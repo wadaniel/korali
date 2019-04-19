@@ -6,6 +6,7 @@ korali/
 *.json
 *.a
 *.swp
+*.swo
 *.out
 *.txt
 *.err

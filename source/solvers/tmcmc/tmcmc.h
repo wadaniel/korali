@@ -12,7 +12,7 @@ typedef struct fparam_s {
     const double *fj;
     int           fn;
     double        pj;
-    double        tol;
+    double        cov;
 } fparam_t;
 
 class TMCMC : public Korali::Solver::Base

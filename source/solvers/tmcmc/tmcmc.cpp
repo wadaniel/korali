@@ -446,10 +446,10 @@ double Korali::Solver::TMCMC::objLog(const gsl_vector *v, void *param)
 {
  double x = gsl_vector_get(v, 0);
  fparam_t *fp = (fparam_t *) param;
- return Korali::Solver::TMCMC::tmcmc_objlogp(x, fp->fj, fp->fn, fp->pj, fp->tol);
+ return Korali::Solver::TMCMC::tmcmc_objlogp(x, fp->fj, fp->fn, fp->pj, fp->cov);
 }
 
-void Korali::Solver::TMCMC::minSearch(double const *fj, int fn, double pj, double objTol, double *xmin, double *fmin)
+void Korali::Solver::TMCMC::minSearch(double const *fj, int fn, double pj, double objCov, double *xmin, double *fmin)
 {
  // Minimizer Options
  size_t MaxIter     = 100;    /* Max number of search iterations */
@@ -469,7 +469,7 @@ void Korali::Solver::TMCMC::minSearch(double const *fj, int fn, double pj, doubl
  fp.fj = fj;
  fp.fn = fn;
  fp.pj = pj;
- fp.tol = objTol;
+ fp.cov = objCov;
 
  x = gsl_vector_alloc (1);
  gsl_vector_set (x, 0, pj);
@@ -482,9 +482,9 @@ void Korali::Solver::TMCMC::minSearch(double const *fj, int fn, double pj, doubl
  minex_func.params = &fp;
 
  // SELECT ONE MINIMIZER STRATEGY
- /* T = gsl_multimin_fminimizer_nmsimplex;*/
- T = gsl_multimin_fminimizer_nmsimplex2;
- /* T = gsl_multimin_fminimizer_nmsimplex2rand;*/
+ T = gsl_multimin_fminimizer_nmsimplex;
+ /* T = gsl_multimin_fminimizer_nmsimplex2; */
+ /* T = gsl_multimin_fminimizer_nmsimplex2rand; (warning: not reliable)  */
  s = gsl_multimin_fminimizer_alloc (T, 1);
  gsl_multimin_fminimizer_set (s, &minex_func, x, ss);
 
@@ -498,9 +498,22 @@ void Korali::Solver::TMCMC::minSearch(double const *fj, int fn, double pj, doubl
    status = gsl_multimin_test_size (size, Tol);
  } while (status == GSL_CONTINUE && iter < MaxIter);
 
+ if (_k->_verbosity >= KORALI_DETAILED)
+ {
+   if(status == GSL_SUCCESS && s->fval >  Tol) printf("[Korali] Minseach coverged, but did not find minimum\n");
+   if(status != GSL_SUCCESS && s->fval <= Tol) printf("[Korali] Minseach did not coverge, but minimum found\n");
+   if(status != GSL_SUCCESS && s->fval >  Tol) printf("[Korali] Minseach did not coverge and did not find minimum\n");
+   if(iter >= MaxIter) printf("[Korali] Minseach MaxIter (%zu) reached\n", MaxIter);
+ }
+ 
  if (s->fval <= Tol) {
    *fmin = s->fval;
    *xmin = gsl_vector_get(s->x, 0);
+ }
+
+ if (*xmin >= 1.0) {
+   *fmin = tmcmc_objlogp(1.0, fj, fn, pj, objCov);
+   *xmin = 1.0;
  }
 
  gsl_vector_free(x);
@@ -548,6 +561,7 @@ void Korali::Solver::TMCMC::printFinal() const
 
   if (_k->_verbosity >= KORALI_NORMAL)
   {
+    printf("[Korali] Coefficient of Variation:  %.2f%%\n", _coefficientOfVariation);
     printf("[Korali] Mean of Samples:\n\n");
     for (size_t i = 0; i < _k->N; i++) printf("\t %g\n", _meanTheta[i]);
     printf("\n[Korali] Covariance of Samples:\n");

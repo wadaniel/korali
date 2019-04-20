@@ -6,4 +6,4 @@ CXX="(CXX)"
 CXXFLAGS="(CXXFLAGS)"
 LDFLAGS="(LDFLAGS)"
 
-$CXX $@ $CXXFLAGS $LDFLAGS -I$PREFIX/include -L$PREFIX/lib -lkorali
+$CXX $@ $CXXFLAGS $LDFLAGS -I$PREFIX/include -L$PREFIX/lib -lkorali -Wl,-rpath=$PREFIX/lib

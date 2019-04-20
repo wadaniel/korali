@@ -4,7 +4,7 @@ TESTS = $(dir $(wildcard tests/*/))
 .PHONY: all install clean snapshot tests clean_tests $(TESTS)
 include common.mk
 
-all: libkorali.a
+all: libkorali.so
 
 libkorali.a:
 	@$(MAKE) -j -C source
@@ -25,7 +25,7 @@ install: libkorali.a
 	mkdir -p $(PREFIX)/lib
 	mkdir -p $(PREFIX)/include
 	mkdir -p $(PREFIX)/bin
-	cp source/libkorali.a $(PREFIX)/lib
+	cp source/libkorali.so $(PREFIX)/lib
 	@cd source && cp $(INCLUDES) --parents $(PREFIX)/include
 	cp libs/json -r $(PREFIX)/include
 	cp libs/koralijson -r $(PREFIX)/include

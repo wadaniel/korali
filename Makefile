@@ -31,6 +31,11 @@ install: libkorali.a
 	cp libs/koralijson -r $(PREFIX)/include
 	@cat tools/korali-cxx | sed -e 's%(LDFLAGS)%$(LDFLAGS)%g' -e 's%(CXXFLAGS)%$(CXXFLAGS)%g' -e 's%(CXX)%$(CXX)%g' -e 's%(PREFIX)%$(PREFIX)%g' > $(PREFIX)/bin/korali-cxx
 	@chmod a+x  $(PREFIX)/bin/korali-cxx
+	@echo '------------------------------------------------------------------'
+	@echo '[Korali] To complete installation, please update your environment:'
+	@echo '[Korali] >export PATH=$$PATH:$(PREFIX)/bin'
+	@echo '[Korali] >export PYTHONPATH=$$PYTHONPATH:$(PREFIX)/lib'
+	@echo '------------------------------------------------------------------'
 
 snapshot: install clean
 	tar -zcvf korali`date +"%m-%d-%y"`.tar.gz korali/ tests/

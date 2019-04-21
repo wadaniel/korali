@@ -2,7 +2,6 @@
 import sys
 sys.path.append('./model')
 from ackley import ackley
-sys.path.append('../../../source')
 import libkorali
   
 korali = libkorali.Engine(ackley)

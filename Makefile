@@ -46,7 +46,10 @@ snapshot: install clean
 	tar -zcvf korali`date +"%m-%d-%y"`.tar.gz korali/ tests/
 
 libs/gsl/lib/libgsl.so:
-	@echo "[Korali] Downloading and Compiling GNU Scientific Library... "
-	cd libs/ && rm -f gsl-2.5.tar.gz && wget "ftp://ftp.gnu.org/gnu/gsl/gsl-2.5.tar.gz" && tar -xzvf gsl-2.5.tar.gz > /dev/null 2>&1
-	cd libs/gsl-2.5 && ./configure --prefix=$(CURDIR)/libs/gsl && make && make install
-	rm -rf libs/gsl-2.5 libs/gsl-2.5.tar.gz
+	@echo "[Korali] Downloading GNU Scientific Library... "
+	@cd libs/ && rm -f gsl-2.5.tar.gz && wget "ftp://ftp.gnu.org/gnu/gsl/gsl-2.5.tar.gz" && tar -xzvf gsl-2.5.tar.gz > /dev/null 2>&1
+	@echo "[Korali] Configuring GNU Scientific Library... "
+	@cd libs/gsl-2.5 && ./configure --prefix=$(CURDIR)/libs/gsl > /dev/null 2>&1 
+	@echo "[Korali] Compiling GNU Scientific Library... "
+	@cd libs/gsl-2.5 && make > /dev/null 2>&1 && make install > /dev/null 2>&1
+	@rm -rf libs/gsl-2.5 libs/gsl-2.5.tar.gz > /dev/null 2>&1

@@ -6,7 +6,7 @@ CXXFLAGS_STATIC =
 CXXFLAGS = -I. -I../libs -I../libs/gsl/include
 CXXFLAGS += -Wno-unused -Wunused-result -Wno-unused-parameter -Wno-address -Wno-deprecated-declarations -Wall -Wfatal-errors
 
-LDFLAGS_SHARED = -Wl,-rpath=$(PREFIX)/lib/koraligsl/lib -lgsl -lgslcblas -L$(PREFIX)/lib/koraligsl/lib
+LDFLAGS_SHARED = -Wl,--whole-archive ../libs/gsl/lib/libgsl.so ../libs/gsl/lib/libgslcblas.so -Wl,--no-whole-archive
 
 ifeq ($(USE_MPI), 1)
 endif
@@ -37,7 +37,7 @@ OBJECTS_SHARED = $(SOURCES:.cpp=.shared.o)
 	$(CXX) $(CXXFLAGS) $(CXXFLAGS_SHARED) -c $< -o $@
 
 libkorali.so: $(OBJECTS_SHARED)
-	$(CXX) -shared $^ -o $@ $(LDFLAGS_SHARED)
+	$(CXX) -shared $^ -o $@ $(LDFLAGS_SHARED) 
 
 libkorali.a: $(OBJECTS_STATIC)
 	ar rs $@ $^  

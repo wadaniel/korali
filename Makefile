@@ -25,6 +25,7 @@ clean_tests:
 install: source/libkorali.so
 	@echo "[Korali] Installing Korali..."
 	mkdir -p $(PREFIX)/lib
+	mkdir -p $(PREFIX)/lib/koraligsl
 	mkdir -p $(PREFIX)/include
 	mkdir -p $(PREFIX)/bin
 	cp source/libkorali.so $(PREFIX)/lib
@@ -32,7 +33,9 @@ install: source/libkorali.so
 	@cd source && cp $(INCLUDES) --parents $(PREFIX)/include
 	cp libs/json -r $(PREFIX)/include
 	cp libs/koralijson -r $(PREFIX)/include
-	cp libs/gsl -r $(PREFIX)/lib/koraligsl
+	cp libs/gsl/include/gsl -r $(PREFIX)/include 
+	cp libs/gsl/lib/libgsl.a -r $(PREFIX)/lib/libkoraligsl.a
+	cp libs/gsl/lib/libgslcblas.a -r $(PREFIX)/lib/libkoraligslcblas.a 
 	@echo "#!/bin/bash" > $(PREFIX)/bin/korali-cxx
 	@cat korali.config tools/korali-cxx >> $(PREFIX)/bin/korali-cxx
 	@chmod a+x  $(PREFIX)/bin/korali-cxx

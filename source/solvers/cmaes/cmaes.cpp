@@ -730,9 +730,8 @@ void Korali::Solver::CMAES::printFinal() const
  {  
     printf("\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"); 
     printf("[Korali] Generation %ld - Finished\n", _currentGeneration);
-    printf("[Korali] Optimum found: %e\n", currentBest);
-    printf("[Korali] Optimum found at:\n\n");
-    for (size_t i = 0; i < _k->N; i++) printf("\t %g\n", rgxbestever[i]);
+    printf("[Korali] Optimum: %e, found at\n", currentBest);
+    for (size_t i = 0; i < _k->N; i++) printf("\t %s = %g\n", _k->_parameters[i]->_name.c_str(), rgxbestever[i]);
     printf("\n[Korali] Number of Function Evaluations: %zu\n", countevals);
     printf("[Korali] Number of Infeasible Samples: %zu\n", countinfeasible);
     printf("[Korali] Stopping Criteria: %s\n", _terminationReason);

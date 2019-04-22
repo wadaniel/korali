@@ -1,7 +1,7 @@
-#ifdef _KORALI_USE_OPENMP
+#ifdef _KORALI_USE_MULTITHREAD
 
-#ifndef _KORALI_OPENMP_H_
-#define _KORALI_OPENMP_H_
+#ifndef _KORALI_MULTITHREAD_H_
+#define _KORALI_MULTITHREAD_H_
 
 #include "conduits/base/base.h"
 #include "pthread.h"
@@ -21,35 +21,33 @@ class Lock
  bool trylock() { return pthread_mutex_trylock(&_lock) == 0; }
 };
 
-class OpenMP : public Base
-{
+class Multithread : public Base {
  public:
- int _threadCount;
- bool _continueEvaluations;
 
+ Lock _sampleLock;
+ size_t _workerCount;
+ pthread_t* _workers;
  std::queue<size_t> _sampleQueue;
- double* sampleArrayPointer;
- double* fitnessArrayPointer;
- Lock _queueLock;
+ bool _continueEvaluations;
+ double* _sampleArrayPointer;
 
+ static void workerThread();
  void run();
  void evaluateSample(double* sampleArray, size_t sampleId);
  void checkProgress();
- void supervisorThread();
- void workerThread();
  bool isRoot();
 
  // Constructor / Destructor
- OpenMP(nlohmann::json& js);
- ~OpenMP();
+ Multithread(nlohmann::json& js);
+ ~Multithread();
 
  // Serialization Methods
  nlohmann::json getConfiguration();
- void setConfiguration(nlohmann::json js);
+ void setConfiguration(nlohmann::json& js);
 };
 
 } // namespace Korali
 
-#endif // _KORALI_OPENMP_H_
+#endif // _KORALI_MULTITHREAD_H_
 
-#endif // _KORALI_USE_OPENMP
+#endif // _KORALI_USE_MULTITHREAD

@@ -2,15 +2,19 @@
 
 #include "korali.h"
 
+using namespace Korali::Conduit;
+
 Korali::Conduit::UPCXX* _ux;
 
 /************************************************************************/
 /*                  Constructor / Destructor Methods                    */
 /************************************************************************/
 
-Korali::Conduit::UPCXX::UPCXX(nlohmann::json& js) : Korali::Conduit::Base::Base(js)
+UPCXX::UPCXX(nlohmann::json& js) : Base::Base(js)
 {
  setConfiguration(js);
+
+ _continueEvaluations = true;
 
  _ux = this;
  _rankId = upcxx::rank_me();
@@ -35,7 +39,7 @@ Korali::Conduit::UPCXX::UPCXX(nlohmann::json& js) : Korali::Conduit::Base::Base(
  upcxx::barrier();
 }
 
-Korali::Conduit::UPCXX::~UPCXX()
+UPCXX::~UPCXX()
 {
  upcxx::finalize();
 }
@@ -44,27 +48,25 @@ Korali::Conduit::UPCXX::~UPCXX()
 /*                    Configuration Methods                             */
 /************************************************************************/
 
-nlohmann::json Korali::Conduit::UPCXX::getConfiguration()
+nlohmann::json UPCXX::getConfiguration()
 {
- auto js = this->Korali::Conduit::Base::getConfiguration();
+ auto js = this->Base::getConfiguration();
 
  js["Type"] = "UPC++";
 
  return js;
 }
 
-void Korali::Conduit::UPCXX::setConfiguration(nlohmann::json js)
+void UPCXX::setConfiguration(nlohmann::json& js)
 {
-  _rankId = 0;
-  _rankCount = 1;
-  _continueEvaluations = true;
+
 }
 
 /************************************************************************/
 /*                    Functional Methods                                */
 /************************************************************************/
 
-void Korali::Conduit::UPCXX::run()
+void UPCXX::run()
 {
  // Supervisor
  if (_rankId == 0)
@@ -79,7 +81,7 @@ void Korali::Conduit::UPCXX::run()
  upcxx::barrier();
 }
 
-void Korali::Conduit::UPCXX::evaluateSample(double* sampleArray, size_t sampleId)
+void UPCXX::evaluateSample(double* sampleArray, size_t sampleId)
 {
  while(_workers.empty()) upcxx::progress();
  int workerId = _workers.front(); _workers.pop();
@@ -98,12 +100,12 @@ void Korali::Conduit::UPCXX::evaluateSample(double* sampleArray, size_t sampleId
  });
 }
 
-void Korali::Conduit::UPCXX::checkProgress()
+void UPCXX::checkProgress()
 {
  upcxx::progress();
 }
 
-bool Korali::Conduit::UPCXX::isRoot()
+bool UPCXX::isRoot()
 {
  return _rankId == 0;
 }

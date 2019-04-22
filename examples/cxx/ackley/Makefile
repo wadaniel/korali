@@ -7,7 +7,7 @@ CXX = korali-cxx
 all: $(BINARIES)
 
 $(BINARIES) : % : %.o $(OBJECTS)
-	$(CXX) -o $@ $^ $(LDFLAGS)
+	$(CXX) -o $@ $^ 
 
 model/ackley.o: 
 	$(MAKE) -C model all 

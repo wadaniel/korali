@@ -177,13 +177,13 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
   #endif
  }
 
- if (conduitString == "OpenMP")
+ if (conduitString == "Multithread")
  {
-  #ifdef _KORALI_USE_OPENMP
-   _conduit = new Korali::Conduit::OpenMP(js["Conduit"]);
+  #ifdef _KORALI_USE_MULTITHREAD
+   _conduit = new Korali::Conduit::Multithread(js["Conduit"]);
   #else
-   fprintf(stderr, "[Korali] Error: OpenMP conduit is not properly configured.\n");
-   fprintf(stderr, "[Korali] Reinstall Korali with the proper configuration to support openMP.\n");
+   fprintf(stderr, "[Korali] Error: Multithread conduit is not properly configured.\n");
+   fprintf(stderr, "[Korali] Reinstall Korali with the proper configuration to support pthreads.\n");
    exit(-1);
   #endif
  }
@@ -219,18 +219,26 @@ void Korali::Engine::run()
 
  setConfiguration(_js);
 
+ #ifdef _KORALI_USE_PYTHON
+  pybind11::gil_scoped_release release; // Releasing Global Lock for Multithreaded execution
+ #endif
+
  _conduit->run();
 
- printf("[Korali] Results saved to folder: '%s'\n", _resultsDirName);
+ if (_conduit->isRoot()) printf("[Korali] Results saved to folder: '%s'\n", _resultsDirName);
 }
 
 void Korali::Engine::saveState(std::string fileName)
 {
+ if (!_conduit->isRoot()) return;
+
  saveJsonToFile(fileName.c_str(), getConfiguration());
 }
 
 void Korali::Engine::saveState()
 {
+ if (!_conduit->isRoot()) return;
+
  char fileName[256];
 
  sprintf(fileName, "./%s/s%05lu.json", _resultsDirName, _currentState++);
@@ -240,6 +248,8 @@ void Korali::Engine::saveState()
 
 void Korali::Engine::loadState(std::string fileName)
 {
+ if (!_conduit->isRoot()) return;
+
  _js = loadJsonFromFile(fileName.c_str());
 }
 

@@ -20,6 +20,7 @@
 #include "solvers/tmcmc/tmcmc.h"
 
 #include "conduits/sequential/sequential.h"
+#include "conduits/multithread/multithread.h"
 #include "conduits/upcxx/upcxx.h"
 #include "koralijson/koralijson.h"
 

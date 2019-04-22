@@ -40,8 +40,10 @@ int main(int argc, char* argv[])
  for (size_t i = 0; i < p.refTemp.size(); i++)
 	 korali["Problem"]["Reference Data"][i] = p.refTemp[i];
 
+ korali["Conduit"]["Type"] = "Multithread";
  korali["Solver"]["Method"] = "CMA-ES";
  korali["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-7;
+ korali["Solver"]["Termination Criteria"]["Max Generations"] = 50;
  korali["Solver"]["Lambda"] = 32;
 
  korali.run();

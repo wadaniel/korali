@@ -7,7 +7,7 @@ int main(int argc, char* argv[])
 	 ackley(d.getParameters(), d.getResults());
  });
 
- korali["Seed"] = 0xC0FFEE;
+ //korali["Seed"] = 0xC0FFEE;
  korali["Verbosity"] = "Normal";
 
  for (int i = 0; i < 4; i++)

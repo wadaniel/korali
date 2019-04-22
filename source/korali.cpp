@@ -106,9 +106,16 @@ nlohmann::json Korali::Engine::getConfiguration()
 void Korali::Engine::setConfiguration(nlohmann::json js)
 {
  // Configure Korali Engine
- std::time_t now_c = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now() - std::chrono::nanoseconds(0));
- _seed  = std::chrono::nanoseconds(now_c).count();
- _seed = consume(js, { "Seed" }, KORALI_NUMBER, "0");
+
+ // Initializing Seed and GSL Random Environment
+ _seed = 0;
+ FILE *fid = fopen("/dev/random", "rb");
+ if (fid != NULL)
+ {
+  fread(&_seed, 1, sizeof(size_t), fid);
+  fclose(fid);
+ }
+ _seed = consume(js, { "Seed" }, KORALI_NUMBER, std::to_string(_seed));
  gsl_rng_env_setup();
 
  auto vString = consume(js, { "Verbosity" }, KORALI_STRING, "Normal");

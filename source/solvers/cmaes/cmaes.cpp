@@ -63,13 +63,11 @@ Korali::Solver::CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js
  if (_muCovariance < 1) _muCovariance = _muEffective;
 
  // Checking Covariance Matrix Evaluation Frequency
-
  if (_diagonalCovarianceMatrixEvalFrequency == 0)  _diagonalCovarianceMatrixEvalFrequency = 2 + 100. * _k->N / sqrt((double)_s);
  if (_diagonalCovarianceMatrixEvalFrequency < 1)
  { fprintf( stderr, "[Korali] Error: Matrix covariance evaluation frequency is less than 1 (%lu)\n", _diagonalCovarianceMatrixEvalFrequency); exit(-1); }
 
  // Setting Sigma Cumulation Factor
-
  double tmpSigma = _sigmaCumulationFactor;
  if (tmpSigma > 0) _sigmaCumulationFactor *= (_muEffective + 2.0) / (_k->N + _muEffective + 3.0);
  if (tmpSigma <= 0 || tmpSigma >= 1)  _sigmaCumulationFactor = (_muEffective + 2.) / (_k->N + _muEffective + 3.0);
@@ -322,7 +320,7 @@ bool Korali::Solver::CMAES::isFeasible(const double *pop) const
 
 void Korali::Solver::CMAES::prepareGeneration()
 {
- int flgdiag = ((_diagonalCovarianceMatrixEvalFrequency== 1) || (_diagonalCovarianceMatrixEvalFrequency>= _currentGeneration));
+ int flgdiag = ((_diagonalCovarianceMatrixEvalFrequency == 1) || (_diagonalCovarianceMatrixEvalFrequency>= _currentGeneration));
 
  /* calculate eigensystem  */
  if (!flgEigensysIsUptodate) {

@@ -8,7 +8,7 @@ include korali.config
 
 all: source/libkorali.so
 
-source/libkorali.so: libs/gsl/lib/libgsl.so
+source/libkorali.so: libs/gsl/lib/libgsl.a
 	@$(MAKE) -j -C source
 
 clean: clean_tests
@@ -48,7 +48,7 @@ install: source/libkorali.so
 snapshot: install clean
 	tar -zcvf korali`date +"%m-%d-%y"`.tar.gz korali/ tests/
 
-libs/gsl/lib/libgsl.so:
+libs/gsl/lib/libgsl.a:
 	@echo "[Korali] Downloading GNU Scientific Library... "
 	@cd libs/ && rm -f gsl-2.5.tar.gz && wget "ftp://ftp.gnu.org/gnu/gsl/gsl-2.5.tar.gz" && tar -xzvf gsl-2.5.tar.gz > /dev/null 2>&1
 	@echo "[Korali] Configuring GNU Scientific Library... "

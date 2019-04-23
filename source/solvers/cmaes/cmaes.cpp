@@ -696,7 +696,7 @@ bool Korali::Solver::CMAES::isStoppingCriteriaActive(const char *criteria) const
 void Korali::Solver::CMAES::printGeneration() const
 {
   if ((_currentGeneration-1) % _k->_outputFrequency != 0) return;
-  printf("\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"); 
+  if (_k->_verbosity >= KORALI_NORMAL) printf("\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
   if (_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Generation %ld - Elapsed Time: %fs\n", _currentGeneration, std::chrono::duration<double>(t1-startTime).count());
   if (_k->_verbosity >= KORALI_NORMAL) 
   {

@@ -84,6 +84,7 @@ class Engine {
  void setItem(const std::string& key, const int& val)         { _js[key] = val; }
  void setItem(const std::string& key, const bool& val)        { _js[key] = val; }
 
+ void loadConfig(std::string fileName);
  void loadState(std::string fileName);
  void saveState(std::string fileName);
  void saveState();

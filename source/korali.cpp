@@ -160,11 +160,6 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
  // Configure Conduit
  std::string conduitString = "Sequential";
 
- #ifdef _KORALI_USE_UPCXX
- upcxx::init();
- if (upcxx::rank_n() > 1) conduitString = "UPC++";
- #endif
-
  conduitString = consume(js, { "Conduit", "Type" }, KORALI_STRING, conduitString);
  _conduit = NULL;
 
@@ -257,6 +252,11 @@ void Korali::Engine::loadState(std::string fileName)
 {
  if (!_conduit->isRoot()) return;
 
+ _js = loadJsonFromFile(fileName.c_str());
+}
+
+void Korali::Engine::loadConfig(std::string fileName)
+{
  _js = loadJsonFromFile(fileName.c_str());
 }
 

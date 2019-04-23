@@ -11,7 +11,7 @@ all: source/libkorali.so
 source/libkorali.so: libs/gsl/lib/libgsl.a
 	@$(MAKE) -j -C source
 
-clean: clean_tests
+clean: 
 	@$(MAKE) -j -C source clean
 
 tests: $(TESTS)

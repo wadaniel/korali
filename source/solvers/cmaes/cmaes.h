@@ -72,11 +72,11 @@ class CMAES : public Korali::Solver::Base
  double sigma;  /* step size */
  Parameter::Gaussian* _gaussianGenerator;
 
- double currentBest; /* best ever fitness */
+ double bestEver; /* best ever fitness */
  double prevBest; /* best ever fitness from previous generation */ 
  double *rgxmean; /* mean "parent" */
  double *rgxbestever; /* bestever vector */
- double *curBest; /* holding all fitness values (fitnessvector) */ 
+ double *curBestVector; /* current best vectir */ 
  int *index; /* sorting index of current sample pop (index[0] idx of current best). */
  double currentFunctionValue; /* best fitness current generation */
  double prevFunctionValue; /* best fitness previous generation */

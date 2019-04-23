@@ -19,10 +19,10 @@ Korali::Solver::CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js
  rgxold = (double*) calloc (sizeof(double), _k->N);
  rgxbestever = (double*) calloc (sizeof(double), _k->N);
  rgD = (double*) calloc (sizeof(double), _k->N);
+ curBestVector = (double *) calloc (sizeof(double), _k->N);
 
  rgFuncValue = (double*) calloc (sizeof(double), _s);
  index = (int *) calloc (sizeof(int*), _s);
- curBest = (double *) calloc (sizeof(double), _s);
  _muWeights = (double *) calloc (sizeof(double), _mu);
 
  C = (double**) calloc (sizeof(double*), _k->N);
@@ -108,7 +108,7 @@ Korali::Solver::CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js
 
  countevals = 0;
  countinfeasible = 0;
- currentBest = 0.0;
+ bestEver = 0.0;
  for (size_t i = 0; i < _s; ++i)  index[i] = i; /* should not be necessary */
 
  for (size_t i = 0; i < _k->N; ++i)
@@ -182,9 +182,9 @@ nlohmann::json Korali::Solver::CMAES::getConfiguration()
  js["State"]["Current Generation"] = _currentGeneration;
  js["State"]["MuEffective"] = _muEffective;
  js["State"]["Sigma"] = sigma;
- js["State"]["CurrentBest"] = currentBest;
- js["State"]["CurrentFunctionValue"] = currentFunctionValue;
- js["State"]["prevFunctionValue"] = prevFunctionValue;
+ js["State"]["BestEverFunctionValue"] = bestEver;
+ js["State"]["CurrentBestFunctionValue"] = currentFunctionValue;
+ js["State"]["PrevFunctionValue"] = prevFunctionValue;
  js["State"]["MaxDiagonalCovariance"] = maxdiagC;
  js["State"]["MinDiagonalCovariance"] = mindiagC;
  js["State"]["MaxEigenvalue"] = maxEW;
@@ -197,11 +197,11 @@ nlohmann::json Korali::Solver::CMAES::getConfiguration()
  for (size_t i = 0; i < _k->N; i++) js["State"]["CurrentMeanVector"] += rgxmean[i];
  for (size_t i = 0; i < _k->N; i++) js["State"]["PreviousMeanVector"] += rgxold[i];
  for (size_t i = 0; i < _k->N; i++) js["State"]["BestEverVector"] += rgxbestever[i];
- for (size_t i = 0; i < _k->N; i++) js["State"]["CurrentBestVector"] += curBest[i];
- for (size_t i = 0; i < _k->N; i++) js["State"]["Index"] += index[i];
+ for (size_t i = 0; i < _k->N; i++) js["State"]["CurrentBestVector"] += curBestVector[i];
  for (size_t i = 0; i < _k->N; i++) js["State"]["AxisLengths"] += rgD[i];
  for (size_t i = 0; i < _k->N; i++) js["State"]["CumulativeCovariance"] += rgpc[i];
- for (size_t i = 0; i < _k->N; i++) js["State"]["FunctionValues"] += rgFuncValue[i];
+ for (size_t i = 0; i < _mu; i++)   js["State"]["Index"] += index[i];
+ for (size_t i = 0; i < _mu; i++)   js["State"]["FunctionValues"] += rgFuncValue[i];
 
  for (size_t i = 0; i < _k->N; i++) for (size_t j = 0; j < _k->N; j++) js["State"]["CovarianceMatrix"][i][j] = C[i][j];
  for (size_t i = 0; i < _k->N; i++) for (size_t j = 0; j < _k->N; j++) js["State"]["EigenMatrix"][i][j] = B[i][j];
@@ -245,9 +245,9 @@ void Korali::Solver::CMAES::setState(nlohmann::json& js)
  _currentGeneration    = js["State"]["Current Generation"];
  _muEffective          = js["State"]["MuEffective"];
  sigma                 = js["State"]["Sigma"];
- currentBest           = js["State"]["CurrentBest"];
- currentFunctionValue  = js["State"]["CurrentFunctionValue"];
- prevFunctionValue     = js["State"]["prevFunctionValue"];
+ bestEver              = js["State"]["BestEverFunctionValie"];
+ currentFunctionValue  = js["State"]["CurrentBestFunctionValue"];
+ prevFunctionValue     = js["State"]["PrevFunctionValue"];
  maxdiagC              = js["State"]["MaxDiagonalCovariance"];
  mindiagC              = js["State"]["MinDiagonalCovariance"];
  maxEW                 = js["State"]["MaxEigenvalue"];
@@ -256,11 +256,11 @@ void Korali::Solver::CMAES::setState(nlohmann::json& js)
  countevals            = js["State"]["EvaluationCount"];
  countinfeasible       = js["State"]["InfeasibleCount"];
 
- for (size_t i = 0; i < _mu; i++) _muWeights[i]     = js["State"]["MuWeights"][i];
- for (size_t i = 0; i < _k->N; i++) rgxmean[i]      = js["State"]["CurrentMeanVector"][i];
- for (size_t i = 0; i < _k->N; i++) rgxold[i]       = js["State"]["PreviousMeanVector"][i];
- for (size_t i = 0; i < _k->N; i++) rgxbestever[i]  = js["State"]["BestEverVector"][i];
- for (size_t i = 0; i < _k->N; i++) curBest[i]      = js["State"]["CurrentBestVector"][i];
+ for (size_t i = 0; i < _mu; i++) _muWeights[i]      = js["State"]["MuWeights"][i];
+ for (size_t i = 0; i < _k->N; i++) rgxmean[i]       = js["State"]["CurrentMeanVector"][i];
+ for (size_t i = 0; i < _k->N; i++) rgxold[i]        = js["State"]["PreviousMeanVector"][i];
+ for (size_t i = 0; i < _k->N; i++) rgxbestever[i]   = js["State"]["BestEverVector"][i];
+ for (size_t i = 0; i < _k->N; i++) curBestVector[i] = js["State"]["CurrentBestVector"][i];
  for (size_t i = 0; i < _k->N; i++) index[i]        = js["State"]["Index"][i];
  for (size_t i = 0; i < _k->N; i++) rgD[i]          = js["State"]["AxisLengths"][i];
  for (size_t i = 0; i < _k->N; i++) rgpc[i]         = js["State"]["CumulativeCovariance"][i];
@@ -393,7 +393,7 @@ void Korali::Solver::CMAES::updateDistribution(const double *fitnessVector)
  countevals += _s;
 
  /* assign function values */
- for (size_t i = 0; i < _s; i++) curBest[i] = rgFuncValue[i] = fitnessVector[i];
+ for (size_t i = 0; i < _s; i++) rgFuncValue[i] = fitnessVector[i];
 
  /* Generate index */
  sorted_index(fitnessVector, index, _s);
@@ -407,14 +407,17 @@ void Korali::Solver::CMAES::updateDistribution(const double *fitnessVector)
 
  /* update function value history */
  prevFunctionValue = currentFunctionValue;
+ 
+ /* update current best */
  currentFunctionValue = fitnessVector[index[0]];
- prevBest = currentBest;
+ for (size_t i = 0; i < _k->N; ++i) curBestVector[i] = _samplePopulation[index[0]*_k->N + i];
 
  /* update xbestever */
- if (currentBest > curBest[index[0]] || _currentGeneration == 1)
+ if (bestEver > fitnessVector[index[0]] || _currentGeneration == 1)
  {
-  for (size_t i = 0; i < _k->N; ++i) rgxbestever[i] = _samplePopulation[index[0]*_k->N + i];
-  currentBest = curBest[index[0]];
+  prevBest = bestEver;
+  bestEver = fitnessVector[index[0]];
+  for (size_t i = 0; i < _k->N; ++i) rgxbestever[i] = curBestVector[i];
  }
 
  /* calculate rgxmean and rgBDz~_k->N(0,C) */
@@ -474,7 +477,7 @@ void Korali::Solver::CMAES::adaptC2(int hsig)
  {
   /* definitions for speeding up inner-most loop */
   double ccov1 = std::min(_covarianceMatrixLearningRate * (1./_muCovariance) * (flgdiag ? (_k->N+1.5) / 3. : 1.), 1.);
-  double ccovmu = std::min(_covarianceMatrixLearningRate * (1-1./_muCovariance)* (flgdiag ? (_k->N+1.5) / 3. : 1.), 1.-ccov1);
+  double ccovmu = std::min(_covarianceMatrixLearningRate * (1-1./_muCovariance) * (flgdiag ? (_k->N+1.5) / 3. : 1.), 1.-ccov1);
   double sigmasquare = sigma * sigma;
 
   flgEigensysIsUptodate = false;
@@ -700,8 +703,8 @@ void Korali::Solver::CMAES::printGeneration() const
   if (_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Generation %ld - Elapsed Time: %fs\n", _currentGeneration, std::chrono::duration<double>(t1-startTime).count());
   if (_k->_verbosity >= KORALI_NORMAL) 
   {
-    double reldiffpct = (currentBest/prevBest - 1.0)*100.0;
-    printf("[Korali] Current Function Value: %e - Best: %e (%.1f%%)\n", currentFunctionValue, currentBest, reldiffpct);
+    double reldiffpct = (bestEver/prevBest - 1.0)*100.0;
+    printf("[Korali] Current Function Value: %e - Best: %e (%.1f%%)\n", currentFunctionValue, bestEver, reldiffpct);
     
     printf("[Korali] Sigma: %e\n", sigma);
     printf("[Korali] Min Diag C: %e - Max Diag C: %e\n", mindiagC, maxdiagC);
@@ -730,7 +733,7 @@ void Korali::Solver::CMAES::printFinal() const
  {  
     printf("\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"); 
     printf("[Korali] Generation %ld - Finished\n", _currentGeneration);
-    printf("[Korali] Optimum found: %e\n", currentBest);
+    printf("[Korali] Optimum found: %e\n", bestEver);
     printf("[Korali] Optimum found at:\n\n");
     for (size_t i = 0; i < _k->N; i++) printf("\t %g\n", rgxbestever[i]);
     printf("\n[Korali] Number of Function Evaluations: %zu\n", countevals);

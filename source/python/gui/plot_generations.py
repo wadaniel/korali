@@ -4,7 +4,7 @@ import json
 import matplotlib.pyplot as plt
 
 
-path = 'korali00000/s00006.json'
+path = 'korali00000/s00035.json'
 
 with open(path) as f:
     data = json.load(f)

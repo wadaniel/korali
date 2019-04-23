@@ -33,26 +33,26 @@ class modelData
 {
  public:
 
-	modelData() { _self = this; }
+ modelData() { _self = this; }
 
-	void addResult(double x) {_self->_results.push_back(x); }
-	size_t getParameterCount() { return _self->_parameters.size(); }
-	std::vector<double>& getParameters() { return _self->_parameters; }
-	std::vector<double>& getResults() { return _self->_results; }
+ void addResult(double x) {_self->_results.push_back(x); }
+ size_t getParameterCount() { return _self->_parameters.size(); }
+ std::vector<double>& getParameters() { return _self->_parameters; }
+ std::vector<double>& getResults() { return _self->_results; }
 
-	double getParameter(size_t i)
-	{
-		if (i > _self->_parameters.size())
-		{
-		   fprintf(stderr, "[Korali] Error: Trying to access parameter %lu, when only %lu are provided.\n", i, _self->_parameters.size());
-		   exit(-1);
-	  }
-		return _self->_parameters[i];
-	}
+ double getParameter(size_t i)
+ {
+  if (i > _self->_parameters.size())
+  {
+     fprintf(stderr, "[Korali] Error: Trying to access parameter %lu, when only %lu are provided.\n", i, _self->_parameters.size());
+     exit(-1);
+   }
+  return _self->_parameters[i];
+ }
 
-	modelData* _self;
-  std::vector<double> _parameters;
-  std::vector<double> _results;
+ modelData* _self;
+ std::vector<double> _parameters;
+ std::vector<double> _results;
 };
 
 class Engine {
@@ -96,7 +96,7 @@ class Engine {
  int _verbosity;
  size_t _outputFrequency;
 
- char   _resultsDirName[64];
+ std::string _resultsDirName;
  size_t _currentState;
 
  // Serialization Methods

@@ -44,7 +44,7 @@ class CMAES : public Korali::Solver::Base
  size_t _mu; /* number of best samples for mean / cov update */
  std::string _muType; /* linearDecreasing, Equal or Logarithmic */
  double* _muWeights; /* weights for mu best samples */
- double _muEffective;
+ double _muEffective; /* variance effective selection mass */
  double _muCovariance;
 
  double _sigmaCumulationFactor; /* default calculated from muEffective and dimension */

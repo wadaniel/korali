@@ -78,8 +78,8 @@ Korali::Solver::CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js
 
  if (_dampFactor < 0) _dampFactor = 1;
  _dampFactor = _dampFactor* (1 + 2*std::max(0.0, sqrt((_muEffective-1.0)/(_k->N+1.0)) - 1))  /* basic factor */
-  * std::max(0.3, 1. - (double)_k->N / (1e-6+std::min(_maxGenenerations, _maxFitnessEvaluations/_s)))
-  + _sigmaCumulationFactor;             /* minor increment */
+  * std::max(0.3, 1. - (double)_k->N / (1e-6+std::min(_maxGenenerations, _maxFitnessEvaluations/_s))) /* modification for short runs */
+  + _sigmaCumulationFactor; /* minor increment */
 
  // Setting Cumulative Covariance
 

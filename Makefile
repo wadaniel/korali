@@ -25,7 +25,6 @@ clean_tests:
 install: source/libkorali.so
 	@echo "[Korali] Installing Korali..."
 	mkdir -p $(PREFIX)/lib
-	mkdir -p $(PREFIX)/lib/koraligsl
 	mkdir -p $(PREFIX)/include
 	mkdir -p $(PREFIX)/bin
 	cp source/libkorali.so $(PREFIX)/lib

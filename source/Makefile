@@ -7,22 +7,20 @@ CXXFLAGS = -I. -I../libs -I../libs/gsl/include
 CXXFLAGS += -Wno-unused -Wunused-result -Wno-unused-parameter -Wno-address -Wno-deprecated-declarations -Wall -Wfatal-errors
 
 ifneq ("$(wildcard ../libs/gsl/lib/libgsl.so)","")
+ LDWHOLE = -Wl,--whole-archive
  LIBGSLPATH = "../libs/gsl/lib/libgsl.so" 
-endif
-
-ifneq ("$(wildcard ../libs/gsl/lib/libgslcblas.so)","")
  LIBGSLCBLASPATH = "../libs/gsl/lib/libgslcblas.so" 
+ LDNOWHOLE = -Wl,--no-whole-archive
 endif
 
 ifneq ("$(wildcard ../libs/gsl/lib/libgsl.dylib)","")
+ LDWHOLE = -Wl,-all_load
  LIBGSLPATH = "../libs/gsl/lib/libgsl.dylib" 
-endif
-
-ifneq ("$(wildcard ../libs/gsl/lib/libgslcblas.dylib)","")
  LIBGSLCBLASPATH = "../libs/gsl/lib/libgslcblas.dylib" 
+ LDNOWHOLE = -Wl,-noall_load
 endif
 
-LDFLAGS_SHARED = -Wl,--whole-archive $(LIBGSLPATH) $(LIBGSLCBLASPATH) -Wl,--no-whole-archive
+LDFLAGS_SHARED = $(LDWHOLE) $(LIBGSLPATH) $(LIBGSLCBLASPATH) $(LDNOWHOLE)
 
 ifeq ($(USE_MPI), 1)
 endif

@@ -46,7 +46,6 @@
   }
  ],
  "Problem": {
-  "Model": "Single",
   "Objective": "Direct Evaluation"
  },
  "Seed": 12648435,
@@ -57,7 +56,7 @@
    "Learning Rate": 0.9375590683224256
   },
   "Current Generation": 0,
-  "Damp Factor": 4.967618381876603,
+  "Damp Factor": 4.8841838162926265,
   "Lambda": 128,
   "Method": "CMA-ES",
   "Mu": {
@@ -119,7 +118,7 @@
     0.0,
     0.0
    ],
-   "CurrentFunctionValue": 1.5e-323,
+   "CurrentFunctionValue": 6.4e-323,
    "CurrentMeanVector": [
     0.0,
     0.0,
@@ -166,6 +165,7 @@
     2,
     3
    ],
+   "InfeasibleCount": 0,
    "MaxDiagonalCovariance": 1.0,
    "MaxEigenvalue": 1.0,
    "MinDiagonalCovariance": 1.0,
@@ -1014,13 +1014,15 @@
     ]
    ],
    "Sigma": 16.0,
-   "prevFunctionValue": 9.6331576e-317
+   "prevFunctionValue": 3.999117522251503e+252
   },
   "Termination Criteria": {
    "Fitness Diff Threshold": 0.0,
-   "Fitness Eval Threshold": 0.0,
-   "Max Generations": 200,
+   "Ignore": "Max Kondition Covariance",
+   "Max Generations": 100,
+   "Max Kondition Covariance": 1.7976931348623157e+308,
    "Max Model Evaluations": 18446744073709551615,
+   "Max Standard Deviation": 1e+18,
    "Min DeltaX": 1e-11,
    "Min Fitness": -1.7976931348623157e+308
   }

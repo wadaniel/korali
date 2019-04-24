@@ -46,7 +46,6 @@
   }
  ],
  "Problem": {
-  "Model": "Single",
   "Objective": "Direct Evaluation"
  },
  "Seed": 12648435,
@@ -57,7 +56,7 @@
    "Learning Rate": 0.9375590683224256
   },
   "Current Generation": 1,
-  "Damp Factor": 4.967618381876603,
+  "Damp Factor": 4.8841838162926265,
   "Lambda": 128,
   "Method": "CMA-ES",
   "Mu": {
@@ -81,50 +80,50 @@
    ],
    "CovarianceMatrix": [
     [
-     0.21027678166170888,
+     0.25264753745740753,
      0.0,
      0.0,
      0.0
     ],
     [
      0.0,
-     0.3066682127425434,
+     0.24208511997465176,
      0.0,
      0.0
     ],
     [
      0.0,
      0.0,
-     0.3097963128268525,
+     0.2583674209631419,
      0.0
     ],
     [
      0.0,
      0.0,
      0.0,
-     0.20308941353727233
+     0.20732803809817288
     ]
    ],
    "CumulativeCovariance": [
-    -0.39873762268028606,
-    -0.8144935407183528,
-    -0.8600667654625436,
-    -0.1876477931905
+    0.011463977794452844,
+    -0.3812776179659409,
+    -0.6492180573474939,
+    0.2114799574420759
    ],
    "Current Generation": 1,
-   "CurrentBest": 7.104624560300685,
+   "CurrentBest": 10.690116800321748,
    "CurrentBestVector": [
-    61.50656295912649,
-    103.48423757753662,
-    79.5148553387231,
-    126.4130461135469
+    19.288982708414427,
+    21.272978354296992,
+    19.10407426083686,
+    20.88507889011177
    ],
-   "CurrentFunctionValue": 7.104624560300685,
+   "CurrentFunctionValue": 10.690116800321748,
    "CurrentMeanVector": [
-    -1.255411742085995,
-    -2.5644050039664643,
-    -2.7078907404866306,
-    -0.5908026470247728
+    0.036093941267511,
+    -1.2004395155177456,
+    -2.0440408078116348,
+    0.665837399551098
    ],
    "EigenMatrix": [
     [
@@ -155,20 +154,21 @@
    "EigenSystemUpToDate": false,
    "EvaluationCount": 128,
    "FunctionValues": [
-    61.50656295912649,
-    103.48423757753662,
-    79.5148553387231,
-    126.4130461135469
+    19.288982708414427,
+    21.272978354296992,
+    19.10407426083686,
+    20.88507889011177
    ],
    "Index": [
     63,
     15,
-    22,
-    30
+    126,
+    86
    ],
-   "MaxDiagonalCovariance": 0.3097963128268525,
+   "InfeasibleCount": 20,
+   "MaxDiagonalCovariance": 0.2583674209631419,
    "MaxEigenvalue": 1.0,
-   "MinDiagonalCovariance": 0.20308941353727233,
+   "MinDiagonalCovariance": 0.20732803809817288,
    "MinEigenvalue": 1.0,
    "MuEffective": 34.43346755139583,
    "MuWeights": [
@@ -1013,14 +1013,16 @@
      -9.60563511718475
     ]
    ],
-   "Sigma": 15.362215904332485,
-   "prevFunctionValue": 1.5e-323
+   "Sigma": 14.561242640201677,
+   "prevFunctionValue": 6.4e-323
   },
   "Termination Criteria": {
    "Fitness Diff Threshold": 0.0,
-   "Fitness Eval Threshold": 0.0,
-   "Max Generations": 200,
+   "Ignore": "Max Kondition Covariance",
+   "Max Generations": 100,
+   "Max Kondition Covariance": 1.7976931348623157e+308,
    "Max Model Evaluations": 18446744073709551615,
+   "Max Standard Deviation": 1e+18,
    "Min DeltaX": 1e-11,
    "Min Fitness": -1.7976931348623157e+308
   }

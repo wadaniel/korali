@@ -9,12 +9,12 @@ import matplotlib.pyplot as plt
 resultdir = 'korali00000'
 
 numeval  = []
-fval     = []
 sigma    = []
+fval     = []
 fvalXvec = []
+cond     = []
 
 plt.figure('CMA-ES live diagonistics: {0}'.format(resultdir),figsize=(8,8))
-#fig, axes = plt.subplots(2, 2, sharex='all')
 
 idx = 1
 while( os.path.isfile( 'korali00000/s{1}.json'.format(resultdir, str(idx).zfill(5))) ):
@@ -25,19 +25,21 @@ while( os.path.isfile( 'korali00000/s{1}.json'.format(resultdir, str(idx).zfill(
         data = json.load(f)
         state = data['Solver']['State']
 
-        numeval.append(data['Solver']['Lambda']*idx)
+        numeval.append(data['Solver']['EvaluationCount'])
+        sigma.append(state['Sigma'])
         fval.append(state['CurrentFunctionValue'])  # or maybe BestEver
         fvalXvec.append(state['CurrentBestVector']) # or maybe BestEverVector
-        sigma.append(state['Sigma'])
+        cond.append(state['MaxEigenvalue']/state['MinEigenvalue'])
 
     print(idx)
 
     plt.subplot(221)
-    plt.title('Sigma')
+    plt.title('FunctionValue (red), Sigma (green), Condition (blue)')
     plt.grid(True)
     plt.yscale('log')
     plt.plot(numeval, sigma, color='g')
     plt.plot(numeval, fval, color='r')
+    plt.plot(numeval, cond, color='b')
 
     plt.subplot(222)
     plt.title('Object Variables')

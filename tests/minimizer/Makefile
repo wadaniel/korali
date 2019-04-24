@@ -13,5 +13,4 @@ $(BINARIES) : % : %.o
 
 .PHONY: clean
 clean:
-	$(MAKE) -C model clean
 	$(RM) $(BINARIES) *.o *.ti *.optrpt *.txt

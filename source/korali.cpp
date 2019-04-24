@@ -6,6 +6,51 @@
 Korali::Engine* Korali::_k;
 
 /************************************************************************/
+/*                  Python Binding Declarations                         */
+/************************************************************************/
+
+#ifdef _KORALI_USE_PYTHON
+
+#include "pybind11/pybind11.h"
+#include "pybind11/functional.h"
+#include "pybind11/stl.h"
+
+PYBIND11_MODULE(libkorali, m) {
+ pybind11::class_<Korali::modelData>(m, "modelData")
+  .def(pybind11::init<>())
+	.def("getParameter", &Korali::modelData::getParameter, pybind11::return_value_policy::reference)
+	.def("getParameterCount", &Korali::modelData::getParameterCount, pybind11::return_value_policy::reference)
+	.def("getParameters", &Korali::modelData::getParameters, pybind11::return_value_policy::reference)
+	.def("getResults", &Korali::modelData::getResults, pybind11::return_value_policy::reference)
+  .def("addResult", &Korali::modelData::addResult, pybind11::return_value_policy::reference);
+
+ pybind11::class_<Korali::Engine>(m, "Engine")
+ .def(pybind11::init<const std::function<void(Korali::modelData&)>&>())
+ .def("__getitem__", pybind11::overload_cast<const std::string&>(&Korali::Engine::getItem), pybind11::return_value_policy::reference)
+ .def("__getitem__", pybind11::overload_cast<const unsigned long int&>(&Korali::Engine::getItem), pybind11::return_value_policy::reference)
+ .def("__setitem__", pybind11::overload_cast<const std::string&, const std::string&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
+ .def("__setitem__", pybind11::overload_cast<const std::string&, const double&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
+ .def("__setitem__", pybind11::overload_cast<const std::string&, const int&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
+ .def("__setitem__", pybind11::overload_cast<const std::string&, const bool&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
+ .def("run", &Korali::Engine::run);
+
+ pybind11::class_<Korali::KoraliJsonWrapper>(m, "__KoraliJsonWrapper")
+ .def(pybind11::init<>())
+ .def("__getitem__", pybind11::overload_cast<const std::string&>(&Korali::KoraliJsonWrapper::getItem), pybind11::return_value_policy::reference)
+ .def("__getitem__", pybind11::overload_cast<const unsigned long int&>(&Korali::KoraliJsonWrapper::getItem), pybind11::return_value_policy::reference)
+ .def("__setitem__", pybind11::overload_cast<const std::string&, const std::string&>(&Korali::KoraliJsonWrapper::setItem), pybind11::return_value_policy::reference)
+ .def("__setitem__", pybind11::overload_cast<const std::string&, const double&>(&Korali::KoraliJsonWrapper::setItem), pybind11::return_value_policy::reference)
+ .def("__setitem__", pybind11::overload_cast<const std::string&, const int&>(&Korali::KoraliJsonWrapper::setItem), pybind11::return_value_policy::reference)
+ .def("__setitem__", pybind11::overload_cast<const std::string&, const bool&>(&Korali::KoraliJsonWrapper::setItem), pybind11::return_value_policy::reference)
+ .def("__setitem__", pybind11::overload_cast<const int&, const std::string&>(&Korali::KoraliJsonWrapper::setItem), pybind11::return_value_policy::reference)
+ .def("__setitem__", pybind11::overload_cast<const int&, const double&>(&Korali::KoraliJsonWrapper::setItem), pybind11::return_value_policy::reference)
+ .def("__setitem__", pybind11::overload_cast<const int&, const int&>(&Korali::KoraliJsonWrapper::setItem), pybind11::return_value_policy::reference)
+ .def("__setitem__", pybind11::overload_cast<const int&, const bool&>(&Korali::KoraliJsonWrapper::setItem), pybind11::return_value_policy::reference);
+}
+
+#endif
+
+/************************************************************************/
 /*                  Constructor / Destructor Methods                    */
 /************************************************************************/
 
@@ -132,13 +177,13 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
   #endif
  }
 
- if (conduitString == "OpenMP")
+ if (conduitString == "Multithread")
  {
-  #ifdef _KORALI_USE_OPENMP
-   _conduit = new Korali::Conduit::OpenMP(js["Conduit"]);
+  #ifdef _KORALI_USE_MULTITHREAD
+   _conduit = new Korali::Conduit::Multithread(js["Conduit"]);
   #else
-   fprintf(stderr, "[Korali] Error: OpenMP conduit is not properly configured.\n");
-   fprintf(stderr, "[Korali] Reinstall Korali with the proper configuration to support openMP.\n");
+   fprintf(stderr, "[Korali] Error: Multithread conduit is not properly configured.\n");
+   fprintf(stderr, "[Korali] Reinstall Korali with the proper configuration to support pthreads.\n");
    exit(-1);
   #endif
  }
@@ -174,18 +219,26 @@ void Korali::Engine::run()
 
  setConfiguration(_js);
 
+ #ifdef _KORALI_USE_PYTHON
+  pybind11::gil_scoped_release release; // Releasing Global Lock for Multithreaded execution
+ #endif
+
  _conduit->run();
 
- printf("[Korali] Results saved to folder: '%s'\n", _resultsDirName);
+ if (_conduit->isRoot()) printf("[Korali] Results saved to folder: '%s'\n", _resultsDirName);
 }
 
 void Korali::Engine::saveState(std::string fileName)
 {
+ if (!_conduit->isRoot()) return;
+
  saveJsonToFile(fileName.c_str(), getConfiguration());
 }
 
 void Korali::Engine::saveState()
 {
+ if (!_conduit->isRoot()) return;
+
  char fileName[256];
 
  sprintf(fileName, "./%s/s%05lu.json", _resultsDirName, _currentState++);
@@ -195,5 +248,8 @@ void Korali::Engine::saveState()
 
 void Korali::Engine::loadState(std::string fileName)
 {
+ if (!_conduit->isRoot()) return;
+
  _js = loadJsonFromFile(fileName.c_str());
 }
+

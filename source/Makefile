@@ -1,14 +1,48 @@
-include ../common.mk
-CXXFLAGS += -I.
-CXXFLAGS += -I../libs
+include ../korali.config
+
+CXXFLAGS_SHARED = -fPIC 
+CXXFLAGS_STATIC = 
+
+CXXFLAGS = -I. -I../libs -I../libs/gsl/include
+CXXFLAGS += -Wno-unused -Wunused-result -Wno-unused-parameter -Wno-address -Wno-deprecated-declarations -Wall -Wfatal-errors
+
+LDFLAGS_SHARED = -Wl,-rpath=$(PREFIX)/lib/koraligsl/lib -lgsl -lgslcblas -L$(PREFIX)/lib/koraligsl/lib
+
+ifeq ($(USE_MPI), 1)
+endif
+
+ifeq ($(USE_UPCXX), 1)
+ CXXFLAGS_STATIC += -D_KORALI_USE_UPCXX `upcxx-meta CPPFLAGS`
+endif
+
+ifeq ($(USE_PYTHON), 1)
+ CXXFLAGS_SHARED += -D_KORALI_USE_PYTHON `python3 -m pybind11 --includes`
+endif
+
+ifeq ($(USE_MULTITHREAD), 1)
+ CXXFLAGS += -D_KORALI_USE_MULTITHREAD -pthread
+ LDFLAGS_SHARED  += -pthread
+endif
+
+all: libkorali.so libkorali.a
 
 SOURCES = $(shell find . -name "*.cpp")
-OBJECTS = $(SOURCES:.cpp=.o)
+OBJECTS_STATIC = $(SOURCES:.cpp=.static.o)
+OBJECTS_SHARED = $(SOURCES:.cpp=.shared.o)
 
-all: libkorali.a
+%.static.o: %.cpp
+	$(CXX) $(CXXFLAGS) $(CXXFLAGS_STATIC) -c $< -o $@
 
-libkorali.a: $(OBJECTS)
+%.shared.o: %.cpp
+	$(CXX) $(CXXFLAGS) $(CXXFLAGS_SHARED) -c $< -o $@
 
-clean:; rm -rf *.a *.o $(OBJECTS)
+libkorali.so: $(OBJECTS_SHARED)
+	$(CXX) -shared $^ -o $@ $(LDFLAGS_SHARED)
+
+libkorali.a: $(OBJECTS_STATIC)
+	ar rs $@ $^  
+
+clean:
+	@rm -rf *.a *.so $(OBJECTS_STATIC) $(OBJECTS_SHARED)
 
 .PHONY: clean all

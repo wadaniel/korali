@@ -56,18 +56,23 @@ double Korali::Problem::Likelihood::evaluateFitness(double* sample)
   exit(-1);
  }
 
- if (_model != KORALI_MULTIPLE)
- {
-  fprintf(stderr, "[Korali] Error: Incorrect model for the Likelihood problem.\n");
-  exit(-1);
- }
-
  if (isSampleOutsideBounds(sample)) return -DBL_MAX;
 
  double sigma = sample[_k->_computationalParameterCount];
  double fitnessData[_referenceDataSize];
 
- _k->_modelMultiple(sample, fitnessData);
+ modelData d;
+ for (size_t i = 0; i < _k->N; i++) d._parameters.push_back(sample[i]);
+ _k->_model(d);
+
+ if (d._results.size() != _referenceDataSize)
+ {
+  fprintf(stderr, "[Korali] Error: This likelihood problem requires a %lu-sized result array.\n", _referenceDataSize);
+  fprintf(stderr, "[Korali]        Provided: %lu.\n", d._results.size());
+  exit(-1);
+ }
+
+ for (size_t i = 0; i < _referenceDataSize; i++) fitnessData[i] = d._results[i];
 
  return -Korali::Parameter::Gaussian::logLikelihood(sigma, _referenceDataSize, _referenceData, fitnessData);
 }

@@ -43,12 +43,18 @@ double Korali::Problem::Direct::evaluateFitness(double* sample)
   exit(-1);
  }
 
- if (_model != KORALI_SINGLE)
+ if (isSampleOutsideBounds(sample)) return -DBL_MAX;
+
+ modelData d;
+ for (size_t i = 0; i < _k->N; i++) d._parameters.push_back(sample[i]);
+ _k->_model(d);
+
+ if (d._results.size() != 1)
  {
-  fprintf(stderr, "[Korali] Error: Incorrect model for the Direct Evaluation problem.\n");
+  fprintf(stderr, "[Korali] Error: The direct evaluation problem requires exactly a 1-element result array.\n");
+  fprintf(stderr, "[Korali]        Provided: %lu.\n", d._results.size());
   exit(-1);
  }
 
- if (isSampleOutsideBounds(sample)) return -DBL_MAX;
- return _k->_modelSingle(sample);
+ return d._results[0];
 }

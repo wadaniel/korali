@@ -1,0 +1,8 @@
+#ifndef _ACKLEY_H_
+#define _ACKLEY_H_
+
+#include <vector>
+
+void ackley(std::vector<double>& pars, std::vector<double>& result);
+
+#endif

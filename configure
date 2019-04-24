@@ -10,35 +10,24 @@ function print_help ()
  echo "| Korali - High-performance framework for optimization, sampling    |"
  echo "|          and Bayesian uncertainty quantification of large scale   |"
  echo "|          computational models.                                    |"
- echo "| Authors: Georgios Arampatzis, Daniel Waelchli, Sergio Martin      |"
+ echo "| Authors: Georgios Arampatzis, Sergio Martin, Daniel Waelchli      |"
  echo "|          CSELab - ETH Zurich - Prof. Koumoutsakos                 |"
  echo "---------------------------------------------------------------------"
  echo ""
  echo "Configuration syntax:"
  echo "./configure"
- echo "   [--use-mpicxx=MPICXX]"
- echo "   [--use-upcxx=UPCXX]"
- echo "   [--enable-pthreads]"
- echo "   [--enable-openmp]"
  echo "   [--prefix=INSTALL_DIR]"
+ echo "   [--build=BUILD_DIR]"
  echo ""
  echo "Where:"
- echo "      MPICXX is the MPI C++ compiler command to use."
- echo "       UPCXX is the UPC++ compiler command to use."
  echo " INSTALL_DIR is the path where to install Korali."
- echo "      --help Displays this help message."
+ echo " BUILD_DIR is the build path."
+ echo " --help Displays this help message."
 }
 
 
-USE_MPICXX=0
-USE_UPCXX=0
-USE_PTHREADS=0
-USE_OPENMP=0
-DETECTED_MPI=0
-DETECTED_UPCXX=0
-MPICXX=
-UPCXX=
 PREFIX=$PWD/korali
+BUILD=$PWD/build
 
 for i in "$@"
 do
@@ -47,24 +36,8 @@ case $i in
     PREFIX="${i#*=}"
     shift 
     ;;
-    --build-dir=*)
-    BUILD_DIR="${i#*=}"
-    shift 
-    ;;
-    --use-mpicxx=*)
-    MPICXX="${i#*=}"
-    shift 
-    ;;
-    --use-upcxx=*)
-    UPCXX="${i#*=}"
-    shift 
-    ;;
-    --enable-pthreads)
-    USE_PTHREADS=1
-    shift 
-    ;;
-    --enable-openmp)
-    USE_OPENMP=1
+    --prefix=*)
+    BUILD="${i#*=}"
     shift 
     ;;
     --help)
@@ -81,89 +54,85 @@ case $i in
 esac
 done
 
-echo "[Korali] Checking for GNU Scientific Library (GSL)..."
-gsl-config --version > /dev/null 2>&1
+######## Checking compiler ########
+
+$CXX --version > /dev/null 2>&1
 if [ ! $? -eq 0 ]
 then
-    echo "[Korali] Error: gsl-config could not be found."
-    echo "[Korali] Install GSL or add its path to the PATH environment variable."       
-    exit -1
+ echo "[Korali] Error: No valid C++ compiler defined in \$CXX"
+ exit -1
+else
+ echo "[Korali] Using \$CXX=$CXX as C++ compiler."
 fi
-echo "[Korali] Success: gsl-config found."
 
-if [ "$UPCXX" != "" ]; then
- echo "[Korali] Checking for UPCXX with $UPCXX command..."
- $UPCXX --version > /dev/null 2>&1
- if [ $? -eq 0 ]; then DETECTED_UPCXX=1;
- else 
-   echo "[Korali] Error: The provided $UPCXX command could not be found."
-   exit -1
+######## Checking support for MPI ########
+
+mpicxx --version > /dev/null 2>&1
+if [ ! $? -eq 0 ]
+then
+ echo "[Korali] No mpicxx command found, disabling support for MPI."
+ USE_MPI=0
+else
+ echo "[Korali] Configuring with support for the MPI Conduit"
+ USE_MPI=1
+fi
+
+######## Checking support for UPC++ ########
+
+upcxx --version > /dev/null 2>&1
+if [ ! $? -eq 0 ]
+then
+ echo "[Korali] No upcxx command found, disabling support for UPCXX."
+ USE_UPCXX=0
+else
+ upcxx-meta CPPFLAGS > /dev/null 2>&1
+ if [ ! $? -eq 0 ]
+ then
+  echo "[Korali] No upcxx-meta command found, disabling support for UPCXX."
+  USE_UPCXX=0
+ else
+  echo "[Korali] Configuring with support for the UPC++ Conduit."
+  USE_UPCXX=1
  fi
 fi
 
-if [ "$MPICXX" != "" ]; then
- echo "[Korali] Checking for MPI with $MPICXX command..."
- $MPICXX --version > /dev/null 2>&1
- if [ $? -eq 0 ]; then DETECTED_MPICXX=1;
- else 
-   echo "[Korali] Error: The provided $MPICXX command could not be found."
-   exit -1
- fi
-fi
+######## Checking support for POSIX Threads ########
 
-compiler=""
-
-if [ $DETECTED_MPI -eq 1 ]; then
-  echo "[Korali] Configuring with support for MPI Conduit/Applications using $MPICXX.";
-  compiler="CXX=$MPICXX"
-  mpiFlags=-D_KORALI_USE_MPI
+$CXX -v 2>&1 > /dev/null | grep posix > /dev/null 2>&1
+if [ ! $? -eq 0 ]
+then
+ echo "[Korali] No compiler support for POSIX Threads found."
+ USE_MULTITHREAD=0
 else
-  echo "[Korali] Configuring without support for MPI Conduit/Applications."
-  mpiFlags=
+ echo "[Korali] Configuring with support for the Pthreads Conduit."
+ USE_MULTITHREAD=1
 fi
 
-if [ $DETECTED_UPCXX -eq 1 ]; then
-  echo "[Korali] Configuring with support for UPC++ Conduit/Applications using $UPCXX.";
-  compiler="CXX=$UPCXX"
-  upcxxFlags=-D_KORALI_USE_UPCXX
+######## Checking support for Python3 ########
+
+echo "[Korali] Detecting Python 3.x using \"pkg-config python3\"."
+pkg-config python3 > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+  echo "[Korali] Configuring with support for Python 3.x."
+  USE_PYTHON=1
 else
-  echo "[Korali] Configuring without support for UPC++ Conduit/Applications."
-  upcxxFlags=
+  echo "[Korali] Configuring without support for Python 3.x."
+  USE_PYTHON=0
 fi
 
-if [ $USE_PTHREADS -eq 1 ]; then
-  echo "[Korali] Configuring with support for the Pthreads Conduit.";
-  pthreadFlags="-pthread -D_KORALI_USE_PTHREADS"
-else
-  echo "[Korali] Configuring without support for the Pthreads Conduit.";
-  pthreadFlags=
-fi
+######## Creating Config File ########
 
-if [ $USE_OPENMP -eq 1 ]; then
-  echo "[Korali] Configuring with support for the OpenMP Conduit.";
-  openMPFlags="-fopenmp -D_KORALI_USE_OPENMP"
-else
-  echo "[Korali] Configuring without support for the OpenMP Conduit.";
-  openMPFlags=
-fi
-
-if [ $USE_UPCXX  -eq 1 ]; then compiler=$UPCXX;  fi
-
-echo "[Korali] Creating common.mk..."
- 
-echo "$compiler" > common.mk 
-echo "PREFIX = $PREFIX" >> common.mk
-echo "CXXFLAGS = -O3 -g" >> common.mk
-echo "#CXXFLAGS = -O0 -g" >> common.mk 
-echo "CXXFLAGS += -std=c++17 -Wall -Wfatal-errors \`gsl-config --cflags\` $pthreadFlags $openMPFlags $upcxxFlags $mpiFlags" >> common.mk
-echo "LDFLAGS = \`gsl-config --libs\` -lm $openMPFlags $pthreadFlags" >> common.mk
-echo "COMPILE.cxx = \$(CXX) \$(CXXFLAGS) -c -o \$@" >> common.mk
-echo "LINK.o      = \$(CXX) \$(LDFLAGS)  -o \$@" >> common.mk
-echo "%.o: %.cpp" >> common.mk
-echo "	\$(COMPILE.cxx) $<" >> common.mk
-echo "%.a:" >> common.mk
-echo "	ar rcs \$@ \$^" >> common.mk
-echo "	ranlib \$@" >> common.mk
+echo "[Korali] Creating korali.config..."
+echo "BUILD=$BUILD" > korali.config
+echo "PREFIX=$PREFIX" >> korali.config
+echo "CXX=$CXX" >> korali.config
+echo "USE_MPI=$USE_MPI" >> korali.config
+echo "USE_UPCXX=$USE_UPCXX" >> korali.config
+echo "USE_MULTITHREAD=$USE_MULTITHREAD" >> korali.config
+echo "USE_PTHREADS=$USE_PTHREADS" >> korali.config
+echo "USE_PYTHON=$USE_PYTHON" >> korali.config
 
 echo "[Korali] Configuration was successful."
-echo "[Korali] Run 'make' to build Korali."
+echo "[Korali] Build Path  : $BUILD"
+echo "[Korali] Install Path: $PREFIX"
+echo "[Korali] Run 'make install' to install Korali."

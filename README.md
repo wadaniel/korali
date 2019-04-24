@@ -24,5 +24,5 @@ To see the documentation site
 ## Authors
 People working on korali:
 * Georgios Arampatzis, garampat at ethz.ch
-* Sergio Martin Miguel, martiser at ethz.ch
+* Sergio Miguel Martin, martiser at ethz.ch
 * Daniel Waelchli, wadaniel at ethz.ch

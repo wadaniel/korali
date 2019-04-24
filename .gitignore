@@ -1,9 +1,11 @@
 korali/
 .exrc
+__pycache__
 *.tar.gz
 *.cfg
 *.o
 *.json
+*.so
 *.a
 *.swp
 *.swo
@@ -15,3 +17,4 @@ korali/
 *.result
 .tags
 .tags1
+libs/gsl

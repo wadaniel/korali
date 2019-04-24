@@ -29,7 +29,7 @@ class TMCMC : public Korali::Solver::Base
  double _bbeta;               /* Covariance scaling parameter */
  size_t  _s; // Population Size
  bool _useLocalCov;
- size_t  _burnIn;
+ size_t  _baseBurnIn;
  size_t _maxGens;
 
  // TMCMC Runtime Variables
@@ -46,6 +46,7 @@ class TMCMC : public Korali::Solver::Base
 
  // TMCMC Status variables
  size_t  _nChains;
+ size_t  _currentBurnIn;
  size_t  _currentGeneration;
  double  _coefficientOfVariation;
  double  _annealingRatio;
@@ -55,9 +56,9 @@ class TMCMC : public Korali::Solver::Base
  double  _acceptanceRate;
  double* _covarianceMatrix;
  double* _meanTheta;
- size_t  databaseEntries;
- double* databasePoints;
- double* databaseFitness;
+ size_t  _databaseEntries;
+ double* _databasePoints;
+ double* _databaseFitness;
  double **local_cov;
 
   // Korali Methods

@@ -52,6 +52,7 @@ class CMAES : public Korali::Solver::Base
  double _cumulativeCovariance; /* default calculated from dimension */
  double _covarianceMatrixLearningRate;
 
+ bool   _diag;
  size_t _diagonalCovarianceMatrixEvalFrequency;
  size_t _covarianceEigenEvalFreq;
 
@@ -82,8 +83,8 @@ class CMAES : public Korali::Solver::Base
  double prevFunctionValue; /* best fitness previous generation */
 
  double **C; /* lower triangular matrix: i>=j for C[i][j] */
- double **B; /* matrix with normalize eigenvectors in columns */
- double *rgD; /* axis lengths */
+ double **B; /* matrix with eigenvectors in columns */
+ double *rgD; /* axis lengths (sqrt(Evals)) */
 
  double *rgpc; /* evolution path for cov update */
  double *rgps; /* exponential for sigma update */
@@ -112,6 +113,7 @@ class CMAES : public Korali::Solver::Base
  bool isFeasible(const double *pop) const;
  double doubleRangeMax(const double *rgd, int len) const;
  double doubleRangeMin(const double *rgd, int len) const;
+ bool isDiag() const;
  bool isStoppingCriteriaActive(const char *criteria) const;
 
  // Print Methods 

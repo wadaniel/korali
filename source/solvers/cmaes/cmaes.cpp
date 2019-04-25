@@ -23,7 +23,6 @@ Korali::Solver::CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js
 
  rgFuncValue = (double*) calloc (sizeof(double), _s);
  index = (int *) calloc (sizeof(int*), _s);
- _muWeights = (double *) calloc (sizeof(double), _mu);
 
  C = (double**) calloc (sizeof(double*), _k->N);
  B = (double**)calloc (sizeof(double*), _k->N);
@@ -35,32 +34,6 @@ Korali::Solver::CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js
 
  // Initializing Gaussian Generator
  _gaussianGenerator = new Parameter::Gaussian(0.0, 1.0, _k->_seed++);
-
- // Otherwise initialize from configuration.
- // Initializing Mu Weights
- if (_muType == "LinearDecreasing") for (size_t i = 0; i < _mu; i++)  _muWeights[i] = _mu - i;
- if (_muType == "Equal")            for (size_t i = 0; i < _mu; i++)  _muWeights[i] = 1;
- if (_muType == "Logarithmic")      for (size_t i = 0; i < _mu; i++)  _muWeights[i] = log(_mu+1.)-log(i+1.);
-
- /* normalize weights vector and set mueff */
- double s1 = 0.0;
- double s2 = 0.0;
-
- for (size_t  i = 0; i < _mu; i++)
- {
-  s1 += _muWeights[i];
-  s2 += _muWeights[i]*_muWeights[i];
- }
-
- _muEffective = s1*s1/s2;
-
- for (size_t i = 0; i < _mu; i++) _muWeights[i] /= s1;
-
- if(_mu < 1 || _mu > _s || (_mu == _s && _muWeights[0] == _muWeights[_mu-1]))
- { fprintf( stderr, "[Korali] Error: Invalid setting of Mu (%lu) and/or Lambda (%lu)\n", _mu, _s); exit(-1); }
-
- // Setting MU Covariance
- if (_muCovariance < 1) _muCovariance = _muEffective;
 
  // Checking Covariance Matrix Evaluation Frequency
  if (_diagonalCovarianceMatrixEvalFrequency == 0)  _diagonalCovarianceMatrixEvalFrequency = 2 + 100. * _k->N / sqrt((double)_s);
@@ -222,15 +195,35 @@ void Korali::Solver::CMAES::setConfiguration(nlohmann::json& js)
  _muType                        = consume(js, { "Mu", "Type" }, KORALI_STRING, "Logarithmic");
  _muCovariance                  = consume(js, { "Mu", "Covariance" }, KORALI_NUMBER, std::to_string(-1));
  
- //_muEffective                   = js["Mu"]["Effective"];
- //for (size_t i = 0; i < _mu; i++) _muWeights[i] = js["Mu"]["Weights"][i];
+ // Initializing Mu Weights
+ _muWeights = (double *) calloc (sizeof(double), _mu);
+ if (_muType == "LinearDecreasing") for (size_t i = 0; i < _mu; i++)  _muWeights[i] = _mu - i;
+ if (_muType == "Equal")            for (size_t i = 0; i < _mu; i++)  _muWeights[i] = 1;
+ if (_muType == "Logarithmic")      for (size_t i = 0; i < _mu; i++)  _muWeights[i] = log(_mu+1.)-log(i+1.);
+
+ /* normalize weights vector and set mueff */
+ double s1 = 0.0;
+ double s2 = 0.0;
+
+ for (size_t  i = 0; i < _mu; i++)
+ {
+  s1 += _muWeights[i];
+  s2 += _muWeights[i]*_muWeights[i];
+ }
+ _muEffective = s1*s1/s2;
+
+ for (size_t i = 0; i < _mu; i++) _muWeights[i] /= s1;
+
+ if(_mu < 1 || _mu > _s || (_mu == _s && _muWeights[0] == _muWeights[_mu-1]))
+ { fprintf( stderr, "[Korali] Error: Invalid setting of Mu (%lu) and/or Lambda (%lu)\n", _mu, _s); exit(-1); }
+ // Setting MU Covariance
+ if (_muCovariance < 1) _muCovariance = _muEffective;
  
  _covarianceEigenEvalFreq       = consume(js, { "Covariance Matrix", "Eigenvalue Evaluation Frequency" }, KORALI_NUMBER, std::to_string(0));
  _cumulativeCovariance          = consume(js, { "Covariance Matrix", "Cumulative Covariance" }, KORALI_NUMBER, std::to_string(-1));
  _covarianceMatrixLearningRate  = consume(js, { "Covariance Matrix", "Learning Rate" }, KORALI_NUMBER, std::to_string(-1));
  
  _diag = false;
- //_diag                          = consume(js, { "Diag" }, KORALI_BOOLEAN, std::to_string(true));
 
  _maxGenenerations              = consume(js, { "Termination Criteria", "Max Generations" }, KORALI_NUMBER, std::to_string(2000));
  _stopMinFitness                = consume(js, { "Termination Criteria", "Min Fitness" }, KORALI_NUMBER, std::to_string(-std::numeric_limits<double>::max()));

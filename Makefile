@@ -1,5 +1,6 @@
 INCLUDES = $(shell cd source && find . | grep "\.h")
 TESTS = $(dir $(wildcard tests/*/))
+EXAMPLES = $(dir $(wildcard examples/cxx/*/))
 CURDIR = $(shell pwd)
 
 include korali.config
@@ -11,13 +12,16 @@ all: source/libkorali.so
 source/libkorali.so: libs/gsl/lib/libgsl.so
 	@$(MAKE) -j -C source
 
-clean: clean_tests
+clean: clean_examples clean_tests
 	@$(MAKE) -j -C source clean
 
 tests: $(TESTS)
 
 $(TESTS):: install
 	$(MAKE) -j -C $@
+
+clean_examples:
+	for i in $(EXAMPLES); do $(MAKE) -j -C $$i clean; done
 
 clean_tests:
 	for i in $(TESTS); do $(MAKE) -j -C $$i clean; done

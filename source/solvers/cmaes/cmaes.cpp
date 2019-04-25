@@ -157,12 +157,13 @@ nlohmann::json Korali::Solver::CMAES::getConfiguration()
  js["Current Generation"]      = _currentGeneration;
  js["Sigma Cumulation Factor"] = _sigmaCumulationFactor;
  js["Damp Factor"]             = _dampFactor;
+ js["Diag"]                    = _diag;
 
- js["Mu"]["Value"]      =  _mu;
- js["Mu"]["Type"]       =  _muType;
+ js["Mu"]["Value"]      = _mu;
+ js["Mu"]["Type"]       = _muType;
  js["Mu"]["Covariance"] = _muCovariance;
  js["Mu"]["Effective"]  = _muEffective;
- for (size_t i = 0; i < _mu; i++)   js["Mu"]["Weights"] += _muWeights[i];
+ for (size_t i = 0; i < _mu; i++) js["Mu"]["Weights"] += _muWeights[i];
 
  js["Covariance Matrix"]["Eigenvalue Evaluation Frequency"] = _covarianceEigenEvalFreq;
  js["Covariance Matrix"]["Cumulative Covariance"]           = _cumulativeCovariance;
@@ -220,13 +221,16 @@ void Korali::Solver::CMAES::setConfiguration(nlohmann::json& js)
  _mu                            = consume(js, { "Mu", "Value" }, KORALI_NUMBER, std::to_string(ceil(_s / 2)));
  _muType                        = consume(js, { "Mu", "Type" }, KORALI_STRING, "Logarithmic");
  _muCovariance                  = consume(js, { "Mu", "Covariance" }, KORALI_NUMBER, std::to_string(-1));
- _muEffective                   = consume(js, { "State", "MuEffective"}, KORALI_NUMBER, std::to_string(-1)); //TODO: what is default? recalc? (DW)
-
- for (size_t i = 0; i < _mu; i++) _muWeights[i] = js["Mu"]["Weights"][i]; //TODO: consume array? (DW)
+ 
+ //_muEffective                   = js["Mu"]["Effective"];
+ //for (size_t i = 0; i < _mu; i++) _muWeights[i] = js["Mu"]["Weights"][i];
  
  _covarianceEigenEvalFreq       = consume(js, { "Covariance Matrix", "Eigenvalue Evaluation Frequency" }, KORALI_NUMBER, std::to_string(0));
  _cumulativeCovariance          = consume(js, { "Covariance Matrix", "Cumulative Covariance" }, KORALI_NUMBER, std::to_string(-1));
  _covarianceMatrixLearningRate  = consume(js, { "Covariance Matrix", "Learning Rate" }, KORALI_NUMBER, std::to_string(-1));
+ 
+ _diag = false;
+ //_diag                          = consume(js, { "Diag" }, KORALI_BOOLEAN, std::to_string(true));
 
  _maxGenenerations              = consume(js, { "Termination Criteria", "Max Generations" }, KORALI_NUMBER, std::to_string(2000));
  _stopMinFitness                = consume(js, { "Termination Criteria", "Min Fitness" }, KORALI_NUMBER, std::to_string(-std::numeric_limits<double>::max()));
@@ -320,7 +324,7 @@ bool Korali::Solver::CMAES::isFeasible(const double *pop) const
 
 void Korali::Solver::CMAES::prepareGeneration()
 {
- int flgdiag = ((_diagonalCovarianceMatrixEvalFrequency == 1) || (_diagonalCovarianceMatrixEvalFrequency>= _currentGeneration));
+ int flgdiag = isDiag();
 
  /* calculate eigensystem  */
  if (!flgEigensysIsUptodate) {
@@ -387,7 +391,7 @@ void Korali::Solver::CMAES::reSampleSingle(size_t idx)
 
 void Korali::Solver::CMAES::updateDistribution(const double *fitnessVector)
 {
- int flgdiag = ((_diagonalCovarianceMatrixEvalFrequency== 1) || (_diagonalCovarianceMatrixEvalFrequency>= _currentGeneration));
+ int flgdiag = isDiag();
  countevals += _s;
 
  /* assign function values */
@@ -469,7 +473,7 @@ void Korali::Solver::CMAES::updateDistribution(const double *fitnessVector)
 
 void Korali::Solver::CMAES::adaptC2(int hsig)
 {
- int flgdiag = ((_diagonalCovarianceMatrixEvalFrequency== 1) || (_diagonalCovarianceMatrixEvalFrequency>= _currentGeneration));
+ int flgdiag = isDiag();
 
  if (_covarianceMatrixLearningRate != 0.0)
  {
@@ -499,7 +503,8 @@ void Korali::Solver::CMAES::adaptC2(int hsig)
 bool Korali::Solver::CMAES::checkTermination()
 {
  double fac;
- int flgdiag = ((_diagonalCovarianceMatrixEvalFrequency== 1) || (_diagonalCovarianceMatrixEvalFrequency>= _currentGeneration));
+ int flgdiag = isDiag();
+ 
  bool terminate = false;
 
  if (_currentGeneration > 1 && rgFuncValue[index[0]] <= _stopMinFitness && isStoppingCriteriaActive("Fitness Value") )
@@ -685,6 +690,11 @@ double Korali::Solver::CMAES::doubleRangeMin(const double *rgd, int len) const
  for (i = 1; i < len; ++i)
   min = (min > rgd[i]) ? rgd[i] : min;
  return min;
+}
+
+bool Korali::Solver::CMAES::isDiag() const
+{
+ return _diag && ((_diagonalCovarianceMatrixEvalFrequency == 1) || (_diagonalCovarianceMatrixEvalFrequency>= _currentGeneration));
 }
 
 bool Korali::Solver::CMAES::isStoppingCriteriaActive(const char *criteria) const

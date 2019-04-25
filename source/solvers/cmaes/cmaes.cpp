@@ -130,7 +130,6 @@ nlohmann::json Korali::Solver::CMAES::getConfiguration()
  js["Current Generation"]      = _currentGeneration;
  js["Sigma Cumulation Factor"] = _sigmaCumulationFactor;
  js["Damp Factor"]             = _dampFactor;
- js["Diag"]                    = _diag;
 
  js["Mu"]["Value"]      = _mu;
  js["Mu"]["Type"]       = _muType;
@@ -141,6 +140,7 @@ nlohmann::json Korali::Solver::CMAES::getConfiguration()
  js["Covariance Matrix"]["Eigenvalue Evaluation Frequency"] = _covarianceEigenEvalFreq;
  js["Covariance Matrix"]["Cumulative Covariance"]           = _cumulativeCovariance;
  js["Covariance Matrix"]["Learning Rate"]                   = _covarianceMatrixLearningRate;
+ js["Covariance Matrix"]["Enable Diagonal Update"]          = _enablediag;
 
  js["Termination Criteria"]["Max Generations"]          = _maxGenenerations;
  js["Termination Criteria"]["Min Fitness"]              = _stopMinFitness;
@@ -222,8 +222,8 @@ void Korali::Solver::CMAES::setConfiguration(nlohmann::json& js)
  _covarianceEigenEvalFreq       = consume(js, { "Covariance Matrix", "Eigenvalue Evaluation Frequency" }, KORALI_NUMBER, std::to_string(0));
  _cumulativeCovariance          = consume(js, { "Covariance Matrix", "Cumulative Covariance" }, KORALI_NUMBER, std::to_string(-1));
  _covarianceMatrixLearningRate  = consume(js, { "Covariance Matrix", "Learning Rate" }, KORALI_NUMBER, std::to_string(-1));
+ _enablediag                    = consume(js, { "Covariance Matrix", "Enable Diagonal Update" }, KORALI_BOOLEAN, "false");
  
- _diag = false;
 
  _maxGenenerations              = consume(js, { "Termination Criteria", "Max Generations" }, KORALI_NUMBER, std::to_string(2000));
  _stopMinFitness                = consume(js, { "Termination Criteria", "Min Fitness" }, KORALI_NUMBER, std::to_string(-std::numeric_limits<double>::max()));
@@ -317,7 +317,7 @@ bool Korali::Solver::CMAES::isFeasible(const double *pop) const
 
 void Korali::Solver::CMAES::prepareGeneration()
 {
- int flgdiag = isDiag();
+ int flgdiag = doDiagUpdate();
 
  /* calculate eigensystem  */
  if (!flgEigensysIsUptodate) {
@@ -384,7 +384,7 @@ void Korali::Solver::CMAES::reSampleSingle(size_t idx)
 
 void Korali::Solver::CMAES::updateDistribution(const double *fitnessVector)
 {
- int flgdiag = isDiag();
+ int flgdiag = doDiagUpdate();
  countevals += _s;
 
  /* assign function values */
@@ -466,7 +466,7 @@ void Korali::Solver::CMAES::updateDistribution(const double *fitnessVector)
 
 void Korali::Solver::CMAES::adaptC2(int hsig)
 {
- int flgdiag = isDiag();
+ int flgdiag = doDiagUpdate();
 
  if (_covarianceMatrixLearningRate != 0.0)
  {
@@ -496,7 +496,7 @@ void Korali::Solver::CMAES::adaptC2(int hsig)
 bool Korali::Solver::CMAES::checkTermination()
 {
  double fac;
- int flgdiag = isDiag();
+ int flgdiag = doDiagUpdate();
  
  bool terminate = false;
 
@@ -685,9 +685,9 @@ double Korali::Solver::CMAES::doubleRangeMin(const double *rgd, int len) const
  return min;
 }
 
-bool Korali::Solver::CMAES::isDiag() const
+bool Korali::Solver::CMAES::doDiagUpdate() const
 {
- return _diag && ((_diagonalCovarianceMatrixEvalFrequency == 1) || (_diagonalCovarianceMatrixEvalFrequency>= _currentGeneration));
+ return _enablediag && ((_diagonalCovarianceMatrixEvalFrequency == 1) || (_diagonalCovarianceMatrixEvalFrequency>= _currentGeneration));
 }
 
 bool Korali::Solver::CMAES::isStoppingCriteriaActive(const char *criteria) const

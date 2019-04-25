@@ -52,7 +52,7 @@ class CMAES : public Korali::Solver::Base
  double _cumulativeCovariance; /* default calculated from dimension */
  double _covarianceMatrixLearningRate;
 
- bool   _diag;
+ bool   _enablediag;
  size_t _diagonalCovarianceMatrixEvalFrequency;
  size_t _covarianceEigenEvalFreq;
 
@@ -113,7 +113,7 @@ class CMAES : public Korali::Solver::Base
  bool isFeasible(const double *pop) const;
  double doubleRangeMax(const double *rgd, int len) const;
  double doubleRangeMin(const double *rgd, int len) const;
- bool isDiag() const;
+ bool doDiagUpdate() const;
  bool isStoppingCriteriaActive(const char *criteria) const;
 
  // Print Methods 

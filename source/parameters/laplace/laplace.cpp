@@ -13,7 +13,7 @@ Laplace::Laplace(double mean, double width, size_t seed) : Base::Base(seed)
   initialize();
 }
 
-Laplace::Laplace(nlohmann::json& js, int seed) : Base::Base(js, seed)
+Laplace::Laplace(nlohmann::json& js, size_t seed) : Base::Base(js, seed)
 {
  setConfiguration(js);
  initialize();

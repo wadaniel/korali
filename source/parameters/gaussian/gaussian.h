@@ -16,7 +16,7 @@ class Gaussian : public Korali::Parameter::Base
  public:
 
   // Constructor / Destructor
-  Gaussian(nlohmann::json& js, int seed = 0);
+  Gaussian(nlohmann::json& js, size_t seed = 0);
   Gaussian(double mean, double sigma, size_t seed = 0);
   ~Gaussian();
 

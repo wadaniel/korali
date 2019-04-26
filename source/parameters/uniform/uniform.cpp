@@ -13,7 +13,7 @@ Uniform::Uniform(double lowerBound, double upperBound, size_t seed) : Base::Base
    initialize();
 }
 
-Uniform::Uniform(nlohmann::json& js, int seed) : Base::Base(js, seed)
+Uniform::Uniform(nlohmann::json& js, size_t seed) : Base::Base(js, seed)
 {
  setConfiguration(js);
  initialize();

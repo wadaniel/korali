@@ -6,7 +6,7 @@ using namespace Korali::Parameter;
 /*                  Constructor / Destructor Methods                    */
 /************************************************************************/
 
-Cauchy::Cauchy(double loc, double scale, size_t seed) : Base::Base(seed)
+Cauchy::Cauchy(double scale, double loc, size_t seed) : Base::Base(seed)
 {
 	_loc = loc;
 	_scale = scale;

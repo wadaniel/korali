@@ -15,7 +15,7 @@ class Laplace : public Korali::Parameter::Base
 
  public:
 
-  Laplace(nlohmann::json& js, int seed = 0);
+  Laplace(nlohmann::json& js, size_t seed = 0);
   Laplace(double mean, double width, size_t seed = 0);
   ~Laplace();
 

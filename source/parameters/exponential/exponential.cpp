@@ -6,13 +6,13 @@ using namespace Korali::Parameter;
 /*                  Constructor / Destructor Methods                    */
 /************************************************************************/
 
-Exponential::Exponential(double loc, double mean, size_t seed) : Base::Base(seed)
+Exponential::Exponential(double mean, double loc, size_t seed) : Base::Base(seed)
 {
 	_loc = loc;
 	_mean = mean;
 }
 
-Exponential::Exponential(nlohmann::json& js, int seed) : Base::Base(js, seed)
+Exponential::Exponential(nlohmann::json& js, size_t seed) : Base::Base(js, seed)
 {
  setConfiguration(js);
 }

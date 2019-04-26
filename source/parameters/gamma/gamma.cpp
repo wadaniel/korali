@@ -13,7 +13,7 @@ Gamma::Gamma(double shape, double scale, size_t seed) : Base::Base(seed)
 	initialize();
 }
 
-Gamma::Gamma(nlohmann::json& js, int seed) : Base::Base(js, seed)
+Gamma::Gamma(nlohmann::json& js, size_t seed) : Base::Base(js, seed)
 {
  setConfiguration(js);
  initialize();

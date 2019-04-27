@@ -94,12 +94,12 @@ nlohmann::json Korali::Solver::TMCMC::getConfiguration()
 
  js["Method"] = "TMCMC";
 
- js["Population Size"]      = _s;
- js["Covariance Tolerance"] = _tolCOV;
- js["Min Rho Update"]       = _minStep;
- js["Covariance Scaling"]   = _bbeta;
- js["Use Local Covariance"] = _useLocalCov;
- js["Burn In"]              = _baseBurnIn;
+ js["Population Size"]          = _s;
+ js["Coefficient of Variation"] = _tolCOV;
+ js["Min Rho Update"]           = _minStep;
+ js["Covariance Scaling"]       = _bbeta;
+ js["Use Local Covariance"]     = _useLocalCov;
+ js["Burn In"]                  = _baseBurnIn;
 
  js["Termination Criteria"]["Max Generations"] = _maxGens;
 
@@ -129,7 +129,7 @@ void Korali::Solver::TMCMC::setConfiguration(nlohmann::json& js)
  this->Korali::Solver::Base::setConfiguration(js);
 
  _s                 = consume(js, { "Population Size" }, KORALI_NUMBER);
- _tolCOV            = consume(js, { "Covariance Tolerance" }, KORALI_NUMBER, std::to_string(1.0));
+ _tolCOV            = consume(js, { "Coefficient of Variation" }, KORALI_NUMBER, std::to_string(1.0));
  _minStep           = consume(js, { "Min Rho Update" }, KORALI_NUMBER, std::to_string(1e-9));
  _bbeta             = consume(js, { "Covariance Scaling" }, KORALI_NUMBER, std::to_string(0.005));
  _useLocalCov       = consume(js, { "Use Local Covariance" }, KORALI_BOOLEAN, "false");
@@ -199,7 +199,7 @@ void Korali::Solver::TMCMC::run()
  _k->saveState(); // Saving final state.
 
  endTime = std::chrono::system_clock::now();
- 
+
  printFinal();
 
 }
@@ -509,7 +509,7 @@ void Korali::Solver::TMCMC::minSearch(double const *fj, int fn, double pj, doubl
    if(status != GSL_SUCCESS && s->fval >  Tol) printf("[Korali] Minseach did not coverge and did not find minimum\n");
    if(iter >= MaxIter) printf("[Korali] Minseach MaxIter (%zu) reached\n", MaxIter);
  }
- 
+
  if (s->fval <= Tol) {
    *fmin = s->fval;
    *xmin = gsl_vector_get(s->x, 0);
@@ -528,53 +528,62 @@ void Korali::Solver::TMCMC::minSearch(double const *fj, int fn, double pj, doubl
 void Korali::Solver::TMCMC::printGeneration() const
 {
   if ((_currentGeneration-1) % _k->_outputFrequency != 0) return;
-  if (_k->_verbosity >= KORALI_MINIMAL) 
+  if (_k->_verbosity >= KORALI_MINIMAL)
   {
-    printf("\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"); 
-    printf("[Korali] Generation %ld - Annealing Ratio:  %.2f%% - Elapsed Time: %.2fs\n", _currentGeneration, _annealingRatio*100, std::chrono::duration<double>(t1-startTime).count());
-  
+    printf("\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+    printf("[Korali] Generation %ld - Annealing Ratio:  %.5f - Elapsed Time: %.2fs\n", _currentGeneration, _annealingRatio, std::chrono::duration<double>(t1-startTime).count());
   }
+
   if (_k->_verbosity >= KORALI_NORMAL)
   {
-    printf("[Korali] Acceptance Rate:  %.2f%%\n", _acceptanceRate);
-    printf("[Korali] Coefficient of Variation:  %.2f%%\n", _coefficientOfVariation);
+    printf("[Korali] Acceptance Rate:  %.2f%%\n", 100*_acceptanceRate);
+    printf("[Korali] Coefficient of Variation:  %.5f\n", _coefficientOfVariation);
   }
+
   if (_k->_verbosity >= KORALI_DETAILED)
   {
-    printf("[Korali] Mean of Samples:\n\n");
+    printf("[Korali] Mean of Samples:\n");
     for (size_t i = 0; i < _k->N; i++) printf("\t %g\n", _meanTheta[i]);
-    printf("\n[Korali] Covariance of Samples:\n");
-    for (size_t i = 0; i < _k->N; i++) 
+    printf("[Korali] Covariance of Samples:\n");
+    for (size_t i = 0; i < _k->N; i++)
     {
-        for (size_t j = 0; j < i; j++) printf("\t%g\t",_covarianceMatrix[i*_k->N+j]);
+        for (size_t j = 0; j <= i; j++) printf("\t%g\t",_covarianceMatrix[i*_k->N+j]);
         printf("\n");
     }
   }
 }
 
+
+
 void Korali::Solver::TMCMC::printFinal() const
 {
-  if (_k->_verbosity >= KORALI_MINIMAL) 
+  if (_k->_verbosity >= KORALI_MINIMAL)
   {
-    printf("\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"); 
-    if (_currentGeneration == _maxGens) printf("[Korali] Generation %ld - not converged (Max Generation reached, Annealing Ratio: %.2f%%)\n", _currentGeneration, _annealingRatio);
-    else printf("[Korali] Generation %ld - Finished (Annealing Ratio: %.2f%%)\n", _currentGeneration, _annealingRatio);
+    printf("\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+    if (_currentGeneration == _maxGens)
+      printf("[Korali] Generation %ld - not converged (Max Generation reached, Annealing Ratio: %.5f)\n", _currentGeneration, _annealingRatio);
+    else
+      printf("[Korali] Generation %ld - Finished (Annealing Ratio: %.5f)\n", _currentGeneration, _annealingRatio);
     printf("[Korali] Total Time: %fs.\n", std::chrono::duration<double>(endTime-startTime).count());
     printf("[Korali] logEvidence: %f.\n", _logEvidence);
   }
 
   if (_k->_verbosity >= KORALI_NORMAL)
   {
+    printf("[Korali] Coefficient of Variation:  %.2f\n", _coefficientOfVariation);
+  }
+
+  if (_k->_verbosity >= KORALI_DETAILED)
+  {
     printf("[Korali] Coefficient of Variation:  %.2f%%\n", _coefficientOfVariation);
-    printf("[Korali] Mean of Samples:\n\n");
+    printf("[Korali] Mean of Samples:\n");
     for (size_t i = 0; i < _k->N; i++) printf("\t %g\n", _meanTheta[i]);
-    printf("\n[Korali] Covariance of Samples:\n");
-    for (size_t i = 0; i < _k->N; i++) 
+    printf("[Korali] Covariance of Samples:\n");
+    for (size_t i = 0; i < _k->N; i++)
     {
-        for (size_t j = 0; j < i; j++) printf("\t%g\t",_covarianceMatrix[i*_k->N+j]);
+        for (size_t j = 0; j <= i; j++) printf("\t%g\t",_covarianceMatrix[i*_k->N+j]);
         printf("\n");
     }
     printf("\n");
   }
 }
-

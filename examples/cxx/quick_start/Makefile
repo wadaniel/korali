@@ -1,4 +1,4 @@
-BINARIES = minimize sample
+BINARIES = direct posterior
 OBJECTS =
 CXX = korali-cxx
 

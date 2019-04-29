@@ -14,8 +14,8 @@ class Exponential : public Korali::Parameter::Base
 
  public:
 
-  Exponential(nlohmann::json& js, int seed);
-  Exponential(double loc, double mean, size_t seed = 0);
+  Exponential(nlohmann::json& js, size_t seed);
+  Exponential(double mean, double loc, size_t seed = 0);
   ~Exponential();
 
   double getDensity(double x);

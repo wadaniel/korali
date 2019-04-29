@@ -3,10 +3,24 @@ include ../korali.config
 CXXFLAGS_SHARED = -fPIC 
 CXXFLAGS_STATIC = 
 
-CXXFLAGS = -I. -I../libs -I../libs/gsl/include
+CXXFLAGS = -O3 -g -I. -I../libs -I../libs/gsl/include
 CXXFLAGS += -Wno-unused -Wunused-result -Wno-unused-parameter -Wno-address -Wno-deprecated-declarations -Wall -Wfatal-errors
 
-LDFLAGS_SHARED = -Wl,-rpath=$(PREFIX)/lib/koraligsl/lib -lgsl -lgslcblas -L$(PREFIX)/lib/koraligsl/lib
+ifneq ("$(wildcard ../libs/gsl/lib/libgsl.so)","")
+ LDWHOLE = -Wl,--whole-archive
+ LIBGSLPATH = "../libs/gsl/lib/libgsl.so" 
+ LIBGSLCBLASPATH = "../libs/gsl/lib/libgslcblas.so" 
+ LDNOWHOLE = -Wl,--no-whole-archive
+endif
+
+ifneq ("$(wildcard ../libs/gsl/lib/libgsl.dylib)","")
+ LDWHOLE = -Wl,-all_load
+ LIBGSLPATH = "../libs/gsl/lib/libgsl.dylib" 
+ LIBGSLCBLASPATH = "../libs/gsl/lib/libgslcblas.dylib" 
+ LDNOWHOLE = -Wl,-noall_load
+endif
+
+LDFLAGS_SHARED = $(LDWHOLE) $(LIBGSLPATH) $(LIBGSLCBLASPATH) $(LDNOWHOLE)
 
 ifeq ($(USE_MPI), 1)
 endif
@@ -37,7 +51,7 @@ OBJECTS_SHARED = $(SOURCES:.cpp=.shared.o)
 	$(CXX) $(CXXFLAGS) $(CXXFLAGS_SHARED) -c $< -o $@
 
 libkorali.so: $(OBJECTS_SHARED)
-	$(CXX) -shared $^ -o $@ $(LDFLAGS_SHARED)
+	$(CXX) -shared $^ -o $@ $(LDFLAGS_SHARED) 
 
 libkorali.a: $(OBJECTS_STATIC)
 	ar rs $@ $^  

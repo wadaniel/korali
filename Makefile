@@ -9,10 +9,10 @@ include korali.config
 
 all: source/libkorali.so
 
-source/libkorali.so: libs/gsl/lib/libgsl.so
+source/libkorali.so: libs/gsl/lib/libgsl.a
 	@$(MAKE) -j -C source
 
-clean: clean_examples clean_tests
+clean: 
 	@$(MAKE) -j -C source clean
 
 tests: $(TESTS)
@@ -37,7 +37,9 @@ install: source/libkorali.so
 	@cd source && cp $(INCLUDES) --parents $(PREFIX)/include
 	cp libs/json -r $(PREFIX)/include
 	cp libs/koralijson -r $(PREFIX)/include
-	cp libs/gsl -r $(PREFIX)/lib/koraligsl
+	cp libs/gsl/include/gsl -r $(PREFIX)/include 
+	cp libs/gsl/lib/libgsl.a -r $(PREFIX)/lib/libkoraligsl.a
+	cp libs/gsl/lib/libgslcblas.a -r $(PREFIX)/lib/libkoraligslcblas.a 
 	cp -r tools/plotting/* $(PREFIX)/bin/
 	@echo "#!/bin/bash" > $(PREFIX)/bin/korali-cxx
 	@cat korali.config tools/korali-cxx >> $(PREFIX)/bin/korali-cxx
@@ -54,8 +56,11 @@ install: source/libkorali.so
 snapshot: install clean
 	tar -zcvf korali`date +"%m-%d-%y"`.tar.gz korali/ tests/
 
-libs/gsl/lib/libgsl.so:
-	@echo "[Korali] Downloading and Compiling GNU Scientific Library... "
-	cd libs/ && rm -f gsl-2.5.tar.gz && wget "ftp://ftp.gnu.org/gnu/gsl/gsl-2.5.tar.gz" && tar -xzvf gsl-2.5.tar.gz > /dev/null 2>&1
-	cd libs/gsl-2.5 && ./configure --prefix=$(CURDIR)/libs/gsl && make && make install
-	rm -rf libs/gsl-2.5 libs/gsl-2.5.tar.gz
+libs/gsl/lib/libgsl.a:
+	@echo "[Korali] Downloading GNU Scientific Library... "
+	@cd libs/ && rm -f gsl-2.5.tar.gz && wget "ftp://ftp.gnu.org/gnu/gsl/gsl-2.5.tar.gz" && tar -xzvf gsl-2.5.tar.gz > /dev/null 2>&1
+	@echo "[Korali] Configuring GNU Scientific Library... "
+	@cd libs/gsl-2.5 && ./configure --prefix=$(CURDIR)/libs/gsl > /dev/null 2>&1 
+	@echo "[Korali] Compiling GNU Scientific Library... "
+	@cd libs/gsl-2.5 && make > /dev/null 2>&1 && make install > /dev/null 2>&1
+	@rm -rf libs/gsl-2.5 libs/gsl-2.5.tar.gz > /dev/null 2>&1

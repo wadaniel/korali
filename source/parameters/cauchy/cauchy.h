@@ -16,7 +16,7 @@ class Cauchy : public Korali::Parameter::Base
  public:
 
   Cauchy(nlohmann::json& js, int seed);
-  Cauchy(double loc, double scale, size_t seed = 0);
+  Cauchy(double scale, double loc, size_t seed = 0);
   ~Cauchy();
 
   double getDensity(double x);

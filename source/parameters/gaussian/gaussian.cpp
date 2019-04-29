@@ -13,7 +13,7 @@ Gaussian::Gaussian(double mean, double sigma, size_t seed) : Base::Base(seed)
 	initialize();
 }
 
-Gaussian::Gaussian(nlohmann::json& js, int seed) : Base::Base(js, seed)
+Gaussian::Gaussian(nlohmann::json& js, size_t seed) : Base::Base(js, seed)
 {
  setConfiguration(js);
  initialize();

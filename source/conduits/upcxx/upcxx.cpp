@@ -17,6 +17,8 @@ UPCXX::UPCXX(nlohmann::json& js) : Base::Base(js)
  _continueEvaluations = true;
 
  _ux = this;
+
+ upcxx::init();
  _rankId = upcxx::rank_me();
  _rankCount = upcxx::rank_n();
 

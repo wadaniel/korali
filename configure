@@ -17,17 +17,14 @@ function print_help ()
  echo "Configuration syntax:"
  echo "./configure"
  echo "   [--prefix=INSTALL_DIR]"
- echo "   [--build=BUILD_DIR]"
  echo ""
  echo "Where:"
  echo " INSTALL_DIR is the path where to install Korali."
- echo " BUILD_DIR is the build path."
  echo " --help Displays this help message."
 }
 
 
 PREFIX=$PWD/korali
-BUILD=$PWD/build
 
 for i in "$@"
 do
@@ -123,7 +120,6 @@ fi
 ######## Creating Config File ########
 
 echo "[Korali] Creating korali.config..."
-echo "BUILD=$BUILD" > korali.config
 echo "PREFIX=$PREFIX" >> korali.config
 echo "CXX=$CXX" >> korali.config
 echo "USE_MPI=$USE_MPI" >> korali.config
@@ -133,6 +129,5 @@ echo "USE_PTHREADS=$USE_PTHREADS" >> korali.config
 echo "USE_PYTHON=$USE_PYTHON" >> korali.config
 
 echo "[Korali] Configuration was successful."
-echo "[Korali] Build Path  : $BUILD"
 echo "[Korali] Install Path: $PREFIX"
 echo "[Korali] Run 'make install' to install Korali."

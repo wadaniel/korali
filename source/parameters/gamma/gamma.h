@@ -15,7 +15,7 @@ class Gamma : public Korali::Parameter::Base
 
  public:
 
-  Gamma(nlohmann::json& js, int seed);
+  Gamma(nlohmann::json& js, size_t seed);
   Gamma(double shape, double scale, size_t seed = 0);
   ~Gamma();
 

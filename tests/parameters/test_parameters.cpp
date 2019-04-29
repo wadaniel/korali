@@ -16,10 +16,10 @@ int main(int argc, char* argv[])
   size_t N = 0;
   unique_ptr<Korali::Parameter::Base> p[20];
 
-  p[N++] = make_unique<Cauchy>( 2., 5. );
-  p[N++] = make_unique<Cauchy>( 0.0, 1.0 );
-  p[N++] = make_unique<Exponential>( -2., 3. );
-  p[N++] = make_unique<Exponential>( 0.0, 3 );
+  p[N++] = make_unique<Cauchy>( 5., 2.0 );
+  p[N++] = make_unique<Cauchy>( 1.0, 0.0 );
+  p[N++] = make_unique<Exponential>( 3., -2. );
+  p[N++] = make_unique<Exponential>( 3, 0.0 );
   p[N++] = make_unique<Gamma>( 2., 3. );
   p[N++] = make_unique<Gaussian>( 0., 0.1 );
   p[N++] = make_unique<Gaussian>( 2., 3. );
@@ -81,11 +81,11 @@ int main(int argc, char* argv[])
   }
 
   {// 3. Exponential
-    double mean=3.;
-    double xstat1=mean, xstat2=mean;
+    double mean=3., loc=0.;
+    double xstat1=loc+mean, xstat2=loc+mean;
     double stat1, stat2;
 
-    dist = make_unique<Exponential>(mean,seed);
+    dist = make_unique<Exponential>(mean,loc, seed);
     for(size_t i=0; i<Ns; i++) samples[i] = dist->getRandomNumber();
     stat1 = gsl_stats_mean(samples, 1, Ns);
     stat2 = gsl_stats_sd_m(samples, 1, Ns, stat1);
@@ -111,12 +111,12 @@ int main(int argc, char* argv[])
   }
 
   {// 5. Cauchy
-    double scale=0.5;
+    double scale=0.5, loc=0.;
     double xstat1 = scale * tan(M_PI*(0.25-0.5)); // 25% quantile
     double xstat2 = scale * tan(M_PI*(0.75-0.5)); // 75% quantile
     double stat1, stat2;
 
-    dist = make_unique<Cauchy>(scale,seed);
+    dist = make_unique<Cauchy>(scale,loc,seed);
     for(size_t i=0; i<Ns; i++) samples[i] = dist->getRandomNumber();
     gsl_sort( samples, 1, Ns);
     stat1 = gsl_stats_quantile_from_sorted_data(samples, 1, Ns, 0.25);

@@ -58,19 +58,6 @@ Korali::Engine::Engine()
 {
  // Determining result folder name
  _currentState = 0;
- size_t runNumber = 0;
- bool exists = true;
-
- while(exists)
- {
-  struct stat info;
-  if (runNumber > 1000) { printf("[Korali] Error: Too many result files. Backup your previous results and run again.\n"); exit(-1);}
-  sprintf(_resultsDirName, "korali%05lu", runNumber);
-  if(stat(_resultsDirName, &info) != 0) exists = false;
-  else if(info.st_mode & S_IFDIR) runNumber++;
- }
-
- mkdir(_resultsDirName, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 }
 
 Korali::Engine::~Engine()
@@ -106,9 +93,16 @@ nlohmann::json Korali::Engine::getConfiguration()
 void Korali::Engine::setConfiguration(nlohmann::json js)
 {
  // Configure Korali Engine
- std::time_t now_c = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now() - std::chrono::nanoseconds(0));
- _seed  = std::chrono::nanoseconds(now_c).count();
- _seed = consume(js, { "Seed" }, KORALI_NUMBER, "0");
+
+ // Initializing Seed and GSL Random Environment
+ _seed = 0;
+ FILE *fid = fopen("/dev/random", "rb");
+ if (fid != NULL)
+ {
+  fread(&_seed, 1, sizeof(size_t), fid);
+  fclose(fid);
+ }
+ _seed = consume(js, { "Seed" }, KORALI_NUMBER, std::to_string(_seed));
  gsl_rng_env_setup();
 
  auto vString = consume(js, { "Verbosity" }, KORALI_STRING, "Normal");
@@ -117,7 +111,19 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
  if (vString == "Normal")   _verbosity = KORALI_NORMAL;
  if (vString == "Detailed") _verbosity = KORALI_DETAILED;
 
+ size_t runNumber = 0;
+ bool exists = true;
+ while(exists)
+ {
+  struct stat info;
+  if (runNumber > 1000) { printf("[Korali] Error: Too many result files. Backup your previous results and run again.\n"); exit(-1);}
+  _resultsDirName = "korali" + std::to_string(runNumber);
+  if(stat(_resultsDirName.c_str(), &info) != 0) exists = false;
+  else if(info.st_mode & S_IFDIR) runNumber++;
+ }
+
  _outputFrequency = consume(js, { "Output Frequency" }, KORALI_NUMBER, "1");
+ _resultsDirName = consume(js, { "Output Directory" }, KORALI_STRING, _resultsDirName);
 
  // Configure Parameters
  std::vector<Korali::Parameter::Base*> tmp;
@@ -152,11 +158,6 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
 
  // Configure Conduit
  std::string conduitString = "Sequential";
-
- #ifdef _KORALI_USE_UPCXX
- upcxx::init();
- if (upcxx::rank_n() > 1) conduitString = "UPC++";
- #endif
 
  conduitString = consume(js, { "Conduit", "Type" }, KORALI_STRING, conduitString);
  _conduit = NULL;
@@ -223,9 +224,13 @@ void Korali::Engine::run()
   pybind11::gil_scoped_release release; // Releasing Global Lock for Multithreaded execution
  #endif
 
+ // Creating Results directory
+ mkdir(_resultsDirName.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+
+ // Running Engine
  _conduit->run();
 
- if (_conduit->isRoot()) printf("[Korali] Results saved to folder: '%s'\n", _resultsDirName);
+ if (_conduit->isRoot()) printf("[Korali] Results saved to folder: '%s'\n", _resultsDirName.c_str());
 }
 
 void Korali::Engine::saveState(std::string fileName)
@@ -241,7 +246,7 @@ void Korali::Engine::saveState()
 
  char fileName[256];
 
- sprintf(fileName, "./%s/s%05lu.json", _resultsDirName, _currentState++);
+ sprintf(fileName, "./%s/s%05lu.json", _resultsDirName.c_str(), _currentState++);
 
  saveJsonToFile(fileName, getConfiguration());
 }
@@ -250,6 +255,11 @@ void Korali::Engine::loadState(std::string fileName)
 {
  if (!_conduit->isRoot()) return;
 
+ _js = loadJsonFromFile(fileName.c_str());
+}
+
+void Korali::Engine::loadConfig(std::string fileName)
+{
  _js = loadJsonFromFile(fileName.c_str());
 }
 

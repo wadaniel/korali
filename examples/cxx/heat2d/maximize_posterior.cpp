@@ -7,7 +7,7 @@ int main(int argc, char* argv[])
 	 heat2DSolver (d.getParameters(), d.getResults());
  });
 
- korali["Seed"] = 0xC0FFEE;
+ //korali["Seed"] = 0xC0FFEE;
  korali["Verbosity"] = "Normal";
 
  korali["Parameters"][0]["Name"] = "Intensity";

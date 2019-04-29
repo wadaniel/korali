@@ -22,7 +22,9 @@ To see the documentation site
 
 
 ## Authors
-People working on korali:
+Korali is written and maintained by
 * Georgios Arampatzis, garampat at ethz.ch
 * Sergio Miguel Martin, martiser at ethz.ch
 * Daniel Waelchli, wadaniel at ethz.ch
+and
+* Petros Koumoutsakos, petros at ethz.ch

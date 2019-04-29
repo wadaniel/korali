@@ -3,22 +3,11 @@ repo_name: 'cselab/korali'
 repo_url: 'https://github.com/cselab/korali'
 
 
-pages:
+nav:
   - Home: index.md
   - Installation: installation.md
   - Examples:
-      - Sampling: examples/sampling.md
-      - External: examples/external.md
-      - Optimizing: examples/optimizing.md
-      - Hierarchical: examples/hierarchical.md
-  - Developing:
-      - Structure: developing/structure.md
-      - Conventions: developing/conventions.md
-      - Par files: developing/par_files.md
-      - Likelihoods: developing/likelihoods.md
-      - Upcoming: developing/upcoming.md
-      - Beta: developing/beta.md
-  - Performance: hpc.md
+      - Beta: examples/sampling.md
   - References: references.md
 
 theme:

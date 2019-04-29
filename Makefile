@@ -31,15 +31,20 @@ install: source/libkorali.so
 	mkdir -p $(PREFIX)/lib
 	mkdir -p $(PREFIX)/include
 	mkdir -p $(PREFIX)/bin
+	mkdir -p $(PREFIX)/python
 	cp source/libkorali.so $(PREFIX)/lib
 	cp source/libkorali.a $(PREFIX)/lib
 	@cd source && cp $(INCLUDES) --parents $(PREFIX)/include
 	cp libs/json -r $(PREFIX)/include
 	cp libs/koralijson -r $(PREFIX)/include
 	cp libs/gsl -r $(PREFIX)/lib/koraligsl
+	cp -r source/python/* $(PREFIX)/bin/
 	@echo "#!/bin/bash" > $(PREFIX)/bin/korali-cxx
 	@cat korali.config tools/korali-cxx >> $(PREFIX)/bin/korali-cxx
 	@chmod a+x  $(PREFIX)/bin/korali-cxx
+	@echo "#!/bin/bash" > $(PREFIX)/bin/korali-config
+	@cat korali.config tools/korali-config >> $(PREFIX)/bin/korali-config
+	@chmod a+x  $(PREFIX)/bin/korali-config
 	@echo '------------------------------------------------------------------'
 	@echo '[Korali] To complete installation, please update your environment:'
 	@echo '[Korali] >export PATH=$$PATH:$(PREFIX)/bin'

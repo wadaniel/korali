@@ -31,6 +31,8 @@ class CMAES : public Korali::Solver::Base
 
  private:
 
+ bool _pyplot; /* start process for live diagnostics */
+
  // Korali Runtime Variables
  double* _fitnessVector; /* objective function values [_s] */
  double* _samplePopulation; /* sample coordinates [_s x _k->N] */
@@ -52,8 +54,8 @@ class CMAES : public Korali::Solver::Base
  double _cumulativeCovariance; /* default calculated from dimension */
  double _covarianceMatrixLearningRate;
 
- bool   _enablediag;
- size_t _diagonalCovarianceMatrixEvalFrequency;
+ bool   _enablediag; /* enable diagonal covariance matrix */
+ size_t _diagonalCovarianceMatrixEvalFrequency; 
  size_t _covarianceEigenEvalFreq;
 
  // Stop conditions

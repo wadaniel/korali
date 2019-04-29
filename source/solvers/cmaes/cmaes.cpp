@@ -1,4 +1,6 @@
 #include "korali.h"
+#include <stdio.h>
+#include <unistd.h>
 #include <chrono>
 
 /************************************************************************/
@@ -126,6 +128,7 @@ nlohmann::json Korali::Solver::CMAES::getConfiguration()
 
  js["Method"] = "CMA-ES";
 
+ js["Live Plotting"]           = _pyplot;
  js["Lambda"]                  = _s;
  js["Current Generation"]      = _currentGeneration;
  js["Sigma Cumulation Factor"] = _sigmaCumulationFactor;
@@ -186,6 +189,7 @@ void Korali::Solver::CMAES::setConfiguration(nlohmann::json& js)
 {
  this->Korali::Solver::Base::setConfiguration(js);
 
+ _pyplot                        = consume(js, { "Live Plotting" }, KORALI_BOOLEAN, "false");
  _s                             = consume(js, { "Lambda" }, KORALI_NUMBER);
  _currentGeneration             = consume(js, { "Current Generation" }, KORALI_NUMBER, std::to_string(0));
  _sigmaCumulationFactor         = consume(js, { "Sigma Cumulation Factor" }, KORALI_NUMBER, std::to_string(-1));
@@ -273,33 +277,52 @@ void Korali::Solver::CMAES::run()
 {
  if (_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Starting CMA-ES.\n");
 
- startTime = std::chrono::system_clock::now();
- _k->saveState();
-
- while(!checkTermination())
+ int pid = 1;
+ if (_pyplot)
  {
-  prepareGeneration();
-
-   while (_finishedSamples < _s)
-   {
-    for (size_t i = 0; i < _s; i++) if (_initializedSample[i] == false)
-    {
-     _initializedSample[i] = true;
-     _k->_conduit->evaluateSample(_samplePopulation, i);
-    }
-    _k->_conduit->checkProgress();
-   }
-  updateDistribution(_fitnessVector);
-
-  t1 = std::chrono::system_clock::now();
-  printGeneration();
-
-  _k->saveState();
+    pid = fork();
  }
 
- endTime = std::chrono::system_clock::now();
+ if( pid == 0 )
+ {
+    printf( "This is being printed from the child process\n" );
+    // TODO: python run_diagnostics live = true, src =_resultsDirName
+ }
+ else
+ {
 
- printFinal();
+    printf( "This is being printed in the parent process:\n"
+            " - the process identifier (pid) of the child is %d\n", pid );
+
+   startTime = std::chrono::system_clock::now();
+   _k->saveState();
+
+   while(!checkTermination())
+   {
+    prepareGeneration();
+
+    while (_finishedSamples < _s)
+    {
+      for (size_t i = 0; i < _s; i++) if (_initializedSample[i] == false)
+      {
+        _initializedSample[i] = true;
+        _k->_conduit->evaluateSample(_samplePopulation, i);
+      }
+        _k->_conduit->checkProgress();
+    }
+    updateDistribution(_fitnessVector);
+
+    t1 = std::chrono::system_clock::now();
+    printGeneration();
+
+    _k->saveState();
+   }
+
+   endTime = std::chrono::system_clock::now();
+
+   printFinal();
+  
+  }
 }
 
 void Korali::Solver::CMAES::processSample(size_t sampleId, double fitness)

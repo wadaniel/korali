@@ -38,7 +38,7 @@ install: source/libkorali.so
 	cp libs/json -r $(PREFIX)/include
 	cp libs/koralijson -r $(PREFIX)/include
 	cp libs/gsl -r $(PREFIX)/lib/koraligsl
-	cp -r source/python/* $(PREFIX)/bin/
+	cp -r source/python/gui/* $(PREFIX)/bin/
 	@echo "#!/bin/bash" > $(PREFIX)/bin/korali-cxx
 	@cat korali.config tools/korali-cxx >> $(PREFIX)/bin/korali-cxx
 	@chmod a+x  $(PREFIX)/bin/korali-cxx

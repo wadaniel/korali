@@ -31,6 +31,8 @@ class CMAES : public Korali::Solver::Base
 
  private:
 
+ bool _pyplot; /* start process for live diagnostics */
+
  // Korali Runtime Variables
  double* _fitnessVector; /* objective function values [_s] */
  double* _samplePopulation; /* sample coordinates [_s x _k->N] */
@@ -44,7 +46,7 @@ class CMAES : public Korali::Solver::Base
  size_t _mu; /* number of best samples for mean / cov update */
  std::string _muType; /* linearDecreasing, Equal or Logarithmic */
  double* _muWeights; /* weights for mu best samples */
- double _muEffective;
+ double _muEffective; /* variance effective selection mass */
  double _muCovariance;
 
  double _sigmaCumulationFactor; /* default calculated from muEffective and dimension */
@@ -52,7 +54,8 @@ class CMAES : public Korali::Solver::Base
  double _cumulativeCovariance; /* default calculated from dimension */
  double _covarianceMatrixLearningRate;
 
- size_t _diagonalCovarianceMatrixEvalFrequency;
+ bool   _enablediag; /* enable diagonal covariance matrix */
+ size_t _diagonalCovarianceMatrixEvalFrequency; 
  size_t _covarianceEigenEvalFreq;
 
  // Stop conditions
@@ -72,18 +75,18 @@ class CMAES : public Korali::Solver::Base
  double sigma;  /* step size */
  Parameter::Gaussian* _gaussianGenerator;
 
- double currentBest; /* best ever fitness */
+ double bestEver; /* best ever fitness */
  double prevBest; /* best ever fitness from previous generation */ 
  double *rgxmean; /* mean "parent" */
  double *rgxbestever; /* bestever vector */
- double *curBest; /* holding all fitness values (fitnessvector) */ 
+ double *curBestVector; /* current best vectir */ 
  int *index; /* sorting index of current sample pop (index[0] idx of current best). */
  double currentFunctionValue; /* best fitness current generation */
  double prevFunctionValue; /* best fitness previous generation */
 
  double **C; /* lower triangular matrix: i>=j for C[i][j] */
- double **B; /* matrix with normalize eigenvectors in columns */
- double *rgD; /* axis lengths */
+ double **B; /* matrix with eigenvectors in columns */
+ double *rgD; /* axis lengths (sqrt(Evals)) */
 
  double *rgpc; /* evolution path for cov update */
  double *rgps; /* exponential for sigma update */
@@ -112,6 +115,7 @@ class CMAES : public Korali::Solver::Base
  bool isFeasible(const double *pop) const;
  double doubleRangeMax(const double *rgd, int len) const;
  double doubleRangeMin(const double *rgd, int len) const;
+ bool doDiagUpdate() const;
  bool isStoppingCriteriaActive(const char *criteria) const;
 
  // Print Methods 

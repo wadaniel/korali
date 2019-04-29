@@ -1,5 +1,6 @@
 INCLUDES = $(shell cd source && find . | grep "\.h")
 TESTS = $(dir $(wildcard tests/*/))
+EXAMPLES = $(dir $(wildcard examples/cxx/*/))
 CURDIR = $(shell pwd)
 
 include korali.config
@@ -19,6 +20,9 @@ tests: $(TESTS)
 $(TESTS):: install
 	$(MAKE) -j -C $@
 
+clean_examples:
+	for i in $(EXAMPLES); do $(MAKE) -j -C $$i clean; done
+
 clean_tests:
 	for i in $(TESTS); do $(MAKE) -j -C $$i clean; done
 
@@ -27,6 +31,7 @@ install: source/libkorali.so
 	mkdir -p $(PREFIX)/lib
 	mkdir -p $(PREFIX)/include
 	mkdir -p $(PREFIX)/bin
+	mkdir -p $(PREFIX)/python
 	cp source/libkorali.so $(PREFIX)/lib
 	cp source/libkorali.a $(PREFIX)/lib
 	@cd source && cp $(INCLUDES) --parents $(PREFIX)/include
@@ -35,9 +40,13 @@ install: source/libkorali.so
 	cp libs/gsl/include/gsl -r $(PREFIX)/include 
 	cp libs/gsl/lib/libgsl.a -r $(PREFIX)/lib/libkoraligsl.a
 	cp libs/gsl/lib/libgslcblas.a -r $(PREFIX)/lib/libkoraligslcblas.a 
+	cp -r tools/plotting/* $(PREFIX)/bin/
 	@echo "#!/bin/bash" > $(PREFIX)/bin/korali-cxx
 	@cat korali.config tools/korali-cxx >> $(PREFIX)/bin/korali-cxx
 	@chmod a+x  $(PREFIX)/bin/korali-cxx
+	@echo "#!/bin/bash" > $(PREFIX)/bin/korali-config
+	@cat korali.config tools/korali-config >> $(PREFIX)/bin/korali-config
+	@chmod a+x  $(PREFIX)/bin/korali-config
 	@echo '------------------------------------------------------------------'
 	@echo '[Korali] To complete installation, please update your environment:'
 	@echo '[Korali] >export PATH=$$PATH:$(PREFIX)/bin'

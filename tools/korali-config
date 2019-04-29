@@ -1,0 +1,77 @@
+
+CXXFLAGS="-I$PREFIX/include -I$PREFIX/lib/koraligsl/include/gsl"
+CXXFLAGS="$CXXFLAGS -Wno-unused -Wunused-result -Wno-unused-parameter -Wno-address -Wno-deprecated-declarations -Wall -Wfatal-errors"
+LDFLAGS="-Wl,-rpath=$PREFIX/lib/koraligsl/lib -L$PREFIX/lib/koraligsl/lib -lgsl -lgslcblas -L$PREFIX/lib -l:libkorali.a" 
+
+if [ $USE_UPCXX -eq 1 ]; then
+ CXXFLAGS="$CXXFLAGS `upcxx-meta CPPFLAGS`"
+ LDFLAGS="$LDFLAGS `upcxx-meta LIBS`" 
+fi
+
+if [ $USE_MULTITHREAD -eq 1 ]; then
+ CXXFLAGS="$CXXFLAGS -pthread"
+fi
+
+usage()
+{
+    cat <<EOF
+Usage: korali-config [OPTION]
+
+Known values for OPTION are:
+
+  --prefix		show korali installation prefix 
+  --libs		print korali library linking information
+  --cflags		print pre-processor and compiler flags
+  --help		display this help and exit
+  --version		output version information
+
+EOF
+
+    exit $1
+}
+
+if test $# -eq 0; then
+    usage 1
+fi
+
+while test $# -gt 0; do
+    case "$1" in
+    -*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'` ;;
+    *) optarg= ;;
+    esac
+
+    case "$1" in
+    --prefix=*)
+	PREFIX=$optarg
+	;;
+
+    --prefix)
+	echo $PREFIX
+	;;
+
+    --version)
+	echo 1.0
+	exit 0
+	;;
+
+    --help)
+	usage 0
+	;;
+
+    --libs)
+	echo $LDFLAGS
+       	;;
+
+    --cflags)
+       	echo $CXXFLAGS
+       	;;
+
+    *)
+	usage
+	exit 1
+	;;
+    esac
+    shift
+done
+
+exit 0

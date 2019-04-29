@@ -9,26 +9,36 @@ Korali is based on [UPCXX](https://bitbucket.org/berkeleylab/upcxx/wiki/Home)
 
 # What Korali does for you
 
-1. **Optimize**: given a cost function $F(\vartheta)$ find
+1. **Gradient-Free Black-Box Optimization**: given a cost function $F(\vartheta)$ find
 	$$
-	\vartheta^\star = \mathop{\arg\min}\limits_{\vartheta}  \,\,\, F(\vartheta) \,.
+	\vartheta^\star = \mathop{\arg\min}\limits_{\vartheta}  \,\,\, F(\vartheta) \,,
 	$$
+    where $F(\theta)$ can be any nonlinear nonconvex function.
+    
+    (todo: insert link to example)
 
-2. **Sample**: given the density of a probability distribution $p_{\vartheta}$ draw samples,
-	$$
-		\vartheta^{(k)} \sim p_\vartheta, \quad k=1,\ldots,N_s \, .
-	$$
-
-3. **Uncertainty Quantification**: given a set of data $d$, the output of the model $f(x;\vartheta)$ a likelihood function $p(d|\vartheta)$ and a prior probablity density $p(\vartheta)$ sample the posterior distribution,
+2. **Uncertainty Quantification**: given a set of data $d$, respectively the output of a model $f(x;\vartheta)$, a likelihood function $p(d|\vartheta)$,  and a prior probability density $p(\vartheta)$ Korali samples the posterior distribution
 	$$
 	p(\vartheta | d) = \frac{p(d | \vartheta) \, p(\vartheta)}{p(d)}\, .
 	$$
-The model output $f$ depends on a set of input parameters $x$.
+    I.e. the output is a set of samples $\theta^{(k)}$ with $k \in \{1,...,N\}$ such that
+    $$
+		\vartheta^{(k)} \sim p(\theta | d).
+    $$
+    Note that $x$ are the input parameters of the computational model $f$.
+
+    (todo: insert link to example)
 
 After [installing](installation.md) the software, please have a look at the [examples](./examples/sampling.md) and learn how to run your own code.
 
 
+## Notes
 
+Please send questions and feedback to:
+
+- martiser AT ethz.ch
+- garampat AT ethz.ch
+- wadaniel AT ethz.ch
 
 
 <br><br><br><br><br><br>

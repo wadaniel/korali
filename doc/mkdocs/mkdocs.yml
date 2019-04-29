@@ -11,15 +11,16 @@ pages:
       - External: examples/external.md
       - Optimizing: examples/optimizing.md
       - Hierarchical: examples/hierarchical.md
+      - Tests: examples/tests.md
   - Developing:
       - Structure: developing/structure.md
       - Conventions: developing/conventions.md
-      - Par files: developing/par_files.md
       - Likelihoods: developing/likelihoods.md
       - Upcoming: developing/upcoming.md
       - Beta: developing/beta.md
   - Performance: hpc.md
   - References: references.md
+
 
 theme:
     name: material
@@ -37,7 +38,6 @@ markdown_extensions:
   - pymdownx.arithmatex
   - admonition
   - codehilite
-
 
 
 extra_javascript:

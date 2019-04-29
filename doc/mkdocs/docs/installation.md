@@ -53,15 +53,5 @@ Before compiling, the following needs to be checked:
 
 TODO
 
-## Tests
-
-coming soon
 
 
-## Notes
-
-Please send your questions to:
-
-- martiser AT ethz.ch
-- garampat AT ethz.ch
-- wadaniel AT ethz.ch

@@ -278,9 +278,10 @@ void Korali::Solver::CMAES::run()
 
  if (_pyplot)
  {
-    const char * cmd = "python `korali-config --prefix`/bin/diagnostics.py";
-    int ret_code = system(cmd);
-    if ( ret_code == -1 ) {  printf( "[Korali] Error in system call:\n\t %s\n", cmd); exit(-1); }
+
+    std::string cmd = "python `korali-config --prefix`/bin/diagnostics.py " + _k->_resultsDirName;
+    int ret_code = system(cmd.c_str());
+    if ( ret_code == -1 ) {  printf( "[Korali] Error in system call:\n\t %s\n", cmd.c_str()); exit(-1); }
  }
 
   startTime = std::chrono::system_clock::now();

@@ -18,6 +18,7 @@ def hls_colors(num, h = 0.01, l=0.6, s=0.65):
     palette = [ list(colorsys.hls_to_rgb(h_i, l, s)) for h_i in hues ]
     return palette
 
+
 # Get a list of strings for json keys of current results or best ever results
 def objstrings(obj='current'):
     if obj == 'current':
@@ -27,8 +28,9 @@ def objstrings(obj='current'):
     else:
         raise ValueError("obj must be 'current' or 'ever'")
 
+
 # Plot CMA-ES results (read from .json files)
-def run_diagnostics(live, src='korali00000', obj='current'):
+def run_diagnostics(live, src, obj='current'):
      
     idx    = 0 # generation
     numdim = 0 # problem dimension
@@ -134,5 +136,11 @@ def run_diagnostics(live, src='korali00000', obj='current'):
 
 
 if __name__ == '__main__':
-    print ("Test OK")
-    #run_diagnostics(live=False)
+
+    if (len(sys.argv) == 2):
+        print  ("Plotting results from dir " + sys.argv[1])
+        run_diagnostics(live=True, src=sys.argv[1])
+
+    else: 
+        print("Invalid arguments, exit ...")
+        print("(one argument required, directoy of CMA-ES results)")

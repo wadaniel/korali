@@ -134,5 +134,5 @@ def run_diagnostics(live, src='korali00000', obj='current'):
 
 
 if __name__ == '__main__':
-
-    run_diagnostics(live=False)
+    print ("Test OK")
+    #run_diagnostics(live=False)

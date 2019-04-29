@@ -277,52 +277,41 @@ void Korali::Solver::CMAES::run()
 {
  if (_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Starting CMA-ES.\n");
 
- int pid = 1;
  if (_pyplot)
  {
-    pid = fork();
+    const char * cmd = "python `korali-config --prefix`/bin/diagnostics.py";
+    int ret_code = system(cmd);
+    if ( ret_code == -1 ) {  printf( "[Korali] Error in system call:\n\t %s\n", cmd); exit(-1); }
  }
 
- if( pid == 0 )
- {
-    printf( "This is being printed from the child process\n" );
-    // TODO: python run_diagnostics live = true, src =_resultsDirName
- }
- else
- {
+  startTime = std::chrono::system_clock::now();
+  _k->saveState();
 
-    printf( "This is being printed in the parent process:\n"
-            " - the process identifier (pid) of the child is %d\n", pid );
+  while(!checkTermination())
+  {
+  prepareGeneration();
 
-   startTime = std::chrono::system_clock::now();
-   _k->saveState();
-
-   while(!checkTermination())
-   {
-    prepareGeneration();
-
-    while (_finishedSamples < _s)
+  while (_finishedSamples < _s)
+  {
+    for (size_t i = 0; i < _s; i++) if (_initializedSample[i] == false)
     {
-      for (size_t i = 0; i < _s; i++) if (_initializedSample[i] == false)
-      {
-        _initializedSample[i] = true;
-        _k->_conduit->evaluateSample(_samplePopulation, i);
-      }
-        _k->_conduit->checkProgress();
+      _initializedSample[i] = true;
+      _k->_conduit->evaluateSample(_samplePopulation, i);
     }
-    updateDistribution(_fitnessVector);
-
-    t1 = std::chrono::system_clock::now();
-    printGeneration();
-
-    _k->saveState();
-   }
-
-   endTime = std::chrono::system_clock::now();
-
-   printFinal();
-  
+    _k->_conduit->checkProgress();
   }
+  updateDistribution(_fitnessVector);
+
+  t1 = std::chrono::system_clock::now();
+  printGeneration();
+
+  _k->saveState();
+  }
+
+  endTime = std::chrono::system_clock::now();
+
+  printFinal();
+
 }
 
 void Korali::Solver::CMAES::processSample(size_t sampleId, double fitness)

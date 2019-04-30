@@ -1,6 +1,9 @@
 all: ackley.o
 
-$(TARGET).o: $(TARGET).cpp
+ackley: ackley.o
+	$(CXX) -o $@ $^ 
+
+ackley.o: ackley.cpp
 	$(CXX) -c $< -O3 -g 
 
 clean:; rm -rf $(TARGET) *.o

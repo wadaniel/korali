@@ -4,7 +4,7 @@ CXXFLAGS_SHARED = -fPIC
 CXXFLAGS_STATIC = 
 
 CXXFLAGS = -O2 -g -I. -I../libs -I../libs/gsl/include -std=c++17
-CXXFLAGS += -Wno-unused -Wunused-result -Wno-unused-parameter -Wno-address -Wno-deprecated-declarations -Wall -Wfatal-errors
+CXXFLAGS += -Wno-unused -Wno-unused-result -Wno-unused-parameter -Wno-address -Wno-deprecated-declarations -Wall -Wfatal-errors -Wno-register
 
 ifneq ("$(wildcard ../libs/gsl/lib/libgsl.so)","")
  LDWHOLE = -Wl,--whole-archive

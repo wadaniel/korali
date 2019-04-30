@@ -13,6 +13,7 @@ nav:
       - Beta: examples/sampling.md
   - References: references.md
 
+
 theme:
     name: material
     palette:
@@ -29,7 +30,6 @@ markdown_extensions:
   - pymdownx.arithmatex
   - admonition
   - codehilite
-
 
 
 extra_javascript:

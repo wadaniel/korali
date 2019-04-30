@@ -43,9 +43,8 @@ Korali::Solver::CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js
  { fprintf( stderr, "[Korali] Error: Matrix covariance evaluation frequency is less than 1 (%lu)\n", _diagonalCovarianceMatrixEvalFrequency); exit(-1); }
 
  // Setting Sigma Cumulation Factor
- double tmpSigma = _sigmaCumulationFactor;
- if (tmpSigma > 0) _sigmaCumulationFactor *= (_muEffective + 2.0) / (_k->N + _muEffective + 3.0);
- if (tmpSigma <= 0 || tmpSigma >= 1)  _sigmaCumulationFactor = (_muEffective + 2.) / (_k->N + _muEffective + 3.0);
+ if (_sigmaCumulationFactor > 0) _sigmaCumulationFactor *= (_muEffective + 2.0) / (_k->N + _muEffective + 3.0);
+ if (_sigmaCumulationFactor <= 0 || _sigmaCumulationFactor >= 1) _sigmaCumulationFactor = (_muEffective + 2.) / (_k->N + _muEffective + 3.0);
 
  // Setting Damping Factor
 
@@ -65,13 +64,12 @@ Korali::Solver::CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js
  t2 = (t2 > 1) ? 1 : t2;
  t2 = (1./_muCovariance) * t1 + (1.-1./_muCovariance) * t2;
 
- double tmpCovarianceRate = _covarianceMatrixLearningRate;
- if (tmpCovarianceRate >= 0)   _covarianceMatrixLearningRate *= t2;
- if (tmpCovarianceRate < 0 || tmpCovarianceRate > 1)  _covarianceMatrixLearningRate = t2;
+ if (_covarianceMatrixLearningRate >= 0) _covarianceMatrixLearningRate *= t2;
+ if (_covarianceMatrixLearningRate < 0 || _covarianceMatrixLearningRate > 1)  _covarianceMatrixLearningRate = t2;
 
  // Setting eigensystem evaluation Frequency
- 
- _covarianceEigenEvalFreq = floor(1.0/(double)_covarianceMatrixLearningRate/((double)_k->N)/10.0);
+
+ if( _covarianceEigenEvalFreq < 0.0) _covarianceEigenEvalFreq = 1.0/_covarianceMatrixLearningRate/((double)_k->N)/10.0;
 
  double trace = 0.0;
  for (size_t i = 0; i < _k->N; ++i) trace += _k->_parameters[i]->_initialStdDev*_k->_parameters[i]->_initialStdDev;
@@ -223,12 +221,10 @@ void Korali::Solver::CMAES::setConfiguration(nlohmann::json& js)
  // Setting MU Covariance
  if (_muCovariance < 1) _muCovariance = _muEffective;
  
- _covarianceEigenEvalFreq       = consume(js, { "Covariance Matrix", "Eigenvalue Evaluation Frequency" }, KORALI_NUMBER, std::to_string(0));
+ _covarianceEigenEvalFreq       = consume(js, { "Covariance Matrix", "Eigenvalue Evaluation Frequency" }, KORALI_NUMBER, std::to_string(-1));
  _cumulativeCovariance          = consume(js, { "Covariance Matrix", "Cumulative Covariance" }, KORALI_NUMBER, std::to_string(-1));
  _covarianceMatrixLearningRate  = consume(js, { "Covariance Matrix", "Learning Rate" }, KORALI_NUMBER, std::to_string(-1));
  _enablediag                    = consume(js, { "Covariance Matrix", "Enable Diagonal Update" }, KORALI_BOOLEAN, "false");
- 
-
  _maxGenenerations              = consume(js, { "Termination Criteria", "Max Generations" }, KORALI_NUMBER, std::to_string(100));
  _stopMinFitness                = consume(js, { "Termination Criteria", "Min Fitness" }, KORALI_NUMBER, std::to_string(-std::numeric_limits<double>::max()));
  _maxFitnessEvaluations         = consume(js, { "Termination Criteria", "Max Model Evaluations" }, KORALI_NUMBER, std::to_string(std::numeric_limits<size_t>::max()));
@@ -603,6 +599,7 @@ bool Korali::Solver::CMAES::checkTermination()
 void Korali::Solver::CMAES::updateEigensystem(int flgforce)
 {
  if(flgforce == 0 && flgEigensysIsUptodate) return;
+ /* if(_currentGeneration % _covarianceEigenEvalFreq == 0) return; */
 
  eigen(_k->N, C, rgD, B);
 

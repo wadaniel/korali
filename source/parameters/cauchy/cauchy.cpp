@@ -13,7 +13,7 @@ Cauchy::Cauchy(double scale, double loc, size_t seed) : Base::Base(seed)
 	initialize();
 }
 
-Cauchy::Cauchy(nlohmann::json& js, int seed) : Base::Base(js, seed)
+Cauchy::Cauchy(nlohmann::json& js, size_t seed) : Base::Base(js, seed)
 {
  setConfiguration(js);
  initialize();

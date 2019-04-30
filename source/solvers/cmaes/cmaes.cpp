@@ -24,7 +24,7 @@ Korali::Solver::CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js
  curBestVector = (double *) calloc (sizeof(double), _k->N);
 
  rgFuncValue = (double*) calloc (sizeof(double), _s);
- index = (int *) calloc (sizeof(int*), _s);
+ index = (size_t *) calloc (sizeof(size_t*), _s);
 
  C = (double**) calloc (sizeof(double*), _k->N);
  B = (double**)calloc (sizeof(double*), _k->N);
@@ -644,30 +644,29 @@ void Korali::Solver::CMAES::eigen(size_t size, double **C, double *diag, double 
  free(data);
 }
 
-int Korali::Solver::CMAES::maxIdx(const double *rgd, int len) const
+size_t Korali::Solver::CMAES::maxIdx(const double *rgd, size_t len) const
 {
- int i, res;
- for(i=1, res=0; i<len; ++i)
-  if(rgd[i] > rgd[res])
-   res = i;
+ size_t res = 0;
+ for(size_t i = 1; i < len; i++)
+  if(rgd[i] > rgd[res]) res = i;
  return res;
 }
 
-int Korali::Solver::CMAES::minIdx(const double *rgd, int len) const
+size_t Korali::Solver::CMAES::minIdx(const double *rgd, size_t len) const
 {
- int i, res;
- for(i=1, res=0; i<len; ++i)
-  if(rgd[i] < rgd[res])
-   res = i;
+ size_t res = 0;
+ for(size_t i = 1; i < len; i++)
+  if(rgd[i] < rgd[res]) res = i;
  return res;
 }
 
 /* dirty index sort */
-void Korali::Solver::CMAES::sorted_index(const double *fitnessVector, int *index, int n) const
+void Korali::Solver::CMAES::sorted_index(const double *fitnessVector, size_t *index, size_t n) const
 {
- int i, j;
- for (i=1, index[0]=0; i<n; ++i) {
-  for (j=i; j>0; --j) {
+ size_t i, j;
+ index[0] = 0;
+ for (i = 1; i < n; i++) {
+  for (j = i; j > 0; j--) {
    if (fitnessVector[index[j-1]] < fitnessVector[i])
     break;
    index[j] = index[j-1]; /* shift up */
@@ -676,20 +675,18 @@ void Korali::Solver::CMAES::sorted_index(const double *fitnessVector, int *index
  }
 }
 
-double Korali::Solver::CMAES::doubleRangeMax(const double *rgd, int len) const
+double Korali::Solver::CMAES::doubleRangeMax(const double *rgd, size_t len) const
 {
- int i;
  double max = rgd[0];
- for (i = 1; i < len; ++i)
+ for (size_t i = 1; i < len; i++)
   max = (max < rgd[i]) ? rgd[i] : max;
  return max;
 }
 
-double Korali::Solver::CMAES::doubleRangeMin(const double *rgd, int len) const
+double Korali::Solver::CMAES::doubleRangeMin(const double *rgd, size_t len) const
 {
- int i;
  double min = rgd[0];
- for (i = 1; i < len; ++i)
+ for (size_t i = 1; i < len; i++)
   min = (min > rgd[i]) ? rgd[i] : min;
  return min;
 }

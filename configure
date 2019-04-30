@@ -66,17 +66,17 @@ c++ --version > /dev/null 2>&1
 DETECTED_CPLUSPLUS=$?
 g++ --version > /dev/null 2>&1
 DETECTED_GXX=$?
-clang --version > /dev/null 2>&1
+clang++ --version > /dev/null 2>&1
 DETECTED_CLANG=$?
 icpc --version > /dev/null 2>&1
 DETECTED_ICPC=$?
  
 USE_CXX=""
-if [ $DETECTED_CPLUSPLUS -eq 0 ]; then USE_CXX=c++;   fi;
-if [ $DETECTED_GXX       -eq 0 ]; then USE_CXX=g++;   fi;
-if [ $DETECTED_ICPC      -eq 0 ]; then USE_CXX=icpc;  fi;
-if [ $DETECTED_CLANG     -eq 0 ]; then USE_CXX=clang; fi;
-if [ $DETECTED_CXX       -eq 0 ]; then USE_CXX=$CXX;  fi;
+if [ $DETECTED_CPLUSPLUS -eq 0 ]; then USE_CXX=c++;     fi;
+if [ $DETECTED_GXX       -eq 0 ]; then USE_CXX=g++;     fi;
+if [ $DETECTED_ICPC      -eq 0 ]; then USE_CXX=icpc;    fi;
+if [ $DETECTED_CLANG     -eq 0 ]; then USE_CXX=clang++; fi;
+if [ $DETECTED_CXX       -eq 0 ]; then USE_CXX=$CXX;    fi;
 
 if [[ "$USE_CXX" == "" ]]
 then
@@ -146,7 +146,7 @@ fi
 
 ######## Checking support for POSIX Threads ########
 
-$CXX -v 2>&1 > /dev/null | grep posix > /dev/null 2>&1
+$USE_CXX -v 2>&1 > /dev/null | grep posix > /dev/null 2>&1
 if [ ! $? -eq 0 ]
 then
  echo "[Korali] No compiler support for POSIX Threads found."
@@ -158,20 +158,20 @@ fi
 
 ######## Checking support for Python3 ########
 
-echo "[Korali] Checking for Python 3.x using \"pkg-config python3\"."
-pkg-config python3 > /dev/null 2>&1
+echo "[Korali] Checking for Python using \"python-config\"."
+python-config --help > /dev/null 2>&1
 if [ $? -eq 0 ]; then
-  echo "[Korali] Configuring with support for Python 3.x."
+  echo "[Korali] Configuring with support for Python."
   USE_PYTHON=1
 else
-  echo "[Korali] Configuring without support for Python 3.x."
+  echo "[Korali] Configuring without support for Python"
   USE_PYTHON=0
 fi
 
 ######## Creating Config File ########
 
 echo "PREFIX=$PREFIX" > korali.config
-echo "CXX=$CXX" >> korali.config
+echo "CXX=$USE_CXX" >> korali.config
 echo "USE_MPI=$USE_MPI" >> korali.config
 echo "USE_UPCXX=$USE_UPCXX" >> korali.config
 echo "USE_MULTITHREAD=$USE_MULTITHREAD" >> korali.config

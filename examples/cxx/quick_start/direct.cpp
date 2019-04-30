@@ -5,14 +5,12 @@
 void F(std::vector<double>& x, std::vector<double>& result){
 
   result.push_back( -pow( x[0]-2. , 2) );
-
 }
-
 
 int main(int argc, char* argv[])
 {
   if(argc<2){
-    printf("\nUsage: ./posterior 1(=maximize) or 2(=sample)\n\n");
+    printf("\nUsage: ./direct 1(=maximize) or 2(=sample)\n");
     exit(1);
   }
 

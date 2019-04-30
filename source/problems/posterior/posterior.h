@@ -9,15 +9,15 @@ namespace Korali::Problem
 class Posterior : public Korali::Problem::Likelihood
 {
  public:
- double evaluateFitness(double* sample);
+ double evaluateFitness(double* sample) override;
 
  // Constructor / Destructor
  Posterior(nlohmann::json& js);
  ~Posterior();
 
  // Serialization Methods
- nlohmann::json getConfiguration();
- void setConfiguration(nlohmann::json& js);
+ nlohmann::json getConfiguration() override;
+ void setConfiguration(nlohmann::json& js) override;
 };
 
 } // namespace Korali

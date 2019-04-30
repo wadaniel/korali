@@ -6,7 +6,6 @@ Korali is based on [UPCXX](https://bitbucket.org/berkeleylab/upcxx/wiki/Home)
 
 <br><br>
 
-
 # What Korali does for you
 
 1. **Gradient-Free Black-Box Optimization**: given a cost function $F(\vartheta)$ find
@@ -31,6 +30,11 @@ Korali is based on [UPCXX](https://bitbucket.org/berkeleylab/upcxx/wiki/Home)
 
 After [installing](installation.md) the software, please have a look at the [examples](./examples/sampling.md) and learn how to run your own code.
 
+<br><br>
+
+# Korali Principles 
+
+(todo)
 
 ## Notes
 

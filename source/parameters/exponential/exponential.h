@@ -18,15 +18,15 @@ class Exponential : public Korali::Parameter::Base
   Exponential(double mean, double loc, size_t seed = 0);
   ~Exponential();
 
-  double getDensity(double x);
-  double getDensityLog(double x);
-  double getRandomNumber();
+  double getDensity(double x) override;
+  double getDensityLog(double x) override;
+  double getRandomNumber() override;
 
   void printDetails() override;
 
   // Serialization Methods
-  nlohmann::json getConfiguration();
-  void setConfiguration(nlohmann::json& js);
+  nlohmann::json getConfiguration() override;
+  void setConfiguration(nlohmann::json& js) override;
 };
 
 } // namespace Korali

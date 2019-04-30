@@ -32,18 +32,18 @@ class Multithread : public Base {
  double* _sampleArrayPointer;
 
  static void workerThread();
- void run();
- void evaluateSample(double* sampleArray, size_t sampleId);
- void checkProgress();
- bool isRoot();
+ void run() override;
+ void evaluateSample(double* sampleArray, size_t sampleId) override;
+ void checkProgress() override;
+ bool isRoot() override;
 
  // Constructor / Destructor
  Multithread(nlohmann::json& js);
  ~Multithread();
 
  // Serialization Methods
- nlohmann::json getConfiguration();
- void setConfiguration(nlohmann::json& js);
+ nlohmann::json getConfiguration() override;
+ void setConfiguration(nlohmann::json& js) override;
 };
 
 } // namespace Korali

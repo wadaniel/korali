@@ -9,15 +9,15 @@ namespace Korali::Problem
 class Direct : public Korali::Problem::Base
 {
  public:
- double evaluateFitness(double* sample);
+ double evaluateFitness(double* sample) override;
 
  // Constructor / Destructor
  Direct(nlohmann::json& js);
  ~Direct();
 
  // Serialization Methods
- nlohmann::json getConfiguration();
- void setConfiguration(nlohmann::json& js);
+ nlohmann::json getConfiguration() override;
+ void setConfiguration(nlohmann::json& js) override;
 };
 
 } // namespace Korali

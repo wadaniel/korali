@@ -21,7 +21,7 @@ class Base {
 
  // Serialization Methods
  virtual nlohmann::json getConfiguration();
- virtual void setConfiguration(nlohmann::json js);
+ virtual void setConfiguration(nlohmann::json& js);
 };
 
 class Conduit;

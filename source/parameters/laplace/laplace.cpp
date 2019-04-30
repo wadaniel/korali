@@ -8,8 +8,8 @@ using namespace Korali::Parameter;
 
 Laplace::Laplace(double mean, double width, size_t seed) : Base::Base(seed)
 {
-	_mean  = mean;
-	_width = width;
+  _mean  = mean;
+  _width = width;
   initialize();
 }
 

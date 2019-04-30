@@ -1,16 +1,26 @@
 
-CXXFLAGS="-I$PREFIX/include -I$PREFIX/lib/koraligsl/include/gsl"
+CXXFLAGS="-I$PREFIX/include -I$PREFIX/lib/koraligsl/include/gsl --std=c++17"
 CXXFLAGS="$CXXFLAGS -Wno-unused -Wunused-result -Wno-unused-parameter -Wno-address -Wno-deprecated-declarations -Wall -Wfatal-errors"
-LDFLAGS="-L$PREFIX/lib -l:libkorali.a -l:libkoraligsl.a -l:libkoraligslcblas.a" 
+LDFLAGS="$PREFIX/lib/libkorali.a $PREFIX/lib/libkoraligsl.a $PREFIX/lib/libkoraligslcblas.a" 
 
-if [ $USE_UPCXX -eq 1 ]; then
+if [[ "$USE_UPCXX" == "1" ]]; then
  CXXFLAGS="$CXXFLAGS `upcxx-meta CPPFLAGS`"
  LDFLAGS="$LDFLAGS `upcxx-meta LIBS`" 
 fi
 
-if [ $USE_MULTITHREAD -eq 1 ]; then
+if [[ "$USE_MULTITHREAD" == "1" ]]; then
  CXXFLAGS="$CXXFLAGS -pthread"
+ LDFLAGS="$LDFLAGS -pthread"
 fi
 
-#echo "$CXX $@ $CXXFLAGS $LDFLAGS"
-$CXX $@ $CXXFLAGS $LDFLAGS
+flags=
+if [[ "$@" == *"-o"* ]]; then
+ flags+=" $LDFLAGS"
+fi
+
+if [[ "$@" == *"-c"* ]]; then
+ flags+=" $CXXFLAGS"
+fi
+
+#echo "$CXX $@ $flags"
+$CXX $@ $flags

@@ -3,8 +3,8 @@ include ../korali.config
 CXXFLAGS_SHARED = -fPIC 
 CXXFLAGS_STATIC = 
 
-CXXFLAGS = -O3 -g -I. -I../libs -I../libs/gsl/include
-CXXFLAGS += -Wno-unused -Wunused-result -Wno-unused-parameter -Wno-address -Wno-deprecated-declarations -Wall -Wfatal-errors
+CXXFLAGS = -O3 -g -I. -I../libs -I../libs/gsl/include -std=c++17
+CXXFLAGS += -Wno-unused -Wunused-result -Wno-unused-parameter -Wno-address -Wno-deprecated-declarations -Wall -Wfatal-errors -Wno-format-security
 
 ifneq ("$(wildcard ../libs/gsl/lib/libgsl.so)","")
  LDWHOLE = -Wl,--whole-archive

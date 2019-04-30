@@ -66,17 +66,17 @@ c++ --version > /dev/null 2>&1
 DETECTED_CPLUSPLUS=$?
 g++ --version > /dev/null 2>&1
 DETECTED_GXX=$?
-clang --version > /dev/null 2>&1
+clang++ --version > /dev/null 2>&1
 DETECTED_CLANG=$?
 icpc --version > /dev/null 2>&1
 DETECTED_ICPC=$?
  
 USE_CXX=""
-if [ $DETECTED_CPLUSPLUS -eq 0 ]; then USE_CXX=c++;   fi;
-if [ $DETECTED_GXX       -eq 0 ]; then USE_CXX=g++;   fi;
-if [ $DETECTED_ICPC      -eq 0 ]; then USE_CXX=icpc;  fi;
-if [ $DETECTED_CLANG     -eq 0 ]; then USE_CXX=clang; fi;
-if [ $DETECTED_CXX       -eq 0 ]; then USE_CXX=$CXX;  fi;
+if [ $DETECTED_CPLUSPLUS -eq 0 ]; then USE_CXX=c++;     fi;
+if [ $DETECTED_GXX       -eq 0 ]; then USE_CXX=g++;     fi;
+if [ $DETECTED_ICPC      -eq 0 ]; then USE_CXX=icpc;    fi;
+if [ $DETECTED_CLANG     -eq 0 ]; then USE_CXX=clang++; fi;
+if [ $DETECTED_CXX       -eq 0 ]; then USE_CXX=$CXX;    fi;
 
 if [[ "$USE_CXX" == "" ]]
 then
@@ -171,7 +171,7 @@ fi
 ######## Creating Config File ########
 
 echo "PREFIX=$PREFIX" > korali.config
-echo "CXX=$CXX" >> korali.config
+echo "CXX=$USE_CXX" >> korali.config
 echo "USE_MPI=$USE_MPI" >> korali.config
 echo "USE_UPCXX=$USE_UPCXX" >> korali.config
 echo "USE_MULTITHREAD=$USE_MULTITHREAD" >> korali.config

@@ -62,12 +62,12 @@ class TMCMC : public Korali::Solver::Base
  double **local_cov;
 
   // Korali Methods
- void run();
+ void run() override;
 
   // Internal TMCMC Methods
  void resampleGeneration();
  void updateDatabase(double* point, double fitness);
- void processSample(size_t c, double fitness);
+ void processSample(size_t c, double fitness) override;
  void generateCandidate(int c);
  void computeChainCovariances(double** chain_cov, int newchains);
  void minSearch(double const *fj, int fn, double pj, double objTol, double *xmin, double *fmin);
@@ -75,13 +75,13 @@ class TMCMC : public Korali::Solver::Base
  static double objLog(const gsl_vector *v, void *param);
 
  // Serialization Methods
- nlohmann::json getConfiguration();
- void setConfiguration(nlohmann::json& js);
- void setState(nlohmann::json& js);
+ nlohmann::json getConfiguration() override;
+ void setConfiguration(nlohmann::json& js) override;
+ void setState(nlohmann::json& js) override;
 
  // Print Methods
- void printGeneration() const;
- void printFinal() const;
+ void printGeneration() const override;
+ void printFinal() const override;
 };
 
 } // namespace Korali

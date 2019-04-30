@@ -19,16 +19,16 @@ class Cauchy : public Korali::Parameter::Base
   Cauchy(double scale, double loc, size_t seed = 0);
   ~Cauchy();
 
-  double getDensity(double x);
-  double getDensityLog(double x);
-  double getRandomNumber();
+  double getDensity(double x) override;
+  double getDensityLog(double x) override;
+  double getRandomNumber() override;
 
   void printDetails() override;
   void initialize();
 
   // Serialization Methods
-  nlohmann::json getConfiguration();
-  void setConfiguration(nlohmann::json& js);
+  nlohmann::json getConfiguration() override;
+  void setConfiguration(nlohmann::json& js) override;
 };
 
 } // namespace Korali

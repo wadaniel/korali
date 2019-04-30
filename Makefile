@@ -33,13 +33,13 @@ install: source/libkorali.so
 	mkdir -p $(PREFIX)/bin
 	mkdir -p $(PREFIX)/python
 	cp source/libkorali.so $(PREFIX)/lib
-	cp source/libkorali.a $(PREFIX)/lib
-	@cd source && cp $(INCLUDES) --parents $(PREFIX)/include
-	cp libs/json -r $(PREFIX)/include
-	cp libs/koralijson -r $(PREFIX)/include
-	cp libs/gsl/include/gsl -r $(PREFIX)/include 
-	cp libs/gsl/lib/libgsl.a -r $(PREFIX)/lib/libkoraligsl.a
-	cp libs/gsl/lib/libgslcblas.a -r $(PREFIX)/lib/libkoraligslcblas.a 
+	cp source/libkorali.a $(PREFIX)/lib 
+	cd source && for i in $(INCLUDES); do rsync -R $$i $(PREFIX)/include; done 
+	cp -r libs/json $(PREFIX)/include
+	cp -r libs/koralijson $(PREFIX)/include
+	cp -r libs/gsl/include/gsl $(PREFIX)/include 
+	cp libs/gsl/lib/libgsl.a $(PREFIX)/lib/libkoraligsl.a
+	cp libs/gsl/lib/libgslcblas.a $(PREFIX)/lib/libkoraligslcblas.a 
 	cp -r tools/plotting/* $(PREFIX)/bin/
 	@echo "#!/bin/bash" > $(PREFIX)/bin/korali-cxx
 	@cat korali.config tools/korali-cxx >> $(PREFIX)/bin/korali-cxx

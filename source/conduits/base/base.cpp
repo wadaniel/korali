@@ -26,7 +26,7 @@ nlohmann::json Base::getConfiguration()
  return js;
 }
 
-void Base::setConfiguration(nlohmann::json js)
+void Base::setConfiguration(nlohmann::json& js)
 {
 }
 

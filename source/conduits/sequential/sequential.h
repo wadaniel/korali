@@ -9,18 +9,18 @@ namespace Korali::Conduit
 class Sequential : public Base {
  public:
 
- void run();
- void evaluateSample(double* sampleArray, size_t sampleId);
- void checkProgress();
- bool isRoot();
+ void run() override;
+ void evaluateSample(double* sampleArray, size_t sampleId) override;
+ void checkProgress() override;
+ bool isRoot() override;
 
  // Constructor / Destructor
  Sequential(nlohmann::json& js);
  ~Sequential();
 
  // Serialization Methods
- nlohmann::json getConfiguration();
- void setConfiguration(nlohmann::json& js);
+ nlohmann::json getConfiguration() override;
+ void setConfiguration(nlohmann::json& js) override;
 };
 
 } // namespace Korali

@@ -21,13 +21,13 @@ class CMAES : public Korali::Solver::Base
  void prepareGeneration();
  bool checkTermination();
  void updateDistribution(const double *fitnessVector);
- void run();
- void processSample(size_t sampleId, double fitness);
+ void run() override;
+ void processSample(size_t sampleId, double fitness) override;
 
  // Serialization Methods
- nlohmann::json getConfiguration();
- void setConfiguration(nlohmann::json& js);
- void setState(nlohmann::json& js);
+ nlohmann::json getConfiguration() override;
+ void setConfiguration(nlohmann::json& js) override;
+ void setState(nlohmann::json& js) override;
 
  private:
 
@@ -39,7 +39,6 @@ class CMAES : public Korali::Solver::Base
  size_t _currentGeneration; /* generation count */
  bool* _initializedSample;
  char _terminationReason[500];
- char filepath[500];
 
  size_t _finishedSamples;
  size_t _s; /* number of samples per generation */
@@ -119,8 +118,8 @@ class CMAES : public Korali::Solver::Base
  bool isStoppingCriteriaActive(const char *criteria) const;
 
  // Print Methods 
- void printGeneration() const;
- void printFinal() const;
+ void printGeneration() const override;
+ void printFinal() const override;
 };
 
 } // namespace Korali

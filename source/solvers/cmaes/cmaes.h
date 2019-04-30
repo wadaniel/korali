@@ -79,7 +79,7 @@ class CMAES : public Korali::Solver::Base
  double *rgxmean; /* mean "parent" */
  double *rgxbestever; /* bestever vector */
  double *curBestVector; /* current best vectir */ 
- int *index; /* sorting index of current sample pop (index[0] idx of current best). */
+ size_t *index; /* sorting index of current sample pop (index[0] idx of current best). */
  double currentFunctionValue; /* best fitness current generation */
  double prevFunctionValue; /* best fitness previous generation */
 
@@ -108,12 +108,12 @@ class CMAES : public Korali::Solver::Base
  void adaptC2(int hsig);
  void updateEigensystem(int flgforce);
  void eigen(size_t N, double **C, double *diag, double **Q) const;
- int maxIdx(const double *rgd, int len) const;
- int minIdx(const double *rgd, int len) const;
- void sorted_index(const double *rgFunVal, int *index, int n) const;
+ size_t maxIdx(const double *rgd, size_t len) const;
+ size_t minIdx(const double *rgd, size_t len) const;
+ void sorted_index(const double *rgFunVal, size_t *index, size_t n) const;
  bool isFeasible(const double *pop) const;
- double doubleRangeMax(const double *rgd, int len) const;
- double doubleRangeMin(const double *rgd, int len) const;
+ double doubleRangeMax(const double *rgd, size_t len) const;
+ double doubleRangeMin(const double *rgd, size_t len) const;
  bool doDiagUpdate() const;
  bool isStoppingCriteriaActive(const char *criteria) const;
 

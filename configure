@@ -146,7 +146,7 @@ fi
 
 ######## Checking support for POSIX Threads ########
 
-$CXX -v 2>&1 > /dev/null | grep posix > /dev/null 2>&1
+$USE_CXX -v 2>&1 > /dev/null | grep posix > /dev/null 2>&1
 if [ ! $? -eq 0 ]
 then
  echo "[Korali] No compiler support for POSIX Threads found."
@@ -158,13 +158,13 @@ fi
 
 ######## Checking support for Python3 ########
 
-echo "[Korali] Checking for Python 3.x using \"pkg-config python3\"."
-pkg-config python3 > /dev/null 2>&1
+echo "[Korali] Checking for Python using \"python-config\"."
+python-config --help > /dev/null 2>&1
 if [ $? -eq 0 ]; then
-  echo "[Korali] Configuring with support for Python 3.x."
+  echo "[Korali] Configuring with support for Python."
   USE_PYTHON=1
 else
-  echo "[Korali] Configuring without support for Python 3.x."
+  echo "[Korali] Configuring without support for Python"
   USE_PYTHON=0
 fi
 

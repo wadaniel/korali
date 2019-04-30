@@ -10,7 +10,7 @@ namespace Korali::Solver
 
 typedef struct fparam_s {
     const double *fj;
-    int           fn;
+    size_t        fn;
     double        pj;
     double        cov;
 } fparam_t;
@@ -27,7 +27,7 @@ class TMCMC : public Korali::Solver::Base
  double _tolCOV;              /* Target coefficient of variation of weights */
  double _minStep;             /* Min update of rho */
  double _bbeta;               /* Covariance scaling parameter */
- size_t  _s; // Population Size
+ unsigned int _s; // Population Size
  bool _useLocalCov;
  size_t  _baseBurnIn;
  size_t _maxGens;
@@ -68,10 +68,10 @@ class TMCMC : public Korali::Solver::Base
  void resampleGeneration();
  void updateDatabase(double* point, double fitness);
  void processSample(size_t c, double fitness) override;
- void generateCandidate(int c);
- void computeChainCovariances(double** chain_cov, int newchains);
- void minSearch(double const *fj, int fn, double pj, double objTol, double *xmin, double *fmin);
- static double tmcmc_objlogp(double x, const double *fj, int fn, double pj, double zero);
+ void generateCandidate(size_t c);
+ void computeChainCovariances(double** chain_cov, size_t newchains);
+ void minSearch(double const *fj, size_t fn, double pj, double objTol, double *xmin, double *fmin);
+ static double tmcmc_objlogp(double x, const double *fj, size_t fn, double pj, double zero);
  static double objLog(const gsl_vector *v, void *param);
 
  // Serialization Methods

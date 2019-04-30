@@ -5,12 +5,12 @@
 /*                  Constructor / Destructor Methods                    */
 /************************************************************************/
 
-Korali::Parameter::Base::Base(nlohmann::json& js, int seed) : Korali::Parameter::Base::Base(seed)
+Korali::Parameter::Base::Base(nlohmann::json& js, size_t seed) : Korali::Parameter::Base::Base(seed)
 {
  setConfiguration(js);
 }
 
-Korali::Parameter::Base::Base(int seed)
+Korali::Parameter::Base::Base(size_t seed)
 {
  _range = gsl_rng_alloc (gsl_rng_default);
  gsl_rng_set(_range, seed);

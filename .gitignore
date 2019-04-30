@@ -6,6 +6,7 @@ __pycache__
 *.o
 *.json
 *.so
+*.pyc
 *.a
 *.swp
 *.swo

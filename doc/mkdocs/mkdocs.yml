@@ -3,22 +3,11 @@ repo_name: 'cselab/skorali'
 repo_url: 'https://github.com/cselab/skorali'
 
 
-pages:
+nav:
   - Home: index.md
   - Installation: installation.md
   - Examples:
-      - Sampling: examples/sampling.md
-      - External: examples/external.md
-      - Optimizing: examples/optimizing.md
-      - Hierarchical: examples/hierarchical.md
-      - Tests: examples/tests.md
-  - Developing:
-      - Structure: developing/structure.md
-      - Conventions: developing/conventions.md
-      - Likelihoods: developing/likelihoods.md
-      - Upcoming: developing/upcoming.md
-      - Beta: developing/beta.md
-  - Performance: hpc.md
+      - Beta: examples/sampling.md
   - References: references.md
 
 

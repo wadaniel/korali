@@ -17,13 +17,16 @@ function print_help ()
  echo "Configuration syntax:"
  echo "./configure"
  echo "   [--prefix=INSTALL_DIR]"
+ echo "   [--enable-upcxx]"
+ echo "   [--enable-mpi]"
  echo ""
  echo "Where:"
  echo " INSTALL_DIR is the path where to install Korali."
  echo " --help Displays this help message."
 }
 
-
+USE_UPCXX=0
+USE_MPI=0
 PREFIX=$PWD/korali
 
 for i in "$@"
@@ -33,13 +36,17 @@ case $i in
     PREFIX="${i#*=}"
     shift 
     ;;
-    --prefix=*)
-    BUILD="${i#*=}"
-    shift 
-    ;;
     --help)
     print_help
     exit 0 
+    shift 
+    ;;
+    --enable-upcxx)
+    USE_UPCXX=1
+    shift 
+    ;;
+    --enable-mpi)
+    USE_MPI=1
     shift 
     ;;
     *)
@@ -54,43 +61,87 @@ done
 ######## Checking compiler ########
 
 $CXX --version > /dev/null 2>&1
-if [ ! $? -eq 0 ]
+DETECTED_CXX=$?
+c++ --version > /dev/null 2>&1
+DETECTED_CPLUSPLUS=$?
+g++ --version > /dev/null 2>&1
+DETECTED_GXX=$?
+clang --version > /dev/null 2>&1
+DETECTED_CLANG=$?
+icpc --version > /dev/null 2>&1
+DETECTED_ICPC=$?
+ 
+USE_CXX=""
+if [ $DETECTED_CPLUSPLUS -eq 0 ]; then USE_CXX=c++;   fi;
+if [ $DETECTED_GXX       -eq 0 ]; then USE_CXX=g++;   fi;
+if [ $DETECTED_ICPC      -eq 0 ]; then USE_CXX=icpc;  fi;
+if [ $DETECTED_CLANG     -eq 0 ]; then USE_CXX=clang; fi;
+if [ $DETECTED_CXX       -eq 0 ]; then USE_CXX=$CXX;  fi;
+
+if [[ "$USE_CXX" == "" ]]
 then
- echo "[Korali] Error: No valid C++ compiler defined in \$CXX"
- exit -1
-else
- echo "[Korali] Using \$CXX=$CXX as C++ compiler."
+  echo "[Korali] Error: Did not found any valid C++ compiler. Please define \$CXX."
+  exit -1
 fi
 
 ######## Checking support for MPI ########
 
-mpicxx --version > /dev/null 2>&1
-if [ ! $? -eq 0 ]
+if [ $USE_MPI -eq 1 ]
 then
- echo "[Korali] No mpicxx command found, disabling support for MPI."
- USE_MPI=0
+ mpicxx --version > /dev/null 2>&1
+ if [ ! $? -eq 0 ]
+ then
+  echo "[Korali] Error: No mpicxx command found."
+  exit -1
+ else
+  echo "[Korali] Configuring with support for the MPI Conduit"
+  USE_MPI=1
+ fi
+ echo "[Korali] Error: No valid C++ compiler defined in \$CXX"
+ exit -1
 else
- echo "[Korali] Configuring with support for the MPI Conduit"
- USE_MPI=1
+ echo "[Korali] Using \$CXX=$USE_CXX as C++ compiler."
+fi
+
+######## Checking support for MPI ########
+
+if [ $USE_MPI -eq 1 ]
+then
+ mpicxx --version > /dev/null 2>&1
+ if [ ! $? -eq 0 ]
+ then
+  echo "[Korali] Error: No mpicxx command found."
+  exit -1
+ else
+  echo "[Korali] Configuring with support for the MPI Conduit"
+  USE_MPI=1
+ fi
+else
+ echo "[Korali] Configuring without support for the MPI Conduit"
 fi
 
 ######## Checking support for UPC++ ########
 
-upcxx --version > /dev/null 2>&1
-if [ ! $? -eq 0 ]
+if [ $USE_UPCXX -eq 1 ]
 then
- echo "[Korali] No upcxx command found, disabling support for UPCXX."
- USE_UPCXX=0
-else
- upcxx-meta CPPFLAGS > /dev/null 2>&1
+ upcxx --version > /dev/null 2>&1
  if [ ! $? -eq 0 ]
  then
-  echo "[Korali] No upcxx-meta command found, disabling support for UPCXX."
-  USE_UPCXX=0
+  echo "[Korali] Error: No upcxx command found for UPC++."
+  exit -1
  else
-  echo "[Korali] Configuring with support for the UPC++ Conduit."
-  USE_UPCXX=1
+  upcxx-meta CPPFLAGS > /dev/null 2>&1
+  if [ ! $? -eq 0 ]
+  then
+   echo "[Korali] Error: No upcxx-meta command found for UPC++."
+   exit -1
+  else
+   echo "[Korali] Configuring with support for the UPC++ Conduit."
+   USE_UPCXX=1
+  fi
  fi
+else
+ echo "[Korali] Configuring without support for the UPC++ Conduit."
 fi
 
 ######## Checking support for POSIX Threads ########
@@ -101,13 +152,13 @@ then
  echo "[Korali] No compiler support for POSIX Threads found."
  USE_MULTITHREAD=0
 else
- echo "[Korali] Configuring with support for the Pthreads Conduit."
+ echo "[Korali] Configuring with support for the Multithreaded Conduit."
  USE_MULTITHREAD=1
 fi
 
 ######## Checking support for Python3 ########
 
-echo "[Korali] Detecting Python 3.x using \"pkg-config python3\"."
+echo "[Korali] Checking for Python 3.x using \"pkg-config python3\"."
 pkg-config python3 > /dev/null 2>&1
 if [ $? -eq 0 ]; then
   echo "[Korali] Configuring with support for Python 3.x."
@@ -119,15 +170,13 @@ fi
 
 ######## Creating Config File ########
 
-echo "[Korali] Creating korali.config..."
-echo "PREFIX=$PREFIX" >> korali.config
+echo "PREFIX=$PREFIX" > korali.config
 echo "CXX=$CXX" >> korali.config
 echo "USE_MPI=$USE_MPI" >> korali.config
 echo "USE_UPCXX=$USE_UPCXX" >> korali.config
 echo "USE_MULTITHREAD=$USE_MULTITHREAD" >> korali.config
-echo "USE_PTHREADS=$USE_PTHREADS" >> korali.config
 echo "USE_PYTHON=$USE_PYTHON" >> korali.config
 
-echo "[Korali] Configuration was successful."
+echo "[Korali] Configuration was successful (see: korali.config)."
 echo "[Korali] Install Path: $PREFIX"
 echo "[Korali] Run 'make install' to install Korali."

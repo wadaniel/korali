@@ -696,7 +696,7 @@ double Korali::Solver::CMAES::doubleRangeMin(const double *rgd, int len) const
 
 bool Korali::Solver::CMAES::doDiagUpdate() const
 {
- return _enablediag && ((_diagonalCovarianceMatrixEvalFrequency == 1) || (_diagonalCovarianceMatrixEvalFrequency>= _currentGeneration));
+ return _enablediag && (_currentGeneration % _diagonalCovarianceMatrixEvalFrequency == 0);
 }
 
 bool Korali::Solver::CMAES::isStoppingCriteriaActive(const char *criteria) const

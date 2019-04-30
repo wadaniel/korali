@@ -70,11 +70,11 @@ Korali::Solver::CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js
  if (tmpCovarianceRate < 0 || tmpCovarianceRate > 1)  _covarianceMatrixLearningRate = t2;
 
  // Setting eigensystem evaluation Frequency
+ 
  _covarianceEigenEvalFreq = floor(1.0/(double)_covarianceMatrixLearningRate/((double)_k->N)/10.0);
 
  double trace = 0.0;
- for (size_t i = 0; i < _k->N; ++i)   trace += _k->_parameters[i]->_initialStdDev*_k->_parameters[i]->_initialStdDev;
- //if (!_silent) printf("Trace: %f\n", trace);
+ for (size_t i = 0; i < _k->N; ++i) trace += _k->_parameters[i]->_initialStdDev*_k->_parameters[i]->_initialStdDev;
  sigma = sqrt(trace/_k->N); /* _muEffective/(0.2*_muEffective+sqrt(_k->N)) * sqrt(trace/_k->N); */
 
  flgEigensysIsUptodate = true;
@@ -82,7 +82,7 @@ Korali::Solver::CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js
  countevals = 0;
  countinfeasible = 0;
  bestEver = 0.0;
- for (size_t i = 0; i < _s; ++i)  index[i] = i; /* should not be necessary */
+ for (size_t i = 0; i < _s; ++i) index[i] = i; /* should not be necessary */
 
  for (size_t i = 0; i < _k->N; ++i)
  {
@@ -537,7 +537,7 @@ bool Korali::Solver::CMAES::checkTermination()
  }
 
  for(size_t i=0; i<_k->N; ++i)
-   if (sigma * sqrt(C[i][i]) > _stopTolUpXFactor * /* rgInitialStds[i] */ 1.0 && isStoppingCriteriaActive("Max Standard Deviation") )
+   if (sigma * sqrt(C[i][i]) > _stopTolUpXFactor * _k->_parameters[i]->_initialStdDev && isStoppingCriteriaActive("Max Standard Deviation") )
    {
      terminate = true;
      sprintf(_terminationReason, "Standard deviation increased by more than %7.2e, larger initial standard deviation recommended \n", _stopTolUpXFactor);

@@ -61,12 +61,46 @@ done
 ######## Checking compiler ########
 
 $CXX --version > /dev/null 2>&1
-if [ ! $? -eq 0 ]
+DETECTED_CXX=$?
+c++ --version > /dev/null 2>&1
+DETECTED_CPLUSPLUS=$?
+g++ --version > /dev/null 2>&1
+DETECTED_GXX=$?
+clang --version > /dev/null 2>&1
+DETECTED_CLANG=$?
+icpc --version > /dev/null 2>&1
+DETECTED_ICPC=$?
+ 
+USE_CXX=""
+if [ $DETECTED_CPLUSPLUS -eq 0 ]; then USE_CXX=c++;   fi;
+if [ $DETECTED_GXX       -eq 0 ]; then USE_CXX=g++;   fi;
+if [ $DETECTED_ICPC      -eq 0 ]; then USE_CXX=icpc;  fi;
+if [ $DETECTED_CLANG     -eq 0 ]; then USE_CXX=clang; fi;
+if [ $DETECTED_CXX       -eq 0 ]; then USE_CXX=$CXX;  fi;
+
+if [[ "$USE_CXX" == "" ]]
 then
+  echo "[Korali] Error: Did not found any valid C++ compiler. Please define \$CXX."
+  exit -1
+fi
+
+######## Checking support for MPI ########
+
+if [ $USE_MPI -eq 1 ]
+then
+ mpicxx --version > /dev/null 2>&1
+ if [ ! $? -eq 0 ]
+ then
+  echo "[Korali] Error: No mpicxx command found."
+  exit -1
+ else
+  echo "[Korali] Configuring with support for the MPI Conduit"
+  USE_MPI=1
+ fi
  echo "[Korali] Error: No valid C++ compiler defined in \$CXX"
  exit -1
 else
- echo "[Korali] Using \$CXX=$CXX as C++ compiler."
+ echo "[Korali] Using \$CXX=$USE_CXX as C++ compiler."
 fi
 
 ######## Checking support for MPI ########
@@ -124,7 +158,7 @@ fi
 
 ######## Checking support for Python3 ########
 
-echo "[Korali] Detecting Python 3.x using \"pkg-config python3\"."
+echo "[Korali] Checking for Python 3.x using \"pkg-config python3\"."
 pkg-config python3 > /dev/null 2>&1
 if [ $? -eq 0 ]; then
   echo "[Korali] Configuring with support for Python 3.x."

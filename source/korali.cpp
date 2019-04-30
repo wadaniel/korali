@@ -167,6 +167,7 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
   _conduit = new Korali::Conduit::Sequential(js["Conduit"]);
  }
 
+
  if (conduitString == "UPC++")
  {
   #ifdef _KORALI_USE_UPCXX
@@ -208,6 +209,7 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
   fprintf(stderr, "%s\n", js.dump(2).c_str());
   exit(-1);
  }
+
 }
 
 /************************************************************************/

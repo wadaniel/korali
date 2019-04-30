@@ -2,15 +2,12 @@
 #include <stdlib.h>
 
 void F01( std::vector<double>& par, std::vector<double>& result, std::vector<double> x ){
-
   for( size_t i=0; i<x.size(); i++){
     double res = par[0]*x[i] + par[1];
     result.push_back( res );
   }
 
 }
-
-
 
 int main(int argc, char* argv[])
 {

@@ -49,12 +49,14 @@ static bool isEmpty(nlohmann::json& js)
 
  if (js.is_object())
  {
+  std::vector<std::string> erasedKeys;
   for (auto& el : js.items())
   {
    bool elEmpty = isEmpty(el.value());
-   if (elEmpty) js.erase(el.key());
+   erasedKeys.push_back(el.key());
    empty = empty && elEmpty;
   }
+  for (size_t i = 0; i < erasedKeys.size(); i++) js.erase(erasedKeys[i]);
  }
 
  return empty;
@@ -166,7 +168,7 @@ static void saveJsonToFile(const char* fileName, nlohmann::json js)
  FILE *fid = fopen(fileName, "w");
  if (fid != NULL)
  {
-   fprintf(fid, js.dump(1).c_str());
+   fprintf(fid, "%s", js.dump(1).c_str());
    fclose(fid);
  }
  else

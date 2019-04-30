@@ -229,7 +229,7 @@ void Korali::Solver::TMCMC::updateDatabase(double* point, double fitness)
  _databaseEntries++;
 }
 
-void Korali::Solver::TMCMC::generateCandidate(int c)
+void Korali::Solver::TMCMC::generateCandidate(size_t c)
 {
  if (_currentGeneration == 0) return;
 
@@ -279,7 +279,7 @@ void Korali::Solver::TMCMC::resampleGeneration()
  gsl_ran_multinomial(range, _databaseEntries, _s, q, nn);
  for (size_t i = 0; i < _databaseEntries; i++) sel[i] += nn[i];
 
- int zeroCount = 0;
+ size_t zeroCount = 0;
  for (size_t i = 0; i < _databaseEntries; i++) if (sel[i] == 0) zeroCount++;
  _uniqueSelections = _databaseEntries - zeroCount;
  _acceptanceRate     = (1.0*_uniqueSelections)/_s;
@@ -302,11 +302,11 @@ void Korali::Solver::TMCMC::resampleGeneration()
  gsl_matrix_view sigma  = gsl_matrix_view_array(_covarianceMatrix, _k->N,_k->N);
  gsl_linalg_cholesky_decomp( &sigma.matrix );
 
- int newchains = 0;
+ size_t newchains = 0;
  for (size_t i = 0; i < _databaseEntries; i++) if (sel[i] != 0) newchains++;
 
  _currentBurnIn = _baseBurnIn;
- int ldi = 0;
+ size_t ldi = 0;
  for (size_t i = 0; i < _databaseEntries; i++) {
    if (sel[i] != 0) {
      for (size_t j = 0; j < _k->N ; j++) clPoints[ldi*_k->N + j] = _databasePoints[i*_k->N + j];
@@ -332,12 +332,12 @@ void Korali::Solver::TMCMC::resampleGeneration()
  free(sel);
 }
 
-void Korali::Solver::TMCMC::computeChainCovariances(double** chain_cov, int newchains)
+void Korali::Solver::TMCMC::computeChainCovariances(double** chain_cov, size_t newchains)
 {
  printf("Precomputing chain covariances for the current generation...\n");
 
  // allocate space
- int* nn_ind  = (int*) calloc (newchains, sizeof(int));
+ size_t* nn_ind  = (size_t*) calloc (newchains, sizeof(size_t));
  size_t* nn_count   = (size_t*) calloc (newchains, sizeof(size_t));
  double* diam    = (double*) calloc (_k->N, sizeof(double));
  double* chain_mean = (double*) calloc (_k->N, sizeof(double));
@@ -356,7 +356,7 @@ void Korali::Solver::TMCMC::computeChainCovariances(double** chain_cov, int newc
   printf("Diameter %ld: %.6lf\n", d, diam[d]);
  }
 
- int idx, pos;
+ size_t idx, pos;
  int status = 0;
  double ds = 0.05;
  for (double scale = 0.1; scale <= 1.0; scale += ds) {
@@ -426,15 +426,15 @@ void Korali::Solver::TMCMC::computeChainCovariances(double** chain_cov, int newc
  gsl_matrix_free(work);
 }
 
-double Korali::Solver::TMCMC::tmcmc_objlogp(double x, const double *fj, int fn, double pj, double zero)
+double Korali::Solver::TMCMC::tmcmc_objlogp(double x, const double *fj, size_t fn, double pj, double zero)
 {
  double *weight = (double*) calloc (fn, sizeof(double));
  double *q      = (double*) calloc (fn, sizeof(double));
  const double fjmax = gsl_stats_max(fj, 1, fn);
 
- for(int i = 0; i <fn; i++)weight[i] = exp((fj[i]-fjmax)*(x-pj));
+ for(size_t i = 0; i <fn; i++)weight[i] = exp((fj[i]-fjmax)*(x-pj));
  double sum_weight = std::accumulate(weight, weight+fn, 0.0);
- for(int i = 0; i < fn; i++)  q[i] = weight[i]/sum_weight;
+ for(size_t i = 0; i < fn; i++)  q[i] = weight[i]/sum_weight;
 
  double mean_q = gsl_stats_mean(q, 1, fn);
  double std_q  = gsl_stats_sd_m(q, 1, fn, mean_q);
@@ -453,7 +453,7 @@ double Korali::Solver::TMCMC::objLog(const gsl_vector *v, void *param)
  return Korali::Solver::TMCMC::tmcmc_objlogp(x, fp->fj, fp->fn, fp->pj, fp->cov);
 }
 
-void Korali::Solver::TMCMC::minSearch(double const *fj, int fn, double pj, double objCov, double *xmin, double *fmin)
+void Korali::Solver::TMCMC::minSearch(double const *fj, size_t fn, double pj, double objCov, double *xmin, double *fmin)
 {
  // Minimizer Options
  size_t MaxIter     = 100;    /* Max number of search iterations */

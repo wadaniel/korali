@@ -16,15 +16,15 @@ class Likelihood : public Korali::Problem::Base
 
  size_t _sigmaPosition;
  size_t _referenceDataSize;
- double evaluateFitness(double* sample);
+ double evaluateFitness(double* sample) override;
 
  // Constructor / Destructor
  Likelihood(nlohmann::json& js);
  ~Likelihood();
 
  // Serialization Methods
- nlohmann::json getConfiguration();
- void setConfiguration(nlohmann::json& js);
+ nlohmann::json getConfiguration() override;
+ void setConfiguration(nlohmann::json& js) override;
 };
 
 } // namespace Korali

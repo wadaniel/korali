@@ -8,9 +8,9 @@ using namespace Korali::Parameter;
 
 Gaussian::Gaussian(double mean, double sigma, size_t seed) : Base::Base(seed)
 {
-	_mean = mean;
-	_sigma = sigma;
-	initialize();
+  _mean = mean;
+  _sigma = sigma;
+  initialize();
 }
 
 Gaussian::Gaussian(nlohmann::json& js, size_t seed) : Base::Base(js, seed)
@@ -51,7 +51,7 @@ void Gaussian::setConfiguration(nlohmann::json& js)
 
 void Gaussian::initialize()
 {
-	_aux = -0.5*gsl_sf_log(2*M_PI) - gsl_sf_log(_sigma);
+ _aux = -0.5*gsl_sf_log(2*M_PI) - gsl_sf_log(_sigma);
 }
 
 double Gaussian::getDensity(double x)
@@ -70,12 +70,12 @@ double Gaussian::getRandomNumber()
  return _mean + gsl_ran_gaussian(_range, _sigma);
 }
 
-double Gaussian::logLikelihood(double sigma, int nData, double* x, double* u)
+double Gaussian::logLikelihood(double sigma, size_t nData, double* x, double* u)
 {
  double sigma2 = sigma*sigma;
  double ssn = 0.0;
 
- for(int i = 0; i < nData; i++)
+ for(size_t i = 0; i < nData; i++)
   {
   double diff = x[i] - u[i];
   ssn += diff*diff;

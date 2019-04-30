@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import os
+import sys
 import glob
 import time
 import json
@@ -56,7 +57,7 @@ def run_diagnostics(live, src, obj='current'):
             else: 
                 break
 
-        path = 'korali00000/s{0}.json'.format(str(idx).zfill(5))
+        path = '{0}/s{1}.json'.format(src, str(idx).zfill(5))
 
         localtime = time.localtime(time.time())
         plt.suptitle('s{0}.json\n(last update:{1}:{2}:{3})'.format(str(idx).zfill(5),\
@@ -128,7 +129,7 @@ def run_diagnostics(live, src, obj='current'):
             plt.legend(bbox_to_anchor=(1.04,0.5), loc="center left", borderaxespad=0, handlelength=1)
 
        
-        plt.pause(0.01) 
+        plt.pause(0.05) 
         if(live == False): time.sleep(0.5)
         idx = idx+1
 

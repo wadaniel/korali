@@ -59,13 +59,13 @@ Korali::Solver::CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js
 
  // Set covariance Matrix Learning Rate
 
- double t1 = 2. / ((_k->N+1.4142)*(_k->N+1.4142));
- double t2 = (2.*_muEffective-1.) / ((_k->N+2.)*(_k->N+2.)+_muEffective);
- t2 = (t2 > 1) ? 1 : t2;
- t2 = (1./_muCovariance) * t1 + (1.-1./_muCovariance) * t2;
+ double l1 = 2. / ((_k->N+1.4142)*(_k->N+1.4142));
+ double l2 = (2.*_muEffective-1.) / ((_k->N+2.)*(_k->N+2.)+_muEffective);
+ l2 = (l2 > 1) ? 1 : l2;
+ l2 = (1./_muCovariance) * l1 + (1.-1./_muCovariance) * l2;
 
- if (_covarianceMatrixLearningRate >= 0) _covarianceMatrixLearningRate *= t2;
- if (_covarianceMatrixLearningRate < 0 || _covarianceMatrixLearningRate > 1)  _covarianceMatrixLearningRate = t2;
+ if (_covarianceMatrixLearningRate >= 0) _covarianceMatrixLearningRate *= l2;
+ if (_covarianceMatrixLearningRate < 0 || _covarianceMatrixLearningRate > 1)  _covarianceMatrixLearningRate = l2;
 
  // Setting eigensystem evaluation Frequency
 
@@ -274,8 +274,8 @@ void Korali::Solver::CMAES::run()
 
  if (_pyplot)
  {
-
-    std::string cmd = "python `korali-config --prefix`/bin/diagnostics.py " + _k->_resultsDirName;
+    std::string cmd = "python `korali-config --prefix`/bin/diagnostics.py " + _k->_resultsDirName + " &";
+    //cmd = "start python `korali-config --prefix`/bin/diagnostics.py " + _k->_resultsDirName; // WINDOWS
     int ret_code = system(cmd.c_str());
     if ( ret_code == -1 ) {  printf( "[Korali] Error in system call:\n\t %s\n", cmd.c_str()); exit(-1); }
  }
@@ -285,6 +285,7 @@ void Korali::Solver::CMAES::run()
 
   while(!checkTermination())
   {
+  t0 = std::chrono::system_clock::now();
   prepareGeneration();
 
   while (_finishedSamples < _s)
@@ -707,7 +708,7 @@ void Korali::Solver::CMAES::printGeneration() const
 {
   if (_currentGeneration % _k->_outputFrequency != 0) return;
   if (_k->_verbosity >= KORALI_NORMAL) printf("\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
-  if (_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Generation %ld - Elapsed Time: %fs\n", _currentGeneration, std::chrono::duration<double>(t1-startTime).count());
+  if (_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Generation %ld - Duration: %fs (Total Elapsed Time: %fs)\n", _currentGeneration, std::chrono::duration<double>(t1-t0).count(), std::chrono::duration<double>(t1-startTime).count());
   if (_k->_verbosity >= KORALI_NORMAL)
   {
     double reldiffpct = (bestEver/prevBest - 1.0)*100.0;

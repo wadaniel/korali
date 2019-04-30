@@ -169,6 +169,7 @@ void Korali::Solver::TMCMC::run()
 
  for(; _currentGeneration < _maxGens; _currentGeneration++)
  {
+  t0 = std::chrono::system_clock::now();
   _k->saveState();
 
   // Generating Samples
@@ -531,7 +532,7 @@ void Korali::Solver::TMCMC::printGeneration() const
   if (_k->_verbosity >= KORALI_MINIMAL)
   {
     printf("\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
-    printf("[Korali] Generation %ld - Annealing Ratio:  %.5f - Elapsed Time: %.2fs\n", _currentGeneration, _annealingRatio, std::chrono::duration<double>(t1-startTime).count());
+    printf("[Korali] Generation %ld - Annealing Ratio:  %.5f - Duration: %fs (Total Elapsed Time: %.2fs)\n", _currentGeneration, _annealingRatio, std::chrono::duration<double>(t1-t0).count() , std::chrono::duration<double>(t1-startTime).count());
   }
 
   if (_k->_verbosity >= KORALI_NORMAL)
@@ -564,8 +565,8 @@ void Korali::Solver::TMCMC::printFinal() const
       printf("[Korali] Generation %ld - not converged (Max Generation reached, Annealing Ratio: %.5f)\n", _currentGeneration, _annealingRatio);
     else
       printf("[Korali] Generation %ld - Finished (Annealing Ratio: %.5f)\n", _currentGeneration, _annealingRatio);
-    printf("[Korali] Total Time: %fs.\n", std::chrono::duration<double>(endTime-startTime).count());
     printf("[Korali] logEvidence: %f.\n", _logEvidence);
+    printf("[Korali] Total Elapsed Time: %fs.\n", std::chrono::duration<double>(endTime-startTime).count());
   }
 
   if (_k->_verbosity >= KORALI_NORMAL)

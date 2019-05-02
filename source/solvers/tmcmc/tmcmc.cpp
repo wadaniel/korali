@@ -165,6 +165,16 @@ void Korali::Solver::TMCMC::setState(nlohmann::json& js)
 
 void Korali::Solver::TMCMC::run()
 {
+ if (_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Starting TMCMC.\n");
+ 
+ if (_k->_pyplot)
+ {
+    std::string cmd = "python `korali-config --prefix`/bin/plot_tmcmc.py " + _k->_resultsDirName + " &";
+    //cmd = "start python `korali-config --prefix`/bin/diagnostics.py " + _k->_resultsDirName; // WINDOWS
+    int ret_code = system(cmd.c_str());
+    if ( ret_code == -1 ) {  printf( "[Korali] Error in system call:\n\t %s\n", cmd.c_str()); exit(-1); }
+ }
+
  startTime = std::chrono::system_clock::now();
 
  for(; _currentGeneration < _maxGens; _currentGeneration++)

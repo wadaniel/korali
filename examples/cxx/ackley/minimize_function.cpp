@@ -7,7 +7,7 @@ int main(int argc, char* argv[])
 	 ackley(d.getParameters(), d.getResults());
  });
 
- //korali["Seed"] = 0xC0FFEE;
+ korali["Seed"] = 0xC0FFEE;
  korali["Verbosity"] = "Normal";
 
  for (int i = 0; i < 4; i++)
@@ -23,6 +23,8 @@ int main(int argc, char* argv[])
  korali["Solver"]["Method"] = "CMA-ES";
  korali["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-11;
  korali["Solver"]["Lambda"] = 128;
+ 
+ korali["Live Plotting"] = true;
  
  korali.run();
  return 0;

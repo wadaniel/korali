@@ -126,7 +126,6 @@ nlohmann::json Korali::Solver::CMAES::getConfiguration()
 
  js["Method"] = "CMA-ES";
 
- js["Live Plotting"]           = _pyplot;
  js["Lambda"]                  = _s;
  js["Current Generation"]      = _currentGeneration;
  js["Sigma Cumulation Factor"] = _sigmaCumulationFactor;
@@ -187,7 +186,6 @@ void Korali::Solver::CMAES::setConfiguration(nlohmann::json& js)
 {
  this->Korali::Solver::Base::setConfiguration(js);
 
- _pyplot                        = consume(js, { "Live Plotting" }, KORALI_BOOLEAN, "false");
  _s                             = consume(js, { "Lambda" }, KORALI_NUMBER);
  _currentGeneration             = consume(js, { "Current Generation" }, KORALI_NUMBER, std::to_string(0));
  _sigmaCumulationFactor         = consume(js, { "Sigma Cumulation Factor" }, KORALI_NUMBER, std::to_string(-1));
@@ -272,9 +270,9 @@ void Korali::Solver::CMAES::run()
 {
  if (_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Starting CMA-ES.\n");
 
- if (_pyplot)
+ if (_k->_pyplot)
  {
-    std::string cmd = "python `korali-config --prefix`/bin/diagnostics.py " + _k->_resultsDirName + " &";
+    std::string cmd = "python `korali-config --prefix`/bin/plot_cmaes.py " + _k->_resultsDirName + " &";
     //cmd = "start python `korali-config --prefix`/bin/diagnostics.py " + _k->_resultsDirName; // WINDOWS
     int ret_code = system(cmd.c_str());
     if ( ret_code == -1 ) {  printf( "[Korali] Error in system call:\n\t %s\n", cmd.c_str()); exit(-1); }

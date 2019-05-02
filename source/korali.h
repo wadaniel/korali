@@ -98,6 +98,7 @@ class Engine {
  size_t _seed;
  int _verbosity;
  size_t _outputFrequency;
+ bool _pyplot;
 
  std::string _resultsDirName;
  size_t _currentState;

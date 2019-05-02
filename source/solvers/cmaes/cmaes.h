@@ -31,8 +31,6 @@ class CMAES : public Korali::Solver::Base
 
  private:
 
- bool _pyplot; /* start process for live diagnostics */
-
  // Korali Runtime Variables
  double* _fitnessVector; /* objective function values [_s] */
  double* _samplePopulation; /* sample coordinates [_s x _k->N] */

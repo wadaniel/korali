@@ -7,11 +7,12 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 # Plot histogram of sampes in diagonal
 def plot_histogram(ax, theta):
     num_bins = 50
     for i in range(theta.shape[1]):
-        hist, bins, _ = ax[i, i].hist(theta[:, i], num_bins, normed=1,
+        hist, bins, _ = ax[i, i].hist(theta[:, i], num_bins, density=True,
                                       color='lightgreen', ec='black')
         if i == 0:
 
@@ -54,8 +55,7 @@ def plot_lower_triangle(ax, theta):
     for i in range(theta.shape[1]):
         for j in range(i):
             # returns bin values, bin edges and bin edges
-            H, xe, ye = np.histogram2d(theta[:, j], theta[:, i], 10,
-                                       normed=True)
+            H, xe, ye = np.histogram2d(theta[:, j], theta[:, i], 10, density=True)
             # plot and interpolate data
             ax[i, j].imshow(H.T, aspect="auto", interpolation='spline16',
                             origin='lower', extent=np.hstack((
@@ -68,11 +68,12 @@ def plot_lower_triangle(ax, theta):
             if j > 0:
                 ax[i, j].set_yticklabels([])
 
+
 # Plot TMCMC result file
 def plot_samples(path, idx=None):
     with open(path) as f:
         data    = json.load(f)
-        numdim  = data['Solver']['Dimension']
+        numdim  = data['Dimension']
         pop     = data['Solver']['Population Size']
         state   = data['Solver']['State']
         anneal  = state['AnnealingRatio']
@@ -84,8 +85,8 @@ def plot_samples(path, idx=None):
         
         if idx is None: fig.canvas.set_window_title(path)
         else:           fig.canvas.set_window_title('s{0}.json'.format(str(idx).zfill(5)))
-        plt.suptitle('Samples Generation {0}\n (Annealing Ratio {1})'.format(str(idx),\
-                                                            str(anneal)) )
+        plt.suptitle('Samples Generation {0}\n (Annealing Ratio {1:.4f})'.format(str(idx),\
+                                                            anneal) )
         plot_histogram(ax, samples)
         plot_upper_triangle(ax, samples, False)
         plot_lower_triangle(ax, samples)
@@ -94,7 +95,7 @@ def plot_samples(path, idx=None):
 # Plot TMCMC results (read from .json files)
 def run_diagnostics(src, live=False):
      
-    idx      = 0
+    idx      = 1
     finished = False
     
     while( not finished ):
@@ -115,6 +116,7 @@ def run_diagnostics(src, live=False):
         if (anneal >= 1.0): finished = True
 
     plt.show()
+
 
 if __name__ == '__main__':
 

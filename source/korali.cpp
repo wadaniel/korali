@@ -73,7 +73,8 @@ nlohmann::json Korali::Engine::getConfiguration()
 {
  auto js = nlohmann::json();
 
- js["Seed"] = _seed;
+ js["Seed"]      = _seed;
+ js["Dimension"] = N;
 
  if (_verbosity == KORALI_SILENT)   js["Verbosity"] = "Silent";
  if (_verbosity == KORALI_MINIMAL)  js["Verbosity"] = "Minimal";
@@ -81,11 +82,12 @@ nlohmann::json Korali::Engine::getConfiguration()
  if (_verbosity == KORALI_DETAILED) js["Verbosity"] = "Detailed";
 
  js["Output Frequency"] = _outputFrequency;
+ js["Live Plotting"]    = _pyplot;
 
  for (size_t i = 0; i < N; i++) js["Parameters"][i] = _parameters[i]->getConfiguration();
- js["Problem"] = _problem->getConfiguration();
- js["Solver"] = _solver->getConfiguration();
- js["Conduit"] = _conduit->getConfiguration();
+ js["Problem"]   = _problem->getConfiguration();
+ js["Solver"]    = _solver->getConfiguration();
+ js["Conduit"]   = _conduit->getConfiguration();
 
  return js;
 }
@@ -103,6 +105,7 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
   fclose(fid);
  }
  _seed = consume(js, { "Seed" }, KORALI_NUMBER, std::to_string(_seed));
+ N     = consume(js, { "Dimension" }, KORALI_NUMBER, std::to_string(_seed));
  gsl_rng_env_setup();
 
  auto vString = consume(js, { "Verbosity" }, KORALI_STRING, "Normal");
@@ -123,7 +126,8 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
  }
 
  _outputFrequency = consume(js, { "Output Frequency" }, KORALI_NUMBER, "1");
- _resultsDirName = consume(js, { "Output Directory" }, KORALI_STRING, _resultsDirName);
+ _resultsDirName  = consume(js, { "Output Directory" }, KORALI_STRING, _resultsDirName);
+ _pyplot          = consume(js, { "Live Plotting" }, KORALI_BOOLEAN, "false");
 
  // Configure Parameters
  std::vector<Korali::Parameter::Base*> tmp;

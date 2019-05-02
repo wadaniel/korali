@@ -9,6 +9,7 @@ import colorsys
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 # Get a list of evenly spaced colors in HLS huse space.
 # Credits: seaborn package
 def hls_colors(num, h = 0.01, l=0.6, s=0.65):
@@ -64,13 +65,13 @@ def run_diagnostics(src, live = False, obj='current'):
                     str(localtime.tm_hour).zfill(2),\
                     str(localtime.tm_min).zfill(2),\
                     str(localtime.tm_sec).zfill(2)), fontsize=14)
-
+       
         with open(path) as f:
             data  = json.load(f)
             state = data['Solver']['State']
 
             if idx == 0:
-                numdim = data['Solver']['Dimension']
+                numdim = data['Dimension']
                 colors = hls_colors(numdim)
                 for i in range(numdim):
                     fvalXvec.append([])
@@ -90,47 +91,51 @@ def run_diagnostics(src, live = False, obj='current'):
                 axis[i].append(state['AxisLengths'][i])
                 Csdev[i].append(sigma[idx-1]*np.sqrt(state['CovarianceMatrix'][i][i]))
 
+        if idx < 2: 
+            idx = idx + 1
+            continue
+
         ax221 = plt.subplot(221)
-        plt.grid(True)
-        plt.yscale('log')
-        plt.plot(numeval, sigma, color='#F8D030', label = 'Sigma')
-        plt.plot(numeval, fval,  color='#C03028', label = 'FVal')
-        plt.plot(numeval, cond,  color='#98D8D8', label = 'Cond')
+        ax221.grid(True)
+        ax221.set_yscale('log')
+        ax221.plot(numeval, sigma, color='#F8D030', label = 'Sigma')
+        ax221.plot(numeval, fval,  color='#C03028', label = 'FVal')
+        ax221.plot(numeval, cond,  color='#98D8D8', label = 'Cond')
 
         if idx == 1:
-            plt.legend(bbox_to_anchor=(0,1.00,1,0.2), loc="lower left", mode="expand", ncol = 3, handlelength=1)
+            ax221.legend(bbox_to_anchor=(0,1.00,1,0.2), loc="lower left", mode="expand", ncol = 3, handlelength=1)
 
         ax222 = plt.subplot(222)
-        plt.title('Object Variables')
-        plt.grid(True)
+        ax222.set_title('Object Variables')
+        ax222.grid(True)
         for i in range(numdim):
             ax222.plot(numeval, fvalXvec[i], color = colors[i], label='X'+str(i+1))
         
         if idx == 1:
-            plt.legend(bbox_to_anchor=(1.04,0.5), loc="center left", borderaxespad=0, handlelength=1)
+            ax222.legend(bbox_to_anchor=(1.04,0.5), loc="center left", borderaxespad=0, handlelength=1)
 
         ax223 = plt.subplot(223)
-        plt.title('Scaling (All Main Axes)')
-        plt.grid(True)
-        plt.yscale('log')
+        ax223.set_title('Scaling (All Main Axes)')
+        ax223.grid(True)
+        ax223.set_yscale('log')
         for i in range(numdim):
             ax223.plot(numeval, axis[i], color = colors[i])
         
         ax224 = plt.subplot(224)
-        plt.title('Standard Deviation in All Coordinates')
-        plt.grid(True)
-        plt.yscale('log')
+        ax224.set_title('Standard Deviation in All Coordinates')
+        ax224.grid(True)
+        ax224.set_yscale('log')
         for i in range(numdim):
             ax224.plot(numeval, Csdev[i], color = colors[i], label='X'+str(i+1))
 
         if idx == 1:
-            plt.legend(bbox_to_anchor=(1.04,0.5), loc="center left", borderaxespad=0, handlelength=1)
+            ax224.legend(bbox_to_anchor=(1.04,0.5), loc="center left", borderaxespad=0, handlelength=1)
        
         plt.pause(0.05) 
         if(live == False): time.sleep(0.5)
         idx = idx+1
 
-    plt.show()
+    fig.show()
 
 
 if __name__ == '__main__':

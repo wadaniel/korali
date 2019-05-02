@@ -2,7 +2,7 @@
 
 ## Prerequisities
 
-### 1. Download UPC++
+### 1. UPC++
 Download UPC++
 ```shell
 wget https://bitbucket.org/berkeleylab/upcxx/downloads/upcxx-2019.3.0.tar.gz
@@ -13,7 +13,12 @@ and install in a desired directory
 ```
 
 - [UPCXX](https://bitbucket.org/berkeleylab/upcxx/wiki/Home) v2019.3.0.
+
+### 2. MPI
 - MPI implementation preferably with full thread safety, e.g. [MPICH](http://www.mpich.org).
+
+
+### 3. GSL
 - [GSL-2.4](http://www.gnu.org/software/gsl/) or later must be installed on your system.
 
 ## Installation

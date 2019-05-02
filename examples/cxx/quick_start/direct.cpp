@@ -2,7 +2,8 @@
 #include <stdlib.h>
 
 
-void F01(std::vector<double>& x, std::vector<double>& result){
+void F(std::vector<double>& x, std::vector<double>& result){
+
   result.push_back( -pow( x[0]-2. , 2) );
 }
 
@@ -14,7 +15,7 @@ int main(int argc, char* argv[])
   }
 
   auto korali = Korali::Engine([](Korali::modelData& d) {
-    F01(d.getParameters(), d.getResults());
+    F(d.getParameters(), d.getResults());
   });
 
   korali["Problem"]["Objective"] = "Direct Evaluation";

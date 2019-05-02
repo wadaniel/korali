@@ -45,6 +45,7 @@ class TMCMC : public Korali::Solver::Base
  size_t* chainLength;
 
  // TMCMC Status variables
+ size_t  _countevals; /* Number of function evaluations */
  size_t  _nChains;
  size_t  _currentBurnIn;
  size_t  _currentGeneration;

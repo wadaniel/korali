@@ -106,7 +106,7 @@ void Multithread::evaluateSample(double* sampleArray, size_t sampleId)
 {
  _sampleArrayPointer = sampleArray;
  _sampleLock.lock();
-  _sampleQueue.push(sampleId);
+ _sampleQueue.push(sampleId);
  _sampleLock.unlock();
 }
 

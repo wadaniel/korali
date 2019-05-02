@@ -54,6 +54,7 @@ Korali::Solver::TMCMC::TMCMC(nlohmann::json& js) : Korali::Solver::Base::Base(js
  for (size_t c = 0; c < _s; c++) chainLength[c] = 1;
  for (size_t c = 0; c < _s; c++) chainPendingFitness[c] = false;
 
+ _countevals              = 0;
  _currentGeneration       = 0;
  _databaseEntries         = 0;
  _coefficientOfVariation  = 0;
@@ -197,7 +198,7 @@ void Korali::Solver::TMCMC::run()
    {
     chainPendingFitness[c] = true;
     generateCandidate(c);
-    _k->_conduit->evaluateSample(ccPoints, c);
+    _k->_conduit->evaluateSample(ccPoints, c); _countevals++;
    }
    _k->_conduit->checkProgress();
   }
@@ -576,6 +577,7 @@ void Korali::Solver::TMCMC::printFinal() const
     else
       printf("[Korali] Generation %ld - Finished (Annealing Ratio: %.5f)\n", _currentGeneration, _annealingRatio);
     printf("[Korali] logEvidence: %f.\n", _logEvidence);
+    printf("[Korali] Number of Function Evaluations: %zu\n", _countevals);
     printf("[Korali] Total Elapsed Time: %fs.\n", std::chrono::duration<double>(endTime-startTime).count());
   }
 

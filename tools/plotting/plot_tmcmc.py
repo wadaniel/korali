@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import os
+import re
 import sys
 import time
 import json
@@ -83,10 +84,15 @@ def plot_samples(path, idx=None):
         plt.style.use('seaborn-dark')
         fig, ax = plt.subplots(samples.shape[1], samples.shape[1])
         
-        if idx is None: fig.canvas.set_window_title(path)
-        else:           fig.canvas.set_window_title('s{0}.json'.format(str(idx).zfill(5)))
+        if idx is None: 
+            fig.canvas.set_window_title(path)
+            idx = int(re.findall(r'[0-9]+', path)[-1])
+        else:           
+            fig.canvas.set_window_title('s{0}.json'.format(str(idx).zfill(5)))
+        
         plt.suptitle('Samples Generation {0}\n (Annealing Ratio {1:.4f})'.format(str(idx),\
-                                                            anneal) )
+                            anneal) )
+
         plot_histogram(ax, samples)
         plot_upper_triangle(ax, samples, False)
         plot_lower_triangle(ax, samples)

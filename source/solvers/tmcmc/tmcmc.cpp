@@ -46,8 +46,8 @@ Korali::Solver::TMCMC::TMCMC(nlohmann::json& js) : Korali::Solver::Base::Base(js
  chainPendingFitness = (bool*)   calloc (_s, sizeof(bool));
  chainCurrentStep    = (size_t*) calloc (_s, sizeof(size_t));
  chainLength         = (size_t*) calloc (_s, sizeof(size_t));
- _databasePoints      = (double*) calloc (_k->N*_s, sizeof(double));
- _databaseFitness     = (double*) calloc (_s, sizeof(double));
+ _databasePoints     = (double*) calloc (_k->N*_s, sizeof(double));
+ _databaseFitness    = (double*) calloc (_s, sizeof(double));
 
  // Initializing Runtime Variables
  for (size_t c = 0; c < _s; c++) chainCurrentStep[c] = 0;

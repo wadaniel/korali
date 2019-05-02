@@ -31,7 +31,7 @@ def objstrings(obj='current'):
 
 
 # Plot CMA-ES results (read from .json files)
-def run_diagnostics(live, src, obj='current'):
+def run_diagnostics(src, live = False, obj='current'):
      
     idx    = 0 # generation
     numdim = 0 # problem dimension
@@ -66,11 +66,11 @@ def run_diagnostics(live, src, obj='current'):
                     str(localtime.tm_sec).zfill(2)), fontsize=14)
 
         with open(path) as f:
-            data = json.load(f)
+            data  = json.load(f)
             state = data['Solver']['State']
 
             if idx == 0:
-                numdim = len(state['AxisLengths'])
+                numdim = data['Solver']['Dimension']
                 colors = hls_colors(numdim)
                 for i in range(numdim):
                     fvalXvec.append([])
@@ -90,7 +90,6 @@ def run_diagnostics(live, src, obj='current'):
                 axis[i].append(state['AxisLengths'][i])
                 Csdev[i].append(sigma[idx-1]*np.sqrt(state['CovarianceMatrix'][i][i]))
 
-
         ax221 = plt.subplot(221)
         plt.grid(True)
         plt.yscale('log')
@@ -100,7 +99,6 @@ def run_diagnostics(live, src, obj='current'):
 
         if idx == 1:
             plt.legend(bbox_to_anchor=(0,1.00,1,0.2), loc="lower left", mode="expand", ncol = 3, handlelength=1)
-
 
         ax222 = plt.subplot(222)
         plt.title('Object Variables')
@@ -127,7 +125,6 @@ def run_diagnostics(live, src, obj='current'):
 
         if idx == 1:
             plt.legend(bbox_to_anchor=(1.04,0.5), loc="center left", borderaxespad=0, handlelength=1)
-
        
         plt.pause(0.05) 
         if(live == False): time.sleep(0.5)
@@ -140,7 +137,7 @@ if __name__ == '__main__':
 
     if (len(sys.argv) == 2):
         print  ("Plotting results from dir " + sys.argv[1])
-        run_diagnostics(live=True, src=sys.argv[1])
+        run_diagnostics(src=sys.argv[1], live = True)
 
     else: 
         print("Invalid arguments, exit ...")

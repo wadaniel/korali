@@ -23,8 +23,7 @@ int main(int argc, char* argv[])
 
  korali["Solver"]["Method"] = "TMCMC";
  korali["Solver"]["Covariance Scaling"] = 0.02;
- korali["Solver"]["Population Size"] = 5000;
- korali["Solver"]["Burn In"] = 5;
+ korali["Solver"]["Population Size"] = 500;
 
  korali.run();
 

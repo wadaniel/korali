@@ -24,6 +24,8 @@ int main(int argc, char* argv[])
  korali["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-11;
  korali["Solver"]["Lambda"] = 128;
  
+ korali["Solver"]["Live Plotting"] = true;
+ 
  korali.run();
  return 0;
 }

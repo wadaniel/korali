@@ -220,7 +220,7 @@ void Korali::Solver::TMCMC::processSample(size_t c, double fitness)
 
  if ( L >= 1.0 || L > gsl_ran_flat(chainGSLRange[c], 0.0, 1.0) ) {
    for (size_t i = 0; i < _k->N; i++) clPoints[c*_k->N + i] = ccPoints[c*_k->N + i];
-   clFitness[c]  = ccFitness[c];
+   clFitness[c] = ccFitness[c];
    _uniqueEntries++;
  }
 

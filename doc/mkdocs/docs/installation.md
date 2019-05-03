@@ -56,8 +56,4 @@ make install
 ```
 In the beginning the GSL-2.5 GNU Scientific Library will be downloaded and installed in your system. This will take some time.
 
-Add the executable and library to the path,
-```shell
-export PATH=$PATH:/home/garampat/skorali/korali/bin
-export PYTHONPATH=$PYTHONPATH:/home/garampat/skorali/korali/lib
-```
+**Don't forget to add the binary and library folders to the path!**

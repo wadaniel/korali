@@ -47,17 +47,17 @@ class TMCMC : public Korali::Solver::Base
  // TMCMC Status variables
  size_t  _countevals; /* Number of function evaluations */
  size_t  _nChains; /* Unique selections after resampling (forming new chain) */
- size_t  _currentGeneration;
- double  _coefficientOfVariation;
+ size_t  _currentGeneration; /* Generation */
+ double  _coefficientOfVariation; /* Actual coefficient of variation of weights */
  double  _annealingExponent; /* Annealing exponent */
- size_t  _uniqueEntries; /* Accepted samples after proposal (TODO: not needed? (DW)) */
- double  _logEvidence;
- double  _acceptanceRate;
+ size_t  _uniqueEntries; /* Accepted samples after proposal */
+ double  _logEvidence; /* Log of evidence of model */
+ double  _acceptanceRate; /* Acceptance rate calculated from _nChains */
  double* _covarianceMatrix; /* Sample covariance of leader fitness values */
  double* _meanTheta; /* Mean of leader fitness values */
- size_t  _databaseEntries;
- double* _databasePoints;
- double* _databaseFitness;
+ size_t  _databaseEntries; /* Num samples in DB (must equal population size) */
+ double* _databasePoints; /* Parameter values of samples in DB */
+ double* _databaseFitness; /* Fitness of samples in DB */
  double **local_cov; /* Local covariances of leaders */
 
   // Korali Methods
@@ -69,8 +69,8 @@ class TMCMC : public Korali::Solver::Base
  void updateDatabase(double* point, double fitness);
  void processSample(size_t c, double fitness) override;
  void generateCandidate(size_t c);
- void computeChainCovariances(double** chain_cov, size_t newchains);
- void minSearch(double const *fj, size_t fn, double pj, double objTol, double *xmin, double *fmin);
+ void computeChainCovariances(double** chain_cov, size_t newchains) const;
+ void minSearch(double const *fj, size_t fn, double pj, double objTol, double *xmin, double *fmin) const;
  static double tmcmc_objlogp(double x, const double *fj, size_t fn, double pj, double zero);
  static double objLog(const gsl_vector *v, void *param);
 

@@ -61,12 +61,12 @@ Korali::Solver::TMCMC::TMCMC(nlohmann::json& js) : Korali::Solver::Base::Base(js
  _databaseEntries         = 0;
  _coefficientOfVariation  = 0;
  _annealingExponent       = 0;
- _uniqueEntries           = _s;
  _logEvidence             = 0;
- _acceptanceRate          = 1.0;
- _nChains                 = _s;
  finishedChains           = 0;
  _databaseEntries         = 0;
+ _acceptanceRate          = 1.0;
+ _uniqueEntries           = _s;
+ _nChains                 = _s;
  for (size_t c = 0; c < _nChains; c++) chainCurrentStep[c] = 0;
  for (size_t c = 0; c < _nChains; c++) chainPendingFitness[c] = false;
 
@@ -176,13 +176,18 @@ void Korali::Solver::TMCMC::run()
 
  startTime = std::chrono::system_clock::now();
 
+ // Generation 0
+ initializeSamples();
+ _k->saveState();
+ _currentGeneration++;
+
  for(; _currentGeneration < _maxGens; _currentGeneration++)
  {
+  printGeneration();
   t0 = std::chrono::system_clock::now();
 
   // Generating Samples
-  if (_currentGeneration == 0) initializeSamples();
-  else resampleGeneration();
+  resampleGeneration();
 
   while (finishedChains < _nChains)
   {
@@ -199,11 +204,8 @@ void Korali::Solver::TMCMC::run()
 
   _k->saveState();
   
-  if (_annealingExponent >= 1.0) break; // TODO: correct here?? (DW)
-  printGeneration();
+  if (_annealingExponent >= 1.0) break;
  }
-
- //_k->saveState(); // Saving final state.
 
  endTime = std::chrono::system_clock::now();
 
@@ -341,7 +343,7 @@ void Korali::Solver::TMCMC::resampleGeneration()
  free(sel);
 }
 
-void Korali::Solver::TMCMC::computeChainCovariances(double** chain_cov, size_t newchains)
+void Korali::Solver::TMCMC::computeChainCovariances(double** chain_cov, size_t newchains) const
 {
  printf("Precomputing chain covariances for the current generation...\n");
 
@@ -462,7 +464,7 @@ double Korali::Solver::TMCMC::objLog(const gsl_vector *v, void *param)
  return Korali::Solver::TMCMC::tmcmc_objlogp(x, fp->fj, fp->fn, fp->pj, fp->cov);
 }
 
-void Korali::Solver::TMCMC::minSearch(double const *fj, size_t fn, double pj, double objCov, double *xmin, double *fmin)
+void Korali::Solver::TMCMC::minSearch(double const *fj, size_t fn, double pj, double objCov, double *xmin, double *fmin) const
 {
  // Minimizer Options
  size_t MaxIter     = 100;    /* Max number of search iterations */

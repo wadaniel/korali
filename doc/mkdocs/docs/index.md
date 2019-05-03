@@ -8,15 +8,14 @@ Korali is based on [UPCXX](https://bitbucket.org/berkeleylab/upcxx/wiki/Home)
 
 # What Korali does for you
 
-1. **Gradient-Free Black-Box Optimization**: given a cost function $F(\vartheta)$ find
+1. [**Gradient-Free Black-Box Optimization**](quick_start/direct.md): given a cost function $F(\vartheta)$ find
 	$$
 	\vartheta^\star = \mathop{\arg\min}\limits_{\vartheta}  \,\,\, F(\vartheta) \,,
 	$$
     where $F(\theta)$ can be any nonlinear nonconvex function.
-    
-    (todo: insert link to example)
 
-2. **Uncertainty Quantification**: given a set of data $d$, respectively the output of a model $f(x;\vartheta)$, a likelihood function $p(d|\vartheta)$,  and a prior probability density $p(\vartheta)$ Korali samples the posterior distribution
+
+2. [**Uncertainty Quantification**](quick_start/posterior.md): given a set of data $d$, respectively the output of a model $f(x;\vartheta)$, a likelihood function $p(d|\vartheta)$,  and a prior probability density $p(\vartheta)$ Korali samples the posterior distribution
 	$$
 	p(\vartheta | d) = \frac{p(d | \vartheta) \, p(\vartheta)}{p(d)}\, .
 	$$
@@ -26,13 +25,11 @@ Korali is based on [UPCXX](https://bitbucket.org/berkeleylab/upcxx/wiki/Home)
     $$
     Note that $x$ are the input parameters of the computational model $f$.
 
-    (todo: insert link to example)
-
-After [installing](installation.md) the software, please have a look at the [examples](./examples/sampling.md) and learn how to run your own code.
+After [installing](installation.md) the software you can have a look at the [quick start](quick_start) guide or [examples](./examples/sampling.md) and learn how to run your own code.
 
 <br><br>
 
-# Korali Principles 
+# Korali Principles
 
 (todo)
 

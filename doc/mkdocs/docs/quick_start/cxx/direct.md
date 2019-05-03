@@ -1,3 +1,4 @@
+## Problem setup
 In this section we will present how to optimize or sample from a given function $f(\vartheta)=\vartheta^2$ for $\vartheta\in[-10,10]$.
 
 The code for this tutorial can be found [here](https://github.com/cselab/skorali/blob/master/examples/cxx/quick_start/direct.cpp).

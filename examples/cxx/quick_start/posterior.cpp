@@ -1,7 +1,7 @@
 #include "korali.h"
 #include <stdlib.h>
 
-void F01( std::vector<double>& par, std::vector<double>& result, std::vector<double> x ){
+void F( std::vector<double>& par, std::vector<double>& result, std::vector<double> x ){
   for( size_t i=0; i<x.size(); i++){
     double res = par[0]*x[i] + par[1];
     result.push_back( res );
@@ -16,22 +16,24 @@ int main(int argc, char* argv[])
     exit(1);
   }
 
-  std::vector<double> x, d;
-  x.push_back(1.0);   d.push_back(3.2069);
-  x.push_back(2.0);   d.push_back(4.1454);
-  x.push_back(3.0);   d.push_back(4.9393);
-  x.push_back(4.0);   d.push_back(6.0588);
-  x.push_back(5.0);   d.push_back(6.8425);
+  std::vector<double> x, y;
+  x.push_back(1.0);   y.push_back(3.2069);
+  x.push_back(2.0);   y.push_back(4.1454);
+  x.push_back(3.0);   y.push_back(4.9393);
+  x.push_back(4.0);   y.push_back(6.0588);
+  x.push_back(5.0);   y.push_back(6.8425);
 
-  auto korali = Korali::Engine([x](Korali::modelData& d) {
-    F01(d.getParameters(), d.getResults(), x);
-  });
+  auto Fx = [x]( Korali::modelData& d ) {
+                F(d.getParameters(), d.getResults(), x);
+  };
+
+  auto korali = Korali::Engine( Fx );
 
 
   korali["Problem"]["Objective"] = "Posterior";
 
-  for (size_t i = 0; i < d.size(); i++)
-    korali["Problem"]["Reference Data"][i] = d[i];
+  for (size_t i = 0; i < y.size(); i++)
+    korali["Problem"]["Reference Data"][i] = y[i];
 
 
   korali["Parameters"][0]["Name"] = "a";

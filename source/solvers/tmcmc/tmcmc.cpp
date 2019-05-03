@@ -16,6 +16,7 @@
 Korali::Solver::TMCMC::TMCMC(nlohmann::json& js) : Korali::Solver::Base::Base(js)
 {
  setConfiguration(js);
+ _plottingScript = "plot_tmcmc.py";
 
  // Setting Chain-Specific Seeds
  range = gsl_rng_alloc (gsl_rng_default);
@@ -589,10 +590,4 @@ void Korali::Solver::TMCMC::printFinal() const
   }
 }
 
-void Korali::Solver::TMCMC::startPlot() const
-{
-  std::string cmd = "python `korali-config --prefix`/bin/plot_tmcmc.py " + _k->_resultsDirName + " &";
-  //cmd = "start python `korali-config --prefix`/bin/diagnostics.py " + _k->_resultsDirName; // WINDOWS
-  int ret_code = system(cmd.c_str());
-  if ( ret_code == -1 ) {  printf( "[Korali] Error in system call:\n\t %s\n", cmd.c_str()); exit(-1); }
-}
+std::string Korali::Solver::TMCMC::getPlottingScript() const { return "plot_tmcmc.py"; }

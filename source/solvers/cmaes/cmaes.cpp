@@ -10,6 +10,7 @@
 Korali::Solver::CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
 {
  setConfiguration(js);
+ _plottingScript = "plot_cmaes.py";
 
  // Allocating Memory
  _samplePopulation =  (double*) calloc (sizeof(double), _k->N*_s);
@@ -740,10 +741,4 @@ void Korali::Solver::CMAES::printFinal() const
  }
 }
 
-void Korali::Solver::CMAES::startPlot() const
-{
-  std::string cmd = "python `korali-config --prefix`/bin/plot_cmaes.py " + _k->_resultsDirName + " &";
-  //cmd = "start python `korali-config --prefix`/bin/diagnostics.py " + _k->_resultsDirName; // WINDOWS
-  int ret_code = system(cmd.c_str());
-  if ( ret_code == -1 ) {  printf( "[Korali] Error in system call:\n\t %s\n", cmd.c_str()); exit(-1); }
-}
+std::string Korali::Solver::CMAES::getPlottingScript() const { return "plot_cmaes.py"; }

@@ -589,5 +589,3 @@ void Korali::Solver::TMCMC::printFinal() const
     printf("\n");
   }
 }
-
-std::string Korali::Solver::TMCMC::getPlottingScript() const { return "plot_tmcmc.py"; }

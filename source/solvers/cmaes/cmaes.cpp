@@ -553,7 +553,7 @@ bool Korali::Solver::CMAES::checkTermination()
     if (iKoo == _k->N)
     {
       terminate = true;
-      sprintf(_terminationReason, "Standard deviation 0.1*%7.2e in principal axis %ld without effect.", fac/0.1, iAchse);
+      sprintf(_terminationReason, "Standard deviation %7.2e in principal axis %ld without effect.", fac, iAchse);
       break;
     } /* if (iKoo == _k->N) */
   } /* for iAchse    */
@@ -740,5 +740,3 @@ void Korali::Solver::CMAES::printFinal() const
     printf("[Korali] Total Elapsed Time: %fs\n", std::chrono::duration<double>(endTime-startTime).count());
  }
 }
-
-std::string Korali::Solver::CMAES::getPlottingScript() const { return "plot_cmaes.py"; }

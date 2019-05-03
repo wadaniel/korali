@@ -118,7 +118,7 @@ class CMAES : public Korali::Solver::Base
  // Print Methods 
  void printGeneration() const override;
  void printFinal() const override;
- std::string getPlottingScript() const override;
+ std::string getPlottingScript() const override { return "plot_cmaes.py"; }
 };
 
 } // namespace Korali

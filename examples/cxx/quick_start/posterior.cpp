@@ -52,7 +52,7 @@ int main(int argc, char* argv[])
   korali["Parameters"][2]["Type"] = "Statistical";
   korali["Parameters"][2]["Distribution"] = "Uniform";
   korali["Parameters"][2]["Minimum"] = 0.0;
-  korali["Parameters"][2]["Maximum"] = 20.0;
+  korali["Parameters"][2]["Maximum"] = 10.0;
 
 
   switch( atoi(argv[1]) ){
@@ -81,7 +81,7 @@ int main(int argc, char* argv[])
 
 
   korali["Seed"] = 0xC0FFEE;
-  korali["Verbosity"] = "Normal";
+  korali["Verbosity"] = "Detailed";
 
 
   korali.run();

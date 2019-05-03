@@ -29,7 +29,7 @@ class TMCMC : public Korali::Solver::Base
  double _bbeta; /* Covariance scaling parameter (bbeta^2) */
  unsigned int _s; /* Population Size */
  bool _useLocalCov; /* Using local covariance instead of sample cov */
- size_t _baseBurnIn; /* burn in generations */
+ size_t _burnin; /* burn in generations */
  size_t _maxGens; /* maximal number of generations */
 
  // TMCMC Runtime Variables
@@ -46,12 +46,10 @@ class TMCMC : public Korali::Solver::Base
 
  // TMCMC Status variables
  size_t  _countevals; /* Number of function evaluations */
- size_t  _nChains;
- size_t  _currentBurnIn;
+ size_t  _nChains; /* Unique selections after resampling (forming new chain) */
  size_t  _currentGeneration;
  double  _coefficientOfVariation;
  double  _annealingExponent; /* Annealing exponent */
- size_t  _uniqueSelections; /* Unique samples after reslection */
  size_t  _uniqueEntries; /* Accepted samples after proposal (TODO: not needed? (DW)) */
  double  _logEvidence;
  double  _acceptanceRate;

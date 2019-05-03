@@ -77,7 +77,7 @@ def plot_samples(path, idx=None):
         numdim  = data['Dimension']
         pop     = data['Solver']['Population Size']
         state   = data['Solver']['State']
-        anneal  = state['AnnealingRatio']
+        anneal  = state['AnnealingExponent']
         fitness = state['DatabaseFitness']
         samples = np.reshape( state['DatabasePoints'],(pop,numdim) )
         

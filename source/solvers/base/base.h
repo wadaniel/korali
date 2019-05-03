@@ -32,6 +32,7 @@ class Base {
  // Print Methods
  virtual void printGeneration() const = 0;
  virtual void printFinal() const = 0;
+ virtual void startPlot() const = 0;
 };
 
 } // namespace Korali

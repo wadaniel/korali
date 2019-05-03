@@ -102,7 +102,7 @@ def run_diagnostics(src, live = False, obj='current'):
         ax221.plot(numeval, fval,  color='#C03028', label = 'FVal')
         ax221.plot(numeval, cond,  color='#98D8D8', label = 'Cond')
 
-        if idx == 1:
+        if idx == 2:
             ax221.legend(bbox_to_anchor=(0,1.00,1,0.2), loc="lower left", mode="expand", ncol = 3, handlelength=1)
 
         ax222 = plt.subplot(222)

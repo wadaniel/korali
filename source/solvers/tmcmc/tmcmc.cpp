@@ -164,16 +164,6 @@ void Korali::Solver::TMCMC::run()
 {
  if (_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Starting TMCMC.\n");
  
-#ifdef _KORALI_USE_PYTHON
- if (_k->_pyplot)
- {
-    std::string cmd = "python `korali-config --prefix`/bin/plot_tmcmc.py " + _k->_resultsDirName + " &";
-    //cmd = "start python `korali-config --prefix`/bin/diagnostics.py " + _k->_resultsDirName; // WINDOWS
-    int ret_code = system(cmd.c_str());
-    if ( ret_code == -1 ) {  printf( "[Korali] Error in system call:\n\t %s\n", cmd.c_str()); exit(-1); }
- }
-#endif
-
  startTime = std::chrono::system_clock::now();
 
  // Generation 0
@@ -597,4 +587,12 @@ void Korali::Solver::TMCMC::printFinal() const
     }
     printf("\n");
   }
+}
+
+void Korali::Solver::TMCMC::startPlot() const
+{
+  std::string cmd = "python `korali-config --prefix`/bin/plot_tmcmc.py " + _k->_resultsDirName + " &";
+  //cmd = "start python `korali-config --prefix`/bin/diagnostics.py " + _k->_resultsDirName; // WINDOWS
+  int ret_code = system(cmd.c_str());
+  if ( ret_code == -1 ) {  printf( "[Korali] Error in system call:\n\t %s\n", cmd.c_str()); exit(-1); }
 }

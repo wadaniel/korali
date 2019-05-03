@@ -233,6 +233,9 @@ void Korali::Engine::run()
  // Creating Results directory
  mkdir(_resultsDirName.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
+ #ifdef _KORALI_USE_PYTHON
+ if (_pyplot) _solver->startPlot();
+ #endif
  // Running Engine
  _conduit->run();
 

@@ -30,7 +30,6 @@ endif
 
 ifeq ($(USE_PYTHON), 1)
  CXXFLAGS_SHARED += -D_KORALI_USE_PYTHON `python-config --cflags` 
- CXXFLAGS_STATIC += -D_KORALI_USE_PYTHON
  LDFLAGS_SHARED  += `python-config --ldflags`
 endif
 

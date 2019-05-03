@@ -270,6 +270,7 @@ void Korali::Solver::CMAES::run()
 {
  if (_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Starting CMA-ES.\n");
 
+#ifdef _KORALI_USE_PYTHON
  if (_k->_pyplot)
  {
     std::string cmd = "python `korali-config --prefix`/bin/plot_cmaes.py " + _k->_resultsDirName + " &";
@@ -277,6 +278,7 @@ void Korali::Solver::CMAES::run()
     int ret_code = system(cmd.c_str());
     if ( ret_code == -1 ) {  printf( "[Korali] Error in system call:\n\t %s\n", cmd.c_str()); exit(-1); }
  }
+#endif
 
   startTime = std::chrono::system_clock::now();
   _k->saveState();

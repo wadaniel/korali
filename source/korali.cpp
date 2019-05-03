@@ -85,9 +85,9 @@ nlohmann::json Korali::Engine::getConfiguration()
  js["Live Plotting"]    = _pyplot;
 
  for (size_t i = 0; i < N; i++) js["Parameters"][i] = _parameters[i]->getConfiguration();
- js["Problem"]   = _problem->getConfiguration();
- js["Solver"]    = _solver->getConfiguration();
- js["Conduit"]   = _conduit->getConfiguration();
+ js["Problem"] = _problem->getConfiguration();
+ js["Solver"]  = _solver->getConfiguration();
+ js["Conduit"] = _conduit->getConfiguration();
 
  return js;
 }

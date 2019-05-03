@@ -37,7 +37,7 @@ nlohmann::json Multithread::getConfiguration()
 {
  auto js = this->Base::getConfiguration();
 
- js["Type"] = "Multithread";
+ js["Type"]    = "Multithread";
  js["Workers"] = _workerCount;
 
  return js;

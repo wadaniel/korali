@@ -24,23 +24,23 @@ class TMCMC : public Korali::Solver::Base
  ~TMCMC();
 
  // TMCMC Configuration
- double _tolCOV;              /* Target coefficient of variation of weights */
- double _minStep;             /* Min update of rho */
- double _bbeta;               /* Covariance scaling parameter */
- unsigned int _s; // Population Size
- bool _useLocalCov;
- size_t  _baseBurnIn;
- size_t _maxGens;
+ double _tolCOV; /* Target coefficient of variation of weights */
+ double _minStep; /* Min update of rho */
+ double _bbeta; /* Covariance scaling parameter (bbeta^2) */
+ unsigned int _s; /* Population Size */
+ bool _useLocalCov; /* Using local covariance instead of sample cov */
+ size_t _baseBurnIn; /* burn in generations */
+ size_t _maxGens; /* maximal number of generations */
 
  // TMCMC Runtime Variables
  gsl_rng  *range;
  gsl_rng** chainGSLRange;
- bool*   chainPendingFitness; // Indicates that the fitness result for the chain is pending
- double* ccPoints;   // Chain Candidate Parameter Values
- double* ccFitness;  // Chain Candidate Fitness
- double* clPoints;   // Chain Leader Parameter Values
- double* clFitness;  // Chain Leader Fitness
- size_t  finishedChains;
+ bool*   chainPendingFitness; /* Indicates that the fitness result for the chain is pending */
+ double* ccPoints; /* Chain candidate parameter values */
+ double* ccFitness; /* Chain candidate fitness value */
+ double* clPoints; /* Chain leader parameter values */
+ double* clFitness; /* Chain leader fitness */
+ size_t  finishedChains; 
  size_t* chainCurrentStep;
  size_t* chainLength;
 
@@ -50,22 +50,23 @@ class TMCMC : public Korali::Solver::Base
  size_t  _currentBurnIn;
  size_t  _currentGeneration;
  double  _coefficientOfVariation;
- double  _annealingRatio;
- size_t  _uniqueSelections; /* unique samples after reslection */
- size_t  _uniqueEntries;    /* accepted samples after proposal (TODO: not needed? (DW)) */
+ double  _annealingExponent; /* Annealing exponent */
+ size_t  _uniqueSelections; /* Unique samples after reslection */
+ size_t  _uniqueEntries; /* Accepted samples after proposal (TODO: not needed? (DW)) */
  double  _logEvidence;
  double  _acceptanceRate;
- double* _covarianceMatrix;
- double* _meanTheta;
+ double* _covarianceMatrix; /* Sample covariance of leader fitness values */
+ double* _meanTheta; /* Mean of leader fitness values */
  size_t  _databaseEntries;
  double* _databasePoints;
  double* _databaseFitness;
- double **local_cov;
+ double **local_cov; /* Local covariances of leaders */
 
   // Korali Methods
  void run() override;
 
   // Internal TMCMC Methods
+ void initializeSamples();
  void resampleGeneration();
  void updateDatabase(double* point, double fitness);
  void processSample(size_t c, double fitness) override;

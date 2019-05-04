@@ -52,7 +52,7 @@ class CMAES : public Korali::Solver::Base
  double _covarianceMatrixLearningRate;
 
  bool   _enablediag; /* enable diagonal covariance matrix */
- size_t _diagonalCovarianceMatrixEvalFrequency; 
+ size_t _diagonalCovarianceMatrixEvalFrequency;
  size_t _covarianceEigenEvalFreq;
 
  // Stop conditions
@@ -61,11 +61,11 @@ class CMAES : public Korali::Solver::Base
  double _stopMinDeltaX; // Defines minimum delta of input parameters among generations before it stops.
  double _stopMinFitness; // Defines the minimum fitness allowed, otherwise it stops
  double _stopTolUpXFactor; // Defines the minimum fitness allowed, otherwise it stops
- double _stopCovKond; // Defines the maximal condition number of the covariance matrix
+ double _stopCovCond; // Defines the maximal condition number of the covariance matrix
  size_t _maxGenenerations; // Max number of generations.
- std::string _ignorecriteria; /* Termination Criteria(s) to ignore: 
-    Fitness Value, Fitness Diff Threshold, Max Standard Deviation, 
-    Max Kondition Covariance, No Effect Axis, No Effect Standard Deviation, 
+ std::string _ignorecriteria; /* Termination Criteria(s) to ignore:
+    Fitness Value, Fitness Diff Threshold, Max Standard Deviation,
+    Max Kondition Covariance, No Effect Axis, No Effect Standard Deviation,
     Max Model Evaluations, Max Generations */
 
  // Private CMAES-Specific Variables
@@ -73,10 +73,10 @@ class CMAES : public Korali::Solver::Base
  Parameter::Gaussian* _gaussianGenerator;
 
  double bestEver; /* best ever fitness */
- double prevBest; /* best ever fitness from previous generation */ 
+ double prevBest; /* best ever fitness from previous generation */
  double *rgxmean; /* mean "parent" */
  double *rgxbestever; /* bestever vector */
- double *curBestVector; /* current best vectir */ 
+ double *curBestVector; /* current best vectir */
  size_t *index; /* sorting index of current sample pop (index[0] idx of current best). */
  double currentFunctionValue; /* best fitness current generation */
  double prevFunctionValue; /* best fitness previous generation */
@@ -115,10 +115,12 @@ class CMAES : public Korali::Solver::Base
  bool doDiagUpdate() const;
  bool isStoppingCriteriaActive(const char *criteria) const;
 
- // Print Methods 
+ // Print Methods
  void printGeneration() const override;
  void printFinal() const override;
  std::string getPlottingScript() const override { return "plot_cmaes.py"; }
+
+ void startPlot() const;
 };
 
 } // namespace Korali

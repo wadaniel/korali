@@ -3,14 +3,15 @@
 #include <unistd.h>
 #include <chrono>
 
+using namespace Korali::Solver;
+
 /************************************************************************/
 /*                  Constructor / Destructor Methods                    */
 /************************************************************************/
 
-Korali::Solver::CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
+CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
 {
  setConfiguration(js);
- _plottingScript = "plot_cmaes.py";
 
  // Allocating Memory
  _samplePopulation =  (double*) calloc (sizeof(double), _k->N*_s);
@@ -112,7 +113,7 @@ Korali::Solver::CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js
  }
 }
 
-Korali::Solver::CMAES::~CMAES()
+CMAES::~CMAES()
 {
 
 }
@@ -121,7 +122,7 @@ Korali::Solver::CMAES::~CMAES()
 /*                    Configuration Methods                             */
 /************************************************************************/
 
-nlohmann::json Korali::Solver::CMAES::getConfiguration()
+nlohmann::json CMAES::getConfiguration()
 {
  auto js = this->Korali::Solver::Base::getConfiguration();
 
@@ -150,7 +151,7 @@ nlohmann::json Korali::Solver::CMAES::getConfiguration()
  js["Termination Criteria"]["Min DeltaX"]               = _stopMinDeltaX;
  js["Termination Criteria"]["Min Fitness"]              = _stopMinFitness;
  js["Termination Criteria"]["Max Standard Deviation"]   = _stopTolUpXFactor;
- js["Termination Criteria"]["Max Kondition Covariance"] = _stopCovKond;
+ js["Termination Criteria"]["Max Condition Covariance"] = _stopCovCond;
  js["Termination Criteria"]["Ignore"]                   = _ignorecriteria;
 
  // State Variables
@@ -183,7 +184,7 @@ nlohmann::json Korali::Solver::CMAES::getConfiguration()
  return js;
 }
 
-void Korali::Solver::CMAES::setConfiguration(nlohmann::json& js)
+void CMAES::setConfiguration(nlohmann::json& js)
 {
  this->Korali::Solver::Base::setConfiguration(js);
 
@@ -195,7 +196,7 @@ void Korali::Solver::CMAES::setConfiguration(nlohmann::json& js)
  _mu                            = consume(js, { "Mu", "Value" }, KORALI_NUMBER, std::to_string(ceil(_s / 2)));
  _muType                        = consume(js, { "Mu", "Type" }, KORALI_STRING, "Logarithmic");
  _muCovariance                  = consume(js, { "Mu", "Covariance" }, KORALI_NUMBER, std::to_string(-1));
- 
+
  // Initializing Mu Weights
  _muWeights = (double *) calloc (sizeof(double), _mu);
  if (_muType == "LinearDecreasing") for (size_t i = 0; i < _mu; i++)  _muWeights[i] = _mu - i;
@@ -219,7 +220,7 @@ void Korali::Solver::CMAES::setConfiguration(nlohmann::json& js)
  { fprintf( stderr, "[Korali] Error: Invalid setting of Mu (%lu) and/or Lambda (%lu)\n", _mu, _s); exit(-1); }
  // Setting MU Covariance
  if (_muCovariance < 1) _muCovariance = _muEffective;
- 
+
  _covarianceEigenEvalFreq       = consume(js, { "Covariance Matrix", "Eigenvalue Evaluation Frequency" }, KORALI_NUMBER, std::to_string(-1));
  _cumulativeCovariance          = consume(js, { "Covariance Matrix", "Cumulative Covariance" }, KORALI_NUMBER, std::to_string(-1));
  _covarianceMatrixLearningRate  = consume(js, { "Covariance Matrix", "Learning Rate" }, KORALI_NUMBER, std::to_string(-1));
@@ -230,11 +231,11 @@ void Korali::Solver::CMAES::setConfiguration(nlohmann::json& js)
  _stopFitnessDiffThreshold      = consume(js, { "Termination Criteria", "Fitness Diff Threshold" }, KORALI_NUMBER, std::to_string(1e-9));
  _stopMinDeltaX                 = consume(js, { "Termination Criteria", "Min DeltaX" }, KORALI_NUMBER, std::to_string(0.0));
  _stopTolUpXFactor              = consume(js, { "Termination Criteria", "Max Standard Deviation" }, KORALI_NUMBER, std::to_string(1e18));
- _stopCovKond                   = consume(js, { "Termination Criteria", "Max Kondition Covariance" }, KORALI_NUMBER, std::to_string(std::numeric_limits<double>::max()));
- _ignorecriteria                = consume(js, { "Termination Criteria", "Ignore" }, KORALI_STRING, "Max Kondition Covariance");
+ _stopCovCond                   = consume(js, { "Termination Criteria", "Max Condition Covariance" }, KORALI_NUMBER, std::to_string(std::numeric_limits<double>::max()));
+ _ignorecriteria                = consume(js, { "Termination Criteria", "Ignore" }, KORALI_STRING, "Max Condition Covariance");
 }
 
-void Korali::Solver::CMAES::setState(nlohmann::json& js)
+void CMAES::setState(nlohmann::json& js)
 {
  this->Korali::Solver::Base::setState(js);
  _currentGeneration    = js["State"]["Current Generation"];
@@ -267,7 +268,7 @@ void Korali::Solver::CMAES::setState(nlohmann::json& js)
 /*                    Functional Methods                                */
 /************************************************************************/
 
-void Korali::Solver::CMAES::run()
+void CMAES::run()
 {
  if (_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Starting CMA-ES.\n");
 
@@ -302,20 +303,20 @@ void Korali::Solver::CMAES::run()
 
 }
 
-void Korali::Solver::CMAES::processSample(size_t sampleId, double fitness)
+void CMAES::processSample(size_t sampleId, double fitness)
 {
  _fitnessVector[sampleId] = -fitness;
  _finishedSamples++;
 }
 
-bool Korali::Solver::CMAES::isFeasible(const double *pop) const
+bool CMAES::isFeasible(const double *pop) const
 {
  for (size_t i = 0; i < _k->N; i++)
   if (pop[i] < _k->_parameters[i]->_lowerBound || pop[i] > _k->_parameters[i]->_upperBound) return false;
  return true;
 }
 
-void Korali::Solver::CMAES::prepareGeneration()
+void CMAES::prepareGeneration()
 {
  int flgdiag = doDiagUpdate();
 
@@ -363,7 +364,7 @@ void Korali::Solver::CMAES::prepareGeneration()
 }
 
 
-void Korali::Solver::CMAES::reSampleSingle(size_t idx)
+void CMAES::reSampleSingle(size_t idx)
 {
  double *rgx;
 
@@ -382,7 +383,7 @@ void Korali::Solver::CMAES::reSampleSingle(size_t idx)
 }
 
 
-void Korali::Solver::CMAES::updateDistribution(const double *fitnessVector)
+void CMAES::updateDistribution(const double *fitnessVector)
 {
  int flgdiag = doDiagUpdate();
  countevals += _s;
@@ -402,7 +403,7 @@ void Korali::Solver::CMAES::updateDistribution(const double *fitnessVector)
 
  /* update function value history */
  prevFunctionValue = currentFunctionValue;
- 
+
  /* update current best */
  currentFunctionValue = fitnessVector[index[0]];
  for (size_t i = 0; i < _k->N; ++i) curBestVector[i] = _samplePopulation[index[0]*_k->N + i];
@@ -464,7 +465,7 @@ void Korali::Solver::CMAES::updateDistribution(const double *fitnessVector)
  sigma *= exp(((sqrt(psxps)/chiN)-1.)*_sigmaCumulationFactor/_dampFactor);
 }
 
-void Korali::Solver::CMAES::adaptC2(int hsig)
+void CMAES::adaptC2(int hsig)
 {
  int flgdiag = doDiagUpdate();
 
@@ -493,11 +494,11 @@ void Korali::Solver::CMAES::adaptC2(int hsig)
  } /* if ccov... */
 }
 
-bool Korali::Solver::CMAES::checkTermination()
+bool CMAES::checkTermination()
 {
  double fac;
  int flgdiag = doDiagUpdate();
- 
+
  bool terminate = false;
 
  if (_currentGeneration > 1 && rgFuncValue[index[0]] <= _stopMinFitness && isStoppingCriteriaActive("Fitness Value") )
@@ -532,11 +533,11 @@ bool Korali::Solver::CMAES::checkTermination()
      break;
    }
 
-  if (maxEW >= minEW * _stopCovKond && isStoppingCriteriaActive("Max Kondition Covariance") )
+  if (maxEW >= minEW * _stopCovCond && isStoppingCriteriaActive("Max Condition Covariance") )
   {
     terminate = true;
-    sprintf(_terminationReason, "Maximal condition number %7.2e reached. maxEW=%7.2e, minEW=%7.2e, maxdiagC=%7.2e, mindiagC=%7.2e\n",
-      _stopCovKond, maxEW, minEW, maxdiagC, mindiagC);
+    sprintf(_terminationReason, "Maximal condition number %7.2e reached. maxEW=%7.2e, minEig=%7.2e, maxdiagC=%7.2e, mindiagC=%7.2e\n",
+      _stopCovCond, maxEW, minEW, maxdiagC, mindiagC);
   }
 
   size_t iAchse = 0;
@@ -553,7 +554,7 @@ bool Korali::Solver::CMAES::checkTermination()
     if (iKoo == _k->N)
     {
       terminate = true;
-      sprintf(_terminationReason, "Standard deviation %7.2e in principal axis %ld without effect.", fac, iAchse);
+      sprintf(_terminationReason, "Standard deviation 0.1*%7.2e in principal axis %ld without effect.", fac/0.1, iAchse);
       break;
     } /* if (iKoo == _k->N) */
   } /* for iAchse    */
@@ -588,7 +589,7 @@ bool Korali::Solver::CMAES::checkTermination()
  return terminate;
 }
 
-void Korali::Solver::CMAES::updateEigensystem(int flgforce)
+void CMAES::updateEigensystem(int flgforce)
 {
  if(flgforce == 0 && flgEigensysIsUptodate) return;
  /* if(_currentGeneration % _covarianceEigenEvalFreq == 0) return; */
@@ -604,7 +605,7 @@ void Korali::Solver::CMAES::updateEigensystem(int flgforce)
  flgEigensysIsUptodate = true;
 }
 
-void Korali::Solver::CMAES::eigen(size_t size, double **C, double *diag, double **Q) const
+void CMAES::eigen(size_t size, double **C, double *diag, double **Q) const
 {
  double* data = (double*) malloc (sizeof(double) * size * size);
 
@@ -636,7 +637,7 @@ void Korali::Solver::CMAES::eigen(size_t size, double **C, double *diag, double 
  free(data);
 }
 
-size_t Korali::Solver::CMAES::maxIdx(const double *rgd, size_t len) const
+size_t CMAES::maxIdx(const double *rgd, size_t len) const
 {
  size_t res = 0;
  for(size_t i = 1; i < len; i++)
@@ -644,7 +645,7 @@ size_t Korali::Solver::CMAES::maxIdx(const double *rgd, size_t len) const
  return res;
 }
 
-size_t Korali::Solver::CMAES::minIdx(const double *rgd, size_t len) const
+size_t CMAES::minIdx(const double *rgd, size_t len) const
 {
  size_t res = 0;
  for(size_t i = 1; i < len; i++)
@@ -653,7 +654,7 @@ size_t Korali::Solver::CMAES::minIdx(const double *rgd, size_t len) const
 }
 
 /* dirty index sort */
-void Korali::Solver::CMAES::sorted_index(const double *fitnessVector, size_t *index, size_t n) const
+void CMAES::sorted_index(const double *fitnessVector, size_t *index, size_t n) const
 {
  size_t i, j;
  index[0] = 0;
@@ -667,7 +668,7 @@ void Korali::Solver::CMAES::sorted_index(const double *fitnessVector, size_t *in
  }
 }
 
-double Korali::Solver::CMAES::doubleRangeMax(const double *rgd, size_t len) const
+double CMAES::doubleRangeMax(const double *rgd, size_t len) const
 {
  double max = rgd[0];
  for (size_t i = 1; i < len; i++)
@@ -675,7 +676,7 @@ double Korali::Solver::CMAES::doubleRangeMax(const double *rgd, size_t len) cons
  return max;
 }
 
-double Korali::Solver::CMAES::doubleRangeMin(const double *rgd, size_t len) const
+double CMAES::doubleRangeMin(const double *rgd, size_t len) const
 {
  double min = rgd[0];
  for (size_t i = 1; i < len; i++)
@@ -683,49 +684,54 @@ double Korali::Solver::CMAES::doubleRangeMin(const double *rgd, size_t len) cons
  return min;
 }
 
-bool Korali::Solver::CMAES::doDiagUpdate() const
+bool CMAES::doDiagUpdate() const
 {
  return _enablediag && (_currentGeneration % _diagonalCovarianceMatrixEvalFrequency == 0);
 }
 
-bool Korali::Solver::CMAES::isStoppingCriteriaActive(const char *criteria) const
+bool CMAES::isStoppingCriteriaActive(const char *criteria) const
 {
     std::string c(criteria);
     size_t found = _ignorecriteria.find(c);
     return (found==std::string::npos);
 }
 
-void Korali::Solver::CMAES::printGeneration() const
+void CMAES::printGeneration() const
 {
   if (_currentGeneration % _k->_outputFrequency != 0) return;
-  if (_k->_verbosity >= KORALI_NORMAL) printf("\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
-  if (_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Generation %ld - Duration: %fs (Total Elapsed Time: %fs)\n", _currentGeneration, std::chrono::duration<double>(t1-t0).count(), std::chrono::duration<double>(t1-startTime).count());
+
   if (_k->_verbosity >= KORALI_NORMAL)
-  {
+    printf("\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+
+  if (_k->_verbosity >= KORALI_MINIMAL)
+    printf("[Korali] Generation %ld - Duration: %fs (Total Elapsed Time: %fs)\n",
+              _currentGeneration, std::chrono::duration<double>(t1-t0).count(), std::chrono::duration<double>(t1-startTime).count());
+
+  if (_k->_verbosity >= KORALI_NORMAL){
     double reldiffpct = (bestEver/prevBest - 1.0)*100.0;
     printf("[Korali] Current Function Value: %e - Best: %e (%.1f%%)\n", currentFunctionValue, bestEver, reldiffpct);
     printf("[Korali] Sigma: %e\n", sigma);
     printf("[Korali] Min Diag C: %e - Max Diag C: %e\n", mindiagC, maxdiagC);
-    printf("[Korali] Min EW C: %e - Max EW C: %e\n", minEW, maxEW);
+    printf("[Korali] Min Eig C: %e - Max Eig C: %e\n", minEW, maxEW);
   }
 
-  if (_k->_verbosity >= KORALI_DETAILED)
-  {
+
+  if (_k->_verbosity >= KORALI_DETAILED){
     printf("\n[Korali] MeanX: \t\t BestX:\n");
     for (size_t i = 0; i < _k->N; i++)  printf("\t %g \t\t %g\n", rgxmean[i], rgxbestever[i]);
 
     printf("\n[Korali] C:\n");
-    for (size_t i = 0; i < _k->N; i++)
-    {
-        for (size_t j = 0; j <=  i; j++) printf("\t%g\t",C[i][j]);
+    for (size_t i = 0; i < _k->N; i++){
+        for (size_t j = 0; j <= i; j++) printf("\t%g\t",C[i][j]);
         printf("\n");
     }
     printf("\n[Korali] Number of Function Evaluations: %zu\n", countevals);
     printf("[Korali] Number of Infeasible Samples: %zu\n", countinfeasible);
   }
+
 }
 
-void Korali::Solver::CMAES::printFinal() const
+void CMAES::printFinal() const
 {
  if (_k->_verbosity >= KORALI_MINIMAL)
  {
@@ -739,4 +745,12 @@ void Korali::Solver::CMAES::printFinal() const
     printf("[Korali] Stopping Criteria: %s\n", _terminationReason);
     printf("[Korali] Total Elapsed Time: %fs\n", std::chrono::duration<double>(endTime-startTime).count());
  }
+}
+
+void CMAES::startPlot() const
+{
+  std::string cmd = "python `korali-config --prefix`/bin/plot_cmaes.py " + _k->_resultsDirName + " &";
+  //cmd = "start python `korali-config --prefix`/bin/diagnostics.py " + _k->_resultsDirName; // WINDOWS
+  int ret_code = system(cmd.c_str());
+  if ( ret_code == -1 ) {  printf( "[Korali] Error in system call:\n\t %s\n", cmd.c_str()); exit(-1); }
 }

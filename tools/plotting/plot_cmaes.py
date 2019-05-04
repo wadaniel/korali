@@ -76,7 +76,6 @@ def run_diagnostics(src, live = False, obj='current'):
             if idx == 0:
                 numdim = data['Dimension']
                 names  = [ data['Parameters'][i]['Name'] for i in range(numdim) ]
-                print(names)
                 colors = hls_colors(numdim)
                 for i in range(numdim):
                     fvalXvec.append([])

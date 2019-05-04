@@ -230,7 +230,7 @@ void Korali::Solver::CMAES::setConfiguration(nlohmann::json& js)
  _stopMinDeltaX                 = consume(js, { "Termination Criteria", "Min DeltaX" }, KORALI_NUMBER, std::to_string(0.0));
  _stopTolUpXFactor              = consume(js, { "Termination Criteria", "Max Standard Deviation" }, KORALI_NUMBER, std::to_string(1e18));
  _stopCovCond                   = consume(js, { "Termination Criteria", "Max Condition Covariance" }, KORALI_NUMBER, std::to_string(std::numeric_limits<double>::max()));
- _ignorecriteria                = consume(js, { "Termination Criteria", "Ignore" }, KORALI_STRING, "Max Kondition Covariance");
+ _ignorecriteria                = consume(js, { "Termination Criteria", "Ignore" }, KORALI_STRING, "Max Condition Covariance");
 }
 
 void Korali::Solver::CMAES::setState(nlohmann::json& js)
@@ -531,7 +531,7 @@ bool Korali::Solver::CMAES::checkTermination()
      break;
    }
 
-  if (maxEW >= minEW * _stopCovCond && isStoppingCriteriaActive("Max Kondition Covariance") )
+  if (maxEW >= minEW * _stopCovCond && isStoppingCriteriaActive("Max Condition Covariance") )
   {
     terminate = true;
     sprintf(_terminationReason, "Maximal condition number %7.2e reached. maxEW=%7.2e, minEig=%7.2e, maxdiagC=%7.2e, mindiagC=%7.2e\n",

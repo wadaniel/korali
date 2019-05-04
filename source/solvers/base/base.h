@@ -15,6 +15,7 @@ class Base {
  // Reporting Settings
  std::chrono::time_point<std::chrono::system_clock> startTime, endTime;
  std::chrono::time_point<std::chrono::system_clock> t0, t1, t2, t3;
+ std::string _plottingScript;
 
  // Constructor / Destructor
  Base(nlohmann::json& js);
@@ -32,7 +33,7 @@ class Base {
  // Print Methods
  virtual void printGeneration() const = 0;
  virtual void printFinal() const = 0;
- virtual void startPlot() const = 0;
+ virtual std::string getPlottingScript() const = 0;
 };
 
 } // namespace Korali

@@ -111,7 +111,7 @@ def run_diagnostics(src, live = False, obj='current'):
         for i in range(numdim):
             ax222.plot(numeval, fvalXvec[i], color = colors[i], label='X'+str(i+1))
         
-        if idx == 1:
+        if idx == 2:
             ax222.legend(bbox_to_anchor=(1.04,0.5), loc="center left", borderaxespad=0, handlelength=1)
 
         ax223 = plt.subplot(223)
@@ -128,7 +128,7 @@ def run_diagnostics(src, live = False, obj='current'):
         for i in range(numdim):
             ax224.plot(numeval, Csdev[i], color = colors[i], label='X'+str(i+1))
 
-        if idx == 1:
+        if idx == 2:
             ax224.legend(bbox_to_anchor=(1.04,0.5), loc="center left", borderaxespad=0, handlelength=1)
        
         plt.pause(0.05) 

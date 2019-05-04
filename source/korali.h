@@ -107,6 +107,7 @@ class Engine {
  nlohmann::json getConfiguration();
  void setConfiguration(nlohmann::json js);
 
+ void startPlot() const;
 };
 
 extern Engine* _k;

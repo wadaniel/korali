@@ -17,11 +17,11 @@ int main(int argc, char* argv[])
   }
 
   std::vector<double> x, y;
-  x.push_back(1.0);   y.push_back(3.2069);
-  x.push_back(2.0);   y.push_back(4.1454);
-  x.push_back(3.0);   y.push_back(4.9393);
-  x.push_back(4.0);   y.push_back(6.0588);
-  x.push_back(5.0);   y.push_back(6.8425);
+  x.push_back(1.00);   y.push_back(-0.2045);
+  x.push_back(3.25);   y.push_back( 4.0171);
+  x.push_back(5.50);   y.push_back( 9.6384);
+  x.push_back(7.75);   y.push_back(14.1257);
+  x.push_back(10.0);   y.push_back(16.2702);
 
   auto Fx = [x]( Korali::modelData& d ) {
                 F(d.getParameters(), d.getResults(), x);
@@ -39,30 +39,33 @@ int main(int argc, char* argv[])
   korali["Parameters"][0]["Name"] = "a";
   korali["Parameters"][0]["Type"] = "Computational";
   korali["Parameters"][0]["Distribution"] = "Uniform";
-  korali["Parameters"][0]["Minimum"] = -10.0;
-  korali["Parameters"][0]["Maximum"] = +10.0;
+  korali["Parameters"][0]["Minimum"] = -5.0;
+  korali["Parameters"][0]["Maximum"] = +5.0;
+  korali["Parameters"][0]["Initial Mean"] = +1.0;
 
   korali["Parameters"][1]["Name"] = "b";
   korali["Parameters"][1]["Type"] = "Computational";
   korali["Parameters"][1]["Distribution"] = "Uniform";
-  korali["Parameters"][1]["Minimum"] = -10.0;
-  korali["Parameters"][1]["Maximum"] = +10.0;
+  korali["Parameters"][1]["Minimum"] = -5.0;
+  korali["Parameters"][1]["Maximum"] = +5.0;
+  korali["Parameters"][1]["Initial Mean"] = +1.0;
 
   korali["Parameters"][2]["Name"] = "Sigma";
   korali["Parameters"][2]["Type"] = "Statistical";
   korali["Parameters"][2]["Distribution"] = "Uniform";
   korali["Parameters"][2]["Minimum"] = 0.0;
   korali["Parameters"][2]["Maximum"] = 10.0;
+  korali["Parameters"][2]["Initial Mean"] = +1.0;
 
 
   switch( atoi(argv[1]) ){
     case 1:
       korali["Solver"]["Method"] = "CMA-ES";
-      korali["Solver"]["Lambda"] = 12;
+      korali["Solver"]["Lambda"] = 10;
       korali["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-11;
       korali["Solver"]["Termination Criteria"]["Min Fitness"] = 1e-12;
       korali["Solver"]["Termination Criteria"]["Max Generations"] = 1e4;
-      korali["Solver"]["Termination Criteria"]["Max Model Evaluations"] = 1e4;
+      korali["Solver"]["Termination Criteria"]["Max Model Evaluations"] = 3e5;
       break;
 
     case 2:

@@ -9,6 +9,7 @@ import colorsys
 import numpy as np
 import matplotlib.pyplot as plt
 
+from plot_helpers import plt_pause_light
 
 # Get a list of evenly spaced colors in HLS huse space.
 # Credits: seaborn package
@@ -37,6 +38,7 @@ def run_diagnostics(src, live = False, obj='current'):
     idx    = 0 # generation
     numdim = 0 # problem dimension
 
+    names    = [] # description params
     colors   = [] # rgb colors
     numeval  = [] # number obj function evaluations
     sigma    = [] # scaling parameter
@@ -48,12 +50,13 @@ def run_diagnostics(src, live = False, obj='current'):
 
     plt.style.use('seaborn-dark')
     fig = plt.figure('CMA-ES live diagnostics: {0}'.format(src),figsize=(8,8))
-       
+    fig.show()
+
     while( plt.fignum_exists(fig.number) ):
 
         if ( not os.path.isfile('{0}/s{1}.json'.format(src, str(idx).zfill(5))) ):
-            if ( live == True):    
-                plt.pause(0.05)
+            if ( live == True  ):    
+                plt_pause_light(0.5)
                 continue
             else: 
                 break
@@ -72,6 +75,8 @@ def run_diagnostics(src, live = False, obj='current'):
 
             if idx == 0:
                 numdim = data['Dimension']
+                names  = [ data['Parameters'][i]['Name'] for i in range(numdim) ]
+                print(names)
                 colors = hls_colors(numdim)
                 for i in range(numdim):
                     fvalXvec.append([])
@@ -109,7 +114,7 @@ def run_diagnostics(src, live = False, obj='current'):
         ax222.set_title('Object Variables')
         ax222.grid(True)
         for i in range(numdim):
-            ax222.plot(numeval, fvalXvec[i], color = colors[i], label='X'+str(i+1))
+            ax222.plot(numeval, fvalXvec[i], color = colors[i], label=names[i])
         
         if idx == 2:
             ax222.legend(bbox_to_anchor=(1.04,0.5), loc="center left", borderaxespad=0, handlelength=1)
@@ -126,12 +131,12 @@ def run_diagnostics(src, live = False, obj='current'):
         ax224.grid(True)
         ax224.set_yscale('log')
         for i in range(numdim):
-            ax224.plot(numeval, Csdev[i], color = colors[i], label='X'+str(i+1))
+            ax224.plot(numeval, Csdev[i], color = colors[i], label=names[i])
 
         if idx == 2:
             ax224.legend(bbox_to_anchor=(1.04,0.5), loc="center left", borderaxespad=0, handlelength=1)
        
-        plt.pause(0.05) 
+        plt_pause_light(0.05)
         if(live == False): time.sleep(0.5)
         idx = idx+1
 

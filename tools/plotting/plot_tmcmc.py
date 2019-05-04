@@ -8,6 +8,7 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 
+from plot_helpers import plt_pause_light
 
 # Plot histogram of sampes in diagonal
 def plot_histogram(ax, theta):
@@ -83,6 +84,7 @@ def plot_samples(path, idx=None):
         
         plt.style.use('seaborn-dark')
         fig, ax = plt.subplots(samples.shape[1], samples.shape[1])
+        fig.show()
         
         if idx is None: 
             fig.canvas.set_window_title(path)
@@ -108,7 +110,7 @@ def run_diagnostics(src, live=False):
 
         if ( not os.path.isfile('{0}/s{1}.json'.format(src, str(idx).zfill(5))) ):
             if ( live == True ):    
-                plt.pause(0.05)
+                plt_pause_light(0.05)
                 continue
             else: 
                 break
@@ -116,7 +118,7 @@ def run_diagnostics(src, live=False):
         path   = '{0}/s{1}.json'.format(src, str(idx).zfill(5))
         anneal = plot_samples(path, idx)
         
-        plt.pause(0.05) 
+        plt_pause_light(0.05) 
         if(live == False): time.sleep(0.5)
         idx = idx+1
         if (anneal >= 1.0): finished = True

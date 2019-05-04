@@ -59,8 +59,8 @@ int main(int argc, char* argv[])
     case 1:
       korali["Solver"]["Method"] = "CMA-ES";
       korali["Solver"]["Lambda"] = 12;
-      korali["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-11;
-      korali["Solver"]["Termination Criteria"]["Min Fitness"] = 1e-12;
+      korali["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-6;
+      korali["Solver"]["Termination Criteria"]["Min Fitness"] = 1e-8;
       korali["Solver"]["Termination Criteria"]["Max Generations"] = 1e4;
       korali["Solver"]["Termination Criteria"]["Max Model Evaluations"] = 1e4;
       break;

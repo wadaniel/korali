@@ -149,7 +149,7 @@ nlohmann::json Korali::Solver::CMAES::getConfiguration()
  js["Termination Criteria"]["Min DeltaX"]               = _stopMinDeltaX;
  js["Termination Criteria"]["Min Fitness"]              = _stopMinFitness;
  js["Termination Criteria"]["Max Standard Deviation"]   = _stopTolUpXFactor;
- js["Termination Criteria"]["Max Kondition Covariance"] = _stopCovKond;
+ js["Termination Criteria"]["Max Condition Covariance"] = _stopCovCond;
  js["Termination Criteria"]["Ignore"]                   = _ignorecriteria;
 
  // State Variables
@@ -229,7 +229,7 @@ void Korali::Solver::CMAES::setConfiguration(nlohmann::json& js)
  _stopFitnessDiffThreshold      = consume(js, { "Termination Criteria", "Fitness Diff Threshold" }, KORALI_NUMBER, std::to_string(1e-9));
  _stopMinDeltaX                 = consume(js, { "Termination Criteria", "Min DeltaX" }, KORALI_NUMBER, std::to_string(0.0));
  _stopTolUpXFactor              = consume(js, { "Termination Criteria", "Max Standard Deviation" }, KORALI_NUMBER, std::to_string(1e18));
- _stopCovKond                   = consume(js, { "Termination Criteria", "Max Kondition Covariance" }, KORALI_NUMBER, std::to_string(std::numeric_limits<double>::max()));
+ _stopCovCond                   = consume(js, { "Termination Criteria", "Max Condition Covariance" }, KORALI_NUMBER, std::to_string(std::numeric_limits<double>::max()));
  _ignorecriteria                = consume(js, { "Termination Criteria", "Ignore" }, KORALI_STRING, "Max Kondition Covariance");
 }
 
@@ -531,11 +531,11 @@ bool Korali::Solver::CMAES::checkTermination()
      break;
    }
 
-  if (maxEW >= minEW * _stopCovKond && isStoppingCriteriaActive("Max Kondition Covariance") )
+  if (maxEW >= minEW * _stopCovCond && isStoppingCriteriaActive("Max Kondition Covariance") )
   {
     terminate = true;
     sprintf(_terminationReason, "Maximal condition number %7.2e reached. maxEW=%7.2e, minEig=%7.2e, maxdiagC=%7.2e, mindiagC=%7.2e\n",
-      _stopCovKond, maxEW, minEW, maxdiagC, mindiagC);
+      _stopCovCond, maxEW, minEW, maxdiagC, mindiagC);
   }
 
   size_t iAchse = 0;

@@ -3,11 +3,13 @@
 #include <unistd.h>
 #include <chrono>
 
+using namespace Korali::Solver;
+
 /************************************************************************/
 /*                  Constructor / Destructor Methods                    */
 /************************************************************************/
 
-Korali::Solver::CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
+CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
 {
  setConfiguration(js);
 
@@ -111,7 +113,7 @@ Korali::Solver::CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js
  }
 }
 
-Korali::Solver::CMAES::~CMAES()
+CMAES::~CMAES()
 {
 
 }
@@ -120,7 +122,7 @@ Korali::Solver::CMAES::~CMAES()
 /*                    Configuration Methods                             */
 /************************************************************************/
 
-nlohmann::json Korali::Solver::CMAES::getConfiguration()
+nlohmann::json CMAES::getConfiguration()
 {
  auto js = this->Korali::Solver::Base::getConfiguration();
 
@@ -182,7 +184,7 @@ nlohmann::json Korali::Solver::CMAES::getConfiguration()
  return js;
 }
 
-void Korali::Solver::CMAES::setConfiguration(nlohmann::json& js)
+void CMAES::setConfiguration(nlohmann::json& js)
 {
  this->Korali::Solver::Base::setConfiguration(js);
 
@@ -233,7 +235,7 @@ void Korali::Solver::CMAES::setConfiguration(nlohmann::json& js)
  _ignorecriteria                = consume(js, { "Termination Criteria", "Ignore" }, KORALI_STRING, "Max Condition Covariance");
 }
 
-void Korali::Solver::CMAES::setState(nlohmann::json& js)
+void CMAES::setState(nlohmann::json& js)
 {
  this->Korali::Solver::Base::setState(js);
  _currentGeneration    = js["State"]["Current Generation"];
@@ -266,7 +268,7 @@ void Korali::Solver::CMAES::setState(nlohmann::json& js)
 /*                    Functional Methods                                */
 /************************************************************************/
 
-void Korali::Solver::CMAES::run()
+void CMAES::run()
 {
  if (_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Starting CMA-ES.\n");
 
@@ -301,20 +303,20 @@ void Korali::Solver::CMAES::run()
 
 }
 
-void Korali::Solver::CMAES::processSample(size_t sampleId, double fitness)
+void CMAES::processSample(size_t sampleId, double fitness)
 {
  _fitnessVector[sampleId] = -fitness;
  _finishedSamples++;
 }
 
-bool Korali::Solver::CMAES::isFeasible(const double *pop) const
+bool CMAES::isFeasible(const double *pop) const
 {
  for (size_t i = 0; i < _k->N; i++)
   if (pop[i] < _k->_parameters[i]->_lowerBound || pop[i] > _k->_parameters[i]->_upperBound) return false;
  return true;
 }
 
-void Korali::Solver::CMAES::prepareGeneration()
+void CMAES::prepareGeneration()
 {
  int flgdiag = doDiagUpdate();
 
@@ -362,7 +364,7 @@ void Korali::Solver::CMAES::prepareGeneration()
 }
 
 
-void Korali::Solver::CMAES::reSampleSingle(size_t idx)
+void CMAES::reSampleSingle(size_t idx)
 {
  double *rgx;
 
@@ -381,7 +383,7 @@ void Korali::Solver::CMAES::reSampleSingle(size_t idx)
 }
 
 
-void Korali::Solver::CMAES::updateDistribution(const double *fitnessVector)
+void CMAES::updateDistribution(const double *fitnessVector)
 {
  int flgdiag = doDiagUpdate();
  countevals += _s;
@@ -463,7 +465,7 @@ void Korali::Solver::CMAES::updateDistribution(const double *fitnessVector)
  sigma *= exp(((sqrt(psxps)/chiN)-1.)*_sigmaCumulationFactor/_dampFactor);
 }
 
-void Korali::Solver::CMAES::adaptC2(int hsig)
+void CMAES::adaptC2(int hsig)
 {
  int flgdiag = doDiagUpdate();
 
@@ -492,7 +494,7 @@ void Korali::Solver::CMAES::adaptC2(int hsig)
  } /* if ccov... */
 }
 
-bool Korali::Solver::CMAES::checkTermination()
+bool CMAES::checkTermination()
 {
  double fac;
  int flgdiag = doDiagUpdate();
@@ -587,7 +589,7 @@ bool Korali::Solver::CMAES::checkTermination()
  return terminate;
 }
 
-void Korali::Solver::CMAES::updateEigensystem(int flgforce)
+void CMAES::updateEigensystem(int flgforce)
 {
  if(flgforce == 0 && flgEigensysIsUptodate) return;
  /* if(_currentGeneration % _covarianceEigenEvalFreq == 0) return; */
@@ -603,7 +605,7 @@ void Korali::Solver::CMAES::updateEigensystem(int flgforce)
  flgEigensysIsUptodate = true;
 }
 
-void Korali::Solver::CMAES::eigen(size_t size, double **C, double *diag, double **Q) const
+void CMAES::eigen(size_t size, double **C, double *diag, double **Q) const
 {
  double* data = (double*) malloc (sizeof(double) * size * size);
 
@@ -635,7 +637,7 @@ void Korali::Solver::CMAES::eigen(size_t size, double **C, double *diag, double 
  free(data);
 }
 
-size_t Korali::Solver::CMAES::maxIdx(const double *rgd, size_t len) const
+size_t CMAES::maxIdx(const double *rgd, size_t len) const
 {
  size_t res = 0;
  for(size_t i = 1; i < len; i++)
@@ -643,7 +645,7 @@ size_t Korali::Solver::CMAES::maxIdx(const double *rgd, size_t len) const
  return res;
 }
 
-size_t Korali::Solver::CMAES::minIdx(const double *rgd, size_t len) const
+size_t CMAES::minIdx(const double *rgd, size_t len) const
 {
  size_t res = 0;
  for(size_t i = 1; i < len; i++)
@@ -652,7 +654,7 @@ size_t Korali::Solver::CMAES::minIdx(const double *rgd, size_t len) const
 }
 
 /* dirty index sort */
-void Korali::Solver::CMAES::sorted_index(const double *fitnessVector, size_t *index, size_t n) const
+void CMAES::sorted_index(const double *fitnessVector, size_t *index, size_t n) const
 {
  size_t i, j;
  index[0] = 0;
@@ -666,7 +668,7 @@ void Korali::Solver::CMAES::sorted_index(const double *fitnessVector, size_t *in
  }
 }
 
-double Korali::Solver::CMAES::doubleRangeMax(const double *rgd, size_t len) const
+double CMAES::doubleRangeMax(const double *rgd, size_t len) const
 {
  double max = rgd[0];
  for (size_t i = 1; i < len; i++)
@@ -674,7 +676,7 @@ double Korali::Solver::CMAES::doubleRangeMax(const double *rgd, size_t len) cons
  return max;
 }
 
-double Korali::Solver::CMAES::doubleRangeMin(const double *rgd, size_t len) const
+double CMAES::doubleRangeMin(const double *rgd, size_t len) const
 {
  double min = rgd[0];
  for (size_t i = 1; i < len; i++)
@@ -682,19 +684,19 @@ double Korali::Solver::CMAES::doubleRangeMin(const double *rgd, size_t len) cons
  return min;
 }
 
-bool Korali::Solver::CMAES::doDiagUpdate() const
+bool CMAES::doDiagUpdate() const
 {
  return _enablediag && (_currentGeneration % _diagonalCovarianceMatrixEvalFrequency == 0);
 }
 
-bool Korali::Solver::CMAES::isStoppingCriteriaActive(const char *criteria) const
+bool CMAES::isStoppingCriteriaActive(const char *criteria) const
 {
     std::string c(criteria);
     size_t found = _ignorecriteria.find(c);
     return (found==std::string::npos);
 }
 
-void Korali::Solver::CMAES::printGeneration() const
+void CMAES::printGeneration() const
 {
   if (_currentGeneration % _k->_outputFrequency != 0) return;
 
@@ -729,7 +731,7 @@ void Korali::Solver::CMAES::printGeneration() const
 
 }
 
-void Korali::Solver::CMAES::printFinal() const
+void CMAES::printFinal() const
 {
  if (_k->_verbosity >= KORALI_MINIMAL)
  {
@@ -745,7 +747,7 @@ void Korali::Solver::CMAES::printFinal() const
  }
 }
 
-void Korali::Solver::CMAES::startPlot() const
+void CMAES::startPlot() const
 {
   std::string cmd = "python `korali-config --prefix`/bin/plot_cmaes.py " + _k->_resultsDirName + " &";
   //cmd = "start python `korali-config --prefix`/bin/diagnostics.py " + _k->_resultsDirName; // WINDOWS

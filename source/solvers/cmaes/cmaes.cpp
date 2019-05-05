@@ -86,9 +86,8 @@ CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
 
  for (size_t i = 0; i < _k->N; ++i)
  {
-  B[i][i] = 1.;
-  C[i][i] = rgD[i] = _k->_parameters[i]->_initialStdDev * sqrt(_k->N / trace);
-  C[i][i] *= C[i][i];
+  B[i][i] = rgD[i] = _k->_parameters[i]->_initialStdDev * sqrt(_k->N / trace);
+  C[i][i] = B[i][i] * B[i][i];
  }
 
  minEW = doubleRangeMin(rgD, _k->N); minEW = minEW * minEW;
@@ -168,14 +167,15 @@ nlohmann::json CMAES::getConfiguration()
  js["State"]["EvaluationCount"]          = countevals;
  js["State"]["InfeasibleCount"]          = countinfeasible;
 
- for (size_t i = 0; i < _k->N; i++) js["State"]["CurrentMeanVector"]    += rgxmean[i];
- for (size_t i = 0; i < _k->N; i++) js["State"]["PreviousMeanVector"]   += rgxold[i];
- for (size_t i = 0; i < _k->N; i++) js["State"]["BestEverVector"]       += rgxbestever[i];
- for (size_t i = 0; i < _k->N; i++) js["State"]["CurrentBestVector"]    += curBestVector[i];
- for (size_t i = 0; i < _k->N; i++) js["State"]["AxisLengths"]          += rgD[i];
- for (size_t i = 0; i < _k->N; i++) js["State"]["CumulativeCovariance"] += rgpc[i];
- for (size_t i = 0; i < _mu; i++)   js["State"]["Index"]                += index[i];
- for (size_t i = 0; i < _mu; i++)   js["State"]["FunctionValues"]       += rgFuncValue[i];
+ for (size_t i = 0; i < _k->N; i++) js["State"]["CurrentMeanVector"]      += rgxmean[i];
+ for (size_t i = 0; i < _k->N; i++) js["State"]["PreviousMeanVector"]     += rgxold[i];
+ for (size_t i = 0; i < _k->N; i++) js["State"]["BestEverVector"]         += rgxbestever[i];
+ for (size_t i = 0; i < _k->N; i++) js["State"]["CurrentBestVector"]      += curBestVector[i];
+ for (size_t i = 0; i < _k->N; i++) js["State"]["AxisLengths"]            += rgD[i];
+ for (size_t i = 0; i < _k->N; i++) js["State"]["EvolutionPath"]          += rgpc[i];
+ for (size_t i = 0; i < _k->N; i++) js["State"]["ConjugateEvolutionPath"] += rgps[i];
+ for (size_t i = 0; i < _mu; i++)   js["State"]["Index"]                  += index[i];
+ for (size_t i = 0; i < _mu; i++)   js["State"]["FunctionValues"]         += rgFuncValue[i];
 
  for (size_t i = 0; i < _k->N; i++) for (size_t j = 0; j < _k->N; j++) js["State"]["CovarianceMatrix"][i][j] = C[i][j];
  for (size_t i = 0; i < _k->N; i++) for (size_t j = 0; j < _k->N; j++) js["State"]["EigenMatrix"][i][j] = B[i][j];
@@ -203,6 +203,8 @@ void CMAES::setConfiguration(nlohmann::json& js)
  if (_muType == "Equal")            for (size_t i = 0; i < _mu; i++)  _muWeights[i] = 1;
  if (_muType == "Logarithmic")      for (size_t i = 0; i < _mu; i++)  _muWeights[i] = log(_mu+1.)-log(i+1.);
 
+ _chiN = sqrt((double) _k->N) * (1. - 1./(4.*_k->N) + 1./(21.*_k->N*_k->N));
+ 
  /* normalize weights vector and set mueff */
  double s1 = 0.0;
  double s2 = 0.0;
@@ -335,8 +337,10 @@ void CMAES::prepareGeneration()
 
  /* treat minimal standard deviations and numeric problems */
  for (size_t i = 0; i < _k->N; ++i)
-  while (sigma * sqrt(C[i][i]) < _k->_parameters[i]->_minStdDevChange)
+  while (sigma * sqrt(C[i][i]) < _k->_parameters[i]->_minStdDevChange) {
    sigma *= exp(0.05+_sigmaCumulationFactor/_dampFactor);
+   if (_k->_verbosity >= KORALI_DETAILED) fprintf(stderr, "[Korali] Warning: sigma increased due to minimal standard deviation.\n");
+   }
 
  for (size_t iNk = 0; iNk < _s; ++iNk)
  { /* generate scaled random vector (D * z) */
@@ -397,9 +401,11 @@ void CMAES::updateDistribution(const double *fitnessVector)
  /* Test if function values are identical, escape flat fitness */
  if (rgFuncValue[index[0]] == rgFuncValue[index[(int)_mu]]) {
   sigma *= exp(0.2+_sigmaCumulationFactor/_dampFactor);
-  fprintf(stderr, "[Korali] Error: Warning: sigma increased due to equal function values.\n");
-  fprintf(stderr, "[Korali] Reconsider the formulation of the objective function\n");
- }
+   if (_k->_verbosity >= KORALI_DETAILED) {
+    fprintf(stderr, "[Korali] Warning: sigma increased due to equal function values.\n");
+    fprintf(stderr, "[Korali] Reconsider the formulation of the objective function\n");
+   }
+  }
 
  /* update function value history */
  prevFunctionValue = currentFunctionValue;
@@ -416,53 +422,50 @@ void CMAES::updateDistribution(const double *fitnessVector)
   for (size_t i = 0; i < _k->N; ++i) rgxbestever[i] = curBestVector[i];
  }
 
- /* calculate rgxmean and rgBDz~_k->N(0,C) */
+ /* calculate rgxmean and rgBDz */
  for (size_t i = 0; i < _k->N; ++i) {
-  rgxold[i] = rgxmean[i];
-  rgxmean[i] = 0.;
-  for (size_t iNk = 0; iNk < _mu; ++iNk)
-   rgxmean[i] += _muWeights[iNk] * _samplePopulation[index[iNk]*_k->N + i];
-  rgBDz[i] = sqrt(_muEffective)*(rgxmean[i] - rgxold[i])/sigma;
+   rgxold[i] = rgxmean[i];
+   rgxmean[i] = 0.;
+   for (size_t iNk = 0; iNk < _mu; ++iNk)
+     rgxmean[i] += _muWeights[iNk] * _samplePopulation[index[iNk]*_k->N + i];
+   
+   rgBDz[i] = (rgxmean[i] - rgxold[i])/sigma;
  }
 
- double sum = 0.0;
- /* calculate z := D^(-1) * B^(-1) * rgBDz into rgdTmp */
+ /* calculate z := D^(-1) * B^(T) * rgBDz into rgdTmp */
  for (size_t i = 0; i < _k->N; ++i) {
-  if (!flgdiag)
-   for (size_t j = 0, sum = 0.; j < _k->N; ++j)
-    sum += B[j][i] * rgBDz[j];
-  else
-   sum = rgBDz[i];
-  rgdTmp[i] = sum / rgD[i];
+  double sum = 0.0;
+  if (flgdiag) sum = rgBDz[i];
+  else for (size_t j = 0; j < _k->N; ++j) sum += B[j][i] * rgBDz[j]; /* B^(T) * rgBDz */
+  
+  rgdTmp[i] = sum / rgD[i]; /* D^(-1) */
  }
+
+  double psL2 = 0.0;
 
  /* cumulation for sigma (ps) using B*z */
  for (size_t i = 0; i < _k->N; ++i) {
-  if (!flgdiag)
-   for (size_t j = 0, sum = 0.; j < _k->N; ++j)
-    sum += B[i][j] * rgdTmp[j];
-  else
-   sum = rgdTmp[i];
-  rgps[i] = (1. - _sigmaCumulationFactor) * rgps[i] +
-   sqrt(_sigmaCumulationFactor * (2. - _sigmaCumulationFactor)) * sum;
+    double sum = 0.0;
+    if (flgdiag) sum = rgdTmp[i];
+    else for (size_t j = 0; j < _k->N; ++j) sum += B[i][j] * rgdTmp[j];
+
+    rgps[i] = (1. - _sigmaCumulationFactor) * rgps[i] + sqrt(_sigmaCumulationFactor * (2. - _sigmaCumulationFactor) * _muEffective) * sum;
+ 
+    /* calculate norm(ps)^2 */
+    psL2 += rgps[i] * rgps[i];
  }
 
- /* calculate norm(ps)^2 */
- double psxps = 0.0;
- for (size_t i = 0; i < _k->N; ++i)  psxps += rgps[i] * rgps[i];
+ int hsig = sqrt(psL2) / sqrt(1. - pow(1.-_sigmaCumulationFactor, 2*_currentGeneration)) / _chiN  < 1.4 + 2./(_k->N+1);
 
  /* cumulation for covariance matrix (pc) using B*D*z~_k->N(0,C) */
- double chiN = sqrt((double) _k->N) * (1. - 1./(4.*_k->N) + 1./(21.*_k->N*_k->N));
- int hsig = sqrt(psxps) / sqrt(1. - pow(1.-_sigmaCumulationFactor, 2*_currentGeneration)) / chiN  < 1.4 + 2./(_k->N+1);
-
  for (size_t i = 0; i < _k->N; ++i)
-  rgpc[i] = (1. - _cumulativeCovariance) * rgpc[i] +  hsig * sqrt(_cumulativeCovariance * (2. - _cumulativeCovariance)) * rgBDz[i];
+   rgpc[i] = (1. - _cumulativeCovariance) * rgpc[i] + hsig * sqrt( _cumulativeCovariance * (2. - _cumulativeCovariance) *_muEffective ) * rgBDz[i];
 
  /* update of C  */
  adaptC2(hsig);
 
  /* update of sigma */
- sigma *= exp(((sqrt(psxps)/chiN)-1.)*_sigmaCumulationFactor/_dampFactor);
+ sigma *= exp(((sqrt(psL2)/_chiN)-1.)*_sigmaCumulationFactor/_dampFactor);
 }
 
 void CMAES::adaptC2(int hsig)
@@ -622,12 +625,12 @@ void CMAES::eigen(size_t size, double **C, double *diag, double **Q) const
  gsl_eigen_symmv_workspace * w =  gsl_eigen_symmv_alloc (size);
  gsl_eigen_symmv (&m.matrix, eval, evec, w);
  gsl_eigen_symmv_free (w);
- gsl_eigen_symmv_sort (eval, evec, GSL_EIGEN_SORT_ABS_ASC);
+ gsl_eigen_symmv_sort (eval, evec, GSL_EIGEN_SORT_ABS_ASC); //TODO: can I do this?? (DW)
 
  for (size_t i = 0; i < size; i++)
  {
   gsl_vector_view evec_i = gsl_matrix_column (evec, i);
-  for (size_t j = 0; j < size; j++) Q[j][i] =  -gsl_vector_get (&evec_i.vector, j);
+  for (size_t j = 0; j < size; j++) Q[j][i] = gsl_vector_get (&evec_i.vector, j);
  }
 
  for (size_t i = 0; i < size; i++) diag[i] = gsl_vector_get (eval, i);
@@ -708,8 +711,7 @@ void CMAES::printGeneration() const
               _currentGeneration, std::chrono::duration<double>(t1-t0).count(), std::chrono::duration<double>(t1-startTime).count());
 
   if (_k->_verbosity >= KORALI_NORMAL){
-    double reldiffpct = (bestEver/prevBest - 1.0)*100.0;
-    printf("[Korali] Current Function Value: %e - Best: %e (%.1f%%)\n", currentFunctionValue, bestEver, reldiffpct);
+    printf("[Korali] Current Function Value: %e - Best: %e\n", currentFunctionValue, bestEver);
     printf("[Korali] Sigma: %e\n", sigma);
     printf("[Korali] Min Diag C: %e - Max Diag C: %e\n", mindiagC, maxdiagC);
     printf("[Korali] Min Eig C: %e - Max Eig C: %e\n", minEW, maxEW);
@@ -718,7 +720,7 @@ void CMAES::printGeneration() const
 
   if (_k->_verbosity >= KORALI_DETAILED){
     printf("\n[Korali] MeanX: \t\t BestX:\n");
-    for (size_t i = 0; i < _k->N; i++)  printf("\t %g \t\t %g\n", rgxmean[i], rgxbestever[i]);
+    for (size_t i = 0; i < _k->N; i++)  printf("\t %.5f \t\t %.5f\n", rgxmean[i], rgxbestever[i]);
 
     printf("\n[Korali] C:\n");
     for (size_t i = 0; i < _k->N; i++){

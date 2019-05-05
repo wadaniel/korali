@@ -81,7 +81,7 @@ double Gaussian::logLikelihood(double sigma, size_t nData, double* x, double* u)
   ssn += diff*diff;
   }
 
- double res = 0.5*( nData*log(2*M_PI) - ssn/sigma2) + nData*log(sigma) ;
+ double res = - 0.5*( nData*log(2*M_PI) + ssn/sigma2) - nData*log(sigma) ;
  return res;
 }
 

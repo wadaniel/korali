@@ -17,19 +17,17 @@ int main(int argc, char* argv[])
   }
 
   std::vector<double> x, y;
-  x.push_back(1.00);   y.push_back(-0.2045);
-  x.push_back(3.25);   y.push_back( 4.0171);
-  x.push_back(5.50);   y.push_back( 9.6384);
-  x.push_back(7.75);   y.push_back(14.1257);
-  x.push_back(10.0);   y.push_back(16.2702);
+  x.push_back(1.0);   y.push_back(3.2069);
+  x.push_back(2.0);   y.push_back(4.1454);
+  x.push_back(3.0);   y.push_back(4.9393);
+  x.push_back(4.0);   y.push_back(6.0588);
+  x.push_back(5.0);   y.push_back(6.8425);
 
   auto Fx = [x]( Korali::modelData& d ) {
                 F(d.getParameters(), d.getResults(), x);
   };
 
   auto korali = Korali::Engine( Fx );
-
-
 
   for (size_t i = 0; i < y.size(); i++)
     korali["Problem"]["Reference Data"][i] = y[i];
@@ -85,7 +83,7 @@ int main(int argc, char* argv[])
 
   korali["Seed"] = 0xC0FFEE;
   korali["Verbosity"] = "Detailed";
-  korali["Live Plotting"] = true;
+  // korali["Live Plotting"] = true;
 
 
   korali.run();

@@ -72,8 +72,9 @@ double Korali::Problem::Likelihood::evaluateFitness(double* sample)
   exit(-1);
  }
 
+ //TODO: can we avoid this copy? (DW)
  for (size_t i = 0; i < _referenceDataSize; i++) fitnessData[i] = d._results[i];
 
- return -Korali::Parameter::Gaussian::logLikelihood(sigma, _referenceDataSize, _referenceData, fitnessData);
+ return Korali::Parameter::Gaussian::logLikelihood(sigma, _referenceDataSize, _referenceData, fitnessData);
 }
 

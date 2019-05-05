@@ -50,6 +50,7 @@ class CMAES : public Korali::Solver::Base
  double _dampFactor; /* dampening parameter determines controls step size adaption */
  double _cumulativeCovariance; /* default calculated from dimension */
  double _covarianceMatrixLearningRate;
+ double _chiN; /* expectation of ||N(0,I)|| */
 
  bool   _enablediag; /* enable diagonal covariance matrix */
  size_t _diagonalCovarianceMatrixEvalFrequency;
@@ -86,7 +87,7 @@ class CMAES : public Korali::Solver::Base
  double *rgD; /* axis lengths (sqrt(Evals)) */
 
  double *rgpc; /* evolution path for cov update */
- double *rgps; /* exponential for sigma update */
+ double *rgps; /* conjugate evolution path for sigma update */
  double *rgxold; /* mean "parent" previous generation */
  double *rgBDz; /* for B*D*z */
  double *rgdTmp; /* temporary (random) vector used in different places */

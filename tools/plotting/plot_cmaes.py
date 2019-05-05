@@ -103,7 +103,7 @@ def run_diagnostics(src, live = False, obj='current'):
         ax221.grid(True)
         ax221.set_yscale('log')
         ax221.plot(numeval, sigma, color='#F8D030', label = 'Sigma')
-        ax221.plot(numeval, fval,  color='#C03028', label = 'FVal')
+        ax221.plot(numeval, abs(fval),  color='#C03028', label = '|FVal|')
         ax221.plot(numeval, cond,  color='#98D8D8', label = 'Cond')
 
         if idx == 2:

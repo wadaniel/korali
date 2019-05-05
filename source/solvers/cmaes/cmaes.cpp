@@ -86,8 +86,9 @@ CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
 
  for (size_t i = 0; i < _k->N; ++i)
  {
-  B[i][i] = rgD[i] = _k->_parameters[i]->_initialStdDev * sqrt(_k->N / trace);
-  C[i][i] = B[i][i] * B[i][i];
+  B[i][i] = 1.0;
+  C[i][i] = rgD[i] = _k->_parameters[i]->_initialStdDev * sqrt(_k->N / trace);
+  C[i][i] *= C[i][i];
  }
 
  minEW = doubleRangeMin(rgD, _k->N); minEW = minEW * minEW;

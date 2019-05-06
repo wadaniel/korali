@@ -29,6 +29,8 @@ int main(int argc, char* argv[])
 
   auto korali = Korali::Engine( Fx );
 
+  korali["Problem"]["Objective"] = "Posterior";
+
   for (size_t i = 0; i < y.size(); i++)
     korali["Problem"]["Reference Data"][i] = y[i];
 
@@ -58,7 +60,6 @@ int main(int argc, char* argv[])
   switch( atoi(argv[1]) ){
     case 1:
       korali["Solver"]["Method"] = "CMA-ES";
-      korali["Problem"]["Objective"] = "Likelihood";
       korali["Solver"]["Lambda"] = 10;
       korali["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-6;
       korali["Solver"]["Termination Criteria"]["Max Generations"] = 1e4;
@@ -67,7 +68,6 @@ int main(int argc, char* argv[])
 
     case 2:
       korali["Solver"]["Method"] = "TMCMC";
-      korali["Problem"]["Objective"] = "Posterior";
       korali["Solver"]["Covariance Scaling"] = 0.02;
       korali["Solver"]["Population Size"] = 5000;
       korali["Solver"]["Burn In"] = 5;

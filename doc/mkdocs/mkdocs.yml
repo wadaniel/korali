@@ -11,7 +11,8 @@ nav:
         - Direct problems: quick_start/cxx/direct.md
         - Bayesian Inference: quick_start/cxx/posterior.md
       - Python:
-        - Direct problems: quick_start/python/direct.md  
+        - Direct problems: quick_start/python/direct.md
+        - Bayesian Inference: quick_start/python/posterior.md
   - Examples:
       - Beta: examples/sampling.md
   - References: references.md

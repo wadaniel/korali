@@ -4,14 +4,6 @@ This is completely new version of korali based on upc++.
 
 Currently the code is under development and the repository is private.
 
-## Install
-To install...
-
-## Tests
-To test...
-
-## Run
-To run...
 
 ## Documentation
 

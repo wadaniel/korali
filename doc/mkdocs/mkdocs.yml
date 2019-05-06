@@ -13,8 +13,13 @@ nav:
       - Python:
         - Direct problems: quick_start/python/direct.md
         - Bayesian Inference: quick_start/python/posterior.md
-  - Examples:
-      - Beta: examples/sampling.md
+  - Documentation:
+      - Hierarchy: documentation/hierarchy.md
+      - Problem: documentation/problem.md
+      - Parameters: documentation/parameters.md
+      - Solver: documentation/solver.md
+      - Seed: documentation/seed.md
+      - Verbosity: documentation/verbosity.md
   - References: references.md
 
 

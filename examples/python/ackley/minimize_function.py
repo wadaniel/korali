@@ -4,7 +4,7 @@ import threading
 sys.path.append('./model')
 from ackley import ackley
 import libkorali
-  
+
 korali = libkorali.Engine(ackley)
 
 korali["Verbosity"] = "Normal"

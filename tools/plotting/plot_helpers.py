@@ -1,5 +1,9 @@
+import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
+from matplotlib.collections import LineCollection
+from matplotlib.colors import ListedColormap, BoundaryNorm
+
 
 # Plot pause without focus
 # Credits: https://stackoverflow.com/questions/45729092/

@@ -70,7 +70,7 @@ def run_diagnostics(src, live = False, obj='current'):
         plt.suptitle('s{0}.json\n(last update:{1}:{2}:{3})'.format(str(idx).zfill(5),\
                     str(localtime.tm_hour).zfill(2),\
                     str(localtime.tm_min).zfill(2),\
-                    str(localtime.tm_sec).zfill(2)), fontsize=14)
+                    str(localtime.tm_sec).zfill(2)), fontsize=14, fontsize = 12)
        
         with open(path) as f:
             data  = json.load(f)

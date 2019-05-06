@@ -13,8 +13,8 @@ nav:
       - Python:
         - Direct problems: quick_start/python/direct.md
         - Bayesian Inference: quick_start/python/posterior.md
-  - Examples:
-      - Beta: examples/sampling.md
+  - Documentation:
+      - Hierarchy: documentation/hierarchy.md
   - References: references.md
 
 
@@ -32,8 +32,10 @@ theme:
 
 markdown_extensions:
   - pymdownx.arithmatex
+  - pymdownx.details
   - admonition
   - codehilite
+
 
 
 extra_javascript:

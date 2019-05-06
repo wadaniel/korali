@@ -99,6 +99,7 @@ class CMAES : public Korali::Solver::Base
  double mindiagC; /* min diagonal element of C */
  double maxEW; /* max Eigenwert of C */
  double minEW; /* min Eigenwert of C */
+ double psL2; /* L2 norm of rgps */
 
  bool flgEigensysIsUptodate;
 

@@ -45,11 +45,12 @@ def run_diagnostics(src, live = False, obj='current'):
     numevaln = [] # number obj function evaluations for negative fval
     sigma    = [] # scaling parameter
     cond     = [] # condition of C (largest EW / smallest EW)
-    fvalneg  = [] # best fval current generation
-    fvalpos  = [] # best fval current generation
+    psL2     = [] # conjugate evolution path L2 norm
+    fvalneg  = [] # best fval current generation (fval < 0)
+    fvalpos  = [] # best fval current generation (fval > 0)
     fvalXvec = [] # location fval
     axis     = [] # sqrt(EVals)
-    Csdev    = [] # sigma x diag(C)
+    ssdev    = [] # sigma x diag(C)
 
     plt.style.use('seaborn-dark')
     fig = plt.figure('CMA-ES live diagnostics: {0}'.format(src),figsize=(8,8))
@@ -70,7 +71,7 @@ def run_diagnostics(src, live = False, obj='current'):
         plt.suptitle('s{0}.json\n(last update:{1}:{2}:{3})'.format(str(idx).zfill(5),\
                     str(localtime.tm_hour).zfill(2),\
                     str(localtime.tm_min).zfill(2),\
-                    str(localtime.tm_sec).zfill(2)), fontsize=14, fontsize = 12)
+                    str(localtime.tm_sec).zfill(2)), fontsize=12)
        
         with open(path) as f:
             data  = json.load(f)
@@ -83,7 +84,7 @@ def run_diagnostics(src, live = False, obj='current'):
                 for i in range(numdim):
                     fvalXvec.append([])
                     axis.append([])
-                    Csdev.append([])
+                    ssdev.append([])
 
                 idx = idx + 1
                 continue
@@ -106,11 +107,12 @@ def run_diagnostics(src, live = False, obj='current'):
                 numevaln.append(numeval[-1])
             sigma.append(state['Sigma'])
             cond.append(state['MaxEigenvalue']/state['MinEigenvalue'])
+            psL2.append(state['ConjugateEvolutionPathL2'])
 
             for i in range(numdim):
                 fvalXvec[i].append(state[objstrings(obj)[1]][i])
                 axis[i].append(state['AxisLengths'][i])
-                Csdev[i].append(sigma[idx-1]*np.sqrt(state['CovarianceMatrix'][i][i]))
+                ssdev[i].append(sigma[idx-1]*np.sqrt(state['CovarianceMatrix'][i][i]))
 
         if idx < 2: 
             idx = idx + 1
@@ -120,9 +122,10 @@ def run_diagnostics(src, live = False, obj='current'):
         ax221.grid(True)
         ax221.set_yscale('log')
         ax221.plot(numeval, sigma, color='#F8D030', label = 'Sigma')
+        ax221.plot(numeval, cond,  color='#98D8D8', label = 'Cond')
+        ax221.plot(numeval, psL2,  color='k', label = 'L2 Ps')
         if len(numevalp) > 0 : ax221.plot(numevalp, fvalpos,  color='b', label = '|FVal|')
         if len(numevaln) > 0 : ax221.plot(numevaln, [abs(v) for v in fvalneg], color='r', label = '|FVal|')
-        ax221.plot(numeval, cond,  color='#98D8D8', label = 'Cond')
 
         if idx == 2:
             ax221.legend(bbox_to_anchor=(0,1.00,1,0.2), loc="lower left", mode="expand", ncol = 3, handlelength=1)
@@ -148,10 +151,7 @@ def run_diagnostics(src, live = False, obj='current'):
         ax224.grid(True)
         ax224.set_yscale('log')
         for i in range(numdim):
-            ax224.plot(numeval, Csdev[i], color = colors[i], label=names[i])
-
-        if idx == 2:
-            ax224.legend(bbox_to_anchor=(1.04,0.5), loc="center left", borderaxespad=0, handlelength=1)
+            ax224.plot(numeval, ssdev[i], color = colors[i], label=names[i])
        
         plt_pause_light(0.05)
         if(live == False): time.sleep(0.5)

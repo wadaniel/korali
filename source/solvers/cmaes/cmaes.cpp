@@ -97,6 +97,8 @@ CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
  maxdiagC=C[0][0]; for(size_t i=1;i<_k->N;++i) if(maxdiagC<C[i][i]) maxdiagC=C[i][i];
  mindiagC=C[0][0]; for(size_t i=1;i<_k->N;++i) if(mindiagC>C[i][i]) mindiagC=C[i][i];
 
+ psL2 = 0.0;
+
  /* set rgxmean */
  for (size_t i = 0; i < _k->N; ++i)
  {
@@ -167,6 +169,7 @@ nlohmann::json CMAES::getConfiguration()
  js["State"]["EigenSystemUpToDate"]      = flgEigensysIsUptodate;
  js["State"]["EvaluationCount"]          = countevals;
  js["State"]["InfeasibleCount"]          = countinfeasible;
+ js["State"]["ConjugateEvolutionPathL2"] = psL2;
 
  for (size_t i = 0; i < _k->N; i++) js["State"]["CurrentMeanVector"]      += rgxmean[i];
  for (size_t i = 0; i < _k->N; i++) js["State"]["PreviousMeanVector"]     += rgxold[i];
@@ -442,7 +445,7 @@ void CMAES::updateDistribution(const double *fitnessVector)
   rgdTmp[i] = sum / rgD[i]; /* D^(-1) */
  }
 
-  double psL2 = 0.0;
+ psL2 = 0.0;
 
  /* cumulation for sigma (ps) using B*z */
  for (size_t i = 0; i < _k->N; ++i) {
@@ -626,7 +629,7 @@ void CMAES::eigen(size_t size, double **C, double *diag, double **Q) const
  gsl_eigen_symmv_workspace * w =  gsl_eigen_symmv_alloc (size);
  gsl_eigen_symmv (&m.matrix, eval, evec, w);
  gsl_eigen_symmv_free (w);
- gsl_eigen_symmv_sort (eval, evec, GSL_EIGEN_SORT_ABS_ASC); //TODO: can I do this?? (DW)
+ gsl_eigen_symmv_sort (eval, evec, GSL_EIGEN_SORT_ABS_ASC);
 
  for (size_t i = 0; i < size; i++)
  {

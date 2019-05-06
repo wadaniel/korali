@@ -41,7 +41,7 @@ class CMAES : public Korali::Solver::Base
  size_t _finishedSamples;
  size_t _s; /* number of samples per generation */
  size_t _mu; /* number of best samples for mean / cov update */
- std::string _muType; /* linearDecreasing, Equal or Logarithmic */
+ std::string _muType; /* Linear, Equal or Logarithmic */
  double* _muWeights; /* weights for mu best samples */
  double _muEffective; /* variance effective selection mass */
  double _muCovariance;

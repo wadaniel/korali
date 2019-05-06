@@ -203,7 +203,7 @@ void CMAES::setConfiguration(nlohmann::json& js)
 
  // Initializing Mu Weights
  _muWeights = (double *) calloc (sizeof(double), _mu);
- if (_muType == "LinearDecreasing") for (size_t i = 0; i < _mu; i++)  _muWeights[i] = _mu - i;
+ if (_muType == "Linear")           for (size_t i = 0; i < _mu; i++)  _muWeights[i] = _mu - i;
  if (_muType == "Equal")            for (size_t i = 0; i < _mu; i++)  _muWeights[i] = 1;
  if (_muType == "Logarithmic")      for (size_t i = 0; i < _mu; i++)  _muWeights[i] = log(_mu+1.)-log(i+1.);
 

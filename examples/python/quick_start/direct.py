@@ -5,11 +5,11 @@ import libkorali
 
 def F( s ):
   x = s.getParameter(0)
-  r = -(x-2.)**2
+  r = (x-2.)**2
   s.addResult(r)
 
 if len(sys.argv) < 2 :
-  print "Usage: ./direct 1(=maximize) or 2(=sample)"
+  print("Usage: ./direct 1(=maximize) or 2(=sample)")
   sys.exit()
 
 
@@ -37,7 +37,7 @@ elif sys.argv[1]=='2':
   korali["Solver"]["Burn In"] = 5
 
 else:
-  print "Usage: ./direct 1(=maximize) or 2(=sample)"
+  print("Usage: ./direct 1(=maximize) or 2(=sample)")
   sys.exit()
 
 korali["Seed"] = 0xC0FFEE;

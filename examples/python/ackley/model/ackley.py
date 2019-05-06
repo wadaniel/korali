@@ -12,5 +12,5 @@ def ackley(x):
    s1 += x.getParameter(i)*x.getParameter(i)
    s2 += math.cos(c*x.getParameter(i))
 
- result = -(-a*math.exp(-b*math.sqrt(s1/4)) - math.exp(s2/4) + a + math.exp(1.))
+ result = -a*math.exp(-b*math.sqrt(s1/4)) - math.exp(s2/4) + a + math.exp(1.)
  x.addResult(result)

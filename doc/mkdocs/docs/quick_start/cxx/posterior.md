@@ -56,6 +56,8 @@ As a prior information we choose the uniform distribution in $[-10,10]$ for $\va
 and the uniform distribution in $[0,10]$ for $\sigma$.
 
 
+The code for this tutorial can be found [here](https://github.com/cselab/skorali/blob/master/examples/cxx/quick_start/posterior.cpp).
+
 
 
 ## Optimize

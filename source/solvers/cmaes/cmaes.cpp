@@ -205,7 +205,7 @@ void CMAES::setConfiguration(nlohmann::json& js)
  if (_muType == "Logarithmic")      for (size_t i = 0; i < _mu; i++)  _muWeights[i] = log(_mu+1.)-log(i+1.);
 
  _chiN = sqrt((double) _k->N) * (1. - 1./(4.*_k->N) + 1./(21.*_k->N*_k->N));
- 
+
  /* normalize weights vector and set mueff */
  double s1 = 0.0;
  double s2 = 0.0;
@@ -429,7 +429,7 @@ void CMAES::updateDistribution(const double *fitnessVector)
    rgxmean[i] = 0.;
    for (size_t iNk = 0; iNk < _mu; ++iNk)
      rgxmean[i] += _muWeights[iNk] * _samplePopulation[index[iNk]*_k->N + i];
-   
+
    rgBDz[i] = (rgxmean[i] - rgxold[i])/sigma;
  }
 
@@ -438,7 +438,7 @@ void CMAES::updateDistribution(const double *fitnessVector)
   double sum = 0.0;
   if (flgdiag) sum = rgBDz[i];
   else for (size_t j = 0; j < _k->N; ++j) sum += B[j][i] * rgBDz[j]; /* B^(T) * rgBDz */
-  
+
   rgdTmp[i] = sum / rgD[i]; /* D^(-1) */
  }
 
@@ -451,7 +451,7 @@ void CMAES::updateDistribution(const double *fitnessVector)
     else for (size_t j = 0; j < _k->N; ++j) sum += B[i][j] * rgdTmp[j];
 
     rgps[i] = (1. - _sigmaCumulationFactor) * rgps[i] + sqrt(_sigmaCumulationFactor * (2. - _sigmaCumulationFactor) * _muEffective) * sum;
- 
+
     /* calculate norm(ps)^2 */
     psL2 += rgps[i] * rgps[i];
  }
@@ -720,14 +720,18 @@ void CMAES::printGeneration() const
 
 
   if (_k->_verbosity >= KORALI_DETAILED){
-    printf("\n[Korali] MeanX: \t\t BestX:\n");
-    for (size_t i = 0; i < _k->N; i++)  printf("\t %.5f \t\t %.5f\n", rgxmean[i], rgxbestever[i]);
+    printf("\n[Korali] MeanX: \t BestX:\n");
+    for (size_t i = 0; i < _k->N; i++)  printf("\t %.5f \t %.5f\n", rgxmean[i], rgxbestever[i]);
 
     printf("\n[Korali] C:\n");
     for (size_t i = 0; i < _k->N; i++){
-        for (size_t j = 0; j <= i; j++) printf("\t%g\t",C[i][j]);
+        printf("\t ");
+        for (size_t j = 0; j <= i; j++) printf("% 9.6le    ",C[i][j]);
         printf("\n");
     }
+
+    printf("\n[Korali] Sigma: %le \n",sigma);
+
     printf("\n[Korali] Number of Function Evaluations: %zu\n", countevals);
     printf("[Korali] Number of Infeasible Samples: %zu\n", countinfeasible);
   }

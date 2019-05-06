@@ -15,11 +15,6 @@ nav:
         - Bayesian Inference: quick_start/python/posterior.md
   - Documentation:
       - Hierarchy: documentation/hierarchy.md
-      - Problem: documentation/problem.md
-      - Parameters: documentation/parameters.md
-      - Solver: documentation/solver.md
-      - Seed: documentation/seed.md
-      - Verbosity: documentation/verbosity.md
   - References: references.md
 
 
@@ -37,8 +32,10 @@ theme:
 
 markdown_extensions:
   - pymdownx.arithmatex
+  - pymdownx.details
   - admonition
   - codehilite
+
 
 
 extra_javascript:

@@ -151,7 +151,6 @@ nlohmann::json CMAES::getConfiguration()
  js["Termination Criteria"]["Max Model Evaluations"]    = _maxFitnessEvaluations;
  js["Termination Criteria"]["Fitness Diff Threshold"]   = _stopFitnessDiffThreshold;
  js["Termination Criteria"]["Min DeltaX"]               = _stopMinDeltaX;
- js["Termination Criteria"]["Min Fitness"]              = _stopMinFitness;
  js["Termination Criteria"]["Max Standard Deviation"]   = _stopTolUpXFactor;
  js["Termination Criteria"]["Max Condition Covariance"] = _stopCovCond;
  js["Termination Criteria"]["Ignore"]                   = _ignorecriteria;

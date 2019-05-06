@@ -41,9 +41,12 @@ def run_diagnostics(src, live = False, obj='current'):
     names    = [] # description params
     colors   = [] # rgb colors
     numeval  = [] # number obj function evaluations
+    numevalp = [] # number obj function evaluations for positive fval
+    numevaln = [] # number obj function evaluations for negative fval
     sigma    = [] # scaling parameter
     cond     = [] # condition of C (largest EW / smallest EW)
-    fval     = [] # best fval current generation
+    fvalneg  = [] # best fval current generation
+    fvalpos  = [] # best fval current generation
     fvalXvec = [] # location fval
     axis     = [] # sqrt(EVals)
     Csdev    = [] # sigma x diag(C)
@@ -86,7 +89,21 @@ def run_diagnostics(src, live = False, obj='current'):
                 continue
 
             numeval.append(state['EvaluationCount'])
-            fval.append(state[objstrings(obj)[0]])
+            f = state[objstrings(obj)[0]]
+            if f > 0 : 
+                if ( (not numevalp) & (len(numevaln) > 0) ):
+                    # trick for conintuous plot
+                    numevalp.append(numevaln[-1])
+                    fvalpos.append(fvalneg[-1])
+                fvalpos.append(f)
+                numevalp.append(numeval[-1])
+            else :
+                if ( (not numevaln) & (len(numevalp) > 0) ):
+                    # trick for conintuous plot
+                    numevaln.append(numevalp[-1])
+                    fvalneg.append(fvalpos[-1])
+                fvalneg.append(f)
+                numevaln.append(numeval[-1])
             sigma.append(state['Sigma'])
             cond.append(state['MaxEigenvalue']/state['MinEigenvalue'])
 
@@ -103,7 +120,8 @@ def run_diagnostics(src, live = False, obj='current'):
         ax221.grid(True)
         ax221.set_yscale('log')
         ax221.plot(numeval, sigma, color='#F8D030', label = 'Sigma')
-        ax221.plot(numeval, [abs(v) for v in fval],  color='#C03028', label = '|FVal|')
+        if len(numevalp) > 0 : ax221.plot(numevalp, fvalpos,  color='b', label = '|FVal|')
+        if len(numevaln) > 0 : ax221.plot(numevaln, [abs(v) for v in fvalneg], color='r', label = '|FVal|')
         ax221.plot(numeval, cond,  color='#98D8D8', label = 'Cond')
 
         if idx == 2:

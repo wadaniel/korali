@@ -10,5 +10,5 @@ void rosenbrock(std::vector<double>& pars, std::vector<double>& result)
  for (size_t i = 0; i < nPars-1; i++)
   s += 100.*pow(pars[i+1]-pars[i]*pars[i], 2) + pow(pars[i]-1., 2);
 
- result.push_back(-s);
+ result.push_back(s);
 }

@@ -2,7 +2,8 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <chrono>
-
+#include <numeric>   // std::iota
+#include <algorithm> // std::sort
 using namespace Korali::Solver;
 
 /************************************************************************/
@@ -151,7 +152,6 @@ nlohmann::json CMAES::getConfiguration()
  js["Termination Criteria"]["Max Model Evaluations"]    = _maxFitnessEvaluations;
  js["Termination Criteria"]["Fitness Diff Threshold"]   = _stopFitnessDiffThreshold;
  js["Termination Criteria"]["Min DeltaX"]               = _stopMinDeltaX;
- js["Termination Criteria"]["Min Fitness"]              = _stopMinFitness;
  js["Termination Criteria"]["Max Standard Deviation"]   = _stopTolUpXFactor;
  js["Termination Criteria"]["Max Condition Covariance"] = _stopCovCond;
  js["Termination Criteria"]["Ignore"]                   = _ignorecriteria;
@@ -208,7 +208,7 @@ void CMAES::setConfiguration(nlohmann::json& js)
  if (_muType == "Logarithmic")      for (size_t i = 0; i < _mu; i++)  _muWeights[i] = log(_mu+1.)-log(i+1.);
 
  _chiN = sqrt((double) _k->N) * (1. - 1./(4.*_k->N) + 1./(21.*_k->N*_k->N));
-
+ 
  /* normalize weights vector and set mueff */
  double s1 = 0.0;
  double s2 = 0.0;
@@ -397,7 +397,7 @@ void CMAES::updateDistribution(const double *fitnessVector)
  countevals += _s;
 
  /* assign function values */
- for (size_t i = 0; i < _s; i++) rgFuncValue[i] = fitnessVector[i];
+ for (size_t i = 0; i < _s; i++) rgFuncValue[i] = -fitnessVector[i];
 
  /* Generate index */
  sorted_index(fitnessVector, index, _s);
@@ -419,10 +419,10 @@ void CMAES::updateDistribution(const double *fitnessVector)
  for (size_t i = 0; i < _k->N; ++i) curBestVector[i] = _samplePopulation[index[0]*_k->N + i];
 
  /* update xbestever */
- if (bestEver > fitnessVector[index[0]] || _currentGeneration == 1)
+ if (fitnessVector[index[0]] > bestEver || _currentGeneration == 1)
  {
   prevBest = bestEver;
-  bestEver = fitnessVector[index[0]];
+  bestEver = currentFunctionValue;
   for (size_t i = 0; i < _k->N; ++i) rgxbestever[i] = curBestVector[i];
  }
 
@@ -432,7 +432,7 @@ void CMAES::updateDistribution(const double *fitnessVector)
    rgxmean[i] = 0.;
    for (size_t iNk = 0; iNk < _mu; ++iNk)
      rgxmean[i] += _muWeights[iNk] * _samplePopulation[index[iNk]*_k->N + i];
-
+   
    rgBDz[i] = (rgxmean[i] - rgxold[i])/sigma;
  }
 
@@ -441,7 +441,7 @@ void CMAES::updateDistribution(const double *fitnessVector)
   double sum = 0.0;
   if (flgdiag) sum = rgBDz[i];
   else for (size_t j = 0; j < _k->N; ++j) sum += B[j][i] * rgBDz[j]; /* B^(T) * rgBDz */
-
+  
   rgdTmp[i] = sum / rgD[i]; /* D^(-1) */
  }
 
@@ -454,7 +454,7 @@ void CMAES::updateDistribution(const double *fitnessVector)
     else for (size_t j = 0; j < _k->N; ++j) sum += B[i][j] * rgdTmp[j];
 
     rgps[i] = (1. - _sigmaCumulationFactor) * rgps[i] + sqrt(_sigmaCumulationFactor * (2. - _sigmaCumulationFactor) * _muEffective) * sum;
-
+ 
     /* calculate norm(ps)^2 */
     psL2 += rgps[i] * rgps[i];
  }
@@ -660,19 +660,13 @@ size_t CMAES::minIdx(const double *rgd, size_t len) const
  return res;
 }
 
-/* dirty index sort */
 void CMAES::sorted_index(const double *fitnessVector, size_t *index, size_t n) const
 {
- size_t i, j;
- index[0] = 0;
- for (i = 1; i < n; i++) {
-  for (j = i; j > 0; j--) {
-   if (fitnessVector[index[j-1]] < fitnessVector[i])
-    break;
-   index[j] = index[j-1]; /* shift up */
-  }
-  index[j] = i; /* insert i */
- }
+  // initialize original index locations
+  std::iota(index, index+n, 0);
+
+  // sort indexes based on comparing values in v
+  std::sort( index, index+n, [fitnessVector](size_t i1, size_t i2) {return fitnessVector[i1] > fitnessVector[i2];} ); //descending
 }
 
 double CMAES::doubleRangeMax(const double *rgd, size_t len) const
@@ -715,7 +709,7 @@ void CMAES::printGeneration() const
               _currentGeneration, std::chrono::duration<double>(t1-t0).count(), std::chrono::duration<double>(t1-startTime).count());
 
   if (_k->_verbosity >= KORALI_NORMAL){
-    printf("[Korali] Current Function Value: %e - Best: %e\n", currentFunctionValue, bestEver);
+    printf("[Korali] Current Function Value: %e - Best: %e\n", -currentFunctionValue, -bestEver);
     printf("[Korali] Sigma: %e\n", sigma);
     printf("[Korali] Min Diag C: %e - Max Diag C: %e\n", mindiagC, maxdiagC);
     printf("[Korali] Min Eig C: %e - Max Eig C: %e\n", minEW, maxEW);
@@ -723,18 +717,14 @@ void CMAES::printGeneration() const
 
 
   if (_k->_verbosity >= KORALI_DETAILED){
-    printf("\n[Korali] MeanX: \t BestX:\n");
-    for (size_t i = 0; i < _k->N; i++)  printf("\t %.5f \t %.5f\n", rgxmean[i], rgxbestever[i]);
+    printf("\n[Korali] MeanX: \t\t BestX:\n");
+    for (size_t i = 0; i < _k->N; i++)  printf("\t %.5f \t\t %.5f\n", rgxmean[i], rgxbestever[i]);
 
     printf("\n[Korali] C:\n");
     for (size_t i = 0; i < _k->N; i++){
-        printf("\t ");
-        for (size_t j = 0; j <= i; j++) printf("% 9.6le    ",C[i][j]);
+        for (size_t j = 0; j <= i; j++) printf("\t%g\t",C[i][j]);
         printf("\n");
     }
-
-    printf("\n[Korali] Sigma: %le \n",sigma);
-
     printf("\n[Korali] Number of Function Evaluations: %zu\n", countevals);
     printf("[Korali] Number of Infeasible Samples: %zu\n", countinfeasible);
   }
@@ -747,7 +737,7 @@ void CMAES::printFinal() const
  {
     printf("\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
     printf("[Korali] Generation %ld - Finished\n", _currentGeneration);
-    printf("[Korali] Optimum found: %e\n", bestEver);
+    printf("[Korali] Optimum found: %e\n", -bestEver);
     printf("[Korali] Optimum found at:\n\n");
     for (size_t i = 0; i < _k->N; i++) printf("\t %g\n", rgxbestever[i]);
     printf("\n[Korali] Number of Function Evaluations: %zu\n", countevals);

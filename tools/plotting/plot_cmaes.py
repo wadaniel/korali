@@ -46,6 +46,7 @@ def run_diagnostics(src, live = False, obj='current'):
     sigma    = [] # scaling parameter
     cond     = [] # condition of C (largest EW / smallest EW)
     psL2     = [] # conjugate evolution path L2 norm
+    dfval    = [] # abs diff currentBest - bestEver
     fvalneg  = [] # best fval current generation (fval < 0)
     fvalpos  = [] # best fval current generation (fval > 0)
     fvalXvec = [] # location fval
@@ -91,6 +92,7 @@ def run_diagnostics(src, live = False, obj='current'):
 
             numeval.append(state['EvaluationCount'])
             f = state[objstrings(obj)[0]]
+            dfval.append(abs(state["CurrentBestFunctionValue"] - state["BestEverFunctionValue"]))
             if f > 0 : 
                 if ( (not numevalp) & (len(numevaln) > 0) ):
                     # trick for conintuous plot
@@ -121,11 +123,12 @@ def run_diagnostics(src, live = False, obj='current'):
         ax221 = plt.subplot(221)
         ax221.grid(True)
         ax221.set_yscale('log')
-        ax221.plot(numeval, sigma, color='#F8D030', label = 'Sigma')
-        ax221.plot(numeval, cond,  color='#98D8D8', label = 'Cond')
-        ax221.plot(numeval, psL2,  color='k', label = 'L2 Ps')
         if len(numevalp) > 0 : ax221.plot(numevalp, fvalpos,  color='b', label = '|FVal|')
         if len(numevaln) > 0 : ax221.plot(numevaln, [abs(v) for v in fvalneg], color='r', label = '|FVal|')
+        ax221.plot(numeval, dfval, 'x', color = '#34495e', label = '|FVal - Best|')
+        ax221.plot(numeval, cond, color='#98D8D8', label = 'Cond')
+        ax221.plot(numeval, sigma, color='#F8D030', label = 'Sigma')
+        #ax221.plot(numeval, psL2,  color='k', label = 'L2 Ps')
 
         if idx == 2:
             ax221.legend(bbox_to_anchor=(0,1.00,1,0.2), loc="lower left", mode="expand", ncol = 3, handlelength=1)

@@ -4,7 +4,7 @@
 
 void F(std::vector<double>& x, std::vector<double>& result){
 
-  result.push_back( -pow( x[0]-2. , 2) );
+  result.push_back( pow( x[0]-2. , 2) );
 }
 
 int main(int argc, char* argv[])

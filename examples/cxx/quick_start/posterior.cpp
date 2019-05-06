@@ -83,7 +83,7 @@ int main(int argc, char* argv[])
 
   korali["Seed"] = 0xC0FFEE;
   korali["Verbosity"] = "Detailed";
-  // korali["Live Plotting"] = true;
+  korali["Live Plotting"] = true;
 
 
   korali.run();

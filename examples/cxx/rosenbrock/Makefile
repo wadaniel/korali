@@ -1,19 +1,19 @@
 BINARIES = minimize_function sample_function
 OBJECTS = model/rosenbrock.o
-CXX = korali-cxx
+KCXX = korali-cxx
 
 .SECONDARY:
 .PHONY: all
 all: $(BINARIES)
 
 $(BINARIES) : % : %.o $(OBJECTS)
-	$(CXX) -o $@ $^
+	$(KCXX) -o $@ $^
 
 model/%.o: 
 	$(MAKE) -C model all 
 
 %.o: %.cpp
-	$(CXX) -c $<
+	$(KCXX) -c $<
 
 .PHONY: clean
 clean:

@@ -14,5 +14,5 @@ void ackley(std::vector<double>& pars, std::vector<double>& result)
 
  double res = -a*exp(-b*sqrt(s1/nDims)) - exp(s2/nDims) + a + exp(1.);
 
- result.push_back(res);
+ result.push_back(-res);
 }

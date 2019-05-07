@@ -7,8 +7,8 @@ int main(int argc, char* argv[])
 	 heat2DSolver (d.getParameters(), d.getResults());
  });
 
- //korali["Seed"] = 0xC0FFEE;
- korali["Verbosity"] = "Normal";
+ korali["Seed"] = 0xC0FFEE;
+ korali["Verbosity"] = "Detailed";
 
  korali["Parameters"][0]["Name"] = "Intensity";
  korali["Parameters"][0]["Type"] = "Computational";
@@ -41,13 +41,10 @@ int main(int argc, char* argv[])
 	 korali["Problem"]["Reference Data"][i] = p.refTemp[i];
 
  korali["Solver"]["Method"] = "CMA-ES";
+ korali["Solver"]["Lambda"] = 32;
  korali["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-7;
  korali["Solver"]["Termination Criteria"]["Fitness Diff Threshold"] = 1e-5;
  korali["Solver"]["Termination Criteria"]["Max Condition Covariance"] = 1e10;
-
- korali["Solver"]["Lambda"] = 32;
-
- korali["Verbosity"] = "Detailed";
 
  korali.run();
 

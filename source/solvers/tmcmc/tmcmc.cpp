@@ -170,11 +170,9 @@ void Korali::Solver::TMCMC::run()
  // Generation 0
  initializeSamples();
  _k->saveState();
- _currentGeneration++;
 
  for(; _currentGeneration < _maxGens; _currentGeneration++)
  {
-  printGeneration();
   t0 = std::chrono::system_clock::now();
 
   // Generating Samples
@@ -195,13 +193,12 @@ void Korali::Solver::TMCMC::run()
 
   _k->saveState();
   
+  printGeneration();
+
   if (_annealingExponent >= 1.0) break;
  }
 
  endTime = std::chrono::system_clock::now();
-
- printFinal();
-
 }
 
 void Korali::Solver::TMCMC::processSample(size_t c, double fitness)
@@ -504,12 +501,12 @@ void Korali::Solver::TMCMC::minSearch(double const *fj, size_t fn, double pj, do
    status = gsl_multimin_test_size (size, Tol);
  } while (status == GSL_CONTINUE && iter < MaxIter);
 
- if (_k->_verbosity >= KORALI_DETAILED)
+ if (_k->_verbosity > KORALI_DETAILED)
  {
-   if(status == GSL_SUCCESS && s->fval >  Tol) printf("[Korali] Minseach coverged, but did not find minimum\n");
-   if(status != GSL_SUCCESS && s->fval <= Tol) printf("[Korali] Minseach did not coverge, but minimum found\n");
-   if(status != GSL_SUCCESS && s->fval >  Tol) printf("[Korali] Minseach did not coverge and did not find minimum\n");
-   if(iter >= MaxIter) printf("[Korali] Minseach MaxIter (%zu) reached\n", MaxIter);
+   if(status == GSL_SUCCESS && s->fval >  Tol) printf("[Korali] Min Search converged but did not find minimum. \n");
+   if(status != GSL_SUCCESS && s->fval <= Tol) printf("[Korali] Min Search did not converge but minimum found\n");
+   if(status != GSL_SUCCESS && s->fval >  Tol) printf("[Korali] Min Search did not converge and did not find minimum\n");
+   if(iter >= MaxIter) printf("[Korali] Min Search MaxIter (%zu) reached\n", MaxIter);
  }
 
  if (s->fval <= Tol) {
@@ -529,63 +526,33 @@ void Korali::Solver::TMCMC::minSearch(double const *fj, size_t fn, double pj, do
 
 void Korali::Solver::TMCMC::printGeneration() const
 {
-  if ((_currentGeneration-1) % _k->_outputFrequency != 0) return;
-  if (_k->_verbosity >= KORALI_MINIMAL)
+ if ((_currentGeneration-1) % _k->_outputFrequency != 0) return;
+ if (_k->_verbosity >= KORALI_MINIMAL)
+ {
+  printf("--------------------------------------------------------------------\n");
+  printf("[Korali] Generation %ld - Annealing Ratio:  %.5f.\n", _currentGeneration, _annealingExponent);
+  printf("[Korali] Duration: %fs (Elapsed Time: %.2fs)\n",  std::chrono::duration<double>(t1-t0).count() , std::chrono::duration<double>(t1-startTime).count());
+  if (_currentGeneration == _maxGens) printf("[Korali] Max Generation Reached.\n");
+ }
+
+ if (_k->_verbosity >= KORALI_NORMAL)
+ {
+  printf("[Korali] Acceptance Rate:           %.2f%%\n", 100*_acceptanceRate);
+  printf("[Korali] Coefficient of Variation:  %.2f%%\n", 100.0*_coefficientOfVariation);
+ }
+
+ if (_k->_verbosity >= KORALI_DETAILED)
+ {
+  printf("[Korali] Sample Mean:\n");
+  for (size_t i = 0; i < _k->N; i++) printf("     %s = %+6.3e\n", _k->_parameters[i]->_name.c_str(), _meanTheta[i]);
+  printf("[Korali] Sample Covariance:\n");
+  for (size_t i = 0; i < _k->N; i++)
   {
-    printf("\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
-    printf("[Korali] Generation %ld - Annealing Ratio:  %.5f - Duration: %fs (Total Elapsed Time: %.2fs)\n", _currentGeneration, _annealingExponent, std::chrono::duration<double>(t1-t0).count() , std::chrono::duration<double>(t1-startTime).count());
+   printf("   | ");
+   for (size_t j = 0; j < _k->N; j++)
+    if(j <= i)  printf("%+6.3e  ",_covarianceMatrix[i*_k->N+j]);
+    else        printf("     -      ");
+   printf(" |\n");
   }
-
-  if (_k->_verbosity >= KORALI_NORMAL)
-  {
-    printf("[Korali] Acceptance Rate:  %.2f%%\n", 100*_acceptanceRate);
-    printf("[Korali] Coefficient of Variation:  %.2f%%\n", 100.0*_coefficientOfVariation);
-  }
-
-  if (_k->_verbosity >= KORALI_DETAILED)
-  {
-    printf("[Korali] Mean of Samples:\n");
-    for (size_t i = 0; i < _k->N; i++) printf("\t %g\n", _meanTheta[i]);
-    printf("[Korali] Covariance of Samples:\n");
-    for (size_t i = 0; i < _k->N; i++)
-    {
-        for (size_t j = 0; j <= i; j++) printf("\t%g\t",_covarianceMatrix[i*_k->N+j]);
-        printf("\n");
-    }
-  }
-}
-
-
-
-void Korali::Solver::TMCMC::printFinal() const
-{
-  if (_k->_verbosity >= KORALI_MINIMAL)
-  {
-    printf("\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
-    if (_currentGeneration == _maxGens)
-      printf("[Korali] Generation %ld - not converged (Max Generation reached, Annealing Ratio: %.5f)\n", _currentGeneration, _annealingExponent);
-    else
-      printf("[Korali] Generation %ld - Finished (Annealing Ratio: %.5f)\n", _currentGeneration, _annealingExponent);
-    printf("[Korali] logEvidence: %f.\n", _logEvidence);
-    printf("[Korali] Number of Function Evaluations: %zu\n", _countevals);
-    printf("[Korali] Total Elapsed Time: %fs.\n", std::chrono::duration<double>(endTime-startTime).count());
-  }
-
-  if (_k->_verbosity >= KORALI_NORMAL)
-  {
-    printf("[Korali] Coefficient of Variation:  %.2f%%\n", 100.0*_coefficientOfVariation);
-  }
-
-  if (_k->_verbosity >= KORALI_DETAILED)
-  {
-    printf("[Korali] Mean of Samples:\n");
-    for (size_t i = 0; i < _k->N; i++) printf("\t %g\n", _meanTheta[i]);
-    printf("[Korali] Covariance of Samples:\n");
-    for (size_t i = 0; i < _k->N; i++)
-    {
-        for (size_t j = 0; j <= i; j++) printf("\t%g\t",_covarianceMatrix[i*_k->N+j]);
-        printf("\n");
-    }
-    printf("\n");
-  }
+ }
 }

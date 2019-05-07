@@ -2,7 +2,6 @@ site_name: korali
 repo_name: 'cselab/skorali'
 repo_url: 'https://github.com/cselab/skorali'
 
-
 nav:
   - Home: index.md
   - Installation: installation.md
@@ -14,7 +13,7 @@ nav:
         - Direct problems: quick_start/python/direct.md
         - Bayesian Inference: quick_start/python/posterior.md
   - Usage:
-      - Configuration: usage/configuration.md
+      - General Settings: usage/settings.md
       - Problem:
           - Direct evaluation: usage/problem/direct.md
           - Bayesian inference: usage/problem/bayesian.md
@@ -56,8 +55,6 @@ markdown_extensions:
   - pymdownx.details
   - admonition
   - codehilite
-
-
 
 extra_javascript:
   - 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML'

@@ -79,7 +79,7 @@ class CMAES : public Korali::Solver::Base
  double prevBest; /* best ever fitness from previous generation */
  double *rgxmean; /* mean "parent" */
  double *rgxbestever; /* bestever vector */
- double *curBestVector; /* current best vectir */
+ double *curBestVector; /* current best vector */
  size_t *index; /* sorting index of current sample pop (index[0] idx of current best). */
  double currentFunctionValue; /* best fitness current generation */
  double prevFunctionValue; /* best fitness previous generation */
@@ -94,6 +94,7 @@ class CMAES : public Korali::Solver::Base
  double *rgBDz; /* for B*D*z */
  double *rgdTmp; /* temporary (random) vector used in different places */
  double *rgFuncValue; /* holding all fitness values (fitnessvector) */
+ double *histFuncValues; /* holding historical best function values */
 
  size_t countevals; /* Number of function evaluations */
  size_t countinfeasible; /* Number of samples outside of domain given by bounds */

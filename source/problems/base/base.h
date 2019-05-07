@@ -11,6 +11,8 @@ class Base
  public:
 
  virtual double evaluateFitness(double* sample) = 0;
+ virtual double evaluateLogPrior(double* sample) = 0;
+
  bool isSampleOutsideBounds(double* sample);
 
  // Constructor / Destructor

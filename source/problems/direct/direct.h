@@ -10,6 +10,7 @@ class Direct : public Korali::Problem::Base
 {
  public:
  double evaluateFitness(double* sample) override;
+ double evaluateLogPrior(double* sample) override;
 
  // Constructor / Destructor
  Direct(nlohmann::json& js);

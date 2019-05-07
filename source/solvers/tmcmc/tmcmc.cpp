@@ -33,9 +33,9 @@ Korali::Solver::TMCMC::TMCMC(nlohmann::json& js) : Korali::Solver::Base::Base(js
  _covarianceMatrix   = (double*) calloc (_k->N*_k->N, sizeof(double));
  _meanTheta          = (double*) calloc (_k->N, sizeof(double));
  ccPoints            = (double*) calloc (_k->N*_s, sizeof(double));
- ccFitness           = (double*) calloc (_s, sizeof(double));
+ ccLogLikelihood     = (double*) calloc (_s, sizeof(double));
  clPoints            = (double*) calloc (_k->N*_s, sizeof(double));
- clFitness           = (double*) calloc (_s, sizeof(double));
+ clLogLikelihood     = (double*) calloc (_s, sizeof(double));
  chainPendingFitness = (bool*)   calloc (_s, sizeof(bool));
  chainCurrentStep    = (size_t*) calloc (_s, sizeof(size_t));
  chainLength         = (size_t*) calloc (_s, sizeof(size_t));
@@ -203,17 +203,20 @@ void Korali::Solver::TMCMC::run()
 
 void Korali::Solver::TMCMC::processSample(size_t c, double fitness)
 {
- ccFitness[c] = fitness;
- double L = exp((ccFitness[c]-clFitness[c])*_annealingExponent);
+ double ccLogPrior = _k->_problem->evaluateLogPrior(&ccPoints[c*_k->N]);
+ double clLogPrior = _k->_problem->evaluateLogPrior(&clPoints[c*_k->N]);
+
+ ccLogLikelihood[c] = fitness;
+ double L = exp((ccLogLikelihood[c]-clLogLikelihood[c])*_annealingExponent + (ccLogPrior-clLogPrior));
 
  if ( L >= 1.0 || L > gsl_ran_flat(chainGSLRange[c], 0.0, 1.0) ) {
    for (size_t i = 0; i < _k->N; i++) clPoints[c*_k->N + i] = ccPoints[c*_k->N + i];
-   clFitness[c] = ccFitness[c];
+   clLogLikelihood[c] = ccLogLikelihood[c];
    _uniqueEntries++;
  }
 
  chainCurrentStep[c]++;
- if (chainCurrentStep[c] > _burnin ) updateDatabase(&clPoints[c*_k->N], clFitness[c]);
+ if (chainCurrentStep[c] > _burnin ) updateDatabase(&clPoints[c*_k->N], clLogLikelihood[c]);
  chainPendingFitness[c] = false;
  if (chainCurrentStep[c] == chainLength[c]) finishedChains++;
 }
@@ -239,9 +242,9 @@ void Korali::Solver::TMCMC::initializeSamples()
   for (size_t c = 0; c < _s; c++) {
      for (size_t d = 0; d < _k->N; d++) {
        clPoints[c*_k->N + d] = ccPoints[c*_k->N + d] = _k->_parameters[d]->getRandomNumber();
-       clFitness[c] += log( _k->_parameters[d]->getDensity(clPoints[c*_k->N + d]) );
+       clLogLikelihood[c] += log( _k->_parameters[d]->getDensity(clPoints[c*_k->N + d]) );
      }
-     updateDatabase(&clPoints[c*_k->N], clFitness[c]);
+     updateDatabase(&clPoints[c*_k->N], clLogLikelihood[c]);
      finishedChains++;
   }
 }
@@ -308,7 +311,7 @@ void Korali::Solver::TMCMC::resampleGeneration()
  for (size_t i = 0; i < _databaseEntries; i++) {
    if (sel[i] != 0) {
      for (size_t j = 0; j < _k->N ; j++) clPoints[ldi*_k->N + j] = _databasePoints[i*_k->N + j];
-     clFitness[ldi] = _databaseFitness[i];
+     clLogLikelihood[ldi] = _databaseFitness[i];
      chainLength[ldi] = sel[i] + _burnin;
      ldi++;
    }

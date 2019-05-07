@@ -58,3 +58,8 @@ double Korali::Problem::Direct::evaluateFitness(double* sample)
 
  return d._results[0];
 }
+
+double Korali::Problem::Direct::evaluateLogPrior(double* sample)
+{
+  return 0.0;
+}

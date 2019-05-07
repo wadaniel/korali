@@ -32,9 +32,10 @@ def objstrings(obj='current'):
         raise ValueError("obj must be 'current' or 'ever'")
 
 
+
 # Plot CMA-ES results (read from .json files)
 def run_diagnostics(src, live = False, obj='current'):
-     
+
     idx    = 0 # generation
     numdim = 0 # problem dimension
 
@@ -60,10 +61,10 @@ def run_diagnostics(src, live = False, obj='current'):
     while( plt.fignum_exists(fig.number) ):
 
         if ( not os.path.isfile('{0}/s{1}.json'.format(src, str(idx).zfill(5))) ):
-            if ( live == True  ):    
+            if ( live == True  ):
                 plt_pause_light(0.5)
                 continue
-            else: 
+            else:
                 break
 
         path = '{0}/s{1}.json'.format(src, str(idx).zfill(5))
@@ -73,7 +74,7 @@ def run_diagnostics(src, live = False, obj='current'):
                     str(localtime.tm_hour).zfill(2),\
                     str(localtime.tm_min).zfill(2),\
                     str(localtime.tm_sec).zfill(2)), fontsize=12)
-       
+
         with open(path) as f:
             data  = json.load(f)
             state = data['Solver']['State']
@@ -93,7 +94,7 @@ def run_diagnostics(src, live = False, obj='current'):
             numeval.append(state['EvaluationCount'])
             f = state[objstrings(obj)[0]]
             dfval.append(abs(state["CurrentBestFunctionValue"] - state["BestEverFunctionValue"]))
-            if f > 0 : 
+            if f > 0 :
                 if ( (not numevalp) & (len(numevaln) > 0) ):
                     # trick for conintuous plot
                     numevalp.append(numevaln[-1])
@@ -116,49 +117,49 @@ def run_diagnostics(src, live = False, obj='current'):
                 axis[i].append(state['AxisLengths'][i])
                 ssdev[i].append(sigma[idx-1]*np.sqrt(state['CovarianceMatrix'][i][i]))
 
-        if idx < 2: 
+        if idx < 2:
             idx = idx + 1
             continue
 
         ax221 = plt.subplot(221)
         ax221.grid(True)
-        ax221.set_yscale('log')
-        if len(numevalp) > 0 : ax221.plot(numevalp, fvalpos,  color='b', label = '|FVal|')
-        if len(numevaln) > 0 : ax221.plot(numevaln, [abs(v) for v in fvalneg], color='r', label = '|FVal|')
-        ax221.plot(numeval, dfval, 'x', color = '#34495e', label = '|FVal - Best|')
-        ax221.plot(numeval, cond, color='#98D8D8', label = 'Cond')
-        ax221.plot(numeval, sigma, color='#F8D030', label = 'Sigma')
+        # ax221.set_yscale('log')
+        # if len(numevalp) > 0 : ax221.plot(numevalp, fvalpos,  color='b', label = '|FVal|')
+        # if len(numevaln) > 0 : ax221.plot(numevaln, [abs(v) for v in fvalneg], color='r', label = '|FVal|')
+        # ax221.plot(numeval, dfval, 'x', color = '#34495e', label = '|FVal - Best|')
+        # ax221.plot(numeval, cond, color='#98D8D8', label = 'Cond')
+        # ax221.plot(numeval, sigma, color='#F8D030', label = 'Sigma')
         #ax221.plot(numeval, psL2,  color='k', label = 'L2 Ps')
 
-        if idx == 2:
-            ax221.legend(bbox_to_anchor=(0,1.00,1,0.2), loc="lower left", mode="expand", ncol = 3, handlelength=1)
+        # if idx == 2:
+        #     ax221.legend(bbox_to_anchor=(0,1.00,1,0.2), loc="lower left", mode="expand", ncol = 3, handlelength=1)
 
-        ax222 = plt.subplot(222)
-        ax222.set_title('Object Variables')
-        ax222.grid(True)
-        for i in range(numdim):
-            ax222.plot(numeval, fvalXvec[i], color = colors[i], label=names[i])
-        
-        if idx == 2:
-            ax222.legend(bbox_to_anchor=(1.04,0.5), loc="center left", borderaxespad=0, handlelength=1)
+        # ax222 = plt.subplot(222)
+        # ax222.set_title('Object Variables')
+        # ax222.grid(True)
+        # for i in range(numdim):
+        #     ax222.plot(numeval, fvalXvec[i], color = colors[i], label=names[i])
+        #
+        # if idx == 2:
+        #     ax222.legend(bbox_to_anchor=(1.04,0.5), loc="center left", borderaxespad=0, handlelength=1)
+        #
+        # ax223 = plt.subplot(223)
+        # ax223.set_title('Scaling (All Main Axes)')
+        # ax223.grid(True)
+        # ax223.set_yscale('log')
+        # for i in range(numdim):
+        #     ax223.plot(numeval, axis[i], color = colors[i])
+        #
+        # ax224 = plt.subplot(224)
+        # ax224.set_title('Standard Deviation in All Coordinates')
+        # ax224.grid(True)
+        # ax224.set_yscale('log')
+        # for i in range(numdim):
+        #     ax224.plot(numeval, ssdev[i], color = colors[i], label=names[i])
 
-        ax223 = plt.subplot(223)
-        ax223.set_title('Scaling (All Main Axes)')
-        ax223.grid(True)
-        ax223.set_yscale('log')
-        for i in range(numdim):
-            ax223.plot(numeval, axis[i], color = colors[i])
-        
-        ax224 = plt.subplot(224)
-        ax224.set_title('Standard Deviation in All Coordinates')
-        ax224.grid(True)
-        ax224.set_yscale('log')
-        for i in range(numdim):
-            ax224.plot(numeval, ssdev[i], color = colors[i], label=names[i])
-       
-        plt_pause_light(0.05)
-        if(live == False): time.sleep(0.5)
-        idx = idx+1
+        # plt_pause_light(0.05)
+        # if(live == False): time.sleep(0.5)
+        # idx = idx+1
 
     fig.show()
 
@@ -169,6 +170,6 @@ if __name__ == '__main__':
         print  ("Plotting results from dir " + sys.argv[1])
         run_diagnostics(src=sys.argv[1], live = True)
 
-    else: 
+    else:
         print("Invalid arguments, exit ...")
         print("(one argument required, directoy of CMA-ES results)")

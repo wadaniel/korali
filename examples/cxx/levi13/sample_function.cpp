@@ -1,10 +1,10 @@
 #include "korali.h"
-#include "model/rosenbrock.h"
+#include "model/levi13.h"
 
 int main(int argc, char* argv[])
 {
  auto korali = Korali::Engine([](Korali::modelData& d) {
-	 rosenbrock(d.getParameters(), d.getResults());
+	 eggholder(d.getParameters(), d.getResults());
  });
 
  korali["Seed"] = 0xC0FFEE;
@@ -25,7 +25,6 @@ int main(int argc, char* argv[])
  korali["Solver"]["Covariance Scaling"] = 0.04;
  korali["Solver"]["Population Size"] = 30000;
 
- korali["Live Plotting"] = true;
  korali.run();
 
  return 0;

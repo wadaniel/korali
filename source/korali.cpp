@@ -273,7 +273,7 @@ void Korali::Engine::loadConfig(std::string fileName)
 
 void Korali::Engine::startPlot() const
 {
-  std::string cmd = "python `korali-config --prefix`/bin/" + _solver->getPlottingScript() + " " + _k->_resultsDirName + " &"; 
+  std::string cmd = "python3 `korali-config --prefix`/bin/" + _solver->getPlottingScript() + " " + _k->_resultsDirName + " &"; 
   int ret_code = system(cmd.c_str());
   if ( ret_code == -1 ) {  printf( "[Korali] Error in system call:\n\t %s\n", cmd.c_str()); exit(-1); }
 }

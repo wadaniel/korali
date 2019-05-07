@@ -31,8 +31,6 @@ class Base {
  virtual void setState(nlohmann::json& js);
 
  // Print Methods
- virtual void printGeneration() const = 0;
- virtual void printFinal() const = 0;
  virtual std::string getPlottingScript() const = 0;
 };
 

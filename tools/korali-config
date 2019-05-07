@@ -50,7 +50,7 @@ while test $# -gt 0; do
 	;;
 
     --version)
-	echo 1.0
+	echo $VERSION
 	exit 0
 	;;
 

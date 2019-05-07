@@ -25,7 +25,6 @@ int main(int argc, char* argv[])
  korali["Solver"]["Termination Criteria"]["Max Generations"] = 600;
  korali["Solver"]["Lambda"] = 128;
 
- korali["Live Plotting"] = true;
  korali.run();
 
  return 0;

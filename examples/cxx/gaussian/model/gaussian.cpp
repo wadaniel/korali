@@ -15,9 +15,8 @@ void gaussian(std::vector<double>& pars, std::vector<double>& result)
  gsl_vector_view vals_view = gsl_vector_view_array(pars.data(), nPars);
  double res = 0.0;
  gsl_ran_multivariate_gaussian_log_pdf(&vals_view.vector, &mean_view.vector, L, &res, &work_view.vector);
- result.push_back(-res);
+ result.push_back(res);
 }
-
 
 void gaussian_init(size_t nPars)
 {

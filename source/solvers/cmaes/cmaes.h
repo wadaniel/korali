@@ -32,6 +32,8 @@ class CMAES : public Korali::Solver::Base
  private:
 
  // Korali Runtime Variables
+ int _fitnessSign;
+ std::string _objective;
  double* _fitnessVector; /* objective function values [_s] */
  double* _samplePopulation; /* sample coordinates [_s x _k->N] */
  size_t _currentGeneration; /* generation count */
@@ -118,8 +120,8 @@ class CMAES : public Korali::Solver::Base
  bool isStoppingCriteriaActive(const char *criteria) const;
 
  // Print Methods
- void printGeneration() const override;
- void printFinal() const override;
+ void printGeneration() const;
+ void printFinal() const;
  std::string getPlottingScript() const override { return "plot_cmaes.py"; }
 
  void startPlot() const;

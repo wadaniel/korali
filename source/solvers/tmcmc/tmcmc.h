@@ -80,8 +80,7 @@ class TMCMC : public Korali::Solver::Base
  void setState(nlohmann::json& js) override;
 
  // Print Methods
- void printGeneration() const override;
- void printFinal() const override;
+ void printGeneration() const;
  std::string getPlottingScript() const override { return "plot_tmcmc.py"; }
 };
 

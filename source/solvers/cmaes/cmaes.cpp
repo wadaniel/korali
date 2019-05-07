@@ -322,7 +322,7 @@ void CMAES::run()
 
 void CMAES::processSample(size_t sampleId, double fitness)
 {
- _fitnessVector[sampleId] = _fitnessSign*fitness + _k->_problem->evaluateLogPrior(&_samplePopulation[sampleId * _k->N]);
+ _fitnessVector[sampleId] = _fitnessSign*fitness;
  _finishedSamples++;
 }
 
@@ -494,6 +494,7 @@ void CMAES::updateDistribution(const double *fitnessVector)
    }
  }
 
+ /*
  size_t horizon = 10 + ceil(3*10*_k->N/_s);
  double min = std::numeric_limits<double>::max();
  double max = std::numeric_limits<double>::min();
@@ -507,6 +508,7 @@ void CMAES::updateDistribution(const double *fitnessVector)
      fprintf(stderr, "[Korali] Warning: sigma increased due to equal histrocial function values.\n");
    }
  }
+ */
 
 }
 

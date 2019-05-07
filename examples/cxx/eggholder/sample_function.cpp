@@ -15,8 +15,8 @@ int main(int argc, char* argv[])
   korali["Parameters"][i]["Name"] = "X" + std::to_string(i);
   korali["Parameters"][i]["Distribution"] = "Uniform";
   korali["Parameters"][i]["Type"] = "Computational";
-  korali["Parameters"][i]["Minimum"] = -32.0;
-  korali["Parameters"][i]["Maximum"] = +32.0;
+  korali["Parameters"][i]["Minimum"] = -512.0;
+  korali["Parameters"][i]["Maximum"] = +512.0;
  }
 
  korali["Problem"]["Objective"] = "Direct Evaluation";

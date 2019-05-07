@@ -42,8 +42,8 @@ int main(int argc, char* argv[])
 
  korali["Solver"]["Method"] = "CMA-ES";
  korali["Solver"]["Lambda"] = 32;
- korali["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-7;
- korali["Solver"]["Termination Criteria"]["Fitness Diff Threshold"] = 1e-5;
+ korali["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-9;
+ korali["Solver"]["Termination Criteria"]["Fitness Diff Threshold"] = 1e-9;
  korali["Solver"]["Termination Criteria"]["Max Condition Covariance"] = 1e10;
 
  korali.run();

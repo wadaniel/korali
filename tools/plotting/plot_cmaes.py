@@ -52,6 +52,7 @@ def run_diagnostics(src, live = False, obj='current'):
     cond     = [] # condition of C (largest EW / smallest EW)
     psL2     = [] # conjugate evolution path L2 norm
     dfval    = [] # abs diff currentBest - bestEver
+    fval     = [] # best fval current generation
     fvalneg  = [] # best fval current generation (fval < 0)
     fvalpos  = [] # best fval current generation (fval > 0)
     fvalXvec = [] # location fval
@@ -66,16 +67,16 @@ def run_diagnostics(src, live = False, obj='current'):
 
     while( plt.fignum_exists(fig.number) ):
 
-        if ( not os.path.isfile('{0}/s{1}.json'.format(src, str(idx).zfill(5))) ):
+        path = '{0}/s{1}.json'.format(src, str(idx).zfill(5))
+        
+        if ( not os.path.isfile(path) ):
             if ( live == True ):
               if( idx > 0): plt_pause_light(0.5)
               continue
             else:
                 break
 
-        time.sleep(0.1) # XXX ok for now but needs better fix
-
-        path = '{0}/s{1}.json'.format(src, str(idx).zfill(5))
+        time.sleep(0.1) # XXX ok for now but needs better fix (GA)
 
         localtime = time.localtime(time.time())
 
@@ -115,22 +116,37 @@ def run_diagnostics(src, live = False, obj='current'):
                 continue
 
             numeval.append(state['EvaluationCount'])
-            f = state[objstrings(obj)[0]]
             dfval.append(abs(state["CurrentBestFunctionValue"] - state["BestEverFunctionValue"]))
-            if f > 0 :
-                if ( (not numevalp) & (len(numevaln) > 0) ):
-                    # trick for conintuous plot
-                    numevalp.append(numevaln[-1])
-                    fvalpos.append(fvalneg[-1])
-                fvalpos.append(f)
-                numevalp.append(numeval[-1])
+            
+            f = state[objstrings(obj)[0]]
+            fval.append(f)
+            if f >= 0 :
+                fvalneg.append(None)
+                
+                if (idx > 1 ):
+                        if (fvalpos != [] and fvalpos[-1] is None): 
+                            fvalpos[-1] = abs(fval[-2])
+                            fvalpos.append(abs(fval[-1]))
+                        elif (fvalpos == [] or fvalpos[-1] != fval[-2]): fvalpos.append(abs(fval[-2]))
+                        else:
+                            fvalpos.append(abs(fval[-1]))
+
+                else:
+                    fvalpos.append(abs(fval[-1]))
+
             else :
-                if ( (not numevaln) & (len(numevalp) > 0) ):
-                    # trick for conintuous plot
-                    numevaln.append(numevalp[-1])
-                    fvalneg.append(fvalpos[-1])
-                fvalneg.append(f)
-                numevaln.append(numeval[-1])
+                fvalpos.append(None)
+                
+                if (idx > 1):
+                    if (fvalneg != [] and fvalneg[-1] is None): 
+                        fvalneg[-1] = abs(fval[-2])
+                        fvalneg.append(abs(fval[-1]))
+                    elif (fvalneg == [] or fvalneg[-1] != fval[-2]): fvalneg.append(abs(fval[-2]))
+                    else:
+                        fvalneg.append(abs(fval[-1]))
+                else:
+                    fvalneg.append(abs(fval[-1]))
+                 
             sigma.append(state['Sigma'])
             cond.append(state['MaxEigenvalue']/state['MinEigenvalue'])
             psL2.append(state['ConjugateEvolutionPathL2'])
@@ -147,8 +163,9 @@ def run_diagnostics(src, live = False, obj='current'):
 
         ax[0,0].grid(True)
         ax[0,0].set_yscale('log')
-        if len(numevalp) > 0 : ax[0,0].plot(numevalp, fvalpos,  color='b', label = '| F |')
-        if len(numevaln) > 0 : ax[0,0].plot(numevaln, [abs(v) for v in fvalneg], color='r', label = '| F |')
+        #if len(fvalneg) > 0 : ax[0,0].plot(numeval, fvalpos, color='b', label = '| F |')
+        #if len(fvalpos) > 0 : ax[0,0].plot(numeval, fvalneg, color='r', label = '| F |')
+        ax[0,0].plot(numeval, [abs(v) for v in fval], color='r', label = '| F |')
         ax[0,0].plot(numeval, dfval, 'x', color = '#34495e', label = '| F - F_best |')
         ax[0,0].plot(numeval, cond, color='#98D8D8', label = 'Condition')
         ax[0,0].plot(numeval, sigma, color='#F8D030', label = 'Sigma')

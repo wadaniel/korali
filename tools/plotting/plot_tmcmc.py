@@ -103,7 +103,7 @@ def plot_samples(path, idx=None):
 # Plot TMCMC results (read from .json files)
 def run_diagnostics(src, live=False):
      
-    idx      = 1
+    idx      = 0
     finished = False
     
     while( not finished ):

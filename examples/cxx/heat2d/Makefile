@@ -1,4 +1,4 @@
-BINARIES = maximize_likelihood maximize_posterior sample_likelihood sample_posterior
+BINARIES = maximize_posterior sample_posterior
 OBJECTS = model/heat2d.o
 CXX = korali-cxx
 

@@ -17,6 +17,7 @@ class Likelihood : public Korali::Problem::Base
  size_t _sigmaPosition;
  size_t _referenceDataSize;
  double evaluateFitness(double* sample) override;
+ double evaluateLogPrior(double* sample) override;
 
  // Constructor / Destructor
  Likelihood(nlohmann::json& js);

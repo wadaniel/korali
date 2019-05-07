@@ -2,7 +2,6 @@ site_name: korali
 repo_name: 'cselab/skorali'
 repo_url: 'https://github.com/cselab/skorali'
 
-
 nav:
   - Home: index.md
   - Installation: installation.md
@@ -13,9 +12,29 @@ nav:
       - Python:
         - Direct problems: quick_start/python/direct.md
         - Bayesian Inference: quick_start/python/posterior.md
-  - Documentation:
-      - Hierarchy: documentation/hierarchy.md
-      - Tools: documentation/tools.md
+  - Usage:
+      - General Settings: usage/settings.md
+      - Problem:
+          - Direct evaluation: usage/problem/direct.md
+          - Bayesian inference: usage/problem/bayesian.md
+      - Distributions:
+          - Uniform: usage/distributions/uniform.md
+          - Gaussian: usage/distributions/gaussian.md
+      - Solvers:
+          - Optimizers:
+            - CMA-ES: usage/solvers/optimizers/cmaes.md
+          - Samplers:
+            - TMCMC: usage/solvers/samplers/tmcmc.md
+      - Conduits:
+          - Sequential: usage/conduits/sequential.md
+          - Multithreaded: usage/conduits/multithreaded.md
+          - UPC++: usage/conduits/upcxx.md
+          - MPI: usage/conduits/mpi.md
+  - Tools:
+      - configure: tools/configure.md
+      - korali-cxx: tools/korali-cxx.md
+      - korali-config: tools/korali-config.md
+      - korali-plot: tools/korali-plot.md
   - References: references.md
 
 
@@ -36,8 +55,6 @@ markdown_extensions:
   - pymdownx.details
   - admonition
   - codehilite
-
-
 
 extra_javascript:
   - 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML'

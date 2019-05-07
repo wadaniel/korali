@@ -322,7 +322,7 @@ void CMAES::run()
 
 void CMAES::processSample(size_t sampleId, double fitness)
 {
- _fitnessVector[sampleId] = _fitnessSign*fitness;
+ _fitnessVector[sampleId] = _fitnessSign*fitness + _k->_problem->evaluateLogPrior(&_samplePopulation[sampleId * _k->N]);
  _finishedSamples++;
 }
 

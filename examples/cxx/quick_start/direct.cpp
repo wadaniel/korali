@@ -4,7 +4,7 @@
 
 void F(std::vector<double>& x, std::vector<double>& result){
 
-  result.push_back( pow( x[0]-2. , 2) );
+  result.push_back( -pow( x[0]-2. , 2) );
 }
 
 int main(int argc, char* argv[])
@@ -52,6 +52,7 @@ int main(int argc, char* argv[])
 
   korali["Seed"] = 0xC0FFEE;
   korali["Verbosity"] = "Detailed";
+  korali["Live Plotting"] = true;
 
   korali.run();
   return 0;

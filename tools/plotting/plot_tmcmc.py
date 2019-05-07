@@ -108,14 +108,15 @@ def run_diagnostics(src, live=False):
     
     while( not finished ):
 
-        if ( not os.path.isfile('{0}/s{1}.json'.format(src, str(idx).zfill(5))) ):
+        path = '{0}/s{1}.json'.format(src, str(idx).zfill(5))
+        if ( not os.path.isfile(path) ):
             if ( live == True ):    
-                plt_pause_light(0.05)
+                if (idx > 1): plt_pause_light(0.05)
                 continue
             else: 
                 break
 
-        path   = '{0}/s{1}.json'.format(src, str(idx).zfill(5))
+        time.sleep(0.1)
         anneal = plot_samples(path, idx)
         
         plt_pause_light(0.05) 

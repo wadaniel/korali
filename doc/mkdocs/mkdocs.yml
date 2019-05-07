@@ -15,6 +15,7 @@ nav:
         - Bayesian Inference: quick_start/python/posterior.md
   - Documentation:
       - Hierarchy: documentation/hierarchy.md
+      - Tools: documentation/tools.md
   - References: references.md
 
 

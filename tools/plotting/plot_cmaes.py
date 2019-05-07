@@ -7,7 +7,12 @@ import time
 import json
 import colorsys
 import numpy as np
+
+import matplotlib
+# matplotlib.rcParams['text.usetex'] = True
+# matplotlib.rcParams['text.latex.unicode'] = True
 import matplotlib.pyplot as plt
+
 
 from plot_helpers import plt_pause_light
 
@@ -54,25 +59,44 @@ def run_diagnostics(src, live = False, obj='current'):
     ssdev    = [] # sigma x diag(C)
 
     plt.style.use('seaborn-dark')
-    fig = plt.figure('CMA-ES live diagnostics: {0}'.format(src),figsize=(8,8))
+    fig, ax = plt.subplots(2,2,num='CMA-ES live diagnostics: {0}'.format(src),figsize=(11,11))
     fig.show()
+
+    updt_text = plt.figtext(0.5, 0.01, 'TEST', horizontalalignment='center');
 
     while( plt.fignum_exists(fig.number) ):
 
         if ( not os.path.isfile('{0}/s{1}.json'.format(src, str(idx).zfill(5))) ):
-            if ( live == True  ):
-                plt_pause_light(0.5)
-                continue
+            if ( live == True ):
+              if( idx > 0): plt_pause_light(0.5)
+              continue
             else:
                 break
+
+        time.sleep(0.1) # XXX ok for now but needs better fix
 
         path = '{0}/s{1}.json'.format(src, str(idx).zfill(5))
 
         localtime = time.localtime(time.time())
-        plt.suptitle('s{0}.json\n(last update:{1}:{2}:{3})'.format(str(idx).zfill(5),\
-                    str(localtime.tm_hour).zfill(2),\
-                    str(localtime.tm_min).zfill(2),\
-                    str(localtime.tm_sec).zfill(2)), fontsize=12)
+
+        plt.suptitle( 'Generation {0}'.format(str(idx).zfill(5)),\
+                      fontweight='bold',\
+                      fontsize=12 )
+
+        tmp_str = 'last update:{0}:{1}:{2}'.format(\
+                          str(localtime.tm_hour).zfill(2),\
+                          str(localtime.tm_min).zfill(2),\
+                          str(localtime.tm_sec).zfill(2))
+
+        updt_text.set_text( tmp_str )
+
+        # plt.figtext(0.05,0.00, date_str, fontsize=14 )
+
+        # plt.suptitle('s{0}.json\n(last update:{1}:{2}:{3})'.format(\
+        #             str(idx).zfill(5),\
+        #             str(localtime.tm_hour).zfill(2),\
+        #             str(localtime.tm_min).zfill(2),\
+        #             str(localtime.tm_sec).zfill(2)), fontsize=12)
 
         with open(path) as f:
             data  = json.load(f)
@@ -120,41 +144,41 @@ def run_diagnostics(src, live = False, obj='current'):
             idx = idx + 1
             continue
 
-        ax221 = plt.subplot(221)
-        ax221.grid(True)
-        ax221.set_yscale('log')
-        if len(numevalp) > 0 : ax221.plot(numevalp, fvalpos,  color='b', label = '|FVal|')
-        if len(numevaln) > 0 : ax221.plot(numevaln, [abs(v) for v in fvalneg], color='r', label = '|FVal|')
-        ax221.plot(numeval, dfval, 'x', color = '#34495e', label = '|FVal - Best|')
-        ax221.plot(numeval, cond, color='#98D8D8', label = 'Cond')
-        ax221.plot(numeval, sigma, color='#F8D030', label = 'Sigma')
-        #ax221.plot(numeval, psL2,  color='k', label = 'L2 Ps')
+
+        ax[0,0].grid(True)
+        ax[0,0].set_yscale('log')
+        if len(numevalp) > 0 : ax[0,0].plot(numevalp, fvalpos,  color='b', label = '| F |')
+        if len(numevaln) > 0 : ax[0,0].plot(numevaln, [abs(v) for v in fvalneg], color='r', label = '| F |')
+        ax[0,0].plot(numeval, dfval, 'x', color = '#34495e', label = '| F - F_best |')
+        ax[0,0].plot(numeval, cond, color='#98D8D8', label = 'Condition')
+        ax[0,0].plot(numeval, sigma, color='#F8D030', label = 'Sigma')
+        ax[0,0].plot(numeval, psL2,  color='k', label = '|| Path ||')
+
 
         if idx == 2:
-            ax221.legend(bbox_to_anchor=(0,1.00,1,0.2), loc="lower left", mode="expand", ncol = 3, handlelength=1)
+            ax[0,0].legend(bbox_to_anchor=(0,1.00,1,0.2), loc="lower left", mode="expand", ncol = 3, handlelength=1)
 
-        ax222 = plt.subplot(222)
-        ax222.set_title('Object Variables')
-        ax222.grid(True)
+        ax[0,1].set_title('Objective Variables')
+        ax[0,1].grid(True)
         for i in range(numdim):
-            ax222.plot(numeval, fvalXvec[i], color = colors[i], label=names[i])
+            ax[0,1].plot(numeval, fvalXvec[i], color = colors[i], label=names[i])
 
         if idx == 2:
-            ax222.legend(bbox_to_anchor=(1.04,0.5), loc="center left", borderaxespad=0, handlelength=1)
+            ax[0,1].legend(bbox_to_anchor=(1.04,0.5), loc="center left", borderaxespad=0, handlelength=1)
 
-        ax223 = plt.subplot(223)
-        ax223.set_title('Scaling (All Main Axes)')
-        ax223.grid(True)
-        ax223.set_yscale('log')
-        for i in range(numdim):
-            ax223.plot(numeval, axis[i], color = colors[i])
 
-        ax224 = plt.subplot(224)
-        ax224.set_title('Standard Deviation in All Coordinates')
-        ax224.grid(True)
-        ax224.set_yscale('log')
+        ax[1,0].set_title('Scaling (All Main Axes)')
+        ax[1,0].grid(True)
+        ax[1,0].set_yscale('log')
         for i in range(numdim):
-            ax224.plot(numeval, ssdev[i], color = colors[i], label=names[i])
+            ax[1,0].plot(numeval, axis[i], color = colors[i])
+
+
+        ax[1,1].set_title('Standard Deviation in All Coordinates')
+        ax[1,1].grid(True)
+        ax[1,1].set_yscale('log')
+        for i in range(numdim):
+            ax[1,1].plot(numeval, ssdev[i], color = colors[i], label=names[i])
 
         plt_pause_light(0.05)
         if(live == False): time.sleep(0.5)

@@ -53,7 +53,7 @@ static bool isEmpty(nlohmann::json& js)
   for (auto& el : js.items())
   {
    bool elEmpty = isEmpty(el.value());
-   erasedKeys.push_back(el.key());
+   if (elEmpty == true) erasedKeys.push_back(el.key());
    empty = empty && elEmpty;
   }
   for (size_t i = 0; i < erasedKeys.size(); i++) js.erase(erasedKeys[i]);

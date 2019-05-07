@@ -3,9 +3,7 @@
 
 int main(int argc, char* argv[])
 {
- auto korali = Korali::Engine([](Korali::modelData& d) {
-	 ackley(d.getParameters(), d.getResults());
- });
+ auto korali = Korali::Engine([](Korali::modelData& d) { ackley(d.getParameters(), d.getResults()); });
 
  korali["Seed"] = 0xC0FFEE;
  korali["Verbosity"] = "Detailed";
@@ -17,6 +15,7 @@ int main(int argc, char* argv[])
   korali["Parameters"][i]["Distribution"] = "Uniform";
   korali["Parameters"][i]["Minimum"] = -32.0;
   korali["Parameters"][i]["Maximum"] = +32.0;
+  korali["Parameters"][i]["Initial StdDev"] = 6.0;
  }
 
  korali["Problem"]["Objective"] = "Direct Evaluation";
@@ -25,8 +24,6 @@ int main(int argc, char* argv[])
  korali["Solver"]["Covariance Scaling"] = 0.02;
  korali["Solver"]["Population Size"] = 5000;
  
- korali["Live Plotting"] = true;
-
  korali.run();
 
  return 0;

@@ -82,7 +82,6 @@ nlohmann::json Korali::Engine::getConfiguration()
  if (_verbosity == KORALI_DETAILED) js["Verbosity"] = "Detailed";
 
  js["Output Frequency"] = _outputFrequency;
- js["Live Plotting"]    = _pyplot;
 
  for (size_t i = 0; i < N; i++) js["Parameters"][i] = _parameters[i]->getConfiguration();
  js["Problem"] = _problem->getConfiguration();
@@ -127,7 +126,6 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
 
  _outputFrequency = consume(js, { "Output Frequency" }, KORALI_NUMBER, "1");
  _resultsDirName  = consume(js, { "Output Directory" }, KORALI_STRING, _resultsDirName);
- _pyplot          = consume(js, { "Live Plotting" }, KORALI_BOOLEAN, "false");
 
  // Configure Parameters
  std::vector<Korali::Parameter::Base*> tmp;
@@ -233,7 +231,7 @@ void Korali::Engine::run()
  // Creating Results directory
  mkdir(_resultsDirName.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
- if (_pyplot) startPlot();
+ startPlot();
 
  // Running Engine
  _conduit->run();
@@ -273,7 +271,7 @@ void Korali::Engine::loadConfig(std::string fileName)
 
 void Korali::Engine::startPlot() const
 {
-  std::string cmd = "python `korali-config --prefix`/bin/" + _solver->getPlottingScript() + " " + _k->_resultsDirName + " &"; 
+  std::string cmd = "python `korali-config --prefix`/bin/" + _solver->getPlottingScript() + " " + _k->_resultsDirName + " &";
   int ret_code = system(cmd.c_str());
   if ( ret_code == -1 ) {  printf( "[Korali] Error in system call:\n\t %s\n", cmd.c_str()); exit(-1); }
 }

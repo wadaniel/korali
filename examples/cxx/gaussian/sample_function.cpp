@@ -3,12 +3,10 @@
 
 int main(int argc, char* argv[])
 {
- auto korali = Korali::Engine([](Korali::modelData& d) {
-	 gaussian(d.getParameters(), d.getResults());
- });
+ auto korali = Korali::Engine([](Korali::modelData& d) { gaussian(d.getParameters(), d.getResults()); });
 
  korali["Seed"] = 0xC0FFEE;
- korali["Verbosity"] = "Normal";
+ korali["Verbosity"] = "Detailed";
 
  size_t nPars = 4;
  for (size_t i = 0; i < nPars; i++)
@@ -21,6 +19,7 @@ int main(int argc, char* argv[])
  }
 
  korali["Problem"]["Objective"] = "Direct Evaluation";
+
  korali["Solver"]["Method"] = "TMCMC";
  korali["Solver"]["Covariance Scaling"] = 0.02;
  korali["Solver"]["Population Size"] = 5000;

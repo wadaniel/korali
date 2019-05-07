@@ -135,6 +135,7 @@ nlohmann::json CMAES::getConfiguration()
  js["Current Generation"]      = _currentGeneration;
  js["Sigma Cumulation Factor"] = _sigmaCumulationFactor;
  js["Damp Factor"]             = _dampFactor;
+ js["Objective"]               = _objective;
 
  js["Mu"]["Value"]      = _mu;
  js["Mu"]["Type"]       = _muType;
@@ -158,6 +159,7 @@ nlohmann::json CMAES::getConfiguration()
 
  // State Variables
  js["State"]["Current Generation"]       = _currentGeneration;
+ js["State"]["Fitness Sign"]             = _fitnessSign;
  js["State"]["Sigma"]                    = sigma;
  js["State"]["BestEverFunctionValue"]    = bestEver;
  js["State"]["CurrentBestFunctionValue"] = currentFunctionValue;
@@ -196,6 +198,12 @@ void CMAES::setConfiguration(nlohmann::json& js)
  _currentGeneration             = consume(js, { "Current Generation" }, KORALI_NUMBER, std::to_string(0));
  _sigmaCumulationFactor         = consume(js, { "Sigma Cumulation Factor" }, KORALI_NUMBER, std::to_string(-1));
  _dampFactor                    = consume(js, { "Damp Factor" }, KORALI_NUMBER, std::to_string(-1));
+ _objective                     = consume(js, { "Objective" }, KORALI_STRING, "Maximize");
+
+ _fitnessSign = 0;
+ if(_objective == "Maximize") _fitnessSign = 1;
+ if(_objective == "Minimize") _fitnessSign = -1;
+ if(_fitnessSign == 0)  { fprintf( stderr, "[Korali] Error: Invalid setting for Objective: %s\n", _objective.c_str()); exit(-1); }
 
  _mu                            = consume(js, { "Mu", "Value" }, KORALI_NUMBER, std::to_string(ceil(_s / 2)));
  _muType                        = consume(js, { "Mu", "Type" }, KORALI_STRING, "Logarithmic");
@@ -244,7 +252,9 @@ void CMAES::setConfiguration(nlohmann::json& js)
 void CMAES::setState(nlohmann::json& js)
 {
  this->Korali::Solver::Base::setState(js);
+
  _currentGeneration    = js["State"]["Current Generation"];
+ _fitnessSign          = js["State"]["Fitness Sign"];
  sigma                 = js["State"]["Sigma"];
  bestEver              = js["State"]["BestEverFunctionValie"];
  currentFunctionValue  = js["State"]["CurrentBestFunctionValue"];
@@ -276,7 +286,7 @@ void CMAES::setState(nlohmann::json& js)
 
 void CMAES::run()
 {
- if (_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Starting CMA-ES.\n");
+ if (_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Starting CMA-ES (Objective: %s).\n", _objective.c_str());
 
   startTime = std::chrono::system_clock::now();
   _k->saveState();
@@ -311,7 +321,7 @@ void CMAES::run()
 
 void CMAES::processSample(size_t sampleId, double fitness)
 {
- _fitnessVector[sampleId] = -fitness;
+ _fitnessVector[sampleId] = _fitnessSign*fitness;
  _finishedSamples++;
 }
 
@@ -699,50 +709,51 @@ bool CMAES::isStoppingCriteriaActive(const char *criteria) const
 
 void CMAES::printGeneration() const
 {
-  if (_currentGeneration % _k->_outputFrequency != 0) return;
+ if (_currentGeneration % _k->_outputFrequency != 0) return;
 
-  if (_k->_verbosity >= KORALI_NORMAL)
-    printf("\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+ if (_k->_verbosity >= KORALI_NORMAL)
+   printf("--------------------------------------------------------------------\n");
 
-  if (_k->_verbosity >= KORALI_MINIMAL)
-    printf("[Korali] Generation %ld - Duration: %fs (Total Elapsed Time: %fs)\n",
-              _currentGeneration, std::chrono::duration<double>(t1-t0).count(), std::chrono::duration<double>(t1-startTime).count());
+ if (_k->_verbosity >= KORALI_MINIMAL)
+   printf("[Korali] Generation %ld - Duration: %fs (Total Elapsed Time: %fs)\n", _currentGeneration, std::chrono::duration<double>(t1-t0).count(), std::chrono::duration<double>(t1-startTime).count());
 
-  if (_k->_verbosity >= KORALI_NORMAL){
-    printf("[Korali] Current Function Value: %e - Best: %e\n", -currentFunctionValue, -bestEver);
-    printf("[Korali] Sigma: %e\n", sigma);
-    printf("[Korali] Min Diag C: %e - Max Diag C: %e\n", mindiagC, maxdiagC);
-    printf("[Korali] Min Eig C: %e - Max Eig C: %e\n", minEW, maxEW);
+ if (_k->_verbosity >= KORALI_NORMAL)
+ {
+  printf("[Korali] Sigma:                        %+6.3e\n", sigma);
+  printf("[Korali] Current Function Value: Min = %+6.3e - Best = %+6.3e\n", currentFunctionValue, bestEver);
+  printf("[Korali] Diagonal Covariance:    Min = %+6.3e -  Max = %+6.3e\n", mindiagC, maxdiagC);
+  printf("[Korali] Covariance Eigenvalues: Min = %+6.3e -  Max = %+6.3e\n", minEW, maxEW);
+ }
+
+ if (_k->_verbosity >= KORALI_DETAILED)
+ {
+  printf("[Korali] Parameter = (MeanX, BestX):\n");
+  for (size_t i = 0; i < _k->N; i++)  printf("         %s = (%+6.3e, %+6.3e)\n", _k->_parameters[i]->_name.c_str(), rgxmean[i], rgxbestever[i]);
+
+  printf("[Korali] Covariance Matrix:\n");
+  for (size_t i = 0; i < _k->N; i++)
+  {
+   for (size_t j = 0; j <= i; j++) printf("   %+6.3e  ",C[i][j]);
+   printf("\n");
   }
 
-
-  if (_k->_verbosity >= KORALI_DETAILED){
-    printf("\n[Korali] MeanX: \t\t BestX:\n");
-    for (size_t i = 0; i < _k->N; i++)  printf("\t %.5f \t\t %.5f\n", rgxmean[i], rgxbestever[i]);
-
-    printf("\n[Korali] C:\n");
-    for (size_t i = 0; i < _k->N; i++){
-        for (size_t j = 0; j <= i; j++) printf("\t%g\t",C[i][j]);
-        printf("\n");
-    }
-    printf("\n[Korali] Number of Function Evaluations: %zu\n", countevals);
-    printf("[Korali] Number of Infeasible Samples: %zu\n", countinfeasible);
-  }
-
+  printf("[Korali] Number of Function Evaluations: %zu\n", countevals);
+  printf("[Korali] Number of Infeasible Samples: %zu\n", countinfeasible);
+ }
 }
 
 void CMAES::printFinal() const
 {
  if (_k->_verbosity >= KORALI_MINIMAL)
  {
-    printf("\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
-    printf("[Korali] Generation %ld - Finished\n", _currentGeneration);
-    printf("[Korali] Optimum found: %e\n", -bestEver);
-    printf("[Korali] Optimum found at:\n\n");
-    for (size_t i = 0; i < _k->N; i++) printf("\t %g\n", rgxbestever[i]);
-    printf("\n[Korali] Number of Function Evaluations: %zu\n", countevals);
+    printf("--------------------------------------------------------------------\n");
+    printf("[Korali] CMA-ES Finished\n");
+    printf("[Korali] Optimum (%s) found: %e\n", _objective.c_str(), bestEver);
+    printf("[Korali] Optimum (%s) found at:\n", _objective.c_str());
+    for (size_t i = 0; i < _k->N; i++) printf("         %s = %+6.3e\n", _k->_parameters[i]->_name.c_str(), rgxbestever[i]);
+    printf("[Korali] Number of Function Evaluations: %zu\n", countevals);
     printf("[Korali] Number of Infeasible Samples: %zu\n", countinfeasible);
-    printf("[Korali] Stopping Criteria: %s\n", _terminationReason);
+    printf("[Korali] Stopping Criterium: %s\n", _terminationReason);
     printf("[Korali] Total Elapsed Time: %fs\n", std::chrono::duration<double>(endTime-startTime).count());
  }
 }

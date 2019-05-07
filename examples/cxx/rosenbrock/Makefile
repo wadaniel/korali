@@ -1,4 +1,4 @@
-BINARIES = minimize_function sample_function
+BINARIES = maximize_function sample_function
 OBJECTS = model/rosenbrock.o
 KCXX = korali-cxx
 

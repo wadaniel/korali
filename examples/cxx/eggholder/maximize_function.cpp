@@ -8,7 +8,7 @@ int main(int argc, char* argv[])
  });
 
  //korali["Seed"] = 0xC0FFEE;
- korali["Verbosity"] = "Normal";
+ korali["Verbosity"] = "Detailed";
 
  for (int i = 0; i < 2; i++)
  {
@@ -23,7 +23,7 @@ int main(int argc, char* argv[])
 
  korali["Solver"]["Method"] = "CMA-ES";
  korali["Solver"]["Termination Criteria"]["Max Generations"] = 600;
- korali["Solver"]["Lambda"] = 128;
+ korali["Solver"]["Lambda"] = 8;
 
  korali.run();
 

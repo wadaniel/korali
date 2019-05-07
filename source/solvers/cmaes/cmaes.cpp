@@ -27,6 +27,7 @@ CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
  curBestVector = (double *) calloc (sizeof(double), _k->N);
 
  rgFuncValue = (double*) calloc (sizeof(double), _s);
+ histFuncValues = (double*) calloc (sizeof(double), _maxGenenerations);
  index = (size_t *) calloc (sizeof(size_t*), _s);
 
  C = (double**) calloc (sizeof(double*), _k->N);
@@ -349,13 +350,6 @@ void CMAES::prepareGeneration()
   }
  }
 
- /* treat minimal standard deviations and numeric problems */
- for (size_t i = 0; i < _k->N; ++i)
-  while (sigma * sqrt(C[i][i]) < _k->_parameters[i]->_minStdDevChange) {
-   sigma *= exp(0.05+_sigmaCumulationFactor/_dampFactor);
-   if (_k->_verbosity >= KORALI_DETAILED) fprintf(stderr, "[Korali] Warning: sigma increased due to minimal standard deviation.\n");
-   }
-
  for (size_t iNk = 0; iNk < _s; ++iNk)
  { /* generate scaled random vector (D * z) */
   for (size_t i = 0; i < _k->N; ++i)
@@ -406,20 +400,11 @@ void CMAES::updateDistribution(const double *fitnessVector)
  int flgdiag = doDiagUpdate();
  countevals += _s;
 
- /* assign function values */
- for (size_t i = 0; i < _s; i++) rgFuncValue[i] = -fitnessVector[i];
-
  /* Generate index */
  sorted_index(fitnessVector, index, _s);
 
- /* Test if function values are identical, escape flat fitness */
- if (rgFuncValue[index[0]] == rgFuncValue[index[(int)_mu]]) {
-  sigma *= exp(0.2+_sigmaCumulationFactor/_dampFactor);
-   if (_k->_verbosity >= KORALI_DETAILED) {
-    fprintf(stderr, "[Korali] Warning: sigma increased due to equal function values.\n");
-    fprintf(stderr, "[Korali] Reconsider the formulation of the objective function\n");
-   }
-  }
+ /* assign function values */
+ for (size_t i = 0; i < _s; i++) rgFuncValue[i] = fitnessVector[i];
 
  /* update function value history */
  prevFunctionValue = currentFunctionValue;
@@ -427,14 +412,16 @@ void CMAES::updateDistribution(const double *fitnessVector)
  /* update current best */
  currentFunctionValue = fitnessVector[index[0]];
  for (size_t i = 0; i < _k->N; ++i) curBestVector[i] = _samplePopulation[index[0]*_k->N + i];
-
+ 
  /* update xbestever */
- if (fitnessVector[index[0]] > bestEver || _currentGeneration == 1)
+ if (currentFunctionValue > bestEver || _currentGeneration == 1)
  {
   prevBest = bestEver;
   bestEver = currentFunctionValue;
   for (size_t i = 0; i < _k->N; ++i) rgxbestever[i] = curBestVector[i];
  }
+
+ histFuncValues[_currentGeneration] = bestEver;
 
  /* calculate rgxmean and rgBDz */
  for (size_t i = 0; i < _k->N; ++i) {
@@ -480,6 +467,47 @@ void CMAES::updateDistribution(const double *fitnessVector)
 
  /* update of sigma */
  sigma *= exp(((sqrt(psL2)/_chiN)-1.)*_sigmaCumulationFactor/_dampFactor);
+
+ /* numerical error management */
+ 
+ //treat maximal standnard deviations
+ //TODO
+
+ //treat minimal standard deviations
+ for (size_t i = 0; i < _k->N; ++i)
+   if (sigma * sqrt(C[i][i]) < _k->_parameters[i]->_minStdDevChange) {
+     sigma = (_k->_parameters[i]->_minStdDevChange)/sqrt(C[i][i]) * exp(0.05+_sigmaCumulationFactor/_dampFactor);
+     if (_k->_verbosity >= KORALI_DETAILED) fprintf(stderr, "[Korali] Warning: sigma increased due to minimal standard deviation.\n");
+   }
+
+ //too low coordinate axis deviations
+ //TODO
+ 
+ //treat numerical precision provblems
+ //TODO
+
+ /* Test if function values are identical, escape flat fitness */
+ if (currentFunctionValue == rgFuncValue[index[(int)_mu]]) {
+   sigma *= exp(0.2+_sigmaCumulationFactor/_dampFactor);
+   if (_k->_verbosity >= KORALI_DETAILED) {
+     fprintf(stderr, "[Korali] Warning: sigma increased due to equal function values.\n");
+   }
+ }
+
+ size_t horizon = 10 + ceil(3*10*_k->N/_s);
+ double min = std::numeric_limits<double>::max();
+ double max = std::numeric_limits<double>::min();
+ for(size_t i = 0; (i < horizon) && (_currentGeneration - i >= 0); i++) {
+    if ( histFuncValues[_currentGeneration-i] < min ) min = histFuncValues[_currentGeneration];
+    if ( histFuncValues[_currentGeneration-i] > max ) max = histFuncValues[_currentGeneration];
+ }
+ if (max-min < 1e-12) {
+   sigma *= exp(0.2+_sigmaCumulationFactor/_dampFactor);
+   if (_k->_verbosity >= KORALI_DETAILED) {
+     fprintf(stderr, "[Korali] Warning: sigma increased due to equal histrocial function values.\n");
+   }
+ }
+
 }
 
 void CMAES::adaptC2(int hsig)
@@ -525,7 +553,7 @@ bool CMAES::checkTermination()
  }
 
   double range = fabs(currentFunctionValue - prevFunctionValue);
-  if (_currentGeneration > 0 && range <= _stopFitnessDiffThreshold && isStoppingCriteriaActive("Fitness Diff Threshold") )
+  if (_currentGeneration > 2 && range <= _stopFitnessDiffThreshold && isStoppingCriteriaActive("Fitness Diff Threshold") )
  {
   terminate = true;
   sprintf(_terminationReason, "Function value differences (%7.2e) < (%7.2e)",  range, _stopFitnessDiffThreshold);

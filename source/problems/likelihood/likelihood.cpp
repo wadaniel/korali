@@ -78,3 +78,9 @@ double Korali::Problem::Likelihood::evaluateFitness(double* sample)
  return Korali::Parameter::Gaussian::logLikelihood(sigma, _referenceDataSize, _referenceData, fitnessData);
 }
 
+double Korali::Problem::Likelihood::evaluateLogPrior(double* sample)
+{
+ double logPrior = 0.0;
+ for (size_t i = 0; i < _k->N; i++) logPrior += _k->_parameters[i]->getDensityLog(sample[i]);
+ return logPrior;
+}

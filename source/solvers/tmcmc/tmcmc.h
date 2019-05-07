@@ -37,9 +37,9 @@ class TMCMC : public Korali::Solver::Base
  gsl_rng** chainGSLRange;
  bool*   chainPendingFitness; /* Indicates that the fitness result for the chain is pending */
  double* ccPoints; /* Chain candidate parameter values */
- double* ccFitness; /* Chain candidate fitness value */
+ double* ccLogLikelihood; /* Chain candidate fitness value */
  double* clPoints; /* Chain leader parameter values */
- double* clFitness; /* Chain leader fitness */
+ double* clLogLikelihood; /* Chain leader fitness */
  size_t  finishedChains; 
  size_t* chainCurrentStep;
  size_t* chainLength;

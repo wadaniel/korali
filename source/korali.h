@@ -7,7 +7,6 @@
 
 #include "problems/direct/direct.h"
 #include "problems/likelihood/likelihood.h"
-#include "problems/posterior/posterior.h"
 
 #include "parameters/exponential/exponential.h"
 #include "parameters/gamma/gamma.h"

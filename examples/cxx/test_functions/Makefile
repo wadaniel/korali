@@ -6,7 +6,7 @@ KORALICXX = korali-cxx
 all: $(BINARIES)
 
 $(BINARIES) : % : %.o models/models.a
-	$(KORALICXX) -o $@ $^ 
+	$(KORALICXX) -o $@ $^
 
 models/models.a:
 	$(MAKE) -C models all

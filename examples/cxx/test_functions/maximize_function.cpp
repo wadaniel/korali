@@ -3,12 +3,18 @@
 #include "models/eggholder.h"
 #include "models/levi13.h"
 #include "models/rosenbrock.h"
+#include "models/shekel.h"
 
 int main(int argc, char* argv[])
 {
 
-  if(argc<2){
-    printf("\nInvalid Args! Usage:\n\t./maximize_function 1 (=maximize -ackley)\n\t./maximize_function 2 (=maximize -eggholder)\n\t./maximize_function 3 (=maximize -levi13)\n\t./maximize_function 4 (=maximize -rosenbrock)\n\n");
+  if(argc<2){ 
+    printf("\nInvalid Args! Usage:\n"
+       "\t./maximize_function 1 (=maximize -ackley)\n"
+       "\t./mazimize_function 2 (=mazimize -eggholder)\n"
+       "\t./mazimize_function 3 (=mazimize -levi13)\n"
+       "\t./mazimize_function 4 (=mazimzie -rosenbrock)\n"
+       "\t./mazimize_function 5 (=maximize --shekel)\n\n");
     exit(1);
   }
 
@@ -34,7 +40,23 @@ int main(int argc, char* argv[])
 
     case 4: 
         nParams = 2; lower = -32.0; upper = 32.0;
-        model = [](Korali::modelData& d) { m_rosenbrock(d.getParameters(), d.getResults()); }; break;
+        model = [](Korali::modelData& d) { m_rosenbrock(d.getParameters(), d.getResults()); }; 
+        break;
+
+    case 5:  
+        nParams = 4; lower = 0.0; upper = 10.0;
+        model = [](Korali::modelData& d) { m_shekel(d.getParameters(), d.getResults()); }; 
+        break;
+
+    default:
+        printf("\nInvalid Args! Usage:\n"
+           "\t./maximize_function 1 (=maximize -ackley)\n"
+           "\t./mazimize_function 2 (=mazimize -eggholder)\n"
+           "\t./mazimize_function 3 (=mazimize -levi13)\n"
+           "\t./mazimize_function 4 (=mazimzie -rosenbrock)\n"
+           "\t./mazimize_function 5 (=maximize -shekel)\n\n");
+        exit(1);
+ 
 
  }
 

@@ -3,12 +3,18 @@
 #include "models/eggholder.h"
 #include "models/levi13.h"
 #include "models/rosenbrock.h"
+#include "models/shekel.h"
 
 int main(int argc, char* argv[])
 {
   
-  if(argc<2){
-    printf("\nInvalid Args! Usage:\n\t./sample_function 1 (=sample exp(-ackley))\n\t./sample_function 2 (=sample exp(-eggholder))\n\t./sample_function 3 (=sample exp(-levi13))\n\t./sample_function 4 (=sample exp(-rosenbrock))\n\n");
+  if( argc<2 ){
+    printf("\nInvalid Args! Usage:\n"
+           "\t./sample_function 1 (=sample exp(-ackley))\n"
+           "\t./sample_function 2 (=sample exp(-eggholder))\n"
+           "\t./sample_function 3 (=sample exp(-levi13))\n"
+           "\t./sample_function 4 (=sample exp(-rosenbrock))\n"
+           "\t./sample_function 5 (=sample exp(-shekel)\n\n");
     exit(1);
   }
 
@@ -34,8 +40,22 @@ int main(int argc, char* argv[])
 
     case 4: 
         nParams = 2; lower = -32.0; upper = 32.0;
-        model = [](Korali::modelData& d) { m_rosenbrock(d.getParameters(), d.getResults()); }; break;
+        model = [](Korali::modelData& d) { m_rosenbrock(d.getParameters(), d.getResults()); }; 
+        break;
 
+    case 5:  
+        nParams = 4; lower = 0.0; upper = 10.0;
+        model = [](Korali::modelData& d) { m_shekel(d.getParameters(), d.getResults()); }; 
+        break;
+
+    default:
+        printf("\nInvalid Args! Usage:\n"
+           "\t./sample_function 1 (=sample exp(-ackley))\n"
+           "\t./sample_function 2 (=sample exp(-eggholder))\n"
+           "\t./sample_function 3 (=sample exp(-levi13))\n"
+           "\t./sample_function 4 (=sample exp(-rosenbrock))\n"
+           "\t./sample_function 5 (=sample exp(-shekel)\n\n");
+        exit(1);
  }
 
  auto korali = Korali::Engine( model );

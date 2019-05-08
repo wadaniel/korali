@@ -15,7 +15,8 @@ for i in range(4):
  korali["Parameters"][i]["Minimum"] = -32.0
  korali["Parameters"][i]["Maximum"] = +32.0
 
-korali["Problem"]["Objective"] = "Direct Evaluation";
+korali["Problem"]["Type"] = "Direct";
+
 korali["Solver"]["Method"] = "TMCMC"
 korali["Solver"]["Covariance Scaling"] = 0.02
 korali["Solver"]["Population Size"] = 1000

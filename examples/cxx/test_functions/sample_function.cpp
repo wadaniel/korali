@@ -25,15 +25,15 @@ int main(int argc, char* argv[])
  int nParams;
  double lower, upper;
  switch( atoi(argv[1]) ){
-    case 1:
-        nParams = 4; lower = -32.0; upper = 32.0;
-        model = [](Korali::modelData& d) { m_ackley(d.getParameters(), d.getResults()); }; 
-        break;
+ case 1:
+  nParams = 4; lower = -32.0; upper = 32.0;
+  model = [](Korali::modelData& d) { m_ackley(d.getParameters(), d.getResults()); };
+  break;
 
-    case 2:
-        nParams = 2; lower = -512.0; upper = 512.0;
-        model = [](Korali::modelData& d) { m_eggholder(d.getParameters(), d.getResults()); }; 
-        break;
+ case 2:
+  nParams = 2; lower = -512.0; upper = 512.0;
+  model = [](Korali::modelData& d) { m_eggholder(d.getParameters(), d.getResults()); };
+  break;
 
     case 3:
         nParams = 5; lower = -10.0; upper = 10.0;
@@ -65,6 +65,7 @@ int main(int argc, char* argv[])
            "\t./sample_function 5 (=sample exp(-rosenbrock))\n"
            "\t./sample_function 6 (=sample exp(-shekel)\n\n");
         exit(1);
+ 
  }
 
  auto korali = Korali::Engine( model );
@@ -74,14 +75,14 @@ int main(int argc, char* argv[])
 
  for (int i = 0; i < nParams; i++)
  {
-  korali["Parameters"][i]["Name"] = "X" + std::to_string(i);
-  korali["Parameters"][i]["Type"] = "Computational";
-  korali["Parameters"][i]["Distribution"] = "Uniform";
-  korali["Parameters"][i]["Minimum"] = lower;
-  korali["Parameters"][i]["Maximum"] = upper;
+ korali["Parameters"][i]["Name"] = "X" + std::to_string(i);
+ korali["Parameters"][i]["Type"] = "Computational";
+ korali["Parameters"][i]["Distribution"] = "Uniform";
+ korali["Parameters"][i]["Minimum"] = lower;
+ korali["Parameters"][i]["Maximum"] = upper;
  }
 
- korali["Problem"]["Objective"] = "Direct Evaluation";
+ korali["Problem"]["Type"] = "Direct";
 
  korali["Solver"]["Method"] = "TMCMC";
  korali["Solver"]["Covariance Scaling"] = 0.02;

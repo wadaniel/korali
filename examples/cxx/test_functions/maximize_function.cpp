@@ -25,6 +25,7 @@ int main(int argc, char* argv[])
  int nParams;
  double lower, upper;
  switch( atoi(argv[1]) ){
+    
     case 1:
         nParams = 4; lower = -32.0; upper = 32.0;
         model = [](Korali::modelData& d) { m_ackley(d.getParameters(), d.getResults()); }; 
@@ -65,8 +66,6 @@ int main(int argc, char* argv[])
            "\t./mazimize_function 5 (=mazimzie -rosenbrock)\n"
            "\t./mazimize_function 6 (=maximize -shekel)\n\n");
         exit(1);
- 
-
  }
 
  auto korali = Korali::Engine(model);
@@ -76,14 +75,14 @@ int main(int argc, char* argv[])
 
  for (int i = 0; i < nParams; i++)
  {
-  korali["Parameters"][i]["Name"] = "X" + std::to_string(i);
-  korali["Parameters"][i]["Type"] = "Computational";
-  korali["Parameters"][i]["Distribution"] = "Uniform";
-  korali["Parameters"][i]["Minimum"] = lower;
-  korali["Parameters"][i]["Maximum"] = upper;
+ korali["Parameters"][i]["Name"] = "X" + std::to_string(i);
+ korali["Parameters"][i]["Type"] = "Computational";
+ korali["Parameters"][i]["Distribution"] = "Uniform";
+ korali["Parameters"][i]["Minimum"] = lower;
+ korali["Parameters"][i]["Maximum"] = upper;
  }
 
- korali["Problem"]["Objective"] = "Direct Evaluation";
+ korali["Problem"]["Type"] = "Direct";
 
  korali["Solver"]["Method"] = "CMA-ES";
  korali["Solver"]["Lambda"] = 8;

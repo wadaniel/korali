@@ -34,7 +34,7 @@ int main(int argc, char* argv[])
  korali["Parameters"][3]["Minimum"] = 0.0;
  korali["Parameters"][3]["Maximum"] = 20.0;
 
- korali["Problem"]["Objective"] = "Likelihood";
+ korali["Problem"]["Type"] = "Bayesian";
 
  auto p = heat2DInit();
  for (size_t i = 0; i < p.refTemp.size(); i++)

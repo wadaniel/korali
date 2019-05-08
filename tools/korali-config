@@ -1,17 +1,4 @@
 
-CXXFLAGS="-I$PREFIX/include -I$PREFIX/lib/koraligsl/include/gsl"
-CXXFLAGS="$CXXFLAGS -Wno-unused -Wunused-result -Wno-unused-parameter -Wno-address -Wno-deprecated-declarations -Wall -Wfatal-errors"
-LDFLAGS="-Wl,-rpath=$PREFIX/lib/koraligsl/lib -L$PREFIX/lib/koraligsl/lib -lgsl -lgslcblas -L$PREFIX/lib -l:libkorali.a" 
-
-if [ $USE_UPCXX -eq 1 ]; then
- CXXFLAGS="$CXXFLAGS `upcxx-meta CPPFLAGS`"
- LDFLAGS="$LDFLAGS `upcxx-meta LIBS`" 
-fi
-
-if [ $USE_MULTITHREAD -eq 1 ]; then
- CXXFLAGS="$CXXFLAGS -pthread"
-fi
-
 usage()
 {
     cat <<EOF

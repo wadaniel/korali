@@ -32,6 +32,9 @@ nav:
       - korali-cxx: tools/korali-cxx.md
       - korali-config: tools/korali-config.md
       - korali-plot: tools/korali-plot.md
+  - Plots:
+      - CMA-ES: plots/plotcmaes.md
+      - TMCMC: plots/plottmcmc.md
   - References: references.md
 
 

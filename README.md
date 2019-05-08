@@ -1,9 +1,8 @@
-# korali NEW
+# Korali
 
-This is completely new version of korali based on upc++.
+Korali is a high performance computing framework for optimization, sampling and Bayesian uncertainty quantification of large scale computational models.
 
 Currently the code is under development and the repository is private.
-
 
 ## Documentation
 

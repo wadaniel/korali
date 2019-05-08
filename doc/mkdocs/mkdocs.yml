@@ -8,7 +8,7 @@ nav:
   - Installation: installation.md
   - Quick Start:
       - Direct problems: quick_start/direct.md
-      - Bayesian Inference: quick_start/posterior.md
+      - Bayesian Inference: quick_start/bayesian.md
   - Usage:
       - General Settings: usage/settings.md
       - Problem:

@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include <math.h>
 
-void rosenbrock(std::vector<double>& pars, std::vector<double>& result)
+// Minus Rosenbrock
+void m_rosenbrock(std::vector<double>& pars, std::vector<double>& result)
 {
  size_t nPars = pars.size();
 

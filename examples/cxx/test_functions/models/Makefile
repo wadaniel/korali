@@ -1,4 +1,4 @@
-all: levi13.o
+all: ackley.o eggholder.o levi13.o rosenbrock.o
 
 CXXFLAGS = -O3 -g
 

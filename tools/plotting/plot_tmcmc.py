@@ -102,7 +102,7 @@ def plot_samples(path, idx=None):
         samples = np.reshape( state['DatabasePoints'], (pop,numdim) )
 
         plt.style.use('seaborn-dark')
-        fig, ax = plt.subplots(samples.shape[1], samples.shape[1])
+        fig, ax = plt.subplots(samples.shape[1], samples.shape[1], figsize=(8,8))
         fig.show()
         
         if idx is None: 

@@ -1,9 +1,10 @@
 
-Here we explain technical details of the **CMA-ES** result plot.
+Here we explain the **CMA-ES** result plot in further detail and how it can be
+used to validate your optimization.
 
 In the figure below we see the evolution of the CMA-ES algorithm during 50
-optimization steps, respectively 500 function evaluations, of the negative
-[Rosenbrock](https://en.wikipedia.org/wiki/Rosenbrock_function) function.
+optimization steps, respectively 500 function evaluations (we used a sample size
+of 10), of the negative [Rosenbrock](https://en.wikipedia.org/wiki/Rosenbrock_function) function.
 
 ![figure](rosenbrock_optimization_result.png)
 
@@ -11,10 +12,10 @@ optimization steps, respectively 500 function evaluations, of the negative
 
 ### Quadrant 1 (Upper Left)
 
-The first quadrant shows 4 graphs and markers (crosses):
+The first quadrant shows 4 graphs plus markers (crosses):
     
     * | F | (red): F is the best function evaluation of the current generation.
-      Note that the colour of F changes for F < 0 (red) and F >= 0
+      Note that the colour of F changes if F smaller 0 (red) and F greater equal 0
       (blue). Also, the absolute values are plotted since the vertical axis is given in
       log-scale.
 
@@ -32,11 +33,10 @@ The first quadrant shows 4 graphs and markers (crosses):
 
     * | F - F_best | (crosses) : At every generation we calculate the absolute
       difference betwen the current best function evaluation (F) and the overall
-      best evaluation (F_best) of CMA-ES . The crosses appear only if F is less than
-      F_best, i.e. | F - F_best | is not 0.
+      best found evaluation (F_best) of CMA-ES. The crosses appear only if F is less than
+      F_best, i.e. no overall improvement and | F - F_best | is greater 0.
 
-A good indicator of convergance of CMA-ES is if | F - F_best | goes to zero.
-
+A good indicator of convergance of CMA-ES to the global maximum is given by a steady decrease of | F - F_best |.
 
 
 ### Quadrant 2 (Object Variables)

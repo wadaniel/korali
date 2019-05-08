@@ -1,6 +1,7 @@
 site_name: korali
 repo_name: 'cselab/skorali'
 repo_url: 'https://github.com/cselab/skorali'
+edit_uri: ''
 
 nav:
   - Home: index.md
@@ -49,8 +50,12 @@ theme:
 markdown_extensions:
   - pymdownx.arithmatex
   - pymdownx.details
+  - attr_list
   - admonition
   - codehilite
+
+extra_css:
+    - css/extra.css
 
 extra_javascript:
   - 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML'

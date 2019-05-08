@@ -14,7 +14,7 @@ def F( s, x ):
 
 
 if len(sys.argv) < 2 :
-  print "Usage: ./posterior 1(=maximize) or 2(=sample)"
+  print("Usage: ./posterior 1(=maximize) or 2(=sample)")
   sys.exit()
 
 
@@ -36,7 +36,7 @@ korali = libkorali.Engine( Fx )
 for i in range(len(y)):
   korali["Problem"]["Reference Data"][i] = y[i];
 
-korali["Problem"]["Objective"] = "Posterior";
+korali["Problem"]["Objective"] = "Likelihood";
 
 
 korali["Parameters"][0]["Name"] = "a";
@@ -74,7 +74,7 @@ elif sys.argv[1]=='2':
   korali["Solver"]["Burn In"] = 5;
   korali["Solver"]["Coefficient of Variation"] = 0.5;
 else:
-  print "Usage: ./posterior 1(=maximize) or 2(=sample)"
+  print("Usage: ./posterior 1(=maximize) or 2(=sample)")
   sys.exit()
 
 

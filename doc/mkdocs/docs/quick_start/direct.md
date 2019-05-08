@@ -88,7 +88,7 @@ korali.run();
 
 
 
-![](direct-cma.png)
+![figure](direct-cma.png)
 
 
 
@@ -105,3 +105,11 @@ korali["Solver"]["Covariance Scaling"] = 0.02
 korali["Solver"]["Population Size"] = 5000
 korali["Solver"]["Burn In"] = 5
 ```
+
+### 2. Plot
+
+```sh
+plot_tmcmc.py korali0
+```
+
+![figure](direct-hist.png){: .center}

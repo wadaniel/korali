@@ -1,6 +1,7 @@
 #include "korali.h"
 #include "models/ackley.h"
 #include "models/eggholder.h"
+#include "models/gaussian.h"
 #include "models/levi13.h"
 #include "models/rosenbrock.h"
 #include "models/shekel.h"
@@ -12,9 +13,10 @@ int main(int argc, char* argv[])
     printf("\nInvalid Args! Usage:\n"
        "\t./maximize_function 1 (=maximize -ackley)\n"
        "\t./mazimize_function 2 (=mazimize -eggholder)\n"
-       "\t./mazimize_function 3 (=mazimize -levi13)\n"
-       "\t./mazimize_function 4 (=mazimzie -rosenbrock)\n"
-       "\t./mazimize_function 5 (=maximize --shekel)\n\n");
+       "\t./mazimize_function 3 (=mazimize -gaussian)\n"
+       "\t./mazimize_function 4 (=mazimize -levi13)\n"
+       "\t./mazimize_function 5 (=mazimzie -rosenbrock)\n"
+       "\t./mazimize_function 6 (=maximize --shekel)\n\n");
     exit(1);
   }
 
@@ -34,16 +36,22 @@ int main(int argc, char* argv[])
         break;
 
     case 3:
+        nParams = 5; lower = -32.0; upper = 32.0;
+        gaussian_init(nParams);
+        model = [](Korali::modelData& d) { gaussian(d.getParameters(), d.getResults()); }; 
+        break;
+
+    case 4:
         nParams = 2; lower = -10.0; upper = 10.0;
         model = [](Korali::modelData& d) { m_levi13(d.getParameters(), d.getResults()); }; 
         break;
 
-    case 4: 
+    case 5: 
         nParams = 2; lower = -32.0; upper = 32.0;
         model = [](Korali::modelData& d) { m_rosenbrock(d.getParameters(), d.getResults()); }; 
         break;
 
-    case 5:  
+    case 6:  
         nParams = 4; lower = 0.0; upper = 10.0;
         model = [](Korali::modelData& d) { m_shekel(d.getParameters(), d.getResults()); }; 
         break;
@@ -52,9 +60,10 @@ int main(int argc, char* argv[])
         printf("\nInvalid Args! Usage:\n"
            "\t./maximize_function 1 (=maximize -ackley)\n"
            "\t./mazimize_function 2 (=mazimize -eggholder)\n"
-           "\t./mazimize_function 3 (=mazimize -levi13)\n"
-           "\t./mazimize_function 4 (=mazimzie -rosenbrock)\n"
-           "\t./mazimize_function 5 (=maximize -shekel)\n\n");
+           "\t./mazimize_function 3 (=mazimize +gaussian)\n"
+           "\t./mazimize_function 4 (=mazimize -levi13)\n"
+           "\t./mazimize_function 5 (=mazimzie -rosenbrock)\n"
+           "\t./mazimize_function 6 (=maximize -shekel)\n\n");
         exit(1);
  
 

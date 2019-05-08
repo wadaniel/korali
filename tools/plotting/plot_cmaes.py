@@ -129,7 +129,7 @@ def run_diagnostics(src, live = False, obj='current'):
 
         ax[0,0].grid(True)
         ax[0,0].set_yscale('log')
-        plt_multicolored_lines(ax[0,0], numeval, fval, 0.0, 'r', 'b', '|F|')
+        plt_multicolored_lines(ax[0,0], numeval, fval, 0.0, 'r', 'b', '| F |')
         ax[0,0].plot(numeval, dfval, 'x', color = '#34495e', label = '| F - F_best |')
         ax[0,0].plot(numeval, cond, color='#98D8D8', label = 'Condition')
         ax[0,0].plot(numeval, sigma, color='#F8D030', label = 'Sigma')

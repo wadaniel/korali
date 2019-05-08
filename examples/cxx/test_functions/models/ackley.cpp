@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include <math.h>
 
-void ackley(std::vector<double>& pars, std::vector<double>& result)
+// Minus Ackley
+void m_ackley(std::vector<double>& pars, std::vector<double>& result)
 {
  size_t nDims = pars.size();
  double a = 20, b = .2, c = 2.*M_PI, s1 = 0., s2 = 0.;

@@ -3,7 +3,8 @@
 #include <stdlib.h>
 #include <math.h>
 
-void eggholder(std::vector<double>& pars, std::vector<double>& result)
+// Minus Eggholder
+void m_eggholder(std::vector<double>& pars, std::vector<double>& result)
 {
  size_t nPars = pars.size();
  if( nPars != 2 ) { printf("eggholder: error, num pars must be 2 (is %zu)\n", nPars); exit(-1); }

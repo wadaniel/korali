@@ -6,8 +6,8 @@
 ##Usage
        ./configure 
                    [--prefix=INSTALL_DIR]
-				   [--enable-upcxx]"
-                   [--enable-mpi]"
+				   [--enable-upcxx]
+                   [--enable-mpi]
                    [--help]
 				   
 ##Description
@@ -20,8 +20,8 @@
 		   default C++ compiler and wheter it supports POSIX Threads. 
 		   Modify $CXX to use a custom C++ compiler for Korali.
             
-       2   Determines whether a compatible Python interpreter exists.
-	       Korali will use the 'korali-config' command to determine location, version,
+       2   Determines whether a compatible Python3 interpreter exists.
+	       Korali will use the 'which python3' command to determine location, version,
 		   libraries, and compilation flags to Python. Make sure this command is 
 		   reachable from the $PATH environment variable to enable support for python.
 
@@ -43,7 +43,7 @@
               Determines whether Korali will install with the UPC++ conduit enabled.
               Default value: Disabled
 			  
-	    --enable-mpi
+	   --enable-mpi
               Determines whether Korali will install with the MPI conduit enabled.
               Default value: Disabled
 
@@ -79,9 +79,17 @@
        sub-dependencies, but an error message informing which programs are missing
        will be displayed by the dependency's own configure script.  
 
+       Python 3.
+          Korali requires an existing installation of Python (version > 3.0) accessible
+		  through the 'python3' command. Korali will look for its associated pkg-config 
+		  file (python3.pc) to determine CFLAGS and LIBS for compilation with python support.
+		  Korali's plotting tools also require a working installation of python3 to work.
+
        GNU Scientific Library (GSL).
           The GNU Scientific Library is a software library for numerical computations
-		  in applied mathematics and science.
+		  in applied mathematics and science. If Korali does not find a compatible GSL
+		  installation currently installed in the system, it will download it and compile
+		  it during installation.
 	
 	   (NLohmann) Json for C++ 
 		  A library for management of Json structured in C++ code. The main header file,

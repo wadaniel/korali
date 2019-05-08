@@ -16,7 +16,7 @@ int main(int argc, char* argv[])
        "\t./mazimize_function 3 (=mazimize -gaussian)\n"
        "\t./mazimize_function 4 (=mazimize -levi13)\n"
        "\t./mazimize_function 5 (=mazimzie -rosenbrock)\n"
-       "\t./mazimize_function 6 (=maximize --shekel)\n\n");
+       "\t./mazimize_function 6 (=maximize -shekel)\n\n");
     exit(1);
   }
 
@@ -85,8 +85,9 @@ int main(int argc, char* argv[])
  korali["Problem"]["Type"] = "Direct";
 
  korali["Solver"]["Method"] = "CMA-ES";
- korali["Solver"]["Lambda"] = 8;
+ korali["Solver"]["Lambda"] = 10;
  korali["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-12;
+ korali["Solver"]["Termination Criteria"]["Max Generations"] = 50;
  
  korali.run();
 

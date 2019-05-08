@@ -183,18 +183,36 @@ else
   echo "[Korali] Please make sure the python3 command is accesible from the $PATH environment variable."
   exit
 fi
+######## Determining Compilation Flags ########
+
+CXXFLAGS="-I$PREFIX/include -I$PREFIX/lib/koraligsl/include/gsl --std=c++17"
+CXXFLAGS="$CXXFLAGS -Wno-unused -Wunused-result -Wno-unused-parameter -Wno-address -Wno-deprecated-declarations -Wall -Wfatal-errors"
+LDFLAGS="$PREFIX/lib/libkorali.a $PREFIX/lib/libkoraligsl.a $PREFIX/lib/libkoraligslcblas.a"
+
+if [[ "$USE_UPCXX" == "1" ]]; then
+ upcxxCFlags=`upcxx-meta CPPFLAGS`
+ upcxxLibs=`upcxx-meta LIBS`
+ CXXFLAGS="$CXXFLAGS $upcxxCFlags"
+ LDFLAGS="$LDFLAGS $upcxxLibs"
+fi
+
+if [[ "$USE_MULTITHREAD" == "1" ]]; then
+ CXXFLAGS="$CXXFLAGS -pthread"
+ LDFLAGS="$LDFLAGS -pthread"
+fi
 
 ######## Creating Config File ########
 
 echo "VERSION=$VERSION" > korali.config
 echo "PREFIX=$PREFIX" >> korali.config
 echo "PYTHONCFLAGS=$pythonCFlags" >> korali.config
-echo "PYTHONLIBS=$pythonLibs" >> korali.config
+echo "PYTHONLIBS=\"$pythonLibs\"" >> korali.config
 echo "CXX=$USE_CXX" >> korali.config
+echo "CXXFLAGS=\"$CXXFLAGS\"" >> korali.config
+echo "LDFLAGS=\"$LDFLAGS\"" >> korali.config
 echo "USE_MPI=$USE_MPI" >> korali.config
 echo "USE_UPCXX=$USE_UPCXX" >> korali.config
 echo "USE_MULTITHREAD=$USE_MULTITHREAD" >> korali.config
-
 
 echo "[Korali] Configuration was successful (see: korali.config)."
 echo "[Korali] Install Path: $PREFIX"

@@ -47,11 +47,11 @@ install: source/libkorali.so
 	chmod a+x  $(PREFIX)/bin/plot_cmaes.py
 	chmod a+x  $(PREFIX)/bin/plot_tmcmc.py
 	@echo "#!/bin/bash" > $(PREFIX)/bin/korali-cxx
-	cat korali.config tools/korali-cxx > $(PREFIX)/bin/korali-cxx
-	chmod a+x  $(PREFIX)/bin/korali-cxx
+	@cat korali.config tools/korali-cxx >> $(PREFIX)/bin/korali-cxx
+	@chmod a+x  $(PREFIX)/bin/korali-cxx
 	@echo "#!/bin/bash" > $(PREFIX)/bin/korali-config
-	cat korali.config tools/korali-config > $(PREFIX)/bin/korali-config
-	chmod a+x  $(PREFIX)/bin/korali-config
+	@cat korali.config tools/korali-config >> $(PREFIX)/bin/korali-config
+	@chmod a+x  $(PREFIX)/bin/korali-config
 	@echo '------------------------------------------------------------------'
 	@echo '[Korali] To complete installation, please update your environment:'
 	@echo '[Korali] >export PATH=$$PATH:$(PREFIX)/bin'

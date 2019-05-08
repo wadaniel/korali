@@ -18,13 +18,14 @@ of 10), of the negative [Rosenbrock](https://en.wikipedia.org/wiki/Rosenbrock_fu
 The first quadrant shows 4 graphs plus markers (crosses):
     
     * | F | (red): F is the best function evaluation of the current generation.
-      Note that the colour of F changes if F is smaller 0 (red) or F greater equal 0
-      (blue). Also, the absolute value of F is plotted since the vertical axis is given in
-      log-scale.
+      Note that the colour of F changes if F is smaller 0 (red) or F greater 
+	  equal 0 (blue). Also, the absolute value of F is plotted since the vertical 
+      axis is given in log-scale.
 
-    * Condition (cyan): This line shows the condition of the covariance matrix of the proposal distribution
-      at every generation. The condition is given by the ratio of the largest Eigenvalue to the
-      smallest Eigenvalue. A large condition number may lead to numerical instabilities, this can be 
+    * Condition (cyan): This line shows the condition of the covariance matrix 
+	  of the proposal distribution at every generation. The condition is given 
+	  by the ratio of the largest Eigenvalue to the smallest Eigenvalue. A 
+	  large condition number may lead to numerical instabilities, this can be 
 	  treated by normalizing the domain of the objective variables.
 
     * || Path || (black):  The evolution path is a measure of the travel
@@ -33,13 +34,14 @@ The first quadrant shows 4 graphs plus markers (crosses):
       updating rule.
 
     * Sigma (yellow) : Sigma is the scaling parameter of the covariance matrix.
-      The scaling parameter is updated at every generation. If Sigma becomes very large or small it may have
-	  an adverse effect on the optimization.
+      The scaling parameter is updated at every generation. If Sigma becomes 
+	  very large or small it may have an adverse effect on the optimization.
 
     * | F - F_best | (crosses) : At every generation we calculate the absolute
       difference betwen the current best function evaluation (F) and the overall
-      best found evaluation (F_best) of CMA-ES. The crosses appear only if the current generation 
-	  does not imrpove the overall result, i.e. F is less than F_best during optimization and | F - F_best | is greater 0.
+      best found evaluation (F_best) of CMA-ES. The crosses appear only if the 
+      current generation does not imrpove the overall result, i.e. F is less 
+      than F_best during optimization and | F - F_best | is greater 0.
 
 A good indicator of convergance of CMA-ES to the global maximum is given by a steady decrease of | F - F_best |.
 

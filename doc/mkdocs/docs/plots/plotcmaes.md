@@ -15,13 +15,14 @@ of 10), of the negative [Rosenbrock](https://en.wikipedia.org/wiki/Rosenbrock_fu
 The first quadrant shows 4 graphs plus markers (crosses):
     
     * | F | (red): F is the best function evaluation of the current generation.
-      Note that the colour of F changes if F smaller 0 (red) and F greater equal 0
-      (blue). Also, the absolute values are plotted since the vertical axis is given in
+      Note that the colour of F changes if F is smaller 0 (red) or F greater equal 0
+      (blue). Also, the absolute value of F is plotted since the vertical axis is given in
       log-scale.
 
-    * Condition (cyan): This line shows the condition of the covariance matrix
+    * Condition (cyan): This line shows the condition of the covariance matrix of the proposal distribution
       at every generation. The condition is given by the ratio of the largest Eigenvalue to the
-      smallest Eigenvalue.
+      smallest Eigenvalue. A large condition number may lead to numerical instabilities, this can be 
+	  treated by normalizing the domain of the objective variables.
 
     * || Path || (black):  The evolution path is a measure of the travel
       direction of the mean of the proposal distribution of CMA-ES. The
@@ -29,12 +30,13 @@ The first quadrant shows 4 graphs plus markers (crosses):
       updating rule.
 
     * Sigma (yellow) : Sigma is the scaling parameter of the covariance matrix.
-      The scaling parameter is updated at every generation.
+      The scaling parameter is updated at every generation. If Sigma becomes very large or small it may have
+	  an adverse effect on the optimization.
 
     * | F - F_best | (crosses) : At every generation we calculate the absolute
       difference betwen the current best function evaluation (F) and the overall
-      best found evaluation (F_best) of CMA-ES. The crosses appear only if F is less than
-      F_best, i.e. no overall improvement and | F - F_best | is greater 0.
+      best found evaluation (F_best) of CMA-ES. The crosses appear only if the current generation 
+	  does not imrpove the overall result, i.e. F is less than F_best during optimization and | F - F_best | is greater 0.
 
 A good indicator of convergance of CMA-ES to the global maximum is given by a steady decrease of | F - F_best |.
 
@@ -42,23 +44,23 @@ A good indicator of convergance of CMA-ES to the global maximum is given by a st
 ### Quadrant 2 (Object Variables)
 
 This plot shows the evolution of the objective variables corresponding to the
-evaluation of | F |. A graph per each dimension of the optimization problem is
-shown.
+evaluation of | F |. A line per each dimension of the optimization problem is
+plotted.
 
 
 
 ### Quadrant 3 (Scaling Main Axes)
 
-The scaling of the main axes is given by the square root of the Eigenvalues.
-Optimally the axes are of the same order.
+The scaling of the main axes is defined as the square root of the Eigenvalues.
+Optimally the values of the axes are of the same magnitude.
 
 
 
 ### Quadrant 4 (Standard Deviation Coordinates)
 
 The standard deviation of the coordinates is approximated by the product of
-sigma with the squarerrot of the diagonal elements of the covariance matrix of the proposal
-distribution. Optimally the standard deviations are of the same order.
+Sigma with the squarerroot of the diagonal elements of the covariance matrix of the proposal
+distribution. Optimally the standard deviations are of the same magnitude.
 
 
 
@@ -66,7 +68,7 @@ distribution. Optimally the standard deviations are of the same order.
 
 ### Shekel function
 
-The following figure shows the results of an unsuccessful mazimization of the
+The following figure shows the results of an unsuccessful maximization of the
 negative of the [Shekel](https://en.wikipedia.org/wiki/Shekel_function) function in 4
 dimensions and with 10 local maxima.
 

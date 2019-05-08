@@ -33,6 +33,7 @@ install: source/libkorali.so
 	mkdir -p $(PREFIX)/bin
 	mkdir -p $(PREFIX)/python
 	cp source/libkorali.so $(PREFIX)/lib
+	cp source/libkorali.so $(PREFIX)/lib/libkorali.dylib
 	cp source/libkorali.a $(PREFIX)/lib 
 	cd source && for i in $(INCLUDES); do rsync -R $$i $(PREFIX)/include > /dev/null 2>&1; done 
 	cp -r libs/json $(PREFIX)/include

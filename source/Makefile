@@ -29,7 +29,7 @@ ifeq ($(USE_UPCXX), 1)
 endif
 
 CXXFLAGS_SHARED += $(PYTHONCFLAGS) -D_KORALI_USE_PYTHON
-LDFLAGS_SHARED  += $(PYTHONLIBS)
+LDFLAGS_SHARED  += -L/usr/local/opt/python/Frameworks/Python.framework/Versions/3.7/lib -lpython3.7m
 
 ifeq ($(USE_MULTITHREAD), 1)
  CXXFLAGS += -D_KORALI_USE_MULTITHREAD -pthread

@@ -1,7 +1,7 @@
 # korali-plot
 
 ##Name
-       Produces a graphical representation and plots for the results produced
+       korali-plot - Creates a graphical representation and plots for the results produced
 	   by a Korali application.
 	   
 ##Usage

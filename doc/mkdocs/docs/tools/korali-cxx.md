@@ -1,7 +1,7 @@
 # korali-cxx
 
 ##Name
-        Compiler/linker wrapper for C++ Korali applications. 
+       korali-cxx - Compiler/linker wrapper for C++ Korali applications. 
 	   
 ##Usage
        korali-cxx [cxxArgs]

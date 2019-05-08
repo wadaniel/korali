@@ -3,7 +3,6 @@ import sys
 import threading
 import libkorali
 
-
 def F( s, x ):
   for i in range(len(x)):
     th0 = s.getParameter(0)
@@ -11,13 +10,9 @@ def F( s, x ):
     r  =  th0*x[i] + th1
     s.addResult(r)
 
-
-
 if len(sys.argv) < 2 :
   print("Usage: ./posterior 1(=maximize) or 2(=sample)")
   sys.exit()
-
-
 
 x=[];            y=[];
 x.append(1.0);   y.append(3.2069);
@@ -36,8 +31,7 @@ korali = libkorali.Engine( Fx )
 for i in range(len(y)):
   korali["Problem"]["Reference Data"][i] = y[i];
 
-korali["Problem"]["Objective"] = "Likelihood";
-
+korali["Problem"]["Type"] = "Gaussian";
 
 korali["Parameters"][0]["Name"] = "a";
 korali["Parameters"][0]["Type"] = "Computational";
@@ -76,7 +70,6 @@ elif sys.argv[1]=='2':
 else:
   print("Usage: ./posterior 1(=maximize) or 2(=sample)")
   sys.exit()
-
 
 korali["Seed"] = 0xC0FFEE;
 korali["Verbosity"] = "Detailed";

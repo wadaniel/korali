@@ -167,7 +167,7 @@ if [ $? -eq 0 ]; then
   pythonPath=`dirname $pythonBin`
   pythonPath=`dirname $pythonPath`
   echo "[Korali] Python3 found at $pythonPath."
-  pythonPkgConfigPath="$pythonPath/lib/pkgconfig/python3.pc"
+  pythonPkgConfigPath="$pythonPath/lib*/pkgconfig/python3.pc"
   echo "[Korali] Checking for Python3 package information: \"pkg-config $pythonPkgConfigPath\""
   pkg-config $pythonPkgConfigPath
   if [ $? -eq 0 ]; then

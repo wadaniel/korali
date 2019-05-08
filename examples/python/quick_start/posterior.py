@@ -11,7 +11,7 @@ def F( s, x ):
     s.addResult(r)
 
 if len(sys.argv) < 2 :
-  print "Usage: ./posterior 1(=maximize) or 2(=sample)"
+  print("Usage: ./posterior 1(=maximize) or 2(=sample)")
   sys.exit()
 
 x=[];            y=[];
@@ -64,11 +64,11 @@ if sys.argv[1]=='1':
 elif sys.argv[1]=='2':
   korali["Solver"]["Method"] = "TMCMC";
   korali["Solver"]["Covariance Scaling"] = 0.02;
-  korali["Solver"]["Population Size"] = 5000;
+  korali["Solver"]["Population Size"] = 50000;
   korali["Solver"]["Burn In"] = 5;
   korali["Solver"]["Coefficient of Variation"] = 0.5;
 else:
-  print "Usage: ./posterior 1(=maximize) or 2(=sample)"
+  print("Usage: ./posterior 1(=maximize) or 2(=sample)")
   sys.exit()
 
 korali["Seed"] = 0xC0FFEE;

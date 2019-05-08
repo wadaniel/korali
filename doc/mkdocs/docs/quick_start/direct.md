@@ -35,7 +35,7 @@ import threading
 import libkorali
 ```
 
-### 1. The computational model
+###  The computational model
 Then write the code for $f$
 ```python
 def F( s ):
@@ -45,20 +45,20 @@ def F( s ):
 ```
 
 
-### 2. The korali object
+###  The korali object
 
 Next we construct a `korali` object using the function `F`
 ```python
 korali = libkorali.Engine( F )
 ```
 
-### 3. The Problem type
+###  The Problem type
 Then, we set the type of the problem to `Direct Evaluation`
 ```python
 korali["Problem"]["Objective"] = "Direct Evaluation"
 ```
 
-### 4. The Parameters
+###  The Parameters
 ```python
 korali["Parameters"][0]["Name"] = "X"
 korali["Parameters"][0]["Distribution"] = "Uniform"
@@ -67,7 +67,7 @@ korali["Parameters"][0]["Minimum"] = -10.0
 korali["Parameters"][0]["Maximum"] = +10.0
 ```
 
-### 5. The Solver
+###  The Solver
 ```python
 korali["Solver"]["Method"] = "CMA-ES"
 korali["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-8
@@ -75,7 +75,7 @@ korali["Solver"]["Termination Criteria"]["Max Generations"] = 100
 korali["Solver"]["Lambda"] = 5
 ```
 
-### 6. Run
+###  Run
 ```python
 korali["Seed"] = 0xC0FFEE;
 korali["Verbosity"] = "Detailed";
@@ -87,8 +87,13 @@ korali.run();
 ```
 
 
+###  Plot
 
-![](direct-cma.png)
+```sh
+plot_cma.py korali0
+```
+
+![figure](direct-cma.png)
 
 
 
@@ -97,7 +102,7 @@ korali.run();
 
 ## Sample
 
-### 1. The Solver
+###  The Solver
 
 ```python
 korali["Solver"]["Method"] = "TMCMC"
@@ -105,3 +110,34 @@ korali["Solver"]["Covariance Scaling"] = 0.02
 korali["Solver"]["Population Size"] = 5000
 korali["Solver"]["Burn In"] = 5
 ```
+
+###  Plot
+
+```sh
+plot_tmcmc.py korali0
+```
+
+![figure](direct-tmcmc.png){: .center}
+
+
+??? tip "Plot with Matlab"
+    Assume that the 7th is last generation. In order to read the json file extract
+    the population run these commands:
+    ```
+    s=jsondecode(fileread('s00007.json'));
+    a=s.Solver.State.DatabasePoints;
+    ```
+    Then you can plot the histogram of the samples against the density of
+    $\mathcal{N}(0,1/\sqrt{2})$:
+    ```
+    h=histogram(a,50);
+    h.Normalization='pdf';
+    hold on;
+    x=-3:0.01:3;
+    p=plot(x,normpdf(x,0,sqrt(0.5)));
+    p.LineWidth = 4;
+    ax=gca;
+    ax.XLim=[-3,3];
+    ax.FontSize=16;
+    grid on;
+    ```

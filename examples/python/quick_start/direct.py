@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import sys
 import threading
 import libkorali
@@ -21,8 +21,7 @@ korali["Parameters"][0]["Type"] = "Computational"
 korali["Parameters"][0]["Minimum"] = -10.0
 korali["Parameters"][0]["Maximum"] = +10.0
 
-korali["Problem"]["Objective"] = "Direct Evaluation"
-
+korali["Problem"]["Type"] = "Direct"
 
 if sys.argv[1]=='1':
   korali["Solver"]["Method"] = "CMA-ES"

@@ -1,19 +1,18 @@
 BINARIES = maximize_function sample_function
-OBJECTS = models/ackley.o models/eggholder.o models/levi13.o models/rosenbrock.o
-CXX = korali-cxx
+KORALICXX = korali-cxx
 
 .SECONDARY:
-.PHONY: all
+.PHONY: all 
 all: $(BINARIES)
 
-$(BINARIES) : % : %.o $(OBJECTS)
-	$(CXX) -o $@ $^ 
+$(BINARIES) : % : %.o models/models.a
+	$(KORALICXX) -o $@ $^
 
-models/%.o:
+models/models.a:
 	$(MAKE) -C models all
 
 %.o: %.cpp
-	$(CXX) -c $<
+	$(KORALICXX) -c $<
 
 .PHONY: clean
 clean:

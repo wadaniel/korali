@@ -6,7 +6,7 @@
 namespace Korali::Problem
 {
 
-class Likelihood : public Korali::Problem::Base
+class Bayesian : public Korali::Problem::Base
 {
  public:
 
@@ -20,8 +20,8 @@ class Likelihood : public Korali::Problem::Base
  double evaluateLogPrior(double* sample) override;
 
  // Constructor / Destructor
- Likelihood(nlohmann::json& js);
- ~Likelihood();
+ Bayesian(nlohmann::json& js);
+ ~Bayesian();
 
  // Serialization Methods
  nlohmann::json getConfiguration() override;

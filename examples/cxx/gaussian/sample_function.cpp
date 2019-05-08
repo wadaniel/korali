@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
   korali["Parameters"][i]["Maximum"] = +32.0;
  }
 
- korali["Problem"]["Objective"] = "Direct Evaluation";
+ korali["Problem"]["Type"] = "Direct";
 
  korali["Solver"]["Method"] = "TMCMC";
  korali["Solver"]["Covariance Scaling"] = 0.02;

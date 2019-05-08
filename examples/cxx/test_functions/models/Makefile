@@ -1,7 +1,12 @@
-all: ackley.o eggholder.o levi13.o rosenbrock.o
+all: models.a
+SOURCES=$(shell find . -name "*.cpp")
+OBJECTS=$(SOURCES:.cpp=.o)
 
-CXXFLAGS = -O3 -g
+models.a: $(OBJECTS)
+	ar rs $@ $^
 
-clean:; rm -rf $(TARGET) *.o
+CXXFLAGS = -O3 -g -std=c++11
+
+clean:; rm -rf $(TARGET) *.o *.a
 
 .PHONY: clean all

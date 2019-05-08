@@ -240,7 +240,7 @@ void CMAES::setConfiguration(nlohmann::json& js)
  _cumulativeCovariance          = consume(js, { "Covariance Matrix", "Cumulative Covariance" }, KORALI_NUMBER, std::to_string(-1));
  _covarianceMatrixLearningRate  = consume(js, { "Covariance Matrix", "Learning Rate" }, KORALI_NUMBER, std::to_string(-1));
  _enablediag                    = consume(js, { "Covariance Matrix", "Enable Diagonal Update" }, KORALI_BOOLEAN, "false");
- _maxGenenerations              = consume(js, { "Termination Criteria", "Max Generations" }, KORALI_NUMBER, std::to_string(100));
+ _maxGenenerations              = consume(js, { "Termination Criteria", "Max Generations" }, KORALI_NUMBER, std::to_string(1000));
  _stopMinFitness                = consume(js, { "Termination Criteria", "Min Fitness" }, KORALI_NUMBER, std::to_string(-std::numeric_limits<double>::max()));
  _maxFitnessEvaluations         = consume(js, { "Termination Criteria", "Max Model Evaluations" }, KORALI_NUMBER, std::to_string(std::numeric_limits<size_t>::max()));
  _stopFitnessDiffThreshold      = consume(js, { "Termination Criteria", "Fitness Diff Threshold" }, KORALI_NUMBER, std::to_string(1e-9));
@@ -786,12 +786,4 @@ void CMAES::printFinal() const
     printf("[Korali] Stopping Criterium: %s\n", _terminationReason);
     printf("[Korali] Total Elapsed Time: %fs\n", std::chrono::duration<double>(endTime-startTime).count());
  }
-}
-
-void CMAES::startPlot() const
-{
-  std::string cmd = "python `korali-config --prefix`/bin/plot_cmaes.py " + _k->_resultsDirName + " &";
-  //cmd = "start python `korali-config --prefix`/bin/diagnostics.py " + _k->_resultsDirName; // WINDOWS
-  int ret_code = system(cmd.c_str());
-  if ( ret_code == -1 ) {  printf( "[Korali] Error in system call:\n\t %s\n", cmd.c_str()); exit(-1); }
 }

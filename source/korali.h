@@ -6,7 +6,7 @@
 #include <functional>
 
 #include "problems/direct/direct.h"
-#include "problems/likelihood/likelihood.h"
+#include "problems/bayesian/bayesian.h"
 
 #include "parameters/exponential/exponential.h"
 #include "parameters/gamma/gamma.h"
@@ -98,14 +98,11 @@ class Engine {
  int _verbosity;
  size_t _outputFrequency;
 
- std::string _resultsDirName;
  size_t _currentState;
 
  // Serialization Methods
  nlohmann::json getConfiguration();
  void setConfiguration(nlohmann::json js);
-
- void startPlot() const;
 };
 
 extern Engine* _k;

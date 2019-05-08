@@ -12,37 +12,53 @@ from plot_helpers import plt_pause_light
 
 # Plot histogram of sampes in diagonal
 def plot_histogram(ax, theta):
+    dim = theta.shape[1]
     num_bins = 50
-    for i in range(theta.shape[1]):
-        hist, bins, _ = ax[i, i].hist(theta[:, i], num_bins, density=True,
-                                      color='lightgreen', ec='black')
+    
+    for i in range(dim):
+
+        if (dim == 1): 
+            ax_loc = ax
+        else: 
+            ax_loc = ax[i,i]
+ 
+        hist, bins, _ = ax_loc.hist(theta[:, i], num_bins, density=True,
+                                    color='lightgreen', ec='black')
+        
         if i == 0:
-
+           
             # Rescale hist to scale of theta -> get correct axis titles
-            hist = hist / np.max(hist) * (ax[i, i].get_xlim()[1] -
-                                          ax[i, i].get_xlim()[0])
-            bottom = ax[i, i].get_xlim()[0]
-
             widths = np.diff(bins)
-            ax[i, i].cla()
-            ax[i, i].bar(bins[:-1], hist, widths,
-                         color='lightgreen', ec='black', bottom=bottom)
-            ax[i, i].set_ylim(ax[i, i].get_xlim())
-
-            ax[i, i].set_xticklabels([])
+            if (dim > 1) :  
+                hist = hist / np.max(hist) * (ax_loc.get_xlim()[1] -
+                                                ax_loc.get_xlim()[0])
+                bottom = ax_loc.get_xlim()[0]
+                ax_loc.cla()
+                ax_loc.bar(bins[:-1], hist, widths,
+                    color='lightgreen', ec='black', bottom=bottom)
+                ax_loc.set_ylim(ax_loc.get_xlim())
+                ax_loc.set_xticklabels([])
+            else:
+                ax_loc.cla()
+                ax_loc.bar(bins[:-1], hist, widths,
+                     color='lightgreen', ec='black')
 
         elif i == theta.shape[1] - 1:
-            ax[i, i].set_yticklabels([])
+            ax_loc.set_yticklabels([])
+        
         else:
-            ax[i, i].set_xticklabels([])
-            ax[i, i].set_yticklabels([])
-        ax[i, i].tick_params(axis='both', which='both', length=0)
+            ax_loc.set_xticklabels([])
+            ax_loc.set_yticklabels([])
+        ax_loc.tick_params(axis='both', which='both', length=0)
 
 
 #Plot scatter plot in upper triangle of figure
 def plot_upper_triangle(ax, theta, lik=False):
-    for i in range(theta.shape[1]):
-        for j in range(i + 1, theta.shape[1]):
+    dim = theta.shape[1]
+    if (dim == 1): return
+    
+    for i in range(dim):
+        for j in range(i + 1, dim):
             if lik:
                 ax[i, j].scatter(theta[:, j], theta[:, i], marker='o', s=10,
                     c=theta, alpha=0.5)
@@ -54,7 +70,10 @@ def plot_upper_triangle(ax, theta, lik=False):
 
 #Plot 2d histogram in lower triangle of figure
 def plot_lower_triangle(ax, theta):
-    for i in range(theta.shape[1]):
+    dim = theta.shape[1]
+    if (dim == 1): return
+
+    for i in range(dim):
         for j in range(i):
             # returns bin values, bin edges and bin edges
             H, xe, ye = np.histogram2d(theta[:, j], theta[:, i], 10, density=True)
@@ -80,10 +99,10 @@ def plot_samples(path, idx=None):
         state   = data['Solver']['State']
         anneal  = state['AnnealingExponent']
         fitness = state['DatabaseFitness']
-        samples = np.reshape( state['DatabasePoints'],(pop,numdim) )
-        
+        samples = np.reshape( state['DatabasePoints'], (pop,numdim) )
+
         plt.style.use('seaborn-dark')
-        fig, ax = plt.subplots(samples.shape[1], samples.shape[1])
+        fig, ax = plt.subplots(samples.shape[1], samples.shape[1], figsize=(8,8))
         fig.show()
         
         if idx is None: 
@@ -110,7 +129,7 @@ def run_diagnostics(src, live=False):
 
         path = '{0}/s{1}.json'.format(src, str(idx).zfill(5))
         if ( not os.path.isfile(path) ):
-            if ( live == True ):    
+            if ( live == True ):
                 if (idx > 1): plt_pause_light(0.05)
                 continue
             else: 
@@ -120,7 +139,7 @@ def run_diagnostics(src, live=False):
         anneal = plot_samples(path, idx)
         
         plt_pause_light(0.05) 
-        if(live == False): time.sleep(0.5)
+        if(live == False): time.sleep(0.1)
         idx = idx+1
         if (anneal >= 1.0): finished = True
 
@@ -131,7 +150,6 @@ if __name__ == '__main__':
 
     if (len(sys.argv) == 2):
         if os.path.isdir(sys.argv[1]):
-            print  ("Plotting results from dir " + sys.argv[1])
             run_diagnostics(src=sys.argv[1], live=True)
         
         elif os.path.isfile(sys.argv[1]):

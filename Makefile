@@ -41,9 +41,11 @@ install: source/libkorali.so
 	cp -r libs/gsl/include/gsl $(PREFIX)/include 
 	cp libs/gsl/lib/libgsl.a $(PREFIX)/lib/libkoraligsl.a
 	cp libs/gsl/lib/libgslcblas.a $(PREFIX)/lib/libkoraligslcblas.a 
+	cp tools/korali-plot $(PREFIX)/bin
+	chmod a+x $(PREFIX)/bin/korali-plot
 	cp -r tools/plotting/* $(PREFIX)/bin/
-	@chmod a+x  $(PREFIX)/bin/plot_cmaes.py
-	@chmod a+x  $(PREFIX)/bin/plot_tmcmc.py
+	chmod a+x  $(PREFIX)/bin/plot_cmaes.py
+	chmod a+x  $(PREFIX)/bin/plot_tmcmc.py
 	@echo "#!/bin/bash" > $(PREFIX)/bin/korali-cxx
 	@cat korali.config tools/korali-cxx >> $(PREFIX)/bin/korali-cxx
 	@chmod a+x  $(PREFIX)/bin/korali-cxx

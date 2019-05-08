@@ -53,7 +53,7 @@ def run_diagnostics(src, live = False, obj='current'):
     ssdev    = [] # sigma x diag(C)
 
     plt.style.use('seaborn-dark')
-    fig, ax = plt.subplots(2,2,num='CMA-ES live diagnostics: {0}'.format(src),figsize=(11,11))
+    fig, ax = plt.subplots(2,2,num='CMA-ES live diagnostics: {0}'.format(src),figsize=(8,8))
     fig.show()
 
     updt_text = plt.figtext(0.5, 0.01, 'TEST', horizontalalignment='center');
@@ -83,14 +83,6 @@ def run_diagnostics(src, live = False, obj='current'):
                           str(localtime.tm_sec).zfill(2))
 
         updt_text.set_text( tmp_str )
-
-        # plt.figtext(0.05,0.00, date_str, fontsize=14 )
-
-        # plt.suptitle('s{0}.json\n(last update:{1}:{2}:{3})'.format(\
-        #             str(idx).zfill(5),\
-        #             str(localtime.tm_hour).zfill(2),\
-        #             str(localtime.tm_min).zfill(2),\
-        #             str(localtime.tm_sec).zfill(2)), fontsize=12)
 
         with open(path) as f:
             data  = json.load(f)
@@ -137,7 +129,7 @@ def run_diagnostics(src, live = False, obj='current'):
 
 
         if idx == 2:
-            ax[0,0].legend(bbox_to_anchor=(0,1.00,1,0.2), loc="lower left", mode="expand", ncol = 3, handlelength=1)
+            ax[0,0].legend(bbox_to_anchor=(0,1.00,1,0.2), loc="lower left", mode="expand", ncol = 3, handlelength=1, fontsize = 8)
 
         ax[0,1].set_title('Objective Variables')
         ax[0,1].grid(True)
@@ -162,7 +154,7 @@ def run_diagnostics(src, live = False, obj='current'):
             ax[1,1].plot(numeval, ssdev[i], color = colors[i], label=names[i])
 
         plt_pause_light(0.05)
-        if(live == False): time.sleep(0.5)
+        if(live == False): time.sleep(0.1)
         idx = idx+1
 
     fig.show()
@@ -171,7 +163,6 @@ def run_diagnostics(src, live = False, obj='current'):
 if __name__ == '__main__':
 
     if (len(sys.argv) == 2):
-        print  ("Plotting results from dir " + sys.argv[1])
         run_diagnostics(src=sys.argv[1], live = True)
 
     else:

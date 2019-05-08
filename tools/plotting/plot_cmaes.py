@@ -53,7 +53,7 @@ def run_diagnostics(src, live = False, obj='current'):
     ssdev    = [] # sigma x diag(C)
 
     plt.style.use('seaborn-dark')
-    fig, ax = plt.subplots(2,2,num='CMA-ES live diagnostics: {0}'.format(src),figsize=(11,11))
+    fig, ax = plt.subplots(2,2,num='CMA-ES live diagnostics: {0}'.format(src),figsize=(8,8))
     fig.show()
 
     updt_text = plt.figtext(0.5, 0.01, 'TEST', horizontalalignment='center');
@@ -137,7 +137,7 @@ def run_diagnostics(src, live = False, obj='current'):
 
 
         if idx == 2:
-            ax[0,0].legend(bbox_to_anchor=(0,1.00,1,0.2), loc="lower left", mode="expand", ncol = 3, handlelength=1)
+            ax[0,0].legend(bbox_to_anchor=(0,1.00,1,0.2), loc="lower left", mode="expand", ncol = 3, handlelength=1, fontsize = 8)
 
         ax[0,1].set_title('Objective Variables')
         ax[0,1].grid(True)

@@ -50,6 +50,7 @@ theme:
 markdown_extensions:
   - pymdownx.arithmatex
   - pymdownx.details
+  - pymdownx.superfences
   - attr_list
   - admonition
   - codehilite

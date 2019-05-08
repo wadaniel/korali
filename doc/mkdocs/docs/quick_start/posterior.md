@@ -165,11 +165,21 @@ for i in range(len(y)):
 ```
 
 
+### Plot
+
+```sh
+plot_cma.py korali0
+```
+
+![figure](posterior-cma.png)
 
 
 
 
-##Sample
+
+## Sample
+
+### The solver
 ```python
   korali["Solver"]["Method"] = "TMCMC";
   korali["Solver"]["Covariance Scaling"] = 0.02;
@@ -177,3 +187,11 @@ for i in range(len(y)):
   korali["Solver"]["Burn In"] = 5;
   korali["Solver"]["Coefficient of Variation"] = 0.5;
 ```
+
+### Plot
+
+```sh
+plot_cma.py korali0
+```
+
+![figure](posterior-cma.png)

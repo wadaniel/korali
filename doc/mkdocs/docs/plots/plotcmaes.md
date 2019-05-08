@@ -2,6 +2,9 @@
 Here we explain the **CMA-ES** result plot in further detail and how it can be
 used to validate your optimization.
 
+The plot-korali command visualizes some of the most meaningful states of CMA-ES 
+stored in the output directory (results folder).
+
 In the figure below we see the evolution of the CMA-ES algorithm during 50
 optimization steps, respectively 500 function evaluations (we used a sample size
 of 10), of the negative [Rosenbrock](https://en.wikipedia.org/wiki/Rosenbrock_function) function.

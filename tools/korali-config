@@ -20,6 +20,8 @@ Usage: korali-config [OPTION]
 Known values for OPTION are:
 
   --prefix		show korali installation prefix 
+  --python		print Python related information for Korali.
+  --cxx  		print cxx compiler/wrapper to build a Korali app.
   --libs		print korali library linking information
   --cflags		print pre-processor and compiler flags
   --help		display this help and exit
@@ -45,6 +47,15 @@ while test $# -gt 0; do
 	PREFIX=$optarg
 	;;
 
+    --python)
+	echo "[Korali] Compiling with Python configuration:"
+        echo "CXXFLAGS=`python-config --cflags`"
+        echo "LIBS=`python-config --libs`"
+        echo "[Korali] To run a korali application, make sure you define:"
+        echo '[Korali] >export PATH=$PATH:'$PREFIX'/bin'
+	echo '[Korali] >export PYTHONPATH=$PYTHONPATH:'$PREFIX'/lib'
+	;;
+
     --prefix)
 	echo $PREFIX
 	;;
@@ -64,6 +75,10 @@ while test $# -gt 0; do
 
     --cflags)
        	echo $CXXFLAGS
+       	;;
+
+    --cxx)
+       	echo $CXX
        	;;
 
     *)

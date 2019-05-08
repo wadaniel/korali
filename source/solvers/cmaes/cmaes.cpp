@@ -787,11 +787,3 @@ void CMAES::printFinal() const
     printf("[Korali] Total Elapsed Time: %fs\n", std::chrono::duration<double>(endTime-startTime).count());
  }
 }
-
-void CMAES::startPlot() const
-{
-  std::string cmd = "python `korali-config --prefix`/bin/plot_cmaes.py " + _k->_resultsDirName + " &";
-  //cmd = "start python `korali-config --prefix`/bin/diagnostics.py " + _k->_resultsDirName; // WINDOWS
-  int ret_code = system(cmd.c_str());
-  if ( ret_code == -1 ) {  printf( "[Korali] Error in system call:\n\t %s\n", cmd.c_str()); exit(-1); }
-}

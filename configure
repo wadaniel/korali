@@ -160,25 +160,41 @@ fi
 
 ######## Checking support for Python3 ########
 
-echo "[Korali] Checking for Python using \"python-config\"."
-python-config --help > /dev/null 2>&1
+echo "[Korali] Checking for Python3 support using \"python3 --version\"."
+python3 --version > /dev/null 2>&1
 if [ $? -eq 0 ]; then
-  echo "[Korali] Configuring with support for Python."
-  USE_PYTHON=1
+  pythonBin=`which python3`
+  pythonPath=`dirname $pythonBin`
+  pythonPath=`dirname $pythonPath`
+  echo "[Korali] Python3 found at $pythonPath."
+  pythonPkgConfigPath="$pythonPath/lib/pkgconfig/python3.pc"
+  echo "[Korali] Checking for Python3 package information: \"pkg-config $pythonPkgConfigPath\""
+  pkg-config $pythonPkgConfigPath
+  if [ $? -eq 0 ]; then
+    pythonCFlags=`pkg-config $pythonPkgConfigPath --cflags`
+    pythonLibs=`pkg-config $pythonPkgConfigPath --libs`
+  else
+    echo "[Korali] Error: $pythonPkgConfigPath not found."
+    echo "[Korali] Please make sure python3 is correctly installed."
+    exit
+  fi
 else
-  echo "[Korali] Configuring without support for Python"
-  USE_PYTHON=0
+  echo "[Korali] Error: Python3 not found."
+  echo "[Korali] Please make sure the python3 command is accesible from the $PATH environment variable."
+  exit
 fi
 
 ######## Creating Config File ########
 
 echo "VERSION=$VERSION" > korali.config
 echo "PREFIX=$PREFIX" >> korali.config
+echo "PYTHONCFLAGS=\"$pythonCFlags\"" >> korali.config
+echo "PYTHONLIBS=\"$pythonLibs\"" >> korali.config
 echo "CXX=$USE_CXX" >> korali.config
 echo "USE_MPI=$USE_MPI" >> korali.config
 echo "USE_UPCXX=$USE_UPCXX" >> korali.config
 echo "USE_MULTITHREAD=$USE_MULTITHREAD" >> korali.config
-echo "USE_PYTHON=$USE_PYTHON" >> korali.config
+
 
 echo "[Korali] Configuration was successful (see: korali.config)."
 echo "[Korali] Install Path: $PREFIX"

@@ -29,9 +29,6 @@ class Base {
  virtual nlohmann::json getConfiguration();
  virtual void setConfiguration(nlohmann::json& js);
  virtual void setState(nlohmann::json& js);
-
- // Print Methods
- virtual std::string getPlottingScript() const = 0;
 };
 
 } // namespace Korali

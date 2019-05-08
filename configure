@@ -167,7 +167,7 @@ if [ $? -eq 0 ]; then
   pythonPath=`dirname $pythonBin`
   pythonPath=`dirname $pythonPath`
   echo "[Korali] Python3 found at $pythonPath."
-  pythonPkgConfigPath="$pythonPath/lib/pkgconfig/python3.pc"
+  pythonPkgConfigPath="$pythonPath/lib*/pkgconfig/python3.pc"
   echo "[Korali] Checking for Python3 package information: \"pkg-config $pythonPkgConfigPath\""
   pkg-config $pythonPkgConfigPath
   if [ $? -eq 0 ]; then
@@ -188,8 +188,8 @@ fi
 
 echo "VERSION=$VERSION" > korali.config
 echo "PREFIX=$PREFIX" >> korali.config
-echo "PYTHONCFLAGS=\"$pythonCFlags\"" >> korali.config
-echo "PYTHONLIBS=\"$pythonLibs\"" >> korali.config
+echo "PYTHONCFLAGS=$pythonCFlags" >> korali.config
+echo "PYTHONLIBS=$pythonLibs" >> korali.config
 echo "CXX=$USE_CXX" >> korali.config
 echo "USE_MPI=$USE_MPI" >> korali.config
 echo "USE_UPCXX=$USE_UPCXX" >> korali.config

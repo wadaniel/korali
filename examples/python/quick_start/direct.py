@@ -5,7 +5,7 @@ import libkorali
 
 def F( s ):
   x = s.getParameter(0)
-  r = (x-2.)**2
+  r = -x*x
   s.addResult(r)
 
 if len(sys.argv) < 2 :
@@ -29,6 +29,7 @@ if sys.argv[1]=='1':
   korali["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-8
   korali["Solver"]["Termination Criteria"]["Max Generations"] = 100
   korali["Solver"]["Lambda"] = 5
+  korali["Solver"]["Objective"] = "Maximize"
 
 elif sys.argv[1]=='2':
   korali["Solver"]["Method"] = "TMCMC"

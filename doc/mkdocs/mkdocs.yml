@@ -6,12 +6,8 @@ nav:
   - Home: index.md
   - Installation: installation.md
   - Quick Start:
-      - C++:
-        - Direct problems: quick_start/cxx/direct.md
-        - Bayesian Inference: quick_start/cxx/posterior.md
-      - Python:
-        - Direct problems: quick_start/python/direct.md
-        - Bayesian Inference: quick_start/python/posterior.md
+      - Direct problems: quick_start/direct.md
+      - Bayesian Inference: quick_start/posterior.md
   - Usage:
       - General Settings: usage/settings.md
       - Problem:

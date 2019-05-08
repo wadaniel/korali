@@ -1,3 +1,13 @@
+
+
+In this tutorial we show how to **optimize** and **sample** the posterior
+distribution of a Bayesian inference problem.
+
+
+The code for this tutorial in **Python** can be found [here](https://github.com/cselab/skorali/blob/master/examples/python/quick_start/posterior.py) and the code in **C++** can be found [here](https://github.com/cselab/skorali/blob/master/examples/cxx/quick_start/posterior.cpp).
+
+
+
 ## Problem setup
 In this example we will solve the inverse problem of estimating the parameters
 of a linear model using noisy data. We consider the computational model,
@@ -56,54 +66,65 @@ As a prior information we choose the uniform distribution in $[-10,10]$ for $\va
 and the uniform distribution in $[0,10]$ for $\sigma$.
 
 
-The code for this tutorial can be found [here](https://github.com/cselab/skorali/blob/master/examples/cxx/quick_start/posterior.cpp).
+
+
 
 
 
 ## Optimize
+First import the needed modules
+```python
+#!/usr/bin/env python
+import sys
+import threading
+import libkorali
+```
+
 
 ### The computational model
 
-```cpp
- void F( std::vector<double>& par, std::vector<double>& result, std::vector<double> x ){
-   for( size_t i=0; i<x.size(); i++){
-     double res = par[0]*x[i] + par[1];
-     result.push_back( res );
-   }
- }
+```python
+def F( s, x ):
+  for i in range(len(x)):
+    th0 = s.getParameter(0)
+    th1 = s.getParameter(1)
+    r  =  th0*x[i] + th1
+    s.addResult(r)
+
 ```
 
 ### The data
-```cpp
-  std::vector<double> x, y;
-  x.push_back(1.0);   y.push_back(3.2069);
-  x.push_back(2.0);   y.push_back(4.1454);
-  x.push_back(3.0);   y.push_back(4.9393);
-  x.push_back(4.0);   y.push_back(6.0588);
-  x.push_back(5.0);   y.push_back(6.8425);
+```python
+x=[];            y=[];
+x.append(1.0);   y.append(3.2069);
+x.append(2.0);   y.append(4.1454);
+x.append(3.0);   y.append(4.9393);
+x.append(4.0);   y.append(6.0588);
+x.append(5.0);   y.append(6.8425);
 ```
 
 ### The Korali object
-```cpp
-  auto Fx = [x]( Korali::modelData& d ) {
-                F(d.getParameters(), d.getResults(), x);
-  };
+```python
+Fx = lambda s: F( s, x )
 
-  auto korali = Korali::Engine( Fx );
+korali = libkorali.Engine( Fx )
 ```
+
+or `Fx = lambda s,*,x=x: F( s, x )`
+
 
 ### The problem type
-```cpp
-  korali["Problem"]["Objective"] = "Posterior";
+```python
+korali["Problem"]["Objective"] = "Posterior";
 ```
 
-```cpp
-  for (size_t i = 0; i < d.size(); i++)
-    korali["Problem"]["Reference Data"][i] = y[i];
+```python
+for i in range(len(y)):
+  korali["Problem"]["Reference Data"][i] = y[i];
 ```
 
 ### The parameters
-```cpp
+```python
   korali["Parameters"][0]["Name"] = "a";
   korali["Parameters"][0]["Type"] = "Computational";
   korali["Parameters"][0]["Distribution"] = "Uniform";
@@ -117,7 +138,7 @@ The code for this tutorial can be found [here](https://github.com/cselab/skorali
   korali["Parameters"][1]["Maximum"] = +10.0;
 ```
 
-```cpp
+```python
   korali["Parameters"][2]["Name"] = "Sigma";
   korali["Parameters"][2]["Type"] = "Statistical";
   korali["Parameters"][2]["Distribution"] = "Uniform";
@@ -126,7 +147,7 @@ The code for this tutorial can be found [here](https://github.com/cselab/skorali
 ```
 
 ### The solver
-```cpp
+```python
   korali["Solver"]["Method"] = "CMA-ES";
   korali["Solver"]["Lambda"] = 12;
   korali["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-11;
@@ -136,9 +157,9 @@ The code for this tutorial can be found [here](https://github.com/cselab/skorali
 ```
 
 ### Run
-```cpp
+```python
   korali["Seed"] = 0xC0FFEE;
-  korali["Verbosity"] = "Normal";
+  korali["Verbosity"] = "Detailed";
 
   korali.run();
 ```
@@ -149,7 +170,7 @@ The code for this tutorial can be found [here](https://github.com/cselab/skorali
 
 
 ##Sample
-```cpp
+```python
   korali["Solver"]["Method"] = "TMCMC";
   korali["Solver"]["Covariance Scaling"] = 0.02;
   korali["Solver"]["Population Size"] = 5000;

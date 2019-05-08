@@ -28,10 +28,8 @@ ifeq ($(USE_UPCXX), 1)
  CXXFLAGS_STATIC += -D_KORALI_USE_UPCXX `upcxx-meta CPPFLAGS`
 endif
 
-ifeq ($(USE_PYTHON), 1)
- CXXFLAGS_SHARED += -D_KORALI_USE_PYTHON `python-config --cflags` 
- LDFLAGS_SHARED  += `python-config --ldflags`
-endif
+CXXFLAGS_SHARED += $(PYTHONCFLAGS) -D_KORALI_USE_PYTHON
+LDFLAGS_SHARED  += $(PYTHONLIBS)
 
 ifeq ($(USE_MULTITHREAD), 1)
  CXXFLAGS += -D_KORALI_USE_MULTITHREAD -pthread

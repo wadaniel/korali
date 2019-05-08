@@ -81,7 +81,6 @@ class TMCMC : public Korali::Solver::Base
 
  // Print Methods
  void printGeneration() const;
- std::string getPlottingScript() const override { return "plot_tmcmc.py"; }
 };
 
 } // namespace Korali

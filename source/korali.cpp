@@ -230,8 +230,6 @@ void Korali::Engine::run()
  // Creating Results directory
  mkdir(_resultsDirName.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
- startPlot();
-
  // Running Engine
  _conduit->run();
 
@@ -266,11 +264,4 @@ void Korali::Engine::loadState(std::string fileName)
 void Korali::Engine::loadConfig(std::string fileName)
 {
  _js = loadJsonFromFile(fileName.c_str());
-}
-
-void Korali::Engine::startPlot() const
-{
-  std::string cmd = "python3 `korali-config --prefix`/bin/" + _solver->getPlottingScript() + " " + _k->_resultsDirName + " &"; 
-  int ret_code = system(cmd.c_str());
-  if ( ret_code == -1 ) {  printf( "[Korali] Error in system call:\n\t %s\n", cmd.c_str()); exit(-1); }
 }

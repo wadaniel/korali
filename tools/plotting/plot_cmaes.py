@@ -9,12 +9,9 @@ import colorsys
 import numpy as np
 
 import matplotlib
-# matplotlib.rcParams['text.usetex'] = True
-# matplotlib.rcParams['text.latex.unicode'] = True
 import matplotlib.pyplot as plt
 
-
-from plot_helpers import plt_pause_light
+from plot_helpers import plt_pause_light, plt_multicolored_lines
 
 # Get a list of evenly spaced colors in HLS huse space.
 # Credits: seaborn package
@@ -46,15 +43,11 @@ def run_diagnostics(src, live = False, obj='current'):
     names    = [] # description params
     colors   = [] # rgb colors
     numeval  = [] # number obj function evaluations
-    numevalp = [] # number obj function evaluations for positive fval
-    numevaln = [] # number obj function evaluations for negative fval
     sigma    = [] # scaling parameter
     cond     = [] # condition of C (largest EW / smallest EW)
     psL2     = [] # conjugate evolution path L2 norm
     dfval    = [] # abs diff currentBest - bestEver
     fval     = [] # best fval current generation
-    fvalneg  = [] # best fval current generation (fval < 0)
-    fvalpos  = [] # best fval current generation (fval > 0)
     fvalXvec = [] # location fval
     axis     = [] # sqrt(EVals)
     ssdev    = [] # sigma x diag(C)
@@ -120,33 +113,6 @@ def run_diagnostics(src, live = False, obj='current'):
             
             f = state[objstrings(obj)[0]]
             fval.append(f)
-            if f >= 0 :
-                fvalneg.append(None)
-                
-                if (idx > 1 ):
-                        if (fvalpos != [] and fvalpos[-1] is None): 
-                            fvalpos[-1] = abs(fval[-2])
-                            fvalpos.append(abs(fval[-1]))
-                        elif (fvalpos == [] or fvalpos[-1] != fval[-2]): fvalpos.append(abs(fval[-2]))
-                        else:
-                            fvalpos.append(abs(fval[-1]))
-
-                else:
-                    fvalpos.append(abs(fval[-1]))
-
-            else :
-                fvalpos.append(None)
-                
-                if (idx > 1):
-                    if (fvalneg != [] and fvalneg[-1] is None): 
-                        fvalneg[-1] = abs(fval[-2])
-                        fvalneg.append(abs(fval[-1]))
-                    elif (fvalneg == [] or fvalneg[-1] != fval[-2]): fvalneg.append(abs(fval[-2]))
-                    else:
-                        fvalneg.append(abs(fval[-1]))
-                else:
-                    fvalneg.append(abs(fval[-1]))
-                 
             sigma.append(state['Sigma'])
             cond.append(state['MaxEigenvalue']/state['MinEigenvalue'])
             psL2.append(state['ConjugateEvolutionPathL2'])
@@ -163,9 +129,7 @@ def run_diagnostics(src, live = False, obj='current'):
 
         ax[0,0].grid(True)
         ax[0,0].set_yscale('log')
-        #if len(fvalneg) > 0 : ax[0,0].plot(numeval, fvalpos, color='b', label = '| F |')
-        #if len(fvalpos) > 0 : ax[0,0].plot(numeval, fvalneg, color='r', label = '| F |')
-        ax[0,0].plot(numeval, [abs(v) for v in fval], color='r', label = '| F |')
+        plt_multicolored_lines(ax[0,0], numeval, fval, 0.0, 'r', 'b', '|F|')
         ax[0,0].plot(numeval, dfval, 'x', color = '#34495e', label = '| F - F_best |')
         ax[0,0].plot(numeval, cond, color='#98D8D8', label = 'Condition')
         ax[0,0].plot(numeval, sigma, color='#F8D030', label = 'Sigma')

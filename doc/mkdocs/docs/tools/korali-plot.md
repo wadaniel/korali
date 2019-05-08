@@ -1,40 +1,43 @@
-korali-plot
+# korali-plot
 
-## plot_cmaes.py
+##Name
+       korali-plot - Creates a graphical representation and plots for the results produced
+	   by a Korali application.
+	   
+##Usage
+       korali-plot [RESULT_FOLDER] [-o OUTPUT_FORMAT] [-f OUTPUT_FILE]
+				   
+##Description
 
+       Given the input folder, korali-plot determines which solver was used by the
+	   korali application and calls the appropriate Korali plotting script:
+	   
+	   - For TMCMC: plot_tmcmc.py
+	   - For CMA-ES: plot_cmaes.py
+	   
+	   Although these scripts can be manually instantiated by the user, korali-plot
+	   provides the additional convenience of automatically determining which solver
+	   was used.
 
-python plot_cmaes.py resultsdir
+       
+##Options
 
-
-- description: loops over all files/generations in resultsdir and plots evolution of cma-es optimizer
-
-- parameter: resultsdir:  relative path to the folder containing all result files
-
-- example1 (from console): python `korali-config --prefix`/bin/plot_cmaes.py korali1/
-- example2 (directly from code): ...; korali["Live Plotting"] = true; ...; korali.run();
-
-
-
-
-
-## plot_tmcmc.py
-
-python plot_tmcmc.py resultsdir
-
-- description: loops over all files in resultsdir and plots samples in histograms
-               a single file can be plotted too
-
-- parameter:
-    resultsdir: relative path to foler OR single file
-
-- example1 (from console, single file):
-    python `korali-config--prefix`/bin/plot_cmaes.py korali1/s00007.json
-
-- example2 (directly from code):
-    ...; korali["Live Plotting"] = true; ...; korali.run();
-
-
-- Comment:
-
-    use `korali-config --prefix` in console to find the installation directory
-    of korali, all tools are available in `korali-config--prefix`/bin/
+      RESULT_FOLDER
+        Specifies the input folder containing Korali results.
+		Default value: ./_korali_results
+		
+	  OUTPUT_FORMAT
+        Specifies the format of the produced plots. Possible values are:
+		   -o display (default)
+              Shows the live results as a new window through the graphical interface.
+		   -o png
+		      Creates a PNG file for each generation.
+		   -o mp4 
+		      Creates a MP4 video animation containing all generations.
+			  
+	  OUTPUT_FILE
+        Specifies the file name root for output plotting. Korali will automatically additional
+		a generation number as suffix and the corresponding extension (e.g., .png). Example
+		   -f myOutputFile
+	   
+		

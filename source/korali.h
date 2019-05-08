@@ -6,7 +6,7 @@
 #include <functional>
 
 #include "problems/direct/direct.h"
-#include "problems/likelihood/likelihood.h"
+#include "problems/bayesian/bayesian.h"
 
 #include "parameters/exponential/exponential.h"
 #include "parameters/gamma/gamma.h"

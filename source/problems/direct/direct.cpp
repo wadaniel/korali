@@ -22,7 +22,7 @@ nlohmann::json Korali::Problem::Direct::getConfiguration()
 {
  auto js = this->Korali::Problem::Base::getConfiguration();
 
- js["Objective"] = "Direct Evaluation";
+ js["Type"] = "Direct";
 
  return js;
 }
@@ -39,7 +39,7 @@ double Korali::Problem::Direct::evaluateFitness(double* sample)
 {
  if (_k->_statisticalParameterCount != 0)
  {
-  fprintf(stderr, "[Korali] Error: Direct Evaluation problem requires 0 statistical parameters.\n");
+  fprintf(stderr, "[Korali] Error: Direct problem requires 0 statistical parameters.\n");
   exit(-1);
  }
 
@@ -51,7 +51,7 @@ double Korali::Problem::Direct::evaluateFitness(double* sample)
 
  if (d._results.size() != 1)
  {
-  fprintf(stderr, "[Korali] Error: The direct evaluation problem requires exactly a 1-element result array.\n");
+  fprintf(stderr, "[Korali] Error: The direct problem requires exactly a 1-element result array.\n");
   fprintf(stderr, "[Korali]        Provided: %lu.\n", d._results.size());
   exit(-1);
  }

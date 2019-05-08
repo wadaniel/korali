@@ -141,9 +141,9 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
 
  // Configure Problem
  bool foundProblem = false;
- auto pString =  consume(js, { "Problem", "Objective" }, KORALI_STRING);
- if (pString == "Direct Evaluation") { _problem = new Korali::Problem::Direct(js["Problem"]);     foundProblem = true; }
- if (pString == "Likelihood")        { _problem = new Korali::Problem::Likelihood(js["Problem"]); foundProblem = true; }
+ auto pString =  consume(js, { "Problem", "Type" }, KORALI_STRING);
+ if (pString == "Direct")   { _problem = new Korali::Problem::Direct(js["Problem"]);   foundProblem = true; }
+ if (pString == "Bayesian") { _problem = new Korali::Problem::Bayesian(js["Problem"]); foundProblem = true; }
  if (foundProblem == false) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Problem."); exit(-1); }
 
  // Configure Conduit

@@ -98,7 +98,6 @@ class Engine {
  int _verbosity;
  size_t _outputFrequency;
 
- std::string _resultsDirName;
  size_t _currentState;
 
  // Serialization Methods

@@ -18,7 +18,7 @@ for i in range(4):
 korali["Problem"]["Objective"] = "Direct Evaluation";
 korali["Solver"]["Method"] = "TMCMC"
 korali["Solver"]["Covariance Scaling"] = 0.02
-korali["Solver"]["Population Size"] = 5000
+korali["Solver"]["Population Size"] = 1000
 korali["Solver"]["Burn In"] = 5
 
 korali.run()

@@ -2,6 +2,7 @@
 #include <chrono>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <cstdio>
 
 Korali::Engine* Korali::_k;
 
@@ -113,19 +114,7 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
  if (vString == "Normal")   _verbosity = KORALI_NORMAL;
  if (vString == "Detailed") _verbosity = KORALI_DETAILED;
 
- size_t runNumber = 0;
- bool exists = true;
- while(exists)
- {
-  struct stat info;
-  if (runNumber > 1000) { printf("[Korali] Error: Too many result files. Backup your previous results and run again.\n"); exit(-1);}
-  _resultsDirName = "korali" + std::to_string(runNumber);
-  if(stat(_resultsDirName.c_str(), &info) != 0) exists = false;
-  else if(info.st_mode & S_IFDIR) runNumber++;
- }
-
  _outputFrequency = consume(js, { "Output Frequency" }, KORALI_NUMBER, "1");
- _resultsDirName  = consume(js, { "Output Directory" }, KORALI_STRING, _resultsDirName);
 
  // Configure Parameters
  std::vector<Korali::Parameter::Base*> tmp;
@@ -228,12 +217,12 @@ void Korali::Engine::run()
  #endif
 
  // Creating Results directory
- mkdir(_resultsDirName.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+ mkdir("_korali_result", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
  // Running Engine
  _conduit->run();
 
- if (_conduit->isRoot()) printf("[Korali] Results saved to folder: '%s'\n", _resultsDirName.c_str());
+ if (_conduit->isRoot()) printf("[Korali] Results saved to folder: '_korali_result'\n");
 }
 
 void Korali::Engine::saveState(std::string fileName)
@@ -249,7 +238,7 @@ void Korali::Engine::saveState()
 
  char fileName[256];
 
- sprintf(fileName, "./%s/s%05lu.json", _resultsDirName.c_str(), _currentState++);
+ sprintf(fileName, "./_korali_result/s%05lu.json", _currentState++);
 
  saveJsonToFile(fileName, getConfiguration());
 }

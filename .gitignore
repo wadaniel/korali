@@ -1,4 +1,5 @@
 korali/
+_korali_result
 .exrc
 __pycache__
 *.tar.gz

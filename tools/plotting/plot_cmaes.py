@@ -162,7 +162,7 @@ def run_diagnostics(src, live = False, obj='current'):
             ax[1,1].plot(numeval, ssdev[i], color = colors[i], label=names[i])
 
         plt_pause_light(0.05)
-        if(live == False): time.sleep(0.5)
+        if(live == False): time.sleep(0.1)
         idx = idx+1
 
     fig.show()
@@ -171,7 +171,6 @@ def run_diagnostics(src, live = False, obj='current'):
 if __name__ == '__main__':
 
     if (len(sys.argv) == 2):
-        print  ("Plotting results from dir " + sys.argv[1])
         run_diagnostics(src=sys.argv[1], live = True)
 
     else:

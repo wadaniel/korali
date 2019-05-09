@@ -55,7 +55,7 @@ double Uniform::getDensity(double x)
  return gsl_ran_flat_pdf(x, _lowerBound, _upperBound);
 }
 
-double Uniform::getDensityLog(double x)
+double Uniform::getLogDensity(double x)
 {
  if (x >= _lowerBound && x <= _upperBound)
   return _aux;

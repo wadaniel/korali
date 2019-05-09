@@ -59,7 +59,7 @@ double Gaussian::getDensity(double x)
  return gsl_ran_gaussian_pdf(x - _mean, _sigma);
 }
 
-double Gaussian::getDensityLog(double x)
+double Gaussian::getLogDensity(double x)
 {
  double d = (x-_mean)/_sigma;
  return _aux - 0.5*d*d;

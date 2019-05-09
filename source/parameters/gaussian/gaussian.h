@@ -21,7 +21,7 @@ class Gaussian : public Korali::Parameter::Base
   ~Gaussian();
 
   double getDensity(double x) override;
-  double getDensityLog(double x) override;
+  double getLogDensity(double x) override;
   double getRandomNumber() override;
   static double logLikelihood(double sigma, size_t nData, double* x, double* u);
   void setDistribution(double mean, double sigma) { _mean = mean; _sigma = sigma; };

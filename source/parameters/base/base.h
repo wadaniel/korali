@@ -34,7 +34,7 @@ class Base
  ~Base();
 
  virtual double getDensity(double x) = 0;
- virtual double getDensityLog(double x) = 0;
+ virtual double getLogDensity(double x) = 0;
  virtual double getRandomNumber() = 0;
  virtual void printDetails() = 0;
 

@@ -20,7 +20,7 @@ class Cauchy : public Korali::Parameter::Base
   ~Cauchy();
 
   double getDensity(double x) override;
-  double getDensityLog(double x) override;
+  double getLogDensity(double x) override;
   double getRandomNumber() override;
 
   void printDetails() override;

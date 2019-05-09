@@ -113,7 +113,7 @@ class CMAES : public Korali::Solver::Base
  void eigen(size_t N, double **C, double *diag, double **Q) const;
  size_t maxIdx(const double *rgd, size_t len) const;
  size_t minIdx(const double *rgd, size_t len) const;
- void sorted_index(const double *rgFunVal, size_t *index, size_t n) const;
+ void sort_index(const double *rgFunVal, size_t *index, size_t n) const;
  bool isFeasible(const double *pop) const;
  double doubleRangeMax(const double *rgd, size_t len) const;
  double doubleRangeMin(const double *rgd, size_t len) const;

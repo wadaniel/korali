@@ -27,7 +27,7 @@ CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
  curBestVector = (double *) calloc (sizeof(double), _k->N);
 
  rgFuncValue = (double*) calloc (sizeof(double), _s);
- histFuncValues = (double*) calloc (sizeof(double), _maxGenenerations);
+ histFuncValues = (double*) calloc (sizeof(double), _maxGenenerations+1);
  index = (size_t *) calloc (sizeof(size_t*), _s);
 
  C = (double**) calloc (sizeof(double*), _k->N);
@@ -84,7 +84,6 @@ CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
  countevals = 0;
  countinfeasible = 0;
  bestEver = 0.0;
- for (size_t i = 0; i < _s; ++i) index[i] = i; /* should not be necessary */
 
  for (size_t i = 0; i < _k->N; ++i)
  {
@@ -401,7 +400,7 @@ void CMAES::updateDistribution(const double *fitnessVector)
  countevals += _s;
 
  /* Generate index */
- sorted_index(fitnessVector, index, _s);
+ sort_index(fitnessVector, index, _s);
 
  /* assign function values */
  for (size_t i = 0; i < _s; i++) rgFuncValue[i] = fitnessVector[i];
@@ -700,13 +699,14 @@ size_t CMAES::minIdx(const double *rgd, size_t len) const
  return res;
 }
 
-void CMAES::sorted_index(const double *fitnessVector, size_t *index, size_t n) const
+void CMAES::sort_index(const double *fitnessVector, size_t *index, size_t n) const
 {
   // initialize original index locations
-  std::iota(index, index+n, 0);
+  std::iota(index, index+n, (size_t) 0);
 
   // sort indexes based on comparing values in v
   std::sort( index, index+n, [fitnessVector](size_t i1, size_t i2) {return fitnessVector[i1] > fitnessVector[i2];} ); //descending
+
 }
 
 double CMAES::doubleRangeMax(const double *rgd, size_t len) const

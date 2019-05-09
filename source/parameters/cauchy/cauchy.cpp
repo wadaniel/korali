@@ -59,7 +59,7 @@ double Cauchy::getDensity(double x)
  return gsl_ran_cauchy_pdf( x-_loc, _scale );
 }
 
-double Cauchy::getDensityLog(double x)
+double Cauchy::getLogDensity(double x)
 {
  return  _aux - gsl_sf_log( 1. + gsl_sf_pow_int((x-_loc)/_scale,2) );
 }

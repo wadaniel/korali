@@ -52,7 +52,7 @@ double Exponential::getDensity(double x)
  return gsl_ran_exponential_pdf(x-_loc, _mean);
 }
 
-double Exponential::getDensityLog(double x)
+double Exponential::getLogDensity(double x)
 {
  if (x-_loc < 0) return -INFINITY;
  return - log(_mean) - (x-_loc)/_mean;

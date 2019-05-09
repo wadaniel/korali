@@ -59,7 +59,7 @@ double Gamma::getDensity(double x)
  return gsl_ran_gamma_pdf( x, _shape, _scale );
 }
 
-double Gamma::getDensityLog(double x)
+double Gamma::getLogDensity(double x)
 {
  if(x < 0) return -INFINITY;
  return _aux + (_shape-1)*log(x) - x/_scale;

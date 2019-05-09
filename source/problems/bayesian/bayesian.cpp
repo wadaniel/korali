@@ -81,6 +81,6 @@ double Korali::Problem::Bayesian::evaluateFitness(double* sample)
 double Korali::Problem::Bayesian::evaluateLogPrior(double* sample)
 {
  double logPrior = 0.0;
- for (size_t i = 0; i < _k->N; i++) logPrior += _k->_parameters[i]->getDensityLog(sample[i]);
+ for (size_t i = 0; i < _k->N; i++) logPrior += _k->_parameters[i]->getLogDensity(sample[i]);
  return logPrior;
 }

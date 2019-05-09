@@ -59,7 +59,7 @@ double Laplace::getDensity(double x)
  return gsl_ran_laplace_pdf( x-_mean, _width );
 }
 
-double Laplace::getDensityLog(double x)
+double Laplace::getLogDensity(double x)
 {
  return  _aux - fabs(x-_mean)/_width;
 }

@@ -20,7 +20,7 @@ class Laplace : public Korali::Parameter::Base
   ~Laplace();
 
   double getDensity(double x) override;
-  double getDensityLog(double x) override;
+  double getLogDensity(double x) override;
   double getRandomNumber() override;
   static double logLikelihood(double sigma, int nData, double* x, double* u);
 

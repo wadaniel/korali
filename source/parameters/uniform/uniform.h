@@ -18,7 +18,7 @@ class Uniform : public Korali::Parameter::Base
 	 ~Uniform();
 
   double getDensity(double x) override;
-  double getDensityLog(double x) override;
+  double getLogDensity(double x) override;
   double getRandomNumber() override;
 
   // Constructor / Destructor

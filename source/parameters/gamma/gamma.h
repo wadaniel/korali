@@ -20,7 +20,7 @@ class Gamma : public Korali::Parameter::Base
   ~Gamma();
 
   double getDensity(double x) override;
-  double getDensityLog(double x) override;
+  double getLogDensity(double x) override;
   double getRandomNumber() override;
 
   void printDetails() override;

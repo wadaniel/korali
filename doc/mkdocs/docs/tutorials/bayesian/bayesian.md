@@ -83,6 +83,8 @@ import libkorali
 
 ### The computational model
 
+We write a function that simulates the model $f(x;\vartheta) = \vartheta_0 + \vartheta_1 x$,
+
 ```python
 def F( s, x ):
   for i in range(len(x)):
@@ -93,7 +95,13 @@ def F( s, x ):
 
 ```
 
+The object `s` must be of type `Korali::modelData`. This class provides the methods
+`getParameter` and `addResult`. For a detailed presentation see [here]
+
 ### The data
+
+The data in the table bellow are added as two Python lists,
+
 ```python
 x=[];            y=[];
 x.append(1.0);   y.append(3.2069);
@@ -103,27 +111,53 @@ x.append(4.0);   y.append(6.0588);
 x.append(5.0);   y.append(6.8425);
 ```
 
+
+
 ### The Korali object
+
+The `x` list corresponds to the *input* variables of the model. The function that
+is passed to korali should not have an argument for `x`. We have to create an intermediate
+lambda function `Fx` that will hide `x` from korali.
+
 ```python
 Fx = lambda s: F( s, x )
+```
 
+or
+
+```python
+Fx = lambda s,*,x=x: F( s, x )
+```
+if we want to make sure that `Fx` will not change if `x` changes later. Then, we can create
+the korali object,
+
+```python
 korali = libkorali.Engine( Fx )
 ```
 
-or `Fx = lambda s,*,x=x: F( s, x )`
 
 
 ### The problem type
+
+The `Objective` `Problem` is characterized as `Bayesian`
 ```python
-korali["Problem"]["Objective"] = "Posterior";
+korali["Problem"]["Objective"] = "Bayesian";
 ```
+
+When the objective is `Bayesian` we must also provide a vector with the `Reference Data`
+to korali,
 
 ```python
 for i in range(len(y)):
   korali["Problem"]["Reference Data"][i] = y[i];
 ```
 
+
+
 ### The parameters
+
+We define two `Parameters` of type `Computational` that correspond to $\vartheta_0$ and $\vartheta_1$. The prior distribution of both is set to `Uniform`.
+
 ```python
   korali["Parameters"][0]["Name"] = "a";
   korali["Parameters"][0]["Type"] = "Computational";
@@ -138,6 +172,9 @@ for i in range(len(y)):
   korali["Parameters"][1]["Maximum"] = +10.0;
 ```
 
+The last parameter we add is of `Type` `Statistical` and corresponds to the variable
+$\sigma$ in the likelihood function,
+
 ```python
   korali["Parameters"][2]["Name"] = "Sigma";
   korali["Parameters"][2]["Type"] = "Statistical";
@@ -147,6 +184,10 @@ for i in range(len(y)):
 ```
 
 ### The solver
+
+Next, we choose the solver `CMA-ES`, the population size to be `12` and set
+four termination criteria,
+
 ```python
   korali["Solver"]["Method"] = "CMA-ES";
   korali["Solver"]["Lambda"] = 12;
@@ -156,19 +197,31 @@ for i in range(len(y)):
   korali["Solver"]["Termination Criteria"]["Max Model Evaluations"] = 1e4;
 ```
 
+For a detailed description of CMA-ES settings see [here](???).
+
+
 ### Run
+
+We set the `Seed` to a fixed value and the `Verbosity` level to the maximum available,
+
+
 ```python
   korali["Seed"] = 0xC0FFEE;
   korali["Verbosity"] = "Detailed";
+```
 
+Finally, we are ready to run the simulation,
+
+```python
   korali.run();
 ```
 
 
 ### Plot
 
+You can see the results of CMA-ES by running the command,
 ```sh
-plot_cma.py korali0
+korali-plot
 ```
 
 ![figure](posterior-cma.png)
@@ -180,6 +233,9 @@ plot_cma.py korali0
 ## Sample
 
 ### The solver
+
+To sample the posterior distribution, we set the solver to `TMCMC` sampler and set a few settings,
+
 ```python
   korali["Solver"]["Method"] = "TMCMC";
   korali["Solver"]["Covariance Scaling"] = 0.02;
@@ -188,10 +244,15 @@ plot_cma.py korali0
   korali["Solver"]["Coefficient of Variation"] = 0.5;
 ```
 
+For a detailed description of the TMCMC settings see [here](???)
+
+
 ### Plot
 
+You can see a histogram of the results by running the command
 ```sh
-plot_cma.py korali0
+korali-plot
 ```
 
-![figure](posterior-cma.png)
+
+![figure](posterior-tmcmc.png)

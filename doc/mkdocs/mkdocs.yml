@@ -10,13 +10,8 @@ nav:
       - Configuration: setup/configuration.md
       - System Requirements: setup/requirements.md
   - Tutorials:
-<<<<<<< HEAD
-      - 1. Direct Problem: tutorials/direct.md
-      - 2. Bayesian Inference: tutorials/bayesian.md
-=======
-      - 1) Direct Problem: tutorials/direct.md
-      - 2) Bayesian Inference: tutorials/bayesian.md
->>>>>>> 436252c9dfd0e89c49918b859caf1a6839f73269
+      - 1. Direct Problem: tutorials/direct/direct.md
+      - 2. Bayesian Inference: tutorials/bayesian/bayesian.md
   - User Manual:
       - Introduction: usage/introduction.md
       - Modules:

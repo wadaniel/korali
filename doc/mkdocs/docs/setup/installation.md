@@ -49,11 +49,11 @@ make -j install
 ```
 
 !!! note
-    If not provided by the user, Korali will automatically the GSL-2.5 GNU Scientific    Library will be automatically downloaded and installed in the installation folder. This step may take a few minutes.
+    If not provided by the user, the GSL-2.5 GNU Scientific Library will be automatically downloaded and installed in the installation folder. This step may take a few minutes.
 
 ### 5. Add Path and Python Path folders
 
-Finally, add Korali will ask you to add its default binary and Python paths:
+Finally, Korali will ask you to add its default binary and Python paths:
 
 ```shell
 export PATH=$PATH:/path/to/install/folder/bin

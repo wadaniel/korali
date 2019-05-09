@@ -1,15 +1,19 @@
 # Introduction
-				   
+
+!!! warning
+    This page serves as a placeholder and is under construction.
+
+
 ##Korali
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-   	  
+
 ##Modules
-   
+
 ![](modules.png)
-   
+
 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-	
+
 ###Problem
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
@@ -19,7 +23,7 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor i
 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
 
 ###Model
- 
+
 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
 
 
@@ -50,17 +54,17 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor i
 	 - Default: *0*
 	 - Syntax: `Korali["Seed"] = seed`
 	 - Example:
-	 
+
 ```python
 # Defining a specific random seed
 Korali["Seed"] = 0xC0FFEE
 ```
 
 <br>
-	 
+
 + Name: **Vebosity**
      - Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-     - Type: String. 
+     - Type: String.
 	 - Allowed values:
 	       - "Silent" - Prints no results.
 		   - "Minimal" - Prints minimal progress information.
@@ -69,7 +73,7 @@ Korali["Seed"] = 0xC0FFEE
 	 - Default: "Computational"
 	 - Syntax: `Korali["Verbosity"] = verbosityLevel`
 	 - Example:
-	 
+
 ```python
 # Defining a detailed verbosity level.
 Korali["Verbosity"] = "Detailed"

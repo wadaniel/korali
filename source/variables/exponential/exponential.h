@@ -1,12 +1,12 @@
 #ifndef _KORALI_EXPONENTIAL_H_
 #define _KORALI_EXPONENTIAL_H_
 
-#include "parameters/base/base.h"
+#include "variables/base/base.h"
 
-namespace Korali::Parameter
+namespace Korali::Variable
 {
 
-class Exponential : public Korali::Parameter::Base
+class Exponential : public Korali::Variable::Base
 {
  private:
   double _loc;

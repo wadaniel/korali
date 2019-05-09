@@ -1,5 +1,5 @@
-#ifndef _KORALI_BASEPARAMETER_H_
-#define _KORALI_BASEPARAMETER_H_
+#ifndef _KORALI_BASEVARIABLE_H_
+#define _KORALI_BASEVARIABLE_H_
 
 #include <string>
 #include <gsl/gsl_rng.h>
@@ -8,16 +8,16 @@
 #include <gsl/gsl_sf.h>
 #include "json/json.hpp"
 
-enum parameterType { KORALI_COMPUTATIONAL, KORALI_STATISTICAL };
+enum variableType { KORALI_COMPUTATIONAL, KORALI_STATISTICAL };
 
-namespace Korali::Parameter
+namespace Korali::Variable
 {
 
 class Base
 {
  public:
  gsl_rng* _range;
- parameterType _type;
+ variableType _type;
 
  std::string _name;
  double _lowerBound;
@@ -45,4 +45,4 @@ class Base
 
 } // namespace Korali
 
-#endif // _KORALI_BASEPARAMETER_H_
+#endif // _KORALI_BASEVARIABLE_H_

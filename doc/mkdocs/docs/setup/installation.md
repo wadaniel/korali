@@ -8,18 +8,18 @@
  the required compilation and software requirements for Korali.
 
 ### 2. Download Korali
-Download the Korali project from [GitHub](https://github.com/cselab/skorali)
+Download the Korali project from [GitHub](https://github.com/cselab/sKorali)
 
 ```shell
-git clone https://github.com/cselab/skorali
+git clone https://github.com/cselab/sKorali
 ```
 
 Altenatively, you can download the latest stable Korali version from:
 
 ```
-wget https://cse-lab.ethz.ch/korali/korali-latest.tar.gz
-tar -xzvf korali-latest.tar.gz
-cd korali-latest
+wget https://cse-lab.ethz.ch/Korali/korali-latest.tar.gz
+tar -xzvf Korali-latest.tar.gz
+cd Korali-latest
 ```
 
 ### 3. Run the configuration script
@@ -29,7 +29,7 @@ Check the full syntax for [configure](./configuration.md) script here.
 ```shell
 ./configure
 ```
-By default the install directory is `$PWD/korali`. If you want to install in a different directory, run
+By default the install directory is `$PWD/Korali`. If you want to install in a different directory, run
 ```shell
 ./configure --prefix=/path/to/install/folder
 ```

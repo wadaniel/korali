@@ -1,220 +1,76 @@
-# Korali json hierarchy
-
-- [Problem](#problem)
-
-- [Parameters](#parameters)
-
-- [Solver](#solver)
-
-- [Seed](#seed)
-
-- [Verbosity](#verbosity)
-
-
-
-
-## Problem
-
-- Objective
-
-    **Type:** String
-
-    **Values:**
-
-    * `Direct Evaluation`
-
-    * `Posterior`
-
-
-- Reference Data
-
-    **Type:** Double array
-
-    **Values:** Real values
-
-
-
-
-
-## Parameters
-
-- Name
-
-    **Type:** String
-
-    **Values:** A user specified string.
-
-
-- Distribution
-
-    **Type:** String
-
-    **Values:**
-
-    * `Uniform`
-    * `Gaussian`
-    * `Exponential`
-    * `Laplace`
-    * `Gamma`
-    * `Cauchy`
-
-- Type
-
-    **Type:** String
-
-    **Values:**
-
-    * `Computational` Any parameter that is related to the *computational* model
-
-    * `Statistical` Any parameter that is involved in the *statistical* model, e.g. in
-    the definition of the likelihood function.
-
-
-
-
-- Initial Mean
-
-- Minimum
-
-- Maximum
-
-
-## Solver
-
-- Method
-
-    **Type:** String
-
-    **Values:**
-
-    - [`CMA-ES`](#cma-es)
-
-    - [`TMCMC`](#tmcmc)
-
-#### CMA-ES
-
-- Lambda
-
-    **Description:** Population size
-
-    **Type:** Integer
-
-    **Default:**
-
-- Termination Criteria
-
-    - Max Generations
-
-        **Description:**
-
-        **Type:**
-
-        **Default:**
-
-    - Min Fitness
-
-        **Description:**
-
-        **Type:**
-
-        **Default:**
-
-    - Max Model Evaluations
-
-        **Description:**
-
-        **Type:**
-
-        **Default:**
-
-    - Fitness Diff Threshold
-
-        **Description:**
-
-        **Type:**
-
-        **Default:**
-
-    - Min DeltaX
-
-        **Description:**
-
-        **Type:**
-
-        **Default:**
-
-    - Max Standard Deviation
-
-        **Description:**
-
-        **Type:**
-
-        **Default:**
-
-    - Max Condition Covariance
-
-        **Description:**
-
-        **Type:**
-
-        **Default:**
-
-    - Ignore
-
-        **Description:**
-
-        **Type:**
-
-        **Default:**
-
-
-
-#### TMCMC
-
-- Population Size
-
-    **Description:**
-
-    **Type:**
-
-    **Default:**
-
-- Covariance Scaling
-
-    **Description:**
-
-    **Type:**
-
-    **Default:**
-
-- Burn In
-
-    **Description:**
-
-    **Type:**
-
-    **Default:**
-
-- Coefficient of Variation
-
-    **Description:**
-
-    **Type:**
-
-    **Default:**
-
-- Min Rho Update
-
-    **Description:**
-
-    **Type:**
-
-    **Default:**
-
-- Use Local Covariance
-
-    **Description:**
-
-    **Type:**
-
-    **Default:**
+# Introduction
+				   
+##Korali
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+   	  
+##Modules
+   
+![](modules.png)
+   
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+	
+###Problem
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+
+###Variables
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+
+###Model
+ 
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+
+
+###Conduit
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+
+##Syntax
+
+###Python
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+
+###C++
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+
+##Requirements
+
++ It should contain at least one computational variable as input for the computational model.
++ It should contain at least one statistical variable for the value of sigma in the Gaussian error calculation.
+
+##Settings
+
++ Name: **Seed**
+     - Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+     - Type: Number
+	 - Default: *0*
+	 - Syntax: `Korali["Seed"] = seed`
+	 - Example:
+	 
+```python
+# Defining a specific random seed
+Korali["Seed"] = 0xC0FFEE
+```
+
+<br>
+	 
++ Name: **Vebosity**
+     - Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+     - Type: String. 
+	 - Allowed values:
+	       - "Silent" - Prints no results.
+		   - "Minimal" - Prints minimal progress information.
+		   - "Normal" - Standard verbosity levels.
+		   - "Detailed" - Prints details about the results and execution state.
+	 - Default: "Computational"
+	 - Syntax: `Korali["Verbosity"] = verbosityLevel`
+	 - Example:
+	 
+```python
+# Defining a detailed verbosity level.
+Korali["Verbosity"] = "Detailed"
+```

@@ -15,56 +15,56 @@ CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
  setConfiguration(js);
 
  // Allocating Memory
- _samplePopulation =  (double*) calloc (sizeof(double), _k->N*_s);
- rgpc = (double*) calloc (sizeof(double), _k->N);
- rgps = (double*) calloc (sizeof(double), _k->N);
- rgdTmp = (double*) calloc (sizeof(double), _k->N);
- rgBDz = (double*) calloc (sizeof(double), _k->N);
- rgxmean = (double*) calloc (sizeof(double), _k->N);
- rgxold = (double*) calloc (sizeof(double), _k->N);
- rgxbestever = (double*) calloc (sizeof(double), _k->N);
- rgD = (double*) calloc (sizeof(double), _k->N);
- curBestVector = (double *) calloc (sizeof(double), _k->N);
+ _samplePopulation =  (double*) calloc (sizeof(double), _k->_problem->N*_s);
+ rgpc = (double*) calloc (sizeof(double), _k->_problem->N);
+ rgps = (double*) calloc (sizeof(double), _k->_problem->N);
+ rgdTmp = (double*) calloc (sizeof(double), _k->_problem->N);
+ rgBDz = (double*) calloc (sizeof(double), _k->_problem->N);
+ rgxmean = (double*) calloc (sizeof(double), _k->_problem->N);
+ rgxold = (double*) calloc (sizeof(double), _k->_problem->N);
+ rgxbestever = (double*) calloc (sizeof(double), _k->_problem->N);
+ rgD = (double*) calloc (sizeof(double), _k->_problem->N);
+ curBestVector = (double *) calloc (sizeof(double), _k->_problem->N);
 
  rgFuncValue = (double*) calloc (sizeof(double), _s);
  histFuncValues = (double*) calloc (sizeof(double), _maxGenenerations+1);
  index = (size_t *) calloc (sizeof(size_t*), _s);
 
- C = (double**) calloc (sizeof(double*), _k->N);
- B = (double**)calloc (sizeof(double*), _k->N);
- for (size_t i = 0; i < _k->N; i++) C[i] = (double*) calloc (sizeof(double), _k->N);
- for (size_t i = 0; i < _k->N; i++) B[i] = (double*) calloc (sizeof(double), _k->N);
+ C = (double**) calloc (sizeof(double*), _k->_problem->N);
+ B = (double**)calloc (sizeof(double*), _k->_problem->N);
+ for (size_t i = 0; i < _k->_problem->N; i++) C[i] = (double*) calloc (sizeof(double), _k->_problem->N);
+ for (size_t i = 0; i < _k->_problem->N; i++) B[i] = (double*) calloc (sizeof(double), _k->_problem->N);
 
  _initializedSample = (bool*) calloc (_s, sizeof(bool));
  _fitnessVector = (double*) calloc (sizeof(double), _s);
 
  // Initializing Gaussian Generator
- _gaussianGenerator = new Parameter::Gaussian(0.0, 1.0, _k->_seed++);
+ _gaussianGenerator = new Variable::Gaussian(0.0, 1.0, _k->_seed++);
 
  // Checking Covariance Matrix Evaluation Frequency
- if (_diagonalCovarianceMatrixEvalFrequency == 0)  _diagonalCovarianceMatrixEvalFrequency = 2 + 100. * _k->N / sqrt((double)_s);
+ if (_diagonalCovarianceMatrixEvalFrequency == 0)  _diagonalCovarianceMatrixEvalFrequency = 2 + 100. * _k->_problem->N / sqrt((double)_s);
  if (_diagonalCovarianceMatrixEvalFrequency < 1)
  { fprintf( stderr, "[Korali] Error: Matrix covariance evaluation frequency is less than 1 (%lu)\n", _diagonalCovarianceMatrixEvalFrequency); exit(-1); }
 
  // Setting Sigma Cumulation Factor
- if (_sigmaCumulationFactor > 0) _sigmaCumulationFactor *= (_muEffective + 2.0) / (_k->N + _muEffective + 3.0);
- if (_sigmaCumulationFactor <= 0 || _sigmaCumulationFactor >= 1) _sigmaCumulationFactor = (_muEffective + 2.) / (_k->N + _muEffective + 3.0);
+ if (_sigmaCumulationFactor > 0) _sigmaCumulationFactor *= (_muEffective + 2.0) / (_k->_problem->N + _muEffective + 3.0);
+ if (_sigmaCumulationFactor <= 0 || _sigmaCumulationFactor >= 1) _sigmaCumulationFactor = (_muEffective + 2.) / (_k->_problem->N + _muEffective + 3.0);
 
  // Setting Damping Factor
 
  if (_dampFactor < 0) _dampFactor = 1;
- _dampFactor = _dampFactor* (1 + 2*std::max(0.0, sqrt((_muEffective-1.0)/(_k->N+1.0)) - 1))  /* basic factor */
-  * std::max(0.3, 1. - (double)_k->N / (1e-6+std::min(_maxGenenerations, _maxFitnessEvaluations/_s))) /* modification for short runs */
+ _dampFactor = _dampFactor* (1 + 2*std::max(0.0, sqrt((_muEffective-1.0)/(_k->_problem->N+1.0)) - 1))  /* basic factor */
+  * std::max(0.3, 1. - (double)_k->_problem->N / (1e-6+std::min(_maxGenenerations, _maxFitnessEvaluations/_s))) /* modification for short runs */
   + _sigmaCumulationFactor; /* minor increment */
 
  // Setting Cumulative Covariance
 
- if (_cumulativeCovariance <= 0 || _cumulativeCovariance> 1)  _cumulativeCovariance = 4. / (_k->N + 4);
+ if (_cumulativeCovariance <= 0 || _cumulativeCovariance> 1)  _cumulativeCovariance = 4. / (_k->_problem->N + 4);
 
  // Set covariance Matrix Learning Rate
 
- double l1 = 2. / ((_k->N+1.4142)*(_k->N+1.4142));
- double l2 = (2.*_muEffective-1.) / ((_k->N+2.)*(_k->N+2.)+_muEffective);
+ double l1 = 2. / ((_k->_problem->N+1.4142)*(_k->_problem->N+1.4142));
+ double l2 = (2.*_muEffective-1.) / ((_k->_problem->N+2.)*(_k->_problem->N+2.)+_muEffective);
  l2 = (l2 > 1) ? 1 : l2;
  l2 = (1./_muCovariance) * l1 + (1.-1./_muCovariance) * l2;
 
@@ -73,11 +73,11 @@ CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
 
  // Setting eigensystem evaluation Frequency
 
- if( _covarianceEigenEvalFreq < 0.0) _covarianceEigenEvalFreq = 1.0/_covarianceMatrixLearningRate/((double)_k->N)/10.0;
+ if( _covarianceEigenEvalFreq < 0.0) _covarianceEigenEvalFreq = 1.0/_covarianceMatrixLearningRate/((double)_k->_problem->N)/10.0;
 
  double trace = 0.0;
- for (size_t i = 0; i < _k->N; ++i) trace += _k->_parameters[i]->_initialStdDev*_k->_parameters[i]->_initialStdDev;
- sigma = sqrt(trace/_k->N); /* _muEffective/(0.2*_muEffective+sqrt(_k->N)) * sqrt(trace/_k->N); */
+ for (size_t i = 0; i < _k->_problem->N; ++i) trace += _k->_problem->_parameters[i]->_initialStdDev*_k->_problem->_parameters[i]->_initialStdDev;
+ sigma = sqrt(trace/_k->_problem->N); /* _muEffective/(0.2*_muEffective+sqrt(_k->_problem->N)) * sqrt(trace/_k->_problem->N); */
 
  flgEigensysIsUptodate = true;
 
@@ -85,27 +85,27 @@ CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
  countinfeasible = 0;
  bestEver = 0.0;
 
- for (size_t i = 0; i < _k->N; ++i)
+ for (size_t i = 0; i < _k->_problem->N; ++i)
  {
   B[i][i] = 1.0;
-  C[i][i] = rgD[i] = _k->_parameters[i]->_initialStdDev * sqrt(_k->N / trace);
+  C[i][i] = rgD[i] = _k->_problem->_parameters[i]->_initialStdDev * sqrt(_k->_problem->N / trace);
   C[i][i] *= C[i][i];
  }
 
- minEW = doubleRangeMin(rgD, _k->N); minEW = minEW * minEW;
- maxEW = doubleRangeMax(rgD, _k->N); maxEW = maxEW * maxEW;
+ minEW = doubleRangeMin(rgD, _k->_problem->N); minEW = minEW * minEW;
+ maxEW = doubleRangeMax(rgD, _k->_problem->N); maxEW = maxEW * maxEW;
 
- maxdiagC=C[0][0]; for(size_t i=1;i<_k->N;++i) if(maxdiagC<C[i][i]) maxdiagC=C[i][i];
- mindiagC=C[0][0]; for(size_t i=1;i<_k->N;++i) if(mindiagC>C[i][i]) mindiagC=C[i][i];
+ maxdiagC=C[0][0]; for(size_t i=1;i<_k->_problem->N;++i) if(maxdiagC<C[i][i]) maxdiagC=C[i][i];
+ mindiagC=C[0][0]; for(size_t i=1;i<_k->_problem->N;++i) if(mindiagC>C[i][i]) mindiagC=C[i][i];
 
  psL2 = 0.0;
 
  /* set rgxmean */
- for (size_t i = 0; i < _k->N; ++i)
+ for (size_t i = 0; i < _k->_problem->N; ++i)
  {
-   if(_k->_parameters[i]->_initialValue < _k->_parameters[i]->_lowerBound || _k->_parameters[i]->_initialValue > _k->_parameters[i]->_upperBound)
-    fprintf(stderr,"[Korali] Warning: Initial Value (%.4f) for \'%s\' is out of bounds (%.4f-%.4f).\n", _k->_parameters[i]->_initialValue, _k->_parameters[i]->_name.c_str(), _k->_parameters[i]->_lowerBound, _k->_parameters[i]->_upperBound);
-   rgxmean[i] = rgxold[i] = _k->_parameters[i]->_initialValue;
+   if(_k->_problem->_parameters[i]->_initialValue < _k->_problem->_parameters[i]->_lowerBound || _k->_problem->_parameters[i]->_initialValue > _k->_problem->_parameters[i]->_upperBound)
+    fprintf(stderr,"[Korali] Warning: Initial Value (%.4f) for \'%s\' is out of bounds (%.4f-%.4f).\n", _k->_problem->_parameters[i]->_initialValue, _k->_problem->_parameters[i]->_name.c_str(), _k->_problem->_parameters[i]->_lowerBound, _k->_problem->_parameters[i]->_upperBound);
+   rgxmean[i] = rgxold[i] = _k->_problem->_parameters[i]->_initialValue;
  }
 
  // If state is defined:
@@ -173,19 +173,19 @@ nlohmann::json CMAES::getConfiguration()
  js["State"]["InfeasibleCount"]          = countinfeasible;
  js["State"]["ConjugateEvolutionPathL2"] = psL2;
 
- for (size_t i = 0; i < _k->N; i++) js["State"]["CurrentMeanVector"]      += rgxmean[i];
- for (size_t i = 0; i < _k->N; i++) js["State"]["PreviousMeanVector"]     += rgxold[i];
- for (size_t i = 0; i < _k->N; i++) js["State"]["BestEverVector"]         += rgxbestever[i];
- for (size_t i = 0; i < _k->N; i++) js["State"]["CurrentBestVector"]      += curBestVector[i];
- for (size_t i = 0; i < _k->N; i++) js["State"]["AxisLengths"]            += rgD[i];
- for (size_t i = 0; i < _k->N; i++) js["State"]["EvolutionPath"]          += rgpc[i];
- for (size_t i = 0; i < _k->N; i++) js["State"]["ConjugateEvolutionPath"] += rgps[i];
+ for (size_t i = 0; i < _k->_problem->N; i++) js["State"]["CurrentMeanVector"]      += rgxmean[i];
+ for (size_t i = 0; i < _k->_problem->N; i++) js["State"]["PreviousMeanVector"]     += rgxold[i];
+ for (size_t i = 0; i < _k->_problem->N; i++) js["State"]["BestEverVector"]         += rgxbestever[i];
+ for (size_t i = 0; i < _k->_problem->N; i++) js["State"]["CurrentBestVector"]      += curBestVector[i];
+ for (size_t i = 0; i < _k->_problem->N; i++) js["State"]["AxisLengths"]            += rgD[i];
+ for (size_t i = 0; i < _k->_problem->N; i++) js["State"]["EvolutionPath"]          += rgpc[i];
+ for (size_t i = 0; i < _k->_problem->N; i++) js["State"]["ConjugateEvolutionPath"] += rgps[i];
  for (size_t i = 0; i < _mu; i++)   js["State"]["Index"]                  += index[i];
  for (size_t i = 0; i < _mu; i++)   js["State"]["FunctionValues"]         += rgFuncValue[i];
 
- for (size_t i = 0; i < _k->N; i++) for (size_t j = 0; j < _k->N; j++) js["State"]["CovarianceMatrix"][i][j] = C[i][j];
- for (size_t i = 0; i < _k->N; i++) for (size_t j = 0; j < _k->N; j++) js["State"]["EigenMatrix"][i][j] = B[i][j];
- for (size_t i = 0; i < _s; i++) for (size_t j = 0; j < _k->N; j++)    js["State"]["Samples"][i][j] = _samplePopulation[i*_k->N + j];
+ for (size_t i = 0; i < _k->_problem->N; i++) for (size_t j = 0; j < _k->_problem->N; j++) js["State"]["CovarianceMatrix"][i][j] = C[i][j];
+ for (size_t i = 0; i < _k->_problem->N; i++) for (size_t j = 0; j < _k->_problem->N; j++) js["State"]["EigenMatrix"][i][j] = B[i][j];
+ for (size_t i = 0; i < _s; i++) for (size_t j = 0; j < _k->_problem->N; j++)    js["State"]["Samples"][i][j] = _samplePopulation[i*_k->_problem->N + j];
 
  return js;
 }
@@ -215,7 +215,7 @@ void CMAES::setConfiguration(nlohmann::json& js)
  if (_muType == "Equal")            for (size_t i = 0; i < _mu; i++)  _muWeights[i] = 1;
  if (_muType == "Logarithmic")      for (size_t i = 0; i < _mu; i++)  _muWeights[i] = log(_mu+1.)-log(i+1.);
 
- _chiN = sqrt((double) _k->N) * (1. - 1./(4.*_k->N) + 1./(21.*_k->N*_k->N));
+ _chiN = sqrt((double) _k->_problem->N) * (1. - 1./(4.*_k->_problem->N) + 1./(21.*_k->_problem->N*_k->_problem->N));
  
  /* normalize weights vector and set mueff */
  double s1 = 0.0;
@@ -267,17 +267,17 @@ void CMAES::setState(nlohmann::json& js)
  countevals            = js["State"]["EvaluationCount"];
  countinfeasible       = js["State"]["InfeasibleCount"];
 
- for (size_t i = 0; i < _k->N; i++) rgxmean[i]       = js["State"]["CurrentMeanVector"][i];
- for (size_t i = 0; i < _k->N; i++) rgxold[i]        = js["State"]["PreviousMeanVector"][i];
- for (size_t i = 0; i < _k->N; i++) rgxbestever[i]   = js["State"]["BestEverVector"][i];
- for (size_t i = 0; i < _k->N; i++) curBestVector[i] = js["State"]["CurrentBestVector"][i];
- for (size_t i = 0; i < _k->N; i++) index[i]         = js["State"]["Index"][i];
- for (size_t i = 0; i < _k->N; i++) rgD[i]           = js["State"]["AxisLengths"][i];
- for (size_t i = 0; i < _k->N; i++) rgpc[i]          = js["State"]["CumulativeCovariance"][i];
- for (size_t i = 0; i < _k->N; i++) rgFuncValue[i]   = js["State"]["FunctionValues"][i];
- for (size_t i = 0; i < _k->N; i++) for (size_t j = 0; j < _k->N; j++) C[i][j] = js["State"]["CovarianceMatrix"][i][j];
- for (size_t i = 0; i < _k->N; i++) for (size_t j = 0; j < _k->N; j++) B[i][j] = js["State"]["EigenMatrix"][i][j];
- for (size_t i = 0; i < _s; i++)    for (size_t j = 0; j < _k->N; j++) _samplePopulation[i*_k->N + j] = js["State"]["Samples"][i][j];
+ for (size_t i = 0; i < _k->_problem->N; i++) rgxmean[i]       = js["State"]["CurrentMeanVector"][i];
+ for (size_t i = 0; i < _k->_problem->N; i++) rgxold[i]        = js["State"]["PreviousMeanVector"][i];
+ for (size_t i = 0; i < _k->_problem->N; i++) rgxbestever[i]   = js["State"]["BestEverVector"][i];
+ for (size_t i = 0; i < _k->_problem->N; i++) curBestVector[i] = js["State"]["CurrentBestVector"][i];
+ for (size_t i = 0; i < _k->_problem->N; i++) index[i]         = js["State"]["Index"][i];
+ for (size_t i = 0; i < _k->_problem->N; i++) rgD[i]           = js["State"]["AxisLengths"][i];
+ for (size_t i = 0; i < _k->_problem->N; i++) rgpc[i]          = js["State"]["CumulativeCovariance"][i];
+ for (size_t i = 0; i < _k->_problem->N; i++) rgFuncValue[i]   = js["State"]["FunctionValues"][i];
+ for (size_t i = 0; i < _k->_problem->N; i++) for (size_t j = 0; j < _k->_problem->N; j++) C[i][j] = js["State"]["CovarianceMatrix"][i][j];
+ for (size_t i = 0; i < _k->_problem->N; i++) for (size_t j = 0; j < _k->_problem->N; j++) B[i][j] = js["State"]["EigenMatrix"][i][j];
+ for (size_t i = 0; i < _s; i++)    for (size_t j = 0; j < _k->_problem->N; j++) _samplePopulation[i*_k->_problem->N + j] = js["State"]["Samples"][i][j];
 }
 
 /************************************************************************/
@@ -327,8 +327,8 @@ void CMAES::processSample(size_t sampleId, double fitness)
 
 bool CMAES::isFeasible(const double *pop) const
 {
- for (size_t i = 0; i < _k->N; i++)
-  if (pop[i] < _k->_parameters[i]->_lowerBound || pop[i] > _k->_parameters[i]->_upperBound) return false;
+ for (size_t i = 0; i < _k->_problem->N; i++)
+  if (pop[i] < _k->_problem->_parameters[i]->_lowerBound || pop[i] > _k->_problem->_parameters[i]->_upperBound) return false;
  return true;
 }
 
@@ -341,34 +341,34 @@ void CMAES::prepareGeneration()
   if (!flgdiag)
    updateEigensystem(0);
   else {
-   for (size_t i = 0; i < _k->N; ++i)
+   for (size_t i = 0; i < _k->_problem->N; ++i)
     rgD[i] = sqrt(C[i][i]);
-   minEW = doubleRangeMin(rgD, _k->N) * doubleRangeMin(rgD, _k->N);
-   maxEW = doubleRangeMax(rgD, _k->N) * doubleRangeMin(rgD, _k->N);
+   minEW = doubleRangeMin(rgD, _k->_problem->N) * doubleRangeMin(rgD, _k->_problem->N);
+   maxEW = doubleRangeMax(rgD, _k->_problem->N) * doubleRangeMin(rgD, _k->_problem->N);
    flgEigensysIsUptodate = true;
   }
  }
 
  for (size_t iNk = 0; iNk < _s; ++iNk)
  { /* generate scaled random vector (D * z) */
-  for (size_t i = 0; i < _k->N; ++i)
+  for (size_t i = 0; i < _k->_problem->N; ++i)
   {
-   if (flgdiag) _samplePopulation[iNk * _k->N + i] = rgxmean[i] + sigma * rgD[i] * _gaussianGenerator->getRandomNumber();
+   if (flgdiag) _samplePopulation[iNk * _k->_problem->N + i] = rgxmean[i] + sigma * rgD[i] * _gaussianGenerator->getRandomNumber();
    else rgdTmp[i] = rgD[i] * _gaussianGenerator->getRandomNumber();
   }
 
   if (!flgdiag)
-   for (size_t i = 0; i < _k->N; ++i) {
+   for (size_t i = 0; i < _k->_problem->N; ++i) {
    double sum = 0.0;
-    for (size_t j = 0; j < _k->N; ++j)
+    for (size_t j = 0; j < _k->_problem->N; ++j)
      sum += B[i][j] * rgdTmp[j];
-    _samplePopulation[iNk * _k->N + i] = rgxmean[i] + sigma * sum;
+    _samplePopulation[iNk * _k->_problem->N + i] = rgxmean[i] + sigma * sum;
    }
  }
 
  _currentGeneration++;
 
- for(size_t i = 0; i < _s; ++i) while( !isFeasible(&_samplePopulation[i*_k->N] )) { countinfeasible++; reSampleSingle(i); }
+ for(size_t i = 0; i < _s; ++i) while( !isFeasible(&_samplePopulation[i*_k->_problem->N] )) { countinfeasible++; reSampleSingle(i); }
 
  _finishedSamples = 0;
  for (size_t i = 0; i < _s; i++) _initializedSample[i] = false;
@@ -380,14 +380,14 @@ void CMAES::reSampleSingle(size_t idx)
  double *rgx;
 
  if (idx < 0 || idx >= _s)  fprintf(stderr, "[Korali] Error: reSampleSingle(): Population member \n");
- rgx = &_samplePopulation[idx*_k->N];
+ rgx = &_samplePopulation[idx*_k->_problem->N];
 
- for (size_t i = 0; i < _k->N; ++i)  rgdTmp[i] = rgD[i] * _gaussianGenerator->getRandomNumber();
+ for (size_t i = 0; i < _k->_problem->N; ++i)  rgdTmp[i] = rgD[i] * _gaussianGenerator->getRandomNumber();
 
  /* add mutation (sigma * B * (D*z)) */
- for (size_t i = 0; i < _k->N; ++i) {
+ for (size_t i = 0; i < _k->_problem->N; ++i) {
  double sum = 0.0;
-  for (size_t j = 0; j < _k->N; ++j)
+  for (size_t j = 0; j < _k->_problem->N; ++j)
    sum += B[i][j] * rgdTmp[j];
   rgx[i] = rgxmean[i] + sigma * sum;
  }
@@ -410,33 +410,33 @@ void CMAES::updateDistribution(const double *fitnessVector)
 
  /* update current best */
  currentFunctionValue = fitnessVector[index[0]];
- for (size_t i = 0; i < _k->N; ++i) curBestVector[i] = _samplePopulation[index[0]*_k->N + i];
+ for (size_t i = 0; i < _k->_problem->N; ++i) curBestVector[i] = _samplePopulation[index[0]*_k->_problem->N + i];
  
  /* update xbestever */
  if (currentFunctionValue > bestEver || _currentGeneration == 1)
  {
   prevBest = bestEver;
   bestEver = currentFunctionValue;
-  for (size_t i = 0; i < _k->N; ++i) rgxbestever[i] = curBestVector[i];
+  for (size_t i = 0; i < _k->_problem->N; ++i) rgxbestever[i] = curBestVector[i];
  }
 
  histFuncValues[_currentGeneration] = bestEver;
 
  /* calculate rgxmean and rgBDz */
- for (size_t i = 0; i < _k->N; ++i) {
+ for (size_t i = 0; i < _k->_problem->N; ++i) {
    rgxold[i] = rgxmean[i];
    rgxmean[i] = 0.;
    for (size_t iNk = 0; iNk < _mu; ++iNk)
-     rgxmean[i] += _muWeights[iNk] * _samplePopulation[index[iNk]*_k->N + i];
+     rgxmean[i] += _muWeights[iNk] * _samplePopulation[index[iNk]*_k->_problem->N + i];
    
    rgBDz[i] = (rgxmean[i] - rgxold[i])/sigma;
  }
 
  /* calculate z := D^(-1) * B^(T) * rgBDz into rgdTmp */
- for (size_t i = 0; i < _k->N; ++i) {
+ for (size_t i = 0; i < _k->_problem->N; ++i) {
   double sum = 0.0;
   if (flgdiag) sum = rgBDz[i];
-  else for (size_t j = 0; j < _k->N; ++j) sum += B[j][i] * rgBDz[j]; /* B^(T) * rgBDz */
+  else for (size_t j = 0; j < _k->_problem->N; ++j) sum += B[j][i] * rgBDz[j]; /* B^(T) * rgBDz */
   
   rgdTmp[i] = sum / rgD[i]; /* D^(-1) */
  }
@@ -444,10 +444,10 @@ void CMAES::updateDistribution(const double *fitnessVector)
  psL2 = 0.0;
 
  /* cumulation for sigma (ps) using B*z */
- for (size_t i = 0; i < _k->N; ++i) {
+ for (size_t i = 0; i < _k->_problem->N; ++i) {
     double sum = 0.0;
     if (flgdiag) sum = rgdTmp[i];
-    else for (size_t j = 0; j < _k->N; ++j) sum += B[i][j] * rgdTmp[j];
+    else for (size_t j = 0; j < _k->_problem->N; ++j) sum += B[i][j] * rgdTmp[j];
 
     rgps[i] = (1. - _sigmaCumulationFactor) * rgps[i] + sqrt(_sigmaCumulationFactor * (2. - _sigmaCumulationFactor) * _muEffective) * sum;
  
@@ -455,10 +455,10 @@ void CMAES::updateDistribution(const double *fitnessVector)
     psL2 += rgps[i] * rgps[i];
  }
 
- int hsig = sqrt(psL2) / sqrt(1. - pow(1.-_sigmaCumulationFactor, 2*_currentGeneration)) / _chiN  < 1.4 + 2./(_k->N+1);
+ int hsig = sqrt(psL2) / sqrt(1. - pow(1.-_sigmaCumulationFactor, 2*_currentGeneration)) / _chiN  < 1.4 + 2./(_k->_problem->N+1);
 
- /* cumulation for covariance matrix (pc) using B*D*z~_k->N(0,C) */
- for (size_t i = 0; i < _k->N; ++i)
+ /* cumulation for covariance matrix (pc) using B*D*z~_k->_problem->N(0,C) */
+ for (size_t i = 0; i < _k->_problem->N; ++i)
    rgpc[i] = (1. - _cumulativeCovariance) * rgpc[i] + hsig * sqrt( _cumulativeCovariance * (2. - _cumulativeCovariance) *_muEffective ) * rgBDz[i];
 
  /* update of C  */
@@ -473,9 +473,9 @@ void CMAES::updateDistribution(const double *fitnessVector)
  //TODO
 
  //treat minimal standard deviations
- for (size_t i = 0; i < _k->N; ++i)
-   if (sigma * sqrt(C[i][i]) < _k->_parameters[i]->_minStdDevChange) {
-     sigma = (_k->_parameters[i]->_minStdDevChange)/sqrt(C[i][i]) * exp(0.05+_sigmaCumulationFactor/_dampFactor);
+ for (size_t i = 0; i < _k->_problem->N; ++i)
+   if (sigma * sqrt(C[i][i]) < _k->_problem->_parameters[i]->_minStdDevChange) {
+     sigma = (_k->_problem->_parameters[i]->_minStdDevChange)/sqrt(C[i][i]) * exp(0.05+_sigmaCumulationFactor/_dampFactor);
      if (_k->_verbosity >= KORALI_DETAILED) fprintf(stderr, "[Korali] Warning: sigma increased due to minimal standard deviation.\n");
    }
 
@@ -494,7 +494,7 @@ void CMAES::updateDistribution(const double *fitnessVector)
  }
 
  /*
- size_t horizon = 10 + ceil(3*10*_k->N/_s);
+ size_t horizon = 10 + ceil(3*10*_k->_problem->N/_s);
  double min = std::numeric_limits<double>::max();
  double max = std::numeric_limits<double>::min();
  for(size_t i = 0; (i < horizon) && (_currentGeneration - i >= 0); i++) {
@@ -518,22 +518,22 @@ void CMAES::adaptC2(int hsig)
  if (_covarianceMatrixLearningRate != 0.0)
  {
   /* definitions for speeding up inner-most loop */
-  double ccov1 = std::min(_covarianceMatrixLearningRate * (1./_muCovariance) * (flgdiag ? (_k->N+1.5) / 3. : 1.), 1.);
-  double ccovmu = std::min(_covarianceMatrixLearningRate * (1-1./_muCovariance) * (flgdiag ? (_k->N+1.5) / 3. : 1.), 1.-ccov1);
+  double ccov1 = std::min(_covarianceMatrixLearningRate * (1./_muCovariance) * (flgdiag ? (_k->_problem->N+1.5) / 3. : 1.), 1.);
+  double ccovmu = std::min(_covarianceMatrixLearningRate * (1-1./_muCovariance) * (flgdiag ? (_k->_problem->N+1.5) / 3. : 1.), 1.-ccov1);
   double sigmasquare = sigma * sigma;
 
   flgEigensysIsUptodate = false;
 
   /* update covariance matrix */
-  for (size_t i = 0; i < _k->N; ++i)
+  for (size_t i = 0; i < _k->_problem->N; ++i)
    for (size_t j = flgdiag ? i : 0; j <= i; ++j) {
    C[i][j] = (1 - ccov1 - ccovmu) * C[i][j] + ccov1 * (rgpc[i] * rgpc[j] + (1-hsig)*_cumulativeCovariance*(2.-_cumulativeCovariance) * C[i][j]);
-   for (size_t k = 0; k < _mu; ++k) C[i][j] += ccovmu * _muWeights[k] * (_samplePopulation[index[k]*_k->N + i] - rgxold[i]) * (_samplePopulation[index[k]*_k->N + j] - rgxold[j]) / sigmasquare;
+   for (size_t k = 0; k < _mu; ++k) C[i][j] += ccovmu * _muWeights[k] * (_samplePopulation[index[k]*_k->_problem->N + i] - rgxold[i]) * (_samplePopulation[index[k]*_k->_problem->N + j] - rgxold[j]) / sigmasquare;
    }
 
   /* update maximal and minimal diagonal value */
   maxdiagC = mindiagC = C[0][0];
-  for (size_t i = 1; i < _k->N; ++i) {
+  for (size_t i = 1; i < _k->_problem->N; ++i) {
   if (maxdiagC < C[i][i]) maxdiagC = C[i][i];
   else if (mindiagC > C[i][i])  mindiagC = C[i][i];
   }
@@ -561,18 +561,18 @@ bool CMAES::checkTermination()
  }
 
  size_t cTemp = 0;
- for(size_t i=0; i<_k->N; ++i) {
+ for(size_t i=0; i<_k->_problem->N; ++i) {
   cTemp += (sigma * sqrt(C[i][i]) < _stopMinDeltaX) ? 1 : 0;
   cTemp += (sigma * rgpc[i] < _stopMinDeltaX) ? 1 : 0;
  }
 
- if (cTemp == 2*_k->N && isStoppingCriteriaActive("Min DeltaX") ) {
+ if (cTemp == 2*_k->_problem->N && isStoppingCriteriaActive("Min DeltaX") ) {
   terminate = true;
   sprintf(_terminationReason, "Object variable changes < %7.2e", _stopMinDeltaX);
  }
 
- for(size_t i=0; i<_k->N; ++i)
-   if (sigma * sqrt(C[i][i]) > _stopTolUpXFactor * _k->_parameters[i]->_initialStdDev && isStoppingCriteriaActive("Max Standard Deviation") )
+ for(size_t i=0; i<_k->_problem->N; ++i)
+   if (sigma * sqrt(C[i][i]) > _stopTolUpXFactor * _k->_problem->_parameters[i]->_initialStdDev && isStoppingCriteriaActive("Max Standard Deviation") )
    {
      terminate = true;
      sprintf(_terminationReason, "Standard deviation increased by more than %7.2e, larger initial standard deviation recommended \n", _stopTolUpXFactor);
@@ -590,24 +590,24 @@ bool CMAES::checkTermination()
   size_t iKoo = 0;
   if (!flgdiag && isStoppingCriteriaActive("No Effect Axis") )
   {
-    for (iAchse = 0; iAchse < _k->N; ++iAchse)
+    for (iAchse = 0; iAchse < _k->_problem->N; ++iAchse)
     {
     fac = 0.1 * sigma * rgD[iAchse];
-    for (iKoo = 0; iKoo < _k->N; ++iKoo){
+    for (iKoo = 0; iKoo < _k->_problem->N; ++iKoo){
       if (rgxmean[iKoo] != rgxmean[iKoo] + fac * B[iKoo][iAchse])
       break;
     }
-    if (iKoo == _k->N)
+    if (iKoo == _k->_problem->N)
     {
       terminate = true;
       sprintf(_terminationReason, "Standard deviation 0.1*%7.2e in principal axis %ld without effect.", fac/0.1, iAchse);
       break;
-    } /* if (iKoo == _k->N) */
+    } /* if (iKoo == _k->_problem->N) */
   } /* for iAchse    */
  } /* if flgdiag */
 
  /* Component of rgxmean is not changed anymore */
- for (iKoo = 0; iKoo < _k->N; ++iKoo)
+ for (iKoo = 0; iKoo < _k->_problem->N; ++iKoo)
  {
   if (rgxmean[iKoo] == rgxmean[iKoo] + 0.2*sigma*sqrt(C[iKoo][iKoo]) && isStoppingCriteriaActive("No Effect Standard Deviation") )
   {
@@ -640,13 +640,13 @@ void CMAES::updateEigensystem(int flgforce)
  if(flgforce == 0 && flgEigensysIsUptodate) return;
  /* if(_currentGeneration % _covarianceEigenEvalFreq == 0) return; */
 
- eigen(_k->N, C, rgD, B);
+ eigen(_k->_problem->N, C, rgD, B);
 
  /* find largest and smallest eigenvalue, they are supposed to be sorted anyway */
- minEW = doubleRangeMin(rgD, _k->N);
- maxEW = doubleRangeMax(rgD, _k->N);
+ minEW = doubleRangeMin(rgD, _k->_problem->N);
+ maxEW = doubleRangeMax(rgD, _k->_problem->N);
 
- for (size_t i = 0; i < _k->N; ++i) rgD[i] = sqrt(rgD[i]);
+ for (size_t i = 0; i < _k->_problem->N; ++i) rgD[i] = sqrt(rgD[i]);
 
  flgEigensysIsUptodate = true;
 }
@@ -757,11 +757,11 @@ void CMAES::printGeneration() const
 
  if (_k->_verbosity >= KORALI_DETAILED)
  {
-  printf("[Korali] Parameter = (MeanX, BestX):\n");
-  for (size_t i = 0; i < _k->N; i++)  printf("         %s = (%+6.3e, %+6.3e)\n", _k->_parameters[i]->_name.c_str(), rgxmean[i], rgxbestever[i]);
+  printf("[Korali] Variable = (MeanX, BestX):\n");
+  for (size_t i = 0; i < _k->_problem->N; i++)  printf("         %s = (%+6.3e, %+6.3e)\n", _k->_problem->_parameters[i]->_name.c_str(), rgxmean[i], rgxbestever[i]);
 
   printf("[Korali] Covariance Matrix:\n");
-  for (size_t i = 0; i < _k->N; i++)
+  for (size_t i = 0; i < _k->_problem->N; i++)
   {
    for (size_t j = 0; j <= i; j++) printf("   %+6.3e  ",C[i][j]);
    printf("\n");
@@ -780,7 +780,7 @@ void CMAES::printFinal() const
     printf("[Korali] CMA-ES Finished\n");
     printf("[Korali] Optimum (%s) found: %e\n", _objective.c_str(), bestEver);
     printf("[Korali] Optimum (%s) found at:\n", _objective.c_str());
-    for (size_t i = 0; i < _k->N; i++) printf("         %s = %+6.3e\n", _k->_parameters[i]->_name.c_str(), rgxbestever[i]);
+    for (size_t i = 0; i < _k->_problem->N; i++) printf("         %s = %+6.3e\n", _k->_problem->_parameters[i]->_name.c_str(), rgxbestever[i]);
     printf("[Korali] Number of Function Evaluations: %zu\n", countevals);
     printf("[Korali] Number of Infeasible Samples: %zu\n", countinfeasible);
     printf("[Korali] Stopping Criterium: %s\n", _terminationReason);

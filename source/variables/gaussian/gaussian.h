@@ -1,12 +1,12 @@
 #ifndef _KORALI_GAUSSIAN_H_
 #define _KORALI_GAUSSIAN_H_
 
-#include "parameters/base/base.h"
+#include "variables/base/base.h"
 
-namespace Korali::Parameter
+namespace Korali::Variable
 {
 
-class Gaussian : public Korali::Parameter::Base
+class Gaussian : public Korali::Variable::Base
 {
  private:
   double _mean;

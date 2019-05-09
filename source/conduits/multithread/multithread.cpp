@@ -94,7 +94,7 @@ void Multithread::workerThread()
 
   if (foundSample)
   {
-   double candidateFitness = _k->_problem->evaluateFitness(&_pt->_sampleArrayPointer[_k->N*sampleId]);
+   double candidateFitness = _k->_problem->evaluateFitness(&_pt->_sampleArrayPointer[_k->_problem->N*sampleId]);
    _pt->_sampleLock.lock();
     _k->_solver->processSample(sampleId, candidateFitness);
    _pt->_sampleLock.unlock();

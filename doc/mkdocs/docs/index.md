@@ -11,7 +11,7 @@
 
 ## What Korali does for you
 
-  - [**Direct problems.**](tutorials/direct/direct.md) Given any function $f:\mathbb{R}\rightarrow\mathbb{R}^N$ korali can
+  - [**Direct problems.**](tutorials/direct/direct.md) Given any function $f:\mathbb{R}\rightarrow\mathbb{R}^N$ Korali can
     - [**Optimize:**](tutorials/direct/direct.md#optimize) find the minima or maxima of $f$
     $$
 	\vartheta^\star = \mathop{\arg\min}\limits_{\vartheta}  \,\,\, f(\vartheta) \,,
@@ -22,7 +22,7 @@
 	\vartheta^{(k)} \sim f.
 	$$  
 
-  - [**Bayesian Inference.**](tutorials/bayesian/bayesian.md) Given a set of data $d$, the output of a computational model $f(x;\vartheta)$, a likelihood function $p(d|\vartheta)$,  and a prior probability density $p(\vartheta)$ korali will build
+  - [**Bayesian Inference.**](tutorials/bayesian/bayesian.md) Given a set of data $d$, the output of a computational model $f(x;\vartheta)$, a likelihood function $p(d|\vartheta)$,  and a prior probability density $p(\vartheta)$ Korali will build
 the posterior distribution below and enabling the following operations:
     $$
 	p(\vartheta | d) \, = \, \frac{p(d | \vartheta) \,\, p(\vartheta)}{p(d)}\, .

@@ -5,7 +5,7 @@
 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
 	   
 ##Syntax
-       korali["Problem"]["Variables"][i]["Distribution"] = "Cauchy"
+       Korali["Problem"]["Variables"][i]["Distribution"] = "Cauchy"
 
 ##Requirements
 
@@ -20,13 +20,13 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor i
 	       - "Computational" - Determines this is a computational variable.
 		   - "Statistical" - Determines this is a statistical variable.
 	 - Default: "Computational"
-	 - Syntax: `korali["Problem"]["Variables"][i]["Type"] = myType`
+	 - Syntax: `Korali["Problem"]["Variables"][i]["Type"] = myType`
 	 - Example:
 	 
 ```python
 # Modifying two variables to have one statistical and another computational.
-korali["Problem"]["Variables"][0]["Type"] = "Computational"
-korali["Problem"]["Variables"][1]["Type"] = "Statistical"
+Korali["Problem"]["Variables"][0]["Type"] = "Computational"
+Korali["Problem"]["Variables"][1]["Type"] = "Statistical"
 ```
 
 <br>
@@ -35,13 +35,13 @@ korali["Problem"]["Variables"][1]["Type"] = "Statistical"
      - Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
      - Type: Number. 
 	 - Default: *-infinity*
-	 - Syntax: `korali["Problem"]["Variables"][i]["Minimum"] = myLowerBound`
+	 - Syntax: `Korali["Problem"]["Variables"][i]["Minimum"] = myLowerBound`
 	 - Example:
 	 
 ```python
 # Modifying the lower bound of two variables
-korali["Problem"]["Variables"][0]["Minimum"] = 0.0;
-korali["Problem"]["Variables"][1]["Minimum"] = -32.0;
+Korali["Problem"]["Variables"][0]["Minimum"] = 0.0;
+Korali["Problem"]["Variables"][1]["Minimum"] = -32.0;
 ```
 
 <br>
@@ -50,13 +50,13 @@ korali["Problem"]["Variables"][1]["Minimum"] = -32.0;
      - Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
      - Type: Number. 
 	 - Default: *+infinity*
-	 - Syntax: `korali["Problem"]["Variables"][i]["Maximum"] = myUpperBound`
+	 - Syntax: `Korali["Problem"]["Variables"][i]["Maximum"] = myUpperBound`
 	 - Example:
 	 
 ```python
 # Modifying the upper bound of two variables
-korali["Problem"]["Variables"][0]["Maximum"] = 32.0;
-korali["Problem"]["Variables"][1]["Maximum"] = 0.0;
+Korali["Problem"]["Variables"][0]["Maximum"] = 32.0;
+Korali["Problem"]["Variables"][1]["Maximum"] = 0.0;
 ```
 
 <br>
@@ -65,12 +65,12 @@ korali["Problem"]["Variables"][1]["Maximum"] = 0.0;
      - Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
      - Type: Number. 
 	 - Default: *0.0*
-	 - Syntax: `korali["Problem"]["Variables"][i]["Initial Mean"] = myInitialMean`
+	 - Syntax: `Korali["Problem"]["Variables"][i]["Initial Mean"] = myInitialMean`
 	 - Example:
 	 
 ```python
 # Modifying the initial guess mean of my variable
-korali["Problem"]["Variables"][0]["Initial Mean"] = 16.0;
+Korali["Problem"]["Variables"][0]["Initial Mean"] = 16.0;
 ```
 
 <br>
@@ -79,12 +79,12 @@ korali["Problem"]["Variables"][0]["Initial Mean"] = 16.0;
      - Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
      - Type: Number. 
 	 - Default: *1.0*
-	 - Syntax: `korali["Problem"]["Variables"][i]["Initial StdDev"] = myInitialStdDev`
+	 - Syntax: `Korali["Problem"]["Variables"][i]["Initial StdDev"] = myInitialStdDev`
 	 - Example:
 	 
 ```python
 # Modifying the initial standard deviation of my variable
-korali["Problem"]["Variables"][0]["Initial StdDev"] = 2.0;
+Korali["Problem"]["Variables"][0]["Initial StdDev"] = 2.0;
 ```	 
 
 <br>
@@ -93,10 +93,10 @@ korali["Problem"]["Variables"][0]["Initial StdDev"] = 2.0;
      - Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
      - Type: Number. 
 	 - Default: *0.0*
-	 - Syntax: `korali["Problem"]["Variables"][i]["Min Std Change"] = myMinStdChange`
+	 - Syntax: `Korali["Problem"]["Variables"][i]["Min Std Change"] = myMinStdChange`
 	 - Example:
 	 
 ```python
 # Modifying the minimum delta for the standard deviation of my variable
-korali["Problem"]["Variables"][0]["Initial StdDev"] = 0.05;
+Korali["Problem"]["Variables"][0]["Initial StdDev"] = 0.05;
 ```	 

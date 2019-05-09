@@ -1,7 +1,7 @@
 
 Here we explain technical details of the **TMCMC** result plot.
 
-The `plot-korali` command plots the distribution of the samples at every
+The `plot-Korali` command plots the distribution of the samples at every
 generation. The samples are read from the json-files stored in the output
 directory (results folder).
 

@@ -28,7 +28,7 @@ UPCXX::UPCXX(nlohmann::json& js) : Base::Base(js)
   exit(-1);
  }
 
- samplePtr = upcxx::new_array<double>(_k->N);
+ samplePtr = upcxx::new_array<double>(_k->_problem->N);
  upcxx::dist_object<upcxx::global_ptr<double>> p(samplePtr);
  upcxx::barrier();
 
@@ -87,7 +87,7 @@ void UPCXX::evaluateSample(double* sampleArray, size_t sampleId)
 {
  while(_workers.empty()) upcxx::progress();
  int workerId = _workers.front(); _workers.pop();
- auto put = upcxx::rput(&sampleArray[sampleId*_k->N], samplePtrGlobal[workerId], _k->N);
+ auto put = upcxx::rput(&sampleArray[sampleId*_k->_problem->N], samplePtrGlobal[workerId], _k->_problem->N);
 
  put.then([workerId, sampleId]()
  {

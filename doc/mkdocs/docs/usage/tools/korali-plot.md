@@ -1,21 +1,21 @@
-# korali-plot
+# Korali-plot
 
 ##Name
-       korali-plot - Creates a graphical representation and plots for the results produced
+       Korali-plot - Creates a graphical representation and plots for the results produced
 	   by a Korali application.
 	   
 ##Usage
-       korali-plot [RESULT_FOLDER] [-o OUTPUT_FORMAT] [-f OUTPUT_FILE]
+       Korali-plot [RESULT_FOLDER] [-o OUTPUT_FORMAT] [-f OUTPUT_FILE]
 				   
 ##Description
 
-       Given the input folder, korali-plot determines which solver was used by the
-	   korali application and calls the appropriate Korali plotting script:
+       Given the input folder, Korali-plot determines which solver was used by the
+	   Korali application and calls the appropriate Korali plotting script:
 	   
 	   - For TMCMC: plot_tmcmc.py
 	   - For CMA-ES: plot_cmaes.py
 	   
-	   Although these scripts can be manually instantiated by the user, korali-plot
+	   Although these scripts can be manually instantiated by the user, Korali-plot
 	   provides the additional convenience of automatically determining which solver
 	   was used.
 
@@ -24,7 +24,7 @@
 
       RESULT_FOLDER
         Specifies the input folder containing Korali results.
-		Default value: ./_korali_results
+		Default value: ./_Korali_results
 		
 	  OUTPUT_FORMAT
         Specifies the format of the produced plots. Possible values are:

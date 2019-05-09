@@ -2,7 +2,7 @@
 #define _KORALI_CMAES_H_
 
 #include "solvers/base/base.h"
-#include "parameters/gaussian/gaussian.h"
+#include "variables/gaussian/gaussian.h"
 #include <chrono>
 #include <map>
 
@@ -73,7 +73,7 @@ class CMAES : public Korali::Solver::Base
 
  // Private CMAES-Specific Variables
  double sigma;  /* step size */
- Parameter::Gaussian* _gaussianGenerator;
+ Variable::Gaussian* _gaussianGenerator;
 
  double bestEver; /* best ever fitness */
  double prevBest; /* best ever fitness from previous generation */

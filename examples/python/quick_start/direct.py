@@ -18,8 +18,10 @@ korali = libkorali.Engine( F )
 korali["Problem"]["Type"] = "Direct"
 
 korali["Problem"]["Variables"][0]["Name"] = "X"
+korali["Problem"]["Variables"][0]["Distribution"] = "Uniform"
 korali["Problem"]["Variables"][0]["Minimum"] = -10.0
 korali["Problem"]["Variables"][0]["Maximum"] = +10.0
+
 
 
 if sys.argv[1]=='1':

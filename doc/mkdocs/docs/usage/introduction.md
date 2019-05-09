@@ -48,12 +48,12 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor i
      - Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
      - Type: Number
 	 - Default: *0*
-	 - Syntax: `korali["Seed"] = seed`
+	 - Syntax: `Korali["Seed"] = seed`
 	 - Example:
 	 
 ```python
 # Defining a specific random seed
-korali["Seed"] = 0xC0FFEE
+Korali["Seed"] = 0xC0FFEE
 ```
 
 <br>
@@ -67,10 +67,10 @@ korali["Seed"] = 0xC0FFEE
 		   - "Normal" - Standard verbosity levels.
 		   - "Detailed" - Prints details about the results and execution state.
 	 - Default: "Computational"
-	 - Syntax: `korali["Verbosity"] = verbosityLevel`
+	 - Syntax: `Korali["Verbosity"] = verbosityLevel`
 	 - Example:
 	 
 ```python
 # Defining a detailed verbosity level.
-korali["Verbosity"] = "Detailed"
+Korali["Verbosity"] = "Detailed"
 ```

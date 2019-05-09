@@ -4,7 +4,7 @@ In this tutorial we show how to **optimize** and **sample** the posterior
 distribution of a Bayesian inference problem.
 
 
-The code for this tutorial in **Python** can be found [here](https://github.com/cselab/skorali/blob/master/examples/python/quick_start/posterior.py) and the code in **C++** can be found [here](https://github.com/cselab/skorali/blob/master/examples/cxx/quick_start/posterior.cpp).
+The code for this tutorial in **Python** can be found [here](https://github.com/cselab/sKorali/blob/master/examples/python/quick_start/posterior.py) and the code in **C++** can be found [here](https://github.com/cselab/skorali/blob/master/examples/cxx/quick_start/posterior.cpp).
 
 
 
@@ -77,7 +77,7 @@ First import the needed modules
 #!/usr/bin/env python
 import sys
 import threading
-import libkorali
+import libKorali
 ```
 
 
@@ -116,8 +116,8 @@ x.append(5.0);   y.append(6.8425);
 ### The Korali object
 
 The `x` list corresponds to the *input* variables of the model. The function that
-is passed to korali should not have an argument for `x`. We have to create an intermediate
-lambda function `Fx` that will hide `x` from korali.
+is passed to Korali should not have an argument for `x`. We have to create an intermediate
+lambda function `Fx` that will hide `x` from Korali.
 
 ```python
 Fx = lambda s: F( s, x )
@@ -129,10 +129,10 @@ or
 Fx = lambda s,*,x=x: F( s, x )
 ```
 if we want to make sure that `Fx` will not change if `x` changes later. Then, we can create
-the korali object,
+the Korali object,
 
 ```python
-korali = libkorali.Engine( Fx )
+Korali = libkorali.Engine( Fx )
 ```
 
 
@@ -141,21 +141,21 @@ korali = libkorali.Engine( Fx )
 
 The `Objective` `Problem` is characterized as `Bayesian`
 ```python
-korali["Problem"]["Objective"] = "Bayesian";
+Korali["Problem"]["Objective"] = "Bayesian";
 ```
 
 When the objective is `Bayesian` we must also provide a vector with the `Reference Data`
-to korali,
+to Korali,
 
 ```python
 for i in range(len(y)):
-  korali["Problem"]["Reference Data"][i] = y[i];
+  Korali["Problem"]["Reference Data"][i] = y[i];
 ```
 or
 
 ```python
 for ey in y:
-  korali["Problem"]["Reference Data"] += ey;
+  Korali["Problem"]["Reference Data"] += ey;
 ```
 
 ### The parameters
@@ -163,19 +163,19 @@ for ey in y:
 We define two `Parameters` of type `Computational` that correspond to $\vartheta_0$ and $\vartheta_1$. The prior distribution of both is set to `Uniform`.
 
 ```python
-    korali["Problem"]["Variables"][0]["Name"] = "a";
-    korali["Problem"]["Variables"][0]["Type"] = "Computational";
-    korali["Problem"]["Variables"][0]["Distribution"] = "Uniform";
-    korali["Problem"]["Variables"][0]["Minimum"] = -5.0;
-    korali["Problem"]["Variables"][0]["Maximum"] = +5.0;
-    korali["Problem"]["Variables"][0]["Initial Mean"] = +1.0;
+    Korali["Problem"]["Variables"][0]["Name"] = "a";
+    Korali["Problem"]["Variables"][0]["Type"] = "Computational";
+    Korali["Problem"]["Variables"][0]["Distribution"] = "Uniform";
+    Korali["Problem"]["Variables"][0]["Minimum"] = -5.0;
+    Korali["Problem"]["Variables"][0]["Maximum"] = +5.0;
+    Korali["Problem"]["Variables"][0]["Initial Mean"] = +1.0;
 
-    korali["Problem"]["Variables"][1]["Name"] = "b";
-    korali["Problem"]["Variables"][1]["Type"] = "Computational";
-    korali["Problem"]["Variables"][1]["Distribution"] = "Uniform";
-    korali["Problem"]["Variables"][1]["Minimum"] = -5.0;
-    korali["Problem"]["Variables"][1]["Maximum"] = +5.0;
-    korali["Problem"]["Variables"][1]["Initial Mean"] = +1.0;
+    Korali["Problem"]["Variables"][1]["Name"] = "b";
+    Korali["Problem"]["Variables"][1]["Type"] = "Computational";
+    Korali["Problem"]["Variables"][1]["Distribution"] = "Uniform";
+    Korali["Problem"]["Variables"][1]["Minimum"] = -5.0;
+    Korali["Problem"]["Variables"][1]["Maximum"] = +5.0;
+    Korali["Problem"]["Variables"][1]["Initial Mean"] = +1.0;
 
 ```
 
@@ -183,12 +183,12 @@ The last parameter we add is of `Type` `Statistical` and corresponds to the vari
 $\sigma$ in the likelihood function,
 
 ```python
-  korali["Problem"]["Variables"][2]["Name"] = "Sigma";
-  korali["Problem"]["Variables"][2]["Type"] = "Statistical";
-  korali["Problem"]["Variables"][2]["Distribution"] = "Uniform";
-  korali["Problem"]["Variables"][2]["Minimum"] = 0.0;
-  korali["Problem"]["Variables"][2]["Maximum"] = 10.0;
-  korali["Problem"]["Variables"][2]["Initial Mean"] = +1.0;
+  Korali["Problem"]["Variables"][2]["Name"] = "Sigma";
+  Korali["Problem"]["Variables"][2]["Type"] = "Statistical";
+  Korali["Problem"]["Variables"][2]["Distribution"] = "Uniform";
+  Korali["Problem"]["Variables"][2]["Minimum"] = 0.0;
+  Korali["Problem"]["Variables"][2]["Maximum"] = 10.0;
+  Korali["Problem"]["Variables"][2]["Initial Mean"] = +1.0;
 ```
 
 ### The solver
@@ -197,12 +197,12 @@ Next, we choose the solver `CMA-ES`, the population size to be `12` and set
 four termination criteria,
 
 ```python
-  korali["Solver"]["Method"] = "CMA-ES";
-  korali["Solver"]["Lambda"] = 12;
-  korali["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-11;
-  korali["Solver"]["Termination Criteria"]["Min Fitness"] = 1e-12;
-  korali["Solver"]["Termination Criteria"]["Max Generations"] = 1e4;
-  korali["Solver"]["Termination Criteria"]["Max Model Evaluations"] = 1e4;
+  Korali["Solver"]["Method"] = "CMA-ES";
+  Korali["Solver"]["Lambda"] = 12;
+  Korali["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-11;
+  Korali["Solver"]["Termination Criteria"]["Min Fitness"] = 1e-12;
+  Korali["Solver"]["Termination Criteria"]["Max Generations"] = 1e4;
+  Korali["Solver"]["Termination Criteria"]["Max Model Evaluations"] = 1e4;
 ```
 
 For a detailed description of CMA-ES settings see [here](../../usage/solvers/optimizers/cmaes.md).
@@ -214,14 +214,14 @@ We set the `Seed` to a fixed value and the `Verbosity` level to the maximum avai
 
 
 ```python
-  korali["Seed"] = 0xC0FFEE;
-  korali["Verbosity"] = "Detailed";
+  Korali["Seed"] = 0xC0FFEE;
+  Korali["Verbosity"] = "Detailed";
 ```
 
 Finally, we are ready to run the simulation,
 
 ```python
-  korali.run();
+  Korali.run();
 ```
 
 
@@ -229,7 +229,7 @@ Finally, we are ready to run the simulation,
 
 You can see the results of CMA-ES by running the command,
 ```sh
-korali-plot
+Korali-plot
 ```
 
 ![figure](posterior-cma.png)
@@ -245,11 +245,11 @@ korali-plot
 To sample the posterior distribution, we set the solver to `TMCMC` sampler and set a few settings,
 
 ```python
-  korali["Solver"]["Method"] = "TMCMC";
-  korali["Solver"]["Covariance Scaling"] = 0.02;
-  korali["Solver"]["Population Size"] = 5000;
-  korali["Solver"]["Burn In"] = 5;
-  korali["Solver"]["Coefficient of Variation"] = 0.5;
+  Korali["Solver"]["Method"] = "TMCMC";
+  Korali["Solver"]["Covariance Scaling"] = 0.02;
+  Korali["Solver"]["Population Size"] = 5000;
+  Korali["Solver"]["Burn In"] = 5;
+  Korali["Solver"]["Coefficient of Variation"] = 0.5;
 ```
 
 For a detailed description of the TMCMC settings see [here](../../usage/solvers/samplers/tmcmc.md)
@@ -259,7 +259,7 @@ For a detailed description of the TMCMC settings see [here](../../usage/solvers/
 
 You can see a histogram of the results by running the command
 ```sh
-korali-plot
+Korali-plot
 ```
 
 

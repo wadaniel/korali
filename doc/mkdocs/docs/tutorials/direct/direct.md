@@ -3,7 +3,7 @@
 In this tutorial we show how to **optimize** and **sample** directly from a
 given function.
 
-The code in **Python** for this tutorial can be found [here](https://github.com/cselab/skorali/blob/master/examples/python/quick_start/direct.py) and the code in **C++** can be found [here](https://github.com/cselab/skorali/blob/master/examples/cxx/quick_start/direct.cpp).
+The code in **Python** for this tutorial can be found [here](https://github.com/cselab/sKorali/blob/master/examples/python/quick_start/direct.py) and the code in **C++** can be found [here](https://github.com/cselab/skorali/blob/master/examples/cxx/quick_start/direct.cpp).
 
 
 
@@ -32,7 +32,7 @@ First import the needed modules
 #!/usr/bin/env python
 import sys
 import threading
-import libkorali
+import libKorali
 ```
 
 ###  The computational model
@@ -45,26 +45,26 @@ def F( s ):
 ```
 
 
-###  The korali object
+###  The Korali object
 
-Next we construct a `korali` object using the function `F`
+Next we construct a `Korali` object using the function `F`
 ```python
-korali = libkorali.Engine( F )
+Korali = libkorali.Engine( F )
 ```
 
 ###  The Problem type
 Then, we set the type of the problem to `Direct Evaluation`
 ```python
-korali["Problem"]["Objective"] = "Direct Evaluation"
+Korali["Problem"]["Objective"] = "Direct Evaluation"
 ```
 
 ###  The Parameters
 In this problem there is only one parameter that takes values in $[-10,10]$.
 ```python
-korali["Problem"]["Variables"][0]["Name"] = "X"
-korali["Problem"]["Variables"][0]["Distribution"] = "Uniform"
-korali["Problem"]["Variables"][0]["Minimum"] = -10.0
-korali["Problem"]["Variables"][0]["Maximum"] = +10.0
+Korali["Problem"]["Variables"][0]["Name"] = "X"
+Korali["Problem"]["Variables"][0]["Distribution"] = "Uniform"
+Korali["Problem"]["Variables"][0]["Minimum"] = -10.0
+Korali["Problem"]["Variables"][0]["Maximum"] = +10.0
 ```
 
 
@@ -73,10 +73,10 @@ Next, we choose the solver `CMA-ES`, the population size to be `5` and set
 two termination criteria,
 
 ```python
-korali["Solver"]["Method"] = "CMA-ES"
-korali["Solver"]["Lambda"] = 5
-korali["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-8
-korali["Solver"]["Termination Criteria"]["Max Generations"] = 100
+Korali["Solver"]["Method"] = "CMA-ES"
+Korali["Solver"]["Lambda"] = 5
+Korali["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-8
+Korali["Solver"]["Termination Criteria"]["Max Generations"] = 100
 ```
 For a detailed description of CMA-ES settings see [here](../../usage/solvers/optimizers/cmaes.md).
 
@@ -84,24 +84,24 @@ For a detailed description of CMA-ES settings see [here](../../usage/solvers/opt
 We set the `Seed` to a fixed value and the `Verbosity` level to the maximum available,
 
 ```python
-korali["Seed"] = 0xC0FFEE;
-korali["Verbosity"] = "Detailed";
+Korali["Seed"] = 0xC0FFEE;
+Korali["Verbosity"] = "Detailed";
 ```
 
 Finally, we are ready to run the simulation,
 
 ```python
-korali.run();
+Korali.run();
 ```
 
-The results are saved in the folder `_korali_result/`.
+The results are saved in the folder `_Korali_result/`.
 
 
 ###  Plot
 
 You can see the results of CMA-ES by running the command,
 ```sh
-korali-plot
+Korali-plot
 ```
 
 ![figure](direct-cma.png)
@@ -118,10 +118,10 @@ korali-plot
 We set the solver to `TMCMC` sampler and set a few settings,
 
 ```python
-korali["Solver"]["Method"] = "TMCMC"
-korali["Solver"]["Covariance Scaling"] = 0.02
-korali["Solver"]["Population Size"] = 5000
-korali["Solver"]["Burn In"] = 5
+Korali["Solver"]["Method"] = "TMCMC"
+Korali["Solver"]["Covariance Scaling"] = 0.02
+Korali["Solver"]["Population Size"] = 5000
+Korali["Solver"]["Burn In"] = 5
 ```
 
 For a detailed description of the TMCMC settings see
@@ -131,7 +131,7 @@ For a detailed description of the TMCMC settings see
 ###  Plot
 You can see a histogram of the results by running the command
 ```sh
-korali-plot
+Korali-plot
 ```
 
 The next figure is plotted in Matlab and shows the histogram of the samples superimposed

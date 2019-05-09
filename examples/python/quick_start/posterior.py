@@ -31,7 +31,7 @@ korali = libkorali.Engine( Fx )
 for i in range(len(y)):
   korali["Problem"]["Reference Data"][i] = y[i];
 
-korali["Problem"]["Type"] = "Gaussian";
+korali["Problem"]["Type"] = "Bayesian";
 
 korali["Parameters"][0]["Name"] = "a";
 korali["Parameters"][0]["Type"] = "Computational";

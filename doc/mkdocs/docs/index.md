@@ -4,13 +4,34 @@ Korali is a high performance computing framework for optimization, sampling and 
 
 <br><br>
 
+
+
 # What Korali does for you
 
-1. [**Gradient-Free Black-Box Optimization**](quick_start/direct.md): given a cost function $F(\vartheta)$ find
+
+
+### [**1. Direct problems**](quick_start/direct.md)
+
+Given any function $f:\mathbb{R}\rightarrow\mathbb{R}^N$ korali can
+
+  - [**Optimize:**](quick_start/direct.md#optimize) find the minima or maxima of $f$
+  $$
+	\vartheta^\star = \mathop{\arg\min}\limits_{\vartheta}  \,\,\, f(\vartheta) \,,
 	$$
-	\vartheta^\star = \mathop{\arg\min}\limits_{\vartheta}  \,\,\, F(\vartheta) \,,
-	$$
-    where $F(\theta)$ can be any nonlinear nonconvex function.
+
+  - [**Sample:**](quick_start/direct.md#sample) treat $f$ as an unnormalized density and draw samples from it
+  $$
+  \vartheta^{(k)} \sim f.
+  $$  
+
+
+
+### [**2. Bayesian Inference**](quick_start/bayesian.md)
+
+
+
+
+
 
 
 2. [**Uncertainty Quantification**](quick_start/posterior.md): given a set of data $d$, respectively the output of a model $f(x;\vartheta)$, a likelihood function $p(d|\vartheta)$,  and a prior probability density $p(\vartheta)$ Korali samples the posterior distribution
@@ -22,6 +43,8 @@ Korali is a high performance computing framework for optimization, sampling and 
 		\vartheta^{(k)} \sim p(\theta | d).
     $$
     Note that $x$ are the input parameters of the computational model $f$.
+
+<br>
 
 After [installing](installation.md) the software you can have a look at the [quick start](quick_start) guide or [examples](./examples/sampling.md) and learn how to run your own code.
 

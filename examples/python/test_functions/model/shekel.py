@@ -13,7 +13,8 @@ def m_shekel(x):
  
     result = 0.0
     for i in range(10) :
-        for j in range(4) : t = pow( x.getParameter(j) - C[i*10+j], 2) + beta[i]
+        for j in range(4) : 
+            t = pow( x.getParameter(j) - C[i*4+j], 2) + beta[i]
         result -= 1.0/t
 
     x.addResult(-result)

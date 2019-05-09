@@ -5,7 +5,7 @@ import math
 def m_rosenbrock(x):
 
     result = 0.0
-    for i in range(4):
+    for i in range(x.getParameterCount()):
         result += 100.0*pow(x.getParameter(i+1)-x.getParameter(i),2) + pow(1.0 - x.getParameter(i),2)
 
     x.addResult(-result)

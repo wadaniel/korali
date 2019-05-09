@@ -20,8 +20,8 @@ void m_shekel(std::vector<double>& pars, std::vector<double>& result)
 
  double t;
  double s = 0.0;
- for(int i = 0; i <10; ++i){
-    for(int j = 0; j < 4; ++j) t = pow( pars[j] - C[i*10+j], 2) + beta[i];
+ for(int i = 0; i < 10; ++i){
+    for(int j = 0; j < 4; ++j) t = pow( pars[j] - C[i*4+j], 2) + beta[i];
     s -= 1.0/t;
  }
 

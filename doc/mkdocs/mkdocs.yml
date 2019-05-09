@@ -5,8 +5,9 @@ edit_uri: ''
 
 nav:
   - Home: index.md
-  - Setup: installation.md
+  - Setup:
       - Installing Korali: setup/installation.md
+      - Configuration: setup/configuration.md
       - System Requirements: setup/requirements.md
   - Quick Start:
       - Direct problems: quick_start/direct.md
@@ -30,7 +31,6 @@ nav:
           - UPC++: usage/conduits/upcxx.md
           - MPI: usage/conduits/mpi.md
   - Tools:
-      - configure: tools/configure.md
       - korali-cxx: tools/korali-cxx.md
       - korali-config: tools/korali-config.md
       - korali-plot: tools/korali-plot.md

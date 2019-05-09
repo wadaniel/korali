@@ -1,4 +1,6 @@
-# configure
+# Configuration
+
+This section details the options for the configure command provided to build Korali.
 
 ##Name
        configure - configuration script to compile and install Korali.

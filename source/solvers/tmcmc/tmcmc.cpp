@@ -62,7 +62,6 @@ Korali::Solver::TMCMC::TMCMC(nlohmann::json& js) : Korali::Solver::Base::Base(js
  _databaseEntries         = 0;
  _coefficientOfVariation  = 0;
  _annealingExponent       = 0;
- _minStep                 = 1e-5;
  _logEvidence             = 0;
  finishedChains           = 0;
  _databaseEntries         = 0;
@@ -100,7 +99,7 @@ nlohmann::json Korali::Solver::TMCMC::getConfiguration()
  js["Population Size"]          = _s;
  js["Coefficient of Variation"] = _tolCOV;
  js["Min Rho Update"]           = _minStep;
- js["Covariance Scaling"]       = _bbeta;
+ js["Covariance Scaling"]       = _beta2;
  js["Use Local Covariance"]     = _useLocalCov;
  js["Burn In"]                  = _burnin;
 
@@ -131,8 +130,8 @@ void Korali::Solver::TMCMC::setConfiguration(nlohmann::json& js)
 
  _s                 = consume(js, { "Population Size" }, KORALI_NUMBER);
  _tolCOV            = consume(js, { "Coefficient of Variation" }, KORALI_NUMBER, std::to_string(1.0));
- _minStep           = consume(js, { "Min Rho Update" }, KORALI_NUMBER, std::to_string(1e-9));
- _bbeta             = consume(js, { "Covariance Scaling" }, KORALI_NUMBER, std::to_string(0.005));
+ _minStep           = consume(js, { "Min Rho Update" }, KORALI_NUMBER, std::to_string(0.00001));
+ _beta2            = consume(js, { "Covariance Scaling" }, KORALI_NUMBER, std::to_string(0.04));
  _useLocalCov       = consume(js, { "Use Local Covariance" }, KORALI_BOOLEAN, "false");
  _burnin            = consume(js, { "Burn In" }, KORALI_NUMBER, std::to_string(0));
  _maxGens           = consume(js, { "Termination Criteria", "Max Generations" }, KORALI_NUMBER, std::to_string(20));
@@ -306,7 +305,7 @@ void Korali::Solver::TMCMC::resampleGeneration()
  {
   double s = 0.0;
   for (size_t k = 0; k < _databaseEntries; ++k) s += q[k]*(_databasePoints[k*_k->N+i]-_meanTheta[i])*(_databasePoints[k*_k->N+j]-_meanTheta[j]);
-  _covarianceMatrix[i*_k->N + j] = _covarianceMatrix[j*_k->N + i] = s*_bbeta*_bbeta;
+  _covarianceMatrix[i*_k->N + j] = _covarianceMatrix[j*_k->N + i] = s*_beta2;
  }
 
  gsl_matrix_view sigma = gsl_matrix_view_array(_covarianceMatrix, _k->N,_k->N);

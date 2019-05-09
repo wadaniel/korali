@@ -1,16 +1,13 @@
-# Welcome to Korali
-
-Korali is a high performance computing framework for optimization, sampling and Bayesian uncertainty quantification of large scale computational models.
-
-<br><br>
+# ![](templogo.png){: style="height:25px;width:25px"} Korali
 
 
 
-# What Korali does for you
+**Korali** is a high-performance computing framework for optimization, sampling and Bayesian uncertainty quantification of large-scale computational models.
 
 
+## What Korali does for you
 
-### [**1. Direct problems**](quick_start/direct.md)
+### [1. Direct problems](tutorials/direct.md)
 
 Given any function $f:\mathbb{R}\rightarrow\mathbb{R}^N$ korali can
 
@@ -26,12 +23,7 @@ Given any function $f:\mathbb{R}\rightarrow\mathbb{R}^N$ korali can
 
 
 
-### [**2. Bayesian Inference**](quick_start/bayesian.md)
-
-
-
-
-
+### [2. Bayesian Inference](tutorials/bayesian.md)
 
 
 2. [**Uncertainty Quantification**](quick_start/posterior.md): given a set of data $d$, respectively the output of a model $f(x;\vartheta)$, a likelihood function $p(d|\vartheta)$,  and a prior probability density $p(\vartheta)$ Korali samples the posterior distribution
@@ -45,10 +37,6 @@ Given any function $f:\mathbb{R}\rightarrow\mathbb{R}^N$ korali can
     Note that $x$ are the input parameters of the computational model $f$.
 
 <br>
-
-After [installing](installation.md) the software you can have a look at the [quick start](quick_start) guide or [examples](./examples/sampling.md) and learn how to run your own code.
-
-<br><br>
 
 # Korali Principles
 

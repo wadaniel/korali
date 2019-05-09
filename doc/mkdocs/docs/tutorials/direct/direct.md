@@ -59,6 +59,7 @@ korali["Problem"]["Objective"] = "Direct Evaluation"
 ```
 
 ###  The Parameters
+In this problem there is only one parameter that takes values in $[-10,10]$.
 ```python
 korali["Parameters"][0]["Name"] = "X"
 korali["Parameters"][0]["Distribution"] = "Uniform"
@@ -67,20 +68,28 @@ korali["Parameters"][0]["Minimum"] = -10.0
 korali["Parameters"][0]["Maximum"] = +10.0
 ```
 
+
 ###  The Solver
+Next, we choose the solver `CMA-ES`, the population size to be `5` and set
+two termination criteria,
+
 ```python
 korali["Solver"]["Method"] = "CMA-ES"
+korali["Solver"]["Lambda"] = 5
 korali["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-8
 korali["Solver"]["Termination Criteria"]["Max Generations"] = 100
-korali["Solver"]["Lambda"] = 5
 ```
+For a detailed description of CMA-ES settings see [here](???).
 
 ###  Run
+We set the `Seed` to a fixed value and the `Verbosity` level to the maximum available,
+
 ```python
 korali["Seed"] = 0xC0FFEE;
 korali["Verbosity"] = "Detailed";
 ```
 
+Finally, we are ready to run the simulation,
 
 ```python
 korali.run();
@@ -88,10 +97,12 @@ korali.run();
 
 The results are saved in the folder `_korali_result/`.
 
+
 ###  Plot
 
+You can see the results of CMA-ES by running the command,
 ```sh
-plot_cma.py korali0
+korali-plot
 ```
 
 ![figure](direct-cma.png)
@@ -105,6 +116,8 @@ plot_cma.py korali0
 
 ###  The Solver
 
+We set the solver to `TMCMC` sampler and set a few settings,
+
 ```python
 korali["Solver"]["Method"] = "TMCMC"
 korali["Solver"]["Covariance Scaling"] = 0.02
@@ -112,33 +125,41 @@ korali["Solver"]["Population Size"] = 5000
 korali["Solver"]["Burn In"] = 5
 ```
 
-###  Plot
+For a detailed description of the TMCMC settings see [here](???)
 
+
+###  Plot
+You can see a histogram of the results by running the command
 ```sh
-plot_tmcmc.py korali0
+korali-plot
 ```
 
-![figure](direct-tmcmc.png){: .center}
+The next figure is plotted in Matlab and shows the histogram of the samples superimposed
+with the density function of $\mathcal{N}(0,1/\sqrt{2})$.
 
 
 ??? tip "Plot with Matlab"
     Assume that the 7th is last generation. In order to read the json file extract
     the population run these commands:
     ```
-    s=jsondecode(fileread('s00007.json'));
-    a=s.Solver.State.DatabasePoints;
+    s = jsondecode(fileread('s00007.json'));
+    a = s.Solver.State.DatabasePoints;
     ```
     Then you can plot the histogram of the samples against the density of
     $\mathcal{N}(0,1/\sqrt{2})$:
     ```
-    h=histogram(a,50);
+    h = histogram(a,50);
     h.Normalization='pdf';
     hold on;
-    x=-3:0.01:3;
-    p=plot(x,normpdf(x,0,sqrt(0.5)));
+
+    x = -3:0.01:3;
+    p = plot(x,normpdf(x,0,sqrt(0.5)));
     p.LineWidth = 4;
+
     ax=gca;
     ax.XLim=[-3,3];
     ax.FontSize=16;
     grid on;
     ```
+
+![figure](direct-tmcmc.png){: .center}

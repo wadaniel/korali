@@ -5,11 +5,11 @@ used to validate your optimization.
 The `plot-korali` command visualizes some of the most meaningful states of CMA-ES 
 stored in the json-files in the output directory (results folder).
 
-In the figure below we see the evolution of the CMA-ES algorithm during 50
-optimization steps, respectively 500 function evaluations (here the sample size
+In the figure below we see the evolution of the CMA-ES algorithm during 100
+optimization steps, respectively 1000 function evaluations (here the sample size
 is 10), of the negative 2-dimensional [Rosenbrock](https://en.wikipedia.org/wiki/Rosenbrock_function) function.
 
-![figure](rosenbrock_optimization_result.png)
+![figure](optimizing_rosenbrock.png)
 
 ## Description
 
@@ -17,56 +17,55 @@ is 10), of the negative 2-dimensional [Rosenbrock](https://en.wikipedia.org/wiki
 
 The first quadrant shows 4 graphs plus markers (crosses):
     
-* | F | (red): F is the best function evaluation of the current generation.
-      Note that the colour of F changes if F is smaller 0 (red) or F greater 
-	  equal 0 (blue). Also, the absolute value of F is plotted since the vertical 
-      axis is given in log-scale.
+* $| F |$ (red): $F$ is the best function evaluation of the current generation.
+      Note that the colour of $F$ changes if $F < 0$ (red) or $F \geq 0$ (blue). 
+      Also, the absolute value of F is plotted since the vertical axis is given 
+      in log-scale.
 
-* Condition (cyan): This line shows the condition of the covariance matrix 
+* $\kappa(\mathbf{C})$ (cyan): This line shows the condition of the covariance matrix 
 	  of the proposal distribution at every generation. The condition is given 
 	  by the ratio of the largest Eigenvalue to the smallest Eigenvalue. A 
 	  large condition number may lead to numerical instabilities, this can be 
 	  treated by normalizing the domain of the objective variables.
 
-* || Path || (black):  The evolution path is a measure of the travel
+* $|| \mathbf{p}_{\sigma} ||$ (black):  The evolution path is a measure of the travel
       direction of the mean of the proposal distribution of CMA-ES. The
       Euclidean norm of the evolution path plays an important rule in the Sigma
       updating rule.
 
-* Sigma (yellow) : Sigma is the scaling parameter of the covariance matrix.
+* $\sigma$ (yellow) : $\sigma$ is the scaling parameter of the covariance matrix.
       The scaling parameter is updated at every generation. If Sigma becomes 
 	  very large or small it may have an adverse effect on the optimization.
 
-* | F - F_best | (crosses) : At every generation we calculate the absolute
-      difference betwen the current best function evaluation (F) and the overall
-      best found evaluation (F_best) of CMA-ES. The crosses appear only if the 
-      current generation does not imrpove the overall result, i.e. F is less 
-      than F_best during optimization and | F - F_best | is greater 0.
+* $| F - F_{best}|$ (crosses) : At every generation we calculate the absolute
+      difference betwen the current best function evaluation ($F$) and the overall
+      best found evaluation ($F_{best}$) of CMA-ES. The crosses appear only if the 
+      current generation does not impeove the overall result, i.e. $F < F_{best}$ 
+      in current generation and $| F - F_{best} |$ is greater 0.
 
-A good indicator of convergance of CMA-ES to the global maximum is given by a steady decrease of | F - F_best |.
+A good indicator of convergance of CMA-ES to the global maximum is given by a steady decrease of $| F - F_{best} |$.
 
 
-### Quadrant 2 (Object Variables)
+### Quadrant 2 - Object Variables
 
 This plot shows the evolution of the objective variables corresponding to the
-evaluation of | F |. A line per each dimension of the optimization problem is
+evaluation of $|F|$. A line per each dimension of the optimization problem is
 plotted.
 
 
 
-### Quadrant 3 (Scaling Main Axes)
+### Quadrant 3 - Square Root of Eigenvalues of $\mathbf{C}$
 
-The scaling of the main axes is defined as the square root of the Eigenvalues of 
-the (unscaled) covariance matrix.
-Optimally the lengths of the axes are of the same magnitude.
-
+The square root of the Eigenvalues of $\mathbf{C}$ are the lengths of the axes of the 
+(unscaled) covariance matrix. Optimally the lengths of the axes are of same magnitude.
 
 
-### Quadrant 4 (Standard Deviation Coordinates)
 
-The standard deviation of the coordinates is approximated by the square root of 
-the diagonal elements of the covariance matrix of the proposal distribution. 
-Ideally the standard deviations of all coordiantes are of the same magnitude.
+### Quadrant 4 - $\sigma \sqrt{diag(\mathbf{C})}$
+
+The square root of the diagonal elements of the (scaled) covariance matrix of 
+the proposal distribution approximate the standard deviation of the parameters.
+Ideally the standard deviations of all coordiantes are of same magnitude.
 
 
 
@@ -88,11 +87,11 @@ ill convergence. Restarting CMA-ES from different starting points as well as
 tuning CMA-ES internal parameters might improve optimization:
 
 * Increasing condition (quadrant 1) of the covariance matrix of the proposal 
-  distribution, respectively diverging scaling and standard deviation 
-  (quadrant 3 & 4).
+  distribution, respectively diverging axes lenghts and standard deviations
+  (quadrants 3 & 4).
 
-* None decreasing values for | F - F_best |. Arguably CMA-ES found a better
+* None decreasing values for $| F - F_{best} |$. Arguably CMA-ES found a better
   function evaluation on a different hill but the algorithm is trapped (the
   objective variables stabilized sampling does not overcome the saddle points).
 
-![figure](shekel_optimization_result.png)
+![figure](optimizing_shekel.png)

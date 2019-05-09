@@ -56,7 +56,6 @@ def run_diagnostics(src, live = False, obj='current'):
     fig, ax = plt.subplots(2,2,num='CMA-ES live diagnostics: {0}'.format(src),figsize=(8,8))
     fig.show()
 
-    updt_text = plt.figtext(0.5, 0.01, 'TEST', horizontalalignment='center');
 
     while( plt.fignum_exists(fig.number) ):
 
@@ -77,14 +76,13 @@ def run_diagnostics(src, live = False, obj='current'):
                       fontweight='bold',\
                       fontsize=12 )
         
-        plt.text(x = 1000.65, y = 50, s = 'just sth', fontsize = 10, alpha = .85)
+        #plt.text(x = 1000.65, y = 50, s = 'just sth', fontsize = 10, alpha = .85)
 
         tmp_str = 'last update:{0}:{1}:{2}'.format(\
                           str(localtime.tm_hour).zfill(2),\
                           str(localtime.tm_min).zfill(2),\
                           str(localtime.tm_sec).zfill(2))
 
-        updt_text.set_text( tmp_str )
 
         with open(path) as f:
             data  = json.load(f)
@@ -142,7 +140,7 @@ def run_diagnostics(src, live = False, obj='current'):
             ax[0,1].legend(bbox_to_anchor=(1.04,0.5), loc="center left", borderaxespad=0, handlelength=1)
 
 
-        ax[1,0].set_title('Square root of Eigenvalues of $\mathbf{C}$')
+        ax[1,0].set_title('Square Root of Eigenvalues of $\mathbf{C}$')
         ax[1,0].grid(True)
         ax[1,0].set_yscale('log')
         for i in range(numdim):

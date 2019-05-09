@@ -10,7 +10,7 @@ function is given below. Here, the target function is the exponential of the
 negative of the 2-dimensional [Rosenbrock](https://en.wikipedia.org/wiki/Rosenbrock_function) 
 function.
 
-![figure](rosenbrock_sampling_result.png)
+![figure](sampling_rosenbrock.png)
 
 ## Description
 

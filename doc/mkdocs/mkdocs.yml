@@ -18,9 +18,13 @@ nav:
           - Problem:
               - Direct evaluation: usage/problem/direct.md
               - Bayesian inference: usage/problem/bayesian.md
-          - Distributions:
-              - Uniform: usage/distributions/uniform.md
-              - Gaussian: usage/distributions/gaussian.md
+          - Variables:
+              - Cauchy: usage/variables/cauchy.md
+              - Exponential: usage/variables/exponential.md
+              - Gamma: usage/variables/gamma.md
+              - Gaussian: usage/variables/gaussian.md
+              - Laplace: usage/variables/laplace.md
+              - Uniform: usage/variables/uniform.md
           - Solvers:
               - Optimizers:
                 - CMA-ES: usage/solvers/optimizers/cmaes.md

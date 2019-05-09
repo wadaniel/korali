@@ -1,0 +1,102 @@
+# Korali / Variables / Gaussian
+				   
+##Description
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+	   
+##Syntax
+       korali["Problem"]["Variables"][i]["Distribution"] = "Gaussian"
+
+##Requirements
+
+*{none}*
+
+##Settings
+
++ Name: **Type**
+     - Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+     - Type: String. 
+	 - Allowed values:
+	       - "Computational" - Determines this is a computational variable.
+		   - "Statistical" - Determines this is a statistical variable.
+	 - Default: "Computational"
+	 - Syntax: `korali["Problem"]["Variables"][i]["Type"] = myType`
+	 - Example:
+	 
+```python
+# Modifying two variables to have one statistical and another computational.
+korali["Problem"]["Variables"][0]["Type"] = "Computational"
+korali["Problem"]["Variables"][1]["Type"] = "Statistical"
+```
+
+<br>
+	 
++ Name: **Minimum**
+     - Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+     - Type: Number. 
+	 - Default: *-infinity*
+	 - Syntax: `korali["Problem"]["Variables"][i]["Minimum"] = myLowerBound`
+	 - Example:
+	 
+```python
+# Modifying the lower bound of two variables
+korali["Problem"]["Variables"][0]["Minimum"] = 0.0;
+korali["Problem"]["Variables"][1]["Minimum"] = -32.0;
+```
+
+<br>
+	 
++ Name: **Maximum**
+     - Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+     - Type: Number. 
+	 - Default: *+infinity*
+	 - Syntax: `korali["Problem"]["Variables"][i]["Maximum"] = myUpperBound`
+	 - Example:
+	 
+```python
+# Modifying the upper bound of two variables
+korali["Problem"]["Variables"][0]["Maximum"] = 32.0;
+korali["Problem"]["Variables"][1]["Maximum"] = 0.0;
+```
+
+<br>
+
++ Name: **Initial Mean**
+     - Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+     - Type: Number. 
+	 - Default: *0.0*
+	 - Syntax: `korali["Problem"]["Variables"][i]["Initial Mean"] = myInitialMean`
+	 - Example:
+	 
+```python
+# Modifying the initial guess mean of my variable
+korali["Problem"]["Variables"][0]["Initial Mean"] = 16.0;
+```
+
+<br>
+
++ Name: **Initial StdDev**
+     - Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+     - Type: Number. 
+	 - Default: *1.0*
+	 - Syntax: `korali["Problem"]["Variables"][i]["Initial StdDev"] = myInitialStdDev`
+	 - Example:
+	 
+```python
+# Modifying the initial standard deviation of my variable
+korali["Problem"]["Variables"][0]["Initial StdDev"] = 2.0;
+```	 
+
+<br>
+
++ Name: **Min Std Change**
+     - Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+     - Type: Number. 
+	 - Default: *0.0*
+	 - Syntax: `korali["Problem"]["Variables"][i]["Min Std Change"] = myMinStdChange`
+	 - Example:
+	 
+```python
+# Modifying the minimum delta for the standard deviation of my variable
+korali["Problem"]["Variables"][0]["Initial StdDev"] = 0.05;
+```	 

@@ -95,7 +95,8 @@ def plot_lower_triangle(ax, theta):
 def plot_samples(path, idx=None):
     with open(path) as f:
         data    = json.load(f)
-        numdim  = data['Dimension']
+        dims    = data['Problem']['Variables']
+        numdim  = len(dims)
         pop     = data['Solver']['Population Size']
         state   = data['Solver']['State']
         anneal  = state['AnnealingExponent']

@@ -89,8 +89,9 @@ def run_diagnostics(src, live = False, obj='current'):
             state = data['Solver']['State']
 
             if idx == 0:
-                numdim = data['Dimension']
-                names  = [ data['Parameters'][i]['Name'] for i in range(numdim) ]
+                dims    = data['Problem']['Variables']
+                numdim  = len(dims)
+                names  = [ data['Problem']['Variables'][i]['Name'] for i in range(numdim) ]
                 colors = hls_colors(numdim)
                 for i in range(numdim):
                     fvalXvec.append([])

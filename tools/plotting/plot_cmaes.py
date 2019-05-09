@@ -142,7 +142,7 @@ def run_diagnostics(src, live = False, obj='current'):
             ax[0,1].legend(bbox_to_anchor=(1.04,0.5), loc="center left", borderaxespad=0, handlelength=1)
 
 
-        ax[1,0].set_title('Square root of Eigenvalues of $\mathbf{C}$')
+        ax[1,0].set_title('Square Root of Eigenvalues of $\mathbf{C}$')
         ax[1,0].grid(True)
         ax[1,0].set_yscale('log')
         for i in range(numdim):

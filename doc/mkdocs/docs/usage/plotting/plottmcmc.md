@@ -15,18 +15,18 @@ function.
 ## Description
 
 ### Diagonal Plots
-The diagonal plots show the marginal probability densities of the samples.
-Note that the vertical axes correspond to the upper and lower triangle plot and
-not to the diagonal plots.
+The diagonal plots show the marginal probability densities of the samples for 
+each variable. Note that the indices of the vertical axes correspond to the 
+upper and lower triangle plot and not to the diagonal plots.
 
 ### Upper Triangle
-In the upper triangle we see the actual realization of the sampling from
-TMCMC. The axes represent the dimensions, respectiely the objective variables,
+In the plots in the upper triangle we see the actual realization of the samples. 
+The axes represent the dimensions, respectiely the objective variables,
 of the problem and we show a two-dimensional plot for every variable pair.
 
 ### Lower Triangle
 The lower triangle shows the probability density of the samples for each variable pair.
-The density is approximated with a smoothening operator applied to the number
+The density is approximated through a smoothening operator applied to the number
 of samples that can be found in a given area.
 
 

@@ -3,7 +3,7 @@ Here we explain the **CMA-ES** result plot in further detail and how it can be
 used to validate your optimization.
 
 The plot-korali command visualizes some of the most meaningful states of CMA-ES 
-stored in the output directory (results folder).
+stored in the json-files in the output directory (results folder).
 
 In the figure below we see the evolution of the CMA-ES algorithm during 50
 optimization steps, respectively 500 function evaluations (we used a sample size
@@ -17,27 +17,27 @@ of 10), of the negative [Rosenbrock](https://en.wikipedia.org/wiki/Rosenbrock_fu
 
 The first quadrant shows 4 graphs plus markers (crosses):
     
-    * | F | (red): F is the best function evaluation of the current generation.
+* | F | (red): F is the best function evaluation of the current generation.
       Note that the colour of F changes if F is smaller 0 (red) or F greater 
 	  equal 0 (blue). Also, the absolute value of F is plotted since the vertical 
       axis is given in log-scale.
 
-    * Condition (cyan): This line shows the condition of the covariance matrix 
+* Condition (cyan): This line shows the condition of the covariance matrix 
 	  of the proposal distribution at every generation. The condition is given 
 	  by the ratio of the largest Eigenvalue to the smallest Eigenvalue. A 
 	  large condition number may lead to numerical instabilities, this can be 
 	  treated by normalizing the domain of the objective variables.
 
-    * || Path || (black):  The evolution path is a measure of the travel
+* || Path || (black):  The evolution path is a measure of the travel
       direction of the mean of the proposal distribution of CMA-ES. The
       Euclidean norm of the evolution path plays an important rule in the Sigma
       updating rule.
 
-    * Sigma (yellow) : Sigma is the scaling parameter of the covariance matrix.
+* Sigma (yellow) : Sigma is the scaling parameter of the covariance matrix.
       The scaling parameter is updated at every generation. If Sigma becomes 
 	  very large or small it may have an adverse effect on the optimization.
 
-    * | F - F_best | (crosses) : At every generation we calculate the absolute
+* | F - F_best | (crosses) : At every generation we calculate the absolute
       difference betwen the current best function evaluation (F) and the overall
       best found evaluation (F_best) of CMA-ES. The crosses appear only if the 
       current generation does not imrpove the overall result, i.e. F is less 
@@ -77,12 +77,18 @@ The following figure shows the results of an unsuccessful maximization of the
 negative of the [Shekel](https://en.wikipedia.org/wiki/Shekel_function) function in 4
 dimensions and with 10 local maxima.
 
-We know that the Shekel function has a global minimum at (4, 4, 4, 4),
-respectivel maximum in the negative case. In quadrant 2 we see that CMA-ES
-converged to a different result. In general the global optimum is not known, 
-following hints indicate ill convergence and restarting CMA-ES from a different starting point might improve optimization:
+[We know](http://www-optima.amp.i.kyoto-u.ac.jp/member/student/hedar/Hedar_files/TestGO_files/Page2354.htm)
+that the Shekel function has a global minimum at (4, 4, 4, 4),
+respectivel maximum in the negative case. 
+In quadrant 2 we see that CMA-ES converged to a different result. 
 
-* Increasing condition (quadrant 1) of the covariance matrix of the proposal distribution, respectively diverging scaling and standard deviation (quadrant 3 & 4).
+In general the global optimum is not known, following observations indicate 
+ill convergence. Restarting CMA-ES from different starting points as well as 
+tuning CMA-ES internal parameters might improve optimization:
+
+* Increasing condition (quadrant 1) of the covariance matrix of the proposal 
+  distribution, respectively diverging scaling and standard deviation 
+  (quadrant 3 & 4).
 
 * None decreasing values for | F - F_best |. Arguably CMA-ES found a better
   function evaluation on a different hill but the algorithm is trapped (the

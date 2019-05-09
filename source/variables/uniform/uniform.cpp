@@ -1,6 +1,6 @@
 #include "korali.h"
 
-using namespace Korali::Parameter;
+using namespace Korali::Variable;
 
 /************************************************************************/
 /*                  Constructor / Destructor Methods                    */

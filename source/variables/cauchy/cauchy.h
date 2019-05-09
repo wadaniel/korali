@@ -1,12 +1,12 @@
 #ifndef _KORALI_CAUCHY_H_
 #define _KORALI_CAUCHY_H_
 
-#include "parameters/base/base.h"
+#include "variables/base/base.h"
 
-namespace Korali::Parameter
+namespace Korali::Variable
 {
 
-class Cauchy : public Korali::Parameter::Base
+class Cauchy : public Korali::Variable::Base
 {
  private:
   double _aux;

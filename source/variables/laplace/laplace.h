@@ -1,12 +1,12 @@
 #ifndef _KORALI_LAPLACE_H_
 #define _KORALI_LAPLACE_H_
 
-#include "parameters/base/base.h"
+#include "variables/base/base.h"
 
-namespace Korali::Parameter
+namespace Korali::Variable
 {
 
-class Laplace : public Korali::Parameter::Base
+class Laplace : public Korali::Variable::Base
 {
  private:
   double _mean;

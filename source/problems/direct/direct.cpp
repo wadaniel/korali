@@ -37,7 +37,7 @@ void Korali::Problem::Direct::setConfiguration(nlohmann::json& js)
 
 double Korali::Problem::Direct::evaluateFitness(double* sample)
 {
- if (_k->_statisticalParameterCount != 0)
+ if (_statisticalParameterCount != 0)
  {
   fprintf(stderr, "[Korali] Error: Direct problem requires 0 statistical parameters.\n");
   exit(-1);
@@ -46,7 +46,7 @@ double Korali::Problem::Direct::evaluateFitness(double* sample)
  if (isSampleOutsideBounds(sample)) return -DBL_MAX;
 
  modelData d;
- for (size_t i = 0; i < _k->N; i++) d._parameters.push_back(sample[i]);
+ for (size_t i = 0; i < N; i++) d._parameters.push_back(sample[i]);
  _k->_model(d);
 
  if (d._results.size() != 1)

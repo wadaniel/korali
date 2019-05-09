@@ -1,12 +1,12 @@
 #ifndef _KORALI_GAMMA_H_
 #define _KORALI_GAMMA_H_
 
-#include "parameters/base/base.h"
+#include "variables/base/base.h"
 
-namespace Korali::Parameter
+namespace Korali::Variable
 {
 
-class Gamma : public Korali::Parameter::Base
+class Gamma : public Korali::Variable::Base
 {
  private:
   double _shape;

@@ -50,7 +50,7 @@ void Korali::Problem::Bayesian::setConfiguration(nlohmann::json& js)
 double Korali::Problem::Bayesian::evaluateFitness(double* sample)
 {
 
- if (_k->_statisticalParameterCount != 1)
+ if (_statisticalParameterCount != 1)
  {
   fprintf(stderr, "[Korali] Error: The Bayesian model requires 1 statistical parameter.\n");
   exit(-1);
@@ -58,11 +58,11 @@ double Korali::Problem::Bayesian::evaluateFitness(double* sample)
 
  if (isSampleOutsideBounds(sample)) return -DBL_MAX;
 
- double sigma = sample[_k->_computationalParameterCount];
+ double sigma = sample[_computationalParameterCount];
  double fitnessData[_referenceDataSize];
 
  modelData d;
- for (size_t i = 0; i < _k->N; i++) d._parameters.push_back(sample[i]);
+ for (size_t i = 0; i < N; i++) d._parameters.push_back(sample[i]);
  _k->_model(d);
 
  if (d._results.size() != _referenceDataSize)
@@ -75,12 +75,12 @@ double Korali::Problem::Bayesian::evaluateFitness(double* sample)
  //TODO: can we avoid this copy? (DW)
  for (size_t i = 0; i < _referenceDataSize; i++) fitnessData[i] = d._results[i];
 
- return Korali::Parameter::Gaussian::logLikelihood(sigma, _referenceDataSize, _referenceData, fitnessData);
+ return Korali::Variable::Gaussian::logLikelihood(sigma, _referenceDataSize, _referenceData, fitnessData);
 }
 
 double Korali::Problem::Bayesian::evaluateLogPrior(double* sample)
 {
  double logPrior = 0.0;
- for (size_t i = 0; i < _k->N; i++) logPrior += _k->_parameters[i]->getLogDensity(sample[i]);
+ for (size_t i = 0; i < N; i++) logPrior += _parameters[i]->getLogDensity(sample[i]);
  return logPrior;
 }

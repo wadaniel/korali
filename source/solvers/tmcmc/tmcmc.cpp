@@ -30,25 +30,25 @@ Korali::Solver::TMCMC::TMCMC(nlohmann::json& js) : Korali::Solver::Base::Base(js
  }
 
  // Allocating TMCMC memory
- _covarianceMatrix   = (double*) calloc (_k->N*_k->N, sizeof(double));
- _meanTheta          = (double*) calloc (_k->N, sizeof(double));
- ccPoints            = (double*) calloc (_k->N*_s, sizeof(double));
+ _covarianceMatrix   = (double*) calloc (_k->_problem->N*_k->_problem->N, sizeof(double));
+ _meanTheta          = (double*) calloc (_k->_problem->N, sizeof(double));
+ ccPoints            = (double*) calloc (_k->_problem->N*_s, sizeof(double));
  ccLogLikelihood     = (double*) calloc (_s, sizeof(double));
- clPoints            = (double*) calloc (_k->N*_s, sizeof(double));
+ clPoints            = (double*) calloc (_k->_problem->N*_s, sizeof(double));
  clLogLikelihood     = (double*) calloc (_s, sizeof(double));
  chainPendingFitness = (bool*)   calloc (_s, sizeof(bool));
  chainCurrentStep    = (size_t*) calloc (_s, sizeof(size_t));
  chainLength         = (size_t*) calloc (_s, sizeof(size_t));
- _databasePoints     = (double*) calloc (_k->N*_s, sizeof(double));
+ _databasePoints     = (double*) calloc (_k->_problem->N*_s, sizeof(double));
  _databaseFitness    = (double*) calloc (_s, sizeof(double));
 
  if(_useLocalCov) {
-   double *LCmem       = (double*)  calloc (_s*_k->N*_k->N, sizeof(double));
+   double *LCmem       = (double*)  calloc (_s*_k->_problem->N*_k->_problem->N, sizeof(double));
    local_cov           = (double**) calloc ( _s, sizeof(double*));
    for (size_t pos = 0; pos < _s; ++pos)
    {
-    local_cov[pos] = LCmem + pos*_k->N*_k->N;
-    for (size_t i = 0; i < _k->N; i++) local_cov[pos][i*_k->N+i] = 1;
+    local_cov[pos] = LCmem + pos*_k->_problem->N*_k->_problem->N;
+    for (size_t i = 0; i < _k->_problem->N; i++) local_cov[pos][i*_k->_problem->N+i] = 1;
    }
  }
 
@@ -115,11 +115,11 @@ nlohmann::json Korali::Solver::TMCMC::getConfiguration()
  js["State"]["AcceptanceRate"]     = _acceptanceRate;
  js["State"]["Database Entries"]   = _databaseEntries;
 
- for (size_t i = 0; i < _k->N*_k->N; i++) js["State"]["CovarianceMatrix"][i] = _covarianceMatrix[i];
- for (size_t i = 0; i < _k->N; i++)       js["State"]["MeanTheta"][i]        = _meanTheta[i];
- for (size_t i = 0; i < _k->N*_s; i++)    js["State"]["DatabasePoints"][i]   = _databasePoints[i];
+ for (size_t i = 0; i < _k->_problem->N*_k->_problem->N; i++) js["State"]["CovarianceMatrix"][i] = _covarianceMatrix[i];
+ for (size_t i = 0; i < _k->_problem->N; i++)       js["State"]["MeanTheta"][i]        = _meanTheta[i];
+ for (size_t i = 0; i < _k->_problem->N*_s; i++)    js["State"]["DatabasePoints"][i]   = _databasePoints[i];
  for (size_t i = 0; i < _s; i++)          js["State"]["DatabaseFitness"][i]  = _databaseFitness[i];
- if (_useLocalCov) for (size_t i = 0; i < _s; i++) for (size_t j = 0; j < _k->N; j++) js["State"]["LocalCovarianceMatrix"][i][j] = local_cov[i][j];
+ if (_useLocalCov) for (size_t i = 0; i < _s; i++) for (size_t j = 0; j < _k->_problem->N; j++) js["State"]["LocalCovarianceMatrix"][i][j] = local_cov[i][j];
 
  return js;
 }
@@ -150,11 +150,11 @@ void Korali::Solver::TMCMC::setState(nlohmann::json& js)
  _acceptanceRate         = js["State"]["AcceptanceRate"];
  _databaseEntries        = js["State"]["Database Entries"];
 
- for (size_t i = 0; i < _k->N*_k->N; i++) _covarianceMatrix[i] = js["State"]["CovarianceMatrix"][i];
- for (size_t i = 0; i < _k->N; i++)       _meanTheta[i]        = js["State"]["MeanTheta"][i];
- for (size_t i = 0; i < _k->N*_s; i++)    _databasePoints[i]   = js["State"]["DatabasePoints"][i];
+ for (size_t i = 0; i < _k->_problem->N*_k->_problem->N; i++) _covarianceMatrix[i] = js["State"]["CovarianceMatrix"][i];
+ for (size_t i = 0; i < _k->_problem->N; i++)       _meanTheta[i]        = js["State"]["MeanTheta"][i];
+ for (size_t i = 0; i < _k->_problem->N*_s; i++)    _databasePoints[i]   = js["State"]["DatabasePoints"][i];
  for (size_t i = 0; i < _s; i++)          _databaseFitness[i]  = js["State"]["DatabaseFitness"][i];
- if (_useLocalCov) for (size_t i = 0; i < _s; i++) for (size_t j = 0; j < _k->N; j++) local_cov[i][j] = js["State"]["LocalCovarianceMatrix"][i][j];
+ if (_useLocalCov) for (size_t i = 0; i < _s; i++) for (size_t j = 0; j < _k->_problem->N; j++) local_cov[i][j] = js["State"]["LocalCovarianceMatrix"][i][j];
 }
 
 /************************************************************************/
@@ -206,27 +206,27 @@ void Korali::Solver::TMCMC::run()
 
 void Korali::Solver::TMCMC::processSample(size_t c, double fitness)
 {
- double ccLogPrior = _k->_problem->evaluateLogPrior(&ccPoints[c*_k->N]);
- double clLogPrior = _k->_problem->evaluateLogPrior(&clPoints[c*_k->N]);
+ double ccLogPrior = _k->_problem->evaluateLogPrior(&ccPoints[c*_k->_problem->N]);
+ double clLogPrior = _k->_problem->evaluateLogPrior(&clPoints[c*_k->_problem->N]);
 
  ccLogLikelihood[c] = fitness;
  double L = exp((ccLogLikelihood[c]-clLogLikelihood[c])*_annealingExponent + (ccLogPrior-clLogPrior));
 
  if ( L >= 1.0 || L > gsl_ran_flat(chainGSLRange[c], 0.0, 1.0) ) {
-   for (size_t i = 0; i < _k->N; i++) clPoints[c*_k->N + i] = ccPoints[c*_k->N + i];
+   for (size_t i = 0; i < _k->_problem->N; i++) clPoints[c*_k->_problem->N + i] = ccPoints[c*_k->_problem->N + i];
    clLogLikelihood[c] = ccLogLikelihood[c];
    _uniqueEntries++;
  }
 
  chainCurrentStep[c]++;
- if (chainCurrentStep[c] > _burnin ) updateDatabase(&clPoints[c*_k->N], clLogLikelihood[c]);
+ if (chainCurrentStep[c] > _burnin ) updateDatabase(&clPoints[c*_k->_problem->N], clLogLikelihood[c]);
  chainPendingFitness[c] = false;
  if (chainCurrentStep[c] == chainLength[c]) finishedChains++;
 }
 
 void Korali::Solver::TMCMC::updateDatabase(double* point, double fitness)
 {
- for (size_t i = 0; i < _k->N; i++) _databasePoints[_databaseEntries*_k->N + i] = point[i];
+ for (size_t i = 0; i < _k->_problem->N; i++) _databasePoints[_databaseEntries*_k->_problem->N + i] = point[i];
  _databaseFitness[_databaseEntries] = fitness;
  _databaseEntries++;
 }
@@ -234,20 +234,20 @@ void Korali::Solver::TMCMC::updateDatabase(double* point, double fitness)
 void Korali::Solver::TMCMC::generateCandidate(size_t c)
 {
  double* covariance = _useLocalCov ? local_cov[c] : _covarianceMatrix;
- gsl_vector_view out_view    = gsl_vector_view_array(&ccPoints[c*_k->N], _k->N);
- gsl_matrix_view sigma_view  = gsl_matrix_view_array(covariance, _k->N,_k->N);
- gsl_vector_view mean_view   = gsl_vector_view_array(&clPoints[c*_k->N], _k->N);
+ gsl_vector_view out_view    = gsl_vector_view_array(&ccPoints[c*_k->_problem->N], _k->_problem->N);
+ gsl_matrix_view sigma_view  = gsl_matrix_view_array(covariance, _k->_problem->N,_k->_problem->N);
+ gsl_vector_view mean_view   = gsl_vector_view_array(&clPoints[c*_k->_problem->N], _k->_problem->N);
  gsl_ran_multivariate_gaussian(chainGSLRange[c], &mean_view.vector, &sigma_view.matrix, &out_view.vector);
 }
 
 void Korali::Solver::TMCMC::initializeSamples()
 {
   for (size_t c = 0; c < _s; c++) {
-     for (size_t d = 0; d < _k->N; d++) {
-       clPoints[c*_k->N + d] = ccPoints[c*_k->N + d] = _k->_parameters[d]->getRandomNumber();
-       clLogLikelihood[c] += log( _k->_parameters[d]->getDensity(clPoints[c*_k->N + d]) );
+     for (size_t d = 0; d < _k->_problem->N; d++) {
+       clPoints[c*_k->_problem->N + d] = ccPoints[c*_k->_problem->N + d] = _k->_problem->_parameters[d]->getRandomNumber();
+       clLogLikelihood[c] += log( _k->_problem->_parameters[d]->getDensity(clPoints[c*_k->_problem->N + d]) );
      }
-     updateDatabase(&clPoints[c*_k->N], clLogLikelihood[c]);
+     updateDatabase(&clPoints[c*_k->_problem->N], clLogLikelihood[c]);
      finishedChains++;
   }
 }
@@ -295,26 +295,26 @@ void Korali::Solver::TMCMC::resampleGeneration()
  size_t uniqueSelections = _databaseEntries - zeroCount;
  _acceptanceRate   = (1.0*uniqueSelections)/_s;
 
- for (size_t i = 0; i < _k->N; i++)
+ for (size_t i = 0; i < _k->_problem->N; i++)
  {
   _meanTheta[i] = 0;
-  for (size_t j = 0; j < _databaseEntries; j++) _meanTheta[i] += _databasePoints[j*_k->N + i]*q[j];
+  for (size_t j = 0; j < _databaseEntries; j++) _meanTheta[i] += _databasePoints[j*_k->_problem->N + i]*q[j];
  }
 
- for (size_t i = 0; i < _k->N; i++) for (size_t j = i; j < _k->N; ++j)
+ for (size_t i = 0; i < _k->_problem->N; i++) for (size_t j = i; j < _k->_problem->N; ++j)
  {
   double s = 0.0;
-  for (size_t k = 0; k < _databaseEntries; ++k) s += q[k]*(_databasePoints[k*_k->N+i]-_meanTheta[i])*(_databasePoints[k*_k->N+j]-_meanTheta[j]);
-  _covarianceMatrix[i*_k->N + j] = _covarianceMatrix[j*_k->N + i] = s*_beta2;
+  for (size_t k = 0; k < _databaseEntries; ++k) s += q[k]*(_databasePoints[k*_k->_problem->N+i]-_meanTheta[i])*(_databasePoints[k*_k->_problem->N+j]-_meanTheta[j]);
+  _covarianceMatrix[i*_k->_problem->N + j] = _covarianceMatrix[j*_k->_problem->N + i] = s*_beta2;
  }
 
- gsl_matrix_view sigma = gsl_matrix_view_array(_covarianceMatrix, _k->N,_k->N);
+ gsl_matrix_view sigma = gsl_matrix_view_array(_covarianceMatrix, _k->_problem->N,_k->_problem->N);
  gsl_linalg_cholesky_decomp( &sigma.matrix );
 
  size_t ldi = 0;
  for (size_t i = 0; i < _databaseEntries; i++) {
    if (sel[i] != 0) {
-     for (size_t j = 0; j < _k->N ; j++) clPoints[ldi*_k->N + j] = _databasePoints[i*_k->N + j];
+     for (size_t j = 0; j < _k->_problem->N ; j++) clPoints[ldi*_k->_problem->N + j] = _databasePoints[i*_k->_problem->N + j];
      clLogLikelihood[ldi] = _databaseFitness[i];
      chainLength[ldi] = sel[i] + _burnin;
      ldi++;
@@ -345,16 +345,16 @@ void Korali::Solver::TMCMC::computeChainCovariances(double** chain_cov, size_t n
  // allocate space
  size_t* nn_ind     = (size_t*) calloc (newchains, sizeof(size_t));
  size_t* nn_count   = (size_t*) calloc (newchains, sizeof(size_t));
- double* diam       = (double*) calloc (_k->N, sizeof(double));
- double* chain_mean = (double*) calloc (_k->N, sizeof(double));
- gsl_matrix* work   = gsl_matrix_alloc(_k->N, _k->N);
+ double* diam       = (double*) calloc (_k->_problem->N, sizeof(double));
+ double* chain_mean = (double*) calloc (_k->_problem->N, sizeof(double));
+ gsl_matrix* work   = gsl_matrix_alloc(_k->_problem->N, _k->_problem->N);
 
  // find diameters
- for (size_t d = 0; d < _k->N; ++d) {
+ for (size_t d = 0; d < _k->_problem->N; ++d) {
   double d_min = +1e6;
   double d_max = -1e6;
   for (size_t pos = 0; pos < _s; ++pos) {
-   double s = _databasePoints[pos*_k->N+d];
+   double s = _databasePoints[pos*_k->_problem->N+d];
    if (d_min > s) d_min = s;
    if (d_max < s) d_max = s;
   }
@@ -369,11 +369,11 @@ void Korali::Solver::TMCMC::computeChainCovariances(double** chain_cov, size_t n
   // find neighbors in a rectangle - O(_s^2)
   for (pos = 0; pos < newchains; ++pos) {
    nn_count[pos] = 0;
-   double* curr = &clPoints[pos*_k->N];
+   double* curr = &clPoints[pos*_k->_problem->N];
    for (size_t i = 0; i < _s; i++) {
-    double* s = &_databasePoints[i*_k->N];
+    double* s = &_databasePoints[i*_k->_problem->N];
     bool isInRectangle = true;
-     for (size_t d = 0; d < _k->N; d++)  if (fabs(curr[d]-s[d]) > scale*diam[d]) isInRectangle = false;
+     for (size_t d = 0; d < _k->_problem->N; d++)  if (fabs(curr[d]-s[d]) > scale*diam[d]) isInRectangle = false;
      if (isInRectangle) {
       nn_ind[pos*_s+nn_count[pos]] = i;
       nn_count[pos]++;
@@ -383,30 +383,30 @@ void Korali::Solver::TMCMC::computeChainCovariances(double** chain_cov, size_t n
 
   // compute the covariances
   for (pos = 0; pos < newchains; ++pos) {
-   for (size_t d = 0; d < _k->N; ++d) {
+   for (size_t d = 0; d < _k->_problem->N; ++d) {
     chain_mean[d] = 0;
     for (size_t k = 0; k < nn_count[pos]; ++k) {
      idx = nn_ind[pos*_s+k];
-     chain_mean[d] += _databasePoints[idx*_k->N+d];
+     chain_mean[d] += _databasePoints[idx*_k->_problem->N+d];
     }
     chain_mean[d] /= nn_count[pos];
    }
 
-   for (size_t i = 0; i < _k->N; i++)
-    for (size_t j = 0; j < _k->N; ++j) {
+   for (size_t i = 0; i < _k->_problem->N; i++)
+    for (size_t j = 0; j < _k->_problem->N; ++j) {
      double s = 0;
      for (size_t k = 0; k < nn_count[pos]; k++) {
       idx = nn_ind[pos*_s+k];
-      s  += (_databasePoints[idx*_k->N+i]-chain_mean[i]) *
-         (_databasePoints[idx*_k->N+j]-chain_mean[j]);
+      s  += (_databasePoints[idx*_k->_problem->N+i]-chain_mean[i]) *
+         (_databasePoints[idx*_k->_problem->N+j]-chain_mean[j]);
      }
-     chain_cov[pos][i*_k->N+j] = chain_cov[pos][j*_k->N+i] = s/nn_count[pos];
+     chain_cov[pos][i*_k->_problem->N+j] = chain_cov[pos][j*_k->_problem->N+i] = s/nn_count[pos];
     }
 
    // check if the matrix is positive definite
-   for (size_t i = 0; i < _k->N; i++)
-    for (size_t j = 0; j < _k->N; ++j) {
-     double s = chain_cov[pos][i*_k->N+j];
+   for (size_t i = 0; i < _k->_problem->N; i++)
+    for (size_t j = 0; j < _k->_problem->N; ++j) {
+     double s = chain_cov[pos][i*_k->_problem->N+j];
      gsl_matrix_set(work, i, j, s);
     }
    gsl_set_error_handler_off();
@@ -416,7 +416,7 @@ void Korali::Solver::TMCMC::computeChainCovariances(double** chain_cov, size_t n
  }
 
  for (pos = 0; pos < newchains; ++pos) {
-   gsl_matrix_view sigma  = gsl_matrix_view_array(chain_cov[pos], _k->N,_k->N);
+   gsl_matrix_view sigma  = gsl_matrix_view_array(chain_cov[pos], _k->_problem->N,_k->_problem->N);
    gsl_linalg_cholesky_decomp( &sigma.matrix );
  }
 
@@ -553,13 +553,13 @@ void Korali::Solver::TMCMC::printGeneration() const
  if (_k->_verbosity >= KORALI_DETAILED)
  {
   printf("[Korali] Sample Mean:\n");
-  for (size_t i = 0; i < _k->N; i++) printf("     %s = %+6.3e\n", _k->_parameters[i]->_name.c_str(), _meanTheta[i]);
+  for (size_t i = 0; i < _k->_problem->N; i++) printf("     %s = %+6.3e\n", _k->_problem->_parameters[i]->_name.c_str(), _meanTheta[i]);
   printf("[Korali] Sample Covariance:\n");
-  for (size_t i = 0; i < _k->N; i++)
+  for (size_t i = 0; i < _k->_problem->N; i++)
   {
    printf("   | ");
-   for (size_t j = 0; j < _k->N; j++)
-    if(j <= i)  printf("%+6.3e  ",_covarianceMatrix[i*_k->N+j]);
+   for (size_t j = 0; j < _k->_problem->N; j++)
+    if(j <= i)  printf("%+6.3e  ",_covarianceMatrix[i*_k->_problem->N+j]);
     else        printf("     -      ");
    printf(" |\n");
   }

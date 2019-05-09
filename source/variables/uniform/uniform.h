@@ -1,12 +1,12 @@
 #ifndef _KORALI_UNIFORM_H_
 #define _KORALI_UNIFORM_H_
 
-#include "parameters/base/base.h"
+#include "variables/base/base.h"
 
-namespace Korali::Parameter
+namespace Korali::Variable
 {
 
-class Uniform : public Korali::Parameter::Base
+class Uniform : public Korali::Variable::Base
 {
  private:
    double _aux;

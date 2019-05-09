@@ -45,7 +45,7 @@ void Sequential::run()
 
 void Sequential::evaluateSample(double* sampleArray, size_t sampleId)
 {
- double fitness = _k->_problem->evaluateFitness(&sampleArray[_k->N*sampleId]);
+ double fitness = _k->_problem->evaluateFitness(&sampleArray[_k->_problem->N*sampleId]);
  _k->_solver->processSample(sampleId, fitness);
 }
 

@@ -34,26 +34,26 @@ int main(int argc, char* argv[])
  korali["Problem"]["Reference Data"][i] = y[i];
 
 
- korali["Parameters"][0]["Name"] = "a";
- korali["Parameters"][0]["Type"] = "Computational";
- korali["Parameters"][0]["Distribution"] = "Uniform";
- korali["Parameters"][0]["Minimum"] = -5.0;
- korali["Parameters"][0]["Maximum"] = +5.0;
- korali["Parameters"][0]["Initial Mean"] = +1.0;
+ korali["Problem"]["Variables"][0]["Name"] = "a";
+ korali["Problem"]["Variables"][0]["Type"] = "Computational";
+ korali["Problem"]["Variables"][0]["Distribution"] = "Uniform";
+ korali["Problem"]["Variables"][0]["Minimum"] = -5.0;
+ korali["Problem"]["Variables"][0]["Maximum"] = +5.0;
+ korali["Problem"]["Variables"][0]["Initial Mean"] = +1.0;
 
- korali["Parameters"][1]["Name"] = "b";
- korali["Parameters"][1]["Type"] = "Computational";
- korali["Parameters"][1]["Distribution"] = "Uniform";
- korali["Parameters"][1]["Minimum"] = -5.0;
- korali["Parameters"][1]["Maximum"] = +5.0;
- korali["Parameters"][1]["Initial Mean"] = +1.0;
+ korali["Problem"]["Variables"][1]["Name"] = "b";
+ korali["Problem"]["Variables"][1]["Type"] = "Computational";
+ korali["Problem"]["Variables"][1]["Distribution"] = "Uniform";
+ korali["Problem"]["Variables"][1]["Minimum"] = -5.0;
+ korali["Problem"]["Variables"][1]["Maximum"] = +5.0;
+ korali["Problem"]["Variables"][1]["Initial Mean"] = +1.0;
 
- korali["Parameters"][2]["Name"] = "Sigma";
- korali["Parameters"][2]["Type"] = "Statistical";
- korali["Parameters"][2]["Distribution"] = "Uniform";
- korali["Parameters"][2]["Minimum"] = 0.0;
- korali["Parameters"][2]["Maximum"] = 10.0;
- korali["Parameters"][2]["Initial Mean"] = +1.0;
+ korali["Problem"]["Variables"][2]["Name"] = "Sigma";
+ korali["Problem"]["Variables"][2]["Type"] = "Statistical";
+ korali["Problem"]["Variables"][2]["Distribution"] = "Uniform";
+ korali["Problem"]["Variables"][2]["Minimum"] = 0.0;
+ korali["Problem"]["Variables"][2]["Maximum"] = 10.0;
+ korali["Problem"]["Variables"][2]["Initial Mean"] = +1.0;
 
 
  switch( atoi(argv[1]) ){

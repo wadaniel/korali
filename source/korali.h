@@ -8,12 +8,12 @@
 #include "problems/direct/direct.h"
 #include "problems/bayesian/bayesian.h"
 
-#include "parameters/exponential/exponential.h"
-#include "parameters/gamma/gamma.h"
-#include "parameters/gaussian/gaussian.h"
-#include "parameters/uniform/uniform.h"
-#include "parameters/cauchy/cauchy.h"
-#include "parameters/laplace/laplace.h"
+#include "variables/exponential/exponential.h"
+#include "variables/gamma/gamma.h"
+#include "variables/gaussian/gaussian.h"
+#include "variables/uniform/uniform.h"
+#include "variables/cauchy/cauchy.h"
+#include "variables/laplace/laplace.h"
 
 #include "solvers/cmaes/cmaes.h"
 #include "solvers/tmcmc/tmcmc.h"
@@ -68,7 +68,6 @@ class Engine {
  Korali::Conduit::Base* _conduit;
  Korali::Problem::Base* _problem;
  Korali::Solver::Base*  _solver;
- std::vector<Korali::Parameter::Base*> _parameters;
 
  // Model Functions and constructors
  Engine();
@@ -91,9 +90,6 @@ class Engine {
  void saveState(std::string fileName);
  void saveState();
 
- size_t N; // Parameter Count
- size_t _statisticalParameterCount;
- size_t _computationalParameterCount;
  size_t _seed;
  int _verbosity;
  size_t _outputFrequency;

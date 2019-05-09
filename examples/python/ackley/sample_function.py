@@ -8,14 +8,15 @@ korali = libkorali.Engine(ackley)
 
 korali["Verbosity"] = "Normal";
 
-for i in range(4):
- korali["Parameters"][i]["Name"] = "X" + str(i)
- korali["Parameters"][i]["Distribution"] = "Uniform"
- korali["Parameters"][i]["Type"] = "Computational"
- korali["Parameters"][i]["Minimum"] = -32.0
- korali["Parameters"][i]["Maximum"] = +32.0
-
 korali["Problem"]["Type"] = "Direct";
+for i in range(4):
+ korali["Problem"]["Variables"][i]["Name"] = "X" + str(i)
+ korali["Problem"]["Variables"][i]["Distribution"] = "Uniform"
+ korali["Problem"]["Variables"][i]["Type"] = "Computational"
+ korali["Problem"]["Variables"][i]["Minimum"] = -32.0
+ korali["Problem"]["Variables"][i]["Maximum"] = +32.0
+
+
 
 korali["Solver"]["Method"] = "TMCMC"
 korali["Solver"]["Covariance Scaling"] = 0.02

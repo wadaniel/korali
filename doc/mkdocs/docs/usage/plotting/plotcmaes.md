@@ -87,8 +87,8 @@ ill convergence. Restarting CMA-ES from different starting points as well as
 tuning CMA-ES internal parameters might improve optimization:
 
 * Increasing condition (quadrant 1) of the covariance matrix of the proposal 
-  distribution, respectively diverging scaling and standard deviation 
-  (quadrant 3 & 4).
+  distribution, respectively diverging axes lenghts and standard deviations
+  (quadrants 3 & 4).
 
 * None decreasing values for $| F - F_{best} |$. Arguably CMA-ES found a better
   function evaluation on a different hill but the algorithm is trapped (the

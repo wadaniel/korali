@@ -1,4 +1,4 @@
-# ![](templogo.png){: style="height:25px;width:25px"} Korali
+# ![](logos/tmp.svg){: style="height:25px;width:25px"} Korali
 
 **Korali** is a high-performance computing framework for optimization, sampling and Bayesian uncertainty quantification of large-scale computational models.
 
@@ -21,7 +21,7 @@
 	$$
 	\vartheta^{(k)} \sim f.
 	$$  
-	
+
   - [**Bayesian Inference.**](tutorials/bayesian/bayesian.md) Given a set of data $d$, the output of a computational model $f(x;\vartheta)$, a likelihood function $p(d|\vartheta)$,  and a prior probability density $p(\vartheta)$ korali will build
 the posterior distribution below and enabling the following operations:
     $$
@@ -37,9 +37,9 @@ the posterior distribution below and enabling the following operations:
     $$
 	\vartheta^{(k)} \sim p(\theta | d).
     $$
-	
+
 
 <br><br><br><br><br><br>
 
 !!! warning
-    The software and the documentation page are under continuous development. New pages and new feature will be constantly added.
+    The software and the documentation page are under continuous development. New pages and new features will be constantly added.

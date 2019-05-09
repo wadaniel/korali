@@ -15,13 +15,12 @@ if len(sys.argv) < 2 :
 
 korali = libkorali.Engine( F )
 
-korali["Parameters"][0]["Name"] = "X"
-korali["Parameters"][0]["Distribution"] = "Uniform"
-korali["Parameters"][0]["Type"] = "Computational"
-korali["Parameters"][0]["Minimum"] = -10.0
-korali["Parameters"][0]["Maximum"] = +10.0
-
 korali["Problem"]["Type"] = "Direct"
+
+korali["Problem"]["Variables"][0]["Name"] = "X"
+korali["Problem"]["Variables"][0]["Minimum"] = -10.0
+korali["Problem"]["Variables"][0]["Maximum"] = +10.0
+
 
 if sys.argv[1]=='1':
   korali["Solver"]["Method"] = "CMA-ES"

@@ -6,8 +6,8 @@ The `plot-korali` command visualizes some of the most meaningful states of CMA-E
 stored in the json-files in the output directory (results folder).
 
 In the figure below we see the evolution of the CMA-ES algorithm during 50
-optimization steps, respectively 500 function evaluations (we used a sample size
-of 10), of the negative [Rosenbrock](https://en.wikipedia.org/wiki/Rosenbrock_function) function.
+optimization steps, respectively 500 function evaluations (here the sample size
+is 10), of the negative 2-dimensional [Rosenbrock](https://en.wikipedia.org/wiki/Rosenbrock_function) function.
 
 ![figure](rosenbrock_optimization_result.png)
 

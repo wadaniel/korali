@@ -2,7 +2,8 @@
 Here we explain technical details of the **TMCMC** result plot.
 
 The `plot-korali` command plots the distribution of the samples at every
-generation.
+generation. The samples are read from the json-files stored in the output
+directory (results folder).
 
 A plot of the samples obtained after the final gerneration of TMCMC
 function is given below. Here, the target function is the exponential of the 

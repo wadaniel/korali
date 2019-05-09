@@ -2,19 +2,21 @@
 				   
 ##Description
 
-
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
 	   
 ##Syntax
        korali["Problem"]["Type"] = "Direct"
 
+##Requirements
+
++ It should contain at least one computational variable as input for the computational model.
 
 ##Settings
 
 + Name: **Variables**
      - Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
      - Type: Array of [Variables](../variables/uniform.md)
-	 - Default: {empty}
-	 - Requirements: At least one variable should be added to the problem. 
+	 - Default: *{empty}*
 	 - Syntax: `korali["Problem"]["Variables"][i]`, where i is the variable index and the syntax for [Variables](../variables/uniform.md) follows.
 	 - Example:
 	 

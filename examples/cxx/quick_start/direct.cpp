@@ -19,6 +19,7 @@ int main(int argc, char* argv[])
  });
 
  korali["Problem"]["Type"] = "Direct";
+ 
  korali["Problem"]["Variables"][0]["Name"] = "X0";
  korali["Problem"]["Variables"][0]["Type"] = "Computational";
  korali["Problem"]["Variables"][0]["Distribution"] = "Uniform";

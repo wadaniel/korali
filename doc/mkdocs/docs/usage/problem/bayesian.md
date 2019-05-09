@@ -22,7 +22,7 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor i
 	 - Example:
 
 ```python
-# Adding two variables, one Gaussian and one Uniform.
+# Adding two variables, one Computational Gaussian and one Statistical Uniform.
 
 korali["Problem"]["Variables"][0]["Name"] = "X";
 korali["Problem"]["Variables"][0]["Type"] = "Computational";
@@ -30,18 +30,13 @@ korali["Problem"]["Variables"][0]["Distribution"] = "Gaussian";
 korali["Problem"]["Variables"][0]["Mean"]  = 0.0;
 korali["Problem"]["Variables"][0]["Sigma"] = 1.0;
 
-korali["Problem"]["Variables"][0]["Name"] = "Sigma";
-korali["Problem"]["Variables"][0]["Type"] = "Statistical";
-korali["Problem"]["Variables"][0]["Distribution"] = "Uniform";
-korali["Problem"]["Variables"][0]["Minimum"]  = 0.0
-korali["Problem"]["Variables"][0]["Maximum"] = 5.0
+korali["Problem"]["Variables"][1]["Name"] = "Sigma";
+korali["Problem"]["Variables"][1]["Type"] = "Statistical";
+korali["Problem"]["Variables"][1]["Distribution"] = "Uniform";
+korali["Problem"]["Variables"][1]["Minimum"]  = 0.0
+korali["Problem"]["Variables"][1]["Maximum"] = 5.0
 
-korali["Problem"]["Parameters"][2]["Name"] = "Sigma";
-korali["Problem"]["Parameters"][2]["Type"] = "Statistical";
-korali["Problem"]["Parameters"][2]["Distribution"] = "Uniform";
-korali["Problem"]["Parameters"][2]["Minimum"] =  0.0;
-korali["Problem"]["Parameters"][2]["Maximum"] = 10.0;
-korali["Problem"]["Parameters"][2]["Initial Mean"] = +1.0;
+
 ```
 
 <br>

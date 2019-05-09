@@ -61,11 +61,10 @@ korali["Problem"]["Objective"] = "Direct Evaluation"
 ###  The Parameters
 In this problem there is only one parameter that takes values in $[-10,10]$.
 ```python
-korali["Parameters"][0]["Name"] = "X"
-korali["Parameters"][0]["Distribution"] = "Uniform"
-korali["Parameters"][0]["Type"] = "Computational"
-korali["Parameters"][0]["Minimum"] = -10.0
-korali["Parameters"][0]["Maximum"] = +10.0
+korali["Problem"]["Variables"][0]["Name"] = "X"
+korali["Problem"]["Variables"][0]["Distribution"] = "Uniform"
+korali["Problem"]["Variables"][0]["Minimum"] = -10.0
+korali["Problem"]["Variables"][0]["Maximum"] = +10.0
 ```
 
 
@@ -79,7 +78,7 @@ korali["Solver"]["Lambda"] = 5
 korali["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-8
 korali["Solver"]["Termination Criteria"]["Max Generations"] = 100
 ```
-For a detailed description of CMA-ES settings see [here](???).
+For a detailed description of CMA-ES settings see [here](../../usage/solvers/optimizers/cmaes.md).
 
 ###  Run
 We set the `Seed` to a fixed value and the `Verbosity` level to the maximum available,
@@ -125,7 +124,8 @@ korali["Solver"]["Population Size"] = 5000
 korali["Solver"]["Burn In"] = 5
 ```
 
-For a detailed description of the TMCMC settings see [here](???)
+For a detailed description of the TMCMC settings see
+[here](../../usage/solvers/samplers/tmcmc.md)
 
 
 ###  Plot

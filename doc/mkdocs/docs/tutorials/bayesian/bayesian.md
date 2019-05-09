@@ -151,36 +151,44 @@ to korali,
 for i in range(len(y)):
   korali["Problem"]["Reference Data"][i] = y[i];
 ```
+or
 
-
+```python
+for ey in y:
+  korali["Problem"]["Reference Data"] += ey;
+```
 
 ### The parameters
 
 We define two `Parameters` of type `Computational` that correspond to $\vartheta_0$ and $\vartheta_1$. The prior distribution of both is set to `Uniform`.
 
 ```python
-  korali["Parameters"][0]["Name"] = "a";
-  korali["Parameters"][0]["Type"] = "Computational";
-  korali["Parameters"][0]["Distribution"] = "Uniform";
-  korali["Parameters"][0]["Minimum"] = -10.0;
-  korali["Parameters"][0]["Maximum"] = +10.0;
+    korali["Problem"]["Variables"][0]["Name"] = "a";
+    korali["Problem"]["Variables"][0]["Type"] = "Computational";
+    korali["Problem"]["Variables"][0]["Distribution"] = "Uniform";
+    korali["Problem"]["Variables"][0]["Minimum"] = -5.0;
+    korali["Problem"]["Variables"][0]["Maximum"] = +5.0;
+    korali["Problem"]["Variables"][0]["Initial Mean"] = +1.0;
 
-  korali["Parameters"][1]["Name"] = "b";
-  korali["Parameters"][1]["Type"] = "Computational";
-  korali["Parameters"][1]["Distribution"] = "Uniform";
-  korali["Parameters"][1]["Minimum"] = -10.0;
-  korali["Parameters"][1]["Maximum"] = +10.0;
+    korali["Problem"]["Variables"][1]["Name"] = "b";
+    korali["Problem"]["Variables"][1]["Type"] = "Computational";
+    korali["Problem"]["Variables"][1]["Distribution"] = "Uniform";
+    korali["Problem"]["Variables"][1]["Minimum"] = -5.0;
+    korali["Problem"]["Variables"][1]["Maximum"] = +5.0;
+    korali["Problem"]["Variables"][1]["Initial Mean"] = +1.0;
+
 ```
 
 The last parameter we add is of `Type` `Statistical` and corresponds to the variable
 $\sigma$ in the likelihood function,
 
 ```python
-  korali["Parameters"][2]["Name"] = "Sigma";
-  korali["Parameters"][2]["Type"] = "Statistical";
-  korali["Parameters"][2]["Distribution"] = "Uniform";
-  korali["Parameters"][2]["Minimum"] = 0.0;
-  korali["Parameters"][2]["Maximum"] = 20.0;
+  korali["Problem"]["Variables"][2]["Name"] = "Sigma";
+  korali["Problem"]["Variables"][2]["Type"] = "Statistical";
+  korali["Problem"]["Variables"][2]["Distribution"] = "Uniform";
+  korali["Problem"]["Variables"][2]["Minimum"] = 0.0;
+  korali["Problem"]["Variables"][2]["Maximum"] = 10.0;
+  korali["Problem"]["Variables"][2]["Initial Mean"] = +1.0;
 ```
 
 ### The solver
@@ -197,7 +205,7 @@ four termination criteria,
   korali["Solver"]["Termination Criteria"]["Max Model Evaluations"] = 1e4;
 ```
 
-For a detailed description of CMA-ES settings see [here](???).
+For a detailed description of CMA-ES settings see [here](../../usage/solvers/optimizers/cmaes.md).
 
 
 ### Run
@@ -244,7 +252,7 @@ To sample the posterior distribution, we set the solver to `TMCMC` sampler and s
   korali["Solver"]["Coefficient of Variation"] = 0.5;
 ```
 
-For a detailed description of the TMCMC settings see [here](???)
+For a detailed description of the TMCMC settings see [here](../../usage/solvers/samplers/tmcmc.md)
 
 
 ### Plot

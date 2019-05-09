@@ -131,7 +131,7 @@ void Korali::Solver::TMCMC::setConfiguration(nlohmann::json& js)
  _s                 = consume(js, { "Population Size" }, KORALI_NUMBER);
  _tolCOV            = consume(js, { "Coefficient of Variation" }, KORALI_NUMBER, std::to_string(1.0));
  _minStep           = consume(js, { "Min Rho Update" }, KORALI_NUMBER, std::to_string(0.00001));
- _beta2            = consume(js, { "Covariance Scaling" }, KORALI_NUMBER, std::to_string(0.04));
+ _beta2             = consume(js, { "Covariance Scaling" }, KORALI_NUMBER, std::to_string(0.04));
  _useLocalCov       = consume(js, { "Use Local Covariance" }, KORALI_BOOLEAN, "false");
  _burnin            = consume(js, { "Burn In" }, KORALI_NUMBER, std::to_string(0));
  _maxGens           = consume(js, { "Termination Criteria", "Max Generations" }, KORALI_NUMBER, std::to_string(20));

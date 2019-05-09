@@ -32,12 +32,12 @@ nav:
               - UPC++: usage/conduits/upcxx.md
               - MPI: usage/conduits/mpi.md
       - Tools:
-          - korali-cxx: tools/korali-cxx.md
-          - korali-config: tools/korali-config.md
-          - korali-plot: tools/korali-plot.md
+          - korali-cxx: usage/tools/korali-cxx.md
+          - korali-config: usage/tools/korali-config.md
+          - korali-plot: usage/tools/korali-plot.md
       - Plotting:
-          - CMA-ES: plots/plotcmaes.md
-          - TMCMC: plots/plottmcmc.md
+          - CMA-ES: usage/plotting/plotcmaes.md
+          - TMCMC: usage/plotting/plottmcmc.md
   - References: references.md
 
 

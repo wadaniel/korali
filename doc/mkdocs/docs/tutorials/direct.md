@@ -86,6 +86,7 @@ korali["Verbosity"] = "Detailed";
 korali.run();
 ```
 
+The results are saved in the folder `_korali_result/`.
 
 ###  Plot
 

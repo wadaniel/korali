@@ -31,17 +31,39 @@ Given any function $f:\mathbb{R}\rightarrow\mathbb{R}^N$ korali can
 ### [2. Bayesian Inference](tutorials/bayesian.md)
 
 
-2. [**Uncertainty Quantification**](tutorials/bayesian.md): given a set of data $d$, respectively the output of a model $f(x;\vartheta)$, a likelihood function $p(d|\vartheta)$,  and a prior probability density $p(\vartheta)$ Korali samples the posterior distribution
+Given a set of data $d$, the output of a computational model $f(x;\vartheta)$, a likelihood function $p(d|\vartheta)$,  and a prior probability density $p(\vartheta)$ korali will build
+the posterior distribution
 	$$
-	p(\vartheta | d) = \frac{p(d | \vartheta) \, p(\vartheta)}{p(d)}\, .
+	p(\vartheta | d) \, = \, \frac{p(d | \vartheta) \,\, p(\vartheta)}{p(d)}\, .
 	$$
-    I.e. the output is a set of samples $\theta^{(k)}$ with $k \in \{1,...,N\}$ such that
+Then, you have the options to:
+
+  - [**compute the maximum a posteriori estimate**](quick_start/bayesian.md#optimize)
+  $$
+  \vartheta^\star = \mathop{\arg\min}\limits_{\vartheta}  \,\,\, f(\vartheta) \,,
+  $$
+
+  - [**sample the posterior distribution**](quick_start/bayesian.md#sample)
     $$
 		\vartheta^{(k)} \sim p(\theta | d).
     $$
-    Where $x$ are the input parameters of the computational model $f$.
 
 <br>
+
+After [installing](installation.md) the software you can have a look at the [quick start](quick_start) guide or [examples](./examples/sampling.md) and learn how to run your own code.
+
+
+# Korali Principles
+
+(todo)
+
+## Notes
+
+Please send questions and feedback to:
+
+- martiser AT ethz.ch
+- garampat AT ethz.ch
+- wadaniel AT ethz.ch
 
 
 <br><br><br><br><br><br>

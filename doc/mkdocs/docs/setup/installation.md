@@ -48,8 +48,8 @@ For a faster build, you can use parallel jobs:
 make -j install
 ```
 
-Note: If not provided by the user, Korali will automatically the GSL-2.5 GNU Scientific Library will be
-      automatically downloaded and installed in the installation forlder. This step may take a few minutes.
+!!! note
+    If not provided by the user, Korali will automatically the GSL-2.5 GNU Scientific    Library will be automatically downloaded and installed in the installation folder. This step may take a few minutes.
 
 ### 5. Add Path and Python Path folders
 

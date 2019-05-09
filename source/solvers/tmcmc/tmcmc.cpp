@@ -99,7 +99,7 @@ nlohmann::json Korali::Solver::TMCMC::getConfiguration()
  js["Population Size"]          = _s;
  js["Coefficient of Variation"] = _tolCOV;
  js["Min Rho Update"]           = _minStep;
- js["Covariance Scaling"]       = _bbeta;
+ js["Covariance Scaling"]       = _beta2;
  js["Use Local Covariance"]     = _useLocalCov;
  js["Burn In"]                  = _burnin;
 
@@ -130,8 +130,8 @@ void Korali::Solver::TMCMC::setConfiguration(nlohmann::json& js)
 
  _s                 = consume(js, { "Population Size" }, KORALI_NUMBER);
  _tolCOV            = consume(js, { "Coefficient of Variation" }, KORALI_NUMBER, std::to_string(1.0));
- _minStep           = consume(js, { "Min Rho Update" }, KORALI_NUMBER, std::to_string(1e-9));
- _bbeta             = consume(js, { "Covariance Scaling" }, KORALI_NUMBER, std::to_string(0.005));
+ _minStep           = consume(js, { "Min Rho Update" }, KORALI_NUMBER, std::to_string(0.00001));
+ _beta2            = consume(js, { "Covariance Scaling" }, KORALI_NUMBER, std::to_string(0.04));
  _useLocalCov       = consume(js, { "Use Local Covariance" }, KORALI_BOOLEAN, "false");
  _burnin            = consume(js, { "Burn In" }, KORALI_NUMBER, std::to_string(0));
  _maxGens           = consume(js, { "Termination Criteria", "Max Generations" }, KORALI_NUMBER, std::to_string(20));
@@ -170,7 +170,10 @@ void Korali::Solver::TMCMC::run()
  // Generation 0
  initializeSamples();
  _k->saveState();
+ printGeneration();
+ _currentGeneration++;
 
+ // Generation 1 to N
  for(; _currentGeneration < _maxGens; _currentGeneration++)
  {
   t0 = std::chrono::system_clock::now();
@@ -258,24 +261,25 @@ void Korali::Solver::TMCMC::resampleGeneration()
  size_t* sel      = (size_t*) calloc (_databaseEntries, sizeof(size_t));
 
  double fmin = 0, xmin = 0;
- minSearch(_databaseFitness, _databaseEntries, _annealingExponent, _tolCOV, &xmin, &fmin);
+ minSearch(_databaseFitness, _databaseEntries, _annealingExponent, _tolCOV, xmin, fmin);
 
- double _prevAnnealingRatio = _annealingExponent;
+ double _prevAnnealingExponent = _annealingExponent;
 
- if (xmin > _prevAnnealingRatio)
+ if (xmin > _prevAnnealingExponent)
  {
   _annealingExponent      = xmin;
   _coefficientOfVariation = sqrt(fmin) + _tolCOV;
  }
  else
  {
-  _annealingExponent      = _prevAnnealingRatio + _minStep;
-  _coefficientOfVariation = sqrt(tmcmc_objlogp(_annealingExponent, _databaseFitness, _databaseEntries, _prevAnnealingRatio, _tolCOV)) + _tolCOV;
+  if ( _k->_verbosity >= KORALI_DETAILED ) printf("[Korali] Annealing Step non increasing, updating Annealing Exponent by %f (Min Rho Update). \n", _minStep);
+  _annealingExponent      = _prevAnnealingExponent + _minStep;
+  _coefficientOfVariation = sqrt(tmcmc_objlogp(_annealingExponent, _databaseFitness, _databaseEntries, _prevAnnealingExponent, _tolCOV)) + _tolCOV;
  }
 
  /* Compute weights and normalize*/
 
- for (size_t i = 0; i < _databaseEntries; i++) flcp[i] = _databaseFitness[i]*(_annealingExponent-_prevAnnealingRatio);
+ for (size_t i = 0; i < _databaseEntries; i++) flcp[i] = _databaseFitness[i]*(_annealingExponent-_prevAnnealingExponent);
  const double fjmax = gsl_stats_max(flcp, 1, _databaseEntries);
  for (size_t i = 0; i < _databaseEntries; i++) weight[i] = exp( flcp[i] - fjmax );
 
@@ -301,7 +305,7 @@ void Korali::Solver::TMCMC::resampleGeneration()
  {
   double s = 0.0;
   for (size_t k = 0; k < _databaseEntries; ++k) s += q[k]*(_databasePoints[k*_k->N+i]-_meanTheta[i])*(_databasePoints[k*_k->N+j]-_meanTheta[j]);
-  _covarianceMatrix[i*_k->N + j] = _covarianceMatrix[j*_k->N + i] = s*_bbeta*_bbeta;
+  _covarianceMatrix[i*_k->N + j] = _covarianceMatrix[j*_k->N + i] = s*_beta2;
  }
 
  gsl_matrix_view sigma = gsl_matrix_view_array(_covarianceMatrix, _k->N,_k->N);
@@ -336,7 +340,7 @@ void Korali::Solver::TMCMC::resampleGeneration()
 
 void Korali::Solver::TMCMC::computeChainCovariances(double** chain_cov, size_t newchains) const
 {
- printf("Precomputing chain covariances for the current generation...\n");
+ //printf("Precomputing chain covariances for the current generation...\n");
 
  // allocate space
  size_t* nn_ind     = (size_t*) calloc (newchains, sizeof(size_t));
@@ -355,7 +359,7 @@ void Korali::Solver::TMCMC::computeChainCovariances(double** chain_cov, size_t n
    if (d_max < s) d_max = s;
   }
   diam[d] = d_max-d_min;
-  printf("Diameter %ld: %.6lf\n", d, diam[d]);
+  //printf("Diameter %ld: %.6lf\n", d, diam[d]);
  }
 
  size_t idx, pos;
@@ -455,7 +459,7 @@ double Korali::Solver::TMCMC::objLog(const gsl_vector *v, void *param)
  return Korali::Solver::TMCMC::tmcmc_objlogp(x, fp->fj, fp->fn, fp->pj, fp->cov);
 }
 
-void Korali::Solver::TMCMC::minSearch(double const *fj, size_t fn, double pj, double objCov, double *xmin, double *fmin) const
+void Korali::Solver::TMCMC::minSearch(double const *fj, size_t fn, double pj, double objCov, double& xmin, double& fmin) const
 {
  // Minimizer Options
  size_t MaxIter     = 100;    /* Max number of search iterations */
@@ -494,8 +498,8 @@ void Korali::Solver::TMCMC::minSearch(double const *fj, size_t fn, double pj, do
  s = gsl_multimin_fminimizer_alloc (T, 1);
  gsl_multimin_fminimizer_set (s, &minex_func, x, ss);
 
- *fmin = 0;
- *xmin = 0.0;
+ fmin = 0;
+ xmin = 0.0;
 
  do {
    iter++;
@@ -504,7 +508,7 @@ void Korali::Solver::TMCMC::minSearch(double const *fj, size_t fn, double pj, do
    status = gsl_multimin_test_size (size, Tol);
  } while (status == GSL_CONTINUE && iter < MaxIter);
 
- if (_k->_verbosity > KORALI_DETAILED)
+ if (_k->_verbosity >= KORALI_DETAILED)
  {
    if(status == GSL_SUCCESS && s->fval >  Tol) printf("[Korali] Min Search converged but did not find minimum. \n");
    if(status != GSL_SUCCESS && s->fval <= Tol) printf("[Korali] Min Search did not converge but minimum found\n");
@@ -513,13 +517,13 @@ void Korali::Solver::TMCMC::minSearch(double const *fj, size_t fn, double pj, do
  }
 
  if (s->fval <= Tol) {
-   *fmin = s->fval;
-   *xmin = gsl_vector_get(s->x, 0);
+   fmin = s->fval;
+   xmin = gsl_vector_get(s->x, 0);
  }
 
- if (*xmin >= 1.0) {
-   *fmin = tmcmc_objlogp(1.0, fj, fn, pj, objCov);
-   *xmin = 1.0;
+ if (xmin >= 1.0) {
+   fmin = tmcmc_objlogp(1.0, fj, fn, pj, objCov);
+   xmin = 1.0;
  }
 
  gsl_vector_free(x);
@@ -533,8 +537,10 @@ void Korali::Solver::TMCMC::printGeneration() const
  if (_k->_verbosity >= KORALI_MINIMAL)
  {
   printf("--------------------------------------------------------------------\n");
-  printf("[Korali] Generation %ld - Annealing Ratio:  %.5f.\n", _currentGeneration, _annealingExponent);
-  printf("[Korali] Duration: %fs (Elapsed Time: %.2fs)\n",  std::chrono::duration<double>(t1-t0).count() , std::chrono::duration<double>(t1-startTime).count());
+  printf("[Korali] Generation %ld - Annealing Exponent:  %.3e.\n", _currentGeneration, _annealingExponent);
+  if (_currentGeneration > 0) printf("[Korali] Duration: %fs (Elapsed Time: %.2fs)\n",  
+                                        std::chrono::duration<double>(t1-t0).count() , 
+                                        std::chrono::duration<double>(t1-startTime).count());
   if (_currentGeneration == _maxGens) printf("[Korali] Max Generation Reached.\n");
  }
 

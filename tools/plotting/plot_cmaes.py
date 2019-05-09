@@ -76,6 +76,8 @@ def run_diagnostics(src, live = False, obj='current'):
         plt.suptitle( 'Generation {0}'.format(str(idx).zfill(5)),\
                       fontweight='bold',\
                       fontsize=12 )
+        
+        plt.text(x = 1000.65, y = 50, s = 'just sth', fontsize = 10, alpha = .85)
 
         tmp_str = 'last update:{0}:{1}:{2}'.format(\
                           str(localtime.tm_hour).zfill(2),\
@@ -121,11 +123,11 @@ def run_diagnostics(src, live = False, obj='current'):
 
         ax[0,0].grid(True)
         ax[0,0].set_yscale('log')
-        plt_multicolored_lines(ax[0,0], numeval, fval, 0.0, 'r', 'b', '| F |')
-        ax[0,0].plot(numeval, dfval, 'x', color = '#34495e', label = '| F - F_best |')
-        ax[0,0].plot(numeval, cond, color='#98D8D8', label = 'Condition')
-        ax[0,0].plot(numeval, sigma, color='#F8D030', label = 'Sigma')
-        ax[0,0].plot(numeval, psL2,  color='k', label = '|| Path ||')
+        plt_multicolored_lines(ax[0,0], numeval, fval, 0.0, 'r', 'b', '$| F |$')
+        ax[0,0].plot(numeval, dfval, 'x', color = '#34495e', label = '$| F - F_{best} |$')
+        ax[0,0].plot(numeval, cond, color='#98D8D8', label = '$\kappa(\mathbf{C})$')
+        ax[0,0].plot(numeval, sigma, color='#F8D030', label = '$\sigma$')
+        ax[0,0].plot(numeval, psL2,  color='k', label = '$|| \mathbf{p}_{\sigma} ||$')
 
 
         if idx == 2:
@@ -140,14 +142,14 @@ def run_diagnostics(src, live = False, obj='current'):
             ax[0,1].legend(bbox_to_anchor=(1.04,0.5), loc="center left", borderaxespad=0, handlelength=1)
 
 
-        ax[1,0].set_title('Scaling (All Main Axes)')
+        ax[1,0].set_title('Square Root of Eigenvalues of $\mathbf{C}$')
         ax[1,0].grid(True)
         ax[1,0].set_yscale('log')
         for i in range(numdim):
             ax[1,0].plot(numeval, axis[i], color = colors[i])
 
 
-        ax[1,1].set_title('Standard Deviation in All Coordinates')
+        ax[1,1].set_title('$\sigma \sqrt{diag(\mathbf{C})}$')
         ax[1,1].grid(True)
         ax[1,1].set_yscale('log')
         for i in range(numdim):

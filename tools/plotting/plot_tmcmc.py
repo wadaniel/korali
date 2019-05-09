@@ -112,8 +112,10 @@ def plot_samples(path, idx=None):
         else:           
             fig.canvas.set_window_title('s{0}.json'.format(str(idx).zfill(5)))
         
-        plt.suptitle('Samples Generation {0}\n (Annealing Exponent {1:.4f})'.format(str(idx),\
-                            anneal) )
+        plt.suptitle( 'Samples Generation {0}\n (Annealing Exponent {1:.4f})'.format(str(idx),\
+                            anneal),
+                      fontweight='bold',
+                      fontsize  = 12)
 
         plot_histogram(ax, samples)
         plot_upper_triangle(ax, samples, False)

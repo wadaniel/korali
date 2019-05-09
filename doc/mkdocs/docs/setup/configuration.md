@@ -10,6 +10,7 @@ This section details the options for the configure command provided to build Kor
                    [--prefix=INSTALL_DIR]
 				   [--enable-upcxx]
                    [--enable-mpi]
+				   [--use-gsl=PATH_TO_GSL]
                    [--help]
 				   
 ##Description
@@ -34,6 +35,8 @@ This section details the options for the configure command provided to build Kor
 	   4   [Optional] Determine whether an MPI library is installed. Korali will
 	       use the 'upcxx' command to find MPI and, if found, enable the MPI conduit for
 		   distributed sampling.
+		   
+	   5   [Optional] Determine whether the GSL++ library provided by path is installed.
       
 ##Options
  
@@ -47,6 +50,11 @@ This section details the options for the configure command provided to build Kor
 			  
 	   --enable-mpi
               Determines whether Korali will install with the MPI conduit enabled.
+              Default value: Disabled
+			  
+	   --use-gsl=PATH_TO_GSL
+              Disables automatic download and installation of GSL, and instead uses the
+			  provided GSL library.
               Default value: Disabled
 
        --help

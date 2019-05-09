@@ -10,8 +10,8 @@ nav:
       - Configuration: setup/configuration.md
       - System Requirements: setup/requirements.md
   - Tutorials:
-      - 1) Direct Problem: quick_start/direct.md
-      - 2) Bayesian Inference: quick_start/bayesian.md
+      - 1. Direct Problem: quick_start/direct.md
+      - 2. Bayesian Inference: quick_start/bayesian.md
   - User Manual:
       - Settings:
           - General: usage/settings.md

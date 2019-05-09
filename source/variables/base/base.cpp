@@ -5,18 +5,18 @@
 /*                  Constructor / Destructor Methods                    */
 /************************************************************************/
 
-Korali::Parameter::Base::Base(nlohmann::json& js, size_t seed) : Korali::Parameter::Base::Base(seed)
+Korali::Variable::Base::Base(nlohmann::json& js, size_t seed) : Korali::Variable::Base::Base(seed)
 {
  setConfiguration(js);
 }
 
-Korali::Parameter::Base::Base(size_t seed)
+Korali::Variable::Base::Base(size_t seed)
 {
  _range = gsl_rng_alloc (gsl_rng_default);
  gsl_rng_set(_range, seed);
 }
 
-Korali::Parameter::Base::~Base()
+Korali::Variable::Base::~Base()
 {
 
 }
@@ -25,7 +25,7 @@ Korali::Parameter::Base::~Base()
 /*                    Configuration Methods                             */
 /************************************************************************/
 
-nlohmann::json Korali::Parameter::Base::getConfiguration()
+nlohmann::json Korali::Variable::Base::getConfiguration()
 {
  auto js = nlohmann::json();
 
@@ -44,9 +44,9 @@ nlohmann::json Korali::Parameter::Base::getConfiguration()
  return js;
 }
 
-void Korali::Parameter::Base::setConfiguration(nlohmann::json& js)
+void Korali::Variable::Base::setConfiguration(nlohmann::json& js)
 {
- _name = consume(js, { "Name" }, KORALI_STRING, "Unnamed Parameter");
+ _name = consume(js, { "Name" }, KORALI_STRING, "Unnamed Variable");
 
  auto typeString = consume(js, { "Type" }, KORALI_STRING, "Computational");
  if (typeString == "Computational")  _type = KORALI_COMPUTATIONAL;

@@ -17,10 +17,10 @@ is 10), of the negative 2-dimensional [Rosenbrock](https://en.wikipedia.org/wiki
 
 The first quadrant shows 4 graphs plus markers (crosses):
     
-* $| F |$ (red): F is the best function evaluation of the current generation.
-      Note that the colour of F changes if F is smaller 0 (red) or F greater 
-	  equal 0 (blue). Also, the absolute value of F is plotted since the vertical 
-      axis is given in log-scale.
+* $| F |$ (red): $F$ is the best function evaluation of the current generation.
+      Note that the colour of $F$ changes if $F < 0$ (red) or $F \geq 0$ (blue). 
+      Also, the absolute value of F is plotted since the vertical axis is given 
+      in log-scale.
 
 * $\kappa(\mathbf{C})$ (cyan): This line shows the condition of the covariance matrix 
 	  of the proposal distribution at every generation. The condition is given 
@@ -38,10 +38,10 @@ The first quadrant shows 4 graphs plus markers (crosses):
 	  very large or small it may have an adverse effect on the optimization.
 
 * $| F - F_{best}|$ (crosses) : At every generation we calculate the absolute
-      difference betwen the current best function evaluation (F) and the overall
+      difference betwen the current best function evaluation ($F$) and the overall
       best found evaluation ($F_{best}$) of CMA-ES. The crosses appear only if the 
-      current generation does not imrpove the overall result, i.e. F is less 
-      than F_best during optimization and $| F - F_{best} |$ is greater 0.
+      current generation does not impeove the overall result, i.e. $F < F_{best}$ 
+      in current generation and $| F - F_{best} |$ is greater 0.
 
 A good indicator of convergance of CMA-ES to the global maximum is given by a steady decrease of $| F - F_{best} |$.
 
@@ -49,7 +49,7 @@ A good indicator of convergance of CMA-ES to the global maximum is given by a st
 ### Quadrant 2 - Object Variables
 
 This plot shows the evolution of the objective variables corresponding to the
-evaluation of | F |. A line per each dimension of the optimization problem is
+evaluation of $|F|$. A line per each dimension of the optimization problem is
 plotted.
 
 

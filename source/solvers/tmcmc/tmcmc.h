@@ -56,7 +56,7 @@ class TMCMC : public Korali::Solver::Base
  double* _covarianceMatrix; /* Sample covariance of leader fitness values */
  double* _meanTheta; /* Mean of leader fitness values */
  size_t  _databaseEntries; /* Num samples in DB (must equal population size) */
- double* _databasePoints; /* Parameter values of samples in DB */
+ double* _databasePoints; /* Variable values of samples in DB */
  double* _databaseFitness; /* Fitness of samples in DB */
  double **local_cov; /* Local covariances of leaders */
 

@@ -75,7 +75,6 @@ nlohmann::json Korali::Engine::getConfiguration()
  auto js = nlohmann::json();
 
  js["Seed"]      = _seed;
- js["Dimension"] = N;
 
  if (_verbosity == KORALI_SILENT)   js["Verbosity"] = "Silent";
  if (_verbosity == KORALI_MINIMAL)  js["Verbosity"] = "Minimal";
@@ -83,8 +82,6 @@ nlohmann::json Korali::Engine::getConfiguration()
  if (_verbosity == KORALI_DETAILED) js["Verbosity"] = "Detailed";
 
  js["Output Frequency"] = _outputFrequency;
-
- for (size_t i = 0; i < N; i++) js["Parameters"][i] = _parameters[i]->getConfiguration();
  js["Problem"] = _problem->getConfiguration();
  js["Solver"]  = _solver->getConfiguration();
  js["Conduit"] = _conduit->getConfiguration();
@@ -105,7 +102,6 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
   fclose(fid);
  }
  _seed = consume(js, { "Seed" }, KORALI_NUMBER, std::to_string(_seed));
- N     = consume(js, { "Dimension" }, KORALI_NUMBER, std::to_string(_seed));
  gsl_rng_env_setup();
 
  auto vString = consume(js, { "Verbosity" }, KORALI_STRING, "Normal");
@@ -115,29 +111,6 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
  if (vString == "Detailed") _verbosity = KORALI_DETAILED;
 
  _outputFrequency = consume(js, { "Output Frequency" }, KORALI_NUMBER, "1");
-
- // Configure Parameters
- std::vector<Korali::Parameter::Base*> tmp;
-
- if (isArray(js, { "Parameters" } ))
- for (size_t i = 0; i < js["Parameters"].size(); i++)
- {
-  auto dString = consume(js["Parameters"][i], { "Distribution" }, KORALI_STRING);
-  bool foundDistribution = false;
-  if (dString == "Uniform")     { tmp.push_back(new Korali::Parameter::Uniform(js["Parameters"][i], _seed++));     foundDistribution = true; }
-  if (dString == "Gaussian")    { tmp.push_back(new Korali::Parameter::Gaussian(js["Parameters"][i], _seed++));    foundDistribution = true; }
-  if (dString == "Gamma")       { tmp.push_back(new Korali::Parameter::Gamma(js["Parameters"][i], _seed++));       foundDistribution = true; }
-  if (dString == "Exponential") { tmp.push_back(new Korali::Parameter::Exponential(js["Parameters"][i], _seed++)); foundDistribution = true; }
-  if (foundDistribution == false) { fprintf(stderr, "[Korali] Error: Incorrect or missing distribution for parameter %lu.\n", i); exit(-1); }
- }
-
- if (tmp.size() == 0) { fprintf(stderr, "[Korali] Error: Incorrect or undefined parameters.\n"); exit(-1); }
-
- _statisticalParameterCount = 0;
- _computationalParameterCount = 0;
- for (size_t i = 0; i < tmp.size(); i++) if (tmp[i]->_type == KORALI_COMPUTATIONAL) { _parameters.push_back(tmp[i]); _computationalParameterCount++; }
- for (size_t i = 0; i < tmp.size(); i++) if (tmp[i]->_type == KORALI_STATISTICAL)   { _parameters.push_back(tmp[i]); _statisticalParameterCount++; };
- N = _parameters.size();
 
  // Configure Problem
  bool foundProblem = false;
@@ -156,7 +129,6 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
  {
   _conduit = new Korali::Conduit::Sequential(js["Conduit"]);
  }
-
 
  if (conduitString == "UPC++")
  {

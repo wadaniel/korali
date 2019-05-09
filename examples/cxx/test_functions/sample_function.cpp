@@ -87,6 +87,7 @@ int main(int argc, char* argv[])
  korali["Solver"]["Method"] = "TMCMC";
  korali["Solver"]["Covariance Scaling"] = 0.02;
  korali["Solver"]["Population Size"] = 10000;
+ korali["Solver"]["Min Rho Update"] = 0.0;
  
  korali.run();
 

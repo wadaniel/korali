@@ -26,7 +26,7 @@ class TMCMC : public Korali::Solver::Base
  // TMCMC Configuration
  double _tolCOV; /* Target coefficient of variation of weights */
  double _minStep; /* Min update of rho */
- double _bbeta; /* Covariance scaling parameter (bbeta^2) */
+ double _beta2; /* Covariance scaling parameter */
  unsigned int _s; /* Population Size */
  bool _useLocalCov; /* Using local covariance instead of sample cov */
  size_t _burnin; /* burn in generations */
@@ -70,7 +70,7 @@ class TMCMC : public Korali::Solver::Base
  void processSample(size_t c, double fitness) override;
  void generateCandidate(size_t c);
  void computeChainCovariances(double** chain_cov, size_t newchains) const;
- void minSearch(double const *fj, size_t fn, double pj, double objTol, double *xmin, double *fmin) const;
+ void minSearch(double const *fj, size_t fn, double pj, double objTol, double& xmin, double& fmin) const;
  static double tmcmc_objlogp(double x, const double *fj, size_t fn, double pj, double zero);
  static double objLog(const gsl_vector *v, void *param);
 

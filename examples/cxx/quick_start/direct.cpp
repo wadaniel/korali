@@ -20,11 +20,9 @@ int main(int argc, char* argv[])
 
  korali["Problem"]["Type"] = "Direct";
 
- korali["Parameters"][0]["Name"] = "X0";
- korali["Parameters"][0]["Type"] = "Computational";
- korali["Parameters"][0]["Distribution"] = "Uniform";
- korali["Parameters"][0]["Minimum"] = -10.0;
- korali["Parameters"][0]["Maximum"] = +10.0;
+ korali["Problem"]["Variables"][0]["Name"] = "X0";
+ korali["Problem"]["Variables"][0]["Minimum"] = -10.0;
+ korali["Problem"]["Variables"][0]["Maximum"] = +10.0;
 
  switch( atoi(argv[1]) ){
  case 1:

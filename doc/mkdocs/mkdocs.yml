@@ -11,7 +11,7 @@ nav:
       - System Requirements: setup/requirements.md
   - Tutorials:
       - 1. Direct Problem: tutorials/direct/direct.md
-      # - 2. Bayesian Inference: tutorials/bayesian/bayesian.md
+      - 2. Bayesian Inference: tutorials/bayesian/bayesian.md
   - User Manual:
       - Introduction: usage/introduction.md
       - Modules:

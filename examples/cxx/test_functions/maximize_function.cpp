@@ -73,7 +73,6 @@ int main(int argc, char* argv[])
  korali["Seed"] = 0xC0FFEE;
  korali["Verbosity"] = "Detailed";
 
- korali["Verbosity"] = "Detailed";
  for (int i = 0; i < nParams; i++)
  {
  korali["Parameters"][i]["Name"] = "X" + std::to_string(i);

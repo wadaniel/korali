@@ -56,16 +56,17 @@ plotted.
 
 ### Quadrant 3 (Scaling Main Axes)
 
-The scaling of the main axes is defined as the square root of the Eigenvalues.
-Optimally the values of the axes are of the same magnitude.
+The scaling of the main axes is defined as the square root of the Eigenvalues of 
+the (unscaled) covariance matrix.
+Optimally the lengths of the axes are of the same magnitude.
 
 
 
 ### Quadrant 4 (Standard Deviation Coordinates)
 
-The standard deviation of the coordinates is approximated by the product of
-Sigma with the squarerroot of the diagonal elements of the covariance matrix of the proposal
-distribution. Optimally the standard deviations are of the same magnitude.
+The standard deviation of the coordinates is approximated by the square root of 
+the diagonal elements of the covariance matrix of the proposal distribution. 
+Ideally the standard deviations of all coordiantes are of the same magnitude.
 
 
 

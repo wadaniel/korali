@@ -5,7 +5,9 @@ edit_uri: ''
 
 nav:
   - Home: index.md
-  - Installation: installation.md
+  - Setup: installation.md
+      - Installing Korali: setup/installation.md
+      - System Requirements: setup/requirements.md
   - Quick Start:
       - Direct problems: quick_start/direct.md
       - Bayesian Inference: quick_start/bayesian.md

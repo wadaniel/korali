@@ -9,35 +9,37 @@ nav:
       - Installing Korali: setup/installation.md
       - Configuration: setup/configuration.md
       - System Requirements: setup/requirements.md
-  - Quick Start:
-      - Direct problems: quick_start/direct.md
-      - Bayesian Inference: quick_start/bayesian.md
-  - Usage:
-      - General Settings: usage/settings.md
-      - Problem:
-          - Direct evaluation: usage/problem/direct.md
-          - Bayesian inference: usage/problem/bayesian.md
-      - Distributions:
-          - Uniform: usage/distributions/uniform.md
-          - Gaussian: usage/distributions/gaussian.md
-      - Solvers:
-          - Optimizers:
-            - CMA-ES: usage/solvers/optimizers/cmaes.md
-          - Samplers:
-            - TMCMC: usage/solvers/samplers/tmcmc.md
-      - Conduits:
-          - Sequential: usage/conduits/sequential.md
-          - Multithreaded: usage/conduits/multithreaded.md
-          - UPC++: usage/conduits/upcxx.md
-          - MPI: usage/conduits/mpi.md
-  - Tools:
-      - korali-cxx: tools/korali-cxx.md
-      - korali-config: tools/korali-config.md
-      - korali-plot: tools/korali-plot.md
-  - Plots:
-      - CMA-ES: plots/plotcmaes.md
-      - TMCMC: plots/plottmcmc.md
+  - Tutorials:
+      - 1. Direct Problem: tutorials/direct.md
+      - 2. Bayesian Inference: tutorials/bayesian.md
+  - User Manual:
+      - Introduction: usage/introduction.md
+      - Modules:
+          - Problem:
+              - Direct evaluation: usage/problem/direct.md
+              - Bayesian inference: usage/problem/bayesian.md
+          - Distributions:
+              - Uniform: usage/distributions/uniform.md
+              - Gaussian: usage/distributions/gaussian.md
+          - Solvers:
+              - Optimizers:
+                - CMA-ES: usage/solvers/optimizers/cmaes.md
+              - Samplers:
+                - TMCMC: usage/solvers/samplers/tmcmc.md
+          - Conduits:
+              - Sequential: usage/conduits/sequential.md
+              - Multithreaded: usage/conduits/multithreaded.md
+              - UPC++: usage/conduits/upcxx.md
+              - MPI: usage/conduits/mpi.md
+      - Tools:
+          - korali-cxx: usage/tools/korali-cxx.md
+          - korali-config: usage/tools/korali-config.md
+          - korali-plot: usage/tools/korali-plot.md
+      - Plotting:
+          - CMA-ES: usage/plotting/plotcmaes.md
+          - TMCMC: usage/plotting/plottmcmc.md
   - References: references.md
+  - About Us: aboutus.md
 
 
 theme:

@@ -30,7 +30,7 @@ the posterior distribution below and enabling the following operations:
 
     - [**Compute the maximum a posteriori estimate**](tutorials/bayesian/bayesian.md#optimize)
     $$
-    \vartheta^\star = \mathop{\arg\min}\limits_{\vartheta}  \,\,\, f(\vartheta) \,,
+    \vartheta^\star = \mathop{\arg\min}\limits_{\vartheta}  \,\,\, p(\theta | d) \,,
     $$
 
     - [**Sample the posterior distribution**](tutorials/bayesian/bayesian.md#sample)

@@ -44,6 +44,10 @@ def F( s ):
     s.addResult(r)
 ```
 
+The argument of `F` must be of type `Korali::modelData`. This class provides the methods
+`getParameter` and `addResult`. For a detailed presentation see [here]
+
+
 
 ###  The Korali object
 
@@ -55,10 +59,10 @@ Korali = libkorali.Engine( F )
 ###  The Problem type
 Then, we set the type of the problem to `Direct Evaluation`
 ```python
-Korali["Problem"]["Objective"] = "Direct Evaluation"
+Korali["Problem"]["Type"] = "Direct Evaluation"
 ```
 
-###  The Parameters
+###  The Variables
 In this problem there is only one parameter that takes values in $[-10,10]$.
 ```python
 Korali["Problem"]["Variables"][0]["Name"] = "X"

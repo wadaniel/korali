@@ -9,7 +9,7 @@ The code for this tutorial in **Python** can be found [here](https://github.com/
 
 
 ## Problem setup
-In this example we will solve the inverse problem of estimating the parameters
+In this example we will solve the inverse problem of estimating the Variables
 of a linear model using noisy data. We consider the computational model,
 
 $$
@@ -31,7 +31,7 @@ p(y|\varphi;x) = \mathcal{N} ( \,y \,| \, f(x;\vartheta), \sigma^2 \,) \,.
 $$
 
 where $\varphi=(\vartheta,\sigma)$ is the parameter vector that contains the
-computational parameters and the parameters of the statistical model.
+computational Variables and the Variables of the statistical model.
 
 We assume that we are given the following data set:
 
@@ -98,7 +98,7 @@ def F( s, x ):
 The object `s` must be of type `Korali::modelData`. This class provides the methods
 `getParameter` and `addResult`. For a detailed presentation see [here]
 
-### The data
+### The Data
 
 The data in the table bellow are added as two Python lists,
 
@@ -137,14 +137,14 @@ Korali = libkorali.Engine( Fx )
 
 
 
-### The problem type
+### The Problem type
 
-The `Objective` `Problem` is characterized as `Bayesian`
+The `Type` of the `Problem` is characterized as `Bayesian`
 ```python
-Korali["Problem"]["Objective"] = "Bayesian";
+Korali["Problem"]["Type"] = "Bayesian";
 ```
 
-When the objective is `Bayesian` we must also provide a vector with the `Reference Data`
+When the Type is `Bayesian` we must also provide a vector with the `Reference Data`
 to Korali,
 
 ```python
@@ -158,9 +158,9 @@ for ey in y:
   Korali["Problem"]["Reference Data"] += ey;
 ```
 
-### The parameters
+### The Variables
 
-We define two `Parameters` of type `Computational` that correspond to $\vartheta_0$ and $\vartheta_1$. The prior distribution of both is set to `Uniform`.
+We define two `Variables` of type `Computational` that correspond to $\vartheta_0$ and $\vartheta_1$. The prior distribution of both is set to `Uniform`.
 
 ```python
     Korali["Problem"]["Variables"][0]["Name"] = "a";
@@ -191,7 +191,7 @@ $\sigma$ in the likelihood function,
   Korali["Problem"]["Variables"][2]["Initial Mean"] = +1.0;
 ```
 
-### The solver
+### The Solver
 
 Next, we choose the solver `CMA-ES`, the population size to be `12` and set
 four termination criteria,

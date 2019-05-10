@@ -15,4 +15,5 @@ The Korali Project is written and maintained by
 
 ## Credits
 
-Korali's code includes a properly credited and licensed copy of [Niels Lohmann's Json for C++](https://github.com/nlohmann/json)
+Korali's code includes a properly credited and licensed copy of [Niels Lohmann's Json for C++](https://github.com/nlohmann/json).
+Our implementation of CMA-ES has been inspired by [Alexander Fabisch's](https://github.com/AlexanderFabisch/CMA-ESpp) C++ implementation.

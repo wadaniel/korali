@@ -22,7 +22,7 @@ tar -xzvf korali-latest.tar.gz
 cd korali-latest
 ```
 
-### 3. Run the configuration script
+### 3. Configure
 
 Check the full syntax for [configure](./configuration.md) script here.
 
@@ -51,7 +51,7 @@ make -j install
 !!! note
     If not provided by the user, the GSL-2.5 GNU Scientific Library will be automatically downloaded and installed in the installation folder. This step may take a few minutes.
 
-### 5. Add Path and Python Path folders
+### 5. Add Paths
 
 Finally, Korali will ask you to add its default binary and Python paths:
 

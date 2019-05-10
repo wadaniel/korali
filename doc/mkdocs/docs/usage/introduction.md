@@ -51,18 +51,18 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor i
 + Name: **Seed**
      - Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
      - Type: Number
-	 - Default: *0*
+	 - Default: 0
 	 - Syntax: `Korali["Seed"] = seed`
 	 - Example:
 
 ```python
 # Defining a specific random seed
-Korali["Seed"] = 0xC0FFEE
+korali["Seed"] = 0xC0FFEE
 ```
 
 <br>
 
-+ Name: **Vebosity**
++ Name: **Verbosity**
      - Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
      - Type: String.
 	 - Allowed values:
@@ -70,11 +70,11 @@ Korali["Seed"] = 0xC0FFEE
 		   - "Minimal" - Prints minimal progress information.
 		   - "Normal" - Standard verbosity levels.
 		   - "Detailed" - Prints details about the results and execution state.
-	 - Default: "Computational"
+	 - Default: "Normal"
 	 - Syntax: `Korali["Verbosity"] = verbosityLevel`
 	 - Example:
 
 ```python
 # Defining a detailed verbosity level.
-Korali["Verbosity"] = "Detailed"
+korali["Verbosity"] = "Detailed"
 ```

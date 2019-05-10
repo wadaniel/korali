@@ -35,6 +35,7 @@ import threading
 import libkorali
 ```
 
+
 ###  The computational model
 Then write the code for $f$
 ```python
@@ -98,7 +99,7 @@ Finally, we are ready to run the simulation,
 korali.run();
 ```
 
-The results are saved in the folder `_Korali_result/`.
+The results are saved in the folder `_korali_result/`.
 
 
 ###  Plot
@@ -149,6 +150,9 @@ with the density function of $\mathcal{N}(0,1/\sqrt{2})$.
     s = jsondecode(fileread('s00007.json'));
     a = s.Solver.State.DatabasePoints;
     ```
+
+    To use `jsondecode` Matlab version must be >= R2016b.
+
     Then you can plot the histogram of the samples against the density of
     $\mathcal{N}(0,1/\sqrt{2})$:
     ```

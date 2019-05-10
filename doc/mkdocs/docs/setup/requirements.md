@@ -4,13 +4,13 @@
 
 ### C++ Compiler
 
-Korali requires a C++ that supports the C++17 standard (-std=c++17) to build its engine, dependencies, and user applications.
+Korali requires a C++ that supports the C++17 standard (`-std=c++17`) to build its engine, dependencies, and user applications.
 
 We have successfully tested Korali in the following environments:
 
-    - g++ (GCC) 6.3.0, CentOS Linux 7
-    - g++ (GCC) 8.2.0, CentOS Linux 7
-    - Apple LLVM version 10.0.1 (clang-1001.0.46.4), macOS 10.14.4 (Darwin 18.5.0)
+  - g++ (GCC) 6.3.0, CentOS Linux 7
+  - g++ (GCC) 8.2.0, CentOS Linux 7
+  - Apple LLVM version 10.0.1 (clang-1001.0.46.4), macOS 10.14.4 (Darwin 18.5.0)
 
 You can verify your C++ compiler and OS versions with the following commands:
 
@@ -33,9 +33,9 @@ Korali requires a version of Python higher than 3.0 to run Python models and plo
 
 We have successfully tested Korali with the following Python versions:
 
-    - Python 3.3.0
-    - Python 3.7.0
-    - Python 3.7.1
+  - Python 3.3.0
+  - Python 3.7.0
+  - Python 3.7.1
 
 By default, Korali's [configuration](./configuration.md) script will check the 'python3' command. The path to this command
 should be present in the $PATH environment variable. Once Korali finds its path, it will check for its corresponding pkg-config

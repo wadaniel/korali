@@ -8,7 +8,7 @@
 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
 
 ##Syntax
-       Korali["Problem"]["Type"] = "Direct"
+       korali["Problem"]["Type"] = "Direct"
 
 ##Requirements
 
@@ -20,17 +20,21 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor i
      - Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
      - Type: Array of [Variables](../variables/uniform.md)
 	 - Default: *{empty}*
-	 - Syntax: `Korali["Problem"]["Variables"][i]`, where i is the variable index and the syntax for [Variables](../variables/uniform.md) follows.
+	 - Syntax: `korali["Problem"]["Variables"][i]`, where i is the variable index and the syntax for [Variables](../variables/uniform.md) follows.
 	 - Example:
 
 ```python
-# Adding two variables, one uniform and another gaussian.
+# Adding two variables, one uniform and one gaussian.
 
-Korali["Problem"]["Variables"][0]["Name"] = "X0";
-Korali["Problem"]["Variables"][0]["Minimum"] = 0.0
-Korali["Problem"]["Variables"][0]["Maximum"] = 32.0
+korali["Problem"]["Variables"][1]["Name"] = "X0";
+korali["Problem"]["Variables"][1]["Type"] = "Computational";
+korali["Problem"]["Variables"][1]["Distribution"] = "Uniform";
+korali["Problem"]["Variables"][1]["Minimum"]  = 0.0
+korali["Problem"]["Variables"][1]["Maximum"] = 5.0
 
-Korali["Problem"]["Variables"][0]["Name"] = "X1";
-Korali["Problem"]["Variables"][1]["Minimum"] = 0.0
-Korali["Problem"]["Variables"][1]["Maximum"] = 32.0
+korali["Problem"]["Variables"][0]["Name"] = "X1";
+korali["Problem"]["Variables"][0]["Type"] = "Computational";
+korali["Problem"]["Variables"][0]["Distribution"] = "Gaussian";
+korali["Problem"]["Variables"][0]["Mean"]  = 0.0;
+korali["Problem"]["Variables"][0]["Sigma"] = 1.0;
 ```

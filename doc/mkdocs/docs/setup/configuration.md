@@ -42,7 +42,7 @@ This section details the options for the configure command provided to build Kor
 
        --prefix=INSTALL_PATH
               Specifies where Korali and its dependencies will be installed.
-              Default value: $PWD/Korali
+              Default value: $PWD/korali
 
        --enable-upcxx
               Determines whether Korali will install with the UPC++ conduit enabled.

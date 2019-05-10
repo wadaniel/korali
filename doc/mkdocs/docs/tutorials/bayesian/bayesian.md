@@ -77,7 +77,7 @@ First import the needed modules
 #!/usr/bin/env python
 import sys
 import threading
-import libKorali
+import libkorali
 ```
 
 
@@ -100,7 +100,7 @@ The object `s` must be of type `Korali::modelData`. This class provides the meth
 
 ### The Data
 
-The data in the table bellow are added as two Python lists,
+The data in the table above are added as two Python lists,
 
 ```python
 x=[];            y=[];
@@ -123,12 +123,13 @@ lambda function `Fx` that will hide `x` from korali.
 Fx = lambda s: F( s, x )
 ```
 
-or
+or, if we want to make sure that `Fx` will not change if `x` changes later,
 
 ```python
 Fx = lambda s,*,x=x: F( s, x )
 ```
-if we want to make sure that `Fx` will not change if `x` changes later. Then, we can create
+
+Then, we can create
 the Korali object,
 
 ```python

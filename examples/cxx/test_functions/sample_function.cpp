@@ -75,11 +75,11 @@ int main(int argc, char* argv[])
 
  for (int i = 0; i < nParams; i++)
  {
- korali["Parameters"][i]["Name"] = "X" + std::to_string(i);
- korali["Parameters"][i]["Type"] = "Computational";
- korali["Parameters"][i]["Distribution"] = "Uniform";
- korali["Parameters"][i]["Minimum"] = lower;
- korali["Parameters"][i]["Maximum"] = upper;
+ korali["Problem"]["Variables"][i]["Name"] = "X" + std::to_string(i);
+ korali["Problem"]["Variables"][i]["Type"] = "Computational";
+ korali["Problem"]["Variables"][i]["Distribution"] = "Uniform";
+ korali["Problem"]["Variables"][i]["Minimum"] = lower;
+ korali["Problem"]["Variables"][i]["Maximum"] = upper;
  }
 
  korali["Problem"]["Type"] = "Direct";

@@ -53,22 +53,22 @@ The argument of `F` must be of type `Korali::modelData`. This class provides the
 
 Next we construct a `Korali` object using the function `F`
 ```python
-Korali = libkorali.Engine( F )
+korali = libkorali.Engine( F )
 ```
 
 ###  The Problem type
 Then, we set the type of the problem to `Direct Evaluation`
 ```python
-Korali["Problem"]["Type"] = "Direct Evaluation"
+korali["Problem"]["Type"] = "Direct Evaluation"
 ```
 
 ###  The Variables
 In this problem there is only one parameter that takes values in $[-10,10]$.
 ```python
-Korali["Problem"]["Variables"][0]["Name"] = "X"
-Korali["Problem"]["Variables"][0]["Distribution"] = "Uniform"
-Korali["Problem"]["Variables"][0]["Minimum"] = -10.0
-Korali["Problem"]["Variables"][0]["Maximum"] = +10.0
+korali["Problem"]["Variables"][0]["Name"] = "X"
+korali["Problem"]["Variables"][0]["Distribution"] = "Uniform"
+korali["Problem"]["Variables"][0]["Minimum"] = -10.0
+korali["Problem"]["Variables"][0]["Maximum"] = +10.0
 ```
 
 
@@ -77,10 +77,10 @@ Next, we choose the solver `CMA-ES`, the population size to be `5` and set
 two termination criteria,
 
 ```python
-Korali["Solver"]["Method"] = "CMA-ES"
-Korali["Solver"]["Lambda"] = 5
-Korali["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-8
-Korali["Solver"]["Termination Criteria"]["Max Generations"] = 100
+korali["Solver"]["Method"] = "CMA-ES"
+korali["Solver"]["Lambda"] = 5
+korali["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-8
+korali["Solver"]["Termination Criteria"]["Max Generations"] = 100
 ```
 For a detailed description of CMA-ES settings see [here](../../usage/solvers/optimizers/cmaes.md).
 
@@ -88,14 +88,14 @@ For a detailed description of CMA-ES settings see [here](../../usage/solvers/opt
 We set the `Seed` to a fixed value and the `Verbosity` level to the maximum available,
 
 ```python
-Korali["Seed"] = 0xC0FFEE;
-Korali["Verbosity"] = "Detailed";
+korali["Seed"] = 0xC0FFEE;
+korali["Verbosity"] = "Detailed";
 ```
 
 Finally, we are ready to run the simulation,
 
 ```python
-Korali.run();
+korali.run();
 ```
 
 The results are saved in the folder `_Korali_result/`.
@@ -105,7 +105,7 @@ The results are saved in the folder `_Korali_result/`.
 
 You can see the results of CMA-ES by running the command,
 ```sh
-Korali-plot
+korali-plot
 ```
 
 ![figure](direct-cma.png)
@@ -122,10 +122,10 @@ Korali-plot
 We set the solver to `TMCMC` sampler and set a few settings,
 
 ```python
-Korali["Solver"]["Method"] = "TMCMC"
-Korali["Solver"]["Covariance Scaling"] = 0.02
-Korali["Solver"]["Population Size"] = 5000
-Korali["Solver"]["Burn In"] = 5
+korali["Solver"]["Method"] = "TMCMC"
+korali["Solver"]["Covariance Scaling"] = 0.02
+korali["Solver"]["Population Size"] = 5000
+korali["Solver"]["Burn In"] = 5
 ```
 
 For a detailed description of the TMCMC settings see
@@ -135,7 +135,7 @@ For a detailed description of the TMCMC settings see
 ###  Plot
 You can see a histogram of the results by running the command
 ```sh
-Korali-plot
+korali-plot
 ```
 
 The next figure is plotted in Matlab and shows the histogram of the samples superimposed

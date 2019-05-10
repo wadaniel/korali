@@ -31,7 +31,6 @@ First import the needed modules
 ```python
 #!/usr/bin/env python
 import sys
-import threading
 import libkorali
 ```
 

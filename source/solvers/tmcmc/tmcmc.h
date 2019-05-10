@@ -52,7 +52,8 @@ class TMCMC : public Korali::Solver::Base
  double  _annealingExponent; /* Annealing exponent */
  size_t  _uniqueEntries; /* Accepted samples after proposal */
  double  _logEvidence; /* Log of evidence of model */
- double  _acceptanceRate; /* Acceptance rate calculated from _nChains */
+ double  _acceptanceRateProposals; /* Acceptance rate calculated from _uniqueEntries */
+ double  _acceptanceRateSelections; /* Acceptance rate calculated from _nChains */
  double* _covarianceMatrix; /* Sample covariance of leader fitness values */
  double* _meanTheta; /* Mean of leader fitness values */
  size_t  _databaseEntries; /* Num samples in DB (must equal population size) */

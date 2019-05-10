@@ -57,17 +57,18 @@ Korali::Solver::TMCMC::TMCMC(nlohmann::json& js) : Korali::Solver::Base::Base(js
  for (size_t c = 0; c < _s; c++) chainLength[c] = 1;
  for (size_t c = 0; c < _s; c++) chainPendingFitness[c] = false;
 
- _countevals              = 0;
- _currentGeneration       = 0;
- _databaseEntries         = 0;
- _coefficientOfVariation  = 0;
- _annealingExponent       = 0;
- _logEvidence             = 0;
- finishedChains           = 0;
- _databaseEntries         = 0;
- _acceptanceRate          = 1.0;
- _uniqueEntries           = _s;
- _nChains                 = _s;
+ _countevals               = 0;
+ _currentGeneration        = 0;
+ _databaseEntries          = 0;
+ _coefficientOfVariation   = 0;
+ _annealingExponent        = 0;
+ _logEvidence              = 0;
+ finishedChains            = 0;
+ _databaseEntries          = 0;
+ _acceptanceRateProposals  = 1.0;
+ _acceptanceRateSelections = 1.0;
+ _uniqueEntries            = _s;
+ _nChains                  = _s;
  for (size_t c = 0; c < _nChains; c++) chainCurrentStep[c] = 0;
  for (size_t c = 0; c < _nChains; c++) chainPendingFitness[c] = false;
 
@@ -106,14 +107,15 @@ nlohmann::json Korali::Solver::TMCMC::getConfiguration()
  js["Termination Criteria"]["Max Generations"] = _maxGens;
 
  // State Variables
- js["State"]["nChains"]            = _nChains;
- js["State"]["Current Generation"] = _currentGeneration;
- js["State"]["CVar"]               = _coefficientOfVariation;
- js["State"]["AnnealingExponent"]  = _annealingExponent;
- js["State"]["UniqueEntries"]      = _uniqueEntries;
- js["State"]["LogEvidence"]        = _logEvidence;
- js["State"]["AcceptanceRate"]     = _acceptanceRate;
- js["State"]["Database Entries"]   = _databaseEntries;
+ js["State"]["nChains"]                  = _nChains;
+ js["State"]["Current Generation"]       = _currentGeneration;
+ js["State"]["CVar"]                     = _coefficientOfVariation;
+ js["State"]["AnnealingExponent"]        = _annealingExponent;
+ js["State"]["UniqueEntries"]            = _uniqueEntries;
+ js["State"]["LogEvidence"]              = _logEvidence;
+ js["State"]["AcceptanceRateProposals"]  = _acceptanceRateSelections;
+ js["State"]["AcceptanceRateSelections"] = _acceptanceRateSelections;
+ js["State"]["Database Entries"]         = _databaseEntries;
 
  for (size_t i = 0; i < _k->_problem->N*_k->_problem->N; i++) js["State"]["CovarianceMatrix"][i] = _covarianceMatrix[i];
  for (size_t i = 0; i < _k->_problem->N; i++)       js["State"]["MeanTheta"][i]        = _meanTheta[i];
@@ -141,14 +143,15 @@ void Korali::Solver::TMCMC::setState(nlohmann::json& js)
 {
  this->Korali::Solver::Base::setState(js);
 
- _nChains                = js["State"]["nChains"];
- _currentGeneration      = js["State"]["Current Generation"];
- _coefficientOfVariation = js["State"]["CVar"];
- _annealingExponent      = js["State"]["AnnealingExponent"];
- _uniqueEntries          = js["State"]["UniqueEntries"];
- _logEvidence            = js["State"]["LogEvidence"];
- _acceptanceRate         = js["State"]["AcceptanceRate"];
- _databaseEntries        = js["State"]["Database Entries"];
+ _nChains                  = js["State"]["nChains"];
+ _currentGeneration        = js["State"]["Current Generation"];
+ _coefficientOfVariation   = js["State"]["CVar"];
+ _annealingExponent        = js["State"]["AnnealingExponent"];
+ _uniqueEntries            = js["State"]["UniqueEntries"];
+ _logEvidence              = js["State"]["LogEvidence"];
+ _acceptanceRateProposals  = js["State"]["AcceptanceRateProposals"];
+ _acceptanceRateSelections = js["State"]["AcceptanceRateSelections"];
+ _databaseEntries          = js["State"]["Database Entries"];
 
  for (size_t i = 0; i < _k->_problem->N*_k->_problem->N; i++) _covarianceMatrix[i] = js["State"]["CovarianceMatrix"][i];
  for (size_t i = 0; i < _k->_problem->N; i++)       _meanTheta[i]        = js["State"]["MeanTheta"][i];
@@ -215,7 +218,7 @@ void Korali::Solver::TMCMC::processSample(size_t c, double fitness)
  if ( L >= 1.0 || L > gsl_ran_flat(chainGSLRange[c], 0.0, 1.0) ) {
    for (size_t i = 0; i < _k->_problem->N; i++) clPoints[c*_k->_problem->N + i] = ccPoints[c*_k->_problem->N + i];
    clLogLikelihood[c] = ccLogLikelihood[c];
-   _uniqueEntries++;
+   if (chainCurrentStep[c] == chainLength[c]-1) _uniqueEntries++; // XXX: is that correct? (DW)
  }
 
  chainCurrentStep[c]++;
@@ -292,8 +295,9 @@ void Korali::Solver::TMCMC::resampleGeneration()
  size_t zeroCount = 0;
  for (size_t i = 0; i < _databaseEntries; i++) { sel[i] = nn[i]; if ( nn[i] == 0 ) zeroCount++; }
 
- size_t uniqueSelections = _databaseEntries - zeroCount;
- _acceptanceRate   = (1.0*uniqueSelections)/_s;
+ size_t uniqueSelections   = _databaseEntries - zeroCount;
+ _acceptanceRateProposals  = (1.0*_uniqueEntries)/_s;
+ _acceptanceRateSelections = (1.0*uniqueSelections)/_s;
 
  for (size_t i = 0; i < _k->_problem->N; i++)
  {
@@ -546,14 +550,14 @@ void Korali::Solver::TMCMC::printGeneration() const
 
  if (_k->_verbosity >= KORALI_NORMAL)
  {
-  printf("[Korali] Acceptance Rate:           %.2f%%\n", 100*_acceptanceRate);
-  printf("[Korali] Coefficient of Variation:  %.2f%%\n", 100.0*_coefficientOfVariation);
+  printf("[Korali] Acceptance Rate (proposals / selections): (%.2f%% / %.2f%%)\n", 100*_acceptanceRateProposals, 100*_acceptanceRateSelections);
+  printf("[Korali] Coefficient of Variation: %.2f%%\n", 100.0*_coefficientOfVariation);
  }
 
  if (_k->_verbosity >= KORALI_DETAILED)
  {
   printf("[Korali] Sample Mean:\n");
-  for (size_t i = 0; i < _k->_problem->N; i++) printf("     %s = %+6.3e\n", _k->_problem->_parameters[i]->_name.c_str(), _meanTheta[i]);
+  for (size_t i = 0; i < _k->_problem->N; i++) printf(" %s = %+6.3e\n", _k->_problem->_parameters[i]->_name.c_str(), _meanTheta[i]);
   printf("[Korali] Sample Covariance:\n");
   for (size_t i = 0; i < _k->_problem->N; i++)
   {

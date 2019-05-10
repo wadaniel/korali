@@ -32,7 +32,7 @@ First import the needed modules
 #!/usr/bin/env python
 import sys
 import threading
-import libKorali
+import libkorali
 ```
 
 ###  The computational model

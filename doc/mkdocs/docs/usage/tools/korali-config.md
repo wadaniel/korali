@@ -1,10 +1,10 @@
 # configure
 
 ##Name
-       Korali-config - displays information about Korali's version and configuration.
+       korali-config - displays information about Korali's version and configuration.
 	   
 ##Usage
-       ./Korali-config
+       ./korali-config
                    [--prefix]
 				   [--python]
 				   [--clibs]			   
@@ -34,7 +34,7 @@
 	       The C++ compiler/wrapper required to build a C++ Korali Application.
 
        --version 
-   	       A help message displaying Korali-config usage.
+   	       A help message displaying korali-config usage.
 		   
        --version 
    	       The currently installed version number.     

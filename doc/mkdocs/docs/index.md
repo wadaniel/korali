@@ -2,13 +2,6 @@
 
 **Korali** is a high-performance computing framework for optimization, sampling and Bayesian uncertainty quantification of large-scale computational models.
 
-## Design Principles
-
-  - [**Modularity.**](usage/introduction.md) Korali is designed as a completely modular software. Each one of its modules can be replaced during runtime, without the need of re-compilation.
-  - [**Scalability.**](usage/conduits/sequential.md) We have designed Korali's problem definition interface to remain agnostic about its execution platform (and even programming language). It follows that a Korali application running in a single-core will, if required to, also run efficiently in the thousands of cores of a supercomputer.
-  - [**High-Throughput.**](usage/conduits/upcxx.md) Korali's has been optimized to fully utilize the given computational resources, maximizing sampling throughput while minimize sampling latency and communication overheads
-  - [**High-Performance.**](usage/conduits/upcxx.md) Korali supports the execution of parallel (MPI, UPC++) and GPU-based (CUDA) computational models.
-
 ## What Korali does for you
 
   - [**Direct problems.**](tutorials/direct/direct.md) Given any function $f:\mathbb{R}\rightarrow\mathbb{R}^N$ Korali can
@@ -37,6 +30,14 @@ the posterior distribution below and enabling the following operations:
     $$
 	\vartheta^{(k)} \sim p(\theta | d).
     $$
+
+
+## Design Principles
+
+  - [**Modularity.**](usage/introduction.md) Korali is designed as a completely modular software. Each one of its modules can be replaced during runtime, without the need of re-compilation.
+  - [**Scalability.**](usage/conduits/sequential.md) We have designed Korali's problem definition interface to remain agnostic about its execution platform (and even programming language). It follows that a Korali application running in a single-core will, if required to, also run efficiently in the thousands of cores of a supercomputer.
+  - [**High-Throughput.**](usage/conduits/upcxx.md) Korali's has been optimized to fully utilize the given computational resources, maximizing sampling throughput while minimize sampling latency and communication overheads
+  - [**High-Performance.**](usage/conduits/upcxx.md) Korali supports the execution of parallel (MPI, UPC++) and GPU-based (CUDA) computational models.
 
 
 <br><br><br><br><br><br>

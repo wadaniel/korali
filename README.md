@@ -1,6 +1,7 @@
 # Korali
 
-Korali is a high performance computing framework for optimization, sampling and Bayesian uncertainty quantification of large scale computational models.
+Korali is a high performance computing framework for optimization, sampling and Bayesian uncertainty quantification.
+
 
 Currently the code is under development and the repository is private.
 

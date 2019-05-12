@@ -110,7 +110,7 @@ class CCMAES : public Korali::Solver::Base
  // Private CMA-ES-Specific Methods
  void sampleSingle(size_t sampleIdx); /* sample individual */
  void evaluateSamples(); /* evaluate all samples until done */
- void adaptC2(int hsig);
+ void adaptC(int hsig); /* CMA-ES covariance matrix adaption */
  void updateEigensystem(int flgforce);
  void eigen(size_t N, double **C, double *diag, double **Q) const;
  size_t maxIdx(const double *rgd, size_t len) const;

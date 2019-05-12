@@ -459,7 +459,7 @@ void CMAES::updateDistribution(const double *fitnessVector)
    rgpc[i] = (1. - _cumulativeCovariance) * rgpc[i] + hsig * sqrt( _cumulativeCovariance * (2. - _cumulativeCovariance) *_muEffective ) * rgBDz[i];
 
  /* update of C  */
- adaptC2(hsig);
+ adaptC(hsig);
 
  /* update of sigma */
  sigma *= exp(((sqrt(psL2)/_chiN)-1.)*_sigmaCumulationFactor/_dampFactor);
@@ -508,7 +508,7 @@ void CMAES::updateDistribution(const double *fitnessVector)
 
 }
 
-void CMAES::adaptC2(int hsig)
+void CMAES::adaptC(int hsig)
 {
  int flgdiag = doDiagUpdate();
 

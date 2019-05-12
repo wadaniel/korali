@@ -1,5 +1,5 @@
-#ifndef _KORALI_CMAES_H_
-#define _KORALI_CMAES_H_
+#ifndef _KORALI_CCMAES_H_
+#define _KORALI_CCMAES_H_
 
 #include "solvers/base/base.h"
 #include "variables/gaussian/gaussian.h"
@@ -9,13 +9,13 @@
 namespace Korali::Solver
 {
 
-class CMAES : public Korali::Solver::Base
+class CCMAES : public Korali::Solver::Base
 {
  public:
 
  // Constructor / Destructor
- CMAES(nlohmann::json& js);
- ~CMAES();
+ CCMAES(nlohmann::json& js);
+ ~CCMAES();
 
  // Runtime Methods (to be inherited from base class in the future)
  void prepareGeneration();
@@ -103,6 +103,7 @@ class CMAES : public Korali::Solver::Base
  double maxEW; /* max Eigenwert of C */
  double minEW; /* min Eigenwert of C */
  double psL2; /* L2 norm of rgps */
+ double pcL2; /* L2 norm of rgpc */
 
  bool flgEigensysIsUptodate;
 
@@ -121,6 +122,32 @@ class CMAES : public Korali::Solver::Base
  bool doDiagUpdate() const;
  bool isStoppingCriteriaActive(const char *criteria) const;
 
+ // Private CCMA-ES-Specific Variables 
+ size_t _numConstraints; /* number of constraints */
+ double _targetSucRate; /* target success rate */
+ double _globalSucRate; /* global success rate (??) (if recalculated without _) */ 
+ size_t _resampled; /* number of resampled parameters due constraint violation */
+ 
+ size_t countcevals; /* Number of constraint evaluations */
+ size_t fviabilityBound; /* value of viability bound */
+ double *sucRates; /* success rate (??)  */
+ bool *viabilityBounds; /* viability boundaries */
+ bool *viabilityImprovement; /* sample evaluations larger than fviabilitybound */
+ size_t *numviolations; /* number of constraint violations for each sample */
+ double *maxConstraintViolations; /* max violations for VIA */
+ bool **viabilityIndicator; /* ??? */
+ double **gviabilityIndicator; /* ???  */
+ double **constraints; /* matrix containing all constraint evaluations */
+ double **transConstraints; /* matrix containing all transformed constraint evaluations */
+
+
+ // Private CCMA-ES-Specific Methods
+ void setConstraints();
+ void updateViabilityBoundaries(/*const fp* functions, T *theta*/);
+ void updateSigmaVIE();
+ void handleConstraintsVIE(/*fp *functions,T* theta,T **boundaries,int &resampled,int &cevals,int adapts*/);
+ void handleConstraintsVIA(/*fp *functions,T* theta,T **boundaries,int &resampled,int &cevals,int adapts*/);
+
  // Print Methods
  void printGeneration() const;
  void printFinal() const;
@@ -128,4 +155,4 @@ class CMAES : public Korali::Solver::Base
 
 } // namespace Korali
 
-#endif // _KORALI_CMAES_H_
+#endif // _KORALI_CCMAES_H_

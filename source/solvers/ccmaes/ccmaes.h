@@ -87,6 +87,10 @@ class CCMAES : public Korali::Solver::Base
  double **C; /* lower triangular matrix: i>=j for C[i][j] */
  double **B; /* matrix with eigenvectors in columns */
  double *rgD; /* axis lengths (sqrt(Evals)) */
+ 
+ double **Z; /* randn() */
+ double **BD; /* B*D */
+ double **BDZ; /* B*D*randn() */
 
  double *rgpc; /* evolution path for cov update */
  double *rgps; /* conjugate evolution path for sigma update */
@@ -125,28 +129,36 @@ class CCMAES : public Korali::Solver::Base
  // Private CCMA-ES-Specific Variables 
  size_t _numConstraints; /* number of constraints */
  double _targetSucRate; /* target success rate */
- double _globalSucRate; /* global success rate (??) (if recalculated without _) */ 
- size_t _resampled; /* number of resampled parameters due constraint violation */
+ double _beta; /* cov adaption size */
+ double _cv; /* learning rate in normal vector  update */
+ double _cp; /* update rate global success estimate */
  
+ //TODO: check all initialization of arrays (DW)
+ double globalSucRate; /* estim. global success rate */ 
+ double fviability; /* viability func value */
+ double frgxmean; /* function evaluation at mean */
+ double frgxold; /* function evaluation prev. mean */
+ size_t resampled; /* number of resampled parameters due constraint violation */
+ size_t adaptionsVia; /* number of cov matrix adaptions in VIA */
+ size_t adaptionsVie; /* number of cov matrix adaptions in VIE */
  size_t countcevals; /* Number of constraint evaluations */
- size_t fviabilityBound; /* value of viability bound */
- double *sucRates; /* success rate (??)  */
- bool *viabilityBounds; /* viability boundaries */
- bool *viabilityImprovement; /* sample evaluations larger than fviabilitybound */
+ double *sucRates; /* constraint success rates */
+ double *viabilityBounds; /* viability boundaries */
+ double *maxConstraintViolations; /* max violations for VIA */ //TODO: check, same as above (DW)
+ bool *viabilityImprovement; /* sample evaluations larger than fviability */ //TODO: check, not needed (DW)
  size_t *numviolations; /* number of constraint violations for each sample */
- double *maxConstraintViolations; /* max violations for VIA */
- bool **viabilityIndicator; /* ??? */
- double **gviabilityIndicator; /* ???  */
+ bool **viabilityIndicator; /* constraint evaluation better than viability bound */
+ double **constraintEvaluations; /* evaluation of each constraint for each sample  */
  double **constraints; /* matrix containing all constraint evaluations */
- double **transConstraints; /* matrix containing all transformed constraint evaluations */
-
+ double **v; /* normal approximation of constraints */
 
  // Private CCMA-ES-Specific Methods
  void setConstraints();
+ void updateConstraintEvaluations();
  void updateViabilityBoundaries(/*const fp* functions, T *theta*/);
+ void handleConstraintsVia(/*fp *functions,T* theta,T **boundaries,int &resampled,int &cevals,int adapts*/);
+ void handleConstraintsVie(/*fp *functions,T* theta,T **boundaries,int &resampled,int &cevals,int adapts*/);
  void updateSigmaVIE();
- void handleConstraintsVIE(/*fp *functions,T* theta,T **boundaries,int &resampled,int &cevals,int adapts*/);
- void handleConstraintsVIA(/*fp *functions,T* theta,T **boundaries,int &resampled,int &cevals,int adapts*/);
 
  // Print Methods
  void printGeneration() const;

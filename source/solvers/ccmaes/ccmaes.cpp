@@ -31,7 +31,7 @@ CCMAES::CCMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
  index = (size_t *) calloc (sizeof(size_t*), _s);
 
  C = (double**) calloc (sizeof(double*), _k->_problem->N);
- B = (double**)calloc (sizeof(double*), _k->_problem->N);
+ B = (double**) calloc (sizeof(double*), _k->_problem->N);
  for (size_t i = 0; i < _k->_problem->N; i++) C[i] = (double*) calloc (sizeof(double), _k->_problem->N);
  for (size_t i = 0; i < _k->_problem->N; i++) B[i] = (double*) calloc (sizeof(double), _k->_problem->N);
 
@@ -190,12 +190,10 @@ nlohmann::json CCMAES::getConfiguration()
  // CCMA-ES States
  js["NumConstraints"] = _numConstraints;
 
- js["State"]["Global Success Rate"] = _globalSucRate;
  js["State"]["Target Success Rate"] = _targetSucRate;
+ js["State"]["Global Success Rate"] = globalSucRate;
  for( size_t i = 0; i < _numConstraints; ++i) js["State"]["Success Rates"] = sucRates[i];
 
- for (size_t i = 0; i < _numConstraints; ++i) for (size_t j = 0; j < _s; ++j) js["State"]["Constraints"][i][j] = constraints[i][j];
- for (size_t i = 0; i < _numConstraints; ++i) for (size_t j = 0; j < _s; ++j) js["State"]["Transformed Constraints"][i][j] = constraints[i][j];
  
  for (size_t i = 0; i < _numConstraints; ++i) js["State"]["Viability Boundaries"][i] = viabilityBounds[i];
  // TODO: some things are missing here, or we remove 'unnecessaty' states
@@ -265,8 +263,8 @@ void CCMAES::setConfiguration(nlohmann::json& js)
  // CCMA-ES States
  _numConstraints = consume(js, { "NumConstraints" }, KORALI_NUMBER);
 
- _globalSucRate = consume(js, { "State", "Global Success Rate" }, KORALI_NUMBER, std::to_string(0.44));
  _targetSucRate = consume(js, { "State", "Target Success Rate" }, KORALI_NUMBER, std::to_string(2.0/11.0));
+ globalSucRate = consume(js, { "State", "Global Success Rate" }, KORALI_NUMBER, std::to_string(0.44));
 
  viabilityBounds = new bool [_numConstraints]; 
  std::fill( viabilityBounds, viabilityBounds+_numConstraints, false);
@@ -274,11 +272,6 @@ void CCMAES::setConfiguration(nlohmann::json& js)
  sucRates = (double*) calloc (sizeof(double), _numConstraints);
  std::fill( sucRates, sucRates+_numConstraints, 0.5);
  
- constraints      = (double**) calloc (sizeof(double*), _numConstraints);
- transConstraints = (double**) calloc (sizeof(double*), _numConstraints);
- for (size_t i = 0; i < _numConstraints; ++i) constraints[i]      = (double*) calloc (sizeof(double), _s);
- for (size_t i = 0; i < _numConstraints; ++i) transConstraints[i] = (double*) calloc (sizeof(double), _s);
-
  numviolations           = (size_t*) calloc (sizeof(size_t*), _s);
  viabilityImprovement    = (bool*) calloc (sizeof(bool*), _s);
  maxConstraintViolations = (double*) calloc (sizeof(double), _numConstraints);
@@ -288,6 +281,11 @@ void CCMAES::setConfiguration(nlohmann::json& js)
  for (size_t i = 0; i < _numConstraints; ++i) viabilityIndicator[i]  = (bool*) calloc (sizeof(bool), _s);
  for (size_t i = 0; i < _numConstraints; ++i) gviabilityIndicator[i] = (double*) calloc (sizeof(double), _s);
 
+ Z = (double**) calloc (sizeof(double*), _s);
+ BDZ = (double**) calloc (sizeof(double*), _s);
+ for (size_t i = 0; i < _k->_problem->N; i++) Z[i] = (double*) calloc (sizeof(double), _k->_problem->N);
+ for (size_t i = 0; i < _k->_problem->N; i++) BDZ[i] = (double*) calloc (sizeof(double), _k->_problem->N);
+ 
 }
 
 
@@ -380,6 +378,32 @@ void CCMAES::processSample(size_t sampleId, double fitness)
 }
 
 
+void CCMAES::updateConstraintEvaluations() //TODO: maybe we can parallelize this (DW)
+{
+  for(size_t c = 0; c < _numConstraints; ++c)
+  {
+    for(size_t i = 0; j<_s; ++i)
+    {
+      if(numviolations[i] > 0)
+      {
+        countcevals += 1;
+        constraintEvaluations[c][i] = 0.0; //TODO: functions[c](population[i],theta);
+        if( constraintEvaluations[c][i] > viabilityBounds[c] ) viabilityIndicator[c][i]=1;
+        else viabilityIndicator[c][i] = 0;
+      }
+    }
+  }
+}
+
+
+void CCMAES::updateViabilityBoundaries()
+{
+   //TODO: frgxmean = _k->_conduit->_evaluateSample(rgxmean) (funcionality not yet implemented! (DW))
+   fviability = frgxmean+0.5(frgxold-frgxmean);
+   frgxold = frgxmean;
+}
+
+
 bool CCMAES::isFeasible(size_t sampleIdx) const
 {
  for (size_t d = 0; d < _k->_problem->N; ++d)
@@ -424,34 +448,20 @@ void CCMAES::sampleSingle(size_t sampleIdx)
   /* generate scaled random vector (D * z) */
   for (size_t d = 0; d < _k->_problem->N; ++d)
   {
-   if (flgdiag) _samplePopulation[sampleIdx * _k->_problem->N + d] = rgxmean[d] + sigma * rgD[d] * _gaussianGenerator->getRandomNumber();
-   else rgdTmp[d] = rgD[d] * _gaussianGenerator->getRandomNumber();
+   Z[sampleIdx][d] = _gaussianGenerator->getRandomNumber();
+   if (flgdiag) { 
+     BDZ[sampleIdx][d] = rgD[d] * Z[sampleIdx][d];
+     _samplePopulation[sampleIdx * _k->_problem->N + d] = rgxmean[d] + sigma * BDZ[sampleIdx][d]; 
+   }
+   else rgdTmp[d] = rgD[d] * Z[sampleIdx][d];
   }
 
   if (!flgdiag)
    for (size_t d = 0; d < _k->_problem->N; ++d) {
-   double sum = 0.0;
-   for (size_t e = 0; e < _k->_problem->N; ++e) sum += B[d][e] * rgdTmp[d];
-    _samplePopulation[sampleIdx * _k->_problem->N + d] = rgxmean[d] + sigma * sum;
+    BDZ[sampleIdx][d] = 0.0;
+    for (size_t e = 0; e < _k->_problem->N; ++e) BDZ[sampleIdx][d] += B[d][e] * rgdTmp[d];
+    _samplePopulation[sampleIdx * _k->_problem->N + d] = rgxmean[d] + sigma * BDZ[sampleIdx][d];
   }
-}
-
-
-void CCMAES::updateViabilityBoundaries()
-{
- //if gen == 0 and functionsp[] != NULL
- 
- for(size_t c = 0; c < _numConstraints; ++c)                                   
- {
-  double max_violation = 0.0;                                              
-  for(size_t i = 0; i < _s; ++i)
-  {                                                             
-    gviabilityIndicator[c][i] = 0.0; /* TODO: functions[j](population[j],theta); */                
-    if(gviabilityIndicator[c][i] > max_violation) max_violation = gviabilityIndicator[c][i];                                      
-    maxConstraintViolations[i] = max_violation;
-  }                                                                   
-   // where shall we put the "last" element? maxConstraintViolations[_numConstraints]=1000000000000;                                        
- }  
 }
 
 
@@ -459,8 +469,8 @@ void CCMAES::updateSigmaVIE()
 {
  pcL2 = 0;
  for(size_t d = 0; d < _k->_problem->N; ++d) pcL2 += rgpc[d]*rgpc[d];
- sigma *= exp(1.0/_dampFactor)*(_globalSucRate-(_targetSucRate/(1.0-_targetSucRate))*(1-_globalSucRate));
- if(_k->_verbosity >= KORALI_DETAILED && sigma > 0.3) printf("updateSigmaVie: sigma (%f) > 0.3\n", sigma);
+ sigma *= exp(1.0/_dampFactor)*(globalSucRate-(_targetSucRate/(1.0-_targetSucRate))*(1-globalSucRate));
+ if(_k->_verbosity >= KORALI_DETAILED && sigma > 0.3) printf("[Korali] Warning: updateSigmaVie: sigma (%f) > 0.3\n", sigma);
  // sigma = std::min(sigma, 0.2);
 };
 
@@ -613,14 +623,16 @@ void CCMAES::adaptC(int hsig)
 }
 
 
-void CCMAES::handleConstraintsVIE(/*fp *functions,T* theta,T **boundaries,int &resampled,int &cevals,int adapts; maybe also fitnessVector*/)
+void CCMAES::handleConstraintsVia(/*fp *functions,T* theta,T **boundaries,int &resampled,int &cevals,int adapts; maybe also fitnessVector*/)
 { 
  int flg_ludec;
  int flg_luinv;
- size_t initial_resampled = _resampled;
+ size_t initial_resampled = resampled;
+ size_t initial_adaptions = adaptionsVia;
 
  // TODO: in first version here check isFeasable & resample (not anymore needed?
-        
+  
+ /*
  for(size_t c = 0; c < _numConstraints; ++c)
  for(size_t i = 0; i < _s; ++i)
  {
@@ -628,32 +640,105 @@ void CCMAES::handleConstraintsVIE(/*fp *functions,T* theta,T **boundaries,int &r
    //constraints[c][i] = functions[c](population[i],theta); TODO: include constraint evaluation
    if(constraints[c][i] > maxConstraintViolations[c]) viabilityIndicator[c][i] = true;
  }
+ */
 
-  evaluateSamples();
-  for(size_t i = 0; i < _s; ++i) if(_fitnessVector[i] > fviabilityBound) viabilityImprovement[i] = true;
+ //evaluateSamples();
+ //for(size_t i = 0; i < _s; ++i) if(_fitnessVector[i] > fviabilityBound) viabilityImprovement[i] = true;
 
-  size_t maxnumviolations = -1;
-  while( maxnumviolations != 0)
-  {
-    for(size_t i = 0; i < _s; ++i)
-    {
-      numviolations[i] = 0;
-      for(size_t c = 0; c < _numConstraints; ++c) if(viabilityIndicator[c][i] == true) numviolations[i]++;
-      if (numviolations[i] > maxnumviolations) maxnumviolations = numviolations[i];
-    }
-
+ size_t maxnumviolations = -1;
+ while( maxnumviolations != 0 )
+ {
    for(size_t i = 0; i < _s; ++i)
    {
-     //TODO: update v, r
-
+     numviolations[i] = 0;
+     for(size_t c = 0; c < _numConstraints; ++c) if(constraintIndicator[c][i] == true) numviolations[i]++;
+     if (numviolations[i] > maxnumviolations) maxnumviolations = numviolations[i];
    }
 
+  for(size_t i = 0; i < _s; ++i)
+  {
+    //TODO: update v
+    for( size_t c = 0; c < _numConstraints; ++c )
+    {
+      double v2 = 0;
+      if (constraintIndicator[c][i] == true && (adaptionsVia - initial_adaptions) < 10000) //TODO: variable
+      {
+        adaptionsVia++;
+        for( size_t d = 0; d < _k->_problem->N; ++d)
+        {
+            v[c][d] = (1.0-cv)*_v[c][d]+cv*BDZ[i][d]; //confirm BDZ correct (state) = y
+            v2 += v[c][d]*v[c][d];
+        }
+        for( size_t d = 0; d < _k->_problem->N; ++d)
+          for( size_t e = 0; e < _k->_problem->N; ++e)
+            C[d][e] = C[d][e] - ((beta * v[c][d]*v[c][e])/(v2[c]*numviolations[i]));
+
+        // update invBD (TODO: not needed?)
+
+        sucRates[i] = (1.0-_cp)*sucRates[i];
+      }
+      else
+      {
+        sucRates[i] = (1.0-_cp)*sucRates[i]+_cp/_s;
+      }
+    }
+    delete r2;
+  }
+  
+  //C
+  /* not needed anymore
+  for(size_t d = 0; d < _k->_problem->N; ++d)
+    for (size_t e = 0; e < _k->_problem->N; ++e)
+    {
+      double sum =  0;
+      for (size_t f = 0; f < _k->_problem->N; ++f) sum += BD[d][f] * BD[e][f];
+      C[e][e] = sum;
+    }
+  */
+
+  //TODO: in original some stopping criterion (TOLX)
+
+  //TODO: eigen(C), write to B & D
+  
+
+  //resample necessary points
+  for(size_t i = 0; i < _s; ++i) if(numviolations[i] > 0)
+  {
+    do
+    {
+     resampled++;
+     sampleSingle(i);
+     if(resampled-initial_resampled > 10000) //TODO: replace with variable
+     {
+        if(k->_verbosity >= KORALI_DETAILED) printf("[Korali] Warning: exiting VIE resampling loop, max resamplings reached.\n ");
+        return;
+     }
+
+    }
+    while( !isFeasible(i) );
+  }
+ 
+  
+  for(size_t c = 0; c < _numConstraints; ++c) if(sucRates[c] < 0.5)
+  {
+    globalSucRate = (1-_cp) * globalSucRate;
+    break; //TODO: verify this break
+  }
+  
+  updateConstraints();
+
+  if(adaptionsVia - initial_adaptions > 10000) //TODO: replace with variable
+  {
+    if(k->_verbosity >= KORALI_DETAILED) printf("[Korali] Warning: exiting VIE adaption loop, max adaptions reached.\n ");
+    return;
   }
 
+ }//while maxnumviolations != 0
+ 
 }
 
 
-void CCMAES::handleConstraintsVIA(/* TODO: fp *functions,T* theta,T **boundaries,int &resampled,int &cevals,int adapts*/) { }
+void CCMAES::handleConstraintsVie(/* TODO: fp *functions,T* theta,T **boundaries,int &resampled,int &cevals,int adapts*/) { }
 
 
 bool CCMAES::checkTermination()

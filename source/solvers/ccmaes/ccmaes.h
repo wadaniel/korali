@@ -149,14 +149,13 @@ class CCMAES : public Korali::Solver::Base
  size_t *numviolations; /* number of constraint violations for each sample */
  bool **viabilityIndicator; /* constraint evaluation better than viability bound */
  double **constraintEvaluations; /* evaluation of each constraint for each sample  */
- double **constraints; /* matrix containing all constraint evaluations */
  double **v; /* normal approximation of constraints */
 
  // Private CCMA-ES-Specific Methods
  void setConstraints();
  void updateConstraintEvaluations();
  void updateViabilityBoundaries(/*const fp* functions, T *theta*/);
- void handleConstraintsVia(/*fp *functions,T* theta,T **boundaries,int &resampled,int &cevals,int adapts*/);
+ void handleViabilityConstraints(/*fp *functions,T* theta,T **boundaries,int &resampled,int &cevals,int adapts*/);
  void handleConstraintsVie(/*fp *functions,T* theta,T **boundaries,int &resampled,int &cevals,int adapts*/);
  void updateSigmaVIE();
 

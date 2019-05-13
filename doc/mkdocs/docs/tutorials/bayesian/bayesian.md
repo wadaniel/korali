@@ -4,7 +4,7 @@ In this tutorial we show how to **optimize** and **sample** the posterior
 distribution of a Bayesian inference problem.
 
 
-The code for this tutorial in **Python** can be found [here](https://github.com/cselab/sKorali/blob/master/examples/python/quick_start/posterior.py) and the code in **C++** can be found [here](https://github.com/cselab/skorali/blob/master/examples/cxx/quick_start/posterior.cpp).
+The code for this tutorial in **Python** can be found [here](https://github.com/cselab/sKorali/blob/master/examples/python/quick_start/posterior_optimize.py) and the code in **C++** can be found [here](https://github.com/cselab/skorali/blob/master/examples/cxx/quick_start/posterior_optimize.cpp).
 
 
 
@@ -239,6 +239,9 @@ korali-plot
 
 
 ## Sample
+
+The code for this tutorial in **Python** can be found [here](https://github.com/cselab/sKorali/blob/master/examples/python/quick_start/posterior_sample.py) and the code in **C++** can be found [here](https://github.com/cselab/skorali/blob/master/examples/cxx/quick_start/posterior_sample.cpp).
+
 
 ### The solver
 

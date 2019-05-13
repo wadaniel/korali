@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import sys
 import libkorali
-import argparse
+
 
 def F( s, x ):
   for i in range(len(x)):
@@ -9,19 +9,6 @@ def F( s, x ):
     th1 = s.getParameter(1)
     r  =  th0*x[i] + th1
     s.addResult(r)
-
-
-
-parser = argparse.ArgumentParser()
-parser.add_argument( "-s", "--solver",
-                     choices = ["cmaes","tmcmc"],
-                     help="Optimize or sample a direct problem")
-
-if len(sys.argv)==1:
-  parser.print_help(sys.stderr)
-  sys.exit(1)
-
-args = parser.parse_args()
 
 
 x=[];            y=[];
@@ -64,18 +51,10 @@ korali["Problem"]["Variables"][2]["Distribution"] = "Uniform";
 korali["Problem"]["Variables"][2]["Minimum"] = 0.0;
 korali["Problem"]["Variables"][2]["Maximum"] = 10.0;
 
-if args.solver == "cmaes":
-  korali["Solver"]["Method"] = "CMA-ES";
-  korali["Solver"]["Lambda"] = 10;
-  korali["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-6;
-  korali["Solver"]["Termination Criteria"]["Max Generations"] = 1e4;
-  korali["Solver"]["Termination Criteria"]["Max Model Evaluations"] = 3e5;
-
-if args.solver == "tmcmc":
-  korali["Solver"]["Method"] = "TMCMC";
-  korali["Solver"]["Covariance Scaling"] = 0.02;
-  korali["Solver"]["Population Size"] = 5000;
-  korali["Solver"]["Burn In"] = 5;
-  korali["Solver"]["Coefficient of Variation"] = 0.5;
+korali["Solver"]["Method"] = "CMA-ES";
+korali["Solver"]["Lambda"] = 10;
+korali["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-6;
+korali["Solver"]["Termination Criteria"]["Max Generations"] = 1e4;
+korali["Solver"]["Termination Criteria"]["Max Model Evaluations"] = 3e5;
 
 korali.run();

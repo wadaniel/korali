@@ -1,5 +1,4 @@
 #include "korali.h"
-#include <stdlib.h>
 
 void F( std::vector<double>& par, std::vector<double>& result, std::vector<double> x ){
  for( size_t i=0; i<x.size(); i++){
@@ -8,12 +7,9 @@ void F( std::vector<double>& par, std::vector<double>& result, std::vector<doubl
  }
 }
 
+
 int main(int argc, char* argv[])
 {
- if(argc<2){
- printf("\nUsage: ./posterior 1(=maximize likelihood) or 2(=sample posterior)\n\n");
- exit(1);
- }
 
  std::vector<double> x, y;
  x.push_back(1.0); y.push_back(3.2069);
@@ -53,29 +49,11 @@ int main(int argc, char* argv[])
  korali["Problem"]["Variables"][2]["Maximum"] = 10.0;
 
 
-
- switch( atoi(argv[1]) ){
- case 1:
-  korali["Solver"]["Method"] = "CMA-ES";
-  korali["Solver"]["Lambda"] = 10;
-  korali["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-6;
-  korali["Solver"]["Termination Criteria"]["Max Generations"] = 1e4;
-  korali["Solver"]["Termination Criteria"]["Max Model Evaluations"] = 3e5;
-  break;
-
- case 2:
-  korali["Solver"]["Method"] = "TMCMC";
-  korali["Solver"]["Covariance Scaling"] = 0.02;
-  korali["Solver"]["Population Size"] = 5000;
-  korali["Solver"]["Burn In"] = 5;
-  korali["Solver"]["Coefficient of Variation"] = 0.5;
-  break;
-
- default:
-  printf("\nUsage: ./posterior 1(=maximize) or 2(=sample)\n");
-  exit(1);
- }
-
+ korali["Solver"]["Method"] = "TMCMC";
+ korali["Solver"]["Covariance Scaling"] = 0.02;
+ korali["Solver"]["Population Size"] = 5000;
+ korali["Solver"]["Burn In"] = 5;
+ korali["Solver"]["Coefficient of Variation"] = 0.5;
 
 
  korali["Seed"] = 0xC0FFEE;

@@ -1,4 +1,4 @@
-BINARIES = direct posterior
+BINARIES = direct_optimize direct_sample posterior_optimize posterior_sample 
 OBJECTS =
 CXX = korali-cxx
 

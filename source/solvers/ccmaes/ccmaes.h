@@ -37,22 +37,23 @@ class CCMAES : public Korali::Solver::Base
  double* _fitnessVector; /* objective function values [_s] */
  double* _samplePopulation; /* sample coordinates [_s x _k->N] */
  size_t _currentGeneration; /* generation count */
- bool* _initializedSample;
- char _terminationReason[500];
+ bool* _initializedSample; /* flag to distribute work */
+ char _terminationReason[500]; /* buffer for exit reason */
 
- size_t _finishedSamples;
+ size_t _finishedSamples; /* counter of evaluated samples to terminate evaluation */
  size_t _s; /* number of samples per generation */
+ size_t _via_s; /* number of samples during start seach (viability regime) */
  size_t _mu; /* number of best samples for mean / cov update */
  std::string _muType; /* Linear, Equal or Logarithmic */
  double* _muWeights; /* weights for mu best samples */
  double _muEffective; /* variance effective selection mass */
- double _muCovariance;
+ double _muCovariance; /* internal parameter to calibrate updates */
 
  double _sigmaCumulationFactor; /* default calculated from muEffective and dimension */
  double _dampFactor; /* dampening parameter determines controls step size adaption */
  double _cumulativeCovariance; /* default calculated from dimension */
- double _covarianceMatrixLearningRate;
- double _chiN; /* expectation of ||N(0,I)|| */
+ double _covarianceMatrixLearningRate; /* parameter to calibrate cov updates */
+ double _chiN; /* expectation of ||N(0,I)||^2 */
 
  bool   _enablediag; /* enable diagonal covariance matrix */
  size_t _diagonalCovarianceMatrixEvalFrequency;
@@ -89,7 +90,6 @@ class CCMAES : public Korali::Solver::Base
  double *rgD; /* axis lengths (sqrt(Evals)) */
  
  double **Z; /* randn() */
- double **BD; /* B*D */
  double **BDZ; /* B*D*randn() */
 
  double *rgpc; /* evolution path for cov update */
@@ -123,17 +123,18 @@ class CCMAES : public Korali::Solver::Base
  bool isFeasible(size_t sampleIdx) const; /* check if sample inside lower & upper bounds */
  double doubleRangeMax(const double *rgd, size_t len) const;
  double doubleRangeMin(const double *rgd, size_t len) const;
- bool doDiagUpdate() const;
+ bool doDiagUpdate() const; /* returns true if diagonal update enforced */
  bool isStoppingCriteriaActive(const char *criteria) const;
 
  // Private CCMA-ES-Specific Variables 
  size_t _numConstraints; /* number of constraints */
+ size_t _maxAdaptions; /* max cov adaptions per generation */
+ size_t _maxResamplings; /* max resamplings per generation */
  double _targetSucRate; /* target success rate */
  double _beta; /* cov adaption size */
  double _cv; /* learning rate in normal vector  update */
  double _cp; /* update rate global success estimate */
  
- //TODO: check all initialization of arrays (DW)
  double globalSucRate; /* estim. global success rate */ 
  double fviability; /* viability func value */
  double frgxmean; /* function evaluation at mean */
@@ -144,20 +145,20 @@ class CCMAES : public Korali::Solver::Base
  size_t countcevals; /* Number of constraint evaluations */
  double *sucRates; /* constraint success rates */
  double *viabilityBounds; /* viability boundaries */
- double *maxConstraintViolations; /* max violations for VIA */ //TODO: check, same as above (DW)
- bool *viabilityImprovement; /* sample evaluations larger than fviability */ //TODO: check, not needed (DW)
+ bool *viabilityImprovement; /* sample evaluations larger than fviability */ //TODO: not neeeded?
+ size_t maxnumviolations; /* maximal amount of constraint violations */
  size_t *numviolations; /* number of constraint violations for each sample */
  bool **viabilityIndicator; /* constraint evaluation better than viability bound */
  double **constraintEvaluations; /* evaluation of each constraint for each sample  */
  double **v; /* normal approximation of constraints */
 
  // Private CCMA-ES-Specific Methods
- void setConstraints();
- void updateConstraintEvaluations();
- void updateViabilityBoundaries(/*const fp* functions, T *theta*/);
- void handleViabilityConstraints(/*fp *functions,T* theta,T **boundaries,int &resampled,int &cevals,int adapts*/);
- void handleConstraintsVie(/*fp *functions,T* theta,T **boundaries,int &resampled,int &cevals,int adapts*/);
- void updateSigmaVIE();
+ bool validateMeanAndSetRegime();
+ void evaluateConstraints(); /* evaluate constraints, count violations etc.. */
+ void updateViabilityBoundaries(); /* update & shrink viability boundaries */
+ void handleViabilityConstraints();
+ void handleConstraints();
+ void updateSigmaVIE(); /* update sigma based on global suc rate (only in via regime) */
 
  // Print Methods
  void printGeneration() const;

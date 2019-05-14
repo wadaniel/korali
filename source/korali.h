@@ -58,6 +58,8 @@ class modelData
  std::vector<double> _results;
 };
 
+using fcon = std::function<double(double*, int N)>;
+
 class Engine {
 
  public:
@@ -66,6 +68,7 @@ class Engine {
  nlohmann::json& operator[](std::string key) { return _js[key]; }
 
  std::function<void(modelData&)> _model;
+ std::vector<fcon> _fconstraints;
  Korali::Conduit::Base* _conduit;
  Korali::Problem::Base* _problem;
  Korali::Solver::Base*  _solver;
@@ -76,6 +79,7 @@ class Engine {
  ~Engine();
 
  void run();
+ void addConstraint( fcon fconstraint );
 
  // Python Configuration Binding Methods
  KoraliJsonWrapper _wr;

@@ -197,6 +197,12 @@ void Korali::Engine::run()
  if (_conduit->isRoot()) printf("[Korali] Results saved to folder: '_korali_result'\n");
 }
 
+void Korali::Engine::addConstraint(fcon fconstraint)
+{
+ _fconstraints.push_back(fconstraint);
+}
+
+
 void Korali::Engine::saveState(std::string fileName)
 {
  if (!_conduit->isRoot()) return;

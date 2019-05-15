@@ -34,10 +34,13 @@ nlohmann::json Korali::Variable::Base::getConfiguration()
  if(_type == KORALI_COMPUTATIONAL) js["Type"] = "Computational";
  if(_type == KORALI_STATISTICAL)   js["Type"] = "Statistical";
 
- js["Minimum"] = _lowerBound;
- js["Maximum"] = _upperBound;
+ if( ~isinf(_lowerBound) )
+  js["Minimum"] = _lowerBound;
 
- js["Initial Mean"] = _initialValue;
+ if( ~isinf(_upperBound) )
+  js["Maximum"] = _upperBound;
+
+ js["Initial Mean"]   = _initialValue;
  js["Initial StdDev"] = _initialStdDev;
  js["Min Std Change"] = _minStdDevChange;
 
@@ -74,7 +77,7 @@ void Korali::Variable::Base::setConfiguration(nlohmann::json& js)
 
  if( _upperBound <= _lowerBound )
  {
-  fprintf(stderr, "[Korali] Error: Invalid Minimum/Maximum for %s.\n", _name.c_str());
+  fprintf(stderr, "[Korali] Error: Invalid Minimum/Maximum for \'%s\'.\n", _name.c_str());
   exit(-1);
  }
 
@@ -93,7 +96,7 @@ void Korali::Variable::Base::setConfiguration(nlohmann::json& js)
  {
    if( isinf(_upperBound) || isinf(_lowerBound) )
    {
-     fprintf(stderr, "[Korali] Error: Minimum and/or Maximum is infinite. Define Initial Mean for %s.\n", _name.c_str());
+     fprintf(stderr, "[Korali] Error: Minimum and/or Maximum is infinite. Define Initial Mean for \'%s\'.\n", _name.c_str());
      exit(-1);
    }
    _initialValue = 0.5*(_lowerBound+_upperBound);
@@ -101,19 +104,28 @@ void Korali::Variable::Base::setConfiguration(nlohmann::json& js)
  }
 
 
+ double Length = _upperBound-_lowerBound;
 
  if( isDefined(js, {"Initial StdDev"}) )
  {
   _initialStdDev = consume(js, { "Initial StdDev" }, KORALI_NUMBER);
+  if( _initialStdDev<=0. )
+  {
+    fprintf(stderr, "[Korali] Error: Initial StdDev for \'%s\' is less or equal 0.\n", _name.c_str());
+    exit(-1);
+  }
+
+  if( _initialStdDev>Length )
+   fprintf(stderr,"[Korali] Warning: Initial StdDev (%.4f) for \'%s\' is bigger than Max-Min (%.4f).\n", _initialStdDev, _name.c_str(), Length);
  }
  else
  {
    if( isinf(_upperBound) || isinf(_lowerBound) )
    {
-     fprintf(stderr, "[Korali] Error: Minimum and/or Maximum is infinite. Define Initial StdDev for %s.\n", _name.c_str());
+     fprintf(stderr, "[Korali] Error: Minimum and/or Maximum is infinite. Define Initial StdDev for \'%s\'.\n", _name.c_str());
      exit(-1);
    }
-   _initialStdDev = 0.3*(_upperBound-_lowerBound);
+   _initialStdDev = 0.3*Length;
    fprintf(stderr,"[Korali] Warning: Initial StdDev for \'%s\' not set, initializing to %.4f.\n", _name.c_str(), _initialStdDev);
  }
 
@@ -121,12 +133,6 @@ void Korali::Variable::Base::setConfiguration(nlohmann::json& js)
 
  _minStdDevChange = consume(js, { "Min Std Change" }, KORALI_NUMBER, "0.0");
 
-
- std::cout << "min = " << _lowerBound << std::endl;
- std::cout << "max = " << _upperBound << std::endl;
- std::cout << "mean = " << _initialValue << std::endl;
- std::cout << "sd   = " << _initialStdDev << std::endl;
- exit(1);
 }
 
 /************************************************************************/

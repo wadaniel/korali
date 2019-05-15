@@ -1,5 +1,5 @@
-#ifndef _KORALI_BASEVARIABLE_H_
-#define _KORALI_BASEVARIABLE_H_
+#ifndef _KORALI_VARIABLE_BASE_H_
+#define _KORALI_VARIABLE_BASE_H_
 
 #include <string>
 #include <gsl/gsl_rng.h>
@@ -45,4 +45,4 @@ class Base
 
 } // namespace Korali
 
-#endif // _KORALI_BASEVARIABLE_H_
+#endif // _KORALI_VARIABLE_BASE_H_

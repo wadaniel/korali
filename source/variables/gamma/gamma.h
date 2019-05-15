@@ -1,5 +1,5 @@
-#ifndef _KORALI_GAMMA_H_
-#define _KORALI_GAMMA_H_
+#ifndef _KORALI_VARIABLE_GAMMA_H_
+#define _KORALI_VARIABLE_GAMMA_H_
 
 #include "variables/base/base.h"
 
@@ -33,4 +33,4 @@ class Gamma : public Korali::Variable::Base
 
 } // namespace Korali
 
-#endif // _KORALI_GAMMA_H_
+#endif // _KORALI_VARIABLE_GAMMA_H_

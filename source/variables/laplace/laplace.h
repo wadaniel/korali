@@ -1,5 +1,5 @@
-#ifndef _KORALI_LAPLACE_H_
-#define _KORALI_LAPLACE_H_
+#ifndef _KORALI_VARIABLE_LAPLACE_H_
+#define _KORALI_VARIABLE_LAPLACE_H_
 
 #include "variables/base/base.h"
 
@@ -34,4 +34,4 @@ class Laplace : public Korali::Variable::Base
 
 } // namespace Korali
 
-#endif // _KORALI_LAPLACE_H_
+#endif // _KORALI_VARIABLE_LAPLACE_H_

@@ -1,5 +1,5 @@
-#ifndef _KORALI_SINGLE_H_
-#define _KORALI_SINGLE_H_
+#ifndef _KORALI_CONDUIT_SEQUENTIAL_H_
+#define _KORALI_CONDUIT_SEQUENTIAL_H_
 
 #include "conduits/base/base.h"
 
@@ -25,4 +25,4 @@ class Sequential : public Base {
 
 } // namespace Korali
 
-#endif // _KORALI_SINGLE_H_
+#endif // _KORALI_CONDUIT_SEQUENTIAL_H_

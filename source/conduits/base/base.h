@@ -1,5 +1,5 @@
-#ifndef _KORALI_BASECONDUIT_H_
-#define _KORALI_BASECONDUIT_H_
+#ifndef _KORALI_CONDUIT_BASE_H_
+#define _KORALI_CONDUIT_BASE_H_
 
 #include <stdlib.h>
 #include "json/json.hpp"
@@ -28,4 +28,4 @@ class Conduit;
 
 } // namespace Korali
 
-#endif // _KORALI_BASECONDUIT_H_
+#endif // _KORALI_CONDUIT_BASE_H_

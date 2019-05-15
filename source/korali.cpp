@@ -19,14 +19,14 @@ Korali::Engine* Korali::_k;
 PYBIND11_MODULE(libkorali, m) {
  pybind11::class_<Korali::modelData>(m, "modelData")
   .def(pybind11::init<>())
-	.def("getParameter", &Korali::modelData::getParameter, pybind11::return_value_policy::reference)
-	.def("getParameterCount", &Korali::modelData::getParameterCount, pybind11::return_value_policy::reference)
-	.def("getParameters", &Korali::modelData::getParameters, pybind11::return_value_policy::reference)
-	.def("getResults", &Korali::modelData::getResults, pybind11::return_value_policy::reference)
+  .def("getParameter", &Korali::modelData::getParameter, pybind11::return_value_policy::reference)
+  .def("getParameterCount", &Korali::modelData::getParameterCount, pybind11::return_value_policy::reference)
+  .def("getParameters", &Korali::modelData::getParameters, pybind11::return_value_policy::reference)
+  .def("getResults", &Korali::modelData::getResults, pybind11::return_value_policy::reference)
   .def("addResult", &Korali::modelData::addResult, pybind11::return_value_policy::reference);
 
  pybind11::class_<Korali::Engine>(m, "Engine")
- .def(pybind11::init<const std::function<void(Korali::modelData&)>&>())
+ .def(pybind11::init<>())
  .def("__getitem__", pybind11::overload_cast<const std::string&>(&Korali::Engine::getItem), pybind11::return_value_policy::reference)
  .def("__getitem__", pybind11::overload_cast<const unsigned long int&>(&Korali::Engine::getItem), pybind11::return_value_policy::reference)
  .def("__setitem__", pybind11::overload_cast<const std::string&, const std::string&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
@@ -57,8 +57,7 @@ PYBIND11_MODULE(libkorali, m) {
 
 Korali::Engine::Engine()
 {
- // Determining result folder name
- _currentState = 0;
+
 }
 
 Korali::Engine::~Engine()
@@ -178,9 +177,13 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
 /*                    Functional Methods                                */
 /************************************************************************/
 
-void Korali::Engine::run()
+void Korali::Engine::run(std::function<void(modelData&)> model)
 {
  _k = this;
+
+ _currentFileId = 0;
+
+ _model = model;
 
  setConfiguration(_js);
 
@@ -210,7 +213,7 @@ void Korali::Engine::saveState()
 
  char fileName[256];
 
- sprintf(fileName, "./_korali_result/s%05lu.json", _currentState++);
+ sprintf(fileName, "./_korali_result/s%05lu.json", _currentFileId++);
 
  saveJsonToFile(fileName, getConfiguration());
 }

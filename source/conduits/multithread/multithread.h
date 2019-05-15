@@ -1,7 +1,7 @@
 #ifdef _KORALI_USE_MULTITHREAD
 
-#ifndef _KORALI_MULTITHREAD_H_
-#define _KORALI_MULTITHREAD_H_
+#ifndef _KORALI_CONDUIT_MULTITHREAD_H_
+#define _KORALI_CONDUIT_MULTITHREAD_H_
 
 #include "conduits/base/base.h"
 #include "pthread.h"
@@ -48,6 +48,6 @@ class Multithread : public Base {
 
 } // namespace Korali
 
-#endif // _KORALI_MULTITHREAD_H_
+#endif // _KORALI_CONDUIT_MULTITHREAD_H_
 
 #endif // _KORALI_USE_MULTITHREAD

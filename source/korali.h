@@ -21,10 +21,19 @@
 #include "conduits/sequential/sequential.h"
 #include "conduits/multithread/multithread.h"
 #include "conduits/upcxx/upcxx.h"
+
+#include "models/sequential/sequential.h"
+
 #include "koralijson/koralijson.h"
 
-#undef _POSIX_C_SOURCE
-#undef _XOPEN_SOURCE
+#ifdef _KORALI_USE_MPI
+ #include "mpi.h"
+#endif
+
+#ifdef _KORALI_USE_PYTHON
+ #undef _POSIX_C_SOURCE
+ #undef _XOPEN_SOURCE
+#endif
 
 enum verbosity { KORALI_SILENT = 0, KORALI_MINIMAL = 1, KORALI_NORMAL = 2, KORALI_DETAILED = 3 };
 
@@ -55,6 +64,10 @@ class modelData
  modelData* _self;
  std::vector<double> _parameters;
  std::vector<double> _results;
+
+ #ifdef _KORALI_USE_MPI
+ MPI_Comm _comm;
+ #endif
 };
 
 class Engine {
@@ -71,10 +84,9 @@ class Engine {
 
  // Model Functions and constructors
  Engine();
- Engine(std::function<void(modelData&)> model) : Engine::Engine() { _model = model; }
  ~Engine();
 
- void run();
+ void run(std::function<void(modelData&)> model);
 
  // Python Configuration Binding Methods
  KoraliJsonWrapper _wr;
@@ -94,7 +106,7 @@ class Engine {
  int _verbosity;
  size_t _outputFrequency;
 
- size_t _currentState;
+ size_t _currentFileId;
 
  // Serialization Methods
  nlohmann::json getConfiguration();

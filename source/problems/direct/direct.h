@@ -1,5 +1,5 @@
-#ifndef _KORALI_DIRECT_H_
-#define _KORALI_DIRECT_H_
+#ifndef _KORALI_PROBLEM_DIRECT_H_
+#define _KORALI_PROBLEM_DIRECT_H_
 
 #include "problems/base/base.h"
 
@@ -24,4 +24,4 @@ class Direct : public Korali::Problem::Base
 } // namespace Korali
 
 
-#endif // _KORALI_DIRECT_H_
+#endif // _KORALI_PROBLEM_DIRECT_H_

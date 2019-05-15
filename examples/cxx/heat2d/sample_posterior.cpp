@@ -3,9 +3,7 @@
 
 int main(int argc, char* argv[])
 {
- auto korali = Korali::Engine([](Korali::modelData& d) {
-	 heat2DSolver (d.getParameters(), d.getResults());
- });
+ auto korali = Korali::Engine();
 
  korali["Seed"] = 0xC0FFEE;
  korali["Verbosity"] = "Normal";
@@ -43,6 +41,6 @@ int main(int argc, char* argv[])
  korali["Solver"]["Covariance Scaling"] = 0.02;
  korali["Solver"]["Population Size"] = 3000;
 
- korali.run();
+ korali.run([](Korali::modelData& d) { heat2DSolver(d.getParameters(), d.getResults()); });
  return 0;
 }

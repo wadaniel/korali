@@ -1,5 +1,5 @@
-#ifndef _KORALI_BASEPROBLEM_H_
-#define _KORALI_BASEPROBLEM_H_
+#ifndef _KORALI_PROBLEM_BASE_H_
+#define _KORALI_PROBLEM_BASE_H_
 
 #include "json/json.hpp"
 #include "variables/base/base.h"
@@ -32,4 +32,4 @@ class Base
 } // namespace Korali
 
 
-#endif // _KORALI_BASEPROBLEM_H_
+#endif // _KORALI_PROBLEM_BASE_H_

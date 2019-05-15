@@ -21,6 +21,7 @@ korali["Problem"]["Variables"][0]["Distribution"] = "Uniform"
 korali["Problem"]["Variables"][0]["Minimum"] = -10.0
 korali["Problem"]["Variables"][0]["Maximum"] = +10.0
 
+
 korali["Solver"]["Method"] = "CMA-ES"
 korali["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-8
 korali["Solver"]["Termination Criteria"]["Max Generations"] = 100

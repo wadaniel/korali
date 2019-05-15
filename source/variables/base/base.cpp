@@ -52,33 +52,81 @@ void Korali::Variable::Base::setConfiguration(nlohmann::json& js)
  if (typeString == "Computational")  _type = KORALI_COMPUTATIONAL;
  if (typeString == "Statistical")    _type = KORALI_STATISTICAL;
 
- _lowerBound = consume(js, { "Minimum" }, KORALI_NUMBER);
- _upperBound = consume(js, { "Maximum" }, KORALI_NUMBER);
 
- if (_upperBound <= _lowerBound)
+
+ if( isDefined(js, {"Minimum"}) )
+  _lowerBound = consume(js, { "Minimum" }, KORALI_NUMBER);
+ else
+ {
+  _lowerBound = -INFINITY;
+  fprintf(stderr,"[Korali] Warning: Minimum for \'%s\' not set, initializing to %.4f.\n", _name.c_str(), _lowerBound);
+ }
+
+
+ if( isDefined(js, {"Maximum"}) )
+  _upperBound = consume(js, { "Maximum" }, KORALI_NUMBER);
+ else
+ {
+  _upperBound = INFINITY;
+  fprintf(stderr,"[Korali] Warning: Maximum for \'%s\' not set, initializing to %.4f.\n", _name.c_str(), _upperBound);
+ }
+
+
+ if( _upperBound <= _lowerBound )
  {
   fprintf(stderr, "[Korali] Error: Invalid Minimum/Maximum for %s.\n", _name.c_str());
   exit(-1);
  }
 
- _initialValue = (_lowerBound + _upperBound) * 0.5;
- _initialValue  = consume(js, { "Initial Mean"   }, KORALI_NUMBER, std::to_string(_initialValue));
 
- if(_initialValue < _lowerBound || _initialValue > _upperBound)
+
+ if( isDefined(js, {"Initial Mean"}) )
  {
-  fprintf(stderr,"[Korali] Error: Initial Mean (%.4f) for \'%s\' is out of bounds (%.4f-%.4f).\n", _initialValue, _name.c_str(), _lowerBound, _upperBound);
-  exit(-1);
+  _initialValue  = consume(js, { "Initial Mean" }, KORALI_NUMBER);
+  if(_initialValue < _lowerBound || _initialValue > _upperBound)
+  {
+   fprintf(stderr,"[Korali] Error: Initial Mean (%.4f) for \'%s\' is out of bounds (%.4f-%.4f).\n", _initialValue, _name.c_str(), _lowerBound, _upperBound);
+   exit(-1);
+  }
+ }
+ else
+ {
+   if( isinf(_upperBound) || isinf(_lowerBound) )
+   {
+     fprintf(stderr, "[Korali] Error: Minimum and/or Maximum is infinite. Define Initial Mean for %s.\n", _name.c_str());
+     exit(-1);
+   }
+   _initialValue = 0.5*(_lowerBound+_upperBound);
+   fprintf(stderr,"[Korali] Warning: Initial Mean for \'%s\' not set, initializing to %.4f.\n", _name.c_str(), _initialValue);
  }
 
- _initialStdDev = consume(js, { "Initial StdDev" }, KORALI_NUMBER, std::to_string(-1.0));
- 
- if(_initialStdDev == -1.0)
+
+
+ if( isDefined(js, {"Initial StdDev"}) )
  {
-  _initialStdDev = (_upperBound - _lowerBound) * 0.3;
-  fprintf(stderr,"[Korali] Warning: Initial StdDev for \'%s\' not set, initializing to %.4f.\n", _name.c_str(), _initialStdDev);
+  _initialStdDev = consume(js, { "Initial StdDev" }, KORALI_NUMBER);
  }
+ else
+ {
+   if( isinf(_upperBound) || isinf(_lowerBound) )
+   {
+     fprintf(stderr, "[Korali] Error: Minimum and/or Maximum is infinite. Define Initial StdDev for %s.\n", _name.c_str());
+     exit(-1);
+   }
+   _initialStdDev = 0.3*(_upperBound-_lowerBound);
+   fprintf(stderr,"[Korali] Warning: Initial StdDev for \'%s\' not set, initializing to %.4f.\n", _name.c_str(), _initialStdDev);
+ }
+
+
 
  _minStdDevChange = consume(js, { "Min Std Change" }, KORALI_NUMBER, "0.0");
+
+
+ std::cout << "min = " << _lowerBound << std::endl;
+ std::cout << "max = " << _upperBound << std::endl;
+ std::cout << "mean = " << _initialValue << std::endl;
+ std::cout << "sd   = " << _initialStdDev << std::endl;
+ exit(1);
 }
 
 /************************************************************************/

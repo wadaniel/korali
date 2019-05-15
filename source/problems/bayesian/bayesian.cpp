@@ -61,19 +61,21 @@ double Korali::Problem::Bayesian::evaluateFitness(double* sample)
  double sigma = sample[_computationalParameterCount];
  double fitnessData[_referenceDataSize];
 
- modelData d;
- for (size_t i = 0; i < N; i++) d._parameters.push_back(sample[i]);
- _k->_model(d);
+ std::vector<double> parameters;
+ for (size_t i = 0; i < N; i++) parameters.push_back(sample[i]);
 
- if (d._results.size() != _referenceDataSize)
+ std::vector<double> results;
+ _k->_model->evaluate(parameters, results);
+
+ if (results.size() != _referenceDataSize)
  {
   fprintf(stderr, "[Korali] Error: This Bayesian Model requires a %lu-sized result array.\n", _referenceDataSize);
-  fprintf(stderr, "[Korali]        Provided: %lu.\n", d._results.size());
+  fprintf(stderr, "[Korali]        Provided: %lu.\n", results.size());
   exit(-1);
  }
 
  //TODO: can we avoid this copy? (DW)
- for (size_t i = 0; i < _referenceDataSize; i++) fitnessData[i] = d._results[i];
+ for (size_t i = 0; i < _referenceDataSize; i++) fitnessData[i] = results[i];
 
  return Korali::Variable::Gaussian::logLikelihood(sigma, _referenceDataSize, _referenceData, fitnessData);
 }

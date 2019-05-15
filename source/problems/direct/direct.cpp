@@ -45,18 +45,20 @@ double Korali::Problem::Direct::evaluateFitness(double* sample)
 
  if (isSampleOutsideBounds(sample)) return -DBL_MAX;
 
- modelData d;
- for (size_t i = 0; i < N; i++) d._parameters.push_back(sample[i]);
- _k->_model(d);
+ std::vector<double> parameters;
+ for (size_t i = 0; i < N; i++) parameters.push_back(sample[i]);
 
- if (d._results.size() != 1)
+ std::vector<double> results;
+ _k->_model->evaluate(parameters, results);
+
+ if (results.size() != 1)
  {
   fprintf(stderr, "[Korali] Error: The direct problem requires exactly a 1-element result array.\n");
-  fprintf(stderr, "[Korali]        Provided: %lu.\n", d._results.size());
+  fprintf(stderr, "[Korali]        Provided: %lu.\n", results.size());
   exit(-1);
  }
 
- return d._results[0];
+ return results[0];
 }
 
 double Korali::Problem::Direct::evaluateLogPrior(double* sample)

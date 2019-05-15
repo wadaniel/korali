@@ -6,9 +6,9 @@ using namespace Korali::Model;
 /*                  Constructor / Destructor Methods                    */
 /************************************************************************/
 
-Sequential::Sequential(nlohmann::json& js) : Base::Base(js)
+Sequential::Sequential(std::function<void(Korali::Model::Sequential&)> method) : Base::Base()
 {
- setConfiguration(js);
+ _method = method;
 }
 
 Sequential::~Sequential()
@@ -38,3 +38,14 @@ void Sequential::setConfiguration(nlohmann::json& js)
 /*                    Functional Methods                                */
 /************************************************************************/
 
+
+void Sequential::evaluate(std::vector<double>& parameters, std::vector<double>& results)
+{
+ Sequential evaluator = *this;
+ evaluator._self = &evaluator;
+ evaluator._parameters = parameters;
+
+ _method(evaluator);
+
+ results = evaluator._results;
+}

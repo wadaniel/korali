@@ -23,7 +23,7 @@ int main(int argc, char* argv[])
  korali["Solver"]["Termination Criteria"]["Max Generations"] = 100;
  korali["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-12;
  
- korali.run([](Korali::modelData& d) { m_ackley(d.getParameters(), d.getResults()); });
+ korali.run([](Korali::Model::Sequential& d) { m_ackley(d.getParameters(), d.getResults()); });
 
  return 0;
 }

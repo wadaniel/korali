@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
  korali["Solver"]["Population Size"] = 10000;
  korali["Solver"]["Min Rho Update"] = 0.0;
  
- korali.run([](Korali::modelData& d) { m_ackley(d.getParameters(), d.getResults());});
+ korali.run([](Korali::Model::Sequential& d) { m_ackley(d.getParameters(), d.getResults()); });
 
  return 0;
 }

@@ -6,9 +6,9 @@ using namespace Korali::Model;
 /*                  Constructor / Destructor Methods                    */
 /************************************************************************/
 
-Base::Base(nlohmann::json& js)
+Base::Base()
 {
- setConfiguration(js);
+ _self = this;
 }
 
 Base::~Base()
@@ -33,4 +33,3 @@ void Base::setConfiguration(nlohmann::json& js)
 /************************************************************************/
 /*                    Functional Methods                                */
 /************************************************************************/
-

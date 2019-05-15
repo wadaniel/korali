@@ -17,13 +17,12 @@ Korali::Engine* Korali::_k;
 #include "pybind11/stl.h"
 
 PYBIND11_MODULE(libkorali, m) {
- pybind11::class_<Korali::modelData>(m, "modelData")
-  .def(pybind11::init<>())
-  .def("getParameter", &Korali::modelData::getParameter, pybind11::return_value_policy::reference)
-  .def("getParameterCount", &Korali::modelData::getParameterCount, pybind11::return_value_policy::reference)
-  .def("getParameters", &Korali::modelData::getParameters, pybind11::return_value_policy::reference)
-  .def("getResults", &Korali::modelData::getResults, pybind11::return_value_policy::reference)
-  .def("addResult", &Korali::modelData::addResult, pybind11::return_value_policy::reference);
+ pybind11::class_<Korali::Model::Sequential>(m, "Model::Sequential")
+  .def("getParameter",      &Korali::Model::Sequential::getParameter, pybind11::return_value_policy::reference)
+  .def("getParameterCount", &Korali::Model::Sequential::getParameterCount, pybind11::return_value_policy::reference)
+  .def("getParameters",     &Korali::Model::Sequential::getParameters, pybind11::return_value_policy::reference)
+  .def("getResults",        &Korali::Model::Sequential::getResults, pybind11::return_value_policy::reference)
+  .def("addResult",         &Korali::Model::Sequential::addResult, pybind11::return_value_policy::reference);
 
  pybind11::class_<Korali::Engine>(m, "Engine")
  .def(pybind11::init<>())
@@ -33,7 +32,7 @@ PYBIND11_MODULE(libkorali, m) {
  .def("__setitem__", pybind11::overload_cast<const std::string&, const double&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
  .def("__setitem__", pybind11::overload_cast<const std::string&, const int&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
  .def("__setitem__", pybind11::overload_cast<const std::string&, const bool&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
- .def("run", &Korali::Engine::run);
+ .def("run", pybind11::overload_cast<std::function<void(Korali::Model::Sequential&)>>(&Korali::Engine::run));
 
  pybind11::class_<Korali::KoraliJsonWrapper>(m, "__KoraliJsonWrapper")
  .def(pybind11::init<>())
@@ -177,15 +176,16 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
 /*                    Functional Methods                                */
 /************************************************************************/
 
-void Korali::Engine::run(std::function<void(modelData&)> model)
+void Korali::Engine::run(std::function<void(Model::Sequential&)> model) { _model = new Model::Sequential(model); run(); }
+void Korali::Engine::run(std::function<void(Model::MPI&)> model) { _model = new Model::MPI(model); run(); }
+
+void Korali::Engine::run()
 {
  _k = this;
 
- _currentFileId = 0;
-
- _model = model;
-
  setConfiguration(_js);
+
+ _currentFileId = 0;
 
  #ifdef _KORALI_USE_PYTHON
   pybind11::gil_scoped_release release; // Releasing Global Lock for Multithreaded execution

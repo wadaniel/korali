@@ -12,7 +12,7 @@ models/models.a:
 	$(MAKE) -C models all
 
 %.o: %.cpp
-	$(KORALICXX) -c $< `gsl-config --cflags`
+	$(KORALICXX) -c $<
 
 .PHONY: clean
 clean:

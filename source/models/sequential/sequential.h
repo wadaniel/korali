@@ -9,8 +9,12 @@ namespace Korali::Model
 class Sequential : public Base {
  public:
 
+ // Evaluation Methods
+ virtual void evaluate(std::vector<double>& parameters, std::vector<double>& results);
+ std::function<void(Korali::Model::Sequential&)> _method;
+
  // Constructor / Destructor
- Sequential(nlohmann::json& js);
+ Sequential(std::function<void(Korali::Model::Sequential&)> method);
  ~Sequential();
 
  // Serialization Methods

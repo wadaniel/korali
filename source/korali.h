@@ -23,12 +23,9 @@
 #include "conduits/upcxx/upcxx.h"
 
 #include "models/sequential/sequential.h"
+#include "models/mpi/__mpi.h"
 
 #include "koralijson/koralijson.h"
-
-#ifdef _KORALI_USE_MPI
- #include "mpi.h"
-#endif
 
 #ifdef _KORALI_USE_PYTHON
  #undef _POSIX_C_SOURCE
@@ -40,36 +37,6 @@ enum verbosity { KORALI_SILENT = 0, KORALI_MINIMAL = 1, KORALI_NORMAL = 2, KORAL
 namespace Korali
 {
 
-class modelData
-{
- public:
-
- modelData() { _self = this; }
-
- void addResult(double x) {_self->_results.push_back(x); }
- size_t getParameterCount() { return _self->_parameters.size(); }
- std::vector<double>& getParameters() { return _self->_parameters; }
- std::vector<double>& getResults() { return _self->_results; }
-
- double getParameter(size_t i)
- {
-  if (i > _self->_parameters.size())
-  {
-     fprintf(stderr, "[Korali] Error: Trying to access parameter %lu, when only %lu are provided.\n", i, _self->_parameters.size());
-     exit(-1);
-   }
-  return _self->_parameters[i];
- }
-
- modelData* _self;
- std::vector<double> _parameters;
- std::vector<double> _results;
-
- #ifdef _KORALI_USE_MPI
- MPI_Comm _comm;
- #endif
-};
-
 class Engine {
 
  public:
@@ -77,7 +44,7 @@ class Engine {
  nlohmann::json  _js;
  nlohmann::json& operator[](std::string key) { return _js[key]; }
 
- std::function<void(modelData&)> _model;
+ Korali::Model::Base*   _model;
  Korali::Conduit::Base* _conduit;
  Korali::Problem::Base* _problem;
  Korali::Solver::Base*  _solver;
@@ -86,7 +53,8 @@ class Engine {
  Engine();
  ~Engine();
 
- void run(std::function<void(modelData&)> model);
+ void run(std::function<void(Model::Sequential&)> model);
+ void run(std::function<void(Model::MPI&)> model);
 
  // Python Configuration Binding Methods
  KoraliJsonWrapper _wr;
@@ -105,12 +73,15 @@ class Engine {
  size_t _seed;
  int _verbosity;
  size_t _outputFrequency;
-
  size_t _currentFileId;
 
  // Serialization Methods
  nlohmann::json getConfiguration();
  void setConfiguration(nlohmann::json js);
+
+ private:
+
+ void run();
 };
 
 extern Engine* _k;

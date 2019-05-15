@@ -80,12 +80,6 @@ if [ $DETECTED_ICPC      -eq 0 ]; then USE_CXX=icpc;    fi;
 if [ $DETECTED_CLANG     -eq 0 ]; then USE_CXX=clang++; fi;
 if [ $DETECTED_CXX       -eq 0 ]; then USE_CXX=$CXX;    fi;
 
-if [[ "$USE_CXX" == "" ]]
-then
-  echo "[Korali] Error: Did not found any valid C++ compiler. Please define \$CXX."
-  exit -1
-fi
-
 ######## Checking support for MPI ########
 
 if [ $USE_MPI -eq 1 ]
@@ -99,9 +93,8 @@ then
   echo "[Korali] Configuring with support for the MPI Conduit"
   USE_MPI=1
  fi
- echo "[Korali] Error: No valid C++ compiler defined in \$CXX"
- exit -1
 else
+ USE_CXX=mpicxx
  echo "[Korali] Using \$CXX=$USE_CXX as C++ compiler."
 fi
 
@@ -116,7 +109,6 @@ then
   exit -1
  else
   echo "[Korali] Configuring with support for the MPI Conduit"
-  USE_MPI=1
  fi
 else
  echo "[Korali] Configuring without support for the MPI Conduit"
@@ -126,6 +118,13 @@ fi
 
 if [ $USE_UPCXX -eq 1 ]
 then
+ if [ $USE_MPI -eq 1 ]
+ then
+  echo "[Korali] Error: Cannot configure separate instances of UPC++ and MPI support."
+  echo "[Korali] Solution: Configure Korali only with support for an MPI-Enabled installation of UPC++"
+  exit -1
+ fi
+
  upcxx --version > /dev/null 2>&1
  if [ ! $? -eq 0 ]
  then
@@ -163,26 +162,30 @@ fi
 echo "[Korali] Checking for Python3 support using \"python3 --version\"."
 python3 --version > /dev/null 2>&1
 if [ $? -eq 0 ]; then
-  pythonBin=`which python3`
-  pythonPath=`dirname $pythonBin`
-  pythonPath=`dirname $pythonPath`
-  echo "[Korali] Python3 found at $pythonPath."
-  pythonPkgConfigPath="$pythonPath/lib*/pkgconfig/python3.pc"
-  echo "[Korali] Checking for Python3 package information: \"pkg-config $pythonPkgConfigPath\""
-  pkg-config $pythonPkgConfigPath
+  echo "[Korali] Checking for python3-config."
+  python3-config --help > /dev/null 2>&1
   if [ $? -eq 0 ]; then
-    pythonCFlags=`pkg-config $pythonPkgConfigPath --cflags`
-    pythonLibs=`pkg-config $pythonPkgConfigPath --libs`
+    pythonCFlags=`python3-config --includes`
+    pythonLibs=`python3-config --ldflags`
   else
-    echo "[Korali] Error: $pythonPkgConfigPath not found."
+    echo "[Korali] Error: python3-config not found."
     echo "[Korali] Please make sure python3 is correctly installed."
     exit
   fi
 else
   echo "[Korali] Error: Python3 not found."
-  echo "[Korali] Please make sure the python3 command is accesible from the $PATH environment variable."
+  echo "[Korali] Please make sure the python3 and python3-config commands are accesible from the $PATH environment variable."
   exit
 fi
+
+######## Checking selected compiler #######
+
+if [[ "$USE_CXX" == "" ]]
+then
+  echo "[Korali] Error: Did not found any valid C++ compiler. Please define \$CXX."
+  exit -1
+fi
+
 ######## Determining Compilation Flags ########
 
 CXXFLAGS="-I$PREFIX/include -I$PREFIX/lib/koraligsl/include/gsl --std=c++17"

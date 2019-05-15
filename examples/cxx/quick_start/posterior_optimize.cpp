@@ -7,13 +7,6 @@ void F( std::vector<double>& par, std::vector<double>& result, std::vector<doubl
 
 int main(int argc, char* argv[])
 {
- std::vector<double> x, y;
- x.push_back(1.0); y.push_back(3.2069);
- x.push_back(2.0); y.push_back(4.1454);
- x.push_back(3.0); y.push_back(4.9393);
- x.push_back(4.0); y.push_back(6.0588);
- x.push_back(5.0); y.push_back(6.8425);
-
  auto korali = Korali::Engine();
 
  korali["Problem"]["Type"] = "Bayesian";
@@ -35,6 +28,13 @@ int main(int argc, char* argv[])
  korali["Problem"]["Variables"][2]["Distribution"] = "Uniform";
  korali["Problem"]["Variables"][2]["Minimum"] = 0.0;
  korali["Problem"]["Variables"][2]["Maximum"] = 10.0;
+
+ std::vector<double> x, y;
+ x.push_back(1.0); y.push_back(3.2069);
+ x.push_back(2.0); y.push_back(4.1454);
+ x.push_back(3.0); y.push_back(4.9393);
+ x.push_back(4.0); y.push_back(6.0588);
+ x.push_back(5.0); y.push_back(6.8425);
 
  for (size_t i = 0; i < y.size(); i++)
   korali["Problem"]["Reference Data"][i] = y[i];

@@ -32,8 +32,8 @@ class CCMAES : public Korali::Solver::Base
  private:
 
  // Korali Runtime Variables
- int _fitnessSign;
- std::string _objective;
+ int _fitnessSign; /* maximizing vs optimizing (+- 1) */
+ std::string _objective; /* Maximize or Minimize */ 
  double* _fitnessVector; /* objective function values [_s] */
  double* _samplePopulation; /* sample coordinates [_s x _k->N] */
  size_t _currentGeneration; /* generation count */
@@ -43,13 +43,16 @@ class CCMAES : public Korali::Solver::Base
  size_t _finishedSamples; /* counter of evaluated samples to terminate evaluation */
  size_t _s; /* number of samples per generation */
  size_t _via_s; /* number of samples during start seach (viability regime) */
+ size_t _current_s; /* number of samples active ( _s or _via_s ) */
  size_t _mu; /* number of best samples for mean / cov update */
+ size_t _via_mu; /* number of best samples for mean (viability regime) */
  std::string _muType; /* Linear, Equal or Logarithmic */
  double* _muWeights; /* weights for mu best samples */
  double _muEffective; /* variance effective selection mass */
  double _muCovariance; /* internal parameter to calibrate updates */
 
- double _sigmaCumulationFactor; /* default calculated from muEffective and dimension */
+ double _sigmaCumulationFactorIn; /* read from configuration, placeholder for reinit (see below) */
+ double _sigmaCumulationFactor; /* increment for sigma, default calculated from muEffective and dimension */
  double _dampFactor; /* dampening parameter determines controls step size adaption */
  double _cumulativeCovariance; /* default calculated from dimension */
  double _covarianceMatrixLearningRate; /* parameter to calibrate cov updates */
@@ -125,6 +128,7 @@ class CCMAES : public Korali::Solver::Base
  double doubleRangeMin(const double *rgd, size_t len) const;
  bool doDiagUpdate() const; /* returns true if diagonal update enforced */
  bool isStoppingCriteriaActive(const char *criteria) const;
+ void initMu(size_t numsamples); /* init _muWeights, _muEffective and _muCov */
 
  // Private CCMA-ES-Specific Variables 
  size_t _numConstraints; /* number of constraints */
@@ -135,6 +139,7 @@ class CCMAES : public Korali::Solver::Base
  double _cv; /* learning rate in normal vector  update */
  double _cp; /* update rate global success estimate */
  
+ bool isVia; /* true if mean violates constraints */
  double globalSucRate; /* estim. global success rate */ 
  double fviability; /* viability func value */
  double frgxmean; /* function evaluation at mean */
@@ -153,12 +158,10 @@ class CCMAES : public Korali::Solver::Base
  double **v; /* normal approximation of constraints */
 
  // Private CCMA-ES-Specific Methods
- bool validateMeanAndSetRegime();
+ void checkMeanAndSetRegime(); /* check if mean inside valid domain, if yes, update internal vars */
  void evaluateConstraints(); /* evaluate constraints, count violations etc.. */
  void updateViabilityBoundaries(); /* update & shrink viability boundaries */
- void handleViabilityConstraints();
- void handleConstraints();
- void updateSigmaVIE(); /* update sigma based on global suc rate (only in via regime) */
+ void handleConstraints(); /* covariance adaption for invalid samples */
 
  // Print Methods
  void printGeneration() const;

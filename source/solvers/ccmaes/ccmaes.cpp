@@ -120,11 +120,13 @@ CCMAES::CCMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
  // CCMA-ES variables
  isVia = true;
 
-  _numConstraints = _k->_fconstraints.size();
- viabilityBounds = new double [_numConstraints]; 
+ _numConstraints = _k->_fconstraints.size();
+ if (_numConstraints < 1 ) { fprintf( stderr, "[Korali] Error: No constraints provided, please use Solver Method 'CMA-ES'.\n" ); exit(-1); }
+ 
+ viabilityBounds = (double*) malloc (sizeof(double) * _numConstraints);
  std::fill_n( viabilityBounds, _numConstraints, -1);
  
- sucRates = (double*) calloc (sizeof(double), _numConstraints); 
+ sucRates = (double*) malloc (sizeof(double) * _numConstraints); 
  std::fill_n( sucRates, _numConstraints, 0.5);
 
  maxnumviolations        = -1;
@@ -338,13 +340,11 @@ void CCMAES::setState(nlohmann::json& js)
 void CCMAES::initMu(size_t numsamples)
 {
 
- if (_muWeights != nullptr) free(_muWeights);
-
  // initializing Mu Weights
  _muWeights = (double *) calloc (sizeof(double), numsamples);
- if (_muType == "Linear")      for (size_t i = 0; i < _mu; i++)  _muWeights[i] = _mu - i;
- if (_muType == "Equal")       for (size_t i = 0; i < _mu; i++)  _muWeights[i] = 1;
- if (_muType == "Logarithmic") for (size_t i = 0; i < _mu; i++)  _muWeights[i] = log(_mu+1.)-log(i+1.);
+ if (_muType == "Linear")      for (size_t i = 0; i < _mu; i++) _muWeights[i] = _mu - i;
+ if (_muType == "Equal")       for (size_t i = 0; i < _mu; i++) _muWeights[i] = 1;
+ if (_muType == "Logarithmic") for (size_t i = 0; i < _mu; i++) _muWeights[i] = log(_mu+1.)-log(i+1.);
 
  /* normalize weights vector and set mueff */
  double s1 = 0.0;
@@ -425,7 +425,7 @@ void CCMAES::checkMeanAndSetRegime()
 {
     if (isVia == false) return; /* mean already inside valid domain, no udpates */
 
-    for (size_t c = 0; c < _numConstraints; ++c) if ( _k->_fconstraints[c](rgxmean, _k->_problem->N) > 0.) return; /* do nothing */
+    for (size_t c = 0; c < _numConstraints; ++c) if ( (*(_k->_fconstraints[c]))(rgxmean, _k->_problem->N) > 0.) return; /* do nothing */
     
     /* mean inside domain, switch regime and update internal variables */
     isVia      = false;
@@ -433,6 +433,7 @@ void CCMAES::checkMeanAndSetRegime()
     _beta      = 0.1/(_s+2.);
     _cv        = 1.0/(_s+2.);
 
+    free(_muWeights);
     initMu(_mu);
 
     if (_sigmaCumulationFactorIn > 0) _sigmaCumulationFactor = _sigmaCumulationFactorIn * (_muEffective + 2.0) / (_k->_problem->N + _muEffective + 3.0);
@@ -455,7 +456,7 @@ void CCMAES::evaluateConstraints() //TODO: maybe we can parallelize constraint e
       {
         numviolations[i] = 0;
         countcevals++;
-        constraintEvaluations[c][i] = _k->_fconstraints[c]( _samplePopulation+i*_k->_problem->N, _k->_problem->N );
+        constraintEvaluations[c][i] = (*(_k->_fconstraints[c]))( _samplePopulation+i*_k->_problem->N, _k->_problem->N );
         if( constraintEvaluations[c][i] > viabilityBounds[c] ) { viabilityIndicator[c][i]=1; numviolations[i]++; }
         else viabilityIndicator[c][i] = 0;
       }
@@ -890,6 +891,11 @@ void CCMAES::updateEigensystem(int flgforce)
 
  flgEigensysIsUptodate = true;
 }
+
+
+/************************************************************************/
+/*                    Additional Methods                                */
+/************************************************************************/
 
 
 void CCMAES::eigen(size_t size, double **C, double *diag, double **Q) const

@@ -79,7 +79,7 @@ class Engine {
  ~Engine();
 
  void run();
- void addConstraint( fcon fconstraint );
+ void addConstraint(fcon fconstraint);
 
  // Python Configuration Binding Methods
  KoraliJsonWrapper _wr;

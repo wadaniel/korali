@@ -5,10 +5,10 @@ KORALICXX = korali-cxx
 .PHONY: all 
 all: $(BINARIES)
 
-$(BINARIES) : % : %.o model/ackley.o
+$(BINARIES) : % : %.o model/jacobi.o
 	$(KORALICXX) -o $@ $^
 
-model/ackley.o:
+model/jacobi.o:
 	$(MAKE) -C model all
 
 %.o: %.cpp

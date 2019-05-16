@@ -1,8 +1,10 @@
 #include "korali.h"
-#include "model/ackley.h"
+#include "model/jacobi.h"
 
 int main(int argc, char* argv[])
 {
+ MPI_Init(&argc, &argv);
+
  auto korali = Korali::Engine();
 
  korali["Seed"] = 0xC0FFEE;
@@ -23,7 +25,9 @@ int main(int argc, char* argv[])
  korali["Solver"]["Termination Criteria"]["Max Generations"] = 100;
  korali["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-12;
  
- korali.run([](Korali::Model::Simple& d) { m_ackley(d.getParameters(), d.getResults()); });
+ korali["Model"]["Rank Count"] = 4;
+
+ korali.run([](Korali::Model::MPI& d) { jacobi(d.getParameters(), d.getResults(), d.getComm()); });
 
  return 0;
 }

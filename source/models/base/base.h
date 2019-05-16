@@ -34,6 +34,12 @@ class Base {
  // Evaluation Method
  virtual void evaluate(std::vector<double>& parameters, std::vector<double>& results) = 0;
 
+ // Team Creation and Distribution
+ size_t _nRanks;
+ virtual void initialize(size_t nRanks) { _nRanks = nRanks; };
+ virtual size_t getTeamCount() = 0;
+ virtual size_t getRanksPerTeam() = 0;
+
  // Constructor / Destructor
  Base(nlohmann::json& js);
  ~Base();

@@ -21,6 +21,7 @@ function print_help ()
  echo "   [--prefix=INSTALL_DIR]"
  echo "   [--enable-upcxx]"
  echo "   [--enable-mpi]"
+ echo "   [--disable-pthreads]"
  echo ""
  echo "Where:"
  echo " INSTALL_DIR is the path where to install Korali."
@@ -29,6 +30,7 @@ function print_help ()
 
 USE_UPCXX=0
 USE_MPI=0
+USE_MULTITHREAD=1
 PREFIX=$PWD/korali
 
 for i in "$@"
@@ -50,6 +52,11 @@ case $i in
     --enable-mpi)
     USE_MPI=1
     shift 
+    ;;
+    --disable-pthreads)
+    USE_MULTITHREAD=0
+    echo "[Korali] Disabling POSIX Thread support."
+    shift
     ;;
     *)
     print_help
@@ -92,26 +99,9 @@ then
  else
   echo "[Korali] Configuring with support for the MPI Conduit"
   USE_MPI=1
+  USE_CXX=mpicxx
+  echo "[Korali] Using \$CXX=$USE_CXX as C++ compiler."
  fi
-else
- USE_CXX=mpicxx
- echo "[Korali] Using \$CXX=$USE_CXX as C++ compiler."
-fi
-
-######## Checking support for MPI ########
-
-if [ $USE_MPI -eq 1 ]
-then
- mpicxx --version > /dev/null 2>&1
- if [ ! $? -eq 0 ]
- then
-  echo "[Korali] Error: No mpicxx command found."
-  exit -1
- else
-  echo "[Korali] Configuring with support for the MPI Conduit"
- fi
-else
- echo "[Korali] Configuring without support for the MPI Conduit"
 fi
 
 ######## Checking support for UPC++ ########
@@ -138,23 +128,12 @@ then
    exit -1
   else
    echo "[Korali] Configuring with support for the UPC++ Conduit."
+   USE_CXX=upcxx
    USE_UPCXX=1
   fi
  fi
 else
  echo "[Korali] Configuring without support for the UPC++ Conduit."
-fi
-
-######## Checking support for POSIX Threads ########
-
-$USE_CXX -v 2>&1 > /dev/null | grep posix > /dev/null 2>&1
-if [ ! $? -eq 0 ]
-then
- echo "[Korali] No compiler support for POSIX Threads found."
- USE_MULTITHREAD=0
-else
- echo "[Korali] Configuring with support for the Multithreaded Conduit."
- USE_MULTITHREAD=1
 fi
 
 ######## Checking support for Python3 ########
@@ -208,7 +187,7 @@ fi
 
 echo "VERSION=$VERSION" > korali.config
 echo "PREFIX=$PREFIX" >> korali.config
-echo "PYTHONCFLAGS=$pythonCFlags" >> korali.config
+echo "PYTHONCFLAGS=\"$pythonCFlags\"" >> korali.config
 echo "PYTHONLIBS=\"$pythonLibs\"" >> korali.config
 echo "CXX=$USE_CXX" >> korali.config
 echo "CXXFLAGS=\"$CXXFLAGS\"" >> korali.config

@@ -18,11 +18,11 @@
 #include "solvers/cmaes/cmaes.h"
 #include "solvers/tmcmc/tmcmc.h"
 
-#include "conduits/sequential/sequential.h"
+#include "conduits/single/single.h"
 #include "conduits/multithread/multithread.h"
 #include "conduits/upcxx/upcxx.h"
 
-#include "models/sequential/sequential.h"
+#include "models/simple/simple.h"
 #include "models/mpi/__mpi.h"
 
 #include "koralijson/koralijson.h"
@@ -53,7 +53,7 @@ class Engine {
  Engine();
  ~Engine();
 
- void run(std::function<void(Model::Sequential&)> model);
+ void run(std::function<void(Model::Simple&)> model);
  void run(std::function<void(Model::MPI&)> model);
 
  // Python Configuration Binding Methods

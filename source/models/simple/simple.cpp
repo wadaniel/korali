@@ -6,12 +6,12 @@ using namespace Korali::Model;
 /*                  Constructor / Destructor Methods                    */
 /************************************************************************/
 
-Sequential::Sequential(std::function<void(Korali::Model::Sequential&)> method) : Base::Base()
+Simple::Simple(std::function<void(Korali::Model::Simple&)> method) : Base::Base()
 {
  _method = method;
 }
 
-Sequential::~Sequential()
+Simple::~Simple()
 {
 
 }
@@ -20,16 +20,16 @@ Sequential::~Sequential()
 /*                    Configuration Methods                             */
 /************************************************************************/
 
-nlohmann::json Sequential::getConfiguration()
+nlohmann::json Simple::getConfiguration()
 {
  auto js = this->Base::getConfiguration();
 
- js["Type"] = "Sequential";
+ js["Type"] = "Simple";
 
  return js;
 }
 
-void Sequential::setConfiguration(nlohmann::json& js)
+void Simple::setConfiguration(nlohmann::json& js)
 {
  this->Base::setConfiguration(js);
 }
@@ -39,13 +39,28 @@ void Sequential::setConfiguration(nlohmann::json& js)
 /************************************************************************/
 
 
-void Sequential::evaluate(std::vector<double>& parameters, std::vector<double>& results)
+void Simple::evaluate(std::vector<double>& parameters, std::vector<double>& results)
 {
- Sequential evaluator = *this;
+ Simple evaluator = *this;
  evaluator._self = &evaluator;
  evaluator._parameters = parameters;
 
  _method(evaluator);
 
  results = evaluator._results;
+}
+
+void Simple::initialize(size_t nRanks)
+{
+  Base::initialize(nRanks);
+}
+
+size_t Simple::getTeamCount()
+{
+  return _nRanks;
+}
+
+size_t Simple::getRanksPerTeam()
+{
+ return 1;
 }

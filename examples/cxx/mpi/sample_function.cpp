@@ -1,5 +1,5 @@
 #include "korali.h"
-#include "model/ackley.h"
+#include "model/jacobi.h"
 
 int main(int argc, char* argv[])
 {
@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
  korali["Solver"]["Population Size"] = 10000;
  korali["Solver"]["Min Rho Update"] = 0.0;
  
- korali.run([](Korali::Model::Simple& d) { m_ackley(d.getParameters(), d.getResults()); });
+ korali.run([](Korali::Model::MPI& d) { jacobi(d.getParameters(), d.getResults(), d.getComm()); });
 
  return 0;
 }

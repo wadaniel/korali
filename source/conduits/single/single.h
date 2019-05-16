@@ -1,12 +1,12 @@
-#ifndef _KORALI_CONDUIT_SEQUENTIAL_H_
-#define _KORALI_CONDUIT_SEQUENTIAL_H_
+#ifndef _KORALI_CONDUIT_SINGLE_H_
+#define _KORALI_CONDUIT_SINGLE_H_
 
 #include "conduits/base/base.h"
 
 namespace Korali::Conduit
 {
 
-class Sequential : public Base {
+class Single : public Base {
  public:
 
  void run() override;
@@ -15,8 +15,8 @@ class Sequential : public Base {
  bool isRoot() override;
 
  // Constructor / Destructor
- Sequential(nlohmann::json& js);
- ~Sequential();
+ Single(nlohmann::json& js);
+ ~Single();
 
  // Serialization Methods
  nlohmann::json getConfiguration() override;
@@ -25,4 +25,4 @@ class Sequential : public Base {
 
 } // namespace Korali
 
-#endif // _KORALI_CONDUIT_SEQUENTIAL_H_
+#endif // _KORALI_CONDUIT_SINGLE_H_

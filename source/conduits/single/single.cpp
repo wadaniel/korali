@@ -6,12 +6,12 @@ using namespace Korali::Conduit;
 /*                  Constructor / Destructor Methods                    */
 /************************************************************************/
 
-Sequential::Sequential(nlohmann::json& js) : Base::Base(js)
+Single::Single(nlohmann::json& js) : Base::Base(js)
 {
  setConfiguration(js);
 }
 
-Sequential::~Sequential()
+Single::~Single()
 {
 
 }
@@ -20,16 +20,16 @@ Sequential::~Sequential()
 /*                    Configuration Methods                             */
 /************************************************************************/
 
-nlohmann::json Sequential::getConfiguration()
+nlohmann::json Single::getConfiguration()
 {
  auto js = this->Base::getConfiguration();
 
- js["Type"] = "Sequential";
+ js["Type"] = "Single";
 
  return js;
 }
 
-void Sequential::setConfiguration(nlohmann::json& js)
+void Single::setConfiguration(nlohmann::json& js)
 {
  this->Base::setConfiguration(js);
 }
@@ -38,23 +38,23 @@ void Sequential::setConfiguration(nlohmann::json& js)
 /*                    Functional Methods                                */
 /************************************************************************/
 
-void Sequential::run()
+void Single::run()
 {
  _k->_solver->run();
 }
 
-void Sequential::evaluateSample(double* sampleArray, size_t sampleId)
+void Single::evaluateSample(double* sampleArray, size_t sampleId)
 {
  double fitness = _k->_problem->evaluateFitness(&sampleArray[_k->_problem->N*sampleId]);
  _k->_solver->processSample(sampleId, fitness);
 }
 
-void Sequential::checkProgress()
+void Single::checkProgress()
 {
 
 }
 
-bool Sequential::isRoot()
+bool Single::isRoot()
 {
  return true;
 }

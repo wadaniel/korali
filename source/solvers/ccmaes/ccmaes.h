@@ -67,7 +67,7 @@ class CCMAES : public Korali::Solver::Base
  size_t _maxFitnessEvaluations;   // Defines maximum number of fitness evaluations
  double _stopFitnessDiffThreshold; // Defines minimum function value differences before stopping
  double _stopMinDeltaX; // Defines minimum delta of input parameters among generations before it stops.
- double _stopMinFitness; // Defines the minimum fitness allowed, otherwise it stops
+ double _stopFitness; // Defines the minimum/maximum fitness allowed, otherwise algo stops
  double _stopTolUpXFactor; // Defines the minimum fitness allowed, otherwise it stops
  double _stopCovCond; // Defines the maximal condition number of the covariance matrix
  size_t _maxGenenerations; // Max number of generations.

@@ -16,19 +16,19 @@ CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
 
  // Allocating Memory
  _samplePopulation =  (double*) calloc (sizeof(double), _k->_problem->N*_s);
- rgpc = (double*) calloc (sizeof(double), _k->_problem->N);
- rgps = (double*) calloc (sizeof(double), _k->_problem->N);
- rgdTmp = (double*) calloc (sizeof(double), _k->_problem->N);
- rgBDz = (double*) calloc (sizeof(double), _k->_problem->N);
- rgxmean = (double*) calloc (sizeof(double), _k->_problem->N);
- rgxold = (double*) calloc (sizeof(double), _k->_problem->N);
- rgxbestever = (double*) calloc (sizeof(double), _k->_problem->N);
- rgD = (double*) calloc (sizeof(double), _k->_problem->N);
- curBestVector = (double *) calloc (sizeof(double), _k->_problem->N);
+ rgpc           = (double*) calloc (sizeof(double), _k->_problem->N);
+ rgps          = (double*) calloc (sizeof(double), _k->_problem->N);
+ rgdTmp        = (double*) calloc (sizeof(double), _k->_problem->N);
+ rgBDz         = (double*) calloc (sizeof(double), _k->_problem->N);
+ rgxmean       = (double*) calloc (sizeof(double), _k->_problem->N);
+ rgxold        = (double*) calloc (sizeof(double), _k->_problem->N);
+ rgxbestever   = (double*) calloc (sizeof(double), _k->_problem->N);
+ rgD           = (double*) calloc (sizeof(double), _k->_problem->N);
+ curBestVector = (double*) calloc (sizeof(double), _k->_problem->N);
 
- rgFuncValue = (double*) calloc (sizeof(double), _s);
+ rgFuncValue    = (double*) calloc (sizeof(double), _s);
  histFuncValues = (double*) calloc (sizeof(double), _maxGenenerations+1);
- index = (size_t *) calloc (sizeof(size_t*), _s);
+ index          = (size_t*) calloc (sizeof(size_t), _s);
 
  C = (double**) calloc (sizeof(double*), _k->_problem->N);
  B = (double**)calloc (sizeof(double*), _k->_problem->N);

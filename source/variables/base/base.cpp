@@ -34,10 +34,10 @@ nlohmann::json Korali::Variable::Base::getConfiguration()
  if(_type == KORALI_COMPUTATIONAL) js["Type"] = "Computational";
  if(_type == KORALI_STATISTICAL)   js["Type"] = "Statistical";
 
- if( ~isinf(_lowerBound) )
+ if( isinf(_lowerBound) == false )
   js["Minimum"] = _lowerBound;
 
- if( ~isinf(_upperBound) )
+ if( isinf(_upperBound) == false )
   js["Maximum"] = _upperBound;
 
  js["Initial Mean"]   = _initialValue;

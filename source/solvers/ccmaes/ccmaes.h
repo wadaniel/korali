@@ -46,6 +46,7 @@ class CCMAES : public Korali::Solver::Base
  size_t _current_s; /* number of samples active ( _s or _via_s ) */
  size_t _mu; /* number of best samples for mean / cov update */
  size_t _via_mu; /* number of best samples for mean (viability regime) */
+ size_t _current_mu; /* number of samples active ( _mu or _mu_s ) */
  std::string _muType; /* Linear, Equal or Logarithmic */
  double* _muWeights; /* weights for mu best samples */
  double _muEffective; /* variance effective selection mass */
@@ -128,11 +129,11 @@ class CCMAES : public Korali::Solver::Base
  double doubleRangeMin(const double *rgd, size_t len) const;
  bool doDiagUpdate() const; /* returns true if diagonal update enforced */
  bool isStoppingCriteriaActive(const char *criteria) const;
- void initMu(size_t numsamples); /* init _muWeights, _muEffective and _muCov */
+ void initMuVars(size_t numsamples); /* init _muWeights, _muEffective and _muCov */
 
  // Private CCMA-ES-Specific Variables 
  size_t _numConstraints; /* number of constraints */
- size_t _maxAdaptions; /* max cov adaptions per generation */
+ size_t _maxCorrections; /* max cov adaptions per generation */
  size_t _maxResamplings; /* max resamplings per generation */
  double _targetSucRate; /* target success rate */
  double _beta; /* cov adaption size */
@@ -145,9 +146,8 @@ class CCMAES : public Korali::Solver::Base
  double frgxmean; /* function evaluation at mean */
  double frgxold; /* function evaluation prev. mean */
  size_t resampled; /* number of resampled parameters due constraint violation */
- size_t adaptionsVia; /* number of cov matrix adaptions in VIA */
- size_t adaptionsVie; /* number of cov matrix adaptions in VIE */
- size_t countcevals; /* Number of constraint evaluations */
+ size_t correctionsC; /* number of cov matrix adaptions */
+ size_t countcevals; /* number of constraint evaluations */
  double *sucRates; /* constraint success rates */
  double *viabilityBounds; /* viability boundaries */
  bool *viabilityImprovement; /* sample evaluations larger than fviability */ //TODO: not neeeded?
@@ -159,9 +159,10 @@ class CCMAES : public Korali::Solver::Base
 
  // Private CCMA-ES-Specific Methods
  void checkMeanAndSetRegime(); /* check if mean inside valid domain, if yes, update internal vars */
- void evaluateConstraints(); /* evaluate constraints, count violations etc.. */
+ void initConstraints();
  void updateViabilityBoundaries(); /* update & shrink viability boundaries */
  void handleConstraints(); /* covariance adaption for invalid samples */
+ void reEvaluateConstraints(); /* re evaluate constraints, in handleConstraints,  count violations etc.. */
 
  // Print Methods
  void printGeneration() const;

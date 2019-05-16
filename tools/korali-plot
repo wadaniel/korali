@@ -19,7 +19,7 @@ if ( method == "TMCMC" ):
  os.system("plot_tmcmc.py _korali_result")
  exit(0) 
 
-if ( method == "CMA-ES" ):
+if ( method == "CMA-ES" or method == "CCMA-ES" ):
  print("[Korali] Running CMA-ES Plotter...")
  os.system("plot_cmaes.py _korali_result") 
  exit(0)

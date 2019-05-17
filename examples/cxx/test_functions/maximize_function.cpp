@@ -86,8 +86,8 @@ int main(int argc, char* argv[])
  korali["Problem"]["Type"] = "Direct";
 
  korali["Solver"]["Method"] = "CMA-ES";
- korali["Solver"]["Lambda"] = 10;
- korali["Solver"]["Termination Criteria"]["Max Generations"] = 100;
+ korali["Solver"]["Lambda"] = 128;
+ korali["Solver"]["Termination Criteria"]["Max Generations"] = 1000;
  korali["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-12;
  
  korali.run();

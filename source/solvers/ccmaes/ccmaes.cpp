@@ -45,41 +45,20 @@ CCMAES::CCMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
  // Initializing Gaussian Generator
  _gaussianGenerator = new Variable::Gaussian(0.0, 1.0, _k->_seed++);
 
- // Setting Mu Dependent Variables
- _muWeights = (double *) calloc (sizeof(double), mu_max);
- initMuVars(_via_mu);
-
  _chiN = sqrt((double) _k->_problem->N) * (1. - 1./(4.*_k->_problem->N) + 1./(21.*_k->_problem->N*_k->_problem->N));
+ 
+ // Initailizing Mu
+ _muWeights = (double *) calloc (sizeof(double), mu_max);
+ 
+ // Setting Mu & Dependent Variables
+ initInternals(_via_mu);
 
  // Checking Covariance Matrix Evaluation Frequency
  if (_diagonalCovarianceMatrixEvalFrequency == 0)  _diagonalCovarianceMatrixEvalFrequency = 2 + 100. * _k->_problem->N / sqrt((double)_s);
  if (_diagonalCovarianceMatrixEvalFrequency < 1)
  { fprintf( stderr, "[Korali] Error: Matrix covariance evaluation frequency is less than 1 (%lu)\n", _diagonalCovarianceMatrixEvalFrequency); exit(-1); }
 
- // Setting Sigma Cumulation Factor
- if (_sigmaCumulationFactorIn > 0) _sigmaCumulationFactor = _sigmaCumulationFactorIn * (_muEffective + 2.0) / (_k->_problem->N + _muEffective + 3.0);
- if (_sigmaCumulationFactorIn <= 0 || _sigmaCumulationFactor >= 1) _sigmaCumulationFactor = (_muEffective + 2.) / (_k->_problem->N + _muEffective + 3.0);
-
-
- // Setting Damping Factor
- if (_dampFactor < 0) _dampFactor = 1;
- _dampFactor = _dampFactor* (1 + 2*std::max(0.0, sqrt((_muEffective-1.0)/(_k->_problem->N+1.0)) - 1))  /* basic factor */
-  * std::max(0.3, 1. - (double)_k->_problem->N / (1e-6+std::min(_maxGenenerations, _maxFitnessEvaluations/_via_s))) /* modification for short runs */
-  + _sigmaCumulationFactor; /* minor increment */
-
- // Setting Cumulative Covariance
- if (_cumulativeCovariance <= 0 || _cumulativeCovariance> 1)  _cumulativeCovariance = 4. / (_k->_problem->N + 4);
-
- // Set covariance Matrix Learning Rate
- double l1 = 2. / ((_k->_problem->N+1.4142)*(_k->_problem->N+1.4142));
- double l2 = (2.*_muEffective-1.) / ((_k->_problem->N+2.)*(_k->_problem->N+2.)+_muEffective);
- l2 = (l2 > 1) ? 1 : l2;
- l2 = (1./_muCovariance) * l1 + (1.-1./_muCovariance) * l2;
-
- if (_covarianceMatrixLearningRate >= 0) _covarianceMatrixLearningRate *= l2;
- if (_covarianceMatrixLearningRate < 0 || _covarianceMatrixLearningRate > 1)  _covarianceMatrixLearningRate = l2;
-
- // Setting eigensystem evaluation Frequency
+  // Setting eigensystem evaluation Frequency
  if( _covarianceEigenEvalFreq < 0.0) _covarianceEigenEvalFreq = 1.0/_covarianceMatrixLearningRate/((double)_k->_problem->N)/10.0;
 
  double trace = 0.0;
@@ -230,8 +209,8 @@ nlohmann::json CCMAES::getConfiguration()
  for (size_t i = 0; i < _current_s; i++) js["State"]["Index"]          += index[i];
  for (size_t i = 0; i < _current_s; i++) js["State"]["FunctionValues"] += rgFuncValue[i];
 
- for (size_t i = 0; i < _k->_problem->N; i++) for (size_t j = 0; j < _k->_problem->N; j++) js["State"]["CovarianceMatrix"][i][j] = C[i][j];
- for (size_t i = 0; i < _k->_problem->N; i++) for (size_t j = 0; j < _k->_problem->N; j++) js["State"]["EigenMatrix"][i][j] = B[i][j];
+ for (size_t i = 0; i < _k->_problem->N; i++) for (size_t j = 0; j <= i; j++) { js["State"]["CovarianceMatrix"][i][j] = C[i][j]; js["State"]["CovarianceMatrix"][j][i] = C[i][j]; }
+ for (size_t i = 0; i < _k->_problem->N; i++) for (size_t j = 0; j <= i; j++) { js["State"]["EigenMatrix"][i][j] = B[i][j]; js["State"]["EigenMatrix"][j][i] = B[i][j]; }
  for (size_t i = 0; i < _current_s; i++) for (size_t j = 0; j < _k->_problem->N; j++) js["State"]["Samples"][i][j] = _samplePopulation[i*_k->_problem->N + j];
 
  // CCMA-ES Variables
@@ -244,7 +223,7 @@ nlohmann::json CCMAES::getConfiguration()
  js["Global Success Learning Rate"] = _cp;
  
  // CCMA-ES States
- js["State"]["Viability Regime"]    = isVia;
+ js["Viability Regime"] = isVia; //TODO: is state, but should not be treated as one in json
  for (size_t i = 0; i < _numConstraints; ++i) js["State"]["Success Rates"] = sucRates[i];
  for (size_t i = 0; i < _numConstraints; ++i) js["State"]["Viability Boundaries"][i] = viabilityBounds[i];
  
@@ -262,7 +241,7 @@ void CCMAES::setConfiguration(nlohmann::json& js)
  _via_s                         = consume(js, { "Num Viability Samples" }, KORALI_NUMBER, std::to_string(2));
  _currentGeneration             = consume(js, { "Current Generation" }, KORALI_NUMBER, std::to_string(0));
  _sigmaCumulationFactorIn       = consume(js, { "Sigma Cumulation Factor" }, KORALI_NUMBER, std::to_string(-1));
- _dampFactor                    = consume(js, { "Damp Factor" }, KORALI_NUMBER, std::to_string(-1));
+ _dampFactorIn                  = consume(js, { "Damp Factor" }, KORALI_NUMBER, std::to_string(-1));
  _objective                     = consume(js, { "Objective" }, KORALI_STRING, "Maximize");
 
  _fitnessSign = 0;
@@ -273,14 +252,14 @@ void CCMAES::setConfiguration(nlohmann::json& js)
  _mu                            = consume(js, { "Mu", "Value" }, KORALI_NUMBER, std::to_string(ceil(_s / 2)));
  _via_mu                        = consume(js, { "Mu", "Viability" }, KORALI_NUMBER, std::to_string(ceil(_via_s / 2)));
  _muType                        = consume(js, { "Mu", "Type" }, KORALI_STRING, "Logarithmic");
- _muCovariance                  = consume(js, { "Mu", "Covariance" }, KORALI_NUMBER, std::to_string(-1));
+ _muCovarianceIn                = consume(js, { "Mu", "Covariance" }, KORALI_NUMBER, std::to_string(-1));
 
  if(_via_mu < 1 || _mu < 1 ||  _via_mu > _via_s || _mu > _s || ( (( _via_mu == _via_s) ||  ( _mu == _s ))  && _muType.compare("Linear") ) )
    { fprintf( stderr, "[Korali] Error: Invalid setting of Mu (%lu) and/or Lambda (%lu)\n", _mu, _s); exit(-1); }
  
- _covarianceEigenEvalFreq      = consume(js, { "Covariance Matrix", "Eigenvalue Evaluation Frequency" }, KORALI_NUMBER, std::to_string(-1));
+ _covarianceEigenEvalFreq      = consume(js, { "Covariance Matrix", "Eigenvalue Evaluation Frequency" }, KORALI_NUMBER, std::to_string(-1)); //TODO: should be 0
  _cumulativeCovariance         = consume(js, { "Covariance Matrix", "Cumulative Covariance" }, KORALI_NUMBER, std::to_string(-1));
- _covarianceMatrixLearningRate = consume(js, { "Covariance Matrix", "Learning Rate" }, KORALI_NUMBER, std::to_string(-1));
+ _covMatrixLearningRateIn      = consume(js, { "Covariance Matrix", "Learning Rate" }, KORALI_NUMBER, std::to_string(-1));
  _enablediag                   = consume(js, { "Covariance Matrix", "Enable Diagonal Update" }, KORALI_BOOLEAN, "false");
  _maxGenenerations             = consume(js, { "Termination Criteria", "Max Generations" }, KORALI_NUMBER, std::to_string(1000));
  _stopFitness                  = consume(js, { "Termination Criteria", "Fitness" }, KORALI_NUMBER, std::to_string(-std::numeric_limits<double>::max()));
@@ -300,14 +279,9 @@ void CCMAES::setConfiguration(nlohmann::json& js)
  _cv             = consume(js, { "Normal Vector Learning Rate" }, KORALI_NUMBER, std::to_string(1.0/(_current_s+2.)));
  _cp             = consume(js, { "Global Success Learning Rate" }, KORALI_NUMBER, std::to_string(1.0/12.0));
  
-}
-
-
-void CCMAES::setState(nlohmann::json& js)
-{
- this->Korali::Solver::Base::setState(js);
-
- isVia = consume(js, { "State", "Viability Regime" }, KORALI_BOOLEAN, "true");
+ // CCMA-ES Logic
+ // TODO: set Regime (is state, but should not be treated like the other cases) 
+ isVia = consume(js, { "Viability Regime" }, KORALI_BOOLEAN, "true");
  
  if(isVia) { 
      _current_s  = _via_s;  
@@ -316,6 +290,14 @@ void CCMAES::setState(nlohmann::json& js)
      _current_s  = _s;
      _current_mu = _mu;
  }
+ 
+}
+
+
+void CCMAES::setState(nlohmann::json& js)
+{
+ this->Korali::Solver::Base::setState(js);
+
 
  _currentGeneration    = js["State"]["Current Generation"];
  sigma                 = js["State"]["Sigma"];
@@ -345,7 +327,7 @@ void CCMAES::setState(nlohmann::json& js)
 }
 
 
-void CCMAES::initMuVars(size_t numsamplesmu)
+void CCMAES::initInternals(size_t numsamplesmu)
 {
 
  // initializing Mu Weights
@@ -366,8 +348,34 @@ void CCMAES::initMuVars(size_t numsamplesmu)
 
  for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] /= s1;
 
- if (_muCovariance < 1) _muCovariance = _muEffective;
+ // Setting Mu Covariance
+ if (_muCovarianceIn < 1) _muCovariance = _muEffective;
+ else                     _muCovariance = _muCovarianceIn;
 
+ // Setting Covariance Matrix Learning Rate
+ double l1 = 2. / ((_k->_problem->N+1.4142)*(_k->_problem->N+1.4142));          
+ double l2 = (2.*_muEffective-1.) / ((_k->_problem->N+2.)*(_k->_problem->N+2.)+_muEffective);
+ l2 = (l2 > 1) ? 1 : l2;                                                        
+ l2 = (1./_muCovariance) * l1 + (1.-1./_muCovariance) * l2;                     
+ 
+ if (_covMatrixLearningRateIn >= 0) _covarianceMatrixLearningRate = _covMatrixLearningRateIn * l2;   
+ if (_covarianceMatrixLearningRate < 0 || _covarianceMatrixLearningRate > 1)  _covarianceMatrixLearningRate = l2;
+
+  // Setting Sigma Cumulation Factor
+ if (_sigmaCumulationFactorIn > 0) _sigmaCumulationFactor = _sigmaCumulationFactorIn * (_muEffective + 2.0) / (_k->_problem->N + _muEffective + 3.0);
+ if (_sigmaCumulationFactorIn <= 0 || _sigmaCumulationFactor >= 1) _sigmaCumulationFactor = (_muEffective + 2.) / (_k->_problem->N + _muEffective + 3.0);
+
+ // Setting Damping Factor
+ if (_dampFactorIn < 0) _dampFactor = 1; 
+ else                   _dampFactor = _dampFactorIn;
+
+ _dampFactor = _dampFactor* (1 + 2*std::max(0.0, sqrt((_muEffective-1.0)/(_k->_problem->N+1.0)) - 1))  /* basic factor */
+  * std::max(0.3, 1. - (double)_k->_problem->N / (1e-6+std::min(_maxGenenerations, _maxFitnessEvaluations/_via_s))) /* modification for short runs */
+  + _sigmaCumulationFactor; /* minor increment */
+
+ // TODO: init rgD
+
+ // success rates
 }
 
 
@@ -443,14 +451,7 @@ void CCMAES::checkMeanAndSetRegime()
     _cv        = 1.0/(_s+2.);
 
     _current_mu = _mu;
-    initMuVars(_mu);
-
-    if (_sigmaCumulationFactorIn > 0) _sigmaCumulationFactor = _sigmaCumulationFactorIn * (_muEffective + 2.0) / (_k->_problem->N + _muEffective + 3.0);
-    if (_sigmaCumulationFactorIn <= 0 || _sigmaCumulationFactor >= 1) _sigmaCumulationFactor = (_muEffective + 2.) / (_k->_problem->N + _muEffective + 3.0);
-
-    _dampFactor = _dampFactor* (1 + 2*std::max(0.0, sqrt((_muEffective-1.0)/(_k->_problem->N+1.0)) - 1)) /* basic factor */
-        * std::max(0.3, 1. - (double)_k->_problem->N / (1e-6+std::min(_maxGenenerations, _maxFitnessEvaluations/_s))) /* modification for short runs */
-        + _sigmaCumulationFactor; /* minor increment */
+    initInternals(_mu);
 
 }
 

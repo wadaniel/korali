@@ -18,7 +18,8 @@ int main(int argc, char* argv[])
 
  korali["Seed"] = 0xC0FFEE;
  korali["Verbosity"] = "Detailed";
- korali["Conduit"]["Type"] = "Multithread";
+ korali["Conduit"]["Type"] = "Sequential";
+ korali["Solver"]["Viability Regime"] = true;
 
  for (int i = 0; i < nParams; i++)
  {
@@ -40,4 +41,5 @@ int main(int argc, char* argv[])
  korali.run();
 
  return 0;
+
 }

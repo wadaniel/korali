@@ -50,12 +50,15 @@ class CCMAES : public Korali::Solver::Base
  std::string _muType; /* Linear, Equal or Logarithmic */
  double* _muWeights; /* weights for mu best samples */
  double _muEffective; /* variance effective selection mass */
+ double _muCovarianceIn; /* read from configuration, placeholder for reinit */
  double _muCovariance; /* internal parameter to calibrate updates */
 
  double _sigmaCumulationFactorIn; /* read from configuration, placeholder for reinit (see below) */
  double _sigmaCumulationFactor; /* increment for sigma, default calculated from muEffective and dimension */
+ double _dampFactorIn; /* read from configuration, placeholder for reinit (see below) */
  double _dampFactor; /* dampening parameter determines controls step size adaption */
  double _cumulativeCovariance; /* default calculated from dimension */
+ double _covMatrixLearningRateIn; /* read from configuration, placehoder for reinit (see below) */
  double _covarianceMatrixLearningRate; /* parameter to calibrate cov updates */
  double _chiN; /* expectation of ||N(0,I)||^2 */
 
@@ -129,7 +132,7 @@ class CCMAES : public Korali::Solver::Base
  double doubleRangeMin(const double *rgd, size_t len) const;
  bool doDiagUpdate() const; /* returns true if diagonal update enforced */
  bool isStoppingCriteriaActive(const char *criteria) const;
- void initMuVars(size_t numsamples); /* init _muWeights, _muEffective and _muCov */
+ void initInternals(size_t numsamples); /* init _muWeights, _muEffective and _muCov */
 
  // Private CCMA-ES-Specific Variables 
  size_t _numConstraints; /* number of constraints */

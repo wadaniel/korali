@@ -5,6 +5,14 @@
 #include <vector>
 #include <functional>
 
+#ifdef _KORALI_USE_MPI
+#include "mpi.h"
+#endif
+
+#ifdef _KORALI_USE_UPCXX
+#include <upcxx/upcxx.hpp>
+#endif
+
 #include "problems/direct/direct.h"
 #include "problems/bayesian/bayesian.h"
 
@@ -21,9 +29,6 @@
 #include "conduits/single/single.h"
 #include "conduits/multithread/multithread.h"
 #include "conduits/upcxx/upcxx.h"
-
-#include "models/simple/simple.h"
-#include "models/mpi/__mpi.h"
 
 #include "koralijson/koralijson.h"
 
@@ -44,7 +49,7 @@ class Engine {
  nlohmann::json  _js;
  nlohmann::json& operator[](std::string key) { return _js[key]; }
 
- Korali::Model::Base*   _model;
+ std::function<void(Korali::ModelData&)> _model;
  Korali::Conduit::Base* _conduit;
  Korali::Problem::Base* _problem;
  Korali::Solver::Base*  _solver;
@@ -53,8 +58,7 @@ class Engine {
  Engine();
  ~Engine();
 
- void run(std::function<void(Model::Simple&)> model);
- void run(std::function<void(Model::MPI&)> model);
+ void run(std::function<void(Korali::ModelData&)> model);
 
  // Python Configuration Binding Methods
  KoraliJsonWrapper _wr;
@@ -78,10 +82,6 @@ class Engine {
  // Serialization Methods
  nlohmann::json getConfiguration();
  void setConfiguration(nlohmann::json js);
-
- private:
-
- void run();
 };
 
 extern Engine* _k;

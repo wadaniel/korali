@@ -3,7 +3,7 @@ include ../korali.config
 CXXFLAGS_SHARED = -fPIC 
 CXXFLAGS_STATIC = 
 
-CXXFLAGS = -O3 -g -I. -I../libs -I../libs/gsl/include -std=c++17
+CXXFLAGS = -g -I. -I../libs -I../libs/gsl/include -std=c++14
 CXXFLAGS += -Wno-unused -Wno-unused-result -Wno-unused-parameter -Wno-address -Wno-deprecated-declarations -Wall -Wfatal-errors -Wno-register
 
 ifneq ("$(wildcard ../libs/gsl/lib/libgsl.so)","")
@@ -27,6 +27,14 @@ LDFLAGS_SHARED  += $(shell echo $(PYTHONLIBS))
 ifeq ($(USE_MULTITHREAD), 1)
  CXXFLAGS += -D_KORALI_USE_MULTITHREAD -pthread
  LDFLAGS_SHARED  += -pthread
+endif
+
+ifeq ($(USE_UPCXX), 1)
+ CXXFLAGS_STATIC += -D_KORALI_USE_UPCXX `upcxx-meta CPPFLAGS`
+endif
+
+ifeq ($(USE_MPI), 1)
+ CXXFLAGS += -D_KORALI_USE_MPI
 endif
 
 all: libkorali.so libkorali.a

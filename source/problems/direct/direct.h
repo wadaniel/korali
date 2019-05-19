@@ -9,7 +9,7 @@ namespace Korali::Problem
 class Direct : public Korali::Problem::Base
 {
  public:
- double evaluateFitness(double* sample) override;
+ double evaluateFitness(double* sample, MPI_Comm comm  = MPI_COMM_WORLD) override;
  double evaluateLogPrior(double* sample) override;
 
  // Constructor / Destructor

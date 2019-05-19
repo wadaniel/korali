@@ -23,6 +23,8 @@ void jacobi(std::vector<double>& parameters, std::vector<double>& results, MPI_C
  MPI_Comm_rank(comm, &myRank);
  MPI_Comm_size(comm, &rankCount);
 
+ printf("RankCount: %d\n", rankCount);
+
  int N = 128;
  int nIters = 50;
  int nx, ny, nz;

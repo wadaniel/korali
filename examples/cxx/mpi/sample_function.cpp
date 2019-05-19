@@ -24,7 +24,10 @@ int main(int argc, char* argv[])
  korali["Solver"]["Population Size"] = 10000;
  korali["Solver"]["Min Rho Update"] = 0.0;
  
- korali.run([](Korali::Model::MPI& d) { jacobi(d.getParameters(), d.getResults(), d.getComm()); });
+ korali["Conduit"]["Type"] = "UPC++";
+ korali["Conduit"]["Ranks Per Team"] = 4;
+
+ korali.run([](Korali::ModelData& d) { jacobi(d.getParameters(), d.getResults(), d.getComm()); });
 
  return 0;
 }

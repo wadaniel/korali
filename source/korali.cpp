@@ -17,12 +17,15 @@ Korali::Engine* Korali::_k;
 #include "pybind11/stl.h"
 
 PYBIND11_MODULE(libkorali, m) {
- pybind11::class_<Korali::Model::Simple>(m, "Model::Simple")
-  .def("getParameter",      &Korali::Model::Simple::getParameter, pybind11::return_value_policy::reference)
-  .def("getParameterCount", &Korali::Model::Simple::getParameterCount, pybind11::return_value_policy::reference)
-  .def("getParameters",     &Korali::Model::Simple::getParameters, pybind11::return_value_policy::reference)
-  .def("getResults",        &Korali::Model::Simple::getResults, pybind11::return_value_policy::reference)
-  .def("addResult",         &Korali::Model::Simple::addResult, pybind11::return_value_policy::reference);
+ pybind11::class_<Korali::ModelData>(m, "ModelData")
+  .def("getParameter",      &Korali::ModelData::getParameter, pybind11::return_value_policy::reference)
+  .def("getParameterCount", &Korali::ModelData::getParameterCount, pybind11::return_value_policy::reference)
+  .def("getParameters",     &Korali::ModelData::getParameters, pybind11::return_value_policy::reference)
+  .def("getResults",        &Korali::ModelData::getResults, pybind11::return_value_policy::reference)
+  #ifdef _KORALI_USE_MPI
+  .def("getComm",        &Korali::ModelData::getComm)
+  #endif
+  .def("addResult",         &Korali::ModelData::addResult, pybind11::return_value_policy::reference);
 
  pybind11::class_<Korali::Engine>(m, "Engine")
  .def(pybind11::init<>())
@@ -32,7 +35,7 @@ PYBIND11_MODULE(libkorali, m) {
  .def("__setitem__", pybind11::overload_cast<const std::string&, const double&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
  .def("__setitem__", pybind11::overload_cast<const std::string&, const int&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
  .def("__setitem__", pybind11::overload_cast<const std::string&, const bool&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
- .def("run", pybind11::overload_cast<std::function<void(Korali::Model::Simple&)>>(&Korali::Engine::run));
+ .def("run", pybind11::overload_cast<std::function<void(Korali::ModelData&)>>(&Korali::Engine::run));
 
  pybind11::class_<Korali::KoraliJsonWrapper>(m, "__KoraliJsonWrapper")
  .def(pybind11::init<>())
@@ -170,28 +173,17 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
   exit(-1);
  }
 
- // Configure Model
- _model->setConfiguration(js["Model"]);
-
- if (isEmpty(js) == false)
- {
-  fprintf(stderr, "[Korali] Error: Unrecognized Settings for Korali:\n");
-  fprintf(stderr, "%s\n", js.dump(2).c_str());
-  exit(-1);
- }
-
 }
 
 /************************************************************************/
 /*                    Functional Methods                                */
 /************************************************************************/
 
-void Korali::Engine::run(std::function<void(Model::Simple&)> model) { _model = new Model::Simple(model); run(); }
-void Korali::Engine::run(std::function<void(Model::MPI&)> model) { _model = new Model::MPI(model); run(); }
-
-void Korali::Engine::run()
+void Korali::Engine::run(std::function<void(Korali::ModelData&)> model)
 {
  _k = this;
+
+ _model = model;
 
  setConfiguration(_js);
 

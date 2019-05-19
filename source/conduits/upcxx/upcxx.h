@@ -4,8 +4,9 @@
 #define _KORALI_CONDUIT_UPCXX_H_
 
 #include "conduits/base/base.h"
-#include <upcxx/upcxx.hpp>
 #include <queue>
+#include <vector>
+#include <map>
 
 namespace Korali::Conduit
 {
@@ -18,7 +19,19 @@ class UPCXX : public Base
 
  upcxx::global_ptr<double> samplePtr; // Individual Pointer for Sample parameters
  upcxx::global_ptr<double>* samplePtrGlobal; // Common Pointer for Sample parameters
- std::queue<int> _workers;
+
+ // Team Management
+ int _rankOffset;
+ int _ranksPerTeam;
+ int _teamCount;
+
+ int _teamId;
+ int _localRankId;
+ MPI_Comm teamComm;
+
+ std::queue<int> _teamQueue;
+ std::map< int, std::vector<int> > _teamWorkers;
+
  bool _continueEvaluations;
 
  void run() override;

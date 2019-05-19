@@ -108,13 +108,6 @@ fi
 
 if [ $USE_UPCXX -eq 1 ]
 then
- if [ $USE_MPI -eq 1 ]
- then
-  echo "[Korali] Error: Cannot configure separate instances of UPC++ and MPI support."
-  echo "[Korali] Solution: Configure Korali only with support for an MPI-Enabled installation of UPC++"
-  exit -1
- fi
-
  upcxx --version > /dev/null 2>&1
  if [ ! $? -eq 0 ]
  then
@@ -128,7 +121,6 @@ then
    exit -1
   else
    echo "[Korali] Configuring with support for the UPC++ Conduit."
-   USE_CXX=upcxx
    USE_UPCXX=1
   fi
  fi
@@ -167,16 +159,9 @@ fi
 
 ######## Determining Compilation Flags ########
 
-CXXFLAGS="-I$PREFIX/include -I$PREFIX/lib/koraligsl/include/gsl --std=c++17"
+CXXFLAGS="-I$PREFIX/include -I$PREFIX/lib/koraligsl/include/gsl --std=c++14"
 CXXFLAGS="$CXXFLAGS -Wno-unused -Wunused-result -Wno-unused-parameter -Wno-address -Wno-deprecated-declarations -Wall -Wfatal-errors"
 LDFLAGS="$PREFIX/lib/libkorali.a $PREFIX/lib/libkoraligsl.a $PREFIX/lib/libkoraligslcblas.a"
-
-if [[ "$USE_UPCXX" == "1" ]]; then
- upcxxCFlags=`upcxx-meta CPPFLAGS`
- upcxxLibs=`upcxx-meta LIBS`
- CXXFLAGS="$CXXFLAGS $upcxxCFlags"
- LDFLAGS="$LDFLAGS $upcxxLibs"
-fi
 
 if [[ "$USE_MULTITHREAD" == "1" ]]; then
  CXXFLAGS="$CXXFLAGS -pthread"

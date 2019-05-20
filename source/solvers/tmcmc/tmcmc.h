@@ -1,5 +1,5 @@
-#ifndef _KORALI_TMCMC_H_
-#define _KORALI_TMCMC_H_
+#ifndef _KORALI_SOLVER_TMCMC_H_
+#define _KORALI_SOLVER_TMCMC_H_
 
 #include "solvers/base/base.h"
 #include <gsl/gsl_rng.h>
@@ -86,4 +86,4 @@ class TMCMC : public Korali::Solver::Base
 
 } // namespace Korali
 
-#endif // _KORALI_TMCMC_H_
+#endif // _KORALI_SOLVER_TMCMC_H_

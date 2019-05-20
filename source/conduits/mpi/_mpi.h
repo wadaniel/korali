@@ -1,7 +1,7 @@
-#ifdef _KORALI_USE_UPCXX
+#ifdef _KORALI_USE_MPI
 
-#ifndef _KORALI_CONDUIT_UPCXX_H_
-#define _KORALI_CONDUIT_UPCXX_H_
+#ifndef _KORALI_CONDUIT_KORALIMPI_H_
+#define _KORALI_CONDUIT_KORALIMPI_H_
 
 #include "conduits/base/base.h"
 #include <queue>
@@ -11,14 +11,11 @@
 namespace Korali::Conduit
 {
 
-class UPCXX : public Base
+class KoraliMPI : public Base
 {
  public:
  int _rankId;
  int _rankCount;
-
- upcxx::global_ptr<double> samplePtr; // Individual Pointer for Sample parameters
- upcxx::global_ptr<double>* samplePtrGlobal; // Common Pointer for Sample parameters
 
  // Team Management
  int _rankOffset;
@@ -27,7 +24,11 @@ class UPCXX : public Base
 
  int _teamId;
  int _localRankId;
- MPI_Comm teamComm;
+ size_t* _teamSampleId;
+ MPI_Comm _teamComm;
+ MPI_Request* _teamRequests;
+ bool* _teamBusy;
+ double* _teamFitness;
 
  std::queue<int> _teamQueue;
  std::map< int, std::vector<int> > _teamWorkers;
@@ -35,13 +36,14 @@ class UPCXX : public Base
  bool _continueEvaluations;
 
  void run() override;
+ void workerThread();
  void evaluateSample(double* sampleArray, size_t sampleId) override;
  void checkProgress() override;
  bool isRoot() override;
 
  // Constructor / Destructor
- UPCXX(nlohmann::json& js);
- ~UPCXX();
+ KoraliMPI(nlohmann::json& js);
+ ~KoraliMPI();
 
  // Serialization Methods
  nlohmann::json getConfiguration() override;
@@ -50,6 +52,6 @@ class UPCXX : public Base
 
 } // namespace Korali
 
-#endif // _KORALI_CONDUIT_UPCXX_H_
+#endif // _KORALI_CONDUIT_KORALIMPI_H_
 
-#endif // _KORALI_USE_UPCXX
+#endif // _KORALI_USE_MPI

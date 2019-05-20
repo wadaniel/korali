@@ -17,23 +17,25 @@ Korali::Engine* Korali::_k;
 #include "pybind11/stl.h"
 
 PYBIND11_MODULE(libkorali, m) {
- pybind11::class_<Korali::modelData>(m, "modelData")
-  .def(pybind11::init<>())
-	.def("getParameter", &Korali::modelData::getParameter, pybind11::return_value_policy::reference)
-	.def("getParameterCount", &Korali::modelData::getParameterCount, pybind11::return_value_policy::reference)
-	.def("getParameters", &Korali::modelData::getParameters, pybind11::return_value_policy::reference)
-	.def("getResults", &Korali::modelData::getResults, pybind11::return_value_policy::reference)
-  .def("addResult", &Korali::modelData::addResult, pybind11::return_value_policy::reference);
+ pybind11::class_<Korali::ModelData>(m, "ModelData")
+  .def("getParameter",      &Korali::ModelData::getParameter, pybind11::return_value_policy::reference)
+  .def("getParameterCount", &Korali::ModelData::getParameterCount, pybind11::return_value_policy::reference)
+  .def("getParameters",     &Korali::ModelData::getParameters, pybind11::return_value_policy::reference)
+  .def("getResults",        &Korali::ModelData::getResults, pybind11::return_value_policy::reference)
+  #ifdef _KORALI_USE_MPI
+  .def("getCommPointer",    &Korali::ModelData::getCommPointer)
+  #endif
+  .def("addResult",         &Korali::ModelData::addResult, pybind11::return_value_policy::reference);
 
  pybind11::class_<Korali::Engine>(m, "Engine")
- .def(pybind11::init<const std::function<void(Korali::modelData&)>&>())
+ .def(pybind11::init<>())
  .def("__getitem__", pybind11::overload_cast<const std::string&>(&Korali::Engine::getItem), pybind11::return_value_policy::reference)
  .def("__getitem__", pybind11::overload_cast<const unsigned long int&>(&Korali::Engine::getItem), pybind11::return_value_policy::reference)
  .def("__setitem__", pybind11::overload_cast<const std::string&, const std::string&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
  .def("__setitem__", pybind11::overload_cast<const std::string&, const double&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
  .def("__setitem__", pybind11::overload_cast<const std::string&, const int&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
  .def("__setitem__", pybind11::overload_cast<const std::string&, const bool&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
- .def("run", &Korali::Engine::run);
+ .def("run", pybind11::overload_cast<std::function<void(Korali::ModelData&)>>(&Korali::Engine::run));
 
  pybind11::class_<Korali::KoraliJsonWrapper>(m, "__KoraliJsonWrapper")
  .def(pybind11::init<>())
@@ -57,8 +59,7 @@ PYBIND11_MODULE(libkorali, m) {
 
 Korali::Engine::Engine()
 {
- // Determining result folder name
- _currentState = 0;
+
 }
 
 Korali::Engine::~Engine()
@@ -120,14 +121,14 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
  if (foundProblem == false) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Problem."); exit(-1); }
 
  // Configure Conduit
- std::string conduitString = "Sequential";
+ std::string conduitString = "Single";
 
  conduitString = consume(js, { "Conduit", "Type" }, KORALI_STRING, conduitString);
  _conduit = NULL;
 
- if (conduitString == "Sequential")
+ if (conduitString == "Single")
  {
-  _conduit = new Korali::Conduit::Sequential(js["Conduit"]);
+  _conduit = new Korali::Conduit::Single(js["Conduit"]);
  }
 
  if (conduitString == "UPC++")
@@ -137,6 +138,17 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
   #else
    fprintf(stderr, "[Korali] Error: UPC++ conduit is not properly configured.\n");
    fprintf(stderr, "[Korali] Reinstall Korali with the proper configuration to support UPC++.\n");
+   exit(-1);
+  #endif
+ }
+
+ if (conduitString == "MPI")
+ {
+  #ifdef _KORALI_USE_MPI
+   _conduit = new Korali::Conduit::KoraliMPI(js["Conduit"]);
+  #else
+   fprintf(stderr, "[Korali] Error: MPI conduit is not properly configured.\n");
+   fprintf(stderr, "[Korali] Reinstall Korali with the proper configuration to support MPI.\n");
    exit(-1);
   #endif
  }
@@ -178,11 +190,15 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
 /*                    Functional Methods                                */
 /************************************************************************/
 
-void Korali::Engine::run()
+void Korali::Engine::run(std::function<void(Korali::ModelData&)> model)
 {
  _k = this;
 
+ _model = model;
+
  setConfiguration(_js);
+
+ _currentFileId = 0;
 
  #ifdef _KORALI_USE_PYTHON
   pybind11::gil_scoped_release release; // Releasing Global Lock for Multithreaded execution
@@ -210,7 +226,7 @@ void Korali::Engine::saveState()
 
  char fileName[256];
 
- sprintf(fileName, "./_korali_result/s%05lu.json", _currentState++);
+ sprintf(fileName, "./_korali_result/s%05lu.json", _currentFileId++);
 
  saveJsonToFile(fileName, getConfiguration());
 }

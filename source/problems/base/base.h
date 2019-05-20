@@ -1,5 +1,5 @@
-#ifndef _KORALI_BASEPROBLEM_H_
-#define _KORALI_BASEPROBLEM_H_
+#ifndef _KORALI_PROBLEM_BASE_H_
+#define _KORALI_PROBLEM_BASE_H_
 
 #include "json/json.hpp"
 #include "variables/base/base.h"
@@ -11,8 +11,14 @@ class Base
 {
  public:
 
- virtual double evaluateFitness(double* sample) = 0;
+ virtual double evaluateFitness(double* sample, bool isLeader
+ #ifdef _KORALI_USE_MPI
+ , MPI_Comm comm = MPI_COMM_NULL
+ #endif
+ ) = 0;
+
  virtual double evaluateLogPrior(double* sample) = 0;
+
  size_t N; // Variable Count size_t N; // Variable Count
  size_t _statisticalParameterCount;
  size_t _computationalParameterCount;
@@ -32,4 +38,4 @@ class Base
 } // namespace Korali
 
 
-#endif // _KORALI_BASEPROBLEM_H_
+#endif // _KORALI_PROBLEM_BASE_H_

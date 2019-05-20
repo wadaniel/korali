@@ -4,7 +4,7 @@ sys.path.append('./model')
 from ackley import m_ackley
 import libkorali
 
-korali = libkorali.Engine(m_ackley)
+korali = libkorali.Engine()
 
 korali["Verbosity"] = "Normal";
 
@@ -16,10 +16,9 @@ for i in range(4):
     korali["Problem"]["Variables"][i]["Minimum"] = -32.0
     korali["Problem"]["Variables"][i]["Maximum"] = +32.0
 
-
 korali["Solver"]["Method"] = "TMCMC"
 korali["Solver"]["Covariance Scaling"] = 0.02
 korali["Solver"]["Population Size"] = 1000
 korali["Solver"]["Burn In"] = 5
 
-korali.run()
+korali.run(m_ackley)

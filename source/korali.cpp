@@ -23,7 +23,8 @@ PYBIND11_MODULE(libkorali, m) {
   .def("getParameters",     &Korali::ModelData::getParameters, pybind11::return_value_policy::reference)
   .def("getResults",        &Korali::ModelData::getResults, pybind11::return_value_policy::reference)
   #ifdef _KORALI_USE_MPI
-  .def("getComm",        &Korali::ModelData::getComm)
+  .def("getComm",           &Korali::ModelData::getComm)
+  .def("getCommPointer",   &Korali::ModelData::getCommPointer)
   #endif
   .def("addResult",         &Korali::ModelData::addResult, pybind11::return_value_policy::reference);
 

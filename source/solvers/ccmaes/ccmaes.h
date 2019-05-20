@@ -58,7 +58,7 @@ class CCMAES : public Korali::Solver::Base
  double _dampFactorIn; /* read from configuration, placeholder for reinit (see below) */
  double _dampFactor; /* dampening parameter determines controls step size adaption */
  double _cumulativeCovariance; /* default calculated from dimension */
- double _covarianceMatrixLearningRateIn; /* read from configuration, placehoder for reinit (see below) */
+ double _covMatrixLearningRateIn; /* read from configuration, placehoder for reinit (see below) */
  double _covarianceMatrixLearningRate; /* parameter to calibrate cov updates */
  double _chiN; /* expectation of ||N(0,I)||^2 */
 
@@ -139,7 +139,7 @@ class CCMAES : public Korali::Solver::Base
  size_t _maxResamplings; /* max resamplings per generation */
  double _targetSucRate; /* target success rate */
  double _beta; /* cov adaption size */
- double _cv; /* learning rate in normal vector update */
+ double _cv; /* learning rate in normal vector  update */
  double _cp; /* update rate global success estimate */
  
  bool isVia; /* true if mean violates constraints */

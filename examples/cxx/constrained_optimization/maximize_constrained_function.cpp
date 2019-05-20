@@ -33,13 +33,16 @@ int main(int argc, char* argv[])
  korali["Problem"]["Type"] = "Direct";
 
  korali["Solver"]["Method"] = "CCMA-ES";
- korali["Solver"]["Num Samples"] = 128;
+ korali["Solver"]["Num Samples"] = 10;
  korali["Solver"]["Num Viability Samples"] = 4;
- korali["Solver"]["Termination Criteria"]["Max Generations"] = 1000;
+ korali["Solver"]["Termination Criteria"]["Max Generations"] = 100;
  korali["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-12;
  
  korali.run();
 
+ std::vector<double> res = {1.0, 1.0};
+ m_rosenbrock(res, res);
+ printf(" rosenbrock (%f,%f) = %f\n", res.at(0), res.at(1), res.at(2) );
  return 0;
 
 }

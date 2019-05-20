@@ -46,13 +46,13 @@ CCMAES::CCMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
  _gaussianGenerator = new Variable::Gaussian(0.0, 1.0, _k->_seed++);
 
  _chiN = sqrt((double) _k->_problem->N) * (1. - 1./(4.*_k->_problem->N) + 1./(21.*_k->_problem->N*_k->_problem->N));
-
- // Setting Cumulative Covariance
- if (_cumulativeCovariance <= 0 || _cumulativeCovariance> 1)  _cumulativeCovariance = 4. / (_k->_problem->N + 4);
  
  // Initailizing Mu
  _muWeights = (double *) calloc (sizeof(double), mu_max);
  
+ // Setting Cumulative Covariance
+ if( (_cumulativeCovariance <= 0) || (_cumulativeCovariance > 1) ) _cumulativeCovariance = 4.0/(_k->_problem->N+4);
+
  // Setting Mu & Dependent Variables
  initInternals(_via_mu);
 
@@ -61,7 +61,7 @@ CCMAES::CCMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
  if (_diagonalCovarianceMatrixEvalFrequency < 1)
  { fprintf( stderr, "[Korali] Error: Matrix covariance evaluation frequency is less than 1 (%lu)\n", _diagonalCovarianceMatrixEvalFrequency); exit(-1); }
 
-  // Setting eigensystem evaluation Frequency
+ // Setting eigensystem evaluation Frequency
  if( _covarianceEigenEvalFreq < 0.0) _covarianceEigenEvalFreq = 1.0/_covarianceMatrixLearningRate/((double)_k->_problem->N)/10.0;
 
  double trace = 0.0;
@@ -260,19 +260,28 @@ void CCMAES::setConfiguration(nlohmann::json& js)
  if(_via_mu < 1 || _mu < 1 ||  _via_mu > _via_s || _mu > _s || ( (( _via_mu == _via_s) ||  ( _mu == _s ))  && _muType.compare("Linear") ) )
    { fprintf( stderr, "[Korali] Error: Invalid setting of Mu (%lu) and/or Lambda (%lu)\n", _mu, _s); exit(-1); }
  
- _covarianceEigenEvalFreq        = consume(js, { "Covariance Matrix", "Eigenvalue Evaluation Frequency" }, KORALI_NUMBER, std::to_string(-1)); //TODO: should be 0
- _cumulativeCovariance           = consume(js, { "Covariance Matrix", "Cumulative Covariance" }, KORALI_NUMBER, std::to_string(-1));
- _covarianceMatrixLearningRateIn = consume(js, { "Covariance Matrix", "Learning Rate" }, KORALI_NUMBER, std::to_string(-1));
- _enablediag                     = consume(js, { "Covariance Matrix", "Enable Diagonal Update" }, KORALI_BOOLEAN, "false");
- _maxGenenerations               = consume(js, { "Termination Criteria", "Max Generations" }, KORALI_NUMBER, std::to_string(1000));
- _stopFitness                    = consume(js, { "Termination Criteria", "Fitness" }, KORALI_NUMBER, std::to_string(-std::numeric_limits<double>::max()));
- _maxFitnessEvaluations          = consume(js, { "Termination Criteria", "Max Model Evaluations" }, KORALI_NUMBER, std::to_string(std::numeric_limits<size_t>::max()));
- _stopFitnessDiffThreshold       = consume(js, { "Termination Criteria", "Fitness Diff Threshold" }, KORALI_NUMBER, std::to_string(1e-9));
- _stopMinDeltaX                  = consume(js, { "Termination Criteria", "Min DeltaX" }, KORALI_NUMBER, std::to_string(0.0));
- _stopTolUpXFactor               = consume(js, { "Termination Criteria", "Max Standard Deviation" }, KORALI_NUMBER, std::to_string(1e18));
- _stopCovCond                    = consume(js, { "Termination Criteria", "Max Condition Covariance" }, KORALI_NUMBER, std::to_string(std::numeric_limits<double>::max()));
- _ignorecriteria                 = consume(js, { "Termination Criteria", "Ignore" }, KORALI_STRING, "Max Condition Covariance");
+ _covarianceEigenEvalFreq      = consume(js, { "Covariance Matrix", "Eigenvalue Evaluation Frequency" }, KORALI_NUMBER, std::to_string(-1)); //TODO: should be 0
+ _cumulativeCovariance         = consume(js, { "Covariance Matrix", "Cumulative Covariance" }, KORALI_NUMBER, std::to_string(-1));
+ _covMatrixLearningRateIn      = consume(js, { "Covariance Matrix", "Learning Rate" }, KORALI_NUMBER, std::to_string(-1));
+ _enablediag                   = consume(js, { "Covariance Matrix", "Enable Diagonal Update" }, KORALI_BOOLEAN, "false");
+ _maxGenenerations             = consume(js, { "Termination Criteria", "Max Generations" }, KORALI_NUMBER, std::to_string(1000));
+ _stopFitness                  = consume(js, { "Termination Criteria", "Fitness" }, KORALI_NUMBER, std::to_string(-std::numeric_limits<double>::max()));
+ _maxFitnessEvaluations        = consume(js, { "Termination Criteria", "Max Model Evaluations" }, KORALI_NUMBER, std::to_string(std::numeric_limits<size_t>::max()));
+ _stopFitnessDiffThreshold     = consume(js, { "Termination Criteria", "Fitness Diff Threshold" }, KORALI_NUMBER, std::to_string(1e-9));
+ _stopMinDeltaX                = consume(js, { "Termination Criteria", "Min DeltaX" }, KORALI_NUMBER, std::to_string(0.0));
+ _stopTolUpXFactor             = consume(js, { "Termination Criteria", "Max Standard Deviation" }, KORALI_NUMBER, std::to_string(1e18));
+ _stopCovCond                  = consume(js, { "Termination Criteria", "Max Condition Covariance" }, KORALI_NUMBER, std::to_string(std::numeric_limits<double>::max()));
+ _ignorecriteria               = consume(js, { "Termination Criteria", "Ignore" }, KORALI_STRING, "Max Condition Covariance");
 
+ 
+ globalSucRate   = consume(js, { "Global Success Rate" }, KORALI_NUMBER, std::to_string(0.44));
+ _targetSucRate  = consume(js, { "Target Success Rate" }, KORALI_NUMBER, std::to_string(2./11.));
+ _beta           = consume(js, { "Adaption Size" }, KORALI_NUMBER, std::to_string(0.1/(_current_s+2.)));
+ _maxCorrections = consume(js, { "Max Corrections" }, KORALI_NUMBER, std::to_string(1e6));
+ _maxResamplings = consume(js, { "Max Resamplings" }, KORALI_NUMBER, std::to_string(1e6));
+ _cv             = consume(js, { "Normal Vector Learning Rate" }, KORALI_NUMBER, std::to_string(1.0/(_current_s+2.)));
+ _cp             = consume(js, { "Global Success Learning Rate" }, KORALI_NUMBER, std::to_string(1.0/12.0));
+ 
  // CCMA-ES Logic
  // TODO: set Regime (is state, but should not be treated like the other cases) 
  isVia = consume(js, { "Viability Regime" }, KORALI_BOOLEAN, "true");
@@ -285,14 +294,6 @@ void CCMAES::setConfiguration(nlohmann::json& js)
      _current_mu = _mu;
  }
  
- globalSucRate   = consume(js, { "Global Success Rate" }, KORALI_NUMBER, std::to_string(0.44));
- _targetSucRate  = consume(js, { "Target Success Rate" }, KORALI_NUMBER, std::to_string(2./11.));
- _beta           = consume(js, { "Adaption Size" }, KORALI_NUMBER, std::to_string(0.1/(_current_s+2.)));
- _maxCorrections = consume(js, { "Max Corrections" }, KORALI_NUMBER, std::to_string(1e6));
- _maxResamplings = consume(js, { "Max Resamplings" }, KORALI_NUMBER, std::to_string(1e6));
- _cv             = consume(js, { "Normal Vector Learning Rate" }, KORALI_NUMBER, std::to_string(1.0/(_current_s+2.)));
- _cp             = consume(js, { "Global Success Learning Rate" }, KORALI_NUMBER, std::to_string(1.0/12.0));
-
 }
 
 
@@ -360,10 +361,9 @@ void CCMAES::initInternals(size_t numsamplesmu)
  l2 = (l2 > 1) ? 1 : l2;                                                        
  l2 = (1./_muCovariance) * l1 + (1.-1./_muCovariance) * l2;                     
  
- _covarianceMatrixLearningRate = _covarianceMatrixLearningRateIn;
+ _covarianceMatrixLearningRate = _covMatrixLearningRateIn;
  if (_covarianceMatrixLearningRate >= 0) _covarianceMatrixLearningRate *= l2;   
  if (_covarianceMatrixLearningRate < 0 || _covarianceMatrixLearningRate > 1)  _covarianceMatrixLearningRate = l2;
- printf("covL %f (%f, %f)\n", _covarianceMatrixLearningRate, _covarianceMatrixLearningRateIn, l2);
 
   // Setting Sigma Cumulation Factor
  if (_sigmaCumulationFactorIn > 0) _sigmaCumulationFactor = _sigmaCumulationFactorIn * (_muEffective + 2.0) / (_k->_problem->N + _muEffective + 3.0);
@@ -992,7 +992,7 @@ void CCMAES::sort_index(const double *fitnessVector, size_t *index, size_t n) co
   std::iota(index, index+n, (size_t) 0);
 
   // sort indexes based on comparing values in v
-  std::sort( index, index+n, [fitnessVector](size_t i1, size_t i2) {return fitnessVector[i1] > fitnessVector[i2];} ); //descending
+  std::sort( index, index+n, [fitnessVector](size_t i1, size_t i2) {return fitnessVector[i1] > fitnessVector[i2];} ); //descending (TODO: ok with minimize?)
 
 }
 

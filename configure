@@ -145,7 +145,7 @@ if [ $? -eq 0 ]; then
   fi
 else
   echo "[Korali] Error: Python3 not found."
-  echo "[Korali] Please make sure the python3 and python3-config commands are accesible from the $PATH environment variable."
+  echo "[Korali] Please make sure the python3-config command is accesible in the PATH environment variable."
   exit
 fi
 

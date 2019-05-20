@@ -29,6 +29,7 @@
 #include "conduits/single/single.h"
 #include "conduits/multithread/multithread.h"
 #include "conduits/upcxx/upcxx.h"
+#include "conduits/mpi/_mpi.h"
 
 #include "koralijson/koralijson.h"
 

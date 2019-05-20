@@ -4,11 +4,17 @@ MPICXX = mpicxx
 
 .SECONDARY:
 .PHONY: all
-all: $(OBJECTS)
+all: $(OBJECTS) main
+
+main: jacobi.o main.o
+	$(MPICXX) -o $@ $?
 
 jacobi.o: jacobi.cpp
 	$(MPICXX) -c $(CXXFLAGS) $<	
 
+main.o: main.cpp
+	$(MPICXX) -c $(CXXFLAGS) $<	
+
 .PHONY: clean
 clean:
-	$(RM) *.o *.ti *.optrpt *.txt
+	$(RM) *.o *.ti *.optrpt *.txt main

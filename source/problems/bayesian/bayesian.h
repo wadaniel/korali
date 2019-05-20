@@ -16,7 +16,7 @@ class Bayesian : public Korali::Problem::Base
 
  size_t _sigmaPosition;
  size_t _referenceDataSize;
- double evaluateFitness(double* sample, MPI_Comm comm = MPI_COMM_WORLD) override;
+ double evaluateFitness(double* sample, bool isLeader, MPI_Comm comm) override;
  double evaluateLogPrior(double* sample) override;
 
  // Constructor / Destructor

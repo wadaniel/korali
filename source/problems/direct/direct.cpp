@@ -35,7 +35,7 @@ void Korali::Problem::Direct::setConfiguration(nlohmann::json& js)
 /*                    Functional Methods                                */
 /************************************************************************/
 
-double Korali::Problem::Direct::evaluateFitness(double* sample, MPI_Comm comm)
+double Korali::Problem::Direct::evaluateFitness(double* sample, bool isLeader, MPI_Comm comm)
 {
  if (_statisticalParameterCount != 0)
  {
@@ -51,14 +51,19 @@ double Korali::Problem::Direct::evaluateFitness(double* sample, MPI_Comm comm)
 
  _k->_model(data);
 
- if (data._results.size() != 1)
+ if (isLeader)
  {
-  fprintf(stderr, "[Korali] Error: The direct problem requires exactly a 1-element result array.\n");
-  fprintf(stderr, "[Korali]        Provided: %lu.\n", data._results.size());
-  exit(-1);
+  if (data._results.size() != 1)
+  {
+   fprintf(stderr, "[Korali] Error: The direct problem requires exactly a 1-element result array.\n");
+   fprintf(stderr, "[Korali]        Provided: %lu.\n", data._results.size());
+   exit(-1);
+  }
+
+  return data._results[0];
  }
 
- return data._results[0];
+ return 0;
 }
 
 double Korali::Problem::Direct::evaluateLogPrior(double* sample)

@@ -37,16 +37,16 @@ UPCXX::UPCXX(nlohmann::json& js) : Base::Base(js)
  int currentRank = 1;
  for (int i = 0; i < _teamCount; i++)
  {
-	 _teamQueue.push(i);
-	 for (int j = 0; j < _ranksPerTeam; j++)
-	 {
-		 if (currentRank == _rankId)
-		 {
-			 _teamId = i;
-			 _localRankId = j;
-		 }
-		 _teamWorkers[i].push_back(currentRank++);
-	 }
+   _teamQueue.push(i);
+   for (int j = 0; j < _ranksPerTeam; j++)
+   {
+     if (currentRank == _rankId)
+     {
+       _teamId = i;
+       _localRankId = j;
+     }
+     _teamWorkers[i].push_back(currentRank++);
+   }
  }
 
  MPI_Comm_split(MPI_COMM_WORLD, _teamId, _rankId, &teamComm);
@@ -116,8 +116,8 @@ void UPCXX::run()
  // Workers
  else
  {
-	 if (_teamId != -1)
-	 while(_continueEvaluations) upcxx::progress();
+   if (_teamId != -1)
+   while(_continueEvaluations) upcxx::progress();
  }
 
  upcxx::barrier();
@@ -132,7 +132,7 @@ void UPCXX::evaluateSample(double* sampleArray, size_t sampleId)
 
  for (int i = 0; i < _ranksPerTeam; i++)
  {
-	int workerId = _teamWorkers[teamId][i];
+  int workerId = _teamWorkers[teamId][i];
   auto put = upcxx::rput(&sampleArray[sampleId*_k->_problem->N], samplePtrGlobal[workerId], _k->_problem->N);
   puts = upcxx::when_all(puts, put);
  }
@@ -144,21 +144,22 @@ void UPCXX::evaluateSample(double* sampleArray, size_t sampleId)
   for (int i = 0; i < _ux->_ranksPerTeam; i++)
   {
    auto request = upcxx::rpc(_ux->_teamWorkers[teamId][i], [](size_t sampleId)
- 	 {
-	  double fitness = _k->_problem->evaluateFitness(_ux->samplePtr.local());
-	  if (_ux->_localRankId == 0)
-	  upcxx::rpc_ff(0,	[](size_t sampleId, double fitness)
-	  {
-	 	_k->_solver->processSample(sampleId, fitness);
-	  },sampleId, fitness);
-	 }, sampleId);
+    {
+    bool isLeader = (_ux->_localRankId == 0);
+    double fitness = _k->_problem->evaluateFitness(_ux->samplePtr.local(), isLeader, MPI_COMM_NULL);
+    if (_ux->_localRankId == 0)
+    upcxx::rpc_ff(0,  [](size_t sampleId, double fitness)
+    {
+     _k->_solver->processSample(sampleId, fitness);
+    },sampleId, fitness);
+   }, sampleId);
 
-	samplingRequests = upcxx::when_all(samplingRequests, request);
+  samplingRequests = upcxx::when_all(samplingRequests, request);
  }
 
  samplingRequests.then([teamId]()
  {
-	 _ux->_teamQueue.push(teamId);
+   _ux->_teamQueue.push(teamId);
  });
 
 });

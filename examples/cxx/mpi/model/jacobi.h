@@ -8,4 +8,4 @@
 #include "mpi.h"
 #include <vector>
 
-void jacobi(std::vector<double>& parameters, std::vector<double>& results, MPI_Comm comm);
+void jacobi(std::vector<double> xdata, std::vector<double>& parameters, std::vector<double>& results, MPI_Comm comm);

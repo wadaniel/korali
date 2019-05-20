@@ -142,6 +142,17 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
   #endif
  }
 
+ if (conduitString == "MPI")
+ {
+  #ifdef _KORALI_USE_MPI
+   _conduit = new Korali::Conduit::KoraliMPI(js["Conduit"]);
+  #else
+   fprintf(stderr, "[Korali] Error: MPI conduit is not properly configured.\n");
+   fprintf(stderr, "[Korali] Reinstall Korali with the proper configuration to support MPI.\n");
+   exit(-1);
+  #endif
+ }
+
  if (conduitString == "Multithread")
  {
   #ifdef _KORALI_USE_MULTITHREAD

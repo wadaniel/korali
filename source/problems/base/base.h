@@ -11,7 +11,7 @@ class Base
 {
  public:
 
- virtual double evaluateFitness(double* sample, MPI_Comm comm = MPI_COMM_WORLD) = 0;
+ virtual double evaluateFitness(double* sample, bool isLeader, MPI_Comm comm) = 0;
  virtual double evaluateLogPrior(double* sample) = 0;
 
  size_t N; // Variable Count size_t N; // Variable Count

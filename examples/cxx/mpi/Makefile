@@ -1,4 +1,4 @@
-BINARIES = maximize_function sample_function
+BINARIES = maximize_posterior sample_posterior
 KORALICXX = korali-cxx
 
 .SECONDARY:

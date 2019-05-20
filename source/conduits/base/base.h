@@ -40,7 +40,7 @@ namespace Korali
   #ifdef _KORALI_USE_MPI
   MPI_Comm _comm;
   MPI_Comm getComm() { return _self->_comm; }
-  MPI_Comm* getCommPointer() { return &_self->_comm; }
+  long int getCommPointer() { return (long int)(&_self->_comm); }
   #endif
 
   double getParameter(size_t i)

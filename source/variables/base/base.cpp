@@ -55,14 +55,12 @@ void Korali::Variable::Base::setConfiguration(nlohmann::json& js)
  if (typeString == "Computational")  _type = KORALI_COMPUTATIONAL;
  if (typeString == "Statistical")    _type = KORALI_STATISTICAL;
 
-
-
  if( isDefined(js, {"Minimum"}) )
   _lowerBound = consume(js, { "Minimum" }, KORALI_NUMBER);
  else
  {
   _lowerBound = -INFINITY;
-  fprintf(stderr,"[Korali] Warning: Minimum for \'%s\' not set, initializing to %.4f.\n", _name.c_str(), _lowerBound);
+  //fprintf(stderr,"[Korali] Warning: Minimum for \'%s\' not set, initializing to %.4f.\n", _name.c_str(), _lowerBound);
  }
 
 
@@ -71,17 +69,14 @@ void Korali::Variable::Base::setConfiguration(nlohmann::json& js)
  else
  {
   _upperBound = INFINITY;
-  fprintf(stderr,"[Korali] Warning: Maximum for \'%s\' not set, initializing to %.4f.\n", _name.c_str(), _upperBound);
+  //fprintf(stderr,"[Korali] Warning: Maximum for \'%s\' not set, initializing to %.4f.\n", _name.c_str(), _upperBound);
  }
-
 
  if( _upperBound <= _lowerBound )
  {
   fprintf(stderr, "[Korali] Error: Invalid Minimum/Maximum for \'%s\'.\n", _name.c_str());
   exit(-1);
  }
-
-
 
  if( isDefined(js, {"Initial Mean"}) )
  {
@@ -100,9 +95,8 @@ void Korali::Variable::Base::setConfiguration(nlohmann::json& js)
      exit(-1);
    }
    _initialValue = 0.5*(_lowerBound+_upperBound);
-   fprintf(stderr,"[Korali] Warning: Initial Mean for \'%s\' not set, initializing to %.4f.\n", _name.c_str(), _initialValue);
+   // fprintf(stderr,"[Korali] Warning: Initial Mean for \'%s\' not set, initializing to %.4f.\n", _name.c_str(), _initialValue);
  }
-
 
  double Length = _upperBound-_lowerBound;
 
@@ -115,8 +109,8 @@ void Korali::Variable::Base::setConfiguration(nlohmann::json& js)
     exit(-1);
   }
 
-  if( _initialStdDev>Length )
-   fprintf(stderr,"[Korali] Warning: Initial StdDev (%.4f) for \'%s\' is bigger than Max-Min (%.4f).\n", _initialStdDev, _name.c_str(), Length);
+  //if( _initialStdDev>Length )
+   //fprintf(stderr,"[Korali] Warning: Initial StdDev (%.4f) for \'%s\' is bigger than Max-Min (%.4f).\n", _initialStdDev, _name.c_str(), Length);
  }
  else
  {
@@ -126,10 +120,8 @@ void Korali::Variable::Base::setConfiguration(nlohmann::json& js)
      exit(-1);
    }
    _initialStdDev = 0.3*Length;
-   fprintf(stderr,"[Korali] Warning: Initial StdDev for \'%s\' not set, initializing to %.4f.\n", _name.c_str(), _initialStdDev);
+   //fprintf(stderr,"[Korali] Warning: Initial StdDev for \'%s\' not set, initializing to %.4f.\n", _name.c_str(), _initialStdDev);
  }
-
-
 
  _minStdDevChange = consume(js, { "Min Std Change" }, KORALI_NUMBER, "0.0");
 

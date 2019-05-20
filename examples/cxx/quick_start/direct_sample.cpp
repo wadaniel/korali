@@ -1,16 +1,13 @@
 #include "korali.h"
 
-void F(std::vector<double>& x, std::vector<double>& result){
-
+void F(std::vector<double>& x, std::vector<double>& result)
+{
  result.push_back( -pow( x[0]-2. , 2) );
 }
 
 int main(int argc, char* argv[])
 {
-
- auto korali = Korali::Engine([](Korali::modelData& d) {
-  F(d.getParameters(), d.getResults());
- });
+ auto korali = Korali::Engine();
 
  korali["Problem"]["Type"] = "Direct";
 
@@ -29,6 +26,6 @@ int main(int argc, char* argv[])
  korali["Seed"] = 0xC0FFEE;
  korali["Verbosity"] = "Detailed";
 
- korali.run();
+ korali.run([](Korali::ModelData& d) { F(d.getParameters(), d.getResults()); });
  return 0;
 }

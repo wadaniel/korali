@@ -5,16 +5,16 @@ KORALICXX = korali-cxx
 .PHONY: all 
 all: $(BINARIES)
 
-$(BINARIES) : % : %.o models/models.a
+$(BINARIES) : % : %.o model/ackley.o
 	$(KORALICXX) -o $@ $^
 
-models/models.a:
-	$(MAKE) -C models all
+model/ackley.o:
+	$(MAKE) -C model all
 
 %.o: %.cpp
-	$(KORALICXX) -c $< `gsl-config --cflags`
+	$(KORALICXX) -c $<
 
 .PHONY: clean
 clean:
-	$(MAKE) -C models clean
+	$(MAKE) -C model clean
 	$(RM) $(BINARIES) *.o *.ti *.optrpt *.txt

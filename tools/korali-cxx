@@ -1,12 +1,22 @@
 
-flags=
+flags=-O3 
+
+if [[ "$USE_UPCXX" == "1" ]]; then
+ CXXFLAGS="$CXXFLAGS `upcxx-meta CPPFLAGS`"
+ LDFLAGS="$LDFLAGS `upcxx-meta LIBS`"
+fi
+
 if [[ "$@" == *"-o"* ]]; then
- flags+=" $LDFLAGS"
+  flags+=" $LDFLAGS"
 fi
 
 if [[ "$@" == *"-c"* ]]; then
  flags+=" $CXXFLAGS"
+ 
+ if [ $USE_MPI -eq 1 ]; then
+  flags+=" -D_KORALI_USE_MPI"
+ fi
 fi
 
-#echo "$CXX $@ $flags"
+echo "$CXX $@ $flags"
 $CXX $@ $flags

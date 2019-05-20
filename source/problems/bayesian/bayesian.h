@@ -1,5 +1,5 @@
-#ifndef _KORALI_LIKELIHOOD_H_
-#define _KORALI_LIKELIHOOD_H_
+#ifndef _KORALI_PROBLEM_LIKELIHOOD_H_
+#define _KORALI_PROBLEM_LIKELIHOOD_H_
 
 #include "problems/base/base.h"
 
@@ -16,7 +16,13 @@ class Bayesian : public Korali::Problem::Base
 
  size_t _sigmaPosition;
  size_t _referenceDataSize;
- double evaluateFitness(double* sample) override;
+
+ double evaluateFitness(double* sample, bool isLeader
+ #ifdef _KORALI_USE_MPI
+ , MPI_Comm comm = MPI_COMM_NULL
+ #endif
+ ) override;
+
  double evaluateLogPrior(double* sample) override;
 
  // Constructor / Destructor
@@ -31,4 +37,4 @@ class Bayesian : public Korali::Problem::Base
 } // namespace Korali
 
 
-#endif // _KORALI_LIKELIHOOD_H_
+#endif // _KORALI_PROBLEM_LIKELIHOOD_H_

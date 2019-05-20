@@ -1,5 +1,5 @@
-#ifndef _KORALI_UNIFORM_H_
-#define _KORALI_UNIFORM_H_
+#ifndef _KORALI_VARIABLE_UNIFORM_H_
+#define _KORALI_VARIABLE_UNIFORM_H_
 
 #include "variables/base/base.h"
 
@@ -9,13 +9,13 @@ namespace Korali::Variable
 class Uniform : public Korali::Variable::Base
 {
  private:
-   double _aux;
+  double _aux;
 
  public:
 
-	 Uniform(nlohmann::json& js, size_t seed);
-	 Uniform(double _lowerBound, double _upperBound, size_t seed = 0);
-	 ~Uniform();
+  Uniform(nlohmann::json& js, size_t seed);
+  Uniform(double _lowerBound, double _upperBound, size_t seed = 0);
+  ~Uniform();
 
   double getDensity(double x) override;
   double getLogDensity(double x) override;

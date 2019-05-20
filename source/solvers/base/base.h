@@ -1,5 +1,5 @@
-#ifndef _BASESOLVER_H_
-#define _BASESOLVER_H_
+#ifndef _KORALI_SOLVER_BASE_H_
+#define _KORALI_SOLVER_BASE_H_
 
 #include <chrono>
 #include <stdlib.h>
@@ -33,4 +33,4 @@ class Base {
 
 } // namespace Korali
 
-#endif // _BASESOLVER_H_
+#endif // _KORALI_SOLVER_BASE_H_

@@ -15,10 +15,10 @@ korali["Verbosity"] = "Detailed"
 korali["Problem"]["Type"] = "Direct"
 korali["Problem"]["Variables"][0]["Name"] = "X"
 korali["Problem"]["Variables"][0]["Distribution"] = "Uniform"
-korali["Problem"]["Variables"][0]["Minimum"] = -10.0
+# korali["Problem"]["Variables"][0]["Minimum"] = -10.0
 korali["Problem"]["Variables"][0]["Maximum"] = +10.0
-# korali["Problem"]["Variables"][0]["Initial Mean"]   = 2.0
-# korali["Problem"]["Variables"][0]["Initial StdDev"] = 5.0
+korali["Problem"]["Variables"][0]["Initial Mean"]   = 2.0
+korali["Problem"]["Variables"][0]["Initial StdDev"] = 5.0
 
 korali["Solver"]["Method"] = "CMA-ES"
 korali["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-8

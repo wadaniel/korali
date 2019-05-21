@@ -29,11 +29,11 @@ KoraliMPI::KoraliMPI(nlohmann::json& js) : Base::Base(js)
  MPI_Comm_size(MPI_COMM_WORLD, &_rankCount);
  MPI_Comm_rank(MPI_COMM_WORLD, &_rankId);
 
- _teamCount = (_rankCount-_rankOffset) / _ranksPerTeam;
+ _teamCount = (_rankCount-1) / _ranksPerTeam;
  _teamId = -1;
  _localRankId = -1;
 
- int currentRank = 1;
+ int currentRank = 0;
  for (int i = 0; i < _teamCount; i++)
  {
    _teamQueue.push(i);
@@ -80,7 +80,6 @@ nlohmann::json KoraliMPI::getConfiguration()
  auto js = this->Base::getConfiguration();
 
  js["Type"] = "MPI";
- js["Rank Offset"] = _rankOffset;
  js["Ranks Per Team"] = _ranksPerTeam;
 
  return js;
@@ -89,7 +88,6 @@ nlohmann::json KoraliMPI::getConfiguration()
 void KoraliMPI::setConfiguration(nlohmann::json& js)
 {
  _ranksPerTeam = consume(js, { "Ranks Per Team" }, KORALI_NUMBER, std::to_string(1));
- _rankOffset = consume(js, { "Rank Offset" }, KORALI_NUMBER, std::to_string(1));
 }
 
 /************************************************************************/
@@ -98,7 +96,7 @@ void KoraliMPI::setConfiguration(nlohmann::json& js)
 
 void KoraliMPI::run()
 {
- if (_rankId == 0)
+ if (isRoot())
  {
    _k->_solver->run();
 
@@ -107,8 +105,7 @@ void KoraliMPI::run()
     for (int j = 0; j < _ranksPerTeam; j++)
      MPI_Send(&continueFlag, 1, MPI_INT, _teamWorkers[i][j], MPI_TAG_CONTINUE, MPI_COMM_WORLD);
  }
-
- if (_rankId > 0) workerThread();
+ else workerThread();
 
  MPI_Barrier(MPI_COMM_WORLD);
 }
@@ -120,14 +117,14 @@ void KoraliMPI::workerThread()
  int continueFlag = 1;
  while (continueFlag == 1)
  {
-  MPI_Recv(&continueFlag, 1, MPI_INT, 0, MPI_TAG_CONTINUE, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+  MPI_Recv(&continueFlag, 1, MPI_INT, getRootRank(), MPI_TAG_CONTINUE, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
   if (continueFlag == 1)
   {
    double sample[_k->_problem->N];
-   MPI_Recv(&sample, _k->_problem->N, MPI_DOUBLE, 0, MPI_TAG_SAMPLE, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+   MPI_Recv(&sample, _k->_problem->N, MPI_DOUBLE, getRootRank(), MPI_TAG_SAMPLE, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
    bool isLeader = (_localRankId == 0);
    double fitness = _k->_problem->evaluateFitness(sample, isLeader, _teamComm);
-   if (_localRankId == 0) MPI_Send(&fitness, 1, MPI_DOUBLE, 0, MPI_TAG_FITNESS, MPI_COMM_WORLD);
+   if (_localRankId == 0) MPI_Send(&fitness, 1, MPI_DOUBLE, getRootRank(), MPI_TAG_FITNESS, MPI_COMM_WORLD);
    MPI_Barrier(_teamComm);
   }
  }
@@ -167,9 +164,14 @@ void KoraliMPI::checkProgress()
  }
 }
 
+int KoraliMPI::getRootRank()
+{
+ return _rankCount-1;
+}
+
 bool KoraliMPI::isRoot()
 {
- return _rankId == 0;
+ return _rankId == getRootRank();
 }
 
 #endif // #ifdef _KORALI_USE_MPI

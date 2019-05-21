@@ -40,6 +40,7 @@ class KoraliMPI : public Base
  void evaluateSample(double* sampleArray, size_t sampleId) override;
  void checkProgress() override;
  bool isRoot() override;
+ int getRootRank();
 
  // Constructor / Destructor
  KoraliMPI(nlohmann::json& js);

@@ -45,7 +45,7 @@ namespace Korali
 
   double getParameter(size_t i)
   {
-   if (i > _self->_parameters.size())
+   if (i >= _self->_parameters.size())
    {
       fprintf(stderr, "[Korali] Error: Trying to access parameter %lu, when only %lu are provided.\n", i, _self->_parameters.size());
       exit(-1);

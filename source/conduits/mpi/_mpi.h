@@ -18,7 +18,6 @@ class KoraliMPI : public Base
  int _rankCount;
 
  // Team Management
- int _rankOffset;
  int _ranksPerTeam;
  int _teamCount;
 

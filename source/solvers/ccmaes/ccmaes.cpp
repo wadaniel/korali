@@ -336,7 +336,7 @@ void CCMAES::initInternals(size_t numsamplesmu)
  // initializing Mu Weights
  if (_muType == "Linear")      for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = numsamplesmu - i;
  if (_muType == "Equal")       for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = 1;
- if (_muType == "Logarithmic") for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = log(numsamplesmu+1.)-log(i+1.);
+ if (_muType == "Logarithmic") for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = log(std::max( (double)numsamplesmu, 0.5*_current_s)+0.5)-log(i+1.);
 
  /* normalize weights vector and set mueff */
  double s1 = 0.0;
@@ -537,7 +537,7 @@ void CCMAES::prepareGeneration()
  /* calculate eigensystem  */ //TODO: this could be moved somewhere else (DW)
  if (!flgEigensysIsUptodate) {
   if (!flgdiag)
-   updateEigensystem(0);
+   updateEigensystem(1.0);
   else {
    for (size_t d = 0; d < _k->_problem->N; ++d) rgD[d] = sqrt(C[d][d]);
    minEW = doubleRangeMin(rgD, _k->_problem->N) * doubleRangeMin(rgD, _k->_problem->N);
@@ -626,7 +626,7 @@ void CCMAES::updateDistribution(const double *fitnessVector)
   if (flgdiag) sum = rgBDz[d];
   else for (size_t e = 0; e < _k->_problem->N; ++e) sum += B[e][d] * rgBDz[e]; /* B^(T) * rgBDz ( iterating B[e][d] = B^(T) ) */
   
-  rgdTmp[d] = sum / rgD[d]; /* D^(-1) */
+  rgdTmp[d] = sum / rgD[d]; /* D^(-1) * B^(T) * rgBDz */
  }
 
  psL2 = 0.0;
@@ -635,7 +635,7 @@ void CCMAES::updateDistribution(const double *fitnessVector)
  for (size_t d = 0; d < _k->_problem->N; ++d) {
     double sum = 0.0;
     if (flgdiag) sum = rgdTmp[d];
-    else for (size_t e = 0; e < _k->_problem->N; ++e) sum += B[d][e] * rgdTmp[d];
+    else for (size_t e = 0; e < _k->_problem->N; ++e) sum += B[d][e] * rgdTmp[e];
 
     rgps[d] = (1. - _sigmaCumulationFactor) * rgps[d] + sqrt(_sigmaCumulationFactor * (2. - _sigmaCumulationFactor) * _muEffective) * sum;
  
@@ -652,7 +652,6 @@ void CCMAES::updateDistribution(const double *fitnessVector)
  /* update of C  */
  adaptC(hsig);
 
-
  // update sigma
  if(isVia)
  {
@@ -663,7 +662,8 @@ void CCMAES::updateDistribution(const double *fitnessVector)
  }
  else
  {
-   sigma *= exp(((sqrt(psL2)/_chiN)-1.)*_sigmaCumulationFactor/_dampFactor);
+   // sigma *= exp(((sqrt(psL2)/_chiN)-1.)*_sigmaCumulationFactor/_dampFactor) (orig)
+   sigma *= exp(std::min(1.0, ((sqrt(psL2)/_chiN)-1.)*_sigmaCumulationFactor/_dampFactor)); //MATLAB
  }
 
 
@@ -719,8 +719,10 @@ void CCMAES::adaptC(int hsig)
  if (_covarianceMatrixLearningRate != 0.0)
  {
   /* definitions for speeding up inner-most loop */
-  double ccov1 = std::min(_covarianceMatrixLearningRate * (1./_muCovariance) * (flgdiag ? (_k->_problem->N+1.5) / 3. : 1.), 1.);
-  double ccovmu = std::min(_covarianceMatrixLearningRate * (1-1./_muCovariance) * (flgdiag ? (_k->_problem->N+1.5) / 3. : 1.), 1.-ccov1);
+  //double ccov1 = std::min(_covarianceMatrixLearningRate * (1./_muCovariance) * (flgdiag ? (_k->_problem->N+1.5) / 3. : 1.), 1.);
+  // ccovmu = ? 
+  double ccov1  = 2.0 / (std::pow(_k->_problem->N+1.3,2)+_muEffective); //MATLAB
+  double ccovmu = std::min(1.0-ccov1,  2.0 * (_muEffective-2+1/_muEffective) / (std::pow(_k->_problem->N+2.0,2)+_muEffective)); //MATLAB
   double sigmasquare = sigma * sigma;
 
   flgEigensysIsUptodate = false;
@@ -728,8 +730,9 @@ void CCMAES::adaptC(int hsig)
   /* update covariance matrix */
   for (size_t d = 0; d < _k->_problem->N; ++d)
    for (size_t e = flgdiag ? d : 0; e <= d; ++e) {
-   C[d][e] = (1 - ccov1 - ccovmu) * C[d][e] + ccov1 * (rgpc[d] * rgpc[e] + (1-hsig)*_cumulativeCovariance*(2.-_cumulativeCovariance) * C[d][e]);
-   for (size_t k = 0; k < _current_mu; ++k) C[d][e] += ccovmu * _muWeights[k] * (_samplePopulation[index[k]*_k->_problem->N + d] - rgxold[d]) * (_samplePopulation[index[k]*_k->_problem->N + e] - rgxold[e]) / sigmasquare;
+     C[d][e] = (1 - ccov1 - ccovmu) * C[d][e] + ccov1 * (rgpc[d] * rgpc[e] + (1-hsig)*ccov1*_cumulativeCovariance*(2.-_cumulativeCovariance) * C[d][e]);
+     for (size_t k = 0; k < _current_mu; ++k) C[d][e] += ccovmu * _muWeights[k] * (_samplePopulation[index[k]*_k->_problem->N + d] - rgxold[d]) * (_samplePopulation[index[k]*_k->_problem->N + e] - rgxold[e]) / sigmasquare;
+     if (e < d) C[e][d] = C[d][e];
    }
 
   /* update maximal and minimal diagonal value */
@@ -781,8 +784,9 @@ void CCMAES::handleConstraints()
   
   //C
   /* TODO: verify this */
-  eigen(_k->_problem->N, C, rgD, B);
-  
+  eigen(_k->_problem->N, C, rgD /* eigen vals*/ , B /* eigen vec*/  );
+     
+
   /* in original some stopping criterion (TOLX) */
 
   //resample invalid points
@@ -919,6 +923,15 @@ void CCMAES::updateEigensystem(int flgforce)
  /* if(_currentGeneration % _covarianceEigenEvalFreq == 0) return; */
 
  eigen(_k->_problem->N, C, rgD, B);
+  
+ /*
+ for(size_t i = 0; i < 2; ++i)
+    for(size_t j = 0; j < 2; ++j)
+    {
+        printf("(%zu, %zu) C: %f\n B: %f\n D: %f\n", i, j, C[i][j], B[i][j], rgD[i]);
+    }
+ */
+
 
  /* find largest and smallest eigenvalue, they are supposed to be sorted anyway */
  minEW = doubleRangeMin(rgD, _k->_problem->N);
@@ -959,7 +972,7 @@ void CCMAES::eigen(size_t size, double **C, double *diag, double **Q) const
   gsl_vector_view evec_i = gsl_matrix_column (evec, i);
   for (size_t j = 0; j < size; j++) Q[j][i] = gsl_vector_get (&evec_i.vector, j);
  }
-
+ 
  for (size_t i = 0; i < size; i++) diag[i] = gsl_vector_get (eval, i);
 
  gsl_vector_free (eval);

@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
  korali["Solver"]["Method"] = "CCMA-ES";
  korali["Solver"]["Num Samples"] = 10;
  korali["Solver"]["Num Viability Samples"] = 4;
- korali["Solver"]["Termination Criteria"]["Max Generations"] = 10;
+ korali["Solver"]["Termination Criteria"]["Max Generations"] = 100;
  korali["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-12;
  
  korali.run();

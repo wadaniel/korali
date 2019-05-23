@@ -57,6 +57,7 @@ class CCMAES : public Korali::Solver::Base
  double _sigmaCumulationFactor; /* increment for sigma, default calculated from muEffective and dimension */
  double _dampFactorIn; /* read from configuration, placeholder for reinit (see below) */
  double _dampFactor; /* dampening parameter determines controls step size adaption */
+ double _cumulativeCovarianceIn; /* read from configuration, plcaeholder for reinit (see below) */
  double _cumulativeCovariance; /* default calculated from dimension */
  double _covMatrixLearningRateIn; /* read from configuration, placehoder for reinit (see below) */
  double _covarianceMatrixLearningRate; /* parameter to calibrate cov updates */

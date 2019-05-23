@@ -1,9 +1,6 @@
 include ../korali.config
 
-CXXFLAGS_SHARED = -fPIC 
-CXXFLAGS_STATIC = 
-
-CXXFLAGS = -g -I. -I../libs -I../libs/gsl/include -std=c++14
+CXXFLAGS += -g -I. -I../libs -I../libs/gsl/include -std=c++14 -fPIC 
 CXXFLAGS += -Wno-unused -Wno-unused-result -Wno-unused-parameter -Wno-address -Wno-deprecated-declarations -Wall -Wfatal-errors -Wno-register -Wno-c++17-extensions
 
 ifneq ("$(wildcard ../libs/gsl/lib/libgsl.so)","")
@@ -19,43 +16,28 @@ ifneq ("$(wildcard ../libs/gsl/lib/libgsl.dylib)","")
  LIBGSLCBLASPATH = "../libs/gsl/lib/libgslcblas.dylib" 
 endif
 
-LDFLAGS_SHARED = $(LDWHOLE) $(LIBGSLPATH) $(LIBGSLCBLASPATH) $(LDNOWHOLE)
+LDFLAGS = $(LDWHOLE) $(LIBGSLPATH) $(LIBGSLCBLASPATH) $(LDNOWHOLE)
 
-CXXFLAGS_SHARED += $(shell echo $(PYTHONCFLAGS)) -D_KORALI_USE_PYTHON
-LDFLAGS_SHARED  += $(shell echo $(PYTHONLIBS))
-
-ifeq ($(USE_MULTITHREAD), 1)
- CXXFLAGS += -D_KORALI_USE_MULTITHREAD -pthread
- LDFLAGS_SHARED  += -pthread
-endif
-
-ifeq ($(USE_UPCXX), 1)
- CXXFLAGS_STATIC += -D_KORALI_USE_UPCXX `upcxx-meta CPPFLAGS`
-endif
+CXXFLAGS += `python3-config --includes` -D_KORALI_USE_PYTHON
+LDFLAGS  += `python3-config --ldflags`
 
 ifeq ($(USE_MPI), 1)
  CXXFLAGS += -D_KORALI_USE_MPI
+ CXX = $(MPICXX)
 endif
 
-all: libkorali.so libkorali.a
+all: libkorali.so
 
 SOURCES = $(shell find . -name "*.cpp")
-OBJECTS_STATIC = $(SOURCES:.cpp=.static.o)
-OBJECTS_SHARED = $(SOURCES:.cpp=.shared.o)
+OBJECTS = $(SOURCES:.cpp=.o)
 
-%.static.o: %.cpp
-	$(CXX) $(CXXFLAGS) $(CXXFLAGS_STATIC) -c $< -o $@
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) $(CXXFLAGS) -c $< -o $@
 
-%.shared.o: %.cpp
-	$(CXX) $(CXXFLAGS) $(CXXFLAGS_SHARED) -c $< -o $@
-
-libkorali.so: $(OBJECTS_SHARED)
-	$(CXX) -shared -O3 $^ -o $@ $(LDFLAGS_SHARED) 
-
-libkorali.a: $(OBJECTS_STATIC)
-	ar rs $@ $^  
+libkorali.so: $(OBJECTS)
+	$(CXX) -shared -O3 $^ -o $@ $(LDFLAGS) 
 
 clean:
-	@rm -rf *.a *.so $(OBJECTS_STATIC) $(OBJECTS_SHARED)
+	@rm -rf *.so  $(OBJECTS)
 
 .PHONY: clean all

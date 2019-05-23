@@ -17,18 +17,12 @@ function print_help ()
  echo "Configuration syntax:"
  echo "./configure"
  echo "   [--prefix=INSTALL_DIR]"
- echo "   [--enable-upcxx]"
- echo "   [--enable-mpi]"
- echo "   [--disable-pthreads]"
  echo ""
  echo "Where:"
  echo " INSTALL_DIR is the path where to install Korali."
  echo " --help Displays this help message."
 }
 
-USE_UPCXX=0
-USE_MPI=0
-USE_MULTITHREAD=1
 PREFIX=$PWD/korali
 
 for i in "$@"
@@ -43,19 +37,6 @@ case $i in
     exit 0 
     shift 
     ;;
-    --enable-upcxx)
-    USE_UPCXX=1
-    shift 
-    ;;
-    --enable-mpi)
-    USE_MPI=1
-    shift 
-    ;;
-    --disable-pthreads)
-    USE_MULTITHREAD=0
-    echo "[Korali] Disabling POSIX Thread support."
-    shift
-    ;;
     *)
     print_help
     echo ""
@@ -64,6 +45,8 @@ case $i in
     ;;
 esac
 done
+
+echo "[Korali] Configuring Korali..."
 
 ######## Checking compiler ########
 
@@ -87,43 +70,18 @@ if [ $DETECTED_CXX       -eq 0 ]; then USE_CXX=$CXX;    fi;
 
 ######## Checking support for MPI ########
 
-if [ $USE_MPI -eq 1 ]
+$MPICXX --version > /dev/null 2>&1
+if [ ! $? -eq 0 ]
 then
- mpicxx --version > /dev/null 2>&1
- if [ ! $? -eq 0 ]
- then
-  echo "[Korali] Error: No mpicxx command found."
-  exit -1
- else
-  echo "[Korali] Configuring with support for the MPI Conduit"
-  USE_MPI=1
-  USE_CXX=mpicxx
-  echo "[Korali] Using \$CXX=$USE_CXX as C++ compiler."
- fi
-fi
-
-######## Checking support for UPC++ ########
-
-if [ $USE_UPCXX -eq 1 ]
-then
- upcxx --version > /dev/null 2>&1
- if [ ! $? -eq 0 ]
- then
-  echo "[Korali] Error: No upcxx command found for UPC++."
-  exit -1
- else
-  upcxx-meta CPPFLAGS > /dev/null 2>&1
-  if [ ! $? -eq 0 ]
-  then
-   echo "[Korali] Error: No upcxx-meta command found for UPC++."
-   exit -1
-  else
-   echo "[Korali] Configuring with support for the UPC++ Conduit."
-   USE_UPCXX=1
-  fi
- fi
+ echo "[Korali] No MPI compiler command found in \$MPICXX."
+ echo "[Korali] Use 'export MPICXX=(path)' to enable MPI support."
+ USE_MPI=0
 else
- echo "[Korali] Configuring without support for the UPC++ Conduit."
+ echo "[Korali] Found $MPICXX for MPI compiler/wrapper."
+ echo "[Korali] Use 'export MPICXX=(path)' to use a different MPI wrapper."
+ echo "[Korali] Configuring with support for the MPI Conduit"
+ USE_CXX=$MPICXX
+ USE_MPI=1
 fi
 
 ######## Checking support for Python3 ########
@@ -133,10 +91,7 @@ python3 --version > /dev/null 2>&1
 if [ $? -eq 0 ]; then
   echo "[Korali] Checking for python3-config."
   python3-config --help > /dev/null 2>&1
-  if [ $? -eq 0 ]; then
-    pythonCFlags=`python3-config --includes`
-    pythonLibs=`python3-config --ldflags`
-  else
+  if [ $? -ne 0 ]; then
     echo "[Korali] Error: python3-config not found."
     echo "[Korali] Please make sure python3 is correctly installed."
     exit
@@ -151,34 +106,22 @@ fi
 
 if [[ "$USE_CXX" == "" ]]
 then
-  echo "[Korali] Error: Did not found any valid C++ compiler. Please define \$CXX."
+  echo "[Korali] Error: Did not found any valid C++ or MPI C++ compiler. Please define \$CXX."
   exit -1
 fi
 
 ######## Determining Compilation Flags ########
 
-CXXFLAGS="-I$PREFIX/include -I$PREFIX/lib/koraligsl/include/gsl --std=c++14"
-CXXFLAGS="$CXXFLAGS -Wno-unused -Wunused-result -Wno-unused-parameter -Wno-address -Wno-deprecated-declarations -Wall -Wfatal-errors -Wno-c++17-extensions"
-LDFLAGS="$PREFIX/lib/libkorali.a $PREFIX/lib/libkoraligsl.a $PREFIX/lib/libkoraligslcblas.a"
-
-if [[ "$USE_MULTITHREAD" == "1" ]]; then
- CXXFLAGS="$CXXFLAGS -pthread"
- LDFLAGS="$LDFLAGS -pthread"
-fi
+CXXFLAGS="-I$PREFIX/include -I$PREFIX/lib/koraligsl/include/gsl --std=c++14 -Wno-unused -Wunused-result -Wno-unused-parameter -Wno-address -Wno-deprecated-declarations -Wall -Wfatal-errors -Wno-c++17-extensions"
 
 ######## Creating Config File ########
 
 echo "VERSION=$VERSION" > korali.config
 echo "PREFIX=$PREFIX" >> korali.config
-echo "PYTHONCFLAGS=\"$pythonCFlags\"" >> korali.config
-echo "PYTHONLIBS=\"$pythonLibs\"" >> korali.config
 echo "CXX=$USE_CXX" >> korali.config
-echo "CXXFLAGS=\"$CXXFLAGS\"" >> korali.config
-echo "LDFLAGS=\"$LDFLAGS\"" >> korali.config
 echo "USE_MPI=$USE_MPI" >> korali.config
-echo "USE_UPCXX=$USE_UPCXX" >> korali.config
-echo "USE_MULTITHREAD=$USE_MULTITHREAD" >> korali.config
 
-echo "[Korali] Configuration was successful (see: korali.config)."
+echo "[Korali] ---------------------------------------------------"
+echo "[Korali] Configuration was successful."
 echo "[Korali] Install Path: $PREFIX"
 echo "[Korali] Run 'make install' to install Korali."

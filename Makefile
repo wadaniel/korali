@@ -1,6 +1,5 @@
 INCLUDES = $(shell cd source && find . | grep "\.h")
 TESTS = $(dir $(wildcard tests/*/))
-EXAMPLES = $(dir $(wildcard examples/cxx/*/))
 CURDIR = $(shell pwd)
 
 include korali.config
@@ -9,7 +8,7 @@ include korali.config
 
 all: source/libkorali.so
 
-source/libkorali.so: libs/gsl/lib/libgsl.a
+source/libkorali.so: libs/gsl/lib/libgsl.so
 	@$(MAKE) -j -C source
 
 clean: 
@@ -19,9 +18,6 @@ tests: $(TESTS)
 
 $(TESTS):: install
 	$(MAKE) -j -C $@
-
-clean_examples:
-	for i in $(EXAMPLES); do $(MAKE) -j -C $$i clean; done
 
 clean_tests:
 	for i in $(TESTS); do $(MAKE) -j -C $$i clean; done
@@ -33,14 +29,12 @@ install: source/libkorali.so
 	mkdir -p $(PREFIX)/bin
 	mkdir -p $(PREFIX)/python
 	cp source/libkorali.so $(PREFIX)/lib
-	cp source/libkorali.so $(PREFIX)/lib/libkorali.dylib
-	cp source/libkorali.a $(PREFIX)/lib 
+	ln -sf $(PREFIX)/lib/libkorali.so $(PREFIX)/lib/libkorali.dylib
 	cd source && for i in $(INCLUDES); do rsync -R $$i $(PREFIX)/include > /dev/null 2>&1; done 
 	cp -r libs/json $(PREFIX)/include
 	cp -r libs/koralijson $(PREFIX)/include
 	cp -r libs/gsl/include/gsl $(PREFIX)/include 
-	cp libs/gsl/lib/libgsl.a $(PREFIX)/lib/libkoraligsl.a
-	cp libs/gsl/lib/libgslcblas.a $(PREFIX)/lib/libkoraligslcblas.a 
+	cp libs/gsl/lib/libgsl* $(PREFIX)/lib/
 	cp tools/korali-plot $(PREFIX)/bin
 	chmod a+x $(PREFIX)/bin/korali-plot
 	cp -r tools/plotting/* $(PREFIX)/bin/
@@ -49,9 +43,6 @@ install: source/libkorali.so
 	@echo "#!/bin/bash" > $(PREFIX)/bin/korali-cxx
 	@cat korali.config tools/korali-cxx >> $(PREFIX)/bin/korali-cxx
 	@chmod a+x  $(PREFIX)/bin/korali-cxx
-	@echo "#!/bin/bash" > $(PREFIX)/bin/korali-config
-	@cat korali.config tools/korali-config >> $(PREFIX)/bin/korali-config
-	@chmod a+x  $(PREFIX)/bin/korali-config
 	@echo '------------------------------------------------------------------'
 	@echo '[Korali] To complete installation, please update your environment:'
 	@echo '[Korali] >export PATH=$$PATH:$(PREFIX)/bin'
@@ -61,7 +52,7 @@ install: source/libkorali.so
 snapshot: install clean
 	tar -zcvf korali`date +"%m-%d-%y"`.tar.gz korali/ tests/
 
-libs/gsl/lib/libgsl.a:
+libs/gsl/lib/libgsl.so:
 	@echo "[Korali] Downloading GNU Scientific Library... "
 	@cd libs/ && rm -f gsl-2.5.tar.gz && wget "ftp://ftp.gnu.org/gnu/gsl/gsl-2.5.tar.gz" && tar -xzvf gsl-2.5.tar.gz > /dev/null 2>&1
 	@echo "[Korali] Configuring GNU Scientific Library... "

@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
 import sys
+sys.path.append('./model')
+from directModel import *
 import libkorali
-
-def F( s ):
-  x = s.getParameter(0)
-  r = -x*x
-  s.addResult(r)
 
 korali = libkorali.Engine()
 
@@ -15,7 +12,7 @@ korali["Verbosity"] = "Detailed"
 korali["Problem"]["Type"] = "Direct"
 korali["Problem"]["Variables"][0]["Name"] = "X"
 korali["Problem"]["Variables"][0]["Distribution"] = "Uniform"
-# korali["Problem"]["Variables"][0]["Minimum"] = -10.0
+korali["Problem"]["Variables"][0]["Minimum"] = -10.0
 korali["Problem"]["Variables"][0]["Maximum"] = +10.0
 korali["Problem"]["Variables"][0]["Initial Mean"]   = 2.0
 korali["Problem"]["Variables"][0]["Initial StdDev"] = 5.0
@@ -26,4 +23,4 @@ korali["Solver"]["Termination Criteria"]["Max Generations"] = 100
 korali["Solver"]["Lambda"] = 5
 korali["Solver"]["Objective"] = "Maximize"
 
-korali.run(F)
+korali.run(evaluateModel)

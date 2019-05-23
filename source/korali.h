@@ -9,10 +9,6 @@
 #include "mpi.h"
 #endif
 
-#ifdef _KORALI_USE_UPCXX
-#include <upcxx/upcxx.hpp>
-#endif
-
 #include "problems/direct/direct.h"
 #include "problems/bayesian/bayesian.h"
 
@@ -27,8 +23,6 @@
 #include "solvers/tmcmc/tmcmc.h"
 
 #include "conduits/single/single.h"
-#include "conduits/multithread/multithread.h"
-#include "conduits/upcxx/upcxx.h"
 #include "conduits/mpi/_mpi.h"
 
 #include "koralijson/koralijson.h"

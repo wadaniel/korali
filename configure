@@ -119,6 +119,7 @@ CXXFLAGS="-I$PREFIX/include -I$PREFIX/lib/koraligsl/include/gsl --std=c++14 -Wno
 echo "VERSION=$VERSION" > korali.config
 echo "PREFIX=$PREFIX" >> korali.config
 echo "CXX=$USE_CXX" >> korali.config
+echo "CXXFLAGS=\"$CXXFLAGS"\" >> korali.config
 echo "USE_MPI=$USE_MPI" >> korali.config
 
 echo "[Korali] ---------------------------------------------------"

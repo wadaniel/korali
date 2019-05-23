@@ -165,10 +165,6 @@ void Korali::Engine::run(std::function<void(Korali::ModelData&)> model)
 
  _currentFileId = 0;
 
- #ifdef _KORALI_USE_PYTHON
-  pybind11::gil_scoped_release release; // Releasing Global Lock for Multithreaded execution
- #endif
-
  // Creating Results directory
  mkdir("_korali_result", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 

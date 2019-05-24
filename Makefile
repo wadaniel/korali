@@ -1,6 +1,7 @@
 INCLUDES = $(shell cd source && find . | grep "\.h")
 TESTS = $(dir $(wildcard tests/*/))
 CURDIR = $(shell pwd)
+PIP ?= python3 -m pip
 
 include korali.config
 
@@ -49,10 +50,10 @@ install: $(KORALI_LIBNAME_SHARED)
 	@echo "#!/bin/bash" > $(PREFIX)/bin/korali-cxx
 	@cat korali.config tools/korali-cxx >> $(PREFIX)/bin/korali-cxx
 	@chmod a+x  $(PREFIX)/bin/korali-cxx
+	@$(PIP) install . --user --upgrade
 	@echo '------------------------------------------------------------------'
-	@echo '[Korali] To complete installation, please update your environment:'
+	@echo '[Korali] For C++ support, please update your environment:'
 	@echo '[Korali] >export PATH=$$PATH:$(PREFIX)/bin'
-	@echo '[Korali] >export PYTHONPATH=$$PYTHONPATH:$(PREFIX)/lib'
 	@echo '------------------------------------------------------------------' 
 
 snapshot: install clean

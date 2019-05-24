@@ -13,5 +13,5 @@ if [[ "$@" == *"-c"* ]]; then
  fi
 fi
 
-echo "$CXX $@ $flags"
+#echo "$CXX $@ $flags"
 $CXX $@ $flags

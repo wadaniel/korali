@@ -2,7 +2,7 @@
 flags=-O3 
 
 if [[ "$@" == *"-o"* ]]; then
-  flags+=" $LDFLAGS -L$PREFIX/lib -Wl,-rpath $PREFIX/lib -lkorali -lgsl -lgslcblas" 
+  flags+=" $LDFLAGS $PREFIX/lib/libkorali.a -L$PREFIX/lib -Wl,-rpath $PREFIX/lib -lgsl -lgslcblas" 
 fi
 
 if [[ "$@" == *"-c"* ]]; then
@@ -13,5 +13,5 @@ if [[ "$@" == *"-c"* ]]; then
  fi
 fi
 
-#echo "$CXX $@ $flags"
+echo "$CXX $@ $flags"
 $CXX $@ $flags

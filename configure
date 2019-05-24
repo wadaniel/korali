@@ -48,7 +48,27 @@ done
 
 echo "[Korali] Configuring Korali..."
 
-######## Checking compiler ########
+######## Checking Architecture ####
+
+# Checking for architecture
+arch="$(uname -s)"
+
+# Linux Architecture is default
+DLL_EXTENSION="so"
+SHAREDLIB_FLAG="-shared"
+
+if [ "$arch" == "Linux" ]; then
+echo "[Korali] Linux System Detected..."
+fi
+
+# If using MacOs, change flags 
+if [ "$arch" == "Darwin" ]; then
+ echo "[Korali] MacOS (Darwin) System Detected..."
+ DLL_EXTENSION="dylib"
+ SHAREDLIB_FLAG="-dynamiclib"
+fi
+
+######## Checking Compiler ########
 
 $CXX --version > /dev/null 2>&1
 DETECTED_CXX=$?
@@ -120,7 +140,10 @@ echo "VERSION=$VERSION" > korali.config
 echo "PREFIX=$PREFIX" >> korali.config
 echo "CXX=$USE_CXX" >> korali.config
 echo "CXXFLAGS=\"$CXXFLAGS"\" >> korali.config
+echo "LDFLAGS=\"`python3-config --ldflags`\"" >> korali.config
+echo "SHAREDLIB_FLAG=$SHAREDLIB_FLAG" >> korali.config
 echo "USE_MPI=$USE_MPI" >> korali.config
+echo "DLL_EXTENSION=$DLL_EXTENSION" >> korali.config 
 
 echo "[Korali] ---------------------------------------------------"
 echo "[Korali] Configuration was successful."

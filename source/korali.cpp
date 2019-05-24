@@ -45,6 +45,7 @@ PYBIND11_MODULE(libkorali, m) {
  .def("__setitem__", pybind11::overload_cast<const std::string&, const double&>(&Korali::KoraliJsonWrapper::setItem), pybind11::return_value_policy::reference)
  .def("__setitem__", pybind11::overload_cast<const std::string&, const int&>(&Korali::KoraliJsonWrapper::setItem), pybind11::return_value_policy::reference)
  .def("__setitem__", pybind11::overload_cast<const std::string&, const bool&>(&Korali::KoraliJsonWrapper::setItem), pybind11::return_value_policy::reference)
+ .def("__setitem__", pybind11::overload_cast<const std::string&, const std::vector<double>&>(&Korali::KoraliJsonWrapper::setItem), pybind11::return_value_policy::reference)
  .def("__setitem__", pybind11::overload_cast<const int&, const std::string&>(&Korali::KoraliJsonWrapper::setItem), pybind11::return_value_policy::reference)
  .def("__setitem__", pybind11::overload_cast<const int&, const double&>(&Korali::KoraliJsonWrapper::setItem), pybind11::return_value_policy::reference)
  .def("__setitem__", pybind11::overload_cast<const int&, const int&>(&Korali::KoraliJsonWrapper::setItem), pybind11::return_value_policy::reference)
@@ -85,7 +86,7 @@ nlohmann::json Korali::Engine::getConfiguration()
  js["Output Frequency"] = _outputFrequency;
  js["Problem"] = _problem->getConfiguration();
  js["Solver"]  = _solver->getConfiguration();
- js["Conduit"] = _conduit->getConfiguration();
+ js["MPI"] = _conduit->getConfiguration();
 
  return js;
 }
@@ -121,54 +122,18 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
  if (foundProblem == false) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Problem."); exit(-1); }
 
  // Configure Conduit
- std::string conduitString = "Single";
 
- conduitString = consume(js, { "Conduit", "Type" }, KORALI_STRING, conduitString);
- _conduit = NULL;
+ int rankCount = 1;
 
- if (conduitString == "Single")
- {
-  _conduit = new Korali::Conduit::Single(js["Conduit"]);
- }
+ #ifdef _KORALI_USE_MPI
+  int isInitialized;
+  MPI_Initialized(&isInitialized);
+  if (isInitialized == false)  MPI_Init(nullptr, nullptr);
+  MPI_Comm_size(MPI_COMM_WORLD, &rankCount);
+  if (rankCount > 1) _conduit = new Korali::Conduit::KoraliMPI(js["MPI"]);
+ #endif
 
- if (conduitString == "UPC++")
- {
-  #ifdef _KORALI_USE_UPCXX
-   _conduit = new Korali::Conduit::UPCXX(js["Conduit"]);
-  #else
-   fprintf(stderr, "[Korali] Error: UPC++ conduit is not properly configured.\n");
-   fprintf(stderr, "[Korali] Reinstall Korali with the proper configuration to support UPC++.\n");
-   exit(-1);
-  #endif
- }
-
- if (conduitString == "MPI")
- {
-  #ifdef _KORALI_USE_MPI
-   _conduit = new Korali::Conduit::KoraliMPI(js["Conduit"]);
-  #else
-   fprintf(stderr, "[Korali] Error: MPI conduit is not properly configured.\n");
-   fprintf(stderr, "[Korali] Reinstall Korali with the proper configuration to support MPI.\n");
-   exit(-1);
-  #endif
- }
-
- if (conduitString == "Multithread")
- {
-  #ifdef _KORALI_USE_MULTITHREAD
-   _conduit = new Korali::Conduit::Multithread(js["Conduit"]);
-  #else
-   fprintf(stderr, "[Korali] Error: Multithread conduit is not properly configured.\n");
-   fprintf(stderr, "[Korali] Reinstall Korali with the proper configuration to support pthreads.\n");
-   exit(-1);
-  #endif
- }
-
- if (_conduit == NULL)
- {
-   fprintf(stderr, "[Korali] Error: Unrecognized or no conduit ('%s') selected.\n", conduitString.c_str());
-   exit(-1);
- }
+ if (rankCount == 1) _conduit = new Korali::Conduit::Single(js["MPI"]);
 
  // Configure Solver
  _solver = NULL;
@@ -199,10 +164,6 @@ void Korali::Engine::run(std::function<void(Korali::ModelData&)> model)
  setConfiguration(_js);
 
  _currentFileId = 0;
-
- #ifdef _KORALI_USE_PYTHON
-  pybind11::gil_scoped_release release; // Releasing Global Lock for Multithreaded execution
- #endif
 
  // Creating Results directory
  mkdir("_korali_result", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);

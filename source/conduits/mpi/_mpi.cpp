@@ -20,11 +20,7 @@ KoraliMPI::KoraliMPI(nlohmann::json& js) : Base::Base(js)
 
  int isInitialized;
  MPI_Initialized(&isInitialized);
- if (isInitialized == false)
- {
-  fprintf(stderr, "[Korali] Error: You must initialize MPI (e.g., MPI_Init) before launching Korali's MPI conduit.\n");
-  exit(-1);
- }
+ if (isInitialized == false)  MPI_Init(nullptr, nullptr);
 
  MPI_Comm_size(MPI_COMM_WORLD, &_rankCount);
  MPI_Comm_rank(MPI_COMM_WORLD, &_rankId);
@@ -57,12 +53,12 @@ KoraliMPI::KoraliMPI(nlohmann::json& js) : Base::Base(js)
  int mpiSize = -1;
  MPI_Comm_size(MPI_COMM_WORLD, &mpiSize);
 
- if (_rankCount < 2)
+ if(isRoot()) if (_rankCount < _ranksPerTeam + 1)
  {
-  fprintf(stderr, "[Korali] Error: Running Korali's MPI Conduit with less than 2 ranks is not allowed.\n");
+  fprintf(stderr, "[Korali] Error: You are running MPI with %d ranks. \n", _rankCount);
+  fprintf(stderr, "[Korali] However, you need at least %d ranks to have at least one worker team. \n", _ranksPerTeam + 1);
   exit(-1);
  }
-
 
  MPI_Barrier(MPI_COMM_WORLD);
 }
@@ -79,7 +75,6 @@ nlohmann::json KoraliMPI::getConfiguration()
 {
  auto js = this->Base::getConfiguration();
 
- js["Type"] = "MPI";
  js["Ranks Per Team"] = _ranksPerTeam;
 
  return js;

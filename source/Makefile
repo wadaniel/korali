@@ -1,61 +1,37 @@
 include ../korali.config
 
-CXXFLAGS_SHARED = -fPIC 
-CXXFLAGS_STATIC = 
+KORALI_LIBNAME_SHARED=libkorali.so
+KORALI_LIBNAME_STATIC=libkorali.a
 
-CXXFLAGS = -g -I. -I../libs -I../libs/gsl/include -std=c++14
-CXXFLAGS += -Wno-unused -Wno-unused-result -Wno-unused-parameter -Wno-address -Wno-deprecated-declarations -Wall -Wfatal-errors -Wno-register -Wno-c++17-extensions
+GSL_LIBNAME=../libs/gsl/lib/libgsl.$(DLL_EXTENSION)
+GSLCBLAS_LIBNAME=../libs/gsl/lib/libgslcblas.$(DLL_EXTENSION)
 
-ifneq ("$(wildcard ../libs/gsl/lib/libgsl.so)","")
- LDWHOLE = -Wl,--whole-archive
- LIBGSLPATH = "../libs/gsl/lib/libgsl.so" 
- LIBGSLCBLASPATH = "../libs/gsl/lib/libgslcblas.so" 
- LDNOWHOLE = -Wl,--no-whole-archive
-endif
+CFLAGS = $(shell echo $(CXXFLAGS)) -g -O3 -I. -I../libs -I../libs/gsl/include -std=c++14 -fPIC 
+LDFLAGS = $(SHAREDLIB_FLAG) $(GSL_LIBNAME) $(GSLCBLAS_LIBNAME)
 
-ifneq ("$(wildcard ../libs/gsl/lib/libgsl.dylib)","")
- LDWHOLE = -Wl,-all_load
- LIBGSLPATH = "../libs/gsl/lib/libgsl.dylib" 
- LIBGSLCBLASPATH = "../libs/gsl/lib/libgslcblas.dylib" 
-endif
-
-LDFLAGS_SHARED = $(LDWHOLE) $(LIBGSLPATH) $(LIBGSLCBLASPATH) $(LDNOWHOLE)
-
-CXXFLAGS_SHARED += $(shell echo $(PYTHONCFLAGS)) -D_KORALI_USE_PYTHON
-LDFLAGS_SHARED  += $(shell echo $(PYTHONLIBS))
-
-ifeq ($(USE_MULTITHREAD), 1)
- CXXFLAGS += -D_KORALI_USE_MULTITHREAD -pthread
- LDFLAGS_SHARED  += -pthread
-endif
-
-ifeq ($(USE_UPCXX), 1)
- CXXFLAGS_STATIC += -D_KORALI_USE_UPCXX `upcxx-meta CPPFLAGS`
-endif
+CFLAGS += `python3-config --includes` -D_KORALI_USE_PYTHON
+LDFLAGS  += `python3-config --ldflags`
 
 ifeq ($(USE_MPI), 1)
- CXXFLAGS += -D_KORALI_USE_MPI
+ CFLAGS += -D_KORALI_USE_MPI
+ CXX = $(MPICXX)
 endif
 
-all: libkorali.so libkorali.a
+all: $(KORALI_LIBNAME_SHARED) $(KORALI_LIBNAME_STATIC)
 
 SOURCES = $(shell find . -name "*.cpp")
-OBJECTS_STATIC = $(SOURCES:.cpp=.static.o)
-OBJECTS_SHARED = $(SOURCES:.cpp=.shared.o)
+OBJECTS = $(SOURCES:.cpp=.o)
 
-%.static.o: %.cpp
-	$(CXX) $(CXXFLAGS) $(CXXFLAGS_STATIC) -c $< -o $@
+%.o: %.cpp
+	$(CXX) $(CFLAGS) -c $< -o $@
 
-%.shared.o: %.cpp
-	$(CXX) $(CXXFLAGS) $(CXXFLAGS_SHARED) -c $< -o $@
-
-libkorali.so: $(OBJECTS_SHARED)
-	$(CXX) -shared -O3 $^ -o $@ $(LDFLAGS_SHARED) 
-
-libkorali.a: $(OBJECTS_STATIC)
+$(KORALI_LIBNAME_SHARED): $(OBJECTS)
+	$(CXX) $^ -o $@ $(LDFLAGS)
+	
+$(KORALI_LIBNAME_STATIC): $(OBJECTS)
 	ar rs $@ $^  
-
+	
 clean:
-	@rm -rf *.a *.so $(OBJECTS_STATIC) $(OBJECTS_SHARED)
+	@rm -rf *.so *.dylib $(OBJECTS)
 
 .PHONY: clean all

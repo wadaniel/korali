@@ -18,16 +18,17 @@ class KoraliJsonWrapper
  public:
   nlohmann::json* _js;
 
-  KoraliJsonWrapper& getItem(const std::string& key)           { _js = &((*_js)[key]); return *this;}
-  KoraliJsonWrapper& getItem(const unsigned long int& key)     { _js = &((*_js)[key]); return *this;}
-  void setItem(const std::string& key, const std::string& val) { (*_js)[key] = val; }
-  void setItem(const std::string& key, const double& val)      { (*_js)[key] = val; }
-  void setItem(const std::string& key, const int& val)         { (*_js)[key] = val; }
-  void setItem(const std::string& key, const bool& val)        { (*_js)[key] = val; }
-  void setItem(const int& key, const std::string& val)         { (*_js)[key] = val; }
-  void setItem(const int& key, const double& val)              { (*_js)[key] = val; }
-  void setItem(const int& key, const int& val)                 { (*_js)[key] = val; }
-  void setItem(const int& key, const bool& val)                { (*_js)[key] = val; }
+  KoraliJsonWrapper& getItem(const std::string& key)                   { _js = &((*_js)[key]); return *this;}
+  KoraliJsonWrapper& getItem(const unsigned long int& key)             { _js = &((*_js)[key]); return *this;}
+  void setItem(const std::string& key, const std::string& val)         { (*_js)[key] = val; }
+  void setItem(const std::string& key, const double& val)              { (*_js)[key] = val; }
+  void setItem(const std::string& key, const int& val)                 { (*_js)[key] = val; }
+  void setItem(const std::string& key, const bool& val)                { (*_js)[key] = val; }
+  void setItem(const std::string& key, const std::vector<double>& val) { (*_js)[key] = val; }
+  void setItem(const int& key, const std::string& val)                 { (*_js)[key] = val; }
+  void setItem(const int& key, const double& val)                      { (*_js)[key] = val; }
+  void setItem(const int& key, const int& val)                         { (*_js)[key] = val; }
+  void setItem(const int& key, const bool& val)                        { (*_js)[key] = val; }
 };
 
 static bool isEmpty(nlohmann::json& js)

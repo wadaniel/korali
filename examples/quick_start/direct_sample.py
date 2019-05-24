@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
 import sys
+sys.path.append('./model')
+from directModel import *
 import libkorali
-
-def F( s ):
-  x = s.getParameter(0)
-  r = -x*x
-  s.addResult(r)
 
 korali = libkorali.Engine()
 
@@ -24,4 +21,4 @@ korali["Solver"]["Population Size"] = 50000
 korali["Solver"]["Coefficient of Variation"] = 0.5;
 korali["Solver"]["Burn In"] = 5
 
-korali.run(F)
+korali.run(evaluateModel)

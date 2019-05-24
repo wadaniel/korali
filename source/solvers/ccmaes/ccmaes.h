@@ -158,6 +158,7 @@ class CCMAES : public Korali::Solver::Base
  bool **viabilityIndicator; /* constraint evaluation better than viability bound */
  double **constraintEvaluations; /* evaluation of each constraint for each sample  */
  double **v; /* normal approximation of constraints */
+ double *besteverCeval; /* constraint evaluations for best ever */
 
  // Private CCMA-ES-Specific Methods
  void checkMeanAndSetRegime(); /* check if mean inside valid domain, if yes, update internal vars */

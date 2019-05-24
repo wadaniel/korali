@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
  korali.addConstraint(fc1);
  //korali.addConstraint(fc2);
 
- korali["Seed"] = 0xC0FFEE;
+ //korali["Seed"] = 0xC0FFEE;
  korali["Verbosity"]       = "Detailed";
  korali["Conduit"]["Type"] = "Sequential";
  korali["Problem"]["Type"] = "Direct";
@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
  korali["Solver"]["Method"] = "CCMA-ES";
  korali["Solver"]["Num Samples"] = 10;
  korali["Solver"]["Num Viability Samples"] = 4;
- korali["Solver"]["Adaption Size"] = 0.5;
+ korali["Solver"]["Adaption Size"] = 0.01;
  korali["Solver"]["Termination Criteria"]["Max Generations"] = 100;
  korali["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-12;
  korali["Solver"]["Termination Criteria"]["Fitness"] = 1.0;

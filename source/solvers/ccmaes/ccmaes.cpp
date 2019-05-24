@@ -106,6 +106,8 @@ CCMAES::CCMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
  v = (double**) malloc (sizeof(double*) * _numConstraints);
  for (size_t i = 0; i < _numConstraints; ++i) v[i] = (double*) calloc (sizeof(double), s_max);
  
+ besteverCeval = (double*) calloc (sizeof(double), _numConstraints); 
+ 
  Z   = (double**) malloc (sizeof(double*) * s_max);
  BDZ = (double**) malloc (sizeof(double*) * s_max);
  for (size_t i = 0; i < s_max; i++) Z[i]   = (double*) calloc (sizeof(double), _k->_problem->N);
@@ -481,7 +483,7 @@ void CCMAES::updateConstraints() //TODO: maybe parallelize constraint evaluation
   for(size_t i = 0; i < _current_s; ++i)
   {
     countcevals++;
-    constraintEvaluations[c][i] = _k->_fconstraints[c]( _samplePopulation+i*_k->_problem->N, _k->_problem->N );
+    constraintEvaluations[c][i] = _k->_fconstraints[c]( _samplePopulation+i*_k->_problem->N, _k->_problem->N ) - 1e-9 ;
     
     if (constraintEvaluations[c][i] > viabilityBounds[c]) numviolations[i]++;
     if ( numviolations[i] > maxnumviolations ) maxnumviolations = numviolations[i];
@@ -504,7 +506,7 @@ void CCMAES::reEvaluateConstraints() //TODO: maybe we can parallelize constraint
     for(size_t c = 0; c < _numConstraints; ++c)
     {
       countcevals++;
-      constraintEvaluations[c][i] = _k->_fconstraints[c]( _samplePopulation+i*_k->_problem->N, _k->_problem->N ); //TODO: we could jump this in 1st gen, or merge with func below
+      constraintEvaluations[c][i] = _k->_fconstraints[c]( _samplePopulation+i*_k->_problem->N, _k->_problem->N ) - 1e-9 ; //TODO: we could jump this in 1st gen, or merge with func below
       if( constraintEvaluations[c][i] > viabilityBounds[c] ) { viabilityIndicator[c][i] = true; numviolations[i]++; }
       else viabilityIndicator[c][i] = false;
         
@@ -601,7 +603,7 @@ void CCMAES::updateDistribution(const double *fitnessVector)
  sort_index(fitnessVector, index, _current_s);
  
  int bestValidIdx = -1;
- for (size_t i = 0; i < _current_s; i++) if(numviolations[index[i]] == 0) bestValidIdx = i;
+ for (size_t i = 0; i < _current_s; i++) if(numviolations[index[i]] == 0) bestValidIdx = index[i];
  if ( bestValidIdx == -1 ) { printf("[Korali] Warning: all samples violate constraints, no updates taking place.\n"); return; }
 
  /* assign function values */
@@ -620,7 +622,8 @@ void CCMAES::updateDistribution(const double *fitnessVector)
  {
   prevBest = bestEver;
   bestEver = currentFunctionValue;
-  for (size_t d = 0; d < _k->_problem->N; ++d) rgxbestever[d] = curBestVector[d];
+  for (size_t d = 0; d < _k->_problem->N; ++d) rgxbestever[d]   = curBestVector[d];
+  for (size_t c = 0; c < _numConstraints; ++c) besteverCeval[c] = constraintEvaluations[c][bestValidIdx];
  }
 
  histFuncValues[_currentGeneration] = bestEver;
@@ -1115,7 +1118,9 @@ void CCMAES::printFinal() const
     printf("[Korali] CCMA-ES Finished\n");
     printf("[Korali] Optimum (%s) found: %e\n", _objective.c_str(), bestEver);
     printf("[Korali] Optimum (%s) found at:\n", _objective.c_str());
-    for (size_t i = 0; i < _k->_problem->N; i++) printf("         %s = %+6.3e\n", _k->_problem->_parameters[i]->_name.c_str(), rgxbestever[i]);
+    for (size_t d = 0; d < _k->_problem->N; ++d) printf("         %s = %+6.3e\n", _k->_problem->_parameters[d]->_name.c_str(), rgxbestever[d]);
+    printf("[Korali] Constraint Evaluation at Optimum:\n");
+    for (size_t c = 0; c < _numConstraints; ++c) printf("         ( %+6.3e\n )", besteverCeval[c]);
     printf("[Korali] Number of Function Evaluations: %zu\n", countevals);
     printf("[Korali] Number of Infeasible Samples: %zu\n", countinfeasible);
     printf("[Korali] Stopping Criterium: %s\n", _terminationReason);

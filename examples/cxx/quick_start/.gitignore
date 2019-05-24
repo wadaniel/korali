@@ -1,3 +1,6 @@
 ._*
-posterior
-direct
+
+direct_optimize
+direct_sample
+posterior_optimize
+posterior_sample

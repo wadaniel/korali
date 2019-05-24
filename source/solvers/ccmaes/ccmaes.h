@@ -95,7 +95,7 @@ class CCMAES : public Korali::Solver::Base
 
  double **C; /* lower triangular matrix: i>=j for C[i][j] */
  double **B; /* matrix with eigenvectors in columns */
- double *rgD; /* axis lengths (sqrt(Evals)) */
+ double *axisD; /* axis lengths (sqrt(Evals)) */
  
  double **Z; /* randn() */
  double **BDZ; /* B*D*randn() */
@@ -139,7 +139,8 @@ class CCMAES : public Korali::Solver::Base
  size_t _maxCorrections; /* max cov adaptions per generation */
  size_t _maxResamplings; /* max resamplings per generation */
  double _targetSucRate; /* target success rate */
- double _beta; /* cov adaption size */
+ double _adaptionSize; /* cov adaption size scaling*/
+ double _beta; /* cov adaption size ( adaptionSize/(samples+2) ) */
  double _cv; /* learning rate in normal vector  update */
  double _cp; /* update rate global success estimate */
  
@@ -160,7 +161,7 @@ class CCMAES : public Korali::Solver::Base
 
  // Private CCMA-ES-Specific Methods
  void checkMeanAndSetRegime(); /* check if mean inside valid domain, if yes, update internal vars */
- void initConstraints();
+ void updateConstraints();
  void updateViabilityBoundaries(); /* update & shrink viability boundaries */
  void handleConstraints(); /* covariance adaption for invalid samples */
  void reEvaluateConstraints(); /* re evaluate constraints, in handleConstraints,  count violations etc.. */

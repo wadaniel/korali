@@ -27,7 +27,7 @@ CCMAES::CCMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
  rgxmean        = (double*) calloc (sizeof(double), _k->_problem->N);
  rgxold         = (double*) calloc (sizeof(double), _k->_problem->N);
  rgxbestever    = (double*) calloc (sizeof(double), _k->_problem->N);
- rgD            = (double*) calloc (sizeof(double), _k->_problem->N);
+ axisD          = (double*) calloc (sizeof(double), _k->_problem->N);
  curBestVector  = (double*) calloc (sizeof(double), _k->_problem->N);
 
  rgFuncValue    = (double*) calloc (sizeof(double), s_max);
@@ -61,30 +61,13 @@ CCMAES::CCMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
  // Setting eigensystem evaluation Frequency
  if( _covarianceEigenEvalFreq < 0.0) _covarianceEigenEvalFreq = 1.0/_covarianceMatrixLearningRate/((double)_k->_problem->N)/10.0;
 
- double trace = 0.0;
- for (size_t i = 0; i < _k->_problem->N; ++i) trace += _k->_problem->_parameters[i]->_initialStdDev*_k->_problem->_parameters[i]->_initialStdDev;
- sigma = sqrt(trace/_k->_problem->N); /* _muEffective/(0.2*_muEffective+sqrt(_k->_problem->N)) * sqrt(trace/_k->_problem->N); */
-
  flgEigensysIsUptodate = true;
 
  countevals = 0;
  countinfeasible = 0;
  resampled = 0;
  correctionsC = 0;
- bestEver = 0.0;
-
- for (size_t i = 0; i < _k->_problem->N; ++i)
- {
-  B[i][i] = 1.0;
-  C[i][i] = rgD[i] = _k->_problem->_parameters[i]->_initialStdDev * sqrt(_k->_problem->N / trace);
-  C[i][i] *= C[i][i];
- }
-
- minEW = doubleRangeMin(rgD, _k->_problem->N); minEW = minEW * minEW;
- maxEW = doubleRangeMax(rgD, _k->_problem->N); maxEW = maxEW * maxEW;
-
- maxdiagC=C[0][0]; for(size_t i=1;i<_k->_problem->N;++i) if(maxdiagC<C[i][i]) maxdiagC=C[i][i];
- mindiagC=C[0][0]; for(size_t i=1;i<_k->_problem->N;++i) if(mindiagC>C[i][i]) mindiagC=C[i][i];
+ bestEver = -std::numeric_limits<double>::max();
 
  psL2 = 0.0;
 
@@ -106,8 +89,7 @@ CCMAES::CCMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
  _numConstraints = _k->_fconstraints.size();
  if (_numConstraints < 1 ) { fprintf( stderr, "[Korali] Error: No constraints provided, please use Solver Method 'CMA-ES'.\n" ); exit(-1); }
  
- viabilityBounds = (double*) malloc (sizeof(double) * _numConstraints);
- std::fill_n( viabilityBounds, _numConstraints, -1);
+ viabilityBounds = (double*) calloc (sizeof(double), _numConstraints);
  
  sucRates = (double*) malloc (sizeof(double) * _numConstraints); 
  std::fill_n( sucRates, _numConstraints, 0.5);
@@ -116,19 +98,18 @@ CCMAES::CCMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
  numviolations           = (size_t*) calloc (sizeof(size_t), s_max); 
  
  viabilityImprovement  = (bool*) calloc (sizeof(bool), s_max);
- viabilityIndicator    = (bool**) calloc (sizeof(bool*), _numConstraints);
- constraintEvaluations = (double**) calloc (sizeof(double*), _numConstraints);
+ viabilityIndicator    = (bool**) malloc (sizeof(bool*) * _numConstraints);
+ constraintEvaluations = (double**) malloc (sizeof(double*) * _numConstraints);
  for (size_t i = 0; i < _numConstraints; ++i) viabilityIndicator[i]    = (bool*) calloc (sizeof(bool), s_max);
  for (size_t i = 0; i < _numConstraints; ++i) constraintEvaluations[i] = (double*) calloc (sizeof(double), s_max);
 
- v = (double**) calloc (sizeof(double*), _numConstraints);
- for (size_t i = 0; i < _numConstraints; ++i) constraintEvaluations[i] = (double*) calloc (sizeof(double), s_max);
+ v = (double**) malloc (sizeof(double*) * _numConstraints);
+ for (size_t i = 0; i < _numConstraints; ++i) v[i] = (double*) calloc (sizeof(double), s_max);
  
- Z   = (double**) calloc (sizeof(double*), s_max);
- BDZ = (double**) calloc (sizeof(double*), s_max);
+ Z   = (double**) malloc (sizeof(double*) * s_max);
+ BDZ = (double**) malloc (sizeof(double*) * s_max);
  for (size_t i = 0; i < s_max; i++) Z[i]   = (double*) calloc (sizeof(double), _k->_problem->N);
  for (size_t i = 0; i < s_max; i++) BDZ[i] = (double*) calloc (sizeof(double), _k->_problem->N);
- // TODO: what else?
 
 
  // If state is defined:
@@ -203,7 +184,7 @@ nlohmann::json CCMAES::getConfiguration()
  for (size_t i = 0; i < _k->_problem->N; i++) js["State"]["PreviousMeanVector"]     += rgxold[i];
  for (size_t i = 0; i < _k->_problem->N; i++) js["State"]["BestEverVector"]         += rgxbestever[i];
  for (size_t i = 0; i < _k->_problem->N; i++) js["State"]["CurrentBestVector"]      += curBestVector[i];
- for (size_t i = 0; i < _k->_problem->N; i++) js["State"]["AxisLengths"]            += rgD[i];
+ for (size_t i = 0; i < _k->_problem->N; i++) js["State"]["AxisLengths"]            += axisD[i];
  for (size_t i = 0; i < _k->_problem->N; i++) js["State"]["EvolutionPath"]          += rgpc[i];
  for (size_t i = 0; i < _k->_problem->N; i++) js["State"]["ConjugateEvolutionPath"] += rgps[i];
  for (size_t i = 0; i < _current_s; i++) js["State"]["Index"]          += index[i];
@@ -216,7 +197,7 @@ nlohmann::json CCMAES::getConfiguration()
  // CCMA-ES Variables
  js["Global Success Rate"]          = globalSucRate;
  js["Target Success Rate"]          = _targetSucRate;
- js["Adaption Size"]                = _beta;
+ js["Adaption Size"]                = _adaptionSize;
  js["Max Corrections"]              = _maxCorrections;
  js["Max Resamplings"]              = _maxResamplings;
  js["Normal Vector Learning Rate"]  = _cv;
@@ -224,11 +205,13 @@ nlohmann::json CCMAES::getConfiguration()
  
  // CCMA-ES States
  js["Viability Regime"] = isVia; //TODO: is state, but should not be treated as one in json
- for (size_t i = 0; i < _numConstraints; ++i) js["State"]["Success Rates"] = sucRates[i];
- for (size_t i = 0; i < _numConstraints; ++i) js["State"]["Viability Boundaries"][i] = viabilityBounds[i];
+ for (size_t c = 0; c < _numConstraints; ++c) js["State"]["Success Rates"][c] = sucRates[c];
+ for (size_t c = 0; c < _numConstraints; ++c) js["State"]["Viability Boundaries"][c] = viabilityBounds[c];
  
- // TODO: some things are missing here, or we remove 'unnecessaty' states
-
+ for (size_t i = 0; i < _current_s; ++i) js["State"]["Num Constraint Violations"][i] = numviolations[i];
+ for (size_t i = 0; i < _current_s; ++i) for (size_t c = 0; c < _numConstraints; ++c) js["State"]["Constraint Evaluations"][i][c] = constraintEvaluations[c][i];
+ 
+ // TODO: some things are missing here
  return js;
 }
 
@@ -261,24 +244,27 @@ void CCMAES::setConfiguration(nlohmann::json& js)
  _cumulativeCovarianceIn       = consume(js, { "Covariance Matrix", "Cumulative Covariance" }, KORALI_NUMBER, std::to_string(-1));
  _covMatrixLearningRateIn      = consume(js, { "Covariance Matrix", "Learning Rate" }, KORALI_NUMBER, std::to_string(-1));
  _enablediag                   = consume(js, { "Covariance Matrix", "Enable Diagonal Update" }, KORALI_BOOLEAN, "false");
+ 
  _maxGenenerations             = consume(js, { "Termination Criteria", "Max Generations" }, KORALI_NUMBER, std::to_string(1000));
- _stopFitness                  = consume(js, { "Termination Criteria", "Fitness" }, KORALI_NUMBER, std::to_string(-std::numeric_limits<double>::max()));
+ _stopFitness                  = consume(js, { "Termination Criteria", "Fitness" }, KORALI_NUMBER, std::to_string(std::numeric_limits<double>::max()));
  _maxFitnessEvaluations        = consume(js, { "Termination Criteria", "Max Model Evaluations" }, KORALI_NUMBER, std::to_string(std::numeric_limits<size_t>::max()));
  _stopFitnessDiffThreshold     = consume(js, { "Termination Criteria", "Fitness Diff Threshold" }, KORALI_NUMBER, std::to_string(1e-9));
- _stopMinDeltaX                = consume(js, { "Termination Criteria", "Min DeltaX" }, KORALI_NUMBER, std::to_string(0.0));
- _stopTolUpXFactor             = consume(js, { "Termination Criteria", "Max Standard Deviation" }, KORALI_NUMBER, std::to_string(1e18));
- _stopCovCond                  = consume(js, { "Termination Criteria", "Max Condition Covariance" }, KORALI_NUMBER, std::to_string(std::numeric_limits<double>::max()));
- _ignorecriteria               = consume(js, { "Termination Criteria", "Ignore" }, KORALI_STRING, "Max Condition Covariance");
+ _stopMinDeltaX                = consume(js, { "Termination Criteria", "Min DeltaX" }, KORALI_NUMBER, std::to_string(1e-9));
+ _stopTolUpXFactor             = consume(js, { "Termination Criteria", "Max Standard Deviation" }, KORALI_NUMBER, std::to_string(1e9));
+ _stopCovCond                  = consume(js, { "Termination Criteria", "Max Condition Covariance" }, KORALI_NUMBER, std::to_string(1e9));
+ _ignorecriteria               = consume(js, { "Termination Criteria", "Ignore" }, KORALI_STRING, "");
 
  
  globalSucRate   = consume(js, { "Global Success Rate" }, KORALI_NUMBER, std::to_string(0.44));
  _targetSucRate  = consume(js, { "Target Success Rate" }, KORALI_NUMBER, std::to_string(2./11.));
- _beta           = consume(js, { "Adaption Size" }, KORALI_NUMBER, std::to_string(0.1/(_current_s+2.)));
+ _adaptionSize   = consume(js, { "Adaption Size" }, KORALI_NUMBER, std::to_string(0.1));
  _maxCorrections = consume(js, { "Max Corrections" }, KORALI_NUMBER, std::to_string(1e6));
  _maxResamplings = consume(js, { "Max Resamplings" }, KORALI_NUMBER, std::to_string(1e6));
  _cv             = consume(js, { "Normal Vector Learning Rate" }, KORALI_NUMBER, std::to_string(1.0/(_current_s+2.)));
  _cp             = consume(js, { "Global Success Learning Rate" }, KORALI_NUMBER, std::to_string(1.0/12.0));
- 
+ if(_adaptionSize <= 0.0)
+   { fprintf( stderr, "[Korali] Error: Invalid Adaption Size (%f), must be greater 0.0\n", _adaptionSize ); exit(-1); }
+
  // CCMA-ES Logic
  // TODO: set Regime (is state, but should not be treated like the other cases) 
  isVia = consume(js, { "Viability Regime" }, KORALI_BOOLEAN, "true");
@@ -301,7 +287,7 @@ void CCMAES::setState(nlohmann::json& js)
 
  _currentGeneration    = js["State"]["Current Generation"];
  sigma                 = js["State"]["Sigma"];
- bestEver              = js["State"]["BestEverFunctionValie"];
+ bestEver              = js["State"]["BestEverFunctionValue"];
  currentFunctionValue  = js["State"]["CurrentBestFunctionValue"];
  prevFunctionValue     = js["State"]["PrevFunctionValue"];
  maxdiagC              = js["State"]["MaxDiagonalCovariance"];
@@ -315,7 +301,7 @@ void CCMAES::setState(nlohmann::json& js)
  for (size_t i = 0; i < _k->_problem->N; i++) rgxmean[i]       = js["State"]["CurrentMeanVector"][i];
  for (size_t i = 0; i < _k->_problem->N; i++) rgxold[i]        = js["State"]["PreviousMeanVector"][i];
  for (size_t i = 0; i < _k->_problem->N; i++) rgxbestever[i]   = js["State"]["BestEverVector"][i];
- for (size_t i = 0; i < _k->_problem->N; i++) rgD[i]           = js["State"]["AxisLengths"][i];
+ for (size_t i = 0; i < _k->_problem->N; i++) axisD[i]         = js["State"]["AxisLengths"][i];
  for (size_t i = 0; i < _k->_problem->N; i++) rgpc[i]          = js["State"]["CumulativeCovariance"][i];
  for (size_t i = 0; i < _k->_problem->N; i++) curBestVector[i] = js["State"]["CurrentBestVector"][i];
  for (size_t i = 0; i < _current_s; i++) index[i]              = js["State"]["Index"][i];
@@ -330,12 +316,16 @@ void CCMAES::setState(nlohmann::json& js)
 void CCMAES::initInternals(size_t numsamplesmu)
 {
 
- // initializing Mu Weights
+ // Setting beta   
+ _cv   = 1.0/(_current_s+2.);
+ _beta = _adaptionSize/(_current_s+2.);
+
+ // Initializing Mu Weights
  if (_muType == "Linear")      for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = numsamplesmu - i;
  if (_muType == "Equal")       for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = 1;
  if (_muType == "Logarithmic") for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = log(std::max( (double)numsamplesmu, 0.5*_current_s)+0.5)-log(i+1.);
 
- /* normalize weights vector and set mueff */
+ // Normalize weights vector and set mueff
  double s1 = 0.0;
  double s2 = 0.0;
 
@@ -378,9 +368,27 @@ void CCMAES::initInternals(size_t numsamplesmu)
                 // * std::max(0.3, 1. - (double)_k->_problem->N / (1e-6+std::min(_maxGenenerations, _maxFitnessEvaluations/_via_s))) /* modification for short runs */
                 + _sigmaCumulationFactor; /* minor increment */
 
- // TODO: reinit rgD
+ // Setting Sigma
+ double trace = 0.0;
+ for (size_t i = 0; i < _k->_problem->N; ++i) trace += _k->_problem->_parameters[i]->_initialStdDev*_k->_problem->_parameters[i]->_initialStdDev;
+ sigma = sqrt(trace/_k->_problem->N); /* _muEffective/(0.2*_muEffective+sqrt(_k->_problem->N)) * sqrt(trace/_k->_problem->N); */
 
- // success rates
+ // Setting B, C and axisD
+ for (size_t i = 0; i < _k->_problem->N; ++i)
+ {
+  B[i][i] = 1.0;
+  C[i][i] = axisD[i] = _k->_problem->_parameters[i]->_initialStdDev * sqrt(_k->_problem->N / trace);
+  C[i][i] *= C[i][i];
+ }
+
+ minEW = doubleRangeMin(axisD, _k->_problem->N); minEW = minEW * minEW;
+ maxEW = doubleRangeMax(axisD, _k->_problem->N); maxEW = maxEW * maxEW;
+
+ maxdiagC=C[0][0]; for(size_t i=1;i<_k->_problem->N;++i) if(maxdiagC<C[i][i]) maxdiagC=C[i][i];
+ mindiagC=C[0][0]; for(size_t i=1;i<_k->_problem->N;++i) if(mindiagC>C[i][i]) mindiagC=C[i][i];
+
+ // success rates ?
+
 }
 
 
@@ -391,7 +399,10 @@ void CCMAES::initInternals(size_t numsamplesmu)
 
 void CCMAES::run()
 {
- if (_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Starting CCMA-ES (Objective: %s).\n", _objective.c_str());
+ if (_k->_verbosity >= KORALI_MINIMAL) { 
+   printf("[Korali] Starting CCMA-ES (Objective: %s).\n", _objective.c_str());
+   printf("--------------------------------------------------------------------\n");
+ }
 
  startTime = std::chrono::system_clock::now();
  _k->saveState();
@@ -402,10 +413,9 @@ void CCMAES::run()
    checkMeanAndSetRegime();
    prepareGeneration();
    evaluateSamples();
-   updateDistribution(_fitnessVector);
-   initConstraints();
+   updateConstraints();
    handleConstraints();
-   if (isVia == true) updateViabilityBoundaries();
+   updateDistribution(_fitnessVector);
    _currentGeneration++;
 
    t1 = std::chrono::system_clock::now();
@@ -452,8 +462,6 @@ void CCMAES::checkMeanAndSetRegime()
     printf("CHANGE REGIME\n");
     isVia      = false;
     _current_s = _s;
-    _beta      = 0.1/(_s+2.);
-    _cv        = 1.0/(_s+2.);
 
     _current_mu = _mu;
     initInternals(_mu);
@@ -461,27 +469,7 @@ void CCMAES::checkMeanAndSetRegime()
 }
 
 
-void CCMAES::reEvaluateConstraints() //TODO: maybe we can parallelize constraint evaluations (DW)
-{
-  for(size_t c = 0; c < _numConstraints; ++c)
-  {
-    for(size_t i = 0; i < _current_s; ++i)
-    {
-      if(numviolations[i] > 0) 
-      {
-        numviolations[i] = 0;
-        countcevals++;
-        constraintEvaluations[c][i] = _k->_fconstraints[c]( _samplePopulation+i*_k->_problem->N, _k->_problem->N ); //TODO: we could jump this in 1st gen, or merge with func below
-        if( constraintEvaluations[c][i] > viabilityBounds[c] ) { viabilityIndicator[c][i] = true; numviolations[i]++; }
-        else viabilityIndicator[c][i] = false;
-      }
-      if (numviolations[i] > maxnumviolations) maxnumviolations = numviolations[i];
-    }
-  }
-}
-
-
-void CCMAES::initConstraints() //TODO: maybe parallelize constraint evaluations (DW)
+void CCMAES::updateConstraints() //TODO: maybe parallelize constraint evaluations (DW)
 {
  
  std::fill_n(numviolations, _current_s, 0);
@@ -489,20 +477,40 @@ void CCMAES::initConstraints() //TODO: maybe parallelize constraint evaluations 
 
  for(size_t c = 0; c < _numConstraints; ++c)
  {
-  double maxviolation = std::numeric_limits<double>::min();
+  double maxviolation = 0.0;
   for(size_t i = 0; i < _current_s; ++i)
   {
     countcevals++;
     constraintEvaluations[c][i] = _k->_fconstraints[c]( _samplePopulation+i*_k->_problem->N, _k->_problem->N );
     
-    if (constraintEvaluations[c][i] > 0.0) numviolations[i]++;
+    if (constraintEvaluations[c][i] > viabilityBounds[c]) numviolations[i]++;
     if ( numviolations[i] > maxnumviolations ) maxnumviolations = numviolations[i];
     
-    if (constraintEvaluations[c][i] > maxviolation) maxviolation = constraintEvaluations[c][index[i]];
-    if ( _currentGeneration == 0 && isVia ) viabilityBounds[c] = std::max( 0.0, maxviolation );
+    if (constraintEvaluations[c][i] > maxviolation) maxviolation = constraintEvaluations[c][i];
+    
+    if ( _currentGeneration == 0 && isVia ) viabilityBounds[c] = maxviolation;
   }
  }
 
+}
+
+
+void CCMAES::reEvaluateConstraints() //TODO: maybe we can parallelize constraint evaluations (DW)
+{
+  maxnumviolations = 0;
+  for(size_t i = 0; i < _current_s; ++i) if(numviolations[i] > 0)
+  {
+    numviolations[i] = 0;
+    for(size_t c = 0; c < _numConstraints; ++c)
+    {
+      countcevals++;
+      constraintEvaluations[c][i] = _k->_fconstraints[c]( _samplePopulation+i*_k->_problem->N, _k->_problem->N ); //TODO: we could jump this in 1st gen, or merge with func below
+      if( constraintEvaluations[c][i] > viabilityBounds[c] ) { viabilityIndicator[c][i] = true; numviolations[i]++; }
+      else viabilityIndicator[c][i] = false;
+        
+    }
+    if (numviolations[i] > maxnumviolations) maxnumviolations = numviolations[i];
+  }
 }
 
 
@@ -514,7 +522,7 @@ void CCMAES::updateViabilityBoundaries()
 
  for(size_t c = 0; c < _numConstraints; ++c)
  {
-  double maxviolation = std::numeric_limits<double>::min();
+  double maxviolation = 0.0;
   for(size_t i = 0; i < _current_s; ++i) if (constraintEvaluations[c][index[i]] > maxviolation) //TODO: or _current_mu instead of _current_s? (orig)
     maxviolation = constraintEvaluations[c][index[i]];
      
@@ -536,21 +544,22 @@ void CCMAES::prepareGeneration()
  int flgdiag = doDiagUpdate();
 
  /* calculate eigensystem  */ //TODO: this could be moved somewhere else (DW)
- if (!flgEigensysIsUptodate) {
-  if (!flgdiag)
-   updateEigensystem(1.0);
-  else {
-   for (size_t d = 0; d < _k->_problem->N; ++d) rgD[d] = sqrt(C[d][d]);
-   minEW = doubleRangeMin(rgD, _k->_problem->N) * doubleRangeMin(rgD, _k->_problem->N);
-   maxEW = doubleRangeMax(rgD, _k->_problem->N) * doubleRangeMin(rgD, _k->_problem->N);
-   flgEigensysIsUptodate = true;
-  }
- }
+ updateEigensystem(1.0);
 
- for (size_t iNk = 0; iNk < _current_s; ++iNk) 
+ for (size_t i = 0; i < _current_s; ++i) 
  {
-     sampleSingle(iNk);
-     while( isFeasible( iNk ) == false ) { countinfeasible++; sampleSingle(iNk); } //TODO: maybe add exit criterion
+     size_t initial_infeasible = countinfeasible;
+     sampleSingle(i);
+     while( isFeasible( i ) == false ) 
+     { 
+       countinfeasible++; 
+       sampleSingle(i); 
+       if ( (countinfeasible - initial_infeasible) > _maxResamplings ) 
+       { 
+         printf("[Korali] Warning: exiting resampling loop, max resamplings reached.\n ");
+         exit(-1); //TODO: brutal exit
+       }
+     } 
  }
 
 
@@ -568,10 +577,10 @@ void CCMAES::sampleSingle(size_t sampleIdx)
   {
    Z[sampleIdx][d] = _gaussianGenerator->getRandomNumber();
    if (flgdiag) { 
-     BDZ[sampleIdx][d] = rgD[d] * Z[sampleIdx][d];
+     BDZ[sampleIdx][d] = axisD[d] * Z[sampleIdx][d];
      _samplePopulation[sampleIdx * _k->_problem->N + d] = rgxmean[d] + sigma * BDZ[sampleIdx][d]; 
    }
-   else rgdTmp[d] = rgD[d] * Z[sampleIdx][d];
+   else rgdTmp[d] = axisD[d] * Z[sampleIdx][d];
   }
 
   if (!flgdiag)
@@ -590,6 +599,10 @@ void CCMAES::updateDistribution(const double *fitnessVector)
 
  /* Generate index */
  sort_index(fitnessVector, index, _current_s);
+ 
+ int bestValidIdx = -1;
+ for (size_t i = 0; i < _current_s; i++) if(numviolations[index[i]] == 0) bestValidIdx = i;
+ if ( bestValidIdx == -1 ) { printf("[Korali] Warning: all samples violate constraints, no updates taking place.\n"); return; }
 
  /* assign function values */
  for (size_t i = 0; i < _current_s; i++) rgFuncValue[i] = fitnessVector[i];
@@ -598,11 +611,12 @@ void CCMAES::updateDistribution(const double *fitnessVector)
  prevFunctionValue = currentFunctionValue;
 
  /* update current best */
- currentFunctionValue = fitnessVector[index[0]];
- for (size_t d = 0; d < _k->_problem->N; ++d) curBestVector[d] = _samplePopulation[index[0]*_k->_problem->N + d];
+ currentFunctionValue = fitnessVector[bestValidIdx];
+ for (size_t d = 0; d < _k->_problem->N; ++d) curBestVector[d] = _samplePopulation[bestValidIdx*_k->_problem->N + d];
  
  /* update xbestever */
- if (currentFunctionValue > bestEver) //TODO: what if we minimize?
+ //TODO: what if we minimize
+ if ( currentFunctionValue > bestEver )
  {
   prevBest = bestEver;
   bestEver = currentFunctionValue;
@@ -615,8 +629,8 @@ void CCMAES::updateDistribution(const double *fitnessVector)
  for (size_t d = 0; d < _k->_problem->N; ++d) {
    rgxold[d] = rgxmean[d];
    rgxmean[d] = 0.;
-   for (size_t iNk = 0; iNk < _current_mu; ++iNk)
-     rgxmean[d] += _muWeights[iNk] * _samplePopulation[index[iNk]*_k->_problem->N + d];
+   for (size_t i = 0; i < _current_mu; ++i)
+     rgxmean[d] += _muWeights[i] * _samplePopulation[index[i]*_k->_problem->N + d];
    
    rgBDz[d] = (rgxmean[d] - rgxold[d])/sigma;
  }
@@ -627,7 +641,7 @@ void CCMAES::updateDistribution(const double *fitnessVector)
   if (flgdiag) sum = rgBDz[d];
   else for (size_t e = 0; e < _k->_problem->N; ++e) sum += B[e][d] * rgBDz[e]; /* B^(T) * rgBDz ( iterating B[e][d] = B^(T) ) */
   
-  rgdTmp[d] = sum / rgD[d]; /* D^(-1) * B^(T) * rgBDz */
+  rgdTmp[d] = sum / axisD[d]; /* D^(-1) * B^(T) * rgBDz */
  }
 
  psL2 = 0.0;
@@ -653,9 +667,11 @@ void CCMAES::updateDistribution(const double *fitnessVector)
  /* update of C  */
  adaptC(hsig);
 
- // update sigma
+ // update sigma & viability boundaries
  if(isVia)
  {
+   updateViabilityBoundaries();
+   
    if ( prevBest == bestEver ) globalSucRate = (1-_cp)*globalSucRate;
    else for(size_t c = 0; c < _numConstraints; ++c) if( sucRates[c] < 0.5 ) { globalSucRate = (1-_cp)*globalSucRate; break; }
    sigma *= exp(1.0/_dampFactor)*(globalSucRate-(_targetSucRate/(1.0-_targetSucRate))*(1-globalSucRate));
@@ -663,8 +679,8 @@ void CCMAES::updateDistribution(const double *fitnessVector)
  }
  else
  {
-   // sigma *= exp(((sqrt(psL2)/_chiN)-1.)*_sigmaCumulationFactor/_dampFactor) (orig)
-   sigma *= exp(std::min(1.0, ((sqrt(psL2)/_chiN)-1.)*_sigmaCumulationFactor/_dampFactor)); //MATLAB
+   // sigma *= exp(((sqrt(psL2)/_chiN)-1.)*_sigmaCumulationFactor/_dampFactor) (orig, alternative)
+   sigma *= exp(std::min(1.0, ((sqrt(psL2)/_chiN)-1.)*_sigmaCumulationFactor/_dampFactor));
  }
 
 
@@ -697,7 +713,7 @@ void CCMAES::updateDistribution(const double *fitnessVector)
  /*
  size_t horizon = 10 + ceil(3*10*_k->_problem->N/_s);
  double min = std::numeric_limits<double>::max();
- double max = std::numeric_limits<double>::min();
+ double max = -std::numeric_limits<double>::max();
  for(size_t i = 0; (i < horizon) && (_currentGeneration - i >= 0); i++) {
     if ( histFuncValues[_currentGeneration-i] < min ) min = histFuncValues[_currentGeneration];
     if ( histFuncValues[_currentGeneration-i] > max ) max = histFuncValues[_currentGeneration];
@@ -720,10 +736,10 @@ void CCMAES::adaptC(int hsig)
  if (_covarianceMatrixLearningRate != 0.0)
  {
   /* definitions for speeding up inner-most loop */
-  //double ccov1 = std::min(_covarianceMatrixLearningRate * (1./_muCovariance) * (flgdiag ? (_k->_problem->N+1.5) / 3. : 1.), 1.);
-  // ccovmu = ? 
-  double ccov1  = 2.0 / (std::pow(_k->_problem->N+1.3,2)+_muEffective); //MATLAB
-  double ccovmu = std::min(1.0-ccov1,  2.0 * (_muEffective-2+1/_muEffective) / (std::pow(_k->_problem->N+2.0,2)+_muEffective)); //MATLAB
+  //double ccov1 = std::min(_covarianceMatrixLearningRate * (1./_muCovariance) * (flgdiag ? (_k->_problem->N+1.5) / 3. : 1.), 1.); (orig, alternative)
+  // ccovmu = ?  TODO: add
+  double ccov1  = 2.0 / (std::pow(_k->_problem->N+1.3,2)+_muEffective);
+  double ccovmu = std::min(1.0-ccov1,  2.0 * (_muEffective-2+1/_muEffective) / (std::pow(_k->_problem->N+2.0,2)+_muEffective));
   double sigmasquare = sigma * sigma;
 
   flgEigensysIsUptodate = false;
@@ -755,16 +771,15 @@ void CCMAES::handleConstraints()
 
  while( maxnumviolations > 0 )
  {
-
   for(size_t i = 0; i < _current_s; ++i) if (numviolations[i] > 0)
   {
     //update v
-    for( size_t c = 0; c < _numConstraints; ++c )
-    {
-      double v2 = 0;
+    for( size_t c = 0; c < _numConstraints; ++c ) 
       if ( viabilityIndicator[c][i] == true )
       {
-        correctionsC ++;
+        correctionsC++;
+        
+        double v2 = 0;
         for( size_t d = 0; d < _k->_problem->N; ++d)
         {
             v[c][d] = (1.0-_cv)*v[c][d]+_cv*BDZ[i][d];
@@ -772,23 +787,22 @@ void CCMAES::handleConstraints()
         }
         for( size_t d = 0; d < _k->_problem->N; ++d)
           for( size_t e = 0; e < _k->_problem->N; ++e)
-            C[d][e] = C[d][e] - ((_beta * v[c][d]*v[c][e])/(v2*numviolations[i]));
+            C[d][e] = C[d][e] - ((_beta * _beta * v[c][d]*v[c][e])/(v2*numviolations[i])); 
 
-        sucRates[i] = (1.0-_cp)*sucRates[i];
+        flgEigensysIsUptodate = false;
+        sucRates[c] = (1.0-_cp)*sucRates[c];
       }
       else
       {
-        sucRates[i] = (1.0-_cp)*sucRates[i]+_cp/_current_s;
+        sucRates[c] = (1.0-_cp)*sucRates[c]+_cp/_current_s;
       }
-    }
-  }
+   }
   
-  //C
-  eigen(_k->_problem->N, C, rgD /* sqrt eigen vals*/ , B /* eigen vec*/ ); // TODO: verify if this correct here
-     
+  updateEigensystem(1.0);
 
   /* in original some stopping criterion (TOLX) */
-
+  // TODO
+    
   //resample invalid points
   for(size_t i = 0; i < _current_s; ++i) if(numviolations[i] > 0)
   {
@@ -798,7 +812,9 @@ void CCMAES::handleConstraints()
      sampleSingle(i);
      if(resampled-initial_resampled > _maxResamplings)
      {
-        if(_k->_verbosity >= KORALI_DETAILED) printf("[Korali] Warning: exiting resampling loop, max resamplings reached.\n ");
+        if(_k->_verbosity >= KORALI_DETAILED) printf("[Korali] Warning: exiting resampling loop, max resamplings (%zu) reached.\n", _maxResamplings);
+        reEvaluateConstraints();
+        
         return;
      }
 
@@ -806,13 +822,13 @@ void CCMAES::handleConstraints()
     while( isFeasible(i) == false );
   }
 
+  reEvaluateConstraints();
+  
   if(correctionsC - initial_corrections > _maxCorrections)
   {
-    if(_k->_verbosity >= KORALI_DETAILED) printf("[Korali] Warning: exiting adaption loop, max adaptions reached.\n ");
+    if(_k->_verbosity >= KORALI_DETAILED) printf("[Korali] Warning: exiting adaption loop, max adaptions (%zu) reached.\n", _maxCorrections);
     return;
   }
-
-  reEvaluateConstraints();
 
  }//while maxnumviolations > 0
  
@@ -827,18 +843,18 @@ bool CCMAES::checkTermination()
  bool terminate = false;
 
  // TODO: check what happens if isVia in all criteria
- 
- if (_currentGeneration > 0 && rgFuncValue[index[0]] <= _stopFitness && isStoppingCriteriaActive("Fitness Value") )
+
+ if ( _currentGeneration > 1 && bestEver >= _stopFitness && isStoppingCriteriaActive("Fitness Value") )
  {
   terminate = true;
-  sprintf(_terminationReason, "Fitness Value (%7.2e) < (%7.2e)",  rgFuncValue[index[0]], _stopFitness);
+  sprintf(_terminationReason, "Fitness Value (%+6.3e) > (%+6.3e)",  bestEver, _stopFitness);
  }
 
-  double range = fabs(currentFunctionValue - prevFunctionValue);
-  if (_currentGeneration > 1 && range <= _stopFitnessDiffThreshold && isStoppingCriteriaActive("Fitness Diff Threshold") )
+ double range = fabs(currentFunctionValue - prevFunctionValue);
+ if (_currentGeneration > 1 && range <= _stopFitnessDiffThreshold && isStoppingCriteriaActive("Fitness Diff Threshold") )
  {
   terminate = true;
-  sprintf(_terminationReason, "Function value differences (%7.2e) < (%7.2e)",  range, _stopFitnessDiffThreshold);
+  sprintf(_terminationReason, "Function value differences (%+6.3e) < (%+6.3e)",  range, _stopFitnessDiffThreshold);
  }
 
  size_t cTemp = 0;
@@ -849,23 +865,23 @@ bool CCMAES::checkTermination()
 
  if (cTemp == 2*_k->_problem->N && isStoppingCriteriaActive("Min DeltaX") ) {
   terminate = true;
-  sprintf(_terminationReason, "Object variable changes < %7.2e", _stopMinDeltaX);
+  sprintf(_terminationReason, "Object variable changes < %+6.3e", _stopMinDeltaX);
  }
 
  for(size_t i=0; i<_k->_problem->N; ++i)
-   if (sigma * sqrt(C[i][i]) > _stopTolUpXFactor * _k->_problem->_parameters[i]->_initialStdDev && isStoppingCriteriaActive("Max Standard Deviation") )
-   {
-     terminate = true;
-     sprintf(_terminationReason, "Standard deviation increased by more than %7.2e, larger initial standard deviation recommended \n", _stopTolUpXFactor);
-     break;
-   }
-
-  if (maxEW >= minEW * _stopCovCond && isStoppingCriteriaActive("Max Condition Covariance") )
+  if (sigma * sqrt(C[i][i]) > _stopTolUpXFactor * _k->_problem->_parameters[i]->_initialStdDev && isStoppingCriteriaActive("Max Standard Deviation") )
   {
     terminate = true;
-    sprintf(_terminationReason, "Maximal condition number %7.2e reached. maxEW=%7.2e, minEig=%7.2e, maxdiagC=%7.2e, mindiagC=%7.2e\n",
-      _stopCovCond, maxEW, minEW, maxdiagC, mindiagC);
+    sprintf(_terminationReason, "Standard deviation increased by more than %7.2e, larger initial standard deviation recommended \n", _stopTolUpXFactor);
+    break;
   }
+
+ if (maxEW >= minEW * _stopCovCond && isStoppingCriteriaActive("Max Condition Covariance") )
+ {
+   terminate = true;
+   sprintf(_terminationReason, "Maximal condition number %7.2e reached. maxEW=%7.2e, minEig=%7.2e, maxdiagC=%7.2e, mindiagC=%7.2e\n",
+                                _stopCovCond, maxEW, minEW, maxdiagC, mindiagC);
+ }
 
   size_t iAchse = 0;
   size_t iKoo = 0;
@@ -873,7 +889,7 @@ bool CCMAES::checkTermination()
   {
     for (iAchse = 0; iAchse < _k->_problem->N; ++iAchse)
     {
-    fac = 0.1 * sigma * rgD[iAchse];
+    fac = 0.1 * sigma * axisD[iAchse];
     for (iKoo = 0; iKoo < _k->_problem->N; ++iKoo){
       if (rgxmean[iKoo] != rgxmean[iKoo] + fac * B[iKoo][iAchse])
       break;
@@ -922,22 +938,25 @@ void CCMAES::updateEigensystem(int flgforce)
  if(flgforce == 0 && flgEigensysIsUptodate) return;
  /* if(_currentGeneration % _covarianceEigenEvalFreq == 0) return; */
 
- eigen(_k->_problem->N, C, rgD, B);
+ eigen(_k->_problem->N, C, axisD, B);
   
  /*
  for(size_t i = 0; i < 2; ++i)
     for(size_t j = 0; j < 2; ++j)
     {
-        printf("(%zu, %zu) C: %f\n B: %f\n D: %f\n", i, j, C[i][j], B[i][j], rgD[i]);
+        printf("(%zu, %zu) C: %f\n B: %f\n D: %f\n", i, j, C[i][j], B[i][j], axisD[i]);
     }
  */
 
 
  /* find largest and smallest eigenvalue, they are supposed to be sorted anyway */
- minEW = doubleRangeMin(rgD, _k->_problem->N);
- maxEW = doubleRangeMax(rgD, _k->_problem->N);
+ minEW = doubleRangeMin(axisD, _k->_problem->N);
+ maxEW = doubleRangeMax(axisD, _k->_problem->N);
 
- for (size_t i = 0; i < _k->_problem->N; ++i) rgD[i] = sqrt(rgD[i]);
+ if (minEW <= 0.0)
+  { printf("[Korali] Error: Min Eigenvalue smaller or equal 0.0 (%+6.3e) after Eigensystem update.\n", minEW); exit(-1); }
+
+ for (size_t i = 0; i < _k->_problem->N; ++i) axisD[i] = sqrt(axisD[i]);
 
  flgEigensysIsUptodate = true;
 }
@@ -1046,9 +1065,6 @@ void CCMAES::printGeneration() const
 {
  if (_currentGeneration % _k->_outputFrequency != 0) return;
 
- if (_k->_verbosity >= KORALI_NORMAL)
-   printf("--------------------------------------------------------------------\n");
-
  if (_k->_verbosity >= KORALI_MINIMAL)
    printf("[Korali] Generation %ld - Duration: %fs (Total Elapsed Time: %fs)\n", _currentGeneration, std::chrono::duration<double>(t1-t0).count(), std::chrono::duration<double>(t1-startTime).count());
  
@@ -1083,7 +1099,12 @@ void CCMAES::printGeneration() const
   printf("[Korali] Number of Constraint Evaluations: %zu\n", countcevals);
   printf("[Korali] Number of Infeasible Samples: %zu\n", countinfeasible);
   printf("[Korali] Number of Matrix Corrections: %zu\n", correctionsC );
- }
+ } 
+ 
+ if (_k->_verbosity >= KORALI_NORMAL)
+   printf("--------------------------------------------------------------------\n");
+
+
 }
 
 
@@ -1091,7 +1112,6 @@ void CCMAES::printFinal() const
 {
  if (_k->_verbosity >= KORALI_MINIMAL)
  {
-    printf("--------------------------------------------------------------------\n");
     printf("[Korali] CCMA-ES Finished\n");
     printf("[Korali] Optimum (%s) found: %e\n", _objective.c_str(), bestEver);
     printf("[Korali] Optimum (%s) found at:\n", _objective.c_str());
@@ -1100,5 +1120,6 @@ void CCMAES::printFinal() const
     printf("[Korali] Number of Infeasible Samples: %zu\n", countinfeasible);
     printf("[Korali] Stopping Criterium: %s\n", _terminationReason);
     printf("[Korali] Total Elapsed Time: %fs\n", std::chrono::duration<double>(endTime-startTime).count());
+    printf("--------------------------------------------------------------------\n");
  }
 }

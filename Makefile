@@ -52,7 +52,7 @@ install: $(KORALI_LIBNAME_SHARED)
 	@chmod a+x  $(PREFIX)/bin/korali-cxx
 	@$(PIP) install . --user --upgrade
 	@echo '------------------------------------------------------------------'
-	@echo '[Korali] For C++ support, please update your environment:'
+	@echo '[Korali] To finalize installation, please update your environment:'
 	@echo '[Korali] >export PATH=$$PATH:$(PREFIX)/bin'
 	@echo '------------------------------------------------------------------' 
 

@@ -21,13 +21,13 @@ class CopyLibrary(build_ext):
 
     def copy_extension(self, ext):
         extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
-        library = glob.glob(ext.sourcedir + '/source/libkorali.so')
+        koraliLib = glob.glob(ext.sourcedir + '/source/libkorali.so')
 
-        if (len(library) == 0):
-            raise ValueError('No pre-builit library found in folder ' + 
+        if (len(koraliLib) == 0):
+            raise ValueError('No Korali library found in folder ' + 
                     ext.sourcedir + '/source')
 
-        shutil.copy2(library[0], extdir)
+        shutil.copy2(koraliLib[0], extdir)
 
 setup(
     name='Korali',

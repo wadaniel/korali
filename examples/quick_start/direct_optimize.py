@@ -2,25 +2,25 @@
 import sys
 sys.path.append('./model')
 from directModel import *
-import libkorali
+import korali
 
-korali = libkorali.Engine()
+k = korali.Engine()
 
-korali["Seed"] = 0xC0FFEE;
-korali["Verbosity"] = "Detailed"
+k["Seed"] = 0xC0FFEE;
+k["Verbosity"] = "Detailed"
 
-korali["Problem"]["Type"] = "Direct"
-korali["Problem"]["Variables"][0]["Name"] = "X"
-korali["Problem"]["Variables"][0]["Distribution"] = "Uniform"
-korali["Problem"]["Variables"][0]["Minimum"] = -10.0
-korali["Problem"]["Variables"][0]["Maximum"] = +10.0
-korali["Problem"]["Variables"][0]["Initial Mean"]   = 2.0
-korali["Problem"]["Variables"][0]["Initial StdDev"] = 5.0
+k["Problem"]["Type"] = "Direct"
+k["Problem"]["Variables"][0]["Name"] = "X"
+k["Problem"]["Variables"][0]["Distribution"] = "Uniform"
+k["Problem"]["Variables"][0]["Minimum"] = -10.0
+k["Problem"]["Variables"][0]["Maximum"] = +10.0
+k["Problem"]["Variables"][0]["Initial Mean"]   = 2.0
+k["Problem"]["Variables"][0]["Initial StdDev"] = 5.0
 
-korali["Solver"]["Method"] = "CMA-ES"
-korali["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-8
-korali["Solver"]["Termination Criteria"]["Max Generations"] = 100
-korali["Solver"]["Lambda"] = 5
-korali["Solver"]["Objective"] = "Maximize"
+k["Solver"]["Method"] = "CMA-ES"
+k["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-8
+k["Solver"]["Termination Criteria"]["Max Generations"] = 100
+k["Solver"]["Lambda"] = 5
+k["Solver"]["Objective"] = "Maximize"
 
-korali.run(evaluateModel)
+k.run(evaluateModel)

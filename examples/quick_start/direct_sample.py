@@ -2,23 +2,23 @@
 import sys
 sys.path.append('./model')
 from directModel import *
-import libkorali
+import korali
 
-korali = libkorali.Engine()
+k = korali.Engine()
 
-korali["Seed"] = 0xC0FFEE;
-korali["Verbosity"] = "Detailed"
+k["Seed"] = 0xC0FFEE;
+k["Verbosity"] = "Detailed"
 
-korali["Problem"]["Type"] = "Direct"
-korali["Problem"]["Variables"][0]["Name"] = "X"
-korali["Problem"]["Variables"][0]["Distribution"] = "Uniform"
-korali["Problem"]["Variables"][0]["Minimum"] = -10.0
-korali["Problem"]["Variables"][0]["Maximum"] = +10.0
+k["Problem"]["Type"] = "Direct"
+k["Problem"]["Variables"][0]["Name"] = "X"
+k["Problem"]["Variables"][0]["Distribution"] = "Uniform"
+k["Problem"]["Variables"][0]["Minimum"] = -10.0
+k["Problem"]["Variables"][0]["Maximum"] = +10.0
 
-korali["Solver"]["Method"] = "TMCMC"
-korali["Solver"]["Covariance Scaling"] = 0.02
-korali["Solver"]["Population Size"] = 50000
-korali["Solver"]["Coefficient of Variation"] = 0.5;
-korali["Solver"]["Burn In"] = 5
+k["Solver"]["Method"] = "TMCMC"
+k["Solver"]["Covariance Scaling"] = 0.02
+k["Solver"]["Population Size"] = 50000
+k["Solver"]["Coefficient of Variation"] = 0.5;
+k["Solver"]["Burn In"] = 5
 
-korali.run(evaluateModel)
+k.run(evaluateModel)

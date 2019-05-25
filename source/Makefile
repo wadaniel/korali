@@ -7,7 +7,7 @@ GSL_LIBNAME=../libs/gsl/lib/libgsl.$(DLL_EXTENSION)
 GSLCBLAS_LIBNAME=../libs/gsl/lib/libgslcblas.$(DLL_EXTENSION)
 
 CFLAGS = $(shell echo $(CXXFLAGS)) -g -O3 -I. -I../libs -I../libs/gsl/include -std=c++14 -fPIC 
-LDFLAGS = $(SHAREDLIB_FLAG) $(GSL_LIBNAME) $(GSLCBLAS_LIBNAME)
+LDFLAGS = $(SHAREDLIB_FLAG) -Wl,-rpath $(PREFIX)/lib -L$(PREFIX)/lib -lgsl -lgslcblas 
 
 CFLAGS += `python3-config --includes` -D_KORALI_USE_PYTHON
 LDFLAGS  += `python3-config --ldflags`

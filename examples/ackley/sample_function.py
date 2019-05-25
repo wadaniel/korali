@@ -2,23 +2,23 @@
 import sys
 sys.path.append('./model')
 from ackley import m_ackley
-import libkorali
+import korali
 
-korali = libkorali.Engine()
+k = korali.Engine()
 
-korali["Verbosity"] = "Normal";
+k["Verbosity"] = "Normal";
 
-korali["Problem"]["Type"] = "Direct";
+k["Problem"]["Type"] = "Direct";
 for i in range(4):
-    korali["Problem"]["Variables"][i]["Name"] = "X" + str(i)
-    korali["Problem"]["Variables"][i]["Distribution"] = "Uniform"
-    korali["Problem"]["Variables"][i]["Type"] = "Computational"
-    korali["Problem"]["Variables"][i]["Minimum"] = -32.0
-    korali["Problem"]["Variables"][i]["Maximum"] = +32.0
+    k["Problem"]["Variables"][i]["Name"] = "X" + str(i)
+    k["Problem"]["Variables"][i]["Distribution"] = "Uniform"
+    k["Problem"]["Variables"][i]["Type"] = "Computational"
+    k["Problem"]["Variables"][i]["Minimum"] = -32.0
+    k["Problem"]["Variables"][i]["Maximum"] = +32.0
 
-korali["Solver"]["Method"] = "TMCMC"
-korali["Solver"]["Covariance Scaling"] = 0.02
-korali["Solver"]["Population Size"] = 1000
-korali["Solver"]["Burn In"] = 5
+k["Solver"]["Method"] = "TMCMC"
+k["Solver"]["Covariance Scaling"] = 0.02
+k["Solver"]["Population Size"] = 1000
+k["Solver"]["Burn In"] = 5
 
-korali.run(m_ackley)
+k.run(m_ackley)

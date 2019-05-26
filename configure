@@ -1,7 +1,5 @@
 #!/bin/bash
 
-VERSION=1.0
-
 # Help display function
 function print_help ()
 {
@@ -54,7 +52,6 @@ echo "[Korali] Configuring Korali..."
 arch="$(uname -s)"
 
 # Linux Architecture is default
-DLL_EXTENSION="so"
 SHAREDLIB_FLAG="-shared"
 
 if [ "$arch" == "Linux" ]; then
@@ -64,7 +61,6 @@ fi
 # If using MacOs, change flags 
 if [ "$arch" == "Darwin" ]; then
  echo "[Korali] MacOS (Darwin) System Detected..."
- DLL_EXTENSION="dylib"
  SHAREDLIB_FLAG="-dynamiclib"
 fi
 
@@ -87,6 +83,29 @@ if [ $DETECTED_GXX       -eq 0 ]; then USE_CXX=g++;     fi;
 if [ $DETECTED_ICPC      -eq 0 ]; then USE_CXX=icpc;    fi;
 if [ $DETECTED_CLANG     -eq 0 ]; then USE_CXX=clang++; fi;
 if [ $DETECTED_CXX       -eq 0 ]; then USE_CXX=$CXX;    fi;
+
+######## Checking support for GNU Scientific Library ########
+
+echo "[Korali] Looking for existing GNU Scientific Library (GSL)."
+
+gslcfgFile=${PWD}/libs/gsl/bin/gsl-config
+if [ ! -f "$gslcfgFile" ]; then
+ gslcfgFile=gsl-config
+fi
+
+echo "[Korali] Running \"$gslcfgFile --version\"..."
+gslver=`$gslcfgFile --version`
+mingslver=2.5
+if [  $? -eq 0 ]
+then
+ echo "[Korali] Found GSL version $gslver."
+ cmpver=`printf "${gslver}\n${mingslver}" | sort -V | head -n 1`
+ if [[ "$cmpver" != "$mingslver" ]]; then
+   echo -e "[Korali] \e[31mError:\e[0m GSL Version found (${gslver}) is smaller than required (${mingslver})."
+   echo -e "[Korali] \e[32mSolution:\e[0m Run ./tools/install-reqs gsl to install a local GSL automatically."
+   exit -1
+ fi
+fi
 
 ######## Checking support for MPI ########
 
@@ -136,14 +155,13 @@ CXXFLAGS="-I$PREFIX/include -I$PREFIX/lib/koraligsl/include/gsl --std=c++14 -Wno
 
 ######## Creating Config File ########
 
-echo "VERSION=$VERSION" > korali.config
-echo "PREFIX=$PREFIX" >> korali.config
+echo "PREFIX=$PREFIX" > korali.config
 echo "CXX=$USE_CXX" >> korali.config
 echo "CXXFLAGS=\"$CXXFLAGS"\" >> korali.config
+echo "GSLCONFIG=$gslcfgFile" >> korali.config
 echo "LDFLAGS=\"`python3-config --ldflags`\"" >> korali.config
 echo "SHAREDLIB_FLAG=$SHAREDLIB_FLAG" >> korali.config
 echo "USE_MPI=$USE_MPI" >> korali.config
-echo "DLL_EXTENSION=$DLL_EXTENSION" >> korali.config 
 
 echo "[Korali] ---------------------------------------------------"
 echo "[Korali] Configuration was successful."

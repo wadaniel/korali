@@ -1,8 +1,12 @@
 
 flags=-O3 
 
+GSLPPREFIX=`$GSLCONFIG --prefix`
+GSLLIBS=`$GSLCONFIG --libs`
+GSLCFLAGS=`$GSLCONFIG --cflags`
+
 if [[ "$@" == *"-o"* ]]; then
-  flags+=" $LDFLAGS $PREFIX/lib/libkorali.a -L$PREFIX/lib -Wl,-rpath $PREFIX/lib -lgsl -lgslcblas" 
+  flags+=" $LDFLAGS $PREFIX/lib/libkorali.a -L$PREFIX/lib -L$GSLPPREFIX/lib -Wl,-rpath $GSLPPREFIX/lib $GSLLIBS " 
 fi
 
 if [[ "$@" == *"-c"* ]]; then

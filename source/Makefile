@@ -1,13 +1,11 @@
 include ../korali.config
 
-KORALI_LIBNAME_SHARED=libkorali.so
-KORALI_LIBNAME_STATIC=libkorali.a
+GSLPPREFIX = $(shell $(GSLCONFIG) --prefix)
+GSLLIBS = $(shell $(GSLCONFIG) --libs)
+GSLCFLAGS = $(shell $(GSLCONFIG) --cflags)
 
-GSL_LIBNAME=../libs/gsl/lib/libgsl.$(DLL_EXTENSION)
-GSLCBLAS_LIBNAME=../libs/gsl/lib/libgslcblas.$(DLL_EXTENSION)
-
-CFLAGS = $(shell echo $(CXXFLAGS)) -g -O3 -I. -I../libs -I../libs/gsl/include -std=c++14 -fPIC 
-LDFLAGS = $(SHAREDLIB_FLAG) -Wl,-rpath $(PREFIX)/lib -L$(PREFIX)/lib -lgsl -lgslcblas 
+CFLAGS = $(shell echo $(CXXFLAGS)) -g -O3 -I. -I../libs $(GSLCFLAGS) -std=c++14 -fPIC 
+LDFLAGS = $(SHAREDLIB_FLAG) -Wl,-rpath $(PREFIX)/lib -L$(PREFIX)/lib -L$(GSLPPREFIX)/lib -Wl,-rpath -L$(GSLPPREFIX)/lib $(GSLLIBS) 
 
 CFLAGS += `python3-config --includes` -D_KORALI_USE_PYTHON
 LDFLAGS  += `python3-config --ldflags`
@@ -17,7 +15,7 @@ ifeq ($(USE_MPI), 1)
  CXX = $(MPICXX)
 endif
 
-all: $(KORALI_LIBNAME_SHARED) $(KORALI_LIBNAME_STATIC)
+all: libkorali.so libkorali.a
 
 SOURCES = $(shell find . -name "*.cpp")
 OBJECTS = $(SOURCES:.cpp=.o)
@@ -25,13 +23,13 @@ OBJECTS = $(SOURCES:.cpp=.o)
 %.o: %.cpp
 	$(CXX) $(CFLAGS) -c $< -o $@
 
-$(KORALI_LIBNAME_SHARED): $(OBJECTS)
+libkorali.so: $(OBJECTS)
 	$(CXX) $^ -o $@ $(LDFLAGS)
 	
-$(KORALI_LIBNAME_STATIC): $(OBJECTS)
+libkorali.a: $(OBJECTS)
 	ar rs $@ $^  
 	
 clean:
-	@rm -rf *.so *.dylib $(OBJECTS)
+	@rm -rf *.so *.dylib __init__.py $(OBJECTS)
 
 .PHONY: clean all

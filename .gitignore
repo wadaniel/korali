@@ -1,5 +1,7 @@
 korali/
 _korali_result
+libs/gsl-2.5
+setup.py
 .exrc
 __pycache__
 *.tar.gz

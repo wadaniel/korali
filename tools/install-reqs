@@ -1,0 +1,18 @@
+#!/bin/bash
+
+echo "[Korali] Downloading GNU Scientific Library... "
+CURDIR=$PWD
+cd libs
+rm -f gsl-2.5.tar.gz 
+wget "ftp://ftp.gnu.org/gnu/gsl/gsl-2.5.tar.gz" 
+tar -xzvf gsl-2.5.tar.gz > /dev/null 2>&1
+echo "[Korali] Configuring GNU Scientific Library... "
+cd gsl-2.5 
+./configure --prefix=$CURDIR/libs/gsl > /dev/null 2>&1 
+echo "[Korali] Compiling GNU Scientific Library... "
+make -j10 > /dev/null 2>&1
+echo "[Korali] Installing GNU Scientific Library... "
+make install > /dev/null 2>&1
+cd .. 
+rm -rf gsl-2.5 gsl-2.5.tar.gz > /dev/null 2>&1
+echo "[Korali] Finished installing GNU Scientific Library. "

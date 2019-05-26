@@ -41,4 +41,5 @@ setup(
     ext_modules=[BinaryExtension('libkorali', sourcedir='./')],
     cmdclass=dict(build_ext=CopyLibrary),
     zip_safe=False,
+    install_requires=['pybind11']
 )

@@ -15,12 +15,16 @@ function print_help ()
  echo "Configuration syntax:"
  echo "./configure"
  echo "   [--prefix=INSTALL_DIR]"
+ echo "   [--install-gsl]"
+ echo "   [--help]"
  echo ""
  echo "Where:"
  echo " INSTALL_DIR is the path where to install Korali."
+ echo " --install-gsl Automatically downloads and installs GSL if not found."
  echo " --help Displays this help message."
 }
 
+INSTALLGSL=0
 PREFIX=$PWD/korali
 
 for i in "$@"
@@ -28,6 +32,10 @@ do
 case $i in
     --prefix=*)
     PREFIX="${i#*=}"
+    shift 
+    ;;
+    --install-gsl)
+    INSTALLGSL=1
     shift 
     ;;
     --help)
@@ -88,7 +96,7 @@ if [ $DETECTED_CXX       -eq 0 ]; then USE_CXX=$CXX;    fi;
 
 echo "[Korali] Looking for existing GNU Scientific Library (GSL)."
 
-gslcfgFile=${PWD}/libs/gsl/bin/gsl-config
+gslcfgFile=${PREFIX}/bin/gsl-config
 if [ ! -f "$gslcfgFile" ]; then
  gslcfgFile=gsl-config
 fi
@@ -101,9 +109,34 @@ then
  echo "[Korali] Found GSL version $gslver."
  cmpver=`printf "${gslver}\n${mingslver}" | sort -V | head -n 1`
  if [[ "$cmpver" != "$mingslver" ]]; then
+  if [ $INSTALLGSL -eq 0 ]; then
    echo -e "[Korali] \e[31mError:\e[0m GSL Version found (${gslver}) is smaller than required (${mingslver})."
-   echo -e "[Korali] \e[32mSolution:\e[0m Run ./tools/install-gsl to install a local GSL version automatically."
+   echo -e "[Korali] \e[32mSolution:\e[0m Re-run ./configure with the --install-gsl option."
    exit -1
+  else
+   echo "[Korali] Downloading GNU Scientific Library... "
+   mkdir -p $PREFIX
+   CURDIR=$PWD
+   cd libs
+   rm -f gsl-2.5.tar.gz 
+   wget "ftp://ftp.gnu.org/gnu/gsl/gsl-2.5.tar.gz" 
+   tar -xzvf gsl-2.5.tar.gz > /dev/null 2>&1
+   echo "[Korali] Configuring GNU Scientific Library... "
+   cd gsl-2.5 
+   ./configure --prefix=$PREFIX > /dev/null 2>&1 
+   echo "[Korali] Compiling GNU Scientific Library... "
+   make -j10 > /dev/null 2>&1
+   echo "[Korali] Installing GNU Scientific Library... "
+   make install > /dev/null 2>&1
+   if [  $? -ne 0 ]; then
+    echo -e "[Korali] \e[31mError: Failed GNU Scientific Library installation."
+    exit -1
+   fi
+   cd .. 
+   rm -rf gsl-2.5 gsl-2.5.tar.gz > /dev/null 2>&1
+   echo "[Korali] Finished installing GNU Scientific Library. "
+   gslcfgFile=${PREFIX}/bin/gsl-config
+  fi
  fi
 fi
 

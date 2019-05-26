@@ -2,7 +2,7 @@
 #define _KORALI_CONDUIT_BASE_H_
 
 #include <stdlib.h>
-#include "json/json.hpp"
+#include "auxiliar/json/json.hpp"
 
 namespace Korali::Conduit
 {

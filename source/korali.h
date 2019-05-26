@@ -25,7 +25,7 @@
 #include "conduits/single/single.h"
 #include "conduits/mpi/_mpi.h"
 
-#include "koralijson/koralijson.h"
+#include "auxiliar/json/koralijson.h"
 
 #ifdef _KORALI_USE_PYTHON
  #undef _POSIX_C_SOURCE

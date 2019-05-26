@@ -4,7 +4,7 @@
 #include <chrono>
 #include <stdlib.h>
 #include "problems/base/base.h"
-#include "json/json.hpp"
+#include "auxiliar/json/json.hpp"
 
 namespace Korali::Solver
 {

@@ -1,7 +1,7 @@
 #ifndef _KORALI_JSON_H_
 #define _KORALI_JSON_H_
 
-#include "json/json.hpp"
+#include "json.hpp"
 #include <type_traits>
 #include <vector>
 #include <iostream>

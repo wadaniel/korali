@@ -29,21 +29,17 @@ install: $(KORALI_LIBNAME_SHARED)
 	ln -sf $(KORALI_LIBNAME_SHARED) $(PREFIX)/lib/libkorali.dylib
 	cp $(KORALI_LIBNAME_STATIC) $(PREFIX)/lib
 	cd source && for i in $(INCLUDES); do rsync -R $$i $(PREFIX)/include > /dev/null 2>&1; done 
-	cp -r libs/json $(PREFIX)/include
-	cp -r libs/koralijson $(PREFIX)/include
-	cp tools/korali-plot $(PREFIX)/bin
+	cp source/auxiliar/python/korali-plot $(PREFIX)/bin
 	chmod a+x $(PREFIX)/bin/korali-plot
-	cp -r tools/plotting/* $(PREFIX)/bin/
-	chmod a+x  $(PREFIX)/bin/plot_cmaes.py
-	chmod a+x  $(PREFIX)/bin/plot_tmcmc.py
 	@echo "#!/bin/bash" > $(PREFIX)/bin/korali-cxx
 	@cat .korali.config tools/korali-cxx >> $(PREFIX)/bin/korali-cxx
 	@chmod a+x  $(PREFIX)/bin/korali-cxx
-	@echo "from libkorali import *" > source/__init__.py 
-	@ln -sf ./tools/setup.py setup.py
+	@ln -sf ./source/auxiliar/python/setup.py setup.py
 	@$(PIP) install . --user --upgrade
+	@rm -f setup.py
 	@echo '------------------------------------------------------------------'
-	@echo '[Korali] To finalize installation, please update your environment:'
+	@echo '[Korali] Finished installation successfully.'
+	@echo '[Korali] Now please update your PATH environment:'
 	@echo '[Korali] >export PATH=$$PATH:$(PREFIX)/bin'
 	@echo '------------------------------------------------------------------' 
 

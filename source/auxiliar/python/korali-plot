@@ -3,6 +3,7 @@
 import os
 import sys
 import json
+from korali import *
 
 path = '_korali_result/s00000.json'
         
@@ -16,12 +17,14 @@ with open(path) as f:
  
 if ( method == "TMCMC" ):
  print("[Korali] Running TMCMC Plotter...")
- os.system("plot_tmcmc.py _korali_result")
+ #os.system("plot_tmcmc.py _korali_result")
+ plot_tmcmc(_korali_result)
  exit(0) 
 
 if ( method == "CMA-ES" ):
  print("[Korali] Running CMA-ES Plotter...")
- os.system("plot_cmaes.py _korali_result") 
+ #os.system("plot_cmaes.py _korali_result") 
+ plot_cmaes(_korali_result)
  exit(0)
  
 print("[Korali] Error: Did not recognize method for plotting...")

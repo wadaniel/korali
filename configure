@@ -126,7 +126,7 @@ fi
 ######## Checking support for Python3 ########
 
 echo "[Korali] Checking for Python3 support using \"python3 --version\"."
-python3 --version > /dev/null 2>&1
+pyver=`python3 --version`
 if [ $? -eq 0 ]; then
   echo "[Korali] Checking for python3-config."
   python3-config --help > /dev/null 2>&1
@@ -140,6 +140,7 @@ else
   echo "[Korali] Please make sure the python3-config command is accesible in the PATH environment variable."
   exit
 fi
+echo "[Korali] Python3 version $pyver found."
 
 ######## Checking selected compiler #######
 
@@ -149,19 +150,13 @@ then
   exit -1
 fi
 
-######## Determining Compilation Flags ########
-
-CXXFLAGS="-I$PREFIX/include -I$PREFIX/lib/koraligsl/include/gsl --std=c++14 -Wno-unused -Wunused-result -Wno-unused-parameter -Wno-address -Wno-deprecated-declarations -Wall -Wfatal-errors -Wno-c++17-extensions"
-
 ######## Creating Config File ########
 
-echo "PREFIX=$PREFIX" > korali.config
-echo "CXX=$USE_CXX" >> korali.config
-echo "CXXFLAGS=\"$CXXFLAGS"\" >> korali.config
-echo "GSLCONFIG=$gslcfgFile" >> korali.config
-echo "LDFLAGS=\"`python3-config --ldflags`\"" >> korali.config
-echo "SHAREDLIB_FLAG=$SHAREDLIB_FLAG" >> korali.config
-echo "USE_MPI=$USE_MPI" >> korali.config
+echo "PREFIX=$PREFIX" > .korali.config
+echo "CXX=$USE_CXX" >> .korali.config
+echo "GSLCONFIG=$gslcfgFile" >> .korali.config
+echo "SHAREDLIB_FLAG=$SHAREDLIB_FLAG" >> .korali.config
+echo "USE_MPI=$USE_MPI" >> .korali.config
 
 echo "[Korali] ---------------------------------------------------"
 echo "[Korali] Configuration was successful."

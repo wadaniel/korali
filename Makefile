@@ -3,7 +3,7 @@ TESTS = $(dir $(wildcard tests/*/))
 CURDIR = $(shell pwd)
 PIP ?= python3 -m pip
 
-include korali.config
+include .korali.config
 
 .PHONY: all install clean snapshot tests clean_tests $(TESTS)
 
@@ -37,7 +37,7 @@ install: $(KORALI_LIBNAME_SHARED)
 	chmod a+x  $(PREFIX)/bin/plot_cmaes.py
 	chmod a+x  $(PREFIX)/bin/plot_tmcmc.py
 	@echo "#!/bin/bash" > $(PREFIX)/bin/korali-cxx
-	@cat korali.config tools/korali-cxx >> $(PREFIX)/bin/korali-cxx
+	@cat .korali.config tools/korali-cxx >> $(PREFIX)/bin/korali-cxx
 	@chmod a+x  $(PREFIX)/bin/korali-cxx
 	@echo "from libkorali import *" > source/__init__.py 
 	@ln -sf ./tools/setup.py setup.py

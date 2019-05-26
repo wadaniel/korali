@@ -1,16 +1,10 @@
 
-flags=-O3 
-
-GSLPPREFIX=`$GSLCONFIG --prefix`
-GSLLIBS=`$GSLCONFIG --libs`
-GSLCFLAGS=`$GSLCONFIG --cflags`
-
 if [[ "$@" == *"-o"* ]]; then
-  flags+=" $LDFLAGS $PREFIX/lib/libkorali.a -L$PREFIX/lib -L$GSLPPREFIX/lib -Wl,-rpath -Wl,$GSLPPREFIX/lib $GSLLIBS " 
+  flags+="-L$PREFIX/lib -Wl,-rpath -Wl,$PREFIX/lib -lkorali" 
 fi
 
 if [[ "$@" == *"-c"* ]]; then
- flags+=" $CXXFLAGS"
+ flags+="-O3 -I$PREFIX/include --std=c++14"
  
  if [ $USE_MPI -eq 1 ]; then
   flags+=" -D_KORALI_USE_MPI"

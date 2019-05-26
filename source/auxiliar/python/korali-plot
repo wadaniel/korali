@@ -3,7 +3,7 @@
 import os
 import sys
 import json
-from korali import *
+from korali.plotters import *
 
 path = '_korali_result/s00000.json'
         

@@ -36,7 +36,7 @@ setup(
     author_email='martiser@ethz.ch',
     description='High Performance Library for Uncertainty Quantification',
     long_description='',
-    packages = ['korali'],
+    packages = ['korali', 'korali.plotters'],
     package_dir = {'korali' : 'source/auxiliar/python'},
     ext_modules=[BinaryExtension('libkorali', sourcedir='./')],
     cmdclass=dict(build_ext=CopyLibrary),

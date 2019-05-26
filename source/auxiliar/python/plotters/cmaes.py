@@ -11,7 +11,7 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 
-from plot_helpers import plt_pause_light, plt_multicolored_lines
+from helpers import plt_pause_light, plt_multicolored_lines
 
 # Get a list of evenly spaced colors in HLS huse space.
 # Credits: seaborn package
@@ -35,7 +35,7 @@ def objstrings(obj='current'):
 
 
 # Plot CMA-ES results (read from .json files)
-def run_diagnostics(src, live = False, obj='current'):
+def plot_cmaes(src, live = False, obj='current'):
 
     idx    = 0 # generation
     numdim = 0 # problem dimension
@@ -160,12 +160,3 @@ def run_diagnostics(src, live = False, obj='current'):
 
     fig.show()
 
-
-if __name__ == '__main__':
-
-    if (len(sys.argv) == 2):
-        run_diagnostics(src=sys.argv[1], live = True)
-
-    else:
-        print("Invalid arguments, exit ...")
-        print("(one argument required, directoy of CMA-ES results)")

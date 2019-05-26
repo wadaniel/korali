@@ -25,7 +25,7 @@ function print_help ()
 }
 
 INSTALLGSL=0
-PREFIX=$PWD/korali
+PREFIX=$HOME/.local
 
 for i in "$@"
 do
@@ -117,7 +117,6 @@ then
    echo "[Korali] Downloading GNU Scientific Library... "
    mkdir -p $PREFIX
    CURDIR=$PWD
-   cd libs
    rm -f gsl-2.5.tar.gz 
    wget "ftp://ftp.gnu.org/gnu/gsl/gsl-2.5.tar.gz" 
    tar -xzvf gsl-2.5.tar.gz > /dev/null 2>&1

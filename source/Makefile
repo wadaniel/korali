@@ -27,6 +27,6 @@ libkorali.so: $(OBJECTS)
 	$(CXX) $^ -o $@ $(LDFLAGS)
 	
 clean:
-	@rm -rf *.so *.dylib __init__.py $(OBJECTS)
+	@rm -rf *.so *.dylib  $(OBJECTS)
 
 .PHONY: clean all

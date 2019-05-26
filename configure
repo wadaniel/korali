@@ -55,12 +55,12 @@ arch="$(uname -s)"
 SHAREDLIB_FLAG="-shared"
 
 if [ "$arch" == "Linux" ]; then
-echo "[Korali] Linux System Detected..."
+echo "[Korali] Linux System Detected."
 fi
 
 # If using MacOs, change flags 
 if [ "$arch" == "Darwin" ]; then
- echo "[Korali] MacOS (Darwin) System Detected..."
+ echo "[Korali] MacOS (Darwin) System Detected."
  SHAREDLIB_FLAG="-dynamiclib"
 fi
 

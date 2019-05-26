@@ -8,7 +8,7 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 
-from plot_helpers import plt_pause_light
+from korali.plotters.helpers import plt_pause_light
 
 # Plot histogram of sampes in diagonal
 def plot_histogram(ax, theta):
@@ -124,7 +124,7 @@ def plot_samples(path, idx=None):
         return anneal
 
 # Plot TMCMC results (read from .json files)
-def run_diagnostics(src, live=False):
+def plot_tmcmc(src, live=False):
      
     idx      = 0
     finished = False
@@ -148,23 +148,3 @@ def run_diagnostics(src, live=False):
         if (anneal >= 1.0): finished = True
 
     plt.show()
-
-
-if __name__ == '__main__':
-
-    if (len(sys.argv) == 2):
-        if os.path.isdir(sys.argv[1]):
-            run_diagnostics(src=sys.argv[1], live=True)
-        
-        elif os.path.isfile(sys.argv[1]):
-            print  ("Plotting results from file " + sys.argv[1])
-            plot_samples(sys.argv[1])
-            plt.show()
-
-        else:
-            print("Invalid arguments, exit ...")
-            print("argument not recognized as directory or file")
-
-    else: 
-        print("Invalid arguments, exit ...")
-        print("one argument required, directoy of TMCMC results or file")

@@ -93,7 +93,8 @@ class CCMAES : public Korali::Solver::Base
  double currentFunctionValue; /* best fitness current generation */
  double prevFunctionValue; /* best fitness previous generation */
 
- double **C; /* lower triangular matrix: i>=j for C[i][j] */
+ double **C; /* Covariance Matrix */
+ double **Ctmp; /* tmp Covariance Matrix for eigen decomp */
  double **B; /* matrix with eigenvectors in columns */
  double **Btmp; /* matrix for eigenvectors calculation */
  double *axisD; /* axis lengths (sqrt(Evals)) */
@@ -124,7 +125,7 @@ class CCMAES : public Korali::Solver::Base
  void sampleSingle(size_t sampleIdx); /* sample individual */
  void evaluateSamples(); /* evaluate all samples until done */
  void adaptC(int hsig); /* CMA-ES covariance matrix adaption */
- void updateEigensystem(int flgforce = 1);
+ void updateEigensystem(double **M, int flgforce = 1);
  void eigen(size_t N, double **C, double *diag, double **Q) const;
  size_t maxIdx(const double *rgd, size_t len) const;
  size_t minIdx(const double *rgd, size_t len) const;

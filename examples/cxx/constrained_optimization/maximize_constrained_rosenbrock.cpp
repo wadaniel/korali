@@ -13,7 +13,7 @@ int main(int argc, char* argv[])
 
  double* tmp = (double*) malloc(0);
  auto korali = Korali::Engine(model);
- //korali.addConstraint(fc1);
+ korali.addConstraint(fc1);
  korali.addConstraint(fc2);
 
  //korali["Seed"] = 0xC0FFEE;

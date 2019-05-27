@@ -1,4 +1,4 @@
-BINARIES = maximize_constrained_rosenbrock maximize_constrained_g09
+BINARIES = maximize_constrained_rosenbrock maximize_constrained_g09 maximize_constrained_tr2
 KORALICXX = korali-cxx
 
 .SECONDARY:

@@ -4,7 +4,7 @@ GSLPPREFIX = $(shell $(GSLCONFIG) --prefix)
 GSLLIBS    = $(shell $(GSLCONFIG) --libs)
 GSLCFLAGS  = $(shell $(GSLCONFIG) --cflags)
 
-CFLAGS = -g -O3 -I. $(GSLCFLAGS) -std=c++14 -fPIC -Wno-deprecated-declarations
+CFLAGS = -g -O3 -I. $(GSLCFLAGS) -std=c++14 -fPIC -Wno-deprecated-declarations -Wno-c++17-extensions
 LDFLAGS = $(SHAREDLIB_FLAG) -Wl,-rpath $(PREFIX)/lib -L$(PREFIX)/lib -L$(GSLPPREFIX)/lib -Wl,-rpath -Wl,$(GSLPPREFIX)/lib $(GSLLIBS) 
 
 CFLAGS  += `python3 -m pybind11 --includes` -D_KORALI_USE_PYTHON

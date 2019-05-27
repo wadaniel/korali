@@ -95,7 +95,9 @@ class CCMAES : public Korali::Solver::Base
 
  double **C; /* lower triangular matrix: i>=j for C[i][j] */
  double **B; /* matrix with eigenvectors in columns */
+ double **Btmp; /* matrix for eigenvectors calculation */
  double *axisD; /* axis lengths (sqrt(Evals)) */
+ double *axisDtmp; /* for axis lengths calculation */
  
  double **Z; /* randn() */
  double **BDZ; /* B*D*randn() */
@@ -122,7 +124,7 @@ class CCMAES : public Korali::Solver::Base
  void sampleSingle(size_t sampleIdx); /* sample individual */
  void evaluateSamples(); /* evaluate all samples until done */
  void adaptC(int hsig); /* CMA-ES covariance matrix adaption */
- void updateEigensystem(int flgforce);
+ void updateEigensystem(int flgforce = 1);
  void eigen(size_t N, double **C, double *diag, double **Q) const;
  size_t maxIdx(const double *rgd, size_t len) const;
  size_t minIdx(const double *rgd, size_t len) const;
@@ -145,6 +147,7 @@ class CCMAES : public Korali::Solver::Base
  double _cp; /* update rate global success estimate */
  
  bool isVia; /* true if mean violates constraints */
+ int bestValidIdx; /* best sample with wo constraint violation (otherwise -1) */
  double globalSucRate; /* estim. global success rate */ 
  double fviability; /* viability func value */
  size_t resampled; /* number of resampled parameters due constraint violation */

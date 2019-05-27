@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
  korali["Solver"]["Adaption Size"] = 0.1;
  korali["Solver"]["Num Samples"] = 8;
  korali["Solver"]["Num Viability Samples"] = 2;
- korali["Solver"]["Termination Criteria"]["Fitness"] = -680.630057374402;
+ korali["Solver"]["Termination Criteria"]["Fitness"] = -680.630057374402 - 1e-4;
  korali["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-12;
  
  korali.run();

@@ -6,7 +6,6 @@ int main(int argc, char* argv[])
  
  //rosenbrock
  std::function<void(Korali::modelData&)> model = [](Korali::modelData& d) { m_rosenbrock(d.getParameters(), d.getResults()); }; 
- std::function<double(double* , size_t)> fc0 = [](double* arr, size_t N) { return 0.0 ; }; 
  std::function<double(double* , size_t)> fc1 = [](double* arr, size_t N) { return arr[0] + arr[1] - 2.0; }; 
  std::function<double(double* , size_t)> fc2 = [](double* arr, size_t N) { return std::pow(arr[0] - 1.0,3.0) - arr[1] + 1; }; 
 
@@ -14,9 +13,8 @@ int main(int argc, char* argv[])
 
  double* tmp = (double*) malloc(0);
  auto korali = Korali::Engine(model);
- korali.addConstraint(fc0);
- korali.addConstraint(fc1);
- //korali.addConstraint(fc2);
+ //korali.addConstraint(fc1);
+ korali.addConstraint(fc2);
 
  //korali["Seed"] = 0xC0FFEE;
  korali["Verbosity"]       = "Detailed";
@@ -37,10 +35,10 @@ int main(int argc, char* argv[])
  korali["Solver"]["Method"] = "CCMA-ES";
  korali["Solver"]["Num Samples"] = 10;
  korali["Solver"]["Num Viability Samples"] = 4;
- korali["Solver"]["Adaption Size"] = 0.01;
- korali["Solver"]["Termination Criteria"]["Max Generations"] = 100;
+ korali["Solver"]["Adaption Size"] = 0.1;
+ korali["Solver"]["Termination Criteria"]["Max Generations"] = 1000;
  korali["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-12;
- korali["Solver"]["Termination Criteria"]["Fitness"] = 1.0;
+ korali["Solver"]["Termination Criteria"]["Fitness"] = -1e-7;
  
  korali.run();
  

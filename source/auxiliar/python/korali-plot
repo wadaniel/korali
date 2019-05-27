@@ -6,13 +6,14 @@ import json
 from korali.plotters.cmaes import *
 from korali.plotters.tmcmc import *
 
-path = '_korali_result/s00000.json'
+path = '_korali_result'
+firstResult = path + '/s00000.json'
         
-if ( not os.path.isfile(path) ):
+if ( not os.path.isfile(firstResult) ):
  print("[Korali] Error: Did not find any results in the _korali_result folder...")
  exit(-1)
                 
-with open(path) as f:
+with open(firstResult) as f:
  data  = json.load(f)
  method = data['Solver']['Method']
  

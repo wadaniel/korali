@@ -8,11 +8,11 @@ include .korali.config
 .PHONY: all install clean snapshot tests clean_tests $(TESTS)
 
 KORALI_LIBNAME_SHARED=source/libkorali.so
-KORALI_LIBNAME_STATIC=source/libkorali.a
 
 all: $(KORALI_LIBNAME_SHARED)
 
 $(KORALI_LIBNAME_SHARED):
+	@mkdir -p $(PREFIX)/lib
 	@$(MAKE) -j -C source
 
 clean: 
@@ -21,12 +21,12 @@ clean:
 
 install: $(KORALI_LIBNAME_SHARED) 
 	@echo "[Korali] Installing Korali..."
+	@mkdir -p $(PREFIX)
 	@mkdir -p $(PREFIX)/lib
 	@mkdir -p $(PREFIX)/include
 	@mkdir -p $(PREFIX)/bin
 	@cp $(KORALI_LIBNAME_SHARED) $(PREFIX)/lib
 	@ln -sf $(KORALI_LIBNAME_SHARED) $(PREFIX)/lib/libkorali.dylib
-	@cp $(KORALI_LIBNAME_STATIC) $(PREFIX)/lib
 	@cd source && for i in $(INCLUDES); do rsync -R $$i $(PREFIX)/include > /dev/null 2>&1; done 
 	@cp source/auxiliar/python/korali-plot $(PREFIX)/bin
 	@chmod a+x $(PREFIX)/bin/korali-plot

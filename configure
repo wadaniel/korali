@@ -46,7 +46,7 @@ case $i in
     *)
     print_help
     echo ""
-    echo -e "[Korali] \e[31mError:\e[0m  Unknown option $i."       
+    echo "[Korali] Error:  Unknown option $i."       
     exit 1
     ;;
 esac
@@ -110,8 +110,8 @@ then
  cmpver=`printf "${gslver}\n${mingslver}" | sort -V | head -n 1`
  if [[ "$cmpver" != "$mingslver" ]]; then
   if [ $INSTALLGSL -eq 0 ]; then
-   echo -e "[Korali] \e[31mError:\e[0m GSL Version found (${gslver}) is smaller than required (${mingslver})."
-   echo -e "[Korali] \e[32mSolution:\e[0m Re-run ./configure with the --install-gsl option."
+   echo "[Korali] Error: GSL Version found (${gslver}) is smaller than required (${mingslver})."
+   echo "[Korali] Solution: Re-run ./configure with the --install-gsl option."
    exit -1
   else
    echo "[Korali] Downloading GNU Scientific Library... "
@@ -145,8 +145,8 @@ echo "[Korali] Checking for MPI support using \"$MPICXX --version\"..."
 $MPICXX --version > /dev/null 2>&1
 if [ ! $? -eq 0 ]
 then
- echo -e "[Korali] \e[33mWarning:\e[0m No MPI compiler command found in \$MPICXX."
- echo -e "[Korali] \e[36mSuggestion:\e[0m Use 'export MPICXX=(path)' to enable MPI support."
+ echo "[Korali] Warning: No MPI compiler command found in \$MPICXX."
+ echo "[Korali] Suggestion: Use 'export MPICXX=(path)' to enable MPI support."
  USE_MPI=0
 else
  echo "[Korali] Found $MPICXX for MPI compiler/wrapper."
@@ -161,8 +161,8 @@ fi
 echo "[Korali] Checking for Python3 support using \"python3 -m pybind11 -h\"..."
 python3 -m pybind11 -h > /dev/null 2>&1
 if [ $? -ne 0 ]; then
-  echo -e "[Korali] \e[31mError:\e[0m pybind11 not found."
-  echo -e "[Korali] \e[32mSolution:\e[0m Install pybind11 with \"pip3 install --user pybind11\"."
+  echo "[Korali] Error: pybind11 not found."
+  echo "[Korali] Solution: Install pybind11 with \"pip3 install --user pybind11\"."
   exit -1
 fi
 echo "[Korali] Pybind11 found."
@@ -175,13 +175,13 @@ if [ $? -eq 0 ]; then
   echo "[Korali] Checking for python3-config."
   python3-config --help > /dev/null 2>&1
   if [ $? -ne 0 ]; then
-    echo -e "[Korali] \e[31mError:\e[0m python3-config not found."
-    echo -e "[Korali] \e[32mSolution:\e[0m Please make sure python3 is correctly installed."
+    echo "[Korali] Error: python3-config not found."
+    echo "[Korali] Solution: Please make sure python3 is correctly installed."
     exit
   fi
 else
-  echo -e "[Korali] \e[31mError:\e[0m Python3 not found."
-  echo -e "[Korali] \e[32mSolution:\e[0m Please make sure the python3-config command is accesible in the PATH environment variable."
+  echo "[Korali] Error: Python3 not found."
+  echo "[Korali] Solution: Please make sure the python3-config command is accesible in the PATH environment variable."
   exit -1
 fi
 echo "[Korali] Python3 version $pyver found."
@@ -190,8 +190,8 @@ echo "[Korali] Python3 version $pyver found."
 
 if [[ "$USE_CXX" == "" ]]
 then
-  echo -e "[Korali] \e[31mError:\e[0m  Did not found any valid C++ or MPI C++ compiler."
-  echo -e "[Korali] \e[32mSolution:\e[0m Please define a valid C++ compiler in \$CXX."
+  echo "[Korali] Error:  Did not found any valid C++ or MPI C++ compiler."
+  echo "[Korali] Solution: Please define a valid C++ compiler in \$CXX."
   exit -1
 fi
 

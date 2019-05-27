@@ -11,7 +11,7 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 
-from korali.plotters.helpers import plt_pause_light, plt_multicolored_lines
+from korali.plotter.helpers import plt_pause_light, plt_multicolored_lines
 
 # Get a list of evenly spaced colors in HLS huse space.
 # Credits: seaborn package

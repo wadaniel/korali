@@ -8,7 +8,7 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 
-from korali.plotters.helpers import plt_pause_light
+from korali.plotter.helpers import plt_pause_light
 
 # Plot histogram of sampes in diagonal
 def plot_histogram(ax, theta):

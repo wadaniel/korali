@@ -28,8 +28,6 @@ install: $(KORALI_LIBNAME_SHARED)
 	@cp $(KORALI_LIBNAME_SHARED) $(PREFIX)/lib
 	@ln -sf $(KORALI_LIBNAME_SHARED) $(PREFIX)/lib/libkorali.dylib
 	@cd source && for i in $(INCLUDES); do rsync -R $$i $(PREFIX)/include > /dev/null 2>&1; done 
-	@cp source/auxiliar/python/korali-plot $(PREFIX)/bin
-	@chmod a+x $(PREFIX)/bin/korali-plot
 	@echo "#!/bin/bash" > $(PREFIX)/bin/korali-cxx
 	@cat .korali.config source/auxiliar/bin/korali-cxx >> $(PREFIX)/bin/korali-cxx
 	@chmod a+x  $(PREFIX)/bin/korali-cxx

@@ -1,10 +1,10 @@
-#ifndef _BASESOLVER_H_
-#define _BASESOLVER_H_
+#ifndef _KORALI_SOLVER_BASE_H_
+#define _KORALI_SOLVER_BASE_H_
 
 #include <chrono>
 #include <stdlib.h>
 #include "problems/base/base.h"
-#include "json/json.hpp"
+#include "auxiliar/json/json.hpp"
 
 namespace Korali::Solver
 {
@@ -33,4 +33,4 @@ class Base {
 
 } // namespace Korali
 
-#endif // _BASESOLVER_H_
+#endif // _KORALI_SOLVER_BASE_H_

@@ -3,7 +3,7 @@
 In this tutorial we show how to **optimize** and **sample** directly from a
 given function.
 
-The code in **Python** for this tutorial can be found [here](https://github.com/cselab/sKorali/blob/master/examples/python/quick_start/direct.py) and the code in **C++** can be found [here](https://github.com/cselab/skorali/blob/master/examples/cxx/quick_start/direct.cpp).
+The code in **Python** for this tutorial can be found [here](https://github.com/cselab/sKorali/blob/master/examples/python/quick_start/direct_optimize.py) and the code in **C++** can be found [here](https://github.com/cselab/skorali/blob/master/examples/cxx/quick_start/direct_optimize.cpp).
 
 
 
@@ -116,6 +116,8 @@ korali-plot
 
 
 ## Sample
+
+The code in **Python** for this part can be found [here](https://github.com/cselab/sKorali/blob/master/examples/python/quick_start/direct_sample.py) and the code in **C++** can be found [here](https://github.com/cselab/skorali/blob/master/examples/cxx/quick_start/direct_sample.cpp).
 
 ###  The Solver
 

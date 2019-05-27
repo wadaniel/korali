@@ -15,23 +15,23 @@ CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
  setConfiguration(js);
 
  // Allocating Memory
- _samplePopulation =  (double*) calloc (sizeof(double), _k->_problem->N*_s);
- rgpc           = (double*) calloc (sizeof(double), _k->_problem->N);
- rgps          = (double*) calloc (sizeof(double), _k->_problem->N);
- rgdTmp        = (double*) calloc (sizeof(double), _k->_problem->N);
- rgBDz         = (double*) calloc (sizeof(double), _k->_problem->N);
- rgxmean       = (double*) calloc (sizeof(double), _k->_problem->N);
- rgxold        = (double*) calloc (sizeof(double), _k->_problem->N);
- rgxbestever   = (double*) calloc (sizeof(double), _k->_problem->N);
- rgD           = (double*) calloc (sizeof(double), _k->_problem->N);
- curBestVector = (double*) calloc (sizeof(double), _k->_problem->N);
+ _samplePopulation = (double*) calloc (sizeof(double), _k->_problem->N*_s);
+ rgpc              = (double*) calloc (sizeof(double), _k->_problem->N);
+ rgps              = (double*) calloc (sizeof(double), _k->_problem->N);
+ rgdTmp            = (double*) calloc (sizeof(double), _k->_problem->N);
+ rgBDz             = (double*) calloc (sizeof(double), _k->_problem->N);
+ rgxmean           = (double*) calloc (sizeof(double), _k->_problem->N);
+ rgxold            = (double*) calloc (sizeof(double), _k->_problem->N);
+ rgxbestever       = (double*) calloc (sizeof(double), _k->_problem->N);
+ rgD               = (double*) calloc (sizeof(double), _k->_problem->N);
+ curBestVector     = (double*) calloc (sizeof(double), _k->_problem->N);
 
  rgFuncValue    = (double*) calloc (sizeof(double), _s);
  histFuncValues = (double*) calloc (sizeof(double), _maxGenenerations+1);
  index          = (size_t*) calloc (sizeof(size_t), _s);
 
  C = (double**) calloc (sizeof(double*), _k->_problem->N);
- B = (double**)calloc (sizeof(double*), _k->_problem->N);
+ B = (double**) calloc (sizeof(double*), _k->_problem->N);
  for (size_t i = 0; i < _k->_problem->N; i++) C[i] = (double*) calloc (sizeof(double), _k->_problem->N);
  for (size_t i = 0; i < _k->_problem->N; i++) B[i] = (double*) calloc (sizeof(double), _k->_problem->N);
 
@@ -190,33 +190,35 @@ nlohmann::json CMAES::getConfiguration()
  return js;
 }
 
+
+
 void CMAES::setConfiguration(nlohmann::json& js)
 {
  this->Korali::Solver::Base::setConfiguration(js);
 
- _s                             = consume(js, { "Lambda" }, KORALI_NUMBER);
- _currentGeneration             = consume(js, { "Current Generation" }, KORALI_NUMBER, std::to_string(0));
- _sigmaCumulationFactor         = consume(js, { "Sigma Cumulation Factor" }, KORALI_NUMBER, std::to_string(-1));
- _dampFactor                    = consume(js, { "Damp Factor" }, KORALI_NUMBER, std::to_string(-1));
- _objective                     = consume(js, { "Objective" }, KORALI_STRING, "Maximize");
+ _s                     = consume(js, { "Lambda" }, KORALI_NUMBER);
+ _currentGeneration     = consume(js, { "Current Generation" }, KORALI_NUMBER, std::to_string(0));
+ _sigmaCumulationFactor = consume(js, { "Sigma Cumulation Factor" }, KORALI_NUMBER, std::to_string(-1));
+ _dampFactor            = consume(js, { "Damp Factor" }, KORALI_NUMBER, std::to_string(-1));
+ _objective             = consume(js, { "Objective" }, KORALI_STRING, "Maximize");
 
  _fitnessSign = 0;
  if(_objective == "Maximize") _fitnessSign = 1;
  if(_objective == "Minimize") _fitnessSign = -1;
  if(_fitnessSign == 0)  { fprintf( stderr, "[Korali] Error: Invalid setting for Objective: %s\n", _objective.c_str()); exit(-1); }
 
- _mu                            = consume(js, { "Mu", "Value" }, KORALI_NUMBER, std::to_string(ceil(_s / 2)));
- _muType                        = consume(js, { "Mu", "Type" }, KORALI_STRING, "Logarithmic");
- _muCovariance                  = consume(js, { "Mu", "Covariance" }, KORALI_NUMBER, std::to_string(-1));
+ _mu            = consume(js, { "Mu", "Value" }, KORALI_NUMBER, std::to_string(ceil(_s / 2)));
+ _muType        = consume(js, { "Mu", "Type" }, KORALI_STRING, "Logarithmic");
+ _muCovariance  = consume(js, { "Mu", "Covariance" }, KORALI_NUMBER, std::to_string(-1));
 
  // Initializing Mu Weights
  _muWeights = (double *) calloc (sizeof(double), _mu);
- if (_muType == "Linear")           for (size_t i = 0; i < _mu; i++)  _muWeights[i] = _mu - i;
- if (_muType == "Equal")            for (size_t i = 0; i < _mu; i++)  _muWeights[i] = 1;
- if (_muType == "Logarithmic")      for (size_t i = 0; i < _mu; i++)  _muWeights[i] = log(_mu+1.)-log(i+1.);
+ if (_muType == "Linear")       for (size_t i = 0; i < _mu; i++)  _muWeights[i] = _mu - i;
+ if (_muType == "Equal")        for (size_t i = 0; i < _mu; i++)  _muWeights[i] = 1;
+ if (_muType == "Logarithmic")  for (size_t i = 0; i < _mu; i++)  _muWeights[i] = log(_mu+1.)-log(i+1.);
 
  _chiN = sqrt((double) _k->_problem->N) * (1. - 1./(4.*_k->_problem->N) + 1./(21.*_k->_problem->N*_k->_problem->N));
- 
+
  /* normalize weights vector and set mueff */
  double s1 = 0.0;
  double s2 = 0.0;
@@ -247,7 +249,10 @@ void CMAES::setConfiguration(nlohmann::json& js)
  _stopTolUpXFactor              = consume(js, { "Termination Criteria", "Max Standard Deviation" }, KORALI_NUMBER, std::to_string(1e18));
  _stopCovCond                   = consume(js, { "Termination Criteria", "Max Condition Covariance" }, KORALI_NUMBER, std::to_string(std::numeric_limits<double>::max()));
  _ignorecriteria                = consume(js, { "Termination Criteria", "Ignore" }, KORALI_STRING, "Max Condition Covariance");
+
 }
+
+
 
 void CMAES::setState(nlohmann::json& js)
 {
@@ -408,7 +413,7 @@ void CMAES::updateDistribution(const double *fitnessVector)
  /* update current best */
  currentFunctionValue = fitnessVector[index[0]];
  for (size_t i = 0; i < _k->_problem->N; ++i) curBestVector[i] = _samplePopulation[index[0]*_k->_problem->N + i];
- 
+
  /* update xbestever */
  if (currentFunctionValue > bestEver || _currentGeneration == 1)
  {
@@ -425,7 +430,7 @@ void CMAES::updateDistribution(const double *fitnessVector)
    rgxmean[i] = 0.;
    for (size_t iNk = 0; iNk < _mu; ++iNk)
      rgxmean[i] += _muWeights[iNk] * _samplePopulation[index[iNk]*_k->_problem->N + i];
-   
+
    rgBDz[i] = (rgxmean[i] - rgxold[i])/sigma;
  }
 
@@ -434,7 +439,7 @@ void CMAES::updateDistribution(const double *fitnessVector)
   double sum = 0.0;
   if (flgdiag) sum = rgBDz[i];
   else for (size_t j = 0; j < _k->_problem->N; ++j) sum += B[j][i] * rgBDz[j]; /* B^(T) * rgBDz */
-  
+
   rgdTmp[i] = sum / rgD[i]; /* D^(-1) */
  }
 
@@ -447,7 +452,7 @@ void CMAES::updateDistribution(const double *fitnessVector)
     else for (size_t j = 0; j < _k->_problem->N; ++j) sum += B[i][j] * rgdTmp[j];
 
     rgps[i] = (1. - _sigmaCumulationFactor) * rgps[i] + sqrt(_sigmaCumulationFactor * (2. - _sigmaCumulationFactor) * _muEffective) * sum;
- 
+
     /* calculate norm(ps)^2 */
     psL2 += rgps[i] * rgps[i];
  }
@@ -465,7 +470,7 @@ void CMAES::updateDistribution(const double *fitnessVector)
  sigma *= exp(((sqrt(psL2)/_chiN)-1.)*_sigmaCumulationFactor/_dampFactor);
 
  /* numerical error management */
- 
+
  //treat maximal standnard deviations
  //TODO
 
@@ -478,7 +483,7 @@ void CMAES::updateDistribution(const double *fitnessVector)
 
  //too low coordinate axis deviations
  //TODO
- 
+
  //treat numerical precision provblems
  //TODO
 

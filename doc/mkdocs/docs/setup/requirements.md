@@ -57,9 +57,9 @@ Make sure your version of python is correctly installed and the .pc file exists 
 The Git control version software is required in case you choose to download Korali's code from our repository or
 wish to contribute with its development. You can download git [here](https://git-scm.com/downloads).
 
-### UPC++
+### UPC++ v2018.9.0
 
-To enable Korali's UPC++ conduit for distributed memory sampling, you first need a valid installation of the [UPC++ library](https://bitbucket.org/berkeleylab/upcxx/wiki/Home).
+To enable Korali's UPC++ conduit for distributed memory sampling, you first need a valid installation of the [UPC++ library](https://bitbucket.org/berkeleylab/upcxx/wiki/Home) v2018.9.0.
 In addition, you need to explicitly require Korali to enable the UPC++ conduit, through:
 
 ```shell
@@ -78,9 +78,9 @@ upcxx-meta LIBS
 To download and install UPC++, you can follow these instructions:
 
 ```shell
-wget https://bitbucket.org/berkeleylab/upcxx/downloads/upcxx-2019.3.0.tar.gz
-tar -xzvf upcxx-2019.3.0
-cd upcxx-2019.3.0
+wget https://bitbucket.org/berkeleylab/upcxx/downloads/upcxx-2018.9.0.tar.gz
+tar -xzvf upcxx-2018.9.0
+cd upcxx-2018.9.0
 ./install $HOME/myapps/upcxx
 export PATH=$PATH:$HOME/myapps/upcxx/bin
 ```

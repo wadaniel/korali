@@ -1,5 +1,5 @@
-#ifndef _KORALI_CMAES_H_
-#define _KORALI_CMAES_H_
+#ifndef _KORALI_SOLVER_CMAES_H_
+#define _KORALI_SOLVER_CMAES_H_
 
 #include "solvers/base/base.h"
 #include "variables/gaussian/gaussian.h"
@@ -128,4 +128,4 @@ class CMAES : public Korali::Solver::Base
 
 } // namespace Korali
 
-#endif // _KORALI_CMAES_H_
+#endif // _KORALI_SOLVER_CMAES_H_

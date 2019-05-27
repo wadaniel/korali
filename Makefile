@@ -1,71 +1,44 @@
 INCLUDES = $(shell cd source && find . | grep "\.h")
 TESTS = $(dir $(wildcard tests/*/))
-EXAMPLES = $(dir $(wildcard examples/cxx/*/))
 CURDIR = $(shell pwd)
+PIP ?= python3 -m pip
 
-include korali.config
+include .korali.config
 
 .PHONY: all install clean snapshot tests clean_tests $(TESTS)
 
-all: source/libkorali.so
+KORALI_LIBNAME_SHARED=source/libkorali.so
 
-source/libkorali.so: libs/gsl/lib/libgsl.a
+all: $(KORALI_LIBNAME_SHARED)
+
+$(KORALI_LIBNAME_SHARED):
+	@mkdir -p $(PREFIX)/lib
 	@$(MAKE) -j -C source
 
 clean: 
 	@$(MAKE) -j -C source clean
+	@rm -f setup.py
 
-tests: $(TESTS)
-
-$(TESTS):: install
-	$(MAKE) -j -C $@
-
-clean_examples:
-	for i in $(EXAMPLES); do $(MAKE) -j -C $$i clean; done
-
-clean_tests:
-	for i in $(TESTS); do $(MAKE) -j -C $$i clean; done
-
-install: source/libkorali.so
+install: $(KORALI_LIBNAME_SHARED) 
 	@echo "[Korali] Installing Korali..."
-	mkdir -p $(PREFIX)/lib
-	mkdir -p $(PREFIX)/include
-	mkdir -p $(PREFIX)/bin
-	mkdir -p $(PREFIX)/python
-	cp source/libkorali.so $(PREFIX)/lib
-	cp source/libkorali.so $(PREFIX)/lib/libkorali.dylib
-	cp source/libkorali.a $(PREFIX)/lib 
-	cd source && for i in $(INCLUDES); do rsync -R $$i $(PREFIX)/include > /dev/null 2>&1; done 
-	cp -r libs/json $(PREFIX)/include
-	cp -r libs/koralijson $(PREFIX)/include
-	cp -r libs/gsl/include/gsl $(PREFIX)/include 
-	cp libs/gsl/lib/libgsl.a $(PREFIX)/lib/libkoraligsl.a
-	cp libs/gsl/lib/libgslcblas.a $(PREFIX)/lib/libkoraligslcblas.a 
-	cp tools/korali-plot $(PREFIX)/bin
-	chmod a+x $(PREFIX)/bin/korali-plot
-	cp -r tools/plotting/* $(PREFIX)/bin/
-	chmod a+x  $(PREFIX)/bin/plot_cmaes.py
-	chmod a+x  $(PREFIX)/bin/plot_tmcmc.py
+	@mkdir -p $(PREFIX)
+	@mkdir -p $(PREFIX)/lib
+	@mkdir -p $(PREFIX)/include
+	@mkdir -p $(PREFIX)/bin
+	@cp $(KORALI_LIBNAME_SHARED) $(PREFIX)/lib
+	@ln -sf $(KORALI_LIBNAME_SHARED) $(PREFIX)/lib/libkorali.dylib
+	@cd source && for i in $(INCLUDES); do rsync -R $$i $(PREFIX)/include > /dev/null 2>&1; done 
 	@echo "#!/bin/bash" > $(PREFIX)/bin/korali-cxx
-	@cat korali.config tools/korali-cxx >> $(PREFIX)/bin/korali-cxx
+	@cat .korali.config source/auxiliar/bin/korali-cxx >> $(PREFIX)/bin/korali-cxx
 	@chmod a+x  $(PREFIX)/bin/korali-cxx
-	@echo "#!/bin/bash" > $(PREFIX)/bin/korali-config
-	@cat korali.config tools/korali-config >> $(PREFIX)/bin/korali-config
-	@chmod a+x  $(PREFIX)/bin/korali-config
+	@ln -sf ./source/auxiliar/python/setup/setup.py setup.py
+	@$(PIP) install . --user --upgrade
+	@rm -f setup.py
 	@echo '------------------------------------------------------------------'
-	@echo '[Korali] To complete installation, please update your environment:'
+	@echo '[Korali] Finished installation successfully.'
+	@echo '[Korali] Do not forget to update your PATH environment:'
 	@echo '[Korali] >export PATH=$$PATH:$(PREFIX)/bin'
-	@echo '[Korali] >export PYTHONPATH=$$PYTHONPATH:$(PREFIX)/lib'
 	@echo '------------------------------------------------------------------' 
 
 snapshot: install clean
 	tar -zcvf korali`date +"%m-%d-%y"`.tar.gz korali/ tests/
-
-libs/gsl/lib/libgsl.a:
-	@echo "[Korali] Downloading GNU Scientific Library... "
-	@cd libs/ && rm -f gsl-2.5.tar.gz && wget "ftp://ftp.gnu.org/gnu/gsl/gsl-2.5.tar.gz" && tar -xzvf gsl-2.5.tar.gz > /dev/null 2>&1
-	@echo "[Korali] Configuring GNU Scientific Library... "
-	@cd libs/gsl-2.5 && ./configure --prefix=$(CURDIR)/libs/gsl > /dev/null 2>&1 
-	@echo "[Korali] Compiling GNU Scientific Library... "
-	@cd libs/gsl-2.5 && make > /dev/null 2>&1 && make install > /dev/null 2>&1
-	@rm -rf libs/gsl-2.5 libs/gsl-2.5.tar.gz > /dev/null 2>&1

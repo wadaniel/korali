@@ -1,5 +1,5 @@
-#ifndef _KORALI_EXPONENTIAL_H_
-#define _KORALI_EXPONENTIAL_H_
+#ifndef _KORALI_VARIABLE_EXPONENTIAL_H_
+#define _KORALI_VARIABLE_EXPONENTIAL_H_
 
 #include "variables/base/base.h"
 
@@ -31,4 +31,4 @@ class Exponential : public Korali::Variable::Base
 
 } // namespace Korali
 
-#endif // _KORALI_EXPONENTIAL_H_
+#endif // _KORALI_VARIABLE_EXPONENTIAL_H_

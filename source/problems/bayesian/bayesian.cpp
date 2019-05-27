@@ -47,7 +47,11 @@ void Korali::Problem::Bayesian::setConfiguration(nlohmann::json& js)
 /*                    Functional Methods                                */
 /************************************************************************/
 
-double Korali::Problem::Bayesian::evaluateFitness(double* sample)
+double Korali::Problem::Bayesian::evaluateFitness(double* sample, bool isLeader
+#ifdef _KORALI_USE_MPI
+, MPI_Comm comm
+#endif
+)
 {
 
  if (_statisticalParameterCount != 1)
@@ -61,21 +65,32 @@ double Korali::Problem::Bayesian::evaluateFitness(double* sample)
  double sigma = sample[_computationalParameterCount];
  double fitnessData[_referenceDataSize];
 
- modelData d;
- for (size_t i = 0; i < N; i++) d._parameters.push_back(sample[i]);
- _k->_model(d);
+ Korali::ModelData data;
 
- if (d._results.size() != _referenceDataSize)
+ #ifdef _KORALI_USE_MPI
+ data._comm = comm;
+ #endif
+
+ for (size_t i = 0; i < N; i++) data._parameters.push_back(sample[i]);
+
+ _k->_model(data);
+
+ if (isLeader)
  {
-  fprintf(stderr, "[Korali] Error: This Bayesian Model requires a %lu-sized result array.\n", _referenceDataSize);
-  fprintf(stderr, "[Korali]        Provided: %lu.\n", d._results.size());
-  exit(-1);
+  if (data._results.size() != _referenceDataSize)
+  {
+   fprintf(stderr, "[Korali] Error: This Bayesian Model requires a %lu-sized result array.\n", _referenceDataSize);
+   fprintf(stderr, "[Korali]        Provided: %lu.\n", data._results.size());
+   exit(-1);
+  }
+
+  //TODO: can we avoid this copy? (DW)
+  for (size_t i = 0; i < _referenceDataSize; i++) fitnessData[i] = data._results[i];
+
+  return Korali::Variable::Gaussian::logLikelihood(sigma, _referenceDataSize, _referenceData, fitnessData);
  }
 
- //TODO: can we avoid this copy? (DW)
- for (size_t i = 0; i < _referenceDataSize; i++) fitnessData[i] = d._results[i];
-
- return Korali::Variable::Gaussian::logLikelihood(sigma, _referenceDataSize, _referenceData, fitnessData);
+ return 0;
 }
 
 double Korali::Problem::Bayesian::evaluateLogPrior(double* sample)

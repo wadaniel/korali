@@ -5,6 +5,10 @@
 #include <vector>
 #include <functional>
 
+#ifdef _KORALI_USE_MPI
+#include "mpi.h"
+#endif
+
 #include "problems/direct/direct.h"
 #include "problems/bayesian/bayesian.h"
 
@@ -19,44 +23,20 @@
 #include "solvers/ccmaes/ccmaes.h"
 #include "solvers/tmcmc/tmcmc.h"
 
-#include "conduits/sequential/sequential.h"
-#include "conduits/multithread/multithread.h"
-#include "conduits/upcxx/upcxx.h"
-#include "koralijson/koralijson.h"
+#include "conduits/single/single.h"
+#include "conduits/mpi/_mpi.h"
 
-#undef _POSIX_C_SOURCE
-#undef _XOPEN_SOURCE
+#include "auxiliar/json/koralijson.h"
+
+#ifdef _KORALI_USE_PYTHON
+ #undef _POSIX_C_SOURCE
+ #undef _XOPEN_SOURCE
+#endif
 
 enum verbosity { KORALI_SILENT = 0, KORALI_MINIMAL = 1, KORALI_NORMAL = 2, KORALI_DETAILED = 3 };
 
 namespace Korali
 {
-
-class modelData
-{
- public:
-
- modelData() { _self = this; }
-
- void addResult(double x) {_self->_results.push_back(x); }
- size_t getParameterCount() { return _self->_parameters.size(); }
- std::vector<double>& getParameters() { return _self->_parameters; }
- std::vector<double>& getResults() { return _self->_results; }
-
- double getParameter(size_t i)
- {
-  if (i > _self->_parameters.size())
-  {
-     fprintf(stderr, "[Korali] Error: Trying to access parameter %lu, when only %lu are provided.\n", i, _self->_parameters.size());
-     exit(-1);
-   }
-  return _self->_parameters[i];
- }
-
- modelData* _self;
- std::vector<double> _parameters;
- std::vector<double> _results;
-};
 
 using fcon = std::function<double(double*, int N)>;
 
@@ -67,7 +47,7 @@ class Engine {
  nlohmann::json  _js;
  nlohmann::json& operator[](std::string key) { return _js[key]; }
 
- std::function<void(modelData&)> _model;
+ std::function<void(ModelData&)> _model;
  std::vector<fcon> _fconstraints;
  Korali::Conduit::Base* _conduit;
  Korali::Problem::Base* _problem;
@@ -75,10 +55,9 @@ class Engine {
 
  // Model Functions and constructors
  Engine();
- Engine(std::function<void(modelData&)> model) : Engine::Engine() { _model = model; }
  ~Engine();
 
- void run();
+ void run(std::function<void(Korali::ModelData&)> model);
  void addConstraint(fcon fconstraint);
 
  // Python Configuration Binding Methods
@@ -98,8 +77,7 @@ class Engine {
  size_t _seed;
  int _verbosity;
  size_t _outputFrequency;
-
- size_t _currentState;
+ size_t _currentFileId;
 
  // Serialization Methods
  nlohmann::json getConfiguration();

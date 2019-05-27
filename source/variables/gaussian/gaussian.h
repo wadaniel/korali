@@ -1,5 +1,5 @@
-#ifndef _KORALI_GAUSSIAN_H_
-#define _KORALI_GAUSSIAN_H_
+#ifndef _KORALI_VARIABLE_GAUSSIAN_H_
+#define _KORALI_VARIABLE_GAUSSIAN_H_
 
 #include "variables/base/base.h"
 
@@ -36,4 +36,4 @@ class Gaussian : public Korali::Variable::Base
 
 } // namespace Korali
 
-#endif // _KORALI_GAUSSIAN_H_
+#endif // _KORALI_VARIABLE_GAUSSIAN_H_

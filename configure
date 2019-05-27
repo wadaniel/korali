@@ -1,8 +1,4 @@
-# This file is subject to the license agreement located in the file LICENSE
-# and cannot be distributed without it. This notice cannot be removed or modified. 
 #!/bin/bash
-
-VERSION=1.0
 
 # Help display function
 function print_help ()
@@ -19,17 +15,17 @@ function print_help ()
  echo "Configuration syntax:"
  echo "./configure"
  echo "   [--prefix=INSTALL_DIR]"
- echo "   [--enable-upcxx]"
- echo "   [--enable-mpi]"
+ echo "   [--install-gsl]"
+ echo "   [--help]"
  echo ""
  echo "Where:"
  echo " INSTALL_DIR is the path where to install Korali."
+ echo " --install-gsl Automatically downloads and installs GSL if not found."
  echo " --help Displays this help message."
 }
 
-USE_UPCXX=0
-USE_MPI=0
-PREFIX=$PWD/korali
+INSTALLGSL=0
+PREFIX=$HOME/.local
 
 for i in "$@"
 do
@@ -38,29 +34,45 @@ case $i in
     PREFIX="${i#*=}"
     shift 
     ;;
+    --install-gsl)
+    INSTALLGSL=1
+    shift 
+    ;;
     --help)
     print_help
     exit 0 
     shift 
     ;;
-    --enable-upcxx)
-    USE_UPCXX=1
-    shift 
-    ;;
-    --enable-mpi)
-    USE_MPI=1
-    shift 
-    ;;
     *)
     print_help
     echo ""
-    echo "[Korali] Error: Unknown option $i."       
+    echo "[Korali] Error:  Unknown option $i."       
     exit 1
     ;;
 esac
 done
 
-######## Checking compiler ########
+echo "[Korali] Configuring Korali..."
+
+######## Checking Architecture ####
+
+# Checking for architecture
+arch="$(uname -s)"
+
+# Linux Architecture is default
+SHAREDLIB_FLAG="-shared"
+
+if [ "$arch" == "Linux" ]; then
+echo "[Korali] Linux System Detected."
+fi
+
+# If using MacOs, change flags 
+if [ "$arch" == "Darwin" ]; then
+ echo "[Korali] MacOS (Darwin) System Detected."
+ SHAREDLIB_FLAG="-dynamiclib"
+fi
+
+######## Checking Compiler ########
 
 $CXX --version > /dev/null 2>&1
 DETECTED_CXX=$?
@@ -80,140 +92,129 @@ if [ $DETECTED_ICPC      -eq 0 ]; then USE_CXX=icpc;    fi;
 if [ $DETECTED_CLANG     -eq 0 ]; then USE_CXX=clang++; fi;
 if [ $DETECTED_CXX       -eq 0 ]; then USE_CXX=$CXX;    fi;
 
-if [[ "$USE_CXX" == "" ]]
-then
-  echo "[Korali] Error: Did not found any valid C++ compiler. Please define \$CXX."
-  exit -1
+######## Checking support for GNU Scientific Library ########
+
+echo "[Korali] Looking for existing GNU Scientific Library (GSL)."
+
+gslcfgFile=${PREFIX}/bin/gsl-config
+if [ ! -f "$gslcfgFile" ]; then
+ gslcfgFile=gsl-config
 fi
 
-######## Checking support for MPI ########
-
-if [ $USE_MPI -eq 1 ]
+echo "[Korali] Running \"$gslcfgFile --version\"..."
+gslver=`$gslcfgFile --version`
+mingslver=2.5
+if [  $? -eq 0 ]
 then
- mpicxx --version > /dev/null 2>&1
- if [ ! $? -eq 0 ]
- then
-  echo "[Korali] Error: No mpicxx command found."
-  exit -1
- else
-  echo "[Korali] Configuring with support for the MPI Conduit"
-  USE_MPI=1
- fi
- echo "[Korali] Error: No valid C++ compiler defined in \$CXX"
- exit -1
-else
- echo "[Korali] Using \$CXX=$USE_CXX as C++ compiler."
-fi
-
-######## Checking support for MPI ########
-
-if [ $USE_MPI -eq 1 ]
-then
- mpicxx --version > /dev/null 2>&1
- if [ ! $? -eq 0 ]
- then
-  echo "[Korali] Error: No mpicxx command found."
-  exit -1
- else
-  echo "[Korali] Configuring with support for the MPI Conduit"
-  USE_MPI=1
- fi
-else
- echo "[Korali] Configuring without support for the MPI Conduit"
-fi
-
-######## Checking support for UPC++ ########
-
-if [ $USE_UPCXX -eq 1 ]
-then
- upcxx --version > /dev/null 2>&1
- if [ ! $? -eq 0 ]
- then
-  echo "[Korali] Error: No upcxx command found for UPC++."
-  exit -1
- else
-  upcxx-meta CPPFLAGS > /dev/null 2>&1
-  if [ ! $? -eq 0 ]
-  then
-   echo "[Korali] Error: No upcxx-meta command found for UPC++."
+ echo "[Korali] Found GSL version $gslver."
+ cmpver=`printf "${gslver}\n${mingslver}" | sort -V | head -n 1`
+ if [[ "$cmpver" != "$mingslver" ]]; then
+  if [ $INSTALLGSL -eq 0 ]; then
+   echo "[Korali] Error: GSL Version found (${gslver}) is smaller than required (${mingslver})."
+   echo "[Korali] Solution: Re-run ./configure with the --install-gsl option."
    exit -1
   else
-   echo "[Korali] Configuring with support for the UPC++ Conduit."
-   USE_UPCXX=1
+   echo "[Korali] Downloading GNU Scientific Library... "
+   mkdir -p $PREFIX
+   CURDIR=$PWD
+   rm -f gsl-2.5.tar.gz 
+   wget "ftp://ftp.gnu.org/gnu/gsl/gsl-2.5.tar.gz" 
+   tar -xzvf gsl-2.5.tar.gz > /dev/null 2>&1
+   echo "[Korali] Configuring GNU Scientific Library... "
+   cd gsl-2.5 
+   ./configure --prefix=$PREFIX > /dev/null 2>&1 
+   echo "[Korali] Compiling GNU Scientific Library... "
+   make -j10 > /dev/null 2>&1
+   echo "[Korali] Installing GNU Scientific Library... "
+   make install > /dev/null 2>&1
+   if [  $? -ne 0 ]; then
+    echo -e "[Korali] \e[31mError: Failed GNU Scientific Library installation."
+    exit -1
+   fi
+   cd .. 
+   rm -rf gsl-2.5 gsl-2.5.tar.gz > /dev/null 2>&1
+   echo "[Korali] Finished installing GNU Scientific Library. "
+   gslcfgFile=${PREFIX}/bin/gsl-config
   fi
  fi
-else
- echo "[Korali] Configuring without support for the UPC++ Conduit."
 fi
 
-######## Checking support for POSIX Threads ########
+######## Checking support for MPI ########
 
-$USE_CXX -v 2>&1 > /dev/null | grep posix > /dev/null 2>&1
+echo "[Korali] Checking for MPI support using \"$MPICXX --version\"..."
+$MPICXX --version > /dev/null 2>&1
 if [ ! $? -eq 0 ]
 then
- echo "[Korali] No compiler support for POSIX Threads found."
- USE_MULTITHREAD=0
+ echo "[Korali] Warning: No MPI compiler command found in \$MPICXX."
+ echo "[Korali] Suggestion: Use 'export MPICXX=(path)' to enable MPI support."
+ USE_MPI=0
 else
- echo "[Korali] Configuring with support for the Multithreaded Conduit."
- USE_MULTITHREAD=1
+ echo "[Korali] Found $MPICXX for MPI compiler/wrapper."
+ echo "[Korali] Use 'export MPICXX=(path)' to use a different MPI wrapper."
+ echo "[Korali] Configuring with support for the MPI Conduit"
+ USE_CXX=$MPICXX
+ USE_MPI=1
 fi
 
 ######## Checking support for Python3 ########
 
 echo "[Korali] Checking for Python3 support using \"python3 --version\"."
-python3 --version > /dev/null 2>&1
+pyver=`python3 --version`
 if [ $? -eq 0 ]; then
-  pythonBin=`which python3`
-  pythonPath=`dirname $pythonBin`
-  pythonPath=`dirname $pythonPath`
-  echo "[Korali] Python3 found at $pythonPath."
-  pythonPkgConfigPath="$pythonPath/lib*/pkgconfig/python3.pc"
-  echo "[Korali] Checking for Python3 package information: \"pkg-config $pythonPkgConfigPath\""
-  pkg-config $pythonPkgConfigPath
-  if [ $? -eq 0 ]; then
-    pythonCFlags=`pkg-config $pythonPkgConfigPath --cflags`
-    pythonLibs=`pkg-config $pythonPkgConfigPath --libs`
-  else
-    echo "[Korali] Error: $pythonPkgConfigPath not found."
-    echo "[Korali] Please make sure python3 is correctly installed."
+  echo "[Korali] Checking for python3-config."
+  python3-config --help > /dev/null 2>&1
+  if [ $? -ne 0 ]; then
+    echo "[Korali] Error: python3-config not found."
+    echo "[Korali] Solution: Please make sure python3 is correctly installed."
     exit
   fi
 else
   echo "[Korali] Error: Python3 not found."
-  echo "[Korali] Please make sure the python3 command is accesible from the $PATH environment variable."
-  exit
+  echo "[Korali] Solution: Please make sure the python3-config command is accesible in the PATH environment variable."
+  exit -1
 fi
-######## Determining Compilation Flags ########
+echo "[Korali] Python3 version $pyver found."
 
-CXXFLAGS="-I$PREFIX/include -I$PREFIX/lib/koraligsl/include/gsl --std=c++17"
-CXXFLAGS="$CXXFLAGS -Wno-unused -Wunused-result -Wno-unused-parameter -Wno-address -Wno-deprecated-declarations -Wall -Wfatal-errors"
-LDFLAGS="$PREFIX/lib/libkorali.a $PREFIX/lib/libkoraligsl.a $PREFIX/lib/libkoraligslcblas.a"
+######## Checking support for pip3 ########
 
-if [[ "$USE_UPCXX" == "1" ]]; then
- upcxxCFlags=`upcxx-meta CPPFLAGS`
- upcxxLibs=`upcxx-meta LIBS`
- CXXFLAGS="$CXXFLAGS $upcxxCFlags"
- LDFLAGS="$LDFLAGS $upcxxLibs"
+echo "[Korali] Checking for pip3 support using \"pip3 --version\"..."
+pip3 --version > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+  echo "[Korali] Error: pip3 not found."
+  echo "[Korali] Solution: Make sure pip3 is correctly installed in your system"
+  exit -1
 fi
+echo "[Korali] Pip3 found."
 
-if [[ "$USE_MULTITHREAD" == "1" ]]; then
- CXXFLAGS="$CXXFLAGS -pthread"
- LDFLAGS="$LDFLAGS -pthread"
+######## Checking support for Pybind11 ########
+
+echo "[Korali] Checking for Pybind11 support using \"python3 -m pybind11 -h\"..."
+python3 -m pybind11 -h > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+  echo "[Korali] Error: pybind11 not found."
+  echo "[Korali] Solution: Install pybind11 with \"pip3 install --user pybind11\"."
+  exit -1
+fi
+echo "[Korali] Pybind11 found."
+
+######## Checking selected compiler #######
+
+if [[ "$USE_CXX" == "" ]]
+then
+  echo "[Korali] Error:  Did not found any valid C++ or MPI C++ compiler."
+  echo "[Korali] Solution: Please define a valid C++ compiler in \$CXX."
+  exit -1
 fi
 
 ######## Creating Config File ########
 
-echo "VERSION=$VERSION" > korali.config
-echo "PREFIX=$PREFIX" >> korali.config
-echo "PYTHONCFLAGS=$pythonCFlags" >> korali.config
-echo "PYTHONLIBS=\"$pythonLibs\"" >> korali.config
-echo "CXX=$USE_CXX" >> korali.config
-echo "CXXFLAGS=\"$CXXFLAGS\"" >> korali.config
-echo "LDFLAGS=\"$LDFLAGS\"" >> korali.config
-echo "USE_MPI=$USE_MPI" >> korali.config
-echo "USE_UPCXX=$USE_UPCXX" >> korali.config
-echo "USE_MULTITHREAD=$USE_MULTITHREAD" >> korali.config
+echo "PREFIX=$PREFIX" > .korali.config
+echo "CXX=$USE_CXX" >> .korali.config
+echo "GSLCONFIG=$gslcfgFile" >> .korali.config
+echo "SHAREDLIB_FLAG=$SHAREDLIB_FLAG" >> .korali.config
+echo "USE_MPI=$USE_MPI" >> .korali.config
 
-echo "[Korali] Configuration was successful (see: korali.config)."
+echo "[Korali] ---------------------------------------------------"
+echo "[Korali] Configuration was successful."
 echo "[Korali] Install Path: $PREFIX"
 echo "[Korali] Run 'make install' to install Korali."

@@ -1,0 +1,15 @@
+
+if [[ "$@" == *"-o"* ]]; then
+  flags+="-L$PREFIX/lib -Wl,-rpath -Wl,$PREFIX/lib -lkorali" 
+fi
+
+if [[ "$@" == *"-c"* ]]; then
+ flags+="-O3 -I$PREFIX/include --std=c++14"
+ 
+ if [ $USE_MPI -eq 1 ]; then
+  flags+=" -D_KORALI_USE_MPI"
+ fi
+fi
+
+#echo "$CXX $@ $flags"
+$CXX $@ $flags

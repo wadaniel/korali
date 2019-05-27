@@ -1,12 +1,12 @@
-#ifndef _KORALI_BASEVARIABLE_H_
-#define _KORALI_BASEVARIABLE_H_
+#ifndef _KORALI_VARIABLE_BASE_H_
+#define _KORALI_VARIABLE_BASE_H_
 
 #include <string>
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_sf.h>
-#include "json/json.hpp"
+#include "auxiliar/json/json.hpp"
 
 enum variableType { KORALI_COMPUTATIONAL, KORALI_STATISTICAL };
 
@@ -45,4 +45,4 @@ class Base
 
 } // namespace Korali
 
-#endif // _KORALI_BASEVARIABLE_H_
+#endif // _KORALI_VARIABLE_BASE_H_

@@ -18,7 +18,6 @@ int main(int argc, char* argv[])
 
  //korali["Seed"] = 0xC0FFEE;
  korali["Verbosity"]       = "Detailed";
- korali["Conduit"]["Type"] = "Sequential";
  korali["Problem"]["Type"] = "Direct";
 
  for (int i = 0; i < nParams; i++)

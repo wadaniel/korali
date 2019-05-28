@@ -1,10 +1,15 @@
 
+gslicflags=`gsl-config --cflags`
+gsllibs=`gsl-config --libs`
+pybindcflags=`python3 -m pybind11 --includes` 
+pybindlibs=`python3-config --ldflags`
+
 if [[ "$@" == *"-o"* ]]; then
-  flags+="-L$PREFIX/lib -Wl,-rpath -Wl,$PREFIX/lib -lkorali" 
+  flags+="$PREFIX/lib/libkorali.a $gsllibs $pybindlibs" 
 fi
 
 if [[ "$@" == *"-c"* ]]; then
- flags+="-O3 -I$PREFIX/include --std=c++14"
+ flags+="-O3 -I$PREFIX/include --std=c++14 -Wno-c++17-extensions $gslcflags $pybindcflags"
  
  if [ $USE_MPI -eq 1 ]; then
   flags+=" -D_KORALI_USE_MPI"

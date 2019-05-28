@@ -15,7 +15,7 @@ ifeq ($(USE_MPI), 1)
  CXX = $(MPICXX)
 endif
 
-all: libkorali.so
+all: libkorali.so libkorali.a
 
 SOURCES = $(shell find . -name "*.cpp")
 OBJECTS = $(SOURCES:.cpp=.o)
@@ -25,8 +25,11 @@ OBJECTS = $(SOURCES:.cpp=.o)
 
 libkorali.so: $(OBJECTS)
 	$(CXX) $^ -o $@ $(LDFLAGS)
-	
+
+libkorali.a: $(OBJECTS)
+	ar rs $@ $^
+
 clean:
-	@rm -rf *.so *.dylib  $(OBJECTS)
+	@rm -rf *.so *.a *.dylib  $(OBJECTS)
 
 .PHONY: clean all

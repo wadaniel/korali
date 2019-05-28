@@ -8,6 +8,7 @@ include .korali.config
 .PHONY: all install clean snapshot tests clean_tests $(TESTS)
 
 KORALI_LIBNAME_SHARED=source/libkorali.so
+KORALI_LIBNAME_STATIC=source/libkorali.a
 
 all: $(KORALI_LIBNAME_SHARED)
 
@@ -27,6 +28,7 @@ install: $(KORALI_LIBNAME_SHARED)
 	@mkdir -p $(PREFIX)/bin
 	@cp $(KORALI_LIBNAME_SHARED) $(PREFIX)/lib
 	@ln -sf $(KORALI_LIBNAME_SHARED) $(PREFIX)/lib/libkorali.dylib
+	@cp $(KORALI_LIBNAME_STATIC) $(PREFIX)/lib
 	@cd source && for i in $(INCLUDES); do rsync -R $$i $(PREFIX)/include > /dev/null 2>&1; done 
 	@echo "#!/bin/bash" > $(PREFIX)/bin/korali-cxx
 	@cat .korali.config source/auxiliar/bin/korali-cxx >> $(PREFIX)/bin/korali-cxx

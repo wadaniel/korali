@@ -35,7 +35,9 @@ PYBIND11_MODULE(libkorali, m) {
  .def("__setitem__", pybind11::overload_cast<const std::string&, const double&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
  .def("__setitem__", pybind11::overload_cast<const std::string&, const int&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
  .def("__setitem__", pybind11::overload_cast<const std::string&, const bool&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
- .def("run", pybind11::overload_cast<std::function<void(Korali::ModelData&)>>(&Korali::Engine::run));
+ .def("run", pybind11::overload_cast<std::function<void(Korali::ModelData&)>>(&Korali::Engine::run))
+ .def("loadState", pybind11::overload_cast<std::string>(&Korali::Engine::loadState))
+ .def("loadConfig", pybind11::overload_cast<std::string>(&Korali::Engine::loadConfig));
 
  pybind11::class_<Korali::KoraliJsonWrapper>(m, "__KoraliJsonWrapper")
  .def(pybind11::init<>())
@@ -194,7 +196,7 @@ void Korali::Engine::saveState()
 
 void Korali::Engine::loadState(std::string fileName)
 {
- if (!_conduit->isRoot()) return;
+ // if (!_conduit->isRoot()) return; TODO: produces segfaults, _conduit not init (DW)
 
  _js = loadJsonFromFile(fileName.c_str());
 }
@@ -202,4 +204,5 @@ void Korali::Engine::loadState(std::string fileName)
 void Korali::Engine::loadConfig(std::string fileName)
 {
  _js = loadJsonFromFile(fileName.c_str());
+ if (isDefined(_js, {"State"})) _js.erase("State");
 }

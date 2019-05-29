@@ -1,4 +1,4 @@
-BINARIES = maximize_function sample_function
+BINARIES = maximize_function maximize_function_restart sample_function
 KORALICXX = korali-cxx
 
 .SECONDARY:
@@ -12,7 +12,7 @@ model/ackley.o:
 	$(MAKE) -C model all
 
 %.o: %.cpp
-	$(KORALICXX) -c $<
+	$(KORALICXX) -c $< `gsl-config --cflags` 
 
 .PHONY: clean
 clean:

@@ -1,6 +1,6 @@
 include Makefile.conf
 
-CFLAGS  = -g -O3 -I../include $(GSLCFLAGS) -std=c++14 -fPIC -Wno-deprecated-declarations -Wno-c++17-extensions
+CFLAGS  = -g -O3 -I../include $(GSLCFLAGS) -std=c++14 -Wno-deprecated-declarations -Wno-c++17-extensions
 LDFLAGS = $(SHAREDLIB_FLAG) -L$(GSLPREFIX)/lib -Wl,-rpath -Wl,$(GSLPREFIX)/lib $(GSLLIBS) 
 
 CFLAGS  += $(PYBIND11INCLUDES) -D_KORALI_USE_PYTHON $(MPIFLAGS)
@@ -9,18 +9,22 @@ LDFLAGS += $(PYBIND11LIBS)
 all: libkorali.so libkorali.a
 
 SOURCES = $(shell find . -name "*.cpp")
-OBJECTS = $(SOURCES:.cpp=.o)
+OBJECTS_STATIC = $(SOURCES:.cpp=.static.o)
+OBJECTS_SHARED = $(SOURCES:.cpp=.shared.o)
 
-%.o: %.cpp
+%.static.o: %.cpp
 	$(CXX) $(CFLAGS) -c $< -o $@
 
-libkorali.so: $(OBJECTS)
+%.shared.o: %.cpp
+	$(CXX) $(CFLAGS) -fPIC -c $< -o $@
+
+libkorali.so: $(OBJECTS_SHARED)
 	$(CXX) $^ -o $@ $(LDFLAGS)
 
-libkorali.a: $(OBJECTS)
+libkorali.a: $(OBJECTS_STATIC)
 	ar rs $@ $^
 
 clean:
-	@rm -rf *.so *.a *.dylib  $(OBJECTS)
+	@rm -rf *.so *.a $(OBJECTS)
 
 .PHONY: clean all

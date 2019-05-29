@@ -15,7 +15,7 @@ CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
  setConfiguration(js);
 
  // Allocating Memory
- samplePopulation = (double*) calloc (sizeof(double), _k->_problem->N*_s);
+ samplePopulation  = (double*) calloc (sizeof(double), _k->_problem->N*_s);
  rgpc              = (double*) calloc (sizeof(double), _k->_problem->N);
  rgps              = (double*) calloc (sizeof(double), _k->_problem->N);
  rgdTmp            = (double*) calloc (sizeof(double), _k->_problem->N);
@@ -27,14 +27,14 @@ CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
  curBestVector     = (double*) calloc (sizeof(double), _k->_problem->N);
 
  histFuncValues = (double*) calloc (sizeof(double), _maxGenenerations+1);
- index = (size_t *) calloc (sizeof(size_t*), _s);
+ index = (size_t *) calloc (sizeof(size_t), _s);
 
  C = (double**) calloc (sizeof(double*), _k->_problem->N);
  B = (double**) calloc (sizeof(double*), _k->_problem->N);
  for (size_t i = 0; i < _k->_problem->N; i++) C[i] = (double*) calloc (sizeof(double), _k->_problem->N);
  for (size_t i = 0; i < _k->_problem->N; i++) B[i] = (double*) calloc (sizeof(double), _k->_problem->N);
 
- initializedSample = (bool*) calloc (_s, sizeof(bool));
+ initializedSample = (bool*) calloc (sizeof(bool), _s);
  fitnessVector = (double*) calloc (sizeof(double), _s);
 
  // Init Generation

@@ -62,9 +62,7 @@ class CCMAES : public Korali::Solver::Base
  double _covMatrixLearningRateIn; /* read from configuration, placehoder for reinit (see below) */
  double _covarianceMatrixLearningRate; /* parameter to calibrate cov updates */
  double _chiN; /* expectation of ||N(0,I)||^2 */
-
- bool   _enablediag; /* enable diagonal covariance matrix */
- size_t _diagonalCovarianceMatrixEvalFrequency;
+ bool   _isdiag; /* diagonal covariance matrix */
  size_t _covarianceEigenEvalFreq;
 
  // Stop conditions
@@ -133,7 +131,6 @@ class CCMAES : public Korali::Solver::Base
  bool isFeasible(size_t sampleIdx) const; /* check if sample inside lower & upper bounds */
  double doubleRangeMax(const double *rgd, size_t len) const;
  double doubleRangeMin(const double *rgd, size_t len) const;
- bool doDiagUpdate() const; /* returns true if diagonal update enforced */
  bool isStoppingCriteriaActive(const char *criteria) const;
  void initInternals(size_t numsamples); /* init _muWeights, _muEffective and _muCov */
 

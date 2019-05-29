@@ -43,11 +43,6 @@ CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
  // Initializing Gaussian Generator
  _gaussianGenerator = new Variable::Gaussian(0.0, 1.0, _k->_seed++);
 
- // Checking Covariance Matrix Evaluation Frequency
- if (_diagonalCovarianceMatrixEvalFrequency == 0)  _diagonalCovarianceMatrixEvalFrequency = 2 + 100. * _k->_problem->N / sqrt((double)_s);
- if (_diagonalCovarianceMatrixEvalFrequency < 1)
- { fprintf( stderr, "[Korali] Error: Matrix covariance evaluation frequency is less than 1 (%lu)\n", _diagonalCovarianceMatrixEvalFrequency); exit(-1); }
-
  // Setting Sigma Cumulation Factor
  // if (_sigmaCumulationFactor > 0) _sigmaCumulationFactor *= (_muEffective + 2.0) / (_k->_problem->N + _muEffective + 3.0);
  if (_sigmaCumulationFactor <= 0 || _sigmaCumulationFactor >= 1) _sigmaCumulationFactor = (_muEffective + 2.) / (_k->_problem->N + _muEffective + 3.0);
@@ -146,9 +141,8 @@ nlohmann::json CMAES::getConfiguration()
 
  js["Covariance Matrix"]["Cumulative Covariance"]           = _cumulativeCovariance;
  js["Covariance Matrix"]["Learning Rate"]                   = _covarianceMatrixLearningRate;
- js["Covariance Matrix"]["Enable Diagonal Update"]          = _enablediag;
  js["Covariance Matrix"]["Eigenvalue Evaluation Frequency"] = _covarianceEigenEvalFreq;
- js["Covariance Matrix"]["Diagonal Evaluation Frequency"]   = _diagonalCovarianceMatrixEvalFrequency;
+ js["Covariance Matrix"]["Is Diagonal"]                     = _isdiag;
 
  js["Termination Criteria"]["Max Generations"]          = _maxGenenerations;
  js["Termination Criteria"]["Max Model Evaluations"]    = _maxFitnessEvaluations;
@@ -244,8 +238,7 @@ void CMAES::setConfiguration(nlohmann::json& js)
  _covarianceEigenEvalFreq               = consume(js, { "Covariance Matrix", "Eigenvalue Evaluation Frequency" }, KORALI_NUMBER, std::to_string(-1));
  _cumulativeCovariance                  = consume(js, { "Covariance Matrix", "Cumulative Covariance" }, KORALI_NUMBER, std::to_string(-1));
  _covarianceMatrixLearningRate          = consume(js, { "Covariance Matrix", "Learning Rate" }, KORALI_NUMBER, std::to_string(-1));
- _enablediag                            = consume(js, { "Covariance Matrix", "Enable Diagonal Update" }, KORALI_BOOLEAN, "false");
- _diagonalCovarianceMatrixEvalFrequency = consume(js, { "Covariance Matrix", "Diagonal Evaluation Frequency" }, KORALI_NUMBER, std::to_string(0));
+ _isdiag                                = consume(js, { "Covariance Matrix", "Is Diagonal" }, KORALI_BOOLEAN, "false");
 
  _maxGenenerations              = consume(js, { "Termination Criteria", "Max Generations" }, KORALI_NUMBER, std::to_string(1000));
  _stopMinFitness                = consume(js, { "Termination Criteria", "Min Fitness" }, KORALI_NUMBER, std::to_string(-std::numeric_limits<double>::max()));
@@ -356,11 +349,10 @@ bool CMAES::isFeasible(size_t sampleIdx) const
 
 void CMAES::prepareGeneration()
 {
- int flgdiag = doDiagUpdate();
 
  /* calculate eigensystem  */
  if (!flgEigensysIsUptodate) {
-  if (!flgdiag)
+  if (!_isdiag)
    updateEigensystem(0);
   else {
    for (size_t i = 0; i < _k->_problem->N; ++i)
@@ -386,16 +378,15 @@ void CMAES::prepareGeneration()
 
 void CMAES::sampleSingle(size_t sampleIdx) 
 {
-  int flgdiag = doDiagUpdate();
   
   /* generate scaled random vector (D * z) */
   for (size_t d = 0; d < _k->_problem->N; ++d)
   {
-   if (flgdiag) samplePopulation[sampleIdx * _k->_problem->N + d] = rgxmean[d] + sigma * rgD[d] * _gaussianGenerator->getRandomNumber();
+   if (_isdiag) samplePopulation[sampleIdx * _k->_problem->N + d] = rgxmean[d] + sigma * rgD[d] * _gaussianGenerator->getRandomNumber();
    else rgdTmp[d] = rgD[d] * _gaussianGenerator->getRandomNumber();
   }
 
-  if (!flgdiag)
+  if (!_isdiag)
    for (size_t d = 0; d < _k->_problem->N; ++d) {
    double sum = 0.0;
    for (size_t e = 0; e < _k->_problem->N; ++e) sum += B[d][e] * rgdTmp[d];
@@ -406,7 +397,6 @@ void CMAES::sampleSingle(size_t sampleIdx)
 
 void CMAES::updateDistribution(const double *fitnessVector)
 {
- int flgdiag = doDiagUpdate();
  countevals += _s;
 
  /* Generate index */
@@ -442,7 +432,7 @@ void CMAES::updateDistribution(const double *fitnessVector)
  /* calculate z := D^(-1) * B^(T) * rgBDz into rgdTmp */
  for (size_t i = 0; i < _k->_problem->N; ++i) {
   double sum = 0.0;
-  if (flgdiag) sum = rgBDz[i];
+  if (_isdiag) sum = rgBDz[i];
   else for (size_t j = 0; j < _k->_problem->N; ++j) sum += B[j][i] * rgBDz[j]; /* B^(T) * rgBDz */
 
   rgdTmp[i] = sum / rgD[i]; /* D^(-1) */
@@ -453,7 +443,7 @@ void CMAES::updateDistribution(const double *fitnessVector)
  /* cumulation for sigma (ps) using B*z */
  for (size_t i = 0; i < _k->_problem->N; ++i) {
     double sum = 0.0;
-    if (flgdiag) sum = rgdTmp[i];
+    if (_isdiag) sum = rgdTmp[i];
     else for (size_t j = 0; j < _k->_problem->N; ++j) sum += B[i][j] * rgdTmp[j];
 
     rgps[i] = (1. - _sigmaCumulationFactor) * rgps[i] + sqrt(_sigmaCumulationFactor * (2. - _sigmaCumulationFactor) * _muEffective) * sum;
@@ -520,20 +510,19 @@ void CMAES::updateDistribution(const double *fitnessVector)
 
 void CMAES::adaptC(int hsig)
 {
- int flgdiag = doDiagUpdate();
 
  if (_covarianceMatrixLearningRate != 0.0)
  {
   /* definitions for speeding up inner-most loop */
-  double ccov1 = std::min(_covarianceMatrixLearningRate * (1./_muCovariance) * (flgdiag ? (_k->_problem->N+1.5) / 3. : 1.), 1.);
-  double ccovmu = std::min(_covarianceMatrixLearningRate * (1-1./_muCovariance) * (flgdiag ? (_k->_problem->N+1.5) / 3. : 1.), 1.-ccov1);
+  double ccov1 = std::min(_covarianceMatrixLearningRate * (1./_muCovariance) * (_isdiag ? (_k->_problem->N+1.5) / 3. : 1.), 1.);
+  double ccovmu = std::min(_covarianceMatrixLearningRate * (1-1./_muCovariance) * (_isdiag ? (_k->_problem->N+1.5) / 3. : 1.), 1.-ccov1);
   double sigmasquare = sigma * sigma;
 
   flgEigensysIsUptodate = false;
 
   /* update covariance matrix */
   for (size_t i = 0; i < _k->_problem->N; ++i)
-   for (size_t j = flgdiag ? i : 0; j <= i; ++j) {
+   for (size_t j = _isdiag ? i : 0; j <= i; ++j) {
    C[i][j] = (1 - ccov1 - ccovmu) * C[i][j] + ccov1 * (rgpc[i] * rgpc[j] + (1-hsig)*_cumulativeCovariance*(2.-_cumulativeCovariance) * C[i][j]);
    for (size_t k = 0; k < _mu; ++k) C[i][j] += ccovmu * _muWeights[k] * (samplePopulation[index[k]*_k->_problem->N + i] - rgxold[i]) * (samplePopulation[index[k]*_k->_problem->N + j] - rgxold[j]) / sigmasquare;
    }
@@ -550,7 +539,6 @@ void CMAES::adaptC(int hsig)
 bool CMAES::checkTermination()
 {
  double fac;
- int flgdiag = doDiagUpdate();
 
  bool terminate = false;
 
@@ -595,7 +583,7 @@ bool CMAES::checkTermination()
 
   size_t iAchse = 0;
   size_t iKoo = 0;
-  if (!flgdiag && isStoppingCriteriaActive("No Effect Axis") )
+  if (!_isdiag && isStoppingCriteriaActive("No Effect Axis") )
   {
     for (iAchse = 0; iAchse < _k->_problem->N; ++iAchse)
     {
@@ -611,7 +599,7 @@ bool CMAES::checkTermination()
       break;
     } /* if (iKoo == _k->_problem->N) */
   } /* for iAchse    */
- } /* if flgdiag */
+ } /* if _isdiag */
 
  /* Component of rgxmean is not changed anymore */
  for (iKoo = 0; iKoo < _k->_problem->N; ++iKoo)
@@ -732,10 +720,6 @@ double CMAES::doubleRangeMin(const double *rgd, size_t len) const
  return min;
 }
 
-bool CMAES::doDiagUpdate() const
-{
- return _enablediag && (currentGeneration % _diagonalCovarianceMatrixEvalFrequency == 0);
-}
 
 bool CMAES::isStoppingCriteriaActive(const char *criteria) const
 {

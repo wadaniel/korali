@@ -49,8 +49,7 @@ class CMAES : public Korali::Solver::Base
  double _covarianceMatrixLearningRate; /* exponential learning rate cov */
  double _chiN; /* expectation of ||N(0,I)|| */
 
- bool   _enablediag; /* enable diagonal covariance matrix */
- size_t _diagonalCovarianceMatrixEvalFrequency;
+ bool   _isdiag; /* diagonal covariance matrix */
  size_t _covarianceEigenEvalFreq;
 
  Variable::Gaussian* _gaussianGenerator; /* random number generator */
@@ -121,7 +120,6 @@ class CMAES : public Korali::Solver::Base
  bool isFeasible(size_t sampleIdx) const;
  double doubleRangeMax(const double *rgd, size_t len) const;
  double doubleRangeMin(const double *rgd, size_t len) const;
- bool doDiagUpdate() const;
  bool isStoppingCriteriaActive(const char *criteria) const;
 
  // Print Methods

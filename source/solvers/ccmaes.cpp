@@ -58,11 +58,6 @@ CCMAES::CCMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
  // Setting Mu & Dependent Variables
  initInternals(_via_mu);
 
- // Checking Covariance Matrix Evaluation Frequency
- if (_diagonalCovarianceMatrixEvalFrequency == 0)  _diagonalCovarianceMatrixEvalFrequency = 2 + 100. * _k->_problem->N / sqrt((double)_s);
- if (_diagonalCovarianceMatrixEvalFrequency < 1)
- { fprintf( stderr, "[Korali] Error: Matrix covariance evaluation frequency is less than 1 (%lu)\n", _diagonalCovarianceMatrixEvalFrequency); exit(-1); }
-
  // Setting eigensystem evaluation Frequency
  if( _covarianceEigenEvalFreq < 0.0) _covarianceEigenEvalFreq = 1.0/_covarianceMatrixLearningRate/((double)_k->_problem->N)/10.0;
 
@@ -162,7 +157,7 @@ nlohmann::json CCMAES::getConfiguration()
  js["Covariance Matrix"]["Eigenvalue Evaluation Frequency"] = _covarianceEigenEvalFreq;
  js["Covariance Matrix"]["Cumulative Covariance"]           = _cumulativeCovariance;
  js["Covariance Matrix"]["Learning Rate"]                   = _covarianceMatrixLearningRate;
- js["Covariance Matrix"]["Enable Diagonal Update"]          = _enablediag;
+ js["Covariance Matrix"]["Is Diagonal"]                     = _isdiag;
 
  js["Termination Criteria"]["Max Generations"]          = _maxGenenerations;
  js["Termination Criteria"]["Fitness"]                  = _stopFitness;
@@ -254,7 +249,7 @@ void CCMAES::setConfiguration(nlohmann::json& js)
  _covarianceEigenEvalFreq      = consume(js, { "Covariance Matrix", "Eigenvalue Evaluation Frequency" }, KORALI_NUMBER, std::to_string(0));
  _cumulativeCovarianceIn       = consume(js, { "Covariance Matrix", "Cumulative Covariance" }, KORALI_NUMBER, std::to_string(-1));
  _covMatrixLearningRateIn      = consume(js, { "Covariance Matrix", "Learning Rate" }, KORALI_NUMBER, std::to_string(-1));
- _enablediag                   = consume(js, { "Covariance Matrix", "Enable Diagonal Update" }, KORALI_BOOLEAN, "false");
+ _isdiag                       = consume(js, { "Covariance Matrix", "Is Diagonal" }, KORALI_BOOLEAN, "false");
  
  _maxGenenerations             = consume(js, { "Termination Criteria", "Max Generations" }, KORALI_NUMBER, std::to_string(1000));
  _stopFitness                  = consume(js, { "Termination Criteria", "Fitness" }, KORALI_NUMBER, std::to_string(std::numeric_limits<double>::max()));
@@ -560,7 +555,6 @@ bool CCMAES::isFeasible(size_t sampleIdx) const
 
 void CCMAES::prepareGeneration()
 {
- int flgdiag = doDiagUpdate();
 
  /* calculate eigensystem */
  updateEigensystem(C);
@@ -589,20 +583,19 @@ void CCMAES::prepareGeneration()
 
 void CCMAES::sampleSingle(size_t sampleIdx) 
 {
-  int flgdiag = doDiagUpdate();
 
   /* generate scaled random vector (D * z) */
   for (size_t d = 0; d < _k->_problem->N; ++d)
   {
    Z[sampleIdx][d] = _gaussianGenerator->getRandomNumber();
-   if (flgdiag) { 
+   if (_isdiag) { 
      BDZ[sampleIdx][d] = axisD[d] * Z[sampleIdx][d];
      _samplePopulation[sampleIdx * _k->_problem->N + d] = rgxmean[d] + sigma * BDZ[sampleIdx][d]; 
    }
    else rgdTmp[d] = axisD[d] * Z[sampleIdx][d];
   }
 
-  if (!flgdiag)
+  if (!_isdiag)
    for (size_t d = 0; d < _k->_problem->N; ++d) {
     BDZ[sampleIdx][d] = 0.0;
     for (size_t e = 0; e < _k->_problem->N; ++e) BDZ[sampleIdx][d] += B[d][e] * rgdTmp[e];
@@ -613,7 +606,6 @@ void CCMAES::sampleSingle(size_t sampleIdx)
 
 void CCMAES::updateDistribution(const double *fitnessVector)
 {
- int flgdiag = doDiagUpdate();
 
  /* Generate index */
  sort_index(fitnessVector, index, _current_s);
@@ -664,7 +656,7 @@ void CCMAES::updateDistribution(const double *fitnessVector)
  /* calculate z := D^(-1) * B^(T) * rgBDz into rgdTmp */
  for (size_t d = 0; d < _k->_problem->N; ++d) {
   double sum = 0.0;
-  if (flgdiag) sum = rgBDz[d];
+  if (_isdiag) sum = rgBDz[d];
   else for (size_t e = 0; e < _k->_problem->N; ++e) sum += B[e][d] * rgBDz[e]; /* B^(T) * rgBDz ( iterating B[e][d] = B^(T) ) */
   
   rgdTmp[d] = sum / axisD[d]; /* D^(-1) * B^(T) * rgBDz */
@@ -675,7 +667,7 @@ void CCMAES::updateDistribution(const double *fitnessVector)
  /* cumulation for sigma (ps) using B*z */
  for (size_t d = 0; d < _k->_problem->N; ++d) {
     double sum = 0.0;
-    if (flgdiag) sum = rgdTmp[d];
+    if (_isdiag) sum = rgdTmp[d];
     else for (size_t e = 0; e < _k->_problem->N; ++e) sum += B[d][e] * rgdTmp[e];
 
     rgps[d] = (1. - _sigmaCumulationFactor) * rgps[d] + sqrt(_sigmaCumulationFactor * (2. - _sigmaCumulationFactor) * _muEffective) * sum;
@@ -757,13 +749,12 @@ void CCMAES::updateDistribution(const double *fitnessVector)
 
 void CCMAES::adaptC(int hsig)
 {
- int flgdiag = doDiagUpdate();
 
  if (_covarianceMatrixLearningRate != 0.0)
  {
   /* definitions for speeding up inner-most loop */
-  //double ccov1  = std::min(_covarianceMatrixLearningRate * (1./_muCovariance) * (flgdiag ? (_k->_problem->N+1.5) / 3. : 1.), 1.); (orig, alternative)
-  //double ccovmu = std::min(_covarianceMatrixLearningRate * (1-1./_muCovariance) * (flgdiag ? (_k->_problem->N+1.5) / 3. : 1.), 1.-ccov1); (orig, alternative)
+  //double ccov1  = std::min(_covarianceMatrixLearningRate * (1./_muCovariance) * (_isdiag ? (_k->_problem->N+1.5) / 3. : 1.), 1.); (orig, alternative)
+  //double ccovmu = std::min(_covarianceMatrixLearningRate * (1-1./_muCovariance) * (_isdiag ? (_k->_problem->N+1.5) / 3. : 1.), 1.-ccov1); (orig, alternative)
   double ccov1  = 2.0 / (std::pow(_k->_problem->N+1.3,2)+_muEffective);
   double ccovmu = std::min(1.0-ccov1,  2.0 * (_muEffective-2+1/_muEffective) / (std::pow(_k->_problem->N+2.0,2)+_muEffective));
   double sigmasquare = sigma * sigma;
@@ -772,7 +763,7 @@ void CCMAES::adaptC(int hsig)
 
   /* update covariance matrix */
   for (size_t d = 0; d < _k->_problem->N; ++d)
-   for (size_t e = flgdiag ? d : 0; e <= d; ++e) {
+   for (size_t e = _isdiag ? d : 0; e <= d; ++e) {
      C[d][e] = (1 - ccov1 - ccovmu) * C[d][e] + ccov1 * (rgpc[d] * rgpc[e] + (1-hsig)*ccov1*_cumulativeCovariance*(2.-_cumulativeCovariance) * C[d][e]);
      for (size_t k = 0; k < _current_mu; ++k) C[d][e] += ccovmu * _muWeights[k] * (_samplePopulation[index[k]*_k->_problem->N + d] - rgxold[d]) * (_samplePopulation[index[k]*_k->_problem->N + e] - rgxold[e]) / sigmasquare;
      if (e < d) C[e][d] = C[d][e];
@@ -864,7 +855,6 @@ void CCMAES::handleConstraints()
 bool CCMAES::checkTermination()
 {
  double fac;
- int flgdiag = doDiagUpdate();
 
  bool terminate = false;
 
@@ -909,7 +899,7 @@ bool CCMAES::checkTermination()
 
   size_t iAchse = 0;
   size_t iKoo = 0;
-  if (!flgdiag && isStoppingCriteriaActive("No Effect Axis") )
+  if (!_isdiag && isStoppingCriteriaActive("No Effect Axis") )
   {
     for (iAchse = 0; iAchse < _k->_problem->N; ++iAchse)
     {
@@ -925,7 +915,7 @@ bool CCMAES::checkTermination()
       break;
     } /* if (iKoo == _k->_problem->N) */
   } /* for iAchse    */
- } /* if flgdiag */
+ } /* if _isdiag */
 
  /* Component of rgxmean is not changed anymore */
  for (iKoo = 0; iKoo < _k->_problem->N; ++iKoo)
@@ -1066,12 +1056,6 @@ double CCMAES::doubleRangeMin(const double *rgd, size_t len) const
  for (size_t i = 1; i < len; i++)
   min = (min > rgd[i]) ? rgd[i] : min;
  return min;
-}
-
-
-bool CCMAES::doDiagUpdate() const
-{
- return _enablediag && (_currentGeneration % _diagonalCovarianceMatrixEvalFrequency == 0);
 }
 
 

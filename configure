@@ -25,15 +25,10 @@ function print_help ()
 }
 
 INSTALLGSL=0
-PREFIX=$HOME/.local
 
 for i in "$@"
 do
 case $i in
-    --prefix=*)
-    PREFIX="${i#*=}"
-    shift 
-    ;;
     --install-gsl)
     INSTALLGSL=1
     shift 
@@ -96,7 +91,9 @@ if [ $DETECTED_CXX       -eq 0 ]; then USE_CXX=$CXX;    fi;
 
 echo "[Korali] Looking for existing GNU Scientific Library (GSL)."
 
-gslcfgFile=${PREFIX}/bin/gsl-config
+gslprefix=$PWD/build
+
+gslcfgFile=$gslprefix/bin/gsl-config
 if [ ! -f "$gslcfgFile" ]; then
  gslcfgFile=gsl-config
 fi
@@ -122,7 +119,7 @@ then
    tar -xzvf gsl-2.5.tar.gz > /dev/null 2>&1
    echo "[Korali] Configuring GNU Scientific Library... "
    cd gsl-2.5 
-   ./configure --prefix=$PREFIX > /dev/null 2>&1 
+   ./configure --prefix=$gslprefix > /dev/null 2>&1 
    echo "[Korali] Compiling GNU Scientific Library... "
    make -j10 > /dev/null 2>&1
    echo "[Korali] Installing GNU Scientific Library... "
@@ -134,13 +131,14 @@ then
    cd .. 
    rm -rf gsl-2.5 gsl-2.5.tar.gz > /dev/null 2>&1
    echo "[Korali] Finished installing GNU Scientific Library. "
-   gslcfgFile=${PREFIX}/bin/gsl-config
+   gslcfgFile=$gslprefix/bin/gsl-config
   fi
  fi
 fi
 
 ######## Checking support for MPI ########
 
+MPIFLAGS=""
 echo "[Korali] Checking for MPI support using \"$MPICXX --version\"..."
 $MPICXX --version > /dev/null 2>&1
 if [ ! $? -eq 0 ]
@@ -153,7 +151,7 @@ else
  echo "[Korali] Use 'export MPICXX=(path)' to use a different MPI wrapper."
  echo "[Korali] Configuring with support for the MPI Conduit"
  USE_CXX=$MPICXX
- USE_MPI=1
+ MPIFLAGS="-D_KORALI_USE_MPI"
 fi
 
 ######## Checking support for Python3 ########
@@ -199,22 +197,46 @@ echo "[Korali] Pybind11 found."
 
 ######## Checking selected compiler #######
 
-if [[ "$USE_CXX" == "" ]]
+if [[ "$" == "" ]]
 then
   echo "[Korali] Error:  Did not found any valid C++ or MPI C++ compiler."
   echo "[Korali] Solution: Please define a valid C++ compiler in \$CXX."
   exit -1
 fi
 
-######## Creating Config File ########
+######## Determining Library Flags ########
 
-echo "PREFIX=$PREFIX" > .korali.config
-echo "CXX=$USE_CXX" >> .korali.config
-echo "GSLCONFIG=$gslcfgFile" >> .korali.config
-echo "SHAREDLIB_FLAG=$SHAREDLIB_FLAG" >> .korali.config
-echo "USE_MPI=$USE_MPI" >> .korali.config
+GSLPREFIX=`$gslcfgFile --prefix`
+GSLCFLAGS=`$gslcfgFile --cflags`
+GSLLIBS=`$gslcfgFile --libs`
+PYBIND11INCLUDES=`python3 -m pybind11 --includes` 
+PYBIND11LIBS=`python3-config --ldflags`
+
+######## Creating Compilation Config File ########
+
+echo "CXX=$USE_CXX" > source/Makefile.conf
+echo "SHAREDLIB_FLAG=$SHAREDLIB_FLAG" >> source/Makefile.conf
+echo "MPIFLAGS=$MPIFLAGS" >> source/Makefile.conf
+
+echo "GSLPREFIX=$GSLPREFIX" >> source/Makefile.conf
+echo "GSLCFLAGS=$GSLCFLAGS" >> source/Makefile.conf
+echo "GSLLIBS=$GSLLIBS"  >> source/Makefile.conf
+echo "PYBIND11INCLUDES=$PYBIND11INCLUDES" >> source/Makefile.conf 
+echo "PYBIND11LIBS=$PYBIND11LIBS" >> source/Makefile.conf
+
+######## Creating Python Config File ########
+
+
+echo "#!/usr/bin/env python3" > python/cxx/cxx.conf
+echo "CXX='$USE_CXX'" >> python/cxx/cxx.conf
+echo "MPIFLAGS='$MPIFLAGS'" >> python/cxx/cxx.conf
+echo "GSLPREFIX='$GSLPREFIX'" >> python/cxx/cxx.conf
+echo "GSLCFLAGS='$GSLCFLAGS'" >> python/cxx/cxx.conf
+echo "GSLLIBS='$GSLLIBS'"  >> python/cxx/cxx.conf
+echo "PYBIND11INCLUDES='$PYBIND11INCLUDES'" >> python/cxx/cxx.conf
+echo "PYBIND11LIBS='$PYBIND11LIBS'" >> python/cxx/cxx.conf
 
 echo "[Korali] ---------------------------------------------------"
 echo "[Korali] Configuration was successful."
-echo "[Korali] Install Path: $PREFIX"
 echo "[Korali] Run 'make install' to install Korali."
+echo "[Korali] ---------------------------------------------------"

@@ -110,14 +110,15 @@ class CMAES : public Korali::Solver::Base
  bool flgEigensysIsUptodate; /* flag if eigen vec need update */
 
  // Private CMA-ES-Specific Methods
- void reSampleSingle(size_t idx);
- void adaptC2(int hsig);
+ void sampleSingle(size_t sampleIdx); /* sample individual */
+ void evaluateSamples(); /* evaluate all samples until done */
+ void adaptC(int hsig); /* CMA-ES covariance matrix adaption */
  void updateEigensystem(int flgforce);
  void eigen(size_t N, double **C, double *diag, double **Q) const;
  size_t maxIdx(const double *rgd, size_t len) const;
  size_t minIdx(const double *rgd, size_t len) const;
  void sort_index(const double *funVal, size_t *index, size_t n) const;
- bool isFeasible(const double *pop) const;
+ bool isFeasible(size_t sampleIdx) const;
  double doubleRangeMax(const double *rgd, size_t len) const;
  double doubleRangeMin(const double *rgd, size_t len) const;
  bool doDiagUpdate() const;

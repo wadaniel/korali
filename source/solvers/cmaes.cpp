@@ -27,7 +27,7 @@ CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
  curBestVector     = (double*) calloc (sizeof(double), _k->_problem->N);
 
  histFuncValues = (double*) calloc (sizeof(double), _maxGenenerations+1);
- index = (size_t *) calloc (sizeof(size_t), _s);
+ index          = (size_t*) calloc (sizeof(size_t), _s);
 
  C = (double**) calloc (sizeof(double*), _k->_problem->N);
  B = (double**) calloc (sizeof(double*), _k->_problem->N);
@@ -307,9 +307,26 @@ void CMAES::run()
 
   while(!checkTermination())
   {
-  t0 = std::chrono::system_clock::now();
-  prepareGeneration();
+    t0 = std::chrono::system_clock::now();
+    
+    prepareGeneration();
+    evaluateSamples();
+    updateDistribution(fitnessVector);
 
+    t1 = std::chrono::system_clock::now();
+    printGeneration();
+
+    _k->saveState();
+  }
+
+  endTime = std::chrono::system_clock::now();
+  printFinal();
+
+}
+
+
+void CMAES::evaluateSamples() 
+{
   while (finishedSamples < _s)
   {
     for (size_t i = 0; i < _s; i++) if (initializedSample[i] == false)
@@ -319,19 +336,8 @@ void CMAES::run()
     }
     _k->_conduit->checkProgress();
   }
-  updateDistribution(fitnessVector);
-
-  t1 = std::chrono::system_clock::now();
-  printGeneration();
-
-  _k->saveState();
-  }
-
-  endTime = std::chrono::system_clock::now();
-
-  printFinal();
-
 }
+
 
 void CMAES::processSample(size_t sampleId, double fitness)
 {
@@ -339,12 +345,14 @@ void CMAES::processSample(size_t sampleId, double fitness)
  finishedSamples++;
 }
 
-bool CMAES::isFeasible(const double *pop) const
+
+bool CMAES::isFeasible(size_t sampleIdx) const
 {
- for (size_t i = 0; i < _k->_problem->N; i++)
-  if (pop[i] < _k->_problem->_parameters[i]->_lowerBound || pop[i] > _k->_problem->_parameters[i]->_upperBound) return false;
+ for (size_t d = 0; d < _k->_problem->N; ++d)
+  if (samplePopulation[ sampleIdx*_k->_problem->N+d ] < _k->_problem->_parameters[d]->_lowerBound || samplePopulation[ sampleIdx*_k->_problem->N+d ] > _k->_problem->_parameters[d]->_upperBound) return false;
  return true;
 }
+
 
 void CMAES::prepareGeneration()
 {
@@ -363,48 +371,36 @@ void CMAES::prepareGeneration()
   }
  }
 
- for (size_t iNk = 0; iNk < _s; ++iNk)
- { /* generate scaled random vector (D * z) */
-  for (size_t i = 0; i < _k->_problem->N; ++i)
-  {
-   if (flgdiag) samplePopulation[iNk * _k->_problem->N + i] = rgxmean[i] + sigma * rgD[i] * _gaussianGenerator->getRandomNumber();
-   else rgdTmp[i] = rgD[i] * _gaussianGenerator->getRandomNumber();
-  }
-
-  if (!flgdiag)
-   for (size_t i = 0; i < _k->_problem->N; ++i) {
-   double sum = 0.0;
-    for (size_t j = 0; j < _k->_problem->N; ++j)
-     sum += B[i][j] * rgdTmp[j];
-    samplePopulation[iNk * _k->_problem->N + i] = rgxmean[i] + sigma * sum;
-   }
+ for (size_t iNk = 0; iNk < _s; ++iNk) 
+ {
+     sampleSingle(iNk);
+     while( !isFeasible( iNk )) { countinfeasible++; sampleSingle(iNk); }
  }
 
  currentGeneration++;
-
- for(size_t i = 0; i < _s; ++i) while( !isFeasible(&samplePopulation[i*_k->_problem->N] )) { countinfeasible++; reSampleSingle(i); }
 
  finishedSamples = 0;
  for (size_t i = 0; i < _s; i++) initializedSample[i] = false;
 }
 
 
-void CMAES::reSampleSingle(size_t idx)
+void CMAES::sampleSingle(size_t sampleIdx) 
 {
- double *rgx;
+  int flgdiag = doDiagUpdate();
+  
+  /* generate scaled random vector (D * z) */
+  for (size_t d = 0; d < _k->_problem->N; ++d)
+  {
+   if (flgdiag) samplePopulation[sampleIdx * _k->_problem->N + d] = rgxmean[d] + sigma * rgD[d] * _gaussianGenerator->getRandomNumber();
+   else rgdTmp[d] = rgD[d] * _gaussianGenerator->getRandomNumber();
+  }
 
- if (idx < 0 || idx >= _s)  fprintf(stderr, "[Korali] Error: reSampleSingle(): Population member \n");
- rgx = &samplePopulation[idx*_k->_problem->N];
-
- for (size_t i = 0; i < _k->_problem->N; ++i)  rgdTmp[i] = rgD[i] * _gaussianGenerator->getRandomNumber();
-
- /* add mutation (sigma * B * (D*z)) */
- for (size_t i = 0; i < _k->_problem->N; ++i) {
- double sum = 0.0;
-  for (size_t j = 0; j < _k->_problem->N; ++j)
-   sum += B[i][j] * rgdTmp[j];
-  rgx[i] = rgxmean[i] + sigma * sum;
- }
+  if (!flgdiag)
+   for (size_t d = 0; d < _k->_problem->N; ++d) {
+   double sum = 0.0;
+   for (size_t e = 0; e < _k->_problem->N; ++e) sum += B[d][e] * rgdTmp[d];
+    samplePopulation[sampleIdx * _k->_problem->N + d] = rgxmean[d] + sigma * sum;
+  }
 }
 
 
@@ -473,7 +469,7 @@ void CMAES::updateDistribution(const double *fitnessVector)
    rgpc[i] = (1. - _cumulativeCovariance) * rgpc[i] + hsig * sqrt( _cumulativeCovariance * (2. - _cumulativeCovariance) *_muEffective ) * rgBDz[i];
 
  /* update of C  */
- adaptC2(hsig);
+ adaptC(hsig);
 
  /* update of sigma */
  sigma *= exp(((sqrt(psL2)/_chiN)-1.)*_sigmaCumulationFactor/_dampFactor);
@@ -522,7 +518,7 @@ void CMAES::updateDistribution(const double *fitnessVector)
 
 }
 
-void CMAES::adaptC2(int hsig)
+void CMAES::adaptC(int hsig)
 {
  int flgdiag = doDiagUpdate();
 

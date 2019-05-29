@@ -1,0 +1,28 @@
+#!/usr/bin/env python3
+
+import os
+import sys
+import json
+
+path = '_korali_result/s00000.json'
+        
+if ( not os.path.isfile(path) ):
+ print("[Korali] Error: Did not find any results in the _korali_result folder...")
+ exit(-1)
+                
+with open(path) as f:
+ data  = json.load(f)
+ method = data['Solver']['Method']
+ 
+if ( method == "TMCMC" ):
+ print("[Korali] Running TMCMC Plotter...")
+ os.system("plot_tmcmc.py _korali_result")
+ exit(0) 
+
+if ( method == "CMA-ES" or method == "CCMA-ES" ):
+ print("[Korali] Running CMA-ES Plotter...")
+ os.system("plot_cmaes.py _korali_result") 
+ exit(0)
+ 
+print("[Korali] Error: Did not recognize method for plotting...")
+exit(-1)

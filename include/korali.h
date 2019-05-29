@@ -20,6 +20,7 @@
 #include "variables/laplace.h"
 
 #include "solvers/cmaes.h"
+#include "solvers/ccmaes.h"
 #include "solvers/tmcmc.h"
 
 #include "conduits/single.h"
@@ -37,6 +38,8 @@ enum verbosity { KORALI_SILENT = 0, KORALI_MINIMAL = 1, KORALI_NORMAL = 2, KORAL
 namespace Korali
 {
 
+using fcon = std::function<double(double*, int N)>;
+
 class Engine {
 
  public:
@@ -44,7 +47,8 @@ class Engine {
  nlohmann::json  _js;
  nlohmann::json& operator[](std::string key) { return _js[key]; }
 
- std::function<void(Korali::ModelData&)> _model;
+ std::function<void(ModelData&)> _model;
+ std::vector<fcon> _fconstraints;
  Korali::Conduit::Base* _conduit;
  Korali::Problem::Base* _problem;
  Korali::Solver::Base*  _solver;
@@ -54,6 +58,7 @@ class Engine {
  ~Engine();
 
  void run(std::function<void(Korali::ModelData&)> model);
+ void addConstraint(fcon fconstraint);
 
  // Python Configuration Binding Methods
  KoraliJsonWrapper _wr;

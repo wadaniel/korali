@@ -1,0 +1,5 @@
+
+
+def getlibs(extdir):
+ flags=extdir + '/../../libkorali.a'
+ print(flags + ' ' + GSLLIBS + ' ' + PYBIND11LIBS)

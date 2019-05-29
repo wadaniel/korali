@@ -1,19 +1,10 @@
-include .Makefile.conf
-
-GSLPPREFIX = $(shell $(GSLCONFIG) --prefix)
-GSLLIBS    = $(shell $(GSLCONFIG) --libs)
-GSLCFLAGS  = $(shell $(GSLCONFIG) --cflags)
+include Makefile.conf
 
 CFLAGS  = -g -O3 -I../include $(GSLCFLAGS) -std=c++14 -fPIC -Wno-deprecated-declarations -Wno-c++17-extensions
-LDFLAGS = $(SHAREDLIB_FLAG) -Wl,-rpath $(PREFIX)/lib -L$(PREFIX)/lib -L$(GSLPPREFIX)/lib -Wl,-rpath -Wl,$(GSLPPREFIX)/lib $(GSLLIBS) 
+LDFLAGS = $(SHAREDLIB_FLAG) -L$(GSLPREFIX)/lib -Wl,-rpath -Wl,$(GSLPREFIX)/lib $(GSLLIBS) 
 
-CFLAGS  += `python3 -m pybind11 --includes` -D_KORALI_USE_PYTHON
-LDFLAGS += `python3-config --ldflags`
-
-ifeq ($(USE_MPI), 1)
- CFLAGS += -D_KORALI_USE_MPI
- CXX = $(MPICXX)
-endif
+CFLAGS  += $(PYBIND11INCLUDES) -D_KORALI_USE_PYTHON $(MPIFLAGS)
+LDFLAGS += $(PYBIND11LIBS)
 
 all: libkorali.so libkorali.a
 

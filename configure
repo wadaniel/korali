@@ -138,6 +138,7 @@ fi
 
 ######## Checking support for MPI ########
 
+MPIFLAGS=""
 echo "[Korali] Checking for MPI support using \"$MPICXX --version\"..."
 $MPICXX --version > /dev/null 2>&1
 if [ ! $? -eq 0 ]
@@ -150,7 +151,7 @@ else
  echo "[Korali] Use 'export MPICXX=(path)' to use a different MPI wrapper."
  echo "[Korali] Configuring with support for the MPI Conduit"
  USE_CXX=$MPICXX
- USE_MPI=1
+ MPIFLAGS="-D_KORALI_USE_MPI"
 fi
 
 ######## Checking support for Python3 ########
@@ -196,27 +197,46 @@ echo "[Korali] Pybind11 found."
 
 ######## Checking selected compiler #######
 
-if [[ "$USE_CXX" == "" ]]
+if [[ "$" == "" ]]
 then
   echo "[Korali] Error:  Did not found any valid C++ or MPI C++ compiler."
   echo "[Korali] Solution: Please define a valid C++ compiler in \$CXX."
   exit -1
 fi
 
+######## Determining Library Flags ########
+
+GSLPREFIX=`$gslcfgFile --prefix`
+GSLCFLAGS=`$gslcfgFile --cflags`
+GSLLIBS=`$gslcfgFile --libs`
+PYBIND11INCLUDES=`python3 -m pybind11 --includes` 
+PYBIND11LIBS=`python3-config --ldflags`
+
 ######## Creating Compilation Config File ########
 
 echo "CXX=$USE_CXX" > source/Makefile.conf
-echo "GSLCONFIG=$gslcfgFile" >> source/Makefile.conf
 echo "SHAREDLIB_FLAG=$SHAREDLIB_FLAG" >> source/Makefile.conf
-echo "USE_MPI=$USE_MPI" >> source/Makefile.conf
+echo "MPIFLAGS=$MPIFLAGS" >> source/Makefile.conf
+
+echo "GSLPREFIX=$GSLPREFIX" >> source/Makefile.conf
+echo "GSLCFLAGS=$GSLCFLAGS" >> source/Makefile.conf
+echo "GSLLIBS=$GSLLIBS"  >> source/Makefile.conf
+echo "PYBIND11INCLUDES=$PYBIND11INCLUDES" >> source/Makefile.conf 
+echo "PYBIND11LIBS=$PYBIND11LIBS" >> source/Makefile.conf
 
 ######## Creating Python Config File ########
 
-echo "CXX='$USE_CXX'" > python/cxx/cxx.conf
-echo "GSLCONFIG=$gslcfgFile" >> python/cxx/cxx.conf
-echo "SHAREDLIB_FLAG=$SHAREDLIB_FLAG" >> python/cxx/cxx.conf
-echo "USE_MPI=$USE_MPI" >> python/cxx/cxx.conf
+
+echo "#!/usr/bin/env python3" > python/cxx/cxx.conf
+echo "CXX='$USE_CXX'" >> python/cxx/cxx.conf
+echo "MPIFLAGS='$MPIFLAGS'" >> python/cxx/cxx.conf
+echo "GSLPREFIX='$GSLPREFIX'" >> python/cxx/cxx.conf
+echo "GSLCFLAGS='$GSLCFLAGS'" >> python/cxx/cxx.conf
+echo "GSLLIBS='$GSLLIBS'"  >> python/cxx/cxx.conf
+echo "PYBIND11INCLUDES='$PYBIND11INCLUDES'" >> python/cxx/cxx.conf
+echo "PYBIND11LIBS='$PYBIND11LIBS'" >> python/cxx/cxx.conf
 
 echo "[Korali] ---------------------------------------------------"
 echo "[Korali] Configuration was successful."
 echo "[Korali] Run 'make install' to install Korali."
+echo "[Korali] ---------------------------------------------------"

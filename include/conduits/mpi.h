@@ -3,7 +3,7 @@
 #ifndef _KORALI_CONDUIT_KORALIMPI_H_
 #define _KORALI_CONDUIT_KORALIMPI_H_
 
-#include "conduits/base/base.h"
+#include "conduits/base.h"
 #include <queue>
 #include <vector>
 #include <map>

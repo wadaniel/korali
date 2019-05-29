@@ -1,18 +1,20 @@
-BINARIES = maximize_function maximize_function_restart sample_function
-KORALICXX = korali-cxx
+BINARIES = maximize_function sample_function maximize_function_restart
+KORALICXX=$(shell python3 -m korali.cxx --compiler)
+KORALICFLAGS=`python3 -m korali.cxx --cflags`
+KORALILIBS=`python3 -m korali.cxx --libs`
 
 .SECONDARY:
 .PHONY: all 
 all: $(BINARIES)
 
 $(BINARIES) : % : %.o model/ackley.o
-	$(KORALICXX) -o $@ $^
+	$(KORALICXX) -o $@ $^  $(KORALILIBS)
 
 model/ackley.o:
 	$(MAKE) -C model all
 
 %.o: %.cpp
-	$(KORALICXX) -c $< `gsl-config --cflags` 
+	$(KORALICXX) -c $< $(KORALICFLAGS)
 
 .PHONY: clean
 clean:

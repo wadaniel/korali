@@ -1,0 +1,4 @@
+
+
+def getcompiler(extdir):
+ print(CXX)

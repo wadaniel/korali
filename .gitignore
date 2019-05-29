@@ -1,9 +1,9 @@
-korali/
 _korali_result
-libs/gsl-2.5
+build
 .exrc
 setup.py
 __pycache__
+*.conf
 *.tar.gz
 *.cfg
 *.o
@@ -17,8 +17,6 @@ __pycache__
 *.txt
 *.err
 *.mk
-*.config
 *.result
 .tags
 .tags1
-libs/gsl

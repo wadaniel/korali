@@ -25,15 +25,10 @@ function print_help ()
 }
 
 INSTALLGSL=0
-PREFIX=$HOME/.local
 
 for i in "$@"
 do
 case $i in
-    --prefix=*)
-    PREFIX="${i#*=}"
-    shift 
-    ;;
     --install-gsl)
     INSTALLGSL=1
     shift 
@@ -96,7 +91,9 @@ if [ $DETECTED_CXX       -eq 0 ]; then USE_CXX=$CXX;    fi;
 
 echo "[Korali] Looking for existing GNU Scientific Library (GSL)."
 
-gslcfgFile=${PREFIX}/bin/gsl-config
+gslprefix=$PWD/build
+
+gslcfgFile=$gslprefix/bin/gsl-config
 if [ ! -f "$gslcfgFile" ]; then
  gslcfgFile=gsl-config
 fi
@@ -122,7 +119,7 @@ then
    tar -xzvf gsl-2.5.tar.gz > /dev/null 2>&1
    echo "[Korali] Configuring GNU Scientific Library... "
    cd gsl-2.5 
-   ./configure --prefix=$PREFIX > /dev/null 2>&1 
+   ./configure --prefix=$gslprefix > /dev/null 2>&1 
    echo "[Korali] Compiling GNU Scientific Library... "
    make -j10 > /dev/null 2>&1
    echo "[Korali] Installing GNU Scientific Library... "
@@ -134,7 +131,7 @@ then
    cd .. 
    rm -rf gsl-2.5 gsl-2.5.tar.gz > /dev/null 2>&1
    echo "[Korali] Finished installing GNU Scientific Library. "
-   gslcfgFile=${PREFIX}/bin/gsl-config
+   gslcfgFile=$gslprefix/bin/gsl-config
   fi
  fi
 fi
@@ -206,15 +203,20 @@ then
   exit -1
 fi
 
-######## Creating Config File ########
+######## Creating Compilation Config File ########
 
-echo "PREFIX=$PREFIX" > .korali.config
-echo "CXX=$USE_CXX" >> .korali.config
-echo "GSLCONFIG=$gslcfgFile" >> .korali.config
-echo "SHAREDLIB_FLAG=$SHAREDLIB_FLAG" >> .korali.config
-echo "USE_MPI=$USE_MPI" >> .korali.config
+echo "CXX=$USE_CXX" > source/Makefile.conf
+echo "GSLCONFIG=$gslcfgFile" >> source/Makefile.conf
+echo "SHAREDLIB_FLAG=$SHAREDLIB_FLAG" >> source/Makefile.conf
+echo "USE_MPI=$USE_MPI" >> source/Makefile.conf
+
+######## Creating Python Config File ########
+
+echo "CXX='$USE_CXX'" > python/cxx/cxx.conf
+echo "GSLCONFIG=$gslcfgFile" >> python/cxx/cxx.conf
+echo "SHAREDLIB_FLAG=$SHAREDLIB_FLAG" >> python/cxx/cxx.conf
+echo "USE_MPI=$USE_MPI" >> python/cxx/cxx.conf
 
 echo "[Korali] ---------------------------------------------------"
 echo "[Korali] Configuration was successful."
-echo "[Korali] Install Path: $PREFIX"
 echo "[Korali] Run 'make install' to install Korali."

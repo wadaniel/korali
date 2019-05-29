@@ -458,7 +458,7 @@ void CCMAES::evaluateSamples()
     for (size_t i = 0; i < _current_s; i++) if (_initializedSample[i] == false)
     {
       _initializedSample[i] = true;
-      _k->_conduit->evaluateSample(_samplePopulation, i);
+      _k->_conduit->evaluateSample(_samplePopulation, i); countevals++;
     }
     _k->_conduit->checkProgress();
   }
@@ -614,7 +614,6 @@ void CCMAES::sampleSingle(size_t sampleIdx)
 void CCMAES::updateDistribution(const double *fitnessVector)
 {
  int flgdiag = doDiagUpdate();
- countevals += _current_s;
 
  /* Generate index */
  sort_index(fitnessVector, index, _current_s);

@@ -191,7 +191,8 @@ void Korali::Solver::TMCMC::run()
    {
     chainPendingFitness[c] = true;
     generateCandidate(c);
-    _k->_conduit->evaluateSample(ccPoints, c); _countevals++;
+    if( isFeasibleCandidate(c) ) _countevals++;
+    _k->_conduit->evaluateSample(ccPoints, c);
    }
    _k->_conduit->checkProgress();
   }
@@ -541,6 +542,15 @@ void Korali::Solver::TMCMC::minSearch(double const *fj, size_t fn, double pj, do
  gsl_vector_free(ss);
  gsl_multimin_fminimizer_free (s);
 }
+
+
+bool Korali::Solver::TMCMC::isFeasibleCandidate(size_t sampleIdx) const
+{
+ for (size_t d = 0; d < _k->_problem->N; ++d)
+  if ( clPoints[ sampleIdx*_k->_problem->N+d ] < _k->_problem->_parameters[d]->_lowerBound || clPoints[ sampleIdx*_k->_problem->N+d ] > _k->_problem->_parameters[d]->_upperBound) return false;
+ return true;
+}
+
 
 void Korali::Solver::TMCMC::printGeneration() const
 {

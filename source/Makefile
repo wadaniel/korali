@@ -25,6 +25,6 @@ libkorali.a: $(OBJECTS_STATIC)
 	ar rs $@ $^
 
 clean:
-	@rm -rf *.so *.a $(OBJECTS)
+	@rm -rf *.so *.a $(OBJECTS_STATIC) $(OBJECTS_SHARED)
 
 .PHONY: clean all

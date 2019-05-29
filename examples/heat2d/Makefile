@@ -1,5 +1,4 @@
 BINARIES = maximize_posterior sample_posterior
-OBJECTS = model/heat2d.o
 KORALICXX=$(shell python3 -m korali.cxx --compiler)
 KORALICFLAGS=`python3 -m korali.cxx --cflags`
 KORALILIBS=`python3 -m korali.cxx --libs`
@@ -8,7 +7,7 @@ KORALILIBS=`python3 -m korali.cxx --libs`
 .PHONY: all
 all: $(BINARIES)
 
-$(BINARIES) : % : %.o $(OBJECTS)
+$(BINARIES) : % : %.o model/heat2d.o
 	$(KORALICXX) -o $@ $^ $(KORALILIBS)
 
 model/%.o: 

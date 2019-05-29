@@ -26,6 +26,7 @@ class TMCMC : public Korali::Solver::Base
  // TMCMC Configuration
  double _tolCOV; /* Target coefficient of variation of weights */
  double _minStep; /* Min update of rho */
+ double _maxStep; /* Max update of rho */
  double _beta2; /* Covariance scaling parameter */
  unsigned int _s; /* Population Size */
  bool _useLocalCov; /* Using local covariance instead of sample cov */

@@ -133,6 +133,7 @@ void Korali::Solver::TMCMC::setConfiguration(nlohmann::json& js)
  _s                 = consume(js, { "Population Size" }, KORALI_NUMBER);
  _tolCOV            = consume(js, { "Coefficient of Variation" }, KORALI_NUMBER, std::to_string(1.0));
  _minStep           = consume(js, { "Min Rho Update" }, KORALI_NUMBER, std::to_string(0.00001));
+ _maxStep           = consume(js, { "Max Rho Update" }, KORALI_NUMBER, std::to_string(1.0));
  _beta2             = consume(js, { "Covariance Scaling" }, KORALI_NUMBER, std::to_string(0.04));
  _useLocalCov       = consume(js, { "Use Local Covariance" }, KORALI_BOOLEAN, "false");
  _burnin            = consume(js, { "Burn In" }, KORALI_NUMBER, std::to_string(0));
@@ -268,14 +269,20 @@ void Korali::Solver::TMCMC::resampleGeneration()
 
  double _prevAnnealingExponent = _annealingExponent;
 
- if (xmin > _prevAnnealingExponent)
+ if (xmin > _prevAnnealingExponent + _maxStep)
+ {
+  if ( _k->_verbosity >= KORALI_DETAILED ) printf("[Korali] Warning: Annealing Step larger than Max Rho Update, updating Annealing Exponent by %f (Max Rho Update). \n", _maxStep);
+  _annealingExponent      = _prevAnnealingExponent + _maxStep;
+  _coefficientOfVariation = sqrt(tmcmc_objlogp(_annealingExponent, _databaseFitness, _databaseEntries, _prevAnnealingExponent, _tolCOV)) + _tolCOV;
+ }
+ else if (xmin > _prevAnnealingExponent)
  {
   _annealingExponent      = xmin;
   _coefficientOfVariation = sqrt(fmin) + _tolCOV;
  }
  else
  {
-  if ( _k->_verbosity >= KORALI_DETAILED ) printf("[Korali] Annealing Step non increasing, updating Annealing Exponent by %f (Min Rho Update). \n", _minStep);
+  if ( _k->_verbosity >= KORALI_DETAILED ) printf("[Korali] Warning: Annealing Step smaller than Min Rho Update, updating Annealing Exponent by %f (Min Rho Update). \n", _minStep);
   _annealingExponent      = _prevAnnealingExponent + _minStep;
   _coefficientOfVariation = sqrt(tmcmc_objlogp(_annealingExponent, _databaseFitness, _databaseEntries, _prevAnnealingExponent, _tolCOV)) + _tolCOV;
  }

@@ -10,7 +10,6 @@ int main(int argc, char* argv[])
  int nParams = 7; 
  double lower = -10;
  double upper = 10;
- double* tmp = (double*) malloc(0);
  auto korali = Korali::Engine();
  korali.addConstraint(g1);
  korali.addConstraint(g2);

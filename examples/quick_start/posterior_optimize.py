@@ -29,7 +29,7 @@ k["Problem"]["Variables"][2]["Distribution"] = "Uniform";
 k["Problem"]["Variables"][2]["Minimum"] = 0.0;
 k["Problem"]["Variables"][2]["Maximum"] = 10.0;
 
-k["Problem"]["Reference Data"] = x;
+k["Problem"]["Reference Data"] = y;
 
 k["Solver"]["Method"] = "CMA-ES";
 k["Solver"]["Lambda"] = 10;

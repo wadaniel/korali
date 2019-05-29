@@ -49,15 +49,17 @@ CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
  { fprintf( stderr, "[Korali] Error: Matrix covariance evaluation frequency is less than 1 (%lu)\n", _diagonalCovarianceMatrixEvalFrequency); exit(-1); }
 
  // Setting Sigma Cumulation Factor
- if (_sigmaCumulationFactor > 0) _sigmaCumulationFactor *= (_muEffective + 2.0) / (_k->_problem->N + _muEffective + 3.0);
+ // if (_sigmaCumulationFactor > 0) _sigmaCumulationFactor *= (_muEffective + 2.0) / (_k->_problem->N + _muEffective + 3.0);
  if (_sigmaCumulationFactor <= 0 || _sigmaCumulationFactor >= 1) _sigmaCumulationFactor = (_muEffective + 2.) / (_k->_problem->N + _muEffective + 3.0);
 
  // Setting Damping Factor
 
- if (_dampFactor < 0) _dampFactor = 1;
- _dampFactor = _dampFactor* (1 + 2*std::max(0.0, sqrt((_muEffective-1.0)/(_k->_problem->N+1.0)) - 1))  /* basic factor */
-  * std::max(0.3, 1. - (double)_k->_problem->N / (1e-6+std::min(_maxGenenerations, _maxFitnessEvaluations/_s))) /* modification for short runs */
-  + _sigmaCumulationFactor; /* minor increment */
+ if (_dampFactor <= 0)
+ { 
+   _dampFactor = 1.0* (1 + 2*std::max(0.0, sqrt((_muEffective-1.0)/(_k->_problem->N+1.0)) - 1))  /* basic factor */
+     * std::max(0.3, 1. - (double)_k->_problem->N / (1e-6+std::min(_maxGenenerations, _maxFitnessEvaluations/_s))) /* modification for short runs */
+     + _sigmaCumulationFactor; /* minor increment */
+ }
 
  // Setting Cumulative Covariance
 
@@ -70,7 +72,7 @@ CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
  l2 = (l2 > 1) ? 1 : l2;
  l2 = (1./_muCovariance) * l1 + (1.-1./_muCovariance) * l2;
 
- if (_covarianceMatrixLearningRate >= 0) _covarianceMatrixLearningRate *= l2;
+ //if (_covarianceMatrixLearningRate >= 0) _covarianceMatrixLearningRate *= l2;
  if (_covarianceMatrixLearningRate < 0 || _covarianceMatrixLearningRate > 1)  _covarianceMatrixLearningRate = l2;
 
  // Setting eigensystem evaluation Frequency
@@ -137,12 +139,10 @@ nlohmann::json CMAES::getConfiguration()
  js["Sigma Cumulation Factor"] = _sigmaCumulationFactor;
  js["Damp Factor"]             = _dampFactor;
  js["Objective"]               = _objective;
- js["Fitness Sign"]            = _fitnessSign;
 
  js["Mu"]["Value"]      = _mu;
  js["Mu"]["Type"]       = _muType;
  js["Mu"]["Covariance"] = _muCovariance;
- for (size_t i = 0; i < _mu; i++) js["Mu"]["Weights"] += _muWeights[i];
 
  js["Covariance Matrix"]["Cumulative Covariance"]           = _cumulativeCovariance;
  js["Covariance Matrix"]["Learning Rate"]                   = _covarianceMatrixLearningRate;
@@ -174,7 +174,7 @@ nlohmann::json CMAES::getConfiguration()
  js["State"]["EvaluationCount"]           = countevals;
  js["State"]["InfeasibleCount"]           = countinfeasible;
  js["State"]["ConjugateEvolutionPathL2"]  = psL2;
- js["State"]["Termination Reason"]        = std::string(terminationReason);
+ //js["State"]["Termination Reason"]        = std::string(terminationReason);
 
  for (size_t i = 0; i < _s; i++) js["State"]["Index"]          += index[i];
  for (size_t i = 0; i < _s; i++) js["State"]["FunctionValues"] += fitnessVector[i];
@@ -217,9 +217,10 @@ void CMAES::setConfiguration(nlohmann::json& js)
  // Initializing Mu Weights
  _muWeights = (double *) calloc (sizeof(double), _mu);
  if (_muType == "Linear")       for (size_t i = 0; i < _mu; i++)  _muWeights[i] = _mu - i;
- if (_muType == "Equal")        for (size_t i = 0; i < _mu; i++)  _muWeights[i] = 1;
- if (_muType == "Logarithmic")  for (size_t i = 0; i < _mu; i++)  _muWeights[i] = log(_mu+1.)-log(i+1.);
-
+ else if (_muType == "Equal")        for (size_t i = 0; i < _mu; i++)  _muWeights[i] = 1;
+ else if (_muType == "Logarithmic")  for (size_t i = 0; i < _mu; i++)  _muWeights[i] = log(_mu+1.)-log(i+1.);
+ else  { fprintf( stderr, "[Korali] Error: Invalid setting of Mu Type (%s) (Linear, Equal or Logarithmic accepted).", _muType); exit(-1); }
+ 
  _chiN = sqrt((double) _k->_problem->N) * (1. - 1./(4.*_k->_problem->N) + 1./(21.*_k->_problem->N*_k->_problem->N));
  
  /* normalize weights vector and set mueff */
@@ -276,9 +277,10 @@ void CMAES::setState(nlohmann::json& js)
  flgEigensysIsUptodate = js["State"]["EigenSystemUpToDate"];
  countevals            = js["State"]["EvaluationCount"];
  countinfeasible       = js["State"]["InfeasibleCount"];
+ psL2                  = js["State"]["ConjugateEvolutionPathL2"];
 
- for (size_t i = 0; i < _k->_problem->N; i++) index[i]         = js["State"]["Index"][i];
- for (size_t i = 0; i < _k->_problem->N; i++) fitnessVector[i] = js["State"]["FunctionValues"][i];
+ for (size_t i = 0; i < _s; i++) index[i]         = js["State"]["Index"][i];
+ for (size_t i = 0; i < _s; i++) fitnessVector[i] = js["State"]["FunctionValues"][i];
 
  for (size_t i = 0; i < _k->_problem->N; i++) rgxmean[i]       = js["State"]["CurrentMeanVector"][i];
  for (size_t i = 0; i < _k->_problem->N; i++) rgxold[i]        = js["State"]["PreviousMeanVector"][i];

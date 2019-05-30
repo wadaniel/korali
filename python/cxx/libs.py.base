@@ -1,5 +1,5 @@
 
 
 def getlibs(extdir):
- flags=extdir + '/../../libkorali.a -L' + GSLPREFIX + '/lib -Wl,-rpath -Wl,' + GSLPREFIX + '/lib' 
+ flags=extdir + '/libs/libkorali.a -L' + GSLPREFIX + '/lib -Wl,-rpath -Wl,' + GSLPREFIX + '/lib' 
  print(flags + ' ' + GSLLIBS + ' ' + PYBIND11LIBS)

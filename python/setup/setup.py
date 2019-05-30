@@ -22,18 +22,31 @@ class CopyLibrary(build_ext):
     def copy_extension(self, ext):
         extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
         
-        koraliLibs = glob.glob(ext.sourcedir + '/source/libkorali.*')
+        koraliLibDirSrc = ext.sourcedir + '/source'
+        koraliSharedLibSrc = glob.glob(koraliLibDirSrc + '/libkorali.so')
+        koraliStaticLibSrc = glob.glob(koraliLibDirSrc + '/libkorali.a')
 
-        if (len(koraliLibs) == 0):
-            raise ValueError('No Korali libraries found in folder ' + ext.sourcedir)
-            
-        for file in koraliLibs:
-            shutil.copy2(file, extdir)
-            
-        koraliIncludes = glob.glob(ext.sourcedir + '/include')
+        koraliSharedLibDst = extdir
+        koraliStaticLibDst = extdir + '/korali/cxx/lib'
 
-        for file in koraliIncludes:
-            shutil.copytree(file, extdir + '/korali/include')
+        os.makedirs(koraliStaticLibDst)
+
+        if (len(koraliSharedLibSrc) == 0):
+            raise ValueError('No libkorali.so found in folder ' + koraliLibDirSrc)
+
+        if (len(koraliStaticLibSrc) == 0):
+            raise ValueError('No libkorali.a found in folder ' + koraliLibDirSrc)
+            
+        shutil.copy2(koraliSharedLibSrc[0], koraliSharedLibDst)
+        shutil.copy2(koraliStaticLibSrc[0], koraliStaticLibDst)
+          
+        koraliIncludesDir = ext.sourcedir + '/include'
+        koraliIncludesSrc = glob.glob(koraliIncludesDir)
+
+        if (len(koraliIncludesSrc) == 0):
+            raise ValueError('No korali includes found in folder ' + koraliIncludesDir)
+            
+        shutil.copytree(koraliIncludesSrc[0], extdir + '/korali/cxx/include')
 
 setup(
     name='Korali',

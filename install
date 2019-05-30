@@ -12,15 +12,14 @@ function print_help ()
  echo "|          CSELab - ETH Zurich - Prof. Koumoutsakos                 |"
  echo "---------------------------------------------------------------------"
  echo ""
- echo "Configuration syntax:"
- echo "./configure"
- echo "   [--prefix=INSTALL_DIR]"
- echo "   [--install-gsl]"
- echo "   [--help]"
+ echo "Syntax: ./install"
+ echo "        [--install-gsl]"
+ echo "        [--rebuild]"
+ echo "        [--help]"
  echo ""
  echo "Where:"
- echo " INSTALL_DIR is the path where to install Korali."
  echo " --install-gsl Automatically downloads and installs GSL if not found."
+ echo " --rebuild Cleans and rebuilds/installs Korali for development purposes."
  echo " --help Displays this help message."
 }
 
@@ -31,6 +30,10 @@ do
 case $i in
     --install-gsl)
     INSTALLGSL=1
+    shift 
+    ;;
+    --rebuild)
+    make -C source clean
     shift 
     ;;
     --help)
@@ -139,7 +142,8 @@ fi
 ######## Checking support for MPI ########
 
 MPIFLAGS=""
-echo "[Korali] Checking for MPI support using \"$MPICXX --version\"..."
+echo "[Korali] Checking for MPI support..."
+echo "[Korali] Running \"\$MPICXX --version\"..."
 $MPICXX --version > /dev/null 2>&1
 if [ ! $? -eq 0 ]
 then
@@ -182,7 +186,6 @@ if [ $? -ne 0 ]; then
   echo "[Korali] Solution: Make sure pip3 is correctly installed in your system"
   exit -1
 fi
-echo "[Korali] Pip3 found."
 
 ######## Checking support for Pybind11 ########
 
@@ -193,7 +196,6 @@ if [ $? -ne 0 ]; then
   echo "[Korali] Solution: Install pybind11 with \"pip3 install --user pybind11\"."
   exit -1
 fi
-echo "[Korali] Pybind11 found."
 
 ######## Checking selected compiler #######
 
@@ -205,6 +207,8 @@ then
 fi
 
 ######## Determining Library Flags ########
+
+echo "[Korali] Creating configuration files..."
 
 GSLPREFIX=`$gslcfgFile --prefix`
 GSLCFLAGS=`$gslcfgFile --cflags`
@@ -226,7 +230,6 @@ echo "PYBIND11LIBS=$PYBIND11LIBS" >> source/Makefile.conf
 
 ######## Creating Python Config File ########
 
-
 echo "#!/usr/bin/env python3" > python/cxx/cxx.conf
 echo "CXX='$USE_CXX'" >> python/cxx/cxx.conf
 echo "MPIFLAGS='$MPIFLAGS'" >> python/cxx/cxx.conf
@@ -236,7 +239,20 @@ echo "GSLLIBS='$GSLLIBS'"  >> python/cxx/cxx.conf
 echo "PYBIND11INCLUDES='$PYBIND11INCLUDES'" >> python/cxx/cxx.conf
 echo "PYBIND11LIBS='$PYBIND11LIBS'" >> python/cxx/cxx.conf
 
-echo "[Korali] ---------------------------------------------------"
-echo "[Korali] Configuration was successful."
-echo "[Korali] Run 'make install' to install Korali."
-echo "[Korali] ---------------------------------------------------"
+cat ./python/cxx/cxx.conf ./python/cxx/cflags.py.base > ./python/cxx/cflags.py
+cat ./python/cxx/cxx.conf ./python/cxx/compiler.py.base > ./python/cxx/compiler.py
+cat ./python/cxx/cxx.conf ./python/cxx/libs.py.base > ./python/cxx/libs.py
+
+######## Compiling Korali C++ Engine #########
+echo "[Korali] Compiling Korali..."
+make -j12 -C source > /dev/null 2>&1
+
+######## Installing Korali using pip3 ########
+echo "[Korali] Installing Korali..."
+ln -sf ./python/setup/setup.py setup.py
+pip3 install . --user --upgrade > /dev/null 2>&1
+rm -f setup.py
+echo '------------------------------------------------------------------'
+echo '[Korali] Finished installation successfully.'
+echo '------------------------------------------------------------------'
+

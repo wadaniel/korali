@@ -22,7 +22,7 @@ def main():
   plot_tmcmc(path, True)
   exit(0)
 
- if ( method == "CMA-ES" ):
+ if ( method == "CMA-ES" or method == "CCMA-ES" ):
   print("[Korali] Running CMA-ES Plotter...")
   plot_cmaes(path, True)
   exit(0)

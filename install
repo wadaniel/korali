@@ -111,7 +111,7 @@ then
  if [[ "$cmpver" != "$mingslver" ]]; then
   if [ $INSTALLGSL -eq 0 ]; then
    echo "[Korali] Error: GSL Version found (${gslver}) is smaller than required (${mingslver})."
-   echo "[Korali] Solution: Re-run ./configure with the --install-gsl option."
+   echo "[Korali] Solution: Run \"./install --install-gsl\"."
    exit -1
   else
    echo "[Korali] Downloading GNU Scientific Library... "

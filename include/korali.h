@@ -66,18 +66,17 @@ class Engine {
  KoraliJsonWrapper& getItem(const unsigned long int& key)     { _wr._js = &(_js[key]); return _wr;}
  void setItem(const std::string& key, const std::string& val) { _js[key] = val; }
  void setItem(const std::string& key, const double& val)      { _js[key] = val; }
- void setItem(const std::string& key, const int& val)         { _js[key] = val; }
+ void setItem(const std::string& key, const int& val)         { if(_js[key].is_boolean()) _js[key] = val == true; else _js[key] = val; }
  void setItem(const std::string& key, const bool& val)        { _js[key] = val; }
 
  void loadConfig(std::string fileName);
  void loadState(std::string fileName);
  void saveState(std::string fileName);
- void saveState();
+ void saveState(int fileId);
 
  size_t _seed;
  int _verbosity;
  size_t _outputFrequency;
- size_t _currentFileId;
 
  // Serialization Methods
  nlohmann::json getConfiguration();

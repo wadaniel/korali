@@ -167,8 +167,6 @@ void Korali::Engine::run(std::function<void(Korali::ModelData&)> model)
 
  setConfiguration(_js);
 
- _currentFileId = 0;
-
  // Creating Results directory
  mkdir("_korali_result", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
@@ -192,13 +190,13 @@ void Korali::Engine::saveState(std::string fileName)
  saveJsonToFile(fileName.c_str(), _js);
 }
 
-void Korali::Engine::saveState()
+void Korali::Engine::saveState(int fileId)
 {
  if (!_conduit->isRoot()) return;
 
  char fileName[256];
 
- sprintf(fileName, "./_korali_result/s%05lu.json", _currentFileId++);
+ sprintf(fileName, "./_korali_result/s%05lu.json", fileId++);
 
  saveState(fileName);
 }

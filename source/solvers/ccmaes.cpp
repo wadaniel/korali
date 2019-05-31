@@ -427,7 +427,7 @@ void CCMAES::run()
  }
 
  startTime = std::chrono::system_clock::now();
- _k->saveState();
+ _k->saveState(_currentGeneration);
 
  while(!checkTermination())
  {
@@ -443,7 +443,7 @@ void CCMAES::run()
    t1 = std::chrono::system_clock::now();
    
    printGeneration();
-   _k->saveState();
+   _k->saveState(_currentGeneration);
  }
 
  endTime = std::chrono::system_clock::now();

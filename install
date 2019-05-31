@@ -56,7 +56,7 @@ case $i in
     ;;
     --rebuild)
     make -C source clean
-    make -j24 -C source 
+    make -j -C source 
     shift 
     ;;
     --help)
@@ -144,7 +144,7 @@ then
    exitWithError
   else
    logEcho "[Korali] Downloading GNU Scientific Library... "
-   mkdir -p $PREFIX
+   mkdir -p build
    CURDIR=$PWD
    rm -f gsl-2.5.tar.gz 
    wget "ftp://ftp.gnu.org/gnu/gsl/gsl-2.5.tar.gz" 
@@ -157,7 +157,7 @@ then
    logEcho "[Korali] Installing GNU Scientific Library... "
    make install >> install.log 2>&1
    if [  $? -ne 0 ]; then
-    logEcho -e "[Korali] \e[31mError: Failed GNU Scientific Library installation."
+    logEcho -e "[Korali] Error: Failed GNU Scientific Library installation."
     exitWithError
    fi
    cd .. 

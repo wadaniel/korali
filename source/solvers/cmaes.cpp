@@ -26,7 +26,7 @@ CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
  rgD               = (double*) calloc (sizeof(double), _k->_problem->N);
  curBestVector     = (double*) calloc (sizeof(double), _k->_problem->N);
 
- histFuncValues = (double*) calloc (sizeof(double), _maxGenenerations+1);
+ histFuncValues = (double*) calloc (sizeof(double), _termCondMaxGenerations+1);
  index          = (size_t*) calloc (sizeof(size_t), _s);
 
  C = (double**) calloc (sizeof(double*), _k->_problem->N);
@@ -52,7 +52,7 @@ CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
  if (_dampFactor <= 0)
  { 
    _dampFactor = 1.0* (1 + 2*std::max(0.0, sqrt((_muEffective-1.0)/(_k->_problem->N+1.0)) - 1))  /* basic factor */
-     * std::max(0.3, 1. - (double)_k->_problem->N / (1e-6+std::min(_maxGenenerations, _maxFitnessEvaluations/_s))) /* modification for short runs */
+     * std::max(0.3, 1. - (double)_k->_problem->N / (1e-6+std::min(_termCondMaxGenerations, _termCondMaxFitnessEvaluations/_s))) /* modification for short runs */
      + _sigmaCumulationFactor; /* minor increment */
  }
 
@@ -144,14 +144,20 @@ nlohmann::json CMAES::getConfiguration()
  js["Covariance Matrix"]["Eigenvalue Evaluation Frequency"] = _covarianceEigenEvalFreq;
  js["Covariance Matrix"]["Is Diagonal"]                     = _isdiag;
 
- js["Termination Criteria"]["Max Generations"]          = _maxGenenerations;
- js["Termination Criteria"]["Max Model Evaluations"]    = _maxFitnessEvaluations;
- js["Termination Criteria"]["Min Fitness"]              = _stopMinFitness;
- js["Termination Criteria"]["Fitness Diff Threshold"]   = _stopFitnessDiffThreshold;
- js["Termination Criteria"]["Min DeltaX"]               = _stopMinDeltaX;
- js["Termination Criteria"]["Max Standard Deviation"]   = _stopTolUpXFactor;
- js["Termination Criteria"]["Max Condition Covariance"] = _stopCovCond;
- js["Termination Criteria"]["Ignore"]                   = _ignorecriteria;
+ js["Termination Criteria"]["Max Generations"]["Value"]           = _termCondMaxGenerations;
+ js["Termination Criteria"]["Max Generations"]["Active"]          = _isTermCondMaxGenerations;
+ js["Termination Criteria"]["Max Model Evaluations"]["Value"]     = _termCondMaxFitnessEvaluations;
+ js["Termination Criteria"]["Max Model Evaluations"]["Active"]    = _isTermCondMaxFitnessEvaluations;
+ js["Termination Criteria"]["Min Fitness"]["Value"]               = _termCondMinFitness;
+ js["Termination Criteria"]["Min Fitness"]["Active"]              = _isTermCondMinFitness;
+ js["Termination Criteria"]["Fitness Diff Threshold"]["Value"]    = _termCondFitnessDiffThreshold;
+ js["Termination Criteria"]["Fitness Diff Threshold"]["Active"]   = _isTermCondFitnessDiffThreshold;
+ js["Termination Criteria"]["Min DeltaX"]["Value"]                = _termCondMinDeltaX;
+ js["Termination Criteria"]["Min DeltaX"]["Active"]               = _isTermCondMinDeltaX;
+ js["Termination Criteria"]["Max Standard Deviation"]["Value"]    = _termCondTolUpXFactor;
+ js["Termination Criteria"]["Max Standard Deviation"]["Active"]   = _isTermCondTolUpXFactor;
+ js["Termination Criteria"]["Max Condition Covariance"]["Value"]  = _termCondCovCond;
+ js["Termination Criteria"]["Max Condition Covariance"]["Active"] = _isTermCondCovCond;
 
  // State Variables
  js["State"]["Current Generation"]        = currentGeneration;
@@ -235,19 +241,26 @@ void CMAES::setConfiguration(nlohmann::json& js)
  // Setting MU Covariance
  if (_muCovariance < 1) _muCovariance = _muEffective;
 
- _covarianceEigenEvalFreq               = consume(js, { "Covariance Matrix", "Eigenvalue Evaluation Frequency" }, KORALI_NUMBER, std::to_string(-1));
- _cumulativeCovariance                  = consume(js, { "Covariance Matrix", "Cumulative Covariance" }, KORALI_NUMBER, std::to_string(-1));
- _covarianceMatrixLearningRate          = consume(js, { "Covariance Matrix", "Learning Rate" }, KORALI_NUMBER, std::to_string(-1));
- _isdiag                                = consume(js, { "Covariance Matrix", "Is Diagonal" }, KORALI_BOOLEAN, "false");
+ _covarianceEigenEvalFreq         = consume(js, { "Covariance Matrix", "Eigenvalue Evaluation Frequency" }, KORALI_NUMBER, std::to_string(-1));
+ _cumulativeCovariance            = consume(js, { "Covariance Matrix", "Cumulative Covariance" }, KORALI_NUMBER, std::to_string(-1));
+ _covarianceMatrixLearningRate    = consume(js, { "Covariance Matrix", "Learning Rate" }, KORALI_NUMBER, std::to_string(-1));
+ _isdiag                          = consume(js, { "Covariance Matrix", "Is Diagonal" }, KORALI_BOOLEAN, "false");
 
- _maxGenenerations              = consume(js, { "Termination Criteria", "Max Generations" }, KORALI_NUMBER, std::to_string(1000));
- _stopMinFitness                = consume(js, { "Termination Criteria", "Min Fitness" }, KORALI_NUMBER, std::to_string(-std::numeric_limits<double>::max()));
- _maxFitnessEvaluations         = consume(js, { "Termination Criteria", "Max Model Evaluations" }, KORALI_NUMBER, std::to_string(std::numeric_limits<size_t>::max()));
- _stopFitnessDiffThreshold      = consume(js, { "Termination Criteria", "Fitness Diff Threshold" }, KORALI_NUMBER, std::to_string(1e-9));
- _stopMinDeltaX                 = consume(js, { "Termination Criteria", "Min DeltaX" }, KORALI_NUMBER, std::to_string(0.0));
- _stopTolUpXFactor              = consume(js, { "Termination Criteria", "Max Standard Deviation" }, KORALI_NUMBER, std::to_string(1e18));
- _stopCovCond                   = consume(js, { "Termination Criteria", "Max Condition Covariance" }, KORALI_NUMBER, std::to_string(std::numeric_limits<double>::max()));
- _ignorecriteria                = consume(js, { "Termination Criteria", "Ignore" }, KORALI_STRING, "Max Condition Covariance");
+ _termCondMaxGenerations          = consume(js, { "Termination Criteria", "Max Generations", "Value" }, KORALI_NUMBER, std::to_string(1000));
+ _isTermCondMaxGenerations        = consume(js, { "Termination Criteria", "Max Generations", "Active" }, KORALI_BOOLEAN, "true");
+ _termCondMaxFitnessEvaluations   = consume(js, { "Termination Criteria", "Max Model Evaluations", "Value" }, KORALI_NUMBER, std::to_string(std::numeric_limits<size_t>::max()));
+ _isTermCondMaxFitnessEvaluations = consume(js, { "Termination Criteria", "Max Model Evaluations", "Active" }, KORALI_BOOLEAN, "true");
+ 
+ _termCondMinFitness              = consume(js, { "Termination Criteria", "Min Fitness", "Value" }, KORALI_NUMBER, std::to_string(-std::numeric_limits<double>::max()));
+ _isTermCondMinFitness            = consume(js, { "Termination Criteria", "Min Fitness", "Active" }, KORALI_BOOLEAN, "true");
+ _termCondFitnessDiffThreshold    = consume(js, { "Termination Criteria", "Fitness Diff Threshold", "Value" }, KORALI_NUMBER, std::to_string(1e-9));
+ _isTermCondFitnessDiffThreshold  = consume(js, { "Termination Criteria", "Fitness Diff Threshold", "Active" }, KORALI_BOOLEAN, "true");
+ _termCondMinDeltaX               = consume(js, { "Termination Criteria", "Min DeltaX", "Value" }, KORALI_NUMBER, std::to_string(0.0));
+ _isTermCondMinDeltaX             = consume(js, { "Termination Criteria", "Min DeltaX", "Active" }, KORALI_BOOLEAN, "true");
+ _termCondTolUpXFactor            = consume(js, { "Termination Criteria", "Max Standard Deviation", "Value" }, KORALI_NUMBER, std::to_string(1e18));
+ _isTermCondTolUpXFactor          = consume(js, { "Termination Criteria", "Max Standard Deviation", "Active" }, KORALI_BOOLEAN, "true");
+ _termCondCovCond                 = consume(js, { "Termination Criteria", "Max Condition Covariance", "Value" }, KORALI_NUMBER, std::to_string(std::numeric_limits<double>::max()));
+ _isTermCondCovCond               = consume(js, { "Termination Criteria", "Max Condition Covariance", "Active" }, KORALI_BOOLEAN, "true");
 
 }
 
@@ -542,48 +555,48 @@ bool CMAES::checkTermination()
 
  bool terminate = false;
 
- if (currentGeneration > 1 && fitnessVector[index[0]] <= _stopMinFitness && isStoppingCriteriaActive("Fitness Value") )
+ if ( _isTermCondMinFitness && (currentGeneration > 1) && (bestEver <= _termCondMinFitness) )
  {
   terminate = true;
-  sprintf(terminationReason, "Fitness Value (%7.2e) < (%7.2e)",  fitnessVector[index[0]], _stopMinFitness);
+  sprintf(terminationReason, "Fitness Value (%7.2e) < (%7.2e)",  fitnessVector[index[0]], _termCondMinFitness);
  }
 
   double range = fabs(currentFunctionValue - prevFunctionValue);
-  if (currentGeneration > 2 && range <= _stopFitnessDiffThreshold && isStoppingCriteriaActive("Fitness Diff Threshold") )
+  if ( _isTermCondFitnessDiffThreshold && (currentGeneration > 2) && (range <= _termCondFitnessDiffThreshold) )
  {
   terminate = true;
-  sprintf(terminationReason, "Function value differences (%7.2e) < (%7.2e)",  range, _stopFitnessDiffThreshold);
+  sprintf(terminationReason, "Function value differences (%7.2e) < (%7.2e)",  range, _termCondFitnessDiffThreshold);
  }
 
  size_t cTemp = 0;
  for(size_t i=0; i<_k->_problem->N; ++i) {
-  cTemp += (sigma * sqrt(C[i][i]) < _stopMinDeltaX) ? 1 : 0;
-  cTemp += (sigma * rgpc[i] < _stopMinDeltaX) ? 1 : 0;
+  cTemp += (sigma * sqrt(C[i][i]) < _termCondMinDeltaX) ? 1 : 0;
+  cTemp += (sigma * rgpc[i] < _termCondMinDeltaX) ? 1 : 0;
  }
 
- if (cTemp == 2*_k->_problem->N && isStoppingCriteriaActive("Min DeltaX") ) {
+ if ( _isTermCondMinDeltaX && (cTemp == 2*_k->_problem->N) ) {
   terminate = true;
-  sprintf(terminationReason, "Object variable changes < %7.2e", _stopMinDeltaX);
+  sprintf(terminationReason, "Object variable changes < %7.2e", _termCondMinDeltaX);
  }
 
  for(size_t i=0; i<_k->_problem->N; ++i)
-   if (sigma * sqrt(C[i][i]) > _stopTolUpXFactor * _k->_problem->_parameters[i]->_initialStdDev && isStoppingCriteriaActive("Max Standard Deviation") )
+   if ( _isTermCondTolUpXFactor && (sigma * sqrt(C[i][i]) > _termCondTolUpXFactor * _k->_problem->_parameters[i]->_initialStdDev) )
    {
      terminate = true;
-     sprintf(terminationReason, "Standard deviation increased by more than %7.2e, larger initial standard deviation recommended \n", _stopTolUpXFactor);
+     sprintf(terminationReason, "Standard deviation increased by more than %7.2e, larger initial standard deviation recommended \n", _termCondTolUpXFactor);
      break;
    }
 
-  if (maxEW >= minEW * _stopCovCond && isStoppingCriteriaActive("Max Condition Covariance") )
+  if ( _isTermCondCovCond && (maxEW >= minEW * _termCondCovCond) )
   {
     terminate = true;
     sprintf(terminationReason, "Maximal condition number %7.2e reached. maxEW=%7.2e, minEig=%7.2e, maxdiagC=%7.2e, mindiagC=%7.2e\n",
-      _stopCovCond, maxEW, minEW, maxdiagC, mindiagC);
+      _termCondCovCond, maxEW, minEW, maxdiagC, mindiagC);
   }
 
   size_t iAchse = 0;
   size_t iKoo = 0;
-  if (!_isdiag && isStoppingCriteriaActive("No Effect Axis") )
+  if ( !_isdiag ) //TODO add isTermCond
   {
     for (iAchse = 0; iAchse < _k->_problem->N; ++iAchse)
     {
@@ -604,7 +617,7 @@ bool CMAES::checkTermination()
  /* Component of rgxmean is not changed anymore */
  for (iKoo = 0; iKoo < _k->_problem->N; ++iKoo)
  {
-  if (rgxmean[iKoo] == rgxmean[iKoo] + 0.2*sigma*sqrt(C[iKoo][iKoo]) && isStoppingCriteriaActive("No Effect Standard Deviation") )
+  if (rgxmean[iKoo] == rgxmean[iKoo] + 0.2*sigma*sqrt(C[iKoo][iKoo]) ) //TODO: add _isTermCond..
   {
    /* C[iKoo][iKoo] *= (1 + _covarianceMatrixLearningRate); */
    /* flg = 1; */
@@ -615,16 +628,16 @@ bool CMAES::checkTermination()
 
  } /* for iKoo */
 
- if(countevals >= _maxFitnessEvaluations && isStoppingCriteriaActive("Max Model Evaluations") )
+ if( _isTermCondMaxFitnessEvaluations && (countevals >= _termCondMaxFitnessEvaluations))
  {
   terminate = true;
-  sprintf(terminationReason, "Conducted %lu function evaluations >= (%lu).", countevals, _maxFitnessEvaluations);
+  sprintf(terminationReason, "Conducted %lu function evaluations >= (%lu).", countevals, _termCondMaxFitnessEvaluations);
  }
 
- if(currentGeneration >= _maxGenenerations && isStoppingCriteriaActive("Max Generations") )
+ if( _isTermCondMaxGenerations && (currentGeneration >= _termCondMaxGenerations) )
  {
   terminate = true;
-  sprintf(terminationReason, "Maximum number of Generations reached (%lu).", _maxGenenerations);
+  sprintf(terminationReason, "Maximum number of Generations reached (%lu).", _termCondMaxGenerations);
  }
 
  return terminate;
@@ -720,13 +733,6 @@ double CMAES::doubleRangeMin(const double *rgd, size_t len) const
  return min;
 }
 
-
-bool CMAES::isStoppingCriteriaActive(const char *criteria) const
-{
-    std::string c(criteria);
-    size_t found = _ignorecriteria.find(c);
-    return (found==std::string::npos);
-}
 
 void CMAES::printGeneration() const
 {

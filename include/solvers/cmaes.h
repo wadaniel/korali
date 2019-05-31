@@ -55,17 +55,16 @@ class CMAES : public Korali::Solver::Base
  Variable::Gaussian* _gaussianGenerator; /* random number generator */
  
  // Stop conditions
- size_t _maxGenenerations; // Max number of generations.
- size_t _maxFitnessEvaluations;   // Defines maximum number of fitness evaluations
- double _stopMinFitness; // Defines the minimum fitness allowed, otherwise it stops
- double _stopFitnessDiffThreshold; // Defines minimum function value differences before stopping
- double _stopMinDeltaX; // Defines minimum delta of input parameters among generations before it stops.
- double _stopTolUpXFactor; // Defines the minimum fitness allowed, otherwise it stops
- double _stopCovCond; // Defines the maximal condition number of the covariance matrix
- std::string _ignorecriteria; /* Termination Criteria(s) to ignore:
-    Fitness Value, Fitness Diff Threshold, Max Standard Deviation,
-    Max Kondition Covariance, No Effect Axis, No Effect Standard Deviation,
-    Max Model Evaluations, Max Generations */
+ size_t _termCondMaxGenerations; // Max number of generations.
+ size_t _termCondMaxFitnessEvaluations;   // Defines maximum number of fitness evaluations
+ double _termCondMinFitness; // Defines the minimum fitness allowed, otherwise it stops
+ double _termCondFitnessDiffThreshold; // Defines minimum function value differences before stopping
+ double _termCondMinDeltaX; // Defines minimum delta of input parameters among generations before it stops.
+ double _termCondTolUpXFactor; // Defines the minimum fitness allowed, otherwise it stops
+ double _termCondCovCond; // Defines the maximal condition number of the covariance matrix
+ bool _isTermCondMaxGenerations, _isTermCondMaxFitnessEvaluations, _isTermCondMinFitness,
+      _isTermCondFitnessDiffThreshold, _isTermCondMinDeltaX, _isTermCondTolUpXFactor,
+      _isTermCondCovCond; // flgs to activate termination criteria
 
  // Private CMAES-Specific Variables
  size_t currentGeneration; /* generation count */
@@ -120,7 +119,6 @@ class CMAES : public Korali::Solver::Base
  bool isFeasible(size_t sampleIdx) const;
  double doubleRangeMax(const double *rgd, size_t len) const;
  double doubleRangeMin(const double *rgd, size_t len) const;
- bool isStoppingCriteriaActive(const char *criteria) const;
 
  // Print Methods
  void printGeneration() const;

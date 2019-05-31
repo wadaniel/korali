@@ -33,8 +33,8 @@ k["Problem"]["Reference Data"] = y;
 
 k["Solver"]["Method"] = "CMA-ES";
 k["Solver"]["Lambda"] = 10;
-k["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-6;
-k["Solver"]["Termination Criteria"]["Max Generations"] = 1e4;
-k["Solver"]["Termination Criteria"]["Max Model Evaluations"] = 3e5;
+k["Solver"]["Termination Criteria"]["Min DeltaX"]["Value"]= 1e-6;
+k["Solver"]["Termination Criteria"]["Max Generations"]["Value"] = 1e4;
+k["Solver"]["Termination Criteria"]["Max Model Evaluations"]["Value"] = 3e5;
 
 k.run(lambda koraliData: evaluateModel(koraliData, x));

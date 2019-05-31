@@ -63,9 +63,9 @@ int main(int argc, char* argv[])
 
  korali["Solver"]["Method"] = "CMA-ES";
  korali["Solver"]["Lambda"] = 16;
- korali["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-4;
- korali["Solver"]["Termination Criteria"]["Fitness Diff Threshold"] = 1e-4;
- korali["Solver"]["Termination Criteria"]["Max Condition Covariance"] = 1e10;
+ korali["Solver"]["Termination Criteria"]["Min DeltaX"]["Value"] = 1e-4;
+ korali["Solver"]["Termination Criteria"]["Fitness Diff Threshold"]["Value"] = 1e-4;
+ korali["Solver"]["Termination Criteria"]["Max Condition Covariance"]["Value"] = 1e10;
  
  korali["MPI"]["Ranks Per Team"] = 2;
 

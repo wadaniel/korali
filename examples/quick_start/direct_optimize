@@ -18,8 +18,8 @@ k["Problem"]["Variables"][0]["Initial Mean"]   = 2.0
 k["Problem"]["Variables"][0]["Initial StdDev"] = 5.0
 
 k["Solver"]["Method"] = "CMA-ES"
-k["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-8
-k["Solver"]["Termination Criteria"]["Max Generations"] = 100
+k["Solver"]["Termination Criteria"]["Min DeltaX"]["Value"] = 1e-8
+k["Solver"]["Termination Criteria"]["Max Generations"]["Value"] = 100
 k["Solver"]["Lambda"] = 5
 k["Solver"]["Objective"] = "Maximize"
 

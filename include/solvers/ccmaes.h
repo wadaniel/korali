@@ -66,17 +66,16 @@ class CCMAES : public Korali::Solver::Base
  size_t _covarianceEigenEvalFreq;
 
  // Stop conditions
- size_t _maxFitnessEvaluations;   // Defines maximum number of fitness evaluations
- double _stopFitnessDiffThreshold; // Defines minimum function value differences before stopping
- double _stopMinDeltaX; // Defines minimum delta of input parameters among generations before it stops.
- double _stopFitness; // Defines the minimum/maximum fitness allowed, otherwise algo stops
- double _stopTolUpXFactor; // Defines the minimum fitness allowed, otherwise it stops
- double _stopCovCond; // Defines the maximal condition number of the covariance matrix
- size_t _maxGenenerations; // Max number of generations.
- std::string _ignorecriteria; /* Termination Criteria(s) to ignore:
-    Fitness Value, Fitness Diff Threshold, Max Standard Deviation,
-    Max Kondition Covariance, No Effect Axis, No Effect Standard Deviation,
-    Max Model Evaluations, Max Generations */
+ size_t _termCondMaxGenerations; // Max number of generations.
+ size_t _termCondMaxFitnessEvaluations;   // Defines maximum number of fitness evaluations
+ double _termCondMinFitness; // Defines the minimum fitness allowed, otherwise it stops
+ double _termCondFitnessDiffThreshold; // Defines minimum function value differences before stopping
+ double _termCondMinDeltaX; // Defines minimum delta of input parameters among generations before it stops.
+ double _termCondTolUpXFactor; // Defines the minimum fitness allowed, otherwise it stops
+ double _termCondCovCond; // Defines the maximal condition number of the covariance matrix
+ bool _isTermCondMaxGenerations, _isTermCondMaxFitnessEvaluations, _isTermCondMinFitness,
+      _isTermCondFitnessDiffThreshold, _isTermCondMinDeltaX, _isTermCondTolUpXFactor,
+      _isTermCondCovCond; // flgs to activate termination criteria
 
  // Private CMAES-Specific Variables
  double sigma;  /* step size */
@@ -131,8 +130,6 @@ class CCMAES : public Korali::Solver::Base
  bool isFeasible(size_t sampleIdx) const; /* check if sample inside lower & upper bounds */
  double doubleRangeMax(const double *rgd, size_t len) const;
  double doubleRangeMin(const double *rgd, size_t len) const;
- bool isStoppingCriteriaActive(const char *criteria) const;
- void initInternals(size_t numsamples); /* init _muWeights, _muEffective and _muCov */
 
  // Private CCMA-ES-Specific Variables 
  size_t _numConstraints; /* number of constraints */
@@ -162,6 +159,7 @@ class CCMAES : public Korali::Solver::Base
  double *besteverCeval; /* constraint evaluations for best ever */
 
  // Private CCMA-ES-Specific Methods
+ void initInternals(size_t numsamples); /* init _muWeights, _muEffective and _muCov */
  void checkMeanAndSetRegime(); /* check if mean inside valid domain, if yes, update internal vars */
  void updateConstraints();
  void updateViabilityBoundaries(); /* update & shrink viability boundaries */

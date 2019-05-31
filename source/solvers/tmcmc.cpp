@@ -104,7 +104,8 @@ nlohmann::json Korali::Solver::TMCMC::getConfiguration()
  js["Use Local Covariance"]     = _useLocalCov;
  js["Burn In"]                  = _burnin;
 
- js["Termination Criteria"]["Max Generations"] = _maxGens;
+ js["Termination Criteria"]["Max Generations"]["Value"]  = _termCondMaxGens;
+ js["Termination Criteria"]["Max Generations"]["Active"] = _isTermCondMaxGens;
 
  // State Variables
  js["State"]["nChains"]                  = _nChains;
@@ -137,7 +138,8 @@ void Korali::Solver::TMCMC::setConfiguration(nlohmann::json& js)
  _beta2             = consume(js, { "Covariance Scaling" }, KORALI_NUMBER, std::to_string(0.04));
  _useLocalCov       = consume(js, { "Use Local Covariance" }, KORALI_BOOLEAN, "false");
  _burnin            = consume(js, { "Burn In" }, KORALI_NUMBER, std::to_string(0));
- _maxGens           = consume(js, { "Termination Criteria", "Max Generations" }, KORALI_NUMBER, std::to_string(20));
+ _termCondMaxGens   = consume(js, { "Termination Criteria", "Max Generations", "Value" }, KORALI_NUMBER, std::to_string(20));
+ _isTermCondMaxGens = consume(js, { "Termination Criteria", "Max Generations", "Active" }, KORALI_BOOLEAN, "true");
 }
 
 void Korali::Solver::TMCMC::setState(nlohmann::json& js)
@@ -178,7 +180,7 @@ void Korali::Solver::TMCMC::run()
  _currentGeneration++;
 
  // Generation 1 to N
- for(; _currentGeneration < _maxGens; _currentGeneration++)
+ for(; _isTermCondMaxGens && (_currentGeneration < _termCondMaxGens); _currentGeneration++)
  {
   t0 = std::chrono::system_clock::now();
 
@@ -562,7 +564,7 @@ void Korali::Solver::TMCMC::printGeneration() const
   if (_currentGeneration > 0) printf("[Korali] Duration: %fs (Elapsed Time: %.2fs)\n",  
                                         std::chrono::duration<double>(t1-t0).count() , 
                                         std::chrono::duration<double>(t1-startTime).count());
-  if (_currentGeneration == _maxGens) printf("[Korali] Max Generation Reached.\n");
+  if (_isTermCondMaxGens && (_currentGeneration == _termCondMaxGens)) printf("[Korali] Max Generation Reached.\n");
  }
 
  if (_k->_verbosity >= KORALI_NORMAL)

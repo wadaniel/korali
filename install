@@ -1,0 +1,298 @@
+#!/bin/bash
+
+logFile=install.log
+
+# Help display function
+function print_help ()
+{
+ echo ""
+ echo "---------------------------------------------------------------------"
+ echo "| Korali - High-performance framework for optimization, sampling    |"
+ echo "|          and Bayesian uncertainty quantification of large scale   |"
+ echo "|          computational models.                                    |"
+ echo "| Authors: Georgios Arampatzis, Sergio Martin, Daniel Waelchli      |"
+ echo "|          CSELab - ETH Zurich - Prof. Koumoutsakos                 |"
+ echo "---------------------------------------------------------------------"
+ echo ""
+ echo "Syntax: ./install"
+ echo "        [--install-gsl]"
+ echo "        [--rebuild]"
+ echo "        [--help]"
+ echo ""
+ echo "Where:"
+ echo " --install-gsl Automatically downloads and installs GSL if not found."
+ echo " --rebuild Cleans and rebuilds/installs Korali for development purposes."
+ echo " --help Displays this help message."
+}
+
+# Logging and printing function.
+function logEcho ()
+{
+ echo "$1"
+ echo "$1" >> $logFile
+}
+
+# Logging function.
+function log ()
+{
+ echo "$1" >> $logFile
+}
+
+# Exit with error message.
+function exitWithError ()
+{
+ echo "[Korali] Installation Error: Check $logFile for more information." >> $logFile
+ exit -1
+}
+
+INSTALLGSL=0
+
+for i in "$@"
+do
+case $i in
+    --install-gsl)
+    INSTALLGSL=1
+    shift 
+    ;;
+    --rebuild)
+    make -C source clean
+    shift 
+    ;;
+    --help)
+    print_help
+    exit 0 
+    shift 
+    ;;
+    *)
+    print_help
+    echo ""
+    echo "[Korali] Error:  Unknown option $i."       
+    exit 1
+    ;;
+esac
+done
+
+
+######## Start Configuration ######
+
+echo "Korali Log Start." > $logFile
+logEcho "[Korali] Configuring Korali..."
+
+log "Checking for architecture..."
+arch="$(uname -s)"
+
+# Linux Architecture is default
+SHAREDLIB_FLAG="-shared"
+
+if [ "$arch" == "Linux" ]; then
+ log "[Korali] Linux System Detected."
+fi
+
+# If using MacOs, change flags 
+if [ "$arch" == "Darwin" ]; then
+ log "[Korali] MacOS (Darwin) System Detected."
+ SHAREDLIB_FLAG="-dynamiclib"
+fi
+
+######## Checking Compiler ########
+
+logEcho "[Korali] Checking Pre-requisites..."
+
+log "Checking for C++ Compiler..."
+
+$CXX --version >> install.log 2>&1
+DETECTED_CXX=$?
+c++ --version >> install.log 2>&1
+DETECTED_CPLUSPLUS=$?
+g++ --version >> install.log 2>&1
+DETECTED_GXX=$?
+clang++ --version >> install.log 2>&1
+DETECTED_CLANG=$?
+icpc --version >> install.log 2>&1
+DETECTED_ICPC=$?
+ 
+USE_CXX=""
+if [ $DETECTED_CPLUSPLUS -eq 0 ]; then USE_CXX=c++;     fi;
+if [ $DETECTED_GXX       -eq 0 ]; then USE_CXX=g++;     fi;
+if [ $DETECTED_ICPC      -eq 0 ]; then USE_CXX=icpc;    fi;
+if [ $DETECTED_CLANG     -eq 0 ]; then USE_CXX=clang++; fi;
+if [ $DETECTED_CXX       -eq 0 ]; then USE_CXX=$CXX;    fi;
+
+######## Checking support for GNU Scientific Library ########
+
+log "[Korali] Looking for existing GNU Scientific Library (GSL)..."
+
+gslprefix=$PWD/build
+
+gslcfgFile=$gslprefix/bin/gsl-config
+if [ ! -f "$gslcfgFile" ]; then
+ gslcfgFile=gsl-config
+fi
+
+log "[Korali] Running \"$gslcfgFile --version\"..."
+gslver=`$gslcfgFile --version`
+mingslver=2.5
+if [  $? -eq 0 ]
+then
+ log "[Korali] Found GSL version $gslver."
+ cmpver=`printf "${gslver}\n${mingslver}" | sort -V | head -n 1`
+ if [[ "$cmpver" != "$mingslver" ]]; then
+  if [ $INSTALLGSL -eq 0 ]; then
+   logEcho "[Korali] Error: GSL Version found (${gslver}) is smaller than required (${mingslver})."
+   logEcho "[Korali] Solution: Run \"./install --install-gsl\"."
+   exitWithError
+  else
+   logEcho "[Korali] Downloading GNU Scientific Library... "
+   mkdir -p $PREFIX
+   CURDIR=$PWD
+   rm -f gsl-2.5.tar.gz 
+   wget "ftp://ftp.gnu.org/gnu/gsl/gsl-2.5.tar.gz" 
+   tar -xzvf gsl-2.5.tar.gz >> install.log 2>&1
+   echo "[Korali] Configuring GNU Scientific Library... "
+   cd gsl-2.5 
+   ./configure --prefix=$gslprefix >> install.log 2>&1 
+   logEcho "[Korali] Compiling GNU Scientific Library... "
+   make -j10 >> install.log 2>&1
+   logEcho "[Korali] Installing GNU Scientific Library... "
+   make install >> install.log 2>&1
+   if [  $? -ne 0 ]; then
+    logEcho -e "[Korali] \e[31mError: Failed GNU Scientific Library installation."
+    exitWithError
+   fi
+   cd .. 
+   rm -rf gsl-2.5 gsl-2.5.tar.gz >> install.log 2>&1
+   logEcho "[Korali] Finished installing GNU Scientific Library. "
+   gslcfgFile=$gslprefix/bin/gsl-config
+  fi
+ fi
+fi
+
+######## Checking support for MPI ########
+
+MPIFLAGS=""
+log "[Korali] Checking for MPI support..."
+log "[Korali] Running \"\$MPICXX --version\"..."
+$MPICXX --version >> install.log 2>&1
+if [ ! $? -eq 0 ]
+then
+ logEcho "[Korali] Info: No MPI compiler command found in \$MPICXX."
+ logEcho "[Korali] Suggestion: Use 'export MPICXX=(path)' to enable MPI support."
+ USE_MPI=0
+else
+ log "[Korali] Found $MPICXX for MPI compiler/wrapper."
+ log "[Korali] Use 'export MPICXX=(path)' to use a different MPI wrapper."
+ USE_CXX=$MPICXX
+ MPIFLAGS="-D_KORALI_USE_MPI"
+fi
+
+######## Checking support for Python3 ########
+
+log "[Korali] Checking for Python3 support using \"python3 --version\"."
+pyver=`python3 --version`
+if [ $? -eq 0 ]; then
+  log "[Korali] Checking for python3-config."
+  python3-config --help >> install.log 2>&1
+  if [ $? -ne 0 ]; then
+    logEcho "[Korali] Error: python3-config not found."
+    logEcho "[Korali] Solution: Please make sure python3 is correctly installed."
+    exitWithError
+  fi
+else
+  logEcho "[Korali] Error: Python3 not found."
+  logEcho "[Korali] Solution: Please make sure the python3-config command is accesible in the PATH environment variable."
+  exitWithError
+fi
+log "[Korali] Python3 version $pyver found."
+
+######## Checking support for pip3 ########
+
+log "[Korali] Checking for pip3 support using \"pip3 --version\"..."
+pip3 --version >> install.log 2>&1
+if [ $? -ne 0 ]; then
+  logEcho "[Korali] Error: pip3 not found."
+  logEcho "[Korali] Solution: Make sure pip3 is correctly installed in your system"
+  exitWithError
+fi
+
+######## Checking support for Pybind11 ########
+
+log "[Korali] Checking for Pybind11 support using \"python3 -m pybind11 -h\"..."
+python3 -m pybind11 -h >> install.log 2>&1
+if [ $? -ne 0 ]; then
+  logEcho "[Korali] Error: pybind11 not found."
+  logEcho "[Korali] Solution: Install pybind11 with \"pip3 install --user pybind11\"."
+  exitWithError
+fi
+
+######## Checking selected compiler #######
+
+if [[ "$" == "" ]]
+then
+  logEcho "[Korali] Error:  Did not found any valid C++ or MPI C++ compiler."
+  logEcho "[Korali] Solution: Please define a valid C++ compiler in \$CXX or \$MPICXX."
+  exitWithError
+fi
+
+######## Determining Library Flags ########
+
+echo "[Korali] Creating configuration files..."
+
+GSLPREFIX=`$gslcfgFile --prefix`
+GSLCFLAGS=`$gslcfgFile --cflags`
+GSLLIBS=`$gslcfgFile --libs`
+PYBIND11INCLUDES=`python3 -m pybind11 --includes` 
+PYBIND11LIBS=`python3-config --ldflags`
+
+######## Creating Compilation Config File ########
+
+log "[Korali] Creating Compilation Config File..."
+
+echo "CXX=$USE_CXX" > source/Makefile.conf
+echo "SHAREDLIB_FLAG=$SHAREDLIB_FLAG" >> source/Makefile.conf
+echo "MPIFLAGS=$MPIFLAGS" >> source/Makefile.conf
+
+echo "GSLPREFIX=$GSLPREFIX" >> source/Makefile.conf
+echo "GSLCFLAGS=$GSLCFLAGS" >> source/Makefile.conf
+echo "GSLLIBS=$GSLLIBS"  >> source/Makefile.conf
+echo "PYBIND11INCLUDES=$PYBIND11INCLUDES" >> source/Makefile.conf 
+echo "PYBIND11LIBS=$PYBIND11LIBS" >> source/Makefile.conf
+
+######## Creating Python Config File ########
+
+log "[Korali] Creating Python Config File..."
+
+echo "#!/usr/bin/env python3" > python/cxx/cxx.conf
+echo "CXX='$USE_CXX'" >> python/cxx/cxx.conf
+echo "MPIFLAGS='$MPIFLAGS'" >> python/cxx/cxx.conf
+echo "GSLPREFIX='$GSLPREFIX'" >> python/cxx/cxx.conf
+echo "GSLCFLAGS='$GSLCFLAGS'" >> python/cxx/cxx.conf
+echo "GSLLIBS='$GSLLIBS'"  >> python/cxx/cxx.conf
+echo "PYBIND11INCLUDES='$PYBIND11INCLUDES'" >> python/cxx/cxx.conf
+echo "PYBIND11LIBS='$PYBIND11LIBS'" >> python/cxx/cxx.conf
+
+cat ./python/cxx/cxx.conf ./python/cxx/cflags.py.base > ./python/cxx/cflags.py
+cat ./python/cxx/cxx.conf ./python/cxx/compiler.py.base > ./python/cxx/compiler.py
+cat ./python/cxx/cxx.conf ./python/cxx/libs.py.base > ./python/cxx/libs.py
+
+######## Compiling Korali C++ Engine #########
+
+logEcho "[Korali] Compiling Korali..."
+make -j12 -C source >> install.log 2>&1
+
+######## Installing Korali using pip3 ########
+logEcho "[Korali] Installing Korali..."
+ln -sf ./python/setup/setup.py setup.py
+pip3 install . --user --upgrade >> install.log 2>&1
+
+if [ $? -ne 0 ]; then
+  logEcho "[Korali] Error installing Korali's Python module."
+  logEcho "[Korali] Check $logFile for further information."
+  exitWithError
+fi
+
+rm -f setup.py
+
+echo "------------------------------------------------------------------"
+echo "[Korali] Finished installation successfully (see $logFile)."
+echo "------------------------------------------------------------------"
+

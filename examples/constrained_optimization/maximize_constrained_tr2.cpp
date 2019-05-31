@@ -32,9 +32,9 @@ int main(int argc, char* argv[])
  korali["Solver"]["Num Samples"] = 10;
  korali["Solver"]["Num Viability Samples"] = 4;
  korali["Solver"]["Adaption Size"] = 0.1;
- korali["Solver"]["Termination Criteria"]["Max Generations"] = 1000;
- korali["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-12;
- korali["Solver"]["Termination Criteria"]["Fitness"] = -2 - 1e-8;
+ korali["Solver"]["Termination Criteria"]["Max Generations"]["Value"] = 1000;
+ korali["Solver"]["Termination Criteria"]["Min DeltaX"]["Value"] = 1e-12;
+ korali["Solver"]["Termination Criteria"]["Fitness"]["Value"] = -2 - 1e-8;
  
  korali.run(model);
  

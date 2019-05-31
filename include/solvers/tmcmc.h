@@ -31,7 +31,8 @@ class TMCMC : public Korali::Solver::Base
  unsigned int _s; /* Population Size */
  bool _useLocalCov; /* Using local covariance instead of sample cov */
  size_t _burnin; /* burn in generations */
- size_t _maxGens; /* maximal number of generations */
+ size_t _termCondMaxGens; /* maximal number of generations */
+ bool _isTermCondMaxGens; /* maximal number of generations */
 
  // TMCMC Runtime Variables
  gsl_rng  *range;

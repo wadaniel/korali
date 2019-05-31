@@ -1,6 +1,5 @@
 BINARIES = maximize_constrained_rosenbrock maximize_constrained_g09 maximize_unconstrained_g09 maximize_constrained_tr2
 KORALICXX=$(shell python3 -m korali.cxx --compiler)
-
 KORALICFLAGS=`python3 -m korali.cxx --cflags`
 KORALILIBS=`python3 -m korali.cxx --libs`
 

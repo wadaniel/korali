@@ -251,7 +251,6 @@ void CMAES::setConfiguration(nlohmann::json& js)
  _termCondMaxFitnessEvaluations   = consume(js, { "Termination Criteria", "Max Model Evaluations", "Value" }, KORALI_NUMBER, std::to_string(std::numeric_limits<size_t>::max()));
  _isTermCondMaxFitnessEvaluations = consume(js, { "Termination Criteria", "Max Model Evaluations", "Active" }, KORALI_BOOLEAN, "true");
  
- 
  _termCondMinFitness              = consume(js, { "Termination Criteria", "Min Fitness", "Value" }, KORALI_NUMBER, std::to_string(-std::numeric_limits<double>::max()));
  _isTermCondMinFitness            = consume(js, { "Termination Criteria", "Min Fitness", "Active" }, KORALI_BOOLEAN, "true");
  _termCondFitnessDiffThreshold    = consume(js, { "Termination Criteria", "Fitness Diff Threshold", "Value" }, KORALI_NUMBER, std::to_string(1e-9));

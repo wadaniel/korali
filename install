@@ -41,7 +41,7 @@ function log ()
 # Exit with error message.
 function exitWithError ()
 {
- echo "[Korali] Installation Error: Check $logFile for more information." >> $logFile
+ echo "[Korali] Installation Error: Check $PWD/$logFile for more information." >> $logFile
  exit -1
 }
 
@@ -56,6 +56,7 @@ case $i in
     ;;
     --rebuild)
     make -C source clean
+    make -j24 -C source 
     shift 
     ;;
     --help)
@@ -292,7 +293,8 @@ fi
 
 rm -f setup.py
 
+logEcho "[Korali] Check $logFile for further information."
 echo "------------------------------------------------------------------"
-echo "[Korali] Finished installation successfully (see $logFile)."
+echo "[Korali] Finished installation successfully."
 echo "------------------------------------------------------------------"
 

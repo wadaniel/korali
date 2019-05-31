@@ -41,6 +41,7 @@ PYBIND11_MODULE(libkorali, m) {
 
  pybind11::class_<Korali::KoraliJsonWrapper>(m, "__KoraliJsonWrapper")
  .def(pybind11::init<>())
+ .def("getValue", &Korali::KoraliJsonWrapper::getValue)
  .def("__getitem__", pybind11::overload_cast<const std::string&>(&Korali::KoraliJsonWrapper::getItem), pybind11::return_value_policy::reference)
  .def("__getitem__", pybind11::overload_cast<const unsigned long int&>(&Korali::KoraliJsonWrapper::getItem), pybind11::return_value_policy::reference)
  .def("__setitem__", pybind11::overload_cast<const std::string&, const std::string&>(&Korali::KoraliJsonWrapper::setItem), pybind11::return_value_policy::reference)
@@ -187,7 +188,8 @@ void Korali::Engine::saveState(std::string fileName)
 {
  if (!_conduit->isRoot()) return;
 
- saveJsonToFile(fileName.c_str(), getConfiguration());
+ _js = getConfiguration();
+ saveJsonToFile(fileName.c_str(), _js);
 }
 
 void Korali::Engine::saveState()
@@ -198,7 +200,7 @@ void Korali::Engine::saveState()
 
  sprintf(fileName, "./_korali_result/s%05lu.json", _currentFileId++);
 
- saveJsonToFile(fileName, getConfiguration());
+ saveState(fileName);
 }
 
 void Korali::Engine::loadState(std::string fileName)

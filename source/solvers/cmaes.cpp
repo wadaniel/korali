@@ -43,16 +43,17 @@ CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
  // Initializing Gaussian Generator
  _gaussianGenerator = new Variable::Gaussian(0.0, 1.0, _k->_seed++);
 
+ _chiN = sqrt((double) _k->_problem->N) * (1. - 1./(4.*_k->_problem->N) + 1./(21.*_k->_problem->N*_k->_problem->N));
+ 
  // Setting Sigma Cumulation Factor
- // if (_sigmaCumulationFactor > 0) _sigmaCumulationFactor *= (_muEffective + 2.0) / (_k->_problem->N + _muEffective + 3.0);
- if (_sigmaCumulationFactor <= 0 || _sigmaCumulationFactor >= 1) _sigmaCumulationFactor = (_muEffective + 2.) / (_k->_problem->N + _muEffective + 3.0);
+ if (_sigmaCumulationFactor <= 0 || _sigmaCumulationFactor > 1) _sigmaCumulationFactor = (_muEffective + 2.) / (_k->_problem->N + _muEffective + 3.0);
 
  // Setting Damping Factor
 
  if (_dampFactor <= 0)
  { 
    _dampFactor = 1.0* (1 + 2*std::max(0.0, sqrt((_muEffective-1.0)/(_k->_problem->N+1.0)) - 1))  /* basic factor */
-     * std::max(0.3, 1. - (double)_k->_problem->N / (1e-6+std::min(_termCondMaxGenerations, _termCondMaxFitnessEvaluations/_s))) /* modification for short runs */
+     //* std::max(0.3, 1. - (double)_k->_problem->N / (1e-6+std::min(_termCondMaxGenerations, _termCondMaxFitnessEvaluations/_s))) /* modification for short runs */
      + _sigmaCumulationFactor; /* minor increment */
  }
 
@@ -67,7 +68,6 @@ CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
  l2 = (l2 > 1) ? 1 : l2;
  l2 = (1./_muCovariance) * l1 + (1.-1./_muCovariance) * l2;
 
- //if (_covarianceMatrixLearningRate >= 0) _covarianceMatrixLearningRate *= l2;
  if (_covarianceMatrixLearningRate < 0 || _covarianceMatrixLearningRate > 1)  _covarianceMatrixLearningRate = l2;
 
  // Setting eigensystem evaluation Frequency
@@ -174,7 +174,6 @@ nlohmann::json CMAES::getConfiguration()
  js["State"]["EvaluationCount"]           = countevals;
  js["State"]["InfeasibleCount"]           = countinfeasible;
  js["State"]["ConjugateEvolutionPathL2"]  = psL2;
- //js["State"]["Termination Reason"]        = std::string(terminationReason);
 
  for (size_t i = 0; i < _s; i++) js["State"]["Index"]          += index[i];
  for (size_t i = 0; i < _s; i++) js["State"]["FunctionValues"] += fitnessVector[i];
@@ -221,7 +220,6 @@ void CMAES::setConfiguration(nlohmann::json& js)
  else if (_muType == "Logarithmic")  for (size_t i = 0; i < _mu; i++)  _muWeights[i] = log(_mu+1.)-log(i+1.);
  else  { fprintf( stderr, "[Korali] Error: Invalid setting of Mu Type (%s) (Linear, Equal or Logarithmic accepted).", _muType); exit(-1); }
  
- _chiN = sqrt((double) _k->_problem->N) * (1. - 1./(4.*_k->_problem->N) + 1./(21.*_k->_problem->N*_k->_problem->N));
  
  /* normalize weights vector and set mueff */
  double s1 = 0.0;
@@ -250,7 +248,6 @@ void CMAES::setConfiguration(nlohmann::json& js)
  _isTermCondMaxGenerations        = consume(js, { "Termination Criteria", "Max Generations", "Active" }, KORALI_BOOLEAN, "true");
  _termCondMaxFitnessEvaluations   = consume(js, { "Termination Criteria", "Max Model Evaluations", "Value" }, KORALI_NUMBER, std::to_string(std::numeric_limits<size_t>::max()));
  _isTermCondMaxFitnessEvaluations = consume(js, { "Termination Criteria", "Max Model Evaluations", "Active" }, KORALI_BOOLEAN, "true");
- 
  _termCondMinFitness              = consume(js, { "Termination Criteria", "Min Fitness", "Value" }, KORALI_NUMBER, std::to_string(-std::numeric_limits<double>::max()));
  _isTermCondMinFitness            = consume(js, { "Termination Criteria", "Min Fitness", "Active" }, KORALI_BOOLEAN, "true");
  _termCondFitnessDiffThreshold    = consume(js, { "Termination Criteria", "Fitness Diff Threshold", "Value" }, KORALI_NUMBER, std::to_string(1e-9));
@@ -270,7 +267,7 @@ void CMAES::setState(nlohmann::json& js)
 {
  this->Korali::Solver::Base::setState(js);
 
- _currentGeneration     = js["State"]["Current Generation"];
+ _currentGeneration    = js["State"]["Current Generation"];
  sigma                 = js["State"]["Sigma"];
  bestEver              = js["State"]["BestEverFunctionValue"];
  prevBest              = js["State"]["PreviousBestFunctionValue"];

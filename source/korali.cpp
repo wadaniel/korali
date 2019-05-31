@@ -128,15 +128,24 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
 
  int rankCount = 1;
 
+ auto cString =  consume(js, { "Conduit", "Type" }, KORALI_STRING, "Undefined");
+
  #ifdef _KORALI_USE_MPI
   int isInitialized;
   MPI_Initialized(&isInitialized);
   if (isInitialized == false)  MPI_Init(nullptr, nullptr);
   MPI_Comm_size(MPI_COMM_WORLD, &rankCount);
-  if (rankCount > 1) _conduit = new Korali::Conduit::KoraliMPI(js["MPI"]);
  #endif
 
- if (rankCount == 1) _conduit = new Korali::Conduit::Single(js["MPI"]);
+ if (cString == "Undefined" && rankCount == 1) cString = "Single";
+ if (cString == "Undefined" && rankCount  > 1) cString = "MPI";
+
+ bool foundConduit = false;
+
+ if (cString == "Single")        { _conduit = new Korali::Conduit::Single(js["Conduit"]); foundConduit = true; }
+ if (cString == "MPI")           { _conduit = new Korali::Conduit::KoraliMPI(js["Conduit"]); foundConduit = true; }
+ if (cString == "Noninstrusive") { _conduit = new Korali::Conduit::Nonintrusive(js["Conduit"]); foundConduit = true; }
+
 
  // Configure Solver
  _solver = NULL;

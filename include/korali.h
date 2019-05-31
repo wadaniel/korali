@@ -25,6 +25,7 @@
 
 #include "conduits/single.h"
 #include "conduits/mpi.h"
+#include "conduits/nonintrusive.h"
 
 #include "json/koralijson.h"
 

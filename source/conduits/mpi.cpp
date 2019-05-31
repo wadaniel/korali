@@ -75,6 +75,7 @@ nlohmann::json KoraliMPI::getConfiguration()
 {
  auto js = this->Base::getConfiguration();
 
+ js["Type"] = "MPI";
  js["Ranks Per Team"] = _ranksPerTeam;
 
  return js;

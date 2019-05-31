@@ -5,6 +5,6 @@ from ackley import m_ackley
 import korali
 
 k = korali.Engine()
-k.loadState('_korali_result/s00001.json')
+k.loadState('_korali_result/s00098.json')
 
 k.run(m_ackley)

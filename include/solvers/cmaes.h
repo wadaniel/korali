@@ -67,7 +67,7 @@ class CMAES : public Korali::Solver::Base
       _isTermCondCovCond; // flgs to activate termination criteria
 
  // Private CMAES-Specific Variables
- size_t currentGeneration; /* generation count */
+ size_t _currentGeneration; /* generation count */
  double* fitnessVector; /* objective function values [_s] */
  double* samplePopulation; /* sample coordinates [_s x _k->N] */
  

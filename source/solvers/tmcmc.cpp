@@ -175,7 +175,7 @@ void Korali::Solver::TMCMC::run()
 
  // Generation 0
  initializeSamples();
- _k->saveState();
+ _k->saveState(_currentGeneration);
  printGeneration();
  _currentGeneration++;
 
@@ -201,7 +201,7 @@ void Korali::Solver::TMCMC::run()
 
   t1 = std::chrono::system_clock::now();
 
-  _k->saveState();
+  _k->saveState(_currentGeneration);
   
   printGeneration();
 

@@ -38,7 +38,7 @@ CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
  fitnessVector = (double*) calloc (sizeof(double), _s);
 
  // Init Generation
- currentGeneration = 0;
+ _currentGeneration = 0;
  
  // Initializing Gaussian Generator
  _gaussianGenerator = new Variable::Gaussian(0.0, 1.0, _k->_seed++);
@@ -160,7 +160,7 @@ nlohmann::json CMAES::getConfiguration()
  js["Termination Criteria"]["Max Condition Covariance"]["Active"] = _isTermCondCovCond;
 
  // State Variables
- js["State"]["Current Generation"]        = currentGeneration;
+ js["State"]["Current Generation"]        = _currentGeneration;
  js["State"]["Sigma"]                     = sigma;
  js["State"]["BestEverFunctionValue"]     = bestEver;
  js["State"]["PreviousBestFunctionValue"] = prevBest;
@@ -270,7 +270,7 @@ void CMAES::setState(nlohmann::json& js)
 {
  this->Korali::Solver::Base::setState(js);
 
- currentGeneration     = js["State"]["Current Generation"];
+ _currentGeneration     = js["State"]["Current Generation"];
  sigma                 = js["State"]["Sigma"];
  bestEver              = js["State"]["BestEverFunctionValue"];
  prevBest              = js["State"]["PreviousBestFunctionValue"];
@@ -309,7 +309,7 @@ void CMAES::run()
  if (_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Starting CMA-ES (Objective: %s).\n", _objective.c_str());
 
   startTime = std::chrono::system_clock::now();
-  _k->saveState();
+  _k->saveState(_currentGeneration);
 
   while(!checkTermination())
   {
@@ -322,7 +322,7 @@ void CMAES::run()
     t1 = std::chrono::system_clock::now();
     printGeneration();
 
-    _k->saveState();
+    _k->saveState(_currentGeneration);
   }
 
   endTime = std::chrono::system_clock::now();
@@ -382,7 +382,7 @@ void CMAES::prepareGeneration()
      while( !isFeasible( iNk )) { countinfeasible++; sampleSingle(iNk); }
  }
 
- currentGeneration++;
+ _currentGeneration++;
 
  finishedSamples = 0;
  for (size_t i = 0; i < _s; i++) initializedSample[i] = false;
@@ -423,14 +423,14 @@ void CMAES::updateDistribution(const double *fitnessVector)
  for (size_t i = 0; i < _k->_problem->N; ++i) curBestVector[i] = samplePopulation[index[0]*_k->_problem->N + i];
 
  /* update xbestever */
- if (currentFunctionValue > bestEver || currentGeneration == 1)
+ if (currentFunctionValue > bestEver || _currentGeneration == 1)
  {
   prevBest = bestEver;
   bestEver = currentFunctionValue;
   for (size_t i = 0; i < _k->_problem->N; ++i) rgxbestever[i] = curBestVector[i];
  }
 
- histFuncValues[currentGeneration] = bestEver;
+ histFuncValues[_currentGeneration] = bestEver;
 
  /* calculate rgxmean and rgBDz */
  for (size_t i = 0; i < _k->_problem->N; ++i) {
@@ -465,7 +465,7 @@ void CMAES::updateDistribution(const double *fitnessVector)
     psL2 += rgps[i] * rgps[i];
  }
 
- int hsig = sqrt(psL2) / sqrt(1. - pow(1.-_sigmaCumulationFactor, 2*currentGeneration)) / _chiN  < 1.4 + 2./(_k->_problem->N+1);
+ int hsig = sqrt(psL2) / sqrt(1. - pow(1.-_sigmaCumulationFactor, 2*_currentGeneration)) / _chiN  < 1.4 + 2./(_k->_problem->N+1);
 
  /* cumulation for covariance matrix (pc) using B*D*z~_k->_problem->N(0,C) */
  for (size_t i = 0; i < _k->_problem->N; ++i)
@@ -507,9 +507,9 @@ void CMAES::updateDistribution(const double *fitnessVector)
  size_t horizon = 10 + ceil(3*10*_k->_problem->N/_s);
  double min = std::numeric_limits<double>::max();
  double max = std::numeric_limits<double>::min();
- for(size_t i = 0; (i < horizon) && (currentGeneration - i >= 0); i++) {
-    if ( histFuncValues[currentGeneration-i] < min ) min = histFuncValues[_currentGeneration];
-    if ( histFuncValues[currentGeneration-i] > max ) max = histFuncValues[_currentGeneration];
+ for(size_t i = 0; (i < horizon) && (_currentGeneration - i >= 0); i++) {
+    if ( histFuncValues[_currentGeneration-i] < min ) min = histFuncValues[_currentGeneration];
+    if ( histFuncValues[_currentGeneration-i] > max ) max = histFuncValues[_currentGeneration];
  }
  if (max-min < 1e-12) {
    sigma *= exp(0.2+_sigmaCumulationFactor/_dampFactor);
@@ -555,14 +555,14 @@ bool CMAES::checkTermination()
 
  bool terminate = false;
 
- if ( _isTermCondMinFitness && (currentGeneration > 1) && (bestEver <= _termCondMinFitness) )
+ if ( _isTermCondMinFitness && (_currentGeneration > 1) && (bestEver <= _termCondMinFitness) )
  {
   terminate = true;
   sprintf(terminationReason, "Fitness Value (%7.2e) < (%7.2e)",  fitnessVector[index[0]], _termCondMinFitness);
  }
 
   double range = fabs(currentFunctionValue - prevFunctionValue);
-  if ( _isTermCondFitnessDiffThreshold && (currentGeneration > 2) && (range <= _termCondFitnessDiffThreshold) )
+  if ( _isTermCondFitnessDiffThreshold && (_currentGeneration > 2) && (range <= _termCondFitnessDiffThreshold) )
  {
   terminate = true;
   sprintf(terminationReason, "Function value differences (%7.2e) < (%7.2e)",  range, _termCondFitnessDiffThreshold);
@@ -634,7 +634,7 @@ bool CMAES::checkTermination()
   sprintf(terminationReason, "Conducted %lu function evaluations >= (%lu).", countevals, _termCondMaxFitnessEvaluations);
  }
 
- if( _isTermCondMaxGenerations && (currentGeneration >= _termCondMaxGenerations) )
+ if( _isTermCondMaxGenerations && (_currentGeneration >= _termCondMaxGenerations) )
  {
   terminate = true;
   sprintf(terminationReason, "Maximum number of Generations reached (%lu).", _termCondMaxGenerations);
@@ -646,7 +646,7 @@ bool CMAES::checkTermination()
 void CMAES::updateEigensystem(int flgforce)
 {
  if(flgforce == 0 && flgEigensysIsUptodate) return;
- /* if(currentGeneration % _covarianceEigenEvalFreq == 0) return; */
+ /* if(_currentGeneration % _covarianceEigenEvalFreq == 0) return; */
 
  eigen(_k->_problem->N, C, rgD, B);
 
@@ -736,13 +736,13 @@ double CMAES::doubleRangeMin(const double *rgd, size_t len) const
 
 void CMAES::printGeneration() const
 {
- if (currentGeneration % _k->_outputFrequency != 0) return;
+ if (_currentGeneration % _k->_outputFrequency != 0) return;
 
  if (_k->_verbosity >= KORALI_NORMAL)
    printf("--------------------------------------------------------------------\n");
 
  if (_k->_verbosity >= KORALI_MINIMAL)
-   printf("[Korali] Generation %ld - Duration: %fs (Total Elapsed Time: %fs)\n", currentGeneration, std::chrono::duration<double>(t1-t0).count(), std::chrono::duration<double>(t1-startTime).count());
+   printf("[Korali] Generation %ld - Duration: %fs (Total Elapsed Time: %fs)\n", _currentGeneration, std::chrono::duration<double>(t1-t0).count(), std::chrono::duration<double>(t1-startTime).count());
 
  if (_k->_verbosity >= KORALI_NORMAL)
  {

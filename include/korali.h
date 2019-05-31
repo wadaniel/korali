@@ -72,12 +72,11 @@ class Engine {
  void loadConfig(std::string fileName);
  void loadState(std::string fileName);
  void saveState(std::string fileName);
- void saveState();
+ void saveState(int fileId);
 
  size_t _seed;
  int _verbosity;
  size_t _outputFrequency;
- size_t _currentFileId;
 
  // Serialization Methods
  nlohmann::json getConfiguration();

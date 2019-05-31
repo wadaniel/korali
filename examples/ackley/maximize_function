@@ -21,6 +21,7 @@ k["Solver"]["Method"] = "CMA-ES"
 k["Solver"]["Lambda"] = 10
 k["Solver"]["Termination Criteria"]["Max Generations"]["Value"] = 100
 k["Solver"]["Termination Criteria"]["Min DeltaX"]["Value"] = 1e-12
+k["Solver"]["Covariance Matrix"]["Is Diagonal"] = False
 
 k.run(m_ackley)
 

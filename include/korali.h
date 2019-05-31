@@ -66,7 +66,7 @@ class Engine {
  KoraliJsonWrapper& getItem(const unsigned long int& key)     { _wr._js = &(_js[key]); return _wr;}
  void setItem(const std::string& key, const std::string& val) { _js[key] = val; }
  void setItem(const std::string& key, const double& val)      { _js[key] = val; }
- void setItem(const std::string& key, const int& val)         { _js[key] = val; }
+ void setItem(const std::string& key, const int& val)         { if(_js[key].is_boolean()) _js[key] = val == true; else _js[key] = val; }
  void setItem(const std::string& key, const bool& val)        { _js[key] = val; }
 
  void loadConfig(std::string fileName);

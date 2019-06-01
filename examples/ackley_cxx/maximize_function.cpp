@@ -18,12 +18,16 @@ int main(int argc, char* argv[])
   korali["Problem"]["Variables"][i]["Maximum"] = +32.0;
  }
 
+ korali["Conduit"]["Type"] = "Nonintrusive";
+
  korali["Solver"]["Method"] = "CMA-ES";
  korali["Solver"]["Lambda"] = 10;
  korali["Solver"]["Termination Criteria"]["Max Generations"]["Value"] = 100;
  korali["Solver"]["Termination Criteria"]["Min DeltaX"]["Value"] = 1e-12;
  
- korali.run([](Korali::ModelData& d) { m_ackley(d.getVariables(), d.getResults()); });
+ korali.addModel([](Korali::ModelData& d) { printf("Hola\n"); });
+
+ korali.run();
 
  return 0;
 }

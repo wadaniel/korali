@@ -122,6 +122,7 @@ void KoraliMPI::workerThread()
 
    Korali::ModelData data;
    data._comm = _teamComm;
+   data._hashId = _rankId * 500000 + _currentSample++;
 
    int curVar = 0;
    for (int i = 0; i < _k->_problem->_computationalVariableCount; i++) data._computationalVariables.push_back(sample[curVar++]);

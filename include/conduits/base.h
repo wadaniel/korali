@@ -14,6 +14,8 @@ class Base {
  virtual void checkProgress() = 0;
  virtual bool isRoot() = 0;
 
+ size_t _currentSample;
+
  // Constructor / Destructor
  Base(nlohmann::json& js);
  ~Base();
@@ -36,6 +38,7 @@ namespace Korali
   size_t getVariableCount() { return _self->_computationalVariables.size(); }
   std::vector<double>& getVariables() { return _self->_computationalVariables; }
   std::vector<double>& getResults() { return _self->_results; }
+  size_t& getHashId() { return _self->_hashId; }
 
   #ifdef _KORALI_USE_MPI
   MPI_Comm _comm;
@@ -54,6 +57,7 @@ namespace Korali
   }
 
   ModelData* _self;
+  size_t _hashId;
   std::vector<double> _computationalVariables;
   std::vector<double> _statisticalVariables;
   std::vector<double> _results;

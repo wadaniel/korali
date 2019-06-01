@@ -1,4 +1,5 @@
 #include "korali.h"
+#include <sys/wait.h>
 
 using namespace Korali::Conduit;
 
@@ -25,7 +26,6 @@ nlohmann::json Nonintrusive::getConfiguration()
  auto js = this->Base::getConfiguration();
 
  js["Type"] = "Nonintrusive";
- js["Launch Command"] = _command;
 
  return js;
 }
@@ -34,7 +34,12 @@ void Nonintrusive::setConfiguration(nlohmann::json& js)
 {
  this->Base::setConfiguration(js);
 
- _command =  consume(js, { "Launch Command" }, KORALI_STRING);
+ _concurrentJobs = consume(js, { "Concurrent Jobs" }, KORALI_NUMBER, std::to_string(1));
+ if (_concurrentJobs < 1)
+ {
+  fprintf(stderr, "[Korali] Error: You need to define at least 1 concurrent job(s) for non-intrusive models \n");
+  exit(-1);
+ }
 }
 
 /************************************************************************/
@@ -43,6 +48,7 @@ void Nonintrusive::setConfiguration(nlohmann::json& js)
 
 void Nonintrusive::run()
 {
+	for (int i = 0; i < _concurrentJobs; i++)	_launcherQueue.push(i);
  _k->_solver->run();
 }
 
@@ -54,14 +60,39 @@ void Nonintrusive::evaluateSample(double* sampleArray, size_t sampleId)
  for (int i = 0; i < _k->_problem->_computationalVariableCount; i++) data._computationalVariables.push_back(sampleArray[_k->_problem->N*sampleId + curVar++]);
  for (int i = 0; i < _k->_problem->_statisticalVariableCount;   i++) data._statisticalVariables.push_back(  sampleArray[_k->_problem->N*sampleId + curVar++]);
 
- // _k->_model(data);
+ data._hashId = _currentSample++;
 
- double fitness = _k->_problem->evaluateFitness(data);
- //_k->_solver->processSample(sampleId, fitness);
+ while (_launcherQueue.empty()) checkProgress();
+
+ int launcherId = _launcherQueue.front(); _launcherQueue.pop();
+
+ pid_t processId = fork();
+
+ _launcherIdToProcessIdMap[launcherId] = processId;
+ _processIdMapToLauncherIdMap[processId] = launcherId;
+
+ if (processId == 0)
+ {
+  _k->_model(data);
+  //double fitness = _k->_problem->evaluateFitness(data);
+  //_k->_solver->processSample(sampleId, fitness);
+  exit(0);
+ }
+
 }
 
 void Nonintrusive::checkProgress()
 {
+	int status;
+	pid_t processId;
+
+	processId = wait(&status);
+	if (processId > 0)
+	 {
+		int launcherId = _processIdMapToLauncherIdMap[processId];
+		printf("Subprocess %d finished.\n", launcherId );
+		_launcherQueue.push(launcherId);
+	 }
 
 }
 

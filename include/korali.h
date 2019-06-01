@@ -58,7 +58,8 @@ class Engine {
  Engine();
  ~Engine();
 
- void run(std::function<void(Korali::ModelData&)> model);
+ void run();
+ void addModel(std::function<void(Korali::ModelData&)> model);
  void addConstraint(fcon fconstraint);
 
  // Python Configuration Binding Methods

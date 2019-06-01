@@ -22,7 +22,7 @@ nlohmann::json Korali::Problem::Base::getConfiguration()
 {
  auto js = nlohmann::json();
 
- for (size_t i = 0; i < N; i++) js["Variables"][i] = _parameters[i]->getConfiguration();
+ for (size_t i = 0; i < N; i++) js["Variables"][i] = _variables[i]->getConfiguration();
 
  return js;
 }
@@ -46,20 +46,14 @@ void Korali::Problem::Base::setConfiguration(nlohmann::json& js)
 
   if (tmp.size() == 0) { fprintf(stderr, "[Korali] Error: Incorrect or undefined parameters.\n"); exit(-1); }
 
-  _statisticalParameterCount = 0;
-  _computationalParameterCount = 0;
-  for (size_t i = 0; i < tmp.size(); i++) if (tmp[i]->_type == KORALI_COMPUTATIONAL) { _parameters.push_back(tmp[i]); _computationalParameterCount++; }
-  for (size_t i = 0; i < tmp.size(); i++) if (tmp[i]->_type == KORALI_STATISTICAL)   { _parameters.push_back(tmp[i]); _statisticalParameterCount++; };
-  N = _parameters.size();
+  _statisticalVariableCount = 0;
+  _computationalVariableCount = 0;
+  for (size_t i = 0; i < tmp.size(); i++) if (tmp[i]->_type == KORALI_COMPUTATIONAL) { _variables.push_back(tmp[i]); _computationalVariableCount++; }
+  for (size_t i = 0; i < tmp.size(); i++) if (tmp[i]->_type == KORALI_STATISTICAL)   { _variables.push_back(tmp[i]); _statisticalVariableCount++; };
+  N = _variables.size();
 }
 
 /************************************************************************/
 /*                    Functional Methods                                */
 /************************************************************************/
 
-bool Korali::Problem::Base::isSampleOutsideBounds(double* sample)
-{
-  for (size_t i = 0; i < N; i++)
-  	if (sample[i] < _parameters[i]->_lowerBound || sample[i] > _parameters[i]->_upperBound) return true;
-  return false;
-}

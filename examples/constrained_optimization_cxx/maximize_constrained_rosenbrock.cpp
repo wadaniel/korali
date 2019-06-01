@@ -5,7 +5,7 @@ int main(int argc, char* argv[])
 {
  
  //rosenbrock
- std::function<void(Korali::ModelData&)> model = [](Korali::ModelData& d) { m_rosenbrock(d.getParameters(), d.getResults()); }; 
+ std::function<void(Korali::ModelData&)> model = [](Korali::ModelData& d) { m_rosenbrock(d.getVariables(), d.getResults()); };
  std::function<double(double* , size_t)> fc1 = [](double* arr, size_t N) { return arr[0] + arr[1] - 2.0; }; 
  std::function<double(double* , size_t)> fc2 = [](double* arr, size_t N) { return std::pow(arr[0] - 1.0,3.0) - arr[1] + 1; }; 
 

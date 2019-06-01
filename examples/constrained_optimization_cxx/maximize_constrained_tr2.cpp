@@ -5,7 +5,7 @@ int main(int argc, char* argv[])
 {
  
  //tr2
- std::function<void(Korali::ModelData&)> model = [](Korali::ModelData& d) { m_tr2(d.getParameters(), d.getResults()); }; 
+ std::function<void(Korali::ModelData&)> model = [](Korali::ModelData& d) { m_tr2(d.getVariables(), d.getResults()); };
  std::function<double(double* , size_t)> fc1 = [](double* arr, size_t N) { return 2.0 - arr[0] - arr[1]; }; 
 
  int    nParams = 2; 

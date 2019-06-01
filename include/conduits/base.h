@@ -33,8 +33,8 @@ namespace Korali
   public:
 
   void addResult(double x) {_self->_results.push_back(x); }
-  size_t getParameterCount() { return _self->_parameters.size(); }
-  std::vector<double>& getParameters() { return _self->_parameters; }
+  size_t getVariableCount() { return _self->_computationalVariables.size(); }
+  std::vector<double>& getVariables() { return _self->_computationalVariables; }
   std::vector<double>& getResults() { return _self->_results; }
 
   #ifdef _KORALI_USE_MPI
@@ -43,18 +43,19 @@ namespace Korali
   long int getCommPointer() { return (long int)(&_self->_comm); }
   #endif
 
-  double getParameter(size_t i)
+  double getVariable(size_t i)
   {
-   if (i >= _self->_parameters.size())
+   if (i >= _self->_computationalVariables.size())
    {
-      fprintf(stderr, "[Korali] Error: Trying to access parameter %lu, when only %lu are provided.\n", i, _self->_parameters.size());
+      fprintf(stderr, "[Korali] Error: Trying to access parameter %lu, when only %lu are provided.\n", i, _self->_computationalVariables.size());
       exit(-1);
     }
-   return _self->_parameters[i];
+   return _self->_computationalVariables[i];
   }
 
   ModelData* _self;
-  std::vector<double> _parameters;
+  std::vector<double> _computationalVariables;
+  std::vector<double> _statisticalVariables;
   std::vector<double> _results;
 
   // Constructor / Destructor

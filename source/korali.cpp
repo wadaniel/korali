@@ -18,9 +18,9 @@ Korali::Engine* Korali::_k;
 
 PYBIND11_MODULE(libkorali, m) {
  pybind11::class_<Korali::ModelData>(m, "ModelData")
-  .def("getParameter",      &Korali::ModelData::getParameter, pybind11::return_value_policy::reference)
-  .def("getParameterCount", &Korali::ModelData::getParameterCount, pybind11::return_value_policy::reference)
-  .def("getParameters",     &Korali::ModelData::getParameters, pybind11::return_value_policy::reference)
+  .def("getVariable",      &Korali::ModelData::getVariable, pybind11::return_value_policy::reference)
+  .def("getVariableCount", &Korali::ModelData::getVariableCount, pybind11::return_value_policy::reference)
+  .def("getVariables",     &Korali::ModelData::getVariables, pybind11::return_value_policy::reference)
   .def("getResults",        &Korali::ModelData::getResults, pybind11::return_value_policy::reference)
   #ifdef _KORALI_USE_MPI
   .def("getCommPointer",    &Korali::ModelData::getCommPointer)
@@ -144,8 +144,9 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
 
  if (cString == "Single")        { _conduit = new Korali::Conduit::Single(js["Conduit"]); foundConduit = true; }
  if (cString == "MPI")           { _conduit = new Korali::Conduit::KoraliMPI(js["Conduit"]); foundConduit = true; }
- if (cString == "Noninstrusive") { _conduit = new Korali::Conduit::Nonintrusive(js["Conduit"]); foundConduit = true; }
+ if (cString == "Nonintrusive") { _conduit = new Korali::Conduit::Nonintrusive(js["Conduit"]); foundConduit = true; }
 
+ if (foundConduit == false) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Conduit.\n"); exit(-1); }
 
  // Configure Solver
  _solver = NULL;

@@ -2,8 +2,8 @@
 
 def evaluateModel( s, x ):
  for i in range(len(x)):
-  th0 = s.getParameter(0)
-  th1 = s.getParameter(1)
+  th0 = s.getVariable(0)
+  th1 = s.getVariable(1)
   r  =  th0*x[i] + th1
   s.addResult(r)
 

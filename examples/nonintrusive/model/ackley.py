@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import math
 
 # Minus Ackley
@@ -10,8 +10,9 @@ def m_ackley(x):
  s1 = 0
  s2 = 0
  for i in range(4):
-   s1 += x.getParameter(i)*x.getParameter(i)
-   s2 += math.cos(c*x.getParameter(i))
+   s1 += x.getVariable(i)*x.getVariable(i)
+   s2 += math.cos(c*x.getVariable(i))
 
  result = -a*math.exp(-b*math.sqrt(s1/4)) - math.exp(s2/4) + a + math.exp(1.)
  x.addResult(-result)
+

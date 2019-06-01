@@ -700,8 +700,9 @@ void CCMAES::updateDistribution(const double *fitnessVector)
    updateViabilityBoundaries();
    
    if ( prevBest == bestEver ) globalSucRate = (1-_cp)*globalSucRate;
-   else for(size_t c = 0; c < _numConstraints; ++c) if( sucRates[c] < 0.5 ) { globalSucRate = (1-_cp)*globalSucRate; break; }
-   sigma *= exp(1.0/_dampFactor)*(globalSucRate-(_targetSucRate/(1.0-_targetSucRate))*(1-globalSucRate));
+   else globalSucRate = (1-_cp)*globalSucRate + _cp;
+   //else for(size_t c = 0; c < _numConstraints; ++c) if( sucRates[c] < 0.5 ) { globalSucRate = (1-_cp)*globalSucRate; break; }
+   sigma *= exp(1.0/_dampFactor*(globalSucRate-(_targetSucRate/(1.0-_targetSucRate))*(1-globalSucRate)));
    if(_k->_verbosity >= KORALI_DETAILED && sigma > 0.3) printf("[Korali] Warning: updateSigmaVie: sigma (%f) > 0.3\n", sigma);
  }
  else

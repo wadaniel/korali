@@ -51,8 +51,8 @@ void Nonintrusive::evaluateSample(double* sampleArray, size_t sampleId)
  Korali::ModelData data;
 
  int curVar = 0;
- for (; curVar < _k->_problem->_computationalVariableCount; curVar++) data._computationalVariables.push_back(sampleArray[_k->_problem->N*sampleId + curVar]);
- for (; curVar < _k->_problem->_statisticalVariableCount;   curVar++) data._statisticalVariables.push_back(  sampleArray[_k->_problem->N*sampleId + curVar]);
+ for (int i = 0; i < _k->_problem->_computationalVariableCount; i++) data._computationalVariables.push_back(sampleArray[_k->_problem->N*sampleId + curVar++]);
+ for (int i = 0; i < _k->_problem->_statisticalVariableCount;   i++) data._statisticalVariables.push_back(  sampleArray[_k->_problem->N*sampleId + curVar++]);
 
  // _k->_model(data);
 

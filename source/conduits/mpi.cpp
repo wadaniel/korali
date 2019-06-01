@@ -124,13 +124,17 @@ void KoraliMPI::workerThread()
    data._comm = _teamComm;
 
    int curVar = 0;
-   for (; curVar < _k->_problem->_computationalVariableCount; curVar++) data._computationalVariables.push_back(sample[curVar]);
-   for (; curVar < _k->_problem->_statisticalVariableCount;   curVar++) data._statisticalVariables.push_back(sample[curVar]);
+   for (int i = 0; i < _k->_problem->_computationalVariableCount; i++) data._computationalVariables.push_back(sample[curVar++]);
+   for (int i = 0; i < _k->_problem->_statisticalVariableCount;   i++) data._statisticalVariables.push_back(sample[curVar++]);
 
    _k->_model(data);
 
-   double fitness = _k->_problem->evaluateFitness(data);
-   if (_localRankId == 0) MPI_Send(&fitness, 1, MPI_DOUBLE, getRootRank(), MPI_TAG_FITNESS, MPI_COMM_WORLD);
+   if (_localRankId == 0)
+   {
+    double fitness = _k->_problem->evaluateFitness(data);
+    MPI_Send(&fitness, 1, MPI_DOUBLE, getRootRank(), MPI_TAG_FITNESS, MPI_COMM_WORLD);
+   }
+
    MPI_Barrier(_teamComm);
   }
  }

@@ -17,10 +17,12 @@ function print_help ()
  echo "Syntax: ./install"
  echo "        [--install-gsl]"
  echo "        [--rebuild]"
+  echo "       [--debug]"
  echo "        [--help]"
  echo ""
  echo "Where:"
  echo " --install-gsl Automatically downloads and installs GSL if not found."
+ echo " --debug builds a non-optimized Korali for debugging purposes."
  echo " --rebuild Cleans and rebuilds/installs Korali for development purposes."
  echo " --help Displays this help message."
 }
@@ -46,6 +48,7 @@ function exitWithError ()
 }
 
 INSTALLGSL=0
+OPTFLAGS="-O3"
 
 for i in "$@"
 do
@@ -54,9 +57,12 @@ case $i in
     INSTALLGSL=1
     shift 
     ;;
+    --debug)
+    OPTFLAGS="-O0"
+    shift 
+    ;;
     --rebuild)
     make -C source clean
-    make -j -C source 
     shift 
     ;;
     --help)
@@ -251,6 +257,7 @@ log "[Korali] Creating Compilation Config File..."
 echo "CXX=$USE_CXX" > source/Makefile.conf
 echo "SHAREDLIB_FLAG=$SHAREDLIB_FLAG" >> source/Makefile.conf
 echo "MPIFLAGS=$MPIFLAGS" >> source/Makefile.conf
+echo "OPTFLAGS=$OPTFLAGS" >> source/Makefile.conf
 
 echo "GSLPREFIX=$GSLPREFIX" >> source/Makefile.conf
 echo "GSLCFLAGS=$GSLCFLAGS" >> source/Makefile.conf
@@ -268,6 +275,7 @@ echo "MPIFLAGS='$MPIFLAGS'" >> python/cxx/cxx.conf
 echo "GSLPREFIX='$GSLPREFIX'" >> python/cxx/cxx.conf
 echo "GSLCFLAGS='$GSLCFLAGS'" >> python/cxx/cxx.conf
 echo "GSLLIBS='$GSLLIBS'"  >> python/cxx/cxx.conf
+echo "OPTFLAGS='$OPTFLAGS'" >> python/cxx/cxx.conf
 echo "PYBIND11INCLUDES='$PYBIND11INCLUDES'" >> python/cxx/cxx.conf
 echo "PYBIND11LIBS='$PYBIND11LIBS'" >> python/cxx/cxx.conf
 

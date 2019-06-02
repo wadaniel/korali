@@ -91,7 +91,7 @@ CCMAES::CCMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
  bestValidIdx = -1;
 
  _numConstraints = _k->_fconstraints.size();
- if (_numConstraints < 1 ) { fprintf( stderr, "[Korali] Error: No constraints provided, please use Solver Method 'CMA-ES'.\n" ); exit(-1); }
+ if (_numConstraints < 1 ) { fprintf( stderr, "[Korali] Warning: No constraints provided, please use Solver Method 'CMA-ES'.\n" ); /*exit(-1);*/ }
  
  viabilityBounds = (double*) calloc (sizeof(double), _numConstraints);
  

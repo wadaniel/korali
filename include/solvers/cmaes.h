@@ -57,12 +57,12 @@ class CMAES : public Korali::Solver::Base
  // Stop conditions
  size_t _termCondMaxGenerations; // Max number of generations.
  size_t _termCondMaxFitnessEvaluations;   // Defines maximum number of fitness evaluations
- double _termCondMinFitness; // Defines the minimum fitness allowed, otherwise it stops
+ double _termCondFitness; // Defines the minimum fitness allowed, otherwise it stops
  double _termCondFitnessDiffThreshold; // Defines minimum function value differences before stopping
  double _termCondMinDeltaX; // Defines minimum delta of input parameters among generations before it stops.
  double _termCondTolUpXFactor; // Defines the minimum fitness allowed, otherwise it stops
  double _termCondCovCond; // Defines the maximal condition number of the covariance matrix
- bool _isTermCondMaxGenerations, _isTermCondMaxFitnessEvaluations, _isTermCondMinFitness,
+ bool _isTermCondMaxGenerations, _isTermCondMaxFitnessEvaluations, _isTermCondFitness,
       _isTermCondFitnessDiffThreshold, _isTermCondMinDeltaX, _isTermCondTolUpXFactor,
       _isTermCondCovCond; // flgs to activate termination criteria
 

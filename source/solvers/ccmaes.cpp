@@ -163,8 +163,8 @@ nlohmann::json CCMAES::getConfiguration()
  js["Termination Criteria"]["Max Generations"]["Active"]          = _isTermCondMaxGenerations;
  js["Termination Criteria"]["Max Model Evaluations"]["Value"]     = _termCondMaxFitnessEvaluations;
  js["Termination Criteria"]["Max Model Evaluations"]["Active"]    = _isTermCondMaxFitnessEvaluations;
- js["Termination Criteria"]["Min Fitness"]["Value"]               = _termCondMinFitness;
- js["Termination Criteria"]["Min Fitness"]["Active"]              = _isTermCondMinFitness;
+ js["Termination Criteria"]["Min Fitness"]["Value"]               = _termCondFitness;
+ js["Termination Criteria"]["Min Fitness"]["Active"]              = _isTermCondFitness;
  js["Termination Criteria"]["Fitness Diff Threshold"]["Value"]    = _termCondFitnessDiffThreshold;
  js["Termination Criteria"]["Fitness Diff Threshold"]["Active"]   = _isTermCondFitnessDiffThreshold;
  js["Termination Criteria"]["Min DeltaX"]["Value"]                = _termCondMinDeltaX;
@@ -260,8 +260,8 @@ void CCMAES::setConfiguration(nlohmann::json& js)
  _isTermCondMaxGenerations        = consume(js, { "Termination Criteria", "Max Generations", "Active" }, KORALI_BOOLEAN, "true");
  _termCondMaxFitnessEvaluations   = consume(js, { "Termination Criteria", "Max Model Evaluations", "Value" }, KORALI_NUMBER, std::to_string(std::numeric_limits<size_t>::max()));
  _isTermCondMaxFitnessEvaluations = consume(js, { "Termination Criteria", "Max Model Evaluations", "Active" }, KORALI_BOOLEAN, "true");
- _termCondMinFitness              = consume(js, { "Termination Criteria", "Min Fitness", "Value" }, KORALI_NUMBER, std::to_string(std::numeric_limits<double>::max()));
- _isTermCondMinFitness            = consume(js, { "Termination Criteria", "Min Fitness", "Active" }, KORALI_BOOLEAN, "true");
+ _termCondFitness                 = consume(js, { "Termination Criteria", "Fitness", "Value" }, KORALI_NUMBER, std::to_string(std::numeric_limits<double>::max()));
+ _isTermCondFitness               = consume(js, { "Termination Criteria", "Fitness", "Active" }, KORALI_BOOLEAN, "true");
  _termCondFitnessDiffThreshold    = consume(js, { "Termination Criteria", "Fitness Diff Threshold", "Value" }, KORALI_NUMBER, std::to_string(1e-9));
  _isTermCondFitnessDiffThreshold  = consume(js, { "Termination Criteria", "Fitness Diff Threshold", "Active" }, KORALI_BOOLEAN, "true");
  _termCondMinDeltaX               = consume(js, { "Termination Criteria", "Min DeltaX", "Value" }, KORALI_NUMBER, std::to_string(0.0));
@@ -704,6 +704,8 @@ void CCMAES::updateDistribution(const double *fitnessVector)
    //else for(size_t c = 0; c < _numConstraints; ++c) if( sucRates[c] < 0.5 ) { globalSucRate = (1-_cp)*globalSucRate; break; }
    sigma *= exp(1.0/_dampFactor*(globalSucRate-(_targetSucRate/(1.0-_targetSucRate))*(1-globalSucRate)));
    if(_k->_verbosity >= KORALI_DETAILED && sigma > 0.3) printf("[Korali] Warning: updateSigmaVie: sigma (%f) > 0.3\n", sigma);
+   if(_k->_verbosity >= KORALI_DETAILED && sigma > 0.3) printf("[Korali] Warning: Sigma bounded \n");
+   sigma = std::min( sigma, 0.3);
  }
  else
  {
@@ -868,10 +870,10 @@ bool CCMAES::checkTermination()
 
  bool terminate = false;
 
- if ( _isTermCondMinFitness && (isVia == false) && (_currentGeneration > 1) && (bestEver >= _termCondMinFitness) )
+ if ( _isTermCondFitness && (isVia == false) && (_currentGeneration > 1) && (bestEver >= _termCondFitness) )
  {
   terminate = true;
-  sprintf(_terminationReason, "Fitness Value (%+6.3e) > (%+6.3e)",  bestEver, _termCondMinFitness);
+  sprintf(_terminationReason, "Fitness Value (%+6.3e) > (%+6.3e)",  bestEver, _termCondFitness);
  }
 
  double range = fabs(currentFunctionValue - prevFunctionValue);

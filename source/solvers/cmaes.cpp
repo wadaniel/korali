@@ -148,8 +148,8 @@ nlohmann::json CMAES::getConfiguration()
  js["Termination Criteria"]["Max Generations"]["Active"]          = _isTermCondMaxGenerations;
  js["Termination Criteria"]["Max Model Evaluations"]["Value"]     = _termCondMaxFitnessEvaluations;
  js["Termination Criteria"]["Max Model Evaluations"]["Active"]    = _isTermCondMaxFitnessEvaluations;
- js["Termination Criteria"]["Min Fitness"]["Value"]               = _termCondMinFitness;
- js["Termination Criteria"]["Min Fitness"]["Active"]              = _isTermCondMinFitness;
+ js["Termination Criteria"]["Min Fitness"]["Value"]               = _termCondFitness;
+ js["Termination Criteria"]["Min Fitness"]["Active"]              = _isTermCondFitness;
  js["Termination Criteria"]["Fitness Diff Threshold"]["Value"]    = _termCondFitnessDiffThreshold;
  js["Termination Criteria"]["Fitness Diff Threshold"]["Active"]   = _isTermCondFitnessDiffThreshold;
  js["Termination Criteria"]["Min DeltaX"]["Value"]                = _termCondMinDeltaX;
@@ -248,8 +248,8 @@ void CMAES::setConfiguration(nlohmann::json& js)
  _isTermCondMaxGenerations        = consume(js, { "Termination Criteria", "Max Generations", "Active" }, KORALI_BOOLEAN, "true");
  _termCondMaxFitnessEvaluations   = consume(js, { "Termination Criteria", "Max Model Evaluations", "Value" }, KORALI_NUMBER, std::to_string(std::numeric_limits<size_t>::max()));
  _isTermCondMaxFitnessEvaluations = consume(js, { "Termination Criteria", "Max Model Evaluations", "Active" }, KORALI_BOOLEAN, "true");
- _termCondMinFitness              = consume(js, { "Termination Criteria", "Min Fitness", "Value" }, KORALI_NUMBER, std::to_string(std::numeric_limits<double>::max()));
- _isTermCondMinFitness            = consume(js, { "Termination Criteria", "Min Fitness", "Active" }, KORALI_BOOLEAN, "true");
+ _termCondFitness                 = consume(js, { "Termination Criteria", "Fitness", "Value" }, KORALI_NUMBER, std::to_string(std::numeric_limits<double>::max()));
+ _isTermCondFitness               = consume(js, { "Termination Criteria", "Fitness", "Active" }, KORALI_BOOLEAN, "true");
  _termCondFitnessDiffThreshold    = consume(js, { "Termination Criteria", "Fitness Diff Threshold", "Value" }, KORALI_NUMBER, std::to_string(1e-9));
  _isTermCondFitnessDiffThreshold  = consume(js, { "Termination Criteria", "Fitness Diff Threshold", "Active" }, KORALI_BOOLEAN, "true");
  _termCondMinDeltaX               = consume(js, { "Termination Criteria", "Min DeltaX", "Value" }, KORALI_NUMBER, std::to_string(0.0));
@@ -552,10 +552,10 @@ bool CMAES::checkTermination()
 
  bool terminate = false;
 
- if ( _isTermCondMinFitness && (_currentGeneration > 1) && (bestEver <= _termCondMinFitness) )
+ if ( _isTermCondFitness && (_currentGeneration > 1) && (bestEver >= _termCondFitness) )
  {
   terminate = true;
-  sprintf(terminationReason, "Fitness Value (%7.2e) < (%7.2e)",  fitnessVector[index[0]], _termCondMinFitness);
+  sprintf(terminationReason, "Fitness Value (%7.2e) < (%7.2e)",  fitnessVector[index[0]], _termCondFitness);
  }
 
   double range = fabs(currentFunctionValue - prevFunctionValue);

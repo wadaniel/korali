@@ -40,7 +40,9 @@ int main(int argc, char* argv[])
  korali["Solver"]["Method"] = "CMA-ES";
  korali["Solver"]["Lambda"] = 32;
 
- korali.run([](Korali::ModelData& d) { heat2DSolver(d.getVariables(), d.getResults()); });
+ korali.setModel([](Korali::ModelData& d) { heat2DSolver(d.getVariables(), d.getResults()); });
+
+ korali.run();
 
  return 0;
 }

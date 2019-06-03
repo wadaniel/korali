@@ -148,8 +148,8 @@ nlohmann::json CMAES::getConfiguration()
  js["Termination Criteria"]["Max Generations"]["Active"]          = _isTermCondMaxGenerations;
  js["Termination Criteria"]["Max Model Evaluations"]["Value"]     = _termCondMaxFitnessEvaluations;
  js["Termination Criteria"]["Max Model Evaluations"]["Active"]    = _isTermCondMaxFitnessEvaluations;
- js["Termination Criteria"]["Min Fitness"]["Value"]               = _termCondFitness;
- js["Termination Criteria"]["Min Fitness"]["Active"]              = _isTermCondFitness;
+ js["Termination Criteria"]["Fitness"]["Value"]               = _termCondFitness;
+ js["Termination Criteria"]["Fitness"]["Active"]              = _isTermCondFitness;
  js["Termination Criteria"]["Fitness Diff Threshold"]["Value"]    = _termCondFitnessDiffThreshold;
  js["Termination Criteria"]["Fitness Diff Threshold"]["Active"]   = _isTermCondFitnessDiffThreshold;
  js["Termination Criteria"]["Min DeltaX"]["Value"]                = _termCondMinDeltaX;

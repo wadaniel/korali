@@ -21,4 +21,7 @@ k["Solver"]["Covariance Scaling"] = 0.02
 k["Solver"]["Population Size"] = 1000
 k["Solver"]["Burn In"] = 5
 
-k.run(m_ackley)
+k.setModel(m_ackley)
+
+k.run()
+

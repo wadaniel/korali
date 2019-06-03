@@ -23,4 +23,6 @@ k["Solver"]["Termination Criteria"]["Max Generations"]["Value"] = 100
 k["Solver"]["Lambda"] = 5
 k["Solver"]["Objective"] = "Maximize"
 
-k.run(evaluateModel)
+k.setModel(evaluateModel)
+
+k.run()

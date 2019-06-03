@@ -61,10 +61,6 @@ case $i in
     OPTFLAGS="-O0"
     shift 
     ;;
-    --rebuild)
-    make -C source clean
-    shift 
-    ;;
     --help)
     print_help
     exit 0 
@@ -286,6 +282,7 @@ cat ./python/cxx/cxx.conf ./python/cxx/libs.py.base > ./python/cxx/libs.py
 ######## Compiling Korali C++ Engine #########
 
 logEcho "[Korali] Compiling Korali..."
+make -C source clean >> install.log 2>&1
 make -j24 -C source >> install.log 2>&1
 if [ $? -ne 0 ]; then
   logEcho "[Korali] Error compiling Korali."

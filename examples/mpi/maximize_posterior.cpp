@@ -80,7 +80,9 @@ int main(int argc, char* argv[])
  xdata.push_back(0.671); xdata.push_back(0.565); xdata.push_back(0.078);
  xdata.push_back(0.565); xdata.push_back(0.779); xdata.push_back(0.974);
 
- korali.run([xdata](Korali::ModelData& d) { jacobi(xdata, d.getVariables(), d.getResults(), d.getComm()); });
+ korali.setModel([xdata](Korali::ModelData& d) { jacobi(xdata, d.getVariables(), d.getResults(), d.getComm()); });
+
+ korali.run();
 
  // Expected Solution:
  // X0 = +3.71

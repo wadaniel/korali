@@ -21,6 +21,7 @@ for i in range(4):
     k["Problem"]["Variables"][i]["Maximum"] = +32.0
 
 k["Conduit"]["Type"] = "Nonintrusive"
+k["Conduit"]["Concurrent Jobs"] = 16
 
 k["Solver"]["Method"] = "CMA-ES"
 k["Solver"]["Lambda"] = 10

@@ -10,11 +10,11 @@ int main(int argc, char* argv[])
 
  for (int i = 0; i < 4; i++)
  {
- korali["Problem"]["Variables"][i]["Name"] = "X" + std::to_string(i);
- korali["Problem"]["Variables"][i]["Type"] = "Computational";
- korali["Problem"]["Variables"][i]["Distribution"] = "Uniform";
- korali["Problem"]["Variables"][i]["Minimum"] = -32.0;
- korali["Problem"]["Variables"][i]["Maximum"] = +32.0;
+  korali["Problem"]["Variables"][i]["Name"] = "X" + std::to_string(i);
+  korali["Problem"]["Variables"][i]["Type"] = "Computational";
+  korali["Problem"]["Variables"][i]["Distribution"] = "Uniform";
+  korali["Problem"]["Variables"][i]["Minimum"] = -32.0;
+  korali["Problem"]["Variables"][i]["Maximum"] = +32.0;
  }
 
  korali["Problem"]["Type"] = "Direct";

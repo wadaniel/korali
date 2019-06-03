@@ -3,10 +3,9 @@
 
 #include "problems/base.h"
 
-namespace Korali::Problem
-{
+namespace Korali { namespace Problem {
 
-class Bayesian : public Korali::Problem::Base
+class Bayesian : public Base
 {
  public:
 
@@ -29,7 +28,7 @@ class Bayesian : public Korali::Problem::Base
  void setConfiguration(nlohmann::json& js) override;
 };
 
-} // namespace Korali
+} } // namespace Korali::Problem
 
 
 #endif // _KORALI_PROBLEM_LIKELIHOOD_H_

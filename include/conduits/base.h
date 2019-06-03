@@ -4,8 +4,8 @@
 #include <stdlib.h>
 #include "json/json.hpp"
 
-namespace Korali::Conduit
-{
+namespace Korali { namespace Conduit {
+
 class Base {
  public:
 
@@ -27,7 +27,7 @@ class Base {
 
 class Conduit;
 
-} // namespace Korali
+} } // namespace Korali::Conduit
 
 namespace Korali
 {

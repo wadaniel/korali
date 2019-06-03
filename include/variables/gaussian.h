@@ -3,10 +3,9 @@
 
 #include "variables/base.h"
 
-namespace Korali::Variable
-{
+namespace Korali { namespace Variable {
 
-class Gaussian : public Korali::Variable::Base
+class Gaussian : public Base
 {
  private:
   double _mean;
@@ -34,6 +33,6 @@ class Gaussian : public Korali::Variable::Base
   void setConfiguration(nlohmann::json& js) override;
 };
 
-} // namespace Korali
+} } // namespace Korali::Variable
 
 #endif // _KORALI_VARIABLE_GAUSSIAN_H_

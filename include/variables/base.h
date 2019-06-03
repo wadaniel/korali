@@ -10,8 +10,7 @@
 
 enum variableType { KORALI_COMPUTATIONAL, KORALI_STATISTICAL };
 
-namespace Korali::Variable
-{
+namespace Korali { namespace Variable {
 
 class Base
 {
@@ -43,6 +42,6 @@ class Base
  virtual void setConfiguration(nlohmann::json& js);
 };
 
-} // namespace Korali
+} } // namespace Korali::Variable
 
 #endif // _KORALI_VARIABLE_BASE_H_

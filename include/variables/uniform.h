@@ -3,10 +3,9 @@
 
 #include "variables/base.h"
 
-namespace Korali::Variable
-{
+namespace Korali { namespace Variable {
 
-class Uniform : public Korali::Variable::Base
+class Uniform : public Base
 {
  private:
   double _aux;
@@ -30,6 +29,6 @@ class Uniform : public Korali::Variable::Base
   void setConfiguration(nlohmann::json& js) override;
 };
 
-} // namespace Korali
+} } // namespace Korali::Variable
 
 #endif // _KORALI_DISTRIBUTION_H_

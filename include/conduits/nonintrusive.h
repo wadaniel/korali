@@ -8,8 +8,7 @@
 #include <vector>
 #include <map>
 
-namespace Korali::Conduit
-{
+namespace Korali { namespace Conduit {
 
 class Nonintrusive : public Base {
  public:
@@ -35,7 +34,6 @@ class Nonintrusive : public Base {
  nlohmann::json getConfiguration() override;
  void setConfiguration(nlohmann::json& js) override;
 };
-
-} // namespace Korali
+} } // namespace Korali::Conduit
 
 #endif // _KORALI_CONDUIT_NONINTRUSIVE_H_

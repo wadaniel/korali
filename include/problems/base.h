@@ -5,8 +5,7 @@
 #include "variables/base.h"
 #include "conduits/base.h"
 
-namespace Korali::Problem
-{
+namespace Korali { namespace Problem {
 
 class Base
 {
@@ -30,7 +29,7 @@ class Base
  virtual void setConfiguration(nlohmann::json& js);
 };
 
-} // namespace Korali
+} } // namespace Korali::Problem
 
 
 #endif // _KORALI_PROBLEM_BASE_H_

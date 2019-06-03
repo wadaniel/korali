@@ -145,7 +145,9 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
  bool foundConduit = false;
 
  if (cString == "Single")        { _conduit = new Korali::Conduit::Single(js["Conduit"]); foundConduit = true; }
+ #ifdef _KORALI_USE_MPI
  if (cString == "MPI")           { _conduit = new Korali::Conduit::KoraliMPI(js["Conduit"]); foundConduit = true; }
+ #endif
  if (cString == "Nonintrusive") { _conduit = new Korali::Conduit::Nonintrusive(js["Conduit"]); foundConduit = true; }
 
  if (foundConduit == false) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Conduit.\n"); exit(-1); }
@@ -211,7 +213,7 @@ void Korali::Engine::saveState(int fileId)
 
  char fileName[256];
 
- sprintf(fileName, "./_korali_result/s%05lu.json", fileId++);
+ sprintf(fileName, "./_korali_result/s%05d.json", fileId++);
 
  saveState(fileName);
 }

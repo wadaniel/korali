@@ -3,10 +3,9 @@
 
 #include "variables/base.h"
 
-namespace Korali::Variable
-{
+namespace Korali { namespace Variable {
 
-class Laplace : public Korali::Variable::Base
+class Laplace : public Base
 {
  private:
   double _mean;
@@ -32,6 +31,6 @@ class Laplace : public Korali::Variable::Base
   void setConfiguration(nlohmann::json& js) override;
 };
 
-} // namespace Korali
+} } // namespace Korali::Variable
 
 #endif // _KORALI_VARIABLE_LAPLACE_H_

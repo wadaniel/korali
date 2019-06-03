@@ -3,10 +3,9 @@
 
 #include "problems/base.h"
 
-namespace Korali::Problem
-{
+namespace Korali { namespace Problem {
 
-class Direct : public Korali::Problem::Base
+class Direct : public Base
 {
  public:
 
@@ -22,7 +21,6 @@ class Direct : public Korali::Problem::Base
  void setConfiguration(nlohmann::json& js) override;
 };
 
-} // namespace Korali
-
+} } // namespace Korali::Problem
 
 #endif // _KORALI_PROBLEM_DIRECT_H_

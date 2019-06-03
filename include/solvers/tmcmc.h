@@ -5,8 +5,7 @@
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_vector.h>
 
-namespace Korali::Solver
-{
+namespace Korali { namespace Solver {
 
 typedef struct fparam_s {
     const double *fj;
@@ -15,7 +14,7 @@ typedef struct fparam_s {
     double        cov;
 } fparam_t;
 
-class TMCMC : public Korali::Solver::Base
+class TMCMC : public Base
 {
  public:
 
@@ -87,6 +86,6 @@ class TMCMC : public Korali::Solver::Base
  void printGeneration() const;
 };
 
-} // namespace Korali
+} } // namespace Korali::Solver
 
 #endif // _KORALI_SOLVER_TMCMC_H_

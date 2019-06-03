@@ -246,7 +246,7 @@ GSLLIBS=`$gslcfgFile --libs`
 PYBIND11INCLUDES=`python3 -m pybind11 --includes` 
 PYBIND11LIBS=`python3-config --ldflags`
 
-CXXARCH=-stdc++14
+CXXARCH="-std=c++14"
 which $USE_CXX | grep "cray" >> install.log 2>&1
 if [ $? -eq 0 ]; then
   logEcho "[Korali] Assuming Cray System."

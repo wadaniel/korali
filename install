@@ -113,11 +113,14 @@ clang++ --version >> install.log 2>&1
 DETECTED_CLANG=$?
 icpc --version >> install.log 2>&1
 DETECTED_ICPC=$?
- 
+CC --help >> install.log 2>&1
+DETECTED_CRAY=$?
+
 USE_CXX=""
 if [ $DETECTED_CPLUSPLUS -eq 0 ]; then USE_CXX=c++;     fi;
 if [ $DETECTED_GXX       -eq 0 ]; then USE_CXX=g++;     fi;
 if [ $DETECTED_ICPC      -eq 0 ]; then USE_CXX=icpc;    fi;
+if [ $DETECTED_CRAY      -eq 0 ]; then USE_CXX=CC;      fi;
 if [ $DETECTED_CLANG     -eq 0 ]; then USE_CXX=clang++; fi;
 if [ $DETECTED_CXX       -eq 0 ]; then USE_CXX=$CXX;    fi;
 

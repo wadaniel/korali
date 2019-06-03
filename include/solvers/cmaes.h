@@ -68,7 +68,7 @@ class CMAES : public Korali::Solver::Base
 
  // Private CMAES-Specific Variables
  size_t _currentGeneration; /* generation count */
- double* fitnessVector; /* objective function values [_s] */
+ double* _fitnessVector; /* objective function values [_s] */
  double* samplePopulation; /* sample coordinates [_s x _k->N] */
  
  bool* initializedSample; /* flag if sample currently in evaluation */
@@ -89,7 +89,9 @@ class CMAES : public Korali::Solver::Base
 
  double **C; /* lower triangular matrix: i>=j for C[i][j] */
  double **B; /* matrix with eigenvectors in columns */
+ double **Btmp;
  double *rgD; /* axis lengths (sqrt(Evals)) */
+ double *axisDtmp;
  double *rgpc; /* evolution path for cov update */
  double *rgps; /* conjugate evolution path for sigma update */
  
@@ -111,7 +113,7 @@ class CMAES : public Korali::Solver::Base
  void sampleSingle(size_t sampleIdx); /* sample individual */
  void evaluateSamples(); /* evaluate all samples until done */
  void adaptC(int hsig); /* CMA-ES covariance matrix adaption */
- void updateEigensystem(int flgforce);
+ void updateEigensystem(double **M, int flgforce = 1);
  void eigen(size_t N, double **C, double *diag, double **Q) const;
  size_t maxIdx(const double *rgd, size_t len) const;
  size_t minIdx(const double *rgd, size_t len) const;

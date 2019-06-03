@@ -105,7 +105,6 @@ class CCMAES : public Korali::Solver::Base
  double *rgxold; /* mean "parent" previous generation */
  double *rgBDz; /* for B*D*z */
  double *rgdTmp; /* temporary (random) vector used in different places */
- double *rgFuncValue; /* holding all fitness values (fitnessvector) */
  double *histFuncValues; /* holding historical best function values */
 
  size_t countevals; /* Number of function evaluations */

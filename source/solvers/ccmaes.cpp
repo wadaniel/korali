@@ -31,7 +31,6 @@ CCMAES::CCMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
  axisDtmp       = (double*) calloc (sizeof(double), _k->_problem->N);
  curBestVector  = (double*) calloc (sizeof(double), _k->_problem->N);
 
- rgFuncValue    = (double*) calloc (sizeof(double), s_max);
  index          = (size_t*) calloc (sizeof(size_t), s_max);
  histFuncValues = (double*) calloc (sizeof(double), _termCondMaxGenerations+1);
 
@@ -191,7 +190,7 @@ nlohmann::json CCMAES::getConfiguration()
  js["State"]["ConjugateEvolutionPathL2"]  = psL2;
 
  for (size_t i = 0; i < _current_s; i++) js["State"]["Index"]          += index[i];
- for (size_t i = 0; i < _current_s; i++) js["State"]["FunctionValues"] += rgFuncValue[i];
+ for (size_t i = 0; i < _current_s; i++) js["State"]["FunctionValues"] += _fitnessVector[i];
  
  for (size_t i = 0; i < _k->_problem->N; i++) js["State"]["CurrentMeanVector"]      += rgxmean[i];
  for (size_t i = 0; i < _k->_problem->N; i++) js["State"]["PreviousMeanVector"]     += rgxold[i];
@@ -246,7 +245,7 @@ void CCMAES::setConfiguration(nlohmann::json& js)
  _mu                            = consume(js, { "Mu", "Value" }, KORALI_NUMBER, std::to_string(ceil(_s / 2)));
  _via_mu                        = consume(js, { "Mu", "Viability" }, KORALI_NUMBER, std::to_string(ceil(_via_s / 2)));
  _muType                        = consume(js, { "Mu", "Type" }, KORALI_STRING, "Logarithmic");
- _muCovariance                  = consume(js, { "Mu", "Covariance" }, KORALI_NUMBER, std::to_string(-1));
+ _muCovarianceIn                = consume(js, { "Mu", "Covariance" }, KORALI_NUMBER, std::to_string(-1));
  
  if(_via_mu < 1 || _mu < 1 ||  _via_mu > _via_s || _mu > _s || ( (( _via_mu == _via_s) ||  ( _mu == _s ))  && _muType.compare("Linear") ) )
    { fprintf( stderr, "[Korali] Error: Invalid setting of Mu (%lu) and/or Lambda (%lu)\n", _mu, _s); exit(-1); }
@@ -323,7 +322,7 @@ void CCMAES::setState(nlohmann::json& js)
  for (size_t i = 0; i < _k->_problem->N; i++) rgpc[i]          = js["State"]["EvolutionPath"][i];
  for (size_t i = 0; i < _k->_problem->N; i++) curBestVector[i] = js["State"]["CurrentBestVector"][i];
  for (size_t i = 0; i < _current_s; i++) index[i]              = js["State"]["Index"][i];
- for (size_t i = 0; i < _current_s; i++) rgFuncValue[i]        = js["State"]["FunctionValues"][i];
+ for (size_t i = 0; i < _current_s; i++) _fitnessVector[i]     = js["State"]["FunctionValues"][i];
  for (size_t i = 0; i < _current_s; i++) for (size_t j = 0; j < _k->_problem->N; j++) _samplePopulation[i*_k->_problem->N + j] = js["State"]["Samples"][i][j];
  for (size_t i = 0; i < _k->_problem->N; i++) for (size_t j = 0; j < _k->_problem->N; j++) C[i][j] = js["State"]["CovarianceMatrix"][i][j];
  for (size_t i = 0; i < _k->_problem->N; i++) for (size_t j = 0; j < _k->_problem->N; j++) B[i][j] = js["State"]["EigenMatrix"][i][j];
@@ -347,9 +346,10 @@ void CCMAES::initInternals(size_t numsamplesmu)
  _beta = _adaptionSize/(_current_s+2.);
 
  // Initializing Mu Weights
- if (_muType == "Linear")      for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = numsamplesmu - i;
- if (_muType == "Equal")       for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = 1;
- if (_muType == "Logarithmic") for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = log(std::max( (double)numsamplesmu, 0.5*_current_s)+0.5)-log(i+1.);
+ if      (_muType == "Linear")      for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = numsamplesmu - i;
+ else if (_muType == "Equal")       for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = 1;
+ else if (_muType == "Logarithmic") for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = log(std::max( (double)numsamplesmu, 0.5*_current_s)+0.5)-log(i+1.);
+ else  { fprintf( stderr, "[Korali] Error: Invalid setting of Mu Type (%s) (Linear, Equal or Logarithmic accepted).", _muType); exit(-1); }
 
  // Normalize weights vector and set mueff
  double s1 = 0.0;
@@ -369,7 +369,8 @@ void CCMAES::initInternals(size_t numsamplesmu)
  else                     _muCovariance = _muCovarianceIn;
  
  // Setting Cumulative Covariancea
- if( (_cumulativeCovarianceIn <= 0) || (_cumulativeCovarianceIn > 1) ) _cumulativeCovariance = (4.0 + _muEffective/(1.0*_k->_problem->N)) / (_k->_problem->N+4.0 + 2.0*_muEffective/(1.0*_k->_problem->N));
+ if( (_cumulativeCovarianceIn <= 0) || (_cumulativeCovarianceIn > 1) ) 
+     _cumulativeCovariance = (4.0 + _muEffective/(1.0*_k->_problem->N)) / (_k->_problem->N+4.0 + 2.0*_muEffective/(1.0*_k->_problem->N));
  else _cumulativeCovariance = _cumulativeCovarianceIn;
 
  // Setting Covariance Matrix Learning Rate
@@ -382,17 +383,15 @@ void CCMAES::initInternals(size_t numsamplesmu)
  if (_covarianceMatrixLearningRate < 0 || _covarianceMatrixLearningRate > 1)  _covarianceMatrixLearningRate = l2;
 
   // Setting Sigma Cumulation Factor
- if (_sigmaCumulationFactorIn <= 0 || _sigmaCumulationFactor >= 1) _sigmaCumulationFactor = (_muEffective + 2.) / (_k->_problem->N + _muEffective + 3.0);
- else  _sigmaCumulationFactor = _sigmaCumulationFactorIn;
+ _sigmaCumulationFactor = _sigmaCumulationFactorIn;
+ if (_sigmaCumulationFactor <= 0 || _sigmaCumulationFactor >= 1) _sigmaCumulationFactor = (_muEffective + 2.) / (_k->_problem->N + _muEffective + 3.0);
 
  // Setting Damping Factor
- if (_dampFactorIn < 0)
- {
-     _dampFactor = 1.0 * (1 + 2*std::max(0.0, sqrt((_muEffective-1.0)/(_k->_problem->N+1.0)) - 1))  /* basic factor */
+ _dampFactor = _dampFactorIn;
+ if (_dampFactor <= 0.0) 
+     _dampFactor = 1.0 * (1.0 + 2*std::max(0.0, sqrt((_muEffective-1.0)/(_k->_problem->N+1.0)) - 1))  /* basic factor */
         // * std::max(0.3, 1. - (double)_k->_problem->N / (1e-6+std::min(_termCondMaxGenerations, _termCondMaxFitnessEvaluations/_via_s))) /* modification for short runs */
         + _sigmaCumulationFactor; /* minor increment */
- }
- else _dampFactor = _dampFactorIn;
  
  // Setting Sigma
  double trace = 0.0;
@@ -630,9 +629,6 @@ void CCMAES::updateDistribution(const double *fitnessVector)
    if ( bestValidIdx == -1 ) { printf("[Korali] Warning: all samples violate constraints, no updates taking place.\n"); return; }
  }
 
- /* assign function values */
- for (size_t i = 0; i < _current_s; i++) rgFuncValue[i] = fitnessVector[i];
-
  /* update function value history */
  prevFunctionValue = currentFunctionValue;
 
@@ -733,7 +729,7 @@ void CCMAES::updateDistribution(const double *fitnessVector)
  //TODO
 
  /* Test if function values are identical, escape flat fitness */
- if (currentFunctionValue == rgFuncValue[index[(int)_current_mu]]) {
+ if (currentFunctionValue == _fitnessVector[index[(int)_current_mu]]) {
    sigma *= exp(0.2+_sigmaCumulationFactor/_dampFactor);
    if (_k->_verbosity >= KORALI_DETAILED) {
      fprintf(stderr, "[Korali] Warning: sigma increased due to equal function values.\n");

@@ -67,7 +67,7 @@ int main(int argc, char* argv[])
  korali["Solver"]["Termination Criteria"]["Fitness Diff Threshold"]["Value"] = 1e-4;
  korali["Solver"]["Termination Criteria"]["Max Condition Covariance"]["Value"] = 1e10;
  
- korali["MPI"]["Ranks Per Team"] = 2;
+ korali["Conduit"]["Ranks Per Team"] = 2;
 
  std::vector<double> xdata;
 
@@ -80,7 +80,7 @@ int main(int argc, char* argv[])
  xdata.push_back(0.671); xdata.push_back(0.565); xdata.push_back(0.078);
  xdata.push_back(0.565); xdata.push_back(0.779); xdata.push_back(0.974);
 
- korali.run([xdata](Korali::ModelData& d) { jacobi(xdata, d.getParameters(), d.getResults(), d.getComm()); });
+ korali.run([xdata](Korali::ModelData& d) { jacobi(xdata, d.getVariables(), d.getResults(), d.getComm()); });
 
  // Expected Solution:
  // X0 = +3.71

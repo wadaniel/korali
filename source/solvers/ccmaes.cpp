@@ -77,13 +77,13 @@ CCMAES::CCMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
  /* set rgxmean */
  for (size_t i = 0; i < _k->_problem->N; ++i)
  {
-   if(_k->_problem->_parameters[i]->_initialValue < _k->_problem->_parameters[i]->_lowerBound || _k->_problem->_parameters[i]->_initialValue > _k->_problem->_parameters[i]->_upperBound)
+   if(_k->_problem->_variables[i]->_initialValue < _k->_problem->_variables[i]->_lowerBound || _k->_problem->_variables[i]->_initialValue > _k->_problem->_variables[i]->_upperBound)
     fprintf(stderr,"[Korali] Warning: Initial Value (%.4f) for \'%s\' is out of bounds (%.4f-%.4f).\n", 
-            _k->_problem->_parameters[i]->_initialValue, 
-            _k->_problem->_parameters[i]->_name.c_str(), 
-            _k->_problem->_parameters[i]->_lowerBound, 
-            _k->_problem->_parameters[i]->_upperBound);
-   rgxmean[i] = rgxold[i] = _k->_problem->_parameters[i]->_initialValue;
+            _k->_problem->_variables[i]->_initialValue,
+            _k->_problem->_variables[i]->_name.c_str(),
+            _k->_problem->_variables[i]->_lowerBound,
+            _k->_problem->_variables[i]->_upperBound);
+   rgxmean[i] = rgxold[i] = _k->_problem->_variables[i]->_initialValue;
  }
 
  // CCMA-ES variables
@@ -396,14 +396,14 @@ void CCMAES::initInternals(size_t numsamplesmu)
  
  // Setting Sigma
  double trace = 0.0;
- for (size_t i = 0; i < _k->_problem->N; ++i) trace += _k->_problem->_parameters[i]->_initialStdDev*_k->_problem->_parameters[i]->_initialStdDev;
+ for (size_t i = 0; i < _k->_problem->N; ++i) trace += _k->_problem->_variables[i]->_initialStdDev*_k->_problem->_variables[i]->_initialStdDev;
  sigma = sqrt(trace/_k->_problem->N); /* _muEffective/(0.2*_muEffective+sqrt(_k->_problem->N)) * sqrt(trace/_k->_problem->N); */
 
  // Setting B, C and axisD
  for (size_t i = 0; i < _k->_problem->N; ++i)
  {
   B[i][i] = 1.0;
-  C[i][i] = axisD[i] = _k->_problem->_parameters[i]->_initialStdDev * sqrt(_k->_problem->N / trace);
+  C[i][i] = axisD[i] = _k->_problem->_variables[i]->_initialStdDev * sqrt(_k->_problem->N / trace);
   C[i][i] *= C[i][i];
  }
 
@@ -557,7 +557,7 @@ void CCMAES::updateViabilityBoundaries()
 bool CCMAES::isFeasible(size_t sampleIdx) const
 {
  for (size_t d = 0; d < _k->_problem->N; ++d)
-  if (_samplePopulation[ sampleIdx*_k->_problem->N+d ] < _k->_problem->_parameters[d]->_lowerBound || _samplePopulation[ sampleIdx*_k->_problem->N+d ] > _k->_problem->_parameters[d]->_upperBound) return false;
+  if (_samplePopulation[ sampleIdx*_k->_problem->N+d ] < _k->_problem->_variables[d]->_lowerBound || _samplePopulation[ sampleIdx*_k->_problem->N+d ] > _k->_problem->_variables[d]->_upperBound) return false;
  return true;
 }
 
@@ -720,9 +720,9 @@ void CCMAES::updateDistribution(const double *fitnessVector)
  //TODO
 
  //treat minimal standard deviations
- for (size_t d = 0; d < _k->_problem->N; ++d) if (sigma * sqrt(C[d][d]) < _k->_problem->_parameters[d]->_minStdDevChange) 
+ for (size_t d = 0; d < _k->_problem->N; ++d) if (sigma * sqrt(C[d][d]) < _k->_problem->_variables[d]->_minStdDevChange)
  {
-   sigma = (_k->_problem->_parameters[d]->_minStdDevChange)/sqrt(C[d][d]) * exp(0.05+_sigmaCumulationFactor/_dampFactor);
+   sigma = (_k->_problem->_variables[d]->_minStdDevChange)/sqrt(C[d][d]) * exp(0.05+_sigmaCumulationFactor/_dampFactor);
    if (_k->_verbosity >= KORALI_DETAILED) fprintf(stderr, "[Korali] Warning: sigma increased due to minimal standard deviation.\n");
  }
 
@@ -895,7 +895,7 @@ bool CCMAES::checkTermination()
  }
 
  for(size_t i=0; i<_k->_problem->N; ++i)
-  if ( _isTermCondTolUpXFactor && (sigma * sqrt(C[i][i]) > _termCondTolUpXFactor * _k->_problem->_parameters[i]->_initialStdDev) )
+  if ( _isTermCondTolUpXFactor && (sigma * sqrt(C[i][i]) > _termCondTolUpXFactor * _k->_problem->_variables[i]->_initialStdDev) )
   {
     terminate = true;
     sprintf(_terminationReason, "Standard deviation increased by more than %7.2e, larger initial standard deviation recommended \n", _termCondTolUpXFactor);
@@ -1082,7 +1082,7 @@ void CCMAES::printGeneration() const
  {
    printf("\n[Korali] CCMA-ES searching start (MeanX violates constraints) .. \n");
    printf("[Korali] Viability Bounds:\n");
-   for (size_t c = 0; c < _numConstraints; c++)  printf("         %s = (%+6.3e)\n", _k->_problem->_parameters[c]->_name.c_str(), viabilityBounds[c]);
+   for (size_t c = 0; c < _numConstraints; c++)  printf("         %s = (%+6.3e)\n", _k->_problem->_variables[c]->_name.c_str(), viabilityBounds[c]);
    printf("\n");
  }
 
@@ -1097,7 +1097,7 @@ void CCMAES::printGeneration() const
  if (_k->_verbosity >= KORALI_DETAILED)
  {
   printf("[Korali] Variable = (MeanX, BestX):\n");
-  for (size_t d = 0; d < _k->_problem->N; d++)  printf("         %s = (%+6.3e, %+6.3e)\n", _k->_problem->_parameters[d]->_name.c_str(), rgxmean[d], rgxbestever[d]);
+  for (size_t d = 0; d < _k->_problem->N; d++)  printf("         %s = (%+6.3e, %+6.3e)\n", _k->_problem->_variables[d]->_name.c_str(), rgxmean[d], rgxbestever[d]);
 
   if ( bestValidIdx >= 0 )
   {
@@ -1138,7 +1138,7 @@ void CCMAES::printFinal() const
     printf("[Korali] CCMA-ES Finished\n");
     printf("[Korali] Optimum (%s) found: %e\n", _objective.c_str(), bestEver);
     printf("[Korali] Optimum (%s) found at:\n", _objective.c_str());
-    for (size_t d = 0; d < _k->_problem->N; ++d) printf("         %s = %+6.3e\n", _k->_problem->_parameters[d]->_name.c_str(), rgxbestever[d]);
+    for (size_t d = 0; d < _k->_problem->N; ++d) printf("         %s = %+6.3e\n", _k->_problem->_variables[d]->_name.c_str(), rgxbestever[d]);
     printf("[Korali] Constraint Evaluation at Optimum:\n");
     for (size_t c = 0; c < _numConstraints; ++c) printf("         ( %+6.3e )\n", besteverCeval[c]);
     printf("[Korali] Number of Function Evaluations: %zu\n", countevals);

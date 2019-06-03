@@ -5,7 +5,7 @@ int main(int argc, char* argv[])
 {
  
  //rosenbrock
- std::function<void(Korali::ModelData&)> model = [](Korali::ModelData& d) { g09(d.getParameters(), d.getResults()); }; 
+ std::function<void(Korali::ModelData&)> model = [](Korali::ModelData& d) { g09(d.getVariables(), d.getResults()); };
 
  int nParams = 7; 
  double lower = -10;

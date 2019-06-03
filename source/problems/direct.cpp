@@ -35,43 +35,22 @@ void Korali::Problem::Direct::setConfiguration(nlohmann::json& js)
 /*                    Functional Methods                                */
 /************************************************************************/
 
-double Korali::Problem::Direct::evaluateFitness(double* sample, bool isLeader
-#ifdef _KORALI_USE_MPI
-, MPI_Comm comm
-#endif
-)
+double Korali::Problem::Direct::evaluateFitness(Korali::ModelData& data)
 {
- if (_statisticalParameterCount != 0)
+ if (_statisticalVariableCount != 0)
  {
   fprintf(stderr, "[Korali] Error: Direct problem requires 0 statistical parameters.\n");
   exit(-1);
  }
 
- if (isSampleOutsideBounds(sample)) return -DBL_MAX;
-
- Korali::ModelData data;
-
- #ifdef _KORALI_USE_MPI
- data._comm = comm;
- #endif
-
- for (size_t i = 0; i < N; i++) data._parameters.push_back(sample[i]);
-
- _k->_model(data);
-
- if (isLeader)
+ if (data._results.size() != 1)
  {
-  if (data._results.size() != 1)
-  {
-   fprintf(stderr, "[Korali] Error: The direct problem requires exactly a 1-element result array.\n");
-   fprintf(stderr, "[Korali]        Provided: %lu.\n", data._results.size());
-   exit(-1);
-  }
-
-  return data._results[0];
+  fprintf(stderr, "[Korali] Error: The direct problem requires exactly a 1-element result array.\n");
+  fprintf(stderr, "[Korali]        Provided: %lu.\n", data._results.size());
+  exit(-1);
  }
 
- return 0;
+ return data._results[0];
 }
 
 double Korali::Problem::Direct::evaluateLogPrior(double* sample)

@@ -251,8 +251,8 @@ void Korali::Solver::TMCMC::initializeSamples()
 {
   for (size_t c = 0; c < _s; c++) {
      for (size_t d = 0; d < _k->_problem->N; d++) {
-       clPoints[c*_k->_problem->N + d] = ccPoints[c*_k->_problem->N + d] = _k->_problem->_parameters[d]->getRandomNumber();
-       clLogLikelihood[c] += log( _k->_problem->_parameters[d]->getDensity(clPoints[c*_k->_problem->N + d]) );
+       clPoints[c*_k->_problem->N + d] = ccPoints[c*_k->_problem->N + d] = _k->_problem->_variables[d]->getRandomNumber();
+       clLogLikelihood[c] += log( _k->_problem->_variables[d]->getDensity(clPoints[c*_k->_problem->N + d]) );
      }
      updateDatabase(&clPoints[c*_k->_problem->N], clLogLikelihood[c]);
      finishedChains++;
@@ -549,7 +549,7 @@ void Korali::Solver::TMCMC::minSearch(double const *fj, size_t fn, double pj, do
 bool Korali::Solver::TMCMC::isFeasibleCandidate(size_t sampleIdx) const
 {
  for (size_t d = 0; d < _k->_problem->N; ++d)
-  if ( clPoints[ sampleIdx*_k->_problem->N+d ] < _k->_problem->_parameters[d]->_lowerBound || clPoints[ sampleIdx*_k->_problem->N+d ] > _k->_problem->_parameters[d]->_upperBound) return false;
+  if ( clPoints[ sampleIdx*_k->_problem->N+d ] < _k->_problem->_variables[d]->_lowerBound || clPoints[ sampleIdx*_k->_problem->N+d ] > _k->_problem->_variables[d]->_upperBound) return false;
  return true;
 }
 
@@ -576,7 +576,7 @@ void Korali::Solver::TMCMC::printGeneration() const
  if (_k->_verbosity >= KORALI_DETAILED)
  {
   printf("[Korali] Sample Mean:\n");
-  for (size_t i = 0; i < _k->_problem->N; i++) printf(" %s = %+6.3e\n", _k->_problem->_parameters[i]->_name.c_str(), _meanTheta[i]);
+  for (size_t i = 0; i < _k->_problem->N; i++) printf(" %s = %+6.3e\n", _k->_problem->_variables[i]->_name.c_str(), _meanTheta[i]);
   printf("[Korali] Sample Covariance:\n");
   for (size_t i = 0; i < _k->_problem->N; i++)
   {

@@ -41,6 +41,6 @@ int main(int argc, char* argv[])
  korali["Solver"]["Covariance Scaling"] = 0.02;
  korali["Solver"]["Population Size"] = 3000;
 
- korali.run([](Korali::ModelData& d) { heat2DSolver(d.getParameters(), d.getResults()); });
+ korali.run([](Korali::ModelData& d) { heat2DSolver(d.getVariables(), d.getResults()); });
  return 0;
 }

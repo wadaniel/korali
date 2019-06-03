@@ -18,10 +18,11 @@ Korali::Engine* Korali::_k;
 
 PYBIND11_MODULE(libkorali, m) {
  pybind11::class_<Korali::ModelData>(m, "ModelData")
-  .def("getParameter",      &Korali::ModelData::getParameter, pybind11::return_value_policy::reference)
-  .def("getParameterCount", &Korali::ModelData::getParameterCount, pybind11::return_value_policy::reference)
-  .def("getParameters",     &Korali::ModelData::getParameters, pybind11::return_value_policy::reference)
+  .def("getVariable",      &Korali::ModelData::getVariable, pybind11::return_value_policy::reference)
+  .def("getVariableCount", &Korali::ModelData::getVariableCount, pybind11::return_value_policy::reference)
+  .def("getVariables",     &Korali::ModelData::getVariables, pybind11::return_value_policy::reference)
   .def("getResults",        &Korali::ModelData::getResults, pybind11::return_value_policy::reference)
+	.def("getHashId",        &Korali::ModelData::getHashId, pybind11::return_value_policy::reference)
   #ifdef _KORALI_USE_MPI
   .def("getCommPointer",    &Korali::ModelData::getCommPointer)
   #endif
@@ -35,7 +36,8 @@ PYBIND11_MODULE(libkorali, m) {
  .def("__setitem__", pybind11::overload_cast<const std::string&, const double&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
  .def("__setitem__", pybind11::overload_cast<const std::string&, const int&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
  .def("__setitem__", pybind11::overload_cast<const std::string&, const bool&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
- .def("run", pybind11::overload_cast<std::function<void(Korali::ModelData&)>>(&Korali::Engine::run))
+ .def("run", &Korali::Engine::run)
+ .def("addModel", pybind11::overload_cast<std::function<void(Korali::ModelData&)>>(&Korali::Engine::addModel))
  .def("loadState", pybind11::overload_cast<std::string>(&Korali::Engine::loadState))
  .def("loadConfig", pybind11::overload_cast<std::string>(&Korali::Engine::loadConfig));
 
@@ -128,15 +130,25 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
 
  int rankCount = 1;
 
+ auto cString =  consume(js, { "Conduit", "Type" }, KORALI_STRING, "Undefined");
+
  #ifdef _KORALI_USE_MPI
   int isInitialized;
   MPI_Initialized(&isInitialized);
   if (isInitialized == false)  MPI_Init(nullptr, nullptr);
   MPI_Comm_size(MPI_COMM_WORLD, &rankCount);
-  if (rankCount > 1) _conduit = new Korali::Conduit::KoraliMPI(js["MPI"]);
  #endif
 
- if (rankCount == 1) _conduit = new Korali::Conduit::Single(js["MPI"]);
+ if (cString == "Undefined" && rankCount == 1) cString = "Single";
+ if (cString == "Undefined" && rankCount  > 1) cString = "MPI";
+
+ bool foundConduit = false;
+
+ if (cString == "Single")        { _conduit = new Korali::Conduit::Single(js["Conduit"]); foundConduit = true; }
+ if (cString == "MPI")           { _conduit = new Korali::Conduit::KoraliMPI(js["Conduit"]); foundConduit = true; }
+ if (cString == "Nonintrusive") { _conduit = new Korali::Conduit::Nonintrusive(js["Conduit"]); foundConduit = true; }
+
+ if (foundConduit == false) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Conduit.\n"); exit(-1); }
 
  // Configure Solver
  _solver = NULL;
@@ -159,11 +171,14 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
 /*                    Functional Methods                                */
 /************************************************************************/
 
-void Korali::Engine::run(std::function<void(Korali::ModelData&)> model)
+void Korali::Engine::addModel(std::function<void(Korali::ModelData&)> model)
+{
+	_model = model;
+}
+
+void Korali::Engine::run()
 {
  _k = this;
-
- _model = model;
 
  setConfiguration(_js);
 

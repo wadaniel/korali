@@ -15,8 +15,10 @@ class Nonintrusive : public Base {
  public:
 
  int _concurrentJobs;
+ int** _pipeDescriptors;
  std::queue<int> _launcherQueue;
 
+ std::map<int, size_t> _launcherIdToSamplerIdMap;
  std::map<int, pid_t> _launcherIdToProcessIdMap;
  std::map<pid_t, int> _processIdMapToLauncherIdMap;
 

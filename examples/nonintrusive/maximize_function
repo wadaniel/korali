@@ -3,12 +3,13 @@ import korali
 import subprocess
 
 def evaluate(x):
- hash = x.getHashId()
- print(hash)
- #subprocess.run(["ls", "-l"])
+ argString = ['./model/ackley.py']
+ for i in range(x.getVariableCount()):
+  argString.append(str(x.getVariable(i)))
+ retValue = subprocess.check_output(argString)
+ x.addResult(float(retValue.decode()))
 
 k = korali.Engine()
-
 k["Verbosity"] = "Normal";
 
 k["Problem"]["Type"] = "Direct";

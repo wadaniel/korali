@@ -48,7 +48,12 @@ void Nonintrusive::setConfiguration(nlohmann::json& js)
 
 void Nonintrusive::run()
 {
-	for (int i = 0; i < _concurrentJobs; i++)	_launcherQueue.push(i);
+
+ _pipeDescriptors = (int**) calloc(_concurrentJobs, sizeof(int*));
+ for (int i = 0; i < _concurrentJobs; i++) _pipeDescriptors[i] = (int*) calloc(2, sizeof(int));
+
+ for (int i = 0; i < _concurrentJobs; i++) _launcherQueue.push(i);
+
  _k->_solver->run();
 }
 
@@ -66,16 +71,24 @@ void Nonintrusive::evaluateSample(double* sampleArray, size_t sampleId)
 
  int launcherId = _launcherQueue.front(); _launcherQueue.pop();
 
+ // Opening Inter-process communicator pipes
+ if (pipe(_pipeDescriptors[launcherId]) == -1)
+ {
+  fprintf(stderr, "[Korali] Error: Unable to create inter-process pipe. \n");
+  exit(-1);
+ }
+
  pid_t processId = fork();
 
+ _launcherIdToSamplerIdMap[launcherId] = sampleId;
  _launcherIdToProcessIdMap[launcherId] = processId;
  _processIdMapToLauncherIdMap[processId] = launcherId;
 
  if (processId == 0)
  {
   _k->_model(data);
-  //double fitness = _k->_problem->evaluateFitness(data);
-  //_k->_solver->processSample(sampleId, fitness);
+  double fitness = _k->_problem->evaluateFitness(data);
+  write(_pipeDescriptors[launcherId][1], &fitness, sizeof(double));
   exit(0);
  }
 
@@ -83,16 +96,21 @@ void Nonintrusive::evaluateSample(double* sampleArray, size_t sampleId)
 
 void Nonintrusive::checkProgress()
 {
-	int status;
-	pid_t processId;
+ int status;
+ pid_t processId;
 
-	processId = wait(&status);
-	if (processId > 0)
-	 {
-		int launcherId = _processIdMapToLauncherIdMap[processId];
-		printf("Subprocess %d finished.\n", launcherId );
-		_launcherQueue.push(launcherId);
-	 }
+ processId = wait(&status);
+ if (processId > 0)
+ {
+  int launcherId = _processIdMapToLauncherIdMap[processId];
+  double fitness = 0.0;
+  size_t sampleId = _launcherIdToSamplerIdMap[launcherId];
+  read(_pipeDescriptors[launcherId][0], &fitness, sizeof(double));
+  _k->_solver->processSample(sampleId, fitness);
+  close(_pipeDescriptors[launcherId][1]); // Closing pipes
+  close(_pipeDescriptors[launcherId][0]);
+  _launcherQueue.push(launcherId);
+ }
 
 }
 

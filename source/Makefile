@@ -1,6 +1,6 @@
 include Makefile.conf
 
-CFLAGS  = -g $(OPTFLAGS) -I../include $(GSLCFLAGS) -std=c++14 -Wno-deprecated-declarations -Wno-c++17-extensions
+CFLAGS  = -g $(OPTFLAGS) -I../include $(GSLCFLAGS) $(CXXARCH) $(WARNING_FLAGS)
 LDFLAGS = $(SHAREDLIB_FLAG) -L$(GSLPREFIX)/lib -Wl,-rpath -Wl,$(GSLPREFIX)/lib $(GSLLIBS) 
 
 CFLAGS  += $(PYBIND11INCLUDES) -D_KORALI_USE_PYTHON $(MPIFLAGS)

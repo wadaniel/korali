@@ -8,8 +8,7 @@
 #include <vector>
 #include <map>
 
-namespace Korali::Conduit
-{
+namespace Korali { namespace Conduit {
 
 class KoraliMPI : public Base
 {
@@ -50,7 +49,7 @@ class KoraliMPI : public Base
  void setConfiguration(nlohmann::json& js) override;
 };
 
-} // namespace Korali
+} } // namespace Korali::Conduit
 
 #endif // _KORALI_CONDUIT_KORALIMPI_H_
 

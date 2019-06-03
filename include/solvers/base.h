@@ -6,8 +6,7 @@
 #include "problems/base.h"
 #include "json/json.hpp"
 
-namespace Korali::Solver
-{
+namespace Korali { namespace Solver {
 
 class Base {
  public:
@@ -31,6 +30,6 @@ class Base {
  virtual void setState(nlohmann::json& js);
 };
 
-} // namespace Korali
+} } // namespace Korali::Solver
 
 #endif // _KORALI_SOLVER_BASE_H_

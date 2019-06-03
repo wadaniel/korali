@@ -38,9 +38,11 @@ int main(int argc, char* argv[])
 	 korali["Problem"]["Reference Data"][i] = p.refTemp[i];
 
  korali["Solver"]["Method"] = "CMA-ES";
- korali["Solver"]["Lambda"] = 32;
+ korali["Solver"]["Num Samples"] = 32;
 
- korali.run([](Korali::ModelData& d) { heat2DSolver(d.getParameters(), d.getResults()); });
+ korali.setModel([](Korali::ModelData& d) { heat2DSolver(d.getVariables(), d.getResults()); });
+
+ korali.run();
 
  return 0;
 }

@@ -20,7 +20,9 @@ k["Problem"]["Variables"][0]["Initial StdDev"] = 5.0
 k["Solver"]["Method"] = "CMA-ES"
 k["Solver"]["Termination Criteria"]["Min DeltaX"]["Value"] = 1e-8
 k["Solver"]["Termination Criteria"]["Max Generations"]["Value"] = 100
-k["Solver"]["Lambda"] = 5
+k["Solver"]["Num Samples"] = 5
 k["Solver"]["Objective"] = "Maximize"
 
-k.run(evaluateModel)
+k.setModel(evaluateModel)
+
+k.run()

@@ -10,11 +10,11 @@ int main(int argc, char* argv[])
 
  for (int i = 0; i < 4; i++)
  {
- korali["Problem"]["Variables"][i]["Name"] = "X" + std::to_string(i);
- korali["Problem"]["Variables"][i]["Type"] = "Computational";
- korali["Problem"]["Variables"][i]["Distribution"] = "Uniform";
- korali["Problem"]["Variables"][i]["Minimum"] = -32.0;
- korali["Problem"]["Variables"][i]["Maximum"] = +32.0;
+  korali["Problem"]["Variables"][i]["Name"] = "X" + std::to_string(i);
+  korali["Problem"]["Variables"][i]["Type"] = "Computational";
+  korali["Problem"]["Variables"][i]["Distribution"] = "Uniform";
+  korali["Problem"]["Variables"][i]["Minimum"] = -32.0;
+  korali["Problem"]["Variables"][i]["Maximum"] = +32.0;
  }
 
  korali["Problem"]["Type"] = "Direct";
@@ -24,7 +24,9 @@ int main(int argc, char* argv[])
  korali["Solver"]["Population Size"] = 10000;
  korali["Solver"]["Min Rho Update"] = 0.0;
  
- korali.run([](Korali::ModelData& d) { m_ackley(d.getParameters(), d.getResults()); });
+ korali.setModel([](Korali::ModelData& d) { m_ackley(d.getVariables(), d.getResults()); });
+
+ korali.run();
 
  return 0;
 }

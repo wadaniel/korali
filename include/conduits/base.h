@@ -4,8 +4,8 @@
 #include <stdlib.h>
 #include "json/json.hpp"
 
-namespace Korali::Conduit
-{
+namespace Korali { namespace Conduit {
+
 class Base {
  public:
 
@@ -13,6 +13,8 @@ class Base {
  virtual void evaluateSample(double* sampleArray, size_t sampleId) = 0;
  virtual void checkProgress() = 0;
  virtual bool isRoot() = 0;
+
+ size_t _currentSample;
 
  // Constructor / Destructor
  Base(nlohmann::json& js);
@@ -25,7 +27,7 @@ class Base {
 
 class Conduit;
 
-} // namespace Korali
+} } // namespace Korali::Conduit
 
 namespace Korali
 {
@@ -33,9 +35,10 @@ namespace Korali
   public:
 
   void addResult(double x) {_self->_results.push_back(x); }
-  size_t getParameterCount() { return _self->_parameters.size(); }
-  std::vector<double>& getParameters() { return _self->_parameters; }
+  size_t getVariableCount() { return _self->_computationalVariables.size(); }
+  std::vector<double>& getVariables() { return _self->_computationalVariables; }
   std::vector<double>& getResults() { return _self->_results; }
+  size_t& getHashId() { return _self->_hashId; }
 
   #ifdef _KORALI_USE_MPI
   MPI_Comm _comm;
@@ -43,18 +46,20 @@ namespace Korali
   long int getCommPointer() { return (long int)(&_self->_comm); }
   #endif
 
-  double getParameter(size_t i)
+  double getVariable(size_t i)
   {
-   if (i >= _self->_parameters.size())
+   if (i >= _self->_computationalVariables.size())
    {
-      fprintf(stderr, "[Korali] Error: Trying to access parameter %lu, when only %lu are provided.\n", i, _self->_parameters.size());
+      fprintf(stderr, "[Korali] Error: Trying to access parameter %lu, when only %lu are provided.\n", i, _self->_computationalVariables.size());
       exit(-1);
     }
-   return _self->_parameters[i];
+   return _self->_computationalVariables[i];
   }
 
   ModelData* _self;
-  std::vector<double> _parameters;
+  size_t _hashId;
+  std::vector<double> _computationalVariables;
+  std::vector<double> _statisticalVariables;
   std::vector<double> _results;
 
   // Constructor / Destructor

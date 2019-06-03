@@ -1,6 +1,6 @@
 #!/bin/bash
 
-logFile=install.log
+logFile=$PWD/install.log
 
 # Help display function
 function print_help ()
@@ -17,10 +17,12 @@ function print_help ()
  echo "Syntax: ./install"
  echo "        [--install-gsl]"
  echo "        [--rebuild]"
+  echo "       [--debug]"
  echo "        [--help]"
  echo ""
  echo "Where:"
  echo " --install-gsl Automatically downloads and installs GSL if not found."
+ echo " --debug builds a non-optimized Korali for debugging purposes."
  echo " --rebuild Cleans and rebuilds/installs Korali for development purposes."
  echo " --help Displays this help message."
 }
@@ -46,6 +48,7 @@ function exitWithError ()
 }
 
 INSTALLGSL=0
+OPTFLAGS="-O3"
 
 for i in "$@"
 do
@@ -54,9 +57,8 @@ case $i in
     INSTALLGSL=1
     shift 
     ;;
-    --rebuild)
-    make -C source clean
-    make -j24 -C source 
+    --debug)
+    OPTFLAGS="-O0"
     shift 
     ;;
     --help)
@@ -111,11 +113,14 @@ clang++ --version >> install.log 2>&1
 DETECTED_CLANG=$?
 icpc --version >> install.log 2>&1
 DETECTED_ICPC=$?
- 
+CC --help >> install.log 2>&1
+DETECTED_CRAY=$?
+
 USE_CXX=""
 if [ $DETECTED_CPLUSPLUS -eq 0 ]; then USE_CXX=c++;     fi;
 if [ $DETECTED_GXX       -eq 0 ]; then USE_CXX=g++;     fi;
 if [ $DETECTED_ICPC      -eq 0 ]; then USE_CXX=icpc;    fi;
+if [ $DETECTED_CRAY      -eq 0 ]; then USE_CXX=CC;      fi;
 if [ $DETECTED_CLANG     -eq 0 ]; then USE_CXX=clang++; fi;
 if [ $DETECTED_CXX       -eq 0 ]; then USE_CXX=$CXX;    fi;
 
@@ -144,7 +149,7 @@ then
    exitWithError
   else
    logEcho "[Korali] Downloading GNU Scientific Library... "
-   mkdir -p $PREFIX
+   mkdir -p build
    CURDIR=$PWD
    rm -f gsl-2.5.tar.gz 
    wget "ftp://ftp.gnu.org/gnu/gsl/gsl-2.5.tar.gz" 
@@ -157,7 +162,7 @@ then
    logEcho "[Korali] Installing GNU Scientific Library... "
    make install >> install.log 2>&1
    if [  $? -ne 0 ]; then
-    logEcho -e "[Korali] \e[31mError: Failed GNU Scientific Library installation."
+    logEcho -e "[Korali] Error: Failed GNU Scientific Library installation."
     exitWithError
    fi
    cd .. 
@@ -172,8 +177,8 @@ fi
 
 MPIFLAGS=""
 log "[Korali] Checking for MPI support..."
-log "[Korali] Running \"\$MPICXX --version\"..."
-$MPICXX --version >> install.log 2>&1
+log "[Korali] Running \"\$MPICXX -v\"..."
+$MPICXX --help >> install.log 2>&1
 if [ ! $? -eq 0 ]
 then
  logEcho "[Korali] Info: No MPI compiler command found in \$MPICXX."
@@ -244,13 +249,23 @@ GSLLIBS=`$gslcfgFile --libs`
 PYBIND11INCLUDES=`python3 -m pybind11 --includes` 
 PYBIND11LIBS=`python3-config --ldflags`
 
+CXXARCH="-std=c++14"
+which $USE_CXX | grep "cray" >> install.log 2>&1
+if [ $? -eq 0 ]; then
+  logEcho "[Korali] Assuming Cray System."
+  CXXARCH="-hstd=c++14"
+  PYBIND11LIBS=`echo $PYBIND11LIBS | sed 's/-Xlinker//g' | sed 's/-export-dynamic//g'`
+fi
+
 ######## Creating Compilation Config File ########
 
 log "[Korali] Creating Compilation Config File..."
 
 echo "CXX=$USE_CXX" > source/Makefile.conf
+echo "CXXARCH=$CXXARCH" >> source/Makefile.conf
 echo "SHAREDLIB_FLAG=$SHAREDLIB_FLAG" >> source/Makefile.conf
 echo "MPIFLAGS=$MPIFLAGS" >> source/Makefile.conf
+echo "OPTFLAGS=$OPTFLAGS" >> source/Makefile.conf
 
 echo "GSLPREFIX=$GSLPREFIX" >> source/Makefile.conf
 echo "GSLCFLAGS=$GSLCFLAGS" >> source/Makefile.conf
@@ -264,10 +279,12 @@ log "[Korali] Creating Python Config File..."
 
 echo "#!/usr/bin/env python3" > python/cxx/cxx.conf
 echo "CXX='$USE_CXX'" >> python/cxx/cxx.conf
+echo "CXXARCH='$CXXARCH'" >> python/cxx/cxx.conf
 echo "MPIFLAGS='$MPIFLAGS'" >> python/cxx/cxx.conf
 echo "GSLPREFIX='$GSLPREFIX'" >> python/cxx/cxx.conf
 echo "GSLCFLAGS='$GSLCFLAGS'" >> python/cxx/cxx.conf
 echo "GSLLIBS='$GSLLIBS'"  >> python/cxx/cxx.conf
+echo "OPTFLAGS='$OPTFLAGS'" >> python/cxx/cxx.conf
 echo "PYBIND11INCLUDES='$PYBIND11INCLUDES'" >> python/cxx/cxx.conf
 echo "PYBIND11LIBS='$PYBIND11LIBS'" >> python/cxx/cxx.conf
 
@@ -278,7 +295,13 @@ cat ./python/cxx/cxx.conf ./python/cxx/libs.py.base > ./python/cxx/libs.py
 ######## Compiling Korali C++ Engine #########
 
 logEcho "[Korali] Compiling Korali..."
-make -j12 -C source >> install.log 2>&1
+make -C source clean >> install.log 2>&1
+make -j24 -C source >> install.log 2>&1
+if [ $? -ne 0 ]; then
+  logEcho "[Korali] Error compiling Korali."
+  logEcho "[Korali] Check $logFile for further information."
+  exitWithError
+fi
 
 ######## Installing Korali using pip3 ########
 logEcho "[Korali] Installing Korali..."

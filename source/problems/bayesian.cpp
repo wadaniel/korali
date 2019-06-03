@@ -47,55 +47,32 @@ void Korali::Problem::Bayesian::setConfiguration(nlohmann::json& js)
 /*                    Functional Methods                                */
 /************************************************************************/
 
-double Korali::Problem::Bayesian::evaluateFitness(double* sample, bool isLeader
-#ifdef _KORALI_USE_MPI
-, MPI_Comm comm
-#endif
-)
+double Korali::Problem::Bayesian::evaluateFitness(Korali::ModelData& data)
 {
 
- if (_statisticalParameterCount != 1)
+ if (_statisticalVariableCount != 1)
  {
   fprintf(stderr, "[Korali] Error: The Bayesian model requires 1 statistical parameter.\n");
   exit(-1);
  }
 
- if (isSampleOutsideBounds(sample)) return -DBL_MAX;
-
- double sigma = sample[_computationalParameterCount];
- double fitnessData[_referenceDataSize];
-
- Korali::ModelData data;
-
- #ifdef _KORALI_USE_MPI
- data._comm = comm;
- #endif
-
- for (size_t i = 0; i < N; i++) data._parameters.push_back(sample[i]);
-
- _k->_model(data);
-
- if (isLeader)
+ if (data._results.size() != _referenceDataSize)
  {
-  if (data._results.size() != _referenceDataSize)
-  {
-   fprintf(stderr, "[Korali] Error: This Bayesian Model requires a %lu-sized result array.\n", _referenceDataSize);
-   fprintf(stderr, "[Korali]        Provided: %lu.\n", data._results.size());
-   exit(-1);
-  }
-
-  //TODO: can we avoid this copy? (DW)
-  for (size_t i = 0; i < _referenceDataSize; i++) fitnessData[i] = data._results[i];
-
-  return Korali::Variable::Gaussian::logLikelihood(sigma, _referenceDataSize, _referenceData, fitnessData);
+  fprintf(stderr, "[Korali] Error: This Bayesian Model requires a %lu-sized result array.\n", _referenceDataSize);
+  fprintf(stderr, "[Korali]        Provided: %lu.\n", data._results.size());
+  exit(-1);
  }
 
- return 0;
+ double sigma = data._statisticalVariables[0];
+
+ double fitness = Korali::Variable::Gaussian::logLikelihood(sigma, _referenceDataSize, _referenceData, data._results.data());
+
+ return fitness;
 }
 
 double Korali::Problem::Bayesian::evaluateLogPrior(double* sample)
 {
  double logPrior = 0.0;
- for (size_t i = 0; i < N; i++) logPrior += _parameters[i]->getLogDensity(sample[i]);
+ for (size_t i = 0; i < N; i++) logPrior += _variables[i]->getLogDensity(sample[i]);
  return logPrior;
 }

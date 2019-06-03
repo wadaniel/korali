@@ -3,10 +3,9 @@
 
 #include "variables/base.h"
 
-namespace Korali::Variable
-{
+namespace Korali { namespace Variable {
 
-class Gamma : public Korali::Variable::Base
+class Gamma : public Base
 {
  private:
   double _shape;
@@ -31,6 +30,6 @@ class Gamma : public Korali::Variable::Base
   void setConfiguration(nlohmann::json& js) override;
 };
 
-} // namespace Korali
+} } // namespace Korali::Variable
 
 #endif // _KORALI_VARIABLE_GAMMA_H_

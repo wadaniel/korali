@@ -6,10 +6,9 @@
 #include <chrono>
 #include <map>
 
-namespace Korali::Solver
-{
+namespace Korali { namespace Solver {
 
-class CMAES : public Korali::Solver::Base
+class CMAES : public Base
 {
  public:
 
@@ -135,6 +134,6 @@ class CMAES : public Korali::Solver::Base
  void printFinal() const;
 };
 
-} // namespace Korali
+} } // namespace Korali::Solver
 
 #endif // _KORALI_SOLVERS_CMAES_H_

@@ -24,7 +24,7 @@ nlohmann::json Single::getConfiguration()
 {
  auto js = this->Base::getConfiguration();
 
- js["Ranks Per Team"] = 1;
+ js["Type"] = "Single";
 
  return js;
 }
@@ -53,7 +53,17 @@ void Single::run()
 
 void Single::evaluateSample(double* sampleArray, size_t sampleId)
 {
- double fitness = _k->_problem->evaluateFitness(&sampleArray[_k->_problem->N*sampleId], true);
+ Korali::ModelData data;
+
+ int curVar = 0;
+ for (int i = 0; i < _k->_problem->_computationalVariableCount; i++) data._computationalVariables.push_back(sampleArray[_k->_problem->N*sampleId + curVar++]);
+ for (int i = 0; i < _k->_problem->_statisticalVariableCount;   i++) data._statisticalVariables.push_back(  sampleArray[_k->_problem->N*sampleId + curVar++]);
+
+ data._hashId = _currentSample++;
+
+ _k->_model(data);
+
+ double fitness = _k->_problem->evaluateFitness(data);
  _k->_solver->processSample(sampleId, fitness);
 }
 

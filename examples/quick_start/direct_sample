@@ -21,4 +21,6 @@ k["Solver"]["Population Size"] = 50000
 k["Solver"]["Coefficient of Variation"] = 0.5;
 k["Solver"]["Burn In"] = 5
 
-k.run(evaluateModel)
+k.setModel(evaluateModel)
+
+k.run()

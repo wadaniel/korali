@@ -60,6 +60,10 @@ CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
  // Setting eigensystem evaluation Frequency
  if( _covarianceEigenEvalFreq < 0.0) _covarianceEigenEvalFreq = 1.0/_covarianceMatrixLearningRate/((double)_k->_problem->N)/10.0;
 
+ double trace = 0.0;
+ for (size_t i = 0; i < _k->_problem->N; ++i) trace += _k->_problem->_variables[i]->_initialStdDev*_k->_problem->_variables[i]->_initialStdDev;
+ sigma = sqrt(trace/_k->_problem->N); /* _muEffective/(0.2*_muEffective+sqrt(_k->_problem->N)) * sqrt(trace/_k->_problem->N); */
+
  flgEigensysIsUptodate = true;
 
  countevals = 0;
@@ -67,18 +71,31 @@ CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
  resampled = 0;
  bestEver = -std::numeric_limits<double>::max();
 
+ for (size_t i = 0; i < _k->_problem->N; ++i)
+ {
+  B[i][i] = 1.0;
+  C[i][i] = axisD[i] = _k->_problem->_variables[i]->_initialStdDev * sqrt(_k->_problem->N / trace);
+  C[i][i] *= C[i][i];
+ }
+
+ minEW = doubleRangeMin(axisD, _k->_problem->N); minEW = minEW * minEW;
+ maxEW = doubleRangeMax(axisD, _k->_problem->N); maxEW = maxEW * maxEW;
+
+ maxdiagC=C[0][0]; for(size_t i=1;i<_k->_problem->N;++i) if(maxdiagC<C[i][i]) maxdiagC=C[i][i];
+ mindiagC=C[0][0]; for(size_t i=1;i<_k->_problem->N;++i) if(mindiagC>C[i][i]) mindiagC=C[i][i];
+
  psL2 = 0.0;
 
  /* set rgxmean */
  for (size_t i = 0; i < _k->_problem->N; ++i)
  {
-   if(_k->_problem->_parameters[i]->_initialValue < _k->_problem->_parameters[i]->_lowerBound || _k->_problem->_parameters[i]->_initialValue > _k->_problem->_parameters[i]->_upperBound)
+   if(_k->_problem->_variables[i]->_initialValue < _k->_problem->_variables[i]->_lowerBound || _k->_problem->_variables[i]->_initialValue > _k->_problem->_variables[i]->_upperBound)
     fprintf(stderr,"[Korali] Warning: Initial Value (%.4f) for \'%s\' is out of bounds (%.4f-%.4f).\n", 
-            _k->_problem->_parameters[i]->_initialValue, 
-            _k->_problem->_parameters[i]->_name.c_str(), 
-            _k->_problem->_parameters[i]->_lowerBound, 
-            _k->_problem->_parameters[i]->_upperBound);
-   rgxmean[i] = rgxold[i] = _k->_problem->_parameters[i]->_initialValue;
+            _k->_problem->_variables[i]->_initialValue, 
+            _k->_problem->_variables[i]->_name.c_str(), 
+            _k->_problem->_variables[i]->_lowerBound, 
+            _k->_problem->_variables[i]->_upperBound);
+   rgxmean[i] = rgxold[i] = _k->_problem->_variables[i]->_initialValue;
  }
 
  Z   = (double**) malloc (sizeof(double*) * _s);
@@ -130,8 +147,8 @@ nlohmann::json CMAES::getConfiguration()
  js["Termination Criteria"]["Max Generations"]["Active"]          = _isTermCondMaxGenerations;
  js["Termination Criteria"]["Max Model Evaluations"]["Value"]     = _termCondMaxFitnessEvaluations;
  js["Termination Criteria"]["Max Model Evaluations"]["Active"]    = _isTermCondMaxFitnessEvaluations;
- js["Termination Criteria"]["Min Fitness"]["Value"]               = _termCondFitness;
- js["Termination Criteria"]["Min Fitness"]["Active"]              = _isTermCondFitness;
+ js["Termination Criteria"]["Fitness"]["Value"]               = _termCondFitness;
+ js["Termination Criteria"]["Fitness"]["Active"]              = _isTermCondFitness;
  js["Termination Criteria"]["Fitness Diff Threshold"]["Value"]    = _termCondFitnessDiffThreshold;
  js["Termination Criteria"]["Fitness Diff Threshold"]["Active"]   = _isTermCondFitnessDiffThreshold;
  js["Termination Criteria"]["Min DeltaX"]["Value"]                = _termCondMinDeltaX;
@@ -194,6 +211,13 @@ void CMAES::setConfiguration(nlohmann::json& js)
  _mu                            = consume(js, { "Mu", "Value" }, KORALI_NUMBER, std::to_string(ceil(_s / 2)));
  _muType                        = consume(js, { "Mu", "Type" }, KORALI_STRING, "Logarithmic");
  _muCovarianceIn                = consume(js, { "Mu", "Covariance" }, KORALI_NUMBER, std::to_string(-1));
+
+ // Initializing Mu Weights
+ _muWeights = (double *) calloc (sizeof(double), _mu);
+ if (_muType == "Linear")       for (size_t i = 0; i < _mu; i++)  _muWeights[i] = _mu - i;
+ else if (_muType == "Equal")        for (size_t i = 0; i < _mu; i++)  _muWeights[i] = 1;
+ else if (_muType == "Logarithmic")  for (size_t i = 0; i < _mu; i++)  _muWeights[i] = log(_mu+1.)-log(i+1.);
+ else  { fprintf( stderr, "[Korali] Error: Invalid setting of Mu Type (%s) (Linear, Equal or Logarithmic accepted).", _muType.c_str()); exit(-1); }
  
  if(_mu < 1 || _mu > _s || (( _mu == _s )  && _muType.compare("Linear") ))
    { fprintf( stderr, "[Korali] Error: Invalid setting of Mu (%lu) and/or Lambda (%lu)\n", _mu, _s); exit(-1); }
@@ -307,14 +331,14 @@ void CMAES::initInternals()
  
  // Setting Sigma
  double trace = 0.0;
- for (size_t i = 0; i < _k->_problem->N; ++i) trace += _k->_problem->_parameters[i]->_initialStdDev*_k->_problem->_parameters[i]->_initialStdDev;
+ for (size_t i = 0; i < _k->_problem->N; ++i) trace += _k->_problem->_variables[i]->_initialStdDev*_k->_problem->_variables[i]->_initialStdDev;
  sigma = sqrt(trace/_k->_problem->N); /* _muEffective/(0.2*_muEffective+sqrt(_k->_problem->N)) * sqrt(trace/_k->_problem->N); */
 
  // Setting B, C and axisD
  for (size_t i = 0; i < _k->_problem->N; ++i)
  {
   B[i][i] = 1.0;
-  C[i][i] = axisD[i] = _k->_problem->_parameters[i]->_initialStdDev * sqrt(_k->_problem->N / trace);
+  C[i][i] = axisD[i] = _k->_problem->_variables[i]->_initialStdDev * sqrt(_k->_problem->N / trace);
   C[i][i] *= C[i][i];
  }
 
@@ -384,7 +408,7 @@ void CMAES::processSample(size_t sampleId, double fitness)
 bool CMAES::isFeasible(size_t sampleIdx) const
 {
  for (size_t d = 0; d < _k->_problem->N; ++d)
-  if (_samplePopulation[ sampleIdx*_k->_problem->N+d ] < _k->_problem->_parameters[d]->_lowerBound || _samplePopulation[ sampleIdx*_k->_problem->N+d ] > _k->_problem->_parameters[d]->_upperBound) return false;
+  if (_samplePopulation[ sampleIdx*_k->_problem->N+d ] < _k->_problem->_variables[d]->_lowerBound || _samplePopulation[ sampleIdx*_k->_problem->N+d ] > _k->_problem->_variables[d]->_upperBound) return false;
  return true;
 }
 
@@ -517,9 +541,9 @@ void CMAES::updateDistribution(const double *fitnessVector)
  //TODO
 
  //treat minimal standard deviations
- for (size_t d = 0; d < _k->_problem->N; ++d) if (sigma * sqrt(C[d][d]) < _k->_problem->_parameters[d]->_minStdDevChange) 
+ for (size_t d = 0; d < _k->_problem->N; ++d) if (sigma * sqrt(C[d][d]) < _k->_problem->_variables[d]->_minStdDevChange) 
  {
-   sigma = (_k->_problem->_parameters[d]->_minStdDevChange)/sqrt(C[d][d]) * exp(0.05+_sigmaCumulationFactor/_dampFactor);
+   sigma = (_k->_problem->_variables[d]->_minStdDevChange)/sqrt(C[d][d]) * exp(0.05+_sigmaCumulationFactor/_dampFactor);
    if (_k->_verbosity >= KORALI_DETAILED) fprintf(stderr, "[Korali] Warning: sigma increased due to minimal standard deviation.\n");
  }
 
@@ -619,7 +643,7 @@ bool CMAES::checkTermination()
  }
 
  for(size_t i=0; i<_k->_problem->N; ++i)
-  if ( _isTermCondTolUpXFactor && (sigma * sqrt(C[i][i]) > _termCondTolUpXFactor * _k->_problem->_parameters[i]->_initialStdDev) )
+  if ( _isTermCondTolUpXFactor && (sigma * sqrt(C[i][i]) > _termCondTolUpXFactor * _k->_problem->_variables[i]->_initialStdDev) )
   {
     terminate = true;
     sprintf(_terminationReason, "Standard deviation increased by more than %7.2e, larger initial standard deviation recommended \n", _termCondTolUpXFactor);
@@ -812,7 +836,7 @@ void CMAES::printGeneration() const
  if (_k->_verbosity >= KORALI_DETAILED)
  {
   printf("[Korali] Variable = (MeanX, BestX):\n");
-  for (size_t d = 0; d < _k->_problem->N; d++)  printf("         %s = (%+6.3e, %+6.3e)\n", _k->_problem->_parameters[d]->_name.c_str(), rgxmean[d], rgxbestever[d]);
+  for (size_t d = 0; d < _k->_problem->N; d++)  printf("         %s = (%+6.3e, %+6.3e)\n", _k->_problem->_variables[d]->_name.c_str(), rgxmean[d], rgxbestever[d]);
 
   printf("[Korali] Covariance Matrix:\n");
   for (size_t d = 0; d < _k->_problem->N; d++)
@@ -839,7 +863,7 @@ void CMAES::printFinal() const
     printf("[Korali] CMA-ES Finished\n");
     printf("[Korali] Optimum (%s) found: %e\n", _objective.c_str(), bestEver);
     printf("[Korali] Optimum (%s) found at:\n", _objective.c_str());
-    for (size_t d = 0; d < _k->_problem->N; ++d) printf("         %s = %+6.3e\n", _k->_problem->_parameters[d]->_name.c_str(), rgxbestever[d]);
+    for (size_t d = 0; d < _k->_problem->N; ++d) printf("         %s = %+6.3e\n", _k->_problem->_variables[d]->_name.c_str(), rgxbestever[d]);
     printf("[Korali] Number of Function Evaluations: %zu\n", countevals);
     printf("[Korali] Number of Infeasible Samples: %zu\n", countinfeasible);
     printf("[Korali] Stopping Criterium: %s\n", _terminationReason);

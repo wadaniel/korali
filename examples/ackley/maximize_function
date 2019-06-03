@@ -16,10 +16,10 @@ for i in range(4):
     k["Problem"]["Variables"][i]["Minimum"] = -32.0
     k["Problem"]["Variables"][i]["Maximum"] = +32.0
 
-k["Solver"]["Method"] = "TMCMC"
-k["Solver"]["Covariance Scaling"] = 0.02
-k["Solver"]["Population Size"] = 1000
-k["Solver"]["Burn In"] = 5
+k["Solver"]["Method"] = "CMA-ES";
+k["Solver"]["Num Samples"] = 10;
+k["Solver"]["Termination Criteria"]["Max Generations"]["Value"] = 100;
+k["Solver"]["Termination Criteria"]["Min DeltaX"]["Value"] = 1e-12;
 
 k.setModel(m_ackley)
 

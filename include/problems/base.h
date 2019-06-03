@@ -3,28 +3,22 @@
 
 #include "json/json.hpp"
 #include "variables/base.h"
+#include "conduits/base.h"
 
-namespace Korali::Problem
-{
+namespace Korali { namespace Problem {
 
 class Base
 {
  public:
 
- virtual double evaluateFitness(double* sample, bool isLeader
- #ifdef _KORALI_USE_MPI
- , MPI_Comm comm = MPI_COMM_NULL
- #endif
- ) = 0;
-
+ virtual double evaluateFitness(Korali::ModelData& data) = 0;
  virtual double evaluateLogPrior(double* sample) = 0;
 
  size_t N; // Variable Count size_t N; // Variable Count
- size_t _statisticalParameterCount;
- size_t _computationalParameterCount;
+ size_t _statisticalVariableCount;
+ size_t _computationalVariableCount;
 
- bool isSampleOutsideBounds(double* sample);
- std::vector<Korali::Variable::Base*> _parameters;
+ std::vector<Korali::Variable::Base*> _variables;
 
  // Constructor / Destructor
  Base(nlohmann::json& js);
@@ -35,7 +29,7 @@ class Base
  virtual void setConfiguration(nlohmann::json& js);
 };
 
-} // namespace Korali
+} } // namespace Korali::Problem
 
 
 #endif // _KORALI_PROBLEM_BASE_H_

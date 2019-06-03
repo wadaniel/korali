@@ -3,8 +3,7 @@
 
 #include "conduits/base.h"
 
-namespace Korali::Conduit
-{
+namespace Korali { namespace Conduit {
 
 class Single : public Base {
  public:
@@ -23,6 +22,6 @@ class Single : public Base {
  void setConfiguration(nlohmann::json& js) override;
 };
 
-} // namespace Korali
+} } // namespace Korali::Conduit
 
 #endif // _KORALI_CONDUIT_SINGLE_H_

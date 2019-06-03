@@ -3,19 +3,13 @@
 
 #include "problems/base.h"
 
-namespace Korali::Problem
-{
+namespace Korali { namespace Problem {
 
-class Direct : public Korali::Problem::Base
+class Direct : public Base
 {
  public:
 
-  double evaluateFitness(double* sample, bool isLeader
- #ifdef _KORALI_USE_MPI
- , MPI_Comm comm = MPI_COMM_NULL
- #endif
- ) override;
-
+ double evaluateFitness(Korali::ModelData& data) override;
  double evaluateLogPrior(double* sample) override;
 
  // Constructor / Destructor
@@ -27,7 +21,6 @@ class Direct : public Korali::Problem::Base
  void setConfiguration(nlohmann::json& js) override;
 };
 
-} // namespace Korali
-
+} } // namespace Korali::Problem
 
 #endif // _KORALI_PROBLEM_DIRECT_H_

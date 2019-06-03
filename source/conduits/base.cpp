@@ -9,6 +9,7 @@ using namespace Korali::Conduit;
 Base::Base(nlohmann::json& js)
 {
  setConfiguration(js);
+ _currentSample = 0;
 }
 
 Base::~Base()

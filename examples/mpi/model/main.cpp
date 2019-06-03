@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "jacobi.h"
 #include <mpi.h>
 #include <vector>

@@ -37,4 +37,6 @@ k["Solver"]["Population Size"] = 5000;
 k["Solver"]["Burn In"] = 5;
 k["Solver"]["Coefficient of Variation"] = 0.5;
 
-k.run(lambda koraliData: evaluateModel(koraliData, x));
+k.setModel(lambda koraliData: evaluateModel(koraliData, x))
+
+k.run()

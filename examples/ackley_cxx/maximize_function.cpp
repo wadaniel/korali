@@ -19,11 +19,13 @@ int main(int argc, char* argv[])
  }
 
  korali["Solver"]["Method"] = "CMA-ES";
- korali["Solver"]["Lambda"] = 10;
+ korali["Solver"]["Num Samples"] = 10;
  korali["Solver"]["Termination Criteria"]["Max Generations"]["Value"] = 100;
  korali["Solver"]["Termination Criteria"]["Min DeltaX"]["Value"] = 1e-12;
  
- korali.run([](Korali::ModelData& d) { m_ackley(d.getParameters(), d.getResults()); });
+ korali.setModel([](Korali::ModelData& d) { m_ackley(d.getVariables(), d.getResults()); });
+
+ korali.run();
 
  return 0;
 }

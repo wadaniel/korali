@@ -75,6 +75,7 @@ nlohmann::json KoraliMPI::getConfiguration()
 {
  auto js = this->Base::getConfiguration();
 
+ js["Type"] = "MPI";
  js["Ranks Per Team"] = _ranksPerTeam;
 
  return js;
@@ -118,8 +119,23 @@ void KoraliMPI::workerThread()
    double sample[_k->_problem->N];
    MPI_Recv(&sample, _k->_problem->N, MPI_DOUBLE, getRootRank(), MPI_TAG_SAMPLE, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
    bool isLeader = (_localRankId == 0);
-   double fitness = _k->_problem->evaluateFitness(sample, isLeader, _teamComm);
-   if (_localRankId == 0) MPI_Send(&fitness, 1, MPI_DOUBLE, getRootRank(), MPI_TAG_FITNESS, MPI_COMM_WORLD);
+
+   Korali::ModelData data;
+   data._comm = _teamComm;
+   data._hashId = _rankId * 500000 + _currentSample++;
+
+   int curVar = 0;
+   for (int i = 0; i < _k->_problem->_computationalVariableCount; i++) data._computationalVariables.push_back(sample[curVar++]);
+   for (int i = 0; i < _k->_problem->_statisticalVariableCount;   i++) data._statisticalVariables.push_back(sample[curVar++]);
+
+   _k->_model(data);
+
+   if (_localRankId == 0)
+   {
+    double fitness = _k->_problem->evaluateFitness(data);
+    MPI_Send(&fitness, 1, MPI_DOUBLE, getRootRank(), MPI_TAG_FITNESS, MPI_COMM_WORLD);
+   }
+
    MPI_Barrier(_teamComm);
   }
  }

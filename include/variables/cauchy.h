@@ -3,10 +3,9 @@
 
 #include "variables/base.h"
 
-namespace Korali::Variable
-{
+namespace Korali { namespace Variable {
 
-class Cauchy : public Korali::Variable::Base
+class Cauchy : public Base
 {
  private:
   double _aux;
@@ -31,6 +30,6 @@ class Cauchy : public Korali::Variable::Base
   void setConfiguration(nlohmann::json& js) override;
 };
 
-} // namespace Korali
+} } // namespace Korali::Variable
 
 #endif // _KORALI_VARIABLE_CAUCHY_H_

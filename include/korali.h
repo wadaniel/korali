@@ -25,6 +25,7 @@
 
 #include "conduits/single.h"
 #include "conduits/mpi.h"
+#include "conduits/nonintrusive.h"
 
 #include "json/koralijson.h"
 
@@ -57,7 +58,8 @@ class Engine {
  Engine();
  ~Engine();
 
- void run(std::function<void(Korali::ModelData&)> model);
+ void run();
+ void setModel(std::function<void(Korali::ModelData&)> model);
  void addConstraint(fcon fconstraint);
 
  // Python Configuration Binding Methods

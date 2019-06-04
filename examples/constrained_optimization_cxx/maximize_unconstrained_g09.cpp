@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
  }
 
  korali["Solver"]["Method"] = "CMA-ES";
- korali["Solver"]["Lambda"] = 8;
+ korali["Solver"]["Num Samples"] = 8;
  //korali["Solver"]["Termination Criteria"]["Fitness"]["Value"] = -680.630057374402 - 1e-4;
  korali["Solver"]["Termination Criteria"]["Min DeltaX"]["Value"] = 1e-12;
  

@@ -24,7 +24,7 @@ k["Conduit"]["Type"] = "Nonintrusive"
 k["Conduit"]["Concurrent Jobs"] = 16
 
 k["Solver"]["Method"] = "CMA-ES"
-k["Solver"]["Lambda"] = 10
+k["Solver"]["Num Samples"] = 10
 k["Solver"]["Termination Criteria"]["Max Generations"]["Value"] = 100
 k["Solver"]["Termination Criteria"]["Min DeltaX"]["Value"] = 1e-12
 

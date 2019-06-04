@@ -1,5 +1,5 @@
-#ifndef _KORALI_CCMAES_H_
-#define _KORALI_CCMAES_H_
+#ifndef _KORALI_SOLVERS_CCMAES_H_
+#define _KORALI_SOLVERS_CCMAES_H_
 
 #include "solvers/base.h"
 #include "variables/gaussian.h"
@@ -104,7 +104,6 @@ class CCMAES : public Base
  double *rgxold; /* mean "parent" previous generation */
  double *rgBDz; /* for B*D*z */
  double *rgdTmp; /* temporary (random) vector used in different places */
- double *rgFuncValue; /* holding all fitness values (fitnessvector) */
  double *histFuncValues; /* holding historical best function values */
 
  size_t countevals; /* Number of function evaluations */
@@ -172,4 +171,4 @@ class CCMAES : public Base
 
 } } // namespace Korali::Solver
 
-#endif // _KORALI_CCMAES_H_
+#endif // _KORALI_SOLVERS_CCMAES_H_

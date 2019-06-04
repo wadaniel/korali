@@ -32,7 +32,7 @@ k["Problem"]["Variables"][2]["Maximum"] = 10.0;
 k["Problem"]["Reference Data"] = y;
 
 k["Solver"]["Method"] = "CMA-ES";
-k["Solver"]["Num Samples"] = 10;
+k["Solver"]["Sample Count"] = 10;
 k["Solver"]["Termination Criteria"]["Min DeltaX"]["Value"]= 1e-6;
 k["Solver"]["Termination Criteria"]["Max Generations"]["Value"] = 1e4;
 k["Solver"]["Termination Criteria"]["Max Model Evaluations"]["Value"] = 3e5;

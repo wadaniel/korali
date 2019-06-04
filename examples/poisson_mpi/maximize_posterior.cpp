@@ -62,7 +62,7 @@ int main(int argc, char* argv[])
  korali["Problem"]["Reference Data"] += 0.974431;
 
  korali["Solver"]["Method"] = "CMA-ES";
- korali["Solver"]["Num Samples"] = 16;
+ korali["Solver"]["Sample Count"] = 16;
  korali["Solver"]["Termination Criteria"]["Min DeltaX"]["Value"] = 1e-4;
  korali["Solver"]["Termination Criteria"]["Fitness Diff Threshold"]["Value"] = 1e-4;
  korali["Solver"]["Termination Criteria"]["Max Condition Covariance"]["Value"] = 1e10;

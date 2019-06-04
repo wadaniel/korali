@@ -22,8 +22,8 @@ int main(int argc, char* argv[])
  korali["Problem"]["Variables"][1]["Maximum"] = 2.5;
 
  korali["Solver"]["Method"] = "CCMA-ES";
- korali["Solver"]["Num Samples"] = 10;
- korali["Solver"]["Num Viability Samples"] = 4;
+ korali["Solver"]["Sample Count"] = 10;
+ korali["Solver"]["Viability Sample Count"] = 4;
  korali["Solver"]["Adaption Size"] = 0.1;
  korali["Solver"]["Termination Criteria"]["Max Generations"]["Value"] = 1000;
  korali["Solver"]["Termination Criteria"]["Min DeltaX"]["Value"] = 1e-12;

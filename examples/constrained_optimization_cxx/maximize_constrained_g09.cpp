@@ -20,8 +20,8 @@ int main(int argc, char* argv[])
 
  korali["Solver"]["Method"] = "CCMA-ES";
  korali["Solver"]["Adaption Size"] = 0.1;
- korali["Solver"]["Num Samples"] = 8;
- korali["Solver"]["Num Viability Samples"] = 2;
+ korali["Solver"]["Sample Count"] = 8;
+ korali["Solver"]["Viability Sample Count"] = 2;
  korali["Solver"]["Termination Criteria"]["Fitness"]["Value"] = -680.630057374402 - 1e-4;
  korali["Solver"]["Termination Criteria"]["Min DeltaX"]["Value"] = 1e-12;
  

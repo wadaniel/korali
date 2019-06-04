@@ -128,7 +128,7 @@ nlohmann::json CMAES::getConfiguration()
 
  js["Method"] = "CMA-ES";
 
- js["Num Samples"]             = _s;
+ js["Sample Count"]             = _s;
  js["Sigma Cumulation Factor"] = _sigmaCumulationFactor;
  js["Damp Factor"]             = _dampFactor;
  js["Objective"]               = _objective;
@@ -197,7 +197,7 @@ void CMAES::setConfiguration(nlohmann::json& js)
 {
  this->Korali::Solver::Base::setConfiguration(js);
 
- _s                             = consume(js, { "Num Samples" }, KORALI_NUMBER);
+ _s                             = consume(js, { "Sample Count" }, KORALI_NUMBER);
  _sigmaCumulationFactorIn       = consume(js, { "Sigma Cumulation Factor" }, KORALI_NUMBER, std::to_string(-1));
  _dampFactorIn                  = consume(js, { "Damp Factor" }, KORALI_NUMBER, std::to_string(-1));
  _objective                     = consume(js, { "Objective" }, KORALI_STRING, "Maximize");

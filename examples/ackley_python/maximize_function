@@ -17,7 +17,7 @@ for i in range(4):
     k["Problem"]["Variables"][i]["Maximum"] = +32.0
 
 k["Solver"]["Method"] = "CMA-ES";
-k["Solver"]["Num Samples"] = 10;
+k["Solver"]["Sample Count"] = 10;
 k["Solver"]["Termination Criteria"]["Max Generations"]["Value"] = 100;
 k["Solver"]["Termination Criteria"]["Min DeltaX"]["Value"] = 1e-12;
 

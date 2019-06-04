@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
  korali["Conduit"]["Type"] = "MPI";
 
  korali["Solver"]["Method"] = "CMA-ES";
- korali["Solver"]["Num Samples"] = 32;
+ korali["Solver"]["Sample Count"] = 32;
 
  korali.setModel([](Korali::ModelData& d) { heat2DSolver(d.getVariables(), d.getResults()); });
 

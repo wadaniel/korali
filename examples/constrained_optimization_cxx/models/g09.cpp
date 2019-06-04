@@ -10,9 +10,9 @@ void g09(std::vector<double>& pars, std::vector<double>& result)
   size_t nPars = pars.size();
   if (nPars != 7) { printf("g09: num pars must be 7\n"); exit(-1); }
     
-  double res = std::pow(pars[0] - 10.0,2) + 5.0 * std::pow(pars[1] - 12.0,2)
-              + std::pow(pars[2], 4.) + 3.0 * std::pow(pars[3] - 11.0,2)            
-              + 10.0 * std::pow(pars[4], 6) + 7.0 * std::pow(pars[5],2) + std::pow(pars[6], 4.)       
+  double res = pow(pars[0] - 10.0,2) + 5.0 * pow(pars[1] - 12.0,2)
+              + pow(pars[2], 4.) + 3.0 * pow(pars[3] - 11.0,2)
+              + 10.0 * pow(pars[4], 6) + 7.0 * pow(pars[5],2) + pow(pars[6], 4.)
               - 4.0 * pars[5] * pars[6] - 10.0 * pars[5] - 8.0 * pars[6];
 
   result.push_back(-res);

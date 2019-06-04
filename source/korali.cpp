@@ -130,23 +130,15 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
 
  int rankCount = 1;
 
- auto cString =  consume(js, { "Conduit", "Type" }, KORALI_STRING, "Undefined");
-
- #ifdef _KORALI_USE_MPI
-  int isInitialized;
-  MPI_Initialized(&isInitialized);
-  if (isInitialized == false)  MPI_Init(nullptr, nullptr);
-  MPI_Comm_size(MPI_COMM_WORLD, &rankCount);
- #endif
-
- if (cString == "Undefined" && rankCount == 1) cString = "Single";
- if (cString == "Undefined" && rankCount  > 1) cString = "MPI";
+ auto cString =  consume(js, { "Conduit", "Type" }, KORALI_STRING, "Single");
 
  bool foundConduit = false;
 
- if (cString == "Single")        { _conduit = new Korali::Conduit::Single(js["Conduit"]); foundConduit = true; }
+ if (cString == "Single")       { _conduit = new Korali::Conduit::Single(js["Conduit"]);       foundConduit = true; }
  #ifdef _KORALI_USE_MPI
- if (cString == "MPI")           { _conduit = new Korali::Conduit::KoraliMPI(js["Conduit"]); foundConduit = true; }
+ if (cString == "MPI")          { _conduit = new Korali::Conduit::KoraliMPI(js["Conduit"]);    foundConduit = true; }
+ #else
+ if (cString == "MPI")          { fprintf(stderr, "[Korali] Error: MPI Conduit selected, but Korali has not been compiled with MPI support."); exit(-1); }
  #endif
  if (cString == "Nonintrusive") { _conduit = new Korali::Conduit::Nonintrusive(js["Conduit"]); foundConduit = true; }
 

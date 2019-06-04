@@ -108,7 +108,7 @@ void Nonintrusive::checkProgress()
   read(_pipeDescriptors[launcherId][0], &fitness, sizeof(double));
   _k->_solver->processSample(sampleId, fitness);
   close(_pipeDescriptors[launcherId][1]); // Closing pipes
-  close(_pipeDescriptors[launcherId][0]);
+  close(_pipeDescriptors[launcherId][0]); // Closing pipes
   _launcherQueue.push(launcherId);
  }
 

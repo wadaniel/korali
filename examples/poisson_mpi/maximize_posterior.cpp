@@ -67,7 +67,8 @@ int main(int argc, char* argv[])
  korali["Solver"]["Termination Criteria"]["Fitness Diff Threshold"]["Value"] = 1e-4;
  korali["Solver"]["Termination Criteria"]["Max Condition Covariance"]["Value"] = 1e10;
  
- korali["Conduit"]["Ranks Per Team"] = 2;
+ korali["Conduit"]["Type"] = "MPI";
+ korali["Conduit"]["Ranks Per Team"] = 4;
 
  std::vector<double> xdata;
 

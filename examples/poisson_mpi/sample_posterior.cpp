@@ -66,7 +66,8 @@ int main(int argc, char* argv[])
  korali["Solver"]["Population Size"] = 100;
  korali["Solver"]["Min Rho Update"] = 0.0;
  
- korali["Conduit"]["Ranks Per Team"] = 2;
+ korali["Conduit"]["Type"] = "MPI";
+ korali["Conduit"]["Ranks Per Team"] = 4;
 
  std::vector<double> xdata;
 

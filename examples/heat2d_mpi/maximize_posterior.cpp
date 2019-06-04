@@ -37,6 +37,8 @@ int main(int argc, char* argv[])
  for (size_t i = 0; i < p.refTemp.size(); i++)
 	 korali["Problem"]["Reference Data"][i] = p.refTemp[i];
 
+ korali["Conduit"]["Type"] = "MPI";
+
  korali["Solver"]["Method"] = "CMA-ES";
  korali["Solver"]["Lambda"] = 32;
 

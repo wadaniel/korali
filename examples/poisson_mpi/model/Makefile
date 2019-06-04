@@ -1,19 +1,19 @@
-CXXFLAGS = -O3 -g -std=c++11 -Wall -Wfatal-errors
+CXXFLAGS = -O3 -g
 OBJECTS = jacobi.o
-MPICXX = mpicxx
+KORALICXX=$(shell python3 -m korali.cxx --compiler)
 
 .SECONDARY:
 .PHONY: all
 all: $(OBJECTS) main
 
 main: jacobi.o main.o
-	$(MPICXX) -o $@ $?
+	$(KORALICXX) -o $@ $?
 
 jacobi.o: jacobi.cpp
-	$(MPICXX) -c $(CXXFLAGS) $<	
+	$(KORALICXX) -c $(CXXFLAGS) $<	
 
 main.o: main.cpp
-	$(MPICXX) -c $(CXXFLAGS) $<	
+	$(KORALICXX) -c $(CXXFLAGS) $<	
 
 .PHONY: clean
 clean:

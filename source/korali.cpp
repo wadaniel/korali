@@ -138,7 +138,7 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
  #ifdef _KORALI_USE_MPI
  if (cString == "MPI")          { _conduit = new Korali::Conduit::KoraliMPI(js["Conduit"]);    foundConduit = true; }
  #else
- if (cString == "MPI")          { fprintf(stderr, "[Korali] Error: MPI Conduit selected, but Korali has not been compiled with MPI support."); exit(-1); }
+ if (cString == "MPI")          { fprintf(stderr, "[Korali] Error: MPI Conduit selected, but Korali has not been compiled with MPI support.\n"); exit(-1); }
  #endif
  if (cString == "Nonintrusive") { _conduit = new Korali::Conduit::Nonintrusive(js["Conduit"]); foundConduit = true; }
 

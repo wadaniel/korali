@@ -285,7 +285,7 @@ void CMAES::initInternals()
  if      (_muType == "Linear")      for (size_t i = 0; i < _mu; i++) _muWeights[i] = _mu - i;
  else if (_muType == "Equal")       for (size_t i = 0; i < _mu; i++) _muWeights[i] = 1;
  else if (_muType == "Logarithmic") for (size_t i = 0; i < _mu; i++) _muWeights[i] = log(std::max( (double)_mu, 0.5*_s)+0.5)-log(i+1.);
- else  { fprintf( stderr, "[Korali] Error: Invalid setting of Mu Type (%s) (Linear, Equal or Logarithmic accepted).", _muType); exit(-1); }
+ else  { fprintf( stderr, "[Korali] Error: Invalid setting of Mu Type (%s) (Linear, Equal or Logarithmic accepted).", _muType.c_str()); exit(-1); }
 
  // Normalize weights vector and set mueff
  double s1 = 0.0;

@@ -4,6 +4,10 @@
 #include <stdlib.h>
 #include "json/json.hpp"
 
+#ifndef _KORALI_USE_MPI
+ typedef long int MPI_Comm;
+#endif
+
 namespace Korali { namespace Conduit {
 
 class Base {
@@ -40,11 +44,9 @@ namespace Korali
   std::vector<double>& getResults() { return _self->_results; }
   size_t& getHashId() { return _self->_hashId; }
 
-  #ifdef _KORALI_USE_MPI
   MPI_Comm _comm;
   MPI_Comm getComm() { return _self->_comm; }
   long int getCommPointer() { return (long int)(&_self->_comm); }
-  #endif
 
   double getVariable(size_t i)
   {

@@ -46,7 +46,7 @@
  },
  "Solver": {
   "Method": "CMA-ES",
-  "Lambda": 10,
+  "Sample Count": 10,
   "Termination Criteria": {
    "Max Generations": {
     "Active": true,

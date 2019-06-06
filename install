@@ -244,8 +244,12 @@ CXXARCH="-std=c++14"
 which $USE_CXX | grep "cray" >> install.log 2>&1
 if [ $? -eq 0 ]; then
   logEcho "[Korali] Assuming Cray System."
-  CXXARCH="-hstd=c++14"
-  PYBIND11LIBS=`echo $PYBIND11LIBS | sed 's/-Xlinker//g' | sed 's/-export-dynamic//g'`
+  CC -craype-verbose 2>&1 | grep "driver.CC" >> install.log 2>&1
+  if [ $? -eq 0 ]; then
+   logEcho "[Korali] Detected Cray compiler."
+   CXXARCH="-hstd=c++14"
+   PYBIND11LIBS=`echo $PYBIND11LIBS | sed 's/-Xlinker//g' | sed 's/-export-dynamic//g'`
+  fi
 fi
 
 ######## Checking selected compiler #######

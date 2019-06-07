@@ -78,6 +78,7 @@ class CCMAES : public Base
 
  // Private CMAES-Specific Variables
  double sigma;  /* step size */
+ double _trace; /* to init sigma (or set upper bound) */
  Variable::Gaussian* _gaussianGenerator;
 
  double bestEver; /* best ever fitness */

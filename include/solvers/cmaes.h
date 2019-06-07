@@ -60,6 +60,7 @@ class CMAES : public Base
  double _covarianceMatrixLearningRate; /* parameter to calibrate cov updates */
  double _chiN; /* expectation of ||N(0,I)||^2 */
  bool   _isdiag; /* diagonal covariance matrix */
+ bool   _isSigmaBounded; /* activate upper bound for sigma */
  size_t _covarianceEigenEvalFreq;
 
  // Stop conditions
@@ -76,6 +77,7 @@ class CMAES : public Base
 
  // Private CMAES-Specific Variables
  double sigma;  /* step size */
+ double _trace; /* to init sigma (or set upper bound) */
  Variable::Gaussian* _gaussianGenerator;
 
  double bestEver; /* best ever fitness */

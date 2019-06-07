@@ -60,23 +60,12 @@ CMAES::CMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
  // Setting eigensystem evaluation Frequency
  if( _covarianceEigenEvalFreq < 0.0) _covarianceEigenEvalFreq = 1.0/_covarianceMatrixLearningRate/((double)_k->_problem->N)/10.0;
 
- double trace = 0.0;
- for (size_t i = 0; i < _k->_problem->N; ++i) trace += _k->_problem->_variables[i]->_initialStdDev*_k->_problem->_variables[i]->_initialStdDev;
- sigma = sqrt(trace/_k->_problem->N); /* _muEffective/(0.2*_muEffective+sqrt(_k->_problem->N)) * sqrt(trace/_k->_problem->N); */
-
  flgEigensysIsUptodate = true;
 
  countevals = 0;
  countinfeasible = 0;
  resampled = 0;
  bestEver = -std::numeric_limits<double>::max();
-
- for (size_t i = 0; i < _k->_problem->N; ++i)
- {
-  B[i][i] = 1.0;
-  C[i][i] = axisD[i] = _k->_problem->_variables[i]->_initialStdDev * sqrt(_k->_problem->N / trace);
-  C[i][i] *= C[i][i];
- }
 
  minEW = doubleRangeMin(axisD, _k->_problem->N); minEW = minEW * minEW;
  maxEW = doubleRangeMax(axisD, _k->_problem->N); maxEW = maxEW * maxEW;
@@ -133,6 +122,7 @@ nlohmann::json CMAES::getConfiguration()
  js["Damp Factor"]             = _dampFactor;
  js["Objective"]               = _objective;
  js["Max Resamplings"]         = _maxResamplings;
+ js["Sigma Bounded"]           = _isSigmaBounded;
  
  js["Mu"]["Value"]      = _mu;
  js["Mu"]["Type"]       = _muType;
@@ -202,6 +192,7 @@ void CMAES::setConfiguration(nlohmann::json& js)
  _dampFactorIn                  = consume(js, { "Damp Factor" }, KORALI_NUMBER, std::to_string(-1));
  _objective                     = consume(js, { "Objective" }, KORALI_STRING, "Maximize");
  _maxResamplings                = consume(js, { "Max Resamplings" }, KORALI_NUMBER, std::to_string(1e6));
+ _isSigmaBounded                = consume(js, { "Sigma Bounded" }, KORALI_BOOLEAN, "false");
 
  _fitnessSign = 0;
  if(_objective == "Maximize") _fitnessSign = 1;
@@ -330,15 +321,15 @@ void CMAES::initInternals()
         + _sigmaCumulationFactor; /* minor increment */
  
  // Setting Sigma
- double trace = 0.0;
- for (size_t i = 0; i < _k->_problem->N; ++i) trace += _k->_problem->_variables[i]->_initialStdDev*_k->_problem->_variables[i]->_initialStdDev;
- sigma = sqrt(trace/_k->_problem->N); /* _muEffective/(0.2*_muEffective+sqrt(_k->_problem->N)) * sqrt(trace/_k->_problem->N); */
+ _trace = 0.0;
+ for (size_t i = 0; i < _k->_problem->N; ++i) _trace += _k->_problem->_variables[i]->_initialStdDev*_k->_problem->_variables[i]->_initialStdDev;
+ sigma = sqrt(_trace/_k->_problem->N); /* _muEffective/(0.2*_muEffective+sqrt(_k->_problem->N)) * sqrt(_trace/_k->_problem->N); */
 
  // Setting B, C and axisD
  for (size_t i = 0; i < _k->_problem->N; ++i)
  {
   B[i][i] = 1.0;
-  C[i][i] = axisD[i] = _k->_problem->_variables[i]->_initialStdDev * sqrt(_k->_problem->N / trace);
+  C[i][i] = axisD[i] = _k->_problem->_variables[i]->_initialStdDev * sqrt(_k->_problem->N / _trace);
   C[i][i] *= C[i][i];
  }
 
@@ -533,8 +524,15 @@ void CMAES::updateDistribution(const double *fitnessVector)
  // update sigma & viability boundaries
  //sigma *= exp(((sqrt(psL2)/_chiN)-1.)*_sigmaCumulationFactor/_dampFactor) (orig, alternative)
  sigma *= exp(std::min(1.0, ((sqrt(psL2)/_chiN)-1.)*_sigmaCumulationFactor/_dampFactor));
-
-
+ 
+ /* upper bound for sigma */
+ double sigma_upper = sqrt(_trace/_k->_problem->N);
+ if( _isSigmaBounded && (sigma > sigma_upper) ) {
+     fprintf(stderr, "[Korali] Warning: sigma bounded by %f, increase Initial Std of vairables.\n", sigma_upper);
+     sigma = sigma_upper;
+ }
+ 
+ 
  /* numerical error management */
  
  //treat maximal standard deviations

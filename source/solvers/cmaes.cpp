@@ -474,8 +474,8 @@ void CMAES::updateDistribution(const double *fitnessVector)
  prevFunctionValue = currentFunctionValue;
 
  /* update current best */
- currentFunctionValue = fitnessVector[0];
- for (size_t d = 0; d < _k->_problem->N; ++d) curBestVector[d] = _samplePopulation[d];
+ currentFunctionValue = fitnessVector[index[0]];
+ for (size_t d = 0; d < _k->_problem->N; ++d) curBestVector[d] = _samplePopulation[index[0]*_k->_problem->N+d];
  
  /* update xbestever */
  //TODO: what if we minimize

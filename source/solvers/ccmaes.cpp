@@ -142,11 +142,13 @@ nlohmann::json CCMAES::getConfiguration()
 
  js["Method"] = "CCMA-ES";
 
- js["Sample Count"]             = _s;
- js["Viability Sample Count"]   = _via_s;
+ js["Sample Count"]            = _s;
+ js["Viability Sample Count"]  = _via_s;
  js["Sigma Cumulation Factor"] = _sigmaCumulationFactor;
  js["Damp Factor"]             = _dampFactor;
  js["Objective"]               = _objective;
+ js["Max Resamplings"]         = _maxResamplings;
+ js["Sigma Bounded"]           = _isSigmaBounded;
 
  js["Mu"]["Value"]      = _mu;
  js["Mu"]["Viability"]  = _via_mu;
@@ -208,7 +210,6 @@ nlohmann::json CCMAES::getConfiguration()
  js["Target Success Rate"]          = _targetSucRate;
  js["Adaption Size"]                = _adaptionSize;
  js["Max Corrections"]              = _maxCorrections;
- js["Max Resamplings"]              = _maxResamplings;
  js["Normal Vector Learning Rate"]  = _cv;
  js["Global Success Learning Rate"] = _cp;
  
@@ -236,6 +237,8 @@ void CCMAES::setConfiguration(nlohmann::json& js)
  _sigmaCumulationFactorIn       = consume(js, { "Sigma Cumulation Factor" }, KORALI_NUMBER, std::to_string(-1));
  _dampFactorIn                  = consume(js, { "Damp Factor" }, KORALI_NUMBER, std::to_string(-1));
  _objective                     = consume(js, { "Objective" }, KORALI_STRING, "Maximize");
+ _maxResamplings                = consume(js, { "Max Resamplings" }, KORALI_NUMBER, std::to_string(1e6));
+ _isSigmaBounded                = consume(js, { "Sigma Bounded" }, KORALI_BOOLEAN, "false");
 
  _fitnessSign = 0;
  if(_objective == "Maximize") _fitnessSign = 1;
@@ -274,7 +277,6 @@ void CCMAES::setConfiguration(nlohmann::json& js)
  _targetSucRate  = consume(js, { "Target Success Rate" }, KORALI_NUMBER, std::to_string(2./11.));
  _adaptionSize   = consume(js, { "Adaption Size" }, KORALI_NUMBER, std::to_string(0.1));
  _maxCorrections = consume(js, { "Max Corrections" }, KORALI_NUMBER, std::to_string(1e6));
- _maxResamplings = consume(js, { "Max Resamplings" }, KORALI_NUMBER, std::to_string(1e6));
  _cv             = consume(js, { "Normal Vector Learning Rate" }, KORALI_NUMBER, std::to_string(1.0/(_current_s+2.)));
  _cp             = consume(js, { "Global Success Learning Rate" }, KORALI_NUMBER, std::to_string(1.0/12.0));
  globalSucRate   = consume(js, { "State", "Global Success Rate" }, KORALI_NUMBER, std::to_string(0.44));
@@ -394,15 +396,15 @@ void CCMAES::initInternals(size_t numsamplesmu)
         + _sigmaCumulationFactor; /* minor increment */
  
  // Setting Sigma
- double trace = 0.0;
- for (size_t i = 0; i < _k->_problem->N; ++i) trace += _k->_problem->_variables[i]->_initialStdDev*_k->_problem->_variables[i]->_initialStdDev;
- sigma = sqrt(trace/_k->_problem->N); /* _muEffective/(0.2*_muEffective+sqrt(_k->_problem->N)) * sqrt(trace/_k->_problem->N); */
+ _trace = 0.0;
+ for (size_t i = 0; i < _k->_problem->N; ++i) _trace += _k->_problem->_variables[i]->_initialStdDev*_k->_problem->_variables[i]->_initialStdDev;
+ sigma = sqrt(_trace/_k->_problem->N); /* _muEffective/(0.2*_muEffective+sqrt(_k->_problem->N)) * sqrt(_trace/_k->_problem->N); */
 
  // Setting B, C and axisD
  for (size_t i = 0; i < _k->_problem->N; ++i)
  {
   B[i][i] = 1.0;
-  C[i][i] = axisD[i] = _k->_problem->_variables[i]->_initialStdDev * sqrt(_k->_problem->N / trace);
+  C[i][i] = axisD[i] = _k->_problem->_variables[i]->_initialStdDev * sqrt(_k->_problem->N / _trace);
   C[i][i] *= C[i][i];
  }
 
@@ -709,6 +711,13 @@ void CCMAES::updateDistribution(const double *fitnessVector)
    sigma *= exp(std::min(1.0, ((sqrt(psL2)/_chiN)-1.)*_sigmaCumulationFactor/_dampFactor));
  }
 
+ /* upper bound for sigma */
+ double sigma_upper = sqrt(_trace/_k->_problem->N);
+ if( _isSigmaBounded && (sigma > sigma_upper) ) {
+     fprintf(stderr, "[Korali] Warning: sigma bounded by %f, increase Initial Std of vairables.\n", sigma_upper);
+     sigma = sigma_upper;
+ }
+ 
 
  /* numerical error management */
  

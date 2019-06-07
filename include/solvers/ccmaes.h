@@ -62,6 +62,7 @@ class CCMAES : public Base
  double _covarianceMatrixLearningRate; /* parameter to calibrate cov updates */
  double _chiN; /* expectation of ||N(0,I)||^2 */
  bool   _isdiag; /* diagonal covariance matrix */
+ bool   _isSigmaBounded; /* activate upper bound for sigma */
  size_t _covarianceEigenEvalFreq;
 
  // Stop conditions

@@ -71,54 +71,6 @@ korali["Problem"]["Variables"][0]["Minimum"] = -10.0
 korali["Problem"]["Variables"][0]["Maximum"] = +10.0
 ```
 
-
-###  The Solver
-Next, we choose the solver `CMA-ES`, the population size to be `5` and set
-two termination criteria,
-
-```python
-korali["Solver"]["Method"] = "CMA-ES"
-korali["Solver"]["Lambda"] = 5
-korali["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-8
-korali["Solver"]["Termination Criteria"]["Max Generations"] = 100
-```
-For a detailed description of CMA-ES settings see [here](../../usage/solvers/optimizers/cmaes.md).
-
-###  Run
-We set the `Seed` to a fixed value and the `Verbosity` level to the maximum available,
-
-```python
-korali["Seed"] = 0xC0FFEE;
-korali["Verbosity"] = "Detailed";
-```
-
-Finally, we are ready to run the simulation,
-
-```python
-korali.run();
-```
-
-The results are saved in the folder `_korali_result/`.
-
-
-###  Plot
-
-You can see the results of CMA-ES by running the command,
-```sh
-korali-plot
-```
-
-![figure](direct-cma.png)
-
-
-
-
-
-
-## Sample
-
-The code in **Python** for this part can be found [here](https://github.com/cselab/sKorali/blob/master/examples/python/quick_start/direct_sample.py) and the code in **C++** can be found [here](https://github.com/cselab/skorali/blob/master/examples/cxx/quick_start/direct_sample.cpp).
-
 ###  The Solver
 
 We set the solver to `TMCMC` sampler and set a few settings,

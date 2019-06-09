@@ -5,13 +5,13 @@ edit_uri: ''
 
 nav:
   - Home: index.md
-  - Setup:
-      - Installing Korali: setup/installation.md
-      - Configuration: setup/configuration.md
-      - System Requirements: setup/requirements.md
-  - Tutorials:
-      - 1. Direct Problem: tutorials/direct/direct.md
-      - 2. Bayesian Inference: tutorials/bayesian/bayesian.md
+  - Installation: installation.md
+  - Getting Started:
+      - Tutorials:
+         - 1. Optimization: tutorials/optimization/optimization.md
+         - 2. Sampling: tutorials/sampling/sampling.md
+         - 3. Bayesian Inference: tutorials/bayesian/bayesian.md
+      - Examples: examples/index.html
   - User Manual:
       - Introduction: usage/introduction.md
       - Modules:

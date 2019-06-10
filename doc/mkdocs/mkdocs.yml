@@ -6,35 +6,33 @@ edit_uri: ''
 nav:
   - Home: index.md
   - Installation: installation.md
-  - Getting Started:
-      - Tutorials:
-         - 1. Optimization: tutorials/optimization/optimization.md
-         - 2. Sampling: tutorials/sampling/sampling.md
-         - 3. Bayesian Inference: tutorials/bayesian/bayesian.md
-      - Examples: examples/index.html
+  - Tutorials:
+     - 1. Optimization: tutorials/optimization/optimization.md
+     - 2. Sampling: tutorials/sampling/sampling.md
+     - 3. Bayesian Inference: tutorials/bayesian/bayesian.md
   - User Manual:
       - Introduction: usage/introduction.md
-      - Modules:
-          - Problem:
-              - Direct evaluation: usage/problem/direct.md
-              - Bayesian inference: usage/problem/bayesian.md
-          - Variables:
-              - Cauchy: usage/variables/cauchy.md
-              - Exponential: usage/variables/exponential.md
-              - Gamma: usage/variables/gamma.md
-              - Gaussian: usage/variables/gaussian.md
-              - Laplace: usage/variables/laplace.md
-              - Uniform: usage/variables/uniform.md
-          - Solvers:
-              - Optimizers:
-                - CMA-ES: usage/solvers/optimizers/cmaes.md
-              - Samplers:
-                - TMCMC: usage/solvers/samplers/tmcmc.md
-          - Conduits:
-              - Sequential: usage/conduits/sequential.md
-              - Multithreaded: usage/conduits/multithreaded.md
-              - UPC++: usage/conduits/upcxx.md
-              - MPI: usage/conduits/mpi.md
+      - Evaluation Type:
+          - Direct: usage/evaluation/direct.md
+          - Bayesian: usage/evaluation/bayesian.md
+      - Variables:
+          - Cauchy: usage/distributions/cauchy.md
+          - Exponential: usage/distributions/exponential.md
+          - Gamma: usage/distributions/gamma.md
+          - Gaussian: usage/distributions/gaussian.md
+          - Laplace: usage/distributions/laplace.md
+          - Uniform: usage/distributions/uniform.md
+      - Solvers:
+          - Optimizers:
+            - CMA-ES: usage/solvers/optimizers/cmaes.md
+            - Constrained CMA-ES: usage/solvers/optimizers/cmaes.md
+          - Samplers:
+            - TMCMC: usage/solvers/samplers/tmcmc.md
+      - Conduits:
+          - Sequential: usage/conduits/sequential.md
+          - Multithreaded: usage/conduits/multithreaded.md
+          - UPC++: usage/conduits/upcxx.md
+          - MPI: usage/conduits/mpi.md
       - Tools:
           - korali-cxx: usage/tools/korali-cxx.md
           - korali-config: usage/tools/korali-config.md
@@ -67,7 +65,7 @@ markdown_extensions:
   - codehilite
 
 extra_css:
-    - css/extra.css
+    - style.css
 
 extra_javascript:
   - 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML'

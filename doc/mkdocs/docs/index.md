@@ -1,32 +1,30 @@
-# ![](logos/tmp.svg){: style="height:25px;width:25px"} Korali
+# ![](images/tmp.svg){: style="height:25px;width:25px"} Korali
 
 **Korali** is a high-performance computing framework for optimization, sampling and Bayesian uncertainty quantification of large-scale computational models.
 
 ## What Korali does for you
 
-  - [**Direct problems.**](tutorials/direct/direct.md) Given any function $f:\mathbb{R}\rightarrow\mathbb{R}^N$ Korali can
-    - [**Optimize:**](tutorials/direct/direct.md#optimize) find the minima or maxima of $f$
+  - [**Optimization.**](tutorials/optimization/optimization.md) Given any function $f:\mathbb{R}^N\rightarrow\mathbb{R}$ Korali can find its minima or maxima:
     $$
 	\vartheta^\star = \mathop{\arg\min}\limits_{\vartheta}  \,\,\, f(\vartheta) \,,
 	$$
 
-	- [**Sample:**](tutorials/direct/direct.md#sample) treat $f$ as an unnormalized density and draw samples from it
+  - [**Sampling.**](tutorials/sampling/sampling.md) treat $f$ as an unnormalized density and draw samples from it:
 	$$
 	\vartheta^{(k)} \sim f.
 	$$  
 
-  - [**Bayesian Inference.**](tutorials/bayesian/bayesian.md) Given a set of data $d$, the output of a computational model $f(x;\vartheta)$, a likelihood function $p(d|\vartheta)$,  and a prior probability density $p(\vartheta)$ Korali will build
-the posterior distribution below and enabling the following operations:
+  - [**Bayesian Inference.**](tutorials/bayesian/bayesian.md) Given a set of data $d$, the output of a computational model $f(x;\vartheta)$, a likelihood function $p(d|\vartheta)$,  and a prior probability density $p(\vartheta)$ Korali will build the posterior distribution below:
     $$
 	p(\vartheta | d) \, = \, \frac{p(d | \vartheta) \,\, p(\vartheta)}{p(d)}\, .
 	$$
 
-    - [**Compute the maximum a posteriori estimate**](tutorials/bayesian/bayesian.md#optimize)
+	Allowing users to compute the maximum a posteriori estimate:
     $$
     \vartheta^\star = \mathop{\arg\min}\limits_{\vartheta}  \,\,\, p(\theta | d) \,,
     $$
 
-    - [**Sample the posterior distribution**](tutorials/bayesian/bayesian.md#sample)
+    And sample its posterior distribution:
     $$
 	\vartheta^{(k)} \sim p(\theta | d).
     $$

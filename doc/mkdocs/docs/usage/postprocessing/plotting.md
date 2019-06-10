@@ -1,6 +1,4 @@
-# Postprocessing
-
-## Plotting
+# Plotting Results
 
 Korali Creates a graphical representation and plots for the results produced by a Korali application.
 

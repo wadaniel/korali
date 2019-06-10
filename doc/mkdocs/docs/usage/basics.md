@@ -37,7 +37,7 @@ To compile and link, you should use the flags provided by the ```korali.cxx``` m
 > $KORALICXX -o myApp myApp.o `python3 -m korali.cxx --libs`
 ```
 
-### Running a Korali Application
+## Running a Korali Application
 
 A Python/C++ application can be run just like any other application, through a shell command:
 
@@ -53,4 +53,12 @@ For distributed jobs, you can launch your Korali application with the SLURM/MPI/
 > upcxx-run -n 16 ./myApp myArguments
 ```
 
-## Adding Computational Model
+Once the Korali engine has started running, it will execute non-preemptively until a termination criterion is met. Each solver method exposes a different set of termination criteria which can be specified through Korali's [configuration](/usage/config). Some of these criteria are enabled by default, and others will only take effect if specified by the user.
+
+## Processing Results
+
+After execution, Korali will automatically create a results folder ```_korali\_result``` where it will save the entire state of the engine (i.e., a *checkpoint*) after each generation. Users can perform several operations on these results:
+
+- [Export to Format](/usage/postprocessing/export)
+- [Resume Execution](/usage/postprocessing/resume)
+- [Generate Plots](/usage/postprocessing/plotting)

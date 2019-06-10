@@ -103,7 +103,7 @@ You can use the following syntax to select, for example, the TMCMC sampler:
 k["Conduit"]["Type"] = "Nonintrusive"
 ```
 
-##Computational Model
+## Computational Model
 
 ```python
 # Defining Computational Model

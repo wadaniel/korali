@@ -33,7 +33,10 @@ nav:
           - Semi-Intrusive: usage/conduits/semi-intrusive.md
           - Distributed: usage/conduits/distributed.md
           - Nonintrusive: usage/conduits/nonintrusive.md
-      - Result Analysis: usage/results.md
+      - Processing Results: 
+          - Export Results: usage/postprocessing/export.md
+          - Resume Execution: usage/postprocessing/resume.md
+          - Generate Plots: usage/postprocessing/plotting.md
   - References: references.md
   - About Us: aboutus.md
 

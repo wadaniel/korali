@@ -511,12 +511,12 @@ void CCMAES::updateConstraints() //TODO: maybe parallelize constraint evaluation
     countcevals++;
     constraintEvaluations[c][i] = _k->_fconstraints[c]( _samplePopulation+i*_k->_problem->N, _k->_problem->N );
     
+    if ( constraintEvaluations[c][i] > maxviolation ) maxviolation = constraintEvaluations[c][i];
+    if ( _currentGeneration == 0 && isVia ) viabilityBounds[c] = maxviolation;
+    
     if ( constraintEvaluations[c][i] > viabilityBounds[c] + 1e-12 ) numviolations[i]++;
     if ( numviolations[i] > maxnumviolations ) maxnumviolations = numviolations[i];
     
-    if ( constraintEvaluations[c][i] > maxviolation ) maxviolation = constraintEvaluations[c][i];
-    
-    if ( _currentGeneration == 0 && isVia ) viabilityBounds[c] = maxviolation;
   }
  }
 

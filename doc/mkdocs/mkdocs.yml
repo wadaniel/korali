@@ -11,35 +11,29 @@ nav:
      - 2. Sampling: tutorials/sampling/sampling.md
      - 3. Bayesian Inference: tutorials/bayesian/bayesian.md
   - User Manual:
-      - Introduction: usage/introduction.md
-      - Evaluation Type:
+      - Korali Basics: usage/basics.md
+      - Configuring Korali: usage/config.md
+      - Evaluation Types:
           - Direct: usage/evaluation/direct.md
           - Bayesian: usage/evaluation/bayesian.md
-      - Variables:
+      - Variable Distributions:
           - Cauchy: usage/distributions/cauchy.md
           - Exponential: usage/distributions/exponential.md
           - Gamma: usage/distributions/gamma.md
           - Gaussian: usage/distributions/gaussian.md
           - Laplace: usage/distributions/laplace.md
           - Uniform: usage/distributions/uniform.md
-      - Solvers:
+      - Solver Methods:
           - Optimizers:
             - CMA-ES: usage/solvers/optimizers/cmaes.md
             - Constrained CMA-ES: usage/solvers/optimizers/cmaes.md
           - Samplers:
             - TMCMC: usage/solvers/samplers/tmcmc.md
-      - Conduits:
-          - Sequential: usage/conduits/sequential.md
-          - Multithreaded: usage/conduits/multithreaded.md
-          - UPC++: usage/conduits/upcxx.md
-          - MPI: usage/conduits/mpi.md
-      - Tools:
-          - korali-cxx: usage/tools/korali-cxx.md
-          - korali-config: usage/tools/korali-config.md
-          - korali-plot: usage/tools/korali-plot.md
-      - Plotting:
-          - CMA-ES: usage/plotting/plotcmaes.md
-          - TMCMC: usage/plotting/plottmcmc.md
+      - Evaluation Conduits:
+          - Semi-Intrusive: usage/conduits/semi-intrusive.md
+          - Distributed: usage/conduits/distributed.md
+          - Nonintrusive: usage/conduits/nonintrusive.md
+      - Result Analysis: usage/results.md
   - References: references.md
   - About Us: aboutus.md
 

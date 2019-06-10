@@ -10,8 +10,8 @@ The Korali Project is written and maintained by
 
 ## Affiliations
 
-[![](logos/cselablogo.png)](https://www.cse-lab.ethz.ch/)<br><br>
-[![](logos/ethzlogo.jpg){: style="height:100px;"}](https://www.ethz.ch)
+[![](images/cselablogo.png)](https://www.cse-lab.ethz.ch/)<br><br>
+[![](images/ethzlogo.jpg){: style="height:100px;"}](https://www.ethz.ch)
 
 ## Credits
 

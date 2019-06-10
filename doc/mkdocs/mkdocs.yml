@@ -49,8 +49,7 @@ theme:
     font:
         text: 'Ubuntu'
         code: 'Ubuntu Mono'
-    logo:
-        icon: 'pie_chart'
+    logo: 'images/templogo.png'
 
 
 markdown_extensions:

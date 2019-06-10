@@ -6,7 +6,7 @@ korali-plot [RESULT_FOLDER] [-o OUTPUT_FORMAT] [-f OUTPUT_FILE]
 		   
 Given the input folder, korali-plot determines which solver was used by the
 Korali application and calls the appropriate Korali plotting script:
-
+ 
 RESULT_FOLDER
 Specifies the input folder containing Korali results.
 Default value: ./_korali_results

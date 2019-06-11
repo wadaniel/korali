@@ -76,13 +76,13 @@ CCMAES::CCMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
  /* set rgxmean */
  for (size_t i = 0; i < _k->_problem->N; ++i)
  {
-   if(_k->_problem->_variables[i]->_initialValue < _k->_problem->_variables[i]->_lowerBound || _k->_problem->_variables[i]->_initialValue > _k->_problem->_variables[i]->_upperBound)
+   if(_initialMeans[i] < _lowerBounds[i] || _initialMeans[i] > _upperBounds[i])
     fprintf(stderr,"[Korali] Warning: Initial Value (%.4f) for \'%s\' is out of bounds (%.4f-%.4f).\n", 
-            _k->_problem->_variables[i]->_initialValue,
+            _initialMeans[i],
             _k->_problem->_variables[i]->_name.c_str(),
-            _k->_problem->_variables[i]->_lowerBound,
-            _k->_problem->_variables[i]->_upperBound);
-   rgxmean[i] = rgxold[i] = _k->_problem->_variables[i]->_initialValue;
+            _lowerBounds[i],
+            _upperBounds[i]);
+   rgxmean[i] = rgxold[i] = _initialMeans[i];
  }
 
  // CCMA-ES variables
@@ -142,11 +142,13 @@ nlohmann::json CCMAES::getConfiguration()
 
  js["Method"] = "CCMA-ES";
 
- js["Sample Count"]             = _s;
- js["Viability Sample Count"]   = _via_s;
+ js["Sample Count"]            = _s;
+ js["Viability Sample Count"]  = _via_s;
  js["Sigma Cumulation Factor"] = _sigmaCumulationFactor;
  js["Damp Factor"]             = _dampFactor;
  js["Objective"]               = _objective;
+ js["Max Resamplings"]         = _maxResamplings;
+ js["Sigma Bounded"]           = _isSigmaBounded;
 
  js["Mu"]["Value"]      = _mu;
  js["Mu"]["Viability"]  = _via_mu;
@@ -208,7 +210,6 @@ nlohmann::json CCMAES::getConfiguration()
  js["Target Success Rate"]          = _targetSucRate;
  js["Adaption Size"]                = _adaptionSize;
  js["Max Corrections"]              = _maxCorrections;
- js["Max Resamplings"]              = _maxResamplings;
  js["Normal Vector Learning Rate"]  = _cv;
  js["Global Success Learning Rate"] = _cp;
  
@@ -236,11 +237,13 @@ void CCMAES::setConfiguration(nlohmann::json& js)
  _sigmaCumulationFactorIn       = consume(js, { "Sigma Cumulation Factor" }, KORALI_NUMBER, std::to_string(-1));
  _dampFactorIn                  = consume(js, { "Damp Factor" }, KORALI_NUMBER, std::to_string(-1));
  _objective                     = consume(js, { "Objective" }, KORALI_STRING, "Maximize");
+ _maxResamplings                = consume(js, { "Max Resamplings" }, KORALI_NUMBER, std::to_string(1e6));
+ _isSigmaBounded                = consume(js, { "Sigma Bounded" }, KORALI_BOOLEAN, "false");
 
  _fitnessSign = 0;
  if(_objective == "Maximize") _fitnessSign = 1;
  if(_objective == "Minimize") _fitnessSign = -1;
- if(_fitnessSign == 0)  { fprintf( stderr, "[Korali] Error: Invalid setting for Objective: %s\n", _objective.c_str()); exit(-1); }
+ if(_fitnessSign == 0)  { fprintf( stderr, "[Korali] CMA-ES Error: Invalid setting for Objective: %s\n", _objective.c_str()); exit(-1); }
 
  _mu                            = consume(js, { "Mu", "Value" }, KORALI_NUMBER, std::to_string(ceil(_s / 2)));
  _via_mu                        = consume(js, { "Mu", "Viability" }, KORALI_NUMBER, std::to_string(ceil(_via_s / 2)));
@@ -248,13 +251,32 @@ void CCMAES::setConfiguration(nlohmann::json& js)
  _muCovarianceIn                = consume(js, { "Mu", "Covariance" }, KORALI_NUMBER, std::to_string(-1));
  
  if(_via_mu < 1 || _mu < 1 ||  _via_mu > _via_s || _mu > _s || ( (( _via_mu == _via_s) ||  ( _mu == _s ))  && _muType.compare("Linear") ) )
-   { fprintf( stderr, "[Korali] Error: Invalid setting of Mu (%lu) and/or Lambda (%lu)\n", _mu, _s); exit(-1); }
+   { fprintf( stderr, "[Korali] CMA-ES Error: Invalid setting of Mu (%lu) and/or Lambda (%lu)\n", _mu, _s); exit(-1); }
  
  _covarianceEigenEvalFreq      = consume(js, { "Covariance Matrix", "Eigenvalue Evaluation Frequency" }, KORALI_NUMBER, std::to_string(0));
  _cumulativeCovarianceIn       = consume(js, { "Covariance Matrix", "Cumulative Covariance" }, KORALI_NUMBER, std::to_string(-1));
  _covMatrixLearningRateIn      = consume(js, { "Covariance Matrix", "Learning Rate" }, KORALI_NUMBER, std::to_string(-1));
  _isdiag                       = consume(js, { "Covariance Matrix", "Is Diagonal" }, KORALI_BOOLEAN, "false");
   
+ // Setting variable information
+
+ auto vec = consume(js, { "Initial Means" }, KORALI_ARRAY);
+ for (size_t i = 0; i < vec.size(); i++) _initialMeans.push_back(vec[i]);
+
+ vec = consume(js, { "Initial Standard Deviations" }, KORALI_ARRAY);
+ for (size_t i = 0; i < vec.size(); i++) _initialStdDevs.push_back(vec[i]);
+
+ vec = consume(js, { "Minimum Standard Deviation Changes" }, KORALI_ARRAY);
+ for (size_t i = 0; i < vec.size(); i++) _minStdDevChanges.push_back(vec[i]);
+
+ vec = consume(js, { "Lower Bounds" }, KORALI_ARRAY);
+ for (size_t i = 0; i < vec.size(); i++) _lowerBounds.push_back(vec[i]);
+
+ vec = consume(js, { "Upper Bounds" }, KORALI_ARRAY);
+ for (size_t i = 0; i < vec.size(); i++) _upperBounds.push_back(vec[i]);
+
+ // Setting termination criteria
+
  _termCondMaxGenerations          = consume(js, { "Termination Criteria", "Max Generations", "Value" }, KORALI_NUMBER, std::to_string(1000));
  _isTermCondMaxGenerations        = consume(js, { "Termination Criteria", "Max Generations", "Active" }, KORALI_BOOLEAN, "true");
  _termCondMaxFitnessEvaluations   = consume(js, { "Termination Criteria", "Max Model Evaluations", "Value" }, KORALI_NUMBER, std::to_string(std::numeric_limits<size_t>::max()));
@@ -274,13 +296,12 @@ void CCMAES::setConfiguration(nlohmann::json& js)
  _targetSucRate  = consume(js, { "Target Success Rate" }, KORALI_NUMBER, std::to_string(2./11.));
  _adaptionSize   = consume(js, { "Adaption Size" }, KORALI_NUMBER, std::to_string(0.1));
  _maxCorrections = consume(js, { "Max Corrections" }, KORALI_NUMBER, std::to_string(1e6));
- _maxResamplings = consume(js, { "Max Resamplings" }, KORALI_NUMBER, std::to_string(1e6));
  _cv             = consume(js, { "Normal Vector Learning Rate" }, KORALI_NUMBER, std::to_string(1.0/(_current_s+2.)));
  _cp             = consume(js, { "Global Success Learning Rate" }, KORALI_NUMBER, std::to_string(1.0/12.0));
  globalSucRate   = consume(js, { "State", "Global Success Rate" }, KORALI_NUMBER, std::to_string(0.44));
  
- if(_targetSucRate <= 0.0) { fprintf( stderr, "[Korali] Error: Invalid Target Success Rate (%f), must be greater 0.0\n", _targetSucRate ); exit(-1); }
- if(_adaptionSize <= 0.0) { fprintf( stderr, "[Korali] Error: Invalid Adaption Size (%f), must be greater 0.0\n", _adaptionSize ); exit(-1); }
+ if(_targetSucRate <= 0.0) { fprintf( stderr, "[Korali] CMA-ES Error: Invalid Target Success Rate (%f), must be greater 0.0\n", _targetSucRate ); exit(-1); }
+ if(_adaptionSize <= 0.0) { fprintf( stderr, "[Korali] CMA-ES Error: Invalid Adaption Size (%f), must be greater 0.0\n", _adaptionSize ); exit(-1); }
 
  // TODO: set Regime (is state, but should not be treated like the other cases) 
  isVia = consume(js, { "Viability Regime" }, KORALI_BOOLEAN, "true");
@@ -340,6 +361,46 @@ void CCMAES::setState(nlohmann::json& js)
 
 void CCMAES::initInternals(size_t numsamplesmu)
 {
+ // Setting variable information
+
+ if (_lowerBounds.size() == 0) for(size_t i = 0; i < _k->_problem->N; i++) _lowerBounds.push_back(-INFINITY);
+ else if (_lowerBounds.size() != _k->_problem->N) { fprintf( stderr, "[Korali] CMA-ES Error: Incorrect number of lower bounds defined. Expected: %lu, Provided: %lu\n.", _k->_problem->N, _lowerBounds.size()); exit(-1); }
+
+ if (_upperBounds.size() == 0) for(size_t i = 0; i < _k->_problem->N; i++) _upperBounds.push_back(+INFINITY);
+ else if (_upperBounds.size() != _k->_problem->N) { fprintf( stderr, "[Korali] CMA-ES Error: Incorrect number of upper bounds defined. Expected: %lu, Provided: %lu\n.", _k->_problem->N, _upperBounds.size()); exit(-1); }
+
+ for(size_t i = 0; i < _k->_problem->N; i++) if (_upperBounds[i] <= _lowerBounds[i])
+ { fprintf( stderr, "[Korali] CMA-ES Error: Invalid Lower (%f) - Upper (%f) bounds range defined for variable %d.\n", _lowerBounds[i], _upperBounds[i], i); exit(-1); }
+
+ if (_initialMeans.size() == 0)
+ for(size_t i = 0; i < _k->_problem->N; i++)
+ {
+  if( isinf(_upperBounds[i]) || isinf(_lowerBounds[i]) )
+  {
+    fprintf(stderr, "[Korali] CMA-ES Error: Either or both lower or upper bounds of variable %lu is infinite, you need to define its Initial Mean\n.", i);
+    exit(-1);
+  }
+  _initialMeans.push_back(0.5*(_lowerBounds[i]+_upperBounds[i]));
+ }
+ else if (_upperBounds.size() != _k->_problem->N) { fprintf( stderr, "[Korali] CMA-ES Error: Incorrect number of Initial Means defined. Expected: %lu, Provided: %lu\n.", _k->_problem->N, _initialMeans.size()); exit(-1); }
+
+ if (_initialStdDevs.size() == 0)
+ for(size_t i = 0; i < _k->_problem->N; i++)
+ {
+  if( isinf(_upperBounds[i]) || isinf(_lowerBounds[i]) )
+  {
+    fprintf(stderr, "[Korali] CMA-ES Error: Either or both lower or upper bounds of variable %lu is infinite, you need to define its Initial Standard Deviation.\n", i);
+    exit(-1);
+  }
+  _initialStdDevs.push_back(0.3*(_upperBounds[i]-_lowerBounds[i]));
+ }
+ else if (_initialStdDevs.size() != _k->_problem->N) { fprintf( stderr, "[Korali] CMA-ES Error: Incorrect number of Initial Standard Deviations defined. Expected: %lu, Provided: %lu\n.", _k->_problem->N, _initialStdDevs.size()); exit(-1); }
+
+ for(size_t i = 0; i < _k->_problem->N; i++)
+  if (_initialStdDevs[i] < 0.0) { fprintf(stderr, "[Korali] CMA-ES Error: Initial StdDev for variable %d is less or equal 0.\n", i);  exit(-1); }
+
+ if (_minStdDevChanges.size() == 0) for(size_t i = 0; i < _k->_problem->N; i++) _minStdDevChanges.push_back(0.0);
+ else if (_minStdDevChanges.size() != _k->_problem->N) { fprintf( stderr, "[Korali] CMA-ES Error: Incorrect number of Minimum Standard Deviation Changes defined. Expected: %lu, Provided: %lu\n.", _k->_problem->N, _minStdDevChanges.size()); exit(-1); }
 
  // Setting beta   
  _cv   = 1.0/(_current_s+2.);
@@ -349,7 +410,7 @@ void CCMAES::initInternals(size_t numsamplesmu)
  if      (_muType == "Linear")      for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = numsamplesmu - i;
  else if (_muType == "Equal")       for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = 1;
  else if (_muType == "Logarithmic") for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = log(std::max( (double)numsamplesmu, 0.5*_current_s)+0.5)-log(i+1.);
- else  { fprintf( stderr, "[Korali] Error: Invalid setting of Mu Type (%s) (Linear, Equal or Logarithmic accepted).", _muType.c_str()); exit(-1); }
+ else  { fprintf( stderr, "[Korali] CMA-ES Error: Invalid setting of Mu Type (%s) (Linear, Equal or Logarithmic accepted).", _muType.c_str()); exit(-1); }
 
  // Normalize weights vector and set mueff
  double s1 = 0.0;
@@ -394,15 +455,15 @@ void CCMAES::initInternals(size_t numsamplesmu)
         + _sigmaCumulationFactor; /* minor increment */
  
  // Setting Sigma
- double trace = 0.0;
- for (size_t i = 0; i < _k->_problem->N; ++i) trace += _k->_problem->_variables[i]->_initialStdDev*_k->_problem->_variables[i]->_initialStdDev;
- sigma = sqrt(trace/_k->_problem->N); /* _muEffective/(0.2*_muEffective+sqrt(_k->_problem->N)) * sqrt(trace/_k->_problem->N); */
+ _trace = 0.0;
+ for (size_t i = 0; i < _k->_problem->N; ++i) _trace += _initialStdDevs[i]*_initialStdDevs[i];
+ sigma = sqrt(_trace/_k->_problem->N); /* _muEffective/(0.2*_muEffective+sqrt(_k->_problem->N)) * sqrt(_trace/_k->_problem->N); */
 
  // Setting B, C and axisD
  for (size_t i = 0; i < _k->_problem->N; ++i)
  {
   B[i][i] = 1.0;
-  C[i][i] = axisD[i] = _k->_problem->_variables[i]->_initialStdDev * sqrt(_k->_problem->N / trace);
+  C[i][i] = axisD[i] = _initialStdDevs[i] * sqrt(_k->_problem->N / _trace);
   C[i][i] *= C[i][i];
  }
 
@@ -509,12 +570,12 @@ void CCMAES::updateConstraints() //TODO: maybe parallelize constraint evaluation
     countcevals++;
     constraintEvaluations[c][i] = _k->_fconstraints[c]( _samplePopulation+i*_k->_problem->N, _k->_problem->N );
     
+    if ( constraintEvaluations[c][i] > maxviolation ) maxviolation = constraintEvaluations[c][i];
+    if ( _currentGeneration == 0 && isVia ) viabilityBounds[c] = maxviolation;
+    
     if ( constraintEvaluations[c][i] > viabilityBounds[c] + 1e-12 ) numviolations[i]++;
     if ( numviolations[i] > maxnumviolations ) maxnumviolations = numviolations[i];
     
-    if ( constraintEvaluations[c][i] > maxviolation ) maxviolation = constraintEvaluations[c][i];
-    
-    if ( _currentGeneration == 0 && isVia ) viabilityBounds[c] = maxviolation;
   }
  }
 
@@ -556,7 +617,7 @@ void CCMAES::updateViabilityBoundaries()
 bool CCMAES::isFeasible(size_t sampleIdx) const
 {
  for (size_t d = 0; d < _k->_problem->N; ++d)
-  if (_samplePopulation[ sampleIdx*_k->_problem->N+d ] < _k->_problem->_variables[d]->_lowerBound || _samplePopulation[ sampleIdx*_k->_problem->N+d ] > _k->_problem->_variables[d]->_upperBound) return false;
+  if (_samplePopulation[ sampleIdx*_k->_problem->N+d ] < _lowerBounds[d] || _samplePopulation[ sampleIdx*_k->_problem->N+d ] > _upperBounds[d]) return false;
  return true;
 }
 
@@ -709,6 +770,13 @@ void CCMAES::updateDistribution(const double *fitnessVector)
    sigma *= exp(std::min(1.0, ((sqrt(psL2)/_chiN)-1.)*_sigmaCumulationFactor/_dampFactor));
  }
 
+ /* upper bound for sigma */
+ double sigma_upper = sqrt(_trace/_k->_problem->N);
+ if( _isSigmaBounded && (sigma > sigma_upper) ) {
+     fprintf(stderr, "[Korali] Warning: sigma bounded by %f, increase Initial Std of vairables.\n", sigma_upper);
+     sigma = sigma_upper;
+ }
+ 
 
  /* numerical error management */
  
@@ -716,9 +784,9 @@ void CCMAES::updateDistribution(const double *fitnessVector)
  //TODO
 
  //treat minimal standard deviations
- for (size_t d = 0; d < _k->_problem->N; ++d) if (sigma * sqrt(C[d][d]) < _k->_problem->_variables[d]->_minStdDevChange)
+ for (size_t d = 0; d < _k->_problem->N; ++d) if (sigma * sqrt(C[d][d]) < _minStdDevChanges[d])
  {
-   sigma = (_k->_problem->_variables[d]->_minStdDevChange)/sqrt(C[d][d]) * exp(0.05+_sigmaCumulationFactor/_dampFactor);
+   sigma = (_minStdDevChanges[d])/sqrt(C[d][d]) * exp(0.05+_sigmaCumulationFactor/_dampFactor);
    if (_k->_verbosity >= KORALI_DETAILED) fprintf(stderr, "[Korali] Warning: sigma increased due to minimal standard deviation.\n");
  }
 
@@ -891,7 +959,7 @@ bool CCMAES::checkTermination()
  }
 
  for(size_t i=0; i<_k->_problem->N; ++i)
-  if ( _isTermCondTolUpXFactor && (sigma * sqrt(C[i][i]) > _termCondTolUpXFactor * _k->_problem->_variables[i]->_initialStdDev) )
+  if ( _isTermCondTolUpXFactor && (sigma * sqrt(C[i][i]) > _termCondTolUpXFactor * _initialStdDevs[i]) )
   {
     terminate = true;
     sprintf(_terminationReason, "Standard deviation increased by more than %7.2e, larger initial standard deviation recommended \n", _termCondTolUpXFactor);

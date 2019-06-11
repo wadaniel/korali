@@ -22,7 +22,7 @@ nlohmann::json Korali::Problem::Direct::getConfiguration()
 {
  auto js = this->Korali::Problem::Base::getConfiguration();
 
- js["Type"] = "Direct";
+ js["Evaluation Type"] = "Direct";
 
  return js;
 }

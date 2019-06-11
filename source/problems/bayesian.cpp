@@ -22,7 +22,7 @@ nlohmann::json Korali::Problem::Bayesian::getConfiguration()
 {
  auto js = this->Korali::Problem::Base::getConfiguration();
 
- js["Type"] = "Bayesian";
+ js["Evaluation Type"] = "Bayesian";
 
  for (size_t i = 0; i < _referenceDataSize; i++) js["Reference Data"][i] = _referenceData[i];
 

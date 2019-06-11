@@ -3,29 +3,34 @@
 
 int main(int argc, char* argv[])
 {
- auto korali = Korali::Engine();
+ auto k = Korali::Engine();
 
- korali["Seed"] = 0xC0FFEE;
- korali["Verbosity"] = "Detailed";
+ k["Problem"]["Evaluation Type"] = "Direct";
 
- korali["Problem"]["Type"] = "Direct";
- for (int i = 0; i < 4; i++)
- {
-  korali["Problem"]["Variables"][i]["Name"] = "X" + std::to_string(i);
-  korali["Problem"]["Variables"][i]["Type"] = "Computational";
-  korali["Problem"]["Variables"][i]["Distribution"] = "Uniform";
-  korali["Problem"]["Variables"][i]["Minimum"] = -32.0;
-  korali["Problem"]["Variables"][i]["Maximum"] = +32.0;
- }
+ k["Problem"]["Variables"][0]["Name"] = "X0";
+ k["Problem"]["Variables"][1]["Name"] = "X1";
+ k["Problem"]["Variables"][2]["Name"] = "X2";
+ k["Problem"]["Variables"][3]["Name"] = "X3";
 
- korali["Solver"]["Method"] = "CMA-ES";
- korali["Solver"]["Sample Count"] = 10;
- korali["Solver"]["Termination Criteria"]["Max Generations"]["Value"] = 100;
- korali["Solver"]["Termination Criteria"]["Min DeltaX"]["Value"] = 1e-12;
- 
- korali.setModel([](Korali::ModelData& d) { m_ackley(d.getVariables(), d.getResults()); });
+ k["Solver"]["Method"] = "CMA-ES";
 
- korali.run();
+ k["Solver"]["Lower Bounds"][0] = -32.0;
+ k["Solver"]["Lower Bounds"][1] = -32.0;
+ k["Solver"]["Lower Bounds"][2] = -32.0;
+ k["Solver"]["Lower Bounds"][3] = -32.0;
+
+ k["Solver"]["Upper Bounds"][0] = +32.0;
+ k["Solver"]["Upper Bounds"][1] = +32.0;
+ k["Solver"]["Upper Bounds"][2] = +32.0;
+ k["Solver"]["Upper Bounds"][3] = +32.0;
+
+ k["Solver"]["Sample Count"] = 10;
+ k["Solver"]["Termination Criteria"]["Max Generations"]["Value"] = 100;
+ k["Solver"]["Termination Criteria"]["Min DeltaX"]["Value"] = 1e-7;
+
+ k.setModel([](Korali::ModelData& d) { m_ackley(d.getVariables(), d.getResults()); });
+
+ k.run();
 
  return 0;
 }

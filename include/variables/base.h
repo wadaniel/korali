@@ -17,25 +17,17 @@ class Base
  public:
  gsl_rng* _range;
  variableType _type;
-
  std::string _name;
- double _lowerBound;
- double _upperBound;
-
- // These are CMA-ES Specific, but could be used for other methods in the future
- double _initialValue;
- double _initialStdDev;
- double _minStdDevChange;
 
  // Constructor / Destructor
  Base(nlohmann::json& js, size_t seed);
  Base(size_t seed);
  ~Base();
 
- virtual double getDensity(double x) = 0;
- virtual double getLogDensity(double x) = 0;
- virtual double getRandomNumber() = 0;
- virtual void printDetails() = 0;
+ virtual double getDensity(double x) { return 0.0; };
+ virtual double getLogDensity(double x) { return 0.0; };
+ virtual double getRandomNumber() { return 0.0; };
+ virtual void printDetails() { return; };
 
  // Serialization Methods
  virtual nlohmann::json getConfiguration();

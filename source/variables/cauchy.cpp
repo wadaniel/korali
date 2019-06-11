@@ -41,7 +41,7 @@ nlohmann::json Cauchy::getConfiguration()
 
 void Cauchy::setConfiguration(nlohmann::json& js)
 {
-	_loc  = consume(js, { "Location" }, KORALI_NUMBER);
+ _loc  = consume(js, { "Location" }, KORALI_NUMBER);
  _scale = consume(js, { "Scale" }, KORALI_NUMBER);
 }
 

@@ -121,7 +121,7 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
 
  // Configure Problem
  bool foundProblem = false;
- auto pString =  consume(js, { "Problem", "Type" }, KORALI_STRING);
+ auto pString =  consume(js, { "Problem", "Evaluation Type" }, KORALI_STRING);
  if (pString == "Direct")   { _problem = new Korali::Problem::Direct(js["Problem"]);   foundProblem = true; }
  if (pString == "Bayesian") { _problem = new Korali::Problem::Bayesian(js["Problem"]); foundProblem = true; }
  if (foundProblem == false) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Problem."); exit(-1); }

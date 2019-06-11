@@ -1,6 +1,6 @@
 include Makefile.conf
 
-CFLAGS  = -g $(OPTFLAGS) -I../include $(GSLCFLAGS) $(CXXARCH)
+CFLAGS  = -g $(OPTFLAGS) -I../include $(GSLCFLAGS) $(CXXARCH) -Wno-deprecated-declarations
 LDFLAGS = $(SHAREDLIB_FLAG) -L$(GSLPREFIX)/lib -Wl,-rpath -Wl,$(GSLPREFIX)/lib $(GSLLIBS) 
 
 CFLAGS  += $(PYBIND11INCLUDES) $(MPIFLAGS)

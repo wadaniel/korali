@@ -546,11 +546,11 @@ void Korali::Solver::TMCMC::minSearch(double const *fj, size_t fn, double pj, do
 }
 
 
-bool Korali::Solver::TMCMC::isFeasibleCandidate(size_t sampleIdx) const
+bool Korali::Solver::TMCMC::isFeasibleCandidate(size_t c) const
 {
- for (size_t d = 0; d < _k->_problem->N; ++d)
-  if ( clPoints[ sampleIdx*_k->_problem->N+d ] < _k->_problem->_variables[d]->_lowerBound || clPoints[ sampleIdx*_k->_problem->N+d ] > _k->_problem->_variables[d]->_upperBound) return false;
- return true;
+ double clLogPrior = _k->_problem->evaluateLogPrior(&clPoints[c*_k->_problem->N]);
+ if (clLogPrior > -INFINITY) return true;
+ return false;
 }
 
 

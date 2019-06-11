@@ -4,6 +4,7 @@
 #include "solvers/base.h"
 #include "variables/gaussian.h"
 #include <chrono>
+#include <vector>
 #include <map>
 
 namespace Korali { namespace Solver {
@@ -15,6 +16,13 @@ class CMAES : public Base
  // Constructor / Destructor
  CMAES(nlohmann::json& js);
  ~CMAES();
+
+ // These are CMA-ES Specific, but could be used for other methods in the future
+ std::vector<double> _lowerBounds;
+ std::vector<double> _upperBounds;
+ std::vector<double> _initialMeans;
+ std::vector<double> _initialStdDevs;
+ std::vector<double> _minStdDevChanges;
 
  // Runtime Methods (to be inherited from base class in the future)
  void prepareGeneration();

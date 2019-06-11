@@ -1,31 +1,27 @@
-#include "korali.h"
+#include "k.h"
 #include "model/ackley.h"
 
 int main(int argc, char* argv[])
 {
- auto korali = Korali::Engine();
+ auto k = Korali::Engine();
 
- korali["Seed"] = 0xC0FFEE;
- korali["Verbosity"] = "Detailed";
+ k["Seed"] = 0xC0FFEE;
+ k["Verbosity"] = "Detailed";
 
- korali["Problem"]["Type"] = "Direct";
- for (int i = 0; i < 4; i++)
- {
-  korali["Problem"]["Variables"][i]["Name"] = "X" + std::to_string(i);
-  korali["Problem"]["Variables"][i]["Type"] = "Computational";
-  korali["Problem"]["Variables"][i]["Distribution"] = "Uniform";
-  korali["Problem"]["Variables"][i]["Minimum"] = -32.0;
-  korali["Problem"]["Variables"][i]["Maximum"] = +32.0;
- }
+ k["Problem"]["Type"] = "Direct";
+ for (int i = 0; i < 4; i++) k["Problem"]["Variables"][i]["Name"] = "X" + std::to_string(i);
 
- korali["Solver"]["Method"] = "CMA-ES";
- korali["Solver"]["Sample Count"] = 10;
- korali["Solver"]["Termination Criteria"]["Max Generations"]["Value"] = 100;
- korali["Solver"]["Termination Criteria"]["Min DeltaX"]["Value"] = 1e-12;
+ k["Solver"]["Method"] = "CMA-ES";
+ k["Solver"]["Sample Count"] = 10;
+ k["Solver"]["Termination Criteria"]["Max Generations"]["Value"] = 100;
+ k["Solver"]["Termination Criteria"]["Min DeltaX"]["Value"] = 1e-7;
 
- korali.setModel([](Korali::ModelData& d) { m_ackley(d.getVariables(), d.getResults()); });
+ for (int i = 0; i < 4; i++) k["Solver"]["Lower Bounds"][i] = -32.0;
+ for (int i = 0; i < 4; i++) k["Solver"]["Upper Bounds"][i] = +32.0;
 
- korali.run();
+ k.setModel([](Korali::ModelData& d) { m_ackley(d.getVariables(), d.getResults()); });
+
+ k.run();
 
  return 0;
 }

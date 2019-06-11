@@ -435,7 +435,7 @@ void Korali::Solver::TMCMC::computeChainCovariances(double** chain_cov, size_t n
  }
 
  if (status != GSL_SUCCESS) {
-  fprintf(stderr, "[Korali] Error: GSL failed to create Chain Covariance Matrix.\n");
+  fprintf(stderr, "[Korali] TMCMC Error: GSL failed to create Chain Covariance Matrix.\n");
  }
 
  // deallocate space

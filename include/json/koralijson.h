@@ -116,7 +116,7 @@ static nlohmann::json consume(nlohmann::json& js, std::vector<std::string> setti
   }
  }
 
- if (type == KORALI_ARRAY) return nlohmann::json("[]");
+ if (type == KORALI_ARRAY) return nlohmann::json();
 
  if (hasDefault == false)
  {

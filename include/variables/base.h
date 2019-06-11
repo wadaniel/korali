@@ -24,10 +24,10 @@ class Base
  Base(size_t seed);
  ~Base();
 
- virtual double getDensity(double x) = 0;
- virtual double getLogDensity(double x) = 0;
- virtual double getRandomNumber() = 0;
- virtual void printDetails() = 0;
+ virtual double getDensity(double x) { return 0.0; };
+ virtual double getLogDensity(double x) { return 0.0; };
+ virtual double getRandomNumber() { return 0.0; };
+ virtual void printDetails() { return; };
 
  // Serialization Methods
  virtual nlohmann::json getConfiguration();

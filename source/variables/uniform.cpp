@@ -32,17 +32,17 @@ nlohmann::json Uniform::getConfiguration()
 {
  auto js = this->Base::getConfiguration();
 
- js["Distribution"] = "Uniform";
- js["Minimum"] = _minimum;
- js["Maximum"] = _maximum;
+ js["Distribution"]["Type"] = "Uniform";
+ js["Distribution"]["Minimum"] = _minimum;
+ js["Distribution"]["Maximum"] = _maximum;
 
  return js;
 }
 
 void Uniform::setConfiguration(nlohmann::json& js)
 {
- _minimum  = consume(js, { "Minimum" }, KORALI_NUMBER);
- _maximum = consume(js, { "Maximum" }, KORALI_NUMBER);
+ _minimum  = consume(js, { "Distribution", "Minimum" }, KORALI_NUMBER);
+ _maximum = consume(js, { "Distribution", "Maximum" }, KORALI_NUMBER);
 }
 
 /************************************************************************/

@@ -160,6 +160,16 @@ nlohmann::json CCMAES::getConfiguration()
  js["Covariance Matrix"]["Eigenvalue Evaluation Frequency"] = _covarianceEigenEvalFreq;
  js["Covariance Matrix"]["Is Diagonal"]                     = _isdiag;
 
+ // Variable information
+ for (size_t i = 0; i < _solverVarInfoCount; i++)
+ {
+  js["Variables"][i]["Lower Bound"]   = _lowerBounds[i];
+  js["Variables"][i]["Upper Bound"]   = _upperBounds[i];
+  js["Variables"][i]["Initial Mean"]  = _initialMeans[i];
+  js["Variables"][i]["Initial Standard Deviation"] = _initialStdDevs[i];
+  js["Variables"][i]["Minimum Standard Deviation Changes"]  = _minStdDevChanges[i];
+ }
+
  js["Termination Criteria"]["Max Generations"]["Value"]           = _termCondMaxGenerations;
  js["Termination Criteria"]["Max Generations"]["Active"]          = _isTermCondMaxGenerations;
  js["Termination Criteria"]["Max Model Evaluations"]["Value"]     = _termCondMaxFitnessEvaluations;
@@ -175,7 +185,7 @@ nlohmann::json CCMAES::getConfiguration()
  js["Termination Criteria"]["Max Condition Covariance"]["Value"]  = _termCondCovCond;
  js["Termination Criteria"]["Max Condition Covariance"]["Active"] = _isTermCondCovCond;
 
-// State Variables
+// State Information
  js["State"]["Current Generation"]        = _currentGeneration;
  js["State"]["Sigma"]                     = sigma;
  js["State"]["BestEverFunctionValue"]     = bestEver;
@@ -260,20 +270,65 @@ void CCMAES::setConfiguration(nlohmann::json& js)
   
  // Setting variable information
 
- auto vec = consume(js, { "Initial Means" }, KORALI_ARRAY);
- for (size_t i = 0; i < vec.size(); i++) _initialMeans.push_back(vec[i]);
+ _solverVarInfoCount = 0;
 
- vec = consume(js, { "Initial Standard Deviations" }, KORALI_ARRAY);
- for (size_t i = 0; i < vec.size(); i++) _initialStdDevs.push_back(vec[i]);
+ if (isArray(js, { "Variables" } ))
+ {
+  _solverVarInfoCount = js["Variables"].size();
 
- vec = consume(js, { "Minimum Standard Deviation Changes" }, KORALI_ARRAY);
- for (size_t i = 0; i < vec.size(); i++) _minStdDevChanges.push_back(vec[i]);
+  _initialMeans = (double*) calloc(sizeof(double), _solverVarInfoCount);
+  _initialStdDevs = (double*) calloc(sizeof(double), _solverVarInfoCount);
+  _minStdDevChanges = (double*) calloc(sizeof(double), _solverVarInfoCount);
+  _lowerBounds = (double*) calloc(sizeof(double), _solverVarInfoCount);
+  _upperBounds = (double*) calloc(sizeof(double), _solverVarInfoCount);
 
- vec = consume(js, { "Lower Bounds" }, KORALI_ARRAY);
- for (size_t i = 0; i < vec.size(); i++) _lowerBounds.push_back(vec[i]);
+  for (size_t i = 0; i < _solverVarInfoCount; i++)
+  {
+   bool lowerBoundDefined = isDefined(js["Variables"][i], { "Lower Bound" });
+   bool upperBoundDefined = isDefined(js["Variables"][i], { "Upper Bound" });
+   bool initialMeanDefined = isDefined(js["Variables"][i], { "Initial Mean" });
+   bool initialStdDevDefined = isDefined(js["Variables"][i], { "Initial Standard Deviation" });
 
- vec = consume(js, { "Upper Bounds" }, KORALI_ARRAY);
- for (size_t i = 0; i < vec.size(); i++) _upperBounds.push_back(vec[i]);
+   if (lowerBoundDefined == true)  _lowerBounds[i] = consume(js["Variables"][i], { "Lower Bound" }, KORALI_NUMBER);
+   if (lowerBoundDefined == false) _lowerBounds[i] = -INFINITY;
+
+   if (upperBoundDefined == true)  _upperBounds[i] = consume(js["Variables"][i], { "Upper Bound" }, KORALI_NUMBER);
+   if (upperBoundDefined == false) _upperBounds[i] = +INFINITY;
+
+   if (initialMeanDefined == true)  _initialMeans[i] = consume(js["Variables"][i], { "Initial Mean" }, KORALI_NUMBER);
+   if (initialMeanDefined == false)
+   {
+    if (lowerBoundDefined && upperBoundDefined) _initialMeans[i] = (_upperBounds[i]+_lowerBounds[i])*0.5;
+    else
+    {
+     fprintf(stderr, "[Korali] CMA-ES Error: Either or both lower or upper bounds of variable %lu is undefined, you therefore need to define its Initial Mean.\n", i);
+     exit(-1);
+    }
+   }
+
+   if (initialStdDevDefined == true)  _initialStdDevs[i] = consume(js["Variables"][i], { "Initial Standard Deviation" }, KORALI_NUMBER);
+   if (initialStdDevDefined == false)
+   {
+    if (lowerBoundDefined && upperBoundDefined) _initialStdDevs[i] = (_upperBounds[i]-_lowerBounds[i])*0.2;
+    else
+    {
+     fprintf(stderr, "[Korali] CMA-ES Error: Either or both lower or upper bounds of variable %lu is undefined, you therefore need to define its Initial Standard Deviation.\n", i);
+     exit(-1);
+    }
+   }
+
+   _minStdDevChanges[i] = consume(js["Variables"][i], { "Minimum Standard Deviation Changes" }, KORALI_NUMBER, std::to_string(0));
+
+   // Further Checks
+   if (_initialMeans[i] < _lowerBounds[i] || _initialMeans[i] > _upperBounds[i])
+    { fprintf( stderr, "[Korali] CMA-ES Error: Initial Mean (%f) outside of Lower - Upper (%f - %f) bounds range defined for variable %d.\n", _initialMeans[i], _lowerBounds[i], _upperBounds[i], i); exit(-1); }
+
+   if (_upperBounds[i] <= _lowerBounds[i])
+    { fprintf( stderr, "[Korali] CMA-ES Error: Invalid Lower (%f) - Upper (%f) bounds range defined for variable %d.\n", _lowerBounds[i], _upperBounds[i], i); exit(-1); }
+
+   if (_initialStdDevs[i] <= 0.0) { fprintf(stderr, "[Korali] CMA-ES Error: Initial StdDev for variable %d is less or equal 0.\n", i);  exit(-1); }
+  }
+ }
 
  // Setting termination criteria
 
@@ -363,44 +418,11 @@ void CCMAES::initInternals(size_t numsamplesmu)
 {
  // Setting variable information
 
- if (_lowerBounds.size() == 0) for(size_t i = 0; i < _k->_problem->N; i++) _lowerBounds.push_back(-INFINITY);
- else if (_lowerBounds.size() != _k->_problem->N) { fprintf( stderr, "[Korali] CMA-ES Error: Incorrect number of lower bounds defined. Expected: %lu, Provided: %lu\n.", _k->_problem->N, _lowerBounds.size()); exit(-1); }
-
- if (_upperBounds.size() == 0) for(size_t i = 0; i < _k->_problem->N; i++) _upperBounds.push_back(+INFINITY);
- else if (_upperBounds.size() != _k->_problem->N) { fprintf( stderr, "[Korali] CMA-ES Error: Incorrect number of upper bounds defined. Expected: %lu, Provided: %lu\n.", _k->_problem->N, _upperBounds.size()); exit(-1); }
-
- for(size_t i = 0; i < _k->_problem->N; i++) if (_upperBounds[i] <= _lowerBounds[i])
- { fprintf( stderr, "[Korali] CMA-ES Error: Invalid Lower (%f) - Upper (%f) bounds range defined for variable %d.\n", _lowerBounds[i], _upperBounds[i], i); exit(-1); }
-
- if (_initialMeans.size() == 0)
- for(size_t i = 0; i < _k->_problem->N; i++)
+ if (_solverVarInfoCount != _k->_problem->N)
  {
-  if( isinf(_upperBounds[i]) || isinf(_lowerBounds[i]) )
-  {
-    fprintf(stderr, "[Korali] CMA-ES Error: Either or both lower or upper bounds of variable %lu is infinite, you need to define its Initial Mean\n.", i);
-    exit(-1);
-  }
-  _initialMeans.push_back(0.5*(_lowerBounds[i]+_upperBounds[i]));
+  fprintf( stderr, "[Korali] CMA-ES Error: You need to define variable information (e.g., Initial Mean, Initial Standard Deviation) for all variables defined in the Problem. Expected: %lu, Provided: %lu\n.", _k->_problem->N, _solverVarInfoCount);
+  exit(-1);
  }
- else if (_upperBounds.size() != _k->_problem->N) { fprintf( stderr, "[Korali] CMA-ES Error: Incorrect number of Initial Means defined. Expected: %lu, Provided: %lu\n.", _k->_problem->N, _initialMeans.size()); exit(-1); }
-
- if (_initialStdDevs.size() == 0)
- for(size_t i = 0; i < _k->_problem->N; i++)
- {
-  if( isinf(_upperBounds[i]) || isinf(_lowerBounds[i]) )
-  {
-    fprintf(stderr, "[Korali] CMA-ES Error: Either or both lower or upper bounds of variable %lu is infinite, you need to define its Initial Standard Deviation.\n", i);
-    exit(-1);
-  }
-  _initialStdDevs.push_back(0.3*(_upperBounds[i]-_lowerBounds[i]));
- }
- else if (_initialStdDevs.size() != _k->_problem->N) { fprintf( stderr, "[Korali] CMA-ES Error: Incorrect number of Initial Standard Deviations defined. Expected: %lu, Provided: %lu\n.", _k->_problem->N, _initialStdDevs.size()); exit(-1); }
-
- for(size_t i = 0; i < _k->_problem->N; i++)
-  if (_initialStdDevs[i] < 0.0) { fprintf(stderr, "[Korali] CMA-ES Error: Initial StdDev for variable %d is less or equal 0.\n", i);  exit(-1); }
-
- if (_minStdDevChanges.size() == 0) for(size_t i = 0; i < _k->_problem->N; i++) _minStdDevChanges.push_back(0.0);
- else if (_minStdDevChanges.size() != _k->_problem->N) { fprintf( stderr, "[Korali] CMA-ES Error: Incorrect number of Minimum Standard Deviation Changes defined. Expected: %lu, Provided: %lu\n.", _k->_problem->N, _minStdDevChanges.size()); exit(-1); }
 
  // Setting beta   
  _cv   = 1.0/(_current_s+2.);

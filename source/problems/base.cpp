@@ -35,7 +35,7 @@ void Korali::Problem::Base::setConfiguration(nlohmann::json& js)
   if (isArray(js, { "Variables" } ))
   for (size_t i = 0; i < js["Variables"].size(); i++)
   {
-   auto dString = consume(js["Variables"][i], { "Distribution" }, KORALI_STRING, "Default");
+   auto dString = consume(js["Variables"][i], { "Distribution", "Type" }, KORALI_STRING, "Default");
    bool foundDistribution = false;
    if (dString == "Default")     { tmp.push_back(new Korali::Variable::Base(js["Variables"][i], _k->_seed++));        foundDistribution = true; }
    if (dString == "Uniform")     { tmp.push_back(new Korali::Variable::Uniform(js["Variables"][i], _k->_seed++));     foundDistribution = true; }

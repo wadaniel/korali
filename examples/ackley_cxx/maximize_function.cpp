@@ -14,15 +14,15 @@ int main(int argc, char* argv[])
 
  k["Solver"]["Method"] = "CMA-ES";
 
- k["Solver"]["Lower Bounds"][0] = -32.0;
- k["Solver"]["Lower Bounds"][1] = -32.0;
- k["Solver"]["Lower Bounds"][2] = -32.0;
- k["Solver"]["Lower Bounds"][3] = -32.0;
+ k["Solver"]["Variables"][0]["Lower Bound"] = -32.0;
+ k["Solver"]["Variables"][1]["Lower Bound"] = -32.0;
+ k["Solver"]["Variables"][2]["Lower Bound"] = -32.0;
+ k["Solver"]["Variables"][3]["Lower Bound"] = -32.0;
 
- k["Solver"]["Upper Bounds"][0] = +32.0;
- k["Solver"]["Upper Bounds"][1] = +32.0;
- k["Solver"]["Upper Bounds"][2] = +32.0;
- k["Solver"]["Upper Bounds"][3] = +32.0;
+ k["Solver"]["Variables"][0]["Upper Bound"] = +32.0;
+ k["Solver"]["Variables"][1]["Upper Bound"] = +32.0;
+ k["Solver"]["Variables"][2]["Upper Bound"] = +32.0;
+ k["Solver"]["Variables"][3]["Upper Bound"] = +32.0;
 
  k["Solver"]["Sample Count"] = 10;
  k["Solver"]["Termination Criteria"]["Max Generations"]["Value"] = 100;

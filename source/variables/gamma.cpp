@@ -32,17 +32,17 @@ nlohmann::json Gamma::getConfiguration()
 {
  auto js = this->Base::getConfiguration();
 
- js["Distribution"] = "Gamma";
- js["Scale"] = _scale;
- js["Shape"] = _shape;
+ js["Distribution"]["Type"] = "Gamma";
+ js["Distribution"]["Scale"] = _scale;
+ js["Distribution"]["Shape"] = _shape;
 
  return js;
 }
 
 void Gamma::setConfiguration(nlohmann::json& js)
 {
- _scale  = consume(js, { "Scale" }, KORALI_NUMBER);
- _shape = consume(js, { "Shape" }, KORALI_NUMBER);
+ _scale  = consume(js, { "Distribution", "Scale" }, KORALI_NUMBER);
+ _shape = consume(js, { "Distribution", "Shape" }, KORALI_NUMBER);
 }
 
 /************************************************************************/

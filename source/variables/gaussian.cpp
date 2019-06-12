@@ -32,17 +32,17 @@ nlohmann::json Gaussian::getConfiguration()
 {
  auto js = this->Base::getConfiguration();
 
- js["Distribution"] = "Gaussian";
- js["Mean"] = _mean;
- js["Sigma"] = _sigma;
+ js["Distribution"]["Type"] = "Gaussian";
+ js["Distribution"]["Mean"] = _mean;
+ js["Distribution"]["Sigma"] = _sigma;
 
  return js;
 }
 
 void Gaussian::setConfiguration(nlohmann::json& js)
 {
- _mean  = consume(js, { "Mean" }, KORALI_NUMBER);
- _sigma = consume(js, { "Sigma" }, KORALI_NUMBER);
+ _mean  = consume(js, { "Distribution", "Mean" }, KORALI_NUMBER);
+ _sigma = consume(js, { "Distribution", "Sigma" }, KORALI_NUMBER);
 }
 
 /************************************************************************/

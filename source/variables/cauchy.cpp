@@ -32,17 +32,17 @@ nlohmann::json Cauchy::getConfiguration()
 {
  auto js = this->Base::getConfiguration();
 
- js["Distribution"] = "Cauchy";
- js["Location"] = _loc;
- js["Scale"] = _scale;
+ js["Distribution"]["Type"] = "Cauchy";
+ js["Distribution"]["Location"] = _loc;
+ js["Distribution"]["Scale"] = _scale;
 
  return js;
 }
 
 void Cauchy::setConfiguration(nlohmann::json& js)
 {
- _loc  = consume(js, { "Location" }, KORALI_NUMBER);
- _scale = consume(js, { "Scale" }, KORALI_NUMBER);
+ _loc  = consume(js, { "Distribution", "Location" }, KORALI_NUMBER);
+ _scale = consume(js, { "Distribution", "Scale" }, KORALI_NUMBER);
 }
 
 /************************************************************************/
@@ -51,7 +51,7 @@ void Cauchy::setConfiguration(nlohmann::json& js)
 
 void Cauchy::initialize()
 {
-	_aux = -gsl_sf_log( _scale * M_PI );
+ _aux = -gsl_sf_log( _scale * M_PI );
 }
 
 double Cauchy::getDensity(double x)

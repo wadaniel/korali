@@ -146,11 +146,11 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
 
  // Configure Solver
  _solver = NULL;
- auto sString = consume(js, { "Solver", "Method" }, KORALI_STRING);
- if (sString == "CMA-ES")  _solver = new Korali::Solver::CMAES(js["Solver"]);
- if (sString == "CCMA-ES") _solver = new Korali::Solver::CCMAES(js["Solver"]);
- if (sString == "TMCMC")   _solver = new Korali::Solver::TMCMC(js["Solver"]);
- if (_solver == NULL) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Solver."); exit(-1); }
+ _solverName = consume(js, { "Solver", "Method" }, KORALI_STRING);
+ if (_solverName == "CMA-ES")  _solver = new Korali::Solver::CMAES(js["Solver"]);
+ if (_solverName == "CCMA-ES") _solver = new Korali::Solver::CCMAES(js["Solver"]);
+ if (_solverName == "TMCMC")   _solver = new Korali::Solver::TMCMC(js["Solver"]);
+ if (_solver == NULL) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Solver '%s'.", _solverName.c_str()); exit(-1); }
 
  if (isEmpty(js) == false)
  {

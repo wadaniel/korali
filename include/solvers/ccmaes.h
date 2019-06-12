@@ -39,6 +39,7 @@ class CCMAES : public Base
  private:
 
  // Korali Runtime Variables
+ bool _isConstrained;
  int _fitnessSign; /* maximizing vs optimizing (+- 1) */
  std::string _objective; /* Maximize or Minimize */ 
  double* _fitnessVector; /* objective function values [_s] */

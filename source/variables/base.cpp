@@ -40,7 +40,7 @@ nlohmann::json Korali::Variable::Base::getConfiguration()
 
 void Korali::Variable::Base::setConfiguration(nlohmann::json& js)
 {
- _name = consume(js, { "Name" }, KORALI_STRING, "Unnamed Variable");
+ _name = consume(js, { "Name" }, KORALI_STRING);
 
  auto typeString = consume(js, { "Type" }, KORALI_STRING, "Computational");
  if (typeString == "Computational")  _type = KORALI_COMPUTATIONAL;

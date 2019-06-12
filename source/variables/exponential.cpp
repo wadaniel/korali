@@ -30,17 +30,17 @@ nlohmann::json Exponential::getConfiguration()
 {
  auto js = this->Base::getConfiguration();
 
- js["Distribution"] = "Exponential";
- js["Location"] = _loc;
- js["Mean"] = _mean;
+ js["Distribution"]["Distribution"] = "Exponential";
+ js["Distribution"]["Location"] = _loc;
+ js["Distribution"]["Mean"] = _mean;
 
  return js;
 }
 
 void Exponential::setConfiguration(nlohmann::json& js)
 {
- _mean = consume(js, { "Mean" }, KORALI_NUMBER);
- _loc  = consume(js, { "Location" }, KORALI_NUMBER);
+ _mean = consume(js, { "Distribution", "Mean" }, KORALI_NUMBER);
+ _loc  = consume(js, { "Distribution", "Location" }, KORALI_NUMBER);
 }
 
 /************************************************************************/

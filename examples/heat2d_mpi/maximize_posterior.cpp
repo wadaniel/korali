@@ -3,48 +3,57 @@
 
 int main(int argc, char* argv[])
 {
- auto korali = Korali::Engine();
-
- korali["Seed"] = 0xC0FFEE;
- korali["Verbosity"] = "Detailed";
-
- korali["Problem"]["Type"] = "Bayesian";
- korali["Problem"]["Variables"][0]["Name"] = "Intensity";
- korali["Problem"]["Variables"][0]["Type"] = "Computational";
- korali["Problem"]["Variables"][0]["Distribution"] = "Uniform";
- korali["Problem"]["Variables"][0]["Minimum"] = 10.0;
- korali["Problem"]["Variables"][0]["Maximum"] = 60.0;
-
- korali["Problem"]["Variables"][1]["Name"] = "PosX";
- korali["Problem"]["Variables"][1]["Type"] = "Computational";
- korali["Problem"]["Variables"][1]["Distribution"] = "Uniform";
- korali["Problem"]["Variables"][1]["Minimum"] = 0.0;
- korali["Problem"]["Variables"][1]["Maximum"] = 0.5;
-
- korali["Problem"]["Variables"][2]["Name"] = "PosY";
- korali["Problem"]["Variables"][2]["Type"] = "Computational";
- korali["Problem"]["Variables"][2]["Distribution"] = "Uniform";
- korali["Problem"]["Variables"][2]["Minimum"] = 0.6;
- korali["Problem"]["Variables"][2]["Maximum"] = 1.0;
-
- korali["Problem"]["Variables"][3]["Name"] = "Sigma";
- korali["Problem"]["Variables"][3]["Type"] = "Statistical";
- korali["Problem"]["Variables"][3]["Distribution"] = "Uniform";
- korali["Problem"]["Variables"][3]["Minimum"] = 0.0;
- korali["Problem"]["Variables"][3]["Maximum"] = 20.0;
-
+ auto k = Korali::Engine();
  auto p = heat2DInit();
- for (size_t i = 0; i < p.refTemp.size(); i++)
-	 korali["Problem"]["Reference Data"][i] = p.refTemp[i];
 
- korali["Conduit"]["Type"] = "MPI";
+ k["Seed"] = 0xC0FFEE;
+ k["Verbosity"] = "Detailed";
 
- korali["Solver"]["Method"] = "CMA-ES";
- korali["Solver"]["Sample Count"] = 32;
+ k["Problem"]["Evaluation Type"] = "Bayesian";
+ k["Problem"]["Reference Data"] = p.refTemp;
 
- korali.setModel([](Korali::ModelData& d) { heat2DSolver(d.getVariables(), d.getResults()); });
+ k["Solver"]["Method"] = "CMA-ES";
+ k["Solver"]["Sample Count"] = 32;
 
- korali.run();
+ k["Conduit"]["Type"] = "MPI";
+
+ k["Problem"]["Variables"][0]["Name"] = "Intensity";
+ k["Problem"]["Variables"][0]["Type"] = "Computational";
+ k["Problem"]["Variables"][0]["Distribution"]["Type"] = "Uniform";
+ k["Problem"]["Variables"][0]["Distribution"]["Minimum"] = 10.0;
+ k["Problem"]["Variables"][0]["Distribution"]["Maximum"] = 60.0;
+
+ k["Problem"]["Variables"][1]["Name"] = "PosX";
+ k["Problem"]["Variables"][1]["Type"] = "Computational";
+ k["Problem"]["Variables"][1]["Distribution"]["Type"] = "Uniform";
+ k["Problem"]["Variables"][1]["Distribution"]["Minimum"] = 0.0;
+ k["Problem"]["Variables"][1]["Distribution"]["Maximum"] = 0.5;
+
+ k["Problem"]["Variables"][2]["Name"] = "PosY";
+ k["Problem"]["Variables"][2]["Type"] = "Computational";
+ k["Problem"]["Variables"][2]["Distribution"]["Type"] = "Uniform";
+ k["Problem"]["Variables"][2]["Distribution"]["Minimum"] = 0.6;
+ k["Problem"]["Variables"][2]["Distribution"]["Maximum"] = 1.0;
+
+ k["Problem"]["Variables"][3]["Name"] = "Sigma";
+ k["Problem"]["Variables"][3]["Type"] = "Statistical";
+ k["Problem"]["Variables"][3]["Distribution"]["Type"] = "Uniform";
+ k["Problem"]["Variables"][3]["Distribution"]["Minimum"] = 0.0;
+ k["Problem"]["Variables"][3]["Distribution"]["Maximum"] = 20.0;
+
+ k["Solver"]["Variables"][0]["Initial Mean"] = 30.0;
+ k["Solver"]["Variables"][1]["Initial Mean"] = 0.25;
+ k["Solver"]["Variables"][2]["Initial Mean"] = 0.80;
+ k["Solver"]["Variables"][3]["Initial Mean"] = 10.0;
+
+ k["Solver"]["Variables"][0]["Initial Standard Deviation"] = 0.300;
+ k["Solver"]["Variables"][1]["Initial Standard Deviation"] = 0.001;
+ k["Solver"]["Variables"][2]["Initial Standard Deviation"] = 0.001;
+ k["Solver"]["Variables"][3]["Initial Standard Deviation"] = 0.100;
+
+ k.setModel([](Korali::ModelData& d) { heat2DSolver(d.getVariables(), d.getResults()); });
+
+ k.run();
 
  return 0;
 }

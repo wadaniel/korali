@@ -3,30 +3,38 @@
 
 int main(int argc, char* argv[])
 {
- auto korali = Korali::Engine();
+ auto k = Korali::Engine();
 
- korali["Seed"] = 0xC0FFEE;
- korali["Verbosity"] = "Detailed";
+ k["Problem"]["Evaluation Type"] = "Direct";
 
- for (int i = 0; i < 4; i++)
- {
-  korali["Problem"]["Variables"][i]["Name"] = "X" + std::to_string(i);
-  korali["Problem"]["Variables"][i]["Type"] = "Computational";
-  korali["Problem"]["Variables"][i]["Distribution"] = "Uniform";
-  korali["Problem"]["Variables"][i]["Minimum"] = -32.0;
-  korali["Problem"]["Variables"][i]["Maximum"] = +32.0;
- }
+ k["Problem"]["Variables"][0]["Name"] = "X0";
+ k["Problem"]["Variables"][1]["Name"] = "X1";
+ k["Problem"]["Variables"][2]["Name"] = "X2";
+ k["Problem"]["Variables"][3]["Name"] = "X3";
 
- korali["Problem"]["Type"] = "Direct";
+ k["Problem"]["Variables"][0]["Distribution"] = "Uniform";
+ k["Problem"]["Variables"][1]["Distribution"] = "Uniform";
+ k["Problem"]["Variables"][2]["Distribution"] = "Uniform";
+ k["Problem"]["Variables"][3]["Distribution"] = "Uniform";
 
- korali["Solver"]["Method"] = "TMCMC";
- korali["Solver"]["Covariance Scaling"] = 0.02;
- korali["Solver"]["Population Size"] = 10000;
- korali["Solver"]["Min Rho Update"] = 0.0;
- 
- korali.setModel([](Korali::ModelData& d) { m_ackley(d.getVariables(), d.getResults()); });
+ k["Problem"]["Variables"][0]["Minimum"] = -32.0;
+ k["Problem"]["Variables"][1]["Minimum"] = -32.0;
+ k["Problem"]["Variables"][2]["Minimum"] = -32.0;
+ k["Problem"]["Variables"][3]["Minimum"] = -32.0;
 
- korali.run();
+ k["Problem"]["Variables"][0]["Maximum"] = +32.0;
+ k["Problem"]["Variables"][1]["Maximum"] = +32.0;
+ k["Problem"]["Variables"][2]["Maximum"] = +32.0;
+ k["Problem"]["Variables"][3]["Maximum"] = +32.0;
+
+ k["Solver"]["Method"] = "TMCMC";
+ k["Solver"]["Covariance Scaling"] = 0.02;
+ k["Solver"]["Population Size"] = 10000;
+ k["Solver"]["Min Rho Update"] = 0.0;
+
+ k.setModel([](Korali::ModelData& d) { m_ackley(d.getVariables(), d.getResults()); });
+
+ k.run();
 
  return 0;
 }

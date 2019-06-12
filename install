@@ -17,7 +17,7 @@ function print_help ()
  echo "Syntax: ./install"
  echo "        [--install-gsl]"
  echo "        [--rebuild]"
-  echo "       [--debug]"
+ echo "        [--debug]"
  echo "        [--help]"
  echo ""
  echo "Where:"
@@ -59,6 +59,11 @@ case $i in
     ;;
     --debug)
     OPTFLAGS="-O0"
+    shift 
+    ;;
+    --rebuild)
+    logEcho "[Korali] Cleaning Korali for new build..."
+    make -C source clean >> install.log 2>&1
     shift 
     ;;
     --help)
@@ -299,7 +304,6 @@ cat ./python/cxx/cxx.conf ./python/cxx/libs.py.base > ./python/cxx/libs.py
 ######## Compiling Korali C++ Engine #########
 
 logEcho "[Korali] Compiling Korali..."
-make -C source clean >> install.log 2>&1
 make -j24 -C source >> install.log 2>&1
 if [ $? -ne 0 ]; then
   logEcho "[Korali] Error compiling Korali."

@@ -18,11 +18,12 @@ class CMAES : public Base
  ~CMAES();
 
  // These are CMA-ES Specific, but could be used for other methods in the future
- std::vector<double> _lowerBounds;
- std::vector<double> _upperBounds;
- std::vector<double> _initialMeans;
- std::vector<double> _initialStdDevs;
- std::vector<double> _minStdDevChanges;
+ size_t _solverVarInfoCount;
+ double* _lowerBounds;
+ double* _upperBounds;
+ double* _initialMeans;
+ double* _initialStdDevs;
+ double* _minStdDevChanges;
 
  // Runtime Methods (to be inherited from base class in the future)
  void prepareGeneration();

@@ -9,7 +9,7 @@ x, y = getReferenceData()
 
 k["Seed"] = 0xC0FFEE;
 k["Verbosity"] = "Detailed";
-k["Problem"]["Type"] = "Bayesian";
+k["Problem"]["Evaluation Type"] = "Bayesian";
 
 k["Problem"]["Variables"][0]["Name"] = "a";
 k["Problem"]["Variables"][0]["Type"] = "Computational";

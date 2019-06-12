@@ -32,17 +32,17 @@ nlohmann::json Laplace::getConfiguration()
 {
  auto js = this->Base::getConfiguration();
 
- js["Distribution"]  = "Laplace";
- js["Mean"]  = _mean;
- js["Width"] = _width;
+ js["Distribution"]["Type"]  = "Laplace";
+ js["Distribution"]["Mean"]  = _mean;
+ js["Distribution"]["Width"] = _width;
 
  return js;
 }
 
 void Laplace::setConfiguration(nlohmann::json& js)
 {
- _mean  = consume(js, { "Mean" }, KORALI_NUMBER);
- _width = consume(js, { "Width" }, KORALI_NUMBER);
+ _mean  = consume(js, { "Distribution", "Mean" }, KORALI_NUMBER);
+ _width = consume(js, { "Distribution", "Width" }, KORALI_NUMBER);
 }
 
 /************************************************************************/

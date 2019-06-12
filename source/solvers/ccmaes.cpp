@@ -418,40 +418,11 @@ void CCMAES::initInternals(size_t numsamplesmu)
 {
  // Setting variable information
 
- if (_lowerBounds.size() == 0) for(size_t i = 0; i < _k->_problem->N; i++) _lowerBounds.push_back(-INFINITY);
- else if (_lowerBounds.size() != _k->_problem->N) { fprintf( stderr, "[Korali] CMA-ES Error: Incorrect number of lower bounds defined. Expected: %lu, Provided: %lu\n.", _k->_problem->N, _lowerBounds.size()); exit(-1); }
-
- if (_upperBounds.size() == 0) for(size_t i = 0; i < _k->_problem->N; i++) _upperBounds.push_back(+INFINITY);
- else if (_upperBounds.size() != _k->_problem->N) { fprintf( stderr, "[Korali] CMA-ES Error: Incorrect number of upper bounds defined. Expected: %lu, Provided: %lu\n.", _k->_problem->N, _upperBounds.size()); exit(-1); }
-
- for(size_t i = 0; i < _k->_problem->N; i++) if (_upperBounds[i] <= _lowerBounds[i])
- { fprintf( stderr, "[Korali] CMA-ES Error: Invalid Lower (%f) - Upper (%f) bounds range defined for variable %zu.\n", _lowerBounds[i], _upperBounds[i], i); exit(-1); }
-
- if (_initialMeans.size() == 0)
- for(size_t i = 0; i < _k->_problem->N; i++)
- {
-  if( isinf(_upperBounds[i]) || isinf(_lowerBounds[i]) )
-  {
-    fprintf(stderr, "[Korali] CMA-ES Error: Either or both lower or upper bounds of variable %lu is infinite, you need to define its Initial Mean\n.", i);
-    exit(-1);
-  }
-  _initialMeans.push_back(0.5*(_lowerBounds[i]+_upperBounds[i]));
- }
- else if (_upperBounds.size() != _k->_problem->N) { fprintf( stderr, "[Korali] CMA-ES Error: Incorrect number of Initial Means defined. Expected: %lu, Provided: %lu\n.", _k->_problem->N, _initialMeans.size()); exit(-1); }
-
- if (_initialStdDevs.size() == 0)
- for(size_t i = 0; i < _k->_problem->N; i++)
+ if (_solverVarInfoCount != _k->_problem->N)
  {
   fprintf( stderr, "[Korali] CMA-ES Error: You need to define variable information (e.g., Initial Mean, Initial Standard Deviation) for all variables defined in the Problem. Expected: %lu, Provided: %lu\n.", _k->_problem->N, _solverVarInfoCount);
   exit(-1);
  }
- else if (_initialStdDevs.size() != _k->_problem->N) { fprintf( stderr, "[Korali] CMA-ES Error: Incorrect number of Initial Standard Deviations defined. Expected: %lu, Provided: %lu\n.", _k->_problem->N, _initialStdDevs.size()); exit(-1); }
-
- for(size_t i = 0; i < _k->_problem->N; i++)
-  if (_initialStdDevs[i] < 0.0) { fprintf(stderr, "[Korali] CMA-ES Error: Initial StdDev for variable %zu is less or equal 0.\n", i);  exit(-1); }
-
- if (_minStdDevChanges.size() == 0) for(size_t i = 0; i < _k->_problem->N; i++) _minStdDevChanges.push_back(0.0);
- else if (_minStdDevChanges.size() != _k->_problem->N) { fprintf( stderr, "[Korali] CMA-ES Error: Incorrect number of Minimum Standard Deviation Changes defined. Expected: %lu, Provided: %lu\n.", _k->_problem->N, _minStdDevChanges.size()); exit(-1); }
 
  // Setting beta
  _cv   = 1.0/(_current_s+2.);

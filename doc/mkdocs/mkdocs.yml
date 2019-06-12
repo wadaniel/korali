@@ -26,7 +26,7 @@ nav:
       - Solver Methods:
           - Optimizers:
             - CMA-ES: usage/solvers/optimizers/cmaes.md
-            - Constrained CMA-ES: usage/solvers/optimizers/cmaes.md
+            - Constrained CMA-ES: usage/solvers/optimizers/ccmaes.md
           - Samplers:
             - TMCMC: usage/solvers/samplers/tmcmc.md
       - Evaluation Conduits:

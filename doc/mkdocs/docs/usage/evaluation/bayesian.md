@@ -7,26 +7,33 @@ In a Bayesian problem type, the computational model is assumed to be of the form
  $$ p(\vartheta | d) = \frac{p(d | \vartheta) p(\vartheta)}{p(d)} $$
 
 ##Syntax
-       korali["Problem"]["Type"] = "Bayesian"
+```python
+  # Definition
+  korali["Problem"]["Type"] = "Bayesian"
+  
+  # Mandatory Settings
+  korali["Problem"]["Reference Data"][i] = ...
+```
 
 ##Requirements
 
 + It should contain at least one computational variable as input for the computational model.
 + It should contain at least one statistical variable for the value of sigma in the Gaussian error calculation.
++ The computational model should return *n* results, where *n* is the number of reference data items.
 
 ##Settings
 
 + Name: **Reference Data**
-     - Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-     - Type: Array of Doubles
-	 - Default: *{empty}*
-	 - Requirements: The number of reference data items should be equal to the number of results returned by the computational model.
-	 - Syntax: `korali["Problem"]["Reference Data"][i] = myValue;`
-	 - Example:
+     - Description: The reference data are points in the variable space that the computational model model evaluates, given the sample variable data. The output of the model allows Korali to evaluate the likelihood function $p(d|\vartheta)$
+	 - Default Value: *None*.
+	 - Examples:
 
 ```python
-# Adding reference data items from a vector.
-
+# Adding reference data items from a vector with the += operator.
 for x in refData:
  korali["Problem"]["Reference Data"] += x
+ 
+# Adding reference data items from a vector by index.
+for i in range(len(refData)):
+ korali["Problem"]["Reference Data"][i] = refData[i]
 ```

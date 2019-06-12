@@ -6,10 +6,17 @@ In a Direct problem type, the computational model is assumed to be of the form: 
 
 
 ##Syntax
-       korali["Problem"]["Type"] = "Direct"
+```python
+  # Definition
+  korali["Problem"]["Type"] = "Direct"
+```	  
 
 ##Requirements
 
 + It should contain at least one computational variable as input for the computational model.
 + It should contain no statistical variables.
++ The computational model should return exactly 1 result. 
 
+##Settings
+
+No other settings.

@@ -304,7 +304,8 @@ void CMAES::setConfiguration(nlohmann::json& js)
 
  // Setting variable information
  _solverVarInfoCount = 0;
-
+ _variableLogSpace = (bool*) calloc(sizeof(bool), _k->_problem->N);
+ 
  if (isArray(js, { "Variables" } ))
  {
   _solverVarInfoCount = js["Variables"].size();
@@ -321,6 +322,7 @@ void CMAES::setConfiguration(nlohmann::json& js)
    bool upperBoundDefined = isDefined(js["Variables"][i], { "Upper Bound" });
    bool initialMeanDefined = isDefined(js["Variables"][i], { "Initial Mean" });
    bool initialStdDevDefined = isDefined(js["Variables"][i], { "Initial Standard Deviation" });
+   _variableLogSpace[i] = consume(js["Variables"][i], { "Log Space" }, KORALI_BOOLEAN, "false");
 
    if (lowerBoundDefined == true)  _lowerBounds[i] = consume(js["Variables"][i], { "Lower Bound" }, KORALI_NUMBER);
    if (lowerBoundDefined == false) _lowerBounds[i] = -INFINITY;
@@ -578,15 +580,23 @@ void CMAES::run()
 
 void CMAES::evaluateSamples()
 {
+  double* _population = new double[_k->_problem->N];
   while (_finishedSamples < _current_s)
   {
     for (size_t i = 0; i < _current_s; i++) if (_initializedSample[i] == false)
     {
       _initializedSample[i] = true;
-      _k->_conduit->evaluateSample(_samplePopulation, i); countevals++;
+      for(size_t d = 0; d < _k->_problem->N; ++d)
+        if(_variableLogSpace[d] == true) 
+          _population[d] = std::exp(_samplePopulation[i*_k->_problem->N+d]);
+        else 
+          _population[d] = _samplePopulation[i*_k->_problem->N+d];
+
+      _k->_conduit->evaluateSample(_population, 0); countevals++;
     }
     _k->_conduit->checkProgress();
   }
+  delete _population;
 }
 
 
@@ -739,7 +749,7 @@ void CMAES::updateDistribution(const double *fitnessVector)
  /* Generate index */
  sort_index(fitnessVector, index, _current_s);
 
- if( (_name == "CCMA-ES") || isVia ) 
+ if( (_name == "CMA-ES") ||  isVia ) 
   bestValidIdx = 0;
  else
  {

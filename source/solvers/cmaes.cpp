@@ -154,7 +154,7 @@ nlohmann::json CMAES::getConfiguration()
 {
  auto js = this->Korali::Solver::Base::getConfiguration();
  
- js["Method"] = _k->_solverName.c_str();
+ js["Method"] = _name;
 
  js["Sample Count"]            = _s;
  js["Sigma Cumulation Factor"] = _sigmaCumulationFactor;
@@ -279,14 +279,14 @@ void CMAES::setConfiguration(nlohmann::json& js)
  _fitnessSign   = 0;
  if(_objective == "Maximize") _fitnessSign = 1;
  if(_objective == "Minimize") _fitnessSign = -1;
- if(_fitnessSign == 0)  { fprintf( stderr, "[Korali] %s Error: Invalid setting for Objective: %s\n", _k->_solverName.c_str(), _objective.c_str()); exit(-1); }
+ if(_fitnessSign == 0)  { fprintf( stderr, "[Korali] %s Error: Invalid setting for Objective: %s\n", _name.c_str(), _objective.c_str()); exit(-1); }
 
  _mu                            = consume(js, { "Mu", "Value" }, KORALI_NUMBER, std::to_string(ceil(_s / 2)));
  _muType                        = consume(js, { "Mu", "Type" }, KORALI_STRING, "Logarithmic");
  _muCovarianceIn                = consume(js, { "Mu", "Covariance" }, KORALI_NUMBER, std::to_string(-1));
  
  if( _mu < 1 || _mu > _s || ( ( _mu == _s )  && _muType.compare("Linear") ) )
-   { fprintf( stderr, "[Korali] %s Error: Invalid setting of Mu (%lu) and/or Lambda (%lu)\n", _k->_solverName.c_str(), _mu, _s); exit(-1); }
+   { fprintf( stderr, "[Korali] %s Error: Invalid setting of Mu (%lu) and/or Lambda (%lu)\n", _name.c_str(), _mu, _s); exit(-1); }
 
  // CCMA-ES (more below)
  if (_name == "CCMA-ES")
@@ -334,7 +334,7 @@ void CMAES::setConfiguration(nlohmann::json& js)
     if (lowerBoundDefined && upperBoundDefined) _initialMeans[i] = (_upperBounds[i]+_lowerBounds[i])*0.5;
     else
     {
-     fprintf(stderr, "[Korali] %s Error: Either or both lower or upper bounds of variable %lu is undefined, you therefore need to define its Initial Mean.\n", _k->_solverName.c_str(), i);
+     fprintf(stderr, "[Korali] %s Error: Either or both lower or upper bounds of variable %lu is undefined, you therefore need to define its Initial Mean.\n", _name.c_str(), i);
      exit(-1);
     }
    }
@@ -345,7 +345,7 @@ void CMAES::setConfiguration(nlohmann::json& js)
     if (lowerBoundDefined && upperBoundDefined) _initialStdDevs[i] = (_upperBounds[i]-_lowerBounds[i])*0.2;
     else
     {
-     fprintf(stderr, "[Korali] %s Error: Either or both lower or upper bounds of variable %lu is undefined, you therefore need to define its Initial Standard Deviation.\n", _k->_solverName.c_str(), i);
+     fprintf(stderr, "[Korali] %s Error: Either or both lower or upper bounds of variable %lu is undefined, you therefore need to define its Initial Standard Deviation.\n", _name.c_str(), i);
      exit(-1);
     }
    }
@@ -354,12 +354,12 @@ void CMAES::setConfiguration(nlohmann::json& js)
 
    // Further Checks
    if (_initialMeans[i] < _lowerBounds[i] || _initialMeans[i] > _upperBounds[i])
-    { fprintf( stderr, "[Korali] %s Error: Initial Mean (%f) outside of Lower - Upper (%f - %f) bounds range defined for variable %d.\n", _k->_solverName.c_str(), _initialMeans[i], _lowerBounds[i], _upperBounds[i], i); exit(-1); }
+    { fprintf( stderr, "[Korali] %s Error: Initial Mean (%f) outside of Lower - Upper (%f - %f) bounds range defined for variable %d.\n", _name.c_str(), _initialMeans[i], _lowerBounds[i], _upperBounds[i], i); exit(-1); }
 
    if (_upperBounds[i] <= _lowerBounds[i])
-    { fprintf( stderr, "[Korali] %s Error: Invalid Lower (%f) - Upper (%f) bounds range defined for variable %d.\n", _k->_solverName.c_str(), _lowerBounds[i], _upperBounds[i], i); exit(-1); }
+    { fprintf( stderr, "[Korali] %s Error: Invalid Lower (%f) - Upper (%f) bounds range defined for variable %d.\n", _name.c_str(), _lowerBounds[i], _upperBounds[i], i); exit(-1); }
 
-   if (_initialStdDevs[i] <= 0.0) { fprintf(stderr, "[Korali] %s Error: Initial StdDev for variable %d is less or equal 0.\n", _k->_solverName.c_str(), i);  exit(-1); }
+   if (_initialStdDevs[i] <= 0.0) { fprintf(stderr, "[Korali] %s Error: Initial StdDev for variable %d is less or equal 0.\n", _name.c_str(), i);  exit(-1); }
   }
  }
 
@@ -389,8 +389,8 @@ void CMAES::setConfiguration(nlohmann::json& js)
    _cp             = consume(js, { "Global Success Learning Rate" }, KORALI_NUMBER, std::to_string(1.0/12.0));
    globalSucRate   = consume(js, { "State", "Global Success Rate" }, KORALI_NUMBER, std::to_string(0.44));
 
-   if(_targetSucRate <= 0.0) { fprintf( stderr, "[Korali] %s Error: Invalid Target Success Rate (%f), must be greater 0.0\n", _k->_solverName.c_str(), _targetSucRate ); exit(-1); }
-   if(_adaptionSize <= 0.0) { fprintf( stderr, "[Korali] %s Error: Invalid Adaption Size (%f), must be greater 0.0\n", _k->_solverName.c_str(), _adaptionSize ); exit(-1); }
+   if(_targetSucRate <= 0.0) { fprintf( stderr, "[Korali] %s Error: Invalid Target Success Rate (%f), must be greater 0.0\n", _name.c_str(), _targetSucRate ); exit(-1); }
+   if(_adaptionSize <= 0.0) { fprintf( stderr, "[Korali] %s Error: Invalid Adaption Size (%f), must be greater 0.0\n", _name.c_str(), _adaptionSize ); exit(-1); }
 
    isVia = consume(js, { "Viability Regime" }, KORALI_BOOLEAN, "true");
 
@@ -457,7 +457,7 @@ void CMAES::initInternals(size_t numsamplesmu)
  // Setting variable information
  if (_solverVarInfoCount != _k->_problem->N)
  {
-  fprintf( stderr, "[Korali] %s Error: You need to define variable information (e.g., Initial Mean, Initial Standard Deviation) for all variables defined in the Problem. Expected: %lu, Provided: %lu\n.",_k->_solverName.c_str(), _k->_problem->N, _solverVarInfoCount);
+  fprintf( stderr, "[Korali] %s Error: You need to define variable information (e.g., Initial Mean, Initial Standard Deviation) for all variables defined in the Problem. Expected: %lu, Provided: %lu\n.",_name.c_str(), _k->_problem->N, _solverVarInfoCount);
   exit(-1);
  }
 
@@ -465,7 +465,7 @@ void CMAES::initInternals(size_t numsamplesmu)
  if      (_muType == "Linear")      for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = numsamplesmu - i;
  else if (_muType == "Equal")       for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = 1;
  else if (_muType == "Logarithmic") for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = log(std::max( (double)numsamplesmu, 0.5*_current_s)+0.5)-log(i+1.);
- else  { fprintf( stderr, "[Korali] %s Error: Invalid setting of Mu Type (%s) (Linear, Equal or Logarithmic accepted).", _k->_solverName.c_str(), _muType.c_str()); exit(-1); }
+ else  { fprintf( stderr, "[Korali] %s Error: Invalid setting of Mu Type (%s) (Linear, Equal or Logarithmic accepted).", _name.c_str(), _muType.c_str()); exit(-1); }
 
  // Normalize weights vector and set mueff
  double s1 = 0.0;
@@ -546,7 +546,7 @@ void CMAES::initInternals(size_t numsamplesmu)
 void CMAES::run()
 {
  if (_k->_verbosity >= KORALI_MINIMAL) {
-   printf("[Korali] Starting %s (Objective: %s).\n", _k->_solverName.c_str(), _objective.c_str());
+   printf("[Korali] Starting %s (Objective: %s).\n", _name.c_str(), _objective.c_str());
    printf("--------------------------------------------------------------------\n");
  }
 
@@ -1257,7 +1257,7 @@ void CMAES::printFinal() const
 {
  if (_k->_verbosity >= KORALI_MINIMAL)
  {
-    printf("[Korali] %s Finished\n", _k->_solverName.c_str());
+    printf("[Korali] %s Finished\n", _name.c_str());
     printf("[Korali] Optimum (%s) found: %e\n", _objective.c_str(), bestEver);
     printf("[Korali] Optimum (%s) found at:\n", _objective.c_str());
     for (size_t d = 0; d < _k->_problem->N; ++d) printf("         %s = %+6.3e\n", _k->_problem->_variables[d]->_name.c_str(), rgxbestever[d]);

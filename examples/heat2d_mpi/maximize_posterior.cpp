@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
  k["Solver"]["Method"] = "CMA-ES";
  k["Solver"]["Sample Count"] = 32;
 
- k["Conduit"]["Type"] = "MPI";
+ //k["Conduit"]["Type"] = "";
 
  k["Problem"]["Variables"][0]["Name"] = "Intensity";
  k["Problem"]["Variables"][0]["Type"] = "Computational";

@@ -5,6 +5,7 @@ int main(int argc, char* argv[])
 {
  auto k = Korali::Engine();
 
+ k["Seed"] = 1337;
  k["Problem"]["Evaluation Type"] = "Direct";
 
  k["Problem"]["Variables"][0]["Name"] = "X0";

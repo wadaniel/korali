@@ -103,7 +103,7 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
  // Initializing Seed and GSL Random Environment
  _seed = 0;
  FILE *fid = fopen("/dev/random", "rb");
- if (fid != NULL)
+ if (fid != nullptr)
  {
   fread(&_seed, 1, sizeof(size_t), fid);
   fclose(fid);
@@ -111,46 +111,45 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
  _seed = consume(js, { "Seed" }, KORALI_NUMBER, std::to_string(_seed));
  gsl_rng_env_setup();
 
- auto vString = consume(js, { "Verbosity" }, KORALI_STRING, "Normal");
- if (vString == "Silent")   _verbosity = KORALI_SILENT;
- if (vString == "Minimal")  _verbosity = KORALI_MINIMAL;
- if (vString == "Normal")   _verbosity = KORALI_NORMAL;
- if (vString == "Detailed") _verbosity = KORALI_DETAILED;
+  _verbosity = KORALI_UNDEFINED;
+ auto vLevel = consume(js, { "Verbosity" }, KORALI_STRING, "Normal");
+ if (vLevel == "Silent")   _verbosity = KORALI_SILENT;
+ if (vLevel == "Minimal")  _verbosity = KORALI_MINIMAL;
+ if (vLevel == "Normal")   _verbosity = KORALI_NORMAL;
+ if (vLevel == "Detailed") _verbosity = KORALI_DETAILED;
+ if (_verbosity == KORALI_UNDEFINED) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Vebosity Level '%s'.", vLevel); exit(-1); }
 
  _outputFrequency = consume(js, { "Output Frequency" }, KORALI_NUMBER, "1");
 
  // Configure Problem
- bool foundProblem = false;
- auto pString =  consume(js, { "Problem", "Evaluation Type" }, KORALI_STRING);
- if (pString == "Direct")   { _problem = new Korali::Problem::Direct(js["Problem"]);   foundProblem = true; }
- if (pString == "Bayesian") { _problem = new Korali::Problem::Bayesian(js["Problem"]); foundProblem = true; }
- if (foundProblem == false) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Problem."); exit(-1); }
-
+ _problem = nullptr;
+ auto pName = consume(js, { "Problem", "Evaluation Type" }, KORALI_STRING);
+ if (pName == "Direct")   { _problem = new Korali::Problem::Direct(js["Problem"]); }
+ if (pName == "Bayesian") { _problem = new Korali::Problem::Bayesian(js["Problem"]); }
+ if (_problem == nullptr) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Problem '%s'.", pName); exit(-1); }
  // Configure Conduit
 
  int rankCount = 1;
 
- auto cString =  consume(js, { "Conduit", "Type" }, KORALI_STRING, "Single");
-
- bool foundConduit = false;
-
- if (cString == "Single")       { _conduit = new Korali::Conduit::Single(js["Conduit"]);       foundConduit = true; }
+ _conduit = nullptr;
+ auto conduitType =  consume(js, { "Conduit", "Type" }, KORALI_STRING, "Single");
+ if (conduitType == "Single") _conduit = new Korali::Conduit::Single(js["Conduit"]);
  #ifdef _KORALI_USE_MPI
- if (cString == "MPI")          { _conduit = new Korali::Conduit::KoraliMPI(js["Conduit"]);    foundConduit = true; }
+ if (conduitType == "MPI")    _conduit = new Korali::Conduit::KoraliMPI(js["Conduit"]);
  #else
- if (cString == "MPI")          { fprintf(stderr, "[Korali] Error: MPI Conduit selected, but Korali has not been compiled with MPI support.\n"); exit(-1); }
+ if (conduitType == "MPI")          { fprintf(stderr, "[Korali] Error: MPI Conduit selected, but Korali has not been compiled with MPI support.\n"); exit(-1); }
  #endif
- if (cString == "Nonintrusive") { _conduit = new Korali::Conduit::Nonintrusive(js["Conduit"]); foundConduit = true; }
+ if (conduitType == "Nonintrusive") _conduit = new Korali::Conduit::Nonintrusive(js["Conduit"]);
 
- if (foundConduit == false) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Conduit.\n"); exit(-1); }
+ if (_conduit == nullptr) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Conduit '%s'.\n", conduitType); exit(-1); }
 
  // Configure Solver
- _solver = NULL;
- auto sString = consume(js, { "Solver", "Method" }, KORALI_STRING);
- if (sString == "CMA-ES")  _solver = new Korali::Solver::CMAES(js["Solver"]);
- if (sString == "CCMA-ES") _solver = new Korali::Solver::CCMAES(js["Solver"]);
- if (sString == "TMCMC")   _solver = new Korali::Solver::TMCMC(js["Solver"]);
- if (_solver == NULL) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Solver."); exit(-1); }
+ _solver = nullptr;
+ auto solverName = consume(js, { "Solver", "Method" }, KORALI_STRING);
+ if (solverName == "CMA-ES")  _solver = new Korali::Solver::CMAES(js["Solver"], solverName);
+ if (solverName == "CCMA-ES") _solver = new Korali::Solver::CMAES(js["Solver"], solverName);
+ if (solverName == "TMCMC")   _solver = new Korali::Solver::TMCMC(js["Solver"]);
+ if (_solver == nullptr) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Solver '%s'.", solverName); exit(-1); }
 
  if (isEmpty(js) == false)
  {

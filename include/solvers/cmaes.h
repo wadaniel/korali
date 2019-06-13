@@ -4,7 +4,6 @@
 #include "solvers/base.h"
 #include "variables/gaussian.h"
 #include <chrono>
-#include <vector>
 #include <map>
 
 namespace Korali { namespace Solver {
@@ -14,7 +13,7 @@ class CMAES : public Base
  public:
 
  // Constructor / Destructor
- CMAES(nlohmann::json& js);
+ CMAES(nlohmann::json& js, std::string name);
  ~CMAES();
 
  // These are CMA-ES Specific, but could be used for other methods in the future
@@ -40,6 +39,7 @@ class CMAES : public Base
  private:
 
  // Korali Runtime Variables
+ std::string _name;
  int _fitnessSign; /* maximizing vs optimizing (+- 1) */
  std::string _objective; /* Maximize or Minimize */ 
  double* _fitnessVector; /* objective function values [_s] */
@@ -50,15 +50,17 @@ class CMAES : public Base
 
  size_t _finishedSamples; /* counter of evaluated samples to terminate evaluation */
  size_t _s; /* number of samples per generation */
+ size_t _via_s; /* number of samples during start seach (viability regime) */
+ size_t _current_s; /* number of samples active ( _s or _via_s ) */
  size_t _mu; /* number of best samples for mean / cov update */
+ size_t _via_mu; /* number of best samples for mean (viability regime) */
+ size_t _current_mu; /* number of samples active ( _mu or _mu_s ) */
  std::string _muType; /* Linear, Equal or Logarithmic */
  double* _muWeights; /* weights for mu best samples */
  double _muEffective; /* variance effective selection mass */
  double _muCovarianceIn; /* read from configuration, placeholder for reinit */
  double _muCovariance; /* internal parameter to calibrate updates */
 
- size_t _maxResamplings; /* max resamplings per generation */
- 
  double _sigmaCumulationFactorIn; /* read from configuration, placeholder for reinit (see below) */
  double _sigmaCumulationFactor; /* increment for sigma, default calculated from muEffective and dimension */
  double _dampFactorIn; /* read from configuration, placeholder for reinit (see below) */
@@ -117,7 +119,6 @@ class CMAES : public Base
 
  size_t countevals; /* Number of function evaluations */
  size_t countinfeasible; /* Number of samples outside of domain given by bounds */
- size_t resampled; /* number of resampled parameters due constraint violation */
  double maxdiagC; /* max diagonal element of C */
  double mindiagC; /* min diagonal element of C */
  double maxEW; /* max Eigenwert of C */
@@ -127,7 +128,6 @@ class CMAES : public Base
  bool flgEigensysIsUptodate;
 
  // Private CMA-ES-Specific Methods
- void initInternals();
  void sampleSingle(size_t sampleIdx); /* sample individual */
  void evaluateSamples(); /* evaluate all samples until done */
  void adaptC(int hsig); /* CMA-ES covariance matrix adaption */
@@ -139,6 +139,41 @@ class CMAES : public Base
  bool isFeasible(size_t sampleIdx) const; /* check if sample inside lower & upper bounds */
  double doubleRangeMax(const double *rgd, size_t len) const;
  double doubleRangeMin(const double *rgd, size_t len) const;
+
+ // Private CCMA-ES-Specific Variables 
+ size_t _numConstraints; /* number of constraints */
+ size_t _maxCorrections; /* max cov adaptions per generation */
+ size_t _maxResamplings; /* max resamplings per generation */
+ double _targetSucRate; /* target success rate */
+ double _adaptionSize; /* cov adaption size scaling*/
+ double _beta; /* cov adaption size ( adaptionSize/(samples+2) ) */
+ double _cv; /* learning rate in normal vector  update */
+ double _cp; /* update rate global success estimate */
+ 
+ bool isVia; /* true if mean violates constraints */
+ int bestValidIdx; /* best sample with wo constraint violation (otherwise -1) */
+ double globalSucRate; /* estim. global success rate */ 
+ double fviability; /* viability func value */
+ size_t resampled; /* number of resampled parameters due constraint violation */
+ size_t correctionsC; /* number of cov matrix adaptions */
+ size_t countcevals; /* number of constraint evaluations */
+ double *sucRates; /* constraint success rates */
+ double *viabilityBounds; /* viability boundaries */
+ bool *viabilityImprovement; /* sample evaluations larger than fviability */ //TODO: not neeeded?
+ size_t maxnumviolations; /* maximal amount of constraint violations */
+ size_t *numviolations; /* number of constraint violations for each sample */
+ bool **viabilityIndicator; /* constraint evaluation better than viability bound */
+ double **constraintEvaluations; /* evaluation of each constraint for each sample  */
+ double **v; /* normal approximation of constraints */
+ double *besteverCeval; /* constraint evaluations for best ever */
+
+ // Private CCMA-ES-Specific Methods
+ void initInternals(size_t numsamples); /* init _muWeights, _muEffective and _muCov */
+ void checkMeanAndSetRegime(); /* check if mean inside valid domain, if yes, update internal vars */
+ void updateConstraints();
+ void updateViabilityBoundaries(); /* update & shrink viability boundaries */
+ void handleConstraints(); /* covariance adaption for invalid samples */
+ void reEvaluateConstraints(); /* re evaluate constraints, in handleConstraints,  count violations etc.. */
 
  // Print Methods
  void printGeneration() const;

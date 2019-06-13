@@ -20,7 +20,6 @@
 #include "variables/laplace.h"
 
 #include "solvers/cmaes.h"
-#include "solvers/ccmaes.h"
 #include "solvers/tmcmc.h"
 
 #include "conduits/single.h"
@@ -34,7 +33,7 @@
  #undef _XOPEN_SOURCE
 #endif
 
-enum verbosity { KORALI_SILENT = 0, KORALI_MINIMAL = 1, KORALI_NORMAL = 2, KORALI_DETAILED = 3 };
+enum verbosity { KORALI_UNDEFINED = -1, KORALI_SILENT = 0, KORALI_MINIMAL = 1, KORALI_NORMAL = 2, KORALI_DETAILED = 3 };
 
 namespace Korali
 {
@@ -48,6 +47,7 @@ class Engine {
  nlohmann::json  _js;
  nlohmann::json& operator[](std::string key) { return _js[key]; }
 
+ std::string _solverName;
  std::function<void(ModelData&)> _model;
  std::vector<fcon> _fconstraints;
  Korali::Conduit::Base* _conduit;

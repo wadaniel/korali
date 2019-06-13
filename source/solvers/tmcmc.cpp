@@ -16,7 +16,6 @@
 Korali::Solver::TMCMC::TMCMC(nlohmann::json& js) : Korali::Solver::Base::Base(js)
 {
  setConfiguration(js);
- _plottingScript = "plot_tmcmc.py";
 
  // Setting Chain-Specific Seeds
  range = gsl_rng_alloc (gsl_rng_default);

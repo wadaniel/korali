@@ -47,7 +47,6 @@ class Engine {
  nlohmann::json  _js;
  nlohmann::json& operator[](std::string key) { return _js[key]; }
 
- std::string _solverName;
  std::function<void(ModelData&)> _model;
  std::vector<fcon> _fconstraints;
  Korali::Conduit::Base* _conduit;

@@ -8,13 +8,12 @@ k = korali.Engine()
 
 k["Verbosity"] = "Normal";
 
-k["Problem"]["Type"] = "Direct";
+k["Problem"]["Evaluation Type"] = "Direct";
 for i in range(4):
  k["Problem"]["Variables"][i]["Name"] = "X" + str(i)
- k["Problem"]["Variables"][i]["Distribution"] = "Uniform"
  k["Problem"]["Variables"][i]["Type"] = "Computational"
- k["Problem"]["Variables"][i]["Minimum"] = -32.0
- k["Problem"]["Variables"][i]["Maximum"] = +32.0
+ k["Solver"]["Variables"][i]["Lower Bound"] = -32.0
+ k["Solver"]["Variables"][i]["Upper Bound"] = +32.0
 
 k["Solver"]["Method"] = "CMA-ES";
 k["Solver"]["Sample Count"] = 10;

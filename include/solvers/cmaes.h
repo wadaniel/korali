@@ -8,13 +8,13 @@
 
 namespace Korali { namespace Solver {
 
-class CCMAES : public Base
+class CMAES : public Base
 {
  public:
 
  // Constructor / Destructor
- CCMAES(std::string name, nlohmann::json& js);
- ~CCMAES();
+ CMAES(nlohmann::json& js, std::string name);
+ ~CMAES();
 
  // These are CMA-ES Specific, but could be used for other methods in the future
  size_t _solverVarInfoCount;

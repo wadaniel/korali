@@ -10,7 +10,7 @@ using namespace Korali::Solver;
 /*                  Constructor / Destructor Methods                    */
 /************************************************************************/
 
-CCMAES::CCMAES(std::string name, nlohmann::json& js) : Korali::Solver::Base::Base(js)
+CMAES::CMAES(nlohmann::json& js, std::string name) : Korali::Solver::Base::Base(js)
 {
  _name = name;
  
@@ -141,7 +141,7 @@ CCMAES::CCMAES(std::string name, nlohmann::json& js) : Korali::Solver::Base::Bas
 
 }
 
-CCMAES::~CCMAES()
+CMAES::~CMAES()
 {
 
 }
@@ -150,7 +150,7 @@ CCMAES::~CCMAES()
 /*                    Configuration Methods                             */
 /************************************************************************/
 
-nlohmann::json CCMAES::getConfiguration()
+nlohmann::json CMAES::getConfiguration()
 {
  auto js = this->Korali::Solver::Base::getConfiguration();
  
@@ -264,7 +264,7 @@ nlohmann::json CCMAES::getConfiguration()
 
 
 
-void CCMAES::setConfiguration(nlohmann::json& js)
+void CMAES::setConfiguration(nlohmann::json& js)
 {
  this->Korali::Solver::Base::setConfiguration(js);
 
@@ -407,7 +407,7 @@ void CCMAES::setConfiguration(nlohmann::json& js)
 }
 
 
-void CCMAES::setState(nlohmann::json& js)
+void CMAES::setState(nlohmann::json& js)
 {
  this->Korali::Solver::Base::setState(js);
 
@@ -452,7 +452,7 @@ void CCMAES::setState(nlohmann::json& js)
 }
 
 
-void CCMAES::initInternals(size_t numsamplesmu)
+void CMAES::initInternals(size_t numsamplesmu)
 {
  // Setting variable information
  if (_solverVarInfoCount != _k->_problem->N)
@@ -543,7 +543,7 @@ void CCMAES::initInternals(size_t numsamplesmu)
 /************************************************************************/
 
 
-void CCMAES::run()
+void CMAES::run()
 {
  if (_k->_verbosity >= KORALI_MINIMAL) {
    printf("[Korali] Starting %s (Objective: %s).\n", _k->_solverName.c_str(), _objective.c_str());
@@ -576,7 +576,7 @@ void CCMAES::run()
 }
 
 
-void CCMAES::evaluateSamples()
+void CMAES::evaluateSamples()
 {
   while (_finishedSamples < _current_s)
   {
@@ -590,14 +590,14 @@ void CCMAES::evaluateSamples()
 }
 
 
-void CCMAES::processSample(size_t sampleId, double fitness)
+void CMAES::processSample(size_t sampleId, double fitness)
 {
  _fitnessVector[sampleId] = _fitnessSign*fitness;
  _finishedSamples++;
 }
 
 
-void CCMAES::checkMeanAndSetRegime()
+void CMAES::checkMeanAndSetRegime()
 {
     if (isVia == false) return; /* mean already inside valid domain, no udpates */
 
@@ -616,7 +616,7 @@ void CCMAES::checkMeanAndSetRegime()
 }
 
 
-void CCMAES::updateConstraints() //TODO: maybe parallelize constraint evaluations (DW)
+void CMAES::updateConstraints() //TODO: maybe parallelize constraint evaluations (DW)
 {
 
  std::fill_n(numviolations, _current_s, 0);
@@ -642,7 +642,7 @@ void CCMAES::updateConstraints() //TODO: maybe parallelize constraint evaluation
 }
 
 
-void CCMAES::reEvaluateConstraints() //TODO: maybe we can parallelize constraint evaluations (DW)
+void CMAES::reEvaluateConstraints() //TODO: maybe we can parallelize constraint evaluations (DW)
 {
   maxnumviolations = 0;
   for(size_t i = 0; i < _current_s; ++i) if(numviolations[i] > 0)
@@ -661,7 +661,7 @@ void CCMAES::reEvaluateConstraints() //TODO: maybe we can parallelize constraint
 }
 
 
-void CCMAES::updateViabilityBoundaries()
+void CMAES::updateViabilityBoundaries()
 {
  for(size_t c = 0; c < _numConstraints; ++c)
  {
@@ -674,7 +674,7 @@ void CCMAES::updateViabilityBoundaries()
 }
 
 
-bool CCMAES::isFeasible(size_t sampleIdx) const
+bool CMAES::isFeasible(size_t sampleIdx) const
 {
  for (size_t d = 0; d < _k->_problem->N; ++d)
   if (_samplePopulation[ sampleIdx*_k->_problem->N+d ] < _lowerBounds[d] || _samplePopulation[ sampleIdx*_k->_problem->N+d ] > _upperBounds[d]) return false;
@@ -682,7 +682,7 @@ bool CCMAES::isFeasible(size_t sampleIdx) const
 }
 
 
-void CCMAES::prepareGeneration()
+void CMAES::prepareGeneration()
 {
 
  /* calculate eigensystem */
@@ -710,7 +710,7 @@ void CCMAES::prepareGeneration()
 }
 
 
-void CCMAES::sampleSingle(size_t sampleIdx)
+void CMAES::sampleSingle(size_t sampleIdx)
 {
 
   /* generate scaled random vector (D * z) */
@@ -733,7 +733,7 @@ void CCMAES::sampleSingle(size_t sampleIdx)
 }
 
 
-void CCMAES::updateDistribution(const double *fitnessVector)
+void CMAES::updateDistribution(const double *fitnessVector)
 {
 
  /* Generate index */
@@ -881,7 +881,7 @@ void CCMAES::updateDistribution(const double *fitnessVector)
 }
 
 
-void CCMAES::adaptC(int hsig)
+void CMAES::adaptC(int hsig)
 {
 
  if (_covarianceMatrixLearningRate != 0.0)
@@ -913,7 +913,7 @@ void CCMAES::adaptC(int hsig)
 }
 
 
-void CCMAES::handleConstraints()
+void CMAES::handleConstraints()
 {
  size_t initial_resampled = resampled;
  size_t initial_corrections = correctionsC;
@@ -986,7 +986,7 @@ void CCMAES::handleConstraints()
 }
 
 
-bool CCMAES::checkTermination()
+bool CMAES::checkTermination()
 {
 
  bool terminate = false;
@@ -1081,7 +1081,7 @@ bool CCMAES::checkTermination()
 }
 
 
-void CCMAES::updateEigensystem(double **M, int flgforce)
+void CMAES::updateEigensystem(double **M, int flgforce)
 {
  if(flgforce == 0 && flgEigensysIsUptodate) return;
  /* if(_currentGeneration % _covarianceEigenEvalFreq == 0) return; */
@@ -1113,7 +1113,7 @@ void CCMAES::updateEigensystem(double **M, int flgforce)
 /************************************************************************/
 
 
-void CCMAES::eigen(size_t size, double **M, double *diag, double **Q) const
+void CMAES::eigen(size_t size, double **M, double *diag, double **Q) const
 {
  double* data = (double*) malloc (sizeof(double) * size * size);
 
@@ -1146,7 +1146,7 @@ void CCMAES::eigen(size_t size, double **M, double *diag, double **Q) const
 }
 
 
-size_t CCMAES::maxIdx(const double *rgd, size_t len) const
+size_t CMAES::maxIdx(const double *rgd, size_t len) const
 {
  size_t res = 0;
  for(size_t i = 1; i < len; i++)
@@ -1155,7 +1155,7 @@ size_t CCMAES::maxIdx(const double *rgd, size_t len) const
 }
 
 
-size_t CCMAES::minIdx(const double *rgd, size_t len) const
+size_t CMAES::minIdx(const double *rgd, size_t len) const
 {
  size_t res = 0;
  for(size_t i = 1; i < len; i++)
@@ -1164,7 +1164,7 @@ size_t CCMAES::minIdx(const double *rgd, size_t len) const
 }
 
 
-void CCMAES::sort_index(const double *fitnessVector, size_t *index, size_t n) const
+void CMAES::sort_index(const double *fitnessVector, size_t *index, size_t n) const
 {
   // initialize original index locations
   std::iota(index, index+n, (size_t) 0);
@@ -1175,7 +1175,7 @@ void CCMAES::sort_index(const double *fitnessVector, size_t *index, size_t n) co
 }
 
 
-double CCMAES::doubleRangeMax(const double *rgd, size_t len) const
+double CMAES::doubleRangeMax(const double *rgd, size_t len) const
 {
  double max = rgd[0];
  for (size_t i = 1; i < len; i++)
@@ -1184,7 +1184,7 @@ double CCMAES::doubleRangeMax(const double *rgd, size_t len) const
 }
 
 
-double CCMAES::doubleRangeMin(const double *rgd, size_t len) const
+double CMAES::doubleRangeMin(const double *rgd, size_t len) const
 {
  double min = rgd[0];
  for (size_t i = 1; i < len; i++)
@@ -1193,7 +1193,7 @@ double CCMAES::doubleRangeMin(const double *rgd, size_t len) const
 }
 
 
-void CCMAES::printGeneration() const
+void CMAES::printGeneration() const
 {
  if (_currentGeneration % _k->_outputFrequency != 0) return;
 
@@ -1253,7 +1253,7 @@ void CCMAES::printGeneration() const
 }
 
 
-void CCMAES::printFinal() const
+void CMAES::printFinal() const
 {
  if (_k->_verbosity >= KORALI_MINIMAL)
  {

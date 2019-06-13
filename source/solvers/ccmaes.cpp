@@ -20,12 +20,12 @@ CCMAES::CCMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
  size_t s_max, mu_max;
  if (_isConstrained)
  {
-    s_max  = std::max(_s, _via_s);
-    mu_max = std::max(_mu, _via_mu);
+   s_max  = std::max(_s, _via_s);
+   mu_max = std::max(_mu, _via_mu);
  }
  else
  {
-   s_max = _s;
+   s_max  = _s;
    mu_max = _mu;
  }
 
@@ -140,8 +140,6 @@ CCMAES::CCMAES(nlohmann::json& js) : Korali::Solver::Base::Base(js)
   js.erase("State");
  }
 
- printf("CONSTRUCTED\n");
-
 }
 
 CCMAES::~CCMAES()
@@ -235,6 +233,7 @@ nlohmann::json CCMAES::getConfiguration()
  if (_isConstrained)
  {
      // CCMA-ES Variables
+     js["Viability Regime"]             = isVia;
      js["Viability Sample Count"]       = _via_s;
      js["Mu"]["Viability"]              = _via_mu;
      js["Target Success Rate"]          = _targetSucRate;
@@ -245,7 +244,6 @@ nlohmann::json CCMAES::getConfiguration()
 
      // CCMA-ES States
      js["State"]["Global Success Rate"] = globalSucRate;
-     js["Viability Regime"] = isVia; //TODO: is state, but should not be treated as one in json
      for (size_t c = 0; c < _numConstraints; ++c) js["State"]["Success Rates"][c] = sucRates[c];
      for (size_t c = 0; c < _numConstraints; ++c) js["State"]["Viability Boundaries"][c] = viabilityBounds[c];
 
@@ -395,11 +393,11 @@ void CCMAES::setConfiguration(nlohmann::json& js)
    if(_targetSucRate <= 0.0) { fprintf( stderr, "[Korali] %s Error: Invalid Target Success Rate (%f), must be greater 0.0\n", _k->_solverName.c_str(), _targetSucRate ); exit(-1); }
    if(_adaptionSize <= 0.0) { fprintf( stderr, "[Korali] %s Error: Invalid Adaption Size (%f), must be greater 0.0\n", _k->_solverName.c_str(), _adaptionSize ); exit(-1); }
 
-   // TODO: set Regime (is state, but should not be treated like the other cases)
    isVia = consume(js, { "Viability Regime" }, KORALI_BOOLEAN, "true");
 
  }
- if(isVia) {
+
+ if(_isConstrained && isVia) {
      _current_s  = _via_s;
      _current_mu = _via_mu;
  } else {
@@ -607,7 +605,7 @@ void CCMAES::checkMeanAndSetRegime()
     for (size_t c = 0; c < _numConstraints; ++c) { countcevals++; if ( _k->_fconstraints[c](rgxmean, _k->_problem->N) > 0.) return; } /* do nothing */
 
     /* mean inside domain, switch regime and update internal variables */
-    isVia       = false;
+    isVia = false;
 
     for (size_t c = 0; c < _numConstraints; ++c) { viabilityBounds[c] = 0; } /* do nothing */
     _current_s  = _s;
@@ -742,15 +740,13 @@ void CCMAES::updateDistribution(const double *fitnessVector)
  /* Generate index */
  sort_index(fitnessVector, index, _current_s);
 
- if( (_isConstrained == false) || isVia)
- {
-   bestValidIdx = 0;
- }
+ if( _isConstrained || isVia ) 
+  bestValidIdx = 0;
  else
  {
-   bestValidIdx = -1;
-   for (size_t i = 0; i < _current_s; i++) if(numviolations[index[i]] == 0) bestValidIdx = index[i];
-   if ( bestValidIdx == -1 ) { printf("[Korali] Warning: all samples violate constraints, no updates taking place.\n"); return; }
+  bestValidIdx = -1;
+  for (size_t i = 0; i < _current_s; i++) if(numviolations[index[i]] == 0) bestValidIdx = index[i];
+  if ( bestValidIdx == -1 ) { printf("[Korali] Warning: all samples violate constraints, no updates taking place.\n"); return; }
  }
 
  /* update function value history */
@@ -815,7 +811,7 @@ void CCMAES::updateDistribution(const double *fitnessVector)
  adaptC(hsig);
 
  // update sigma & viability boundaries
- if( (_isConstrained == false) || isVia)
+ if( _isConstrained && (isVia == false) )
  {
    updateViabilityBoundaries();
 
@@ -1205,7 +1201,7 @@ void CCMAES::printGeneration() const
  if (_k->_verbosity >= KORALI_MINIMAL)
    printf("[Korali] Generation %ld - Duration: %fs (Total Elapsed Time: %fs)\n", _currentGeneration, std::chrono::duration<double>(t1-t0).count(), std::chrono::duration<double>(t1-startTime).count());
 
- if ( isVia && _k->_verbosity >= KORALI_NORMAL)
+ if ( _isConstrained && isVia && _k->_verbosity >= KORALI_NORMAL)
  {
    printf("\n[Korali] CCMA-ES searching start (MeanX violates constraints) .. \n");
    printf("[Korali] Viability Bounds:\n");

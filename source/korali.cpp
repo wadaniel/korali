@@ -125,6 +125,7 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
  _problem = nullptr;
  auto pName = consume(js, { "Problem", "Evaluation Type" }, KORALI_STRING);
  if (pName == "Direct")   { _problem = new Korali::Problem::Direct(js["Problem"]); }
+ if (pName == "Direct Bayesian") { _problem = new Korali::Problem::DirectBayesian(js["Problem"]); }
  if (pName == "Bayesian") { _problem = new Korali::Problem::Bayesian(js["Problem"]); }
  if (_problem == nullptr) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Problem '%s'.", pName); exit(-1); }
  // Configure Conduit

@@ -61,7 +61,7 @@ void Korali::Problem::Bayesian::initialize()
  for (size_t i = 0; i < N; i++)
   if (_variables[i]->_hasDistribution == false)
   {
-   fprintf(stderr, "[Korali] Error: Variable %s has no defined distribution as required by the Bayesian model.\n", _variables[i]->_name.c_str());
+   fprintf(stderr, "[Korali] Error: Variable %s has no defined distribution as required by a Bayesian model.\n", _variables[i]->_name.c_str());
    exit(-1);
   }
 }

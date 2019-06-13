@@ -19,7 +19,6 @@
 #include "variables/cauchy.h"
 #include "variables/laplace.h"
 
-#include "solvers/cmaes.h"
 #include "solvers/ccmaes.h"
 #include "solvers/tmcmc.h"
 

@@ -13,7 +13,7 @@ class CCMAES : public Base
  public:
 
  // Constructor / Destructor
- CCMAES(nlohmann::json& js);
+ CCMAES(std::string name, nlohmann::json& js);
  ~CCMAES();
 
  // These are CMA-ES Specific, but could be used for other methods in the future
@@ -39,7 +39,7 @@ class CCMAES : public Base
  private:
 
  // Korali Runtime Variables
- bool _isConstrained;
+ std::string _name;
  int _fitnessSign; /* maximizing vs optimizing (+- 1) */
  std::string _objective; /* Maximize or Minimize */ 
  double* _fitnessVector; /* objective function values [_s] */

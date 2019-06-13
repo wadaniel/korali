@@ -14,6 +14,7 @@ Korali::Variable::Base::Base(size_t seed)
 {
  _range = gsl_rng_alloc (gsl_rng_default);
  gsl_rng_set(_range, seed);
+ _hasDistribution = false;
 }
 
 Korali::Variable::Base::~Base()

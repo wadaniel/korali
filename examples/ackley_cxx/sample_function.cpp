@@ -12,20 +12,20 @@ int main(int argc, char* argv[])
  k["Problem"]["Variables"][2]["Name"] = "X2";
  k["Problem"]["Variables"][3]["Name"] = "X3";
 
- k["Problem"]["Variables"][0]["Distribution"] = "Uniform";
- k["Problem"]["Variables"][1]["Distribution"] = "Uniform";
- k["Problem"]["Variables"][2]["Distribution"] = "Uniform";
- k["Problem"]["Variables"][3]["Distribution"] = "Uniform";
+ k["Problem"]["Variables"][0]["Distribution"]["Type"] = "Uniform";
+ k["Problem"]["Variables"][1]["Distribution"]["Type"] = "Uniform";
+ k["Problem"]["Variables"][2]["Distribution"]["Type"] = "Uniform";
+ k["Problem"]["Variables"][3]["Distribution"]["Type"] = "Uniform";
 
- k["Problem"]["Variables"][0]["Minimum"] = -32.0;
- k["Problem"]["Variables"][1]["Minimum"] = -32.0;
- k["Problem"]["Variables"][2]["Minimum"] = -32.0;
- k["Problem"]["Variables"][3]["Minimum"] = -32.0;
+ k["Problem"]["Variables"][0]["Distribution"]["Minimum"] = -32.0;
+ k["Problem"]["Variables"][1]["Distribution"]["Minimum"] = -32.0;
+ k["Problem"]["Variables"][2]["Distribution"]["Minimum"] = -32.0;
+ k["Problem"]["Variables"][3]["Distribution"]["Minimum"] = -32.0;
 
- k["Problem"]["Variables"][0]["Maximum"] = +32.0;
- k["Problem"]["Variables"][1]["Maximum"] = +32.0;
- k["Problem"]["Variables"][2]["Maximum"] = +32.0;
- k["Problem"]["Variables"][3]["Maximum"] = +32.0;
+ k["Problem"]["Variables"][0]["Distribution"]["Maximum"] = +32.0;
+ k["Problem"]["Variables"][1]["Distribution"]["Maximum"] = +32.0;
+ k["Problem"]["Variables"][2]["Distribution"]["Maximum"] = +32.0;
+ k["Problem"]["Variables"][3]["Distribution"]["Maximum"] = +32.0;
 
  k["Solver"]["Method"] = "TMCMC";
  k["Solver"]["Covariance Scaling"] = 0.02;

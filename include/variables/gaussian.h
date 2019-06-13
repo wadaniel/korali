@@ -26,7 +26,7 @@ class Gaussian : public Base
   void setDistribution(double mean, double sigma) { _mean = mean; _sigma = sigma; };
 
   void printDetails() override;
-  void initialize();
+  void initialize() override;
 
   // Serialization Methods
   nlohmann::json getConfiguration() override;

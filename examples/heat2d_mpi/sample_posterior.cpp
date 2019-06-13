@@ -6,9 +6,6 @@ int main(int argc, char* argv[])
  auto k = Korali::Engine();
  auto p = heat2DInit();
 
- k["Seed"] = 0xC0FFEE;
- k["Verbosity"] = "Detailed";
-
  k["Problem"]["Evaluation Type"] = "Bayesian";
  k["Problem"]["Reference Data"] = p.refTemp;
 

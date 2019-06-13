@@ -24,7 +24,7 @@ class Uniform : public Base
 
   // Constructor / Destructor
   void printDetails() override;
-  void initialize();
+  void initialize() override;
 
   // Serialization Methods
   nlohmann::json getConfiguration() override;

@@ -47,14 +47,27 @@ void Korali::Problem::Bayesian::setConfiguration(nlohmann::json& js)
 /*                    Functional Methods                                */
 /************************************************************************/
 
-double Korali::Problem::Bayesian::evaluateFitness(Korali::ModelData& data)
+void Korali::Problem::Bayesian::initialize()
 {
+
+ _isBayesian = true;
 
  if (_statisticalVariableCount != 1)
  {
   fprintf(stderr, "[Korali] Error: The Bayesian model requires 1 statistical parameter.\n");
   exit(-1);
  }
+
+ for (size_t i = 0; i < N; i++)
+  if (_variables[i]->_hasDistribution == false)
+  {
+   fprintf(stderr, "[Korali] Error: Variable %s has no defined distribution as required by the Bayesian model.\n", _variables[i]->_name.c_str());
+   exit(-1);
+  }
+}
+
+double Korali::Problem::Bayesian::evaluateFitness(Korali::ModelData& data)
+{
 
  if (data._results.size() != _referenceDataSize)
  {

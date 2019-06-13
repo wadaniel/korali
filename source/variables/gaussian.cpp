@@ -8,9 +8,9 @@ using namespace Korali::Variable;
 
 Gaussian::Gaussian(double mean, double sigma, size_t seed) : Base::Base(seed)
 {
-  _mean = mean;
-  _sigma = sigma;
-  initialize();
+ _mean = mean;
+ _sigma = sigma;
+ initialize();
 }
 
 Gaussian::Gaussian(nlohmann::json& js, size_t seed) : Base::Base(js, seed)
@@ -52,6 +52,7 @@ void Gaussian::setConfiguration(nlohmann::json& js)
 void Gaussian::initialize()
 {
  _aux = -0.5*gsl_sf_log(2*M_PI) - gsl_sf_log(_sigma);
+ _hasDistribution = true;
 }
 
 double Gaussian::getDensity(double x)

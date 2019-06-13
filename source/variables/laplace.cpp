@@ -8,9 +8,9 @@ using namespace Korali::Variable;
 
 Laplace::Laplace(double mean, double width, size_t seed) : Base::Base(seed)
 {
-  _mean  = mean;
-  _width = width;
-  initialize();
+ _mean  = mean;
+ _width = width;
+ initialize();
 }
 
 Laplace::Laplace(nlohmann::json& js, size_t seed) : Base::Base(js, seed)
@@ -51,7 +51,8 @@ void Laplace::setConfiguration(nlohmann::json& js)
 
 void Laplace::initialize()
 {
-	_aux = - gsl_sf_log(2.*_width);
+ _aux = - gsl_sf_log(2.*_width);
+ _hasDistribution = true;
 }
 
 double Laplace::getDensity(double x)

@@ -7,6 +7,7 @@
 Korali::Problem::Base::Base(nlohmann::json& js)
 {
  setConfiguration(js);
+ _isBayesian = false;
 }
 
 Korali::Problem::Base::~Base()

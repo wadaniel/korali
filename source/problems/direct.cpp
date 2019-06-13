@@ -35,17 +35,31 @@ void Korali::Problem::Direct::setConfiguration(nlohmann::json& js)
 /*                    Functional Methods                                */
 /************************************************************************/
 
-double Korali::Problem::Direct::evaluateFitness(Korali::ModelData& data)
+void Korali::Problem::Direct::initialize()
 {
+
+ _isBayesian = false;
+
  if (_statisticalVariableCount != 0)
  {
-  fprintf(stderr, "[Korali] Error: Direct problem requires 0 statistical parameters.\n");
+  fprintf(stderr, "[Korali] Error: Direct Evaluation type requires 0 statistical parameters.\n");
   exit(-1);
  }
 
+ for (size_t i = 0; i < N; i++)
+ if (_variables[i]->_hasDistribution == true)
+ {
+  fprintf(stderr, "[Korali] Error: Variable %s has a defined distribution, not required by a Direct Evaluation Type.\n", _variables[i]->_name.c_str());
+  exit(-1);
+ }
+}
+
+double Korali::Problem::Direct::evaluateFitness(Korali::ModelData& data)
+{
+
  if (data._results.size() != 1)
  {
-  fprintf(stderr, "[Korali] Error: The direct problem requires exactly a 1-element result array.\n");
+  fprintf(stderr, "[Korali] Error: Direct Evaluation type requires exactly a 1-element result array.\n");
   fprintf(stderr, "[Korali]        Provided: %lu.\n", data._results.size());
   exit(-1);
  }

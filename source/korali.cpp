@@ -178,6 +178,9 @@ void Korali::Engine::run()
  // Creating Results directory
  mkdir("_korali_result", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
+ // Initialize Problem
+ _problem->initialize();
+
  // Running Engine
  _conduit->run();
 

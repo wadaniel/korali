@@ -24,7 +24,7 @@ def main():
 
  if ( method == "CMA-ES" or method == "CCMA-ES" ):
   print("[Korali] Running CMA-ES Plotter...")
-  plot_cmaes(path, True)
+  plot_cmaes(path, False)
   exit(0)
 
  print("[Korali] Error: Did not recognize method for plotting...")

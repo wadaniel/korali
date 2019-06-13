@@ -39,7 +39,6 @@ def plot_cmaes(src, live = False, obj='current'):
 
     idx    = 0 # generation
     numdim = 0 # problem dimension
-
     names    = [] # description params
     colors   = [] # rgb colors
     numeval  = [] # number obj function evaluations
@@ -53,44 +52,33 @@ def plot_cmaes(src, live = False, obj='current'):
     ssdev    = [] # sigma x diag(C)
 
     plt.style.use('seaborn-dark')
-    fig, ax = plt.subplots(2,2,num='CMA-ES live diagnostics: {0}'.format(src),figsize=(8,8))
-    fig.show()
+    if live == True:
+        fig.show()
 
 
-    while( plt.fignum_exists(fig.number) ):
+    while( (live == False) or (plt.fignum_exists(fig.number)) ):
 
         path = '{0}/s{1}.json'.format(src, str(idx).zfill(5))
-        
+       
         if ( not os.path.isfile(path) ):
-            if ( live == True ):
-              if( idx > 0): plt_pause_light(0.5)
+            if ( (live == True) and (idx > 0) ):
+              plt_pause_light(0.5)
               continue
             else:
                 break
 
-        time.sleep(0.1) # XXX ok for now but needs better fix (GA)
-
-        localtime = time.localtime(time.time())
-
-        plt.suptitle( 'Generation {0}'.format(str(idx).zfill(5)),\
-                      fontweight='bold',\
-                      fontsize=12 )
-        
-        #plt.text(x = 1000.65, y = 50, s = 'just sth', fontsize = 10, alpha = .85)
-
-        tmp_str = 'last update:{0}:{1}:{2}'.format(\
-                          str(localtime.tm_hour).zfill(2),\
-                          str(localtime.tm_min).zfill(2),\
-                          str(localtime.tm_sec).zfill(2))
-
+        if live == True:
+            fig, ax = plt.subplots(2,2,num='CMA-ES live diagnostics: {0}'.format(src),figsize=(8,8))
+            plt.suptitle( 'Generation {0}'.format(str(idx).zfill(5)),\
+                          fontweight='bold',\
+                          fontsize=12 )
 
         with open(path) as f:
             data  = json.load(f)
             state = data['Solver']['State']
 
             if idx == 0:
-                dims    = data['Problem']['Variables']
-                numdim  = len(dims)
+                numdim = len(data['Problem']['Variables'])
                 names  = [ data['Problem']['Variables'][i]['Name'] for i in range(numdim) ]
                 colors = hls_colors(numdim)
                 for i in range(numdim):
@@ -104,8 +92,7 @@ def plot_cmaes(src, live = False, obj='current'):
             numeval.append(state['EvaluationCount'])
             dfval.append(abs(state["CurrentBestFunctionValue"] - state["BestEverFunctionValue"]))
             
-            f = state[objstrings(obj)[0]]
-            fval.append(f)
+            fval.append(state[objstrings(obj)[0]])
             sigma.append(state['Sigma'])
             cond.append(state['MaxEigenvalue']/state['MinEigenvalue'])
             psL2.append(state['ConjugateEvolutionPathL2'])
@@ -115,48 +102,63 @@ def plot_cmaes(src, live = False, obj='current'):
                 axis[i].append(state['AxisLengths'][i])
                 ssdev[i].append(sigma[idx-1]*np.sqrt(state['CovarianceMatrix'][i][i]))
 
-        if idx < 2:
+        if ( (live == False) or (idx < 2) ):
             idx = idx + 1
             continue
 
-
-        ax[0,0].grid(True)
-        ax[0,0].set_yscale('log')
-        plt_multicolored_lines(ax[0,0], numeval, fval, 0.0, 'r', 'b', '$| F |$')
-        ax[0,0].plot(numeval, dfval, 'x', color = '#34495e', label = '$| F - F_{best} |$')
-        ax[0,0].plot(numeval, cond, color='#98D8D8', label = '$\kappa(\mathbf{C})$')
-        ax[0,0].plot(numeval, sigma, color='#F8D030', label = '$\sigma$')
-        ax[0,0].plot(numeval, psL2,  color='k', label = '$|| \mathbf{p}_{\sigma} ||$')
-
-
-        if idx == 2:
-            ax[0,0].legend(bbox_to_anchor=(0,1.00,1,0.2), loc="lower left", mode="expand", ncol = 3, handlelength=1, fontsize = 8)
-
-        ax[0,1].set_title('Objective Variables')
-        ax[0,1].grid(True)
-        for i in range(numdim):
-            ax[0,1].plot(numeval, fvalXvec[i], color = colors[i], label=names[i])
-
-        if idx == 2:
-            ax[0,1].legend(bbox_to_anchor=(1.04,0.5), loc="center left", borderaxespad=0, handlelength=1)
-
-
-        ax[1,0].set_title('Square Root of Eigenvalues of $\mathbf{C}$')
-        ax[1,0].grid(True)
-        ax[1,0].set_yscale('log')
-        for i in range(numdim):
-            ax[1,0].plot(numeval, axis[i], color = colors[i])
-
-
-        ax[1,1].set_title('$\sigma \sqrt{diag(\mathbf{C})}$')
-        ax[1,1].grid(True)
-        ax[1,1].set_yscale('log')
-        for i in range(numdim):
-            ax[1,1].plot(numeval, ssdev[i], color = colors[i], label=names[i])
-
-        plt_pause_light(0.05)
-        if(live == False): time.sleep(0.1)
+        create(src, idx, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, axis, ssdev, colors, names, live)
         idx = idx+1
 
+    if live == False:
+        create(src, idx, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, axis, ssdev, colors, names, live)
+            
     fig.show()
+
+
+# Create Plot from Data
+def create(src, idx, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, axis, ssdev, colors, names, live):
+    fig, ax = plt.subplots(2,2,num='CMA-ES live diagnostics: {0}'.format(src),figsize=(8,8))
+
+    plt.suptitle( 'Generation {0}'.format(str(idx).zfill(5)),\
+                      fontweight='bold',\
+                      fontsize=12 )
+
+    # Upper Left Plot
+    ax[0,0].grid(True)
+    ax[0,0].set_yscale('log')
+    plt_multicolored_lines(ax[0,0], numeval, fval, 0.0, 'r', 'b', '$| F |$')
+    ax[0,0].plot(numeval, dfval, 'x', color = '#34495e', label = '$| F - F_{best} |$')
+    ax[0,0].plot(numeval, cond, color='#98D8D8', label = '$\kappa(\mathbf{C})$')
+    ax[0,0].plot(numeval, sigma, color='#F8D030', label = '$\sigma$')
+    ax[0,0].plot(numeval, psL2,  color='k', label = '$|| \mathbf{p}_{\sigma} ||$')
+    if ( (idx == 2) or (live == False) ):
+        ax[0,0].legend(bbox_to_anchor=(0,1.00,1,0.2), loc="lower left", mode="expand", ncol = 3, handlelength=1, fontsize = 8)
+
+    # Upper Right Plot
+    ax[0,1].set_title('Objective Variables')
+    ax[0,1].grid(True)
+    for i in range(numdim):
+        ax[0,1].plot(numeval, fvalXvec[i], color = colors[i], label=names[i])
+    if ( (idx == 2) or (live == False) ):
+        ax[0,1].legend(bbox_to_anchor=(1.04,0.5), loc="center left", borderaxespad=0, handlelength=1)
+
+    # Lower Right Plot
+    ax[1,0].set_title('Square Root of Eigenvalues of $\mathbf{C}$')
+    ax[1,0].grid(True)
+    ax[1,0].set_yscale('log')
+    for i in range(numdim):
+        ax[1,0].plot(numeval, axis[i], color = colors[i])
+
+    # Lower Left Plot
+    ax[1,1].set_title('$\sigma \sqrt{diag(\mathbf{C})}$')
+    ax[1,1].grid(True)
+    ax[1,1].set_yscale('log')
+    for i in range(numdim):
+        ax[1,1].plot(numeval, ssdev[i], color = colors[i], label=names[i])
+    
+    if (live == True):
+        plt_pause_light(0.05)
+    else:
+        plt.pause(1000) #fix this (DW)
+
 

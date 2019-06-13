@@ -580,23 +580,26 @@ void CMAES::run()
 
 void CMAES::evaluateSamples()
 {
-  double* _population = new double[_k->_problem->N];
+  double* transformedSamples = new double[ _current_s * _k->_problem->N ]; 
+  
+  for (size_t i = 0; i < _current_s; i++) for(size_t d = 0; d < _k->_problem->N; ++d)
+    if(_variableLogSpace[d] == true) 
+        transformedSamples[i*_k->_problem->N+d] = std::exp(_samplePopulation[i*_k->_problem->N+d]);
+    else 
+        transformedSamples[i*_k->_problem->N+d] = _samplePopulation[i*_k->_problem->N+d];
+
+
   while (_finishedSamples < _current_s)
   {
     for (size_t i = 0; i < _current_s; i++) if (_initializedSample[i] == false)
     {
-      _initializedSample[i] = true;
-      for(size_t d = 0; d < _k->_problem->N; ++d)
-        if(_variableLogSpace[d] == true) 
-          _population[d] = std::exp(_samplePopulation[i*_k->_problem->N+d]);
-        else 
-          _population[d] = _samplePopulation[i*_k->_problem->N+d];
-
-      _k->_conduit->evaluateSample(_population, 0); countevals++;
+      _initializedSample[i] = true; 
+      _k->_conduit->evaluateSample(transformedSamples, i); countevals++;
+      //_k->_conduit->evaluateSample(_samplePopulation, i); countevals++;
     }
     _k->_conduit->checkProgress();
   }
-  delete _population;
+  delete transformedSamples;
 }
 
 

@@ -25,7 +25,7 @@ int main(int argc, char* argv[])
  k["Solver"]["Variables"][3]["Upper Bound"] = +32.0;
 
  k["Solver"]["Sample Count"] = 10;
- k["Solver"]["Termination Criteria"]["Max Generations"]["Value"] = 100;
+ k["Solver"]["Termination Criteria"]["Max Generations"]["Value"] = 1000;
  k["Solver"]["Termination Criteria"]["Min DeltaX"]["Value"] = 1e-7;
 
  k.setModel([](Korali::ModelData& d) { m_ackley(d.getVariables(), d.getResults()); });

@@ -8,9 +8,9 @@ using namespace Korali::Variable;
 
 Gamma::Gamma(double shape, double scale, size_t seed) : Base::Base(seed)
 {
-	_shape = shape;
-	_scale = scale;
-	initialize();
+ _shape = shape;
+ _scale = scale;
+ initialize();
 }
 
 Gamma::Gamma(nlohmann::json& js, size_t seed) : Base::Base(js, seed)
@@ -51,7 +51,8 @@ void Gamma::setConfiguration(nlohmann::json& js)
 
 void Gamma::initialize()
 {
-	_aux = - gsl_sf_lngamma(_shape) - _shape*log(_scale);
+ _aux = - gsl_sf_lngamma(_shape) - _shape*log(_scale);
+ _hasDistribution = true;
 }
 
 double Gamma::getDensity(double x)

@@ -18,6 +18,7 @@ class Base
  gsl_rng* _range;
  variableType _type;
  std::string _name;
+ bool _hasDistribution;
 
  // Constructor / Destructor
  Base(nlohmann::json& js, size_t seed);
@@ -28,6 +29,7 @@ class Base
  virtual double getLogDensity(double x) { fprintf(stderr, "[Korali] Error: Problem requires that variable '%s' to have a defined distribution.\n"); exit(-1); return 0.0; };
  virtual double getRandomNumber() { fprintf(stderr, "[Korali] Error: Problem requires that variable '%s' to have a defined distribution.\n"); exit(-1); return 0.0; };
  virtual void printDetails() { return; };
+ virtual void initialize() { };
 
  // Serialization Methods
  virtual nlohmann::json getConfiguration();

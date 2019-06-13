@@ -8,9 +8,9 @@ using namespace Korali::Variable;
 
 Cauchy::Cauchy(double scale, double loc, size_t seed) : Base::Base(seed)
 {
-	_loc = loc;
-	_scale = scale;
-	initialize();
+ _loc = loc;
+ _scale = scale;
+ initialize();
 }
 
 Cauchy::Cauchy(nlohmann::json& js, size_t seed) : Base::Base(js, seed)
@@ -52,6 +52,7 @@ void Cauchy::setConfiguration(nlohmann::json& js)
 void Cauchy::initialize()
 {
  _aux = -gsl_sf_log( _scale * M_PI );
+ _hasDistribution = true;
 }
 
 double Cauchy::getDensity(double x)

@@ -1,11 +1,11 @@
-#ifndef _KORALI_PROBLEM_DIRECT_H_
-#define _KORALI_PROBLEM_DIRECT_H_
+#ifndef _KORALI_PROBLEM_DIRECTBAYESIAN_H_
+#define _KORALI_PROBLEM_DIRECTBAYESIAN_H_
 
 #include "problems/base.h"
 
 namespace Korali { namespace Problem {
 
-class Direct : public Base
+class DirectBayesian : public Base
 {
  public:
 
@@ -13,8 +13,8 @@ class Direct : public Base
  double evaluateLogPrior(double* sample) override;
 
  // Constructor / Destructor
- Direct(nlohmann::json& js);
- ~Direct();
+ DirectBayesian(nlohmann::json& js);
+ ~DirectBayesian();
 
  // Initialization Method
  void initialize() override;
@@ -26,4 +26,4 @@ class Direct : public Base
 
 } } // namespace Korali::Problem
 
-#endif // _KORALI_PROBLEM_DIRECT_H_
+#endif // _KORALI_PROBLEM_DIRECTBAYESIAN_H_

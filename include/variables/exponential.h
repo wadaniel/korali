@@ -22,6 +22,7 @@ class Exponential : public Base
   double getRandomNumber() override;
 
   void printDetails() override;
+  void initialize() override;
 
   // Serialization Methods
   nlohmann::json getConfiguration() override;

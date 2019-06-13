@@ -17,8 +17,12 @@ class Base
  size_t N; // Variable Count size_t N; // Variable Count
  size_t _statisticalVariableCount;
  size_t _computationalVariableCount;
+ bool _isBayesian;
 
  std::vector<Korali::Variable::Base*> _variables;
+
+ // Initialization Method
+ virtual void initialize() = 0;
 
  // Constructor / Destructor
  Base(nlohmann::json& js);

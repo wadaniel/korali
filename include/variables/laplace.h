@@ -24,7 +24,7 @@ class Laplace : public Base
   static double logLikelihood(double sigma, int nData, double* x, double* u);
 
   void printDetails() override;
-  void initialize();
+  void initialize() override;
 
   // Serialization Methods
   nlohmann::json getConfiguration() override;

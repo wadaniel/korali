@@ -8,9 +8,9 @@ using namespace Korali::Variable;
 
 Uniform::Uniform(double minimum, double maximum, size_t seed) : Base::Base(seed)
 {
-   _minimum = minimum;
-   _maximum = maximum;
-   initialize();
+ _minimum = minimum;
+ _maximum = maximum;
+ initialize();
 }
 
 Uniform::Uniform(nlohmann::json& js, size_t seed) : Base::Base(js, seed)
@@ -41,7 +41,7 @@ nlohmann::json Uniform::getConfiguration()
 
 void Uniform::setConfiguration(nlohmann::json& js)
 {
- _minimum  = consume(js, { "Distribution", "Minimum" }, KORALI_NUMBER);
+ _minimum = consume(js, { "Distribution", "Minimum" }, KORALI_NUMBER);
  _maximum = consume(js, { "Distribution", "Maximum" }, KORALI_NUMBER);
 }
 
@@ -52,6 +52,7 @@ void Uniform::setConfiguration(nlohmann::json& js)
 void Uniform::initialize()
 {
  _aux = -gsl_sf_log(_maximum-_minimum);
+ _hasDistribution = true;
 }
 
 double Uniform::getDensity(double x)
@@ -63,7 +64,7 @@ double Uniform::getLogDensity(double x)
 {
  if (x >= _minimum && x <= _maximum)
   return _aux;
- return -GSL_NEGINF;
+ return -INFINITY;
 }
 
 double Uniform::getRandomNumber()

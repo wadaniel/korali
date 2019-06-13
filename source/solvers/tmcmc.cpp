@@ -168,6 +168,12 @@ void Korali::Solver::TMCMC::setState(nlohmann::json& js)
 
 void Korali::Solver::TMCMC::run()
 {
+ if (_k->_problem->_isBayesian == false)
+ {
+  fprintf(stderr, "[Korali] Error: The TMCMC Method can only be used with Bayesian-type models.\n");
+  exit(-1);
+ }
+
  if (_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Starting TMCMC.\n");
  
  startTime = std::chrono::system_clock::now();

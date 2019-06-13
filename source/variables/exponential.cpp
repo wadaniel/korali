@@ -8,13 +8,16 @@ using namespace Korali::Variable;
 
 Exponential::Exponential(double mean, double loc, size_t seed) : Base::Base(seed)
 {
-	_loc = loc;
-	_mean = mean;
+ _loc = loc;
+ _mean = mean;
+ initialize();
 }
 
 Exponential::Exponential(nlohmann::json& js, size_t seed) : Base::Base(js, seed)
 {
  setConfiguration(js);
+ _hasDistribution = true;
+ initialize();
 }
 
 Exponential::~Exponential()
@@ -46,6 +49,11 @@ void Exponential::setConfiguration(nlohmann::json& js)
 /************************************************************************/
 /*                    Functional Methods                                */
 /************************************************************************/
+
+void Exponential::initialize()
+{
+ _hasDistribution = true;
+}
 
 double Exponential::getDensity(double x)
 {

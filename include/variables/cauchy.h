@@ -23,7 +23,7 @@ class Cauchy : public Base
   double getRandomNumber() override;
 
   void printDetails() override;
-  void initialize();
+  void initialize() override;
 
   // Serialization Methods
   nlohmann::json getConfiguration() override;

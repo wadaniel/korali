@@ -52,9 +52,10 @@ def plot_cmaes(src, live = False, obj='current'):
     ssdev    = [] # sigma x diag(C)
 
     plt.style.use('seaborn-dark')
+
+    fig, ax = plt.subplots(2,2,num='CMA-ES live diagnostics: {0}'.format(src),figsize=(8,8))
     if live == True:
         fig.show()
-
 
     while( (live == False) or (plt.fignum_exists(fig.number)) ):
 
@@ -68,7 +69,6 @@ def plot_cmaes(src, live = False, obj='current'):
                 break
 
         if live == True:
-            fig, ax = plt.subplots(2,2,num='CMA-ES live diagnostics: {0}'.format(src),figsize=(8,8))
             plt.suptitle( 'Generation {0}'.format(str(idx).zfill(5)),\
                           fontweight='bold',\
                           fontsize=12 )
@@ -102,22 +102,22 @@ def plot_cmaes(src, live = False, obj='current'):
                 axis[i].append(state['AxisLengths'][i])
                 ssdev[i].append(sigma[idx-1]*np.sqrt(state['CovarianceMatrix'][i][i]))
 
-        if ( (live == False) or (idx < 2) ):
+        if (live == False or idx < 2):
             idx = idx + 1
             continue
 
-        create(src, idx, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, axis, ssdev, colors, names, live)
+        draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, axis, ssdev, colors, names, live)
         idx = idx+1
 
     if live == False:
-        create(src, idx, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, axis, ssdev, colors, names, live)
+        draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, axis, ssdev, colors, names, live)
             
     fig.show()
 
 
 # Create Plot from Data
-def create(src, idx, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, axis, ssdev, colors, names, live):
-    fig, ax = plt.subplots(2,2,num='CMA-ES live diagnostics: {0}'.format(src),figsize=(8,8))
+def draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, axis, ssdev, colors, names, live):
+    #fig, ax = plt.subplots(2,2,num='CMA-ES live diagnostics: {0}'.format(src),figsize=(8,8))
 
     plt.suptitle( 'Generation {0}'.format(str(idx).zfill(5)),\
                       fontweight='bold',\
@@ -159,6 +159,6 @@ def create(src, idx, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, 
     if (live == True):
         plt_pause_light(0.05)
     else:
-        plt.pause(1000) #fix this (DW)
+        plt.pause(3600) #fix this (DW)
 
 

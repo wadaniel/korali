@@ -32,7 +32,7 @@ def main(live):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='korali.plotter', description='Process korali results in _korali_results folder.')
-    parser.add_argument('--live', help='run live plotting', default=False)
+    parser.add_argument('--live', help='run live plotting', type=bool, default=False)
     args = parser.parse_args()
     
     main(args.live)

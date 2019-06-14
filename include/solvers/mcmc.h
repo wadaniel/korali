@@ -19,6 +19,7 @@ class MCMC : public Base
  unsigned int _s; /* Population Size */
  //bool _useLocalCov; /* Using local covariance instead of sample cov */
  size_t _burnin; /* burn in generations */
+ size_t _maxresamplings;
  bool _isTermCondMaxFunEvals;
  size_t _termCondMaxFunEvals;
  bool _isTermCondMaxGenerations;
@@ -49,12 +50,12 @@ class MCMC : public Base
  void processSample(size_t c, double fitness) override;
 
   // Internal MCMC Methods
- void initializeSamples();
  void updateDatabase(double* point, double fitness);
  void generateCandidate();
+ void sampleCandidate();
  //void computeChainCovariances(double** chain_cov, size_t newchains) const;
- void updateSolver();
- bool isFeasibleCandidate();
+ void updateState();
+ bool setCandidatePriorAndCheck();
  bool checkTermination();
 
  // Serialization Methods

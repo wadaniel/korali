@@ -151,11 +151,9 @@ void Korali::Solver::MCMC::run()
   t0 = std::chrono::system_clock::now();
 
   // Generating Samples
-  do {
-    generateCandidate(); countgens++;
-  } while (isFeasibleCandidate());
+  generateCandidate();
   _k->_conduit->evaluateSample(ccPoint, 0); countevals++;
-  updateSolver();
+  updateState();
 
   t1 = std::chrono::system_clock::now();
 
@@ -195,6 +193,20 @@ void Korali::Solver::MCMC::updateDatabase(double* point, double loglik)
 
 
 void Korali::Solver::MCMC::generateCandidate()
+{  
+ size_t initialgens = countgens;
+ do {
+   sampleCandidate(); countgens++;
+   if ( (countgens - initialgens) > _maxresamplings) 
+   {       
+     if(_k->_verbosity >= KORALI_DETAILED) printf("[Korali] Warning: exiting resampling loop, max resamplings (%zu) reached.\n", _maxresamplings);
+     exit(-1);
+   }
+  } while (setCandidatePriorAndCheck());
+}
+
+
+void Korali::Solver::MCMC::sampleCandidate()
 {
  //double* covariance = _useLocalCov ? local_cov[c] : _covarianceMatrix;
  gsl_vector_view out_view    = gsl_vector_view_array(ccPoint, _k->_problem->N);
@@ -204,7 +216,7 @@ void Korali::Solver::MCMC::generateCandidate()
 }
 
 
-bool Korali::Solver::MCMC::isFeasibleCandidate()
+bool Korali::Solver::MCMC::setCandidatePriorAndCheck()
 {
  ccLogPrior = _k->_problem->evaluateLogPrior(ccPoint);
  if (ccLogPrior > -INFINITY) return true;
@@ -212,7 +224,7 @@ bool Korali::Solver::MCMC::isFeasibleCandidate()
 }
 
 
-void Korali::Solver::MCMC::updateSolver()
+void Korali::Solver::MCMC::updateState()
 {
  
  acceptanceRateProposals = ( (double) countgens / (double) chainLength );

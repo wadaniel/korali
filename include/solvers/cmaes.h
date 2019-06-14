@@ -17,7 +17,6 @@ class CMAES : public Base
  ~CMAES();
 
  // These are CMA-ES Specific, but could be used for other methods in the future
- size_t _solverVarInfoCount;
  double* _lowerBounds;
  double* _upperBounds;
  double* _initialMeans;

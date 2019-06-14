@@ -23,4 +23,3 @@ k["Solver"]["Termination Criteria"]["Min DeltaX"]["Value"] = 1e-12;
 k.setModel(m_ackley)
 
 k.run()
-

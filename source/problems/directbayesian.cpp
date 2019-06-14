@@ -38,7 +38,7 @@ void Korali::Problem::DirectBayesian::setConfiguration(nlohmann::json& js)
 void Korali::Problem::DirectBayesian::initialize()
 {
 
- _isBayesian = false;
+ _isBayesian = true;
 
  if (_statisticalVariableCount != 0)
  {

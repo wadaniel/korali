@@ -9,11 +9,12 @@ k = korali.Engine()
 k["Seed"] = 0xC0FFEE;
 k["Verbosity"] = "Detailed"
 
-k["Problem"]["Type"] = "Direct"
+k["Problem"]["Type"] = "Direct Bayesian"
+
 k["Problem"]["Variables"][0]["Name"] = "X"
-k["Problem"]["Variables"][0]["Distribution"] = "Uniform"
-k["Problem"]["Variables"][0]["Minimum"] = -10.0
-k["Problem"]["Variables"][0]["Maximum"] = +10.0
+k["Problem"]["Variables"][0]["Distribution"]["Type"] = "Uniform"
+k["Problem"]["Variables"][0]["Distribution"]["Minimum"] = -10.0
+k["Problem"]["Variables"][0]["Distribution"]["Maximum"] = +10.0
 
 k["Solver"]["Method"] = "TMCMC"
 k["Solver"]["Covariance Scaling"] = 0.02

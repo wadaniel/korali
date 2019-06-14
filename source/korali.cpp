@@ -124,7 +124,7 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
 
  // Configure Problem
  _problem = nullptr;
- std::string pName = consume(js, { "Problem", "Evaluation Type" }, KORALI_STRING);
+ std::string pName = consume(js, { "Problem", "Type" }, KORALI_STRING);
  if (pName == "Direct")   { _problem = new Korali::Problem::Direct(js["Problem"]); }
  if (pName == "Direct Bayesian") { _problem = new Korali::Problem::DirectBayesian(js["Problem"]); }
  if (pName == "Bayesian") { _problem = new Korali::Problem::Bayesian(js["Problem"]); }
@@ -137,9 +137,9 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
  std::string conduitType =  consume(js, { "Conduit", "Type" }, KORALI_STRING, "Single");
  if (conduitType == "Single") _conduit = new Korali::Conduit::Single(js["Conduit"]);
  #ifdef _KORALI_USE_MPI
- if (conduitType == "MPI")    _conduit = new Korali::Conduit::KoraliMPI(js["Conduit"]);
+ if (conduitType == "MPI") _conduit = new Korali::Conduit::KoraliMPI(js["Conduit"]);
  #else
- if (conduitType == "MPI")          { fprintf(stderr, "[Korali] Error: MPI Conduit selected, but Korali has not been compiled with MPI support.\n"); exit(-1); }
+ if (conduitType == "MPI") { fprintf(stderr, "[Korali] Error: MPI Conduit selected, but Korali has not been compiled with MPI support.\n"); exit(-1); }
  #endif
  if (conduitType == "Nonintrusive") _conduit = new Korali::Conduit::Nonintrusive(js["Conduit"]);
 

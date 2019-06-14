@@ -19,27 +19,28 @@ class MCMC : public Base
  unsigned int _s; /* Population Size */
  //bool _useLocalCov; /* Using local covariance instead of sample cov */
  size_t _burnin; /* burn in generations */
- size_t _maxresamplings;
+ size_t _maxresamplings; /* Max number resamplings inside generation loop */
  bool _isTermCondMaxFunEvals;
- size_t _termCondMaxFunEvals;
+ size_t _termCondMaxFunEvals; /* Max objective function evaluations */
  bool _isTermCondMaxGenerations;
- size_t _termCondMaxGenerations;
+ size_t _termCondMaxGenerations; /* Max proposed samples */
  char _terminationReason[500];
 
  // MCMC Runtime Variables
- gsl_rng *gslGen;
+ gsl_rng *gslGen; /* Random number generator */
  double* clPoint; /*  Leader parameter values */
  double clLogLikelihood; /* Leader fitness value */
  double* ccPoint; /*  Candidate parameter values */
  double ccLogLikelihood; /* Candidate fitness value */
  double ccLogPrior; /* Candidate prior value */
- double acceptanceRateProposals;
- size_t countgens;
- size_t chainLength;
- size_t databaseEntries;
+ double acceptanceRateProposals; /* Ratio proposed to accepted Samples */
+ size_t countgens; /* Number of proposed samples */
+ size_t chainLength; /* Number accepted samples + burnin accepted samples */
+ size_t databaseEntries; /* Accepted Samples */
  double* databasePoints; /* Variable values of samples in DB */
  double* databaseFitness; /* Fitness of samples in DB */
  size_t  countevals; /* Number of function evaluations */
+ double* autocorrelation; /* TODO */
 
  // MCMC Status variables
  double* _covarianceMatrix; /* Covariance of leader fitness values */
@@ -51,7 +52,7 @@ class MCMC : public Base
 
   // Internal MCMC Methods
  void updateDatabase(double* point, double fitness);
- void generateCandidate();
+ void generateCandidate(); 
  void sampleCandidate();
  //void computeChainCovariances(double** chain_cov, size_t newchains) const;
  void updateState();

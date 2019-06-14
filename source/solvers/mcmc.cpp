@@ -72,12 +72,15 @@ nlohmann::json Korali::Solver::MCMC::getConfiguration()
 
  js["Method"] = _name;
 
- js["Population Size"]          = _s;
- js["Burn In"]                  = _burnin;
+ js["Population Size"] = _s;
+ js["Burn In"]         = _burnin;
+ js["Max Resamplings"] = _maxresamplings;
  //js["Use Local Covariance"]     = _useLocalCov;
 
  js["Termination Criteria"]["Max Function Evaluations"]["Value"]  = _termCondMaxFunEvals;
  js["Termination Criteria"]["Max Function Evaluations"]["Active"] = _isTermCondMaxFunEvals;
+ js["Termination Criteria"]["Max Generated Samples"]["Value"]     = _termCondMaxGenerations;
+ js["Termination Criteria"]["Max Generated Samples"]["Active"]    = _isTermCondMaxGenerations;
 
  // State Variables
  for (size_t d = 0; d < _k->_problem->N*_k->_problem->N; d++) js["State"]["CovarianceMatrix"][d] = _covarianceMatrix[d];
@@ -103,9 +106,11 @@ void Korali::Solver::MCMC::setConfiguration(nlohmann::json& js)
 
  _s                        = consume(js, { "Population Size" }, KORALI_NUMBER);
  _burnin                   = consume(js, { "Burn In" }, KORALI_NUMBER, std::to_string(0));
+ _maxresamplings           = consume(js, { "Max Resamplings" }, KORALI_NUMBER, std::to_string(1e6));
+ 
  _termCondMaxFunEvals      = consume(js, { "Termination Criteria", "Max Function Evaluations", "Value" }, KORALI_NUMBER, std::to_string(1e4));
  _isTermCondMaxFunEvals    = consume(js, { "Termination Criteria", "Max Function Evaluations", "Active" }, KORALI_BOOLEAN, "false");
- _termCondMaxGenerations   = consume(js, { "Termination Criteria", "Max Sample Generations", "Value" }, KORALI_NUMBER, std::to_string(1e5));
+ _termCondMaxGenerations   = consume(js, { "Termination Criteria", "Max Sample Generations", "Value" }, KORALI_NUMBER, std::to_string(1e12));
  _isTermCondMaxGenerations = consume(js, { "Termination Criteria", "Max Sample Generations", "Active" }, KORALI_BOOLEAN, "false");
  for (size_t d = 0; d < _k->_problem->N*_k->_problem->N; d++) _covarianceMatrix[d] = js["State"]["CovarianceMatrix"][d];
  //_useLocalCov       = consume(js, { "Use Local Covariance" }, KORALI_BOOLEAN, "false");

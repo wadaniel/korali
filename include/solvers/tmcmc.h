@@ -64,12 +64,12 @@ class TMCMC : public Base
 
   // Korali Methods
  void run() override;
+ void processSample(size_t c, double fitness) override;
 
   // Internal TMCMC Methods
  void initializeSamples();
  void resampleGeneration();
  void updateDatabase(double* point, double fitness);
- void processSample(size_t c, double fitness) override;
  void generateCandidate(size_t c);
  void computeChainCovariances(double** chain_cov, size_t newchains) const;
  void minSearch(double const *fj, size_t fn, double pj, double objTol, double& xmin, double& fmin) const;

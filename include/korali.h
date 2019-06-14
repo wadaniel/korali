@@ -21,6 +21,7 @@
 #include "variables/laplace.h"
 
 #include "solvers/cmaes.h"
+#include "solvers/mcmc.h"
 #include "solvers/tmcmc.h"
 
 #include "conduits/single.h"

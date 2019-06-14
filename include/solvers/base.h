@@ -19,6 +19,8 @@ class Base {
  Base(nlohmann::json& js);
  ~Base();
 
+ std::string _name;
+
  // Running Methods
  virtual void run() = 0;
  virtual void processSample(size_t sampleId, double fitness) = 0;

@@ -38,7 +38,20 @@ void Korali::Problem::DirectBayesian::setConfiguration(nlohmann::json& js)
 void Korali::Problem::DirectBayesian::initialize()
 {
 
- _isBayesian = false;
+ _isBayesian = true;
+
+ if (_k->_likelihoodDefined == false)
+ {
+  fprintf(stderr, "[Korali] Error: Direct Bayesian requires defining a likelihood function.\n");
+  exit(-1);
+ }
+
+ if (_k->_modelDefined == true)
+ {
+  fprintf(stderr, "[Korali] Error: Direct Bayesian does not accept a computational model, only a likelihood function.\n");
+  exit(-1);
+ }
+
 
  if (_statisticalVariableCount != 0)
  {

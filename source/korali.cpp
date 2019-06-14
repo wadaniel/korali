@@ -65,7 +65,8 @@ PYBIND11_MODULE(libkorali, m) {
 
 Korali::Engine::Engine()
 {
-
+ _modelDefined = false;
+ _likelihoodDefined = false;
 }
 
 Korali::Engine::~Engine()
@@ -168,6 +169,13 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
 void Korali::Engine::setModel(std::function<void(Korali::ModelData&)> model)
 {
  _model = model;
+ _modelDefined = true;
+}
+
+void Korali::Engine::setLikelihood(std::function<void(Korali::ModelData&)> likelihood)
+{
+ _model = likelihood;
+ _likelihoodDefined = true;
 }
 
 void Korali::Engine::run()

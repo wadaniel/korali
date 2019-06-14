@@ -40,6 +40,18 @@ void Korali::Problem::Direct::initialize()
 
  _isBayesian = false;
 
+ if (_k->_modelDefined == false)
+ {
+  fprintf(stderr, "[Korali] Error: Direct Problem requires defining a computational model.\n");
+  exit(-1);
+ }
+
+ if (_k->_likelihoodDefined == true)
+ {
+  fprintf(stderr, "[Korali] Error: Direct Problem does not accept a likelihood function, only a computational model.\n");
+  exit(-1);
+ }
+
  if (_statisticalVariableCount != 0)
  {
   fprintf(stderr, "[Korali] Error: Direct Evaluation type requires 0 statistical parameters.\n");

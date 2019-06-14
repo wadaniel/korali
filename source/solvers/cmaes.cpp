@@ -595,17 +595,18 @@ void CMAES::evaluateSamples()
     {
       _initializedSample[i] = true; 
       _k->_conduit->evaluateSample(transformedSamples, i); countevals++;
-      //_k->_conduit->evaluateSample(_samplePopulation, i); countevals++;
     }
     _k->_conduit->checkProgress();
   }
+
   delete transformedSamples;
 }
 
 
 void CMAES::processSample(size_t sampleId, double fitness)
 {
- _fitnessVector[sampleId] = _fitnessSign*fitness;
+ double logPrior = _k->_problem->evaluateLogPrior(&_samplePopulation[sampleId*_k->_problem->N]);
+ _fitnessVector[sampleId] = _fitnessSign * (logPrior+fitness);
  _finishedSamples++;
 }
 

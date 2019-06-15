@@ -10,17 +10,17 @@ A Korali application encapsulates all the configuration necessary to run the Kor
 
 ## Variable Space
 
-A Korali Problem describes the sampling space of the physical or real-world phenomenon to analyze. The number of variables defined by the user represents a dimension of the problem. Variables are configured by accessing the problem's variable array, specifying their constant or variable numerical index:
+A Korali Problem describes the sampling space of the physical or real-world phenomenon to analyze. The number of variables defined by the user represents a dimension of the problem. Variables are created by simply adding their name to the problem configuration:
 
 ```python
-# Accessing variable 0
-k["Problem"]["Variables"][0] 
+# Creating first variable
+k["Problem"]["Variables"][0] = "Thermal Conductivity"
 	
-# Accessing variable i
-k["Problem"]["Variables"][i]
+# Creating second variable
+k["Problem"]["Variables"][1] = "Heat Source Position"
 ```
 
-Korali allows defining information about each variable, such as its name and prior probability distribution, for example:
+For Bayesian problems, Korali allows defining the prior probability distribution of variables, for example:
 
 ```python
 k["Problem"]["Variables"][0]["Name"] = "Thermal Conductivity"
@@ -36,7 +36,6 @@ Each prior distribution defines its own set of configurable parameters. The full
 - [Laplace](/usage/distributions/laplace)
 - [Uniform](/usage/distributions/uniform)
 	
-
 We make a distinction between computational and statistical variable types. Computational variables describe the dimension of the problem-space (e.g., the X, Y, and Z coordinates of a real-world 3D problem), while statistical variables are employed to infer values from the statistical model (e.g., the error estimation $\sigma$ of a Gaussian process).
 
 ```python
@@ -44,7 +43,7 @@ k["Problem"]["Variables"][0]["Type] = "Computational"
 k["Problem"]["Variables"][1]["Type] = "Statistical"
 ```
 
-The number of statistical variables required depends on the evaluation type selected, as described next.
+The number of statistical variables required depends on the *evaluation type* selected.
 	
 ### Evaluation Type
 
@@ -75,14 +74,27 @@ k["Solver"]["Method"] = "CMA-ES"
 ### Samplers
 
 Sampler solver type maps the probability distribution of samples in the variable space of the described problem. The detailed configuration of the currently implemented optimizers can be found below:
- 
+
+- [Markov-Chain Monte-Carlo](/usage/solvers/samplers/mcmc) 
 - [Transitional Markov-Chain Monte-Carlo](/usage/solvers/samplers/tmcmc)
   
 You can use the following syntax to select, for example, the TMCMC sampler:
 
 ```python
-# Selecting the CMA-ES optimizer method.
-k["Solver"]["Method"] = "TMCMC"
+# Selecting the Markov-Chain Monte-Carlo sampling method.
+k["Solver"]["Method"] = "MCMC"
+```
+
+### Additional Variable Information
+
+For some, additional solver-specific information is required for each variable. For example, CMA-ES requires the definition of an initial mean and standard deviation. To define this information, the user accesses the variable from the solver's side:
+
+```python
+k["Problem"]["Variables"][0]["Name"] = "Thermal Conductivity"
+k["Solver"]["Method"] = "CMA-ES"
+
+# Changing CMA-ES' initial mean for variable 0
+k["Solver"]["Variables"][0]["Initial Mean"] = 5.0
 ```
 
 ##Evaluation Conduit

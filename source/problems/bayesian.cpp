@@ -52,6 +52,18 @@ void Korali::Problem::Bayesian::initialize()
 
  _isBayesian = true;
 
+ if (_k->_modelDefined == false)
+ {
+  fprintf(stderr, "[Korali] Error: Bayesian Problem requires defining a computational model.\n");
+  exit(-1);
+ }
+
+ if (_k->_likelihoodDefined == true)
+ {
+  fprintf(stderr, "[Korali] Error: Bayesian Problem does not accept a likelihood function, only a computational model.\n");
+  exit(-1);
+ }
+
  if (_statisticalVariableCount != 1)
  {
   fprintf(stderr, "[Korali] Error: The Bayesian model requires 1 statistical parameter.\n");

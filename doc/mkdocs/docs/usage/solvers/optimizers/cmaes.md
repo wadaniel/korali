@@ -1,3 +1,131 @@
+# Solvers / CMA-ES
+   				   
+##Description
+
+This is the implementation of the CMA Evolution Strategy, as published in the [paper](https://doi.org/10.1007/3-540-32494-1_4) 
+
+( THE REST OF THE EXPLANATION GOES HERE)
+
+
+##Syntax
+
+```python
+  # Definition
+  Korali["Solver"]["Method"] = "CMA-ES";
+  
+  # Mandatory Settings
+  Korali["Solver"]["Sample Count"] = ...;
+  Korali["Solver"]["Variables"][i]["Initial Mean"] = ...                # For all problem's variables
+  Korali["Solver"]["Variables"][i]["Initial Standard Deviation"] = ...  # For all problem's variables
+
+  # Optional Settings
+  Korali["Solver"]["Variables"][i]["Lower Bound"] = ...
+  Korali["Solver"]["Variables"][i]["Upper Bound"] = ...
+```
+
+##Mandatory Settings
+
+### **Type**
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+
+ - Value Type: *String*.
+ - Allowed values:
+	   - ```"Computational"``` - Determines this is a computational variable.
+	   - ```"Statistical"``` - Determines this is a statistical variable.
+ - Example:
+
+```python
+# Modifying two variables to have one statistical and another computational.
+Korali["Problem"]["Variables"][0]["Type"] = "Computational"
+Korali["Problem"]["Variables"][1]["Type"] = "Statistical"
+```
+
+### **Location**
+Indicates the location of the peak of the Cauchy distribution.
+
+- Value Type: *Real Number*
+- Example: 
+
+```python
+ Korali["Problem"]["Variables"][i]["Location"] = +8.0
+```
+
+### **Scale**
+Specifies the half-width at half-maximum (HWHM) of the Cauchy distribution.
+
+ - Value Type: *Real Number*
+ - Example:
+
+```python
+Korali["Problem"]["Variables"][i]["Scale"] = +2.0
+```
+
+### **Minimum**
+
+Specifies the lower bound for the variable's value. Korali will not generate samples in which this variable falls below the specified minimum.
+ 
+ - Value Type: *Real Number*
+ - Default Value: ```-infinity```
+ - Example:
+
+```python
+# Modifying the lower bound of two variables
+Korali["Problem"]["Variables"][0]["Minimum"] = 0.0;
+Korali["Problem"]["Variables"][1]["Minimum"] = -32.0;
+```
+
+### **Maximum**
+Specifies the upper bound for the variable's value. Korali will not generate samples in which this variable falls below the specified minimum.
+ 
+ - Value Type: *Real Number*
+ - Default Value: ```+infinity```
+ - Example:
+
+```python
+# Modifying the upper bound of two variables
+Korali["Problem"]["Variables"][0]["Maximum"] = 32.0;
+Korali["Problem"]["Variables"][1]["Maximum"] = 0.0;
+```
+
+### **Initial Mean**
+Defines the initial guess mean for the variable's value. Korali will start exploring the variable space at the start of execution.
+
+ - Value Type: *Real Number*, the value should be between the Mininum and Maximum settings.
+ - Default Value: ```(Maximum+Minimum)/2```
+ - Example:
+
+```python
+# Modifying the initial guess mean of my variable
+Korali["Problem"]["Variables"][i]["Initial Mean"] = 16.0;
+```
+
+### **Initial StdDev**
+Defines the initial guess standard deviation mean for the variable's value. Korali will generate samples around this deviation from the initial mean.
+
+ - Value Type: *Real Number*
+ - Default: ```(Maximum-Minimum)/8```
+ - Example:
+
+```python
+# Modifying the initial standard deviation of my variable
+Korali["Problem"]["Variables"][i]["Initial StdDev"] = 2.0;
+```
+	 
+### **Min StdDev Change**
+Defines the minimum rate of change for the standard deviation. A bigger rate may accelerate convergence, but a smaller rate will increase result precision.
+
+ - Value Type: *Real Number*
+ - Default: ```0.0```
+ - Example:
+
+```python
+# Modifying the minimum delta for the standard deviation of my variable
+Korali["Problem"]["Variables"][i]["Min StdDev Change""] = 0.05;
+```	 
+
+
+## Plotting
 
 Here we explain the **CMA-ES** result plot in further detail and how it can be
 used to validate your optimization.

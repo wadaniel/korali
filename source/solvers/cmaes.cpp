@@ -173,7 +173,7 @@ nlohmann::json CMAES::getConfiguration()
  js["Covariance Matrix"]["Is Diagonal"]                     = _isdiag;
 
  // Variable information
- for (size_t i = 0; i < _solverVarInfoCount; i++)
+ for (size_t i = 0; i < _k->_problem->N; i++)
  {
   js["Variables"][i]["Lower Bound"]   = _lowerBounds[i];
   js["Variables"][i]["Upper Bound"]   = _upperBounds[i];
@@ -231,25 +231,24 @@ nlohmann::json CMAES::getConfiguration()
  // CCMA-ES
  if (_name == "CCMA-ES")
  {
-     // CCMA-ES Variables
-     js["Viability Regime"]             = isVia;
-     js["Viability Sample Count"]       = _via_s;
-     js["Mu"]["Viability"]              = _via_mu;
-     js["Target Success Rate"]          = _targetSucRate;
-     js["Adaption Size"]                = _adaptionSize;
-     js["Max Corrections"]              = _maxCorrections;
-     js["Normal Vector Learning Rate"]  = _cv;
-     js["Global Success Learning Rate"] = _cp;
+   js["Viability Regime"]             = isVia;
+   js["Viability Sample Count"]       = _via_s;
+   js["Mu"]["Viability"]              = _via_mu;
+   js["Target Success Rate"]          = _targetSucRate;
+   js["Adaption Size"]                = _adaptionSize;
+   js["Max Corrections"]              = _maxCorrections;
+   js["Normal Vector Learning Rate"]  = _cv;
+   js["Global Success Learning Rate"] = _cp;
 
-     // CCMA-ES States
-     js["State"]["Global Success Rate"] = globalSucRate;
-     for (size_t c = 0; c < _numConstraints; ++c) js["State"]["Success Rates"][c] = sucRates[c];
-     for (size_t c = 0; c < _numConstraints; ++c) js["State"]["Viability Boundaries"][c] = viabilityBounds[c];
+   // CCMA-ES States
+   js["State"]["Global Success Rate"] = globalSucRate;
+   for (size_t c = 0; c < _numConstraints; ++c) js["State"]["Success Rates"][c] = sucRates[c];
+   for (size_t c = 0; c < _numConstraints; ++c) js["State"]["Viability Boundaries"][c] = viabilityBounds[c];
 
-     for (size_t i = 0; i < _current_s; ++i) js["State"]["Num Constraint Violations"][i] = numviolations[i];
+   for (size_t i = 0; i < _current_s; ++i) js["State"]["Num Constraint Violations"][i] = numviolations[i];
 
-     for (size_t c = 0; c < _numConstraints; ++c) for (size_t i = 0; i < _current_s; ++i) js["State"]["Constraint Evaluations"][c][i] = constraintEvaluations[c][i];
-     for (size_t c = 0; c < _numConstraints; ++c) for (size_t d = 0; d < _k->_problem->N; ++d) js["State"]["Constraint Normal Approximation"][c][d] = v[c][d];
+   for (size_t c = 0; c < _numConstraints; ++c) for (size_t i = 0; i < _current_s; ++i) js["State"]["Constraint Evaluations"][c][i] = constraintEvaluations[c][i];
+   for (size_t c = 0; c < _numConstraints; ++c) for (size_t d = 0; d < _k->_problem->N; ++d) js["State"]["Constraint Normal Approximation"][c][d] = v[c][d];
  }
  return js;
 }
@@ -295,20 +294,17 @@ void CMAES::setConfiguration(nlohmann::json& js)
  _isdiag                       = consume(js, { "Covariance Matrix", "Is Diagonal" }, KORALI_BOOLEAN, "false");
 
  // Setting variable information
- _solverVarInfoCount = 0;
  _variableLogSpace = (bool*) calloc(sizeof(bool), _k->_problem->N);
  
  if (isArray(js, { "Variables" } ))
  {
-  _solverVarInfoCount = js["Variables"].size();
+  _initialMeans = (double*) calloc(sizeof(double), _k->_problem->N);
+  _initialStdDevs = (double*) calloc(sizeof(double), _k->_problem->N);
+  _minStdDevChanges = (double*) calloc(sizeof(double), _k->_problem->N);
+  _lowerBounds = (double*) calloc(sizeof(double), _k->_problem->N);
+  _upperBounds = (double*) calloc(sizeof(double), _k->_problem->N);
 
-  _initialMeans = (double*) calloc(sizeof(double), _solverVarInfoCount);
-  _initialStdDevs = (double*) calloc(sizeof(double), _solverVarInfoCount);
-  _minStdDevChanges = (double*) calloc(sizeof(double), _solverVarInfoCount);
-  _lowerBounds = (double*) calloc(sizeof(double), _solverVarInfoCount);
-  _upperBounds = (double*) calloc(sizeof(double), _solverVarInfoCount);
-
-  for (size_t i = 0; i < _solverVarInfoCount; i++)
+  for (size_t i = 0; i < _k->_problem->N; i++)
   {
    bool lowerBoundDefined = isDefined(js["Variables"][i], { "Lower Bound" });
    bool upperBoundDefined = isDefined(js["Variables"][i], { "Upper Bound" });
@@ -448,13 +444,6 @@ void CMAES::setState(nlohmann::json& js)
 
 void CMAES::initInternals(size_t numsamplesmu)
 {
- // Setting variable information
- if (_solverVarInfoCount != _k->_problem->N)
- {
-  fprintf( stderr, "[Korali] %s Error: You need to define variable information (e.g., Initial Mean, Initial Standard Deviation) for all variables defined in the Problem. Expected: %lu, Provided: %lu\n.",_name.c_str(), _k->_problem->N, _solverVarInfoCount);
-  exit(-1);
- }
-
  // Initializing Mu Weights
  if      (_muType == "Linear")      for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = numsamplesmu - i;
  else if (_muType == "Equal")       for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = 1;

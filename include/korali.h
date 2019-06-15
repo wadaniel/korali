@@ -49,8 +49,11 @@ class Engine {
  nlohmann::json  _js;
  nlohmann::json& operator[](std::string key) { return _js[key]; }
 
+ bool _modelDefined;
+ bool _likelihoodDefined;
  std::function<void(ModelData&)> _model;
  std::vector<fcon> _fconstraints;
+
  Korali::Conduit::Base* _conduit;
  Korali::Problem::Base* _problem;
  Korali::Solver::Base*  _solver;
@@ -61,6 +64,7 @@ class Engine {
 
  void run();
  void setModel(std::function<void(Korali::ModelData&)> model);
+ void setLikelihood(std::function<void(Korali::ModelData&)> model);
  void addConstraint(fcon fconstraint);
 
  // Python Configuration Binding Methods

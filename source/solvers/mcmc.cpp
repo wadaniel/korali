@@ -29,7 +29,9 @@ Korali::Solver::MCMC::MCMC(nlohmann::json& js, std::string name) : Korali::Solve
  chainMean         = (double*) calloc (_k->_problem->N, sizeof(double));
  chainVar          = (double*) calloc (_k->_problem->N, sizeof(double));
 
- for(size_t d = 0; d < _k->_problem->N; ++d) _covarianceMatrix[d*_k->_problem->N+d] = 1.0; //TODO: define how to init (eg CMA-ES style)
+ for(size_t d = 0; d < _k->_problem->N; ++d) clPoint[d] = _initialMean[d];
+ for(size_t d = 0; d < _k->_problem->N; ++d) _covarianceMatrix[d*_k->_problem->N+d] = _initialStdDevs[d];
+
  /*
  if(_useLocalCov) {
    double *LCmem       = (double*)  calloc (_s*_k->_problem->N*_k->_problem->N, sizeof(double));
@@ -121,6 +123,13 @@ void Korali::Solver::MCMC::setConfiguration(nlohmann::json& js)
  _isTermCondMaxFunEvals    = consume(js, { "Termination Criteria", "Max Function Evaluations", "Active" }, KORALI_BOOLEAN, "false");
  _termCondMaxGenerations   = consume(js, { "Termination Criteria", "Max Sample Generations", "Value" }, KORALI_NUMBER, std::to_string(1e12));
  _isTermCondMaxGenerations = consume(js, { "Termination Criteria", "Max Sample Generations", "Active" }, KORALI_BOOLEAN, "false");
+  
+  _initialMean    = (double*) calloc(sizeof(double), _k->_problem->N);
+  _initialStdDevs = (double*) calloc(sizeof(double), _k->_problem->N);
+
+  for(size_t d = 0; d < _k->_problem->N; ++d) _initialMean[d] = consume(js["Variables"][d], { "Initial Mean" }, KORALI_NUMBER, std::to_string(0.0));
+  for(size_t d = 0; d < _k->_problem->N; ++d) _initialStdDevs[d] = consume(js["Variables"][d], { "Initial Standard Deviation" }, KORALI_NUMBER, std::to_string(1.0));
+
  //_useLocalCov       = consume(js, { "Use Local Covariance" }, KORALI_BOOLEAN, "false");
 }
 

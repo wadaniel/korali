@@ -256,14 +256,6 @@ nlohmann::json CMAES::getConfiguration()
 
 
 
-
-
-
-
-
-
-
-
 void CMAES::setConfiguration(nlohmann::json& js)
 {
  this->Korali::Solver::Base::setConfiguration(js);
@@ -344,7 +336,7 @@ void CMAES::setConfiguration(nlohmann::json& js)
    if (initialStdDevDefined == true)  _initialStdDevs[i] = consume(js["Variables"][i], { "Initial Standard Deviation" }, KORALI_NUMBER);
    if (initialStdDevDefined == false)
    {
-    if (lowerBoundDefined && upperBoundDefined) _initialStdDevs[i] = (_upperBounds[i]-_lowerBounds[i])*0.2;
+    if (lowerBoundDefined && upperBoundDefined) _initialStdDevs[i] = (_upperBounds[i]-_lowerBounds[i])*0.3;
     else
     {
      fprintf(stderr, "[Korali] %s Error: Either or both lower or upper bounds of variable %lu is undefined, you therefore need to define its Initial Standard Deviation.\n", _name.c_str(), i);

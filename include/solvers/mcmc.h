@@ -47,7 +47,9 @@ class MCMC : public Base
  double* chainVar; /* variance of mcmc chain */
 
  // MCMC Status variables
- double* _covarianceMatrix; /* Covariance of leader fitness values */
+ double* _initialMean; /* Initial Mean of Cov Proposal Distribution */
+ double* _initialStdDevs; /* Initial Diagonal of Cov Proposal Distribution */
+ double* _covarianceMatrix; /* Covariance of Proposal Distribution */
  //double **local_cov; /* Local covariances of leaders */
 
  gsl_rng *_gslGen;

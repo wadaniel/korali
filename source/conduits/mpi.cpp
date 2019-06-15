@@ -14,6 +14,7 @@ using namespace Korali::Conduit;
 
 KoraliMPI::KoraliMPI(nlohmann::json& js) : Base::Base(js)
 {
+ _name = "MPI";
  setConfiguration(js);
 
  _continueEvaluations = true;
@@ -75,7 +76,7 @@ nlohmann::json KoraliMPI::getConfiguration()
 {
  auto js = this->Base::getConfiguration();
 
- js["Type"] = "MPI";
+ js["Type"] = _name;
  js["Ranks Per Team"] = _ranksPerTeam;
 
  return js;

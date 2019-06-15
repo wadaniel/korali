@@ -5,5 +5,6 @@
 
 // Minus Ackley
 void m_ackley(std::vector<double>& pars, std::vector<double>& result);
+void l_gauss(std::vector<double>& pars, std::vector<double>& result);
 
 #endif

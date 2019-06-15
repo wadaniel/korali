@@ -1,4 +1,4 @@
-BINARIES = maximize_function sample_function maximize_function_restart
+BINARIES = maximize_function maximize_function_restart sample_function_tmcmc sample_function_mcmc
 KORALICXX=$(shell python3 -m korali.cxx --compiler)
 KORALICFLAGS=`python3 -m korali.cxx --cflags`
 KORALILIBS=`python3 -m korali.cxx --libs`

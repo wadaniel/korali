@@ -1,6 +1,7 @@
 #include "ackley.h"
 #include <stdlib.h>
 #include <math.h>
+#include <stdio.h>
 
 // Minus Ackley
 void m_ackley(std::vector<double>& pars, std::vector<double>& result)
@@ -16,4 +17,17 @@ void m_ackley(std::vector<double>& pars, std::vector<double>& result)
  double res = -a*exp(-b*sqrt(s1/nDims)) - exp(s2/nDims) + a + exp(1.);
 
  result.push_back(-res);
+}
+
+// Minus Ackley
+void l_gauss(std::vector<double>& pars, std::vector<double>& result)
+{
+ size_t nDims = pars.size();
+ double sum = 0.0;
+ for (size_t i = 0; i < nDims; ++i) {
+  sum += pars[i]*pars[i];
+ }
+
+ double res = -0.5*sum;
+ result.push_back(res);
 }

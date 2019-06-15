@@ -15,6 +15,7 @@
 
 Korali::Solver::TMCMC::TMCMC(nlohmann::json& js) : Korali::Solver::Base::Base(js)
 {
+ _name = "TMCMC";
  setConfiguration(js);
 
  // Setting Chain-Specific Seeds
@@ -113,7 +114,7 @@ nlohmann::json Korali::Solver::TMCMC::getConfiguration()
  js["State"]["AnnealingExponent"]        = _annealingExponent;
  js["State"]["UniqueEntries"]            = _uniqueEntries;
  js["State"]["LogEvidence"]              = _logEvidence;
- js["State"]["AcceptanceRateProposals"]  = _acceptanceRateSelections;
+ js["State"]["AcceptanceRateProposals"]  = _acceptanceRateProposals;
  js["State"]["AcceptanceRateSelections"] = _acceptanceRateSelections;
  js["State"]["Database Entries"]         = _databaseEntries;
 

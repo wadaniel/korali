@@ -5,6 +5,7 @@ import json
 import argparse
 from korali.plotter.cmaes import plot_cmaes
 from korali.plotter.tmcmc import plot_tmcmc
+from korali.plotter.mcmc import plot_mcmc
 
 def main(live):
  path = '_korali_result'
@@ -20,6 +21,11 @@ def main(live):
  if ( method == "TMCMC" ):
   print("[Korali] Running TMCMC Plotter...")
   plot_tmcmc(path, live)
+  exit(0)
+ 
+ if ( method == "MCMC" ):
+  print("[Korali] Running MCMC Plotter...")
+  plot_mcmc(path, live)
   exit(0)
 
  if ( method == "CMA-ES" or method == "CCMA-ES" ):

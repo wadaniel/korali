@@ -9,6 +9,7 @@ using namespace Korali::Conduit;
 
 Nonintrusive::Nonintrusive(nlohmann::json& js) : Base::Base(js)
 {
+ _name = "Nonintrusive";
  setConfiguration(js);
 }
 
@@ -25,7 +26,7 @@ nlohmann::json Nonintrusive::getConfiguration()
 {
  auto js = this->Base::getConfiguration();
 
- js["Type"] = "Nonintrusive";
+ js["Type"] = _name;
 
  return js;
 }

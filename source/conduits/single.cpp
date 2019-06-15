@@ -8,6 +8,7 @@ using namespace Korali::Conduit;
 
 Single::Single(nlohmann::json& js) : Base::Base(js)
 {
+ _name = "Single";
  setConfiguration(js);
 }
 
@@ -24,7 +25,7 @@ nlohmann::json Single::getConfiguration()
 {
  auto js = this->Base::getConfiguration();
 
- js["Type"] = "Single";
+ js["Type"] = _name;
 
  return js;
 }

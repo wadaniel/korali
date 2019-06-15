@@ -3,7 +3,6 @@
 
 #include "solvers/base.h"
 #include <gsl/gsl_rng.h>
-#include <gsl/gsl_vector.h>
 
 namespace Korali { namespace Solver {
 
@@ -20,14 +19,18 @@ class MCMC : public Base
  //bool _useLocalCov; /* Using local covariance instead of sample cov */
  size_t _burnin; /* burn in generations */
  size_t _maxresamplings; /* Max number resamplings inside generation loop */
+ size_t _acfLags; /* number of lags in acf */
  bool _isTermCondMaxFunEvals;
  size_t _termCondMaxFunEvals; /* Max objective function evaluations */
  bool _isTermCondMaxGenerations;
  size_t _termCondMaxGenerations; /* Max proposed samples */
  char _terminationReason[500];
 
+
+ Variable::Gaussian* _gaussianGenerator; /* Gaussian random number generator */
+
  // MCMC Runtime Variables
- gsl_rng *gslGen; /* Random number generator */
+ double* z; /* placeholder random numbers */
  double* clPoint; /*  Leader parameter values */
  double clLogLikelihood; /* Leader fitness value */
  double* ccPoint; /*  Candidate parameter values */
@@ -39,14 +42,18 @@ class MCMC : public Base
  size_t databaseEntries; /* Accepted Samples */
  double* databasePoints; /* Variable values of samples in DB */
  double* databaseFitness; /* Fitness of samples in DB */
- size_t  countevals; /* Number of function evaluations */
- double* autocorrelation; /* TODO */
+ size_t countevals; /* Number of function evaluations */
+ double* chainMean; /* mean of mcmc chain */
+ double* chainVar; /* variance of mcmc chain */
+ double** acf; /* autocorrelation of mcmc chain */
 
  // MCMC Status variables
  double* _covarianceMatrix; /* Covariance of leader fitness values */
  //double **local_cov; /* Local covariances of leaders */
 
-  // Korali Methods
+ gsl_rng *_gslGen;
+ 
+ // Korali Methods
  void run() override;
  void processSample(size_t c, double fitness) override;
 

@@ -18,17 +18,20 @@ Korali::Solver::MCMC::MCMC(nlohmann::json& js, std::string name) : Korali::Solve
  _name = name;
  setConfiguration(js);
 
- // Setting Chain-Specific Seeds
- gslGen = gsl_rng_alloc (gsl_rng_default);
- gsl_rng_set(gslGen, _k->_seed++);
 
  // Allocating MCMC memory
  _covarianceMatrix = (double*) calloc (_k->_problem->N*_k->_problem->N, sizeof(double));
+ z                 = (double*) calloc (_k->_problem->N, sizeof(double));
  clPoint           = (double*) calloc (_k->_problem->N, sizeof(double));
  ccPoint           = (double*) calloc (_k->_problem->N, sizeof(double));
  databasePoints    = (double*) calloc (_k->_problem->N*_s, sizeof(double));
  databaseFitness   = (double*) calloc (_s, sizeof(double));
+ chainMean         = (double*) calloc (_k->_problem->N, sizeof(double));
+ chainVar          = (double*) calloc (_k->_problem->N, sizeof(double));
+ acf               = (double**) malloc (_k->_problem->N * sizeof(double*));
+ for (size_t d = 0; d < _k->_problem->N; ++d) acf[d] = (double*) calloc (_acfLags, sizeof(double));
 
+ for(size_t d = 0; d < _k->_problem->N; ++d) _covarianceMatrix[d*_k->_problem->N+d] = 1.0; //TODO: define how to init (eg CMA-ES style)
  /*
  if(_useLocalCov) {
    double *LCmem       = (double*)  calloc (_s*_k->_problem->N*_k->_problem->N, sizeof(double));
@@ -39,6 +42,10 @@ Korali::Solver::MCMC::MCMC(nlohmann::json& js, std::string name) : Korali::Solve
     for (size_t i = 0; i < _k->_problem->N; i++) local_cov[pos][i*_k->_problem->N+i] = 1;
    }
  }*/
+ 
+ _gslGen = gsl_rng_alloc (gsl_rng_default);
+ gsl_rng_set(_gslGen, _k->_seed++);
+ _gaussianGenerator = new Variable::Gaussian(0.0, 1.0, _k->_seed++);
 
  countevals               = 0;
  countgens                = 0;
@@ -75,6 +82,7 @@ nlohmann::json Korali::Solver::MCMC::getConfiguration()
  js["Population Size"] = _s;
  js["Burn In"]         = _burnin;
  js["Max Resamplings"] = _maxresamplings;
+ js["ACF Lags"]        = _acfLags;
  //js["Use Local Covariance"]     = _useLocalCov;
 
  js["Termination Criteria"]["Max Function Evaluations"]["Value"]  = _termCondMaxFunEvals;
@@ -92,6 +100,9 @@ nlohmann::json Korali::Solver::MCMC::getConfiguration()
  for (size_t d = 0; d < _k->_problem->N; d++) js["State"]["Candidate"][d]                      = ccPoint[d];
  for (size_t i = 0; i < _k->_problem->N*databaseEntries; i++) js["State"]["DatabasePoints"][i] = databasePoints[i];
  for (size_t i = 0; i < databaseEntries; i++) js["State"]["DatabaseFitness"][i]                = databaseFitness[i];
+ for (size_t d = 0; d < _k->_problem->N; d++) js["State"]["Chain Mean"][d]                     = chainMean[d];
+ for (size_t d = 0; d < _k->_problem->N; d++) js["State"]["Chain Variance"][d]                 = chainVar[d];
+ for (size_t d = 0; d < _k->_problem->N; d++) for (size_t l = 0; l < _acfLags; ++l) js["State"]["Autocorrelation"][d][l] = acf[d][l];
  //if (_useLocalCov) for (size_t i = 0; i < _chainLength; i++) for (size_t d = 0; d < _k->_problem->N; d++) js["State"]["LocalCovarianceMatrix"][i][d] = local_cov[i][d];
 
  js["State"]["LeaderFitness"]    = clLogLikelihood;
@@ -107,6 +118,7 @@ void Korali::Solver::MCMC::setConfiguration(nlohmann::json& js)
  _s                        = consume(js, { "Population Size" }, KORALI_NUMBER);
  _burnin                   = consume(js, { "Burn In" }, KORALI_NUMBER, std::to_string(0));
  _maxresamplings           = consume(js, { "Max Resamplings" }, KORALI_NUMBER, std::to_string(1e6));
+ _acfLags                  = consume(js, { "ACF Lags" }, KORALI_NUMBER, std::to_string(10));
  
  _termCondMaxFunEvals      = consume(js, { "Termination Criteria", "Max Function Evaluations", "Value" }, KORALI_NUMBER, std::to_string(1e4));
  _isTermCondMaxFunEvals    = consume(js, { "Termination Criteria", "Max Function Evaluations", "Active" }, KORALI_BOOLEAN, "false");
@@ -128,6 +140,9 @@ void Korali::Solver::MCMC::setState(nlohmann::json& js)
  for (size_t d = 0; d < _k->_problem->N; d++) ccPoint[d]                        = js["State"]["Candidate"][d];
  for (size_t i = 0; i < _k->_problem->N*databaseEntries; i++) databasePoints[i] = js["State"]["DatabasePoints"][i];
  for (size_t i = 0; i < databaseEntries; i++) databaseFitness[i]                = js["State"]["DatabaseFitness"][i];
+ for (size_t d = 0; d < _k->_problem->N; d++) chainMean[d]                      = js["State"]["Chain Mean"][d];
+ for (size_t d = 0; d < _k->_problem->N; d++) chainVar[d]                       = js["State"]["Chain Variance"][d];
+ for (size_t d = 0; d < _k->_problem->N; d++) for (size_t l = 0; l < _acfLags; ++l) acf[d][l] = js["State"]["Autocorrelation"][d][l];
  //if (_useLocalCov) for (size_t i = 0; i < _s; i++) for (size_t j = 0; j < _k->_problem->N; j++) local_cov[i][j] = js["State"]["LocalCovarianceMatrix"][i][j];
  
  clLogLikelihood = js["State"]["LeaderFitness"];
@@ -179,7 +194,7 @@ void Korali::Solver::MCMC::processSample(size_t c, double fitness)
  ccLogLikelihood = fitness + ccLogPrior;
  double L = exp(ccLogLikelihood-clLogLikelihood);
 
- if ( L >= 1.0 || L > gsl_ran_flat(gslGen, 0.0, 1.0) ) {
+ if ( L >= 1.0 || L > gsl_ran_flat(_gslGen, 0.0, 1.0) ) {
    chainLength++;
    clLogLikelihood = ccLogLikelihood;
    for (size_t d = 0; d < _k->_problem->N; d++) clPoint[d] = ccPoint[d];
@@ -212,12 +227,15 @@ void Korali::Solver::MCMC::generateCandidate()
 
 
 void Korali::Solver::MCMC::sampleCandidate()
-{
- //double* covariance = _useLocalCov ? local_cov[c] : _covarianceMatrix;
- gsl_vector_view out_view    = gsl_vector_view_array(ccPoint, _k->_problem->N);
- gsl_vector_view mean_view   = gsl_vector_view_array(clPoint, _k->_problem->N);
- gsl_matrix_view sigma_view  = gsl_matrix_view_array(_covarianceMatrix, _k->_problem->N,_k->_problem->N);
- gsl_ran_multivariate_gaussian(gslGen, &mean_view.vector, &sigma_view.matrix, &out_view.vector);
+{  
+
+ for (size_t d = 0; d < _k->_problem->N; ++d)
+ {
+   z[d] = _gaussianGenerator->getRandomNumber();
+   for (size_t e = 0; e < _k->_problem->N; ++e) ccPoint[e] += _covarianceMatrix[e*_k->_problem->N+d] * z[d];
+ }
+
+ for (size_t d = 0; d < _k->_problem->N; ++d) ccPoint[d] += clPoint[d];
 }
 
 
@@ -234,6 +252,28 @@ void Korali::Solver::MCMC::updateState()
  
  acceptanceRateProposals = ( (double) countgens / (double) chainLength );
 
+ // Chain Mean and Variance
+ for (size_t d = 0; d < _k->_problem->N; d++) 
+ {
+    double delta = (ccPoint[d] - chainMean[d]);
+    chainMean[d] += (delta)/((double)databaseEntries);
+    chainVar[d] = (chainVar[d] * (databaseEntries-2.0) + delta * (ccPoint[d] - chainMean[d]))/(databaseEntries-1.0); //TODO: verify (DW)
+ }
+
+ // Autocorrelation
+ for (size_t d = 0; d < _k->_problem->N; d++) for(size_t l = 0; l < _acfLags; ++l) acf[d][l] = 0.0;
+
+ for(size_t i = 0; i < databaseEntries; ++i)
+ {
+    for(size_t d = 0; d < _k->_problem->N; ++d)
+    {
+        for(size_t l = 0; l < _acfLags; ++l) if(l>=i)
+        {
+            acf[d][l] += (clPoint[d] - chainMean[d]) * (databasePoints[(databaseEntries-l)*_k->_problem->N + d] - chainMean[d]);
+        }
+    }
+ }
+ for (size_t d = 0; d < _k->_problem->N; d++) for(size_t l = 0; l < _acfLags; ++l) acf[d][l] /= ((databaseEntries-l) * chainVar[d]);
 }
 
 bool Korali::Solver::MCMC::checkTermination()
@@ -273,8 +313,12 @@ void Korali::Solver::MCMC::printGeneration() const
 
  if (_k->_verbosity >= KORALI_DETAILED)
  {
-  printf("[Korali] Current Sample:\n");
-  for (size_t d = 0; d < _k->_problem->N; d++) printf(" %s = %+6.3e\n", _k->_problem->_variables[d]->_name.c_str(), ccPoint[d]);
+  printf("[Korali] Current Mean:\n");
+  for (size_t d = 0; d < _k->_problem->N; d++) printf(" %s = %+6.3e\n", _k->_problem->_variables[d]->_name.c_str(), chainMean[d]);
+  printf("[Korali] Current Variance:\n");
+  for (size_t d = 0; d < _k->_problem->N; d++) printf(" %s = %+6.3e\n", _k->_problem->_variables[d]->_name.c_str(), chainVar[d]);
+  printf("[Korali] Current Autocorrelation:\n");
+  for (size_t d = 0; d < _k->_problem->N; d++) { for (size_t l = 0; l < _acfLags; ++l) printf(" %+6.3e ", acf[d][l]); printf("\n"); }
  }
 }
 

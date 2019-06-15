@@ -27,10 +27,9 @@ int main(int argc, char* argv[])
  k["Problem"]["Variables"][2]["Distribution"]["Maximum"] = +32.0;
  k["Problem"]["Variables"][3]["Distribution"]["Maximum"] = +32.0;
 
- k["Solver"]["Method"] = "TMCMC";
- k["Solver"]["Covariance Scaling"] = 0.02;
+
+ k["Solver"]["Method"] = "MCMC";
  k["Solver"]["Population Size"] = 10000;
- k["Solver"]["Min Rho Update"] = 0.0;
 
  k.setModel([](Korali::ModelData& d) { m_ackley(d.getVariables(), d.getResults()); });
 

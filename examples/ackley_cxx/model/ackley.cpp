@@ -1,6 +1,7 @@
 #include "ackley.h"
 #include <stdlib.h>
 #include <math.h>
+#include <stdio.h>
 
 // Minus Ackley
 void m_ackley(std::vector<double>& pars, std::vector<double>& result)
@@ -28,6 +29,5 @@ void l_gauss(std::vector<double>& pars, std::vector<double>& result)
  }
 
  double res = -0.5*sum;
-
  result.push_back(res);
 }

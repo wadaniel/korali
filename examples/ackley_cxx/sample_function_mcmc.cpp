@@ -13,10 +13,12 @@ int main(int argc, char* argv[])
  k["Problem"]["Variables"][3]["Name"] = "X3";
 
  k["Solver"]["Method"] = "MCMC";
- k["Solver"]["Population Size"] = 100;
+ k["Solver"]["Population Size"] = 1000;
+ k["Solver"]["Burn In"] = 100;
  k["Verbosity"] = "Detailed";
 
- k.setModel([](Korali::ModelData& d) { l_gauss(d.getVariables(), d.getResults()); });
+ //k.setModel([](Korali::ModelData& d) { l_gauss(d.getVariables(), d.getResults()); });
+ k.setModel([](Korali::ModelData& d) { m_ackley(d.getVariables(), d.getResults()); });
 
  k.run();
 

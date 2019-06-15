@@ -19,7 +19,6 @@ class MCMC : public Base
  //bool _useLocalCov; /* Using local covariance instead of sample cov */
  size_t _burnin; /* burn in generations */
  size_t _maxresamplings; /* Max number resamplings inside generation loop */
- size_t _acfLags; /* number of lags in acf */
  bool _isTermCondMaxFunEvals;
  size_t _termCondMaxFunEvals; /* Max objective function evaluations */
  bool _isTermCondMaxGenerations;
@@ -46,7 +45,6 @@ class MCMC : public Base
  size_t countevals; /* Number of function evaluations */
  double* chainMean; /* mean of mcmc chain */
  double* chainVar; /* variance of mcmc chain */
- double** acf; /* autocorrelation of mcmc chain */
 
  // MCMC Status variables
  double* _covarianceMatrix; /* Covariance of leader fitness values */

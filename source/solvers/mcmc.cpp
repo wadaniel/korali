@@ -93,10 +93,11 @@ nlohmann::json Korali::Solver::MCMC::getConfiguration()
  // State Variables
  for (size_t d = 0; d < _k->_problem->N*_k->_problem->N; d++) js["State"]["CovarianceMatrix"][d] = _covarianceMatrix[d];
  
- js["State"]["Function Evaluations"]    = countevals;
- js["State"]["Number Accepted Samples"] = naccept;
- js["State"]["Chain Length"]            = chainLength;
- js["State"]["AcceptanceRateProposals"] = acceptanceRateProposals;
+ js["State"]["Function Evaluations"]      = countevals;
+ js["State"]["Number Accepted Samples"]   = naccept;
+ js["State"]["Chain Length"]              = chainLength;
+ js["State"]["Database Entries"]          = databaseEntries;
+ js["State"]["Acceptance Rate Proposals"] = acceptanceRateProposals;
  for (size_t d = 0; d < _k->_problem->N; d++) js["State"]["Leader"][d]                         = clPoint[d];
  for (size_t d = 0; d < _k->_problem->N; d++) js["State"]["Candidate"][d]                      = ccPoint[d];
  for (size_t i = 0; i < _k->_problem->N*databaseEntries; i++) js["State"]["DatabasePoints"][i] = databasePoints[i];
@@ -140,7 +141,8 @@ void Korali::Solver::MCMC::setState(nlohmann::json& js)
  countevals              = js["State"]["FunctionEvaluations"];
  naccept                 = js["State"]["Number Accepted Samples"];
  chainLength             = js["State"]["Chain Length"];
- acceptanceRateProposals = js["State"]["AcceptanceRateProposals"];
+ databaseEntries         = js["State"]["Database Entries"];
+ acceptanceRateProposals = js["State"]["Acceptance Rate Proposals"];
 
  for (size_t d = 0; d < _k->_problem->N; d++) clPoint[d]                        = js["State"]["Leader"][d];
  for (size_t d = 0; d < _k->_problem->N; d++) ccPoint[d]                        = js["State"]["Candidate"][d];
@@ -168,6 +170,7 @@ void Korali::Solver::MCMC::run()
     exit(-1);
   } 
  
+  _k->saveState(countevals);
  if (_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Starting MCMC.\n");
  
  startTime = std::chrono::system_clock::now();
@@ -204,7 +207,7 @@ void Korali::Solver::MCMC::processSample(size_t c, double fitness)
 void Korali::Solver::MCMC::acceptReject()
 {
  double L = exp(ccLogLikelihood-clLogLikelihood);
-
+ printf("%f\n", L);
  if ( L >= 1.0 || L > gsl_ran_flat(_gslGen, 0.0, 1.0) ) {
    naccept++;
    clLogLikelihood = ccLogLikelihood;
@@ -303,7 +306,7 @@ void Korali::Solver::MCMC::printGeneration() const
  }
 
  if (_k->_verbosity >= KORALI_NORMAL) printf("[Korali] Accepted Samples: %zu\n", naccept);
- if (_k->_verbosity >= KORALI_NORMAL) printf("[Korali] Acceptance Rate proposals: %.2f%%\n", 100*acceptanceRateProposals);
+ if (_k->_verbosity >= KORALI_NORMAL) printf("[Korali] Acceptance Rate Proposals: %.2f%%\n", 100*acceptanceRateProposals);
 
  if (_k->_verbosity >= KORALI_DETAILED)
  {

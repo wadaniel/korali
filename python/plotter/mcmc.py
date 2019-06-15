@@ -97,7 +97,7 @@ def plot_samples(path, idx=None):
         data    = json.load(f)
         dims    = data['Problem']['Variables']
         numdim  = len(dims)
-        pop     = data['Solver']['Population Size']
+        pop     = data['Solver']['State']['Database Entries']
         fitness = data['Solver']['State']['DatabaseFitness']
         samples = np.reshape( data['Solver']['State']['DatabasePoints'], (pop,numdim) )
 
@@ -111,7 +111,7 @@ def plot_samples(path, idx=None):
         else:           
             fig.canvas.set_window_title('s{0}.json'.format(str(idx).zfill(5)))
         
-        plt.suptitle( 'Number of Samples {0}\n'.format(str(pop)),
+        plt.suptitle( 'MCMC\nNumber of Samples {0}\n'.format(str(pop)),
                       fontweight='bold',
                       fontsize  = 12)
 
@@ -124,7 +124,6 @@ def plot_mcmc(src, live=False):
      
     idx      = 0
     path = '{0}/s{1}.json'.format(src, str(idx).zfill(5))
-    if ( not os.path.isfile(path) ):
 
     while (os.path.isfile(path)):
         idx = idx+1

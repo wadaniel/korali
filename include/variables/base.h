@@ -25,9 +25,9 @@ class Base
  Base(size_t seed);
  ~Base();
 
- virtual double getDensity(double x) { fprintf(stderr, "[Korali] Error: Problem requires that variable '%s' to have a defined distribution.\n"); exit(-1); return 0.0; };
- virtual double getLogDensity(double x) { fprintf(stderr, "[Korali] Error: Problem requires that variable '%s' to have a defined distribution.\n"); exit(-1); return 0.0; };
- virtual double getRandomNumber() { fprintf(stderr, "[Korali] Error: Problem requires that variable '%s' to have a defined distribution.\n"); exit(-1); return 0.0; };
+ virtual double getDensity(double x) { fprintf(stderr, "[Korali] Error: Problem requires that variable '%s' to have a defined distribution.\n", _name.c_str()); exit(-1); return 0.0; };
+ virtual double getLogDensity(double x) { fprintf(stderr, "[Korali] Error: Problem requires that variable '%s' to have a defined distribution.\n", _name.c_str()); exit(-1); return 0.0; };
+ virtual double getRandomNumber() { fprintf(stderr, "[Korali] Error: Problem requires that variable '%s' to have a defined distribution.\n", _name.c_str()); exit(-1); return 0.0; };
  virtual void printDetails() { return; };
  virtual void initialize() { };
 

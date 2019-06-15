@@ -5,7 +5,7 @@ int main(int argc, char* argv[])
 {
  auto k = Korali::Engine();
 
- k["Problem"]["Evaluation Type"] = "Direct";
+ k["Problem"]["Evaluation Type"] = "Direct Bayesian";
 
  k["Problem"]["Variables"][0]["Name"] = "X0";
  k["Problem"]["Variables"][1]["Name"] = "X1";
@@ -27,7 +27,7 @@ int main(int argc, char* argv[])
  k["Problem"]["Variables"][2]["Distribution"]["Maximum"] = +32.0;
  k["Problem"]["Variables"][3]["Distribution"]["Maximum"] = +32.0;
 
- k["Solver"]["Method"] = "MCMC";
+ k["Solver"]["Method"] = "TMCMC";
  k["Solver"]["Covariance Scaling"] = 0.02;
  k["Solver"]["Population Size"] = 10000;
  k["Solver"]["Min Rho Update"] = 0.0;

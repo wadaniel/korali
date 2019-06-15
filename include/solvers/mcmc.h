@@ -37,6 +37,7 @@ class MCMC : public Base
  double ccLogLikelihood; /* Candidate fitness value */
  double ccLogPrior; /* Candidate prior value */
  double acceptanceRateProposals; /* Ratio proposed to accepted Samples */
+ size_t naccept; /* Number of accepted samples */
  size_t countgens; /* Number of proposed samples */
  size_t chainLength; /* Number accepted samples + burnin accepted samples */
  size_t databaseEntries; /* Accepted Samples */
@@ -61,6 +62,7 @@ class MCMC : public Base
  void updateDatabase(double* point, double fitness);
  void generateCandidate(); 
  void sampleCandidate();
+ void acceptReject();
  //void computeChainCovariances(double** chain_cov, size_t newchains) const;
  void updateState();
  bool setCandidatePriorAndCheck();

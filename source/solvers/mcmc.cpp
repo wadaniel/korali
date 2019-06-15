@@ -48,6 +48,7 @@ Korali::Solver::MCMC::MCMC(nlohmann::json& js, std::string name) : Korali::Solve
  _gaussianGenerator = new Variable::Gaussian(0.0, 1.0, _k->_seed++);
 
  countevals               = 0;
+ naccept                  = 0;
  countgens                = 0;
  chainLength              = 0;
  databaseEntries          = 0;
@@ -94,6 +95,7 @@ nlohmann::json Korali::Solver::MCMC::getConfiguration()
  for (size_t d = 0; d < _k->_problem->N*_k->_problem->N; d++) js["State"]["CovarianceMatrix"][d] = _covarianceMatrix[d];
  
  js["State"]["Function Evaluations"]    = countevals;
+ js["State"]["Number Accepted Samples"] = naccept;
  js["State"]["Chain Length"]            = chainLength;
  js["State"]["AcceptanceRateProposals"] = acceptanceRateProposals;
  for (size_t d = 0; d < _k->_problem->N; d++) js["State"]["Leader"][d]                         = clPoint[d];
@@ -124,7 +126,6 @@ void Korali::Solver::MCMC::setConfiguration(nlohmann::json& js)
  _isTermCondMaxFunEvals    = consume(js, { "Termination Criteria", "Max Function Evaluations", "Active" }, KORALI_BOOLEAN, "false");
  _termCondMaxGenerations   = consume(js, { "Termination Criteria", "Max Sample Generations", "Value" }, KORALI_NUMBER, std::to_string(1e12));
  _isTermCondMaxGenerations = consume(js, { "Termination Criteria", "Max Sample Generations", "Active" }, KORALI_BOOLEAN, "false");
- for (size_t d = 0; d < _k->_problem->N*_k->_problem->N; d++) _covarianceMatrix[d] = js["State"]["CovarianceMatrix"][d];
  //_useLocalCov       = consume(js, { "Use Local Covariance" }, KORALI_BOOLEAN, "false");
 }
 
@@ -133,6 +134,7 @@ void Korali::Solver::MCMC::setState(nlohmann::json& js)
  this->Korali::Solver::Base::setState(js);
 
  countevals              = js["State"]["FunctionEvaluations"];
+ naccept                 = js["State"]["Number Accepted Samples"];
  chainLength             = js["State"]["Chain Length"];
  acceptanceRateProposals = js["State"]["AcceptanceRateProposals"];
 
@@ -143,6 +145,7 @@ void Korali::Solver::MCMC::setState(nlohmann::json& js)
  for (size_t d = 0; d < _k->_problem->N; d++) chainMean[d]                      = js["State"]["Chain Mean"][d];
  for (size_t d = 0; d < _k->_problem->N; d++) chainVar[d]                       = js["State"]["Chain Variance"][d];
  for (size_t d = 0; d < _k->_problem->N; d++) for (size_t l = 0; l < _acfLags; ++l) acf[d][l] = js["State"]["Autocorrelation"][d][l];
+ for (size_t d = 0; d < _k->_problem->N*_k->_problem->N; d++) _covarianceMatrix[d] = js["State"]["CovarianceMatrix"][d];
  //if (_useLocalCov) for (size_t i = 0; i < _s; i++) for (size_t j = 0; j < _k->_problem->N; j++) local_cov[i][j] = js["State"]["LocalCovarianceMatrix"][i][j];
  
  clLogLikelihood = js["State"]["LeaderFitness"];
@@ -156,7 +159,7 @@ void Korali::Solver::MCMC::setState(nlohmann::json& js)
 
 void Korali::Solver::MCMC::run()
 {
-  if (_k->_conduit->_name != "Sequential")                                        
+  if (_k->_conduit->_name != "Single")                                        
   {                                                                              
     fprintf(stderr, "[Korali] Error: The MCMC Method can only be used with Sequanetial conduit (is %s).\n", _k->_conduit->_name.c_str());
     exit(-1);
@@ -170,9 +173,10 @@ void Korali::Solver::MCMC::run()
  {
   t0 = std::chrono::system_clock::now();
 
-  // Generating Samples
   generateCandidate();
   _k->_conduit->evaluateSample(ccPoint, 0); countevals++;
+  _k->_conduit->checkProgress();
+  acceptReject();
   updateState();
 
   t1 = std::chrono::system_clock::now();
@@ -192,17 +196,20 @@ void Korali::Solver::MCMC::run()
 void Korali::Solver::MCMC::processSample(size_t c, double fitness)
 {
  ccLogLikelihood = fitness + ccLogPrior;
+}
+
+void Korali::Solver::MCMC::acceptReject()
+{
  double L = exp(ccLogLikelihood-clLogLikelihood);
 
  if ( L >= 1.0 || L > gsl_ran_flat(_gslGen, 0.0, 1.0) ) {
-   chainLength++;
+   naccept++;
    clLogLikelihood = ccLogLikelihood;
    for (size_t d = 0; d < _k->_problem->N; d++) clPoint[d] = ccPoint[d];
-
-   if (chainLength > _burnin ) updateDatabase(ccPoint, ccLogLikelihood);
  }
+ chainLength++;
+ if (chainLength > _burnin ) updateDatabase(ccPoint, ccLogLikelihood);
 }
-
 
 void Korali::Solver::MCMC::updateDatabase(double* point, double loglik)
 {
@@ -215,14 +222,14 @@ void Korali::Solver::MCMC::updateDatabase(double* point, double loglik)
 void Korali::Solver::MCMC::generateCandidate()
 {  
  size_t initialgens = countgens;
- do {
+ //do { /TODO: fix check (DW)
    sampleCandidate(); countgens++;
    if ( (countgens - initialgens) > _maxresamplings) 
    {       
-     if(_k->_verbosity >= KORALI_DETAILED) printf("[Korali] Warning: exiting resampling loop, max resamplings (%zu) reached.\n", _maxresamplings);
+     if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Warning: exiting resampling loop, max resamplings (%zu) reached.\n", _maxresamplings);
      exit(-1);
    }
-  } while (setCandidatePriorAndCheck());
+  //} while (setCandidatePriorAndCheck());
 }
 
 
@@ -249,8 +256,8 @@ bool Korali::Solver::MCMC::setCandidatePriorAndCheck()
 
 void Korali::Solver::MCMC::updateState()
 {
- 
- acceptanceRateProposals = ( (double) countgens / (double) chainLength );
+ if(databaseEntries < 2) return;
+ acceptanceRateProposals = ( (double) naccept / (double) chainLength );
 
  // Chain Mean and Variance
  for (size_t d = 0; d < _k->_problem->N; d++) 
@@ -267,7 +274,7 @@ void Korali::Solver::MCMC::updateState()
  {
     for(size_t d = 0; d < _k->_problem->N; ++d)
     {
-        for(size_t l = 0; l < _acfLags; ++l) if(l>=i)
+        for(size_t l = 0; l < _acfLags; ++l) if(i>=l)
         {
             acf[d][l] += (clPoint[d] - chainMean[d]) * (databasePoints[(databaseEntries-l)*_k->_problem->N + d] - chainMean[d]);
         }
@@ -328,11 +335,11 @@ void Korali::Solver::MCMC::printFinal() const
  if (_k->_verbosity >= KORALI_MINIMAL)
  {
     printf("[Korali] %s Finished\n", _name.c_str());
-    if (databaseEntries == _s) printf("[Korali] Max Samples Reached.\n");
     printf("[Korali] Number of Function Evaluations: %zu\n", countevals);
     printf("[Korali] Number of Generated Samples: %zu\n", countgens);
-    printf("[Korali] Acceptance Rate: %zu\n", acceptanceRateProposals);
-    printf("[Korali] Stopping Criterium: %s\n", _terminationReason);
+    printf("[Korali] Acceptance Rate: %6.3e\n", acceptanceRateProposals);
+    if (databaseEntries == _s) printf("[Korali] Max Samples Reached.\n");
+    else printf("[Korali] Stopping Criterium: %s\n", _terminationReason);
     printf("[Korali] Total Elapsed Time: %fs\n", std::chrono::duration<double>(t1-t0).count());
     printf("--------------------------------------------------------------------\n");
  }

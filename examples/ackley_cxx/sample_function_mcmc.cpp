@@ -14,7 +14,7 @@ int main(int argc, char* argv[])
 
  k["Solver"]["Method"] = "MCMC";
  k["Solver"]["Population Size"] = 10000;
- k["Solver"]["Burn In"] = 100;
+ k["Solver"]["Burn In"] = 500;
  k["Verbosity"] = "Detailed";
 
  k.setModel([](Korali::ModelData& d) { m_ackley(d.getVariables(), d.getResults()); });

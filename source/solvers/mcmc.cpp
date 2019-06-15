@@ -189,8 +189,8 @@ void Korali::Solver::MCMC::run()
 
   _k->saveState(countevals);
   
-  if (databaseEntries == _s) break;
   printGeneration();
+  if (databaseEntries == _s) break;
  }
 
  printFinal();
@@ -207,7 +207,6 @@ void Korali::Solver::MCMC::processSample(size_t c, double fitness)
 void Korali::Solver::MCMC::acceptReject()
 {
  double L = exp(ccLogLikelihood-clLogLikelihood);
- printf("%f\n", L);
  if ( L >= 1.0 || L > gsl_ran_flat(_gslGen, 0.0, 1.0) ) {
    naccept++;
    clLogLikelihood = ccLogLikelihood;

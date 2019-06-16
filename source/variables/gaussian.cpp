@@ -6,15 +6,17 @@ using namespace Korali::Variable;
 /*                  Constructor / Destructor Methods                    */
 /************************************************************************/
 
-Gaussian::Gaussian(double mean, double sigma, size_t seed) : Base::Base(seed)
+Gaussian::Gaussian(double mean, double sigma, size_t seed)
 {
+ _seed = seed;
  _mean = mean;
  _sigma = sigma;
  initialize();
 }
 
-Gaussian::Gaussian(nlohmann::json& js, size_t seed) : Base::Base(js, seed)
+Gaussian::Gaussian(nlohmann::json& js, size_t seed)
 {
+ _seed = seed;
  setConfiguration(js);
  initialize();
 }
@@ -30,8 +32,9 @@ Gaussian::~Gaussian()
 
 nlohmann::json Gaussian::getConfiguration()
 {
- auto js = this->Base::getConfiguration();
+ auto js = nlohmann::json();
 
+ js["Name"] = _name;
  js["Distribution"]["Type"] = "Gaussian";
  js["Distribution"]["Mean"] = _mean;
  js["Distribution"]["Sigma"] = _sigma;
@@ -41,6 +44,7 @@ nlohmann::json Gaussian::getConfiguration()
 
 void Gaussian::setConfiguration(nlohmann::json& js)
 {
+ _name = consume(js, { "Name" }, KORALI_STRING);
  _mean  = consume(js, { "Distribution", "Mean" }, KORALI_NUMBER);
  _sigma = consume(js, { "Distribution", "Sigma" }, KORALI_NUMBER);
 }
@@ -51,8 +55,9 @@ void Gaussian::setConfiguration(nlohmann::json& js)
 
 void Gaussian::initialize()
 {
+ _range = gsl_rng_alloc (gsl_rng_default);
+ gsl_rng_set(_range, _seed);
  _aux = -0.5*gsl_sf_log(2*M_PI) - gsl_sf_log(_sigma);
- _hasDistribution = true;
 }
 
 double Gaussian::getDensity(double x)

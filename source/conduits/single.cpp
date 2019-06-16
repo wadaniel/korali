@@ -6,10 +6,11 @@ using namespace Korali::Conduit;
 /*                  Constructor / Destructor Methods                    */
 /************************************************************************/
 
-Single::Single(nlohmann::json& js) : Base::Base(js)
+Single::Single(nlohmann::json& js)
 {
  _name = "Single";
  setConfiguration(js);
+ _currentSample = 0;
 }
 
 Single::~Single()
@@ -23,7 +24,7 @@ Single::~Single()
 
 nlohmann::json Single::getConfiguration()
 {
- auto js = this->Base::getConfiguration();
+ auto js = nlohmann::json();
 
  js["Type"] = _name;
 
@@ -32,8 +33,6 @@ nlohmann::json Single::getConfiguration()
 
 void Single::setConfiguration(nlohmann::json& js)
 {
- this->Base::setConfiguration(js);
-
  int ranksPerTeam = consume(js, { "Ranks Per Team" }, KORALI_NUMBER, std::to_string(1));
  if (ranksPerTeam != 1)
  {
@@ -57,8 +56,8 @@ void Single::evaluateSample(double* sampleArray, size_t sampleId)
  Korali::ModelData data;
 
  int curVar = 0;
- for (int i = 0; i < _k->_problem->_computationalVariableCount; i++) data._computationalVariables.push_back(sampleArray[_k->_problem->N*sampleId + curVar++]);
- for (int i = 0; i < _k->_problem->_statisticalVariableCount;   i++) data._statisticalVariables.push_back(  sampleArray[_k->_problem->N*sampleId + curVar++]);
+ for (int i = 0; i < _k->_computationalVariableCount; i++) data._computationalVariables.push_back(sampleArray[_k->N*sampleId + curVar++]);
+ for (int i = 0; i < _k->_statisticalVariableCount;   i++) data._statisticalVariables.push_back(  sampleArray[_k->N*sampleId + curVar++]);
 
  data._hashId = _currentSample++;
 

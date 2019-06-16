@@ -149,9 +149,9 @@ class CMAES : public Base
  double _cv; /* learning rate in normal vector  update */
  double _cp; /* update rate global success estimate */
  
- bool isVia; /* true if mean violates constraints */
+ bool _isViabilityRegime; /* true if mean violates constraints */
  int bestValidIdx; /* best sample with wo constraint violation (otherwise -1) */
- double globalSucRate; /* estim. global success rate */ 
+ double _globalSucRate; /* estim. global success rate */
  double fviability; /* viability func value */
  size_t resampled; /* number of resampled parameters due constraint violation */
  size_t correctionsC; /* number of cov matrix adaptions */

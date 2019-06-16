@@ -6,15 +6,17 @@ using namespace Korali::Variable;
 /*                  Constructor / Destructor Methods                    */
 /************************************************************************/
 
-Gamma::Gamma(double shape, double scale, size_t seed) : Base::Base(seed)
+Gamma::Gamma(double shape, double scale, size_t seed)
 {
+ _seed = seed;
  _shape = shape;
  _scale = scale;
  initialize();
 }
 
-Gamma::Gamma(nlohmann::json& js, size_t seed) : Base::Base(js, seed)
+Gamma::Gamma(nlohmann::json& js, size_t seed)
 {
+ _seed = seed;
  setConfiguration(js);
  initialize();
 }
@@ -30,8 +32,9 @@ Gamma::~Gamma()
 
 nlohmann::json Gamma::getConfiguration()
 {
- auto js = this->Base::getConfiguration();
+ auto js = nlohmann::json();
 
+ js["Name"] = _name;
  js["Distribution"]["Type"] = "Gamma";
  js["Distribution"]["Scale"] = _scale;
  js["Distribution"]["Shape"] = _shape;
@@ -41,6 +44,7 @@ nlohmann::json Gamma::getConfiguration()
 
 void Gamma::setConfiguration(nlohmann::json& js)
 {
+ _name = consume(js, { "Name" }, KORALI_STRING);
  _scale  = consume(js, { "Distribution", "Scale" }, KORALI_NUMBER);
  _shape = consume(js, { "Distribution", "Shape" }, KORALI_NUMBER);
 }
@@ -51,8 +55,9 @@ void Gamma::setConfiguration(nlohmann::json& js)
 
 void Gamma::initialize()
 {
+ _range = gsl_rng_alloc (gsl_rng_default);
+ gsl_rng_set(_range, _seed);
  _aux = - gsl_sf_lngamma(_shape) - _shape*log(_scale);
- _hasDistribution = true;
 }
 
 double Gamma::getDensity(double x)

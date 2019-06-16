@@ -4,7 +4,7 @@
 /*                  Constructor / Destructor Methods                    */
 /************************************************************************/
 
-Korali::Problem::Direct::Direct(nlohmann::json& js) : Korali::Problem::Base::Base(js)
+Korali::Problem::Direct::Direct(nlohmann::json& js)
 {
  setConfiguration(js);
 }
@@ -20,7 +20,7 @@ Korali::Problem::Direct::~Direct()
 
 nlohmann::json Korali::Problem::Direct::getConfiguration()
 {
- auto js = this->Korali::Problem::Base::getConfiguration();
+ auto js = nlohmann::json();
 
  js["Evaluation Type"] = "Direct";
 
@@ -37,7 +37,6 @@ void Korali::Problem::Direct::setConfiguration(nlohmann::json& js)
 
 void Korali::Problem::Direct::initialize()
 {
-
  _isBayesian = false;
 
  if (_k->_modelDefined == false)
@@ -52,18 +51,12 @@ void Korali::Problem::Direct::initialize()
   exit(-1);
  }
 
- if (_statisticalVariableCount != 0)
+ if (_k->_statisticalVariableCount != 0)
  {
   fprintf(stderr, "[Korali] Error: Direct Evaluation type requires 0 statistical parameters.\n");
   exit(-1);
  }
 
- for (size_t i = 0; i < N; i++)
- if (_variables[i]->_hasDistribution == true)
- {
-  fprintf(stderr, "[Korali] Error: Variable %s has a defined distribution, not required by a Direct Evaluation Type.\n", _variables[i]->_name.c_str());
-  exit(-1);
- }
 }
 
 double Korali::Problem::Direct::evaluateFitness(Korali::ModelData& data)

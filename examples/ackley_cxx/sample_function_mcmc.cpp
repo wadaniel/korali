@@ -5,20 +5,18 @@ int main(int argc, char* argv[])
 {
  auto k = Korali::Engine();
 
- k["Problem"]["Evaluation Type"] = "Direct";
+ k["Problem"] = "Direct";
+ k["Solver"]  = "MCMC";
 
- k["Problem"]["Variables"][0]["Name"] = "X0";
- k["Problem"]["Variables"][1]["Name"] = "X1";
- k["Problem"]["Variables"][2]["Name"] = "X2";
- k["Problem"]["Variables"][3]["Name"] = "X3";
+ k["Variables"][0]["Name"] = "X0";
+ k["Variables"][1]["Name"] = "X1";
+ k["Variables"][2]["Name"] = "X2";
+ k["Variables"][3]["Name"] = "X3";
 
- k["Solver"]["Method"] = "MCMC";
- k["Solver"]["Population Size"] = 10000;
- k["Solver"]["Burn In"] = 500;
- k["Verbosity"] = "Detailed";
+ k["MCMC"]["Population Size"] = 10000;
+ k["MCMC"]["Burn In"] = 500;
 
  k.setModel([](Korali::ModelData& d) { m_ackley(d.getVariables(), d.getResults()); });
-
  k.run();
 
  return 0;

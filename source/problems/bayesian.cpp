@@ -4,7 +4,7 @@
 /*                  Constructor / Destructor Methods                    */
 /************************************************************************/
 
-Korali::Problem::Bayesian::Bayesian(nlohmann::json& js) : Korali::Problem::Base::Base(js)
+Korali::Problem::Bayesian::Bayesian(nlohmann::json& js)
 {
  setConfiguration(js);
 }
@@ -20,9 +20,12 @@ Korali::Problem::Bayesian::~Bayesian()
 
 nlohmann::json Korali::Problem::Bayesian::getConfiguration()
 {
- auto js = this->Korali::Problem::Base::getConfiguration();
+ auto js = nlohmann::json();
 
  js["Evaluation Type"] = "Bayesian";
+
+// if(_type == KORALI_COMPUTATIONAL) js["Type"] = "Computational";
+// if(_type == KORALI_STATISTICAL)   js["Type"] = "Statistical";
 
  for (size_t i = 0; i < _referenceDataSize; i++) js["Reference Data"][i] = _referenceData[i];
 
@@ -35,6 +38,10 @@ void Korali::Problem::Bayesian::setConfiguration(nlohmann::json& js)
  _referenceDataSize = ref.size();
  _referenceData = (double*) calloc (_referenceDataSize, sizeof(double));
  for (size_t i = 0; i < _referenceDataSize; i++) _referenceData[i] = ref[i];
+
+// auto typeString = consume(js, { "Type" }, KORALI_STRING, "Computational");
+// if (typeString == "Computational")  _type = KORALI_COMPUTATIONAL;
+// if (typeString == "Statistical")    _type = KORALI_STATISTICAL;
 
  if (_referenceDataSize == 0)
  {
@@ -49,6 +56,11 @@ void Korali::Problem::Bayesian::setConfiguration(nlohmann::json& js)
 
 void Korali::Problem::Bayesian::initialize()
 {
+// _statisticalVariableCount = 0;
+// _computationalVariableCount = 0;
+// for (size_t i = 0; i < tmp.size(); i++) if (tmp[i]->_type == KORALI_COMPUTATIONAL) { _variables.push_back(tmp[i]); _computationalVariableCount++; }
+// for (size_t i = 0; i < tmp.size(); i++) if (tmp[i]->_type == KORALI_STATISTICAL)   { _variables.push_back(tmp[i]); _statisticalVariableCount++; };
+// N = _variables.size();
 
  _isBayesian = true;
 
@@ -64,18 +76,12 @@ void Korali::Problem::Bayesian::initialize()
   exit(-1);
  }
 
- if (_statisticalVariableCount != 1)
+ if (_k->_statisticalVariableCount != 1)
  {
   fprintf(stderr, "[Korali] Error: The Bayesian model requires 1 statistical parameter.\n");
   exit(-1);
  }
 
- for (size_t i = 0; i < N; i++)
-  if (_variables[i]->_hasDistribution == false)
-  {
-   fprintf(stderr, "[Korali] Error: Variable %s has no defined distribution as required by a Bayesian model.\n", _variables[i]->_name.c_str());
-   exit(-1);
-  }
 }
 
 double Korali::Problem::Bayesian::evaluateFitness(Korali::ModelData& data)
@@ -98,6 +104,6 @@ double Korali::Problem::Bayesian::evaluateFitness(Korali::ModelData& data)
 double Korali::Problem::Bayesian::evaluateLogPrior(double* sample)
 {
  double logPrior = 0.0;
- for (size_t i = 0; i < N; i++) logPrior += _variables[i]->getLogDensity(sample[i]);
+ for (size_t i = 0; i < _k->N; i++) logPrior += _k->_variables[i]->getLogDensity(sample[i]);
  return logPrior;
 }

@@ -1,6 +1,10 @@
 #ifndef _KORALI_VARIABLE_EXPONENTIAL_H_
 #define _KORALI_VARIABLE_EXPONENTIAL_H_
 
+#include <gsl/gsl_rng.h>
+#include <gsl/gsl_randist.h>
+#include <gsl/gsl_math.h>
+#include <gsl/gsl_sf.h>
 #include "variables/base.h"
 
 namespace Korali { namespace Variable {
@@ -8,6 +12,8 @@ namespace Korali { namespace Variable {
 class Exponential : public Base
 {
  private:
+	size_t _seed;
+	gsl_rng* _range;
   double _loc;
   double _mean;
 

@@ -12,11 +12,12 @@ using namespace Korali::Conduit;
 /*                  Constructor / Destructor Methods                    */
 /************************************************************************/
 
-KoraliMPI::KoraliMPI(nlohmann::json& js) : Base::Base(js)
+KoraliMPI::KoraliMPI(nlohmann::json& js)
 {
  _name = "MPI";
  setConfiguration(js);
 
+ _currentSample = 0;
  _continueEvaluations = true;
 
  int isInitialized;
@@ -74,7 +75,7 @@ KoraliMPI::~KoraliMPI()
 
 nlohmann::json KoraliMPI::getConfiguration()
 {
- auto js = this->Base::getConfiguration();
+ auto js = nlohmann::json();
 
  js["Type"] = _name;
  js["Ranks Per Team"] = _ranksPerTeam;
@@ -117,8 +118,8 @@ void KoraliMPI::workerThread()
   MPI_Recv(&continueFlag, 1, MPI_INT, getRootRank(), MPI_TAG_CONTINUE, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
   if (continueFlag == 1)
   {
-   double sample[_k->_problem->N];
-   MPI_Recv(&sample, _k->_problem->N, MPI_DOUBLE, getRootRank(), MPI_TAG_SAMPLE, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+   double sample[_k->N];
+   MPI_Recv(&sample, _k->N, MPI_DOUBLE, getRootRank(), MPI_TAG_SAMPLE, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
    bool isLeader = (_localRankId == 0);
 
    Korali::ModelData data;
@@ -126,8 +127,8 @@ void KoraliMPI::workerThread()
    data._hashId = _rankId * 500000 + _currentSample++;
 
    int curVar = 0;
-   for (int i = 0; i < _k->_problem->_computationalVariableCount; i++) data._computationalVariables.push_back(sample[curVar++]);
-   for (int i = 0; i < _k->_problem->_statisticalVariableCount;   i++) data._statisticalVariables.push_back(sample[curVar++]);
+   for (int i = 0; i < _k->_computationalVariableCount; i++) data._computationalVariables.push_back(sample[curVar++]);
+   for (int i = 0; i < _k->_statisticalVariableCount;   i++) data._statisticalVariables.push_back(sample[curVar++]);
 
    _k->_model(data);
 
@@ -157,7 +158,7 @@ void KoraliMPI::evaluateSample(double* sampleArray, size_t sampleId)
   int workerId = _teamWorkers[teamId][i];
   int continueFlag = 1;
   MPI_Send(&continueFlag, 1, MPI_INT, workerId, MPI_TAG_CONTINUE, MPI_COMM_WORLD);
-  MPI_Send(&sampleArray[sampleId*_k->_problem->N],_k->_problem->N, MPI_DOUBLE, workerId, MPI_TAG_SAMPLE, MPI_COMM_WORLD);
+  MPI_Send(&sampleArray[sampleId*_k->N],_k->N, MPI_DOUBLE, workerId, MPI_TAG_SAMPLE, MPI_COMM_WORLD);
  }
 }
 

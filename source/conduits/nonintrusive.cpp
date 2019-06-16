@@ -7,10 +7,11 @@ using namespace Korali::Conduit;
 /*                  Constructor / Destructor Methods                    */
 /************************************************************************/
 
-Nonintrusive::Nonintrusive(nlohmann::json& js) : Base::Base(js)
+Nonintrusive::Nonintrusive(nlohmann::json& js)
 {
  _name = "Nonintrusive";
  setConfiguration(js);
+ _currentSample = 0;
 }
 
 Nonintrusive::~Nonintrusive()
@@ -24,7 +25,7 @@ Nonintrusive::~Nonintrusive()
 
 nlohmann::json Nonintrusive::getConfiguration()
 {
- auto js = this->Base::getConfiguration();
+ auto js = nlohmann::json();
 
  js["Type"] = _name;
 
@@ -33,8 +34,6 @@ nlohmann::json Nonintrusive::getConfiguration()
 
 void Nonintrusive::setConfiguration(nlohmann::json& js)
 {
- this->Base::setConfiguration(js);
-
  _concurrentJobs = consume(js, { "Concurrent Jobs" }, KORALI_NUMBER, std::to_string(1));
  if (_concurrentJobs < 1)
  {
@@ -49,7 +48,6 @@ void Nonintrusive::setConfiguration(nlohmann::json& js)
 
 void Nonintrusive::run()
 {
-
  _pipeDescriptors = (int**) calloc(_concurrentJobs, sizeof(int*));
  for (int i = 0; i < _concurrentJobs; i++) _pipeDescriptors[i] = (int*) calloc(2, sizeof(int));
 
@@ -63,8 +61,8 @@ void Nonintrusive::evaluateSample(double* sampleArray, size_t sampleId)
  Korali::ModelData data;
 
  int curVar = 0;
- for (int i = 0; i < _k->_problem->_computationalVariableCount; i++) data._computationalVariables.push_back(sampleArray[_k->_problem->N*sampleId + curVar++]);
- for (int i = 0; i < _k->_problem->_statisticalVariableCount;   i++) data._statisticalVariables.push_back(  sampleArray[_k->_problem->N*sampleId + curVar++]);
+ for (int i = 0; i < _k->_computationalVariableCount; i++) data._computationalVariables.push_back(sampleArray[_k->N*sampleId + curVar++]);
+ for (int i = 0; i < _k->_statisticalVariableCount;   i++) data._statisticalVariables.push_back(  sampleArray[_k->N*sampleId + curVar++]);
 
  data._hashId = _currentSample++;
 

@@ -43,7 +43,7 @@ function log ()
 # Exit with error message.
 function exitWithError ()
 {
- echo "[Korali] Installation Error: Check $PWD/$logFile for more information." >> $logFile
+ >&2 echo "[Korali] Installation Error: Check $logFile for more information."
  exit -1
 }
 
@@ -307,7 +307,6 @@ logEcho "[Korali] Compiling Korali..."
 make -j24 -C source >> install.log 2>&1
 if [ $? -ne 0 ]; then
   logEcho "[Korali] Error compiling Korali."
-  logEcho "[Korali] Check $logFile for further information."
   exitWithError
 fi
 
@@ -318,7 +317,6 @@ pip3 install . --user --upgrade >> install.log 2>&1
 
 if [ $? -ne 0 ]; then
   logEcho "[Korali] Error installing Korali's Python module."
-  logEcho "[Korali] Check $logFile for further information."
   exitWithError
 fi
 

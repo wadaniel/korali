@@ -4,7 +4,7 @@
 /*                  Constructor / Destructor Methods                    */
 /************************************************************************/
 
-Korali::Problem::DirectBayesian::DirectBayesian(nlohmann::json& js) : Korali::Problem::Base::Base(js)
+Korali::Problem::DirectBayesian::DirectBayesian(nlohmann::json& js)
 {
  setConfiguration(js);
 }
@@ -20,7 +20,7 @@ Korali::Problem::DirectBayesian::~DirectBayesian()
 
 nlohmann::json Korali::Problem::DirectBayesian::getConfiguration()
 {
- auto js = this->Korali::Problem::Base::getConfiguration();
+ auto js = nlohmann::json();
 
  js["Evaluation Type"] = "Direct Bayesian";
 
@@ -37,7 +37,6 @@ void Korali::Problem::DirectBayesian::setConfiguration(nlohmann::json& js)
 
 void Korali::Problem::DirectBayesian::initialize()
 {
-
  _isBayesian = true;
 
  if (_k->_likelihoodDefined == false)
@@ -52,18 +51,12 @@ void Korali::Problem::DirectBayesian::initialize()
   exit(-1);
  }
 
- if (_statisticalVariableCount != 0)
+ if (_k->_statisticalVariableCount != 0)
  {
   fprintf(stderr, "[Korali] Error: Direct Bayesian Evaluation type requires 0 statistical parameters.\n");
   exit(-1);
  }
 
- for (size_t i = 0; i < N; i++)
- if (_variables[i]->_hasDistribution == false)
- {
-  fprintf(stderr, "[Korali] Error: Variable %s has no defined distribution as required by a Bayesian model.\n", _variables[i]->_name.c_str());
-  exit(-1);
- }
 }
 
 double Korali::Problem::DirectBayesian::evaluateFitness(Korali::ModelData& data)
@@ -82,6 +75,6 @@ double Korali::Problem::DirectBayesian::evaluateFitness(Korali::ModelData& data)
 double Korali::Problem::DirectBayesian::evaluateLogPrior(double* sample)
 {
  double logPrior = 0.0;
- for (size_t i = 0; i < N; i++) logPrior += _variables[i]->getLogDensity(sample[i]);
+ for (size_t i = 0; i < _k->N; i++) logPrior += _k->_variables[i]->getLogDensity(sample[i]);
  return logPrior;
 }

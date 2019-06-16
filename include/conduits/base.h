@@ -21,13 +21,9 @@ class Base {
  std::string _name;
  size_t _currentSample;
 
- // Constructor / Destructor
- Base(nlohmann::json& js);
- ~Base();
-
  // Serialization Methods
- virtual nlohmann::json getConfiguration();
- virtual void setConfiguration(nlohmann::json& js);
+ virtual nlohmann::json getConfiguration() = 0;
+ virtual void setConfiguration(nlohmann::json& js) = 0;
 };
 
 class Conduit;

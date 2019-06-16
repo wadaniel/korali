@@ -6,17 +6,18 @@ using namespace Korali::Variable;
 /*                  Constructor / Destructor Methods                    */
 /************************************************************************/
 
-Exponential::Exponential(double mean, double loc, size_t seed) : Base::Base(seed)
+Exponential::Exponential(double mean, double loc, size_t seed)
 {
+ _seed = seed;
  _loc = loc;
  _mean = mean;
  initialize();
 }
 
-Exponential::Exponential(nlohmann::json& js, size_t seed) : Base::Base(js, seed)
+Exponential::Exponential(nlohmann::json& js, size_t seed)
 {
+ _seed = seed;
  setConfiguration(js);
- _hasDistribution = true;
  initialize();
 }
 
@@ -31,8 +32,9 @@ Exponential::~Exponential()
 
 nlohmann::json Exponential::getConfiguration()
 {
- auto js = this->Base::getConfiguration();
+ auto js = nlohmann::json();
 
+ js["Name"] = _name;
  js["Distribution"]["Distribution"] = "Exponential";
  js["Distribution"]["Location"] = _loc;
  js["Distribution"]["Mean"] = _mean;
@@ -42,6 +44,7 @@ nlohmann::json Exponential::getConfiguration()
 
 void Exponential::setConfiguration(nlohmann::json& js)
 {
+ _name = consume(js, { "Name" }, KORALI_STRING);
  _mean = consume(js, { "Distribution", "Mean" }, KORALI_NUMBER);
  _loc  = consume(js, { "Distribution", "Location" }, KORALI_NUMBER);
 }
@@ -52,7 +55,8 @@ void Exponential::setConfiguration(nlohmann::json& js)
 
 void Exponential::initialize()
 {
- _hasDistribution = true;
+ _range = gsl_rng_alloc (gsl_rng_default);
+ gsl_rng_set(_range, _seed);
 }
 
 double Exponential::getDensity(double x)

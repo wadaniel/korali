@@ -13,6 +13,7 @@
 #include "problems/bayesian.h"
 #include "problems/directbayesian.h"
 
+#include "variables/default.h"
 #include "variables/exponential.h"
 #include "variables/gamma.h"
 #include "variables/gaussian.h"
@@ -54,6 +55,11 @@ class Engine {
  std::function<void(ModelData&)> _model;
  std::vector<fcon> _fconstraints;
 
+ size_t N; // Variable Count size_t N; // Variable Count
+ size_t _statisticalVariableCount;
+ size_t _computationalVariableCount;
+
+ std::vector<Korali::Variable::Base*> _variables;
  Korali::Conduit::Base* _conduit;
  Korali::Problem::Base* _problem;
  Korali::Solver::Base*  _solver;

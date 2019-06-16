@@ -15,10 +15,6 @@ class Base {
  std::chrono::time_point<std::chrono::system_clock> startTime, endTime;
  std::chrono::time_point<std::chrono::system_clock> t0, t1, t2, t3;
 
- // Constructor / Destructor
- Base(nlohmann::json& js);
- ~Base();
-
  std::string _name;
 
  // Running Methods
@@ -26,9 +22,9 @@ class Base {
  virtual void processSample(size_t sampleId, double fitness) = 0;
 
  // Serialization Methods
- virtual nlohmann::json getConfiguration();
- virtual void setConfiguration(nlohmann::json& js);
- virtual void setState(nlohmann::json& js);
+ virtual nlohmann::json getConfiguration() = 0;
+ virtual void setConfiguration(nlohmann::json& js) = 0;
+ virtual void setState(nlohmann::json& js) = 0;
 };
 
 } } // namespace Korali::Solver

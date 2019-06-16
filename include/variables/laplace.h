@@ -1,6 +1,10 @@
 #ifndef _KORALI_VARIABLE_LAPLACE_H_
 #define _KORALI_VARIABLE_LAPLACE_H_
 
+#include <gsl/gsl_rng.h>
+#include <gsl/gsl_randist.h>
+#include <gsl/gsl_math.h>
+#include <gsl/gsl_sf.h>
 #include "variables/base.h"
 
 namespace Korali { namespace Variable {
@@ -8,6 +12,8 @@ namespace Korali { namespace Variable {
 class Laplace : public Base
 {
  private:
+	size_t _seed;
+  gsl_rng* _range;
   double _mean;
   double _width;
   double _aux;

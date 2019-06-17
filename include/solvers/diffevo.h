@@ -21,6 +21,9 @@ class DE : public Base
  double* _upperBounds;
  double* _initialMeans;
  double* _initialStdDevs;
+ bool* _initialMeanDefined;
+ bool* _initialStdDevDefined;
+ bool* _variableLogSpace;
 
  // Runtime Methods (to be inherited from base class in the future)
  void prepareGeneration();
@@ -41,9 +44,11 @@ class DE : public Base
  std::string _objective; /* Maximize or Minimize */ 
  double* _fitnessVector; /* objective function values [_s] */
  double* _samplePopulation; /* sample coordinates [_s x _k->N] */
- size_t _currentGeneration; /* generation count */
+ size_t currentGeneration; /* generation count */
  bool* _initializedSample; /* flag to distribute work */
  char _terminationReason[500]; /* buffer for exit reason */
+ Variable::Gaussian* _gaussianGenerator;
+ Variable::Uniform* _uniformGenerator;
 
  size_t _finishedSamples; /* counter of evaluated samples to terminate evaluation */
  size_t _s; /* number of samples per generation */
@@ -53,16 +58,15 @@ class DE : public Base
  size_t _termCondMaxFitnessEvaluations;   // Defines maximum number of fitness evaluations
  double _termCondFitness; // Defines the maximum fitness allowed, otherwise it stops
  double _termCondFitnessDiffThreshold; // Defines minimum function value differences before stopping
- double _termCondMinDeltaX; // Defines minimum delta of input parameters among generations before it stops.
- double _termCondTolUpXFactor; // Defines the minimum fitness allowed, otherwise it stops //TODO: check again what it is in CMAES(DW)
  bool _isTermCondMaxGenerations, _isTermCondMaxFitnessEvaluations, _isTermCondFitness,
-      _isTermCondFitnessDiffThreshold, _isTermCondMinDeltaX; // flgs to activate termination criteria
+      _isTermCondFitnessDiffThreshold; // flgs to activate termination criteria
 
  // Private DE-Specific Variables
  //Variable::Gaussian* _gaussianGenerator;
  double bestEver; /* best ever fitness */
  double prevBest; /* best ever fitness from previous generation */
  double *rgxmean; /* mean "parent" */
+ double *rgxold; /* mean "parent" previous generation */
  double *rgxbestever; /* bestever vector */
  double *curBestVector; /* current best vector */
  double currentFunctionValue; /* best fitness current generation */
@@ -71,13 +75,12 @@ class DE : public Base
  double *histFuncValues; /* holding historical best function values */
 
  size_t countevals; /* Number of function evaluations */
- size_t countinfeasible; /* Number of samples outside of domain given by bounds */
 
 
  // Private DE-Specific Methods
- void sampleSingle(size_t sampleIdx); /* sample individual */
+ void mutateSingle(size_t sampleIdx); /* sample individual */
+ void updateSolver(const double *fitnessVector); /* update states of DE */
  void evaluateSamples(); /* evaluate all samples until done */
- bool isFeasible(size_t sampleIdx) const; /* check if sample inside lower & upper bounds */
 
  // Private DE-ES-Specific Variables 
  double _crossoverRate;

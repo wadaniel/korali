@@ -178,6 +178,7 @@ nlohmann::json CMAES::getConfiguration()
   js["Variables"][i]["CMA-ES"]["Initial Mean"]  = _initialMeans[i];
   js["Variables"][i]["CMA-ES"]["Initial Standard Deviation"] = _initialStdDevs[i];
   js["Variables"][i]["CMA-ES"]["Minimum Standard Deviation Changes"]  = _minStdDevChanges[i];
+  js["Variables"][i]["CMA-ES"]["Log Space"]  = _variableLogSpace[i];
  }
 
  js["CMA-ES"]["Termination Criteria"]["Max Generations"]["Value"]           = _termCondMaxGenerations;
@@ -312,11 +313,11 @@ void CMAES::setConfiguration(nlohmann::json& js)
   if (lowerBoundDefined && upperBoundDefined)
   {
    if (initialMeanDefined   == false) _initialMeans[i]   = (_upperBounds[i] + _lowerBounds[i]) * 0.5;
-   if (initialStdDevDefined == false) _initialStdDevs[i] = (_upperBounds[i] - _lowerBounds[i]) * 0.05;
+   if (initialStdDevDefined == false) _initialStdDevs[i] = (_upperBounds[i] - _lowerBounds[i]) * 0.30;
   }
 
-  if (initialMeanDefined)   _initialMeans[i]   = consume(js["Variables"][i], { "CMA-ES", "Initial Mean" }, KORALI_NUMBER);
-  if (initialStdDevDefined) _initialStdDevs[i] = consume(js["Variables"][i], { "CMA-ES", "Initial Standard Deviation" }, KORALI_NUMBER);
+  if (initialMeanDefined)   _initialMeans[i] = consume(js["Variables"][i], { "CMA-ES", "Initial Mean" }, KORALI_NUMBER);
+  if (initialStdDevDefined) _initialMeans[i] = consume(js["Variables"][i], { "CMA-ES", "Initial Standard Deviation" }, KORALI_NUMBER);
 
   _variableLogSpace[i] = consume(js["Variables"][i], { "CMA-ES", "Log Space" }, KORALI_BOOLEAN, "false");
   _minStdDevChanges[i] = consume(js["Variables"][i], { "CMA-ES", "Minimum Standard Deviation Changes" }, KORALI_NUMBER, std::to_string(0));
@@ -418,7 +419,7 @@ void CMAES::initInternals(size_t numsamplesmu)
   if (_upperBounds[i] <= _lowerBounds[i])
   { fprintf( stderr, "[Korali] %s Error: Invalid Lower (%f) - Upper (%f) bounds range defined for variable %d.\n", _name.c_str(), _lowerBounds[i], _upperBounds[i], i); exit(-1); }
 
-  if (_initialStdDevs[i] <= 0.0) { fprintf(stderr, "[Korali] %s Error: Initial StdDev for variable %d is less or equal than 0 (%f).\n", _name.c_str(), i, _initialStdDevs[i]);  exit(-1); }
+  if (_initialStdDevs[i] <= 0.0) { fprintf(stderr, "[Korali] %s Error: Initial StdDev for variable %d is less or equal 0.\n", _name.c_str(), i);  exit(-1); }
  }
 
  // Initializing Mu Weights

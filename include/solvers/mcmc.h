@@ -17,6 +17,7 @@ class MCMC : public Base
  // MCMC Configuration
  unsigned int _s; /* Population Size */
  size_t _burnin; /* burn in generations */
+ size_t _rejectionLevels; /* delayed rejection if > 1*/
  bool _adaptive; /* Using chain covariance for proposal */
  size_t _nonAdaptionPeriod; /* Period without Chain Cov Adaption (using initial Stddev) */
  double _cr; /* Learning rate or Chain Covariance */
@@ -36,8 +37,8 @@ class MCMC : public Base
  double* clPoint; /* Leader parameter values */
  double clLogLikelihood; /* Leader fitness value */
  double* ccPoint; /*  Candidate parameter values */
- double ccLogLikelihood; /* Candidate fitness value */
- double ccLogPrior; /* Candidate prior value */
+ double* ccLogLikelihood; /* Candidate fitness value */
+ double* ccLogPrior; /* Candidate prior value */
  double acceptanceRateProposals; /* Ratio proposed to accepted Samples */
  size_t naccept; /* Number of accepted samples */
  size_t countgens; /* Number of proposed samples */

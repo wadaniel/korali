@@ -5,6 +5,8 @@
 
 namespace Korali { namespace Problem {
 
+enum likelihoodType {DirectLikelihood, ReferenceLikelihood};
+
 class Bayesian : public Base
 {
  public:
@@ -13,6 +15,7 @@ class Bayesian : public Base
  double* _referenceData;
  double* fitnessArrayPointer;
  size_t _referenceDataSize;
+ likelihoodType _likelihood;
 
  std::vector<size_t> _computationalVariableIndices;
  std::vector<size_t> _statisticalVariableIndices;

@@ -133,8 +133,8 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
   if (dString == "Uniform")     { _variables.push_back(new Korali::Variable::Uniform(js["Variables"][i], _k->_seed++));     foundDistribution = true; }
   if (dString == "Gaussian")    { _variables.push_back(new Korali::Variable::Gaussian(js["Variables"][i], _k->_seed++));    foundDistribution = true; }
   if (dString == "Gamma")       { _variables.push_back(new Korali::Variable::Gamma(js["Variables"][i], _k->_seed++));       foundDistribution = true; }
- 	if (dString == "Exponential") { _variables.push_back(new Korali::Variable::Exponential(js["Variables"][i], _k->_seed++)); foundDistribution = true; }
- 	if (foundDistribution == false) { fprintf(stderr, "[Korali] Error: Incorrect or missing distribution for parameter %lu.\n", i); exit(-1); }
+  if (dString == "Exponential") { _variables.push_back(new Korali::Variable::Exponential(js["Variables"][i], _k->_seed++)); foundDistribution = true; }
+  if (foundDistribution == false) { fprintf(stderr, "[Korali] Error: Incorrect or missing distribution for parameter %lu.\n", i); exit(-1); }
  }
 
  N = _variables.size();
@@ -144,7 +144,6 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
  _problem = nullptr;
  std::string pName = consume(js, { "Problem" }, KORALI_STRING);
  if (pName == "Direct")   { _problem = new Korali::Problem::Direct(js); }
- if (pName == "Direct Bayesian") { _problem = new Korali::Problem::DirectBayesian(js); }
  if (pName == "Bayesian") { _problem = new Korali::Problem::Bayesian(js); }
  if (_problem == nullptr) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Problem '%s'.", pName.c_str()); exit(-1); }
  // Configure Conduit
@@ -152,7 +151,7 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
  int rankCount = 1;
 
  _conduit = nullptr;
- std::string conduitType =  consume(js, { "Conduit", "Type" }, KORALI_STRING, "Single");
+ std::string conduitType =  consume(js, { "Conduit" }, KORALI_STRING, "Single");
  if (conduitType == "Single") _conduit = new Korali::Conduit::Single(js["Conduit"]);
  #ifdef _KORALI_USE_MPI
  if (conduitType == "MPI") _conduit = new Korali::Conduit::KoraliMPI(js["Conduit"]);

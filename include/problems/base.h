@@ -11,6 +11,7 @@ class Base
 {
  public:
 
+ virtual void packVariables(double* sample, Korali::ModelData& data) = 0;
  virtual double evaluateFitness(Korali::ModelData& data) = 0;
  virtual double evaluateLogPrior(double* sample) = 0;
 

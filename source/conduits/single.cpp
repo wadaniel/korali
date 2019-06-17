@@ -55,9 +55,7 @@ void Single::evaluateSample(double* sampleArray, size_t sampleId)
 {
  Korali::ModelData data;
 
- int curVar = 0;
-// for (int i = 0; i < _k->_computationalVariableCount; i++) data._computationalVariables.push_back(sampleArray[_k->N*sampleId + curVar++]);
-// for (int i = 0; i < _k->_statisticalVariableCount;   i++) data._statisticalVariables.push_back(  sampleArray[_k->N*sampleId + curVar++]);
+ _k->_problem->packVariables(&sampleArray[_k->N*sampleId], data);
 
  data._hashId = _currentSample++;
 

@@ -39,14 +39,11 @@ void Korali::Problem::Bayesian::setConfiguration(nlohmann::json& js)
  _referenceData = (double*) calloc (_referenceDataSize, sizeof(double));
  for (size_t i = 0; i < _referenceDataSize; i++) _referenceData[i] = ref[i];
 
-// auto typeString = consume(js, { "Type" }, KORALI_STRING, "Computational");
-// if (typeString == "Computational")  _type = KORALI_COMPUTATIONAL;
-// if (typeString == "Statistical")    _type = KORALI_STATISTICAL;
-
- if (_referenceDataSize == 0)
+ for (size_t i = 0; i < _k->N; i++ )
  {
-  fprintf(stderr, "[Korali] Error: No Reference Data set provided for the Bayesian Model.\n");
-  exit(-1);
+  auto typeString = consume(js["Variables"][i], { "Type" }, KORALI_STRING, "Computational");
+  if (typeString == "Computational") _computationalVariableIndices.push_back(i);
+  if (typeString == "Statistical")   _statisticalVariableIndices.push_back(i);
  }
 }
 
@@ -56,13 +53,13 @@ void Korali::Problem::Bayesian::setConfiguration(nlohmann::json& js)
 
 void Korali::Problem::Bayesian::initialize()
 {
-// _statisticalVariableCount = 0;
-// _computationalVariableCount = 0;
-// for (size_t i = 0; i < tmp.size(); i++) if (tmp[i]->_type == KORALI_COMPUTATIONAL) { _variables.push_back(tmp[i]); _computationalVariableCount++; }
-// for (size_t i = 0; i < tmp.size(); i++) if (tmp[i]->_type == KORALI_STATISTICAL)   { _variables.push_back(tmp[i]); _statisticalVariableCount++; };
-// N = _variables.size();
-
  _isBayesian = true;
+
+ if (_referenceDataSize == 0)
+ {
+  fprintf(stderr, "[Korali] Error: No Reference Data set provided for the Bayesian Model.\n");
+  exit(-1);
+ }
 
  if (_k->_modelDefined == false)
  {
@@ -76,12 +73,17 @@ void Korali::Problem::Bayesian::initialize()
   exit(-1);
  }
 
-// if (_k->_statisticalVariableCount != 1)
-// {
-//  fprintf(stderr, "[Korali] Error: The Bayesian model requires 1 statistical parameter.\n");
-//  exit(-1);
-// }
+ if (_statisticalVariableIndices.size() != 1)
+ {
+  fprintf(stderr, "[Korali] Error: The Bayesian model requires 1 statistical parameter.\n");
+  exit(-1);
+ }
+}
 
+void Korali::Problem::Bayesian::packVariables(double* sample, Korali::ModelData& data)
+{
+ for (size_t i = 0; i < _computationalVariableIndices.size(); i++) data._computationalVariables.push_back(sample[_computationalVariableIndices[i]]);
+ for (size_t i = 0; i < _statisticalVariableIndices.size();   i++) data._statisticalVariables.push_back(sample[_statisticalVariableIndices[i]]);
 }
 
 double Korali::Problem::Bayesian::evaluateFitness(Korali::ModelData& data)

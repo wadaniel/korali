@@ -29,6 +29,17 @@ nlohmann::json Korali::Problem::DirectBayesian::getConfiguration()
 
 void Korali::Problem::DirectBayesian::setConfiguration(nlohmann::json& js)
 {
+ auto ref = consume(js, { "Reference Data" }, KORALI_ARRAY);
+ _referenceDataSize = ref.size();
+ _referenceData = (double*) calloc (_referenceDataSize, sizeof(double));
+ for (size_t i = 0; i < _referenceDataSize; i++) _referenceData[i] = ref[i];
+
+ for (size_t i = 0; i < _k->N; i++ )
+ {
+  auto typeString = consume(js["Variables"][i], { "Type" }, KORALI_STRING, "Computational");
+  if (typeString == "Computational") _computationalVariableIndices.push_back(i);
+  if (typeString == "Statistical")   _statisticalVariableIndices.push_back(i);
+ }
 }
 
 /************************************************************************/
@@ -38,6 +49,12 @@ void Korali::Problem::DirectBayesian::setConfiguration(nlohmann::json& js)
 void Korali::Problem::DirectBayesian::initialize()
 {
  _isBayesian = true;
+
+ if (_referenceDataSize != 0)
+ {
+  fprintf(stderr, "[Korali] Error: Reference Data is not required by the Direct Bayesian model.\n");
+  exit(-1);
+ }
 
  if (_k->_likelihoodDefined == false)
  {
@@ -51,12 +68,16 @@ void Korali::Problem::DirectBayesian::initialize()
   exit(-1);
  }
 
-// if (_k->_statisticalVariableCount != 0)
-// {
-//  fprintf(stderr, "[Korali] Error: Direct Bayesian Evaluation type requires 0 statistical parameters.\n");
-//  exit(-1);
-// }
+ if (_statisticalVariableIndices.size() != 0)
+ {
+  fprintf(stderr, "[Korali] Error: Direct Bayesian Evaluation type requires no statistical parameters.\n");
+  exit(-1);
+ }
+}
 
+void Korali::Problem::DirectBayesian::packVariables(double* sample, Korali::ModelData& data)
+{
+ for (size_t i = 0; i < _computationalVariableIndices.size(); i++) data._computationalVariables.push_back(sample[i]);
 }
 
 double Korali::Problem::DirectBayesian::evaluateFitness(Korali::ModelData& data)

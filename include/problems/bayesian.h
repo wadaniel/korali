@@ -12,10 +12,12 @@ class Bayesian : public Base
  // Reference Data
  double* _referenceData;
  double* fitnessArrayPointer;
-
- size_t _sigmaPosition;
  size_t _referenceDataSize;
 
+ std::vector<size_t> _computationalVariableIndices;
+ std::vector<size_t> _statisticalVariableIndices;
+
+ void packVariables(double* sample, Korali::ModelData& data) override;
  double evaluateFitness(Korali::ModelData& data) override;
  double evaluateLogPrior(double* sample) override;
 

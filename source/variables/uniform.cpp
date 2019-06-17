@@ -35,9 +35,9 @@ nlohmann::json Uniform::getConfiguration()
  auto js = nlohmann::json();
 
  js["Name"] = _name;
- js["Distribution"]["Type"] = "Uniform";
- js["Distribution"]["Minimum"] = _minimum;
- js["Distribution"]["Maximum"] = _maximum;
+ js["Bayesian"]["Prior Distribution"]["Type"] = "Uniform";
+ js["Bayesian"]["Prior Distribution"]["Minimum"] = _minimum;
+ js["Bayesian"]["Prior Distribution"]["Maximum"] = _maximum;
 
  return js;
 }
@@ -45,8 +45,8 @@ nlohmann::json Uniform::getConfiguration()
 void Uniform::setConfiguration(nlohmann::json& js)
 {
  _name = consume(js, { "Name" }, KORALI_STRING);
- _minimum = consume(js, { "Distribution", "Minimum" }, KORALI_NUMBER);
- _maximum = consume(js, { "Distribution", "Maximum" }, KORALI_NUMBER);
+ _minimum = consume(js, { "Bayesian", "Prior Distribution", "Minimum" }, KORALI_NUMBER);
+ _maximum = consume(js, { "Bayesian", "Prior Distribution", "Maximum" }, KORALI_NUMBER);
 }
 
 /************************************************************************/

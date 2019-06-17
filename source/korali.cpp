@@ -127,7 +127,7 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
  if (isArray(js, { "Variables" } ))
  for (size_t i = 0; i < js["Variables"].size(); i++)
  {
-  auto dString = consume(js["Variables"][i], { "Distribution", "Type" }, KORALI_STRING, "Default");
+  auto dString = consume(js["Variables"][i], { "Bayesian", "Prior Distribution", "Type" }, KORALI_STRING, "Default");
   bool foundDistribution = false;
   if (dString == "Default")     { _variables.push_back(new Korali::Variable::Default(js["Variables"][i]));                  foundDistribution = true; }
   if (dString == "Uniform")     { _variables.push_back(new Korali::Variable::Uniform(js["Variables"][i], _k->_seed++));     foundDistribution = true; }

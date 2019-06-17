@@ -22,7 +22,7 @@ nlohmann::json Korali::Problem::Bayesian::getConfiguration()
 {
  auto js = nlohmann::json();
 
- js["Evaluation Type"] = "Bayesian";
+ js["Problem"] = "Bayesian";
 
  for (size_t i = 0; i < _referenceDataSize; i++) js["Reference Data"][i] = _referenceData[i];
 
@@ -32,19 +32,19 @@ nlohmann::json Korali::Problem::Bayesian::getConfiguration()
 void Korali::Problem::Bayesian::setConfiguration(nlohmann::json& js)
 {
  bool foundLikelihoodType = false;
- std::string likelihoodString = consume(js, { "Likelihood", "Type" }, KORALI_STRING, "Undefined");
+ std::string likelihoodString = consume(js, { "Bayesian", "Likelihood", "Type" }, KORALI_STRING, "Undefined");
  if (likelihoodString == "Direct")    { _likelihood = DirectLikelihood;    foundLikelihoodType = true; }
  if (likelihoodString == "Reference") { _likelihood = ReferenceLikelihood; foundLikelihoodType = true; }
  if (foundLikelihoodType == false) { fprintf(stderr, "[Korali] Error: Incorrect or no Likelihood Type selected: %s.\n", likelihoodString.c_str()); exit(-1); }
 
- auto ref = consume(js, { "Likelihood", "Reference Data" }, KORALI_ARRAY);
+ auto ref = consume(js, { "Bayesian", "Likelihood", "Reference Data" }, KORALI_ARRAY);
  _referenceDataSize = ref.size();
  _referenceData = (double*) calloc (_referenceDataSize, sizeof(double));
  for (size_t i = 0; i < _referenceDataSize; i++) _referenceData[i] = ref[i];
 
  for (size_t i = 0; i < _k->N; i++ )
  {
-  auto typeString = consume(js["Variables"][i], { "Type" }, KORALI_STRING, "Computational");
+  auto typeString = consume(js["Variables"][i], { "Bayesian", "Type" }, KORALI_STRING, "Computational");
   if (typeString == "Computational") _computationalVariableIndices.push_back(i);
   if (typeString == "Statistical")   _statisticalVariableIndices.push_back(i);
  }

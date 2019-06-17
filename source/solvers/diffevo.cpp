@@ -17,7 +17,8 @@ DE::DE(nlohmann::json& js, std::string name)
  setConfiguration(js);
 
  // Allocating Memory
- _samplePopulation =  (double*) calloc (sizeof(double), _k->N*_s);
+ samplePopulation =  (double*) calloc (sizeof(double), _k->N*_s);
+ candidates       = (double*) calloc (sizeof(double), _k->N*_s);
 
  rgxmean        = (double*) calloc (sizeof(double), _k->N);
  rgxold         = (double*) calloc (sizeof(double), _k->N);
@@ -111,7 +112,8 @@ nlohmann::json DE::getConfiguration()
  for (size_t i = 0; i < _k->N; i++) js["DE"]["State"]["BestEverVector"]     += rgxbestever[i];
  for (size_t i = 0; i < _k->N; i++) js["DE"]["State"]["CurrentBestVector"]  += curBestVector[i];
 
- for (size_t i = 0; i < _s; i++) for (size_t j = 0; j < _k->N; j++) js["DE"]["State"]["Samples"][i][j] = _samplePopulation[i*_k->N + j];
+ for (size_t i = 0; i < _s; i++) for (size_t j = 0; j < _k->N; j++) js["DE"]["State"]["Samples"][i][j] = samplePopulation[i*_k->N + j];
+ for (size_t i = 0; i < _s; i++) for (size_t j = 0; j < _k->N; j++) js["DE"]["State"]["Candidates"][i][j] = candidates[i*_k->N + j];
 
  return js;
 }
@@ -124,8 +126,9 @@ void DE::setConfiguration(nlohmann::json& js)
  _crossoverRate                 = consume(js, { "DE", "Crossover Rate" }, KORALI_NUMBER);
  _mutationRate                  = consume(js, { "DE", "Mutation Rate" }, KORALI_NUMBER);
  _objective                     = consume(js, { "DE", "Objective" }, KORALI_STRING, "Maximize");
- if(_crossoverRate <= 0.0 || _crossoverRate >= 1.0 )  { fprintf( stderr, "[Korali] %s Error: Invalid Crossover Rate, must be in (0,1) is %f\n", _name.c_str(), _crossoverRate); exit(-1); }
- if(_mutationRate < 0.0 || _mutationRate > 2.0 )  { fprintf( stderr, "[Korali] %s Error: Invalid Mutation Rate, must be in [0,2] is %f\n", _name.c_str(), _mutationRate); exit(-1); }
+ if(_s < 3)  { fprintf( stderr, "[Korali] %s Error: Sample Count must be larger 3 (is %zu)\n", _name.c_str(), _s); exit(-1); }
+ if(_crossoverRate <= 0.0 || _crossoverRate >= 1.0 )  { fprintf( stderr, "[Korali] %s Error: Invalid Crossover Rate, must be in (0,1) (is %f)\n", _name.c_str(), _crossoverRate); exit(-1); }
+ if(_mutationRate < 0.0 || _mutationRate > 2.0 )  { fprintf( stderr, "[Korali] %s Error: Invalid Mutation Rate, must be in [0,2] (is %f)\n", _name.c_str(), _mutationRate); exit(-1); }
  
  _fitnessSign   = 0;
  if(_objective == "Maximize") _fitnessSign = 1;
@@ -183,7 +186,8 @@ void DE::setState(nlohmann::json& js)
  for (size_t i = 0; i < _k->N; i++) rgxold[i]        = js["DE"]["State"]["PreviousMeanVector"][i];
  for (size_t i = 0; i < _k->N; i++) rgxbestever[i]   = js["DE"]["State"]["BestEverVector"][i];
  for (size_t i = 0; i < _s; i++) _fitnessVector[i]   = js["DE"]["State"]["FunctionValues"][i];
- for (size_t i = 0; i < _s; i++) for (size_t j = 0; j < _k->N; j++) _samplePopulation[i*_k->N + j] = js["DE"]["State"]["Samples"][i][j];
+ for (size_t i = 0; i < _s; i++) for (size_t j = 0; j < _k->N; j++) samplePopulation[i*_k->N + j] = js["DE"]["State"]["Samples"][i][j];
+ for (size_t i = 0; i < _s; i++) for (size_t j = 0; j < _k->N; j++) candidates[i*_k->N + j] = js["DE"]["State"]["Candidates"][i][j];
 }
 
 
@@ -198,8 +202,9 @@ void DE::run()
    printf("[Korali] Starting %s (Objective: %s).\n", _name.c_str(), _objective.c_str());
    printf("--------------------------------------------------------------------\n");
  }
-
+ 
  startTime = std::chrono::system_clock::now();
+ initSamples();
  _k->saveState(currentGeneration);
 
  while(!checkTermination())
@@ -223,15 +228,58 @@ void DE::run()
 }
 
 
+void DE::initSamples()
+{
+  for(size_t i = 0; i < _s; ++i) for(size_t d = 0; d < _k->N; ++d)
+  {
+    if (_initialMeanDefined[d] && _initialStdDevDefined[d]) 
+    {
+        samplePopulation[i*_k->N+d] = _initialMeans[d] + _initialStdDevs[d] * _gaussianGenerator->getRandomNumber();
+        if(samplePopulation[i*_k->N+d] < _lowerBounds[d]) samplePopulation[i*_k->N+d] = _lowerBounds[d];
+        if(samplePopulation[i*_k->N+d] > _upperBounds[d]) samplePopulation[i*_k->N+d] = _upperBounds[d];
+    }
+    else 
+        samplePopulation[i*_k->N+d] = _lowerBounds[d] + (_upperBounds[d]-_lowerBounds[d]) * _uniformGenerator->getRandomNumber();
+  }
+}
+
+void DE::prepareGeneration()
+{
+
+ for (size_t i = 0; i < _s; ++i) mutateSingle(i);
+
+ _finishedSamples = 0;
+ for (size_t i = 0; i < _s; i++) _initializedSample[i] = false;
+}
+
+
+void DE::mutateSingle(size_t sampleIdx)
+{
+    size_t a, b, c;
+    do{ a = _uniformGenerator->getRandomNumber()*_s; } while(a == sampleIdx);
+    do{ b = _uniformGenerator->getRandomNumber()*_s; } while(b == sampleIdx || b == a);
+    do{ c = _uniformGenerator->getRandomNumber()*_s; } while(c == sampleIdx || c == a || c == b);
+
+    size_t e = _uniformGenerator->getRandomNumber()*_k->N;
+    for(size_t d = 0; d < _k->N; ++d)
+    {
+      if(_uniformGenerator->getRandomNumber() < _crossoverRate || d == _k->N-1)
+          candidates[sampleIdx*_k->N+d] = samplePopulation[c*_k->N+d]+_mutationRate*(samplePopulation[a*_k->N+d]-samplePopulation[b*_k->N+d]);
+      else
+          candidates[sampleIdx*_k->N+d] = samplePopulation[sampleIdx*_k->N+d];
+    }
+}
+
+
 void DE::evaluateSamples()
 {
   double* transformedSamples = new double[ _s * _k->N ];
   
   for (size_t i = 0; i < _s; i++) for(size_t d = 0; d < _k->N; ++d)
     if(_variableLogSpace[d] == true) 
-        transformedSamples[i*_k->N+d] = std::exp(_samplePopulation[i*_k->N+d]);
+        transformedSamples[i*_k->N+d] = std::exp(candidates[i*_k->N+d]);
     else 
-        transformedSamples[i*_k->N+d] = _samplePopulation[i*_k->N+d];
+        transformedSamples[i*_k->N+d] = candidates[i*_k->N+d];
 
 
   while (_finishedSamples < _s)
@@ -248,28 +296,14 @@ void DE::evaluateSamples()
 }
 
 
-void DE::processSample(size_t sampleId, double fitness)
+void DE::processSample(size_t sampleIdx, double fitness)
 {
- double logPrior = _k->_problem->evaluateLogPrior(&_samplePopulation[sampleId*_k->N]);
- _fitnessVector[sampleId] = _fitnessSign * (logPrior+fitness);
+ double logPrior = _k->_problem->evaluateLogPrior(&samplePopulation[sampleIdx*_k->N]);
+ _fitnessVector[sampleIdx] = _fitnessSign * (logPrior+fitness);
  _finishedSamples++;
 }
 
 
-void DE::prepareGeneration()
-{
-
- for (size_t i = 0; i < _s; ++i) mutateSingle(i);
-
- _finishedSamples = 0;
- for (size_t i = 0; i < _s; i++) _initializedSample[i] = false;
-}
-
-
-void DE::mutateSingle(size_t sampleIdx)
-{
-    //TODO
-}
 
 
 void DE::updateSolver(const double *fitnessVector)

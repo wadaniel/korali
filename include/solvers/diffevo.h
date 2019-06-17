@@ -26,6 +26,7 @@ class DE : public Base
  bool* _variableLogSpace;
 
  // Runtime Methods (to be inherited from base class in the future)
+ void initSamples();
  void prepareGeneration();
  bool checkTermination();
  void updateDistribution(const double *fitnessVector);
@@ -43,7 +44,8 @@ class DE : public Base
  int _fitnessSign; /* maximizing vs optimizing (+- 1) */
  std::string _objective; /* Maximize or Minimize */ 
  double* _fitnessVector; /* objective function values [_s] */
- double* _samplePopulation; /* sample coordinates [_s x _k->N] */
+ double* samplePopulation; /* sample coordinates [_s x _k->N] */
+ double* candidates; /* candidates to evaluate */
  size_t currentGeneration; /* generation count */
  bool* _initializedSample; /* flag to distribute work */
  char _terminationReason[500]; /* buffer for exit reason */

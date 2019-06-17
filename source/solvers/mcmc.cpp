@@ -27,7 +27,8 @@ Korali::Solver::MCMC::MCMC(nlohmann::json& js, std::string name)
  databasePoints    = (double*) calloc (_k->N*_s, sizeof(double));
  databaseFitness   = (double*) calloc (_s, sizeof(double));
  chainMean         = (double*) calloc (_k->N, sizeof(double));
- chainVar          = (double*) calloc (_k->N, sizeof(double));
+ tmpC              = (double*) calloc (_k->N*_k->N , sizeof(double));
+ chainCov          = (double*) calloc (_k->N*_k->N , sizeof(double));
 
  for(size_t d = 0; d < _k->N; ++d) clPoint[d] = _initialMean[d];
  for(size_t d = 0; d < _k->N; ++d) _covarianceMatrix[d*_k->N+d] = _initialStdDevs[d];
@@ -80,10 +81,13 @@ nlohmann::json Korali::Solver::MCMC::getConfiguration()
 
  js["Solver"] = _name;
 
- js["MCMC"]["Population Size"] = _s;
- js["MCMC"]["Burn In"]         = _burnin;
- js["MCMC"]["Max Resamplings"] = _maxresamplings;
- //js["Use Local Covariance"]     = _useLocalCov;
+ js["MCMC"]["Population Size"]                = _s;
+ js["MCMC"]["Burn In"]                        = _burnin;
+ js["MCMC"]["Max Resamplings"]                = _maxresamplings;
+ js["MCMC"]["Adaptive MCMC"]                  = _adaptive;
+ js["MCMC"]["Non Adaption Period"]            = _nonAdaptionPeriod;
+ js["MCMC"]["Chain Covariance Learning Rate"] = _cr;
+ js["MCMC"]["Chain Covariance Increment"]     = _eps;
 
  js["MCMC"]["Termination Criteria"]["Max Function Evaluations"]["Value"]  = _termCondMaxFunEvals;
  js["MCMC"]["Termination Criteria"]["Max Function Evaluations"]["Active"] = _isTermCondMaxFunEvals;
@@ -101,9 +105,9 @@ nlohmann::json Korali::Solver::MCMC::getConfiguration()
  for (size_t d = 0; d < _k->N; d++) js["MCMC"]["State"]["Leader"][d]                         = clPoint[d];
  for (size_t d = 0; d < _k->N; d++) js["MCMC"]["State"]["Candidate"][d]                      = ccPoint[d];
  for (size_t i = 0; i < _k->N*databaseEntries; i++) js["MCMC"]["State"]["DatabasePoints"][i] = databasePoints[i];
- for (size_t i = 0; i < databaseEntries; i++) js["MCMC"]["State"]["DatabaseFitness"][i]                = databaseFitness[i];
+ for (size_t i = 0; i < databaseEntries; i++) js["MCMC"]["State"]["DatabaseFitness"][i]      = databaseFitness[i];
  for (size_t d = 0; d < _k->N; d++) js["MCMC"]["State"]["Chain Mean"][d]                     = chainMean[d];
- for (size_t d = 0; d < _k->N; d++) js["MCMC"]["State"]["Chain Variance"][d]                 = chainVar[d];
+ for (size_t d = 0; d < _k->N * _k->N; d++) js["MCMC"]["State"]["Chain Covariance"][d]       = chainCov[d];
  //if (_useLocalCov) for (size_t i = 0; i < _chainLength; i++) for (size_t d = 0; d < _k->N; d++) js["State"]["LocalCovarianceMatrix"][i][d] = local_cov[i][d];
 
  js["MCMC"]["State"]["LeaderFitness"]    = clLogLikelihood;
@@ -117,6 +121,12 @@ void Korali::Solver::MCMC::setConfiguration(nlohmann::json& js)
  _s                        = consume(js, { "MCMC", "Population Size" }, KORALI_NUMBER);
  _burnin                   = consume(js, { "MCMC", "Burn In" }, KORALI_NUMBER, std::to_string(0));
  _maxresamplings           = consume(js, { "MCMC", "Max Resamplings" }, KORALI_NUMBER, std::to_string(1e6));
+
+ size_t nonAdaptionPeriodDefault = _s*0.05; 
+ _adaptive                 = consume(js, { "MCMC", "Adaptive MCMC" }, KORALI_BOOLEAN, "false");
+ _nonAdaptionPeriod        = consume(js, { "MCMC", "Non Adaption Period" }, KORALI_NUMBER, std::to_string(nonAdaptionPeriodDefault));
+ _cr                       = consume(js, { "MCMC", "Chain Covariance Learning Rate" }, KORALI_NUMBER, std::to_string(2.4*2.4/_k->N)); //Gelman et al. 1995
+ _eps                      = consume(js, { "MCMC", "Chain Covariance Increment" }, KORALI_NUMBER, std::to_string(0.01)); // sth small (Haario et. al. 2006)
  
  _termCondMaxFunEvals      = consume(js, { "MCMC", "Termination Criteria", "Max Function Evaluations", "Value" }, KORALI_NUMBER, std::to_string(1e4));
  _isTermCondMaxFunEvals    = consume(js, { "MCMC", "Termination Criteria", "Max Function Evaluations", "Active" }, KORALI_BOOLEAN, "false");
@@ -145,7 +155,7 @@ void Korali::Solver::MCMC::setState(nlohmann::json& js)
  for (size_t i = 0; i < _k->N*databaseEntries; i++) databasePoints[i] = js["MCMC"]["State"]["DatabasePoints"][i];
  for (size_t i = 0; i < databaseEntries; i++) databaseFitness[i]      = js["MCMC"]["State"]["DatabaseFitness"][i];
  for (size_t d = 0; d < _k->N; d++) chainMean[d]                      = js["MCMC"]["State"]["Chain Mean"][d];
- for (size_t d = 0; d < _k->N; d++) chainVar[d]                       = js["MCMC"]["State"]["Chain Variance"][d];
+ for (size_t d = 0; d < _k->N * _k->N; d++) chainCov[d]               = js["MCMC"]["State"]["Chain Covariance"][d];
  for (size_t d = 0; d < _k->N*_k->N; d++) _covarianceMatrix[d] = js["MCMC"]["State"]["CovarianceMatrix"][d];
  //if (_useLocalCov) for (size_t i = 0; i < _s; i++) for (size_t j = 0; j < _k->N; j++) local_cov[i][j] = js["State"]["LocalCovarianceMatrix"][i][j];
  
@@ -232,7 +242,11 @@ void Korali::Solver::MCMC::sampleCandidate()
 {  
 
  for (size_t d = 0; d < _k->N; ++d) { z[d] = _gaussianGenerator->getRandomNumber(); ccPoint[d] = 0.0; }
- for (size_t d = 0; d < _k->N; ++d) for (size_t e = 0; e < _k->N; ++e) ccPoint[d] += _covarianceMatrix[d*_k->N+e] * z[e];
+
+ if ( _adaptive && databaseEntries < _nonAdaptionPeriod) 
+     for (size_t d = 0; d < _k->N; ++d) for (size_t e = 0; e < _k->N; ++e) ccPoint[d] += _covarianceMatrix[d*_k->N+e] * z[e];
+ else
+     for (size_t d = 0; d < _k->N; ++d) for (size_t e = 0; e < _k->N; ++e) ccPoint[d] += chainCov[d*_k->N+e] * z[e];
 
  for (size_t d = 0; d < _k->N; ++d) ccPoint[d] += clPoint[d];
 }
@@ -248,17 +262,37 @@ bool Korali::Solver::MCMC::setCandidatePriorAndCheck()
 
 void Korali::Solver::MCMC::updateState()
 {
- if(databaseEntries < 2) return;
+ if(chainLength == 0) return;
+
  acceptanceRateProposals = ( (double)naccept/ (double)chainLength );
 
- // Chain Mean and Variance
- for (size_t d = 0; d < _k->N; d++)
+ for (size_t d = 0; d < _k->N; d++) for (size_t e = 0; e < d; e++)
  {
-    double delta = (clPoint[d] - chainMean[d]);
-    chainMean[d] += (delta)/((double)databaseEntries);
-    chainVar[d] = (chainVar[d] * (databaseEntries-2.0) + delta * delta)/(databaseEntries-1.0); //TODO: verify (DW)
+   tmpC[d*_k->N+e] = databaseEntries*chainMean[d]*chainMean[e] + clPoint[d]*clPoint[e];
+   tmpC[e*_k->N+d] = databaseEntries*chainMean[d]*chainMean[e] + clPoint[d]*clPoint[e];
  }
+ for (size_t d = 0; d < _k->N; d++) tmpC[d*_k->N+d] = databaseEntries*chainMean[d]*chainMean[d] + clPoint[d]*clPoint[d] + _eps;
 
+ // Chain Mean
+ for (size_t d = 0; d < _k->N; d++) chainMean[d] = (chainMean[d] * (databaseEntries-1) + clPoint[d]) / ((double) databaseEntries);
+ 
+ for (size_t d = 0; d < _k->N; d++) for (size_t e = 0; e < d; e++)
+ {
+    tmpC[d*_k->N+e] -= (databaseEntries+1)*chainMean[d]*chainMean[e];
+    tmpC[e*_k->N+d] -= (databaseEntries+1)*chainMean[d]*chainMean[e];
+
+ }
+ for (size_t d = 0; d < _k->N; d++) tmpC[d*_k->N+d] -= (databaseEntries+1)*chainMean[d]*chainMean[d];
+
+ // Chain Covariance (TODO: careful check N (databasEntires) (DW)
+ for (size_t d = 0; d < _k->N; d++) for (size_t e = 0; e < d; e++)
+ {
+   chainCov[d*_k->N+e] = (databaseEntries-1.0)/( (double) databaseEntries) * chainCov[d*_k->N+e] + (_cr/( (double) databaseEntries))*tmpC[d*_k->N+e];
+   chainCov[e*_k->N+d] = (databaseEntries-1.0)/( (double) databaseEntries) * chainCov[d*_k->N+e] + (_cr/( (double) databaseEntries))*tmpC[d*_k->N+e];
+ }
+ for (size_t d = 0; d < _k->N; d++) chainCov[d*_k->N+d] = (databaseEntries-1.0)/( (double) databaseEntries) * chainCov[d*_k->N+d] + (_cr/( (double) databaseEntries))*tmpC[d*_k->N+d];
+
+ 
 }
 
 bool Korali::Solver::MCMC::checkTermination()
@@ -299,14 +333,18 @@ void Korali::Solver::MCMC::printGeneration() const
 
  if (_k->_verbosity >= KORALI_DETAILED)
  {
-  printf("[Korali] Current Sample:\n");
-  for (size_t d = 0; d < _k->N; d++) printf(" %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), clPoint[d]);
-  printf("[Korali] Current Candidate:\n");
-  for (size_t d = 0; d < _k->N; d++) printf(" %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), ccPoint[d]);
+  printf("[Korali] Variable = (Current Sample, Current Candidate):\n");
+  for (size_t d = 0; d < _k->N; d++)  printf("         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), clPoint[d], ccPoint[d]);
   printf("[Korali] Current Chain Mean:\n");
   for (size_t d = 0; d < _k->N; d++) printf(" %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), chainMean[d]);
   printf("[Korali] Current Chain Variance:\n");
-  for (size_t d = 0; d < _k->N; d++) printf(" %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), chainVar[d]);
+  for (size_t d = 0; d < _k->N; d++)
+  {
+   for (size_t e = 0; e <= d; e++) printf("   %+6.3e  ", chainCov[d*_k->N+e]);
+   printf("\n");
+  }
+
+
  }
 }
 

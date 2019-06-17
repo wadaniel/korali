@@ -16,8 +16,11 @@ class MCMC : public Base
 
  // MCMC Configuration
  unsigned int _s; /* Population Size */
- //bool _useLocalCov; /* Using local covariance instead of sample cov */
  size_t _burnin; /* burn in generations */
+ bool _adaptive; /* Using chain covariance for proposal */
+ size_t _nonAdaptionPeriod; /* Period without Chain Cov Adaption (using initial Stddev) */
+ double _cr; /* Learning rate or Chain Covariance */
+ double _eps; /* Chain Covariance increment */
  size_t _maxresamplings; /* Max number resamplings inside generation loop */
  bool _isTermCondMaxFunEvals;
  size_t _termCondMaxFunEvals; /* Max objective function evaluations */
@@ -29,8 +32,8 @@ class MCMC : public Base
  Variable::Gaussian* _gaussianGenerator; /* Gaussian random number generator */
 
  // MCMC Runtime Variables
- double* z; /* placeholder random numbers */
- double* clPoint; /*  Leader parameter values */
+ double* z; /* Placeholder random numbers */
+ double* clPoint; /* Leader parameter values */
  double clLogLikelihood; /* Leader fitness value */
  double* ccPoint; /*  Candidate parameter values */
  double ccLogLikelihood; /* Candidate fitness value */
@@ -43,14 +46,14 @@ class MCMC : public Base
  double* databasePoints; /* Variable values of samples in DB */
  double* databaseFitness; /* Fitness of samples in DB */
  size_t countevals; /* Number of function evaluations */
- double* chainMean; /* mean of mcmc chain */
- double* chainVar; /* variance of mcmc chain */
+ double* chainMean; /* Mean of mcmc chain */
+ double* tmpC; /* Placeholder chain cov calculation */
+ double* chainCov; /* Variance of mcmc chain */
 
  // MCMC Status variables
  double* _initialMean; /* Initial Mean of Cov Proposal Distribution */
  double* _initialStdDevs; /* Initial Diagonal of Cov Proposal Distribution */
  double* _covarianceMatrix; /* Covariance of Proposal Distribution */
- //double **local_cov; /* Local covariances of leaders */
 
  gsl_rng *_gslGen;
  

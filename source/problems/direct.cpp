@@ -51,12 +51,6 @@ void Korali::Problem::Direct::initialize()
   exit(-1);
  }
 
- if (_k->_statisticalVariableCount != 0)
- {
-  fprintf(stderr, "[Korali] Error: Direct Evaluation type requires 0 statistical parameters.\n");
-  exit(-1);
- }
-
 }
 
 double Korali::Problem::Direct::evaluateFitness(Korali::ModelData& data)

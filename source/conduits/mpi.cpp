@@ -127,8 +127,8 @@ void KoraliMPI::workerThread()
    data._hashId = _rankId * 500000 + _currentSample++;
 
    int curVar = 0;
-   for (int i = 0; i < _k->_computationalVariableCount; i++) data._computationalVariables.push_back(sample[curVar++]);
-   for (int i = 0; i < _k->_statisticalVariableCount;   i++) data._statisticalVariables.push_back(sample[curVar++]);
+//   for (int i = 0; i < _k->_computationalVariableCount; i++) data._computationalVariables.push_back(sample[curVar++]);
+//   for (int i = 0; i < _k->_statisticalVariableCount;   i++) data._statisticalVariables.push_back(sample[curVar++]);
 
    _k->_model(data);
 

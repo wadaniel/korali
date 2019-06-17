@@ -51,11 +51,11 @@ void Korali::Problem::DirectBayesian::initialize()
   exit(-1);
  }
 
- if (_k->_statisticalVariableCount != 0)
- {
-  fprintf(stderr, "[Korali] Error: Direct Bayesian Evaluation type requires 0 statistical parameters.\n");
-  exit(-1);
- }
+// if (_k->_statisticalVariableCount != 0)
+// {
+//  fprintf(stderr, "[Korali] Error: Direct Bayesian Evaluation type requires 0 statistical parameters.\n");
+//  exit(-1);
+// }
 
 }
 

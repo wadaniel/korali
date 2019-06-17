@@ -76,11 +76,11 @@ void Korali::Problem::Bayesian::initialize()
   exit(-1);
  }
 
- if (_k->_statisticalVariableCount != 1)
- {
-  fprintf(stderr, "[Korali] Error: The Bayesian model requires 1 statistical parameter.\n");
-  exit(-1);
- }
+// if (_k->_statisticalVariableCount != 1)
+// {
+//  fprintf(stderr, "[Korali] Error: The Bayesian model requires 1 statistical parameter.\n");
+//  exit(-1);
+// }
 
 }
 

@@ -12,7 +12,7 @@ namespace Korali { namespace Variable {
 class Laplace : public Base
 {
  private:
-	size_t _seed;
+  size_t _seed;
   gsl_rng* _range;
   double _mean;
   double _width;

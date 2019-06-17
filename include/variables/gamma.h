@@ -12,8 +12,8 @@ namespace Korali { namespace Variable {
 class Gamma : public Base
 {
  private:
-	size_t _seed;
-	gsl_rng* _range;
+  size_t _seed;
+  gsl_rng* _range;
   double _shape;
   double _scale;
   double _aux;

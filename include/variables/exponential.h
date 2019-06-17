@@ -12,8 +12,8 @@ namespace Korali { namespace Variable {
 class Exponential : public Base
 {
  private:
-	size_t _seed;
-	gsl_rng* _range;
+  size_t _seed;
+  gsl_rng* _range;
   double _loc;
   double _mean;
 

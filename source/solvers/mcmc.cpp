@@ -26,6 +26,7 @@ Korali::Solver::MCMC::MCMC(nlohmann::json& js, std::string name)
  ccPoint           = (double*) calloc (_k->N*_rejectionLevels, sizeof(double));
  ccLogPrior        = (double*) calloc (_rejectionLevels, sizeof(double));
  ccLogLikelihood   = (double*) calloc (_rejectionLevels, sizeof(double));
+ alpha             = (double*) calloc (_rejectionLevels, sizeof(double));
  databasePoints    = (double*) calloc (_k->N*_s, sizeof(double));
  databaseFitness   = (double*) calloc (_s, sizeof(double));
  chainMean         = (double*) calloc (_k->N, sizeof(double));
@@ -94,14 +95,14 @@ nlohmann::json Korali::Solver::MCMC::getConfiguration()
  js["MCMC"]["State"]["Database Entries"]          = databaseEntries;
  js["MCMC"]["State"]["Acceptance Rate Proposals"] = acceptanceRateProposals;
  for (size_t d = 0; d < _k->N; d++) js["MCMC"]["State"]["Leader"][d]                         = clPoint[d];
- for (size_t d = 0; d < _k->N; d++) js["MCMC"]["State"]["Candidate"][d]                      = ccPoint[(_rejectionLevels-1)*_k->N+d];
+ //for (size_t d = 0; d < _k->N; d++) js["MCMC"]["State"]["Candidate"][d]                      = ccPoint[(_rejectionLevels-1)*_k->N+d];
  for (size_t i = 0; i < _k->N*databaseEntries; i++) js["MCMC"]["State"]["DatabasePoints"][i] = databasePoints[i];
  for (size_t i = 0; i < databaseEntries; i++) js["MCMC"]["State"]["DatabaseFitness"][i]      = databaseFitness[i];
  for (size_t d = 0; d < _k->N; d++) js["MCMC"]["State"]["Chain Mean"][d]                     = chainMean[d];
  for (size_t d = 0; d < _k->N * _k->N; d++) js["MCMC"]["State"]["Chain Covariance"][d]       = chainCov[d];
 
  js["MCMC"]["State"]["LeaderFitness"]    = clLogLikelihood;
- js["MCMC"]["State"]["CandidateFitness"] = ccLogLikelihood;
+ //js["MCMC"]["State"]["CandidateFitness"] = ccLogLikelihood;
 
  return js;
 }
@@ -148,7 +149,7 @@ void Korali::Solver::MCMC::setState(nlohmann::json& js)
  acceptanceRateProposals = js["MCMC"]["State"]["Acceptance Rate Proposals"];
 
  for (size_t d = 0; d < _k->N; d++) clPoint[d]                        = js["MCMC"]["State"]["Leader"][d];
- for (size_t d = 0; d < _k->N; d++) ccPoint[d]                        = js["MCMC"]["State"]["Candidate"][d];
+ //for (size_t d = 0; d < _k->N; d++) ccPoint[d]                        = js["MCMC"]["State"]["Candidate"][d];
  for (size_t i = 0; i < _k->N*databaseEntries; i++) databasePoints[i] = js["MCMC"]["State"]["DatabasePoints"][i];
  for (size_t i = 0; i < databaseEntries; i++) databaseFitness[i]      = js["MCMC"]["State"]["DatabaseFitness"][i];
  for (size_t d = 0; d < _k->N; d++) chainMean[d]                      = js["MCMC"]["State"]["Chain Mean"][d];
@@ -156,7 +157,7 @@ void Korali::Solver::MCMC::setState(nlohmann::json& js)
  for (size_t d = 0; d < _k->N*_k->N; d++) _covarianceMatrix[d]        = js["MCMC"]["State"]["CovarianceMatrix"][d];
  
  clLogLikelihood = js["MCMC"]["State"]["LeaderFitness"];
- ccLogLikelihood = js["MCMC"]["State"]["CandidateFitness"];
+ //ccLogLikelihood = js["MCMC"]["State"]["CandidateFitness"];
 
 }
 
@@ -177,10 +178,10 @@ void Korali::Solver::MCMC::run()
 
   for(size_t r = 0; r < _rejectionLevels; ++r)
   {
-    generateCandidate();
-    _k->_conduit->evaluateSample(ccPoint, 0); countevals++;
+    generateCandidate(r);
+    _k->_conduit->evaluateSample(ccPoint, r); countevals++;
     _k->_conduit->checkProgress();
-    acceptReject();
+    acceptReject(r);
   }
   if (chainLength > _burnin ) updateDatabase(clPoint, clLogLikelihood);
   updateState();
@@ -199,21 +200,53 @@ void Korali::Solver::MCMC::run()
 }
 
 
-void Korali::Solver::MCMC::processSample(size_t c, double fitness)
+void Korali::Solver::MCMC::processSample(size_t lvl, double fitness)
 {
- ccLogLikelihood = fitness + ccLogPrior;
+ ccLogLikelihood[lvl] = fitness + ccLogPrior[lvl];
 }
 
-void Korali::Solver::MCMC::acceptReject()
+
+void Korali::Solver::MCMC::acceptReject(size_t level)
 {
- double L = exp(ccLogLikelihood-clLogLikelihood);
- if ( L >= 1.0 || L > gsl_ran_flat(_gslGen, 0.0, 1.0) ) {
-   naccept++;
-   clLogLikelihood = ccLogLikelihood;
-   for (size_t d = 0; d < _k->N; d++) clPoint[d] = ccPoint[d];
+
+ double D, N; // denominator, nominator
+ double prevLogLikelihood;
+
+ for(size_t l = 0; l <= level; ++l)
+ {
+  double D = 1.0;
+  alpha[l] = recursiveAlpha(D, clLogLikelihood, ccLogLikelihood, l);
+  if ( alpha[l] >= 1.0 || alpha[l] > gsl_ran_flat(_gslGen, 0.0, 1.0) ) {
+    naccept++;
+    clLogLikelihood = ccLogLikelihood[l];
+    for (size_t d = 0; d < _k->N; d++) clPoint[d] = ccPoint[l*_k->N+d];
+    break;
+  }
  }
  chainLength++;
 }
+
+
+double Korali::Solver::MCMC::recursiveAlpha(double& D, const double llk0, const double* logliks, size_t N) const
+{
+    if(N==0)
+    {
+        D = logliks[0];
+        return std::min(1.0, exp(logliks[0]/llk0));
+    }
+    else
+    {
+        double D1 = D;
+        D = D1 * (1-recursiveAlpha(D1, logliks[0], logliks+1, N-1));
+        double* revLlks = new double[N-1];
+        for(size_t i = 0; i < N-1; ++i) revLlks[i] = logliks[N-1-i];
+        double D2 = D;
+        double num = llk0 * ( 1 - std::min(1.0, exp(llk0/logliks[N-1])) ) * recursiveAlpha( D2, logliks[N], revLlks, N-1);
+        delete [] revLlks;
+        return num/D;
+    }
+}
+
 
 void Korali::Solver::MCMC::updateDatabase(double* point, double loglik)
 {
@@ -223,38 +256,42 @@ void Korali::Solver::MCMC::updateDatabase(double* point, double loglik)
 }
 
 
-void Korali::Solver::MCMC::generateCandidate()
+void Korali::Solver::MCMC::generateCandidate(size_t level)
 {  
  size_t initialgens = countgens;
- //do { /TODO: fix check (DW)
-   sampleCandidate(); countgens++;
+ sampleCandidate(level); countgens++;
+ setCandidatePriorAndCheck(level);
+ 
+ /*do { /TODO: fix check (DW)
+   sampleCandidate(level); countgens++;
+   setCandidatePriorAndCheck(level);
    if ( (countgens - initialgens) > _maxresamplings) 
    {       
      if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Warning: exiting resampling loop, max resamplings (%zu) reached.\n", _maxresamplings);
      exit(-1);
    }
-  //} while (setCandidatePriorAndCheck());
+  } while (setCandidatePriorAndCheck(level)); */
 }
 
 
-void Korali::Solver::MCMC::sampleCandidate()
+void Korali::Solver::MCMC::sampleCandidate(size_t level)
 {  
 
- for (size_t d = 0; d < _k->N; ++d) { z[d] = _gaussianGenerator->getRandomNumber(); ccPoint[d] = 0.0; }
+ for (size_t d = 0; d < _k->N; ++d) { z[d] = _gaussianGenerator->getRandomNumber(); ccPoint[level*_k->N+d] = 0.0; }
 
  if ( _adaptive && databaseEntries < _nonAdaptionPeriod) 
-     for (size_t d = 0; d < _k->N; ++d) for (size_t e = 0; e < _k->N; ++e) ccPoint[d] += _covarianceMatrix[d*_k->N+e] * z[e];
+     for (size_t d = 0; d < _k->N; ++d) for (size_t e = 0; e < _k->N; ++e) ccPoint[level*_k->N+d] += _covarianceMatrix[d*_k->N+e] * z[e];
  else
-     for (size_t d = 0; d < _k->N; ++d) for (size_t e = 0; e < _k->N; ++e) ccPoint[d] += chainCov[d*_k->N+e] * z[e];
+     for (size_t d = 0; d < _k->N; ++d) for (size_t e = 0; e < _k->N; ++e) ccPoint[level*_k->N+d] += chainCov[d*_k->N+e] * z[e];
 
- for (size_t d = 0; d < _k->N; ++d) ccPoint[d] += clPoint[d];
+ for (size_t d = 0; d < _k->N; ++d) ccPoint[level*_k->N+d] += clPoint[d];
 }
 
 
-bool Korali::Solver::MCMC::setCandidatePriorAndCheck()
+bool Korali::Solver::MCMC::setCandidatePriorAndCheck(size_t level)
 {
- ccLogPrior = _k->_problem->evaluateLogPrior(ccPoint);
- if (ccLogPrior > -INFINITY) return true;
+ ccLogPrior[level] = _k->_problem->evaluateLogPrior(ccPoint+_k->N*level);
+ if (ccLogPrior[level] > -INFINITY) return true;
  return false;
 }
 

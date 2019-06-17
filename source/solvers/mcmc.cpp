@@ -126,8 +126,8 @@ void Korali::Solver::MCMC::setConfiguration(nlohmann::json& js)
   _initialMean    = (double*) calloc(sizeof(double), _k->N);
   _initialStdDevs = (double*) calloc(sizeof(double), _k->N);
 
-  for(size_t i = 0; i < _k->N; i++) _initialMean[i] = consume(js["Variables"][i], { "MCMC", "Initial Mean" }, KORALI_NUMBER, std::to_string(0.0));
-  for(size_t i = 0; i < _k->N; i++) _initialStdDevs[i] = consume(js["Variables"][i], { "TMCMC", "Initial Standard Deviation" }, KORALI_NUMBER, std::to_string(1.0));
+  for(size_t i = 0; i < _k->N; i++) _initialMean[i] = consume(js["Variables"][i], { "MCMC", "Initial Mean" }, KORALI_NUMBER);
+  for(size_t i = 0; i < _k->N; i++) _initialStdDevs[i] = consume(js["Variables"][i], { "MCMC", "Initial Standard Deviation" }, KORALI_NUMBER);
 
  //_useLocalCov       = consume(js, { "Use Local Covariance" }, KORALI_BOOLEAN, "false");
 }

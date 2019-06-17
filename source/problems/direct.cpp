@@ -50,7 +50,11 @@ void Korali::Problem::Direct::initialize()
   fprintf(stderr, "[Korali] Error: Direct Problem does not accept a likelihood function, only a computational model.\n");
   exit(-1);
  }
+}
 
+void Korali::Problem::Direct::packVariables(double* sample, Korali::ModelData& data)
+{
+ for (size_t i = 0; i < _k->N; i++) data._computationalVariables.push_back(sample[i]);
 }
 
 double Korali::Problem::Direct::evaluateFitness(Korali::ModelData& data)

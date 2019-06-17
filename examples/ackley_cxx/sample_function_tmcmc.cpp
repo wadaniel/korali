@@ -5,7 +5,8 @@ int main(int argc, char* argv[])
 {
  auto k = Korali::Engine();
 
- k["Problem"] = "Direct Bayesian";
+ k["Problem"] = "Bayesian";
+ k["Likelihood"]["Type"] = "Direct";
  k["Solver"] = "TMCMC";
 
  k["Variables"][0]["Name"] = "X0";

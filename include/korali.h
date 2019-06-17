@@ -11,7 +11,6 @@
 
 #include "problems/direct.h"
 #include "problems/bayesian.h"
-#include "problems/directbayesian.h"
 
 #include "variables/default.h"
 #include "variables/exponential.h"

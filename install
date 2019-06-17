@@ -322,7 +322,6 @@ fi
 
 rm -f setup.py
 
-logEcho "[Korali] Check $logFile for further information."
 echo "------------------------------------------------------------------"
 echo "[Korali] Finished installation successfully."
 echo "------------------------------------------------------------------"

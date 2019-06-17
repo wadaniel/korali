@@ -18,7 +18,6 @@ Korali::Solver::MCMC::MCMC(nlohmann::json& js, std::string name)
  _name = name;
  setConfiguration(js);
 
-
  // Allocating MCMC memory
  _covarianceMatrix = (double*) calloc (_k->N*_k->N, sizeof(double));
  z                 = (double*) calloc (_k->N, sizeof(double));
@@ -43,9 +42,14 @@ Korali::Solver::MCMC::MCMC(nlohmann::json& js, std::string name)
    }
  }*/
  
- _gslGen = gsl_rng_alloc (gsl_rng_default);
- gsl_rng_set(_gslGen, _k->_seed++);
- _gaussianGenerator = new Variable::Gaussian(0.0, 1.0, _k->_seed++);
+ // Initializing Gaussian Generator
+ auto jsGaussian = nlohmann::json();
+ jsGaussian["Name"] = "CMA-ES Generator";
+ jsGaussian["Type"] = "Gaussian";
+ jsGaussian["Mean"] = 0.0;
+ jsGaussian["Sigma"] = 1.0;
+ jsGaussian["Seed"] = _k->_seed++;
+ _gaussianGenerator = new Variable(jsGaussian);
 
  countevals               = 0;
  naccept                  = 0;

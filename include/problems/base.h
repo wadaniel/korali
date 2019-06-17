@@ -2,7 +2,7 @@
 #define _KORALI_PROBLEM_BASE_H_
 
 #include "json/json.hpp"
-#include "variables/base.h"
+#include "variable.h"
 #include "conduits/base.h"
 
 namespace Korali { namespace Problem {

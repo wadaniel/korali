@@ -61,7 +61,13 @@ CMAES::CMAES(nlohmann::json& js, std::string name)
  _currentGeneration = 0;
 
  // Initializing Gaussian Generator
- _gaussianGenerator = new Variable::Gaussian(0.0, 1.0, _k->_seed++);
+ auto jsGaussian = nlohmann::json();
+ jsGaussian["Name"] = "CMA-ES Generator";
+ jsGaussian["Type"] = "Gaussian";
+ jsGaussian["Mean"] = 0.0;
+ jsGaussian["Sigma"] = 1.0;
+ jsGaussian["Seed"] = _k->_seed++;
+ _gaussianGenerator = new Variable(jsGaussian);
 
  _chiN = sqrt((double) _k->N) * (1. - 1./(4.*_k->N) + 1./(21.*_k->N*_k->N));
 

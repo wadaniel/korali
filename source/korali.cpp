@@ -123,29 +123,16 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
 
  _outputFrequency = consume(js, { "Output Frequency" }, KORALI_NUMBER, "1");
 
- // Configure Variables
- if (isArray(js, { "Variables" } ))
- for (size_t i = 0; i < js["Variables"].size(); i++)
- {
-  auto dString = consume(js["Variables"][i], { "Bayesian", "Prior Distribution", "Type" }, KORALI_STRING, "Default");
-  bool foundDistribution = false;
-  if (dString == "Default")     { _variables.push_back(new Korali::Variable::Default(js["Variables"][i]));                  foundDistribution = true; }
-  if (dString == "Uniform")     { _variables.push_back(new Korali::Variable::Uniform(js["Variables"][i], _k->_seed++));     foundDistribution = true; }
-  if (dString == "Gaussian")    { _variables.push_back(new Korali::Variable::Gaussian(js["Variables"][i], _k->_seed++));    foundDistribution = true; }
-  if (dString == "Gamma")       { _variables.push_back(new Korali::Variable::Gamma(js["Variables"][i], _k->_seed++));       foundDistribution = true; }
-  if (dString == "Exponential") { _variables.push_back(new Korali::Variable::Exponential(js["Variables"][i], _k->_seed++)); foundDistribution = true; }
-  if (foundDistribution == false) { fprintf(stderr, "[Korali] Error: Incorrect or missing distribution for parameter %lu.\n", i); exit(-1); }
- }
-
- N = _variables.size();
- if (N == 0) { fprintf(stderr, "[Korali] Error: No variables have been defined.\n"); exit(-1); }
-
  // Configure Problem
  _problem = nullptr;
  std::string pName = consume(js, { "Problem" }, KORALI_STRING);
  if (pName == "Direct")   { _problem = new Korali::Problem::Direct(js); }
  if (pName == "Bayesian") { _problem = new Korali::Problem::Bayesian(js); }
  if (_problem == nullptr) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Problem '%s'.", pName.c_str()); exit(-1); }
+
+ N = _variables.size();
+ if (N == 0) { fprintf(stderr, "[Korali] Error: No variables have been defined.\n"); exit(-1); }
+
  // Configure Conduit
 
  int rankCount = 1;

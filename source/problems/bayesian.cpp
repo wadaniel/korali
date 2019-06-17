@@ -134,8 +134,16 @@ double Korali::Problem::Bayesian::evaluateFitness(Korali::ModelData& data)
   }
 
   double sigma = data._statisticalVariables[0];
+  double sigma2 = sigma*sigma;
+  double ssn = 0.0;
 
-  fitness = Korali::Variable::Gaussian::logLikelihood(sigma, _referenceDataSize, _referenceData, data._results.data());
+  for(size_t i = 0; i < _referenceDataSize; i++)
+  {
+   double diff = _referenceData[i] - data._results[i];
+   ssn += diff*diff;
+  }
+
+  fitness = -0.5*( _referenceDataSize*log(2*M_PI) + ssn/sigma2) - _referenceDataSize*log(sigma);
  }
 
  if (_likelihood == DirectLikelihood)

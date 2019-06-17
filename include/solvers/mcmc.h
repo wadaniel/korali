@@ -2,6 +2,7 @@
 #define _KORALI_SOLVER_MCMC_H_
 
 #include "solvers/base.h"
+#include "variable.h"
 #include <gsl/gsl_rng.h>
 
 namespace Korali { namespace Solver {
@@ -26,7 +27,7 @@ class MCMC : public Base
  char _terminationReason[500];
 
 
- Variable::Gaussian* _gaussianGenerator; /* Gaussian random number generator */
+ Korali::Variable* _gaussianGenerator; /* Gaussian random number generator */
 
  // MCMC Runtime Variables
  double* z; /* placeholder random numbers */

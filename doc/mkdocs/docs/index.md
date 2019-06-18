@@ -1,6 +1,6 @@
-# ![](images/templogo.png){: style="height:25px;width:25px"} Korali
+# Korali  ![](images/templogo.png){: style="height:25px;width:25px"}
 
-**Korali** is a high-performance computing framework for optimization, sampling and Bayesian uncertainty quantification of large-scale computational models. [Here should be the abstract of our paper]
+**Korali** is a high-performance computing framework for optimization, sampling and Bayesian uncertainty quantification of large-scale computational models.
 
 ## What Korali does for you
 
@@ -19,12 +19,15 @@ $$
 
 Allowing users to compute the maximum a posteriori estimate: $\vartheta^\star = \mathop{\arg\min}\limits_{\vartheta}  \,\,\, p(\theta | d) \,,$ or sample its posterior distribution: $\vartheta^{(k)} \sim p(\theta | d).$
 
-
 ## Design Principles
 
 ### [Extensibility](usage/basics)
 
 Korali is designed as a completely modular and extensible software. Operations can be changed on runtime to produce multiple results without the need of re-compilation.
+
+### [Multi-Language](usage/basics)
+
+Korali applications can be programmed in either C++ or Python. Additionally, Korali can sample from C++/Python and pre-compiled computational models.
 
 ### [Multi-Intrusiveness](usage/config/#evaluation-conduit)
 

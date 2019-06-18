@@ -83,9 +83,10 @@ CMAES::CMAES(nlohmann::json& js, std::string name)
 
  flgEigensysIsUptodate = true;
 
- countevals = 0;
+ countevals      = 0;
  countinfeasible = 0;
- resampled = 0;
+ resampled       = 0;
+ 
  bestEver = -std::numeric_limits<double>::max();
 
  psL2 = 0.0;
@@ -184,6 +185,7 @@ nlohmann::json CMAES::getConfiguration()
   js["Variables"][i]["CMA-ES"]["Initial Mean"]  = _initialMeans[i];
   js["Variables"][i]["CMA-ES"]["Initial Standard Deviation"] = _initialStdDevs[i];
   js["Variables"][i]["CMA-ES"]["Minimum Standard Deviation Changes"]  = _minStdDevChanges[i];
+  js["Variables"][i]["CMA-ES"]["Log Space"]  = _variableLogSpace[i];
  }
 
  js["CMA-ES"]["Termination Criteria"]["Max Generations"]["Value"]           = _termCondMaxGenerations;
@@ -318,11 +320,11 @@ void CMAES::setConfiguration(nlohmann::json& js)
   if (lowerBoundDefined && upperBoundDefined)
   {
    if (initialMeanDefined   == false) _initialMeans[i]   = (_upperBounds[i] + _lowerBounds[i]) * 0.5;
-   if (initialStdDevDefined == false) _initialStdDevs[i] = (_upperBounds[i] - _lowerBounds[i]) * 0.05;
+   if (initialStdDevDefined == false) _initialStdDevs[i] = (_upperBounds[i] - _lowerBounds[i]) * 0.30;
   }
 
-  if (initialMeanDefined)   _initialMeans[i]   = consume(js["Variables"][i], { "CMA-ES", "Initial Mean" }, KORALI_NUMBER);
-  if (initialStdDevDefined) _initialStdDevs[i] = consume(js["Variables"][i], { "CMA-ES", "Initial Standard Deviation" }, KORALI_NUMBER);
+  if (initialMeanDefined)   _initialMeans[i] = consume(js["Variables"][i], { "CMA-ES", "Initial Mean" }, KORALI_NUMBER);
+  if (initialStdDevDefined) _initialMeans[i] = consume(js["Variables"][i], { "CMA-ES", "Initial Standard Deviation" }, KORALI_NUMBER);
 
   _variableLogSpace[i] = consume(js["Variables"][i], { "CMA-ES", "Log Space" }, KORALI_BOOLEAN, "false");
   _minStdDevChanges[i] = consume(js["Variables"][i], { "CMA-ES", "Minimum Standard Deviation Changes" }, KORALI_NUMBER, std::to_string(0));
@@ -334,11 +336,11 @@ void CMAES::setConfiguration(nlohmann::json& js)
  _termCondMaxFitnessEvaluations   = consume(js, { "CMA-ES", "Termination Criteria", "Max Model Evaluations", "Value" }, KORALI_NUMBER, std::to_string(std::numeric_limits<size_t>::max()));
  _isTermCondMaxFitnessEvaluations = consume(js, { "CMA-ES", "Termination Criteria", "Max Model Evaluations", "Active" }, KORALI_BOOLEAN, "true");
  _termCondFitness                 = consume(js, { "CMA-ES", "Termination Criteria", "Fitness", "Value" }, KORALI_NUMBER, std::to_string(std::numeric_limits<double>::max()));
- _isTermCondFitness               = consume(js, { "CMA-ES", "Termination Criteria", "Fitness", "Active" }, KORALI_BOOLEAN, "true");
+ _isTermCondFitness               = consume(js, { "CMA-ES", "Termination Criteria", "Fitness", "Active" }, KORALI_BOOLEAN, "false");
  _termCondFitnessDiffThreshold    = consume(js, { "CMA-ES", "Termination Criteria", "Fitness Diff Threshold", "Value" }, KORALI_NUMBER, std::to_string(1e-9));
  _isTermCondFitnessDiffThreshold  = consume(js, { "CMA-ES", "Termination Criteria", "Fitness Diff Threshold", "Active" }, KORALI_BOOLEAN, "true");
- _termCondMinDeltaX               = consume(js, { "CMA-ES", "Termination Criteria", "Min DeltaX", "Value" }, KORALI_NUMBER, std::to_string(0.0));
- _isTermCondMinDeltaX             = consume(js, { "CMA-ES", "Termination Criteria", "Min DeltaX", "Active" }, KORALI_BOOLEAN, "true");
+ _termCondMinDeltaX               = consume(js, { "CMA-ES", "Termination Criteria", "Min DeltaX", "Value" }, KORALI_NUMBER, std::to_string(1e-12));
+ _isTermCondMinDeltaX             = consume(js, { "CMA-ES", "Termination Criteria", "Min DeltaX", "Active" }, KORALI_BOOLEAN, "false");
  _termCondTolUpXFactor            = consume(js, { "CMA-ES", "Termination Criteria", "Max Standard Deviation", "Value" }, KORALI_NUMBER, std::to_string(1e18));
  _isTermCondTolUpXFactor          = consume(js, { "CMA-ES", "Termination Criteria", "Max Standard Deviation", "Active" }, KORALI_BOOLEAN, "true");
  _termCondCovCond                 = consume(js, { "CMA-ES", "Termination Criteria", "Max Condition Covariance", "Value" }, KORALI_NUMBER, std::to_string(std::numeric_limits<double>::max()));
@@ -424,7 +426,7 @@ void CMAES::initInternals(size_t numsamplesmu)
   if (_upperBounds[i] <= _lowerBounds[i])
   { fprintf( stderr, "[Korali] %s Error: Invalid Lower (%f) - Upper (%f) bounds range defined for variable %d.\n", _name.c_str(), _lowerBounds[i], _upperBounds[i], i); exit(-1); }
 
-  if (_initialStdDevs[i] <= 0.0) { fprintf(stderr, "[Korali] %s Error: Initial StdDev for variable %d is less or equal than 0 (%f).\n", _name.c_str(), i, _initialStdDevs[i]);  exit(-1); }
+  if (_initialStdDevs[i] <= 0.0) { fprintf(stderr, "[Korali] %s Error: Initial StdDev for variable %d is less or equal 0.\n", _name.c_str(), i);  exit(-1); }
  }
 
  // Initializing Mu Weights
@@ -676,7 +678,7 @@ void CMAES::prepareGeneration()
        sampleSingle(i);
        if ( (countinfeasible - initial_infeasible) > _maxResamplings )
        {
-        if(_k->_verbosity >= KORALI_DETAILED) printf("[Korali] Warning: exiting resampling loop (param %zu) , max resamplings (%zu) reached.\n", i, _maxResamplings);
+        if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Warning: exiting resampling loop (param %zu) , max resamplings (%zu) reached.\n", i, _maxResamplings);
         exit(-1);
        }
      }

@@ -17,8 +17,12 @@ class MCMC : public Base
 
  // MCMC Configuration
  unsigned int _s; /* Population Size */
- //bool _useLocalCov; /* Using local covariance instead of sample cov */
  size_t _burnin; /* burn in generations */
+ size_t _rejectionLevels; /* delayed rejection if > 1*/
+ bool _adaptive; /* Using chain covariance for proposal */
+ size_t _nonAdaptionPeriod; /* Period without Chain Cov Adaption (using initial Stddev) */
+ double _cr; /* Learning rate or Chain Covariance */
+ double _eps; /* Chain Covariance increment */
  size_t _maxresamplings; /* Max number resamplings inside generation loop */
  bool _isTermCondMaxFunEvals;
  size_t _termCondMaxFunEvals; /* Max objective function evaluations */
@@ -26,16 +30,17 @@ class MCMC : public Base
  size_t _termCondMaxGenerations; /* Max proposed samples */
  char _terminationReason[500];
 
-
  Korali::Variable* _gaussianGenerator; /* Gaussian random number generator */
+ Korali::Variable* _uniformGenerator; /* Uniform random number generator */
 
  // MCMC Runtime Variables
- double* z; /* placeholder random numbers */
- double* clPoint; /*  Leader parameter values */
+ double* z; /* Placeholder random numbers */
+ double* clPoint; /* Leader parameter values */
  double clLogLikelihood; /* Leader fitness value */
- double* ccPoint; /*  Candidate parameter values */
- double ccLogLikelihood; /* Candidate fitness value */
- double ccLogPrior; /* Candidate prior value */
+ double* ccPoints; /*  Candidates parameter values */
+ double* ccLogPriors; /* Candidates prior value */
+ double* ccLogLikelihoods; /* Candidates fitness value */
+ double* alpha; /* alphas for recursive calculation of delayed rejection schemes */
  double acceptanceRateProposals; /* Ratio proposed to accepted Samples */
  size_t naccept; /* Number of accepted samples */
  size_t countgens; /* Number of proposed samples */
@@ -44,14 +49,14 @@ class MCMC : public Base
  double* databasePoints; /* Variable values of samples in DB */
  double* databaseFitness; /* Fitness of samples in DB */
  size_t countevals; /* Number of function evaluations */
- double* chainMean; /* mean of mcmc chain */
- double* chainVar; /* variance of mcmc chain */
+ double* chainMean; /* Mean of mcmc chain */
+ double* tmpC; /* Placeholder chain cov calculation */
+ double* chainCov; /* Variance of mcmc chain */
 
  // MCMC Status variables
  double* _initialMean; /* Initial Mean of Cov Proposal Distribution */
  double* _initialStdDevs; /* Initial Diagonal of Cov Proposal Distribution */
  double* _covarianceMatrix; /* Covariance of Proposal Distribution */
- //double **local_cov; /* Local covariances of leaders */
 
  // Korali Methods
  void run() override;
@@ -59,12 +64,12 @@ class MCMC : public Base
 
   // Internal MCMC Methods
  void updateDatabase(double* point, double fitness);
- void generateCandidate(); 
- void sampleCandidate();
- void acceptReject();
- //void computeChainCovariances(double** chain_cov, size_t newchains) const;
+ void generateCandidate(size_t level); 
+ void sampleCandidate(size_t level);
+ void acceptReject(size_t level); /* Accept or reject sample at delay level */
+ double recursiveAlpha(double& D, const double llk0, const double* logliks, size_t N) const; /* calculate acceptance ratio alpha_N */
  void updateState();
- bool setCandidatePriorAndCheck();
+ bool setCandidatePriorAndCheck(size_t level);
  bool checkTermination();
 
  // Serialization Methods

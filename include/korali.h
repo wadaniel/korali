@@ -13,6 +13,7 @@
 #include "problems/bayesian.h"
 
 #include "solvers/cmaes.h"
+#include "solvers/diffevo.h"
 #include "solvers/mcmc.h"
 #include "solvers/tmcmc.h"
 

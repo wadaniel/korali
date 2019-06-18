@@ -155,6 +155,7 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
  std::string solverName = consume(js, { "Solver" }, KORALI_STRING);
  if (solverName == "CMA-ES")  _solver = new Korali::Solver::CMAES(js, solverName);
  if (solverName == "CCMA-ES") _solver = new Korali::Solver::CMAES(js, solverName);
+ if (solverName == "DE")      _solver = new Korali::Solver::DE(js, solverName);
  if (solverName == "MCMC")    _solver = new Korali::Solver::MCMC(js, solverName);
  if (solverName == "DRAM")    _solver = new Korali::Solver::MCMC(js, solverName);
  if (solverName == "TMCMC")   _solver = new Korali::Solver::TMCMC(js);

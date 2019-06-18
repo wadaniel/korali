@@ -1,4 +1,5 @@
-maximize_function
+maximize_function_de
+maximize_function_cmaes
 maximize_function_restart
 sample_function_tmcmc
 sample_function_mcmc

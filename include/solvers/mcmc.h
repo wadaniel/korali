@@ -53,8 +53,6 @@ class MCMC : public Base
  double* _covarianceMatrix; /* Covariance of Proposal Distribution */
  //double **local_cov; /* Local covariances of leaders */
 
- gsl_rng *_gslGen;
- 
  // Korali Methods
  void run() override;
  void processSample(size_t c, double fitness) override;

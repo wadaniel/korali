@@ -42,11 +42,21 @@ void Korali::Problem::Bayesian::setConfiguration(nlohmann::json& js)
  _referenceData = (double*) calloc (_referenceDataSize, sizeof(double));
  for (size_t i = 0; i < _referenceDataSize; i++) _referenceData[i] = ref[i];
 
- for (size_t i = 0; i < _k->N; i++ )
+ if (isArray(js, { "Variables" } ))
+ for (size_t i = 0; i < js["Variables"].size(); i++)
  {
+  auto varName = consume(js["Variables"][i], { "Name" }, KORALI_STRING);
+  _k->_variables.push_back(new Korali::Variable(varName));
+
   auto typeString = consume(js["Variables"][i], { "Bayesian", "Type" }, KORALI_STRING, "Computational");
   if (typeString == "Computational") _computationalVariableIndices.push_back(i);
   if (typeString == "Statistical")   _statisticalVariableIndices.push_back(i);
+
+  bool foundPriorDistribution = isDefined(js["Variables"][i], {"Bayesian", "Prior Distribution" });
+  if (foundPriorDistribution == false) { fprintf(stderr, "[Korali] Error: No Prior Distribution information provided for variable: %s.\n", _k->_variables[i]->_name.c_str()); exit(-1); }
+
+  js["Variables"][i]["Bayesian"]["Prior Distribution"]["Seed"] = _k->_seed++;
+  _k->_variables[i]->setDistribution(js["Variables"][i]["Bayesian"]["Prior Distribution"]);
  }
 }
 

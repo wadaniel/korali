@@ -28,8 +28,8 @@ Korali::Solver::MCMC::MCMC(nlohmann::json& js, std::string name)
  chainMean         = (double*) calloc (_k->N, sizeof(double));
  chainVar          = (double*) calloc (_k->N, sizeof(double));
 
- for(size_t d = 0; d < _k->N; ++d) clPoint[d] = _initialMean[d];
- for(size_t d = 0; d < _k->N; ++d) _covarianceMatrix[d*_k->N+d] = _initialStdDevs[d];
+ for(size_t i = 0; i < _k->N; i++) clPoint[i] = _initialMean[i];
+ for(size_t i = 0; i < _k->N; i++) _covarianceMatrix[i*_k->N+i] = _initialStdDevs[i];
 
  /*
  if(_useLocalCov) {
@@ -44,12 +44,12 @@ Korali::Solver::MCMC::MCMC(nlohmann::json& js, std::string name)
  
  // Initializing Gaussian Generator
  auto jsGaussian = nlohmann::json();
- jsGaussian["Name"] = "CMA-ES Generator";
  jsGaussian["Type"] = "Gaussian";
  jsGaussian["Mean"] = 0.0;
  jsGaussian["Sigma"] = 1.0;
  jsGaussian["Seed"] = _k->_seed++;
- _gaussianGenerator = new Variable(jsGaussian);
+ _gaussianGenerator = new Variable();
+ _gaussianGenerator->setDistribution(jsGaussian);
 
  countevals               = 0;
  naccept                  = 0;
@@ -201,7 +201,7 @@ void Korali::Solver::MCMC::processSample(size_t c, double fitness)
 void Korali::Solver::MCMC::acceptReject()
 {
  double L = exp(ccLogLikelihood-clLogLikelihood);
- if ( L >= 1.0 || L > gsl_ran_flat(_gslGen, 0.0, 1.0) ) {
+ if ( L >= 1.0 || L > _gaussianGenerator->getRandomNumber()) {
    naccept++;
    clLogLikelihood = ccLogLikelihood;
    for (size_t d = 0; d < _k->N; d++) clPoint[d] = ccPoint[d];
@@ -234,10 +234,8 @@ void Korali::Solver::MCMC::generateCandidate()
 
 void Korali::Solver::MCMC::sampleCandidate()
 {  
-
  for (size_t d = 0; d < _k->N; ++d) { z[d] = _gaussianGenerator->getRandomNumber(); ccPoint[d] = 0.0; }
  for (size_t d = 0; d < _k->N; ++d) for (size_t e = 0; e < _k->N; ++e) ccPoint[d] += _covarianceMatrix[d*_k->N+e] * z[e];
-
  for (size_t d = 0; d < _k->N; ++d) ccPoint[d] += clPoint[d];
 }
 

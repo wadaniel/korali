@@ -28,8 +28,7 @@ class Variable
  KoraliDistributionType _distributionType;
 
  // Constructor / Destructor
- Variable(nlohmann::json& js);
- Variable();
+ Variable(std::string name = "");
  ~Variable();
 
  double getDensity(double x);
@@ -39,8 +38,8 @@ class Variable
  void initialize();
 
  // Serialization Methods
-  nlohmann::json getConfiguration();
-  void setConfiguration(nlohmann::json& js);
+  void setDistribution(nlohmann::json& js);
+  nlohmann::json getDistribution();
 };
 
 } // namespace Korali

@@ -93,7 +93,6 @@ nlohmann::json Korali::Engine::getConfiguration()
  js["Problem"] = _problem->getConfiguration();
  js["Solver"]  = _solver->getConfiguration();
  js["Conduit"] = _conduit->getConfiguration();
- for (size_t i = 0; i < _k->N; i++) js["Variables"][i] = _variables[i]->getConfiguration();
 
  return js;
 }
@@ -124,6 +123,7 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
  _outputFrequency = consume(js, { "Output Frequency" }, KORALI_NUMBER, "1");
 
  // Configure Problem
+
  _problem = nullptr;
  std::string pName = consume(js, { "Problem" }, KORALI_STRING);
  if (pName == "Direct")   { _problem = new Korali::Problem::Direct(js); }
@@ -150,6 +150,7 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
  if (_conduit == nullptr) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Conduit '%s'.\n", conduitType.c_str()); exit(-1); }
 
  // Configure Solver
+
  _solver = nullptr;
  std::string solverName = consume(js, { "Solver" }, KORALI_STRING);
  if (solverName == "CMA-ES")  _solver = new Korali::Solver::CMAES(js, solverName);

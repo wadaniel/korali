@@ -10,6 +10,8 @@ using namespace Korali::Solver;
 /*                  Constructor / Destructor Methods                    */
 /************************************************************************/
 
+constexpr size_t str2int(const char* str, int h = 0) { return !str[h] ? 5381 : (str2int(str, h+1) * 33) ^ str[h]; }
+
 DE::DE(nlohmann::json& js, std::string name)
 {
  _name = name;
@@ -38,6 +40,7 @@ DE::DE(nlohmann::json& js, std::string name)
  _uniformGenerator = new Variable::Uniform(0.0, 1.0, _k->_seed++);
 
  countevals = 0;
+ countinfeasible = 0;
  prevFunctionValue    = -std::numeric_limits<double>::max();
  currentFunctionValue = -std::numeric_limits<double>::max();
  bestEver             = -std::numeric_limits<double>::max();
@@ -76,10 +79,12 @@ nlohmann::json DE::getConfiguration()
 {
  auto js = nlohmann::json();
 
- js["DE"]["Sample Count"]   = _s;
- js["DE"]["Crossover Rate"] = _crossoverRate;
- js["DE"]["Mutation Rate"]  = _mutationRate;
- js["DE"]["Objective"]      = _objective;
+ js["DE"]["Sample Count"]    = _s;
+ js["DE"]["Crossover Rate"]  = _crossoverRate;
+ js["DE"]["Mutation Rate"]   = _mutationRate;
+ js["DE"]["Objective"]       = _objective;
+ js["DE"]["Max Resamplings"] = _maxResamplings;
+ js["DE"]["Accept Rule"]     = _acceptRule;
 
  // Variable information
  for (size_t i = 0; i < _k->N; i++)
@@ -99,8 +104,10 @@ nlohmann::json DE::getConfiguration()
  js["DE"]["Termination Criteria"]["Min Fitness"]["Active"]            = _isTermCondFitness;
  js["DE"]["Termination Criteria"]["Fitness Diff Threshold"]["Value"]  = _termCondFitnessDiffThreshold;
  js["DE"]["Termination Criteria"]["Fitness Diff Threshold"]["Active"] = _isTermCondFitnessDiffThreshold;
+ js["DE"]["Termination Criteria"]["Min DeltaX"]["Value"]              = _termCondMinDeltaX;
+ js["DE"]["Termination Criteria"]["Min DeltaX"]["Active"]             = _isTermCondMinDeltaX;
 
-// State Information
+ // State Information
  js["DE"]["State"]["BestEverFunctionValue"]     = bestEver;
  js["DE"]["State"]["PreviousBestFunctionValue"] = prevBest;
  js["DE"]["State"]["EvaluationCount"]           = countevals;
@@ -122,13 +129,17 @@ nlohmann::json DE::getConfiguration()
 
 void DE::setConfiguration(nlohmann::json& js)
 {
- _s                             = consume(js, { "DE", "Sample Count" }, KORALI_NUMBER);
- _crossoverRate                 = consume(js, { "DE", "Crossover Rate" }, KORALI_NUMBER);
- _mutationRate                  = consume(js, { "DE", "Mutation Rate" }, KORALI_NUMBER);
+ _s                             = consume(js, { "DE", "Sample Count" }, KORALI_NUMBER); // 5x - 10x Dim
+ _crossoverRate                 = consume(js, { "DE", "Crossover Rate" }, KORALI_NUMBER, std::to_string(0.9)); // Rainer Storn [1996]
+ _mutationRate                  = consume(js, { "DE", "Mutation Rate" }, KORALI_NUMBER, std::to_string(0.5));  // Rainer Storn [1996]
  _objective                     = consume(js, { "DE", "Objective" }, KORALI_STRING, "Maximize");
- if(_s < 3)  { fprintf( stderr, "[Korali] %s Error: Sample Count must be larger 3 (is %zu)\n", _name.c_str(), _s); exit(-1); }
+ _maxResamplings                = consume(js, { "DE", "Max Resamplings" }, KORALI_NUMBER, std::to_string(1e6));
+ _acceptRule                    = consume(js, { "DE", "Accept Rule" }, KORALI_NUMBER, "Iterative");
+
+ if(_s < 4)  { fprintf( stderr, "[Korali] %s Error: Sample Count must be larger 3 (is %zu)\n", _name.c_str(), _s); exit(-1); }
  if(_crossoverRate <= 0.0 || _crossoverRate >= 1.0 )  { fprintf( stderr, "[Korali] %s Error: Invalid Crossover Rate, must be in (0,1) (is %f)\n", _name.c_str(), _crossoverRate); exit(-1); }
  if(_mutationRate < 0.0 || _mutationRate > 2.0 )  { fprintf( stderr, "[Korali] %s Error: Invalid Mutation Rate, must be in [0,2] (is %f)\n", _name.c_str(), _mutationRate); exit(-1); }
+ if( (_acceptRule != "Best") && (_acceptRule != "Greedy") && _acceptRule != "Iterative")  { fprintf( stderr, "[Korali] %s Error: Invalid Accept Rule, must be 'Best', 'Greedy' or 'Iterative' (is %s)\n", _name.c_str(), _acceptRule.c_str()); exit(-1); }
  
  _fitnessSign   = 0;
  if(_objective == "Maximize") _fitnessSign = 1;
@@ -168,9 +179,11 @@ void DE::setConfiguration(nlohmann::json& js)
  _termCondMaxFitnessEvaluations   = consume(js, { "DE", "Termination Criteria", "Max Model Evaluations", "Value" }, KORALI_NUMBER, std::to_string(std::numeric_limits<size_t>::max()));
  _isTermCondMaxFitnessEvaluations = consume(js, { "DE", "Termination Criteria", "Max Model Evaluations", "Active" }, KORALI_BOOLEAN, "true");
  _termCondFitness                 = consume(js, { "DE", "Termination Criteria", "Fitness", "Value" }, KORALI_NUMBER, std::to_string(std::numeric_limits<double>::max()));
- _isTermCondFitness               = consume(js, { "DE", "Termination Criteria", "Fitness", "Active" }, KORALI_BOOLEAN, "true");
+ _isTermCondFitness               = consume(js, { "DE", "Termination Criteria", "Fitness", "Active" }, KORALI_BOOLEAN, "false");
  _termCondFitnessDiffThreshold    = consume(js, { "DE", "Termination Criteria", "Fitness Diff Threshold", "Value" }, KORALI_NUMBER, std::to_string(1e-9));
  _isTermCondFitnessDiffThreshold  = consume(js, { "DE", "Termination Criteria", "Fitness Diff Threshold", "Active" }, KORALI_BOOLEAN, "true");
+ _termCondMinDeltaX               = consume(js, { "DE", "Termination Criteria", "Min DeltaX", "Value" }, KORALI_NUMBER, std::to_string(1e-12));
+ _isTermCondMinDeltaX             = consume(js, { "DE", "Termination Criteria", "Min DeltaX", "Active" }, KORALI_BOOLEAN, "true");
 
 }
 
@@ -246,8 +259,21 @@ void DE::initSamples()
 
 void DE::prepareGeneration()
 {
-
- for (size_t i = 0; i < _s; ++i) do { mutateSingle(i); } while (isFeasible(i) == false);
+ size_t initial_infeasible = countinfeasible;
+ for (size_t i = 0; i < _s; ++i)
+ {
+    mutateSingle(i);
+    while(isFeasible(i) == false)
+    {
+        countinfeasible++;
+        mutateSingle(i);
+        if ( (countinfeasible - initial_infeasible) > _maxResamplings )
+        {
+          if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Warning: exiting resampling loop (param %zu) , max resamplings (%zu) reached.\n", i, _maxResamplings);
+          exit(-1);
+        }
+    }
+ }
 
  finishedSamples = 0;
  for (size_t i = 0; i < _s; i++) initializedSample[i] = false;
@@ -321,16 +347,35 @@ void DE::updateSolver(const double *fitnessVector)
     
     if(currentFunctionValue < bestEver)
     {
-        bestEver = currentFunctionValue;
         for(size_t d = 0; d < _k->N; ++d) 
         {
             rgxoldmean[d]  = rgxmean[d];
             rgxbestever[d] = curBestVector[d];
             rgxmean[d]     = 0.0;
         }
-    
-        for(size_t i = 0; i < _s; ++i) if(fitnessVector[i] < bestEver) //greedy
-            for(size_t d = 0; d < _k->N; ++d) samplePopulation[i*_k->N+d] = candidates[i*_k->N+d];
+   
+        switch (str2int(_acceptRule.c_str()))
+        {
+            case str2int("Best") : // only update best sample
+                bestEver = currentFunctionValue;
+                for(size_t d = 0; d < _k->N; ++d) samplePopulation[minIndex*_k->N+d] = candidates[minIndex*_k->N+d];
+                break;
+
+            case str2int("Greedy") : // update all samples better than bestEver
+                for(size_t i = 0; i < _s; ++i) if(fitnessVector[i] < bestEver)
+                    for(size_t d = 0; d < _k->N; ++d) samplePopulation[i*_k->N+d] = candidates[i*_k->N+d];
+                bestEver = currentFunctionValue;
+                break;
+
+            case str2int("Iterative") : // iteratibely accept samples and update bestEver
+                for(size_t i = 0; i < _s; ++i) if(fitnessVector[i] < bestEver)
+                 { for(size_t d = 0; d < _k->N; ++d) samplePopulation[i*_k->N+d] = candidates[i*_k->N+d]; bestEver = fitnessVector[i]; }
+                break;
+
+            default :
+                if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Error: Accept Rule not recognize (%s).\n",  _acceptRule.c_str());
+                exit(-1);
+        }
 
         for(size_t i = 0; i < _s; ++i) for(size_t d = 0; d < _k->N; ++d) 
             rgxmean[d] += samplePopulation[i*_k->N+d]/((double)_s);
@@ -348,37 +393,26 @@ bool DE::checkTermination()
  if ( _isTermCondFitness && (currentGeneration > 1) && (bestEver >= _termCondFitness) )
  {
   terminate = true;
-  sprintf(_terminationReason, "Fitness Value (%+6.3e) > (%+6.3e)",  bestEver, _termCondFitness);
+  sprintf(_terminationReason, "Fitness Value (%+6.3e) > (%+6.3e).",  bestEver, _termCondFitness);
  }
 
  double range = fabs(currentFunctionValue - prevFunctionValue);
  if ( _isTermCondFitnessDiffThreshold && (currentGeneration > 1) && (range <= _termCondFitnessDiffThreshold) )
  {
   terminate = true;
-  sprintf(_terminationReason, "Function value differences (%+6.3e) < (%+6.3e)",  range, _termCondFitnessDiffThreshold);
+  sprintf(_terminationReason, "Function value differences (%+6.3e) < (%+6.3e).",  range, _termCondFitnessDiffThreshold);
  }
  
- /* TODO something similar with spread of samples
- double fac;
- size_t iAchse = 0;
- size_t iKoo = 0;
- if (!_isdiag )
+ if ( _isTermCondMinDeltaX && (currentGeneration > 1) )
  {
-    for (iAchse = 0; iAchse < _k->N; ++iAchse)
-    {
-    fac = 0.1 * sigma * axisD[iAchse];
-    for (iKoo = 0; iKoo < _k->N; ++iKoo){
-      if (rgxmean[iKoo] != rgxmean[iKoo] + fac * B[iKoo][iAchse])
-      break;
-    }
-    if (iKoo == _k->N)
-    {
-      terminate = true;
-      sprintf(_terminationReason, "Standard deviation 0.1*%7.2e in principal axis %ld without effect.", fac/0.1, iAchse);
-      break;
-    } 
-    }
- } */
+   size_t cTemp = 0;
+   for(size_t d = 0; d < _k->N; ++d) cTemp += (fabs(rgxmean[d] - rgxoldmean[d]) < _termCondMinDeltaX) ? 1 : 0;
+   if (cTemp == _k->N) 
+   {
+    terminate = true;
+    sprintf(_terminationReason, "Mean changes < %+6.3e for all variables.", _termCondMinDeltaX);
+   }
+ }
 
  if( _isTermCondMaxFitnessEvaluations && (countevals >= _termCondMaxFitnessEvaluations) )
  {

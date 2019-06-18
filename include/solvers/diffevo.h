@@ -42,6 +42,7 @@ class DE : public Base
 
  // Korali Runtime Variables
  int _fitnessSign; /* maximizing vs optimizing (+- 1) */
+ std::string _acceptRule; /* Best, Greedy or Iterative */
  std::string _objective; /* Maximize or Minimize */ 
  double* fitnessVector; /* objective function values [_s] */
  double* samplePopulation; /* sample coordinates [_s x _k->N] */
@@ -56,12 +57,14 @@ class DE : public Base
  size_t finishedSamples; /* counter of evaluated samples to terminate evaluation */
 
  // Stop conditions
- size_t _termCondMaxGenerations; // Max number of generations.
+ size_t _maxResamplings; // Max number of resamplings if sample is infeasible
+ size_t _termCondMaxGenerations; // Max number of generations
  size_t _termCondMaxFitnessEvaluations;   // Defines maximum number of fitness evaluations
  double _termCondFitness; // Defines the maximum fitness allowed, otherwise it stops
  double _termCondFitnessDiffThreshold; // Defines minimum function value differences before stopping
+ double _termCondMinDeltaX; // Defines minimum delta of input parameters among generations before it stops.
  bool _isTermCondMaxGenerations, _isTermCondMaxFitnessEvaluations, _isTermCondFitness,
-      _isTermCondFitnessDiffThreshold; // flgs to activate termination criteria
+      _isTermCondMinDeltaX, _isTermCondFitnessDiffThreshold; // flgs to activate termination criteria
  
  // Private DE-Specific Variables
  double currentFunctionValue; /* best fitness current generation */

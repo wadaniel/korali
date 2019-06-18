@@ -77,9 +77,10 @@ CMAES::CMAES(nlohmann::json& js, std::string name)
 
  flgEigensysIsUptodate = true;
 
- countevals = 0;
+ countevals      = 0;
  countinfeasible = 0;
- resampled = 0;
+ resampled       = 0;
+ 
  bestEver = -std::numeric_limits<double>::max();
 
  psL2 = 0.0;
@@ -329,11 +330,11 @@ void CMAES::setConfiguration(nlohmann::json& js)
  _termCondMaxFitnessEvaluations   = consume(js, { "CMA-ES", "Termination Criteria", "Max Model Evaluations", "Value" }, KORALI_NUMBER, std::to_string(std::numeric_limits<size_t>::max()));
  _isTermCondMaxFitnessEvaluations = consume(js, { "CMA-ES", "Termination Criteria", "Max Model Evaluations", "Active" }, KORALI_BOOLEAN, "true");
  _termCondFitness                 = consume(js, { "CMA-ES", "Termination Criteria", "Fitness", "Value" }, KORALI_NUMBER, std::to_string(std::numeric_limits<double>::max()));
- _isTermCondFitness               = consume(js, { "CMA-ES", "Termination Criteria", "Fitness", "Active" }, KORALI_BOOLEAN, "true");
+ _isTermCondFitness               = consume(js, { "CMA-ES", "Termination Criteria", "Fitness", "Active" }, KORALI_BOOLEAN, "false");
  _termCondFitnessDiffThreshold    = consume(js, { "CMA-ES", "Termination Criteria", "Fitness Diff Threshold", "Value" }, KORALI_NUMBER, std::to_string(1e-9));
  _isTermCondFitnessDiffThreshold  = consume(js, { "CMA-ES", "Termination Criteria", "Fitness Diff Threshold", "Active" }, KORALI_BOOLEAN, "true");
- _termCondMinDeltaX               = consume(js, { "CMA-ES", "Termination Criteria", "Min DeltaX", "Value" }, KORALI_NUMBER, std::to_string(0.0));
- _isTermCondMinDeltaX             = consume(js, { "CMA-ES", "Termination Criteria", "Min DeltaX", "Active" }, KORALI_BOOLEAN, "true");
+ _termCondMinDeltaX               = consume(js, { "CMA-ES", "Termination Criteria", "Min DeltaX", "Value" }, KORALI_NUMBER, std::to_string(1e-12));
+ _isTermCondMinDeltaX             = consume(js, { "CMA-ES", "Termination Criteria", "Min DeltaX", "Active" }, KORALI_BOOLEAN, "false");
  _termCondTolUpXFactor            = consume(js, { "CMA-ES", "Termination Criteria", "Max Standard Deviation", "Value" }, KORALI_NUMBER, std::to_string(1e18));
  _isTermCondTolUpXFactor          = consume(js, { "CMA-ES", "Termination Criteria", "Max Standard Deviation", "Active" }, KORALI_BOOLEAN, "true");
  _termCondCovCond                 = consume(js, { "CMA-ES", "Termination Criteria", "Max Condition Covariance", "Value" }, KORALI_NUMBER, std::to_string(std::numeric_limits<double>::max()));
@@ -671,7 +672,7 @@ void CMAES::prepareGeneration()
        sampleSingle(i);
        if ( (countinfeasible - initial_infeasible) > _maxResamplings )
        {
-        if(_k->_verbosity >= KORALI_DETAILED) printf("[Korali] Warning: exiting resampling loop (param %zu) , max resamplings (%zu) reached.\n", i, _maxResamplings);
+        if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Warning: exiting resampling loop (param %zu) , max resamplings (%zu) reached.\n", i, _maxResamplings);
         exit(-1);
        }
      }

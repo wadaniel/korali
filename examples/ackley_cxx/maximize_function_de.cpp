@@ -5,8 +5,9 @@ int main(int argc, char* argv[])
 {
  auto k = Korali::Engine();
 
- k["Problem"] = "Direct";
- k["Solver"]  = "DE";
+ k["Problem"]   = "Direct";
+ k["Solver"]    = "DE";
+ k["Verbosity"] = "Detailed";
  
  k["Variables"][0]["Name"] = "X0";
  k["Variables"][0]["DE"]["Lower Bound"] = -32.0;
@@ -26,8 +27,10 @@ int main(int argc, char* argv[])
 
  k["DE"]["Objective"] = "Maximize";
  k["DE"]["Sample Count"] = 40;
- k["DE"]["Termination Criteria"]["Max Generations"]["Value"] = 100;
- 
+ k["DE"]["Termination Criteria"]["Max Generations"]["Value"] = 5000;
+ k["DE"]["Termination Criteria"]["Fitness Diff Threshold"]["Active"] = false;
+ k["DE"]["Accept Rule"] = "Iterative";
+ k["DE"]["Crossover Rate"] = 1.0;
  
  k.setModel([](Korali::ModelData& d) { m_ackley(d.getVariables(), d.getResults()); });
 

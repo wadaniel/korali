@@ -90,7 +90,7 @@ class DE : public Base
  double _mutationRate;
  
  // Helper Methods
- size_t minIdx(const double *rgd, size_t len) const;
+ size_t maxIdx(const double *rgd, size_t len) const;
  
  // Print Methods
  void printGeneration() const;

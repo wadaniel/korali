@@ -32,7 +32,7 @@ Korali::Solver::MCMC::MCMC(nlohmann::json& js, std::string name)
  tmpC              = (double*) calloc (_k->N*_k->N , sizeof(double));
  chainCov          = (double*) calloc (_k->N*_k->N , sizeof(double));
 
- for(size_t i = 0; i < _k->N; i++) clPoint[i] = _initialMean[i];
+ for(size_t i = 0; i < _k->N; i++) clPoint[i] = _initialMeans[i];
  for(size_t i = 0; i < _k->N; i++) _covarianceMatrix[i*_k->N+i] = _initialStdDevs[i];
 
  // Initializing Gaussian Generator
@@ -95,6 +95,15 @@ nlohmann::json Korali::Solver::MCMC::getConfiguration()
  js["MCMC"]["Chain Covariance Increment"]     = _eps;
  js["MCMC"]["Max Resamplings"]                = _maxresamplings;
 
+ // Variable information
+ for (size_t i = 0; i < _k->N; i++)
+ {
+  js["Variables"][i]["Name"]                               = _varNames[i];
+  js["Variables"][i]["MCMC"]["Initial Mean"]               = _initialMeans[i];
+  js["Variables"][i]["MCMC"]["Initial Standard Deviation"] = _initialStdDevs[i];
+  //js["Variables"][i]["MCMC"]["Log Space"]                  = _variableLogSpace[i];
+ }
+
  js["MCMC"]["Termination Criteria"]["Max Function Evaluations"]["Value"]  = _termCondMaxFunEvals;
  js["MCMC"]["Termination Criteria"]["Max Function Evaluations"]["Active"] = _isTermCondMaxFunEvals;
  js["MCMC"]["Termination Criteria"]["Max Generated Samples"]["Value"]     = _termCondMaxGenerations;
@@ -143,13 +152,16 @@ void Korali::Solver::MCMC::setConfiguration(nlohmann::json& js)
  _termCondMaxGenerations   = consume(js, { "MCMC", "Termination Criteria", "Max Sample Generations", "Value" }, KORALI_NUMBER, std::to_string(1e12));
  _isTermCondMaxGenerations = consume(js, { "MCMC", "Termination Criteria", "Max Sample Generations", "Active" }, KORALI_BOOLEAN, "false");
   
-  _initialMean    = (double*) calloc(sizeof(double), _k->N);
-  _initialStdDevs = (double*) calloc(sizeof(double), _k->N);
+ _initialMeans   = (double*) calloc(sizeof(double), _k->N);
+ _initialStdDevs = (double*) calloc(sizeof(double), _k->N);
 
-  for(size_t d = 0; d < _k->N; d++) _initialMean[d] = consume(js["Variables"][d], { "MCMC", "Initial Mean" }, KORALI_NUMBER, std::to_string(0.0));
-  for(size_t d = 0; d < _k->N; d++) _initialStdDevs[d] = consume(js["Variables"][d], { "MCMC", "Initial Standard Deviation" }, KORALI_NUMBER, std::to_string(1.0));
+ for(size_t d = 0; d < _k->N; ++d) _varNames.push_back(consume(js["Variables"][d], { "Name" }, KORALI_STRING, "X"+std::to_string(d)));
   
-  for(size_t d = 0; d < _k->N; d++) if (_initialStdDevs[d] < 0) { fprintf( stderr, "[Korali] MCMC Error: Initial Standard Deviation in dim %zu must be larger Zero (is %f)\n", d, _initialStdDevs[d]); exit(-1); }
+ for(size_t d = 0; d < _k->N; d++) _initialMeans[d]   = consume(js["Variables"][d], { "MCMC", "Initial Mean" }, KORALI_NUMBER, std::to_string(0.0));
+ for(size_t d = 0; d < _k->N; d++) _initialStdDevs[d] = consume(js["Variables"][d], { "MCMC", "Initial Standard Deviation" }, KORALI_NUMBER, std::to_string(1.0));
+ //for(size_t d = 0; d < _k->N; d++) _variableLogSpace[d] = consume(js["Variables"][d], { "MCMC", "Log Space" }, KORALI_BOOLEAN, false);
+  
+ for(size_t d = 0; d < _k->N; d++) if (_initialStdDevs[d] < 0) { fprintf( stderr, "[Korali] MCMC Error: Initial Standard Deviation in dim %zu must be larger Zero (is %f)\n", d, _initialStdDevs[d]); exit(-1); }
 
 }
 

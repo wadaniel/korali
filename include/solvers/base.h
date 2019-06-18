@@ -3,6 +3,7 @@
 
 #include <chrono>
 #include <stdlib.h>
+#include <vector>
 #include "problems/base.h"
 #include "json/json.hpp"
 
@@ -16,6 +17,7 @@ class Base {
  std::chrono::time_point<std::chrono::system_clock> t0, t1, t2, t3;
 
  std::string _name;
+ std::vector<std::string> _varNames;
 
  // Running Methods
  virtual void run() = 0;

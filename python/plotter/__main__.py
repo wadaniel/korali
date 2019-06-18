@@ -16,22 +16,26 @@ def main(live):
 
  with open(firstResult) as f:
   data  = json.load(f)
-  method = data['Solver']['Method']
+  method = 'bla'
 
- if ( method == "TMCMC" ):
+ if 'TMCMC' in data['Solver']:
   print("[Korali] Running TMCMC Plotter...")
   plot_tmcmc(path, live)
   exit(0)
  
- if ( method == "MCMC" ):
+ if 'MCMC' in data['Solver']:
   print("[Korali] Running MCMC Plotter...")
   plot_mcmc(path, live)
   exit(0)
 
- if ( method == "CMA-ES" or method == "CCMA-ES" ):
+ if ( data['Solver']['CMA-ES'] or data['Solver']['CCMA-ES'] ):
   print("[Korali] Running CMA-ES Plotter...")
   plot_cmaes(path, live)
   exit(0)
+
+ if ( data['Solver']['DE'] ):
+  print("[Korali] Error: DE plotting not yet implemented...")
+  exit(-1)
 
  print("[Korali] Error: Did not recognize method for plotting...")
  exit(-1)

@@ -103,6 +103,7 @@ nlohmann::json DE::getConfiguration()
  // Variable information
  for (size_t i = 0; i < _k->N; i++)
  {
+  js["Variables"][i]["Name"]                = _varNames[i];
   js["Variables"][i]["DE"]["Lower Bound"]   = _lowerBounds[i];
   js["Variables"][i]["DE"]["Upper Bound"]   = _upperBounds[i];
   if (_initialMeanDefined[i]) js["Variables"][i]["DE"]["Initial Mean"] = _initialMeans[i];
@@ -173,6 +174,8 @@ void DE::setConfiguration(nlohmann::json& js)
 
  for (size_t d = 0; d < _k->N; ++d)
  {
+  _varNames.push_back(consume(js["Variables"][d], { "Name" }, KORALI_STRING, "X"+std::to_string(d)));
+  
   _lowerBounds[d] = consume(js["Variables"][d], { "DE", "Lower Bound" }, KORALI_NUMBER);
   _upperBounds[d] = consume(js["Variables"][d], { "DE", "Upper Bound" }, KORALI_NUMBER);
 

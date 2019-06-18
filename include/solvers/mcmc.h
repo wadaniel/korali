@@ -54,7 +54,7 @@ class MCMC : public Base
  double* chainCov; /* Variance of mcmc chain */
 
  // MCMC Status variables
- double* _initialMean; /* Initial Mean of Cov Proposal Distribution */
+ double* _initialMeans; /* Initial Mean of Cov Proposal Distribution */
  double* _initialStdDevs; /* Initial Diagonal of Cov Proposal Distribution */
  double* _covarianceMatrix; /* Covariance of Proposal Distribution */
 

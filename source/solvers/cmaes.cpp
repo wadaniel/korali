@@ -180,12 +180,13 @@ nlohmann::json CMAES::getConfiguration()
  // Variable information
  for (size_t i = 0; i < _k->N; i++)
  {
+  js["Variables"][i]["Name"]                    = _varNames[i];
   js["Variables"][i]["CMA-ES"]["Lower Bound"]   = _lowerBounds[i];
   js["Variables"][i]["CMA-ES"]["Upper Bound"]   = _upperBounds[i];
   js["Variables"][i]["CMA-ES"]["Initial Mean"]  = _initialMeans[i];
-  js["Variables"][i]["CMA-ES"]["Initial Standard Deviation"] = _initialStdDevs[i];
-  js["Variables"][i]["CMA-ES"]["Minimum Standard Deviation Changes"]  = _minStdDevChanges[i];
-  js["Variables"][i]["CMA-ES"]["Log Space"]  = _variableLogSpace[i];
+  js["Variables"][i]["CMA-ES"]["Initial Standard Deviation"]         = _initialStdDevs[i];
+  js["Variables"][i]["CMA-ES"]["Minimum Standard Deviation Changes"] = _minStdDevChanges[i];
+  js["Variables"][i]["CMA-ES"]["Log Space"]     = _variableLogSpace[i];
  }
 
  js["CMA-ES"]["Termination Criteria"]["Max Generations"]["Value"]           = _termCondMaxGenerations;
@@ -307,6 +308,8 @@ void CMAES::setConfiguration(nlohmann::json& js)
  {
   _lowerBounds[i] = -INFINITY;
   _upperBounds[i] = +INFINITY;
+
+  _varNames.push_back(consume(js["Variables"][i], { "Name" }, KORALI_STRING, "X"+std::to_string(i)));
 
   bool lowerBoundDefined = isDefined(js["Variables"][i], { "CMA-ES", "Lower Bound" });
   bool upperBoundDefined = isDefined(js["Variables"][i], { "CMA-ES", "Upper Bound" });

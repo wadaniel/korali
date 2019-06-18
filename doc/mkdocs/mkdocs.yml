@@ -42,6 +42,7 @@ nav:
       - Models: 
           - Simple: usage/models/simple.md
           - Rerefence: usage/models/reference.md
+          - Distributed: usage/models/distributed.md
           - Constraint: usage/models/constraint.md
       - Results: 
           - Export Results: usage/results/export.md
@@ -64,7 +65,7 @@ theme:
         text: 'Ubuntu'
         code: 'Ubuntu Mono'
     logo: 'images/templogo.png'
-
+# Got logo from https://icons8.com/icon/3036/coral
 
 markdown_extensions:
   - pymdownx.arithmatex

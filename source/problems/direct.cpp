@@ -29,6 +29,12 @@ nlohmann::json Korali::Problem::Direct::getConfiguration()
 
 void Korali::Problem::Direct::setConfiguration(nlohmann::json& js)
 {
+ if (isArray(js, { "Variables" } ))
+ for (size_t i = 0; i < js["Variables"].size(); i++)
+ {
+  auto varName = consume(js["Variables"][i], { "Name" }, KORALI_STRING);
+  _k->_variables.push_back(new Korali::Variable(varName));
+ }
 }
 
 /************************************************************************/

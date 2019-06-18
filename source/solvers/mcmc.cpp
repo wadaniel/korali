@@ -18,7 +18,6 @@ Korali::Solver::MCMC::MCMC(nlohmann::json& js, std::string name)
  _name = name;
  setConfiguration(js);
 
-
  // Allocating MCMC memory
  _covarianceMatrix = (double*) calloc (_k->N*_k->N, sizeof(double));
  z                 = (double*) calloc (_k->N, sizeof(double));
@@ -33,12 +32,17 @@ Korali::Solver::MCMC::MCMC(nlohmann::json& js, std::string name)
  tmpC              = (double*) calloc (_k->N*_k->N , sizeof(double));
  chainCov          = (double*) calloc (_k->N*_k->N , sizeof(double));
 
- for(size_t d = 0; d < _k->N; ++d) clPoint[d] = _initialMean[d];
- for(size_t d = 0; d < _k->N; ++d) _covarianceMatrix[d*_k->N+d] = _initialStdDevs[d];
+ for(size_t i = 0; i < _k->N; i++) clPoint[i] = _initialMean[i];
+ for(size_t i = 0; i < _k->N; i++) _covarianceMatrix[i*_k->N+i] = _initialStdDevs[i];
 
- _gslGen = gsl_rng_alloc (gsl_rng_default);
- gsl_rng_set(_gslGen, _k->_seed++);
- _gaussianGenerator = new Variable::Gaussian(0.0, 1.0, _k->_seed++);
+ // Initializing Gaussian Generator
+ auto jsGaussian = nlohmann::json();
+ jsGaussian["Type"] = "Gaussian";
+ jsGaussian["Mean"] = 0.0;
+ jsGaussian["Sigma"] = 1.0;
+ jsGaussian["Seed"] = _k->_seed++;
+ _gaussianGenerator = new Variable();
+ _gaussianGenerator->setDistribution(jsGaussian);
 
  countevals               = 0;
  naccept                  = 0;
@@ -208,6 +212,7 @@ void Korali::Solver::MCMC::processSample(size_t lvl, double fitness)
 
 void Korali::Solver::MCMC::acceptReject(size_t level)
 {
+<<<<<<< HEAD
 
  double D, N; // denominator, nominator
  double prevLogLikelihood;
@@ -276,7 +281,6 @@ void Korali::Solver::MCMC::generateCandidate(size_t level)
 
 void Korali::Solver::MCMC::sampleCandidate(size_t level)
 {  
-
  for (size_t d = 0; d < _k->N; ++d) { z[d] = _gaussianGenerator->getRandomNumber(); ccPoint[level*_k->N+d] = 0.0; }
 
  if ( _adaptive && databaseEntries < _nonAdaptionPeriod) 

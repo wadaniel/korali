@@ -12,14 +12,6 @@
 #include "problems/direct.h"
 #include "problems/bayesian.h"
 
-#include "variables/default.h"
-#include "variables/exponential.h"
-#include "variables/gamma.h"
-#include "variables/gaussian.h"
-#include "variables/uniform.h"
-#include "variables/cauchy.h"
-#include "variables/laplace.h"
-
 #include "solvers/cmaes.h"
 #include "solvers/diffevo.h"
 #include "solvers/mcmc.h"
@@ -30,6 +22,7 @@
 #include "conduits/nonintrusive.h"
 
 #include "json/koralijson.h"
+#include "variable.h"
 
 #ifdef _KORALI_USE_PYTHON
  #undef _POSIX_C_SOURCE
@@ -57,7 +50,7 @@ class Engine {
 
  size_t N; // Variable Count size_t N; // Variable Count
 
- std::vector<Korali::Variable::Base*> _variables;
+ std::vector<Korali::Variable*> _variables;
  Korali::Conduit::Base* _conduit;
  Korali::Problem::Base* _problem;
  Korali::Solver::Base*  _solver;

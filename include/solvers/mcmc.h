@@ -37,9 +37,9 @@ class MCMC : public Base
  double* z; /* Placeholder random numbers */
  double* clPoint; /* Leader parameter values */
  double clLogLikelihood; /* Leader fitness value */
- double* ccPoint; /*  Candidate parameter values */
- double* ccLogPrior; /* Candidate prior value */
- double* ccLogLikelihood; /* Candidate fitness value */
+ double* ccPoints; /*  Candidates parameter values */
+ double* ccLogPriors; /* Candidates prior value */
+ double* ccLogLikelihoods; /* Candidates fitness value */
  double* alpha; /* alphas for recursive calculation of delayed rejection schemes */
  double acceptanceRateProposals; /* Ratio proposed to accepted Samples */
  size_t naccept; /* Number of accepted samples */

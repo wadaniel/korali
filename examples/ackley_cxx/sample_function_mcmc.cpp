@@ -7,22 +7,23 @@ int main(int argc, char* argv[])
 
  k["Problem"] = "Direct";
  k["Solver"]  = "MCMC";
+ k["Verbosity"]  = "Detailed";
 
  k["Variables"][0]["Name"] = "X0";
  k["Variables"][0]["MCMC"]["Initial Mean"] = 0.0;
- k["Variables"][0]["MCMC"]["Initial Standard Deviation"] = 0.100;
+ k["Variables"][0]["MCMC"]["Initial Standard Deviation"] = 1.000;
 
  k["Variables"][1]["Name"] = "X1";
  k["Variables"][1]["MCMC"]["Initial Mean"] = 0.0;
- k["Variables"][1]["MCMC"]["Initial Standard Deviation"] = 0.100;
+ k["Variables"][1]["MCMC"]["Initial Standard Deviation"] = 1.000;
 
  k["Variables"][2]["Name"] = "X2";
  k["Variables"][2]["MCMC"]["Initial Mean"] = 0.0;
- k["Variables"][2]["MCMC"]["Initial Standard Deviation"] = 0.100;
+ k["Variables"][2]["MCMC"]["Initial Standard Deviation"] = 1.000;
 
  k["Variables"][3]["Name"] = "X3";
  k["Variables"][3]["MCMC"]["Initial Mean"] = 0.0;
- k["Variables"][3]["MCMC"]["Initial Standard Deviation"] = 0.100;
+ k["Variables"][3]["MCMC"]["Initial Standard Deviation"] = 1.000;
 
  k["MCMC"]["Population Size"] = 10000;
  k["MCMC"]["Burn In"] = 500;

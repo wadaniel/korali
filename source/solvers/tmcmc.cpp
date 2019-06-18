@@ -103,6 +103,14 @@ nlohmann::json Korali::Solver::TMCMC::getConfiguration()
  js["TMCMC"]["Covariance Scaling"]       = _beta2;
  js["TMCMC"]["Use Local Covariance"]     = _useLocalCov;
  js["TMCMC"]["Burn In"]                  = _burnin;
+ 
+ // Variable information
+ for (size_t i = 0; i < _k->N; i++)
+ {
+  js["Variables"][i]["Name"] = _varNames[i];
+  // TODO: rest (DW)
+ }
+
 
  js["TMCMC"]["Termination Criteria"]["Max Generations"]["Value"]  = _termCondMaxGens;
  js["TMCMC"]["Termination Criteria"]["Max Generations"]["Active"] = _isTermCondMaxGens;
@@ -136,6 +144,9 @@ void Korali::Solver::TMCMC::setConfiguration(nlohmann::json& js)
  _beta2             = consume(js, { "TMCMC", "Covariance Scaling" }, KORALI_NUMBER, std::to_string(0.04));
  _useLocalCov       = consume(js, { "TMCMC", "Use Local Covariance" }, KORALI_BOOLEAN, "false");
  _burnin            = consume(js, { "TMCMC", "Burn In" }, KORALI_NUMBER, std::to_string(0));
+ 
+ for(size_t d = 0; d < _k->N; ++d) _varNames.push_back(consume(js["Variables"][d], { "Name" }, KORALI_STRING, "X"+std::to_string(d)));
+ 
  _termCondMaxGens   = consume(js, { "TMCMC", "Termination Criteria", "Max Generations", "Value" }, KORALI_NUMBER, std::to_string(20));
  _isTermCondMaxGens = consume(js, { "TMCMC", "Termination Criteria", "Max Generations", "Active" }, KORALI_BOOLEAN, "true");
 }

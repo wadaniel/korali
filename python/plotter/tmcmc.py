@@ -95,13 +95,11 @@ def plot_lower_triangle(ax, theta):
 def plot_samples(path, idx=None):
     with open(path) as f:
         data    = json.load(f)
-        dims    = data['Problem']['Variables']
-        numdim  = len(dims)
-        pop     = data['Solver']['Population Size']
-        state   = data['Solver']['State']
-        anneal  = state['AnnealingExponent']
-        fitness = state['DatabaseFitness']
-        samples = np.reshape( state['DatabasePoints'], (pop,numdim) )
+        numdim  = len(data['Solver']['Variables'])
+        pop     = data['Solver']['TMCMC']['Population Size']
+        anneal  = data['Solver']['TMCMC']['State']['AnnealingExponent']
+        fitness = data['Solver']['TMCMC']['State']['DatabaseFitness']
+        samples = np.reshape( data['Solver']['TMCMC']['State']['DatabasePoints'], (pop,numdim) )
 
         plt.style.use('seaborn-dark')
         fig, ax = plt.subplots(samples.shape[1], samples.shape[1], figsize=(8,8))
@@ -113,10 +111,8 @@ def plot_samples(path, idx=None):
         else:           
             fig.canvas.set_window_title('s{0}.json'.format(str(idx).zfill(5)))
         
-        plt.suptitle( 'TMCMC\nSamples Generation {0}\n(Annealing Exponent {1:.3e})'.format(str(idx),\
-                            anneal),
-                      fontweight='bold',
-                      fontsize  = 12)
+        plt.suptitle( 'TMCMC\nGeneration {0}\nNumber of Samples {1}\n(Annealing Exponent {2:.3e})'.format(str(idx), \
+                        str(pop), anneal), fontweight='bold', fontsize  = 12 )
 
         plot_histogram(ax, samples)
         plot_upper_triangle(ax, samples, False)

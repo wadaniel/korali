@@ -27,6 +27,7 @@ int main(int argc, char* argv[])
 
  k["MCMC"]["Population Size"] = 10000;
  k["MCMC"]["Burn In"] = 500;
+ k["MCMC"]["Adaptive Sampling"]  = true;
 
  k.setModel([](Korali::ModelData& d) { m_ackley(d.getVariables(), d.getResults()); });
  k.run();

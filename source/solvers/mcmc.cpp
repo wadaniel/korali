@@ -89,7 +89,7 @@ nlohmann::json Korali::Solver::MCMC::getConfiguration()
  js["MCMC"]["Population Size"]                = _s;
  js["MCMC"]["Burn In"]                        = _burnin;
  js["MCMC"]["Rejection Levels"]               = _rejectionLevels;
- js["MCMC"]["Adaptive MCMC"]                  = _adaptive;
+ js["MCMC"]["Adaptive Sampling"]              = _adaptive;
  js["MCMC"]["Non Adaption Period"]            = _nonAdaptionPeriod;
  js["MCMC"]["Chain Covariance Learning Rate"] = _cr;
  js["MCMC"]["Chain Covariance Increment"]     = _eps;
@@ -129,7 +129,7 @@ void Korali::Solver::MCMC::setConfiguration(nlohmann::json& js)
 
  if (_rejectionLevels < 1) { fprintf( stderr, "[Korali] MCMC Error: Rejection Level must be at least One (is %lu)\n", _rejectionLevels); exit(-1); }
  
- _adaptive                 = consume(js, { "MCMC", "Adaptive MCMC" }, KORALI_BOOLEAN, "false");
+ _adaptive                 = consume(js, { "MCMC", "Adaptive Sampling" }, KORALI_BOOLEAN, "false");
  _nonAdaptionPeriod        = consume(js, { "MCMC", "Non Adaption Period" }, KORALI_NUMBER, std::to_string(0.05 * _s));
  _cr                       = consume(js, { "MCMC", "Chain Covariance Learning Rate" }, KORALI_NUMBER, std::to_string(2.4*2.4/_k->N)); //Gelman et al. 1995
  _eps                      = consume(js, { "MCMC", "Chain Covariance Increment" }, KORALI_NUMBER, std::to_string(0.01)); // sth small (Haario et. al. 2006)
@@ -387,7 +387,7 @@ void Korali::Solver::MCMC::printGeneration() const
   for (size_t d = 0; d < _k->N; d++)  printf("         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), clPoint[d], ccPoints[d]);
   printf("[Korali] Current Chain Mean:\n");
   for (size_t d = 0; d < _k->N; d++) printf(" %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), chainMean[d]);
-  printf("[Korali] Current Chain Variance:\n");
+  printf("[Korali] Current Chain Covariance:\n");
   for (size_t d = 0; d < _k->N; d++)
   {
    for (size_t e = 0; e <= d; e++) printf("   %+6.3e  ", chainCov[d*_k->N+e]);

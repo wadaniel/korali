@@ -2,7 +2,6 @@
 #define _KORALI_SOLVERS_DE_H_
 
 #include "solvers/base.h"
-#include "variables/gaussian.h"
 #include <chrono>
 #include <map>
 
@@ -49,8 +48,8 @@ class DE : public Base
  double* candidates; /* candidates to evaluate */
  bool* initializedSample; /* flag to distribute work */
  char _terminationReason[500]; /* buffer for exit reason */
- Variable::Gaussian* _gaussianGenerator;
- Variable::Uniform* _uniformGenerator;
+ Variable* _gaussianGenerator;
+ Variable* _uniformGenerator;
 
  size_t _s; /* number of samples per generation */
  size_t currentGeneration; /* generation count */

@@ -30,8 +30,8 @@ class MCMC : public Base
  size_t _termCondMaxGenerations; /* Max proposed samples */
  char _terminationReason[500];
 
-
  Korali::Variable* _gaussianGenerator; /* Gaussian random number generator */
+ Korali::Variable* _uniformGenerator; /* Uniform random number generator */
 
  // MCMC Runtime Variables
  double* z; /* Placeholder random numbers */

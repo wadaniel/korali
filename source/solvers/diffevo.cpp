@@ -35,11 +35,25 @@ DE::DE(nlohmann::json& js, std::string name)
  // Init Generation
  currentGeneration = 0;
 
- // Initializing Generators
- _gaussianGenerator = new Variable::Gaussian(0.0, 1.0, _k->_seed++);
- _uniformGenerator = new Variable::Uniform(0.0, 1.0, _k->_seed++);
+ // Initializing Generators 
+ auto jsGaussian = nlohmann::json();
+ jsGaussian["Type"]  = "Gaussian";
+ jsGaussian["Mean"]  = 0.0;
+ jsGaussian["Sigma"] = 1.0;
+ jsGaussian["Seed"] = _k->_seed++;
+ _gaussianGenerator = new Variable();
+ _gaussianGenerator->setDistribution(jsGaussian);
 
- countevals = 0;
+ auto jsUniform = nlohmann::json();
+ jsUniform["Type"] = "Uniform";
+ jsUniform["Minimum"] = 0.0;
+ jsUniform["Maximum"] = 1.0;
+ jsUniform["Seed"] = _k->_seed++;
+
+ _uniformGenerator = new Variable();
+ _uniformGenerator->setDistribution(jsUniform);
+
+ countevals      = 0;
  countinfeasible = 0;
  prevFunctionValue    = -std::numeric_limits<double>::max();
  currentFunctionValue = -std::numeric_limits<double>::max();

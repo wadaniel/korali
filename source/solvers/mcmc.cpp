@@ -43,6 +43,16 @@ Korali::Solver::MCMC::MCMC(nlohmann::json& js, std::string name)
  jsGaussian["Seed"] = _k->_seed++;
  _gaussianGenerator = new Variable();
  _gaussianGenerator->setDistribution(jsGaussian);
+ 
+ auto jsUniform = nlohmann::json();
+ jsUniform["Type"] = "Uniform";
+ jsUniform["Minimum"] = 0.0;
+ jsUniform["Maximum"] = 1.0;
+ jsUniform["Seed"] = _k->_seed++;
+
+ _uniformGenerator = new Variable();
+ _uniformGenerator->setDistribution(jsUniform);
+
 
  countevals               = 0;
  naccept                  = 0;
@@ -212,7 +222,6 @@ void Korali::Solver::MCMC::processSample(size_t lvl, double fitness)
 
 void Korali::Solver::MCMC::acceptReject(size_t level)
 {
-<<<<<<< HEAD
 
  double D, N; // denominator, nominator
  double prevLogLikelihood;
@@ -221,7 +230,7 @@ void Korali::Solver::MCMC::acceptReject(size_t level)
  {
   double D = 1.0;
   alpha[l] = recursiveAlpha(D, clLogLikelihood, ccLogLikelihood, l);
-  if ( alpha[l] >= 1.0 || alpha[l] > gsl_ran_flat(_gslGen, 0.0, 1.0) ) {
+  if ( alpha[l] >= 1.0 || alpha[l] > _uniformGenerator->getRandomNumber() ) {
     naccept++;
     clLogLikelihood = ccLogLikelihood[l];
     for (size_t d = 0; d < _k->N; d++) clPoint[d] = ccPoint[l*_k->N+d];

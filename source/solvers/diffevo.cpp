@@ -20,15 +20,15 @@ DE::DE(nlohmann::json& js, std::string name)
  samplePopulation =  (double*) calloc (sizeof(double), _k->N*_s);
  candidates       = (double*) calloc (sizeof(double), _k->N*_s);
 
+ rgxoldmean     = (double*) calloc (sizeof(double), _k->N);
  rgxmean        = (double*) calloc (sizeof(double), _k->N);
- rgxold         = (double*) calloc (sizeof(double), _k->N);
  rgxbestever    = (double*) calloc (sizeof(double), _k->N);
  curBestVector  = (double*) calloc (sizeof(double), _k->N);
 
  histFuncValues = (double*) calloc (sizeof(double), _termCondMaxGenerations+1);
 
- _initializedSample = (bool*) calloc (sizeof(bool), _s);
- _fitnessVector = (double*) calloc (sizeof(double), _s);
+ initializedSample = (bool*) calloc (sizeof(bool), _s);
+ fitnessVector = (double*) calloc (sizeof(double), _s);
 
  // Init Generation
  currentGeneration = 0;
@@ -38,7 +38,9 @@ DE::DE(nlohmann::json& js, std::string name)
  _uniformGenerator = new Variable::Uniform(0.0, 1.0, _k->_seed++);
 
  countevals = 0;
- bestEver = -std::numeric_limits<double>::max();
+ prevFunctionValue    = -std::numeric_limits<double>::max();
+ currentFunctionValue = -std::numeric_limits<double>::max();
+ bestEver             = -std::numeric_limits<double>::max();
 
  /* set rgxmean */
  for (size_t i = 0; i < _k->N; ++i) if (_initialMeanDefined[i])
@@ -49,7 +51,7 @@ DE::DE(nlohmann::json& js, std::string name)
             _k->_variables[i]->_name.c_str(),
             _lowerBounds[i],
             _upperBounds[i]);
-   rgxmean[i] = rgxold[i] = _initialMeans[i];
+   rgxmean[i] = rgxoldmean[i] = _initialMeans[i];
  }
 
  // If state is defined:
@@ -101,14 +103,12 @@ nlohmann::json DE::getConfiguration()
 // State Information
  js["DE"]["State"]["BestEverFunctionValue"]     = bestEver;
  js["DE"]["State"]["PreviousBestFunctionValue"] = prevBest;
- js["DE"]["State"]["CurrentBestFunctionValue"]  = currentFunctionValue;
- js["DE"]["State"]["PrevFunctionValue"]         = prevFunctionValue;
  js["DE"]["State"]["EvaluationCount"]           = countevals;
 
- for (size_t i = 0; i < _s; i++) js["DE"]["State"]["FunctionValues"] += _fitnessVector[i];
+ for (size_t i = 0; i < _s; i++) js["DE"]["State"]["FunctionValues"] += fitnessVector[i];
 
  for (size_t i = 0; i < _k->N; i++) js["DE"]["State"]["CurrentMeanVector"]  += rgxmean[i];
- for (size_t i = 0; i < _k->N; i++) js["DE"]["State"]["PreviousMeanVector"] += rgxold[i];
+ for (size_t i = 0; i < _k->N; i++) js["DE"]["State"]["PreviousMeanVector"] += rgxoldmean[i];
  for (size_t i = 0; i < _k->N; i++) js["DE"]["State"]["BestEverVector"]     += rgxbestever[i];
  for (size_t i = 0; i < _k->N; i++) js["DE"]["State"]["CurrentBestVector"]  += curBestVector[i];
 
@@ -146,18 +146,20 @@ void DE::setConfiguration(nlohmann::json& js)
 
  _variableLogSpace = (bool*) calloc(sizeof(bool), _k->N);
 
- for (size_t i = 0; i < _k->N; i++)
+ for (size_t d = 0; d < _k->N; ++d)
  {
-  _lowerBounds[i] = consume(js["Variables"][i], { "DE", "Lower Bound" }, KORALI_NUMBER);
-  _upperBounds[i] = consume(js["Variables"][i], { "DE", "Upper Bound" }, KORALI_NUMBER);
+  _lowerBounds[d] = consume(js["Variables"][d], { "DE", "Lower Bound" }, KORALI_NUMBER);
+  _upperBounds[d] = consume(js["Variables"][d], { "DE", "Upper Bound" }, KORALI_NUMBER);
 
-  _initialMeanDefined[i]   = isDefined(js["Variables"][i], { "DE", "Initial Mean" });
-  _initialStdDevDefined[i] = isDefined(js["Variables"][i], { "DE", "Initial Standard Deviation" });
+  _initialMeanDefined[d]   = isDefined(js["Variables"][d], { "DE", "Initial Mean" });
+  _initialStdDevDefined[d] = isDefined(js["Variables"][d], { "DE", "Initial Standard Deviation" });
+  if( _initialStdDevDefined[d] != _initialMeanDefined[d]) 
+    { fprintf( stderr, "[Korali] %s Error: Invalid setting for Initial Mean and Initial Stanard Deviation for variable %s (both must be defined or none)\n", _name.c_str(), _k->_variables[d]->_name.c_str()); exit(-1); }
 
-  if (_initialMeanDefined[i])   _initialMeans[i]   = consume(js["Variables"][i], { "DE", "Initial Mean" }, KORALI_NUMBER);
-  if (_initialStdDevDefined[i]) _initialStdDevs[i] = consume(js["Variables"][i], { "DE", "Initial Standard Deviation" }, KORALI_NUMBER);
+  if (_initialMeanDefined[d])   _initialMeans[d]   = consume(js["Variables"][d], { "DE", "Initial Mean" }, KORALI_NUMBER);
+  if (_initialStdDevDefined[d]) _initialStdDevs[d] = consume(js["Variables"][d], { "DE", "Initial Standard Deviation" }, KORALI_NUMBER);
 
-  _variableLogSpace[i] = consume(js["Variables"][i], { "DE", "Log Space" }, KORALI_BOOLEAN, "false");
+  _variableLogSpace[d] = consume(js["Variables"][d], { "DE", "Log Space" }, KORALI_BOOLEAN, "false");
  }
 
  // Setting termination criteria
@@ -177,15 +179,13 @@ void DE::setState(nlohmann::json& js)
 {
  currentGeneration    = js["DE"]["State"]["Current Generation"];
  bestEver             = js["DE"]["State"]["BestEverFunctionValue"];
- currentFunctionValue = js["DE"]["State"]["CurrentBestFunctionValue"];
  prevBest             = js["DE"]["State"]["PreviousBestFunctionValue"];
- prevFunctionValue    = js["DE"]["State"]["PrevFunctionValue"];
  countevals           = js["DE"]["State"]["EvaluationCount"];
 
  for (size_t i = 0; i < _k->N; i++) rgxmean[i]       = js["DE"]["State"]["CurrentMeanVector"][i];
- for (size_t i = 0; i < _k->N; i++) rgxold[i]        = js["DE"]["State"]["PreviousMeanVector"][i];
+ for (size_t i = 0; i < _k->N; i++) rgxoldmean[i]    = js["DE"]["State"]["PreviousMeanVector"][i];
  for (size_t i = 0; i < _k->N; i++) rgxbestever[i]   = js["DE"]["State"]["BestEverVector"][i];
- for (size_t i = 0; i < _s; i++) _fitnessVector[i]   = js["DE"]["State"]["FunctionValues"][i];
+ for (size_t i = 0; i < _s; i++) fitnessVector[i]   = js["DE"]["State"]["FunctionValues"][i];
  for (size_t i = 0; i < _s; i++) for (size_t j = 0; j < _k->N; j++) samplePopulation[i*_k->N + j] = js["DE"]["State"]["Samples"][i][j];
  for (size_t i = 0; i < _s; i++) for (size_t j = 0; j < _k->N; j++) candidates[i*_k->N + j] = js["DE"]["State"]["Candidates"][i][j];
 }
@@ -212,7 +212,7 @@ void DE::run()
    t0 = std::chrono::system_clock::now();
    prepareGeneration();
    evaluateSamples(); 
-   updateSolver(_fitnessVector);
+   updateSolver(fitnessVector);
    currentGeneration++;
 
    t1 = std::chrono::system_clock::now();
@@ -243,13 +243,14 @@ void DE::initSamples()
   }
 }
 
+
 void DE::prepareGeneration()
 {
 
- for (size_t i = 0; i < _s; ++i) mutateSingle(i);
+ for (size_t i = 0; i < _s; ++i) do { mutateSingle(i); } while (isFeasible(i) == false);
 
- _finishedSamples = 0;
- for (size_t i = 0; i < _s; i++) _initializedSample[i] = false;
+ finishedSamples = 0;
+ for (size_t i = 0; i < _s; i++) initializedSample[i] = false;
 }
 
 
@@ -271,6 +272,13 @@ void DE::mutateSingle(size_t sampleIdx)
 }
 
 
+bool DE::isFeasible(size_t sampleIdx) const
+{
+  for(size_t d = 0; d < _k->N; ++d) if ( (candidates[sampleIdx*_k->N+d] < _lowerBounds[d]) || (candidates[sampleIdx*_k->N+d] > _upperBounds[d])) return false;
+  return true;
+}
+
+
 void DE::evaluateSamples()
 {
   double* transformedSamples = new double[ _s * _k->N ];
@@ -282,11 +290,11 @@ void DE::evaluateSamples()
         transformedSamples[i*_k->N+d] = candidates[i*_k->N+d];
 
 
-  while (_finishedSamples < _s)
+  while (finishedSamples < _s)
   {
-    for (size_t i = 0; i < _s; i++) if (_initializedSample[i] == false)
+    for (size_t i = 0; i < _s; i++) if (initializedSample[i] == false)
     {
-      _initializedSample[i] = true; 
+      initializedSample[i] = true; 
       _k->_conduit->evaluateSample(transformedSamples, i); countevals++;
     }
     _k->_conduit->checkProgress();
@@ -299,16 +307,36 @@ void DE::evaluateSamples()
 void DE::processSample(size_t sampleIdx, double fitness)
 {
  double logPrior = _k->_problem->evaluateLogPrior(&samplePopulation[sampleIdx*_k->N]);
- _fitnessVector[sampleIdx] = _fitnessSign * (logPrior+fitness);
- _finishedSamples++;
+ fitnessVector[sampleIdx] = _fitnessSign * (logPrior+fitness);
+ finishedSamples++;
 }
-
-
 
 
 void DE::updateSolver(const double *fitnessVector)
 {
-    //TODO
+    size_t minIndex      = minIdx(fitnessVector, _s);
+    prevFunctionValue    = currentFunctionValue;
+    currentFunctionValue = fitnessVector[minIndex];
+    for(size_t d = 0; d < _k->N; ++d) curBestVector[d] = candidates[minIndex*_k->N+d];
+    
+    if(currentFunctionValue < bestEver)
+    {
+        bestEver = currentFunctionValue;
+        for(size_t d = 0; d < _k->N; ++d) 
+        {
+            rgxoldmean[d]  = rgxmean[d];
+            rgxbestever[d] = curBestVector[d];
+            rgxmean[d]     = 0.0;
+        }
+    
+        for(size_t i = 0; i < _s; ++i) if(fitnessVector[i] < bestEver) //greedy
+            for(size_t d = 0; d < _k->N; ++d) samplePopulation[i*_k->N+d] = candidates[i*_k->N+d];
+
+        for(size_t i = 0; i < _s; ++i) for(size_t d = 0; d < _k->N; ++d) 
+            rgxmean[d] += samplePopulation[i*_k->N+d]/((double)_s);
+    }
+    
+    prevBest = bestEver;
 }
 
 
@@ -371,6 +399,14 @@ bool DE::checkTermination()
 /************************************************************************/
 /*                    Additional Methods                                */
 /************************************************************************/
+
+
+size_t DE::minIdx(const double *rgd, size_t len) const
+{
+ size_t res = 0;
+ for(size_t i = 1; i < len; i++) if(rgd[i] < rgd[res]) res = i;
+ return res;
+}
 
 
 void DE::printGeneration() const

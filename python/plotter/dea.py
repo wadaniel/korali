@@ -45,7 +45,8 @@ def plot_dea(src, live = False, obj='current'):
     dfval    = [] # abs diff currentBest - bestEver
     fval     = [] # best fval current generation
     fvalXvec = [] # location fval
-    width    = [] # spread samples
+    meanXvec = [] # location mean population
+    width    = [] # spread population
 
     plt.style.use('seaborn-dark')
 
@@ -142,7 +143,7 @@ def draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, fvalXvec, meanX
     ax[1,1].set_title('Mean Population')
     ax[1,1].grid(True)
     for i in range(numdim):
-        ax[1,1].plot(numeval, meanXvec, color = colors[i], label=names[i])
+        ax[1,1].plot(numeval, meanXvec[i], color = colors[i], label=names[i])
     if ( (idx == 2) or (live == False) ):
         ax[1,1].legend(bbox_to_anchor=(1.04,0.5), loc="center left", borderaxespad=0, handlelength=1)
     

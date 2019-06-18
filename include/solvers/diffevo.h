@@ -43,6 +43,7 @@ class DE : public Base
  int _fitnessSign; /* maximizing vs optimizing (+- 1) */
  std::string _acceptRule; /* Best, Greedy or Iterative */
  std::string _objective; /* Maximize or Minimize */ 
+ double* oldFitnessVector; /* objective function values previous generation [_s] */
  double* fitnessVector; /* objective function values [_s] */
  double* samplePopulation; /* sample coordinates [_s x _k->N] */
  double* candidates; /* candidates to evaluate */

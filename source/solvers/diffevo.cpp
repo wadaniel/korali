@@ -30,7 +30,8 @@ DE::DE(nlohmann::json& js, std::string name)
  histFuncValues = (double*) calloc (sizeof(double), _termCondMaxGenerations+1);
 
  initializedSample = (bool*) calloc (sizeof(bool), _s);
- fitnessVector = (double*) calloc (sizeof(double), _s);
+ oldFitnessVector  = (double*) calloc (sizeof(double), _s);
+ fitnessVector     = (double*) calloc (sizeof(double), _s);
 
  // Init Generation
  currentGeneration = 0;
@@ -128,6 +129,7 @@ nlohmann::json DE::getConfiguration()
  js["DE"]["State"]["EvaluationCount"]           = countevals;
 
  for (size_t i = 0; i < _s; i++) js["DE"]["State"]["FunctionValues"] += fitnessVector[i];
+ for (size_t i = 0; i < _s; i++) js["DE"]["State"]["PreviousFunctionValues"] += oldFitnessVector[i];
 
  for (size_t i = 0; i < _k->N; i++) js["DE"]["State"]["CurrentMeanVector"]  += rgxmean[i];
  for (size_t i = 0; i < _k->N; i++) js["DE"]["State"]["PreviousMeanVector"] += rgxoldmean[i];
@@ -154,7 +156,8 @@ void DE::setConfiguration(nlohmann::json& js)
  if(_s < 4)  { fprintf( stderr, "[Korali] %s Error: Sample Count must be larger 3 (is %zu)\n", _name.c_str(), _s); exit(-1); }
  if(_crossoverRate <= 0.0 || _crossoverRate > 1.0 )  { fprintf( stderr, "[Korali] %s Error: Invalid Crossover Rate, must be in (0,1] (is %f)\n", _name.c_str(), _crossoverRate); exit(-1); }
  if(_mutationRate < 0.0 || _mutationRate > 2.0 )  { fprintf( stderr, "[Korali] %s Error: Invalid Mutation Rate, must be in [0,2] (is %f)\n", _name.c_str(), _mutationRate); exit(-1); }
- if( (_acceptRule != "Best") && (_acceptRule != "Greedy") && (_acceptRule != "Iterative") )  { fprintf( stderr, "[Korali] %s Error: Invalid Accept Rule, must be 'Best', 'Greedy' or 'Iterative' (is %s)\n", _name.c_str(), _acceptRule.c_str()); exit(-1); }
+ if( (_acceptRule != "Best") && (_acceptRule != "Greedy") && (_acceptRule != "Iterative") && (_acceptRule != "Paired") )  
+ { fprintf( stderr, "[Korali] %s Error: Invalid Accept Rule, must be 'Best', 'Greedy', 'Iterative' or 'Paired' (is %s)\n", _name.c_str(), _acceptRule.c_str()); exit(-1); }
  
  _fitnessSign   = 0;
  if(_objective == "Maximize") _fitnessSign = 1;
@@ -215,7 +218,8 @@ void DE::setState(nlohmann::json& js)
  for (size_t i = 0; i < _k->N; i++) rgxmean[i]       = js["DE"]["State"]["CurrentMeanVector"][i];
  for (size_t i = 0; i < _k->N; i++) rgxoldmean[i]    = js["DE"]["State"]["PreviousMeanVector"][i];
  for (size_t i = 0; i < _k->N; i++) rgxbestever[i]   = js["DE"]["State"]["BestEverVector"][i];
- for (size_t i = 0; i < _s; i++) fitnessVector[i]   = js["DE"]["State"]["FunctionValues"][i];
+ for (size_t i = 0; i < _s; i++) fitnessVector[i]    = js["DE"]["State"]["FunctionValues"][i];
+ for (size_t i = 0; i < _s; i++) oldFitnessVector[i] = js["DE"]["State"]["OldFunctionValues"][i];
  for (size_t i = 0; i < _s; i++) for (size_t j = 0; j < _k->N; j++) samplePopulation[i*_k->N + j] = js["DE"]["State"]["Samples"][i][j];
  for (size_t i = 0; i < _s; i++) for (size_t j = 0; j < _k->N; j++) candidates[i*_k->N + j] = js["DE"]["State"]["Candidates"][i][j];
 }
@@ -294,6 +298,10 @@ void DE::prepareGeneration()
 
  finishedSamples = 0;
  for (size_t i = 0; i < _s; i++) initializedSample[i] = false;
+
+ double *tmp = fitnessVector;
+ fitnessVector = oldFitnessVector;
+ oldFitnessVector = fitnessVector;
 }
 
 
@@ -364,6 +372,8 @@ void DE::updateSolver(const double *fitnessVector)
     
     if(currentFunctionValue > bestEver)
     {
+        prevBest = bestEver;
+        
         for(size_t d = 0; d < _k->N; ++d) 
         {
             rgxoldmean[d]  = rgxmean[d];
@@ -388,6 +398,12 @@ void DE::updateSolver(const double *fitnessVector)
                 for(size_t i = 0; i < _s; ++i) if(fitnessVector[i] > bestEver)
                  { for(size_t d = 0; d < _k->N; ++d) samplePopulation[i*_k->N+d] = candidates[i*_k->N+d]; bestEver = fitnessVector[i]; }
                 break;
+ 
+            case str2int("Paired") : // accept if mutation better than parent
+                for(size_t i = 0; i < _s; ++i) if(fitnessVector[i] > oldFitnessVector[i])
+                    for(size_t d = 0; d < _k->N; ++d) samplePopulation[i*_k->N+d] = candidates[i*_k->N+d];
+                bestEver = currentFunctionValue;
+                break;
 
             default :
                 if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Error: Accept Rule not recognize (%s).\n",  _acceptRule.c_str());
@@ -398,7 +414,6 @@ void DE::updateSolver(const double *fitnessVector)
             rgxmean[d] += samplePopulation[i*_k->N+d]/((double)_s);
     }
     
-    prevBest = bestEver;
 }
 
 

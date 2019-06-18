@@ -26,10 +26,10 @@ int main(int argc, char* argv[])
  k["Variables"][3]["DE"]["Upper Bound"] = +32.0;
 
  k["DE"]["Objective"] = "Maximize";
- k["DE"]["Sample Count"] = 20;
+ k["DE"]["Sample Count"] = 30;
  k["DE"]["Termination Criteria"]["Max Generations"]["Value"] = 5000;
  k["DE"]["Termination Criteria"]["Fitness Diff Threshold"]["Active"] = false;
- k["DE"]["Accept Rule"] = "Iterative";
+ k["DE"]["Accept Rule"] = "Paired";
  k["DE"]["Crossover Rate"] = 0.9;
  
  k.setModel([](Korali::ModelData& d) { m_ackley(d.getVariables(), d.getResults()); });

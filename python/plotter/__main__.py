@@ -6,6 +6,7 @@ import argparse
 from korali.plotter.cmaes import plot_cmaes
 from korali.plotter.tmcmc import plot_tmcmc
 from korali.plotter.mcmc import plot_mcmc
+from korali.plotter.dea import plot_dea
 
 def main(live):
  path = '_korali_result'
@@ -28,14 +29,15 @@ def main(live):
   plot_mcmc(path, live)
   exit(0)
 
- if ( data['Solver']['CMA-ES'] or data['Solver']['CCMA-ES'] ):
+ if ( 'CMA-ES' in data['Solver'] or 'CCMA-ES' in data['Solver'] ):
   print("[Korali] Running CMA-ES Plotter...")
   plot_cmaes(path, live)
   exit(0)
 
- if ( data['Solver']['DE'] ):
-  print("[Korali] Error: DE plotting not yet implemented...")
-  exit(-1)
+ if ( 'DE' in data['Solver'] ):
+  print("[Korali] Running DEA Plotter...")
+  plot_dea(path, live)
+  exit(0)
 
  print("[Korali] Error: Did not recognize method for plotting...")
  exit(-1)

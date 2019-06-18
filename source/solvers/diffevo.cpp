@@ -26,6 +26,7 @@ DE::DE(nlohmann::json& js, std::string name)
  rgxmean        = (double*) calloc (sizeof(double), _k->N);
  rgxbestever    = (double*) calloc (sizeof(double), _k->N);
  curBestVector  = (double*) calloc (sizeof(double), _k->N);
+ maxWidth       = (double*) calloc (sizeof(double), _k->N);
 
  histFuncValues = (double*) calloc (sizeof(double), _termCondMaxGenerations+1);
 
@@ -128,6 +129,9 @@ nlohmann::json DE::getConfiguration()
  js["DE"]["State"]["PreviousBestFunctionValue"] = prevBest;
  js["DE"]["State"]["EvaluationCount"]           = countevals;
 
+ js["DE"]["State"]["PreviousBestFunctionValue"]     = prevFunctionValue;
+ js["DE"]["State"]["CurrentBestFunctionValue"]      = currentFunctionValue;
+
  for (size_t i = 0; i < _s; i++) js["DE"]["State"]["FunctionValues"] += fitnessVector[i];
  for (size_t i = 0; i < _s; i++) js["DE"]["State"]["PreviousFunctionValues"] += oldFitnessVector[i];
 
@@ -135,6 +139,7 @@ nlohmann::json DE::getConfiguration()
  for (size_t i = 0; i < _k->N; i++) js["DE"]["State"]["PreviousMeanVector"] += rgxoldmean[i];
  for (size_t i = 0; i < _k->N; i++) js["DE"]["State"]["BestEverVector"]     += rgxbestever[i];
  for (size_t i = 0; i < _k->N; i++) js["DE"]["State"]["CurrentBestVector"]  += curBestVector[i];
+ for (size_t i = 0; i < _k->N; i++) js["DE"]["State"]["MaxWidth"]           += maxWidth[i];
 
  for (size_t i = 0; i < _s; i++) for (size_t j = 0; j < _k->N; j++) js["DE"]["State"]["Samples"][i][j] = samplePopulation[i*_k->N + j];
  for (size_t i = 0; i < _s; i++) for (size_t j = 0; j < _k->N; j++) js["DE"]["State"]["Candidates"][i][j] = candidates[i*_k->N + j];
@@ -211,13 +216,17 @@ void DE::setConfiguration(nlohmann::json& js)
 void DE::setState(nlohmann::json& js)
 {
  currentGeneration    = js["DE"]["State"]["Current Generation"];
+ countevals           = js["DE"]["State"]["EvaluationCount"];
  bestEver             = js["DE"]["State"]["BestEverFunctionValue"];
  prevBest             = js["DE"]["State"]["PreviousBestFunctionValue"];
- countevals           = js["DE"]["State"]["EvaluationCount"];
+ currentFunctionValue = js["DE"]["State"]["CurrentBestFunctionValue"];
+ prevFunctionValue    = js["DE"]["State"]["Previ"];
 
  for (size_t i = 0; i < _k->N; i++) rgxmean[i]       = js["DE"]["State"]["CurrentMeanVector"][i];
  for (size_t i = 0; i < _k->N; i++) rgxoldmean[i]    = js["DE"]["State"]["PreviousMeanVector"][i];
  for (size_t i = 0; i < _k->N; i++) rgxbestever[i]   = js["DE"]["State"]["BestEverVector"][i];
+ for (size_t i = 0; i < _k->N; i++) curBestVector[i] = js["DE"]["State"]["CurrentBestVector"][i];
+ for (size_t i = 0; i < _k->N; i++) maxWidth[i]      = js["DE"]["State"]["MaxWidth"][i];
  for (size_t i = 0; i < _s; i++) fitnessVector[i]    = js["DE"]["State"]["FunctionValues"][i];
  for (size_t i = 0; i < _s; i++) oldFitnessVector[i] = js["DE"]["State"]["OldFunctionValues"][i];
  for (size_t i = 0; i < _s; i++) for (size_t j = 0; j < _k->N; j++) samplePopulation[i*_k->N + j] = js["DE"]["State"]["Samples"][i][j];
@@ -414,6 +423,18 @@ void DE::updateSolver(const double *fitnessVector)
             rgxmean[d] += samplePopulation[i*_k->N+d]/((double)_s);
     }
     
+    for(size_t d = 0; d < _k->N; ++d) 
+    {
+        double max = -std::numeric_limits<double>::max();
+        double min = -max;
+        for(size_t i = 0; i < _s; ++i)
+        {
+            if (samplePopulation[i*_k->N+d] > max) max = samplePopulation[i*_k->N+d];
+            if (samplePopulation[i*_k->N+d] < min) min = samplePopulation[i*_k->N+d];
+        }
+        maxWidth[d] = max-min;
+    }
+
 }
 
 
@@ -492,6 +513,8 @@ void DE::printGeneration() const
  {
   printf("[Korali] Variable = (MeanX, BestX):\n");
   for (size_t d = 0; d < _k->N; d++)  printf("         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), rgxmean[d], rgxbestever[d]);
+  printf("[Korali] Max Width:\n");
+  for (size_t d = 0; d < _k->N; d++)  printf("         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), maxWidth[d]);
   printf("[Korali] Number of Function Evaluations: %zu\n", countevals);
   printf("[Korali] Number of Infeasible Samples: %zu\n", countinfeasible);
  }

@@ -76,6 +76,7 @@ class DE : public Base
  double *rgxbestever; /* bestever vector */
  double *curBestVector; /* current best vector */
  double *histFuncValues; /* holding historical best function values */
+ double* maxWidth; /* max distance between samples per dimension */
 
  size_t countevals; /* Number of function evaluations */
  size_t countinfeasible; /* Number of samples outside of domain given by bounds */

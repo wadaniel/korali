@@ -27,7 +27,6 @@ int main(int argc, char* argv[])
  k["CMA-ES"]["Objective"] = "Maximize";
  k["CMA-ES"]["Sample Count"] = 10;
  k["CMA-ES"]["Termination Criteria"]["Max Generations"]["Value"] = 100;
- k["CMA-ES"]["Termination Criteria"]["Min DeltaX"]["Value"] = 1e-7;
 
  k.setModel([](Korali::ModelData& d) { m_ackley(d.getVariables(), d.getResults()); });
 

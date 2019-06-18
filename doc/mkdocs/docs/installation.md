@@ -22,10 +22,6 @@ To build and install Korali, run:
 ./install
 ```
 
-!!! note
-    Use ```./install --install-gsl``` to have Korali download and build the GSL-2.5 GNU Scientific Library automatically. 
-	
-
 ## System Requirements
 
 ### C++ Compiler
@@ -108,4 +104,6 @@ Korali's installer will check the $MPICXX environment variable to determine a va
 
 Korali requires the [GSL-2.4](http://www.gnu.org/software/gsl/) or later must be installed on your system. Korali will look for the ```gsl-config``` command by default. In case GSL is not currently installed, you can run ```./install --install-gsl``` to have Korali install and build it automatically.
 
-
+!!! note
+    Use ```./install --install-gsl``` to have Korali download and build the GSL-2.5 GNU Scientific Library automatically. 
+	

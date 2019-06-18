@@ -18,36 +18,36 @@ nav:
      - 'C.2 - Nonintrusive Cluster': tutorials/bayesian/bayesian.md
      - 'C.3 - C++/Python Interaction': tutorials/bayesian/bayesian.md
   - User Manual:
-      - Korali Basics: usage/basics.md
-      - Configuring Korali: usage/config.md
-      - Evaluation Types:
+      - Basics: usage/basics.md
+      - Model: usage/model.md
+      - Problems:
           - Direct: usage/evaluation/direct.md
           - Bayesian: usage/evaluation/bayesian.md
-      - Variable Distributions:
+      - Solvers:
+          - Optimizers:
+            - CMA-ES: usage/solvers/optimizers/cmaes.md
+            - Constrained CMA-ES: usage/solvers/optimizers/ccmaes.md
+          - Samplers:
+            - TMCMC: usage/solvers/samplers/tmcmc.md
+      - Conduits:
+          - Semi-Intrusive: usage/conduits/semi-intrusive.md
+          - Distributed: usage/conduits/distributed.md
+          - Nonintrusive: usage/conduits/nonintrusive.md
+      - Distributions:
           - Cauchy: usage/distributions/cauchy.md
           - Exponential: usage/distributions/exponential.md
           - Gamma: usage/distributions/gamma.md
           - Gaussian: usage/distributions/gaussian.md
           - Laplace: usage/distributions/laplace.md
           - Uniform: usage/distributions/uniform.md
-      - Solver Methods:
-          - Optimizers:
-            - CMA-ES: usage/solvers/optimizers/cmaes.md
-            - Constrained CMA-ES: usage/solvers/optimizers/ccmaes.md
-          - Samplers:
-            - TMCMC: usage/solvers/samplers/tmcmc.md
-      - Evaluation Conduits:
-          - Semi-Intrusive: usage/conduits/semi-intrusive.md
-          - Distributed: usage/conduits/distributed.md
-          - Nonintrusive: usage/conduits/nonintrusive.md
-      - Processing Results: 
-          - Export Results: usage/postprocessing/export.md
-          - Resume Execution: usage/postprocessing/resume.md
-          - Generate Plots: usage/postprocessing/plotting.md
+      - Results: 
+          - Export Results: usage/results/export.md
+          - Resume Execution: usage/results/resume.md
+          - Generate Plots: usage/results/plotting.md
   - Developers:
+    - Integration: developers/integration.md
     - Doxygen: developers/doxygen.md
     - Git Repository: developers/git.md
-    - Test Cases: developers/tests.md
   - References: references.md
   - About Us: aboutus.md
 

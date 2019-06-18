@@ -19,7 +19,6 @@ nav:
      - 'C.3 - C++/Python Interaction': tutorials/bayesian/bayesian.md
   - User Manual:
       - Basics: usage/basics.md
-      - Model: usage/model.md
       - Problems:
           - Direct: usage/evaluation/direct.md
           - Bayesian: usage/evaluation/bayesian.md
@@ -40,6 +39,10 @@ nav:
           - Gaussian: usage/distributions/gaussian.md
           - Laplace: usage/distributions/laplace.md
           - Uniform: usage/distributions/uniform.md
+      - Models: 
+          - Simple: usage/models/simple.md
+          - Rerefence: usage/models/reference.md
+          - Constraint: usage/models/constraint.md
       - Results: 
           - Export Results: usage/results/export.md
           - Resume Execution: usage/results/resume.md

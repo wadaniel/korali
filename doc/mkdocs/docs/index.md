@@ -26,6 +26,10 @@ Allowing users to compute the maximum a posteriori estimate: $\vartheta^\star = 
 
 Korali is designed as a completely modular and extensible software. Operations can be changed on runtime to produce multiple results without the need of re-compilation.
 
+### [Multi-Language](usage/basics)
+
+Korali applications can be programmed in either C++ or Python. Additionally, Korali can sample from C++/Python and pre-compiled computational models.
+
 ### [Multi-Intrusiveness](usage/config/#evaluation-conduit)
 
 A novelty in Korali is its support for multi-intrusive evaluation. That is, Korali can sample from computational models either semi-instrusively, through static linking or dynamic loading of Python modules; or nonintrusively, through shell command execution.

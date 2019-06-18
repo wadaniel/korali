@@ -78,7 +78,7 @@ k["Conduit"]["Type"] = "Nonintrusive"
 k["Conduit"]["Type"] = "Distributed"
 ```
 
-### Step 5) Define Models
+### Step 5) Define Model(s)
 
 Computational Models
 

@@ -95,11 +95,11 @@ def plot_lower_triangle(ax, theta):
 def plot_samples(path, idx=None):
     with open(path) as f:
         data    = json.load(f)
-        numdim  = len(data['Solver']['Variables'])
-        pop     = data['Solver']['TMCMC']['Population Size']
-        anneal  = data['Solver']['TMCMC']['State']['AnnealingExponent']
-        fitness = data['Solver']['TMCMC']['State']['DatabaseFitness']
-        samples = np.reshape( data['Solver']['TMCMC']['State']['DatabasePoints'], (pop,numdim) )
+        numdim  = len(data['Variables'])
+        pop     = data['TMCMC']['Population Size']
+        anneal  = data['TMCMC']['State']['AnnealingExponent']
+        fitness = data['TMCMC']['State']['DatabaseFitness']
+        samples = np.reshape( data['TMCMC']['State']['DatabasePoints'], (pop,numdim) )
 
         plt.style.use('seaborn-dark')
         fig, ax = plt.subplots(samples.shape[1], samples.shape[1], figsize=(8,8))

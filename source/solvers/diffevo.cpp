@@ -91,9 +91,9 @@ DE::~DE()
 /*                    Configuration Methods                             */
 /************************************************************************/
 
-nlohmann::json DE::getConfiguration()
+void Korali::Solver::DE::getConfiguration(nlohmann::json& js)
 {
- auto js = nlohmann::json();
+ js["Solver"] = "DE";
 
  js["DE"]["Sample Count"]    = _s;
  js["DE"]["Crossover Rate"]  = _crossoverRate;
@@ -105,7 +105,6 @@ nlohmann::json DE::getConfiguration()
  // Variable information
  for (size_t i = 0; i < _k->N; i++)
  {
-  js["Variables"][i]["Name"]                = _varNames[i];
   js["Variables"][i]["DE"]["Lower Bound"]   = _lowerBounds[i];
   js["Variables"][i]["DE"]["Upper Bound"]   = _upperBounds[i];
   if (_initialMeanDefined[i]) js["Variables"][i]["DE"]["Initial Mean"] = _initialMeans[i];
@@ -143,8 +142,6 @@ nlohmann::json DE::getConfiguration()
 
  for (size_t i = 0; i < _s; i++) for (size_t j = 0; j < _k->N; j++) js["DE"]["State"]["Samples"][i][j] = samplePopulation[i*_k->N + j];
  for (size_t i = 0; i < _s; i++) for (size_t j = 0; j < _k->N; j++) js["DE"]["State"]["Candidates"][i][j] = candidates[i*_k->N + j];
-
- return js;
 }
 
 

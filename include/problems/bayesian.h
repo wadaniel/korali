@@ -32,7 +32,7 @@ class Bayesian : public Base
  ~Bayesian();
 
  // Serialization Methods
- nlohmann::json getConfiguration() override;
+ void getConfiguration(nlohmann::json& js) override;
  void setConfiguration(nlohmann::json& js) override;
 };
 

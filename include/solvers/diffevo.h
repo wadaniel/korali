@@ -33,7 +33,7 @@ class DE : public Base
  void processSample(size_t sampleId, double fitness) override;
 
  // Serialization Methods
- nlohmann::json getConfiguration() override;
+ void getConfiguration(nlohmann::json& js) override;
  void setConfiguration(nlohmann::json& js) override;
  void setState(nlohmann::json& js) override;
 

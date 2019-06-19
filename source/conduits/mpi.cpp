@@ -73,19 +73,16 @@ KoraliMPI::~KoraliMPI()
 /*                    Configuration Methods                             */
 /************************************************************************/
 
-nlohmann::json KoraliMPI::getConfiguration()
+
+void KoraliMPI::getConfiguration(nlohmann::json& js)
 {
- auto js = nlohmann::json();
-
- js["Type"] = _name;
- js["Ranks Per Team"] = _ranksPerTeam;
-
- return js;
+ js["Conduit"] = _name;
+ js["MPI"]["Ranks Per Team"] = _ranksPerTeam;
 }
 
 void KoraliMPI::setConfiguration(nlohmann::json& js)
 {
- _ranksPerTeam = consume(js, { "Ranks Per Team" }, KORALI_NUMBER, std::to_string(1));
+ _ranksPerTeam = consume(js, { "MPI", "Ranks Per Team" }, KORALI_NUMBER, std::to_string(1));
 }
 
 /************************************************************************/

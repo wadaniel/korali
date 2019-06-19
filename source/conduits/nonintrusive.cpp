@@ -9,7 +9,6 @@ using namespace Korali::Conduit;
 
 Nonintrusive::Nonintrusive(nlohmann::json& js)
 {
- _name = "Nonintrusive";
  setConfiguration(js);
  _currentSample = 0;
 }
@@ -23,18 +22,15 @@ Nonintrusive::~Nonintrusive()
 /*                    Configuration Methods                             */
 /************************************************************************/
 
-nlohmann::json Nonintrusive::getConfiguration()
+void Nonintrusive::getConfiguration(nlohmann::json& js)
 {
- auto js = nlohmann::json();
-
- js["Type"] = _name;
-
- return js;
+ js["Conduit"] = "Nonintrusive";
+ js["Nonintrusive"]["Concurrent Jobs"] = _concurrentJobs;
 }
 
 void Nonintrusive::setConfiguration(nlohmann::json& js)
 {
- _concurrentJobs = consume(js, { "Concurrent Jobs" }, KORALI_NUMBER, std::to_string(1));
+ _concurrentJobs = consume(js, { "Nonintrusive", "Concurrent Jobs" }, KORALI_NUMBER, std::to_string(1));
  if (_concurrentJobs < 1)
  {
   fprintf(stderr, "[Korali] Error: You need to define at least 1 concurrent job(s) for non-intrusive models \n");

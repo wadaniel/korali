@@ -85,10 +85,8 @@ void Korali::Variable::setDistribution(nlohmann::json& js)
  if (_distributionType == KoraliUniformDistribution)     { _aux = -gsl_sf_log(_b-_a); }
 };
 
-nlohmann::json Korali::Variable::getDistribution()
+void Korali::Variable::getDistribution(nlohmann::json& js)
 {
- auto js = nlohmann::json();
-
  js["Seed"] = _seed;
 
  if (_distributionType == KoraliCauchyDistribution)
@@ -132,8 +130,6 @@ nlohmann::json Korali::Variable::getDistribution()
   js["Minimum"] = _a;
   js["Maximum"] = _b;
  }
-
- return js;
 }
 
 /************************************************************************/

@@ -17,16 +17,32 @@ Korali::Problem::Bayesian::~Bayesian()
 /************************************************************************/
 /*                    Configuration Methods                             */
 /************************************************************************/
-
-nlohmann::json Korali::Problem::Bayesian::getConfiguration()
+void Korali::Problem::Bayesian::getConfiguration(nlohmann::json& js)
 {
- auto js = nlohmann::json();
-
  js["Problem"] = "Bayesian";
 
- for (size_t i = 0; i < _referenceDataSize; i++) js["Reference Data"][i] = _referenceData[i];
+ if (_likelihood == DirectLikelihood)    js["Bayesian"]["Likelihood"]["Type"] = "Direct";
+ if (_likelihood == ReferenceLikelihood) js["Bayesian"]["Likelihood"]["Type"] = "Reference";
 
- return js;
+ for (size_t i = 0; i < _referenceDataSize; i++) js["Bayesian", "Likelihood", "Reference Data"][i] = _referenceData[i];
+
+ for (size_t i = 0; i < _computationalVariableIndices.size(); i++)
+ {
+  size_t idx = _computationalVariableIndices[i];
+  js["Variables"][idx]["Bayesian"]["Type"] = "Computational";
+ }
+
+ for (size_t i = 0; i < _statisticalVariableIndices.size(); i++)
+  {
+   size_t idx = _statisticalVariableIndices[i];
+   js["Variables"][idx]["Bayesian"]["Type"] = "Statistical";
+  }
+
+ for (size_t i = 0; i < _k->N; i++)
+ {
+  js["Variables"][i]["Name"] = _k->_variables[i]->_name;
+  _k->_variables[i]->getDistribution(js["Variables"][i]["Bayesian"]["Prior Distribution"]);
+ }
 }
 
 void Korali::Problem::Bayesian::setConfiguration(nlohmann::json& js)

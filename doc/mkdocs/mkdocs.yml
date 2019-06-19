@@ -52,7 +52,7 @@ nav:
   - Development:
     - Git Repository: https://github.com/cselab/skorali
     - Integration: developers/integration.md
-    - Doxygen: developers/doxygen.md
+    - Doxygen: ../../html/index.html
   - References: references.md
   - About Us: aboutus.md
 

@@ -74,10 +74,10 @@ DE::DE(nlohmann::json& js, std::string name)
  }
 
  // If state is defined:
- if (isDefined(js, {"State"}))
+ if (isDefined(js, {"DE", "State"}))
  {
   setState(js);
-  js.erase("State");
+  js["DE"].erase("State");
  }
 
 }

@@ -21,21 +21,24 @@ A Korali application encapsulates the configuration necessary to run the Korali 
 
 ### Step 1) Define Problem
 
-A Problem describes the objective function to be optimized/sampled from. We distinguish between two evaluation types: 
+A Problem describes the objective function to be optimized/sampled from. We currently support these problem types: 
 
-- [Direct](/usage/evaluation/direct)
-- [Bayesian](/usage/evaluation/bayesian)
+- [Direct Evaluation](/usage/evaluation/direct)
+- [Bayesian - Direct Likelihood](/usage/evaluation/bayesian/direct)
+- [Bayesian - Gaussian Likelihood](/usage/evaluation/bayesian/gaussian)
+- [Bayesian - Custom Likelihood](/usage/evaluation/bayesian/custom)
 
 ### Step 2) Define Solver
 
-The Solver module generates new samples to be evaluated, performs the statistical analysis, and outputs the results for the problem described in the Korali application. Korali currently provides two types of solvers: *optimizers* and *samplers*:
+The Solver module generates samples for evaluation, performs the statistical analysis, and outputs the results for the problem described in the Korali application. Korali currently provides two types of solvers: *optimizers* and *samplers*:
 
-Optimizers find the global maximum or minimum of the described problem. The detailed configuration of the currently implemented optimizers can be found below:
+**Optimizers** find the global maximum or minimum of the described problem. The detailed configuration of the currently implemented optimizers can be found below:
 
 - [CMA-ES](/usage/solvers/optimizers/cmaes)
 - [Constrained CMA-ES](/usage/solvers/optimizers/ccmaes)
+- [Differential Evolution](/usage/solvers/optimizers/diffevo)
 	
-Samplers map the probability distribution of samples in the variable space of the described problem. The detailed configuration of the currently implemented optimizers can be found below:
+**Samplers** map the probability distribution of samples in the variable space of the described problem. The detailed configuration of the currently implemented optimizers can be found below:
 
 - [Markov-Chain Monte-Carlo](/usage/solvers/samplers/mcmc) 
 - [Transitional Markov-Chain Monte-Carlo](/usage/solvers/samplers/tmcmc)
@@ -45,42 +48,30 @@ Samplers map the probability distribution of samples in the variable space of th
 A Korali Problem describes the sampling space of the physical or real-world phenomenon to analyze. The number of variables defined by the user represents a dimension of the problem. Variables are created by simply adding their name to the problem configuration:
 
 ```python
-# Defining two variables
+# Example: Defining two variables
 k["Variables"][0]["Name"] = "Thermal Conductivity"
 k["Variables"][1]["Name"] = "Heat Source Position"
 ```
 
-For some, additional solver-specific information is required for each variable. For example, CMA-ES requires the definition of an initial mean and standard deviation:
-
-```python
-# Adding CMA-ES Specific Configuration
-k["Variables"][0]["CMA-ES"]["Initial Mean"] = 10.0;
-k["Variables"][0]["CMA-ES"]["Initial Standard Deviation"] = 1.0;
-```
+Variable definitions require additional parameters depending on which problem and solver types have been selected. The syntax for specifying these parameters is explained in each solver/problem page. 
 
 ### Step 4) Define Conduit
 
-The evaluation conduit module is in charge of providing an interface for the execution of computational models and evaluation of their results. A novelty in Korali is its support for *multi-intrusive* evaluation. That is, Korali can sample from computational models either *semi-instrusively*, through static linking or dynamic loading of Python modules; or *nonintrusively*, through shell command execution. Additionally, Korali supports the execution of distributed (MPI/UPC+++) applications through its *distributed* conduit. The choice of conduit depends on the design and requirements of the computational model. 
+The evaluation conduit module executes the computational model(s) for a given sample and returns their raw results back to the solver. The choice of conduit depends on the design and requirements of the computational model. 
 
 The rationale and configuration of the currently implemented conduits can be found below:
 
 - [Semi-Intrusive](/usage/conduits/semi-intrusive)
 - [Distributed](/usage/conduits/distributed)
 - [Nonintrusive](/usage/conduits/nonintrusive)
-	
-  
-You can use the following syntax to select the desired conduit:
-
-```python
-# Selecting the Nonintrusive Conduit
-k["Conduit"]["Type"] = "Semi-Intrusive" # This is the default if conduit type is not specified
-k["Conduit"]["Type"] = "Nonintrusive"
-k["Conduit"]["Type"] = "Distributed"
-```
 
 ### Step 5) Define Model(s)
 
-Computational Models
+Korali provides several ways to specify external code/applications to provide results to the Korali engine:
+
+- [Basic](/usage/models/basic)
+- [Rerefence](/usage/conduits/reference)
+- [Likelihood](/usage/conduits/likelihood)
 
 ## Running a Korali Application
 

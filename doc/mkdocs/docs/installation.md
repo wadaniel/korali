@@ -51,5 +51,5 @@ Korali requires the [GSL-2.4](http://www.gnu.org/software/gsl/) or later must be
 To enable support distributed conduits and computational models, the MPI library should be installed in the system.
 
 !!! note
-The installer will check the $MPICXX environment variable to determine a valid MPI C++ compiler. Also make sure you have the corresponding modules loaded in your system.
+	The installer will check the $MPICXX environment variable to determine a valid MPI C++ compiler. Also make sure you have the corresponding modules loaded in your system.
 

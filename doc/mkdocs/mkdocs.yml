@@ -20,8 +20,10 @@ nav:
   - User Manual:
       - Basics: usage/basics.md
       - Problems:
-          - Direct: usage/evaluation/direct.md
-          - Bayesian: usage/evaluation/bayesian.md
+          - Direct Evaluation: usage/problems/direct.md
+          - Bayesian:
+            - Direct Likelihood: usage/problems/bayesian/direct.md
+            - Reference Likelihood: usage/problems/bayesian/reference.md
       - Solvers:
           - Optimizers:
             - CMA-ES: usage/solvers/optimizers/cmaes.md
@@ -42,16 +44,15 @@ nav:
       - Models: 
           - Simple: usage/models/simple.md
           - Rerefence: usage/models/reference.md
-          - Distributed: usage/models/distributed.md
           - Constraint: usage/models/constraint.md
       - Results: 
           - Export Results: usage/results/export.md
           - Resume Execution: usage/results/resume.md
           - Generate Plots: usage/results/plotting.md
-  - Developers:
+  - Development:
+    - Git Repository: https://github.com/cselab/skorali
     - Integration: developers/integration.md
     - Doxygen: developers/doxygen.md
-    - Git Repository: developers/git.md
   - References: references.md
   - About Us: aboutus.md
 

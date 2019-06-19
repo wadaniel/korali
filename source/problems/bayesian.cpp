@@ -98,12 +98,6 @@ void Korali::Problem::Bayesian::initialize()
    exit(-1);
   }
 
-  if (_k->_likelihoodDefined == true)
-  {
-   fprintf(stderr, "[Korali] Error: Bayesian Problem does not accept a likelihood function, only a computational model.\n");
-   exit(-1);
-  }
-
   if (_statisticalVariableIndices.size() != 1)
   {
    fprintf(stderr, "[Korali] Error: The Bayesian model requires 1 statistical parameter.\n");
@@ -122,12 +116,6 @@ void Korali::Problem::Bayesian::initialize()
   if (_k->_likelihoodDefined == false)
   {
    fprintf(stderr, "[Korali] Error: Direct Bayesian requires defining a likelihood function.\n");
-   exit(-1);
-  }
-
-  if (_k->_modelDefined == true)
-  {
-   fprintf(stderr, "[Korali] Error: Direct Bayesian does not accept a computational model, only a likelihood function.\n");
    exit(-1);
   }
 

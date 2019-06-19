@@ -24,7 +24,7 @@ class Base {
  virtual void processSample(size_t sampleId, double fitness) = 0;
 
  // Serialization Methods
- virtual nlohmann::json getConfiguration() = 0;
+ virtual void getConfiguration(nlohmann::json& js) = 0;
  virtual void setConfiguration(nlohmann::json& js) = 0;
  virtual void setState(nlohmann::json& js) = 0;
 };

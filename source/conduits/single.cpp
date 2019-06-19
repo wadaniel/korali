@@ -8,7 +8,6 @@ using namespace Korali::Conduit;
 
 Single::Single(nlohmann::json& js)
 {
- _name = "Single";
  setConfiguration(js);
  _currentSample = 0;
 }
@@ -22,24 +21,14 @@ Single::~Single()
 /*                    Configuration Methods                             */
 /************************************************************************/
 
-nlohmann::json Single::getConfiguration()
+void Single::getConfiguration(nlohmann::json& js)
 {
- auto js = nlohmann::json();
-
- js["Type"] = _name;
-
- return js;
+ js["Conduit"] = "Single";
 }
 
 void Single::setConfiguration(nlohmann::json& js)
 {
- int ranksPerTeam = consume(js, { "Ranks Per Team" }, KORALI_NUMBER, std::to_string(1));
- if (ranksPerTeam != 1)
- {
-  fprintf(stderr, "[Korali] Error: You have defined 'Ranks Per Team' = %d, but did not run Korali using MPI. \n", ranksPerTeam);
-  fprintf(stderr, "[Korali] Solution: Run Korali using MPI (e.g., $mpirun -n NUMBER ./myprogram)\n");
-  exit(-1);
- }
+
 }
 
 /************************************************************************/

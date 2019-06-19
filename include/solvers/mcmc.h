@@ -74,7 +74,7 @@ class MCMC : public Base
  bool checkTermination();
 
  // Serialization Methods
- nlohmann::json getConfiguration() override;
+ void getConfiguration(nlohmann::json& js) override;
  void setConfiguration(nlohmann::json& js) override;
  void setState(nlohmann::json& js) override;
 

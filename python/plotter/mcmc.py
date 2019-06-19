@@ -93,10 +93,10 @@ def plot_lower_triangle(ax, theta):
 
 # Plot MCMC result file
 def plot_samples(fig, ax, data, idx=None):
-    dims     = data['Solver']['Variables']
+    dims     = data['Variables']
     numdim   = len(dims)
-    pop      = data['Solver']['MCMC']['State']['Database Entries']
-    samples  = np.reshape( data['Solver']['MCMC']['State']['DatabasePoints'], (pop,numdim) )
+    pop      = data['MCMC']['State']['Database Entries']
+    samples  = np.reshape( data['MCMC']['State']['DatabasePoints'], (pop,numdim) )
     
     if idx is None: 
         fig.canvas.set_window_title(path)
@@ -125,8 +125,8 @@ def plot_mcmc(src, live=False):
  
     with open(path) as f:
         data = json.load(f)
-        burnin = data['Solver']['MCMC']['Burn In']
-        numdim = len(data['Solver']['Variables'])
+        burnin = data['MCMC']['Burn In']
+        numdim = len(data['Variables'])
         fig, ax = plt.subplots(numdim, numdim, figsize=(8,8))
         if (live == True):
             fig.show()
@@ -146,7 +146,7 @@ def plot_mcmc(src, live=False):
             data = json.load(f)
             
             if ( live == True)  :
-                chainlen = data['Solver']['MCMC']['State']['Chain Length']
+                chainlen = data['MCMC']['State']['Chain Length']
                 
                 if chainlen > burnin:
                     plot_samples(fig, ax, data, idx)
@@ -162,8 +162,8 @@ def plot_mcmc(src, live=False):
         path = '{0}/s{1}.json'.format(src, str(idx-1).zfill(5))
         with open(path) as f:
             data     = json.load(f)
-            numdim   = len(data['Solver']['Variables'])
-            chainlen = data['Solver']['MCMC']['State']['Chain Length']
+            numdim   = len(data['Variables'])
+            chainlen = data['MCMC']['State']['Chain Length']
             if chainlen <= burnin:
                 print("[Korali] Error: No samples found in file {0}...".format(path))
                 exit(-1)

@@ -90,9 +90,10 @@ nlohmann::json Korali::Engine::getConfiguration()
  if (_verbosity == KORALI_DETAILED) js["Verbosity"] = "Detailed";
 
  js["Output Frequency"] = _outputFrequency;
- js["Problem"] = _problem->getConfiguration();
- js["Solver"]  = _solver->getConfiguration();
- js["Conduit"] = _conduit->getConfiguration();
+
+ _problem->getConfiguration(js);
+ _solver->getConfiguration(js);
+ _conduit->getConfiguration(js);
 
  return js;
 }
@@ -126,7 +127,7 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
 
  _problem = nullptr;
  std::string pName = consume(js, { "Problem" }, KORALI_STRING);
- if (pName == "Direct")   { _problem = new Korali::Problem::Direct(js); }
+ if (pName == "Direct Evaluation")   { _problem = new Korali::Problem::Direct(js); }
  if (pName == "Bayesian") { _problem = new Korali::Problem::Bayesian(js); }
  if (_problem == nullptr) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Problem '%s'.", pName.c_str()); exit(-1); }
 

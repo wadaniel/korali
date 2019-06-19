@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.5"/>
-<title>Korali: Korali</title>
+<title>Korali: README</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -61,7 +61,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -73,24 +73,47 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- top -->
 <div class="header">
   <div class="headertitle">
-<div class="title">Korali </div>  </div>
+<div class="title">README </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>Korali is a high performance computing framework for optimization, sampling and Bayesian uncertainty quantification.</p>
-<p>Currently the code is under development and the repository is private.</p>
-<h2>Documentation</h2>
-<p>To see the temporary documentation site go <a href="https://www.cse-lab.ethz.ch/skorali-jws815jpgw/">here</a></p>
-<h2>Authors</h2>
-<p>Korali is written and maintained by</p>
+<div class="textblock"><p><b>Korali</b> is a high-performance computing framework for optimization, sampling and Bayesian uncertainty quantification of large-scale computational models.</p>
+<h2>What Korali does for you</h2>
+<h3>**Optimization**</h3>
+<p>Given any function </p>
+<dl class="section rcs"><dt>f:</dt><dd>mathbb{R}^N{R}</dd></dl>
+<p>Korali can find its minima or maxima: $^ = {</p>
 <ul>
-<li>Georgios Arampatzis, garampat at ethz.ch</li>
-<li>Sergio Miguel Martin, martiser at ethz.ch</li>
-<li>Daniel Waelchli, wadaniel at ethz.ch</li>
+<li>}{} \,\,\, f() \,,$</li>
 </ul>
-<p>and</p>
+<h3>**Sampling**</h3>
+<p>Treat $f$ as an unnormalized density and draw samples to determine its distribution: $^{(k)}  f.$</p>
+<h3>**Bayesian Inference**</h3>
+<p>Given a set of data $d$, the output of a computational model $f(x;)$, a likelihood function $p(d|)$, and a prior probability density $p()$ Korali will build the posterior distribution: $$ p( | d) \, = \, {p(d | ) \,\, p()}{p(d)}\, $$</p>
+<p>Allowing users to compute the maximum a posteriori estimate: $^ = {</p>
 <ul>
-<li>Petros Koumoutsakos, petros at ethz.ch </li>
+<li>}{} \,\,\, p( | d) \,,$ or sample its posterior distribution: $^{(k)}  p( | d).$</li>
 </ul>
+<h2>Design Principles</h2>
+<h3>**Extensibility**</h3>
+<p>Korali is designed as a completely modular and extensible software. Operations can be changed on runtime to produce multiple results without the need of re-compilation.</p>
+<h3>**Multi-Language**</h3>
+<p>Korali applications can be programmed in either C++ or Python. Additionally, Korali can sample from C++/Python and pre-compiled computational models.</p>
+<h3>**Multi-Intrusiveness**</h3>
+<p>A novelty in Korali is its support for multi-intrusive evaluation. That is, Korali can sample from computational models either semi-instrusively, through static linking or dynamic loading of Python modules; or nonintrusively, through shell command execution.</p>
+<h3>**High-Throughput**</h3>
+<p>Korali's work distribution engine has been optimized to fully harness computational resources, maximizing throughput and minimizing latency and load imbalance.</p>
+<h3>**High-Performance**</h3>
+<p>Korali supports the execution of parallel (OpenMP, Pthreads), distributed (MPI, UPC++), and GPU-based (CUDA) models.</p>
+<h2>About us</h2>
+<p>The Korali Project is written and maintained by</p>
+<ul>
+<li><b>Georgios Arampatzis</b>, garampat at ethz.ch</li>
+<li><b>Sergio Miguel Martin</b>, martiser at ethz.ch</li>
+<li><b>Daniel Waelchli</b>, wadaniel at ethz.ch</li>
+<li><b>Petros Koumoutsakos</b>, petros at ethz.ch (Director)</li>
+</ul>
+<h2>Credits</h2>
+<p>Korali's code includes a properly credited and licensed copy of <a href="https://github.com/nlohmann/json">Niels Lohmann's Json for C++</a>. Our implementation of CMA-ES has been inspired by <a href="https://github.com/AlexanderFabisch/CMA-ESpp">Alexander Fabisch's</a> C++ implementation. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

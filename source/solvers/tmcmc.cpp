@@ -91,10 +91,8 @@ Korali::Solver::TMCMC::~TMCMC()
 /*                    Configuration Methods                             */
 /************************************************************************/
 
-nlohmann::json Korali::Solver::TMCMC::getConfiguration()
+void Korali::Solver::TMCMC::getConfiguration(nlohmann::json& js)
 {
- auto js = nlohmann::json();
-
  js["Solver"] = "TMCMC";
 
  js["TMCMC"]["Population Size"]          = _s;
@@ -104,14 +102,6 @@ nlohmann::json Korali::Solver::TMCMC::getConfiguration()
  js["TMCMC"]["Use Local Covariance"]     = _useLocalCov;
  js["TMCMC"]["Burn In"]                  = _burnin;
  
- // Variable information
- for (size_t i = 0; i < _k->N; i++)
- {
-  js["Variables"][i]["Name"] = _varNames[i];
-  // TODO: rest (DW)
- }
-
-
  js["TMCMC"]["Termination Criteria"]["Max Generations"]["Value"]  = _termCondMaxGens;
  js["TMCMC"]["Termination Criteria"]["Max Generations"]["Active"] = _isTermCondMaxGens;
 
@@ -131,8 +121,6 @@ nlohmann::json Korali::Solver::TMCMC::getConfiguration()
  for (size_t i = 0; i < _k->N*_s; i++)    js["TMCMC"]["State"]["DatabasePoints"][i]   = _databasePoints[i];
  for (size_t i = 0; i < _s; i++)          js["TMCMC"]["State"]["DatabaseFitness"][i]  = _databaseFitness[i];
  if (_useLocalCov) for (size_t i = 0; i < _s; i++) for (size_t j = 0; j < _k->N; j++) js["TMCMC"]["State"]["LocalCovarianceMatrix"][i][j] = local_cov[i][j];
-
- return js;
 }
 
 void Korali::Solver::TMCMC::setConfiguration(nlohmann::json& js)

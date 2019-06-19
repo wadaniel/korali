@@ -21,7 +21,7 @@ class Base
  virtual void initialize() = 0;
 
  // Serialization Methods
- virtual nlohmann::json getConfiguration() = 0;
+ virtual void getConfiguration(nlohmann::json& js) = 0;
  virtual void setConfiguration(nlohmann::json& js) = 0;
 };
 

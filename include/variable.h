@@ -39,7 +39,7 @@ class Variable
 
  // Serialization Methods
   void setDistribution(nlohmann::json& js);
-  nlohmann::json getDistribution();
+  void getDistribution(nlohmann::json& js);
 };
 
 } // namespace Korali

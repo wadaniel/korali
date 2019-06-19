@@ -81,11 +81,9 @@ Korali::Solver::MCMC::~MCMC()
 /*                    Configuration Methods                             */
 /************************************************************************/
 
-nlohmann::json Korali::Solver::MCMC::getConfiguration()
+void Korali::Solver::MCMC::getConfiguration(nlohmann::json& js)
 {
- auto js = nlohmann::json();
-
- js["Solver"] = _name;
+ js["Solver"] = "MCMC";
 
  js["MCMC"]["Population Size"]                = _s;
  js["MCMC"]["Burn In"]                        = _burnin;
@@ -99,7 +97,6 @@ nlohmann::json Korali::Solver::MCMC::getConfiguration()
  // Variable information
  for (size_t i = 0; i < _k->N; i++)
  {
-  js["Variables"][i]["Name"]                               = _varNames[i];
   js["Variables"][i]["MCMC"]["Initial Mean"]               = _initialMeans[i];
   js["Variables"][i]["MCMC"]["Initial Standard Deviation"] = _initialStdDevs[i];
   //js["Variables"][i]["MCMC"]["Log Space"]                  = _variableLogSpace[i];

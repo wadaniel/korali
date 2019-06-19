@@ -128,7 +128,8 @@ def plot_mcmc(src, live=False):
         burnin = data['Solver']['MCMC']['Burn In']
         numdim = len(data['Solver']['Variables'])
         fig, ax = plt.subplots(numdim, numdim, figsize=(8,8))
-        fig.show()
+        if (live == True):
+            fig.show()
         idx  = idx + 1
  
     while( (live == False) or (plt.fignum_exists(fig.number)) ):
@@ -169,6 +170,3 @@ def plot_mcmc(src, live=False):
             
             plot_samples(fig, ax, data, idx)
             plt_pause_light(3600) 
-        
-
-

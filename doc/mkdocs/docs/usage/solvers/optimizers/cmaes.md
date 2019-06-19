@@ -6,6 +6,7 @@ This is the implementation of the *Covariance Matrix Adaptation Evolution Strate
 
 In an evolution strategy, new candidate solutions are sampled according to a multivariate normal distribution in $\mathbb {R} ^{n}$. Recombination amounts to selecting a new mean value for the distribution. Mutation amounts to adding a random vector, a perturbation with zero mean. Pairwise dependencies between the variables in the distribution are represented by a covariance matrix. The covariance matrix adaptation (CMA) is a method to update the covariance matrix of this distribution.
 
+CMA-ES works iteratively, evaluating a number $\lambda$ of samples per generation, and improving the covariance matrix for the samples in the next generation.
 
 ##Syntax
 
@@ -49,6 +50,7 @@ In an evolution strategy, new candidate solutions are sampled according to a mul
 ```
 
 ##Requirements
++ The *Sample Count* per generation $\lambda$ needs to be defined.
 + The *Initial Mean* needs to be defined for every variable.
 + The *Initial Standard Deviation* needs to be defined for every variable.
 
@@ -63,7 +65,13 @@ In an evolution strategy, new candidate solutions are sampled according to a mul
 	#Minimizing Problem Evaluation
 	k["CMA-ES"]["Objective"] = "Minimize"
 	```
+- **Sample Count**. Specifies the number of samples $\lambda$ to evaluate per each generation. Example:
 
+	```python
+	#Setting lambda
+	k["CMA-ES"]["Sample Count"] = 32
+	```
+	
 ## Variable Settings
 
 - **Minimum** Specifies the lower bound for the variable's value. Korali will not generate samples in which this variable falls below the specified minimum. By default, Korali will set this value to *-Infinity*. Example:

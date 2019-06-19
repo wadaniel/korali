@@ -24,7 +24,6 @@ nav:
           - Bayesian:
             - Direct Likelihood: usage/problems/bayesian/direct.md
             - Reference Likelihood: usage/problems/bayesian/reference.md
-            - Custom Likelihood: usage/problems/bayesian/reference.md
       - Solvers:
           - Optimizers:
             - CMA-ES: usage/solvers/optimizers/cmaes.md

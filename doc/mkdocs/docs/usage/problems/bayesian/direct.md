@@ -12,9 +12,11 @@ Whereas with a *Direct Likelihood*, the function $p(d|\vartheta)$ is given direc
 ```python
   # Definition
   k["Problem"] = "Bayesian"
+  
+  # Problem Settings
   k["Bayesian"]["Likelihood"]["Type"] = "Direct"
 	
-  # Settings
+  # Variable Settings
   k["Variables"][i]["Bayesian"]["Prior Distribution"] ...
 ```
 

@@ -1,4 +1,4 @@
-# Evaluation Type / Bayesian
+# Problems / Bayesian
 
 ##Description
 
@@ -9,16 +9,22 @@ In a Bayesian problem type, the computational model is assumed to be of the form
 ##Syntax
 ```python
   # Definition
-  korali["Problem"]["Type"] = "Bayesian"
+  k["Problem"] = "Bayesian"
   
-  # Mandatory Settings
-  korali["Problem"]["Reference Data"][i] = ...
+  # Problem Settings
+  k["Bayesian"]["Likelihood"]["Type"] = ...
+  k["Bayesian"]["Reference Data"][i] = ...
+  
+  # Variable Settings
+  
 ```
 
 ##Requirements
 
-+ It should contain at least one computational variable as input for the computational model.
-+ It should contain at least one statistical variable for the value of sigma in the Gaussian error calculation.
++ At least one computational variable as input for the computational model.
++ At least one statistical variable for the value of sigma in the Gaussian error calculation.
++ A [Basic](/usage/models/basic) computational model should be defined.
++ At least one variable should be defined.
 + The computational model should return *n* results, where *n* is the number of reference data items.
 
 ##Settings

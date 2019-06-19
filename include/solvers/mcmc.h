@@ -65,12 +65,12 @@ class MCMC : public Base
 
   // Internal MCMC Methods
  void updateDatabase(double* point, double fitness);
- void generateCandidate(size_t level); 
- void sampleCandidate(size_t level);
- void acceptReject(size_t level); /* Accept or reject sample at delay level */
+ void generateCandidate(size_t sampleIdx); 
+ void sampleCandidate(size_t sampleIdx);
+ void acceptReject(size_t trial); /* Accept or reject sample with multiple trials */
  double recursiveAlpha(double& D, const double llk0, const double* logliks, size_t N) const; /* calculate acceptance ratio alpha_N */
  void updateState();
- bool setCandidatePriorAndCheck(size_t level);
+ bool setCandidatePriorAndCheck(size_t sampleIdx);
  bool checkTermination();
 
  // Serialization Methods

@@ -177,8 +177,8 @@ void Korali::Solver::MCMC::setState(nlohmann::json& js)
  rejections              = js["MCMC"]["State"]["Rejections"];
 
  for (size_t d = 0; d < _k->N; d++) clPoint[d]                        = js["MCMC"]["State"]["Leader"][d];
- for(size_t r = 0; r < rejections; ++r) for (size_t d = 0; d < _k->N; d++) ccPoints[r*_k->N+d] = js["MCMC"]["State"]["Candidate"][r][d];
- for(size_t r = 0; r < rejections; ++r) ccLogLikelihoods[r]           = js["MCMC"]["State"]["CandidatesFitness"][r];
+ for (size_t r = 0; r < rejections; ++r) for (size_t d = 0; d < _k->N; d++) ccPoints[r*_k->N+d] = js["MCMC"]["State"]["Candidate"][r][d];
+ for (size_t r = 0; r < rejections; ++r) ccLogLikelihoods[r]           = js["MCMC"]["State"]["CandidatesFitness"][r];
  for (size_t i = 0; i < _k->N*databaseEntries; i++) databasePoints[i] = js["MCMC"]["State"]["DatabasePoints"][i];
  for (size_t i = 0; i < databaseEntries; i++) databaseFitness[i]      = js["MCMC"]["State"]["DatabaseFitness"][i];
  for (size_t d = 0; d < _k->N; d++) chainMean[d]                      = js["MCMC"]["State"]["Chain Mean"][d];
@@ -204,14 +204,14 @@ void Korali::Solver::MCMC::run()
  {
   t0 = std::chrono::system_clock::now();
 
-  rejections = -1;
+  rejections = 0;
   while( rejections < _rejectionLevels )
   {
-    rejections++;
     generateCandidate(rejections);
     _k->_conduit->evaluateSample(ccPoints, rejections); countevals++;
     _k->_conduit->checkProgress();
-    acceptReject(rejections+1);
+    acceptReject(rejections);
+    rejections++;
   }
   if (chainLength > _burnin ) updateDatabase(clPoint, clLogLikelihood);
   updateState();
@@ -236,15 +236,15 @@ void Korali::Solver::MCMC::processSample(size_t sampleIdx, double fitness)
 }
 
 
-void Korali::Solver::MCMC::acceptReject(size_t level)
+void Korali::Solver::MCMC::acceptReject(size_t trial)
 {
 
  double denom;
- alpha[level-1] = recursiveAlpha(denom, clLogLikelihood, ccLogLikelihoods, level);
- if ( alpha[level-1] == 1.0 || alpha[level-1] > _uniformGenerator->getRandomNumber() ) {
+ double alpha = recursiveAlpha(denom, clLogLikelihood, ccLogLikelihoods, trial);
+ if ( alpha == 1.0 || alpha > _uniformGenerator->getRandomNumber() ) {
    naccept++;
-   clLogLikelihood = ccLogLikelihoods[level-1];
-   for (size_t d = 0; d < _k->N; d++) clPoint[d] = ccPoints[(level-1)*_k->N+d];
+   clLogLikelihood = ccLogLikelihoods[trial];
+   for (size_t d = 0; d < _k->N; d++) clPoint[d] = ccPoints[trial*_k->N+d];
  }
  chainLength++;
 }
@@ -254,8 +254,7 @@ double Korali::Solver::MCMC::recursiveAlpha(double& denom, const double llk0, co
 {
     // recursive formula from Trias[2009]
 
-    if(N<1) { fprintf( stderr, "[Korali] MCMC Error: invalid call of method recusriveAlpha (N<1)\n"); exit(-1); }
-    if(N==1)
+    if(N==0)
     {
         denom = exp(llk0);
         return std::min(1.0, exp(logliks[0] - llk0));
@@ -263,15 +262,15 @@ double Korali::Solver::MCMC::recursiveAlpha(double& denom, const double llk0, co
     else
     {
         // revert sample array
-        double* revLlks = new double[N-1];
-        for(size_t i = 0; i < N-1; ++i) revLlks[i] = logliks[N-2-i];
+        double* revLlks = new double[N];
+        for(size_t i = 0; i < N; ++i) revLlks[i] = logliks[N-1-i];
         
         // update numerator (w. recursive calls)
-        double numerator = std::exp(logliks[N-1]);
-        for(size_t i = 1; i < N; ++i)
+        double numerator = std::exp(logliks[N]);
+        for(size_t i = 0; i < N; ++i)
         {   
             double denom2; 
-            double recalpha2 = recursiveAlpha(denom2, logliks[N-1], revLlks, i);
+            double recalpha2 = recursiveAlpha(denom2, logliks[N], revLlks, i);
             numerator *=  ( 1.0 - recalpha2 );
         }
         delete [] revLlks;
@@ -314,16 +313,16 @@ void Korali::Solver::MCMC::generateCandidate(size_t sampleIdx)
 }
 
 
-void Korali::Solver::MCMC::sampleCandidate(size_t level)
+void Korali::Solver::MCMC::sampleCandidate(size_t sampleIdx)
 {  
- for (size_t d = 0; d < _k->N; ++d) { z[d] = _gaussianGenerator->getRandomNumber(); ccPoints[level*_k->N+d] = 0.0; }
+ for (size_t d = 0; d < _k->N; ++d) { z[d] = _gaussianGenerator->getRandomNumber(); ccPoints[sampleIdx*_k->N+d] = 0.0; }
 
  if ( (_adaptive == false) || (databaseEntries <= _nonAdaptionPeriod + _burnin)) 
-     for (size_t d = 0; d < _k->N; ++d) for (size_t e = 0; e < _k->N; ++e) ccPoints[level*_k->N+d] += _covarianceMatrix[d*_k->N+e] * z[e];
+     for (size_t d = 0; d < _k->N; ++d) for (size_t e = 0; e < _k->N; ++e) ccPoints[sampleIdx*_k->N+d] += _covarianceMatrix[d*_k->N+e] * z[e];
  else
-     for (size_t d = 0; d < _k->N; ++d) for (size_t e = 0; e < _k->N; ++e) ccPoints[level*_k->N+d] += chainCov[d*_k->N+e] * z[e];
+     for (size_t d = 0; d < _k->N; ++d) for (size_t e = 0; e < _k->N; ++e) ccPoints[sampleIdx*_k->N+d] += chainCov[d*_k->N+e] * z[e];
 
- for (size_t d = 0; d < _k->N; ++d) ccPoints[level*_k->N+d] += clPoint[d];
+ for (size_t d = 0; d < _k->N; ++d) ccPoints[sampleIdx*_k->N+d] += clPoint[d];
 }
 
 

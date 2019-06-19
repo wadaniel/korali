@@ -247,29 +247,38 @@ void Korali::Solver::MCMC::acceptReject(size_t level)
 
 double Korali::Solver::MCMC::recursiveAlpha(double& denom, const double llk0, const double* logliks, size_t N) const
 {
+    // recursive formula from Trias[2009]
+
     if(N<1) { fprintf( stderr, "[Korali] MCMC Error: invalid call of method recusriveAlpha (N<1)\n"); exit(-1); }
     if(N==1)
     {
-        denom = logliks[0];
+        denom = exp(llk0);
         return std::min(1.0, exp(logliks[0] - llk0));
     }
     else
     {
-        double denomTmp1, denomTmp2;
-        
-        // update denomiator
-        denom = denomTmp1 * (1-recursiveAlpha(denomTmp1, llk0, logliks, N-1));
-        
-
+        // revert sample array
         double* revLlks = new double[N-1];
-        for(size_t i = 0; i < N-1; ++i) revLlks[i] = logliks[N-1-i];
+        for(size_t i = 0; i < N-1; ++i) revLlks[i] = logliks[N-2-i];
         
-        // update nominator
-        double num = llk0 * ( 1 - std::min(1.0, exp(llk0 - logliks[N-1])) ) * recursiveAlpha( denomTmp2, logliks[N], revLlks, N-1);
-        
+        // update numerator (w. recursive calls)
+        double numerator = std::exp(logliks[N-1]);
+        for(size_t i = 1; i < N; ++i)
+        {   
+            double denom2; 
+            double recalpha2 = recursiveAlpha(denom2, logliks[N-1], revLlks, i);
+            numerator *=  ( 1.0 - recalpha2 );
+        }
         delete [] revLlks;
-        
-        return std::min(1.0, num/denom);
+  
+        if (numerator == 0.0) return 0.0;
+
+        // update denomiator
+        double denom1;
+        double recalpha1 = recursiveAlpha(denom1, llk0, logliks, N-1);
+        denom = denom1 * (1.0 - recalpha1);
+               
+        return std::min(1.0, numerator/denom);
     }
 }
 

@@ -8,7 +8,13 @@ In an evolution strategy, new candidate solutions are sampled according to a mul
 
 CMA-ES works iteratively, evaluating a number $\lambda$ of samples per generation, and improving the covariance matrix for the samples in the next generation.
 
-##Syntax
+**Requirements:**
+
++ The *Sample Count* per generation $\lambda$ needs to be defined.
++ The *Initial Mean* needs to be defined for every variable.
++ The *Initial Standard Deviation* needs to be defined for every variable.
+
+##Settings
 
 ```python
   # Definition
@@ -49,10 +55,6 @@ CMA-ES works iteratively, evaluating a number $\lambda$ of samples per generatio
   k["Variables"][i]["CMA-ES"]["Log Space"] = ...
 ```
 
-##Requirements
-+ The *Sample Count* per generation $\lambda$ needs to be defined.
-+ The *Initial Mean* needs to be defined for every variable.
-+ The *Initial Standard Deviation* needs to be defined for every variable.
 
 ##Solver Settings
 
@@ -71,6 +73,102 @@ CMA-ES works iteratively, evaluating a number $\lambda$ of samples per generatio
 	#Setting lambda
 	k["CMA-ES"]["Sample Count"] = 32
 	```
+	
+- **Sigma Cumulation Factor**. Description. By default, Korali will set this value to *-1* (Disabled). Example:
+
+	```python
+	k["CMA-ES"]["Sigma Cumulation Factor"] = 1.0
+	```
+
+- **Damp Factor**. Description. By default, Korali will set this value to *-1* (Disabled). Example:
+
+	```python
+	k["CMA-ES"]["Damp Factor"] = 1.0
+	```	
+	
+- **Max Resamplings**. Description. By default, Korali will set this value to $10^6$. Example:
+
+	```python
+	k["CMA-ES"]["Max Resamplings"] = 5
+	```	
+
+- **Sigma Bounded**. Description. By default, Korali will set this value to *false*. Example:
+
+	```python
+	k["CMA-ES"]["Sigma Bounded"] = true
+	```	
+	
+- **Mu Value**. Description. By default, Korali will set this value to $\lambda / 2$. Example:
+
+	```python
+	k["CMA-ES"]["Mu"]["Value"] = 8
+	```	
+
+- **Mu Type**. Description. By default, Korali will set this value to *Logarithmic*. Example:
+
+	```python
+	k["CMA-ES"]["Mu"]["Value"] = "Equal"
+	k["CMA-ES"]["Mu"]["Value"] = "Linear"
+	k["CMA-ES"]["Mu"]["Value"] = "Logarithmic"
+	```
+	
+- **Mu Covariance**. Description. By default, Korali will set this value to *-1* (Disabled). Example:
+
+	```python
+	k["CMA-ES"]["Mu"]["Covariance"] = 0.5
+	```	
+		 
+## Termination Criteria
+
+- **Max Generations** Specifies the maximum number of generations to run. By default, Korali will set this criterion as active and its value to *1000*. Example:
+
+	```python
+	k["CMA-ES"]["Termination Criteria"]["Max Generations"]["Active"] = true
+	k["CMA-ES"]["Termination Criteria"]["Max Generations"]["Value"] = 500
+	```
+
+	
+- **Max Model Evaluations** Specifies the maximum number of sample evaluations to run. By default, Korali will set this criterion as inactive. Example:
+
+	```python
+	k["CMA-ES"]["Termination Criteria"]["Max Model Evaluations"]["Active"] = true
+	k["CMA-ES"]["Termination Criteria"]["Max Model Evaluations"]["Value"] = 50000
+	```	
+	
+- **Fitness** Specifies the goal fitness to achieve before stopping execution. By default, Korali will set this criterion as inactive. Example:
+
+	```python
+	k["CMA-ES"]["Termination Criteria"]["Fitness"]["Active"] = true
+	k["CMA-ES"]["Termination Criteria"]["Fitness"]["Value"] = 5.0
+	```	
+	
+- **Fitness Diff Threshold** Specifies the minimum fitness differential between two consecutive generations before stopping execution. By default, Korali will set this criterion as active and value $1^-9$. Example:
+
+	```python
+	k["CMA-ES"]["Termination Criteria"]["Fitness Diff Threshold"]["Active"] = true
+	k["CMA-ES"]["Termination Criteria"]["Fitness Diff Threshold"]["Value"] = 0.01
+	```	
+
+- **Min DeltaX** Specifies the minimum differential change between variable values between two consecutive generations before stopping execution. By default, Korali will set this criterion as active and value $1^-12$. Example:
+
+	```python
+	k["CMA-ES"]["Termination Criteria"]["Min DeltaX"]["Active"] = true
+	k["CMA-ES"]["Termination Criteria"]["Min DeltaX"]["Value"] = 0.00001
+	```	
+	
+- **Max Standard Deviation** Specifies the maximum standard deviation in the covariance matrix. By default, Korali will set this criterion as disabled. Example:
+
+	```python
+	k["CMA-ES"]["Termination Criteria"]["Max Standard Deviation"]["Active"] = true
+	k["CMA-ES"]["Termination Criteria"]["Max Standard Deviation"]["Value"] = 10.0
+	```	
+
+- **Max Condition Covariance** Specifies the maximum condition covariance. By default, Korali will set this criterion as disabled. Example:
+
+	```python
+	k["CMA-ES"]["Termination Criteria"]["Max Standard Deviation"]["Active"] = true
+	k["CMA-ES"]["Termination Criteria"]["Max Standard Deviation"]["Value"] = 10.0
+	```	
 	
 ## Variable Settings
 
@@ -110,7 +208,7 @@ CMA-ES works iteratively, evaluating a number $\lambda$ of samples per generatio
 	# Modifying the initial standard deviation of my variable
 	k["Variables"][i]["CMA-ES"]["Minimum Standard Deviation Changes"] = 0.05;
 	```
-	 
+	
 ## Plotting
 
 Here we explain the **CMA-ES** result plot in further detail and how it can be
@@ -125,11 +223,7 @@ is 10), of the negative 2-dimensional [Rosenbrock](https://en.wikipedia.org/wiki
 
 ![figure](optimizing_rosenbrock.png)
 
-## Description
-
-### Quadrant 1
-
-The first quadrant (upper left) shows 4 graphs plus markers (crosses):
+**Quadrant 1**: The first quadrant (upper left) shows 4 graphs plus markers (crosses):
 
 * $| F |$ (red): $F$ is the best function evaluation of the current generation.
       Note that the colour of $F$ changes if $F < 0$ (red) or $F \geq 0$ (blue).
@@ -159,33 +253,18 @@ The first quadrant (upper left) shows 4 graphs plus markers (crosses):
 
 A good indicator of convergance of CMA-ES to the global maximum is given by a steady decrease of $| F - F_{best} |$.
 
-
-### Quadrant 2
-
-Objective Variables: This plot shows the evolution of the objective variables corresponding to the
-evaluation of $|F|$. A line per each dimension of the optimization problem is
-plotted.
+**Quadrant 2**: Objective Variables: This plot shows the evolution of the objective variables corresponding to the
+evaluation of $|F|$. A line per each dimension of the optimization problem is plotted.
 
 
+**Quadrant 3**: Square Root of Eigenvalues $\mathbf{C}$: The square root of the Eigenvalues of $\mathbf{C}$ are the lengths of the axes of the (unscaled) covariance matrix. Optimally the lengths of the axes are of same magnitude.
 
-### Quadrant 3
-
-Square Root of Eigenvalues $\mathbf{C}$: The square root of the Eigenvalues of $\mathbf{C}$ are the lengths of the axes of the
-(unscaled) covariance matrix. Optimally the lengths of the axes are of same magnitude.
+**Quadrant 4**: $\sigma \sqrt{diag(\mathbf{C})}$: the square root of the diagonal elements of the (scaled) covariance matrix of
+the proposal distribution approximate the standard deviation of the parameters. Ideally the standard deviations of all coordinates are of same magnitude.
 
 
 
-### Quadrant 4
-
-$\sigma \sqrt{diag(\mathbf{C})}$: the square root of the diagonal elements of the (scaled) covariance matrix of
-the proposal distribution approximate the standard deviation of the parameters.
-Ideally the standard deviations of all coordinates are of same magnitude.
-
-
-
-## Example
-
-### Shekel function
+**Example: Shekel function**
 
 The following figure shows the results of an unsuccessful maximization of the
 negative of the [Shekel](https://en.wikipedia.org/wiki/Shekel_function) function in 4

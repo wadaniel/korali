@@ -12,7 +12,17 @@ Currently, Korali uses a Gaussian estimator for the error component of the likel
 
 $$ p(d | \vartheta) = {\frac {1}{\sigma {\sqrt {2\pi }}}}e^{-{\frac {1}{2}}\left((x-\mu )/\sigma \right)^{2}} $$
 
+**Requirements:**
+
++ At least one computational variable as input for the computational model.
++ At least one statistical variable for the value of *sigma* in the Gaussian error calculation.
++ A [Reference](/usage/models/reference) computational model should be defined for the likelihood.
++ At least one variable should be defined.
++ A prior distribution should be defined for every variable.
+
+
 ##Syntax
+
 ```python
   # Definition
   k["Problem"] = "Bayesian"
@@ -26,55 +36,49 @@ $$ p(d | \vartheta) = {\frac {1}{\sigma {\sqrt {2\pi }}}}e^{-{\frac {1}{2}}\left
   k["Variables"][i]["Bayesian"]["Prior Distribution"] ...
 ```
 
-##Requirements
-+ At least one computational variable as input for the computational model.
-+ At least one statistical variable for the value of *sigma* in the Gaussian error calculation.
-+ A [Reference](/usage/models/reference) computational model should be defined for the likelihood.
-+ At least one variable should be defined.
-+ A prior distribution should be defined for every variable.
+##Problem Settings
 
-##Settings
+- **Reference Data**. The reference data are points in the variable space that the computational model model evaluates, given the sample variable data. The output of the model allows Korali to evaluate the likelihood function $p(d|\vartheta)$
 
-### Reference Data
-The reference data are points in the variable space that the computational model model evaluates, given the sample variable data. The output of the model allows Korali to evaluate the likelihood function $p(d|\vartheta)$
+	Example:
+	```python
+	# Adding reference data items from a vector with the += operator.
+	for x in refData:
+	 korali["Problem"]["Reference Data"] += x
+	 
+	# Adding reference data items from a vector by index.
+	for i in range(len(refData)):
+	 korali["Problem"]["Reference Data"][i] = refData[i]
+	 
+	# Providing a complete vector as reference data
+	 korali["Problem"]["Reference Data"] = refData
+	```
 
-Example:
-```python
-# Adding reference data items from a vector with the += operator.
-for x in refData:
- korali["Problem"]["Reference Data"] += x
- 
-# Adding reference data items from a vector by index.
-for i in range(len(refData)):
- korali["Problem"]["Reference Data"][i] = refData[i]
- 
-# Providing a complete vector as reference data
- korali["Problem"]["Reference Data"] = refData
-```
+##Variable Settings
 
-### Variable Type
-The Bayesian problem makes a distinction between computational and statistical variable types. Computational variables describe the dimension of the problem-space (e.g., the X, Y, and Z coordinates of a real-world 3D problem), while statistical variables are employed to infer values from the statistical model (e.g., the error estimation $\sigma$ of a Gaussian process).
+- **Type**. The Bayesian problem makes a distinction between computational and statistical variable types. Computational variables describe the dimension of the problem-space (e.g., the X, Y, and Z coordinates of a real-world 3D problem), while statistical variables are employed to infer values from the statistical model (e.g., the error estimation $\sigma$ of a Gaussian process).
 
-Example:
-```python
-k["Variables"][0]["Bayesian"]["Type] = "Computational"
-k["Variables"][1]["Bayesian"]["Type] = "Statistical"
-```
+	Example:
+	
+	```python
+	k["Variables"][0]["Bayesian"]["Type] = "Computational"
+	k["Variables"][1]["Bayesian"]["Type] = "Statistical"
+	```
 
-### Prior Distribution
-The Bayesian problem type extends the definition of each variable with the possibility of defining a prior distribution. Korali currently offers the following distributions:
+- **Prior Distribution**. The Bayesian problem type extends the definition of each variable with the possibility of defining a prior distribution. Korali currently offers the following distributions:
 
-- [Cauchy](/usage/distributions/cauchy)
-- [Exponential](/usage/distributions/exponential)
-- [Gamma](/usage/distributions/gamma)
-- [Gaussian](/usage/distributions/gaussian)
-- [Laplace](/usage/distributions/laplace)
-- [Uniform](/usage/distributions/uniform)
+	- [Cauchy](/usage/distributions/cauchy)
+	- [Exponential](/usage/distributions/exponential)
+	- [Gamma](/usage/distributions/gamma)
+	- [Gaussian](/usage/distributions/gaussian)
+	- [Laplace](/usage/distributions/laplace)
+	- [Uniform](/usage/distributions/uniform)
 
-Example:
-```python
-  #Setting a uniform prior distribution for variable 0
-  k["Variables"][0]["Bayesian"]["Prior Distribution"]["Type"] = "Uniform"
-  k["Variables"][0]["Bayesian"]["Prior Distribution"]["Minimum"] = -10.0
-  k["Variables"][0]["Bayesian"]["Prior Distribution"]["Maximum"] = +10.0
-```
+	Example:
+	
+	```python
+	  #Setting a uniform prior distribution for variable 0
+	  k["Variables"][0]["Bayesian"]["Prior Distribution"]["Type"] = "Uniform"
+	  k["Variables"][0]["Bayesian"]["Prior Distribution"]["Minimum"] = -10.0
+	  k["Variables"][0]["Bayesian"]["Prior Distribution"]["Maximum"] = +10.0
+	```

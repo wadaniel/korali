@@ -42,6 +42,7 @@ class MCMC : public Base
  double* ccLogLikelihoods; /* Candidates fitness value */
  double* alpha; /* alphas for recursive calculation of delayed rejection schemes */
  double acceptanceRateProposals; /* Ratio proposed to accepted Samples */
+ size_t rejections; /* Rejections in current generation*/
  size_t naccept; /* Number of accepted samples */
  size_t countgens; /* Number of proposed samples */
  size_t chainLength; /* Number accepted samples + burnin accepted samples */

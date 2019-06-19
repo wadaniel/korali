@@ -58,6 +58,7 @@ Korali::Solver::MCMC::MCMC(nlohmann::json& js, std::string name)
  naccept                  = 0;
  countgens                = 0;
  chainLength              = 0;
+ rejections               = 0;
  databaseEntries          = 0;
  clLogLikelihood          = -std::numeric_limits<double>::max();
  acceptanceRateProposals  = 1.0;
@@ -117,15 +118,16 @@ nlohmann::json Korali::Solver::MCMC::getConfiguration()
  js["MCMC"]["State"]["Chain Length"]              = chainLength;
  js["MCMC"]["State"]["Database Entries"]          = databaseEntries;
  js["MCMC"]["State"]["Acceptance Rate Proposals"] = acceptanceRateProposals;
+ js["MCMC"]["State"]["Rejections"]                = rejections;
  for (size_t d = 0; d < _k->N; d++) js["MCMC"]["State"]["Leader"][d]                         = clPoint[d];
- //for (size_t d = 0; d < _k->N; d++) js["MCMC"]["State"]["Candidate"][d]                      = ccPoints[(_rejectionLevels-1)*_k->N+d];
+ for (size_t r = 0; r < rejections; ++r) for (size_t d = 0; d < _k->N; d++) js["MCMC"]["State"]["Candidates"][r][d] = ccPoints[r*_k->N+d];
+ for (size_t r = 0; r < rejections; ++r) js["MCMC"]["State"]["CandidatesFitness"][r]         = ccLogLikelihoods[r];
  for (size_t i = 0; i < _k->N*databaseEntries; i++) js["MCMC"]["State"]["DatabasePoints"][i] = databasePoints[i];
  for (size_t i = 0; i < databaseEntries; i++) js["MCMC"]["State"]["DatabaseFitness"][i]      = databaseFitness[i];
  for (size_t d = 0; d < _k->N; d++) js["MCMC"]["State"]["Chain Mean"][d]                     = chainMean[d];
  for (size_t d = 0; d < _k->N * _k->N; d++) js["MCMC"]["State"]["Chain Covariance"][d]       = chainCov[d];
 
  js["MCMC"]["State"]["LeaderFitness"]    = clLogLikelihood;
- //js["MCMC"]["State"]["CandidateFitness"] = ccLogLikelihoods;
 
  return js;
 }
@@ -172,9 +174,11 @@ void Korali::Solver::MCMC::setState(nlohmann::json& js)
  chainLength             = js["MCMC"]["State"]["Chain Length"];
  databaseEntries         = js["MCMC"]["State"]["Database Entries"];
  acceptanceRateProposals = js["MCMC"]["State"]["Acceptance Rate Proposals"];
+ rejections              = js["MCMC"]["State"]["Rejections"];
 
  for (size_t d = 0; d < _k->N; d++) clPoint[d]                        = js["MCMC"]["State"]["Leader"][d];
- //for (size_t d = 0; d < _k->N; d++) ccPoints[d]                        = js["MCMC"]["State"]["Candidate"][d];
+ for(size_t r = 0; r < rejections; ++r) for (size_t d = 0; d < _k->N; d++) ccPoints[r*_k->N+d] = js["MCMC"]["State"]["Candidate"][r][d];
+ for(size_t r = 0; r < rejections; ++r) ccLogLikelihoods[r]           = js["MCMC"]["State"]["CandidatesFitness"][r];
  for (size_t i = 0; i < _k->N*databaseEntries; i++) databasePoints[i] = js["MCMC"]["State"]["DatabasePoints"][i];
  for (size_t i = 0; i < databaseEntries; i++) databaseFitness[i]      = js["MCMC"]["State"]["DatabaseFitness"][i];
  for (size_t d = 0; d < _k->N; d++) chainMean[d]                      = js["MCMC"]["State"]["Chain Mean"][d];
@@ -182,7 +186,6 @@ void Korali::Solver::MCMC::setState(nlohmann::json& js)
  for (size_t d = 0; d < _k->N*_k->N; d++) _covarianceMatrix[d]        = js["MCMC"]["State"]["CovarianceMatrix"][d];
  
  clLogLikelihood = js["MCMC"]["State"]["LeaderFitness"];
- //ccLogLikelihoods = js["MCMC"]["State"]["CandidateFitness"];
 
 }
 
@@ -201,12 +204,14 @@ void Korali::Solver::MCMC::run()
  {
   t0 = std::chrono::system_clock::now();
 
-  for(size_t r = 1; r <= _rejectionLevels; ++r)
+  rejections = -1;
+  while( rejections < _rejectionLevels )
   {
-    generateCandidate(r-1);
-    _k->_conduit->evaluateSample(ccPoints, r-1); countevals++;
+    rejections++;
+    generateCandidate(rejections);
+    _k->_conduit->evaluateSample(ccPoints, rejections); countevals++;
     _k->_conduit->checkProgress();
-    acceptReject(r);
+    acceptReject(rejections+1);
   }
   if (chainLength > _burnin ) updateDatabase(clPoint, clLogLikelihood);
   updateState();

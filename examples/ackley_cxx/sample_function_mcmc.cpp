@@ -25,7 +25,7 @@ int main(int argc, char* argv[])
  k["Variables"][3]["MCMC"]["Initial Mean"] = 0.0;
  k["Variables"][3]["MCMC"]["Initial Standard Deviation"] = 1.000;
 
- k["MCMC"]["Population Size"] = 10000;
+ k["MCMC"]["Population Size"] = 5000;
  k["MCMC"]["Burn In"] = 500;
  k["MCMC"]["Adaptive Sampling"]  = true;
 

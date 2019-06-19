@@ -326,8 +326,8 @@ void CMAES::setConfiguration(nlohmann::json& js)
    if (initialStdDevDefined == false) _initialStdDevs[i] = (_upperBounds[i] - _lowerBounds[i]) * 0.30;
   }
 
-  if (initialMeanDefined)   _initialMeans[i] = consume(js["Variables"][i], { "CMA-ES", "Initial Mean" }, KORALI_NUMBER);
-  if (initialStdDevDefined) _initialMeans[i] = consume(js["Variables"][i], { "CMA-ES", "Initial Standard Deviation" }, KORALI_NUMBER);
+  if (initialMeanDefined)   _initialMeans[i]   = consume(js["Variables"][i], { "CMA-ES", "Initial Mean" }, KORALI_NUMBER);
+  if (initialStdDevDefined) _initialStdDevs[i] = consume(js["Variables"][i], { "CMA-ES", "Initial Standard Deviation" }, KORALI_NUMBER);
 
   _variableLogSpace[i] = consume(js["Variables"][i], { "CMA-ES", "Log Space" }, KORALI_BOOLEAN, "false");
   _minStdDevChanges[i] = consume(js["Variables"][i], { "CMA-ES", "Minimum Standard Deviation Changes" }, KORALI_NUMBER, std::to_string(0));

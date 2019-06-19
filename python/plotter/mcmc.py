@@ -92,50 +92,81 @@ def plot_lower_triangle(ax, theta):
 
 
 # Plot MCMC result file
-def plot_samples(path, idx=None):
-    with open(path) as f:
-        data    = json.load(f)
-        dims    = data['Solver']['Variables']
-        numdim  = len(dims)
-        pop     = data['Solver']['MCMC']['State']['Database Entries']
-        fitness = data['Solver']['MCMC']['State']['DatabaseFitness']
-        samples = np.reshape( data['Solver']['MCMC']['State']['DatabasePoints'], (pop,numdim) )
+def plot_samples(fig, ax, data, idx=None):
+    dims     = data['Solver']['Variables']
+    numdim   = len(dims)
+    pop      = data['Solver']['MCMC']['State']['Database Entries']
+    samples  = np.reshape( data['Solver']['MCMC']['State']['DatabasePoints'], (pop,numdim) )
+    
+    if idx is None: 
+        fig.canvas.set_window_title(path)
+        idx = int(re.findall(r'[0-9]+', path)[-1])
+    else:           
+        fig.canvas.set_window_title('s{0}.json'.format(str(idx).zfill(5)))
+    
+    plt.suptitle( 'MCMC\nNumber of Samples {0}\n'.format(str(pop)),
+                  fontweight='bold',
+                  fontsize  = 12)
 
-        plt.style.use('seaborn-dark')
-        fig, ax = plt.subplots(samples.shape[1], samples.shape[1], figsize=(8,8))
-        fig.show()
-        
-        if idx is None: 
-            fig.canvas.set_window_title(path)
-            idx = int(re.findall(r'[0-9]+', path)[-1])
-        else:           
-            fig.canvas.set_window_title('s{0}.json'.format(str(idx).zfill(5)))
-        
-        plt.suptitle( 'MCMC\nNumber of Samples {0}\n'.format(str(pop)),
-                      fontweight='bold',
-                      fontsize  = 12)
-
-        plot_histogram(ax, samples)
-        plot_upper_triangle(ax, samples, False)
-        plot_lower_triangle(ax, samples)
+    plot_histogram(ax, samples)
+    plot_upper_triangle(ax, samples, False)
+    plot_lower_triangle(ax, samples)
 
 # Plot MCMC results (read from .json files)
 def plot_mcmc(src, live=False):
      
-    idx      = 0
-    path = '{0}/s{1}.json'.format(src, str(idx).zfill(5))
-
-    while (os.path.isfile(path)):
-        idx = idx+1
+    plt.style.use('seaborn-dark')
+    burnin = 1e18
+    idx    = 0
+    path   = '{0}/s{1}.json'.format(src, str(idx).zfill(5))
+    
+    fig = None
+    ax  = None
+ 
+    with open(path) as f:
+        data = json.load(f)
+        burnin = data['Solver']['MCMC']['Burn In']
+        numdim = len(data['Solver']['Variables'])
+        fig, ax = plt.subplots(numdim, numdim, figsize=(8,8))
+        if (live == True):
+            fig.show()
+        idx  = idx + 1
+ 
+    while( (live == False) or (plt.fignum_exists(fig.number)) ):
         path = '{0}/s{1}.json'.format(src, str(idx).zfill(5))
-        if ( live == True ):
-            print("TODO")
+
+        if ( not os.path.isfile(path) ):
+            if ( (live == True) and (idx > 0) ):
+              plt_pause_light(0.5)
+              continue
+            else:
+                break
+
+        with open(path) as f:
+            data = json.load(f)
+            
+            if ( live == True)  :
+                chainlen = data['Solver']['MCMC']['State']['Chain Length']
+                
+                if chainlen > burnin:
+                    plot_samples(fig, ax, data, idx)
+                    plt_pause_light(0.5) 
+            
+        idx  = idx + 1
 
     if (idx == 0):
-        print("TODO, file not found")
+        print("[Korali] Error: Did not find file {0} in the _korali_result folder...".format(path))
 
-    path = '{0}/s{1}.json'.format(src, str(idx-1).zfill(5))
-    plot_samples(path, idx)
-    plt_pause_light(3600) 
-
-    plt.show()
+    if ( live == False):
+        print("here")
+        path = '{0}/s{1}.json'.format(src, str(idx-1).zfill(5))
+        with open(path) as f:
+            data     = json.load(f)
+            numdim   = len(data['Solver']['Variables'])
+            chainlen = data['Solver']['MCMC']['State']['Chain Length']
+            if chainlen <= burnin:
+                print("[Korali] Error: No samples found in file {0}...".format(path))
+                exit(-1)
+            
+            plot_samples(fig, ax, data, idx)
+            plt_pause_light(3600) 

@@ -4,7 +4,7 @@
 
 This is the implementation of the *Constrained Covariance Matrix Adaptation Evolution Strategy*, as published in the [paper](https://dl.acm.org/citation.cfm?doid=3324989.3325725).
 
-CCMA-ES is an extension of CMA-ES for constrained optimization problems. It uses
+CCMA-ES is an extension of [CMA-ES](/usage/solvers/optimizers/cmaes/) for constrained optimization problems. It uses
 the principle of *viability boundaries* to find an initial mean vector for the proposal
 distribution that does not violate constraints and secondly it uses an additional *constraint
 handling technique* to efficiently adapt the proposal distribution to the
@@ -311,6 +311,6 @@ For a better understanding of the variables please refer to the paper.
 
 ## Plotting
 
-For plotting we use the same tool as in [CMA-ES](TODO), for more information
-please refer given page. 
+For plotting we use the same tool as in [CMA-ES](/usage/solvers/optimizers/cmaes/#plotting), for more information
+please refer to given page. 
 

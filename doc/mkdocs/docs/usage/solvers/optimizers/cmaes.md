@@ -241,8 +241,9 @@ For a better understanding of the variables please refer to the paper.
 Here we explain the **CMA-ES** result plot in further detail and how it can be
 used to validate your optimization.
 
-The module korali.plotter (run with `python3 -m korali.plotter` command visualizes some of the most meaningful states of CMA-ES
+The module korali.plotter (run with `python3 -m korali.plotter`) command visualizes some of the most meaningful states of CMA-ES
 stored in the result files in the output directory (`_korali_result`).
+To plot a running simulation use the command `python3 -m korali.plotter --live` for incremental plots.
 
 In the figure below we see the evolution of the CMA-ES algorithm during 100
 optimization steps, respectively 1000 function evaluations (here the sample size

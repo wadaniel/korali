@@ -37,9 +37,9 @@ PYBIND11_MODULE(libkorali, m) {
  .def("__setitem__", pybind11::overload_cast<const std::string&, const int&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
  .def("__setitem__", pybind11::overload_cast<const std::string&, const bool&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
  .def("run", &Korali::Engine::run)
- .def("setModel",       pybind11::overload_cast<std::function<void(Korali::ModelData&)>>(&Korali::Engine::setModel))
- .def("setLikelihood",  pybind11::overload_cast<std::function<void(Korali::ModelData&)>>(&Korali::Engine::setLikelihood))
- .def("addConstraint"), pybind11::overload_cast<fcon>(&Korali::Engine::addConstraint))
+ .def("setModel",      pybind11::overload_cast<std::function<void(Korali::ModelData&)>>(&Korali::Engine::setModel))
+ .def("setLikelihood", pybind11::overload_cast<std::function<void(Korali::ModelData&)>>(&Korali::Engine::setLikelihood))
+ .def("addConstraint", pybind11::overload_cast<Korali::fcon>(&Korali::Engine::addConstraint))
  .def("loadState",  pybind11::overload_cast<std::string>(&Korali::Engine::loadState))
  .def("loadConfig", pybind11::overload_cast<std::string>(&Korali::Engine::loadConfig)
  );

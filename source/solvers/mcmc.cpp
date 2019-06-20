@@ -107,8 +107,8 @@ void Korali::Solver::MCMC::getConfiguration(nlohmann::json& js)
 
  js["MCMC"]["Termination Criteria"]["Max Function Evaluations"]["Value"]  = _termCondMaxFunEvals;
  js["MCMC"]["Termination Criteria"]["Max Function Evaluations"]["Active"] = _isTermCondMaxFunEvals;
- js["MCMC"]["Termination Criteria"]["Max Generated Samples"]["Value"]     = _termCondMaxGenerations;
- js["MCMC"]["Termination Criteria"]["Max Generated Samples"]["Active"]    = _isTermCondMaxGenerations;
+ js["MCMC"]["Termination Criteria"]["Max Candidate Proposals"]["Value"]   = _termCondMaxGenerations;
+ js["MCMC"]["Termination Criteria"]["Max Candidate Proposals"]["Active"]  = _isTermCondMaxGenerations;
 
  // State Variables
  for (size_t d = 0; d < _k->N*_k->N; d++) js["MCMC"]["State"]["CovarianceMatrix"][d] = _covarianceMatrix[d];
@@ -152,8 +152,8 @@ void Korali::Solver::MCMC::setConfiguration(nlohmann::json& js)
  _maxresamplings           = consume(js, { "MCMC", "Max Resamplings" }, KORALI_NUMBER, std::to_string(1e6));
  _termCondMaxFunEvals      = consume(js, { "MCMC", "Termination Criteria", "Max Function Evaluations", "Value" }, KORALI_NUMBER, std::to_string(1e4));
  _isTermCondMaxFunEvals    = consume(js, { "MCMC", "Termination Criteria", "Max Function Evaluations", "Active" }, KORALI_BOOLEAN, "false");
- _termCondMaxGenerations   = consume(js, { "MCMC", "Termination Criteria", "Max Sample Generations", "Value" }, KORALI_NUMBER, std::to_string(1e12));
- _isTermCondMaxGenerations = consume(js, { "MCMC", "Termination Criteria", "Max Sample Generations", "Active" }, KORALI_BOOLEAN, "false");
+ _termCondMaxGenerations   = consume(js, { "MCMC", "Termination Criteria", "Max Candidate Proposals", "Value" }, KORALI_NUMBER, std::to_string(1e12));
+ _isTermCondMaxGenerations = consume(js, { "MCMC", "Termination Criteria", "Max Candidate Proposals", "Active" }, KORALI_BOOLEAN, "false");
   
  _initialMeans   = (double*) calloc(sizeof(double), _k->N);
  _initialStdDevs = (double*) calloc(sizeof(double), _k->N);
@@ -179,7 +179,7 @@ void Korali::Solver::MCMC::setState(nlohmann::json& js)
 
  for (size_t d = 0; d < _k->N; d++) clPoint[d]                        = js["MCMC"]["State"]["Leader"][d];
  for (size_t r = 0; r < rejections; ++r) for (size_t d = 0; d < _k->N; d++) ccPoints[r*_k->N+d] = js["MCMC"]["State"]["Candidate"][r][d];
- for (size_t r = 0; r < rejections; ++r) ccLogLikelihoods[r]           = js["MCMC"]["State"]["CandidatesFitness"][r];
+ for (size_t r = 0; r < rejections; ++r) ccLogLikelihoods[r]          = js["MCMC"]["State"]["CandidatesFitness"][r];
  for (size_t i = 0; i < _k->N*databaseEntries; i++) databasePoints[i] = js["MCMC"]["State"]["DatabasePoints"][i];
  for (size_t i = 0; i < databaseEntries; i++) databaseFitness[i]      = js["MCMC"]["State"]["DatabaseFitness"][i];
  for (size_t d = 0; d < _k->N; d++) chainMean[d]                      = js["MCMC"]["State"]["Chain Mean"][d];

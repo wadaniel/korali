@@ -10,7 +10,7 @@ Whereas with a *Direct Likelihood*, the function $p(d|\vartheta)$ is given direc
 
 **Requirements:**
 
-+ A [Basic](/usage/models/basic) computational model should be defined for the likelihood.
++ A [Simple](/usage/models/simple) computational model should be defined for the likelihood.
 + At least one variable should be defined.
 + A prior distribution should be defined for every variable.
 

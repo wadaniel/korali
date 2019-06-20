@@ -67,11 +67,13 @@ The rationale and configuration of the currently implemented conduits can be fou
 
 ### Step 5) Define Model(s)
 
+During execution, the Korali engine will evaluate many *samples*. A Korali sample is a vector containing a particular set of values for all (computational and statistical) variables defined in the problem. Korali will stochastically produce new samples to be evaluated by a user-provided computational model.
+
 Korali provides several ways to specify external code/applications to provide results to the Korali engine:
 
-- [Basic](/usage/models/basic)
+- [Simple](/usage/models/simple)
 - [Rerefence](/usage/conduits/reference)
-- [Likelihood](/usage/conduits/likelihood)
+- [Constraint](/usage/conduits/constraint)
 
 ## Running a Korali Application
 

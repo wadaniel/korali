@@ -65,6 +65,7 @@ class TMCMC : public Base
   // Korali Methods
  void run() override;
  void processSample(size_t c, double fitness) override;
+ bool checkTermination() override;
 
   // Internal TMCMC Methods
  void initializeSamples();
@@ -81,6 +82,7 @@ class TMCMC : public Base
  void getConfiguration(nlohmann::json& js) override;
  void setConfiguration(nlohmann::json& js) override;
  void setState(nlohmann::json& js) override;
+ void saveState() const override;
 
  // Print Methods
  void printGeneration() const;

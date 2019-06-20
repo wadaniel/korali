@@ -35,6 +35,7 @@ DE::DE(nlohmann::json& js, std::string name)
  fitnessVector     = (double*) calloc (sizeof(double), _s);
 
  // Init Generation
+ terminate = false;
  currentGeneration = 0;
 
  // Initializing Generators 
@@ -250,7 +251,7 @@ void DE::run()
  
  startTime = std::chrono::system_clock::now();
  initSamples();
- _k->saveState(currentGeneration);
+ saveState();
 
  while(!checkTermination())
  {
@@ -263,7 +264,7 @@ void DE::run()
    t1 = std::chrono::system_clock::now();
 
    printGeneration();
-   _k->saveState(currentGeneration);
+   saveState();
  }
 
  endTime = std::chrono::system_clock::now();
@@ -443,8 +444,6 @@ void DE::updateSolver(const double *fitnessVector)
 bool DE::checkTermination()
 {
 
- bool terminate = false;
-
  if ( _isTermCondFitness && (currentGeneration > 1) && (bestEver >= _termCondFitness) )
  {
   terminate = true;
@@ -495,6 +494,12 @@ size_t DE::maxIdx(const double *rgd, size_t len) const
  size_t res = 0;
  for(size_t i = 1; i < len; i++) if(rgd[i] > rgd[res]) res = i;
  return res;
+}
+
+
+void Korali::Solver::DE::saveState() const
+{
+ if (terminate || (currentGeneration % _resultOutputFrequency) == 0) _k->saveState(currentGeneration);
 }
 
 

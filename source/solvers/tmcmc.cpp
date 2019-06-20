@@ -57,6 +57,8 @@ Korali::Solver::TMCMC::TMCMC(nlohmann::json& js)
  for (size_t c = 0; c < _s; c++) chainLength[c] = 1;
  for (size_t c = 0; c < _s; c++) chainPendingFitness[c] = false;
 
+ // Init Generation
+ terminate = false;
  _countevals               = 0;
  _currentGeneration        = 0;
  _databaseEntries          = 0;
@@ -176,12 +178,12 @@ void Korali::Solver::TMCMC::run()
 
  // Generation 0
  initializeSamples();
- _k->saveState(_currentGeneration);
+ saveState();
  printGeneration();
  _currentGeneration++;
 
  // Generation 1 to N
- for(; _isTermCondMaxGens && (_currentGeneration < _termCondMaxGens); _currentGeneration++)
+ while(!checkTermination())
  {
   t0 = std::chrono::system_clock::now();
 
@@ -202,11 +204,12 @@ void Korali::Solver::TMCMC::run()
 
   t1 = std::chrono::system_clock::now();
 
-  _k->saveState(_currentGeneration);
+  saveState();
   
   printGeneration();
 
-  if (_annealingExponent >= 1.0) break;
+  _currentGeneration++;
+
  }
 
  endTime = std::chrono::system_clock::now();
@@ -552,6 +555,21 @@ bool Korali::Solver::TMCMC::isFeasibleCandidate(size_t c) const
  double clLogPrior = _k->_problem->evaluateLogPrior(&clPoints[c*_k->N]);
  if (clLogPrior > -INFINITY) return true;
  return false;
+}
+
+bool Korali::Solver::TMCMC::checkTermination()
+{
+
+ terminate = (_isTermCondMaxGens && (_currentGeneration < _termCondMaxGens));
+
+ terminate = (_annealingExponent >= 1.0);
+
+ return terminate;
+}
+
+void Korali::Solver::TMCMC::saveState() const
+{
+ if (terminate || (_currentGeneration % _resultOutputFrequency) == 0) _k->saveState(_currentGeneration);
 }
 
 

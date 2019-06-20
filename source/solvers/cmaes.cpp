@@ -58,6 +58,7 @@ CMAES::CMAES(nlohmann::json& js, std::string name)
  _fitnessVector = (double*) calloc (sizeof(double), s_max);
 
  // Init Generation
+ terminate = false;
  _currentGeneration = 0;
 
  // Initializing Gaussian Generator
@@ -974,8 +975,6 @@ void CMAES::handleConstraints()
 bool CMAES::checkTermination()
 {
 
- bool terminate = false;
-
  if ( _isTermCondFitness && (_isViabilityRegime == false) && (_currentGeneration > 1) && (bestEver >= _termCondFitness) )
  {
   terminate = true;
@@ -1180,7 +1179,7 @@ double CMAES::doubleRangeMin(const double *rgd, size_t len) const
 
 void Korali::Solver::CMAES::saveState() const
 {
- if ((_currentGeneration % _resultOutputFrequency) == 0) _k->saveState(_currentGeneration);
+ if (terminate || (_currentGeneration % _resultOutputFrequency) == 0) _k->saveState(_currentGeneration);
 }
 
 

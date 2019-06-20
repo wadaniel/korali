@@ -53,7 +53,8 @@ Korali::Solver::MCMC::MCMC(nlohmann::json& js, std::string name)
  _uniformGenerator = new Variable();
  _uniformGenerator->setDistribution(jsUniform);
 
-
+ // Init Generation
+ terminate = false;
  countevals               = 0;
  naccept                  = 0;
  countgens                = 0;
@@ -372,9 +373,6 @@ void Korali::Solver::MCMC::updateState()
 
 bool Korali::Solver::MCMC::checkTermination()
 {
-
- bool terminate = false;
-
  if ( _isTermCondMaxFunEvals && (countevals >= _termCondMaxFunEvals))
  {
   terminate = true;
@@ -393,7 +391,7 @@ bool Korali::Solver::MCMC::checkTermination()
 
 void Korali::Solver::MCMC::saveState() const
 {
- if ((chainLength % _resultOutputFrequency) == 0) _k->saveState(chainLength);
+ if (terminate || (chainLength % _resultOutputFrequency) == 0) _k->saveState(chainLength);
 }
 
  

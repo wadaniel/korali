@@ -25,7 +25,7 @@ class CMAES : public Base
 
  // Runtime Methods (to be inherited from base class in the future)
  void prepareGeneration();
- bool checkTermination();
+ bool checkTermination() override;
  void updateDistribution(const double *fitnessVector);
  void run() override;
  void processSample(size_t sampleId, double fitness) override;
@@ -34,7 +34,7 @@ class CMAES : public Base
  void getConfiguration(nlohmann::json& js) override;
  void setConfiguration(nlohmann::json& js) override;
  void setState(nlohmann::json& js) override;
- void saveState() const;
+ void saveState() const override;
 
  private:
 

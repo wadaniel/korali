@@ -125,8 +125,6 @@ void Korali::Solver::MCMC::getConfiguration(nlohmann::json& js)
  for (size_t d = 0; d < _k->N * _k->N; d++) js["MCMC"]["State"]["Chain Covariance"][d]       = chainCov[d];
 
  js["MCMC"]["State"]["LeaderFitness"]    = clLogLikelihood;
-
- return js;
 }
 
 void Korali::Solver::MCMC::setConfiguration(nlohmann::json& js)

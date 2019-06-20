@@ -1,0 +1,43 @@
+\subsection*{Steps}
+
+\subsubsection*{1. Check your system}
+
+Check the \href{#system-requirements}{\tt Requirements} section to make sure your system provides the required compilation and software requirements for Korali.
+
+\subsubsection*{2. Download Korali}
+
+Download the Korali project code from \href{https://github.com/cselab/skorali}{\tt Git\-Hub}
+
+```shell git clone \href{https://github.com/cselab/skorali}{\tt https\-://github.\-com/cselab/skorali} ```
+
+\subsubsection*{3. Build and Install Korali}
+
+To build and install Korali, run\-:
+
+```shell cd skorali ./install ```
+
+\subsection*{System Requirements}
+
+\subsubsection*{C++ Compiler}
+
+Korali requires a C++ that supports the C++14 standard ({\ttfamily -\/std=c++14}) to build its engine, dependencies, and user applications.
+
+!!! note The installer will check the \$\-C\-X\-X environment variable to determine the default C++ compiler. You can change the value of this variable to define a custom C++ compiler.
+
+\subsubsection*{Python $>$3.\-0}
+
+Korali requires a version of Python higher than 3.\-0 to be installed in the system.
+
+!!! note Korali's installer will check the 'python3' command. The path to this command should be present in the \$\-P\-A\-T\-H environment variable. Make sure your Python is correctly installed or its module loaded before configuring Korali.
+
+\subsubsection*{G\-N\-U Scientific Library}
+
+Korali requires the \href{http://www.gnu.org/software/gsl/}{\tt G\-S\-L-\/2.\-4} or later must be installed on your system.
+
+!!! hint You can use {\ttfamily ./install -\/-\/install-\/gsl} to have Korali download and build the G\-S\-L-\/2.\-5 G\-N\-U Scientific Library automatically.
+
+\subsubsection*{M\-P\-I (Optional)}
+
+To enable support distributed conduits and computational models, the M\-P\-I library should be installed in the system.
+
+!!! note The installer will check the \$\-M\-P\-I\-C\-X\-X environment variable to determine a valid M\-P\-I C++ compiler. Also make sure you have the corresponding modules loaded in your system. 

@@ -2,7 +2,11 @@
 
 ## Principles
 
-We have designed Korali around 5 key principles:
+We have designed Korali based on these key principles:
+
+### [Ease of Use](usage/basics)
+
+Korali provides an intuitive language-independent interface to designing optimization and uncertainty quantification problems.
 
 ### [Extensibility](usage/basics)
 

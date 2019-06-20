@@ -17,7 +17,6 @@ def main(live):
 
  with open(firstResult) as f:
   data  = json.load(f)
-  method = 'bla'
 
  if 'TMCMC' in data['Solver']:
   print("[Korali] Running TMCMC Plotter...")

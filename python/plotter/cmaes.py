@@ -70,7 +70,16 @@ def plot_cmaes(src, live = False, obj='current'):
             with open(path) as f:
  
                 data  = json.load(f)
-                state = data['CMA-ES']['State']
+                solver = ''
+                if ( 'CMA-ES' in data['Solver'] ):
+                    solver = 'CMA-ES'
+                elif ('CCMA-ES' in data['Solver'] ):
+                    solver = 'CCMA-ES'
+                else:
+                    print("[Korali] Error: could not identify solver from result files!")
+                    exit(-1)
+
+                state = data[solver]['State']
                 gen   = state['Current Generation']
 
                 if (fig, ax) == (None, None):
@@ -85,12 +94,12 @@ def plot_cmaes(src, live = False, obj='current'):
                         ssdev.append([])
 
                     if (live == True):
-                        fig, ax = plt.subplots(2,2,num='CMA-ES live diagnostics', figsize=(8,8))
+                        fig, ax = plt.subplots(2,2,num='{0} live diagnostics'.format(solver), figsize=(8,8))
                         fig.show()
  
                 if (live == True and (not plt.fignum_exists(fig.number))):
                     print("[Korali] Figure closed - Bye!")
-                    exit(-1)
+                    exit(0)
 
                 if gen > 0:
 
@@ -111,11 +120,11 @@ def plot_cmaes(src, live = False, obj='current'):
                         draw_figure(fig, ax, src, gen, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, axis, ssdev, colors, names, live)
 
     if (live == False):
-        fig, ax = plt.subplots(2,2,num='CMA-ES live diagnostics', figsize=(8,8))
+        fig, ax = plt.subplots(2,2,num='{0} live diagnostics'.format(solver), figsize=(8,8))
         fig.show()
         draw_figure(fig, ax, src, gen, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, axis, ssdev, colors, names, live)
         print("[Korali] Figure closed - Bye!")
-
+        exit(0)
 
 
 # Create Plot from Data

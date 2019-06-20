@@ -42,7 +42,8 @@ class DE : public Base
 
  // Korali Runtime Variables
  int _fitnessSign; /* maximizing vs optimizing (+- 1) */
- std::string _acceptRule; /* Best, Greedy or Iterative */
+ std::string _mutationRule; /* Default or Self  Adaptive */
+ std::string _acceptRule; /* Best, Greedy, Iterative or Improved */
  std::string _objective; /* Maximize or Minimize */ 
  double* oldFitnessVector; /* objective function values previous generation [_s] */
  double* fitnessVector; /* objective function values [_s] */

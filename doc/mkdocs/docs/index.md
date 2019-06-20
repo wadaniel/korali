@@ -33,11 +33,11 @@ Korali applications can be programmed in either C++ or Python. Additionally, Kor
 
 A novelty in Korali is its support for multi-intrusive evaluation. That is, Korali can sample from computational models either semi-instrusively, through static linking or dynamic loading of Python modules; or nonintrusively, through shell command execution.
 
-### [High-Throughput](tutorials/mpi/mpi.md)
+### [High-Throughput](usage/conduits/distributed.md)
 
 Korali's work distribution engine has been optimized to fully harness computational resources, maximizing throughput and minimizing latency and load imbalance.
 
-### [High-Performance](tutorials/mpi/mpi.md)
+### [High-Performance](usage/conduits/distributed.md)
 
 Korali supports the execution of parallel (OpenMP, Pthreads), distributed (MPI, UPC++), and GPU-based (CUDA) models.
 

@@ -19,7 +19,7 @@ class Base {
  std::string _name;
  std::vector<std::string> _varNames;
  bool terminate; // Finished?
- 
+
  size_t _resultOutputFrequency;
 
  // Running Methods
@@ -31,7 +31,7 @@ class Base {
  virtual void getConfiguration(nlohmann::json& js) = 0;
  virtual void setConfiguration(nlohmann::json& js) = 0;
  virtual void setState(nlohmann::json& js) = 0;
- virtual void saveState() const = 0;
+ virtual void saveState() const = 0 ;
 
 };
 

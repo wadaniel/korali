@@ -1,20 +1,14 @@
-# Model / Constraint
+# Models / Constraint
 
-A Constraint  
+A Constraint is function of the form: $f:\mathbb{R}^N\rightarrow\mathbb{R}$, where *N* inputs, representing the variables values of a sample, that returns:
 
-## Syntax
+$$f(x)= \left\{{\begin{matrix} >=0 \quad \quad  \quad  \quad {\text{if x satisfies the given constraint.}} \\ < 0 \quad \text{if x does not satisfy the given constraint.} \end{matrix}}\right.$$
+
 
 ###Defining the Model
 
-```python
-# Using a normal function definition
-def myConstraint(data): 
- #do stuff
- 
-k.addConstraint(myConstraint);
-
-# Using a lambda expression
-myModel = lambda koraliData: 
+```pytho
+def myConstraint(x, N): 
  #do stuff
  
 k.addConstraint(myConstraint);
@@ -22,39 +16,28 @@ k.addConstraint(myConstraint);
 
 ###Reading Parameters 
 
-The ```KoraliData``` object exposes information about the sample's computational variables. The snippet below shows the relevant operations:
+The constraint function receives an array of double precision floating points and the number of points *N*
 
-```python
-data.getVariableCount() # Return the number of computational variables in the sample
-data.getVariables() # Returns a vector containing all the computational variables
-data.getVariable(i) # Returns the value of the ith computational variable
-data.getHashId() # Returns a unique identifier for the sample
-``
-
-In the code below shows how a computational model can access sample data:
+In the code below shows how a constraint model can access sample data:
 
 ```python
 # This computational model sums the squares of all sample arguments.
-def myModel(data):
+def myConstraint(x, N):
  sum = 0.0;
- for i in range(data.getVariableCount()):
-  sum += x.getVariable(i)*x.getVariable(i)
+ for i in range(N):
+  sum += x(i)
 ```
 
-###Returning Results
+###Returning Result
 
-The reference model interface requires *M* result to be sent back to the solver. To save the results of the evaluation, Korali exposes the following interface:
-
-```python
-data.addResult() # Adds a new result to the vector result to be sent back to Korali's engine
-data.getResults() # Returns a the full results vector by reference
-```
-
-In the code below shows how a computational model saves a multiple results:
+The reference model interface requires a single constraint result to be returned. In the code below shows how an example:
 
 ```python
 # This computational model returns the squares for all sample arguments.
-def myModel(data):
- for i in range(data.getVariableCount()):
-  data.addResult(x.getVariable(i)*x.getVariable(i))
+# This computational model sums the squares of all sample arguments.
+def myConstraint(x, N):
+ sum = 0.0;
+ for i in range(N):
+  sum += x(i)
+ return sum
 ```

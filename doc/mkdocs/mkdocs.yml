@@ -5,6 +5,7 @@ edit_uri: ''
 
 nav:
   - Home: index.md
+  - Design: design.md
   - Installation: installation.md
   - Tutorials:
      - 'A.1 - Optimization': tutorials/optimization/optimization.md
@@ -55,7 +56,6 @@ nav:
     - Git Repository: https://github.com/cselab/skorali
     - Integration: development/integration.md
     - Doxygen: development/doxygen/html/index.html
-  - References: references.md
   - About Us: aboutus.md
 
 

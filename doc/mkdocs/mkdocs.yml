@@ -37,12 +37,12 @@ nav:
           - Distributed: usage/conduits/distributed.md
           - Nonintrusive: usage/conduits/nonintrusive.md
       - Distributions:
-          - Cauchy: usage/distributions/cauchy.md
-          - Exponential: usage/distributions/exponential.md
-          - Gamma: usage/distributions/gamma.md
-          - Gaussian: usage/distributions/gaussian.md
-          - Laplace: usage/distributions/laplace.md
-          - Uniform: usage/distributions/uniform.md
+          - Cauchy: usage/distributions/#cauchy
+          - Exponential: usage/distributions/#exponential
+          - Gamma: usage/distributions/#gamma
+          - Gaussian: usage/distributions/#gaussian
+          - Laplace: usage/distributions/#laplace
+          - Uniform: usage/distributions/#uniform
       - Models: 
           - Simple: usage/models/simple.md
           - Rerefence: usage/models/reference.md

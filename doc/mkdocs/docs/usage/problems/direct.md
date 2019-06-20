@@ -13,7 +13,7 @@ In a *Direct Evaluation* problem, the computational model is assumed to be of th
 
 ##Requirements
 
-+ A [Basic](/usage/models/basic) computational model should be defined.
++ A [Simple](/usage/models/simple) computational model should be defined.
 + At least one variable should be defined.
 
 ##Settings

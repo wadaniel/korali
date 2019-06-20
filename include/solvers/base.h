@@ -18,6 +18,8 @@ class Base {
 
  std::string _name;
  std::vector<std::string> _varNames;
+ 
+ size_t _resultOutputFrequency;
 
  // Running Methods
  virtual void run() = 0;

@@ -84,6 +84,8 @@ Korali::Solver::MCMC::~MCMC()
 void Korali::Solver::MCMC::getConfiguration(nlohmann::json& js)
 {
  js["Solver"] = "MCMC";
+ 
+ js["MCMC"]["Result Output Frequency"] = _resultOutputFrequency;
 
  js["MCMC"]["Population Size"]                = _s;
  js["MCMC"]["Burn In"]                        = _burnin;
@@ -126,11 +128,12 @@ void Korali::Solver::MCMC::getConfiguration(nlohmann::json& js)
 
  js["MCMC"]["State"]["LeaderFitness"]    = clLogLikelihood;
 
- return js;
 }
 
 void Korali::Solver::MCMC::setConfiguration(nlohmann::json& js)
 {
+ _resultOutputFrequency    = consume(js, { "MCMC", "Result Output Frequency" }, KORALI_NUMBER, std::to_string(100));
+ 
  _s                        = consume(js, { "MCMC", "Population Size" }, KORALI_NUMBER);
  _burnin                   = consume(js, { "MCMC", "Burn In" }, KORALI_NUMBER, std::to_string(0));
  _rejectionLevels          = consume(js, { "MCMC", "Rejection Levels" }, KORALI_NUMBER, std::to_string(1));
@@ -192,7 +195,7 @@ void Korali::Solver::MCMC::setState(nlohmann::json& js)
 
 void Korali::Solver::MCMC::run()
 {
-  _k->saveState(countevals);
+ saveState();
  if (_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Starting MCMC.\n");
  
  startTime = std::chrono::system_clock::now();
@@ -210,12 +213,13 @@ void Korali::Solver::MCMC::run()
     acceptReject(rejections);
     rejections++;
   }
+  chainLength++;
   if (chainLength > _burnin ) updateDatabase(clPoint, clLogLikelihood);
   updateState();
 
   t1 = std::chrono::system_clock::now();
 
-  _k->saveState(countevals);
+  saveState();
   
   printGeneration();
   if (databaseEntries == _s) break;
@@ -243,7 +247,6 @@ void Korali::Solver::MCMC::acceptReject(size_t trial)
    clLogLikelihood = ccLogLikelihoods[trial];
    for (size_t d = 0; d < _k->N; d++) clPoint[d] = ccPoints[trial*_k->N+d];
  }
- chainLength++;
 }
 
 
@@ -386,11 +389,17 @@ bool Korali::Solver::MCMC::checkTermination()
  
  return terminate;
 }
+ 
+
+void Korali::Solver::MCMC::saveState() const
+{
+ if ((chainLength % _resultOutputFrequency) == 0) _k->saveState(chainLength);
+}
 
  
 void Korali::Solver::MCMC::printGeneration() const
 {
- if ((countgens) % _k->_outputFrequency != 0) return;
+ if ((chainLength % _k->_outputFrequency) != 0) return;
  if (_k->_verbosity >= KORALI_MINIMAL)
  {
   printf("--------------------------------------------------------------------\n");

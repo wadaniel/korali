@@ -509,7 +509,7 @@ bool DE::checkTermination()
  }
 
  double range = fabs(currentFunctionValue - prevFunctionValue);
- if ( _isTermCondFitnessDiffThreshold && (currentGeneration > 1) && (range <= _termCondFitnessDiffThreshold) )
+ if ( _isTermCondFitnessDiffThreshold && (currentGeneration > 1) && (range < _termCondFitnessDiffThreshold) )
  {
   terminate = true;
   sprintf(_terminationReason, "Fitness Diff Threshold (%+6.3e) < (%+6.3e).",  range, _termCondFitnessDiffThreshold);

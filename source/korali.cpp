@@ -21,12 +21,12 @@ PYBIND11_MODULE(libkorali, m) {
   .def("getVariable",      &Korali::ModelData::getVariable, pybind11::return_value_policy::reference)
   .def("getVariableCount", &Korali::ModelData::getVariableCount, pybind11::return_value_policy::reference)
   .def("getVariables",     &Korali::ModelData::getVariables, pybind11::return_value_policy::reference)
-  .def("getResults",        &Korali::ModelData::getResults, pybind11::return_value_policy::reference)
- .def("getHashId",        &Korali::ModelData::getHashId, pybind11::return_value_policy::reference)
+  .def("getResults",       &Korali::ModelData::getResults, pybind11::return_value_policy::reference)
+ .def("getHashId",         &Korali::ModelData::getHashId, pybind11::return_value_policy::reference)
   #ifdef _KORALI_USE_MPI
-  .def("getCommPointer",    &Korali::ModelData::getCommPointer)
+  .def("getCommPointer",   &Korali::ModelData::getCommPointer)
   #endif
-  .def("addResult",         &Korali::ModelData::addResult, pybind11::return_value_policy::reference);
+  .def("addResult",        &Korali::ModelData::addResult, pybind11::return_value_policy::reference);
 
  pybind11::class_<Korali::Engine>(m, "Engine")
  .def(pybind11::init<>())
@@ -37,10 +37,12 @@ PYBIND11_MODULE(libkorali, m) {
  .def("__setitem__", pybind11::overload_cast<const std::string&, const int&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
  .def("__setitem__", pybind11::overload_cast<const std::string&, const bool&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
  .def("run", &Korali::Engine::run)
- .def("setModel",      pybind11::overload_cast<std::function<void(Korali::ModelData&)>>(&Korali::Engine::setModel))
- .def("setLikelihood", pybind11::overload_cast<std::function<void(Korali::ModelData&)>>(&Korali::Engine::setLikelihood))
- .def("loadState", pybind11::overload_cast<std::string>(&Korali::Engine::loadState))
- .def("loadConfig", pybind11::overload_cast<std::string>(&Korali::Engine::loadConfig));
+ .def("setModel",       pybind11::overload_cast<std::function<void(Korali::ModelData&)>>(&Korali::Engine::setModel))
+ .def("setLikelihood",  pybind11::overload_cast<std::function<void(Korali::ModelData&)>>(&Korali::Engine::setLikelihood))
+ .def("addConstraint"), pybind11::overload_cast<fcon>(&Korali::Engine::addConstraint))
+ .def("loadState",  pybind11::overload_cast<std::string>(&Korali::Engine::loadState))
+ .def("loadConfig", pybind11::overload_cast<std::string>(&Korali::Engine::loadConfig)
+ );
 
  pybind11::class_<Korali::KoraliJsonWrapper>(m, "__KoraliJsonWrapper")
  .def(pybind11::init<>())

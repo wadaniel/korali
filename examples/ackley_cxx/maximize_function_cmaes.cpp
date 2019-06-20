@@ -5,7 +5,7 @@ int main(int argc, char* argv[])
 {
  auto k = Korali::Engine();
 
- k["Problem"]   = "Direct Evaluation";
+ k["Problem"]   = "Direct";
  k["Solver"]    = "CMA-ES";
  k["Verbosity"] = "Detailed";
 

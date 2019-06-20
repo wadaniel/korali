@@ -124,7 +124,7 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
  if (vLevel == "Detailed") _verbosity = KORALI_DETAILED;
  if (_verbosity == KORALI_UNDEFINED) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Vebosity Level '%s'.", vLevel.c_str()); exit(-1); }
 
- _outputFrequency = consume(js, { "Output Frequency" }, KORALI_NUMBER, "1");
+ _outputFrequency       = consume(js, { "Output Frequency" }, KORALI_NUMBER, "1");
 
  // Configure Problem
 

@@ -77,6 +77,7 @@ class MCMC : public Base
  void getConfiguration(nlohmann::json& js) override;
  void setConfiguration(nlohmann::json& js) override;
  void setState(nlohmann::json& js) override;
+ void saveState() const;
 
  // Print Methods
  void printGeneration() const;

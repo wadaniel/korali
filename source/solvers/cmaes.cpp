@@ -161,6 +161,8 @@ void Korali::Solver::CMAES::getConfiguration(nlohmann::json& js)
 {
  js["Solver"] = "CMA-ES";
 
+ js["CMA-ES"]["Result Output Frequency"] = _resultOutputFrequency;
+ 
  js["CMA-ES"]["Sample Count"]            = _s;
  js["CMA-ES"]["Sigma Cumulation Factor"] = _sigmaCumulationFactor;
  js["CMA-ES"]["Damp Factor"]             = _dampFactor;
@@ -260,6 +262,8 @@ void Korali::Solver::CMAES::getConfiguration(nlohmann::json& js)
 
 void CMAES::setConfiguration(nlohmann::json& js)
 {
+ _resultOutputFrequency = consume(js, { "CMA-ES", "Result Output Frequency" }, KORALI_NUMBER, std::to_string(1));
+ 
  _s                             = consume(js, { "CMA-ES", "Sample Count" }, KORALI_NUMBER);
  _sigmaCumulationFactorIn       = consume(js, { "CMA-ES", "Sigma Cumulation Factor" }, KORALI_NUMBER, std::to_string(-1));
  _dampFactorIn                  = consume(js, { "CMA-ES", "Damp Factor" }, KORALI_NUMBER, std::to_string(-1));

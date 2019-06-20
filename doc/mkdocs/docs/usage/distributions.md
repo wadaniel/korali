@@ -82,6 +82,7 @@ k["Variables"][3]["Bayesian"]["Prior Distribution"]["Sigma"] = +1.0
 The probability density of the Laplace distribution is
 
 $$f(x\mid \mu ,b)={\frac  {1}{2b}}\exp \left(-{\frac  {|x-\mu |}{b}}\right)\,\!$$
+
 $$={\frac  {1}{2b}}\left\{{\begin{matrix}\exp \left(-{\frac  {\mu -x}{b}}\right)&{\text{if }}x<\mu \\[8pt]\exp \left(-{\frac  {x-\mu }{b}}\right)&{\text{if }}x\geq \mu \end{matrix}}\right.$$
 
 Where:

@@ -2,7 +2,7 @@
    				   
 ##Description
 
-This is the implementation of the *Covariance Matrix Adaptation Evolution Strategy*, as published in the [paper](https://doi.org/10.1007/3-540-32494-1_4) 
+This is the implementation of the *Covariance Matrix Adaptation Evolution Strategy*, as published in the [paper](https://doi.org/10.1007/3-540-32494-1_4).
 
 In an evolution strategy, new candidate solutions are sampled according to a multivariate normal distribution in $\mathbb {R} ^{n}$. Recombination amounts to selecting a new mean value for the distribution. Mutation amounts to adding a random vector, a perturbation with zero mean. Pairwise dependencies between the variables in the distribution are represented by a covariance matrix. The covariance matrix adaptation (CMA) is a method to update the covariance matrix of this distribution.
 
@@ -10,17 +10,19 @@ CMA-ES works iteratively, evaluating a number $\lambda$ of samples per generatio
 
 **Requirements:**
 
-+ The *Sample Count* per generation $\lambda$ needs to be defined.
++ The *Sample Count* $\lambda$ needs to be defined.
 + The *Initial Mean* needs to be defined for every variable.
 + The *Initial Standard Deviation* needs to be defined for every variable.
 
 ##Settings
 
+For a better understanding of the variables please refer to the paper.
+
 ```python
   # Definition
   k["Solver"] = "CMA-ES";
   
-  k["CMA-ES"]["Result Output Frequency"] = ...;
+  k["CMA-ES"]["Result Output Frequency"] = ...
   
   # Solver Settings
   k["CMA-ES"]["Objective"] = ... 
@@ -116,9 +118,9 @@ CMA-ES works iteratively, evaluating a number $\lambda$ of samples per generatio
 - **Mu Type**. Weights given to the Mu best values to update the covariance matrix and the mean. By default, Korali will set this value to *Logarithmic*. Example:
 
 	```python
-	k["CMA-ES"]["Mu"]["Value"] = "Equal"
-	k["CMA-ES"]["Mu"]["Value"] = "Linear"
-	k["CMA-ES"]["Mu"]["Value"] = "Logarithmic"
+	k["CMA-ES"]["Mu"]["Type"] = "Equal"
+	k["CMA-ES"]["Mu"]["Type"] = "Linear"
+	k["CMA-ES"]["Mu"]["Type"] = "Logarithmic"
 	```
 
 - **Cumulative Covariance**. Controls the learning rate of the evolution path for the covariance update. By default, Korali will precalibrate this value from $\mu_{eff}$ and number of variables (must be in $(0,1]$). Example:

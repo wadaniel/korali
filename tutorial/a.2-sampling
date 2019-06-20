@@ -15,7 +15,7 @@ k.setLikelihood( evaluateModel )
 k["Variables"][0]["Name"] = "X"
 k["Variables"][0]["Bayesian"]["Prior Distribution"]["Type"] = "Uniform";
 k["Variables"][0]["Bayesian"]["Prior Distribution"]["Minimum"] = -10.0;
-k["Variables"][0]["Bayesian"]["Prior Distribution"]["Maxicmum"] = +10.0;
+k["Variables"][0]["Bayesian"]["Prior Distribution"]["Maximum"] = +10.0;
 
 k["Solver"] = "TMCMC";
 k["TMCMC"]["Covariance Scaling"] = 0.02;

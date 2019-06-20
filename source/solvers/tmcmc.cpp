@@ -103,6 +103,7 @@ void Korali::Solver::TMCMC::getConfiguration(nlohmann::json& js)
  js["TMCMC"]["Covariance Scaling"]       = _beta2;
  js["TMCMC"]["Use Local Covariance"]     = _useLocalCov;
  js["TMCMC"]["Burn In"]                  = _burnin;
+ js["TMCMC"]["Result Output Frequency"]  = _burnin;
  
  js["TMCMC"]["Termination Criteria"]["Max Generations"]["Value"]  = _termCondMaxGens;
  js["TMCMC"]["Termination Criteria"]["Max Generations"]["Active"] = _isTermCondMaxGens;
@@ -127,6 +128,8 @@ void Korali::Solver::TMCMC::getConfiguration(nlohmann::json& js)
 
 void Korali::Solver::TMCMC::setConfiguration(nlohmann::json& js)
 {
+ _resultOutputFrequency = consume(js, { "TMCMC", "Result Output Frequency" }, KORALI_NUMBER, std::to_string(1));
+ 
  _s                 = consume(js, { "TMCMC", "Population Size" }, KORALI_NUMBER);
  _tolCOV            = consume(js, { "TMCMC", "Coefficient of Variation" }, KORALI_NUMBER, std::to_string(1.0));
  _minStep           = consume(js, { "TMCMC", "Min Rho Update" }, KORALI_NUMBER, std::to_string(0.00001));

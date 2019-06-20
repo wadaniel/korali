@@ -80,7 +80,7 @@ CMAES::CMAES(nlohmann::json& js, std::string name)
  else initInternals(_mu);
 
  // Setting eigensystem evaluation Frequency
- if( _covarianceEigenEvalFreq < 0.0) _covarianceEigenEvalFreq = 1.0/_covarianceMatrixLearningRate/((double)_k->N)/10.0;
+ //if( _covarianceEigenEvalFreq < 0.0) _covarianceEigenEvalFreq = 1.0/_covarianceMatrixLearningRate/((double)_k->N)/10.0;
 
  flgEigensysIsUptodate = true;
 
@@ -173,11 +173,11 @@ void Korali::Solver::CMAES::getConfiguration(nlohmann::json& js)
 
  js[_name]["Mu"]["Value"]      = _mu;
  js[_name]["Mu"]["Type"]       = _muType;
- js[_name]["Mu"]["Covariance"] = _muCovariance;
+ //js[_name]["Mu"]["Covariance"] = _muCovariance;
 
  js[_name]["Covariance Matrix"]["Cumulative Covariance"]           = _cumulativeCovariance;
- js[_name]["Covariance Matrix"]["Learning Rate"]                   = _covarianceMatrixLearningRate;
- js[_name]["Covariance Matrix"]["Eigenvalue Evaluation Frequency"] = _covarianceEigenEvalFreq;
+ //js[_name]["Covariance Matrix"]["Learning Rate"]                   = _covarianceMatrixLearningRate;
+ //js[_name]["Covariance Matrix"]["Eigenvalue Evaluation Frequency"] = _covarianceEigenEvalFreq;
  js[_name]["Covariance Matrix"]["Is Diagonal"]                     = _isdiag;
 
  // Variable information
@@ -294,7 +294,7 @@ void CMAES::setConfiguration(nlohmann::json& js)
         { fprintf( stderr, "[Korali] CCMA-ES Error: Invalid setting of Mu Viability (%lu) and/or Viability Sample Count (%lu)\n", _via_mu, _via_s); exit(-1); }
  }
 
- _covarianceEigenEvalFreq      = consume(js, { _name, "Covariance Matrix", "Eigenvalue Evaluation Frequency" }, KORALI_NUMBER, std::to_string(0));
+ //_covarianceEigenEvalFreq      = consume(js, { _name, "Covariance Matrix", "Eigenvalue Evaluation Frequency" }, KORALI_NUMBER, std::to_string(0));
  _cumulativeCovarianceIn       = consume(js, { _name, "Covariance Matrix", "Cumulative Covariance" }, KORALI_NUMBER, std::to_string(-1));
  _covMatrixLearningRateIn      = consume(js, { _name, "Covariance Matrix", "Learning Rate" }, KORALI_NUMBER, std::to_string(-1));
  _isdiag                       = consume(js, { _name, "Covariance Matrix", "Is Diagonal" }, KORALI_BOOLEAN, "false");
@@ -349,7 +349,7 @@ void CMAES::setConfiguration(nlohmann::json& js)
  _isTermCondMinDeltaX             = consume(js, { _name, "Termination Criteria", "Min DeltaX", "Active" }, KORALI_BOOLEAN, "false");
  _termCondTolUpXFactor            = consume(js, { _name, "Termination Criteria", "Max Standard Deviation", "Value" }, KORALI_NUMBER, std::to_string(1e18));
  _isTermCondTolUpXFactor          = consume(js, { _name, "Termination Criteria", "Max Standard Deviation", "Active" }, KORALI_BOOLEAN, "true");
- _termCondCovCond                 = consume(js, { _name, "Termination Criteria", "Max Condition Covariance", "Value" }, KORALI_NUMBER, std::to_string(std::numeric_limits<double>::max()));
+ _termCondCovCond                 = consume(js, { _name, "Termination Criteria", "Max Condition Covariance", "Value" }, KORALI_NUMBER, std::to_string(1e18));
  _isTermCondCovCond               = consume(js, { _name, "Termination Criteria", "Max Condition Covariance", "Active" }, KORALI_BOOLEAN, "true");
 
  // CCMA-ES
@@ -455,13 +455,14 @@ void CMAES::initInternals(size_t numsamplesmu)
  for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] /= s1;
 
  // Setting Mu Covariance
- if (_muCovarianceIn < 1) _muCovariance = _muEffective;
- else                     _muCovariance = _muCovarianceIn;
+ //if (_muCovarianceIn < 1) _muCovariance = _muEffective;
+ //else                     _muCovariance = _muCovarianceIn;
 
  // Setting Cumulative Covariancea
  if( (_cumulativeCovarianceIn <= 0) || (_cumulativeCovarianceIn > 1) ) _cumulativeCovariance = (4.0 + _muEffective/(1.0*_k->N)) / (_k->N+4.0 + 2.0*_muEffective/(1.0*_k->N));
  else _cumulativeCovariance = _cumulativeCovarianceIn;
 
+ /*
  // Setting Covariance Matrix Learning Rate
  double l1 = 2. / ((_k->N+1.4142)*(_k->N+1.4142));
  double l2 = (2.*_muEffective-1.) / ((_k->N+2.)*(_k->N+2.)+_muEffective);
@@ -470,15 +471,16 @@ void CMAES::initInternals(size_t numsamplesmu)
 
  _covarianceMatrixLearningRate = _covMatrixLearningRateIn;
  if (_covarianceMatrixLearningRate < 0 || _covarianceMatrixLearningRate > 1)  _covarianceMatrixLearningRate = l2;
+ */
 
   // Setting Sigma Cumulation Factor
  _sigmaCumulationFactor = _sigmaCumulationFactorIn;
- if (_sigmaCumulationFactor <= 0 || _sigmaCumulationFactor >= 1) _sigmaCumulationFactor = (_muEffective + 2.) / (_k->N + _muEffective + 3.0);
+ if (_sigmaCumulationFactor <= 0 || _sigmaCumulationFactor >= 1) _sigmaCumulationFactor = (_muEffective + 2.0) / (_k->N + _muEffective + 3.0);
 
  // Setting Damping Factor
  _dampFactor = _dampFactorIn;
  if (_dampFactor <= 0.0)
-     _dampFactor = 1.0 * (1.0 + 2*std::max(0.0, sqrt((_muEffective-1.0)/(_k->N+1.0)) - 1))  /* basic factor */
+     _dampFactor = (1.0 + 2*std::max(0.0, sqrt((_muEffective-1.0)/(_k->N+1.0)) - 1))  /* basic factor */
         // * std::max(0.3, 1. - (double)_k->N / (1e-6+std::min(_termCondMaxGenerations, _termCondMaxFitnessEvaluations/_via_s))) /* modification for short runs */
         + _sigmaCumulationFactor; /* minor increment */
 
@@ -882,7 +884,8 @@ void CMAES::updateDistribution(const double *fitnessVector)
 void CMAES::adaptC(int hsig)
 {
 
- if (_covarianceMatrixLearningRate != 0.0)
+ //if (_covarianceMatrixLearningRate != 0.0)
+ if (true)
  {
   /* definitions for speeding up inner-most loop */
   //double ccov1  = std::min(_covarianceMatrixLearningRate * (1./_muCovariance) * (_isdiag ? (_k->N+1.5) / 3. : 1.), 1.); (orig, alternative)
@@ -1001,21 +1004,22 @@ bool CMAES::checkTermination()
  }
 
  size_t cTemp = 0;
- for(size_t i=0; i<_k->N; ++i) {
-  cTemp += (sigma * sqrt(C[i][i]) < _termCondMinDeltaX) ? 1 : 0;
-  cTemp += (sigma * rgpc[i] < _termCondMinDeltaX) ? 1 : 0;
+ size_t iTemp;
+ for(iTemp=0; iTemp<_k->N; ++iTemp) {
+  cTemp += (sigma * sqrt(C[iTemp][iTemp]) < _termCondMinDeltaX * _initialStdDevs[iTemp]) ? 1 : 0;
+  cTemp += (sigma * rgpc[iTemp] < _termCondMinDeltaX * _initialStdDevs[iTemp]) ? 1 : 0;
  }
 
  if ( _isTermCondMinDeltaX && (cTemp == 2*_k->N) ) {
   terminate = true;
-  sprintf(_terminationReason, "Object variable changes < %+6.3e", _termCondMinDeltaX);
+  sprintf(_terminationReason, "Object variable changes < %+6.3e", _termCondMinDeltaX * _initialStdDevs[iTemp]);
  }
 
- for(size_t i=0; i<_k->N; ++i)
-  if ( _isTermCondTolUpXFactor && (sigma * sqrt(C[i][i]) > _termCondTolUpXFactor * _initialStdDevs[i]) )
+ for(iTemp=0; iTemp<_k->N; ++iTemp)
+  if ( _isTermCondTolUpXFactor && (sigma * sqrt(C[iTemp][iTemp]) > _termCondTolUpXFactor * _initialStdDevs[iTemp]) )
   {
     terminate = true;
-    sprintf(_terminationReason, "Standard deviation increased by more than %7.2e, larger initial standard deviation recommended \n", _termCondTolUpXFactor);
+    sprintf(_terminationReason, "Standard deviation increased by more than %7.2e, larger initial standard deviation recommended \n", _termCondTolUpXFactor * _initialStdDevs[iTemp]);
     break;
   }
 

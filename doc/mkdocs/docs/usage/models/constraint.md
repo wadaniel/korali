@@ -4,6 +4,7 @@ A Constraint is function of the form: $f:\mathbb{R}^N\rightarrow\mathbb{R}$, whe
 
 $$f(x)= \left\{{\begin{matrix} >=0 \quad \quad  \quad  \quad {\text{if x satisfies the given constraint.}} \\ < 0 \quad \text{if x does not satisfy the given constraint.} \end{matrix}}\right.$$
 
+## Usage
 
 ###Defining the Model
 

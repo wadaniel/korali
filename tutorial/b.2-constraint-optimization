@@ -6,20 +6,28 @@ import korali
 
 k = korali.Engine()
 
+korali["Problem"] = "Direct Evaluation";
 
-k["Problem"] = "Direct Evaluation"
+ int nParams = 7;
+ for (int i = 0; i < nParams; i++)
+ {
+  korali["Variables"][i]["Name"] = "X" + std::to_string(i);
+  korali["Problem"]["Variables"][i]["Type"] = "Computational";
+  korali["Solver"]["Variables"][i]["Lower Bound"] = -10.0;
+  korali["Solver"]["Variables"][i]["Upper Bound"] = +10.0;
+ }
 
-k["Solver"]  = "CMA-ES"
+ korali["Solver"] = "CCMA-ES";
+ korali["Solver"]["Adaption Size"] = 0.1;
+ korali["Solver"]["Sample Count"] = 8;
+ korali["Solver"]["Viability Sample Count"] = 2;
+ korali["Solver"]["Termination Criteria"]["Fitness"]["Value"] = -680.630057374402 - 1e-4;
+ korali["Solver"]["Termination Criteria"]["Min DeltaX"]["Value"] = 1e-12;
 
-k["Variables"][0]["Name"] = "X";
-k["Variables"][0]["CMA-ES"]["Lower Bound"] = -10.0;
-k["Variables"][0]["CMA-ES"]["Upper Bound"] = +10.0;
+ korali.setModel([](Korali::ModelData& d) { g09(d.getVariables(), d.getResults()); });
+ korali.addConstraint(g1);
+ korali.addConstraint(g2);
+ korali.addConstraint(g3);
+ korali.addConstraint(g4);
 
-k["CMA-ES"]["Objective"] = "Maximize"
-k["CMA-ES"]["Termination Criteria"]["Min DeltaX"]["Value"] = 1e-8
-k["CMA-ES"]["Termination Criteria"]["Max Generations"]["Value"] = 100
-k["CMA-ES"]["Sample Count"] = 5
-
-k.setModel(evaluateModel)
-
-k.run()
+ korali.run();

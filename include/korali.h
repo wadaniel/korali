@@ -34,7 +34,7 @@ enum verbosity { KORALI_UNDEFINED = -1, KORALI_SILENT = 0, KORALI_MINIMAL = 1, K
 namespace Korali
 {
 
-using fcon = std::function<double(double*, int N)>;
+using fcon = std::function<double(std::vector<double>&)>;
 
 class Engine {
 

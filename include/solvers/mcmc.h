@@ -65,19 +65,19 @@ class MCMC : public Base
 
   // Internal MCMC Methods
  void updateDatabase(double* point, double fitness);
- void generateCandidate(size_t sampleIdx); 
+ void generateCandidate(size_t sampleIdx);
  void sampleCandidate(size_t sampleIdx);
  void acceptReject(size_t trial); /* Accept or reject sample with multiple trials */
  double recursiveAlpha(double& D, const double llk0, const double* logliks, size_t N) const; /* calculate acceptance ratio alpha_N */
  void updateState();
  bool setCandidatePriorAndCheck(size_t sampleIdx);
- bool checkTermination();
+ bool checkTermination() override;
 
  // Serialization Methods
  void getConfiguration(nlohmann::json& js) override;
  void setConfiguration(nlohmann::json& js) override;
  void setState(nlohmann::json& js) override;
- void saveState() const;
+ void saveState() const override;
 
  // Print Methods
  void printGeneration() const;

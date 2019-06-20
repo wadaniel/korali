@@ -13,7 +13,7 @@ using namespace Korali::Solver;
 CMAES::CMAES(nlohmann::json& js, std::string name)
 {
  _name = name;
- 
+
  setConfiguration(js);
 
  size_t s_max, mu_max;
@@ -87,7 +87,7 @@ CMAES::CMAES(nlohmann::json& js, std::string name)
  countevals      = 0;
  countinfeasible = 0;
  resampled       = 0;
- 
+
  bestEver = -std::numeric_limits<double>::max();
 
  psL2 = 0.0;
@@ -163,7 +163,7 @@ void Korali::Solver::CMAES::getConfiguration(nlohmann::json& js)
  js["Solver"] = _name;
 
  js[_name]["Result Output Frequency"] = _resultOutputFrequency;
- 
+
  js[_name]["Sample Count"]            = _s;
  js[_name]["Sigma Cumulation Factor"] = _sigmaCumulationFactor;
  js[_name]["Damp Factor"]             = _dampFactor;
@@ -264,7 +264,7 @@ void Korali::Solver::CMAES::getConfiguration(nlohmann::json& js)
 void CMAES::setConfiguration(nlohmann::json& js)
 {
  _resultOutputFrequency = consume(js, { _name, "Result Output Frequency" }, KORALI_NUMBER, std::to_string(1));
- 
+
  _s                             = consume(js, { _name, "Sample Count" }, KORALI_NUMBER);
  _sigmaCumulationFactorIn       = consume(js, { _name, "Sigma Cumulation Factor" }, KORALI_NUMBER, std::to_string(-1));
  _dampFactorIn                  = consume(js, { _name, "Damp Factor" }, KORALI_NUMBER, std::to_string(-1));
@@ -281,7 +281,7 @@ void CMAES::setConfiguration(nlohmann::json& js)
  _mu                            = consume(js, { _name, "Mu", "Value" }, KORALI_NUMBER, std::to_string(ceil(_s / 2)));
  _muType                        = consume(js, { _name, "Mu", "Type" }, KORALI_STRING, "Logarithmic");
  _muCovarianceIn                = consume(js, { _name, "Mu", "Covariance" }, KORALI_NUMBER, std::to_string(-1));
- 
+
  if( _mu < 1 || _mu > _s || ( ( _mu == _s )  && _muType.compare("Linear") ) )
    { fprintf( stderr, "[Korali] %s Error: Invalid setting of Mu (%lu) and/or Lambda (%lu)\n", _name.c_str(), _mu, _s); exit(-1); }
 
@@ -534,7 +534,7 @@ void CMAES::run()
    t0 = std::chrono::system_clock::now();
    if ( _name == "CCMA-ES" ) checkMeanAndSetRegime();
    prepareGeneration();
-   evaluateSamples(); 
+   evaluateSamples();
    if ( _name == "CCMA-ES" ){ updateConstraints(); handleConstraints(); }
    updateDistribution(_fitnessVector);
    _currentGeneration++;
@@ -555,11 +555,11 @@ void CMAES::run()
 void CMAES::evaluateSamples()
 {
   double* transformedSamples = new double[ _current_s * _k->N ];
-  
+
   for (size_t i = 0; i < _current_s; i++) for(size_t d = 0; d < _k->N; ++d)
-    if(_variableLogSpace[d] == true) 
+    if(_variableLogSpace[d] == true)
         transformedSamples[i*_k->N+d] = std::exp(_samplePopulation[i*_k->N+d]);
-    else 
+    else
         transformedSamples[i*_k->N+d] = _samplePopulation[i*_k->N+d];
 
 
@@ -567,7 +567,7 @@ void CMAES::evaluateSamples()
   {
     for (size_t i = 0; i < _current_s; i++) if (_initializedSample[i] == false)
     {
-      _initializedSample[i] = true; 
+      _initializedSample[i] = true;
       _k->_conduit->evaluateSample(transformedSamples, i); countevals++;
     }
     _k->_conduit->checkProgress();
@@ -589,7 +589,12 @@ void CMAES::checkMeanAndSetRegime()
 {
     if (_isViabilityRegime == false) return; /* mean already inside valid domain, no udpates */
 
-    for (size_t c = 0; c < _numConstraints; ++c) { countcevals++; if ( _k->_fconstraints[c](rgxmean, _k->N) > 0.) return; } /* do nothing */
+    for (size_t c = 0; c < _numConstraints; ++c){
+      countcevals++;
+      std::vector<double> sample;
+      for( size_t k=0; k<_k->N; k++) sample.push_back( rgxmean[k] );
+      if ( _k->_fconstraints[c](sample) > 0.) return;
+    } /* do nothing */
 
     /* mean inside domain, switch regime and update internal variables */
     _isViabilityRegime = false;
@@ -616,7 +621,10 @@ void CMAES::updateConstraints() //TODO: maybe parallelize constraint evaluations
   for(size_t i = 0; i < _current_s; ++i)
   {
     countcevals++;
-    constraintEvaluations[c][i] = _k->_fconstraints[c]( _samplePopulation+i*_k->N, _k->N );
+    std::vector<double> sample;
+    for( size_t k=0; k<_k->N; k++) sample.push_back( _samplePopulation[i*_k->N+k] );
+
+    constraintEvaluations[c][i] = _k->_fconstraints[c]( sample );
 
     if ( constraintEvaluations[c][i] > maxviolation ) maxviolation = constraintEvaluations[c][i];
     if ( _currentGeneration == 0 && _isViabilityRegime ) viabilityBounds[c] = maxviolation;
@@ -639,7 +647,11 @@ void CMAES::reEvaluateConstraints() //TODO: maybe we can parallelize constraint 
     for(size_t c = 0; c < _numConstraints; ++c)
     {
       countcevals++;
-      constraintEvaluations[c][i] = _k->_fconstraints[c]( _samplePopulation+i*_k->N, _k->N );
+      std::vector<double> sample;
+      for( size_t k=0; k<_k->N; k++) sample.push_back( _samplePopulation[i*_k->N+k] );
+
+      constraintEvaluations[c][i] = _k->_fconstraints[c]( sample );
+
       if( constraintEvaluations[c][i] > viabilityBounds[c] + 1e-12 ) { viabilityIndicator[c][i] = true; numviolations[i]++; }
       else viabilityIndicator[c][i] = false;
 

@@ -1,10 +1,10 @@
-# Model / Simple
+# Models / Simple
 
 Korali exposes a single interface for computational models, regardless of the chosen conduit/evaluation type. The computational model is specified via Korali's ```setModel(myModel)``` function, which receieves a function pointer that accepts a single argument of type ```KoraliData```.
 
 The simple model provides an interface of the form: $f:\mathbb{R}^N\rightarrow\mathbb{R}$, with *N* inputs and 1 output. Both inputs and output are of double precision floating point types and are accessed through a common ```KoraliData``` object. 
 
-## Syntax
+## Usage
 
 ###Defining the Model
 

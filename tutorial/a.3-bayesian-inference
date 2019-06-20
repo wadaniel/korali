@@ -1,0 +1,42 @@
+#!/usr/bin/env python3
+import sys
+sys.path.append('./model')
+from posteriorModel import *
+import korali
+
+k = korali.Engine()
+x, y = getReferenceData()
+
+k["Problem"] = "Bayesian";
+
+k["Bayesian"]["Likelihood"]["Type"] = "Reference"
+k["Bayesian"]["Likelihood"]["Reference Data"] = y;
+
+k["Variables"][0]["Name"] = "a";
+k["Variables"][0]["Bayesian"]["Type"] = "Computational";
+k["Variables"][0]["Bayesian"]["Prior Distribution"]["Type"] = "Uniform";
+k["Variables"][0]["Bayesian"]["Prior Distribution"]["Minimum"] = -5.0;
+k["Variables"][0]["Bayesian"]["Prior Distribution"]["Maximum"] = +5.0;
+
+k["Variables"][1]["Name"] = "b";
+k["Variables"][1]["Bayesian"]["Type"] = "Computational";
+k["Variables"][1]["Bayesian"]["Prior Distribution"]["Type"] = "Uniform";
+k["Variables"][1]["Bayesian"]["Prior Distribution"]["Minimum"] = -5.0;
+k["Variables"][1]["Bayesian"]["Prior Distribution"]["Maximum"] = +5.0;
+
+k["Variables"][2]["Name"] = "Sigma";
+k["Variables"][2]["Bayesian"]["Type"] = "Statistical";
+k["Variables"][2]["Bayesian"]["Prior Distribution"]["Type"] = "Uniform";
+k["Variables"][2]["Bayesian"]["Prior Distribution"]["Minimum"] =   0.0;
+k["Variables"][2]["Bayesian"]["Prior Distribution"]["Maximum"] = +5.0;
+
+k["Solver"] = "TMCMC";
+k["TMCMC"]["Covariance Scaling"] = 0.02;
+k["TMCMC"]["Population Size"] = 5000;
+k["TMCMC"]["Min Rho Update"] = 0.0;
+k["TMCMC"]["Coefficient of Variation"] = 0.5;
+k["TMCMC"]["Burn In"] = 5
+
+k.setModel(lambda koraliData: evaluateModel(koraliData, x))
+
+k.run()

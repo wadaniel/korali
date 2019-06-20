@@ -1,0 +1,25 @@
+#!/usr/bin/env python3
+import sys
+sys.path.append('./model')
+from directModel import *
+import korali
+
+k = korali.Engine()
+
+
+k["Problem"] = "Direct"
+
+k["Solver"]  = "CMA-ES"
+
+k["Variables"][0]["Name"] = "X";
+k["Variables"][0]["CMA-ES"]["Lower Bound"] = -10.0;
+k["Variables"][0]["CMA-ES"]["Upper Bound"] = +10.0;
+
+k["CMA-ES"]["Objective"] = "Maximize"
+k["CMA-ES"]["Termination Criteria"]["Min DeltaX"]["Value"] = 1e-8
+k["CMA-ES"]["Termination Criteria"]["Max Generations"]["Value"] = 100
+k["CMA-ES"]["Sample Count"] = 5
+
+k.setModel(evaluateModel)
+
+k.run()

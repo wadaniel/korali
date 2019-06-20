@@ -1,0 +1,27 @@
+#!/usr/bin/env python3
+import sys
+sys.path.append('./model')
+from directModel import *
+import korali
+
+k = korali.Engine()
+
+k["Problem"] = "Bayesian"
+
+k["Bayesian"]["Likelihood"]["Type"] = "Direct";
+
+k.setLikelihood( evaluateModel )
+
+k["Variables"][0]["Name"] = "X"
+k["Variables"][0]["Bayesian"]["Prior Distribution"]["Type"] = "Uniform";
+k["Variables"][0]["Bayesian"]["Prior Distribution"]["Minimum"] = -10.0;
+k["Variables"][0]["Bayesian"]["Prior Distribution"]["Maxicmum"] = +10.0;
+
+k["Solver"] = "TMCMC";
+k["TMCMC"]["Covariance Scaling"] = 0.02;
+k["TMCMC"]["Population Size"] = 5000;
+k["TMCMC"]["Min Rho Update"] = 0.0;
+k["TMCMC"]["Coefficient of Variation"] = 0.5;
+k["TMCMC"]["Burn In"] = 5
+
+k.run()

@@ -18,13 +18,14 @@ Korali::Problem::Direct::~Direct()
 /*                    Configuration Methods                             */
 /************************************************************************/
 
-nlohmann::json Korali::Problem::Direct::getConfiguration()
+void Korali::Problem::Direct::getConfiguration(nlohmann::json& js)
 {
- auto js = nlohmann::json();
+ js["Problem"] = "Direct Evaluation";
 
- js["Evaluation Type"] = "Direct";
-
- return js;
+ for (size_t i = 0; i < _k->N; i++)
+ {
+  js["Variables"][i]["Name"] = _k->_variables[i]->_name;
+ }
 }
 
 void Korali::Problem::Direct::setConfiguration(nlohmann::json& js)

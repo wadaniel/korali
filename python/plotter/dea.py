@@ -72,11 +72,11 @@ def plot_dea(src, live = False, obj='current'):
 
         with open(path) as f:
             data  = json.load(f)
-            state = data['Solver']['DE']['State']
+            state = data['DE']['State']
 
             if idx == 0:
-                numdim = len(data['Solver']['Variables'])
-                names  = [ data['Solver']['Variables'][i]['Name'] for i in range(numdim) ]
+                numdim = len(data['Variables'])
+                names  = [ data['Variables'][i]['Name'] for i in range(numdim) ]
                 colors = hls_colors(numdim)
                 for i in range(numdim):
                     fvalXvec.append([])

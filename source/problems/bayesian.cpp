@@ -17,16 +17,32 @@ Korali::Problem::Bayesian::~Bayesian()
 /************************************************************************/
 /*                    Configuration Methods                             */
 /************************************************************************/
-
-nlohmann::json Korali::Problem::Bayesian::getConfiguration()
+void Korali::Problem::Bayesian::getConfiguration(nlohmann::json& js)
 {
- auto js = nlohmann::json();
-
  js["Problem"] = "Bayesian";
 
- for (size_t i = 0; i < _referenceDataSize; i++) js["Reference Data"][i] = _referenceData[i];
+ if (_likelihood == DirectLikelihood)    js["Bayesian"]["Likelihood"]["Type"] = "Direct";
+ if (_likelihood == ReferenceLikelihood) js["Bayesian"]["Likelihood"]["Type"] = "Reference";
 
- return js;
+ for (size_t i = 0; i < _referenceDataSize; i++) js["Bayesian", "Likelihood", "Reference Data"][i] = _referenceData[i];
+
+ for (size_t i = 0; i < _computationalVariableIndices.size(); i++)
+ {
+  size_t idx = _computationalVariableIndices[i];
+  js["Variables"][idx]["Bayesian"]["Type"] = "Computational";
+ }
+
+ for (size_t i = 0; i < _statisticalVariableIndices.size(); i++)
+  {
+   size_t idx = _statisticalVariableIndices[i];
+   js["Variables"][idx]["Bayesian"]["Type"] = "Statistical";
+  }
+
+ for (size_t i = 0; i < _k->N; i++)
+ {
+  js["Variables"][i]["Name"] = _k->_variables[i]->_name;
+  _k->_variables[i]->getDistribution(js["Variables"][i]["Bayesian"]["Prior Distribution"]);
+ }
 }
 
 void Korali::Problem::Bayesian::setConfiguration(nlohmann::json& js)
@@ -82,12 +98,6 @@ void Korali::Problem::Bayesian::initialize()
    exit(-1);
   }
 
-  if (_k->_likelihoodDefined == true)
-  {
-   fprintf(stderr, "[Korali] Error: Bayesian Problem does not accept a likelihood function, only a computational model.\n");
-   exit(-1);
-  }
-
   if (_statisticalVariableIndices.size() != 1)
   {
    fprintf(stderr, "[Korali] Error: The Bayesian model requires 1 statistical parameter.\n");
@@ -106,12 +116,6 @@ void Korali::Problem::Bayesian::initialize()
   if (_k->_likelihoodDefined == false)
   {
    fprintf(stderr, "[Korali] Error: Direct Bayesian requires defining a likelihood function.\n");
-   exit(-1);
-  }
-
-  if (_k->_modelDefined == true)
-  {
-   fprintf(stderr, "[Korali] Error: Direct Bayesian does not accept a computational model, only a likelihood function.\n");
    exit(-1);
   }
 

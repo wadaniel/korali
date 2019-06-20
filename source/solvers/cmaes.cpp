@@ -140,10 +140,10 @@ CMAES::CMAES(nlohmann::json& js, std::string name)
  }
 
  // If state is defined:
- if (isDefined(js, {"State"}))
+ if (isDefined(js, {"CMA-ES", "State"}))
  {
   setState(js);
-  js.erase("State");
+  js["CMA-ES"].erase("State");
  }
 
 }
@@ -157,9 +157,9 @@ CMAES::~CMAES()
 /*                    Configuration Methods                             */
 /************************************************************************/
 
-nlohmann::json CMAES::getConfiguration()
+void Korali::Solver::CMAES::getConfiguration(nlohmann::json& js)
 {
- auto js = nlohmann::json();
+ js["Solver"] = "CMA-ES";
 
  js["CMA-ES"]["Sample Count"]            = _s;
  js["CMA-ES"]["Sigma Cumulation Factor"] = _sigmaCumulationFactor;
@@ -180,7 +180,6 @@ nlohmann::json CMAES::getConfiguration()
  // Variable information
  for (size_t i = 0; i < _k->N; i++)
  {
-  js["Variables"][i]["Name"]                    = _varNames[i];
   js["Variables"][i]["CMA-ES"]["Lower Bound"]   = _lowerBounds[i];
   js["Variables"][i]["CMA-ES"]["Upper Bound"]   = _upperBounds[i];
   js["Variables"][i]["CMA-ES"]["Initial Mean"]  = _initialMeans[i];
@@ -255,7 +254,6 @@ nlohmann::json CMAES::getConfiguration()
    for (size_t c = 0; c < _numConstraints; ++c) for (size_t i = 0; i < _current_s; ++i) js["CMA-ES"]["State"]["Constraint Evaluations"][c][i] = constraintEvaluations[c][i];
    for (size_t c = 0; c < _numConstraints; ++c) for (size_t d = 0; d < _k->N; ++d) js["CMA-ES"]["State"]["Constraint Normal Approximation"][c][d] = v[c][d];
  }
- return js;
 }
 
 
@@ -338,8 +336,8 @@ void CMAES::setConfiguration(nlohmann::json& js)
  _isTermCondMaxGenerations        = consume(js, { "CMA-ES", "Termination Criteria", "Max Generations", "Active" }, KORALI_BOOLEAN, "true");
  _termCondMaxFitnessEvaluations   = consume(js, { "CMA-ES", "Termination Criteria", "Max Model Evaluations", "Value" }, KORALI_NUMBER, std::to_string(std::numeric_limits<size_t>::max()));
  _isTermCondMaxFitnessEvaluations = consume(js, { "CMA-ES", "Termination Criteria", "Max Model Evaluations", "Active" }, KORALI_BOOLEAN, "true");
- _termCondFitness                 = consume(js, { "CMA-ES", "Termination Criteria", "Fitness", "Value" }, KORALI_NUMBER, std::to_string(std::numeric_limits<double>::max()));
- _isTermCondFitness               = consume(js, { "CMA-ES", "Termination Criteria", "Fitness", "Active" }, KORALI_BOOLEAN, "false");
+ _termCondFitness                 = consume(js, { "CMA-ES", "Termination Criteria", "Min Fitness", "Value" }, KORALI_NUMBER, std::to_string(std::numeric_limits<double>::max()));
+ _isTermCondFitness               = consume(js, { "CMA-ES", "Termination Criteria", "Min Fitness", "Active" }, KORALI_BOOLEAN, "false");
  _termCondFitnessDiffThreshold    = consume(js, { "CMA-ES", "Termination Criteria", "Fitness Diff Threshold", "Value" }, KORALI_NUMBER, std::to_string(1e-9));
  _isTermCondFitnessDiffThreshold  = consume(js, { "CMA-ES", "Termination Criteria", "Fitness Diff Threshold", "Active" }, KORALI_BOOLEAN, "true");
  _termCondMinDeltaX               = consume(js, { "CMA-ES", "Termination Criteria", "Min DeltaX", "Value" }, KORALI_NUMBER, std::to_string(1e-12));

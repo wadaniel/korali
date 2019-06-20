@@ -42,6 +42,7 @@ class MCMC : public Base
  double* ccLogLikelihoods; /* Candidates fitness value */
  double* alpha; /* alphas for recursive calculation of delayed rejection schemes */
  double acceptanceRateProposals; /* Ratio proposed to accepted Samples */
+ size_t rejections; /* Rejections in current generation*/
  size_t naccept; /* Number of accepted samples */
  size_t countgens; /* Number of proposed samples */
  size_t chainLength; /* Number accepted samples + burnin accepted samples */
@@ -64,16 +65,16 @@ class MCMC : public Base
 
   // Internal MCMC Methods
  void updateDatabase(double* point, double fitness);
- void generateCandidate(size_t level); 
- void sampleCandidate(size_t level);
- void acceptReject(size_t level); /* Accept or reject sample at delay level */
+ void generateCandidate(size_t sampleIdx); 
+ void sampleCandidate(size_t sampleIdx);
+ void acceptReject(size_t trial); /* Accept or reject sample with multiple trials */
  double recursiveAlpha(double& D, const double llk0, const double* logliks, size_t N) const; /* calculate acceptance ratio alpha_N */
  void updateState();
- bool setCandidatePriorAndCheck(size_t level);
+ bool setCandidatePriorAndCheck(size_t sampleIdx);
  bool checkTermination();
 
  // Serialization Methods
- nlohmann::json getConfiguration() override;
+ void getConfiguration(nlohmann::json& js) override;
  void setConfiguration(nlohmann::json& js) override;
  void setState(nlohmann::json& js) override;
 

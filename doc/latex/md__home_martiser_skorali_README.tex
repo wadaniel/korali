@@ -1,0 +1,58 @@
+{\bfseries Korali} is a high-\/performance computing framework for optimization, sampling and Bayesian uncertainty quantification of large-\/scale computational models.
+
+\subsection*{What Korali does for you}
+
+\subsubsection*{$\ast$$\ast$\-Optimization$\ast$$\ast$}
+
+Given any function \begin{DoxyParagraph}{f\-:}
+mathbb\{R\}$^\wedge$\-N\{R\}
+\end{DoxyParagraph}
+Korali can find its minima or maxima\-: \$$^\wedge$ = \{\begin{DoxyItemize}
+\item \}\{\} \textbackslash{},\textbackslash{},\textbackslash{}, f() \textbackslash{},,\$\end{DoxyItemize}
+\subsubsection*{$\ast$$\ast$\-Sampling$\ast$$\ast$}
+
+Treat \$f\$ as an unnormalized density and draw samples to determine its distribution\-: \$$^\wedge$\{(k)\}  f.\$
+
+\subsubsection*{$\ast$$\ast$\-Bayesian Inference$\ast$$\ast$}
+
+Given a set of data \$d\$, the output of a computational model \$f(x;)\$, a likelihood function \$p(d$|$)\$, and a prior probability density \$p()\$ Korali will build the posterior distribution\-: \$\$ p( $|$ d) \textbackslash{}, = \textbackslash{}, \{p(d $|$ ) \textbackslash{},\textbackslash{}, p()\}\{p(d)\}\textbackslash{}, \$\$
+
+Allowing users to compute the maximum a posteriori estimate\-: \$$^\wedge$ = \{\begin{DoxyItemize}
+\item \}\{\} \textbackslash{},\textbackslash{},\textbackslash{}, p( $|$ d) \textbackslash{},,\$ or sample its posterior distribution\-: \$$^\wedge$\{(k)\}  p( $|$ d).\$\end{DoxyItemize}
+\subsection*{Design Principles}
+
+\subsubsection*{$\ast$$\ast$\-Extensibility$\ast$$\ast$}
+
+Korali is designed as a completely modular and extensible software. Operations can be changed on runtime to produce multiple results without the need of re-\/compilation.
+
+\subsubsection*{$\ast$$\ast$\-Multi-\/\-Language$\ast$$\ast$}
+
+Korali applications can be programmed in either C++ or Python. Additionally, Korali can sample from C++/\-Python and pre-\/compiled computational models.
+
+\subsubsection*{$\ast$$\ast$\-Multi-\/\-Intrusiveness$\ast$$\ast$}
+
+A novelty in Korali is its support for multi-\/intrusive evaluation. That is, Korali can sample from computational models either semi-\/instrusively, through static linking or dynamic loading of Python modules; or nonintrusively, through shell command execution.
+
+\subsubsection*{$\ast$$\ast$\-High-\/\-Throughput$\ast$$\ast$}
+
+Korali's work distribution engine has been optimized to fully harness computational resources, maximizing throughput and minimizing latency and load imbalance.
+
+\subsubsection*{$\ast$$\ast$\-High-\/\-Performance$\ast$$\ast$}
+
+Korali supports the execution of parallel (Open\-M\-P, Pthreads), distributed (M\-P\-I, U\-P\-C++), and G\-P\-U-\/based (C\-U\-D\-A) models.
+
+\subsection*{About us}
+
+The Korali Project is written and maintained by
+
+
+\begin{DoxyItemize}
+\item {\bfseries Georgios Arampatzis}, garampat at ethz.\-ch
+\item {\bfseries Sergio Miguel Martin}, martiser at ethz.\-ch
+\item {\bfseries Daniel Waelchli}, wadaniel at ethz.\-ch
+\item {\bfseries Petros Koumoutsakos}, petros at ethz.\-ch (Director)
+\end{DoxyItemize}
+
+\subsection*{Credits}
+
+Korali's code includes a properly credited and licensed copy of \href{https://github.com/nlohmann/json}{\tt Niels Lohmann's Json for C++}. Our implementation of C\-M\-A-\/\-E\-S has been inspired by \href{https://github.com/AlexanderFabisch/CMA-ESpp}{\tt Alexander Fabisch's} C++ implementation. 

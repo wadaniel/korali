@@ -78,7 +78,7 @@ class TMCMC : public Base
  static double objLog(const gsl_vector *v, void *param);
 
  // Serialization Methods
- nlohmann::json getConfiguration() override;
+ void getConfiguration(nlohmann::json& js) override;
  void setConfiguration(nlohmann::json& js) override;
  void setState(nlohmann::json& js) override;
 

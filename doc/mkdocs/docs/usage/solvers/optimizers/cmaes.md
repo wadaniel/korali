@@ -20,6 +20,8 @@ CMA-ES works iteratively, evaluating a number $\lambda$ of samples per generatio
   # Definition
   k["Solver"] = "CMA-ES";
   
+  k["CMA-ES"]["Result Output Frequency"] = ...;
+  
   # Solver Settings
   k["CMA-ES"]["Objective"] = ... 
   k["CMA-ES"]["Sample Count"] = ...
@@ -58,19 +60,26 @@ CMA-ES works iteratively, evaluating a number $\lambda$ of samples per generatio
 
 ##Solver Settings
 
+- **Result Output Frequency**. Specifies the output frequency of intermediate result files. By default, Korali will set this value to *1* (i.e. each generation). Example:
+
+	```python
+    # Reduce the number of result files
+	k["CMA-ES"]["Result Output Frequency"] = 10
+
+	```
+
 - **Objective**. Specifies whether the problem evaluation is to be *minimized* or *maximized*. By default, Korali will set this value to *Maximize*. Example:
 
 	```python
-	#Maximizing Problem Evaluation (Default)
+	#Maximizing problem evaluation (default)
 	k["CMA-ES"]["Objective"] = "Maximize"
 
-	#Minimizing Problem Evaluation
+	#Minimizing problem evaluation
 	k["CMA-ES"]["Objective"] = "Minimize"
 	```
 - **Sample Count**. Specifies the number of samples $\lambda$ to evaluate per each generation. Example:
 
 	```python
-	#Setting lambda
 	k["CMA-ES"]["Sample Count"] = 32
 	```
 	
@@ -157,7 +166,7 @@ CMA-ES works iteratively, evaluating a number $\lambda$ of samples per generatio
 	k["CMA-ES"]["Termination Criteria"]["Fitness Diff Threshold"]["Value"]  = 1e-12
 	```	
 
-- **Min DeltaX** Specifies a minimum standard deviation for the proposal distribution of the variables. Korali terminates if this value is undershot from all variables. By default, Korali will set this criterion as active and value $1^-12$. Example:
+- **Min Standard Deviation** Specifies a minimum standard deviation for the proposal distribution of the variables. Korali terminates if this value is undershot from all variables. By default, Korali will set this criterion as active and value $1^-12$. Example:
 
 	```python
 	k["CMA-ES"]["Termination Criteria"]["Min DeltaX"]["Active"] = True
@@ -203,27 +212,35 @@ CMA-ES works iteratively, evaluating a number $\lambda$ of samples per generatio
 	k["Variables"][i]["CMA-ES"]["Initial Mean"] = 16.0;
 	```
 
-- **Initial Standard Deviation**. Defines the initial guess standard deviation mean for the variable's value. Korali will generate samples around this deviation from the initial mean. Example:
+- **Initial Standard Deviation**. Defines the initial standard deviation of the proposal distribution for a variable. By default, Korali sets this value to 30% of the domain width. Example:
 
 	```python
 	# Modifying the initial standard deviation of my variable
 	k["Variables"][i]["CMA-ES"]["Initial Standard Deviation"] = 2.0;
 	```
 
-- **Minimum Standard Deviation Changes**. Defines the minimum rate of change for the standard deviation. A bigger rate may accelerate convergence, but a smaller rate will increase result precision. Example:
+- **Minimum Standard Deviation Changes**. Defines a lower bound for the standard deviation of the proposal distribution for a variable. Korali increases the scaling factor $\sigma$ if this value is undershot. By default, Korali sets this value to 0.0 (inactive). Example:
 
 	```python
 	# Modifying the initial standard deviation of my variable
-	k["Variables"][i]["CMA-ES"]["Minimum Standard Deviation Changes"] = 0.05;
+	k["Variables"][i]["CMA-ES"]["Minimum Standard Deviation Changes"] = 1e-6
 	```
-	
+
+- **Log Space**. Specifies if the log space of a variable should be searched. By default, Korali sets this value to $False$.
+		
+    ```python
+	# Search in log space
+	k["Variables"][i]["CMA-ES"]["Log Space"] = True
+	```
+
+
 ## Plotting
 
 Here we explain the **CMA-ES** result plot in further detail and how it can be
 used to validate your optimization.
 
-The `plot-Korali` command visualizes some of the most meaningful states of CMA-ES
-stored in the  kon-files in the output directory (results folder).
+The module korali.plotter (run with `python3 -m korali.plotter` command visualizes some of the most meaningful states of CMA-ES
+stored in the result files in the output directory (`_korali_result`).
 
 In the figure below we see the evolution of the CMA-ES algorithm during 100
 optimization steps, respectively 1000 function evaluations (here the sample size

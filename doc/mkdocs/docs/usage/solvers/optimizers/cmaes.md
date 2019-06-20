@@ -74,100 +74,108 @@ CMA-ES works iteratively, evaluating a number $\lambda$ of samples per generatio
 	k["CMA-ES"]["Sample Count"] = 32
 	```
 	
-- **Sigma Cumulation Factor**. Description. By default, Korali will set this value to *-1* (Disabled). Example:
+- **Sigma Cumulation Factor**. Controls the learning rate of the conjugate evolution path for $\sigma$ update. By default, Korali will set this value to $\frac{\mu_{eff}+2}{\mu_{eff}+N+3}$. Example:
 
 	```python
 	k["CMA-ES"]["Sigma Cumulation Factor"] = 1.0
 	```
 
-- **Damp Factor**. Description. By default, Korali will set this value to *-1* (Disabled). Example:
+- **Damp Factor**. Controls the update of the scaling factor $\sigma$. By default, Korali will precalibrate this value from $\mu_{eff}$ and number of variables (must be larger 0.0). Example:
 
 	```python
 	k["CMA-ES"]["Damp Factor"] = 1.0
 	```	
 	
-- **Max Resamplings**. Description. By default, Korali will set this value to $10^6$. Example:
+- **Max Resamplings**. Number of resamplings per candidate per generation if sample is outside of Lower and Uppder Bound. By default, Korali will set this value to $10^6$. Example:
 
 	```python
-	k["CMA-ES"]["Max Resamplings"] = 5
+	k["CMA-ES"]["Max Resamplings"] = 10e6
 	```	
 
-- **Sigma Bounded**. Description. By default, Korali will set this value to *false*. Example:
+- **Sigma Bounded**. Sets an upper bound for scaling factor $\sigma$. Upper bound is given by the average of the initial standard deviation of the variables. By default, Korali will set this value to *False*. Example:
 
 	```python
-	k["CMA-ES"]["Sigma Bounded"] = true
+	k["CMA-ES"]["Sigma Bounded"] = True
 	```	
 	
-- **Mu Value**. Description. By default, Korali will set this value to $\lambda / 2$. Example:
+- **Mu Value**. Number of best samples to update the covariance matrix and the mean. By default, Korali will set this value to $\lambda / 2$. Example:
 
 	```python
 	k["CMA-ES"]["Mu"]["Value"] = 8
 	```	
 
-- **Mu Type**. Description. By default, Korali will set this value to *Logarithmic*. Example:
+- **Mu Type**. Weights given to the Mu best values to update the covariance matrix and the mean. By default, Korali will set this value to *Logarithmic*. Example:
 
 	```python
 	k["CMA-ES"]["Mu"]["Value"] = "Equal"
 	k["CMA-ES"]["Mu"]["Value"] = "Linear"
 	k["CMA-ES"]["Mu"]["Value"] = "Logarithmic"
 	```
-	
-- **Mu Covariance**. Description. By default, Korali will set this value to *-1* (Disabled). Example:
+
+- **Cumulative Covariance**. Controls the learning rate of the evolution path for the covariance update. By default, Korali will precalibrate this value from $\mu_{eff}$ and number of variables (must be in $(0,1]$). Example:
 
 	```python
-	k["CMA-ES"]["Mu"]["Covariance"] = 0.5
-	```	
+	k["CMA-ES"]["Covariance Matrix"]["Cumulative Covariance"] = 0.9
+	```
+
+- **Is Diag**. Tells the solver to treat the covariance matrix as diagonal matrix in order to speed up covariance matrix updates. By default, Korali will set this value to *False*. Example:
+
+	```python
+	k["CMA-ES"]["Covariance Matrix"]["Is Diag"] = True
+	```
+
+
 		 
 ## Termination Criteria
 
 - **Max Generations** Specifies the maximum number of generations to run. By default, Korali will set this criterion as active and its value to *1000*. Example:
 
 	```python
-	k["CMA-ES"]["Termination Criteria"]["Max Generations"]["Active"] = true
-	k["CMA-ES"]["Termination Criteria"]["Max Generations"]["Value"] = 500
+	k["CMA-ES"]["Termination Criteria"]["Max Generations"]["Active"] = True
+	k["CMA-ES"]["Termination Criteria"]["Max Generations"]["Value"]  = 2000
 	```
 
 	
-- **Max Model Evaluations** Specifies the maximum number of sample evaluations to run. By default, Korali will set this criterion as inactive. Example:
+- **Max Model Evaluations** Specifies the maximum number of objective function evaluations. By default, Korali will set this criterion as inactive. Example:
 
 	```python
-	k["CMA-ES"]["Termination Criteria"]["Max Model Evaluations"]["Active"] = true
-	k["CMA-ES"]["Termination Criteria"]["Max Model Evaluations"]["Value"] = 50000
+	k["CMA-ES"]["Termination Criteria"]["Max Model Evaluations"]["Active"] = True
+	k["CMA-ES"]["Termination Criteria"]["Max Model Evaluations"]["Value"]  = 50000
 	```	
 	
 - **Fitness** Specifies the goal fitness to achieve before stopping execution. By default, Korali will set this criterion as inactive. Example:
 
 	```python
-	k["CMA-ES"]["Termination Criteria"]["Fitness"]["Active"] = true
-	k["CMA-ES"]["Termination Criteria"]["Fitness"]["Value"] = 5.0
+	k["CMA-ES"]["Termination Criteria"]["Min Fitness"]["Active"] = True
+	k["CMA-ES"]["Termination Criteria"]["Min Fitness"]["Value"]  = 0.0
 	```	
 	
 - **Fitness Diff Threshold** Specifies the minimum fitness differential between two consecutive generations before stopping execution. By default, Korali will set this criterion as active and value $1^-9$. Example:
 
 	```python
-	k["CMA-ES"]["Termination Criteria"]["Fitness Diff Threshold"]["Active"] = true
-	k["CMA-ES"]["Termination Criteria"]["Fitness Diff Threshold"]["Value"] = 0.01
+	k["CMA-ES"]["Termination Criteria"]["Fitness Diff Threshold"]["Active"] = True
+	k["CMA-ES"]["Termination Criteria"]["Fitness Diff Threshold"]["Value"]  = 1e-12
 	```	
 
-- **Min DeltaX** Specifies the minimum differential change between variable values between two consecutive generations before stopping execution. By default, Korali will set this criterion as active and value $1^-12$. Example:
+- **Min DeltaX** Specifies a minimum standard deviation for the proposal distribution of the variables. Korali terminates if this value is undershot from all variables. By default, Korali will set this criterion as active and value $1^-12$. Example:
 
 	```python
-	k["CMA-ES"]["Termination Criteria"]["Min DeltaX"]["Active"] = true
-	k["CMA-ES"]["Termination Criteria"]["Min DeltaX"]["Value"] = 0.00001
+	k["CMA-ES"]["Termination Criteria"]["Min DeltaX"]["Active"] = True
+	k["CMA-ES"]["Termination Criteria"]["Min DeltaX"]["Value"]  = 1e-9
 	```	
 	
-- **Max Standard Deviation** Specifies the maximum standard deviation in the covariance matrix. By default, Korali will set this criterion as disabled. Example:
+- **Max Standard Deviation** Specifies the maximum allowed increase in the standard deviation for the proposal distribution of a variable. By default, Korali will set this criterion as active and value $1^18$. Example:
 
 	```python
-	k["CMA-ES"]["Termination Criteria"]["Max Standard Deviation"]["Active"] = true
-	k["CMA-ES"]["Termination Criteria"]["Max Standard Deviation"]["Value"] = 10.0
+	k["CMA-ES"]["Termination Criteria"]["Max Standard Deviation"]["Active"] = True
+	k["CMA-ES"]["Termination Criteria"]["Max Standard Deviation"]["Value"]  = 1e12
 	```	
 
-- **Max Condition Covariance** Specifies the maximum condition covariance. By default, Korali will set this criterion as disabled. Example:
+- **Max Condition Covariance** Specifies the maximum condition of the covariance matrix. By default, Korali will set this criterion as active and value $1^18$. Example:
 
 	```python
-	k["CMA-ES"]["Termination Criteria"]["Max Standard Deviation"]["Active"] = true
-	k["CMA-ES"]["Termination Criteria"]["Max Standard Deviation"]["Value"] = 10.0
+	k["CMA-ES"]["Termination Criteria"]["Max Standard Deviation"]["Active"] = True
+	k["CMA-ES"]["Termination Criteria"]["Max Standard Deviation"]["Value"]  = 1e12
 	```	
 	
 ## Variable Settings
@@ -188,7 +196,7 @@ CMA-ES works iteratively, evaluating a number $\lambda$ of samples per generatio
 	k["Variables"][i]["CMA-ES"][1]["Maximum"] = 0.0;
 	```
 
-- **Initial Mean**. Defines the initial guess mean for the variable solution at the start of execution. This value should be defined between the variable's *Mininum* and *Maximum* settings. Example:
+- **Initial Mean**. Defines the initial mean for the proposal distribution. This value must be defined between the variable's *Mininum* and *Maximum* settings By default, Korali will set this value in the center of the domain. Example:
 
 	```python
 	# Modifying the initial guess mean of variable i

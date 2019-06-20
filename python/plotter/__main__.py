@@ -28,11 +28,16 @@ def main(live):
   plot_mcmc(path, live)
   exit(0)
 
- if ( 'CMA-ES' in data['Solver'] or 'CCMA-ES' in data['Solver'] ):
+ if ( 'CMA-ES' in data['Solver']):
   print("[Korali] Running CMA-ES Plotter...")
   plot_cmaes(path, live)
   exit(0)
 
+ if ( 'CCMA-ES' in data['Solver'] ):
+  print("[Korali] Running CCMA-ES Plotter...")
+  plot_cmaes(path, live)
+  exit(0)
+     
  if ( 'DE' in data['Solver'] ):
   print("[Korali] Running DEA Plotter...")
   plot_dea(path, live)

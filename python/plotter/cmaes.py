@@ -129,7 +129,6 @@ def plot_cmaes(src, live = False, obj='current'):
 
 # Create Plot from Data
 def draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, axis, ssdev, colors, names, live):
-    #fig, ax = plt.subplots(2,2,num='CMA-ES live diagnostics: {0}'.format(src),figsize=(8,8))
 
     plt.suptitle( 'Generation {0}'.format(str(idx).zfill(5)),\
                       fontweight='bold',\

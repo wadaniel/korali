@@ -223,7 +223,6 @@ void Korali::Solver::MCMC::run()
   saveState();
   
   printGeneration();
-  if (databaseEntries == _s) break;
  }
 
  printFinal();
@@ -385,6 +384,13 @@ bool Korali::Solver::MCMC::checkTermination()
   sprintf(_terminationReason, "Max Samples generated (%zu)",  countgens);
  }
  
+ 
+ if ( databaseEntries == _s)
+ {
+  terminate = true;
+  sprintf(_terminationReason, "Chainlength (%zu) reached.",  _s);
+ }
+
  return terminate;
 }
  

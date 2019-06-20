@@ -24,6 +24,6 @@ k["Solver"] = "MCMC";
 k["MCMC"]["Population Size"] = 5000;
 k["MCMC"]["Burn In"] = 500;
 k["MCMC"]["Adaptive Sampling"]  = True;
-k["MCMC"]["Result Output Frequency"] = 1e5
+k["MCMC"]["Result Output Frequency"]  = 5000;
 
 k.run()

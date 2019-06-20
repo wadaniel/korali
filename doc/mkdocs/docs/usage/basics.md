@@ -91,10 +91,13 @@ For distributed jobs, you can launch your Korali application with the SLURM/MPI/
 > upcxx-run -n 16 ./myApp myArguments
 ```
 
+## Processing Results
+
 Once the Korali engine has started running, it will execute non-preemptively until a termination criterion is met. Each solver method exposes a configurable set of termination criteria.
 
 After execution, Korali will automatically create a results folder ```_korali\_result``` where it will save the entire state of the engine (i.e., a *checkpoint*) after each generation. Users can perform several operations on these results:
 
-- [Export to Format](/usage/results/export)
-- [Resume Execution](/usage/results/resume)
-- [Generate Plots](/usage/results/plotting)
+- [Generate Plots](usage/results/#generate-plots)
+- [Export Results](usage/results/#export-results)
+- [Resume Execution](usage/results/#resume-execution)
+		 

@@ -1,7 +1,7 @@
 
 ## Contact us
 
-The Korali Project is written and maintained by
+The Korali Project is developed and maintained by
 
 * **Georgios Arampatzis**, garampat at ethz.ch
 * **Sergio Miguel Martin**, martiser at ethz.ch

@@ -29,6 +29,7 @@ int main(int argc, char* argv[])
  k["MCMC"]["Burn In"] = 500;
  k["MCMC"]["Rejection Levels"] = 2;
  k["MCMC"]["Adaptive Sampling"]  = true;
+ k["MCMC"]["Result Output Frequency"] = 100;
 
  k.setModel([](Korali::ModelData& d) { m_ackley(d.getVariables(), d.getResults()); });
  k.run();

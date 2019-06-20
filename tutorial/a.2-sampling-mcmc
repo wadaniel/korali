@@ -6,7 +6,7 @@ import korali
 
 k = korali.Engine()
 
-k["Problem"] = "Direct"
+k["Problem"] = "Direct Evaluation"
 
 k.setModel( evaluateModel )
 

@@ -94,6 +94,8 @@ DE::~DE()
 void Korali::Solver::DE::getConfiguration(nlohmann::json& js)
 {
  js["Solver"] = "DE";
+ 
+ js["DE"]["Result Output Frequency"] = _resultOutputFrequency;
 
  js["DE"]["Sample Count"]    = _s;
  js["DE"]["Crossover Rate"]  = _crossoverRate;
@@ -147,7 +149,10 @@ void Korali::Solver::DE::getConfiguration(nlohmann::json& js)
 
 
 void DE::setConfiguration(nlohmann::json& js)
-{
+{  
+ 
+ _resultOutputFrequency = consume(js, { "DE", "Result Output Frequency" }, KORALI_NUMBER, std::to_string(1));
+ 
  _s                             = consume(js, { "DE", "Sample Count" }, KORALI_NUMBER); // 5x - 10x Dim
  _crossoverRate                 = consume(js, { "DE", "Crossover Rate" }, KORALI_NUMBER, std::to_string(0.9)); // Rainer Storn [1996]
  _mutationRate                  = consume(js, { "DE", "Mutation Rate" }, KORALI_NUMBER, std::to_string(0.5));  // Rainer Storn [1996]

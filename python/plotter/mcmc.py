@@ -92,17 +92,13 @@ def plot_lower_triangle(ax, theta):
 
 
 # Plot MCMC result file
-def plot_samples(fig, ax, data, idx=None):
+def plot_samples(fig, ax, data, filename):
     dims     = data['Variables']
     numdim   = len(dims)
     pop      = data['MCMC']['State']['Database Entries']
     samples  = np.reshape( data['MCMC']['State']['DatabasePoints'], (pop,numdim) )
     
-    if idx is None: 
-        fig.canvas.set_window_title(path)
-        idx = int(re.findall(r'[0-9]+', path)[-1])
-    else:           
-        fig.canvas.set_window_title('s{0}.json'.format(str(idx).zfill(5)))
+    fig.canvas.set_window_title(filename)
     
     plt.suptitle( 'MCMC\nNumber of Samples {0}\n'.format(str(pop)),
                   fontweight='bold',
@@ -117,56 +113,54 @@ def plot_mcmc(src, live=False):
      
     plt.style.use('seaborn-dark')
     burnin = 1e18
-    idx    = 0
-    path   = '{0}/s{1}.json'.format(src, str(idx).zfill(5))
     
+    resultfiles = [f for f in os.listdir(src) if os.path.isfile(os.path.join(src, f))]
+    resultfiles = sorted(resultfiles)
+
     fig = None
     ax  = None
  
-    with open(path) as f:
-        data = json.load(f)
-        burnin = data['MCMC']['Burn In']
-        numdim = len(data['Variables'])
-        fig, ax = plt.subplots(numdim, numdim, figsize=(8,8))
-        if (live == True):
-            fig.show()
-        idx  = idx + 1
- 
-    while( (live == False) or (plt.fignum_exists(fig.number)) ):
-        path = '{0}/s{1}.json'.format(src, str(idx).zfill(5))
+    if (resultfiles == []):
+        print("[Korali] Error: Did not find file {0} in the _korali_result folder...".format(src))
+        exit(-1)
 
-        if ( not os.path.isfile(path) ):
-            if ( (live == True) and (idx > 0) ):
-              plt_pause_light(0.5)
-              continue
-            else:
-                break
-
-        with open(path) as f:
-            data = json.load(f)
+    if (live == True):
+        for filename in resultfiles:
+            path   = '{0}/{1}'.format(src, filename)
             
-            if ( live == True)  :
+            with open(path) as f:
+                data     = json.load(f)
+                numdim   = len(data['Variables'])
+                burnin   = data['MCMC']['Burn In']
                 chainlen = data['MCMC']['State']['Chain Length']
                 
-                if chainlen > burnin:
-                    plot_samples(fig, ax, data, idx)
-                    plt_pause_light(0.5) 
-            
-        idx  = idx + 1
+                if (fig, ax) == (None, None):
+                    fig, ax = plt.subplots(numdim, numdim, figsize=(8,8))
+                    fig.show()
+    
+                if (not plt.fignum_exists(fig.number)):
+                    print("[Korali] Figure closed - Bye!")
+                    exit(-1)
 
-    if (idx == 0):
-        print("[Korali] Error: Did not find file {0} in the _korali_result folder...".format(path))
+                if chainlen > burnin:
+                    plot_samples(fig, ax, data, filename)
+                    plt_pause_light(0.5) 
+                
 
     if ( live == False):
-        print("here")
-        path = '{0}/s{1}.json'.format(src, str(idx-1).zfill(5))
+        path = '{0}/{1}'.format(src, resultfiles[-1])
+        
         with open(path) as f:
             data     = json.load(f)
             numdim   = len(data['Variables'])
+            burnin   = data['MCMC']['Burn In']
             chainlen = data['MCMC']['State']['Chain Length']
             if chainlen <= burnin:
                 print("[Korali] Error: No samples found in file {0}...".format(path))
                 exit(-1)
             
-            plot_samples(fig, ax, data, idx)
+            fig, ax = plt.subplots(numdim, numdim, figsize=(8,8))
+            fig.show()
+            plot_samples(fig, ax, data, resultfiles[-1])
             plt_pause_light(3600) 
+            print("[Korali] Figure closed - Bye!")

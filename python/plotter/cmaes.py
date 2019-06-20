@@ -37,7 +37,6 @@ def objstrings(obj='current'):
 # Plot CMA-ES results (read from .json files)
 def plot_cmaes(src, live = False, obj='current'):
 
-    idx    = 0 # generation
     numdim = 0 # problem dimension
     names    = [] # description params
     colors   = [] # rgb colors
@@ -52,67 +51,71 @@ def plot_cmaes(src, live = False, obj='current'):
     ssdev    = [] # sigma x diag(C)
 
     plt.style.use('seaborn-dark')
+ 
+    resultfiles = [f for f in os.listdir(src) if os.path.isfile(os.path.join(src, f))]
+    resultfiles = sorted(resultfiles)
 
-    fig, ax = plt.subplots(2,2,num='CMA-ES live diagnostics: {0}'.format(src),figsize=(8,8))
-    if live == True:
+    fig = None
+    ax  = None
+ 
+    if (resultfiles == []):
+        print("[Korali] Error: Did not find file {0} in the _korali_result folder...".format(src))
+        exit(-1)
+
+
+    if (True):
+        for filename in resultfiles:
+            path   = '{0}/{1}'.format(src, filename)
+            
+            with open(path) as f:
+ 
+                data  = json.load(f)
+                state = data['CMA-ES']['State']
+                gen   = state['Current Generation']
+
+                if (fig, ax) == (None, None):
+ 
+                    numdim = len(data['Variables'])
+                    names  = [ data['Variables'][i]['Name'] for i in range(numdim) ]
+                    colors = hls_colors(numdim)
+ 
+                    for i in range(numdim):
+                        fvalXvec.append([])
+                        axis.append([])
+                        ssdev.append([])
+
+                    if (live == True):
+                        fig, ax = plt.subplots(2,2,num='CMA-ES live diagnostics', figsize=(8,8))
+                        fig.show()
+ 
+                if (live == True and (not plt.fignum_exists(fig.number))):
+                    print("[Korali] Figure closed - Bye!")
+                    exit(-1)
+
+                if gen > 0:
+
+                    numeval.append(state['EvaluationCount'])
+                    dfval.append(abs(state["CurrentBestFunctionValue"] - state["BestEverFunctionValue"]))
+                    
+                    fval.append(state[objstrings(obj)[0]])
+                    sigma.append(state['Sigma'])
+                    cond.append(state['MaxEigenvalue']/state['MinEigenvalue'])
+                    psL2.append(state['ConjugateEvolutionPathL2'])
+
+                    for i in range(numdim):
+                        fvalXvec[i].append(state[objstrings(obj)[1]][i])
+                        axis[i].append(state['AxisLengths'][i])
+                        ssdev[i].append(sigma[-1]*np.sqrt(state['CovarianceMatrix'][i][i]))
+                
+                    if (live == True and gen > 1):
+                        draw_figure(fig, ax, src, gen, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, axis, ssdev, colors, names, live)
+
+    if (live == False):
+        fig, ax = plt.subplots(2,2,num='CMA-ES live diagnostics', figsize=(8,8))
         fig.show()
+        draw_figure(fig, ax, src, gen, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, axis, ssdev, colors, names, live)
+        print("[Korali] Figure closed - Bye!")
 
-    while( (live == False) or (plt.fignum_exists(fig.number)) ):
-
-        path = '{0}/s{1}.json'.format(src, str(idx).zfill(5))
-       
-        if ( not os.path.isfile(path) ):
-            if ( (live == True) and (idx > 0) ):
-              plt_pause_light(0.5)
-              continue
-            else:
-                break
-
-        if live == True:
-            plt.suptitle( 'Generation {0}'.format(str(idx).zfill(5)),\
-                          fontweight='bold',\
-                          fontsize=12 )
-
-        with open(path) as f:
-            data  = json.load(f)
-            state = data['CMA-ES']['State']
-
-            if idx == 0:
-                numdim = len(data['Variables'])
-                names  = [ data['Variables'][i]['Name'] for i in range(numdim) ]
-                colors = hls_colors(numdim)
-                for i in range(numdim):
-                    fvalXvec.append([])
-                    axis.append([])
-                    ssdev.append([])
-
-                idx = idx + 1
-                continue
-
-            numeval.append(state['EvaluationCount'])
-            dfval.append(abs(state["CurrentBestFunctionValue"] - state["BestEverFunctionValue"]))
-            
-            fval.append(state[objstrings(obj)[0]])
-            sigma.append(state['Sigma'])
-            cond.append(state['MaxEigenvalue']/state['MinEigenvalue'])
-            psL2.append(state['ConjugateEvolutionPathL2'])
-
-            for i in range(numdim):
-                fvalXvec[i].append(state[objstrings(obj)[1]][i])
-                axis[i].append(state['AxisLengths'][i])
-                ssdev[i].append(sigma[idx-1]*np.sqrt(state['CovarianceMatrix'][i][i]))
-
-        if (live == False or idx < 2):
-            idx = idx + 1
-            continue
-
-        draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, axis, ssdev, colors, names, live)
-        idx = idx+1
-
-    if live == False:
-        draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, axis, ssdev, colors, names, live)
-            
-    fig.show()
 
 
 # Create Plot from Data

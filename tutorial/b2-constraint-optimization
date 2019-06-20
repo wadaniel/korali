@@ -4,9 +4,15 @@ sys.path.append('./model')
 from g09 import *
 import korali
 
+
+import shutil
+import os
+
+if( os.path.exists("./_korali_result/") ) :
+  shutil.rmtree("./_korali_result/")
+
+
 k = korali.Engine()
-
-
 
 k["Problem"] = "Direct Evaluation";
 

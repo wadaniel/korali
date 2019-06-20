@@ -17,28 +17,29 @@ def main(live):
 
  with open(firstResult) as f:
   data  = json.load(f)
-
- if 'TMCMC' in data['Solver']:
+ 
+ solver = data['Solver']
+ if ( 'TMCMC' == solver ):
   print("[Korali] Running TMCMC Plotter...")
   plot_tmcmc(path, live)
   exit(0)
  
- if 'MCMC' in data['Solver']:
+ if ( 'MCMC' == solver ):
   print("[Korali] Running MCMC Plotter...")
   plot_mcmc(path, live)
   exit(0)
 
- if ( 'CMA-ES' in data['Solver']):
+ if ( 'CMA-ES' == solver):
   print("[Korali] Running CMA-ES Plotter...")
   plot_cmaes(path, live)
   exit(0)
 
- if ( 'CCMA-ES' in data['Solver'] ):
+ if ( 'CCMA-ES' == solver ):
   print("[Korali] Running CCMA-ES Plotter...")
   plot_cmaes(path, live)
   exit(0)
      
- if ( 'DE' in data['Solver'] ):
+ if ( 'DE' == solver ):
   print("[Korali] Running DEA Plotter...")
   plot_dea(path, live)
   exit(0)

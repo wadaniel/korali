@@ -46,7 +46,6 @@ k["Variables"][2]["CMA-ES"]["Lower Bound"] = 0.0;
 k["Variables"][2]["CMA-ES"]["Upper Bound"] = +5.0;
 
 k["CMA-ES"]["Objective"] = "Maximize"
-k["CMA-ES"]["Termination Criteria"]["Min DeltaX"]["Value"] = 1e-8
 k["CMA-ES"]["Termination Criteria"]["Max Generations"]["Value"] = 1000
 k["CMA-ES"]["Sample Count"] = 5
 

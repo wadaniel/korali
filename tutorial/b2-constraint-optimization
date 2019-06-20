@@ -31,7 +31,6 @@ k["CCMA-ES"]["Adaption Size"] = 0.1;
 k["CCMA-ES"]["Sample Count"] = 8;
 k["CCMA-ES"]["Viability Sample Count"] = 2;
 k["CCMA-ES"]["Termination Criteria"]["Min Fitness"]["Value"] = -680.630057374402 - 1e-4;
-k["CCMA-ES"]["Termination Criteria"]["Min DeltaX"]["Value"] = 1e-12;
 
 k.setModel( g09 );
 k.addConstraint( g1 );

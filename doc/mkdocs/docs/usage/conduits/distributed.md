@@ -1,10 +1,14 @@
 # Conduits / Distributed
 
+## Description
+
 The distributed conduit provides support for MPI distributed computational models. It works by defining a set of evaluation teams (see Figure). Evaluation teams comprise multiple cores (i.e.,MPI or UPC++ ranks) each which receivenew samples to be evaluated and return their results asynchronously. The conduit will distribute newsamples to teams as soon as they become free. By distributing sample arguments to cores speculatively, this conduit reduces system-wide load imbalance and communication overhead.
 
 ![](distributedConduit.png)
 
-## Distributed Execution of Sequential Models
+## Usage
+
+### Parallel Korali / Simple Model
 
 In this case, we want to execute *N* parallel instances of a sequential model, with only 1 rank per computational model evaluation. We define a simple Korali application:
 
@@ -32,7 +36,7 @@ And then run the application in shell, using the corresponding job launcher. We 
 > mpirun -n N+1 ./myKoraliApp
 ```
 
-## Single Instance of a Distributed Model
+### Simple Korali / Parallel Model
 
 In this case, we want to execute a single instance of a sequential model at a time, with *M* ranks per computational model evaluation. We define another Korali application:
 
@@ -70,7 +74,7 @@ And then run the application in shell, using the corresponding job launcher:
 > mpirun -n M+1 ./myKoraliApp
 ```
 
-## Parallel Execution of a Distributed Model
+### Parallel Korali / Paralell Model
 
 In this case, we want to execute N instance of a sequential model at a time, with *M* ranks per computational model evaluation. We define another Korali application:
 

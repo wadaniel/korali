@@ -589,7 +589,12 @@ void CMAES::checkMeanAndSetRegime()
 {
     if (_isViabilityRegime == false) return; /* mean already inside valid domain, no udpates */
 
-    for (size_t c = 0; c < _numConstraints; ++c) { countcevals++; if ( _k->_fconstraints[c](rgxmean, _k->N) > 0.) return; } /* do nothing */
+    for (size_t c = 0; c < _numConstraints; ++c){
+      countcevals++;
+      std::vector<double> sample;
+      for( size_t k=0; k<_k->N; k++) sample.push_back( rgxmean[k] );
+      if ( _k->_fconstraints[c](sample) > 0.) return;
+    } /* do nothing */
 
     /* mean inside domain, switch regime and update internal variables */
     _isViabilityRegime = false;
@@ -616,7 +621,10 @@ void CMAES::updateConstraints() //TODO: maybe parallelize constraint evaluations
   for(size_t i = 0; i < _current_s; ++i)
   {
     countcevals++;
-    constraintEvaluations[c][i] = _k->_fconstraints[c]( _samplePopulation+i*_k->N, _k->N );
+    std::vector<double> sample;
+    for( size_t k=0; k<_k->N; k++) sample.push_back( _samplePopulation[i*_k->N+k] );
+
+    constraintEvaluations[c][i] = _k->_fconstraints[c]( sample );
 
     if ( constraintEvaluations[c][i] > maxviolation ) maxviolation = constraintEvaluations[c][i];
     if ( _currentGeneration == 0 && _isViabilityRegime ) viabilityBounds[c] = maxviolation;
@@ -639,7 +647,11 @@ void CMAES::reEvaluateConstraints() //TODO: maybe we can parallelize constraint 
     for(size_t c = 0; c < _numConstraints; ++c)
     {
       countcevals++;
-      constraintEvaluations[c][i] = _k->_fconstraints[c]( _samplePopulation+i*_k->N, _k->N );
+      std::vector<double> sample;
+      for( size_t k=0; k<_k->N; k++) sample.push_back( _samplePopulation[i*_k->N+k] );
+
+      constraintEvaluations[c][i] = _k->_fconstraints[c]( sample );
+
       if( constraintEvaluations[c][i] > viabilityBounds[c] + 1e-12 ) { viabilityIndicator[c][i] = true; numviolations[i]++; }
       else viabilityIndicator[c][i] = false;
 

@@ -1,72 +1,101 @@
 # Conduits / Distributed
 
-The distributed semi-intrusive provides support for MPI, CUDA, UPC++, and OpenMP parallel computational models. It works by defining a set of evaluation teams (see Figure). Evaluation teams comprise multiple cores (i.e.,MPI or UPC++ ranks) each which receivenew samples to be evaluated and return their results asynchronously. The conduit will distribute newsamples to teams as soon as they become free. By distributing sample arguments to cores speculatively, this conduit reduces system-wide load imbalance and communication overhead.
+The distributed conduit provides support for MPI distributed computational models. It works by defining a set of evaluation teams (see Figure). Evaluation teams comprise multiple cores (i.e.,MPI or UPC++ ranks) each which receivenew samples to be evaluated and return their results asynchronously. The conduit will distribute newsamples to teams as soon as they become free. By distributing sample arguments to cores speculatively, this conduit reduces system-wide load imbalance and communication overhead.
 
 ![](distributedConduit.png)
 
-## Settings
+## Distributed Execution of Sequential Models
+
+In this case, we want to execute *N* parallel instances of a sequential model, with only 1 rank per computational model evaluation. We define a simple Korali application:
 
 ```python
-  # Definition
-  k["Conduit"] = "Distributed";
-  
-  # Solver Settings
-  k["Distributed"]["Objective"] = ... 
-  k["Distributed"]["Sample Count"] = ...
+#!/usr/bin/env python3
+import korali
+k = korali.Engine()
+
+# Set problem, solver, variables, and model.
+...
+
+# Defining the distributed conduit
+k["Conduit"] = "Distributed"
+
+# Setting ranks per team to 1.
+# This is not really necessary since the default value is 1.
+k["Distributed"]["Ranks Per Team"] = 1
+
+k.run()
 ```
 
-###Defining the Model
+And then run the application in shell, using the corresponding job launcher. We need N+1 ranks since the Korali engine requires a rank to serve as master:
+
+```bash
+> mpirun -n N+1 ./myKoraliApp
+```
+
+## Single Instance of a Distributed Model
+
+In this case, we want to execute a single instance of a sequential model at a time, with *M* ranks per computational model evaluation. We define another Korali application:
 
 ```python
-# Using a normal function definition
+#!/usr/bin/env python3
+import korali
+k = korali.Engine()
+
+# Set problem, solver, variables.
+...
+
+#Using a distributed (MPI) model
 def myModel(data): 
- #do stuff
+ # Grabbing a pointer to the team's MPI communicator
+ x = data.getVariable(0)
+ y = data.getVariable(1)
+ comm = korali_obj.getCommPointer()
+ fval = myMPIModel(comm, x0, ks)
+ data.addResult(fval)
  
 k.setModel(myModel);
 
-# Using a lambda expression
-myModel = lambda koraliData: 
- #do stuff
- 
+# Defining the distributed conduit
+k["Conduit"] = "Distributed"
+
+# Setting ranks per team to M.
+k["Distributed"]["Ranks Per Team"] = M
+
+k.run()
+```
+
+And then run the application in shell, using the corresponding job launcher:
+
+```bash
+> mpirun -n M+1 ./myKoraliApp
+```
+
+## Parallel Execution of a Distributed Model
+
+In this case, we want to execute N instance of a sequential model at a time, with *M* ranks per computational model evaluation. We define another Korali application:
+
+```python
+#!/usr/bin/env python3
+import korali
+k = korali.Engine()
+
+# Set problem, solver, variables.
+...
+
+#Using the same MPI model as above.
 k.setModel(myModel);
+
+# Defining the distributed conduit
+k["Conduit"] = "Distributed"
+
+# Setting ranks per team to M.
+k["Distributed"]["Ranks Per Team"] = M
+
+k.run()
 ```
 
-###Reading Parameters 
+And then run the application in shell, using the corresponding job launcher:
 
-The ```KoraliData``` object exposes information about the sample's computational variables. The snippet below shows the relevant operations:
-
-```python
-data.getVariableCount() # Return the number of computational variables in the sample
-data.getVariables() # Returns a vector containing all the computational variables
-data.getVariable(i) # Returns the value of the ith computational variable
-data.getHashId() # Returns a unique identifier for the sample
-``
-
-In the code below shows how a computational model can access sample data:
-
-```python
-# This computational model sums the squares of all sample arguments.
-def myModel(data):
- sum = 0.0;
- for i in range(data.getVariableCount()):
-  sum += x.getVariable(i)*x.getVariable(i)
-```
-
-###Returning Results
-
-The simple model interface requires a single result to be sent back to the solver. To save the result of the evaluation, Korali exposes the following interface:
-
-```python
-data.setResult() # Sets the result of the computation
-```
-
-In the code below shows how a computational model saves a single result:
-
-```python
-# This computational model sums the squares of all sample arguments.
-def myModel(data):
- sum = 0.0;
- for i in range(data.getVariableCount()):
-  sum += x.getVariable(i)*x.getVariable(i)
- data.addResult(sum)
+```bash
+> mpirun -n N*M+1 ./myKoraliApp
 ```

@@ -4,7 +4,7 @@ Korali exposes a single interface for computational models, regardless of the ch
 
 The simple model provides an interface of the form: $f:\mathbb{R}^N\rightarrow\mathbb{R}^M$, with *N* inputs and *M* outputs. Both inputs and outputs are of double precision floating point types and are accessed through a common ```KoraliData``` object. 
 
-## Syntax
+## Usage
 
 ###Defining the Model
 

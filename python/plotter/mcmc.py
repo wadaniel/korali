@@ -163,3 +163,4 @@ def plot_mcmc(src, live=False):
             fig.show()
             plot_samples(fig, ax, data, resultfiles[-1])
             plt_pause_light(3600) 
+            print("[Korali] Figure closed - Bye!")

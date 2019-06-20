@@ -524,7 +524,7 @@ void CMAES::run()
  }
 
  startTime = std::chrono::system_clock::now();
- _k->saveState(_currentGeneration);
+ saveState();
 
  while(!checkTermination())
  {
@@ -539,7 +539,7 @@ void CMAES::run()
    t1 = std::chrono::system_clock::now();
 
    printGeneration();
-   _k->saveState(_currentGeneration);
+   saveState();
  }
 
  endTime = std::chrono::system_clock::now();
@@ -1175,6 +1175,12 @@ double CMAES::doubleRangeMin(const double *rgd, size_t len) const
  for (size_t i = 1; i < len; i++)
   min = (min > rgd[i]) ? rgd[i] : min;
  return min;
+}
+
+
+void Korali::Solver::CMAES::saveState() const
+{
+ if ((_currentGeneration % _resultOutputFrequency) == 0) _k->saveState(_currentGeneration);
 }
 
 

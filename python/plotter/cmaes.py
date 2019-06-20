@@ -111,13 +111,16 @@ def plot_cmaes(src, live = False, obj='current'):
                 
                     if (live == True and gen > 1):
                         draw_figure(fig, ax, src, gen, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, axis, ssdev, colors, names, live)
+                        plt_pause_light(0.05)
 
     if (live == False):
         fig, ax = plt.subplots(2,2,num='{0} live diagnostics'.format(solverName), figsize=(8,8))
-        fig.show()
         draw_figure(fig, ax, src, gen, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, axis, ssdev, colors, names, live)
-        print("[Korali] Figure closed - Bye!")
-        exit(0)
+        fig.show()
+    
+    plt.pause(3600)
+    print("[Korali] Figure closed - Bye!")
+    exit(0)
 
 
 # Create Plot from Data
@@ -159,10 +162,3 @@ def draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, cond, sigma, ps
     ax[1,1].set_yscale('log')
     for i in range(numdim):
         ax[1,1].plot(numeval, ssdev[i], color = colors[i], label=names[i])
-    
-    if (live == True):
-        plt_pause_light(0.05)
-    else:
-        plt.pause(3600) #fix this (DW)
-
-

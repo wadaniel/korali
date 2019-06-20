@@ -145,7 +145,7 @@ def plot_mcmc(src, live=False):
                 if chainlen > burnin:
                     plot_samples(fig, ax, data, filename)
                     plt_pause_light(0.5) 
-                
+            
 
     if ( live == False):
         path = '{0}/{1}'.format(src, resultfiles[-1])
@@ -162,5 +162,6 @@ def plot_mcmc(src, live=False):
             fig, ax = plt.subplots(numdim, numdim, figsize=(8,8))
             fig.show()
             plot_samples(fig, ax, data, resultfiles[-1])
-            plt_pause_light(3600) 
-            print("[Korali] Figure closed - Bye!")
+    
+    plt.pause(3600) 
+    print("[Korali] Figure closed - Bye!")

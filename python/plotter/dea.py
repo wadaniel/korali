@@ -99,14 +99,17 @@ def plot_dea(src, live = False, obj='current'):
         if (live == False or idx < 2):
             idx = idx + 1
             continue
-
+        
+        fig.show()
         draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, fvalXvec, meanXvec, width, colors, names, live)
+        plt_pause_light(0.05)
         idx = idx+1
 
     if live == False:
         draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, fvalXvec, meanXvec, width, colors, names, live)
+    
+    plt.pause(3600)
             
-    fig.show()
 
 
 # Create Plot from Data
@@ -146,10 +149,3 @@ def draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, fvalXvec, meanX
         ax[1,1].plot(numeval, meanXvec[i], color = colors[i], label=names[i])
     if ( (idx == 2) or (live == False) ):
         ax[1,1].legend(bbox_to_anchor=(1.04,0.5), loc="center left", borderaxespad=0, handlelength=1)
-    
-    if (live == True):
-        plt_pause_light(0.05)
-    else:
-        plt.pause(3600) #fix this (DW)
-
-

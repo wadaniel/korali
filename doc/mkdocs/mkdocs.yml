@@ -10,9 +10,9 @@ nav:
   - Tutorials:
      - 'A.1 - Optimization': tutorials/a1-optimization/optimization.md
      - 'A.2 - Sampling': tutorials/a2-sampling/sampling.md
-     - 'A.3 - Bayesian Inference': tutorials/bayesian/bayesian.md
-     - 'B.1 - Checkpoint/Restart': tutorials/bayesian/bayesian.md
-     - 'B.2 - Constrained Optimization': tutorials/bayesian/bayesian.md
+     - 'A.3 - Bayesian Inference': tutorials/a3-bayesian/bayesian.md
+     - 'B.1 - Checkpoint/Restart': tutorials/b1-restart/restart.md
+     - 'B.2 - Constrained Optimization': tutorials/b2-constraint-optimization/constrained-optimization.md
      #- 'B.3 - Distributed Conduit': tutorials/distributed/distributed.md
      #- 'B.4 - Nonintrusive Conduit': tutorials/nonintrusive/nonintrusive.md
      #- 'C.1 - MPI Model': tutorials/mpi/mpi.md
@@ -37,21 +37,14 @@ nav:
           - Semi-Intrusive: usage/conduits/semi-intrusive.md
           - Distributed: usage/conduits/distributed.md
           - Nonintrusive: usage/conduits/nonintrusive.md
-      - Distributions:
-          - Cauchy: usage/distributions/#cauchy
-          - Exponential: usage/distributions/#exponential
-          - Gamma: usage/distributions/#gamma
-          - Gaussian: usage/distributions/#gaussian
-          - Laplace: usage/distributions/#laplace
-          - Uniform: usage/distributions/#uniform
       - Models:
           - Simple: usage/models/simple.md
           - Rerefence: usage/models/reference.md
           - Constraint: usage/models/constraint.md
       - Results:
-          - Generate Plots: usage/results/#generate-plots
-          - Export Results: usage/results/#export-results
-          - Resume Execution: usage/results/#resume-execution
+          - Generate Plots: /usage/results/#generate-plots
+          - Export Results: /usage/results/#export-results
+          - Resume Execution: /usage/results/#resume-execution
   - Development:
     - Git Repository: https://github.com/cselab/skorali
     - Integration: development/integration.md

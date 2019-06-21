@@ -11,7 +11,7 @@ To build a Korali application in Python, you simply need to include the correspo
 ```python
 #!/usr/bin/env python3
 import korali
-k = korali.Engine()
+k = korali.initialize()
 ...
 ```
 
@@ -23,10 +23,9 @@ A Korali application encapsulates the configuration necessary to run the Korali 
 
 A Problem describes the objective function to be optimized/sampled from. We currently support these problem types: 
 
-- [Direct Evaluation](/usage/evaluation/direct)
-- [Bayesian - Direct Likelihood](/usage/evaluation/bayesian/direct)
-- [Bayesian - Gaussian Likelihood](/usage/evaluation/bayesian/gaussian)
-- [Bayesian - Custom Likelihood](/usage/evaluation/bayesian/custom)
+- [Direct Evaluation](../problems/direct)
+- [Bayesian - Direct Likelihood](../problems/bayesian/direct)
+- [Bayesian - Reference Likelihood](../problems/bayesian/reference)
 
 ### Step 2) Define Solver
 
@@ -34,14 +33,14 @@ The Solver module generates samples for evaluation, performs the statistical ana
 
 **Optimizers** find the global maximum or minimum of the described problem. The detailed configuration of the currently implemented optimizers can be found below:
 
-- [CMA-ES](/usage/solvers/optimizers/cmaes)
-- [Constrained CMA-ES](/usage/solvers/optimizers/ccmaes)
-- [Differential Evolution](/usage/solvers/optimizers/diffevo)
+- [CMA-ES](../solvers/optimizers/cmaes)
+- [Constrained CMA-ES](../solvers/optimizers/ccmaes)
+- [Differential Evolution](../solvers/optimizers/diffevo)
 	
 **Samplers** map the probability distribution of samples in the variable space of the described problem. The detailed configuration of the currently implemented optimizers can be found below:
 
-- [Markov-Chain Monte-Carlo](/usage/solvers/samplers/mcmc) 
-- [Transitional Markov-Chain Monte-Carlo](/usage/solvers/samplers/tmcmc)
+- [Markov-Chain Monte-Carlo](../solvers/samplers/mcmc) 
+- [Transitional Markov-Chain Monte-Carlo](../solvers/samplers/tmcmc)
   
 ###Step 3) Define Variables
 
@@ -61,9 +60,9 @@ The evaluation conduit module executes the computational model(s) for a given sa
 
 The rationale and configuration of the currently implemented conduits can be found below:
 
-- [Semi-Intrusive](/usage/conduits/semi-intrusive)
-- [Distributed](/usage/conduits/distributed)
-- [Nonintrusive](/usage/conduits/nonintrusive)
+- [Semi-Intrusive](../conduits/semi-intrusive)
+- [Distributed](../conduits/distributed)
+- [Nonintrusive](../conduits/nonintrusive)
 
 ### Step 5) Define Model(s)
 
@@ -71,9 +70,9 @@ During execution, the Korali engine will evaluate many *samples*. A Korali sampl
 
 Korali provides several ways to specify external code/applications to provide results to the Korali engine:
 
-- [Simple](/usage/models/simple)
-- [Rerefence](/usage/conduits/reference)
-- [Constraint](/usage/conduits/constraint)
+- [Simple](../models/simple)
+- [Rerefence](../conduits/reference)
+- [Constraint](../conduits/constraint)
 
 ## Running a Korali Application
 
@@ -95,9 +94,9 @@ For distributed jobs, you can launch your Korali application with the SLURM/MPI/
 
 Once the Korali engine has started running, it will execute non-preemptively until a termination criterion is met. Each solver method exposes a configurable set of termination criteria.
 
-After execution, Korali will automatically create a results folder ```_korali\_result``` where it will save the entire state of the engine (i.e., a *checkpoint*) after each generation. Users can perform several operations on these results:
+After execution, Korali will automatically create a results folder ```_korali_result``` where it will save the entire state of the engine (i.e., a *checkpoint*) after each generation. Users can perform several operations on these results:
 
-- [Generate Plots](usage/results/#generate-plots)
-- [Export Results](usage/results/#export-results)
-- [Resume Execution](usage/results/#resume-execution)
+- [Generate Plots](../results/#generate-plots)
+- [Export Results](../results/#export-results)
+- [Resume Execution](../results/#resume-execution)
 		 

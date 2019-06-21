@@ -12,7 +12,7 @@ Our implementation includes various adaption and updating strategies
 
 **Requirements:**
 
-+ The *Sample Count* $\lambda$ needs to be defined.
++ The *Sample Count* needs to be defined.
 + The *Lower Bound* needs to be defined for every variable.
 + The *Upper Bound* needs to be defined for every variable.
 

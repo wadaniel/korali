@@ -14,13 +14,13 @@ In this example we will solve the inverse problem of estimating the Variables
 of a linear model using noisy data. We consider the computational model,
 
 $$
-f(x;\vartheta) = \vartheta_0 + \vartheta_1 x \,,
+f(x\vartheta) = \vartheta_0 + \vartheta_1 x \,,
 $$
 
 for $x\in\mathbb{R}$. We assume the following error model,
 
 $$
-y = f(x;\vartheta) + \varepsilon \,,
+y = f(x\vartheta) + \varepsilon \,,
 $$
 
 with $\varepsilon$ a random variable that follows normal distribution with zero
@@ -28,7 +28,7 @@ mean and $\sigma$ standard deviation. This assumption leads to the likelihood
 function,
 
 $$
-p(y|\varphi;x) = \mathcal{N} ( \,y \,| \, f(x;\vartheta), \sigma^2 \,) \,.
+p(y|\varphix) = \mathcal{N} ( \,y \,| \, f(x\vartheta), \sigma^2 \,) \,.
 $$
 
 where $\varphi=(\vartheta,\sigma)$ is the parameter vector that contains the
@@ -52,14 +52,14 @@ We call this data set $d=\{x_i,y_i\}_{i=1}^5$. Assuming that each datum is
 independent, the likelihood of $d$ under the linear model is given by
 
 $$
-p(y|\vartheta;x) = \prod_{i=1}^6 \mathcal{N} ( \,y_i \,| \, f(x_i;\vartheta), \sigma^2 \,) \,.
+p(y|\varthetax) = \prod_{i=1}^6 \mathcal{N} ( \,y_i \,| \, f(x_i\vartheta), \sigma^2 \,) \,.
 $$
 
 In order to identify the distribution of $\varphi$ conditioned on the observations $d$
 we use Bayes' theorem
 
 $$
-p(\varphi | y;x) = \frac{ p(y|\varphi;x) \, p(\varphi) }{ p(y) } \, .
+p(\varphi | yx) = \frac{ p(y|\varphix) \, p(\varphi) }{ p(y) } \, .
 $$
 
 
@@ -89,17 +89,17 @@ def evaluateModel( s, x ):
   r  =  th0*x[i] + th1
   s.addResult(r)
 ```
-This function corresponds implements the computational model that corresponds to $f(x;\vartheta) = \vartheta_0 + \vartheta_1 x$. The object `s` must be of type `Korali::modelData`. This class provides the methods `getParameter` and `addResult`. For a detailed presentation see [here]
+This function corresponds implements the computational model that corresponds to $f(x\vartheta) = \vartheta_0 + \vartheta_1 x$. The object `s` must be of type `Korali::modelData`. This class provides the methods `getParameter` and `addResult`. For a detailed presentation see [here]
 
 In the same file add the following function that return the data presented in the table above,
 ```python
 def getReferenceData():
- x=[]; y=[]
- x.append(1.0); y.append(3.2069);
- x.append(2.0); y.append(4.1454);
- x.append(3.0); y.append(4.9393);
- x.append(4.0); y.append(6.0588);
- x.append(5.0); y.append(6.8425);
+ x=[] y=[]
+ x.append(1.0) y.append(3.2069)
+ x.append(2.0) y.append(4.1454)
+ x.append(3.0) y.append(4.9393)
+ x.append(4.0) y.append(6.0588)
+ x.append(5.0) y.append(6.8425)
  return x, y
 ```
 
@@ -159,7 +159,7 @@ Fx = lambda koraliData: evaluateModel(koraliData, x)
 Then, we set the model to Korali,
 
 ```python
-k.setModel( Fx );
+k.setModel( Fx )
 ```
 
 
@@ -168,14 +168,14 @@ k.setModel( Fx );
 
 The `Type` of the `Problem` is characterized as `Bayesian`
 ```python
-k["Problem"] = "Bayesian";
+k["Problem"] = "Bayesian"
 ```
 
 When the Type is `Bayesian` we must set the type of likelihood and provide a vector with the `Reference Data` to Korali,
 
 ```python
 k["Bayesian"]["Likelihood"]["Type"] = "Reference"
-k["Bayesian"]["Likelihood"]["Reference Data"] = y;
+k["Bayesian"]["Likelihood"]["Reference Data"] = y
 ```
 
 ### The Variables
@@ -183,53 +183,63 @@ k["Bayesian"]["Likelihood"]["Reference Data"] = y;
 We define two `Variables` of type `Computational` that correspond to $\vartheta_0$ and $\vartheta_1$. The prior distribution of both is set to `Uniform`.
 
 ```python
-k["Variables"][0]["Name"] = "a";
-k["Variables"][0]["Bayesian"]["Type"] = "Computational";
-k["Variables"][0]["Bayesian"]["Prior Distribution"]["Type"] = "Uniform";
-k["Variables"][0]["Bayesian"]["Prior Distribution"]["Minimum"] = -5.0;
-k["Variables"][0]["Bayesian"]["Prior Distribution"]["Maximum"] = +5.0;
+k["Variables"][0]["Name"] = "a"
+k["Variables"][0]["Bayesian"]["Type"] = "Computational"
+k["Variables"][0]["Bayesian"]["Prior Distribution"]["Type"] = "Uniform"
+k["Variables"][0]["Bayesian"]["Prior Distribution"]["Minimum"] = -5.0
+k["Variables"][0]["Bayesian"]["Prior Distribution"]["Maximum"] = +5.0
 
-k["Variables"][1]["Name"] = "b";
-k["Variables"][1]["Bayesian"]["Type"] = "Computational";
-k["Variables"][1]["Bayesian"]["Prior Distribution"]["Type"] = "Uniform";
-k["Variables"][1]["Bayesian"]["Prior Distribution"]["Minimum"] = -5.0;
-k["Variables"][1]["Bayesian"]["Prior Distribution"]["Maximum"] = +5.0;
+k["Variables"][1]["Name"] = "b"
+k["Variables"][1]["Bayesian"]["Type"] = "Computational"
+k["Variables"][1]["Bayesian"]["Prior Distribution"]["Type"] = "Uniform"
+k["Variables"][1]["Bayesian"]["Prior Distribution"]["Minimum"] = -5.0
+k["Variables"][1]["Bayesian"]["Prior Distribution"]["Maximum"] = +5.0
 ```
 
 The last parameter we add is of `Type` `Statistical` and corresponds to the variable
 $\sigma$ in the likelihood function,
 
 ```python
-k["Variables"][2]["Name"] = "Sigma";
-k["Variables"][2]["Bayesian"]["Type"] = "Statistical";
-k["Variables"][2]["Bayesian"]["Prior Distribution"]["Type"] = "Uniform";
-k["Variables"][2]["Bayesian"]["Prior Distribution"]["Minimum"] =   0.0;
-k["Variables"][2]["Bayesian"]["Prior Distribution"]["Maximum"] = +5.0;
+k["Variables"][2]["Name"] = "Sigma"
+k["Variables"][2]["Bayesian"]["Type"] = "Statistical"
+k["Variables"][2]["Bayesian"]["Prior Distribution"]["Type"] = "Uniform"
+k["Variables"][2]["Bayesian"]["Prior Distribution"]["Minimum"] =   0.0
+k["Variables"][2]["Bayesian"]["Prior Distribution"]["Maximum"] = +5.0
 ```
 
 ### The Solver
 
-Next, we choose the solver `CMA-ES`, the population size to be `12` and set
-four termination criteria,
+Next, we choose the solver `CMA-ES`, the population size to be `12`.
 
 ```python
-k["Solver"] = "CMA-ES";
+k["Solver"] = "CMA-ES"
 k["CMA-ES"]["Objective"] = "Maximize"
-k["CMA-ES"]["Sample Count"] = 12;
-k["CMA-ES"]["Termination Criteria"]["Min DeltaX"] = 1e-11;
-k["CMA-ES"]["Termination Criteria"]["Min Fitness"] = 1e-12;
-k["CMA-ES"]["Termination Criteria"]["Max Generations"] = 1e4;
-k["CMA-ES"]["Termination Criteria"]["Max Model Evaluations"] = 1e4;
+k["CMA-ES"]["Sample Count"] = 12
 ```
 
-The CMA-ES algorithm needs the lower and upper bound for each parameter.
+And activating 3 of its available termination criteria.
+
 ```python
-k["Variables"][0]["CMA-ES"]["Lower Bound"] = -5.0;
-k["Variables"][0]["CMA-ES"]["Upper Bound"] = +5.0;
-k["Variables"][1]["CMA-ES"]["Lower Bound"] = -5.0;
-k["Variables"][1]["CMA-ES"]["Upper Bound"] = +5.0;
-k["Variables"][2]["CMA-ES"]["Lower Bound"] = 0.0;
-k["Variables"][2]["CMA-ES"]["Upper Bound"] = +5.0;
+
+k["CMA-ES"]["Termination Criteria"]["Min Fitness"]["Active"] = True
+k["CMA-ES"]["Termination Criteria"]["Min Fitness"]["Value"] = 1e-12
+
+k["CMA-ES"]["Termination Criteria"]["Max Generations"]["Active"] = True
+k["CMA-ES"]["Termination Criteria"]["Max Generations"]["Value"] = 100
+
+k["CMA-ES"]["Termination Criteria"]["Max Model Evaluations"]["Active"] = True
+k["CMA-ES"]["Termination Criteria"]["Max Model Evaluations"]["Value"] = 1e4
+```
+
+The CMA-ES algorithm needs the lower and upper exploration bound for each variable.
+
+```python
+k["Variables"][0]["CMA-ES"]["Lower Bound"] = -5.0
+k["Variables"][0]["CMA-ES"]["Upper Bound"] = +5.0
+k["Variables"][1]["CMA-ES"]["Lower Bound"] = -5.0
+k["Variables"][1]["CMA-ES"]["Upper Bound"] = +5.0
+k["Variables"][2]["CMA-ES"]["Lower Bound"] = 0.0
+k["Variables"][2]["CMA-ES"]["Upper Bound"] = +5.0
 ```
 
 For a detailed description of CMA-ES settings see [here](../../usage/solvers/optimizers/cmaes.md).
@@ -285,16 +295,16 @@ python3 -m korali.plotter
 The code for this tutorial in **Python** can be found [here](https://github.com/cselab/skorali/blob/master/tutorials/a3-bayesian-inference-tmcmc).
 
 
-### The solver
+### The Solver
 
 To sample the posterior distribution, we set the solver to `TMCMC` sampler and set a few settings,
 
 ```python
-k["Solver"] = "TMCMC";
-k["TMCMC"]["Covariance Scaling"] = 0.02;
-k["TMCMC"]["Population Size"] = 5000;
-k["TMCMC"]["Min Rho Update"] = 0.0;
-k["TMCMC"]["Coefficient of Variation"] = 0.5;
+k["Solver"] = "TMCMC"
+k["TMCMC"]["Covariance Scaling"] = 0.02
+k["TMCMC"]["Population Size"] = 5000
+k["TMCMC"]["Min Rho Update"] = 0.0
+k["TMCMC"]["Coefficient of Variation"] = 0.5
 k["TMCMC"]["Burn In"] = 5
 ```
 

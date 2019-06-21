@@ -11,7 +11,7 @@ To build a Korali application in Python, you simply need to include the correspo
 ```python
 #!/usr/bin/env python3
 import korali
-k = korali.Engine()
+k = korali.initialize()
 ...
 ```
 

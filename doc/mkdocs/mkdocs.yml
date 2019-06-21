@@ -37,21 +37,14 @@ nav:
           - Semi-Intrusive: usage/conduits/semi-intrusive.md
           - Distributed: usage/conduits/distributed.md
           - Nonintrusive: usage/conduits/nonintrusive.md
-      - Distributions:
-          - Cauchy: usage/distributions/#cauchy
-          - Exponential: usage/distributions/#exponential
-          - Gamma: usage/distributions/#gamma
-          - Gaussian: usage/distributions/#gaussian
-          - Laplace: usage/distributions/#laplace
-          - Uniform: usage/distributions/#uniform
       - Models:
           - Simple: usage/models/simple.md
           - Rerefence: usage/models/reference.md
           - Constraint: usage/models/constraint.md
       - Results:
-          - Generate Plots: usage/results/#generate-plots
-          - Export Results: usage/results/#export-results
-          - Resume Execution: usage/results/#resume-execution
+          - Generate Plots: /usage/results/#generate-plots
+          - Export Results: /usage/results/#export-results
+          - Resume Execution: /usage/results/#resume-execution
   - Development:
     - Git Repository: https://github.com/cselab/skorali
     - Integration: development/integration.md

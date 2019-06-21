@@ -97,7 +97,7 @@ Once the Korali engine has started running, it will execute non-preemptively unt
 
 After execution, Korali will automatically create a results folder ```_korali\_result``` where it will save the entire state of the engine (i.e., a *checkpoint*) after each generation. Users can perform several operations on these results:
 
-- [Generate Plots](usage/results/#generate-plots)
-- [Export Results](usage/results/#export-results)
-- [Resume Execution](usage/results/#resume-execution)
+- [Generate Plots](/usage/results/#generate-plots)
+- [Export Results](/usage/results/#export-results)
+- [Resume Execution](/usage/results/#resume-execution)
 		 

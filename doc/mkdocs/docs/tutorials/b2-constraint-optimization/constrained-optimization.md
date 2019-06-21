@@ -20,9 +20,9 @@ The code for this tutorial in **Python** can be found [here](https://github.com/
 
 We want to solve the problem:
 
-$$ (x_1 - 10)^2 + 5(x_2 - 12)^2 + x_3^4  + 3(x_4 - 11)^2 + 10 x_5^6 + 7 x_6^2 + x7^4 - 4 x_6 x_7 - 10  x_6 - 8 x_7 $$
+$$ f(x) = (x_1 - 10)^2 + 5(x_2 - 12)^2 + x_3^4  + 3(x_4 - 11)^2 + 10 x_5^6 + 7 x_6^2 + x7^4 - 4 x_6 x_7 - 10  x_6 - 8 x_7 $$
 
-under the four constraints
+under the four constraints $g_i(x)$:
 
 $$
 g_1(x) = -127 + 2x_1^2 + 3 x_2^4 + x_3 + 4x_4^2 + 5x_5

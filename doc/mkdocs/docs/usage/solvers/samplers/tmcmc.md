@@ -52,77 +52,73 @@ For a better understanding of the variables please refer to the paper.
 - **Population Size**. Specifies whether the problem evaluation is to be *minimized* or *maximized*. By default, Korali will set this value to *Maximize*. Example:
 
 	```python
-	#Maximizing problem evaluation (default)
+	# Maximizing problem evaluation (default)
 	k["TMCMC"]["Objective"] = "Maximize"
 
-	#Minimizing problem evaluation
+	# Minimizing problem evaluation
 	k["TMCMC"]["Objective"] = "Minimize"
 	```
-- **Burn In**. Specifies the number of samples $\lambda$ to evaluate per each generation. Example:
+
+- **Burn In**. Specifies the number of additional MCMC steps per sample per generation. Note that only the last sample per chain is considered for the recombination. By default, Korali sets this value to 0. Example:
 
 	```python
-	k["TMCMC"]["Sample Count"] = 32
+    # Execute 5 additional Burn In steps per generation
+	k["TMCMC"]["Burn In"] = 5
 	```
 	
-- **Coefficient of Variation**. Controls the learning rate of the conjugate evolution path for $\sigma$ update. By default, Korali will set this value to $\frac{\mu_{eff}+2}{\mu_{eff}+N+3}$. Example:
+- **Coefficient of Variation**. Target coefficient of variation to search for the exponent $\rho_{i+1}$. By default, Korali will set this value to 1.00 as suggested in [Ching2007]. Example:
 
 	```python
-	k["TMCMC"]["Sigma Cumulation Factor"] = 1.0
+    # Reduce CoV for smoother transitions between intermediate PDFss
+	k["TMCMC"]["Coefficient of Variation"] = 0.2
 	```
 
-- **Covariance Scaling**. Sets an upper bound for scaling factor $\sigma$. Upper bound is given by the average of the initial standard deviation of the variables. By default, Korali will set this value to *False*. Example:
+- **Covariance Scaling**. Covariance scaling factor $\beta^2$ of proposal distribution. By default, Korali sets this value 0.04 as suggested in [Ching2007]. Example:
 
 	```python
-	k["TMCMC"]["Sigma Bounded"] = True
+    # Reduce Covariance Scaling factor
+	k["TMCMC"]["Covariance Scaling"] = 0.01
 	```	
 	
-- **Use Local Covariance**. Number of best samples to update the covariance matrix and the mean. By default, Korali will set this value to $\lambda / 2$. Example:
+- **Use Local Covariance**. If set $True$, TMCMC calculates a local covariance matrix per sample from its neighbours. By default, Korali sets this value to $False$. Example:
 
 	```python
-	k["TMCMC"]["Mu"]["Value"] = 8
+    # Use Local Covariance
+	k["TMCMC"]["Mu"]["Use Local Covariance"] = True
 	```	
 	
-- **Min Rho Update**. Controls the update of the scaling factor $\sigma$. By default, Korali will precalibrate this value from $\mu_{eff}$ and number of variables (must be larger 0.0). Example:
+- **Min Rho Update**. Minimum increment of the exponent $\rho_{i+1}$. This parameter prevents TMCMC from not making progres. By default, Korali sets this value to $10^{-5}$. Example:
 
 	```python
-	k["TMCMC"]["Damp Factor"] = 1.0
+    # Increase Min Rho Update
+	k["TMCMC"]["Min Rho Update"] = 0.01
 	```	
 	
-- **Max Rho Update**. Number of resamplings per candidate per generation if sample is outside of Lower and Uppder Bound. By default, Korali will set this value to $10^6$. Example:
+- **Max Rho Update**. Maximum increment of the exponent $\rho{i+1}$. By default, Korali will set this value to 1.0 (inactive). Example:
 
 	```python
-	k["TMCMC"]["Max Resamplings"] = 10e6
+    # Reduce Max Rho Update
+	k["TMCMC"]["Max Rho Update"] = 0.2
 	```	
 
-- **Covariance Scaling**. Sets an upper bound for scaling factor $\sigma$. Upper bound is given by the average of the initial standard deviation of the variables. By default, Korali will set this value to *False*. Example:
-
-	```python
-	k["TMCMC"]["Sigma Bounded"] = True
-	```	
-	
-- **Use Local Covariance**. Number of best samples to update the covariance matrix and the mean. By default, Korali will set this value to $\lambda / 2$. Example:
-
-	```python
-	k["TMCMC"]["Mu"]["Value"] = 8
-	```	
-		 
 ## Termination Criteria
 
-- **Max Generations** Specifies the maximum number of generations to run. By default, Korali will set this criterion as active and its value to *1000*. Example:
+- **Max Generations** Specifies the maximum number of generations to run. By default, Korali sets this value to 20. Example:
 
 	```python
+    # Increase Max Generations
 	k["TMCMC"]["Termination Criteria"]["Max Generations"]["Active"] = True
-	k["TMCMC"]["Termination Criteria"]["Max Generations"]["Value"]  = 2000
+	k["TMCMC"]["Termination Criteria"]["Max Generations"]["Value"]  = 50
 	```
 
 ## Variable Settings
 
-- **Name** Specifies the lower bound for the variable's value. Korali will not generate samples in which this variable falls below the specified minimum. By default, Korali will set this value to *-Infinity*. Example:
+- **Name** Specifies a Name for the variables, only used for output. By default, Korali sets this value to $Xi$. Example:
 
 	```python
-	# Modifying the lower bound of two variables
-	k["Variables"][i]["TMCMC"][0]["Minimum"] = 0.0;
-	k["Variables"][i]["TMCMC"][1]["Minimum"] = -32.0;
+	# Specifying Names
+	k["Variables"][0]["TMCMC"]["Name"] = "Theta";
+	k["Variables"][1]["TMCMC"]["Name"] = "Sigma";
 	```
 
 ## Plotting

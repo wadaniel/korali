@@ -16,10 +16,10 @@ $$
 p(\vartheta | d) \, = \, \frac{p(d | \vartheta) \,\, p(\vartheta)}{p(d)}\,
 $$
 
-Allowing users to compute the maximum a posteriori estimate: 
+Allowing users to compute the maximum a posteriori estimate:
 
-$$\vartheta^\star = \mathop{\arg\min}\limits_{\vartheta}  \,\,\, p(\theta | d) \,,$$
+$$\vartheta^\star = \mathop{\arg\min}\limits_{\vartheta}  \,\,\, p(\vartheta | d) \,,$$
 
-Or sample its posterior distribution: 
+Or sample its posterior distribution:
 
-$$\vartheta^{(k)} \sim p(\theta | d).$$
+$$\vartheta^{(k)} \sim p(\vartheta | d).$$

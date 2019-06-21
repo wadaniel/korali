@@ -71,8 +71,8 @@ During execution, the Korali engine will evaluate many *samples*. A Korali sampl
 Korali provides several ways to specify external code/applications to provide results to the Korali engine:
 
 - [Simple](../models/simple)
-- [Rerefence](../conduits/reference)
-- [Constraint](../conduits/constraint)
+- [Rerefence](../models/reference)
+- [Constraint](../models/constraint)
 
 ## Running a Korali Application
 

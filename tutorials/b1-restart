@@ -10,7 +10,6 @@ import os
 if( os.path.exists("./_korali_result/") ) :
   shutil.rmtree("./_korali_result/")
 
-
 k = korali.Engine()
 
 k["Problem"] = "Direct Evaluation"
@@ -28,8 +27,6 @@ k["CMA-ES"]["Sample Count"] = 5
 k.setModel(evaluateModel)
 
 k.run()
-
-
 
 k2 = korali.Engine()
 

@@ -171,6 +171,8 @@ static nlohmann::json loadJsonFromFile(const char* fileName)
    fread(string, 1, fsize, fid);
    fclose(fid);
 
+   string[fsize] = '\0';
+
    js = nlohmann::json::parse(string);
 
    free(string);

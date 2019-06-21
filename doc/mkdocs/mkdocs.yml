@@ -42,9 +42,9 @@ nav:
           - Rerefence: usage/models/reference.md
           - Constraint: usage/models/constraint.md
       - Results:
-          - Generate Plots: /usage/results/#generate-plots
-          - Export Results: /usage/results/#export-results
-          - Resume Execution: /usage/results/#resume-execution
+          - Generate Plots: usage/results/#generate-plots
+          - Export Results: usage/results/#export-results
+          - Resume Execution: usage/results/#resume-execution
   - Development:
     - Git Repository: https://github.com/cselab/skorali
     - Integration: development/integration.md

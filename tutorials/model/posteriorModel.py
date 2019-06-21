@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# This is a linear regression model with two params (slope and intercept)
+
 def evaluateModel( s, x ):
  for i in range(len(x)):
   th0 = s.getVariable(0)

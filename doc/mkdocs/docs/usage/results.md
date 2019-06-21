@@ -4,7 +4,7 @@
 
 The Korali plotter creates a graphical representation and plots for the results produced by a Korali application.
 
-	python3 -m korali-plotter [RESULT_FOLDER] [-o OUTPUT_FORMAT] [-f OUTPUT_FILE]
+	python3 -m korali.plotter [RESULT_FOLDER] [-o OUTPUT_FORMAT] [-f OUTPUT_FILE]
 		    
 Given the input folder, korali-plot determines which solver was used by the
 Korali application and calls the appropriate Korali plotting script:
@@ -37,7 +37,7 @@ Korali application and calls the appropriate Korali plotting script:
 
 The Korali export tool converts Korali's JSON-based result information into a format readable by other applications (e.g., MATLAB).
 
-	python3 -m korali-export [PROPERTY] [RESULT_FOLDER] [-o OUTPUT_FORMAT]
+	python3 -m korali.export [PROPERTY] [RESULT_FOLDER] [-o OUTPUT_FORMAT]
 		    
 *PROPERTY*
 

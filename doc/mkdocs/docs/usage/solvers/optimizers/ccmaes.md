@@ -2,7 +2,7 @@
    				   
 ##Description
 
-This is the implementation of the *Constrained Covariance Matrix Adaptation Evolution Strategy*, as published in [[Arampatzis2019](https://dl.acm.org/citation.cfm?doid=3324989.3325725)].
+This is the implementation of the *Constrained Covariance Matrix Adaptation Evolution Strategy*, as published in [Arampatzis2019](https://dl.acm.org/citation.cfm?doid=3324989.3325725).
 
 CCMA-ES is an extension of [CMA-ES](/usage/solvers/optimizers/cmaes/) for constrained optimization problems. It uses
 the principle of *viability boundaries* to find an initial mean vector for the proposal

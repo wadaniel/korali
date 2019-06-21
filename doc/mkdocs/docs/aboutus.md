@@ -6,13 +6,13 @@
 The Korali Project is developed and maintained by
 
 
-* [**Georgios Arampatzis**], garampat at ethz.ch
-* [**Sergio Miguel Martin**], martiser at ethz.ch
-* [**Daniel Waelchli**], wadaniel at ethz.ch
+* [**Georgios Arampatzis**](https://www.cse-lab.ethz.ch/member/georgios-arampatzis/), garampat at ethz.ch
+* [**Sergio Miguel Martin**](https://www.cse-lab.ethz.ch/member/sergio-martin/), martiser at ethz.ch
+* [**Daniel Waelchli**](https://www.cse-lab.ethz.ch/member/daniel-walchli/), wadaniel at ethz.ch
 
 Director:
 
-* [**Petros Koumoutsakos**], petros at ethz.ch 
+* [**Petros Koumoutsakos**](https://www.cse-lab.ethz.ch/member/petros-koumoutsakos/), petros at ethz.ch 
 
 ## Affiliations
 

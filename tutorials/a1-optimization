@@ -12,6 +12,8 @@ if( os.path.exists("./_korali_result/") ) :
 
 k = korali.Engine()
 
+k.setModel(evaluateModel)
+
 
 k["Problem"] = "Direct Evaluation"
 
@@ -25,6 +27,6 @@ k["CMA-ES"]["Objective"] = "Maximize"
 k["CMA-ES"]["Termination Criteria"]["Max Generations"]["Value"] = 500
 k["CMA-ES"]["Sample Count"] = 5
 
-k.setModel(evaluateModel)
+
 
 k.run()

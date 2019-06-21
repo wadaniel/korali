@@ -8,8 +8,8 @@ nav:
   - Design: design.md
   - Installation: installation.md
   - Tutorials:
-     - 'A.1 - Optimization': tutorials/optimization/optimization.md
-     - 'A.2 - Sampling': tutorials/sampling/sampling.md
+     - 'A.1 - Optimization': tutorials/a1-optimization/optimization.md
+     - 'A.2 - Sampling': tutorials/a2-sampling/sampling.md
      - 'A.3 - Bayesian Inference': tutorials/bayesian/bayesian.md
      - 'B.1 - Checkpoint/Restart': tutorials/bayesian/bayesian.md
      - 'B.2 - Constrained Optimization': tutorials/bayesian/bayesian.md
@@ -44,11 +44,11 @@ nav:
           - Gaussian: usage/distributions/#gaussian
           - Laplace: usage/distributions/#laplace
           - Uniform: usage/distributions/#uniform
-      - Models: 
+      - Models:
           - Simple: usage/models/simple.md
           - Rerefence: usage/models/reference.md
           - Constraint: usage/models/constraint.md
-      - Results: 
+      - Results:
           - Generate Plots: usage/results/#generate-plots
           - Export Results: usage/results/#export-results
           - Resume Execution: usage/results/#resume-execution

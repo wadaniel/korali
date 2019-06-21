@@ -2,13 +2,14 @@
    				   
 ##Description
 
-This is am implementation of the *Delayed Rejection Adaptive Metropolis* algorithm, as published in this [article](https://link.springer.com/article/10.1007%2Fs11222-006-9438-0). We can also run standard *Metropolis Hastings* if correctly configured.
-
+This is am implementation of the *Delayed Rejection Adaptive Metropolis* algorithm, as published in [Haario2006](https://link.springer.com/article/10.1007%2Fs11222-006-9438-0). We can also run standard *Metropolis Hastings* if correspondingly configured.
 
 **Requirements:**
 
 + The *Chain Length*, i.e. the number of generated samples.
-+ The *Problem* needs to be of type Bayesian. (TODO: confirm)
++ The *Initial Mean* of the proposal distribution for each variable.
++ The *Standard Deviation* of the proposal distribution for each variable.
+
 
 ##Settings
 
@@ -21,129 +22,120 @@ For a better understanding of the variables please refer to the paper.
   k["MCMC"]["Result Output Frequency"] = ...
   
   # Solver Settings
-  k["MCMC"]["Population Size"] = ... 
+  k["MCMC"]["Chain Length"] = ... 
   k["MCMC"]["Burn In"] = ...
   k["MCMC"]["Rejection Levels"] = ...
   k["MCMC"]["Adaptive Sampling"] = ...
   k["MCMC"]["Non Adaption Period"] = ...
-  k["MCMC"]["Chain Covariance Learning Rate"] = ...
+  k["MCMC"]["Chain Covariance Scaling"] = ...
   k["MCMC"]["Chain Covariance Increment"] = ...
-  k["MCMC"]["Max Resamplings"] = ...
   
   # Termination Criteria
   k["MCMC"]["Termination Criteria"]["Max Function Evaluations"]["Active"] = ...
   k["MCMC"]["Termination Criteria"]["Max Function Evaluations"]["Value"] = ...
-  k["MCMC"]["Termination Criteria"]["Max Candidate Proposals"]["Active"] = ...
-  k["MCMC"]["Termination Criteria"]["Max Candidate Proposals"]["Value"] = ...
 
   # Variable Settings
   k["Variables"][i]["MCMC"]["Name"] = ...
   k["Variables"][i]["MCMC"]["Initial Mean"] = ...
-  k["Variables"][i]["MCMC"]["Initial Standard Deviation"] = ...
+  k["Variables"][i]["MCMC"]["Standard Deviation"] = ...
 ```
 
 
 ##Solver Settings
 
-- **Result Output Frequency**. Specifies the output frequency of intermediate result files. By default, Korali will set this value to *1* (i.e. each generation). Example:
+- **Result Output Frequency**. Specifies the output frequency of intermediate result files. By default, Korali sets this value to *100*. Example:
 
 	```python
-    # Reduce the number of result files
-	k["MCMC"]["Result Output Frequency"] = 10
+    # Increase the number of result files
+	k["MCMC"]["Result Output Frequency"] = 25
 
 	```
 
-- **Population Size**. Specifies whether the problem evaluation is to be *minimized* or *maximized*. By default, Korali will set this value to *Maximize*. Example:
+- **Chain Length**. Specifies the number of samples drawn from the objective function. Example:
 
 	```python
-	#Maximizing problem evaluation (default)
-	k["MCMC"]["Objective"] = "Maximize"
-
-	#Minimizing problem evaluation
-	k["MCMC"]["Objective"] = "Minimize"
-	```
-- **Burn In**. Specifies the number of samples $\lambda$ to evaluate per each generation. Example:
-
-	```python
-	k["MCMC"]["Sample Count"] = 32
-	```
-	
-- **Rejection Levels**. Controls the learning rate of the conjugate evolution path for $\sigma$ update. By default, Korali will set this value to $\frac{\mu_{eff}+2}{\mu_{eff}+N+3}$. Example:
-
-	```python
-	k["MCMC"]["Sigma Cumulation Factor"] = 1.0
+	# Specifying Chain Length
+	k["MCMC"]["Chain Length"] = 5000
 	```
 
-- **Adaptive Sampling**. Sets an upper bound for scaling factor $\sigma$. Upper bound is given by the average of the initial standard deviation of the variables. By default, Korali will set this value to *False*. Example:
+- **Burn In**. Specifies the number of prelimnieary MCMC steps before samples are being drawn. This may reduce effects from improper initialization. By default, Korali sets this value *1*. Example:
 
 	```python
-	k["MCMC"]["Sigma Bounded"] = True
+    # Add Burn In steps
+	k["MCMC"]["Burn In"] = 500
+	```
+	
+- **Rejection Levels**. Controls the number of accept-reject stages per MCMC step. By default, Korali sets this value *1* (standard Metropolis Hastings). Example:
+
+	```python
+    # Introduce Delayed Rejection
+	k["MCMC"]["Rejection Levels"] = 2
+	```
+
+- **Adaptive Sampling**. Specifies if covariance matrix of the proposal distribution is calculated from the samples. By default, Korali sets this flag *False* (standard Metropolis Hastings). Example:
+
+	```python
+    # Intoduce Adaptive Sampling
+	k["MCMC"]["Adaptive Sampling"] = True
 	```	
 	
-- **Non Adaption Period**. Number of best samples to update the covariance matrix and the mean. By default, Korali will set this value to $\lambda / 2$. Example:
+- **Non Adaption Period**. Number of steps (after Burn In steps) during which the initial standard deviation is used (only relevant for Adaptive Sampling). By default, Korali sets this value to $5%$ of the Chain Length. Example:
 
 	```python
-	k["MCMC"]["Mu"]["Value"] = 8
+    # Reducing Non Adaption Period
+	k["MCMC"]["Non Adaption Period"] = 100
 	```	
 	
-- **Chain Covariance Learning Rate**. Controls the update of the scaling factor $\sigma$. By default, Korali will precalibrate this value from $\mu_{eff}$ and number of variables (must be larger 0.0). Example:
+- **Chain Covariance Scaling**. Scaling factor of the chain covariance (only relevant for Adaptive Sampling). By default, Korali will precalibrate this factor from the number of variables: $\frac{2.4^2}{N}$ [Gelman1995]. Example:
 
 	```python
-	k["MCMC"]["Damp Factor"] = 1.0
+    # Increase Scaling
+	k["MCMC"]["Chain Covariance Scaling"] = 4.0
 	```	
 	
-- **Chain Covariance Increment**. Number of resamplings per candidate per generation if sample is outside of Lower and Uppder Bound. By default, Korali will set this value to $10^6$. Example:
+- **Chain Covariance Increment**. Small constant to avoid singularity of the chain covariance. By default, Korali will set this value to $10^{-3}$. Example:
 
 	```python
-	k["MCMC"]["Max Resamplings"] = 10e6
+    # Setting Chain Covariance Increment
+	k["MCMC"]["Max Resamplings"] = 10e-5
 	```	
 
-- **Max Resamplings**. Sets an upper bound for scaling factor $\sigma$. Upper bound is given by the average of the initial standard deviation of the variables. By default, Korali will set this value to *False*. Example:
-
-	```python
-	k["MCMC"]["Sigma Bounded"] = True
-	```	
-	
 ## Termination Criteria
 
-- **Max Generations** Specifies the maximum number of generations to run. By default, Korali will set this criterion as active and its value to *1000*. Example:
+- **Max Generations** Specifies the maximum number of function evaluations (only relevant if Rejection Levels is large). By default, Korali will set this criterion as inactive. Example:
 
 	```python
-	k["MCMC"]["Termination Criteria"]["Max Generations"]["Active"] = True
-	k["MCMC"]["Termination Criteria"]["Max Generations"]["Value"]  = 2000
+    # Set an upper bound for number of function evaluations
+	k["MCMC"]["Termination Criteria"]["Max Function Evaluations"]["Active"] = True
+	k["MCMC"]["Termination Criteria"]["Max Function Evaluations"]["Value"]  = 1e6
 	```
 
-- **Max Candidate Proposals** Specifies the maximum number of generations to run. By default, Korali will set this criterion as active and its value to *1000*. Example:
-
-	```python
-	k["MCMC"]["Termination Criteria"]["Max Generations"]["Active"] = True
-	k["MCMC"]["Termination Criteria"]["Max Generations"]["Value"]  = 2000
-	```
 
 ## Variable Settings
 
-- **Name** Specifies the lower bound for the variable's value. Korali will not generate samples in which this variable falls below the specified minimum. By default, Korali will set this value to *-Infinity*. Example:
+
+- **Name** Specifies a Name for the variables, only used for output. By default, Korali sets this value to $Xi$. Example:
 
 	```python
-	# Modifying the lower bound of two variables
-	k["Variables"][i]["MCMC"][0]["Minimum"] = 0.0;
-	k["Variables"][i]["MCMC"][1]["Minimum"] = -32.0;
+	# Specifying Names
+	k["Variables"][0]["TMCMC"]["Name"] = "Theta";
+	k["Variables"][1]["TMCMC"]["Name"] = "Sigma";
 	```
 
-- **Initial Mean** Specifies the lower bound for the variable's value. Korali will not generate samples in which this variable falls below the specified minimum. By default, Korali will set this value to *-Infinity*. Example:
+- **Initial Mean**. Specifies the Initial Mean of the proposal distribution. Example:
 
 	```python
-	# Modifying the lower bound of two variables
-	k["Variables"][i]["MCMC"][0]["Minimum"] = 0.0;
-	k["Variables"][i]["MCMC"][1]["Minimum"] = -32.0;
+	# Specifying the Initial Mean
+	k["Variables"][0]["MCMC"]["Intiial Mean"] = 1.0;
+	k["Variables"][1]["MCMC"]["Initial Mean"] = 1.0;
 	```
 
-- **Initial Standard Deviation** Specifies the lower bound for the variable's value. Korali will not generate samples in which this variable falls below the specified minimum. By default, Korali will set this value to *-Infinity*. Example:
+- **Standard Deviation** Specifies the Standard Deviation for each variable. The proposal distribution is defined through a covariance matrix with the variance of the variables in its diagonal. Example:
 
 	```python
-	# Modifying the lower bound of two variables
-	k["Variables"][i]["MCMC"][0]["Minimum"] = 0.0;
-	k["Variables"][i]["MCMC"][1]["Minimum"] = -32.0;
+	# Specifying the Standard Deviation
+	k["Variables"][i]["MCMC"][0]["Standard Deviation"] = 2.0;
+	k["Variables"][i]["MCMC"][1]["Standard Deviation"] = 2.0;
 	```
 
 

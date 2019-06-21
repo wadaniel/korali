@@ -33,7 +33,7 @@ Korali::Solver::MCMC::MCMC(nlohmann::json& js, std::string name)
  chainCov          = (double*) calloc (_k->N*_k->N , sizeof(double));
 
  for(size_t i = 0; i < _k->N; i++) clPoint[i] = _initialMeans[i];
- for(size_t i = 0; i < _k->N; i++) _covarianceMatrix[i*_k->N+i] = _initialStdDevs[i];
+ for(size_t i = 0; i < _k->N; i++) _covarianceMatrix[i*_k->N+i] = _stdDevs[i];
 
  // Initializing Gaussian Generator
  auto jsGaussian = nlohmann::json();
@@ -88,27 +88,25 @@ void Korali::Solver::MCMC::getConfiguration(nlohmann::json& js)
  
  js["MCMC"]["Result Output Frequency"] = _resultOutputFrequency;
 
- js["MCMC"]["Population Size"]                = _s;
+ js["MCMC"]["Chain Length"]                   = _s;
  js["MCMC"]["Burn In"]                        = _burnin;
  js["MCMC"]["Rejection Levels"]               = _rejectionLevels;
  js["MCMC"]["Adaptive Sampling"]              = _adaptive;
  js["MCMC"]["Non Adaption Period"]            = _nonAdaptionPeriod;
- js["MCMC"]["Chain Covariance Learning Rate"] = _cr;
+ js["MCMC"]["Chain Covariance Scaling"]       = _cr;
  js["MCMC"]["Chain Covariance Increment"]     = _eps;
- js["MCMC"]["Max Resamplings"]                = _maxresamplings;
+ //js["MCMC"]["Max Resamplings"]                = _maxresamplings;
 
  // Variable information
  for (size_t i = 0; i < _k->N; i++)
  {
-  js["Variables"][i]["MCMC"]["Initial Mean"]               = _initialMeans[i];
-  js["Variables"][i]["MCMC"]["Initial Standard Deviation"] = _initialStdDevs[i];
+  js["Variables"][i]["MCMC"]["Initial Mean"]      = _initialMeans[i];
+  js["Variables"][i]["MCMC"]["Initial Deviation"] = _stdDevs[i];
   //js["Variables"][i]["MCMC"]["Log Space"]                  = _variableLogSpace[i];
  }
 
  js["MCMC"]["Termination Criteria"]["Max Function Evaluations"]["Value"]  = _termCondMaxFunEvals;
  js["MCMC"]["Termination Criteria"]["Max Function Evaluations"]["Active"] = _isTermCondMaxFunEvals;
- js["MCMC"]["Termination Criteria"]["Max Candidate Proposals"]["Value"]   = _termCondMaxGenerations;
- js["MCMC"]["Termination Criteria"]["Max Candidate Proposals"]["Active"]  = _isTermCondMaxGenerations;
 
  // State Variables
  for (size_t d = 0; d < _k->N*_k->N; d++) js["MCMC"]["State"]["CovarianceMatrix"][d] = _covarianceMatrix[d];
@@ -135,7 +133,7 @@ void Korali::Solver::MCMC::setConfiguration(nlohmann::json& js)
 {
  _resultOutputFrequency    = consume(js, { "MCMC", "Result Output Frequency" }, KORALI_NUMBER, std::to_string(100));
  
- _s                        = consume(js, { "MCMC", "Population Size" }, KORALI_NUMBER);
+ _s                        = consume(js, { "MCMC", "Chain Length" }, KORALI_NUMBER);
  _burnin                   = consume(js, { "MCMC", "Burn In" }, KORALI_NUMBER, std::to_string(0));
  _rejectionLevels          = consume(js, { "MCMC", "Rejection Levels" }, KORALI_NUMBER, std::to_string(1));
 
@@ -143,28 +141,26 @@ void Korali::Solver::MCMC::setConfiguration(nlohmann::json& js)
  
  _adaptive                 = consume(js, { "MCMC", "Adaptive Sampling" }, KORALI_BOOLEAN, "false");
  _nonAdaptionPeriod        = consume(js, { "MCMC", "Non Adaption Period" }, KORALI_NUMBER, std::to_string(0.05 * _s));
- _cr                       = consume(js, { "MCMC", "Chain Covariance Learning Rate" }, KORALI_NUMBER, std::to_string(2.4*2.4/_k->N)); //Gelman et al. 1995
- _eps                      = consume(js, { "MCMC", "Chain Covariance Increment" }, KORALI_NUMBER, std::to_string(0.01)); // sth small (Haario et. al. 2006)
+ _cr                       = consume(js, { "MCMC", "Chain Covariance Scaling" }, KORALI_NUMBER, std::to_string(2.4*2.4/_k->N)); //Gelman et al. 1995
+ _eps                      = consume(js, { "MCMC", "Chain Covariance Increment" }, KORALI_NUMBER, std::to_string(0.001)); // sth small (Haario et. al. 2006)
  
  if (_cr < 0) { fprintf( stderr, "[Korali] MCMC Error: Chain Covariance Learning Rate must be larger Zero (is %f)\n", _cr); exit(-1); }
  if (_eps < 0) { fprintf( stderr, "[Korali] MCMC Error: Chain Covariance Increment must be larger Zero (is %f)\n", _eps); exit(-1); }
  
- _maxresamplings           = consume(js, { "MCMC", "Max Resamplings" }, KORALI_NUMBER, std::to_string(1e6));
- _termCondMaxFunEvals      = consume(js, { "MCMC", "Termination Criteria", "Max Function Evaluations", "Value" }, KORALI_NUMBER, std::to_string(1e4));
+ //_maxresamplings           = consume(js, { "MCMC", "Max Resamplings" }, KORALI_NUMBER, std::to_string(1e6));
+ _termCondMaxFunEvals      = consume(js, { "MCMC", "Termination Criteria", "Max Function Evaluations", "Value" }, KORALI_NUMBER, std::to_string(1e6));
  _isTermCondMaxFunEvals    = consume(js, { "MCMC", "Termination Criteria", "Max Function Evaluations", "Active" }, KORALI_BOOLEAN, "false");
- _termCondMaxGenerations   = consume(js, { "MCMC", "Termination Criteria", "Max Candidate Proposals", "Value" }, KORALI_NUMBER, std::to_string(1e12));
- _isTermCondMaxGenerations = consume(js, { "MCMC", "Termination Criteria", "Max Candidate Proposals", "Active" }, KORALI_BOOLEAN, "false");
   
- _initialMeans   = (double*) calloc(sizeof(double), _k->N);
- _initialStdDevs = (double*) calloc(sizeof(double), _k->N);
+ _initialMeans = (double*) calloc(sizeof(double), _k->N);
+ _stdDevs      = (double*) calloc(sizeof(double), _k->N);
 
  for(size_t d = 0; d < _k->N; ++d) _varNames.push_back(consume(js["Variables"][d], { "Name" }, KORALI_STRING, "X"+std::to_string(d)));
   
- for(size_t d = 0; d < _k->N; d++) _initialMeans[d]   = consume(js["Variables"][d], { "MCMC", "Initial Mean" }, KORALI_NUMBER, std::to_string(0.0));
- for(size_t d = 0; d < _k->N; d++) _initialStdDevs[d] = consume(js["Variables"][d], { "MCMC", "Initial Standard Deviation" }, KORALI_NUMBER, std::to_string(1.0));
+ for(size_t d = 0; d < _k->N; d++) _initialMeans[d] = consume(js["Variables"][d], { "MCMC", "Initial Mean" }, KORALI_NUMBER);
+ for(size_t d = 0; d < _k->N; d++) _stdDevs[d]      = consume(js["Variables"][d], { "MCMC", "Standard Deviation" }, KORALI_NUMBER);
  //for(size_t d = 0; d < _k->N; d++) _variableLogSpace[d] = consume(js["Variables"][d], { "MCMC", "Log Space" }, KORALI_BOOLEAN, false);
   
- for(size_t d = 0; d < _k->N; d++) if (_initialStdDevs[d] < 0) { fprintf( stderr, "[Korali] MCMC Error: Initial Standard Deviation in dim %zu must be larger Zero (is %f)\n", d, _initialStdDevs[d]); exit(-1); }
+ for(size_t d = 0; d < _k->N; d++) if (_stdDevs[d] < 0) { fprintf( stderr, "[Korali] MCMC Error: Initial Standard Deviation in dim %zu must be larger Zero (is %f)\n", d, _stdDevs[d]); exit(-1); }
 
 }
 
@@ -372,18 +368,12 @@ void Korali::Solver::MCMC::updateState()
 
 bool Korali::Solver::MCMC::checkTermination()
 {
+
  if ( _isTermCondMaxFunEvals && (countevals >= _termCondMaxFunEvals))
  {
   terminate = true;
   sprintf(_terminationReason, "Max Function Evaluations reached (%zu)",  countevals);
  }
- 
- if ( _isTermCondMaxGenerations && (countgens >= _termCondMaxGenerations))
- {
-  terminate = true;
-  sprintf(_terminationReason, "Max Samples generated (%zu)",  countgens);
- }
- 
  
  if ( databaseEntries == _s)
  {

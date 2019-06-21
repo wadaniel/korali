@@ -23,11 +23,9 @@ class MCMC : public Base
  size_t _nonAdaptionPeriod; /* Period without Chain Cov Adaption (using initial Stddev) */
  double _cr; /* Learning rate or Chain Covariance */
  double _eps; /* Chain Covariance increment */
- size_t _maxresamplings; /* Max number resamplings inside generation loop */
+ //size_t _maxresamplings; /* Max number resamplings inside generation loop */
  bool _isTermCondMaxFunEvals;
  size_t _termCondMaxFunEvals; /* Max objective function evaluations */
- bool _isTermCondMaxGenerations;
- size_t _termCondMaxGenerations; /* Max proposed samples */
  char _terminationReason[500];
 
  Korali::Variable* _gaussianGenerator; /* Gaussian random number generator */
@@ -56,7 +54,7 @@ class MCMC : public Base
 
  // MCMC Status variables
  double* _initialMeans; /* Initial Mean of Cov Proposal Distribution */
- double* _initialStdDevs; /* Initial Diagonal of Cov Proposal Distribution */
+ double* _stdDevs; /* Diagonal of Cov Proposal Distribution */
  double* _covarianceMatrix; /* Covariance of Proposal Distribution */
 
  // Korali Methods

@@ -29,7 +29,7 @@ nav:
           - Optimizers:
             - CMA-ES: usage/solvers/optimizers/cmaes.md
             - Constrained CMA-ES: usage/solvers/optimizers/ccmaes.md
-            #- Differential Evolution: usage/solvers/optimizers/diffevo.md
+            - Differential Evolution: usage/solvers/optimizers/diffevo.md
           - Samplers:
             - MCMC: usage/solvers/samplers/mcmc.md
             - TMCMC: usage/solvers/samplers/tmcmc.md

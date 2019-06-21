@@ -352,13 +352,21 @@ void CMAES::setConfiguration(nlohmann::json& js)
  _termCondCovCond                 = consume(js, { _name, "Termination Criteria", "Max Condition Covariance", "Value" }, KORALI_NUMBER, std::to_string(1e18));
  _isTermCondCovCond               = consume(js, { _name, "Termination Criteria", "Max Condition Covariance", "Active" }, KORALI_BOOLEAN, "true");
 
+ if( (_name == "CCMA-ES") && _isViabilityRegime) {
+     _current_s  = _via_s;
+     _current_mu = _via_mu;
+ } else {
+     _current_s  = _s;
+     _current_mu = _mu;
+ }
+
  // CCMA-ES
  if (_name == "CCMA-ES")
  {
  _targetSucRate  = consume(js, { _name, "Target Success Rate" }, KORALI_NUMBER, std::to_string(2./11.));
  _adaptionSize   = consume(js, { _name, "Adaption Size" }, KORALI_NUMBER, std::to_string(0.1));
  _maxCorrections = consume(js, { _name, "Max Corrections" }, KORALI_NUMBER, std::to_string(1e6));
- _cv             = consume(js, { _name, "Normal Vector Learning Rate" }, KORALI_NUMBER, std::to_string(1.0/(_current_s+2.)));
+ _cv             = consume(js, { _name, "Normal Vector Learning Rate" }, KORALI_NUMBER, std::to_string(1.0/(2.0+_current_s)));
  _cp             = consume(js, { _name, "Global Success Learning Rate" }, KORALI_NUMBER, std::to_string(1.0/12.0));
 
  if( (_cv <= 0.0) || (_cv > 1.0) ) { fprintf( stderr, "[Korali] %s Error: Invalid Normal Vector Learning Rate (%f), must be greater 0.0 and less 1.0\n", _name.c_str(), _cv ); exit(-1); }
@@ -368,14 +376,6 @@ void CMAES::setConfiguration(nlohmann::json& js)
 
  _isViabilityRegime = consume(js, { _name, "Viability Regime" }, KORALI_BOOLEAN, "true");
 }
-
- if( (_name == "CCMA-ES") && _isViabilityRegime) {
-     _current_s  = _via_s;
-     _current_mu = _via_mu;
- } else {
-     _current_s  = _s;
-     _current_mu = _mu;
- }
 
 }
 
@@ -509,7 +509,7 @@ void CMAES::initInternals(size_t numsamplesmu)
  if ( _name == "CCMA-ES" )
  {
      // Setting beta
-    _cv   = 1.0/(_current_s+2.);
+    _cv   = 1.0/(2.0+(double)_current_s);
     _beta = _adaptionSize/(_current_s+2.);
  }
 

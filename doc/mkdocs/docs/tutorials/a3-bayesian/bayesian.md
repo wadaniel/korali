@@ -213,13 +213,13 @@ Next, we choose the solver `CMA-ES`, the population size to be `12` and set
 four termination criteria,
 
 ```python
-  k["Solver"] = "CMA-ES";
-  k["CMA-ES"]["Objective"] = "Maximize"
-  k["CMA-ES"]["Sample Count"] = 12;
-  k["CMA-ES"]["Termination Criteria"]["Min DeltaX"] = 1e-11;
-  k["CMA-ES"]["Termination Criteria"]["Min Fitness"] = 1e-12;
-  k["CMA-ES"]["Termination Criteria"]["Max Generations"] = 1e4;
-  k["CMA-ES"]["Termination Criteria"]["Max Model Evaluations"] = 1e4;
+k["Solver"] = "CMA-ES";
+k["CMA-ES"]["Objective"] = "Maximize"
+k["CMA-ES"]["Sample Count"] = 12;
+k["CMA-ES"]["Termination Criteria"]["Min DeltaX"] = 1e-11;
+k["CMA-ES"]["Termination Criteria"]["Min Fitness"] = 1e-12;
+k["CMA-ES"]["Termination Criteria"]["Max Generations"] = 1e4;
+k["CMA-ES"]["Termination Criteria"]["Max Model Evaluations"] = 1e4;
 ```
 
 The CMA-ES algorithm needs the lower and upper bound for each parameter.

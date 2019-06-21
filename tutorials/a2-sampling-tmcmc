@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+## In this example, we demonstrate how Korali samples the posterior
+## distribution in a bayesian problem where the likelihood
+## is provided directly by the computational model.
+
 # Importing computational model
 import sys
 sys.path.append('./model')
@@ -7,7 +11,7 @@ from directModel import *
 
 # Starting Korali's Engine
 import korali
-k = korali.Engine()
+k = korali.initialize()
 
 # Selecting problem and solver types.
 k["Problem"] = "Bayesian"

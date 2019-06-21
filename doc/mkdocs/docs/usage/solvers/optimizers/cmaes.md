@@ -2,7 +2,7 @@
    				   
 ##Description
 
-This is the implementation of the *Covariance Matrix Adaptation Evolution Strategy*, as published in the [paper](https://doi.org/10.1007/3-540-32494-1_4).
+This is the implementation of the *Covariance Matrix Adaptation Evolution Strategy*, as published in [Hansen2006](https://doi.org/10.1007/3-540-32494-1_4).
 
 In an evolution strategy, new candidate solutions are sampled according to a multivariate normal distribution in $\mathbb {R} ^{n}$. Recombination amounts to selecting a new mean value for the distribution. Mutation amounts to adding a random vector, a perturbation with zero mean. Pairwise dependencies between the variables in the distribution are represented by a covariance matrix. The covariance matrix adaptation (CMA) is a method to update the covariance matrix of this distribution.
 

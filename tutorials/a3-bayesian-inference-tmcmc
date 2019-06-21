@@ -11,12 +11,10 @@ from posteriorModel import *
 import korali
 
 k = korali.Engine()
-
 x, y = getReferenceData()
-
 k.setModel(lambda koraliData: evaluateModel(koraliData, x))
 
-# Selecting problem .
+# Selecting problem.
 k["Problem"] = "Bayesian";
 
 k["Bayesian"]["Likelihood"]["Type"] = "Reference"
@@ -49,8 +47,6 @@ k["TMCMC"]["Population Size"] = 5000;
 k["TMCMC"]["Min Rho Update"] = 0.0;
 k["TMCMC"]["Coefficient of Variation"] = 0.5;
 k["TMCMC"]["Burn In"] = 5
-
-
 
 # Running Korali
 k.run()

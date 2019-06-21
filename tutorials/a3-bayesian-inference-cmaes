@@ -21,7 +21,6 @@ k.setModel( Fx );
 # Selecting problem.
 k["Problem"] = "Bayesian"
 
-
 # Setting up the reference likelihood for the Bayesian Problem
 k["Bayesian"]["Likelihood"]["Type"] = "Reference"
 k["Bayesian"]["Likelihood"]["Reference Data"] = y
@@ -60,7 +59,6 @@ k["Variables"][2]["CMA-ES"]["Upper Bound"] = +5.0
 k["CMA-ES"]["Objective"] = "Maximize"
 k["CMA-ES"]["Termination Criteria"]["Max Generations"]["Value"] = 1000
 k["CMA-ES"]["Sample Count"] = 5
-
 
 # Running Korali
 k.run()

@@ -69,17 +69,10 @@ def plot_cmaes(src, live = False, obj='current'):
             
             with open(path) as f:
  
-                data  = json.load(f)
-                solver = ''
-                if ( 'CMA-ES' in data['Solver'] ):
-                    solver = 'CMA-ES'
-                elif ('CCMA-ES' in data['Solver'] ):
-                    solver = 'CCMA-ES'
-                else:
-                    print("[Korali] Error: could not identify solver from result files!")
-                    exit(-1)
+                data       = json.load(f)
+                solverName = data['Solver']
 
-                state = data[solver]['State']
+                state = data[solverName]['State']
                 gen   = state['Current Generation']
 
                 if (fig, ax) == (None, None):
@@ -94,7 +87,7 @@ def plot_cmaes(src, live = False, obj='current'):
                         ssdev.append([])
 
                     if (live == True):
-                        fig, ax = plt.subplots(2,2,num='{0} live diagnostics'.format(solver), figsize=(8,8))
+                        fig, ax = plt.subplots(2,2,num='{0} live diagnostics'.format(solverName), figsize=(8,8))
                         fig.show()
  
                 if (live == True and (not plt.fignum_exists(fig.number))):
@@ -118,18 +111,20 @@ def plot_cmaes(src, live = False, obj='current'):
                 
                     if (live == True and gen > 1):
                         draw_figure(fig, ax, src, gen, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, axis, ssdev, colors, names, live)
+                        plt_pause_light(0.05)
 
     if (live == False):
-        fig, ax = plt.subplots(2,2,num='{0} live diagnostics'.format(solver), figsize=(8,8))
-        fig.show()
+        fig, ax = plt.subplots(2,2,num='{0} live diagnostics'.format(solverName), figsize=(8,8))
         draw_figure(fig, ax, src, gen, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, axis, ssdev, colors, names, live)
-        print("[Korali] Figure closed - Bye!")
-        exit(0)
+        fig.show()
+    
+    plt.pause(3600)
+    print("[Korali] Figure closed - Bye!")
+    exit(0)
 
 
 # Create Plot from Data
 def draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, axis, ssdev, colors, names, live):
-    #fig, ax = plt.subplots(2,2,num='CMA-ES live diagnostics: {0}'.format(src),figsize=(8,8))
 
     plt.suptitle( 'Generation {0}'.format(str(idx).zfill(5)),\
                       fontweight='bold',\
@@ -167,10 +162,3 @@ def draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, cond, sigma, ps
     ax[1,1].set_yscale('log')
     for i in range(numdim):
         ax[1,1].plot(numeval, ssdev[i], color = colors[i], label=names[i])
-    
-    if (live == True):
-        plt_pause_light(0.05)
-    else:
-        plt.pause(3600) #fix this (DW)
-
-

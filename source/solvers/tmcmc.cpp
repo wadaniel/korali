@@ -100,6 +100,7 @@ void Korali::Solver::TMCMC::getConfiguration(nlohmann::json& js)
  js["TMCMC"]["Population Size"]          = _s;
  js["TMCMC"]["Coefficient of Variation"] = _tolCOV;
  js["TMCMC"]["Min Rho Update"]           = _minStep;
+ js["TMCMC"]["Max Rho Update"]           = _maxStep;
  js["TMCMC"]["Covariance Scaling"]       = _beta2;
  js["TMCMC"]["Use Local Covariance"]     = _useLocalCov;
  js["TMCMC"]["Burn In"]                  = _burnin;

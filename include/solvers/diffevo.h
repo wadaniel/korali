@@ -42,7 +42,10 @@ class DE : public Base
 
  // Korali Runtime Variables
  int _fitnessSign; /* maximizing vs optimizing (+- 1) */
- std::string _acceptRule; /* Best, Greedy or Iterative */
+ std::string _parent; /* Random or Best */
+ std::string _mutationRule; /* Default or Self  Adaptive */
+ std::string _acceptRule; /* Best, Greedy, Iterative or Improved */
+ bool _fixinfeasible; /* fix infeasible sample (no resampling) */ 
  std::string _objective; /* Maximize or Minimize */ 
  double* oldFitnessVector; /* objective function values previous generation [_s] */
  double* fitnessVector; /* objective function values [_s] */
@@ -70,6 +73,7 @@ class DE : public Base
  // Private DE-Specific Variables
  double currentFunctionValue; /* best fitness current generation */
  double prevFunctionValue; /* best fitness previous generation */
+ size_t bestIndex; /* index of best sample */
  double bestEver; /* best ever fitness */
  double prevBest; /* best ever fitness from previous generation */
  double *rgxmean; /* mean "parent" */
@@ -85,6 +89,7 @@ class DE : public Base
  // Private DE-Specific Methods
  void mutateSingle(size_t sampleIdx); /* sample individual */
  bool isFeasible(size_t sampleIdx) const; /* check if sample inside lower & upper bounds */
+ void fixInfeasible(size_t sampleIdx); /* force sample inside lower & upper bounds */
  void updateSolver(const double *fitnessVector); /* update states of DE */
  void evaluateSamples(); /* evaluate all samples until done */
 

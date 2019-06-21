@@ -58,6 +58,7 @@ DE::DE(nlohmann::json& js, std::string name)
 
  countevals      = 0;
  countinfeasible = 0;
+ bestIndex       = 0;
  prevFunctionValue    = -std::numeric_limits<double>::max();
  currentFunctionValue = -std::numeric_limits<double>::max();
  bestEver             = -std::numeric_limits<double>::max();
@@ -104,6 +105,9 @@ void Korali::Solver::DE::getConfiguration(nlohmann::json& js)
  js["DE"]["Objective"]       = _objective;
  js["DE"]["Max Resamplings"] = _maxResamplings;
  js["DE"]["Accept Rule"]     = _acceptRule;
+ js["DE"]["Mutation Rule"]   = _mutationRule;
+ js["DE"]["Parent"]          = _parent;
+ js["DE"]["Fix Infeasoble"]  = _fixinfeasible;
 
  // Variable information
  for (size_t i = 0; i < _k->N; i++)
@@ -155,17 +159,22 @@ void DE::setConfiguration(nlohmann::json& js)
  _resultOutputFrequency = consume(js, { "DE", "Result Output Frequency" }, KORALI_NUMBER, std::to_string(1));
  
  _s                             = consume(js, { "DE", "Sample Count" }, KORALI_NUMBER); // 5x - 10x Dim
+ _parent                        = consume(js, { "DE", "Parent" }, KORALI_STRING, "Random"); // Best or Random
  _crossoverRate                 = consume(js, { "DE", "Crossover Rate" }, KORALI_NUMBER, std::to_string(0.9)); // Rainer Storn [1996]
  _mutationRate                  = consume(js, { "DE", "Mutation Rate" }, KORALI_NUMBER, std::to_string(0.5));  // Rainer Storn [1996]
+ _mutationRule                  = consume(js, { "DE", "Mutation Rule" }, KORALI_STRING, "Default");  // Self Adaptive (Brest [2006])
  _objective                     = consume(js, { "DE", "Objective" }, KORALI_STRING, "Maximize");
  _maxResamplings                = consume(js, { "DE", "Max Resamplings" }, KORALI_NUMBER, std::to_string(1e6));
- _acceptRule                    = consume(js, { "DE", "Accept Rule" }, KORALI_STRING, "Iterative");
+ _acceptRule                    = consume(js, { "DE", "Accept Rule" }, KORALI_STRING, "Greedy");
+ _fixinfeasible                 = consume(js, { "DE", "Fix Infeasible" }, KORALI_BOOLEAN, "true");
 
  if(_s < 4)  { fprintf( stderr, "[Korali] %s Error: Sample Count must be larger 3 (is %zu)\n", _name.c_str(), _s); exit(-1); }
  if(_crossoverRate <= 0.0 || _crossoverRate > 1.0 )  { fprintf( stderr, "[Korali] %s Error: Invalid Crossover Rate, must be in (0,1] (is %f)\n", _name.c_str(), _crossoverRate); exit(-1); }
  if(_mutationRate < 0.0 || _mutationRate > 2.0 )  { fprintf( stderr, "[Korali] %s Error: Invalid Mutation Rate, must be in [0,2] (is %f)\n", _name.c_str(), _mutationRate); exit(-1); }
- if( (_acceptRule != "Best") && (_acceptRule != "Greedy") && (_acceptRule != "Iterative") && (_acceptRule != "Paired") )  
- { fprintf( stderr, "[Korali] %s Error: Invalid Accept Rule, must be 'Best', 'Greedy', 'Iterative' or 'Paired' (is %s)\n", _name.c_str(), _acceptRule.c_str()); exit(-1); }
+ if( (_mutationRule != "Default") && (_mutationRule != "Self Adaptive") )  
+ { fprintf( stderr, "[Korali] %s Error: Invalid Mutation Rule, must be 'Default' or 'Self Adaptive' (is %s)\n", _name.c_str(), _mutationRule.c_str()); exit(-1); }
+ if( (_acceptRule != "Best") && (_acceptRule != "Greedy") && (_acceptRule != "Iterative") && (_acceptRule != "Improved") )  
+ { fprintf( stderr, "[Korali] %s Error: Invalid Accept Rule, must be 'Best', 'Greedy', 'Iterative' or 'Improved' (is %s)\n", _name.c_str(), _acceptRule.c_str()); exit(-1); }
  
  _fitnessSign   = 0;
  if(_objective == "Maximize") _fitnessSign = 1;
@@ -299,7 +308,10 @@ void DE::prepareGeneration()
     while(isFeasible(i) == false)
     {
         countinfeasible++;
-        mutateSingle(i);
+        
+        if (_fixinfeasible) fixInfeasible(i);
+        else mutateSingle(i);
+        
         if ( (countinfeasible - initial_infeasible) > _maxResamplings )
         {
           if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Warning: exiting resampling loop (param %zu) , max resamplings (%zu) reached.\n", i, _maxResamplings);
@@ -319,16 +331,51 @@ void DE::prepareGeneration()
 
 void DE::mutateSingle(size_t sampleIdx)
 {
-    size_t a, b, c;
+    size_t a, b;
     do{ a = _uniformGenerator->getRandomNumber()*_s; } while(a == sampleIdx);
     do{ b = _uniformGenerator->getRandomNumber()*_s; } while(b == sampleIdx || b == a);
-    do{ c = _uniformGenerator->getRandomNumber()*_s; } while(c == sampleIdx || c == a || c == b);
 
-    size_t e = _uniformGenerator->getRandomNumber()*_k->N;
+    if (_mutationRule == "Self Adaptive")
+    {
+        // Brest [2006]
+        double tau1 = 0.1;
+        double tau2 = 0.1;
+        double Fl = 0.1;
+        double Fu = 0.9;
+
+        double rd2 = _uniformGenerator->getRandomNumber();
+        double rd3 = _uniformGenerator->getRandomNumber();
+        
+        if(rd2 < tau1) 
+        {
+           double rd1 = _uniformGenerator->getRandomNumber();
+            _mutationRate = Fl+rd1*Fu;
+        } 
+        if(rd3 < tau2)
+        {
+           double rd4 = _uniformGenerator->getRandomNumber();
+           _crossoverRate = rd4;
+        }
+    }
+
+    double* parent;
+    if(_parent == "Random")
+    {
+        size_t c;
+        do{ c = _uniformGenerator->getRandomNumber()*_s; } while(c == sampleIdx || c == a || c == b);
+        parent = &samplePopulation[c*_k->N];
+    }
+    else
+    {
+     /* _parent == "Best" */
+        parent = &samplePopulation[bestIndex*_k->N];
+    }
+
+    size_t rn = _uniformGenerator->getRandomNumber()*_k->N;
     for(size_t d = 0; d < _k->N; ++d)
     {
-      if(_uniformGenerator->getRandomNumber() < _crossoverRate || d == _k->N-1)
-          candidates[sampleIdx*_k->N+d] = samplePopulation[c*_k->N+d]+_mutationRate*(samplePopulation[a*_k->N+d]-samplePopulation[b*_k->N+d]);
+      if( (_uniformGenerator->getRandomNumber() < _crossoverRate) || (d == rn) )
+          candidates[sampleIdx*_k->N+d] = parent[d]+_mutationRate*(samplePopulation[a*_k->N+d]-samplePopulation[b*_k->N+d]);
       else
           candidates[sampleIdx*_k->N+d] = samplePopulation[sampleIdx*_k->N+d];
     }
@@ -339,6 +386,17 @@ bool DE::isFeasible(size_t sampleIdx) const
 {
   for(size_t d = 0; d < _k->N; ++d) if ( (candidates[sampleIdx*_k->N+d] < _lowerBounds[d]) || (candidates[sampleIdx*_k->N+d] > _upperBounds[d])) return false;
   return true;
+}
+
+
+void DE::fixInfeasible(size_t sampleIdx)
+{
+  for(size_t d = 0; d < _k->N; ++d) 
+  {
+    if ( candidates[sampleIdx*_k->N+d] < _lowerBounds[d] ) candidates[sampleIdx*_k->N+d] *= _uniformGenerator->getRandomNumber(); 
+    if ( candidates[sampleIdx*_k->N+d] > _upperBounds[d] ) 
+    { double len = _upperBounds[d] - samplePopulation[sampleIdx*_k->N+d]; candidates[sampleIdx*_k->N+d] = samplePopulation[sampleIdx*_k->N+d] + len * _uniformGenerator->getRandomNumber(); }
+  }
 }
 
 
@@ -377,10 +435,10 @@ void DE::processSample(size_t sampleIdx, double fitness)
 
 void DE::updateSolver(const double *fitnessVector)
 {
-    size_t minIndex      = maxIdx(fitnessVector, _s);
+    bestIndex            = maxIdx(fitnessVector, _s);
     prevFunctionValue    = currentFunctionValue;
-    currentFunctionValue = fitnessVector[minIndex];
-    for(size_t d = 0; d < _k->N; ++d) curBestVector[d] = candidates[minIndex*_k->N+d];
+    currentFunctionValue = fitnessVector[bestIndex];
+    for(size_t d = 0; d < _k->N; ++d) curBestVector[d] = candidates[bestIndex*_k->N+d];
     
     if(currentFunctionValue > bestEver)
     {
@@ -397,11 +455,11 @@ void DE::updateSolver(const double *fitnessVector)
         {
             case str2int("Best") : // only update best sample
                 bestEver = currentFunctionValue;
-                for(size_t d = 0; d < _k->N; ++d) samplePopulation[minIndex*_k->N+d] = candidates[minIndex*_k->N+d];
+                for(size_t d = 0; d < _k->N; ++d) samplePopulation[bestIndex*_k->N+d] = candidates[bestIndex*_k->N+d];
                 break;
 
-            case str2int("Greedy") : // update all samples better than bestEver
-                for(size_t i = 0; i < _s; ++i) if(fitnessVector[i] > bestEver)
+            case str2int("Greedy") : // accept if mutation better than parent
+                for(size_t i = 0; i < _s; ++i) if(fitnessVector[i] > oldFitnessVector[i])
                     for(size_t d = 0; d < _k->N; ++d) samplePopulation[i*_k->N+d] = candidates[i*_k->N+d];
                 bestEver = currentFunctionValue;
                 break;
@@ -411,8 +469,8 @@ void DE::updateSolver(const double *fitnessVector)
                  { for(size_t d = 0; d < _k->N; ++d) samplePopulation[i*_k->N+d] = candidates[i*_k->N+d]; bestEver = fitnessVector[i]; }
                 break;
  
-            case str2int("Paired") : // accept if mutation better than parent
-                for(size_t i = 0; i < _s; ++i) if(fitnessVector[i] > oldFitnessVector[i])
+            case str2int("Improved") : // update all samples better than bestEver
+                for(size_t i = 0; i < _s; ++i) if(fitnessVector[i] > bestEver)
                     for(size_t d = 0; d < _k->N; ++d) samplePopulation[i*_k->N+d] = candidates[i*_k->N+d];
                 bestEver = currentFunctionValue;
                 break;
@@ -451,7 +509,7 @@ bool DE::checkTermination()
  }
 
  double range = fabs(currentFunctionValue - prevFunctionValue);
- if ( _isTermCondFitnessDiffThreshold && (currentGeneration > 1) && (range <= _termCondFitnessDiffThreshold) )
+ if ( _isTermCondFitnessDiffThreshold && (currentGeneration > 1) && (range < _termCondFitnessDiffThreshold) )
  {
   terminate = true;
   sprintf(_terminationReason, "Fitness Diff Threshold (%+6.3e) < (%+6.3e).",  range, _termCondFitnessDiffThreshold);

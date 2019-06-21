@@ -5,6 +5,7 @@ edit_uri: ''
 
 nav:
   - Home: index.md
+  - Design: design.md
   - Installation: installation.md
   - Tutorials:
      - 'A.1 - Optimization': tutorials/optimization/optimization.md
@@ -36,13 +37,6 @@ nav:
           - Semi-Intrusive: usage/conduits/semi-intrusive.md
           - Distributed: usage/conduits/distributed.md
           - Nonintrusive: usage/conduits/nonintrusive.md
-      - Distributions:
-          - Cauchy: usage/distributions/#cauchy
-          - Exponential: usage/distributions/#exponential
-          - Gamma: usage/distributions/#gamma
-          - Gaussian: usage/distributions/#gaussian
-          - Laplace: usage/distributions/#laplace
-          - Uniform: usage/distributions/#uniform
       - Models: 
           - Simple: usage/models/simple.md
           - Rerefence: usage/models/reference.md
@@ -55,7 +49,6 @@ nav:
     - Git Repository: https://github.com/cselab/skorali
     - Integration: development/integration.md
     - Doxygen: development/doxygen/html/index.html
-  - References: references.md
   - About Us: aboutus.md
 
 

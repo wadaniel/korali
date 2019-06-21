@@ -361,7 +361,9 @@ void CMAES::setConfiguration(nlohmann::json& js)
  _cv             = consume(js, { _name, "Normal Vector Learning Rate" }, KORALI_NUMBER, std::to_string(1.0/(_current_s+2.)));
  _cp             = consume(js, { _name, "Global Success Learning Rate" }, KORALI_NUMBER, std::to_string(1.0/12.0));
 
- if(_targetSucRate <= 0.0) { fprintf( stderr, "[Korali] %s Error: Invalid Target Success Rate (%f), must be greater 0.0\n", _name.c_str(), _targetSucRate ); exit(-1); }
+ if( (_cv <= 0.0) || (_cv > 1.0) ) { fprintf( stderr, "[Korali] %s Error: Invalid Normal Vector Learning Rate (%f), must be greater 0.0 and less 1.0\n", _name.c_str(), _cv ); exit(-1); }
+ if( (_cp <= 0.0) || (_cp > 1.0) ) { fprintf( stderr, "[Korali] %s Error: Invalid Global Success Learning Rate (%f), must be greater 0.0 and less 1.0\n", _name.c_str(), _cp ); exit(-1); }
+ if( (_targetSucRate <= 0.0) || (_targetSucRate > 1.0) ) { fprintf( stderr, "[Korali] %s Error: Invalid Target Success Rate (%f), must be greater 0.0 and less 1.0\n", _name.c_str(), _targetSucRate ); exit(-1); }
  if(_adaptionSize <= 0.0) { fprintf( stderr, "[Korali] %s Error: Invalid Adaption Size (%f), must be greater 0.0\n", _name.c_str(), _adaptionSize ); exit(-1); }
 
  _isViabilityRegime = consume(js, { _name, "Viability Regime" }, KORALI_BOOLEAN, "true");

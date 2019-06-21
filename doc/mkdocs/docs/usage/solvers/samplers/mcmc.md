@@ -117,7 +117,7 @@ For a better understanding of the variables please refer to the paper.
 - **Name** Specifies a Name for the variables, only used for output. By default, Korali sets this value to $Xi$. Example:
 
 	```python
-	# Specifying Names
+	# Specify Variable Names
 	k["Variables"][0]["TMCMC"]["Name"] = "Theta";
 	k["Variables"][1]["TMCMC"]["Name"] = "Sigma";
 	```

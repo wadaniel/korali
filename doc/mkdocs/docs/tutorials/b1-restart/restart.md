@@ -1,12 +1,15 @@
 
 
-In this tutorial we show how to **optimize** and **sample** the posterior
-distribution of a Bayesian inference problem.
+In this tutorial we show how to restart an **optimization** algorithm.
 
 
 The code for this tutorial in **Python** can be found [here](https://github.com/cselab/skorali/blob/master/tutorials/b1-restart).
 
 
+First delete the `_korali_result` folder and run the optimization example from [this](../a1-optimization/optimization.md) tutorial. The code can be found [here](https://github.com/cselab/skorali/blob/master/tutorials/a1-optimization).
+
+
+Assume that we want to resume the algorithm from the 5th generation. We just have to run the following script,
 ```python
 #!/usr/bin/env python3
 import sys

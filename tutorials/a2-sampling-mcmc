@@ -1,32 +1,32 @@
 #!/usr/bin/env python3
+
+# Importing computational model
 import sys
 sys.path.append('./model')
 from directModel import *
+
+# Starting Korali's Engine
 import korali
-
-import shutil
-import os
-if( os.path.exists("./_korali_result/") ) :
-  shutil.rmtree("./_korali_result/")
-
-
 k = korali.Engine()
 
+# Selecting problem and solver types.
 k["Problem"] = "Direct Evaluation"
+k["Solver"] = "MCMC";
 
-k.setModel( evaluateModel )
-
+# Defining problem's variables and their prior distribution
 k["Variables"][0]["Name"] = "X"
 
 
 k["Solver"] = "MCMC";
 
 k["Variables"][0]["MCMC"]["Initial Mean"] = 0.0;
-k["Variables"][0]["MCMC"]["Initial Standard Deviation"] = 1.000;
+k["Variables"][0]["MCMC"]["Standard Deviation"] = 1.000;
 
-k["MCMC"]["Population Size"] = 5000;
+# Configuring the MCMC sampler parameters
+k["MCMC"]["Chain Length"] = 5000;
 k["MCMC"]["Burn In"] = 500;
 k["MCMC"]["Adaptive Sampling"]  = True;
 k["MCMC"]["Result Output Frequency"]  = 5000;
 
+# Running Korali
 k.run()

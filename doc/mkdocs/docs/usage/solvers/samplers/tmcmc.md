@@ -2,7 +2,7 @@
    				   
 ##Description
 
-This is the implementation of the *Transitional Markov Chain Monte Carlo* algorithm, as published in the [paper](https://ascelibrary.org/doi/abs/10.1061/%28ASCE%290733-9399%282007%29133%3A7%28816%29).
+This is the implementation of the *Transitional Markov Chain Monte Carlo* algorithm, as published in [Ching2007](https://ascelibrary.org/doi/abs/10.1061/%28ASCE%290733-9399%282007%29133%3A7%28816%29).
 
 TMCMC avoids sampling from difficult target probability densities (e.g. posterior distributions in a Bayesian inference problem) but samples from a series of intermediate PDFs that converge to the target PDF. This technique is also known as Sampling Importance Resampling in the Bayesian community.
 
@@ -62,7 +62,7 @@ For a better understanding of the variables please refer to the paper.
 - **Burn In**. Specifies the number of additional MCMC steps per sample per generation. Note that only the last sample per chain is considered for the recombination. By default, Korali sets this value to 0. Example:
 
 	```python
-    # Execute 5 additional Burn In steps per generation
+    # Execute additional Burn In steps
 	k["TMCMC"]["Burn In"] = 5
 	```
 	
@@ -116,7 +116,7 @@ For a better understanding of the variables please refer to the paper.
 - **Name** Specifies a Name for the variables, only used for output. By default, Korali sets this value to $Xi$. Example:
 
 	```python
-	# Specifying Names
+	# Specify Variable  Names
 	k["Variables"][0]["TMCMC"]["Name"] = "Theta";
 	k["Variables"][1]["TMCMC"]["Name"] = "Sigma";
 	```

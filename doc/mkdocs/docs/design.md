@@ -6,7 +6,7 @@ We have designed Korali based on these key principles:
 
 ### Ease of Use
 
-Korali provides a JSON-based intuitive interface that is mostly language-independent.
+Korali provides an intuitive JSON-based interface that is mostly language-independent.
 
 ### Extensibility
 

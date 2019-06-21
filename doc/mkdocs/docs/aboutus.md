@@ -1,15 +1,18 @@
 
+![](images/koraliteam.png)
+
 ## Contact us
 
 The Korali Project is developed and maintained by
 
-* **Georgios Arampatzis**, garampat at ethz.ch
-* **Sergio Miguel Martin**, martiser at ethz.ch
-* **Daniel Waelchli**, wadaniel at ethz.ch
+
+* [**Georgios Arampatzis**], garampat at ethz.ch
+* [**Sergio Miguel Martin**], martiser at ethz.ch
+* [**Daniel Waelchli**], wadaniel at ethz.ch
 
 Director:
 
-* **Petros Koumoutsakos**, petros at ethz.ch 
+* [**Petros Koumoutsakos**], petros at ethz.ch 
 
 ## Affiliations
 

@@ -104,7 +104,7 @@ void Korali::Solver::TMCMC::getConfiguration(nlohmann::json& js)
  js["TMCMC"]["Covariance Scaling"]       = _beta2;
  js["TMCMC"]["Use Local Covariance"]     = _useLocalCov;
  js["TMCMC"]["Burn In"]                  = _burnin;
- js["TMCMC"]["Result Output Frequency"]  = _burnin;
+ js["TMCMC"]["Result Output Frequency"]  = _resultOutputFrequency;
  
  js["TMCMC"]["Termination Criteria"]["Max Generations"]["Value"]  = _termCondMaxGens;
  js["TMCMC"]["Termination Criteria"]["Max Generations"]["Active"] = _isTermCondMaxGens;

@@ -49,14 +49,13 @@ For a better understanding of the variables please refer to the paper.
 
 	```
 
-- **Population Size**. Specifies whether the problem evaluation is to be *minimized* or *maximized*. By default, Korali will set this value to *Maximize*. Example:
+- **Population Size**. Specifies the number of samples drawn from the posterior
+  distribution at each generation.
 
 	```python
-	# Maximizing problem evaluation (default)
-	k["TMCMC"]["Objective"] = "Maximize"
+	# Specifying Population Size
+	k["TMCMC"]["Population Size"] = 10000
 
-	# Minimizing problem evaluation
-	k["TMCMC"]["Objective"] = "Minimize"
 	```
 
 - **Burn In**. Specifies the number of additional MCMC steps per sample per generation. Note that only the last sample per chain is considered for the recombination. By default, Korali sets this value to 0. Example:

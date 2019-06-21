@@ -241,13 +241,28 @@ k["CMA-ES"]["Sample Count"] = 5
 
 For a detailed description of CMA-ES settings see [here](../../usage/solvers/optimizers/cmaes.md).
 
-
-### Run
-We are ready to run the simulation,
+Finally, we need to add a call to the run() routine to start the Korali engine.
 
 ```python
-  korali.run();
+k.run()
 ```
+
+###  Run
+
+We are now ready to run our example:
+
+```bash
+./a3-bayesian-cmaes
+```
+
+Or, alternatively:
+
+```bash
+python3 ./a3-bayesian-cmaes
+```
+
+The results are saved in the folder `_korali_result/`.
+
 
 
 ### Plot
@@ -291,6 +306,29 @@ k["TMCMC"]["Burn In"] = 5
 ```
 
 For a detailed description of the TMCMC settings see [here](../../usage/solvers/samplers/tmcmc.md)
+
+Finally, we need to add a call to the run() routine to start the Korali engine.
+
+```python
+k.run()
+```
+
+###  Run
+
+We are now ready to run our example:
+
+```bash
+./a3-bayesian-tmcmc
+```
+
+Or, alternatively:
+
+```bash
+python3 ./a3-bayesian-tmcmc
+```
+
+The results are saved in the folder `_korali_result/`.
+
 
 
 ### Plot

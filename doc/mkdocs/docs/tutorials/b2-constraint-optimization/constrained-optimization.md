@@ -171,17 +171,28 @@ k["CCMA-ES"]["Termination Criteria"]["Min Fitness"]["Value"] = -680.630057374402
 ```
 For a detailed description of CCMA-ES settings see [here](../../usage/solvers/optimizers/ccmaes.md).
 
-
-
-
-
-###  Run
-
-Finally, we are ready to run the simulation,
+Finally, we need to add a call to the run() routine to start the Korali engine.
 
 ```python
 k.run()
 ```
+
+###  Run
+
+We are now ready to run our example:
+
+```bash
+./b2-constrained-optimization
+```
+
+Or, alternatively:
+
+```bash
+python3 ./b2-constrained-optimization
+```
+
+The results are saved in the folder `_korali_result/`.
+
 
 
 

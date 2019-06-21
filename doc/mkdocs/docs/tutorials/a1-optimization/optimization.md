@@ -87,14 +87,24 @@ k["CMA-ES"]["Sample Count"] = 5
 ```
 For a detailed description of CMA-ES settings see [here](../../usage/solvers/optimizers/cmaes.md).
 
-
-
-###  Run
-
-Finally, we are ready to run the simulation,
+Finally, we need to add a call to the run() routine to start the Korali engine.
 
 ```python
 k.run()
+```
+
+###  Run
+
+We are now ready to run our example:
+
+```bash
+./a1-optimization
+```
+
+Or, alternatively:
+
+```bash
+python3 ./a1-optimization
 ```
 
 The results are saved in the folder `_korali_result/`.

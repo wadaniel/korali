@@ -183,18 +183,27 @@ k["TMCMC"]["Burn In"] = 5
 
  For a detailed description of the MCMC settings see [here](../../usage/solvers/samplers/tmcmc.md).
 
-
-
-###  Run
-
-Finally, we are ready to run the simulation,
+Finally, we need to add a call to the run() routine to start the Korali engine.
 
 ```python
 k.run()
 ```
 
+###  Run
 
+We are now ready to run our example:
 
+```bash
+./a2-sampling-mcmc
+```
+
+Or, alternatively:
+
+```bash
+python3 ./a2-sampling-mcmc
+```
+
+The results are saved in the folder `_korali_result/`.
 
 
 ###  Plot

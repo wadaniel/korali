@@ -8,12 +8,9 @@ The code in **Python** for this tutorial can be found [here](https://github.com/
 
 
 ## Problem setup
-We are given the function $g(\vartheta)=\exp(-\vartheta^2)$ for $\vartheta\in[-10,10]$.
+We are given the function $f(\vartheta)=-\vartheta^2$ for $\vartheta\in[-10,10]$.
 We want to find the maximum of the function in the given interval.
 
-!!! tip
-    Since $\exp$ is monotonically increasing function, g has the same optima
-    as $\log g$.
 
 
 

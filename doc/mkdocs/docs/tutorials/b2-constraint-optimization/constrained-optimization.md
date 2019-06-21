@@ -1,12 +1,14 @@
 
 
-In this tutorial we show how to solve a **constrained optimization**problem, defined as: find
+In this tutorial we show how to solve a **constrained optimization** problem ([CEC 2006](http://web.mysites.ntu.edu.sg/epnsugan/PublicSite/Shared%20Documents/CEC-2006/technical_report.pdf) Test Problem g09), defined as: 
 
-$$x^\star = \mathop{\arg\min}\limits_{\x}  \,\,\, f(x) \,,$$
+find
+
+$$x^\star = \mathop{\arg\min}\limits_{x}  \,\,\, f(x) \,,$$
 
 under the constraints
 
-$$g_i(x) \geq 0.$$
+$$g_i(x) \leq 0.$$
 
 
 The code for this tutorial in **Python** can be found [here](https://github.com/cselab/skorali/blob/master/tutorials/b1-restart).

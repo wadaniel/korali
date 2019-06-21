@@ -3,7 +3,7 @@
 In this tutorial we show how to **optimize** directly from a
 given function.
 
-The code in **Python** for this tutorial can be found [here](https://github.com/cselab/skorali/blob/master/tutorial/a1-optimization).
+The code in **Python** for this tutorial can be found [here](https://github.com/cselab/skorali/blob/master/tutorials/a1-optimization).
 
 
 
@@ -17,17 +17,7 @@ We want to find the maximum of the function in the given interval.
 
 
 
-## Optimize
-
-First, open a file and import the korali module
-```python
-#!/usr/bin/env python3
-import korali
-```
-This will be our Korali application.
-
-
-###  The computational model
+##  The computational model
 Create a folder named `model`. Inside, create a file with name `directModel.py` and paste the following code,
 ```python
 #!/usr/bin/env python
@@ -37,16 +27,25 @@ def evaluateModel( s ):
   r = -x*x
   s.addResult(r)
 ```
-
 This is the computational model.
 
 
-Then, go back to the Korali application and import the computational model,
+
+
+## Optimization with CMA-ES
+
+First, open a file and import the korali module
+```python
+#!/usr/bin/env python3
+import korali
+```
+Import the computational model,
 ```python
 import sys
 sys.path.append('./model')
 from directModel import *
 ```
+
 
 
 ###  The Korali object
@@ -56,6 +55,9 @@ Next we construct a `Korali` object and set the computational model,
 k = korali.Engine()
 k.setModel(evaluateModel)
 ```
+
+
+
 
 ###  The Problem type
 Then, we set the type of the problem to `Direct Evaluation`
@@ -71,7 +73,7 @@ k["Variables"][0]["Name"] = "X";
 
 
 ###  The Solver
-We choose the solver `CMA-ES`, set the domain of the parameter `X`, the population size to be `5` and set two termination criteria,
+We choose the solver `CMA-ES`, set the domain of the parameter `X`, the population size to be `5` and two termination criteria,
 
 ```python
 k["Solver"]  = "CMA-ES"
@@ -102,7 +104,7 @@ The results are saved in the folder `_korali_result/`.
 
 You can see the results of CMA-ES by running the command,
 ```sh
-korali-plot
+python3 -m korali.plotter
 ```
 
 ![figure](direct-cma.png)

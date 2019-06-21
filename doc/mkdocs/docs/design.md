@@ -4,27 +4,27 @@
 
 We have designed Korali based on these key principles:
 
-### [Ease of Use](usage/basics)
+### Ease of Use
 
-Korali provides an intuitive language-independent interface to designing optimization and uncertainty quantification problems.
+Korali provides a JSON-based intuitive interface that is mostly language-independent.
 
-### [Extensibility](usage/basics)
+### Extensibility
 
-Korali is designed as a completely modular and extensible software. Operations can be changed on runtime to produce multiple results without the need of re-compilation.
+Korali is designed as a completely modular and extensible software. Researchers can easily integrate and test new statistical methods for optimization and sampling into Korali. Likewise, new problems (e.g., sensor placement) can be easily added into Korali's engine.
 
-### [Multi-Language](usage/basics)
+### Multi-Language
 
-Korali applications can be programmed in either C++ or Python. Additionally, Korali can sample from C++/Python and pre-compiled computational models.
+Korali applications can be programmed in either C++ or Python. Additionally, Korali can sample from C++/Fortran/Python and pre-compiled computational models.
 
-### [Multi-Intrusiveness](usage/config/#evaluation-conduit)
+### Multi-Intrusiveness
 
 A novelty in Korali is its support for multi-intrusive evaluation. That is, Korali can sample from computational models either semi-instrusively, through static linking or dynamic loading of Python modules; or nonintrusively, through shell command execution.
 
-### [High-Throughput](usage/conduits/distributed.md)
+### High-Throughput
 
-Korali's work distribution engine has been optimized to fully harness computational resources, maximizing throughput and minimizing latency and load imbalance.
+Korali's work distribution engine has been optimized to fully harness computational resources of large-scale supercomputers, maximizing throughput and minimizing latency and load imbalance.
 
-### [High-Performance](usage/conduits/distributed.md)
+### High-Performance
 
 Korali supports the execution of parallel (OpenMP, Pthreads), distributed (MPI, UPC++), and GPU-based (CUDA) models.
 

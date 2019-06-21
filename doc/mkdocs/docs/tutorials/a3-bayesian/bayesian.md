@@ -168,7 +168,7 @@ k.setModel( Fx );
 
 The `Type` of the `Problem` is characterized as `Bayesian`
 ```python
-korali["Problem"]["Type"] = "Bayesian";
+k["Problem"] = "Bayesian";
 ```
 
 When the Type is `Bayesian` we must set the type of likelihood and provide a vector with the `Reference Data` to Korali,
@@ -213,12 +213,13 @@ Next, we choose the solver `CMA-ES`, the population size to be `12` and set
 four termination criteria,
 
 ```python
-  korali["Solver"]["Method"] = "CMA-ES";
-  korali["Solver"]["Lambda"] = 12;
-  korali["Solver"]["Termination Criteria"]["Min DeltaX"] = 1e-11;
-  korali["Solver"]["Termination Criteria"]["Min Fitness"] = 1e-12;
-  korali["Solver"]["Termination Criteria"]["Max Generations"] = 1e4;
-  korali["Solver"]["Termination Criteria"]["Max Model Evaluations"] = 1e4;
+  k["Solver"] = "CMA-ES";
+  k["CMA-ES"]["Objective"] = "Maximize"
+  k["CMA-ES"]["Sample Count"] = 12;
+  k["CMA-ES"]["Termination Criteria"]["Min DeltaX"] = 1e-11;
+  k["CMA-ES"]["Termination Criteria"]["Min Fitness"] = 1e-12;
+  k["CMA-ES"]["Termination Criteria"]["Max Generations"] = 1e4;
+  k["CMA-ES"]["Termination Criteria"]["Max Model Evaluations"] = 1e4;
 ```
 
 The CMA-ES algorithm needs the lower and upper bound for each parameter.
@@ -230,14 +231,6 @@ k["Variables"][1]["CMA-ES"]["Upper Bound"] = +5.0;
 k["Variables"][2]["CMA-ES"]["Lower Bound"] = 0.0;
 k["Variables"][2]["CMA-ES"]["Upper Bound"] = +5.0;
 ```
-
-
-```python
-k["CMA-ES"]["Objective"] = "Maximize"
-k["CMA-ES"]["Termination Criteria"]["Max Generations"]["Value"] = 1000
-k["CMA-ES"]["Sample Count"] = 5
-```
-
 
 For a detailed description of CMA-ES settings see [here](../../usage/solvers/optimizers/cmaes.md).
 

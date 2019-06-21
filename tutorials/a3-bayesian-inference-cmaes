@@ -11,7 +11,14 @@ if( os.path.exists("./_korali_result/") ) :
 
 
 k = korali.Engine()
+
 x, y = getReferenceData()
+
+Fx = lambda koraliData: evaluateModel(koraliData, x)
+k.setModel( Fx );
+
+
+
 
 k["Problem"] = "Bayesian";
 
@@ -49,6 +56,5 @@ k["CMA-ES"]["Objective"] = "Maximize"
 k["CMA-ES"]["Termination Criteria"]["Max Generations"]["Value"] = 1000
 k["CMA-ES"]["Sample Count"] = 5
 
-k.setModel(lambda koraliData: evaluateModel(koraliData, x))
 
 k.run()

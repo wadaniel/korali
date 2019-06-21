@@ -5,7 +5,11 @@ from posteriorModel import *
 import korali
 
 k = korali.Engine()
+
 x, y = getReferenceData()
+
+k.setModel(lambda koraliData: evaluateModel(koraliData, x))
+
 
 k["Problem"] = "Bayesian";
 
@@ -37,6 +41,6 @@ k["TMCMC"]["Min Rho Update"] = 0.0;
 k["TMCMC"]["Coefficient of Variation"] = 0.5;
 k["TMCMC"]["Burn In"] = 5
 
-k.setModel(lambda koraliData: evaluateModel(koraliData, x))
+
 
 k.run()

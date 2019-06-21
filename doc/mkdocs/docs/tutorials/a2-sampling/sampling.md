@@ -103,7 +103,7 @@ The results are saved in the folder `_korali_result/`.
 ###  Plot
 You can see a histogram of the results by running the command
 ```sh
-korali-plot
+python3 -m korali.plotter
 ```
 
 
@@ -200,7 +200,7 @@ k.run()
 ###  Plot
 You can see a histogram of the results by running the command
 ```sh
-korali-plot
+python3 -m korali.plotter
 ```
 
 The next figure is plotted in Matlab and shows the histogram of the samples superimposed

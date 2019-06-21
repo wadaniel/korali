@@ -1,8 +1,8 @@
 # Models / Constraint
 
-A Constraint is function of the form: $f:\mathbb{R}^N\rightarrow\mathbb{R}$, where *N* inputs, representing the variables values of a sample, that returns:
+A Constraint is a function of the form: $g:\mathbb{R}^N\rightarrow\mathbb{R}$, where *N* is the number of inputs, representing the variables values of a sample, that returns:
 
-$$f(x)= \left\{{\begin{matrix} >=0 \quad \quad  \quad  \quad {\text{if x satisfies the given constraint.}} \\ < 0 \quad \text{if x does not satisfy the given constraint.} \end{matrix}}\right.$$
+$$g(x)= \left\{{\begin{matrix} \leq 0 \quad \quad  \quad  \quad {\text{if x satisfies the given constraint.}} \\ > 0 \quad \text{if x does not satisfy the given constraint.} \end{matrix}}\right.$$
 
 ## Usage
 

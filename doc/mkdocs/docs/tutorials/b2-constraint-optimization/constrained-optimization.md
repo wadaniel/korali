@@ -1,12 +1,14 @@
 
 
-In this tutorial we show how to solve a **constrained optimization**problem, defined as: find
+In this tutorial we show how to solve a **constrained optimization** problem ([CEC 2006](http://web.mysites.ntu.edu.sg/epnsugan/PublicSite/Shared%20Documents/CEC-2006/technical_report.pdf) Test Problem g09), defined as: 
 
-$$x^\star = \mathop{\arg\min}\limits_{\x}  \,\,\, f(x) \,,$$
+find
+
+$$x^\star = \mathop{\arg\min}\limits_{x}  \,\,\, f(x) \,,$$
 
 under the constraints
 
-$$g_i(x) \geq 0.$$
+$$g_i(x) \leq 0.$$
 
 
 The code for this tutorial in **Python** can be found [here](https://github.com/cselab/skorali/blob/master/tutorials/b1-restart).
@@ -18,9 +20,9 @@ The code for this tutorial in **Python** can be found [here](https://github.com/
 
 We want to solve the problem:
 
-$$ (x_1 - 10)^2 + 5(x_2 - 12)^2 + x_3^4  + 3(x_4 - 11)^2 + 10 x_5^6 + 7 x_6^2 + x7^4 - 4 x_6 x_7 - 10  x_6 - 8 x_7 $$
+$$ f(x) = (x_1 - 10)^2 + 5(x_2 - 12)^2 + x_3^4  + 3(x_4 - 11)^2 + 10 x_5^6 + 7 x_6^2 + x7^4 - 4 x_6 x_7 - 10  x_6 - 8 x_7 $$
 
-under the four constraints
+under the four constraints $g_i(x)$:
 
 $$
 g_1(x) = -127 + 2x_1^2 + 3 x_2^4 + x_3 + 4x_4^2 + 5x_5

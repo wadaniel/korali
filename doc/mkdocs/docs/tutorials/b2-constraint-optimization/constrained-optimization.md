@@ -11,7 +11,7 @@ under the constraints
 $$g_i(x) \leq 0.$$
 
 
-The code for this tutorial in **Python** can be found [here](https://github.com/cselab/skorali/blob/master/tutorials/b1-restart).
+The code for this tutorial in **Python** can be found [here](https://github.com/cselab/skorali/blob/master/tutorials/b2-constrained-optimization).
 
 
 

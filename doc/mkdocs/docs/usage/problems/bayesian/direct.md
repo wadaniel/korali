@@ -40,12 +40,12 @@ Whereas with a *Direct Likelihood*, the function $p(d|\vartheta)$ is given direc
 
 - **Prior Distribution**. The Bayesian problem type extends the definition of each variable with the possibility of defining a prior distribution. Korali currently offers the following distributions:
 
-	- [Cauchy](../../distributions/#cauchy)
-	- [Exponential](../../distributions/#exponential)
-	- [Gamma](../../distributions/#gamma)
-	- [Gaussian](../../distributions/#gaussian)
-	- [Laplace](../../distributions/#laplace)
-	- [Uniform](../../distributions/#uniform)
+	- [Cauchy](../../../distributions/#cauchy)
+	- [Exponential](../../../distributions/#exponential)
+	- [Gamma](../../../distributions/#gamma)
+	- [Gaussian](../../../distributions/#gaussian)
+	- [Laplace](../../../distributions/#laplace)
+	- [Uniform](../../../distributions/#uniform)
 
 	Example:
 	```python

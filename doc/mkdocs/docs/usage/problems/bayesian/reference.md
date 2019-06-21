@@ -66,12 +66,12 @@ $$ p(d | \vartheta) = {\frac {1}{\sigma {\sqrt {2\pi }}}}e^{-{\frac {1}{2}}\left
 
 - **Prior Distribution**. The Bayesian problem type extends the definition of each variable with the possibility of defining a prior distribution. Korali currently offers the following distributions:
 
-	- [Cauchy](../../distributions/#cauchy)
-	- [Exponential](../../distributions/#exponential)
-	- [Gamma](../../distributions/#gamma)
-	- [Gaussian](../../distributions/#gaussian)
-	- [Laplace](../../distributions/#laplace)
-	- [Uniform](../../distributions/#uniform)
+	- [Cauchy](../../../distributions/#cauchy)
+	- [Exponential](../../../distributions/#exponential)
+	- [Gamma](../../../distributions/#gamma)
+	- [Gaussian](../../../distributions/#gaussian)
+	- [Laplace](../../../distributions/#laplace)
+	- [Uniform](../../../distributions/#uniform)
 
 	Example:
 	

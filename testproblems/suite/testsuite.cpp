@@ -9,18 +9,18 @@ TestSuite::TestSuite() : _repetitions(100) {};
 
 void TestSuite::run()
 {
-	printf("TODO\n");
+  printf("TODO\n");
 }
 
 
 void TestSuite::addTestFunction(std::string name, double (&fRef) (int, double*))
 {
-  _functions.insert( std::pair<std::string, (double) & (int, double*)> (name, fRef) ); 
+  _functions.insert( std::pair<std::string, (double) & (int, double*)> (name, fRef) );
 }
 
 void TestSuite::addTargetFitness(std::string name, double fitness)
 {
- _fitnessMap.insert( std::pair<std::string, double>(name, fitness) );
+  _fitnessMap.insert( std::pair<std::string, double>(name, fitness) );
 }
 
 

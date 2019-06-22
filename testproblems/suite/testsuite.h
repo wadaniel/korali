@@ -13,20 +13,20 @@ using TestFun = typename std::function<double(int, double*)>;
 class TestSuite
 {
 
-TestSuite();
-~TestSuite();
+  TestSuite();
+  ~TestSuite();
 
-void run();
-void addTestFunction(std::string name, double (&fRef) (int, double*));
-void addTargetFitness(std::string name, double);
-void addMaxFunctionEvaluations(std::string, size_t numFunEval);
+  void run();
+  void addTestFunction(std::string name, double (&fRef) (int, double*));
+  void addTargetFitness(std::string name, double);
+  void addMaxFunctionEvaluations(std::string, size_t numFunEval);
 
 private:
 
-size_t _repetitions;
-std::vector<std::pair<std::string, TestFun>> _functions;
-std::map<std::string, double> _fitnessMap;
-std::map<std::string, size_t> _maxFunEvals;
+  size_t _repetitions;
+  std::vector<std::pair<std::string, TestFun>> _functions;
+  std::map<std::string, double> _fitnessMap;
+  std::map<std::string, size_t> _maxFunEvals;
 
 };
 

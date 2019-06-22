@@ -6,6 +6,8 @@
 #include <string>
 #include <functional>
 
+#include "korali.h"
+
 namespace Suite {
 
 typedef double (*TestFun) (int, double*);
@@ -15,7 +17,7 @@ class TestSuite
 
 public:
 
-  TestSuite();
+  TestSuite(Korali::Engine &engine);
   ~TestSuite();
 
   void run();
@@ -25,12 +27,13 @@ public:
 
 private:
 
+  Korali::Engine _engine; 
   size_t _repetitions;
   double _precision;
 
   std::vector<std::pair<std::string, TestFun>> _functions;
   std::map<std::string, double> _fitnessMap;
-  std::map<std::string, size_t> _maxFunEvals;
+  std::map<std::string, size_t> _maxModelEvals;
 
 };
 

@@ -8,7 +8,8 @@
 
 #include "korali.h"
 
-namespace Suite {
+namespace Suite
+{
 
 typedef double (*TestFun) (int, double*);
 
@@ -27,7 +28,7 @@ public:
 
 private:
 
-  Korali::Engine _engine; 
+  Korali::Engine _engine;
   size_t _repetitions;
   double _precision;
 

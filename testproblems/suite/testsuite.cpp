@@ -17,15 +17,19 @@ void TestSuite::run()
 
     printf("Run Test: %s\nSolver: %s\n", func.first.c_str(), name.c_str());
 
-    auto model = [func](Korali::ModelData& d) { double res = func.second( d.getVariableCount(), &d.getVariables()[0] ); d.addResult(res); };
+    auto model = [func](Korali::ModelData& d)
+    {
+      double res = func.second( d.getVariableCount(), &d.getVariables()[0] );
+      d.addResult(res);
+    };
     _engine.setModel(model);
-    
+
     _engine["CMA-ES"]["Termination Criteria"]["Max Model Evaluations"]["Active"] = true;
     _engine["CMA-ES"]["Termination Criteria"]["Max Model Evaluations"]["Value"] = _maxModelEvals[func.first];
-    
+
     _engine["CMA-ES"]["Termination Criteria"]["Min Fitness"]["Active"] = true;
     _engine["CMA-ES"]["Termination Criteria"]["Min Fitness"]["Value"] = _fitnessMap[func.first];
-    
+
     _engine.run();
 
   }
@@ -35,9 +39,9 @@ void TestSuite::run()
 void TestSuite::addTestFunction(std::string name, TestFun fptr, double fitness, size_t numFunEval )
 {
   _functions.push_back( std::pair<std::string, TestFun> (name, fptr) );
-  
+
   _fitnessMap.insert( std::pair<std::string, double>(name, fitness) );
-  
+
   _maxModelEvals.insert( std::pair<std::string, size_t>(name, numFunEval) );
 }
 

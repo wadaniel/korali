@@ -8,8 +8,7 @@
 
 #include "korali.h"
 
-namespace Suite
-{
+namespace Suite {
 
 typedef double (*TestFun) (int, double*);
 
@@ -18,21 +17,22 @@ class TestSuite
 
 public:
 
-  TestSuite(Korali::Engine &engine);
+  TestSuite();
   ~TestSuite();
 
   void run();
-  void addTestFunction(std::string name, TestFun fptr, double fitness = 0.0, size_t numFunEval = 10000);
-  void addTargetFitness(std::string name, double);
+  void addTestFunction(std::string name, TestFun fptr, size_t dim, double lowerBound, double upperBound, double fitness, size_t numFunEval);
+  void addTargetFitness(std::string name, double fitness );
   void addMaxFunctionEvaluations(std::string, size_t numFunEval);
 
 private:
 
-  Korali::Engine _engine;
   size_t _repetitions;
   double _precision;
 
   std::vector<std::pair<std::string, TestFun>> _functions;
+  std::map<std::string, size_t> _dimMap;
+  std::map<std::string, std::pair<double, double>> _domainMap;
   std::map<std::string, double> _fitnessMap;
   std::map<std::string, size_t> _maxModelEvals;
 

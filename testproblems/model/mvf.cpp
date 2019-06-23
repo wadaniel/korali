@@ -1,4 +1,9 @@
 /*
+	Credits:
+	https://www.sfu.ca/~ssurjano/other.html
+*/
+
+/*
 - File mvf.cpp
 - Original compiled by Ernie.
 - Revisions:
@@ -14,12 +19,6 @@
 - Xor
 */
 
-/*
-	Credits:
-	https://www.sfu.ca/~ssurjano/other.html
-*/
-
-
 #include <stdio.h>
 #include <math.h>
 #include "rnd.h"
@@ -30,6 +29,7 @@ double sqr( double x )
 {
   return x*x;
 };
+
 double dmax(int n, double *x)
 {
   int i;
@@ -40,11 +40,13 @@ double dmax(int n, double *x)
   }
   return m;
 }
+
 double sgn(double x)
 {
   if (x < 0.0) return -1.0;
   return 1.0;
 }
+
 double dist2(int n, double *x, double *y)
 {
   register int i;
@@ -57,6 +59,7 @@ double dist2(int n, double *x, double *y)
   }
   return s;
 }
+
 double distInf(int n, double *x, double *y)
 {
   register int i;
@@ -72,6 +75,7 @@ double distInf(int n, double *x, double *y)
   }
   return m;
 }
+
 double prod(int n, double *x)
 {
   int i;
@@ -83,6 +87,8 @@ double prod(int n, double *x)
   }
   return -p;
 }
+// ============================================== //
+
 double mvfAckley(int n, double *x)
 /*
 -Dimension: n arbitrary

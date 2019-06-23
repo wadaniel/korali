@@ -205,6 +205,8 @@ void Korali::Solver::CMAES::getConfiguration(nlohmann::json& js)
  js[_name]["Termination Criteria"]["Max Standard Deviation"]["Active"]   = _isTermCondTolUpXFactor;
  js[_name]["Termination Criteria"]["Max Condition Covariance"]["Value"]  = _termCondCovCond;
  js[_name]["Termination Criteria"]["Max Condition Covariance"]["Active"] = _isTermCondCovCond;
+ js[_name]["Termination Criteria"]["Min Step Size"]["Value"]             = _termCondMinStepFac;
+ js[_name]["Termination Criteria"]["Min Step Size"]["Active"]            = _isTermCondMinStep;
 
 // State Information
  js[_name]["State"]["Current Generation"]        = _currentGeneration;
@@ -351,6 +353,8 @@ void CMAES::setConfiguration(nlohmann::json& js)
  _isTermCondTolUpXFactor          = consume(js, { _name, "Termination Criteria", "Max Standard Deviation", "Active" }, KORALI_BOOLEAN, "true");
  _termCondCovCond                 = consume(js, { _name, "Termination Criteria", "Max Condition Covariance", "Value" }, KORALI_NUMBER, std::to_string(1e18));
  _isTermCondCovCond               = consume(js, { _name, "Termination Criteria", "Max Condition Covariance", "Active" }, KORALI_BOOLEAN, "true");
+ _termCondMinStepFac              = consume(js, { _name, "Termination Criteria", "Min Step Size", "Value" }, KORALI_NUMBER, std::to_string(0.2));
+ _isTermCondMinStep               = consume(js, { _name, "Termination Criteria", "Min Step Size", "Active" }, KORALI_BOOLEAN, "true");
 
  if( (_name == "CCMA-ES") && _isViabilityRegime) {
      _current_s  = _via_s;
@@ -1034,11 +1038,12 @@ bool CMAES::checkTermination()
  double fac;
  size_t iAchse = 0;
  size_t iKoo = 0;
- if (!_isdiag ) // TODO: no effect axis add to _isTermCond..
+ if( _isTermCondMinStep )
+ if (!_isdiag )
  {
     for (iAchse = 0; iAchse < _k->N; ++iAchse)
     {
-    fac = 0.1 * sigma * axisD[iAchse];
+    fac = _termCondMinStepFac * sigma * axisD[iAchse];
     for (iKoo = 0; iKoo < _k->N; ++iKoo){
       if (rgxmean[iKoo] != rgxmean[iKoo] + fac * B[iKoo][iAchse])
       break;
@@ -1053,9 +1058,10 @@ bool CMAES::checkTermination()
  } /* if _isdiag */
 
  /* Component of rgxmean is not changed anymore */
+ if( _isTermCondMinStep )
  for (iKoo = 0; iKoo < _k->N; ++iKoo)
  {
-  if (rgxmean[iKoo] == rgxmean[iKoo] + 0.2*sigma*sqrt(C[iKoo][iKoo]) ) //TODO: standard dev add to _isTermCond..
+  if (rgxmean[iKoo] == rgxmean[iKoo] + _termCondMinStepFac*sigma*sqrt(C[iKoo][iKoo]) ) //TODO: standard dev add to _isTermCond..
   {
    /* C[iKoo][iKoo] *= (1 + _covarianceMatrixLearningRate); */
    /* flg = 1; */

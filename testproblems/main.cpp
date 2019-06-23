@@ -8,12 +8,16 @@ using namespace Suite;
 
 int main(int, char**)
 {
-  auto k = Korali::Engine();
-  auto t = TestSuite(k);
-  t.addTestFunction("Ackley", &mvfAckley);
+    
 
-  t.run();
 
-  return 0;
+    
+    auto t = TestSuite();
+    t.addTestFunction("Ackley", &mvfAckley, 4, -30.0, 30.0, 0.0, 50000);
+    t.addTestFunction("Beale", &mvfBeale, 2, -4.5, 4.5, 0.0, 50000);
+
+    t.run();
+
+    return 0;
 }
 

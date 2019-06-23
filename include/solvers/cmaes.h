@@ -81,9 +81,10 @@ class CMAES : public Base
  double _termCondMinDeltaX; // Defines minimum delta of input parameters among generations before it stops.
  double _termCondTolUpXFactor; // Defines the minimum fitness allowed, otherwise it stops
  double _termCondCovCond; // Defines the maximal condition number of the covariance matrix
+ double _termCondMinStepFac; // Factor to calculate min step length
  bool _isTermCondMaxGenerations, _isTermCondMaxFitnessEvaluations, _isTermCondFitness,
       _isTermCondFitnessDiffThreshold, _isTermCondMinDeltaX, _isTermCondTolUpXFactor,
-      _isTermCondCovCond; // flgs to activate termination criteria
+      _isTermCondCovCond, _isTermCondMinStep; // flgs to activate termination criteria
 
  // Private CMAES-Specific Variables
  double sigma;  /* step size */

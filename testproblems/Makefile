@@ -7,7 +7,7 @@ KORALILIBS=`python3 -m korali.cxx --libs`
 .PHONY: all 
 all: $(BINARIES)
 
-$(BINARIES) : % : %.o model/mvf.o model/rnd.o suite/testsuite.o
+$(BINARIES) : % : %.o model/mvf.o model/rnd.o suite/testsuite.o suite/enginefactory.o
 	$(KORALICXX) -o $@ $^ $(KORALILIBS)
 
 model/mvf.o:
@@ -18,6 +18,10 @@ model/rnd.o:
 
 suite/testsuite.o:
 	$(MAKE) -C suite all
+
+suite/enginefactory.o:
+	$(MAKE) -C suite all
+
 
 %.o: %.cpp
 	$(KORALICXX) -c $< $(KORALICFLAGS)

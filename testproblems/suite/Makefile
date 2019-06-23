@@ -1,7 +1,7 @@
 KORALICXX=$(shell python3 -m korali.cxx --compiler)                             
 KORALICFLAGS=`python3 -m korali.cxx --cflags`                                   
 
-all: testsuite.o
+all: testsuite.o enginefactory.o
 
 %.o: %.cpp
 	$(KORALICXX) -c $< $(KORALICFLAGS)

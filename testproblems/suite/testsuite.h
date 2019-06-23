@@ -7,6 +7,7 @@
 #include <functional>
 
 #include "korali.h"
+#include "enginefactory.h"
 
 namespace Suite {
 
@@ -26,6 +27,8 @@ public:
   void addMaxFunctionEvaluations(std::string, size_t numFunEval);
 
 private:
+
+  std::vector<EngineFactory*> _factories;
 
   size_t _repetitions;
   double _precision;

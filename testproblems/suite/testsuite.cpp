@@ -5,47 +5,26 @@
 namespace Suite
 {
 
-TestSuite::TestSuite() : _repetitions(100), _precision(1e-4) {};
+TestSuite::TestSuite() : _repetitions(100), _precision(1e-4) 
+{
+    _factories.push_back(new CMAESFactory());
+    _factories.push_back(new DEFactory("Best", "Self Adaptive", "Greedy"));
+};
+
 TestSuite::~TestSuite() {};
 
 void TestSuite::run()
 {
+  
+
   for(auto func : _functions)
   {
 
     std::string name = func.first;
-
-    auto k = Korali::Engine();
-    k["Verbosity"] = "Minimal";
-    k["Output Frequency"] = 100;
-    k["CMA-ES"]["Result Output Frequency"] = 5000;
-
-    k["Problem"] = "Direct Evaluation";
-    k["Solver"]  = "CMA-ES";
     
-    k["CMA-ES"]["Objective"]    = "Minimize";
-    k["CMA-ES"]["Sample Count"] = 4+3*log(_dimMap[name]);
+
+    auto k = _factories[1]->createEngine(_dimMap[name], _domainMap[name].first, _domainMap[name].second, _maxModelEvals[name], _fitnessMap[name] - _precision);
  
-    for (int i = 0; i < _dimMap[name]; i++)
-    {
-        k["Variables"][i]["Name"] = "X" + std::to_string(i);
-        k["Variables"][i]["CMA-ES"]["Lower Bound"] = _domainMap[name].first;
-        k["Variables"][i]["CMA-ES"]["Upper Bound"] = _domainMap[name].second;
-    }
-
-    k["CMA-ES"]["Termination Criteria"]["Max Generations"]["Active"]          = false;
-    k["CMA-ES"]["Termination Criteria"]["Fitness Diff Threshold"]["Active"]   = false;
-    k["CMA-ES"]["Termination Criteria"]["Min Standard Deviation"]["Active"]   = false;
-    k["CMA-ES"]["Termination Criteria"]["Max Standard Deviation"]["Active"]   = false;
-    k["CMA-ES"]["Termination Criteria"]["Max Condition Covariance"]["Active"] = false;
-    k["CMA-ES"]["Termination Criteria"]["Min Step Size"]["Active"]            = false;
-    
-    k["CMA-ES"]["Termination Criteria"]["Max Model Evaluations"]["Active"] = true;
-    k["CMA-ES"]["Termination Criteria"]["Max Model Evaluations"]["Value"] = _maxModelEvals[name];
-    
-    k["CMA-ES"]["Termination Criteria"]["Min Fitness"]["Active"] = true;
-    k["CMA-ES"]["Termination Criteria"]["Min Fitness"]["Value"] = _fitnessMap[name]-_precision;
-  
     auto model = [func](Korali::ModelData& d) { double res = func.second( d.getVariableCount(), &d.getVariables()[0] ); d.addResult(res); };
     k.setModel(model);
     

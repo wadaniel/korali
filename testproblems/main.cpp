@@ -13,8 +13,9 @@ int main(int, char**)
 
     
     auto t = TestSuite();
-    t.addTestFunction("Ackley", &mvfAckley, 4, -30.0, 30.0, 0.0, 50000);
-    t.addTestFunction("Beale", &mvfBeale, 2, -4.5, 4.5, 0.0, 50000);
+    t.addTestFunction("Ackley", &mvfAckley, 4, -30.0, 30.0, 0.0, 100000);
+    t.addTestFunction("Beale", &mvfBeale, 2, -4.5, 4.5, 0.0, 100000);
+    t.addTestFunction("Beale", &mvfBeale, 2, -4.5, 4.5, 0.0, 100000);
 
     t.run();
 

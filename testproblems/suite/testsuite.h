@@ -9,7 +9,8 @@
 #include "korali.h"
 #include "enginefactory.h"
 
-namespace Suite {
+namespace Suite
+{
 
 typedef double (*TestFun) (int, double*);
 

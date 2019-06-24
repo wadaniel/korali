@@ -5,7 +5,6 @@ edit_uri: ''
 
 nav:
   - Home: index.md
-  - Design: design.md
   - Tutorials:
      - 'A.1 - Optimization': tutorials/a1-optimization/optimization.md
      - 'A.2 - Sampling': tutorials/a2-sampling/sampling.md

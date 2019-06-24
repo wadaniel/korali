@@ -4,8 +4,8 @@ distribution of a Bayesian inference problem.
 !!! info
 	The full Python codes for this tutorial can be found in:
 	
-	+ [tutorials/a3-bayesian-inference-cmaes](https://github.com/cselab/skorali/blob/master/tutorials/a3-bayesian-inference-cmaes)
-	+ [tutorials/a3-bayesian-inference-tmcmc](https://github.com/cselab/skorali/blob/master/tutorials/a3-bayesian-inference-tmcmc)
+	+ [tutorials/a3-bayesian-inference-cmaes.py](https://github.com/cselab/skorali/blob/master/tutorials/a3-bayesian-inference-cmaes.py)
+	+ [tutorials/a3-bayesian-inference-tmcmc.py](https://github.com/cselab/skorali/blob/master/tutorials/a3-bayesian-inference-tmcmc.py)
 
 
 ## Problem Setup

@@ -3,8 +3,8 @@ In this tutorial we show how to **sample** directly from a given function.
 !!! info
 	The full Python codes for this tutorial can be found in:
 	
-	+ [tutorials/a2-sampling-mcmc](https://github.com/cselab/skorali/blob/master/tutorials/a2-sampling-mcmc).
-	+ [tutorials/a2-sampling-tmcmc](https://github.com/cselab/skorali/blob/master/tutorials/a2-sampling-tmcmc).
+	+ [tutorials/a2-sampling-mcmc.py](https://github.com/cselab/skorali/blob/master/tutorials/a2-sampling-mcmc.py).
+	+ [tutorials/a2-sampling-tmcmc.py](https://github.com/cselab/skorali/blob/master/tutorials/a2-sampling-tmcmc.py).
 
 ## Problem Setup
 We are given the function $g(\vartheta)=\exp(-\vartheta^2)$ for $\vartheta\in[-10,10]$.

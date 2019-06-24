@@ -229,9 +229,12 @@ fi
 log "[Korali] Checking for Pybind11 support using \"python3 -m pybind11 -h\"..."
 python3 -m pybind11 -h >> $logFile 2>&1
 if [ $? -ne 0 ]; then
-  logEcho "[Korali] Error: pybind11 not found."
-  logEcho "[Korali] Solution: Install pybind11 with \"pip3 install --user pybind11\"."
-  exitWithError
+  logEcho "[Korali] pybind11 not found, trying to install it automatically."
+  pip3 install --user pybind11 >> $logFile 2>&1
+  if [ $? -ne 0 ]; then
+    logEcho "[Korali] Error trying to install pybind11."
+    exitWithError
+  fi
 fi
 
 ######## Determining Library Flags ########

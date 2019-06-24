@@ -1,5 +1,6 @@
 #!/bin/bash
 
+version=1.0.0
 logFile=$PWD/install.log
 
 # Help display function
@@ -76,7 +77,7 @@ done
 ######## Start Configuration ######
 
 echo "Korali Log Start." > $logFile
-logEcho "[Korali] Configuring Korali..."
+logEcho "[Korali] Configuring Korali v$version..."
 
 log "Checking for architecture..."
 arch="$(uname -s)"

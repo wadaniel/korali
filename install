@@ -6,22 +6,14 @@ logFile=$PWD/install.log
 function print_help ()
 {
  echo ""
- echo "---------------------------------------------------------------------"
- echo "| Korali - High-performance framework for optimization, sampling    |"
- echo "|          and Bayesian uncertainty quantification of large scale   |"
- echo "|          computational models.                                    |"
- echo "| Authors: Georgios Arampatzis, Sergio Martin, Daniel Waelchli      |"
- echo "|          CSELab - ETH Zurich - Prof. Koumoutsakos                 |"
- echo "---------------------------------------------------------------------"
- echo ""
  echo "Syntax: ./install"
- echo "        [--install-gsl]"
+ echo "        [--no-install-gsl]"
  echo "        [--rebuild]"
  echo "        [--debug]"
  echo "        [--help]"
  echo ""
  echo "Where:"
- echo " --install-gsl Automatically downloads and installs GSL if not found."
+ echo " --no-install-gsl prevents Korali from installing GSL."
  echo " --debug builds a non-optimized Korali for debugging purposes."
  echo " --rebuild Cleans and rebuilds/installs Korali for development purposes."
  echo " --help Displays this help message."
@@ -47,14 +39,14 @@ function exitWithError ()
  exit -1
 }
 
-INSTALLGSL=0
+INSTALLGSL=1
 OPTFLAGS="-O3"
 
 for i in "$@"
 do
 case $i in
-    --install-gsl)
-    INSTALLGSL=1
+    --no-install-gsl)
+    INSTALLGSL=0
     shift 
     ;;
     --debug)

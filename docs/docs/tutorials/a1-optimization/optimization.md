@@ -1,21 +1,21 @@
+In this tutorial we show how to **optimize** directly from a given function.
+
+!!! info
+	The full Python code for this tutorial can be found in:
+	[tutorials/a1-optimization](https://github.com/cselab/skorali/blob/master/tutorials/a1-optimization).
 
 
-In this tutorial we show how to **optimize** directly from a
-given function.
-
-The code in **Python** for this tutorial can be found [here](https://github.com/cselab/skorali/blob/master/tutorials/a1-optimization).
-
-
-
-## Problem setup
+## Problem Setup
 We are given the function $f(\vartheta)=-\vartheta^2$ for $\vartheta\in[-10,10]$.
 We want to find the maximum of the function in the given interval.
 
 
 
 
-##  The computational model
+##  The Objective Function
+
 Create a folder named `model`. Inside, create a file with name `directModel.py` and paste the following code,
+
 ```python
 #!/usr/bin/env python
 
@@ -24,9 +24,8 @@ def evaluateModel( s ):
   r = -x*x
   s.addResult(r)
 ```
-This is the computational model.
 
-
+This is the computational model that represents our objective function.
 
 
 ## Optimization with CMA-ES
@@ -45,7 +44,7 @@ from directModel import *
 
 
 
-###  The Korali object
+###  The Korali Object
 
 Next we construct a `Korali` object and set the computational model,
 ```python
@@ -56,7 +55,7 @@ k.setModel(evaluateModel)
 
 
 
-###  The Problem type
+###  The Problem Type
 Then, we set the type of the problem to `Direct Evaluation`
 ```python
 k["Problem"] = "Direct Evaluation"
@@ -90,7 +89,7 @@ Finally, we need to add a call to the run() routine to start the Korali engine.
 k.run()
 ```
 
-###  Run
+###  Running
 
 We are now ready to run our example:
 
@@ -107,7 +106,7 @@ python3 ./a1-optimization
 The results are saved in the folder `_korali_result/`.
 
 
-###  Plot
+###  Plotting
 
 You can see the results of CMA-ES by running the command,
 ```sh

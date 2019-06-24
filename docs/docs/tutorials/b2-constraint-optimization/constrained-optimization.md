@@ -1,26 +1,19 @@
 
 
-In this tutorial we show how to solve a **constrained optimization** problem ([CEC 2006](http://web.mysites.ntu.edu.sg/epnsugan/PublicSite/Shared%20Documents/CEC-2006/technical_report.pdf) Test Problem g09), defined as: 
-
-find
-
-$$x^\star = \mathop{\arg\min}\limits_{x}  \,\,\, f(x) \,,$$
-
-under the constraints
-
-$$g_i(x) \leq 0.$$
+In this tutorial we show how to solve a **constrained optimization** problem ([CEC 2006](http://web.mysites.ntu.edu.sg/epnsugan/PublicSite/Shared%20Documents/CEC-2006/technical_report.pdf) Test Problem g09), defined as: Find $x^\star = \mathop{\arg\min}\limits_{x}  \,\,\, f(x) \,,$ under the constraints $g_i(x) \leq 0.$
 
 
-The code for this tutorial in **Python** can be found [here](https://github.com/cselab/skorali/blob/master/tutorials/b2-constrained-optimization).
+!!! info
+	An example Python code for this tutorial can be found in:
+	[tutorials/b2-constrained-optimization](https://github.com/cselab/skorali/blob/master/tutorials/b2-constrained-optimization)
 
 
-
-
-## Problem setup
+## Problem Setup
 
 We want to solve the problem:
 
-$$ f(x) = (x_1 - 10)^2 + 5(x_2 - 12)^2 + x_3^4  + 3(x_4 - 11)^2 + 10 x_5^6 + 7 x_6^2 + x7^4 - 4 x_6 x_7 - 10  x_6 - 8 x_7 $$
+$$ f(x) = (x_1 - 10)^2 + 5(x_2 - 12)^2 + x_3^4  + 3(x_4 - 11)^2 + 10 x_5^6 + \\
+7 x_6^2 + x7^4 - 4 x_6 x_7 - 10  x_6 - 8 x_7 $$
 
 under the four constraints $g_i(x)$:
 
@@ -41,14 +34,8 @@ g_4(x) = 4x_1^2 + x_2^2 - 3x_1x_2 + 2x_3^2 + 5x_6 - 11x_7
 $$
 
 
+##  The Objective Function
 
-
-
-
-
-
-
-##  The computational model
 Create a folder named `model`. Inside, create a file with name `g09.py` and paste the following code,
 ```python
 #!/usr/bin/env python
@@ -70,7 +57,7 @@ def g09( s ):
 
   s.addResult(-res);
 ```
-This is the objective function.
+This computational model represents our objective function.
 
 For the constraints, add the following code in the same file,
 ```python
@@ -93,15 +80,6 @@ def g4( x ):
           + 2.0 * x[2] * x[2] + 5.0 * x[5] - 11.0 * x[6];
 ```
 
-
-
-
-
-
-
-
-
-
 ## Optimization with CCMA-ES
 
 First, open a file and import the korali module
@@ -116,10 +94,7 @@ sys.path.append('./model')
 from g09 import *
 ```
 
-
-
-
-###  The Korali object
+###  The Korali Object
 
 Next we construct a `Korali` object and set the computational model,
 ```python
@@ -136,8 +111,7 @@ k.addConstraint( g4 );
 ```
 
 
-
-###  The Problem type
+###  The Problem Type
 Then, we set the type of the problem to `Direct Evaluation`
 ```python
 k["Problem"] = "Direct Evaluation"
@@ -179,7 +153,7 @@ Finally, we need to add a call to the run() routine to start the Korali engine.
 k.run()
 ```
 
-###  Run
+###  Running
 
 We are now ready to run our example:
 
@@ -195,18 +169,7 @@ python3 ./b2-constrained-optimization
 
 The results are saved in the folder `_korali_result/`.
 
-
-
-
-
-
-
-
-
-
-
-
-###  Plot
+###  Plotting
 
 You can see the results of CMA-ES by running the command,
 ```sh

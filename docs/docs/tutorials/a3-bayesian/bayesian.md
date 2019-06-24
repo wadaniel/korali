@@ -1,15 +1,14 @@
-
-
 In this tutorial we show how to **optimize** and **sample** the posterior
 distribution of a Bayesian inference problem.
 
+!!! info
+	The full Python codes for this tutorial can be found in:
+	
+	+ [tutorials/a3-bayesian-inference-cmaes](https://github.com/cselab/skorali/blob/master/tutorials/a3-bayesian-inference-cmaes)
+	+ [tutorials/a3-bayesian-inference-tmcmc](https://github.com/cselab/skorali/blob/master/tutorials/a3-bayesian-inference-tmcmc)
 
 
-
-
-
-
-## Problem setup
+## Problem Setup
 In this example we will solve the inverse problem of estimating the Variables
 of a linear model using noisy data. We consider the computational model,
 
@@ -67,16 +66,7 @@ As a prior information we choose the uniform distribution in $[-10,10]$ for $\va
 and the uniform distribution in $[0,10]$ for $\sigma$.
 
 
-
-
-
-
-
-
-
-
-
-##  The computational model
+##  The Objective Function
 
 Create a folder named `model`. Inside, create a file with name `posteriorModel.py` and paste the following code,
 ```python
@@ -104,19 +94,7 @@ def getReferenceData():
 ```
 
 
-
-
-
-
-
-
-
-
 ## Optimization with CMA-ES
-
-
-The code for this tutorial in **Python** can be found [here](https://github.com/cselab/skorali/blob/master/tutorials/a3-bayesian-inference-cmaes).
-
 
 
 First, open a file and import the korali module
@@ -131,16 +109,13 @@ sys.path.append('./model')
 from posteriorModel import *
 ```
 
-
-
-### The Korali object
+### The Korali Object
 
 Next we construct a `Korali` object and set the computational model,
 ```python
 k = korali.Engine()
 k.setModel(evaluateModel)
 ```
-
 
 We add the data
 ```python
@@ -162,9 +137,7 @@ Then, we set the model to Korali,
 k.setModel( Fx )
 ```
 
-
-
-### The Problem type
+### The Problem Type
 
 The `Type` of the `Problem` is characterized as `Bayesian`
 ```python
@@ -250,7 +223,7 @@ Finally, we need to add a call to the run() routine to start the Korali engine.
 k.run()
 ```
 
-###  Run
+###  Running
 
 We are now ready to run our example:
 
@@ -268,7 +241,7 @@ The results are saved in the folder `_korali_result/`.
 
 
 
-### Plot
+### Plottting
 
 You can see the results of CMA-ES by running the command,
 ```sh
@@ -278,21 +251,7 @@ python3 -m korali.plotter
 ![figure](posterior-cma.png)
 
 
-
-
-
-
-
-
-
-
-
-
-
 ## Sampling with TMCMC
-
-
-The code for this tutorial in **Python** can be found [here](https://github.com/cselab/skorali/blob/master/tutorials/a3-bayesian-inference-tmcmc).
 
 
 ### The Solver
@@ -316,7 +275,7 @@ Finally, we need to add a call to the run() routine to start the Korali engine.
 k.run()
 ```
 
-###  Run
+###  Running
 
 We are now ready to run our example:
 
@@ -332,14 +291,11 @@ python3 ./a3-bayesian-tmcmc
 
 The results are saved in the folder `_korali_result/`.
 
-
-
-### Plot
+### Plottting
 
 You can see a histogram of the results by running the command
 ```sh
 python3 -m korali.plotter
 ```
-
 
 ![figure](posterior-tmcmc.png)

@@ -2,9 +2,7 @@
 
 ## Building a Korali Application
 
-Korali provides a range of optimization and uncertainty quantification tools. To use these tools, a user needs to create a *Korali Application*. This application serves as a nexus between the computational models (user-provided C++ objects, Python modules, or pre-compiled applications), and the Korali's main solver engine, as illustrated below.
-
-![](modules.png)
+Korali provides a range of optimization and uncertainty quantification tools. To use these tools, a user needs to create a *Korali Application*. This application serves as a nexus between the computational models (user-provided C++ objects, Python modules, or pre-compiled applications), and the Korali's main solver engine.
 
 To build a Korali application in Python, you simply need to include the corresponding korali module and declare an instance of the Korali engine:
 

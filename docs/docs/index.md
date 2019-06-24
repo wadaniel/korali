@@ -4,7 +4,7 @@
 
 ### **Download Korali**
 
-[**24/06/2019 - Korali 1.0.0**](https://www.cse-lab.ethz.ch/korali/releases/korali-latest.tar.gz) (see [previous releases](https://www.cse-lab.ethz.ch/korali/releases) and [system requirements](requirements.md))
+24/06/2019 - [**Korali-1.0.0**](releases/korali-latest.tar.gz) - [release notes](releases/notes) - [system requirements](releases/requirements.md)
 
 Installation Steps:
 
@@ -17,11 +17,11 @@ cd korali
 
 ### **What Korali Does**
 
-??? "Function Optimization"
-	Given any function $f:\mathbb{R}^N\rightarrow\mathbb{R}$ Korali can find its minima or maxima: $\vartheta^\star = \mathop{\arg\min}\limits_{\vartheta}    f(\vartheta)$
+??? "Optimization (Constrained and Unconstrained)"
+	Given any objective function $f:\mathbb{R}^N\rightarrow\mathbb{R}$ Korali can find its minima or maxima: $\vartheta^\star = \mathop{\arg\min}\limits_{\vartheta}  f(\vartheta)$
 
-??? "Function Sampling"
-	Given any function $f:\mathbb{R}^N\rightarrow\mathbb{R}$ Korali can treat $f$ as an unnormalized density and draw samples to determine its distribution: $\vartheta^{(k)} \sim f.$
+??? "Distribution Sampling"
+	Given any probability distribution of type $f:\mathbb{R}^N\rightarrow\mathbb{R}$, Korali can draw samples to determine its distribution: $\vartheta^{(k)} \sim f.$
 
 ??? "Bayesian Inference"
 	Given a set of data $d$, the output of a computational model $f(x;\vartheta)$, a likelihood function $p(d|\vartheta)$, and a prior probability density $p(\vartheta)$ Korali will build the posterior distribution: $$ p(\vartheta | d)  =  \frac{p(d | \vartheta) p(\vartheta)}{p(d)} $$

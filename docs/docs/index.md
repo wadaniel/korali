@@ -12,7 +12,7 @@
 
 ### **What Korali Does**
 
-??? "Optimization (Constrained and Unconstrained)"
+???+ "Optimization (Constrained and Unconstrained)"
 	Given any objective function $f:\mathbb{R}^N\rightarrow\mathbb{R}$ Korali can find its minima or maxima: $\vartheta^\star = \mathop{\arg\min}\limits_{\vartheta}  f(\vartheta)$
 
 ??? "Distribution Sampling"
@@ -31,23 +31,23 @@
 
 ### **Design Principles**
 
-??? "Ease of Use"
-	Korali provides an intuitive JSON-based interface that is mostly language-independent.
-
-??? "Extensibility"
-
-	Korali is designed as a completely modular and extensible software. Researchers can easily integrate and test new statistical methods for optimization and sampling into Korali. Likewise, new problems types can be easily added into Korali's engine.
-
-??? "Multi-Language"
-
-	Korali applications can be programmed in either C++ or Python. Additionally, Korali can sample from C++/Fortran/Python and pre-compiled computational models.
-
-??? "Multi-Intrusiveness"
-
-	A novelty in Korali is its support for multi-intrusive evaluation. That is, Korali can sample from computational models either semi-instrusively, through static linking or dynamic loading of Python modules; or nonintrusively, through shell command execution.
-
-??? "High-Performance"
+??? success "High-Performance"
 
 	Korali's work distribution engine has been optimized to fully harness computational resources of large-scale supercomputers, maximizing throughput and minimizing latency and load imbalance.
 	
 	Furthermore, Korali supports the execution of parallel (OpenMP, Pthreads), distributed (MPI, UPC++), and GPU-based (CUDA) models.
+	
+??? success "Ease of Use"
+	Korali provides an intuitive JSON-based interface that is mostly language-independent.
+
+??? success "Extensibility"
+
+	Korali is designed as a completely modular and extensible software. Researchers can easily integrate and test new statistical methods for optimization and sampling into Korali. Likewise, new problems types can be easily added into Korali's engine.
+
+??? success "Multi-Language"
+
+	Korali applications can be programmed in either C++ or Python. Additionally, Korali can sample from C++/Fortran/Python and pre-compiled computational models.
+
+??? success "Multi-Intrusiveness"
+
+	A novelty in Korali is its support for multi-intrusive evaluation. That is, Korali can sample from computational models either semi-instrusively, through static linking or dynamic loading of Python modules; or nonintrusively, through shell command execution.

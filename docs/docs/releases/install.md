@@ -11,7 +11,7 @@
 Open a command line console and download and extract the latest release of Korali.
 
 ```shell
-wget 'https://www.cse-lab.ethz.ch/korali/releases/korali-latest.tar.gz'
+wget 'https://github.com/cselab/korali-releases/raw/master/korali-latest.tar.gz'
 tar -xzvf korali-latest.tar.gz 
 ```
 
@@ -28,3 +28,12 @@ cd korali
 	This step may take several minutes since Korali will automatically download and build its prerequisites.
 	
 	Use ```./install --no-install-gsl``` if you do not with Korali to automatically build pre-requisites.
+	
+### 4. Test Korali
+
+Run any of the included tutorials to verify Korali has installed correctly.
+
+```shell
+cd tutorials
+./a1-optimization
+```

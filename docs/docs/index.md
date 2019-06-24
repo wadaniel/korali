@@ -4,7 +4,7 @@
 
 ### **Download Korali**
 
-24/06/2019 - [**Korali-1.0.0.tar.gz**](releases/korali-1.0.0.tar.gz)
+24/06/2019 - [**Korali-1.0.0.tar.gz**](https://github.com/cselab/korali-releases/raw/master/korali-1.0.0.tar.gz)
 
  + [Installation Guide](releases/install.md)
  + [Release Notes](releases/notes.md)
@@ -12,13 +12,13 @@
 
 ### **What Korali Does**
 
-???+ "Optimization (Constrained and Unconstrained)"
+??? abstract "Optimization (Constrained and Unconstrained)"
 	Given any objective function $f:\mathbb{R}^N\rightarrow\mathbb{R}$ Korali can find its minima or maxima: $\vartheta^\star = \mathop{\arg\min}\limits_{\vartheta}  f(\vartheta)$
 
-??? "Distribution Sampling"
+??? abstract "Distribution Sampling"
 	Given any probability distribution of type $f:\mathbb{R}^N\rightarrow\mathbb{R}$, Korali can draw samples to determine its distribution: $\vartheta^{(k)} \sim f.$
 
-??? "Bayesian Inference"
+??? abstract "Bayesian Inference"
 	Given a set of data $d$, the output of a computational model $f(x;\vartheta)$, a likelihood function $p(d|\vartheta)$, and a prior probability density $p(\vartheta)$ Korali will build the posterior distribution: $$ p(\vartheta | d)  =  \frac{p(d | \vartheta) p(\vartheta)}{p(d)} $$
 
 	Allowing users to compute the maximum a posteriori estimate:

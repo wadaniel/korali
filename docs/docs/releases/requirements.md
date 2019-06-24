@@ -26,10 +26,6 @@ Korali requires pybind11 to be installed in the system. If not found, it will tr
 ### GNU Scientific Library
 
 Korali requires the [GSL-2.4](http://www.gnu.org/software/gsl/) or later must be installed on your system. If the command ```gsl-config``` is not found, Korali will try to install GSL automatically.
-
-!!! hint
-	You can use ```./install --no-install-gsl``` to prevent Korali from downloading and building GSL-2.5 automatically. 
-	
 	
 ### MPI (Optional)
 

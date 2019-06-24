@@ -4,16 +4,11 @@
 
 ### **Download Korali**
 
-24/06/2019 - [**Korali-1.0.0**](releases/korali-latest.tar.gz) - [release notes](releases/notes) - [system requirements](releases/requirements.md)
+24/06/2019 - [**Korali-1.0.0.tar.gz**](releases/korali-1.0.0.tar.gz)
 
-Installation Steps:
-
-```shell
-wget 'https://www.cse-lab.ethz.ch/korali/releases/korali-latest.tar.gz'
-tar -xzvf korali-latest.tar.gz 
-cd korali 
-./install
-```
+ + [Installation Guide](releases/install.md)
+ + [Release Notes](releases/notes.md)
+ + [System Requirements](releases/requirements.md)
 
 ### **What Korali Does**
 

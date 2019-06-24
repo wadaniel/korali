@@ -98,7 +98,7 @@ from g09 import *
 
 Next we construct a `Korali` object and set the computational model,
 ```python
-k = korali.Engine()
+k = korali.initialize()
 ```
 
 Add the objective function and the constraints in the Korali object,

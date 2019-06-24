@@ -29,7 +29,6 @@ nParams = 7;
 for i in range(nParams) :
   k["Variables"][i]["Name"] = "X" + str(i);
 
-
 # Selecting the CCMA-ES solver.
 k["Solver"]  = "CCMA-ES";
 
@@ -43,8 +42,6 @@ k["CCMA-ES"]["Adaption Size"] = 0.1;
 k["CCMA-ES"]["Sample Count"] = 8;
 k["CCMA-ES"]["Viability Sample Count"] = 2;
 k["CCMA-ES"]["Termination Criteria"]["Min Fitness"]["Value"] = -680.630057374402 - 1e-4;
-
-
 
 # Running Korali
 k.run();

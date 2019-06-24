@@ -10,7 +10,7 @@ sys.path.append('./model')
 from posteriorModel import *
 import korali
 
-k = korali.Engine()
+k = korali.initialize()
 
 # Getting reference data from the model
 x, y = getReferenceData()

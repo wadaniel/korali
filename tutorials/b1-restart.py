@@ -13,6 +13,7 @@ from directModel import *
 
 import korali
 k = korali.initialize()
+
 k["Problem"] = "Direct Evaluation"
 k["Solver"]  = "CMA-ES" 
 k["Variables"][0]["Name"] = "X";

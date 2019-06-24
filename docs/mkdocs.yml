@@ -1,12 +1,11 @@
 site_name: korali
-repo_name: 'cselab/skorali'
-repo_url: 'https://github.com/cselab/skorali'
+repo_name: 'cselab/korali'
+repo_url: 'https://github.com/cselab/korali'
 edit_uri: ''
 
 nav:
   - Home: index.md
   - Design: design.md
-  - Installation: installation.md
   - Tutorials:
      - 'A.1 - Optimization': tutorials/a1-optimization/optimization.md
      - 'A.2 - Sampling': tutorials/a2-sampling/sampling.md
@@ -46,11 +45,10 @@ nav:
           - Export Results: usage/results/#export-results
           - Resume Execution: usage/results/#resume-execution
   - Development:
-    - Git Repository: https://github.com/cselab/skorali
+    - Git Repository: https://github.com/cselab/korali
     - Integration: development/integration.md
     - Doxygen: development/doxygen/html/index.html
   - About Us: aboutus.md
-
 
 theme:
     name: material

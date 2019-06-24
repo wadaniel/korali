@@ -25,4 +25,6 @@ cd korali
 ```
 
 !!! note
-	Use ```./install --no-install-gsl``` if you do not with Korali to automatically download and build pre-requisites.
+	This step may take several minutes since Korali will automatically download and build its prerequisites.
+	
+	Use ```./install --no-install-gsl``` if you do not with Korali to automatically build pre-requisites.

@@ -1,5 +1,3 @@
-
-
 In this tutorial we show how to **sample** directly from a given function.
 
 !!! info
@@ -19,8 +17,6 @@ We want to draw samples from this distribution.
 
 For the rest of the tutorial we will work with the function $f(\vartheta)=\log g(\vartheta) = -\vartheta^2$.
 
-
-
 ##  The Objective Function
 
 Create a folder named `model`. Inside, create a file with name `directModel.py` and paste the following code,
@@ -34,9 +30,6 @@ def evaluateModel( s ):
 ```
 
 This is the computational model that represents our objective function.
-
-
-
 
 ## Sampling with MCMC
 
@@ -59,7 +52,7 @@ from directModel import *
 
 Next we construct a `Korali` object and set the computational model,
 ```python
-k = korali.Engine()
+k = korali.initialize()
 k.setModel(evaluateModel)
 ```
 
@@ -74,7 +67,6 @@ In this problem there is only one variable,
 ```python
 k["Variables"][0]["Name"] = "X";
 ```
-
 
 ###  The Solver
 We choose the solver `MCMC` and set the initial mean and standard deviation  of the parameter `X`.
@@ -92,8 +84,6 @@ k["MCMC"]["Result Output Frequency"]  = 5000;
 We also set some settings for MCMC. For a detailed description of the MCMC settings, see
 [here](../../usage/solvers/samplers/mcmc.md).
 
-
-
 ###  Running
 
 Finally, we are ready to run the simulation,
@@ -110,16 +100,6 @@ You can see a histogram of the results by running the command
 ```sh
 python3 -m korali.plotter
 ```
-
-
-
-
-
-
-
-
-
-
 
 ## Sampling with TMCMC
 
@@ -141,7 +121,7 @@ from directModel import *
 
 Next we construct a `Korali` object and set the computational model,
 ```python
-k = korali.Engine()
+k = korali.initialize()
 k.setModel(evaluateModel)
 ```
 

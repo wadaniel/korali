@@ -93,7 +93,6 @@ def getReferenceData():
  return x, y
 ```
 
-
 ## Optimization with CMA-ES
 
 
@@ -113,7 +112,7 @@ from posteriorModel import *
 
 Next we construct a `Korali` object and set the computational model,
 ```python
-k = korali.Engine()
+k = korali.initialize()
 k.setModel(evaluateModel)
 ```
 
@@ -129,7 +128,6 @@ lambda function `Fx` that will hide `x` from korali.
 ```python
 Fx = lambda koraliData: evaluateModel(koraliData, x)
 ```
-
 
 Then, we set the model to Korali,
 

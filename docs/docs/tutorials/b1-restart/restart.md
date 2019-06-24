@@ -14,7 +14,7 @@ sys.path.append('./model')
 from directModel import *
 import korali
 
-k = korali.Engine()
+k = korali.initialize()
 k.loadState("_korali_result/s00005.json")
 k.setModel(evaluateModel)
 k.run();

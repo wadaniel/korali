@@ -9,9 +9,6 @@ In this tutorial we show how to **optimize** directly from a given function.
 We are given the function $f(\vartheta)=-\vartheta^2$ for $\vartheta\in[-10,10]$.
 We want to find the maximum of the function in the given interval.
 
-
-
-
 ##  The Objective Function
 
 Create a folder named `model`. Inside, create a file with name `directModel.py` and paste the following code,
@@ -42,18 +39,13 @@ sys.path.append('./model')
 from directModel import *
 ```
 
-
-
 ###  The Korali Object
 
 Next we construct a `Korali` object and set the computational model,
 ```python
-k = korali.Engine()
+k = korali.initialize()
 k.setModel(evaluateModel)
 ```
-
-
-
 
 ###  The Problem Type
 Then, we set the type of the problem to `Direct Evaluation`
@@ -66,7 +58,6 @@ In this problem there is only one variable,
 ```python
 k["Variables"][0]["Name"] = "X";
 ```
-
 
 ###  The Solver
 We choose the solver `CMA-ES`, set the domain of the parameter `X`, the population size to be `5` and two termination criteria,
@@ -102,9 +93,7 @@ Or, alternatively:
 ```bash
 python3 ./a1-optimization
 ```
-
 The results are saved in the folder `_korali_result/`.
-
 
 ###  Plotting
 

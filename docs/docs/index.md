@@ -4,7 +4,7 @@
 
 ### **Download Korali**
 
-24/06/2019 - [**Korali-1.0.0.tar.gz**](https://github.com/cselab/korali-releases/raw/master/korali-1.0.0.tar.gz)
+24/06/2019 - [**Korali-1.0.0.tar.gz**](https://gitlab.ethz.ch/mavt-cse/korali-releases/raw/master/korali-1.0.0.tar.gz)
 
  + [Installation Guide](releases/install.md)
  + [Release Notes](releases/notes.md)

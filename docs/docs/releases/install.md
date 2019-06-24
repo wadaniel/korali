@@ -8,10 +8,18 @@
  the required compilation and software requirements for Korali.
 
 ### 2. Download Korali
-Open a command line console and download and extract the latest release of Korali.
+
+Download the latest release of Korali from the following path:
+
++ [**korali-latest.tar.gz**](https://gitlab.ethz.ch/mavt-cse/korali-releases/raw/master/korali-latest.tar.gz)
+
+!!! attention
+	You need to be logged into tour MAVT/CSE-Lab account to be able to download the file.
+	
+### Extract Korali
+Open a command line console and extract the downloaded file
 
 ```shell
-wget 'https://github.com/cselab/korali-releases/raw/master/korali-latest.tar.gz'
 tar -xzvf korali-latest.tar.gz 
 ```
 

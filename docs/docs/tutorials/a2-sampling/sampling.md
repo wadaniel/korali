@@ -2,8 +2,13 @@
 
 In this tutorial we show how to **sample** directly from a given function.
 
+!!! info
+	The full Python codes for this tutorial can be found in:
+	
+	+ [tutorials/a2-sampling-mcmc](https://github.com/cselab/skorali/blob/master/tutorials/a2-sampling-mcmc).
+	+ [tutorials/a2-sampling-tmcmc](https://github.com/cselab/skorali/blob/master/tutorials/a2-sampling-tmcmc).
 
-## Problem setup
+## Problem Setup
 We are given the function $g(\vartheta)=\exp(-\vartheta^2)$ for $\vartheta\in[-10,10]$.
 
 We assume that $f$ represents the *unnormalized* density of a distribution.
@@ -16,9 +21,8 @@ For the rest of the tutorial we will work with the function $f(\vartheta)=\log g
 
 
 
+##  The Objective Function
 
-
-##  The computational model
 Create a folder named `model`. Inside, create a file with name `directModel.py` and paste the following code,
 ```python
 #!/usr/bin/env python
@@ -28,7 +32,8 @@ def evaluateModel( s ):
   r = -x*x
   s.addResult(r)
 ```
-This is the computational model.
+
+This is the computational model that represents our objective function.
 
 
 
@@ -50,7 +55,7 @@ from directModel import *
 ```
 
 
-###  The Korali object
+###  The Korali Object
 
 Next we construct a `Korali` object and set the computational model,
 ```python
@@ -58,7 +63,7 @@ k = korali.Engine()
 k.setModel(evaluateModel)
 ```
 
-###  The Problem type
+###  The Problem Type
 Then, we set the type of the problem to `Direct Evaluation`
 ```python
 k["Problem"] = "Direct Evaluation"
@@ -84,12 +89,12 @@ k["MCMC"]["Burn In"] = 500;
 k["MCMC"]["Adaptive Sampling"]  = True;
 k["MCMC"]["Result Output Frequency"]  = 5000;
 ```
-We also set some settings for MCMC. For a detailed description of the MCMC settings see
+We also set some settings for MCMC. For a detailed description of the MCMC settings, see
 [here](../../usage/solvers/samplers/mcmc.md).
 
 
 
-###  Run
+###  Running
 
 Finally, we are ready to run the simulation,
 
@@ -100,7 +105,7 @@ k.run()
 The results are saved in the folder `_korali_result/`.
 
 
-###  Plot
+###  Plottting
 You can see a histogram of the results by running the command
 ```sh
 python3 -m korali.plotter
@@ -117,7 +122,7 @@ python3 -m korali.plotter
 
 
 ## Sampling with TMCMC
-The code in **Python** for this tutorial can be found [here](https://github.com/cselab/skorali/blob/master/tutorials/a2-sampling-tmcmc).
+
 
 First, open a file and import the korali module
 ```python
@@ -132,7 +137,7 @@ from directModel import *
 ```
 
 
-###  The Korali object
+###  The Korali Object
 
 Next we construct a `Korali` object and set the computational model,
 ```python
@@ -140,7 +145,7 @@ k = korali.Engine()
 k.setModel(evaluateModel)
 ```
 
-###  The Problem type
+###  The Problem Type
 Then, we set the type of the problem to `Direct Evaluation`
 ```python
 k["Problem"] = "Bayesian"
@@ -189,7 +194,7 @@ Finally, we need to add a call to the run() routine to start the Korali engine.
 k.run()
 ```
 
-###  Run
+###  Running
 
 We are now ready to run our example:
 
@@ -206,7 +211,7 @@ python3 ./a2-sampling-mcmc
 The results are saved in the folder `_korali_result/`.
 
 
-###  Plot
+###  Plottting
 You can see a histogram of the results by running the command
 ```sh
 python3 -m korali.plotter

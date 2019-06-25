@@ -1,6 +1,9 @@
 #ifndef _KORALI_SOLVERS_CMAES_H_
 #define _KORALI_SOLVERS_CMAES_H_
 
+#include <gsl/gsl_multimin.h>
+#include <gsl/gsl_randist.h>
+
 #include "solvers/base.h"
 #include <chrono>
 #include <map>
@@ -14,6 +17,8 @@ class CMAES : public Base
  // Constructor / Destructor
  CMAES(nlohmann::json& js, std::string name);
  ~CMAES();
+
+ std::string _name;
 
  // These are CMA-ES Specific, but could be used for other methods in the future
  double* _lowerBounds;
@@ -180,6 +185,11 @@ class CMAES : public Base
  void printFinal() const;
 };
 
-} } // namespace Korali::Solver
+double emvnorm(const gsl_vector *v, void *params);
+void emvnorm_df (const gsl_vector *v, void *params, gsl_vector *df);
+
+} // namespace Korali::Solver
+
+} // namespace Korali
 
 #endif // _KORALI_SOLVERS_CMAES_H_

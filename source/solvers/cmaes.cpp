@@ -1,4 +1,9 @@
 #include "korali.h"
+
+
+#include <gsl/gsl_linalg.h>
+#include <gsl/gsl_errno.h>
+
 #include <stdio.h>
 #include <unistd.h>
 #include <chrono>
@@ -12,6 +17,7 @@ using namespace Korali::Solver;
 
 CMAES::CMAES(nlohmann::json& js, std::string name)
 {
+ _name = name;
  setConfiguration(js);
 
  size_t s_max  = std::max(_s,  _via_s);
@@ -736,6 +742,11 @@ void CMAES::updateDistribution(const double *fitnessVector)
  histFuncValues[_currentGeneration] = bestEver;
 
  /* calculate rgxmean and rgBDz */
+ if (_name == "ECMA-ES") 
+ {
+    /* find MLE of rgxmean for E[f(x)], x~N(rgxmean,C) */
+ }
+ else
  for (size_t d = 0; d < _k->N; ++d) {
    rgxold[d] = rgxmean[d];
    rgxmean[d] = 0.;
@@ -1239,4 +1250,98 @@ void CMAES::printFinal() const
     printf("[Korali] Total Elapsed Time: %fs\n", std::chrono::duration<double>(endTime-startTime).count());
     printf("--------------------------------------------------------------------\n");
  }
+}
+
+
+double emvnorm(const gsl_vector *mucov, void *params)
+{
+ /* params [ 2 + _s(_N+1) ] ( ndim + nsamples + sample_vec + fval_vec ) */
+ 
+ double *par = (double *)params;
+
+ size_t N = (size_t) par[0];
+ size_t S = (size_t) par[1];
+ 
+ int err;
+ gsl_vector* mu   = gsl_vector_alloc(N);
+ gsl_vector* x    = gsl_vector_alloc(N);
+ gsl_vector* work = gsl_vector_alloc(N);
+ gsl_matrix* L    = gsl_matrix_alloc(N,N);
+ for(size_t d = 0; d < N; ++d) gsl_vector_set( mu, d, gsl_vector_get(mucov, d));
+ for(size_t d = 0; d < N; ++d)
+    for(size_t e = 0; e < N; ++e) 
+        { gsl_matrix_set(L, d, e, gsl_vector_get(mucov, N+d+e)); gsl_matrix_set(L, e, d, gsl_vector_get( mucov, N+d+e)); }
+ 
+ err = gsl_linalg_cholesky_decomp1(L); // diag an lower triangle is L
+ if (err) printf ("error chol decomp: %s\n", gsl_strerror (err));
+ //TODO: check err
+ 
+ double res = 0;
+ double* tmpres = new double;
+ for(size_t i = 0; i < S; ++i)
+ {
+    for(size_t d = 0; d < N; ++d) gsl_vector_set( x, d, (double) par[i*d+2]);
+    err = gsl_ran_multivariate_gaussian_pdf(x, mu, L , tmpres, work) * (double) par[S*N+2+i];
+    if (err) printf ("error mvn gauss: %s\n", gsl_strerror (err));
+    res += *tmpres;
+ }
+
+ gsl_vector_free(mu);
+ gsl_vector_free(x);
+ gsl_vector_free(work);
+ gsl_matrix_free(L);
+ delete tmpres;
+ return res;
+}
+
+
+void mvnorm_df (const gsl_vector *mucov, void *params, gsl_vector *df)
+{
+ double *par = (double *)params;
+ 
+ size_t N = (size_t) par[0];
+ size_t S = (size_t) par[1];
+
+ int *signum = new int;
+  
+ int err;
+ gsl_vector* mu     = gsl_vector_alloc(N);
+ gsl_vector* x      = gsl_vector_alloc(N);
+ gsl_vector* dldmu  = gsl_vector_alloc(N);
+ gsl_vector* work   = gsl_vector_alloc(N);
+ gsl_matrix* L      = gsl_matrix_alloc(N,N);
+ gsl_matrix* A      = gsl_matrix_alloc(N,N);
+ gsl_matrix* Ainv   = gsl_matrix_alloc(N,N);
+ gsl_matrix* dldC   = gsl_matrix_alloc(N,N);
+ gsl_permutation* p = gsl_permutation_alloc(N);
+ 
+ for(size_t d = 0; d < N; ++d) gsl_vector_set( mu, d, gsl_vector_get(mucov, d));
+ for(size_t d = 0; d < N; ++d)
+    for(size_t e = 0; e <= d; ++e) 
+        { gsl_matrix_set(L, d, e, gsl_vector_get(mucov, N+d+e)); gsl_matrix_set(L, e, d, gsl_vector_get( mucov, N+d+e));
+          gsl_matrix_set(A, d, e, gsl_vector_get(mucov, N+d+e)); gsl_matrix_set(A, e, d, gsl_vector_get( mucov, N+d+e)); }
+ 
+ err = gsl_linalg_cholesky_decomp1(L); // diag an lower triangle is L
+ if (err) printf ("error chol decomp: %s\n", gsl_strerror (err));
+
+ err = gsl_linalg_LU_decomp(A, p, signum);
+ if (err) printf ("error LU decomp: %s\n", gsl_strerror (err));
+ 
+ err =  gsl_linalg_LU_invert(A, p, Ainv);
+ if (err) printf ("error LU invert: %s\n", gsl_strerror (err));
+ 
+ //TODO:
+ // dLDu
+ // dLdC
+ // ...
+ 
+ gsl_vector_free(mu);
+ gsl_vector_free(x);
+ gsl_vector_free(dldmu);
+ gsl_vector_free(work);
+ gsl_matrix_free(L);
+ gsl_matrix_free(A);
+ gsl_matrix_free(dldC);
+ gsl_permutation_free(p);
+ delete signum;
 }

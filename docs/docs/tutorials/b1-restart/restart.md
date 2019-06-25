@@ -2,7 +2,7 @@ In this tutorial we show how to restart a previous Korali run.
 
 !!! info
 	An example Python code for this tutorial can be found in:
-	[tutorials/b1-restart](https://github.com/cselab/skorali/blob/master/tutorials/b1-restart)
+	[tutorials/b1-restart.py](https://github.com/cselab/skorali/blob/master/tutorials/b1-restart.py)
 
 
 Assume that we want to resume a previous Korali run, restarting from the one of the last generations. All we need to do is to run the following script:

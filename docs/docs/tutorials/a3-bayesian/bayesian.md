@@ -4,8 +4,8 @@ distribution of a Bayesian inference problem.
 !!! info
 	The full Python codes for this tutorial can be found in:
 	
-	+ [tutorials/a3-bayesian-inference-cmaes](https://github.com/cselab/skorali/blob/master/tutorials/a3-bayesian-inference-cmaes)
-	+ [tutorials/a3-bayesian-inference-tmcmc](https://github.com/cselab/skorali/blob/master/tutorials/a3-bayesian-inference-tmcmc)
+	+ [tutorials/a3-bayesian-inference-cmaes.py](https://github.com/cselab/skorali/blob/master/tutorials/a3-bayesian-inference-cmaes.py)
+	+ [tutorials/a3-bayesian-inference-tmcmc.py](https://github.com/cselab/skorali/blob/master/tutorials/a3-bayesian-inference-tmcmc.py)
 
 
 ## Problem Setup
@@ -27,7 +27,7 @@ mean and $\sigma$ standard deviation. This assumption leads to the likelihood
 function,
 
 $$
-p(y|\varphix) = \mathcal{N} ( \,y \,| \, f(x\vartheta), \sigma^2 \,) \,.
+p(y|\varphi_x) = \mathcal{N} ( \,y \,| \, f(x\vartheta), \sigma^2 \,) \,.
 $$
 
 where $\varphi=(\vartheta,\sigma)$ is the parameter vector that contains the
@@ -51,14 +51,14 @@ We call this data set $d=\{x_i,y_i\}_{i=1}^5$. Assuming that each datum is
 independent, the likelihood of $d$ under the linear model is given by
 
 $$
-p(y|\varthetax) = \prod_{i=1}^6 \mathcal{N} ( \,y_i \,| \, f(x_i\vartheta), \sigma^2 \,) \,.
+p(y|\vartheta_x) = \prod_{i=1}^6 \mathcal{N} ( \,y_i \,| \, f(x_i\vartheta), \sigma^2 \,) \,.
 $$
 
 In order to identify the distribution of $\varphi$ conditioned on the observations $d$
 we use Bayes' theorem
 
 $$
-p(\varphi | yx) = \frac{ p(y|\varphix) \, p(\varphi) }{ p(y) } \, .
+p(\varphi | y_x) = \frac{ p(y|\varphi_x) \, p(\varphi) }{ p(y) } \, .
 $$
 
 

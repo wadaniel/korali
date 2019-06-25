@@ -5,7 +5,7 @@ In this tutorial we show how to solve a **constrained optimization** problem ([C
 
 !!! info
 	An example Python code for this tutorial can be found in:
-	[tutorials/b2-constrained-optimization](https://github.com/cselab/skorali/blob/master/tutorials/b2-constrained-optimization)
+	[tutorials/b2-constrained-optimization.py](https://github.com/cselab/skorali/blob/master/tutorials/b2-constrained-optimization.py)
 
 
 ## Problem Setup

@@ -2,7 +2,7 @@ In this tutorial we show how to **optimize** directly from a given function.
 
 !!! info
 	The full Python code for this tutorial can be found in:
-	[tutorials/a1-optimization](https://github.com/cselab/skorali/blob/master/tutorials/a1-optimization).
+	[tutorials/a1-optimization.py](https://github.com/cselab/skorali/blob/master/tutorials/a1-optimization.py).
 
 
 ## Problem Setup

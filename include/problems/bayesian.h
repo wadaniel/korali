@@ -24,9 +24,6 @@ class Bayesian : public Base
  double evaluateFitness(Korali::ModelData& data) override;
  double evaluateLogPrior(double* sample) override;
 
- // Initialization Method
- void initialize() override;
-
  // Constructor / Destructor
  Bayesian(nlohmann::json& js);
  ~Bayesian();

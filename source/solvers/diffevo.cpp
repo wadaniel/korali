@@ -192,8 +192,6 @@ void DE::setConfiguration(nlohmann::json& js)
 
  for (size_t d = 0; d < _k->N; ++d)
  {
-  _varNames.push_back(consume(js["Variables"][d], { "Name" }, KORALI_STRING, "X"+std::to_string(d)));
-  
   _lowerBounds[d] = consume(js["Variables"][d], { "DE", "Lower Bound" }, KORALI_NUMBER);
   _upperBounds[d] = consume(js["Variables"][d], { "DE", "Upper Bound" }, KORALI_NUMBER);
 

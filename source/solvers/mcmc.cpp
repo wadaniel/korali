@@ -155,8 +155,6 @@ void Korali::Solver::MCMC::setConfiguration(nlohmann::json& js)
  _initialMeans = (double*) calloc(sizeof(double), _k->N);
  _stdDevs      = (double*) calloc(sizeof(double), _k->N);
 
- for(size_t d = 0; d < _k->N; ++d) _varNames.push_back(consume(js["Variables"][d], { "Name" }, KORALI_STRING, "X"+std::to_string(d)));
-  
  for(size_t d = 0; d < _k->N; d++) _initialMeans[d] = consume(js["Variables"][d], { "MCMC", "Initial Mean" }, KORALI_NUMBER);
  for(size_t d = 0; d < _k->N; d++) _stdDevs[d]      = consume(js["Variables"][d], { "MCMC", "Standard Deviation" }, KORALI_NUMBER);
  //for(size_t d = 0; d < _k->N; d++) _variableLogSpace[d] = consume(js["Variables"][d], { "MCMC", "Log Space" }, KORALI_BOOLEAN, false);

@@ -24,16 +24,14 @@ k.addConstraint( g2 )
 k.addConstraint( g3 )
 k.addConstraint( g4 )
 
-# Creating 7 variables
-nParams = 7
-for i in range(nParams) :
-  k["Variables"][i]["Name"] = "X" + str(i)
-
 # Selecting the CCMA-ES solver.
 k["Solver"]  = "CMA-ES"
 
-#Setting up the variables CCMA-ES bounds
+# Creating 7 variables and
+# Setting up the variables CCMA-ES bounds
+nParams = 7
 for i in range(nParams) :
+  k["Variables"][i]["Name"] = "X" + str(i)
   k["Variables"][i]["CMA-ES"]["Lower Bound"] = -10.0
   k["Variables"][i]["CMA-ES"]["Upper Bound"] = +10.0
 

@@ -139,8 +139,6 @@ void Korali::Solver::TMCMC::setConfiguration(nlohmann::json& js)
  _useLocalCov       = consume(js, { "TMCMC", "Use Local Covariance" }, KORALI_BOOLEAN, "false");
  _burnin            = consume(js, { "TMCMC", "Burn In" }, KORALI_NUMBER, std::to_string(0));
  
- for(size_t d = 0; d < _k->N; ++d) _varNames.push_back(consume(js["Variables"][d], { "Name" }, KORALI_STRING, "X"+std::to_string(d)));
- 
  _termCondMaxGens   = consume(js, { "TMCMC", "Termination Criteria", "Max Generations", "Value" }, KORALI_NUMBER, std::to_string(20));
  _isTermCondMaxGens = consume(js, { "TMCMC", "Termination Criteria", "Max Generations", "Active" }, KORALI_BOOLEAN, "true");
 }

@@ -140,7 +140,6 @@ class CMAES : public Base
  double doubleRangeMin(const double *rgd, size_t len) const;
 
  // Private CCMA-ES-Specific Variables 
- size_t _numConstraints; /* number of constraints */
  size_t _maxCorrections; /* max cov adaptions per generation */
  size_t _maxResamplings; /* max resamplings per generation */
  double _targetSucRate; /* target success rate */

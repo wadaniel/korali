@@ -25,10 +25,7 @@ k["CMA-ES"]["Sample Count"] = 5
 k.setModel(evaluateModel)
 k.run()
 
-## Now, we create another korali engine and use loadState()
-## to resume the same experiment from generation 5.
+## Now we loadState() to resume the same experiment from generation 5.
 
-k2 = korali.Engine()
-k2.loadState("_korali_result/s00005.json")
-k2.setModel(evaluateModel)
-k2.run()
+k.loadState("_korali_result/s00498.json")
+k.run()

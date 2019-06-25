@@ -103,6 +103,10 @@ nlohmann::json Korali::Engine::getConfiguration()
 void Korali::Engine::setConfiguration(nlohmann::json js)
 {
  // Configure Korali Engine
+ _variables.clear();
+ _conduit = nullptr;
+ _problem = nullptr;
+ _solver  = nullptr;
 
  // Initializing Seed and GSL Random Environment
  _seed = 0;
@@ -199,9 +203,6 @@ void Korali::Engine::run()
  // Creating Results directory
  mkdir("_korali_result", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
- // Initialize Problem
- _problem->initialize();
-
  // Running Engine
  _conduit->run();
 
@@ -235,8 +236,6 @@ void Korali::Engine::saveState(int fileId)
 
 void Korali::Engine::loadState(std::string fileName)
 {
- // if (!_conduit->isRoot()) return; TODO: produces segfaults, _conduit not init (DW)
-
  _js = loadJsonFromFile(fileName.c_str());
 }
 

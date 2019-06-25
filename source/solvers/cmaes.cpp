@@ -3,6 +3,7 @@
 
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_errno.h>
+#include <gsl/gsl_cblas.h>
 
 #include <stdio.h>
 #include <unistd.h>
@@ -1281,7 +1282,7 @@ double emvnorm(const gsl_vector *mucov, void *params)
  for(size_t i = 0; i < S; ++i)
  {
     for(size_t d = 0; d < N; ++d) gsl_vector_set( x, d, (double) par[i*d+2]);
-    err = gsl_ran_multivariate_gaussian_pdf(x, mu, L , tmpres, work) * (double) par[S*N+2+i];
+    err = gsl_ran_multivariate_gaussian_pdf(x, mu, L , tmpres, work) * (double) par[S*N+2+i]; //TODO: scale this fvals
     if (err) printf ("error mvn gauss: %s\n", gsl_strerror (err));
     res += *tmpres;
  }
@@ -1295,8 +1296,12 @@ double emvnorm(const gsl_vector *mucov, void *params)
 }
 
 
-void mvnorm_df (const gsl_vector *mucov, void *params, gsl_vector *df)
+void emvnorm_df(const gsl_vector *mucov, void *params, gsl_vector *df)
 {
+ /* params [ 2 + _s(_N+1) ] ( ndim + nsamples + sample_vec + fval_vec ) */
+ 
+ double f = emvnorm(  mucov,  params);
+
  double *par = (double *)params;
  
  size_t N = (size_t) par[0];
@@ -1307,15 +1312,18 @@ void mvnorm_df (const gsl_vector *mucov, void *params, gsl_vector *df)
  int err;
  gsl_vector* mu     = gsl_vector_alloc(N);
  gsl_vector* x      = gsl_vector_alloc(N);
+ gsl_vector* mx     = gsl_vector_alloc(N);
+ gsl_vector* z      = gsl_vector_alloc(N);
  gsl_vector* dldmu  = gsl_vector_alloc(N);
  gsl_vector* work   = gsl_vector_alloc(N);
  gsl_matrix* L      = gsl_matrix_alloc(N,N);
  gsl_matrix* A      = gsl_matrix_alloc(N,N);
  gsl_matrix* Ainv   = gsl_matrix_alloc(N,N);
+ gsl_matrix* AinvT  = gsl_matrix_alloc(N,N);
  gsl_matrix* dldC   = gsl_matrix_alloc(N,N);
  gsl_permutation* p = gsl_permutation_alloc(N);
  
- for(size_t d = 0; d < N; ++d) gsl_vector_set( mu, d, gsl_vector_get(mucov, d));
+ for(size_t d = 0; d < N; ++d) { gsl_vector_set( mu, d, gsl_vector_get(mucov, d)); gsl_vector_set( z, d, gsl_vector_get(mucov, d)); }
  for(size_t d = 0; d < N; ++d)
     for(size_t e = 0; e <= d; ++e) 
         { gsl_matrix_set(L, d, e, gsl_vector_get(mucov, N+d+e)); gsl_matrix_set(L, e, d, gsl_vector_get( mucov, N+d+e));
@@ -1329,11 +1337,23 @@ void mvnorm_df (const gsl_vector *mucov, void *params, gsl_vector *df)
  
  err =  gsl_linalg_LU_invert(A, p, Ainv);
  if (err) printf ("error LU invert: %s\n", gsl_strerror (err));
- 
+
+ err = gsl_matrix_transpose_memcpy(AinvT, Ainv);
+ if (err) printf ("error transpose: %s\n", gsl_strerror (err));
+
+ gsl_matrix_add(Ainv, AinvT);
+ double* dMu = (double*) calloc(N, sizeof(double));
+ for(size_t i = 0; i < S; ++i)
+ {
+     for(size_t d = 0; d < N; ++d) gsl_vector_set( mx, d, (double) par[i*d+2]);
+     gsl_vector_sub(z, mx);  // z = mu-x
+     gsl_vector_sub(mx, mu); // x = x-mu
+     cblas_dgemv(CblasRowMajor, CblasNoTrans, N, N, 0.5*par[S*N+2+i]*f, Ainv->data, N, mx->data, 0, 1.0, dMu, 0); //TODO: scale this fvals
+     // TODO: dC = 0.5 ( AinvT * z * zT * AinvT - AinvT ) * f
+
+ }
  //TODO:
- // dLDu
- // dLdC
- // ...
+ // write back dMu and dC
  
  gsl_vector_free(mu);
  gsl_vector_free(x);
@@ -1341,7 +1361,11 @@ void mvnorm_df (const gsl_vector *mucov, void *params, gsl_vector *df)
  gsl_vector_free(work);
  gsl_matrix_free(L);
  gsl_matrix_free(A);
+ gsl_matrix_free(Ainv);
+ gsl_matrix_free(AinvT);
  gsl_matrix_free(dldC);
  gsl_permutation_free(p);
  delete signum;
+ free(dMu);
+ 
 }

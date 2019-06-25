@@ -186,7 +186,7 @@ class CMAES : public Base
 };
 
 double emvnorm(const gsl_vector *v, void *params);
-void emvnorm_df (const gsl_vector *v, void *params, gsl_vector *df);
+void emvnorm_df(const gsl_vector *v, void *params, gsl_vector *df);
 
 } // namespace Korali::Solver
 

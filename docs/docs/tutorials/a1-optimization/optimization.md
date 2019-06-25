@@ -2,9 +2,11 @@ In this tutorial we show how to **optimize** directly from a given function.
 
 !!! info
 	The full Python code for this tutorial can be found in:
-	[tutorials/a1-optimization.py](https://github.com/cselab/skorali/blob/master/tutorials/a1-optimization.py).
+	[tutorials/python/a1-optimization.py](https://github.com/cselab/skorali/blob/master/tutorials/python/a1-optimization.py).
 
-
+	The full C++ code for this tutorial can be found in:
+	[tutorials/cxx/a1-optimization.cpp](https://github.com/cselab/skorali/blob/master/tutorials/cxx/a1-optimization.cpp).
+	
 ## Problem Setup
 We are given the function $f(\vartheta)=-\vartheta^2$ for $\vartheta\in[-10,10]$.
 We want to find the maximum of the function in the given interval.

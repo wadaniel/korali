@@ -16,9 +16,9 @@ k = korali.initialize()
 
 k["Problem"] = "Direct Evaluation"
 k["Solver"]  = "CMA-ES" 
-k["Variables"][0]["Name"] = "X";
-k["Variables"][0]["CMA-ES"]["Lower Bound"] = -10.0;
-k["Variables"][0]["CMA-ES"]["Upper Bound"] = +10.0;
+k["Variables"][0]["Name"] = "X"
+k["Variables"][0]["CMA-ES"]["Lower Bound"] = -10.0
+k["Variables"][0]["CMA-ES"]["Upper Bound"] = +10.0
 k["CMA-ES"]["Objective"] = "Maximize"
 k["CMA-ES"]["Termination Criteria"]["Max Generations"]["Value"] = 500
 k["CMA-ES"]["Sample Count"] = 5
@@ -31,4 +31,4 @@ k.run()
 k2 = korali.Engine()
 k2.loadState("_korali_result/s00005.json")
 k2.setModel(evaluateModel)
-k2.run();
+k2.run()

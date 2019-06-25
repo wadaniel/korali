@@ -16,7 +16,7 @@ k = korali.initialize()
 x, y = getReferenceData()
 
 Fx = lambda koraliData: evaluateModel(koraliData, x)
-k.setModel( Fx );
+k.setModel( Fx )
 
 # Selecting problem.
 k["Problem"] = "Bayesian"
@@ -41,7 +41,7 @@ k["Variables"][1]["Bayesian"]["Prior Distribution"]["Maximum"] = +5.0
 k["Variables"][2]["Name"] = "Sigma"
 k["Variables"][2]["Bayesian"]["Type"] = "Statistical"
 k["Variables"][2]["Bayesian"]["Prior Distribution"]["Type"] = "Uniform"
-k["Variables"][2]["Bayesian"]["Prior Distribution"]["Minimum"] =   0.0
+k["Variables"][2]["Bayesian"]["Prior Distribution"]["Minimum"] = 0.0
 k["Variables"][2]["Bayesian"]["Prior Distribution"]["Maximum"] = +5.0
 
 # Selecting solver type.

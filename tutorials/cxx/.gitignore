@@ -1,0 +1,9 @@
+a1-optimization
+a2-sampling-mcmc
+a2-sampling-tmcmc
+a3-bayesian-inference-cmaes
+a3-bayesian-inference-tmcmc
+b1-restart
+b2-constrained-optimization
+*.o
+*.a

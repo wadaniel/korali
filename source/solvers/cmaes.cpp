@@ -14,17 +14,8 @@ CMAES::CMAES(nlohmann::json& js, std::string name)
 {
  setConfiguration(js);
 
- size_t s_max, mu_max;
- if (_k->_fconstraints.size() > 0)
- {
-   s_max  = std::max(_s, _via_s);
-   mu_max = std::max(_mu, _via_mu);
- }
- else
- {
-   s_max  = _s;
-   mu_max = _mu;
- }
+ size_t s_max  = std::max(_s,  _via_s);
+ size_t mu_max = std::max(_mu, _via_mu);
 
  // Allocating Memory
  _samplePopulation =  (double*) calloc (sizeof(double), _k->N*s_max);
@@ -64,7 +55,7 @@ CMAES::CMAES(nlohmann::json& js, std::string name)
  for (size_t i = 0; i < s_max; i++) Z[i]   = (double*) calloc (sizeof(double), _k->N);
  for (size_t i = 0; i < s_max; i++) BDZ[i] = (double*) calloc (sizeof(double), _k->N);
 
- _transformedSamples = (double*) calloc (sizeof(double), _current_s * _k->N);
+ _transformedSamples = (double*) calloc (sizeof(double), s_max * _k->N);
 
  // Initailizing Mu
  _muWeights = (double *) calloc (sizeof(double), mu_max);
@@ -284,13 +275,13 @@ void CMAES::setConfiguration(nlohmann::json& js)
 
  // CCMA-ES (more below)
   _via_s  = consume(js, { "CMA-ES", "Viability", "Sample Count"}, KORALI_NUMBER, std::to_string(_s));
-  _via_mu = consume(js, { "CMA-ES",  "Viability", "Mu"}, KORALI_NUMBER, std::to_string(ceil(_via_s / 2)));
+  _via_mu = consume(js, { "CMA-ES",  "Viability", "Mu"}, KORALI_NUMBER, std::to_string(ceil(_via_s*0.5)));
   if(_via_mu < 1 ||  _via_mu > _via_s || ( ( _via_mu == _via_s) && _muType.compare("Linear") ) )
       { fprintf( stderr, "[Korali] CMA-ES Error: Invalid setting of Mu Viability (%lu) and/or Viability Sample Count (%lu)\n", _via_mu, _via_s); exit(-1); }
 
-  _isViabilityRegime = consume(js, { "CMA-ES", "Viability", "Regime" }, KORALI_BOOLEAN, "true");
+  _isViabilityRegime = consume(js, { "CMA-ES", "Viability", "Regime" }, KORALI_BOOLEAN, "false");
 
-  if( _isViabilityRegime) {
+  if(_isViabilityRegime) {
       _current_s  = _via_s;
       _current_mu = _via_mu;
   } else {

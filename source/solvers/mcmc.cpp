@@ -393,7 +393,6 @@ void Korali::Solver::MCMC::saveState() const
  
 void Korali::Solver::MCMC::printGeneration() const
 {
- if ((chainLength % _k->_outputFrequency) != 0) return;
  if (_k->_verbosity >= KORALI_MINIMAL)
  {
   printf("--------------------------------------------------------------------\n");

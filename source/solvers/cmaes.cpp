@@ -14,15 +14,6 @@ CMAES::CMAES(nlohmann::json& js, std::string name)
 {
  setConfiguration(js);
 
- if( _isViabilityRegime) {
-     _current_s  = _via_s;
-     _current_mu = _via_mu;
- } else {
-     _current_s  = _s;
-     _current_mu = _mu;
- }
-
-
  size_t s_max, mu_max;
  if (_k->_fconstraints.size() > 0)
  {
@@ -52,6 +43,13 @@ CMAES::CMAES(nlohmann::json& js, std::string name)
  index          = (size_t*) calloc (sizeof(size_t), s_max);
  histFuncValues = (double*) calloc (sizeof(double), _termCondMaxGenerations+1);
 
+ _initializedSample = (bool*) calloc (sizeof(bool), s_max);
+ _fitnessVector = (double*) calloc (sizeof(double), s_max);
+
+ // Init Generation
+ _isFinished = false;
+ _currentGeneration = 0;
+
  C    = (double**) calloc (sizeof(double*), _k->N);
  Ctmp = (double**) calloc (sizeof(double*), _k->N);
  B    = (double**) calloc (sizeof(double*), _k->N);
@@ -61,12 +59,15 @@ CMAES::CMAES(nlohmann::json& js, std::string name)
  for (size_t i = 0; i < _k->N; i++) B[i] = (double*) calloc (sizeof(double), _k->N);
  for (size_t i = 0; i < _k->N; i++) Btmp[i] = (double*) calloc (sizeof(double), _k->N);
 
- _initializedSample = (bool*) calloc (sizeof(bool), s_max);
- _fitnessVector = (double*) calloc (sizeof(double), s_max);
+ Z   = (double**) malloc (sizeof(double*) * s_max);
+ BDZ = (double**) malloc (sizeof(double*) * s_max);
+ for (size_t i = 0; i < s_max; i++) Z[i]   = (double*) calloc (sizeof(double), _k->N);
+ for (size_t i = 0; i < s_max; i++) BDZ[i] = (double*) calloc (sizeof(double), _k->N);
 
- // Init Generation
- _isFinished = false;
- _currentGeneration = 0;
+ _transformedSamples = (double*) calloc (sizeof(double), _current_s * _k->N);
+
+ // Initailizing Mu
+ _muWeights = (double *) calloc (sizeof(double), mu_max);
 
  // Initializing Gaussian Generator
  auto jsGaussian = nlohmann::json();
@@ -78,43 +79,6 @@ CMAES::CMAES(nlohmann::json& js, std::string name)
  _gaussianGenerator->setDistribution(jsGaussian);
 
  _chiN = sqrt((double) _k->N) * (1. - 1./(4.*_k->N) + 1./(21.*_k->N*_k->N));
-
- // Initailizing Mu
- _muWeights = (double *) calloc (sizeof(double), mu_max);
-
- // Setting algorithm internal variables
- if (_k->_fconstraints.size() > 0) initInternals(_via_mu);
- else initInternals(_mu);
-
- // Setting eigensystem evaluation Frequency
- //if( _covarianceEigenEvalFreq < 0.0) _covarianceEigenEvalFreq = 1.0/_covarianceMatrixLearningRate/((double)_k->N)/10.0;
-
- flgEigensysIsUptodate = true;
-
- countevals      = 0;
- countinfeasible = 0;
- resampled       = 0;
- 
- bestEver = -std::numeric_limits<double>::max();
-
- psL2 = 0.0;
-
- /* set rgxmean */
- for (size_t i = 0; i < _k->N; ++i)
- {
-   if(_initialMeans[i] < _lowerBounds[i] || _initialMeans[i] > _upperBounds[i])
-    fprintf(stderr,"[Korali] Warning: Initial Value (%.4f) for \'%s\' is out of bounds (%.4f-%.4f).\n",
-            _initialMeans[i],
-            _k->_variables[i]->_name.c_str(),
-            _lowerBounds[i],
-            _upperBounds[i]);
-   rgxmean[i] = rgxold[i] = _initialMeans[i];
- }
-
- Z   = (double**) malloc (sizeof(double*) * s_max);
- BDZ = (double**) malloc (sizeof(double*) * s_max);
- for (size_t i = 0; i < s_max; i++) Z[i]   = (double*) calloc (sizeof(double), _k->N);
- for (size_t i = 0; i < s_max; i++) BDZ[i] = (double*) calloc (sizeof(double), _k->N);
 
  // CCMA-ES variables
  if (_k->_fconstraints.size() > 0)
@@ -135,15 +99,44 @@ CMAES::CMAES(nlohmann::json& js, std::string name)
   std::fill_n( sucRates, _k->_fconstraints.size(), 0.5);
 
   viabilityImprovement  = (bool*) calloc (sizeof(bool), s_max);
-  viabilityIndicator    = (bool**) malloc (sizeof(bool*) * _k->_fconstraints.size());
-  constraintEvaluations = (double**) malloc (sizeof(double*) * _k->_fconstraints.size());
+  viabilityIndicator    = (bool**) calloc (sizeof(bool*), _k->_fconstraints.size());
+  constraintEvaluations = (double**) calloc (sizeof(double*), _k->_fconstraints.size());
+
   for (size_t c = 0; c < _k->_fconstraints.size(); c++) viabilityIndicator[c]    = (bool*) calloc (sizeof(bool), s_max);
   for (size_t c = 0; c < _k->_fconstraints.size(); c++) constraintEvaluations[c] = (double*) calloc (sizeof(double), s_max);
 
-  v = (double**) malloc (sizeof(double*) * _k->_fconstraints.size());
-  for (size_t i = 0; i < _k->_fconstraints.size(); ++i) v[i] = (double*) calloc (sizeof(double), _k->N);
+  v = (double**) calloc (sizeof(double*), _k->_fconstraints.size());
+  for (size_t i = 0; i < _k->_fconstraints.size(); i++) v[i] = (double*) calloc (sizeof(double), _k->N);
 
   besteverCeval = (double*) calloc (sizeof(double), _k->_fconstraints.size());
+ }
+
+ // Setting algorithm internal variables
+ if (_k->_fconstraints.size() > 0) initInternals(_via_mu);
+ else initInternals(_mu);
+
+ // Setting eigensystem evaluation Frequency
+ //if( _covarianceEigenEvalFreq < 0.0) _covarianceEigenEvalFreq = 1.0/_covarianceMatrixLearningRate/((double)_k->N)/10.0;
+
+ flgEigensysIsUptodate = true;
+
+ countevals      = 0;
+ countinfeasible = 0;
+ resampled       = 0;
+ 
+ bestEver = -std::numeric_limits<double>::max();
+ psL2 = 0.0;
+
+ /* set rgxmean */
+ for (size_t i = 0; i < _k->N; ++i)
+ {
+   if(_initialMeans[i] < _lowerBounds[i] || _initialMeans[i] > _upperBounds[i]) if(_k->_verbosity >= KORALI_MINIMAL)
+    fprintf(stderr,"[Korali] Warning: Initial Value (%.4f) for \'%s\' is out of bounds (%.4f-%.4f).\n",
+            _initialMeans[i],
+            _k->_variables[i]->_name.c_str(),
+            _lowerBounds[i],
+            _upperBounds[i]);
+   rgxmean[i] = rgxold[i] = _initialMeans[i];
  }
 
  // If state is defined:
@@ -169,7 +162,7 @@ void Korali::Solver::CMAES::getConfiguration(nlohmann::json& js)
  js["Solver"] = "CMA-ES";
 
  js["CMA-ES"]["Result Output Frequency"] = _resultOutputFrequency;
- 
+
  js["CMA-ES"]["Sample Count"]            = _s;
  js["CMA-ES"]["Sigma Cumulation Factor"] = _sigmaCumulationFactor;
  js["CMA-ES"]["Damp Factor"]             = _dampFactor;
@@ -277,7 +270,6 @@ void CMAES::setConfiguration(nlohmann::json& js)
  _maxResamplings                = consume(js, { "CMA-ES", "Max Resamplings" }, KORALI_NUMBER, std::to_string(1e6));
  _isSigmaBounded                = consume(js, { "CMA-ES", "Sigma Bounded" }, KORALI_BOOLEAN, "false");
 
-
  _fitnessSign   = 0;
  if(_objective == "Maximize") _fitnessSign = 1;
  if(_objective == "Minimize") _fitnessSign = -1;
@@ -295,6 +287,16 @@ void CMAES::setConfiguration(nlohmann::json& js)
   _via_mu = consume(js, { "CMA-ES",  "Viability", "Mu"}, KORALI_NUMBER, std::to_string(ceil(_via_s / 2)));
   if(_via_mu < 1 ||  _via_mu > _via_s || ( ( _via_mu == _via_s) && _muType.compare("Linear") ) )
       { fprintf( stderr, "[Korali] CMA-ES Error: Invalid setting of Mu Viability (%lu) and/or Viability Sample Count (%lu)\n", _via_mu, _via_s); exit(-1); }
+
+  _isViabilityRegime = consume(js, { "CMA-ES", "Viability", "Regime" }, KORALI_BOOLEAN, "true");
+
+  if( _isViabilityRegime) {
+      _current_s  = _via_s;
+      _current_mu = _via_mu;
+  } else {
+      _current_s  = _s;
+      _current_mu = _mu;
+  }
 
  //_covarianceEigenEvalFreq      = consume(js, { "CMA-ES", "Covariance Matrix", "Eigenvalue Evaluation Frequency" }, KORALI_NUMBER, std::to_string(0));
  _cumulativeCovarianceIn       = consume(js, { "CMA-ES", "Covariance Matrix", "Cumulative Covariance" }, KORALI_NUMBER, std::to_string(-1));
@@ -358,11 +360,7 @@ void CMAES::setConfiguration(nlohmann::json& js)
  _maxCorrections = consume(js, { "CMA-ES", "Max Corrections" }, KORALI_NUMBER, std::to_string(1e6));
  _cv             = consume(js, { "CMA-ES", "Normal Vector Learning Rate" }, KORALI_NUMBER, std::to_string(1.0/(2.0+_current_s)));
  _cp             = consume(js, { "CMA-ES", "Global Success Learning Rate" }, KORALI_NUMBER, std::to_string(1.0/12.0));
-
- _isViabilityRegime = consume(js, { "CMA-ES", "Viability", "Regime" }, KORALI_BOOLEAN, "true");
-
 }
-
 
 void CMAES::setState(nlohmann::json& js)
 {
@@ -539,26 +537,21 @@ void CMAES::run()
 
 void CMAES::evaluateSamples()
 {
-  double* transformedSamples = new double[ _current_s * _k->N ];
-  
   for (size_t i = 0; i < _current_s; i++) for(size_t d = 0; d < _k->N; ++d)
     if(_variableLogSpace[d] == true) 
-        transformedSamples[i*_k->N+d] = std::exp(_samplePopulation[i*_k->N+d]);
+        _transformedSamples[i*_k->N+d] = std::exp(_samplePopulation[i*_k->N+d]);
     else 
-        transformedSamples[i*_k->N+d] = _samplePopulation[i*_k->N+d];
-
+        _transformedSamples[i*_k->N+d] = _samplePopulation[i*_k->N+d];
 
   while (_finishedSamples < _current_s)
   {
     for (size_t i = 0; i < _current_s; i++) if (_initializedSample[i] == false)
     {
       _initializedSample[i] = true; 
-      _k->_conduit->evaluateSample(transformedSamples, i); countevals++;
+      _k->_conduit->evaluateSample(_transformedSamples, i); countevals++;
     }
     _k->_conduit->checkProgress();
   }
-
-  delete transformedSamples;
 }
 
 
@@ -729,7 +722,7 @@ void CMAES::updateDistribution(const double *fitnessVector)
  {
   bestValidIdx = -1;
   for (size_t i = 0; i < _current_s; i++) if(numviolations[index[i]] == 0) bestValidIdx = index[i];
-  if ( bestValidIdx == -1 ) { printf("[Korali] Warning: all samples violate constraints, no updates taking place.\n"); return; }
+  if ( bestValidIdx == -1 ) if(_k->_verbosity >= KORALI_MINIMAL) { printf("[Korali] Warning: all samples violate constraints, no updates taking place.\n"); return; }
  }
 
  /* update function value history */
@@ -815,7 +808,7 @@ void CMAES::updateDistribution(const double *fitnessVector)
  /* upper bound for sigma */
  double sigma_upper = sqrt(_trace/_k->N);
  if( _isSigmaBounded && (sigma > sigma_upper) ) {
-     fprintf(stderr, "[Korali] Warning: sigma bounded by %f, increase Initial Std of vairables.\n", sigma_upper);
+  if(_k->_verbosity >= KORALI_MINIMAL) fprintf(stderr, "[Korali] Warning: sigma bounded by %f, increase Initial Std of vairables.\n", sigma_upper);
      sigma = sigma_upper;
  }
 
@@ -1069,20 +1062,19 @@ void CMAES::updateEigensystem(double **M, int flgforce)
  if(flgforce == 0 && flgEigensysIsUptodate) return;
  /* if(_currentGeneration % _covarianceEigenEvalFreq == 0) return; */
 
-
  eigen(_k->N, M, axisDtmp, Btmp);
 
  /* find largest and smallest eigenvalue, they are supposed to be sorted anyway */
  double minEWtmp = doubleRangeMin(axisDtmp, _k->N);
  double maxEWtmp = doubleRangeMax(axisDtmp, _k->N);
 
- if (minEWtmp <= 0.0)
+ if (minEWtmp <= 0.0) if(_k->_verbosity >= KORALI_MINIMAL)
   { printf("[Korali] Warning: Min Eigenvalue smaller or equal 0.0 (%+6.3e) after Eigen decomp (no update possible).\n", minEWtmp ); return; }
 
  /* write back */
  for (size_t d = 0; d < _k->N; ++d) axisD[d] = sqrt(axisDtmp[d]);
- for (size_t d = 0; d < _k->N; ++d) std::memcpy( B[d], Btmp[d], sizeof(double) * _k->N );
- for (size_t d = 0; d < _k->N; ++d) std::memcpy( C[d], M[d], sizeof(double) * _k->N );
+ for (size_t d = 0; d < _k->N; ++d) memcpy(B[d], Btmp[d], sizeof(double) * _k->N );
+ for (size_t d = 0; d < _k->N; ++d) memcpy(C[d], M[d], sizeof(double) * _k->N );
 
  minEW = minEWtmp;
  maxEW = maxEWtmp;
@@ -1184,7 +1176,7 @@ void Korali::Solver::CMAES::saveState() const
 
 void CMAES::printGeneration() const
 {
- if (_currentGeneration % _k->_outputFrequency != 0) return;
+ if (_currentGeneration % _resultOutputFrequency != 0) return;
 
  if (_k->_verbosity >= KORALI_MINIMAL)
    printf("[Korali] Generation %ld - Duration: %fs (Total Elapsed Time: %fs)\n", _currentGeneration, std::chrono::duration<double>(t1-t0).count(), std::chrono::duration<double>(t1-startTime).count());

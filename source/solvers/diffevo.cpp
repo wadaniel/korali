@@ -561,8 +561,6 @@ void Korali::Solver::DE::saveState() const
 
 void DE::printGeneration() const
 {
- if (currentGeneration % _k->_outputFrequency != 0) return;
-
  if (_k->_verbosity >= KORALI_MINIMAL)
    printf("[Korali] Generation %ld - Duration: %fs (Total Elapsed Time: %fs)\n", currentGeneration, std::chrono::duration<double>(t1-t0).count(), std::chrono::duration<double>(t1-startTime).count());
 

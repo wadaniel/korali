@@ -85,13 +85,11 @@ nlohmann::json Korali::Engine::getConfiguration()
  auto js = nlohmann::json();
 
  js["Seed"]      = _seed;
-
+//
  if (_verbosity == KORALI_SILENT)   js["Verbosity"] = "Silent";
  if (_verbosity == KORALI_MINIMAL)  js["Verbosity"] = "Minimal";
  if (_verbosity == KORALI_NORMAL)   js["Verbosity"] = "Normal";
  if (_verbosity == KORALI_DETAILED) js["Verbosity"] = "Detailed";
-
- js["Output Frequency"] = _outputFrequency;
 
  _problem->getConfiguration(js);
  _solver->getConfiguration(js);
@@ -104,9 +102,6 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
 {
  // Configure Korali Engine
  _variables.clear();
- _conduit = nullptr;
- _problem = nullptr;
- _solver  = nullptr;
 
  // Initializing Seed and GSL Random Environment
  _seed = 0;
@@ -126,8 +121,6 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
  if (vLevel == "Normal")   _verbosity = KORALI_NORMAL;
  if (vLevel == "Detailed") _verbosity = KORALI_DETAILED;
  if (_verbosity == KORALI_UNDEFINED) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Vebosity Level '%s'.", vLevel.c_str()); exit(-1); }
-
- _outputFrequency       = consume(js, { "Output Frequency" }, KORALI_NUMBER, "1");
 
  // Configure Problem
 
@@ -206,7 +199,7 @@ void Korali::Engine::run()
  // Running Engine
  _conduit->run();
 
- if (_conduit->isRoot()) printf("[Korali] Results saved to folder: '_korali_result'\n");
+ if (_conduit->isRoot()) if(_verbosity >= KORALI_MINIMAL) printf("[Korali] Results saved to folder: '_korali_result'\n");
 }
 
 void Korali::Engine::addConstraint(fcon fconstraint)

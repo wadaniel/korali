@@ -80,7 +80,6 @@ class Engine {
 
  size_t _seed;
  int _verbosity;
- size_t _outputFrequency;
 
  // Serialization Methods
  nlohmann::json getConfiguration();

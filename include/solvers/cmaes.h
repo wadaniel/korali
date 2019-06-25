@@ -46,6 +46,7 @@ class CMAES : public Base
  size_t _currentGeneration; /* generation count */
  bool* _initializedSample; /* flag to distribute work */
  char _terminationReason[500]; /* buffer for exit reason */
+ double*_transformedSamples;
 
  size_t _finishedSamples; /* counter of evaluated samples to terminate evaluation */
  size_t _s; /* number of samples per generation */

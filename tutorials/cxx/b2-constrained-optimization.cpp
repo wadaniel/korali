@@ -18,8 +18,8 @@ int main(int argc, char* argv[])
  for (int i = 0; i < nParams; i++)
  {
   k["Variables"][i]["Name"] = "X" + std::to_string(i);
-  k["Variables"][0]["CMA-ES"]["Lower Bound"] = -10.0;
-  k["Variables"][0]["CMA-ES"]["Upper Bound"] = +10.0;
+  k["Variables"][i]["CMA-ES"]["Lower Bound"] = -10.0;
+  k["Variables"][i]["CMA-ES"]["Upper Bound"] = +10.0;
  }
 
  k["CMA-ES"]["Adaption Size"] = 0.1;

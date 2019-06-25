@@ -572,7 +572,6 @@ void Korali::Solver::TMCMC::saveState() const
 
 void Korali::Solver::TMCMC::printGeneration() const
 {
- if ((_currentGeneration-1) % _k->_outputFrequency != 0) return;
  if (_k->_verbosity >= KORALI_MINIMAL)
  {
   printf("--------------------------------------------------------------------\n");

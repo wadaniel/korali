@@ -17,8 +17,8 @@
 #include "solvers/mcmc.h"
 #include "solvers/tmcmc.h"
 
-#include "conduits/single.h"
-#include "conduits/mpi.h"
+#include "conduits/semi-intrusive.h"
+#include "conduits/distributed.h"
 #include "conduits/nonintrusive.h"
 
 #include "json/koralijson.h"
@@ -80,7 +80,6 @@ class Engine {
 
  size_t _seed;
  int _verbosity;
- size_t _outputFrequency;
 
  // Serialization Methods
  nlohmann::json getConfiguration();

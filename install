@@ -1,27 +1,20 @@
 #!/bin/bash
 
+version=1.0.0
 logFile=$PWD/install.log
 
 # Help display function
 function print_help ()
 {
  echo ""
- echo "---------------------------------------------------------------------"
- echo "| Korali - High-performance framework for optimization, sampling    |"
- echo "|          and Bayesian uncertainty quantification of large scale   |"
- echo "|          computational models.                                    |"
- echo "| Authors: Georgios Arampatzis, Sergio Martin, Daniel Waelchli      |"
- echo "|          CSELab - ETH Zurich - Prof. Koumoutsakos                 |"
- echo "---------------------------------------------------------------------"
- echo ""
  echo "Syntax: ./install"
- echo "        [--install-gsl]"
+ echo "        [--no-prereqs]"
  echo "        [--rebuild]"
  echo "        [--debug]"
  echo "        [--help]"
  echo ""
  echo "Where:"
- echo " --install-gsl Automatically downloads and installs GSL if not found."
+ echo " --no-prereqs prevents Korali from automatically installing prerequisites."
  echo " --debug builds a non-optimized Korali for debugging purposes."
  echo " --rebuild Cleans and rebuilds/installs Korali for development purposes."
  echo " --help Displays this help message."
@@ -47,14 +40,14 @@ function exitWithError ()
  exit -1
 }
 
-INSTALLGSL=0
+INSTALLREQS=1
 OPTFLAGS="-O3"
 
 for i in "$@"
 do
 case $i in
-    --install-gsl)
-    INSTALLGSL=1
+    --no-prereqs)
+    INSTALLREQS=0
     shift 
     ;;
     --debug)
@@ -84,7 +77,7 @@ done
 ######## Start Configuration ######
 
 echo "Korali Log Start." > $logFile
-logEcho "[Korali] Configuring Korali..."
+logEcho "[Korali] Configuring Korali v$version..."
 
 log "Checking for architecture..."
 arch="$(uname -s)"
@@ -148,33 +141,36 @@ then
  log "[Korali] Found GSL version $gslver."
  cmpver=`printf "${gslver}\n${mingslver}" | sort -V | head -n 1`
  if [[ "$cmpver" != "$mingslver" ]]; then
-  if [ $INSTALLGSL -eq 0 ]; then
+ 
+  if [ $INSTALLREQS -eq 0 ]; then
    logEcho "[Korali] Error: GSL Version found (${gslver}) is smaller than required (${mingslver})."
-   logEcho "[Korali] Solution: Run \"./install --install-gsl\"."
+   logEcho "[Korali] Solution: Run \"./install\"."
    exitWithError
-  else
-   logEcho "[Korali] Downloading GNU Scientific Library... "
-   mkdir -p build
-   CURDIR=$PWD
-   rm -f gsl-2.5.tar.gz 
-   wget "ftp://ftp.gnu.org/gnu/gsl/gsl-2.5.tar.gz" 
-   tar -xzvf gsl-2.5.tar.gz >> $logFile 2>&1
-   echo "[Korali] Configuring GNU Scientific Library... "
-   cd gsl-2.5 
-   ./configure --prefix=$gslprefix >> $logFile 2>&1 
-   logEcho "[Korali] Compiling GNU Scientific Library... "
-   make -j10 >> $logFile 2>&1
-   logEcho "[Korali] Installing GNU Scientific Library... "
-   make install >> $logFile 2>&1
-   if [  $? -ne 0 ]; then
-    logEcho -e "[Korali] Error: Failed GNU Scientific Library installation."
-    exitWithError
-   fi
-   cd .. 
-   rm -rf gsl-2.5 gsl-2.5.tar.gz >> $logFile 2>&1
-   logEcho "[Korali] Finished installing GNU Scientific Library. "
-   gslcfgFile=$gslprefix/bin/gsl-config
   fi
+  
+  logEcho "[Korali] Downloading GNU Scientific Library... "
+  mkdir -p build
+  CURDIR=$PWD
+  rm -f gsl-2.5.tar.gz 
+  wget "ftp://ftp.gnu.org/gnu/gsl/gsl-2.5.tar.gz" 
+  tar -xzvf gsl-2.5.tar.gz >> $logFile 2>&1
+  echo "[Korali] Configuring GNU Scientific Library... "
+  cd gsl-2.5 
+  ./configure --prefix=$gslprefix >> $logFile 2>&1 
+  logEcho "[Korali] Compiling GNU Scientific Library... "
+  make -j10 >> $logFile 2>&1
+  logEcho "[Korali] Installing GNU Scientific Library... "
+  
+  make install >> $logFile 2>&1
+  if [  $? -ne 0 ]; then
+   logEcho -e "[Korali] Error: Failed GNU Scientific Library installation."
+   exitWithError
+  fi
+  
+  cd .. 
+  rm -rf gsl-2.5 gsl-2.5.tar.gz >> $logFile 2>&1
+  logEcho "[Korali] Finished installing GNU Scientific Library. "
+  gslcfgFile=$gslprefix/bin/gsl-config
  fi
 fi
 
@@ -220,7 +216,7 @@ log "[Korali] Checking for pip3 support using \"pip3 --version\"..."
 pip3 --version >> $logFile 2>&1
 if [ $? -ne 0 ]; then
   logEcho "[Korali] Error: pip3 not found."
-  logEcho "[Korali] Solution: Make sure pip3 is correctly installed in your system"
+  logEcho "[Korali] Solution: Make sure python and pip3 are correctly installed in your system."
   exitWithError
 fi
 
@@ -229,9 +225,19 @@ fi
 log "[Korali] Checking for Pybind11 support using \"python3 -m pybind11 -h\"..."
 python3 -m pybind11 -h >> $logFile 2>&1
 if [ $? -ne 0 ]; then
-  logEcho "[Korali] Error: pybind11 not found."
-  logEcho "[Korali] Solution: Install pybind11 with \"pip3 install --user pybind11\"."
-  exitWithError
+
+  if [ $INSTALLREQS -eq 0 ]; then
+   logEcho "[Korali] Error: pybind11 not found, trying to install it automatically."
+   logEcho "[Korali] Solution: Run \"./install\"."
+   exitWithError
+  fi
+  
+  logEcho "[Korali] pybind11 not found, trying to install it automatically."
+  pip3 install --user pybind11 >> $logFile 2>&1
+  if [ $? -ne 0 ]; then
+    logEcho "[Korali] Error trying to install pybind11."
+    exitWithError
+  fi
 fi
 
 ######## Determining Library Flags ########

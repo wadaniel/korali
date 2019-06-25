@@ -1,0 +1,77 @@
+site_name: korali
+repo_name: 'cselab/korali'
+repo_url: 'https://github.com/cselab/korali'
+edit_uri: ''
+
+nav:
+  - Home: index.md
+  - Tutorials:
+     - 'A.1 - Optimization': tutorials/a1-optimization/optimization.md
+     - 'A.2 - Sampling': tutorials/a2-sampling/sampling.md
+     - 'A.3 - Bayesian Inference': tutorials/a3-bayesian/bayesian.md
+     - 'B.1 - Checkpoint/Restart': tutorials/b1-restart/restart.md
+     - 'B.2 - Constrained Optimization': tutorials/b2-constrained-optimization/constrained-optimization.md
+     #- 'B.3 - Distributed Conduit': tutorials/distributed/distributed.md
+     #- 'B.4 - Nonintrusive Conduit': tutorials/nonintrusive/nonintrusive.md
+     #- 'C.1 - MPI Model': tutorials/mpi/mpi.md
+     #- 'C.2 - Nonintrusive Cluster': tutorials/bayesian/bayesian.md
+     #- 'C.3 - C++/Python Interaction': tutorials/bayesian/bayesian.md
+  - User Manual:
+      - Basics: usage/basics.md
+      - Problems:
+          - Direct Evaluation: usage/problems/direct.md
+          - Bayesian:
+            - Direct Likelihood: usage/problems/bayesian/direct.md
+            - Reference Likelihood: usage/problems/bayesian/reference.md
+      - Solvers:
+          - Optimizers:
+            - CMA-ES: usage/solvers/optimizers/cmaes.md
+            - Constrained CMA-ES: usage/solvers/optimizers/ccmaes.md
+            - Differential Evolution: usage/solvers/optimizers/diffevo.md
+          - Samplers:
+            - MCMC: usage/solvers/samplers/mcmc.md
+            - TMCMC: usage/solvers/samplers/tmcmc.md
+      - Conduits:
+          - Semi-Intrusive: usage/conduits/semi-intrusive.md
+          - Distributed: usage/conduits/distributed.md
+          - Nonintrusive: usage/conduits/nonintrusive.md
+      - Models:
+          - Simple: usage/models/simple.md
+          - Rerefence: usage/models/reference.md
+          - Constraint: usage/models/constraint.md
+      - Results:
+          - Generate Plots: usage/results/#generate-plots
+          - Export Results: usage/results/#export-results
+          - Resume Execution: usage/results/#resume-execution
+  - Development:
+    - Git Repository: https://github.com/cselab/korali
+    - Integration: development/integration.md
+    - Doxygen: development/doxygen/html/index.html
+  - About Us: aboutus.md
+
+theme:
+    name: material
+    palette:
+        primary: 'light blue'
+        accent: 'blue'
+    font:
+        text: 'Ubuntu'
+        code: 'Ubuntu Mono'
+    logo: 'images/templogo.png'
+# Got logo from https://icons8.com/icon/3036/coral
+
+markdown_extensions:
+  - pymdownx.arithmatex
+  - pymdownx.details
+  - pymdownx.superfences
+  - attr_list
+  - admonition
+  - codehilite
+
+extra_css:
+    - style.css
+
+extra_javascript:
+  - 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML'
+  
+google_analytics: ['UA-43580832-2', 'https://www.cse-lab.ethz.ch/korali/']

@@ -85,13 +85,11 @@ nlohmann::json Korali::Engine::getConfiguration()
  auto js = nlohmann::json();
 
  js["Seed"]      = _seed;
-
+//
  if (_verbosity == KORALI_SILENT)   js["Verbosity"] = "Silent";
  if (_verbosity == KORALI_MINIMAL)  js["Verbosity"] = "Minimal";
  if (_verbosity == KORALI_NORMAL)   js["Verbosity"] = "Normal";
  if (_verbosity == KORALI_DETAILED) js["Verbosity"] = "Detailed";
-
- js["Output Frequency"] = _outputFrequency;
 
  _problem->getConfiguration(js);
  _solver->getConfiguration(js);
@@ -103,6 +101,7 @@ nlohmann::json Korali::Engine::getConfiguration()
 void Korali::Engine::setConfiguration(nlohmann::json js)
 {
  // Configure Korali Engine
+ _variables.clear();
 
  // Initializing Seed and GSL Random Environment
  _seed = 0;
@@ -123,8 +122,6 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
  if (vLevel == "Detailed") _verbosity = KORALI_DETAILED;
  if (_verbosity == KORALI_UNDEFINED) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Vebosity Level '%s'.", vLevel.c_str()); exit(-1); }
 
- _outputFrequency       = consume(js, { "Output Frequency" }, KORALI_NUMBER, "1");
-
  // Configure Problem
 
  _problem = nullptr;
@@ -141,12 +138,13 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
  int rankCount = 1;
 
  _conduit = nullptr;
- std::string conduitType =  consume(js, { "Conduit" }, KORALI_STRING, "Single");
- if (conduitType == "Single") _conduit = new Korali::Conduit::Single(js["Conduit"]);
+ std::string conduitType =  consume(js, { "Conduit" }, KORALI_STRING, "Semi-Intrusive");
+
+ if (conduitType == "Semi-Intrusive") _conduit = new Korali::Conduit::SemiIntrusive(js["Conduit"]);
  #ifdef _KORALI_USE_MPI
- if (conduitType == "MPI") _conduit = new Korali::Conduit::KoraliMPI(js["Conduit"]);
+ if (conduitType == "Distributed") _conduit = new Korali::Conduit::Distributed(js["Conduit"]);
  #else
- if (conduitType == "MPI") { fprintf(stderr, "[Korali] Error: MPI Conduit selected, but Korali has not been compiled with MPI support.\n"); exit(-1); }
+ if (conduitType == "Distributed") { fprintf(stderr, "[Korali] Error: Distributed Conduit selected, but Korali has not been compiled with MPI or UPC++ support.\n"); exit(-1); }
  #endif
  if (conduitType == "Nonintrusive") _conduit = new Korali::Conduit::Nonintrusive(js["Conduit"]);
 
@@ -198,13 +196,10 @@ void Korali::Engine::run()
  // Creating Results directory
  mkdir("_korali_result", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
- // Initialize Problem
- _problem->initialize();
-
  // Running Engine
  _conduit->run();
 
- if (_conduit->isRoot()) printf("[Korali] Results saved to folder: '_korali_result'\n");
+ if (_conduit->isRoot()) if(_verbosity >= KORALI_MINIMAL) printf("[Korali] Results saved to folder: '_korali_result'\n");
 }
 
 void Korali::Engine::addConstraint(fcon fconstraint)
@@ -234,8 +229,6 @@ void Korali::Engine::saveState(int fileId)
 
 void Korali::Engine::loadState(std::string fileName)
 {
- // if (!_conduit->isRoot()) return; TODO: produces segfaults, _conduit not init (DW)
-
  _js = loadJsonFromFile(fileName.c_str());
 }
 

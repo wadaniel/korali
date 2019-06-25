@@ -46,6 +46,7 @@ class CMAES : public Base
  size_t _currentGeneration; /* generation count */
  bool* _initializedSample; /* flag to distribute work */
  char _terminationReason[500]; /* buffer for exit reason */
+ double*_transformedSamples;
 
  size_t _finishedSamples; /* counter of evaluated samples to terminate evaluation */
  size_t _s; /* number of samples per generation */
@@ -141,7 +142,6 @@ class CMAES : public Base
  double doubleRangeMin(const double *rgd, size_t len) const;
 
  // Private CCMA-ES-Specific Variables 
- size_t _numConstraints; /* number of constraints */
  size_t _maxCorrections; /* max cov adaptions per generation */
  size_t _maxResamplings; /* max resamplings per generation */
  double _targetSucRate; /* target success rate */

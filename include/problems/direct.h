@@ -17,9 +17,6 @@ class Direct : public Base
  Direct(nlohmann::json& js);
  ~Direct();
 
- // Initialization Method
- void initialize() override;
-
  // Serialization Methods
  void getConfiguration(nlohmann::json& js) override;
  void setConfiguration(nlohmann::json& js) override;

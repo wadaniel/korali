@@ -11,7 +11,7 @@ Korali::Problem::Direct::Direct(nlohmann::json& js)
 
 Korali::Problem::Direct::~Direct()
 {
-
+  printf("DELETING PREVIOUS PROBLEM\n");
 }
 
 /************************************************************************/
@@ -36,15 +36,6 @@ void Korali::Problem::Direct::setConfiguration(nlohmann::json& js)
   auto varName = consume(js["Variables"][i], { "Name" }, KORALI_STRING);
   _k->_variables.push_back(new Korali::Variable(varName));
  }
-}
-
-/************************************************************************/
-/*                    Functional Methods                                */
-/************************************************************************/
-
-void Korali::Problem::Direct::initialize()
-{
- _isBayesian = false;
 
  if (_k->_modelDefined == false)
  {
@@ -58,6 +49,10 @@ void Korali::Problem::Direct::initialize()
   exit(-1);
  }
 }
+
+/************************************************************************/
+/*                    Functional Methods                                */
+/************************************************************************/
 
 void Korali::Problem::Direct::packVariables(double* sample, Korali::ModelData& data)
 {

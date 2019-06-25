@@ -14,8 +14,6 @@ constexpr size_t str2int(const char* str, int h = 0) { return !str[h] ? 5381 : (
 
 DE::DE(nlohmann::json& js, std::string name)
 {
- _name = name;
- 
  setConfiguration(js);
 
  // Allocating Memory
@@ -35,7 +33,7 @@ DE::DE(nlohmann::json& js, std::string name)
  fitnessVector     = (double*) calloc (sizeof(double), _s);
 
  // Init Generation
- terminate = false;
+ _isFinished = false;
  currentGeneration = 0;
 
  // Initializing Generators 
@@ -134,7 +132,7 @@ void Korali::Solver::DE::getConfiguration(nlohmann::json& js)
  js["DE"]["State"]["BestEverFunctionValue"]     = bestEver;
  js["DE"]["State"]["PreviousBestFunctionValue"] = prevBest;
  js["DE"]["State"]["EvaluationCount"]           = countevals;
-
+ js["DE"]["State"]["Finished"]                  = _isFinished;
  js["DE"]["State"]["PreviousBestFunctionValue"]     = prevFunctionValue;
  js["DE"]["State"]["CurrentBestFunctionValue"]      = currentFunctionValue;
 
@@ -168,18 +166,18 @@ void DE::setConfiguration(nlohmann::json& js)
  _fixinfeasible                 = consume(js, { "DE", "Fix Infeasible" }, KORALI_BOOLEAN, "true");
  _maxResamplings                = consume(js, { "DE", "Max Resamplings" }, KORALI_NUMBER, std::to_string(1e6));
 
- if(_s < 4)  { fprintf( stderr, "[Korali] %s Error: Sample Count must be larger 3 (is %zu)\n", _name.c_str(), _s); exit(-1); }
- if(_crossoverRate < 0.0 || _crossoverRate > 1.0 )  { fprintf( stderr, "[Korali] %s Error: Invalid Crossover Rate, must be in [0,1] (is %f)\n", _name.c_str(), _crossoverRate); exit(-1); }
- if(_mutationRate < 0.0 || _mutationRate > 2.0 )  { fprintf( stderr, "[Korali] %s Error: Invalid Mutation Rate, must be in [0,2] (is %f)\n", _name.c_str(), _mutationRate); exit(-1); }
+ if(_s < 4)  { fprintf( stderr, "[Korali] Differential Evolution Error: Sample Count must be larger 3 (is %zu)\n", _s); exit(-1); }
+ if(_crossoverRate < 0.0 || _crossoverRate > 1.0 )  { fprintf( stderr, "[Korali] Differential Evolution Error: Invalid Crossover Rate, must be in [0,1] (is %f)\n", _crossoverRate); exit(-1); }
+ if(_mutationRate < 0.0 || _mutationRate > 2.0 )  { fprintf( stderr, "[Korali] Differential Evolution Error: Invalid Mutation Rate, must be in [0,2] (is %f)\n", _mutationRate); exit(-1); }
  if( (_mutationRule != "Default") && (_mutationRule != "Self Adaptive") )  
- { fprintf( stderr, "[Korali] %s Error: Invalid Mutation Rule, must be 'Default' or 'Self Adaptive' (is %s)\n", _name.c_str(), _mutationRule.c_str()); exit(-1); }
+ { fprintf( stderr, "[Korali] Differential Evolution Error: Invalid Mutation Rule, must be 'Default' or 'Self Adaptive' (is %s)\n", _mutationRule.c_str()); exit(-1); }
  if( (_acceptRule != "Best") && (_acceptRule != "Greedy") && (_acceptRule != "Iterative") && (_acceptRule != "Improved") )  
- { fprintf( stderr, "[Korali] %s Error: Invalid Accept Rule, must be 'Best', 'Greedy', 'Iterative' or 'Improved' (is %s)\n", _name.c_str(), _acceptRule.c_str()); exit(-1); }
+ { fprintf( stderr, "[Korali] Differential Evolution Error: Invalid Accept Rule, must be 'Best', 'Greedy', 'Iterative' or 'Improved' (is %s)\n", _acceptRule.c_str()); exit(-1); }
  
  _fitnessSign   = 0;
  if(_objective == "Maximize") _fitnessSign = 1;
  if(_objective == "Minimize") _fitnessSign = -1;
- if(_fitnessSign == 0)  { fprintf( stderr, "[Korali] %s Error: Invalid setting for Objective: %s\n", _name.c_str(), _objective.c_str()); exit(-1); }
+ if(_fitnessSign == 0)  { fprintf( stderr, "[Korali] Differential Evolution Error: Invalid setting for Objective: %s\n", _objective.c_str()); exit(-1); }
 
  // Setting variable information
  _initialMeans         = (double*) calloc(sizeof(double), _k->N);
@@ -194,15 +192,13 @@ void DE::setConfiguration(nlohmann::json& js)
 
  for (size_t d = 0; d < _k->N; ++d)
  {
-  _varNames.push_back(consume(js["Variables"][d], { "Name" }, KORALI_STRING, "X"+std::to_string(d)));
-  
   _lowerBounds[d] = consume(js["Variables"][d], { "DE", "Lower Bound" }, KORALI_NUMBER);
   _upperBounds[d] = consume(js["Variables"][d], { "DE", "Upper Bound" }, KORALI_NUMBER);
 
   _initialMeanDefined[d]   = isDefined(js["Variables"][d], { "DE", "Initial Mean" });
   _initialStdDevDefined[d] = isDefined(js["Variables"][d], { "DE", "Initial Standard Deviation" });
   if( _initialStdDevDefined[d] != _initialMeanDefined[d]) 
-    { fprintf( stderr, "[Korali] %s Error: Invalid setting for Initial Mean and Initial Stanard Deviation for variable %s (both must be defined or none)\n", _name.c_str(), _k->_variables[d]->_name.c_str()); exit(-1); }
+    { fprintf( stderr, "[Korali] Differential Evolution Error: Invalid setting for Initial Mean and Initial Stanard Deviation for variable %s (both must be defined or none)\n", _k->_variables[d]->_name.c_str()); exit(-1); }
 
   if (_initialMeanDefined[d])   _initialMeans[d]   = consume(js["Variables"][d], { "DE", "Initial Mean" }, KORALI_NUMBER);
   if (_initialStdDevDefined[d]) _initialStdDevs[d] = consume(js["Variables"][d], { "DE", "Initial Standard Deviation" }, KORALI_NUMBER);
@@ -232,7 +228,8 @@ void DE::setState(nlohmann::json& js)
  bestEver             = js["DE"]["State"]["BestEverFunctionValue"];
  prevBest             = js["DE"]["State"]["PreviousBestFunctionValue"];
  currentFunctionValue = js["DE"]["State"]["CurrentBestFunctionValue"];
- prevFunctionValue    = js["DE"]["State"]["Previ"];
+ prevFunctionValue    = js["DE"]["State"]["PreviousFunctionValue"];
+ _isFinished          = js["DE"]["State"]["Finished"];
 
  for (size_t i = 0; i < _k->N; i++) rgxmean[i]       = js["DE"]["State"]["CurrentMeanVector"][i];
  for (size_t i = 0; i < _k->N; i++) rgxoldmean[i]    = js["DE"]["State"]["PreviousMeanVector"][i];
@@ -243,6 +240,7 @@ void DE::setState(nlohmann::json& js)
  for (size_t i = 0; i < _s; i++) oldFitnessVector[i] = js["DE"]["State"]["OldFunctionValues"][i];
  for (size_t i = 0; i < _s; i++) for (size_t j = 0; j < _k->N; j++) samplePopulation[i*_k->N + j] = js["DE"]["State"]["Samples"][i][j];
  for (size_t i = 0; i < _s; i++) for (size_t j = 0; j < _k->N; j++) candidates[i*_k->N + j] = js["DE"]["State"]["Candidates"][i][j];
+
 }
 
 
@@ -254,7 +252,7 @@ void DE::setState(nlohmann::json& js)
 void DE::run()
 {
  if (_k->_verbosity >= KORALI_MINIMAL) {
-   printf("[Korali] Starting %s (Objective: %s).\n", _name.c_str(), _objective.c_str());
+   printf("[Korali] Starting Differential Evolution (Objective: %s).\n", _objective.c_str());
    printf("--------------------------------------------------------------------\n");
  }
  
@@ -504,14 +502,14 @@ bool DE::checkTermination()
 
  if ( _isTermCondFitness && (currentGeneration > 1) && (bestEver >= _termCondFitness) )
  {
-  terminate = true;
+  _isFinished = true;
   sprintf(_terminationReason, "Fitness Value (%+6.3e) > (%+6.3e).",  bestEver, _termCondFitness);
  }
 
  double range = fabs(currentFunctionValue - prevFunctionValue);
  if ( _isTermCondFitnessDiffThreshold && (currentGeneration > 1) && (range < _termCondFitnessDiffThreshold) )
  {
-  terminate = true;
+  _isFinished = true;
   sprintf(_terminationReason, "Fitness Diff Threshold (%+6.3e) < (%+6.3e).",  range, _termCondFitnessDiffThreshold);
  }
  
@@ -521,24 +519,24 @@ bool DE::checkTermination()
    for(size_t d = 0; d < _k->N; ++d) cTemp += (fabs(rgxmean[d] - rgxoldmean[d]) < _termCondMinDeltaX) ? 1 : 0;
    if (cTemp == _k->N) 
    {
-    terminate = true;
+    _isFinished = true;
     sprintf(_terminationReason, "Mean changes < %+6.3e for all variables.", _termCondMinDeltaX);
    }
  }
 
  if( _isTermCondMaxFitnessEvaluations && (countevals >= _termCondMaxFitnessEvaluations) )
  {
-  terminate = true;
+  _isFinished = true;
   sprintf(_terminationReason, "Conducted %lu function evaluations >= (%lu).", countevals, _termCondMaxFitnessEvaluations);
  }
 
  if( _isTermCondMaxGenerations && (currentGeneration >= _termCondMaxGenerations) )
  {
-  terminate = true;
+  _isFinished = true;
   sprintf(_terminationReason, "Maximum number of Generations reached (%lu).", _termCondMaxGenerations);
  }
 
- return terminate;
+ return _isFinished;
 }
 
 
@@ -557,14 +555,12 @@ size_t DE::maxIdx(const double *rgd, size_t len) const
 
 void Korali::Solver::DE::saveState() const
 {
- if (terminate || (currentGeneration % _resultOutputFrequency) == 0) _k->saveState(currentGeneration);
+ if (_isFinished || (currentGeneration % _resultOutputFrequency) == 0) _k->saveState(currentGeneration);
 }
 
 
 void DE::printGeneration() const
 {
- if (currentGeneration % _k->_outputFrequency != 0) return;
-
  if (_k->_verbosity >= KORALI_MINIMAL)
    printf("[Korali] Generation %ld - Duration: %fs (Total Elapsed Time: %fs)\n", currentGeneration, std::chrono::duration<double>(t1-t0).count(), std::chrono::duration<double>(t1-startTime).count());
 
@@ -594,7 +590,7 @@ void DE::printFinal() const
 {
  if (_k->_verbosity >= KORALI_MINIMAL)
  {
-    printf("[Korali] %s Finished\n", _name.c_str());
+    printf("[Korali] Differential Evolution Finished\n");
     printf("[Korali] Optimum (%s) found: %e\n", _objective.c_str(), bestEver);
     printf("[Korali] Optimum (%s) found at:\n", _objective.c_str());
     for (size_t d = 0; d < _k->N; ++d) printf("         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), rgxbestever[d]);

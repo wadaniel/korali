@@ -15,7 +15,6 @@
 
 Korali::Solver::MCMC::MCMC(nlohmann::json& js, std::string name)
 {
- _name = name;
  setConfiguration(js);
 
  // Allocating MCMC memory
@@ -54,7 +53,7 @@ Korali::Solver::MCMC::MCMC(nlohmann::json& js, std::string name)
  _uniformGenerator->setDistribution(jsUniform);
 
  // Init Generation
- terminate = false;
+ _isFinished = false;
  countevals               = 0;
  naccept                  = 0;
  countgens                = 0;
@@ -117,6 +116,8 @@ void Korali::Solver::MCMC::getConfiguration(nlohmann::json& js)
  js["MCMC"]["State"]["Database Entries"]          = databaseEntries;
  js["MCMC"]["State"]["Acceptance Rate Proposals"] = acceptanceRateProposals;
  js["MCMC"]["State"]["Rejections"]                = rejections;
+ js["MCMC"]["State"]["Finished"]                  = _isFinished;
+
  for (size_t d = 0; d < _k->N; d++) js["MCMC"]["State"]["Leader"][d]                         = clPoint[d];
  for (size_t r = 0; r < rejections; ++r) for (size_t d = 0; d < _k->N; d++) js["MCMC"]["State"]["Candidates"][r][d] = ccPoints[r*_k->N+d];
  for (size_t r = 0; r < rejections; ++r) js["MCMC"]["State"]["CandidatesFitness"][r]         = ccLogLikelihoods[r];
@@ -154,8 +155,6 @@ void Korali::Solver::MCMC::setConfiguration(nlohmann::json& js)
  _initialMeans = (double*) calloc(sizeof(double), _k->N);
  _stdDevs      = (double*) calloc(sizeof(double), _k->N);
 
- for(size_t d = 0; d < _k->N; ++d) _varNames.push_back(consume(js["Variables"][d], { "Name" }, KORALI_STRING, "X"+std::to_string(d)));
-  
  for(size_t d = 0; d < _k->N; d++) _initialMeans[d] = consume(js["Variables"][d], { "MCMC", "Initial Mean" }, KORALI_NUMBER);
  for(size_t d = 0; d < _k->N; d++) _stdDevs[d]      = consume(js["Variables"][d], { "MCMC", "Standard Deviation" }, KORALI_NUMBER);
  //for(size_t d = 0; d < _k->N; d++) _variableLogSpace[d] = consume(js["Variables"][d], { "MCMC", "Log Space" }, KORALI_BOOLEAN, false);
@@ -172,6 +171,7 @@ void Korali::Solver::MCMC::setState(nlohmann::json& js)
  databaseEntries         = js["MCMC"]["State"]["Database Entries"];
  acceptanceRateProposals = js["MCMC"]["State"]["Acceptance Rate Proposals"];
  rejections              = js["MCMC"]["State"]["Rejections"];
+ _isFinished             = js["MCMC"]["State"]["Finished"];
 
  for (size_t d = 0; d < _k->N; d++) clPoint[d]                        = js["MCMC"]["State"]["Leader"][d];
  for (size_t r = 0; r < rejections; ++r) for (size_t d = 0; d < _k->N; d++) ccPoints[r*_k->N+d] = js["MCMC"]["State"]["Candidate"][r][d];
@@ -371,29 +371,28 @@ bool Korali::Solver::MCMC::checkTermination()
 
  if ( _isTermCondMaxFunEvals && (countevals >= _termCondMaxFunEvals))
  {
-  terminate = true;
+  _isFinished = true;
   sprintf(_terminationReason, "Max Function Evaluations reached (%zu)",  countevals);
  }
  
  if ( databaseEntries == _s)
  {
-  terminate = true;
+  _isFinished = true;
   sprintf(_terminationReason, "Chainlength (%zu) reached.",  _s);
  }
 
- return terminate;
+ return _isFinished;
 }
  
 
 void Korali::Solver::MCMC::saveState() const
 {
- if (terminate || (chainLength % _resultOutputFrequency) == 0) _k->saveState(chainLength);
+ if (_isFinished || (chainLength % _resultOutputFrequency) == 0) _k->saveState(chainLength);
 }
 
  
 void Korali::Solver::MCMC::printGeneration() const
 {
- if ((chainLength % _k->_outputFrequency) != 0) return;
  if (_k->_verbosity >= KORALI_MINIMAL)
  {
   printf("--------------------------------------------------------------------\n");
@@ -428,7 +427,7 @@ void Korali::Solver::MCMC::printFinal() const
 {
  if (_k->_verbosity >= KORALI_MINIMAL)
  {
-    printf("[Korali] %s Finished\n", _name.c_str());
+    printf("[Korali] MCMC Finished\n");
     printf("[Korali] Number of Function Evaluations: %zu\n", countevals);
     printf("[Korali] Number of Generated Samples: %zu\n", countgens);
     printf("[Korali] Acceptance Rate: %.2f%%\n", 100*acceptanceRateProposals);

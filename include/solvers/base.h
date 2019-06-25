@@ -16,10 +16,7 @@ class Base {
  std::chrono::time_point<std::chrono::system_clock> startTime, endTime;
  std::chrono::time_point<std::chrono::system_clock> t0, t1, t2, t3;
 
- std::string _name;
- std::vector<std::string> _varNames;
- bool terminate; // Finished?
-
+ bool _isFinished;
  size_t _resultOutputFrequency;
 
  // Running Methods

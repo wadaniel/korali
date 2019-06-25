@@ -145,7 +145,7 @@ double Korali::Variable::getDensity(double x)
  if (_distributionType == KoraliLaplaceDistribution)     { return gsl_ran_laplace_pdf( x-_a, _b ); }
  if (_distributionType == KoraliUniformDistribution)     { return gsl_ran_flat_pdf(x, _a, _b); }
 
- fprintf(stderr, "[Korali] Error: Problem requires that variable '%s' to have a defined distribution.\n", _name.c_str());
+ fprintf(stderr, "[Korali] Error: Problem requires that variable '%s' has a defined distribution.\n", _name.c_str());
  exit(-1);
  return 0.0;
 };
@@ -159,7 +159,7 @@ double Korali::Variable::getLogDensity(double x)
  if (_distributionType == KoraliLaplaceDistribution)     { return _aux - fabs(x-_a)/_b; }
  if (_distributionType == KoraliUniformDistribution)     { if (x >= _a && x <= _b) return _aux; return -INFINITY; }
 
- fprintf(stderr, "[Korali] Error: Problem requires that variable '%s' to have a defined distribution.\n", _name.c_str());
+ fprintf(stderr, "[Korali] Error: Problem requires that variable '%s' has a defined distribution.\n", _name.c_str());
  exit(-1);
  return 0.0;
 };
@@ -173,7 +173,7 @@ double Korali::Variable::getRandomNumber()
  if (_distributionType == KoraliLaplaceDistribution)     { return _a + gsl_ran_laplace(_range, _b); }
  if (_distributionType == KoraliUniformDistribution)     { return gsl_ran_flat(_range, _a, _b); }
 
- fprintf(stderr, "[Korali] Error: Problem requires that variable '%s' to have a defined distribution.\n", _name.c_str());
+ fprintf(stderr, "[Korali] Error: Problem requires that variable '%s' has a defined distribution.\n", _name.c_str());
  exit(-1);
  return 0.0;
 };

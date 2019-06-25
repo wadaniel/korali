@@ -74,15 +74,6 @@ void Korali::Problem::Bayesian::setConfiguration(nlohmann::json& js)
   js["Variables"][i]["Bayesian"]["Prior Distribution"]["Seed"] = _k->_seed++;
   _k->_variables[i]->setDistribution(js["Variables"][i]["Bayesian"]["Prior Distribution"]);
  }
-}
-
-/************************************************************************/
-/*                    Functional Methods                                */
-/************************************************************************/
-
-void Korali::Problem::Bayesian::initialize()
-{
- _isBayesian = true;
 
  if (_likelihood == ReferenceLikelihood)
  {
@@ -127,6 +118,10 @@ void Korali::Problem::Bayesian::initialize()
  }
 }
 
+/************************************************************************/
+/*                    Functional Methods                                */
+/************************************************************************/
+
 void Korali::Problem::Bayesian::packVariables(double* sample, Korali::ModelData& data)
 {
  for (size_t i = 0; i < _computationalVariableIndices.size(); i++) data._computationalVariables.push_back(sample[_computationalVariableIndices[i]]);
@@ -135,7 +130,6 @@ void Korali::Problem::Bayesian::packVariables(double* sample, Korali::ModelData&
 
 double Korali::Problem::Bayesian::evaluateFitness(Korali::ModelData& data)
 {
-
  double fitness = 0.0;
 
  if (_likelihood == ReferenceLikelihood)

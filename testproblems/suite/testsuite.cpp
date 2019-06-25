@@ -9,6 +9,7 @@ TestSuite::TestSuite() : _repetitions(100), _precision(1e-4)
 {
   _factories.push_back(new CMAESFactory());
   _factories.push_back(new DEFactory("Best", "Self Adaptive", "Greedy"));
+  _factories.push_back(new DEFactory("Best", "Default", "Greedy"));
 };
 
 TestSuite::~TestSuite() {};

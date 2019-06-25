@@ -44,8 +44,6 @@ void Korali::Problem::Direct::setConfiguration(nlohmann::json& js)
 
 void Korali::Problem::Direct::initialize()
 {
- _isBayesian = false;
-
  if (_k->_modelDefined == false)
  {
   fprintf(stderr, "[Korali] Error: Direct Problem requires defining a computational model.\n");

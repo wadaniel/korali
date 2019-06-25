@@ -1,5 +1,5 @@
-#ifndef _KORALI_CONDUIT_SEMI-INTRUSIVE_H_
-#define _KORALI_CONDUIT_SEMI-INTRUSIVE_H_
+#ifndef _KORALI_CONDUIT_SEMI_INTRUSIVE_H_
+#define _KORALI_CONDUIT_SEMI_INTRUSIVE_H_
 
 #include "conduits/base.h"
 
@@ -24,4 +24,4 @@ class SemiIntrusive : public Base {
 
 } } // namespace Korali::Conduit
 
-#endif // _KORALI_CONDUIT_SEMI-INTRUSIVE_H_
+#endif // _KORALI_CONDUIT_SEMI_INTRUSIVE_H_

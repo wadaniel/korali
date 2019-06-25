@@ -18,7 +18,6 @@ class Base {
  virtual void checkProgress() = 0;
  virtual bool isRoot() = 0;
 
- std::string _name;
  size_t _currentSample;
 
  // Serialization Methods

@@ -14,7 +14,6 @@ using namespace Korali::Conduit;
 
 Distributed::Distributed(nlohmann::json& js)
 {
- _name = "Distributed";
  setConfiguration(js);
 
  _currentSample = 0;
@@ -76,7 +75,7 @@ Distributed::~Distributed()
 
 void Distributed::getConfiguration(nlohmann::json& js)
 {
- js["Conduit"] = _name;
+ js["Conduit"] = "Distributed";
  js["MPI"]["Ranks Per Team"] = _ranksPerTeam;
 }
 

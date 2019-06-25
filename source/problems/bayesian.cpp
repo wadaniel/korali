@@ -82,8 +82,6 @@ void Korali::Problem::Bayesian::setConfiguration(nlohmann::json& js)
 
 void Korali::Problem::Bayesian::initialize()
 {
- _isBayesian = true;
-
  if (_likelihood == ReferenceLikelihood)
  {
   if (_referenceDataSize == 0)

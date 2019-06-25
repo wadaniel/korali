@@ -15,7 +15,6 @@
 
 Korali::Solver::TMCMC::TMCMC(nlohmann::json& js)
 {
- _name = "TMCMC";
  setConfiguration(js);
 
  // Setting Chain-Specific Seeds
@@ -58,7 +57,7 @@ Korali::Solver::TMCMC::TMCMC(nlohmann::json& js)
  for (size_t c = 0; c < _s; c++) chainPendingFitness[c] = false;
 
  // Init Generation
- terminate = false;
+ _isFinished = false;
  _countevals               = 0;
  _currentGeneration        = 0;
  _databaseEntries          = 0;
@@ -119,6 +118,7 @@ void Korali::Solver::TMCMC::getConfiguration(nlohmann::json& js)
  js["TMCMC"]["State"]["AcceptanceRateProposals"]  = _acceptanceRateProposals;
  js["TMCMC"]["State"]["AcceptanceRateSelections"] = _acceptanceRateSelections;
  js["TMCMC"]["State"]["Database Entries"]         = _databaseEntries;
+ js["TMCMC"]["State"]["Finished"]                 = _isFinished;
 
  for (size_t i = 0; i < _k->N*_k->N; i++) js["TMCMC"]["State"]["CovarianceMatrix"][i] = _covarianceMatrix[i];
  for (size_t i = 0; i < _k->N; i++)       js["TMCMC"]["State"]["MeanTheta"][i]        = _meanTheta[i];
@@ -156,6 +156,7 @@ void Korali::Solver::TMCMC::setState(nlohmann::json& js)
  _acceptanceRateProposals  = js["TMCMC"]["State"]["AcceptanceRateProposals"];
  _acceptanceRateSelections = js["TMCMC"]["State"]["AcceptanceRateSelections"];
  _databaseEntries          = js["TMCMC"]["State"]["Database Entries"];
+ _isFinished               = js["TMCMC"]["State"]["Finished"];
 
  for (size_t i = 0; i < _k->N*_k->N; i++) _covarianceMatrix[i] = js["TMCMC"]["State"]["CovarianceMatrix"][i];
  for (size_t i = 0; i < _k->N; i++)       _meanTheta[i]        = js["TMCMC"]["State"]["MeanTheta"][i];
@@ -170,12 +171,6 @@ void Korali::Solver::TMCMC::setState(nlohmann::json& js)
 
 void Korali::Solver::TMCMC::run()
 {
- if (_k->_problem->_isBayesian == false)
- {
-  fprintf(stderr, "[Korali] Error: The TMCMC Method can only be used with Bayesian-type models.\n");
-  exit(-1);
- }
-
  if (_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Starting TMCMC.\n");
  
  startTime = std::chrono::system_clock::now();
@@ -564,16 +559,16 @@ bool Korali::Solver::TMCMC::isFeasibleCandidate(size_t c) const
 bool Korali::Solver::TMCMC::checkTermination()
 {
 
- terminate = (_isTermCondMaxGens && (_currentGeneration < _termCondMaxGens));
+ _isFinished = (_isTermCondMaxGens && (_currentGeneration < _termCondMaxGens));
 
- terminate = (_annealingExponent >= 1.0);
+ _isFinished = (_annealingExponent >= 1.0);
 
- return terminate;
+ return _isFinished;
 }
 
 void Korali::Solver::TMCMC::saveState() const
 {
- if (terminate || (_currentGeneration % _resultOutputFrequency) == 0) _k->saveState(_currentGeneration);
+ if (_isFinished || (_currentGeneration % _resultOutputFrequency) == 0) _k->saveState(_currentGeneration);
 }
 
 

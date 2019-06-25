@@ -1,11 +1,11 @@
-#ifndef _KORALI_CONDUIT_SINGLE_H_
-#define _KORALI_CONDUIT_SINGLE_H_
+#ifndef _KORALI_CONDUIT_SEMI-INTRUSIVE_H_
+#define _KORALI_CONDUIT_SEMI-INTRUSIVE_H_
 
 #include "conduits/base.h"
 
 namespace Korali { namespace Conduit {
 
-class Single : public Base {
+class SemiIntrusive : public Base {
  public:
 
  void run() override;
@@ -14,8 +14,8 @@ class Single : public Base {
  bool isRoot() override;
 
  // Constructor / Destructor
- Single(nlohmann::json& js);
- ~Single();
+ SemiIntrusive(nlohmann::json& js);
+ ~SemiIntrusive();
 
  // Serialization Methods
  void getConfiguration(nlohmann::json& js) override;
@@ -24,4 +24,4 @@ class Single : public Base {
 
 } } // namespace Korali::Conduit
 
-#endif // _KORALI_CONDUIT_SINGLE_H_
+#endif // _KORALI_CONDUIT_SEMI-INTRUSIVE_H_

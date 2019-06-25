@@ -1,7 +1,7 @@
 #ifdef _KORALI_USE_MPI
 
-#ifndef _KORALI_CONDUIT_KORALIMPI_H_
-#define _KORALI_CONDUIT_KORALIMPI_H_
+#ifndef _KORALI_CONDUIT_DISTRIBUTED_H_
+#define _KORALI_CONDUIT_DISTRIBUTED_H_
 
 #include "conduits/base.h"
 #include <queue>
@@ -10,7 +10,7 @@
 
 namespace Korali { namespace Conduit {
 
-class KoraliMPI : public Base
+class Distributed : public Base
 {
  public:
  int _rankId;
@@ -41,8 +41,8 @@ class KoraliMPI : public Base
  int getRootRank();
 
  // Constructor / Destructor
- KoraliMPI(nlohmann::json& js);
- ~KoraliMPI();
+ Distributed(nlohmann::json& js);
+ ~Distributed();
 
  // Serialization Methods
  void getConfiguration(nlohmann::json& js) override;
@@ -51,6 +51,6 @@ class KoraliMPI : public Base
 
 } } // namespace Korali::Conduit
 
-#endif // _KORALI_CONDUIT_KORALIMPI_H_
+#endif // _KORALI_CONDUIT_DISTRIBUTED_H_
 
 #endif // _KORALI_USE_MPI

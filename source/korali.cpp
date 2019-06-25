@@ -141,12 +141,13 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
  int rankCount = 1;
 
  _conduit = nullptr;
- std::string conduitType =  consume(js, { "Conduit" }, KORALI_STRING, "Single");
- if (conduitType == "Single") _conduit = new Korali::Conduit::Single(js["Conduit"]);
+ std::string conduitType =  consume(js, { "Conduit" }, KORALI_STRING, "Semi-Intrusive");
+
+ if (conduitType == "Semi-Intrusive") _conduit = new Korali::Conduit::SemiIntrusive(js["Conduit"]);
  #ifdef _KORALI_USE_MPI
- if (conduitType == "MPI") _conduit = new Korali::Conduit::KoraliMPI(js["Conduit"]);
+ if (conduitType == "Distributed") _conduit = new Korali::Conduit::Distributed(js["Conduit"]);
  #else
- if (conduitType == "MPI") { fprintf(stderr, "[Korali] Error: MPI Conduit selected, but Korali has not been compiled with MPI support.\n"); exit(-1); }
+ if (conduitType == "Distributed") { fprintf(stderr, "[Korali] Error: Distributed Conduit selected, but Korali has not been compiled with MPI or UPC++ support.\n"); exit(-1); }
  #endif
  if (conduitType == "Nonintrusive") _conduit = new Korali::Conduit::Nonintrusive(js["Conduit"]);
 

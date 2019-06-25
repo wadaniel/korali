@@ -12,9 +12,9 @@ using namespace Korali::Conduit;
 /*                  Constructor / Destructor Methods                    */
 /************************************************************************/
 
-KoraliMPI::KoraliMPI(nlohmann::json& js)
+Distributed::Distributed(nlohmann::json& js)
 {
- _name = "MPI";
+ _name = "Distributed";
  setConfiguration(js);
 
  _currentSample = 0;
@@ -65,7 +65,7 @@ KoraliMPI::KoraliMPI(nlohmann::json& js)
  MPI_Barrier(MPI_COMM_WORLD);
 }
 
-KoraliMPI::~KoraliMPI()
+Distributed::~Distributed()
 {
 }
 
@@ -74,13 +74,13 @@ KoraliMPI::~KoraliMPI()
 /************************************************************************/
 
 
-void KoraliMPI::getConfiguration(nlohmann::json& js)
+void Distributed::getConfiguration(nlohmann::json& js)
 {
  js["Conduit"] = _name;
  js["MPI"]["Ranks Per Team"] = _ranksPerTeam;
 }
 
-void KoraliMPI::setConfiguration(nlohmann::json& js)
+void Distributed::setConfiguration(nlohmann::json& js)
 {
  _ranksPerTeam = consume(js, { "MPI", "Ranks Per Team" }, KORALI_NUMBER, std::to_string(1));
 }
@@ -89,7 +89,7 @@ void KoraliMPI::setConfiguration(nlohmann::json& js)
 /*                    Functional Methods                                */
 /************************************************************************/
 
-void KoraliMPI::run()
+void Distributed::run()
 {
  if (isRoot())
  {
@@ -105,7 +105,7 @@ void KoraliMPI::run()
  MPI_Barrier(MPI_COMM_WORLD);
 }
 
-void KoraliMPI::workerThread()
+void Distributed::workerThread()
 {
  if (_teamId == -1) return;
 
@@ -138,7 +138,7 @@ void KoraliMPI::workerThread()
  }
 }
 
-void KoraliMPI::evaluateSample(double* sampleArray, size_t sampleId)
+void Distributed::evaluateSample(double* sampleArray, size_t sampleId)
 {
  while (_teamQueue.empty()) checkProgress();
 
@@ -157,7 +157,7 @@ void KoraliMPI::evaluateSample(double* sampleArray, size_t sampleId)
  }
 }
 
-void KoraliMPI::checkProgress()
+void Distributed::checkProgress()
 {
  for (int i = 0; i < _teamCount; i++) if (_teamBusy[i] == true)
  {
@@ -172,12 +172,12 @@ void KoraliMPI::checkProgress()
  }
 }
 
-int KoraliMPI::getRootRank()
+int Distributed::getRootRank()
 {
  return _rankCount-1;
 }
 
-bool KoraliMPI::isRoot()
+bool Distributed::isRoot()
 {
  return _rankId == getRootRank();
 }

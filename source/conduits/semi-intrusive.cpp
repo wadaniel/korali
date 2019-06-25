@@ -6,13 +6,13 @@ using namespace Korali::Conduit;
 /*                  Constructor / Destructor Methods                    */
 /************************************************************************/
 
-Single::Single(nlohmann::json& js)
+SemiIntrusive::SemiIntrusive(nlohmann::json& js)
 {
  setConfiguration(js);
  _currentSample = 0;
 }
 
-Single::~Single()
+SemiIntrusive::~SemiIntrusive()
 {
 
 }
@@ -21,12 +21,12 @@ Single::~Single()
 /*                    Configuration Methods                             */
 /************************************************************************/
 
-void Single::getConfiguration(nlohmann::json& js)
+void SemiIntrusive::getConfiguration(nlohmann::json& js)
 {
- js["Conduit"] = "Single";
+ js["Conduit"] = "Semi-Intrusive";
 }
 
-void Single::setConfiguration(nlohmann::json& js)
+void SemiIntrusive::setConfiguration(nlohmann::json& js)
 {
 
 }
@@ -35,12 +35,12 @@ void Single::setConfiguration(nlohmann::json& js)
 /*                    Functional Methods                                */
 /************************************************************************/
 
-void Single::run()
+void SemiIntrusive::run()
 {
  _k->_solver->run();
 }
 
-void Single::evaluateSample(double* sampleArray, size_t sampleId)
+void SemiIntrusive::evaluateSample(double* sampleArray, size_t sampleId)
 {
  Korali::ModelData data;
 
@@ -54,12 +54,12 @@ void Single::evaluateSample(double* sampleArray, size_t sampleId)
  _k->_solver->processSample(sampleId, fitness);
 }
 
-void Single::checkProgress()
+void SemiIntrusive::checkProgress()
 {
 
 }
 
-bool Single::isRoot()
+bool SemiIntrusive::isRoot()
 {
  return true;
 }

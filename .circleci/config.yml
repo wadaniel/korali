@@ -16,7 +16,7 @@ jobs:
       - run:
           name: run tests
           command: ./install
-  build:
+  test:
     macos:
       xcode: "10.0.0"
 

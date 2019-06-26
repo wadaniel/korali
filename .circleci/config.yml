@@ -16,7 +16,15 @@ jobs:
       - run:
           name: run tests
           command: ./install
+  build:
+    macos:
+      xcode: "10.0.0"
 
-      #- store_artifacts:
-      #    path: test-reports
-      #    destination: test-reports
+    working_directory: ~/korali
+
+    steps:
+      - checkout
+
+      - run:
+          name: run tests
+          command: ./install

@@ -2,32 +2,32 @@ version: 2
 
 workflows:
   version: 2
-  build_and_test:
+  build:
     jobs:
-      - build
-      - test
+      - build_linux
+      - build_macos
 
 jobs:
-  build:
+  build_linux:
     docker:
       - image: circleci/python:3.7.3-node
-
     working_directory: ~/korali
-
     steps:
       - checkout
       - run:
-          name: run tests
+          name: build Korali
           command: ./install
-  test:
+
+  build_macos:
     macos:
-      xcode: "10.2.1"
-
+      xcode: "10.0.0"
     working_directory: ~/korali
-
     steps:
       - checkout
       - run:
-          name: run tests
+          name: Install wget dependency
+          command: brew install wget
+      - run:
+          name: build Korali
           command: ./install
 

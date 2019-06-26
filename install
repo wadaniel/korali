@@ -83,9 +83,7 @@ done
 ######## Start Configuration ######
 
 logEcho "[Korali] Configuring Korali..." 
-
 log "[Korali] Using $NJOBS jobs."
-
 log "[Korali] Checking for architecture..."
 arch="$(uname -s)"
 

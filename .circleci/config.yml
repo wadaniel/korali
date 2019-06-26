@@ -18,15 +18,15 @@ jobs:
 
       - restore_cache:
           keys:
-            - gsl-dependency
+            - korali-dependencies
       - run:
           name: build Korali
           command: ./install
 
       - save_cache:
-          key: gsl-dependency
+          key: korali-dependencies
           paths:
-            - "~/korali/build/gsl"
+            - "~/korali/build"
 
   build_macos:
     macos:
@@ -38,7 +38,7 @@ jobs:
 
       - restore_cache:
           keys:
-            - gsl-dependency
+            - korali-dependencies
 
       - run:
           name: Install wget dependency
@@ -49,7 +49,7 @@ jobs:
           command: ./install
 
       - save_cache:
-          key: gsl-dependency
+          key: korali-dependencies 
           paths:
-            - "~/korali/build/gsl"
+            - "~/korali/build"
 

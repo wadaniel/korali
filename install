@@ -11,12 +11,14 @@ function print_help ()
  echo "        [--no-prereqs]"
  echo "        [--rebuild]"
  echo "        [--debug]"
+ echo "        [--jobs]"
  echo "        [--help]"
  echo ""
  echo "Where:"
  echo " --no-prereqs prevents Korali from automatically installing prerequisites."
- echo " --debug builds a non-optimized Korali for debugging purposes."
  echo " --rebuild Cleans and rebuilds/installs Korali for development purposes."
+ echo " --debug builds a non-optimized Korali for debugging purposes."
+ echo " --jobs Specifies the number of jobs to use when building Korali."
  echo " --help Displays this help message."
 }
 
@@ -41,6 +43,7 @@ function exitWithError ()
 }
 
 INSTALLREQS=1
+NJOBS=4
 OPTFLAGS="-O3"
 
 for i in "$@"
@@ -53,6 +56,10 @@ case $i in
     --debug)
     OPTFLAGS="-O0"
     shift 
+    ;;
+    --jobs)
+    shift
+    NJOBS=$i 
     ;;
     --rebuild)
     logEcho "[Korali] Cleaning Korali for new build..."
@@ -77,9 +84,11 @@ done
 ######## Start Configuration ######
 
 echo "Korali Log Start." > $logFile
-logEcho "[Korali] Configuring Korali v$version..."
+logEcho "[Korali] Configuring Korali v$version..." 
 
-log "Checking for architecture..."
+log "[Korali] Using $NJOBS jobs."
+
+log "[Korali] Checking for architecture..."
 arch="$(uname -s)"
 
 # Linux Architecture is default
@@ -158,7 +167,7 @@ then
   cd gsl-2.5 
   ./configure --prefix=$gslprefix >> $logFile 2>&1 
   logEcho "[Korali] Compiling GNU Scientific Library... "
-  make -j10 >> $logFile 2>&1
+  make -j$NJOBS >> $logFile 2>&1
   logEcho "[Korali] Installing GNU Scientific Library... "
   
   make install >> $logFile 2>&1
@@ -309,7 +318,7 @@ cat ./python/cxx/cxx.conf ./python/cxx/libs.py.base > ./python/cxx/libs.py
 ######## Compiling Korali C++ Engine #########
 
 logEcho "[Korali] Compiling Korali..."
-make -j24 -C source >> $logFile 2>&1
+make -j$NJOBS -C source >> $logFile 2>&1
 if [ $? -ne 0 ]; then
   logEcho "[Korali] Error compiling Korali."
   exitWithError

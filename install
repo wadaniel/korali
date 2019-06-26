@@ -1,6 +1,5 @@
 #!/bin/bash
 
-version=1.0.0
 logFile=$PWD/install.log
 
 # Help display function
@@ -11,14 +10,14 @@ function print_help ()
  echo "        [--no-prereqs]"
  echo "        [--rebuild]"
  echo "        [--debug]"
- echo "        [--jobs]"
+ echo "        [--jobs=N]"
  echo "        [--help]"
  echo ""
  echo "Where:"
  echo " --no-prereqs prevents Korali from automatically installing prerequisites."
  echo " --rebuild Cleans and rebuilds/installs Korali for development purposes."
  echo " --debug builds a non-optimized Korali for debugging purposes."
- echo " --jobs Specifies the number of jobs to use when building Korali."
+ echo " --jobs=N Specifies N jobs to use when building Korali."
  echo " --help Displays this help message."
 }
 
@@ -57,9 +56,9 @@ case $i in
     OPTFLAGS="-O0"
     shift 
     ;;
-    --jobs)
+    --jobs=*)
+    NJOBS="${i#*=}"
     shift
-    NJOBS=$i 
     ;;
     --rebuild)
     logEcho "[Korali] Cleaning Korali for new build..."
@@ -83,8 +82,7 @@ done
 
 ######## Start Configuration ######
 
-echo "Korali Log Start." > $logFile
-logEcho "[Korali] Configuring Korali v$version..." 
+logEcho "[Korali] Configuring Korali..." 
 
 log "[Korali] Using $NJOBS jobs."
 
@@ -161,7 +159,7 @@ then
   mkdir -p build
   CURDIR=$PWD
   rm -f gsl-2.5.tar.gz 
-  wget "ftp://ftp.gnu.org/gnu/gsl/gsl-2.5.tar.gz" 
+  wget 'ftp://ftp.gnu.org/gnu/gsl/gsl-2.5.tar.gz' 
   tar -xzvf gsl-2.5.tar.gz >> $logFile 2>&1
   echo "[Korali] Configuring GNU Scientific Library... "
   cd gsl-2.5 
@@ -284,32 +282,31 @@ fi
 
 log "[Korali] Creating Compilation Config File..."
 
-echo "CXX=$USE_CXX" > source/Makefile.conf
-echo "CXXARCH=$CXXARCH" >> source/Makefile.conf
-echo "SHAREDLIB_FLAG=$SHAREDLIB_FLAG" >> source/Makefile.conf
-echo "MPIFLAGS=$MPIFLAGS" >> source/Makefile.conf
-echo "OPTFLAGS=$OPTFLAGS" >> source/Makefile.conf
+echo CXX=$USE_CXX > source/Makefile.conf
+echo CXXARCH=$CXXARCH >> source/Makefile.conf
+echo SHAREDLIB_FLAG=$SHAREDLIB_FLAG >> source/Makefile.conf
+echo MPIFLAGS=$MPIFLAGS >> source/Makefile.conf
+echo OPTFLAGS=$OPTFLAGS >> source/Makefile.conf
 
-echo "GSLPREFIX=$GSLPREFIX" >> source/Makefile.conf
-echo "GSLCFLAGS=$GSLCFLAGS" >> source/Makefile.conf
-echo "GSLLIBS=$GSLLIBS"  >> source/Makefile.conf
-echo "PYBIND11INCLUDES=$PYBIND11INCLUDES" >> source/Makefile.conf 
-echo "PYBIND11LIBS=$PYBIND11LIBS" >> source/Makefile.conf
+echo GSLPREFIX=$GSLPREFIX >> source/Makefile.conf
+echo GSLCFLAGS=$GSLCFLAGS >> source/Makefile.conf
+echo GSLLIBS=$GSLLIBS  >> source/Makefile.conf
+echo PYBIND11INCLUDES=$PYBIND11INCLUDES >> source/Makefile.conf 
+echo PYBIND11LIBS=$PYBIND11LIBS >> source/Makefile.conf
 
 ######## Creating Python Config File ########
 
 log "[Korali] Creating Python Config File..."
 
-echo "#!/usr/bin/env python3" > python/cxx/cxx.conf
-echo "CXX='$USE_CXX'" >> python/cxx/cxx.conf
-echo "CXXARCH='$CXXARCH'" >> python/cxx/cxx.conf
-echo "MPIFLAGS='$MPIFLAGS'" >> python/cxx/cxx.conf
-echo "GSLPREFIX='$GSLPREFIX'" >> python/cxx/cxx.conf
-echo "GSLCFLAGS='$GSLCFLAGS'" >> python/cxx/cxx.conf
-echo "GSLLIBS='$GSLLIBS'"  >> python/cxx/cxx.conf
-echo "OPTFLAGS='$OPTFLAGS'" >> python/cxx/cxx.conf
-echo "PYBIND11INCLUDES='$PYBIND11INCLUDES'" >> python/cxx/cxx.conf
-echo "PYBIND11LIBS='$PYBIND11LIBS'" >> python/cxx/cxx.conf
+echo CXX=\'$USE_CXX\' > python/cxx/cxx.conf
+echo CXXARCH=\'$CXXARCH\' >> python/cxx/cxx.conf
+echo MPIFLAGS=\'$MPIFLAGS\' >> python/cxx/cxx.conf
+echo GSLPREFIX=\'$GSLPREFIX\' >> python/cxx/cxx.conf
+echo GSLCFLAGS=\'$GSLCFLAGS\' >> python/cxx/cxx.conf
+echo GSLLIBS=\'$GSLLIBS\'  >> python/cxx/cxx.conf
+echo OPTFLAGS=\'$OPTFLAGS\' >> python/cxx/cxx.conf
+echo PYBIND11INCLUDES=\'$PYBIND11INCLUDES\' >> python/cxx/cxx.conf
+echo PYBIND11LIBS=\'$PYBIND11LIBS\' >> python/cxx/cxx.conf
 
 cat ./python/cxx/cxx.conf ./python/cxx/cflags.py.base > ./python/cxx/cflags.py
 cat ./python/cxx/cxx.conf ./python/cxx/compiler.py.base > ./python/cxx/compiler.py

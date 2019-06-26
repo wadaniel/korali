@@ -1,3 +1,11 @@
+version: 2
+
+workflows:
+  build_and_test:
+    jobs:
+      - build
+      - test
+
 jobs:
   build:
     docker:
@@ -22,9 +30,3 @@ jobs:
           name: run tests
           command: ./install
 
-workflows:
-  version: 2
-  build_and_test:
-    jobs:
-      - build
-      - test

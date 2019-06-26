@@ -18,13 +18,13 @@ jobs:
 
       - restore_cache:
           keys:
-            - korali-dependencies
+            - korali-dependencies-linux
       - run:
           name: build Korali
           command: ./install
 
       - save_cache:
-          key: korali-dependencies
+          key: korali-dependencies-linux
           paths:
             - "~/korali/build"
 
@@ -38,7 +38,7 @@ jobs:
 
       - restore_cache:
           keys:
-            - korali-dependencies
+            - korali-dependencies-macos
 
       - run:
           name: Install wget dependency
@@ -49,7 +49,7 @@ jobs:
           command: ./install
 
       - save_cache:
-          key: korali-dependencies 
+          key: korali-dependencies-macos
           paths:
             - "~/korali/build"
 

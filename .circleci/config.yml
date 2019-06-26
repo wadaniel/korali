@@ -21,7 +21,7 @@ jobs:
           command: ./install
   test:
     macos:
-      xcode: "10.0.0"
+      xcode: "10.2.1"
 
     working_directory: ~/korali
 

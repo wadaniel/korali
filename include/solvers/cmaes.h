@@ -1,15 +1,14 @@
 #ifndef _KORALI_SOLVERS_CMAES_H_
 #define _KORALI_SOLVERS_CMAES_H_
 
-#include <gsl/gsl_multimin.h>
-#include <gsl/gsl_randist.h>
-#include <gsl/gsl_multifit_nlinear.h>
-
 #include "solvers/base.h"
 #include <chrono>
 #include <map>
 
 namespace Korali { namespace Solver {
+
+struct fitParams { size_t nsamples; double eps; const double* fevals; const size_t *index; };
+
 
 class CMAES : public Base
 {
@@ -62,6 +61,7 @@ class CMAES : public Base
  size_t _via_mu; /* number of best samples for mean (viability regime) */
  size_t _current_mu; /* number of samples active ( _mu or _mu_s ) */
  std::string _muType; /* Linear, Equal or Logarithmic */
+ double _eps; /* exploitation (for adaptive weights) */
  double* _muWeights; /* weights for mu best samples */
  double _muEffective; /* variance effective selection mass */
  double _muCovarianceIn; /* read from configuration, placeholder for reinit */
@@ -176,24 +176,21 @@ class CMAES : public Base
  // Private CCMA-ES-Specific Methods
  void initInternals(size_t numsamples); /* init _muWeights and dependencies */
  void initCovariance(); /* init sigma, C and B */
- void initCovCorrectionParams(size_t numsamples); /* init sigma, C and B */
+ void initCovCorrectionParams(); /* init beta and cv */
  void checkMeanAndSetRegime(); /* check if mean inside valid domain, if yes, update internal vars */
  void updateConstraints();
  void updateViabilityBoundaries(); /* update & shrink viability boundaries */
  void handleConstraints(); /* covariance adaption for invalid samples */
  void reEvaluateConstraints(); /* re evaluate constraints, in handleConstraints,  count violations etc.. */
 
+ void initProportionalWeights(double eps, size_t nsamples, double* fevals, size_t* index, double* weights);
+ 
  // Print Methods
  void printGeneration() const;
  void printFinal() const;
 };
 
-struct fitParams { const double* fevals; };
-
-int emvnorm_df(const gsl_vector *mucov, void *params, gsl_matrix *J);
-
-void fit_callback(const size_t iter, void *params, const gsl_multifit_nlinear_workspace *w);
-bool fit_mucov(double *mu, double **C, size_t ndim, size_t nsamples, double *fevals, const double *samples, const double *muOld, double **Cold);
+ double fn1 (double eta, void * params);
 
 } // namespace Korali::Solver
 

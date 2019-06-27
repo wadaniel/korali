@@ -7,13 +7,15 @@ Korali::Engine CMAESFactory::createEngine(size_t dim, double lowerbound, double 
 {
   auto k = Korali::Engine();
   k["Verbosity"] = "Minimal";
-  k["CMA-ES"]["Result Output Frequency"] = 5000;
+  k["CMA-ES"]["Result Output Frequency"] = 1;
 
   k["Problem"] = "Direct Evaluation";
   k["Solver"]  = "CMA-ES";
 
-  k["CMA-ES"]["Objective"]    = "Minimize";
-  k["CMA-ES"]["Sample Count"] = 4+3*log(dim);
+  k["CMA-ES"]["Objective"]          = "Minimize";
+  k["CMA-ES"]["Sample Count"]       = 4+3*log(dim);
+  k["CMA-ES"]["Mu"]["Type"]         = _muType;
+  k["CMA-ES"]["Mu"]["Exploitation"] = _eps;
 
   for (int i = 0; i < dim; i++)
   {

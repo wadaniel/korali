@@ -21,9 +21,13 @@ public:
 class CMAESFactory : public EngineFactory
 {
 public:
-  CMAESFactory() : EngineFactory() {};
+  CMAESFactory(std::string muType, double eps) : EngineFactory(), _muType(muType), _eps(eps) {};
   ~CMAESFactory() {};
   Korali::Engine createEngine(size_t dim, double lowerbound, double upperbound, size_t maxEval, double targetFitness );
+
+private:
+  std::string _muType;
+  double _eps;
 };
 
 

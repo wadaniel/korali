@@ -29,8 +29,8 @@ jobs:
             - "~/korali/build"
 
       - run:
-        name: run tests
-        command: cd tests; ./run_all_tests.sh
+          name: run tests
+          command: cd tests; ./run_all_tests.sh
 
   build_macos:
     macos:
@@ -58,6 +58,6 @@ jobs:
             - "~/korali/build"
 
       - run:
-        name: run tests
-        command: cd tests; ./run_all_tests.sh
+          name: run tests
+          command: cd tests; ./run_all_tests.sh
 

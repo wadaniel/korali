@@ -8,10 +8,12 @@ namespace Suite
 
 TestSuite::TestSuite(size_t rep, double prec) : _repetitions(rep), _precision(prec)
 {
-  _factories.push_back(std::pair<std::string, EngineFactory*>("Prop", new CMAESFactory("Proportional", 0.7)));
+  //_factories.push_back(std::pair<std::string, EngineFactory*>("Prop", new CMAESFactory("Proportional", 0.7)));
+  _factories.push_back(std::pair<std::string, EngineFactory*>("Equal", new CMAESFactory("Equal", 0.7)));
+  _factories.push_back(std::pair<std::string, EngineFactory*>("Linear", new CMAESFactory("Linear", 0.7)));
   _factories.push_back(std::pair<std::string, EngineFactory*>("Logarithmic", new CMAESFactory("Logarithmic", 0.7)));
-  //_factories.push_back(new DEFactory("Best", "Self Adaptive", "Greedy"));
-  //_factories.push_back(new DEFactory("Best", "Default", "Greedy"));
+  //_factories.push_back(std::pair<std::string, EngineFactory*>("DE Self Adaptive", new DEFactory("Best", "Self Adaptive", "Greedy")));
+  //_factories.push_back(std::pair<std::string, EngineFactory*>("DE Default", new DEFactory("Best", "Default", "Greedy")));
 };
 
 TestSuite::~TestSuite() {};
@@ -49,7 +51,8 @@ void TestSuite::run()
 
         k.run();
         auto config = k.getConfiguration();
-        size_t eval = config["CMA-ES"]["State"]["EvaluationCount"].get<size_t>();
+        std::string solver = config["Solver"].get<std::string>();
+        size_t eval = config[solver]["State"]["EvaluationCount"].get<size_t>();
         evec.push_back(eval);
     }
 
@@ -100,7 +103,7 @@ void TestSuite::makeStatistics()
         int sum = std::accumulate(facres.begin(), facres.end(), 0);
         double avg = (double)sum/facres.size();
         
-        printf("| FUNCTION  %s  | SOLVER  %-20s | MIN  %zu | MAX %zu | AVG %f |\n", func.first.c_str(), fac.first.c_str(), min, max, avg); //TODO: sdev median
+        printf("| FUNCTION  %-25s  | SOLVER  %-25s | MIN  %zu | MAX %zu | AVG %f |\n", func.first.c_str(), fac.first.c_str(), min, max, avg); //TODO: sdev median
     }
   }
 

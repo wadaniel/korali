@@ -7,7 +7,7 @@ Korali::Engine CMAESFactory::createEngine(size_t dim, double lowerbound, double 
 {
   auto k = Korali::Engine();
   k["Verbosity"] = "Minimal";
-  k["CMA-ES"]["Result Output Frequency"] = 1;
+  k["CMA-ES"]["Result Output Frequency"] = 5000;
 
   k["Problem"] = "Direct Evaluation";
   k["Solver"]  = "CMA-ES";

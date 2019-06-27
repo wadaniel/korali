@@ -3,6 +3,7 @@
 
 #include <gsl/gsl_multimin.h>
 #include <gsl/gsl_randist.h>
+#include <gsl/gsl_multifit_nlinear.h>
 
 #include "solvers/base.h"
 #include <chrono>
@@ -173,7 +174,9 @@ class CMAES : public Base
  double *besteverCeval; /* constraint evaluations for best ever */
 
  // Private CCMA-ES-Specific Methods
- void initInternals(size_t numsamples); /* init _muWeights, _muEffective and _muCov */
+ void initInternals(size_t numsamples); /* init _muWeights and dependencies */
+ void initCovariance(); /* init sigma, C and B */
+ void initCovCorrectionParams(size_t numsamples); /* init sigma, C and B */
  void checkMeanAndSetRegime(); /* check if mean inside valid domain, if yes, update internal vars */
  void updateConstraints();
  void updateViabilityBoundaries(); /* update & shrink viability boundaries */
@@ -185,8 +188,12 @@ class CMAES : public Base
  void printFinal() const;
 };
 
-double emvnorm(const gsl_vector *v, void *params);
-void emvnorm_df(const gsl_vector *v, void *params, gsl_vector *df);
+struct fitParams { const double* fevals; };
+
+int emvnorm_df(const gsl_vector *mucov, void *params, gsl_matrix *J);
+
+void fit_callback(const size_t iter, void *params, const gsl_multifit_nlinear_workspace *w);
+bool fit_mucov(double *mu, double **C, size_t ndim, size_t nsamples, double *fevals, const double *samples, const double *muOld, double **Cold);
 
 } // namespace Korali::Solver
 

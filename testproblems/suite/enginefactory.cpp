@@ -7,7 +7,6 @@ Korali::Engine CMAESFactory::createEngine(size_t dim, double lowerbound, double 
 {
   auto k = Korali::Engine();
   k["Verbosity"] = "Minimal";
-  k["Output Frequency"] = 100;
   k["CMA-ES"]["Result Output Frequency"] = 5000;
 
   k["Problem"] = "Direct Evaluation";
@@ -28,7 +27,7 @@ Korali::Engine CMAESFactory::createEngine(size_t dim, double lowerbound, double 
   k["CMA-ES"]["Termination Criteria"]["Min Standard Deviation"]["Active"]   = false;
   k["CMA-ES"]["Termination Criteria"]["Max Standard Deviation"]["Active"]   = false;
   k["CMA-ES"]["Termination Criteria"]["Max Condition Covariance"]["Active"] = false;
-  k["CMA-ES"]["Termination Criteria"]["Min Step Size"]["Active"]            = false;
+  //k["CMA-ES"]["Termination Criteria"]["Min Step Size"]["Active"]            = false;
 
   k["CMA-ES"]["Termination Criteria"]["Max Model Evaluations"]["Active"] = true;
   k["CMA-ES"]["Termination Criteria"]["Max Model Evaluations"]["Value"]  = maxEval;
@@ -42,7 +41,6 @@ Korali::Engine DEFactory::createEngine(size_t dim, double lowerbound, double upp
 {
   auto k = Korali::Engine();
   k["Verbosity"] = "Minimal";
-  k["Output Frequency"] = 100;
   k["DE"]["Result Output Frequency"] = 5000;
 
   k["Problem"] = "Direct Evaluation";

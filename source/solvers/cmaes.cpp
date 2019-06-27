@@ -42,7 +42,7 @@ CMAES::CMAES(nlohmann::json& js, std::string name)
  histFuncValues = (double*) calloc (sizeof(double), _termCondMaxGenerations+1);
 
  _initializedSample = (bool*) calloc (sizeof(bool), s_max);
- _fitnessVector = (double*) calloc (sizeof(double), s_max);
+ _fitnessVector     = (double*) calloc (sizeof(double), s_max);
 
  // Init Generation
  _isFinished = false;
@@ -110,8 +110,10 @@ CMAES::CMAES(nlohmann::json& js, std::string name)
  }
 
  // Setting algorithm internal variables
- if (_k->_fconstraints.size() > 0) initInternals(_via_mu);
+ if (_k->_fconstraints.size() > 0) { initInternals(_via_mu); initCovCorrectionParams(); }
  else initInternals(_mu);
+
+ initCovariance();
 
  // Setting eigensystem evaluation Frequency
  //if( _covarianceEigenEvalFreq < 0.0) _covarianceEigenEvalFreq = 1.0/_covarianceMatrixLearningRate/((double)_k->N)/10.0;
@@ -415,10 +417,13 @@ void CMAES::initInternals(size_t numsamplesmu)
   if (_initialStdDevs[i] <= 0.0) { fprintf(stderr, "[Korali] CMA-ES Error: Initial Standard Deviation (%f) for variable %d is less or equal 0.\n", i); _initialStdDevs[i],  exit(-1); }
  }
 
+ double eta = 0.0;
+
  // Initializing Mu Weights
- if      (_muType == "Linear")      for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = numsamplesmu - i;
- else if (_muType == "Equal")       for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = 1;
- else if (_muType == "Logarithmic") for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = log(std::max( (double)numsamplesmu, 0.5*_current_s)+0.5)-log(i+1.);
+ if      (_muType == "Linear")       for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = numsamplesmu - i;
+ else if (_muType == "Equal")        for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = 1.;
+ else if (_muType == "Logarithmic")  for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = log(std::max( (double)numsamplesmu, 0.5*_current_s)+0.5)-log(i+1.);
+ else if (_muType == "Proportional") for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = log(std::max( (double)numsamplesmu, 0.5*_current_s)+0.5)-log(i+1.);
  else  { fprintf( stderr, "[Korali] CMA-ES Error: Invalid setting of Mu Type (%s) (Linear, Equal or Logarithmic accepted).",  _muType.c_str()); exit(-1); }
 
  // Normalize weights vector and set mueff
@@ -464,6 +469,18 @@ void CMAES::initInternals(size_t numsamplesmu)
         // * std::max(0.3, 1. - (double)_k->N / (1e-6+std::min(_termCondMaxGenerations, _termCondMaxFitnessEvaluations/_via_s))) /* modification for short runs */
         + _sigmaCumulationFactor; /* minor increment */
 
+}
+
+void CMAES::initCovCorrectionParams()
+{
+  // Setting beta
+  _cv   = 1.0/(2.0+(double)_current_s);
+  _beta = _adaptionSize/(_current_s+2.);
+}
+
+void CMAES::initCovariance()
+{
+ 
  // Setting Sigma
  _trace = 0.0;
  for (size_t i = 0; i < _k->N; ++i) _trace += _initialStdDevs[i]*_initialStdDevs[i];
@@ -483,16 +500,7 @@ void CMAES::initInternals(size_t numsamplesmu)
  maxdiagC=C[0][0]; for(size_t i=1;i<_k->N;++i) if(maxdiagC<C[i][i]) maxdiagC=C[i][i];
  mindiagC=C[0][0]; for(size_t i=1;i<_k->N;++i) if(mindiagC>C[i][i]) mindiagC=C[i][i];
 
- // CCMA-ES
- if ( _k->_fconstraints.size() > 0 )
- {
-     // Setting beta
-    _cv   = 1.0/(2.0+(double)_current_s);
-    _beta = _adaptionSize/(_current_s+2.);
- }
-
 }
-
 
 /************************************************************************/
 /*                    Functional Methods                                */
@@ -508,7 +516,7 @@ void CMAES::run()
 
  startTime = std::chrono::system_clock::now();
  saveState();
-
+ 
  while(!checkTermination())
  {
    t0 = std::chrono::system_clock::now();
@@ -581,6 +589,8 @@ void CMAES::checkMeanAndSetRegime()
 
     bestEver = -std::numeric_limits<double>::max();
     initInternals(_mu);
+    initCovCorrectionParams();
+    initCovariance();
 
 }
 
@@ -1251,121 +1261,4 @@ void CMAES::printFinal() const
     printf("[Korali] Total Elapsed Time: %fs\n", std::chrono::duration<double>(endTime-startTime).count());
     printf("--------------------------------------------------------------------\n");
  }
-}
-
-
-double emvnorm(const gsl_vector *mucov, void *params)
-{
- /* params [ 2 + _s(_N+1) ] ( ndim + nsamples + sample_vec + fval_vec ) */
- 
- double *par = (double *)params;
-
- size_t N = (size_t) par[0];
- size_t S = (size_t) par[1];
- 
- int err;
- gsl_vector* mu   = gsl_vector_alloc(N);
- gsl_vector* x    = gsl_vector_alloc(N);
- gsl_vector* work = gsl_vector_alloc(N);
- gsl_matrix* L    = gsl_matrix_alloc(N,N);
- for(size_t d = 0; d < N; ++d) gsl_vector_set( mu, d, gsl_vector_get(mucov, d));
- for(size_t d = 0; d < N; ++d)
-    for(size_t e = 0; e < N; ++e) 
-        { gsl_matrix_set(L, d, e, gsl_vector_get(mucov, N+d+e)); gsl_matrix_set(L, e, d, gsl_vector_get( mucov, N+d+e)); }
- 
- err = gsl_linalg_cholesky_decomp1(L); // diag an lower triangle is L
- if (err) printf ("error chol decomp: %s\n", gsl_strerror (err));
- //TODO: check err
- 
- double res = 0;
- double* tmpres = new double;
- for(size_t i = 0; i < S; ++i)
- {
-    for(size_t d = 0; d < N; ++d) gsl_vector_set( x, d, (double) par[i*d+2]);
-    err = gsl_ran_multivariate_gaussian_pdf(x, mu, L , tmpres, work) * (double) par[S*N+2+i]; //TODO: scale this fvals
-    if (err) printf ("error mvn gauss: %s\n", gsl_strerror (err));
-    res += *tmpres;
- }
-
- gsl_vector_free(mu);
- gsl_vector_free(x);
- gsl_vector_free(work);
- gsl_matrix_free(L);
- delete tmpres;
- return res;
-}
-
-
-void emvnorm_df(const gsl_vector *mucov, void *params, gsl_vector *df)
-{
- /* params [ 2 + _s(_N+1) ] ( ndim + nsamples + sample_vec + fval_vec ) */
- 
- double f = emvnorm(  mucov,  params);
-
- double *par = (double *)params;
- 
- size_t N = (size_t) par[0];
- size_t S = (size_t) par[1];
-
- int *signum = new int;
-  
- int err;
- gsl_vector* mu     = gsl_vector_alloc(N);
- gsl_vector* x      = gsl_vector_alloc(N);
- gsl_vector* mx     = gsl_vector_alloc(N);
- gsl_vector* z      = gsl_vector_alloc(N);
- gsl_vector* dldmu  = gsl_vector_alloc(N);
- gsl_vector* work   = gsl_vector_alloc(N);
- gsl_matrix* L      = gsl_matrix_alloc(N,N);
- gsl_matrix* A      = gsl_matrix_alloc(N,N);
- gsl_matrix* Ainv   = gsl_matrix_alloc(N,N);
- gsl_matrix* AinvT  = gsl_matrix_alloc(N,N);
- gsl_matrix* dldC   = gsl_matrix_alloc(N,N);
- gsl_permutation* p = gsl_permutation_alloc(N);
- 
- for(size_t d = 0; d < N; ++d) { gsl_vector_set( mu, d, gsl_vector_get(mucov, d)); gsl_vector_set( z, d, gsl_vector_get(mucov, d)); }
- for(size_t d = 0; d < N; ++d)
-    for(size_t e = 0; e <= d; ++e) 
-        { gsl_matrix_set(L, d, e, gsl_vector_get(mucov, N+d+e)); gsl_matrix_set(L, e, d, gsl_vector_get( mucov, N+d+e));
-          gsl_matrix_set(A, d, e, gsl_vector_get(mucov, N+d+e)); gsl_matrix_set(A, e, d, gsl_vector_get( mucov, N+d+e)); }
- 
- err = gsl_linalg_cholesky_decomp1(L); // diag an lower triangle is L
- if (err) printf ("error chol decomp: %s\n", gsl_strerror (err));
-
- err = gsl_linalg_LU_decomp(A, p, signum);
- if (err) printf ("error LU decomp: %s\n", gsl_strerror (err));
- 
- err =  gsl_linalg_LU_invert(A, p, Ainv);
- if (err) printf ("error LU invert: %s\n", gsl_strerror (err));
-
- err = gsl_matrix_transpose_memcpy(AinvT, Ainv);
- if (err) printf ("error transpose: %s\n", gsl_strerror (err));
-
- gsl_matrix_add(Ainv, AinvT);
- double* dMu = (double*) calloc(N, sizeof(double));
- for(size_t i = 0; i < S; ++i)
- {
-     for(size_t d = 0; d < N; ++d) gsl_vector_set( mx, d, (double) par[i*d+2]);
-     gsl_vector_sub(z, mx);  // z = mu-x
-     gsl_vector_sub(mx, mu); // x = x-mu
-     cblas_dgemv(CblasRowMajor, CblasNoTrans, N, N, 0.5*par[S*N+2+i]*f, Ainv->data, N, mx->data, 0, 1.0, dMu, 0); //TODO: scale this fvals
-     // TODO: dC = 0.5 ( AinvT * z * zT * AinvT - AinvT ) * f
-
- }
- //TODO:
- // write back dMu and dC
- 
- gsl_vector_free(mu);
- gsl_vector_free(x);
- gsl_vector_free(dldmu);
- gsl_vector_free(work);
- gsl_matrix_free(L);
- gsl_matrix_free(A);
- gsl_matrix_free(Ainv);
- gsl_matrix_free(AinvT);
- gsl_matrix_free(dldC);
- gsl_permutation_free(p);
- delete signum;
- free(dMu);
- 
 }

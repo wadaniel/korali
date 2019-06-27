@@ -24,7 +24,7 @@ void TestSuite::run()
     std::string name = func.first;
 
 
-    auto k = _factories[1]->createEngine(_dimMap[name], _domainMap[name].first, _domainMap[name].second, _maxModelEvals[name], _fitnessMap[name] - _precision);
+    auto k = _factories[0]->createEngine(_dimMap[name], _domainMap[name].first, _domainMap[name].second, _maxModelEvals[name], _fitnessMap[name] - _precision);
 
     auto model = [func](Korali::ModelData& d)
     {

@@ -205,7 +205,7 @@ if [ $? -eq 0 ]; then
   python3-config --help >> $logFile 2>&1
   if [ $? -ne 0 ]; then
     logEcho "[Korali] Error: python3-config not found."
-    logEcho "[Korali] Solution: Please make sure python3 is correctly installed."
+    logEcho "[Korali] Solution: Please make sure the python3-dev package is correctly installed."
     exitWithError
   fi
 else

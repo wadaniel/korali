@@ -6,7 +6,7 @@ namespace Suite
 Korali::Engine CMAESFactory::createEngine(size_t dim, double lowerbound, double upperbound, size_t maxEval, double targetFitness )
 {
   auto k = Korali::Engine();
-  k["Verbosity"] = "Minimal";
+  k["Verbosity"] = "Detailed";
   k["CMA-ES"]["Result Output Frequency"] = 1;
 
   k["Problem"] = "Direct Evaluation";

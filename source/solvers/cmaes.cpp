@@ -21,7 +21,7 @@ using namespace Korali::Solver;
 
 CMAES::CMAES(nlohmann::json& js, std::string name)
 {
- gsl_set_error_handler_off();
+ //gsl_set_error_handler_off();
  
  _name = name;
  setConfiguration(js);
@@ -70,7 +70,8 @@ CMAES::CMAES(nlohmann::json& js, std::string name)
  _transformedSamples = (double*) calloc (sizeof(double), s_max * _k->N);
 
  // Initailizing Mu
- _muWeights = (double *) calloc (sizeof(double), mu_max);
+ _muWeights    = (double *) calloc (sizeof(double), mu_max);
+ _muWeightsTmp = (double *) calloc (sizeof(double), mu_max);
 
  // Initializing Gaussian Generator
  auto jsGaussian = nlohmann::json();
@@ -439,7 +440,7 @@ void CMAES::initInternals(size_t numsamplesmu)
  double s1 = 0.0;
  double s2 = 0.0;
 
- for (size_t  i = 0; i < numsamplesmu; i++)
+ for (size_t i = 0; i < numsamplesmu; i++)
  {
   s1 += _muWeights[i];
   s2 += _muWeights[i]*_muWeights[i];
@@ -447,6 +448,7 @@ void CMAES::initInternals(size_t numsamplesmu)
  _muEffective = s1*s1/s2;
 
  for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] /= s1;
+ for (size_t i = 0; i < numsamplesmu; i++) printf("w %e \n", _muWeights[i]);
 
  // Setting Mu Covariance
  //if (_muCovarianceIn < 1) _muCovariance = _muEffective;
@@ -573,7 +575,14 @@ void CMAES::evaluateSamples()
 void CMAES::processSample(size_t sampleId, double fitness)
 {
  double logPrior = _k->_problem->evaluateLogPrior(&_samplePopulation[sampleId*_k->N]);
- _fitnessVector[sampleId] = _fitnessSign * (logPrior+fitness);
+ fitness = _fitnessSign * (logPrior+fitness);
+ if(std::isfinite(fitness) == false)
+ {
+   fitness = _fitnessSign * std::numeric_limits<double>::max();
+   printf("[Korali] Warning: sample %zu non finite fitness (set to %e)!\n", sampleId, fitness);
+ }
+ 
+ _fitnessVector[sampleId] = fitness;
  _finishedSamples++;
 }
 
@@ -597,7 +606,7 @@ void CMAES::checkMeanAndSetRegime()
     _current_mu = _mu;
 
     bestEver = -std::numeric_limits<double>::max();
-    initInternals(_mu);
+    initInternals(_current_mu);
     initCovCorrectionParams();
     initCovariance();
 
@@ -681,7 +690,8 @@ void CMAES::prepareGeneration()
 {
 
  /* calculate eigensystem */
- updateEigensystem(C);
+ for (size_t d = 0; d < _k->N; ++d) memcpy(Ctmp[d], C[d], sizeof(double) * _k->N );
+ updateEigensystem(Ctmp);
 
  for (size_t i = 0; i < _current_s; ++i)
  {
@@ -1088,18 +1098,31 @@ void CMAES::updateEigensystem(double **M, int flgforce)
  /* if(_currentGeneration % _covarianceEigenEvalFreq == 0) return; */
 
  eigen(_k->N, M, axisDtmp, Btmp);
-
+ 
  /* find largest and smallest eigenvalue, they are supposed to be sorted anyway */
  double minEWtmp = doubleRangeMin(axisDtmp, _k->N);
  double maxEWtmp = doubleRangeMax(axisDtmp, _k->N);
 
- if (minEWtmp <= 0.0) if(_k->_verbosity >= KORALI_MINIMAL)
-  { printf("[Korali] Warning: Min Eigenvalue smaller or equal 0.0 (%+6.3e) after Eigen decomp (no update possible).\n", minEWtmp ); return; }
+ if (minEWtmp <= 0.0) { if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Warning: Min Eigenvalue smaller or equal 0.0 (%+6.3e) after Eigen decomp (no update possible).\n", minEWtmp ); return; }
 
+ for (size_t d = 0; d < _k->N; ++d) 
+ {
+     axisDtmp[d] = sqrt(axisDtmp[d]); 
+     if (std::isfinite(axisDtmp[d]) == false)
+     {
+       if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Warning: Could not calculate root of Eigenvalue (%+6.3e) after Eigen decomp (no update possible).\n", axisDtmp[d] ); 
+       return; 
+     }
+    for (size_t e = 0; e < _k->N; ++e) if (std::isfinite(B[d][e]) == false)
+    {
+       if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Warning: Non finite value detected in B (no update possible).\n"); 
+       return;
+    }
+ }
+ 
  /* write back */
- for (size_t d = 0; d < _k->N; ++d) axisD[d] = sqrt(axisDtmp[d]);
+ for (size_t d = 0; d < _k->N; ++d) axisD[d] = axisDtmp[d];
  for (size_t d = 0; d < _k->N; ++d) memcpy(B[d], Btmp[d], sizeof(double) * _k->N );
- if (C!=M) for (size_t d = 0; d < _k->N; ++d) memcpy(C[d], M[d], sizeof(double) * _k->N );
 
  minEW = minEWtmp;
  maxEW = maxEWtmp;
@@ -1348,10 +1371,27 @@ void CMAES::initProportionalWeights(double eps, size_t nsamples, double* fevals,
 
     for (size_t i = 0; i < nsamples; i++) { if(fevals[index[i]] > max) max = fevals[index[i]]; if(fevals[index[i]] < min) min = fevals[index[i]]; }
     eta = 5*(max-min);
-    
+    if (eta < a) eta = a;
     printf("[Korali] Warning: minimizer did not find eta (fallback: eta estimated %e (fmin: %e, fmax: %e))\n", eta, min, max);
   }
-  
-  for(size_t i = 0; i < nsamples; ++i) weights[i] = std::exp(fevals[index[i]]/eta);
+ 
+  size_t chk = 0;
+  double s1  = 0;
+  double s2  = 0;
+  for(size_t i = 0; i < nsamples; ++i) 
+  {
+      _muWeightsTmp[i] = std::exp(fevals[index[i]]/eta);
+      if (std::isfinite(_muWeightsTmp[i]) == false)
+      {
+        printf("[Korali] Warning: error in weight assignment (non finite value found)\n");
+        return;
+      }
+      s1 += _muWeightsTmp[i];
+      s2 += _muWeightsTmp[i] * _muWeightsTmp[i];
+      if (_muWeightsTmp[i] > 0.0) chk++;
+  }
+  if (chk==0) { printf("[Korali] Warning: error in weight assignment (all values zero))\n"); return; }
+  if (std::isfinite(s1*s1/s2) == false) { printf("[Korali] Warning: error in weight assignment (effective sample size not finite))\n"); return; }
+  for(size_t i = 0; i < nsamples; ++i) weights[i] = _muWeightsTmp[i];
 
 }

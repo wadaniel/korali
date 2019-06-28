@@ -87,7 +87,7 @@ void TestSuite::addMaxFunctionEvaluations(std::string name, size_t numFunEval)
   _maxModelEvals.insert( std::pair<std::string, size_t>(name, numFunEval) );
 }
 
-void TestSuite::makeStatistics()
+void TestSuite::makeStatistics() 
 {
   for(auto func : _functions)
   {
@@ -95,13 +95,29 @@ void TestSuite::makeStatistics()
     for(auto fac : _factories)
     {
         std::vector<size_t> facres = funcres[fac.first];
-        size_t min = *std::min_element(std::begin(facres), std::end(facres));
-        size_t max = *std::max_element(std::begin(facres), std::end(facres));
         
-        int sum = std::accumulate(facres.begin(), facres.end(), 0);
+        size_t len = facres.size();
+
+        sort(std::begin(facres), std::end(facres)); 
+        size_t min = *std::begin(facres);
+        size_t max = *std::end(facres);
+        size_t med;
+
+        if(len % 2 == false) med = facres[len/2];
+        else                 med = (facres[(len-1)/2] + facres[len/2])/2.0;  
+
+        double sum  = 0;
+        double sum2 = 0;
+        for(size_t i = 0; i < len; ++i)
+        {
+            sum  += facres[i];
+            sum2 += facres[i]*facres[i];
+        }
+
         double avg = (double)sum/facres.size();
+        double std = sum2 - (sum*sum);
         
-        printf("| FUNCTION  %-25s  | SOLVER  %-25s | MIN  %zu | MAX %zu | AVG %f |\n", func.first.c_str(), fac.first.c_str(), min, max, avg); //TODO: sdev median
+        printf("| FUNCTION  %-25s  | SOLVER  %-25s | MIN  %zu | MAX %zu | MED %zu | AVG %f | STD %f \n", func.first.c_str(), fac.first.c_str(), min, max, med, avg, std); //TODO: sdev median
     }
   }
 

@@ -9,7 +9,7 @@ using namespace Suite;
 int main(int, char**)
 {
 
-  auto t = TestSuite(1, 1e-4); 
+  auto t = TestSuite(10, 1e-4); 
   
   t.addFactory("Prop", new CMAESFactory("Proportional", 0.7));
   //t.addFactory("Equal", new CMAESFactory("Equal", 0.7));

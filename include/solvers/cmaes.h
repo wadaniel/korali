@@ -63,6 +63,7 @@ class CMAES : public Base
  std::string _muType; /* Linear, Equal or Logarithmic */
  double _eps; /* exploitation (for adaptive weights) */
  double* _muWeights; /* weights for mu best samples */
+ double* _muWeightsTmp; /* tmp weights for mu best samples for safety check */
  double _muEffective; /* variance effective selection mass */
  double _muCovarianceIn; /* read from configuration, placeholder for reinit */
  double _muCovariance; /* internal parameter to calibrate updates */
@@ -108,11 +109,11 @@ class CMAES : public Base
  double prevFunctionValue; /* best fitness previous generation */
 
  double **C; /* Covariance Matrix */
- double **Ctmp; /* tmp Covariance Matrix for eigen decomp */
+ double **Ctmp; /* tmp Covariance Matrix for eigen decomp for safety check */
  double **B; /* matrix with eigenvectors in columns */
- double **Btmp; /* matrix for eigenvectors calculation */
+ double **Btmp; /* matrix for eigenvectors calculation for safety check*/
  double *axisD; /* axis lengths (sqrt(Evals)) */
- double *axisDtmp; /* for axis lengths calculation */
+ double *axisDtmp; /* for axis lengths calculation for saftey check */
  
  double **Z; /* randn() */
  double **BDZ; /* B*D*randn() */

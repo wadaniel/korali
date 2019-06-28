@@ -32,6 +32,10 @@ jobs:
           name: run tests
           command: cd tests; ./run_all_tests.sh
 
+      - add_ssh_keys:
+          fingerprints:
+            - 'SHA256:sSXDhEdnQ/9NVgUfhqsrUsNUyIv/h/wqghGScylK9vo'
+      
   build_macos:
     macos:
       xcode: "10.0.0"

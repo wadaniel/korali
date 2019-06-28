@@ -27,6 +27,10 @@ jobs:
           key: korali-dependencies-linux
           paths:
             - "~/korali/build"
+      
+      - run:
+          name: build webpage
+          command: cd docs; ./build.sh
 
       - run:
           name: run tests

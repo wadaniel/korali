@@ -31,10 +31,6 @@ jobs:
       - run:
           name: run tests
           command: cd tests; ./run_all_tests.sh
-
-      - add_ssh_keys:
-          fingerprints:
-            - 'c3:60:fb:22:0f:99:71:96:94:41:df:fa:df:a1:be:96'
       
   build_macos:
     macos:

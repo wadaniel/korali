@@ -83,7 +83,12 @@ CMAES::CMAES(nlohmann::json& js, std::string name)
  _gaussianGenerator->setDistribution(jsGaussian);
 
  _chiN = sqrt((double) _k->N) * (1. - 1./(4.*_k->N) + 1./(21.*_k->N*_k->N));
-
+ 
+ // GSL Workspace
+ gsl_eval  = gsl_vector_alloc(_k->N);
+ gsl_evec  = gsl_matrix_alloc(_k->N, _k->N);
+ gsl_work =  gsl_eigen_symmv_alloc(_k->N);
+ 
  // CCMA-ES variables
  if (_k->_fconstraints.size() > 0)
  {
@@ -1148,23 +1153,18 @@ void CMAES::eigen(size_t size, double **M, double *diag, double **Q) const
  }
 
  gsl_matrix_view m = gsl_matrix_view_array (data, size, size);
- gsl_vector *eval  = gsl_vector_alloc (size);
- gsl_matrix *evec  = gsl_matrix_alloc (size, size);
- gsl_eigen_symmv_workspace * w =  gsl_eigen_symmv_alloc (size);
- gsl_eigen_symmv (&m.matrix, eval, evec, w);
- gsl_eigen_symmv_free (w);
- gsl_eigen_symmv_sort (eval, evec, GSL_EIGEN_SORT_ABS_ASC);
+
+ gsl_eigen_symmv (&m.matrix, gsl_eval, gsl_evec, gsl_work);
+ gsl_eigen_symmv_sort (gsl_eval, gsl_evec, GSL_EIGEN_SORT_ABS_ASC);
 
  for (size_t i = 0; i < size; i++)
  {
-  gsl_vector_view evec_i = gsl_matrix_column (evec, i);
-  for (size_t j = 0; j < size; j++) Q[j][i] = gsl_vector_get (&evec_i.vector, j);
+  gsl_vector_view gsl_evec_i = gsl_matrix_column (gsl_evec, i);
+  for (size_t j = 0; j < size; j++) Q[j][i] = gsl_vector_get (&gsl_evec_i.vector, j);
  }
 
- for (size_t i = 0; i < size; i++) diag[i] = gsl_vector_get (eval, i);
+ for (size_t i = 0; i < size; i++) diag[i] = gsl_vector_get (gsl_eval, i);
 
- gsl_vector_free (eval);
- gsl_matrix_free (evec);
  free(data);
 }
 
@@ -1369,10 +1369,11 @@ void CMAES::initProportionalWeights(double eps, size_t nsamples, double* fevals,
     double min = std::numeric_limits<double>::max();
     double max = -std::numeric_limits<double>::max();
 
-    for (size_t i = 0; i < nsamples; i++) { if(fevals[index[i]] > max) max = fevals[index[i]]; if(fevals[index[i]] < min) min = fevals[index[i]]; }
-    eta = 5*(max-min);
-    if (eta < a) eta = a;
-    printf("[Korali] Warning: minimizer did not find eta (fallback: eta estimated %e (fmin: %e, fmax: %e))\n", eta, min, max);
+    //for (size_t i = 0; i < nsamples; i++) { if(fevals[index[i]] > max) max = fevals[index[i]]; if(fevals[index[i]] < min) min = fevals[index[i]]; }
+    //eta = 5*(max-min);
+    //if (eta < a) { printf("[Korali] Warning: minimizer did not find eta\n"); return; }
+    printf("[Korali] Warning: minimizer did not find eta\n"); 
+    return;
   }
  
   size_t chk = 0;

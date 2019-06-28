@@ -174,6 +174,11 @@ class CMAES : public Base
  double **v; /* normal approximation of constraints */
  double *besteverCeval; /* constraint evaluations for best ever */
 
+ // Workspace for gsl
+ gsl_vector* gsl_eval;
+ gsl_matrix* gsl_evec;
+ gsl_eigen_symmv_workspace* gsl_work;
+
  // Private CCMA-ES-Specific Methods
  void initInternals(size_t numsamples); /* init _muWeights and dependencies */
  void initCovariance(); /* init sigma, C and B */

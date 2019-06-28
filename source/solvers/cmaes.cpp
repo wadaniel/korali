@@ -546,6 +546,7 @@ void CMAES::run()
 
  endTime = std::chrono::system_clock::now();
 
+ saveState();
  printFinal();
 
 }

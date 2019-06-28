@@ -15,7 +15,15 @@ scp -r site/* circleci@falcon.ethz.ch:websites/korali
 check
 
 # Copying from falcon to vladimirovich (host)
-ssh circleci@falcon.ethz.ch './update_vladimirovich.sh'
-check
+
+git branch | grep master
+if [ $? -eq 0 ] 
+then
+  ssh circleci@falcon.ethz.ch './update_master.sh'
+  check
+else
+  ssh circleci@falcon.ethz.ch './update_development.sh'
+  check
+fi
 
 echo "[Korali] Deploying complete."

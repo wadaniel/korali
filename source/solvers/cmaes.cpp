@@ -448,7 +448,6 @@ void CMAES::initInternals(size_t numsamplesmu)
  _muEffective = s1*s1/s2;
 
  for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] /= s1;
- for (size_t i = 0; i < numsamplesmu; i++) printf("w %e \n", _muWeights[i]);
 
  // Setting Mu Covariance
  //if (_muCovarianceIn < 1) _muCovariance = _muEffective;

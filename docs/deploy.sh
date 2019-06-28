@@ -16,7 +16,7 @@ check
 
 # Copying from falcon to vladimirovich (host)
 
-git branch | grep master
+git branch | grep \* | grep master
 if [ $? -eq 0 ] 
 then
   echo "[Korali] Deploying to master webpage."

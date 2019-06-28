@@ -23,6 +23,7 @@ public:
   ~TestSuite();
 
   void run();
+  void addFactory(std::string name, EngineFactory* fact_ptr);
   void addTestFunction(std::string name, TestFun fptr, size_t dim, double lowerBound, double upperBound, double fitness, size_t numFunEval);
   void addTargetFitness(std::string name, double fitness );
   void addMaxFunctionEvaluations(std::string, size_t numFunEval);

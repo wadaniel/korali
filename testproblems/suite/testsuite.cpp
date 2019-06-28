@@ -6,15 +6,7 @@
 namespace Suite
 {
 
-TestSuite::TestSuite(size_t rep, double prec) : _repetitions(rep), _precision(prec)
-{
-  _factories.push_back(std::pair<std::string, EngineFactory*>("Prop", new CMAESFactory("Proportional", 0.7)));
-  //_factories.push_back(std::pair<std::string, EngineFactory*>("Equal", new CMAESFactory("Equal", 0.7)));
-  //_factories.push_back(std::pair<std::string, EngineFactory*>("Linear", new CMAESFactory("Linear", 0.7)));
-  _factories.push_back(std::pair<std::string, EngineFactory*>("Logarithmic", new CMAESFactory("Logarithmic", 0.7)));
-  //_factories.push_back(std::pair<std::string, EngineFactory*>("DE Self Adaptive", new DEFactory("Best", "Self Adaptive", "Greedy")));
-  //_factories.push_back(std::pair<std::string, EngineFactory*>("DE Default", new DEFactory("Best", "Default", "Greedy")));
-};
+TestSuite::TestSuite(size_t rep, double prec) : _repetitions(rep), _precision(prec) { };
 
 TestSuite::~TestSuite() {};
 
@@ -61,6 +53,12 @@ void TestSuite::run()
    }
     _evalsCount.insert(std::pair<std::string, std::map<std::string, std::vector<size_t>>>(funcname, evals));
   }
+}
+
+
+void TestSuite::addFactory(std::string name, EngineFactory* factory_ptr)
+{
+  _factories.push_back(std::pair<std::string, EngineFactory*>(name, factory_ptr));
 }
 
 

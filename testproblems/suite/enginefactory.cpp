@@ -7,16 +7,15 @@ Korali::Engine CMAESFactory::createEngine(size_t dim, double lowerbound, double 
 {
   auto k = Korali::Engine();
   k["Verbosity"] = "Minimal";
-  k["CMA-ES"]["Result Output Frequency"] = 5000;
+  k["CMA-ES"]["Result Output Frequency"] = 1;
 
   k["Problem"] = "Direct Evaluation";
   k["Solver"]  = "CMA-ES";
 
   k["CMA-ES"]["Objective"]          = "Minimize";
-  k["CMA-ES"]["Sample Count"]       = 4*dim; //4+3*log(dim);
+  k["CMA-ES"]["Sample Count"]       = 4+3*log(dim);
   k["CMA-ES"]["Mu"]["Type"]         = _muType;
   k["CMA-ES"]["Mu"]["Exploitation"] = _eps;
-  k["CMA-ES"]["Mu"]["Value"]        = dim;
 
   for (int i = 0; i < dim; i++)
   {
@@ -30,7 +29,7 @@ Korali::Engine CMAESFactory::createEngine(size_t dim, double lowerbound, double 
   k["CMA-ES"]["Termination Criteria"]["Min Standard Deviation"]["Active"]   = false;
   k["CMA-ES"]["Termination Criteria"]["Max Standard Deviation"]["Active"]   = false;
   k["CMA-ES"]["Termination Criteria"]["Max Condition Covariance"]["Active"] = false;
-  //k["CMA-ES"]["Termination Criteria"]["Min Step Size"]["Active"]            = false;
+  k["CMA-ES"]["Termination Criteria"]["Min Step Size Factor"]["Active"]     = false;
 
   k["CMA-ES"]["Termination Criteria"]["Max Model Evaluations"]["Active"] = true;
   k["CMA-ES"]["Termination Criteria"]["Max Model Evaluations"]["Value"]  = maxEval;

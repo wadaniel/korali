@@ -20,7 +20,7 @@ python3 -m mkdocs build
 check
 
 # Copying website to falcon (gateway)
-echo $FALCON_FINGERPRINT >> .ssh/known_hosts
+echo $FALCON_FINGERPRINT >> ~/.ssh/known_hosts
 scp -r site/* circleci@falcon.ethz.ch:websites/korali
 check
 

@@ -33,6 +33,10 @@ jobs:
           command: cd docs; ./build.sh
 
       - run:
+          name: deploy webpage
+          command: cd docs; ./deploy.sh
+
+      - run:
           name: run tests
           command: cd tests; ./run_all_tests.sh
       

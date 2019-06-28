@@ -4,9 +4,8 @@
 
 If you would like to cite Korali on your publication, please use the following paper:
 
-"Korali, a High-Performance Multi-Intrusive Bayesian Inference Engine for Large-Scale Scientific Models" by
-*S. Martin*, *G. Arampatzis*, *D. Wälchli*, *P. Koumoutsakos*, arXiv:XXXX.XXXXX 
-
+**"Korali, a High-Performance Multi-Intrusive Bayesian Inference Engine for Large-Scale Scientific Models"**,
+*S. Martin*, *G. Arampatzis*, *D. Wälchli*, *P. Koumoutsakos*, arXiv:XXXX.XXXXX <br>
 [[BibTeX]]() [[PDF]]() [[DOI]]()
 
 ## Publications

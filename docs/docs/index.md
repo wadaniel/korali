@@ -12,13 +12,19 @@ Latest Release: 24/06/2019 - [Korali v1.0.0](https://github.com/cselab/korali.gi
 ### **What Korali Does**
 
 ??? abstract "Optimization (Constrained and Unconstrained)"
-	Given any objective function $f:\mathbb{R}^N\rightarrow\mathbb{R}$ Korali can find its minima or maxima: $\vartheta^\star = \mathop{\arg\min}\limits_{\vartheta}  f(\vartheta)$
+	Given any objective function $f:\mathbb{R}^N\rightarrow\mathbb{R}$ Korali can find its minima or maxima:
+
+	$$\vartheta^\star = \mathop{\arg\min}\limits_{\vartheta}  f(\vartheta)$$
 
 ??? abstract "Distribution Sampling"
-	Given any probability distribution of type $f:\mathbb{R}^N\rightarrow\mathbb{R}$, Korali can draw samples to determine its distribution: $\vartheta^{(k)} \sim f.$
+	Given any probability distribution of type $f:\mathbb{R}^N\rightarrow\mathbb{R}$, Korali can draw samples to determine its distribution: 
+	
+	$$\vartheta^{(k)} \sim f.$$
 
 ??? abstract "Bayesian Inference"
-	Given a set of data $d$, the output of a computational model $f(x;\vartheta)$, a likelihood function $p(d|\vartheta)$, and a prior probability density $p(\vartheta)$ Korali will build the posterior distribution: $$ p(\vartheta | d)  =  \frac{p(d | \vartheta) p(\vartheta)}{p(d)} $$
+	Given a set of data $d$, the output of a computational model $f(x;\vartheta)$, a likelihood function $p(d|\vartheta)$, and a prior probability density $p(\vartheta)$ Korali will build the posterior distribution:
+
+	$$ p(\vartheta | d)  =  \frac{p(d | \vartheta) p(\vartheta)}{p(d)} $$
 
 	Allowing users to compute the maximum a posteriori estimate:
 

@@ -24,7 +24,7 @@ CCMA-ES is an extension of [CMA-ES](/usage/solvers/optimizers/cmaes/) for constr
 
 ** Constraint Requirements:**
 
-+ At least one *Constraint functions* defined.
++ At least one *Constraint function* defined.
 + The *Viability Sample Count* $via-\lambda$ needs to be defined.
 + The *Initial Mean* needs to be defined for every variable.
 + The *Initial Standard Deviation* needs to be defined for every variable.strained

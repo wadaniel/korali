@@ -31,3 +31,14 @@ Run any of the included tutorials to verify Korali has installed correctly.
 cd tutorials
 ./a1-optimization
 ```
+
+!!! question "Troubles Installing Korali?"
+    If you are experiencing problems installing or running Korali, please check the following hints:
+
+	- Visit the [system requirements](../requirements) page to verify that your system meets the software requirements to install and run Korali.
+
+	- Check the [build](../build) to see if Korali is currently building correctly.
+
+	- If the problem persists, please submit a new [issue report](https://github.com/cselab/korali/issues) on our Github repository detailing the problem, your system information, and the steps to replicate it and we will promptly address it.
+
+	- For further questions, feel free to [contact us](/aboutus).

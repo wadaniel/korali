@@ -34,7 +34,7 @@ jobs:
 
       - add_ssh_keys:
           fingerprints:
-            - 'SHA256:sSXDhEdnQ/9NVgUfhqsrUsNUyIv/h/wqghGScylK9vo'
+            - 'c3:60:fb:22:0f:99:71:96:94:41:df:fa:df:a1:be:96'
       
   build_macos:
     macos:

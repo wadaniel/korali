@@ -46,11 +46,10 @@ typedef struct
   }
 brent_state_t;
 
-static int brent_init (void *vstate, gsl_function * f, double x_minimum, double f_minimum, double x_lower, double f_lower, double x_upper, double f_upper);
+static int brent_init (void *vstate, gsl_function * f, double x_lower, double x_upper, double *xmin, double *fmin);
 static int brent_iterate (void *vstate, gsl_function * f, double *x_minimum, double * f_minimum, double * x_lower, double * f_lower, double * x_upper, double * f_upper);
 
-static int
-brent_init (void *vstate, gsl_function * f, double x_minimum, double f_minimum, double x_lower, double f_lower, double x_upper, double f_upper)
+static int brent_init (void *vstate, gsl_function * f, double x_lower, double x_upper, double *xmin, double *fmin)
 {
   brent_state_t *state = (brent_state_t *) vstate;
 
@@ -61,11 +60,6 @@ brent_init (void *vstate, gsl_function * f, double x_minimum, double f_minimum, 
 
   double f_vw;
 
-  x_minimum = 0 ;  /* avoid warnings about unused varibles */
-  f_minimum = 0 ;
-  f_lower = 0 ;
-  f_upper = 0 ;
-
   state->v = v;
   state->w = w;
 
@@ -73,7 +67,9 @@ brent_init (void *vstate, gsl_function * f, double x_minimum, double f_minimum, 
   state->e = 0;
 
   f_vw = f->function(v, f->params);
-  //SAFE_FUNC_CALL (f, v, &f_vw);
+
+  *xmin = v;
+  *fmin = f_vw;
 
   state->f_v = f_vw;
   state->f_w = f_vw;
@@ -81,8 +77,7 @@ brent_init (void *vstate, gsl_function * f, double x_minimum, double f_minimum, 
   return GSL_SUCCESS;
 }
 
-static int
-brent_iterate (void *vstate, gsl_function * f, double *x_minimum, double * f_minimum, double * x_lower, double * f_lower, double * x_upper, double * f_upper)
+static int brent_iterate (void *vstate, gsl_function * f, double *x_minimum, double * f_minimum, double * x_lower, double * f_lower, double * x_upper, double * f_upper)
 {
   brent_state_t *state = (brent_state_t *) vstate;
 
@@ -171,7 +166,7 @@ brent_iterate (void *vstate, gsl_function * f, double *x_minimum, double * f_min
   catch (int e)
   {
     printf("WTFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\n");
-    return GSL_ERROR;
+    return GSL_FAILURE;
   }
 
   if (f_u <= f_z)
@@ -226,15 +221,6 @@ brent_iterate (void *vstate, gsl_function * f, double *x_minimum, double * f_min
 
   return GSL_SUCCESS;
 }
-
-
-static const gsl_min_fminimizer_type brent_type =
-{"brent",                       /* name */
- sizeof (brent_state_t),
- &brent_init,
- &brent_iterate};
-
-const gsl_min_fminimizer_type *gsl_min_fminimizer_brent = &brent_type;
 
 } } // namespace Korali Solver
 #endif // _BRENT_H_ 

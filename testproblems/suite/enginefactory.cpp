@@ -13,9 +13,10 @@ Korali::Engine CMAESFactory::createEngine(size_t dim, double lowerbound, double 
   k["Solver"]  = "CMA-ES";
 
   k["CMA-ES"]["Objective"]          = "Minimize";
-  k["CMA-ES"]["Sample Count"]       = 4+3*log(dim);
+  k["CMA-ES"]["Sample Count"]       = 4*dim; //4+3*log(dim);
   k["CMA-ES"]["Mu"]["Type"]         = _muType;
   k["CMA-ES"]["Mu"]["Exploitation"] = _eps;
+  k["CMA-ES"]["Mu"]["Value"]        = dim;
 
   for (int i = 0; i < dim; i++)
   {

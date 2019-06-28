@@ -8,9 +8,9 @@ namespace Suite
 
 TestSuite::TestSuite(size_t rep, double prec) : _repetitions(rep), _precision(prec)
 {
-  //_factories.push_back(std::pair<std::string, EngineFactory*>("Prop", new CMAESFactory("Proportional", 0.7)));
-  _factories.push_back(std::pair<std::string, EngineFactory*>("Equal", new CMAESFactory("Equal", 0.7)));
-  _factories.push_back(std::pair<std::string, EngineFactory*>("Linear", new CMAESFactory("Linear", 0.7)));
+  _factories.push_back(std::pair<std::string, EngineFactory*>("Prop", new CMAESFactory("Proportional", 0.7)));
+  //_factories.push_back(std::pair<std::string, EngineFactory*>("Equal", new CMAESFactory("Equal", 0.7)));
+  //_factories.push_back(std::pair<std::string, EngineFactory*>("Linear", new CMAESFactory("Linear", 0.7)));
   _factories.push_back(std::pair<std::string, EngineFactory*>("Logarithmic", new CMAESFactory("Logarithmic", 0.7)));
   //_factories.push_back(std::pair<std::string, EngineFactory*>("DE Self Adaptive", new DEFactory("Best", "Self Adaptive", "Greedy")));
   //_factories.push_back(std::pair<std::string, EngineFactory*>("DE Default", new DEFactory("Best", "Default", "Greedy")));

@@ -286,7 +286,7 @@ void CMAES::setConfiguration(nlohmann::json& js)
  _eps                           = consume(js, { "CMA-ES", "Mu", "Exploitation" }, KORALI_NUMBER, std::to_string(0.1));
  _muCovarianceIn                = consume(js, { "CMA-ES", "Mu", "Covariance" }, KORALI_NUMBER, std::to_string(-1));
  
- if( _mu < 1 || _mu > _s || ( ( _mu == _s )  && _muType.compare("Linear") ) )
+ if( _mu < 1 || _mu > _s || ( ( _mu == _s )  && _muType == "Linear") )
    { fprintf( stderr, "[Korali] CMA-ES Error: Invalid setting of Mu (%lu) and/or Lambda (%lu)\n",  _mu, _s); exit(-1); }
 
  // CCMA-ES (more below)
@@ -360,6 +360,8 @@ void CMAES::setConfiguration(nlohmann::json& js)
  _isTermCondTolUpXFactor          = consume(js, { "CMA-ES", "Termination Criteria", "Max Standard Deviation", "Active" }, KORALI_BOOLEAN, "true");
  _termCondCovCond                 = consume(js, { "CMA-ES", "Termination Criteria", "Max Condition Covariance", "Value" }, KORALI_NUMBER, std::to_string(1e18));
  _isTermCondCovCond               = consume(js, { "CMA-ES", "Termination Criteria", "Max Condition Covariance", "Active" }, KORALI_BOOLEAN, "true");
+ _termCondMinStepFac              = consume(js, { "CMA-ES", "Termination Criteria", "Min Step Size Factor", "Value" }, KORALI_NUMBER, std::to_string(0.1));
+ _isTermCondMinStep               = consume(js, { "CMA-ES", "Termination Criteria", "Min Step Size Factor", "Active" }, KORALI_BOOLEAN, "false");
 
  // CCMA-ES
  _targetSucRate  = consume(js, { "CMA-ES", "Target Success Rate" }, KORALI_NUMBER, std::to_string(2./11.));
@@ -691,7 +693,7 @@ void CMAES::prepareGeneration()
        sampleSingle(i);
        if ( (countinfeasible - initial_infeasible) > _maxResamplings )
        {
-        if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Warning: exiting resampling loop (param %zu) , max resamplings (%zu) reached.\n", i, _maxResamplings);
+        if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Warning: exiting resampling loop (sample %zu) , max resamplings (%zu) reached.\n", i, _maxResamplings);
         exit(-1);
        }
      }
@@ -1097,7 +1099,7 @@ void CMAES::updateEigensystem(double **M, int flgforce)
  /* write back */
  for (size_t d = 0; d < _k->N; ++d) axisD[d] = sqrt(axisDtmp[d]);
  for (size_t d = 0; d < _k->N; ++d) memcpy(B[d], Btmp[d], sizeof(double) * _k->N );
- for (size_t d = 0; d < _k->N; ++d) memcpy(C[d], M[d], sizeof(double) * _k->N );
+ if (C!=M) for (size_t d = 0; d < _k->N; ++d) memcpy(C[d], M[d], sizeof(double) * _k->N );
 
  minEW = minEWtmp;
  maxEW = maxEWtmp;
@@ -1289,7 +1291,7 @@ double Korali::Solver::fn1 (double eta, void * params)
 
   double result = eta*par->eps + eta*sum;
 
-  delete f;
+  delete [] f;
   return result;
 }
 
@@ -1300,8 +1302,6 @@ void CMAES::initProportionalWeights(double eps, size_t nsamples, double* fevals,
  
   int status;
   int iter = 0, max_iter = 1000;
-  const gsl_min_fminimizer_type *T;
-  gsl_min_fminimizer *s;
   double eta = 10.0;
   double a = 1e-9; 
   double b = 1e9;
@@ -1310,35 +1310,23 @@ void CMAES::initProportionalWeights(double eps, size_t nsamples, double* fevals,
   F.function = &fn1;
   F.params = &params;
 
-  T = gsl_min_fminimizer_brent;
-  //T = gsl_min_fminimizer_goldensection;
-  s = gsl_min_fminimizer_alloc (T);
-  gsl_min_fminimizer_set (s, &F, eta, a, b);
+  double x_min, f_min, x_low, f_low, x_up, f_up;
+  brent_state_t vstate;
+  brent_init (&vstate, &F, a,  b, &x_min, &f_min);
 
-#ifdef VERBOSE
-  printf ("using %s method\n",
-          gsl_min_fminimizer_name (s));
-
-  printf ("%5s [%9s, %9s] %9s %10s %9s\n",
-          "iter", "lower", "upper", "min",
-          "err", "err(est)");
-
-  printf ("%5d [%.7f, %.7f] %.7f %.7f\n",
-          iter, a, b,
-          eta, b - a);
-#endif
+  x_low = a;
+  x_up  = b;
 
   do
   {
       iter++;
-      status = gsl_min_fminimizer_iterate (s);
+      status =  brent_iterate (&vstate, &F, &x_min, &f_min, &x_low, &f_low, &x_up, &f_up);
 
-      eta = gsl_min_fminimizer_x_minimum (s);
-      a   = gsl_min_fminimizer_x_lower (s);
-      b   = gsl_min_fminimizer_x_upper (s);
+      eta = x_min;
+      a   = x_low;
+      b   = x_up;;
 
-      status
-        = gsl_min_test_interval (a, b, 0.001, 0.0);
+      status = gsl_min_test_interval (a, b, 0.001, 0.0);
 
 #ifdef VERBOSE
       if (status == GSL_SUCCESS)
@@ -1364,10 +1352,6 @@ void CMAES::initProportionalWeights(double eps, size_t nsamples, double* fevals,
     printf("[Korali] Warning: minimizer did not find eta (fallback: eta estimated %.7f)", eta);
   }
   
-  gsl_min_fminimizer_free (s);
-
   for(size_t i = 0; i < nsamples; ++i) weights[i] = std::exp(fevals[index[i]]/eta);
-
-
 
 }

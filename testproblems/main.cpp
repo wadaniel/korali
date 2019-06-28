@@ -11,10 +11,10 @@ int main(int, char**)
 
   auto t = TestSuite(1, 1e-4); 
   
-  //t.addFactory("Prop", new CMAESFactory("Proportional", 0.7));
+  t.addFactory("Prop", new CMAESFactory("Proportional", 0.7));
   //t.addFactory("Equal", new CMAESFactory("Equal", 0.7));
   //t.addFactory("Linear", new CMAESFactory("Linear", 0.7));
-  t.addFactory("Logarithmic", new CMAESFactory("Logarithmic", 0.7));
+  //t.addFactory("Logarithmic", new CMAESFactory("Logarithmic", 0.7));
   //t.addFactory("DE Self Adaptive", new DEFactory("Best", "Self Adaptive", "Greedy"));
   //t.addFactory("DE Default", new DEFactory("Best", "Default", "Greedy"));
 

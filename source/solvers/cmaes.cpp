@@ -1349,7 +1349,7 @@ void CMAES::initProportionalWeights(double eps, size_t nsamples, double* fevals,
     for (size_t i = 0; i < nsamples; i++) { if(fevals[index[i]] > max) max = fevals[index[i]]; if(fevals[index[i]] < min) min = fevals[index[i]]; }
     eta = 5*(max-min);
     
-    printf("[Korali] Warning: minimizer did not find eta (fallback: eta estimated %.7f)", eta);
+    printf("[Korali] Warning: minimizer did not find eta (fallback: eta estimated %e (fmin: %e, fmax: %e))\n", eta, min, max);
   }
   
   for(size_t i = 0; i < nsamples; ++i) weights[i] = std::exp(fevals[index[i]]/eta);

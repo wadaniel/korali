@@ -242,10 +242,6 @@ def draw_figure_evolution(fig, ax, src, idx, sigma, cov, mu_x, mu_y, samples_x, 
         ax.add_patch(circle2)
     ax.add_patch(ellipse)
 
-    #legend = ax.legend(loc = 'lower right')
-
-
     #plt_pause_light(1)
     #plt.savefig('ccmaes{0}.png'.format(idx), bbox_inches='tight')
     #if(live == False): time.sleep(0.1)
-    #idx = idx+1

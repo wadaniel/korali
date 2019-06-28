@@ -100,7 +100,7 @@ void TestSuite::makeStatistics()
 
         sort(std::begin(facres), std::end(facres)); 
         size_t min = *std::begin(facres);
-        size_t max = *std::end(facres);
+        size_t max = *(std::end(facres)-1);
         size_t med;
 
         if(len % 2 == false) med = facres[len/2];
@@ -111,13 +111,13 @@ void TestSuite::makeStatistics()
         for(size_t i = 0; i < len; ++i)
         {
             sum  += facres[i];
-            sum2 += facres[i]*facres[i];
+            sum2 += (facres[i]*facres[i]);
         }
 
-        double avg = (double)sum/facres.size();
-        double std = sum2 - (sum*sum);
+        double avg = sum/len;
+        double std = std::sqrt(sum2/len - sum*sum/(len*len));
         
-        printf("| FUNCTION  %-25s  | SOLVER  %-25s | MIN  %zu | MAX %zu | MED %zu | AVG %f | STD %f \n", func.first.c_str(), fac.first.c_str(), min, max, med, avg, std); //TODO: sdev median
+        printf("| FUNCTION  %-25s  | SOLVER  %-25s | MIN  %5zu | MAX %5zu | MED %5zu | AVG %5.1f | STD %5.1f \n", func.first.c_str(), fac.first.c_str(), min, max, med, avg, std); //TODO: sdev median
     }
   }
 

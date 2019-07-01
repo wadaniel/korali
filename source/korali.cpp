@@ -69,6 +69,10 @@ Korali::Engine::Engine()
 {
  _modelDefined = false;
  _likelihoodDefined = false;
+
+ _problem = nullptr;
+ _conduit = nullptr;
+ _solver  = nullptr;
 }
 
 Korali::Engine::~Engine()
@@ -85,15 +89,15 @@ nlohmann::json Korali::Engine::getConfiguration()
  auto js = nlohmann::json();
 
  js["Seed"]      = _seed;
-//
+ 
  if (_verbosity == KORALI_SILENT)   js["Verbosity"] = "Silent";
  if (_verbosity == KORALI_MINIMAL)  js["Verbosity"] = "Minimal";
  if (_verbosity == KORALI_NORMAL)   js["Verbosity"] = "Normal";
  if (_verbosity == KORALI_DETAILED) js["Verbosity"] = "Detailed";
 
- _problem->getConfiguration(js);
- _solver->getConfiguration(js);
- _conduit->getConfiguration(js);
+ if (_problem != nullptr) _problem->getConfiguration(js);
+ if (_solver  != nullptr) _solver->getConfiguration(js);
+ if (_conduit != nullptr) _conduit->getConfiguration(js);
 
  return js;
 }
@@ -126,7 +130,6 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
 
  // Configure Problem
 
- _problem = nullptr;
  std::string pName = consume(js, { "Problem" }, KORALI_STRING);
  if (pName == "Direct Evaluation")   { _problem = new Korali::Problem::Direct(js); }
  if (pName == "Bayesian") { _problem = new Korali::Problem::Bayesian(js); }
@@ -139,7 +142,6 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
 
  int rankCount = 1;
 
- _conduit = nullptr;
  std::string conduitType =  consume(js, { "Conduit" }, KORALI_STRING, "Semi-Intrusive");
 
  if (conduitType == "Semi-Intrusive") _conduit = new Korali::Conduit::SemiIntrusive(js["Conduit"]);
@@ -154,7 +156,6 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
 
  // Configure Solver
 
- _solver = nullptr;
  std::string solverName = consume(js, { "Solver" }, KORALI_STRING);
  if (solverName == "CMA-ES")  _solver = new Korali::Solver::CMAES(js, solverName);
  if (solverName == "CCMA-ES") _solver = new Korali::Solver::CMAES(js, solverName);

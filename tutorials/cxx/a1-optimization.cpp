@@ -17,6 +17,6 @@ int main(int argc, char* argv[])
  k["CMA-ES"]["Sample Count"] = 5;
 
  k.setModel([](Korali::ModelData& d) { directModel(d.getVariables(), d.getResults()); });
-
+ auto tmp = k.getConfiguration();
  k.run();
 }

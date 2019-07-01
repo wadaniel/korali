@@ -42,7 +42,7 @@ def plot_cmaes(src, live = False, evolution = False, obj='current'):
 
     live = live or evolution
 
-    numdim   = 0 # problem dimension
+    numdim   = 0  # problem dimension
     names    = [] # description params
     colors   = [] # rgb colors
     numeval  = [] # number obj function evaluations
@@ -54,9 +54,9 @@ def plot_cmaes(src, live = False, evolution = False, obj='current'):
     fvalXvec = [] # location fval
     axis     = [] # sqrt(EVals)
     ssdev    = [] # sigma x diag(C)
-    cov      = []
-    mu_x     = []
-    mu_y     = []
+    cov      = [] # covariance matrix (for evolution plot)
+    mu_x     = [] # current mean dim 1 (for evolution plot)
+    mu_y     = [] # current mean dim 2 (for evolution plot)
     
     ccmaes   = False
     via      = None

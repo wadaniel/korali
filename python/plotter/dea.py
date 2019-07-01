@@ -34,91 +34,11 @@ def objstrings(obj='current'):
         raise ValueError("obj must be 'current' or 'ever'")
 
 
-# Plot DEA results (read from .json files)
-def plot_dea(src, live = False, obj='current'):
-
-    idx    = 0 # generation
-    numdim = 0 # problem dimension
-    names    = [] # description params
-    colors   = [] # rgb colors
-    numeval  = [] # number obj function evaluations
-    dfval    = [] # abs diff currentBest - bestEver
-    fval     = [] # best fval current generation
-    fvalXvec = [] # location fval
-    meanXvec = [] # location mean population
-    width    = [] # spread population
-
-    plt.style.use('seaborn-dark')
-
-    fig, ax = plt.subplots(2,2,num='DEA live diagnostics: {0}'.format(src),figsize=(8,8))
-    if live == True:
-        fig.show()
-
-    while( (live == False) or (plt.fignum_exists(fig.number)) ):
-
-        path = '{0}/s{1}.json'.format(src, str(idx).zfill(5))
-       
-        if ( not os.path.isfile(path) ):
-            if ( (live == True) and (idx > 0) ):
-              plt_pause_light(0.5)
-              continue
-            else:
-                break
-
-        if live == True:
-            plt.suptitle( 'Generation {0}'.format(str(idx).zfill(5)),\
-                          fontweight='bold',\
-                          fontsize=12 )
-
-        with open(path) as f:
-            data  = json.load(f)
-            state = data['DE']['State']
-
-            if idx == 0:
-                numdim = len(data['Variables'])
-                names  = [ data['Variables'][i]['Name'] for i in range(numdim) ]
-                colors = hls_colors(numdim)
-                for i in range(numdim):
-                    fvalXvec.append([])
-                    meanXvec.append([])
-                    width.append([])
-
-                idx = idx + 1
-                continue
-
-            numeval.append(state['EvaluationCount'])
-            dfval.append(abs(state["CurrentBestFunctionValue"] - state["BestEverFunctionValue"]))
-            
-            fval.append(state[objstrings(obj)[0]])
-
-            for i in range(numdim):
-                fvalXvec[i].append(state[objstrings(obj)[1]][i])
-                meanXvec[i].append(state['CurrentMeanVector'][i])
-                width[i].append(state['MaxWidth'][i])
-
-        if (live == False or idx < 2):
-            idx = idx + 1
-            continue
-        
-        fig.show()
-        draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, fvalXvec, meanXvec, width, colors, names, live)
-        plt_pause_light(0.05)
-        idx = idx+1
-
-    if live == False:
-        draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, fvalXvec, meanXvec, width, colors, names, live)
-    
-    plt.pause(3600)
-            
-
-
 # Create Plot from Data
 def draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, fvalXvec, meanXvec, width, colors, names, live):
     #fig, ax = plt.subplots(2,2,num='DEA live diagnostics: {0}'.format(src),figsize=(8,8))
 
-    plt.suptitle( 'Generation {0}'.format(str(idx).zfill(5)),\
-                      fontweight='bold',\
-                      fontsize=12 )
+    plt.suptitle( 'Generation {0}'.format(str(idx).zfill(5)), fontweight='bold', fontsize=12 )
 
     # Upper Left Plot
     ax[0,0].grid(True)
@@ -149,3 +69,81 @@ def draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, fvalXvec, meanX
         ax[1,1].plot(numeval, meanXvec[i], color = colors[i], label=names[i])
     if ( (idx == 2) or (live == False) ):
         ax[1,1].legend(bbox_to_anchor=(1.04,0.5), loc="center left", borderaxespad=0, handlelength=1)
+
+
+# Plot DEA results (read from .json files)
+def plot_dea(src, live = False, obj='current'):
+
+    gen      = 0 # generation
+    numdim   = 0 # problem dimension
+    names    = [] # description params
+    colors   = [] # rgb colors
+    numeval  = [] # number obj function evaluations
+    dfval    = [] # abs diff currentBest - bestEver
+    fval     = [] # best fval current generation
+    fvalXvec = [] # location fval
+    meanXvec = [] # location mean population
+    width    = [] # spread population
+
+    plt.style.use('seaborn-dark')
+
+    resultfiles = [f for f in os.listdir(src) if os.path.isfile(os.path.join(src, f))]
+    resultfiles = sorted(resultfiles)
+
+    fig = None
+    ax  = None
+    
+    if (resultfiles == []):
+        print("[Korali] Error: Did not find file {0} in the result folder...".format(src))
+        exit(-1)
+
+   
+    for filename in resultfiles:
+        path   = '{0}/{1}'.format(src, filename)
+ 
+        with open(path) as f:
+            
+            data  = json.load(f)
+            state = data['DE']['State']
+            gen   = state['Current Generation']
+
+            if ( (fig, ax) == (None, None) ):
+                fig, ax = plt.subplots(2,2,num='DEA live diagnostics: {0}'.format(src),figsize=(8,8))
+                fig.show()
+                
+                numdim = len(data['Variables'])
+                names  = [ data['Variables'][i]['Name'] for i in range(numdim) ]
+                colors = hls_colors(numdim)
+                for i in range(numdim):
+                    fvalXvec.append([])
+                    meanXvec.append([])
+                    width.append([])
+                continue
+                
+            numeval.append(state['EvaluationCount'])
+            dfval.append(abs(state['CurrentBestFunctionValue'] - state['BestEverFunctionValue']))
+            fval.append(state[objstrings(obj)[0]])
+
+            for i in range(numdim):
+                fvalXvec[i].append(state[objstrings(obj)[1]][i])
+                meanXvec[i].append(state['CurrentMeanVector'][i])
+                width[i].append(state['MaxWidth'][i])
+
+            if (live == False):
+                continue
+            
+            if ( not plt.fignum_exists(fig.number)):
+                print("[Korali] Figure closed - Bye!")
+                exit(0)
+
+            draw_figure(fig, ax, src, gen, numeval, numdim, fval, dfval, fvalXvec, meanXvec, width, colors, names, live)
+            plt_pause_light(0.05)
+
+    if live == False: 
+        draw_figure(fig, ax, src, gen, numeval, numdim, fval, dfval, fvalXvec, meanXvec, width, colors, names, live)
+        fig.show()
+    
+    plt.pause(3600)
+
+
+

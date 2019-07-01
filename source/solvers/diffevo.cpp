@@ -129,6 +129,7 @@ void Korali::Solver::DE::getConfiguration(nlohmann::json& js)
  js["DE"]["Termination Criteria"]["Min DeltaX"]["Active"]             = _isTermCondMinDeltaX;
 
  // State Information
+ js["DE"]["State"]["Current Generation"]        = currentGeneration;
  js["DE"]["State"]["BestEverFunctionValue"]     = bestEver;
  js["DE"]["State"]["PreviousBestFunctionValue"] = prevBest;
  js["DE"]["State"]["EvaluationCount"]           = countevals;

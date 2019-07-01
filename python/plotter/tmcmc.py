@@ -3,6 +3,7 @@
 import os
 import re
 import sys
+import glob
 import time
 import json
 import numpy as np
@@ -91,56 +92,46 @@ def plot_lower_triangle(ax, theta):
                 ax[i, j].set_yticklabels([])
 
 
-# Plot TMCMC result file
-def plot_samples(path, idx=None):
-    with open(path) as f:
-        data    = json.load(f)
-        numdim  = len(data['Variables'])
-        pop     = data['TMCMC']['Population Size']
-        anneal  = data['TMCMC']['State']['AnnealingExponent']
-        fitness = data['TMCMC']['State']['DatabaseFitness']
-        samples = np.reshape( data['TMCMC']['State']['DatabasePoints'], (pop,numdim) )
-
-        plt.style.use('seaborn-dark')
-        fig, ax = plt.subplots(samples.shape[1], samples.shape[1], figsize=(8,8))
-        fig.show()
-        
-        if idx is None: 
-            fig.canvas.set_window_title(path)
-            idx = int(re.findall(r'[0-9]+', path)[-1])
-        else:           
-            fig.canvas.set_window_title('s{0}.json'.format(str(idx).zfill(5)))
-        
-        plt.suptitle( 'TMCMC\nGeneration {0}\nNumber of Samples {1}\n(Annealing Exponent {2:.3e})'.format(str(idx), \
-                        str(pop), anneal), fontweight='bold', fontsize  = 12 )
-
-        plot_histogram(ax, samples)
-        plot_upper_triangle(ax, samples, False)
-        plot_lower_triangle(ax, samples)
-        return anneal
-
 # Plot TMCMC results (read from .json files)
 def plot_tmcmc(src, live=False):
      
-    idx      = 0
-    finished = False
+    plt.style.use('seaborn-dark')
     
-    while( not finished ):
+    resultfiles = [f for f in os.listdir(src) if os.path.isfile(os.path.join(src, f))]
+    resultfiles = sorted(resultfiles)
+   
+    fig = None
+    ax  = None 
+    
+    if (resultfiles == []):
+        print("[Korali] Error: Did not find file {0} in the result folder...".format(src))
+        exit(-1)
 
-        path = '{0}/s{1}.json'.format(src, str(idx).zfill(5))
-        if ( not os.path.isfile(path) ):
-            if ( live == True ):
-                if (idx > 1): plt_pause_light(0.05)
-                continue
-            else: 
-                break
+    for filename in resultfiles:
+        path   = '{0}/{1}'.format(src, filename)
+ 
+        with open(path) as f:
+ 
+            data    = json.load(f)
+            numdim  = len(data['Variables'])
+            pop     = data['TMCMC']['Population Size']
+            gen     = data['TMCMC']['State']['Current Generation']
+            anneal  = data['TMCMC']['State']['AnnealingExponent']
+            fitness = data['TMCMC']['State']['DatabaseFitness']
+            samples = np.reshape( data['TMCMC']['State']['DatabasePoints'], (pop,numdim) )
+            fig, ax = plt.subplots(samples.shape[1], samples.shape[1], figsize=(8,8))
 
-        time.sleep(0.1)
-        anneal = plot_samples(path, idx)
-        
-        plt_pause_light(0.05) 
-        if(live == False): time.sleep(0.1)
-        idx = idx+1
-        if (anneal >= 1.0): finished = True
+            fig.canvas.set_window_title(filename)
+  
+            plt.suptitle( 'TMCMC\nGeneration {0}\nNumber of Samples {1}\n(Annealing Exponent {2:.3e})'.format(str(gen), \
+                            str(pop), anneal), fontweight='bold', fontsize  = 12 )
+
+            fig.show()
+            plot_histogram(ax, samples)
+            plot_upper_triangle(ax, samples, False)
+            plot_lower_triangle(ax, samples)
+
+            plt_pause_light(0.05) 
 
     plt.show()
+    print("[Korali] Figures closed - Bye!")

@@ -117,7 +117,7 @@ void TestSuite::makeStatistics()
         double avg = sum/len;
         double std = std::sqrt(sum2/len - sum*sum/(len*len));
         
-        printf("| FUNCTION  %-25s  | SOLVER  %-25s | MIN  %5zu | MAX %5zu | MED %5zu | AVG %5.1f | STD %5.1f \n", func.first.c_str(), fac.first.c_str(), min, max, med, avg, std); //TODO: sdev median
+        printf("| FUNCTION  %-25s  | SOLVER  %-25s | MIN  %5zu | MAX %5zu | MED %5zu | AVG %6.1f | STD %6.1f \n", func.first.c_str(), fac.first.c_str(), min, max, med, avg, std);
     }
   }
 

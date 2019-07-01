@@ -1,4 +1,4 @@
-BINARIES = main max
+BINARIES = main
 KORALICXX=$(shell python3 -m korali.cxx --compiler)
 KORALICFLAGS=`python3 -m korali.cxx --cflags`
 KORALILIBS=`python3 -m korali.cxx --libs`
@@ -29,4 +29,5 @@ suite/enginefactory.o:
 .PHONY: clean
 clean:
 	$(MAKE) -C model clean
+	$(MAKE) -C suite clean
 	$(RM) $(BINARIES) *.o *.ti *.optrpt *.txt

@@ -14,6 +14,7 @@ Korali::Engine CMAESFactory::createEngine(size_t dim, double lowerbound, double 
 
   k["CMA-ES"]["Objective"]          = "Minimize";
   k["CMA-ES"]["Sample Count"]       = 4+3*log(dim);
+  k["CMA-ES"]["Max Resamplings"]    = 1e7;
   k["CMA-ES"]["Mu"]["Type"]         = _muType;
   k["CMA-ES"]["Mu"]["Exploitation"] = _eps;
 

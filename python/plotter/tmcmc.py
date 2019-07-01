@@ -95,9 +95,6 @@ def plot_lower_triangle(ax, theta):
 # Plot TMCMC results (read from .json files)
 def plot_tmcmc(src, live=False):
      
-    gen      = 0
-    finished = False
-    
     plt.style.use('seaborn-dark')
     
     resultfiles = [f for f in os.listdir(src) if os.path.isfile(os.path.join(src, f))]
@@ -118,18 +115,13 @@ def plot_tmcmc(src, live=False):
             data    = json.load(f)
             numdim  = len(data['Variables'])
             pop     = data['TMCMC']['Population Size']
+            gen     = data['TMCMC']['State']['Current Generation']
             anneal  = data['TMCMC']['State']['AnnealingExponent']
             fitness = data['TMCMC']['State']['DatabaseFitness']
             samples = np.reshape( data['TMCMC']['State']['DatabasePoints'], (pop,numdim) )
-
-
             fig, ax = plt.subplots(samples.shape[1], samples.shape[1], figsize=(8,8))
- 
-            if (gen == 0): 
-                fig.canvas.set_window_title(path)
-                gen = int(re.findall(r'[0-9]+', path)[-1])
-            else:           
-                fig.canvas.set_window_title('s{0}.json'.format(str(gen).zfill(5)))
+
+            fig.canvas.set_window_title(filename)
   
             plt.suptitle( 'TMCMC\nGeneration {0}\nNumber of Samples {1}\n(Annealing Exponent {2:.3e})'.format(str(gen), \
                             str(pop), anneal), fontweight='bold', fontsize  = 12 )
@@ -139,10 +131,7 @@ def plot_tmcmc(src, live=False):
             plot_upper_triangle(ax, samples, False)
             plot_lower_triangle(ax, samples)
 
-        
             plt_pause_light(0.05) 
-            gen = gen+1
 
-            
     plt.show()
     print("[Korali] Figures closed - Bye!")

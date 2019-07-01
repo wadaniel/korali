@@ -7,9 +7,6 @@
 
 namespace Korali { namespace Solver {
 
-struct fitParams { size_t nsamples; double eps; const double* fevals; const size_t *index; };
-
-
 class CMAES : public Base
 {
  public:
@@ -61,9 +58,7 @@ class CMAES : public Base
  size_t _via_mu; /* number of best samples for mean (viability regime) */
  size_t _current_mu; /* number of samples active ( _mu or _mu_s ) */
  std::string _muType; /* Linear, Equal or Logarithmic */
- double _eps; /* exploitation (for adaptive weights) */
  double* _muWeights; /* weights for mu best samples */
- double* _muWeightsTmp; /* tmp weights for mu best samples for safety check */
  double _muEffective; /* variance effective selection mass */
  double _muCovarianceIn; /* read from configuration, placeholder for reinit */
  double _muCovariance; /* internal parameter to calibrate updates */
@@ -92,7 +87,7 @@ class CMAES : public Base
  double _termCondMinStepFac; // Factor to calculate min step length
  bool _isTermCondMaxGenerations, _isTermCondMaxFitnessEvaluations, _isTermCondFitness,
       _isTermCondFitnessDiffThreshold, _isTermCondMinDeltaX, _isTermCondTolUpXFactor,
-      _isTermCondCovCond, _isTermCondMinStep; // flgs to activate termination criteria
+      _isTermCondCovCond, _isTermCondMinStepFac; // flgs to activate termination criteria
 
  // Private CMAES-Specific Variables
  double sigma;  /* step size */
@@ -189,14 +184,10 @@ class CMAES : public Base
  void handleConstraints(); /* covariance adaption for invalid samples */
  void reEvaluateConstraints(); /* re evaluate constraints, in handleConstraints,  count violations etc.. */
 
- void initProportionalWeights(double eps, size_t nsamples, double* fevals, size_t* index, double* weights);
- 
  // Print Methods
  void printGeneration() const;
  void printFinal() const;
 };
-
- double fn1 (double eta, void * params);
 
 } // namespace Korali::Solver
 

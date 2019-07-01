@@ -15,6 +15,8 @@ class CMAES : public Base
  CMAES(nlohmann::json& js, std::string name);
  ~CMAES();
 
+ std::string _name;
+
  // These are CMA-ES Specific, but could be used for other methods in the future
  double* _lowerBounds;
  double* _upperBounds;
@@ -82,9 +84,10 @@ class CMAES : public Base
  double _termCondMinDeltaX; // Defines minimum delta of input parameters among generations before it stops.
  double _termCondTolUpXFactor; // Defines the minimum fitness allowed, otherwise it stops
  double _termCondCovCond; // Defines the maximal condition number of the covariance matrix
+ double _termCondMinStepFac; // Factor to calculate min step length
  bool _isTermCondMaxGenerations, _isTermCondMaxFitnessEvaluations, _isTermCondFitness,
       _isTermCondFitnessDiffThreshold, _isTermCondMinDeltaX, _isTermCondTolUpXFactor,
-      _isTermCondCovCond; // flgs to activate termination criteria
+      _isTermCondCovCond, _isTermCondMinStepFac; // flgs to activate termination criteria
 
  // Private CMAES-Specific Variables
  double sigma;  /* step size */
@@ -101,11 +104,11 @@ class CMAES : public Base
  double prevFunctionValue; /* best fitness previous generation */
 
  double **C; /* Covariance Matrix */
- double **Ctmp; /* tmp Covariance Matrix for eigen decomp */
+ double **Ctmp; /* tmp Covariance Matrix for eigen decomp for safety check */
  double **B; /* matrix with eigenvectors in columns */
- double **Btmp; /* matrix for eigenvectors calculation */
+ double **Btmp; /* matrix for eigenvectors calculation for safety check*/
  double *axisD; /* axis lengths (sqrt(Evals)) */
- double *axisDtmp; /* for axis lengths calculation */
+ double *axisDtmp; /* for axis lengths calculation for saftey check */
  
  double **Z; /* randn() */
  double **BDZ; /* B*D*randn() */
@@ -166,8 +169,15 @@ class CMAES : public Base
  double **v; /* normal approximation of constraints */
  double *besteverCeval; /* constraint evaluations for best ever */
 
+ // Workspace for gsl
+ gsl_vector* gsl_eval;
+ gsl_matrix* gsl_evec;
+ gsl_eigen_symmv_workspace* gsl_work;
+
  // Private CCMA-ES-Specific Methods
- void initInternals(size_t numsamples); /* init _muWeights, _muEffective and _muCov */
+ void initInternals(size_t numsamples); /* init _muWeights and dependencies */
+ void initCovariance(); /* init sigma, C and B */
+ void initCovCorrectionParams(); /* init beta and cv */
  void checkMeanAndSetRegime(); /* check if mean inside valid domain, if yes, update internal vars */
  void updateConstraints();
  void updateViabilityBoundaries(); /* update & shrink viability boundaries */
@@ -179,6 +189,8 @@ class CMAES : public Base
  void printFinal() const;
 };
 
-} } // namespace Korali::Solver
+} // namespace Korali::Solver
+
+} // namespace Korali
 
 #endif // _KORALI_SOLVERS_CMAES_H_

@@ -56,7 +56,7 @@ class MCMC : public Base
  // MCMC Status variables
  double* _initialMeans; /* Initial Mean of Cov Proposal Distribution */
  double* _stdDevs; /* Diagonal of Cov Proposal Distribution */
- bool* _variableLogSpace; /* Apply log transform of variable in sampling */
+ bool* _variableLogSpace; /* Apply log transform of variable before evaluation */
  double* _covarianceMatrix; /* Covariance of Proposal Distribution */
 
  // Korali Methods

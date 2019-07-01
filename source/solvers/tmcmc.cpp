@@ -38,6 +38,8 @@ Korali::Solver::TMCMC::TMCMC(nlohmann::json& js)
  // Allocating TMCMC memory
  _covarianceMatrix   = (double*) calloc (_k->N*_k->N, sizeof(double));
  _meanTheta          = (double*) calloc (_k->N, sizeof(double));
+ _variableLogSpace   = (bool*) calloc (_k->N, sizeof(bool));
+ transformedSamples  = (double*) calloc (_k->N*_s, sizeof(double));
  ccPoints            = (double*) calloc (_k->N*_s, sizeof(double));
  ccLogLikelihood     = (double*) calloc (_s, sizeof(double));
  clPoints            = (double*) calloc (_k->N*_s, sizeof(double));

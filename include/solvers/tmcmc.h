@@ -31,6 +31,7 @@ class TMCMC : public Base
  gsl_rng** chainGSLRange;
  bool*   chainPendingFitness; /* Indicates that the fitness result for the chain is pending */
  double* ccPoints; /* Chain candidate parameter values */
+ double* transformedSamples; /* Candidate parameters log transformed */
  double* ccLogLikelihood; /* Chain candidate fitness value */
  double* clPoints; /* Chain leader parameter values */
  double* clLogLikelihood; /* Chain leader fitness */
@@ -54,6 +55,7 @@ class TMCMC : public Base
  double* _databasePoints; /* Variable values of samples in DB */
  double* _databaseFitness; /* Fitness of samples in DB */
  double **local_cov; /* Local covariances of leaders */
+ bool* _variableLogSpace; /* Apply log transform of variable before evaluation */
 
   // Korali Methods
  void run() override;

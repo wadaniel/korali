@@ -196,8 +196,10 @@ void Korali::Solver::CMAES::getConfiguration(nlohmann::json& js)
  js["CMA-ES"]["Termination Criteria"]["Max Generations"]["Active"]          = _isTermCondMaxGenerations;
  js["CMA-ES"]["Termination Criteria"]["Max Model Evaluations"]["Value"]     = _termCondMaxFitnessEvaluations;
  js["CMA-ES"]["Termination Criteria"]["Max Model Evaluations"]["Active"]    = _isTermCondMaxFitnessEvaluations;
- js["CMA-ES"]["Termination Criteria"]["Min Fitness"]["Value"]               = _termCondFitness;
- js["CMA-ES"]["Termination Criteria"]["Min Fitness"]["Active"]              = _isTermCondFitness;
+ js["CMA-ES"]["Termination Criteria"]["Min Fitness"]["Value"]               = _termCondMinFitness;
+ js["CMA-ES"]["Termination Criteria"]["Min Fitness"]["Active"]              = _isTermCondMinFitness; 
+ js["CMA-ES"]["Termination Criteria"]["Max Fitness"]["Value"]               = _termCondMaxFitness;
+ js["CMA-ES"]["Termination Criteria"]["Max Fitness"]["Active"]              = _isTermCondMaxFitness;
  js["CMA-ES"]["Termination Criteria"]["Fitness Diff Threshold"]["Value"]    = _termCondFitnessDiffThreshold;
  js["CMA-ES"]["Termination Criteria"]["Fitness Diff Threshold"]["Active"]   = _isTermCondFitnessDiffThreshold;
  js["CMA-ES"]["Termination Criteria"]["Min Standard Deviation"]["Value"]    = _termCondMinDeltaX;
@@ -345,8 +347,10 @@ void CMAES::setConfiguration(nlohmann::json& js)
  _isTermCondMaxGenerations        = consume(js, { "CMA-ES", "Termination Criteria", "Max Generations", "Active" }, KORALI_BOOLEAN, "true");
  _termCondMaxFitnessEvaluations   = consume(js, { "CMA-ES", "Termination Criteria", "Max Model Evaluations", "Value" }, KORALI_NUMBER, std::to_string(std::numeric_limits<size_t>::max()));
  _isTermCondMaxFitnessEvaluations = consume(js, { "CMA-ES", "Termination Criteria", "Max Model Evaluations", "Active" }, KORALI_BOOLEAN, "true");
- _termCondFitness                 = consume(js, { "CMA-ES", "Termination Criteria", "Min Fitness", "Value" }, KORALI_NUMBER, std::to_string(std::numeric_limits<double>::max()));
- _isTermCondFitness               = consume(js, { "CMA-ES", "Termination Criteria", "Min Fitness", "Active" }, KORALI_BOOLEAN, "false");
+ _termCondMinFitness              = consume(js, { "CMA-ES", "Termination Criteria", "Min Fitness", "Value" }, KORALI_NUMBER, std::to_string(std::numeric_limits<double>::max()));
+ _isTermCondMinFitness            = consume(js, { "CMA-ES", "Termination Criteria", "Min Fitness", "Active" }, KORALI_BOOLEAN, "false"); 
+ _termCondMaxFitness              = consume(js, { "CMA-ES", "Termination Criteria", "Max Fitness", "Value" }, KORALI_NUMBER, std::to_string(-std::numeric_limits<double>::max()));
+ _isTermCondMaxFitness            = consume(js, { "CMA-ES", "Termination Criteria", "Max Fitness", "Active" }, KORALI_BOOLEAN, "false");
  _termCondFitnessDiffThreshold    = consume(js, { "CMA-ES", "Termination Criteria", "Fitness Diff Threshold", "Value" }, KORALI_NUMBER, std::to_string(1e-9));
  _isTermCondFitnessDiffThreshold  = consume(js, { "CMA-ES", "Termination Criteria", "Fitness Diff Threshold", "Active" }, KORALI_BOOLEAN, "true");
  _termCondMinDeltaX               = consume(js, { "CMA-ES", "Termination Criteria", "Min Standard Deviation", "Value" }, KORALI_NUMBER, std::to_string(1e-12));
@@ -357,6 +361,12 @@ void CMAES::setConfiguration(nlohmann::json& js)
  _isTermCondCovCond               = consume(js, { "CMA-ES", "Termination Criteria", "Max Condition Covariance", "Active" }, KORALI_BOOLEAN, "true");
  _termCondMinStepFac              = consume(js, { "CMA-ES", "Termination Criteria", "Min Step Size Factor", "Value" }, KORALI_NUMBER, std::to_string(0.1));
  _isTermCondMinStepFac            = consume(js, { "CMA-ES", "Termination Criteria", "Min Step Size Factor", "Active" }, KORALI_BOOLEAN, "false");
+
+ if( _isTermCondMinFitness && (_fitnessSign == 1) )
+    { fprintf( stderr, "[Korali] CMA-ES Error: Invalid setting of Termination Criteria Min Fitness (objective is Maximize)\n"); exit(-1); }
+
+ if( _isTermCondMaxFitness && (_fitnessSign == -1) )
+    { fprintf( stderr, "[Korali] CMA-ES Error: Invalid setting of Termination Criteria Max Fitness (objective is Minimize)\n"); exit(-1); }
 
  // CCMA-ES
  _targetSucRate  = consume(js, { "CMA-ES", "Target Success Rate" }, KORALI_NUMBER, std::to_string(2./11.));
@@ -983,10 +993,16 @@ void CMAES::handleConstraints()
 bool CMAES::checkTermination()
 {
 
- if ( _isTermCondFitness && (_isViabilityRegime == false) && (_currentGeneration > 1) && (bestEver >= _termCondFitness) )
+ if ( _isTermCondMinFitness && (_isViabilityRegime == false) && (_currentGeneration > 1) && (bestEver >= _termCondMinFitness) )
  {
   _isFinished = true;
-  sprintf(_terminationReason, "Fitness Value (%+6.3e) > (%+6.3e)",  bestEver, _termCondFitness);
+  sprintf(_terminationReason, "Min fitness value (%+6.3e) > (%+6.3e)",  bestEver, _termCondMinFitness);
+ }
+ 
+ if ( _isTermCondMaxFitness && (_isViabilityRegime == false) && (_currentGeneration > 1) && (bestEver >= _termCondMaxFitness) )
+ {
+  _isFinished = true;
+  sprintf(_terminationReason, "Max fitness value (%+6.3e) > (%+6.3e)",  bestEver, _termCondMaxFitness);
  }
 
  double range = fabs(currentFunctionValue - prevFunctionValue);

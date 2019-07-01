@@ -121,8 +121,10 @@ void Korali::Solver::DE::getConfiguration(nlohmann::json& js)
  js["DE"]["Termination Criteria"]["Max Generations"]["Active"]        = _isTermCondMaxGenerations;
  js["DE"]["Termination Criteria"]["Max Model Evaluations"]["Value"]   = _termCondMaxFitnessEvaluations;
  js["DE"]["Termination Criteria"]["Max Model Evaluations"]["Active"]  = _isTermCondMaxFitnessEvaluations;
- js["DE"]["Termination Criteria"]["Min Fitness"]["Value"]             = _termCondFitness;
- js["DE"]["Termination Criteria"]["Min Fitness"]["Active"]            = _isTermCondFitness;
+ js["DE"]["Termination Criteria"]["Min Fitness"]["Value"]             = _termCondMinFitness;
+ js["DE"]["Termination Criteria"]["Min Fitness"]["Active"]            = _isTermCondMinFitness; 
+ js["DE"]["Termination Criteria"]["Max Fitness"]["Value"]             = _termCondMaxFitness;
+ js["DE"]["Termination Criteria"]["Max Fitness"]["Active"]            = _isTermCondMaxFitness;
  js["DE"]["Termination Criteria"]["Fitness Diff Threshold"]["Value"]  = _termCondFitnessDiffThreshold;
  js["DE"]["Termination Criteria"]["Fitness Diff Threshold"]["Active"] = _isTermCondFitnessDiffThreshold;
  js["DE"]["Termination Criteria"]["Min DeltaX"]["Value"]              = _termCondMinDeltaX;
@@ -212,12 +214,21 @@ void DE::setConfiguration(nlohmann::json& js)
  _termCondMaxGenerations          = consume(js, { "DE", "Termination Criteria", "Max Generations", "Value" }, KORALI_NUMBER, std::to_string(1000));
  _isTermCondMaxFitnessEvaluations = consume(js, { "DE", "Termination Criteria", "Max Model Evaluations", "Active" }, KORALI_BOOLEAN, "false");
  _termCondMaxFitnessEvaluations   = consume(js, { "DE", "Termination Criteria", "Max Model Evaluations", "Value" }, KORALI_NUMBER, std::to_string(std::numeric_limits<size_t>::max()));
- _isTermCondFitness               = consume(js, { "DE", "Termination Criteria", "Fitness", "Active" }, KORALI_BOOLEAN, "false");
- _termCondFitness                 = consume(js, { "DE", "Termination Criteria", "Fitness", "Value" }, KORALI_NUMBER, std::to_string(std::numeric_limits<double>::max()));
+ _isTermCondMinFitness            = consume(js, { "DE", "Termination Criteria", "Min Fitness", "Active" }, KORALI_BOOLEAN, "false");
+ _termCondMinFitness              = consume(js, { "DE", "Termination Criteria", "Min Fitness", "Value" }, KORALI_NUMBER, std::to_string(std::numeric_limits<double>::max())); 
+ _isTermCondMaxFitness            = consume(js, { "DE", "Termination Criteria", "Max Fitness", "Active" }, KORALI_BOOLEAN, "false");
+ _termCondMaxFitness              = consume(js, { "DE", "Termination Criteria", "Max Fitness", "Value" }, KORALI_NUMBER, std::to_string(-std::numeric_limits<double>::max()));
  _isTermCondFitnessDiffThreshold  = consume(js, { "DE", "Termination Criteria", "Fitness Diff Threshold", "Active" }, KORALI_BOOLEAN, "false");
  _termCondFitnessDiffThreshold    = consume(js, { "DE", "Termination Criteria", "Fitness Diff Threshold", "Value" }, KORALI_NUMBER, std::to_string(0.0));
  _isTermCondMinDeltaX             = consume(js, { "DE", "Termination Criteria", "Min DeltaX", "Active" }, KORALI_BOOLEAN, "false");
  _termCondMinDeltaX               = consume(js, { "DE", "Termination Criteria", "Min DeltaX", "Value" }, KORALI_NUMBER, std::to_string(0.0));
+ 
+ if( _isTermCondMinFitness && (_fitnessSign == 1) )
+    { fprintf( stderr, "[Korali] DE Error: Invalid setting of Termination Criteria Min Fitness (objective is Maximize)\n"); exit(-1); }
+
+ if( _isTermCondMaxFitness && (_fitnessSign == -1) )
+    { fprintf( stderr, "[Korali] DE Error: Invalid setting of Termination Criteria Max Fitness (objective is Minimize)\n"); exit(-1); }
+
 
 }
 
@@ -501,10 +512,16 @@ void DE::updateSolver(const double *fitnessVector)
 bool DE::checkTermination()
 {
 
- if ( _isTermCondFitness && (currentGeneration > 1) && (bestEver >= _termCondFitness) )
+ if ( _isTermCondMinFitness && (currentGeneration > 1) && (bestEver >= _termCondMinFitness) )
  {
   _isFinished = true;
-  sprintf(_terminationReason, "Fitness Value (%+6.3e) > (%+6.3e).",  bestEver, _termCondFitness);
+  sprintf(_terminationReason, "Fitness Value (%+6.3e) > (%+6.3e).",  bestEver, _termCondMinFitness);
+ }
+ 
+ if ( _isTermCondMaxFitness && (currentGeneration > 1) && (bestEver >= _termCondMaxFitness) )
+ {
+  _isFinished = true;
+  sprintf(_terminationReason, "Fitness Value (%+6.3e) > (%+6.3e).",  bestEver, _termCondMaxFitness);
  }
 
  double range = fabs(currentFunctionValue - prevFunctionValue);

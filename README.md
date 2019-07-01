@@ -1,6 +1,6 @@
 # Korali
 
-**Korali** is a high-performance framework for Uncertainty Quantification of large-scale models.
+**Korali** is a high-performance framework for uncertainty quantification of large-scale models.
 
 ## Website
 

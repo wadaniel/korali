@@ -1,10 +1,15 @@
-site_name: korali
+site_name: Korali
 repo_name: 'cselab/korali'
 repo_url: 'https://github.com/cselab/korali'
 edit_uri: ''
 
 nav:
   - Home: index.md
+  - Installation:
+     - 'Installation Guide': install/install.md
+     - 'System Requirements': install/requirements.md
+     - 'Release Notes': https://github.com/cselab/korali/blob/master/docs/RELEASE-NOTES
+     - 'Build Status': install/build.md
   - Tutorials:
      - 'A.1 - Optimization': tutorials/a1-optimization/optimization.md
      - 'A.2 - Sampling': tutorials/a2-sampling/sampling.md
@@ -26,7 +31,6 @@ nav:
       - Solvers:
           - Optimizers:
             - CMA-ES: usage/solvers/optimizers/cmaes.md
-            - Constrained CMA-ES: usage/solvers/optimizers/ccmaes.md
             - Differential Evolution: usage/solvers/optimizers/diffevo.md
           - Samplers:
             - MCMC: usage/solvers/samplers/mcmc.md
@@ -40,13 +44,10 @@ nav:
           - Rerefence: usage/models/reference.md
           - Constraint: usage/models/constraint.md
       - Results:
-          - Generate Plots: usage/results/#generate-plots
-          - Export Results: usage/results/#export-results
+          - Plotting Results: usage/results/#plotting-results
+          - Exporting Results: usage/results/#exporting-results
           - Resume Execution: usage/results/#resume-execution
-  - Development:
-    - Git Repository: https://github.com/cselab/korali
-    - Integration: development/integration.md
-    - Doxygen: development/doxygen/html/index.html
+  - Publications: publications.md
   - About Us: aboutus.md
 
 theme:
@@ -57,7 +58,9 @@ theme:
     font:
         text: 'Ubuntu'
         code: 'Ubuntu Mono'
-    logo: 'images/templogo.png'
+    logo: 'images/logo.png'
+    favicon: 'images/favicon.ico'
+
 # Got logo from https://icons8.com/icon/3036/coral
 
 markdown_extensions:

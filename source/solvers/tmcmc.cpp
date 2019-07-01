@@ -13,6 +13,13 @@
 /*                  Constructor / Destructor Methods                    */
 /************************************************************************/
 
+typedef struct fparam_s {
+    const double *fj;
+    size_t        fn;
+    double        pj;
+    double        cov;
+} fparam_t;
+
 Korali::Solver::TMCMC::TMCMC(nlohmann::json& js)
 {
  setConfiguration(js);

@@ -7,13 +7,6 @@
 
 namespace Korali { namespace Solver {
 
-typedef struct fparam_s {
-    const double *fj;
-    size_t        fn;
-    double        pj;
-    double        cov;
-} fparam_t;
-
 class TMCMC : public Base
 {
  public:

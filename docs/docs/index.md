@@ -1,25 +1,30 @@
-# Korali  ![](images/templogo.png){: style="height:25px;width:25px"}
+# Korali  ![](images/logo.png){: style="height:25px;width:25px"}
+<center>**High-performance framework for uncertainty quantification of large-scale models.**</center>
 
-**Korali** is a high-performance framework for Uncertainty Quantification of large-scale models.
+### **Download**
 
-### **Download Korali**
+Latest Release: REPLACE_DATE - [REPLACE_NAME vREPLACE_VERSION](https://github.com/cselab/korali.git) - Build Status: [![CircleCI](https://circleci.com/gh/cselab/korali.svg?style=svg&circle-token=d73f56a4d14073880f8fe1140964afb58f2b1c35)](install/build)
 
-24/06/2019 - [**Korali-1.0.0.tar.gz**](https://gitlab.ethz.ch/mavt-cse/korali-releases/raw/master/korali-1.0.0.tar.gz) *(CSELab Internal Release)*
-
- + [Installation Guide](releases/install.md)
- + [Release Notes](releases/notes.md)
- + [System Requirements](releases/requirements.md)
+ + [Installation Guide](install/install.md)
+ + [Release Notes](https://github.com/cselab/korali/blob/master/docs/RELEASE-NOTES)
+ + [System Requirements](install/requirements.md)
 
 ### **What Korali Does**
 
 ??? abstract "Optimization (Constrained and Unconstrained)"
-	Given any objective function $f:\mathbb{R}^N\rightarrow\mathbb{R}$ Korali can find its minima or maxima: $\vartheta^\star = \mathop{\arg\min}\limits_{\vartheta}  f(\vartheta)$
+	Given any objective function $f:\mathbb{R}^N\rightarrow\mathbb{R}$ Korali can find its minima or maxima:
+
+	$$\vartheta^\star = \mathop{\arg\min}\limits_{\vartheta}  f(\vartheta)$$
 
 ??? abstract "Distribution Sampling"
-	Given any probability distribution of type $f:\mathbb{R}^N\rightarrow\mathbb{R}$, Korali can draw samples to determine its distribution: $\vartheta^{(k)} \sim f.$
+	Given any probability distribution of type $f:\mathbb{R}^N\rightarrow\mathbb{R}$, Korali can draw samples to determine its distribution: 
+	
+	$$\vartheta^{(k)} \sim f.$$
 
 ??? abstract "Bayesian Inference"
-	Given a set of data $d$, the output of a computational model $f(x;\vartheta)$, a likelihood function $p(d|\vartheta)$, and a prior probability density $p(\vartheta)$ Korali will build the posterior distribution: $$ p(\vartheta | d)  =  \frac{p(d | \vartheta) p(\vartheta)}{p(d)} $$
+	Given a set of data $d$, the output of a computational model $f(x;\vartheta)$, a likelihood function $p(d|\vartheta)$, and a prior probability density $p(\vartheta)$ Korali will build the posterior distribution:
+
+	$$ p(\vartheta | d)  =  \frac{p(d | \vartheta) p(\vartheta)}{p(d)} $$
 
 	Allowing users to compute the maximum a posteriori estimate:
 
@@ -38,7 +43,7 @@
 	Furthermore, Korali supports the execution of parallel (OpenMP, Pthreads), distributed (MPI, UPC++), and GPU-based (CUDA) models.
 	
 ??? success "Ease of Use"
-	Korali provides an intuitive JSON-based interface that is mostly language-independent.
+	Korali provides an intuitive string-based interface that is mostly language-independent.
 
 ??? success "Extensibility"
 

@@ -2,9 +2,9 @@
 
 ## Description
 
-Many computational models are comprised of legacy codes that can be too complex or poorly-documented for non-expert users to modify. Thus, extending them with a Korali-compatible interface may be unfeasible. Other commercial / pre-compiled applications may not even allow users to access their code. For these models, we provide a non-intrusive conduit that allows running pre-compiled models via shell commands and reading back the results through either file or pipe I/O operations. This conduit can be used to launch and gather results from large-scale parallel (MPI/UPC++) applications.
+Many computational models are comprised of legacy codes that can be too complex or poorly-documented for non-expert users to modify. Korali's non-intrusive conduit allows running any pre-compiled or legacy computational model. It requires that the user specifies the way in which variable values are passed to the model and how to parse the results from file or standard output. 
 
-Although Korali's non-intrusive conduit provides flexibility in the execution of any computational model, it does require that the user specifies how to pass the sample's values as inputs to the model. Furthermore, it requires the user to specify how to parse the results from file or standard output. Korali's non-intrusive conduit uses a fork/join strategy to instantiate an independent operating-system process per each sample. Since I/O and process management operations incur much more overhead than direct function calls, the non-intrusive conduit may be less efficient than the semi-intrusive ones, especially when launching a large number of short samples.
+Korali's non-intrusive conduit uses a fork/join strategy to instantiate an independent operating-system process per each sample. Since I/O and process management operations incur much more overhead than direct function calls, the non-intrusive conduit may be less efficient than the semi-intrusive ones.
 
 ## Usage
 

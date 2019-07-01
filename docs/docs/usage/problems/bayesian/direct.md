@@ -14,21 +14,11 @@ Whereas with a *Direct Likelihood*, the function $p(d|\vartheta)$ is given direc
 + At least one variable should be defined.
 + A prior distribution should be defined for every variable.
 
-##Syntax
-```python
-  # Definition
-  k["Problem"] = "Bayesian"
-  
-  # Problem Settings
-  k["Bayesian"]["Likelihood"]["Type"] = "Direct"
-	
-  # Variable Settings
-  k["Variables"][i]["Bayesian"]["Prior Distribution"] ...
-```
-
 ##Problem Settings
 
-- **Likelihood Type**. Defines how the likelihood is calculated. In the Direct Likelihood type, it is provided directly by the computational model.
+??? abstract "Likelihood Type"
+	
+	Defines how the likelihood is calculated. In the Direct Likelihood type, it is provided directly by the computational model.
 
 	Example:
 	```python
@@ -38,7 +28,9 @@ Whereas with a *Direct Likelihood*, the function $p(d|\vartheta)$ is given direc
 	
 ##Variable Settings
 
-- **Prior Distribution**. The Bayesian problem type extends the definition of each variable with the possibility of defining a prior distribution. Korali currently offers the following distributions:
+??? abstract "Prior Distribution"
+
+	The Bayesian problem type extends the definition of each variable with the possibility of defining a prior distribution. Korali currently offers the following distributions:
 
 	- [Cauchy](../../../distributions/#cauchy)
 	- [Exponential](../../../distributions/#exponential)

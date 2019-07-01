@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=1.0.0
+source VERSION
 logFile=$PWD/install.log
 
 # Help display function
@@ -11,12 +11,14 @@ function print_help ()
  echo "        [--no-prereqs]"
  echo "        [--rebuild]"
  echo "        [--debug]"
+ echo "        [--jobs=N]"
  echo "        [--help]"
  echo ""
  echo "Where:"
  echo " --no-prereqs prevents Korali from automatically installing prerequisites."
- echo " --debug builds a non-optimized Korali for debugging purposes."
  echo " --rebuild Cleans and rebuilds/installs Korali for development purposes."
+ echo " --debug builds a non-optimized Korali for debugging purposes."
+ echo " --jobs=N Specifies N jobs to use when building Korali."
  echo " --help Displays this help message."
 }
 
@@ -41,6 +43,7 @@ function exitWithError ()
 }
 
 INSTALLREQS=1
+NJOBS=4
 OPTFLAGS="-O3"
 
 for i in "$@"
@@ -53,6 +56,10 @@ case $i in
     --debug)
     OPTFLAGS="-O0"
     shift 
+    ;;
+    --jobs=*)
+    NJOBS="${i#*=}"
+    shift
     ;;
     --rebuild)
     logEcho "[Korali] Cleaning Korali for new build..."
@@ -76,10 +83,10 @@ done
 
 ######## Start Configuration ######
 
-echo "Korali Log Start." > $logFile
-logEcho "[Korali] Configuring Korali v$version..."
-
-log "Checking for architecture..."
+logEcho "[Korali] Installing Korali v$VERSION..." 
+logEcho "[Korali] Determining Configuration..." 
+log "[Korali] Using $NJOBS jobs."
+log "[Korali] Checking for architecture..."
 arch="$(uname -s)"
 
 # Linux Architecture is default
@@ -152,13 +159,13 @@ then
   mkdir -p build
   CURDIR=$PWD
   rm -f gsl-2.5.tar.gz 
-  wget "ftp://ftp.gnu.org/gnu/gsl/gsl-2.5.tar.gz" 
+  wget 'ftp://ftp.gnu.org/gnu/gsl/gsl-2.5.tar.gz' 
   tar -xzvf gsl-2.5.tar.gz >> $logFile 2>&1
   echo "[Korali] Configuring GNU Scientific Library... "
   cd gsl-2.5 
   ./configure --prefix=$gslprefix >> $logFile 2>&1 
   logEcho "[Korali] Compiling GNU Scientific Library... "
-  make -j10 >> $logFile 2>&1
+  make -j$NJOBS >> $logFile 2>&1
   logEcho "[Korali] Installing GNU Scientific Library... "
   
   make install >> $logFile 2>&1
@@ -200,7 +207,7 @@ if [ $? -eq 0 ]; then
   python3-config --help >> $logFile 2>&1
   if [ $? -ne 0 ]; then
     logEcho "[Korali] Error: python3-config not found."
-    logEcho "[Korali] Solution: Please make sure python3 is correctly installed."
+    logEcho "[Korali] Solution: Please make sure the python3-dev package is correctly installed."
     exitWithError
   fi
 else
@@ -275,32 +282,31 @@ fi
 
 log "[Korali] Creating Compilation Config File..."
 
-echo "CXX=$USE_CXX" > source/Makefile.conf
-echo "CXXARCH=$CXXARCH" >> source/Makefile.conf
-echo "SHAREDLIB_FLAG=$SHAREDLIB_FLAG" >> source/Makefile.conf
-echo "MPIFLAGS=$MPIFLAGS" >> source/Makefile.conf
-echo "OPTFLAGS=$OPTFLAGS" >> source/Makefile.conf
+echo CXX=$USE_CXX > source/Makefile.conf
+echo CXXARCH=$CXXARCH >> source/Makefile.conf
+echo SHAREDLIB_FLAG=$SHAREDLIB_FLAG >> source/Makefile.conf
+echo MPIFLAGS=$MPIFLAGS >> source/Makefile.conf
+echo OPTFLAGS=$OPTFLAGS >> source/Makefile.conf
 
-echo "GSLPREFIX=$GSLPREFIX" >> source/Makefile.conf
-echo "GSLCFLAGS=$GSLCFLAGS" >> source/Makefile.conf
-echo "GSLLIBS=$GSLLIBS"  >> source/Makefile.conf
-echo "PYBIND11INCLUDES=$PYBIND11INCLUDES" >> source/Makefile.conf 
-echo "PYBIND11LIBS=$PYBIND11LIBS" >> source/Makefile.conf
+echo GSLPREFIX=$GSLPREFIX >> source/Makefile.conf
+echo GSLCFLAGS=$GSLCFLAGS >> source/Makefile.conf
+echo GSLLIBS=$GSLLIBS  >> source/Makefile.conf
+echo PYBIND11INCLUDES=$PYBIND11INCLUDES >> source/Makefile.conf 
+echo PYBIND11LIBS=$PYBIND11LIBS >> source/Makefile.conf
 
 ######## Creating Python Config File ########
 
 log "[Korali] Creating Python Config File..."
 
-echo "#!/usr/bin/env python3" > python/cxx/cxx.conf
-echo "CXX='$USE_CXX'" >> python/cxx/cxx.conf
-echo "CXXARCH='$CXXARCH'" >> python/cxx/cxx.conf
-echo "MPIFLAGS='$MPIFLAGS'" >> python/cxx/cxx.conf
-echo "GSLPREFIX='$GSLPREFIX'" >> python/cxx/cxx.conf
-echo "GSLCFLAGS='$GSLCFLAGS'" >> python/cxx/cxx.conf
-echo "GSLLIBS='$GSLLIBS'"  >> python/cxx/cxx.conf
-echo "OPTFLAGS='$OPTFLAGS'" >> python/cxx/cxx.conf
-echo "PYBIND11INCLUDES='$PYBIND11INCLUDES'" >> python/cxx/cxx.conf
-echo "PYBIND11LIBS='$PYBIND11LIBS'" >> python/cxx/cxx.conf
+echo CXX=\'$USE_CXX\' > python/cxx/cxx.conf
+echo CXXARCH=\'$CXXARCH\' >> python/cxx/cxx.conf
+echo MPIFLAGS=\'$MPIFLAGS\' >> python/cxx/cxx.conf
+echo GSLPREFIX=\'$GSLPREFIX\' >> python/cxx/cxx.conf
+echo GSLCFLAGS=\'$GSLCFLAGS\' >> python/cxx/cxx.conf
+echo GSLLIBS=\'$GSLLIBS\'  >> python/cxx/cxx.conf
+echo OPTFLAGS=\'$OPTFLAGS\' >> python/cxx/cxx.conf
+echo PYBIND11INCLUDES=\'$PYBIND11INCLUDES\' >> python/cxx/cxx.conf
+echo PYBIND11LIBS=\'$PYBIND11LIBS\' >> python/cxx/cxx.conf
 
 cat ./python/cxx/cxx.conf ./python/cxx/cflags.py.base > ./python/cxx/cflags.py
 cat ./python/cxx/cxx.conf ./python/cxx/compiler.py.base > ./python/cxx/compiler.py
@@ -309,7 +315,7 @@ cat ./python/cxx/cxx.conf ./python/cxx/libs.py.base > ./python/cxx/libs.py
 ######## Compiling Korali C++ Engine #########
 
 logEcho "[Korali] Compiling Korali..."
-make -j24 -C source >> $logFile 2>&1
+make -j$NJOBS -C source >> $logFile 2>&1
 if [ $? -ne 0 ]; then
   logEcho "[Korali] Error compiling Korali."
   exitWithError

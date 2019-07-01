@@ -79,15 +79,16 @@ class CMAES : public Base
  // Stop conditions
  size_t _termCondMaxGenerations; // Max number of generations.
  size_t _termCondMaxFitnessEvaluations;   // Defines maximum number of fitness evaluations
- double _termCondFitness; // Defines the maximum fitness allowed, otherwise it stops
+ double _termCondMinFitness; // Defines the minimum fitness allowed, otherwise it stops
+ double _termCondMaxFitness; // Defines the maximum fitness allowed, otherwise it stops
  double _termCondFitnessDiffThreshold; // Defines minimum function value differences before stopping
  double _termCondMinDeltaX; // Defines minimum delta of input parameters among generations before it stops.
  double _termCondTolUpXFactor; // Defines the minimum fitness allowed, otherwise it stops
  double _termCondCovCond; // Defines the maximal condition number of the covariance matrix
  double _termCondMinStepFac; // Factor to calculate min step length
- bool _isTermCondMaxGenerations, _isTermCondMaxFitnessEvaluations, _isTermCondFitness,
-      _isTermCondFitnessDiffThreshold, _isTermCondMinDeltaX, _isTermCondTolUpXFactor,
-      _isTermCondCovCond, _isTermCondMinStepFac; // flgs to activate termination criteria
+ bool _isTermCondMaxGenerations, _isTermCondMaxFitnessEvaluations, _isTermCondMinFitness, 
+      _isTermCondMaxFitness, _isTermCondFitnessDiffThreshold, _isTermCondMinDeltaX, 
+      _isTermCondTolUpXFactor, _isTermCondCovCond, _isTermCondMinStepFac; // flgs to activate termination criteria
 
  // Private CMAES-Specific Variables
  double sigma;  /* step size */

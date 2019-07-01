@@ -12,7 +12,7 @@ Korali application and calls the appropriate Korali plotting script:
 *RESULT_FOLDER*
 
 	Specifies the input folder containing Korali results.
-	Default value: ./_korali_results
+	Default value: ./_korali_result
 
 *OUTPUT_FORMAT*
 
@@ -46,7 +46,7 @@ The Korali export tool converts Korali's JSON-based result information into a fo
 *RESULT_FOLDER*
 
 	Specifies the input folder containing Korali results.
-	Default value: ./_korali_results
+	Default value: ./_korali_result
 
 *OUTPUT_FORMAT*
 

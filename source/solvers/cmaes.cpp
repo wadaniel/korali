@@ -1,9 +1,11 @@
 #include "korali.h"
+
 #include <stdio.h>
 #include <unistd.h>
 #include <chrono>
 #include <numeric>   // std::iota
 #include <algorithm> // std::sort
+
 using namespace Korali::Solver;
 
 /************************************************************************/
@@ -12,6 +14,8 @@ using namespace Korali::Solver;
 
 CMAES::CMAES(nlohmann::json& js, std::string name)
 {
+ 
+ _name = name;
  setConfiguration(js);
 
  size_t s_max  = std::max(_s,  _via_s);
@@ -35,7 +39,7 @@ CMAES::CMAES(nlohmann::json& js, std::string name)
  histFuncValues = (double*) calloc (sizeof(double), _termCondMaxGenerations+1);
 
  _initializedSample = (bool*) calloc (sizeof(bool), s_max);
- _fitnessVector = (double*) calloc (sizeof(double), s_max);
+ _fitnessVector     = (double*) calloc (sizeof(double), s_max);
 
  // Init Generation
  _isFinished = false;
@@ -58,7 +62,7 @@ CMAES::CMAES(nlohmann::json& js, std::string name)
  _transformedSamples = (double*) calloc (sizeof(double), s_max * _k->N);
 
  // Initailizing Mu
- _muWeights = (double *) calloc (sizeof(double), mu_max);
+ _muWeights    = (double *) calloc (sizeof(double), mu_max);
 
  // Initializing Gaussian Generator
  auto jsGaussian = nlohmann::json();
@@ -70,7 +74,12 @@ CMAES::CMAES(nlohmann::json& js, std::string name)
  _gaussianGenerator->setDistribution(jsGaussian);
 
  _chiN = sqrt((double) _k->N) * (1. - 1./(4.*_k->N) + 1./(21.*_k->N*_k->N));
-
+ 
+ // GSL Workspace
+ gsl_eval  = gsl_vector_alloc(_k->N);
+ gsl_evec  = gsl_matrix_alloc(_k->N, _k->N);
+ gsl_work =  gsl_eigen_symmv_alloc(_k->N);
+ 
  // CCMA-ES variables
  if (_k->_fconstraints.size() > 0)
  {
@@ -103,8 +112,10 @@ CMAES::CMAES(nlohmann::json& js, std::string name)
  }
 
  // Setting algorithm internal variables
- if (_k->_fconstraints.size() > 0) initInternals(_via_mu);
+ if (_k->_fconstraints.size() > 0) { initInternals(_via_mu); initCovCorrectionParams(); }
  else initInternals(_mu);
+
+ initCovariance();
 
  // Setting eigensystem evaluation Frequency
  //if( _covarianceEigenEvalFreq < 0.0) _covarianceEigenEvalFreq = 1.0/_covarianceMatrixLearningRate/((double)_k->N)/10.0;
@@ -161,8 +172,8 @@ void Korali::Solver::CMAES::getConfiguration(nlohmann::json& js)
  js["CMA-ES"]["Max Resamplings"]         = _maxResamplings;
  js["CMA-ES"]["Sigma Bounded"]           = _isSigmaBounded;
 
- js["CMA-ES"]["Mu"]["Value"]      = _mu;
- js["CMA-ES"]["Mu"]["Type"]       = _muType;
+ js["CMA-ES"]["Mu"]["Value"]        = _mu;
+ js["CMA-ES"]["Mu"]["Type"]         = _muType;
  //js["CMA-ES"]["Mu"]["Covariance"] = _muCovariance;
 
  js["CMA-ES"]["Covariance Matrix"]["Cumulative Covariance"]           = _cumulativeCovariance;
@@ -270,7 +281,7 @@ void CMAES::setConfiguration(nlohmann::json& js)
  _muType                        = consume(js, { "CMA-ES", "Mu", "Type" }, KORALI_STRING, "Logarithmic");
  _muCovarianceIn                = consume(js, { "CMA-ES", "Mu", "Covariance" }, KORALI_NUMBER, std::to_string(-1));
  
- if( _mu < 1 || _mu > _s || ( ( _mu == _s )  && _muType.compare("Linear") ) )
+ if( _mu < 1 || _mu > _s || ( ( _mu == _s )  && _muType == "Linear") )
    { fprintf( stderr, "[Korali] CMA-ES Error: Invalid setting of Mu (%lu) and/or Lambda (%lu)\n",  _mu, _s); exit(-1); }
 
  // CCMA-ES (more below)
@@ -344,6 +355,8 @@ void CMAES::setConfiguration(nlohmann::json& js)
  _isTermCondTolUpXFactor          = consume(js, { "CMA-ES", "Termination Criteria", "Max Standard Deviation", "Active" }, KORALI_BOOLEAN, "true");
  _termCondCovCond                 = consume(js, { "CMA-ES", "Termination Criteria", "Max Condition Covariance", "Value" }, KORALI_NUMBER, std::to_string(1e18));
  _isTermCondCovCond               = consume(js, { "CMA-ES", "Termination Criteria", "Max Condition Covariance", "Active" }, KORALI_BOOLEAN, "true");
+ _termCondMinStepFac              = consume(js, { "CMA-ES", "Termination Criteria", "Min Step Size Factor", "Value" }, KORALI_NUMBER, std::to_string(0.1));
+ _isTermCondMinStepFac            = consume(js, { "CMA-ES", "Termination Criteria", "Min Step Size Factor", "Active" }, KORALI_BOOLEAN, "false");
 
  // CCMA-ES
  _targetSucRate  = consume(js, { "CMA-ES", "Target Success Rate" }, KORALI_NUMBER, std::to_string(2./11.));
@@ -408,17 +421,18 @@ void CMAES::initInternals(size_t numsamplesmu)
   if (_initialStdDevs[i] <= 0.0) { fprintf(stderr, "[Korali] CMA-ES Error: Initial Standard Deviation (%f) for variable %d is less or equal 0.\n", i); _initialStdDevs[i],  exit(-1); }
  }
 
+
  // Initializing Mu Weights
- if      (_muType == "Linear")      for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = numsamplesmu - i;
- else if (_muType == "Equal")       for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = 1;
- else if (_muType == "Logarithmic") for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = log(std::max( (double)numsamplesmu, 0.5*_current_s)+0.5)-log(i+1.);
- else  { fprintf( stderr, "[Korali] CMA-ES Error: Invalid setting of Mu Type (%s) (Linear, Equal or Logarithmic accepted).",  _muType.c_str()); exit(-1); }
+ if      (_muType == "Linear")       for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = numsamplesmu - i;
+ else if (_muType == "Equal")        for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = 1.;
+ else if (_muType == "Logarithmic")  for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = log(std::max( (double)numsamplesmu, 0.5*_current_s)+0.5)-log(i+1.);
+ else  { fprintf( stderr, "[Korali] CMA-ES Error: Invalid setting of Mu Type (%s) (Linear, Equal, or Logarithmic accepted).",  _muType.c_str()); exit(-1); }
 
  // Normalize weights vector and set mueff
  double s1 = 0.0;
  double s2 = 0.0;
 
- for (size_t  i = 0; i < numsamplesmu; i++)
+ for (size_t i = 0; i < numsamplesmu; i++)
  {
   s1 += _muWeights[i];
   s2 += _muWeights[i]*_muWeights[i];
@@ -457,6 +471,18 @@ void CMAES::initInternals(size_t numsamplesmu)
         // * std::max(0.3, 1. - (double)_k->N / (1e-6+std::min(_termCondMaxGenerations, _termCondMaxFitnessEvaluations/_via_s))) /* modification for short runs */
         + _sigmaCumulationFactor; /* minor increment */
 
+}
+
+void CMAES::initCovCorrectionParams()
+{
+  // Setting beta
+  _cv   = 1.0/(2.0+(double)_current_s);
+  _beta = _adaptionSize/(_current_s+2.);
+}
+
+void CMAES::initCovariance()
+{
+ 
  // Setting Sigma
  _trace = 0.0;
  for (size_t i = 0; i < _k->N; ++i) _trace += _initialStdDevs[i]*_initialStdDevs[i];
@@ -476,16 +502,7 @@ void CMAES::initInternals(size_t numsamplesmu)
  maxdiagC=C[0][0]; for(size_t i=1;i<_k->N;++i) if(maxdiagC<C[i][i]) maxdiagC=C[i][i];
  mindiagC=C[0][0]; for(size_t i=1;i<_k->N;++i) if(mindiagC>C[i][i]) mindiagC=C[i][i];
 
- // CCMA-ES
- if ( _k->_fconstraints.size() > 0 )
- {
-     // Setting beta
-    _cv   = 1.0/(2.0+(double)_current_s);
-    _beta = _adaptionSize/(_current_s+2.);
- }
-
 }
-
 
 /************************************************************************/
 /*                    Functional Methods                                */
@@ -501,7 +518,7 @@ void CMAES::run()
 
  startTime = std::chrono::system_clock::now();
  saveState();
-
+ 
  while(!checkTermination())
  {
    t0 = std::chrono::system_clock::now();
@@ -521,6 +538,7 @@ void CMAES::run()
 
  endTime = std::chrono::system_clock::now();
 
+ saveState();
  printFinal();
 
 }
@@ -549,7 +567,14 @@ void CMAES::evaluateSamples()
 void CMAES::processSample(size_t sampleId, double fitness)
 {
  double logPrior = _k->_problem->evaluateLogPrior(&_samplePopulation[sampleId*_k->N]);
- _fitnessVector[sampleId] = _fitnessSign * (logPrior+fitness);
+ fitness = _fitnessSign * (logPrior+fitness);
+ if(std::isfinite(fitness) == false)
+ {
+   fitness = _fitnessSign * std::numeric_limits<double>::max();
+   printf("[Korali] Warning: sample %zu non finite fitness (set to %e)!\n", sampleId, fitness);
+ }
+ 
+ _fitnessVector[sampleId] = fitness;
  _finishedSamples++;
 }
 
@@ -573,7 +598,9 @@ void CMAES::checkMeanAndSetRegime()
     _current_mu = _mu;
 
     bestEver = -std::numeric_limits<double>::max();
-    initInternals(_mu);
+    initInternals(_current_mu);
+    initCovCorrectionParams();
+    initCovariance();
 
 }
 
@@ -655,7 +682,8 @@ void CMAES::prepareGeneration()
 {
 
  /* calculate eigensystem */
- updateEigensystem(C);
+ for (size_t d = 0; d < _k->N; ++d) memcpy(Ctmp[d], C[d], sizeof(double) * _k->N );
+ updateEigensystem(Ctmp);
 
  for (size_t i = 0; i < _current_s; ++i)
  {
@@ -667,7 +695,7 @@ void CMAES::prepareGeneration()
        sampleSingle(i);
        if ( (countinfeasible - initial_infeasible) > _maxResamplings )
        {
-        if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Warning: exiting resampling loop (param %zu) , max resamplings (%zu) reached.\n", i, _maxResamplings);
+        if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Warning: exiting resampling loop (sample %zu) , max resamplings (%zu) reached.\n", i, _maxResamplings);
         exit(-1);
        }
      }
@@ -734,8 +762,8 @@ void CMAES::updateDistribution(const double *fitnessVector)
  }
 
  histFuncValues[_currentGeneration] = bestEver;
-
- /* calculate rgxmean and rgBDz */
+ 
+ /* set weights */
  for (size_t d = 0; d < _k->N; ++d) {
    rgxold[d] = rgxmean[d];
    rgxmean[d] = 0.;
@@ -848,7 +876,6 @@ void CMAES::updateDistribution(const double *fitnessVector)
 
 }
 
-
 void CMAES::adaptC(int hsig)
 {
 
@@ -880,7 +907,6 @@ void CMAES::adaptC(int hsig)
   }
  } /* if ccov... */
 }
-
 
 void CMAES::handleConstraints()
 {
@@ -954,7 +980,6 @@ void CMAES::handleConstraints()
 
 }
 
-
 bool CMAES::checkTermination()
 {
 
@@ -1000,11 +1025,12 @@ bool CMAES::checkTermination()
  double fac;
  size_t iAchse = 0;
  size_t iKoo = 0;
- if (!_isdiag ) // TODO: no effect axis add to _isTermCond..
+ if( _isTermCondMinStepFac )
+ if (!_isdiag )
  {
     for (iAchse = 0; iAchse < _k->N; ++iAchse)
     {
-    fac = 0.1 * sigma * axisD[iAchse];
+    fac = _termCondMinStepFac * sigma * axisD[iAchse];
     for (iKoo = 0; iKoo < _k->N; ++iKoo){
       if (rgxmean[iKoo] != rgxmean[iKoo] + fac * B[iKoo][iAchse])
       break;
@@ -1019,9 +1045,10 @@ bool CMAES::checkTermination()
  } /* if _isdiag */
 
  /* Component of rgxmean is not changed anymore */
+ if( _isTermCondMinStepFac )
  for (iKoo = 0; iKoo < _k->N; ++iKoo)
  {
-  if (rgxmean[iKoo] == rgxmean[iKoo] + 0.2*sigma*sqrt(C[iKoo][iKoo]) ) //TODO: standard dev add to _isTermCond..
+  if (rgxmean[iKoo] == rgxmean[iKoo] + _termCondMinStepFac*sigma*sqrt(C[iKoo][iKoo]) ) //TODO: standard dev add to _isTermCond..
   {
    /* C[iKoo][iKoo] *= (1 + _covarianceMatrixLearningRate); */
    /* flg = 1; */
@@ -1054,18 +1081,31 @@ void CMAES::updateEigensystem(double **M, int flgforce)
  /* if(_currentGeneration % _covarianceEigenEvalFreq == 0) return; */
 
  eigen(_k->N, M, axisDtmp, Btmp);
-
+ 
  /* find largest and smallest eigenvalue, they are supposed to be sorted anyway */
  double minEWtmp = doubleRangeMin(axisDtmp, _k->N);
  double maxEWtmp = doubleRangeMax(axisDtmp, _k->N);
 
- if (minEWtmp <= 0.0) if(_k->_verbosity >= KORALI_MINIMAL)
-  { printf("[Korali] Warning: Min Eigenvalue smaller or equal 0.0 (%+6.3e) after Eigen decomp (no update possible).\n", minEWtmp ); return; }
+ if (minEWtmp <= 0.0) { if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Warning: Min Eigenvalue smaller or equal 0.0 (%+6.3e) after Eigen decomp (no update possible).\n", minEWtmp ); return; }
 
+ for (size_t d = 0; d < _k->N; ++d) 
+ {
+     axisDtmp[d] = sqrt(axisDtmp[d]); 
+     if (std::isfinite(axisDtmp[d]) == false)
+     {
+       if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Warning: Could not calculate root of Eigenvalue (%+6.3e) after Eigen decomp (no update possible).\n", axisDtmp[d] ); 
+       return; 
+     }
+    for (size_t e = 0; e < _k->N; ++e) if (std::isfinite(B[d][e]) == false)
+    {
+       if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Warning: Non finite value detected in B (no update possible).\n"); 
+       return;
+    }
+ }
+ 
  /* write back */
- for (size_t d = 0; d < _k->N; ++d) axisD[d] = sqrt(axisDtmp[d]);
+ for (size_t d = 0; d < _k->N; ++d) axisD[d] = axisDtmp[d];
  for (size_t d = 0; d < _k->N; ++d) memcpy(B[d], Btmp[d], sizeof(double) * _k->N );
- for (size_t d = 0; d < _k->N; ++d) memcpy(C[d], M[d], sizeof(double) * _k->N );
 
  minEW = minEWtmp;
  maxEW = maxEWtmp;
@@ -1091,23 +1131,18 @@ void CMAES::eigen(size_t size, double **M, double *diag, double **Q) const
  }
 
  gsl_matrix_view m = gsl_matrix_view_array (data, size, size);
- gsl_vector *eval  = gsl_vector_alloc (size);
- gsl_matrix *evec  = gsl_matrix_alloc (size, size);
- gsl_eigen_symmv_workspace * w =  gsl_eigen_symmv_alloc (size);
- gsl_eigen_symmv (&m.matrix, eval, evec, w);
- gsl_eigen_symmv_free (w);
- gsl_eigen_symmv_sort (eval, evec, GSL_EIGEN_SORT_ABS_ASC);
+
+ gsl_eigen_symmv (&m.matrix, gsl_eval, gsl_evec, gsl_work);
+ gsl_eigen_symmv_sort (gsl_eval, gsl_evec, GSL_EIGEN_SORT_ABS_ASC);
 
  for (size_t i = 0; i < size; i++)
  {
-  gsl_vector_view evec_i = gsl_matrix_column (evec, i);
-  for (size_t j = 0; j < size; j++) Q[j][i] = gsl_vector_get (&evec_i.vector, j);
+  gsl_vector_view gsl_evec_i = gsl_matrix_column (gsl_evec, i);
+  for (size_t j = 0; j < size; j++) Q[j][i] = gsl_vector_get (&gsl_evec_i.vector, j);
  }
 
- for (size_t i = 0; i < size; i++) diag[i] = gsl_vector_get (eval, i);
+ for (size_t i = 0; i < size; i++) diag[i] = gsl_vector_get (gsl_eval, i);
 
- gsl_vector_free (eval);
- gsl_matrix_free (evec);
  free(data);
 }
 

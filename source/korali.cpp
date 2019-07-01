@@ -122,6 +122,8 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
  if (vLevel == "Detailed") _verbosity = KORALI_DETAILED;
  if (_verbosity == KORALI_UNDEFINED) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Vebosity Level '%s'.", vLevel.c_str()); exit(-1); }
 
+ _result_dir = consume(js, { "Result Directory" }, KORALI_STRING, "_korali_result");
+
  // Configure Problem
 
  _problem = nullptr;
@@ -194,12 +196,12 @@ void Korali::Engine::run()
  setConfiguration(_js);
 
  // Creating Results directory
- mkdir("_korali_result", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+ mkdir(_result_dir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
  // Running Engine
  _conduit->run();
 
- if (_conduit->isRoot()) if(_verbosity >= KORALI_MINIMAL) printf("[Korali] Results saved to folder: '_korali_result'\n");
+ if (_conduit->isRoot()) if(_verbosity >= KORALI_MINIMAL) printf("[Korali] Results saved to folder: '%s'\n", _result_dir.c_str());
 }
 
 void Korali::Engine::addConstraint(fcon fconstraint)
@@ -222,7 +224,7 @@ void Korali::Engine::saveState(int fileId)
 
  char fileName[256];
 
- sprintf(fileName, "./_korali_result/s%05d.json", fileId++);
+ sprintf(fileName, "./%s/s%05d.json", _result_dir.c_str(), fileId++);
 
  saveState(fileName);
 }

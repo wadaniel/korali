@@ -19,7 +19,7 @@ git clone https://github.com/cselab/korali.git
 To build and install Korali, simply run:
 
 ```shell
-cd korali 
+cd korali
 ./install
 ```
 
@@ -41,4 +41,4 @@ cd tutorials
 
 	- If the problem persists, please submit a new [issue report](https://github.com/cselab/korali/issues) on our Github repository detailing the problem, your system information, and the steps to replicate it and we will promptly address it.
 
-	- For further questions, feel free to [contact us](/aboutus).
+	- For further questions, feel free to [contact us](../aboutus).

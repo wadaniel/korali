@@ -19,7 +19,7 @@ A Korali application encapsulates the configuration necessary to run the Korali 
 
 ### Step 1) Define Problem
 
-A Problem describes the objective function to be optimized/sampled from. We currently support these problem types: 
+A Problem describes the objective function to be optimized/sampled from. We currently support these problem types:
 
 - [Direct Evaluation](../problems/direct)
 - [Bayesian - Direct Likelihood](../problems/bayesian/direct)
@@ -35,62 +35,62 @@ The Solver module generates samples for evaluation, performs the statistical ana
 
     To select the CMA-ES solver, use the following syntax:
 
-	```python 
+	```python
 	 k["Solver"] = "CMA-ES";
 	```
-	
+
 	[Click here for detailed information on CMA-ES.](../solvers/optimizers/cmaes)
-	
+
 ??? abstract "Differential Evolution"
 
     To select the Differential Evolution solver, use the following syntax:
 
-	```python 
+	```python
 	 k["Solver"] = "DE";
 	```
-	
+
 	[Click here for detailed information on Differential Evolution](../solvers/optimizers/diffevo)
-	
+
 + **Samplers** map the probability distribution of samples in the variable space of the described problem. The detailed configuration of the currently implemented optimizers can be found below:
 
 ??? abstract "Markov-Chain Monte-Carlo"
 
     To select the Markov-Chain Monte-Carlo solver, use the following syntax:
 
-	```python 
+	```python
 	 k["Solver"] = "MCMC";
 	```
-	
+
 	[Click here for detailed information on MCMC(../solvers/optimizers/mcmc)
-	
+
 ??? abstract "Transitional Markov-Chain Monte-Carlo"
 
     To select the Transitional Markov-Chain Monte-Carlo solver, use the following syntax:
 
-	```python 
+	```python
 	 k["Solver"] = "TMCMC";
 	```
-	
+
 	[Click here for detailed information on TMCMC.](../solvers/optimizers/tmcmc)
-	
-  
+
+
 ###Step 3) Define Variables
 
 A Korali Problem describes the sampling space of the physical or real-world phenomenon to analyze. The number of variables defined by the user represents a dimension of the problem. Variables are created by simply adding their name to the problem configuration:
 
 !!! example
-	
+
 	```python
 	# Example: Defining two variables
 	k["Variables"][0]["Name"] = "Thermal Conductivity"
 	k["Variables"][1]["Name"] = "Heat Source Position"
 	```
 
-Variable definitions require additional parameters depending on which problem and solver types have been selected. The syntax for specifying these parameters is explained in each solver/problem page. 
+Variable definitions require additional parameters depending on which problem and solver types have been selected. The syntax for specifying these parameters is explained in each solver/problem page.
 
 ### Step 4) Define Conduit
 
-The evaluation conduit module executes the computational model(s) for a given sample and returns their raw results back to the solver. The choice of conduit depends on the design and requirements of the computational model. 
+The evaluation conduit module executes the computational model(s) for a given sample and returns their raw results back to the solver. The choice of conduit depends on the design and requirements of the computational model.
 
 The rationale and configuration of the currently implemented conduits can be found below:
 
@@ -98,22 +98,22 @@ The rationale and configuration of the currently implemented conduits can be fou
 
     To select the Semi-Intrusive conduit, use the following syntax:
 
-	```python 
+	```python
 	 # This is not really necessary since semi-intrusive is the default conduit.
 	 k["Conduit"] = "Semi-Intrusive";
 	```
-	
-	[Click here for detailed information on Semi-Intrusive.](../solvers/optimizers/../conduits/semi-intrusive)
+
+	[Click here for detailed information on Semi-Intrusive.](../conduits/semi-intrusive)
 
 ??? abstract "Distributed"
 
     To select the Distributed conduit, use the following syntax:
 
-	```python 
+	```python
 	 k["Conduit"] = "Distributed";
 	```
-	
-	[Click here for detailed information on Distributed.](../solvers/optimizers/../conduits/distributed)
+
+	[Click here for detailed information on Distributed.](../conduits/distributed)
 
 
 - [Semi-Intrusive](../conduits/semi-intrusive)
@@ -155,4 +155,3 @@ After execution, Korali will automatically create a results folder ```_korali_re
 - [Generate Plots](../results/#generate-plots)
 - [Export Results](../results/#export-results)
 - [Resume Execution](../results/#resume-execution)
-		 

@@ -8,11 +8,10 @@ from korali.plotter.tmcmc import plot_tmcmc
 from korali.plotter.mcmc import plot_mcmc
 from korali.plotter.dea import plot_dea
 
-def main(live, evolution):
- path = '_korali_result'
+def main(path, live, evolution):
  firstResult = path + '/s00000.json'
  if ( not os.path.isfile(firstResult) ):
-  print("[Korali] Error: Did not find any results in the _korali_result folder...")
+  print("[Korali] Error: Did not find any results in the {0} folder...".format(path))
   exit(-1)
 
  with open(firstResult) as f:
@@ -48,9 +47,10 @@ def main(live, evolution):
  exit(-1)
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(prog='korali.plotter', description='Process korali results in _korali_results folder.')
+    parser = argparse.ArgumentParser(prog='korali.plotter', description='Process korali results in _korali_result (default) folder.')
+    parser.add_argument('--dir', help='directory of result files', default='_korali_result', required = False)
     parser.add_argument('--live', help='run live plotting', action='store_true')
     parser.add_argument('--evolution', help='plot CMA-ES evolution (only in 2D)', action='store_true')
     args = parser.parse_args()
     
-    main(args.live, args.evolution)
+    main(args.dir, args.live, args.evolution)

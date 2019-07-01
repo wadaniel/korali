@@ -18,18 +18,19 @@ Korali::Solver::MCMC::MCMC(nlohmann::json& js, std::string name)
  setConfiguration(js);
 
  // Allocating MCMC memory
- _covarianceMatrix = (double*) calloc (_k->N*_k->N, sizeof(double));
- z                 = (double*) calloc (_k->N, sizeof(double));
- clPoint           = (double*) calloc (_k->N, sizeof(double));
- ccPoints          = (double*) calloc (_k->N*_rejectionLevels, sizeof(double));
- ccLogPriors       = (double*) calloc (_rejectionLevels, sizeof(double));
- ccLogLikelihoods  = (double*) calloc (_rejectionLevels, sizeof(double));
- alpha             = (double*) calloc (_rejectionLevels, sizeof(double));
- databasePoints    = (double*) calloc (_k->N*_s, sizeof(double));
- databaseFitness   = (double*) calloc (_s, sizeof(double));
- chainMean         = (double*) calloc (_k->N, sizeof(double));
- tmpC              = (double*) calloc (_k->N*_k->N , sizeof(double));
- chainCov          = (double*) calloc (_k->N*_k->N , sizeof(double));
+ _covarianceMatrix  = (double*) calloc (_k->N*_k->N, sizeof(double));
+ z                  = (double*) calloc (_k->N, sizeof(double));
+ clPoint            = (double*) calloc (_k->N, sizeof(double));
+ ccPoints           = (double*) calloc (_k->N*_rejectionLevels, sizeof(double));
+ transformedSamples = (double*) calloc (_k->N*_rejectionLevels, sizeof(double));
+ ccLogPriors        = (double*) calloc (_rejectionLevels, sizeof(double));
+ ccLogLikelihoods   = (double*) calloc (_rejectionLevels, sizeof(double));
+ alpha              = (double*) calloc (_rejectionLevels, sizeof(double));
+ databasePoints     = (double*) calloc (_k->N*_s, sizeof(double));
+ databaseFitness    = (double*) calloc (_s, sizeof(double));
+ chainMean          = (double*) calloc (_k->N, sizeof(double));
+ tmpC               = (double*) calloc (_k->N*_k->N , sizeof(double));
+ chainCov           = (double*) calloc (_k->N*_k->N , sizeof(double));
 
  for(size_t i = 0; i < _k->N; i++) clPoint[i] = _initialMeans[i];
  for(size_t i = 0; i < _k->N; i++) _covarianceMatrix[i*_k->N+i] = _stdDevs[i];
@@ -101,7 +102,7 @@ void Korali::Solver::MCMC::getConfiguration(nlohmann::json& js)
  {
   js["Variables"][i]["MCMC"]["Initial Mean"]      = _initialMeans[i];
   js["Variables"][i]["MCMC"]["Initial Deviation"] = _stdDevs[i];
-  //js["Variables"][i]["MCMC"]["Log Space"]                  = _variableLogSpace[i];
+  js["Variables"][i]["MCMC"]["Log Space"]         = _variableLogSpace[i];
  }
 
  js["MCMC"]["Termination Criteria"]["Max Function Evaluations"]["Value"]  = _termCondMaxFunEvals;
@@ -152,12 +153,13 @@ void Korali::Solver::MCMC::setConfiguration(nlohmann::json& js)
  _termCondMaxFunEvals      = consume(js, { "MCMC", "Termination Criteria", "Max Function Evaluations", "Value" }, KORALI_NUMBER, std::to_string(1e6));
  _isTermCondMaxFunEvals    = consume(js, { "MCMC", "Termination Criteria", "Max Function Evaluations", "Active" }, KORALI_BOOLEAN, "false");
   
- _initialMeans = (double*) calloc(sizeof(double), _k->N);
- _stdDevs      = (double*) calloc(sizeof(double), _k->N);
+ _initialMeans     = (double*) calloc(sizeof(double), _k->N);
+ _stdDevs          = (double*) calloc(sizeof(double), _k->N);
+ _variableLogSpace = (bool*) calloc(sizeof(bool), _k->N);
 
- for(size_t d = 0; d < _k->N; d++) _initialMeans[d] = consume(js["Variables"][d], { "MCMC", "Initial Mean" }, KORALI_NUMBER);
- for(size_t d = 0; d < _k->N; d++) _stdDevs[d]      = consume(js["Variables"][d], { "MCMC", "Standard Deviation" }, KORALI_NUMBER);
- //for(size_t d = 0; d < _k->N; d++) _variableLogSpace[d] = consume(js["Variables"][d], { "MCMC", "Log Space" }, KORALI_BOOLEAN, false);
+ for(size_t d = 0; d < _k->N; d++) _initialMeans[d]     = consume(js["Variables"][d], { "MCMC", "Initial Mean" }, KORALI_NUMBER);
+ for(size_t d = 0; d < _k->N; d++) _stdDevs[d]          = consume(js["Variables"][d], { "MCMC", "Standard Deviation" }, KORALI_NUMBER);
+ for(size_t d = 0; d < _k->N; d++) _variableLogSpace[d] = consume(js["Variables"][d], { "MCMC", "Log Space" }, KORALI_BOOLEAN, "false");
   
  for(size_t d = 0; d < _k->N; d++) if (_stdDevs[d] < 0) { fprintf( stderr, "[Korali] MCMC Error: Initial Standard Deviation in dim %zu must be larger Zero (is %f)\n", d, _stdDevs[d]); exit(-1); }
 
@@ -205,7 +207,7 @@ void Korali::Solver::MCMC::run()
   while( rejections < _rejectionLevels )
   {
     generateCandidate(rejections);
-    _k->_conduit->evaluateSample(ccPoints, rejections); countevals++;
+    evaluateSample();
     _k->_conduit->checkProgress();
     acceptReject(rejections);
     rejections++;
@@ -308,6 +310,16 @@ void Korali::Solver::MCMC::generateCandidate(size_t sampleIdx)
   } while (setCandidatePriorAndCheck(level)); */
 }
 
+void Korali::Solver::MCMC::evaluateSample()
+{
+  for(size_t d = 0; d < _k->N; ++d)
+    if(_variableLogSpace[d] == true) 
+        transformedSamples[rejections*_k->N+d] = std::exp(ccPoints[rejections*_k->N+d]);
+    else 
+        transformedSamples[rejections*_k->N+d] = ccPoints[rejections*_k->N+d];
+
+  _k->_conduit->evaluateSample(transformedSamples, rejections); countevals++;
+}
 
 void Korali::Solver::MCMC::sampleCandidate(size_t sampleIdx)
 {  

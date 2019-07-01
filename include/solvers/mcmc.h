@@ -36,6 +36,7 @@ class MCMC : public Base
  double* clPoint; /* Leader parameter values */
  double clLogLikelihood; /* Leader fitness value */
  double* ccPoints; /*  Candidates parameter values */
+ double* transformedSamples; /* Candidate parameters log transformed */
  double* ccLogPriors; /* Candidates prior value */
  double* ccLogLikelihoods; /* Candidates fitness value */
  double* alpha; /* alphas for recursive calculation of delayed rejection schemes */
@@ -55,6 +56,7 @@ class MCMC : public Base
  // MCMC Status variables
  double* _initialMeans; /* Initial Mean of Cov Proposal Distribution */
  double* _stdDevs; /* Diagonal of Cov Proposal Distribution */
+ bool* _variableLogSpace; /* Apply log transform of variable in sampling */
  double* _covarianceMatrix; /* Covariance of Proposal Distribution */
 
  // Korali Methods
@@ -67,6 +69,7 @@ class MCMC : public Base
  void sampleCandidate(size_t sampleIdx);
  void acceptReject(size_t trial); /* Accept or reject sample with multiple trials */
  double recursiveAlpha(double& D, const double llk0, const double* logliks, size_t N) const; /* calculate acceptance ratio alpha_N */
+ void evaluateSample();
  void updateState();
  bool setCandidatePriorAndCheck(size_t sampleIdx);
  bool checkTermination() override;

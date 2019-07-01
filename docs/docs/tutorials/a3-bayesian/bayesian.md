@@ -3,12 +3,12 @@ distribution of a Bayesian inference problem.
 
 !!! info
 	The full Python codes for this tutorial can be found in:
-	
+
 	+ [tutorials/python/a3-bayesian-inference-cmaes.py](https://github.com/cselab/skorali/blob/master/tutorials/python/a3-bayesian-inference-cmaes.py)
 	+ [tutorials/python/a3-bayesian-inference-tmcmc.py](https://github.com/cselab/skorali/blob/master/tutorials/python/a3-bayesian-inference-tmcmc.py)
-	
+
 	The full C++ codes for this tutorial can be found in:
-	
+
 	+ [tutorials/cxx/a3-bayesian-inference-cmaes.cpp](https://github.com/cselab/skorali/blob/master/tutorials/cxx/a3-bayesian-inference-cmaes.cpp)
 	+ [tutorials/cxx/a3-bayesian-inference-tmcmc.cpp](https://github.com/cselab/skorali/blob/master/tutorials/cxx/a3-bayesian-inference-tmcmc.cpp)
 
@@ -18,13 +18,13 @@ In this example we will solve the inverse problem of estimating the Variables
 of a linear model using noisy data. We consider the computational model,
 
 $$
-f(x\vartheta) = \vartheta_0 + \vartheta_1 x \,,
+f(x;\vartheta) = \vartheta_0 + \vartheta_1 x \,,
 $$
 
 for $x\in\mathbb{R}$. We assume the following error model,
 
 $$
-y = f(x\vartheta) + \varepsilon \,,
+y = f(x;\vartheta) + \varepsilon \,,
 $$
 
 with $\varepsilon$ a random variable that follows normal distribution with zero
@@ -32,7 +32,7 @@ mean and $\sigma$ standard deviation. This assumption leads to the likelihood
 function,
 
 $$
-p(y|\varphi_x) = \mathcal{N} ( \,y \,| \, f(x\vartheta), \sigma^2 \,) \,.
+p(y|\varphi,x) = \mathcal{N} ( \,y \,| \, f(x;\vartheta), \sigma^2 \,) \,.
 $$
 
 where $\varphi=(\vartheta,\sigma)$ is the parameter vector that contains the
@@ -56,14 +56,14 @@ We call this data set $d=\{x_i,y_i\}_{i=1}^5$. Assuming that each datum is
 independent, the likelihood of $d$ under the linear model is given by
 
 $$
-p(y|\vartheta_x) = \prod_{i=1}^6 \mathcal{N} ( \,y_i \,| \, f(x_i\vartheta), \sigma^2 \,) \,.
+p(y|\vartheta,x) = \prod_{i=1}^6 \mathcal{N} ( \,y_i \,| \, f(x_i,\vartheta), \sigma^2 \,) \,.
 $$
 
 In order to identify the distribution of $\varphi$ conditioned on the observations $d$
 we use Bayes' theorem
 
 $$
-p(\varphi | y_x) = \frac{ p(y|\varphi_x) \, p(\varphi) }{ p(y) } \, .
+p(\varphi | y,x) = \frac{ p(y|\varphi,x) \, p(\varphi) }{ p(y) } \, .
 $$
 
 

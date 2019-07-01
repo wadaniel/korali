@@ -121,7 +121,7 @@ def plot_mcmc(src, live=False):
     ax  = None
  
     if (resultfiles == []):
-        print("[Korali] Error: Did not find file {0} in the _korali_result folder...".format(src))
+        print("[Korali] Error: Did not find file {0} in the result folder...".format(src))
         exit(-1)
 
     if (live == True):

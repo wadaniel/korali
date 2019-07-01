@@ -77,7 +77,7 @@ def plot_cmaes(src, live = False, evolution = False, obj='current'):
     ax  = None
  
     if (resultfiles == []):
-        print("[Korali] Error: Did not find file {0} in the _korali_result folder...".format(src))
+        print("[Korali] Error: Did not find file {0} in the result folder...".format(src))
         exit(-1)
 
 
@@ -97,12 +97,13 @@ def plot_cmaes(src, live = False, evolution = False, obj='current'):
                 numdim = len(data['Variables'])
                 names  = [ data['Variables'][i]['Name'] for i in range(numdim) ]
                 colors = hls_colors(numdim)
-                cov.append(state['CovarianceMatrix'])
                 
                 if ( (evolution == True) and (numdim != 2) ):
                     print("[Korali] Error: Evolution feature only for 2D available - Bye!")
                     exit(0)
-
+                else:
+                    cov.append(state['CovarianceMatrix'])
+                
                 # TODO check constraints
                 #ccmaes = True
                 #via    = [state['Viability Boundaries'][0]]
@@ -135,11 +136,12 @@ def plot_cmaes(src, live = False, evolution = False, obj='current'):
                 cond.append(state['MaxEigenvalue']/state['MinEigenvalue'])
                 psL2.append(state['ConjugateEvolutionPathL2'])
                 cov.append(state['CovarianceMatrix'])
-                mu_x.append(state['PreviousMeanVector'][0])
-                mu_y.append(state['PreviousMeanVector'][1])
-                
-                samples_x = [sublist[0] for sublist in state['Samples']]
-                samples_y = [sublist[1] for sublist in state['Samples']]
+
+                if (evolution == True):
+                    mu_x.append(state['PreviousMeanVector'][0])
+                    mu_y.append(state['PreviousMeanVector'][1])
+                    samples_x = [sublist[0] for sublist in state['Samples']]
+                    samples_y = [sublist[1] for sublist in state['Samples']]
                 
                 if ccmaes == True:
                     via.append(state['Viability Boundaries'][0])

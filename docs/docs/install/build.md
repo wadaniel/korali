@@ -20,17 +20,7 @@
 
 | Type             |     Code         |      Status       |    Description    | 
 | :----------------:|:----------------:|: ----------------:|: ----------------:|
-| Regression | [REG-000](https://github.com/cselab/korali/tree/master/tests/REG-000) | <span style="color:green">Active</span> | Building and Installing Korali |
-| Regression | [REG-001](https://github.com/cselab/korali/tree/master/tests/REG-001) | <span style="color:green">Active</span> | Running all tutorials |
-| Functional | [FUN-000](https://github.com/cselab/korali/tree/master/tests/FUN-000) | <span style="color:green">Active</span> | CMA-ES Test Battery |
-| Functional | [FUN-001](https://github.com/cselab/korali/tree/master/tests/FUN-001) | <span style="color:green">Active</span> | TMCMC Test Battery  |
-| Functional | [FUN-002](https://github.com/cselab/korali/tree/master/tests/FUN-002) | <span style="color:orange">Deprecated</span> | Nonintrusive Test Battery |
-| Functional | [FUN-003](https://github.com/cselab/korali/tree/master/tests/FUN-003) | <span style="color:green">Active</span> | Bayesian Inference Test Battery |
-| Stress     | [STR-000](https://github.com/cselab/korali/tree/master/tests/STR-000) | <span style="color:green">Active</span> | Variable Stress Tests |
-| Stress     | [STR-001](https://github.com/cselab/korali/tree/master/tests/STR-001) | <span style="color:green">Active</span> | CMA-ES Stress Tests |
-| Stress     | [STR-002](https://github.com/cselab/korali/tree/master/tests/STR-002) | <span style="color:green">Active</span> | TMCMC Stress Tests  |
-| Unit       | [UNI-000](https://github.com/cselab/korali/tree/master/tests/UNI-000) | <span style="color:green">Active</span> | Nonintrusive Conduit Test |
-| Unit       | [UNI-001](https://github.com/cselab/korali/tree/master/tests/UNI-001) | <span style="color:orange">Deprecated</span> | UPC++ Conduit Test |
-| Unit       | [UNI-002](https://github.com/cselab/korali/tree/master/tests/UNI-002) | <span style="color:green">Active</span> | MPI Conduit Test |
+| Regression | [REG-000](https://github.com/cselab/korali/tree/development/tests/REG-000/run_test.sh) | <span style="color:green">Active</span> | Checks for a correct installation of Korali and its modules. |
+| Regression | [REG-001](https://github.com/cselab/korali/tree/development/tests/REG-001/run_test.sh) | <span style="color:green">Active</span> | Re-run all tutorials for basic sanity check. |
 
 </center>

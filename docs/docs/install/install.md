@@ -32,7 +32,7 @@ cd tutorials
 ./a1-optimization
 ```
 
-!!! question "Troubles Installing Korali?"
+!!! question "Trouble Installing Korali?"
     If you are experiencing problems installing or running Korali, please check the following hints:
 
 	- Visit the [system requirements](../requirements) page to verify that your system meets the software requirements to install and run Korali.

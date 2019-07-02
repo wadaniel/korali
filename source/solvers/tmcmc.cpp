@@ -251,9 +251,9 @@ void Korali::Solver::TMCMC::evaluateSample(size_t c)
 {
   for(size_t d = 0; d<_k->N; ++d) 
       if (_variableLogSpace[d] == true) 
-          transformedSamples[c*_k->N] = std::exp(ccPoints[c*_k->N+d]);
+          transformedSamples[c*_k->N+d] = std::exp(ccPoints[c*_k->N+d]);
       else 
-          transformedSamples[c*_k->N] = ccPoints[c*_k->N+d];
+          transformedSamples[c*_k->N+d] = ccPoints[c*_k->N+d];
 
   //if( isFeasibleCandidate(c) ) _countevals++; //TODO: check if feasible, if yes - evaluate
   _k->_conduit->evaluateSample(transformedSamples, c); _countevals++;

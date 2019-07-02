@@ -13,6 +13,7 @@ from directModel import *
 
 import korali
 k = korali.initialize()
+k.setModel(evaluateModel)
 
 k["Problem"] = "Direct Evaluation"
 k["Solver"]  = "CMA-ES" 
@@ -26,7 +27,6 @@ k["CMA-ES"]["Sample Count"] = 5
 # Setting output directory
 k["Result Directory"] = "_b1_restart_cmaes"
 
-k.setModel(evaluateModel)
 k.run()
 
 # Reducing Output

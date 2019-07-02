@@ -47,7 +47,7 @@ k["CMA-ES"]["Termination Criteria"]["Max Fitness"]["Active"] = True
 k["CMA-ES"]["Termination Criteria"]["Max Fitness"]["Value"] = -680.630057374402 - 1e-4
 
 # Reducing Output
-k["CMA-ES"]["Result Output Frequency"]  = 100
+k["CMA-ES"]["Result Output Frequency"] = 100
 
 # Setting output directory
 k["Result Directory"] = "_b2_constrained_optimization"

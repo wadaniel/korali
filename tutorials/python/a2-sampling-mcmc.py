@@ -30,10 +30,12 @@ k["Variables"][0]["MCMC"]["Standard Deviation"] = 1.000
 k["MCMC"]["Burn In"] = 500
 k["MCMC"]["Chain Length"] = 5000
 k["MCMC"]["Adaptive Sampling"] = True
+
+# Reducint Output
 k["MCMC"]["Result Output Frequency"] = 5000
 
 # Setting output directory
-k["MCMC"]["Result Directory"] = "a2_sampling_mcmc_result"
+k["Result Directory"] = "a2_sampling_mcmc_result"
 
 # Running Korali
 k.run()

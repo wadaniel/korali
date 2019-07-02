@@ -61,10 +61,10 @@ k["CMA-ES"]["Termination Criteria"]["Max Generations"]["Value"] = 1000
 k["CMA-ES"]["Sample Count"] = 5
 
 # Reducing Output
-k["Output Frequency"] = 100
+k["CMA-ES"]["Result Output Frequency"] = 100
 
 # Setting output directory
-k["CMA-ES"]["Result Directory"] = "_a3_bayesian_inference_cmaes"
+k["Result Directory"] = "_a3_bayesian_inference_cmaes"
 
 # Running Korali
 k.run()

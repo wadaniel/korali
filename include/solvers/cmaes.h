@@ -23,7 +23,7 @@ class CMAES : public Base
  double* _initialMeans;
  double* _initialStdDevs;
  double* _minStdDevChanges;
- bool* _variableLogSpace;
+ bool* _variableLogSpace; /* Apply log transform of variable before evaluation */
 
  // Runtime Methods (to be inherited from base class in the future)
  void prepareGeneration();

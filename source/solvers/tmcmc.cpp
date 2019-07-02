@@ -114,6 +114,8 @@ void Korali::Solver::TMCMC::getConfiguration(nlohmann::json& js)
  js["TMCMC"]["Burn In"]                  = _burnin;
  js["TMCMC"]["Result Output Frequency"]  = _resultOutputFrequency;
  
+ for (size_t i = 0; i < _k->N; i++) js["Variables"][i]["MCMC"]["Log Space"] = _variableLogSpace[i];
+ 
  js["TMCMC"]["Termination Criteria"]["Max Generations"]["Value"]  = _termCondMaxGens;
  js["TMCMC"]["Termination Criteria"]["Max Generations"]["Active"] = _isTermCondMaxGens;
 
@@ -148,6 +150,10 @@ void Korali::Solver::TMCMC::setConfiguration(nlohmann::json& js)
  _useLocalCov       = consume(js, { "TMCMC", "Use Local Covariance" }, KORALI_BOOLEAN, "false");
  _burnin            = consume(js, { "TMCMC", "Burn In" }, KORALI_NUMBER, std::to_string(0));
  
+ // Variable information
+ for(size_t d = 0; d < _k->N; d++) _variableLogSpace[d] = consume(js["Variables"][d], { "TMCMC", "Log Space" }, KORALI_BOOLEAN, "false");
+ 
+ // Termination Criteria
  _termCondMaxGens   = consume(js, { "TMCMC", "Termination Criteria", "Max Generations", "Value" }, KORALI_NUMBER, std::to_string(20));
  _isTermCondMaxGens = consume(js, { "TMCMC", "Termination Criteria", "Max Generations", "Active" }, KORALI_BOOLEAN, "true");
 }
@@ -202,8 +208,7 @@ void Korali::Solver::TMCMC::run()
    {
     chainPendingFitness[c] = true;
     generateCandidate(c);
-    if( isFeasibleCandidate(c) ) _countevals++;
-    _k->_conduit->evaluateSample(ccPoints, c);
+    evaluateSample(c);
    }
    _k->_conduit->checkProgress();
   }
@@ -239,6 +244,18 @@ void Korali::Solver::TMCMC::processSample(size_t c, double fitness)
  if (chainCurrentStep[c] > _burnin ) updateDatabase(&clPoints[c*_k->N], clLogLikelihood[c]);
  chainPendingFitness[c] = false;
  if (chainCurrentStep[c] == chainLength[c]) finishedChains++;
+}
+
+void Korali::Solver::TMCMC::evaluateSample(size_t c)
+{
+  for(size_t d = 0; d<_k->N; ++d) 
+      if (_variableLogSpace[d] == true) 
+          transformedSamples[c*_k->N] = std::exp(ccPoints[c*_k->N+d]);
+      else 
+          transformedSamples[c*_k->N] = ccPoints[c*_k->N+d];
+
+  //if( isFeasibleCandidate(c) ) _countevals++; //TODO: check if feasible, if yes - evaluate
+  _k->_conduit->evaluateSample(transformedSamples, c); _countevals++;
 }
 
 void Korali::Solver::TMCMC::updateDatabase(double* point, double fitness)

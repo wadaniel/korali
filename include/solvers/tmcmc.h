@@ -66,10 +66,11 @@ class TMCMC : public Base
  void initializeSamples();
  void resampleGeneration();
  void updateDatabase(double* point, double fitness);
- void generateCandidate(size_t c);
+ void generateCandidate(size_t candidate);
+ void evaluateSample(size_t candidate);
  void computeChainCovariances(double** chain_cov, size_t newchains) const;
  void minSearch(double const *fj, size_t fn, double pj, double objTol, double& xmin, double& fmin) const;
- bool isFeasibleCandidate(size_t c) const;
+ bool isFeasibleCandidate(size_t candidate) const;
  static double tmcmc_objlogp(double x, const double *fj, size_t fn, double pj, double zero);
  static double objLog(const gsl_vector *v, void *param);
 

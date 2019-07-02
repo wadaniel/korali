@@ -7,7 +7,6 @@ int main(int argc, char* argv[])
 
  k["Problem"] = "Direct Evaluation";
  k["Solver"]  = "CMA-ES";
- k["Verbosity"] = "Detailed";
 
  k["CMA-ES"]["Objective"] = "Maximize";
  
@@ -26,9 +25,9 @@ int main(int argc, char* argv[])
  }
 
  k["CMA-ES"]["Sigma Bounded"] = true;
- k["CMA-ES"]["Adaption Size"] = 0.1;
  k["CMA-ES"]["Sample Count"] = 8;
- k["CMA-ES"]["Viability"]["Sample Count"] = 2;
+ k["CMA-ES"]["Constraint"]["Adaption Size"] = 0.1;
+ k["CMA-ES"]["Constraint"]["Viability"]["Sample Count"] = 2;
  k["CMA-ES"]["Termination Criteria"]["Max Fitness"]["Active"] = true;
  k["CMA-ES"]["Termination Criteria"]["Max Fitness"]["Value"] = -680.630057374402 - 1e-4;
  k["CMA-ES"]["Termination Criteria"]["Max Generations"]["Active"] = true;

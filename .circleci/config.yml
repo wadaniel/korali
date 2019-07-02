@@ -35,7 +35,7 @@ jobs:
 
       - run:
           name: deploy webpage
-          command: cd docs; timeout 3m ./deploy.sh
+          command: cd docs; timeout 10m ./deploy.sh
 
       - run:
           name: run tests

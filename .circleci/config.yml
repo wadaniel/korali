@@ -55,7 +55,7 @@ jobs:
 
       - run:
           name: Install wget dependency
-          command: HOMEBREW_NO_AUTO_UPDATE=1 brew install wget
+          command: HOMEBREW_NO_AUTO_UPDATE=1 brew install wget;
                    HOMEBREW_NO_AUTO_UPDATE=1 brew install coreutils
       - run:
           name: build Korali

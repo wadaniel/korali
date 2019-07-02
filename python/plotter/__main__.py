@@ -8,7 +8,12 @@ from korali.plotter.tmcmc import plot_tmcmc
 from korali.plotter.mcmc import plot_mcmc
 from korali.plotter.dea import plot_dea
 
-def main(path, live, evolution):
+def main(check, path, live, evolution):
+
+ if (check == True):
+  print("[Korali] Plotter correctly installed.")
+  exit(0)
+
  firstResult = path + '/s00000.json'
  if ( not os.path.isfile(firstResult) ):
   print("[Korali] Error: Did not find any results in the {0} folder...".format(path))
@@ -51,6 +56,7 @@ if __name__ == '__main__':
     parser.add_argument('--dir', help='directory of result files', default='_korali_result', required = False)
     parser.add_argument('--live', help='run live plotting', action='store_true')
     parser.add_argument('--evolution', help='plot CMA-ES evolution (only in 2D)', action='store_true')
+    parser.add_argument('--check', help='Verifies that plotter is installed and can run.', action='store_true', required = False)
     args = parser.parse_args()
     
-    main(args.dir, args.live, args.evolution)
+    main(args.check, args.dir, args.live, args.evolution)

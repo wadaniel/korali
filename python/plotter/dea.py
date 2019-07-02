@@ -24,16 +24,6 @@ def hls_colors(num, h = 0.01, l=0.6, s=0.65):
     return palette
 
 
-# Get a list of strings for json keys of current results or best ever results
-def objstrings(obj='current'):
-    if obj == 'current':
-        return ['CurrentBestFunctionValue', 'CurrentBestVector']
-    elif obj == 'ever':
-        return ['BestEverFunctionValue', 'BestEverVector']
-    else:
-        raise ValueError("obj must be 'current' or 'ever'")
-
-
 # Create Plot from Data
 def draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, fvalXvec, meanXvec, width, colors, names, live):
     #fig, ax = plt.subplots(2,2,num='DEA live diagnostics: {0}'.format(src),figsize=(8,8))
@@ -72,7 +62,7 @@ def draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, fvalXvec, meanX
 
 
 # Plot DEA results (read from .json files)
-def plot_dea(src, live = False, obj='current'):
+def plot_dea(src, live=False, test=False):
 
     gen      = 0 # generation
     numdim   = 0 # problem dimension
@@ -122,7 +112,7 @@ def plot_dea(src, live = False, obj='current'):
                 
             numeval.append(state['EvaluationCount'])
             dfval.append(abs(state['CurrentBestFunctionValue'] - state['BestEverFunctionValue']))
-            fval.append(state[objstrings(obj)[0]])
+            fval.append(state['CurrentBestFunctionValue'])
 
             for i in range(numdim):
                 fvalXvec[i].append(state[objstrings(obj)[1]][i])
@@ -142,8 +132,9 @@ def plot_dea(src, live = False, obj='current'):
     if live == False: 
         draw_figure(fig, ax, src, gen, numeval, numdim, fval, dfval, fvalXvec, meanXvec, width, colors, names, live)
         fig.show()
-    
-    plt.pause(3600)
 
+    if test == False: 
+        plt.pause(3600)
 
-
+    print("[Korali] Figure closed - Bye!")
+    exit(0)

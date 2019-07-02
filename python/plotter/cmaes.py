@@ -27,18 +27,8 @@ def hls_colors(num, h = 0.01, l=0.6, s=0.65):
     return palette
 
 
-# Get a list of strings for json keys of current results or best ever results
-def objstrings(obj='current'):
-    if obj == 'current':
-        return ['CurrentBestFunctionValue', 'CurrentBestVector']
-    elif obj == 'ever':
-        return ['BestEverFunctionValue', 'BestEverVector']
-    else:
-        raise ValueError("obj must be 'current' or 'ever'")
-
-
 # Plot CMA-ES results (read from .json files)
-def plot_cmaes(src, live = False, evolution = False, obj='current'):
+def plot_cmaes(src, live=False, test=False, evolution=False):
 
     live = live or evolution
 
@@ -131,7 +121,7 @@ def plot_cmaes(src, live = False, evolution = False, obj='current'):
                 numeval.append(state['EvaluationCount'])
                 dfval.append(abs(state['CurrentBestFunctionValue'] - state['BestEverFunctionValue']))
                 
-                fval.append(state[objstrings(obj)[0]])
+                fval.append(state['CurrentBestFunctionValue'])
                 sigma.append(state['Sigma'])
                 cond.append(state['MaxEigenvalue']/state['MinEigenvalue'])
                 psL2.append(state['ConjugateEvolutionPathL2'])
@@ -148,7 +138,7 @@ def plot_cmaes(src, live = False, evolution = False, obj='current'):
                     normal.append(state['Constraint Normal Approximation'])
 
                 for i in range(numdim):
-                    fvalXvec[i].append(state[objstrings(obj)[1]][i])
+                    fvalXvec[i].append(state['CurrentBestVector'][i])
                     axis[i].append(state['AxisLengths'][i])
                     ssdev[i].append(sigma[-1]*np.sqrt(state['CovarianceMatrix'][i][i]))
             
@@ -167,7 +157,9 @@ def plot_cmaes(src, live = False, evolution = False, obj='current'):
         draw_figure(fig, ax, src, gen, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, axis, ssdev, colors, names, live)
         fig.show()
     
-    plt.pause(3600)
+    if (test == False):
+        plt.pause(3600)
+    
     print("[Korali] Figure closed - Bye!")
     exit(0)
 

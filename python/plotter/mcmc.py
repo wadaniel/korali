@@ -109,7 +109,7 @@ def plot_samples(fig, ax, data, filename):
     plot_lower_triangle(ax, samples)
 
 # Plot MCMC results (read from .json files)
-def plot_mcmc(src, live=False):
+def plot_mcmc(src, live=False, test=False):
      
     plt.style.use('seaborn-dark')
     burnin = 1e18
@@ -162,6 +162,8 @@ def plot_mcmc(src, live=False):
             fig, ax = plt.subplots(numdim, numdim, figsize=(8,8))
             fig.show()
             plot_samples(fig, ax, data, resultfiles[-1])
+   
+    if (test == False):
+        plt.pause(3600) 
     
-    plt.pause(3600) 
     print("[Korali] Figure closed - Bye!")

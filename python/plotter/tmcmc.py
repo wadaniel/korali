@@ -93,7 +93,7 @@ def plot_lower_triangle(ax, theta):
 
 
 # Plot TMCMC results (read from .json files)
-def plot_tmcmc(src, live=False):
+def plot_tmcmc(src, live=False, test=False):
      
     plt.style.use('seaborn-dark')
     

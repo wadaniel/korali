@@ -29,7 +29,10 @@ k["Result Directory"] = "_b1_restart_cmaes"
 k.setModel(evaluateModel)
 k.run()
 
+# Reducing Output
+k["CMA-ES"]["Result Output Frequency"]  = 100
+
 # Now we loadState() to resume the same experiment from generation 5.
-k.loadState("_b1_restart_cmaes/s00498.json")
+k.loadState("_b1_restart_cmaes/s00400.json")
 
 k.run()

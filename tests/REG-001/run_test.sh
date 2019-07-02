@@ -72,6 +72,7 @@ logfile=$PWD/test.log
 for dir in ./_*                                                                 
 do                                                                              
     python3 -m korali.plotter --test --dir "${dir}" >> $logfile 2>&1                   
-    #python3 -m korali.plotter --evolution --dir "${dir}" >> $logfile 2>&1
+    python3 -m korali.plotter --test --live --dir "${dir}" >> $logfile 2>&1                   
+    #python3 -m korali.plotter --test --evolution --dir "${dir}" >> $logfile 2>&1
     check_result
 done 

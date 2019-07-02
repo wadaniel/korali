@@ -28,9 +28,9 @@ k["Variables"][0]["MCMC"]["Standard Deviation"] = 1.000
 
 # Configuring the MCMC sampler parameters
 k["MCMC"]["Burn In"] = 500
-k["MCMC"]["Chain Length"]  = 5000
-k["MCMC"]["Adaptive Sampling"]  = True
-k["MCMC"]["Result Output Frequency"]  = 5000
+k["MCMC"]["Chain Length"] = 5000
+k["MCMC"]["Adaptive Sampling"] = True
+k["MCMC"]["Result Output Frequency"] = 5000
 
 # Setting output directory
 k["Result Directory"] = "a2_sampling_mcmc_result"

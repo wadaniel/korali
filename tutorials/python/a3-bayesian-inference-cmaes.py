@@ -60,6 +60,9 @@ k["CMA-ES"]["Objective"] = "Maximize"
 k["CMA-ES"]["Termination Criteria"]["Max Generations"]["Value"] = 1000
 k["CMA-ES"]["Sample Count"] = 5
 
+# Reducing Output
+k["Output Frequency"] = 100
+
 # Setting output directory
 k["Result Directory"] = "_a3_bayesian_inference_cmaes"
 

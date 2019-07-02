@@ -15,7 +15,6 @@ using namespace Korali::Solver;
 CMAES::CMAES(nlohmann::json& js, std::string name)
 {
  
- _name = name;
  setConfiguration(js);
 
  size_t s_max  = std::max(_s,  _via_s);

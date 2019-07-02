@@ -15,8 +15,6 @@ class CMAES : public Base
  CMAES(nlohmann::json& js, std::string name);
  ~CMAES();
 
- std::string _name;
-
  // These are CMA-ES Specific, but could be used for other methods in the future
  double* _lowerBounds;
  double* _upperBounds;

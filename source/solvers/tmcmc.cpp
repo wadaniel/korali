@@ -151,7 +151,8 @@ void Korali::Solver::TMCMC::setConfiguration(nlohmann::json& js)
  _burnin            = consume(js, { "TMCMC", "Burn In" }, KORALI_NUMBER, std::to_string(0));
  
  // Variable information
- for(size_t d = 0; d < _k->N; d++) _variableLogSpace[d] = consume(js["Variables"][d], { "TMCMC", "Log Space" }, KORALI_BOOLEAN, "false");
+ for(size_t d = 0; d < _k->N; d++) if ( isDefined(js["Variables"], { "TMCMC", "Log Space" } ) ) 
+     _variableLogSpace[d] = consume( js["Variables"][d], { "TMCMC", "Log Space" }, KORALI_BOOLEAN, "false");
  
  // Termination Criteria
  _termCondMaxGens   = consume(js, { "TMCMC", "Termination Criteria", "Max Generations", "Value" }, KORALI_NUMBER, std::to_string(20));

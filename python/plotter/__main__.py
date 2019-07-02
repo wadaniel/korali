@@ -42,11 +42,6 @@ def main(check, path, live, test, evolution):
   plot_cmaes(path, live, test, evolution)
   exit(0)
 
- if ( 'CCMA-ES' == solver ):
-  print("[Korali] Running CCMA-ES Plotter...")
-  plot_cmaes(path, live, test)
-  exit(0)
-     
  if ( 'DE' == solver ):
   print("[Korali] Running DEA Plotter...")
   plot_dea(path, live, test)

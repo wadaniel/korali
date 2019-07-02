@@ -13,7 +13,10 @@
 # 2 - Operation: List, compile, and run all .cpp files in the tutorials/cxx
 #     folder. 
 #     Expected result: all of the .py scripts will run for less than 20
-#     secs and rc = 0.    
+#     secs and rc = 0.
+# 3 - Operation: plot all results produced in Step 1. 
+#     Expected result: all plotting scripts will run for less than 30 secs and
+#     rc = 0.
 ###############################################################################
 
 ###### Auxiliar Functions #########
@@ -57,3 +60,17 @@ do
   ./"${file%.*}" >> $logfile 2>&1
   check_result
 done
+
+############# STEP 3 ##############
+
+cd $curdir/../../tutorials/python
+
+echo "[Korali] Beginning plotting tests" > $logfile
+
+logfile=$PWD/test.log                                                           
+                                                                                
+for dir in ./_*                                                                 
+do                                                                              
+    python3 -m korali.plotter --test --dir "${dir}" >> $logfile 2>&1                   
+    #python3 -m korali.plotter --evolution --dir "${dir}" >> $logfile 2>&1      
+done 

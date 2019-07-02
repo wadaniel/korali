@@ -64,7 +64,7 @@ k["CMA-ES"]["Sample Count"] = 5
 k["Output Frequency"] = 100
 
 # Setting output directory
-k["Result Directory"] = "_a3_bayesian_inference_cmaes"
+k["CMA-ES"]["Result Directory"] = "_a3_bayesian_inference_cmaes"
 
 # Running Korali
 k.run()

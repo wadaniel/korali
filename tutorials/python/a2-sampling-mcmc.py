@@ -33,7 +33,7 @@ k["MCMC"]["Adaptive Sampling"] = True
 k["MCMC"]["Result Output Frequency"] = 5000
 
 # Setting output directory
-k["Result Directory"] = "a2_sampling_mcmc_result"
+k["MCMC"]["Result Directory"] = "a2_sampling_mcmc_result"
 
 # Running Korali
 k.run()

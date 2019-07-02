@@ -340,6 +340,24 @@ void CMAES::setConfiguration(nlohmann::json& js)
 
   _variableLogSpace[i] = consume(js["Variables"][i], { "CMA-ES", "Log Space" }, KORALI_BOOLEAN, "false");
   _minStdDevChanges[i] = consume(js["Variables"][i], { "CMA-ES", "Minimum Standard Deviation Changes" }, KORALI_NUMBER, std::to_string(0));
+
+  if ( (initialMeanDefined == false) && ((lowerBoundDefined == false) || (upperBoundDefined == false)) )
+  { fprintf( stderr, "[Korali] CMA-ES Error: Initial Mean and Lower/Upper Bound not defined. Unable to init Initial Mean\n" ); exit(-1); }
+  
+  if ( (initialStdDevDefined == false) && ((lowerBoundDefined == false) || (upperBoundDefined == false)) )
+  { fprintf( stderr, "[Korali] CMA-ES Error: Initial Standard Deviation and Lower/Upper Bound not defined. Unable to init Initial Standard Deviation\n" ); exit(-1); }
+ }
+
+ // Checking Variable values
+ for (size_t i = 0; i < _k->N; i++)
+ {
+  if (_initialMeans[i] < _lowerBounds[i] || _initialMeans[i] > _upperBounds[i])
+  { fprintf( stderr, "[Korali] CMA-ES Error: Initial Mean (%f) outside of Lower - Upper (%f - %f) bounds range defined for variable %d.\n",  _initialMeans[i], _lowerBounds[i], _upperBounds[i], i); exit(-1); }
+
+  if (_upperBounds[i] <= _lowerBounds[i])
+  { fprintf( stderr, "[Korali] CMA-ES Error: Invalid Lower (%f) - Upper (%f) bounds range defined for variable %d.\n",  _lowerBounds[i], _upperBounds[i], i); exit(-1); }
+
+  if (_initialStdDevs[i] <= 0.0) { fprintf(stderr, "[Korali] CMA-ES Error: Initial Standard Deviation (%f) for variable %d is less or equal 0.\n", i); _initialStdDevs[i],  exit(-1); }
  }
 
  // Setting termination criteria
@@ -419,18 +437,6 @@ void CMAES::setState(nlohmann::json& js)
 
 void CMAES::initInternals(size_t numsamplesmu)
 {
- // Checking Variable values
- for (size_t i = 0; i < _k->N; i++)
- {
-  if (_initialMeans[i] < _lowerBounds[i] || _initialMeans[i] > _upperBounds[i])
-  { fprintf( stderr, "[Korali] CMA-ES Error: Initial Mean (%f) outside of Lower - Upper (%f - %f) bounds range defined for variable %d.\n",  _initialMeans[i], _lowerBounds[i], _upperBounds[i], i); exit(-1); }
-
-  if (_upperBounds[i] <= _lowerBounds[i])
-  { fprintf( stderr, "[Korali] CMA-ES Error: Invalid Lower (%f) - Upper (%f) bounds range defined for variable %d.\n",  _lowerBounds[i], _upperBounds[i], i); exit(-1); }
-
-  if (_initialStdDevs[i] <= 0.0) { fprintf(stderr, "[Korali] CMA-ES Error: Initial Standard Deviation (%f) for variable %d is less or equal 0.\n", i); _initialStdDevs[i],  exit(-1); }
- }
-
 
  // Initializing Mu Weights
  if      (_muType == "Linear")       for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = numsamplesmu - i;

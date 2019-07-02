@@ -535,17 +535,21 @@ void CMAES::run()
  }
 
  startTime = std::chrono::system_clock::now();
+ if ( _hasConstraints ) { checkMeanAndSetRegime(); updateConstraints(); }
+ printGeneration();
  saveState();
  
  while(!checkTermination())
  {
    t0 = std::chrono::system_clock::now();
-   if ( _hasConstraints ) checkMeanAndSetRegime();
+   
    prepareGeneration();
    evaluateSamples(); 
-
+   
    if ( _hasConstraints ){ updateConstraints(); handleConstraints(); }
    updateDistribution(_fitnessVector);
+   if ( _hasConstraints ) checkMeanAndSetRegime();
+   
    _currentGeneration++;
 
    t1 = std::chrono::system_clock::now();
@@ -767,7 +771,6 @@ void CMAES::updateDistribution(const double *fitnessVector)
  for (size_t d = 0; d < _k->N; ++d) curBestVector[d] = _samplePopulation[bestValidIdx*_k->N + d];
 
  /* update xbestever */
- //TODO: what if we minimize
  if ( currentFunctionValue > bestEver )
  {
   prevBest = bestEver;
@@ -1246,16 +1249,14 @@ void CMAES::printGeneration() const
   printf("[Korali] Variable = (MeanX, BestX):\n");
   for (size_t d = 0; d < _k->N; d++)  printf("         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), rgxmean[d], rgxbestever[d]);
 
+  printf("[Korali] Constraint Evaluation at Current Function Value:\n");
   if ( _hasConstraints )
   if ( bestValidIdx >= 0 )
   {
-    printf("[Korali] Constraint Evaluation at Current Function Value:\n");
       for (size_t c = 0; c < _k->_fconstraints.size(); c++) printf("         ( %+6.3e )\n", constraintEvaluations[c][bestValidIdx]);
   }
   else
   {
-    printf("[Korali] Constraint Evaluation at Current Best:\n");
-    printf("[Korali] Warning: all samples violate constraints!\n");
       for (size_t c = 0; c < _k->_fconstraints.size(); c++) printf("         ( %+6.3e )\n", constraintEvaluations[c][0]);
   }
 

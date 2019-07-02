@@ -22,7 +22,7 @@ jobs:
 
       - run:
           name: build Korali
-          command: timeout 5m ./install
+          command: timeout 10m ./install
 
       - save_cache:
           key: korali-dependencies-linux
@@ -31,7 +31,7 @@ jobs:
       
       - run:
           name: build webpage
-          command: cd docs; timeout 3m ./build.sh
+          command: cd docs; timeout 10m ./build.sh
 
       - run:
           name: deploy webpage
@@ -39,7 +39,7 @@ jobs:
 
       - run:
           name: run tests
-          command: cd tests; ./run_all_tests.sh
+          command: cd tests; timeout 10m ./run_all_tests.sh
       
   build_macos:
     macos:
@@ -56,10 +56,10 @@ jobs:
       - run:
           name: Install wget dependency
           command: HOMEBREW_NO_AUTO_UPDATE=1 brew install wget
-
+                   HOMEBREW_NO_AUTO_UPDATE=1 brew install coreutils
       - run:
           name: build Korali
-          command: timeout 5m ./install
+          command: gtimeout 10m ./install
 
       - save_cache:
           key: korali-dependencies-macos
@@ -68,5 +68,5 @@ jobs:
 
       - run:
           name: run tests
-          command: cd tests; ./run_all_tests.sh
+          command: cd tests; gtimeout 10m ./run_all_tests.sh
 

@@ -228,14 +228,14 @@ void Korali::Solver::CMAES::getConfiguration(nlohmann::json& js)
  js["CMA-ES"]["State"]["ConjugateEvolutionPathL2"]  = psL2;
 
  // CCMA-ES
- js["CMA-ES"]["Viability"]["Regime"]          = _isViabilityRegime;
- js["CMA-ES"]["Viability"]["Sample Count"]    = _via_s;
- js["CMA-ES"]["Viability"]["Mu"]              = _via_mu;
- js["CMA-ES"]["Target Success Rate"]          = _targetSucRate;
- js["CMA-ES"]["Adaption Size"]                = _adaptionSize;
- js["CMA-ES"]["Max Corrections"]              = _maxCorrections;
- js["CMA-ES"]["Normal Vector Learning Rate"]  = _cv;
- js["CMA-ES"]["Global Success Learning Rate"] = _cp;
+ js["CMA-ES"]["Constraint"]["Viability"]["Regime"]          = _isViabilityRegime;
+ js["CMA-ES"]["Constraint"]["Viability"]["Sample Count"]    = _via_s;
+ js["CMA-ES"]["Constraint"]["Viability"]["Mu"]              = _via_mu;
+ js["CMA-ES"]["Constraint"]["Target Success Rate"]          = _targetSucRate;
+ js["CMA-ES"]["Constraint"]["Adaption Size"]                = _adaptionSize;
+ js["CMA-ES"]["Constraint"]["Max Corrections"]              = _maxCorrections;
+ js["CMA-ES"]["Constraint"]["Normal Vector Learning Rate"]  = _cv;
+ js["CMA-ES"]["Constraint"]["Global Success Learning Rate"] = _cp;
 
  for (size_t i = 0; i < _current_s; i++) js["CMA-ES"]["State"]["Index"]          += index[i];
  for (size_t i = 0; i < _current_s; i++) js["CMA-ES"]["State"]["FunctionValues"] += _fitnessVector[i];
@@ -255,12 +255,12 @@ void Korali::Solver::CMAES::getConfiguration(nlohmann::json& js)
  // CCMA-ES States
  if (_hasConstraints)
  {
-  js["CMA-ES"]["State"]["Global Success Rate"] = _globalSucRate;
-  for (size_t c = 0; c < _k->_fconstraints.size(); c++) js["CMA-ES"]["State"]["Success Rates"][c] = sucRates[c];
-  for (size_t c = 0; c < _k->_fconstraints.size(); c++) js["CMA-ES"]["State"]["Viability"]["Boundaries"][c] = viabilityBounds[c];
-  for (size_t i = 0; i < _current_s; ++i) js["CMA-ES"]["State"]["Num Constraint Violations"][i] = numviolations[i];
-  for (size_t c = 0; c < _k->_fconstraints.size(); c++) for (size_t i = 0; i < _current_s; ++i) js["CMA-ES"]["State"]["Constraint Evaluations"][c][i] = constraintEvaluations[c][i];
-  for (size_t c = 0; c < _k->_fconstraints.size(); c++) for (size_t d = 0; d < _k->N; ++d) js["CMA-ES"]["State"]["Constraint Normal Approximation"][c][d] = v[c][d];
+  js["CMA-ES"]["State"]["Constraint Global Success Rate"] = _globalSucRate;
+  for (size_t c = 0; c < _k->_fconstraints.size(); c++) js["CMA-ES"]["State"]["Constraint"]["Success Rates"][c] = sucRates[c];
+  for (size_t c = 0; c < _k->_fconstraints.size(); c++) js["CMA-ES"]["State"]["Constraint"]["Viability"]["Boundaries"][c] = viabilityBounds[c];
+  for (size_t i = 0; i < _current_s; ++i) js["CMA-ES"]["State"]["Constraint"]["Violations"][i] = numviolations[i];
+  for (size_t c = 0; c < _k->_fconstraints.size(); c++) for (size_t i = 0; i < _current_s; ++i) js["CMA-ES"]["State"]["Constraint"]["Evaluations"][c][i] = constraintEvaluations[c][i];
+  for (size_t c = 0; c < _k->_fconstraints.size(); c++) for (size_t d = 0; d < _k->N; ++d) js["CMA-ES"]["State"]["Constraint"]["Normal Approximation"][c][d] = v[c][d];
  }
 }
 
@@ -289,12 +289,12 @@ void CMAES::setConfiguration(nlohmann::json& js)
    { fprintf( stderr, "[Korali] CMA-ES Error: Invalid setting of Mu (%lu) and/or Lambda (%lu)\n",  _mu, _s); exit(-1); }
 
  // CCMA-ES (more below)
-  _via_s  = consume(js, { "CMA-ES", "Viability", "Sample Count"}, KORALI_NUMBER, std::to_string(_s));
-  _via_mu = consume(js, { "CMA-ES",  "Viability", "Mu"}, KORALI_NUMBER, std::to_string(ceil(_via_s*0.5)));
+  _via_s  = consume(js, { "CMA-ES", "Constraint", "Viability", "Sample Count"}, KORALI_NUMBER, std::to_string(_s));
+  _via_mu = consume(js, { "CMA-ES", "Constraint", "Viability", "Mu"}, KORALI_NUMBER, std::to_string(ceil(_via_s*0.5)));
   if(_via_mu < 1 ||  _via_mu > _via_s || ( ( _via_mu == _via_s) && _muType.compare("Linear") ) )
-      { fprintf( stderr, "[Korali] CMA-ES Error: Invalid setting of Viability Mu (%lu) and/or Viability Sample Count (%lu)\n", _via_mu, _via_s); exit(-1); }
+      { fprintf( stderr, "[Korali] CMA-ES Error: Invalid setting of Constraint Viability Mu (%lu) and/or Constraint Viability Sample Count (%lu)\n", _via_mu, _via_s); exit(-1); }
 
-  _isViabilityRegime = consume(js, { "CMA-ES", "Viability", "Regime" }, KORALI_BOOLEAN, "false");
+  _isViabilityRegime = consume(js, { "CMA-ES", "Constraint", "Viability", "Regime" }, KORALI_BOOLEAN, "false");
 
   if(_isViabilityRegime) {
       _current_s  = _via_s;
@@ -389,11 +389,11 @@ void CMAES::setConfiguration(nlohmann::json& js)
     { fprintf( stderr, "[Korali] CMA-ES Error: Invalid setting of Termination Criteria Max Fitness (objective is Minimize)\n"); exit(-1); }
 
  // CCMA-ES
- _targetSucRate  = consume(js, { "CMA-ES", "Target Success Rate" }, KORALI_NUMBER, std::to_string(2./11.));
- _adaptionSize   = consume(js, { "CMA-ES", "Adaption Size" }, KORALI_NUMBER, std::to_string(0.1));
- _maxCorrections = consume(js, { "CMA-ES", "Max Corrections" }, KORALI_NUMBER, std::to_string(1e6));
- _cv             = consume(js, { "CMA-ES", "Normal Vector Learning Rate" }, KORALI_NUMBER, std::to_string(1.0/(2.0+_current_s)));
- _cp             = consume(js, { "CMA-ES", "Global Success Learning Rate" }, KORALI_NUMBER, std::to_string(1.0/12.0));
+ _targetSucRate  = consume(js, { "CMA-ES", "Constraint", "Target Success Rate" }, KORALI_NUMBER, std::to_string(2./11.));
+ _adaptionSize   = consume(js, { "CMA-ES", "Constraint", "Adaption Size" }, KORALI_NUMBER, std::to_string(0.1));
+ _maxCorrections = consume(js, { "CMA-ES", "Constraint", "Max Corrections" }, KORALI_NUMBER, std::to_string(1e6));
+ _cv             = consume(js, { "CMA-ES", "Constraint", "Normal Vector Learning Rate" }, KORALI_NUMBER, std::to_string(1.0/(2.0+_current_s)));
+ _cp             = consume(js, { "CMA-ES", "Constraint", "Global Success Learning Rate" }, KORALI_NUMBER, std::to_string(1.0/12.0));
 }
 
 void CMAES::setState(nlohmann::json& js)
@@ -418,21 +418,27 @@ void CMAES::setState(nlohmann::json& js)
  for (size_t i = 0; i < _k->N; i++) axisD[i]         = js["CMA-ES"]["State"]["AxisLengths"][i];
  for (size_t i = 0; i < _k->N; i++) rgpc[i]          = js["CMA-ES"]["State"]["EvolutionPath"][i];
  for (size_t i = 0; i < _k->N; i++) curBestVector[i] = js["CMA-ES"]["State"]["CurrentBestVector"][i];
- for (size_t i = 0; i < _current_s; i++) index[i]              = js["CMA-ES"]["State"]["Index"][i];
- for (size_t i = 0; i < _current_s; i++) _fitnessVector[i]     = js["CMA-ES"]["State"]["FunctionValues"][i];
- for (size_t i = 0; i < _current_s; i++) for (size_t j = 0; j < _k->N; j++) _samplePopulation[i*_k->N + j] = js["CMA-ES"]["State"]["Samples"][i][j];
+ 
+ for (size_t i = 0; i < _current_s; i++) index[i]          = js["CMA-ES"]["State"]["Index"][i];
+ for (size_t i = 0; i < _current_s; i++) _fitnessVector[i] = js["CMA-ES"]["State"]["FunctionValues"][i];
+ 
  for (size_t i = 0; i < _k->N; i++) for (size_t j = 0; j < _k->N; j++) C[i][j] = js["CMA-ES"]["State"]["CovarianceMatrix"][i][j];
  for (size_t i = 0; i < _k->N; i++) for (size_t j = 0; j < _k->N; j++) B[i][j] = js["CMA-ES"]["State"]["EigenMatrix"][i][j];
 
+ for (size_t i = 0; i < _current_s; i++) for (size_t j = 0; j < _k->N; j++) _samplePopulation[i*_k->N + j] = js["CMA-ES"]["State"]["Samples"][i][j];
+ 
  // CCMA-ES
  if (_hasConstraints)
  {
-  _globalSucRate = js["CMA-ES"]["State"]["Global Success Rate"];
-  for (size_t c = 0; c < _k->_fconstraints.size(); c++) sucRates[c]        = js["CMA-ES"]["State"]["Success Rates"][c];
-  for (size_t c = 0; c < _k->_fconstraints.size(); c++) viabilityBounds[c] = js["CMA-ES"]["State"]["Viability"]["Boundaries"][c];
-  for (size_t i = 0; i < _current_s; ++i) numviolations[i] = js["CMA-ES"]["State"]["Num Constraint Violations"][i];
-  for (size_t c = 0; c < _k->_fconstraints.size(); c++) for (size_t i = 0; i < _current_s; ++i) constraintEvaluations[c][i] = js["CMA-ES"]["State"]["Constraint Evaluations"][c][i];
-  for (size_t c = 0; c < _k->_fconstraints.size(); c++) for (size_t d = 0; d < _k->N; ++d) v[c][d] = js["CMA-ES"]["State"]["Constraint Normal Approximation"][c][d];
+  _globalSucRate = js["CMA-ES"]["State"]["Constraint Global Success Rate"];
+  
+  for (size_t i = 0; i < _current_s; ++i) numviolations[i] = js["CMA-ES"]["State"]["Constraint"]["Violations"][i];
+  
+  for (size_t c = 0; c < _k->_fconstraints.size(); c++) sucRates[c]        = js["CMA-ES"]["State"]["Constraint"]["Success Rates"][c];
+  for (size_t c = 0; c < _k->_fconstraints.size(); c++) viabilityBounds[c] = js["CMA-ES"]["State"]["Constraint"]["Viability"]["Boundaries"][c];
+  
+  for (size_t c = 0; c < _k->_fconstraints.size(); c++) for (size_t d = 0; d < _k->N; ++d) v[c][d] = js["CMA-ES"]["State"]["Constraint"]["Normal Approximation"][c][d];
+  for (size_t c = 0; c < _k->_fconstraints.size(); c++) for (size_t i = 0; i < _current_s; ++i) constraintEvaluations[c][i] = js["CMA-ES"]["State"]["Constraint"]["Evaluations"][c][i];
  }
 }
 

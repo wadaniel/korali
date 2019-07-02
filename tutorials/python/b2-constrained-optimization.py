@@ -38,9 +38,9 @@ for i in range(nParams) :
 
 # Configuring the constrained optimizer CCMA-ES
 k["CMA-ES"]["Sigma Bounded"] = True
-k["CMA-ES"]["Adaption Size"] = 0.1
 k["CMA-ES"]["Sample Count"] = 8
-k["CMA-ES"]["Viability"]["Sample Count"] = 2
+k["CMA-ES"]["Constraint"]["Viability"]["Sample Count"] = 2
+k["CMA-ES"]["Constraint"]["Adaption Size"] = 0.1
 k["CMA-ES"]["Termination Criteria"]["Max Generations"]["Active"] = True
 k["CMA-ES"]["Termination Criteria"]["Max Generations"]["Value"] = 5000
 k["CMA-ES"]["Termination Criteria"]["Max Fitness"]["Active"] = True

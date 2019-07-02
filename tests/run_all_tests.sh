@@ -20,7 +20,7 @@ for file in */
 do
   echo "[Korali] Running test in folder ${file} ..." >> $logfile
   pushd $file
-  ./run_test.sh
+  timeout 1m ./run_test.sh
   check_result
   popd 
 done

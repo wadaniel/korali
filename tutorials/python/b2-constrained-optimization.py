@@ -14,15 +14,15 @@ from g09 import *
 import korali
 k = korali.initialize()
 
-# Selecting problem type.
-k["Problem"] = "Direct Evaluation"
-
 # Setting model and constraints
 k.setModel( g09 )
 k.addConstraint( g1 )
 k.addConstraint( g2 )
 k.addConstraint( g3 )
 k.addConstraint( g4 )
+
+# Selecting problem type.
+k["Problem"] = "Direct Evaluation"
 
 # Selecting the CCMA-ES solver.
 k["Solver"]  = "CMA-ES"
@@ -45,6 +45,9 @@ k["CMA-ES"]["Termination Criteria"]["Max Generations"]["Active"] = True
 k["CMA-ES"]["Termination Criteria"]["Max Generations"]["Value"] = 5000
 k["CMA-ES"]["Termination Criteria"]["Max Fitness"]["Active"] = True
 k["CMA-ES"]["Termination Criteria"]["Max Fitness"]["Value"] = -680.630057374402 - 1e-4
+
+# Setting output directory
+k["Result Directory"] = "_b2_constrained_optimization"
 
 # Running Korali
 k.run()

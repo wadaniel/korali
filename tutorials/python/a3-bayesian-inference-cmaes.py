@@ -60,5 +60,8 @@ k["CMA-ES"]["Objective"] = "Maximize"
 k["CMA-ES"]["Termination Criteria"]["Max Generations"]["Value"] = 1000
 k["CMA-ES"]["Sample Count"] = 5
 
+# Setting output directory
+k["Result Directory"] = "_a3_bayesian_inference_cmaes"
+
 # Running Korali
 k.run()

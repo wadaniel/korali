@@ -94,6 +94,8 @@ nlohmann::json Korali::Engine::getConfiguration()
  if (_verbosity == KORALI_MINIMAL)  js["Verbosity"] = "Minimal";
  if (_verbosity == KORALI_NORMAL)   js["Verbosity"] = "Normal";
  if (_verbosity == KORALI_DETAILED) js["Verbosity"] = "Detailed";
+ 
+ js["Result Directory"] = _result_dir;
 
  if (_problem != nullptr) _problem->getConfiguration(js);
  if (_solver  != nullptr) _solver->getConfiguration(js);

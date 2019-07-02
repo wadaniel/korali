@@ -13,6 +13,9 @@ from directModel import *
 import korali
 k = korali.initialize()
 
+# Setting computational model
+k.setModel(evaluateModel)
+
 # Selecting problem and solver types.
 k["Problem"] = "Direct Evaluation"
 k["Solver"]  = "CMA-ES" 
@@ -27,8 +30,8 @@ k["CMA-ES"]["Objective"] = "Maximize"
 k["CMA-ES"]["Termination Criteria"]["Max Generations"]["Value"] = 500
 k["CMA-ES"]["Sample Count"] = 5
 
-# Setting computational model
-k.setModel(evaluateModel)
+# Setting output directory
+k["Result Directory"] = "_a1_optimization_result"
 
 # Running Korali
 k.run()

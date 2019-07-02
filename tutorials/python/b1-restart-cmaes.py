@@ -22,10 +22,14 @@ k["Variables"][0]["CMA-ES"]["Upper Bound"] = +10.0
 k["CMA-ES"]["Objective"] = "Maximize"
 k["CMA-ES"]["Termination Criteria"]["Max Generations"]["Value"] = 500
 k["CMA-ES"]["Sample Count"] = 5
+
+# Setting output directory
+k["Result Directory"] = "_b1_restart_cmaes"
+
 k.setModel(evaluateModel)
 k.run()
 
-## Now we loadState() to resume the same experiment from generation 5.
+# Now we loadState() to resume the same experiment from generation 5.
+k.loadState("_b1_restart_cmaes/s00498.json")
 
-k.loadState("_korali_result/s00498.json")
 k.run()

@@ -14,6 +14,9 @@ from directModel import *
 import korali
 k = korali.initialize()
 
+# Setting Model
+k.setModel(evaluateModel)
+
 # Selecting problem and solver types.
 k["Problem"] = "Direct Evaluation"
 k["Solver"] = "MCMC"
@@ -29,8 +32,8 @@ k["MCMC"]["Chain Length"]  = 5000
 k["MCMC"]["Adaptive Sampling"]  = True
 k["MCMC"]["Result Output Frequency"]  = 5000
 
-# Setting Model
-k.setModel(evaluateModel)
+# Setting output directory
+k["Result Directory"] = "a2_sampling_mcmc_result"
 
 # Running Korali
 k.run()

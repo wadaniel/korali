@@ -48,5 +48,8 @@ k["TMCMC"]["Min Rho Update"] = 0.0
 k["TMCMC"]["Coefficient of Variation"] = 0.5
 k["TMCMC"]["Burn In"] = 5
 
+# Setting output directory
+k["Result Directory"] = "_a3_bayesian_inference_tmcmc"
+
 # Running Korali
 k.run()

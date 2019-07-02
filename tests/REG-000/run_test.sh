@@ -10,7 +10,7 @@
 # 1 - Operation: Check the existence of the korali.engine module.
 #     Expected Result: The module is found, and rc = 0.
 # 2 - Operation: Checking Korali's modules.
-      Expected Result: All modules execute correctly and rc = 0.
+#     Expected Result: All modules execute correctly and rc = 0.
 ###############################################################################
 
 ###### Auxiliar Functions #########

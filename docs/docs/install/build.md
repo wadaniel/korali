@@ -20,7 +20,7 @@
 
 | Type             |     Code         |      Status       |    Description    | 
 | :----------------:|:----------------:|: ----------------:|: ----------------:|
-| Regression | [REG-000](https://github.com/cselab/korali/tree/master/tests/REG-000/run_test.sh) | <span style="color:green">Active</span> | Checking for correct installation. |
-| Regression | [REG-001](https://github.com/cselab/korali/tree/master/tests/REG-001/run_test.sh) | <span style="color:green">Active</span> | Running all tutorials |
+| Regression | [REG-000](https://github.com/cselab/korali/tree/development/tests/REG-000/run_test.sh) | <span style="color:green">Active</span> | Checks for a correct installation of Korali and its modules. |
+| Regression | [REG-001](https://github.com/cselab/korali/tree/development/tests/REG-001/run_test.sh) | <span style="color:green">Active</span> | Re-run all tutorials for basic sanity check. |
 
 </center>

@@ -18,20 +18,11 @@ class Base {
 
  bool _isFinished;
 
- size_t _resultOutputFrequency;
- size_t _terminalOutputFrequency;
-
  // Running Methods
  virtual void run() = 0;
+ virtual void initialize() = 0;
  virtual void processSample(size_t sampleId, double fitness) = 0;
  virtual bool checkTermination() = 0;
-
- // Serialization Methods
- virtual void getConfiguration(nlohmann::json& js) = 0;
- virtual void setConfiguration(nlohmann::json& js) = 0;
- virtual void setState(nlohmann::json& js) = 0;
- virtual void saveState() const = 0 ;
-
 };
 
 } } // namespace Korali::Solver

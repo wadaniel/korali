@@ -11,9 +11,8 @@ class DE : public Base
 {
  public:
 
- // Constructor / Destructor
- DE(nlohmann::json& js);
- ~DE();
+ size_t resultOutputFrequency;
+ size_t terminalOutputFrequency;
 
  // These are DE-Specific, but could be used for other methods in the future
  double* _lowerBounds;
@@ -29,14 +28,9 @@ class DE : public Base
  void prepareGeneration();
  bool checkTermination() override;
  void updateDistribution(const double *fitnessVector);
+ void initialize() override;
  void run() override;
  void processSample(size_t sampleId, double fitness) override;
-
- // Serialization Methods
- void getConfiguration(nlohmann::json& js) override;
- void setConfiguration(nlohmann::json& js) override;
- void setState(nlohmann::json& js) override;
- void saveState() const override;
 
  private:
 

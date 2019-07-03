@@ -6,16 +6,10 @@
 #include <algorithm> // std::sort
 using namespace Korali::Solver;
 
-/************************************************************************/
-/*                  Constructor / Destructor Methods                    */
-/************************************************************************/
-
 constexpr size_t str2int(const char* str, int h = 0) { return !str[h] ? 5381 : (str2int(str, h+1) * 33) ^ str[h]; }
 
-DE::DE(nlohmann::json& js)
+void DE::initialize()
 {
- setConfiguration(js);
-
  // Allocating Memory
  samplePopulation = (double*) calloc (sizeof(double), _k->N*_s);
  candidates       = (double*) calloc (sizeof(double), _k->N*_s);
@@ -64,204 +58,15 @@ DE::DE(nlohmann::json& js)
  /* set rgxmean */
  for (size_t i = 0; i < _k->N; ++i) if (_initialMeanDefined[i])
  {
-   if(_initialMeans[i] < _lowerBounds[i] || _initialMeans[i] > _upperBounds[i])
-    fprintf(stderr,"[Korali] Warning: Initial Value (%.4f) for \'%s\' is out of bounds (%.4f-%.4f).\n",
-            _initialMeans[i],
-            _k->_variables[i]->_name.c_str(),
-            _lowerBounds[i],
-            _upperBounds[i]);
-   rgxmean[i] = rgxoldmean[i] = _initialMeans[i];
+	 if(_initialMeans[i] < _lowerBounds[i] || _initialMeans[i] > _upperBounds[i])
+		fprintf(stderr,"[Korali] Warning: Initial Value (%.4f) for \'%s\' is out of bounds (%.4f-%.4f).\n",
+						_initialMeans[i],
+						_k->_variables[i]->_name.c_str(),
+						_lowerBounds[i],
+						_upperBounds[i]);
+	 rgxmean[i] = rgxoldmean[i] = _initialMeans[i];
  }
-
- // If state is defined:
- if (isDefined(js, {"DE", "State"}))
- {
-  setState(js);
-  js["DE"].erase("State");
- }
-
 }
-
-DE::~DE()
-{
-
-}
-
-/************************************************************************/
-/*                    Configuration Methods                             */
-/************************************************************************/
-
-void Korali::Solver::DE::getConfiguration(nlohmann::json& js)
-{
- js["Solver"] = "DE";
- 
- js["DE"]["Result Output Frequency"]   = _resultOutputFrequency;
- js["DE"]["Terminal Output Frequency"] = _terminalOutputFrequency;
-
- js["DE"]["Sample Count"]    = _s;
- js["DE"]["Crossover Rate"]  = _crossoverRate;
- js["DE"]["Mutation Rate"]   = _mutationRate;
- js["DE"]["Objective"]       = _objective;
- js["DE"]["Max Resamplings"] = _maxResamplings;
- js["DE"]["Accept Rule"]     = _acceptRule;
- js["DE"]["Mutation Rule"]   = _mutationRule;
- js["DE"]["Parent"]          = _parent;
- js["DE"]["Fix Infeasoble"]  = _fixinfeasible;
-
- // Variable information
- for (size_t i = 0; i < _k->N; i++)
- {
-  js["Variables"][i]["DE"]["Lower Bound"]   = _lowerBounds[i];
-  js["Variables"][i]["DE"]["Upper Bound"]   = _upperBounds[i];
-  if (_initialMeanDefined[i]) js["Variables"][i]["DE"]["Initial Mean"] = _initialMeans[i];
-  if (_initialStdDevDefined[i]) js["Variables"][i]["DE"]["Initial Standard Deviation"] = _initialStdDevs[i];
-  js["Variables"][i]["DE"]["Log Space"]  = _variableLogSpace[i];
- }
-
- js["DE"]["Termination Criteria"]["Max Generations"]["Value"]         = _termCondMaxGenerations;
- js["DE"]["Termination Criteria"]["Max Generations"]["Active"]        = _isTermCondMaxGenerations;
- js["DE"]["Termination Criteria"]["Max Model Evaluations"]["Value"]   = _termCondMaxFitnessEvaluations;
- js["DE"]["Termination Criteria"]["Max Model Evaluations"]["Active"]  = _isTermCondMaxFitnessEvaluations;
- js["DE"]["Termination Criteria"]["Min Fitness"]["Value"]             = _termCondMinFitness;
- js["DE"]["Termination Criteria"]["Min Fitness"]["Active"]            = _isTermCondMinFitness; 
- js["DE"]["Termination Criteria"]["Max Fitness"]["Value"]             = _termCondMaxFitness;
- js["DE"]["Termination Criteria"]["Max Fitness"]["Active"]            = _isTermCondMaxFitness;
- js["DE"]["Termination Criteria"]["Fitness Diff Threshold"]["Value"]  = _termCondFitnessDiffThreshold;
- js["DE"]["Termination Criteria"]["Fitness Diff Threshold"]["Active"] = _isTermCondFitnessDiffThreshold;
- js["DE"]["Termination Criteria"]["Min DeltaX"]["Value"]              = _termCondMinDeltaX;
- js["DE"]["Termination Criteria"]["Min DeltaX"]["Active"]             = _isTermCondMinDeltaX;
-
- // State Information
- js["DE"]["State"]["Current Generation"]        = currentGeneration;
- js["DE"]["State"]["BestEverFunctionValue"]     = bestEver;
- js["DE"]["State"]["PreviousBestFunctionValue"] = prevBest;
- js["DE"]["State"]["EvaluationCount"]           = countevals;
- js["DE"]["State"]["Finished"]                  = _isFinished;
- js["DE"]["State"]["PreviousBestFunctionValue"]     = prevFunctionValue;
- js["DE"]["State"]["CurrentBestFunctionValue"]      = currentFunctionValue;
-
- for (size_t i = 0; i < _s; i++) js["DE"]["State"]["FunctionValues"] += fitnessVector[i];
- for (size_t i = 0; i < _s; i++) js["DE"]["State"]["PreviousFunctionValues"] += oldFitnessVector[i];
-
- for (size_t i = 0; i < _k->N; i++) js["DE"]["State"]["CurrentMeanVector"]  += rgxmean[i];
- for (size_t i = 0; i < _k->N; i++) js["DE"]["State"]["PreviousMeanVector"] += rgxoldmean[i];
- for (size_t i = 0; i < _k->N; i++) js["DE"]["State"]["BestEverVector"]     += rgxbestever[i];
- for (size_t i = 0; i < _k->N; i++) js["DE"]["State"]["CurrentBestVector"]  += curBestVector[i];
- for (size_t i = 0; i < _k->N; i++) js["DE"]["State"]["MaxWidth"]           += maxWidth[i];
-
- for (size_t i = 0; i < _s; i++) for (size_t j = 0; j < _k->N; j++) js["DE"]["State"]["Samples"][i][j] = samplePopulation[i*_k->N + j];
- for (size_t i = 0; i < _s; i++) for (size_t j = 0; j < _k->N; j++) js["DE"]["State"]["Candidates"][i][j] = candidates[i*_k->N + j];
-}
-
-
-
-void DE::setConfiguration(nlohmann::json& js)
-{  
- 
- _resultOutputFrequency   = consume(js, { "DE", "Result Output Frequency" }, KORALI_NUMBER, std::to_string(1));
- _terminalOutputFrequency = consume(js, { "DE", "Terminal Output Frequency" }, KORALI_NUMBER, std::to_string(1));
- 
- _objective                     = consume(js, { "DE", "Objective" }, KORALI_STRING, "Maximize");
- _s                             = consume(js, { "DE", "Sample Count" }, KORALI_NUMBER); // 5x - 10x Dim
- _crossoverRate                 = consume(js, { "DE", "Crossover Rate" }, KORALI_NUMBER, std::to_string(0.9)); // Rainer Storn [1996]
- _mutationRate                  = consume(js, { "DE", "Mutation Rate" }, KORALI_NUMBER, std::to_string(0.5));  // Rainer Storn [1996]
- _mutationRule                  = consume(js, { "DE", "Mutation Rule" }, KORALI_STRING, "Default");  // Self Adaptive (Brest [2006])
- _parent                        = consume(js, { "DE", "Parent" }, KORALI_STRING, "Random"); // Best or Random
- _acceptRule                    = consume(js, { "DE", "Accept Rule" }, KORALI_STRING, "Greedy");
- _fixinfeasible                 = consume(js, { "DE", "Fix Infeasible" }, KORALI_BOOLEAN, "true");
- _maxResamplings                = consume(js, { "DE", "Max Resamplings" }, KORALI_NUMBER, std::to_string(1e6));
-
- if(_s < 4)  { fprintf( stderr, "[Korali] Differential Evolution Error: Sample Count must be larger 3 (is %zu)\n", _s); exit(-1); }
- if(_crossoverRate < 0.0 || _crossoverRate > 1.0 )  { fprintf( stderr, "[Korali] Differential Evolution Error: Invalid Crossover Rate, must be in [0,1] (is %f)\n", _crossoverRate); exit(-1); }
- if(_mutationRate < 0.0 || _mutationRate > 2.0 )  { fprintf( stderr, "[Korali] Differential Evolution Error: Invalid Mutation Rate, must be in [0,2] (is %f)\n", _mutationRate); exit(-1); }
- if( (_mutationRule != "Default") && (_mutationRule != "Self Adaptive") )  
- { fprintf( stderr, "[Korali] Differential Evolution Error: Invalid Mutation Rule, must be 'Default' or 'Self Adaptive' (is %s)\n", _mutationRule.c_str()); exit(-1); }
- if( (_acceptRule != "Best") && (_acceptRule != "Greedy") && (_acceptRule != "Iterative") && (_acceptRule != "Improved") )  
- { fprintf( stderr, "[Korali] Differential Evolution Error: Invalid Accept Rule, must be 'Best', 'Greedy', 'Iterative' or 'Improved' (is %s)\n", _acceptRule.c_str()); exit(-1); }
- 
- _fitnessSign   = 0;
- if(_objective == "Maximize") _fitnessSign = 1;
- if(_objective == "Minimize") _fitnessSign = -1;
- if(_fitnessSign == 0)  { fprintf( stderr, "[Korali] Differential Evolution Error: Invalid setting for Objective: %s\n", _objective.c_str()); exit(-1); }
-
- // Setting variable information
- _initialMeans         = (double*) calloc(sizeof(double), _k->N);
- _initialStdDevs       = (double*) calloc(sizeof(double), _k->N);
- _initialMeanDefined   = (bool*) calloc(sizeof(bool), _k->N);
- _initialStdDevDefined = (bool*) calloc(sizeof(bool), _k->N);
- 
- _lowerBounds = (double*) calloc(sizeof(double), _k->N);
- _upperBounds = (double*) calloc(sizeof(double), _k->N);
-
- _variableLogSpace = (bool*) calloc(sizeof(bool), _k->N);
-
- for (size_t d = 0; d < _k->N; ++d)
- {
-  _lowerBounds[d] = consume(js["Variables"][d], { "DE", "Lower Bound" }, KORALI_NUMBER);
-  _upperBounds[d] = consume(js["Variables"][d], { "DE", "Upper Bound" }, KORALI_NUMBER);
-
-  _initialMeanDefined[d]   = isDefined(js["Variables"][d], { "DE", "Initial Mean" });
-  _initialStdDevDefined[d] = isDefined(js["Variables"][d], { "DE", "Initial Standard Deviation" });
-  if( _initialStdDevDefined[d] != _initialMeanDefined[d]) 
-    { fprintf( stderr, "[Korali] Differential Evolution Error: Invalid setting for Initial Mean and Initial Stanard Deviation for variable %s (both must be defined or none)\n", _k->_variables[d]->_name.c_str()); exit(-1); }
-
-  if (_initialMeanDefined[d])   _initialMeans[d]   = consume(js["Variables"][d], { "DE", "Initial Mean" }, KORALI_NUMBER);
-  if (_initialStdDevDefined[d]) _initialStdDevs[d] = consume(js["Variables"][d], { "DE", "Initial Standard Deviation" }, KORALI_NUMBER);
-
-  _variableLogSpace[d] = consume(js["Variables"][d], { "DE", "Log Space" }, KORALI_BOOLEAN, "false");
- }
-
- // Setting termination criteria
- _isTermCondMaxGenerations        = consume(js, { "DE", "Termination Criteria", "Max Generations", "Active" }, KORALI_BOOLEAN, "true");
- _termCondMaxGenerations          = consume(js, { "DE", "Termination Criteria", "Max Generations", "Value" }, KORALI_NUMBER, std::to_string(1000));
- _isTermCondMaxFitnessEvaluations = consume(js, { "DE", "Termination Criteria", "Max Model Evaluations", "Active" }, KORALI_BOOLEAN, "false");
- _termCondMaxFitnessEvaluations   = consume(js, { "DE", "Termination Criteria", "Max Model Evaluations", "Value" }, KORALI_NUMBER, std::to_string(std::numeric_limits<size_t>::max()));
- _isTermCondMinFitness            = consume(js, { "DE", "Termination Criteria", "Min Fitness", "Active" }, KORALI_BOOLEAN, "false");
- _termCondMinFitness              = consume(js, { "DE", "Termination Criteria", "Min Fitness", "Value" }, KORALI_NUMBER, std::to_string(std::numeric_limits<double>::max())); 
- _isTermCondMaxFitness            = consume(js, { "DE", "Termination Criteria", "Max Fitness", "Active" }, KORALI_BOOLEAN, "false");
- _termCondMaxFitness              = consume(js, { "DE", "Termination Criteria", "Max Fitness", "Value" }, KORALI_NUMBER, std::to_string(-std::numeric_limits<double>::max()));
- _isTermCondFitnessDiffThreshold  = consume(js, { "DE", "Termination Criteria", "Fitness Diff Threshold", "Active" }, KORALI_BOOLEAN, "false");
- _termCondFitnessDiffThreshold    = consume(js, { "DE", "Termination Criteria", "Fitness Diff Threshold", "Value" }, KORALI_NUMBER, std::to_string(0.0));
- _isTermCondMinDeltaX             = consume(js, { "DE", "Termination Criteria", "Min DeltaX", "Active" }, KORALI_BOOLEAN, "false");
- _termCondMinDeltaX               = consume(js, { "DE", "Termination Criteria", "Min DeltaX", "Value" }, KORALI_NUMBER, std::to_string(0.0));
- 
- if( _isTermCondMinFitness && (_fitnessSign == 1) )
-    { fprintf( stderr, "[Korali] DE Error: Invalid setting of Termination Criteria Min Fitness (objective is Maximize)\n"); exit(-1); }
-
- if( _isTermCondMaxFitness && (_fitnessSign == -1) )
-    { fprintf( stderr, "[Korali] DE Error: Invalid setting of Termination Criteria Max Fitness (objective is Minimize)\n"); exit(-1); }
-
-
-}
-
-
-void DE::setState(nlohmann::json& js)
-{
- currentGeneration    = js["DE"]["State"]["Current Generation"];
- countevals           = js["DE"]["State"]["EvaluationCount"];
- bestEver             = js["DE"]["State"]["BestEverFunctionValue"];
- prevBest             = js["DE"]["State"]["PreviousBestFunctionValue"];
- currentFunctionValue = js["DE"]["State"]["CurrentBestFunctionValue"];
- prevFunctionValue    = js["DE"]["State"]["PreviousFunctionValue"];
- _isFinished          = js["DE"]["State"]["Finished"];
-
- for (size_t i = 0; i < _k->N; i++) rgxmean[i]       = js["DE"]["State"]["CurrentMeanVector"][i];
- for (size_t i = 0; i < _k->N; i++) rgxoldmean[i]    = js["DE"]["State"]["PreviousMeanVector"][i];
- for (size_t i = 0; i < _k->N; i++) rgxbestever[i]   = js["DE"]["State"]["BestEverVector"][i];
- for (size_t i = 0; i < _k->N; i++) curBestVector[i] = js["DE"]["State"]["CurrentBestVector"][i];
- for (size_t i = 0; i < _k->N; i++) maxWidth[i]      = js["DE"]["State"]["MaxWidth"][i];
- for (size_t i = 0; i < _s; i++) fitnessVector[i]    = js["DE"]["State"]["FunctionValues"][i];
- for (size_t i = 0; i < _s; i++) oldFitnessVector[i] = js["DE"]["State"]["OldFunctionValues"][i];
- for (size_t i = 0; i < _s; i++) for (size_t j = 0; j < _k->N; j++) samplePopulation[i*_k->N + j] = js["DE"]["State"]["Samples"][i][j];
- for (size_t i = 0; i < _s; i++) for (size_t j = 0; j < _k->N; j++) candidates[i*_k->N + j] = js["DE"]["State"]["Candidates"][i][j];
-
-}
-
-
-/************************************************************************/
-/*                    Functional Methods                                */
-/************************************************************************/
-
 
 void DE::run()
 {
@@ -272,7 +77,6 @@ void DE::run()
  
  startTime = std::chrono::system_clock::now();
  initSamples();
- saveState();
 
  while(!checkTermination())
  {
@@ -285,7 +89,6 @@ void DE::run()
    t1 = std::chrono::system_clock::now();
 
    printGeneration();
-   saveState();
  }
 
  endTime = std::chrono::system_clock::now();
@@ -572,17 +375,10 @@ size_t DE::maxIdx(const double *rgd, size_t len) const
  return res;
 }
 
-
-void Korali::Solver::DE::saveState() const
-{
- if (_isFinished || (currentGeneration % _resultOutputFrequency) == 0) _k->saveState(currentGeneration);
-}
-
-
 void DE::printGeneration() const
 {
- 
- if (currentGeneration % _terminalOutputFrequency != 0) return;
+
+ if (currentGeneration % terminalOutputFrequency != 0) return;
  
  if (_k->_verbosity >= KORALI_MINIMAL)
    printf("[Korali] Generation %ld - Duration: %fs (Total Elapsed Time: %fs)\n", currentGeneration, std::chrono::duration<double>(t1-t0).count(), std::chrono::duration<double>(t1-startTime).count());
@@ -605,9 +401,7 @@ void DE::printGeneration() const
 
  if (_k->_verbosity >= KORALI_NORMAL)
    printf("--------------------------------------------------------------------\n");
-
 }
-
 
 void DE::printFinal() const
 {

@@ -98,7 +98,6 @@ nlohmann::json Korali::Engine::getConfiguration()
  js["Result Directory"] = _result_dir;
 
  if (_problem != nullptr) _problem->getConfiguration(js);
- if (_solver  != nullptr) _solver->getConfiguration(js);
  if (_conduit != nullptr) _conduit->getConfiguration(js);
 
  return js;
@@ -159,10 +158,10 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
  // Configure Solver
 
  std::string solverName = consume(js, { "Solver" }, KORALI_STRING);
- if (solverName == "CMA-ES")  _solver = new Korali::Solver::CMAES(js);
- if (solverName == "DE")      _solver = new Korali::Solver::DE(js);
- if (solverName == "MCMC")    _solver = new Korali::Solver::MCMC(js);
- if (solverName == "TMCMC")   _solver = new Korali::Solver::TMCMC(js);
+ if (solverName == "CMA-ES")  _solver = new Korali::Solver::CMAES();
+ if (solverName == "DE")      _solver = new Korali::Solver::DE();
+ if (solverName == "MCMC")    _solver = new Korali::Solver::MCMC();
+ if (solverName == "TMCMC")   _solver = new Korali::Solver::TMCMC();
  if (_solver == nullptr) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Solver '%s'.", solverName.c_str()); exit(-1); }
 
  if (isEmpty(js) == false)

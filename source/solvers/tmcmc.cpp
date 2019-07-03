@@ -9,10 +9,6 @@
 #include <gsl/gsl_statistics.h>
 #include <gsl/gsl_multimin.h>
 
-/************************************************************************/
-/*                  Constructor / Destructor Methods                    */
-/************************************************************************/
-
 typedef struct fparam_s {
     const double *fj;
     size_t        fn;
@@ -20,19 +16,17 @@ typedef struct fparam_s {
     double        cov;
 } fparam_t;
 
-Korali::Solver::TMCMC::TMCMC(nlohmann::json& js)
+void Korali::Solver::TMCMC::initialize()
 {
- setConfiguration(js);
-
- // Setting Chain-Specific Seeds
+// Setting Chain-Specific Seeds
  range = gsl_rng_alloc (gsl_rng_default);
  gsl_rng_set(range, _k->_seed++);
 
  chainGSLRange = (gsl_rng**) calloc (_s, sizeof(gsl_rng*));
  for (size_t c = 0; c < _s; c++)
  {
-  chainGSLRange[c] = gsl_rng_alloc (gsl_rng_default);
-  gsl_rng_set(chainGSLRange[c], _k->_seed++);
+	chainGSLRange[c] = gsl_rng_alloc (gsl_rng_default);
+	gsl_rng_set(chainGSLRange[c], _k->_seed++);
  }
 
  // Allocating TMCMC memory
@@ -51,13 +45,13 @@ Korali::Solver::TMCMC::TMCMC(nlohmann::json& js)
  _databaseFitness    = (double*) calloc (_s, sizeof(double));
 
  if(_useLocalCov) {
-   double *LCmem       = (double*)  calloc (_s*_k->N*_k->N, sizeof(double));
-   local_cov           = (double**) calloc ( _s, sizeof(double*));
-   for (size_t pos = 0; pos < _s; ++pos)
-   {
-    local_cov[pos] = LCmem + pos*_k->N*_k->N;
-    for (size_t i = 0; i < _k->N; i++) local_cov[pos][i*_k->N+i] = 1;
-   }
+	 double *LCmem       = (double*)  calloc (_s*_k->N*_k->N, sizeof(double));
+	 local_cov           = (double**) calloc ( _s, sizeof(double*));
+	 for (size_t pos = 0; pos < _s; ++pos)
+	 {
+		local_cov[pos] = LCmem + pos*_k->N*_k->N;
+		for (size_t i = 0; i < _k->N; i++) local_cov[pos][i*_k->N+i] = 1;
+	 }
  }
 
  // Initializing Runtime Variables
@@ -81,109 +75,7 @@ Korali::Solver::TMCMC::TMCMC(nlohmann::json& js)
  _nChains                  = _s;
  for (size_t c = 0; c < _nChains; c++) chainCurrentStep[c] = 0;
  for (size_t c = 0; c < _nChains; c++) chainPendingFitness[c] = false;
-
- // If state is defined:
- if (isDefined(js, {"TMCMC", "State"}))
- {
-  setState(js);
-  js["TMCMC"].erase("State");
- }
-
- // TODO: Ensure proper memory deallocation
 }
-
-Korali::Solver::TMCMC::~TMCMC()
-{
-
-}
-
-/************************************************************************/
-/*                    Configuration Methods                             */
-/************************************************************************/
-
-void Korali::Solver::TMCMC::getConfiguration(nlohmann::json& js)
-{
- js["Solver"] = "TMCMC";
-
- js["TMCMC"]["Population Size"]           = _s;
- js["TMCMC"]["Coefficient of Variation"]  = _tolCOV;
- js["TMCMC"]["Min Rho Update"]            = _minStep;
- js["TMCMC"]["Max Rho Update"]            = _maxStep;
- js["TMCMC"]["Covariance Scaling"]        = _beta2;
- js["TMCMC"]["Use Local Covariance"]      = _useLocalCov;
- js["TMCMC"]["Burn In"]                   = _burnin;
- js["TMCMC"]["Result Output Frequency"]   = _resultOutputFrequency;
- js["TMCMC"]["Terminal Output Frequency"] = _terminalOutputFrequency;
- 
- for (size_t i = 0; i < _k->N; i++) js["Variables"][i]["MCMC"]["Log Space"] = _variableLogSpace[i];
- 
- js["TMCMC"]["Termination Criteria"]["Max Generations"]["Value"]  = _termCondMaxGens;
- js["TMCMC"]["Termination Criteria"]["Max Generations"]["Active"] = _isTermCondMaxGens;
-
- // State Variables
- js["TMCMC"]["State"]["nChains"]                  = _nChains;
- js["TMCMC"]["State"]["Current Generation"]       = _currentGeneration;
- js["TMCMC"]["State"]["CVar"]                     = _coefficientOfVariation;
- js["TMCMC"]["State"]["AnnealingExponent"]        = _annealingExponent;
- js["TMCMC"]["State"]["UniqueEntries"]            = _uniqueEntries;
- js["TMCMC"]["State"]["LogEvidence"]              = _logEvidence;
- js["TMCMC"]["State"]["AcceptanceRateProposals"]  = _acceptanceRateProposals;
- js["TMCMC"]["State"]["AcceptanceRateSelections"] = _acceptanceRateSelections;
- js["TMCMC"]["State"]["Database Entries"]         = _databaseEntries;
- js["TMCMC"]["State"]["Finished"]                 = _isFinished;
-
- for (size_t i = 0; i < _k->N*_k->N; i++) js["TMCMC"]["State"]["CovarianceMatrix"][i] = _covarianceMatrix[i];
- for (size_t i = 0; i < _k->N; i++)       js["TMCMC"]["State"]["MeanTheta"][i]        = _meanTheta[i];
- for (size_t i = 0; i < _k->N*_s; i++)    js["TMCMC"]["State"]["DatabasePoints"][i]   = _databasePoints[i];
- for (size_t i = 0; i < _s; i++)          js["TMCMC"]["State"]["DatabaseFitness"][i]  = _databaseFitness[i];
- if (_useLocalCov) for (size_t i = 0; i < _s; i++) for (size_t j = 0; j < _k->N; j++) js["TMCMC"]["State"]["LocalCovarianceMatrix"][i][j] = local_cov[i][j];
-}
-
-void Korali::Solver::TMCMC::setConfiguration(nlohmann::json& js)
-{
- _resultOutputFrequency   = consume(js, { "TMCMC", "Result Output Frequency" }, KORALI_NUMBER, std::to_string(1));
- _terminalOutputFrequency = consume(js, { "TMCMC", "Terminal Output Frequency" }, KORALI_NUMBER, std::to_string(1));
- 
- _s                 = consume(js, { "TMCMC", "Population Size" }, KORALI_NUMBER);
- _tolCOV            = consume(js, { "TMCMC", "Coefficient of Variation" }, KORALI_NUMBER, std::to_string(1.0));
- _minStep           = consume(js, { "TMCMC", "Min Rho Update" }, KORALI_NUMBER, std::to_string(0.00001));
- _maxStep           = consume(js, { "TMCMC", "Max Rho Update" }, KORALI_NUMBER, std::to_string(1.0));
- _beta2             = consume(js, { "TMCMC", "Covariance Scaling" }, KORALI_NUMBER, std::to_string(0.04));
- _useLocalCov       = consume(js, { "TMCMC", "Use Local Covariance" }, KORALI_BOOLEAN, "false");
- _burnin            = consume(js, { "TMCMC", "Burn In" }, KORALI_NUMBER, std::to_string(0));
- 
- // Variable information
- for(size_t d = 0; d < _k->N; d++) if ( isDefined(js["Variables"], { "TMCMC", "Log Space" } ) ) 
-     _variableLogSpace[d] = consume( js["Variables"][d], { "TMCMC", "Log Space" }, KORALI_BOOLEAN, "false");
- 
- // Termination Criteria
- _termCondMaxGens   = consume(js, { "TMCMC", "Termination Criteria", "Max Generations", "Value" }, KORALI_NUMBER, std::to_string(20));
- _isTermCondMaxGens = consume(js, { "TMCMC", "Termination Criteria", "Max Generations", "Active" }, KORALI_BOOLEAN, "true");
-}
-
-void Korali::Solver::TMCMC::setState(nlohmann::json& js)
-{
- _nChains                  = js["TMCMC"]["State"]["nChains"];
- _currentGeneration        = js["TMCMC"]["State"]["Current Generation"];
- _coefficientOfVariation   = js["TMCMC"]["State"]["CVar"];
- _annealingExponent        = js["TMCMC"]["State"]["AnnealingExponent"];
- _uniqueEntries            = js["TMCMC"]["State"]["UniqueEntries"];
- _logEvidence              = js["TMCMC"]["State"]["LogEvidence"];
- _acceptanceRateProposals  = js["TMCMC"]["State"]["AcceptanceRateProposals"];
- _acceptanceRateSelections = js["TMCMC"]["State"]["AcceptanceRateSelections"];
- _databaseEntries          = js["TMCMC"]["State"]["Database Entries"];
- _isFinished               = js["TMCMC"]["State"]["Finished"];
-
- for (size_t i = 0; i < _k->N*_k->N; i++) _covarianceMatrix[i] = js["TMCMC"]["State"]["CovarianceMatrix"][i];
- for (size_t i = 0; i < _k->N; i++)       _meanTheta[i]        = js["TMCMC"]["State"]["MeanTheta"][i];
- for (size_t i = 0; i < _k->N*_s; i++)    _databasePoints[i]   = js["TMCMC"]["State"]["DatabasePoints"][i];
- for (size_t i = 0; i < _s; i++)          _databaseFitness[i]  = js["TMCMC"]["State"]["DatabaseFitness"][i];
- if (_useLocalCov) for (size_t i = 0; i < _s; i++) for (size_t j = 0; j < _k->N; j++) local_cov[i][j] = js["TMCMC"]["State"]["LocalCovarianceMatrix"][i][j];
-}
-
-/************************************************************************/
-/*                    Functional Methods                                */
-/************************************************************************/
 
 void Korali::Solver::TMCMC::run()
 {
@@ -193,7 +85,6 @@ void Korali::Solver::TMCMC::run()
 
  // Generation 0
  initializeSamples();
- saveState();
  printGeneration();
  _currentGeneration++;
 
@@ -218,8 +109,6 @@ void Korali::Solver::TMCMC::run()
 
   t1 = std::chrono::system_clock::now();
 
-  saveState();
-  
   printGeneration();
 
   _currentGeneration++;
@@ -593,15 +482,9 @@ bool Korali::Solver::TMCMC::checkTermination()
  return _isFinished;
 }
 
-void Korali::Solver::TMCMC::saveState() const
-{
- if (_isFinished || (_currentGeneration % _resultOutputFrequency) == 0) _k->saveState(_currentGeneration);
-}
-
-
 void Korali::Solver::TMCMC::printGeneration() const
 {
- if (_currentGeneration % _terminalOutputFrequency != 0) return;
+ if (_currentGeneration % terminalOutputFrequency != 0) return;
  
  if (_k->_verbosity >= KORALI_MINIMAL)
  {

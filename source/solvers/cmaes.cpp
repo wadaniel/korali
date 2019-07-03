@@ -8,15 +8,8 @@
 
 using namespace Korali::Solver;
 
-/************************************************************************/
-/*                  Constructor / Destructor Methods                    */
-/************************************************************************/
-
-CMAES::CMAES(nlohmann::json& js)
+void CMAES::initialize()
 {
- 
- setConfiguration(js);
-
  size_t s_max  = std::max(_s,  _via_s);
  size_t mu_max = std::max(_mu, _via_mu);
 
@@ -84,38 +77,38 @@ CMAES::CMAES(nlohmann::json& js)
  // CCMA-ES variables
  if (_hasConstraints)
  {
-  if( (_cv <= 0.0) || (_cv > 1.0) ) { fprintf( stderr, "[Korali] CMA-ES Error: Invalid Normal Vector Learning Rate (%f), must be greater than 0.0 and less than 1.0\n", _cv ); exit(-1); }
-  if( (_cp <= 0.0) || (_cp > 1.0) ) { fprintf( stderr, "[Korali] CMA-ES Error: Invalid Global Success Learning Rate (%f), must be greater than 0.0 and less than 1.0\n",  _cp ); exit(-1); }
-  if( (_targetSucRate <= 0.0) || (_targetSucRate > 1.0) ) 
-    { fprintf( stderr, "[Korali] CMA-ES Error: Invalid Target Success Rate (%f), must be greater than 0.0 and less than 1.0\n",  _targetSucRate ); exit(-1); }
-  if(_adaptionSize <= 0.0) { fprintf( stderr, "[Korali] CMA-ES Error: Invalid Adaption Size (%f), must be greater than 0.0\n", _adaptionSize ); exit(-1); }
+	if( (_cv <= 0.0) || (_cv > 1.0) ) { fprintf( stderr, "[Korali] CMA-ES Error: Invalid Normal Vector Learning Rate (%f), must be greater than 0.0 and less than 1.0\n", _cv ); exit(-1); }
+	if( (_cp <= 0.0) || (_cp > 1.0) ) { fprintf( stderr, "[Korali] CMA-ES Error: Invalid Global Success Learning Rate (%f), must be greater than 0.0 and less than 1.0\n",  _cp ); exit(-1); }
+	if( (_targetSucRate <= 0.0) || (_targetSucRate > 1.0) )
+		{ fprintf( stderr, "[Korali] CMA-ES Error: Invalid Target Success Rate (%f), must be greater than 0.0 and less than 1.0\n",  _targetSucRate ); exit(-1); }
+	if(_adaptionSize <= 0.0) { fprintf( stderr, "[Korali] CMA-ES Error: Invalid Adaption Size (%f), must be greater than 0.0\n", _adaptionSize ); exit(-1); }
 
-  bestValidIdx     = -1;
-  countcevals      = 0;
-  correctionsC     = 0;
-  maxnumviolations = 0;
-  numviolations    = (size_t*) calloc (sizeof(size_t), _current_s);
-  viabilityBounds  = (double*) calloc (sizeof(double), _k->_fconstraints.size());
+	bestValidIdx     = -1;
+	countcevals      = 0;
+	correctionsC     = 0;
+	maxnumviolations = 0;
+	numviolations    = (size_t*) calloc (sizeof(size_t), _current_s);
+	viabilityBounds  = (double*) calloc (sizeof(double), _k->_fconstraints.size());
 
-  sucRates = (double*) calloc (sizeof(double), _k->_fconstraints.size());
-  std::fill_n( sucRates, _k->_fconstraints.size(), 0.5);
+	sucRates = (double*) calloc (sizeof(double), _k->_fconstraints.size());
+	std::fill_n( sucRates, _k->_fconstraints.size(), 0.5);
 
-  viabilityImprovement  = (bool*) calloc (sizeof(bool), s_max);
-  viabilityIndicator    = (bool**) calloc (sizeof(bool*), _k->_fconstraints.size());
-  constraintEvaluations = (double**) calloc (sizeof(double*), _k->_fconstraints.size());
+	viabilityImprovement  = (bool*) calloc (sizeof(bool), s_max);
+	viabilityIndicator    = (bool**) calloc (sizeof(bool*), _k->_fconstraints.size());
+	constraintEvaluations = (double**) calloc (sizeof(double*), _k->_fconstraints.size());
 
-  for (size_t c = 0; c < _k->_fconstraints.size(); c++) viabilityIndicator[c]    = (bool*) calloc (sizeof(bool), s_max);
-  for (size_t c = 0; c < _k->_fconstraints.size(); c++) constraintEvaluations[c] = (double*) calloc (sizeof(double), s_max);
+	for (size_t c = 0; c < _k->_fconstraints.size(); c++) viabilityIndicator[c]    = (bool*) calloc (sizeof(bool), s_max);
+	for (size_t c = 0; c < _k->_fconstraints.size(); c++) constraintEvaluations[c] = (double*) calloc (sizeof(double), s_max);
 
-  v = (double**) calloc (sizeof(double*), _k->_fconstraints.size());
-  for (size_t i = 0; i < _k->_fconstraints.size(); i++) v[i] = (double*) calloc (sizeof(double), _k->N);
+	v = (double**) calloc (sizeof(double*), _k->_fconstraints.size());
+	for (size_t i = 0; i < _k->_fconstraints.size(); i++) v[i] = (double*) calloc (sizeof(double), _k->N);
 
-  besteverCeval = (double*) calloc (sizeof(double), _k->_fconstraints.size());
+	besteverCeval = (double*) calloc (sizeof(double), _k->_fconstraints.size());
  }
 
  // Setting algorithm internal variables
- if (_hasConstraints) { initInternals(_via_mu); initCovCorrectionParams(); }
- else initInternals(_mu);
+ if (_hasConstraints) { initMuWeights(_via_mu); initCovCorrectionParams(); }
+ else initMuWeights(_mu);
 
  initCovariance();
 
@@ -134,318 +127,70 @@ CMAES::CMAES(nlohmann::json& js)
  /* set rgxmean */
  for (size_t i = 0; i < _k->N; ++i)
  {
-   if(_initialMeans[i] < _lowerBounds[i] || _initialMeans[i] > _upperBounds[i]) if(_k->_verbosity >= KORALI_MINIMAL)
-    fprintf(stderr,"[Korali] Warning: Initial Value (%.4f) of variable \'%s\' is out of bounds (%.4f-%.4f).\n",
-            _initialMeans[i],
-            _k->_variables[i]->_name.c_str(),
-            _lowerBounds[i],
-            _upperBounds[i]);
-   rgxmean[i] = rgxold[i] = _initialMeans[i];
- }
-
- // If state is defined:
- if (isDefined(js, {"CMA-ES", "State"}))
- {
-  setState(js);
-  js["CMA-ES"].erase("State");
- }
-
-}
-
-CMAES::~CMAES()
-{
-
-}
-
-/************************************************************************/
-/*                    Configuration Methods                             */
-/************************************************************************/
-
-void Korali::Solver::CMAES::getConfiguration(nlohmann::json& js)
-{
- js["Solver"] = "CMA-ES";
-
- js["CMA-ES"]["Result Output Frequency"]   = _resultOutputFrequency;
- js["CMA-ES"]["Terminal Output Frequency"] = _terminalOutputFrequency;
-
- js["CMA-ES"]["Sample Count"]            = _s;
- js["CMA-ES"]["Sigma Cumulation Factor"] = _sigmaCumulationFactor;
- js["CMA-ES"]["Damp Factor"]             = _dampFactor;
- js["CMA-ES"]["Objective"]               = _objective;
- js["CMA-ES"]["Max Resamplings"]         = _maxResamplings;
- js["CMA-ES"]["Sigma Bounded"]           = _isSigmaBounded;
-
- js["CMA-ES"]["Mu"]["Value"]        = _mu;
- js["CMA-ES"]["Mu"]["Type"]         = _muType;
- //js["CMA-ES"]["Mu"]["Covariance"] = _muCovariance;
-
- js["CMA-ES"]["Covariance Matrix"]["Cumulative Covariance"]           = _cumulativeCovariance;
- js["CMA-ES"]["Covariance Matrix"]["Is Diagonal"]                     = _isdiag;
- //js["CMA-ES"]["Covariance Matrix"]["Eigenvalue Evaluation Frequency"] = _covarianceEigenEvalFreq;
- //js["CMA-ES"]["Covariance Matrix"]["Learning Rate"]                   = _covarianceMatrixLearningRate;
-
- // Variable information
- for (size_t i = 0; i < _k->N; i++)
- {
-  js["Variables"][i]["CMA-ES"]["Lower Bound"]   = _lowerBounds[i];
-  js["Variables"][i]["CMA-ES"]["Upper Bound"]   = _upperBounds[i];
-  js["Variables"][i]["CMA-ES"]["Initial Mean"]  = _initialMeans[i];
-  js["Variables"][i]["CMA-ES"]["Initial Standard Deviation"]         = _initialStdDevs[i];
-  js["Variables"][i]["CMA-ES"]["Minimum Standard Deviation Changes"] = _minStdDevChanges[i];
-  js["Variables"][i]["CMA-ES"]["Log Space"]     = _variableLogSpace[i];
- }
-
- js["CMA-ES"]["Termination Criteria"]["Max Generations"]["Value"]           = _termCondMaxGenerations;
- js["CMA-ES"]["Termination Criteria"]["Max Generations"]["Active"]          = _isTermCondMaxGenerations;
- js["CMA-ES"]["Termination Criteria"]["Max Model Evaluations"]["Value"]     = _termCondMaxFitnessEvaluations;
- js["CMA-ES"]["Termination Criteria"]["Max Model Evaluations"]["Active"]    = _isTermCondMaxFitnessEvaluations;
- js["CMA-ES"]["Termination Criteria"]["Min Fitness"]["Value"]               = _termCondMinFitness;
- js["CMA-ES"]["Termination Criteria"]["Min Fitness"]["Active"]              = _isTermCondMinFitness; 
- js["CMA-ES"]["Termination Criteria"]["Max Fitness"]["Value"]               = _termCondMaxFitness;
- js["CMA-ES"]["Termination Criteria"]["Max Fitness"]["Active"]              = _isTermCondMaxFitness;
- js["CMA-ES"]["Termination Criteria"]["Fitness Diff Threshold"]["Value"]    = _termCondFitnessDiffThreshold;
- js["CMA-ES"]["Termination Criteria"]["Fitness Diff Threshold"]["Active"]   = _isTermCondFitnessDiffThreshold;
- js["CMA-ES"]["Termination Criteria"]["Min Standard Deviation"]["Value"]    = _termCondMinDeltaX;
- js["CMA-ES"]["Termination Criteria"]["Min Standard Deviation"]["Active"]   = _isTermCondMinDeltaX;
- js["CMA-ES"]["Termination Criteria"]["Max Standard Deviation"]["Value"]    = _termCondTolUpXFactor;
- js["CMA-ES"]["Termination Criteria"]["Max Standard Deviation"]["Active"]   = _isTermCondTolUpXFactor;
- js["CMA-ES"]["Termination Criteria"]["Max Condition Covariance"]["Value"]  = _termCondCovCond;
- js["CMA-ES"]["Termination Criteria"]["Max Condition Covariance"]["Active"] = _isTermCondCovCond;
-
-// State Information
- js["CMA-ES"]["State"]["Current Generation"]        = _currentGeneration;
- js["CMA-ES"]["State"]["Sigma"]                     = sigma;
- js["CMA-ES"]["State"]["BestEverFunctionValue"]     = bestEver;
- js["CMA-ES"]["State"]["PreviousBestFunctionValue"] = prevBest;
- js["CMA-ES"]["State"]["CurrentBestFunctionValue"]  = currentFunctionValue;
- js["CMA-ES"]["State"]["PrevFunctionValue"]         = prevFunctionValue;
- js["CMA-ES"]["State"]["MaxDiagonalCovariance"]     = maxdiagC;
- js["CMA-ES"]["State"]["MinDiagonalCovariance"]     = mindiagC;
- js["CMA-ES"]["State"]["MaxEigenvalue"]             = maxEW;
- js["CMA-ES"]["State"]["MinEigenvalue"]             = minEW;
- js["CMA-ES"]["State"]["EigenSystemUpToDate"]       = flgEigensysIsUptodate;
- js["CMA-ES"]["State"]["EvaluationCount"]           = countevals;
- js["CMA-ES"]["State"]["InfeasibleCount"]           = countinfeasible;
- js["CMA-ES"]["State"]["ConjugateEvolutionPathL2"]  = psL2;
-
- // CCMA-ES
- js["CMA-ES"]["Constraint"]["Viability"]["Regime"]          = _isViabilityRegime;
- js["CMA-ES"]["Constraint"]["Viability"]["Sample Count"]    = _via_s;
- js["CMA-ES"]["Constraint"]["Viability"]["Mu"]              = _via_mu;
- js["CMA-ES"]["Constraint"]["Target Success Rate"]          = _targetSucRate;
- js["CMA-ES"]["Constraint"]["Adaption Size"]                = _adaptionSize;
- js["CMA-ES"]["Constraint"]["Max Corrections"]              = _maxCorrections;
- js["CMA-ES"]["Constraint"]["Normal Vector Learning Rate"]  = _cv;
- js["CMA-ES"]["Constraint"]["Global Success Learning Rate"] = _cp;
-
- for (size_t i = 0; i < _current_s; i++) js["CMA-ES"]["State"]["Index"]          += index[i];
- for (size_t i = 0; i < _current_s; i++) js["CMA-ES"]["State"]["FunctionValues"] += _fitnessVector[i];
-
- for (size_t i = 0; i < _k->N; i++) js["CMA-ES"]["State"]["CurrentMeanVector"]      += rgxmean[i];
- for (size_t i = 0; i < _k->N; i++) js["CMA-ES"]["State"]["PreviousMeanVector"]     += rgxold[i];
- for (size_t i = 0; i < _k->N; i++) js["CMA-ES"]["State"]["BestEverVector"]         += rgxbestever[i];
- for (size_t i = 0; i < _k->N; i++) js["CMA-ES"]["State"]["CurrentBestVector"]      += curBestVector[i];
- for (size_t i = 0; i < _k->N; i++) js["CMA-ES"]["State"]["AxisLengths"]            += axisD[i];
- for (size_t i = 0; i < _k->N; i++) js["CMA-ES"]["State"]["EvolutionPath"]          += rgpc[i];
- for (size_t i = 0; i < _k->N; i++) js["CMA-ES"]["State"]["ConjugateEvolutionPath"] += rgps[i];
-
- for (size_t i = 0; i < _current_s; i++) for (size_t j = 0; j < _k->N; j++) js["CMA-ES"]["State"]["Samples"][i][j] = _samplePopulation[i*_k->N + j];
- for (size_t i = 0; i < _k->N; i++) for (size_t j = 0; j <= i; j++) { js["CMA-ES"]["State"]["CovarianceMatrix"][i][j] = C[i][j]; js["CMA-ES"]["State"]["CovarianceMatrix"][j][i] = C[i][j]; }
- for (size_t i = 0; i < _k->N; i++) for (size_t j = 0; j <= i; j++) { js["CMA-ES"]["State"]["EigenMatrix"][i][j] = B[i][j]; js["CMA-ES"]["State"]["EigenMatrix"][j][i] = B[i][j]; }
-
- // CCMA-ES States
- if (_hasConstraints)
- {
-  js["CMA-ES"]["State"]["Constraint Global Success Rate"] = _globalSucRate;
-  for (size_t c = 0; c < _k->_fconstraints.size(); c++) js["CMA-ES"]["State"]["Constraint"]["Success Rates"][c] = sucRates[c];
-  for (size_t c = 0; c < _k->_fconstraints.size(); c++) js["CMA-ES"]["State"]["Constraint"]["Viability"]["Boundaries"][c] = viabilityBounds[c];
-  for (size_t i = 0; i < _current_s; ++i) js["CMA-ES"]["State"]["Constraint"]["Violations"][i] = numviolations[i];
-  for (size_t c = 0; c < _k->_fconstraints.size(); c++) for (size_t i = 0; i < _current_s; ++i) js["CMA-ES"]["State"]["Constraint"]["Evaluations"][c][i] = constraintEvaluations[c][i];
-  for (size_t c = 0; c < _k->_fconstraints.size(); c++) for (size_t d = 0; d < _k->N; ++d) js["CMA-ES"]["State"]["Constraint"]["Normal Approximation"][c][d] = v[c][d];
+	 if(_initialMeans[i] < _lowerBounds[i] || _initialMeans[i] > _upperBounds[i]) if(_k->_verbosity >= KORALI_MINIMAL)
+		fprintf(stderr,"[Korali] Warning: Initial Value (%.4f) of variable \'%s\' is out of bounds (%.4f-%.4f).\n",
+						_initialMeans[i],
+						_k->_variables[i]->_name.c_str(),
+						_lowerBounds[i],
+						_upperBounds[i]);
+	 rgxmean[i] = rgxold[i] = _initialMeans[i];
  }
 }
 
-
-void CMAES::setConfiguration(nlohmann::json& js)
+void CMAES::run()
 {
- _resultOutputFrequency   = consume(js, { "CMA-ES", "Result Output Frequency" }, KORALI_NUMBER, std::to_string(1));
- _terminalOutputFrequency = consume(js, { "CMA-ES", "Terminal Output Frequency" }, KORALI_NUMBER, std::to_string(1));
- 
- _s                             = consume(js, { "CMA-ES", "Sample Count" }, KORALI_NUMBER);
- _sigmaCumulationFactorIn       = consume(js, { "CMA-ES", "Sigma Cumulation Factor" }, KORALI_NUMBER, std::to_string(-1));
- _dampFactorIn                  = consume(js, { "CMA-ES", "Damp Factor" }, KORALI_NUMBER, std::to_string(-1));
- _objective                     = consume(js, { "CMA-ES", "Objective" }, KORALI_STRING);
- _maxResamplings                = consume(js, { "CMA-ES", "Max Resamplings" }, KORALI_NUMBER, std::to_string(1e7));
- _isSigmaBounded                = consume(js, { "CMA-ES", "Sigma Bounded" }, KORALI_BOOLEAN, "false");
+ if (_k->_verbosity >= KORALI_MINIMAL) {
+   printf("[Korali] Starting CMA-ES (Objective: %s).\n",  _objective.c_str());
+   printf("--------------------------------------------------------------------\n");
+ }
 
- _fitnessSign   = 0;
- if(_objective == "Maximize") _fitnessSign = 1;
- if(_objective == "Minimize") _fitnessSign = -1;
- if(_fitnessSign == 0)  { fprintf( stderr, "[Korali] CMA-ES Error: Invalid Objective: %s (choose Maximize or Minimize) \n", _objective.c_str()); exit(-1); }
+ startTime = std::chrono::system_clock::now();
+ if ( _hasConstraints ) { checkMeanAndSetRegime(); updateConstraints(); }
+ printGeneration();
 
- _mu                            = consume(js, { "CMA-ES", "Mu", "Value" }, KORALI_NUMBER, std::to_string(ceil(_s / 2)));
- _muType                        = consume(js, { "CMA-ES", "Mu", "Type" }, KORALI_STRING, "Logarithmic");
- _muCovarianceIn                = consume(js, { "CMA-ES", "Mu", "Covariance" }, KORALI_NUMBER, std::to_string(-1));
- 
- if( _mu < 1 || _mu > _s || ( ( _mu == _s )  && _muType == "Linear") )
-   { fprintf( stderr, "[Korali] CMA-ES Error: Invalid setting of Mu (%lu) and/or Lambda (%lu)\n",  _mu, _s); exit(-1); }
-
- // CCMA-ES (more below)
-  _via_s  = consume(js, { "CMA-ES", "Constraint", "Viability", "Sample Count"}, KORALI_NUMBER, std::to_string(_s));
-  _via_mu = consume(js, { "CMA-ES", "Constraint", "Viability", "Mu"}, KORALI_NUMBER, std::to_string(ceil(_via_s*0.5)));
-  if(_via_mu < 1 ||  _via_mu > _via_s || ( ( _via_mu == _via_s) && _muType.compare("Linear") ) )
-      { fprintf( stderr, "[Korali] CMA-ES Error: Invalid setting of Constraint Viability Mu (%lu) and/or Constraint Viability Sample Count (%lu)\n", _via_mu, _via_s); exit(-1); }
-
-  _isViabilityRegime = consume(js, { "CMA-ES", "Constraint", "Viability", "Regime" }, KORALI_BOOLEAN, "false");
-
-  if(_isViabilityRegime) {
-      _current_s  = _via_s;
-      _current_mu = _via_mu;
-  } else {
-      _current_s  = _s;
-      _current_mu = _mu;
-  }
-
- //_covarianceEigenEvalFreq      = consume(js, { "CMA-ES", "Covariance Matrix", "Eigenvalue Evaluation Frequency" }, KORALI_NUMBER, std::to_string(0));
- _cumulativeCovarianceIn       = consume(js, { "CMA-ES", "Covariance Matrix", "Cumulative Covariance" }, KORALI_NUMBER, std::to_string(-1));
- _covMatrixLearningRateIn      = consume(js, { "CMA-ES", "Covariance Matrix", "Learning Rate" }, KORALI_NUMBER, std::to_string(-1));
- _isdiag                       = consume(js, { "CMA-ES", "Covariance Matrix", "Is Diagonal" }, KORALI_BOOLEAN, "false");
-
- // Setting variable information
- _variableLogSpace = (bool*) calloc(sizeof(bool), _k->N);
- _initialMeans = (double*) calloc(sizeof(double), _k->N);
- _initialStdDevs = (double*) calloc(sizeof(double), _k->N);
- _minStdDevChanges = (double*) calloc(sizeof(double), _k->N);
- _lowerBounds = (double*) calloc(sizeof(double), _k->N);
- _upperBounds = (double*) calloc(sizeof(double), _k->N);
-
- for (size_t i = 0; i < _k->N; i++)
+ while(!checkTermination())
  {
-  _lowerBounds[i] = -INFINITY;
-  _upperBounds[i] = +INFINITY;
+   t0 = std::chrono::system_clock::now();
 
-  bool lowerBoundDefined = isDefined(js["Variables"][i], { "CMA-ES", "Lower Bound" });
-  bool upperBoundDefined = isDefined(js["Variables"][i], { "CMA-ES", "Upper Bound" });
+   prepareGeneration();
+   evaluateSamples();
 
-  if (lowerBoundDefined) _lowerBounds[i] = consume(js["Variables"][i], { "CMA-ES", "Lower Bound" }, KORALI_NUMBER);
-  if (upperBoundDefined) _upperBounds[i] = consume(js["Variables"][i], { "CMA-ES", "Upper Bound" }, KORALI_NUMBER);
+   if ( _hasConstraints ){ updateConstraints(); handleConstraints(); }
+   updateDistribution(_fitnessVector);
+   if ( _hasConstraints ) checkMeanAndSetRegime();
 
-  bool initialMeanDefined   = isDefined(js["Variables"][i], { "CMA-ES", "Initial Mean" });
-  bool initialStdDevDefined = isDefined(js["Variables"][i], { "CMA-ES", "Initial Standard Deviation" });
+   _currentGeneration++;
 
-  if (lowerBoundDefined && upperBoundDefined)
+   t1 = std::chrono::system_clock::now();
+
+   printGeneration();
+ }
+
+ endTime = std::chrono::system_clock::now();
+ printFinal();
+}
+
+
+void CMAES::evaluateSamples()
+{
+  for (size_t i = 0; i < _current_s; i++) for(size_t d = 0; d < _k->N; ++d)
+    if(_variableLogSpace[d] == true)
+        _transformedSamples[i*_k->N+d] = std::exp(_samplePopulation[i*_k->N+d]);
+    else
+        _transformedSamples[i*_k->N+d] = _samplePopulation[i*_k->N+d];
+
+  while (_finishedSamples < _current_s)
   {
-   if (initialMeanDefined   == false) _initialMeans[i]   = (_upperBounds[i] + _lowerBounds[i]) * 0.5;
-   if (initialStdDevDefined == false) _initialStdDevs[i] = (_upperBounds[i] - _lowerBounds[i]) * 0.30;
+    for (size_t i = 0; i < _current_s; i++) if (_initializedSample[i] == false)
+    {
+      _initializedSample[i] = true;
+      _k->_conduit->evaluateSample(_transformedSamples, i); countevals++;
+    }
+    _k->_conduit->checkProgress();
   }
-
-  if (initialMeanDefined)   _initialMeans[i]   = consume(js["Variables"][i], { "CMA-ES", "Initial Mean" }, KORALI_NUMBER);
-  if (initialStdDevDefined) _initialStdDevs[i] = consume(js["Variables"][i], { "CMA-ES", "Initial Standard Deviation" }, KORALI_NUMBER);
-
-  _variableLogSpace[i] = consume(js["Variables"][i], { "CMA-ES", "Log Space" }, KORALI_BOOLEAN, "false");
-  _minStdDevChanges[i] = consume(js["Variables"][i], { "CMA-ES", "Minimum Standard Deviation Changes" }, KORALI_NUMBER, std::to_string(0));
-
-  if ( (initialMeanDefined == false) && ((lowerBoundDefined == false) || (upperBoundDefined == false)) )
-  { fprintf( stderr, "[Korali] CMA-ES Error: Initial Mean and Lower/Upper Bound not defined. Unable to init Initial Mean\n" ); exit(-1); }
-  
-  if ( (initialStdDevDefined == false) && ((lowerBoundDefined == false) || (upperBoundDefined == false)) )
-  { fprintf( stderr, "[Korali] CMA-ES Error: Initial Standard Deviation and Lower/Upper Bound not defined. Unable to init Initial Standard Deviation\n" ); exit(-1); }
- }
-
- // Checking Variable values
- for (size_t i = 0; i < _k->N; i++)
- {
-  if (_initialMeans[i] < _lowerBounds[i] || _initialMeans[i] > _upperBounds[i])
-  { fprintf( stderr, "[Korali] CMA-ES Error: Initial Mean (%f) outside of Lower/Upper (%f - %f) Bound  defined for variable %d.\n",  _initialMeans[i], _lowerBounds[i], _upperBounds[i], i); exit(-1); }
-
-  if (_upperBounds[i] <= _lowerBounds[i])
-  { fprintf( stderr, "[Korali] CMA-ES Error: Invalid Lower/Upper (%f/%f) Bound defined for variable %d.\n",  _lowerBounds[i], _upperBounds[i], i); exit(-1); }
-
-  if (_initialStdDevs[i] <= 0.0) { fprintf(stderr, "[Korali] CMA-ES Error: Initial Standard Deviation (%f) for variable %s is less or equal 0.\n", _initialStdDevs[i], _k->_variables[i]->_name.c_str()); exit(-1); }
- }
-
- // Setting termination criteria
- _termCondMaxGenerations          = consume(js, { "CMA-ES", "Termination Criteria", "Max Generations", "Value" }, KORALI_NUMBER, std::to_string(1000));
- _isTermCondMaxGenerations        = consume(js, { "CMA-ES", "Termination Criteria", "Max Generations", "Active" }, KORALI_BOOLEAN, "true");
- _termCondMaxFitnessEvaluations   = consume(js, { "CMA-ES", "Termination Criteria", "Max Model Evaluations", "Value" }, KORALI_NUMBER, std::to_string(std::numeric_limits<size_t>::max()));
- _isTermCondMaxFitnessEvaluations = consume(js, { "CMA-ES", "Termination Criteria", "Max Model Evaluations", "Active" }, KORALI_BOOLEAN, "true");
- _termCondMinFitness              = consume(js, { "CMA-ES", "Termination Criteria", "Min Fitness", "Value" }, KORALI_NUMBER, std::to_string(std::numeric_limits<double>::max()));
- _isTermCondMinFitness            = consume(js, { "CMA-ES", "Termination Criteria", "Min Fitness", "Active" }, KORALI_BOOLEAN, "false"); 
- _termCondMaxFitness              = consume(js, { "CMA-ES", "Termination Criteria", "Max Fitness", "Value" }, KORALI_NUMBER, std::to_string(-std::numeric_limits<double>::max()));
- _isTermCondMaxFitness            = consume(js, { "CMA-ES", "Termination Criteria", "Max Fitness", "Active" }, KORALI_BOOLEAN, "false");
- _termCondFitnessDiffThreshold    = consume(js, { "CMA-ES", "Termination Criteria", "Fitness Diff Threshold", "Value" }, KORALI_NUMBER, std::to_string(1e-9));
- _isTermCondFitnessDiffThreshold  = consume(js, { "CMA-ES", "Termination Criteria", "Fitness Diff Threshold", "Active" }, KORALI_BOOLEAN, "true");
- _termCondMinDeltaX               = consume(js, { "CMA-ES", "Termination Criteria", "Min Standard Deviation", "Value" }, KORALI_NUMBER, std::to_string(1e-12));
- _isTermCondMinDeltaX             = consume(js, { "CMA-ES", "Termination Criteria", "Min Standard Deviation", "Active" }, KORALI_BOOLEAN, "false");
- _termCondTolUpXFactor            = consume(js, { "CMA-ES", "Termination Criteria", "Max Standard Deviation", "Value" }, KORALI_NUMBER, std::to_string(1e18));
- _isTermCondTolUpXFactor          = consume(js, { "CMA-ES", "Termination Criteria", "Max Standard Deviation", "Active" }, KORALI_BOOLEAN, "true");
- _termCondCovCond                 = consume(js, { "CMA-ES", "Termination Criteria", "Max Condition Covariance", "Value" }, KORALI_NUMBER, std::to_string(1e18));
- _isTermCondCovCond               = consume(js, { "CMA-ES", "Termination Criteria", "Max Condition Covariance", "Active" }, KORALI_BOOLEAN, "true");
- _termCondMinStepFac              = consume(js, { "CMA-ES", "Termination Criteria", "Min Step Size Factor", "Value" }, KORALI_NUMBER, std::to_string(0.1));
- _isTermCondMinStepFac            = consume(js, { "CMA-ES", "Termination Criteria", "Min Step Size Factor", "Active" }, KORALI_BOOLEAN, "false");
-
- if( _isTermCondMinFitness && (_fitnessSign == 1) )
-    { fprintf( stderr, "[Korali] CMA-ES Error: Invalid setting of Termination Criteria Min Fitness (objective is Maximize)\n"); exit(-1); }
-
- if( _isTermCondMaxFitness && (_fitnessSign == -1) )
-    { fprintf( stderr, "[Korali] CMA-ES Error: Invalid setting of Termination Criteria Max Fitness (objective is Minimize)\n"); exit(-1); }
-
- // CCMA-ES
- _targetSucRate  = consume(js, { "CMA-ES", "Constraint", "Target Success Rate" }, KORALI_NUMBER, std::to_string(2./11.));
- _adaptionSize   = consume(js, { "CMA-ES", "Constraint", "Adaption Size" }, KORALI_NUMBER, std::to_string(0.1));
- _maxCorrections = consume(js, { "CMA-ES", "Constraint", "Max Corrections" }, KORALI_NUMBER, std::to_string(1e6));
- _cv             = consume(js, { "CMA-ES", "Constraint", "Normal Vector Learning Rate" }, KORALI_NUMBER, std::to_string(1.0/(2.0+_current_s)));
- _cp             = consume(js, { "CMA-ES", "Constraint", "Global Success Learning Rate" }, KORALI_NUMBER, std::to_string(1.0/12.0));
 }
 
-void CMAES::setState(nlohmann::json& js)
-{
- _currentGeneration    = js["CMA-ES"]["State"]["Current Generation"];
- sigma                 = js["CMA-ES"]["State"]["Sigma"];
- bestEver              = js["CMA-ES"]["State"]["BestEverFunctionValue"];
- currentFunctionValue  = js["CMA-ES"]["State"]["CurrentBestFunctionValue"];
- prevBest              = js["CMA-ES"]["State"]["PreviousBestFunctionValue"];
- prevFunctionValue     = js["CMA-ES"]["State"]["PrevFunctionValue"];
- maxdiagC              = js["CMA-ES"]["State"]["MaxDiagonalCovariance"];
- mindiagC              = js["CMA-ES"]["State"]["MinDiagonalCovariance"];
- maxEW                 = js["CMA-ES"]["State"]["MaxEigenvalue"];
- minEW                 = js["CMA-ES"]["State"]["MinEigenvalue"] ;
- flgEigensysIsUptodate = js["CMA-ES"]["State"]["EigenSystemUpToDate"];
- countevals            = js["CMA-ES"]["State"]["EvaluationCount"];
- countinfeasible       = js["CMA-ES"]["State"]["InfeasibleCount"];
-
- for (size_t i = 0; i < _k->N; i++) rgxmean[i]       = js["CMA-ES"]["State"]["CurrentMeanVector"][i];
- for (size_t i = 0; i < _k->N; i++) rgxold[i]        = js["CMA-ES"]["State"]["PreviousMeanVector"][i];
- for (size_t i = 0; i < _k->N; i++) rgxbestever[i]   = js["CMA-ES"]["State"]["BestEverVector"][i];
- for (size_t i = 0; i < _k->N; i++) axisD[i]         = js["CMA-ES"]["State"]["AxisLengths"][i];
- for (size_t i = 0; i < _k->N; i++) rgpc[i]          = js["CMA-ES"]["State"]["EvolutionPath"][i];
- for (size_t i = 0; i < _k->N; i++) curBestVector[i] = js["CMA-ES"]["State"]["CurrentBestVector"][i];
- 
- for (size_t i = 0; i < _current_s; i++) index[i]          = js["CMA-ES"]["State"]["Index"][i];
- for (size_t i = 0; i < _current_s; i++) _fitnessVector[i] = js["CMA-ES"]["State"]["FunctionValues"][i];
- 
- for (size_t i = 0; i < _k->N; i++) for (size_t j = 0; j < _k->N; j++) C[i][j] = js["CMA-ES"]["State"]["CovarianceMatrix"][i][j];
- for (size_t i = 0; i < _k->N; i++) for (size_t j = 0; j < _k->N; j++) B[i][j] = js["CMA-ES"]["State"]["EigenMatrix"][i][j];
-
- for (size_t i = 0; i < _current_s; i++) for (size_t j = 0; j < _k->N; j++) _samplePopulation[i*_k->N + j] = js["CMA-ES"]["State"]["Samples"][i][j];
- 
- // CCMA-ES
- if (_hasConstraints)
- {
-  _globalSucRate = js["CMA-ES"]["State"]["Constraint Global Success Rate"];
-  
-  for (size_t i = 0; i < _current_s; ++i) numviolations[i] = js["CMA-ES"]["State"]["Constraint"]["Violations"][i];
-  
-  for (size_t c = 0; c < _k->_fconstraints.size(); c++) sucRates[c]        = js["CMA-ES"]["State"]["Constraint"]["Success Rates"][c];
-  for (size_t c = 0; c < _k->_fconstraints.size(); c++) viabilityBounds[c] = js["CMA-ES"]["State"]["Constraint"]["Viability"]["Boundaries"][c];
-  
-  for (size_t c = 0; c < _k->_fconstraints.size(); c++) for (size_t d = 0; d < _k->N; ++d) v[c][d] = js["CMA-ES"]["State"]["Constraint"]["Normal Approximation"][c][d];
-  for (size_t c = 0; c < _k->_fconstraints.size(); c++) for (size_t i = 0; i < _current_s; ++i) constraintEvaluations[c][i] = js["CMA-ES"]["State"]["Constraint"]["Evaluations"][c][i];
- }
-}
-
-
-void CMAES::initInternals(size_t numsamplesmu)
+void CMAES::initMuWeights(size_t numsamplesmu)
 {
 
  // Initializing Mu Weights
@@ -530,69 +275,6 @@ void CMAES::initCovariance()
 
 }
 
-/************************************************************************/
-/*                    Functional Methods                                */
-/************************************************************************/
-
-
-void CMAES::run()
-{
- if (_k->_verbosity >= KORALI_MINIMAL) {
-   printf("[Korali] Starting CMA-ES (Objective: %s).\n",  _objective.c_str());
-   printf("--------------------------------------------------------------------\n");
- }
-
- startTime = std::chrono::system_clock::now();
- if ( _hasConstraints ) { checkMeanAndSetRegime(); updateConstraints(); }
- printGeneration();
- saveState();
- 
- while(!checkTermination())
- {
-   t0 = std::chrono::system_clock::now();
-   
-   prepareGeneration();
-   evaluateSamples(); 
-   
-   if ( _hasConstraints ){ updateConstraints(); handleConstraints(); }
-   updateDistribution(_fitnessVector);
-   if ( _hasConstraints ) checkMeanAndSetRegime();
-   
-   _currentGeneration++;
-
-   t1 = std::chrono::system_clock::now();
-
-   printGeneration();
-   saveState();
- }
-
- endTime = std::chrono::system_clock::now();
-
- saveState();
- printFinal();
-
-}
-
-
-void CMAES::evaluateSamples()
-{
-  for (size_t i = 0; i < _current_s; i++) for(size_t d = 0; d < _k->N; ++d)
-    if(_variableLogSpace[d] == true) 
-        _transformedSamples[i*_k->N+d] = std::exp(_samplePopulation[i*_k->N+d]);
-    else 
-        _transformedSamples[i*_k->N+d] = _samplePopulation[i*_k->N+d];
-
-  while (_finishedSamples < _current_s)
-  {
-    for (size_t i = 0; i < _current_s; i++) if (_initializedSample[i] == false)
-    {
-      _initializedSample[i] = true; 
-      _k->_conduit->evaluateSample(_transformedSamples, i); countevals++;
-    }
-    _k->_conduit->checkProgress();
-  }
-}
-
 
 void CMAES::processSample(size_t sampleId, double fitness)
 {
@@ -627,7 +309,7 @@ void CMAES::checkMeanAndSetRegime()
     _current_mu = _mu;
 
     bestEver = -std::numeric_limits<double>::max();
-    initInternals(_current_mu);
+    initMuWeights(_current_mu);
     initCovCorrectionParams();
     initCovariance();
 }
@@ -1223,15 +905,9 @@ double CMAES::doubleRangeMin(const double *rgd, size_t len) const
 }
 
 
-void Korali::Solver::CMAES::saveState() const
-{
- if (_isFinished || (_currentGeneration % _resultOutputFrequency) == 0) _k->saveState(_currentGeneration);
-}
-
-
 void CMAES::printGeneration() const
 {
- if (_currentGeneration % _terminalOutputFrequency != 0) return;
+ if (_currentGeneration % terminalOutputFrequency != 0) return;
 
  if (_k->_verbosity >= KORALI_MINIMAL)
    printf("[Korali] Generation %ld - Duration: %fs (Total Elapsed Time: %fs)\n", _currentGeneration, std::chrono::duration<double>(t1-t0).count(), std::chrono::duration<double>(t1-startTime).count());

@@ -11,9 +11,8 @@ class TMCMC : public Base
 {
  public:
 
- // Constructor / Destructor
- TMCMC(nlohmann::json& js);
- ~TMCMC();
+ size_t resultOutputFrequency;
+ size_t terminalOutputFrequency;
 
  // TMCMC Configuration
  double _tolCOV; /* Target coefficient of variation of weights */
@@ -58,6 +57,7 @@ class TMCMC : public Base
  bool* _variableLogSpace; /* Apply log transform of variable before evaluation */
 
   // Korali Methods
+ void initialize() override;
  void run() override;
  void processSample(size_t c, double fitness) override;
  bool checkTermination() override;
@@ -73,12 +73,6 @@ class TMCMC : public Base
  bool isFeasibleCandidate(size_t candidate) const;
  static double tmcmc_objlogp(double x, const double *fj, size_t fn, double pj, double zero);
  static double objLog(const gsl_vector *v, void *param);
-
- // Serialization Methods
- void getConfiguration(nlohmann::json& js) override;
- void setConfiguration(nlohmann::json& js) override;
- void setState(nlohmann::json& js) override;
- void saveState() const override;
 
  // Print Methods
  void printGeneration() const;

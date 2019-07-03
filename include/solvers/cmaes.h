@@ -11,9 +11,8 @@ class CMAES : public Base
 {
  public:
 
- // Constructor / Destructor
- CMAES(nlohmann::json& js);
- ~CMAES();
+ size_t resultOutputFrequency;
+ size_t terminalOutputFrequency;
 
  // These are CMA-ES Specific, but could be used for other methods in the future
  double* _lowerBounds;
@@ -27,14 +26,9 @@ class CMAES : public Base
  void prepareGeneration();
  bool checkTermination() override;
  void updateDistribution(const double *fitnessVector);
+ void initialize() override;
  void run() override;
  void processSample(size_t sampleId, double fitness) override;
-
- // Serialization Methods
- void getConfiguration(nlohmann::json& js) override;
- void setConfiguration(nlohmann::json& js) override;
- void setState(nlohmann::json& js) override;
- void saveState() const override;
 
  private:
 
@@ -175,7 +169,7 @@ class CMAES : public Base
  gsl_eigen_symmv_workspace* gsl_work;
 
  // Private CCMA-ES-Specific Methods
- void initInternals(size_t numsamples); /* init _muWeights and dependencies */
+ void initMuWeights(size_t numsamples); /* init _muWeights and dependencies */
  void initCovariance(); /* init sigma, C and B */
  void initCovCorrectionParams(); /* init beta and cv */
  void checkMeanAndSetRegime(); /* check if mean inside valid domain, if yes, update internal vars */

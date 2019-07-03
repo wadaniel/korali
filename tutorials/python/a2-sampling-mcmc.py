@@ -19,7 +19,7 @@ k.setModel(evaluateModel)
 
 # Selecting problem and solver types.
 k["Problem"] = "Direct Evaluation"
-k["Solver"] = "MCMC"
+k["Solver"]  = "MCMC"
 
 # Defining problem's variables and their prior distribution
 k["Variables"][0]["Name"] = "X"
@@ -35,7 +35,7 @@ k["MCMC"]["Adaptive Sampling"] = True
 k["MCMC"]["Result Output Frequency"] = 5000
 
 # Setting output directory
-k["Result Directory"] = "a2_sampling_mcmc_result"
+k["Result Directory"] = "_a2_sampling_mcmc_result"
 
 # Running Korali
 k.run()

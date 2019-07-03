@@ -86,7 +86,8 @@ void Korali::Solver::MCMC::getConfiguration(nlohmann::json& js)
 {
  js["Solver"] = "MCMC";
  
- js["MCMC"]["Result Output Frequency"] = _resultOutputFrequency;
+ js["MCMC"]["Result Output Frequency"]   = _resultOutputFrequency;
+ js["MCMC"]["Terminal Output Frequency"] = _terminalOutputFrequency;
 
  js["MCMC"]["Chain Length"]                   = _s;
  js["MCMC"]["Burn In"]                        = _burnin;
@@ -133,7 +134,8 @@ void Korali::Solver::MCMC::getConfiguration(nlohmann::json& js)
 
 void Korali::Solver::MCMC::setConfiguration(nlohmann::json& js)
 {
- _resultOutputFrequency    = consume(js, { "MCMC", "Result Output Frequency" }, KORALI_NUMBER, std::to_string(100));
+ _resultOutputFrequency   = consume(js, { "MCMC", "Result Output Frequency" }, KORALI_NUMBER, std::to_string(100));
+ _terminalOutputFrequency = consume(js, { "MCMC", "Terminal Output Frequency" }, KORALI_NUMBER, std::to_string(100));
  
  _s                        = consume(js, { "MCMC", "Chain Length" }, KORALI_NUMBER);
  _burnin                   = consume(js, { "MCMC", "Burn In" }, KORALI_NUMBER, std::to_string(0));
@@ -405,6 +407,8 @@ void Korali::Solver::MCMC::saveState() const
  
 void Korali::Solver::MCMC::printGeneration() const
 {
+ if (chainLength % _terminalOutputFrequency != 0) return;
+ 
  if (_k->_verbosity >= KORALI_MINIMAL)
  {
   printf("--------------------------------------------------------------------\n");

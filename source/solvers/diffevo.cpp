@@ -95,7 +95,8 @@ void Korali::Solver::DE::getConfiguration(nlohmann::json& js)
 {
  js["Solver"] = "DE";
  
- js["DE"]["Result Output Frequency"] = _resultOutputFrequency;
+ js["DE"]["Result Output Frequency"]   = _resultOutputFrequency;
+ js["DE"]["Terminal Output Frequency"] = _terminalOutputFrequency;
 
  js["DE"]["Sample Count"]    = _s;
  js["DE"]["Crossover Rate"]  = _crossoverRate;
@@ -157,7 +158,8 @@ void Korali::Solver::DE::getConfiguration(nlohmann::json& js)
 void DE::setConfiguration(nlohmann::json& js)
 {  
  
- _resultOutputFrequency = consume(js, { "DE", "Result Output Frequency" }, KORALI_NUMBER, std::to_string(1));
+ _resultOutputFrequency   = consume(js, { "DE", "Result Output Frequency" }, KORALI_NUMBER, std::to_string(1));
+ _terminalOutputFrequency = consume(js, { "DE", "Terminal Output Frequency" }, KORALI_NUMBER, std::to_string(1));
  
  _objective                     = consume(js, { "DE", "Objective" }, KORALI_STRING, "Maximize");
  _s                             = consume(js, { "DE", "Sample Count" }, KORALI_NUMBER); // 5x - 10x Dim
@@ -579,6 +581,9 @@ void Korali::Solver::DE::saveState() const
 
 void DE::printGeneration() const
 {
+ 
+ if (currentGeneration % _terminalOutputFrequency != 0) return;
+ 
  if (_k->_verbosity >= KORALI_MINIMAL)
    printf("[Korali] Generation %ld - Duration: %fs (Total Elapsed Time: %fs)\n", currentGeneration, std::chrono::duration<double>(t1-t0).count(), std::chrono::duration<double>(t1-startTime).count());
 

@@ -105,14 +105,15 @@ void Korali::Solver::TMCMC::getConfiguration(nlohmann::json& js)
 {
  js["Solver"] = "TMCMC";
 
- js["TMCMC"]["Population Size"]          = _s;
- js["TMCMC"]["Coefficient of Variation"] = _tolCOV;
- js["TMCMC"]["Min Rho Update"]           = _minStep;
- js["TMCMC"]["Max Rho Update"]           = _maxStep;
- js["TMCMC"]["Covariance Scaling"]       = _beta2;
- js["TMCMC"]["Use Local Covariance"]     = _useLocalCov;
- js["TMCMC"]["Burn In"]                  = _burnin;
- js["TMCMC"]["Result Output Frequency"]  = _resultOutputFrequency;
+ js["TMCMC"]["Population Size"]           = _s;
+ js["TMCMC"]["Coefficient of Variation"]  = _tolCOV;
+ js["TMCMC"]["Min Rho Update"]            = _minStep;
+ js["TMCMC"]["Max Rho Update"]            = _maxStep;
+ js["TMCMC"]["Covariance Scaling"]        = _beta2;
+ js["TMCMC"]["Use Local Covariance"]      = _useLocalCov;
+ js["TMCMC"]["Burn In"]                   = _burnin;
+ js["TMCMC"]["Result Output Frequency"]   = _resultOutputFrequency;
+ js["TMCMC"]["Terminal Output Frequency"] = _terminalOutputFrequency;
  
  for (size_t i = 0; i < _k->N; i++) js["Variables"][i]["MCMC"]["Log Space"] = _variableLogSpace[i];
  
@@ -140,7 +141,8 @@ void Korali::Solver::TMCMC::getConfiguration(nlohmann::json& js)
 
 void Korali::Solver::TMCMC::setConfiguration(nlohmann::json& js)
 {
- _resultOutputFrequency = consume(js, { "TMCMC", "Result Output Frequency" }, KORALI_NUMBER, std::to_string(1));
+ _resultOutputFrequency   = consume(js, { "TMCMC", "Result Output Frequency" }, KORALI_NUMBER, std::to_string(1));
+ _terminalOutputFrequency = consume(js, { "TMCMC", "Terminal Output Frequency" }, KORALI_NUMBER, std::to_string(1));
  
  _s                 = consume(js, { "TMCMC", "Population Size" }, KORALI_NUMBER);
  _tolCOV            = consume(js, { "TMCMC", "Coefficient of Variation" }, KORALI_NUMBER, std::to_string(1.0));
@@ -599,6 +601,8 @@ void Korali::Solver::TMCMC::saveState() const
 
 void Korali::Solver::TMCMC::printGeneration() const
 {
+ if (_currentGeneration % _terminalOutputFrequency != 0) return;
+ 
  if (_k->_verbosity >= KORALI_MINIMAL)
  {
   printf("--------------------------------------------------------------------\n");

@@ -165,7 +165,8 @@ void Korali::Solver::CMAES::getConfiguration(nlohmann::json& js)
 {
  js["Solver"] = "CMA-ES";
 
- js["CMA-ES"]["Result Output Frequency"] = _resultOutputFrequency;
+ js["CMA-ES"]["Result Output Frequency"]   = _resultOutputFrequency;
+ js["CMA-ES"]["Terminal Output Frequency"] = _terminalOutputFrequency;
 
  js["CMA-ES"]["Sample Count"]            = _s;
  js["CMA-ES"]["Sigma Cumulation Factor"] = _sigmaCumulationFactor;
@@ -267,7 +268,8 @@ void Korali::Solver::CMAES::getConfiguration(nlohmann::json& js)
 
 void CMAES::setConfiguration(nlohmann::json& js)
 {
- _resultOutputFrequency = consume(js, { "CMA-ES", "Result Output Frequency" }, KORALI_NUMBER, std::to_string(1));
+ _resultOutputFrequency   = consume(js, { "CMA-ES", "Result Output Frequency" }, KORALI_NUMBER, std::to_string(1));
+ _terminalOutputFrequency = consume(js, { "CMA-ES", "Terminal Output Frequency" }, KORALI_NUMBER, std::to_string(1));
  
  _s                             = consume(js, { "CMA-ES", "Sample Count" }, KORALI_NUMBER);
  _sigmaCumulationFactorIn       = consume(js, { "CMA-ES", "Sigma Cumulation Factor" }, KORALI_NUMBER, std::to_string(-1));
@@ -1229,7 +1231,7 @@ void Korali::Solver::CMAES::saveState() const
 
 void CMAES::printGeneration() const
 {
- if (_currentGeneration % _resultOutputFrequency != 0) return;
+ if (_currentGeneration % _terminalOutputFrequency != 0) return;
 
  if (_k->_verbosity >= KORALI_MINIMAL)
    printf("[Korali] Generation %ld - Duration: %fs (Total Elapsed Time: %fs)\n", _currentGeneration, std::chrono::duration<double>(t1-t0).count(), std::chrono::duration<double>(t1-startTime).count());

@@ -112,7 +112,7 @@ void Korali::Solver::TMCMC::getConfiguration(nlohmann::json& js)
  js["TMCMC"]["Covariance Scaling"]       = _beta2;
  js["TMCMC"]["Use Local Covariance"]     = _useLocalCov;
  js["TMCMC"]["Burn In"]                  = _burnin;
- js["TMCMC"]["Result Output Frequency"]  = _resultOutputFrequency;
+ js["TMCMC"]["Result Output Frequency"]  = resultOutputFrequency;
  
  for (size_t i = 0; i < _k->N; i++) js["Variables"][i]["MCMC"]["Log Space"] = _variableLogSpace[i];
  
@@ -140,7 +140,7 @@ void Korali::Solver::TMCMC::getConfiguration(nlohmann::json& js)
 
 void Korali::Solver::TMCMC::setConfiguration(nlohmann::json& js)
 {
- _resultOutputFrequency = consume(js, { "TMCMC", "Result Output Frequency" }, KORALI_NUMBER, std::to_string(1));
+ resultOutputFrequency = consume(js, { "TMCMC", "Result Output Frequency" }, KORALI_NUMBER, std::to_string(1));
  
  _s                 = consume(js, { "TMCMC", "Population Size" }, KORALI_NUMBER);
  _tolCOV            = consume(js, { "TMCMC", "Coefficient of Variation" }, KORALI_NUMBER, std::to_string(1.0));
@@ -593,7 +593,7 @@ bool Korali::Solver::TMCMC::checkTermination()
 
 void Korali::Solver::TMCMC::saveState() const
 {
- if (_isFinished || (_currentGeneration % _resultOutputFrequency) == 0) _k->saveState(_currentGeneration);
+ if (_isFinished || (_currentGeneration % resultOutputFrequency) == 0) _k->saveState(_currentGeneration);
 }
 
 

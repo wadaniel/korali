@@ -17,7 +17,6 @@ class Base {
  std::chrono::time_point<std::chrono::system_clock> t0, t1, t2, t3;
 
  bool _isFinished;
- size_t _resultOutputFrequency;
 
  // Running Methods
  virtual void run() = 0;

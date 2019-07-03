@@ -15,6 +15,8 @@ class TMCMC : public Base
  TMCMC(nlohmann::json& js);
  ~TMCMC();
 
+ size_t resultOutputFrequency;
+
  // TMCMC Configuration
  double _tolCOV; /* Target coefficient of variation of weights */
  double _minStep; /* Min update of rho */

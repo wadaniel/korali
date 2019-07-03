@@ -5,7 +5,7 @@
 | **Korali Team**             |            |
 | :---------------- |:----------------:|
 | ![](images/george.jpg){: style="height:120px"} | **George Arampatzis** <br> **Email:** garampat [at] ethz.ch <br> **Web:** [cse-lab.ethz.ch/member/georgios-arampatzis/](https://www.cse-lab.ethz.ch/member/georgios-arampatzi/) |
-| ![](images/sergio.jpg){: style="height:120px"} | **Sergio Martin** <br> **Email:** martiser [at] ethz.ch <br> **Web:** [cse-lab.ethz.ch/member/sergiom-martin/](https://www.cse-lab.ethz.ch/member/sergiom-martin/) |
+| ![](images/sergio.jpg){: style="height:120px"} | **Sergio Martin** <br> **Email:** martiser [at] ethz.ch <br> **Web:** [cse-lab.ethz.ch/member/sergio-martin/](https://www.cse-lab.ethz.ch/member/sergio-martin/) |
 | ![](images/daniel.jpg){: style="height:120px"} | **Daniel Wälchli** <br> **Email:** wadaniel [at] ethz.ch <br> **Web:** [cse-lab.ethz.ch/member/daniel-walchli/](https://www.cse-lab.ethz.ch/member/daniel-walchli/) |
 
 | **Director**             |            |

@@ -95,7 +95,7 @@ void Korali::Solver::DE::getConfiguration(nlohmann::json& js)
 {
  js["Solver"] = "DE";
  
- js["DE"]["Result Output Frequency"] = _resultOutputFrequency;
+ js["DE"]["Result Output Frequency"] = resultOutputFrequency;
 
  js["DE"]["Sample Count"]    = _s;
  js["DE"]["Crossover Rate"]  = _crossoverRate;
@@ -157,7 +157,7 @@ void Korali::Solver::DE::getConfiguration(nlohmann::json& js)
 void DE::setConfiguration(nlohmann::json& js)
 {  
  
- _resultOutputFrequency = consume(js, { "DE", "Result Output Frequency" }, KORALI_NUMBER, std::to_string(1));
+ resultOutputFrequency = consume(js, { "DE", "Result Output Frequency" }, KORALI_NUMBER, std::to_string(1));
  
  _objective                     = consume(js, { "DE", "Objective" }, KORALI_STRING, "Maximize");
  _s                             = consume(js, { "DE", "Sample Count" }, KORALI_NUMBER); // 5x - 10x Dim
@@ -573,7 +573,7 @@ size_t DE::maxIdx(const double *rgd, size_t len) const
 
 void Korali::Solver::DE::saveState() const
 {
- if (_isFinished || (currentGeneration % _resultOutputFrequency) == 0) _k->saveState(currentGeneration);
+ if (_isFinished || (currentGeneration % resultOutputFrequency) == 0) _k->saveState(currentGeneration);
 }
 
 

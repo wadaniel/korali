@@ -15,6 +15,8 @@ class DE : public Base
  DE(nlohmann::json& js, std::string name);
  ~DE();
 
+ size_t resultOutputFrequency;
+
  // These are DE-Specific, but could be used for other methods in the future
  double* _lowerBounds;
  double* _upperBounds;

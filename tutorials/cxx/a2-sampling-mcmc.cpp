@@ -14,7 +14,7 @@ int main(int argc, char* argv[])
 
  k["MCMC"]["Burn In"] = 500;
  k["MCMC"]["Chain Length"]  = 5000;
- k["MCMC"]["Adaptive Sampling"]  = true;
+ k["MCMC"]["Use Adaptive Sampling"]  = true;
  k["MCMC"]["Result Output Frequency"]  = 5000;
 
  k.setModel([](Korali::ModelData& d) { directModel(d.getVariables(), d.getResults()); });

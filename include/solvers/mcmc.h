@@ -8,7 +8,10 @@
 namespace Korali { namespace Solver {
 
 /******************************************************************************
-Solver Name: Markov Chain Monte Carlo
+Solver Description
+Name: Markov Chain Monte Carlo
+Short Name: MCMC
+Class: MCMC
 Type: Sampler
 Description:
 This is an implementation of the *Delayed Rejection Adaptive Metropolis* algorithm,
@@ -27,10 +30,7 @@ class MCMC : public Base
  public:
 
 /******************************************************************************
-* Solver Settings
-******************************************************************************/
-
-/******************************************************************************
+Solver Setting
 Name: Result Output Frequency
 Type: Integer
 Mandatory: No
@@ -41,6 +41,7 @@ Specifies the output frequency of intermediate result files.
 size_t resultOutputFrequency;
 
 /******************************************************************************
+Solver Setting
 Name: Terminal Output Frequency
 Type: Integer
 Mandatory: No
@@ -51,6 +52,7 @@ Specifies the output frequency onto the terminal screen.
 size_t terminalOutputFrequency;
 
 /******************************************************************************
+Solver Setting
 Name: Chain Length
 Type: Integer
 Mandatory: Yes
@@ -61,6 +63,7 @@ Specifies the output frequency of intermediate result files.
 size_t chainLength;
 
 /******************************************************************************
+Solver Setting
 Name: Burn In
 Type: Integer
 Mandatory: No
@@ -72,8 +75,7 @@ This may reduce effects from improper initialization.
 size_t burnIn;
 
 /******************************************************************************
-* Solver Setting
-*******************************************************************************
+Solver Setting
 Name: Rejection Levels
 Type: Integer
 Mandatory: No
@@ -84,6 +86,7 @@ Controls the number of accept-reject stages per MCMC step.
 size_t rejectionLevels;
 
 /******************************************************************************
+Solver Setting
 Name: Use Adaptive Sampling
 Type: Boolean
 Mandatory: No
@@ -97,6 +100,7 @@ A "False" value corresponds to the standard Metropolis Hastings.
 bool useAdaptiveSampling;
 
 /******************************************************************************
+Solver Setting
 Name: Non Adaption Period
 Type: Integer
 Mandatory: No
@@ -109,6 +113,7 @@ set this value to $5%$ of the Chain Length.
 size_t nonAdaptionPeriod;
 
 /******************************************************************************
+Solver Setting
 Name: Chain Covariance Scaling
 Type: Real
 Mandatory: No
@@ -121,6 +126,7 @@ variables: $\frac{2.4^2}{N}$ [Gelman1995].
 double chainCovarianceScaling;
 
 /******************************************************************************
+Solver Setting
 Name: Chain Covariance Increment
 Type: Real
 Mandatory: No
@@ -131,10 +137,7 @@ Small constant to avoid singularity of the chain covariance.
 double chainCovarianceIncrement;
 
 /******************************************************************************
-* Variable Settings
-******************************************************************************/
-
-/******************************************************************************
+Variable Setting
 Name: Initial Mean
 Type: Real
 Mandatory: Yes
@@ -145,6 +148,7 @@ Specifies the Initial Mean of the proposal distribution.
 std::vector<double> variableInitialMeans;
 
 /******************************************************************************
+Variable Setting
 Name: Standard Deviation
 Type: Real
 Mandatory: Yes
@@ -157,6 +161,7 @@ its diagonal.
 std::vector<double> variableStandardDeviations;
 
 /******************************************************************************
+Variable Setting
 Name: Log Space
 Type: Boolean
 Mandatory: No
@@ -167,10 +172,7 @@ Indicates whether the variable is expressed in Logarithmic Space.
 std::vector<bool> variableLogSpaces;
 
 /******************************************************************************
-* Termination Criteria
-******************************************************************************/
-
-/******************************************************************************
+Termination Criterion
 Name: Max Function Evaluations
 Type: Integer
 Mandatory: No

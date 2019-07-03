@@ -8,9 +8,7 @@
 namespace Korali { namespace Solver {
 
 /******************************************************************************
-* Korali Solver
-*******************************************************************************
-Name: Markov Chain Monte Carlo
+Solver Name: Markov Chain Monte Carlo
 Type: Sampler
 Description:
 This is an implementation of the *Delayed Rejection Adaptive Metropolis* algorithm,

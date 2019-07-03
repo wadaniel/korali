@@ -13,7 +13,7 @@
 /*                  Constructor / Destructor Methods                    */
 /************************************************************************/
 
-Korali::Solver::MCMC::MCMC(nlohmann::json& js, std::string name)
+Korali::Solver::MCMC::MCMC(nlohmann::json& js)
 {
  setConfiguration(js);
 

@@ -12,7 +12,7 @@ class DE : public Base
  public:
 
  // Constructor / Destructor
- DE(nlohmann::json& js, std::string name);
+ DE(nlohmann::json& js);
  ~DE();
 
  // These are DE-Specific, but could be used for other methods in the future

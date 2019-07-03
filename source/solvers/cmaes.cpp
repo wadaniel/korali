@@ -12,7 +12,7 @@ using namespace Korali::Solver;
 /*                  Constructor / Destructor Methods                    */
 /************************************************************************/
 
-CMAES::CMAES(nlohmann::json& js, std::string name)
+CMAES::CMAES(nlohmann::json& js)
 {
  
  setConfiguration(js);

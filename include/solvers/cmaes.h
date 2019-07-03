@@ -12,7 +12,7 @@ class CMAES : public Base
  public:
 
  // Constructor / Destructor
- CMAES(nlohmann::json& js, std::string name);
+ CMAES(nlohmann::json& js);
  ~CMAES();
 
  // These are CMA-ES Specific, but could be used for other methods in the future

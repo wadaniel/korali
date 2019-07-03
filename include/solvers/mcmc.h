@@ -12,7 +12,7 @@ class MCMC : public Base
  public:
 
  // Constructor / Destructor
- MCMC(nlohmann::json& js, std::string name);
+ MCMC(nlohmann::json& js);
  ~MCMC();
 
  // MCMC Configuration

@@ -232,6 +232,9 @@ bool maxFunctionEvaluationsEnabled;
  bool setCandidatePriorAndCheck(size_t sampleIdx);
  bool checkTermination() override;
 
+ void setConfiguration() override {};
+ void getConfiguration() override {};
+
  // Print Methods
  void printGeneration() const;
  void printFinal() const;

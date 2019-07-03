@@ -2,6 +2,8 @@
 
 import os
 
+configFile = open("config.cpp","w+")
+
 def getDescription(fobj):
  line = fobj.readline()
  description = ''
@@ -12,6 +14,12 @@ def getDescription(fobj):
 
 def parseFile(f):
 
+ solverName = ''
+ solverShortName = ''
+ solverClass = ''
+ solverType = ''
+ solverDescription = ''
+    
  solverSettingNames = []
  solverSettingTypes = []
  solverSettingMandatoryFlags = []
@@ -31,72 +39,66 @@ def parseFile(f):
  terminationCriteriaDefaultStates = []
  terminationCriteriaDescriptions = []
 
- with open(f, 'r') as file_object:
-  line = file_object.readline()
+ with open(f, 'r') as file:
+  line = file.readline()
   while line:
   
    ## Resolving Solver Data
    if (line.startswith('Solver Description')):
-    solverName = file_object.replace('Solver Name:', '').strip()
-    solverShortName = file_object.replace('Solver Name:', '').strip()
-    solverClass = file_object.replace('Class:', '').strip()
-    solverType = file_object.readline().replace('Type:', '').strip()
-    solverDescription = getDescription(file_object)
+    solverName = file.readline().replace('Name:', '').strip()
+    solverShortName = file.readline().replace('Short Name:', '').strip()
+    solverClass = file.readline().replace('Class:', '').strip()
+    solverType = file.readline().replace('Type:', '').strip()
+    solverDescription = getDescription(file)
      
    ## Resolving Solver Settings
    if (line.startswith('Solver Setting')):
-    solverSettingNames.append(file_object.readline().replace('Name:', '').strip())
-    solverSettingTypes.append(file_object.readline().replace('Type:', '').strip())
-    solverSettingMandatoryFlags.append(file_object.readline().replace('Mandatory:', '').strip())
-    solverSettingDefaultValues.append(file_object.readline().replace('Default Value:', '').strip())
-    solverSettingDescription.append(getDescription(file_object))
+    solverSettingNames.append(file.readline().replace('Name:', '').strip())
+    solverSettingTypes.append(file.readline().replace('Type:', '').strip())
+    solverSettingMandatoryFlags.append(file.readline().replace('Mandatory:', '').strip())
+    solverSettingDefaultValues.append(file.readline().replace('Default Value:', '').strip())
+    solverSettingDescription.append(getDescription(file))
     
    ## Resolving Solver Settings
    if (line.startswith('Variable Setting')):
-    variableSettingNames.append(file_object.readline().replace('Name:', '').strip())
-    variableSettingTypes.append(file_object.readline().replace('Type:', '').strip())
-    variableSettingMandatoryFlags.append(file_object.readline().replace('Mandatory:', '').strip())
-    variableSettingDefaultValues.append(file_object.readline().replace('Default Value:', '').strip())
-    variableSettingDescription.append(getDescription(file_object))
+    variableSettingNames.append(file.readline().replace('Name:', '').strip())
+    variableSettingTypes.append(file.readline().replace('Type:', '').strip())
+    variableSettingMandatoryFlags.append(file.readline().replace('Mandatory:', '').strip())
+    variableSettingDefaultValues.append(file.readline().replace('Default Value:', '').strip())
+    variableSettingDescription.append(getDescription(file))
     
    ## Resolving Solver Settings
    if (line.startswith('Termination Criterion')):
-    terminationCriteriaNames.append(file_object.readline().replace('Name:', '').strip())
-    terminationCriteriaTypes.append(file_object.readline().replace('Type:', '').strip())
-    terminationCriteriaMandatoryFlags.append(file_object.readline().replace('Mandatory:', '').strip())
-    terminationCriteriaDefaultValues.append(file_object.readline().replace('Default Value:', '').strip())
-    terminationCriteriaDefaultStates.append(file_object.readline().replace('Default State:', '').strip())
-    terminationCriteriaDescriptions.append(getDescription(file_object))
+    terminationCriteriaNames.append(file.readline().replace('Name:', '').strip())
+    terminationCriteriaTypes.append(file.readline().replace('Type:', '').strip())
+    terminationCriteriaMandatoryFlags.append(file.readline().replace('Mandatory:', '').strip())
+    terminationCriteriaDefaultValues.append(file.readline().replace('Default Value:', '').strip())
+    terminationCriteriaDefaultStates.append(file.readline().replace('Default State:', '').strip())
+    terminationCriteriaDescriptions.append(getDescription(file))
           
-   line = file_object.readline()
+   line = file.readline()
  
- # Print Results
-  for i in range(len(solverSettingNames)):
-   print(solverSettingNames[i])
-   print(solverSettingTypes[i])
-   print(solverSettingMandatoryFlags[i])
-   print(solverSettingDefaultValues[i])
-   print(solverSettingDescription[i])
-   
-def main():
- # Finding Solver Header Files
- path = '../include/solvers'
-
- files = []
- for r, d, f in os.walk(path):
-  for file in f:
-   if '.h' in file:
-    files.append(os.path.join(r, file))
-
- # Parse each file
- for f in files:
-  print('Processing: ' + f + '...')
-  parseFile(f) 
+ # Save solver configuration
+ configFile.write('Korali::' + solverClass + '::setConfiguration() \n{')
+ 
+ #for i in range(len(solverSettingNames)):
+  #print(solverSettingNames[i])
+  #print(solverSettingTypes[i])
+  #print(solverSettingMandatoryFlags[i])
+  #print(solverSettingDefaultValues[i])
+  #print(solverSettingDescription[i]) 
   
-main()
+ configFile.write('\n} \n\n') 
+
+# Finding Solver Header Files
+path = '../include/solvers'
+for r, d, f in os.walk(path):
+ for filePath in f:
+  if '.h' in filePath:
+   if not 'base.h' in filePath:
+    print('Processing: ' + filePath + '...')
+    parseFile(os.path.join(r, filePath)) 
    
-   
-   
-   
+configFile.close()    
    
    

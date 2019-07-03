@@ -7,6 +7,15 @@
 
 namespace Korali { namespace Solver {
 
+/******************************************************************************
+Solver Description
+Name: CMA-ES
+Short Name: CMA-ES
+Class: CMAES
+Type: Optimizer
+Description:
+******************************************************************************/
+
 class CMAES : public Base
 {
  public:
@@ -177,6 +186,9 @@ class CMAES : public Base
  void updateViabilityBoundaries(); /* update & shrink viability boundaries */
  void handleConstraints(); /* covariance adaption for invalid samples */
  void reEvaluateConstraints(); /* re evaluate constraints, in handleConstraints,  count violations etc.. */
+
+ void setConfiguration() override;
+ void getConfiguration() override;
 
  // Print Methods
  void printGeneration() const;

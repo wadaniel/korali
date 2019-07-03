@@ -8,7 +8,7 @@ LDFLAGS += $(PYBIND11LIBS)
 
 all: libkorali.so libkorali.a
 
-SOURCES = $(shell find . -name "*.cpp")
+SOURCES = $(shell find . -name "*.cpp") config.cpp
 OBJECTS_STATIC = $(SOURCES:.cpp=.static.o)
 OBJECTS_SHARED = $(SOURCES:.cpp=.shared.o)
 
@@ -24,7 +24,10 @@ libkorali.so: $(OBJECTS_SHARED)
 libkorali.a: $(OBJECTS_STATIC)
 	ar rs $@ $^
 
+config.cpp:
+	python3 ./build_config.py
+
 clean:
-	@rm -rf *.so *.a $(OBJECTS_STATIC) $(OBJECTS_SHARED)
+	@rm -rf *.so *.a config.cpp $(OBJECTS_STATIC) $(OBJECTS_SHARED)
 
 .PHONY: clean all

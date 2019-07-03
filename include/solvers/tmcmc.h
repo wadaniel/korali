@@ -7,6 +7,15 @@
 
 namespace Korali { namespace Solver {
 
+/******************************************************************************
+Solver Description
+Name: TMCMC
+Short Name: TMCMC
+Class: TMCMC
+Type: Sampler
+Description:
+******************************************************************************/
+
 class TMCMC : public Base
 {
  public:
@@ -73,6 +82,9 @@ class TMCMC : public Base
  bool isFeasibleCandidate(size_t candidate) const;
  static double tmcmc_objlogp(double x, const double *fj, size_t fn, double pj, double zero);
  static double objLog(const gsl_vector *v, void *param);
+
+ void setConfiguration() override {};
+ void getConfiguration() override {};
 
  // Print Methods
  void printGeneration() const;

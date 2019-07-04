@@ -8,11 +8,9 @@
 namespace Korali { namespace Solver {
 
 /******************************************************************************
-Solver Description
-Name: TMCMC
-Short Name: TMCMC
-Class: TMCMC
-Type: Sampler
+Module Name: TMCMC
+Type: Solver, Sampler
+Alias: TMCMC
 Description:
 ******************************************************************************/
 

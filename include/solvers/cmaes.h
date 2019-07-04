@@ -8,11 +8,9 @@
 namespace Korali { namespace Solver {
 
 /******************************************************************************
-Solver Description
-Name: CMA-ES
-Short Name: CMA-ES
-Class: CMAES
-Type: Optimizer
+Module Name: CMAES
+Type: Solver, Optimizer
+Alias: CMAES
 Description:
 ******************************************************************************/
 

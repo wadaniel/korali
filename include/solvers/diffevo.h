@@ -8,11 +8,9 @@
 namespace Korali { namespace Solver {
 
 /******************************************************************************
-Solver Description
-Name: Differential Evolution
-Short Name: DE
-Class: DE
-Type: Optimizer
+Module Name: Differential Evolution
+Type: Solver, Optimizer
+Alias: DE
 Description:
 ******************************************************************************/
 

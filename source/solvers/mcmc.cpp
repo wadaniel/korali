@@ -9,6 +9,40 @@
 #include <gsl/gsl_statistics.h>
 #include <gsl/gsl_multimin.h>
 
+void Korali::Solver::MCMC::run()
+{
+ initialize();
+
+ if (_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Starting MCMC.\n");
+
+ startTime = std::chrono::system_clock::now();
+
+ while(!checkTermination())
+ {
+  t0 = std::chrono::system_clock::now();
+
+  rejections = 0;
+  while( rejections < rejectionLevels )
+  {
+    generateCandidate(rejections);
+    evaluateSample();
+    _k->_conduit->checkProgress();
+    acceptReject(rejections);
+    rejections++;
+  }
+  chainLength++;
+  if (chainLength > burnIn ) updateDatabase(clPoint, clLogLikelihood);
+  updateState();
+
+  t1 = std::chrono::system_clock::now();
+
+  printGeneration();
+ }
+
+ printFinal();
+
+ endTime = std::chrono::system_clock::now();
+}
 
 void Korali::Solver::MCMC::initialize()
 {
@@ -21,8 +55,8 @@ void Korali::Solver::MCMC::initialize()
  ccLogPriors        = (double*) calloc (rejectionLevels, sizeof(double));
  ccLogLikelihoods   = (double*) calloc (rejectionLevels, sizeof(double));
  alpha              = (double*) calloc (rejectionLevels, sizeof(double));
- databasePoints     = (double*) calloc (_k->N*chainLength, sizeof(double));
- databaseFitness    = (double*) calloc (chainLength, sizeof(double));
+ databasePoints     = (double*) calloc (_k->N*maxChainLength, sizeof(double));
+ databaseFitness    = (double*) calloc (maxChainLength, sizeof(double));
  chainMean          = (double*) calloc (_k->N, sizeof(double));
  tmpC               = (double*) calloc (_k->N*_k->N , sizeof(double));
  chainCov           = (double*) calloc (_k->N*_k->N , sizeof(double));
@@ -58,40 +92,6 @@ void Korali::Solver::MCMC::initialize()
  clLogLikelihood          = -std::numeric_limits<double>::max();
  acceptanceRateProposals  = 1.0;
 }
-
-void Korali::Solver::MCMC::run()
-{
- if (_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Starting MCMC.\n");
- 
- startTime = std::chrono::system_clock::now();
-
- while(!checkTermination())
- {
-  t0 = std::chrono::system_clock::now();
-
-  rejections = 0;
-  while( rejections < rejectionLevels )
-  {
-    generateCandidate(rejections);
-    evaluateSample();
-    _k->_conduit->checkProgress();
-    acceptReject(rejections);
-    rejections++;
-  }
-  chainLength++;
-  if (chainLength > burnIn ) updateDatabase(clPoint, clLogLikelihood);
-  updateState();
-
-  t1 = std::chrono::system_clock::now();
-
-  printGeneration();
- }
-
- printFinal();
-
- endTime = std::chrono::system_clock::now();
-}
-
 
 void Korali::Solver::MCMC::processSample(size_t sampleIdx, double fitness)
 {
@@ -251,7 +251,7 @@ bool Korali::Solver::MCMC::checkTermination()
   sprintf(_terminationReason, "Max Function Evaluations reached (%zu)",  countevals);
  }
  
- if ( databaseEntries == chainLength)
+ if ( databaseEntries == maxChainLength)
  {
   _isFinished = true;
   sprintf(_terminationReason, "Chainlength (%zu) reached.",  chainLength);

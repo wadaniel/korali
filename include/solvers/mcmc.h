@@ -8,11 +8,9 @@
 namespace Korali { namespace Solver {
 
 /******************************************************************************
-Solver Description
-Name: Markov Chain Monte Carlo
-Short Name: MCMC
-Class: MCMC
-Type: Sampler
+Module Name: Markov Chain Monte Carlo
+Type: Solver, Sampler
+Alias: MCMC
 Description:
 This is an implementation of the *Delayed Rejection Adaptive Metropolis* algorithm,
 as published in [Haario2006](https://link.springer.com/article/10.1007%2Fs11222-006-9438-0).
@@ -30,44 +28,48 @@ class MCMC : public Base
  public:
 
 /******************************************************************************
-Solver Setting
-Name: Result Output Frequency
-Type: Integer
+Setting Name: Result Output Frequency
+Type: Solver Setting
+Format: Integer
 Mandatory: No
 Default Value: 1
+Default Enabled:
 Description:
 Specifies the output frequency of intermediate result files.
 ******************************************************************************/
 size_t resultOutputFrequency;
 
 /******************************************************************************
-Solver Setting
-Name: Terminal Output Frequency
-Type: Integer
+Setting Name: Terminal Output Frequency
+Type: Solver Setting
+Format: Integer
 Mandatory: No
 Default Value: 1
+Default Enabled:
 Description:
 Specifies the output frequency onto the terminal screen.
 ******************************************************************************/
 size_t terminalOutputFrequency;
 
 /******************************************************************************
-Solver Setting
-Name: Chain Length
-Type: Integer
+Setting Name: Chain Length
+Type: Solver Setting
+Format: Integer
 Mandatory: Yes
 Default Value:
+Default Enabled:
 Description:
 Specifies the output frequency of intermediate result files.
 ******************************************************************************/
-size_t chainLength;
+size_t maxChainLength;
 
 /******************************************************************************
-Solver Setting
-Name: Burn In
-Type: Integer
+Setting Name: Burn In
+Type: Solver Setting
+Format: Integer
 Mandatory: No
 Default Value: 0
+Default Enabled:
 Description:
 Specifies the number of preliminary MCMC steps before samples are being drawn.
 This may reduce effects from improper initialization.
@@ -75,36 +77,39 @@ This may reduce effects from improper initialization.
 size_t burnIn;
 
 /******************************************************************************
-Solver Setting
-Name: Rejection Levels
-Type: Integer
+Setting Name: Rejection Levels
+Type: Solver Setting
+Format: Integer
 Mandatory: No
 Default Value: 1
+Default Enabled:
 Description:
 Controls the number of accept-reject stages per MCMC step.
 ******************************************************************************/
 size_t rejectionLevels;
 
 /******************************************************************************
-Solver Setting
-Name: Use Adaptive Sampling
-Type: Boolean
+Setting Name: Use Adaptive Sampling
+Type: Solver Setting
+Format: Boolean
 Mandatory: No
-Default Value: False
+Default Value: false
+Default Enabled:
 Description:
 Specifies if covariance matrix of the proposal distribution is calculated from
 the samples.
 
-A "False" value corresponds to the standard Metropolis Hastings.
+A "false" value corresponds to the standard Metropolis Hastings.
 ******************************************************************************/
 bool useAdaptiveSampling;
 
 /******************************************************************************
-Solver Setting
-Name: Non Adaption Period
-Type: Integer
+Setting Name: Non Adaption Period
+Type: Solver Setting
+Format: Integer
 Mandatory: No
 Default Value: 0
+Default Enabled:
 Description:
 Number of steps (after Burn In steps) during which the initial standard deviation
 is used (only relevant for Adaptive Sampling). If "0" is specified, Korali will
@@ -113,11 +118,12 @@ set this value to $5%$ of the Chain Length.
 size_t nonAdaptionPeriod;
 
 /******************************************************************************
-Solver Setting
-Name: Chain Covariance Scaling
-Type: Real
+Setting Name: Chain Covariance Scaling
+Type: Solver Setting
+Format: Real
 Mandatory: No
 Default Value: 0.0
+Default Enabled:
 Description:
 Scaling factor of the chain covariance (only relevant for Adaptive Sampling).
 If "0.0" is specified, Korali will precalibrate this factor from the number of
@@ -126,33 +132,36 @@ variables: $\frac{2.4^2}{N}$ [Gelman1995].
 double chainCovarianceScaling;
 
 /******************************************************************************
-Solver Setting
-Name: Chain Covariance Increment
-Type: Real
+Setting Name: Chain Covariance Increment
+Type: Solver Setting
+Format: Real
 Mandatory: No
 Default Value: 0.001
+Default Enabled:
 Description:
 Small constant to avoid singularity of the chain covariance.
 ******************************************************************************/
 double chainCovarianceIncrement;
 
 /******************************************************************************
-Variable Setting
-Name: Initial Mean
-Type: Real
+Setting Name: Initial Mean
+Type: Variable Setting
+Format: Real
 Mandatory: Yes
 Default Value:
+Default Enabled:
 Description:
 Specifies the Initial Mean of the proposal distribution.
 ******************************************************************************/
 std::vector<double> variableInitialMeans;
 
 /******************************************************************************
-Variable Setting
-Name: Standard Deviation
-Type: Real
+Setting Name: Standard Deviation
+Type: Variable Setting
+Format: Real
 Mandatory: Yes
 Default Value:
+Default Enabled:
 Description:
 Specifies the Standard Deviation for each variable. The proposal distribution
 is defined through a covariance matrix with the variance of the variables in
@@ -161,23 +170,24 @@ its diagonal.
 std::vector<double> variableStandardDeviations;
 
 /******************************************************************************
-Variable Setting
-Name: Log Space
-Type: Boolean
+Setting Name: Log Space
+Type: Variable Setting
+Format: Boolean
 Mandatory: No
-Default Value: False
+Default Value: false
+Default Enabled:
 Description:
 Indicates whether the variable is expressed in Logarithmic Space.
 ******************************************************************************/
 std::vector<bool> variableLogSpaces;
 
 /******************************************************************************
-Termination Criterion
-Name: Max Function Evaluations
-Type: Integer
+Setting Name: Max Function Evaluations
+Type: Termination Criterion
+Format: Integer
 Mandatory: No
 Default Value: 100000
-Default State: Enabled
+Default Enabled: true
 Description:
 Specifies the maximum number of function evaluations (only relevant if
 Rejection Levels are large).
@@ -212,6 +222,7 @@ bool maxFunctionEvaluationsEnabled;
  double* chainMean; /* Mean of mcmc chain */
  double* tmpC; /* Placeholder chain cov calculation */
  double* chainCov; /* Variance of mcmc chain */
+ size_t chainLength;
 
  // MCMC Status variables
  double* _covarianceMatrix; /* Covariance of Proposal Distribution */

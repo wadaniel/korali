@@ -57,10 +57,6 @@ def parseFile(f):
     
    line = file.readline()
   
- # Creating setConfiguration()
-
- configFile.write('void Korali::Solver::' + solverAlias + '::setConfiguration() \n{\n')
- 
  ## Post-processing variable information
  
  for i in range(len(settingNames)):
@@ -76,6 +72,10 @@ def parseFile(f):
    settingKoraliDataTypes.append('KORALI_STRING')
   if (settingFormats[i] == 'Boolean'):
    settingKoraliDataTypes.append('KORALI_BOOLEAN')
+
+ # Creating setConfiguration()
+
+ configFile.write('void Korali::Solver::' + solverAlias + '::setConfiguration() \n{\n')
 
  ## Writing Solver Settings
  for i in range(len(settingNames)):   
@@ -127,8 +127,29 @@ def parseFile(f):
  # Creating getConfiguration()
  
  configFile.write('void Korali::Solver::' + solverAlias + '::getConfiguration() \n{\n')
- configFile.write('printf("Getting ' + solverAlias + ' configuration. \\n");\n')
- configFile.write('\n} \n\n') 
+
+ ## Writing Solver Settings
+ for i in range(len(settingNames)):   
+  if (settingTypes[i] == 'Solver Setting'):
+   configFile.write(' _k->_js["' + solverAlias + '"]["' + settingNames[i] + '"] = ' + settingVariableNames[i] + ';\n')
+ 
+ ## Writing Variable Settings
+ configFile.write('\n\n for(size_t i = 0; i < _k->N; i++) \n { \n')
+  
+ for i in range(len(settingNames)): 
+  if (settingTypes[i] == 'Variable Setting'):
+   configFile.write('  _k->_js["Variables"][i]["' + settingNames[i] + '"] = ' + settingVariableNames[i] + ';\n')
+   
+ configFile.write(' } \n\n')
+ 
+ ## Writing Termination Criteria
+ 
+ for i in range(len(settingNames)):   
+  if (settingTypes[i] == 'Termination Criterion'):
+   configFile.write(' _k->_js["' + solverAlias + '"]["Termination Criteria"]["' + settingNames[i] + '"]["Value"] = ' + settingVariableNames[i] + ';\n')
+   configFile.write(' _k->_js["' + solverAlias + '"]["Termination Criteria"]["' + settingNames[i] + '"]["State"] = ' + settingStateNames[i] + ';\n') 
+ 
+ configFile.write('} \n\n') 
 
 # Initializing Config File
 

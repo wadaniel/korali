@@ -18,7 +18,7 @@ typedef struct fparam_s {
 
 void Korali::Solver::TMCMC::initialize()
 {
-// Setting Chain-Specific Seeds
+ // Setting Chain-Specific Seeds
  range = gsl_rng_alloc (gsl_rng_default);
  gsl_rng_set(range, _k->_seed++);
 

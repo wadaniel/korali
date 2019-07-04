@@ -8,29 +8,151 @@
 namespace Korali { namespace Solver {
 
 /******************************************************************************
-Module Name: TMCMC
+Module Name: Transitional Markov Chain Monte Carlo
 Type: Solver, Sampler
 Alias: TMCMC
 Description:
+This is the implementation of the *Transitional Markov Chain Monte Carlo*
+algorithm, as published in [Ching2007](https://ascelibrary.org/doi/abs/10.1061/%28ASCE%290733-9399%282007%29133%3A7%28816%29).
+
+TMCMC avoids sampling from difficult target probability densities
+(e.g. posterior distributions in a Bayesian inference problem) but samples from
+a series of intermediate PDFs that converge to the target PDF.
+This technique is also known as Sampling Importance Resampling in the Bayesian community.
+
+**Requirements:**
+
++ The *Population Size* used at every generation needs to be defined.
++ The *Problem* needs to be of type Bayesian.
 ******************************************************************************/
 
 class TMCMC : public Base
 {
  public:
 
- size_t resultOutputFrequency;
- size_t terminalOutputFrequency;
+/******************************************************************************
+Setting Name: Result Output Frequency
+Type: Solver Setting
+Format: Integer
+Mandatory: No
+Default Value: 1
+Default Enabled:
+Description:
+Specifies the output frequency of intermediate result files.
+******************************************************************************/
+size_t resultOutputFrequency;
 
- // TMCMC Configuration
- double _tolCOV; /* Target coefficient of variation of weights */
- double _minStep; /* Min update of rho */
- double _maxStep; /* Max update of rho */
- double _beta2; /* Covariance scaling parameter */
- unsigned int _s; /* Population Size */
- bool _useLocalCov; /* Using local covariance instead of sample cov */
- size_t _burnin; /* burn in generations */
- size_t _termCondMaxGens; /* maximal number of generations */
- bool _isTermCondMaxGens; /* maximal number of generations */
+/******************************************************************************
+Setting Name: Terminal Output Frequency
+Type: Solver Setting
+Format: Integer
+Mandatory: No
+Default Value: 1
+Default Enabled:
+Description:
+Specifies the output frequency onto the terminal screen.
+******************************************************************************/
+size_t terminalOutputFrequency;
+
+/******************************************************************************
+Setting Name: Population Size
+Type: Solver Setting
+Format: Integer
+Mandatory: Yes
+Default Value:
+Default Enabled:
+Description:
+Specifies the number of samples drawn from the posterior distribution at each generation.
+******************************************************************************/
+size_t populationSize;
+
+/******************************************************************************
+Setting Name: Burn In
+Type: Solver Setting
+Format: Integer
+Mandatory: No
+Default Value: 0
+Default Enabled:
+Description:
+Specifies the number of additional MCMC steps per sample per generation.
+Note that only the last sample per chain is considered for the recombination.
+******************************************************************************/
+size_t burnIn;
+
+/******************************************************************************
+Setting Name: Coefficient of Variation
+Type: Solver Setting
+Format: Real
+Mandatory: No
+Default Value: 1.0
+Default Enabled:
+Description:
+Target coefficient of variation to search for the exponent $\rho_{i+1}$.
+By default, Korali will set this value to 1.00 as suggested in [Ching2007].
+******************************************************************************/
+double coefficientOfVariation;
+
+/******************************************************************************
+Setting Name: Covariance Scaling
+Type: Solver Setting
+Format: Real
+Mandatory: No
+Default Value: 0.04
+Default Enabled:
+Description:
+Covariance scaling factor $\beta^2$ of proposal distribution.
+By default, Korali sets this value 0.04 as suggested in [Ching2007].
+******************************************************************************/
+double covarianceScaling;
+
+/******************************************************************************
+Setting Name: Use Local Covariance
+Type: Solver Setting
+Format: Boolean
+Mandatory: No
+Default Value: false
+Default Enabled:
+Description:
+If $true, TMCMC calculates a local covariance matrix per sample from its neighbours.
+******************************************************************************/
+bool useLocalCovariance;
+
+/******************************************************************************
+Setting Name: Min Rho Update
+Type: Solver Setting
+Format: Real
+Mandatory: No
+Default Value: 0.00001
+Default Enabled:
+Description:
+Minimum increment of the exponent $\rho_{i+1}$. This parameter prevents TMCMC from stalling.
+******************************************************************************/
+double minRhoUpdate;
+
+/******************************************************************************
+Setting Name: Max Rho Update
+Type: Solver Setting
+Format: Real
+Mandatory: No
+Default Value: 1.0
+Default Enabled:
+Description:
+Maximum increment of the exponent $\rho{i+1}$. By default, Korali will set this value to 1.0 (inactive).
+******************************************************************************/
+double maxRhoUpdate;
+
+/******************************************************************************
+Setting Name: Max Function Evaluations
+Type: Termination Criterion
+Format: Integer
+Mandatory: No
+Default Value: 20
+Default Enabled: true
+Description:
+Specifies the maximum number of generations to run.
+******************************************************************************/
+size_t maxGenerations;
+bool maxGenerationsEnabled;
 
  // TMCMC Runtime Variables
  gsl_rng  *range;

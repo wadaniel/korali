@@ -62,7 +62,6 @@ void Korali::Solver::TMCMC::initialize()
  // Init Generation
  _isFinished = false;
  _countevals               = 0;
- _currentGeneration        = 0;
  _databaseEntries          = 0;
  _coefficientOfVariation   = 0;
  _annealingExponent        = 0;
@@ -75,49 +74,26 @@ void Korali::Solver::TMCMC::initialize()
  _nChains                  = populationSize;
  for (size_t c = 0; c < _nChains; c++) chainCurrentStep[c] = 0;
  for (size_t c = 0; c < _nChains; c++) chainPendingFitness[c] = false;
-}
 
-void Korali::Solver::TMCMC::run()
-{
- initialize();
-
- if (_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Starting TMCMC.\n");
- 
- startTime = std::chrono::system_clock::now();
-
- // Generation 0
  initializeSamples();
  printGeneration();
- _currentGeneration++;
+ _k->currentGeneration++;
+}
 
- // Generation 1 to N
- while(!checkTermination())
- {
-  t0 = std::chrono::system_clock::now();
+void Korali::Solver::TMCMC::runGeneration()
+{
+	resampleGeneration();
 
-  // Generating Samples
-  resampleGeneration();
-
-  while (finishedChains < _nChains)
-  {
-   for (size_t c = 0; c < _nChains; c++) if (chainCurrentStep[c] < chainLength[c]) if (chainPendingFitness[c] == false)
-   {
-    chainPendingFitness[c] = true;
-    generateCandidate(c);
-    evaluateSample(c);
-   }
-   _k->_conduit->checkProgress();
-  }
-
-  t1 = std::chrono::system_clock::now();
-
-  printGeneration();
-
-  _currentGeneration++;
-
- }
-
- endTime = std::chrono::system_clock::now();
+	while (finishedChains < _nChains)
+	{
+	 for (size_t c = 0; c < _nChains; c++) if (chainCurrentStep[c] < chainLength[c]) if (chainPendingFitness[c] == false)
+	 {
+		chainPendingFitness[c] = true;
+		generateCandidate(c);
+		evaluateSample(c);
+	 }
+	 _k->_conduit->checkProgress();
+	}
 }
 
 void Korali::Solver::TMCMC::processSample(size_t c, double fitness)
@@ -477,25 +453,27 @@ bool Korali::Solver::TMCMC::isFeasibleCandidate(size_t c) const
 bool Korali::Solver::TMCMC::checkTermination()
 {
 
- _isFinished = (maxGenerationsEnabled && (_currentGeneration < maxGenerations));
+ _isFinished = (maxGenerationsEnabled && (_k->currentGeneration < maxGenerations));
 
  _isFinished = (_annealingExponent >= 1.0);
 
  return _isFinished;
 }
 
-void Korali::Solver::TMCMC::printGeneration() const
+void Korali::Solver::TMCMC::finalize()
 {
- if (_currentGeneration % terminalOutputFrequency != 0) return;
+
+}
+
+void Korali::Solver::TMCMC::printGeneration()
+{
+ if (_k->currentGeneration % terminalOutputFrequency != 0) return;
  
  if (_k->_verbosity >= KORALI_MINIMAL)
  {
   printf("--------------------------------------------------------------------\n");
-  printf("[Korali] Generation %ld - Annealing Exponent:  %.3e.\n", _currentGeneration, _annealingExponent);
-  if (_currentGeneration > 0) printf("[Korali] Duration: %fs (Elapsed Time: %.2fs)\n",  
-                                        std::chrono::duration<double>(t1-t0).count() , 
-                                        std::chrono::duration<double>(t1-startTime).count());
-  if (maxGenerationsEnabled && (_currentGeneration == maxGenerations)) printf("[Korali] Max Generation Reached.\n");
+  printf("[Korali] Generation %ld - Annealing Exponent:  %.3e.\n", _k->currentGeneration, _annealingExponent);
+  if (maxGenerationsEnabled && (_k->currentGeneration == maxGenerations)) printf("[Korali] Max Generation Reached.\n");
  }
 
  if (_k->_verbosity >= KORALI_NORMAL)

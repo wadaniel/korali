@@ -49,6 +49,7 @@ class Engine {
  std::vector<fcon> _fconstraints;
 
  size_t N; // Variable Count size_t N; // Variable Count
+ size_t currentGeneration;
 
  std::vector<Korali::Variable*> _variables;
  Korali::Conduit::Base* _conduit;

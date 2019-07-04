@@ -36,8 +36,11 @@ class DE : public Base
  void prepareGeneration();
  bool checkTermination() override;
  void updateDistribution(const double *fitnessVector);
+
  void initialize() override;
- void run() override;
+ void finalize() override;
+
+ void runGeneration() override;
  void processSample(size_t sampleId, double fitness) override;
 
  private:
@@ -59,7 +62,6 @@ class DE : public Base
  Variable* _uniformGenerator;
 
  size_t _s; /* number of samples per generation */
- size_t currentGeneration; /* generation count */
  size_t finishedSamples; /* counter of evaluated samples to terminate evaluation */
 
  // Stop conditions
@@ -106,10 +108,7 @@ class DE : public Base
  
  void setConfiguration() override;
  void getConfiguration() override;
-
- // Print Methods
- void printGeneration() const;
- void printFinal() const;
+ void printGeneration() override;
 };
 
 } } // namespace Korali::Solver

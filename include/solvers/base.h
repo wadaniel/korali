@@ -12,19 +12,19 @@ namespace Korali { namespace Solver {
 class Base {
  public:
 
- std::chrono::time_point<std::chrono::system_clock> startTime, endTime;
- std::chrono::time_point<std::chrono::system_clock> t0, t1, t2, t3;
-
  bool _isFinished;
 
- virtual void run() = 0;
  virtual void initialize() = 0;
+ virtual void finalize() = 0;
+
+ virtual void printGeneration() = 0;
+ virtual void runGeneration() = 0;
+ virtual bool checkTermination() = 0;
 
  virtual void setConfiguration() = 0;
  virtual void getConfiguration() = 0;
 
  virtual void processSample(size_t sampleId, double fitness) = 0;
- virtual bool checkTermination() = 0;
 };
 
 } } // namespace Korali::Solver

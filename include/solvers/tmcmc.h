@@ -170,7 +170,6 @@ bool maxGenerationsEnabled;
  // TMCMC Status variables
  size_t  _countevals; /* Number of function evaluations */
  size_t  _nChains; /* Unique selections after resampling (forming new chain) */
- size_t  _currentGeneration; /* Generation */
  double  _coefficientOfVariation; /* Actual coefficient of variation of weights */
  double  _annealingExponent; /* Annealing exponent */
  size_t  _uniqueEntries; /* Accepted samples after proposal */
@@ -187,7 +186,9 @@ bool maxGenerationsEnabled;
 
   // Korali Methods
  void initialize() override;
- void run() override;
+ void finalize() override;
+
+ void runGeneration() override;
  void processSample(size_t c, double fitness) override;
  bool checkTermination() override;
 
@@ -205,9 +206,7 @@ bool maxGenerationsEnabled;
 
  void setConfiguration() override;
  void getConfiguration() override;
-
- // Print Methods
- void printGeneration() const;
+ void printGeneration() override;
 };
 
 } } // namespace Korali::Solver

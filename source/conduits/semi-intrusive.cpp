@@ -35,9 +35,12 @@ void SemiIntrusive::setConfiguration(nlohmann::json& js)
 /*                    Functional Methods                                */
 /************************************************************************/
 
-void SemiIntrusive::run()
+void SemiIntrusive::initialize()
 {
- _k->_solver->run();
+}
+
+void SemiIntrusive::finalize()
+{
 }
 
 void SemiIntrusive::evaluateSample(double* sampleArray, size_t sampleId)

@@ -88,20 +88,22 @@ void Distributed::setConfiguration(nlohmann::json& js)
 /*                    Functional Methods                                */
 /************************************************************************/
 
-void Distributed::run()
+void Distributed::initialize()
 {
- if (isRoot())
- {
-   _k->_solver->run();
+ if (!isRoot()) workerThread();
+}
 
-   int continueFlag = 0;
-   for (int i = 0; i < _teamCount; i++)
-    for (int j = 0; j < _ranksPerTeam; j++)
-     MPI_Send(&continueFlag, 1, MPI_INT, _teamWorkers[i][j], MPI_TAG_CONTINUE, MPI_COMM_WORLD);
- }
- else workerThread();
+void Distributed::finalize()
+{
+	if (isRoot())
+	{
+	 int continueFlag = 0;
+	  for (int i = 0; i < _teamCount; i++)
+	 	 for (int j = 0; j < _ranksPerTeam; j++)
+		  MPI_Send(&continueFlag, 1, MPI_INT, _teamWorkers[i][j], MPI_TAG_CONTINUE, MPI_COMM_WORLD);
+	}
 
- MPI_Barrier(MPI_COMM_WORLD);
+  MPI_Barrier(MPI_COMM_WORLD);
 }
 
 void Distributed::workerThread()

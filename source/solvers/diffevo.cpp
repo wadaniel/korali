@@ -28,7 +28,6 @@ void DE::initialize()
 
  // Init Generation
  _isFinished = false;
- currentGeneration = 0;
 
  // Initializing Generators 
  auto jsGaussian = nlohmann::json();
@@ -66,35 +65,15 @@ void DE::initialize()
 						_upperBounds[i]);
 	 rgxmean[i] = rgxoldmean[i] = _initialMeans[i];
  }
+
+ initSamples();
 }
 
-void DE::run()
+void DE::runGeneration()
 {
- if (_k->_verbosity >= KORALI_MINIMAL) {
-   printf("[Korali] Starting Differential Evolution (Objective: %s).\n", _objective.c_str());
-   printf("--------------------------------------------------------------------\n");
- }
- 
- startTime = std::chrono::system_clock::now();
- initSamples();
-
- while(!checkTermination())
- {
-   t0 = std::chrono::system_clock::now();
-   prepareGeneration();
-   evaluateSamples(); 
-   updateSolver(fitnessVector);
-   currentGeneration++;
-
-   t1 = std::chrono::system_clock::now();
-
-   printGeneration();
- }
-
- endTime = std::chrono::system_clock::now();
-
- printFinal();
-
+ prepareGeneration();
+ evaluateSamples();
+ updateSolver(fitnessVector);
 }
 
 
@@ -317,26 +296,26 @@ void DE::updateSolver(const double *fitnessVector)
 bool DE::checkTermination()
 {
 
- if ( _isTermCondMinFitness && (currentGeneration > 1) && (bestEver >= _termCondMinFitness) )
+ if ( _isTermCondMinFitness && (_k->currentGeneration > 1) && (bestEver >= _termCondMinFitness) )
  {
   _isFinished = true;
   sprintf(_terminationReason, "Fitness Value (%+6.3e) > (%+6.3e).",  bestEver, _termCondMinFitness);
  }
  
- if ( _isTermCondMaxFitness && (currentGeneration > 1) && (bestEver >= _termCondMaxFitness) )
+ if ( _isTermCondMaxFitness && (_k->currentGeneration > 1) && (bestEver >= _termCondMaxFitness) )
  {
   _isFinished = true;
   sprintf(_terminationReason, "Fitness Value (%+6.3e) > (%+6.3e).",  bestEver, _termCondMaxFitness);
  }
 
  double range = fabs(currentFunctionValue - prevFunctionValue);
- if ( _isTermCondFitnessDiffThreshold && (currentGeneration > 1) && (range < _termCondFitnessDiffThreshold) )
+ if ( _isTermCondFitnessDiffThreshold && (_k->currentGeneration > 1) && (range < _termCondFitnessDiffThreshold) )
  {
   _isFinished = true;
   sprintf(_terminationReason, "Fitness Diff Threshold (%+6.3e) < (%+6.3e).",  range, _termCondFitnessDiffThreshold);
  }
  
- if ( _isTermCondMinDeltaX && (currentGeneration > 1) )
+ if ( _isTermCondMinDeltaX && (_k->currentGeneration > 1) )
  {
    size_t cTemp = 0;
    for(size_t d = 0; d < _k->N; ++d) cTemp += (fabs(rgxmean[d] - rgxoldmean[d]) < _termCondMinDeltaX) ? 1 : 0;
@@ -353,7 +332,7 @@ bool DE::checkTermination()
   sprintf(_terminationReason, "Conducted %lu function evaluations >= (%lu).", countevals, _termCondMaxFitnessEvaluations);
  }
 
- if( _isTermCondMaxGenerations && (currentGeneration >= _termCondMaxGenerations) )
+ if( _isTermCondMaxGenerations && (_k->currentGeneration >= _termCondMaxGenerations) )
  {
   _isFinished = true;
   sprintf(_terminationReason, "Maximum number of Generations reached (%lu).", _termCondMaxGenerations);
@@ -375,14 +354,11 @@ size_t DE::maxIdx(const double *rgd, size_t len) const
  return res;
 }
 
-void DE::printGeneration() const
+void DE::printGeneration()
 {
 
- if (currentGeneration % terminalOutputFrequency != 0) return;
+ if (_k->currentGeneration % terminalOutputFrequency != 0) return;
  
- if (_k->_verbosity >= KORALI_MINIMAL)
-   printf("[Korali] Generation %ld - Duration: %fs (Total Elapsed Time: %fs)\n", currentGeneration, std::chrono::duration<double>(t1-t0).count(), std::chrono::duration<double>(t1-startTime).count());
-
  if (_k->_verbosity >= KORALI_NORMAL)
  {
   printf("[Korali] Current Function Value: Max = %+6.3e - Best = %+6.3e\n", currentFunctionValue, bestEver);
@@ -403,7 +379,7 @@ void DE::printGeneration() const
    printf("--------------------------------------------------------------------\n");
 }
 
-void DE::printFinal() const
+void DE::finalize()
 {
  if (_k->_verbosity >= KORALI_MINIMAL)
  {
@@ -414,7 +390,6 @@ void DE::printFinal() const
     printf("[Korali] Number of Function Evaluations: %zu\n", countevals);
     printf("[Korali] Number of Infeasible Samples: %zu\n", countinfeasible);
     printf("[Korali] Stopping Criterium: %s\n", _terminationReason);
-    printf("[Korali] Total Elapsed Time: %fs\n", std::chrono::duration<double>(endTime-startTime).count());
     printf("--------------------------------------------------------------------\n");
  }
 }

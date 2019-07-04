@@ -33,8 +33,11 @@ class CMAES : public Base
  void prepareGeneration();
  bool checkTermination() override;
  void updateDistribution(const double *fitnessVector);
+
  void initialize() override;
- void run() override;
+ void finalize() override;
+
+ void runGeneration() override;
  void processSample(size_t sampleId, double fitness) override;
 
  private:
@@ -44,7 +47,6 @@ class CMAES : public Base
  std::string _objective; /* Maximize or Minimize */ 
  double* _fitnessVector; /* objective function values [_s] */
  double* _samplePopulation; /* sample coordinates [_s x _k->N] */
- size_t _currentGeneration; /* generation count */
  bool* _initializedSample; /* flag to distribute work */
  char _terminationReason[500]; /* buffer for exit reason */
  double*_transformedSamples;
@@ -187,10 +189,8 @@ class CMAES : public Base
 
  void setConfiguration() override;
  void getConfiguration() override;
+ void printGeneration() override;
 
- // Print Methods
- void printGeneration() const;
- void printFinal() const;
 };
 
 } // namespace Korali::Solver

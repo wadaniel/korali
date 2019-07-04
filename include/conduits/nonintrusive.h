@@ -21,7 +21,9 @@ class Nonintrusive : public Base {
  std::map<int, pid_t> _launcherIdToProcessIdMap;
  std::map<pid_t, int> _processIdMapToLauncherIdMap;
 
- void run() override;
+ void initialize() override;
+ void finalize() override;
+
  void evaluateSample(double* sampleArray, size_t sampleId) override;
  void checkProgress() override;
  bool isRoot() override;

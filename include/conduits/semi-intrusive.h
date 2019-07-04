@@ -8,7 +8,9 @@ namespace Korali { namespace Conduit {
 class SemiIntrusive : public Base {
  public:
 
- void run() override;
+ void initialize() override;
+ void finalize() override;
+
  void evaluateSample(double* sampleArray, size_t sampleId) override;
  void checkProgress() override;
  bool isRoot() override;

@@ -203,8 +203,33 @@ void Korali::Engine::run()
  // Creating Results directory
  mkdir(_result_dir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
+ std::chrono::time_point<std::chrono::system_clock> startTime, endTime;
+ std::chrono::time_point<std::chrono::system_clock> t0, t1, t2, t3;
+
  // Running Engine
- _conduit->run();
+ _conduit->initialize();
+ _solver->initialize();
+
+ startTime = std::chrono::system_clock::now();
+
+ currentGeneration = 0;
+
+ while(!_solver->checkTermination())
+ {
+   t0 = std::chrono::system_clock::now();
+
+   _solver->runGeneration();
+   currentGeneration++;
+
+   t1 = std::chrono::system_clock::now();
+
+   _solver->printGeneration();
+ }
+
+ endTime = std::chrono::system_clock::now();
+
+ _solver->finalize();
+ _conduit->finalize();
 
  if (_conduit->isRoot()) if(_verbosity >= KORALI_MINIMAL) printf("[Korali] Results saved to folder: '%s'\n", _result_dir.c_str());
 }

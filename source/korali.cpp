@@ -103,7 +103,7 @@ nlohmann::json Korali::Engine::getConfiguration()
  return js;
 }
 
-void Korali::Engine::setConfiguration(nlohmann::json js)
+void Korali::Engine::setConfiguration()
 {
  // Configure Korali Engine
  _variables.clear();
@@ -116,24 +116,24 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
   fread(&_seed, 1, sizeof(size_t), fid);
   fclose(fid);
  }
- _seed = consume(js, { "Seed" }, KORALI_NUMBER, std::to_string(_seed));
+ _seed = consume(_js, { "Seed" }, KORALI_NUMBER, std::to_string(_seed));
  gsl_rng_env_setup();
 
   _verbosity = KORALI_UNDEFINED;
- std::string vLevel = consume(js, { "Verbosity" }, KORALI_STRING, "Normal");
+ std::string vLevel = consume(_js, { "Verbosity" }, KORALI_STRING, "Normal");
  if (vLevel == "Silent")   _verbosity = KORALI_SILENT;
  if (vLevel == "Minimal")  _verbosity = KORALI_MINIMAL;
  if (vLevel == "Normal")   _verbosity = KORALI_NORMAL;
  if (vLevel == "Detailed") _verbosity = KORALI_DETAILED;
  if (_verbosity == KORALI_UNDEFINED) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Vebosity Level '%s'.", vLevel.c_str()); exit(-1); }
 
- _result_dir = consume(js, { "Result Directory" }, KORALI_STRING, "_korali_result");
+ _result_dir = consume(_js, { "Result Directory" }, KORALI_STRING, "_korali_result");
 
  // Configure Problem
 
- std::string pName = consume(js, { "Problem" }, KORALI_STRING);
- if (pName == "Direct Evaluation")   { _problem = new Korali::Problem::Direct(js); }
- if (pName == "Bayesian") { _problem = new Korali::Problem::Bayesian(js); }
+ std::string pName = consume(_js, { "Problem" }, KORALI_STRING);
+ if (pName == "Direct Evaluation")   { _problem = new Korali::Problem::Direct(_js); }
+ if (pName == "Bayesian") { _problem = new Korali::Problem::Bayesian(_js); }
  if (_problem == nullptr) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Problem '%s'.", pName.c_str()); exit(-1); }
 
  N = _variables.size();
@@ -143,31 +143,36 @@ void Korali::Engine::setConfiguration(nlohmann::json js)
 
  int rankCount = 1;
 
- std::string conduitType =  consume(js, { "Conduit" }, KORALI_STRING, "Semi-Intrusive");
+ std::string conduitType =  consume(_js, { "Conduit" }, KORALI_STRING, "Semi-Intrusive");
 
- if (conduitType == "Semi-Intrusive") _conduit = new Korali::Conduit::SemiIntrusive(js["Conduit"]);
+ if (conduitType == "Semi-Intrusive") _conduit = new Korali::Conduit::SemiIntrusive(_js["Conduit"]);
  #ifdef _KORALI_USE_MPI
- if (conduitType == "Distributed") _conduit = new Korali::Conduit::Distributed(js["Conduit"]);
+ if (conduitType == "Distributed") _conduit = new Korali::Conduit::Distributed(_js["Conduit"]);
  #else
  if (conduitType == "Distributed") { fprintf(stderr, "[Korali] Error: Distributed Conduit selected, but Korali has not been compiled with MPI or UPC++ support.\n"); exit(-1); }
  #endif
- if (conduitType == "Nonintrusive") _conduit = new Korali::Conduit::Nonintrusive(js["Conduit"]);
+ if (conduitType == "Nonintrusive") _conduit = new Korali::Conduit::Nonintrusive(_js["Conduit"]);
 
  if (_conduit == nullptr) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Conduit '%s'.\n", conduitType.c_str()); exit(-1); }
 
  // Configure Solver
 
- std::string solverName = consume(js, { "Solver" }, KORALI_STRING);
+ std::string solverName = consume(_js, { "Solver" }, KORALI_STRING);
  if (solverName == "CMA-ES")  _solver = new Korali::Solver::CMAES();
  if (solverName == "DE")      _solver = new Korali::Solver::DE();
  if (solverName == "MCMC")    _solver = new Korali::Solver::MCMC();
  if (solverName == "TMCMC")   _solver = new Korali::Solver::TMCMC();
  if (_solver == nullptr) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Solver '%s'.", solverName.c_str()); exit(-1); }
 
- if (isEmpty(js) == false)
+ // Setting module configuration
+// _problem->setConfiguration();
+// _conduit->setConfiguration();
+ _solver->setConfiguration();
+
+ if (isEmpty(_js) == false)
  {
   fprintf(stderr, "[Korali] Error: Unrecognized Settings for Korali:\n");
-  fprintf(stderr, "%s\n", js.dump(2).c_str());
+  fprintf(stderr, "%s\n", _js.dump(2).c_str());
   exit(-1);
  }
 
@@ -193,7 +198,7 @@ void Korali::Engine::run()
 {
  _k = this;
 
- setConfiguration(_js);
+ setConfiguration();
 
  // Creating Results directory
  mkdir(_result_dir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);

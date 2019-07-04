@@ -24,13 +24,15 @@ def parseFile(f):
  solverSettingTypes = []
  solverSettingMandatoryFlags = []
  solverSettingDefaultValues = []
- solverSettingDescription = []
+ solverSettingDescriptions = []
+ solverSettingDeclarations = []
  
  variableSettingNames = []
  variableSettingTypes = []
  variableSettingMandatoryFlags = []
  variableSettingDefaultValues = []
- variableSettingDescription = []
+ variableSettingDescriptions = []
+ variableSettingDeclarations = []
  
  terminationCriteriaNames = []
  terminationCriteriaTypes = []
@@ -38,6 +40,7 @@ def parseFile(f):
  terminationCriteriaDefaultValues = []
  terminationCriteriaDefaultStates = []
  terminationCriteriaDescriptions = []
+ terminationCriteriaDeclarations = []
 
  with open(f, 'r') as file:
   line = file.readline()
@@ -57,17 +60,19 @@ def parseFile(f):
     solverSettingTypes.append(file.readline().replace('Type:', '').strip())
     solverSettingMandatoryFlags.append(file.readline().replace('Mandatory:', '').strip())
     solverSettingDefaultValues.append(file.readline().replace('Default Value:', '').strip())
-    solverSettingDescription.append(getDescription(file))
+    solverSettingDescriptions.append(getDescription(file))
+    solverSettingDeclarations.append(file.readline().strip())
     
-   ## Resolving Solver Settings
+   ## Resolving Variable Settings
    if (line.startswith('Variable Setting')):
     variableSettingNames.append(file.readline().replace('Name:', '').strip())
     variableSettingTypes.append(file.readline().replace('Type:', '').strip())
     variableSettingMandatoryFlags.append(file.readline().replace('Mandatory:', '').strip())
     variableSettingDefaultValues.append(file.readline().replace('Default Value:', '').strip())
-    variableSettingDescription.append(getDescription(file))
+    variableSettingDescriptions.append(getDescription(file))
+    variableSettingDeclarations.append(file.readline().strip())
     
-   ## Resolving Solver Settings
+   ## Resolving Termination Criteria
    if (line.startswith('Termination Criterion')):
     terminationCriteriaNames.append(file.readline().replace('Name:', '').strip())
     terminationCriteriaTypes.append(file.readline().replace('Type:', '').strip())
@@ -75,20 +80,53 @@ def parseFile(f):
     terminationCriteriaDefaultValues.append(file.readline().replace('Default Value:', '').strip())
     terminationCriteriaDefaultStates.append(file.readline().replace('Default State:', '').strip())
     terminationCriteriaDescriptions.append(getDescription(file))
+    terminationCriteriaDeclarations.append(file.readline().strip())
           
    line = file.readline()
+  
+ # Creating setConfiguration()
+
+ configFile.write('void Korali::Solver::' + solverClass + '::setConfiguration() \n{\n\n')
+ configFile.write('printf("Setting ' + solverClass + ' configuration. \\n");\n\n')
  
- # Save solver configuration
- configFile.write('Korali::' + solverClass + '::setConfiguration() \n{')
+ for i in range(len(solverSettingNames)):
  
- #for i in range(len(solverSettingNames)):
-  #print(solverSettingNames[i])
-  #print(solverSettingTypes[i])
-  #print(solverSettingMandatoryFlags[i])
-  #print(solverSettingDefaultValues[i])
-  #print(solverSettingDescription[i]) 
+  if (solverSettingTypes[i] == 'Integer'):
+   koraliVarType = 'KORALI_NUMBER'
+   varName = solverSettingDeclarations[i].replace('size_t', '').replace(';', '').strip()
+   
+  if (solverSettingTypes[i] == 'Real'):
+   koraliVarType = 'KORALI_NUMBER'
+   varName = solverSettingDeclarations[i].replace('double', '').replace(';', '').strip()
+  
+  if (solverSettingTypes[i] == 'String'):
+   koraliVarType = 'KORALI_STRING'
+   varName = solverSettingDeclarations[i].replace('std::string', '').replace(';', '').strip()
+  
+  if (solverSettingTypes[i] == 'Boolean'):
+   koraliVarType = 'KORALI_BOOLEAN'
+   varName = solverSettingDeclarations[i].replace('bool', '').replace(';', '').strip()
+  
+  configFile.write(varName + ' =  consume(_k->_js, { "')
+  
+  configFile.write(solverShortName + '", "' + solverSettingNames[i] + '" }, ' + koraliVarType)
+  
+  if (solverSettingDefaultValues[i] != ''): 
+   configFile.write(', "' + solverSettingDefaultValues[i] + '"' )
+  
+  configFile.write('); \n')
   
  configFile.write('\n} \n\n') 
+ 
+ # Creating getConfiguration()
+ 
+ configFile.write('void Korali::Solver::' + solverClass + '::getConfiguration() \n{\n')
+ configFile.write('printf("Getting ' + solverClass + ' configuration. \\n");\n')
+ configFile.write('\n} \n\n') 
+
+# Initializing Config File
+
+configFile.write('#include "korali.h"\n\n')
 
 # Finding Solver Header Files
 path = '../include/solvers'

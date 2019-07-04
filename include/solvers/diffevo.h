@@ -106,8 +106,8 @@ class DE : public Base
  // Helper Methods
  size_t maxIdx(const double *rgd, size_t len) const;
  
- void setConfiguration() override {};
- void getConfiguration() override {};
+ void setConfiguration() override;
+ void getConfiguration() override;
 
  // Print Methods
  void printGeneration() const;

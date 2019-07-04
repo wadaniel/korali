@@ -84,7 +84,7 @@ class Engine {
 
  // Serialization Methods
  nlohmann::json getConfiguration();
- void setConfiguration(nlohmann::json js);
+ void setConfiguration();
 };
 
 extern Engine* _k;

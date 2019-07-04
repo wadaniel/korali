@@ -56,7 +56,7 @@ Solver Setting
 Name: Chain Length
 Type: Integer
 Mandatory: Yes
-Default Value: ---
+Default Value:
 Description:
 Specifies the output frequency of intermediate result files.
 ******************************************************************************/
@@ -141,7 +141,7 @@ Variable Setting
 Name: Initial Mean
 Type: Real
 Mandatory: Yes
-Default Value: ---
+Default Value:
 Description:
 Specifies the Initial Mean of the proposal distribution.
 ******************************************************************************/
@@ -152,7 +152,7 @@ Variable Setting
 Name: Standard Deviation
 Type: Real
 Mandatory: Yes
-Default Value: ---
+Default Value:
 Description:
 Specifies the Standard Deviation for each variable. The proposal distribution
 is defined through a covariance matrix with the variance of the variables in
@@ -232,8 +232,8 @@ bool maxFunctionEvaluationsEnabled;
  bool setCandidatePriorAndCheck(size_t sampleIdx);
  bool checkTermination() override;
 
- void setConfiguration() override {};
- void getConfiguration() override {};
+ void setConfiguration() override;
+ void getConfiguration() override;
 
  // Print Methods
  void printGeneration() const;

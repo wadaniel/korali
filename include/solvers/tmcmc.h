@@ -83,8 +83,8 @@ class TMCMC : public Base
  static double tmcmc_objlogp(double x, const double *fj, size_t fn, double pj, double zero);
  static double objLog(const gsl_vector *v, void *param);
 
- void setConfiguration() override {};
- void getConfiguration() override {};
+ void setConfiguration() override;
+ void getConfiguration() override;
 
  // Print Methods
  void printGeneration() const;

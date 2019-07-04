@@ -84,7 +84,7 @@ class Engine {
  std::string _result_dir;
 
  // Serialization Methods
- nlohmann::json getConfiguration();
+ void getConfiguration();
  void setConfiguration();
 };
 

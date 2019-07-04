@@ -84,23 +84,23 @@ Korali::Engine::~Engine()
 /*                    Configuration Methods                             */
 /************************************************************************/
 
-nlohmann::json Korali::Engine::getConfiguration()
+void Korali::Engine::getConfiguration()
 {
  auto js = nlohmann::json();
+ _js = js;
 
- js["Seed"]      = _seed;
+ _js["Seed"]      = _seed;
  
- if (_verbosity == KORALI_SILENT)   js["Verbosity"] = "Silent";
- if (_verbosity == KORALI_MINIMAL)  js["Verbosity"] = "Minimal";
- if (_verbosity == KORALI_NORMAL)   js["Verbosity"] = "Normal";
- if (_verbosity == KORALI_DETAILED) js["Verbosity"] = "Detailed";
+ if (_verbosity == KORALI_SILENT)   _js["Verbosity"] = "Silent";
+ if (_verbosity == KORALI_MINIMAL)  _js["Verbosity"] = "Minimal";
+ if (_verbosity == KORALI_NORMAL)   _js["Verbosity"] = "Normal";
+ if (_verbosity == KORALI_DETAILED) _js["Verbosity"] = "Detailed";
  
- js["Result Directory"] = _result_dir;
+ _js["Result Directory"] = _result_dir;
 
- if (_problem != nullptr) _problem->getConfiguration(js);
- if (_conduit != nullptr) _conduit->getConfiguration(js);
-
- return js;
+ if (_problem != nullptr) _problem->getConfiguration(_js);
+ if (_conduit != nullptr) _conduit->getConfiguration(_js);
+ if (_conduit != nullptr) _solver->getConfiguration();
 }
 
 void Korali::Engine::setConfiguration()
@@ -216,14 +216,15 @@ void Korali::Engine::run()
 
  while(!_solver->checkTermination())
  {
-   t0 = std::chrono::system_clock::now();
+	t0 = std::chrono::system_clock::now();
 
-   _solver->runGeneration();
-   currentGeneration++;
+	_solver->runGeneration();
+	currentGeneration++;
 
-   t1 = std::chrono::system_clock::now();
+	t1 = std::chrono::system_clock::now();
 
-   _solver->printGeneration();
+	_solver->printGeneration();
+	saveState(currentGeneration);
  }
 
  endTime = std::chrono::system_clock::now();
@@ -244,7 +245,7 @@ void Korali::Engine::saveState(std::string fileName)
 {
  if (!_conduit->isRoot()) return;
 
- _js = getConfiguration();
+ getConfiguration();
  saveJsonToFile(fileName.c_str(), _js);
 }
 
@@ -254,7 +255,7 @@ void Korali::Engine::saveState(int fileId)
 
  char fileName[256];
 
- sprintf(fileName, "./%s/s%05d.json", _result_dir.c_str(), fileId++);
+ sprintf(fileName, "./%s/s%05d.json", _result_dir.c_str(), fileId);
 
  saveState(fileName);
 }

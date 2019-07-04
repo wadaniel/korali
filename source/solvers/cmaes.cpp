@@ -152,26 +152,25 @@ void CMAES::runGeneration()
 
 void CMAES::evaluateSamples()
 {
-  for (size_t i = 0; i < _current_s; i++) for(size_t d = 0; d < _k->N; ++d)
-    if(_variableLogSpace[d] == true)
-        _transformedSamples[i*_k->N+d] = std::exp(_samplePopulation[i*_k->N+d]);
-    else
-        _transformedSamples[i*_k->N+d] = _samplePopulation[i*_k->N+d];
+ for (size_t i = 0; i < _current_s; i++) for(size_t d = 0; d < _k->N; ++d)
+  if(_variableLogSpace[d] == true)
+	 _transformedSamples[i*_k->N+d] = std::exp(_samplePopulation[i*_k->N+d]);
+	else
+	 _transformedSamples[i*_k->N+d] = _samplePopulation[i*_k->N+d];
 
-  while (_finishedSamples < _current_s)
-  {
-    for (size_t i = 0; i < _current_s; i++) if (_initializedSample[i] == false)
-    {
-      _initializedSample[i] = true;
-      _k->_conduit->evaluateSample(_transformedSamples, i); countevals++;
-    }
-    _k->_conduit->checkProgress();
-  }
+	while (_finishedSamples < _current_s)
+	{
+		for (size_t i = 0; i < _current_s; i++) if (_initializedSample[i] == false)
+		{
+			_initializedSample[i] = true;
+			_k->_conduit->evaluateSample(_transformedSamples, i); countevals++;
+		}
+		_k->_conduit->checkProgress();
+	}
 }
 
 void CMAES::initMuWeights(size_t numsamplesmu)
 {
-
  // Initializing Mu Weights
  if      (_muType == "Linear")       for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = numsamplesmu - i;
  else if (_muType == "Equal")        for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = 1.;
@@ -251,7 +250,6 @@ void CMAES::initCovariance()
 
  maxdiagC=C[0][0]; for(size_t i=1;i<_k->N;++i) if(maxdiagC<C[i][i]) maxdiagC=C[i][i];
  mindiagC=C[0][0]; for(size_t i=1;i<_k->N;++i) if(mindiagC>C[i][i]) mindiagC=C[i][i];
-
 }
 
 
@@ -272,25 +270,25 @@ void CMAES::processSample(size_t sampleId, double fitness)
 
 void CMAES::checkMeanAndSetRegime()
 {
-    if (_isViabilityRegime == false) return; /* mean already inside valid domain, no udpates */
+	if (_isViabilityRegime == false) return; /* mean already inside valid domain, no udpates */
 
-    for (size_t c = 0; c < _k->_fconstraints.size(); c++){
-      countcevals++;
-      std::vector<double> sample(rgxmean, rgxmean+_k->N);
-      if ( _k->_fconstraints[c](sample) > 0.) return; /* mean violates constraint, do nothing */
-    }
+	for (size_t c = 0; c < _k->_fconstraints.size(); c++){
+		countcevals++;
+		std::vector<double> sample(rgxmean, rgxmean+_k->N);
+		if ( _k->_fconstraints[c](sample) > 0.) return; /* mean violates constraint, do nothing */
+	}
 
-    /* mean inside domain, switch regime and update internal variables */
-    _isViabilityRegime = false;
+	/* mean inside domain, switch regime and update internal variables */
+	_isViabilityRegime = false;
 
-    for (size_t c = 0; c < _k->_fconstraints.size(); c++) { viabilityBounds[c] = 0; }
-    _current_s  = _s;
-    _current_mu = _mu;
+	for (size_t c = 0; c < _k->_fconstraints.size(); c++) { viabilityBounds[c] = 0; }
+	_current_s  = _s;
+	_current_mu = _mu;
 
-    bestEver = -std::numeric_limits<double>::max();
-    initMuWeights(_current_mu);
-    initCovCorrectionParams();
-    initCovariance();
+	bestEver = -std::numeric_limits<double>::max();
+	initMuWeights(_current_mu);
+	initCovCorrectionParams();
+	initCovariance();
 }
 
 

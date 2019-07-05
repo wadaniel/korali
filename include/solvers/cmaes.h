@@ -172,19 +172,6 @@ handling loop.
 size_t _maxCovMatrixCorrections;
  
 /******************************************************************************
-Setting Name: Max Infeasible Resampling
-Type: Solver Setting
-Format: Integer
-Mandatory: No
-Default Value: 1e9
-Default Enabled:
-Description:
-Number of resamplings per candidate per generation if sample is outside of 
-Lower and Upper Bound
-******************************************************************************/
-size_t _maxInfeasibleResamplings;
-
-/******************************************************************************
 Setting Name: Target Success Rate
 Type: Solver Setting
 Format: Real
@@ -257,6 +244,20 @@ Description:
 Specifies the output frequency onto the terminal screen.
 ******************************************************************************/
 size_t _terminalOutputFrequency;
+
+/******************************************************************************
+Setting Name: Max Infeasible Resampling
+Type: Termination Criterion
+Format: Integer
+Mandatory: No
+Default Value: 1e9
+Default Enabled: true
+Description:
+Number of resamplings per candidate per generation if sample is outside of 
+Lower and Upper Bound. 
+******************************************************************************/
+size_t _termCondMaxInfeasibleResamplings;
+bool   _termCondMaxInfeasibleResamplingsEnabled;
 
 /******************************************************************************
 Setting Name: Min Fitness

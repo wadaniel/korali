@@ -378,9 +378,11 @@ void CMAES::prepareGeneration()
      {
        countinfeasible++;
        sampleSingle(i);
-       if ( (countinfeasible - initial_infeasible) > _maxInfeasibleResamplings )
+
+       if ( _termCondMaxInfeasibleResamplingsEnabled )
+       if ( (countinfeasible - initial_infeasible) > _termCondMaxInfeasibleResamplings )
        {
-        if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Warning: Exiting resampling loop (sample %zu), max resamplings (%zu) reached.\n", i, _maxInfeasibleResamplings);
+        if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Warning: Exiting resampling loop (sample %zu), max resamplings (%zu) reached.\n", i, _termCondMaxInfeasibleResamplings);
         exit(-1);
        }
      }
@@ -620,9 +622,11 @@ void CMAES::handleConstraints()
     {
      resampled++;
      sampleSingle(i);
-     if(resampled-initial_resampled > _maxInfeasibleResamplings)
+
+     if(_termCondMaxInfeasibleResamplingsEnabled)
+     if(resampled-initial_resampled > _termCondMaxInfeasibleResamplings)
      {
-        if(_k->_verbosity >= KORALI_DETAILED) printf("[Korali] Warning: Exiting resampling loop, max resamplings (%zu) reached.\n", _maxInfeasibleResamplings);
+        if(_k->_verbosity >= KORALI_DETAILED) printf("[Korali] Warning: Exiting resampling loop, max resamplings (%zu) reached.\n", _termCondMaxInfeasibleResamplings);
         reEvaluateConstraints();
 
         return;

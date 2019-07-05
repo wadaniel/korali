@@ -154,21 +154,80 @@ Specifies the maximum number of generations to run.
 size_t maxGenerations;
 bool maxGenerationsEnabled;
 
- // TMCMC Runtime Variables
- gsl_rng  *range;
- gsl_rng** chainGSLRange;
- bool*   chainPendingFitness; /* Indicates that the fitness result for the chain is pending */
- double* ccPoints; /* Chain candidate parameter values */
- double* transformedSamples; /* Candidate parameters log transformed */
- double* ccLogLikelihood; /* Chain candidate fitness value */
- double* clPoints; /* Chain leader parameter values */
- double* clLogLikelihood; /* Chain leader fitness */
- size_t  finishedChains; 
- size_t* chainCurrentStep;
- size_t* chainLength;
+
+/******************************************************************************
+Internal Variable Name: Chain Pending Fitness
+Format: Array of Booleans
+Description:
+Indicates that the fitness result for the chain is pending
+******************************************************************************/
+std::vector<bool> chainPendingFitness;
+
+/******************************************************************************
+Internal Variable Name: Chain Candidate Parameters
+Format: Array of Reals
+Description:
+Current (theta) parameters of the chain leader sample.
+******************************************************************************/
+std::vector<double> chainCandidatesParameters;
+
+/******************************************************************************
+Internal Variable Name: Log Transformed Samples
+Format: Array of Reals
+Description:
+Candidate parameters log transformed.
+******************************************************************************/
+std::vector<double> logTransformedSamples;
+
+/******************************************************************************
+Internal Variable Name: Chain Candidates LogLikelihoods
+Format: Array of Reals
+Description:
+The logLikelihoods of the chain candidates.
+******************************************************************************/
+std::vector<double> chainCandidatesLogLikelihoods;
+
+/******************************************************************************
+Internal Variable Name: Chain Leader Parameters
+Format: Array of Reals
+Description:
+Current (theta) parameters of the chain leader sample.
+******************************************************************************/
+std::vector<double> chainLeadersParameters;
+
+/******************************************************************************
+Internal Variable Name: Chain Leaders LogLikelihoods
+Format: Array of Reals
+Description:
+The logLikelihoods of the chain leaders.
+******************************************************************************/
+std::vector<double> chainLeadersLogLikelihoods;
+
+/******************************************************************************
+Internal Variable Name: Finished Chains Count
+Format: Integer
+Description:
+Number of finished chains.
+******************************************************************************/
+size_t finishedChainsCount;
+
+/******************************************************************************
+Internal Variable Name: Current Chain Step
+Format: Array of Integers
+Description:
+The current execution step for every chain.
+******************************************************************************/
+std::vector<size_t> currentChainStep;
+
+/******************************************************************************
+Internal Variable Name: Chain Lengths
+Format: Array of Integers
+Description:
+Length for each of the chains.
+******************************************************************************/
+std::vector<size_t> chainLengths;
 
  // TMCMC Status variables
- size_t  _countevals; /* Number of function evaluations */
  size_t  _nChains; /* Unique selections after resampling (forming new chain) */
  double  _coefficientOfVariation; /* Actual coefficient of variation of weights */
  double  _annealingExponent; /* Annealing exponent */
@@ -184,6 +243,9 @@ bool maxGenerationsEnabled;
  double **local_cov; /* Local covariances of leaders */
  bool* _variableLogSpace; /* Apply log transform of variable before evaluation */
 
+ gsl_rng  *range;
+ gsl_rng** chainGSLRange;
+
   // Korali Methods
  void initialize() override;
  void finalize() override;
@@ -198,9 +260,9 @@ bool maxGenerationsEnabled;
  void updateDatabase(double* point, double fitness);
  void generateCandidate(size_t candidate);
  void evaluateSample(size_t candidate);
- void computeChainCovariances(double** chain_cov, size_t newchains) const;
- void minSearch(double const *fj, size_t fn, double pj, double objTol, double& xmin, double& fmin) const;
- bool isFeasibleCandidate(size_t candidate) const;
+ void computeChainCovariances(double** chain_cov, size_t newchains);
+ void minSearch(double const *fj, size_t fn, double pj, double objTol, double& xmin, double& fmin);
+ bool isFeasibleCandidate(size_t candidate);
  static double tmcmc_objlogp(double x, const double *fj, size_t fn, double pj, double zero);
  static double objLog(const gsl_vector *v, void *param);
 

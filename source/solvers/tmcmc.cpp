@@ -33,14 +33,14 @@ void Korali::Solver::TMCMC::initialize()
  _covarianceMatrix   = (double*) calloc (_k->N*_k->N, sizeof(double));
  _meanTheta          = (double*) calloc (_k->N, sizeof(double));
  _variableLogSpace   = (bool*) calloc (_k->N, sizeof(bool));
- transformedSamples  = (double*) calloc (_k->N*populationSize, sizeof(double));
- ccPoints            = (double*) calloc (_k->N*populationSize, sizeof(double));
- ccLogLikelihood     = (double*) calloc (populationSize, sizeof(double));
- clPoints            = (double*) calloc (_k->N*populationSize, sizeof(double));
- clLogLikelihood     = (double*) calloc (populationSize, sizeof(double));
- chainPendingFitness = (bool*)   calloc (populationSize, sizeof(bool));
- chainCurrentStep    = (size_t*) calloc (populationSize, sizeof(size_t));
- chainLength         = (size_t*) calloc (populationSize, sizeof(size_t));
+ logTransformedSamples.reserve(_k->N*populationSize);
+ chainCandidatesParameters.reserve(_k->N*populationSize);
+ chainCandidatesLogLikelihoods.reserve(populationSize);
+ chainLeadersParameters.reserve(_k->N*populationSize);
+ chainLeadersLogLikelihoods.reserve(populationSize);
+ chainPendingFitness.reserve(populationSize);
+ currentChainStep.reserve(populationSize);
+ chainLengths.reserve(populationSize);
  _databasePoints     = (double*) calloc (_k->N*populationSize, sizeof(double));
  _databaseFitness    = (double*) calloc (populationSize, sizeof(double));
 
@@ -55,24 +55,23 @@ void Korali::Solver::TMCMC::initialize()
  }
 
  // Initializing Runtime Variables
- for (size_t c = 0; c < populationSize; c++) chainCurrentStep[c] = 0;
- for (size_t c = 0; c < populationSize; c++) chainLength[c] = 1;
+ for (size_t c = 0; c < populationSize; c++) currentChainStep[c] = 0;
+ for (size_t c = 0; c < populationSize; c++) chainLengths[c] = 1;
  for (size_t c = 0; c < populationSize; c++) chainPendingFitness[c] = false;
 
  // Init Generation
  _isFinished = false;
- _countevals               = 0;
  _databaseEntries          = 0;
  _coefficientOfVariation   = 0;
  _annealingExponent        = 0;
  _logEvidence              = 0;
- finishedChains            = 0;
+ finishedChainsCount            = 0;
  _databaseEntries          = 0;
  _acceptanceRateProposals  = 1.0;
  _acceptanceRateSelections = 1.0;
  _uniqueEntries            = populationSize;
  _nChains                  = populationSize;
- for (size_t c = 0; c < _nChains; c++) chainCurrentStep[c] = 0;
+ for (size_t c = 0; c < _nChains; c++) currentChainStep[c] = 0;
  for (size_t c = 0; c < _nChains; c++) chainPendingFitness[c] = false;
 
  initializeSamples();
@@ -84,9 +83,9 @@ void Korali::Solver::TMCMC::runGeneration()
 {
  resampleGeneration();
 
- while (finishedChains < _nChains)
+ while (finishedChainsCount < _nChains)
  {
-  for (size_t c = 0; c < _nChains; c++) if (chainCurrentStep[c] < chainLength[c]) if (chainPendingFitness[c] == false)
+  for (size_t c = 0; c < _nChains; c++) if (currentChainStep[c] < chainLengths[c]) if (chainPendingFitness[c] == false)
   {
   chainPendingFitness[c] = true;
   generateCandidate(c);
@@ -98,34 +97,33 @@ void Korali::Solver::TMCMC::runGeneration()
 
 void Korali::Solver::TMCMC::processSample(size_t c, double fitness)
 {
- double ccLogPrior = _k->_problem->evaluateLogPrior(&ccPoints[c*_k->N]);
- double clLogPrior = _k->_problem->evaluateLogPrior(&clPoints[c*_k->N]);
+ double ccLogPrior = _k->_problem->evaluateLogPrior(&chainCandidatesParameters[c*_k->N]);
+ double clLogPrior = _k->_problem->evaluateLogPrior(&chainLeadersParameters[c*_k->N]);
 
- ccLogLikelihood[c] = fitness;
- double L = exp((ccLogLikelihood[c]-clLogLikelihood[c])*_annealingExponent + (ccLogPrior-clLogPrior));
+ chainCandidatesLogLikelihoods[c] = fitness;
+ double L = exp((chainCandidatesLogLikelihoods[c]-chainLeadersLogLikelihoods[c])*_annealingExponent + (ccLogPrior-clLogPrior));
 
  if ( L >= 1.0 || L > gsl_ran_flat(chainGSLRange[c], 0.0, 1.0) ) {
-   for (size_t i = 0; i < _k->N; i++) clPoints[c*_k->N + i] = ccPoints[c*_k->N + i];
-   clLogLikelihood[c] = ccLogLikelihood[c];
-   if (chainCurrentStep[c] == chainLength[c]-1) _uniqueEntries++; // XXX: is that correct? (DW)
+   for (size_t i = 0; i < _k->N; i++) chainLeadersParameters[c*_k->N + i] = chainCandidatesParameters[c*_k->N + i];
+   chainLeadersLogLikelihoods[c] = chainCandidatesLogLikelihoods[c];
+   if (currentChainStep[c] == chainLengths[c]-1) _uniqueEntries++; // XXX: is that correct? (DW)
  }
 
- chainCurrentStep[c]++;
- if (chainCurrentStep[c] > burnIn ) updateDatabase(&clPoints[c*_k->N], clLogLikelihood[c]);
+ currentChainStep[c]++;
+ if (currentChainStep[c] > burnIn ) updateDatabase(&chainLeadersParameters[c*_k->N], chainLeadersLogLikelihoods[c]);
  chainPendingFitness[c] = false;
- if (chainCurrentStep[c] == chainLength[c]) finishedChains++;
+ if (currentChainStep[c] == chainLengths[c]) finishedChainsCount++;
 }
 
 void Korali::Solver::TMCMC::evaluateSample(size_t c)
 {
   for(size_t d = 0; d<_k->N; ++d) 
       if (_variableLogSpace[d] == true) 
-          transformedSamples[c*_k->N+d] = std::exp(ccPoints[c*_k->N+d]);
+          logTransformedSamples[c*_k->N+d] = std::exp(chainCandidatesParameters[c*_k->N+d]);
       else 
-          transformedSamples[c*_k->N+d] = ccPoints[c*_k->N+d];
+          logTransformedSamples[c*_k->N+d] = chainCandidatesParameters[c*_k->N+d];
 
-  //if( isFeasibleCandidate(c) ) _countevals++; //TODO: check if feasible, if yes - evaluate
-  _k->_conduit->evaluateSample(transformedSamples, c); _countevals++;
+  _k->_conduit->evaluateSample(&logTransformedSamples[0], c);
 }
 
 void Korali::Solver::TMCMC::updateDatabase(double* point, double fitness)
@@ -138,9 +136,9 @@ void Korali::Solver::TMCMC::updateDatabase(double* point, double fitness)
 void Korali::Solver::TMCMC::generateCandidate(size_t c)
 {
  double* covariance = useLocalCovariance ? local_cov[c] : _covarianceMatrix;
- gsl_vector_view out_view    = gsl_vector_view_array(&ccPoints[c*_k->N], _k->N);
+ gsl_vector_view out_view    = gsl_vector_view_array(&chainCandidatesParameters[c*_k->N], _k->N);
  gsl_matrix_view sigma_view  = gsl_matrix_view_array(covariance, _k->N,_k->N);
- gsl_vector_view mean_view   = gsl_vector_view_array(&clPoints[c*_k->N], _k->N);
+ gsl_vector_view mean_view   = gsl_vector_view_array(&chainLeadersParameters[c*_k->N], _k->N);
  gsl_ran_multivariate_gaussian(chainGSLRange[c], &mean_view.vector, &sigma_view.matrix, &out_view.vector);
 }
 
@@ -148,11 +146,11 @@ void Korali::Solver::TMCMC::initializeSamples()
 {
   for (size_t c = 0; c < populationSize; c++) {
      for (size_t d = 0; d < _k->N; d++) {
-       clPoints[c*_k->N + d] = ccPoints[c*_k->N + d] = _k->_variables[d]->getRandomNumber();
-       clLogLikelihood[c] += log( _k->_variables[d]->getDensity(clPoints[c*_k->N + d]) );
+       chainLeadersParameters[c*_k->N + d] = chainCandidatesParameters[c*_k->N + d] = _k->_variables[d]->getRandomNumber();
+       chainLeadersLogLikelihoods[c] += log( _k->_variables[d]->getDensity(chainLeadersParameters[c*_k->N + d]) );
      }
-     updateDatabase(&clPoints[c*_k->N], clLogLikelihood[c]);
-     finishedChains++;
+     updateDatabase(&chainLeadersParameters[c*_k->N], chainLeadersLogLikelihoods[c]);
+     finishedChainsCount++;
   }
 }
 
@@ -225,9 +223,9 @@ void Korali::Solver::TMCMC::resampleGeneration()
  size_t ldi = 0;
  for (size_t i = 0; i < _databaseEntries; i++) {
    if (sel[i] != 0) {
-     for (size_t j = 0; j < _k->N ; j++) clPoints[ldi*_k->N + j] = _databasePoints[i*_k->N + j];
-     clLogLikelihood[ldi] = _databaseFitness[i];
-     chainLength[ldi] = sel[i] + burnIn;
+     for (size_t j = 0; j < _k->N ; j++) chainLeadersParameters[ldi*_k->N + j] = _databasePoints[i*_k->N + j];
+     chainLeadersLogLikelihoods[ldi] = _databaseFitness[i];
+     chainLengths[ldi] = sel[i] + burnIn;
      ldi++;
    }
  }
@@ -236,10 +234,10 @@ void Korali::Solver::TMCMC::resampleGeneration()
 
  _databaseEntries = 0;
  _uniqueEntries   = 0;
- finishedChains   = 0;
+ finishedChainsCount   = 0;
  _nChains         = uniqueSelections;
  
- for (size_t c = 0; c < _nChains; c++) chainCurrentStep[c] = 0;
+ for (size_t c = 0; c < _nChains; c++) currentChainStep[c] = 0;
  for (size_t c = 0; c < _nChains; c++) chainPendingFitness[c] = false;
 
  free(flcp);
@@ -249,7 +247,7 @@ void Korali::Solver::TMCMC::resampleGeneration()
  free(sel);
 }
 
-void Korali::Solver::TMCMC::computeChainCovariances(double** chain_cov, size_t newchains) const
+void Korali::Solver::TMCMC::computeChainCovariances(double** chain_cov, size_t newchains)
 {
  //printf("Precomputing chain covariances for the current generation...\n");
 
@@ -280,7 +278,7 @@ void Korali::Solver::TMCMC::computeChainCovariances(double** chain_cov, size_t n
   // find neighbors in a rectangle - O(populationSize^2)
   for (pos = 0; pos < newchains; ++pos) {
    nn_count[pos] = 0;
-   double* curr = &clPoints[pos*_k->N];
+   double* curr = &chainLeadersParameters[pos*_k->N];
    for (size_t i = 0; i < populationSize; i++) {
     double* s = &_databasePoints[i*_k->N];
     bool isInRectangle = true;
@@ -370,7 +368,7 @@ double Korali::Solver::TMCMC::objLog(const gsl_vector *v, void *param)
  return Korali::Solver::TMCMC::tmcmc_objlogp(x, fp->fj, fp->fn, fp->pj, fp->cov);
 }
 
-void Korali::Solver::TMCMC::minSearch(double const *fj, size_t fn, double pj, double objCov, double& xmin, double& fmin) const
+void Korali::Solver::TMCMC::minSearch(double const *fj, size_t fn, double pj, double objCov, double& xmin, double& fmin)
 {
  // Minimizer Options
  size_t MaxIter     = 100;    /* Max number of search iterations */
@@ -443,9 +441,9 @@ void Korali::Solver::TMCMC::minSearch(double const *fj, size_t fn, double pj, do
 }
 
 
-bool Korali::Solver::TMCMC::isFeasibleCandidate(size_t c) const
+bool Korali::Solver::TMCMC::isFeasibleCandidate(size_t c)
 {
- double clLogPrior = _k->_problem->evaluateLogPrior(&clPoints[c*_k->N]);
+ double clLogPrior = _k->_problem->evaluateLogPrior(&chainLeadersParameters[c*_k->N]);
  if (clLogPrior > -INFINITY) return true;
  return false;
 }

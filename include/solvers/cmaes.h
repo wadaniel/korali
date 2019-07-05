@@ -204,7 +204,7 @@ Description:
 Controls the updates of the covariance matrix scaling factor during the
 viability regime.
 ******************************************************************************/
-double _targetSucRate; /* target success rate */
+double _targetSucRate;
 
 /******************************************************************************
 Setting Name: Covariance Matrix Adaption Size
@@ -216,7 +216,7 @@ Default Enabled:
 Description:
 Controls the covariane matrix adaption strength if samples violate constraints.
 ******************************************************************************/
-double _adaptionSize; /* cov adaption size scaling*/
+double _adaptionSize;
 
 /******************************************************************************
 Setting Name: Normal Vector Learning Rate
@@ -266,7 +266,6 @@ Description:
 Specifies the output frequency onto the terminal screen.
 ******************************************************************************/
 size_t terminalOutputFrequency;
-
 
 // These are CMA-ES Specific, but could be used for other methods in the future
 double* _lowerBounds;

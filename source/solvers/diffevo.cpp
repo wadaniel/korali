@@ -107,7 +107,7 @@ void DE::prepareGeneration()
             mutateSingle(i);
        
         if ( _termCondMaxInfeasibleResamplingsEnabled )
-        if ( (countinfeasible - initial_infeasible) > _termCondmaxInfeasibleResamplings )
+        if ( (countinfeasible - initial_infeasible) > _termCondMaxInfeasibleResamplings )
         {
           if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Warning: exiting resampling loop (param %zu) , max resamplings (%zu) reached.\n", i, _termCondMaxInfeasibleResamplings);
           exit(-1);
@@ -346,7 +346,7 @@ size_t DE::maxIdx(const double *rgd, size_t len) const
 void DE::printGeneration()
 {
 
- if (_k->currentGeneration % terminalOutputFrequency != 0) return;
+ if (_k->currentGeneration % _terminalOutputFrequency != 0) return;
  
  if (_k->_verbosity >= KORALI_NORMAL)
  {

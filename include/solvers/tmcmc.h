@@ -154,7 +154,6 @@ Specifies the maximum number of generations to run.
 size_t maxGenerations;
 bool maxGenerationsEnabled;
 
-
 /******************************************************************************
 Internal Variable Name: Chain Pending Fitness
 Format: Array of Booleans
@@ -234,7 +233,6 @@ Description:
 Current coefficient of variation
 ******************************************************************************/
 double coefficientOfVariation;
-
 
 /******************************************************************************
 Internal Variable Name: Chain Count
@@ -330,7 +328,7 @@ Format: Array of Array of Reals
 Description:
 Local covariances of chain leaders
 ******************************************************************************/
-//std::vector< std::vector<double> > localCovarianceMatrices;
+std::vector< std::vector<double> > localCovarianceMatrices;
 
 /******************************************************************************
 Setting Name: Log Space
@@ -345,14 +343,6 @@ Indicates whether the variable is expressed in Logarithmic Space.
 std::vector<bool> variableLogSpaces;
 
  // TMCMC Status variables
- double* _covarianceMatrix; /* Sample covariance of leader fitness values */
- double* _meanTheta; /* Mean of leader fitness values */
- size_t  _databaseEntries; /* Num samples in DB (must equal population size) */
- double* _databasePoints; /* Variable values of samples in DB */
- double* _databaseFitness; /* Fitness of samples in DB */
- double **local_cov; /* Local covariances of leaders */
- bool* _variableLogSpace; /* Apply log transform of variable before evaluation */
-
  gsl_rng  *range;
  gsl_rng** chainGSLRange;
 
@@ -370,7 +360,7 @@ std::vector<bool> variableLogSpaces;
  void updateDatabase(double* point, double fitness);
  void generateCandidate(size_t candidate);
  void evaluateSample(size_t candidate);
- void computeChainCovariances(double** chain_cov, size_t newchains);
+ void computeChainCovariances(std::vector< std::vector<double> >& chain_cov, size_t newchains);
  void minSearch(double const *fj, size_t fn, double pj, double objTol, double& xmin, double& fmin);
  bool isFeasibleCandidate(size_t candidate);
  static double tmcmc_objlogp(double x, const double *fj, size_t fn, double pj, double zero);

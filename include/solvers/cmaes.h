@@ -41,7 +41,7 @@ Description:
 Specifies the number of samples to evaluate per generation (preferably 
 4+3*log(N) number of variables).
 ******************************************************************************/
-size_t _s;
+size_t _sampleCount;
 
 /******************************************************************************
 Setting Name: Mu Value
@@ -53,7 +53,7 @@ Default Enabled:
 Description:
 Number of best samples used to update the covariance matrix and the mean.
 ******************************************************************************/
-size_t _mu;
+size_t _muValue;
 
 /******************************************************************************
 Setting Name: Mu Type

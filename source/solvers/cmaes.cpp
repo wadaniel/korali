@@ -10,8 +10,8 @@ using namespace Korali::Solver;
 
 void CMAES::initialize()
 {
- size_t s_max  = std::max(_s,  _via_s);
- size_t mu_max = std::max(_mu, _via_mu);
+ size_t s_max  = std::max(_sampleCount,  _via_s);
+ size_t mu_max = std::max(_muValue, _via_mu);
 
  // Allocating Memory
  _samplePopulation =  (double*) calloc (sizeof(double), _k->N*s_max);
@@ -106,7 +106,7 @@ void CMAES::initialize()
 
  // Setting algorithm internal variables
  if (_hasConstraints) { initMuWeights(_via_mu); initCovCorrectionParams(); }
- else initMuWeights(_mu);
+ else initMuWeights(_muValue);
 
  initCovariance();
 
@@ -281,8 +281,8 @@ void CMAES::checkMeanAndSetRegime()
 	_isViabilityRegime = false;
 
 	for (size_t c = 0; c < _k->_fconstraints.size(); c++) { viabilityBounds[c] = 0; }
-	_current_s  = _s;
-	_current_mu = _mu;
+	_current_s  = _sampleCount;
+	_current_mu = _muValue;
 
 	bestEver = -std::numeric_limits<double>::max();
 	initMuWeights(_current_mu);

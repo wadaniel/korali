@@ -216,15 +216,15 @@ void Korali::Engine::run()
 
  while(!_solver->checkTermination())
  {
-	t0 = std::chrono::system_clock::now();
+  t0 = std::chrono::system_clock::now();
 
-	_solver->runGeneration();
-	currentGeneration++;
+  _solver->runGeneration();
+  currentGeneration++;
 
-	t1 = std::chrono::system_clock::now();
+  t1 = std::chrono::system_clock::now();
 
-	_solver->printGeneration();
-	saveState(currentGeneration);
+  _solver->printGeneration();
+  saveState(currentGeneration);
  }
 
  endTime = std::chrono::system_clock::now();

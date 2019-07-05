@@ -25,8 +25,8 @@ void Korali::Solver::TMCMC::initialize()
  chainGSLRange = (gsl_rng**) calloc (populationSize, sizeof(gsl_rng*));
  for (size_t c = 0; c < populationSize; c++)
  {
-	chainGSLRange[c] = gsl_rng_alloc (gsl_rng_default);
-	gsl_rng_set(chainGSLRange[c], _k->_seed++);
+ chainGSLRange[c] = gsl_rng_alloc (gsl_rng_default);
+ gsl_rng_set(chainGSLRange[c], _k->_seed++);
  }
 
  // Allocating TMCMC memory
@@ -45,13 +45,13 @@ void Korali::Solver::TMCMC::initialize()
  _databaseFitness    = (double*) calloc (populationSize, sizeof(double));
 
  if(useLocalCovariance) {
-	 double *LCmem       = (double*)  calloc (populationSize*_k->N*_k->N, sizeof(double));
-	 local_cov           = (double**) calloc ( populationSize, sizeof(double*));
-	 for (size_t pos = 0; pos < populationSize; ++pos)
-	 {
-		local_cov[pos] = LCmem + pos*_k->N*_k->N;
-		for (size_t i = 0; i < _k->N; i++) local_cov[pos][i*_k->N+i] = 1;
-	 }
+  double *LCmem       = (double*)  calloc (populationSize*_k->N*_k->N, sizeof(double));
+  local_cov           = (double**) calloc ( populationSize, sizeof(double*));
+  for (size_t pos = 0; pos < populationSize; ++pos)
+  {
+  local_cov[pos] = LCmem + pos*_k->N*_k->N;
+  for (size_t i = 0; i < _k->N; i++) local_cov[pos][i*_k->N+i] = 1;
+  }
  }
 
  // Initializing Runtime Variables
@@ -82,18 +82,18 @@ void Korali::Solver::TMCMC::initialize()
 
 void Korali::Solver::TMCMC::runGeneration()
 {
-	resampleGeneration();
+ resampleGeneration();
 
-	while (finishedChains < _nChains)
-	{
-	 for (size_t c = 0; c < _nChains; c++) if (chainCurrentStep[c] < chainLength[c]) if (chainPendingFitness[c] == false)
-	 {
-		chainPendingFitness[c] = true;
-		generateCandidate(c);
-		evaluateSample(c);
-	 }
-	 _k->_conduit->checkProgress();
-	}
+ while (finishedChains < _nChains)
+ {
+  for (size_t c = 0; c < _nChains; c++) if (chainCurrentStep[c] < chainLength[c]) if (chainPendingFitness[c] == false)
+  {
+  chainPendingFitness[c] = true;
+  generateCandidate(c);
+  evaluateSample(c);
+  }
+  _k->_conduit->checkProgress();
+ }
 }
 
 void Korali::Solver::TMCMC::processSample(size_t c, double fitness)

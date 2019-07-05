@@ -668,20 +668,20 @@ bool CMAES::checkTermination()
  if ( _isTermCondMinFitness && (_isViabilityRegime == false) && (_k->currentGeneration > 1) && (bestEver >= _termCondMinFitness) )
  {
   _isFinished = true;
-  sprintf(_terminationReason, "Min fitness value (%+6.3e) > (%+6.3e)",  bestEver, _termCondMinFitness);
+  printf("Min fitness value (%+6.3e) > (%+6.3e)",  bestEver, _termCondMinFitness);
  }
  
  if ( _isTermCondMaxFitness && (_isViabilityRegime == false) && (_k->currentGeneration > 1) && (bestEver >= _termCondMaxFitness) )
  {
   _isFinished = true;
-  sprintf(_terminationReason, "Max fitness value (%+6.3e) > (%+6.3e)",  bestEver, _termCondMaxFitness);
+  printf("Max fitness value (%+6.3e) > (%+6.3e)",  bestEver, _termCondMaxFitness);
  }
 
  double range = fabs(currentFunctionValue - prevFunctionValue);
  if ( _isTermCondFitnessDiffThreshold && (_k->currentGeneration > 1) && (range <= _termCondFitnessDiffThreshold) )
  {
   _isFinished = true;
-  sprintf(_terminationReason, "Function value differences (%+6.3e) < (%+6.3e)",  range, _termCondFitnessDiffThreshold);
+  printf("Function value differences (%+6.3e) < (%+6.3e)",  range, _termCondFitnessDiffThreshold);
  }
 
  size_t cTemp = 0;
@@ -692,21 +692,21 @@ bool CMAES::checkTermination()
 
  if ( _isTermCondMinDeltaX && (cTemp == _k->N) ) {
   _isFinished = true;
-  sprintf(_terminationReason, "Object variable changes < %+6.3e", _termCondMinDeltaX * _initialStdDevs[iTemp]);
+  printf("Object variable changes < %+6.3e", _termCondMinDeltaX * _initialStdDevs[iTemp]);
  }
 
  for(iTemp=0; iTemp<_k->N; ++iTemp)
   if ( _isTermCondTolUpXFactor && (sigma * sqrt(C[iTemp][iTemp]) > _termCondTolUpXFactor * _initialStdDevs[iTemp]) )
   {
     _isFinished = true;
-    sprintf(_terminationReason, "Standard deviation increased by more than %7.2e, larger initial standard deviation recommended \n", _termCondTolUpXFactor * _initialStdDevs[iTemp]);
+    printf("Standard deviation increased by more than %7.2e, larger initial standard deviation recommended \n", _termCondTolUpXFactor * _initialStdDevs[iTemp]);
     break;
   }
 
  if ( _isTermCondCovCond && (maxEW >= minEW * _termCondCovCond) )
  {
    _isFinished = true;
-   sprintf(_terminationReason, "Maximal condition number %7.2e reached. maxEW=%7.2e, minEig=%7.2e, maxdiagC=%7.2e, mindiagC=%7.2e\n",
+   printf("Maximal condition number %7.2e reached. maxEW=%7.2e, minEig=%7.2e, maxdiagC=%7.2e, mindiagC=%7.2e\n",
                                 _termCondCovCond, maxEW, minEW, maxdiagC, mindiagC);
  }
 
@@ -726,7 +726,7 @@ bool CMAES::checkTermination()
     if (iKoo == _k->N)
     {
       _isFinished = true;
-      sprintf(_terminationReason, "Standard deviation %f*%7.2e in principal axis %ld without effect.", _termCondMinStepFac, sigma*axisD[iAchse], iAchse);
+      printf("Standard deviation %f*%7.2e in principal axis %ld without effect.", _termCondMinStepFac, sigma*axisD[iAchse], iAchse);
       break;
     }
   }
@@ -741,7 +741,7 @@ bool CMAES::checkTermination()
    /* C[iKoo][iKoo] *= (1 + _covarianceMatrixLearningRate); */
    /* flg = 1; */
    _isFinished = true;
-   sprintf(_terminationReason, "Standard deviation %f*%7.2e in coordinate %ld without effect.", _termCondMinStepFac, sigma*sqrt(C[iKoo][iKoo]), iKoo);
+   printf("Standard deviation %f*%7.2e in coordinate %ld without effect.", _termCondMinStepFac, sigma*sqrt(C[iKoo][iKoo]), iKoo);
    break;
   }
 
@@ -750,13 +750,13 @@ bool CMAES::checkTermination()
  if( _isTermCondMaxFitnessEvaluations && (countevals >= _termCondMaxFitnessEvaluations) )
  {
   _isFinished = true;
-  sprintf(_terminationReason, "Conducted %lu function evaluations >= (%lu).", countevals, _termCondMaxFitnessEvaluations);
+  printf("Conducted %lu function evaluations >= (%lu).", countevals, _termCondMaxFitnessEvaluations);
  }
 
  if( _isTermCondMaxGenerations && (_k->currentGeneration >= _termCondMaxGenerations) )
  {
   _isFinished = true;
-  sprintf(_terminationReason, "Maximum number of Generations reached (%lu).", _termCondMaxGenerations);
+  printf("Maximum number of Generations reached (%lu).", _termCondMaxGenerations);
  }
 
  return _isFinished;
@@ -945,7 +945,6 @@ void CMAES::finalize()
     if ( _hasConstraints ) { printf("[Korali] Constraint Evaluation at Optimum:\n"); for (size_t c = 0; c < _k->_fconstraints.size(); c++) printf("         ( %+6.3e )\n", besteverCeval[c]); }
     printf("[Korali] Number of Function Evaluations: %zu\n", countevals);
     printf("[Korali] Number of Infeasible Samples: %zu\n", countinfeasible);
-    printf("[Korali] Stopping Criterium: %s\n", _terminationReason);
     printf("--------------------------------------------------------------------\n");
  }
 }

@@ -299,20 +299,20 @@ bool DE::checkTermination()
  if ( _isTermCondMinFitness && (_k->currentGeneration > 1) && (bestEver >= _termCondMinFitness) )
  {
   _isFinished = true;
-  sprintf(_terminationReason, "Fitness Value (%+6.3e) > (%+6.3e).",  bestEver, _termCondMinFitness);
+  printf("Fitness Value (%+6.3e) > (%+6.3e).",  bestEver, _termCondMinFitness);
  }
  
  if ( _isTermCondMaxFitness && (_k->currentGeneration > 1) && (bestEver >= _termCondMaxFitness) )
  {
   _isFinished = true;
-  sprintf(_terminationReason, "Fitness Value (%+6.3e) > (%+6.3e).",  bestEver, _termCondMaxFitness);
+  printf("Fitness Value (%+6.3e) > (%+6.3e).",  bestEver, _termCondMaxFitness);
  }
 
  double range = fabs(currentFunctionValue - prevFunctionValue);
  if ( _isTermCondFitnessDiffThreshold && (_k->currentGeneration > 1) && (range < _termCondFitnessDiffThreshold) )
  {
   _isFinished = true;
-  sprintf(_terminationReason, "Fitness Diff Threshold (%+6.3e) < (%+6.3e).",  range, _termCondFitnessDiffThreshold);
+  printf("Fitness Diff Threshold (%+6.3e) < (%+6.3e).",  range, _termCondFitnessDiffThreshold);
  }
  
  if ( _isTermCondMinDeltaX && (_k->currentGeneration > 1) )
@@ -322,20 +322,20 @@ bool DE::checkTermination()
    if (cTemp == _k->N) 
    {
     _isFinished = true;
-    sprintf(_terminationReason, "Mean changes < %+6.3e for all variables.", _termCondMinDeltaX);
+    printf("Mean changes < %+6.3e for all variables.", _termCondMinDeltaX);
    }
  }
 
  if( _isTermCondMaxFitnessEvaluations && (countevals >= _termCondMaxFitnessEvaluations) )
  {
   _isFinished = true;
-  sprintf(_terminationReason, "Conducted %lu function evaluations >= (%lu).", countevals, _termCondMaxFitnessEvaluations);
+  printf("Conducted %lu function evaluations >= (%lu).", countevals, _termCondMaxFitnessEvaluations);
  }
 
  if( _isTermCondMaxGenerations && (_k->currentGeneration >= _termCondMaxGenerations) )
  {
   _isFinished = true;
-  sprintf(_terminationReason, "Maximum number of Generations reached (%lu).", _termCondMaxGenerations);
+  printf("Maximum number of Generations reached (%lu).", _termCondMaxGenerations);
  }
 
  return _isFinished;
@@ -389,7 +389,6 @@ void DE::finalize()
     for (size_t d = 0; d < _k->N; ++d) printf("         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), rgxbestever[d]);
     printf("[Korali] Number of Function Evaluations: %zu\n", countevals);
     printf("[Korali] Number of Infeasible Samples: %zu\n", countinfeasible);
-    printf("[Korali] Stopping Criterium: %s\n", _terminationReason);
     printf("--------------------------------------------------------------------\n");
  }
 }

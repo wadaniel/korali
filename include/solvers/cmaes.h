@@ -48,7 +48,6 @@ class CMAES : public Base
  double* _fitnessVector; /* objective function values [_s] */
  double* _samplePopulation; /* sample coordinates [_s x _k->N] */
  bool* _initializedSample; /* flag to distribute work */
- char _terminationReason[500]; /* buffer for exit reason */
  double*_transformedSamples;
 
  size_t _finishedSamples; /* counter of evaluated samples to terminate evaluation */

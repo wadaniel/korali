@@ -182,50 +182,160 @@ Indicates whether the variable is expressed in Logarithmic Space.
 std::vector<bool> variableLogSpaces;
 
 /******************************************************************************
-Setting Name: Max Function Evaluations
-Type: Termination Criterion
-Format: Integer
-Mandatory: No
-Default Value: 100000
-Default Enabled: true
+Internal Variable Name: Covariance Matrix
+Format: Array of Reals
 Description:
-Specifies the maximum number of function evaluations (only relevant if
-Rejection Levels are large).
+Hold the covariance matrix of proposal distribution.
 ******************************************************************************/
-size_t maxFunctionEvaluations;
-bool maxFunctionEvaluationsEnabled;
+std::vector<double> covarianceMatrix;
+
+/******************************************************************************
+Internal Variable Name: Chain Leader Parameters
+Format: Array of Reals
+Description:
+Current (theta) parameters of the chain leader sample.
+******************************************************************************/
+std::vector<double> chainLeaderParameters;
+
+/******************************************************************************
+Internal Variable Name: Chain Leader LogLikelihood
+Format: Real
+Description:
+The logLikelihood of the current chain leader.
+******************************************************************************/
+double chainLeaderLogLikelihood;
+
+/******************************************************************************
+Internal Variable Name: Chain Candidate Parameters
+Format: Array of Reals
+Description:
+Current (theta) parameters of the chain leader sample.
+******************************************************************************/
+std::vector<double> chainCandidatesParameters;
+
+/******************************************************************************
+Internal Variable Name: Chain Candidates LogLikelihoods
+Format: Array of Reals
+Description:
+The logLikelihoods of the chain candidates.
+******************************************************************************/
+std::vector<double> chainCandidatesLogLikelihoods;
+
+/******************************************************************************
+Internal Variable Name: Chain Candidates LogPriors
+Format: Array of Reals
+Description:
+The logPriors of the chain candidates.
+******************************************************************************/
+std::vector<double> chainCandidatesLogPriors;
+
+/******************************************************************************
+Internal Variable Name: Log Transformed Samples
+Format: Array of Reals
+Description:
+Candidate parameters log transformed.
+******************************************************************************/
+std::vector<double> logTransformedSamples;
+
+/******************************************************************************
+Internal Variable Name: Rejection Alphas
+Format: Array of Reals
+Description:
+Alphas for recursive calculation of delayed rejection schemes
+******************************************************************************/
+std::vector<double> rejectionAlphas;
+
+/******************************************************************************
+Internal Variable Name: Acceptance Rate
+Format: Real
+Description:
+Ratio proposed to accepted samples.
+******************************************************************************/
+double acceptanceRate;
+
+/******************************************************************************
+Internal Variable Name: Rejection Count
+Format: Integer
+Description:
+Number of rejections in the current generation.
+******************************************************************************/
+size_t rejectionCount;
+
+/******************************************************************************
+Internal Variable Name: Acceptance Count
+Format: Integer
+Description:
+Number of accepted samples.
+******************************************************************************/
+size_t acceptanceCount;
+
+/******************************************************************************
+Internal Variable Name: Proposed Sample Count
+Format: Integer
+Description:
+Number of proposed samples.
+******************************************************************************/
+size_t proposedSampleCount;
+
+/******************************************************************************
+Internal Variable Name: Database Entry Count
+Format: Integer
+Description:
+Number of accepted samples stored in the database.
+******************************************************************************/
+size_t databaseEntryCount;
+
+/******************************************************************************
+Internal Variable Name: Sample Parameters Database
+Format: Array of Reals
+Description:
+Variable values of samples stored in the database.
+******************************************************************************/
+std::vector<double> sampleParametersDatabase;
+
+/******************************************************************************
+Internal Variable Name: Sample Fitness Database
+Format: Array of Reals
+Description:
+Fitness of the samples stored in the database.
+******************************************************************************/
+std::vector<double> sampleFitnessDatabase;
+
+/******************************************************************************
+Internal Variable Name: Chain Mean
+Format: Array of Reals
+Description:
+Mean of Markov Chain Monte Carlo Chain
+******************************************************************************/
+std::vector<double> chainMean;
+
+/******************************************************************************
+Internal Variable Name: Chain Covariance Placeholder
+Format: Array of Reals
+Description:
+Placeholder chain covariance calculation
+******************************************************************************/
+std::vector<double> chainCovariancePlaceholder;
+
+/******************************************************************************
+Internal Variable Name: Chain Covariance
+Format: Array of Reals
+Description:
+Chain Covariance
+******************************************************************************/
+std::vector<double> chainCovariance;
+
+/******************************************************************************
+Internal Variable Name: Chain Length
+Format: Integer
+Description:
+Current Chain Length
+******************************************************************************/
+size_t chainLength;
 
  // MCMC Configuration
- //size_t _maxresamplings; /* Max number resamplings inside generation loop */
- char _terminationReason[500];
-
  Korali::Variable* _gaussianGenerator; /* Gaussian random number generator */
  Korali::Variable* _uniformGenerator; /* Uniform random number generator */
-
- // MCMC Runtime Variables
- double* z; /* Placeholder random numbers */
- double* clPoint; /* Leader parameter values */
- double clLogLikelihood; /* Leader fitness value */
- double* ccPoints; /*  Candidates parameter values */
- double* transformedSamples; /* Candidate parameters log transformed */
- double* ccLogPriors; /* Candidates prior value */
- double* ccLogLikelihoods; /* Candidates fitness value */
- double* alpha; /* alphas for recursive calculation of delayed rejection schemes */
- double acceptanceRateProposals; /* Ratio proposed to accepted Samples */
- size_t rejections; /* Rejections in current generation*/
- size_t naccept; /* Number of accepted samples */
- size_t countgens; /* Number of proposed samples */
- size_t databaseEntries; /* Accepted Samples */
- double* databasePoints; /* Variable values of samples in DB */
- double* databaseFitness; /* Fitness of samples in DB */
- size_t countevals; /* Number of function evaluations */
- double* chainMean; /* Mean of mcmc chain */
- double* tmpC; /* Placeholder chain cov calculation */
- double* chainCov; /* Variance of mcmc chain */
- size_t chainLength;
-
- // MCMC Status variables
- double* _covarianceMatrix; /* Covariance of Proposal Distribution */
 
  // Korali Methods
  void initialize() override;
@@ -235,7 +345,7 @@ bool maxFunctionEvaluationsEnabled;
  void processSample(size_t c, double fitness) override;
 
   // Internal MCMC Methods
- void updateDatabase(double* point, double fitness);
+ void updateDatabase(std::vector<double>&, double fitness);
  void generateCandidate(size_t sampleIdx);
  void sampleCandidate(size_t sampleIdx);
  void acceptReject(size_t trial); /* Accept or reject sample with multiple trials */

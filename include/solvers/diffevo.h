@@ -57,7 +57,6 @@ class DE : public Base
  double* samplePopulation; /* sample coordinates [_s x _k->N] */
  double* candidates; /* candidates to evaluate */
  bool* initializedSample; /* flag to distribute work */
- char _terminationReason[500]; /* buffer for exit reason */
  Variable* _gaussianGenerator;
  Variable* _uniformGenerator;
 

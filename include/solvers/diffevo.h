@@ -12,6 +12,19 @@ Module Name: Differential Evolution
 Type: Solver, Optimizer
 Alias: DE
 Description:
+his is an implementation of the *Differential Evolution Algorithm* algorithm,
+as published in [Storn1997](https://link.springer.com/article/10.1023/A:1008202821328.
+
+DE optimizes a problem by updating a population of candidate solutions through 
+mutation and recombination. The update rules are simple and the objective 
+function must not be differentiable. Our implementation includes various adaption 
+and updating strategies [Brest2006](https://ieeexplore.ieee.org/document/4016057).
+
+**Requirements:**
+
++ The *Sample Count* needs to be defined..
++ The *Lower Bound* needs to be defined for each variable.
++ The *Upper Bound* needs to be defined for every variable.
 ******************************************************************************/
 
 
@@ -19,10 +32,225 @@ class DE : public Base
 {
  public:
 
- size_t resultOutputFrequency;
- size_t terminalOutputFrequency;
+/******************************************************************************
+Setting Name: Objective
+Type: Solver Setting
+Format: String
+Mandatory: No
+Default Value: Maximize
+Default Enabled:
+Description:
+Specifies whether the problem evaluation is to be minimized or maximized.
+******************************************************************************/
+std::string _objective;
 
- // These are DE-Specific, but could be used for other methods in the future
+/******************************************************************************
+Setting Name: Sample Count
+Type: Solver Setting
+Format: Integer
+Mandatory: Yes
+Default Value:
+Default Enabled:
+Description:
+Specifies the number of samples to evaluate per generation (preferably 5-10x 
+number of variables).
+******************************************************************************/
+size_t _s;
+
+/******************************************************************************
+Setting Name: Crossover Rate
+Type: Solver Setting
+Format: Real
+Mandatory: No
+Default Value: 0.9
+Default Enabled:
+Description:
+Controls the rate at which dimensions from samples are mixed (must be in [0,1]).
+******************************************************************************/
+double _crossoverRate;
+
+/******************************************************************************
+Setting Name: Mutation Rate
+Type: Solver Setting
+Format: Real
+Mandatory: No
+Default Value: 0.5
+Default Enabled:
+Description:
+Controls the scaling of the vector differentials (must be in [0,2], preferably < 1).
+******************************************************************************/
+double _mutationRate;
+
+/******************************************************************************
+Setting Name: Result Output Frequency
+Type: Solver Setting
+Format: Integer
+Mandatory: No
+Default Value: 1
+Default Enabled:
+Description:
+Specifies the output frequency of intermediate result files.
+******************************************************************************/
+size_t resultOutputFrequency;
+
+/******************************************************************************
+Setting Name: Terminal Output Frequency
+Type: Solver Setting
+Format: Integer
+Mandatory: No
+Default Value: 1
+Default Enabled:
+Description:
+Specifies the output frequency onto the terminal screen.
+******************************************************************************/
+size_t terminalOutputFrequency;
+
+/******************************************************************************
+Setting Name: Mutation Rule
+Type: Solver Setting
+Format: String
+Mandatory: No
+Default Value: Default
+Default Enabled:
+Description:
+Controls the Mutation Rate: "Default" (rate is fixed) or "Self Adaptive" 
+(udpating rule in [Brest2006]).
+******************************************************************************/
+std::string _mutationRule;
+
+/******************************************************************************
+Setting Name: Parent Selection Rule
+Type: Solver Setting
+Format: String
+Mandatory: No
+Default Value: Random
+Default Enabled:
+Description:
+Controls the selection of the parent vecor: "Random" or "Best" (best sample 
+from previous generation).
+******************************************************************************/
+std::string _parent;
+
+/******************************************************************************
+Setting Name: Accept Rule
+Type: Solver Setting
+Format: String
+Mandatory: No
+Default Value: Greedy
+Default Enabled:
+Description:
+Sets the sample accept rule after mutation and evaluation: "Best", "Greedy", 
+"Iterative" or "Improved".
+******************************************************************************/
+std::string _acceptRule;
+
+/******************************************************************************
+Setting Name: Fix Infeasible
+Type: Solver Setting
+Format: Boolean
+Mandatory: No
+Default Value: True
+Default Enabled:
+Description:
+If set true, Korali samples a random sample between Parent and the voiolated 
+boundary. If set false, infeasible samples are mutated again until feasible.
+******************************************************************************/
+bool _fixinfeasible;
+
+/******************************************************************************
+Setting Name: Max Resamplings
+Type: Solver Setting
+Format: Integer
+Mandatory: No
+Default Value: 1e9
+Default Enabled:
+Description:
+Max number of mutations per sample per generation if infeasible (only relevant 
+if Fix Infeasible is set False).
+******************************************************************************/
+size_t _maxResamplings;
+ 
+/******************************************************************************
+Setting Name: Max Generations
+Type: Termination Criterion
+Format: Integer
+Mandatory: No
+Default Value: 1000
+Default Enabled: true
+Description:
+Specifies the maximum number of generations to run.
+******************************************************************************/
+size_t _termCondMaxGenerations;
+
+/******************************************************************************
+Setting Name: Max Function Evaluations
+Type: Termination Criterion
+Format: Integer
+Mandatory: No
+Default Value: +Inf
+Default Enabled: false
+Description:
+Specifies the maximum number of objective function evaluations.
+******************************************************************************/
+size_t _termCondMaxFitnessEvaluations;
+
+/******************************************************************************
+Setting Name: Min Fitness
+Type: Termination Criterion
+Format: Real
+Mandatory: No
+Default Value: -Inf
+Default Enabled: false
+Description:
+Specifies the target fitness to stop minimization.
+******************************************************************************/
+double _termCondMinFitness; 
+
+/******************************************************************************
+Setting Name: Max Fitness
+Type: Termination Criterion
+Format: Real
+Mandatory: No
+Default Value: +Inf
+Default Enabled: false
+Description:
+Specifies the target fitness to stop maximization.
+******************************************************************************/
+double _termCondMaxFitness;
+
+/******************************************************************************
+Setting Name: Min Fitness Diff Threshold
+Type: Termination Criterion
+Format: Real
+Mandatory: No
+Default Value: 0.0
+Default Enabled: false
+Description:
+Specifies the minimum fitness differential between two consecutive generations 
+before stopping execution.
+******************************************************************************/
+double _termCondFitnessDiffThreshold;
+
+/******************************************************************************
+Setting Name: Min Stepz Size
+Type: Termination Criterion
+Format: Real
+Mandatory: No
+Default Value: 1e-12
+Default Enabled: false
+Description:
+Specifies the minimal step size of the sample mean from one gneration to another.
+******************************************************************************/
+double _termCondMinDeltaX; 
+ 
+
+// Term Cond Flags (TODO: rmeove?)
+bool _isTermCondMaxGenerations, _isTermCondMaxFitnessEvaluations, 
+      _isTermCondMinFitness, _isTermCondMaxFitness,
+      _isTermCondMinDeltaX, _isTermCondFitnessDiffThreshold;
+ 
+
+// These are DE-Specific, but could be used for other methods in the future
  double* _lowerBounds;
  double* _upperBounds;
  double* _initialMeans;
@@ -47,11 +275,6 @@ class DE : public Base
 
  // Korali Runtime Variables
  int _fitnessSign; /* maximizing vs optimizing (+- 1) */
- std::string _parent; /* Random or Best */
- std::string _mutationRule; /* Default or Self  Adaptive */
- std::string _acceptRule; /* Best, Greedy, Iterative or Improved */
- bool _fixinfeasible; /* fix infeasible sample (no resampling) */ 
- std::string _objective; /* Maximize or Minimize */ 
  double* oldFitnessVector; /* objective function values previous generation [_s] */
  double* fitnessVector; /* objective function values [_s] */
  double* samplePopulation; /* sample coordinates [_s x _k->N] */
@@ -60,21 +283,10 @@ class DE : public Base
  Variable* _gaussianGenerator;
  Variable* _uniformGenerator;
 
- size_t _s; /* number of samples per generation */
+ size_t currentGeneration; /* generation count */
  size_t finishedSamples; /* counter of evaluated samples to terminate evaluation */
 
- // Stop conditions
- size_t _maxResamplings; // Max number of resamplings if sample is infeasible
- size_t _termCondMaxGenerations; // Max number of generations
- size_t _termCondMaxFitnessEvaluations;   // Defines maximum number of fitness evaluations
- double _termCondMinFitness; // Defines the minimum fitness allowed, otherwise it stops
- double _termCondMaxFitness; // Defines the maximum fitness allowed, otherwise it stops
- double _termCondFitnessDiffThreshold; // Defines minimum function value differences before stopping
- double _termCondMinDeltaX; // Defines minimum delta of input parameters among generations before it stops.
- bool _isTermCondMaxGenerations, _isTermCondMaxFitnessEvaluations, 
-      _isTermCondMinFitness, _isTermCondMaxFitness,
-      _isTermCondMinDeltaX, _isTermCondFitnessDiffThreshold; // flgs to activate termination criteria
- 
+
  // Private DE-Specific Variables
  double currentFunctionValue; /* best fitness current generation */
  double prevFunctionValue; /* best fitness previous generation */
@@ -99,8 +311,6 @@ class DE : public Base
  void evaluateSamples(); /* evaluate all samples until done */
 
  // Private DE-ES-Specific Variables 
- double _crossoverRate;
- double _mutationRate;
  
  // Helper Methods
  size_t maxIdx(const double *rgd, size_t len) const;

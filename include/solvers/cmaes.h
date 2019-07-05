@@ -18,78 +18,413 @@ class CMAES : public Base
 {
  public:
 
- size_t resultOutputFrequency;
- size_t terminalOutputFrequency;
+/******************************************************************************
+Setting Name: Objective
+Type: Solver Setting
+Format: String
+Mandatory: No
+Default Value: Maximize
+Default Enabled:
+Description:
+Specifies whether the problem evaluation is to be minimized or maximized.
+******************************************************************************/
+std::string _objective; /* Maximize or Minimize */ 
 
- // These are CMA-ES Specific, but could be used for other methods in the future
- double* _lowerBounds;
- double* _upperBounds;
- double* _initialMeans;
- double* _initialStdDevs;
- double* _minStdDevChanges;
- bool* _variableLogSpace; /* Apply log transform of variable before evaluation */
+/******************************************************************************
+Setting Name: Sample Count
+Type: Solver Setting
+Format: Integer
+Mandatory: Yes
+Default Value:
+Default Enabled:
+Description:
+Specifies the number of samples to evaluate per generation (preferably 
+4+3*log(N) number of variables).
+******************************************************************************/
+size_t _s;
 
- // Runtime Methods (to be inherited from base class in the future)
- void prepareGeneration();
- bool checkTermination() override;
- void updateDistribution(const double *fitnessVector);
+/******************************************************************************
+Setting Name: Mu Value
+Type: Solver Setting
+Format: Integer
+Mandatory: No
+Default Value: 0.5*(Sample Count)
+Default Enabled:
+Description:
+Number of best samples used to update the covariance matrix and the mean.
+******************************************************************************/
+size_t _mu;
 
- void initialize() override;
- void finalize() override;
+/******************************************************************************
+Setting Name: Mu Type
+Type: Solver Setting
+Format: String
+Mandatory: No
+Default Value: Logarithmic
+Default Enabled:
+Description:
+Weights given to the Mu best values to update the covariance matrix and the mean.
+******************************************************************************/
+std::string _muType;
 
- void runGeneration() override;
- void processSample(size_t sampleId, double fitness) override;
+/******************************************************************************
+Setting Name: Sigma Cumulation Factor
+Type: Solver Setting
+Format: Real
+Mandatory: No
+Default Value: (calibrated internally)
+Default Enabled:
+Description:
+Controls the learning rate of the conjugate evolution path.
+******************************************************************************/
+double _sigmaCumulationFactorIn;
 
- private:
+/******************************************************************************
+Setting Name: Damp Factor
+Type: Solver Setting
+Format: Real
+Mandatory: No
+Default Value: (calibrated internally)
+Default Enabled:
+Description:
+Controls the updates of the covariance matrix scaling factor.
+******************************************************************************/
+double _dampFactorIn;
 
+/******************************************************************************
+Setting Name: Is Sigma Bounded
+Type: Solver Setting
+Format: Boolean
+Mandatory: No
+Default Value: False
+Default Enabled:
+Description:
+Sets an upper bound for the covariance matrix scaling factor. The upper bound 
+is given by the average of the initial standard deviation of the variables
+******************************************************************************/
+bool _isSigmaBounded;
+
+/******************************************************************************
+Setting Name: Cumulative Covariance
+Type: Solver Setting
+Format: Real
+Mandatory: No
+Default Value: (calibrated internally)
+Default Enabled:
+Description:
+Controls the learning rate of the evolution path for the covariance update
+(must be in (0,1]).
+******************************************************************************/
+double _cumulativeCovarianceIn;
+
+/******************************************************************************
+Setting Name: Covariance Matrix Learning Rate
+Type: Solver Setting
+Format: Real
+Mandatory: No
+Default Value: (calibrated internally)
+Default Enabled:
+Description:
+Controls the learning rate of the covariance matrix (must be in (0,1]).
+******************************************************************************/
+double _covMatrixLearningRateIn;
+
+/******************************************************************************
+Setting Name: Is Diagonal
+Type: Solver Setting
+Format: Boolean
+Mandatory: No
+Default Value: False
+Default Enabled:
+Description:
+Covariance matrix updates will be optimized for diagonal matrices.
+******************************************************************************/
+bool _isdiag;
+
+/******************************************************************************
+Setting Name: Viability Sample Count
+Type: Solver Setting
+Format: Integer
+Mandatory: Yes
+Default Value:
+Default Enabled:
+Description:
+Specifies the number of samples per generation during the viability 
+regime, i.e. during the search for a mean vector not violating the constraints.
+******************************************************************************/
+size_t _via_s;
+
+/******************************************************************************
+Setting Name: Viability Mu
+Type: Solver Setting
+Format: Integer
+Mandatory: Yes
+Default Value:
+Default Enabled:
+Description:
+Number of best samples used to update the covariance matrix and the mean 
+during the viability regime.
+******************************************************************************/
+size_t _via_mu;
+
+/******************************************************************************
+Setting Name: Max Covariance Matrix Corrections
+Type: Solver Setting
+Format: Integer
+Mandatory: No
+Default Value: 1e6
+Default Enabled:
+Description:
+Max number of covairance matrix adaptions per generation during the constraint 
+handling loop.
+******************************************************************************/
+size_t _maxCorrections;
+ 
+/******************************************************************************
+Setting Name: Max Resampling
+Type: Solver Setting
+Format: Integer
+Mandatory: No
+Default Value: 1e9
+Default Enabled:
+Description:
+Number of resamplings per candidate per generation if sample is outside of 
+Lower and Upper Bound
+******************************************************************************/
+size_t _maxResamplings;
+
+/******************************************************************************
+Setting Name: Target Success Rate
+Type: Solver Setting
+Format: Real
+Mandatory: No
+Default Value: 2/11
+Default Enabled:
+Description:
+Controls the updates of the covariance matrix scaling factor during the
+viability regime.
+******************************************************************************/
+double _targetSucRate;
+
+/******************************************************************************
+Setting Name: Covariance Matrix Adaption Size
+Type: Solver Setting
+Format: Real
+Mandatory: No
+Default Value: 0.1
+Default Enabled:
+Description:
+Controls the covariane matrix adaption strength if samples violate constraints.
+******************************************************************************/
+double _adaptionSize;
+
+/******************************************************************************
+Setting Name: Normal Vector Learning Rate
+Type: Solver Setting
+Format: Real
+Mandatory: No
+Default Value: (internally calibrated)
+Default Enabled:
+Description:
+Learning rate of constraint normal vectors (must be in (0, 1]).
+******************************************************************************/
+double _cv;
+
+/******************************************************************************
+Setting Name: Global Success Learning Rate
+Type: Solver Setting
+Format: Real
+Mandatory: No
+Default Value: (internally calibrated)
+Default Enabled:
+Description:
+Learning rate of success probability of objective function improvements. 
+Required for covariance matrix scaling factor update during viability regime.
+******************************************************************************/
+double _cp;
+ 
+/******************************************************************************
+Setting Name: Result Output Frequency
+Type: Solver Setting
+Format: Integer
+Mandatory: No
+Default Value: 1
+Default Enabled:
+Description:
+Specifies the output frequency of intermediate result files.
+******************************************************************************/
+size_t resultOutputFrequency;
+
+/******************************************************************************
+Setting Name: Terminal Output Frequency
+Type: Solver Setting
+Format: Integer
+Mandatory: No
+Default Value: 1
+Default Enabled:
+Description:
+Specifies the output frequency onto the terminal screen.
+******************************************************************************/
+size_t terminalOutputFrequency;
+
+/******************************************************************************
+Setting Name: Max Generations
+Type: Termination Criterion
+Format: Integer
+Mandatory: No
+Default Value: 1000
+Default Enabled: true
+Description:
+Specifies the maximum number of generations to run.
+******************************************************************************/
+size_t _termCondMaxGenerations;
+
+/******************************************************************************
+Setting Name: Max Function Evaluations
+Type: Termination Criterion
+Format: Integer
+Mandatory: No
+Default Value: +Inf
+Default Enabled: false
+Description:
+Specifies the maximum number of objective function evaluations.
+******************************************************************************/
+size_t _termCondMaxFitnessEvaluations;
+
+/******************************************************************************
+Setting Name: Min Fitness
+Type: Termination Criterion
+Format: Real
+Mandatory: No
+Default Value: -Inf
+Default Enabled: false
+Description:
+Specifies the target fitness to stop minimization.
+******************************************************************************/
+double _termCondMinFitness;
+
+/******************************************************************************
+Setting Name: Max Fitness
+Type: Termination Criterion
+Format: Real
+Mandatory: No
+Default Value: +Inf
+Default Enabled: false
+Description:
+Specifies the target fitness to stop maximization.
+******************************************************************************/
+double _termCondMaxFitness;
+
+/******************************************************************************
+Setting Name: Min Fitness Diff Threshold
+Type: Termination Criterion
+Format: Real
+Mandatory: No
+Default Value: 1e-9
+Default Enabled: true
+Description:
+Specifies the minimum fitness differential between two consecutive generations 
+before stopping execution.
+******************************************************************************/
+double _termCondFitnessDiffThreshold;
+
+/******************************************************************************
+Setting Name: Min Standard Deviation
+Type: Termination Criterion
+Format: Real
+Mandatory: No
+Default Value: 1e-12
+Default Enabled: false
+Description:
+Specifies the minimal standard deviation per dimension of the proposal.
+******************************************************************************/
+double _termCondMinDeltaX;
+
+/******************************************************************************
+Setting Name: Max Standard Deviation
+Type: Termination Criterion
+Format: Real
+Mandatory: No
+Default Value: 1e-18
+Default Enabled: false
+Description:
+Specifies the maximal standard deviation per dimension of the proposal.
+******************************************************************************/
+double _termCondTolUpXFactor;
+
+/******************************************************************************
+Setting Name: Max Condition Covariance Matrix
+Type: Termination Criterion
+Format: Real
+Mandatory: No
+Default Value: 1e18
+Default Enabled: false
+Description:
+Specifies the maximum condition of the covariance matrix
+******************************************************************************/
+double _termCondCovCond;
+
+/******************************************************************************
+Setting Name: Max Condition Covariance Matrix
+Type: Termination Criterion
+Format: Real
+Mandatory: No
+Default Value: 1e18
+Default Enabled: false
+Description:
+Specifies a scaling factor under which the standard deviation does not change
+in the direction of the eigenvectors.
+******************************************************************************/
+double _termCondMinStepFac;
+
+
+// Term Cond Flags (TODO: remove?)
+bool _isTermCondMaxGenerations, _isTermCondMaxFitnessEvaluations, 
+    _isTermCondMinFitness, _isTermCondMaxFitness, 
+    _isTermCondFitnessDiffThreshold, _isTermCondMinDeltaX, 
+    _isTermCondTolUpXFactor, _isTermCondCovCond, _isTermCondMinStepFac;
+
+
+// These are CMA-ES Specific, but could be used for other methods in the future
+double* _lowerBounds;
+double* _upperBounds;
+double* _initialMeans;
+double* _initialStdDevs;
+double* _minStdDevChanges;
+bool* _variableLogSpace; /* Apply log transform of variable before evaluation */
+
+// Runtime Methods (to be inherited from base class in the future)
+void prepareGeneration();
+bool checkTermination() override;
+void updateDistribution(const double *fitnessVector);
+void initialize() override;
+void run() override;
+void processSample(size_t sampleId, double fitness) override;
+
+private:
  // Korali Runtime Variables
  int _fitnessSign; /* maximizing vs optimizing (+- 1) */
- std::string _objective; /* Maximize or Minimize */ 
  double* _fitnessVector; /* objective function values [_s] */
  double* _samplePopulation; /* sample coordinates [_s x _k->N] */
  bool* _initializedSample; /* flag to distribute work */
  double*_transformedSamples;
 
  size_t _finishedSamples; /* counter of evaluated samples to terminate evaluation */
- size_t _s; /* number of samples per generation */
- size_t _via_s; /* number of samples during start seach (viability regime) */
  size_t _current_s; /* number of samples active ( _s or _via_s ) */
- size_t _mu; /* number of best samples for mean / cov update */
- size_t _via_mu; /* number of best samples for mean (viability regime) */
  size_t _current_mu; /* number of samples active ( _mu or _mu_s ) */
- std::string _muType; /* Linear, Equal or Logarithmic */
  double* _muWeights; /* weights for mu best samples */
  double _muEffective; /* variance effective selection mass */
- double _muCovarianceIn; /* read from configuration, placeholder for reinit */
- double _muCovariance; /* internal parameter to calibrate updates */
+ //double _muCovarianceIn; /* read from configuration, placeholder for reinit */
+ //double _muCovariance; /* internal parameter to calibrate updates */
 
- double _sigmaCumulationFactorIn; /* read from configuration, placeholder for reinit (see below) */
  double _sigmaCumulationFactor; /* increment for sigma, default calculated from muEffective and dimension */
- double _dampFactorIn; /* read from configuration, placeholder for reinit (see below) */
  double _dampFactor; /* dampening parameter determines controls step size adaption */
- double _cumulativeCovarianceIn; /* read from configuration, plcaeholder for reinit (see below) */
  double _cumulativeCovariance; /* default calculated from dimension */
- double _covMatrixLearningRateIn; /* read from configuration, placehoder for reinit (see below) */
  double _covarianceMatrixLearningRate; /* parameter to calibrate cov updates */
  double _chiN; /* expectation of ||N(0,I)||^2 */
- bool   _isdiag; /* diagonal covariance matrix */
- bool   _isSigmaBounded; /* activate upper bound for sigma */
  size_t _covarianceEigenEvalFreq;
 
  // Stop conditions
- size_t _termCondMaxGenerations; // Max number of generations.
- size_t _termCondMaxFitnessEvaluations;   // Defines maximum number of fitness evaluations
- double _termCondMinFitness; // Defines the minimum fitness allowed, otherwise it stops
- double _termCondMaxFitness; // Defines the maximum fitness allowed, otherwise it stops
- double _termCondFitnessDiffThreshold; // Defines minimum function value differences before stopping
- double _termCondMinDeltaX; // Defines minimum delta of input parameters among generations before it stops.
- double _termCondTolUpXFactor; // Defines the minimum fitness allowed, otherwise it stops
- double _termCondCovCond; // Defines the maximal condition number of the covariance matrix
- double _termCondMinStepFac; // Factor to calculate min step length
- bool _isTermCondMaxGenerations, _isTermCondMaxFitnessEvaluations, _isTermCondMinFitness, 
-      _isTermCondMaxFitness, _isTermCondFitnessDiffThreshold, _isTermCondMinDeltaX, 
-      _isTermCondTolUpXFactor, _isTermCondCovCond, _isTermCondMinStepFac; // flgs to activate termination criteria
-
  // Private CMAES-Specific Variables
  double sigma;  /* step size */
  double _trace; /* to init sigma (or set upper bound) */
@@ -146,14 +481,8 @@ class CMAES : public Base
 
  // Private CCMA-ES-Specific Variables
  bool _hasConstraints; /* True if num constraints greater 0 */
- size_t _maxCorrections; /* max cov adaptions per generation */
- size_t _maxResamplings; /* max resamplings per generation */
- double _targetSucRate; /* target success rate */
- double _adaptionSize; /* cov adaption size scaling*/
- double _beta; /* cov adaption size ( adaptionSize/(samples+2) ) */
- double _cv; /* learning rate in normal vector  update */
- double _cp; /* update rate global success estimate */
- 
+ double _beta; /* Factor of covariance matrix adaption size */
+
  bool _isViabilityRegime; /* true if mean violates constraints */
  int bestValidIdx; /* best sample with wo constraint violation (otherwise -1) */
  double _globalSucRate; /* estim. global success rate */

@@ -35,7 +35,6 @@ void CMAES::initialize()
 
  // Init Generation
  _isFinished = false;
- _currentGeneration = 0;
 
  C    = (double**) calloc (sizeof(double*), _k->N);
  Ctmp = (double**) calloc (sizeof(double*), _k->N);
@@ -135,64 +134,43 @@ void CMAES::initialize()
 						_upperBounds[i]);
 	 rgxmean[i] = rgxold[i] = _initialMeans[i];
  }
+
+ if ( _hasConstraints ){ updateConstraints(); handleConstraints(); }
+ updateDistribution(_fitnessVector);
+ if ( _hasConstraints ) checkMeanAndSetRegime();
 }
 
-void CMAES::run()
+void CMAES::runGeneration()
 {
- if (_k->_verbosity >= KORALI_MINIMAL) {
-   printf("[Korali] Starting CMA-ES (Objective: %s).\n",  _objective.c_str());
-   printf("--------------------------------------------------------------------\n");
- }
-
- startTime = std::chrono::system_clock::now();
- if ( _hasConstraints ) { checkMeanAndSetRegime(); updateConstraints(); }
- printGeneration();
-
- while(!checkTermination())
- {
-   t0 = std::chrono::system_clock::now();
-
-   prepareGeneration();
-   evaluateSamples();
-
-   if ( _hasConstraints ){ updateConstraints(); handleConstraints(); }
-   updateDistribution(_fitnessVector);
-   if ( _hasConstraints ) checkMeanAndSetRegime();
-
-   _currentGeneration++;
-
-   t1 = std::chrono::system_clock::now();
-
-   printGeneration();
- }
-
- endTime = std::chrono::system_clock::now();
- printFinal();
+ prepareGeneration();
+ evaluateSamples();
+ if ( _hasConstraints ){ updateConstraints(); handleConstraints(); }
+ updateDistribution(_fitnessVector);
+ if ( _hasConstraints ) checkMeanAndSetRegime();
 }
 
 
 void CMAES::evaluateSamples()
 {
-  for (size_t i = 0; i < _current_s; i++) for(size_t d = 0; d < _k->N; ++d)
-    if(_variableLogSpace[d] == true)
-        _transformedSamples[i*_k->N+d] = std::exp(_samplePopulation[i*_k->N+d]);
-    else
-        _transformedSamples[i*_k->N+d] = _samplePopulation[i*_k->N+d];
+ for (size_t i = 0; i < _current_s; i++) for(size_t d = 0; d < _k->N; ++d)
+  if(_variableLogSpace[d] == true)
+	 _transformedSamples[i*_k->N+d] = std::exp(_samplePopulation[i*_k->N+d]);
+	else
+	 _transformedSamples[i*_k->N+d] = _samplePopulation[i*_k->N+d];
 
-  while (_finishedSamples < _current_s)
-  {
-    for (size_t i = 0; i < _current_s; i++) if (_initializedSample[i] == false)
-    {
-      _initializedSample[i] = true;
-      _k->_conduit->evaluateSample(_transformedSamples, i); countevals++;
-    }
-    _k->_conduit->checkProgress();
-  }
+	while (_finishedSamples < _current_s)
+	{
+		for (size_t i = 0; i < _current_s; i++) if (_initializedSample[i] == false)
+		{
+			_initializedSample[i] = true;
+			_k->_conduit->evaluateSample(_transformedSamples, i); countevals++;
+		}
+		_k->_conduit->checkProgress();
+	}
 }
 
 void CMAES::initMuWeights(size_t numsamplesmu)
 {
-
  // Initializing Mu Weights
  if      (_muType == "Linear")       for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = numsamplesmu - i;
  else if (_muType == "Equal")        for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = 1.;
@@ -272,7 +250,6 @@ void CMAES::initCovariance()
 
  maxdiagC=C[0][0]; for(size_t i=1;i<_k->N;++i) if(maxdiagC<C[i][i]) maxdiagC=C[i][i];
  mindiagC=C[0][0]; for(size_t i=1;i<_k->N;++i) if(mindiagC>C[i][i]) mindiagC=C[i][i];
-
 }
 
 
@@ -293,25 +270,25 @@ void CMAES::processSample(size_t sampleId, double fitness)
 
 void CMAES::checkMeanAndSetRegime()
 {
-    if (_isViabilityRegime == false) return; /* mean already inside valid domain, no udpates */
+	if (_isViabilityRegime == false) return; /* mean already inside valid domain, no udpates */
 
-    for (size_t c = 0; c < _k->_fconstraints.size(); c++){
-      countcevals++;
-      std::vector<double> sample(rgxmean, rgxmean+_k->N);
-      if ( _k->_fconstraints[c](sample) > 0.) return; /* mean violates constraint, do nothing */
-    }
+	for (size_t c = 0; c < _k->_fconstraints.size(); c++){
+		countcevals++;
+		std::vector<double> sample(rgxmean, rgxmean+_k->N);
+		if ( _k->_fconstraints[c](sample) > 0.) return; /* mean violates constraint, do nothing */
+	}
 
-    /* mean inside domain, switch regime and update internal variables */
-    _isViabilityRegime = false;
+	/* mean inside domain, switch regime and update internal variables */
+	_isViabilityRegime = false;
 
-    for (size_t c = 0; c < _k->_fconstraints.size(); c++) { viabilityBounds[c] = 0; }
-    _current_s  = _s;
-    _current_mu = _mu;
+	for (size_t c = 0; c < _k->_fconstraints.size(); c++) { viabilityBounds[c] = 0; }
+	_current_s  = _s;
+	_current_mu = _mu;
 
-    bestEver = -std::numeric_limits<double>::max();
-    initMuWeights(_current_mu);
-    initCovCorrectionParams();
-    initCovariance();
+	bestEver = -std::numeric_limits<double>::max();
+	initMuWeights(_current_mu);
+	initCovCorrectionParams();
+	initCovariance();
 }
 
 
@@ -332,7 +309,7 @@ void CMAES::updateConstraints() //TODO: maybe parallelize constraint evaluations
     constraintEvaluations[c][i] = _k->_fconstraints[c]( sample );
 
     if ( constraintEvaluations[c][i] > maxviolation ) maxviolation = constraintEvaluations[c][i];
-    if ( _currentGeneration == 0 && _isViabilityRegime ) viabilityBounds[c] = maxviolation;
+    if ( _k->currentGeneration == 0 && _isViabilityRegime ) viabilityBounds[c] = maxviolation;
 
     if ( constraintEvaluations[c][i] > viabilityBounds[c] + 1e-12 ) numviolations[i]++;
     if ( numviolations[i] > maxnumviolations ) maxnumviolations = numviolations[i];
@@ -469,7 +446,7 @@ void CMAES::updateDistribution(const double *fitnessVector)
   for (size_t c = 0; c < _k->_fconstraints.size(); c++) besteverCeval[c] = constraintEvaluations[c][bestValidIdx];
  }
 
- histFuncValues[_currentGeneration] = bestEver;
+ histFuncValues[_k->currentGeneration] = bestEver;
  
  /* set weights */
  for (size_t d = 0; d < _k->N; ++d) {
@@ -504,7 +481,7 @@ void CMAES::updateDistribution(const double *fitnessVector)
     psL2 += rgps[d] * rgps[d];
  }
 
- int hsig = sqrt(psL2) / sqrt(1. - pow(1.-_sigmaCumulationFactor, 2.0*(1.0+_currentGeneration))) / _chiN  < 1.4 + 2./(_k->N+1);
+ int hsig = sqrt(psL2) / sqrt(1. - pow(1.-_sigmaCumulationFactor, 2.0*(1.0+_k->currentGeneration))) / _chiN  < 1.4 + 2./(_k->N+1);
 
  /* cumulation for covariance matrix (pc) using B*D*z~_k->N(0,C) */
  for (size_t d = 0; d < _k->N; ++d)
@@ -566,9 +543,9 @@ void CMAES::updateDistribution(const double *fitnessVector)
  size_t horizon = 10 + ceil(3*10*_k->N/_s);
  double min = std::numeric_limits<double>::max();
  double max = -std::numeric_limits<double>::max();
- for(size_t i = 0; (i < horizon) && (_currentGeneration - i >= 0); i++) {
-    if ( histFuncValues[_currentGeneration-i] < min ) min = histFuncValues[_currentGeneration];
-    if ( histFuncValues[_currentGeneration-i] > max ) max = histFuncValues[_currentGeneration];
+ for(size_t i = 0; (i < horizon) && (_k->currentGeneration - i >= 0); i++) {
+    if ( histFuncValues[_k->currentGeneration-i] < min ) min = histFuncValues[_k->currentGeneration];
+    if ( histFuncValues[_k->currentGeneration-i] > max ) max = histFuncValues[_k->currentGeneration];
  }
  if (max-min < 1e-12) {
    sigma *= exp(0.2+_sigmaCumulationFactor/_dampFactor);
@@ -688,20 +665,20 @@ void CMAES::handleConstraints()
 bool CMAES::checkTermination()
 {
 
- if ( _isTermCondMinFitness && (_isViabilityRegime == false) && (_currentGeneration > 1) && (bestEver >= _termCondMinFitness) )
+ if ( _isTermCondMinFitness && (_isViabilityRegime == false) && (_k->currentGeneration > 1) && (bestEver >= _termCondMinFitness) )
  {
   _isFinished = true;
   sprintf(_terminationReason, "Min fitness value (%+6.3e) > (%+6.3e)",  bestEver, _termCondMinFitness);
  }
  
- if ( _isTermCondMaxFitness && (_isViabilityRegime == false) && (_currentGeneration > 1) && (bestEver >= _termCondMaxFitness) )
+ if ( _isTermCondMaxFitness && (_isViabilityRegime == false) && (_k->currentGeneration > 1) && (bestEver >= _termCondMaxFitness) )
  {
   _isFinished = true;
   sprintf(_terminationReason, "Max fitness value (%+6.3e) > (%+6.3e)",  bestEver, _termCondMaxFitness);
  }
 
  double range = fabs(currentFunctionValue - prevFunctionValue);
- if ( _isTermCondFitnessDiffThreshold && (_currentGeneration > 1) && (range <= _termCondFitnessDiffThreshold) )
+ if ( _isTermCondFitnessDiffThreshold && (_k->currentGeneration > 1) && (range <= _termCondFitnessDiffThreshold) )
  {
   _isFinished = true;
   sprintf(_terminationReason, "Function value differences (%+6.3e) < (%+6.3e)",  range, _termCondFitnessDiffThreshold);
@@ -776,7 +753,7 @@ bool CMAES::checkTermination()
   sprintf(_terminationReason, "Conducted %lu function evaluations >= (%lu).", countevals, _termCondMaxFitnessEvaluations);
  }
 
- if( _isTermCondMaxGenerations && (_currentGeneration >= _termCondMaxGenerations) )
+ if( _isTermCondMaxGenerations && (_k->currentGeneration >= _termCondMaxGenerations) )
  {
   _isFinished = true;
   sprintf(_terminationReason, "Maximum number of Generations reached (%lu).", _termCondMaxGenerations);
@@ -789,7 +766,7 @@ bool CMAES::checkTermination()
 void CMAES::updateEigensystem(double **M, int flgforce)
 {
  if(flgforce == 0 && flgEigensysIsUptodate) return;
- /* if(_currentGeneration % _covarianceEigenEvalFreq == 0) return; */
+ /* if(_k->currentGeneration % _covarianceEigenEvalFreq == 0) return; */
 
  eigen(_k->N, M, axisDtmp, Btmp);
  
@@ -905,12 +882,9 @@ double CMAES::doubleRangeMin(const double *rgd, size_t len) const
 }
 
 
-void CMAES::printGeneration() const
+void CMAES::printGeneration()
 {
- if (_currentGeneration % terminalOutputFrequency != 0) return;
-
- if (_k->_verbosity >= KORALI_MINIMAL)
-   printf("[Korali] Generation %ld - Duration: %fs (Total Elapsed Time: %fs)\n", _currentGeneration, std::chrono::duration<double>(t1-t0).count(), std::chrono::duration<double>(t1-startTime).count());
+ if (_k->currentGeneration % terminalOutputFrequency != 0) return;
 
  if ( _hasConstraints && _isViabilityRegime && _k->_verbosity >= KORALI_NORMAL)
  {
@@ -960,7 +934,7 @@ void CMAES::printGeneration() const
    printf("--------------------------------------------------------------------\n");
 }
 
-void CMAES::printFinal() const
+void CMAES::finalize()
 {
  if (_k->_verbosity >= KORALI_MINIMAL)
  {
@@ -972,7 +946,6 @@ void CMAES::printFinal() const
     printf("[Korali] Number of Function Evaluations: %zu\n", countevals);
     printf("[Korali] Number of Infeasible Samples: %zu\n", countinfeasible);
     printf("[Korali] Stopping Criterium: %s\n", _terminationReason);
-    printf("[Korali] Total Elapsed Time: %fs\n", std::chrono::duration<double>(endTime-startTime).count());
     printf("--------------------------------------------------------------------\n");
  }
 }

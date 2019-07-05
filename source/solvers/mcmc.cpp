@@ -9,39 +9,20 @@
 #include <gsl/gsl_statistics.h>
 #include <gsl/gsl_multimin.h>
 
-void Korali::Solver::MCMC::run()
+void Korali::Solver::MCMC::runGeneration()
 {
- initialize();
-
- if (_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Starting MCMC.\n");
-
- startTime = std::chrono::system_clock::now();
-
- while(!checkTermination())
- {
-  t0 = std::chrono::system_clock::now();
-
-  rejections = 0;
-  while( rejections < rejectionLevels )
-  {
-    generateCandidate(rejections);
-    evaluateSample();
-    _k->_conduit->checkProgress();
-    acceptReject(rejections);
-    rejections++;
-  }
-  chainLength++;
-  if (chainLength > burnIn ) updateDatabase(clPoint, clLogLikelihood);
-  updateState();
-
-  t1 = std::chrono::system_clock::now();
-
-  printGeneration();
- }
-
- printFinal();
-
- endTime = std::chrono::system_clock::now();
+	rejections = 0;
+	while( rejections < rejectionLevels )
+	{
+		generateCandidate(rejections);
+		evaluateSample();
+		_k->_conduit->checkProgress();
+		acceptReject(rejections);
+		rejections++;
+	}
+	chainLength++;
+	if (chainLength > burnIn ) updateDatabase(clPoint, clLogLikelihood);
+	updateState();
 }
 
 void Korali::Solver::MCMC::initialize()
@@ -260,7 +241,7 @@ bool Korali::Solver::MCMC::checkTermination()
  return _isFinished;
 }
  
-void Korali::Solver::MCMC::printGeneration() const
+void Korali::Solver::MCMC::printGeneration()
 {
  if (chainLength % terminalOutputFrequency != 0) return;
  
@@ -268,9 +249,6 @@ void Korali::Solver::MCMC::printGeneration() const
  {
   printf("--------------------------------------------------------------------\n");
   printf("[Korali] Database Entries %ld\n", databaseEntries);
-  printf("[Korali] Duration: %fs (Elapsed Time: %.2fs)\n",  
-          std::chrono::duration<double>(t1-t0).count() , 
-          std::chrono::duration<double>(t1-startTime).count());
  }
 
  if (_k->_verbosity >= KORALI_NORMAL) printf("[Korali] Accepted Samples: %zu\n", naccept);
@@ -294,7 +272,7 @@ void Korali::Solver::MCMC::printGeneration() const
 }
 
 
-void Korali::Solver::MCMC::printFinal() const
+void Korali::Solver::MCMC::finalize()
 {
  if (_k->_verbosity >= KORALI_MINIMAL)
  {
@@ -304,7 +282,6 @@ void Korali::Solver::MCMC::printFinal() const
     printf("[Korali] Acceptance Rate: %.2f%%\n", 100*acceptanceRateProposals);
     if (databaseEntries == chainLength) printf("[Korali] Max Samples Reached.\n");
     else printf("[Korali] Stopping Criterium: %s\n", _terminationReason);
-    printf("[Korali] Total Elapsed Time: %fs\n", std::chrono::duration<double>(t1-startTime).count());
     printf("--------------------------------------------------------------------\n");
  }
 }

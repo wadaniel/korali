@@ -185,8 +185,11 @@ size_t _maxResamplings;
  void prepareGeneration();
  bool checkTermination() override;
  void updateDistribution(const double *fitnessVector);
+
  void initialize() override;
- void run() override;
+ void finalize() override;
+
+ void runGeneration() override;
  void processSample(size_t sampleId, double fitness) override;
 
  private:
@@ -246,10 +249,7 @@ size_t _maxResamplings;
  
  void setConfiguration() override;
  void getConfiguration() override;
-
- // Print Methods
- void printGeneration() const;
- void printFinal() const;
+ void printGeneration() override;
 };
 
 } } // namespace Korali::Solver

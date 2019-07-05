@@ -229,7 +229,9 @@ bool maxFunctionEvaluationsEnabled;
 
  // Korali Methods
  void initialize() override;
- void run() override;
+ void finalize() override;
+
+ void runGeneration() override;
  void processSample(size_t c, double fitness) override;
 
   // Internal MCMC Methods
@@ -245,10 +247,7 @@ bool maxFunctionEvaluationsEnabled;
 
  void setConfiguration() override;
  void getConfiguration() override;
-
- // Print Methods
- void printGeneration() const;
- void printFinal() const;
+ void printGeneration() override;
 };
 
 } } // namespace Korali::Solver

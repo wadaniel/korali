@@ -42,14 +42,15 @@ void Nonintrusive::setConfiguration(nlohmann::json& js)
 /*                    Functional Methods                                */
 /************************************************************************/
 
-void Nonintrusive::run()
+void Nonintrusive::initialize()
 {
  _pipeDescriptors = (int**) calloc(_concurrentJobs, sizeof(int*));
  for (int i = 0; i < _concurrentJobs; i++) _pipeDescriptors[i] = (int*) calloc(2, sizeof(int));
-
  for (int i = 0; i < _concurrentJobs; i++) _launcherQueue.push(i);
+}
 
- _k->_solver->run();
+void Nonintrusive::finalize()
+{
 }
 
 void Nonintrusive::evaluateSample(double* sampleArray, size_t sampleId)

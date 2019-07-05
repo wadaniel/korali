@@ -33,7 +33,9 @@ class Distributed : public Base
 
  bool _continueEvaluations;
 
- void run() override;
+ void initialize() override;
+ void finalize() override;
+
  void workerThread();
  void evaluateSample(double* sampleArray, size_t sampleId) override;
  void checkProgress() override;

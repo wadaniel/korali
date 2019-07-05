@@ -13,7 +13,9 @@ namespace Korali { namespace Conduit {
 class Base {
  public:
 
- virtual void run() = 0;
+ virtual void initialize() = 0;
+ virtual void finalize() = 0;
+
  virtual void evaluateSample(double* sampleArray, size_t sampleId) = 0;
  virtual void checkProgress() = 0;
  virtual bool isRoot() = 0;

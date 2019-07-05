@@ -158,7 +158,7 @@ void Korali::Engine::setConfiguration()
  // Configure Solver
 
  std::string solverName = consume(_js, { "Solver" }, KORALI_STRING);
- if (solverName == "CMA-ES")  _solver = new Korali::Solver::CMAES();
+ if (solverName == "CMAES")  _solver = new Korali::Solver::CMAES();
  if (solverName == "DE")      _solver = new Korali::Solver::DE();
  if (solverName == "MCMC")    _solver = new Korali::Solver::MCMC();
  if (solverName == "TMCMC")   _solver = new Korali::Solver::TMCMC();

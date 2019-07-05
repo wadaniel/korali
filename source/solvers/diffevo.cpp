@@ -20,8 +20,6 @@ void DE::initialize()
  curBestVector  = (double*) calloc (sizeof(double), _k->N);
  maxWidth       = (double*) calloc (sizeof(double), _k->N);
 
- histFuncValues = (double*) calloc (sizeof(double), _termCondMaxGenerations+1);
-
  initializedSample = (bool*) calloc (sizeof(bool), _s);
  oldFitnessVector  = (double*) calloc (sizeof(double), _s);
  fitnessVector     = (double*) calloc (sizeof(double), _s);
@@ -296,26 +294,26 @@ void DE::updateSolver(const double *fitnessVector)
 bool DE::checkTermination()
 {
 
- if ( _isTermCondMinFitness && (_k->currentGeneration > 1) && (bestEver >= _termCondMinFitness) )
+ if ( _termCondMinFitnessEnabled && (_k->currentGeneration > 1) && (bestEver >= _termCondMinFitness) )
  {
   _isFinished = true;
   printf("Fitness Value (%+6.3e) > (%+6.3e).",  bestEver, _termCondMinFitness);
  }
  
- if ( _isTermCondMaxFitness && (_k->currentGeneration > 1) && (bestEver >= _termCondMaxFitness) )
+ if ( _termCondMaxFitnessEnabled && (_k->currentGeneration > 1) && (bestEver >= _termCondMaxFitness) )
  {
   _isFinished = true;
   printf("Fitness Value (%+6.3e) > (%+6.3e).",  bestEver, _termCondMaxFitness);
  }
 
  double range = fabs(currentFunctionValue - prevFunctionValue);
- if ( _isTermCondFitnessDiffThreshold && (_k->currentGeneration > 1) && (range < _termCondFitnessDiffThreshold) )
+ if ( _termCondFitnessDiffThresholdEnabled && (_k->currentGeneration > 1) && (range < _termCondFitnessDiffThreshold) )
  {
   _isFinished = true;
   printf("Fitness Diff Threshold (%+6.3e) < (%+6.3e).",  range, _termCondFitnessDiffThreshold);
  }
  
- if ( _isTermCondMinDeltaX && (_k->currentGeneration > 1) )
+ if ( _termCondMinDeltaXEnabled && (_k->currentGeneration > 1) )
  {
    size_t cTemp = 0;
    for(size_t d = 0; d < _k->N; ++d) cTemp += (fabs(rgxmean[d] - rgxoldmean[d]) < _termCondMinDeltaX) ? 1 : 0;
@@ -324,18 +322,6 @@ bool DE::checkTermination()
     _isFinished = true;
     printf("Mean changes < %+6.3e for all variables.", _termCondMinDeltaX);
    }
- }
-
- if( _isTermCondMaxFitnessEvaluations && (countevals >= _termCondMaxFitnessEvaluations) )
- {
-  _isFinished = true;
-  printf("Conducted %lu function evaluations >= (%lu).", countevals, _termCondMaxFitnessEvaluations);
- }
-
- if( _isTermCondMaxGenerations && (_k->currentGeneration >= _termCondMaxGenerations) )
- {
-  _isFinished = true;
-  printf("Maximum number of Generations reached (%lu).", _termCondMaxGenerations);
  }
 
  return _isFinished;

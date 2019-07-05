@@ -268,30 +268,6 @@ Specifies the output frequency onto the terminal screen.
 size_t terminalOutputFrequency;
 
 /******************************************************************************
-Setting Name: Max Generations
-Type: Termination Criterion
-Format: Integer
-Mandatory: No
-Default Value: 1000
-Default Enabled: true
-Description:
-Specifies the maximum number of generations to run.
-******************************************************************************/
-size_t _termCondMaxGenerations;
-
-/******************************************************************************
-Setting Name: Max Function Evaluations
-Type: Termination Criterion
-Format: Integer
-Mandatory: No
-Default Value: +Inf
-Default Enabled: false
-Description:
-Specifies the maximum number of objective function evaluations.
-******************************************************************************/
-size_t _termCondMaxFitnessEvaluations;
-
-/******************************************************************************
 Setting Name: Min Fitness
 Type: Termination Criterion
 Format: Real
@@ -302,6 +278,7 @@ Description:
 Specifies the target fitness to stop minimization.
 ******************************************************************************/
 double _termCondMinFitness;
+bool   _termCondMinFitnessEnabled;
 
 /******************************************************************************
 Setting Name: Max Fitness
@@ -314,6 +291,7 @@ Description:
 Specifies the target fitness to stop maximization.
 ******************************************************************************/
 double _termCondMaxFitness;
+bool   _termCondMaxFitnessEnabled;
 
 /******************************************************************************
 Setting Name: Min Fitness Diff Threshold
@@ -327,6 +305,7 @@ Specifies the minimum fitness differential between two consecutive generations
 before stopping execution.
 ******************************************************************************/
 double _termCondFitnessDiffThreshold;
+bool   _termCondFitnessDiffThresholdEnabled;
 
 /******************************************************************************
 Setting Name: Min Standard Deviation
@@ -339,6 +318,7 @@ Description:
 Specifies the minimal standard deviation per dimension of the proposal.
 ******************************************************************************/
 double _termCondMinDeltaX;
+bool   _termCondMinDeltaXEnabled;
 
 /******************************************************************************
 Setting Name: Max Standard Deviation
@@ -351,6 +331,7 @@ Description:
 Specifies the maximal standard deviation per dimension of the proposal.
 ******************************************************************************/
 double _termCondTolUpXFactor;
+bool   _termCondTolUpXFactorEnabled;
 
 /******************************************************************************
 Setting Name: Max Condition Covariance Matrix
@@ -363,6 +344,7 @@ Description:
 Specifies the maximum condition of the covariance matrix
 ******************************************************************************/
 double _termCondCovCond;
+bool   _termCondCovCondEnabled;
 
 /******************************************************************************
 Setting Name: Max Condition Covariance Matrix
@@ -376,14 +358,7 @@ Specifies a scaling factor under which the standard deviation does not change
 in the direction of the eigenvectors.
 ******************************************************************************/
 double _termCondMinStepFac;
-
-
-// Term Cond Flags (TODO: remove?)
-bool _isTermCondMaxGenerations, _isTermCondMaxFitnessEvaluations, 
-    _isTermCondMinFitness, _isTermCondMaxFitness, 
-    _isTermCondFitnessDiffThreshold, _isTermCondMinDeltaX, 
-    _isTermCondTolUpXFactor, _isTermCondCovCond, _isTermCondMinStepFac;
-
+bool   _termCondMinStepFacEnabled;
 
 // These are CMA-ES Specific, but could be used for other methods in the future
 double* _lowerBounds;
@@ -398,7 +373,7 @@ void prepareGeneration();
 bool checkTermination() override;
 void updateDistribution(const double *fitnessVector);
 void initialize() override;
-void run() override;
+void runGeneration() override;
 void processSample(size_t sampleId, double fitness) override;
 
 private:
@@ -454,7 +429,6 @@ private:
  double *rgxold; /* mean "parent" previous generation */
  double *rgBDz; /* for B*D*z */
  double *rgdTmp; /* temporary (random) vector used in different places */
- double *histFuncValues; /* holding historical best function values */
 
  size_t countevals; /* Number of function evaluations */
  size_t countinfeasible; /* Number of samples outside of domain given by bounds */
@@ -515,10 +489,10 @@ private:
  void handleConstraints(); /* covariance adaption for invalid samples */
  void reEvaluateConstraints(); /* re evaluate constraints, in handleConstraints,  count violations etc.. */
 
+ void finalize() override;
  void setConfiguration() override;
  void getConfiguration() override;
  void printGeneration() override;
-
 };
 
 } // namespace Korali::Solver

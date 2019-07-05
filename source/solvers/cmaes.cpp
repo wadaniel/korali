@@ -28,7 +28,6 @@ void CMAES::initialize()
  curBestVector  = (double*) calloc (sizeof(double), _k->N);
 
  index          = (size_t*) calloc (sizeof(size_t), s_max);
- histFuncValues = (double*) calloc (sizeof(double), _termCondMaxGenerations+1);
 
  _initializedSample = (bool*) calloc (sizeof(bool), s_max);
  _fitnessVector     = (double*) calloc (sizeof(double), s_max);
@@ -446,8 +445,6 @@ void CMAES::updateDistribution(const double *fitnessVector)
   for (size_t c = 0; c < _k->_fconstraints.size(); c++) besteverCeval[c] = constraintEvaluations[c][bestValidIdx];
  }
 
- histFuncValues[_k->currentGeneration] = bestEver;
- 
  /* set weights */
  for (size_t d = 0; d < _k->N; ++d) {
    rgxold[d] = rgxmean[d];
@@ -538,22 +535,6 @@ void CMAES::updateDistribution(const double *fitnessVector)
      fprintf(stderr, "[Korali] Warning: Sigma increased due to equal function values.\n");
    }
  }
-
- /*
- size_t horizon = 10 + ceil(3*10*_k->N/_s);
- double min = std::numeric_limits<double>::max();
- double max = -std::numeric_limits<double>::max();
- for(size_t i = 0; (i < horizon) && (_k->currentGeneration - i >= 0); i++) {
-    if ( histFuncValues[_k->currentGeneration-i] < min ) min = histFuncValues[_k->currentGeneration];
-    if ( histFuncValues[_k->currentGeneration-i] > max ) max = histFuncValues[_k->currentGeneration];
- }
- if (max-min < 1e-12) {
-   sigma *= exp(0.2+_sigmaCumulationFactor/_dampFactor);
-   if (_k->_verbosity >= KORALI_DETAILED) {
-     fprintf(stderr, "[Korali] Warning: sigma increased due to equal histrocial function values.\n");
-   }
- }
- */
 
 }
 
@@ -665,20 +646,20 @@ void CMAES::handleConstraints()
 bool CMAES::checkTermination()
 {
 
- if ( _isTermCondMinFitness && (_isViabilityRegime == false) && (_k->currentGeneration > 1) && (bestEver >= _termCondMinFitness) )
+ if ( _termCondMinFitnessEnabled && (_isViabilityRegime == false) && (_k->currentGeneration > 1) && (bestEver >= _termCondMinFitness) )
  {
   _isFinished = true;
   printf("Min fitness value (%+6.3e) > (%+6.3e)",  bestEver, _termCondMinFitness);
  }
  
- if ( _isTermCondMaxFitness && (_isViabilityRegime == false) && (_k->currentGeneration > 1) && (bestEver >= _termCondMaxFitness) )
+ if ( _termCondMaxFitnessEnabled && (_isViabilityRegime == false) && (_k->currentGeneration > 1) && (bestEver >= _termCondMaxFitness) )
  {
   _isFinished = true;
   printf("Max fitness value (%+6.3e) > (%+6.3e)",  bestEver, _termCondMaxFitness);
  }
 
  double range = fabs(currentFunctionValue - prevFunctionValue);
- if ( _isTermCondFitnessDiffThreshold && (_k->currentGeneration > 1) && (range <= _termCondFitnessDiffThreshold) )
+ if ( _termCondFitnessDiffThresholdEnabled && (_k->currentGeneration > 1) && (range <= _termCondFitnessDiffThreshold) )
  {
   _isFinished = true;
   printf("Function value differences (%+6.3e) < (%+6.3e)",  range, _termCondFitnessDiffThreshold);
@@ -690,20 +671,20 @@ bool CMAES::checkTermination()
   cTemp += (sigma * sqrt(C[iTemp][iTemp]) < _termCondMinDeltaX * _initialStdDevs[iTemp]) ? 1 : 0;
  }
 
- if ( _isTermCondMinDeltaX && (cTemp == _k->N) ) {
+ if ( _termCondMinDeltaXEnabled && (cTemp == _k->N) ) {
   _isFinished = true;
   printf("Object variable changes < %+6.3e", _termCondMinDeltaX * _initialStdDevs[iTemp]);
  }
 
  for(iTemp=0; iTemp<_k->N; ++iTemp)
-  if ( _isTermCondTolUpXFactor && (sigma * sqrt(C[iTemp][iTemp]) > _termCondTolUpXFactor * _initialStdDevs[iTemp]) )
+  if ( _termCondTolUpXFactorEnabled && (sigma * sqrt(C[iTemp][iTemp]) > _termCondTolUpXFactor * _initialStdDevs[iTemp]) )
   {
     _isFinished = true;
     printf("Standard deviation increased by more than %7.2e, larger initial standard deviation recommended \n", _termCondTolUpXFactor * _initialStdDevs[iTemp]);
     break;
   }
 
- if ( _isTermCondCovCond && (maxEW >= minEW * _termCondCovCond) )
+ if ( _termCondCovCondEnabled && (maxEW >= minEW * _termCondCovCond) )
  {
    _isFinished = true;
    printf("Maximal condition number %7.2e reached. maxEW=%7.2e, minEig=%7.2e, maxdiagC=%7.2e, mindiagC=%7.2e\n",
@@ -713,7 +694,7 @@ bool CMAES::checkTermination()
  double fac;
  size_t iAchse = 0;
  size_t iKoo = 0;
- if( _isTermCondMinStepFac )
+ if( _termCondMinStepFacEnabled )
  if (!_isdiag )
  {
     for (iAchse = 0; iAchse < _k->N; ++iAchse)
@@ -733,7 +714,7 @@ bool CMAES::checkTermination()
  }
 
  /* Component of rgxmean is not changed anymore */
- if( _isTermCondMinStepFac )
+ if( _termCondMinStepFacEnabled )
  for (iKoo = 0; iKoo < _k->N; ++iKoo)
  {
   if (rgxmean[iKoo] == rgxmean[iKoo] + _termCondMinStepFac*sigma*sqrt(C[iKoo][iKoo]) ) //TODO: standard dev add to _isTermCond..
@@ -746,18 +727,6 @@ bool CMAES::checkTermination()
   }
 
  } /* for iKoo */
-
- if( _isTermCondMaxFitnessEvaluations && (countevals >= _termCondMaxFitnessEvaluations) )
- {
-  _isFinished = true;
-  printf("Conducted %lu function evaluations >= (%lu).", countevals, _termCondMaxFitnessEvaluations);
- }
-
- if( _isTermCondMaxGenerations && (_k->currentGeneration >= _termCondMaxGenerations) )
- {
-  _isFinished = true;
-  printf("Maximum number of Generations reached (%lu).", _termCondMaxGenerations);
- }
 
  return _isFinished;
 }

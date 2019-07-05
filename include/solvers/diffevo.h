@@ -171,30 +171,6 @@ if Fix Infeasible is set False).
 size_t _maxResamplings;
  
 /******************************************************************************
-Setting Name: Max Generations
-Type: Termination Criterion
-Format: Integer
-Mandatory: No
-Default Value: 1000
-Default Enabled: true
-Description:
-Specifies the maximum number of generations to run.
-******************************************************************************/
-size_t _termCondMaxGenerations;
-
-/******************************************************************************
-Setting Name: Max Function Evaluations
-Type: Termination Criterion
-Format: Integer
-Mandatory: No
-Default Value: +Inf
-Default Enabled: false
-Description:
-Specifies the maximum number of objective function evaluations.
-******************************************************************************/
-size_t _termCondMaxFitnessEvaluations;
-
-/******************************************************************************
 Setting Name: Min Fitness
 Type: Termination Criterion
 Format: Real
@@ -205,6 +181,7 @@ Description:
 Specifies the target fitness to stop minimization.
 ******************************************************************************/
 double _termCondMinFitness; 
+bool   _termCondMinFitnessEnabled;
 
 /******************************************************************************
 Setting Name: Max Fitness
@@ -217,6 +194,7 @@ Description:
 Specifies the target fitness to stop maximization.
 ******************************************************************************/
 double _termCondMaxFitness;
+bool   _termCondMaxFitnessEnabled;
 
 /******************************************************************************
 Setting Name: Min Fitness Diff Threshold
@@ -230,6 +208,7 @@ Specifies the minimum fitness differential between two consecutive generations
 before stopping execution.
 ******************************************************************************/
 double _termCondFitnessDiffThreshold;
+bool   _termCondFitnessDiffThresholdEnabled;
 
 /******************************************************************************
 Setting Name: Min Stepz Size
@@ -242,14 +221,8 @@ Description:
 Specifies the minimal step size of the sample mean from one gneration to another.
 ******************************************************************************/
 double _termCondMinDeltaX; 
+bool   _termCondMinDeltaXEnabled;
  
-
-// Term Cond Flags (TODO: rmeove?)
-bool _isTermCondMaxGenerations, _isTermCondMaxFitnessEvaluations, 
-      _isTermCondMinFitness, _isTermCondMaxFitness,
-      _isTermCondMinDeltaX, _isTermCondFitnessDiffThreshold;
- 
-
 // These are DE-Specific, but could be used for other methods in the future
  double* _lowerBounds;
  double* _upperBounds;
@@ -297,7 +270,6 @@ bool _isTermCondMaxGenerations, _isTermCondMaxFitnessEvaluations,
  double *rgxoldmean; /* mean "parent" previous generation */
  double *rgxbestever; /* bestever vector */
  double *curBestVector; /* current best vector */
- double *histFuncValues; /* holding historical best function values */
  double* maxWidth; /* max distance between samples per dimension */
 
  size_t countevals; /* Number of function evaluations */

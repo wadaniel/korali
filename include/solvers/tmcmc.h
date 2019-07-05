@@ -80,17 +80,17 @@ Note that only the last sample per chain is considered for the recombination.
 size_t burnIn;
 
 /******************************************************************************
-Setting Name: Coefficient of Variation
+Setting Name: Initial Coefficient of Variation
 Type: Solver Setting
 Format: Real
 Mandatory: No
 Default Value: 1.0
 Default Enabled:
 Description:
-Target coefficient of variation to search for the exponent $\rho_{i+1}$.
-By default, Korali will set this value to 1.00 as suggested in [Ching2007].
+Initial value for the target coefficient of variation to search for the exponent
+ $\rho_{i+1}$. By default, Korali will set this value to 1.00 as suggested in [Ching2007].
 ******************************************************************************/
-double coefficientOfVariation;
+double initialCoefficientOfVariation;
 
 /******************************************************************************
 Setting Name: Covariance Scaling
@@ -154,35 +154,197 @@ Specifies the maximum number of generations to run.
 size_t maxGenerations;
 bool maxGenerationsEnabled;
 
- // TMCMC Runtime Variables
- gsl_rng  *range;
- gsl_rng** chainGSLRange;
- bool*   chainPendingFitness; /* Indicates that the fitness result for the chain is pending */
- double* ccPoints; /* Chain candidate parameter values */
- double* transformedSamples; /* Candidate parameters log transformed */
- double* ccLogLikelihood; /* Chain candidate fitness value */
- double* clPoints; /* Chain leader parameter values */
- double* clLogLikelihood; /* Chain leader fitness */
- size_t  finishedChains; 
- size_t* chainCurrentStep;
- size_t* chainLength;
+/******************************************************************************
+Internal Variable Name: Chain Pending Fitness
+Format: Array of Booleans
+Description:
+Indicates that the fitness result for the chain is pending
+******************************************************************************/
+std::vector<bool> chainPendingFitness;
+
+/******************************************************************************
+Internal Variable Name: Chain Candidate Parameters
+Format: Array of Reals
+Description:
+Current (theta) parameters of the chain leader sample.
+******************************************************************************/
+std::vector<double> chainCandidatesParameters;
+
+/******************************************************************************
+Internal Variable Name: Log Transformed Samples
+Format: Array of Reals
+Description:
+Candidate parameters log transformed.
+******************************************************************************/
+std::vector<double> logTransformedSamples;
+
+/******************************************************************************
+Internal Variable Name: Chain Candidates LogLikelihoods
+Format: Array of Reals
+Description:
+The logLikelihoods of the chain candidates.
+******************************************************************************/
+std::vector<double> chainCandidatesLogLikelihoods;
+
+/******************************************************************************
+Internal Variable Name: Chain Leader Parameters
+Format: Array of Reals
+Description:
+Current (theta) parameters of the chain leader sample.
+******************************************************************************/
+std::vector<double> chainLeadersParameters;
+
+/******************************************************************************
+Internal Variable Name: Chain Leaders LogLikelihoods
+Format: Array of Reals
+Description:
+The logLikelihoods of the chain leaders.
+******************************************************************************/
+std::vector<double> chainLeadersLogLikelihoods;
+
+/******************************************************************************
+Internal Variable Name: Finished Chains Count
+Format: Integer
+Description:
+Number of finished chains.
+******************************************************************************/
+size_t finishedChainsCount;
+
+/******************************************************************************
+Internal Variable Name: Current Chain Step
+Format: Array of Integers
+Description:
+The current execution step for every chain.
+******************************************************************************/
+std::vector<size_t> currentChainStep;
+
+/******************************************************************************
+Internal Variable Name: Chain Lengths
+Format: Array of Integers
+Description:
+Length for each of the chains.
+******************************************************************************/
+std::vector<size_t> chainLengths;
+
+/******************************************************************************
+Internal Variable Name: Coefficient of Variation
+Format: Real
+Description:
+Current coefficient of variation
+******************************************************************************/
+double coefficientOfVariation;
+
+/******************************************************************************
+Internal Variable Name: Chain Count
+Format: Integer
+Description:
+Unique selections after resampling (forming new chain)
+******************************************************************************/
+size_t chainCount;
+
+/******************************************************************************
+Internal Variable Name: Annealing Exponent
+Format: Real
+Description:
+Indicates how the calculated distribution fits the real distribution
+******************************************************************************/
+double annealingExponent;
+
+/******************************************************************************
+Internal Variable Name: Accepted Samples Count
+Format: Integer
+Description:
+Accepted samples after proposal
+******************************************************************************/
+size_t acceptedSamplesCount;
+
+/******************************************************************************
+Internal Variable Name: logEvidence
+Format: Real
+Description:
+Calculated logEvidence of the model so far
+******************************************************************************/
+double logEvidence;
+
+/******************************************************************************
+Internal Variable Name: Proposals Acceptance Rate
+Format: Real
+Description:
+Acceptance rate calculated from samples
+******************************************************************************/
+double proposalsAcceptanceRate;
+
+/******************************************************************************
+Internal Variable Name: Selection Acceptance Rate
+Format: Real
+Description:
+Acceptance rate calculated from chain count
+******************************************************************************/
+double selectionAcceptanceRate;
+
+/******************************************************************************
+Internal Variable Name: Covariance Matrix
+Format: Array of Reals
+Description:
+Sample covariance of leader fitness values
+******************************************************************************/
+std::vector<double> covarianceMatrix;
+
+/******************************************************************************
+Internal Variable Name: Mean Theta
+Format: Array of Reals
+Description:
+Mean of leader fitness values
+******************************************************************************/
+std::vector<double> meanTheta;
+
+/******************************************************************************
+Internal Variable Name: Database Entry Count
+Format: Integer
+Description:
+Number of accepted samples stored in the database.
+******************************************************************************/
+size_t databaseEntryCount;
+
+/******************************************************************************
+Internal Variable Name: Sample Parameters Database
+Format: Array of Reals
+Description:
+Variable values of samples stored in the database.
+******************************************************************************/
+std::vector<double> sampleParametersDatabase;
+
+/******************************************************************************
+Internal Variable Name: Sample Fitness Database
+Format: Array of Reals
+Description:
+Fitness of the samples stored in the database.
+******************************************************************************/
+std::vector<double> sampleFitnessDatabase;
+
+/******************************************************************************
+Internal Variable Name: Local Covariance Matrices
+Format: Array of Array of Reals
+Description:
+Local covariances of chain leaders
+******************************************************************************/
+std::vector< std::vector<double> > localCovarianceMatrices;
+
+/******************************************************************************
+Setting Name: Log Space
+Type: Variable Setting
+Format: Boolean
+Mandatory: No
+Default Value: false
+Default Enabled:
+Description:
+Indicates whether the variable is expressed in Logarithmic Space.
+******************************************************************************/
+std::vector<bool> variableLogSpaces;
 
  // TMCMC Status variables
- size_t  _countevals; /* Number of function evaluations */
- size_t  _nChains; /* Unique selections after resampling (forming new chain) */
- double  _coefficientOfVariation; /* Actual coefficient of variation of weights */
- double  _annealingExponent; /* Annealing exponent */
- size_t  _uniqueEntries; /* Accepted samples after proposal */
- double  _logEvidence; /* Log of evidence of model */
- double  _acceptanceRateProposals; /* Acceptance rate calculated from _uniqueEntries */
- double  _acceptanceRateSelections; /* Acceptance rate calculated from _nChains */
- double* _covarianceMatrix; /* Sample covariance of leader fitness values */
- double* _meanTheta; /* Mean of leader fitness values */
- size_t  _databaseEntries; /* Num samples in DB (must equal population size) */
- double* _databasePoints; /* Variable values of samples in DB */
- double* _databaseFitness; /* Fitness of samples in DB */
- double **local_cov; /* Local covariances of leaders */
- bool* _variableLogSpace; /* Apply log transform of variable before evaluation */
+ gsl_rng  *range;
+ gsl_rng** chainGSLRange;
 
   // Korali Methods
  void initialize() override;
@@ -198,9 +360,9 @@ bool maxGenerationsEnabled;
  void updateDatabase(double* point, double fitness);
  void generateCandidate(size_t candidate);
  void evaluateSample(size_t candidate);
- void computeChainCovariances(double** chain_cov, size_t newchains) const;
- void minSearch(double const *fj, size_t fn, double pj, double objTol, double& xmin, double& fmin) const;
- bool isFeasibleCandidate(size_t candidate) const;
+ void computeChainCovariances(std::vector< std::vector<double> >& chain_cov, size_t newchains);
+ void minSearch(double const *fj, size_t fn, double pj, double objTol, double& xmin, double& fmin);
+ bool isFeasibleCandidate(size_t candidate);
  static double tmcmc_objlogp(double x, const double *fj, size_t fn, double pj, double zero);
  static double objLog(const gsl_vector *v, void *param);
 

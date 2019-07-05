@@ -55,7 +55,7 @@ Description:
 Specifies the number of samples to evaluate per generation (preferably 5-10x 
 number of variables).
 ******************************************************************************/
-size_t _s;
+size_t _sampleCount;
 
 /******************************************************************************
 Setting Name: Crossover Rate
@@ -91,7 +91,7 @@ Default Enabled:
 Description:
 Specifies the output frequency of intermediate result files.
 ******************************************************************************/
-size_t resultOutputFrequency;
+size_t _resultOutputFrequency;
 
 /******************************************************************************
 Setting Name: Terminal Output Frequency
@@ -103,7 +103,7 @@ Default Enabled:
 Description:
 Specifies the output frequency onto the terminal screen.
 ******************************************************************************/
-size_t terminalOutputFrequency;
+size_t _terminalOutputFrequency;
 
 /******************************************************************************
 Setting Name: Mutation Rule
@@ -129,7 +129,7 @@ Description:
 Controls the selection of the parent vecor: "Random" or "Best" (best sample 
 from previous generation).
 ******************************************************************************/
-std::string _parent;
+std::string _parentSelectionRule;
 
 /******************************************************************************
 Setting Name: Accept Rule
@@ -155,20 +155,21 @@ Description:
 If set true, Korali samples a random sample between Parent and the voiolated 
 boundary. If set false, infeasible samples are mutated again until feasible.
 ******************************************************************************/
-bool _fixinfeasible;
+bool _fixInfeasible;
 
 /******************************************************************************
 Setting Name: Max Resamplings
-Type: Solver Setting
+Type: Termination Criterion
 Format: Integer
 Mandatory: No
 Default Value: 1e9
-Default Enabled:
+Default Enabled: True
 Description:
 Max number of mutations per sample per generation if infeasible (only relevant 
 if Fix Infeasible is set False).
 ******************************************************************************/
-size_t _maxResamplings;
+size_t _termCondMaxInfeasibleResamplings;
+size_t _termCondMaxInfeasibleResamplingsEnabled;
  
 /******************************************************************************
 Setting Name: Min Fitness
@@ -207,11 +208,11 @@ Description:
 Specifies the minimum fitness differential between two consecutive generations 
 before stopping execution.
 ******************************************************************************/
-double _termCondFitnessDiffThreshold;
-bool   _termCondFitnessDiffThresholdEnabled;
+double _termCondMinFitnessDiffThreshold;
+bool   _termCondMinFitnessDiffThresholdEnabled;
 
 /******************************************************************************
-Setting Name: Min Stepz Size
+Setting Name: Min Step Size
 Type: Termination Criterion
 Format: Real
 Mandatory: No
@@ -220,8 +221,8 @@ Default Enabled: false
 Description:
 Specifies the minimal step size of the sample mean from one gneration to another.
 ******************************************************************************/
-double _termCondMinDeltaX; 
-bool   _termCondMinDeltaXEnabled;
+double _termCondMinStepSize; 
+bool   _termCondMinStepSizeEnabled;
  
 // These are DE-Specific, but could be used for other methods in the future
  double* _lowerBounds;

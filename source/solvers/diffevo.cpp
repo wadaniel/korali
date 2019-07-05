@@ -11,8 +11,8 @@ constexpr size_t str2int(const char* str, int h = 0) { return !str[h] ? 5381 : (
 void DE::initialize()
 {
  // Allocating Memory
- samplePopulation = (double*) calloc (sizeof(double), _k->N*_s);
- candidates       = (double*) calloc (sizeof(double), _k->N*_s);
+ samplePopulation = (double*) calloc (sizeof(double), _k->N*_sampleCount);
+ candidates       = (double*) calloc (sizeof(double), _k->N*_sampleCount);
 
  rgxoldmean     = (double*) calloc (sizeof(double), _k->N);
  rgxmean        = (double*) calloc (sizeof(double), _k->N);
@@ -20,9 +20,9 @@ void DE::initialize()
  curBestVector  = (double*) calloc (sizeof(double), _k->N);
  maxWidth       = (double*) calloc (sizeof(double), _k->N);
 
- initializedSample = (bool*) calloc (sizeof(bool), _s);
- oldFitnessVector  = (double*) calloc (sizeof(double), _s);
- fitnessVector     = (double*) calloc (sizeof(double), _s);
+ initializedSample = (bool*) calloc (sizeof(bool), _sampleCount);
+ oldFitnessVector  = (double*) calloc (sizeof(double), _sampleCount);
+ fitnessVector     = (double*) calloc (sizeof(double), _sampleCount);
 
  // Init Generation
  _isFinished = false;
@@ -77,7 +77,7 @@ void DE::runGeneration()
 
 void DE::initSamples()
 {
-  for(size_t i = 0; i < _s; ++i) for(size_t d = 0; d < _k->N; ++d)
+  for(size_t i = 0; i < _sampleCount; ++i) for(size_t d = 0; d < _k->N; ++d)
   {
     if (_initialMeanDefined[d] && _initialStdDevDefined[d]) 
     {
@@ -94,26 +94,29 @@ void DE::initSamples()
 void DE::prepareGeneration()
 {
  size_t initial_infeasible = countinfeasible;
- for (size_t i = 0; i < _s; ++i)
+ for (size_t i = 0; i < _sampleCount; ++i)
  {
     mutateSingle(i);
     while(isFeasible(i) == false)
     {
         countinfeasible++;
         
-        if (_fixinfeasible) fixInfeasible(i);
-        else mutateSingle(i);
-        
-        if ( (countinfeasible - initial_infeasible) > _maxResamplings )
+        if (_fixInfeasible) 
+            fixInfeasible(i);
+        else 
+            mutateSingle(i);
+       
+        if ( _termCondMaxInfeasibleResamplingsEnabled )
+        if ( (countinfeasible - initial_infeasible) > _termCondmaxInfeasibleResamplings )
         {
-          if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Warning: exiting resampling loop (param %zu) , max resamplings (%zu) reached.\n", i, _maxResamplings);
+          if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Warning: exiting resampling loop (param %zu) , max resamplings (%zu) reached.\n", i, _termCondMaxInfeasibleResamplings);
           exit(-1);
         }
     }
  }
 
  finishedSamples = 0;
- for (size_t i = 0; i < _s; i++) initializedSample[i] = false;
+ for (size_t i = 0; i < _sampleCount; i++) initializedSample[i] = false;
 
  double *tmp = fitnessVector;
  fitnessVector = oldFitnessVector;
@@ -124,8 +127,8 @@ void DE::prepareGeneration()
 void DE::mutateSingle(size_t sampleIdx)
 {
     size_t a, b;
-    do{ a = _uniformGenerator->getRandomNumber()*_s; } while(a == sampleIdx);
-    do{ b = _uniformGenerator->getRandomNumber()*_s; } while(b == sampleIdx || b == a);
+    do{ a = _uniformGenerator->getRandomNumber()*_sampleCount; } while(a == sampleIdx);
+    do{ b = _uniformGenerator->getRandomNumber()*_sampleCount; } while(b == sampleIdx || b == a);
 
     if (_mutationRule == "Self Adaptive")
     {
@@ -151,15 +154,15 @@ void DE::mutateSingle(size_t sampleIdx)
     }
 
     double* parent;
-    if(_parent == "Random")
+    if(_parentSelectionRule == "Random")
     {
         size_t c;
-        do{ c = _uniformGenerator->getRandomNumber()*_s; } while(c == sampleIdx || c == a || c == b);
+        do{ c = _uniformGenerator->getRandomNumber()*_sampleCount; } while(c == sampleIdx || c == a || c == b);
         parent = &samplePopulation[c*_k->N];
     }
     else
     {
-     /* _parent == "Best" */
+     /* _parentSelectionRule == "Best" */
         parent = &samplePopulation[bestIndex*_k->N];
     }
 
@@ -194,18 +197,18 @@ void DE::fixInfeasible(size_t sampleIdx)
 
 void DE::evaluateSamples()
 {
-  double* transformedSamples = new double[ _s * _k->N ];
+  double* transformedSamples = new double[ _sampleCount * _k->N ];
   
-  for (size_t i = 0; i < _s; i++) for(size_t d = 0; d < _k->N; ++d)
+  for (size_t i = 0; i < _sampleCount; i++) for(size_t d = 0; d < _k->N; ++d)
     if(_variableLogSpace[d] == true) 
         transformedSamples[i*_k->N+d] = std::exp(candidates[i*_k->N+d]);
     else 
         transformedSamples[i*_k->N+d] = candidates[i*_k->N+d];
 
 
-  while (finishedSamples < _s)
+  while (finishedSamples < _sampleCount)
   {
-    for (size_t i = 0; i < _s; i++) if (initializedSample[i] == false)
+    for (size_t i = 0; i < _sampleCount; i++) if (initializedSample[i] == false)
     {
       initializedSample[i] = true; 
       _k->_conduit->evaluateSample(transformedSamples, i); countevals++;
@@ -227,7 +230,7 @@ void DE::processSample(size_t sampleIdx, double fitness)
 
 void DE::updateSolver(const double *fitnessVector)
 {
-    bestIndex            = maxIdx(fitnessVector, _s);
+    bestIndex            = maxIdx(fitnessVector, _sampleCount);
     prevFunctionValue    = currentFunctionValue;
     currentFunctionValue = fitnessVector[bestIndex];
     for(size_t d = 0; d < _k->N; ++d) curBestVector[d] = candidates[bestIndex*_k->N+d];
@@ -251,18 +254,18 @@ void DE::updateSolver(const double *fitnessVector)
                 break;
 
             case str2int("Greedy") : // accept if mutation better than parent
-                for(size_t i = 0; i < _s; ++i) if(fitnessVector[i] > oldFitnessVector[i])
+                for(size_t i = 0; i < _sampleCount; ++i) if(fitnessVector[i] > oldFitnessVector[i])
                     for(size_t d = 0; d < _k->N; ++d) samplePopulation[i*_k->N+d] = candidates[i*_k->N+d];
                 bestEver = currentFunctionValue;
                 break;
 
             case str2int("Iterative") : // iteratibely accept samples and update bestEver
-                for(size_t i = 0; i < _s; ++i) if(fitnessVector[i] > bestEver)
+                for(size_t i = 0; i < _sampleCount; ++i) if(fitnessVector[i] > bestEver)
                  { for(size_t d = 0; d < _k->N; ++d) samplePopulation[i*_k->N+d] = candidates[i*_k->N+d]; bestEver = fitnessVector[i]; }
                 break;
  
             case str2int("Improved") : // update all samples better than bestEver
-                for(size_t i = 0; i < _s; ++i) if(fitnessVector[i] > bestEver)
+                for(size_t i = 0; i < _sampleCount; ++i) if(fitnessVector[i] > bestEver)
                     for(size_t d = 0; d < _k->N; ++d) samplePopulation[i*_k->N+d] = candidates[i*_k->N+d];
                 bestEver = currentFunctionValue;
                 break;
@@ -272,15 +275,15 @@ void DE::updateSolver(const double *fitnessVector)
                 exit(-1);
         }
 
-        for(size_t i = 0; i < _s; ++i) for(size_t d = 0; d < _k->N; ++d) 
-            rgxmean[d] += samplePopulation[i*_k->N+d]/((double)_s);
+        for(size_t i = 0; i < _sampleCount; ++i) for(size_t d = 0; d < _k->N; ++d) 
+            rgxmean[d] += samplePopulation[i*_k->N+d]/((double)_sampleCount);
     }
     
     for(size_t d = 0; d < _k->N; ++d) 
     {
         double max = -std::numeric_limits<double>::max();
         double min = -max;
-        for(size_t i = 0; i < _s; ++i)
+        for(size_t i = 0; i < _sampleCount; ++i)
         {
             if (samplePopulation[i*_k->N+d] > max) max = samplePopulation[i*_k->N+d];
             if (samplePopulation[i*_k->N+d] < min) min = samplePopulation[i*_k->N+d];
@@ -307,20 +310,20 @@ bool DE::checkTermination()
  }
 
  double range = fabs(currentFunctionValue - prevFunctionValue);
- if ( _termCondFitnessDiffThresholdEnabled && (_k->currentGeneration > 1) && (range < _termCondFitnessDiffThreshold) )
+ if ( _termCondMinFitnessDiffThresholdEnabled && (_k->currentGeneration > 1) && (range < _termCondMinFitnessDiffThreshold) )
  {
   _isFinished = true;
-  printf("Fitness Diff Threshold (%+6.3e) < (%+6.3e).",  range, _termCondFitnessDiffThreshold);
+  printf("Fitness Diff Threshold (%+6.3e) < (%+6.3e).",  range, _termCondMinFitnessDiffThreshold);
  }
  
- if ( _termCondMinDeltaXEnabled && (_k->currentGeneration > 1) )
+ if ( _termCondMinStepSizeEnabled && (_k->currentGeneration > 1) )
  {
    size_t cTemp = 0;
-   for(size_t d = 0; d < _k->N; ++d) cTemp += (fabs(rgxmean[d] - rgxoldmean[d]) < _termCondMinDeltaX) ? 1 : 0;
+   for(size_t d = 0; d < _k->N; ++d) cTemp += (fabs(rgxmean[d] - rgxoldmean[d]) < _termCondMinStepSize) ? 1 : 0;
    if (cTemp == _k->N) 
    {
     _isFinished = true;
-    printf("Mean changes < %+6.3e for all variables.", _termCondMinDeltaX);
+    printf("Mean changes < %+6.3e for all variables.", _termCondMinStepSize);
    }
  }
 

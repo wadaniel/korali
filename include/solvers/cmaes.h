@@ -267,6 +267,124 @@ Specifies the output frequency onto the terminal screen.
 ******************************************************************************/
 size_t terminalOutputFrequency;
 
+/******************************************************************************
+Setting Name: Max Generations
+Type: Termination Criterion
+Format: Integer
+Mandatory: No
+Default Value: 1000
+Default Enabled: true
+Description:
+Specifies the maximum number of generations to run.
+******************************************************************************/
+size_t _termCondMaxGenerations;
+
+/******************************************************************************
+Setting Name: Max Function Evaluations
+Type: Termination Criterion
+Format: Integer
+Mandatory: No
+Default Value:
+Default Enabled: false
+Description:
+Specifies the maximum number of objective function evaluations.
+******************************************************************************/
+size_t _termCondMaxFitnessEvaluations;
+
+/******************************************************************************
+Setting Name: Min Fitness
+Type: Termination Criterion
+Format: Real
+Mandatory: No
+Default Value: -Inf
+Default Enabled: false
+Description:
+Specifies the target fitness to stop minimization.
+******************************************************************************/
+double _termCondMinFitness;
+
+/******************************************************************************
+Setting Name: Max Fitness
+Type: Termination Criterion
+Format: Real
+Mandatory: No
+Default Value: +Inf
+Default Enabled: false
+Description:
+Specifies the target fitness to stop maximization.
+******************************************************************************/
+double _termCondMaxFitness;
+
+/******************************************************************************
+Setting Name: Min Fitness Diff Threshold
+Type: Termination Criterion
+Format: Real
+Mandatory: No
+Default Value: 1e-9
+Default Enabled: true
+Description:
+Specifies the minimum fitness differential between two consecutive generations 
+before stopping execution.
+******************************************************************************/
+double _termCondFitnessDiffThreshold;
+
+/******************************************************************************
+Setting Name: Min Standard Deviation
+Type: Termination Criterion
+Format: Real
+Mandatory: No
+Default Value: 1e-12
+Default Enabled: false
+Description:
+Specifies the minimal standard deviation per dimension of the proposal.
+******************************************************************************/
+double _termCondMinDeltaX;
+
+/******************************************************************************
+Setting Name: Max Standard Deviation
+Type: Termination Criterion
+Format: Real
+Mandatory: No
+Default Value: 1e-18
+Default Enabled: false
+Description:
+Specifies the maximal standard deviation per dimension of the proposal.
+******************************************************************************/
+double _termCondTolUpXFactor;
+
+/******************************************************************************
+Setting Name: Max Condition Covariance Matrix
+Type: Termination Criterion
+Format: Real
+Mandatory: No
+Default Value: 1e18
+Default Enabled: false
+Description:
+Specifies the maximum condition of the covariance matrix
+******************************************************************************/
+double _termCondCovCond;
+
+/******************************************************************************
+Setting Name: Max Condition Covariance Matrix
+Type: Termination Criterion
+Format: Real
+Mandatory: No
+Default Value: 1e18
+Default Enabled: false
+Description:
+Specifies a scaling factor under which the standard deviation does not change
+in the direction of the eigenvectors.
+******************************************************************************/
+double _termCondMinStepFac;
+
+
+// Term Cond Flags (TODO: remove?)
+bool _isTermCondMaxGenerations, _isTermCondMaxFitnessEvaluations, 
+    _isTermCondMinFitness, _isTermCondMaxFitness, 
+    _isTermCondFitnessDiffThreshold, _isTermCondMinDeltaX, 
+    _isTermCondTolUpXFactor, _isTermCondCovCond, _isTermCondMinStepFac;
+
+
 // These are CMA-ES Specific, but could be used for other methods in the future
 double* _lowerBounds;
 double* _upperBounds;
@@ -308,19 +426,6 @@ private:
  size_t _covarianceEigenEvalFreq;
 
  // Stop conditions
- size_t _termCondMaxGenerations; // Max number of generations.
- size_t _termCondMaxFitnessEvaluations;   // Defines maximum number of fitness evaluations
- double _termCondMinFitness; // Defines the minimum fitness allowed, otherwise it stops
- double _termCondMaxFitness; // Defines the maximum fitness allowed, otherwise it stops
- double _termCondFitnessDiffThreshold; // Defines minimum function value differences before stopping
- double _termCondMinDeltaX; // Defines minimum delta of input parameters among generations before it stops.
- double _termCondTolUpXFactor; // Defines the minimum fitness allowed, otherwise it stops
- double _termCondCovCond; // Defines the maximal condition number of the covariance matrix
- double _termCondMinStepFac; // Factor to calculate min step length
- bool _isTermCondMaxGenerations, _isTermCondMaxFitnessEvaluations, _isTermCondMinFitness, 
-      _isTermCondMaxFitness, _isTermCondFitnessDiffThreshold, _isTermCondMinDeltaX, 
-      _isTermCondTolUpXFactor, _isTermCondCovCond, _isTermCondMinStepFac; // flgs to activate termination criteria
-
  // Private CMAES-Specific Variables
  double sigma;  /* step size */
  double _trace; /* to init sigma (or set upper bound) */

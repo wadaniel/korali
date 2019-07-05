@@ -284,7 +284,7 @@ Setting Name: Max Function Evaluations
 Type: Termination Criterion
 Format: Integer
 Mandatory: No
-Default Value:
+Default Value: +Inf
 Default Enabled: false
 Description:
 Specifies the maximum number of objective function evaluations.

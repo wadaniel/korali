@@ -169,7 +169,86 @@ Max number of mutations per sample per generation if infeasible (only relevant
 if Fix Infeasible is set False).
 ******************************************************************************/
 size_t _maxResamplings;
+ 
+/******************************************************************************
+Setting Name: Max Generations
+Type: Termination Criterion
+Format: Integer
+Mandatory: No
+Default Value: 1000
+Default Enabled: true
+Description:
+Specifies the maximum number of generations to run.
+******************************************************************************/
+size_t _termCondMaxGenerations;
 
+/******************************************************************************
+Setting Name: Max Function Evaluations
+Type: Termination Criterion
+Format: Integer
+Mandatory: No
+Default Value: +Inf
+Default Enabled: false
+Description:
+Specifies the maximum number of objective function evaluations.
+******************************************************************************/
+size_t _termCondMaxFitnessEvaluations;
+
+/******************************************************************************
+Setting Name: Min Fitness
+Type: Termination Criterion
+Format: Real
+Mandatory: No
+Default Value: -Inf
+Default Enabled: false
+Description:
+Specifies the target fitness to stop minimization.
+******************************************************************************/
+double _termCondMinFitness; 
+
+/******************************************************************************
+Setting Name: Max Fitness
+Type: Termination Criterion
+Format: Real
+Mandatory: No
+Default Value: +Inf
+Default Enabled: false
+Description:
+Specifies the target fitness to stop maximization.
+******************************************************************************/
+double _termCondMaxFitness;
+
+/******************************************************************************
+Setting Name: Min Fitness Diff Threshold
+Type: Termination Criterion
+Format: Real
+Mandatory: No
+Default Value: 0.0
+Default Enabled: false
+Description:
+Specifies the minimum fitness differential between two consecutive generations 
+before stopping execution.
+******************************************************************************/
+double _termCondFitnessDiffThreshold;
+
+/******************************************************************************
+Setting Name: Min Stepz Size
+Type: Termination Criterion
+Format: Real
+Mandatory: No
+Default Value: 1e-12
+Default Enabled: false
+Description:
+Specifies the minimal step size of the sample mean from one gneration to another.
+******************************************************************************/
+double _termCondMinDeltaX; 
+ 
+
+// Term Cond Flags (TODO: rmeove?)
+bool _isTermCondMaxGenerations, _isTermCondMaxFitnessEvaluations, 
+      _isTermCondMinFitness, _isTermCondMaxFitness,
+      _isTermCondMinDeltaX, _isTermCondFitnessDiffThreshold;
+ 
 
 // These are DE-Specific, but could be used for other methods in the future
  double* _lowerBounds;
@@ -208,17 +287,7 @@ size_t _maxResamplings;
  size_t currentGeneration; /* generation count */
  size_t finishedSamples; /* counter of evaluated samples to terminate evaluation */
 
- // Stop conditions
- size_t _termCondMaxGenerations; // Max number of generations
- size_t _termCondMaxFitnessEvaluations;   // Defines maximum number of fitness evaluations
- double _termCondMinFitness; // Defines the minimum fitness allowed, otherwise it stops
- double _termCondMaxFitness; // Defines the maximum fitness allowed, otherwise it stops
- double _termCondFitnessDiffThreshold; // Defines minimum function value differences before stopping
- double _termCondMinDeltaX; // Defines minimum delta of input parameters among generations before it stops.
- bool _isTermCondMaxGenerations, _isTermCondMaxFitnessEvaluations, 
-      _isTermCondMinFitness, _isTermCondMaxFitness,
-      _isTermCondMinDeltaX, _isTermCondFitnessDiffThreshold; // flgs to activate termination criteria
- 
+
  // Private DE-Specific Variables
  double currentFunctionValue; /* best fitness current generation */
  double prevFunctionValue; /* best fitness previous generation */

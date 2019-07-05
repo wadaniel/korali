@@ -169,7 +169,7 @@ Max number of mutations per sample per generation if infeasible (only relevant
 if Fix Infeasible is set False).
 ******************************************************************************/
 size_t _termCondMaxInfeasibleResamplings;
-size_t _termCondMaxInfeasibleResamplingsEnabled;
+bool _termCondMaxInfeasibleResamplingsEnabled;
  
 /******************************************************************************
 Setting Name: Min Fitness

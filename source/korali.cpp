@@ -69,7 +69,6 @@ Korali::Engine::Engine()
 {
  _modelDefined = false;
  _likelihoodDefined = false;
-
  _problem = nullptr;
  _conduit = nullptr;
  _solver  = nullptr;
@@ -205,14 +204,13 @@ void Korali::Engine::run()
 
  std::chrono::time_point<std::chrono::system_clock> startTime, endTime;
  std::chrono::time_point<std::chrono::system_clock> t0, t1, t2, t3;
+ currentGeneration = 0;
 
  // Running Engine
  _conduit->initialize();
  _solver->initialize();
 
  startTime = std::chrono::system_clock::now();
-
- currentGeneration = 0;
 
  while(!_solver->checkTermination())
  {

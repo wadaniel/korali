@@ -80,17 +80,17 @@ Note that only the last sample per chain is considered for the recombination.
 size_t burnIn;
 
 /******************************************************************************
-Setting Name: Coefficient of Variation
+Setting Name: Initial Coefficient of Variation
 Type: Solver Setting
 Format: Real
 Mandatory: No
 Default Value: 1.0
 Default Enabled:
 Description:
-Target coefficient of variation to search for the exponent $\rho_{i+1}$.
-By default, Korali will set this value to 1.00 as suggested in [Ching2007].
+Initial value for the target coefficient of variation to search for the exponent
+ $\rho_{i+1}$. By default, Korali will set this value to 1.00 as suggested in [Ching2007].
 ******************************************************************************/
-double coefficientOfVariation;
+double initialCoefficientOfVariation;
 
 /******************************************************************************
 Setting Name: Covariance Scaling
@@ -227,14 +227,124 @@ Length for each of the chains.
 ******************************************************************************/
 std::vector<size_t> chainLengths;
 
+/******************************************************************************
+Internal Variable Name: Coefficient of Variation
+Format: Real
+Description:
+Current coefficient of variation
+******************************************************************************/
+double coefficientOfVariation;
+
+
+/******************************************************************************
+Internal Variable Name: Chain Count
+Format: Integer
+Description:
+Unique selections after resampling (forming new chain)
+******************************************************************************/
+size_t chainCount;
+
+/******************************************************************************
+Internal Variable Name: Annealing Exponent
+Format: Real
+Description:
+Indicates how the calculated distribution fits the real distribution
+******************************************************************************/
+double annealingExponent;
+
+/******************************************************************************
+Internal Variable Name: Accepted Samples Count
+Format: Integer
+Description:
+Accepted samples after proposal
+******************************************************************************/
+size_t acceptedSamplesCount;
+
+/******************************************************************************
+Internal Variable Name: logEvidence
+Format: Real
+Description:
+Calculated logEvidence of the model so far
+******************************************************************************/
+double logEvidence;
+
+/******************************************************************************
+Internal Variable Name: Proposals Acceptance Rate
+Format: Real
+Description:
+Acceptance rate calculated from samples
+******************************************************************************/
+double proposalsAcceptanceRate;
+
+/******************************************************************************
+Internal Variable Name: Selection Acceptance Rate
+Format: Real
+Description:
+Acceptance rate calculated from chain count
+******************************************************************************/
+double selectionAcceptanceRate;
+
+/******************************************************************************
+Internal Variable Name: Covariance Matrix
+Format: Array of Reals
+Description:
+Sample covariance of leader fitness values
+******************************************************************************/
+std::vector<double> covarianceMatrix;
+
+/******************************************************************************
+Internal Variable Name: Mean Theta
+Format: Array of Reals
+Description:
+Mean of leader fitness values
+******************************************************************************/
+std::vector<double> meanTheta;
+
+/******************************************************************************
+Internal Variable Name: Database Entry Count
+Format: Integer
+Description:
+Number of accepted samples stored in the database.
+******************************************************************************/
+size_t databaseEntryCount;
+
+/******************************************************************************
+Internal Variable Name: Sample Parameters Database
+Format: Array of Reals
+Description:
+Variable values of samples stored in the database.
+******************************************************************************/
+std::vector<double> sampleParametersDatabase;
+
+/******************************************************************************
+Internal Variable Name: Sample Fitness Database
+Format: Array of Reals
+Description:
+Fitness of the samples stored in the database.
+******************************************************************************/
+std::vector<double> sampleFitnessDatabase;
+
+/******************************************************************************
+Internal Variable Name: Local Covariance Matrices
+Format: Array of Array of Reals
+Description:
+Local covariances of chain leaders
+******************************************************************************/
+//std::vector< std::vector<double> > localCovarianceMatrices;
+
+/******************************************************************************
+Setting Name: Log Space
+Type: Variable Setting
+Format: Boolean
+Mandatory: No
+Default Value: false
+Default Enabled:
+Description:
+Indicates whether the variable is expressed in Logarithmic Space.
+******************************************************************************/
+std::vector<bool> variableLogSpaces;
+
  // TMCMC Status variables
- size_t  _nChains; /* Unique selections after resampling (forming new chain) */
- double  _coefficientOfVariation; /* Actual coefficient of variation of weights */
- double  _annealingExponent; /* Annealing exponent */
- size_t  _uniqueEntries; /* Accepted samples after proposal */
- double  _logEvidence; /* Log of evidence of model */
- double  _acceptanceRateProposals; /* Acceptance rate calculated from _uniqueEntries */
- double  _acceptanceRateSelections; /* Acceptance rate calculated from _nChains */
  double* _covarianceMatrix; /* Sample covariance of leader fitness values */
  double* _meanTheta; /* Mean of leader fitness values */
  size_t  _databaseEntries; /* Num samples in DB (must equal population size) */

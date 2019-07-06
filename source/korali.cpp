@@ -178,14 +178,6 @@ void Korali::Engine::setConfiguration()
  _problem->setConfiguration();
  _conduit->setConfiguration();
  _solver->setConfiguration();
-
- if (isEmpty(_js) == false)
- {
-  fprintf(stderr, "[Korali] Error: Unrecognized Settings for Korali:\n");
-  fprintf(stderr, "%s\n", _js.dump(2).c_str());
-  exit(-1);
- }
-
 }
 
 /************************************************************************/
@@ -211,12 +203,18 @@ void Korali::Engine::run()
 
  setConfiguration();
 
+ if (isEmpty(_js) == false)
+ {
+  fprintf(stderr, "[Korali] Error: Unrecognized Settings for Korali:\n");
+  fprintf(stderr, "%s\n", _js.dump(2).c_str());
+  exit(-1);
+ }
+
  // Creating Results directory
  mkdir(_result_dir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
  std::chrono::time_point<std::chrono::system_clock> startTime, endTime;
  std::chrono::time_point<std::chrono::system_clock> t0, t1, t2, t3;
-
 
  // Running Engine
  _conduit->initialize();

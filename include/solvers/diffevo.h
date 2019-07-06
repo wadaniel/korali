@@ -37,7 +37,7 @@ Setting Name: Objective
 Type: Solver Setting
 Format: String
 Mandatory: No
-Default Value: Maximize
+Default Value: "Maximize"
 Default Enabled:
 Description:
 Specifies whether the problem evaluation is to be minimized or maximized.
@@ -110,7 +110,7 @@ Setting Name: Mutation Rule
 Type: Solver Setting
 Format: String
 Mandatory: No
-Default Value: Default
+Default Value: "Default"
 Default Enabled:
 Description:
 Controls the Mutation Rate: "Default" (rate is fixed) or "Self Adaptive" 
@@ -123,7 +123,7 @@ Setting Name: Parent Selection Rule
 Type: Solver Setting
 Format: String
 Mandatory: No
-Default Value: Random
+Default Value: "Random"
 Default Enabled:
 Description:
 Controls the selection of the parent vecor: "Random" or "Best" (best sample 
@@ -136,7 +136,7 @@ Setting Name: Accept Rule
 Type: Solver Setting
 Format: String
 Mandatory: No
-Default Value: Greedy
+Default Value: "Greedy"
 Default Enabled:
 Description:
 Sets the sample accept rule after mutation and evaluation: "Best", "Greedy", 
@@ -149,7 +149,7 @@ Setting Name: Fix Infeasible
 Type: Solver Setting
 Format: Boolean
 Mandatory: No
-Default Value: True
+Default Value: true
 Default Enabled:
 Description:
 If set true, Korali samples a random sample between Parent and the voiolated 
@@ -163,7 +163,7 @@ Type: Termination Criterion
 Format: Integer
 Mandatory: No
 Default Value: 1e9
-Default Enabled: True
+Default Enabled: true
 Description:
 Max number of mutations per sample per generation if infeasible (only relevant 
 if Fix Infeasible is set False).
@@ -176,7 +176,7 @@ Setting Name: Min Fitness
 Type: Termination Criterion
 Format: Real
 Mandatory: No
-Default Value: -Inf
+Default Value: -INFINITY
 Default Enabled: false
 Description:
 Specifies the target fitness to stop minimization.
@@ -189,7 +189,7 @@ Setting Name: Max Fitness
 Type: Termination Criterion
 Format: Real
 Mandatory: No
-Default Value: +Inf
+Default Value: +INFINITY
 Default Enabled: false
 Description:
 Specifies the target fitness to stop maximization.

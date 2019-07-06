@@ -12,6 +12,35 @@ def getDescription(fobj):
   line = fobj.readline()
  return description
 
+def consumeValue(base, varName, type, default, path = []):
+ 
+ configFile.write('\n')
+ 
+ configFile.write(' if (isDefined(' + base + ', {"' + path[0] + '"')
+ for i in range(1, len(path)): configFile.write(', "' + path[i] +'"')
+ configFile.write('})) \n { \n')
+ 
+ configFile.write('  ' + varName + ' = ' + base )
+ for i in range(0, len(path)-1): configFile.write('.at("' + path[i] +'")')
+ configFile.write('.at("' + path[-1] + '").get<' + type + '>();\n')
+ 
+ configFile.write('  ' + base)
+ for i in range(0, len(path)-1): configFile.write('.at("' + path[i] +'")')
+ configFile.write('.erase("' + path[-1] + '");\n')
+ 
+ configFile.write(' }\n else ')
+ if (default == ''):
+  configFile.write(' { fprintf(stderr, "[Korali] Error: No value provided for mandatory setting: ')
+  for i in range(0, len(path)-1): configFile.write('[' + path[i] + '] > ')
+  configFile.write('[' + path[-1] + ']\\n"); exit(-1); } ')
+ else:
+  if ('vector' in type):
+   configFile.write('for(size_t i = 0; i < ' + varName + '.size(); i++) ' + varName + '[i] = ' + default + ';')
+  else:
+   configFile.write(varName + ' = ' + default + ';')
+   
+ configFile.write('\n')
+  
 def parseFile(f):
 
  solverName = ''
@@ -77,46 +106,27 @@ def parseFile(f):
  ## Load Solver Settings
  for i in range(len(settingNames)):   
   if (settingTypes[i] == 'Solver Setting'):
-   configFile.write(' ' + settingVariableNames[i] + ' =  consume(_k->_js, { "')
-   configFile.write(solverAlias + '", "' + settingNames[i] + '" }, ' + settingKoraliDataTypes[i])
-   if (settingDefaultValues[i] != ''): 
-    configFile.write(', "' + settingDefaultValues[i] + '"' )
-   configFile.write('); \n')
+   consumeValue('_k->_js', settingVariableNames[i], settingVariableDataTypes[i], settingDefaultValues[i], [ solverAlias, settingNames[i] ])
  
  ## Load Variable Settings
  configFile.write('\n')
  
  for i in range(len(settingNames)): 
   if (settingTypes[i] == 'Variable Setting'):
-   configFile.write(' ' + settingVariableNames[i] + '.reserve(_k->N);\n')
-  
+   configFile.write(' ' + settingVariableNames[i] + '.resize(_k->N);\n') 
  configFile.write('\n for(size_t i = 0; i < _k->N; i++) \n { \n')
   
  for i in range(len(settingNames)): 
   if (settingTypes[i] == 'Variable Setting'):
-   configFile.write('  ' + settingVariableNames[i] + '[i] =  consume(_k->_js["Variables"][i]')
-   configFile.write(', { "' + solverAlias + '", "' + settingNames[i] + '" }, ' + settingKoraliDataTypes[i])
-   if (settingDefaultValues[i] != ''): 
-    configFile.write(', "' + settingDefaultValues[i] + '"' )
-   configFile.write('); \n')
- 
+   consumeValue('_k->_js["Variables"][i]', settingVariableNames[i], settingVariableDataTypes[i], settingDefaultValues[i], [ solverAlias, settingNames[i] ])
  configFile.write(' } \n\n')
  
  ## Load Termination Criteria
  
  for i in range(len(settingNames)):   
   if (settingTypes[i] == 'Termination Criterion'):
-   configFile.write(' ' + settingVariableNames[i] + ' =  consume(_k->_js, { "')
-   configFile.write(solverAlias + '", "Termination Criteria", "' + settingNames[i] + '", "Value" }, ' + settingKoraliDataTypes[i])
-   if (settingDefaultValues[i] != ''): 
-    configFile.write(', "' + settingDefaultValues[i] + '" );' )
-   configFile.write('\n')
-    
-   configFile.write(' ' + settingStateNames[i] + ' =  consume(_k->_js, { "')
-   configFile.write(solverAlias + '", "Termination Criteria", "' + settingNames[i] + '", "State" }, KORALI_BOOLEAN')
-   if (settingDefaultStates[i] != ''): 
-    configFile.write(', "' + settingDefaultStates[i] + '" );' )
-   configFile.write('\n')
+   consumeValue('_k->_js', settingVariableNames[i], settingVariableDataTypes[i], settingDefaultValues[i], [ 'Termination Criteria', solverAlias, settingNames[i], 'Value' ])
+   consumeValue('_k->_js', settingStateNames[i], 'bool', settingDefaultStates[i], [ 'Termination Criteria', solverAlias, settingNames[i], 'Default' ]) 
  configFile.write('\n')
  
  ## Load Solver Internal Attributes
@@ -167,7 +177,8 @@ def parseFile(f):
 
 # Initializing Config File
 
-configFile.write('#include "korali.h"\n\n')
+configFile.write('#include "korali.h"\n')
+configFile.write('#include <stdio.h>\n\n')
 
 # Finding Solver Header Files
 path = '../include/solvers'

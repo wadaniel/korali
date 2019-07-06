@@ -30,26 +30,25 @@ void Korali::Solver::TMCMC::initialize()
  }
 
  // Allocating TMCMC memory
- covarianceMatrix.reserve(_k->N*_k->N);
- meanTheta.reserve(_k->N);
- variableLogSpaces.reserve(_k->N);
- logTransformedSamples.reserve(_k->N*populationSize);
- chainCandidatesParameters.reserve(_k->N*populationSize);
- chainCandidatesLogLikelihoods.reserve(populationSize);
- chainLeadersParameters.reserve(_k->N*populationSize);
- chainLeadersLogLikelihoods.reserve(populationSize);
- chainPendingFitness.reserve(populationSize);
- currentChainStep.reserve(populationSize);
- chainLengths.reserve(populationSize);
- sampleParametersDatabase.reserve(_k->N*populationSize);
- sampleFitnessDatabase.reserve(populationSize);
+ covarianceMatrix.resize(_k->N*_k->N);
+ meanTheta.resize(_k->N);
+ logTransformedSamples.resize(_k->N*populationSize);
+ chainCandidatesParameters.resize(_k->N*populationSize);
+ chainCandidatesLogLikelihoods.resize(populationSize);
+ chainLeadersParameters.resize(_k->N*populationSize);
+ chainLeadersLogLikelihoods.resize(populationSize);
+ chainPendingFitness.resize(populationSize);
+ currentChainStep.resize(populationSize);
+ chainLengths.resize(populationSize);
+ sampleParametersDatabase.resize(_k->N*populationSize);
+ sampleFitnessDatabase.resize(populationSize);
 
  if(useLocalCovariance)
  {
-  localCovarianceMatrices.reserve(populationSize);
+  localCovarianceMatrices.resize(populationSize);
   for (size_t pos = 0; pos < populationSize; ++pos)
   {
-   localCovarianceMatrices[pos].reserve(_k->N*_k->N);
+   localCovarianceMatrices[pos].resize(_k->N*_k->N);
    for (size_t i = 0; i < _k->N; i++)
     for (size_t j = 0; j < _k->N; j++) localCovarianceMatrices[pos][i*_k->N+j] = 0.0;
    for (size_t i = 0; i < _k->N; i++) localCovarianceMatrices[pos][i*_k->N+i] = 1.0;

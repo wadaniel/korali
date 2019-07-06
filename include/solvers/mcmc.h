@@ -182,152 +182,228 @@ Indicates whether the variable is expressed in Logarithmic Space.
 std::vector<bool> variableLogSpaces;
 
 /******************************************************************************
-Internal Variable Name: Covariance Matrix
+Setting Name: Covariance Matrix
+Type: Internal Attribute
 Format: Array of Reals
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 Hold the covariance matrix of proposal distribution.
 ******************************************************************************/
 std::vector<double> covarianceMatrix;
 
 /******************************************************************************
-Internal Variable Name: Chain Leader Parameters
+Setting Name: Chain Leader Parameters
+Type: Internal Attribute
 Format: Array of Reals
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 Current (theta) parameters of the chain leader sample.
 ******************************************************************************/
 std::vector<double> chainLeaderParameters;
 
 /******************************************************************************
-Internal Variable Name: Chain Leader LogLikelihood
+Setting Name: Chain Leader LogLikelihood
+Type: Internal Attribute
 Format: Real
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 The logLikelihood of the current chain leader.
 ******************************************************************************/
 double chainLeaderLogLikelihood;
 
 /******************************************************************************
-Internal Variable Name: Chain Candidate Parameters
+Setting Name: Chain Candidate Parameters
+Type: Internal Attribute
 Format: Array of Reals
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 Current (theta) parameters of the chain leader sample.
 ******************************************************************************/
 std::vector<double> chainCandidatesParameters;
 
 /******************************************************************************
-Internal Variable Name: Chain Candidates LogLikelihoods
+Setting Name: Chain Candidates LogLikelihoods
+Type: Internal Attribute
 Format: Array of Reals
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 The logLikelihoods of the chain candidates.
 ******************************************************************************/
 std::vector<double> chainCandidatesLogLikelihoods;
 
 /******************************************************************************
-Internal Variable Name: Chain Candidates LogPriors
+Setting Name: Chain Candidates LogPriors
+Type: Internal Attribute
 Format: Array of Reals
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 The logPriors of the chain candidates.
 ******************************************************************************/
 std::vector<double> chainCandidatesLogPriors;
 
 /******************************************************************************
-Internal Variable Name: Log Transformed Samples
+Setting Name: Log Transformed Samples
+Type: Internal Attribute
 Format: Array of Reals
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 Candidate parameters log transformed.
 ******************************************************************************/
 std::vector<double> logTransformedSamples;
 
 /******************************************************************************
-Internal Variable Name: Rejection Alphas
+Setting Name: Rejection Alphas
+Type: Internal Attribute
 Format: Array of Reals
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 Alphas for recursive calculation of delayed rejection schemes
 ******************************************************************************/
 std::vector<double> rejectionAlphas;
 
 /******************************************************************************
-Internal Variable Name: Acceptance Rate
+Setting Name: Acceptance Rate
+Type: Internal Attribute
 Format: Real
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 Ratio proposed to accepted samples.
 ******************************************************************************/
 double acceptanceRate;
 
 /******************************************************************************
-Internal Variable Name: Rejection Count
+Setting Name: Rejection Count
+Type: Internal Attribute
 Format: Integer
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 Number of rejections in the current generation.
 ******************************************************************************/
 size_t rejectionCount;
 
 /******************************************************************************
-Internal Variable Name: Acceptance Count
+Setting Name: Acceptance Count
+Type: Internal Attribute
 Format: Integer
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 Number of accepted samples.
 ******************************************************************************/
 size_t acceptanceCount;
 
 /******************************************************************************
-Internal Variable Name: Proposed Sample Count
+Setting Name: Proposed Sample Count
+Type: Internal Attribute
 Format: Integer
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 Number of proposed samples.
 ******************************************************************************/
 size_t proposedSampleCount;
 
 /******************************************************************************
-Internal Variable Name: Database Entry Count
+Setting Name: Database Entry Count
+Type: Internal Attribute
 Format: Integer
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 Number of accepted samples stored in the database.
 ******************************************************************************/
 size_t databaseEntryCount;
 
 /******************************************************************************
-Internal Variable Name: Sample Parameters Database
+Setting Name: Sample Parameters Database
+Type: Internal Attribute
 Format: Array of Reals
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 Variable values of samples stored in the database.
 ******************************************************************************/
 std::vector<double> sampleParametersDatabase;
 
 /******************************************************************************
-Internal Variable Name: Sample Fitness Database
+Setting Name: Sample Fitness Database
+Type: Internal Attribute
 Format: Array of Reals
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 Fitness of the samples stored in the database.
 ******************************************************************************/
 std::vector<double> sampleFitnessDatabase;
 
 /******************************************************************************
-Internal Variable Name: Chain Mean
+Setting Name: Chain Mean
+Type: Internal Attribute
 Format: Array of Reals
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 Mean of Markov Chain Monte Carlo Chain
 ******************************************************************************/
 std::vector<double> chainMean;
 
 /******************************************************************************
-Internal Variable Name: Chain Covariance Placeholder
+Setting Name: Chain Covariance Placeholder
+Type: Internal Attribute
 Format: Array of Reals
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 Placeholder chain covariance calculation
 ******************************************************************************/
 std::vector<double> chainCovariancePlaceholder;
 
 /******************************************************************************
-Internal Variable Name: Chain Covariance
+Setting Name: Chain Covariance
+Type: Internal Attribute
 Format: Array of Reals
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 Chain Covariance
 ******************************************************************************/
 std::vector<double> chainCovariance;
 
 /******************************************************************************
-Internal Variable Name: Chain Length
+Setting Name: Chain Length
+Type: Internal Attribute
 Format: Integer
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 Current Chain Length
 ******************************************************************************/

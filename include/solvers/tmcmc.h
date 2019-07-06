@@ -130,6 +130,18 @@ Minimum increment of the exponent $\rho_{i+1}$. This parameter prevents TMCMC fr
 double minRhoUpdate;
 
 /******************************************************************************
+Setting Name: Log Space
+Type: Variable Setting
+Format: Boolean
+Mandatory: No
+Default Value: false
+Default Enabled:
+Description:
+Indicates whether the variable is expressed in Logarithmic Space.
+******************************************************************************/
+std::vector<bool> variableLogSpaces;
+
+/******************************************************************************
 Setting Name: Max Rho Update
 Type: Solver Setting
 Format: Real
@@ -155,192 +167,268 @@ size_t maxGenerations;
 bool maxGenerationsEnabled;
 
 /******************************************************************************
-Internal Variable Name: Chain Pending Fitness
+Setting Name: Chain Pending Fitness
+Type: Internal Attribute
 Format: Array of Booleans
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 Indicates that the fitness result for the chain is pending
 ******************************************************************************/
 std::vector<bool> chainPendingFitness;
 
 /******************************************************************************
-Internal Variable Name: Chain Candidate Parameters
+Setting Name: Chain Candidate Parameters
+Type: Internal Attribute
 Format: Array of Reals
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 Current (theta) parameters of the chain leader sample.
 ******************************************************************************/
 std::vector<double> chainCandidatesParameters;
 
 /******************************************************************************
-Internal Variable Name: Log Transformed Samples
+Setting Name: Log Transformed Samples
+Type: Internal Attribute
 Format: Array of Reals
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 Candidate parameters log transformed.
 ******************************************************************************/
 std::vector<double> logTransformedSamples;
 
 /******************************************************************************
-Internal Variable Name: Chain Candidates LogLikelihoods
+Setting Name: Chain Candidates LogLikelihoods
+Type: Internal Attribute
 Format: Array of Reals
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 The logLikelihoods of the chain candidates.
 ******************************************************************************/
 std::vector<double> chainCandidatesLogLikelihoods;
 
 /******************************************************************************
-Internal Variable Name: Chain Leader Parameters
+Setting Name: Chain Leader Parameters
+Type: Internal Attribute
 Format: Array of Reals
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 Current (theta) parameters of the chain leader sample.
 ******************************************************************************/
 std::vector<double> chainLeadersParameters;
 
 /******************************************************************************
-Internal Variable Name: Chain Leaders LogLikelihoods
+Setting Name: Chain Leaders LogLikelihoods
+Type: Internal Attribute
 Format: Array of Reals
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 The logLikelihoods of the chain leaders.
 ******************************************************************************/
 std::vector<double> chainLeadersLogLikelihoods;
 
 /******************************************************************************
-Internal Variable Name: Finished Chains Count
+Setting Name: Finished Chains Count
+Type: Internal Attribute
 Format: Integer
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 Number of finished chains.
 ******************************************************************************/
 size_t finishedChainsCount;
 
 /******************************************************************************
-Internal Variable Name: Current Chain Step
+Setting Name: Current Chain Step
+Type: Internal Attribute
 Format: Array of Integers
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 The current execution step for every chain.
 ******************************************************************************/
 std::vector<size_t> currentChainStep;
 
 /******************************************************************************
-Internal Variable Name: Chain Lengths
+Setting Name: Chain Lengths
+Type: Internal Attribute
 Format: Array of Integers
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 Length for each of the chains.
 ******************************************************************************/
 std::vector<size_t> chainLengths;
 
 /******************************************************************************
-Internal Variable Name: Coefficient of Variation
+Setting Name: Coefficient of Variation
+Type: Internal Attribute
 Format: Real
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 Current coefficient of variation
 ******************************************************************************/
 double coefficientOfVariation;
 
 /******************************************************************************
-Internal Variable Name: Chain Count
+Setting Name: Chain Count
+Type: Internal Attribute
 Format: Integer
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 Unique selections after resampling (forming new chain)
 ******************************************************************************/
 size_t chainCount;
 
 /******************************************************************************
-Internal Variable Name: Annealing Exponent
+Setting Name: Annealing Exponent
+Type: Internal Attribute
 Format: Real
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 Indicates how the calculated distribution fits the real distribution
 ******************************************************************************/
 double annealingExponent;
 
 /******************************************************************************
-Internal Variable Name: Accepted Samples Count
+Setting Name: Accepted Samples Count
+Type: Internal Attribute
 Format: Integer
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 Accepted samples after proposal
 ******************************************************************************/
 size_t acceptedSamplesCount;
 
 /******************************************************************************
-Internal Variable Name: logEvidence
+Setting Name: logEvidence
+Type: Internal Attribute
 Format: Real
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 Calculated logEvidence of the model so far
 ******************************************************************************/
 double logEvidence;
 
 /******************************************************************************
-Internal Variable Name: Proposals Acceptance Rate
+Setting Name: Proposals Acceptance Rate
+Type: Internal Attribute
 Format: Real
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 Acceptance rate calculated from samples
 ******************************************************************************/
 double proposalsAcceptanceRate;
 
 /******************************************************************************
-Internal Variable Name: Selection Acceptance Rate
+Setting Name: Selection Acceptance Rate
+Type: Internal Attribute
 Format: Real
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 Acceptance rate calculated from chain count
 ******************************************************************************/
 double selectionAcceptanceRate;
 
 /******************************************************************************
-Internal Variable Name: Covariance Matrix
+Setting Name: Covariance Matrix
+Type: Internal Attribute
 Format: Array of Reals
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 Sample covariance of leader fitness values
 ******************************************************************************/
 std::vector<double> covarianceMatrix;
 
 /******************************************************************************
-Internal Variable Name: Mean Theta
+Setting Name: Mean Theta
+Type: Internal Attribute
 Format: Array of Reals
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 Mean of leader fitness values
 ******************************************************************************/
 std::vector<double> meanTheta;
 
 /******************************************************************************
-Internal Variable Name: Database Entry Count
+Setting Name: Database Entry Count
+Type: Internal Attribute
 Format: Integer
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 Number of accepted samples stored in the database.
 ******************************************************************************/
 size_t databaseEntryCount;
 
 /******************************************************************************
-Internal Variable Name: Sample Parameters Database
+Setting Name: Sample Parameters Database
+Type: Internal Attribute
 Format: Array of Reals
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 Variable values of samples stored in the database.
 ******************************************************************************/
 std::vector<double> sampleParametersDatabase;
 
 /******************************************************************************
-Internal Variable Name: Sample Fitness Database
+Setting Name: Sample Fitness Database
+Type: Internal Attribute
 Format: Array of Reals
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 Fitness of the samples stored in the database.
 ******************************************************************************/
 std::vector<double> sampleFitnessDatabase;
 
 /******************************************************************************
-Internal Variable Name: Local Covariance Matrices
+Setting Name: Local Covariance Matrices
+Type: Internal Attribute
 Format: Array of Array of Reals
+Mandatory:
+Default Value:
+Default Enabled:
 Description:
 Local covariances of chain leaders
 ******************************************************************************/
 std::vector< std::vector<double> > localCovarianceMatrices;
-
-/******************************************************************************
-Setting Name: Log Space
-Type: Variable Setting
-Format: Boolean
-Mandatory: No
-Default Value: false
-Default Enabled:
-Description:
-Indicates whether the variable is expressed in Logarithmic Space.
-******************************************************************************/
-std::vector<bool> variableLogSpaces;
 
  // TMCMC Status variables
  gsl_rng  *range;

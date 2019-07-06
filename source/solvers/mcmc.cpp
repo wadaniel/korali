@@ -28,18 +28,18 @@ void Korali::Solver::MCMC::runGeneration()
 void Korali::Solver::MCMC::initialize()
 {
  // Allocating MCMC memory
- covarianceMatrix.reserve(_k->N*_k->N);
- chainLeaderParameters.reserve(_k->N);
- chainCandidatesParameters.reserve(_k->N*rejectionLevels);
- logTransformedSamples.reserve(_k->N*rejectionLevels);
- chainCandidatesLogPriors.reserve(rejectionLevels);
- chainCandidatesLogLikelihoods.reserve(rejectionLevels);
- rejectionAlphas.reserve(rejectionLevels);
- sampleParametersDatabase.reserve(_k->N*maxChainLength);
- sampleFitnessDatabase.reserve(maxChainLength);
- chainMean.reserve(_k->N);
- chainCovariancePlaceholder.reserve(_k->N*_k->N);
- chainCovariance.reserve(_k->N*_k->N);
+ covarianceMatrix.resize(_k->N*_k->N);
+ chainLeaderParameters.resize(_k->N);
+ chainCandidatesParameters.resize(_k->N*rejectionLevels);
+ logTransformedSamples.resize(_k->N*rejectionLevels);
+ chainCandidatesLogPriors.resize(rejectionLevels);
+ chainCandidatesLogLikelihoods.resize(rejectionLevels);
+ rejectionAlphas.resize(rejectionLevels);
+ sampleParametersDatabase.resize(_k->N*maxChainLength);
+ sampleFitnessDatabase.resize(maxChainLength);
+ chainMean.resize(_k->N);
+ chainCovariancePlaceholder.resize(_k->N*_k->N);
+ chainCovariance.resize(_k->N*_k->N);
 
  for(size_t i = 0; i < _k->N; i++) chainLeaderParameters[i] = variableInitialMeans[i];
  for(size_t i = 0; i < _k->N; i++) covarianceMatrix[i*_k->N+i] = variableStandardDeviations[i];

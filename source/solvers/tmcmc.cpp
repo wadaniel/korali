@@ -16,19 +16,14 @@ typedef struct fparam_s {
     double        cov;
 } fparam_t;
 
-void Korali::Solver::TMCMC::initialize()
+Korali::Solver::TMCMC::TMCMC()
 {
- // Setting Chain-Specific Seeds
  range = gsl_rng_alloc (gsl_rng_default);
  gsl_rng_set(range, _k->_seed++);
+}
 
- chainGSLRange = (gsl_rng**) calloc (populationSize, sizeof(gsl_rng*));
- for (size_t c = 0; c < populationSize; c++)
- {
- chainGSLRange[c] = gsl_rng_alloc (gsl_rng_default);
- gsl_rng_set(chainGSLRange[c], _k->_seed++);
- }
-
+void Korali::Solver::TMCMC::initialize()
+{
  // Allocating TMCMC memory
  covarianceMatrix.resize(_k->N*_k->N);
  meanTheta.resize(_k->N);
@@ -76,7 +71,6 @@ void Korali::Solver::TMCMC::initialize()
  for (size_t c = 0; c < chainCount; c++) chainPendingFitness[c] = false;
 
  initializeSamples();
- printGeneration();
 }
 
 void Korali::Solver::TMCMC::runGeneration()
@@ -103,7 +97,7 @@ void Korali::Solver::TMCMC::processSample(size_t c, double fitness)
  chainCandidatesLogLikelihoods[c] = fitness;
  double L = exp((chainCandidatesLogLikelihoods[c]-chainLeadersLogLikelihoods[c])*annealingExponent + (ccLogPrior-clLogPrior));
 
- if ( L >= 1.0 || L > gsl_ran_flat(chainGSLRange[c], 0.0, 1.0) ) {
+ if ( L >= 1.0 || L > gsl_ran_flat(range, 0.0, 1.0) ) {
    for (size_t i = 0; i < _k->N; i++) chainLeadersParameters[c*_k->N + i] = chainCandidatesParameters[c*_k->N + i];
    chainLeadersLogLikelihoods[c] = chainCandidatesLogLikelihoods[c];
    if (currentChainStep[c] == chainLengths[c]-1) acceptedSamplesCount++; // XXX: is that correct? (DW)
@@ -118,7 +112,7 @@ void Korali::Solver::TMCMC::processSample(size_t c, double fitness)
 void Korali::Solver::TMCMC::evaluateSample(size_t c)
 {
   for(size_t d = 0; d<_k->N; ++d) 
-      if (variableLogSpaces[d] == true)
+      if (_k->_variables[d]->_isLogSpace == true)
           logTransformedSamples[c*_k->N+d] = std::exp(chainCandidatesParameters[c*_k->N+d]);
       else 
           logTransformedSamples[c*_k->N+d] = chainCandidatesParameters[c*_k->N+d];
@@ -139,7 +133,7 @@ void Korali::Solver::TMCMC::generateCandidate(size_t c)
  gsl_vector_view out_view    = gsl_vector_view_array(&chainCandidatesParameters[c*_k->N], _k->N);
  gsl_matrix_view sigma_view  = gsl_matrix_view_array(covariance, _k->N,_k->N);
  gsl_vector_view mean_view   = gsl_vector_view_array(&chainLeadersParameters[c*_k->N], _k->N);
- gsl_ran_multivariate_gaussian(chainGSLRange[c], &mean_view.vector, &sigma_view.matrix, &out_view.vector);
+ gsl_ran_multivariate_gaussian(range, &mean_view.vector, &sigma_view.matrix, &out_view.vector);
 }
 
 void Korali::Solver::TMCMC::initializeSamples()
@@ -451,8 +445,6 @@ bool Korali::Solver::TMCMC::isFeasibleCandidate(size_t c)
 bool Korali::Solver::TMCMC::checkTermination()
 {
 
- _isFinished = (maxGenerationsEnabled && (_k->currentGeneration < maxGenerations));
-
  _isFinished = (annealingExponent >= 1.0);
 
  return _isFinished;
@@ -471,7 +463,6 @@ void Korali::Solver::TMCMC::printGeneration()
  {
   printf("--------------------------------------------------------------------\n");
   printf("[Korali] Generation %ld - Annealing Exponent:  %.3e.\n", _k->currentGeneration, annealingExponent);
-  if (maxGenerationsEnabled && (_k->currentGeneration == maxGenerations)) printf("[Korali] Max Generation Reached.\n");
  }
 
  if (_k->_verbosity >= KORALI_NORMAL)

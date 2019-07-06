@@ -50,6 +50,7 @@ class Engine {
 
  size_t N; // Variable Count size_t N; // Variable Count
  size_t currentGeneration;
+ size_t maxGenerations;
 
  std::vector<Korali::Variable*> _variables;
  Korali::Conduit::Base* _conduit;

@@ -24,9 +24,7 @@ int main(int argc, char* argv[])
 
  k.run();
 
- printf("\n--------------\n");
- printf("Restarting Now\n");
- printf("--------------\n");
+ printf("\n\nRestarting now:\n\n");
 
  k.loadState("_korali_result/s00003.json");
 

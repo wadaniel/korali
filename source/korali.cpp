@@ -96,6 +96,8 @@ void Korali::Engine::getConfiguration()
  if (_verbosity == KORALI_DETAILED) _js["Verbosity"] = "Detailed";
  
  _js["Result Directory"] = _result_dir;
+ _js["Max Generations"] = maxGenerations;
+ _js["Current Generation"] = currentGeneration;
 
  for (int i = 0; i < _variables.size(); i++) _js["Variables"][i]["Name"] = _variables[i]->_name;
 
@@ -119,6 +121,9 @@ void Korali::Engine::setConfiguration()
  }
  _seed = consume(_js, { "Seed" }, KORALI_NUMBER, std::to_string(_seed));
  gsl_rng_env_setup();
+
+ maxGenerations = consume(_js, { "Max Generations" }, KORALI_NUMBER, "5000");
+ currentGeneration = consume(_js, { "Current Generation" }, KORALI_NUMBER, "0");
 
   _verbosity = KORALI_UNDEFINED;
  std::string vLevel = consume(_js, { "Verbosity" }, KORALI_STRING, "Normal");
@@ -199,7 +204,6 @@ void Korali::Engine::setLikelihood(std::function<void(Korali::ModelData&)> likel
 void Korali::Engine::run()
 {
  _k = this;
- currentGeneration = 0;
 
  setConfiguration();
 
@@ -219,7 +223,11 @@ void Korali::Engine::run()
  // Running Engine
  _conduit->initialize();
  _problem->initialize();
- _solver->initialize();
+ if (currentGeneration == 0) _solver->initialize();
+
+ saveState(currentGeneration);
+
+ _solver->printGeneration();
 
  startTime = std::chrono::system_clock::now();
 

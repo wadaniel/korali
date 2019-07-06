@@ -83,11 +83,14 @@ void Korali::Variable::setDistribution(nlohmann::json& js)
  if (_distributionType == KoraliGaussianDistribution)    { _aux = -0.5*gsl_sf_log(2*M_PI) - gsl_sf_log(_b);}
  if (_distributionType == KoraliLaplaceDistribution)     { _aux = -gsl_sf_log(2.*_b); }
  if (_distributionType == KoraliUniformDistribution)     { _aux = -gsl_sf_log(_b-_a); }
+
+ _isLogSpace = consume(js, { "Log Space"}, KORALI_BOOLEAN, "false");
 };
 
 void Korali::Variable::getDistribution(nlohmann::json& js)
 {
  js["Seed"] = _seed;
+ js["Log Space"] = _isLogSpace;
 
  if (_distributionType == KoraliCauchyDistribution)
  {

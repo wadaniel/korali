@@ -130,18 +130,6 @@ Minimum increment of the exponent $\rho_{i+1}$. This parameter prevents TMCMC fr
 double minRhoUpdate;
 
 /******************************************************************************
-Setting Name: Log Space
-Type: Variable Setting
-Format: Boolean
-Mandatory: No
-Default Value: false
-Default Enabled:
-Description:
-Indicates whether the variable is expressed in Logarithmic Space.
-******************************************************************************/
-std::vector<bool> variableLogSpaces;
-
-/******************************************************************************
 Setting Name: Max Rho Update
 Type: Solver Setting
 Format: Real
@@ -152,19 +140,6 @@ Description:
 Maximum increment of the exponent $\rho{i+1}$. By default, Korali will set this value to 1.0 (inactive).
 ******************************************************************************/
 double maxRhoUpdate;
-
-/******************************************************************************
-Setting Name: Max Function Evaluations
-Type: Termination Criterion
-Format: Integer
-Mandatory: No
-Default Value: 20
-Default Enabled: true
-Description:
-Specifies the maximum number of generations to run.
-******************************************************************************/
-size_t maxGenerations;
-bool maxGenerationsEnabled;
 
 /******************************************************************************
 Setting Name: Chain Pending Fitness
@@ -432,7 +407,8 @@ std::vector<std::vector<double>> localCovarianceMatrices;
 
  // TMCMC Status variables
  gsl_rng  *range;
- gsl_rng** chainGSLRange;
+
+ TMCMC();
 
   // Korali Methods
  void initialize() override;

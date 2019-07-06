@@ -3,30 +3,15 @@
 using namespace Korali::Conduit;
 
 /************************************************************************/
-/*                  Constructor / Destructor Methods                    */
-/************************************************************************/
-
-SemiIntrusive::SemiIntrusive(nlohmann::json& js)
-{
- setConfiguration(js);
- _currentSample = 0;
-}
-
-SemiIntrusive::~SemiIntrusive()
-{
-
-}
-
-/************************************************************************/
 /*                    Configuration Methods                             */
 /************************************************************************/
 
-void SemiIntrusive::getConfiguration(nlohmann::json& js)
+void SemiIntrusive::getConfiguration()
 {
- js["Conduit"] = "Semi-Intrusive";
+ _k->_js["Conduit"] = "Semi-Intrusive";
 }
 
-void SemiIntrusive::setConfiguration(nlohmann::json& js)
+void SemiIntrusive::setConfiguration()
 {
 
 }
@@ -37,6 +22,7 @@ void SemiIntrusive::setConfiguration(nlohmann::json& js)
 
 void SemiIntrusive::initialize()
 {
+	_currentSample = 0;
 }
 
 void SemiIntrusive::finalize()

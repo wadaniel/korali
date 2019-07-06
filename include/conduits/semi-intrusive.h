@@ -15,13 +15,9 @@ class SemiIntrusive : public Base {
  void checkProgress() override;
  bool isRoot() override;
 
- // Constructor / Destructor
- SemiIntrusive(nlohmann::json& js);
- ~SemiIntrusive();
-
  // Serialization Methods
- void getConfiguration(nlohmann::json& js) override;
- void setConfiguration(nlohmann::json& js) override;
+ void getConfiguration() override;
+ void setConfiguration() override;
 };
 
 } } // namespace Korali::Conduit

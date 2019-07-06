@@ -13,13 +13,12 @@ class Direct : public Base
  double evaluateFitness(Korali::ModelData& data) override;
  double evaluateLogPrior(double* sample) override;
 
- // Constructor / Destructor
- Direct(nlohmann::json& js);
- ~Direct();
+ void initialize() override;
+ void finalize() override;
 
  // Serialization Methods
- void getConfiguration(nlohmann::json& js) override;
- void setConfiguration(nlohmann::json& js) override;
+ void getConfiguration() override;
+ void setConfiguration() override;
 };
 
 } } // namespace Korali::Problem

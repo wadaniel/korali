@@ -122,14 +122,17 @@ def parseFile(f):
  ## Load Solver Internal Attributes
  for i in range(len(settingNames)):   
   if (settingTypes[i] == 'Internal Attribute'):
-   configFile.write(' if(isDefined(_k->_js, {"' + solverAlias + '", "Internal", "' + settingNames[i] + '"} ))\n')
+   configFile.write(' if(isDefined(_k->_js, {"' + solverAlias + '", "Internal", "' + settingNames[i] + '"} )) \n {\n')
    configFile.write('  ' + settingVariableNames[i] + ' = _k->_js.at("' + solverAlias + '").at("Internal").at("' + settingNames[i] + '").get<' + settingVariableDataTypes[i] + '>();\n')
-   
+   configFile.write('  _k->_js["' + solverAlias + '"]["Internal"].erase("' + settingNames[i] + '"); \n }\n\n')
+ 
  configFile.write('} \n\n') 
  
  # Creating getConfiguration()
  
- configFile.write('void Korali::Solver::' + solverAlias + '::getConfiguration() \n{\n')
+ configFile.write('void Korali::Solver::' + solverAlias + '::getConfiguration() \n{\n\n')
+
+ configFile.write(' _k->_js["Solver"] = "' + solverAlias + '";\n')
 
  ## Save Solver Settings
  for i in range(len(settingNames)):   

@@ -12,10 +12,8 @@ using namespace Korali::Conduit;
 /*                  Constructor / Destructor Methods                    */
 /************************************************************************/
 
-Distributed::Distributed(nlohmann::json& js)
+void Distributed::initialize()
 {
- setConfiguration(js);
-
  _currentSample = 0;
  _continueEvaluations = true;
 
@@ -62,36 +60,30 @@ Distributed::Distributed(nlohmann::json& js)
  }
 
  MPI_Barrier(MPI_COMM_WORLD);
+
+ if (!isRoot()) workerThread();
 }
 
-Distributed::~Distributed()
-{
-}
 
 /************************************************************************/
 /*                    Configuration Methods                             */
 /************************************************************************/
 
 
-void Distributed::getConfiguration(nlohmann::json& js)
+void Distributed::getConfiguration()
 {
- js["Conduit"] = "Distributed";
- js["MPI"]["Ranks Per Team"] = _ranksPerTeam;
+ _k->_js["Conduit"] = "Distributed";
+ _k->_js["MPI"]["Ranks Per Team"] = _ranksPerTeam;
 }
 
-void Distributed::setConfiguration(nlohmann::json& js)
+void Distributed::setConfiguration()
 {
- _ranksPerTeam = consume(js, { "MPI", "Ranks Per Team" }, KORALI_NUMBER, std::to_string(1));
+ _ranksPerTeam = consume(_k->_js, { "MPI", "Ranks Per Team" }, KORALI_NUMBER, std::to_string(1));
 }
 
 /************************************************************************/
 /*                    Functional Methods                                */
 /************************************************************************/
-
-void Distributed::initialize()
-{
- if (!isRoot()) workerThread();
-}
 
 void Distributed::finalize()
 {

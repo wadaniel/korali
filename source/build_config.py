@@ -26,12 +26,10 @@ def parseFile(f):
  settingDefaultValues = []
  settingDefaultStates = []
  settingDescriptions = []
- settingVariableDeclarations = []
- settingStateDeclarations = []
  settingVariableNames = []
  settingStateNames = []
  settingKoraliDataTypes = []
- settingCXXDataTypes = []
+ settingVariableDataTypes = []
 
  with open(f, 'r') as file:
   line = file.readline()
@@ -53,42 +51,25 @@ def parseFile(f):
     settingDefaultValues.append(file.readline().replace('Default Value:', '').strip())
     settingDefaultStates.append(file.readline().replace('Default Enabled:', '').strip())
     settingDescriptions.append(getDescription(file))
-    settingVariableDeclarations.append(file.readline().strip())
-    settingStateDeclarations.append(file.readline().strip())
-    settingCXXDataTypes.append('')
+    declarationWords = file.readline().strip().replace(';', '').split() 
+    settingVariableDataTypes.append(declarationWords[0])
+    settingVariableNames.append(declarationWords[-1])
+    
+    stateWords = file.readline().strip().split()
+    stateName = ''
+    if (len(stateWords) > 0): stateName = stateWords[1] 
+    settingStateNames.append(stateName.replace(';', ''))
     
    line = file.readline()
   
  ## Post-processing variable information
  
- for i in range(len(settingNames)):
-  settingVariableNames.append(settingVariableDeclarations[i].replace('size_t', '').replace('double', '').replace('std::string', '').replace('bool', '').replace('std::vector', '').replace('<', '').replace('>', '').replace(';', '').strip())
-  settingStateNames.append(settingStateDeclarations[i].replace('bool', '').replace(';', '').strip())
-  
  for i in range(len(settingNames)): 
   if (settingFormats[i] == 'Integer'): settingKoraliDataTypes.append('KORALI_NUMBER')
   if (settingFormats[i] == 'Real'): settingKoraliDataTypes.append('KORALI_NUMBER')
   if (settingFormats[i] == 'String'): settingKoraliDataTypes.append('KORALI_STRING')
   if (settingFormats[i] == 'Boolean'): settingKoraliDataTypes.append('KORALI_BOOLEAN')
-
- for i in range(len(settingNames)): 
-  if (settingVariableDeclarations[i].startswith('bool')): settingCXXDataTypes[i] = 'bool'
-  if (settingVariableDeclarations[i].startswith('size_t')): settingCXXDataTypes[i] = 'size_t'
-  if (settingVariableDeclarations[i].startswith('int')): settingCXXDataTypes[i] = 'int'
-  if (settingVariableDeclarations[i].startswith('double')): settingCXXDataTypes[i] = 'double'
-  if (settingVariableDeclarations[i].startswith('std::string')): settingCXXDataTypes[i] = 'std::string'
-  if (settingVariableDeclarations[i].startswith('std::vector<bool>')): settingCXXDataTypes[i] = 'std::vector<bool>'
-  if (settingVariableDeclarations[i].startswith('std::vector<size_t>')): settingCXXDataTypes[i] = 'std::vector<size_t>'
-  if (settingVariableDeclarations[i].startswith('std::vector<int>')): settingCXXDataTypes[i] = 'std::vector<int>'
-  if (settingVariableDeclarations[i].startswith('std::vector<double>')): settingCXXDataTypes[i] = 'std::vector<double>'
-  if (settingVariableDeclarations[i].startswith('std::vector< std::vector<bool> >')): settingCXXDataTypes[i] = 'std::vector< std::vector<bool> >'
-  if (settingVariableDeclarations[i].startswith('std::vector< std::vector<size_t> >')): settingCXXDataTypes[i] = 'std::vector< std::vector<size_t> >'
-  if (settingVariableDeclarations[i].startswith('std::vector< std::vector<int> >')): settingCXXDataTypes[i] = 'std::vector< std::vector<int> >'
-  if (settingVariableDeclarations[i].startswith('std::vector< std::vector<double> >')): settingCXXDataTypes[i] = 'std::vector< std::vector<double> >'
-  if (settingCXXDataTypes[i] == ''):
-   print('[Korali] Error recognizing datatype for: ' + settingVariableDeclarations[i] + '\n')
-   exit(-1)
-   
+ 
  # Creating setConfiguration()
 
  configFile.write('void Korali::Solver::' + solverAlias + '::setConfiguration() \n{\n')
@@ -142,7 +123,7 @@ def parseFile(f):
  for i in range(len(settingNames)):   
   if (settingTypes[i] == 'Internal Attribute'):
    configFile.write(' if(isDefined(_k->_js, {"' + solverAlias + '", "Internal", "' + settingNames[i] + '"} ))\n')
-   configFile.write('  ' + settingVariableNames[i] + ' = _k->_js.at("' + solverAlias + '").at("Internal").at("' + settingNames[i] + '").get<' + settingCXXDataTypes[i] + '>();\n')
+   configFile.write('  ' + settingVariableNames[i] + ' = _k->_js.at("' + solverAlias + '").at("Internal").at("' + settingNames[i] + '").get<' + settingVariableDataTypes[i] + '>();\n')
    
  configFile.write('} \n\n') 
  

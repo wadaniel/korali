@@ -428,7 +428,7 @@ Default Enabled:
 Description:
 Local covariances of chain leaders
 ******************************************************************************/
-std::vector< std::vector<double> > localCovarianceMatrices;
+std::vector<std::vector<double>> localCovarianceMatrices;
 
  // TMCMC Status variables
  gsl_rng  *range;

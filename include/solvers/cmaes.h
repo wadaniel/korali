@@ -334,7 +334,6 @@ in the direction of the eigenvectors.
 double _termCondMinStandardDeviationStepFactor;
 bool   _termCondMinStandardDeviationStepFactorEnabled;
 
-
 /******************************************************************************
 * Variable Settings
 ******************************************************************************/
@@ -797,27 +796,98 @@ Auxiliar B*D*z
 ******************************************************************************/
 std::vector<double> rgdTmp;
 
+/******************************************************************************
+Setting Name: Function Evaluation Count
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Keeps count of the number of function evaluations so far
+******************************************************************************/
+size_t _functionEvaluationCount;
 
- size_t countevals; /* Number of function evaluations */
- size_t countinfeasible; /* Number of samples outside of domain given by bounds */
- double maxdiagC; /* max diagonal element of C */
- double mindiagC; /* min diagonal element of C */
- double maxEW; /* max Eigenwert of C */
- double minEW; /* min Eigenwert of C */
- double psL2; /* L2 norm of rgps */
+/******************************************************************************
+Setting Name: Infeasible Sample Count
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Keeps count of the number of function evaluations so far
+******************************************************************************/
+size_t _infeasibleSampleCount;
 
- bool flgEigensysIsUptodate;
+/******************************************************************************
+Setting Name: Maximum Diagonal Covariance Matrix Element
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Maximum diagonal element of the Covariance Matrix.
+******************************************************************************/
+double _maxDiagCElement;
 
- // Private CMA-ES-Specific Methods
- void sampleSingle(size_t sampleIdx); /* sample individual */
- void evaluateSamples(); /* evaluate all samples until done */
- void adaptC(int hsig); /* CMA-ES covariance matrix adaption */
- void updateEigensystem(std::vector<double>& M, int flgforce = 1);
- void eigen(size_t N, std::vector<double>& C, std::vector<double>& diag, std::vector<double>& Q) const;
- void sort_index(const std::vector<double>& vec, std::vector<size_t>& _sortingIndex, size_t n) const;
- bool isFeasible(size_t sampleIdx) const; /* check if sample inside lower & upper bounds */
+/******************************************************************************
+Setting Name: Minimum Diagonal Covariance Matrix Element
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Minimum diagonal element of the Covariance Matrix.
+******************************************************************************/
+double _minDiagCElement;
 
- // Private CCMA-ES-Specific Variables
+/******************************************************************************
+Setting Name: Maximum Covariance Eigenvalue
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Maximum Covariance Matrix Eigenvalue
+******************************************************************************/
+double _maxCovarianceEigenvalue;
+
+/******************************************************************************
+Setting Name: Minimum Covariance Eigenvalue
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Minimum Covariance Matrix Eigenvalue
+******************************************************************************/
+double _minCovarianceEigenvalue;
+
+/******************************************************************************
+Setting Name: RGPS L2 Norm
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+
+******************************************************************************/
+double _rgpsL2Norm;
+
+/******************************************************************************
+Setting Name: Is Eigensystem Updated
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Flag determining if the covariance eigensystem is up to date.
+******************************************************************************/
+bool _isEigenSystemUpdate;
+
+// Private CCMA-ES-Specific Variables
+
+/******************************************************************************
+Setting Name: Viability Indicator
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Evaluation of each constraint for each sample.
+******************************************************************************/
+std::vector<std::vector<bool>> _viabilityIndicator;
+
  bool _hasConstraints; /* True if num constraints greater 0 */
  double _beta; /* Factor of covariance matrix adaption size */
 
@@ -832,8 +902,7 @@ std::vector<double> rgdTmp;
  bool *viabilityImprovement; /* sample evaluations larger than fviability */ //TODO: not neeeded?
  size_t maxnumviolations; /* maximal amount of constraint violations */
  size_t *numviolations; /* number of constraint violations for each sample */
- bool **viabilityIndicator; /* constraint evaluation better than viability bound */
- double **constraintEvaluations; /* evaluation of each constraint for each sample  */
+ double **constraintEvaluations; /* e  */
  double **v; /* normal approximation of constraints */
  double *besteverCeval; /* constraint evaluations for best ever */
 
@@ -843,6 +912,14 @@ std::vector<double> rgdTmp;
  // Ctor & Dtor
  CMAES();
 
+ void sampleSingle(size_t sampleIdx); /* sample individual */
+ void evaluateSamples(); /* evaluate all samples until done */
+ void adaptC(int hsig); /* CMA-ES covariance matrix adaption */
+ void updateEigensystem(std::vector<double>& M, int flgforce = 1);
+ void eigen(size_t N, std::vector<double>& C, std::vector<double>& diag, std::vector<double>& Q) const;
+ void sort_index(const std::vector<double>& vec, std::vector<size_t>& _sortingIndex, size_t n) const;
+ bool isFeasible(size_t sampleIdx) const; /* check if sample inside lower & upper bounds */
+
  // Runtime Methods (to be inherited from base class in the future)
  void prepareGeneration();
  bool checkTermination() override;
@@ -850,7 +927,6 @@ std::vector<double> rgdTmp;
  void initialize() override;
  void runGeneration() override;
  void processSample(size_t sampleId, double fitness) override;
-
 
  // Private CCMA-ES-Specific Methods
  void initMuWeights(size_t numsamples); /* init _muWeights and dependencies */

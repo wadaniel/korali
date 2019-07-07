@@ -34,10 +34,12 @@ def consumeValue(base, varName, type, default, path = []):
   for i in range(0, len(path)-1): configFile.write('[' + path[i] + '] > ')
   configFile.write('[' + path[-1] + ']\\n"); exit(-1); } ')
  else:
-  if ('vector' in type):
-   configFile.write('for(size_t i = 0; i < ' + varName + '.size(); i++) ' + varName + '[i] = ' + default + ';')
-  else:
-   configFile.write(varName + ' = ' + default + ' ;')
+  defaultLine = varName + ' = ' + default + ' ;'
+  if ('std::vector<' in type):
+   defaultLine = 'for(size_t i = 0; i < ' + varName + '.size(); i++) ' + varName + '[i] = ' + default + ';'
+  if ('std::vector<std::vector<' in type):
+   defaultLine = 'for(size_t i = 0; i < ' + varName + '.size(); i++) ' + 'for(size_t j = 0; j < ' + varName + '[i].size(); j++) ' + varName + '[i][j] = ' + default + ';'
+  configFile.write(defaultLine)
    
  configFile.write('\n')
   

@@ -158,15 +158,6 @@ boundary. If set false, infeasible samples are mutated again until feasible.
 bool _fixInfeasible;
 
 /******************************************************************************
-* Variable Settings
-******************************************************************************/
-
-struct variableSetting
-{
-
-};
-
-/******************************************************************************
 Setting Name: Max Resamplings
 Type: Termination Criterion
 Format: Integer
@@ -233,18 +224,74 @@ Specifies the minimal step size of the sample mean from one gneration to another
 double _termCondMinStepSize; 
 bool   _termCondMinStepSizeEnabled;
  
-DE();
+/******************************************************************************
+* Variable Settings
+******************************************************************************/
+
+struct variableSetting
+{
+
+/******************************************************************************
+Setting Name: Lower Bound
+Type: Variable Setting
+Format: Real
+Mandatory: No
+Default Value: -INFINITY
+Default Enabled:
+Description:
+Specifies the lower bound for the variable's value. Korali will not generate samples
+for which this variable falls below the specified minimum. By default, Korali sets this
+value to -Infinity.
+******************************************************************************/
+double lowerBound;
+
+/******************************************************************************
+Setting Name: Upper Bound
+Type: Variable Setting
+Format: Real
+Mandatory: No
+Default Value: +INFINITY
+Default Enabled:
+Description:
+Specifies the upper bound for the variable's value. Korali will not generate samples
+for which this variable falls below the specified maximum. By default, Korali sets this
+value to +Infinity.
+******************************************************************************/
+double upperBound;
+
+/******************************************************************************
+Setting Name: Initial Mean
+Type: Variable Setting
+Format: Real
+Mandatory: No
+Default Value: 0.0
+Default Enabled:
+Description:
+Defines the initial mean for the proposal distribution. This value must be defined
+between the variable's Mininum and Maximum settings By default, Korali sets this
+value in the center of the domain.
+******************************************************************************/
+double initialMean;
+
+/******************************************************************************
+Setting Name: Initial Standard Deviation
+Type: Variable Setting
+Format: Real
+Mandatory: No
+Default Value: 1.0
+Default Enabled:
+Description:
+Defines the initial standard deviation of the proposal distribution for a variable.
+By default, Korali sets this value to 30% of the domain width.
+******************************************************************************/
+double initialStdDev;
+
+};
 
 std::vector<variableSetting> _variableSettings;
+/******************************************************************************/
 
-// These are DE-Specific, but could be used for other methods in the future
- double* _lowerBounds;
- double* _upperBounds;
- double* _initialMeans;
- double* _initialStdDevs;
- bool* _initialMeanDefined;
- bool* _initialStdDevDefined;
- bool* _variableLogSpace;
+DE();
 
  // Runtime Methods (to be inherited from base class in the future)
  void initSamples();

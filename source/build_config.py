@@ -37,7 +37,7 @@ def consumeValue(base, varName, type, default, path = []):
   if ('vector' in type):
    configFile.write('for(size_t i = 0; i < ' + varName + '.size(); i++) ' + varName + '[i] = ' + default + ';')
   else:
-   configFile.write(varName + ' = ' + default + ';')
+   configFile.write(varName + ' = ' + default + ' ;')
    
  configFile.write('\n')
   

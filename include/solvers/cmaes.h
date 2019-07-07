@@ -13,6 +13,32 @@ Module Name: CMAES
 Type: Solver, Optimizer
 Alias: CMAES
 Description:
+### Base CMA-ES
+
+This is the implementation of the *Covariance Matrix Adaptation Evolution Strategy*, as published in [Hansen2006](https://doi.org/10.1007/3-540-32494-1_4).
+
+In an evolution strategy, new candidate solutions are sampled according to a multivariate normal distribution in $\mathbb {R} ^{n}$. Recombination amounts to selecting a new mean value for the distribution. Mutation amounts to adding a random vector, a perturbation with zero mean. Pairwise dependencies between the variables in the distribution are represented by a covariance matrix. The covariance matrix adaptation (CMA) is a method to update the covariance matrix of this distribution.
+
+CMA-ES works iteratively, evaluating a number $\lambda$ of samples per generation, and improving the covariance matrix for the samples in the next generation.
+
+**Base Requirements:**
+
++ The *Sample Count* $\lambda$ needs to be defined.
++ The *Initial Mean* needs to be defined for every variable.
++ The *Initial Standard Deviation* needs to be defined for every variable.
+
+### Constrained CMA-ES
+
+This solver also implements the *Constrained Covariance Matrix Adaptation Evolution Strategy*, as published in [Arampatzis2019](https://dl.acm.org/citation.cfm?doid=3324989.3325725).
+
+CCMA-ES is an extension of [CMA-ES](/usage/solvers/optimizers/cmaes/) for constrained optimization problems. It uses the principle of *viability boundaries* to find an initial mean vector for the proposal distribution that does not violate constraints, and secondly it uses a  *constraint handling technique* to efficiently adapt the proposal distribution to the constraints.
+
+** Constraint Requirements:**
+
++ At least one *Constraint function* defined.
++ The *Viability Sample Count* $via-\lambda$ needs to be defined.
++ The *Initial Mean* needs to be defined for every variable.
++ The *Initial Standard Deviation* needs to be defined for every variable.
 ******************************************************************************/
 
 class CMAES : public Base
@@ -24,19 +50,19 @@ Setting Name: Objective
 Type: Solver Setting
 Format: String
 Mandatory: No
-Default Value: Maximize
+Default Value: "Maximize"
 Default Enabled:
 Description:
 Specifies whether the problem evaluation is to be minimized or maximized.
 ******************************************************************************/
-std::string _objective; /* Maximize or Minimize */ 
+std::string _objective;
 
 /******************************************************************************
 Setting Name: Sample Count
 Type: Solver Setting
 Format: Integer
-Mandatory: Yes
-Default Value:
+Mandatory: No
+Default Value: 32
 Default Enabled:
 Description:
 Specifies the number of samples to evaluate per generation (preferably 
@@ -49,7 +75,7 @@ Setting Name: Mu Value
 Type: Solver Setting
 Format: Integer
 Mandatory: No
-Default Value: 0.5*(Sample Count)
+Default Value: 16
 Default Enabled:
 Description:
 Number of best samples used to update the covariance matrix and the mean.
@@ -61,7 +87,7 @@ Setting Name: Mu Type
 Type: Solver Setting
 Format: String
 Mandatory: No
-Default Value: Logarithmic
+Default Value: "Logarithmic"
 Default Enabled:
 Description:
 Weights given to the Mu best values to update the covariance matrix and the mean.
@@ -73,7 +99,7 @@ Setting Name: Initial Sigma Cumulation Factor
 Type: Solver Setting
 Format: Real
 Mandatory: No
-Default Value: (calibrated internally)
+Default Value: 1.0
 Default Enabled:
 Description:
 Controls the learning rate of the conjugate evolution path.
@@ -85,7 +111,7 @@ Setting Name: Initial Damp Factor
 Type: Solver Setting
 Format: Real
 Mandatory: No
-Default Value: (calibrated internally)
+Default Value: 1.0
 Default Enabled:
 Description:
 Controls the updates of the covariance matrix scaling factor.
@@ -97,7 +123,7 @@ Setting Name: Is Sigma Bounded
 Type: Solver Setting
 Format: Boolean
 Mandatory: No
-Default Value: False
+Default Value: false
 Default Enabled:
 Description:
 Sets an upper bound for the covariance matrix scaling factor. The upper bound 
@@ -110,7 +136,7 @@ Setting Name: Initial Cumulative Covariance
 Type: Solver Setting
 Format: Real
 Mandatory: No
-Default Value: (calibrated internally)
+Default Value: 1.0
 Default Enabled:
 Description:
 Controls the learning rate of the evolution path for the covariance update
@@ -126,7 +152,7 @@ Setting Name: Is Diagonal
 Type: Solver Setting
 Format: Boolean
 Mandatory: No
-Default Value: False
+Default Value: false
 Default Enabled:
 Description:
 Covariance matrix updates will be optimized for diagonal matrices.
@@ -134,11 +160,24 @@ Covariance matrix updates will be optimized for diagonal matrices.
 bool _isDiag;
 
 /******************************************************************************
+Setting Name: Use Viability Regime
+Type: Solver Setting
+Format: Boolean
+Mandatory: No
+Default Value: false
+Default Enabled:
+Description:
+Determines if a viability regime should be used.
+******************************************************************************/
+bool _isViabilityRegime;
+
+
+/******************************************************************************
 Setting Name: Viability Sample Count
 Type: Solver Setting
 Format: Integer
-Mandatory: Yes
-Default Value:
+Mandatory: No
+Default Value: 8
 Default Enabled:
 Description:
 Specifies the number of samples per generation during the viability 
@@ -150,8 +189,8 @@ size_t _viabilitySampleCount;
 Setting Name: Viability Mu
 Type: Solver Setting
 Format: Integer
-Mandatory: Yes
-Default Value:
+Mandatory: No
+Default Value: 4
 Default Enabled:
 Description:
 Number of best samples used to update the covariance matrix and the mean 
@@ -202,7 +241,7 @@ Setting Name: Normal Vector Learning Rate
 Type: Solver Setting
 Format: Real
 Mandatory: No
-Default Value: (internally calibrated)
+Default Value: 0.5
 Default Enabled:
 Description:
 Learning rate of constraint normal vectors (must be in (0, 1]).
@@ -214,7 +253,7 @@ Setting Name: Global Success Learning Rate
 Type: Solver Setting
 Format: Real
 Mandatory: No
-Default Value: (internally calibrated)
+Default Value: 0.2
 Default Enabled:
 Description:
 Learning rate of success probability of objective function improvements. 
@@ -265,7 +304,7 @@ Setting Name: Min Fitness
 Type: Termination Criterion
 Format: Real
 Mandatory: No
-Default Value: -Inf
+Default Value: -INFINITY
 Default Enabled: false
 Description:
 Specifies the target fitness to stop minimization.
@@ -278,7 +317,7 @@ Setting Name: Max Fitness
 Type: Termination Criterion
 Format: Real
 Mandatory: No
-Default Value: +Inf
+Default Value: +INFINITY
 Default Enabled: false
 Description:
 Specifies the target fitness to stop maximization.
@@ -353,16 +392,90 @@ in the direction of the eigenvectors.
 double _termCondMinStandardDeviationStepFactor;
 bool   _termCondMinStandardDeviationStepFactorEnabled;
 
+
+/******************************************************************************
+* Variable Settings
+******************************************************************************/
+
+struct variableSetting
+{
+
+/******************************************************************************
+Setting Name: Lower Bound
+Type: Variable Setting
+Format: Real
+Mandatory: No
+Default Value: -INFINITY
+Default Enabled:
+Description:
+Specifies the lower bound for the variable's value. Korali will not generate samples
+for which this variable falls below the specified minimum. By default, Korali sets this
+value to -Infinity.
+******************************************************************************/
+double lowerBound;
+
+/******************************************************************************
+Setting Name: Upper Bound
+Type: Variable Setting
+Format: Real
+Mandatory: No
+Default Value: +INFINITY
+Default Enabled:
+Description:
+Specifies the upper bound for the variable's value. Korali will not generate samples
+for which this variable falls below the specified maximum. By default, Korali sets this
+value to +Infinity.
+******************************************************************************/
+double upperBound;
+
+/******************************************************************************
+Setting Name: Initial Mean
+Type: Variable Setting
+Format: Real
+Mandatory: No
+Default Value: 0.0
+Default Enabled:
+Description:
+Defines the initial mean for the proposal distribution. This value must be defined
+between the variable's Mininum and Maximum settings By default, Korali sets this
+value in the center of the domain.
+******************************************************************************/
+double initialMean;
+
+/******************************************************************************
+Setting Name: Initial Standard Deviation
+Type: Variable Setting
+Format: Real
+Mandatory: No
+Default Value: 1.0
+Default Enabled:
+Description:
+Defines the initial standard deviation of the proposal distribution for a variable.
+By default, Korali sets this value to 30% of the domain width.
+******************************************************************************/
+double initialStdDev;
+
+/******************************************************************************
+Setting Name: Minimum Stardard Deviation Changes
+Type: Variable Setting
+Format: Real
+Mandatory: No
+Default Value: 0.0
+Default Enabled:
+Description:
+Defines a lower bound for the standard deviation updates of the proposal distribution for a variable.
+Korali increases the scaling factor $\sigma$ if this value is undershot. By default,
+Korali sets this value to 0.0 (inactive).
+******************************************************************************/
+double minStdDevChange;
+
+};
+
+std::vector<variableSetting> _variableSettings;
+/******************************************************************************/
+
 // Ctor & Dtor
 CMAES();
-
-// These are CMA-ES Specific, but could be used for other methods in the future
-std::vector<double> _lowerBounds;
-std::vector<double> _upperBounds;
-std::vector<double> _initialMeans;
-std::vector<double> _initialStdDevs;
-std::vector<double> _minStdDevChanges;
-std::vector<bool> _variableLogSpace;
 
 // Runtime Methods (to be inherited from base class in the future)
 void prepareGeneration();
@@ -449,7 +562,6 @@ private:
  bool _hasConstraints; /* True if num constraints greater 0 */
  double _beta; /* Factor of covariance matrix adaption size */
 
- bool _isViabilityRegime; /* true if mean violates constraints */
  int bestValidIdx; /* best sample with wo constraint violation (otherwise -1) */
  double _globalSucRate; /* estim. global success rate */
  double fviability; /* viability func value */

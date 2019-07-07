@@ -33,40 +33,48 @@ void CMAES::initialize()
  size_t s_max  = std::max(_sampleCount,  _viabilitySampleCount);
  size_t mu_max = std::max(_muValue, _viabilityMu);
 
+ if(_isViabilityRegime) {
+     _current_s  = _viabilitySampleCount;
+     _current_mu = _viabilityMu;
+ } else {
+     _current_s  = _sampleCount;
+     _current_mu = _muValue;
+ }
+
  // Allocating Memory
- _samplePopulation.reserve(_k->N*s_max);
+ _samplePopulation.resize(_k->N*s_max);
 
- rgpc.reserve(_k->N);
- rgps.reserve(_k->N);
- rgdTmp.reserve(_k->N);
- rgBDz.reserve(_k->N);
- rgxmean.reserve(_k->N);
- rgxold.reserve(_k->N);
- rgxbestever.reserve(_k->N);
- axisD.reserve(_k->N);
- axisDtmp.reserve(_k->N);
- curBestVector.reserve(_k->N); 
+ rgpc.resize(_k->N);
+ rgps.resize(_k->N);
+ rgdTmp.resize(_k->N);
+ rgBDz.resize(_k->N);
+ rgxmean.resize(_k->N);
+ rgxold.resize(_k->N);
+ rgxbestever.resize(_k->N);
+ axisD.resize(_k->N);
+ axisDtmp.resize(_k->N);
+ curBestVector.resize(_k->N);
 
- index.reserve(s_max);
+ index.resize(s_max);
 
- _initializedSample.reserve(s_max);
- _fitnessVector.reserve(s_max);
+ _initializedSample.resize(s_max);
+ _fitnessVector.resize(s_max);
 
  // Init Generation
  _isFinished = false;
 
- C.reserve(_k->N*_k->N);
- Ctmp.reserve(_k->N*_k->N);
- B.reserve(_k->N*_k->N);
- Btmp.reserve(_k->N*_k->N);
+ C.resize(_k->N*_k->N);
+ Ctmp.resize(_k->N*_k->N);
+ B.resize(_k->N*_k->N);
+ Btmp.resize(_k->N*_k->N);
 
- Z.reserve(s_max*_k->N);
- BDZ.reserve(s_max*_k->N);
+ Z.resize(s_max*_k->N);
+ BDZ.resize(s_max*_k->N);
 
- _transformedSamples.reserve(s_max*_k->N); 
+ _transformedSamples.resize(s_max*_k->N);
 
  // Initailizing Mu
- _muWeights.reserve(mu_max);
+ _muWeights.resize(mu_max);
 
  _hasConstraints = (_k->_fconstraints.size() > 0);
  
@@ -87,7 +95,7 @@ void CMAES::initialize()
 	numviolations    = (size_t*) calloc (sizeof(size_t), _current_s);
 	viabilityBounds  = (double*) calloc (sizeof(double), _k->_fconstraints.size());
 
-	sucRates.reserve(_k->_fconstraints.size());
+	sucRates.resize(_k->_fconstraints.size());
 	std::fill_n( std::begin(sucRates), _k->_fconstraints.size(), 0.5);
 
 	viabilityImprovement  = (bool*) calloc (sizeof(bool), s_max);
@@ -124,13 +132,13 @@ void CMAES::initialize()
  /* set rgxmean */
  for (size_t i = 0; i < _k->N; ++i)
  {
-	 if(_initialMeans[i] < _lowerBounds[i] || _initialMeans[i] > _upperBounds[i]) if(_k->_verbosity >= KORALI_MINIMAL)
+	 if(_variableSettings[i].initialMean < _variableSettings[i].lowerBound || _variableSettings[i].initialMean > _variableSettings[i].upperBound) if(_k->_verbosity >= KORALI_MINIMAL)
 		fprintf(stderr,"[Korali] Warning: Initial Value (%.4f) of variable \'%s\' is out of bounds (%.4f-%.4f).\n",
-						_initialMeans[i],
+						_variableSettings[i].initialMean,
 						_k->_variables[i]->_name.c_str(),
-						_lowerBounds[i],
-						_upperBounds[i]);
-	 rgxmean[i] = rgxold[i] = _initialMeans[i];
+						_variableSettings[i].lowerBound,
+						_variableSettings[i].upperBound);
+	 rgxmean[i] = rgxold[i] = _variableSettings[i].initialMean;
  }
 
  if ( _hasConstraints ){ updateConstraints(); handleConstraints(); }
@@ -151,7 +159,7 @@ void CMAES::runGeneration()
 void CMAES::evaluateSamples()
 {
  for (size_t i = 0; i < _current_s; i++) for(size_t d = 0; d < _k->N; ++d)
-  if(_variableLogSpace[d] == true)
+  if(_k->_variables[d]->_isLogSpace == true)
 	 _transformedSamples[i*_k->N+d] = std::exp(_samplePopulation[i*_k->N+d]);
 	else
 	 _transformedSamples[i*_k->N+d] = _samplePopulation[i*_k->N+d];
@@ -232,14 +240,14 @@ void CMAES::initCovariance()
  
  // Setting Sigma
  _trace = 0.0;
- for (size_t i = 0; i < _k->N; ++i) _trace += _initialStdDevs[i]*_initialStdDevs[i];
+ for (size_t i = 0; i < _k->N; ++i) _trace += _variableSettings[i].initialStdDev*_variableSettings[i].initialStdDev;
  sigma = sqrt(_trace/_k->N);
 
  // Setting B, C and axisD
  for (size_t i = 0; i < _k->N; ++i)
  {
   B[i*_k->N+i] = 1.0;
-  C[i*_k->N+i] = axisD[i] = _initialStdDevs[i] * sqrt(_k->N / _trace);
+  C[i*_k->N+i] = axisD[i] = _variableSettings[i].initialStdDev * sqrt(_k->N / _trace);
   C[i*_k->N+i] *= C[i*_k->N+i];
  }
 
@@ -359,7 +367,7 @@ void CMAES::updateViabilityBoundaries()
 bool CMAES::isFeasible(size_t sampleIdx) const
 {
  for (size_t d = 0; d < _k->N; ++d)
-  if (_samplePopulation[ sampleIdx*_k->N+d ] < _lowerBounds[d] || _samplePopulation[ sampleIdx*_k->N+d ] > _upperBounds[d]) return false;
+  if (_samplePopulation[ sampleIdx*_k->N+d ] < _variableSettings[d].lowerBound || _samplePopulation[ sampleIdx*_k->N+d ] > _variableSettings[d].upperBound) return false;
  return true;
 }
 
@@ -520,9 +528,9 @@ void CMAES::updateDistribution()
  //TODO
 
  //treat minimal standard deviations
- for (size_t d = 0; d < _k->N; ++d) if (sigma * sqrt(C[d*_k->N+d]) < _minStdDevChanges[d])
+ for (size_t d = 0; d < _k->N; ++d) if (sigma * sqrt(C[d*_k->N+d]) < _variableSettings[d].minStdDevChange)
  {
-   sigma = (_minStdDevChanges[d])/sqrt(C[d*_k->N+d]) * exp(0.05+_sigmaCumulationFactor/_dampFactor);
+   sigma = (_variableSettings[d].minStdDevChange)/sqrt(C[d*_k->N+d]) * exp(0.05+_sigmaCumulationFactor/_dampFactor);
    if (_k->_verbosity >= KORALI_DETAILED) fprintf(stderr, "[Korali] Warning: Sigma increased due to minimal standard deviation.\n");
  }
 
@@ -677,18 +685,18 @@ bool CMAES::checkTermination()
  {
   size_t cTemp = 0;
   for(idx = 0; idx <_k->N; ++idx )
-   cTemp += (sigma * sqrt(C[idx*_k->N+idx]) < _termCondMinStandardDeviation * _initialStdDevs[idx]) ? 1 : 0;
+   cTemp += (sigma * sqrt(C[idx*_k->N+idx]) < _termCondMinStandardDeviation * _variableSettings[idx].initialStdDev) ? 1 : 0;
   
   if (cTemp == _k->N) {
    _isFinished = true;
-   printf("Object variable changes < %+6.3e", _termCondMinStandardDeviation * _initialStdDevs[idx]);
+   printf("Object variable changes < %+6.3e", _termCondMinStandardDeviation * _variableSettings[idx].initialStdDev);
   }
 
   for(idx = 0; idx <_k->N; ++idx )
-   if ( _termCondMaxStandardDeviationEnabled && (sigma * sqrt(C[idx*_k->N+idx]) > _termCondMaxStandardDeviation * _initialStdDevs[idx]) )
+   if ( _termCondMaxStandardDeviationEnabled && (sigma * sqrt(C[idx*_k->N+idx]) > _termCondMaxStandardDeviation * _variableSettings[idx].initialStdDev) )
    {
     _isFinished = true;
-    printf("Standard deviation increased by more than %7.2e, larger initial standard deviation recommended \n", _termCondMaxStandardDeviation * _initialStdDevs[idx]);
+    printf("Standard deviation increased by more than %7.2e, larger initial standard deviation recommended \n", _termCondMaxStandardDeviation * _variableSettings[idx].initialStdDev);
     break;
    }
  }

@@ -13,9 +13,9 @@ int main(int argc, char* argv[])
  k["Variables"][0]["CMAES"]["Upper Bound"] = +10.0;
 
  k["CMAES"]["Objective"] = "Maximize";
- k["CMAES"]["Termination Criteria"]["Max Generations"]["Value"] = 500;
- k["CMAES"]["Sample Count"] = 5;
+ k["CMAES"]["Sample Count"] = 32;
 
+ k["Termination Criteria"]["Max Generations"]["Value"] = 500;
  k.setModel([](Korali::ModelData& d) { directModel(d.getVariables(), d.getResults()); });
  k.run();
 }

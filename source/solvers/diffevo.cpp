@@ -55,15 +55,15 @@ void DE::initialize()
  bestEver             = -std::numeric_limits<double>::max();
 
  /* set rgxmean */
- for (size_t i = 0; i < _k->N; ++i) if (_initialMeanDefined[i])
+ for (size_t i = 0; i < _k->N; ++i)
  {
-	 if(_initialMeans[i] < _lowerBounds[i] || _initialMeans[i] > _upperBounds[i])
+	 if(_variableSettings[i].initialMean < _variableSettings[i].lowerBound || _variableSettings[i].initialMean > _variableSettings[i].upperBound)
 		fprintf(stderr,"[Korali] Warning: Initial Value (%.4f) for \'%s\' is out of bounds (%.4f-%.4f).\n",
-						_initialMeans[i],
+						_variableSettings[i].initialMean,
 						_k->_variables[i]->_name.c_str(),
-						_lowerBounds[i],
-						_upperBounds[i]);
-	 rgxmean[i] = rgxoldmean[i] = _initialMeans[i];
+						_variableSettings[i].lowerBound,
+						_variableSettings[i].upperBound);
+	 rgxmean[i] = rgxoldmean[i] = _variableSettings[i].initialMean;
  }
 
  initSamples();
@@ -81,14 +81,9 @@ void DE::initSamples()
 {
   for(size_t i = 0; i < _sampleCount; ++i) for(size_t d = 0; d < _k->N; ++d)
   {
-    if (_initialMeanDefined[d] && _initialStdDevDefined[d]) 
-    {
-        samplePopulation[i*_k->N+d] = _initialMeans[d] + _initialStdDevs[d] * _gaussianGenerator->getRandomNumber();
-        if(samplePopulation[i*_k->N+d] < _lowerBounds[d]) samplePopulation[i*_k->N+d] = _lowerBounds[d];
-        if(samplePopulation[i*_k->N+d] > _upperBounds[d]) samplePopulation[i*_k->N+d] = _upperBounds[d];
-    }
-    else 
-        samplePopulation[i*_k->N+d] = _lowerBounds[d] + (_upperBounds[d]-_lowerBounds[d]) * _uniformGenerator->getRandomNumber();
+		samplePopulation[i*_k->N+d] = _variableSettings[d].initialMean + _variableSettings[d].initialStdDev * _gaussianGenerator->getRandomNumber();
+		if(samplePopulation[i*_k->N+d] < _variableSettings[d].lowerBound) samplePopulation[i*_k->N+d] = _variableSettings[d].lowerBound;
+		if(samplePopulation[i*_k->N+d] > _variableSettings[d].upperBound) samplePopulation[i*_k->N+d] = _variableSettings[d].upperBound;
   }
 }
 
@@ -181,7 +176,7 @@ void DE::mutateSingle(size_t sampleIdx)
 
 bool DE::isFeasible(size_t sampleIdx) const
 {
-  for(size_t d = 0; d < _k->N; ++d) if ( (candidates[sampleIdx*_k->N+d] < _lowerBounds[d]) || (candidates[sampleIdx*_k->N+d] > _upperBounds[d])) return false;
+  for(size_t d = 0; d < _k->N; ++d) if ( (candidates[sampleIdx*_k->N+d] < _variableSettings[d].lowerBound) || (candidates[sampleIdx*_k->N+d] > _variableSettings[d].upperBound)) return false;
   return true;
 }
 
@@ -190,9 +185,9 @@ void DE::fixInfeasible(size_t sampleIdx)
 {
   for(size_t d = 0; d < _k->N; ++d) 
   {
-    if ( candidates[sampleIdx*_k->N+d] < _lowerBounds[d] ) candidates[sampleIdx*_k->N+d] *= _uniformGenerator->getRandomNumber(); 
-    if ( candidates[sampleIdx*_k->N+d] > _upperBounds[d] ) 
-    { double len = _upperBounds[d] - samplePopulation[sampleIdx*_k->N+d]; candidates[sampleIdx*_k->N+d] = samplePopulation[sampleIdx*_k->N+d] + len * _uniformGenerator->getRandomNumber(); }
+    if ( candidates[sampleIdx*_k->N+d] < _variableSettings[d].lowerBound ) candidates[sampleIdx*_k->N+d] *= _uniformGenerator->getRandomNumber();
+    if ( candidates[sampleIdx*_k->N+d] > _variableSettings[d].upperBound )
+    { double len = _variableSettings[d].upperBound - samplePopulation[sampleIdx*_k->N+d]; candidates[sampleIdx*_k->N+d] = samplePopulation[sampleIdx*_k->N+d] + len * _uniformGenerator->getRandomNumber(); }
   }
 }
 
@@ -202,7 +197,7 @@ void DE::evaluateSamples()
   double* transformedSamples = new double[ _sampleCount * _k->N ];
   
   for (size_t i = 0; i < _sampleCount; i++) for(size_t d = 0; d < _k->N; ++d)
-    if(_variableLogSpace[d] == true) 
+    if(_k->_variables[d]->_isLogSpace == true)
         transformedSamples[i*_k->N+d] = std::exp(candidates[i*_k->N+d]);
     else 
         transformedSamples[i*_k->N+d] = candidates[i*_k->N+d];

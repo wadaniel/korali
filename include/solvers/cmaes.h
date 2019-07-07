@@ -406,20 +406,18 @@ double minStdDevChange;
 std::vector<variableSetting> _variableSettings;
 /******************************************************************************/
 
-// Ctor & Dtor
-CMAES();
+/******************************************************************************
+Setting Name: Evaluation Sign
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+The sign for the fitness evaluation to determine whether this is a maximization
+or minimization operation.
+******************************************************************************/
+int evaluationSign;
 
-// Runtime Methods (to be inherited from base class in the future)
-void prepareGeneration();
-bool checkTermination() override;
-void updateDistribution();
-void initialize() override;
-void runGeneration() override;
-void processSample(size_t sampleId, double fitness) override;
-
-private:
  // Korali Runtime Variables
- int _fitnessSign; /* maximizing vs optimizing (+- 1) */
  std::vector<double> _fitnessVector; /* objective function values [_s] */
  std::vector<double> _samplePopulation; /* sample coordinates [_s x _k->N] */
  std::vector<bool> _initializedSample; /* flag to distribute work */
@@ -514,6 +512,18 @@ private:
  gsl_vector* gsl_eval;
  gsl_matrix* gsl_evec;
  gsl_eigen_symmv_workspace* gsl_work;
+
+ // Ctor & Dtor
+ CMAES();
+
+ // Runtime Methods (to be inherited from base class in the future)
+ void prepareGeneration();
+ bool checkTermination() override;
+ void updateDistribution();
+ void initialize() override;
+ void runGeneration() override;
+ void processSample(size_t sampleId, double fitness) override;
+
 
  // Private CCMA-ES-Specific Methods
  void initMuWeights(size_t numsamples); /* init _muWeights and dependencies */

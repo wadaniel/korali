@@ -265,10 +265,10 @@ void CMAES::initCovariance()
 void CMAES::processSample(size_t sampleId, double fitness)
 {
  double logPrior = _k->_problem->evaluateLogPrior(&_samplePopulation[sampleId*_k->N]);
- fitness = _fitnessSign * (logPrior+fitness);
+ fitness = evaluationSign * (logPrior+fitness);
  if(std::isfinite(fitness) == false)
  {
-   fitness = _fitnessSign * std::numeric_limits<double>::max();
+   fitness = evaluationSign * std::numeric_limits<double>::max();
    printf("[Korali] Warning: sample %zu returned non finite fitness (set to %e)!\n", sampleId, fitness);
  }
  

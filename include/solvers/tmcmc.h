@@ -142,16 +142,6 @@ Maximum increment of the exponent $\rho{i+1}$. By default, Korali will set this 
 double maxRhoUpdate;
 
 /******************************************************************************
-* Variable Settings
-******************************************************************************/
-
-struct variableSetting
-{
-
-};
-
-
-/******************************************************************************
 Setting Name: Chain Pending Fitness
 Type: Internal Attribute
 Format: Array of Booleans
@@ -415,10 +405,23 @@ Local covariances of chain leaders
 ******************************************************************************/
 std::vector<std::vector<double>> localCovarianceMatrices;
 
+/******************************************************************************
+* Variable Settings
+******************************************************************************/
+
+struct variableSetting
+{
+
+};
+
+std::vector<variableSetting> _variableSettings;
+
+/*****************************************************************************/
+
  // TMCMC Status variables
  gsl_rng  *range;
 
- std::vector<variableSetting> _variableSettings;
+
 
  TMCMC();
 

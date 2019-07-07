@@ -143,42 +143,6 @@ Small constant to avoid singularity of the chain covariance.
 ******************************************************************************/
 double chainCovarianceIncrement;
 
-
-/******************************************************************************
-* Variable Settings
-******************************************************************************/
-
-struct variableSetting
-{
-
-/******************************************************************************
-Setting Name: Initial Mean
-Type: Variable Setting
-Format: Real
-Mandatory: Yes
-Default Value:
-Default Enabled:
-Description:
-Specifies the Initial Mean of the proposal distribution.
-******************************************************************************/
-double initialMean;
-
-/******************************************************************************
-Setting Name: Standard Deviation
-Type: Variable Setting
-Format: Real
-Mandatory: Yes
-Default Value:
-Default Enabled:
-Description:
-Specifies the Standard Deviation for each variable. The proposal distribution
-is defined through a covariance matrix with the variance of the variables in
-its diagonal.
-******************************************************************************/
-double standardDeviation;
-
-};
-
 /******************************************************************************
 Setting Name: Covariance Matrix
 Type: Internal Attribute
@@ -407,13 +371,49 @@ Current Chain Length
 ******************************************************************************/
 size_t chainLength;
 
- // MCMC Configuration
+/******************************************************************************
+* Variable Settings
+******************************************************************************/
+
+struct variableSetting
+{
+
+/******************************************************************************
+Setting Name: Initial Mean
+Type: Variable Setting
+Format: Real
+Mandatory: Yes
+Default Value:
+Default Enabled:
+Description:
+Specifies the Initial Mean of the proposal distribution.
+******************************************************************************/
+double initialMean;
+
+/******************************************************************************
+Setting Name: Standard Deviation
+Type: Variable Setting
+Format: Real
+Mandatory: Yes
+Default Value:
+Default Enabled:
+Description:
+Specifies the Standard Deviation for each variable. The proposal distribution
+is defined through a covariance matrix with the variance of the variables in
+its diagonal.
+******************************************************************************/
+double standardDeviation;
+
+};
+
+std::vector<variableSetting> _variableSettings;
+/******************************************************************************/
+
+// MCMC Configuration
 
  Korali::Variable* _gaussianGenerator; /* Gaussian random number generator */
  Korali::Variable* _uniformGenerator; /* Uniform random number generator */
 
- std::vector<variableSetting> _variableSettings;
- 
  MCMC();
 
  // Korali Methods

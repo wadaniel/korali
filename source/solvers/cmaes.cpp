@@ -59,10 +59,8 @@ void CMAES::initialize()
  B.reserve(_k->N*_k->N);
  Btmp.reserve(_k->N*_k->N);
 
- Z   = (double**) malloc (sizeof(double*) * s_max);
- BDZ = (double**) malloc (sizeof(double*) * s_max);
- for (size_t i = 0; i < s_max; i++) Z[i]   = (double*) calloc (sizeof(double), _k->N);
- for (size_t i = 0; i < s_max; i++) BDZ[i] = (double*) calloc (sizeof(double), _k->N);
+ Z.reserve(s_max*_k->N);
+ BDZ.reserve(s_max*_k->N);
 
  _transformedSamples.reserve(s_max*_k->N); 
 
@@ -398,19 +396,19 @@ void CMAES::sampleSingle(size_t sampleIdx)
   /* generate scaled random vector (D * z) */
   for (size_t d = 0; d < _k->N; ++d)
   {
-   Z[sampleIdx][d] = _gaussianGenerator->getRandomNumber();
+   Z[sampleIdx*_k->N+d] = _gaussianGenerator->getRandomNumber();
    if (_isDiag) {
-     BDZ[sampleIdx][d] = axisD[d] * Z[sampleIdx][d];
-     _samplePopulation[sampleIdx * _k->N + d] = rgxmean[d] + sigma * BDZ[sampleIdx][d];
+     BDZ[sampleIdx*_k->N+d] = axisD[d] * Z[sampleIdx*_k->N+d];
+     _samplePopulation[sampleIdx * _k->N + d] = rgxmean[d] + sigma * BDZ[sampleIdx*_k->N+d];
    }
-   else rgdTmp[d] = axisD[d] * Z[sampleIdx][d];
+   else rgdTmp[d] = axisD[d] * Z[sampleIdx*_k->N+d];
   }
 
   if (!_isDiag)
    for (size_t d = 0; d < _k->N; ++d) {
-    BDZ[sampleIdx][d] = 0.0;
-    for (size_t e = 0; e < _k->N; ++e) BDZ[sampleIdx][d] += B[d][e] * rgdTmp[e];
-    _samplePopulation[sampleIdx * _k->N + d] = rgxmean[d] + sigma * BDZ[sampleIdx][d];
+    BDZ[sampleIdx*_k->N+d] = 0.0;
+    for (size_t e = 0; e < _k->N; ++e) BDZ[sampleIdx*_k->N+d] += B[d*_k->N+e] * rgdTmp[e];
+    _samplePopulation[sampleIdx * _k->N + d] = rgxmean[d] + sigma * BDZ[sampleIdx*_k_>N+d];
   }
 }
 
@@ -593,7 +591,7 @@ void CMAES::handleConstraints()
         double v2 = 0;
         for( size_t d = 0; d < _k->N; ++d)
         {
-            v[c][d] = (1.0-_normalVectorLearningRate)*v[c][d]+_normalVectorLearningRate*BDZ[i][d];
+            v[c][d] = (1.0-_normalVectorLearningRate)*v[c][d]+_normalVectorLearningRate*BDZ[i*_k->N+d];
             v2 += v[c][d]*v[c][d];
         }
         for( size_t d = 0; d < _k->N; ++d)

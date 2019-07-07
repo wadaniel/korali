@@ -23,12 +23,12 @@ Setting Name: Objective
 Type: Solver Setting
 Format: String
 Mandatory: No
-Default Value: "Maximize"
+Default Value: Maximize
 Default Enabled:
 Description:
 Specifies whether the problem evaluation is to be minimized or maximized.
 ******************************************************************************/
-std::string _objective;
+std::string _objective; /* Maximize or Minimize */ 
 
 /******************************************************************************
 Setting Name: Sample Count
@@ -48,7 +48,7 @@ Setting Name: Mu Value
 Type: Solver Setting
 Format: Integer
 Mandatory: No
-Default Value: -1
+Default Value: 0.5*(Sample Count)
 Default Enabled:
 Description:
 Number of best samples used to update the covariance matrix and the mean.
@@ -60,7 +60,7 @@ Setting Name: Mu Type
 Type: Solver Setting
 Format: String
 Mandatory: No
-Default Value: "Logarithmic"
+Default Value: Logarithmic
 Default Enabled:
 Description:
 Weights given to the Mu best values to update the covariance matrix and the mean.
@@ -72,7 +72,7 @@ Setting Name: Initial Sigma Cumulation Factor
 Type: Solver Setting
 Format: Real
 Mandatory: No
-Default Value: -1
+Default Value: (calibrated internally)
 Default Enabled:
 Description:
 Controls the learning rate of the conjugate evolution path.
@@ -84,7 +84,7 @@ Setting Name: Initial Damp Factor
 Type: Solver Setting
 Format: Real
 Mandatory: No
-Default Value: -1
+Default Value: (calibrated internally)
 Default Enabled:
 Description:
 Controls the updates of the covariance matrix scaling factor.
@@ -96,7 +96,7 @@ Setting Name: Is Sigma Bounded
 Type: Solver Setting
 Format: Boolean
 Mandatory: No
-Default Value: false
+Default Value: False
 Default Enabled:
 Description:
 Sets an upper bound for the covariance matrix scaling factor. The upper bound 
@@ -109,7 +109,7 @@ Setting Name: Initial Cumulative Covariance
 Type: Solver Setting
 Format: Real
 Mandatory: No
-Default Value:
+Default Value: (calibrated internally)
 Default Enabled:
 Description:
 Controls the learning rate of the evolution path for the covariance update
@@ -117,12 +117,15 @@ Controls the learning rate of the evolution path for the covariance update
 ******************************************************************************/
 double _initialCumulativeCovariance;
 
+//Unused
+//double _initialCovMatrixLearningRate;
+
 /******************************************************************************
 Setting Name: Is Diagonal
 Type: Solver Setting
 Format: Boolean
 Mandatory: No
-Default Value: false
+Default Value: False
 Default Enabled:
 Description:
 Covariance matrix updates will be optimized for diagonal matrices.
@@ -198,7 +201,7 @@ Setting Name: Normal Vector Learning Rate
 Type: Solver Setting
 Format: Real
 Mandatory: No
-Default Value: -1
+Default Value: (internally calibrated)
 Default Enabled:
 Description:
 Learning rate of constraint normal vectors (must be in (0, 1]).
@@ -210,7 +213,7 @@ Setting Name: Global Success Learning Rate
 Type: Solver Setting
 Format: Real
 Mandatory: No
-Default Value: -1
+Default Value: (internally calibrated)
 Default Enabled:
 Description:
 Learning rate of success probability of objective function improvements. 
@@ -261,7 +264,7 @@ Setting Name: Min Fitness
 Type: Termination Criterion
 Format: Real
 Mandatory: No
-Default Value: -INFINITY
+Default Value: -Inf
 Default Enabled: false
 Description:
 Specifies the target fitness to stop minimization.
@@ -274,7 +277,7 @@ Setting Name: Max Fitness
 Type: Termination Criterion
 Format: Real
 Mandatory: No
-Default Value: +INFINITY
+Default Value: +Inf
 Default Enabled: false
 Description:
 Specifies the target fitness to stop maximization.
@@ -349,17 +352,6 @@ in the direction of the eigenvectors.
 double _termCondMinStandardDeviationStepFactor;
 bool   _termCondMinStandardDeviationStepFactorEnabled;
 
-/******************************************************************************
-* Variable Settings
-******************************************************************************/
-
-struct variableSetting
-{
-
-};
-
-std::vector<variableSetting> _variableSettings;
-
 // These are CMA-ES Specific, but could be used for other methods in the future
 std::vector<double> _lowerBounds;
 std::vector<double> _upperBounds;
@@ -367,8 +359,6 @@ std::vector<double> _initialMeans;
 std::vector<double> _initialStdDevs;
 std::vector<double> _minStdDevChanges;
 std::vector<bool> _variableLogSpace;
-
-CMAES();
 
 // Runtime Methods (to be inherited from base class in the future)
 void prepareGeneration();
@@ -423,8 +413,8 @@ private:
  std::vector<double> axisD; /* axis lengths (sqrt(Evals)) */
  std::vector<double> axisDtmp; /* for axis lengths calculation for saftey check */
  
- double **Z; /* randn() */
- double **BDZ; /* B*D*randn() */
+ std::vector<double> Z; /* randn() */
+ std::vector<double> BDZ; /* B*D*randn() */
 
  std::vector<double> rgpc; /* evolution path for cov update */
  std::vector<double> rgps; /* conjugate evolution path for sigma update */

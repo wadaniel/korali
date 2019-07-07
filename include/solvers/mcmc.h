@@ -30,8 +30,6 @@ class MCMC : public Base
 /******************************************************************************
 Setting Name: Result Output Frequency
 Type: Solver Setting
-Format: Integer
-Mandatory: No
 Default Value: 1
 Default Enabled:
 Description:
@@ -42,8 +40,6 @@ size_t resultOutputFrequency;
 /******************************************************************************
 Setting Name: Terminal Output Frequency
 Type: Solver Setting
-Format: Integer
-Mandatory: No
 Default Value: 1
 Default Enabled:
 Description:
@@ -54,8 +50,6 @@ size_t terminalOutputFrequency;
 /******************************************************************************
 Setting Name: Chain Length
 Type: Solver Setting
-Format: Integer
-Mandatory: Yes
 Default Value:
 Default Enabled:
 Description:
@@ -66,8 +60,6 @@ size_t maxChainLength;
 /******************************************************************************
 Setting Name: Burn In
 Type: Solver Setting
-Format: Integer
-Mandatory: No
 Default Value: 0
 Default Enabled:
 Description:
@@ -79,8 +71,6 @@ size_t burnIn;
 /******************************************************************************
 Setting Name: Rejection Levels
 Type: Solver Setting
-Format: Integer
-Mandatory: No
 Default Value: 1
 Default Enabled:
 Description:
@@ -91,8 +81,6 @@ size_t rejectionLevels;
 /******************************************************************************
 Setting Name: Use Adaptive Sampling
 Type: Solver Setting
-Format: Boolean
-Mandatory: No
 Default Value: false
 Default Enabled:
 Description:
@@ -106,8 +94,6 @@ bool useAdaptiveSampling;
 /******************************************************************************
 Setting Name: Non Adaption Period
 Type: Solver Setting
-Format: Integer
-Mandatory: No
 Default Value: 0
 Default Enabled:
 Description:
@@ -120,8 +106,6 @@ size_t nonAdaptionPeriod;
 /******************************************************************************
 Setting Name: Chain Covariance Scaling
 Type: Solver Setting
-Format: Real
-Mandatory: No
 Default Value: 0.0
 Default Enabled:
 Description:
@@ -134,8 +118,6 @@ double chainCovarianceScaling;
 /******************************************************************************
 Setting Name: Chain Covariance Increment
 Type: Solver Setting
-Format: Real
-Mandatory: No
 Default Value: 0.001
 Default Enabled:
 Description:
@@ -146,8 +128,6 @@ double chainCovarianceIncrement;
 /******************************************************************************
 Setting Name: Covariance Matrix
 Type: Internal Attribute
-Format: Array of Reals
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -158,8 +138,6 @@ std::vector<double> covarianceMatrix;
 /******************************************************************************
 Setting Name: Chain Leader Parameters
 Type: Internal Attribute
-Format: Array of Reals
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -170,8 +148,6 @@ std::vector<double> chainLeaderParameters;
 /******************************************************************************
 Setting Name: Chain Leader LogLikelihood
 Type: Internal Attribute
-Format: Real
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -182,8 +158,6 @@ double chainLeaderLogLikelihood;
 /******************************************************************************
 Setting Name: Chain Candidate Parameters
 Type: Internal Attribute
-Format: Array of Reals
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -194,8 +168,6 @@ std::vector<double> chainCandidatesParameters;
 /******************************************************************************
 Setting Name: Chain Candidates LogLikelihoods
 Type: Internal Attribute
-Format: Array of Reals
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -206,8 +178,6 @@ std::vector<double> chainCandidatesLogLikelihoods;
 /******************************************************************************
 Setting Name: Chain Candidates LogPriors
 Type: Internal Attribute
-Format: Array of Reals
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -218,8 +188,6 @@ std::vector<double> chainCandidatesLogPriors;
 /******************************************************************************
 Setting Name: Log Transformed Samples
 Type: Internal Attribute
-Format: Array of Reals
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -230,8 +198,6 @@ std::vector<double> logTransformedSamples;
 /******************************************************************************
 Setting Name: Rejection Alphas
 Type: Internal Attribute
-Format: Array of Reals
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -242,8 +208,6 @@ std::vector<double> rejectionAlphas;
 /******************************************************************************
 Setting Name: Acceptance Rate
 Type: Internal Attribute
-Format: Real
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -254,8 +218,6 @@ double acceptanceRate;
 /******************************************************************************
 Setting Name: Rejection Count
 Type: Internal Attribute
-Format: Integer
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -266,8 +228,6 @@ size_t rejectionCount;
 /******************************************************************************
 Setting Name: Acceptance Count
 Type: Internal Attribute
-Format: Integer
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -278,8 +238,6 @@ size_t acceptanceCount;
 /******************************************************************************
 Setting Name: Proposed Sample Count
 Type: Internal Attribute
-Format: Integer
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -290,8 +248,6 @@ size_t proposedSampleCount;
 /******************************************************************************
 Setting Name: Database Entry Count
 Type: Internal Attribute
-Format: Integer
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -302,8 +258,6 @@ size_t databaseEntryCount;
 /******************************************************************************
 Setting Name: Sample Parameters Database
 Type: Internal Attribute
-Format: Array of Reals
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -314,8 +268,6 @@ std::vector<double> sampleParametersDatabase;
 /******************************************************************************
 Setting Name: Sample Fitness Database
 Type: Internal Attribute
-Format: Array of Reals
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -326,8 +278,6 @@ std::vector<double> sampleFitnessDatabase;
 /******************************************************************************
 Setting Name: Chain Mean
 Type: Internal Attribute
-Format: Array of Reals
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -338,8 +288,6 @@ std::vector<double> chainMean;
 /******************************************************************************
 Setting Name: Chain Covariance Placeholder
 Type: Internal Attribute
-Format: Array of Reals
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -350,8 +298,6 @@ std::vector<double> chainCovariancePlaceholder;
 /******************************************************************************
 Setting Name: Chain Covariance
 Type: Internal Attribute
-Format: Array of Reals
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -362,8 +308,6 @@ std::vector<double> chainCovariance;
 /******************************************************************************
 Setting Name: Chain Length
 Type: Internal Attribute
-Format: Integer
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -381,8 +325,6 @@ struct variableSetting
 /******************************************************************************
 Setting Name: Initial Mean
 Type: Variable Setting
-Format: Real
-Mandatory: Yes
 Default Value:
 Default Enabled:
 Description:
@@ -393,8 +335,6 @@ double initialMean;
 /******************************************************************************
 Setting Name: Standard Deviation
 Type: Variable Setting
-Format: Real
-Mandatory: Yes
 Default Value:
 Default Enabled:
 Description:

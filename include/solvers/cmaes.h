@@ -48,8 +48,6 @@ class CMAES : public Base
 /******************************************************************************
 Setting Name: Objective
 Type: Solver Setting
-Format: String
-Mandatory: No
 Default Value: "Maximize"
 Default Enabled:
 Description:
@@ -60,8 +58,6 @@ std::string _objective;
 /******************************************************************************
 Setting Name: Sample Count
 Type: Solver Setting
-Format: Integer
-Mandatory: No
 Default Value: 32
 Default Enabled:
 Description:
@@ -73,8 +69,6 @@ size_t _sampleCount;
 /******************************************************************************
 Setting Name: Mu Value
 Type: Solver Setting
-Format: Integer
-Mandatory: No
 Default Value: 16
 Default Enabled:
 Description:
@@ -85,8 +79,6 @@ size_t _muValue;
 /******************************************************************************
 Setting Name: Mu Type
 Type: Solver Setting
-Format: String
-Mandatory: No
 Default Value: "Logarithmic"
 Default Enabled:
 Description:
@@ -97,8 +89,6 @@ std::string _muType;
 /******************************************************************************
 Setting Name: Initial Sigma Cumulation Factor
 Type: Solver Setting
-Format: Real
-Mandatory: No
 Default Value: 1.0
 Default Enabled:
 Description:
@@ -109,8 +99,6 @@ double _initialSigmaCumulationFactor;
 /******************************************************************************
 Setting Name: Initial Damp Factor
 Type: Solver Setting
-Format: Real
-Mandatory: No
 Default Value: 1.0
 Default Enabled:
 Description:
@@ -121,8 +109,6 @@ double _initialDampFactor;
 /******************************************************************************
 Setting Name: Is Sigma Bounded
 Type: Solver Setting
-Format: Boolean
-Mandatory: No
 Default Value: false
 Default Enabled:
 Description:
@@ -134,8 +120,6 @@ bool _isSigmaBounded;
 /******************************************************************************
 Setting Name: Initial Cumulative Covariance
 Type: Solver Setting
-Format: Real
-Mandatory: No
 Default Value: 1.0
 Default Enabled:
 Description:
@@ -144,14 +128,9 @@ Controls the learning rate of the evolution path for the covariance update
 ******************************************************************************/
 double _initialCumulativeCovariance;
 
-//Unused
-//double _initialCovMatrixLearningRate;
-
 /******************************************************************************
 Setting Name: Is Diagonal
 Type: Solver Setting
-Format: Boolean
-Mandatory: No
 Default Value: false
 Default Enabled:
 Description:
@@ -162,8 +141,6 @@ bool _isDiag;
 /******************************************************************************
 Setting Name: Use Viability Regime
 Type: Solver Setting
-Format: Boolean
-Mandatory: No
 Default Value: false
 Default Enabled:
 Description:
@@ -171,12 +148,9 @@ Determines if a viability regime should be used.
 ******************************************************************************/
 bool _isViabilityRegime;
 
-
 /******************************************************************************
 Setting Name: Viability Sample Count
 Type: Solver Setting
-Format: Integer
-Mandatory: No
 Default Value: 8
 Default Enabled:
 Description:
@@ -188,8 +162,6 @@ size_t _viabilitySampleCount;
 /******************************************************************************
 Setting Name: Viability Mu
 Type: Solver Setting
-Format: Integer
-Mandatory: No
 Default Value: 4
 Default Enabled:
 Description:
@@ -201,8 +173,6 @@ size_t _viabilityMu;
 /******************************************************************************
 Setting Name: Max Covariance Matrix Corrections
 Type: Solver Setting
-Format: Integer
-Mandatory: No
 Default Value: 1e6
 Default Enabled:
 Description:
@@ -214,8 +184,6 @@ size_t _maxCovMatrixCorrections;
 /******************************************************************************
 Setting Name: Target Success Rate
 Type: Solver Setting
-Format: Real
-Mandatory: No
 Default Value: 0.1818
 Default Enabled:
 Description:
@@ -225,10 +193,8 @@ viability regime.
 double _targetSuccessRate;
 
 /******************************************************************************
-Setting Name: Covariance Matrix Adaption Strenth
+Setting Name: Covariance Matrix Adaption Strength
 Type: Solver Setting
-Format: Real
-Mandatory: No
 Default Value: 0.1
 Default Enabled:
 Description:
@@ -239,8 +205,6 @@ double _covMatrixAdaptionStrength;
 /******************************************************************************
 Setting Name: Normal Vector Learning Rate
 Type: Solver Setting
-Format: Real
-Mandatory: No
 Default Value: 0.5
 Default Enabled:
 Description:
@@ -251,8 +215,6 @@ double _normalVectorLearningRate;
 /******************************************************************************
 Setting Name: Global Success Learning Rate
 Type: Solver Setting
-Format: Real
-Mandatory: No
 Default Value: 0.2
 Default Enabled:
 Description:
@@ -264,8 +226,6 @@ double _globalSuccessLearningRate;
 /******************************************************************************
 Setting Name: Result Output Frequency
 Type: Solver Setting
-Format: Integer
-Mandatory: No
 Default Value: 1
 Default Enabled:
 Description:
@@ -276,8 +236,6 @@ size_t _resultOutputFrequency;
 /******************************************************************************
 Setting Name: Terminal Output Frequency
 Type: Solver Setting
-Format: Integer
-Mandatory: No
 Default Value: 1
 Default Enabled:
 Description:
@@ -288,8 +246,6 @@ size_t _terminalOutputFrequency;
 /******************************************************************************
 Setting Name: Max Infeasible Resampling
 Type: Termination Criterion
-Format: Integer
-Mandatory: No
 Default Value: 1e9
 Default Enabled: true
 Description:
@@ -302,8 +258,6 @@ bool   _termCondMaxInfeasibleResamplingsEnabled;
 /******************************************************************************
 Setting Name: Min Fitness
 Type: Termination Criterion
-Format: Real
-Mandatory: No
 Default Value: -INFINITY
 Default Enabled: false
 Description:
@@ -315,8 +269,6 @@ bool   _termCondMinFitnessEnabled;
 /******************************************************************************
 Setting Name: Max Fitness
 Type: Termination Criterion
-Format: Real
-Mandatory: No
 Default Value: +INFINITY
 Default Enabled: false
 Description:
@@ -328,8 +280,6 @@ bool   _termCondMaxFitnessEnabled;
 /******************************************************************************
 Setting Name: Min Fitness Diff Threshold
 Type: Termination Criterion
-Format: Real
-Mandatory: No
 Default Value: 1e-9
 Default Enabled: true
 Description:
@@ -342,8 +292,6 @@ bool   _termCondMinFitnessDiffThresholdEnabled;
 /******************************************************************************
 Setting Name: Min Standard Deviation
 Type: Termination Criterion
-Format: Real
-Mandatory: No
 Default Value: 1e-12
 Default Enabled: false
 Description:
@@ -355,8 +303,6 @@ bool   _termCondMinStandardDeviationEnabled;
 /******************************************************************************
 Setting Name: Max Standard Deviation
 Type: Termination Criterion
-Format: Real
-Mandatory: No
 Default Value: 1e-18
 Default Enabled: false
 Description:
@@ -368,8 +314,6 @@ bool   _termCondMaxStandardDeviationEnabled;
 /******************************************************************************
 Setting Name: Max Condition Covariance Matrix
 Type: Termination Criterion
-Format: Real
-Mandatory: No
 Default Value: 1e18
 Default Enabled: false
 Description:
@@ -381,8 +325,6 @@ bool   _termCondMaxCovMatrixConditionEnabled;
 /******************************************************************************
 Setting Name: Min Standard Deviation Step Factor
 Type: Termination Criterion
-Format: Real
-Mandatory: No
 Default Value: 1e18
 Default Enabled: false
 Description:
@@ -403,8 +345,6 @@ struct variableSetting
 /******************************************************************************
 Setting Name: Lower Bound
 Type: Variable Setting
-Format: Real
-Mandatory: No
 Default Value: -INFINITY
 Default Enabled:
 Description:
@@ -417,8 +357,6 @@ double lowerBound;
 /******************************************************************************
 Setting Name: Upper Bound
 Type: Variable Setting
-Format: Real
-Mandatory: No
 Default Value: +INFINITY
 Default Enabled:
 Description:
@@ -431,8 +369,6 @@ double upperBound;
 /******************************************************************************
 Setting Name: Initial Mean
 Type: Variable Setting
-Format: Real
-Mandatory: No
 Default Value: 0.0
 Default Enabled:
 Description:
@@ -445,8 +381,6 @@ double initialMean;
 /******************************************************************************
 Setting Name: Initial Standard Deviation
 Type: Variable Setting
-Format: Real
-Mandatory: No
 Default Value: 1.0
 Default Enabled:
 Description:
@@ -458,8 +392,6 @@ double initialStdDev;
 /******************************************************************************
 Setting Name: Minimum Stardard Deviation Changes
 Type: Variable Setting
-Format: Real
-Mandatory: No
 Default Value: 0.0
 Default Enabled:
 Description:

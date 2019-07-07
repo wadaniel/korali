@@ -27,7 +27,6 @@ and updating strategies [Brest2006](https://ieeexplore.ieee.org/document/4016057
 + The *Upper Bound* needs to be defined for every variable.
 ******************************************************************************/
 
-
 class DE : public Base
 {
  public:
@@ -35,8 +34,6 @@ class DE : public Base
 /******************************************************************************
 Setting Name: Objective
 Type: Solver Setting
-Format: String
-Mandatory: No
 Default Value: "Maximize"
 Default Enabled:
 Description:
@@ -47,8 +44,6 @@ std::string _objective;
 /******************************************************************************
 Setting Name: Sample Count
 Type: Solver Setting
-Format: Integer
-Mandatory: Yes
 Default Value:
 Default Enabled:
 Description:
@@ -60,8 +55,6 @@ size_t _sampleCount;
 /******************************************************************************
 Setting Name: Crossover Rate
 Type: Solver Setting
-Format: Real
-Mandatory: No
 Default Value: 0.9
 Default Enabled:
 Description:
@@ -72,8 +65,6 @@ double _crossoverRate;
 /******************************************************************************
 Setting Name: Mutation Rate
 Type: Solver Setting
-Format: Real
-Mandatory: No
 Default Value: 0.5
 Default Enabled:
 Description:
@@ -84,8 +75,6 @@ double _mutationRate;
 /******************************************************************************
 Setting Name: Result Output Frequency
 Type: Solver Setting
-Format: Integer
-Mandatory: No
 Default Value: 1
 Default Enabled:
 Description:
@@ -96,8 +85,6 @@ size_t _resultOutputFrequency;
 /******************************************************************************
 Setting Name: Terminal Output Frequency
 Type: Solver Setting
-Format: Integer
-Mandatory: No
 Default Value: 1
 Default Enabled:
 Description:
@@ -108,8 +95,6 @@ size_t _terminalOutputFrequency;
 /******************************************************************************
 Setting Name: Mutation Rule
 Type: Solver Setting
-Format: String
-Mandatory: No
 Default Value: "Default"
 Default Enabled:
 Description:
@@ -121,8 +106,6 @@ std::string _mutationRule;
 /******************************************************************************
 Setting Name: Parent Selection Rule
 Type: Solver Setting
-Format: String
-Mandatory: No
 Default Value: "Random"
 Default Enabled:
 Description:
@@ -134,8 +117,6 @@ std::string _parentSelectionRule;
 /******************************************************************************
 Setting Name: Accept Rule
 Type: Solver Setting
-Format: String
-Mandatory: No
 Default Value: "Greedy"
 Default Enabled:
 Description:
@@ -147,8 +128,6 @@ std::string _acceptRule;
 /******************************************************************************
 Setting Name: Fix Infeasible
 Type: Solver Setting
-Format: Boolean
-Mandatory: No
 Default Value: true
 Default Enabled:
 Description:
@@ -160,8 +139,6 @@ bool _fixInfeasible;
 /******************************************************************************
 Setting Name: Max Resamplings
 Type: Termination Criterion
-Format: Integer
-Mandatory: No
 Default Value: 1e9
 Default Enabled: true
 Description:
@@ -174,8 +151,6 @@ bool _termCondMaxInfeasibleResamplingsEnabled;
 /******************************************************************************
 Setting Name: Min Fitness
 Type: Termination Criterion
-Format: Real
-Mandatory: No
 Default Value: -INFINITY
 Default Enabled: false
 Description:
@@ -187,8 +162,6 @@ bool   _termCondMinFitnessEnabled;
 /******************************************************************************
 Setting Name: Max Fitness
 Type: Termination Criterion
-Format: Real
-Mandatory: No
 Default Value: +INFINITY
 Default Enabled: false
 Description:
@@ -200,8 +173,6 @@ bool   _termCondMaxFitnessEnabled;
 /******************************************************************************
 Setting Name: Min Fitness Diff Threshold
 Type: Termination Criterion
-Format: Real
-Mandatory: No
 Default Value: 0.0
 Default Enabled: false
 Description:
@@ -214,8 +185,6 @@ bool   _termCondMinFitnessDiffThresholdEnabled;
 /******************************************************************************
 Setting Name: Min Step Size
 Type: Termination Criterion
-Format: Real
-Mandatory: No
 Default Value: 1e-12
 Default Enabled: false
 Description:
@@ -234,8 +203,6 @@ struct variableSetting
 /******************************************************************************
 Setting Name: Lower Bound
 Type: Variable Setting
-Format: Real
-Mandatory: No
 Default Value: -INFINITY
 Default Enabled:
 Description:
@@ -248,8 +215,6 @@ double lowerBound;
 /******************************************************************************
 Setting Name: Upper Bound
 Type: Variable Setting
-Format: Real
-Mandatory: No
 Default Value: +INFINITY
 Default Enabled:
 Description:
@@ -262,8 +227,6 @@ double upperBound;
 /******************************************************************************
 Setting Name: Initial Mean
 Type: Variable Setting
-Format: Real
-Mandatory: No
 Default Value: 0.0
 Default Enabled:
 Description:
@@ -276,8 +239,6 @@ double initialMean;
 /******************************************************************************
 Setting Name: Initial Standard Deviation
 Type: Variable Setting
-Format: Real
-Mandatory: No
 Default Value: 1.0
 Default Enabled:
 Description:

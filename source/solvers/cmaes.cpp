@@ -676,7 +676,7 @@ bool CMAES::checkTermination()
  if ( _termCondMinFitnessDiffThresholdEnabled && (_k->currentGeneration > 1) && (range <= _termCondMinFitnessDiffThreshold) )
  {
   _isFinished = true;
-  printf("Function value differences (%+6.3e) < (%+6.3e)",  range, _termCondMinFitnessDiffThreshold);
+  printf("Function value differences (%+6.3e) < (%+6.3e)\n",  range, _termCondMinFitnessDiffThreshold);
  }
 
  size_t idx;

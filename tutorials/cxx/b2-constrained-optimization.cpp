@@ -6,9 +6,9 @@ int main(int argc, char* argv[])
  auto k = Korali::Engine();
 
  k["Problem"] = "Direct Evaluation";
- k["Solver"]  = "CMA-ES";
+ k["Solver"]  = "CMAES";
 
- k["CMA-ES"]["Objective"] = "Maximize";
+ k["CMAES"]["Objective"] = "Maximize";
  
  k.setModel([](Korali::ModelData& d) { g09(d.getVariables(), d.getResults()); });
  k.addConstraint(g1);
@@ -20,18 +20,16 @@ int main(int argc, char* argv[])
  for (int i = 0; i < nParams; i++)
  {
   k["Variables"][i]["Name"] = "X" + std::to_string(i);
-  k["Variables"][i]["CMA-ES"]["Lower Bound"] = -10.0;
-  k["Variables"][i]["CMA-ES"]["Upper Bound"] = +10.0;
+  k["Variables"][i]["CMAES"]["Lower Bound"] = -10.0;
+  k["Variables"][i]["CMAES"]["Upper Bound"] = +10.0;
  }
 
- k["CMA-ES"]["Sigma Bounded"] = true;
- k["CMA-ES"]["Sample Count"] = 8;
- k["CMA-ES"]["Constraint"]["Adaption Size"] = 0.1;
- k["CMA-ES"]["Constraint"]["Viability"]["Sample Count"] = 2;
- k["CMA-ES"]["Termination Criteria"]["Max Fitness"]["Active"] = true;
- k["CMA-ES"]["Termination Criteria"]["Max Fitness"]["Value"] = -680.630057374402 - 1e-4;
- k["CMA-ES"]["Termination Criteria"]["Max Generations"]["Active"] = true;
- k["CMA-ES"]["Termination Criteria"]["Max Generations"]["Value"] = 5000;
+ k["CMAES"]["Is Sigma Bounded"] = true;
+ k["CMAES"]["Sample Count"] = 32;
+ k["CMAES"]["Covariance Matrix Adaption Strength"] = 0.1;
+ k["CMAES"]["Viability Sample Count"] = 8;
+ k["CMAES"]["Termination Criteria"]["Max Fitness"]["Enabled"] = true;
+ k["CMAES"]["Termination Criteria"]["Max Fitness"]["Value"] = -680.630057374402 - 1e-4;
 
  k.run();
 }

@@ -33,8 +33,6 @@ class TMCMC : public Base
 /******************************************************************************
 Setting Name: Result Output Frequency
 Type: Solver Setting
-Format: Integer
-Mandatory: No
 Default Value: 1
 Default Enabled:
 Description:
@@ -45,8 +43,6 @@ size_t resultOutputFrequency;
 /******************************************************************************
 Setting Name: Terminal Output Frequency
 Type: Solver Setting
-Format: Integer
-Mandatory: No
 Default Value: 1
 Default Enabled:
 Description:
@@ -57,8 +53,6 @@ size_t terminalOutputFrequency;
 /******************************************************************************
 Setting Name: Population Size
 Type: Solver Setting
-Format: Integer
-Mandatory: Yes
 Default Value:
 Default Enabled:
 Description:
@@ -69,8 +63,6 @@ size_t populationSize;
 /******************************************************************************
 Setting Name: Burn In
 Type: Solver Setting
-Format: Integer
-Mandatory: No
 Default Value: 0
 Default Enabled:
 Description:
@@ -82,8 +74,6 @@ size_t burnIn;
 /******************************************************************************
 Setting Name: Initial Coefficient of Variation
 Type: Solver Setting
-Format: Real
-Mandatory: No
 Default Value: 1.0
 Default Enabled:
 Description:
@@ -95,8 +85,6 @@ double initialCoefficientOfVariation;
 /******************************************************************************
 Setting Name: Covariance Scaling
 Type: Solver Setting
-Format: Real
-Mandatory: No
 Default Value: 0.04
 Default Enabled:
 Description:
@@ -108,8 +96,6 @@ double covarianceScaling;
 /******************************************************************************
 Setting Name: Use Local Covariance
 Type: Solver Setting
-Format: Boolean
-Mandatory: No
 Default Value: false
 Default Enabled:
 Description:
@@ -120,8 +106,6 @@ bool useLocalCovariance;
 /******************************************************************************
 Setting Name: Min Rho Update
 Type: Solver Setting
-Format: Real
-Mandatory: No
 Default Value: 0.00001
 Default Enabled:
 Description:
@@ -132,8 +116,6 @@ double minRhoUpdate;
 /******************************************************************************
 Setting Name: Max Rho Update
 Type: Solver Setting
-Format: Real
-Mandatory: No
 Default Value: 1.0
 Default Enabled:
 Description:
@@ -144,8 +126,6 @@ double maxRhoUpdate;
 /******************************************************************************
 Setting Name: Chain Pending Fitness
 Type: Internal Attribute
-Format: Array of Booleans
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -156,8 +136,6 @@ std::vector<bool> chainPendingFitness;
 /******************************************************************************
 Setting Name: Chain Candidate Parameters
 Type: Internal Attribute
-Format: Array of Reals
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -168,8 +146,6 @@ std::vector<double> chainCandidatesParameters;
 /******************************************************************************
 Setting Name: Log Transformed Samples
 Type: Internal Attribute
-Format: Array of Reals
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -180,8 +156,6 @@ std::vector<double> logTransformedSamples;
 /******************************************************************************
 Setting Name: Chain Candidates LogLikelihoods
 Type: Internal Attribute
-Format: Array of Reals
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -192,8 +166,6 @@ std::vector<double> chainCandidatesLogLikelihoods;
 /******************************************************************************
 Setting Name: Chain Leader Parameters
 Type: Internal Attribute
-Format: Array of Reals
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -204,8 +176,6 @@ std::vector<double> chainLeadersParameters;
 /******************************************************************************
 Setting Name: Chain Leaders LogLikelihoods
 Type: Internal Attribute
-Format: Array of Reals
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -216,8 +186,6 @@ std::vector<double> chainLeadersLogLikelihoods;
 /******************************************************************************
 Setting Name: Finished Chains Count
 Type: Internal Attribute
-Format: Integer
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -228,8 +196,6 @@ size_t finishedChainsCount;
 /******************************************************************************
 Setting Name: Current Chain Step
 Type: Internal Attribute
-Format: Array of Integers
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -240,8 +206,6 @@ std::vector<size_t> currentChainStep;
 /******************************************************************************
 Setting Name: Chain Lengths
 Type: Internal Attribute
-Format: Array of Integers
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -252,8 +216,6 @@ std::vector<size_t> chainLengths;
 /******************************************************************************
 Setting Name: Coefficient of Variation
 Type: Internal Attribute
-Format: Real
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -264,8 +226,6 @@ double coefficientOfVariation;
 /******************************************************************************
 Setting Name: Chain Count
 Type: Internal Attribute
-Format: Integer
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -276,8 +236,6 @@ size_t chainCount;
 /******************************************************************************
 Setting Name: Annealing Exponent
 Type: Internal Attribute
-Format: Real
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -288,8 +246,6 @@ double annealingExponent;
 /******************************************************************************
 Setting Name: Accepted Samples Count
 Type: Internal Attribute
-Format: Integer
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -300,8 +256,6 @@ size_t acceptedSamplesCount;
 /******************************************************************************
 Setting Name: logEvidence
 Type: Internal Attribute
-Format: Real
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -312,8 +266,6 @@ double logEvidence;
 /******************************************************************************
 Setting Name: Proposals Acceptance Rate
 Type: Internal Attribute
-Format: Real
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -324,8 +276,6 @@ double proposalsAcceptanceRate;
 /******************************************************************************
 Setting Name: Selection Acceptance Rate
 Type: Internal Attribute
-Format: Real
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -336,8 +286,6 @@ double selectionAcceptanceRate;
 /******************************************************************************
 Setting Name: Covariance Matrix
 Type: Internal Attribute
-Format: Array of Reals
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -348,8 +296,6 @@ std::vector<double> covarianceMatrix;
 /******************************************************************************
 Setting Name: Mean Theta
 Type: Internal Attribute
-Format: Array of Reals
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -360,8 +306,6 @@ std::vector<double> meanTheta;
 /******************************************************************************
 Setting Name: Database Entry Count
 Type: Internal Attribute
-Format: Integer
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -372,8 +316,6 @@ size_t databaseEntryCount;
 /******************************************************************************
 Setting Name: Sample Parameters Database
 Type: Internal Attribute
-Format: Array of Reals
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -384,8 +326,6 @@ std::vector<double> sampleParametersDatabase;
 /******************************************************************************
 Setting Name: Sample Fitness Database
 Type: Internal Attribute
-Format: Array of Reals
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -396,8 +336,6 @@ std::vector<double> sampleFitnessDatabase;
 /******************************************************************************
 Setting Name: Local Covariance Matrices
 Type: Internal Attribute
-Format: Array of Array of Reals
-Mandatory:
 Default Value:
 Default Enabled:
 Description:
@@ -420,8 +358,6 @@ std::vector<variableSetting> _variableSettings;
 
  // TMCMC Status variables
  gsl_rng  *range;
-
-
 
  TMCMC();
 

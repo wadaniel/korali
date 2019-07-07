@@ -417,57 +417,386 @@ or minimization operation.
 ******************************************************************************/
 int evaluationSign;
 
- // Korali Runtime Variables
- std::vector<double> _fitnessVector; /* objective function values [_s] */
- std::vector<double> _samplePopulation; /* sample coordinates [_s x _k->N] */
- std::vector<bool> _initializedSample; /* flag to distribute work */
- std::vector<double> _transformedSamples;
+/******************************************************************************
+Setting Name: Fitness Vector
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Objection Function Values
+******************************************************************************/
+std::vector<double> _fitnessVector;
 
- size_t _finishedSamples; /* counter of evaluated samples to terminate evaluation */
- size_t _current_s; /* number of samples active ( _s or _via_s ) */
- size_t _current_mu; /* number of samples active ( _mu or _mu_s ) */
- std::vector<double> _muWeights; /* weights for mu best samples */
- double _muEffective; /* variance effective selection mass */
- //double _muCovarianceIn; /* read from configuration, placeholder for reinit */
- //double _muCovariance; /* internal parameter to calibrate updates */
+/******************************************************************************
+Setting Name: Sample Population
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Sample coordinate information
+******************************************************************************/
+std::vector<double> _samplePopulation;
 
- double _sigmaCumulationFactor; /* increment for sigma, default calculated from muEffective and dimension */
- double _dampFactor; /* dampening parameter determines controls step size adaption */
- double _cumulativeCovariance; /* default calculated from dimension */
- double _covarianceMatrixLearningRate; /* parameter to calibrate cov updates */
- double _chiN; /* expectation of ||N(0,I)||^2 */
- size_t _covarianceEigenEvalFreq;
+/******************************************************************************
+Setting Name: Is Initialized Sample
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Determines which samples are initialized.
+******************************************************************************/
+std::vector<double> _isInitializedSample;
 
- // Stop conditions
- // Private CMAES-Specific Variables
- double sigma;  /* step size */
- double _trace; /* to init sigma (or set upper bound) */
- Variable* _gaussianGenerator;
+/******************************************************************************
+Setting Name: Transformed Samples
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Values of the log transformed samples.
+******************************************************************************/
+std::vector<double> _transformedSamples;
 
- double bestEver; /* best ever fitness */
- double prevBest; /* best ever fitness from previous generation */
- std::vector<double> rgxmean; /* mean "parent" */
- std::vector<double> rgxbestever; /* bestever vector */
- std::vector<double> curBestVector; /* current best vector */
- std::vector<size_t> index; /* sorting index of current sample pop (index[0] idx of current best). */
- double currentFunctionValue; /* best fitness current generation */
- double prevFunctionValue; /* best fitness previous generation */
+/******************************************************************************
+Setting Name: Finished Sample Count
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Counter of evaluated samples to terminate evaluation.
+******************************************************************************/
+size_t _finishedSampleCount;
 
- std::vector<double> C; /* Covariance Matrix */
- std::vector<double> Ctmp; /* tmp Covariance Matrix for eigen decomp for safety check */
- std::vector<double> B; /* matrix with eigenvectors in columns */
- std::vector<double> Btmp; /* matrix for eigenvectors calculation for safety check*/
- std::vector<double> axisD; /* axis lengths (sqrt(Evals)) */
- std::vector<double> axisDtmp; /* for axis lengths calculation for saftey check */
- 
- std::vector<double> Z; /* randn() */
- std::vector<double> BDZ; /* B*D*randn() */
+/******************************************************************************
+Setting Name: Current Sample Count
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Number of samples active ( _s or _via_s ).
+******************************************************************************/
+size_t _currentSampleCount;
 
- std::vector<double> rgpc; /* evolution path for cov update */
- std::vector<double> rgps; /* conjugate evolution path for sigma update */
- std::vector<double> rgxold; /* mean "parent" previous generation */
- std::vector<double> rgBDz; /* for B*D*z */
- std::vector<double> rgdTmp; /* temporary (random) vector used in different places */
+/******************************************************************************
+Setting Name: Current Sample Mu
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Number of samples active ( _mu or _mu_s ).
+******************************************************************************/
+size_t _currentSampleMu;
+
+/******************************************************************************
+Setting Name: Mu Weights
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Weights for each of the Mu samples
+******************************************************************************/
+std::vector<double> _muWeights;
+
+/******************************************************************************
+Setting Name: Effective Mu
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Variance effective selection mass
+******************************************************************************/
+double _effectiveMu;
+
+/******************************************************************************
+Setting Name: Sigma Cumulation Factor
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+increment for sigma, default calculated from muEffective and dimension.
+******************************************************************************/
+double _sigmaCumulationFactor;
+
+/******************************************************************************
+Setting Name: Damp Factor
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Dampening parameter determines controls step size adaption.
+******************************************************************************/
+double _dampFactor;
+
+/******************************************************************************
+Setting Name: Cumulative Covariance
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Default calculated from dimension.
+******************************************************************************/
+double _cumulativeCovariance;
+
+/******************************************************************************
+Setting Name: Covariance Matrix Learning Rate
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Calibration parameter for Covariance Matrix updates.
+******************************************************************************/
+double _covarianceMatrixLearningRate;
+
+/******************************************************************************
+Setting Name: Chi Number
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+expectation of $||N(0,I)||^2$
+******************************************************************************/
+double _chiN;
+
+/******************************************************************************
+Setting Name: Covariance Eigenvalue Evaluation Frequency
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Establishes how frequently the eigenvalues are updated.
+******************************************************************************/
+size_t _covarianceEigenEvalFreq;
+
+/******************************************************************************
+Setting Name: Sigma
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Determines the step size.
+******************************************************************************/
+double _sigma;
+
+/******************************************************************************
+Setting Name: Trace
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Variable to init sigma (or set upper bound).
+******************************************************************************/
+double _trace;
+
+/******************************************************************************
+Setting Name: Current Best Fitness
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Best ever fitness found in the current generation
+******************************************************************************/
+double _currentBestFitness;
+
+/******************************************************************************
+Setting Name: Previous Best Fitness
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Best ever fitness found in the previous generation
+******************************************************************************/
+double _previousBestFitness;
+
+/******************************************************************************
+Setting Name: RGX Mean
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+
+******************************************************************************/
+std::vector<double> _rgxMean;
+
+/******************************************************************************
+Setting Name: RGX Best Ever
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+
+******************************************************************************/
+std::vector<double> _rgxBestEver;
+
+/******************************************************************************
+Setting Name: Current Best Vector
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+
+******************************************************************************/
+std::vector<double> _currentBestVector;
+
+/******************************************************************************
+Setting Name: Sorting Index
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Sorting _sortingIndex of current sample pop (_sortingIndex[0] idx of current best).
+******************************************************************************/
+std::vector<size_t> _sortingIndex;
+
+/******************************************************************************
+Setting Name: Current Function Value
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Best fitness current generation.
+******************************************************************************/
+double _currentFunctionValue;
+
+/******************************************************************************
+Setting Name: Previous Function Value
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Best fitness previous generation.
+******************************************************************************/
+double _previousFunctionValue;
+
+/******************************************************************************
+Setting Name: Covariance Matrix
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+
+******************************************************************************/
+std::vector<double> C;
+
+/******************************************************************************
+Setting Name: Auxiliar Covariance Matrix
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Temporary Storage for Covariance Matrix
+******************************************************************************/
+std::vector<double> Ctmp;
+
+/******************************************************************************
+Setting Name: Covariance Eigenvector Matrix
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Matrix with eigenvectors in columns.
+******************************************************************************/
+std::vector<double> B;
+
+/******************************************************************************
+Setting Name: Auxiliar Covariance Eigenvector Matrix
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Temporary Storage for Matrix with eigenvectors in columns.
+******************************************************************************/
+std::vector<double> Btmp;
+
+/******************************************************************************
+Setting Name: Axis Lengths
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Axis lengths (sqrt(Evals))
+******************************************************************************/
+std::vector<double> axisD;
+
+/******************************************************************************
+Setting Name: Axis Lengths
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Temporary storage for Axis lengths
+******************************************************************************/
+std::vector<double> axisDtmp;
+
+/******************************************************************************
+Setting Name: Random Number Storage
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Temporary storage for Random Number Generation
+******************************************************************************/
+std::vector<double> Z;
+
+/******************************************************************************
+Setting Name: BDZ Matrix
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Matrix to hold B*D*randn()
+******************************************************************************/
+std::vector<double> BDZ;
+
+/******************************************************************************
+Setting Name: Evolution Path
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Evolution path for Covariance Matrix update.
+******************************************************************************/
+std::vector<double> rgpc;
+
+/******************************************************************************
+Setting Name: Conjugate Evolution Path
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Conjugate evolution path for Covariance Matrix update for sigma update.
+******************************************************************************/
+std::vector<double> rgps;
+
+/******************************************************************************
+Setting Name: Previous RGX
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Mean "parent" on previous generation.
+******************************************************************************/
+std::vector<double> rgxold;
+
+/******************************************************************************
+Setting Name: Storage for BDZ
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+B*D*z
+******************************************************************************/
+std::vector<double> rgBDz;
+
+/******************************************************************************
+Setting Name: Auxiliar Storage for BDZ
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Auxiliar B*D*z
+******************************************************************************/
+std::vector<double> rgdTmp;
+
 
  size_t countevals; /* Number of function evaluations */
  size_t countinfeasible; /* Number of samples outside of domain given by bounds */
@@ -485,7 +814,7 @@ int evaluationSign;
  void adaptC(int hsig); /* CMA-ES covariance matrix adaption */
  void updateEigensystem(std::vector<double>& M, int flgforce = 1);
  void eigen(size_t N, std::vector<double>& C, std::vector<double>& diag, std::vector<double>& Q) const;
- void sort_index(const std::vector<double>& vec, std::vector<size_t>& index, size_t n) const;
+ void sort_index(const std::vector<double>& vec, std::vector<size_t>& _sortingIndex, size_t n) const;
  bool isFeasible(size_t sampleIdx) const; /* check if sample inside lower & upper bounds */
 
  // Private CCMA-ES-Specific Variables
@@ -509,9 +838,7 @@ int evaluationSign;
  double *besteverCeval; /* constraint evaluations for best ever */
 
  // Workspace for gsl
- gsl_vector* gsl_eval;
- gsl_matrix* gsl_evec;
- gsl_eigen_symmv_workspace* gsl_work;
+ Variable* _gaussianGenerator;
 
  // Ctor & Dtor
  CMAES();

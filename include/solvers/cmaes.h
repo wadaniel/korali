@@ -3,6 +3,7 @@
 
 #include "solvers/base.h"
 #include <chrono>
+#include <vector>
 #include <map>
 
 namespace Korali { namespace Solver {
@@ -23,12 +24,12 @@ Setting Name: Objective
 Type: Solver Setting
 Format: String
 Mandatory: No
-Default Value: "Maximize"
+Default Value: Maximize
 Default Enabled:
 Description:
 Specifies whether the problem evaluation is to be minimized or maximized.
 ******************************************************************************/
-std::string _objective;
+std::string _objective; /* Maximize or Minimize */ 
 
 /******************************************************************************
 Setting Name: Sample Count
@@ -48,7 +49,7 @@ Setting Name: Mu Value
 Type: Solver Setting
 Format: Integer
 Mandatory: No
-Default Value: -1
+Default Value: 0.5*(Sample Count)
 Default Enabled:
 Description:
 Number of best samples used to update the covariance matrix and the mean.
@@ -60,7 +61,7 @@ Setting Name: Mu Type
 Type: Solver Setting
 Format: String
 Mandatory: No
-Default Value: "Logarithmic"
+Default Value: Logarithmic
 Default Enabled:
 Description:
 Weights given to the Mu best values to update the covariance matrix and the mean.
@@ -72,7 +73,7 @@ Setting Name: Initial Sigma Cumulation Factor
 Type: Solver Setting
 Format: Real
 Mandatory: No
-Default Value: -1
+Default Value: (calibrated internally)
 Default Enabled:
 Description:
 Controls the learning rate of the conjugate evolution path.
@@ -84,7 +85,7 @@ Setting Name: Initial Damp Factor
 Type: Solver Setting
 Format: Real
 Mandatory: No
-Default Value: -1
+Default Value: (calibrated internally)
 Default Enabled:
 Description:
 Controls the updates of the covariance matrix scaling factor.
@@ -96,7 +97,7 @@ Setting Name: Is Sigma Bounded
 Type: Solver Setting
 Format: Boolean
 Mandatory: No
-Default Value: false
+Default Value: False
 Default Enabled:
 Description:
 Sets an upper bound for the covariance matrix scaling factor. The upper bound 
@@ -109,7 +110,7 @@ Setting Name: Initial Cumulative Covariance
 Type: Solver Setting
 Format: Real
 Mandatory: No
-Default Value:
+Default Value: (calibrated internally)
 Default Enabled:
 Description:
 Controls the learning rate of the evolution path for the covariance update
@@ -117,12 +118,15 @@ Controls the learning rate of the evolution path for the covariance update
 ******************************************************************************/
 double _initialCumulativeCovariance;
 
+//Unused
+//double _initialCovMatrixLearningRate;
+
 /******************************************************************************
 Setting Name: Is Diagonal
 Type: Solver Setting
 Format: Boolean
 Mandatory: No
-Default Value: false
+Default Value: False
 Default Enabled:
 Description:
 Covariance matrix updates will be optimized for diagonal matrices.
@@ -198,7 +202,7 @@ Setting Name: Normal Vector Learning Rate
 Type: Solver Setting
 Format: Real
 Mandatory: No
-Default Value: -1
+Default Value: (internally calibrated)
 Default Enabled:
 Description:
 Learning rate of constraint normal vectors (must be in (0, 1]).
@@ -210,7 +214,7 @@ Setting Name: Global Success Learning Rate
 Type: Solver Setting
 Format: Real
 Mandatory: No
-Default Value: -1
+Default Value: (internally calibrated)
 Default Enabled:
 Description:
 Learning rate of success probability of objective function improvements. 
@@ -261,7 +265,7 @@ Setting Name: Min Fitness
 Type: Termination Criterion
 Format: Real
 Mandatory: No
-Default Value: -INFINITY
+Default Value: -Inf
 Default Enabled: false
 Description:
 Specifies the target fitness to stop minimization.
@@ -274,7 +278,7 @@ Setting Name: Max Fitness
 Type: Termination Criterion
 Format: Real
 Mandatory: No
-Default Value: +INFINITY
+Default Value: +Inf
 Default Enabled: false
 Description:
 Specifies the target fitness to stop maximization.
@@ -349,31 +353,21 @@ in the direction of the eigenvectors.
 double _termCondMinStandardDeviationStepFactor;
 bool   _termCondMinStandardDeviationStepFactorEnabled;
 
-/******************************************************************************
-* Variable Settings
-******************************************************************************/
-
-struct variableSetting
-{
-
-};
-
-std::vector<variableSetting> _variableSettings;
+// Ctor & Dtor
+CMAES();
 
 // These are CMA-ES Specific, but could be used for other methods in the future
-double* _lowerBounds;
-double* _upperBounds;
-double* _initialMeans;
-double* _initialStdDevs;
-double* _minStdDevChanges;
-bool* _variableLogSpace; /* Apply log transform of variable before evaluation */
-
-CMAES();
+std::vector<double> _lowerBounds;
+std::vector<double> _upperBounds;
+std::vector<double> _initialMeans;
+std::vector<double> _initialStdDevs;
+std::vector<double> _minStdDevChanges;
+std::vector<bool> _variableLogSpace;
 
 // Runtime Methods (to be inherited from base class in the future)
 void prepareGeneration();
 bool checkTermination() override;
-void updateDistribution(const double *fitnessVector);
+void updateDistribution();
 void initialize() override;
 void runGeneration() override;
 void processSample(size_t sampleId, double fitness) override;
@@ -381,15 +375,15 @@ void processSample(size_t sampleId, double fitness) override;
 private:
  // Korali Runtime Variables
  int _fitnessSign; /* maximizing vs optimizing (+- 1) */
- double* _fitnessVector; /* objective function values [_s] */
- double* _samplePopulation; /* sample coordinates [_s x _k->N] */
- bool* _initializedSample; /* flag to distribute work */
- double*_transformedSamples;
+ std::vector<double> _fitnessVector; /* objective function values [_s] */
+ std::vector<double> _samplePopulation; /* sample coordinates [_s x _k->N] */
+ std::vector<bool> _initializedSample; /* flag to distribute work */
+ std::vector<double> _transformedSamples;
 
  size_t _finishedSamples; /* counter of evaluated samples to terminate evaluation */
  size_t _current_s; /* number of samples active ( _s or _via_s ) */
  size_t _current_mu; /* number of samples active ( _mu or _mu_s ) */
- double* _muWeights; /* weights for mu best samples */
+ std::vector<double> _muWeights; /* weights for mu best samples */
  double _muEffective; /* variance effective selection mass */
  //double _muCovarianceIn; /* read from configuration, placeholder for reinit */
  //double _muCovariance; /* internal parameter to calibrate updates */
@@ -409,28 +403,28 @@ private:
 
  double bestEver; /* best ever fitness */
  double prevBest; /* best ever fitness from previous generation */
- double *rgxmean; /* mean "parent" */
- double *rgxbestever; /* bestever vector */
- double *curBestVector; /* current best vector */
- size_t *index; /* sorting index of current sample pop (index[0] idx of current best). */
+ std::vector<double> rgxmean; /* mean "parent" */
+ std::vector<double> rgxbestever; /* bestever vector */
+ std::vector<double> curBestVector; /* current best vector */
+ std::vector<size_t> index; /* sorting index of current sample pop (index[0] idx of current best). */
  double currentFunctionValue; /* best fitness current generation */
  double prevFunctionValue; /* best fitness previous generation */
 
- double **C; /* Covariance Matrix */
- double **Ctmp; /* tmp Covariance Matrix for eigen decomp for safety check */
- double **B; /* matrix with eigenvectors in columns */
- double **Btmp; /* matrix for eigenvectors calculation for safety check*/
- double *axisD; /* axis lengths (sqrt(Evals)) */
- double *axisDtmp; /* for axis lengths calculation for saftey check */
+ std::vector<double> C; /* Covariance Matrix */
+ std::vector<double> Ctmp; /* tmp Covariance Matrix for eigen decomp for safety check */
+ std::vector<double> B; /* matrix with eigenvectors in columns */
+ std::vector<double> Btmp; /* matrix for eigenvectors calculation for safety check*/
+ std::vector<double> axisD; /* axis lengths (sqrt(Evals)) */
+ std::vector<double> axisDtmp; /* for axis lengths calculation for saftey check */
  
- double **Z; /* randn() */
- double **BDZ; /* B*D*randn() */
+ std::vector<double> Z; /* randn() */
+ std::vector<double> BDZ; /* B*D*randn() */
 
- double *rgpc; /* evolution path for cov update */
- double *rgps; /* conjugate evolution path for sigma update */
- double *rgxold; /* mean "parent" previous generation */
- double *rgBDz; /* for B*D*z */
- double *rgdTmp; /* temporary (random) vector used in different places */
+ std::vector<double> rgpc; /* evolution path for cov update */
+ std::vector<double> rgps; /* conjugate evolution path for sigma update */
+ std::vector<double> rgxold; /* mean "parent" previous generation */
+ std::vector<double> rgBDz; /* for B*D*z */
+ std::vector<double> rgdTmp; /* temporary (random) vector used in different places */
 
  size_t countevals; /* Number of function evaluations */
  size_t countinfeasible; /* Number of samples outside of domain given by bounds */
@@ -446,14 +440,10 @@ private:
  void sampleSingle(size_t sampleIdx); /* sample individual */
  void evaluateSamples(); /* evaluate all samples until done */
  void adaptC(int hsig); /* CMA-ES covariance matrix adaption */
- void updateEigensystem(double **M, int flgforce = 1);
- void eigen(size_t N, double **C, double *diag, double **Q) const;
- size_t maxIdx(const double *rgd, size_t len) const;
- size_t minIdx(const double *rgd, size_t len) const;
- void sort_index(const double *rgFunVal, size_t *index, size_t n) const;
+ void updateEigensystem(std::vector<double>& M, int flgforce = 1);
+ void eigen(size_t N, std::vector<double>& C, std::vector<double>& diag, std::vector<double>& Q) const;
+ void sort_index(const std::vector<double>& vec, std::vector<size_t>& index, size_t n) const;
  bool isFeasible(size_t sampleIdx) const; /* check if sample inside lower & upper bounds */
- double doubleRangeMax(const double *rgd, size_t len) const;
- double doubleRangeMin(const double *rgd, size_t len) const;
 
  // Private CCMA-ES-Specific Variables
  bool _hasConstraints; /* True if num constraints greater 0 */
@@ -466,7 +456,7 @@ private:
  size_t resampled; /* number of resampled parameters due constraint violation */
  size_t correctionsC; /* number of cov matrix adaptions */
  size_t countcevals; /* number of constraint evaluations */
- double *sucRates; /* constraint success rates */
+ std::vector<double> sucRates; /* constraint success rates */
  double *viabilityBounds; /* viability boundaries */
  bool *viabilityImprovement; /* sample evaluations larger than fviability */ //TODO: not neeeded?
  size_t maxnumviolations; /* maximal amount of constraint violations */

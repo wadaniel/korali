@@ -1,9 +1,10 @@
 #ifndef _KORALI_SOLVER_BASE_H_
 #define _KORALI_SOLVER_BASE_H_
 
-#include <chrono>
 #include <stdlib.h>
+#include <chrono>
 #include <vector>
+
 #include "problems/base.h"
 #include "json/json.hpp"
 

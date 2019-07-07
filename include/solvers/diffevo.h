@@ -158,6 +158,15 @@ boundary. If set false, infeasible samples are mutated again until feasible.
 bool _fixInfeasible;
 
 /******************************************************************************
+* Variable Settings
+******************************************************************************/
+
+struct variableSetting
+{
+
+};
+
+/******************************************************************************
 Setting Name: Max Resamplings
 Type: Termination Criterion
 Format: Integer
@@ -224,6 +233,10 @@ Specifies the minimal step size of the sample mean from one gneration to another
 double _termCondMinStepSize; 
 bool   _termCondMinStepSizeEnabled;
  
+DE();
+
+std::vector<variableSetting> _variableSettings;
+
 // These are DE-Specific, but could be used for other methods in the future
  double* _lowerBounds;
  double* _upperBounds;

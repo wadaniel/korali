@@ -218,39 +218,44 @@ void Korali::Engine::run()
  mkdir(_result_dir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
  std::chrono::time_point<std::chrono::system_clock> startTime, endTime;
- std::chrono::time_point<std::chrono::system_clock> t0, t1, t2, t3;
 
  // Running Engine
  _conduit->initialize();
  _problem->initialize();
  if (currentGeneration == 0) _solver->initialize();
 
- saveState(currentGeneration);
-
- _solver->printGeneration();
-
- startTime = std::chrono::system_clock::now();
-
- while(!_solver->checkTermination())
+ if (_conduit->isRoot())
  {
-  t0 = std::chrono::system_clock::now();
+	saveState(currentGeneration);
 
-  _solver->runGeneration();
-  currentGeneration++;
+	_solver->printGeneration();
 
-  t1 = std::chrono::system_clock::now();
+	auto startTime = std::chrono::system_clock::now();
 
-  _solver->printGeneration();
-  saveState(currentGeneration);
+	while(!_solver->checkTermination())
+	{
+	 auto t0 = std::chrono::system_clock::now();
+
+	 _solver->runGeneration();
+	 currentGeneration++;
+
+	 auto t1 = std::chrono::system_clock::now();
+
+	 if(_verbosity >= KORALI_DETAILED) printf("[Korali] Generation Time: %.3fs\n", std::chrono::duration<double>(t1-t0).count());
+
+	 _solver->printGeneration();
+	 saveState(currentGeneration);
+	}
+
+	auto endTime = std::chrono::system_clock::now();
+
+	_solver->finalize();
+	_problem->finalize();
+	_conduit->finalize();
+
+	if(_verbosity >= KORALI_MINIMAL) printf("[Korali] Elapsed Time: %.3fs\n", std::chrono::duration<double>(endTime-startTime).count());
+	if(_verbosity >= KORALI_MINIMAL) printf("[Korali] Results saved to folder: '%s'\n", _result_dir.c_str());
  }
-
- endTime = std::chrono::system_clock::now();
-
- _solver->finalize();
- _problem->finalize();
- _conduit->finalize();
-
- if (_conduit->isRoot()) if(_verbosity >= KORALI_MINIMAL) printf("[Korali] Results saved to folder: '%s'\n", _result_dir.c_str());
 }
 
 void Korali::Engine::addConstraint(fcon fconstraint)

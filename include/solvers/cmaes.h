@@ -349,6 +349,17 @@ in the direction of the eigenvectors.
 double _termCondMinStandardDeviationStepFactor;
 bool   _termCondMinStandardDeviationStepFactorEnabled;
 
+/******************************************************************************
+* Variable Settings
+******************************************************************************/
+
+struct variableSetting
+{
+
+};
+
+std::vector<variableSetting> _variableSettings;
+
 // These are CMA-ES Specific, but could be used for other methods in the future
 double* _lowerBounds;
 double* _upperBounds;
@@ -356,6 +367,8 @@ double* _initialMeans;
 double* _initialStdDevs;
 double* _minStdDevChanges;
 bool* _variableLogSpace; /* Apply log transform of variable before evaluation */
+
+CMAES();
 
 // Runtime Methods (to be inherited from base class in the future)
 void prepareGeneration();

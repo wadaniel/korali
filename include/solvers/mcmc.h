@@ -143,6 +143,14 @@ Small constant to avoid singularity of the chain covariance.
 ******************************************************************************/
 double chainCovarianceIncrement;
 
+
+/******************************************************************************
+* Variable Settings
+******************************************************************************/
+
+struct variableSetting
+{
+
 /******************************************************************************
 Setting Name: Initial Mean
 Type: Variable Setting
@@ -153,7 +161,7 @@ Default Enabled:
 Description:
 Specifies the Initial Mean of the proposal distribution.
 ******************************************************************************/
-std::vector<double> variableInitialMeans;
+double initialMean;
 
 /******************************************************************************
 Setting Name: Standard Deviation
@@ -167,19 +175,9 @@ Specifies the Standard Deviation for each variable. The proposal distribution
 is defined through a covariance matrix with the variance of the variables in
 its diagonal.
 ******************************************************************************/
-std::vector<double> variableStandardDeviations;
+double standardDeviation;
 
-/******************************************************************************
-Setting Name: Log Space
-Type: Variable Setting
-Format: Boolean
-Mandatory: No
-Default Value: false
-Default Enabled:
-Description:
-Indicates whether the variable is expressed in Logarithmic Space.
-******************************************************************************/
-std::vector<bool> variableLogSpaces;
+};
 
 /******************************************************************************
 Setting Name: Covariance Matrix
@@ -410,8 +408,13 @@ Current Chain Length
 size_t chainLength;
 
  // MCMC Configuration
+
  Korali::Variable* _gaussianGenerator; /* Gaussian random number generator */
  Korali::Variable* _uniformGenerator; /* Uniform random number generator */
+
+ std::vector<variableSetting> _variableSettings;
+ 
+ MCMC();
 
  // Korali Methods
  void initialize() override;

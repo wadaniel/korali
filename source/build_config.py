@@ -111,14 +111,12 @@ def parseFile(f):
  ## Load Variable Settings
  configFile.write('\n')
  
- for i in range(len(settingNames)): 
-  if (settingTypes[i] == 'Variable Setting'):
-   configFile.write(' ' + settingVariableNames[i] + '.resize(_k->N);\n') 
- configFile.write('\n for(size_t i = 0; i < _k->N; i++) \n { \n')
+ configFile.write(' _variableSettings.resize(_k->N);\n') 
+ configFile.write(' for(size_t i = 0; i < _k->N; i++) \n { \n')
   
  for i in range(len(settingNames)): 
   if (settingTypes[i] == 'Variable Setting'):
-   consumeValue('_k->_js["Variables"][i]', settingVariableNames[i], settingVariableDataTypes[i], settingDefaultValues[i], [ solverAlias, settingNames[i] ])
+   consumeValue('_k->_js["Variables"][i]', '_variableSettings[i].' + settingVariableNames[i], settingVariableDataTypes[i], settingDefaultValues[i], [ solverAlias, settingNames[i] ])
  configFile.write(' } \n\n')
  
  ## Load Termination Criteria
@@ -154,7 +152,7 @@ def parseFile(f):
   
  for i in range(len(settingNames)): 
   if (settingTypes[i] == 'Variable Setting'):
-   configFile.write('  _k->_js["Variables"][i]["' + settingNames[i] + '"] = ' + settingVariableNames[i] + ';\n')
+   configFile.write('  _k->_js["Variables"][i]["' + solverAlias +'"]["' + settingNames[i] + '"] = _variableSettings[i].' + settingVariableNames[i] + ';\n')
    
  configFile.write(' } \n\n')
  

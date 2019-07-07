@@ -9,6 +9,26 @@
 #include <gsl/gsl_statistics.h>
 #include <gsl/gsl_multimin.h>
 
+Korali::Solver::MCMC::MCMC()
+{
+ // Initializing Gaussian Generator
+ auto jsGaussian = nlohmann::json();
+ jsGaussian["Type"] = "Gaussian";
+ jsGaussian["Mean"] = 0.0;
+ jsGaussian["Sigma"] = 1.0;
+ jsGaussian["Seed"] = _k->_seed++;
+ _gaussianGenerator = new Variable();
+ _gaussianGenerator->setDistribution(jsGaussian);
+
+ auto jsUniform = nlohmann::json();
+ jsUniform["Type"] = "Uniform";
+ jsUniform["Minimum"] = 0.0;
+ jsUniform["Maximum"] = 1.0;
+ jsUniform["Seed"] = _k->_seed++;
+ _uniformGenerator = new Variable();
+ _uniformGenerator->setDistribution(jsUniform);
+}
+
 void Korali::Solver::MCMC::runGeneration()
 {
  rejectionCount = 0;
@@ -41,34 +61,17 @@ void Korali::Solver::MCMC::initialize()
  chainCovariancePlaceholder.resize(_k->N*_k->N);
  chainCovariance.resize(_k->N*_k->N);
 
- for(size_t i = 0; i < _k->N; i++) chainLeaderParameters[i] = variableInitialMeans[i];
- for(size_t i = 0; i < _k->N; i++) covarianceMatrix[i*_k->N+i] = variableStandardDeviations[i];
-
- // Initializing Gaussian Generator
- auto jsGaussian = nlohmann::json();
- jsGaussian["Type"] = "Gaussian";
- jsGaussian["Mean"] = 0.0;
- jsGaussian["Sigma"] = 1.0;
- jsGaussian["Seed"] = _k->_seed++;
- _gaussianGenerator = new Variable();
- _gaussianGenerator->setDistribution(jsGaussian);
- 
- auto jsUniform = nlohmann::json();
- jsUniform["Type"] = "Uniform";
- jsUniform["Minimum"] = 0.0;
- jsUniform["Maximum"] = 1.0;
- jsUniform["Seed"] = _k->_seed++;
- _uniformGenerator = new Variable();
- _uniformGenerator->setDistribution(jsUniform);
+ for(size_t i = 0; i < _k->N; i++) chainLeaderParameters[i] = _variableSettings[i].initialMean;
+ for(size_t i = 0; i < _k->N; i++) covarianceMatrix[i*_k->N+i] = _variableSettings[i].standardDeviation;
 
  // Init Generation
  _isFinished = false;
- acceptanceCount                  = 0;
- proposedSampleCount                = 0;
- chainLength              = 0;
- rejectionCount               = 0;
- databaseEntryCount          = 0;
- chainLeaderLogLikelihood          = -std::numeric_limits<double>::max();
+ acceptanceCount = 0;
+ proposedSampleCount = 0;
+ chainLength = 0;
+ rejectionCount = 0;
+ databaseEntryCount = 0;
+ chainLeaderLogLikelihood = -std::numeric_limits<double>::max();
  acceptanceRate  = 1.0;
 }
 
@@ -154,7 +157,7 @@ void Korali::Solver::MCMC::generateCandidate(size_t sampleIdx)
 void Korali::Solver::MCMC::evaluateSample()
 {
   for(size_t d = 0; d < _k->N; ++d)
-    if(variableLogSpaces[d] == true)
+    if(_k->_variables[d]->_isLogSpace == true)
         logTransformedSamples[rejectionCount*_k->N+d] = std::exp(chainCandidatesParameters[rejectionCount*_k->N+d]);
     else 
         logTransformedSamples[rejectionCount*_k->N+d] = chainCandidatesParameters[rejectionCount*_k->N+d];

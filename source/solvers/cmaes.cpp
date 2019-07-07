@@ -27,6 +27,7 @@ CMAES::CMAES()
  gsl_work =  gsl_eigen_symmv_alloc(_k->N);
 }
 
+
 void CMAES::initialize()
 {
  size_t s_max  = std::max(_sampleCount,  _viabilitySampleCount);
@@ -87,7 +88,7 @@ void CMAES::initialize()
 	viabilityBounds  = (double*) calloc (sizeof(double), _k->_fconstraints.size());
 
 	sucRates.reserve(_k->_fconstraints.size());
-	std::fill_n( sucRates, _k->_fconstraints.size(), 0.5);
+	std::fill_n( std::begin(sucRates), _k->_fconstraints.size(), 0.5);
 
 	viabilityImprovement  = (bool*) calloc (sizeof(bool), s_max);
 	viabilityIndicator    = (bool**) calloc (sizeof(bool*), _k->_fconstraints.size());
@@ -160,7 +161,7 @@ void CMAES::evaluateSamples()
 		for (size_t i = 0; i < _current_s; i++) if (_initializedSample[i] == false)
 		{
 			_initializedSample[i] = true;
-			_k->_conduit->evaluateSample(_transformedSamples, i); countevals++;
+			_k->_conduit->evaluateSample(&_transformedSamples[0], i); countevals++;
 		}
 		_k->_conduit->checkProgress();
 	}
@@ -242,8 +243,11 @@ void CMAES::initCovariance()
   C[i*_k->N+i] *= C[i*_k->N+i];
  }
 
- minEW = doubleRangeMin(axisD, _k->N); minEW = minEW * minEW;
- maxEW = doubleRangeMax(axisD, _k->N); maxEW = maxEW * maxEW;
+ minEW = *std::min_element(std::begin(axisD), std::end(axisD));
+ maxEW = *std::max_element(std::begin(axisD), std::end(axisD));
+ 
+ minEW = minEW * minEW;
+ maxEW = maxEW * maxEW;
 
  maxdiagC=C[0]; for(size_t i=1;i<_k->N;++i) if(maxdiagC<C[i*_k->N+i]) maxdiagC=C[i*_k->N+i];
  mindiagC=C[0]; for(size_t i=1;i<_k->N;++i) if(mindiagC>C[i*_k->N+i]) mindiagC=C[i*_k->N+i];
@@ -364,7 +368,7 @@ void CMAES::prepareGeneration()
 {
 
  /* calculate eigensystem */
- for (size_t d = 0; d < _k->N; ++d) memcpy(Ctmp[d*_k->N], C[d*_k->N], sizeof(double) * _k->N );
+ for (size_t d = 0; d < _k->N; ++d) Ctmp.assign(std::begin(C), std::end(C));
  updateEigensystem(Ctmp);
 
  for (size_t i = 0; i < _current_s; ++i)
@@ -408,7 +412,7 @@ void CMAES::sampleSingle(size_t sampleIdx)
    for (size_t d = 0; d < _k->N; ++d) {
     BDZ[sampleIdx*_k->N+d] = 0.0;
     for (size_t e = 0; e < _k->N; ++e) BDZ[sampleIdx*_k->N+d] += B[d*_k->N+e] * rgdTmp[e];
-    _samplePopulation[sampleIdx * _k->N + d] = rgxmean[d] + sigma * BDZ[sampleIdx*_k_>N+d];
+    _samplePopulation[sampleIdx * _k->N + d] = rgxmean[d] + sigma * BDZ[sampleIdx*_k->N+d];
   }
 }
 
@@ -459,7 +463,7 @@ void CMAES::updateDistribution()
  for (size_t d = 0; d < _k->N; ++d) {
   double sum = 0.0;
   if (_isDiag) sum = rgBDz[d];
-  else for (size_t e = 0; e < _k->N; ++e) sum += B[e][d] * rgBDz[e]; /* B^(T) * rgBDz ( iterating B[e][d] = B^(T) ) */
+  else for (size_t e = 0; e < _k->N; ++e) sum += B[e*_k->N+d] * rgBDz[e]; /* B^(T) * rgBDz ( iterating B[e][d] = B^(T) ) */
 
   rgdTmp[d] = sum / axisD[d]; /* D^(-1) * B^(T) * rgBDz */
  }
@@ -578,7 +582,7 @@ void CMAES::handleConstraints()
 
  while( maxnumviolations > 0 )
  {
-  for (size_t i = 0; i < _k->N; i++) memcpy(Ctmp[i], C[i], sizeof(double) * _k->N);
+  for (size_t i = 0; i < _k->N; i++) Ctmp.assign(std::begin(C), std::end(C));
 
   for(size_t i = 0; i < _current_s; ++i) if (numviolations[i] > 0)
   {
@@ -707,7 +711,7 @@ bool CMAES::checkTermination()
     {
     fac = _termCondMinStandardDeviationStepFactor * sigma * axisD[iAchse];
     for (iKoo = 0; iKoo < _k->N; ++iKoo){
-      if (rgxmean[iKoo] != rgxmean[iKoo] + fac * B[iKoo][iAchse])
+      if (rgxmean[iKoo] != rgxmean[iKoo] + fac * B[iKoo*_k->N+iAchse])
       break;
     }
     if (iKoo == _k->N)
@@ -744,8 +748,8 @@ void CMAES::updateEigensystem(std::vector<double>& M, int flgforce)
  eigen(_k->N, M, axisDtmp, Btmp);
  
  /* find largest and smallest eigenvalue, they are supposed to be sorted anyway */
- double minEWtmp = doubleRangeMin(axisDtmp, _k->N);
- double maxEWtmp = doubleRangeMax(axisDtmp, _k->N);
+ double minEWtmp = *std::min_element(std::begin(axisDtmp), std::end(axisDtmp));
+ double maxEWtmp = *std::max_element(std::begin(axisDtmp), std::end(axisDtmp));
 
  if (minEWtmp <= 0.0) 
  { if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Warning: Min Eigenvalue smaller or equal 0.0 (%+6.3e) after Eigen decomp (no update possible).\n", minEWtmp ); return; }
@@ -758,7 +762,7 @@ void CMAES::updateEigensystem(std::vector<double>& M, int flgforce)
        if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Warning: Could not calculate root of Eigenvalue (%+6.3e) after Eigen decomp (no update possible).\n", axisDtmp[d] ); 
        return; 
      }
-    for (size_t e = 0; e < _k->N; ++e) if (std::isfinite(B[d][e]) == false)
+    for (size_t e = 0; e < _k->N; ++e) if (std::isfinite(B[d*_k->N+e]) == false)
     {
        if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Warning: Non finite value detected in B (no update possible).\n"); 
        return;
@@ -767,7 +771,7 @@ void CMAES::updateEigensystem(std::vector<double>& M, int flgforce)
  
  /* write back */
  for (size_t d = 0; d < _k->N; ++d) axisD[d] = axisDtmp[d];
- for (size_t d = 0; d < _k->N; ++d) memcpy(B[d], Btmp[d], sizeof(double) * _k->N );
+ B.assign(std::begin(Btmp), std::end(Btmp));
 
  minEW = minEWtmp;
  maxEW = maxEWtmp;
@@ -781,7 +785,7 @@ void CMAES::updateEigensystem(std::vector<double>& M, int flgforce)
 /************************************************************************/
 
 
-void CMAES::eigen(size_t size, std::vector<double>& M, double *diag, double **Q) const
+void CMAES::eigen(size_t size, std::vector<double>& M,  std::vector<double>& diag, std::vector<double>& Q) const
 {
  double* data = (double*) malloc (sizeof(double) * size * size);
 
@@ -800,7 +804,7 @@ void CMAES::eigen(size_t size, std::vector<double>& M, double *diag, double **Q)
  for (size_t i = 0; i < size; i++)
  {
   gsl_vector_view gsl_evec_i = gsl_matrix_column (gsl_evec, i);
-  for (size_t j = 0; j < size; j++) Q[j][i] = gsl_vector_get (&gsl_evec_i.vector, j);
+  for (size_t j = 0; j < size; j++) Q[j*_k->N+i] = gsl_vector_get (&gsl_evec_i.vector, j);
  }
 
  for (size_t i = 0; i < size; i++) diag[i] = gsl_vector_get (gsl_eval, i);
@@ -809,50 +813,14 @@ void CMAES::eigen(size_t size, std::vector<double>& M, double *diag, double **Q)
 }
 
 
-size_t CMAES::maxIdx(const double *rgd, size_t len) const
-{
- size_t res = 0;
- for(size_t i = 1; i < len; i++)
-  if(rgd[i] > rgd[res]) res = i;
- return res;
-}
-
-
-size_t CMAES::minIdx(const double *rgd, size_t len) const
-{
- size_t res = 0;
- for(size_t i = 1; i < len; i++)
-  if(rgd[i] < rgd[res]) res = i;
- return res;
-}
-
-
 void CMAES::sort_index(const std::vector<double>& vec, std::vector<size_t>& index, size_t n) const
 {
   // initialize original index locations
-  std::iota(index, index+n, (size_t) 0);
+  std::iota(std::begin(index), std::end(index), (size_t) 0);
 
   // sort indexes based on comparing values in v
-  std::sort( index, index+n, [vec](size_t i1, size_t i2) {return vec[i1] > vec[i2];} ); //descending (TODO: ok with minimize?)
+  std::sort(std::begin(index), std::end(index), [vec](size_t i1, size_t i2) {return vec[i1] > vec[i2];} );
 
-}
-
-
-double CMAES::doubleRangeMax(const std::vector<double>& rgd, size_t len) const
-{
- double max = rgd[0];
- for (size_t i = 1; i < len; i++)
-  max = (max < rgd[i]) ? rgd[i] : max;
- return max;
-}
-
-
-double CMAES::doubleRangeMin(const double *rgd, size_t len) const
-{
- double min = rgd[0];
- for (size_t i = 1; i < len; i++)
-  min = (min > rgd[i]) ? rgd[i] : min;
- return min;
 }
 
 

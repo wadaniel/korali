@@ -3,6 +3,7 @@
 
 #include "solvers/base.h"
 #include <chrono>
+#include <vector>
 #include <map>
 
 namespace Korali { namespace Solver {
@@ -352,6 +353,9 @@ in the direction of the eigenvectors.
 double _termCondMinStandardDeviationStepFactor;
 bool   _termCondMinStandardDeviationStepFactorEnabled;
 
+// Ctor & Dtor
+CMAES();
+
 // These are CMA-ES Specific, but could be used for other methods in the future
 std::vector<double> _lowerBounds;
 std::vector<double> _upperBounds;
@@ -437,13 +441,9 @@ private:
  void evaluateSamples(); /* evaluate all samples until done */
  void adaptC(int hsig); /* CMA-ES covariance matrix adaption */
  void updateEigensystem(std::vector<double>& M, int flgforce = 1);
- void eigen(size_t N, std::vector<double>& C, std::vector<double> diag, std::vector<double>& Q) const;
- size_t maxIdx(const std::vector<double>& rgd, size_t len) const;
- size_t minIdx(const std::vector<double>& rgd, size_t len) const;
+ void eigen(size_t N, std::vector<double>& C, std::vector<double>& diag, std::vector<double>& Q) const;
  void sort_index(const std::vector<double>& vec, std::vector<size_t>& index, size_t n) const;
  bool isFeasible(size_t sampleIdx) const; /* check if sample inside lower & upper bounds */
- double doubleRangeMax(const std::vector<double>& rgd, size_t len) const;
- double doubleRangeMin(const std::vector<double>& rgd, size_t len) const;
 
  // Private CCMA-ES-Specific Variables
  bool _hasConstraints; /* True if num constraints greater 0 */

@@ -12,6 +12,35 @@ def getDescription(fobj):
   line = fobj.readline()
  return description
 
+def consumeValue(base, varName, type, default, path = []):
+ 
+ configFile.write('\n')
+ 
+ configFile.write(' if (isDefined(' + base + ', {"' + path[0] + '"')
+ for i in range(1, len(path)): configFile.write(', "' + path[i] +'"')
+ configFile.write('})) \n { \n')
+ 
+ configFile.write('  ' + varName + ' = ' + base )
+ for i in range(0, len(path)-1): configFile.write('.at("' + path[i] +'")')
+ configFile.write('.at("' + path[-1] + '").get<' + type + '>();\n')
+ 
+ configFile.write('  ' + base)
+ for i in range(0, len(path)-1): configFile.write('.at("' + path[i] +'")')
+ configFile.write('.erase("' + path[-1] + '");\n')
+ 
+ configFile.write(' }\n else ')
+ if (default == ''):
+  configFile.write(' { fprintf(stderr, "[Korali] Error: No value provided for mandatory setting: ')
+  for i in range(0, len(path)-1): configFile.write('[' + path[i] + '] > ')
+  configFile.write('[' + path[-1] + ']\\n"); exit(-1); } ')
+ else:
+  if ('vector' in type):
+   configFile.write('for(size_t i = 0; i < ' + varName + '.size(); i++) ' + varName + '[i] = ' + default + ';')
+  else:
+   configFile.write(varName + ' = ' + default + ';')
+   
+ configFile.write('\n')
+  
 def parseFile(f):
 
  solverName = ''
@@ -26,11 +55,10 @@ def parseFile(f):
  settingDefaultValues = []
  settingDefaultStates = []
  settingDescriptions = []
- settingVariableDeclarations = []
- settingStateDeclarations = []
  settingVariableNames = []
  settingStateNames = []
  settingKoraliDataTypes = []
+ settingVariableDataTypes = []
 
  with open(f, 'r') as file:
   line = file.readline()
@@ -52,108 +80,103 @@ def parseFile(f):
     settingDefaultValues.append(file.readline().replace('Default Value:', '').strip())
     settingDefaultStates.append(file.readline().replace('Default Enabled:', '').strip())
     settingDescriptions.append(getDescription(file))
-    settingVariableDeclarations.append(file.readline().strip())
-    settingStateDeclarations.append(file.readline().strip())
+    declarationWords = file.readline().strip().replace(';', '').split() 
+    settingVariableDataTypes.append(declarationWords[0])
+    settingVariableNames.append(declarationWords[-1])
+    
+    stateWords = file.readline().strip().split()
+    stateName = ''
+    if (len(stateWords) > 0): stateName = stateWords[1] 
+    settingStateNames.append(stateName.replace(';', ''))
     
    line = file.readline()
   
  ## Post-processing variable information
  
- for i in range(len(settingNames)):
-  settingVariableNames.append(settingVariableDeclarations[i].replace('size_t', '').replace('double', '').replace('std::string', '').replace('bool', '').replace('std::vector', '').replace('<', '').replace('>', '').replace(';', '').strip())
-  settingStateNames.append(settingStateDeclarations[i].replace('bool', '').replace(';', '').strip())
-  
  for i in range(len(settingNames)): 
-  if (settingFormats[i] == 'Integer'):
-   settingKoraliDataTypes.append('KORALI_NUMBER')
-  if (settingFormats[i] == 'Real'):
-   settingKoraliDataTypes.append('KORALI_NUMBER')
-  if (settingFormats[i] == 'String'):
-   settingKoraliDataTypes.append('KORALI_STRING')
-  if (settingFormats[i] == 'Boolean'):
-   settingKoraliDataTypes.append('KORALI_BOOLEAN')
-
+  if (settingFormats[i] == 'Integer'): settingKoraliDataTypes.append('KORALI_NUMBER')
+  if (settingFormats[i] == 'Real'): settingKoraliDataTypes.append('KORALI_NUMBER')
+  if (settingFormats[i] == 'String'): settingKoraliDataTypes.append('KORALI_STRING')
+  if (settingFormats[i] == 'Boolean'): settingKoraliDataTypes.append('KORALI_BOOLEAN')
+ 
  # Creating setConfiguration()
 
  configFile.write('void Korali::Solver::' + solverAlias + '::setConfiguration() \n{\n')
 
- ## Writing Solver Settings
+ ## Load Solver Settings
  for i in range(len(settingNames)):   
   if (settingTypes[i] == 'Solver Setting'):
-   configFile.write(' ' + settingVariableNames[i] + ' =  consume(_k->_js, { "')
-   configFile.write(solverAlias + '", "' + settingNames[i] + '" }, ' + settingKoraliDataTypes[i])
-   if (settingDefaultValues[i] != ''): 
-    configFile.write(', "' + settingDefaultValues[i] + '"' )
-   configFile.write('); \n')
+   consumeValue('_k->_js', settingVariableNames[i], settingVariableDataTypes[i], settingDefaultValues[i], [ solverAlias, settingNames[i] ])
  
- ## Writing Variable Settings
+ ## Load Variable Settings
  configFile.write('\n')
  
- for i in range(len(settingNames)): 
-  if (settingTypes[i] == 'Variable Setting'):
-   configFile.write(' ' + settingVariableNames[i] + '.reserve(_k->N);\n')
-  
- configFile.write('\n for(size_t i = 0; i < _k->N; i++) \n { \n')
+ configFile.write(' _variableSettings.resize(_k->N);\n') 
+ configFile.write(' for(size_t i = 0; i < _k->N; i++) \n { \n')
   
  for i in range(len(settingNames)): 
   if (settingTypes[i] == 'Variable Setting'):
-   configFile.write('  ' + settingVariableNames[i] + '[i] =  consume(_k->_js["Variables"][i]')
-   configFile.write(', { "' + solverAlias + '", "' + settingNames[i] + '" }, ' + settingKoraliDataTypes[i])
-   if (settingDefaultValues[i] != ''): 
-    configFile.write(', "' + settingDefaultValues[i] + '"' )
-   configFile.write('); \n')
- 
+   consumeValue('_k->_js["Variables"][i]', '_variableSettings[i].' + settingVariableNames[i], settingVariableDataTypes[i], settingDefaultValues[i], [ solverAlias, settingNames[i] ])
  configFile.write(' } \n\n')
  
- ## Writing Termination Criteria
+ ## Load Termination Criteria
  
  for i in range(len(settingNames)):   
   if (settingTypes[i] == 'Termination Criterion'):
-   configFile.write(' ' + settingVariableNames[i] + ' =  consume(_k->_js, { "')
-   configFile.write(solverAlias + '", "Termination Criteria", "' + settingNames[i] + '", "Value" }, ' + settingKoraliDataTypes[i])
-   if (settingDefaultValues[i] != ''): 
-    configFile.write(', "' + settingDefaultValues[i] + '" );' )
-   configFile.write('\n')
-    
-   configFile.write(' ' + settingStateNames[i] + ' =  consume(_k->_js, { "')
-   configFile.write(solverAlias + '", "Termination Criteria", "' + settingNames[i] + '", "State" }, KORALI_BOOLEAN')
-   if (settingDefaultStates[i] != ''): 
-    configFile.write(', "' + settingDefaultStates[i] + '" );' )
-   configFile.write('\n')
+   consumeValue('_k->_js', settingVariableNames[i], settingVariableDataTypes[i], settingDefaultValues[i], [ 'Termination Criteria', solverAlias, settingNames[i], 'Value' ])
+   consumeValue('_k->_js', settingStateNames[i], 'bool', settingDefaultStates[i], [ 'Termination Criteria', solverAlias, settingNames[i], 'Default' ]) 
  configFile.write('\n')
+ 
+ ## Load Solver Internal Attributes
+ for i in range(len(settingNames)):   
+  if (settingTypes[i] == 'Internal Attribute'):
+   configFile.write(' if(isDefined(_k->_js, {"' + solverAlias + '", "Internal", "' + settingNames[i] + '"} )) \n {\n')
+   configFile.write('  ' + settingVariableNames[i] + ' = _k->_js.at("' + solverAlias + '").at("Internal").at("' + settingNames[i] + '").get<' + settingVariableDataTypes[i] + '>();\n')
+   configFile.write('  _k->_js["' + solverAlias + '"]["Internal"].erase("' + settingNames[i] + '"); \n }\n\n')
  
  configFile.write('} \n\n') 
  
  # Creating getConfiguration()
  
- configFile.write('void Korali::Solver::' + solverAlias + '::getConfiguration() \n{\n')
+ configFile.write('void Korali::Solver::' + solverAlias + '::getConfiguration() \n{\n\n')
 
- ## Writing Solver Settings
+ configFile.write(' _k->_js["Solver"] = "' + solverAlias + '";\n')
+
+ ## Save Solver Settings
  for i in range(len(settingNames)):   
   if (settingTypes[i] == 'Solver Setting'):
    configFile.write(' _k->_js["' + solverAlias + '"]["' + settingNames[i] + '"] = ' + settingVariableNames[i] + ';\n')
  
- ## Writing Variable Settings
+ ## Save Variable Settings
  configFile.write('\n\n for(size_t i = 0; i < _k->N; i++) \n { \n')
   
  for i in range(len(settingNames)): 
   if (settingTypes[i] == 'Variable Setting'):
-   configFile.write('  _k->_js["Variables"][i]["' + settingNames[i] + '"] = ' + settingVariableNames[i] + ';\n')
+   configFile.write('  _k->_js["Variables"][i]["' + solverAlias +'"]["' + settingNames[i] + '"] = _variableSettings[i].' + settingVariableNames[i] + ';\n')
    
  configFile.write(' } \n\n')
  
- ## Writing Termination Criteria
+ ## Save Termination Criteria
  
  for i in range(len(settingNames)):   
   if (settingTypes[i] == 'Termination Criterion'):
    configFile.write(' _k->_js["' + solverAlias + '"]["Termination Criteria"]["' + settingNames[i] + '"]["Value"] = ' + settingVariableNames[i] + ';\n')
    configFile.write(' _k->_js["' + solverAlias + '"]["Termination Criteria"]["' + settingNames[i] + '"]["State"] = ' + settingStateNames[i] + ';\n') 
  
+ configFile.write('\n')
+ 
+ ## Save Solver Internal Attributes
+
+ for i in range(len(settingNames)):   
+  if (settingTypes[i] == 'Internal Attribute'):
+   configFile.write(' _k->_js["' + solverAlias + '"]["Internal"]["' + settingNames[i] + '"] = ' + settingVariableNames[i] + ';\n')
+  
  configFile.write('} \n\n') 
 
 # Initializing Config File
 
-configFile.write('#include "korali.h"\n\n')
+configFile.write('#include "korali.h"\n')
+configFile.write('#include <stdio.h>\n\n')
 
 # Finding Solver Header Files
 path = '../include/solvers'

@@ -24,6 +24,7 @@ class Variable
 
  public:
 
+ bool _isLogSpace;
  std::string _name;
  KoraliDistributionType _distributionType;
 

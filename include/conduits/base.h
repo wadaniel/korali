@@ -23,8 +23,8 @@ class Base {
  size_t _currentSample;
 
  // Serialization Methods
- virtual void getConfiguration(nlohmann::json& js) = 0;
- virtual void setConfiguration(nlohmann::json& js) = 0;
+ virtual void getConfiguration() = 0;
+ virtual void setConfiguration() = 0;
 };
 
 class Conduit;

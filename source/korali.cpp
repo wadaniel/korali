@@ -96,9 +96,13 @@ void Korali::Engine::getConfiguration()
  if (_verbosity == KORALI_DETAILED) _js["Verbosity"] = "Detailed";
  
  _js["Result Directory"] = _result_dir;
+ _js["Max Generations"] = maxGenerations;
+ _js["Current Generation"] = currentGeneration;
 
- if (_problem != nullptr) _problem->getConfiguration(_js);
- if (_conduit != nullptr) _conduit->getConfiguration(_js);
+ for (int i = 0; i < _variables.size(); i++) _js["Variables"][i]["Name"] = _variables[i]->_name;
+
+ if (_problem != nullptr) _problem->getConfiguration();
+ if (_conduit != nullptr) _conduit->getConfiguration();
  if (_conduit != nullptr) _solver->getConfiguration();
 }
 
@@ -118,6 +122,9 @@ void Korali::Engine::setConfiguration()
  _seed = consume(_js, { "Seed" }, KORALI_NUMBER, std::to_string(_seed));
  gsl_rng_env_setup();
 
+ maxGenerations = consume(_js, { "Max Generations" }, KORALI_NUMBER, "5000");
+ currentGeneration = consume(_js, { "Current Generation" }, KORALI_NUMBER, "0");
+
   _verbosity = KORALI_UNDEFINED;
  std::string vLevel = consume(_js, { "Verbosity" }, KORALI_STRING, "Normal");
  if (vLevel == "Silent")   _verbosity = KORALI_SILENT;
@@ -131,9 +138,18 @@ void Korali::Engine::setConfiguration()
  // Configure Problem
 
  std::string pName = consume(_js, { "Problem" }, KORALI_STRING);
- if (pName == "Direct Evaluation")   { _problem = new Korali::Problem::Direct(_js); }
- if (pName == "Bayesian") { _problem = new Korali::Problem::Bayesian(_js); }
+ if (pName == "Direct Evaluation")   { _problem = new Korali::Problem::Direct(); }
+ if (pName == "Bayesian") { _problem = new Korali::Problem::Bayesian(); }
  if (_problem == nullptr) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Problem '%s'.", pName.c_str()); exit(-1); }
+
+ // Create Variables
+
+ if (isArray(_js, { "Variables" } ))
+ for (size_t i = 0; i < _js["Variables"].size(); i++)
+ {
+  auto varName = consume(_js["Variables"][i], { "Name" }, KORALI_STRING);
+  _k->_variables.push_back(new Korali::Variable(varName));
+ }
 
  N = _variables.size();
  if (N == 0) { fprintf(stderr, "[Korali] Error: No variables have been defined.\n"); exit(-1); }
@@ -144,13 +160,13 @@ void Korali::Engine::setConfiguration()
 
  std::string conduitType =  consume(_js, { "Conduit" }, KORALI_STRING, "Semi-Intrusive");
 
- if (conduitType == "Semi-Intrusive") _conduit = new Korali::Conduit::SemiIntrusive(_js["Conduit"]);
+ if (conduitType == "Semi-Intrusive") _conduit = new Korali::Conduit::SemiIntrusive();
  #ifdef _KORALI_USE_MPI
- if (conduitType == "Distributed") _conduit = new Korali::Conduit::Distributed(_js["Conduit"]);
+ if (conduitType == "Distributed") _conduit = new Korali::Conduit::Distributed();
  #else
  if (conduitType == "Distributed") { fprintf(stderr, "[Korali] Error: Distributed Conduit selected, but Korali has not been compiled with MPI or UPC++ support.\n"); exit(-1); }
  #endif
- if (conduitType == "Nonintrusive") _conduit = new Korali::Conduit::Nonintrusive(_js["Conduit"]);
+ if (conduitType == "Nonintrusive") _conduit = new Korali::Conduit::Nonintrusive();
 
  if (_conduit == nullptr) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Conduit '%s'.\n", conduitType.c_str()); exit(-1); }
 
@@ -158,23 +174,15 @@ void Korali::Engine::setConfiguration()
 
  std::string solverName = consume(_js, { "Solver" }, KORALI_STRING);
  if (solverName == "CMAES")  _solver = new Korali::Solver::CMAES();
- if (solverName == "DE")      _solver = new Korali::Solver::DE();
- if (solverName == "MCMC")    _solver = new Korali::Solver::MCMC();
- if (solverName == "TMCMC")   _solver = new Korali::Solver::TMCMC();
+ if (solverName == "DE")     _solver = new Korali::Solver::DE();
+ if (solverName == "MCMC")   _solver = new Korali::Solver::MCMC();
+ if (solverName == "TMCMC")  _solver = new Korali::Solver::TMCMC();
  if (_solver == nullptr) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Solver '%s'.", solverName.c_str()); exit(-1); }
 
  // Setting module configuration
-// _problem->setConfiguration();
-// _conduit->setConfiguration();
+ _problem->setConfiguration();
+ _conduit->setConfiguration();
  _solver->setConfiguration();
-
- if (isEmpty(_js) == false)
- {
-  fprintf(stderr, "[Korali] Error: Unrecognized Settings for Korali:\n");
-  fprintf(stderr, "%s\n", _js.dump(2).c_str());
-  exit(-1);
- }
-
 }
 
 /************************************************************************/
@@ -199,38 +207,55 @@ void Korali::Engine::run()
 
  setConfiguration();
 
+ if (isEmpty(_js) == false)
+ {
+  fprintf(stderr, "[Korali] Error: Unrecognized Settings for Korali:\n");
+  fprintf(stderr, "%s\n", _js.dump(2).c_str());
+  exit(-1);
+ }
+
  // Creating Results directory
  mkdir(_result_dir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
  std::chrono::time_point<std::chrono::system_clock> startTime, endTime;
- std::chrono::time_point<std::chrono::system_clock> t0, t1, t2, t3;
- currentGeneration = 0;
 
  // Running Engine
  _conduit->initialize();
- _solver->initialize();
+ _problem->initialize();
+ if (currentGeneration == 0) _solver->initialize();
 
- startTime = std::chrono::system_clock::now();
-
- while(!_solver->checkTermination())
+ if (_conduit->isRoot())
  {
-  t0 = std::chrono::system_clock::now();
+	saveState(currentGeneration);
 
-  _solver->runGeneration();
-  currentGeneration++;
+	_solver->printGeneration();
 
-  t1 = std::chrono::system_clock::now();
+	auto startTime = std::chrono::system_clock::now();
 
-  _solver->printGeneration();
-  saveState(currentGeneration);
+	while(!_solver->checkTermination())
+	{
+	 auto t0 = std::chrono::system_clock::now();
+
+	 _solver->runGeneration();
+	 currentGeneration++;
+
+	 auto t1 = std::chrono::system_clock::now();
+
+	 if(_verbosity >= KORALI_DETAILED) printf("[Korali] Generation Time: %.3fs\n", std::chrono::duration<double>(t1-t0).count());
+
+	 _solver->printGeneration();
+	 saveState(currentGeneration);
+	}
+
+	auto endTime = std::chrono::system_clock::now();
+
+	_solver->finalize();
+	_problem->finalize();
+	_conduit->finalize();
+
+	if(_verbosity >= KORALI_MINIMAL) printf("[Korali] Elapsed Time: %.3fs\n", std::chrono::duration<double>(endTime-startTime).count());
+	if(_verbosity >= KORALI_MINIMAL) printf("[Korali] Results saved to folder: '%s'\n", _result_dir.c_str());
  }
-
- endTime = std::chrono::system_clock::now();
-
- _solver->finalize();
- _conduit->finalize();
-
- if (_conduit->isRoot()) if(_verbosity >= KORALI_MINIMAL) printf("[Korali] Results saved to folder: '%s'\n", _result_dir.c_str());
 }
 
 void Korali::Engine::addConstraint(fcon fconstraint)

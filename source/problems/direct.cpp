@@ -1,58 +1,44 @@
 #include "korali.h"
 
 /************************************************************************/
-/*                  Constructor / Destructor Methods                    */
-/************************************************************************/
-
-Korali::Problem::Direct::Direct(nlohmann::json& js)
-{
- setConfiguration(js);
-}
-
-Korali::Problem::Direct::~Direct()
-{
-  printf("DELETING PREVIOUS PROBLEM\n");
-}
-
-/************************************************************************/
 /*                    Configuration Methods                             */
 /************************************************************************/
 
-void Korali::Problem::Direct::getConfiguration(nlohmann::json& js)
+void Korali::Problem::Direct::getConfiguration()
 {
- js["Problem"] = "Direct Evaluation";
-
- for (size_t i = 0; i < _k->N; i++)
- {
-  js["Variables"][i]["Name"] = _k->_variables[i]->_name;
- }
+ _k->_js["Problem"] = "Direct Evaluation";
 }
 
-void Korali::Problem::Direct::setConfiguration(nlohmann::json& js)
+void Korali::Problem::Direct::setConfiguration()
 {
- if (isArray(js, { "Variables" } ))
- for (size_t i = 0; i < js["Variables"].size(); i++)
- {
-  auto varName = consume(js["Variables"][i], { "Name" }, KORALI_STRING);
-  _k->_variables.push_back(new Korali::Variable(varName));
- }
 
- if (_k->_modelDefined == false)
- {
-  fprintf(stderr, "[Korali] Error: Direct Problem requires defining a computational model.\n");
-  exit(-1);
- }
 
- if (_k->_likelihoodDefined == true)
- {
-  fprintf(stderr, "[Korali] Error: Direct Problem does not accept a likelihood function, only a computational model.\n");
-  exit(-1);
- }
 }
 
 /************************************************************************/
 /*                    Functional Methods                                */
 /************************************************************************/
+
+void Korali::Problem::Direct::initialize()
+{
+ if (_k->_modelDefined == false)
+ {
+	fprintf(stderr, "[Korali] Error: Direct Problem requires defining a computational model.\n");
+	exit(-1);
+ }
+
+ if (_k->_likelihoodDefined == true)
+ {
+	fprintf(stderr, "[Korali] Error: Direct Problem does not accept a likelihood function, only a computational model.\n");
+	exit(-1);
+ }
+}
+
+void Korali::Problem::Direct::finalize()
+{
+
+}
+
 
 void Korali::Problem::Direct::packVariables(double* sample, Korali::ModelData& data)
 {

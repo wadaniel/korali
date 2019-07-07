@@ -5,20 +5,28 @@ int main(int argc, char* argv[])
 {
  auto k = Korali::Engine();
 
- k["Problem"] = "Direct Evaluation";
- k["Solver"]  = "CMA-ES";
- k["Variables"][0]["Name"] = "X";
- k["Variables"][0]["CMA-ES"]["Lower Bound"] = -10.0;
- k["Variables"][0]["CMA-ES"]["Upper Bound"] = +10.0;
- k["CMA-ES"]["Objective"] = "Maximize";
- k["CMA-ES"]["Termination Criteria"]["Max Generations"]["Value"] = 500;
- k["CMA-ES"]["Sample Count"] = 5;
+ k["Problem"] = "Bayesian";
+ k["Solver"] = "TMCMC";
 
- k.setModel([](Korali::ModelData& d) { directModel(d.getVariables(), d.getResults()); });
+ k["Bayesian"]["Likelihood"]["Type"] = "Direct";
+ k.setLikelihood([](Korali::ModelData& d) { directModel(d.getVariables(), d.getResults()); });
+
+ k["Variables"][0]["Name"] = "X";
+ k["Variables"][0]["Bayesian"]["Prior Distribution"]["Type"] = "Uniform";
+ k["Variables"][0]["Bayesian"]["Prior Distribution"]["Minimum"] = -10.0;
+ k["Variables"][0]["Bayesian"]["Prior Distribution"]["Maximum"] = +10.0;
+
+ k["TMCMC"]["Covariance Scaling"] = 0.02;
+ k["TMCMC"]["Population Size"] = 5000;
+ k["TMCMC"]["Min Rho Update"] = 0.0;
+ k["TMCMC"]["Initial Coefficient of Variation"] = 0.5;
+ k["TMCMC"]["Burn In"] = 5;
 
  k.run();
 
- k.loadState("_korali_result/s00498.json");
+ printf("\n\nRestarting now:\n\n");
+
+ k.loadState("_korali_result/s00003.json");
 
  k.run();
 }

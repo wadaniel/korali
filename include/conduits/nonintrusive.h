@@ -28,13 +28,9 @@ class Nonintrusive : public Base {
  void checkProgress() override;
  bool isRoot() override;
 
- // Constructor / Destructor
- Nonintrusive(nlohmann::json& js);
- ~Nonintrusive();
-
  // Serialization Methods
- void getConfiguration(nlohmann::json& js) override;
- void setConfiguration(nlohmann::json& js) override;
+ void getConfiguration() override;
+ void setConfiguration() override;
 };
 } } // namespace Korali::Conduit
 

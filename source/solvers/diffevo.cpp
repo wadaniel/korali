@@ -8,26 +8,9 @@ using namespace Korali::Solver;
 
 constexpr size_t str2int(const char* str, int h = 0) { return !str[h] ? 5381 : (str2int(str, h+1) * 33) ^ str[h]; }
 
-void DE::initialize()
+DE::DE()
 {
- // Allocating Memory
- samplePopulation = (double*) calloc (sizeof(double), _k->N*_sampleCount);
- candidates       = (double*) calloc (sizeof(double), _k->N*_sampleCount);
-
- rgxoldmean     = (double*) calloc (sizeof(double), _k->N);
- rgxmean        = (double*) calloc (sizeof(double), _k->N);
- rgxbestever    = (double*) calloc (sizeof(double), _k->N);
- curBestVector  = (double*) calloc (sizeof(double), _k->N);
- maxWidth       = (double*) calloc (sizeof(double), _k->N);
-
- initializedSample = (bool*) calloc (sizeof(bool), _sampleCount);
- oldFitnessVector  = (double*) calloc (sizeof(double), _sampleCount);
- fitnessVector     = (double*) calloc (sizeof(double), _sampleCount);
-
- // Init Generation
- _isFinished = false;
-
- // Initializing Generators 
+ // Initializing Generators
  auto jsGaussian = nlohmann::json();
  jsGaussian["Type"]  = "Gaussian";
  jsGaussian["Mean"]  = 0.0;
@@ -44,6 +27,25 @@ void DE::initialize()
 
  _uniformGenerator = new Variable();
  _uniformGenerator->setDistribution(jsUniform);
+}
+
+void DE::initialize()
+{
+ // Allocating Memory
+ samplePopulation = (double*) calloc (sizeof(double), _k->N*_sampleCount);
+ candidates       = (double*) calloc (sizeof(double), _k->N*_sampleCount);
+
+ rgxoldmean     = (double*) calloc (sizeof(double), _k->N);
+ rgxmean        = (double*) calloc (sizeof(double), _k->N);
+ rgxbestever    = (double*) calloc (sizeof(double), _k->N);
+ curBestVector  = (double*) calloc (sizeof(double), _k->N);
+ maxWidth       = (double*) calloc (sizeof(double), _k->N);
+
+ initializedSample = (bool*) calloc (sizeof(bool), _sampleCount);
+ oldFitnessVector  = (double*) calloc (sizeof(double), _sampleCount);
+ fitnessVector     = (double*) calloc (sizeof(double), _sampleCount);
+
+ _isFinished = false;
 
  countevals      = 0;
  countinfeasible = 0;

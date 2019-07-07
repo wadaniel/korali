@@ -8,6 +8,25 @@
 
 using namespace Korali::Solver;
 
+CMAES::CMAES()
+{
+ // Initializing Gaussian Generator
+ auto jsGaussian = nlohmann::json();
+ jsGaussian["Type"] = "Gaussian";
+ jsGaussian["Mean"] = 0.0;
+ jsGaussian["Sigma"] = 1.0;
+ jsGaussian["Seed"] = _k->_seed++;
+ _gaussianGenerator = new Variable();
+ _gaussianGenerator->setDistribution(jsGaussian);
+
+ _chiN = sqrt((double) _k->N) * (1. - 1./(4.*_k->N) + 1./(21.*_k->N*_k->N));
+
+ // GSL Workspace
+ gsl_eval  = gsl_vector_alloc(_k->N);
+ gsl_evec  = gsl_matrix_alloc(_k->N, _k->N);
+ gsl_work =  gsl_eigen_symmv_alloc(_k->N);
+}
+
 void CMAES::initialize()
 {
  size_t s_max  = std::max(_sampleCount,  _viabilitySampleCount);
@@ -49,22 +68,6 @@ void CMAES::initialize()
 
  // Initailizing Mu
  _muWeights.reserve(mu_max);
-
- // Initializing Gaussian Generator
- auto jsGaussian = nlohmann::json();
- jsGaussian["Type"] = "Gaussian";
- jsGaussian["Mean"] = 0.0;
- jsGaussian["Sigma"] = 1.0;
- jsGaussian["Seed"] = _k->_seed++;
- _gaussianGenerator = new Variable();
- _gaussianGenerator->setDistribution(jsGaussian);
-
- _chiN = sqrt((double) _k->N) * (1. - 1./(4.*_k->N) + 1./(21.*_k->N*_k->N));
- 
- // GSL Workspace
- gsl_eval  = gsl_vector_alloc(_k->N);
- gsl_evec  = gsl_matrix_alloc(_k->N, _k->N);
- gsl_work =  gsl_eigen_symmv_alloc(_k->N);
 
  _hasConstraints = (_k->_fconstraints.size() > 0);
  

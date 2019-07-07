@@ -3,34 +3,20 @@
 
 using namespace Korali::Conduit;
 
-/************************************************************************/
-/*                  Constructor / Destructor Methods                    */
-/************************************************************************/
-
-Nonintrusive::Nonintrusive(nlohmann::json& js)
-{
- setConfiguration(js);
- _currentSample = 0;
-}
-
-Nonintrusive::~Nonintrusive()
-{
-
-}
 
 /************************************************************************/
 /*                    Configuration Methods                             */
 /************************************************************************/
 
-void Nonintrusive::getConfiguration(nlohmann::json& js)
+void Nonintrusive::getConfiguration()
 {
- js["Conduit"] = "Nonintrusive";
- js["Nonintrusive"]["Concurrent Jobs"] = _concurrentJobs;
+ _k->_js["Conduit"] = "Nonintrusive";
+ _k->_js["Nonintrusive"]["Concurrent Jobs"] = _concurrentJobs;
 }
 
-void Nonintrusive::setConfiguration(nlohmann::json& js)
+void Nonintrusive::setConfiguration()
 {
- _concurrentJobs = consume(js, { "Nonintrusive", "Concurrent Jobs" }, KORALI_NUMBER, std::to_string(1));
+ _concurrentJobs = consume(_k->_js, { "Nonintrusive", "Concurrent Jobs" }, KORALI_NUMBER, std::to_string(1));
  if (_concurrentJobs < 1)
  {
   fprintf(stderr, "[Korali] Error: You need to define at least 1 concurrent job(s) for non-intrusive models \n");
@@ -44,6 +30,8 @@ void Nonintrusive::setConfiguration(nlohmann::json& js)
 
 void Nonintrusive::initialize()
 {
+ _currentSample = 0;
+
  _pipeDescriptors = (int**) calloc(_concurrentJobs, sizeof(int*));
  for (int i = 0; i < _concurrentJobs; i++) _pipeDescriptors[i] = (int*) calloc(2, sizeof(int));
  for (int i = 0; i < _concurrentJobs; i++) _launcherQueue.push(i);

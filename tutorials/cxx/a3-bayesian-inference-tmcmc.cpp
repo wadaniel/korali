@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
  k["TMCMC"]["Covariance Scaling"] = 0.02;
  k["TMCMC"]["Population Size"] = 5000;
  k["TMCMC"]["Min Rho Update"] = 0.0;
- k["TMCMC"]["Coefficient of Variation"] = 0.5;
+ k["TMCMC"]["Initial Coefficient of Variation"] = 0.5;
  k["TMCMC"]["Burn In"] = 5;
 
  k.run();

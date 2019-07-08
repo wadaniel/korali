@@ -25,6 +25,8 @@ and updating strategies [Brest2006](https://ieeexplore.ieee.org/document/4016057
 + The *Sample Count* needs to be defined..
 + The *Lower Bound* needs to be defined for each variable.
 + The *Upper Bound* needs to be defined for every variable.
+*******************************************************************************
+Plotting:
 ******************************************************************************/
 
 class DE : public Base
@@ -34,7 +36,7 @@ class DE : public Base
 /******************************************************************************
 Setting Name: Objective
 Type: Solver Setting
-Default Value: Maximize
+Default Value: "Maximize"
 Default Enabled:
 Description:
 Specifies whether the problem evaluation is to be minimized or maximized.

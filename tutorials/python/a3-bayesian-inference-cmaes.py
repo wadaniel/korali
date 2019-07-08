@@ -45,23 +45,24 @@ k["Variables"][2]["Bayesian"]["Prior Distribution"]["Minimum"] = 0.0
 k["Variables"][2]["Bayesian"]["Prior Distribution"]["Maximum"] = +5.0
 
 # Selecting solver type.
-k["Solver"] = "CMA-ES"
+k["Solver"] = "CMAES"
 
 # Configuring the CMA-ES bounds for the variables
-k["Variables"][0]["CMA-ES"]["Lower Bound"] = -5.0
-k["Variables"][0]["CMA-ES"]["Upper Bound"] = +5.0
-k["Variables"][1]["CMA-ES"]["Lower Bound"] = -5.0
-k["Variables"][1]["CMA-ES"]["Upper Bound"] = +5.0
-k["Variables"][2]["CMA-ES"]["Lower Bound"] = 0.0
-k["Variables"][2]["CMA-ES"]["Upper Bound"] = +5.0
+k["Variables"][0]["CMAES"]["Lower Bound"] = -5.0
+k["Variables"][0]["CMAES"]["Upper Bound"] = +5.0
+k["Variables"][1]["CMAES"]["Lower Bound"] = -5.0
+k["Variables"][1]["CMAES"]["Upper Bound"] = +5.0
+k["Variables"][2]["CMAES"]["Lower Bound"] = 0.0
+k["Variables"][2]["CMAES"]["Upper Bound"] = +5.0
 
 # Configuring CMA-ES parameters
-k["CMA-ES"]["Objective"] = "Maximize"
-k["CMA-ES"]["Termination Criteria"]["Max Generations"]["Value"] = 1000
-k["CMA-ES"]["Sample Count"] = 5
+k["CMAES"]["Objective"] = "Maximize"
+k["CMAES"]["Sample Count"] = 12
 
 # Reducing Output
-k["CMA-ES"]["Result Output Frequency"] = 100
+k["Console Output Frequency"] = 5
+k["File Output Frequency"] = 5
+k["Termination Criteria"]["Max Generations"] = 100
 
 # Setting output directory
 k["Result Directory"] = "_a3_bayesian_inference_cmaes"

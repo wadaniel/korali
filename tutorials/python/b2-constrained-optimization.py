@@ -39,14 +39,13 @@ for i in range(nParams) :
 # Configuring the constrained optimizer CCMA-ES
 k["CMAES"]["Is Sigma Bounded"] = True
 k["CMAES"]["Sample Count"] = 32
-k["CMAES"]["Constraint"]["Viability"]["Sample Count"] = 4
-k["CMAES"]["Termination Criteria"]["Max Generations"]["Enabled"] = True
-k["CMAES"]["Termination Criteria"]["Max Generations"]["Value"] = 5000
+k["CMAES"]["Viability Sample Count"] = 4
 k["CMAES"]["Termination Criteria"]["Max Fitness"]["Enabled"] = True
 k["CMAES"]["Termination Criteria"]["Max Fitness"]["Value"] = -680.630057374402 - 1e-4
 
 # Reducing Output
-k["CMAES"]["Result Output Frequency"] = 100
+k["Verbosity"] = "Minimal"
+k["Termination Criteria"]["Max Generations"] = 500
 
 # Setting output directory
 k["Result Directory"] = "_b2_constrained_optimization"

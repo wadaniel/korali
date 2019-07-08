@@ -146,7 +146,7 @@ size_t _sampleCount;
 /******************************************************************************
 Setting Name: Mu Value
 Type: Solver Setting
-Default Value: 16
+Default Value: _sampleCount*0.5
 Default Enabled:
 Description:
 Number of best samples used to update the covariance matrix and the mean.

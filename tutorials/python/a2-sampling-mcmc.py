@@ -27,12 +27,13 @@ k["Variables"][0]["MCMC"]["Initial Mean"] = 0.0
 k["Variables"][0]["MCMC"]["Standard Deviation"] = 1.000
 
 # Configuring the MCMC sampler parameters
-k["MCMC"]["Burn In"] = 800
+#k["MCMC"]["Burn In"] = 800
 k["MCMC"]["Chain Length"] = 5000
-k["MCMC"]["Use Adaptive Sampling"] = True
+#k["MCMC"]["Use Adaptive Sampling"] = True
 
 # Reducint Output
-k["MCMC"]["Result Output Frequency"] = 5000
+k["Console Output Frequency"] = 500
+k["File Output Frequency"] = 500
 
 # Setting output directory
 k["Result Directory"] = "_a2_sampling_mcmc_result"

@@ -33,18 +33,18 @@ int main(int argc, char* argv[])
  k["Variables"][2]["Bayesian"]["Prior Distribution"]["Minimum"] = 0.0;
  k["Variables"][2]["Bayesian"]["Prior Distribution"]["Maximum"] = +5.0;
 
- k["Solver"] = "CMA-ES";
+ k["Solver"] = "CMAES";
 
- k["Variables"][0]["CMA-ES"]["Lower Bound"] = -5.0;
- k["Variables"][0]["CMA-ES"]["Upper Bound"] = +5.0;
- k["Variables"][1]["CMA-ES"]["Lower Bound"] = -5.0;
- k["Variables"][1]["CMA-ES"]["Upper Bound"] = +5.0;
- k["Variables"][2]["CMA-ES"]["Lower Bound"] = 0.0;
- k["Variables"][2]["CMA-ES"]["Upper Bound"] = +5.0;
+ k["Variables"][0]["CMAES"]["Lower Bound"] = -5.0;
+ k["Variables"][0]["CMAES"]["Upper Bound"] = +5.0;
+ k["Variables"][1]["CMAES"]["Lower Bound"] = -5.0;
+ k["Variables"][1]["CMAES"]["Upper Bound"] = +5.0;
+ k["Variables"][2]["CMAES"]["Lower Bound"] = 0.0;
+ k["Variables"][2]["CMAES"]["Upper Bound"] = +5.0;
 
- k["CMA-ES"]["Objective"] = "Maximize";
- k["CMA-ES"]["Termination Criteria"]["Max Generations"]["Value"] = 1000;
- k["CMA-ES"]["Sample Count"] = 5;
+ k["CMAES"]["Objective"] = "Maximize";
+ k["CMAES"]["Termination Criteria"]["Max Generations"]["Value"] = 1000;
+ k["CMAES"]["Sample Count"] = 16;
 
  k.run();
 }

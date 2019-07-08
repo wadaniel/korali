@@ -676,13 +676,13 @@ bool CMAES::checkTermination()
  if ( _termCondMinFitnessEnabled && (_isViabilityRegime == false) && (_k->currentGeneration > 1) && (_currentBestFitness >= _termCondMinFitness) )
  {
   _isFinished = true;
-  printf("[Korali] Min fitness value (%+6.3e) > (%+6.3e)",  _currentBestFitness, _termCondMinFitness);
+  printf("[Korali] Min fitness value (%+6.3e) > (%+6.3e).\n",  _currentBestFitness, _termCondMinFitness);
  }
  
  if ( _termCondMaxFitnessEnabled && (_isViabilityRegime == false) && (_k->currentGeneration > 1) && (_currentBestFitness >= _termCondMaxFitness) )
  {
   _isFinished = true;
-  printf("[Korali] Max fitness value (%+6.3e) > (%+6.3e)",  _currentBestFitness, _termCondMaxFitness);
+  printf("[Korali] Max fitness value (%+6.3e) > (%+6.3e)\n",  _currentBestFitness, _termCondMaxFitness);
  }
 
  double range = fabs(_currentFunctionValue - _previousFunctionValue);
@@ -702,7 +702,7 @@ bool CMAES::checkTermination()
   
   if (cTemp == _k->N) {
    _isFinished = true;
-   printf("[Korali] Object variable changes < %+6.3e", _termCondMinStandardDeviation * _variableSettings[idx].initialStdDev);
+   printf("[Korali] Object variable changes < %+6.3e\n", _termCondMinStandardDeviation * _variableSettings[idx].initialStdDev);
   }
 
   for(idx = 0; idx <_k->N; ++idx )
@@ -738,7 +738,7 @@ bool CMAES::checkTermination()
     if (iKoo == _k->N)
     {
       _isFinished = true;
-      printf("[Korali] Standard deviation %f*%7.2e in principal axis %ld without effect.", _termCondMinStandardDeviationStepFactor, _sigma*axisD[iAchse], iAchse);
+      printf("[Korali] Standard deviation %f*%7.2e in principal axis %ld without effect.\n", _termCondMinStandardDeviationStepFactor, _sigma*axisD[iAchse], iAchse);
       break;
     }
   }
@@ -751,7 +751,7 @@ bool CMAES::checkTermination()
   if (_rgxMean[iKoo] == _rgxMean[iKoo] + _termCondMinStandardDeviationStepFactor*_sigma*sqrt(C[iKoo*_k->N+iKoo]) )
   {
    _isFinished = true;
-   printf("[Korali] Standard deviation %f*%7.2e in coordinate %ld without effect.", _termCondMinStandardDeviationStepFactor, _sigma*sqrt(C[iKoo*_k->N+iKoo]), iKoo);
+   printf("[Korali] Standard deviation %f*%7.2e in coordinate %ld without effect.\n", _termCondMinStandardDeviationStepFactor, _sigma*sqrt(C[iKoo*_k->N+iKoo]), iKoo);
    break;
   }
 
@@ -760,7 +760,7 @@ bool CMAES::checkTermination()
  if( _termCondMaxGenerationsEnabled && (_k->currentGeneration >= _termCondMaxGenerations) )
  {
   _isFinished = true;
-  printf("[Korali] Maximum number of Generations reached (%lu).", _termCondMaxGenerations);
+  printf("[Korali] Maximum number of Generations reached (%lu).\n", _termCondMaxGenerations);
  }
 
  return _isFinished;
@@ -779,19 +779,19 @@ void CMAES::updateEigensystem(std::vector<double>& M, int flgforce)
  double maxEWtmp = *std::max_element(std::begin(axisDtmp), std::end(axisDtmp));
 
  if (minEWtmp <= 0.0) 
- { if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Warning: Min Eigenvalue smaller or equal 0.0 (%+6.3e) after Eigen decomp (no update possible).\n", minEWtmp ); return; }
+ { if(_k->_verbosity >= KORALI_NORMAL) printf("[Korali] Warning: Min Eigenvalue smaller or equal 0.0 (%+6.3e) after Eigen decomp (no update possible).\n", minEWtmp ); return; }
 
  for (size_t d = 0; d < _k->N; ++d) 
  {
      axisDtmp[d] = sqrt(axisDtmp[d]); 
      if (std::isfinite(axisDtmp[d]) == false)
      {
-       if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Warning: Could not calculate root of Eigenvalue (%+6.3e) after Eigen decomp (no update possible).\n", axisDtmp[d] ); 
+       if(_k->_verbosity >= KORALI_NORMAL) printf("[Korali] Warning: Could not calculate root of Eigenvalue (%+6.3e) after Eigen decomp (no update possible).\n", axisDtmp[d] );
        return; 
      }
     for (size_t e = 0; e < _k->N; ++e) if (std::isfinite(B[d*_k->N+e]) == false)
     {
-       if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Warning: Non finite value detected in B (no update possible).\n"); 
+       if(_k->_verbosity >= KORALI_NORMAL) printf("[Korali] Warning: Non finite value detected in B (no update possible).\n");
        return;
     }
  }

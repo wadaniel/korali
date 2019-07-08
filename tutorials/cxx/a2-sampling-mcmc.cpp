@@ -17,6 +17,9 @@ int main(int argc, char* argv[])
  k["MCMC"]["Use Adaptive Sampling"]  = true;
  k["MCMC"]["Result Output Frequency"]  = 5000;
 
+ k["Console Output Frequency"] = 200;
+ k["File Output Frequency"] = 200;
+
  k.setModel([](Korali::ModelData& d) { directModel(d.getVariables(), d.getResults()); });
 
  k.run();

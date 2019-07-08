@@ -24,7 +24,9 @@ def consumeValue(base, varName, type, default, path = []):
  
  configFile.write('  ' + varName + ' = ' + base )
  for i in range(0, len(path)-1): configFile.write('.at("' + path[i] +'")')
- configFile.write('.at("' + path[-1] + '").get<' + type + '>();\n')
+ getLine = '.at("' + path[-1] + '").get<' + type + '>();\n'
+ if ('bool' in type): getLine = '.at("' + path[-1] + '").get<int>() != 0;\n' 
+ configFile.write(getLine)
  
  configFile.write('  ' + base)
  for i in range(0, len(path)-1): configFile.write('.at("' + path[i] +'")')

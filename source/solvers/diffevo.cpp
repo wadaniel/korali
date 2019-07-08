@@ -300,20 +300,20 @@ bool DE::checkTermination()
  if ( _termCondMinFitnessEnabled && (_k->currentGeneration > 1) && (_bestEver >= _termCondMinFitness) )
  {
   _isFinished = true;
-  printf("[Korali] Fitness Value (%+6.3e) > (%+6.3e).",  _bestEver, _termCondMinFitness);
+  printf("[Korali] Fitness Value (%+6.3e) > (%+6.3e).\n",  _bestEver, _termCondMinFitness);
  }
  
  if ( _termCondMaxFitnessEnabled && (_k->currentGeneration > 1) && (_bestEver >= _termCondMaxFitness) )
  {
   _isFinished = true;
-  printf("[Korali] Fitness Value (%+6.3e) > (%+6.3e).",  _bestEver, _termCondMaxFitness);
+  printf("[Korali] Fitness Value (%+6.3e) > (%+6.3e).\n",  _bestEver, _termCondMaxFitness);
  }
 
  double range = fabs(_currentFunctionValue - _previousFunctionValue);
  if ( _termCondMinFitnessDiffThresholdEnabled && (_k->currentGeneration > 1) && (range < _termCondMinFitnessDiffThreshold) )
  {
   _isFinished = true;
-  printf("[Korali] Fitness Diff Threshold (%+6.3e) < (%+6.3e).",  range, _termCondMinFitnessDiffThreshold);
+  printf("[Korali] Fitness Diff Threshold (%+6.3e) < (%+6.3e).\n",  range, _termCondMinFitnessDiffThreshold);
  }
  
  if ( _termCondMinStepSizeEnabled && (_k->currentGeneration > 1) )
@@ -323,14 +323,14 @@ bool DE::checkTermination()
    if (cTemp == _k->N) 
    {
     _isFinished = true;
-    printf("[Korali] Mean changes < %+6.3e for all variables.", _termCondMinStepSize);
+    printf("[Korali] Mean changes < %+6.3e for all variables.\n", _termCondMinStepSize);
    }
  }
  
  if( _termCondMaxGenerationsEnabled && (_k->currentGeneration >= _termCondMaxGenerations) )
  {
   _isFinished = true;
-  printf("[Korali] Maximum number of Generations reached (%lu).", _termCondMaxGenerations);
+  printf("[Korali] Maximum number of Generations reached (%lu).\n", _termCondMaxGenerations);
  }
 
  return _isFinished;

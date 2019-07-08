@@ -96,8 +96,10 @@ void Korali::Engine::getConfiguration()
  if (_verbosity == KORALI_DETAILED) _js["Verbosity"] = "Detailed";
  
  _js["Result Directory"] = _result_dir;
- _js["Termination Criteria"]["Max Generations"]["Value"] = maxGenerations;
+ _js["Termination Criteria"]["Max Generations"] = maxGenerations;
  _js["Current Generation"] = currentGeneration;
+ _js["Console Output Frequency"] = consoleOutputFrequency;
+ _js["File Output Frequency"] = fileOutputFrequency;
 
  for (int i = 0; i < _variables.size(); i++) _js["Variables"][i]["Name"] = _variables[i]->_name;
 
@@ -122,8 +124,10 @@ void Korali::Engine::setConfiguration()
  _seed = consume(_js, { "Seed" }, KORALI_NUMBER, std::to_string(_seed));
  gsl_rng_env_setup();
 
- maxGenerations = consume(_js, { "Termination Criteria", "Max Generations", "Value" }, KORALI_NUMBER, "5000");
+ maxGenerations = consume(_js, { "Termination Criteria", "Max Generations" }, KORALI_NUMBER, "5000000");
  currentGeneration = consume(_js, { "Current Generation" }, KORALI_NUMBER, "0");
+ consoleOutputFrequency = consume(_js, { "Console Output Frequency" }, KORALI_NUMBER, "1");
+ fileOutputFrequency = consume(_js, { "File Output Frequency" }, KORALI_NUMBER, "1");
 
   _verbosity = KORALI_UNDEFINED;
  std::string vLevel = consume(_js, { "Verbosity" }, KORALI_STRING, "Normal");
@@ -243,11 +247,13 @@ void Korali::Engine::run()
 
 	 if(_verbosity >= KORALI_DETAILED) printf("[Korali] Generation Time: %.3fs\n", std::chrono::duration<double>(t1-t0).count());
 
-	 _solver->printGeneration();
-	 saveState(currentGeneration);
+	 if (currentGeneration % consoleOutputFrequency == 0)_solver->printGeneration();
+	 if (currentGeneration % fileOutputFrequency    == 0) saveState(currentGeneration);
 	}
 
 	auto endTime = std::chrono::system_clock::now();
+
+	saveState(currentGeneration);
 
 	_solver->finalize();
 	_problem->finalize();

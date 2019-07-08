@@ -147,8 +147,8 @@ void Korali::Engine::setConfiguration()
  if (isArray(_js, { "Variables" } ))
  for (size_t i = 0; i < _js["Variables"].size(); i++)
  {
-  auto varName = consume(_js["Variables"][i], { "Name" }, KORALI_STRING);
-  _k->_variables.push_back(new Korali::Variable(varName));
+  _k->_variables.push_back(new Korali::Variable());
+  _k->_variables[i]->setConfiguration(_js["Variables"][i]);
  }
 
  N = _variables.size();

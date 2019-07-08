@@ -5,14 +5,14 @@
 /*                  Constructor / Destructor Methods                    */
 /************************************************************************/
 
-Korali::Variable::Variable(std::string name)
+Korali::Variable::Variable()
 {
- _name = name;
  _a = 0.0;
  _b = 0.0;
  _aux = 0.0;
  _seed = 0;
  _distributionType = KoraliDefaultDistribution;
+ _isLogSpace = false;
 }
 
 Korali::Variable::~Variable()
@@ -83,14 +83,11 @@ void Korali::Variable::setDistribution(nlohmann::json& js)
  if (_distributionType == KoraliGaussianDistribution)    { _aux = -0.5*gsl_sf_log(2*M_PI) - gsl_sf_log(_b);}
  if (_distributionType == KoraliLaplaceDistribution)     { _aux = -gsl_sf_log(2.*_b); }
  if (_distributionType == KoraliUniformDistribution)     { _aux = -gsl_sf_log(_b-_a); }
-
- _isLogSpace = consume(js, { "Log Space"}, KORALI_BOOLEAN, "false");
 };
 
 void Korali::Variable::getDistribution(nlohmann::json& js)
 {
  js["Seed"] = _seed;
- js["Log Space"] = _isLogSpace;
 
  if (_distributionType == KoraliCauchyDistribution)
  {
@@ -138,6 +135,18 @@ void Korali::Variable::getDistribution(nlohmann::json& js)
 /************************************************************************/
 /*                    Functional Methods                                */
 /************************************************************************/
+
+void Korali::Variable::getConfiguration(nlohmann::json& js)
+{
+ js["Log Space"] = _isLogSpace;
+ js["Name"] = _name;
+}
+
+void Korali::Variable::setConfiguration(nlohmann::json& js)
+{
+ _isLogSpace = consume(js, { "Log Space"}, KORALI_BOOLEAN, "false");
+ _name = consume(js, { "Name" }, KORALI_STRING);
+}
 
 double Korali::Variable::getDensity(double x)
 {

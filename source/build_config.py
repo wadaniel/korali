@@ -87,7 +87,9 @@ def parseFile(f):
     settingStateNames.append(stateName.replace(';', ''))
     
    line = file.readline()
-  
+ 
+ if (solverName == ''): return
+ 
  ## Post-processing variable information
  
  # Creating setConfiguration()
@@ -173,8 +175,6 @@ configFile.write('#include <stdio.h>\n\n')
 path = '../include/solvers'
 for r, d, f in os.walk(path):
  for filePath in f:
-  if '.h' in filePath:
-   if not 'base.h' in filePath:
     print('Processing: ' + filePath + '...')
     parseFile(os.path.join(r, filePath)) 
    

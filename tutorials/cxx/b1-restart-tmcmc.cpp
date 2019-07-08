@@ -18,7 +18,13 @@ int main(int argc, char* argv[])
 
  k["TMCMC"]["Population Size"] = 5000;
 
- k["Result Directory"] = "_a2_sampling_tmcmc";
- 
+ k["Result Directory"] = "_b1_restart_tmcmc";
+
+ k.run();
+
+ printf("\n\nRestarting now:\n\n");
+
+ k.loadState("_b1_restart_tmcmc/s00003.json");
+
  k.run();
 }

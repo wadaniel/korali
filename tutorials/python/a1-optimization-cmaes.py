@@ -27,11 +27,12 @@ k["Variables"][0]["CMAES"]["Upper Bound"] = +10.0;
 
 # Configuring CMA-ES parameters
 k["CMAES"]["Objective"] = "Maximize"
-k["CMAES"]["Termination Criteria"]["Max Generations"]["Value"] = 500
 k["CMAES"]["Sample Count"] = 32
 
+k["CMAES"]["Termination Criteria"]["Max Generations"]["Value"] = 500
+
 # Setting output directory
-k["Result Directory"] = "_a1_optimization_result"
+k["Result Directory"] = "_a1_optimization_cmaes_result"
 
 # Running Korali
 k.run()

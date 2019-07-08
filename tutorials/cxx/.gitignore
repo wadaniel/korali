@@ -4,7 +4,9 @@ a2-sampling-mcmc
 a2-sampling-tmcmc
 a3-bayesian-inference-cmaes
 a3-bayesian-inference-tmcmc
-b1-restart
+b1-restart-cmaes
+b1-restart-de
+b1-restart-tmcmc
 b2-constrained-optimization
 *.o
 *.a

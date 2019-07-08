@@ -68,13 +68,9 @@ void CMAES::initialize()
  // Init Generation
  _isFinished = false;
 
- if (_objective == "Maximize") 
-     _evaluationSign = 1.0;
- else if(_objective == "Minimize")
-     _evaluationSign = -1.0;
- else
-    { fprintf(stderr,"[Korali] Warning: Objective must be either be initialized to \'Maximize\' or \'Minimize\' (is %s).\n", _objective.c_str()); }         
-
+ if (_objective == "Maximize")     _evaluationSign = 1.0;
+ else if(_objective == "Minimize") _evaluationSign = -1.0;
+ else { fprintf(stderr,"[Korali] Warning: Objective must be either be initialized to \'Maximize\' or \'Minimize\' (is %s).\n", _objective.c_str()); }         
 
  // Initailizing Mu
  _muWeights.resize(mu_max);

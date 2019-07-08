@@ -4,6 +4,7 @@
 int main(int argc, char* argv[])
 {
  auto k = Korali::Engine();
+ k.setModel([](Korali::ModelData& d) { directModel(d.getVariables(), d.getResults()); });
 
  k["Problem"] = "Direct Evaluation";
  k["Solver"] = "MCMC";
@@ -14,13 +15,13 @@ int main(int argc, char* argv[])
 
  k["MCMC"]["Burn In"] = 500;
  k["MCMC"]["Chain Length"]  = 5000;
- k["MCMC"]["Use Adaptive Sampling"]  = true;
- k["MCMC"]["Result Output Frequency"]  = 5000;
+ k["MCMC"]["Use Adaptive Sampling"] = true;
+ k["MCMC"]["Result Output Frequency"] = 5000;
 
- k["Console Output Frequency"] = 200;
- k["File Output Frequency"] = 200;
+ k["Console Output Frequency"] = 500;
+ k["File Output Frequency"] = 500;
 
- k.setModel([](Korali::ModelData& d) { directModel(d.getVariables(), d.getResults()); });
-
+ k["Result Directory"] = "_a2_sampling_mcmc_result";
+ 
  k.run();
 }

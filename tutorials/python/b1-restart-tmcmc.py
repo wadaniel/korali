@@ -15,28 +15,27 @@ import korali
 k = korali.initialize()
 k.setModel(evaluateModel)
 
-k["Problem"] = "Direct Evaluation"
-k["Solver"]  = "CMAES" 
+k["Problem"] = "Bayesian"
+k["Solver"]  = "TMCMC" 
+
+k["Bayesian"]["Likelihood"]["Type"] = "Direct"
 
 k["Variables"][0]["Name"] = "X"
-k["Variables"][0]["CMAES"]["Lower Bound"] = -10.0
-k["Variables"][0]["CMAES"]["Upper Bound"] = +10.0
 
-k["CMAES"]["Objective"] = "Maximize"
-k["CMAES"]["Sample Count"] = 5
+k["Variables"][0]["Bayesian"]["Prior Distribution"]["Type"] = "Uniform"
+k["Variables"][0]["Bayesian"]["Prior Distribution"]["Minimum"] = -10.0
+k["Variables"][0]["Bayesian"]["Prior Distribution"]["Maximum"] = +10.0
+
+k["TMCMC"]["Population Size"] = 5000
 
 # Setting output directory
-k["Result Directory"] = "_b1_restart_cmaes"
-
-# Reducing Output
-k["Termination Criteria"]["Max Generations"] = 500
-k["Console Output Frequency"] = 10
+k["Result Directory"] = "_b1_restart_tmcmc"
 
 k.run()
 
-print("\n\nRestart Now\n\n")
+print("\n\nRestarting now:\n\n");
 
 # Now we loadState() to resume the same experiment from generation 5.
-k.loadState("_b1_restart_cmaes/s00010.json")
+k.loadState("_b1_restart_cmaes/s00003.json")
 
 k.run()

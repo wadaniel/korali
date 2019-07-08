@@ -5,7 +5,7 @@ int main(int argc, char* argv[])
 {
  auto k = Korali::Engine();
  k.setModel([](Korali::ModelData& d) { directModel(d.getVariables(), d.getResults()); });
-
+ 
  k["Problem"] = "Direct Evaluation";
  k["Solver"]  = "CMAES";
 
@@ -14,11 +14,18 @@ int main(int argc, char* argv[])
  k["Variables"][0]["CMAES"]["Upper Bound"] = +10.0;
 
  k["CMAES"]["Objective"] = "Maximize";
- k["CMAES"]["Sample Count"] = 32;
+ k["CMAES"]["Sample Count"] = 5;
 
- k["CMAES"]["Termination Criteria"]["Max Generations"]["Value"] = 500;
+ k["Result Directory"] = "_b1_restart_cmaes";
 
- k["Result Directory"] = "_a1_optimization_cmaes_result";
- 
+ k["Termination Criteria"]["Max Generations"] = 500;
+ k["Console Output Frequency"] = 10;
+
  k.run();
+
+ printf("\n\nRestarting now:\n\n");
+
+ k.loadState("_b1_restart_cmaes/s00010.json");
+ k.run();
+
 }

@@ -27,9 +27,9 @@ k["Variables"][0]["MCMC"]["Initial Mean"] = 0.0
 k["Variables"][0]["MCMC"]["Standard Deviation"] = 1.000
 
 # Configuring the MCMC sampler parameters
-#k["MCMC"]["Burn In"] = 800
+k["MCMC"]["Burn In"] = 500
 k["MCMC"]["Chain Length"] = 5000
-#k["MCMC"]["Use Adaptive Sampling"] = True
+k["MCMC"]["Use Adaptive Sampling"] = True
 
 # Reducint Output
 k["Console Output Frequency"] = 500

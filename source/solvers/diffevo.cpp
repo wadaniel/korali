@@ -50,8 +50,7 @@ void DE::initialize()
 
  if (_objective == "Maximize")      _evaluationSign = 1.0;
  else if(_objective == "Minimize")  _evaluationSign = -1.0;
- else
-    { fprintf(stderr,"[Korali] Error: Objective must be either be initialized to \'Maximize\' or \'Minimize\' (is %s).\n", _objective.c_str()); exit(-1); }         
+ else { fprintf(stderr,"[Korali] Error: Objective must be either be initialized to \'Maximize\' or \'Minimize\' (is %s).\n", _objective.c_str()); exit(-1); }         
 
  _functionEvaluationCount = 0;
  _infeasibleSampleCount   = 0;

@@ -4,6 +4,8 @@
 int main(int argc, char* argv[])
 {
  auto k = Korali::Engine();
+ 
+ k.setModel([](Korali::ModelData& d) { directModel(d.getVariables(), d.getResults()); });
 
  k["Problem"] = "Direct Evaluation";
  k["Solver"]  = "DE";
@@ -16,6 +18,8 @@ int main(int argc, char* argv[])
  k["DE"]["Sample Count"] = 32;
 
  k["DE"]["Termination Criteria"]["Max Generations"]["Value"] = 500;
- k.setModel([](Korali::ModelData& d) { directModel(d.getVariables(), d.getResults()); });
+
+ k["Result Directory"] = "_a1_optimization_de_result";
+ 
  k.run();
 }

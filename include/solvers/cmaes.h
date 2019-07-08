@@ -29,7 +29,7 @@ Default Enabled:
 Description:
 Specifies whether the problem evaluation is to be minimized or maximized.
 ******************************************************************************/
-std::string _objective; /* Maximize or Minimize */ 
+std::string _objective;
 
 /******************************************************************************
 Setting Name: Sample Count

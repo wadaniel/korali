@@ -218,7 +218,7 @@ k["Variables"][2]["CMA-ES"]["Lower Bound"] = 0.0
 k["Variables"][2]["CMA-ES"]["Upper Bound"] = +5.0
 ```
 
-For a detailed description of CMA-ES settings see [here](../../usage/solvers/optimizers/cmaes.md).
+For a detailed description of CMA-ES settings see [here](../../usage/solvers/cmaes.md).
 
 Finally, we need to add a call to the run() routine to start the Korali engine.
 
@@ -270,7 +270,7 @@ k["TMCMC"]["Coefficient of Variation"] = 0.5
 k["TMCMC"]["Burn In"] = 5
 ```
 
-For a detailed description of the TMCMC settings see [here](../../usage/solvers/samplers/tmcmc.md)
+For a detailed description of the TMCMC settings see [here](../../usage/solvers/tmcmc.md)
 
 Finally, we need to add a call to the run() routine to start the Korali engine.
 

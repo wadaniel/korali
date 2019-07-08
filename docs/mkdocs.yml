@@ -30,7 +30,7 @@ nav:
             - Reference Likelihood: usage/problems/bayesian/reference.md
       - Solvers:
           - Optimizers:
-            - CMA-ES: usage/solvers/optimizers/cmaes.md
+            - CMA-ES: usage/solvers/cmaes.md
             - Differential Evolution: usage/solvers/de.md
           - Samplers:
             - MCMC: usage/solvers/mcmc.md

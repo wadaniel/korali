@@ -347,7 +347,7 @@ bool   _termCondMaxInfeasibleResamplingsEnabled;
 /******************************************************************************
 Setting Name: Min Fitness
 Type: Termination Criterion
-Default Value: -INFINITY
+Default Value: -std::numeric_limits<float>::max()
 Default Enabled: false
 Description:
 Specifies the target fitness to stop minimization.
@@ -358,7 +358,7 @@ bool   _termCondMinFitnessEnabled;
 /******************************************************************************
 Setting Name: Max Fitness
 Type: Termination Criterion
-Default Value: +INFINITY
+Default Value: std::numeric_limits<float>::max()
 Default Enabled: false
 Description:
 Specifies the target fitness to stop maximization.
@@ -1078,7 +1078,7 @@ struct variableSetting
 /******************************************************************************
 Setting Name: Lower Bound
 Type: Variable Setting
-Default Value: -INFINITY
+Default Value: -std::numeric_limits<float>::max()
 Default Enabled:
 Description:
 Specifies the lower bound for the variable's value. Korali will not generate samples
@@ -1090,7 +1090,7 @@ double lowerBound;
 /******************************************************************************
 Setting Name: Upper Bound
 Type: Variable Setting
-Default Value: +INFINITY
+Default Value: +std::numeric_limits<float>::max()
 Default Enabled:
 Description:
 Specifies the upper bound for the variable's value. Korali will not generate samples

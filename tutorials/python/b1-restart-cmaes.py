@@ -34,6 +34,6 @@ k["Console Output Frequency"]  = 100
 k["File Output Frequency"]  = 100
 
 # Now we loadState() to resume the same experiment from generation 5.
-k.loadState("_b1_restart_cmaes/s00400.json")
+k.loadState("_b1_restart_cmaes/s00010.json")
 
 k.run()

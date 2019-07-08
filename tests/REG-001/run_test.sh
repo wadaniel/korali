@@ -41,6 +41,9 @@ echo "[Korali] Beginning python tests" > $logfile
 
 for file in *.py
 do
+  echo "-------------------------------------"
+  echo " Running $file"
+  echo "-------------------------------------"
   ./"$file" >> $logfile 2>&1
   check_result
 done
@@ -57,6 +60,9 @@ check_result
 
 for file in *.cpp
 do
+  echo "-------------------------------------"
+  echo " Running $logfile"
+  echo "-------------------------------------"
   ./"${file%.*}" >> $logfile 2>&1
   check_result
 done

@@ -164,7 +164,7 @@ bool _termCondMaxInfeasibleResamplingsEnabled;
 /******************************************************************************
 Setting Name: Min Fitness
 Type: Termination Criterion
-Default Value: -INFINITY
+Default Value: -std::numeric_limits<double>::infinity()
 Default Enabled: false
 Description:
 Specifies the target fitness to stop minimization.
@@ -175,7 +175,7 @@ bool   _termCondMinFitnessEnabled;
 /******************************************************************************
 Setting Name: Max Fitness
 Type: Termination Criterion
-Default Value: +INFINITY
+Default Value: +std::numeric_limits<double>::infinity()
 Default Enabled: false
 Description:
 Specifies the target fitness to stop maximization.

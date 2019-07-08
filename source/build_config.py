@@ -117,7 +117,7 @@ def writeConfig(solverName, solverType, solverAlias, solverDescription, solverPl
  for i in range(len(settingNames)):   
   if (settingTypes[i] == 'Termination Criterion'):
    configFile.write(' _k->_js["' + solverAlias + '"]["Termination Criteria"]["' + settingNames[i] + '"]["Value"] = ' + settingVariableNames[i] + ';\n')
-   configFile.write(' _k->_js["' + solverAlias + '"]["Termination Criteria"]["' + settingNames[i] + '"]["State"] = ' + settingStateNames[i] + ';\n') 
+   configFile.write(' _k->_js["' + solverAlias + '"]["Termination Criteria"]["' + settingNames[i] + '"]["Enabled"] = ' + settingStateNames[i] + ';\n') 
  
  configFile.write('\n')
  

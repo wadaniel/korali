@@ -13,7 +13,7 @@ from directModel import *
 
 import korali
 k = korali.initialize()
-k.setModel(evaluateModel)
+k.setLikelihood( evaluateModel )
 
 k["Problem"] = "Bayesian"
 k["Solver"]  = "TMCMC" 

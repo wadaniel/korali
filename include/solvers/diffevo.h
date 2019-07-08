@@ -34,7 +34,7 @@ class DE : public Base
 /******************************************************************************
 Setting Name: Objective
 Type: Solver Setting
-Default Value: "Maximize"
+Default Value: Maximize
 Default Enabled:
 Description:
 Specifies whether the problem evaluation is to be minimized or maximized.

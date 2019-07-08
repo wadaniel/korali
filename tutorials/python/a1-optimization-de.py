@@ -18,17 +18,17 @@ k.setModel(evaluateModel)
 
 # Selecting problem and solver types.
 k["Problem"] = "Direct Evaluation"
-k["Solver"]  = "CMAES" 
+k["Solver"]  = "DE" 
 
 # Defining the problem's variables and their CMA-ES bounds.
 k["Variables"][0]["Name"] = "X";
-k["Variables"][0]["CMAES"]["Lower Bound"] = -10.0;
-k["Variables"][0]["CMAES"]["Upper Bound"] = +10.0;
+k["Variables"][0]["DE"]["Lower Bound"] = -10.0;
+k["Variables"][0]["DE"]["Upper Bound"] = +10.0;
 
 # Configuring CMA-ES parameters
-k["CMAES"]["Objective"] = "Maximize"
-k["CMAES"]["Termination Criteria"]["Max Generations"]["Value"] = 500
-k["CMAES"]["Sample Count"] = 5
+#k["DE"]["Objective"] = "Maximize"
+k["DE"]["Termination Criteria"]["Max Generations"]["Value"] = 500
+k["DE"]["Sample Count"] = 32
 
 # Setting output directory
 k["Result Directory"] = "_a1_optimization_result"

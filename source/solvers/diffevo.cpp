@@ -48,12 +48,10 @@ void DE::initialize()
 
  _isFinished = false;
 
- if (_objective == "Maximize") 
-     _evaluationSign = 1.0;
- else if(_objective == "Minimize")
-     _evaluationSign = -1.0;
+ if (_objective == "Maximize")      _evaluationSign = 1.0;
+ else if(_objective == "Minimize")  _evaluationSign = -1.0;
  else
-    { fprintf(stderr,"[Korali] Warning: Objective must be either be initialized to \'Maximize\' or \'Minimize\' (is %s).\n", _objective.c_str()); }         
+    { fprintf(stderr,"[Korali] Error: Objective must be either be initialized to \'Maximize\' or \'Minimize\' (is %s).\n", _objective.c_str()); exit(-1); }         
 
  _functionEvaluationCount = 0;
  _infeasibleSampleCount   = 0;
@@ -63,7 +61,7 @@ void DE::initialize()
  _bestEver                = -std::numeric_limits<double>::max();
 
  for(size_t d = 0; d < _k->N; ++d) if(_variableSettings[d].upperBound < _variableSettings[d].lowerBound)
-    { fprintf(stderr,"[Korali] Warning: Lower Bound (%.4f) of variable \'%s\'  exceeds Upper Bound (%.4f).\n",          
+    { fprintf(stderr,"[Korali] Error: Lower Bound (%.4f) of variable \'%s\'  exceeds Upper Bound (%.4f).\n",          
             _variableSettings[d].lowerBound,
             _k->_variables[d]->_name.c_str(),
             _variableSettings[d].upperBound);

@@ -38,8 +38,6 @@ This is the computational model that represents our objective function.
 
 ## Sampling with MCMC
 
-The code in **Python** for this tutorial can be found [here](https://github.com/cselab/skorali/blob/master/tutorials/a2-sampling-mcmc).
-
 First, open a file and import the korali module
 ```python
 #!/usr/bin/env python3
@@ -87,7 +85,7 @@ k["MCMC"]["Adaptive Sampling"]  = True;
 k["MCMC"]["Result Output Frequency"]  = 5000;
 ```
 We also set some settings for MCMC. For a detailed description of the MCMC settings, see
-[here](../../usage/solvers/samplers/mcmc.md).
+[here](../../usage/solvers/mcmc.md).
 
 ###  Running
 
@@ -171,7 +169,7 @@ k["TMCMC"]["Coefficient of Variation"] = 0.5;
 k["TMCMC"]["Burn In"] = 5
 ```
 
- For a detailed description of the MCMC settings see [here](../../usage/solvers/samplers/tmcmc.md).
+ For a detailed description of the MCMC settings see [here](../../usage/solvers/tmcmc.md).
 
 Finally, we need to add a call to the run() routine to start the Korali engine.
 

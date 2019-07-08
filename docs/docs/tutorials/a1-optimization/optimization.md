@@ -74,7 +74,7 @@ k["CMA-ES"]["Objective"] = "Maximize"
 k["CMA-ES"]["Termination Criteria"]["Max Generations"]["Value"] = 500
 k["CMA-ES"]["Sample Count"] = 5
 ```
-For a detailed description of CMA-ES settings see [here](../../usage/solvers/optimizers/cmaes.md).
+For a detailed description of CMA-ES settings see [here](../../usage/solvers/cmaes.md).
 
 Finally, we need to add a call to the run() routine to start the Korali engine.
 

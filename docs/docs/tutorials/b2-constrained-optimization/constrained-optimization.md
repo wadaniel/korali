@@ -148,7 +148,7 @@ k["CCMA-ES"]["Sample Count"] = 8;
 k["CCMA-ES"]["Viability Sample Count"] = 2;
 k["CCMA-ES"]["Termination Criteria"]["Min Fitness"]["Value"] = -680.630057374402 - 1e-4;
 ```
-For a detailed description of CCMA-ES settings see [here](../../usage/solvers/optimizers/cmaes.md).
+For a detailed description of CCMA-ES settings see [here](../../usage/solvers/cmaes.md).
 
 Finally, we need to add a call to the run() routine to start the Korali engine.
 

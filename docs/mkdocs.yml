@@ -30,11 +30,11 @@ nav:
             - Reference Likelihood: usage/problems/bayesian/reference.md
       - Solvers:
           - Optimizers:
-            - CMA-ES: usage/solvers/optimizers/cmaes.md
-            - Differential Evolution: usage/solvers/optimizers/diffevo.md
+            - CMA-ES: usage/solvers/cmaes.md
+            - Differential Evolution: usage/solvers/de.md
           - Samplers:
-            - MCMC: usage/solvers/samplers/mcmc.md
-            - TMCMC: usage/solvers/samplers/tmcmc.md
+            - MCMC: usage/solvers/mcmc.md
+            - TMCMC: usage/solvers/tmcmc.md
       - Conduits:
           - Semi-Intrusive: usage/conduits/semi-intrusive.md
           - Distributed: usage/conduits/distributed.md

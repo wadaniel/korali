@@ -206,9 +206,9 @@ void DE::evaluateSamples()
 {
   
   for (size_t i = 0; i < _sampleCount; i++) for(size_t d = 0; d < _k->N; ++d)
-    if(_k->_variables[d]->_isLogSpace == true)
-        _transformedSamples[i*_k->N+d] = std::exp(_sampleCandidates[i*_k->N+d]);
-    else 
+    //if(_k->_variables[d]->_isLogSpace == true)
+    //    _transformedSamples[i*_k->N+d] = std::exp(_sampleCandidates[i*_k->N+d]);
+    //else 
         _transformedSamples[i*_k->N+d] = _sampleCandidates[i*_k->N+d];
 
 

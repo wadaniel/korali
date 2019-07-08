@@ -12,9 +12,7 @@ int main(int argc, char* argv[])
  k["Variables"][0]["Name"] = "X";
  k["Variables"][0]["DE"]["Lower Bound"] = -10.0;
  k["Variables"][0]["DE"]["Upper Bound"] = +10.0;
- k["Variables"][0]["DE"]["Log Space"] = false;
 
- k["DE"]["Objective"] = "Maximize";
  k["DE"]["Sample Count"] = 32;
 
  k["DE"]["Termination Criteria"]["Max Generations"]["Value"] = 100;

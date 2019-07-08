@@ -48,17 +48,17 @@ done
 
 ############# STEP 2 ##############
 
-make clean >> $logfile 2>&1
-check_result
+#make clean >> $logfile 2>&1
+#check_result
 
-make -j 4 >> $logfile 2>&1
-check_result
+#make -j 4 >> $logfile 2>&1
+#check_result
 
-for file in *.cpp
-do
-  echo "-------------------------------------"
-  echo " Running $file"
-  echo "-------------------------------------"
-  ./"${file%.*}" >> $logfile 2>&1
-  check_result
-done
+#for file in *.cpp
+#do
+#  echo "-------------------------------------"
+#  echo " Running $file"
+#  echo "-------------------------------------"
+#  ./"${file%.*}" >> $logfile 2>&1
+#  check_result
+#done

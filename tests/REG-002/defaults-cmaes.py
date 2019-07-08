@@ -1,34 +1,24 @@
 #!/usr/bin/env python3
-
-# Importing computational model
-import sys
-
 def evaluateModel( s ):
    x = s.getVariable(0)
    r = -x*x      
    s.addResult(r)
 
-# Starting Korali's Engine
 import korali
 k = korali.initialize()
 k.setModel(evaluateModel)
 
-# Selecting problem and solver types.
 k["Problem"] = "Direct Evaluation"
 k["Solver"]  = "CMAES" 
 
-# Defining the problem's variables and their CMA-ES bounds.
 k["Variables"][0]["Name"] = "X";
 k["Variables"][0]["CMAES"]["Lower Bound"] = -10.0;
 k["Variables"][0]["CMAES"]["Upper Bound"] = +10.0;
 
-# Configuring CMA-ES parameters
 k["CMAES"]["Objective"] = "Maximize"
 k["CMAES"]["Sample Count"] = 32
-
 k["CMAES"]["Termination Criteria"]["Max Generations"]["Value"] = 0
 
-# Setting output directory
 k["Result Directory"] = "_defaults_cmaes"
 
 # Running Korali

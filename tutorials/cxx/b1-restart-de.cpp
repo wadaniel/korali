@@ -4,29 +4,28 @@
 int main(int argc, char* argv[])
 {
  auto k = Korali::Engine();
-
- k["Problem"] = "Bayesian";
- k["Solver"] = "TMCMC";
-
- k["Bayesian"]["Likelihood"]["Type"] = "Direct";
- k.setLikelihood([](Korali::ModelData& d) { directModel(d.getVariables(), d.getResults()); });
+ k.setModel([](Korali::ModelData& d) { directModel(d.getVariables(), d.getResults()); });
+ 
+ k["Problem"] = "Direct Evaluation";
+ k["Solver"]  = "DE";
 
  k["Variables"][0]["Name"] = "X";
- k["Variables"][0]["Bayesian"]["Prior Distribution"]["Type"] = "Uniform";
- k["Variables"][0]["Bayesian"]["Prior Distribution"]["Minimum"] = -10.0;
- k["Variables"][0]["Bayesian"]["Prior Distribution"]["Maximum"] = +10.0;
+ k["Variables"][0]["DE"]["Lower Bound"] = -10.0;
+ k["Variables"][0]["DE"]["Upper Bound"] = +10.0;
 
- k["TMCMC"]["Covariance Scaling"] = 0.02;
- k["TMCMC"]["Population Size"] = 5000;
- k["TMCMC"]["Min Rho Update"] = 0.0;
- k["TMCMC"]["Initial Coefficient of Variation"] = 0.5;
- k["TMCMC"]["Burn In"] = 5;
+ k["DE"]["Objective"] = "Maximize";
+ k["DE"]["Sample Count"] = 10;
+
+ k["Result Directory"] = "_b1_restart_de";
+
+ k["Termination Criteria"]["Max Generations"] = 500;
+ k["Console Output Frequency"] = 10;
 
  k.run();
 
  printf("\n\nRestarting now:\n\n");
 
- k.loadState("_korali_result/s00003.json");
-
+ k.loadState("_b1_restart_de/s00004.json");
  k.run();
+
 }

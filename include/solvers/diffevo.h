@@ -194,6 +194,207 @@ double _termCondMinStepSize;
 bool   _termCondMinStepSizeEnabled;
  
 /******************************************************************************
+Setting Name: Evaluation Sign
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+The sign for the fitness evaluation to determine whether this is a maximization
+or minimization operation.
+******************************************************************************/
+int evaluationSign;
+
+/******************************************************************************
+Setting Name: Fitness Vector
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Objection Function Values
+******************************************************************************/
+std::vector<double> _fitnessVector;
+
+/******************************************************************************
+Setting Name: Previous Fitness Vector
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Objection Function Values from previous evaluations
+******************************************************************************/
+std::vector<double> _prevfitnessVector;
+
+/******************************************************************************
+Setting Name: Sample Population
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Sample coordinate information
+******************************************************************************/
+std::vector<double> _samplePopulation;
+
+/******************************************************************************
+Setting Name: Sample Candidates
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Sample Candidates to evaluate
+******************************************************************************/
+std::vector<double> _sampleCandidates;
+
+/******************************************************************************
+Setting Name: Is Initialized Sample
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Determines which samples are initialized.
+******************************************************************************/
+std::vector<bool> _isInitializedSample;
+
+/******************************************************************************
+Setting Name: Finished Sample Count
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Counter of evaluated samples to terminate evaluation.
+******************************************************************************/
+size_t _finishedSampleCount;
+
+/******************************************************************************
+Setting Name: Current Function Value
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Best fitness from current generation.
+******************************************************************************/
+double _currentFunctionValue;
+
+/******************************************************************************
+Setting Name: Previous Function Value
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Best fitness from previous generation.
+******************************************************************************/
+double _previousFunctionValue;
+
+/******************************************************************************
+Setting Name: Best Sample Index
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Best Sample Index.
+******************************************************************************/
+size_t _bestIndex;
+
+/******************************************************************************
+Setting Name: Best Sample Ever
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Best Sample Ever.
+******************************************************************************/
+double _bestEver;
+
+/******************************************************************************
+Setting Name: Previous Best Sample Ever
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Previous Best Sample Ever.
+******************************************************************************/
+double _previousBestEver;
+
+/******************************************************************************
+Setting Name: RGX Mean
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Mean Parent
+******************************************************************************/
+std::vector<double> _rgxMean;
+
+/******************************************************************************
+Setting Name: RGX Old Mean
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Old Mean Parent
+******************************************************************************/
+std::vector<double> _rgxOldMean;
+
+/******************************************************************************
+Setting Name: RGX Best Ever
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Best RGX
+******************************************************************************/
+std::vector<double> _rgxBestEver;
+
+/******************************************************************************
+Setting Name: Current Best Ever
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Current Best Ever
+******************************************************************************/
+std::vector<double> _curBestEver;
+
+/******************************************************************************
+Setting Name: Max Width
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Max distance between samples per dimension.
+******************************************************************************/
+std::vector<double> _maxWidth;
+
+/******************************************************************************
+Setting Name: Max Width
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Max distance between samples per dimension.
+******************************************************************************/
+size_t _evaluationCount;
+
+/******************************************************************************
+Setting Name: Function Evaluation Count
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Keeps count of the number of function evaluations so far
+******************************************************************************/
+size_t _functionEvaluationCount;
+
+/******************************************************************************
+Setting Name: Infeasible Sample Count
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Keeps count of the number of function evaluations so far
+******************************************************************************/
+size_t _infeasibleSampleCount;
+
+/******************************************************************************
 * Variable Settings
 ******************************************************************************/
 
@@ -252,13 +453,23 @@ double initialStdDev;
 std::vector<variableSetting> _variableSettings;
 /******************************************************************************/
 
-DE();
 
- // Runtime Methods (to be inherited from base class in the future)
+ // DE Methods
+
+ Variable* _gaussianGenerator;
+ Variable* _uniformGenerator;
+
+ DE();
+
+ void mutateSingle(size_t sampleIdx); /* sample individual */
+ bool isFeasible(size_t sampleIdx) const; /* check if sample inside lower & upper bounds */
+ void fixInfeasible(size_t sampleIdx); /* force sample inside lower & upper bounds */
+ void updateSolver(); /* update states of DE */
+ void evaluateSamples(); /* evaluate all samples until done */
+
  void initSamples();
  void prepareGeneration();
  bool checkTermination() override;
- void updateDistribution(const double *fitnessVector);
 
  void initialize() override;
  void finalize() override;
@@ -266,47 +477,6 @@ DE();
  void runGeneration() override;
  void processSample(size_t sampleId, double fitness) override;
 
- private:
-
- // Korali Runtime Variables
- int _fitnessSign; /* maximizing vs optimizing (+- 1) */
- double* oldFitnessVector; /* objective function values previous generation [_s] */
- double* fitnessVector; /* objective function values [_s] */
- double* samplePopulation; /* sample coordinates [_s x _k->N] */
- double* candidates; /* candidates to evaluate */
- bool* initializedSample; /* flag to distribute work */
- Variable* _gaussianGenerator;
- Variable* _uniformGenerator;
-
- size_t currentGeneration; /* generation count */
- size_t finishedSamples; /* counter of evaluated samples to terminate evaluation */
-
-
- // Private DE-Specific Variables
- double currentFunctionValue; /* best fitness current generation */
- double prevFunctionValue; /* best fitness previous generation */
- size_t bestIndex; /* index of best sample */
- double bestEver; /* best ever fitness */
- double prevBest; /* best ever fitness from previous generation */
- double *rgxmean; /* mean "parent" */
- double *rgxoldmean; /* mean "parent" previous generation */
- double *rgxbestever; /* bestever vector */
- double *curBestVector; /* current best vector */
- double* maxWidth; /* max distance between samples per dimension */
-
- size_t countevals; /* Number of function evaluations */
- size_t countinfeasible; /* Number of samples outside of domain given by bounds */
-
- // Private DE-Specific Methods
- void mutateSingle(size_t sampleIdx); /* sample individual */
- bool isFeasible(size_t sampleIdx) const; /* check if sample inside lower & upper bounds */
- void fixInfeasible(size_t sampleIdx); /* force sample inside lower & upper bounds */
- void updateSolver(const double *fitnessVector); /* update states of DE */
- void evaluateSamples(); /* evaluate all samples until done */
-
- // Private DE-ES-Specific Variables 
- 
- // Helper Methods
  size_t maxIdx(const double *rgd, size_t len) const;
  
  void setConfiguration() override;

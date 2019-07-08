@@ -175,9 +175,10 @@ configFile.write('#include <stdio.h>\n\n')
 path = '../include/solvers'
 for r, d, f in os.walk(path):
  for filePath in f:
+   if filePath.endswith('.h'):
     print('Processing: ' + filePath + '...')
     parseFile(os.path.join(r, filePath)) 
-   
+    
 configFile.close()    
    
    

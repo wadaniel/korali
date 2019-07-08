@@ -25,7 +25,7 @@ libkorali.a: $(OBJECTS_STATIC)
 	ar rs $@ $^
 
 config.cpp:
-	python3 ./build_config.py
+	python3 ../python/parser/build_config.py
 
 clean:
 	@rm -rf *.so *.a config.cpp $(OBJECTS_STATIC) $(OBJECTS_SHARED)

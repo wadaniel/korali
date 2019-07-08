@@ -95,8 +95,8 @@ def plot_lower_triangle(ax, theta):
 def plot_samples(fig, ax, data, filename):
     dims     = data['Variables']
     numdim   = len(dims)
-    pop      = data['MCMC']['State']['Database Entries']
-    samples  = np.reshape( data['MCMC']['State']['DatabasePoints'], (pop,numdim) )
+    pop      = data['MCMC']['Internal']['Database Entries']
+    samples  = np.reshape( data['MCMC']['Internal']['DatabasePoints'], (pop,numdim) )
     
     fig.canvas.set_window_title(filename)
     
@@ -132,7 +132,7 @@ def plot_mcmc(src, live=False, test=False):
                 data     = json.load(f)
                 numdim   = len(data['Variables'])
                 burnin   = data['MCMC']['Burn In']
-                chainlen = data['MCMC']['State']['Chain Length']
+                chainlen = data['MCMC']['Internal']['Chain Length']
                 
                 if (fig, ax) == (None, None):
                     fig, ax = plt.subplots(numdim, numdim, figsize=(8,8))
@@ -154,7 +154,7 @@ def plot_mcmc(src, live=False, test=False):
             data     = json.load(f)
             numdim   = len(data['Variables'])
             burnin   = data['MCMC']['Burn In']
-            chainlen = data['MCMC']['State']['Chain Length']
+            chainlen = data['MCMC']['Internal']['Chain Length']
             if chainlen <= burnin:
                 print("[Korali] Error: No samples found in file {0}...".format(path))
                 exit(-1)

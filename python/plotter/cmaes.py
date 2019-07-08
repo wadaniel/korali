@@ -79,8 +79,8 @@ def plot_cmaes(src, live=False, test=False, evolution=False):
             data       = json.load(f)
             solverName = data['Solver']
 
-            state = data[solverName]['State']
-            gen   = state['Current Generation']
+            state = data[solverName]['Internal']
+            gen   = data['Current Generation']
 
             if (fig, ax) == (None, None):
 
@@ -118,7 +118,7 @@ def plot_cmaes(src, live=False, test=False, evolution=False):
 
             if gen > 0:
 
-                numeval.append(state['EvaluationCount'])
+                numeval.append(data['Function Evaluation Count'])
                 dfval.append(abs(state['CurrentBestFunctionValue'] - state['BestEverFunctionValue']))
                 
                 fval.append(state['CurrentBestFunctionValue'])

@@ -53,6 +53,7 @@ class Engine {
  size_t maxGenerations;
  size_t consoleOutputFrequency;
  size_t fileOutputFrequency;
+ size_t functionEvaluationCount;
 
  std::vector<Korali::Variable*> _variables;
  Korali::Conduit::Base* _conduit;

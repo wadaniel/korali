@@ -115,10 +115,10 @@ def plot_tmcmc(src, live=False, test=False):
             data    = json.load(f)
             numdim  = len(data['Variables'])
             pop     = data['TMCMC']['Population Size']
-            gen     = data['TMCMC']['State']['Current Generation']
-            anneal  = data['TMCMC']['State']['AnnealingExponent']
-            fitness = data['TMCMC']['State']['DatabaseFitness']
-            samples = np.reshape( data['TMCMC']['State']['DatabasePoints'], (pop,numdim) )
+            gen     = data['Current Generation']
+            anneal  = data['TMCMC']['Internal']['AnnealingExponent']
+            fitness = data['TMCMC']['Internal']['DatabaseFitness']
+            samples = np.reshape( data['TMCMC']['Internal']['DatabasePoints'], (pop,numdim) )
             fig, ax = plt.subplots(samples.shape[1], samples.shape[1], figsize=(8,8))
 
             fig.canvas.set_window_title(filename)

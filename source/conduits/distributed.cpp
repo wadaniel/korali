@@ -148,6 +148,8 @@ void Distributed::evaluateSample(double* sampleArray, size_t sampleId)
   MPI_Send(&continueFlag, 1, MPI_INT, workerId, MPI_TAG_CONTINUE, MPI_COMM_WORLD);
   MPI_Send(&sampleArray[sampleId*_k->N],_k->N, MPI_DOUBLE, workerId, MPI_TAG_SAMPLE, MPI_COMM_WORLD);
  }
+
+ _k->functionEvaluationCount++;
 }
 
 void Distributed::checkProgress()

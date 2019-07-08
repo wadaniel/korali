@@ -61,7 +61,7 @@ check_result
 for file in *.cpp
 do
   echo "-------------------------------------"
-  echo " Running $logfile"
+  echo " Running $file"
   echo "-------------------------------------"
   ./"${file%.*}" >> $logfile 2>&1
   check_result

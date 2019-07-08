@@ -100,7 +100,7 @@ void Korali::Engine::getConfiguration()
  _js["Current Generation"] = currentGeneration;
  _js["Console Output Frequency"] = consoleOutputFrequency;
  _js["File Output Frequency"] = fileOutputFrequency;
-
+ _js["Function Evaluation Count"] = functionEvaluationCount;
  for (int i = 0; i < _variables.size(); i++) _js["Variables"][i]["Name"] = _variables[i]->_name;
 
  if (_problem != nullptr) _problem->getConfiguration();
@@ -128,6 +128,7 @@ void Korali::Engine::setConfiguration()
  currentGeneration = consume(_js, { "Current Generation" }, KORALI_NUMBER, "0");
  consoleOutputFrequency = consume(_js, { "Console Output Frequency" }, KORALI_NUMBER, "1");
  fileOutputFrequency = consume(_js, { "File Output Frequency" }, KORALI_NUMBER, "1");
+ functionEvaluationCount = consume(_js, { "Function Evaluation Count" }, KORALI_NUMBER, "0");
 
   _verbosity = KORALI_UNDEFINED;
  std::string vLevel = consume(_js, { "Verbosity" }, KORALI_STRING, "Normal");

@@ -94,8 +94,8 @@ def plot_dea(src, live=False, test=False):
         with open(path) as f:
             
             data  = json.load(f)
-            state = data['DE']['State']
-            gen   = state['Current Generation']
+            state = data['DE']['Internal']
+            gen   = data['Current Generation']
 
             if ( (fig, ax) == (None, None) ):
                 fig, ax = plt.subplots(2,2,num='DEA live diagnostics: {0}'.format(src),figsize=(8,8))
@@ -110,7 +110,7 @@ def plot_dea(src, live=False, test=False):
                     width.append([])
                 continue
                 
-            numeval.append(state['EvaluationCount'])
+            numeval.append(data['Function Evaluation Count'])
             dfval.append(abs(state['CurrentBestFunctionValue'] - state['BestEverFunctionValue']))
             fval.append(state['CurrentBestFunctionValue'])
 

@@ -74,6 +74,8 @@ void Nonintrusive::evaluateSample(double* sampleArray, size_t sampleId)
   exit(0);
  }
 
+ _k->functionEvaluationCount++;
+
 }
 
 void Nonintrusive::checkProgress()

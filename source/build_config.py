@@ -145,40 +145,43 @@ def writeWeb(solverName, solverType, solverAlias, solverDescription, solverPlott
  
  for i in range(len(settingNames)):   
   if (settingTypes[i] == 'Solver Setting'):
-   webFile.write(' ??? abstract "' + settingNames[i] + '"\n\n')
+   webFile.write('??? abstract "' + settingNames[i] + '"\n\n')
    s = io.StringIO(settingDescriptions[i])
-   for line in s:  webFile.write(' ' + line)
-   webFile.write('   + Default Value: ' + settingDefaultValues[i] + '\n')
-   webFile.write('   + Datatype: ' + settingDataTypes[i] + '\n')
-   webFile.write('   + Syntax: \n\n')
-   webFile.write('   ```python\n    _k->_js["' + solverAlias + '"]["' + settingNames[i] + '"]\n   ```\n\n')
+   for line in s:  webFile.write('\t' + line)
+   webFile.write('\n')
+   webFile.write('\t+ Default Value: ' + settingDefaultValues[i] + '\n')
+   webFile.write('\t+ Datatype: ' + settingDataTypes[i] + '\n')
+   webFile.write('\t+ Syntax: \n\n')
+   webFile.write('\t```python\n\t\t_k->_js["' + solverAlias + '"]["' + settingNames[i] + '"]\n\t```\n\n')
   
  webFile.write('## Variable Settings\n\n')
  
  for i in range(len(settingNames)):   
   if (settingTypes[i] == 'Variable Setting'):
-   webFile.write(' ??? abstract "' + settingNames[i] + '"\n\n')
+   webFile.write('??? abstract "' + settingNames[i] + '"\n\n')
    s = io.StringIO(settingDescriptions[i])
-   for line in s:  webFile.write(' ' + line)
-   webFile.write('   + Default Value: ' + settingDefaultValues[i] + '\n')
-   webFile.write('   + Datatype: ' + settingDataTypes[i] + '\n')
-   webFile.write('   + Syntax: \n\n')
-   webFile.write('   ```python\n    _k->_js["Variables"][i]["' + solverAlias + '"]["' + settingNames[i] + '"]\n   ```\n\n')
+   for line in s:  webFile.write('\t' + line)
+   webFile.write('\n')
+   webFile.write('\t+ Default Value: ' + settingDefaultValues[i] + '\n')
+   webFile.write('\t+ Datatype: ' + settingDataTypes[i] + '\n')
+   webFile.write('\t+ Syntax: \n\n')
+   webFile.write('\t```python\n\t\t_k->_js["Variables"][i]["' + solverAlias + '"]["' + settingNames[i] + '"]\n\t```\n\n')
 
  webFile.write('## Termination Criteria\n\n')
  
  for i in range(len(settingNames)):   
   if (settingTypes[i] == 'Termination Criterion'):
-   webFile.write(' ??? abstract "' + settingNames[i] + '"\n\n')
+   webFile.write('??? abstract "' + settingNames[i] + '"\n\n')
    s = io.StringIO(settingDescriptions[i])
-   for line in s:  webFile.write(' ' + line)
-   webFile.write('   + Default Value: ' + settingDefaultValues[i] + '\n')
-   webFile.write('   + Enabled by Default?: ' + settingDefaultStates[i] + '\n')
-   webFile.write('   + C++ Type: ' + settingTypes[i] + '\n')
-   webFile.write('   + Syntax: \n\n')
-   webFile.write('   ```python\n    _k->_js["' + solverAlias + '"]["Termination Criteria"]["' + settingNames[i] + '"]["Value"]\n   ```\n\n')
-   webFile.write('   ```python\n    _k->_js["' + solverAlias + '"]["Termination Criteria"]["' + settingNames[i] + '"]["Enabled"]\n   ```\n\n')
-  
+   for line in s:  webFile.write('\t' + line)
+   webFile.write('\n')
+   webFile.write('\t+ Default Value: ' + settingDefaultValues[i] + '\n')
+   webFile.write('\t+ Enabled by Default?: ' + settingDefaultStates[i] + '\n')
+   webFile.write('\t+ Datatype: ' + settingDataTypes[i] + '\n')
+   webFile.write('\t+ Syntax: \n\n')
+   webFile.write('\t```python\n\t\t_k->_js["' + solverAlias + '"]["Termination Criteria"]["' + settingNames[i] + '"]["Value"]\n\t```\n\n')
+   webFile.write('\t```python\n\t\t_k->_js["' + solverAlias + '"]["Termination Criteria"]["' + settingNames[i] + '"]["Enabled"]\n\t```\n\n')
+   
  webFile.write('## Plotting\n\n')
  
  webFile.write(solverPlottingDescription + '\n\n')

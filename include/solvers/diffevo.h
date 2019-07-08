@@ -13,7 +13,7 @@ Type: Solver, Optimizer
 Alias: DE
 Description:
 his is an implementation of the *Differential Evolution Algorithm* algorithm,
-as published in [Storn1997](https://link.springer.com/article/10.1023/A:1008202821328.
+as published in [Storn1997](https://link.springer.com/article/10.1023/A:1008202821328).
 
 DE optimizes a problem by updating a population of candidate solutions through 
 mutation and recombination. The update rules are simple and the objective 

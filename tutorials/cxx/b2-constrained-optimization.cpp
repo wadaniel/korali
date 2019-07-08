@@ -7,6 +7,7 @@ int main(int argc, char* argv[])
 
  k["Problem"] = "Direct Evaluation";
  k["Solver"]  = "CMAES";
+ k["Verbosity"] = "Detailed";
 
  k["CMAES"]["Objective"] = "Maximize";
  
@@ -27,9 +28,13 @@ int main(int argc, char* argv[])
  k["CMAES"]["Is Sigma Bounded"] = true;
  k["CMAES"]["Sample Count"] = 32;
  k["CMAES"]["Covariance Matrix Adaption Strength"] = 0.1;
- k["CMAES"]["Viability Sample Count"] = 8;
+ k["CMAES"]["Viability Sample Count"] = 4;
+ 
+ k["CMAES"]["Termination Criteria"]["Max Generations"]["Value"] = 1000;
+ 
  k["CMAES"]["Termination Criteria"]["Max Fitness"]["Enabled"] = true;
  k["CMAES"]["Termination Criteria"]["Max Fitness"]["Value"] = -680.630057374402 - 1e-4;
+ 
 
  k.run();
 }

@@ -37,7 +37,7 @@ def main(check, path, live, test, evolution):
   plot_mcmc(path, live, test)
   exit(0)
 
- if ( 'CMA-ES' == solver):
+ if ( 'CMAES' == solver):
   print("[Korali] Running CMA-ES Plotter...")
   plot_cmaes(path, live, test, evolution)
   exit(0)

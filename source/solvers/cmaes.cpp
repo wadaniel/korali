@@ -144,15 +144,15 @@ void CMAES::initialize()
 	 _rgxMean[i] = rgxold[i] = _variableSettings[i].initialMean;
  }
 
- if ( _constraintsDefined ){ updateConstraints(); handleConstraints(); }
  if ( _constraintsDefined ) checkMeanAndSetRegime();
 }
+
 
 void CMAES::runGeneration()
 {
  prepareGeneration();
- evaluateSamples();
  if ( _constraintsDefined ){ updateConstraints(); handleConstraints(); }
+ evaluateSamples();
  updateDistribution();
  if ( _constraintsDefined ) checkMeanAndSetRegime();
 }
@@ -239,6 +239,15 @@ void CMAES::initCovCorrectionParams()
 
 void CMAES::initCovariance()
 {
+
+ for(size_t d = 0; d < _k->N; ++d)
+ {
+    if ( _variableSettings[d].initialStdDev<0 )
+    if ( std::isfinite(_variableSettings[d].lowerBound) && std::isfinite(_variableSettings[d].upperBound ) )
+            _variableSettings[d].initialStdDev = 0.3*(_variableSettings[d].upperBound-_variableSettings[d].lowerBound);
+    else 
+        { printf("[Korali] Warning: Lower/Upper Bound not defined, and Initial Standard Dev not defined for variable '%s'\n", _k->_variables[d]->_name.c_str()); exit(-1); }
+ }
  
  // Setting Sigma
  _trace = 0.0;
@@ -293,7 +302,7 @@ void CMAES::checkMeanAndSetRegime()
 	_isViabilityRegime = false;
 
 	for (size_t c = 0; c < _k->_fconstraints.size(); c++) { _viabilityBoundaries[c] = 0; }
-	_currentSampleCount  = _sampleCount;
+	_currentSampleCount = _sampleCount;
 	_currentSampleMu = _muValue;
 
 	_currentBestFitness = -std::numeric_limits<double>::max();

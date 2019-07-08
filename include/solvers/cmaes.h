@@ -1113,7 +1113,7 @@ double initialMean;
 /******************************************************************************
 Setting Name: Initial Standard Deviation
 Type: Variable Setting
-Default Value: 1.0
+Default Value: -1.0
 Default Enabled:
 Description:
 Defines the initial standard deviation of the proposal distribution for a variable.

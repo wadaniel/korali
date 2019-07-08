@@ -96,7 +96,7 @@ void Korali::Engine::getConfiguration()
  if (_verbosity == KORALI_DETAILED) _js["Verbosity"] = "Detailed";
  
  _js["Result Directory"] = _result_dir;
- _js["Max Generations"] = maxGenerations;
+ _js["Termination Criteria"]["Max Generations"]["Value"] = maxGenerations;
  _js["Current Generation"] = currentGeneration;
 
  for (int i = 0; i < _variables.size(); i++) _js["Variables"][i]["Name"] = _variables[i]->_name;
@@ -122,7 +122,7 @@ void Korali::Engine::setConfiguration()
  _seed = consume(_js, { "Seed" }, KORALI_NUMBER, std::to_string(_seed));
  gsl_rng_env_setup();
 
- maxGenerations = consume(_js, { "Max Generations" }, KORALI_NUMBER, "5000");
+ maxGenerations = consume(_js, { "Termination Criteria", "Max Generations", "Value" }, KORALI_NUMBER, "5000");
  currentGeneration = consume(_js, { "Current Generation" }, KORALI_NUMBER, "0");
 
   _verbosity = KORALI_UNDEFINED;

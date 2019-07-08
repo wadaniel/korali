@@ -34,10 +34,12 @@ def consumeValue(base, varName, type, default, path = []):
   for i in range(0, len(path)-1): configFile.write('[' + path[i] + '] > ')
   configFile.write('[' + path[-1] + ']\\n"); exit(-1); } ')
  else:
-  if ('vector' in type):
-   configFile.write('for(size_t i = 0; i < ' + varName + '.size(); i++) ' + varName + '[i] = ' + default + ';')
-  else:
-   configFile.write(varName + ' = ' + default + ';')
+  defaultLine = varName + ' = ' + default + ' ;'
+  if ('std::vector<' in type):
+   defaultLine = 'for(size_t i = 0; i < ' + varName + '.size(); i++) ' + varName + '[i] = ' + default + ';'
+  if ('std::vector<std::vector<' in type):
+   defaultLine = 'for(size_t i = 0; i < ' + varName + '.size(); i++) ' + 'for(size_t j = 0; j < ' + varName + '[i].size(); j++) ' + varName + '[i][j] = ' + default + ';'
+  configFile.write(defaultLine)
    
  configFile.write('\n')
   
@@ -50,15 +52,12 @@ def parseFile(f):
     
  settingNames = []
  settingTypes = []
- settingFormats = []
- settingMandatoryFlags = []
  settingDefaultValues = []
  settingDefaultStates = []
  settingDescriptions = []
  settingVariableNames = []
  settingStateNames = []
- settingKoraliDataTypes = []
- settingVariableDataTypes = []
+ settingDataTypes = []
 
  with open(f, 'r') as file:
   line = file.readline()
@@ -75,13 +74,11 @@ def parseFile(f):
    if (line.startswith('Setting Name:')):
     settingNames.append(line.replace('Setting Name:', '').strip())
     settingTypes.append(file.readline().replace('Type:', '').strip())
-    settingFormats.append(file.readline().replace('Format:', '').strip())
-    settingMandatoryFlags.append(file.readline().replace('Mandatory:', '').strip())
     settingDefaultValues.append(file.readline().replace('Default Value:', '').strip())
     settingDefaultStates.append(file.readline().replace('Default Enabled:', '').strip())
     settingDescriptions.append(getDescription(file))
     declarationWords = file.readline().strip().replace(';', '').split() 
-    settingVariableDataTypes.append(declarationWords[0])
+    settingDataTypes.append(declarationWords[0])
     settingVariableNames.append(declarationWords[-1])
     
     stateWords = file.readline().strip().split()
@@ -93,12 +90,6 @@ def parseFile(f):
   
  ## Post-processing variable information
  
- for i in range(len(settingNames)): 
-  if (settingFormats[i] == 'Integer'): settingKoraliDataTypes.append('KORALI_NUMBER')
-  if (settingFormats[i] == 'Real'): settingKoraliDataTypes.append('KORALI_NUMBER')
-  if (settingFormats[i] == 'String'): settingKoraliDataTypes.append('KORALI_STRING')
-  if (settingFormats[i] == 'Boolean'): settingKoraliDataTypes.append('KORALI_BOOLEAN')
- 
  # Creating setConfiguration()
 
  configFile.write('void Korali::Solver::' + solverAlias + '::setConfiguration() \n{\n')
@@ -106,7 +97,7 @@ def parseFile(f):
  ## Load Solver Settings
  for i in range(len(settingNames)):   
   if (settingTypes[i] == 'Solver Setting'):
-   consumeValue('_k->_js', settingVariableNames[i], settingVariableDataTypes[i], settingDefaultValues[i], [ solverAlias, settingNames[i] ])
+   consumeValue('_k->_js', settingVariableNames[i], settingDataTypes[i], settingDefaultValues[i], [ solverAlias, settingNames[i] ])
  
  ## Load Variable Settings
  configFile.write('\n')
@@ -116,22 +107,22 @@ def parseFile(f):
   
  for i in range(len(settingNames)): 
   if (settingTypes[i] == 'Variable Setting'):
-   consumeValue('_k->_js["Variables"][i]', '_variableSettings[i].' + settingVariableNames[i], settingVariableDataTypes[i], settingDefaultValues[i], [ solverAlias, settingNames[i] ])
+   consumeValue('_k->_js["Variables"][i]', '_variableSettings[i].' + settingVariableNames[i], settingDataTypes[i], settingDefaultValues[i], [ solverAlias, settingNames[i] ])
  configFile.write(' } \n\n')
  
  ## Load Termination Criteria
  
  for i in range(len(settingNames)):   
   if (settingTypes[i] == 'Termination Criterion'):
-   consumeValue('_k->_js', settingVariableNames[i], settingVariableDataTypes[i], settingDefaultValues[i], [ 'Termination Criteria', solverAlias, settingNames[i], 'Value' ])
-   consumeValue('_k->_js', settingStateNames[i], 'bool', settingDefaultStates[i], [ 'Termination Criteria', solverAlias, settingNames[i], 'Default' ]) 
+   consumeValue('_k->_js', settingVariableNames[i], settingDataTypes[i], settingDefaultValues[i], [ solverAlias, 'Termination Criteria', settingNames[i], 'Value' ])
+   consumeValue('_k->_js', settingStateNames[i], 'bool', settingDefaultStates[i], [ solverAlias, 'Termination Criteria', settingNames[i], 'Enabled' ]) 
  configFile.write('\n')
  
  ## Load Solver Internal Attributes
  for i in range(len(settingNames)):   
   if (settingTypes[i] == 'Internal Attribute'):
    configFile.write(' if(isDefined(_k->_js, {"' + solverAlias + '", "Internal", "' + settingNames[i] + '"} )) \n {\n')
-   configFile.write('  ' + settingVariableNames[i] + ' = _k->_js.at("' + solverAlias + '").at("Internal").at("' + settingNames[i] + '").get<' + settingVariableDataTypes[i] + '>();\n')
+   configFile.write('  ' + settingVariableNames[i] + ' = _k->_js.at("' + solverAlias + '").at("Internal").at("' + settingNames[i] + '").get<' + settingDataTypes[i] + '>();\n')
    configFile.write('  _k->_js["' + solverAlias + '"]["Internal"].erase("' + settingNames[i] + '"); \n }\n\n')
  
  configFile.write('} \n\n') 

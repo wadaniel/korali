@@ -30,8 +30,6 @@ class MCMC : public Base
 /******************************************************************************
 Setting Name: Result Output Frequency
 Type: Solver Setting
-Format: Integer
-Mandatory: No
 Default Value: 1
 Default Enabled:
 Description:
@@ -42,8 +40,6 @@ size_t resultOutputFrequency;
 /******************************************************************************
 Setting Name: Terminal Output Frequency
 Type: Solver Setting
-Format: Integer
-Mandatory: No
 Default Value: 1
 Default Enabled:
 Description:
@@ -54,8 +50,6 @@ size_t terminalOutputFrequency;
 /******************************************************************************
 Setting Name: Chain Length
 Type: Solver Setting
-Format: Integer
-Mandatory: Yes
 Default Value:
 Default Enabled:
 Description:
@@ -66,8 +60,6 @@ size_t maxChainLength;
 /******************************************************************************
 Setting Name: Burn In
 Type: Solver Setting
-Format: Integer
-Mandatory: No
 Default Value: 0
 Default Enabled:
 Description:
@@ -79,8 +71,6 @@ size_t burnIn;
 /******************************************************************************
 Setting Name: Rejection Levels
 Type: Solver Setting
-Format: Integer
-Mandatory: No
 Default Value: 1
 Default Enabled:
 Description:
@@ -91,8 +81,6 @@ size_t rejectionLevels;
 /******************************************************************************
 Setting Name: Use Adaptive Sampling
 Type: Solver Setting
-Format: Boolean
-Mandatory: No
 Default Value: false
 Default Enabled:
 Description:
@@ -106,8 +94,6 @@ bool useAdaptiveSampling;
 /******************************************************************************
 Setting Name: Non Adaption Period
 Type: Solver Setting
-Format: Integer
-Mandatory: No
 Default Value: 0
 Default Enabled:
 Description:
@@ -120,8 +106,6 @@ size_t nonAdaptionPeriod;
 /******************************************************************************
 Setting Name: Chain Covariance Scaling
 Type: Solver Setting
-Format: Real
-Mandatory: No
 Default Value: 0.0
 Default Enabled:
 Description:
@@ -134,8 +118,6 @@ double chainCovarianceScaling;
 /******************************************************************************
 Setting Name: Chain Covariance Increment
 Type: Solver Setting
-Format: Real
-Mandatory: No
 Default Value: 0.001
 Default Enabled:
 Description:
@@ -143,6 +125,195 @@ Small constant to avoid singularity of the chain covariance.
 ******************************************************************************/
 double chainCovarianceIncrement;
 
+/******************************************************************************
+Setting Name: Covariance Matrix
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Hold the covariance matrix of proposal distribution.
+******************************************************************************/
+std::vector<double> covarianceMatrix;
+
+/******************************************************************************
+Setting Name: Chain Leader Parameters
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Current (theta) parameters of the chain leader sample.
+******************************************************************************/
+std::vector<double> chainLeaderParameters;
+
+/******************************************************************************
+Setting Name: Chain Leader LogLikelihood
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+The logLikelihood of the current chain leader.
+******************************************************************************/
+double chainLeaderLogLikelihood;
+
+/******************************************************************************
+Setting Name: Chain Candidate Parameters
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Current (theta) parameters of the chain leader sample.
+******************************************************************************/
+std::vector<double> chainCandidatesParameters;
+
+/******************************************************************************
+Setting Name: Chain Candidates LogLikelihoods
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+The logLikelihoods of the chain candidates.
+******************************************************************************/
+std::vector<double> chainCandidatesLogLikelihoods;
+
+/******************************************************************************
+Setting Name: Chain Candidates LogPriors
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+The logPriors of the chain candidates.
+******************************************************************************/
+std::vector<double> chainCandidatesLogPriors;
+
+/******************************************************************************
+Setting Name: Log Transformed Samples
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Candidate parameters log transformed.
+******************************************************************************/
+std::vector<double> logTransformedSamples;
+
+/******************************************************************************
+Setting Name: Rejection Alphas
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Alphas for recursive calculation of delayed rejection schemes
+******************************************************************************/
+std::vector<double> rejectionAlphas;
+
+/******************************************************************************
+Setting Name: Acceptance Rate
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Ratio proposed to accepted samples.
+******************************************************************************/
+double acceptanceRate;
+
+/******************************************************************************
+Setting Name: Rejection Count
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Number of rejections in the current generation.
+******************************************************************************/
+size_t rejectionCount;
+
+/******************************************************************************
+Setting Name: Acceptance Count
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Number of accepted samples.
+******************************************************************************/
+size_t acceptanceCount;
+
+/******************************************************************************
+Setting Name: Proposed Sample Count
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Number of proposed samples.
+******************************************************************************/
+size_t proposedSampleCount;
+
+/******************************************************************************
+Setting Name: Database Entry Count
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Number of accepted samples stored in the database.
+******************************************************************************/
+size_t databaseEntryCount;
+
+/******************************************************************************
+Setting Name: Sample Parameters Database
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Variable values of samples stored in the database.
+******************************************************************************/
+std::vector<double> sampleParametersDatabase;
+
+/******************************************************************************
+Setting Name: Sample Fitness Database
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Fitness of the samples stored in the database.
+******************************************************************************/
+std::vector<double> sampleFitnessDatabase;
+
+/******************************************************************************
+Setting Name: Chain Mean
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Mean of Markov Chain Monte Carlo Chain
+******************************************************************************/
+std::vector<double> chainMean;
+
+/******************************************************************************
+Setting Name: Chain Covariance Placeholder
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Placeholder chain covariance calculation
+******************************************************************************/
+std::vector<double> chainCovariancePlaceholder;
+
+/******************************************************************************
+Setting Name: Chain Covariance
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Chain Covariance
+******************************************************************************/
+std::vector<double> chainCovariance;
+
+/******************************************************************************
+Setting Name: Chain Length
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Current Chain Length
+******************************************************************************/
+size_t chainLength;
 
 /******************************************************************************
 * Variable Settings
@@ -154,8 +325,6 @@ struct variableSetting
 /******************************************************************************
 Setting Name: Initial Mean
 Type: Variable Setting
-Format: Real
-Mandatory: Yes
 Default Value:
 Default Enabled:
 Description:
@@ -166,8 +335,6 @@ double initialMean;
 /******************************************************************************
 Setting Name: Standard Deviation
 Type: Variable Setting
-Format: Real
-Mandatory: Yes
 Default Value:
 Default Enabled:
 Description:
@@ -179,241 +346,14 @@ double standardDeviation;
 
 };
 
-/******************************************************************************
-Setting Name: Covariance Matrix
-Type: Internal Attribute
-Format: Array of Reals
-Mandatory:
-Default Value:
-Default Enabled:
-Description:
-Hold the covariance matrix of proposal distribution.
-******************************************************************************/
-std::vector<double> covarianceMatrix;
+std::vector<variableSetting> _variableSettings;
+/******************************************************************************/
 
-/******************************************************************************
-Setting Name: Chain Leader Parameters
-Type: Internal Attribute
-Format: Array of Reals
-Mandatory:
-Default Value:
-Default Enabled:
-Description:
-Current (theta) parameters of the chain leader sample.
-******************************************************************************/
-std::vector<double> chainLeaderParameters;
-
-/******************************************************************************
-Setting Name: Chain Leader LogLikelihood
-Type: Internal Attribute
-Format: Real
-Mandatory:
-Default Value:
-Default Enabled:
-Description:
-The logLikelihood of the current chain leader.
-******************************************************************************/
-double chainLeaderLogLikelihood;
-
-/******************************************************************************
-Setting Name: Chain Candidate Parameters
-Type: Internal Attribute
-Format: Array of Reals
-Mandatory:
-Default Value:
-Default Enabled:
-Description:
-Current (theta) parameters of the chain leader sample.
-******************************************************************************/
-std::vector<double> chainCandidatesParameters;
-
-/******************************************************************************
-Setting Name: Chain Candidates LogLikelihoods
-Type: Internal Attribute
-Format: Array of Reals
-Mandatory:
-Default Value:
-Default Enabled:
-Description:
-The logLikelihoods of the chain candidates.
-******************************************************************************/
-std::vector<double> chainCandidatesLogLikelihoods;
-
-/******************************************************************************
-Setting Name: Chain Candidates LogPriors
-Type: Internal Attribute
-Format: Array of Reals
-Mandatory:
-Default Value:
-Default Enabled:
-Description:
-The logPriors of the chain candidates.
-******************************************************************************/
-std::vector<double> chainCandidatesLogPriors;
-
-/******************************************************************************
-Setting Name: Log Transformed Samples
-Type: Internal Attribute
-Format: Array of Reals
-Mandatory:
-Default Value:
-Default Enabled:
-Description:
-Candidate parameters log transformed.
-******************************************************************************/
-std::vector<double> logTransformedSamples;
-
-/******************************************************************************
-Setting Name: Rejection Alphas
-Type: Internal Attribute
-Format: Array of Reals
-Mandatory:
-Default Value:
-Default Enabled:
-Description:
-Alphas for recursive calculation of delayed rejection schemes
-******************************************************************************/
-std::vector<double> rejectionAlphas;
-
-/******************************************************************************
-Setting Name: Acceptance Rate
-Type: Internal Attribute
-Format: Real
-Mandatory:
-Default Value:
-Default Enabled:
-Description:
-Ratio proposed to accepted samples.
-******************************************************************************/
-double acceptanceRate;
-
-/******************************************************************************
-Setting Name: Rejection Count
-Type: Internal Attribute
-Format: Integer
-Mandatory:
-Default Value:
-Default Enabled:
-Description:
-Number of rejections in the current generation.
-******************************************************************************/
-size_t rejectionCount;
-
-/******************************************************************************
-Setting Name: Acceptance Count
-Type: Internal Attribute
-Format: Integer
-Mandatory:
-Default Value:
-Default Enabled:
-Description:
-Number of accepted samples.
-******************************************************************************/
-size_t acceptanceCount;
-
-/******************************************************************************
-Setting Name: Proposed Sample Count
-Type: Internal Attribute
-Format: Integer
-Mandatory:
-Default Value:
-Default Enabled:
-Description:
-Number of proposed samples.
-******************************************************************************/
-size_t proposedSampleCount;
-
-/******************************************************************************
-Setting Name: Database Entry Count
-Type: Internal Attribute
-Format: Integer
-Mandatory:
-Default Value:
-Default Enabled:
-Description:
-Number of accepted samples stored in the database.
-******************************************************************************/
-size_t databaseEntryCount;
-
-/******************************************************************************
-Setting Name: Sample Parameters Database
-Type: Internal Attribute
-Format: Array of Reals
-Mandatory:
-Default Value:
-Default Enabled:
-Description:
-Variable values of samples stored in the database.
-******************************************************************************/
-std::vector<double> sampleParametersDatabase;
-
-/******************************************************************************
-Setting Name: Sample Fitness Database
-Type: Internal Attribute
-Format: Array of Reals
-Mandatory:
-Default Value:
-Default Enabled:
-Description:
-Fitness of the samples stored in the database.
-******************************************************************************/
-std::vector<double> sampleFitnessDatabase;
-
-/******************************************************************************
-Setting Name: Chain Mean
-Type: Internal Attribute
-Format: Array of Reals
-Mandatory:
-Default Value:
-Default Enabled:
-Description:
-Mean of Markov Chain Monte Carlo Chain
-******************************************************************************/
-std::vector<double> chainMean;
-
-/******************************************************************************
-Setting Name: Chain Covariance Placeholder
-Type: Internal Attribute
-Format: Array of Reals
-Mandatory:
-Default Value:
-Default Enabled:
-Description:
-Placeholder chain covariance calculation
-******************************************************************************/
-std::vector<double> chainCovariancePlaceholder;
-
-/******************************************************************************
-Setting Name: Chain Covariance
-Type: Internal Attribute
-Format: Array of Reals
-Mandatory:
-Default Value:
-Default Enabled:
-Description:
-Chain Covariance
-******************************************************************************/
-std::vector<double> chainCovariance;
-
-/******************************************************************************
-Setting Name: Chain Length
-Type: Internal Attribute
-Format: Integer
-Mandatory:
-Default Value:
-Default Enabled:
-Description:
-Current Chain Length
-******************************************************************************/
-size_t chainLength;
-
- // MCMC Configuration
+// MCMC Configuration
 
  Korali::Variable* _gaussianGenerator; /* Gaussian random number generator */
  Korali::Variable* _uniformGenerator; /* Uniform random number generator */
 
- std::vector<variableSetting> _variableSettings;
- 
  MCMC();
 
  // Korali Methods

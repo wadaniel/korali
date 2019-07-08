@@ -1,12 +1,18 @@
 #!/usr/bin/env python3
+from math import isclose
+
 def evaluateModel( s ):
    x = s.getVariable(0)
    r = -x*x      
    s.addResult(r)
 
+def g1(x):
+    return -3.14
+
 import korali
 k = korali.initialize()
 k.setModel(evaluateModel)
+k.addConstraint( g1 )
 
 k["Problem"] = "Direct Evaluation"
 k["Solver"]  = "CMAES" 
@@ -24,45 +30,76 @@ k["Result Directory"] = "_defaults_cmaes"
 # Running Korali
 k.run()
 
-ast = k["CMAES"]["Covariance Matrix Adaption Strength"].getValue()
-print(ast)
+# Testing Internals
 
-lr = k["CMAES"]["Global Success Learning Rate"].getValue()
-print(lr)
+ast = k["CMAES"]["Covariance Matrix Adaption Strength"].getValue()
+assert ast == 0.1
+
+slr = k["CMAES"]["Global Success Learning Rate"].getValue()
+assert slr == 0.2
 
 icc = k["CMAES"]["Initial Cumulative Covariance"].getValue()
-print(icc)
+assert icc == -1.0
 
 idf = k["CMAES"]["Initial Damp Factor"].getValue()
-print(idf)
+assert idf == -1.0
 
 isc = k["CMAES"]["Initial Sigma Cumulation Factor"].getValue()
-print(isc)
+assert isc == -1.0
 
 chi = k["CMAES"]["Internal"]["Chi Number"].getValue()
-print(chi)
+assert chi == 0.7976190476190477
 
-cc = k["CMAES"]["Internal"]["Covariance Matrix Adaption Factor"].getValue()
-cc = k["CMAES"]["Internal"]["Covariance Matrix Learning Rate"].getValue()
+cca = k["CMAES"]["Internal"]["Covariance Matrix Adaption Factor"].getValue()
+assert cca == 0.0029411764705882353
+
 cc = k["CMAES"]["Internal"]["Cumulative Covariance"].getValue()
-print(cc)
+assert cc == 0.6681246319195033
 
-cc = k["CMAES"]["Internal"]["Current Sample Count"].getValue()
-cc = k["CMAES"]["Internal"]["Current Sample Mu"].getValue()
-cc = k["CMAES"]["Internal"]["Damp Factor"].getValue()
-cc = k["CMAES"]["Internal"]["Effective Mu"].getValue()
-cc = k["CMAES"]["Internal"]["Evaluation Sign"].getValue()
-cc = k["CMAES"]["Internal"]["Global Success Rate"].getValue()
-cc = k["CMAES"]["Internal"]["Sigma"].getValue()
-cc = k["CMAES"]["Internal"]["Trace"].getValue()
+csc = k["CMAES"]["Internal"]["Current Sample Count"].getValue()
+assert csc == 32
+
+csm = k["CMAES"]["Internal"]["Current Sample Mu"].getValue()
+assert csm == 16
+
+df = k["CMAES"]["Internal"]["Damp Factor"].getValue()
+assert df == 1.6644844910916576
+
+em = k["CMAES"]["Internal"]["Effective Mu"].getValue()
+assert em == 1.9609763092840191
+
+es = k["CMAES"]["Internal"]["Evaluation Sign"].getValue()
+assert es == 1.0
+
+sr = k["CMAES"]["Internal"]["Global Success Rate"].getValue()
+print(sr)
+
+si = k["CMAES"]["Internal"]["Sigma"].getValue()
+assert si == 6.0
+
+tr = k["CMAES"]["Internal"]["Trace"].getValue()
+assert tr == 36.0
+
+# TODO: Why are these not Internal?
+
 #cc = k["CMAES"]["Is Sigma Bounded"].getValue()
-#cc = k["CMAES"]["Internal"]["Max Covairance Matrix Corrections"].getValue()
+#cc = k["CMAES"]["Max Covairance Matrix Corrections"].getValue()
 #cc = k["CMAES"]["Internal"]["Mu Type"].getValue()
-#cc = k["CMAES"]["Internal"]["Mu Value"].getValue()
-cc = k["CMAES"]["Normal Vector Learning Rate"].getValue()
+muv = k["CMAES"]["Mu Value"].getValue()
+assert muv == 16
+
+nvl = k["CMAES"]["Normal Vector Learning Rate"].getValue()
+assert nvl == 0.029411764705882353 # TODO: is that correct?
+
 #cc = k["CMAES"]["Internal"]["Objective"].getValue()
-#cc = k["CMAES"]["Internal"]["Sample Count"].getValue()
-#cc = k["CMAES"]["Internal"]["Target Success Rate"].getValue()
+of = k["CMAES"]["Result Output Frequency"].getValue()
+sc = k["CMAES"]["Sample Count"].getValue()
+assert sc == 32.0
+
+tsc = k["CMAES"]["Target Success Rate"].getValue()
+assert tsc == 0.1818
+
+tsc = k["CMAES"]["Terminal Output Frequency"].getValue()
 
 # Termination Criterias
 

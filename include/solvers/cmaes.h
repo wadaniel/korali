@@ -166,7 +166,7 @@ std::string _muType;
 /******************************************************************************
 Setting Name: Initial Sigma Cumulation Factor
 Type: Solver Setting
-Default Value: 1.0
+Default Value: -1.0
 Default Enabled:
 Description:
 Controls the learning rate of the conjugate evolution path.
@@ -176,7 +176,7 @@ double _initialSigmaCumulationFactor;
 /******************************************************************************
 Setting Name: Initial Damp Factor
 Type: Solver Setting
-Default Value: 1.0
+Default Value: -1.0
 Default Enabled:
 Description:
 Controls the updates of the covariance matrix scaling factor.
@@ -228,7 +228,7 @@ bool _isViabilityRegime;
 /******************************************************************************
 Setting Name: Viability Sample Count
 Type: Solver Setting
-Default Value: 8
+Default Value: 4
 Default Enabled:
 Description:
 Specifies the number of samples per generation during the viability 
@@ -239,7 +239,7 @@ size_t _viabilitySampleCount;
 /******************************************************************************
 Setting Name: Viability Mu
 Type: Solver Setting
-Default Value: 4
+Default Value: 2
 Default Enabled:
 Description:
 Number of best samples used to update the covariance matrix and the mean 
@@ -554,16 +554,6 @@ Description:
 Default calculated from dimension.
 ******************************************************************************/
 double _cumulativeCovariance;
-
-/******************************************************************************
-Setting Name: Covariance Matrix Learning Rate
-Type: Internal Attribute
-Default Value:
-Default Enabled:
-Description:
-Calibration parameter for Covariance Matrix updates.
-******************************************************************************/
-double _covarianceMatrixLearningRate;
 
 /******************************************************************************
 Setting Name: Chi Number

@@ -158,9 +158,8 @@ void DE::mutateSingle(size_t sampleIdx)
         do{ c = _uniformGenerator->getRandomNumber()*_sampleCount; } while(c == sampleIdx || c == a || c == b);
         parent = &_samplePopulation[c*_k->N];
     }
-    else
+    else /* _parentSelectionRule == "Best" */
     {
-     /* _parentSelectionRule == "Best" */
         parent = &_samplePopulation[_bestIndex*_k->N];
     }
 
@@ -236,50 +235,48 @@ void DE::updateSolver()
     _currentFunctionValue = _fitnessVector[_bestIndex];
     for(size_t d = 0; d < _k->N; ++d) _curBestEver[d] = _sampleCandidates[_bestIndex*_k->N+d];
     
-    if(_currentFunctionValue > _bestEver)
+    for(size_t d = 0; d < _k->N; ++d) 
     {
-        _previousBestEver = _bestEver;
-        
-        for(size_t d = 0; d < _k->N; ++d) 
-        {
-            _rgxOldMean[d]  = _rgxMean[d];
-            _rgxBestEver[d] = _curBestEver[d];
-            _rgxMean[d]     = 0.0;
-        }
-   
-        switch (str2int(_acceptRule.c_str()))
-        {
-            case str2int("Best") : // only update best sample
-                _bestEver = _currentFunctionValue;
-                for(size_t d = 0; d < _k->N; ++d) _samplePopulation[_bestIndex*_k->N+d] = _sampleCandidates[_bestIndex*_k->N+d];
-                break;
-
-            case str2int("Greedy") : // accept if mutation better than parent
-                for(size_t i = 0; i < _sampleCount; ++i) if(_fitnessVector[i] > _prevfitnessVector[i])
-                    for(size_t d = 0; d < _k->N; ++d) _samplePopulation[i*_k->N+d] = _sampleCandidates[i*_k->N+d];
-                _bestEver = _currentFunctionValue;
-                break;
-
-            case str2int("Iterative") : // iteratibely accept samples and update _bestEver
-                for(size_t i = 0; i < _sampleCount; ++i) if(_fitnessVector[i] > _bestEver)
-                 { for(size_t d = 0; d < _k->N; ++d) _samplePopulation[i*_k->N+d] = _sampleCandidates[i*_k->N+d]; _bestEver = _fitnessVector[i]; }
-                break;
- 
-            case str2int("Improved") : // update all samples better than _bestEver
-                for(size_t i = 0; i < _sampleCount; ++i) if(_fitnessVector[i] > _bestEver)
-                    for(size_t d = 0; d < _k->N; ++d) _samplePopulation[i*_k->N+d] = _sampleCandidates[i*_k->N+d];
-                _bestEver = _currentFunctionValue;
-                break;
-
-            default :
-                if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Error: Accept Rule not recognize (%s).\n",  _acceptRule.c_str());
-                exit(-1);
-        }
-
-        for(size_t i = 0; i < _sampleCount; ++i) for(size_t d = 0; d < _k->N; ++d) 
-            _rgxMean[d] += _samplePopulation[i*_k->N+d]/((double)_sampleCount);
+        _rgxOldMean[d]  = _rgxMean[d];
+        if(_currentFunctionValue > _bestEver) _rgxBestEver[d] = _curBestEver[d];
+        _rgxMean[d]     = 0.0;
     }
-    
+
+    switch (str2int(_acceptRule.c_str()))
+    {
+        case str2int("Best") : // only update best sample
+            if(_currentFunctionValue > _bestEver)
+            {
+              _bestEver = _currentFunctionValue;
+              for(size_t d = 0; d < _k->N; ++d) _samplePopulation[_bestIndex*_k->N+d] = _sampleCandidates[_bestIndex*_k->N+d];
+            }
+            break;
+
+        case str2int("Greedy") : // accept all mutations better than parent
+            for(size_t i = 0; i < _sampleCount; ++i) if(_fitnessVector[i] > _prevfitnessVector[i])
+                for(size_t d = 0; d < _k->N; ++d) _samplePopulation[i*_k->N+d] = _sampleCandidates[i*_k->N+d];
+            _bestEver = _currentFunctionValue;
+            break;
+
+        case str2int("Improved") : // update all samples better than _bestEver
+            for(size_t i = 0; i < _sampleCount; ++i) if(_fitnessVector[i] > _bestEver)
+                for(size_t d = 0; d < _k->N; ++d) _samplePopulation[i*_k->N+d] = _sampleCandidates[i*_k->N+d];
+            _bestEver = _currentFunctionValue;
+            break;
+
+        case str2int("Iterative") : // iteratibely update _bestEver and accept samples
+            for(size_t i = 0; i < _sampleCount; ++i) if(_fitnessVector[i] > _bestEver)
+             { for(size_t d = 0; d < _k->N; ++d) _samplePopulation[i*_k->N+d] = _sampleCandidates[i*_k->N+d]; _bestEver = _fitnessVector[i]; }
+            break;
+
+        default :
+            if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Error: Accept Rule (%s) not recognized.\n",  _acceptRule.c_str());
+            exit(-1);
+    }
+
+    for(size_t i = 0; i < _sampleCount; ++i) for(size_t d = 0; d < _k->N; ++d) 
+        _rgxMean[d] += _samplePopulation[i*_k->N+d]/((double)_sampleCount);
+
     for(size_t d = 0; d < _k->N; ++d) 
     {
         double max = -std::numeric_limits<double>::max();
@@ -301,20 +298,20 @@ bool DE::checkTermination()
  if ( _termCondMinFitnessEnabled && (_k->currentGeneration > 1) && (_bestEver >= _termCondMinFitness) )
  {
   _isFinished = true;
-  printf("Fitness Value (%+6.3e) > (%+6.3e).",  _bestEver, _termCondMinFitness);
+  printf("[Korali] Fitness Value (%+6.3e) > (%+6.3e).",  _bestEver, _termCondMinFitness);
  }
  
  if ( _termCondMaxFitnessEnabled && (_k->currentGeneration > 1) && (_bestEver >= _termCondMaxFitness) )
  {
   _isFinished = true;
-  printf("Fitness Value (%+6.3e) > (%+6.3e).",  _bestEver, _termCondMaxFitness);
+  printf("[Korali] Fitness Value (%+6.3e) > (%+6.3e).",  _bestEver, _termCondMaxFitness);
  }
 
  double range = fabs(_currentFunctionValue - _previousFunctionValue);
  if ( _termCondMinFitnessDiffThresholdEnabled && (_k->currentGeneration > 1) && (range < _termCondMinFitnessDiffThreshold) )
  {
   _isFinished = true;
-  printf("Fitness Diff Threshold (%+6.3e) < (%+6.3e).",  range, _termCondMinFitnessDiffThreshold);
+  printf("[Korali] Fitness Diff Threshold (%+6.3e) < (%+6.3e).",  range, _termCondMinFitnessDiffThreshold);
  }
  
  if ( _termCondMinStepSizeEnabled && (_k->currentGeneration > 1) )
@@ -324,8 +321,14 @@ bool DE::checkTermination()
    if (cTemp == _k->N) 
    {
     _isFinished = true;
-    printf("Mean changes < %+6.3e for all variables.", _termCondMinStepSize);
+    printf("[Korali] Mean changes < %+6.3e for all variables.", _termCondMinStepSize);
    }
+ }
+ 
+ if( _termCondMaxGenerationsEnabled && (_k->currentGeneration >= _termCondMaxGenerations) )
+ {
+  _isFinished = true;
+  printf("[Korali] Maximum number of Generations reached (%lu).", _termCondMaxGenerations);
  }
 
  return _isFinished;
@@ -341,6 +344,7 @@ void DE::printGeneration()
 {
 
  if (_k->currentGeneration % _terminalOutputFrequency != 0) return;
+ if (_k->_verbosity >= KORALI_NORMAL) printf("[Korali] Differential Evolution Generation %zu\n", _k->currentGeneration);
  
  if (_k->_verbosity >= KORALI_NORMAL)
  {

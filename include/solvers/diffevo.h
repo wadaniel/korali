@@ -137,6 +137,17 @@ boundary. If set false, infeasible samples are mutated again until feasible.
 bool _fixInfeasible;
 
 /******************************************************************************
+Setting Name: Max Generations
+Type: Termination Criterion
+Default Value: 1e3
+Default Enabled: true
+Description:
+Maximal number of generations to run.
+******************************************************************************/
+size_t _termCondMaxGenerations;
+bool   _termCondMaxGenerationsEnabled;
+
+/******************************************************************************
 Setting Name: Max Resamplings
 Type: Termination Criterion
 Default Value: 1e9

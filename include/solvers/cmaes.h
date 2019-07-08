@@ -244,6 +244,18 @@ Specifies the output frequency onto the terminal screen.
 size_t _terminalOutputFrequency;
 
 /******************************************************************************
+Setting Name: Max Generations
+Type: Termination Criterion
+Default Value: 1e3
+Default Enabled: true
+Description:
+Maximal number of generations to run.
+******************************************************************************/
+size_t _termCondMaxGenerations;
+bool   _termCondMaxGenerationsEnabled;
+
+
+/******************************************************************************
 Setting Name: Max Infeasible Resampling
 Type: Termination Criterion
 Default Value: 1e9

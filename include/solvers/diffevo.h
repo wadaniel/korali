@@ -13,7 +13,7 @@ Type: Solver, Optimizer
 Alias: DE
 Description:
 his is an implementation of the *Differential Evolution Algorithm* algorithm,
-as published in [Storn1997](https://link.springer.com/article/10.1023/A:1008202821328).
+as published in [Storn1997](https://link.springer.com/article/10.1023/A:1008202821328.
 
 DE optimizes a problem by updating a population of candidate solutions through 
 mutation and recombination. The update rules are simple and the objective 
@@ -25,9 +25,6 @@ and updating strategies [Brest2006](https://ieeexplore.ieee.org/document/4016057
 + The *Sample Count* needs to be defined..
 + The *Lower Bound* needs to be defined for each variable.
 + The *Upper Bound* needs to be defined for every variable.
-******************************************************************************
-Plotting:
-Here we explain technical details of the **DE** result plot.
 ******************************************************************************/
 
 class DE : public Base
@@ -187,8 +184,8 @@ bool   _termCondMaxFitnessEnabled;
 /******************************************************************************
 Setting Name: Min Fitness Diff Threshold
 Type: Termination Criterion
-Default Value: 0.0
-Default Enabled: false
+Default Value: 1e-9
+Default Enabled: true
 Description:
 Specifies the minimum fitness differential between two consecutive generations 
 before stopping execution.

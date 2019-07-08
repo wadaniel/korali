@@ -157,9 +157,9 @@ void Korali::Solver::MCMC::generateCandidate(size_t sampleIdx)
 void Korali::Solver::MCMC::evaluateSample()
 {
   for(size_t d = 0; d < _k->N; ++d)
-    if(_k->_variables[d]->_isLogSpace == true)
-        logTransformedSamples[rejectionCount*_k->N+d] = std::exp(chainCandidatesParameters[rejectionCount*_k->N+d]);
-    else 
+    //if(_k->_variables[d]->_isLogSpace == true)
+    //    logTransformedSamples[rejectionCount*_k->N+d] = std::exp(chainCandidatesParameters[rejectionCount*_k->N+d]);
+    //else 
         logTransformedSamples[rejectionCount*_k->N+d] = chainCandidatesParameters[rejectionCount*_k->N+d];
 
   _k->_conduit->evaluateSample(&logTransformedSamples[0], rejectionCount);

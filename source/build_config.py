@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
 
 import os
-
 configFile = open("config.cpp","w+")
 
 def getDescription(fobj):
  line = fobj.readline()
+ line = ''
  description = ''
  while (not line.startswith('*******************************')):
   description += line
   line = fobj.readline()
  return description
+
+################################################################################################
 
 def consumeValue(base, varName, type, default, path = []):
  
@@ -42,57 +44,16 @@ def consumeValue(base, varName, type, default, path = []):
   configFile.write(defaultLine)
    
  configFile.write('\n')
-  
-def parseFile(f):
 
- solverName = ''
- solverType = ''
- solverAlias = ''
- solverDescription = ''
-    
- settingNames = []
- settingTypes = []
- settingDefaultValues = []
- settingDefaultStates = []
- settingDescriptions = []
- settingVariableNames = []
- settingStateNames = []
- settingDataTypes = []
+#############################################################################################################
 
- with open(f, 'r') as file:
-  line = file.readline()
-  while line:
-  
-   ## Resolving Solver Data
-   if (line.startswith('Module Name:')):
-    solverName = line.replace('Module Name:', '').strip()
-    solverType = file.readline().replace('Type:', '').strip()
-    solverAlias = file.readline().replace('Alias:', '').strip()
-    solverDescription = getDescription(file)
-     
-   ## Resolving Solver Settings
-   if (line.startswith('Setting Name:')):
-    settingNames.append(line.replace('Setting Name:', '').strip())
-    settingTypes.append(file.readline().replace('Type:', '').strip())
-    settingDefaultValues.append(file.readline().replace('Default Value:', '').strip())
-    settingDefaultStates.append(file.readline().replace('Default Enabled:', '').strip())
-    settingDescriptions.append(getDescription(file))
-    declarationWords = file.readline().strip().replace(';', '').split() 
-    settingDataTypes.append(declarationWords[0])
-    settingVariableNames.append(declarationWords[-1])
-    
-    stateWords = file.readline().strip().split()
-    stateName = ''
-    if (len(stateWords) > 0): stateName = stateWords[1] 
-    settingStateNames.append(stateName.replace(';', ''))
-    
-   line = file.readline()
- 
+def writeConfig(solverName, solverType, solverAlias, solverDescription, solverPlottingDescription, settingNames = [],
+                settingTypes = [], settingDefaultValues = [], settingDefaultStates = [],
+                settingDescriptions = [], settingVariableNames = [], settingStateNames = [],
+                settingDataTypes = []):
+  # Creating setConfiguration()
+
  if (solverName == ''): return
- 
- ## Post-processing variable information
- 
- # Creating setConfiguration()
 
  configFile.write('void Korali::Solver::' + solverAlias + '::setConfiguration() \n{\n')
 
@@ -164,7 +125,125 @@ def parseFile(f):
   if (settingTypes[i] == 'Internal Attribute'):
    configFile.write(' _k->_js["' + solverAlias + '"]["Internal"]["' + settingNames[i] + '"] = ' + settingVariableNames[i] + ';\n')
   
- configFile.write('} \n\n') 
+ configFile.write('} \n\n')
+ 
+###############################################################################################################
+ 
+def writeWeb(solverName, solverType, solverAlias, solverDescription, solverPlottingDescription, settingNames = [],
+               settingTypes = [], settingDefaultValues = [], settingDefaultStates = [],
+               settingDescriptions = [], settingVariableNames = [], settingStateNames = [],
+               settingDataTypes = []):
+
+ import io
+ if (solverName == ''): return
+ webFile = open( '../docs/docs/usage/solvers/' + solverAlias.lower() + '.md', 'w+')
+
+ webFile.write('# ' + solverName + ' \n\n')
+ webFile.write('## Description\n\n')
+ webFile.write(solverDescription + '\n\n')
+ webFile.write('## Solver Settings\n\n')
+ 
+ for i in range(len(settingNames)):   
+  if (settingTypes[i] == 'Solver Setting'):
+   webFile.write(' ??? abstract "' + settingNames[i] + '"\n\n')
+   s = io.StringIO(settingDescriptions[i])
+   for line in s:  webFile.write(' ' + line)
+   webFile.write('   + Default Value: ' + settingDefaultValues[i] + '\n')
+   webFile.write('   + Datatype: ' + settingDataTypes[i] + '\n')
+   webFile.write('   + Syntax: \n\n')
+   webFile.write('   ```python\n    _k->_js["' + solverAlias + '"]["' + settingNames[i] + '"]\n   ```\n\n')
+  
+ webFile.write('## Variable Settings\n\n')
+ 
+ for i in range(len(settingNames)):   
+  if (settingTypes[i] == 'Variable Setting'):
+   webFile.write(' ??? abstract "' + settingNames[i] + '"\n\n')
+   s = io.StringIO(settingDescriptions[i])
+   for line in s:  webFile.write(' ' + line)
+   webFile.write('   + Default Value: ' + settingDefaultValues[i] + '\n')
+   webFile.write('   + Datatype: ' + settingDataTypes[i] + '\n')
+   webFile.write('   + Syntax: \n\n')
+   webFile.write('   ```python\n    _k->_js["Variables"][i]["' + solverAlias + '"]["' + settingNames[i] + '"]\n   ```\n\n')
+
+ webFile.write('## Termination Criteria\n\n')
+ 
+ for i in range(len(settingNames)):   
+  if (settingTypes[i] == 'Termination Criterion'):
+   webFile.write(' ??? abstract "' + settingNames[i] + '"\n\n')
+   s = io.StringIO(settingDescriptions[i])
+   for line in s:  webFile.write(' ' + line)
+   webFile.write('   + Default Value: ' + settingDefaultValues[i] + '\n')
+   webFile.write('   + Enabled by Default?: ' + settingDefaultStates[i] + '\n')
+   webFile.write('   + C++ Type: ' + settingTypes[i] + '\n')
+   webFile.write('   + Syntax: \n\n')
+   webFile.write('   ```python\n    _k->_js["' + solverAlias + '"]["Termination Criteria"]["' + settingNames[i] + '"]["Value"]\n   ```\n\n')
+   webFile.write('   ```python\n    _k->_js["' + solverAlias + '"]["Termination Criteria"]["' + settingNames[i] + '"]["Enabled"]\n   ```\n\n')
+  
+ webFile.write('## Plotting\n\n')
+ 
+ webFile.write(solverPlottingDescription + '\n\n')
+   
+ webFile.close()
+ 
+################################################################################################################
+
+def parseFile(f):
+
+ solverName = ''
+ solverType = ''
+ solverAlias = ''
+ solverDescription = ''
+ solverPlottingDescription = ''
+    
+ settingNames = []
+ settingTypes = []
+ settingDefaultValues = []
+ settingDefaultStates = []
+ settingDescriptions = []
+ settingPlottings = []
+ settingVariableNames = []
+ settingStateNames = []
+ settingDataTypes = []
+
+ with open(f, 'r') as file:
+  line = file.readline()
+  while line:
+  
+   ## Resolving Solver Data
+   if (line.startswith('Module Name:')):
+    solverName = line.replace('Module Name:', '').strip()
+    solverType = file.readline().replace('Type:', '').strip()
+    solverAlias = file.readline().replace('Alias:', '').strip()
+    solverDescription = getDescription(file)
+    solverPlottingDescription = getDescription(file)
+     
+   ## Resolving Solver Settings
+   if (line.startswith('Setting Name:')):
+    settingNames.append(line.replace('Setting Name:', '').strip())
+    settingTypes.append(file.readline().replace('Type:', '').strip())
+    settingDefaultValues.append(file.readline().replace('Default Value:', '').strip())
+    settingDefaultStates.append(file.readline().replace('Default Enabled:', '').strip())
+    settingDescriptions.append(getDescription(file))
+    declarationWords = file.readline().strip().replace(';', '').split() 
+    settingDataTypes.append(declarationWords[0])
+    settingVariableNames.append(declarationWords[-1])
+    
+    stateWords = file.readline().strip().split()
+    stateName = ''
+    if (len(stateWords) > 0): stateName = stateWords[1] 
+    settingStateNames.append(stateName.replace(';', ''))
+    
+   line = file.readline()
+   
+ writeConfig(solverName, solverType, solverAlias, solverDescription, solverPlottingDescription, settingNames,
+             settingTypes, settingDefaultValues, settingDefaultStates, settingDescriptions, 
+             settingVariableNames, settingStateNames, settingDataTypes)
+  
+ writeWeb(solverName, solverType, solverAlias, solverDescription, solverPlottingDescription, settingNames,
+           settingTypes, settingDefaultValues, settingDefaultStates, settingDescriptions, 
+           settingVariableNames, settingStateNames, settingDataTypes)
+ 
+####################################################################################################
 
 # Initializing Config File
 

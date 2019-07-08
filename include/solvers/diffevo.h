@@ -25,6 +25,9 @@ and updating strategies [Brest2006](https://ieeexplore.ieee.org/document/4016057
 + The *Sample Count* needs to be defined..
 + The *Lower Bound* needs to be defined for each variable.
 + The *Upper Bound* needs to be defined for every variable.
+******************************************************************************
+Plotting:
+Here we explain technical details of the **DE** result plot.
 ******************************************************************************/
 
 class DE : public Base

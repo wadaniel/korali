@@ -39,7 +39,7 @@ The Solver module generates samples for evaluation, performs the statistical ana
 	 k["Solver"] = "CMA-ES";
 	```
 
-	[Click here for detailed information on CMA-ES.](../solvers/optimizers/cmaes)
+	[Click here for detailed information on CMA-ES.](../solvers/cmaes)
 
 ??? abstract "Differential Evolution"
 
@@ -49,7 +49,7 @@ The Solver module generates samples for evaluation, performs the statistical ana
 	 k["Solver"] = "DE";
 	```
 
-	[Click here for detailed information on Differential Evolution](../solvers/optimizers/diffevo)
+	[Click here for detailed information on Differential Evolution](../solvers/de)
 
 + **Samplers** map the probability distribution of samples in the variable space of the described problem. The detailed configuration of the currently implemented optimizers can be found below:
 
@@ -61,7 +61,7 @@ The Solver module generates samples for evaluation, performs the statistical ana
 	 k["Solver"] = "MCMC";
 	```
 
-	[Click here for detailed information on MCMC(../solvers/optimizers/mcmc)
+	[Click here for detailed information on MCMC(../solvers/mcmc)
 
 ??? abstract "Transitional Markov-Chain Monte-Carlo"
 
@@ -71,7 +71,7 @@ The Solver module generates samples for evaluation, performs the statistical ana
 	 k["Solver"] = "TMCMC";
 	```
 
-	[Click here for detailed information on TMCMC.](../solvers/optimizers/tmcmc)
+	[Click here for detailed information on TMCMC.](../solvers/tmcmc)
 
 
 ###Step 3) Define Variables

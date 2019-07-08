@@ -32,38 +32,38 @@ DE::DE()
 void DE::initialize()
 {
  // Allocating Memory
- samplePopulation = (double*) calloc (sizeof(double), _k->N*_sampleCount);
- candidates       = (double*) calloc (sizeof(double), _k->N*_sampleCount);
+ _samplePopulation.resize(_k->N*_sampleCount);
+ _sampleCandidates.resize(_k->N*_sampleCount);
 
- rgxoldmean     = (double*) calloc (sizeof(double), _k->N);
- rgxmean        = (double*) calloc (sizeof(double), _k->N);
- rgxbestever    = (double*) calloc (sizeof(double), _k->N);
- curBestVector  = (double*) calloc (sizeof(double), _k->N);
- maxWidth       = (double*) calloc (sizeof(double), _k->N);
+ _rgxOldMean.resize(_k->N);
+ _rgxMean.resize(_k->N);
+ _rgxBestEver.resize(_k->N);
+ _curBestEver.resize(_k->N);
+ _maxWidth.resize(_k->N);
 
- initializedSample = (bool*) calloc (sizeof(bool), _sampleCount);
- oldFitnessVector  = (double*) calloc (sizeof(double), _sampleCount);
- fitnessVector     = (double*) calloc (sizeof(double), _sampleCount);
+ _isInitializedSample.resize(_sampleCount);
+ _prevfitnessVector.resize(_sampleCount);
+ _fitnessVector.resize(_sampleCount);
 
  _isFinished = false;
 
- countevals      = 0;
- countinfeasible = 0;
- bestIndex       = 0;
- prevFunctionValue    = -std::numeric_limits<double>::max();
- currentFunctionValue = -std::numeric_limits<double>::max();
- bestEver             = -std::numeric_limits<double>::max();
+ _functionEvaluationCount      = 0;
+ _infeasibleSampleCount = 0;
+ _bestIndex       = 0;
+ _previousFunctionValue    = -std::numeric_limits<double>::max();
+ _currentFunctionValue = -std::numeric_limits<double>::max();
+ _bestEver             = -std::numeric_limits<double>::max();
 
- /* set rgxmean */
+ /* set _rgxMean */
  for (size_t i = 0; i < _k->N; ++i)
  {
-	 if(_variableSettings[i].initialMean < _variableSettings[i].lowerBound || _variableSettings[i].initialMean > _variableSettings[i].upperBound)
-		fprintf(stderr,"[Korali] Warning: Initial Value (%.4f) for \'%s\' is out of bounds (%.4f-%.4f).\n",
-						_variableSettings[i].initialMean,
-						_k->_variables[i]->_name.c_str(),
-						_variableSettings[i].lowerBound,
-						_variableSettings[i].upperBound);
-	 rgxmean[i] = rgxoldmean[i] = _variableSettings[i].initialMean;
+   if(_variableSettings[i].initialMean < _variableSettings[i].lowerBound || _variableSettings[i].initialMean > _variableSettings[i].upperBound)
+    fprintf(stderr,"[Korali] Warning: Initial Value (%.4f) for \'%s\' is out of bounds (%.4f-%.4f).\n",
+            _variableSettings[i].initialMean,
+            _k->_variables[i]->_name.c_str(),
+            _variableSettings[i].lowerBound,
+            _variableSettings[i].upperBound);
+   _rgxMean[i] = _rgxOldMean[i] = _variableSettings[i].initialMean;
  }
 
  initSamples();
@@ -73,7 +73,7 @@ void DE::runGeneration()
 {
  prepareGeneration();
  evaluateSamples();
- updateSolver(fitnessVector);
+ updateSolver();
 }
 
 
@@ -81,43 +81,43 @@ void DE::initSamples()
 {
   for(size_t i = 0; i < _sampleCount; ++i) for(size_t d = 0; d < _k->N; ++d)
   {
-		samplePopulation[i*_k->N+d] = _variableSettings[d].initialMean + _variableSettings[d].initialStdDev * _gaussianGenerator->getRandomNumber();
-		if(samplePopulation[i*_k->N+d] < _variableSettings[d].lowerBound) samplePopulation[i*_k->N+d] = _variableSettings[d].lowerBound;
-		if(samplePopulation[i*_k->N+d] > _variableSettings[d].upperBound) samplePopulation[i*_k->N+d] = _variableSettings[d].upperBound;
+    _samplePopulation[i*_k->N+d] = _variableSettings[d].initialMean + _variableSettings[d].initialStdDev * _gaussianGenerator->getRandomNumber();
+    if(_samplePopulation[i*_k->N+d] < _variableSettings[d].lowerBound) _samplePopulation[i*_k->N+d] = _variableSettings[d].lowerBound;
+    if(_samplePopulation[i*_k->N+d] > _variableSettings[d].upperBound) _samplePopulation[i*_k->N+d] = _variableSettings[d].upperBound;
   }
 }
 
 
 void DE::prepareGeneration()
 {
- size_t initial_infeasible = countinfeasible;
+ size_t initial_infeasible = _infeasibleSampleCount;
  for (size_t i = 0; i < _sampleCount; ++i)
  {
-    mutateSingle(i);
-    while(isFeasible(i) == false)
-    {
-        countinfeasible++;
-        
-        if (_fixInfeasible) 
-            fixInfeasible(i);
-        else 
-            mutateSingle(i);
-       
-        if ( _termCondMaxInfeasibleResamplingsEnabled )
-        if ( (countinfeasible - initial_infeasible) > _termCondMaxInfeasibleResamplings )
-        {
-          if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Warning: exiting resampling loop (param %zu) , max resamplings (%zu) reached.\n", i, _termCondMaxInfeasibleResamplings);
-          exit(-1);
-        }
-    }
+	mutateSingle(i);
+	while(isFeasible(i) == false)
+	{
+	_infeasibleSampleCount++;
+
+	if (_fixInfeasible)
+			fixInfeasible(i);
+	else
+			mutateSingle(i);
+
+	if ( _termCondMaxInfeasibleResamplingsEnabled )
+	if ( (_infeasibleSampleCount - initial_infeasible) > _termCondMaxInfeasibleResamplings )
+	{
+		if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Warning: exiting resampling loop (param %zu) , max resamplings (%zu) reached.\n", i, _termCondMaxInfeasibleResamplings);
+		exit(-1);
+	}
+	}
  }
 
- finishedSamples = 0;
- for (size_t i = 0; i < _sampleCount; i++) initializedSample[i] = false;
+ _finishedSampleCount = 0;
+ for (size_t i = 0; i < _sampleCount; i++) _isInitializedSample[i] = false;
 
- double *tmp = fitnessVector;
- fitnessVector = oldFitnessVector;
- oldFitnessVector = fitnessVector;
+ std::vector<double> tmp = _fitnessVector;
+ _fitnessVector = _prevfitnessVector;
+ _prevfitnessVector = tmp;
 }
 
 
@@ -155,28 +155,28 @@ void DE::mutateSingle(size_t sampleIdx)
     {
         size_t c;
         do{ c = _uniformGenerator->getRandomNumber()*_sampleCount; } while(c == sampleIdx || c == a || c == b);
-        parent = &samplePopulation[c*_k->N];
+        parent = &_samplePopulation[c*_k->N];
     }
     else
     {
      /* _parentSelectionRule == "Best" */
-        parent = &samplePopulation[bestIndex*_k->N];
+        parent = &_samplePopulation[_bestIndex*_k->N];
     }
 
     size_t rn = _uniformGenerator->getRandomNumber()*_k->N;
     for(size_t d = 0; d < _k->N; ++d)
     {
       if( (_uniformGenerator->getRandomNumber() < _crossoverRate) || (d == rn) )
-          candidates[sampleIdx*_k->N+d] = parent[d]+_mutationRate*(samplePopulation[a*_k->N+d]-samplePopulation[b*_k->N+d]);
+          _sampleCandidates[sampleIdx*_k->N+d] = parent[d]+_mutationRate*(_samplePopulation[a*_k->N+d]-_samplePopulation[b*_k->N+d]);
       else
-          candidates[sampleIdx*_k->N+d] = samplePopulation[sampleIdx*_k->N+d];
+          _sampleCandidates[sampleIdx*_k->N+d] = _samplePopulation[sampleIdx*_k->N+d];
     }
 }
 
 
 bool DE::isFeasible(size_t sampleIdx) const
 {
-  for(size_t d = 0; d < _k->N; ++d) if ( (candidates[sampleIdx*_k->N+d] < _variableSettings[d].lowerBound) || (candidates[sampleIdx*_k->N+d] > _variableSettings[d].upperBound)) return false;
+  for(size_t d = 0; d < _k->N; ++d) if ( (_sampleCandidates[sampleIdx*_k->N+d] < _variableSettings[d].lowerBound) || (_sampleCandidates[sampleIdx*_k->N+d] > _variableSettings[d].upperBound)) return false;
   return true;
 }
 
@@ -185,9 +185,9 @@ void DE::fixInfeasible(size_t sampleIdx)
 {
   for(size_t d = 0; d < _k->N; ++d) 
   {
-    if ( candidates[sampleIdx*_k->N+d] < _variableSettings[d].lowerBound ) candidates[sampleIdx*_k->N+d] *= _uniformGenerator->getRandomNumber();
-    if ( candidates[sampleIdx*_k->N+d] > _variableSettings[d].upperBound )
-    { double len = _variableSettings[d].upperBound - samplePopulation[sampleIdx*_k->N+d]; candidates[sampleIdx*_k->N+d] = samplePopulation[sampleIdx*_k->N+d] + len * _uniformGenerator->getRandomNumber(); }
+    if ( _sampleCandidates[sampleIdx*_k->N+d] < _variableSettings[d].lowerBound ) _sampleCandidates[sampleIdx*_k->N+d] *= _uniformGenerator->getRandomNumber();
+    if ( _sampleCandidates[sampleIdx*_k->N+d] > _variableSettings[d].upperBound )
+    { double len = _variableSettings[d].upperBound - _samplePopulation[sampleIdx*_k->N+d]; _sampleCandidates[sampleIdx*_k->N+d] = _samplePopulation[sampleIdx*_k->N+d] + len * _uniformGenerator->getRandomNumber(); }
   }
 }
 
@@ -198,17 +198,17 @@ void DE::evaluateSamples()
   
   for (size_t i = 0; i < _sampleCount; i++) for(size_t d = 0; d < _k->N; ++d)
     if(_k->_variables[d]->_isLogSpace == true)
-        transformedSamples[i*_k->N+d] = std::exp(candidates[i*_k->N+d]);
+        transformedSamples[i*_k->N+d] = std::exp(_sampleCandidates[i*_k->N+d]);
     else 
-        transformedSamples[i*_k->N+d] = candidates[i*_k->N+d];
+        transformedSamples[i*_k->N+d] = _sampleCandidates[i*_k->N+d];
 
 
-  while (finishedSamples < _sampleCount)
+  while (_finishedSampleCount < _sampleCount)
   {
-    for (size_t i = 0; i < _sampleCount; i++) if (initializedSample[i] == false)
+    for (size_t i = 0; i < _sampleCount; i++) if (_isInitializedSample[i] == false)
     {
-      initializedSample[i] = true; 
-      _k->_conduit->evaluateSample(transformedSamples, i); countevals++;
+      _isInitializedSample[i] = true;
+      _k->_conduit->evaluateSample(transformedSamples, i); _functionEvaluationCount++;
     }
     _k->_conduit->checkProgress();
   }
@@ -219,52 +219,52 @@ void DE::evaluateSamples()
 
 void DE::processSample(size_t sampleIdx, double fitness)
 {
- double logPrior = _k->_problem->evaluateLogPrior(&samplePopulation[sampleIdx*_k->N]);
- fitnessVector[sampleIdx] = _fitnessSign * (logPrior+fitness);
- finishedSamples++;
+ double logPrior = _k->_problem->evaluateLogPrior(&_samplePopulation[sampleIdx*_k->N]);
+ _fitnessVector[sampleIdx] = evaluationSign * (logPrior+fitness);
+ _finishedSampleCount++;
 }
 
 
-void DE::updateSolver(const double *fitnessVector)
+void DE::updateSolver()
 {
-    bestIndex            = maxIdx(fitnessVector, _sampleCount);
-    prevFunctionValue    = currentFunctionValue;
-    currentFunctionValue = fitnessVector[bestIndex];
-    for(size_t d = 0; d < _k->N; ++d) curBestVector[d] = candidates[bestIndex*_k->N+d];
+    _bestIndex            = maxIdx(_fitnessVector.data(), _sampleCount);
+    _previousFunctionValue    = _currentFunctionValue;
+    _currentFunctionValue = _fitnessVector[_bestIndex];
+    for(size_t d = 0; d < _k->N; ++d) _curBestEver[d] = _sampleCandidates[_bestIndex*_k->N+d];
     
-    if(currentFunctionValue > bestEver)
+    if(_currentFunctionValue > _bestEver)
     {
-        prevBest = bestEver;
+        _previousBestEver = _bestEver;
         
         for(size_t d = 0; d < _k->N; ++d) 
         {
-            rgxoldmean[d]  = rgxmean[d];
-            rgxbestever[d] = curBestVector[d];
-            rgxmean[d]     = 0.0;
+            _rgxOldMean[d]  = _rgxMean[d];
+            _rgxBestEver[d] = _curBestEver[d];
+            _rgxMean[d]     = 0.0;
         }
    
         switch (str2int(_acceptRule.c_str()))
         {
             case str2int("Best") : // only update best sample
-                bestEver = currentFunctionValue;
-                for(size_t d = 0; d < _k->N; ++d) samplePopulation[bestIndex*_k->N+d] = candidates[bestIndex*_k->N+d];
+                _bestEver = _currentFunctionValue;
+                for(size_t d = 0; d < _k->N; ++d) _samplePopulation[_bestIndex*_k->N+d] = _sampleCandidates[_bestIndex*_k->N+d];
                 break;
 
             case str2int("Greedy") : // accept if mutation better than parent
-                for(size_t i = 0; i < _sampleCount; ++i) if(fitnessVector[i] > oldFitnessVector[i])
-                    for(size_t d = 0; d < _k->N; ++d) samplePopulation[i*_k->N+d] = candidates[i*_k->N+d];
-                bestEver = currentFunctionValue;
+                for(size_t i = 0; i < _sampleCount; ++i) if(_fitnessVector[i] > _prevfitnessVector[i])
+                    for(size_t d = 0; d < _k->N; ++d) _samplePopulation[i*_k->N+d] = _sampleCandidates[i*_k->N+d];
+                _bestEver = _currentFunctionValue;
                 break;
 
-            case str2int("Iterative") : // iteratibely accept samples and update bestEver
-                for(size_t i = 0; i < _sampleCount; ++i) if(fitnessVector[i] > bestEver)
-                 { for(size_t d = 0; d < _k->N; ++d) samplePopulation[i*_k->N+d] = candidates[i*_k->N+d]; bestEver = fitnessVector[i]; }
+            case str2int("Iterative") : // iteratibely accept samples and update _bestEver
+                for(size_t i = 0; i < _sampleCount; ++i) if(_fitnessVector[i] > _bestEver)
+                 { for(size_t d = 0; d < _k->N; ++d) _samplePopulation[i*_k->N+d] = _sampleCandidates[i*_k->N+d]; _bestEver = _fitnessVector[i]; }
                 break;
  
-            case str2int("Improved") : // update all samples better than bestEver
-                for(size_t i = 0; i < _sampleCount; ++i) if(fitnessVector[i] > bestEver)
-                    for(size_t d = 0; d < _k->N; ++d) samplePopulation[i*_k->N+d] = candidates[i*_k->N+d];
-                bestEver = currentFunctionValue;
+            case str2int("Improved") : // update all samples better than _bestEver
+                for(size_t i = 0; i < _sampleCount; ++i) if(_fitnessVector[i] > _bestEver)
+                    for(size_t d = 0; d < _k->N; ++d) _samplePopulation[i*_k->N+d] = _sampleCandidates[i*_k->N+d];
+                _bestEver = _currentFunctionValue;
                 break;
 
             default :
@@ -273,7 +273,7 @@ void DE::updateSolver(const double *fitnessVector)
         }
 
         for(size_t i = 0; i < _sampleCount; ++i) for(size_t d = 0; d < _k->N; ++d) 
-            rgxmean[d] += samplePopulation[i*_k->N+d]/((double)_sampleCount);
+            _rgxMean[d] += _samplePopulation[i*_k->N+d]/((double)_sampleCount);
     }
     
     for(size_t d = 0; d < _k->N; ++d) 
@@ -282,10 +282,10 @@ void DE::updateSolver(const double *fitnessVector)
         double min = -max;
         for(size_t i = 0; i < _sampleCount; ++i)
         {
-            if (samplePopulation[i*_k->N+d] > max) max = samplePopulation[i*_k->N+d];
-            if (samplePopulation[i*_k->N+d] < min) min = samplePopulation[i*_k->N+d];
+            if (_samplePopulation[i*_k->N+d] > max) max = _samplePopulation[i*_k->N+d];
+            if (_samplePopulation[i*_k->N+d] < min) min = _samplePopulation[i*_k->N+d];
         }
-        maxWidth[d] = max-min;
+        _maxWidth[d] = max-min;
     }
 
 }
@@ -294,19 +294,19 @@ void DE::updateSolver(const double *fitnessVector)
 bool DE::checkTermination()
 {
 
- if ( _termCondMinFitnessEnabled && (_k->currentGeneration > 1) && (bestEver >= _termCondMinFitness) )
+ if ( _termCondMinFitnessEnabled && (_k->currentGeneration > 1) && (_bestEver >= _termCondMinFitness) )
  {
   _isFinished = true;
-  printf("Fitness Value (%+6.3e) > (%+6.3e).",  bestEver, _termCondMinFitness);
+  printf("Fitness Value (%+6.3e) > (%+6.3e).",  _bestEver, _termCondMinFitness);
  }
  
- if ( _termCondMaxFitnessEnabled && (_k->currentGeneration > 1) && (bestEver >= _termCondMaxFitness) )
+ if ( _termCondMaxFitnessEnabled && (_k->currentGeneration > 1) && (_bestEver >= _termCondMaxFitness) )
  {
   _isFinished = true;
-  printf("Fitness Value (%+6.3e) > (%+6.3e).",  bestEver, _termCondMaxFitness);
+  printf("Fitness Value (%+6.3e) > (%+6.3e).",  _bestEver, _termCondMaxFitness);
  }
 
- double range = fabs(currentFunctionValue - prevFunctionValue);
+ double range = fabs(_currentFunctionValue - _previousFunctionValue);
  if ( _termCondMinFitnessDiffThresholdEnabled && (_k->currentGeneration > 1) && (range < _termCondMinFitnessDiffThreshold) )
  {
   _isFinished = true;
@@ -316,7 +316,7 @@ bool DE::checkTermination()
  if ( _termCondMinStepSizeEnabled && (_k->currentGeneration > 1) )
  {
    size_t cTemp = 0;
-   for(size_t d = 0; d < _k->N; ++d) cTemp += (fabs(rgxmean[d] - rgxoldmean[d]) < _termCondMinStepSize) ? 1 : 0;
+   for(size_t d = 0; d < _k->N; ++d) cTemp += (fabs(_rgxMean[d] - _rgxOldMean[d]) < _termCondMinStepSize) ? 1 : 0;
    if (cTemp == _k->N) 
    {
     _isFinished = true;
@@ -347,18 +347,18 @@ void DE::printGeneration()
  
  if (_k->_verbosity >= KORALI_NORMAL)
  {
-  printf("[Korali] Current Function Value: Max = %+6.3e - Best = %+6.3e\n", currentFunctionValue, bestEver);
+  printf("[Korali] Current Function Value: Max = %+6.3e - Best = %+6.3e\n", _currentFunctionValue, _bestEver);
   // TODO: sth like width of samples: printf("[Korali] Covariance Eigenvalues: Min = %+6.3e -  Max = %+6.3e\n", minEW, maxEW);
  }
 
  if (_k->_verbosity >= KORALI_DETAILED)
  {
   printf("[Korali] Variable = (MeanX, BestX):\n");
-  for (size_t d = 0; d < _k->N; d++)  printf("         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), rgxmean[d], rgxbestever[d]);
+  for (size_t d = 0; d < _k->N; d++)  printf("         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _rgxMean[d], _rgxBestEver[d]);
   printf("[Korali] Max Width:\n");
-  for (size_t d = 0; d < _k->N; d++)  printf("         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), maxWidth[d]);
-  printf("[Korali] Number of Function Evaluations: %zu\n", countevals);
-  printf("[Korali] Number of Infeasible Samples: %zu\n", countinfeasible);
+  for (size_t d = 0; d < _k->N; d++)  printf("         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _maxWidth[d]);
+  printf("[Korali] Number of Function Evaluations: %zu\n", _functionEvaluationCount);
+  printf("[Korali] Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
  }
 
  if (_k->_verbosity >= KORALI_NORMAL)
@@ -370,11 +370,11 @@ void DE::finalize()
  if (_k->_verbosity >= KORALI_MINIMAL)
  {
     printf("[Korali] Differential Evolution Finished\n");
-    printf("[Korali] Optimum (%s) found: %e\n", _objective.c_str(), bestEver);
+    printf("[Korali] Optimum (%s) found: %e\n", _objective.c_str(), _bestEver);
     printf("[Korali] Optimum (%s) found at:\n", _objective.c_str());
-    for (size_t d = 0; d < _k->N; ++d) printf("         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), rgxbestever[d]);
-    printf("[Korali] Number of Function Evaluations: %zu\n", countevals);
-    printf("[Korali] Number of Infeasible Samples: %zu\n", countinfeasible);
+    for (size_t d = 0; d < _k->N; ++d) printf("         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _rgxBestEver[d]);
+    printf("[Korali] Number of Function Evaluations: %zu\n", _functionEvaluationCount);
+    printf("[Korali] Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
     printf("--------------------------------------------------------------------\n");
  }
 }

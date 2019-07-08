@@ -335,77 +335,6 @@ double _termCondMinStandardDeviationStepFactor;
 bool   _termCondMinStandardDeviationStepFactorEnabled;
 
 /******************************************************************************
-* Variable Settings
-******************************************************************************/
-
-struct variableSetting
-{
-
-/******************************************************************************
-Setting Name: Lower Bound
-Type: Variable Setting
-Default Value: -INFINITY
-Default Enabled:
-Description:
-Specifies the lower bound for the variable's value. Korali will not generate samples
-for which this variable falls below the specified minimum. By default, Korali sets this
-value to -Infinity.
-******************************************************************************/
-double lowerBound;
-
-/******************************************************************************
-Setting Name: Upper Bound
-Type: Variable Setting
-Default Value: +INFINITY
-Default Enabled:
-Description:
-Specifies the upper bound for the variable's value. Korali will not generate samples
-for which this variable falls below the specified maximum. By default, Korali sets this
-value to +Infinity.
-******************************************************************************/
-double upperBound;
-
-/******************************************************************************
-Setting Name: Initial Mean
-Type: Variable Setting
-Default Value: 0.0
-Default Enabled:
-Description:
-Defines the initial mean for the proposal distribution. This value must be defined
-between the variable's Mininum and Maximum settings By default, Korali sets this
-value in the center of the domain.
-******************************************************************************/
-double initialMean;
-
-/******************************************************************************
-Setting Name: Initial Standard Deviation
-Type: Variable Setting
-Default Value: 1.0
-Default Enabled:
-Description:
-Defines the initial standard deviation of the proposal distribution for a variable.
-By default, Korali sets this value to 30% of the domain width.
-******************************************************************************/
-double initialStdDev;
-
-/******************************************************************************
-Setting Name: Minimum Stardard Deviation Changes
-Type: Variable Setting
-Default Value: 0.0
-Default Enabled:
-Description:
-Defines a lower bound for the standard deviation updates of the proposal distribution for a variable.
-Korali increases the scaling factor $\sigma$ if this value is undershot. By default,
-Korali sets this value to 0.0 (inactive).
-******************************************************************************/
-double minStdDevChange;
-
-};
-
-std::vector<variableSetting> _variableSettings;
-/******************************************************************************/
-
-/******************************************************************************
 Setting Name: Evaluation Sign
 Type: Internal Attribute
 Default Value:
@@ -444,7 +373,7 @@ Default Enabled:
 Description:
 Determines which samples are initialized.
 ******************************************************************************/
-std::vector<double> _isInitializedSample;
+std::vector<bool> _isInitializedSample;
 
 /******************************************************************************
 Setting Name: Transformed Samples
@@ -1048,6 +977,77 @@ Description:
 Constraint evaluations for best ever.
 ******************************************************************************/
 std::vector<double> _bestEverConstraintEvaluation;
+
+/******************************************************************************
+* Variable Settings
+******************************************************************************/
+
+struct variableSetting
+{
+
+/******************************************************************************
+Setting Name: Lower Bound
+Type: Variable Setting
+Default Value: -INFINITY
+Default Enabled:
+Description:
+Specifies the lower bound for the variable's value. Korali will not generate samples
+for which this variable falls below the specified minimum. By default, Korali sets this
+value to -Infinity.
+******************************************************************************/
+double lowerBound;
+
+/******************************************************************************
+Setting Name: Upper Bound
+Type: Variable Setting
+Default Value: +INFINITY
+Default Enabled:
+Description:
+Specifies the upper bound for the variable's value. Korali will not generate samples
+for which this variable falls below the specified maximum. By default, Korali sets this
+value to +Infinity.
+******************************************************************************/
+double upperBound;
+
+/******************************************************************************
+Setting Name: Initial Mean
+Type: Variable Setting
+Default Value: 0.0
+Default Enabled:
+Description:
+Defines the initial mean for the proposal distribution. This value must be defined
+between the variable's Mininum and Maximum settings By default, Korali sets this
+value in the center of the domain.
+******************************************************************************/
+double initialMean;
+
+/******************************************************************************
+Setting Name: Initial Standard Deviation
+Type: Variable Setting
+Default Value: 1.0
+Default Enabled:
+Description:
+Defines the initial standard deviation of the proposal distribution for a variable.
+By default, Korali sets this value to 30% of the domain width.
+******************************************************************************/
+double initialStdDev;
+
+/******************************************************************************
+Setting Name: Minimum Stardard Deviation Changes
+Type: Variable Setting
+Default Value: 0.0
+Default Enabled:
+Description:
+Defines a lower bound for the standard deviation updates of the proposal distribution for a variable.
+Korali increases the scaling factor $\sigma$ if this value is undershot. By default,
+Korali sets this value to 0.0 (inactive).
+******************************************************************************/
+double minStdDevChange;
+
+};
+
+std::vector<variableSetting> _variableSettings;
+/******************************************************************************/
 
  // Workspace for GSL
  Variable* _gaussianGenerator;

@@ -1,5 +1,5 @@
-a1-de
-a1-optimization
+a1-optimization-cmaes
+a1-optimization-de
 a2-sampling-mcmc
 a2-sampling-tmcmc
 a3-bayesian-inference-cmaes

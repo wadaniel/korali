@@ -55,9 +55,6 @@ void CMAES::initialize()
  _isInitializedSample.resize(s_max);
  _fitnessVector.resize(s_max);
 
- // Init Generation
- _isFinished = false;
-
  C.resize(_k->N*_k->N);
  Ctmp.resize(_k->N*_k->N);
  B.resize(_k->N*_k->N);
@@ -67,6 +64,17 @@ void CMAES::initialize()
  BDZ.resize(s_max*_k->N);
 
  _transformedSamples.resize(s_max*_k->N);
+ 
+ // Init Generation
+ _isFinished = false;
+
+ if (_objective == "Maximize") 
+     _evaluationSign = 1.0;
+ else if(_objective == "Minimize")
+     _evaluationSign = -1.0;
+ else
+    { fprintf(stderr,"[Korali] Warning: Objective must be either be initialized to \'Maximize\' or \'Minimize\' (is %s).\n", _objective.c_str()); }         
+
 
  // Initailizing Mu
  _muWeights.resize(mu_max);
@@ -83,9 +91,9 @@ void CMAES::initialize()
 		{ fprintf( stderr, "[Korali] CMA-ES Error: Invalid Target Success Rate (%f), must be greater than 0.0 and less than 1.0\n",  _targetSuccessRate ); exit(-1); }
 	if(_covMatrixAdaptionStrength <= 0.0) { fprintf( stderr, "[Korali] CMA-ES Error: Invalid Adaption Size (%f), must be greater than 0.0\n", _covMatrixAdaptionStrength ); exit(-1); }
 
-	_bestValidSample     = -1;
-	_constraintEvaluationCount      = 0;
-	_adaptationCount     = 0;
+	_bestValidSample = -1;
+	_constraintEvaluationCount = 0;
+	_adaptationCount = 0;
 	_maxViolationCount = 0;
 	_sampleViolationCounts.resize(_currentSampleCount);
 	_viabilityBoundaries.resize(_k->_fconstraints.size());
@@ -137,7 +145,6 @@ void CMAES::initialize()
  }
 
  if ( _constraintsDefined ){ updateConstraints(); handleConstraints(); }
- updateDistribution();
  if ( _constraintsDefined ) checkMeanAndSetRegime();
 }
 
@@ -260,13 +267,13 @@ void CMAES::initCovariance()
 void CMAES::processSample(size_t sampleId, double fitness)
 {
  double logPrior = _k->_problem->evaluateLogPrior(&_samplePopulation[sampleId*_k->N]);
- fitness = evaluationSign * (logPrior+fitness);
+ fitness = _evaluationSign * (logPrior+fitness);
  if(std::isfinite(fitness) == false)
  {
-   fitness = evaluationSign * std::numeric_limits<double>::max();
+   fitness = _evaluationSign * std::numeric_limits<double>::max();
    printf("[Korali] Warning: sample %zu returned non finite fitness (set to %e)!\n", sampleId, fitness);
  }
- 
+
  _fitnessVector[sampleId] = fitness;
  _finishedSampleCount++;
 }
@@ -835,10 +842,10 @@ void CMAES::eigen(size_t size, std::vector<double>& M,  std::vector<double>& dia
 void CMAES::sort_index(const std::vector<double>& vec, std::vector<size_t>& _sortingIndex, size_t n) const
 {
   // initialize original _sortingIndex locations
-  std::iota(std::begin(_sortingIndex), std::end(_sortingIndex), (size_t) 0);
+  std::iota(std::begin(_sortingIndex), std::begin(_sortingIndex)+n, (size_t) 0);
 
   // sort indexes based on comparing values in _v
-  std::sort(std::begin(_sortingIndex), std::end(_sortingIndex), [vec](size_t i1, size_t i2) {return vec[i1] > vec[i2];} );
+  std::sort(std::begin(_sortingIndex), std::begin(_sortingIndex)+n, [vec](size_t i1, size_t i2) { return vec[i1] > vec[i2]; } );
 
 }
 

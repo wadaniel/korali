@@ -213,7 +213,7 @@ Description:
 The sign for the fitness evaluation to determine whether this is a maximization
 or minimization operation.
 ******************************************************************************/
-int evaluationSign;
+int _evaluationSign;
 
 /******************************************************************************
 Setting Name: Fitness Vector
@@ -254,6 +254,16 @@ Description:
 Sample Candidates to evaluate
 ******************************************************************************/
 std::vector<double> _sampleCandidates;
+
+/******************************************************************************
+Setting Name: Tansformed Samples
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Sample Candidates in log space
+******************************************************************************/
+std::vector<double> _transformedSamples;
 
 /******************************************************************************
 Setting Name: Is Initialized Sample

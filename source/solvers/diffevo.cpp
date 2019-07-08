@@ -34,6 +34,7 @@ void DE::initialize()
  // Allocating Memory
  _samplePopulation.resize(_k->N*_sampleCount);
  _sampleCandidates.resize(_k->N*_sampleCount);
+ _transformedSamples.resize(_k->N*_sampleCount);
 
  _rgxOldMean.resize(_k->N);
  _rgxMean.resize(_k->N);
@@ -46,6 +47,13 @@ void DE::initialize()
  _fitnessVector.resize(_sampleCount);
 
  _isFinished = false;
+
+ if (_objective == "Maximize") 
+     _evaluationSign = 1.0;
+ else if(_objective == "Minimize")
+     _evaluationSign = -1.0;
+ else
+    { fprintf(stderr,"[Korali] Warning: Objective must be either be initialized to \'Maximize\' or \'Minimize\' (is %s).\n", _objective.c_str()); }         
 
  _functionEvaluationCount = 0;
  _infeasibleSampleCount   = 0;
@@ -64,7 +72,7 @@ void DE::initialize()
 
  initSamples();
 
- for(size_t d = 0; d < _k->N; ++d) _rgxOldMean[d] = 0.0;
+ for(size_t d = 0; d < _k->N; ++d) { _rgxOldMean[d] = 0.0; _rgxMean[d] = 0.0; }
 
  for(size_t i = 0; i < _sampleCount; ++i) for(size_t d = 0; d < _k->N; ++d) 
    _rgxMean[d] += _samplePopulation[i*_k->N+d]/((double)_sampleCount);
@@ -116,9 +124,7 @@ void DE::prepareGeneration()
  _finishedSampleCount = 0;
  for (size_t i = 0; i < _sampleCount; i++) _isInitializedSample[i] = false;
 
- std::vector<double> tmp = _fitnessVector;
- _fitnessVector = _prevfitnessVector;
- _prevfitnessVector = tmp;
+ _prevfitnessVector.assign(std::begin(_fitnessVector), std::end(_fitnessVector));
 }
 
 
@@ -198,13 +204,12 @@ void DE::fixInfeasible(size_t sampleIdx)
 
 void DE::evaluateSamples()
 {
-  std::vector<double> transformedSamples(_sampleCount * _k->N);
   
   for (size_t i = 0; i < _sampleCount; i++) for(size_t d = 0; d < _k->N; ++d)
     if(_k->_variables[d]->_isLogSpace == true)
-        transformedSamples[i*_k->N+d] = std::exp(_sampleCandidates[i*_k->N+d]);
+        _transformedSamples[i*_k->N+d] = std::exp(_sampleCandidates[i*_k->N+d]);
     else 
-        transformedSamples[i*_k->N+d] = _sampleCandidates[i*_k->N+d];
+        _transformedSamples[i*_k->N+d] = _sampleCandidates[i*_k->N+d];
 
 
   while (_finishedSampleCount < _sampleCount)
@@ -212,7 +217,7 @@ void DE::evaluateSamples()
     for (size_t i = 0; i < _sampleCount; i++) if (_isInitializedSample[i] == false)
     {
       _isInitializedSample[i] = true;
-      _k->_conduit->evaluateSample(&transformedSamples[0], i); _functionEvaluationCount++;
+      _k->_conduit->evaluateSample(&_transformedSamples[0], i); _functionEvaluationCount++;
     }
     _k->_conduit->checkProgress();
   }
@@ -222,8 +227,8 @@ void DE::evaluateSamples()
 
 void DE::processSample(size_t sampleIdx, double fitness)
 {
- double logPrior = _k->_problem->evaluateLogPrior(&_samplePopulation[sampleIdx*_k->N]);
- _fitnessVector[sampleIdx] = evaluationSign * (logPrior+fitness);
+ double logPrior = _k->_problem->evaluateLogPrior(&_transformedSamples[sampleIdx*_k->N]);
+ _fitnessVector[sampleIdx] = _evaluationSign * (logPrior+fitness);
  _finishedSampleCount++;
 }
 
@@ -232,36 +237,35 @@ void DE::updateSolver()
 {
     _bestIndex = std::distance( std::begin(_fitnessVector), std::max_element(std::begin(_fitnessVector), std::end(_fitnessVector)) );
     _previousFunctionValue = _currentFunctionValue;
-    _currentFunctionValue = _fitnessVector[_bestIndex];
+    _currentFunctionValue  = _fitnessVector[_bestIndex];
+
     for(size_t d = 0; d < _k->N; ++d) _curBestEver[d] = _sampleCandidates[_bestIndex*_k->N+d];
     
-    for(size_t d = 0; d < _k->N; ++d) 
-    {
-        _rgxOldMean[d]  = _rgxMean[d];
-        if(_currentFunctionValue > _bestEver) _rgxBestEver[d] = _curBestEver[d];
-        _rgxMean[d]     = 0.0;
-    }
+    _rgxOldMean.assign(std::begin(_rgxMean), std::end(_rgxMean));
+    std::fill(std::begin(_rgxMean), std::end(_rgxMean), 0.0); 
+
+    if(_currentFunctionValue > _bestEver) _rgxBestEver.assign(std::begin(_curBestEver), std::end(_curBestEver));
 
     switch (str2int(_acceptRule.c_str()))
     {
         case str2int("Best") : // only update best sample
             if(_currentFunctionValue > _bestEver)
             {
-              _bestEver = _currentFunctionValue;
               for(size_t d = 0; d < _k->N; ++d) _samplePopulation[_bestIndex*_k->N+d] = _sampleCandidates[_bestIndex*_k->N+d];
+              _bestEver = _currentFunctionValue;
             }
             break;
 
         case str2int("Greedy") : // accept all mutations better than parent
             for(size_t i = 0; i < _sampleCount; ++i) if(_fitnessVector[i] > _prevfitnessVector[i])
                 for(size_t d = 0; d < _k->N; ++d) _samplePopulation[i*_k->N+d] = _sampleCandidates[i*_k->N+d];
-            _bestEver = _currentFunctionValue;
+            if(_currentFunctionValue > _bestEver) _bestEver = _currentFunctionValue;
             break;
 
         case str2int("Improved") : // update all samples better than _bestEver
             for(size_t i = 0; i < _sampleCount; ++i) if(_fitnessVector[i] > _bestEver)
                 for(size_t d = 0; d < _k->N; ++d) _samplePopulation[i*_k->N+d] = _sampleCandidates[i*_k->N+d];
-            _bestEver = _currentFunctionValue;
+            if(_currentFunctionValue > _bestEver) _bestEver = _currentFunctionValue;
             break;
 
         case str2int("Iterative") : // iteratibely update _bestEver and accept samples

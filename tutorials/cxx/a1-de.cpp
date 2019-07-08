@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
  k["DE"]["Objective"] = "Maximize";
  k["DE"]["Sample Count"] = 32;
 
- k["Termination Criteria"]["Max Generations"]["Value"] = 500;
+ k["DE"]["Termination Criteria"]["Max Generations"]["Value"] = 500;
  k.setModel([](Korali::ModelData& d) { directModel(d.getVariables(), d.getResults()); });
  k.run();
 }

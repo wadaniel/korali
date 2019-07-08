@@ -137,6 +137,17 @@ boundary. If set false, infeasible samples are mutated again until feasible.
 bool _fixInfeasible;
 
 /******************************************************************************
+Setting Name: Max Generations
+Type: Termination Criterion
+Default Value: 1e3
+Default Enabled: true
+Description:
+Maximal number of generations to run.
+******************************************************************************/
+size_t _termCondMaxGenerations;
+bool   _termCondMaxGenerationsEnabled;
+
+/******************************************************************************
 Setting Name: Max Resamplings
 Type: Termination Criterion
 Default Value: 1e9
@@ -404,7 +415,7 @@ struct variableSetting
 /******************************************************************************
 Setting Name: Lower Bound
 Type: Variable Setting
-Default Value: -INFINITY
+Default Value:
 Default Enabled:
 Description:
 Specifies the lower bound for the variable's value. Korali will not generate samples
@@ -416,7 +427,7 @@ double lowerBound;
 /******************************************************************************
 Setting Name: Upper Bound
 Type: Variable Setting
-Default Value: +INFINITY
+Default Value:
 Default Enabled:
 Description:
 Specifies the upper bound for the variable's value. Korali will not generate samples
@@ -424,29 +435,6 @@ for which this variable falls below the specified maximum. By default, Korali se
 value to +Infinity.
 ******************************************************************************/
 double upperBound;
-
-/******************************************************************************
-Setting Name: Initial Mean
-Type: Variable Setting
-Default Value: 0.0
-Default Enabled:
-Description:
-Defines the initial mean for the proposal distribution. This value must be defined
-between the variable's Mininum and Maximum settings By default, Korali sets this
-value in the center of the domain.
-******************************************************************************/
-double initialMean;
-
-/******************************************************************************
-Setting Name: Initial Standard Deviation
-Type: Variable Setting
-Default Value: 1.0
-Default Enabled:
-Description:
-Defines the initial standard deviation of the proposal distribution for a variable.
-By default, Korali sets this value to 30% of the domain width.
-******************************************************************************/
-double initialStdDev;
 
 };
 
@@ -477,8 +465,6 @@ std::vector<variableSetting> _variableSettings;
  void runGeneration() override;
  void processSample(size_t sampleId, double fitness) override;
 
- size_t maxIdx(const double *rgd, size_t len) const;
- 
  void setConfiguration() override;
  void getConfiguration() override;
  void printGeneration() override;

@@ -25,29 +25,28 @@ k.addConstraint( g4 )
 k["Problem"] = "Direct Evaluation"
 
 # Selecting the CCMA-ES solver.
-k["Solver"]  = "CMA-ES"
-k["CMA-ES"]["Objective"] = "Maximize"
+k["Solver"]  = "CMAES"
+k["CMAES"]["Objective"] = "Maximize"
 
 # Creating 7 variables and
 # Setting up the variables CCMA-ES bounds
 nParams = 7
 for i in range(nParams) :
   k["Variables"][i]["Name"] = "X" + str(i)
-  k["Variables"][i]["CMA-ES"]["Lower Bound"] = -10.0
-  k["Variables"][i]["CMA-ES"]["Upper Bound"] = +10.0
+  k["Variables"][i]["CMAES"]["Lower Bound"] = -10.0
+  k["Variables"][i]["CMAES"]["Upper Bound"] = +10.0
 
 # Configuring the constrained optimizer CCMA-ES
-k["CMA-ES"]["Sigma Bounded"] = True
-k["CMA-ES"]["Sample Count"] = 8
-k["CMA-ES"]["Constraint"]["Viability"]["Sample Count"] = 2
-k["CMA-ES"]["Constraint"]["Adaption Size"] = 0.1
-k["CMA-ES"]["Termination Criteria"]["Max Generations"]["Active"] = True
-k["CMA-ES"]["Termination Criteria"]["Max Generations"]["Value"] = 5000
-k["CMA-ES"]["Termination Criteria"]["Max Fitness"]["Active"] = True
-k["CMA-ES"]["Termination Criteria"]["Max Fitness"]["Value"] = -680.630057374402 - 1e-4
+k["CMAES"]["Is Sigma Bounded"] = True
+k["CMAES"]["Sample Count"] = 32
+k["CMAES"]["Constraint"]["Viability"]["Sample Count"] = 4
+k["CMAES"]["Termination Criteria"]["Max Generations"]["Enabled"] = True
+k["CMAES"]["Termination Criteria"]["Max Generations"]["Value"] = 5000
+k["CMAES"]["Termination Criteria"]["Max Fitness"]["Enabled"] = True
+k["CMAES"]["Termination Criteria"]["Max Fitness"]["Value"] = -680.630057374402 - 1e-4
 
 # Reducing Output
-k["CMA-ES"]["Result Output Frequency"] = 100
+k["CMAES"]["Result Output Frequency"] = 100
 
 # Setting output directory
 k["Result Directory"] = "_b2_constrained_optimization"

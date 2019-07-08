@@ -197,7 +197,7 @@ bool _isSigmaBounded;
 /******************************************************************************
 Setting Name: Initial Cumulative Covariance
 Type: Solver Setting
-Default Value: 1.0
+Default Value: -1.0
 Default Enabled:
 Description:
 Controls the learning rate of the evolution path for the covariance update
@@ -527,20 +527,21 @@ double _effectiveMu;
 /******************************************************************************
 Setting Name: Sigma Cumulation Factor
 Type: Internal Attribute
-Default Value:
+Default Value: -1.0
 Default Enabled:
 Description:
-increment for sigma, default calculated from muEffective and dimension.
+increment for sigma, default calculated from muEffective and dimension 
+(must be in (0,1) ).
 ******************************************************************************/
 double _sigmaCumulationFactor;
 
 /******************************************************************************
 Setting Name: Damp Factor
 Type: Internal Attribute
-Default Value:
+Default Value: -1.0
 Default Enabled:
 Description:
-Dampening parameter determines controls step size adaption.
+Dampening parameter controls step size adaption (must be in (0,1) ).
 ******************************************************************************/
 double _dampFactor;
 

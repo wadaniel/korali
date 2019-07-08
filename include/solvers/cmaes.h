@@ -888,28 +888,170 @@ Evaluation of each constraint for each sample.
 ******************************************************************************/
 std::vector<std::vector<bool>> _viabilityIndicator;
 
- bool _hasConstraints; /* True if num constraints greater 0 */
- double _beta; /* Factor of covariance matrix adaption size */
+/******************************************************************************
+Setting Name: Constraints Defined
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+True if the number of constraints is higher than zero
+******************************************************************************/
+bool _constraintsDefined;
 
- int bestValidIdx; /* best sample with wo constraint violation (otherwise -1) */
- double _globalSucRate; /* estim. global success rate */
- double fviability; /* viability func value */
- size_t resampled; /* number of resampled parameters due constraint violation */
- size_t correctionsC; /* number of cov matrix adaptions */
- size_t countcevals; /* number of constraint evaluations */
- std::vector<double> sucRates; /* constraint success rates */
- double *viabilityBounds; /* viability boundaries */
- bool *viabilityImprovement; /* sample evaluations larger than fviability */ //TODO: not neeeded?
- size_t maxnumviolations; /* maximal amount of constraint violations */
- size_t *numviolations; /* number of constraint violations for each sample */
- double **constraintEvaluations; /* e  */
- double **v; /* normal approximation of constraints */
- double *besteverCeval; /* constraint evaluations for best ever */
+/******************************************************************************
+Setting Name: Covariance Matrix Adaption Factor
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+This is the $\beta$ factor that indicates how fast the covariance matrix
+is adapted.
+******************************************************************************/
+double _beta;
 
- // Workspace for gsl
+/******************************************************************************
+Setting Name: Best Valid Sample
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Best sample with without constraint violations (otherwise -1).
+******************************************************************************/
+int _bestValidSample;
+
+/******************************************************************************
+Setting Name: Global Success Rate
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Estimated Global Success Rate
+******************************************************************************/
+double _globalSuccessRate;
+
+/******************************************************************************
+Setting Name: Viability Function Value
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Viability Function Value
+******************************************************************************/
+double _viabilityValue;
+
+/******************************************************************************
+Setting Name: Resampled Parameter Count
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Number of resampled parameters due constraint violation.
+******************************************************************************/
+size_t _resampleCount;
+
+/******************************************************************************
+Setting Name: Covariance Matrix Adaptation Count
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Number of Covariance Matrix Adaptations
+******************************************************************************/
+size_t _adaptationCount;
+
+/******************************************************************************
+Setting Name: Constraint Evaluation Count
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Number of constraint evaluations.
+******************************************************************************/
+size_t _constraintEvaluationCount;
+
+/******************************************************************************
+Setting Name: Constraint Success Rates
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Number of constraint evaluations.
+******************************************************************************/
+std::vector<double> _successRates;
+
+/******************************************************************************
+Setting Name: Viability Boundaries
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Viability Boundaries
+******************************************************************************/
+std::vector<double> _viabilityBoundaries;
+
+/******************************************************************************
+Setting Name: Viability Improvement
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Sample evaluations larger than fviability.
+******************************************************************************/
+std::vector<bool> _viabilityImprovement;
+
+/******************************************************************************
+Setting Name: Maximum Violation Count
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Maximal amount of constraint violations.
+******************************************************************************/
+size_t _maxViolationCount;
+
+/******************************************************************************
+Setting Name: Sample Constraint Violation Counts
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Maximal amount of constraint violations.
+******************************************************************************/
+std::vector<size_t> _sampleViolationCounts;
+
+/******************************************************************************
+Setting Name: Constraint Evaluations
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Constraint Evaluations $$e$$
+******************************************************************************/
+std::vector<std::vector<double>> _constraintEvaluations;
+
+/******************************************************************************
+Setting Name: Normal Constraint Approximation
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Normal approximation of constraints
+******************************************************************************/
+std::vector<std::vector<double>> _v;
+
+/******************************************************************************
+Setting Name: Best Constraint Evaluations
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Constraint evaluations for best ever.
+******************************************************************************/
+std::vector<double> _bestEverConstraintEvaluation;
+
+ // Workspace for GSL
  Variable* _gaussianGenerator;
 
- // Ctor & Dtor
  CMAES();
 
  void sampleSingle(size_t sampleIdx); /* sample individual */

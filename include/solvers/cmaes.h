@@ -806,16 +806,6 @@ Auxiliar B*D*z
 std::vector<double> rgdTmp;
 
 /******************************************************************************
-Setting Name: Function Evaluation Count
-Type: Internal Attribute
-Default Value:
-Default Enabled:
-Description:
-Keeps count of the number of function evaluations so far
-******************************************************************************/
-size_t _functionEvaluationCount;
-
-/******************************************************************************
 Setting Name: Infeasible Sample Count
 Type: Internal Attribute
 Default Value:
@@ -1144,7 +1134,7 @@ std::vector<variableSetting> _variableSettings;
 
  // Runtime Methods (to be inherited from base class in the future)
  void prepareGeneration();
- bool checkTermination() override;
+ void checkTermination() override;
  void updateDistribution();
  void initialize() override;
  void runGeneration() override;

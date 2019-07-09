@@ -13,14 +13,12 @@ namespace Korali { namespace Solver {
 class Base {
  public:
 
- bool _isFinished;
-
  virtual void initialize() = 0;
  virtual void finalize() = 0;
 
  virtual void printGeneration() = 0;
  virtual void runGeneration() = 0;
- virtual bool checkTermination() = 0;
+ virtual void checkTermination() = 0;
 
  virtual void setConfiguration() = 0;
  virtual void getConfiguration() = 0;

@@ -164,7 +164,7 @@ bool _termCondMaxInfeasibleResamplingsEnabled;
 /******************************************************************************
 Setting Name: Min Fitness
 Type: Termination Criterion
-Default Value: -std::numeric_limits<double>::infinity()
+Default Value: -std::numeric_limits<float>::max()
 Default Enabled: false
 Description:
 Specifies the target fitness to stop minimization.
@@ -175,7 +175,7 @@ bool   _termCondMinFitnessEnabled;
 /******************************************************************************
 Setting Name: Max Fitness
 Type: Termination Criterion
-Default Value: +std::numeric_limits<double>::infinity()
+Default Value: +std::numeric_limits<float>::max()
 Default Enabled: false
 Description:
 Specifies the target fitness to stop maximization.
@@ -388,26 +388,6 @@ Max distance between samples per dimension.
 std::vector<double> _maxWidth;
 
 /******************************************************************************
-Setting Name: Max Width
-Type: Internal Attribute
-Default Value:
-Default Enabled:
-Description:
-Max distance between samples per dimension.
-******************************************************************************/
-size_t _evaluationCount;
-
-/******************************************************************************
-Setting Name: Function Evaluation Count
-Type: Internal Attribute
-Default Value:
-Default Enabled:
-Description:
-Keeps count of the number of function evaluations so far
-******************************************************************************/
-size_t _functionEvaluationCount;
-
-/******************************************************************************
 Setting Name: Infeasible Sample Count
 Type: Internal Attribute
 Default Value:
@@ -427,7 +407,7 @@ struct variableSetting
 /******************************************************************************
 Setting Name: Lower Bound
 Type: Variable Setting
-Default Value:
+Default Value: -std::numeric_limits<float>::max()
 Default Enabled:
 Description:
 Specifies the lower bound for the variable's value. Korali will not generate samples
@@ -439,7 +419,7 @@ double lowerBound;
 /******************************************************************************
 Setting Name: Upper Bound
 Type: Variable Setting
-Default Value:
+Default Value: +std::numeric_limits<float>::max()
 Default Enabled:
 Description:
 Specifies the upper bound for the variable's value. Korali will not generate samples
@@ -469,7 +449,7 @@ std::vector<variableSetting> _variableSettings;
 
  void initSamples();
  void prepareGeneration();
- bool checkTermination() override;
+ void checkTermination() override;
 
  void initialize() override;
  void finalize() override;

@@ -97,10 +97,12 @@ void Korali::Engine::getConfiguration()
  
  _js["Result Directory"] = _result_dir;
  _js["Termination Criteria"]["Max Generations"] = maxGenerations;
+ _js["Termination Criteria"]["Max Function Evaluations"] = maxFunctionEvaluations;
  _js["Current Generation"] = currentGeneration;
  _js["Console Output Frequency"] = consoleOutputFrequency;
  _js["File Output Frequency"] = fileOutputFrequency;
  _js["Function Evaluation Count"] = functionEvaluationCount;
+ _js["Is Finished"] = _isFinished;
  for (int i = 0; i < _variables.size(); i++) _js["Variables"][i]["Name"] = _variables[i]->_name;
 
  if (_problem != nullptr) _problem->getConfiguration();
@@ -129,6 +131,8 @@ void Korali::Engine::setConfiguration()
  consoleOutputFrequency = consume(_js, { "Console Output Frequency" }, KORALI_NUMBER, "1");
  fileOutputFrequency = consume(_js, { "File Output Frequency" }, KORALI_NUMBER, "1");
  functionEvaluationCount = consume(_js, { "Function Evaluation Count" }, KORALI_NUMBER, "0");
+ maxFunctionEvaluations = consume(_js, { "Termination Criteria", "Max Function Evaluations" }, KORALI_NUMBER, "50000000");
+ _isFinished = consume(_js, { "Is Finished" }, KORALI_BOOLEAN, "false");
 
   _verbosity = KORALI_UNDEFINED;
  std::string vLevel = consume(_js, { "Verbosity" }, KORALI_STRING, "Normal");
@@ -231,37 +235,44 @@ void Korali::Engine::run()
 
  if (_conduit->isRoot())
  {
-	saveState(currentGeneration);
+  saveState(currentGeneration);
 
-	_solver->printGeneration();
+  _solver->printGeneration();
 
-	auto startTime = std::chrono::system_clock::now();
+  auto startTime = std::chrono::system_clock::now();
 
-	while(!_solver->checkTermination())
-	{
-	 auto t0 = std::chrono::system_clock::now();
+  while(_isFinished == false)
+  {
+   auto t0 = std::chrono::system_clock::now();
 
-	 _solver->runGeneration();
-	 currentGeneration++;
+   _solver->runGeneration();
+   currentGeneration++;
 
-	 auto t1 = std::chrono::system_clock::now();
+   auto t1 = std::chrono::system_clock::now();
 
-	 if(_verbosity >= KORALI_DETAILED) printf("[Korali] Generation Time: %.3fs\n", std::chrono::duration<double>(t1-t0).count());
+   if(_verbosity >= KORALI_DETAILED) printf("[Korali] Generation Time: %.3fs\n", std::chrono::duration<double>(t1-t0).count());
 
-	 if (currentGeneration % consoleOutputFrequency == 0)_solver->printGeneration();
-	 if (currentGeneration % fileOutputFrequency    == 0) saveState(currentGeneration);
-	}
+   if (currentGeneration % consoleOutputFrequency == 0)_solver->printGeneration();
+   if (currentGeneration % fileOutputFrequency    == 0) saveState(currentGeneration);
 
-	auto endTime = std::chrono::system_clock::now();
+   // Evaluation Termination Criteria
+   _solver->checkTermination();
+   if (currentGeneration >= maxGenerations) { if(_verbosity >= KORALI_MINIMAL) printf("[Korali] Maximum generation count reached (%lu).\n", maxGenerations); _isFinished = true; }
+   if (functionEvaluationCount >= maxFunctionEvaluations) { if(_verbosity >= KORALI_MINIMAL) printf("[Korali] Maximum function evaluation count reached (%lu).\n", maxFunctionEvaluations); _isFinished = true; }
+  }
 
-	saveState(currentGeneration);
+  auto endTime = std::chrono::system_clock::now();
 
-	_solver->finalize();
-	_problem->finalize();
-	_conduit->finalize();
+  saveState(currentGeneration);
 
-	if(_verbosity >= KORALI_MINIMAL) printf("[Korali] Elapsed Time: %.3fs\n", std::chrono::duration<double>(endTime-startTime).count());
-	if(_verbosity >= KORALI_MINIMAL) printf("[Korali] Results saved to folder: '%s'\n", _result_dir.c_str());
+  _solver->finalize();
+  _problem->finalize();
+  _conduit->finalize();
+
+  if(_verbosity >= KORALI_MINIMAL) printf("[Korali] Total Generations: %lu\n", currentGeneration);
+  if(_verbosity >= KORALI_MINIMAL) printf("[Korali] Total Function Evaluations: %lu\n", functionEvaluationCount);
+  if(_verbosity >= KORALI_MINIMAL) printf("[Korali] Elapsed Time: %.3fs\n", std::chrono::duration<double>(endTime-startTime).count());
+  if(_verbosity >= KORALI_MINIMAL) printf("[Korali] Results saved to folder: '%s'\n", _result_dir.c_str());
  }
 }
 

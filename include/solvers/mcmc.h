@@ -397,7 +397,7 @@ std::vector<variableSetting> _variableSettings;
  void evaluateSample();
  void updateState();
  bool setCandidatePriorAndCheck(size_t sampleIdx);
- bool checkTermination() override;
+ void checkTermination() override;
 
  void setConfiguration() override;
  void getConfiguration() override;

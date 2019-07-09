@@ -25,7 +25,8 @@ int main(int argc, char* argv[])
 
  printf("\n\nRestarting now:\n\n");
 
- k.loadState("_b1_restart_de/s00004.json");
+ k.loadState("_b1_restart_de/s00010.json");
+
  k.run();
 
 }

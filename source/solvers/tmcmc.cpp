@@ -56,7 +56,6 @@ void Korali::Solver::TMCMC::initialize()
  for (size_t c = 0; c < populationSize; c++) chainPendingFitness[c] = false;
 
  // Init Generation
- _isFinished = false;
  databaseEntryCount          = 0;
  annealingExponent        = 0;
  logEvidence              = 0;
@@ -442,12 +441,11 @@ bool Korali::Solver::TMCMC::isFeasibleCandidate(size_t c)
  return false;
 }
 
-bool Korali::Solver::TMCMC::checkTermination()
+void Korali::Solver::TMCMC::checkTermination()
 {
 
- _isFinished = (annealingExponent >= 1.0);
+ _k->_isFinished = (annealingExponent >= 1.0);
 
- return _isFinished;
 }
 
 void Korali::Solver::TMCMC::finalize()

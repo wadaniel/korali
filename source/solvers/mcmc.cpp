@@ -65,7 +65,6 @@ void Korali::Solver::MCMC::initialize()
  for(size_t i = 0; i < _k->N; i++) covarianceMatrix[i*_k->N+i] = _variableSettings[i].standardDeviation;
 
  // Init Generation
- _isFinished = false;
  acceptanceCount = 0;
  proposedSampleCount = 0;
  chainLength = 0;
@@ -218,15 +217,14 @@ void Korali::Solver::MCMC::updateState()
  for (size_t d = 0; d < _k->N; d++) chainCovariance[d*_k->N+d] = (databaseEntryCount-1.0)/( (double) databaseEntryCount) * chainCovariance[d*_k->N+d] + (chainCovarianceScaling/( (double) databaseEntryCount))*chainCovariancePlaceholder[d*_k->N+d];
 }
 
-bool Korali::Solver::MCMC::checkTermination()
+void Korali::Solver::MCMC::checkTermination()
 {
  if ( databaseEntryCount == maxChainLength)
  {
-  _isFinished = true;
+  _k->_isFinished = true;
   printf("Chainlength (%zu) reached.\n",  chainLength);
  }
 
- return _isFinished;
 }
  
 void Korali::Solver::MCMC::printGeneration()

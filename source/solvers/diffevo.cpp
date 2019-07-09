@@ -46,13 +46,12 @@ void DE::initialize()
  _prevfitnessVector.resize(_sampleCount);
  _fitnessVector.resize(_sampleCount);
 
- _isFinished = false;
+ _k->_isFinished = false;
 
  if (_objective == "Maximize")      _evaluationSign = 1.0;
  else if(_objective == "Minimize")  _evaluationSign = -1.0;
  else { fprintf(stderr,"[Korali] Error: Objective must be either be initialized to \'Maximize\' or \'Minimize\' (is %s).\n", _objective.c_str()); exit(-1); }         
 
- _functionEvaluationCount = 0;
  _infeasibleSampleCount   = 0;
  _bestIndex               = 0;
  _previousFunctionValue   = -std::numeric_limits<double>::max();
@@ -214,7 +213,7 @@ void DE::evaluateSamples()
     for (size_t i = 0; i < _sampleCount; i++) if (_isInitializedSample[i] == false)
     {
       _isInitializedSample[i] = true;
-      _k->_conduit->evaluateSample(&_transformedSamples[0], i); _functionEvaluationCount++;
+      _k->_conduit->evaluateSample(&_transformedSamples[0], i);
     }
     _k->_conduit->checkProgress();
   }
@@ -293,25 +292,25 @@ void DE::updateSolver()
 }
 
 
-bool DE::checkTermination()
+void DE::checkTermination()
 {
 
  if ( _termCondMinFitnessEnabled && (_k->currentGeneration > 1) && (_bestEver >= _termCondMinFitness) )
  {
-  _isFinished = true;
+  _k->_isFinished = true;
   printf("[Korali] Fitness Value (%+6.3e) > (%+6.3e).\n",  _bestEver, _termCondMinFitness);
  }
  
  if ( _termCondMaxFitnessEnabled && (_k->currentGeneration > 1) && (_bestEver >= _termCondMaxFitness) )
  {
-  _isFinished = true;
+  _k->_isFinished = true;
   printf("[Korali] Fitness Value (%+6.3e) > (%+6.3e).\n",  _bestEver, _termCondMaxFitness);
  }
 
  double range = fabs(_currentFunctionValue - _previousFunctionValue);
  if ( _termCondMinFitnessDiffThresholdEnabled && (_k->currentGeneration > 1) && (range < _termCondMinFitnessDiffThreshold) )
  {
-  _isFinished = true;
+  _k->_isFinished = true;
   printf("[Korali] Fitness Diff Threshold (%+6.3e) < (%+6.3e).\n",  range, _termCondMinFitnessDiffThreshold);
  }
  
@@ -321,18 +320,17 @@ bool DE::checkTermination()
    for(size_t d = 0; d < _k->N; ++d) cTemp += (fabs(_rgxMean[d] - _rgxOldMean[d]) < _termCondMinStepSize) ? 1 : 0;
    if (cTemp == _k->N) 
    {
-    _isFinished = true;
+    _k->_isFinished = true;
     printf("[Korali] Mean changes < %+6.3e for all variables.\n", _termCondMinStepSize);
    }
  }
  
  if( _termCondMaxGenerationsEnabled && (_k->currentGeneration >= _termCondMaxGenerations) )
  {
-  _isFinished = true;
+  _k->_isFinished = true;
   printf("[Korali] Maximum number of Generations reached (%lu).\n", _termCondMaxGenerations);
  }
 
- return _isFinished;
 }
 
 
@@ -359,7 +357,6 @@ void DE::printGeneration()
   for (size_t d = 0; d < _k->N; d++)  printf("         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _rgxMean[d], _rgxBestEver[d]);
   printf("[Korali] Max Width:\n");
   for (size_t d = 0; d < _k->N; d++)  printf("         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _maxWidth[d]);
-  printf("[Korali] Number of Function Evaluations: %zu\n", _functionEvaluationCount);
   printf("[Korali] Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
  }
 
@@ -375,7 +372,6 @@ void DE::finalize()
     printf("[Korali] Optimum (%s) found: %e\n", _objective.c_str(), _bestEver);
     printf("[Korali] Optimum (%s) found at:\n", _objective.c_str());
     for (size_t d = 0; d < _k->N; ++d) printf("         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _rgxBestEver[d]);
-    printf("[Korali] Number of Function Evaluations: %zu\n", _functionEvaluationCount);
     printf("[Korali] Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
     printf("--------------------------------------------------------------------\n");
  }

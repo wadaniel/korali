@@ -92,7 +92,7 @@ def plot_cmaes(src, live=False, test=False, evolution=False):
                     print("[Korali] Error: Evolution feature only for 2D available - Bye!")
                     exit(0)
                 else:
-                    cov.append(state['CovarianceMatrix'])
+                    cov.append(state['Covariance Matrix'])
                 
                 # TODO check constraints
                 #ccmaes = True
@@ -116,16 +116,16 @@ def plot_cmaes(src, live=False, test=False, evolution=False):
                 print("[Korali] Figure closed - Bye!")
                 exit(0)
 
-            if gen > 0:
+            if gen > 1:
 
                 numeval.append(data['Function Evaluation Count'])
-                dfval.append(abs(state['CurrentBestFunctionValue'] - state['BestEverFunctionValue']))
+                dfval.append(abs(state['Current Function Value'] - state['Current Best Fitness']))
                 
-                fval.append(state['CurrentBestFunctionValue'])
+                fval.append(state['Current Function Value'])
                 sigma.append(state['Sigma'])
-                cond.append(state['MaxEigenvalue']/state['MinEigenvalue'])
-                psL2.append(state['ConjugateEvolutionPathL2'])
-                cov.append(state['CovarianceMatrix'])
+                cond.append(state['Maximum Covariance Eigenvalue']/state['Minimum Covariance Eigenvalue'])
+                psL2.append(state['RGPS L2 Norm'])
+                cov.append(state['Covariance Matrix'])
 
                 if (evolution == True):
                     mu_x.append(state['PreviousMeanVector'][0])
@@ -138,9 +138,9 @@ def plot_cmaes(src, live=False, test=False, evolution=False):
                     normal.append(state['Constraint Normal Approximation'])
 
                 for i in range(numdim):
-                    fvalXvec[i].append(state['CurrentBestVector'][i])
-                    axis[i].append(state['AxisLengths'][i])
-                    ssdev[i].append(sigma[-1]*np.sqrt(state['CovarianceMatrix'][i][i]))
+                    fvalXvec[i].append(state['Current Best Vector'][i])
+                    axis[i].append(state['Axis Lengths'][i])
+                    ssdev[i].append(sigma[-1]*np.sqrt(state['Covariance Matrix'][i*numdim+i]))
             
                 if (live == True and gen > 1):
                     if (evolution == False):

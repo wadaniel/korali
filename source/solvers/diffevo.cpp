@@ -54,6 +54,7 @@ void DE::initialize()
  _bestIndex               = 0;
  _previousFunctionValue   = -std::numeric_limits<double>::max();
  _currentFunctionValue    = -std::numeric_limits<double>::max();
+ _previousBestEver        = -std::numeric_limits<double>::max();
  _bestEver                = -std::numeric_limits<double>::max();
 
  for(size_t d = 0; d < _k->N; ++d) if(_variableSettings[d].upperBound < _variableSettings[d].lowerBound)
@@ -230,6 +231,7 @@ void DE::processSample(size_t sampleIdx, double fitness)
 void DE::updateSolver()
 {
     _bestIndex = std::distance( std::begin(_fitnessVector), std::max_element(std::begin(_fitnessVector), std::end(_fitnessVector)) );
+    _previousBestEver      = _bestEver;
     _previousFunctionValue = _currentFunctionValue;
     _currentFunctionValue  = _fitnessVector[_bestIndex];
 

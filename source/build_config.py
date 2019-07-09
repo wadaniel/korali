@@ -154,7 +154,7 @@ def writeWeb(solverName, solverType, solverAlias, solverDescription, solverPlott
    webFile.write('\t+ Default Value: ' + settingDefaultValues[i] + '\n')
    webFile.write('\t+ Datatype: ' + settingDataTypes[i] + '\n')
    webFile.write('\t+ Syntax: \n\n')
-   webFile.write('\t```python\n\t\t_k->_js["' + solverAlias + '"]["' + settingNames[i] + '"]\n\t```\n\n')
+   webFile.write('\t```python\n\t\tkorali["' + solverAlias + '"]["' + settingNames[i] + '"] = $value$\n\t```\n\n')
   
  webFile.write('## Variable Settings\n\n')
  

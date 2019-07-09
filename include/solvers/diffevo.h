@@ -75,26 +75,6 @@ Controls the scaling of the vector differentials (must be in [0,2], preferably <
 double _mutationRate;
 
 /******************************************************************************
-Setting Name: Result Output Frequency
-Type: Solver Setting
-Default Value: 1
-Default Enabled:
-Description:
-Specifies the output frequency of intermediate result files.
-******************************************************************************/
-size_t _resultOutputFrequency;
-
-/******************************************************************************
-Setting Name: Terminal Output Frequency
-Type: Solver Setting
-Default Value: 1
-Default Enabled:
-Description:
-Specifies the output frequency onto the terminal screen.
-******************************************************************************/
-size_t _terminalOutputFrequency;
-
-/******************************************************************************
 Setting Name: Mutation Rule
 Type: Solver Setting
 Default Value: "Default"

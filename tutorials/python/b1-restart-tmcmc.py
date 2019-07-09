@@ -36,6 +36,6 @@ k.run()
 print("\n\nRestarting now:\n\n");
 
 # Now we loadState() to resume the same experiment from generation 5.
-k.loadState("_b1_restart_cmaes/s00003.json")
+k.loadState("_b1_restart_tmcmc/s00003.json")
 
 k.run()

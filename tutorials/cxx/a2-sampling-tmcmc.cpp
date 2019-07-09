@@ -1,10 +1,10 @@
 #include "korali.h"
-#include "model/directModel.h"
+#include "model/evaluateModel.h"
 
 int main(int argc, char* argv[])
 {
  auto k = Korali::Engine();
- k.setLikelihood([](Korali::ModelData& d) { directModel(d.getVariables(), d.getResults()); });
+ k.setLikelihood([](Korali::ModelData& d) { evaluateModel(d.getVariables(), d.getResults()); });
 
  k["Problem"] = "Bayesian";
  k["Solver"] = "TMCMC";

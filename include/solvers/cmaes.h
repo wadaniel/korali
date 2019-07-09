@@ -228,7 +228,7 @@ bool _isViabilityRegime;
 /******************************************************************************
 Setting Name: Viability Sample Count
 Type: Solver Setting
-Default Value: 4
+Default Value: 2
 Default Enabled:
 Description:
 Specifies the number of samples per generation during the viability 
@@ -239,7 +239,7 @@ size_t _viabilitySampleCount;
 /******************************************************************************
 Setting Name: Viability Mu
 Type: Solver Setting
-Default Value: 2
+Default Value: 1
 Default Enabled:
 Description:
 Number of best samples used to update the covariance matrix and the mean 
@@ -1103,7 +1103,7 @@ By default, Korali sets this value to 30% of the domain width.
 double initialStdDev;
 
 /******************************************************************************
-Setting Name: Minimum Stardard Deviation Changes
+Setting Name: Minimum Standard Deviation Changes
 Type: Variable Setting
 Default Value: 0.0
 Default Enabled:

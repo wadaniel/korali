@@ -141,6 +141,22 @@ class KoraliJsonWrapper
    return val;
   }
 
+  bool getBoolean()
+  {
+   bool tf = false;
+   if (_js->is_boolean()) tf = *_js;
+   else { fprintf(stderr, "[Korali] Error: Attempted getBoolean() on non-boolean field.\n");  exit(-1); }
+   return tf;
+  }
+
+  std::string getString()
+  {
+   std::string str;
+   if (_js->is_string()) str = *_js;
+   else { fprintf(stderr, "[Korali] Error: Attempted getString() on non-string field.\n");  exit(-1); }
+   return str;
+  }
+
   KoraliJsonWrapper& getItem(const std::string& key)                   { _js = &((*_js)[key]); return *this;}
   KoraliJsonWrapper& getItem(const unsigned long int& key)             { _js = &((*_js)[key]); return *this;}
   void setItem(const std::string& key, const std::string& val)         { (*_js)[key] = val; }

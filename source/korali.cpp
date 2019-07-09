@@ -46,6 +46,8 @@ PYBIND11_MODULE(libkorali, m) {
  pybind11::class_<Korali::KoraliJsonWrapper>(m, "__KoraliJsonWrapper")
  .def(pybind11::init<>())
  .def("getValue", &Korali::KoraliJsonWrapper::getValue)
+ .def("getBoolean", &Korali::KoraliJsonWrapper::getBoolean)
+ .def("getString", &Korali::KoraliJsonWrapper::getString)
  .def("__getitem__", pybind11::overload_cast<const std::string&>(&Korali::KoraliJsonWrapper::getItem), pybind11::return_value_policy::reference)
  .def("__getitem__", pybind11::overload_cast<const unsigned long int&>(&Korali::KoraliJsonWrapper::getItem), pybind11::return_value_policy::reference)
  .def("__setitem__", pybind11::overload_cast<const std::string&, const std::string&>(&Korali::KoraliJsonWrapper::setItem), pybind11::return_value_policy::reference)

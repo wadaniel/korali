@@ -154,7 +154,7 @@ def writeWeb(solverName, solverType, solverAlias, solverDescription, solverPlott
    webFile.write('\t+ Default Value: ' + settingDefaultValues[i] + '\n')
    webFile.write('\t+ Datatype: ' + settingDataTypes[i] + '\n')
    webFile.write('\t+ Syntax: \n\n')
-   webFile.write('\t```python\n\t\tkorali["' + solverAlias + '"]["' + settingNames[i] + '"] = $value$\n\t```\n\n')
+   webFile.write('\t```python\n\t\tkorali["' + solverAlias + '"]["' + settingNames[i] + '"] = *value*\n\t```\n\n')
   
  webFile.write('## Variable Settings\n\n')
  
@@ -167,7 +167,7 @@ def writeWeb(solverName, solverType, solverAlias, solverDescription, solverPlott
    webFile.write('\t+ Default Value: ' + settingDefaultValues[i] + '\n')
    webFile.write('\t+ Datatype: ' + settingDataTypes[i] + '\n')
    webFile.write('\t+ Syntax: \n\n')
-   webFile.write('\t```python\n\t\t_k->_js["Variables"][i]["' + solverAlias + '"]["' + settingNames[i] + '"]\n\t```\n\n')
+   webFile.write('\t```python\n\t\tkorali["Variables"][i]["' + solverAlias + '"]["' + settingNames[i] + '"] = *value*\n\t```\n\n')
 
  webFile.write('## Termination Criteria\n\n')
  
@@ -181,8 +181,8 @@ def writeWeb(solverName, solverType, solverAlias, solverDescription, solverPlott
    webFile.write('\t+ Enabled by Default?: ' + settingDefaultStates[i] + '\n')
    webFile.write('\t+ Datatype: ' + settingDataTypes[i] + '\n')
    webFile.write('\t+ Syntax: \n\n')
-   webFile.write('\t```python\n\t\t_k->_js["' + solverAlias + '"]["Termination Criteria"]["' + settingNames[i] + '"]["Value"]\n\t```\n\n')
-   webFile.write('\t```python\n\t\t_k->_js["' + solverAlias + '"]["Termination Criteria"]["' + settingNames[i] + '"]["Enabled"]\n\t```\n\n')
+   webFile.write('\t```python\n\t\tkorali["' + solverAlias + '"]["Termination Criteria"]["' + settingNames[i] + '"]["Value"] = *value*\n\t```\n\n')
+   webFile.write('\t```python\n\t\tkorali["' + solverAlias + '"]["Termination Criteria"]["' + settingNames[i] + '"]["Enabled"] = *true / false* \n\t```\n\n')
    
  webFile.write('## Plotting\n\n')
  

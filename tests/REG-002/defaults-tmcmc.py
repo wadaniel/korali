@@ -19,7 +19,7 @@ k["Variables"][0]["Bayesian"]["Prior Distribution"]["Minimum"] = -10.0
 k["Variables"][0]["Bayesian"]["Prior Distribution"]["Maximum"] = +10.0
 
 k["TMCMC"]["Population Size"] = 5000
-k["TMCMC"]["Termination Criteria"]["Max Generations"]["Value"] = 0
+#k["Termination Criteria"]["Max Generations"]["Value"] = 1
 
 k["Result Directory"] = "_a2_sampling_tmcmc"
 

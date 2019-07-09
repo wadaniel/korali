@@ -217,14 +217,16 @@ void Korali::Solver::MCMC::updateState()
  for (size_t d = 0; d < _k->N; d++) chainCovariance[d*_k->N+d] = (databaseEntryCount-1.0)/( (double) databaseEntryCount) * chainCovariance[d*_k->N+d] + (chainCovarianceScaling/( (double) databaseEntryCount))*chainCovariancePlaceholder[d*_k->N+d];
 }
 
-void Korali::Solver::MCMC::checkTermination()
+bool Korali::Solver::MCMC::checkTermination()
 {
+ bool isFinished = false;
  if ( databaseEntryCount == maxChainLength)
  {
-  _k->_isFinished = true;
   printf("Chainlength (%zu) reached.\n",  chainLength);
+  isFinished = true;
  }
 
+ return isFinished;
 }
  
 void Korali::Solver::MCMC::printGeneration()

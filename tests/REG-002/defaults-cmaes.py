@@ -102,6 +102,15 @@ assert tsc == 0.1818
 tsc = k["CMAES"]["Terminal Output Frequency"].getValue()
 
 # Termination Criterias
+tc = k["CMAES"]["Termination Criteria"]["Max Condition Covariance Matrix"]["Value"].getValue()
+tf = k["CMAES"]["Termination Criteria"]["Max Fitness"]["Value"].getValue()
+tf = k["CMAES"]["Termination Criteria"]["Max Generations"]["Value"].getValue()
+tf = k["CMAES"]["Termination Criteria"]["Max Infeasible Resamplings"]["Value"].getValue()
+tf = k["CMAES"]["Termination Criteria"]["Max Standard Deviation"]["Value"].getValue()
+tf = k["CMAES"]["Termination Criteria"]["Min Fitness"].getValue()
+tf = k["CMAES"]["Termination Criteria"]["Min Fitness Diff Threshold"].getValue()
+tf = k["CMAES"]["Termination Criteria"]["Min Standard Deviation"].getValue()
+tf = k["CMAES"]["Termination Criteria"]["Min Standard Deviation Step Factor"].getValue()
 
 # Variables
 

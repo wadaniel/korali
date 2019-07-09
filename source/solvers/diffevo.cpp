@@ -46,8 +46,6 @@ void DE::initialize()
  _prevfitnessVector.resize(_sampleCount);
  _fitnessVector.resize(_sampleCount);
 
- _k->_isFinished = false;
-
  if (_objective == "Maximize")      _evaluationSign = 1.0;
  else if(_objective == "Minimize")  _evaluationSign = -1.0;
  else { fprintf(stderr,"[Korali] Error: Objective must be either be initialized to \'Maximize\' or \'Minimize\' (is %s).\n", _objective.c_str()); exit(-1); }         
@@ -292,25 +290,26 @@ void DE::updateSolver()
 }
 
 
-void DE::checkTermination()
+bool DE::checkTermination()
 {
 
+ bool isFinished = false;
  if ( _termCondMinFitnessEnabled && (_k->currentGeneration > 1) && (_bestEver >= _termCondMinFitness) )
  {
-  _k->_isFinished = true;
+  isFinished = true;
   printf("[Korali] Fitness Value (%+6.3e) > (%+6.3e).\n",  _bestEver, _termCondMinFitness);
  }
  
  if ( _termCondMaxFitnessEnabled && (_k->currentGeneration > 1) && (_bestEver >= _termCondMaxFitness) )
  {
-  _k->_isFinished = true;
+  isFinished = true;
   printf("[Korali] Fitness Value (%+6.3e) > (%+6.3e).\n",  _bestEver, _termCondMaxFitness);
  }
 
  double range = fabs(_currentFunctionValue - _previousFunctionValue);
  if ( _termCondMinFitnessDiffThresholdEnabled && (_k->currentGeneration > 1) && (range < _termCondMinFitnessDiffThreshold) )
  {
-  _k->_isFinished = true;
+  isFinished = true;
   printf("[Korali] Fitness Diff Threshold (%+6.3e) < (%+6.3e).\n",  range, _termCondMinFitnessDiffThreshold);
  }
  
@@ -320,17 +319,18 @@ void DE::checkTermination()
    for(size_t d = 0; d < _k->N; ++d) cTemp += (fabs(_rgxMean[d] - _rgxOldMean[d]) < _termCondMinStepSize) ? 1 : 0;
    if (cTemp == _k->N) 
    {
-    _k->_isFinished = true;
+    isFinished = true;
     printf("[Korali] Mean changes < %+6.3e for all variables.\n", _termCondMinStepSize);
    }
  }
  
  if( _termCondMaxGenerationsEnabled && (_k->currentGeneration >= _termCondMaxGenerations) )
  {
-  _k->_isFinished = true;
+  isFinished = true;
   printf("[Korali] Maximum number of Generations reached (%lu).\n", _termCondMaxGenerations);
  }
 
+ return isFinished;
 }
 
 

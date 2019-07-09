@@ -85,6 +85,8 @@ class Engine {
  void saveState(std::string fileName);
  void saveState(int fileId);
 
+ bool checkTermination();
+
  size_t _seed;
  int _verbosity;
  std::string _result_dir;

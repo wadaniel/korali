@@ -726,7 +726,7 @@ Axis lengths (sqrt(Evals))
 std::vector<double> axisD;
 
 /******************************************************************************
-Setting Name: Axis Lengths
+Setting Name: Temporary Axis Lengths
 Type: Internal Attribute
 Default Value:
 Default Enabled:

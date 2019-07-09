@@ -802,7 +802,7 @@ void CMAES::updateEigensystem(std::vector<double>& M, int flgforce)
 
 void CMAES::eigen(size_t size, std::vector<double>& M,  std::vector<double>& diag, std::vector<double>& Q) const
 {
- double* data = (double*) malloc (sizeof(double) * size * size);
+ double* data = (double*) calloc (sizeof(double), size * size);
 
  for (size_t i = 0; i <  size; i++)
  for (size_t j = 0; j <= i; j++)

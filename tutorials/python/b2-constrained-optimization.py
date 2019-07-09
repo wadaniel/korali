@@ -42,9 +42,9 @@ k["CMAES"]["Sample Count"] = 32
 k["CMAES"]["Viability Sample Count"] = 4
 k["CMAES"]["Termination Criteria"]["Max Fitness"]["Enabled"] = True
 k["CMAES"]["Termination Criteria"]["Max Fitness"]["Value"] = -680.630057374402 - 1e-4
-k["CMAES"]["Termination Criteria"]["Max Generations"] = 500
 
 # Reducing Output
+k["Termination Criteria"]["Max Generations"] = 500
 k["Verbosity"] = "Minimal"
 
 # Setting output directory

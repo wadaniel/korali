@@ -58,9 +58,9 @@ k["Variables"][2]["CMAES"]["Upper Bound"] = +5.0
 # Configuring CMA-ES parameters
 k["CMAES"]["Objective"] = "Maximize"
 k["CMAES"]["Sample Count"] = 12
-k["CMAES"]["Termination Criteria"]["Max Generations"] = 100
 
 # Reducing Output
+k["Termination Criteria"]["Max Generations"] = 100
 k["Console Output Frequency"] = 5
 k["File Output Frequency"] = 5
 

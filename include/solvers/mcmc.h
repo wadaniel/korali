@@ -73,7 +73,7 @@ Specifies the output frequency onto the terminal screen.
 size_t terminalOutputFrequency;
 
 /******************************************************************************
-Setting Name: Chain Length
+Setting Name: Max Chain Length
 Type: Solver Setting
 Default Value:
 Default Enabled:

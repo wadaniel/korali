@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+import sys
+sys.path.append('./helpers')
+
 from reg002_helpers import *
 
 from math import isclose

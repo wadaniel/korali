@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
+import sys
+sys.path.append('./helpers')
+
 from reg002_helpers import *
 
 import korali
+
 k = korali.initialize()
 
 k.setModel(evaluateModel)

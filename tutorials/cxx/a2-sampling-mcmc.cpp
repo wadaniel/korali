@@ -14,7 +14,7 @@ int main(int argc, char* argv[])
  k["Variables"][0]["MCMC"]["Standard Deviation"] = 1.000;
 
  k["MCMC"]["Burn In"] = 500;
- k["MCMC"]["Chain Length"]  = 5000;
+ k["MCMC"]["Max Chain Length"]  = 5000;
  k["MCMC"]["Use Adaptive Sampling"] = true;
  k["MCMC"]["Result Output Frequency"] = 5000;
 

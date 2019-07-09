@@ -16,7 +16,7 @@ k["Variables"][0]["Name"] = "X"
 k["Variables"][0]["MCMC"]["Initial Mean"] = 0.0
 k["Variables"][0]["MCMC"]["Standard Deviation"] = 1.000
 
-k["MCMC"]["Chain Length"] = 0
+k["MCMC"]["Max Chain Length"] = 0
 k["MCMC"]["Use Adaptive Sampling"] = True
 
 k["Console Output Frequency"] = 500

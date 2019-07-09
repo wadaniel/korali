@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 import sys
-def evaluateModel( s ):
-   x = s.getVariable(0)
-   r = -x*x      
-   s.addResult(r)
+sys.path.append('./helpers')
+
+from reg002_helpers import *
 
 import korali
+
 k = korali.initialize()
 
 k.setModel(evaluateModel)

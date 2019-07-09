@@ -1,13 +1,10 @@
 #!/usr/bin/env python3
+import sys
+sys.path.append('./helpers')
+
+from reg002_helpers import *
+
 from math import isclose
-
-def evaluateModel( s ):
-   x = s.getVariable(0)
-   r = -x*x      
-   s.addResult(r)
-
-def g1(x):
-    return -3.14
 
 import korali
 k = korali.initialize()
@@ -27,99 +24,104 @@ k["CMAES"]["Termination Criteria"]["Max Generations"]["Value"] = 0
 
 k["Result Directory"] = "_defaults_cmaes"
 
-# Running Korali
 k.run()
+
+###############################################################################
+
+# Testing Configuration
+
+assert_value( k["CMAES"]["Covariance Matrix Adaption Strength"], 0.1 )
+
+assert_value( k["CMAES"]["Global Success Learning Rate"], 0.2 )
+
+assert_value( k["CMAES"]["Initial Cumulative Covariance"], -1.0 )
+
+assert_value( k["CMAES"]["Initial Damp Factor"], -1.0 )
+
+assert_value( k["CMAES"]["Initial Sigma Cumulation Factor"], -1.0 )
+
+assert_boolean( k["CMAES"]["Is Sigma Bounded"], False )
+
+assert_value( k["CMAES"]["Max Covariance Matrix Corrections"], 1e6 )
+
+assert_string( k["CMAES"]["Mu Type"], "Logarithmic" )
+
+assert_value( k["CMAES"]["Mu Value"], 16 )
+
+assert_value( k["CMAES"]["Normal Vector Learning Rate"], 0.3333333333333333 )
+
+assert_string( k["CMAES"]["Objective"], "Maximize" )
+
+assert_value( k["CMAES"]["Result Output Frequency"], 1 )
+
+assert_value( k["CMAES"]["Sample Count"], 32 )
+
+assert_value( k["CMAES"]["Target Success Rate"], 0.1818 )
+
+assert_value( k["CMAES"]["Terminal Output Frequency"], 1 )
+
 
 # Testing Internals
 
-ast = k["CMAES"]["Covariance Matrix Adaption Strength"].getValue()
-assert ast == 0.1
+assert_value( k["CMAES"]["Internal"]["Chi Number"], 0.7976190476190477 )
 
-slr = k["CMAES"]["Global Success Learning Rate"].getValue()
-assert slr == 0.2
+assert_value( k["CMAES"]["Internal"]["Covariance Matrix Adaption Factor"],  0.03333333333333333 )
 
-icc = k["CMAES"]["Initial Cumulative Covariance"].getValue()
-assert icc == -1.0
+assert_value( k["CMAES"]["Internal"]["Cumulative Covariance"], 0.564218767613317 )
 
-idf = k["CMAES"]["Initial Damp Factor"].getValue()
-assert idf == -1.0
+assert_value( k["CMAES"]["Internal"]["Current Sample Count"], 32 )
 
-isc = k["CMAES"]["Initial Sigma Cumulation Factor"].getValue()
-assert isc == -1.0
+assert_value( k["CMAES"]["Internal"]["Current Sample Mu"], 16 )
 
-chi = k["CMAES"]["Internal"]["Chi Number"].getValue()
-assert chi == 0.7976190476190477
+assert_value( k["CMAES"]["Internal"]["Damp Factor"], 3.7963001362285684 )
 
-cca = k["CMAES"]["Internal"]["Covariance Matrix Adaption Factor"].getValue()
-assert cca == 0.0029411764705882353
+assert_value( k["CMAES"]["Internal"]["Effective Mu"], 9.17882891362855 )
 
-cc = k["CMAES"]["Internal"]["Cumulative Covariance"].getValue()
-assert cc == 0.6681246319195033
+assert_value( k["CMAES"]["Internal"]["Evaluation Sign"], 1.0 )
 
-csc = k["CMAES"]["Internal"]["Current Sample Count"].getValue()
-assert csc == 32
+assert_value( k["CMAES"]["Internal"]["Global Success Rate"], 0.5 )
 
-csm = k["CMAES"]["Internal"]["Current Sample Mu"].getValue()
-assert csm == 16
+assert_value( k["CMAES"]["Internal"]["Sigma"], 6.0 )
 
-df = k["CMAES"]["Internal"]["Damp Factor"].getValue()
-assert df == 1.6644844910916576
+assert_value( k["CMAES"]["Internal"]["Trace"], 36.0 )
 
-em = k["CMAES"]["Internal"]["Effective Mu"].getValue()
-assert em == 1.9609763092840191
+# Testing Termination Criteria
 
-es = k["CMAES"]["Internal"]["Evaluation Sign"].getValue()
-assert es == 1.0
+assert_value( k["CMAES"]["Termination Criteria"]["Max Condition Covariance Matrix"]["Value"], 1e18 )
 
-sr = k["CMAES"]["Internal"]["Global Success Rate"].getValue()
-print(sr)
+assert_boolean( k["CMAES"]["Termination Criteria"]["Max Fitness"]["Enabled"], False )
 
-si = k["CMAES"]["Internal"]["Sigma"].getValue()
-assert si == 6.0
+assert_value( k["CMAES"]["Termination Criteria"]["Max Generations"]["Value"], 0 )
 
-tr = k["CMAES"]["Internal"]["Trace"].getValue()
-assert tr == 36.0
+assert_value( k["CMAES"]["Termination Criteria"]["Max Infeasible Resampling"]["Value"], 1e9 )
 
-# TODO: Why are these not Internal?
+assert_value( k["CMAES"]["Termination Criteria"]["Max Standard Deviation"]["Value"], 1e-18)
 
-#cc = k["CMAES"]["Is Sigma Bounded"].getValue()
-#cc = k["CMAES"]["Max Covairance Matrix Corrections"].getValue()
-#cc = k["CMAES"]["Internal"]["Mu Type"].getValue()
-muv = k["CMAES"]["Mu Value"].getValue()
-assert muv == 16
+assert_boolean( k["CMAES"]["Termination Criteria"]["Min Fitness"]["Enabled"], False )
 
-nvl = k["CMAES"]["Normal Vector Learning Rate"].getValue()
-assert nvl == 0.029411764705882353 # TODO: is that correct?
+assert_value( k["CMAES"]["Termination Criteria"]["Min Fitness Diff Threshold"]["Value"], 1e-9 )
 
-#cc = k["CMAES"]["Internal"]["Objective"].getValue()
-of = k["CMAES"]["Result Output Frequency"].getValue()
-sc = k["CMAES"]["Sample Count"].getValue()
-assert sc == 32.0
+assert_value( k["CMAES"]["Termination Criteria"]["Min Standard Deviation"]["Value"], 1e-12 )
 
-tsc = k["CMAES"]["Target Success Rate"].getValue()
-assert tsc == 0.1818
+assert_value( k["CMAES"]["Termination Criteria"]["Min Standard Deviation Step Factor"]["Value"], 1e18 ) # why is this MIN andn ot mAX
 
-tsc = k["CMAES"]["Terminal Output Frequency"].getValue()
+assert_boolean( k["CMAES"]["Use Viability Regime"], False ) # why not true?
 
-# Termination Criterias
-tc = k["CMAES"]["Termination Criteria"]["Max Condition Covariance Matrix"]["Value"].getValue()
-tf = k["CMAES"]["Termination Criteria"]["Max Fitness"]["Value"].getValue()
-tf = k["CMAES"]["Termination Criteria"]["Max Generations"]["Value"].getValue()
-#tf = k["CMAES"]["Termination Criteria"]["Max Infeasible Resamplings"]["Value"].getValue()
-tf = k["CMAES"]["Termination Criteria"]["Max Standard Deviation"]["Value"].getValue()
-#tf = k["CMAES"]["Termination Criteria"]["Min Fitness"].getValue()
-#tf = k["CMAES"]["Termination Criteria"]["Min Fitness Diff Threshold"].getValue()
-#tf = k["CMAES"]["Termination Criteria"]["Min Standard Deviation"].getValue()
-#tf = k["CMAES"]["Termination Criteria"]["Min Standard Deviation Step Factor"].getValue()
-#tf = k["CMAES"]["Use Viability Regime"].getValue()
-tf = k["CMAES"]["Viability Mu"].getValue()
-tf = k["CMAES"]["Viability Sample Count"].getValue()
+assert_value( k["CMAES"]["Viability Mu"], 1 )
 
-# Variables
-tf = k["Variables"][0]["CMAES"]["Initial Mean"].getValue()
-tf = k["Variables"][0]["CMAES"]["Initial Standard Deviation"].getValue()
-tf = k["Variables"][0]["CMAES"]["Lower Bound"].getValue()
-#tf = k["Variables"][0]["CMAES"]["Minimum Standard Deviation Changes"].getValue()
-tf = k["Variables"][0]["CMAES"]["Upper Bound"].getValue()
+assert_value( k["CMAES"]["Viability Sample Count"], 2 )
+
+
+# Testing Variables
+
+assert_value( k["Variables"][0]["CMAES"]["Initial Mean"], 0.0 )
+
+assert_value( k["Variables"][0]["CMAES"]["Initial Standard Deviation"], 6.0 )
+
+assert_value( k["Variables"][0]["CMAES"]["Lower Bound"], -10.0 )
+
+assert_value( k["Variables"][0]["CMAES"]["Minimum Standard Deviation Changes"], 0.0 )
+
+assert_value( k["Variables"][0]["CMAES"]["Upper Bound"], 10.0 )
 
 

@@ -149,11 +149,11 @@ void Korali::Solver::TMCMC::initializeSamples()
 
 void Korali::Solver::TMCMC::resampleGeneration()
 {
- double* flcp     = (double*) calloc (databaseEntryCount, sizeof(double));
- double* weight   = (double*) calloc (databaseEntryCount, sizeof(double));
- double* q        = (double*) calloc (databaseEntryCount, sizeof(double));
- unsigned int* nn = (unsigned int*) calloc (databaseEntryCount, sizeof(unsigned int));
- size_t* sel      = (size_t*) calloc (databaseEntryCount, sizeof(size_t));
+ std::vector<double> flcp(databaseEntryCount);
+ std::vector<double> weight(databaseEntryCount);
+ std::vector<double> q(databaseEntryCount);
+ std::vector<unsigned int> nn(databaseEntryCount);
+ std::vector<size_t> sel(databaseEntryCount);
 
  double fmin = 0, xmin = 0;
  minSearch(&sampleFitnessDatabase[0], databaseEntryCount, annealingExponent, coefficientOfVariation, xmin, fmin);
@@ -181,15 +181,15 @@ void Korali::Solver::TMCMC::resampleGeneration()
  /* Compute weights and normalize*/
 
  for (size_t i = 0; i < databaseEntryCount; i++) flcp[i] = sampleFitnessDatabase[i]*(annealingExponent-_prevAnnealingExponent);
- const double fjmax = gsl_stats_max(flcp, 1, databaseEntryCount);
+ const double fjmax = gsl_stats_max(flcp.data(), 1, databaseEntryCount);
  for (size_t i = 0; i < databaseEntryCount; i++) weight[i] = exp( flcp[i] - fjmax );
 
- double sum_weight = std::accumulate(weight, weight+databaseEntryCount, 0.0);
+ double sum_weight = std::accumulate(weight.begin(), weight.end(), 0.0);
  logEvidence  += log(sum_weight) + fjmax - log(databaseEntryCount);
 
  for (size_t i = 0; i < databaseEntryCount; i++) q[i] = weight[i]/sum_weight;
 
- gsl_ran_multinomial(range, databaseEntryCount, populationSize, q, nn);
+ gsl_ran_multinomial(range, databaseEntryCount, populationSize, q.data(), nn.data());
  size_t zeroCount = 0;
  for (size_t i = 0; i < databaseEntryCount; i++) { sel[i] = nn[i]; if ( nn[i] == 0 ) zeroCount++; }
 
@@ -232,12 +232,6 @@ void Korali::Solver::TMCMC::resampleGeneration()
  
  for (size_t c = 0; c < chainCount; c++) currentChainStep[c] = 0;
  for (size_t c = 0; c < chainCount; c++) chainPendingFitness[c] = false;
-
- free(flcp);
- free(weight);
- free(q);
- free(nn);
- free(sel);
 }
 
 void Korali::Solver::TMCMC::computeChainCovariances(std::vector< std::vector<double> >& chain_cov, size_t newchains)

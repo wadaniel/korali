@@ -239,10 +239,10 @@ void Korali::Solver::TMCMC::computeChainCovariances(std::vector< std::vector<dou
  //printf("Precomputing chain covariances for the current generation...\n");
 
  // allocate space
- size_t* nn_ind     = (size_t*) calloc (newchains, sizeof(size_t));
- size_t* nn_count   = (size_t*) calloc (newchains, sizeof(size_t));
- double* diam       = (double*) calloc (_k->N, sizeof(double));
- double* chain_mean = (double*) calloc (_k->N, sizeof(double));
+ std::vector<size_t> nn_ind(newchains);
+ std::vector<size_t> nn_count(newchains);
+ std::vector<double> diam(_k->N);
+ std::vector<double> chain_mean(_k->N);
  gsl_matrix* work   = gsl_matrix_alloc(_k->N, _k->N);
 
  // find diameters
@@ -321,29 +321,22 @@ void Korali::Solver::TMCMC::computeChainCovariances(std::vector< std::vector<dou
  }
 
  // deallocate space
- free(nn_ind);
- free(nn_count);
- free(diam);
- free(chain_mean);
  gsl_matrix_free(work);
 }
 
 double Korali::Solver::TMCMC::tmcmc_objlogp(double x, const double *fj, size_t fn, double pj, double zero)
 {
- double *weight = (double*) calloc (fn, sizeof(double));
- double *q      = (double*) calloc (fn, sizeof(double));
+ std::vector<double> weight(fn);
+ std::vector<double> q(fn);
  const double fjmax = gsl_stats_max(fj, 1, fn);
 
  for(size_t i = 0; i <fn; i++)weight[i] = exp((fj[i]-fjmax)*(x-pj));
- double sum_weight = std::accumulate(weight, weight+fn, 0.0);
+ double sum_weight = std::accumulate(weight.begin(), weight.end(), 0.0);
  for(size_t i = 0; i < fn; i++)  q[i] = weight[i]/sum_weight;
 
- double mean_q = gsl_stats_mean(q, 1, fn);
- double std_q  = gsl_stats_sd_m(q, 1, fn, mean_q);
+ double mean_q = gsl_stats_mean(q.data(), 1, fn);
+ double std_q  = gsl_stats_sd_m(q.data(), 1, fn, mean_q);
  double cov2   = (std_q/mean_q-zero); cov2 *= cov2;
-
- free(weight);
- free(q);
 
  return cov2;
 }

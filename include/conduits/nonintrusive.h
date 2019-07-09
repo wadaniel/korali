@@ -14,7 +14,7 @@ class Nonintrusive : public Base {
  public:
 
  int _concurrentJobs;
- int** _pipeDescriptors;
+ std::vector<std::vector<int>> _pipeDescriptors;
  std::queue<int> _launcherQueue;
 
  std::map<int, size_t> _launcherIdToSamplerIdMap;

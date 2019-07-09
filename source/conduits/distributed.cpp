@@ -43,10 +43,10 @@ void Distributed::initialize()
    }
  }
 
- _teamSampleId = (size_t*) calloc (_teamCount, sizeof(size_t));
- _teamFitness = (double*) calloc (_teamCount, sizeof(double));
- _teamRequests = (MPI_Request*) calloc (_teamCount, sizeof(MPI_Request));
- _teamBusy = (bool*) calloc (_teamCount, sizeof(bool));
+ _teamSampleId.resize(_teamCount);
+ _teamFitness.resize(_teamCount);
+ _teamRequests.resize(_teamCount);
+ _teamBusy.resize(_teamCount);
  MPI_Comm_split(MPI_COMM_WORLD, _teamId, _rankId, &_teamComm);
 
  int mpiSize = -1;
@@ -87,13 +87,13 @@ void Distributed::setConfiguration()
 
 void Distributed::finalize()
 {
-	if (isRoot())
-	{
-	 int continueFlag = 0;
-	  for (int i = 0; i < _teamCount; i++)
-	 	 for (int j = 0; j < _ranksPerTeam; j++)
-		  MPI_Send(&continueFlag, 1, MPI_INT, _teamWorkers[i][j], MPI_TAG_CONTINUE, MPI_COMM_WORLD);
-	}
+  if (isRoot())
+  {
+   int continueFlag = 0;
+    for (int i = 0; i < _teamCount; i++)
+      for (int j = 0; j < _ranksPerTeam; j++)
+      MPI_Send(&continueFlag, 1, MPI_INT, _teamWorkers[i][j], MPI_TAG_CONTINUE, MPI_COMM_WORLD);
+  }
 
   MPI_Barrier(MPI_COMM_WORLD);
 }

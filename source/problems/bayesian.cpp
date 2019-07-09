@@ -34,7 +34,7 @@ void Korali::Problem::Bayesian::setConfiguration()
 
  auto ref = consume(_k->_js, { "Bayesian", "Likelihood", "Reference Data" }, KORALI_ARRAY);
  _referenceDataSize = ref.size();
- _referenceData = (double*) calloc (_referenceDataSize, sizeof(double));
+ _referenceData.resize(_referenceDataSize);
  for (size_t i = 0; i < _referenceDataSize; i++) _referenceData[i] = ref[i];
 
  if (isArray(_k->_js, { "Variables" } ))

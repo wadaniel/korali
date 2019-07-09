@@ -22,11 +22,12 @@ class Distributed : public Base
 
  int _teamId;
  int _localRankId;
- size_t* _teamSampleId;
  MPI_Comm _teamComm;
- MPI_Request* _teamRequests;
- bool* _teamBusy;
- double* _teamFitness;
+
+ std::vector<size_t> _teamSampleId;
+ std::vector<MPI_Request> _teamRequests;
+ std::vector<bool> _teamBusy;
+ std::vector<double> _teamFitness;
 
  std::queue<int> _teamQueue;
  std::map< int, std::vector<int> > _teamWorkers;

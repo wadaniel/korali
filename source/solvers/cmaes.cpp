@@ -805,7 +805,7 @@ void CMAES::updateEigensystem(std::vector<double>& M, int flgforce)
 
 void CMAES::eigen(size_t size, std::vector<double>& M,  std::vector<double>& diag, std::vector<double>& Q) const
 {
- double* data = (double*) calloc (sizeof(double), size * size);
+ std::vector<double> data(size * size);
 
  for (size_t i = 0; i <  size; i++)
  for (size_t j = 0; j <= i; j++)
@@ -819,7 +819,7 @@ void CMAES::eigen(size_t size, std::vector<double>& M,  std::vector<double>& dia
  gsl_matrix* gsl_evec = gsl_matrix_alloc(_k->N, _k->N);
  gsl_eigen_symmv_workspace* gsl_work =  gsl_eigen_symmv_alloc(_k->N);
 
- gsl_matrix_view m = gsl_matrix_view_array (data, size, size);
+ gsl_matrix_view m = gsl_matrix_view_array (data.data(), size, size);
 
  gsl_eigen_symmv (&m.matrix, gsl_eval, gsl_evec, gsl_work);
  gsl_eigen_symmv_sort (gsl_eval, gsl_evec, GSL_EIGEN_SORT_ABS_ASC);
@@ -832,7 +832,6 @@ void CMAES::eigen(size_t size, std::vector<double>& M,  std::vector<double>& dia
 
  for (size_t i = 0; i < size; i++) diag[i] = gsl_vector_get (gsl_eval, i);
 
- free(data);
  gsl_vector_free(gsl_eval);
  gsl_matrix_free(gsl_evec);
  gsl_eigen_symmv_free(gsl_work);

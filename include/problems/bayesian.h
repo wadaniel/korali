@@ -12,7 +12,7 @@ class Bayesian : public Base
  public:
 
  // Reference Data
- double* _referenceData;
+ std::vector<double> _referenceData;
  double* fitnessArrayPointer;
  size_t _referenceDataSize;
  likelihoodType _likelihood;

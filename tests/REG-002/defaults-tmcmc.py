@@ -24,3 +24,15 @@ k["TMCMC"]["Population Size"] = 5000
 k["Result Directory"] = "_a2_sampling_tmcmc"
 
 k.run()
+
+###############################################################################
+
+# Test Configuration
+
+# Test Internals
+
+# Test Termination Criteria
+
+# Test Variables
+
+

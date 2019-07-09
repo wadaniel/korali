@@ -440,8 +440,6 @@ void Korali::Solver::TMCMC::finalize()
 
 void Korali::Solver::TMCMC::printGeneration()
 {
- if (_k->currentGeneration % terminalOutputFrequency != 0) return;
- 
  if (_k->_verbosity >= KORALI_MINIMAL)
  {
   printf("--------------------------------------------------------------------\n");

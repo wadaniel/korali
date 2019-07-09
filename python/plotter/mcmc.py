@@ -96,7 +96,7 @@ def plot_samples(fig, ax, data, filename):
     dims     = data['Variables']
     numdim   = len(dims)
     pop      = data['MCMC']['Internal']['Database Entry Count']
-    samples  = np.reshape( data['MCMC']['Internal']['Sample Parameters Database'], (pop,numdim) )
+    samples  = np.reshape( data['MCMC']['Internal']['Sample Parameters Database'][0:pop*numdim], (pop,numdim) )
     
     fig.canvas.set_window_title(filename)
     

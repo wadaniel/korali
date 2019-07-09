@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from helpers import *
+from reg002_helpers import *
 
 from math import isclose
 
@@ -21,9 +21,9 @@ k["CMAES"]["Termination Criteria"]["Max Generations"]["Value"] = 0
 
 k["Result Directory"] = "_defaults_cmaes"
 
-# Running Korali
 k.run()
 
+###############################################################################
 
 # Testing Configuration
 
@@ -45,7 +45,7 @@ assert_string( k["CMAES"]["Mu Type"], "Logarithmic" )
 
 assert_value( k["CMAES"]["Mu Value"], 16 )
 
-assert_value( k["CMAES"]["Normal Vector Learning Rate"], 0.029411764705882353 )# TODO: is that correct?
+assert_value( k["CMAES"]["Normal Vector Learning Rate"], 0.3333333333333333 )
 
 assert_string( k["CMAES"]["Objective"], "Maximize" )
 
@@ -62,21 +62,21 @@ assert_value( k["CMAES"]["Terminal Output Frequency"], 1 )
 
 assert_value( k["CMAES"]["Internal"]["Chi Number"], 0.7976190476190477 )
 
-assert_value( k["CMAES"]["Internal"]["Covariance Matrix Adaption Factor"], 0.0029411764705882353 )
+assert_value( k["CMAES"]["Internal"]["Covariance Matrix Adaption Factor"],  0.03333333333333333 )
 
-assert_value( k["CMAES"]["Internal"]["Cumulative Covariance"], 0.7142857142857143 )
+assert_value( k["CMAES"]["Internal"]["Cumulative Covariance"], 0.564218767613317 )
 
 assert_value( k["CMAES"]["Internal"]["Current Sample Count"], 32 )
 
 assert_value( k["CMAES"]["Internal"]["Current Sample Mu"], 16 )
 
-assert_value( k["CMAES"]["Internal"]["Damp Factor"], 1.6 )
+assert_value( k["CMAES"]["Internal"]["Damp Factor"], 3.7963001362285684 )
 
-assert_value( k["CMAES"]["Internal"]["Effective Mu"], 1.0 )
+assert_value( k["CMAES"]["Internal"]["Effective Mu"], 9.17882891362855 )
 
 assert_value( k["CMAES"]["Internal"]["Evaluation Sign"], 1.0 )
 
-#assert_value( k["CMAES"]["Internal"]["Global Success Rate"], 0.0 ) # check this
+assert_value( k["CMAES"]["Internal"]["Global Success Rate"], 0.5 )
 
 assert_value( k["CMAES"]["Internal"]["Sigma"], 6.0 )
 

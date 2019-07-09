@@ -449,7 +449,7 @@ std::vector<variableSetting> _variableSettings;
 
  void initSamples();
  void prepareGeneration();
- void checkTermination() override;
+ bool checkTermination() override;
 
  void initialize() override;
  void finalize() override;

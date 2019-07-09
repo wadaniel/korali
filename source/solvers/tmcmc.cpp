@@ -441,11 +441,9 @@ bool Korali::Solver::TMCMC::isFeasibleCandidate(size_t c)
  return false;
 }
 
-void Korali::Solver::TMCMC::checkTermination()
+bool Korali::Solver::TMCMC::checkTermination()
 {
-
- _k->_isFinished = (annealingExponent >= 1.0);
-
+ return (annealingExponent >= 1.0);
 }
 
 void Korali::Solver::TMCMC::finalize()

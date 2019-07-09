@@ -102,7 +102,24 @@ assert tsc == 0.1818
 tsc = k["CMAES"]["Terminal Output Frequency"].getValue()
 
 # Termination Criterias
+tc = k["CMAES"]["Termination Criteria"]["Max Condition Covariance Matrix"]["Value"].getValue()
+tf = k["CMAES"]["Termination Criteria"]["Max Fitness"]["Value"].getValue()
+tf = k["CMAES"]["Termination Criteria"]["Max Generations"]["Value"].getValue()
+#tf = k["CMAES"]["Termination Criteria"]["Max Infeasible Resamplings"]["Value"].getValue()
+tf = k["CMAES"]["Termination Criteria"]["Max Standard Deviation"]["Value"].getValue()
+#tf = k["CMAES"]["Termination Criteria"]["Min Fitness"].getValue()
+#tf = k["CMAES"]["Termination Criteria"]["Min Fitness Diff Threshold"].getValue()
+#tf = k["CMAES"]["Termination Criteria"]["Min Standard Deviation"].getValue()
+#tf = k["CMAES"]["Termination Criteria"]["Min Standard Deviation Step Factor"].getValue()
+#tf = k["CMAES"]["Use Viability Regime"].getValue()
+tf = k["CMAES"]["Viability Mu"].getValue()
+tf = k["CMAES"]["Viability Sample Count"].getValue()
 
 # Variables
+tf = k["Variables"][0]["CMAES"]["Initial Mean"].getValue()
+tf = k["Variables"][0]["CMAES"]["Initial Standard Deviation"].getValue()
+tf = k["Variables"][0]["CMAES"]["Lower Bound"].getValue()
+#tf = k["Variables"][0]["CMAES"]["Minimum Standard Deviation Changes"].getValue()
+tf = k["Variables"][0]["CMAES"]["Upper Bound"].getValue()
 
 

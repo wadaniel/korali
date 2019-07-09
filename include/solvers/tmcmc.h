@@ -394,7 +394,7 @@ std::vector<variableSetting> _variableSettings;
 
  void runGeneration() override;
  void processSample(size_t c, double fitness) override;
- void checkTermination() override;
+ bool checkTermination() override;
 
   // Internal TMCMC Methods
  void initializeSamples();

@@ -241,7 +241,7 @@ void Korali::Engine::run()
 
   auto startTime = std::chrono::system_clock::now();
 
-  while(_isFinished == false)
+  while(checkTermination() == false)
   {
    auto t0 = std::chrono::system_clock::now();
 
@@ -252,13 +252,9 @@ void Korali::Engine::run()
 
    if(_verbosity >= KORALI_DETAILED) printf("[Korali] Generation Time: %.3fs\n", std::chrono::duration<double>(t1-t0).count());
 
-   if (currentGeneration % consoleOutputFrequency == 0)_solver->printGeneration();
+   if (currentGeneration % consoleOutputFrequency == 0) _solver->printGeneration();
    if (currentGeneration % fileOutputFrequency    == 0) saveState(currentGeneration);
 
-   // Evaluation Termination Criteria
-   _solver->checkTermination();
-   if (currentGeneration >= maxGenerations) { if(_verbosity >= KORALI_MINIMAL) printf("[Korali] Maximum generation count reached (%lu).\n", maxGenerations); _isFinished = true; }
-   if (functionEvaluationCount >= maxFunctionEvaluations) { if(_verbosity >= KORALI_MINIMAL) printf("[Korali] Maximum function evaluation count reached (%lu).\n", maxFunctionEvaluations); _isFinished = true; }
   }
 
   auto endTime = std::chrono::system_clock::now();
@@ -310,4 +306,17 @@ void Korali::Engine::loadConfig(std::string fileName)
 {
  _js = loadJsonFromFile(fileName.c_str());
  if (isDefined(_js, {"State"})) _js.erase("State");
+}
+
+bool Korali::Engine::checkTermination()
+{
+   _isFinished = _solver->checkTermination();
+   
+   if (currentGeneration >= maxGenerations) 
+   { if(_verbosity >= KORALI_MINIMAL) printf("[Korali] Maximum generation count reached (%lu).\n", maxGenerations); _isFinished = true; }
+   
+   if (functionEvaluationCount >= maxFunctionEvaluations) 
+   { if(_verbosity >= KORALI_MINIMAL) printf("[Korali] Maximum function evaluation count reached (%lu).\n", maxFunctionEvaluations); _isFinished = true; }
+
+   return _isFinished;
 }

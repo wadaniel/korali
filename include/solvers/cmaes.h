@@ -1134,7 +1134,7 @@ std::vector<variableSetting> _variableSettings;
 
  // Runtime Methods (to be inherited from base class in the future)
  void prepareGeneration();
- void checkTermination() override;
+ bool checkTermination() override;
  void updateDistribution();
  void initialize() override;
  void runGeneration() override;

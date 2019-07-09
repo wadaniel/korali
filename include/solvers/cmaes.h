@@ -970,16 +970,6 @@ Number of constraint evaluations.
 size_t _constraintEvaluationCount;
 
 /******************************************************************************
-Setting Name: Constraint Success Rates
-Type: Internal Attribute
-Default Value:
-Default Enabled:
-Description:
-Number of constraint evaluations.
-******************************************************************************/
-std::vector<double> _successRates;
-
-/******************************************************************************
 Setting Name: Viability Boundaries
 Type: Internal Attribute
 Default Value:

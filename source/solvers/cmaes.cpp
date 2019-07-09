@@ -95,9 +95,6 @@ void CMAES::initialize()
   _sampleViolationCounts.resize(_currentSampleCount);
   _viabilityBoundaries.resize(_k->_fconstraints.size());
 
-  _successRates.resize(_k->_fconstraints.size());
-  std::fill_n( std::begin(_successRates), _k->_fconstraints.size(), 0.5);
-
   _viabilityImprovement.resize(s_max);
   _viabilityIndicator.resize(_k->_fconstraints.size());
   _constraintEvaluations.resize(_k->_fconstraints.size());
@@ -304,6 +301,7 @@ void CMAES::updateConstraints() //TODO: maybe parallelize constraint evaluations
     _constraintEvaluationCount++;
     std::vector<double> sample(&_samplePopulation[i*_k->N], &_samplePopulation[(i+1)*_k->N]);
 
+    printf("t: %zu, c: %zu, i:%zu ce: %zu, cee %zu\n", _k->_fconstraints.size(), c, i, _constraintEvaluations.size(), _constraintEvaluations[0].size() );
     _constraintEvaluations[c][i] = _k->_fconstraints[c]( sample );
 
     if ( _constraintEvaluations[c][i] > maxviolation ) maxviolation = _constraintEvaluations[c][i];
@@ -583,9 +581,8 @@ void CMAES::handleConstraints()
   for(size_t i = 0; i < _currentSampleCount; ++i) if (_sampleViolationCounts[i] > 0)
   {
     //update _v
-    for( size_t c = 0; c < _k->_fconstraints.size(); c++ )
-      if ( _viabilityIndicator[c][i] == true )
-      {
+    for( size_t c = 0; c < _k->_fconstraints.size(); c++ ) if ( _viabilityIndicator[c][i] == true )
+    {
         _adaptationCount++;
 
         double v2 = 0;
@@ -599,12 +596,7 @@ void CMAES::handleConstraints()
             Ctmp[d*_k->N+e] = Ctmp[d*_k->N+e] - ((_beta * _beta * _v[c][d]*_v[c][e])/(v2*_sampleViolationCounts[i]*_sampleViolationCounts[i]));
 
         _isEigenSystemUpdate = false;
-        _successRates[c] = (1.0-_globalSuccessLearningRate)*_successRates[c];
-      }
-      else
-      {
-        _successRates[c] = (1.0-_globalSuccessLearningRate)*_successRates[c]+_globalSuccessLearningRate/_currentSampleCount;
-      }
+    }
    }
 
   updateEigensystem(Ctmp);

@@ -116,9 +116,9 @@ def plot_tmcmc(src, live=False, test=False):
             numdim  = len(data['Variables'])
             pop     = data['TMCMC']['Population Size']
             gen     = data['Current Generation']
-            anneal  = data['TMCMC']['Internal']['AnnealingExponent']
-            fitness = data['TMCMC']['Internal']['DatabaseFitness']
-            samples = np.reshape( data['TMCMC']['Internal']['DatabasePoints'], (pop,numdim) )
+            anneal  = data['TMCMC']['Internal']['Annealing Exponent']
+            fitness = data['TMCMC']['Internal']['Sample Fitness Database']
+            samples = np.reshape( data['TMCMC']['Internal']['Sample Parameters Database'], (pop,numdim) )
             fig, ax = plt.subplots(samples.shape[1], samples.shape[1], figsize=(8,8))
 
             fig.canvas.set_window_title(filename)

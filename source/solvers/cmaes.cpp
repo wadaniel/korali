@@ -92,7 +92,7 @@ void CMAES::initialize()
   _constraintEvaluationCount = 0;
   _adaptationCount = 0;
   _maxViolationCount = 0;
-  _sampleViolationCounts.resize(_currentSampleCount);
+  _sampleViolationCounts.resize(s_max);
   _viabilityBoundaries.resize(_k->_fconstraints.size());
 
   _viabilityImprovement.resize(s_max);
@@ -301,7 +301,6 @@ void CMAES::updateConstraints() //TODO: maybe parallelize constraint evaluations
     _constraintEvaluationCount++;
     std::vector<double> sample(&_samplePopulation[i*_k->N], &_samplePopulation[(i+1)*_k->N]);
 
-    printf("t: %zu, c: %zu, i:%zu ce: %zu, cee %zu\n", _k->_fconstraints.size(), c, i, _constraintEvaluations.size(), _constraintEvaluations[0].size() );
     _constraintEvaluations[c][i] = _k->_fconstraints[c]( sample );
 
     if ( _constraintEvaluations[c][i] > maxviolation ) maxviolation = _constraintEvaluations[c][i];

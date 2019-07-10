@@ -149,7 +149,7 @@ The Solver module generates samples for evaluation, performs the statistical ana
 	 k["Solver"] = "MCMC";
 	```
 
-	[Click here for detailed information on MCMC(../solvers/mcmc)
+	[Click here for detailed information on MCMC](../solvers/mcmc)
 
 ??? abstract "Transitional Markov-Chain Monte-Carlo"
 

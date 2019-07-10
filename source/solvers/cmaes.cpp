@@ -48,7 +48,6 @@ CMAES::~CMAES()
 	_muWeights.clear(); _muWeights.resize(0);
 	_sampleViolationCounts.clear(); _sampleViolationCounts.resize(0);
 	_viabilityBoundaries.clear(); _viabilityBoundaries.resize(0);
-	_successRates.clear(); _successRates.resize(0);
 	_viabilityImprovement.clear(); _viabilityImprovement.resize(0);
 
   for (size_t c = 0; c < _k->_fconstraints.size(); c++) { _viabilityIndicator[c].clear(); _viabilityIndicator[c].resize(0); }

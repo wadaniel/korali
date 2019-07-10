@@ -26,20 +26,29 @@ void Korali::Problem::Bayesian::getConfiguration()
 
 void Korali::Problem::Bayesian::setConfiguration()
 {
- bool foundLikelihoodType = false;
- std::string likelihoodString = consume(_k->_js, { "Bayesian", "Likelihood", "Type" }, KORALI_STRING, "Undefined");
- if (likelihoodString == "Direct")    { _likelihood = DirectLikelihood;    foundLikelihoodType = true; }
- if (likelihoodString == "Reference") { _likelihood = ReferenceLikelihood; foundLikelihoodType = true; }
- if (foundLikelihoodType == false) { fprintf(stderr, "[Korali] Error: Incorrect or no Likelihood Type selected: %s.\n", likelihoodString.c_str()); exit(-1); }
+  bool foundLikelihoodType = false;
+  std::string likelihoodString = consume(_k->_js, { "Bayesian", "Likelihood", "Type" }, KORALI_STRING, "Undefined");
+  if (likelihoodString == "Direct")    { _likelihood = DirectLikelihood;    foundLikelihoodType = true; }
+  if (likelihoodString == "Reference") { _likelihood = ReferenceLikelihood; foundLikelihoodType = true; }
+  if (foundLikelihoodType == false) { fprintf(stderr, "[Korali] Error: Incorrect or no Likelihood Type selected: %s.\n", likelihoodString.c_str()); exit(-1); }
 
- auto ref = consume(_k->_js, { "Bayesian", "Likelihood", "Reference Data" }, KORALI_ARRAY);
- _referenceDataSize = ref.size();
- _referenceData.resize(_referenceDataSize);
- for (size_t i = 0; i < _referenceDataSize; i++) _referenceData[i] = ref[i];
+  if ( _likelihood == ReferenceLikelihood )
+  {
+    bool foundLikelihoodModel = false;
+    std::string likelihoodModelString = consume(_k->_js, { "Bayesian", "Likelihood", "Model" }, KORALI_STRING, "Undefined");
+    if (likelihoodModelString == "Additive Gaussian")          { _likelihoodModel = AdditiveGaussian;       foundLikelihoodModel = true; }
+    if (likelihoodModelString == "Multiplicative Gaussian")    { _likelihoodModel = MultiplicativeGaussian; foundLikelihoodModel = true; }
+    if (foundLikelihoodModel  == false) { fprintf(stderr, "[Korali] Error: Incorrect or no Likelihood Model selected: %s.\n", likelihoodModelString.c_str()); exit(-1); }
+  }
 
- if (isArray(_k->_js, { "Variables" } ))
- for (size_t i = 0; i < _k->N; i++)
- {
+  auto ref = consume(_k->_js, { "Bayesian", "Likelihood", "Reference Data" }, KORALI_ARRAY);
+  _referenceDataSize = ref.size();
+  _referenceData.resize(_referenceDataSize);
+  for (size_t i = 0; i < _referenceDataSize; i++) _referenceData[i] = ref[i];
+
+  if (isArray(_k->_js, { "Variables" } ))
+  for (size_t i = 0; i < _k->N; i++)
+  {
   auto typeString = consume(_k->_js["Variables"][i], { "Bayesian", "Type" }, KORALI_STRING, "Computational");
   if (typeString == "Computational") _computationalVariableIndices.push_back(i);
   if (typeString == "Statistical")   _statisticalVariableIndices.push_back(i);
@@ -49,7 +58,7 @@ void Korali::Problem::Bayesian::setConfiguration()
 
   _k->_js["Variables"][i]["Bayesian"]["Prior Distribution"]["Seed"] = _k->_seed++;
   _k->_variables[i]->setDistribution(_k->_js["Variables"][i]["Bayesian"]["Prior Distribution"]);
- }
+  }
 }
 
 void Korali::Problem::Bayesian::initialize()
@@ -114,24 +123,15 @@ double Korali::Problem::Bayesian::evaluateFitness(Korali::ModelData& data)
 
  if (_likelihood == ReferenceLikelihood)
  {
-  if (data._results.size() != _referenceDataSize)
-  {
-   fprintf(stderr, "[Korali] Error: Reference Likelihood requires a %lu-sized result array.\n", _referenceDataSize);
-   fprintf(stderr, "[Korali]        Provided: %lu.\n", data._results.size());
-   exit(-1);
-  }
+   if (data._results.size() != _referenceDataSize)
+   {
+    fprintf(stderr, "[Korali] Error: Reference Likelihood requires a %lu-sized result array.\n", _referenceDataSize);
+    fprintf(stderr, "[Korali]        Provided: %lu.\n", data._results.size());
+    exit(-1);
+   }
 
-  double sigma = data._statisticalVariables[0];
-  double sigma2 = sigma*sigma;
-  double ssn = 0.0;
-
-  for(size_t i = 0; i < _referenceDataSize; i++)
-  {
-   double diff = _referenceData[i] - data._results[i];
-   ssn += diff*diff;
-  }
-
-  fitness = -0.5*( _referenceDataSize*log(2*M_PI) + ssn/sigma2) - _referenceDataSize*log(sigma);
+   if (_likelihoodModel == AdditiveGaussian)       fitness = likelihoodGaussianAdditive(data);
+   if (_likelihoodModel == MultiplicativeGaussian) fitness = likelihoodGaussianMultiplicative(data);
  }
 
  if (_likelihood == DirectLikelihood)
@@ -154,4 +154,39 @@ double Korali::Problem::Bayesian::evaluateLogPrior(double* sample)
  double logPrior = 0.0;
  for (size_t i = 0; i < _k->N; i++) logPrior += _k->_variables[i]->getLogDensity(sample[i]);
  return logPrior;
+}
+
+double Korali::Problem::Bayesian::likelihoodGaussianAdditive(Korali::ModelData& data)
+{
+  double sigma   = data._statisticalVariables[0];
+  double sigma2  = sigma*sigma;
+  double ssn     = 0.0;
+  double fitness = 0.0;
+
+  for(size_t i = 0; i < _referenceDataSize; i++)
+  {
+   double diff = _referenceData[i] - data._results[i];
+   ssn += diff*diff;
+  }
+
+  fitness = -0.5*( _referenceDataSize*log(2*M_PI) + ssn/sigma2) - _referenceDataSize*log(sigma);
+  return fitness;
+}
+
+double Korali::Problem::Bayesian::likelihoodGaussianMultiplicative(Korali::ModelData& data)
+{
+  double sigma    = data._statisticalVariables[0];
+  double ssn      = 0.0;
+  double fitness  = 0.0;
+  double logSigma = 0.0;
+  for(size_t i = 0; i < _referenceDataSize; i++)
+  {
+   double diff   = _referenceData[i] - data._results[i];
+   double denom  = sigma*data._results[i];
+   ssn += diff*diff / (denom*denom);
+   logSigma += log(denom);
+  }
+
+  fitness = -0.5*( _referenceDataSize*log(2*M_PI) + ssn) - _referenceDataSize*logSigma;
+  return fitness;
 }

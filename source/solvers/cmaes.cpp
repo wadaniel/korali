@@ -22,43 +22,7 @@ CMAES::CMAES()
 
 CMAES::~CMAES()
 {
-	delete _gaussianGenerator;
-
-	_samplePopulation.clear();
-	rgpc.clear(); rgpc.resize(0);
-	rgps.clear(); rgps.resize(0);
-	rgdTmp.clear(); rgdTmp.resize(0);
-	rgBDz.clear(); rgBDz.resize(0);
-	_rgxMean.clear(); _rgxMean.resize(0);
-	rgxold.clear(); rgxold.resize(0);
-	_rgxBestEver.clear(); _rgxBestEver.resize(0);
-	axisD.clear(); axisD.resize(0);
-	axisDtmp.clear(); axisDtmp.resize(0);
-	_currentBestVector.clear(); _currentBestVector.resize(0);
-	_sortingIndex.clear(); _sortingIndex.resize(0);
-	_isInitializedSample.clear(); _isInitializedSample.resize(0);
-	_fitnessVector.clear(); _fitnessVector.resize(0);
-	C.clear(); C.resize(0);
-	Ctmp.clear(); Ctmp.resize(0);
-	B.clear(); B.resize(0);
-	Btmp.clear(); Btmp.resize(0);
-	Z.clear(); Z.resize(0);
-	BDZ.clear(); BDZ.resize(0);
-	_transformedSamples.clear(); _transformedSamples.resize(0);
-	_muWeights.clear(); _muWeights.resize(0);
-	_sampleViolationCounts.clear(); _sampleViolationCounts.resize(0);
-	_viabilityBoundaries.clear(); _viabilityBoundaries.resize(0);
-	_viabilityImprovement.clear(); _viabilityImprovement.resize(0);
-
-  for (size_t c = 0; c < _k->_fconstraints.size(); c++) { _viabilityIndicator[c].clear(); _viabilityIndicator[c].resize(0); }
-  for (size_t c = 0; c < _k->_fconstraints.size(); c++) { _constraintEvaluations[c].clear(); _constraintEvaluations[c].resize(0); }
-	_viabilityIndicator.clear(); _viabilityIndicator.resize(0);
-	_constraintEvaluations.clear(); _constraintEvaluations.resize(0);
-
-  for (size_t i = 0; i < _k->_fconstraints.size(); i++) { _v[i].clear(); _v[i].resize(0); }
-  _v.clear(); _v.resize(0);
-
-  _bestEverConstraintEvaluation.clear(); _bestEverConstraintEvaluation.resize(0);
+  delete _gaussianGenerator;
 }
 
 

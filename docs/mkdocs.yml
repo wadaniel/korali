@@ -31,7 +31,7 @@ nav:
       - Solvers:
           - Optimizers:
             - CMA-ES: usage/solvers/cmaes.md
-            - Differential Evolution: usage/solvers/de.md
+            - DEA: usage/solvers/dea.md
           - Samplers:
             - MCMC: usage/solvers/mcmc.md
             - TMCMC: usage/solvers/tmcmc.md
@@ -44,8 +44,8 @@ nav:
           - Rerefence: usage/models/reference.md
           - Constraint: usage/models/constraint.md
       - Results:
+          - Accessing Results: usage/results/#accessing-results
           - Plotting Results: usage/results/#plotting-results
-          - Exporting Results: usage/results/#exporting-results
           - Resume Execution: usage/results/#resume-execution
   - Publications: publications.md
   - About Us: aboutus.md

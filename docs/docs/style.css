@@ -27,6 +27,12 @@ h3 {
   background-position: 50% 50%;
   visibility: visible !important;
   position: fixed !important;
+  z-index: 0;
+}
+
+.md-footer
+{
+  height: 50px;
 }
 
 li .md-nav__item{

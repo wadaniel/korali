@@ -20,6 +20,12 @@ TMCMC avoids sampling from difficult target probability densities
 a series of intermediate PDFs that converge to the target PDF.
 This technique is also known as Sampling Importance Resampling in the Bayesian community.
 
+** Usage **
+
+```python
+  k["Solver"] = "TMCMC"
+```
+	
 **Requirements:**
 
 + The *Population Size* used at every generation needs to be defined.
@@ -367,6 +373,7 @@ std::vector<variableSetting> _variableSettings;
  gsl_rng  *range;
 
  TMCMC();
+ ~TMCMC();
 
   // Korali Methods
  void initialize() override;

@@ -10,8 +10,9 @@ int main(int argc, char* argv[])
  k.setModel([x](Korali::ModelData& d) { posteriorModel(d.getVariables(), d.getResults(), x); });
 
  k["Problem"] = "Bayesian";
- 
+
  k["Bayesian"]["Likelihood"]["Type"] = "Reference";
+ k["Bayesian"]["Likelihood"]["Model"] = "Additive Gaussian";
  k["Bayesian"]["Likelihood"]["Reference Data"] = y;
 
  k["Variables"][0]["Name"] = "a";

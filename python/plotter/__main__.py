@@ -38,11 +38,11 @@ def main(check, path, live, test, evolution):
   exit(0)
 
  if ( 'CMAES' == solver):
-  print("[Korali] Running CMA-ES Plotter...")
+  print("[Korali] Running CMAES Plotter...")
   plot_cmaes(path, live, test, evolution)
   exit(0)
 
- if ( 'DE' == solver ):
+ if ( 'DEA' == solver ):
   print("[Korali] Running DEA Plotter...")
   plot_dea(path, live, test)
   exit(0)

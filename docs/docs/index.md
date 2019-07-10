@@ -53,6 +53,3 @@ Latest Release: 28/06/2019 - [Korali v1.0.0](https://github.com/cselab/korali.gi
 
 	Korali applications can be programmed in either C++ or Python. Additionally, Korali can sample from C++/Fortran/Python and pre-compiled computational models.
 
-??? success "Multi-Intrusiveness"
-
-	A novelty in Korali is its support for multi-intrusive evaluation. That is, Korali can sample from computational models either semi-instrusively, through static linking or dynamic loading of Python modules; or nonintrusively, through shell command execution.

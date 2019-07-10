@@ -5,7 +5,8 @@
 
 namespace Korali { namespace Problem {
 
-enum likelihoodType {DirectLikelihood, ReferenceLikelihood};
+enum likelihoodType  {DirectLikelihood, ReferenceLikelihood};
+enum likelihoodModel {AdditiveGaussian, MultiplicativeGaussian};
 
 class Bayesian : public Base
 {
@@ -15,7 +16,8 @@ class Bayesian : public Base
  std::vector<double> _referenceData;
  double* fitnessArrayPointer;
  size_t _referenceDataSize;
- likelihoodType _likelihood;
+ likelihoodType  _likelihood;
+ likelihoodModel _likelihoodModel;
 
  std::vector<size_t> _computationalVariableIndices;
  std::vector<size_t> _statisticalVariableIndices;
@@ -30,6 +32,11 @@ class Bayesian : public Base
  // Serialization Methods
  void getConfiguration() override;
  void setConfiguration() override;
+
+  private:
+
+    double likelihoodGaussianAdditive(Korali::ModelData& data);
+    double likelihoodGaussianMultiplicative(Korali::ModelData& data);
 };
 
 } } // namespace Korali::Problem

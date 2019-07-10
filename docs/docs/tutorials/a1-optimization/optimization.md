@@ -1,11 +1,17 @@
 In this tutorial we show how to **optimize** directly from a given function.
 
 !!! info
-	The full Python code for this tutorial can be found in:
-	[tutorials/python/a1-optimization.py](https://github.com/cselab/skorali/blob/master/tutorials/python/a1-optimization.py).
+	The full Python codes for this tutorial can be found in:
+	
+	[tutorials/python/a1-optimization-cmaes.py](https://github.com/cselab/skorali/blob/development/tutorials/python/a1-optimization-cmaes.py)
+	
+	[tutorials/python/a1-optimization-dea.py](https://github.com/cselab/skorali/blob/development/tutorials/python/a1-optimization-dea.py)
 
 	The full C++ code for this tutorial can be found in:
-	[tutorials/cxx/a1-optimization.cpp](https://github.com/cselab/skorali/blob/master/tutorials/cxx/a1-optimization.cpp).
+	
+	[tutorials/cxx/a1-optimization-cmaes.cpp](https://github.com/cselab/skorali/blob/development/tutorials/cxx/a1-optimization-cmaes.cpp)
+	
+	[tutorials/cxx/a1-optimization-dea.cpp](https://github.com/cselab/skorali/blob/development/tutorials/cxx/a1-optimization-dea.cpp)
 	
 ## Problem Setup
 We are given the function $f(\vartheta)=-\vartheta^2$ for $\vartheta\in[-10,10]$.
@@ -27,7 +33,7 @@ def evaluateModel( s ):
 This is the computational model that represents our objective function.
 
 
-## Optimization with CMA-ES
+## Optimization with CMAES
 
 First, open a file and import the korali module
 ```python
@@ -62,10 +68,10 @@ k["Variables"][0]["Name"] = "X";
 ```
 
 ###  The Solver
-We choose the solver `CMA-ES`, set the domain of the parameter `X`, the population size to be `5` and two termination criteria,
+We choose the solver `CMAES`, set the domain of the parameter `X`, the population size to be `5` and two termination criteria,
 
 ```python
-k["Solver"]  = "CMA-ES"
+k["Solver"]  = "CMAES"
 
 k["Variables"][0]["CMA-ES"]["Lower Bound"] = -10.0;
 k["Variables"][0]["CMA-ES"]["Upper Bound"] = +10.0;
@@ -74,7 +80,7 @@ k["CMA-ES"]["Objective"] = "Maximize"
 k["CMA-ES"]["Termination Criteria"]["Max Generations"]["Value"] = 500
 k["CMA-ES"]["Sample Count"] = 5
 ```
-For a detailed description of CMA-ES settings see [here](../../usage/solvers/cmaes.md).
+For a detailed description of CMAES settings see [here](../../usage/solvers/cmaes.md).
 
 Finally, we need to add a call to the run() routine to start the Korali engine.
 

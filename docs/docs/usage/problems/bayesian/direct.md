@@ -8,6 +8,14 @@ In a *Bayesian* problem, the defines and a prior probability density $p(\varthet
 
 Whereas with a *Direct Likelihood*, the function $p(d|\vartheta)$ is given directly by a user-defined model of the form $f:\mathbb{R}^N\rightarrow\mathbb{R}$, where $N$ is the number of variables.
 
+** Usage **
+
+```python
+  k["Problem"] = "Bayesian"
+  k["Bayesian"]["Likelihood"]["Type"] = "Direct"
+```
+	
+
 **Requirements:**
 
 + A [Simple](/usage/models/simple) computational model should be defined for the likelihood.

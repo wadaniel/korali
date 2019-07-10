@@ -17,12 +17,27 @@ void Distributed::initialize()
  _currentSample = 0;
  _continueEvaluations = true;
 
+ bool hasCommunicationLayer = false;
+
+ #ifdef _KORALI_USE_MPI
+ hasCommunicationLayer = true;
+ #endif
+
+ if (hasCommunicationLayer == false)
+ {
+  fprintf(stderr, "[Korali] Error: Distributed conduit selected but no communication library (e.g., MPI) was configured during installation\n.");
+  fprintf(stderr, "[Korali] Please re-install Korali with support for communication libraries\n.");
+  exit(-1);
+ }
+
+ #ifdef _KORALI_USE_MPI
  int isInitialized;
  MPI_Initialized(&isInitialized);
  if (isInitialized == false)  MPI_Init(nullptr, nullptr);
 
  MPI_Comm_size(MPI_COMM_WORLD, &_rankCount);
  MPI_Comm_rank(MPI_COMM_WORLD, &_rankId);
+ #endif
 
  _teamCount = (_rankCount-1) / _ranksPerTeam;
  _teamId = -1;
@@ -47,19 +62,24 @@ void Distributed::initialize()
  _teamFitness.resize(_teamCount);
  _teamRequests.resize(_teamCount);
  _teamBusy.resize(_teamCount);
+
+ #ifdef _KORALI_USE_MPI
  MPI_Comm_split(MPI_COMM_WORLD, _teamId, _rankId, &_teamComm);
 
  int mpiSize = -1;
  MPI_Comm_size(MPI_COMM_WORLD, &mpiSize);
+ #endif
 
  if(isRoot()) if (_rankCount < _ranksPerTeam + 1)
  {
-  fprintf(stderr, "[Korali] Error: You are running MPI with %d ranks. \n", _rankCount);
+  fprintf(stderr, "[Korali] Error: You are running Korali with %d ranks. \n", _rankCount);
   fprintf(stderr, "[Korali] However, you need at least %d ranks to have at least one worker team. \n", _ranksPerTeam + 1);
   exit(-1);
  }
 
+ #ifdef _KORALI_USE_MPI
  MPI_Barrier(MPI_COMM_WORLD);
+ #endif
 
  if (!isRoot()) workerThread();
 }
@@ -87,7 +107,8 @@ void Distributed::setConfiguration()
 
 void Distributed::finalize()
 {
-  if (isRoot())
+ #ifdef _KORALI_USE_MPI
+ if (isRoot())
   {
    int continueFlag = 0;
     for (int i = 0; i < _teamCount; i++)
@@ -96,10 +117,12 @@ void Distributed::finalize()
   }
 
   MPI_Barrier(MPI_COMM_WORLD);
+ #endif
 }
 
 void Distributed::workerThread()
 {
+ #ifdef _KORALI_USE_MPI
  if (_teamId == -1) return;
 
  int continueFlag = 1;
@@ -129,6 +152,7 @@ void Distributed::workerThread()
    MPI_Barrier(_teamComm);
   }
  }
+ #endif
 }
 
 void Distributed::evaluateSample(double* sampleArray, size_t sampleId)
@@ -138,6 +162,7 @@ void Distributed::evaluateSample(double* sampleArray, size_t sampleId)
  int teamId = _teamQueue.front(); _teamQueue.pop();
  _teamSampleId[teamId] = sampleId;
 
+ #ifdef _KORALI_USE_MPI
  MPI_Irecv(&_teamFitness[teamId], 1, MPI_DOUBLE, _teamWorkers[teamId][0], MPI_TAG_FITNESS, MPI_COMM_WORLD, &_teamRequests[teamId]);
  _teamBusy[teamId] = true;
 
@@ -148,12 +173,14 @@ void Distributed::evaluateSample(double* sampleArray, size_t sampleId)
   MPI_Send(&continueFlag, 1, MPI_INT, workerId, MPI_TAG_CONTINUE, MPI_COMM_WORLD);
   MPI_Send(&sampleArray[sampleId*_k->N],_k->N, MPI_DOUBLE, workerId, MPI_TAG_SAMPLE, MPI_COMM_WORLD);
  }
+ #endif
 
  _k->functionEvaluationCount++;
 }
 
 void Distributed::checkProgress()
 {
+ #ifdef _KORALI_USE_MPI
  for (int i = 0; i < _teamCount; i++) if (_teamBusy[i] == true)
  {
   int flag;
@@ -165,6 +192,7 @@ void Distributed::checkProgress()
    _teamQueue.push(i);
   }
  }
+ #endif
 }
 
 int Distributed::getRootRank()

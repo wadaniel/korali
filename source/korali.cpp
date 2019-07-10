@@ -67,12 +67,10 @@ PYBIND11_MODULE(libkorali, m) {
 /*                  Constructor / Destructor Methods                    */
 /************************************************************************/
 
-Korali::Engine::Engine() : _solver(nullptr)
+Korali::Engine::Engine() : _solver(nullptr), _problem(nullptr), _conduit(nullptr)
 {
- _modelDefined = false;
+ _modelDefined      = false;
  _likelihoodDefined = false;
- _problem = nullptr;
- _conduit = nullptr;
 }
 
 Korali::Engine::~Engine()

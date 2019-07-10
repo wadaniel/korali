@@ -1,11 +1,11 @@
 a1-optimization-cmaes
-a1-optimization-de
+a1-optimization-dea
 a2-sampling-mcmc
 a2-sampling-tmcmc
 a3-bayesian-inference-cmaes
 a3-bayesian-inference-tmcmc
 b1-restart-cmaes
-b1-restart-de
+b1-restart-dea
 b1-restart-tmcmc
 b2-constrained-optimization
 *.o

@@ -8,7 +8,7 @@ using namespace Korali::Solver;
 
 constexpr size_t str2int(const char* str, int h = 0) { return !str[h] ? 5381 : (str2int(str, h+1) * 33) ^ str[h]; }
 
-DE::DE()
+DEA::DEA()
 {
  // Initializing Generators
  auto jsGaussian = nlohmann::json();
@@ -29,7 +29,12 @@ DE::DE()
  _uniformGenerator->setDistribution(jsUniform);
 }
 
-void DE::initialize()
+DEA::~DEA()
+{
+  delete _uniformGenerator;
+}
+
+void DEA::initialize()
 {
  // Allocating Memory
  _samplePopulation.resize(_k->N*_sampleCount);
@@ -74,7 +79,7 @@ void DE::initialize()
 
 }
 
-void DE::runGeneration()
+void DEA::runGeneration()
 {
  prepareGeneration();
  evaluateSamples();
@@ -82,7 +87,7 @@ void DE::runGeneration()
 }
 
 
-void DE::initSamples()
+void DEA::initSamples()
 {
   for(size_t i = 0; i < _sampleCount; ++i) for(size_t d = 0; d < _k->N; ++d)
   {
@@ -92,7 +97,7 @@ void DE::initSamples()
 }
 
 
-void DE::prepareGeneration()
+void DEA::prepareGeneration()
 {
  size_t initial_infeasible = _infeasibleSampleCount;
  for (size_t i = 0; i < _sampleCount; ++i)
@@ -123,7 +128,7 @@ void DE::prepareGeneration()
 }
 
 
-void DE::mutateSingle(size_t sampleIdx)
+void DEA::mutateSingle(size_t sampleIdx)
 {
     size_t a, b;
     do{ a = _uniformGenerator->getRandomNumber()*_sampleCount; } while(a == sampleIdx);
@@ -175,7 +180,7 @@ void DE::mutateSingle(size_t sampleIdx)
 }
 
 
-bool DE::isFeasible(size_t sampleIdx) const
+bool DEA::isFeasible(size_t sampleIdx) const
 {
   for(size_t d = 0; d < _k->N; ++d) 
     if ( (_sampleCandidates[sampleIdx*_k->N+d] < _variableSettings[d].lowerBound) || (_sampleCandidates[sampleIdx*_k->N+d] > _variableSettings[d].upperBound)) return false;
@@ -183,7 +188,7 @@ bool DE::isFeasible(size_t sampleIdx) const
 }
 
 
-void DE::fixInfeasible(size_t sampleIdx)
+void DEA::fixInfeasible(size_t sampleIdx)
 {
   for(size_t d = 0; d < _k->N; ++d) 
   {
@@ -197,7 +202,7 @@ void DE::fixInfeasible(size_t sampleIdx)
 }
 
 
-void DE::evaluateSamples()
+void DEA::evaluateSamples()
 {
   
   for (size_t i = 0; i < _sampleCount; i++) for(size_t d = 0; d < _k->N; ++d)
@@ -220,7 +225,7 @@ void DE::evaluateSamples()
 }
 
 
-void DE::processSample(size_t sampleIdx, double fitness)
+void DEA::processSample(size_t sampleIdx, double fitness)
 {
  double logPrior = _k->_problem->evaluateLogPrior(&_transformedSamples[sampleIdx*_k->N]);
  _fitnessVector[sampleIdx] = _evaluationSign * (logPrior+fitness);
@@ -228,7 +233,7 @@ void DE::processSample(size_t sampleIdx, double fitness)
 }
 
 
-void DE::updateSolver()
+void DEA::updateSolver()
 {
     _bestIndex = std::distance( std::begin(_fitnessVector), std::max_element(std::begin(_fitnessVector), std::end(_fitnessVector)) );
     _previousBestEver      = _bestEver;
@@ -292,7 +297,7 @@ void DE::updateSolver()
 }
 
 
-bool DE::checkTermination()
+bool DEA::checkTermination()
 {
 
  bool isFinished = false;
@@ -341,7 +346,7 @@ bool DE::checkTermination()
 /************************************************************************/
 
 
-void DE::printGeneration()
+void DEA::printGeneration()
 {
 
  if (_k->_verbosity >= KORALI_NORMAL) printf("[Korali] Differential Evolution Generation %zu\n", _k->currentGeneration);
@@ -365,7 +370,7 @@ void DE::printGeneration()
    printf("--------------------------------------------------------------------\n");
 }
 
-void DE::finalize()
+void DEA::finalize()
 {
  if (_k->_verbosity >= KORALI_MINIMAL)
  {

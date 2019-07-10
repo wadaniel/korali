@@ -94,7 +94,7 @@ def plot_dea(src, live=False, test=False):
         with open(path) as f:
             
             data  = json.load(f)
-            state = data['DE']['Internal']
+            state = data['DEA']['Internal']
             gen   = data['Current Generation']
 
             if ( (fig, ax) == (None, None) ):

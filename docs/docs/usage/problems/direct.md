@@ -6,9 +6,9 @@ In a *Direct Evaluation* problem, the computational model is assumed to be of th
 
 ** Usage **
 
-	```python
-	  k["Problem"] = "Direct Evaluation"
-	```
+```python
+  k["Problem"] = "Direct Evaluation"
+```
 
 ##Requirements
 

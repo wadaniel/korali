@@ -18,9 +18,9 @@ This solver can also be configured to run the standard *Metropolis Hastings* met
 
 ** Usage **
 
-	```python
-	  k["Solver"] = "MCMC"
-	```
+```python
+  k["Solver"] = "MCMC"
+```
 	
 **Requirements:**
 

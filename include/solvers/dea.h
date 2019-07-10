@@ -22,9 +22,9 @@ and updating strategies [Brest2006](https://ieeexplore.ieee.org/document/4016057
 
 ** Usage **
 
-	```python
-	  k["Solver"] = "DEA"
-	```
+```python
+  k["Solver"] = "DEA"
+```
 	
 **Requirements:**
 

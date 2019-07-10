@@ -14,10 +14,10 @@ $$ p(d | \vartheta) = {\frac {1}{\sigma {\sqrt {2\pi }}}}e^{-{\frac {1}{2}}\left
 
 ** Usage **
 
-	```python
-	  k["Problem"] = "Bayesian"
-	  k["Bayesian"]["Likelihood"]["Type"] = "Reference"
-	```
+```python
+  k["Problem"] = "Bayesian"
+  k["Bayesian"]["Likelihood"]["Type"] = "Reference"
+```
 	
 **Requirements:**
 

@@ -22,9 +22,9 @@ This technique is also known as Sampling Importance Resampling in the Bayesian c
 
 ** Usage **
 
-	```python
-	  k["Solver"] = "TMCMC"
-	```
+```python
+  k["Solver"] = "TMCMC"
+```
 	
 **Requirements:**
 

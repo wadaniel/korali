@@ -24,9 +24,9 @@ CMAES works iteratively, evaluating a number $\lambda$ of samples per generation
 
 ** Usage **
 
-	```python
-	  k["Solver"] = "CMAES"
-	```
+```python
+  k["Solver"] = "CMAES"
+```
 
 **Base Requirements:**
 

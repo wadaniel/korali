@@ -10,10 +10,10 @@ Whereas with a *Direct Likelihood*, the function $p(d|\vartheta)$ is given direc
 
 ** Usage **
 
-	```python
-	  k["Problem"] = "Bayesian"
-	  k["Bayesian"]["Likelihood"]["Type"] = "Direct"
-	```
+```python
+  k["Problem"] = "Bayesian"
+  k["Bayesian"]["Likelihood"]["Type"] = "Direct"
+```
 	
 
 **Requirements:**

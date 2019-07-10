@@ -360,6 +360,7 @@ std::vector<variableSetting> _variableSettings;
  Korali::Variable* _uniformGenerator; /* Uniform random number generator */
 
  MCMC();
+ ~MCMC();
 
  // Korali Methods
  void initialize() override;

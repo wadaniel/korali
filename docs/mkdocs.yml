@@ -31,7 +31,7 @@ nav:
       - Solvers:
           - Optimizers:
             - CMA-ES: usage/solvers/cmaes.md
-            - Differential Evolution: usage/solvers/de.md
+            - DEA: usage/solvers/dea.md
           - Samplers:
             - MCMC: usage/solvers/mcmc.md
             - TMCMC: usage/solvers/tmcmc.md

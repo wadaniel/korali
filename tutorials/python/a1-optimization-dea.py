@@ -18,21 +18,20 @@ k.setModel(evaluateModel)
 
 # Selecting problem and solver types.
 k["Problem"] = "Direct Evaluation"
-k["Solver"]  = "DE" 
+k["Solver"]  = "DEA" 
 
-# Defining the problem's variables and their CMA-ES bounds.
+# Defining the problem's variables and their DEA bounds.
 k["Variables"][0]["Name"] = "X";
-k["Variables"][0]["DE"]["Lower Bound"] = -10.0;
-k["Variables"][0]["DE"]["Upper Bound"] = +10.0;
+k["Variables"][0]["DEA"]["Lower Bound"] = -10.0;
+k["Variables"][0]["DEA"]["Upper Bound"] = +10.0;
 
-# Configuring CMA-ES parameters
-k["DE"]["Objective"] = "Maximize"
-k["DE"]["Sample Count"] = 32
-
-k["DE"]["Termination Criteria"]["Max Generations"]["Value"] = 500
+# Configuring DEA parameters
+k["DEA"]["Objective"] = "Maximize"
+k["DEA"]["Sample Count"] = 32
+k["DEA"]["Termination Criteria"]["Max Generations"]["Value"] = 500
 
 # Setting output directory
-k["Result Directory"] = "_a1_optimization_de_result"
+k["Result Directory"] = "_a1_optimization_dea_result"
 
 # Running Korali
 k.run()

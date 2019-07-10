@@ -22,6 +22,11 @@ Korali::Solver::TMCMC::TMCMC()
  gsl_rng_set(range, _k->_seed++);
 }
 
+Korali::Solver::TMCMC::~TMCMC()
+{
+ gsl_rng_free(range);
+}
+
 void Korali::Solver::TMCMC::initialize()
 {
  // Allocating TMCMC memory

@@ -16,17 +16,17 @@ k = korali.initialize()
 k.setModel(evaluateModel)
 
 k["Problem"] = "Direct Evaluation"
-k["Solver"]  = "DE" 
+k["Solver"]  = "DEA" 
 
 k["Variables"][0]["Name"] = "X"
-k["Variables"][0]["DE"]["Lower Bound"] = -10.0
-k["Variables"][0]["DE"]["Upper Bound"] = +10.0
+k["Variables"][0]["DEA"]["Lower Bound"] = -10.0
+k["Variables"][0]["DEA"]["Upper Bound"] = +10.0
 
-k["DE"]["Objective"] = "Maximize"
-k["DE"]["Sample Count"] = 10
+k["DEA"]["Objective"] = "Maximize"
+k["DEA"]["Sample Count"] = 10
 
 # Setting output directory
-k["Result Directory"] = "_b1_restart_de"
+k["Result Directory"] = "_b1_restart_dea"
 
 # Reducing Output
 k["Termination Criteria"]["Max Generations"] = 500
@@ -37,6 +37,6 @@ k.run()
 print("\n\nRestart Now\n\n")
 
 # Now we loadState() to resume the same experiment from generation 5.
-k.loadState("_b1_restart_de/s00004.json")
+k.loadState("_b1_restart_dea/s00004.json")
 
 k.run()

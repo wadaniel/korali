@@ -367,6 +367,7 @@ std::vector<variableSetting> _variableSettings;
  gsl_rng  *range;
 
  TMCMC();
+ ~TMCMC();
 
   // Korali Methods
  void initialize() override;

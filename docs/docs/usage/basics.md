@@ -41,12 +41,12 @@ The Solver module generates samples for evaluation, performs the statistical ana
 
 	[Click here for detailed information on CMA-ES.](../solvers/cmaes)
 
-??? abstract "Differential Evolution"
+??? abstract "Differential Evolution Algorithm"
 
-    To select the Differential Evolution solver, use the following syntax:
+    To select the Differential Evolution Algorithm solver, use the following syntax:
 
 	```python
-	 k["Solver"] = "DE";
+	 k["Solver"] = "DEA";
 	```
 
 	[Click here for detailed information on Differential Evolution](../solvers/de)

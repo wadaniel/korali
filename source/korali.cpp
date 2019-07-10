@@ -185,7 +185,7 @@ void Korali::Engine::setConfiguration()
 
  std::string solverName = consume(_js, { "Solver" }, KORALI_STRING);
  if (solverName == "CMAES")  _solver = new Korali::Solver::CMAES();
- if (solverName == "DE")     _solver = new Korali::Solver::DE();
+ if (solverName == "DEA")    _solver = new Korali::Solver::DEA();
  if (solverName == "MCMC")   _solver = new Korali::Solver::MCMC();
  if (solverName == "TMCMC")  _solver = new Korali::Solver::TMCMC();
  if (_solver == nullptr) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Solver '%s'.", solverName.c_str()); exit(-1); }

@@ -29,6 +29,12 @@ Korali::Solver::MCMC::MCMC()
  _uniformGenerator->setDistribution(jsUniform);
 }
 
+Korali::Solver::MCMC::~MCMC()
+{
+ delete _gaussianGenerator;
+ delete _uniformGenerator;
+}
+
 void Korali::Solver::MCMC::runGeneration()
 {
  rejectionCount = 0;

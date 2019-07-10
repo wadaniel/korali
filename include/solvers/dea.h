@@ -1,5 +1,5 @@
-#ifndef _KORALI_SOLVERS_DE_H_
-#define _KORALI_SOLVERS_DE_H_
+#ifndef _KORALI_SOLVERS_DEA_H_
+#define _KORALI_SOLVERS_DEA_H_
 
 #include "solvers/base.h"
 #include <chrono>
@@ -8,14 +8,14 @@
 namespace Korali { namespace Solver {
 
 /******************************************************************************
-Module Name: Differential Evolution
+Module Name: Differential Evolution Algorithm
 Type: Solver, Optimizer
-Alias: DE
+Alias: DEA
 Description:
 his is an implementation of the *Differential Evolution Algorithm* algorithm,
 as published in [Storn1997](https://link.springer.com/article/10.1023/A:1008202821328.
 
-DE optimizes a problem by updating a population of candidate solutions through 
+DEA optimizes a problem by updating a population of candidate solutions through
 mutation and recombination. The update rules are simple and the objective 
 function must not be differentiable. Our implementation includes various adaption 
 and updating strategies [Brest2006](https://ieeexplore.ieee.org/document/4016057).
@@ -29,7 +29,7 @@ and updating strategies [Brest2006](https://ieeexplore.ieee.org/document/4016057
 Plotting:
 ******************************************************************************/
 
-class DE : public Base
+class DEA : public Base
 {
  public:
 
@@ -414,17 +414,18 @@ std::vector<variableSetting> _variableSettings;
 /******************************************************************************/
 
 
- // DE Methods
+ // DEA Methods
 
  Variable* _gaussianGenerator;
  Variable* _uniformGenerator;
 
- DE();
+ DEA();
+ ~DEA();
 
  void mutateSingle(size_t sampleIdx); /* sample individual */
  bool isFeasible(size_t sampleIdx) const; /* check if sample inside lower & upper bounds */
  void fixInfeasible(size_t sampleIdx); /* force sample inside lower & upper bounds */
- void updateSolver(); /* update states of DE */
+ void updateSolver(); /* update states of DEA */
  void evaluateSamples(); /* evaluate all samples until done */
 
  void initSamples();
@@ -444,4 +445,4 @@ std::vector<variableSetting> _variableSettings;
 
 } } // namespace Korali::Solver
 
-#endif // _KORALI_SOLVERS_DE_H_
+#endif // _KORALI_SOLVERS_DEA_H_

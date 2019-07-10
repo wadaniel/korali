@@ -32,11 +32,14 @@ void Korali::Problem::Bayesian::setConfiguration()
   if (likelihoodString == "Reference") { _likelihood = ReferenceLikelihood; foundLikelihoodType = true; }
   if (foundLikelihoodType == false) { fprintf(stderr, "[Korali] Error: Incorrect or no Likelihood Type selected: %s.\n", likelihoodString.c_str()); exit(-1); }
 
-  bool foundLikelihoodModel = false;
-  std::string likelihoodModelString = consume(_k->_js, { "Bayesian", "Likelihood", "Model" }, KORALI_STRING, "Undefined");
-  if (likelihoodModelString == "Additive Gaussian")          { _likelihoodModel = AdditiveGaussian;       foundLikelihoodModel = true; }
-  if (likelihoodModelString == "Multiplicative Gaussian")    { _likelihoodModel = MultiplicativeGaussian; foundLikelihoodModel = true; }
-  if (foundLikelihoodModel  == false) { fprintf(stderr, "[Korali] Error: Incorrect or no Likelihood Model selected: %s.\n", likelihoodString.c_str()); exit(-1); }
+  if ( _likelihood == ReferenceLikelihood )
+  {
+    bool foundLikelihoodModel = false;
+    std::string likelihoodModelString = consume(_k->_js, { "Bayesian", "Likelihood", "Model" }, KORALI_STRING, "Undefined");
+    if (likelihoodModelString == "Additive Gaussian")          { _likelihoodModel = AdditiveGaussian;       foundLikelihoodModel = true; }
+    if (likelihoodModelString == "Multiplicative Gaussian")    { _likelihoodModel = MultiplicativeGaussian; foundLikelihoodModel = true; }
+    if (foundLikelihoodModel  == false) { fprintf(stderr, "[Korali] Error: Incorrect or no Likelihood Model selected: %s.\n", likelihoodString.c_str()); exit(-1); }
+  }
 
   auto ref = consume(_k->_js, { "Bayesian", "Likelihood", "Reference Data" }, KORALI_ARRAY);
   _referenceDataSize = ref.size();

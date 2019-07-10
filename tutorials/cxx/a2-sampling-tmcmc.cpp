@@ -7,7 +7,7 @@ int main(int argc, char* argv[])
  k.setLikelihood([](Korali::ModelData& d) { evaluateModel(d.getVariables(), d.getResults()); });
 
  k["Problem"] = "Bayesian";
- k["Solver"] = "TMCMC";
+ k["Solver"]  = "TMCMC";
 
  k["Bayesian"]["Likelihood"]["Type"] = "Direct";
 
@@ -19,6 +19,6 @@ int main(int argc, char* argv[])
  k["TMCMC"]["Population Size"] = 5000;
 
  k["Result Directory"] = "_a2_sampling_tmcmc";
- 
+
  k.run();
 }

@@ -3,10 +3,12 @@ In this tutorial we show how to **optimize** directly from a given function.
 !!! info
 	The full Python codes for this tutorial can be found in:
 	[tutorials/python/a1-optimization-cmaes.py](https://github.com/cselab/skorali/blob/master/tutorials/python/a1-optimization-cmaes.py)
+	
 	[tutorials/python/a1-optimization-dea.py](https://github.com/cselab/skorali/blob/master/tutorials/python/a1-optimization-dea.py)
 
 	The full C++ code for this tutorial can be found in:
 	[tutorials/cxx/a1-optimization-cmaes.cpp](https://github.com/cselab/skorali/blob/master/tutorials/cxx/a1-optimization-cmaes.cpp)
+	
 	[tutorials/cxx/a1-optimization-dea.cpp](https://github.com/cselab/skorali/blob/master/tutorials/cxx/a1-optimization-dea.cpp)
 	
 ## Problem Setup

@@ -18,6 +18,7 @@ k.setModel(lambda koraliData: evaluateModel(koraliData, x))
 k["Problem"] = "Bayesian"
 
 k["Bayesian"]["Likelihood"]["Type"] = "Reference"
+k["Bayesian"]["Likelihood"]["Model"] = "Additive Gaussian"
 k["Bayesian"]["Likelihood"]["Reference Data"] = y
 
 k["Variables"][0]["Name"] = "a"

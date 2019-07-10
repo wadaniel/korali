@@ -23,6 +23,7 @@ k["Problem"] = "Bayesian"
 
 # Setting up the reference likelihood for the Bayesian Problem
 k["Bayesian"]["Likelihood"]["Type"] = "Reference"
+k["Bayesian"]["Likelihood"]["Model"] = "Additive Gaussian"
 k["Bayesian"]["Likelihood"]["Reference Data"] = y
 
 # Configuring the problem's variables and their prior distributions

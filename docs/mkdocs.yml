@@ -44,8 +44,8 @@ nav:
           - Rerefence: usage/models/reference.md
           - Constraint: usage/models/constraint.md
       - Results:
+          - Accessing Results: usage/results/#accessing-results
           - Plotting Results: usage/results/#plotting-results
-          - Exporting Results: usage/results/#exporting-results
           - Resume Execution: usage/results/#resume-execution
   - Publications: publications.md
   - About Us: aboutus.md

@@ -30,10 +30,17 @@ Korali application and calls the appropriate Korali plotting script:
 	a generation number as suffix and the corresponding extension (e.g., .png). Example
 	   -f myOutputFile
 	   
-## Exporting Results
+## Accessing Results
+
+### Within your Korali Application
 
 !!!warning
-	This feature is still under development
+	Daniel: Can you explain how and write an example as to how to access results here?
+
+### Exporting Results to Other Formats
+
+!!!warning
+	Daniel / George: How about developing one such tool?
 
 The Korali export tool converts Korali's JSON-based result information into a format readable by other applications (e.g., MATLAB).
 

@@ -231,8 +231,6 @@ bool Korali::Solver::MCMC::checkTermination()
  
 void Korali::Solver::MCMC::printGeneration()
 {
- if (chainLength % terminalOutputFrequency != 0) return;
- 
  if (_k->_verbosity >= KORALI_MINIMAL)
  {
   printf("--------------------------------------------------------------------\n");

@@ -58,26 +58,6 @@ class TMCMC : public Base
  public:
 
 /******************************************************************************
-Setting Name: Result Output Frequency
-Type: Solver Setting
-Default Value: 1
-Default Enabled:
-Description:
-Specifies the output frequency of intermediate result files.
-******************************************************************************/
-size_t resultOutputFrequency;
-
-/******************************************************************************
-Setting Name: Terminal Output Frequency
-Type: Solver Setting
-Default Value: 1
-Default Enabled:
-Description:
-Specifies the output frequency onto the terminal screen.
-******************************************************************************/
-size_t terminalOutputFrequency;
-
-/******************************************************************************
 Setting Name: Population Size
 Type: Solver Setting
 Default Value:

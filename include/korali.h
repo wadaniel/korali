@@ -52,7 +52,7 @@ class Engine {
  size_t currentGeneration;
  size_t maxGenerations;
  size_t consoleOutputFrequency;
- size_t fileOutputFrequency;
+ size_t fileOutputFrequency; //TODO: should be resultOutputFrequency (aligned with resultfolder) (DW)
  size_t functionEvaluationCount;
  size_t maxFunctionEvaluations;
  bool _isFinished;

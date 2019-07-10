@@ -344,7 +344,6 @@ bool DE::checkTermination()
 void DE::printGeneration()
 {
 
- if (_k->currentGeneration % _terminalOutputFrequency != 0) return;
  if (_k->_verbosity >= KORALI_NORMAL) printf("[Korali] Differential Evolution Generation %zu\n", _k->currentGeneration);
  
  if (_k->_verbosity >= KORALI_NORMAL)

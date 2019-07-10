@@ -228,7 +228,7 @@ bool _isViabilityRegime;
 /******************************************************************************
 Setting Name: Viability Sample Count
 Type: Solver Setting
-Default Value: 4
+Default Value: 2
 Default Enabled:
 Description:
 Specifies the number of samples per generation during the viability 
@@ -239,7 +239,7 @@ size_t _viabilitySampleCount;
 /******************************************************************************
 Setting Name: Viability Mu
 Type: Solver Setting
-Default Value: 2
+Default Value: 1
 Default Enabled:
 Description:
 Number of best samples used to update the covariance matrix and the mean 
@@ -282,7 +282,7 @@ double _covMatrixAdaptionStrength;
 /******************************************************************************
 Setting Name: Normal Vector Learning Rate
 Type: Solver Setting
-Default Value: 0.5
+Default Value: -1.0
 Default Enabled:
 Description:
 Learning rate of constraint normal vectors (must be in (0, 1]).
@@ -527,7 +527,7 @@ double _effectiveMu;
 /******************************************************************************
 Setting Name: Sigma Cumulation Factor
 Type: Internal Attribute
-Default Value: -1.0
+Default Value:
 Default Enabled:
 Description:
 increment for sigma, default calculated from muEffective and dimension 
@@ -914,7 +914,7 @@ Type: Internal Attribute
 Default Value:
 Default Enabled:
 Description:
-Best sample with without constraint violations (otherwise -1).
+Best sample without constraint violations (otherwise -1).
 ******************************************************************************/
 int _bestValidSample;
 
@@ -924,7 +924,8 @@ Type: Internal Attribute
 Default Value:
 Default Enabled:
 Description:
-Estimated Global Success Rate
+Estimated Global Success Rate, required for calibration of covariance matrix
+scaling factor updates.
 ******************************************************************************/
 double _globalSuccessRate;
 
@@ -967,16 +968,6 @@ Description:
 Number of constraint evaluations.
 ******************************************************************************/
 size_t _constraintEvaluationCount;
-
-/******************************************************************************
-Setting Name: Constraint Success Rates
-Type: Internal Attribute
-Default Value:
-Default Enabled:
-Description:
-Number of constraint evaluations.
-******************************************************************************/
-std::vector<double> _successRates;
 
 /******************************************************************************
 Setting Name: Viability Boundaries
@@ -1103,7 +1094,7 @@ By default, Korali sets this value to 30% of the domain width.
 double initialStdDev;
 
 /******************************************************************************
-Setting Name: Minimum Stardard Deviation Changes
+Setting Name: Minimum Standard Deviation Changes
 Type: Variable Setting
 Default Value: 0.0
 Default Enabled:
@@ -1144,7 +1135,6 @@ std::vector<variableSetting> _variableSettings;
  // Private CCMA-ES-Specific Methods
  void initMuWeights(size_t numsamples); /* init _muWeights and dependencies */
  void initCovariance(); /* init sigma, C and B */
- void initCovCorrectionParams(); /* init beta and cv */
  void checkMeanAndSetRegime(); /* check if mean inside valid domain, if yes, update internal vars */
  void updateConstraints();
  void updateViabilityBoundaries(); /* update & shrink viability boundaries */

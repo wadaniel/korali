@@ -70,6 +70,9 @@ void CMAES::initialize()
 
  _chiN = sqrt((double) _k->N) * (1. - 1./(4.*_k->N) + 1./(21.*_k->N*_k->N));
 
+ _constraintsDefined = (_k->_fconstraints.size() > 0);
+ if(_constraintsDefined) _isViabilityRegime = true;
+
  if(_isViabilityRegime) {
      _currentSampleCount  = _viabilitySampleCount;
      _currentSampleMu = _viabilityMu;
@@ -107,6 +110,7 @@ void CMAES::initialize()
 
  _transformedSamples.resize(s_max*_k->N);
  
+
  if (_objective == "Maximize")     _evaluationSign = 1.0;
  else if(_objective == "Minimize") _evaluationSign = -1.0;
  else { fprintf(stderr,"[Korali] Warning: Objective must be either be initialized to \'Maximize\' or \'Minimize\' (is %s).\n", _objective.c_str()); }         
@@ -114,27 +118,24 @@ void CMAES::initialize()
  // Initailizing Mu
  _muWeights.resize(mu_max);
 
- _constraintsDefined = (_k->_fconstraints.size() > 0);
  
  // CCMA-ES variables
  if (_constraintsDefined)
  {
-  if( (_normalVectorLearningRate <= 0.0) || (_normalVectorLearningRate > 1.0) )
-        { fprintf( stderr, "[Korali] CMA-ES Error: Invalid Normal Vector Learning Rate (%f), must be greater than 0.0 and less than 1.0\n", _normalVectorLearningRate); exit(-1); }
-  if( (_globalSuccessLearningRate <= 0.0) || (_globalSuccessLearningRate > 1.0) ) { fprintf( stderr, "[Korali] CMA-ES Error: Invalid Global Success Learning Rate (%f), must be greater than 0.0 and less than 1.0\n",  _globalSuccessLearningRate ); exit(-1); }
+  if( (_globalSuccessLearningRate <= 0.0) || (_globalSuccessLearningRate > 1.0) ) 
+        { fprintf( stderr, "[Korali] CMA-ES Error: Invalid Global Success Learning Rate (%f), must be greater than 0.0 and less than 1.0\n",  _globalSuccessLearningRate ); exit(-1); }
   if( (_targetSuccessRate <= 0.0) || (_targetSuccessRate > 1.0) )
-    { fprintf( stderr, "[Korali] CMA-ES Error: Invalid Target Success Rate (%f), must be greater than 0.0 and less than 1.0\n",  _targetSuccessRate ); exit(-1); }
-  if(_covMatrixAdaptionStrength <= 0.0) { fprintf( stderr, "[Korali] CMA-ES Error: Invalid Adaption Size (%f), must be greater than 0.0\n", _covMatrixAdaptionStrength ); exit(-1); }
+        { fprintf( stderr, "[Korali] CMA-ES Error: Invalid Target Success Rate (%f), must be greater than 0.0 and less than 1.0\n",  _targetSuccessRate ); exit(-1); }
+  if(_covMatrixAdaptionStrength <= 0.0) 
+        { fprintf( stderr, "[Korali] CMA-ES Error: Invalid Adaption Size (%f), must be greater than 0.0\n", _covMatrixAdaptionStrength ); exit(-1); }
 
+  _globalSuccessRate = 0.5;
   _bestValidSample = -1;
   _constraintEvaluationCount = 0;
   _adaptationCount = 0;
   _maxViolationCount = 0;
-  _sampleViolationCounts.resize(_currentSampleCount);
+  _sampleViolationCounts.resize(s_max);
   _viabilityBoundaries.resize(_k->_fconstraints.size());
-
-  _successRates.resize(_k->_fconstraints.size());
-  std::fill_n( std::begin(_successRates), _k->_fconstraints.size(), 0.5);
 
   _viabilityImprovement.resize(s_max);
   _viabilityIndicator.resize(_k->_fconstraints.size());
@@ -147,10 +148,14 @@ void CMAES::initialize()
   for (size_t i = 0; i < _k->_fconstraints.size(); i++) _v[i].resize(_k->N);
 
   _bestEverConstraintEvaluation.resize(_k->_fconstraints.size());
+
+  _normalVectorLearningRate = 1.0/(2.0+_k->N);
+  _beta = _covMatrixAdaptionStrength/(_k->N+2.);
+
  }
 
  // Setting algorithm internal variables
- if (_constraintsDefined) { initMuWeights(_viabilityMu); initCovCorrectionParams(); }
+ if (_constraintsDefined) { initMuWeights(_viabilityMu); }
  else initMuWeights(_muValue);
 
  initCovariance();
@@ -231,45 +236,24 @@ void CMAES::initMuWeights(size_t numsamplesmu)
  _effectiveMu = s1*s1/s2;
 
  for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] /= s1;
-
- // Setting Mu Covariance
- //if (_muCovarianceIn < 1) _muCovariance = _effectiveMu;
- //else                     _muCovariance = _muCovarianceIn;
  
- /*
- // Setting Covariance Matrix Learning Rate
- double l1 = 2. / ((_k->N+1.4142)*(_k->N+1.4142));
- double l2 = (2.*_effectiveMu-1.) / ((_k->N+2.)*(_k->N+2.)+_effectiveMu);
- l2 = (l2 > 1) ? 1 : l2;
- l2 = (1./_muCovariance) * l1 + (1.-1./_muCovariance) * l2;
-
- _covarianceMatrixLearningRate = _covMatrixLearningRateIn;
- if (_covarianceMatrixLearningRate < 0 || _covarianceMatrixLearningRate > 1)  _covarianceMatrixLearningRate = l2;
- */
-
  // Setting Cumulative Covariancea
  if( (_initialCumulativeCovariance <= 0) || (_initialCumulativeCovariance > 1) ) _cumulativeCovariance = (4.0 + _effectiveMu/(1.0*_k->N)) / (_k->N+4.0 + 2.0*_effectiveMu/(1.0*_k->N));
  else _cumulativeCovariance = _initialCumulativeCovariance;
 
  // Setting Sigma Cumulation Factor
  _sigmaCumulationFactor = _initialSigmaCumulationFactor;
- if (_sigmaCumulationFactor <= 0 || _sigmaCumulationFactor >= 1) _sigmaCumulationFactor = (_effectiveMu + 2.0) / (_k->N + _effectiveMu + 3.0);
+ if (_sigmaCumulationFactor <= 0 || _sigmaCumulationFactor >= 1) 
+    if (_constraintsDefined) _sigmaCumulationFactor = sqrt(_effectiveMu) / ( sqrt(_effectiveMu) + sqrt(_k->N) );
+    else                     _sigmaCumulationFactor = (_effectiveMu + 2.0) / (_k->N + _effectiveMu + 3.0);
 
  // Setting Damping Factor
  _dampFactor = _initialDampFactor;
  if (_dampFactor <= 0.0)
-     _dampFactor = (1.0 + 2*std::max(0.0, sqrt((_effectiveMu-1.0)/(_k->N+1.0)) - 1))  /* basic factor */
-        // * std::max(0.3, 1. - (double)_k->N / (1e-6+std::min(_termCondMaxGenerations, _termCondMaxFitnessEvaluations/_viabilitySampleCount))) /* modification for short runs */
-        + _sigmaCumulationFactor; /* minor increment */
+     _dampFactor = (1.0 + 2*std::max(0.0, sqrt((_effectiveMu-1.0)/(_k->N+1.0)) - 1)) + _sigmaCumulationFactor;
 
 }
 
-void CMAES::initCovCorrectionParams()
-{
-  // Setting beta
-  _normalVectorLearningRate  = 1.0/(2.0+(double)_currentSampleCount);
-  _beta = _covMatrixAdaptionStrength/(_currentSampleCount+2.);
-}
 
 void CMAES::initCovariance()
 {
@@ -341,7 +325,6 @@ void CMAES::checkMeanAndSetRegime()
 
   _currentBestFitness = -std::numeric_limits<double>::max();
   initMuWeights(_currentSampleMu);
-  initCovCorrectionParams();
   initCovariance();
 }
 
@@ -552,7 +535,6 @@ void CMAES::updateDistribution()
 
    if ( _previousBestFitness == _currentBestFitness ) _globalSuccessRate = (1-_globalSuccessLearningRate)*_globalSuccessRate;
    else _globalSuccessRate = (1-_globalSuccessLearningRate)*_globalSuccessRate + _globalSuccessLearningRate;
-   //else for(size_t c = 0; c < _k->_fconstraints.size(); c++) if( _successRates[c] < 0.5 ) { _globalSuccessRate = (1-_globalSuccessLearningRate)*_globalSuccessRate; break; }
    _sigma *= exp(1.0/_dampFactor*(_globalSuccessRate-(_targetSuccessRate/(1.0-_targetSuccessRate))*(1-_globalSuccessRate)));
  }
  else
@@ -640,9 +622,8 @@ void CMAES::handleConstraints()
   for(size_t i = 0; i < _currentSampleCount; ++i) if (_sampleViolationCounts[i] > 0)
   {
     //update _v
-    for( size_t c = 0; c < _k->_fconstraints.size(); c++ )
-      if ( _viabilityIndicator[c][i] == true )
-      {
+    for( size_t c = 0; c < _k->_fconstraints.size(); c++ ) if ( _viabilityIndicator[c][i] == true )
+    {
         _adaptationCount++;
 
         double v2 = 0;
@@ -656,12 +637,7 @@ void CMAES::handleConstraints()
             Ctmp[d*_k->N+e] = Ctmp[d*_k->N+e] - ((_beta * _beta * _v[c][d]*_v[c][e])/(v2*_sampleViolationCounts[i]*_sampleViolationCounts[i]));
 
         _isEigenSystemUpdate = false;
-        _successRates[c] = (1.0-_globalSuccessLearningRate)*_successRates[c];
-      }
-      else
-      {
-        _successRates[c] = (1.0-_globalSuccessLearningRate)*_successRates[c]+_globalSuccessLearningRate/_currentSampleCount;
-      }
+    }
    }
 
   updateEigensystem(Ctmp);

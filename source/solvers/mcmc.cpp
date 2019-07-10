@@ -222,7 +222,7 @@ bool Korali::Solver::MCMC::checkTermination()
  bool isFinished = false;
  if ( databaseEntryCount == maxChainLength)
  {
-  printf("[Korali] Chainlength (%zu) reached.\n",  chainLength);
+	 if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Chainlength (%zu) reached.\n",  chainLength);
   isFinished = true;
  }
 

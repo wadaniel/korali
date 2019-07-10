@@ -20,6 +20,48 @@ CMAES::CMAES()
  _gaussianGenerator->setDistribution(jsGaussian);
 }
 
+CMAES::~CMAES()
+{
+	delete _gaussianGenerator;
+
+	_samplePopulation.clear();
+	rgpc.clear(); rgpc.resize(0);
+	rgps.clear(); rgps.resize(0);
+	rgdTmp.clear(); rgdTmp.resize(0);
+	rgBDz.clear(); rgBDz.resize(0);
+	_rgxMean.clear(); _rgxMean.resize(0);
+	rgxold.clear(); rgxold.resize(0);
+	_rgxBestEver.clear(); _rgxBestEver.resize(0);
+	axisD.clear(); axisD.resize(0);
+	axisDtmp.clear(); axisDtmp.resize(0);
+	_currentBestVector.clear(); _currentBestVector.resize(0);
+	_sortingIndex.clear(); _sortingIndex.resize(0);
+	_isInitializedSample.clear(); _isInitializedSample.resize(0);
+	_fitnessVector.clear(); _fitnessVector.resize(0);
+	C.clear(); C.resize(0);
+	Ctmp.clear(); Ctmp.resize(0);
+	B.clear(); B.resize(0);
+	Btmp.clear(); Btmp.resize(0);
+	Z.clear(); Z.resize(0);
+	BDZ.clear(); BDZ.resize(0);
+	_transformedSamples.clear(); _transformedSamples.resize(0);
+	_muWeights.clear(); _muWeights.resize(0);
+	_sampleViolationCounts.clear(); _sampleViolationCounts.resize(0);
+	_viabilityBoundaries.clear(); _viabilityBoundaries.resize(0);
+	_successRates.clear(); _successRates.resize(0);
+	_viabilityImprovement.clear(); _viabilityImprovement.resize(0);
+
+  for (size_t c = 0; c < _k->_fconstraints.size(); c++) { _viabilityIndicator[c].clear(); _viabilityIndicator[c].resize(0); }
+  for (size_t c = 0; c < _k->_fconstraints.size(); c++) { _constraintEvaluations[c].clear(); _constraintEvaluations[c].resize(0); }
+	_viabilityIndicator.clear(); _viabilityIndicator.resize(0);
+	_constraintEvaluations.clear(); _constraintEvaluations.resize(0);
+
+  for (size_t i = 0; i < _k->_fconstraints.size(); i++) { _v[i].clear(); _v[i].resize(0); }
+  _v.clear(); _v.resize(0);
+
+  _bestEverConstraintEvaluation.clear(); _bestEverConstraintEvaluation.resize(0);
+}
+
 
 void CMAES::initialize()
 {
@@ -667,20 +709,20 @@ bool CMAES::checkTermination()
  if ( _termCondMinFitnessEnabled && (_isViabilityRegime == false) && (_k->currentGeneration > 1) && (_currentBestFitness >= _termCondMinFitness) )
  {
   isFinished = true;
-  printf("[Korali] Min fitness value (%+6.3e) > (%+6.3e).\n",  _currentBestFitness, _termCondMinFitness);
+  if(_k->_verbosity >= KORALI_MINIMAL)  printf("[Korali] Min fitness value (%+6.3e) > (%+6.3e).\n",  _currentBestFitness, _termCondMinFitness);
  }
  
  if ( _termCondMaxFitnessEnabled && (_isViabilityRegime == false) && (_k->currentGeneration > 1) && (_currentBestFitness >= _termCondMaxFitness) )
  {
   isFinished = true;
-  printf("[Korali] Max fitness value (%+6.3e) > (%+6.3e)\n",  _currentBestFitness, _termCondMaxFitness);
+  if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Max fitness value (%+6.3e) > (%+6.3e)\n",  _currentBestFitness, _termCondMaxFitness);
  }
 
  double range = fabs(_currentFunctionValue - _previousFunctionValue);
  if ( _termCondMinFitnessDiffThresholdEnabled && (_k->currentGeneration > 1) && (range <= _termCondMinFitnessDiffThreshold) )
  {
   isFinished = true;
-  printf("[Korali] Function value differences (%+6.3e) < (%+6.3e)\n",  range, _termCondMinFitnessDiffThreshold);
+  if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Function value differences (%+6.3e) < (%+6.3e)\n",  range, _termCondMinFitnessDiffThreshold);
  }
 
  size_t idx;
@@ -693,14 +735,14 @@ bool CMAES::checkTermination()
   
   if (cTemp == _k->N) {
    isFinished = true;
-   printf("[Korali] Object variable changes < %+6.3e\n", _termCondMinStandardDeviation * _variableSettings[idx].initialStdDev);
+   if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Object variable changes < %+6.3e\n", _termCondMinStandardDeviation * _variableSettings[idx].initialStdDev);
   }
 
   for(idx = 0; idx <_k->N; ++idx )
    if ( _termCondMaxStandardDeviationEnabled && (_sigma * sqrt(C[idx*_k->N+idx]) > _termCondMaxStandardDeviation * _variableSettings[idx].initialStdDev) )
    {
     isFinished = true;
-    printf("[Korali] Standard deviation increased by more than %7.2e, larger initial standard deviation recommended \n", _termCondMaxStandardDeviation * _variableSettings[idx].initialStdDev);
+    if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Standard deviation increased by more than %7.2e, larger initial standard deviation recommended \n", _termCondMaxStandardDeviation * _variableSettings[idx].initialStdDev);
     break;
    }
  }
@@ -708,7 +750,7 @@ bool CMAES::checkTermination()
  if ( _termCondMaxCovMatrixConditionEnabled && (_maxCovarianceEigenvalue >= _minCovarianceEigenvalue * _termCondMaxCovMatrixCondition) )
  {
    isFinished = true;
-   printf("[Korali] Maximal condition number %7.2e reached. _maxCovarianceEigenvalue=%7.2e, minEig=%7.2e, _maxDiagCElement=%7.2e, _minDiagCElement=%7.2e\n",
+   if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Maximal condition number %7.2e reached. _maxCovarianceEigenvalue=%7.2e, minEig=%7.2e, _maxDiagCElement=%7.2e, _minDiagCElement=%7.2e\n",
                                 _termCondMaxCovMatrixCondition, _maxCovarianceEigenvalue, _minCovarianceEigenvalue, _maxDiagCElement, _minDiagCElement);
  }
 
@@ -729,7 +771,7 @@ bool CMAES::checkTermination()
     if (iKoo == _k->N)
     {
       isFinished = true;
-      printf("[Korali] Standard deviation %f*%7.2e in principal axis %ld without effect.\n", _termCondMinStandardDeviationStepFactor, _sigma*axisD[iAchse], iAchse);
+      if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Standard deviation %f*%7.2e in principal axis %ld without effect.\n", _termCondMinStandardDeviationStepFactor, _sigma*axisD[iAchse], iAchse);
       break;
     }
   }
@@ -742,7 +784,7 @@ bool CMAES::checkTermination()
   if (_rgxMean[iKoo] == _rgxMean[iKoo] + _termCondMinStandardDeviationStepFactor*_sigma*sqrt(C[iKoo*_k->N+iKoo]) )
   {
    isFinished = true;
-   printf("[Korali] Standard deviation %f*%7.2e in coordinate %ld without effect.\n", _termCondMinStandardDeviationStepFactor, _sigma*sqrt(C[iKoo*_k->N+iKoo]), iKoo);
+   if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Standard deviation %f*%7.2e in coordinate %ld without effect.\n", _termCondMinStandardDeviationStepFactor, _sigma*sqrt(C[iKoo*_k->N+iKoo]), iKoo);
    break;
   }
 
@@ -751,7 +793,7 @@ bool CMAES::checkTermination()
  if( _termCondMaxGenerationsEnabled && (_k->currentGeneration >= _termCondMaxGenerations) )
  {
   isFinished = true;
-  printf("[Korali] Maximum number of Generations reached (%lu).\n", _termCondMaxGenerations);
+  if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Maximum number of Generations reached (%lu).\n", _termCondMaxGenerations);
  }
 
  return isFinished;

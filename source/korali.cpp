@@ -265,6 +265,12 @@ void Korali::Engine::run()
   _problem->finalize();
   _conduit->finalize();
 
+  delete _solver;  _solver  = nullptr;
+  delete _problem; _problem = nullptr;
+  delete _conduit; _conduit = nullptr;
+  for (size_t i = 0; i < N; i++) delete _variables[i];
+  _variables.clear();
+
   if(_verbosity >= KORALI_MINIMAL) printf("[Korali] Total Generations: %lu\n", currentGeneration);
   if(_verbosity >= KORALI_MINIMAL) printf("[Korali] Total Function Evaluations: %lu\n", functionEvaluationCount);
   if(_verbosity >= KORALI_MINIMAL) printf("[Korali] Elapsed Time: %.3fs\n", std::chrono::duration<double>(endTime-startTime).count());

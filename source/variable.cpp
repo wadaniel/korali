@@ -13,11 +13,12 @@ Korali::Variable::Variable()
  _seed = 0;
  _distributionType = KoraliDefaultDistribution;
  _isLogSpace = false;
+ _range = gsl_rng_alloc (gsl_rng_default);
 }
 
 Korali::Variable::~Variable()
 {
-
+ gsl_rng_free(_range);
 }
 
 /************************************************************************/
@@ -74,7 +75,6 @@ void Korali::Variable::setDistribution(nlohmann::json& js)
  }
 
  _seed = consume(js, { "Seed" }, KORALI_NUMBER);
- _range = gsl_rng_alloc (gsl_rng_default);
  gsl_rng_set(_range, _seed);
 
  if (_distributionType == KoraliCauchyDistribution)      { _aux = -gsl_sf_log( _b * M_PI );}

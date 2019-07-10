@@ -1123,6 +1123,7 @@ std::vector<variableSetting> _variableSettings;
  Variable* _gaussianGenerator;
 
  CMAES();
+ ~CMAES();
 
  void sampleSingle(size_t sampleIdx); /* sample individual */
  void evaluateSamples(); /* evaluate all samples until done */

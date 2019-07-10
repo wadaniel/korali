@@ -3,7 +3,10 @@
 
 int main(int argc, char* argv[])
 {
+ for (int i = 0; i < 11; i++)
+{
  auto k = Korali::Engine();
+
  k.setModel([](Korali::ModelData& d) { evaluateModel(d.getVariables(), d.getResults()); });
 
  k["Problem"] = "Direct Evaluation";
@@ -18,7 +21,8 @@ int main(int argc, char* argv[])
 
  k["CMAES"]["Termination Criteria"]["Max Generations"]["Value"] = 500;
 
+ k["Verbosity"] = "Silent";
  k["Result Directory"] = "_a1_optimization_cmaes_result";
- 
  k.run();
+ }
 }

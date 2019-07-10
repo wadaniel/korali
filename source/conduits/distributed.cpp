@@ -25,7 +25,7 @@ void Distributed::initialize()
 
  if (hasCommunicationLayer == false)
  {
-  fprintf(stderr, "[Korali] Error: Distributed conduit selected but no communication library (e.g., MPI, UPC++) was configured during installation\n.");
+  fprintf(stderr, "[Korali] Error: Distributed conduit selected but no communication library (e.g., MPI) was configured during installation\n.");
   fprintf(stderr, "[Korali] Please re-install Korali with support for communication libraries\n.");
   exit(-1);
  }

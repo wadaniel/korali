@@ -13,13 +13,20 @@ Module Name: Covariance Matrix Adaptation Evolution Strategy
 Type: Solver, Optimizer
 Alias: CMAES
 Description:
-### Base CMA-ES
+### Base CMAES
 
 This is the implementation of the *Covariance Matrix Adaptation Evolution Strategy*, as published in [Hansen2006](https://doi.org/10.1007/3-540-32494-1_4).
 
 In an evolution strategy, new candidate solutions are sampled according to a multivariate normal distribution in $\mathbb {R} ^{n}$. Recombination amounts to selecting a new mean value for the distribution. Mutation amounts to adding a random vector, a perturbation with zero mean. Pairwise dependencies between the variables in the distribution are represented by a covariance matrix. The covariance matrix adaptation (CMA) is a method to update the covariance matrix of this distribution.
 
-CMA-ES works iteratively, evaluating a number $\lambda$ of samples per generation, and improving the covariance matrix for the samples in the next generation.
+CMAES works iteratively, evaluating a number $\lambda$ of samples per generation, and improving the covariance matrix for the samples in the next generation.
+
+
+** Usage **
+
+	```python
+	  k["Solver"] = "CMAES"
+	```
 
 **Base Requirements:**
 
@@ -27,11 +34,11 @@ CMA-ES works iteratively, evaluating a number $\lambda$ of samples per generatio
 + The *Initial Mean* needs to be defined for every variable.
 + The *Initial Standard Deviation* needs to be defined for every variable.
 
-### Constrained CMA-ES
+### Constrained CMAES
 
 This solver also implements the *Constrained Covariance Matrix Adaptation Evolution Strategy*, as published in [Arampatzis2019](https://dl.acm.org/citation.cfm?doid=3324989.3325725).
 
-CCMA-ES is an extension of [CMA-ES](/usage/solvers/optimizers/cmaes/) for constrained optimization problems. It uses the principle of *viability boundaries* to find an initial mean vector for the proposal distribution that does not violate constraints, and secondly it uses a  *constraint handling technique* to efficiently adapt the proposal distribution to the constraints.
+CCMAES is an extension of [CMAES](/usage/solvers/optimizers/cmaes/) for constrained optimization problems. It uses the principle of *viability boundaries* to find an initial mean vector for the proposal distribution that does not violate constraints, and secondly it uses a  *constraint handling technique* to efficiently adapt the proposal distribution to the constraints.
 
 ** Constraint Requirements:**
 
@@ -41,14 +48,14 @@ CCMA-ES is an extension of [CMA-ES](/usage/solvers/optimizers/cmaes/) for constr
 + The *Initial Standard Deviation* needs to be defined for every variable.
 ******************************************************************************
 Plotting:
-Here we explain the **CMA-ES** result plot in further detail and how it can be
+Here we explain the **CMAES** result plot in further detail and how it can be
 used to validate your optimization.
 
-The module korali.plotter (run with `python3 -m korali.plotter`) command visualizes some of the most meaningful states of CMA-ES
+The module korali.plotter (run with `python3 -m korali.plotter`) command visualizes some of the most meaningful states of CMAES
 stored in the result files in the output directory (`_korali_result`).
 To plot a running simulation use the command `python3 -m korali.plotter --live` for incremental plots.
 
-In the figure below we see the evolution of the CMA-ES algorithm during 100
+In the figure below we see the evolution of the CMAES algorithm during 100
 optimization steps, respectively 1000 function evaluations (here the sample size
 is 10), of the negative 2-dimensional [Rosenbrock](https://en.wikipedia.org/wiki/Rosenbrock_function) function.
 
@@ -68,7 +75,7 @@ is 10), of the negative 2-dimensional [Rosenbrock](https://en.wikipedia.org/wiki
           treated by normalizing the domain of the objective variables.
 
 * $|| \mathbf{p}_{\sigma} ||$ (black):  The evolution path is a measure of the travel
-      direction of the mean of the proposal distribution of CMA-ES. The
+      direction of the mean of the proposal distribution of CMAES. The
       Euclidean norm of the evolution path plays an important rule in the Sigma
       updating rule.
 
@@ -78,11 +85,11 @@ is 10), of the negative 2-dimensional [Rosenbrock](https://en.wikipedia.org/wiki
 
 * $| F - F_{best}|$ (crosses) : At every generation we calculate the absolute
       difference betwen the current best function evaluation ($F$) and the overall
-      best found evaluation ($F_{best}$) of CMA-ES. The crosses appear only if the
+      best found evaluation ($F_{best}$) of CMAES. The crosses appear only if the
       current generation does not impeove the overall result, i.e. $F < F_{best}$
       in current generation and $| F - F_{best} |$ is greater 0.
 
-A good indicator of convergance of CMA-ES to the global maximum is given by a steady decrease of $| F - F_{best} |$.
+A good indicator of convergance of CMAES to the global maximum is given by a steady decrease of $| F - F_{best} |$.
 
 **Quadrant 2**: Objective Variables: This plot shows the evolution of the objective variables corresponding to the
 evaluation of $|F|$. A line per each dimension of the optimization problem is plotted.
@@ -101,17 +108,17 @@ dimensions and with 10 local maxima.
 [We know](http://www-optima.amp.i.kyoto-u.ac.jp/member/student/hedar/Hedar_files/TestGO_files/Page2354.htm)
 that the Shekel function has a global minimum at (4, 4, 4, 4),
 respectivel maximum in the negative case.
-In quadrant 2 we see that CMA-ES converged to a different result.
+In quadrant 2 we see that CMAES converged to a different result.
 
 In general the global optimum is not known, following observations indicate
-ill convergence. Restarting CMA-ES from different starting points as well as
-tuning CMA-ES internal parameters might improve optimization:
+ill convergence. Restarting CMAES from different starting points as well as
+tuning CMAES internal parameters might improve optimization:
 
 * Increasing condition (quadrant 1) of the covariance matrix of the proposal
   distribution, respectively diverging axes lenghts and standard deviations
   (quadrants 3 & 4).
 
-* None decreasing values for $| F - F_{best} |$. Arguably CMA-ES found a better
+* None decreasing values for $| F - F_{best} |$. Arguably CMAES found a better
   function evaluation on a different hill but the algorithm is trapped (the
   objective variables stabilized sampling does not overcome the saddle points).
 
@@ -875,7 +882,7 @@ Flag determining if the covariance eigensystem is up to date.
 ******************************************************************************/
 bool _isEigenSystemUpdate;
 
-// Private CCMA-ES-Specific Variables
+// Private CCMAES-Specific Variables
 
 /******************************************************************************
 Setting Name: Viability Indicator
@@ -1118,7 +1125,7 @@ std::vector<variableSetting> _variableSettings;
 
  void sampleSingle(size_t sampleIdx); /* sample individual */
  void evaluateSamples(); /* evaluate all samples until done */
- void adaptC(int hsig); /* CMA-ES covariance matrix adaption */
+ void adaptC(int hsig); /* CMAES covariance matrix adaption */
  void updateEigensystem(std::vector<double>& M, int flgforce = 1);
  void eigen(size_t N, std::vector<double>& C, std::vector<double>& diag, std::vector<double>& Q) const;
  void sort_index(const std::vector<double>& vec, std::vector<size_t>& _sortingIndex, size_t n) const;
@@ -1132,7 +1139,7 @@ std::vector<variableSetting> _variableSettings;
  void runGeneration() override;
  void processSample(size_t sampleId, double fitness) override;
 
- // Private CCMA-ES-Specific Methods
+ // Private CCMAES-Specific Methods
  void initMuWeights(size_t numsamples); /* init _muWeights and dependencies */
  void initCovariance(); /* init sigma, C and B */
  void checkMeanAndSetRegime(); /* check if mean inside valid domain, if yes, update internal vars */

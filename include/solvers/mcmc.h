@@ -16,6 +16,12 @@ This is an implementation of the *Delayed Rejection Adaptive Metropolis* algorit
 as published in [Haario2006](https://link.springer.com/article/10.1007%2Fs11222-006-9438-0).
 This solver can also be configured to run the standard *Metropolis Hastings* method.
 
+** Usage **
+
+	```python
+	  k["Solver"] = "MCMC"
+	```
+	
 **Requirements:**
 
 + The *Chain Length*, i.e. the number of generated samples.

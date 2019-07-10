@@ -12,6 +12,13 @@ Currently, Korali uses a Gaussian estimator for the error component of the likel
 
 $$ p(d | \vartheta) = {\frac {1}{\sigma {\sqrt {2\pi }}}}e^{-{\frac {1}{2}}\left((x-\mu )/\sigma \right)^{2}} $$
 
+** Usage **
+
+	```python
+	  k["Problem"] = "Bayesian"
+	  k["Bayesian"]["Likelihood"]["Type"] = "Reference"
+	```
+	
 **Requirements:**
 
 + At least one computational variable as input for the computational model.

@@ -20,6 +20,12 @@ mutation and recombination. The update rules are simple and the objective
 function must not be differentiable. Our implementation includes various adaption 
 and updating strategies [Brest2006](https://ieeexplore.ieee.org/document/4016057).
 
+** Usage **
+
+	```python
+	  k["Solver"] = "DEA"
+	```
+	
 **Requirements:**
 
 + The *Sample Count* needs to be defined..

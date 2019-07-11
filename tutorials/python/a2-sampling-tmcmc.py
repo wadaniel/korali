@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-## In this example, we demonstrate how Korali samples the posterior
-## distribution in a bayesian problem where the likelihood
-## is provided directly by the computational model.
-## In this case, we use the TMCMC method.
+# In this example, we demonstrate how Korali samples the posterior
+# distribution in a bayesian problem where the likelihood
+# is provided directly by the computational model.
+# In this case, we use the TMCMC method.
 
 # Importing computational model
 import sys

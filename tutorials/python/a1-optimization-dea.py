@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-## In this example, we demonstrate how Korali finds values for the
-## variables that maximize the objective function, given by a
-## user-provided computational model.
+# In this example, we demonstrate how Korali finds values for the
+# variables that maximize the objective function, given by a
+# user-provided computational model.
 
 # Importing computational model
 import sys
@@ -18,7 +18,7 @@ k.setModel(evaluateModel)
 
 # Selecting problem and solver types.
 k["Problem"] = "Direct Evaluation"
-k["Solver"]  = "DEA" 
+k["Solver"]  = "DEA"
 
 # Defining the problem's variables and their DEA bounds.
 k["Variables"][0]["Name"] = "X";
@@ -35,5 +35,3 @@ k["Result Directory"] = "_a1_optimization_dea_result"
 
 # Running Korali
 k.run()
-
-

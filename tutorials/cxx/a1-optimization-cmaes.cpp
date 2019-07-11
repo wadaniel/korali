@@ -1,28 +1,37 @@
+// In this example, we demonstrate how Korali finds values for the
+// variables that maximize the objective function, given by a
+// user-provided computational model.
+
 #include "korali.h"
 #include "model/evaluateModel.h"
 
 int main(int argc, char* argv[])
 {
- for (int i = 0; i < 11; i++)
-{
- auto k = Korali::Engine();
+  // Starting Korali's Engine
+  auto k = Korali::Engine();
 
- k.setModel([](Korali::ModelData& d) { evaluateModel(d.getVariables(), d.getResults()); });
+  // Setting computational model
+  k.setModel([](Korali::ModelData& d) { evaluateModel(d.getVariables(), d.getResults()); });
 
- k["Problem"] = "Direct Evaluation";
- k["Solver"]  = "CMAES";
+  // Selecting problem and solver types.
+  k["Problem"] = "Direct Evaluation";
+  k["Solver"]  = "CMAES";
 
- k["Variables"][0]["Name"] = "X";
- k["Variables"][0]["CMAES"]["Lower Bound"] = -10.0;
- k["Variables"][0]["CMAES"]["Upper Bound"] = +10.0;
+  // Defining the problem's variables and their CMA-ES bounds.
+  k["Variables"][0]["Name"] = "X";
+  k["Variables"][0]["CMAES"]["Lower Bound"] = -10.0;
+  k["Variables"][0]["CMAES"]["Upper Bound"] = +10.0;
 
- k["CMAES"]["Objective"] = "Maximize";
- k["CMAES"]["Sample Count"] = 32;
+  // Configuring CMA-ES parameters
+  k["CMAES"]["Objective"] = "Maximize";
+  k["CMAES"]["Sample Count"] = 32;
 
- k["CMAES"]["Termination Criteria"]["Max Generations"]["Value"] = 500;
+  k["CMAES"]["Termination Criteria"]["Max Generations"]["Value"] = 500;
 
- k["Verbosity"] = "Silent";
- k["Result Directory"] = "_a1_optimization_cmaes_result";
- k.run();
- }
+  // Setting output directory
+  k["Result Directory"] = "_a1_optimization_cmaes_result";
+
+  // Running Korali
+  k.run();
+
 }

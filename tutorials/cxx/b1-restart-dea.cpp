@@ -1,3 +1,10 @@
+// In this example, we demonstrate how a Korali experiment can
+// be resumed from any point (generation). This is a useful feature
+// for continuing jobs after an error, or to fragment big jobs into
+// smaller ones that can better fit a supercomputer queue.
+//
+// First, we run a simple Korali experiment.
+
 #include "korali.h"
 #include "model/evaluateModel.h"
 
@@ -5,7 +12,7 @@ int main(int argc, char* argv[])
 {
  auto k = Korali::Engine();
  k.setModel([](Korali::ModelData& d) { evaluateModel(d.getVariables(), d.getResults()); });
- 
+
  k["Problem"] = "Direct Evaluation";
  k["Solver"]  = "DEA";
  k["Verbosity"]  = "Detailed";
@@ -26,6 +33,7 @@ int main(int argc, char* argv[])
 
  printf("\n\nRestarting now:\n\n");
 
+ // Now we loadState() to resume the same experiment from generation 5
  k.loadState("_b1_restart_dea/s00010.json");
 
  k.run();

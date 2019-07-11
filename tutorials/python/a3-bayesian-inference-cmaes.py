@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-## In this example, we demonstrate how Korali find the variable values
-## that maximize the posterior in a bayesian problem where the likelihood
-## is calculated by providing reference data points and their objective values.
+# In this example, we demonstrate how Korali find the variable values
+# that maximize the posterior in a bayesian problem where the likelihood
+# is calculated by providing reference data points and their objective values.
 
 # Importing the computational model
 import sys
@@ -12,13 +12,14 @@ import korali
 
 k = korali.initialize()
 
-# Getting reference data from the model
+# Setting reference data from the model
 x, y = getReferenceData()
 
+# Setting the model
 Fx = lambda koraliData: evaluateModel(koraliData, x)
 k.setModel( Fx )
 
-# Selecting problem.
+# Selecting problem
 k["Problem"] = "Bayesian"
 
 # Setting up the reference likelihood for the Bayesian Problem
@@ -45,7 +46,7 @@ k["Variables"][2]["Bayesian"]["Prior Distribution"]["Type"] = "Uniform"
 k["Variables"][2]["Bayesian"]["Prior Distribution"]["Minimum"] = 0.0
 k["Variables"][2]["Bayesian"]["Prior Distribution"]["Maximum"] = +5.0
 
-# Selecting solver type.
+# Selecting solver type
 k["Solver"] = "CMAES"
 
 # Configuring the CMA-ES bounds for the variables

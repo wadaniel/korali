@@ -18,7 +18,7 @@ k.setModel(evaluateModel)
 
 # Selecting problem and solver types.
 k["Problem"] = "Direct Evaluation"
-k["Solver"]  = "CMAES" 
+k["Solver"]  = "CMAES"
 
 # Defining the problem's variables and their CMA-ES bounds.
 k["Variables"][0]["Name"] = "X"
@@ -36,5 +36,3 @@ k["Result Directory"] = "_a1_optimization_cmaes_result"
 
 # Running Korali
 k.run()
-
-

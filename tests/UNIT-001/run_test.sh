@@ -48,6 +48,10 @@ then
  exit 0
 fi
 
+logEcho "[Korali] Compiling heat2d_posterior..."
+make -j 4 >> $logFile 2>&1
+check_result
+
 logEcho "[Korali] Running mpirun -n 8 ./heat2d_posterior..."
 mpirun -n 8 ./heat2d_posterior >> $logFile 2>&1
 check_result

@@ -38,8 +38,6 @@ assert_value( k["MCMC"]["Burn In"], 0 )
 
 assert_value( k["MCMC"]["Chain Covariance Increment"], 0.001 )
 
-assert_value( k["MCMC"]["Chain Covariance Scaling"], 0.0 )
-
 assert_value( k["MCMC"]["Max Chain Length"], 0 ) # What is this? (DW)
 
 assert_value( k["MCMC"]["Non Adaption Period"], 0 )

@@ -182,7 +182,7 @@ void Korali::Engine::setConfiguration()
 
  std::string solverName = consume(_js, { "Solver" }, KORALI_STRING);
  if (solverName == "CMAES")  _solver = std::make_shared<Korali::Solver::CMAES>();
- if (solverName == "DE")     _solver = std::make_shared<Korali::Solver::DE>();
+ if (solverName == "DEA")    _solver = std::make_shared<Korali::Solver::DEA>();
  if (solverName == "MCMC")   _solver = std::make_shared<Korali::Solver::MCMC>();
  if (solverName == "TMCMC")  _solver = std::make_shared<Korali::Solver::TMCMC>();
  if (_solver == nullptr) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Solver '%s'.", solverName.c_str()); exit(-1); }

@@ -19,46 +19,54 @@
 #     rc = 0.
 ###############################################################################
 
-###### Auxiliar Functions #########
+###### Auxiliar Functions and Variables #########
+
+curdir=$PWD
+logFile=$curdir/test.log
+echo "" > $logFile
 
 function check_result()
 {
  if [ ! $? -eq 0 ]
  then
-  echo "[Korali] Error running test. Please check $logfile."
+  echo "[Korali] Error running test. Please check $logFile."
   exit -1
  fi 
 }
 
+# Logging and printing function.
+function logEcho ()
+{
+ echo "$1"
+ echo "$1" >> $logFile
+}
+
 ############# STEP 1 ##############
 
-curdir=$PWD
-logfile=$curdir/test.log
-
-echo "[Korali] Beginning python tests" > $logfile
+logFile "[Korali] Beginning python tests"
 
 for file in *.py
 do
-  echo "-------------------------------------"
-  echo " Running $file"
-  echo "-------------------------------------"
-  ./"$file" >> $logfile 2>&1
+  logEcho "-------------------------------------"
+  logEcho " Running $file"
+  logEcho "-------------------------------------"
+  ./"$file" >> $logFile 2>&1
   check_result
 done
 
 ############# STEP 2 ##############
 
-#make clean >> $logfile 2>&1
+#make clean >> $logFile 2>&1
 #check_result
 
-#make -j 4 >> $logfile 2>&1
+#make -j 4 >> $logFile 2>&1
 #check_result
 
 #for file in *.cpp
 #do
-#  echo "-------------------------------------"
-#  echo " Running $file"
-#  echo "-------------------------------------"
-#  ./"${file%.*}" >> $logfile 2>&1
+#  logEcho "-------------------------------------"
+#  logEcho " Running $file"
+#  logEcho "-------------------------------------"
+#  ./"${file%.*}" >> $logFile 2>&1
 #  check_result
 #done

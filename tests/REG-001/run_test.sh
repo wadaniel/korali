@@ -19,35 +19,43 @@
 #     rc = 0.
 ###############################################################################
 
-###### Auxiliar Functions #########
+###### Auxiliar Functions and Variables #########
+
+curdir=$PWD
+logFile=$curdir/test.log
+echo "" > $logFile
 
 function check_result()
 {
  if [ ! $? -eq 0 ]
  then
-  echo "[Korali] Error running test. Please check $logfile."
+  echo "[Korali] Error running test. Please check $logFile."
   exit -1
  fi 
 }
 
-############# STEP 1 ##############
+# Logging and printing function.
+function logEcho ()
+{
+ echo "$1"
+ echo "$1" >> $logFile
+}
 
-curdir=$PWD
-logfile=$curdir/test.log
+############# STEP 1 ##############
 
 cd $curdir/../../tutorials/python
 
-echo "[Korali] Removing old result files" > $logfile
+logEcho "[Korali] Removing old result files"
 rm -rf _*
 
-echo "[Korali] Beginning python tests" > $logfile
+logEcho "[Korali] Beginning python tests"
 
 for file in *.py
 do
-  echo "-------------------------------------"
-  echo " Running $file"
-  echo "-------------------------------------"
-  ./"$file" >> $logfile 2>&1
+  logEcho "-------------------------------------"
+  logEcho " Running $file"
+  logEcho "-------------------------------------"
+  ./"$file" >> $logFile 2>&1
   check_result
 done
 
@@ -55,25 +63,25 @@ done
 
 cd $curdir/../../tutorials/cxx
 
-echo "[Korali] Removing old result files" > $logfile
+logEcho "[Korali] Removing old result files"
 rm -rf _*
 
-echo "[Korali] Compiling executables" > $logfile
+logEcho "[Korali] Compiling executables"
 
-make clean >> $logfile 2>&1
+make clean >> $logFile 2>&1
 check_result
 
-make -j 4 >> $logfile 2>&1
+make -j 4 >> $logFile 2>&1
 check_result
 
-echo "[Korali] Beginning c++ tests" > $logfile
+logEcho "[Korali] Beginning c++ tests"
 
 for file in *.cpp
 do
-  echo "-------------------------------------"
-  echo " Running $file"
-  echo "-------------------------------------"
-  ./"${file%.*}" >> $logfile 2>&1
+  logEcho "-------------------------------------"
+  logEcho " Running $file"
+  logEcho "-------------------------------------"
+  ./"${file%.*}" >> $logFile 2>&1
   check_result
 done
 
@@ -81,17 +89,19 @@ done
 
 cd $curdir/../../tutorials/python
 
-echo "[Korali] Beginning plotting tests" > $logfile
-
-logfile=$PWD/test.log                                                           
+logEcho "[Korali] Beginning plotting tests"                                   
                                                                                 
 for dir in ./_*                                                                 
 do                                                                              
-  echo "-------------------------------------"
-  echo " Plotting results from $dir ..."
-  echo "-------------------------------------"
-    python3 -m korali.plotter --test --dir "${dir}" >> $logfile 2>&1                   
-    python3 -m korali.plotter --test --live --dir "${dir}" >> $logfile 2>&1                   
-    #python3 -m korali.plotter --test --evolution --dir "${dir}" >> $logfile 2>&1
-    check_result
+  logEcho "-------------------------------------"
+  logEcho " Plotting results from $dir ..."
+  logEcho "-------------------------------------"
+  python3 -m korali.plotter --test --dir "${dir}" >> $logFile 2>&1
+  check_result
+                     
+  python3 -m korali.plotter --test --live --dir "${dir}" >> $logFile 2>&1
+  check_result
+                     
+  #python3 -m korali.plotter --test --evolution --dir "${dir}" >> $logFile 2>&1
+  #check_result
 done 

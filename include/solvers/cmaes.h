@@ -782,7 +782,7 @@ Conjugate evolution path for Covariance Matrix update for sigma update.
 std::vector<double> _conjugateEvolutionPath;
 
 /******************************************************************************
-Setting Name: RGPS L2 Norm
+Setting Name: Conjugate Evolution Path L2 Norm
 Type: Internal Attribute
 Default Value:
 Default Enabled:

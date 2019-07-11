@@ -119,12 +119,12 @@ def plot_cmaes(src, live=False, test=False, evolution=False):
             if gen > 1:
 
                 numeval.append(data['Function Evaluation Count'])
-                dfval.append(abs(state['Current Function Value'] - state['Current Best Fitness']))
+                dfval.append(abs(state['Current Best Value'] - state['Best Ever Value']))
                 
-                fval.append(state['Current Function Value'])
+                fval.append(state['Current Best Value'])
                 sigma.append(state['Sigma'])
                 cond.append(state['Maximum Covariance Eigenvalue']/state['Minimum Covariance Eigenvalue'])
-                psL2.append(state['RGPS L2 Norm'])
+                psL2.append(state['Conjugate Evolution Path L2 Norm'])
                 cov.append(state['Covariance Matrix'])
 
                 if (evolution == True):
@@ -138,7 +138,7 @@ def plot_cmaes(src, live=False, test=False, evolution=False):
                     normal.append(state['Constraint Normal Approximation'])
 
                 for i in range(numdim):
-                    fvalXvec[i].append(state['Current Best Vector'][i])
+                    fvalXvec[i].append(state['Current Best Sample'][i])
                     axis[i].append(state['Axis Lengths'][i])
                     ssdev[i].append(sigma[-1]*np.sqrt(state['Covariance Matrix'][i*numdim+i]))
             

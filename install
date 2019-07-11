@@ -2,6 +2,7 @@
 
 source VERSION
 logFile=$PWD/install.log
+echo "" > $logFile
 
 # Help display function
 function print_help ()
@@ -109,17 +110,17 @@ logEcho "[Korali] Checking Pre-requisites..."
 
 log "Checking for C++ Compiler..."
 
-$CXX --version >> $logFile 2>&1
+$CXX --version > /dev/null 2>&1
 DETECTED_CXX=$?
-c++ --version >> $logFile 2>&1
+c++ --version > /dev/null 2>&1
 DETECTED_CPLUSPLUS=$?
-g++ --version >> $logFile 2>&1
+g++ --version > /dev/null 2>&1
 DETECTED_GXX=$?
-clang++ --version >> $logFile 2>&1
+clang++ --version > /dev/null 2>&1
 DETECTED_CLANG=$?
-icpc --version >> $logFile 2>&1
+icpc --version > /dev/null 2>&1
 DETECTED_ICPC=$?
-CC --help >> $logFile 2>&1
+CC --help > /dev/null 2>&1
 DETECTED_CRAY=$?
 
 USE_CXX=""
@@ -186,8 +187,8 @@ fi
 
 MPIFLAGS=""
 log "[Korali] Checking for MPI support..."
-log "[Korali] Running \"\$MPICXX -v\"..."
-$MPICXX --help >> $logFile 2>&1
+log "[Korali] Running \"\$MPICXX --help\"..."
+$MPICXX --help > /dev/null 2>&1
 if [ ! $? -eq 0 ]
 then
  logEcho "[Korali] Installing Korali without support for MPI."

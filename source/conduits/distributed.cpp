@@ -143,7 +143,7 @@ void Distributed::workerThread()
 
    _k->_model(data);
 
-   if (_localRankId == 0)
+   if (isLeader)
    {
     double fitness = _k->_problem->evaluateFitness(data);
     MPI_Send(&fitness, 1, MPI_DOUBLE, getRootRank(), MPI_TAG_FITNESS, MPI_COMM_WORLD);

@@ -1080,7 +1080,7 @@ double upperBound;
 /******************************************************************************
 Setting Name: Initial Mean
 Type: Variable Setting
-Default Value: 0.0
+Default Value: (_variableSettings[i].upperBound + _variableSettings[i].lowerBound)*0.5
 Default Enabled:
 Description:
 Defines the initial mean for the proposal distribution. This value must be defined
@@ -1092,7 +1092,7 @@ double initialMean;
 /******************************************************************************
 Setting Name: Initial Standard Deviation
 Type: Variable Setting
-Default Value: -1.0
+Default Value: (_variableSettings[i].upperBound - _variableSettings[i].lowerBound)*0.25
 Default Enabled:
 Description:
 Defines the initial standard deviation of the proposal distribution for a variable.

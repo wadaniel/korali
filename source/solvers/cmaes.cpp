@@ -163,9 +163,9 @@ void CMAES::runGeneration()
 void CMAES::evaluateSamples()
 {
  for (size_t i = 0; i < _currentSampleCount; i++) for(size_t d = 0; d < _k->N; ++d)
-  //if(_k->_variables[d]->_isLogSpace == true)
-  //   _transformedSamples[i*_k->N+d] = std::exp(_samplePopulation[i*_k->N+d]);
-  //else
+  if(_k->_variables[d]->_isLogSpace == true)
+   _transformedSamples[i*_k->N+d] = std::exp(_samplePopulation[i*_k->N+d]);
+  else
    _transformedSamples[i*_k->N+d] = _samplePopulation[i*_k->N+d];
 
   while (_finishedSampleCount < _currentSampleCount)

@@ -37,6 +37,9 @@ logfile=$curdir/test.log
 
 cd $curdir/../../tutorials/python
 
+echo "[Korali] Removing old result files" > $logfile
+rm -rf _*
+
 echo "[Korali] Beginning python tests" > $logfile
 
 for file in *.py
@@ -52,11 +55,18 @@ done
 
 cd $curdir/../../tutorials/cxx
 
+echo "[Korali] Removing old result files" > $logfile
+rm -rf _*
+
+echo "[Korali] Compiling executables" > $logfile
+
 make clean >> $logfile 2>&1
 check_result
 
 make -j 4 >> $logfile 2>&1
 check_result
+
+echo "[Korali] Beginning c++ tests" > $logfile
 
 for file in *.cpp
 do

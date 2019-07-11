@@ -116,10 +116,10 @@ void Korali::Solver::TMCMC::processSample(size_t c, double fitness)
 void Korali::Solver::TMCMC::evaluateSample(size_t c)
 {
   for(size_t d = 0; d<_k->N; ++d) 
-      //if (_k->_variables[d]->_isLogSpace == true)
-      //    logTransformedSamples[c*_k->N+d] = std::exp(chainCandidatesParameters[c*_k->N+d]);
-      //else 
-          logTransformedSamples[c*_k->N+d] = chainCandidatesParameters[c*_k->N+d];
+    if (_k->_variables[d]->_isLogSpace == true)
+        logTransformedSamples[c*_k->N+d] = std::exp(chainCandidatesParameters[c*_k->N+d]);
+    else 
+        logTransformedSamples[c*_k->N+d] = chainCandidatesParameters[c*_k->N+d];
 
   _k->_conduit->evaluateSample(&logTransformedSamples[0], c);
 }

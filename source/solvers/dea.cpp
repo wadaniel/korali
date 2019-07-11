@@ -15,8 +15,8 @@ DEA::DEA()
  jsGaussian["Type"]  = "Gaussian";
  jsGaussian["Mean"]  = 0.0;
  jsGaussian["Sigma"] = 1.0;
- jsGaussian["Seed"] = _k->_seed++;
- _gaussianGenerator = new Variable();
+ jsGaussian["Seed"]  = _k->_seed++;
+ _gaussianGenerator  = new Variable();
  _gaussianGenerator->setDistribution(jsGaussian);
 
  auto jsUniform = nlohmann::json();

@@ -408,7 +408,7 @@ Description:
 The sign for the fitness evaluation to determine whether this is a maximization
 or minimization operation.
 ******************************************************************************/
-int _evaluationSign;
+double _evaluationSign;
 
 /******************************************************************************
 Setting Name: Is Viability Regime

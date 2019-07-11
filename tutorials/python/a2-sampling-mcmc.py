@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-## In this example, we demonstrate how Korali samples the posterior
-## distribution in a bayesian problem where the likelihood
-## is provided directly by the computational model.
-## In this case, we use the MCMC method.
+# In this example, we demonstrate how Korali samples the posterior
+# distribution in a bayesian problem where the likelihood
+# is provided directly by the computational model.
+# In this case, we use the MCMC method.
 
 # Importing computational model
 import sys
@@ -16,7 +16,7 @@ k = korali.initialize()
 
 # Setting Model
 k.setModel(evaluateModel)
- 
+
 # Selecting problem and solver types.
 k["Problem"] = "Direct Evaluation"
 k["Solver"]  = "MCMC"
@@ -24,7 +24,7 @@ k["Solver"]  = "MCMC"
 # Defining problem's variables and their prior distribution
 k["Variables"][0]["Name"] = "X"
 k["Variables"][0]["MCMC"]["Initial Mean"] = 0.0
-k["Variables"][0]["MCMC"]["Standard Deviation"] = 1.000
+k["Variables"][0]["MCMC"]["Standard Deviation"] = 1.0
 
 # Configuring the MCMC sampler parameters
 k["MCMC"]["Burn In"] = 500

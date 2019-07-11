@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
-## In this example, we demonstrate how Korali finds values for the
-## variables that maximize the objective function, given by a
-## user-provided computational model, subject to a set of
-## constraints.
-
+# In this example, we demonstrate how Korali finds values for the
+# variables that maximize the objective function, given by a
+# user-provided computational model, subject to a set of
+# constraints.
+#
 # Importing the computational model and constraints
 import sys
 sys.path.append('./model')
@@ -21,10 +21,10 @@ k.addConstraint( g2 )
 k.addConstraint( g3 )
 k.addConstraint( g4 )
 
-# Selecting problem type.
+# Selecting problem type
 k["Problem"] = "Direct Evaluation"
 
-# Selecting the CCMA-ES solver.
+# Selecting the CCMA-ES solver
 k["Solver"]  = "CMAES"
 k["CMAES"]["Objective"] = "Maximize"
 

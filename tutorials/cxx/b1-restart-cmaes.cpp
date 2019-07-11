@@ -1,31 +1,39 @@
+// In this example, we demonstrate how a Korali experiment can
+// be resumed from any point (generation). This is a useful feature
+// for continuing jobs after an error, or to fragment big jobs into
+// smaller ones that can better fit a supercomputer queue.
+
 #include "korali.h"
 #include "model/evaluateModel.h"
 
 int main(int argc, char* argv[])
 {
- auto k = Korali::Engine();
- k.setModel([](Korali::ModelData& d) { evaluateModel(d.getVariables(), d.getResults()); });
- 
- k["Problem"] = "Direct Evaluation";
- k["Solver"]  = "CMAES";
+  // First, we run a simple Korali experiment.
+  auto k = Korali::Engine();
+  k.setModel([](Korali::ModelData& d) { evaluateModel(d.getVariables(), d.getResults()); });
 
- k["Variables"][0]["Name"] = "X";
- k["Variables"][0]["CMAES"]["Lower Bound"] = -10.0;
- k["Variables"][0]["CMAES"]["Upper Bound"] = +10.0;
+  k["Problem"] = "Direct Evaluation";
+  k["Solver"]  = "CMAES";
 
- k["CMAES"]["Objective"] = "Maximize";
- k["CMAES"]["Sample Count"] = 5;
+  k["Variables"][0]["Name"] = "X";
+  k["Variables"][0]["CMAES"]["Lower Bound"] = -10.0;
+  k["Variables"][0]["CMAES"]["Upper Bound"] = +10.0;
 
- k["Result Directory"] = "_b1_restart_cmaes";
+  k["CMAES"]["Objective"] = "Maximize";
+  k["CMAES"]["Sample Count"] = 5;
 
- k["Termination Criteria"]["Max Generations"] = 500;
- k["Console Output Frequency"] = 10;
+  k["Result Directory"] = "_b1_restart_cmaes";
 
- k.run();
+  k["Termination Criteria"]["Max Generations"] = 500;
+  k["Console Output Frequency"] = 10;
 
- printf("\n\nRestarting now:\n\n");
+  k.run();
 
- k.loadState("_b1_restart_cmaes/s00010.json");
- k.run();
+  printf("\n\nRestarting now:\n\n");
+
+  // Now we loadState() to resume the same experiment from generation 10
+  k.loadState("_b1_restart_cmaes/s00010.json");
+
+  k.run();
 
 }

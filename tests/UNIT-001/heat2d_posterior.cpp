@@ -6,9 +6,6 @@ int main(int argc, char* argv[])
  auto k = Korali::Engine();
  auto p = heat2DInit(&argc, &argv);
 
- int teamSize = 1;
- if (argc == 1) teamSize = atoi(argv[0]);
-
  k["Problem"] = "Bayesian";
  k["Bayesian"]["Likelihood"]["Type"] = "Reference";
  k["Bayesian"]["Likelihood"]["Model"] = "Additive Gaussian";
@@ -47,8 +44,6 @@ int main(int argc, char* argv[])
  k["Variables"][3]["CMAES"]["Upper Bound"] = 20.0;
 
  k["Conduit"]= "Distributed";
- k["Distributed"]["Ranks Per Team"] = teamSize;
-
  k["Solver"] = "CMAES";
  k["CMAES"]["Sample Count"] = 32;
 

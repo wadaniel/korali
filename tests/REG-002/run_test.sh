@@ -43,7 +43,7 @@ function logEcho ()
 
 ############# STEP 1 ##############
 
-logFile "[Korali] Beginning python tests"
+logEcho "[Korali] Beginning python tests"
 
 for file in *.py
 do

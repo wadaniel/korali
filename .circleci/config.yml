@@ -16,6 +16,11 @@ jobs:
 
       - checkout
 
+      - run:
+          name: install MPI
+          command: sudo apt-get install mpich;
+                   echo 'export MPICXX=mpicxx' >> $BASH_ENV
+
       - restore_cache:
           keys:
             - korali-dependencies-linux
@@ -28,6 +33,9 @@ jobs:
           key: korali-dependencies-linux
           paths:
             - "~/korali/build"
+      - run:
+          name: run tests
+          command: cd tests; ./run_all_tests.sh
       
       - run:
           name: build webpage
@@ -37,10 +45,6 @@ jobs:
           name: deploy webpage
           command: cd docs; ./deploy.sh
 
-      - run:
-          name: run tests
-          command: cd tests; timeout 10m ./run_all_tests.sh
-      
   build_macos:
     macos:
       xcode: "10.0.0"
@@ -68,5 +72,5 @@ jobs:
 
       - run:
           name: run tests
-          command: cd tests; gtimeout 10m ./run_all_tests.sh
+          command: cd tests; ./run_all_tests.sh
 

@@ -22,7 +22,7 @@ void SemiIntrusive::setConfiguration()
 
 void SemiIntrusive::initialize()
 {
-	_currentSample = 0;
+  _currentSample = 0;
 }
 
 void SemiIntrusive::finalize()

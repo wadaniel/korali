@@ -95,7 +95,7 @@ assert_value( k["CMAES"]["Termination Criteria"]["Max Generations"]["Value"], 0 
 
 assert_value( k["CMAES"]["Termination Criteria"]["Max Infeasible Resampling"]["Value"], 1e9 )
 
-assert_value( k["CMAES"]["Termination Criteria"]["Max Standard Deviation"]["Value"], 1e-18)
+assert_value( k["CMAES"]["Termination Criteria"]["Max Standard Deviation"]["Value"], 1e18)
 
 assert_boolean( k["CMAES"]["Termination Criteria"]["Min Fitness"]["Enabled"], False )
 
@@ -103,7 +103,7 @@ assert_value( k["CMAES"]["Termination Criteria"]["Min Fitness Diff Threshold"]["
 
 assert_value( k["CMAES"]["Termination Criteria"]["Min Standard Deviation"]["Value"], 1e-12 )
 
-assert_value( k["CMAES"]["Termination Criteria"]["Min Standard Deviation Step Factor"]["Value"], 1e18 ) # why is this MIN andn ot mAX
+assert_value( k["CMAES"]["Termination Criteria"]["Min Standard Deviation Step Factor"]["Value"], 1e-18 )
 
 assert_boolean( k["CMAES"]["Use Viability Regime"], False ) # why not true?
 

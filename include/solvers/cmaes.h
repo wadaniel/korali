@@ -223,16 +223,6 @@ Covariance matrix updates will be optimized for diagonal matrices.
 bool _isDiag;
 
 /******************************************************************************
-Setting Name: Use Viability Regime
-Type: Solver Setting
-Default Value: false
-Default Enabled:
-Description:
-Determines if a viability regime should be used.
-******************************************************************************/
-bool _isViabilityRegime;
-
-/******************************************************************************
 Setting Name: Viability Sample Count
 Type: Solver Setting
 Default Value: 2
@@ -306,26 +296,6 @@ Learning rate of success probability of objective function improvements.
 Required for covariance matrix scaling factor update during viability regime.
 ******************************************************************************/
 double _globalSuccessLearningRate;
- 
-/******************************************************************************
-Setting Name: Result Output Frequency
-Type: Solver Setting
-Default Value: 1
-Default Enabled:
-Description:
-Specifies the output frequency of intermediate result files.
-******************************************************************************/
-size_t _resultOutputFrequency;
-
-/******************************************************************************
-Setting Name: Terminal Output Frequency
-Type: Solver Setting
-Default Value: 1
-Default Enabled:
-Description:
-Specifies the output frequency onto the terminal screen.
-******************************************************************************/
-size_t _terminalOutputFrequency;
 
 /******************************************************************************
 Setting Name: Max Generations
@@ -337,7 +307,6 @@ Maximal number of generations to run.
 ******************************************************************************/
 size_t _termCondMaxGenerations;
 bool   _termCondMaxGenerationsEnabled;
-
 
 /******************************************************************************
 Setting Name: Max Infeasible Resampling
@@ -399,7 +368,7 @@ bool   _termCondMinStandardDeviationEnabled;
 /******************************************************************************
 Setting Name: Max Standard Deviation
 Type: Termination Criterion
-Default Value: 1e-18
+Default Value: 1e18
 Default Enabled: false
 Description:
 Specifies the maximal standard deviation per dimension of the proposal.
@@ -421,7 +390,7 @@ bool   _termCondMaxCovMatrixConditionEnabled;
 /******************************************************************************
 Setting Name: Min Standard Deviation Step Factor
 Type: Termination Criterion
-Default Value: 1e18
+Default Value: 1e-18
 Default Enabled: false
 Description:
 Specifies a scaling factor under which the standard deviation does not change
@@ -440,6 +409,16 @@ The sign for the fitness evaluation to determine whether this is a maximization
 or minimization operation.
 ******************************************************************************/
 int _evaluationSign;
+
+/******************************************************************************
+Setting Name: Use Viability Regime
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+True if mean is outside feasible domain.
+******************************************************************************/
+bool _isViabilityRegime;
 
 /******************************************************************************
 Setting Name: Fitness Vector
@@ -603,54 +582,54 @@ Variable to init sigma (or set upper bound).
 double _trace;
 
 /******************************************************************************
-Setting Name: Current Best Fitness
+Setting Name: Best Ever Value
 Type: Internal Attribute
 Default Value:
 Default Enabled:
 Description:
-Best ever fitness found in the current generation
+Best ever value found.
 ******************************************************************************/
-double _currentBestFitness;
+double _bestEverValue;
 
 /******************************************************************************
-Setting Name: Previous Best Fitness
+Setting Name: Previous Best Ever Value
 Type: Internal Attribute
 Default Value:
 Default Enabled:
 Description:
-Best ever fitness found in the previous generation
+Best ever value as of previous generation.
 ******************************************************************************/
-double _previousBestFitness;
+double _previousBestEverValue;
 
 /******************************************************************************
-Setting Name: RGX Mean
+Setting Name: Mean Proposal
 Type: Internal Attribute
 Default Value:
 Default Enabled:
 Description:
-
+Mean of proposal distribution.
 ******************************************************************************/
-std::vector<double> _rgxMean;
+std::vector<double> _mean;
 
 /******************************************************************************
-Setting Name: RGX Best Ever
+Setting Name: Best Ever Sample
 Type: Internal Attribute
 Default Value:
 Default Enabled:
 Description:
-
+Coordinates of best ever sample.
 ******************************************************************************/
-std::vector<double> _rgxBestEver;
+std::vector<double> _bestEverSample;
 
 /******************************************************************************
-Setting Name: Current Best Vector
+Setting Name: Current Best Sample
 Type: Internal Attribute
 Default Value:
 Default Enabled:
 Description:
-
+Coorindates of current best sample.
 ******************************************************************************/
-std::vector<double> _currentBestVector;
+std::vector<double> _currentBestSample;
 
 /******************************************************************************
 Setting Name: Sorting Index
@@ -663,24 +642,24 @@ Sorting _sortingIndex of current sample pop (_sortingIndex[0] idx of current bes
 std::vector<size_t> _sortingIndex;
 
 /******************************************************************************
-Setting Name: Current Function Value
+Setting Name: Current Best Value
 Type: Internal Attribute
 Default Value:
 Default Enabled:
 Description:
-Best fitness current generation.
+Best value of current generation.
 ******************************************************************************/
-double _currentFunctionValue;
+double _currentBestValue;
 
 /******************************************************************************
-Setting Name: Previous Function Value
+Setting Name: Previous Best Value
 Type: Internal Attribute
 Default Value:
 Default Enabled:
 Description:
 Best fitness previous generation.
 ******************************************************************************/
-double _previousFunctionValue;
+double _previousBestValue;
 
 /******************************************************************************
 Setting Name: Covariance Matrix
@@ -688,9 +667,9 @@ Type: Internal Attribute
 Default Value:
 Default Enabled:
 Description:
-
+(Unscaled) covariance Matrix of proposal distribution.
 ******************************************************************************/
-std::vector<double> C;
+std::vector<double> _C;
 
 /******************************************************************************
 Setting Name: Auxiliar Covariance Matrix
@@ -700,7 +679,7 @@ Default Enabled:
 Description:
 Temporary Storage for Covariance Matrix
 ******************************************************************************/
-std::vector<double> Ctmp;
+std::vector<double> _Ctmp;
 
 /******************************************************************************
 Setting Name: Covariance Eigenvector Matrix
@@ -710,7 +689,7 @@ Default Enabled:
 Description:
 Matrix with eigenvectors in columns.
 ******************************************************************************/
-std::vector<double> B;
+std::vector<double> _B;
 
 /******************************************************************************
 Setting Name: Auxiliar Covariance Eigenvector Matrix
@@ -720,7 +699,7 @@ Default Enabled:
 Description:
 Temporary Storage for Matrix with eigenvectors in columns.
 ******************************************************************************/
-std::vector<double> Btmp;
+std::vector<double> _Btmp;
 
 /******************************************************************************
 Setting Name: Axis Lengths
@@ -730,7 +709,7 @@ Default Enabled:
 Description:
 Axis lengths (sqrt(Evals))
 ******************************************************************************/
-std::vector<double> axisD;
+std::vector<double> _axisD;
 
 /******************************************************************************
 Setting Name: Temporary Axis Lengths
@@ -740,7 +719,7 @@ Default Enabled:
 Description:
 Temporary storage for Axis lengths
 ******************************************************************************/
-std::vector<double> axisDtmp;
+std::vector<double> _axisDtmp;
 
 /******************************************************************************
 Setting Name: Random Number Storage
@@ -750,7 +729,7 @@ Default Enabled:
 Description:
 Temporary storage for Random Number Generation
 ******************************************************************************/
-std::vector<double> Z;
+std::vector<double> _Z;
 
 /******************************************************************************
 Setting Name: BDZ Matrix
@@ -758,9 +737,9 @@ Type: Internal Attribute
 Default Value:
 Default Enabled:
 Description:
-Matrix to hold B*D*randn()
+Temporary storage to hold B*D*randn()
 ******************************************************************************/
-std::vector<double> BDZ;
+std::vector<double> _BDZ;
 
 /******************************************************************************
 Setting Name: Evolution Path
@@ -770,7 +749,7 @@ Default Enabled:
 Description:
 Evolution path for Covariance Matrix update.
 ******************************************************************************/
-std::vector<double> rgpc;
+std::vector<double> _evolutionPath;
 
 /******************************************************************************
 Setting Name: Conjugate Evolution Path
@@ -780,17 +759,27 @@ Default Enabled:
 Description:
 Conjugate evolution path for Covariance Matrix update for sigma update.
 ******************************************************************************/
-std::vector<double> rgps;
+std::vector<double> _conjugateEvolutionPath;
 
 /******************************************************************************
-Setting Name: Previous RGX
+Setting Name: RGPS L2 Norm
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+
+******************************************************************************/
+double _conjugateEvolutionPathL2Norm;
+
+/******************************************************************************
+Setting Name: Previous Mean
 Type: Internal Attribute
 Default Value:
 Default Enabled:
 Description:
 Mean "parent" on previous generation.
 ******************************************************************************/
-std::vector<double> rgxold;
+std::vector<double> _previousMean;
 
 /******************************************************************************
 Setting Name: Storage for BDZ
@@ -861,16 +850,6 @@ Description:
 Minimum Covariance Matrix Eigenvalue
 ******************************************************************************/
 double _minCovarianceEigenvalue;
-
-/******************************************************************************
-Setting Name: RGPS L2 Norm
-Type: Internal Attribute
-Default Value:
-Default Enabled:
-Description:
-
-******************************************************************************/
-double _rgpsL2Norm;
 
 /******************************************************************************
 Setting Name: Is Eigensystem Updated
@@ -1034,7 +1013,7 @@ Default Enabled:
 Description:
 Normal approximation of constraints
 ******************************************************************************/
-std::vector<std::vector<double>> _v;
+std::vector<std::vector<double>> _constraintNormal;
 
 /******************************************************************************
 Setting Name: Best Constraint Evaluations

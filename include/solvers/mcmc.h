@@ -64,9 +64,9 @@ Type: Solver Setting
 Default Value:
 Default Enabled:
 Description:
-Specifies the output frequency of intermediate result files.
+Number of samples to be generated.
 ******************************************************************************/
-size_t maxChainLength;
+size_t _maxChainLength;
 
 /******************************************************************************
 Setting Name: Burn In
@@ -77,7 +77,7 @@ Description:
 Specifies the number of preliminary MCMC steps before samples are being drawn.
 This may reduce effects from improper initialization.
 ******************************************************************************/
-size_t burnIn;
+size_t _burnIn;
 
 /******************************************************************************
 Setting Name: Rejection Levels
@@ -87,7 +87,7 @@ Default Enabled:
 Description:
 Controls the number of accept-reject stages per MCMC step.
 ******************************************************************************/
-size_t rejectionLevels;
+size_t _rejectionLevels;
 
 /******************************************************************************
 Setting Name: Use Adaptive Sampling
@@ -97,10 +97,8 @@ Default Enabled:
 Description:
 Specifies if covariance matrix of the proposal distribution is calculated from
 the samples.
-
-A "false" value corresponds to the standard Metropolis Hastings.
 ******************************************************************************/
-bool useAdaptiveSampling;
+bool _useAdaptiveSampling;
 
 /******************************************************************************
 Setting Name: Non Adaption Period
@@ -112,19 +110,7 @@ Number of steps (after Burn In steps) during which the initial standard deviatio
 is used (only relevant for Adaptive Sampling). If "0" is specified, Korali will
 set this value to $5%$ of the Chain Length.
 ******************************************************************************/
-size_t nonAdaptionPeriod;
-
-/******************************************************************************
-Setting Name: Chain Covariance Scaling
-Type: Solver Setting
-Default Value: 0.0
-Default Enabled:
-Description:
-Scaling factor of the chain covariance (only relevant for Adaptive Sampling).
-If "0.0" is specified, Korali will precalibrate this factor from the number of
-variables: $\frac{2.4^2}{N}$ [Gelman1995].
-******************************************************************************/
-double chainCovarianceScaling;
+size_t _nonAdaptionPeriod;
 
 /******************************************************************************
 Setting Name: Chain Covariance Increment
@@ -134,7 +120,17 @@ Default Enabled:
 Description:
 Small constant to avoid singularity of the chain covariance.
 ******************************************************************************/
-double chainCovarianceIncrement;
+double _chainCovarianceIncrement;
+
+/******************************************************************************
+Setting Name: Chain Covariance Scaling
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Small constant to avoid singularity of the chain covariance.
+******************************************************************************/
+double _chainCovarianceScaling;
 
 /******************************************************************************
 Setting Name: Covariance Matrix
@@ -144,7 +140,7 @@ Default Enabled:
 Description:
 Hold the covariance matrix of proposal distribution.
 ******************************************************************************/
-std::vector<double> covarianceMatrix;
+std::vector<double> _covarianceMatrix;
 
 /******************************************************************************
 Setting Name: Chain Leader Parameters
@@ -152,9 +148,9 @@ Type: Internal Attribute
 Default Value:
 Default Enabled:
 Description:
-Current (theta) parameters of the chain leader sample.
+Parameters of the current sample.
 ******************************************************************************/
-std::vector<double> chainLeaderParameters;
+std::vector<double> _chainLeaderParameters;
 
 /******************************************************************************
 Setting Name: Chain Leader LogLikelihood
@@ -162,9 +158,9 @@ Type: Internal Attribute
 Default Value:
 Default Enabled:
 Description:
-The logLikelihood of the current chain leader.
+The logLikelihood of the current sample.
 ******************************************************************************/
-double chainLeaderLogLikelihood;
+double _chainLeaderLogLikelihood;
 
 /******************************************************************************
 Setting Name: Chain Candidate Parameters
@@ -174,7 +170,7 @@ Default Enabled:
 Description:
 Current (theta) parameters of the chain leader sample.
 ******************************************************************************/
-std::vector<double> chainCandidatesParameters;
+std::vector<double> _chainCandidatesParameters;
 
 /******************************************************************************
 Setting Name: Chain Candidates LogLikelihoods
@@ -184,7 +180,7 @@ Default Enabled:
 Description:
 The logLikelihoods of the chain candidates.
 ******************************************************************************/
-std::vector<double> chainCandidatesLogLikelihoods;
+std::vector<double> _chainCandidatesLogLikelihoods;
 
 /******************************************************************************
 Setting Name: Chain Candidates LogPriors
@@ -194,7 +190,7 @@ Default Enabled:
 Description:
 The logPriors of the chain candidates.
 ******************************************************************************/
-std::vector<double> chainCandidatesLogPriors;
+std::vector<double> _chainCandidatesLogPriors;
 
 /******************************************************************************
 Setting Name: Log Transformed Samples
@@ -204,7 +200,7 @@ Default Enabled:
 Description:
 Candidate parameters log transformed.
 ******************************************************************************/
-std::vector<double> logTransformedSamples;
+std::vector<double> _logTransformedSamples;
 
 /******************************************************************************
 Setting Name: Rejection Alphas
@@ -214,7 +210,7 @@ Default Enabled:
 Description:
 Alphas for recursive calculation of delayed rejection schemes
 ******************************************************************************/
-std::vector<double> rejectionAlphas;
+std::vector<double> _rejectionAlphas;
 
 /******************************************************************************
 Setting Name: Acceptance Rate
@@ -224,7 +220,7 @@ Default Enabled:
 Description:
 Ratio proposed to accepted samples.
 ******************************************************************************/
-double acceptanceRate;
+double _acceptanceRate;
 
 /******************************************************************************
 Setting Name: Rejection Count
@@ -234,7 +230,7 @@ Default Enabled:
 Description:
 Number of rejections in the current generation.
 ******************************************************************************/
-size_t rejectionCount;
+size_t _rejectionCount;
 
 /******************************************************************************
 Setting Name: Acceptance Count
@@ -244,7 +240,7 @@ Default Enabled:
 Description:
 Number of accepted samples.
 ******************************************************************************/
-size_t acceptanceCount;
+size_t _acceptanceCount;
 
 /******************************************************************************
 Setting Name: Proposed Sample Count
@@ -254,7 +250,7 @@ Default Enabled:
 Description:
 Number of proposed samples.
 ******************************************************************************/
-size_t proposedSampleCount;
+size_t _proposedSampleCount;
 
 /******************************************************************************
 Setting Name: Database Entry Count
@@ -264,7 +260,7 @@ Default Enabled:
 Description:
 Number of accepted samples stored in the database.
 ******************************************************************************/
-size_t databaseEntryCount;
+size_t _databaseEntryCount;
 
 /******************************************************************************
 Setting Name: Sample Parameters Database
@@ -274,7 +270,7 @@ Default Enabled:
 Description:
 Variable values of samples stored in the database.
 ******************************************************************************/
-std::vector<double> sampleParametersDatabase;
+std::vector<double> _sampleParametersDatabase;
 
 /******************************************************************************
 Setting Name: Sample Fitness Database
@@ -284,7 +280,7 @@ Default Enabled:
 Description:
 Fitness of the samples stored in the database.
 ******************************************************************************/
-std::vector<double> sampleFitnessDatabase;
+std::vector<double> _sampleFitnessDatabase;
 
 /******************************************************************************
 Setting Name: Chain Mean
@@ -294,7 +290,7 @@ Default Enabled:
 Description:
 Mean of Markov Chain Monte Carlo Chain
 ******************************************************************************/
-std::vector<double> chainMean;
+std::vector<double> _chainMean;
 
 /******************************************************************************
 Setting Name: Chain Covariance Placeholder
@@ -304,7 +300,7 @@ Default Enabled:
 Description:
 Placeholder chain covariance calculation
 ******************************************************************************/
-std::vector<double> chainCovariancePlaceholder;
+std::vector<double> _chainCovariancePlaceholder;
 
 /******************************************************************************
 Setting Name: Chain Covariance
@@ -314,7 +310,7 @@ Default Enabled:
 Description:
 Chain Covariance
 ******************************************************************************/
-std::vector<double> chainCovariance;
+std::vector<double> _chainCovariance;
 
 /******************************************************************************
 Setting Name: Chain Length
@@ -324,7 +320,7 @@ Default Enabled:
 Description:
 Current Chain Length
 ******************************************************************************/
-size_t chainLength;
+size_t _chainLength;
 
 /******************************************************************************
 * Variable Settings

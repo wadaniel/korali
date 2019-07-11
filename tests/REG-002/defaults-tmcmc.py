@@ -31,8 +31,6 @@ k.run()
 
 assert_value( k["File Output Frequency"], 1 )
 
-#assert_value( k["TMCMC"]"Terminal Output Frequency"], 1 ) TODO
-
 assert_value( k["TMCMC"]["Covariance Scaling"], 0.04 )
 
 assert_value( k["TMCMC"]["Burn In"], 0 )
@@ -52,7 +50,7 @@ assert_value( k["TMCMC"]["Internal"]["Accepted Samples Count"], 5000 ) # what is
 
 assert_value( k["TMCMC"]["Internal"]["Annealing Exponent"], 0.0 )
 
-assert_value( k["TMCMC"]["Internal"]["Coefficient of Variation"], 1.0 )
+assert_value( k["TMCMC"]["Internal"]["Coefficient of Variation"], 0.0 )
 
 assert_value( k["TMCMC"]["Internal"]["Covariance Matrix"][0], 0.0 )
 

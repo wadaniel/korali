@@ -67,13 +67,10 @@ PYBIND11_MODULE(libkorali, m) {
 /*                  Constructor / Destructor Methods                    */
 /************************************************************************/
 
-Korali::Engine::Engine()
+Korali::Engine::Engine() : _solver(nullptr), _problem(nullptr), _conduit(nullptr)
 {
- _modelDefined = false;
+ _modelDefined      = false;
  _likelihoodDefined = false;
- _problem = nullptr;
- _conduit = nullptr;
- _solver  = nullptr;
 }
 
 Korali::Engine::~Engine()
@@ -149,8 +146,8 @@ void Korali::Engine::setConfiguration()
  // Configure Problem
 
  std::string pName = consume(_js, { "Problem" }, KORALI_STRING);
- if (pName == "Direct Evaluation")   { _problem = new Korali::Problem::Direct(); }
- if (pName == "Bayesian") { _problem = new Korali::Problem::Bayesian(); }
+ if (pName == "Direct Evaluation")  _problem = std::make_shared<Korali::Problem::Direct>(); 
+ if (pName == "Bayesian")           _problem = std::make_shared<Korali::Problem::Bayesian>();
  if (_problem == nullptr) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Problem '%s'.", pName.c_str()); exit(-1); }
 
  // Create Variables
@@ -171,23 +168,23 @@ void Korali::Engine::setConfiguration()
 
  std::string conduitType =  consume(_js, { "Conduit" }, KORALI_STRING, "Semi-Intrusive");
 
- if (conduitType == "Semi-Intrusive") _conduit = new Korali::Conduit::SemiIntrusive();
+ if (conduitType == "Semi-Intrusive") _conduit = std::make_shared<Korali::Conduit::SemiIntrusive>();
  #ifdef _KORALI_USE_MPI
- if (conduitType == "Distributed") _conduit = new Korali::Conduit::Distributed();
+ if (conduitType == "Distributed") _conduit = std::make_shared<Korali::Conduit::Distributed>();
  #else
  if (conduitType == "Distributed") { fprintf(stderr, "[Korali] Error: Distributed Conduit selected, but Korali has not been compiled with MPI or UPC++ support.\n"); exit(-1); }
  #endif
- if (conduitType == "Nonintrusive") _conduit = new Korali::Conduit::Nonintrusive();
+ if (conduitType == "Nonintrusive") _conduit = std::make_shared<Korali::Conduit::Nonintrusive>();
 
  if (_conduit == nullptr) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Conduit '%s'.\n", conduitType.c_str()); exit(-1); }
 
  // Configure Solver
 
  std::string solverName = consume(_js, { "Solver" }, KORALI_STRING);
- if (solverName == "CMAES")  _solver = new Korali::Solver::CMAES();
- if (solverName == "DEA")    _solver = new Korali::Solver::DEA();
- if (solverName == "MCMC")   _solver = new Korali::Solver::MCMC();
- if (solverName == "TMCMC")  _solver = new Korali::Solver::TMCMC();
+ if (solverName == "CMAES")  _solver = std::make_shared<Korali::Solver::CMAES>();
+ if (solverName == "DEA")    _solver = std::make_shared<Korali::Solver::DEA>();
+ if (solverName == "MCMC")   _solver = std::make_shared<Korali::Solver::MCMC>();
+ if (solverName == "TMCMC")  _solver = std::make_shared<Korali::Solver::TMCMC>();
  if (_solver == nullptr) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Solver '%s'.", solverName.c_str()); exit(-1); }
 
  // Setting module configuration
@@ -267,9 +264,6 @@ void Korali::Engine::run()
   _problem->finalize();
   _conduit->finalize();
 
-  delete _solver;  _solver  = nullptr;
-  delete _problem; _problem = nullptr;
-  delete _conduit; _conduit = nullptr;
   for (size_t i = 0; i < N; i++) delete _variables[i];
   _variables.clear();
 

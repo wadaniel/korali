@@ -13,7 +13,11 @@
 #     Expected Result: All modules execute correctly and rc = 0.
 ###############################################################################
 
-###### Auxiliar Functions #########
+###### Auxiliar Functions and Variables #########
+
+curdir=$PWD
+logFile=$curdir/test.log
+echo "" > $logFile
 
 function check_result()
 {
@@ -24,16 +28,26 @@ function check_result()
  fi 
 }
 
+# Logging and printing function.
+function logEcho ()
+{
+ echo "$1"
+ echo "$1" >> $logFile
+}
+
 ############# STEP 1 ##############
 
+logEcho "[Korali] Checking Pip Installation"
 pip check korali
 check_result
 
 ############# STEP 2 ##############
 
+logEcho "[Korali] Checking korali.plotter"
 python3 -m korali.plotter --check
 check_result
 
+logEcho "[Korali] Checking korali.cxx"
 python3 -m korali.cxx --cflags
 check_result
 

@@ -58,9 +58,9 @@ class Engine {
  bool _isFinished;
 
  std::vector<Korali::Variable*> _variables;
- Korali::Conduit::Base* _conduit;
- Korali::Problem::Base* _problem;
- Korali::Solver::Base*  _solver;
+ std::shared_ptr<Korali::Conduit::Base> _conduit;
+ std::shared_ptr<Korali::Problem::Base> _problem;
+ std::shared_ptr<Korali::Solver::Base>  _solver;
 
  // Model Functions and constructors
  Engine();

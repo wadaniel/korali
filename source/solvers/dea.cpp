@@ -41,10 +41,10 @@ void DEA::initialize()
  _sampleCandidates.resize(_k->N*_sampleCount);
  _transformedSamples.resize(_k->N*_sampleCount);
 
- _rgxOldMean.resize(_k->N);
- _rgxMean.resize(_k->N);
- _rgxBestEver.resize(_k->N);
- _curBestEver.resize(_k->N);
+ _oldMean.resize(_k->N);
+ _mean.resize(_k->N);
+ _bestEverSample.resize(_k->N);
+ _currentBestSample.resize(_k->N);
  _maxWidth.resize(_k->N);
 
  _isInitializedSample.resize(_sampleCount);
@@ -55,12 +55,12 @@ void DEA::initialize()
  else if(_objective == "Minimize")  _evaluationSign = -1.0;
  else { fprintf(stderr,"[Korali] Error: Objective must be either be initialized to \'Maximize\' or \'Minimize\' (is %s).\n", _objective.c_str()); exit(-1); }         
 
- _infeasibleSampleCount   = 0;
- _bestIndex               = 0;
- _previousFunctionValue   = -std::numeric_limits<double>::max();
- _currentFunctionValue    = -std::numeric_limits<double>::max();
- _previousBestEver        = -std::numeric_limits<double>::max();
- _bestEver                = -std::numeric_limits<double>::max();
+ _infeasibleSampleCount = 0;
+ _bestIndex             = 0;
+ _previousBestValue     = -std::numeric_limits<double>::max();
+ _currentBestValue      = -std::numeric_limits<double>::max();
+ _previousBestEverValue = -std::numeric_limits<double>::max();
+ _bestEverValue         = -std::numeric_limits<double>::max();
 
  for(size_t d = 0; d < _k->N; ++d) if(_variableSettings[d].upperBound < _variableSettings[d].lowerBound)
     { fprintf(stderr,"[Korali] Error: Lower Bound (%.4f) of variable \'%s\'  exceeds Upper Bound (%.4f).\n",          
@@ -72,10 +72,10 @@ void DEA::initialize()
 
  initSamples();
 
- for(size_t d = 0; d < _k->N; ++d) { _rgxOldMean[d] = 0.0; _rgxMean[d] = 0.0; }
+ for(size_t d = 0; d < _k->N; ++d) { _oldMean[d] = 0.0; _mean[d] = 0.0; }
 
  for(size_t i = 0; i < _sampleCount; ++i) for(size_t d = 0; d < _k->N; ++d) 
-   _rgxMean[d] += _samplePopulation[i*_k->N+d]/((double)_sampleCount);
+   _mean[d] += _samplePopulation[i*_k->N+d]/((double)_sampleCount);
 
 }
 
@@ -206,9 +206,9 @@ void DEA::evaluateSamples()
 {
   
   for (size_t i = 0; i < _sampleCount; i++) for(size_t d = 0; d < _k->N; ++d)
-    //if(_k->_variables[d]->_isLogSpace == true)
-    //    _transformedSamples[i*_k->N+d] = std::exp(_sampleCandidates[i*_k->N+d]);
-    //else 
+    if(_k->_variables[d]->_isLogSpace == true)
+        _transformedSamples[i*_k->N+d] = std::exp(_sampleCandidates[i*_k->N+d]);
+    else 
         _transformedSamples[i*_k->N+d] = _sampleCandidates[i*_k->N+d];
 
 
@@ -236,42 +236,42 @@ void DEA::processSample(size_t sampleIdx, double fitness)
 void DEA::updateSolver()
 {
     _bestIndex = std::distance( std::begin(_fitnessVector), std::max_element(std::begin(_fitnessVector), std::end(_fitnessVector)) );
-    _previousBestEver      = _bestEver;
-    _previousFunctionValue = _currentFunctionValue;
-    _currentFunctionValue  = _fitnessVector[_bestIndex];
+    _previousBestEverValue  = _bestEverValue;
+    _previousBestValue = _currentBestValue;
+    _currentBestValue  = _fitnessVector[_bestIndex];
 
-    for(size_t d = 0; d < _k->N; ++d) _curBestEver[d] = _sampleCandidates[_bestIndex*_k->N+d];
+    for(size_t d = 0; d < _k->N; ++d) _currentBestSample[d] = _sampleCandidates[_bestIndex*_k->N+d];
     
-    _rgxOldMean.assign(std::begin(_rgxMean), std::end(_rgxMean));
-    std::fill(std::begin(_rgxMean), std::end(_rgxMean), 0.0); 
+    _oldMean.assign(std::begin(_mean), std::end(_mean));
+    std::fill(std::begin(_mean), std::end(_mean), 0.0); 
 
-    if(_currentFunctionValue > _bestEver) _rgxBestEver.assign(std::begin(_curBestEver), std::end(_curBestEver));
+    if(_currentBestValue > _bestEverValue) _bestEverSample.assign(std::begin(_currentBestSample), std::end(_currentBestSample));
 
     switch (str2int(_acceptRule.c_str()))
     {
         case str2int("Best") : // only update best sample
-            if(_currentFunctionValue > _bestEver)
+            if(_currentBestValue > _bestEverValue)
             {
               for(size_t d = 0; d < _k->N; ++d) _samplePopulation[_bestIndex*_k->N+d] = _sampleCandidates[_bestIndex*_k->N+d];
-              _bestEver = _currentFunctionValue;
+              _bestEverValue = _currentBestValue;
             }
             break;
 
         case str2int("Greedy") : // accept all mutations better than parent
             for(size_t i = 0; i < _sampleCount; ++i) if(_fitnessVector[i] > _prevfitnessVector[i])
                 for(size_t d = 0; d < _k->N; ++d) _samplePopulation[i*_k->N+d] = _sampleCandidates[i*_k->N+d];
-            if(_currentFunctionValue > _bestEver) _bestEver = _currentFunctionValue;
+            if(_currentBestValue > _bestEverValue) _bestEverValue = _currentBestValue;
             break;
 
-        case str2int("Improved") : // update all samples better than _bestEver
-            for(size_t i = 0; i < _sampleCount; ++i) if(_fitnessVector[i] > _bestEver)
+        case str2int("Improved") : // update all samples better than _bestEverValue
+            for(size_t i = 0; i < _sampleCount; ++i) if(_fitnessVector[i] > _bestEverValue)
                 for(size_t d = 0; d < _k->N; ++d) _samplePopulation[i*_k->N+d] = _sampleCandidates[i*_k->N+d];
-            if(_currentFunctionValue > _bestEver) _bestEver = _currentFunctionValue;
+            if(_currentBestValue > _bestEverValue) _bestEverValue = _currentBestValue;
             break;
 
-        case str2int("Iterative") : // iteratibely update _bestEver and accept samples
-            for(size_t i = 0; i < _sampleCount; ++i) if(_fitnessVector[i] > _bestEver)
-             { for(size_t d = 0; d < _k->N; ++d) _samplePopulation[i*_k->N+d] = _sampleCandidates[i*_k->N+d]; _bestEver = _fitnessVector[i]; }
+        case str2int("Iterative") : // iteratibely update _bestEverValue and accept samples
+            for(size_t i = 0; i < _sampleCount; ++i) if(_fitnessVector[i] > _bestEverValue)
+             { for(size_t d = 0; d < _k->N; ++d) _samplePopulation[i*_k->N+d] = _sampleCandidates[i*_k->N+d]; _bestEverValue = _fitnessVector[i]; }
             break;
 
         default :
@@ -280,7 +280,7 @@ void DEA::updateSolver()
     }
 
     for(size_t i = 0; i < _sampleCount; ++i) for(size_t d = 0; d < _k->N; ++d) 
-        _rgxMean[d] += _samplePopulation[i*_k->N+d]/((double)_sampleCount);
+        _mean[d] += _samplePopulation[i*_k->N+d]/((double)_sampleCount);
 
     for(size_t d = 0; d < _k->N; ++d) 
     {
@@ -301,19 +301,19 @@ bool DEA::checkTermination()
 {
 
  bool isFinished = false;
- if ( _termCondMinFitnessEnabled && (_k->currentGeneration > 1) && (_bestEver >= _termCondMinFitness) )
+ if ( _termCondMinFitnessEnabled && (_k->currentGeneration > 1) && (_bestEverValue >= _termCondMinFitness) )
  {
   isFinished = true;
-  if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Fitness Value (%+6.3e) > (%+6.3e).\n",  _bestEver, _termCondMinFitness);
+  if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Fitness Value (%+6.3e) > (%+6.3e).\n",  _bestEverValue, _termCondMinFitness);
  }
  
- if ( _termCondMaxFitnessEnabled && (_k->currentGeneration > 1) && (_bestEver >= _termCondMaxFitness) )
+ if ( _termCondMaxFitnessEnabled && (_k->currentGeneration > 1) && (_bestEverValue >= _termCondMaxFitness) )
  {
   isFinished = true;
-  if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Fitness Value (%+6.3e) > (%+6.3e).\n",  _bestEver, _termCondMaxFitness);
+  if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Fitness Value (%+6.3e) > (%+6.3e).\n",  _bestEverValue, _termCondMaxFitness);
  }
 
- double range = fabs(_currentFunctionValue - _previousFunctionValue);
+ double range = fabs(_currentBestValue - _previousBestValue);
  if ( _termCondMinFitnessDiffThresholdEnabled && (_k->currentGeneration > 1) && (range < _termCondMinFitnessDiffThreshold) )
  {
   isFinished = true;
@@ -323,7 +323,7 @@ bool DEA::checkTermination()
  if ( _termCondMinStepSizeEnabled && (_k->currentGeneration > 1) )
  {
    size_t cTemp = 0;
-   for(size_t d = 0; d < _k->N; ++d) cTemp += (fabs(_rgxMean[d] - _rgxOldMean[d]) < _termCondMinStepSize) ? 1 : 0;
+   for(size_t d = 0; d < _k->N; ++d) cTemp += (fabs(_mean[d] - _oldMean[d]) < _termCondMinStepSize) ? 1 : 0;
    if (cTemp == _k->N) 
    {
     isFinished = true;
@@ -353,14 +353,14 @@ void DEA::printGeneration()
  
  if (_k->_verbosity >= KORALI_NORMAL)
  {
-  printf("[Korali] Current Function Value: Max = %+6.3e - Best = %+6.3e\n", _currentFunctionValue, _bestEver);
+  printf("[Korali] Current Function Value: Max = %+6.3e - Best = %+6.3e\n", _currentBestValue, _bestEverValue);
   // TODO: sth like width of samples: printf("[Korali] Covariance Eigenvalues: Min = %+6.3e -  Max = %+6.3e\n", minEW, maxEW);
  }
 
  if (_k->_verbosity >= KORALI_DETAILED)
  {
   printf("[Korali] Variable = (MeanX, BestX):\n");
-  for (size_t d = 0; d < _k->N; d++)  printf("         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _rgxMean[d], _rgxBestEver[d]);
+  for (size_t d = 0; d < _k->N; d++)  printf("         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _mean[d], _bestEverSample[d]);
   printf("[Korali] Max Width:\n");
   for (size_t d = 0; d < _k->N; d++)  printf("         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _maxWidth[d]);
   printf("[Korali] Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
@@ -375,9 +375,9 @@ void DEA::finalize()
  if (_k->_verbosity >= KORALI_MINIMAL)
  {
     printf("[Korali] Differential Evolution Finished\n");
-    printf("[Korali] Optimum (%s) found: %e\n", _objective.c_str(), _bestEver);
+    printf("[Korali] Optimum (%s) found: %e\n", _objective.c_str(), _bestEverValue);
     printf("[Korali] Optimum (%s) found at:\n", _objective.c_str());
-    for (size_t d = 0; d < _k->N; ++d) printf("         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _rgxBestEver[d]);
+    for (size_t d = 0; d < _k->N; ++d) printf("         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverSample[d]);
     printf("[Korali] Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
     printf("--------------------------------------------------------------------\n");
  }

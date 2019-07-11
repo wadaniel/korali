@@ -21,9 +21,9 @@ k["Problem"] = "Direct Evaluation"
 k["Solver"]  = "CMAES"
 
 # Defining the problem's variables and their CMA-ES bounds.
-k["Variables"][0]["Name"] = "X";
-k["Variables"][0]["CMAES"]["Lower Bound"] = -10.0;
-k["Variables"][0]["CMAES"]["Upper Bound"] = +10.0;
+k["Variables"][0]["Name"] = "X"
+k["Variables"][0]["CMAES"]["Lower Bound"] = -10.0
+k["Variables"][0]["CMAES"]["Upper Bound"] = +10.0
 
 # Configuring CMA-ES parameters
 k["CMAES"]["Objective"] = "Maximize"

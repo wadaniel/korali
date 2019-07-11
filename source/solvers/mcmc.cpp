@@ -37,63 +37,64 @@ Korali::Solver::MCMC::~MCMC()
 
 void Korali::Solver::MCMC::runGeneration()
 {
- rejectionCount = 0;
- while( rejectionCount < rejectionLevels )
+ _rejectionCount = 0;
+ while( _rejectionCount < _rejectionLevels )
  {
-  generateCandidate(rejectionCount);
+  generateCandidate(_rejectionCount);
   evaluateSample();
   _k->_conduit->checkProgress();
-  acceptReject(rejectionCount);
-  rejectionCount++;
+  acceptReject(_rejectionCount);
+  _rejectionCount++;
  }
- chainLength++;
- if (chainLength > burnIn ) updateDatabase(chainLeaderParameters, chainLeaderLogLikelihood);
+ _chainLength++;
+ if (_chainLength > _burnIn ) updateDatabase(_chainLeaderParameters, _chainLeaderLogLikelihood);
  updateState();
 }
 
 void Korali::Solver::MCMC::initialize()
 {
  // Allocating MCMC memory
- covarianceMatrix.resize(_k->N*_k->N);
- chainLeaderParameters.resize(_k->N);
- chainCandidatesParameters.resize(_k->N*rejectionLevels);
- logTransformedSamples.resize(_k->N*rejectionLevels);
- chainCandidatesLogPriors.resize(rejectionLevels);
- chainCandidatesLogLikelihoods.resize(rejectionLevels);
- rejectionAlphas.resize(rejectionLevels);
- sampleParametersDatabase.resize(_k->N*maxChainLength);
- sampleFitnessDatabase.resize(maxChainLength);
- chainMean.resize(_k->N);
- chainCovariancePlaceholder.resize(_k->N*_k->N);
- chainCovariance.resize(_k->N*_k->N);
+ _covarianceMatrix.resize(_k->N*_k->N);
+ _chainLeaderParameters.resize(_k->N);
+ _chainCandidatesParameters.resize(_k->N*_rejectionLevels);
+ _logTransformedSamples.resize(_k->N*_rejectionLevels);
+ _chainCandidatesLogPriors.resize(_rejectionLevels);
+ _chainCandidatesLogLikelihoods.resize(_rejectionLevels);
+ _rejectionAlphas.resize(_rejectionLevels);
+ _sampleParametersDatabase.resize(_k->N*_maxChainLength);
+ _sampleFitnessDatabase.resize(_maxChainLength);
+ _chainMean.resize(_k->N);
+ _chainCovariancePlaceholder.resize(_k->N*_k->N);
+ _chainCovariance.resize(_k->N*_k->N);
 
- for(size_t i = 0; i < _k->N; i++) chainLeaderParameters[i] = _variableSettings[i].initialMean;
- for(size_t i = 0; i < _k->N; i++) covarianceMatrix[i*_k->N+i] = _variableSettings[i].standardDeviation;
+ for(size_t i = 0; i < _k->N; i++) _chainLeaderParameters[i] = _variableSettings[i].initialMean;
+ for(size_t i = 0; i < _k->N; i++) _covarianceMatrix[i*_k->N+i] = _variableSettings[i].standardDeviation;
 
  // Init Generation
- acceptanceCount = 0;
- proposedSampleCount = 0;
- chainLength = 0;
- rejectionCount = 0;
- databaseEntryCount = 0;
- chainLeaderLogLikelihood = -std::numeric_limits<double>::max();
- acceptanceRate  = 1.0;
+ _acceptanceCount = 0;
+ _proposedSampleCount = 0;
+ _chainLength = 0;
+ _rejectionCount = 0;
+ _databaseEntryCount = 0;
+ _chainLeaderLogLikelihood = -std::numeric_limits<double>::max();
+ _acceptanceRate  = 1.0;
+ _chainCovarianceScaling = 2.4*2.4/_k->N; //[Gelman et. al. 1995]
 }
 
 void Korali::Solver::MCMC::processSample(size_t sampleIdx, double fitness)
 {
- chainCandidatesLogLikelihoods[sampleIdx] = fitness + chainCandidatesLogPriors[sampleIdx];
+ _chainCandidatesLogLikelihoods[sampleIdx] = fitness + _chainCandidatesLogPriors[sampleIdx];
 }
 
 void Korali::Solver::MCMC::acceptReject(size_t trial)
 {
 
  double denom;
- double rejectionAlphas = recursiveAlpha(denom, chainLeaderLogLikelihood, &chainCandidatesLogLikelihoods[0], trial);
- if ( rejectionAlphas == 1.0 || rejectionAlphas > _uniformGenerator->getRandomNumber() ) {
-   acceptanceCount++;
-   chainLeaderLogLikelihood = chainCandidatesLogLikelihoods[trial];
-   for (size_t d = 0; d < _k->N; d++) chainLeaderParameters[d] = chainCandidatesParameters[trial*_k->N+d];
+ double _rejectionAlphas = recursiveAlpha(denom, _chainLeaderLogLikelihood, &_chainCandidatesLogLikelihoods[0], trial);
+ if ( _rejectionAlphas == 1.0 || _rejectionAlphas > _uniformGenerator->getRandomNumber() ) {
+   _acceptanceCount++;
+   _chainLeaderLogLikelihood = _chainCandidatesLogLikelihoods[trial];
+   for (size_t d = 0; d < _k->N; d++) _chainLeaderParameters[d] = _chainCandidatesParameters[trial*_k->N+d];
  }
 }
 
@@ -136,22 +137,22 @@ double Korali::Solver::MCMC::recursiveAlpha(double& denom, const double llk0, co
 
 void Korali::Solver::MCMC::updateDatabase(std::vector<double>& point, double loglik)
 {
- for (size_t d = 0; d < _k->N; d++) sampleParametersDatabase[databaseEntryCount*_k->N + d] = point[d];
- sampleFitnessDatabase[databaseEntryCount] = loglik;
- databaseEntryCount++;
+ for (size_t d = 0; d < _k->N; d++) _sampleParametersDatabase[_databaseEntryCount*_k->N + d] = point[d];
+ _sampleFitnessDatabase[_databaseEntryCount] = loglik;
+ _databaseEntryCount++;
 }
 
 
 void Korali::Solver::MCMC::generateCandidate(size_t sampleIdx)
 {  
- size_t initialgens = proposedSampleCount;
- sampleCandidate(sampleIdx); proposedSampleCount++;
+ size_t initialgens = _proposedSampleCount;
+ sampleCandidate(sampleIdx); _proposedSampleCount++;
  setCandidatePriorAndCheck(sampleIdx);
  
  /*do { /TODO: fix check (DW)
-   sampleCandidate(level); proposedSampleCount++;
+   sampleCandidate(level); _proposedSampleCount++;
    setCandidatePriorAndCheck(level);
-   if ( (proposedSampleCount - initialgens) > _maxresamplings)
+   if ( (_proposedSampleCount - initialgens) > _maxresamplings)
    {       
      if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Warning: exiting resampling loop, max resamplings (%zu) reached.\n", _maxresamplings);
      exit(-1);
@@ -162,74 +163,70 @@ void Korali::Solver::MCMC::generateCandidate(size_t sampleIdx)
 void Korali::Solver::MCMC::evaluateSample()
 {
   for(size_t d = 0; d < _k->N; ++d)
-    //if(_k->_variables[d]->_isLogSpace == true)
-    //    logTransformedSamples[rejectionCount*_k->N+d] = std::exp(chainCandidatesParameters[rejectionCount*_k->N+d]);
-    //else 
-        logTransformedSamples[rejectionCount*_k->N+d] = chainCandidatesParameters[rejectionCount*_k->N+d];
+    if(_k->_variables[d]->_isLogSpace == true)
+        _logTransformedSamples[_rejectionCount*_k->N+d] = std::exp(_chainCandidatesParameters[_rejectionCount*_k->N+d]);
+    else 
+        _logTransformedSamples[_rejectionCount*_k->N+d] = _chainCandidatesParameters[_rejectionCount*_k->N+d];
 
-  _k->_conduit->evaluateSample(&logTransformedSamples[0], rejectionCount);
+  _k->_conduit->evaluateSample(&_logTransformedSamples[0], _rejectionCount);
 }
 
 void Korali::Solver::MCMC::sampleCandidate(size_t sampleIdx)
 {  
- for (size_t d = 0; d < _k->N; ++d) chainCandidatesParameters[sampleIdx*_k->N+d] = 0.0;
+ for (size_t d = 0; d < _k->N; ++d) _chainCandidatesParameters[sampleIdx*_k->N+d] = 0.0;
 
- if ( (useAdaptiveSampling == false) || (databaseEntryCount <= nonAdaptionPeriod + burnIn))
-     for (size_t d = 0; d < _k->N; ++d) for (size_t e = 0; e < _k->N; ++e) chainCandidatesParameters[sampleIdx*_k->N+d] += covarianceMatrix[d*_k->N+e] * _gaussianGenerator->getRandomNumber();
+ if ( (_useAdaptiveSampling == false) || (_databaseEntryCount <= _nonAdaptionPeriod + _burnIn))
+     for (size_t d = 0; d < _k->N; ++d) for (size_t e = 0; e < _k->N; ++e) _chainCandidatesParameters[sampleIdx*_k->N+d] += _covarianceMatrix[d*_k->N+e] * _gaussianGenerator->getRandomNumber();
  else
-     for (size_t d = 0; d < _k->N; ++d) for (size_t e = 0; e < _k->N; ++e) chainCandidatesParameters[sampleIdx*_k->N+d] += chainCovariance[d*_k->N+e] * _gaussianGenerator->getRandomNumber();
+     for (size_t d = 0; d < _k->N; ++d) for (size_t e = 0; e < _k->N; ++e) _chainCandidatesParameters[sampleIdx*_k->N+d] += _chainCovariance[d*_k->N+e] * _gaussianGenerator->getRandomNumber();
 
- for (size_t d = 0; d < _k->N; ++d) chainCandidatesParameters[sampleIdx*_k->N+d] += chainLeaderParameters[d];
+ for (size_t d = 0; d < _k->N; ++d) _chainLeaderParameters[d] += _chainCandidatesParameters[sampleIdx*_k->N+d];
 }
 
 bool Korali::Solver::MCMC::setCandidatePriorAndCheck(size_t sampleIdx)
 {
- chainCandidatesLogPriors[sampleIdx] = _k->_problem->evaluateLogPrior(&chainCandidatesParameters[_k->N*sampleIdx]);
- if (chainCandidatesLogPriors[sampleIdx] > -INFINITY) return true;
+ _chainCandidatesLogPriors[sampleIdx] = _k->_problem->evaluateLogPrior(&_chainCandidatesParameters[_k->N*sampleIdx]);
+ if (_chainCandidatesLogPriors[sampleIdx] > -INFINITY) return true;
  return false;
 }
 
 void Korali::Solver::MCMC::updateState()
 {
 
- acceptanceRate = ( (double)acceptanceCount/ (double)chainLength );
+ _acceptanceRate = ( (double)_acceptanceCount/ (double)_chainLength );
 
- if(databaseEntryCount < 1) return;
+ if(_databaseEntryCount < 1) return;
  
  for (size_t d = 0; d < _k->N; d++) for (size_t e = 0; e < d; e++)
  {
-   chainCovariancePlaceholder[d*_k->N+e] = databaseEntryCount*chainMean[d]*chainMean[e] + chainLeaderParameters[d]*chainLeaderParameters[e];
-   chainCovariancePlaceholder[e*_k->N+d] = databaseEntryCount*chainMean[d]*chainMean[e] + chainLeaderParameters[d]*chainLeaderParameters[e];
+   _chainCovariancePlaceholder[d*_k->N+e] = (_databaseEntryCount-1)*_chainMean[d]*_chainMean[e] + _chainLeaderParameters[d]*_chainLeaderParameters[e];
+   _chainCovariancePlaceholder[e*_k->N+d] = (_databaseEntryCount-1)*_chainMean[d]*_chainMean[e] + _chainLeaderParameters[d]*_chainLeaderParameters[e];
  }
- for (size_t d = 0; d < _k->N; d++) chainCovariancePlaceholder[d*_k->N+d] = databaseEntryCount*chainMean[d]*chainMean[d] + chainLeaderParameters[d]*chainLeaderParameters[d] + chainCovarianceIncrement;
+ for (size_t d = 0; d < _k->N; d++) _chainCovariancePlaceholder[d*_k->N+d] += _chainCovarianceIncrement*_chainCovarianceScaling;
 
  // Chain Mean
- for (size_t d = 0; d < _k->N; d++) chainMean[d] = ((chainMean[d] * (databaseEntryCount-1) + chainLeaderParameters[d])) / ((double) databaseEntryCount);
+ for (size_t d = 0; d < _k->N; d++) _chainMean[d] = ((_chainMean[d] * (_databaseEntryCount-1) + _chainLeaderParameters[d])) / ((double) _databaseEntryCount);
  
  for (size_t d = 0; d < _k->N; d++) for (size_t e = 0; e < d; e++)
  {
-    chainCovariancePlaceholder[d*_k->N+e] -= (databaseEntryCount+1)*chainMean[d]*chainMean[e];
-    chainCovariancePlaceholder[e*_k->N+d] -= (databaseEntryCount+1)*chainMean[d]*chainMean[e];
-
+    _chainCovariancePlaceholder[d*_k->N+e] -= _databaseEntryCount*_chainMean[d]*_chainMean[e];
+    _chainCovariancePlaceholder[e*_k->N+d] -= _databaseEntryCount*_chainMean[d]*_chainMean[e];
  }
- for (size_t d = 0; d < _k->N; d++) chainCovariancePlaceholder[d*_k->N+d] -= (databaseEntryCount+1)*chainMean[d]*chainMean[d];
 
- // Chain Covariance (TODO: careful check N (databasEntires) (DW)
  for (size_t d = 0; d < _k->N; d++) for (size_t e = 0; e < d; e++)
  {
-   chainCovariance[d*_k->N+e] = (databaseEntryCount-1.0)/( (double) databaseEntryCount) * chainCovariance[d*_k->N+e] + (chainCovarianceScaling/( (double) databaseEntryCount))*chainCovariancePlaceholder[d*_k->N+e];
-   chainCovariance[e*_k->N+d] = (databaseEntryCount-1.0)/( (double) databaseEntryCount) * chainCovariance[d*_k->N+e] + (chainCovarianceScaling/( (double) databaseEntryCount))*chainCovariancePlaceholder[d*_k->N+e];
+   _chainCovariance[d*_k->N+e] = (_databaseEntryCount-2.0)/(_databaseEntryCount-1.0) * _chainCovariance[d*_k->N+e] + (_chainCovarianceScaling/( (double) _databaseEntryCount))*_chainCovariancePlaceholder[d*_k->N+e];
+   _chainCovariance[e*_k->N+d] = (_databaseEntryCount-2.0)/(_databaseEntryCount-1.0) * _chainCovariance[d*_k->N+e] + (_chainCovarianceScaling/( (double) _databaseEntryCount))*_chainCovariancePlaceholder[d*_k->N+e];
  }
- for (size_t d = 0; d < _k->N; d++) chainCovariance[d*_k->N+d] = (databaseEntryCount-1.0)/( (double) databaseEntryCount) * chainCovariance[d*_k->N+d] + (chainCovarianceScaling/( (double) databaseEntryCount))*chainCovariancePlaceholder[d*_k->N+d];
 }
 
 bool Korali::Solver::MCMC::checkTermination()
 {
  bool isFinished = false;
- if ( databaseEntryCount == maxChainLength)
+ if ( _databaseEntryCount == _maxChainLength)
  {
-	 if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Chainlength (%zu) reached.\n",  chainLength);
-  isFinished = true;
+   if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Chainlength (%zu) reached.\n",  _chainLength);
+   isFinished = true;
  }
 
  return isFinished;
@@ -240,22 +237,22 @@ void Korali::Solver::MCMC::printGeneration()
  if (_k->_verbosity >= KORALI_MINIMAL)
  {
   printf("--------------------------------------------------------------------\n");
-  printf("[Korali] Database Entries %ld\n", databaseEntryCount);
+  printf("[Korali] Database Entries %ld\n", _databaseEntryCount);
  }
 
- if (_k->_verbosity >= KORALI_NORMAL) printf("[Korali] Accepted Samples: %zu\n", acceptanceCount);
- if (_k->_verbosity >= KORALI_NORMAL) printf("[Korali] Acceptance Rate Proposals: %.2f%%\n", 100*acceptanceRate);
+ if (_k->_verbosity >= KORALI_NORMAL) printf("[Korali] Accepted Samples: %zu\n", _acceptanceCount);
+ if (_k->_verbosity >= KORALI_NORMAL) printf("[Korali] Acceptance Rate Proposals: %.2f%%\n", 100*_acceptanceRate);
 
  if (_k->_verbosity >= KORALI_DETAILED)
  {
   printf("[Korali] Variable = (Current Sample, Current Candidate):\n");
-  for (size_t d = 0; d < _k->N; d++)  printf("         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), chainLeaderParameters[d], chainCandidatesParameters[d]);
+  for (size_t d = 0; d < _k->N; d++)  printf("         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _chainLeaderParameters[d], _chainCandidatesParameters[d]);
   printf("[Korali] Current Chain Mean:\n");
-  for (size_t d = 0; d < _k->N; d++) printf(" %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), chainMean[d]);
+  for (size_t d = 0; d < _k->N; d++) printf(" %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _chainMean[d]);
   printf("[Korali] Current Chain Covariance:\n");
   for (size_t d = 0; d < _k->N; d++)
   {
-   for (size_t e = 0; e <= d; e++) printf("   %+6.3e  ", chainCovariance[d*_k->N+e]);
+   for (size_t e = 0; e <= d; e++) printf("   %+6.3e  ", _chainCovariance[d*_k->N+e]);
    printf("\n");
   }
  }
@@ -266,9 +263,9 @@ void Korali::Solver::MCMC::finalize()
  if (_k->_verbosity >= KORALI_MINIMAL)
  {
     printf("[Korali] MCMC Finished\n");
-    printf("[Korali] Number of Generated Samples: %zu\n", proposedSampleCount);
-    printf("[Korali] Acceptance Rate: %.2f%%\n", 100*acceptanceRate);
-    if (databaseEntryCount == chainLength) printf("[Korali] Max Samples Reached.\n");
+    printf("[Korali] Number of Generated Samples: %zu\n", _proposedSampleCount);
+    printf("[Korali] Acceptance Rate: %.2f%%\n", 100*_acceptanceRate);
+    if (_databaseEntryCount == _chainLength) printf("[Korali] Max Samples Reached.\n");
     printf("--------------------------------------------------------------------\n");
  }
 }

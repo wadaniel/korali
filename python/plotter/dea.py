@@ -111,12 +111,12 @@ def plot_dea(src, live=False, test=False):
                 continue
                 
             numeval.append(data['Function Evaluation Count'])
-            dfval.append(abs(state['Current Function Value'] - state['Best Sample Ever']))
-            fval.append(state['Current Function Value'])
+            dfval.append(abs(state['Current Best Value'] - state['Best Ever Value']))
+            fval.append(state['Current Best Value'])
 
             for i in range(numdim):
-                fvalXvec[i].append(state['Current Best Ever'][i])
-                meanXvec[i].append(state['RGX Mean'][i])
+                fvalXvec[i].append(state['Current Best Sample'][i])
+                meanXvec[i].append(state['Mean'][i])
                 width[i].append(state['Max Width'][i])
 
             if (live == False):

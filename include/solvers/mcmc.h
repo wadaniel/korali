@@ -123,6 +123,16 @@ Small constant to avoid singularity of the chain covariance.
 double _chainCovarianceIncrement;
 
 /******************************************************************************
+Setting Name: Chain Covariance Scaling
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Small constant to avoid singularity of the chain covariance.
+******************************************************************************/
+double _chainCovarianceScaling;
+
+/******************************************************************************
 Setting Name: Covariance Matrix
 Type: Internal Attribute
 Default Value:

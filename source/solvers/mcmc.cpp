@@ -78,6 +78,7 @@ void Korali::Solver::MCMC::initialize()
  _databaseEntryCount = 0;
  _chainLeaderLogLikelihood = -std::numeric_limits<double>::max();
  _acceptanceRate  = 1.0;
+ _chainCovarianceScaling = 2.4*2.4/_k->N; //[Gelman et. al. 1995]
 }
 
 void Korali::Solver::MCMC::processSample(size_t sampleIdx, double fitness)
@@ -198,29 +199,25 @@ void Korali::Solver::MCMC::updateState()
  
  for (size_t d = 0; d < _k->N; d++) for (size_t e = 0; e < d; e++)
  {
-   _chainCovariancePlaceholder[d*_k->N+e] = _databaseEntryCount*_chainMean[d]*_chainMean[e] + _chainLeaderParameters[d]*_chainLeaderParameters[e];
-   _chainCovariancePlaceholder[e*_k->N+d] = _databaseEntryCount*_chainMean[d]*_chainMean[e] + _chainLeaderParameters[d]*_chainLeaderParameters[e];
+   _chainCovariancePlaceholder[d*_k->N+e] = (_databaseEntryCount-1)*_chainMean[d]*_chainMean[e] + _chainLeaderParameters[d]*_chainLeaderParameters[e];
+   _chainCovariancePlaceholder[e*_k->N+d] = (_databaseEntryCount-1)*_chainMean[d]*_chainMean[e] + _chainLeaderParameters[d]*_chainLeaderParameters[e];
  }
- for (size_t d = 0; d < _k->N; d++) _chainCovariancePlaceholder[d*_k->N+d] = _databaseEntryCount*_chainMean[d]*_chainMean[d] + _chainLeaderParameters[d]*_chainLeaderParameters[d] + _chainCovarianceIncrement;
+ for (size_t d = 0; d < _k->N; d++) _chainCovariancePlaceholder[d*_k->N+d] += _chainCovarianceIncrement*_chainCovarianceScaling;
 
  // Chain Mean
  for (size_t d = 0; d < _k->N; d++) _chainMean[d] = ((_chainMean[d] * (_databaseEntryCount-1) + _chainLeaderParameters[d])) / ((double) _databaseEntryCount);
  
  for (size_t d = 0; d < _k->N; d++) for (size_t e = 0; e < d; e++)
  {
-    _chainCovariancePlaceholder[d*_k->N+e] -= (_databaseEntryCount+1)*_chainMean[d]*_chainMean[e];
-    _chainCovariancePlaceholder[e*_k->N+d] -= (_databaseEntryCount+1)*_chainMean[d]*_chainMean[e];
-
+    _chainCovariancePlaceholder[d*_k->N+e] -= _databaseEntryCount*_chainMean[d]*_chainMean[e];
+    _chainCovariancePlaceholder[e*_k->N+d] -= _databaseEntryCount*_chainMean[d]*_chainMean[e];
  }
- for (size_t d = 0; d < _k->N; d++) _chainCovariancePlaceholder[d*_k->N+d] -= (_databaseEntryCount+1)*_chainMean[d]*_chainMean[d];
 
- // Chain Covariance (TODO: careful check N (databasEntires) (DW)
  for (size_t d = 0; d < _k->N; d++) for (size_t e = 0; e < d; e++)
  {
-   _chainCovariance[d*_k->N+e] = (_databaseEntryCount-1.0)/( (double) _databaseEntryCount) * _chainCovariance[d*_k->N+e] + (_chainCovarianceIncrement/( (double) _databaseEntryCount))*_chainCovariancePlaceholder[d*_k->N+e];
-   _chainCovariance[e*_k->N+d] = (_databaseEntryCount-1.0)/( (double) _databaseEntryCount) * _chainCovariance[d*_k->N+e] + (_chainCovarianceIncrement/( (double) _databaseEntryCount))*_chainCovariancePlaceholder[d*_k->N+e];
+   _chainCovariance[d*_k->N+e] = (_databaseEntryCount-2.0)/(_databaseEntryCount-1.0) * _chainCovariance[d*_k->N+e] + (_chainCovarianceScaling/( (double) _databaseEntryCount))*_chainCovariancePlaceholder[d*_k->N+e];
+   _chainCovariance[e*_k->N+d] = (_databaseEntryCount-2.0)/(_databaseEntryCount-1.0) * _chainCovariance[d*_k->N+e] + (_chainCovarianceScaling/( (double) _databaseEntryCount))*_chainCovariancePlaceholder[d*_k->N+e];
  }
- for (size_t d = 0; d < _k->N; d++) _chainCovariance[d*_k->N+d] = (_databaseEntryCount-1.0)/( (double) _databaseEntryCount) * _chainCovariance[d*_k->N+d] + (_chainCovarianceIncrement/( (double) _databaseEntryCount))*_chainCovariancePlaceholder[d*_k->N+d];
 }
 
 bool Korali::Solver::MCMC::checkTermination()
@@ -228,8 +225,8 @@ bool Korali::Solver::MCMC::checkTermination()
  bool isFinished = false;
  if ( _databaseEntryCount == _maxChainLength)
  {
-	 if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Chainlength (%zu) reached.\n",  _chainLength);
-  isFinished = true;
+   if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Chainlength (%zu) reached.\n",  _chainLength);
+   isFinished = true;
  }
 
  return isFinished;

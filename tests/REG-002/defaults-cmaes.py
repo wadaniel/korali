@@ -81,9 +81,9 @@ assert_value( k["CMAES"]["Internal"]["Evaluation Sign"], 1.0 )
 
 assert_value( k["CMAES"]["Internal"]["Global Success Rate"], 0.5 )
 
-assert_value( k["CMAES"]["Internal"]["Sigma"], 6.0 )
+assert_value( k["CMAES"]["Internal"]["Sigma"], 5.0 )
 
-assert_value( k["CMAES"]["Internal"]["Trace"], 36.0 )
+assert_value( k["CMAES"]["Internal"]["Trace"], 25.0 )
 
 # Testing Termination Criteria
 
@@ -116,7 +116,7 @@ assert_value( k["CMAES"]["Viability Sample Count"], 2 )
 
 assert_value( k["Variables"][0]["CMAES"]["Initial Mean"], 0.0 )
 
-assert_value( k["Variables"][0]["CMAES"]["Initial Standard Deviation"], 6.0 )
+assert_value( k["Variables"][0]["CMAES"]["Initial Standard Deviation"], 5.0 )
 
 assert_value( k["Variables"][0]["CMAES"]["Lower Bound"], -10.0 )
 

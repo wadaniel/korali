@@ -34,7 +34,9 @@ void CMAES::initialize()
  _chiN = sqrt((double) _k->N) * (1. - 1./(4.*_k->N) + 1./(21.*_k->N*_k->N));
 
  _constraintsDefined = (_k->_fconstraints.size() > 0);
- if(_constraintsDefined) _isViabilityRegime = true;
+ if(_constraintsDefined) { _isViabilityRegime = true; printf("bla"); }
+ else                    _isViabilityRegime = false;
+
 
  if(_isViabilityRegime) {
      _currentSampleCount  = _viabilitySampleCount;
@@ -146,17 +148,16 @@ void CMAES::initialize()
    _mean[i] = _previousMean[i] = _variableSettings[i].initialMean;
  }
 
- if ( _constraintsDefined ) checkMeanAndSetRegime();
 }
 
 
 void CMAES::runGeneration()
 {
+ if ( _constraintsDefined ) checkMeanAndSetRegime();
  prepareGeneration();
  if ( _constraintsDefined ){ updateConstraints(); handleConstraints(); }
  evaluateSamples();
  updateDistribution();
- if ( _constraintsDefined ) checkMeanAndSetRegime();
 }
 
 

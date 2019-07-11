@@ -411,7 +411,7 @@ or minimization operation.
 int _evaluationSign;
 
 /******************************************************************************
-Setting Name: Use Viability Regime
+Setting Name: Is Viability Regime
 Type: Internal Attribute
 Default Value:
 Default Enabled:

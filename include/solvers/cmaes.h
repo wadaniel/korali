@@ -742,6 +742,26 @@ Temporary storage to hold B*D*randn()
 std::vector<double> _BDZ;
 
 /******************************************************************************
+Setting Name: Auxiliar Storage for BDZ
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Auxiliar B*D*z
+******************************************************************************/
+std::vector<double> _BDZtmp;
+
+/******************************************************************************
+Setting Name: Mean Update
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Vector pointing from old mean to mean
+******************************************************************************/
+std::vector<double> _y;
+
+/******************************************************************************
 Setting Name: Evolution Path
 Type: Internal Attribute
 Default Value:
@@ -780,26 +800,6 @@ Description:
 Mean "parent" on previous generation.
 ******************************************************************************/
 std::vector<double> _previousMean;
-
-/******************************************************************************
-Setting Name: Storage for BDZ
-Type: Internal Attribute
-Default Value:
-Default Enabled:
-Description:
-B*D*z
-******************************************************************************/
-std::vector<double> rgBDz;
-
-/******************************************************************************
-Setting Name: Auxiliar Storage for BDZ
-Type: Internal Attribute
-Default Value:
-Default Enabled:
-Description:
-Auxiliar B*D*z
-******************************************************************************/
-std::vector<double> rgdTmp;
 
 /******************************************************************************
 Setting Name: Infeasible Sample Count

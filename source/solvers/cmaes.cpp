@@ -49,8 +49,8 @@ void CMAES::initialize()
 
  _evolutionPath.resize(_k->N);
  _conjugateEvolutionPath.resize(_k->N);
- rgdTmp.resize(_k->N);
- rgBDz.resize(_k->N);
+ _BDZtmp.resize(_k->N);
+ _y.resize(_k->N);
  _mean.resize(_k->N);
  _previousMean.resize(_k->N);
  _bestEverSample.resize(_k->N);
@@ -404,13 +404,13 @@ void CMAES::sampleSingle(size_t sampleIdx)
      _BDZ[sampleIdx*_k->N+d] = _axisD[d] * _Z[sampleIdx*_k->N+d];
      _samplePopulation[sampleIdx * _k->N + d] = _mean[d] + _sigma * _BDZ[sampleIdx*_k->N+d];
    }
-   else rgdTmp[d] = _axisD[d] * _Z[sampleIdx*_k->N+d];
+   else _BDZtmp[d] = _axisD[d] * _Z[sampleIdx*_k->N+d];
   }
 
   if (!_isDiag)
    for (size_t d = 0; d < _k->N; ++d) {
     _BDZ[sampleIdx*_k->N+d] = 0.0;
-    for (size_t e = 0; e < _k->N; ++e) _BDZ[sampleIdx*_k->N+d] += _B[d*_k->N+e] * rgdTmp[e];
+    for (size_t e = 0; e < _k->N; ++e) _BDZ[sampleIdx*_k->N+d] += _B[d*_k->N+e] * _BDZtmp[e];
     _samplePopulation[sampleIdx * _k->N + d] = _mean[d] + _sigma * _BDZ[sampleIdx*_k->N+d];
   }
 }
@@ -455,16 +455,16 @@ void CMAES::updateDistribution()
    for (size_t i = 0; i < _currentSampleMu; ++i)
      _mean[d] += _muWeights[i] * _samplePopulation[_sortingIndex[i]*_k->N + d];
 
-   rgBDz[d] = (_mean[d] - _previousMean[d])/_sigma;
+   _y[d] = (_mean[d] - _previousMean[d])/_sigma;
  }
 
- /* calculate z := D^(-1) * B^(T) * rgBDz into rgdTmp */
+ /* calculate z := D^(-1) * B^(T) * _y into _BDZtmp */
  for (size_t d = 0; d < _k->N; ++d) {
   double sum = 0.0;
-  if (_isDiag) sum = rgBDz[d];
-  else for (size_t e = 0; e < _k->N; ++e) sum += _B[e*_k->N+d] * rgBDz[e]; /* B^(T) * rgBDz ( iterating B[e][d] = B^(T) ) */
+  if (_isDiag) sum = _y[d];
+  else for (size_t e = 0; e < _k->N; ++e) sum += _B[e*_k->N+d] * _y[e]; /* B^(T) * _y ( iterating B[e][d] = B^(T) ) */
 
-  rgdTmp[d] = sum / _axisD[d]; /* D^(-1) * B^(T) * rgBDz */
+  _BDZtmp[d] = sum / _axisD[d]; /* D^(-1) * B^(T) * _y */
  }
 
  _conjugateEvolutionPathL2Norm = 0.0;
@@ -472,8 +472,8 @@ void CMAES::updateDistribution()
  /* cumulation for _sigma (ps) using B*z */
  for (size_t d = 0; d < _k->N; ++d) {
     double sum = 0.0;
-    if (_isDiag) sum = rgdTmp[d];
-    else for (size_t e = 0; e < _k->N; ++e) sum += _B[d*_k->N+e] * rgdTmp[e];
+    if (_isDiag) sum = _BDZtmp[d];
+    else for (size_t e = 0; e < _k->N; ++e) sum += _B[d*_k->N+e] * _BDZtmp[e];
 
     _conjugateEvolutionPath[d] = (1. - _sigmaCumulationFactor) * _conjugateEvolutionPath[d] + sqrt(_sigmaCumulationFactor * (2. - _sigmaCumulationFactor) * _effectiveMu) * sum;
 
@@ -485,7 +485,7 @@ void CMAES::updateDistribution()
 
  /* cumulation for covariance matrix (pc) using B*D*z~_k->N(0,C) */
  for (size_t d = 0; d < _k->N; ++d)
-   _evolutionPath[d] = (1. - _cumulativeCovariance) * _evolutionPath[d] + hsig * sqrt( _cumulativeCovariance * (2. - _cumulativeCovariance) * _effectiveMu ) * rgBDz[d];
+   _evolutionPath[d] = (1. - _cumulativeCovariance) * _evolutionPath[d] + hsig * sqrt( _cumulativeCovariance * (2. - _cumulativeCovariance) * _effectiveMu ) * _y[d];
 
  /* update of C  */
  adaptC(hsig);

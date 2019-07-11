@@ -179,7 +179,7 @@ void Korali::Solver::TMCMC::resampleGeneration()
  {
   if ( _k->_verbosity >= KORALI_DETAILED ) printf("[Korali] Warning: Annealing Step smaller than Min Rho Update, updating Annealing Exponent by %f (Min Rho Update). \n", _minRhoUpdate);
   _annealingExponent      = _prevAnnealingExponent + _minRhoUpdate;
-  _coefficientOfVariation = sqrt(tmcmc_objlogp(_annealingExponent, &_sampleFitnessDatabase[0], _databaseEntryCount, _prevAnnealingExponent, _coefficientOfVariation)) + _targetCVar;
+  _coefficientOfVariation = sqrt(tmcmc_objlogp(_annealingExponent, &_sampleFitnessDatabase[0], _databaseEntryCount, _prevAnnealingExponent, _targetCVar)) + _targetCVar;
  }
 
  /* Compute weights and normalize*/
@@ -247,7 +247,7 @@ void Korali::Solver::TMCMC::computeChainCovariances(std::vector< std::vector<dou
  std::vector<size_t> nn_count(newchains);
  std::vector<double> diam(_k->N);
  std::vector<double> chain_mean(_k->N);
- gsl_matrix* work   = gsl_matrix_alloc(_k->N, _k->N);
+ gsl_matrix* work = gsl_matrix_alloc(_k->N, _k->N);
 
  // find diameters
  for (size_t d = 0; d < _k->N; ++d) {
@@ -334,13 +334,14 @@ double Korali::Solver::TMCMC::tmcmc_objlogp(double x, const double *fj, size_t f
  std::vector<double> q(fn);
  const double fjmax = gsl_stats_max(fj, 1, fn);
 
- for(size_t i = 0; i <fn; i++)weight[i] = exp((fj[i]-fjmax)*(x-pj));
+ for(size_t i = 0; i <fn; i++) weight[i] = exp((fj[i]-fjmax)*(x-pj));
  double sum_weight = std::accumulate(weight.begin(), weight.end(), 0.0);
- for(size_t i = 0; i < fn; i++)  q[i] = weight[i]/sum_weight;
+ for(size_t i = 0; i < fn; i++) q[i] = weight[i]/sum_weight;
 
  double mean_q = gsl_stats_mean(q.data(), 1, fn);
  double std_q  = gsl_stats_sd_m(q.data(), 1, fn, mean_q);
- double cov2   = (std_q/mean_q-zero); cov2 *= cov2;
+ double cov2   = (std_q/mean_q-zero); 
+ cov2 *= cov2;
 
  return cov2;
 }

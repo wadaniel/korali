@@ -30,6 +30,7 @@ k["Variables"][0]["Bayesian"]["Prior Distribution"]["Maximum"] = +10.0
 
 # Configuring the TMCMC sampler parameters
 k["TMCMC"]["Population Size"] = 5000
+k["TMCMC"]["Burn In"] = 5
 
 # Setting output directory
 k["Result Directory"] = "_a2_sampling_tmcmc"

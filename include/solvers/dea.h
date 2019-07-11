@@ -274,24 +274,24 @@ Counter of evaluated samples to terminate evaluation.
 size_t _finishedSampleCount;
 
 /******************************************************************************
-Setting Name: Current Function Value
+Setting Name: Current Best Value
 Type: Internal Attribute
 Default Value:
 Default Enabled:
 Description:
-Best fitness from current generation.
+Best vlaue from current generation.
 ******************************************************************************/
-double _currentFunctionValue;
+double _currentBestValue;
 
 /******************************************************************************
-Setting Name: Previous Function Value
+Setting Name: Previous Best Value
 Type: Internal Attribute
 Default Value:
 Default Enabled:
 Description:
 Best fitness from previous generation.
 ******************************************************************************/
-double _previousFunctionValue;
+double _previousBestValue;
 
 /******************************************************************************
 Setting Name: Best Sample Index
@@ -304,64 +304,64 @@ Best Sample Index.
 size_t _bestIndex;
 
 /******************************************************************************
-Setting Name: Best Sample Ever
+Setting Name: Best Ever Value
 Type: Internal Attribute
 Default Value:
 Default Enabled:
 Description:
 Best Sample Ever.
 ******************************************************************************/
-double _bestEver;
+double _bestEverValue;
 
 /******************************************************************************
-Setting Name: Previous Best Sample Ever
+Setting Name: Previous Best Ever Value
 Type: Internal Attribute
 Default Value:
 Default Enabled:
 Description:
 Previous Best Sample Ever.
 ******************************************************************************/
-double _previousBestEver;
+double _previousBestEverValue;
 
 /******************************************************************************
-Setting Name: RGX Mean
+Setting Name: Mean
 Type: Internal Attribute
 Default Value:
 Default Enabled:
 Description:
-Mean Parent
+Mean of samples.
 ******************************************************************************/
-std::vector<double> _rgxMean;
+std::vector<double> _mean;
 
 /******************************************************************************
-Setting Name: RGX Old Mean
+Setting Name: Old Mean
 Type: Internal Attribute
 Default Value:
 Default Enabled:
 Description:
 Old Mean Parent
 ******************************************************************************/
-std::vector<double> _rgxOldMean;
+std::vector<double> _oldMean;
 
 /******************************************************************************
-Setting Name: RGX Best Ever
+Setting Name: Best Ever Sample
 Type: Internal Attribute
 Default Value:
 Default Enabled:
 Description:
-Best RGX
+Coordinates best ever sample.
 ******************************************************************************/
-std::vector<double> _rgxBestEver;
+std::vector<double> _bestEverSample;
 
 /******************************************************************************
-Setting Name: Current Best Ever
+Setting Name: Current Best Sample
 Type: Internal Attribute
 Default Value:
 Default Enabled:
 Description:
 Current Best Ever
 ******************************************************************************/
-std::vector<double> _curBestEver;
+std::vector<double> _currentBestSample;
 
 /******************************************************************************
 Setting Name: Max Width

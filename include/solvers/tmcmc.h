@@ -71,7 +71,7 @@ Default Enabled:
 Description:
 Specifies the number of samples drawn from the posterior distribution at each generation.
 ******************************************************************************/
-size_t populationSize;
+size_t _populationSize;
 
 /******************************************************************************
 Setting Name: Burn In
@@ -82,10 +82,10 @@ Description:
 Specifies the number of additional MCMC steps per sample per generation.
 Note that only the last sample per chain is considered for the recombination.
 ******************************************************************************/
-size_t burnIn;
+size_t _burnIn;
 
 /******************************************************************************
-Setting Name: Initial Coefficient of Variation
+Setting Name: Target Coefficient of Variation
 Type: Solver Setting
 Default Value: 1.0
 Default Enabled:
@@ -93,7 +93,7 @@ Description:
 Initial value for the target coefficient of variation to search for the exponent
  $\rho_{i+1}$. By default, Korali will set this value to 1.00 as suggested in [Ching2007].
 ******************************************************************************/
-double initialCoefficientOfVariation;
+double _targetCVar;
 
 /******************************************************************************
 Setting Name: Covariance Scaling
@@ -104,7 +104,7 @@ Description:
 Covariance scaling factor $\beta^2$ of proposal distribution.
 By default, Korali sets this value 0.04 as suggested in [Ching2007].
 ******************************************************************************/
-double covarianceScaling;
+double _covarianceScaling;
 
 /******************************************************************************
 Setting Name: Use Local Covariance
@@ -114,7 +114,7 @@ Default Enabled:
 Description:
 If $true, TMCMC calculates a local covariance matrix per sample from its neighbours.
 ******************************************************************************/
-bool useLocalCovariance;
+bool _useLocalCovariance;
 
 /******************************************************************************
 Setting Name: Min Rho Update
@@ -124,7 +124,7 @@ Default Enabled:
 Description:
 Minimum increment of the exponent $\rho_{i+1}$. This parameter prevents TMCMC from stalling.
 ******************************************************************************/
-double minRhoUpdate;
+double _minRhoUpdate;
 
 /******************************************************************************
 Setting Name: Max Rho Update
@@ -134,7 +134,7 @@ Default Enabled:
 Description:
 Maximum increment of the exponent $\rho{i+1}$. By default, Korali will set this value to 1.0 (inactive).
 ******************************************************************************/
-double maxRhoUpdate;
+double _maxRhoUpdate;
 
 /******************************************************************************
 Setting Name: Chain Pending Fitness
@@ -144,7 +144,7 @@ Default Enabled:
 Description:
 Indicates that the fitness result for the chain is pending
 ******************************************************************************/
-std::vector<bool> chainPendingFitness;
+std::vector<bool> _chainPendingFitness;
 
 /******************************************************************************
 Setting Name: Chain Candidate Parameters
@@ -154,7 +154,7 @@ Default Enabled:
 Description:
 Current (theta) parameters of the chain leader sample.
 ******************************************************************************/
-std::vector<double> chainCandidatesParameters;
+std::vector<double> _chainCandidatesParameters;
 
 /******************************************************************************
 Setting Name: Log Transformed Samples
@@ -164,7 +164,7 @@ Default Enabled:
 Description:
 Candidate parameters log transformed.
 ******************************************************************************/
-std::vector<double> logTransformedSamples;
+std::vector<double> _logTransformedSamples;
 
 /******************************************************************************
 Setting Name: Chain Candidates LogLikelihoods
@@ -174,7 +174,7 @@ Default Enabled:
 Description:
 The logLikelihoods of the chain candidates.
 ******************************************************************************/
-std::vector<double> chainCandidatesLogLikelihoods;
+std::vector<double> _chainCandidatesLogLikelihoods;
 
 /******************************************************************************
 Setting Name: Chain Leader Parameters
@@ -184,7 +184,7 @@ Default Enabled:
 Description:
 Current (theta) parameters of the chain leader sample.
 ******************************************************************************/
-std::vector<double> chainLeadersParameters;
+std::vector<double> _chainLeadersParameters;
 
 /******************************************************************************
 Setting Name: Chain Leaders LogLikelihoods
@@ -194,7 +194,7 @@ Default Enabled:
 Description:
 The logLikelihoods of the chain leaders.
 ******************************************************************************/
-std::vector<double> chainLeadersLogLikelihoods;
+std::vector<double> _chainLeadersLogLikelihoods;
 
 /******************************************************************************
 Setting Name: Finished Chains Count
@@ -204,7 +204,7 @@ Default Enabled:
 Description:
 Number of finished chains.
 ******************************************************************************/
-size_t finishedChainsCount;
+size_t _finishedChainsCount;
 
 /******************************************************************************
 Setting Name: Current Chain Step
@@ -214,7 +214,7 @@ Default Enabled:
 Description:
 The current execution step for every chain.
 ******************************************************************************/
-std::vector<size_t> currentChainStep;
+std::vector<size_t> _currentChainStep;
 
 /******************************************************************************
 Setting Name: Chain Lengths
@@ -224,7 +224,7 @@ Default Enabled:
 Description:
 Length for each of the chains.
 ******************************************************************************/
-std::vector<size_t> chainLengths;
+std::vector<size_t> _chainLengths;
 
 /******************************************************************************
 Setting Name: Coefficient of Variation
@@ -234,7 +234,7 @@ Default Enabled:
 Description:
 Current coefficient of variation
 ******************************************************************************/
-double coefficientOfVariation;
+double _coefficientOfVariation;
 
 /******************************************************************************
 Setting Name: Chain Count
@@ -244,7 +244,7 @@ Default Enabled:
 Description:
 Unique selections after resampling (forming new chain)
 ******************************************************************************/
-size_t chainCount;
+size_t _chainCount;
 
 /******************************************************************************
 Setting Name: Annealing Exponent
@@ -254,7 +254,7 @@ Default Enabled:
 Description:
 Indicates how the calculated distribution fits the real distribution
 ******************************************************************************/
-double annealingExponent;
+double _annealingExponent;
 
 /******************************************************************************
 Setting Name: Accepted Samples Count
@@ -264,7 +264,7 @@ Default Enabled:
 Description:
 Accepted samples after proposal
 ******************************************************************************/
-size_t acceptedSamplesCount;
+size_t _acceptedSamplesCount;
 
 /******************************************************************************
 Setting Name: logEvidence
@@ -274,7 +274,7 @@ Default Enabled:
 Description:
 Calculated logEvidence of the model so far
 ******************************************************************************/
-double logEvidence;
+double _logEvidence;
 
 /******************************************************************************
 Setting Name: Proposals Acceptance Rate
@@ -284,7 +284,7 @@ Default Enabled:
 Description:
 Acceptance rate calculated from samples
 ******************************************************************************/
-double proposalsAcceptanceRate;
+double _proposalsAcceptanceRate;
 
 /******************************************************************************
 Setting Name: Selection Acceptance Rate
@@ -294,7 +294,7 @@ Default Enabled:
 Description:
 Acceptance rate calculated from chain count
 ******************************************************************************/
-double selectionAcceptanceRate;
+double _selectionAcceptanceRate;
 
 /******************************************************************************
 Setting Name: Covariance Matrix
@@ -304,7 +304,7 @@ Default Enabled:
 Description:
 Sample covariance of leader fitness values
 ******************************************************************************/
-std::vector<double> covarianceMatrix;
+std::vector<double> _covarianceMatrix;
 
 /******************************************************************************
 Setting Name: Mean Theta
@@ -314,7 +314,7 @@ Default Enabled:
 Description:
 Mean of leader fitness values
 ******************************************************************************/
-std::vector<double> meanTheta;
+std::vector<double> _meanTheta;
 
 /******************************************************************************
 Setting Name: Database Entry Count
@@ -324,7 +324,7 @@ Default Enabled:
 Description:
 Number of accepted samples stored in the database.
 ******************************************************************************/
-size_t databaseEntryCount;
+size_t _databaseEntryCount;
 
 /******************************************************************************
 Setting Name: Sample Parameters Database
@@ -334,7 +334,7 @@ Default Enabled:
 Description:
 Variable values of samples stored in the database.
 ******************************************************************************/
-std::vector<double> sampleParametersDatabase;
+std::vector<double> _sampleParametersDatabase;
 
 /******************************************************************************
 Setting Name: Sample Fitness Database
@@ -344,7 +344,7 @@ Default Enabled:
 Description:
 Fitness of the samples stored in the database.
 ******************************************************************************/
-std::vector<double> sampleFitnessDatabase;
+std::vector<double> _sampleFitnessDatabase;
 
 /******************************************************************************
 Setting Name: Local Covariance Matrices
@@ -354,7 +354,7 @@ Default Enabled:
 Description:
 Local covariances of chain leaders
 ******************************************************************************/
-std::vector<std::vector<double>> localCovarianceMatrices;
+std::vector<std::vector<double>> _localCovarianceMatrices;
 
 /******************************************************************************
 * Variable Settings

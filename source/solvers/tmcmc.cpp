@@ -30,49 +30,48 @@ Korali::Solver::TMCMC::~TMCMC()
 void Korali::Solver::TMCMC::initialize()
 {
  // Allocating TMCMC memory
- covarianceMatrix.resize(_k->N*_k->N);
- meanTheta.resize(_k->N);
- logTransformedSamples.resize(_k->N*populationSize);
- chainCandidatesParameters.resize(_k->N*populationSize);
- chainCandidatesLogLikelihoods.resize(populationSize);
- chainLeadersParameters.resize(_k->N*populationSize);
- chainLeadersLogLikelihoods.resize(populationSize);
- chainPendingFitness.resize(populationSize);
- currentChainStep.resize(populationSize);
- chainLengths.resize(populationSize);
- sampleParametersDatabase.resize(_k->N*populationSize);
- sampleFitnessDatabase.resize(populationSize);
+ _covarianceMatrix.resize(_k->N*_k->N);
+ _meanTheta.resize(_k->N);
+ _logTransformedSamples.resize(_k->N*_populationSize);
+ _chainCandidatesParameters.resize(_k->N*_populationSize);
+ _chainCandidatesLogLikelihoods.resize(_populationSize);
+ _chainLeadersParameters.resize(_k->N*_populationSize);
+ _chainLeadersLogLikelihoods.resize(_populationSize);
+ _chainPendingFitness.resize(_populationSize);
+ _currentChainStep.resize(_populationSize);
+ _chainLengths.resize(_populationSize);
+ _sampleParametersDatabase.resize(_k->N*_populationSize);
+ _sampleFitnessDatabase.resize(_populationSize);
 
- if(useLocalCovariance)
+ if(_useLocalCovariance)
  {
-  localCovarianceMatrices.resize(populationSize);
-  for (size_t pos = 0; pos < populationSize; ++pos)
+  _localCovarianceMatrices.resize(_populationSize);
+  for (size_t pos = 0; pos < _populationSize; ++pos)
   {
-   localCovarianceMatrices[pos].resize(_k->N*_k->N);
+   _localCovarianceMatrices[pos].resize(_k->N*_k->N);
    for (size_t i = 0; i < _k->N; i++)
-    for (size_t j = 0; j < _k->N; j++) localCovarianceMatrices[pos][i*_k->N+j] = 0.0;
-   for (size_t i = 0; i < _k->N; i++) localCovarianceMatrices[pos][i*_k->N+i] = 1.0;
+   for (size_t j = 0; j < _k->N; j++) _localCovarianceMatrices[pos][i*_k->N+j] = 0.0;
+   for (size_t i = 0; i < _k->N; i++) _localCovarianceMatrices[pos][i*_k->N+i] = 1.0;
   }
  }
 
  // Initializing Runtime Variables
- for (size_t c = 0; c < populationSize; c++) currentChainStep[c] = 0;
- for (size_t c = 0; c < populationSize; c++) chainLengths[c] = 1;
- for (size_t c = 0; c < populationSize; c++) chainPendingFitness[c] = false;
+ for (size_t c = 0; c < _populationSize; c++) _currentChainStep[c] = 0;
+ for (size_t c = 0; c < _populationSize; c++) _chainLengths[c] = 1;
+ for (size_t c = 0; c < _populationSize; c++) _chainPendingFitness[c] = false;
 
  // Init Generation
- databaseEntryCount          = 0;
- annealingExponent        = 0;
- logEvidence              = 0;
- coefficientOfVariation = initialCoefficientOfVariation;
- finishedChainsCount            = 0;
- databaseEntryCount          = 0;
- proposalsAcceptanceRate  = 1.0;
- selectionAcceptanceRate = 1.0;
- acceptedSamplesCount            = populationSize;
- chainCount                  = populationSize;
- for (size_t c = 0; c < chainCount; c++) currentChainStep[c] = 0;
- for (size_t c = 0; c < chainCount; c++) chainPendingFitness[c] = false;
+ _annealingExponent       = 0.0;
+ _logEvidence             = 0.0;
+ _coefficientOfVariation  = 0.0;
+ _finishedChainsCount     = 0;
+ _databaseEntryCount      = 0;
+ _proposalsAcceptanceRate = 1.0;
+ _selectionAcceptanceRate = 1.0;
+ _acceptedSamplesCount    = _populationSize;
+ _chainCount              = _populationSize;
+ for (size_t c = 0; c < _chainCount; c++) _currentChainStep[c]    = 0;
+ for (size_t c = 0; c < _chainCount; c++) _chainPendingFitness[c] = false;
 
  initializeSamples();
 }
@@ -81,11 +80,11 @@ void Korali::Solver::TMCMC::runGeneration()
 {
  if (_k->currentGeneration > 1) resampleGeneration();
 
- while (finishedChainsCount < chainCount)
+ while (_finishedChainsCount < _chainCount)
  {
-  for (size_t c = 0; c < chainCount; c++) if (currentChainStep[c] < chainLengths[c]) if (chainPendingFitness[c] == false)
+  for (size_t c = 0; c < _chainCount; c++) if (_currentChainStep[c] < _chainLengths[c]) if (_chainPendingFitness[c] == false)
   {
-  chainPendingFitness[c] = true;
+  _chainPendingFitness[c] = true;
   generateCandidate(c);
   evaluateSample(c);
   }
@@ -95,148 +94,148 @@ void Korali::Solver::TMCMC::runGeneration()
 
 void Korali::Solver::TMCMC::processSample(size_t c, double fitness)
 {
- double ccLogPrior = _k->_problem->evaluateLogPrior(&chainCandidatesParameters[c*_k->N]);
- double clLogPrior = _k->_problem->evaluateLogPrior(&chainLeadersParameters[c*_k->N]);
+ double ccLogPrior = _k->_problem->evaluateLogPrior(&_chainCandidatesParameters[c*_k->N]);
+ double clLogPrior = _k->_problem->evaluateLogPrior(&_chainLeadersParameters[c*_k->N]);
 
- chainCandidatesLogLikelihoods[c] = fitness;
- double L = exp((chainCandidatesLogLikelihoods[c]-chainLeadersLogLikelihoods[c])*annealingExponent + (ccLogPrior-clLogPrior));
+ _chainCandidatesLogLikelihoods[c] = fitness;
+ double L = exp((_chainCandidatesLogLikelihoods[c]-_chainLeadersLogLikelihoods[c])*_annealingExponent + (ccLogPrior-clLogPrior));
 
  if ( L >= 1.0 || L > gsl_ran_flat(range, 0.0, 1.0) ) {
-   for (size_t i = 0; i < _k->N; i++) chainLeadersParameters[c*_k->N + i] = chainCandidatesParameters[c*_k->N + i];
-   chainLeadersLogLikelihoods[c] = chainCandidatesLogLikelihoods[c];
-   if (currentChainStep[c] == chainLengths[c]-1) acceptedSamplesCount++; // XXX: is that correct? (DW)
+   for (size_t i = 0; i < _k->N; i++) _chainLeadersParameters[c*_k->N + i] = _chainCandidatesParameters[c*_k->N + i];
+   _chainLeadersLogLikelihoods[c] = _chainCandidatesLogLikelihoods[c];
+   if (_currentChainStep[c] == _chainLengths[c]-1) _acceptedSamplesCount++; // XXX: is that correct? (DW)
  }
 
- currentChainStep[c]++;
- if (currentChainStep[c] > burnIn ) updateDatabase(&chainLeadersParameters[c*_k->N], chainLeadersLogLikelihoods[c]);
- chainPendingFitness[c] = false;
- if (currentChainStep[c] == chainLengths[c]) finishedChainsCount++;
+ _currentChainStep[c]++;
+ if (_currentChainStep[c] > _burnIn ) updateDatabase(&_chainLeadersParameters[c*_k->N], _chainLeadersLogLikelihoods[c]);
+ _chainPendingFitness[c] = false;
+ if (_currentChainStep[c] == _chainLengths[c]) _finishedChainsCount++;
 }
 
 void Korali::Solver::TMCMC::evaluateSample(size_t c)
 {
   for(size_t d = 0; d<_k->N; ++d) 
     if (_k->_variables[d]->_isLogSpace == true)
-        logTransformedSamples[c*_k->N+d] = std::exp(chainCandidatesParameters[c*_k->N+d]);
+        _logTransformedSamples[c*_k->N+d] = std::exp(_chainCandidatesParameters[c*_k->N+d]);
     else 
-        logTransformedSamples[c*_k->N+d] = chainCandidatesParameters[c*_k->N+d];
+        _logTransformedSamples[c*_k->N+d] = _chainCandidatesParameters[c*_k->N+d];
 
-  _k->_conduit->evaluateSample(&logTransformedSamples[0], c);
+  _k->_conduit->evaluateSample(&_logTransformedSamples[0], c);
 }
 
 void Korali::Solver::TMCMC::updateDatabase(double* point, double fitness)
 {
- for (size_t i = 0; i < _k->N; i++) sampleParametersDatabase[databaseEntryCount*_k->N + i] = point[i];
- sampleFitnessDatabase[databaseEntryCount] = fitness;
- databaseEntryCount++;
+ for (size_t i = 0; i < _k->N; i++) _sampleParametersDatabase[_databaseEntryCount*_k->N + i] = point[i];
+ _sampleFitnessDatabase[_databaseEntryCount] = fitness;
+ _databaseEntryCount++;
 }
 
 void Korali::Solver::TMCMC::generateCandidate(size_t c)
 {
- double* covariance = useLocalCovariance ? &localCovarianceMatrices[c][0] : &covarianceMatrix[0];
- gsl_vector_view out_view    = gsl_vector_view_array(&chainCandidatesParameters[c*_k->N], _k->N);
+ double* covariance = _useLocalCovariance ? &_localCovarianceMatrices[c][0] : &_covarianceMatrix[0];
+ gsl_vector_view out_view    = gsl_vector_view_array(&_chainCandidatesParameters[c*_k->N], _k->N);
  gsl_matrix_view sigma_view  = gsl_matrix_view_array(covariance, _k->N,_k->N);
- gsl_vector_view mean_view   = gsl_vector_view_array(&chainLeadersParameters[c*_k->N], _k->N);
+ gsl_vector_view mean_view   = gsl_vector_view_array(&_chainLeadersParameters[c*_k->N], _k->N);
  gsl_ran_multivariate_gaussian(range, &mean_view.vector, &sigma_view.matrix, &out_view.vector);
 }
 
 void Korali::Solver::TMCMC::initializeSamples()
 {
-  for (size_t c = 0; c < populationSize; c++) {
+  for (size_t c = 0; c < _populationSize; c++) {
      for (size_t d = 0; d < _k->N; d++) {
-       chainLeadersParameters[c*_k->N + d] = chainCandidatesParameters[c*_k->N + d] = _k->_variables[d]->getRandomNumber();
-       chainLeadersLogLikelihoods[c] += log( _k->_variables[d]->getDensity(chainLeadersParameters[c*_k->N + d]) );
+       _chainLeadersParameters[c*_k->N + d] = _chainCandidatesParameters[c*_k->N + d] = _k->_variables[d]->getRandomNumber();
+       _chainLeadersLogLikelihoods[c] += log( _k->_variables[d]->getDensity(_chainLeadersParameters[c*_k->N + d]) );
      }
-     updateDatabase(&chainLeadersParameters[c*_k->N], chainLeadersLogLikelihoods[c]);
-     finishedChainsCount++;
+     updateDatabase(&_chainLeadersParameters[c*_k->N], _chainLeadersLogLikelihoods[c]);
+     _finishedChainsCount++;
   }
 }
 
 void Korali::Solver::TMCMC::resampleGeneration()
 {
- std::vector<double> flcp(databaseEntryCount);
- std::vector<double> weight(databaseEntryCount);
- std::vector<double> q(databaseEntryCount);
- std::vector<unsigned int> nn(databaseEntryCount);
- std::vector<size_t> sel(databaseEntryCount);
+ std::vector<double> flcp(_databaseEntryCount);
+ std::vector<double> weight(_databaseEntryCount);
+ std::vector<double> q(_databaseEntryCount);
+ std::vector<unsigned int> nn(_databaseEntryCount);
+ std::vector<size_t> sel(_databaseEntryCount);
 
  double fmin = 0, xmin = 0;
- minSearch(&sampleFitnessDatabase[0], databaseEntryCount, annealingExponent, coefficientOfVariation, xmin, fmin);
+ minSearch(&_sampleFitnessDatabase[0], _databaseEntryCount, _annealingExponent, _targetCVar, xmin, fmin);
 
- double _prevAnnealingExponent = annealingExponent;
+ double _prevAnnealingExponent = _annealingExponent;
 
- if (xmin > _prevAnnealingExponent + maxRhoUpdate)
+ if (xmin > _prevAnnealingExponent + _maxRhoUpdate)
  {
-  if ( _k->_verbosity >= KORALI_DETAILED ) printf("[Korali] Warning: Annealing Step larger than Max Rho Update, updating Annealing Exponent by %f (Max Rho Update). \n", maxRhoUpdate);
-  annealingExponent      = _prevAnnealingExponent + maxRhoUpdate;
-  coefficientOfVariation = sqrt(tmcmc_objlogp(annealingExponent, &sampleFitnessDatabase[0], databaseEntryCount, _prevAnnealingExponent, coefficientOfVariation)) + coefficientOfVariation;
+  if ( _k->_verbosity >= KORALI_DETAILED ) printf("[Korali] Warning: Annealing Step larger than Max Rho Update, updating Annealing Exponent by %f (Max Rho Update). \n", _maxRhoUpdate);
+  _annealingExponent      = _prevAnnealingExponent + _maxRhoUpdate;
+  _coefficientOfVariation = sqrt(tmcmc_objlogp(_annealingExponent, &_sampleFitnessDatabase[0], _databaseEntryCount, _prevAnnealingExponent, _targetCVar)) + _targetCVar;
  }
  else if (xmin > _prevAnnealingExponent)
  {
-  annealingExponent      = xmin;
-  coefficientOfVariation = sqrt(fmin) + coefficientOfVariation;
+  _annealingExponent      = xmin;
+  _coefficientOfVariation = sqrt(fmin) + _targetCVar;
  }
  else
  {
-  if ( _k->_verbosity >= KORALI_DETAILED ) printf("[Korali] Warning: Annealing Step smaller than Min Rho Update, updating Annealing Exponent by %f (Min Rho Update). \n", minRhoUpdate);
-  annealingExponent      = _prevAnnealingExponent + minRhoUpdate;
-  coefficientOfVariation = sqrt(tmcmc_objlogp(annealingExponent, &sampleFitnessDatabase[0], databaseEntryCount, _prevAnnealingExponent, coefficientOfVariation)) + coefficientOfVariation;
+  if ( _k->_verbosity >= KORALI_DETAILED ) printf("[Korali] Warning: Annealing Step smaller than Min Rho Update, updating Annealing Exponent by %f (Min Rho Update). \n", _minRhoUpdate);
+  _annealingExponent      = _prevAnnealingExponent + _minRhoUpdate;
+  _coefficientOfVariation = sqrt(tmcmc_objlogp(_annealingExponent, &_sampleFitnessDatabase[0], _databaseEntryCount, _prevAnnealingExponent, _coefficientOfVariation)) + _targetCVar;
  }
 
  /* Compute weights and normalize*/
 
- for (size_t i = 0; i < databaseEntryCount; i++) flcp[i] = sampleFitnessDatabase[i]*(annealingExponent-_prevAnnealingExponent);
- const double fjmax = gsl_stats_max(flcp.data(), 1, databaseEntryCount);
- for (size_t i = 0; i < databaseEntryCount; i++) weight[i] = exp( flcp[i] - fjmax );
+ for (size_t i = 0; i < _databaseEntryCount; i++) flcp[i] = _sampleFitnessDatabase[i]*(_annealingExponent-_prevAnnealingExponent);
+ const double fjmax = gsl_stats_max(flcp.data(), 1, _databaseEntryCount);
+ for (size_t i = 0; i < _databaseEntryCount; i++) weight[i] = exp( flcp[i] - fjmax );
 
  double sum_weight = std::accumulate(weight.begin(), weight.end(), 0.0);
- logEvidence  += log(sum_weight) + fjmax - log(databaseEntryCount);
+ _logEvidence  += log(sum_weight) + fjmax - log(_databaseEntryCount);
 
- for (size_t i = 0; i < databaseEntryCount; i++) q[i] = weight[i]/sum_weight;
+ for (size_t i = 0; i < _databaseEntryCount; i++) q[i] = weight[i]/sum_weight;
 
- gsl_ran_multinomial(range, databaseEntryCount, populationSize, q.data(), nn.data());
+ gsl_ran_multinomial(range, _databaseEntryCount, _populationSize, q.data(), nn.data());
  size_t zeroCount = 0;
- for (size_t i = 0; i < databaseEntryCount; i++) { sel[i] = nn[i]; if ( nn[i] == 0 ) zeroCount++; }
+ for (size_t i = 0; i < _databaseEntryCount; i++) { sel[i] = nn[i]; if ( nn[i] == 0 ) zeroCount++; }
 
- size_t uniqueSelections   = databaseEntryCount - zeroCount;
- proposalsAcceptanceRate  = (1.0*acceptedSamplesCount)/populationSize;
- selectionAcceptanceRate = (1.0*uniqueSelections)/populationSize;
+ size_t uniqueSelections   = _databaseEntryCount - zeroCount;
+ _proposalsAcceptanceRate  = (1.0*_acceptedSamplesCount)/_populationSize;
+ _selectionAcceptanceRate = (1.0*uniqueSelections)/_populationSize;
 
  for (size_t i = 0; i < _k->N; i++)
  {
-  meanTheta[i] = 0;
-  for (size_t j = 0; j < databaseEntryCount; j++) meanTheta[i] += sampleParametersDatabase[j*_k->N + i]*q[j];
+  _meanTheta[i] = 0;
+  for (size_t j = 0; j < _databaseEntryCount; j++) _meanTheta[i] += _sampleParametersDatabase[j*_k->N + i]*q[j];
  }
 
  for (size_t i = 0; i < _k->N; i++) for (size_t j = i; j < _k->N; ++j)
  {
   double s = 0.0;
-  for (size_t k = 0; k < databaseEntryCount; ++k) s += q[k]*(sampleParametersDatabase[k*_k->N+i]-meanTheta[i])*(sampleParametersDatabase[k*_k->N+j]-meanTheta[j]);
-  covarianceMatrix[i*_k->N + j] = covarianceMatrix[j*_k->N + i] = s*covarianceScaling;
+  for (size_t k = 0; k < _databaseEntryCount; ++k) s += q[k]*(_sampleParametersDatabase[k*_k->N+i]-_meanTheta[i])*(_sampleParametersDatabase[k*_k->N+j]-_meanTheta[j]);
+  _covarianceMatrix[i*_k->N + j] = _covarianceMatrix[j*_k->N + i] = s*_covarianceScaling;
  }
 
- gsl_matrix_view sigma = gsl_matrix_view_array(&covarianceMatrix[0], _k->N,_k->N);
+ gsl_matrix_view sigma = gsl_matrix_view_array(&_covarianceMatrix[0], _k->N,_k->N);
  gsl_linalg_cholesky_decomp( &sigma.matrix );
 
  size_t ldi = 0;
- for (size_t i = 0; i < databaseEntryCount; i++) {
+ for (size_t i = 0; i < _databaseEntryCount; i++) {
    if (sel[i] != 0) {
-     for (size_t j = 0; j < _k->N ; j++) chainLeadersParameters[ldi*_k->N + j] = sampleParametersDatabase[i*_k->N + j];
-     chainLeadersLogLikelihoods[ldi] = sampleFitnessDatabase[i];
-     chainLengths[ldi] = sel[i] + burnIn;
+     for (size_t j = 0; j < _k->N ; j++) _chainLeadersParameters[ldi*_k->N + j] = _sampleParametersDatabase[i*_k->N + j];
+     _chainLeadersLogLikelihoods[ldi] = _sampleFitnessDatabase[i];
+     _chainLengths[ldi] = sel[i] + _burnIn;
      ldi++;
    }
  }
  
- if (useLocalCovariance) computeChainCovariances(localCovarianceMatrices, uniqueSelections);
+ if (_useLocalCovariance) computeChainCovariances(_localCovarianceMatrices, uniqueSelections);
 
- databaseEntryCount = 0;
- acceptedSamplesCount   = 0;
- finishedChainsCount   = 0;
- chainCount         = uniqueSelections;
+ _databaseEntryCount = 0;
+ _acceptedSamplesCount   = 0;
+ _finishedChainsCount   = 0;
+ _chainCount         = uniqueSelections;
  
- for (size_t c = 0; c < chainCount; c++) currentChainStep[c] = 0;
- for (size_t c = 0; c < chainCount; c++) chainPendingFitness[c] = false;
+ for (size_t c = 0; c < _chainCount; c++) _currentChainStep[c] = 0;
+ for (size_t c = 0; c < _chainCount; c++) _chainPendingFitness[c] = false;
 }
 
 void Korali::Solver::TMCMC::computeChainCovariances(std::vector< std::vector<double> >& chain_cov, size_t newchains)
@@ -254,8 +253,8 @@ void Korali::Solver::TMCMC::computeChainCovariances(std::vector< std::vector<dou
  for (size_t d = 0; d < _k->N; ++d) {
   double d_min = +1e6;
   double d_max = -1e6;
-  for (size_t pos = 0; pos < populationSize; ++pos) {
-   double s = sampleParametersDatabase[pos*_k->N+d];
+  for (size_t pos = 0; pos < _populationSize; ++pos) {
+   double s = _sampleParametersDatabase[pos*_k->N+d];
    if (d_min > s) d_min = s;
    if (d_max < s) d_max = s;
   }
@@ -267,16 +266,16 @@ void Korali::Solver::TMCMC::computeChainCovariances(std::vector< std::vector<dou
  int status = 0;
  double ds = 0.05;
  for (double scale = 0.1; scale <= 1.0; scale += ds) {
-  // find neighbors in a rectangle - O(populationSize^2)
+  // find neighbors in a rectangle - O(_populationSize^2)
   for (pos = 0; pos < newchains; ++pos) {
    nn_count[pos] = 0;
-   double* curr = &chainLeadersParameters[pos*_k->N];
-   for (size_t i = 0; i < populationSize; i++) {
-    double* s = &sampleParametersDatabase[i*_k->N];
+   double* curr = &_chainLeadersParameters[pos*_k->N];
+   for (size_t i = 0; i < _populationSize; i++) {
+    double* s = &_sampleParametersDatabase[i*_k->N];
     bool isInRectangle = true;
      for (size_t d = 0; d < _k->N; d++)  if (fabs(curr[d]-s[d]) > scale*diam[d]) isInRectangle = false;
      if (isInRectangle) {
-      nn_ind[pos*populationSize+nn_count[pos]] = i;
+      nn_ind[pos*_populationSize+nn_count[pos]] = i;
       nn_count[pos]++;
      }
    }
@@ -287,8 +286,8 @@ void Korali::Solver::TMCMC::computeChainCovariances(std::vector< std::vector<dou
    for (size_t d = 0; d < _k->N; ++d) {
     chain_mean[d] = 0;
     for (size_t k = 0; k < nn_count[pos]; ++k) {
-     idx = nn_ind[pos*populationSize+k];
-     chain_mean[d] += sampleParametersDatabase[idx*_k->N+d];
+     idx = nn_ind[pos*_populationSize+k];
+     chain_mean[d] += _sampleParametersDatabase[idx*_k->N+d];
     }
     chain_mean[d] /= nn_count[pos];
    }
@@ -297,9 +296,9 @@ void Korali::Solver::TMCMC::computeChainCovariances(std::vector< std::vector<dou
     for (size_t j = 0; j < _k->N; ++j) {
      double s = 0;
      for (size_t k = 0; k < nn_count[pos]; k++) {
-      idx = nn_ind[pos*populationSize+k];
-      s  += (sampleParametersDatabase[idx*_k->N+i]-chain_mean[i]) *
-         (sampleParametersDatabase[idx*_k->N+j]-chain_mean[j]);
+      idx = nn_ind[pos*_populationSize+k];
+      s  += (_sampleParametersDatabase[idx*_k->N+i]-chain_mean[i]) *
+         (_sampleParametersDatabase[idx*_k->N+j]-chain_mean[j]);
      }
      chain_cov[pos][i*_k->N+j] = chain_cov[pos][j*_k->N+i] = s/nn_count[pos];
     }
@@ -428,14 +427,14 @@ void Korali::Solver::TMCMC::minSearch(double const *fj, size_t fn, double pj, do
 
 bool Korali::Solver::TMCMC::isFeasibleCandidate(size_t c)
 {
- double clLogPrior = _k->_problem->evaluateLogPrior(&chainLeadersParameters[c*_k->N]);
+ double clLogPrior = _k->_problem->evaluateLogPrior(&_chainLeadersParameters[c*_k->N]);
  if (clLogPrior > -INFINITY) return true;
  return false;
 }
 
 bool Korali::Solver::TMCMC::checkTermination()
 {
- return (annealingExponent >= 1.0);
+ return (_annealingExponent >= 1.0);
 }
 
 void Korali::Solver::TMCMC::finalize()
@@ -448,25 +447,25 @@ void Korali::Solver::TMCMC::printGeneration()
  if (_k->_verbosity >= KORALI_MINIMAL)
  {
   printf("--------------------------------------------------------------------\n");
-  printf("[Korali] Generation %ld - Annealing Exponent:  %.3e.\n", _k->currentGeneration, annealingExponent);
+  printf("[Korali] Generation %ld - Annealing Exponent:  %.3e.\n", _k->currentGeneration, _annealingExponent);
  }
 
  if (_k->_verbosity >= KORALI_NORMAL)
  {
-  printf("[Korali] Acceptance Rate (proposals / selections): (%.2f%% / %.2f%%)\n", 100*proposalsAcceptanceRate, 100*selectionAcceptanceRate);
-  printf("[Korali] Coefficient of Variation: %.2f%%\n", 100.0*coefficientOfVariation);
+  printf("[Korali] Acceptance Rate (proposals / selections): (%.2f%% / %.2f%%)\n", 100*_proposalsAcceptanceRate, 100*_selectionAcceptanceRate);
+  printf("[Korali] Coefficient of Variation: %.2f%%\n", 100.0*_coefficientOfVariation);
  }
 
  if (_k->_verbosity >= KORALI_DETAILED)
  {
   printf("[Korali] Sample Mean:\n");
-  for (size_t i = 0; i < _k->N; i++) printf(" %s = %+6.3e\n", _k->_variables[i]->_name.c_str(), meanTheta[i]);
+  for (size_t i = 0; i < _k->N; i++) printf(" %s = %+6.3e\n", _k->_variables[i]->_name.c_str(), _meanTheta[i]);
   printf("[Korali] Sample Covariance:\n");
   for (size_t i = 0; i < _k->N; i++)
   {
    printf("   | ");
    for (size_t j = 0; j < _k->N; j++)
-    if(j <= i)  printf("%+6.3e  ",covarianceMatrix[i*_k->N+j]);
+    if(j <= i)  printf("%+6.3e  ",_covarianceMatrix[i*_k->N+j]);
     else        printf("     -      ");
    printf(" |\n");
   }

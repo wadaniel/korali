@@ -93,12 +93,12 @@ void Distributed::initialize()
 void Distributed::getConfiguration()
 {
  _k->_js["Conduit"] = "Distributed";
- _k->_js["MPI"]["Ranks Per Team"] = _ranksPerTeam;
+ _k->_js["Distributed"]["Ranks Per Team"] = _ranksPerTeam;
 }
 
 void Distributed::setConfiguration()
 {
- _ranksPerTeam = consume(_k->_js, { "MPI", "Ranks Per Team" }, KORALI_NUMBER, std::to_string(1));
+ _ranksPerTeam = consume(_k->_js, { "Distributed", "Ranks Per Team" }, KORALI_NUMBER, std::to_string(1));
 }
 
 /************************************************************************/

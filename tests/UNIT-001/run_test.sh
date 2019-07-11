@@ -1,20 +1,14 @@
 #!/bin/bash
 
 ##############################################################################
-# Brief: Test for the Distributed
+# Brief: Distributed Conduit for Sequential Bayesian Inference
 # Type: Unit Test 
 # Description:
-# Tests several configurations of the distributed conduit on a heat2d posterior
-# problem that employs an MPI solver.
+# Tests the distributed for a bayesian inference problem using a sequential
+# heat diffusion solver on 2D. 
 # Steps: 
 # 1 - Operation: Run 8x1 distribution.
 #     Expected result: 8 Concurrent teams of 1 MPI rank run with rc = 0.
-#     If MPI is not installed (e.g., macOs) , it will not run.
-# 2 - Operation: Run 4x2 distribution.
-#     Expected result: 4 Concurrent teams of 2 MPI ranks run with rc = 0.
-#     If MPI is not installed (e.g., macOs) , it will not run.
-# 3 - Operation: Run 1x8 distribution.
-#     Expected result: 1 Team of 8 MPI ranks run with rc = 0.  
 #     If MPI is not installed (e.g., macOs) , it will not run.
 ###############################################################################
 
@@ -53,5 +47,5 @@ make -j 4 >> $logFile 2>&1
 check_result
 
 logEcho "[Korali] Running mpirun -n 8 ./heat2d_posterior..."
-mpirun -n 8 ./heat2d_posterior >> $logFile 2>&1
+mpirun -n 9 ./heat2d_posterior >> $logFile 2>&1
 check_result

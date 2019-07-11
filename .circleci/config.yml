@@ -44,7 +44,7 @@ jobs:
 
       - run:
           name: run tests
-          command: cd tests; timeout 10m ./run_all_tests.sh
+          command: cd tests; ./run_all_tests.sh
       
   build_macos:
     macos:
@@ -73,5 +73,5 @@ jobs:
 
       - run:
           name: run tests
-          command: cd tests; gtimeout 10m ./run_all_tests.sh
+          command: cd tests; ./run_all_tests.sh
 

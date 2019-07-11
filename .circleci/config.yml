@@ -16,6 +16,11 @@ jobs:
 
       - checkout
 
+      - run:
+          name: install MPI
+          command: sudo apt-get install mpich;
+                   echo 'export MPICXX=mpicxx' >> $BASH_ENV
+
       - restore_cache:
           keys:
             - korali-dependencies-linux

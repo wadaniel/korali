@@ -29,6 +29,8 @@ void Linked::initialize()
 
  if (_rankCount == 1) return;
 
+ #ifdef _KORALI_USE_MPI
+
  _teamCount = (_rankCount-1) / _ranksPerTeam;
  _teamId = -1;
  _localRankId = -1;
@@ -53,12 +55,11 @@ void Linked::initialize()
  _teamRequests.resize(_teamCount);
  _teamBusy.resize(_teamCount);
 
- #ifdef _KORALI_USE_MPI
  MPI_Comm_split(MPI_COMM_WORLD, _teamId, _rankId, &_teamComm);
 
  int mpiSize = -1;
  MPI_Comm_size(MPI_COMM_WORLD, &mpiSize);
- #endif
+
 
  if(isRoot()) if (_rankCount < _ranksPerTeam + 1)
  {
@@ -67,11 +68,11 @@ void Linked::initialize()
   exit(-1);
  }
 
- #ifdef _KORALI_USE_MPI
  MPI_Barrier(MPI_COMM_WORLD);
- #endif
 
  if (!isRoot()) workerThread();
+
+ #endif
 }
 
 
@@ -165,12 +166,13 @@ void Linked::evaluateSample(double* sampleArray, size_t sampleId)
  }
 
  // If parallel solver, check the workers queue.
+ #ifdef _KORALI_USE_MPI
  while (_teamQueue.empty()) checkProgress();
 
  int teamId = _teamQueue.front(); _teamQueue.pop();
  _teamSampleId[teamId] = sampleId;
 
- #ifdef _KORALI_USE_MPI
+
  MPI_Irecv(&_teamFitness[teamId], 1, MPI_DOUBLE, _teamWorkers[teamId][0], MPI_TAG_FITNESS, MPI_COMM_WORLD, &_teamRequests[teamId]);
  _teamBusy[teamId] = true;
 

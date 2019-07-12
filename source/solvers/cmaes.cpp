@@ -858,12 +858,10 @@ void CMAES::printGeneration()
 
   printf("[Korali] Constraint Evaluation at Current Function Value:\n");
   if ( _constraintsDefined )
-  if ( _bestValidSample >= 0 )
   {
+   if ( _bestValidSample >= 0 )
       for (size_t c = 0; c < _k->_fconstraints.size(); c++) printf("         ( %+6.3e )\n", _constraintEvaluations[c][_bestValidSample]);
-  }
-  else
-  {
+   else
       for (size_t c = 0; c < _k->_fconstraints.size(); c++) printf("         ( %+6.3e )\n", _constraintEvaluations[c][0]);
   }
 

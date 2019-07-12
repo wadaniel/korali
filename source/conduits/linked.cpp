@@ -1,5 +1,3 @@
-#ifdef _KORALI_USE_MPI
-
 #include "korali.h"
 
 using namespace Korali::Conduit;
@@ -188,6 +186,8 @@ void Linked::evaluateSample(double* sampleArray, size_t sampleId)
 
 void Linked::checkProgress()
 {
+ if (_rankCount == 1) return;
+
  #ifdef _KORALI_USE_MPI
  for (int i = 0; i < _teamCount; i++) if (_teamBusy[i] == true)
  {
@@ -212,5 +212,3 @@ bool Linked::isRoot()
 {
  return _rankId == getRootRank();
 }
-
-#endif // #ifdef _KORALI_USE_MPI

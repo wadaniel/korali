@@ -42,7 +42,7 @@ void External::evaluateSample(double* sampleArray, size_t sampleId)
 {
  Korali::ModelData data;
 
- _k->_problem->packVariables(&sampleArray[_k->N*sampleId], data);
+ _k->_problem->packVariables(sampleArray, data);
 
  data._sampleId = sampleId;
 

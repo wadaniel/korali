@@ -159,7 +159,7 @@ void Linked::evaluateSample(double* sampleArray, size_t sampleId)
  {
    Korali::ModelData data;
 
-  _k->_problem->packVariables(&sampleArray[_k->N*sampleId], data);
+  _k->_problem->packVariables(sampleArray, data);
    data._sampleId = sampleId;
   _k->_model(data);
 
@@ -185,7 +185,7 @@ void Linked::evaluateSample(double* sampleArray, size_t sampleId)
   int workerId = _teamWorkers[teamId][i];
   int continueFlag = 1;
   MPI_Send(&sampleId, 1, MPI_INT, workerId, MPI_TAG_ID, MPI_COMM_WORLD);
-  MPI_Send(&sampleArray[sampleId*_k->N],_k->N, MPI_DOUBLE, workerId, MPI_TAG_SAMPLE, MPI_COMM_WORLD);
+  MPI_Send(sampleArray, _k->N, MPI_DOUBLE, workerId, MPI_TAG_SAMPLE, MPI_COMM_WORLD);
  }
  #endif
 }

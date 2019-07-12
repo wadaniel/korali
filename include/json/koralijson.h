@@ -157,6 +157,14 @@ class KoraliJsonWrapper
    return str;
   }
 
+  std::vector<double> getArray()
+  {
+   std::vector<double> vec;
+   if (_js->is_array() && (*_js)[0].is_number()) vec = _js->get<std::vector<double>>();
+   else { fprintf(stderr, "[Korali] Error: Attempted getArray() on non-array field or non-numeric array.\n");  exit(-1); }
+   return vec;
+  }
+
   KoraliJsonWrapper& getItem(const std::string& key)                   { _js = &((*_js)[key]); return *this;}
   KoraliJsonWrapper& getItem(const unsigned long int& key)             { _js = &((*_js)[key]); return *this;}
   void setItem(const std::string& key, const std::string& val)         { (*_js)[key] = val; }

@@ -73,9 +73,6 @@ void CMAES::initialize()
  _Z.resize(s_max*_k->N);
  _BDZ.resize(s_max*_k->N);
 
- _transformedSamples.resize(s_max*_k->N);
- 
-
  if (_objective == "Maximize")     _evaluationSign = 1.0;
  else if(_objective == "Minimize") _evaluationSign = -1.0;
  else { fprintf(stderr,"[Korali] Warning: Objective must be either be initialized to \'Maximize\' or \'Minimize\' (is %s).\n", _objective.c_str()); }         
@@ -163,18 +160,20 @@ void CMAES::runGeneration()
 
 void CMAES::evaluateSamples()
 {
- for (size_t i = 0; i < _currentSampleCount; i++) for(size_t d = 0; d < _k->N; ++d)
-  if(_k->_variables[d]->_isLogSpace == true)
-   _transformedSamples[i*_k->N+d] = std::exp(_samplePopulation[i*_k->N+d]);
-  else
-   _transformedSamples[i*_k->N+d] = _samplePopulation[i*_k->N+d];
-
   while (_finishedSampleCount < _currentSampleCount)
   {
     for (size_t i = 0; i < _currentSampleCount; i++) if (_isInitializedSample[i] == false)
     {
+     std::vector<double> _logTransformedSample(_k->N);
+
+     for(size_t d = 0; d<_k->N; ++d)
+       if (_k->_variables[d]->_isLogSpace == true)
+           _logTransformedSample[d] = std::exp(_samplePopulation[i*_k->N+d]);
+       else
+           _logTransformedSample[d] = _samplePopulation[i*_k->N+d];
+
       _isInitializedSample[i] = true;
-      _k->_conduit->evaluateSample(&_transformedSamples[0], i);
+      _k->_conduit->evaluateSample(_logTransformedSample.data(), i);
     }
     _k->_conduit->checkProgress();
   }

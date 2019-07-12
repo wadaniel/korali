@@ -7,7 +7,7 @@ def estimateHarvest(ph, temp):
  a = getAppleCount(ph, temp)
  totalHarvestQuality = b*1.2 + o*0.9 + a*1.1
    
- return totalHarvestQuality
+ return totalHarvestQuality, b, o, a 
 
 def getBananaCount(ph, temp):
  a = 100

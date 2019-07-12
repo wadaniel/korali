@@ -244,16 +244,6 @@ Sample Candidates to evaluate
 std::vector<double> _sampleCandidates;
 
 /******************************************************************************
-Setting Name: Tansformed Samples
-Type: Internal Attribute
-Default Value:
-Default Enabled:
-Description:
-Sample Candidates in log space
-******************************************************************************/
-std::vector<double> _transformedSamples;
-
-/******************************************************************************
 Setting Name: Is Initialized Sample
 Type: Internal Attribute
 Default Value:

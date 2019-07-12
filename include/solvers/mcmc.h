@@ -193,16 +193,6 @@ The logPriors of the chain candidates.
 std::vector<double> _chainCandidatesLogPriors;
 
 /******************************************************************************
-Setting Name: Log Transformed Samples
-Type: Internal Attribute
-Default Value:
-Default Enabled:
-Description:
-Candidate parameters log transformed.
-******************************************************************************/
-std::vector<double> _logTransformedSamples;
-
-/******************************************************************************
 Setting Name: Rejection Alphas
 Type: Internal Attribute
 Default Value:

@@ -39,7 +39,6 @@ void DEA::initialize()
  // Allocating Memory
  _samplePopulation.resize(_k->N*_sampleCount);
  _sampleCandidates.resize(_k->N*_sampleCount);
- _transformedSamples.resize(_k->N*_sampleCount);
 
  _oldMean.resize(_k->N);
  _mean.resize(_k->N);
@@ -204,20 +203,12 @@ void DEA::fixInfeasible(size_t sampleIdx)
 
 void DEA::evaluateSamples()
 {
-  
-  for (size_t i = 0; i < _sampleCount; i++) for(size_t d = 0; d < _k->N; ++d)
-    if(_k->_variables[d]->_isLogSpace == true)
-        _transformedSamples[i*_k->N+d] = std::exp(_sampleCandidates[i*_k->N+d]);
-    else 
-        _transformedSamples[i*_k->N+d] = _sampleCandidates[i*_k->N+d];
-
-
   while (_finishedSampleCount < _sampleCount)
   {
     for (size_t i = 0; i < _sampleCount; i++) if (_isInitializedSample[i] == false)
     {
       _isInitializedSample[i] = true;
-      _k->_conduit->evaluateSample(&_transformedSamples[0], i);
+      _k->_conduit->evaluateSample(&_sampleCandidates[i*_k->N], i);
     }
     _k->_conduit->checkProgress();
   }
@@ -227,7 +218,7 @@ void DEA::evaluateSamples()
 
 void DEA::processSample(size_t sampleIdx, double fitness)
 {
- double logPrior = _k->_problem->evaluateLogPrior(&_transformedSamples[sampleIdx*_k->N]);
+ double logPrior = _k->_problem->evaluateLogPrior(&_sampleCandidates[sampleIdx*_k->N]);
  _fitnessVector[sampleIdx] = _evaluationSign * (logPrior+fitness);
  _finishedSampleCount++;
 }

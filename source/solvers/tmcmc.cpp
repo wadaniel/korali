@@ -32,7 +32,6 @@ void Korali::Solver::TMCMC::initialize()
  // Allocating TMCMC memory
  _covarianceMatrix.resize(_k->N*_k->N);
  _meanTheta.resize(_k->N);
- _logTransformedSamples.resize(_k->N*_populationSize);
  _chainCandidatesParameters.resize(_k->N*_populationSize);
  _chainCandidatesLogLikelihoods.resize(_populationSize);
  _chainLeadersParameters.resize(_k->N*_populationSize);
@@ -110,27 +109,28 @@ void Korali::Solver::TMCMC::processSample(size_t c, double fitness)
  }
 
  _currentChainStep[c]++;
- if (_currentChainStep[c] > _burnIn[_k->currentGeneration] ) updateDatabase(c, &_chainLeadersParameters[c*_k->N], _chainLeadersLogLikelihoods[c]);
+ if (_currentChainStep[c] > _burnIn[_k->currentGeneration] ) updateDatabase(&_chainLeadersParameters[c*_k->N], _chainLeadersLogLikelihoods[c]);
  _chainPendingFitness[c] = false;
  if (_currentChainStep[c] == _chainLengths[c]) _finishedChainsCount++;
 }
 
 void Korali::Solver::TMCMC::evaluateSample(size_t c)
 {
+  std::vector<double> _logTransformedSample(_k->N);
+
   for(size_t d = 0; d<_k->N; ++d) 
     if (_k->_variables[d]->_isLogSpace == true)
-        _logTransformedSamples[c*_k->N+d] = std::exp(_chainCandidatesParameters[c*_k->N+d]);
+        _logTransformedSample[d] = std::exp(_chainCandidatesParameters[c*_k->N+d]);
     else 
-        _logTransformedSamples[c*_k->N+d] = _chainCandidatesParameters[c*_k->N+d];
+        _logTransformedSample[d] = _chainCandidatesParameters[c*_k->N+d];
 
-  _k->_conduit->evaluateSample(&_logTransformedSamples[0], c);
+  _k->_conduit->evaluateSample(_logTransformedSample.data(), c);
 }
 
-void Korali::Solver::TMCMC::updateDatabase(size_t hashId, double* point, double fitness)
+void Korali::Solver::TMCMC::updateDatabase(double* point, double fitness)
 {
  for (size_t i = 0; i < _k->N; i++) _sampleParametersDatabase.push_back(point[i]);
  _sampleFitnessDatabase.push_back(fitness);
- _sampleHashIdDatabase.push_back(hashId);
  _databaseEntryCount++;
 }
 
@@ -150,7 +150,7 @@ void Korali::Solver::TMCMC::initializeSamples()
        _chainLeadersParameters[c*_k->N + d] = _chainCandidatesParameters[c*_k->N + d] = _k->_variables[d]->getRandomNumber();
        _chainLeadersLogLikelihoods[c] += log( _k->_variables[d]->getDensity(_chainLeadersParameters[c*_k->N + d]) );
      }
-     updateDatabase(c, &_chainLeadersParameters[c*_k->N], _chainLeadersLogLikelihoods[c]);
+     updateDatabase(&_chainLeadersParameters[c*_k->N], _chainLeadersLogLikelihoods[c]);
      _finishedChainsCount++;
   }
 }
@@ -233,7 +233,6 @@ void Korali::Solver::TMCMC::resampleGeneration()
  
  if (_useLocalCovariance) computeChainCovariances(_localCovarianceMatrices, uniqueSelections);
 
- _sampleHashIdDatabase.clear();
  _sampleFitnessDatabase.clear();
  _sampleParametersDatabase.clear();
 

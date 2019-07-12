@@ -57,7 +57,6 @@ void Korali::Solver::MCMC::initialize()
  _covarianceMatrix.resize(_k->N*_k->N);
  _chainLeaderParameters.resize(_k->N);
  _chainCandidatesParameters.resize(_k->N*_rejectionLevels);
- _logTransformedSamples.resize(_k->N*_rejectionLevels);
  _chainCandidatesLogPriors.resize(_rejectionLevels);
  _chainCandidatesLogLikelihoods.resize(_rejectionLevels);
  _rejectionAlphas.resize(_rejectionLevels);
@@ -162,13 +161,15 @@ void Korali::Solver::MCMC::generateCandidate(size_t sampleIdx)
 
 void Korali::Solver::MCMC::evaluateSample()
 {
-  for(size_t d = 0; d < _k->N; ++d)
-    if(_k->_variables[d]->_isLogSpace == true)
-        _logTransformedSamples[_rejectionCount*_k->N+d] = std::exp(_chainCandidatesParameters[_rejectionCount*_k->N+d]);
-    else 
-        _logTransformedSamples[_rejectionCount*_k->N+d] = _chainCandidatesParameters[_rejectionCount*_k->N+d];
+ std::vector<double> _logTransformedSample(_k->N);
 
-  _k->_conduit->evaluateSample(&_logTransformedSamples[0], _rejectionCount);
+ for(size_t d = 0; d<_k->N; ++d)
+   if (_k->_variables[d]->_isLogSpace == true)
+       _logTransformedSample[d] = std::exp(_chainCandidatesParameters[_rejectionCount*_k->N+d]);
+   else
+       _logTransformedSample[d] = _chainCandidatesParameters[_rejectionCount*_k->N+d];
+
+  _k->_conduit->evaluateSample(_logTransformedSample.data(), _rejectionCount);
 }
 
 void Korali::Solver::MCMC::sampleCandidate(size_t sampleIdx)

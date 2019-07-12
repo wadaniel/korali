@@ -451,16 +451,6 @@ Determines which samples are initialized.
 std::vector<bool> _isInitializedSample;
 
 /******************************************************************************
-Setting Name: Transformed Samples
-Type: Internal Attribute
-Default Value:
-Default Enabled:
-Description:
-Values of the log transformed samples.
-******************************************************************************/
-std::vector<double> _transformedSamples;
-
-/******************************************************************************
 Setting Name: Finished Sample Count
 Type: Internal Attribute
 Default Value:

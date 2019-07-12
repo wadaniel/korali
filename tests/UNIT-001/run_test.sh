@@ -7,7 +7,10 @@
 # Tests the distributed for a bayesian inference problem using a sequential
 # heat diffusion solver on 2D. 
 # Steps: 
-# 1 - Operation: Run 8x1 distribution.
+# 1 - Operation: Compile test case.
+#     Expected result: Correct compilation with rc = 0.
+#     If MPI is not installed (e.g., macOs) , it will not compile. 
+# 2 - Operation: Run 8x1 distribution.
 #     Expected result: 8 Concurrent teams of 1 MPI rank run with rc = 0.
 #     If MPI is not installed (e.g., macOs) , it will not run.
 ###############################################################################
@@ -42,10 +45,12 @@ then
  exit 0
 fi
 
+############# STEP 2 ##############
+
 logEcho "[Korali] Compiling heat2d_posterior..."
 make -j 4 >> $logFile 2>&1
 check_result
 
-logEcho "[Korali] Running mpirun -n 8 ./heat2d_posterior..."
+logEcho "[Korali] Running mpirun -n 9 ./heat2d_posterior..."
 mpirun -n 9 ./heat2d_posterior >> $logFile 2>&1
 check_result

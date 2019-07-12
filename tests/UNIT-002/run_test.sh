@@ -6,9 +6,18 @@
 # Description:
 # Tests the distributed for a bayesian inference problem using a sequential
 # heat diffusion solver on 2D. 
-# Steps: 
-# 1 - Operation: Run 8x1 distribution.
+# Steps:
+# 1 - Operation: Compile test case.
+#     Expected result: Correct compilation with rc = 0.
+#     If MPI is not installed (e.g., macOs) , it will not compile. 
+# 2 - Operation: Run 8x1 distribution.
 #     Expected result: 8 Concurrent teams of 1 MPI rank run with rc = 0.
+#     If MPI is not installed (e.g., macOs) , it will not run.
+# 3 - Operation: Run 4x2 distribution.
+#     Expected result: 4 Concurrent teams of 2 MPI rank run with rc = 0.
+#     If MPI is not installed (e.g., macOs) , it will not run.
+# 4 - Operation: Run 1x8 distribution.
+#     Expected result: 1 Teams of 8 MPI ranks run with rc = 0.
 #     If MPI is not installed (e.g., macOs) , it will not run.
 ###############################################################################
 
@@ -42,10 +51,24 @@ then
  exit 0
 fi
 
-logEcho "[Korali] Compiling heat2d_posterior..."
+logEcho "[Korali] Compiling poisson_posterior..."
 make -j 4 >> $logFile 2>&1
 check_result
 
-logEcho "[Korali] Running mpirun -n 8 ./heat2d_posterior..."
-mpirun -n 9 ./heat2d_posterior >> $logFile 2>&1
+############# STEP 2 ##############
+
+logEcho "[Korali] Running mpirun -n 9 ./poisson_posterior 1..."
+mpirun -n 9 ./poisson_posterior 1 >> $logFile 2>&1
+check_result
+
+############# STEP 3 ##############
+
+logEcho "[Korali] Running mpirun -n 9 ./poisson_posterior 4..."
+mpirun -n 9 ./poisson_posterior 4 >> $logFile 2>&1
+check_result
+
+############# STEP 4 ##############
+
+logEcho "[Korali] Running mpirun -n 9 ./poisson_posterior 8..."
+mpirun -n 9 ./poisson_posterior 8 >> $logFile 2>&1
 check_result

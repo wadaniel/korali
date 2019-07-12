@@ -40,8 +40,6 @@ void Korali::Solver::TMCMC::initialize()
  _chainPendingFitness.resize(_populationSize);
  _currentChainStep.resize(_populationSize);
  _chainLengths.resize(_populationSize);
- _sampleParametersDatabase.resize(_k->N*_populationSize);
- _sampleFitnessDatabase.resize(_populationSize);
 
  if(_useLocalCovariance)
  {
@@ -112,7 +110,7 @@ void Korali::Solver::TMCMC::processSample(size_t c, double fitness)
  }
 
  _currentChainStep[c]++;
- if (_currentChainStep[c] > _burnIn[_k->currentGeneration] ) updateDatabase(&_chainLeadersParameters[c*_k->N], _chainLeadersLogLikelihoods[c]);
+ if (_currentChainStep[c] > _burnIn[_k->currentGeneration] ) updateDatabase(c, &_chainLeadersParameters[c*_k->N], _chainLeadersLogLikelihoods[c]);
  _chainPendingFitness[c] = false;
  if (_currentChainStep[c] == _chainLengths[c]) _finishedChainsCount++;
 }
@@ -128,10 +126,11 @@ void Korali::Solver::TMCMC::evaluateSample(size_t c)
   _k->_conduit->evaluateSample(&_logTransformedSamples[0], c);
 }
 
-void Korali::Solver::TMCMC::updateDatabase(double* point, double fitness)
+void Korali::Solver::TMCMC::updateDatabase(size_t hashId, double* point, double fitness)
 {
- for (size_t i = 0; i < _k->N; i++) _sampleParametersDatabase[_databaseEntryCount*_k->N + i] = point[i];
- _sampleFitnessDatabase[_databaseEntryCount] = fitness;
+ for (size_t i = 0; i < _k->N; i++) _sampleParametersDatabase.push_back(point[i]);
+ _sampleFitnessDatabase.push_back(fitness);
+ _sampleHashIdDatabase.push_back(hashId);
  _databaseEntryCount++;
 }
 
@@ -151,7 +150,7 @@ void Korali::Solver::TMCMC::initializeSamples()
        _chainLeadersParameters[c*_k->N + d] = _chainCandidatesParameters[c*_k->N + d] = _k->_variables[d]->getRandomNumber();
        _chainLeadersLogLikelihoods[c] += log( _k->_variables[d]->getDensity(_chainLeadersParameters[c*_k->N + d]) );
      }
-     updateDatabase(&_chainLeadersParameters[c*_k->N], _chainLeadersLogLikelihoods[c]);
+     updateDatabase(c, &_chainLeadersParameters[c*_k->N], _chainLeadersLogLikelihoods[c]);
      _finishedChainsCount++;
   }
 }
@@ -233,6 +232,10 @@ void Korali::Solver::TMCMC::resampleGeneration()
  }
  
  if (_useLocalCovariance) computeChainCovariances(_localCovarianceMatrices, uniqueSelections);
+
+ _sampleHashIdDatabase.clear();
+ _sampleFitnessDatabase.clear();
+ _sampleParametersDatabase.clear();
 
  _databaseEntryCount = 0;
  _acceptedSamplesCount   = 0;

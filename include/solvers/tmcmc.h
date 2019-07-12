@@ -373,6 +373,16 @@ Fitness of the samples stored in the database.
 std::vector<double> _sampleFitnessDatabase;
 
 /******************************************************************************
+Setting Name: Sample HashId Database
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Hash Id of the samples stored in the database.
+******************************************************************************/
+std::vector<double> _sampleHashIdDatabase;
+
+/******************************************************************************
 Setting Name: Local Covariance Matrices
 Type: Internal Attribute
 Default Value:
@@ -412,7 +422,7 @@ std::vector<variableSetting> _variableSettings;
   // Internal TMCMC Methods
  void initializeSamples();
  void resampleGeneration();
- void updateDatabase(double* point, double fitness);
+ void updateDatabase(size_t hashId, double* point, double fitness);
  void generateCandidate(size_t candidate);
  void evaluateSample(size_t candidate);
  void computeChainCovariances(std::vector< std::vector<double> >& chain_cov, size_t newchains);

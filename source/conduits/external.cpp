@@ -30,8 +30,6 @@ void External::setConfiguration()
 
 void External::initialize()
 {
- _currentSample = 0;
-
  for (int i = 0; i < _concurrentJobs; i++) _pipeDescriptors.push_back(std::vector<int>(2));
  for (int i = 0; i < _concurrentJobs; i++) _launcherQueue.push(i);
 }
@@ -46,7 +44,7 @@ void External::evaluateSample(double* sampleArray, size_t sampleId)
 
  _k->_problem->packVariables(&sampleArray[_k->N*sampleId], data);
 
- data._hashId = _currentSample++;
+ data._sampleId = sampleId;
 
  while (_launcherQueue.empty()) checkProgress();
 

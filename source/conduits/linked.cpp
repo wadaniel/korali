@@ -2,9 +2,13 @@
 
 using namespace Korali::Conduit;
 
-#define MPI_TAG_CONTINUE 0
+#ifdef _KORALI_USE_MPI
+
 #define MPI_TAG_FITNESS 1
 #define MPI_TAG_SAMPLE 2
+#define MPI_TAG_ID 3
+
+#endif
 
 /************************************************************************/
 /*                  Constructor / Destructor Methods                    */
@@ -12,7 +16,6 @@ using namespace Korali::Conduit;
 
 void Linked::initialize()
 {
- _currentSample = 0;
  _continueEvaluations = true;
 
  _rankCount = 1;
@@ -101,10 +104,10 @@ void Linked::finalize()
  #ifdef _KORALI_USE_MPI
  if (isRoot())
   {
-   int continueFlag = 0;
+   int stopFlag = -1;
     for (int i = 0; i < _teamCount; i++)
       for (int j = 0; j < _ranksPerTeam; j++)
-      MPI_Send(&continueFlag, 1, MPI_INT, _teamWorkers[i][j], MPI_TAG_CONTINUE, MPI_COMM_WORLD);
+      MPI_Send(&stopFlag, 1, MPI_INT, _teamWorkers[i][j], MPI_TAG_ID, MPI_COMM_WORLD);
   }
 
   MPI_Barrier(MPI_COMM_WORLD);
@@ -116,11 +119,12 @@ void Linked::workerThread()
  #ifdef _KORALI_USE_MPI
  if (_teamId == -1) return;
 
- int continueFlag = 1;
- while (continueFlag == 1)
+ int sampleId = 0;
+ while (sampleId != -1)
  {
-  MPI_Recv(&continueFlag, 1, MPI_INT, getRootRank(), MPI_TAG_CONTINUE, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-  if (continueFlag == 1)
+  MPI_Recv(&sampleId, 1, MPI_INT, getRootRank(), MPI_TAG_ID, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+  if (sampleId != -1)
   {
    double sample[_k->N];
    MPI_Recv(&sample, _k->N, MPI_DOUBLE, getRootRank(), MPI_TAG_SAMPLE, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -128,7 +132,7 @@ void Linked::workerThread()
 
    Korali::ModelData data;
    data._comm = _teamComm;
-   data._hashId = _rankId * 0x100000 + _currentSample++;
+   data._sampleId = sampleId;
 
    _k->_problem->packVariables(sample, data);
 
@@ -156,7 +160,7 @@ void Linked::evaluateSample(double* sampleArray, size_t sampleId)
    Korali::ModelData data;
 
   _k->_problem->packVariables(&sampleArray[_k->N*sampleId], data);
-  data._hashId = _currentSample++;
+   data._sampleId = sampleId;
   _k->_model(data);
 
   double fitness = _k->_problem->evaluateFitness(data);
@@ -180,7 +184,7 @@ void Linked::evaluateSample(double* sampleArray, size_t sampleId)
  {
   int workerId = _teamWorkers[teamId][i];
   int continueFlag = 1;
-  MPI_Send(&continueFlag, 1, MPI_INT, workerId, MPI_TAG_CONTINUE, MPI_COMM_WORLD);
+  MPI_Send(&sampleId, 1, MPI_INT, workerId, MPI_TAG_ID, MPI_COMM_WORLD);
   MPI_Send(&sampleArray[sampleId*_k->N],_k->N, MPI_DOUBLE, workerId, MPI_TAG_SAMPLE, MPI_COMM_WORLD);
  }
  #endif

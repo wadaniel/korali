@@ -40,11 +40,13 @@ namespace Korali
   size_t getVariableCount() { return _self->_computationalVariables.size(); }
   std::vector<double>& getVariables() { return _self->_computationalVariables; }
   std::vector<double>& getResults() { return _self->_results; }
-  size_t& getHashId() { return _self->_hashId; }
+  size_t& getSampleId() { return _self->_sampleId; }
 
+  #ifdef _KORALI_USE_MPI
   MPI_Comm _comm;
   MPI_Comm getComm() { return _self->_comm; }
   long int getCommPointer() { return (long int)(&_self->_comm); }
+  #endif
 
   double getVariable(size_t i)
   {
@@ -57,7 +59,7 @@ namespace Korali
   }
 
   ModelData* _self;
-  size_t _hashId;
+  size_t _sampleId;
   std::vector<double> _computationalVariables;
   std::vector<double> _statisticalVariables;
   std::vector<double> _results;

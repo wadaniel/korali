@@ -74,7 +74,7 @@ Specifies the number of samples drawn from the posterior distribution at each ge
 size_t _populationSize;
 
 /******************************************************************************
-Setting Name: Burn In
+Setting Name: Burn In Default
 Type: Solver Setting
 Default Value: 0
 Default Enabled:
@@ -82,7 +82,18 @@ Description:
 Specifies the number of additional MCMC steps per sample per generation.
 Note that only the last sample per chain is considered for the recombination.
 ******************************************************************************/
-size_t _burnIn;
+size_t _burnInDefault;
+
+/******************************************************************************
+Setting Name: Burn In Steps
+Type: Solver Setting
+Default Value: 0
+Default Enabled:
+Description:
+Specifies the number of additional MCMC steps per sample at specified 
+generations.
+******************************************************************************/
+std::vector<size_t> _burnInSteps;
 
 /******************************************************************************
 Setting Name: Target Coefficient of Variation
@@ -91,7 +102,8 @@ Default Value: 1.0
 Default Enabled:
 Description:
 Initial value for the target coefficient of variation to search for the exponent
- $\rho_{i+1}$. By default, Korali will set this value to 1.00 as suggested in [Ching2007].
+ $\rho_{i+1}$. By default, Korali will set this value to 1.00 as suggested in 
+ [Ching2007].
 ******************************************************************************/
 double _targetCVar;
 
@@ -112,7 +124,8 @@ Type: Solver Setting
 Default Value: false
 Default Enabled:
 Description:
-If $true, TMCMC calculates a local covariance matrix per sample from its neighbours.
+If $true, TMCMC calculates a local covariance matrix per sample from its 
+neighbours.
 ******************************************************************************/
 bool _useLocalCovariance;
 
@@ -122,7 +135,8 @@ Type: Solver Setting
 Default Value: 0.00001
 Default Enabled:
 Description:
-Minimum increment of the exponent $\rho_{i+1}$. This parameter prevents TMCMC from stalling.
+Minimum increment of the exponent $\rho_{i+1}$. This parameter prevents TMCMC 
+from stalling.
 ******************************************************************************/
 double _minRhoUpdate;
 
@@ -132,9 +146,21 @@ Type: Solver Setting
 Default Value: 1.0
 Default Enabled:
 Description:
-Maximum increment of the exponent $\rho{i+1}$. By default, Korali will set this value to 1.0 (inactive).
+Maximum increment of the exponent $\rho{i+1}$. By default, Korali will set this 
+value to 1.0 (inactive).
 ******************************************************************************/
 double _maxRhoUpdate;
+
+/******************************************************************************
+Setting Name: Burn In
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Actual placeholder for burn in steps per generation, initialized from $Burn In 
+Default$ and $Burn In Steps$.
+******************************************************************************/
+std::vector<size_t> _burnIn;
 
 /******************************************************************************
 Setting Name: Chain Pending Fitness

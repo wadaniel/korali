@@ -33,7 +33,7 @@ assert_value( k["File Output Frequency"], 1 )
 
 assert_value( k["TMCMC"]["Covariance Scaling"], 0.04 )
 
-assert_value( k["TMCMC"]["Burn In"], 0 )
+assert_value( k["TMCMC"]["Burn In Default"], 0 )
 
 assert_value( k["TMCMC"]["Max Rho Update"], 1.0 )
 
@@ -46,7 +46,11 @@ assert_boolean( k["TMCMC"]["Use Local Covariance"], False )
 
 # Test Internals
 
-assert_value( k["TMCMC"]["Internal"]["Accepted Samples Count"], 5000 ) # what is this (DW)
+assert_value( k["TMCMC"]["Internal"]["Burn In"][0], 0 )
+assert_value( k["TMCMC"]["Internal"]["Burn In"][1], 0 ) 
+assert_value( k["TMCMC"]["Internal"]["Burn In"][2], 0 )
+
+assert_value( k["TMCMC"]["Internal"]["Accepted Samples Count"], 5000 )
 
 assert_value( k["TMCMC"]["Internal"]["Annealing Exponent"], 0.0 )
 

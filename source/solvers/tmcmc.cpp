@@ -73,6 +73,11 @@ void Korali::Solver::TMCMC::initialize()
  for (size_t c = 0; c < _chainCount; c++) _currentChainStep[c]    = 0;
  for (size_t c = 0; c < _chainCount; c++) _chainPendingFitness[c] = false;
 
+ _burnIn = std::vector<size_t>(1000, _burnInDefault); //TODO: replace 1000 by Max Generation Value
+ if(_burnInSteps.size() > _burnIn.size())
+ { printf("[Korali] Error: Number of defined Burn In Steps (%zu) larger than Max Generations (1000)\n", _burnInSteps.size()); exit(-1); }
+ std::copy(_burnInSteps.begin(), _burnInSteps.end(), _burnIn.begin());
+
  initializeSamples();
 }
 
@@ -107,7 +112,7 @@ void Korali::Solver::TMCMC::processSample(size_t c, double fitness)
  }
 
  _currentChainStep[c]++;
- if (_currentChainStep[c] > _burnIn ) updateDatabase(&_chainLeadersParameters[c*_k->N], _chainLeadersLogLikelihoods[c]);
+ if (_currentChainStep[c] > _burnIn[_k->currentGeneration] ) updateDatabase(&_chainLeadersParameters[c*_k->N], _chainLeadersLogLikelihoods[c]);
  _chainPendingFitness[c] = false;
  if (_currentChainStep[c] == _chainLengths[c]) _finishedChainsCount++;
 }
@@ -222,7 +227,7 @@ void Korali::Solver::TMCMC::resampleGeneration()
    if (sel[i] != 0) {
      for (size_t j = 0; j < _k->N ; j++) _chainLeadersParameters[ldi*_k->N + j] = _sampleParametersDatabase[i*_k->N + j];
      _chainLeadersLogLikelihoods[ldi] = _sampleFitnessDatabase[i];
-     _chainLengths[ldi] = sel[i] + _burnIn;
+     _chainLengths[ldi] = sel[i] + _burnIn[_k->currentGeneration];
      ldi++;
    }
  }

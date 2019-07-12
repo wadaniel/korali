@@ -166,15 +166,10 @@ void Korali::Engine::setConfiguration()
 
  int rankCount = 1;
 
- std::string conduitType =  consume(_js, { "Conduit" }, KORALI_STRING, "Semi-Intrusive");
+ std::string conduitType =  consume(_js, { "Conduit", "Type" }, KORALI_STRING, "Linked");
 
- if (conduitType == "Semi-Intrusive") _conduit = std::make_shared<Korali::Conduit::SemiIntrusive>();
- #ifdef _KORALI_USE_MPI
- if (conduitType == "Distributed") _conduit = std::make_shared<Korali::Conduit::Distributed>();
- #else
- if (conduitType == "Distributed") { fprintf(stderr, "[Korali] Error: Distributed Conduit selected, but Korali has not been compiled with MPI or UPC++ support.\n"); exit(-1); }
- #endif
- if (conduitType == "Nonintrusive") _conduit = std::make_shared<Korali::Conduit::Nonintrusive>();
+ if (conduitType == "Linked") _conduit = std::make_shared<Korali::Conduit::Linked>();
+ if (conduitType == "External") _conduit = std::make_shared<Korali::Conduit::External>();
 
  if (_conduit == nullptr) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Conduit '%s'.\n", conduitType.c_str()); exit(-1); }
 

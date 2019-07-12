@@ -1,5 +1,5 @@
-#ifndef _KORALI_CONDUIT_NONINTRUSIVE_H_
-#define _KORALI_CONDUIT_NONINTRUSIVE_H_
+#ifndef _KORALI_CONDUIT_EXTERNAL_H_
+#define _KORALI_CONDUIT_EXTERNAL_H_
 
 #include "conduits/base.h"
 #include <sys/types.h>
@@ -10,7 +10,7 @@
 
 namespace Korali { namespace Conduit {
 
-class Nonintrusive : public Base {
+class External : public Base {
  public:
 
  int _concurrentJobs;
@@ -34,4 +34,4 @@ class Nonintrusive : public Base {
 };
 } } // namespace Korali::Conduit
 
-#endif // _KORALI_CONDUIT_NONINTRUSIVE_H_
+#endif // _KORALI_CONDUIT_EXTERNAL_H_

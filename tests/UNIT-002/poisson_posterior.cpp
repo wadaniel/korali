@@ -57,8 +57,7 @@ int main(int argc, char* argv[])
  k["TMCMC"]["Covariance Scaling"] = 0.02;
  k["TMCMC"]["Population Size"] = 100;
 
- k["Conduit"] = "Distributed";
- k["Distributed"]["Ranks Per Team"] = atoi(argv[1]);
+ k["Conduit"]["Ranks Per Team"] = atoi(argv[1]);
 
  std::vector<double> xdata = getPointData();
  k.setModel([xdata](Korali::ModelData& d) { jacobi(xdata, d.getVariables(), d.getResults(), d.getComm()); });

@@ -8,18 +8,18 @@ using namespace Korali::Conduit;
 /*                    Configuration Methods                             */
 /************************************************************************/
 
-void Nonintrusive::getConfiguration()
+void External::getConfiguration()
 {
- _k->_js["Conduit"] = "Nonintrusive";
- _k->_js["Nonintrusive"]["Concurrent Jobs"] = _concurrentJobs;
+ _k->_js["Conduit"]["Type"] = "External";
+ _k->_js["Conduit"]["Concurrent Jobs"] = _concurrentJobs;
 }
 
-void Nonintrusive::setConfiguration()
+void External::setConfiguration()
 {
- _concurrentJobs = consume(_k->_js, { "Nonintrusive", "Concurrent Jobs" }, KORALI_NUMBER, std::to_string(1));
+ _concurrentJobs = consume(_k->_js, { "Conduit", "Concurrent Jobs" }, KORALI_NUMBER, std::to_string(1));
  if (_concurrentJobs < 1)
  {
-  fprintf(stderr, "[Korali] Error: You need to define at least 1 concurrent job(s) for non-intrusive models \n");
+  fprintf(stderr, "[Korali] Error: You need to define at least 1 concurrent job(s) for external models \n");
   exit(-1);
  }
 }
@@ -28,7 +28,7 @@ void Nonintrusive::setConfiguration()
 /*                    Functional Methods                                */
 /************************************************************************/
 
-void Nonintrusive::initialize()
+void External::initialize()
 {
  _currentSample = 0;
 
@@ -36,11 +36,11 @@ void Nonintrusive::initialize()
  for (int i = 0; i < _concurrentJobs; i++) _launcherQueue.push(i);
 }
 
-void Nonintrusive::finalize()
+void External::finalize()
 {
 }
 
-void Nonintrusive::evaluateSample(double* sampleArray, size_t sampleId)
+void External::evaluateSample(double* sampleArray, size_t sampleId)
 {
  Korali::ModelData data;
 
@@ -77,7 +77,7 @@ void Nonintrusive::evaluateSample(double* sampleArray, size_t sampleId)
 
 }
 
-void Nonintrusive::checkProgress()
+void External::checkProgress()
 {
  int status;
  pid_t processId;
@@ -97,7 +97,7 @@ void Nonintrusive::checkProgress()
 
 }
 
-bool Nonintrusive::isRoot()
+bool External::isRoot()
 {
  return true;
 }

@@ -36,9 +36,8 @@ nav:
             - MCMC: usage/solvers/mcmc.md
             - TMCMC: usage/solvers/tmcmc.md
       - Conduits:
-          - Semi-Intrusive: usage/conduits/semi-intrusive.md
-          - Distributed: usage/conduits/distributed.md
-          - Nonintrusive: usage/conduits/nonintrusive.md
+          - Linked: usage/conduits/linked.md
+          - External: usage/conduits/external.md
       - Models:
           - Simple: usage/models/simple.md
           - Rerefence: usage/models/reference.md

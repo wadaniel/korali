@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import korali
+import sys
 import subprocess
 
 def evaluate(x):
@@ -16,15 +17,15 @@ k["Problem"] = "Direct Evaluation";
 for i in range(4):
   k["Variables"][i]["Name"] = "X" + str(i)
 
-k["Conduit"] = "Nonintrusive"
-k["Nonintrusive"]["Concurrent Jobs"] = 2
+k["Conduit"]["Type"] = "External"
+k["Conduit"]["Concurrent Jobs"] = int(sys.argv[1])
 
 k["Solver"] = "CMAES"
 k["CMAES"]["Sample Count"] = 10
 for i in range(4):
   k["Variables"][i]["CMAES"]["Lower Bound"] = -32.0;
   k["Variables"][i]["CMAES"]["Upper Bound"] = +32.0;
-k["CMAES"]["Termination Criteria"]["Max Generations"]["Value"] = 100
+k["CMAES"]["Termination Criteria"]["Max Generations"]["Value"] = 30
 
 k.setModel(evaluate)
 

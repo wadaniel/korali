@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##############################################################################
-# Brief: Distributed Conduit for Distributed (MPI) Bayesian Inference
+# Brief: Distributed Linked Conduit for Distributed (MPI) Bayesian Inference
 # Type: Unit Test 
 # Description:
 # Tests the distributed for a bayesian inference problem using a sequential

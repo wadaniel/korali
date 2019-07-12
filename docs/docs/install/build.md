@@ -22,5 +22,8 @@
 | :----------------:|:----------------:|: ----------------:|: ----------------:|
 | Regression | [REG-000](https://github.com/cselab/korali/tree/development/tests/REG-000/run_test.sh) | <span style="color:green">Active</span> | Checks for a correct installation of Korali and its modules. |
 | Regression | [REG-001](https://github.com/cselab/korali/tree/development/tests/REG-001/run_test.sh) | <span style="color:green">Active</span> | Re-run all tutorials and plotting for basic sanity check. |
+| Unit Test | [UNIT-000](https://github.com/cselab/korali/tree/development/tests/UNIT-000/run_test.sh) | <span style="color:green">Active</span> | Test for the Non-Intrusive Conduit |
+| Unit Test | [UNIT-001](https://github.com/cselab/korali/tree/development/tests/UNIT-001/run_test.sh) | <span style="color:green">Active</span> | Distributed Conduit for Sequential Bayesian Inference |
+| Unit Test | [UNIT-002](https://github.com/cselab/korali/tree/development/tests/UNIT-002/run_test.sh) | <span style="color:green">Active</span> | Distributed Conduit for Distributed (MPI) Bayesian Inference |
 
 </center>

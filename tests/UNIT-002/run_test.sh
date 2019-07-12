@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##############################################################################
-# Brief: Distributed Conduit for Sequential Bayesian Inference
+# Brief: Distributed Conduit for Distributed (MPI) Bayesian Inference
 # Type: Unit Test 
 # Description:
 # Tests the distributed for a bayesian inference problem using a sequential
@@ -52,6 +52,9 @@ then
 fi
 
 logEcho "[Korali] Compiling poisson_posterior..."
+make clean >> $logFile 2>&1
+check_result
+
 make -j 4 >> $logFile 2>&1
 check_result
 

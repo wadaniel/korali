@@ -45,11 +45,15 @@ then
  exit 0
 fi
 
-############# STEP 2 ##############
-
 logEcho "[Korali] Compiling heat2d_posterior..."
+
+make clean >> $logFile 2>&1
+check_result
+
 make -j 4 >> $logFile 2>&1
 check_result
+
+############# STEP 2 ##############
 
 logEcho "[Korali] Running mpirun -n 9 ./heat2d_posterior..."
 mpirun -n 9 ./heat2d_posterior >> $logFile 2>&1

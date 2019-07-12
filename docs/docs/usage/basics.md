@@ -182,31 +182,27 @@ The evaluation conduit module executes the computational model(s) for a given sa
 
 The rationale and configuration of the currently implemented conduits can be found below:
 
-??? abstract "Semi-Intrusive"
+??? abstract "Linked"
 
-    To select the Semi-Intrusive conduit, use the following syntax:
-
-	```python
-	 # This is not really necessary since semi-intrusive is the default conduit.
-	 k["Conduit"] = "Semi-Intrusive";
-	```
-
-	[Click here for detailed information on Semi-Intrusive.](../conduits/semi-intrusive)
-
-??? abstract "Distributed"
-
-    To select the Distributed conduit, use the following syntax:
+    To select the Linked conduit, use the following syntax:
 
 	```python
-	 k["Conduit"] = "Distributed";
+	 # This is not really necessary since Linked is the default conduit.
+	 k["Conduit"] = "Linked";
 	```
 
-	[Click here for detailed information on Distributed.](../conduits/distributed)
+	[Click here for detailed information on the Linked conduit.](../conduits/linked)
 
+??? abstract "External"
 
-- [Semi-Intrusive](../conduits/semi-intrusive)
-- [Distributed](../conduits/distributed)
-- [Nonintrusive](../conduits/nonintrusive)
+    To select the External conduit, use the following syntax:
+
+	```python
+	 k["Conduit"] = "External";
+	```
+
+	[Click here for detailed information on the External conduit.](../conduits/external)
+
 
 ### Step 5) Define Model(s)
 

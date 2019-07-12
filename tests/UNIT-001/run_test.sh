@@ -1,11 +1,11 @@
 #!/bin/bash
 
 ##############################################################################
-# Brief: Distributed Conduit for Sequential Bayesian Inference
+# Brief: Distributed Linked Conduit for Sequential Bayesian Inference
 # Type: Unit Test 
 # Description:
-# Tests the distributed for a bayesian inference problem using a sequential
-# heat diffusion solver on 2D. 
+# Tests the distributed linked conduit for a bayesian inference problem using
+# a sequential heat diffusion solver on 2D. 
 # Steps: 
 # 1 - Operation: Compile test case.
 #     Expected result: Correct compilation with rc = 0.

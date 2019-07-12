@@ -16,8 +16,8 @@ nav:
      - 'A.3 - Bayesian Inference': tutorials/a3-bayesian/bayesian.md
      - 'B.1 - Checkpoint/Restart': tutorials/b1-restart/restart.md
      - 'B.2 - Constrained Optimization': tutorials/b2-constrained-optimization/constrained-optimization.md
-     #- 'B.3 - Distributed Conduit': tutorials/distributed/distributed.md
-     #- 'B.4 - Nonintrusive Conduit': tutorials/nonintrusive/nonintrusive.md
+     #- 'B.3 - Distributed Linked Conduit': tutorials/distributed/distributed.md
+     #- 'B.4 - External Conduit': tutorials/external/external.md
      #- 'C.1 - MPI Model': tutorials/mpi/mpi.md
      #- 'C.2 - Nonintrusive Cluster': tutorials/bayesian/bayesian.md
      #- 'C.3 - C++/Python Interaction': tutorials/bayesian/bayesian.md
@@ -36,9 +36,8 @@ nav:
             - MCMC: usage/solvers/mcmc.md
             - TMCMC: usage/solvers/tmcmc.md
       - Conduits:
-          - Semi-Intrusive: usage/conduits/semi-intrusive.md
-          - Distributed: usage/conduits/distributed.md
-          - Nonintrusive: usage/conduits/nonintrusive.md
+          - Linked: usage/conduits/linked.md
+          - External: usage/conduits/external.md
       - Models:
           - Simple: usage/models/simple.md
           - Rerefence: usage/models/reference.md

@@ -43,7 +43,6 @@ int main(int argc, char* argv[])
  k["Variables"][3]["CMAES"]["Lower Bound"] = 0.0;
  k["Variables"][3]["CMAES"]["Upper Bound"] = 20.0;
 
- k["Conduit"]= "Distributed";
  k["Solver"] = "CMAES";
  k["CMAES"]["Sample Count"] = 32;
 

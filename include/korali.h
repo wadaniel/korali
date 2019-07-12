@@ -17,9 +17,8 @@
 #include "solvers/mcmc.h"
 #include "solvers/tmcmc.h"
 
-#include "conduits/semi-intrusive.h"
-#include "conduits/distributed.h"
-#include "conduits/nonintrusive.h"
+#include "conduits/linked.h"
+#include "conduits/external.h"
 
 #include "json/koralijson.h"
 #include "variable.h"

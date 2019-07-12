@@ -1,16 +1,16 @@
-# Conduits / Semi-Intrusive
+# Conduits / External
 
 ## Description
 
-Many computational models are comprised of legacy codes that can be too complex or poorly-documented for non-expert users to modify. Korali's non-intrusive conduit allows running any pre-compiled or legacy computational model. It requires that the user specifies the way in which variable values are passed to the model and how to parse the results from file or standard output. 
+Many computational models are comprised of legacy codes that can be too complex or poorly-documented for non-expert users to modify. Korali's External conduit allows running any pre-compiled or legacy computational model. It requires that the user specifies the way in which variable values are passed to the model and how to parse the results from file or standard output. 
 
-Korali's non-intrusive conduit uses a fork/join strategy to instantiate an independent operating-system process per each sample. Since I/O and process management operations incur much more overhead than direct function calls, the non-intrusive conduit may be less efficient than the semi-intrusive ones.
+Korali's External conduit uses a fork/join strategy to instantiate an independent operating-system process per each sample. Since I/O and process management operations incur much more overhead than direct function calls, the External conduit may be less efficient than the Linked conduit.
 
 ## Usage
 
 ### Launching an External Application.
 
-The Nonintrusive conduit guarantees that each model is executed as an independent process. As such, the model can be suspended in wait for a sub-process to run, as shown in the following example:
+The External conduit guarantees that each model is executed as an independent process. As such, the model can be suspended in wait for a sub-process to run, as shown in the following example:
 
 ```python
 def myModel(x):
@@ -36,8 +36,8 @@ k = korali.Engine()
 # Set model.
 k.setModel(myModel)
 
-# Defining the Nonintrusive conduit
-k["Conduit"] = "Nonintrusive"
+# Defining the External conduit
+k["Conduit"] = "External"
 
 # Setting concurrent jobs count. 
 # If this is larger than 1, then many samples will be evaluated in parallel

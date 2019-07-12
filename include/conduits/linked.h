@@ -1,5 +1,5 @@
-#ifndef _KORALI_CONDUIT_DISTRIBUTED_H_
-#define _KORALI_CONDUIT_DISTRIBUTED_H_
+#ifndef _KORALI_CONDUIT_LINKED_H_
+#define _KORALI_CONDUIT_LINKED_H_
 
 #include "conduits/base.h"
 #include <queue>
@@ -8,7 +8,7 @@
 
 namespace Korali { namespace Conduit {
 
-class Distributed : public Base
+class Linked : public Base
 {
  public:
  int _rankId;
@@ -51,4 +51,4 @@ class Distributed : public Base
 
 } } // namespace Korali::Conduit
 
-#endif // _KORALI_CONDUIT_DISTRIBUTED_H_
+#endif // _KORALI_CONDUIT_LINKED_H_

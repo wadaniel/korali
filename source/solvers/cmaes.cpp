@@ -34,7 +34,7 @@ void CMAES::initialize()
  _chiN = sqrt((double) _k->N) * (1. - 1./(4.*_k->N) + 1./(21.*_k->N*_k->N));
 
  _constraintsDefined = (_k->_fconstraints.size() > 0);
- if(_constraintsDefined) { _isViabilityRegime = true; printf("bla"); }
+ if(_constraintsDefined) { _isViabilityRegime = true; }
  else                    _isViabilityRegime = false;
 
 

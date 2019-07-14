@@ -247,8 +247,6 @@ void Korali::Solver::TMCMC::resampleGeneration()
 
 void Korali::Solver::TMCMC::computeChainCovariances(std::vector< std::vector<double> >& chain_cov, size_t newchains)
 {
- //printf("Precomputing chain covariances for the current generation...\n");
-
  // allocate space
  std::vector<size_t> nn_ind(newchains);
  std::vector<size_t> nn_count(newchains);
@@ -266,7 +264,6 @@ void Korali::Solver::TMCMC::computeChainCovariances(std::vector< std::vector<dou
    if (d_max < s) d_max = s;
   }
   diam[d] = d_max-d_min;
-  //printf("Diameter %ld: %.6lf\n", d, diam[d]);
  }
 
  size_t idx, pos;

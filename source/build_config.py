@@ -34,9 +34,9 @@ def consumeValue(base, varName, type, default, path = []):
  
  configFile.write(' }\n else ')
  if (default == ''):
-  configFile.write(' { fprintf(stderr, "[Korali] Error: No value provided for mandatory setting: ')
+  configFile.write(' koraliError("No value provided for mandatory setting: ')
   for i in range(0, len(path)-1): configFile.write('[' + path[i] + '] > ')
-  configFile.write('[' + path[-1] + ']\\n"); exit(-1); } ')
+  configFile.write('[' + path[-1] + ']\\n"); ')
  else:
   defaultLine = varName + ' = ' + default + ' ;'
   if ('std::vector<' in type):

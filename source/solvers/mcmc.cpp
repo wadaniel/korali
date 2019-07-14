@@ -152,10 +152,7 @@ void Korali::Solver::MCMC::generateCandidate(size_t sampleIdx)
    sampleCandidate(level); _proposedSampleCount++;
    setCandidatePriorAndCheck(level);
    if ( (_proposedSampleCount - initialgens) > _maxresamplings)
-   {       
-     if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Warning: exiting resampling loop, max resamplings (%zu) reached.\n", _maxresamplings);
-     exit(-1);
-   }
+     koraliError(exiting resampling loop, max resamplings (%zu) reached.\n", _maxresamplings);
   } while (setCandidatePriorAndCheck(level)); */
 }
 

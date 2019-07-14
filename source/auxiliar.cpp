@@ -166,21 +166,16 @@ nlohmann::json Korali::consume(nlohmann::json& js, std::vector<std::string> sett
   }
   else
   {
-   if (type == KORALI_STRING)  fprintf(stderr, "[Korali] Error: Passing non-string value to string-type option: %s.\n", fullOption.c_str());
-   if (type == KORALI_NUMBER)  fprintf(stderr, "[Korali] Error: Passing non-numeric value to numeric option: %s.\n", fullOption.c_str());
-   if (type == KORALI_ARRAY)   fprintf(stderr, "[Korali] Error: Passing non-array value to array option: %s.\n", fullOption.c_str());
-   if (type == KORALI_BOOLEAN) fprintf(stderr, "[Korali] Error: Passing non-boolean and non-numeric value to boolean option: %s.\n", fullOption.c_str());
-   exit(-1);
+   if (type == KORALI_STRING)  koraliError("Passing non-string value to string-type option: %s.\n", fullOption.c_str());
+   if (type == KORALI_NUMBER)  koraliError("Passing non-numeric value to numeric option: %s.\n", fullOption.c_str());
+   if (type == KORALI_ARRAY)   koraliError("Passing non-array value to array option: %s.\n", fullOption.c_str());
+   if (type == KORALI_BOOLEAN) koraliError("Passing non-boolean and non-numeric value to boolean option: %s.\n", fullOption.c_str());
   }
  }
 
  if (type == KORALI_ARRAY) return nlohmann::json();
 
- if (hasDefault == false)
- {
-  fprintf(stderr, "[Korali] Error: No value passed for non-default option: %s.\n", fullOption.c_str());
-  exit(-1);
- }
+ if (hasDefault == false) koraliError("No value passed for non-default option: %s.\n", fullOption.c_str());
 
  if (type == KORALI_STRING) def = "\"" + def + "\"";
  return nlohmann::json::parse(def);
@@ -208,10 +203,7 @@ nlohmann::json Korali::loadJsonFromFile(const char* fileName)
    free(string);
  }
  else
- {
-  fprintf(stderr, "[Korali] Could not load file: %s.\n", fileName);
-  exit(-1);
- }
+  koraliError("Could not load file: %s.\n", fileName);
 
  return js;
 }
@@ -225,9 +217,6 @@ void Korali::saveJsonToFile(const char* fileName, nlohmann::json js)
    fclose(fid);
  }
  else
- {
-  fprintf(stderr, "[Korali] Could not write to file: %s.\n", fileName);
-  exit(-1);
- }
+  koraliError("Could not write to file: %s.\n", fileName);
 
 }

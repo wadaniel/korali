@@ -17,16 +17,16 @@ Korali::Engine* Korali::_k;
 #include "pybind11/stl.h"
 
 PYBIND11_MODULE(libkorali, m) {
- pybind11::class_<Korali::ModelData>(m, "ModelData")
-  .def("getVariable",      &Korali::ModelData::getVariable, pybind11::return_value_policy::reference)
-  .def("getVariableCount", &Korali::ModelData::getVariableCount, pybind11::return_value_policy::reference)
-  .def("getVariables",     &Korali::ModelData::getVariables, pybind11::return_value_policy::reference)
-  .def("getResults",       &Korali::ModelData::getResults, pybind11::return_value_policy::reference)
- .def("getSampleId",         &Korali::ModelData::getSampleId, pybind11::return_value_policy::reference)
+ pybind11::class_<Korali::Model>(m, "Model")
+  .def("getVariable",      &Korali::Model::getVariable, pybind11::return_value_policy::reference)
+  .def("getVariableCount", &Korali::Model::getVariableCount, pybind11::return_value_policy::reference)
+  .def("getVariables",     &Korali::Model::getVariables, pybind11::return_value_policy::reference)
+  .def("getResults",       &Korali::Model::getResults, pybind11::return_value_policy::reference)
+ .def("getSampleId",         &Korali::Model::getSampleId, pybind11::return_value_policy::reference)
   #ifdef _KORALI_USE_MPI
-  .def("getCommPointer",   &Korali::ModelData::getCommPointer)
+  .def("getCommPointer",   &Korali::Model::getCommPointer)
   #endif
-  .def("addResult",        &Korali::ModelData::addResult, pybind11::return_value_policy::reference);
+  .def("addResult",        &Korali::Model::addResult, pybind11::return_value_policy::reference);
 
  pybind11::class_<Korali::Engine>(m, "Engine")
  .def(pybind11::init<>())
@@ -193,13 +193,13 @@ void Korali::Engine::setConfiguration()
 /*                    Functional Methods                                */
 /************************************************************************/
 
-void Korali::Engine::setModel(std::function<void(Korali::ModelData&)> model)
+void Korali::Engine::setModel(std::function<void(Korali::Model&)> model)
 {
  _model = model;
  _modelDefined = true;
 }
 
-void Korali::Engine::setLikelihood(std::function<void(Korali::ModelData&)> likelihood)
+void Korali::Engine::setLikelihood(std::function<void(Korali::Model&)> likelihood)
 {
  _model = likelihood;
  _likelihoodDefined = true;

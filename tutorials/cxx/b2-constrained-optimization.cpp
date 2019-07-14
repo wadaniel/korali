@@ -12,7 +12,7 @@ int main(int argc, char* argv[])
   auto k = Korali::Engine();
 
   // Setting model and constraints
-  k.setModel([](Korali::ModelData& d) { g09(d.getVariables(), d.getResults()); });
+  k.setModel([](Korali::Model& d) { g09(d.getVariables(), d.getResults()); });
   k.addConstraint(g1);
   k.addConstraint(g2);
   k.addConstraint(g3);

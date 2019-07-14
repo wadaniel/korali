@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
  k["Conduit"]["Ranks Per Team"] = atoi(argv[1]);
 
  std::vector<double> xdata = getPointData();
- k.setModel([xdata](Korali::ModelData& d) { jacobi(xdata, d.getVariables(), d.getResults(), d.getComm()); });
+ k.setModel([xdata](Korali::Model& d) { jacobi(xdata, d.getVariables(), d.getResults(), d.getComm()); });
 
  k.run();
 

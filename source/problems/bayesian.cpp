@@ -111,13 +111,13 @@ void Korali::Problem::Bayesian::finalize()
 
 }
 
-void Korali::Problem::Bayesian::packVariables(double* sample, Korali::ModelData& data)
+void Korali::Problem::Bayesian::packVariables(double* sample, Korali::Model& data)
 {
  for (size_t i = 0; i < _computationalVariableIndices.size(); i++) data._computationalVariables.push_back(sample[_computationalVariableIndices[i]]);
  for (size_t i = 0; i < _statisticalVariableIndices.size();   i++) data._statisticalVariables.push_back(sample[_statisticalVariableIndices[i]]);
 }
 
-double Korali::Problem::Bayesian::evaluateFitness(Korali::ModelData& data)
+double Korali::Problem::Bayesian::evaluateFitness(Korali::Model& data)
 {
  double fitness = 0.0;
 
@@ -156,7 +156,7 @@ double Korali::Problem::Bayesian::evaluateLogPrior(double* sample)
  return logPrior;
 }
 
-double Korali::Problem::Bayesian::likelihoodGaussianAdditive(Korali::ModelData& data)
+double Korali::Problem::Bayesian::likelihoodGaussianAdditive(Korali::Model& data)
 {
   double sigma   = data._statisticalVariables[0];
   double sigma2  = sigma*sigma;
@@ -173,7 +173,7 @@ double Korali::Problem::Bayesian::likelihoodGaussianAdditive(Korali::ModelData& 
   return fitness;
 }
 
-double Korali::Problem::Bayesian::likelihoodGaussianMultiplicative(Korali::ModelData& data)
+double Korali::Problem::Bayesian::likelihoodGaussianMultiplicative(Korali::Model& data)
 {
   double sigma    = data._statisticalVariables[0];
   double ssn      = 0.0;

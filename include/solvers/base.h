@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "problems/base.h"
-#include "json/json.hpp"
 
 namespace Korali { namespace Solver {
 

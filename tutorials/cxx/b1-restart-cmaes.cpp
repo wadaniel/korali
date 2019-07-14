@@ -10,7 +10,7 @@ int main(int argc, char* argv[])
 {
   // First, we run a simple Korali experiment.
   auto k = Korali::Engine();
-  k.setModel([](Korali::ModelData& d) { evaluateModel(d.getVariables(), d.getResults()); });
+  k.setModel([](Korali::Model& d) { evaluateModel(d.getVariables(), d.getResults()); });
 
   k["Problem"] = "Direct Evaluation";
   k["Solver"]  = "CMAES";

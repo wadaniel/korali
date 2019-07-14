@@ -22,6 +22,7 @@
 
 #include "json/koralijson.h"
 #include "variable.h"
+#include "model.h"
 
 #ifdef _KORALI_USE_PYTHON
  #undef _POSIX_C_SOURCE
@@ -44,7 +45,7 @@ class Engine {
 
  bool _modelDefined;
  bool _likelihoodDefined;
- std::function<void(ModelData&)> _model;
+ std::function<void(Model&)> _model;
  std::vector<fcon> _fconstraints;
 
  size_t N; // Variable Count size_t N; // Variable Count
@@ -66,8 +67,8 @@ class Engine {
  ~Engine();
 
  void run();
- void setModel(std::function<void(Korali::ModelData&)> model);
- void setLikelihood(std::function<void(Korali::ModelData&)> model);
+ void setModel(std::function<void(Korali::Model&)> model);
+ void setLikelihood(std::function<void(Korali::Model&)> model);
  void addConstraint(fcon fconstraint);
 
  // Python Configuration Binding Methods

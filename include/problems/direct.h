@@ -9,8 +9,8 @@ class Direct : public Base
 {
  public:
 
- void packVariables(double* sample, Korali::ModelData& data) override;
- double evaluateFitness(Korali::ModelData& data) override;
+ void packVariables(double* sample, Korali::Model& data) override;
+ double evaluateFitness(Korali::Model& data) override;
  double evaluateLogPrior(double* sample) override;
 
  void initialize() override;

@@ -9,7 +9,7 @@
 int main(int argc, char* argv[])
 {
  auto k = Korali::Engine();
- k.setLikelihood([](Korali::ModelData& d) { evaluateModel(d.getVariables(), d.getResults()); });
+ k.setLikelihood([](Korali::Model& d) { evaluateModel(d.getVariables(), d.getResults()); });
 
  // Selecting problem and solver types.
  k["Problem"] = "Bayesian";

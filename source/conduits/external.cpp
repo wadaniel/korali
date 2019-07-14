@@ -40,7 +40,7 @@ void External::finalize()
 
 void External::evaluateSample(double* sampleArray, size_t sampleId)
 {
- Korali::ModelData data;
+ Korali::Model data;
 
  _k->_problem->packVariables(sampleArray, data);
 

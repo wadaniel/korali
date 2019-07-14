@@ -40,12 +40,12 @@ void Korali::Problem::Direct::finalize()
 }
 
 
-void Korali::Problem::Direct::packVariables(double* sample, Korali::ModelData& data)
+void Korali::Problem::Direct::packVariables(double* sample, Korali::Model& data)
 {
  for (size_t i = 0; i < _k->N; i++) data._computationalVariables.push_back(sample[i]);
 }
 
-double Korali::Problem::Direct::evaluateFitness(Korali::ModelData& data)
+double Korali::Problem::Direct::evaluateFitness(Korali::Model& data)
 {
 
  if (data._results.size() != 1)

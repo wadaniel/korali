@@ -9,6 +9,7 @@ from math import isclose
 import korali
 k = korali.initialize()
 k.setModel(evaluateModel)
+k.addConstraint( g1 )
 
 k["Problem"] = "Direct Evaluation"
 k["Solver"]  = "CMAES" 
@@ -21,7 +22,7 @@ k["CMAES"]["Objective"] = "Maximize"
 k["CMAES"]["Sample Count"] = 32
 k["CMAES"]["Termination Criteria"]["Max Generations"]["Value"] = 0
 
-k["Result Directory"] = "_defaults_cmaes"
+k["Result Directory"] = "_defaults_ccmaes"
 
 k.run()
 
@@ -47,7 +48,7 @@ assert_string( k["CMAES"]["Mu Type"], "Logarithmic" )
 
 assert_value( k["CMAES"]["Mu Value"], 16 )
 
-assert_value( k["CMAES"]["Normal Vector Learning Rate"], -1.0 )
+assert_value( k["CMAES"]["Normal Vector Learning Rate"], 0.3333333333333333 )
 
 assert_string( k["CMAES"]["Objective"], "Maximize" )
 
@@ -60,27 +61,27 @@ assert_value( k["CMAES"]["Target Success Rate"], 0.1818 )
 
 assert_value( k["CMAES"]["Internal"]["Chi Number"], 0.7976190476190477 )
 
-assert_value( k["CMAES"]["Internal"]["Covariance Matrix Adaption Factor"], -1.0 )
+assert_value( k["CMAES"]["Internal"]["Covariance Matrix Adaption Factor"],  0.03333333333333333 )
 
-assert_value( k["CMAES"]["Internal"]["Cumulative Covariance"], 0.564218767613317 )
+assert_value( k["CMAES"]["Internal"]["Cumulative Covariance"], 0.7142857142857143 )
 
-assert_value( k["CMAES"]["Internal"]["Current Sample Count"], 32 )
+assert_value( k["CMAES"]["Internal"]["Current Sample Count"], 2 )
 
-assert_value( k["CMAES"]["Internal"]["Current Sample Mu"], 16 )
+assert_value( k["CMAES"]["Internal"]["Current Sample Mu"], 1 )
 
-assert_value( k["CMAES"]["Internal"]["Damp Factor"], 3.892701587864561 )
+assert_value( k["CMAES"]["Internal"]["Damp Factor"], 1.5 )
 
-assert_value( k["CMAES"]["Internal"]["Effective Mu"], 9.17882891362855 )
+assert_value( k["CMAES"]["Internal"]["Effective Mu"], 1.0 )
 
 assert_value( k["CMAES"]["Internal"]["Evaluation Sign"], 1.0 )
 
-assert_value( k["CMAES"]["Internal"]["Global Success Rate"], -1.0 )
+assert_value( k["CMAES"]["Internal"]["Global Success Rate"], 0.5 )
 
 assert_value( k["CMAES"]["Internal"]["Sigma"], 5.0 )
 
 assert_value( k["CMAES"]["Internal"]["Trace"], 25.0 )
 
-assert_boolean( k["CMAES"]["Internal"]["Is Viability Regime"], False )
+assert_boolean( k["CMAES"]["Internal"]["Is Viability Regime"], True )
 
 
 # Testing Termination Criteria

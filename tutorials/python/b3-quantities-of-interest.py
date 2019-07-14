@@ -84,6 +84,8 @@ k["Variables"][1]["Bayesian"]["Prior Distribution"]["Maximum"] = +50.0
 # Configuring the TMCMC sampler parameters
 k["TMCMC"]["Population Size"] = 5000
 
+k["TMCMC"]["Target Coefficient of Variation"] = 0.2
+
 # Setting output directory
 k["Result Directory"] = "_b3_quantities_of_interest_result"
 

@@ -5,6 +5,7 @@
 #include <cstdio>
 
 Korali::Engine* Korali::_k;
+Korali::verbosity _korali_verbosity;
 
 /************************************************************************/
 /*                  Python Binding Declarations                         */
@@ -306,10 +307,10 @@ bool Korali::Engine::checkTermination()
    _isFinished = _solver->checkTermination();
    
    if (currentGeneration >= maxGenerations) 
-   { if(_korali_verbosity >= KORALI_MINIMAL) printf("[Korali] Maximum generation count reached (%lu).\n", maxGenerations); _isFinished = true; }
+   { koraliLog(KORALI_MINIMAL, "Maximum generation count reached (%lu).\n", maxGenerations); _isFinished = true; }
    
    if (functionEvaluationCount >= maxFunctionEvaluations) 
-   { if(_korali_verbosity >= KORALI_MINIMAL) printf("[Korali] Maximum function evaluation count reached (%lu).\n", maxFunctionEvaluations); _isFinished = true; }
+   { koraliLog(KORALI_MINIMAL, "Maximum function evaluation count reached (%lu).\n", maxFunctionEvaluations); _isFinished = true; }
 
    return _isFinished;
 }

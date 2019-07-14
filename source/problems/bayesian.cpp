@@ -103,8 +103,10 @@ double Korali::Problem::Bayesian::evaluateFitness(Korali::Model& data)
  }
 
  if (_likelihood == DirectLikelihood)
-  if (data._results.size() != 1)
-   koraliError("Direct Likelihood requires exactly a 1-element result array. Provided: %lu.\n", data._results.size() );
+ {
+  if (data._results.size() != 1)  koraliError("Direct Likelihood requires exactly a 1-element result array. Provided: %lu.\n", data._results.size() );
+  fitness =  data._results[0];
+ }
 
  return fitness;
 }

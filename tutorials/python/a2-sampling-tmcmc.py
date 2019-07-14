@@ -16,7 +16,6 @@ k = korali.initialize()
 k.setLikelihood( evaluateModel )
 
 # Selecting problem and solver types.
-k["Verbosity"] = "Detailed"
 k["Problem"] = "Bayesian"
 k["Solver"] = "TMCMC"
 

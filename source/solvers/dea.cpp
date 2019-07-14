@@ -342,9 +342,9 @@ void DEA::printGeneration()
  koraliLog(KORALI_NORMAL, "Differential Evolution Generation %zu\n", _k->currentGeneration);
  koraliLog(KORALI_NORMAL, "Current Function Value: Max = %+6.3e - Best = %+6.3e\n", _currentBestValue, _bestEverValue);
  koraliLog(KORALI_DETAILED, "Variable = (MeanX, BestX):\n");
- for (size_t d = 0; d < _k->N; d++) koraliLog(KORALI_DETAILED, "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _mean[d], _bestEverSample[d]);
+ for (size_t d = 0; d < _k->N; d++) koraliLogData(KORALI_DETAILED, "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _mean[d], _bestEverSample[d]);
  koraliLog(KORALI_DETAILED, "Max Width:\n");
- for (size_t d = 0; d < _k->N; d++) koraliLog(KORALI_DETAILED, "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _maxWidth[d]);
+ for (size_t d = 0; d < _k->N; d++) koraliLogData(KORALI_DETAILED, "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _maxWidth[d]);
  koraliLog(KORALI_DETAILED, "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
  koraliLog(KORALI_NORMAL, "--------------------------------------------------------------------\n");
 }
@@ -354,7 +354,7 @@ void DEA::finalize()
  koraliLog(KORALI_MINIMAL, "Differential Evolution Finished\n");
  koraliLog(KORALI_MINIMAL, "Optimum (%s) found: %e\n", _objective.c_str(), _bestEverValue);
  koraliLog(KORALI_MINIMAL, "Optimum (%s) found at:\n", _objective.c_str());
- for (size_t d = 0; d < _k->N; ++d) koraliLog(KORALI_MINIMAL, "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverSample[d]);
+ for (size_t d = 0; d < _k->N; ++d) koraliLogData(KORALI_MINIMAL, "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverSample[d]);
  koraliLog(KORALI_MINIMAL, "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
  koraliLog(KORALI_MINIMAL, "--------------------------------------------------------------------\n");
 }

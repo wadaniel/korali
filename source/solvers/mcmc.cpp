@@ -242,13 +242,13 @@ void Korali::Solver::MCMC::printGeneration()
  koraliLog(KORALI_NORMAL, "Acceptance Rate Proposals: %.2f%%\n", 100*_acceptanceRate);
 
  koraliLog(KORALI_DETAILED, "Variable = (Current Sample, Current Candidate):\n");
- for (size_t d = 0; d < _k->N; d++)  koraliLog(KORALI_DETAILED, "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _chainLeaderParameters[d], _chainCandidatesParameters[d]);
+ for (size_t d = 0; d < _k->N; d++)  koraliLogData(KORALI_DETAILED, "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _chainLeaderParameters[d], _chainCandidatesParameters[d]);
  koraliLog(KORALI_DETAILED, "Current Chain Mean:\n");
- for (size_t d = 0; d < _k->N; d++) koraliLog(KORALI_DETAILED, " %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _chainMean[d]);
+ for (size_t d = 0; d < _k->N; d++) koraliLogData(KORALI_DETAILED, " %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _chainMean[d]);
  koraliLog(KORALI_DETAILED, "Current Chain Covariance:\n");
  for (size_t d = 0; d < _k->N; d++)
  {
-	 for (size_t e = 0; e <= d; e++) koraliLog(KORALI_DETAILED, "   %+6.3e  ", _chainCovariance[d*_k->N+e]);
+	 for (size_t e = 0; e <= d; e++) koraliLogData(KORALI_DETAILED, "   %+6.3e  ", _chainCovariance[d*_k->N+e]);
 	 koraliLog(KORALI_DETAILED, "\n");
  }
 }

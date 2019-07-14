@@ -829,7 +829,7 @@ void CMAES::printGeneration()
  {
 	 koraliLog(KORALI_NORMAL, "Searching start (MeanX violates constraints) .. \n");
 	 koraliLog(KORALI_NORMAL, "Viability Bounds:\n");
-   for (size_t c = 0; c < _k->_fconstraints.size(); c++) koraliLog(KORALI_NORMAL, "         %s = (%+6.3e)\n", _k->_variables[c]->_name.c_str(), _viabilityBoundaries[c]);
+   for (size_t c = 0; c < _k->_fconstraints.size(); c++) koraliLogData(KORALI_NORMAL, "         %s = (%+6.3e)\n", _k->_variables[c]->_name.c_str(), _viabilityBoundaries[c]);
    koraliLog(KORALI_NORMAL, "\n");
  }
 
@@ -839,21 +839,21 @@ void CMAES::printGeneration()
  koraliLog(KORALI_NORMAL, "Covariance Eigenvalues: Min = %+6.3e -  Max = %+6.3e\n", _minCovarianceEigenvalue, _maxCovarianceEigenvalue);
 
 	koraliLog(KORALI_DETAILED, "Variable = (MeanX, BestX):\n");
-	for (size_t d = 0; d < _k->N; d++) koraliLog(KORALI_DETAILED, "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _mean[d], _bestEverSample[d]);
+	for (size_t d = 0; d < _k->N; d++) koraliLogData(KORALI_DETAILED, "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _mean[d], _bestEverSample[d]);
 
 	koraliLog(KORALI_DETAILED, "Constraint Evaluation at Current Function Value:\n");
 	if ( _constraintsDefined )
 	{
 	 if ( _bestValidSample >= 0 )
-			for (size_t c = 0; c < _k->_fconstraints.size(); c++) koraliLog(KORALI_DETAILED, "         ( %+6.3e )\n", _constraintEvaluations[c][_bestValidSample]);
+			for (size_t c = 0; c < _k->_fconstraints.size(); c++) koraliLogData(KORALI_DETAILED, "         ( %+6.3e )\n", _constraintEvaluations[c][_bestValidSample]);
 	 else
-			for (size_t c = 0; c < _k->_fconstraints.size(); c++) koraliLog(KORALI_DETAILED, "         ( %+6.3e )\n", _constraintEvaluations[c][0]);
+			for (size_t c = 0; c < _k->_fconstraints.size(); c++) koraliLogData(KORALI_DETAILED, "         ( %+6.3e )\n", _constraintEvaluations[c][0]);
 	}
 
 	koraliLog(KORALI_DETAILED, "Covariance Matrix:\n");
 	for (size_t d = 0; d < _k->N; d++)
 	{
-	 for (size_t e = 0; e <= d; e++) koraliLog(KORALI_DETAILED, "   %+6.3e  ",_C[d*_k->N+e]);
+	 for (size_t e = 0; e <= d; e++) koraliLogData(KORALI_DETAILED, "   %+6.3e  ",_C[d*_k->N+e]);
 	 koraliLog(KORALI_DETAILED, "\n");
 	}
 
@@ -872,12 +872,12 @@ void CMAES::finalize()
 	koraliLog(KORALI_MINIMAL, "CMA-ES Finished\n");
 	koraliLog(KORALI_MINIMAL, "Optimum (%s) found: %e\n", _objective.c_str(), _bestEverValue);
 	koraliLog(KORALI_MINIMAL, "Optimum (%s) found at:\n", _objective.c_str());
-	for (size_t d = 0; d < _k->N; ++d) koraliLog(KORALI_MINIMAL, "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverSample[d]);
+	for (size_t d = 0; d < _k->N; ++d) koraliLogData(KORALI_MINIMAL, "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverSample[d]);
 	if ( _constraintsDefined )
 	{
 		koraliLog(KORALI_MINIMAL, "Constraint Evaluation at Optimum:\n");
 		for (size_t c = 0; c < _k->_fconstraints.size(); c++)
-			koraliLog(KORALI_MINIMAL, "         ( %+6.3e )\n", _bestEverConstraintEvaluation[c]);
+			koraliLogData(KORALI_MINIMAL, "         ( %+6.3e )\n", _bestEverConstraintEvaluation[c]);
 	}
 	koraliLog(KORALI_MINIMAL, "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
 	koraliLog(KORALI_MINIMAL, "--------------------------------------------------------------------\n");

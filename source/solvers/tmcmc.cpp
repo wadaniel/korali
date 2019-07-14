@@ -454,14 +454,14 @@ void Korali::Solver::TMCMC::printGeneration()
  koraliLog(KORALI_NORMAL, "Coefficient of Variation: %.2f%%\n", 100.0*_coefficientOfVariation);
 
  koraliLog(KORALI_DETAILED, "Sample Mean:\n");
- for (size_t i = 0; i < _k->N; i++) koraliLog(KORALI_DETAILED, " %s = %+6.3e\n", _k->_variables[i]->_name.c_str(), _meanTheta[i]);
+ for (size_t i = 0; i < _k->N; i++) koraliLogData(KORALI_DETAILED, " %s = %+6.3e\n", _k->_variables[i]->_name.c_str(), _meanTheta[i]);
  koraliLog(KORALI_DETAILED, "Sample Covariance:\n");
  for (size_t i = 0; i < _k->N; i++)
   {
-	 koraliLog(KORALI_DETAILED, "   | ");
+	 koraliLogData(KORALI_DETAILED, "   | ");
    for (size_t j = 0; j < _k->N; j++)
-    if(j <= i)  koraliLog(KORALI_DETAILED, "%+6.3e  ",_covarianceMatrix[i*_k->N+j]);
-    else        koraliLog(KORALI_DETAILED, "     -      ");
-   koraliLog(KORALI_DETAILED, " |\n");
+    if(j <= i)  koraliLogData(KORALI_DETAILED, "%+6.3e  ",_covarianceMatrix[i*_k->N+j]);
+    else        koraliLogData(KORALI_DETAILED, "     -      ");
+   koraliLogData(KORALI_DETAILED, " |\n");
   }
 }

@@ -52,7 +52,7 @@ void DEA::initialize()
 
  if (_objective == "Maximize")      _evaluationSign = 1.0;
  else if(_objective == "Minimize")  _evaluationSign = -1.0;
- else { fprintf(stderr,"[Korali] Error: Objective must be either be initialized to \'Maximize\' or \'Minimize\' (is %s).\n", _objective.c_str()); exit(-1); }         
+ else koraliError("Objective must be either be initialized to \'Maximize\' or \'Minimize\' (is %s).\n", _objective.c_str());
 
  _infeasibleSampleCount = 0;
  _bestIndex             = 0;
@@ -61,13 +61,9 @@ void DEA::initialize()
  _previousBestEverValue = -std::numeric_limits<double>::max();
  _bestEverValue         = -std::numeric_limits<double>::max();
 
- for(size_t d = 0; d < _k->N; ++d) if(_variableSettings[d].upperBound < _variableSettings[d].lowerBound)
-    { fprintf(stderr,"[Korali] Error: Lower Bound (%.4f) of variable \'%s\'  exceeds Upper Bound (%.4f).\n",          
-            _variableSettings[d].lowerBound,
-            _k->_variables[d]->_name.c_str(),
-            _variableSettings[d].upperBound);
-      exit(-1);
-    }
+ for(size_t d = 0; d < _k->N; ++d)
+	if(_variableSettings[d].upperBound < _variableSettings[d].lowerBound)
+    koraliError("Lower Bound (%.4f) of variable \'%s\'  exceeds Upper Bound (%.4f).\n", _variableSettings[d].lowerBound, _k->_variables[d]->_name.c_str(), _variableSettings[d].upperBound);
 
  initSamples();
 
@@ -113,10 +109,7 @@ void DEA::prepareGeneration()
 
 	if ( _termCondMaxInfeasibleResamplingsEnabled )
 	if ( (_infeasibleSampleCount - initial_infeasible) > _termCondMaxInfeasibleResamplings )
-	{
-		if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Warning: exiting resampling loop (param %zu) , max resamplings (%zu) reached.\n", i, _termCondMaxInfeasibleResamplings);
-		exit(-1);
-	}
+	koraliWarning(KORALI_MINIMAL, "Exiting resampling loop (param %zu) because max resamplings (%zu) reached.\n", i, _termCondMaxInfeasibleResamplings);
 	}
  }
 
@@ -274,8 +267,7 @@ void DEA::updateSolver()
             break;
 
         default :
-            if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Error: Accept Rule (%s) not recognized.\n",  _acceptRule.c_str());
-            exit(-1);
+            koraliError("Accept Rule (%s) not recognized.\n",  _acceptRule.c_str());
     }
 
     for(size_t i = 0; i < _sampleCount; ++i) for(size_t d = 0; d < _k->N; ++d) 
@@ -303,20 +295,20 @@ bool DEA::checkTermination()
  if ( _termCondMinFitnessEnabled && (_k->currentGeneration > 1) && (_bestEverValue >= _termCondMinFitness) )
  {
   isFinished = true;
-  if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Fitness Value (%+6.3e) > (%+6.3e).\n",  _bestEverValue, _termCondMinFitness);
+  koraliLog(KORALI_MINIMAL, "Fitness Value (%+6.3e) > (%+6.3e).\n",  _bestEverValue, _termCondMinFitness);
  }
  
  if ( _termCondMaxFitnessEnabled && (_k->currentGeneration > 1) && (_bestEverValue >= _termCondMaxFitness) )
  {
   isFinished = true;
-  if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Fitness Value (%+6.3e) > (%+6.3e).\n",  _bestEverValue, _termCondMaxFitness);
+  koraliLog(KORALI_MINIMAL, "Fitness Value (%+6.3e) > (%+6.3e).\n",  _bestEverValue, _termCondMaxFitness);
  }
 
  double range = fabs(_currentBestValue - _previousBestValue);
  if ( _termCondMinFitnessDiffThresholdEnabled && (_k->currentGeneration > 1) && (range < _termCondMinFitnessDiffThreshold) )
  {
   isFinished = true;
-  if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Fitness Diff Threshold (%+6.3e) < (%+6.3e).\n",  range, _termCondMinFitnessDiffThreshold);
+  koraliLog(KORALI_MINIMAL, "Fitness Diff Threshold (%+6.3e) < (%+6.3e).\n",  range, _termCondMinFitnessDiffThreshold);
  }
  
  if ( _termCondMinStepSizeEnabled && (_k->currentGeneration > 1) )
@@ -326,14 +318,14 @@ bool DEA::checkTermination()
    if (cTemp == _k->N) 
    {
     isFinished = true;
-    if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Mean changes < %+6.3e for all variables.\n", _termCondMinStepSize);
+    koraliLog(KORALI_MINIMAL, "Mean changes < %+6.3e for all variables.\n", _termCondMinStepSize);
    }
  }
  
  if( _termCondMaxGenerationsEnabled && (_k->currentGeneration >= _termCondMaxGenerations) )
  {
   isFinished = true;
-  if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Maximum number of Generations reached (%lu).\n", _termCondMaxGenerations);
+  koraliLog(KORALI_MINIMAL, "Maximum number of Generations reached (%lu).\n", _termCondMaxGenerations);
  }
 
  return isFinished;
@@ -347,37 +339,22 @@ bool DEA::checkTermination()
 
 void DEA::printGeneration()
 {
-
- if (_k->_verbosity >= KORALI_NORMAL) printf("[Korali] Differential Evolution Generation %zu\n", _k->currentGeneration);
- 
- if (_k->_verbosity >= KORALI_NORMAL)
- {
-  printf("[Korali] Current Function Value: Max = %+6.3e - Best = %+6.3e\n", _currentBestValue, _bestEverValue);
-  // TODO: sth like width of samples: printf("[Korali] Covariance Eigenvalues: Min = %+6.3e -  Max = %+6.3e\n", minEW, maxEW);
- }
-
- if (_k->_verbosity >= KORALI_DETAILED)
- {
-  printf("[Korali] Variable = (MeanX, BestX):\n");
-  for (size_t d = 0; d < _k->N; d++)  printf("         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _mean[d], _bestEverSample[d]);
-  printf("[Korali] Max Width:\n");
-  for (size_t d = 0; d < _k->N; d++)  printf("         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _maxWidth[d]);
-  printf("[Korali] Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
- }
-
- if (_k->_verbosity >= KORALI_NORMAL)
-   printf("--------------------------------------------------------------------\n");
+ koraliLog(KORALI_NORMAL, "Differential Evolution Generation %zu\n", _k->currentGeneration);
+ koraliLog(KORALI_NORMAL, "Current Function Value: Max = %+6.3e - Best = %+6.3e\n", _currentBestValue, _bestEverValue);
+ koraliLog(KORALI_DETAILED, "Variable = (MeanX, BestX):\n");
+ for (size_t d = 0; d < _k->N; d++) koraliLog(KORALI_DETAILED, "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _mean[d], _bestEverSample[d]);
+ koraliLog(KORALI_DETAILED, "Max Width:\n");
+ for (size_t d = 0; d < _k->N; d++) koraliLog(KORALI_DETAILED, "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _maxWidth[d]);
+ koraliLog(KORALI_DETAILED, "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
+ koraliLog(KORALI_NORMAL, "--------------------------------------------------------------------\n");
 }
 
 void DEA::finalize()
 {
- if (_k->_verbosity >= KORALI_MINIMAL)
- {
-    printf("[Korali] Differential Evolution Finished\n");
-    printf("[Korali] Optimum (%s) found: %e\n", _objective.c_str(), _bestEverValue);
-    printf("[Korali] Optimum (%s) found at:\n", _objective.c_str());
-    for (size_t d = 0; d < _k->N; ++d) printf("         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverSample[d]);
-    printf("[Korali] Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
-    printf("--------------------------------------------------------------------\n");
- }
+ koraliLog(KORALI_MINIMAL, "Differential Evolution Finished\n");
+ koraliLog(KORALI_MINIMAL, "Optimum (%s) found: %e\n", _objective.c_str(), _bestEverValue);
+ koraliLog(KORALI_MINIMAL, "Optimum (%s) found at:\n", _objective.c_str());
+ for (size_t d = 0; d < _k->N; ++d) koraliLog(KORALI_MINIMAL, "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverSample[d]);
+ koraliLog(KORALI_MINIMAL, "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
+ koraliLog(KORALI_MINIMAL, "--------------------------------------------------------------------\n");
 }

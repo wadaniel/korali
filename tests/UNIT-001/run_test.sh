@@ -17,25 +17,7 @@
 
 ###### Auxiliar Functions and Variables #########
 
-curdir=$PWD
-logFile=$curdir/test.log
-echo "" > $logFile
-
-function check_result()
-{
- if [ ! $? -eq 0 ]
- then
-  echo "[Korali] Error running test. Please check $logFile."
-  exit -1
- fi 
-}
-
-# Logging and printing function.
-function logEcho ()
-{
- echo "$1"
- echo "$1" >> $logFile
-}
+source ../functions.sh
 
 ############# STEP 1 ##############
 
@@ -47,14 +29,14 @@ fi
 
 logEcho "[Korali] Compiling heat2d_posterior..."
 
-make clean >> $logFile 2>&1
+make clean >> $logFile 
 check_result
 
-make -j 4 >> $logFile 2>&1
+make -j 4 >> $logFile
 check_result
 
 ############# STEP 2 ##############
 
 logEcho "[Korali] Running mpirun -n 9 ./heat2d_posterior..."
-mpirun -n 9 ./heat2d_posterior >> $logFile 2>&1
+mpirun -n 9 ./heat2d_posterior >> $logFile
 check_result

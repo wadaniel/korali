@@ -72,7 +72,7 @@ void Korali::Solver::TMCMC::initialize()
 
  _burnIn = std::vector<size_t>(1000, _burnInDefault); //TODO: replace 1000 by Max Generation Value
  if(_burnInSteps.size() > _burnIn.size())
- { printf("[Korali] Error: Number of defined Burn In Steps (%zu) larger than Max Generations (1000)\n", _burnInSteps.size()); exit(-1); }
+	 koraliError("Number of defined Burn In Steps (%zu) larger than Max Generations (1000)\n", _burnInSteps.size());
  std::copy(_burnInSteps.begin(), _burnInSteps.end(), _burnIn.begin());
 
  initializeSamples();
@@ -170,7 +170,7 @@ void Korali::Solver::TMCMC::resampleGeneration()
 
  if (xmin > _prevAnnealingExponent + _maxRhoUpdate)
  {
-  if ( _k->_verbosity >= KORALI_DETAILED ) printf("[Korali] Warning: Annealing Step larger than Max Rho Update, updating Annealing Exponent by %f (Max Rho Update). \n", _maxRhoUpdate);
+  koraliWarning(KORALI_DETAILED, "Annealing Step larger than Max Rho Update, updating Annealing Exponent by %f (Max Rho Update). \n", _maxRhoUpdate);
   _annealingExponent      = _prevAnnealingExponent + _maxRhoUpdate;
   _coefficientOfVariation = sqrt(tmcmc_objlogp(_annealingExponent, &_sampleFitnessDatabase[0], _databaseEntryCount, _prevAnnealingExponent, _targetCVar)) + _targetCVar;
  }
@@ -181,7 +181,7 @@ void Korali::Solver::TMCMC::resampleGeneration()
  }
  else
  {
-  if ( _k->_verbosity >= KORALI_DETAILED ) printf("[Korali] Warning: Annealing Step smaller than Min Rho Update, updating Annealing Exponent by %f (Min Rho Update). \n", _minRhoUpdate);
+	 koraliWarning(KORALI_DETAILED, "Annealing Step smaller than Min Rho Update, updating Annealing Exponent by %f (Min Rho Update). \n", _minRhoUpdate);
   _annealingExponent      = _prevAnnealingExponent + _minRhoUpdate;
   _coefficientOfVariation = sqrt(tmcmc_objlogp(_annealingExponent, &_sampleFitnessDatabase[0], _databaseEntryCount, _prevAnnealingExponent, _targetCVar)) + _targetCVar;
  }
@@ -327,9 +327,7 @@ void Korali::Solver::TMCMC::computeChainCovariances(std::vector< std::vector<dou
    gsl_linalg_cholesky_decomp( &sigma.matrix );
  }
 
- if (status != GSL_SUCCESS) {
-  fprintf(stderr, "[Korali] TMCMC Error: GSL failed to create Chain Covariance Matrix.\n");
- }
+ if (status != GSL_SUCCESS) koraliError("TMCMC - GSL failed to create Chain Covariance Matrix.\n");
 
  // deallocate space
  gsl_matrix_free(work);
@@ -409,13 +407,10 @@ void Korali::Solver::TMCMC::minSearch(double const *fj, size_t fn, double pj, do
    status = gsl_multimin_test_size (size, Tol);
  } while (status == GSL_CONTINUE && iter < MaxIter);
 
- if (_k->_verbosity >= KORALI_DETAILED)
- {
-   if(status == GSL_SUCCESS && s->fval >  Tol) printf("[Korali] Min Search converged but did not find minimum. \n");
-   if(status != GSL_SUCCESS && s->fval <= Tol) printf("[Korali] Min Search did not converge but minimum found\n");
-   if(status != GSL_SUCCESS && s->fval >  Tol) printf("[Korali] Min Search did not converge and did not find minimum\n");
-   if(iter >= MaxIter) printf("[Korali] Min Search MaxIter (%zu) reached\n", MaxIter);
- }
+ if(status == GSL_SUCCESS && s->fval >  Tol) koraliLog(KORALI_DETAILED, "Min Search converged but did not find minimum. \n");
+ if(status != GSL_SUCCESS && s->fval <= Tol) koraliLog(KORALI_DETAILED, "Min Search did not converge but minimum found\n");
+ if(status != GSL_SUCCESS && s->fval >  Tol) koraliLog(KORALI_DETAILED, "Min Search did not converge and did not find minimum\n");
+ if(iter >= MaxIter) koraliLog(KORALI_DETAILED, "[Korali] Min Search MaxIter (%zu) reached\n", MaxIter);
 
  if (s->fval <= Tol) {
    fmin = s->fval;
@@ -452,30 +447,21 @@ void Korali::Solver::TMCMC::finalize()
 
 void Korali::Solver::TMCMC::printGeneration()
 {
- if (_k->_verbosity >= KORALI_MINIMAL)
- {
-  printf("--------------------------------------------------------------------\n");
-  printf("[Korali] Generation %ld - Annealing Exponent:  %.3e.\n", _k->currentGeneration, _annealingExponent);
- }
+ koraliLog(KORALI_MINIMAL, "--------------------------------------------------------------------\n");
+ koraliLog(KORALI_MINIMAL, "Generation %ld - Annealing Exponent:  %.3e.\n", _k->currentGeneration, _annealingExponent);
 
- if (_k->_verbosity >= KORALI_NORMAL)
- {
-  printf("[Korali] Acceptance Rate (proposals / selections): (%.2f%% / %.2f%%)\n", 100*_proposalsAcceptanceRate, 100*_selectionAcceptanceRate);
-  printf("[Korali] Coefficient of Variation: %.2f%%\n", 100.0*_coefficientOfVariation);
- }
+ koraliLog(KORALI_NORMAL, "Acceptance Rate (proposals / selections): (%.2f%% / %.2f%%)\n", 100*_proposalsAcceptanceRate, 100*_selectionAcceptanceRate);
+ koraliLog(KORALI_NORMAL, "Coefficient of Variation: %.2f%%\n", 100.0*_coefficientOfVariation);
 
- if (_k->_verbosity >= KORALI_DETAILED)
- {
-  printf("[Korali] Sample Mean:\n");
-  for (size_t i = 0; i < _k->N; i++) printf(" %s = %+6.3e\n", _k->_variables[i]->_name.c_str(), _meanTheta[i]);
-  printf("[Korali] Sample Covariance:\n");
-  for (size_t i = 0; i < _k->N; i++)
+ koraliLog(KORALI_DETAILED, "Sample Mean:\n");
+ for (size_t i = 0; i < _k->N; i++) koraliLog(KORALI_DETAILED, " %s = %+6.3e\n", _k->_variables[i]->_name.c_str(), _meanTheta[i]);
+ koraliLog(KORALI_DETAILED, "Sample Covariance:\n");
+ for (size_t i = 0; i < _k->N; i++)
   {
-   printf("   | ");
+	 koraliLog(KORALI_DETAILED, "   | ");
    for (size_t j = 0; j < _k->N; j++)
-    if(j <= i)  printf("%+6.3e  ",_covarianceMatrix[i*_k->N+j]);
-    else        printf("     -      ");
-   printf(" |\n");
+    if(j <= i)  koraliLog(KORALI_DETAILED, "%+6.3e  ",_covarianceMatrix[i*_k->N+j]);
+    else        koraliLog(KORALI_DETAILED, "     -      ");
+   koraliLog(KORALI_DETAILED, " |\n");
   }
- }
 }

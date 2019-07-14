@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
 
  k["Problem"] = "Direct Evaluation";
  k["Solver"]  = "DEA";
- k["Verbosity"]  = "Detailed";
+ k["Verbosity"]  = "Normal";
 
  k["Variables"][0]["Name"] = "X";
  k["Variables"][0]["DEA"]["Lower Bound"] = -10.0;

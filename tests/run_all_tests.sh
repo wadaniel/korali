@@ -1,13 +1,6 @@
 #!/bin/bash
 
-function check_result()
-{
- if [ ! $? -eq 0 ]
- then
-  echo "[Korali] Error running test."
-  exit -1
- fi 
-}
+source functions.sh
 
 #Running tutorials
 

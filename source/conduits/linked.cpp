@@ -65,11 +65,7 @@ void Linked::initialize()
 
 
  if(isRoot()) if (_rankCount < _ranksPerTeam + 1)
- {
-  fprintf(stderr, "[Korali] Error: You are running Korali with %d ranks. \n", _rankCount);
-  fprintf(stderr, "[Korali] However, you need at least %d ranks to have at least one worker team. \n", _ranksPerTeam + 1);
-  exit(-1);
- }
+  koraliError("You are running Korali with %d ranks. However, you need at least %d ranks to have at least one worker team. \n", _rankCount, _ranksPerTeam + 1 );
 
  MPI_Barrier(MPI_COMM_WORLD);
 

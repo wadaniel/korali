@@ -21,24 +21,14 @@ void Korali::Problem::Direct::setConfiguration()
 
 void Korali::Problem::Direct::initialize()
 {
- if (_k->_modelDefined == false)
- {
-	fprintf(stderr, "[Korali] Error: Direct Problem requires defining a computational model.\n");
-	exit(-1);
- }
-
- if (_k->_likelihoodDefined == true)
- {
-	fprintf(stderr, "[Korali] Error: Direct Problem does not accept a likelihood function, only a computational model.\n");
-	exit(-1);
- }
+ if (_k->_modelDefined == false) koraliError("Direct Problem requires defining a computational model.\n");
+ if (_k->_likelihoodDefined == true) koraliError("Direct Problem does not accept a likelihood function, only a computational model.\n");
 }
 
 void Korali::Problem::Direct::finalize()
 {
 
 }
-
 
 void Korali::Problem::Direct::packVariables(double* sample, Korali::Model& data)
 {
@@ -49,11 +39,7 @@ double Korali::Problem::Direct::evaluateFitness(Korali::Model& data)
 {
 
  if (data._results.size() != 1)
- {
-  fprintf(stderr, "[Korali] Error: Direct Evaluation type requires exactly a 1-element result array.\n");
-  fprintf(stderr, "[Korali]        Provided: %lu.\n", data._results.size());
-  exit(-1);
- }
+  koraliError("Direct Evaluation type requires exactly a 1-element result array. Provided: %lu.\n", data._results.size());
 
  return data._results[0];
 }

@@ -226,7 +226,7 @@ bool Korali::Solver::MCMC::checkTermination()
  bool isFinished = false;
  if ( _databaseEntryCount == _maxChainLength)
  {
-   if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Chainlength (%zu) reached.\n",  _chainLength);
+   koraliLog(KORALI_MINIMAL, "Chainlength (%zu) reached.\n",  _chainLength);
    isFinished = true;
  }
 
@@ -235,39 +235,30 @@ bool Korali::Solver::MCMC::checkTermination()
  
 void Korali::Solver::MCMC::printGeneration()
 {
- if (_k->_verbosity >= KORALI_MINIMAL)
- {
-  printf("--------------------------------------------------------------------\n");
-  printf("[Korali] Database Entries %ld\n", _databaseEntryCount);
- }
+ koraliLog(KORALI_MINIMAL, "--------------------------------------------------------------------\n");
+ koraliLog(KORALI_MINIMAL, "Database Entries %ld\n", _databaseEntryCount);
 
- if (_k->_verbosity >= KORALI_NORMAL) printf("[Korali] Accepted Samples: %zu\n", _acceptanceCount);
- if (_k->_verbosity >= KORALI_NORMAL) printf("[Korali] Acceptance Rate Proposals: %.2f%%\n", 100*_acceptanceRate);
+ koraliLog(KORALI_NORMAL, "Accepted Samples: %zu\n", _acceptanceCount);
+ koraliLog(KORALI_NORMAL, "Acceptance Rate Proposals: %.2f%%\n", 100*_acceptanceRate);
 
- if (_k->_verbosity >= KORALI_DETAILED)
+ koraliLog(KORALI_DETAILED, "Variable = (Current Sample, Current Candidate):\n");
+ for (size_t d = 0; d < _k->N; d++)  koraliLog(KORALI_DETAILED, "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _chainLeaderParameters[d], _chainCandidatesParameters[d]);
+ koraliLog(KORALI_DETAILED, "Current Chain Mean:\n");
+ for (size_t d = 0; d < _k->N; d++) koraliLog(KORALI_DETAILED, " %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _chainMean[d]);
+ koraliLog(KORALI_DETAILED, "Current Chain Covariance:\n");
+ for (size_t d = 0; d < _k->N; d++)
  {
-  printf("[Korali] Variable = (Current Sample, Current Candidate):\n");
-  for (size_t d = 0; d < _k->N; d++)  printf("         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _chainLeaderParameters[d], _chainCandidatesParameters[d]);
-  printf("[Korali] Current Chain Mean:\n");
-  for (size_t d = 0; d < _k->N; d++) printf(" %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _chainMean[d]);
-  printf("[Korali] Current Chain Covariance:\n");
-  for (size_t d = 0; d < _k->N; d++)
-  {
-   for (size_t e = 0; e <= d; e++) printf("   %+6.3e  ", _chainCovariance[d*_k->N+e]);
-   printf("\n");
-  }
+	 for (size_t e = 0; e <= d; e++) koraliLog(KORALI_DETAILED, "   %+6.3e  ", _chainCovariance[d*_k->N+e]);
+	 koraliLog(KORALI_DETAILED, "\n");
  }
 }
 
 void Korali::Solver::MCMC::finalize()
 {
- if (_k->_verbosity >= KORALI_MINIMAL)
- {
-    printf("[Korali] MCMC Finished\n");
-    printf("[Korali] Number of Generated Samples: %zu\n", _proposedSampleCount);
-    printf("[Korali] Acceptance Rate: %.2f%%\n", 100*_acceptanceRate);
-    if (_databaseEntryCount == _chainLength) printf("[Korali] Max Samples Reached.\n");
-    printf("--------------------------------------------------------------------\n");
- }
+	koraliLog(KORALI_MINIMAL, "MCMC Finished\n");
+	koraliLog(KORALI_MINIMAL, "Number of Generated Samples: %zu\n", _proposedSampleCount);
+	koraliLog(KORALI_MINIMAL, "Acceptance Rate: %.2f%%\n", 100*_acceptanceRate);
+	if (_databaseEntryCount == _chainLength) koraliLog(KORALI_MINIMAL, "Max Samples Reached.\n");
+	koraliLog(KORALI_MINIMAL, "--------------------------------------------------------------------\n");
 }
 

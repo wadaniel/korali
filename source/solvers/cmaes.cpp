@@ -92,10 +92,7 @@ void CMAES::initialize()
         { fprintf( stderr, "[Korali] CMA-ES Error: Invalid Adaption Size (%f), must be greater than 0.0\n", _covMatrixAdaptionStrength ); exit(-1); }
 
   _globalSuccessRate = 0.5;
-  _bestValidSample = -1;
-  _constraintEvaluationCount = 0;
-  _adaptationCount = 0;
-  _maxViolationCount = 0;
+  _bestValidSample   = -1;
   _sampleViolationCounts.resize(s_max);
   _viabilityBoundaries.resize(_k->_fconstraints.size());
 
@@ -115,6 +112,16 @@ void CMAES::initialize()
   _beta = _covMatrixAdaptionStrength/(_k->N+2.);
 
  }
+ else
+ {
+  _globalSuccessRate = -1.0;
+  _beta              = -1.0;
+  _bestValidSample   = 0;
+ }
+  
+ _constraintEvaluationCount = 0;
+ _adaptationCount           = 0;
+ _maxViolationCount         = 0;
 
  // Setting algorithm internal variables
  if (_constraintsDefined) { initMuWeights(_viabilityMu); }

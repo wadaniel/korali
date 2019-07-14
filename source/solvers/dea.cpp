@@ -207,8 +207,16 @@ void DEA::evaluateSamples()
   {
     for (size_t i = 0; i < _sampleCount; i++) if (_isInitializedSample[i] == false)
     {
-      _isInitializedSample[i] = true;
-      _k->_conduit->evaluateSample(&_sampleCandidates[i*_k->N], i);
+    	 std::vector<double> _logTransformedSample(_k->N);
+
+		 for(size_t d = 0; d<_k->N; ++d)
+			 if (_k->_variables[d]->_isLogSpace == true)
+					 _logTransformedSample[d] = std::exp(_sampleCandidates[i*_k->N+d]);
+			 else
+					 _logTransformedSample[d] = _sampleCandidates[i*_k->N+d];
+
+			_isInitializedSample[i] = true;
+			_k->_conduit->evaluateSample(_logTransformedSample.data(), i);
     }
     _k->_conduit->checkProgress();
   }

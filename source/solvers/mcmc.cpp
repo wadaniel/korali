@@ -27,6 +27,9 @@ Korali::Solver::MCMC::MCMC()
  jsUniform["Seed"] = _k->_seed++;
  _uniformGenerator = new Variable();
  _uniformGenerator->setDistribution(jsUniform);
+
+ _k->consoleOutputFrequency = 500;
+ _k->fileOutputFrequency = 500;
 }
 
 Korali::Solver::MCMC::~MCMC()

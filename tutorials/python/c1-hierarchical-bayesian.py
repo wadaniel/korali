@@ -11,10 +11,12 @@ sys.path.append('./model')
 from directModel import *
 import korali
 
+# Running first Bayesian problem
 k1 = korali.initialize()
 k1.setLikelihood( evaluateModel )
 k1["Problem"] = "Bayesian"
 k1["Solver"] = "TMCMC"
+k1["Verbosity"] = "Silent"
 k1["Bayesian"]["Likelihood"]["Type"] = "Direct"
 k1["Variables"][0]["Name"] = "X"
 k1["Variables"][0]["Bayesian"]["Prior Distribution"]["Type"] = "Uniform"
@@ -23,17 +25,21 @@ k1["Variables"][0]["Bayesian"]["Prior Distribution"]["Maximum"] = +10.0
 k1["TMCMC"]["Population Size"] = 5000
 k1.run()
 
+# Running second Bayesian problem
 k2 = korali.initialize()
 k2.setLikelihood( evaluateModel )
 k2["Problem"] = "Bayesian"
 k2["Solver"] = "TMCMC"
+k2["Verbosity"] = "Silent"
 k2["Bayesian"]["Likelihood"]["Type"] = "Direct"
 k2["Variables"][0]["Name"] = "X"
 k2["Variables"][0]["Bayesian"]["Prior Distribution"]["Type"] = "Uniform"
 k2["Variables"][0]["Bayesian"]["Prior Distribution"]["Minimum"] = -10.0
 k2["Variables"][0]["Bayesian"]["Prior Distribution"]["Maximum"] = +10.0
 k2["TMCMC"]["Population Size"] = 5000
+k2.run()
 
+# Creating hierarchical Bayesian problem from previous two problems
 kH = korali.initialize()
 kH["Problem"] = "Hierarchical Bayesian"
 kH["Hierarchical Bayesian"]["Operation Type"] = "Sample Psi"

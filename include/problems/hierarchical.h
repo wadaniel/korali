@@ -14,9 +14,6 @@ class Hierarchical : public Base
  // Reference Data
  operationType  _operationType;
 
- std::vector<size_t> _computationalVariableIndices;
- std::vector<size_t> _statisticalVariableIndices;
-
  void packVariables(double* sample, Korali::Model& data) override;
  double evaluateFitness(Korali::Model& data) override;
  double evaluateLogPrior(double* sample) override;

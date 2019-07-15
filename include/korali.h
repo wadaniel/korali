@@ -46,7 +46,7 @@ class Engine {
  bool _likelihoodDefined;
  std::function<void(Model&)> _model;
  std::vector<fcon> _fconstraints;
- std::vector<Korali::Engine> _subProblems;
+ std::vector<nlohmann::json> _subProblems;
 
  size_t N; // Variable Count size_t N; // Variable Count
  size_t currentGeneration;

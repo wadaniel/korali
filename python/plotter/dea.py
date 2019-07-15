@@ -64,6 +64,7 @@ def draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, fvalXvec, meanX
 # Plot DEA results (read from .json files)
 def plot_dea(src, live=False, test=False):
 
+    seed     = -1 # seed for safety check
     gen      = 0 # generation
     numdim   = 0 # problem dimension
     names    = [] # description params
@@ -97,7 +98,9 @@ def plot_dea(src, live=False, test=False):
             state = data['DEA']['Internal']
             gen   = data['Current Generation']
 
-            if ( (fig, ax) == (None, None) ):
+            if (seed == -1):
+                
+                seed = data['Seed']
                 fig, ax = plt.subplots(2,2,num='DEA live diagnostics: {0}'.format(src),figsize=(8,8))
                 fig.show()
                 
@@ -125,6 +128,10 @@ def plot_dea(src, live=False, test=False):
             if ( not plt.fignum_exists(fig.number)):
                 print("[Korali] Figure closed - Bye!")
                 exit(0)
+      
+            if (data['Seed'] != seed):
+                print("[Korali] Warning: Skipping file {0} (different seed)".format(path))
+                continue
 
             draw_figure(fig, ax, src, gen, numeval, numdim, fval, dfval, fvalXvec, meanXvec, width, colors, names, live)
             plt_pause_light(0.05)

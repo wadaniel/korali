@@ -30,13 +30,13 @@ k["Result Directory"] = "_b1_restart_dea"
 
 # Reducing Output
 k["Termination Criteria"]["Max Generations"] = 500
-k["Console Output Frequency"] = 10
+k["Console Output Frequency"] = 5 
 
 k.run()
 
 print("\n\nRestart Now\n\n")
 
 # Now we loadState() to resume the same experiment from generation 5
-k.loadState("_b1_restart_dea/s00004.json")
+k.loadState("_b1_restart_dea/s00010.json")
 
 k.run()

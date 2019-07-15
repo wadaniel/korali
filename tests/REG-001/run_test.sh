@@ -14,9 +14,6 @@
 #     folder. 
 #     Expected result: all of the .py scripts will run for less than 20
 #     secs and rc = 0.
-# 3 - Operation: plot all results produced in Step 1. 
-#     Expected result: all plotting scripts will run for less than 30 secs and
-#     rc = 0.
 ###############################################################################
 
 ###### Auxiliar Functions and Variables #########
@@ -66,24 +63,3 @@ do
   ./"${file%.*}" >> $logFile
   check_result
 done
-
-############# STEP 3 ##############
-
-cd $curdir/../../tutorials/python
-
-logEcho "[Korali] Beginning plotting tests"                                   
-                                                                                
-for dir in ./_*                                                                 
-do                                                                              
-  logEcho "-------------------------------------"
-  logEcho " Plotting results from $dir ..."
-  logEcho "-------------------------------------"
-  python3 -m korali.plotter --test --dir "${dir}" >> $logFile
-  check_result
-                     
-  python3 -m korali.plotter --test --live --dir "${dir}" >> $logFile
-  check_result
-                     
-  #python3 -m korali.plotter --test --evolution --dir "${dir}" >> $logFile
-  #check_result
-done 

@@ -1,154 +1,75 @@
 #include "korali.h"
 
-void Korali::Problem::Bayesian::getConfiguration()
+void Korali::Problem::Hierarchical::getConfiguration()
 {
- _k->_js["Problem"] = "Bayesian";
+ _k->_js["Problem"] = "Hierarchical Bayesian";
 
- if (_likelihood == DirectLikelihood)    _k->_js["Bayesian"]["Likelihood"]["Type"] = "Direct";
- if (_likelihood == ReferenceLikelihood) _k->_js["Bayesian"]["Likelihood"]["Type"] = "Reference";
+ if (_subProblem == SamplePsi)   _k->_js["Hierarchical Bayesian"]["Type"] = "Sample Psi";
+ if (_subProblem == SampleTheta) _k->_js["Hierarchical Bayesian"]["Type"] = "Sample Theta";
 
- for (size_t i = 0; i < _referenceDataSize; i++) _k->_js["Bayesian", "Likelihood", "Reference Data"][i] = _referenceData[i];
-
- for (size_t i = 0; i < _computationalVariableIndices.size(); i++)
- {
-  size_t idx = _computationalVariableIndices[i];
-  _k->_js["Variables"][idx]["Bayesian"]["Type"] = "Computational";
- }
-
- for (size_t i = 0; i < _statisticalVariableIndices.size(); i++)
-  {
-   size_t idx = _statisticalVariableIndices[i];
-   _k->_js["Variables"][idx]["Bayesian"]["Type"] = "Statistical";
-  }
-
- for (size_t i = 0; i < _k->N; i++)  _k->_variables[i]->getDistribution(_k->_js["Variables"][i]["Bayesian"]["Prior Distribution"]);
+ for (size_t i = 0; i < _k->N; i++)  _k->_variables[i]->getDistribution(_k->_js["Variables"][i]["Hierarchical Bayesian"]["Prior Distribution"]);
 }
 
-void Korali::Problem::Bayesian::setConfiguration()
+void Korali::Problem::Hierarchical::setConfiguration()
 {
-  bool foundLikelihoodType = false;
-  std::string likelihoodString = consume(_k->_js, { "Bayesian", "Likelihood", "Type" }, KORALI_STRING, "Undefined");
-  if (likelihoodString == "Direct")    { _likelihood = DirectLikelihood;    foundLikelihoodType = true; }
-  if (likelihoodString == "Reference") { _likelihood = ReferenceLikelihood; foundLikelihoodType = true; }
-  if (foundLikelihoodType == false) { koraliError("Incorrect or no Likelihood Type selected: %s.\n", likelihoodString.c_str()); exit(-1); }
-
-  if ( _likelihood == ReferenceLikelihood )
-  {
-    bool foundLikelihoodModel = false;
-    std::string likelihoodModelString = consume(_k->_js, { "Bayesian", "Likelihood", "Model" }, KORALI_STRING, "Undefined");
-    if (likelihoodModelString == "Additive Gaussian")          { _likelihoodModel = AdditiveGaussian;       foundLikelihoodModel = true; }
-    if (likelihoodModelString == "Multiplicative Gaussian")    { _likelihoodModel = MultiplicativeGaussian; foundLikelihoodModel = true; }
-    if (foundLikelihoodModel  == false) { koraliError("Incorrect or no Likelihood Model selected: %s.\n", likelihoodModelString.c_str()); exit(-1); }
-  }
-
-  auto ref = consume(_k->_js, { "Bayesian", "Likelihood", "Reference Data" }, KORALI_ARRAY);
-  _referenceDataSize = ref.size();
-  _referenceData.resize(_referenceDataSize);
-  for (size_t i = 0; i < _referenceDataSize; i++) _referenceData[i] = ref[i];
+  bool foundSubProblemType = false;
+  std::string subProblemString = consume(_k->_js, { "Hierarchical Bayesian", "Type" }, KORALI_STRING, "Undefined");
+  if (subProblemString == "Sample Psi")   { _subProblem = SamplePsi;   foundSubProblemType = true; }
+  if (subProblemString == "Sample Theta") { _subProblem = SampleTheta; foundSubProblemType = true; }
+  if (foundSubProblemType == false) { koraliError("Incorrect or no sub-problem Type selected for Hierarchical Bayesian: %s.\n", subProblemString.c_str()); exit(-1); }
 
   if (isArray(_k->_js, { "Variables" } ))
   for (size_t i = 0; i < _k->N; i++)
   {
-		auto typeString = consume(_k->_js["Variables"][i], { "Bayesian", "Type" }, KORALI_STRING, "Computational");
-		if (typeString == "Computational") _computationalVariableIndices.push_back(i);
-		if (typeString == "Statistical")   _statisticalVariableIndices.push_back(i);
+    bool foundPriorDistribution = isDefined(_k->_js["Variables"][i], {"Hierarchical Bayesian", "Prior Distribution" });
+    if (foundPriorDistribution == false) { koraliError("No Prior Distribution information provided for variable: %s.\n", _k->_variables[i]->_name.c_str()); exit(-1); }
 
-		bool foundPriorDistribution = isDefined(_k->_js["Variables"][i], {"Bayesian", "Prior Distribution" });
-		if (foundPriorDistribution == false) { koraliError("No Prior Distribution information provided for variable: %s.\n", _k->_variables[i]->_name.c_str()); exit(-1); }
-
-		_k->_js["Variables"][i]["Bayesian"]["Prior Distribution"]["Seed"] = _k->_seed++;
-		_k->_variables[i]->setDistribution(_k->_js["Variables"][i]["Bayesian"]["Prior Distribution"]);
+    _k->_js["Variables"][i]["Hierarchical Bayesian"]["Prior Distribution"]["Seed"] = _k->_seed++;
+    _k->_variables[i]->setDistribution(_k->_js["Variables"][i]["Hierarchical Bayesian"]["Prior Distribution"]);
   }
 }
 
-void Korali::Problem::Bayesian::initialize()
+void Korali::Problem::Hierarchical::initialize()
 {
- if (_likelihood == ReferenceLikelihood)
- {
-	if (_referenceDataSize == 0) koraliError("No Reference Data set provided for the Bayesian Model.\n");
-	if (_k->_modelDefined == false) koraliError("Bayesian Problem requires defining a computational model.\n");
-	if (_statisticalVariableIndices.size() != 1) koraliError("The Bayesian model requires 1 statistical parameter.\n");
- }
+ if (_k->_modelDefined == true) koraliError("Direct Hierarchical does not require a computational model, but one was provided.\n");
+ if (_k->_likelihoodDefined == true) koraliError("Direct Hierarchical does not require a likelihood function, but one was provided.\n");
 
- if (_likelihood == DirectLikelihood)
- {
-	if (_referenceDataSize != 0) koraliError("Reference Data is not required by the Direct Bayesian model.\n");
-	if (_k->_likelihoodDefined == false) koraliError("Direct Bayesian requires defining a likelihood function.\n");
-	if (_statisticalVariableIndices.size() != 0) koraliError("Direct Bayesian Evaluation type requires no statistical parameters.\n");
- }
+ if (_subProblem == SamplePsi)   _k->setModel(Korali::Problem::Hierarchical::samplePsi);
+ if (_subProblem == SampleTheta) _k->setModel(Korali::Problem::Hierarchical::sampleTheta);
 }
 
-void Korali::Problem::Bayesian::finalize()
+void Korali::Problem::Hierarchical::finalize()
 {
 
 }
 
-void Korali::Problem::Bayesian::packVariables(double* sample, Korali::Model& data)
+void Korali::Problem::Hierarchical::packVariables(double* sample, Korali::Model& data)
 {
- for (size_t i = 0; i < _computationalVariableIndices.size(); i++) data._computationalVariables.push_back(sample[_computationalVariableIndices[i]]);
- for (size_t i = 0; i < _statisticalVariableIndices.size();   i++) data._statisticalVariables.push_back(sample[_statisticalVariableIndices[i]]);
+ for (size_t i = 0; i < _k->N; i++) data._computationalVariables.push_back(sample[i]);
 }
 
-double Korali::Problem::Bayesian::evaluateFitness(Korali::Model& data)
+double Korali::Problem::Hierarchical::evaluateFitness(Korali::Model& data)
 {
  double fitness = 0.0;
 
- if (_likelihood == ReferenceLikelihood)
- {
-   if (data._results.size() != _referenceDataSize)
-  	 koraliError("Reference Likelihood requires a %lu-sized result array. Provided: %lu.\n", _referenceDataSize, data._results.size());
-
-   if (_likelihoodModel == AdditiveGaussian)       fitness = likelihoodGaussianAdditive(data);
-   if (_likelihoodModel == MultiplicativeGaussian) fitness = likelihoodGaussianMultiplicative(data);
- }
-
- if (_likelihood == DirectLikelihood)
- {
-  if (data._results.size() != 1)  koraliError("Direct Likelihood requires exactly a 1-element result array. Provided: %lu.\n", data._results.size() );
-  fitness =  data._results[0];
- }
+ fitness = data._results[0];
 
  return fitness;
 }
 
-double Korali::Problem::Bayesian::evaluateLogPrior(double* sample)
+double Korali::Problem::Hierarchical::evaluateLogPrior(double* sample)
 {
  double logPrior = 0.0;
  for (size_t i = 0; i < _k->N; i++) logPrior += _k->_variables[i]->getLogDensity(sample[i]);
  return logPrior;
 }
 
-double Korali::Problem::Bayesian::likelihoodGaussianAdditive(Korali::Model& data)
+void Korali::Problem::Hierarchical::samplePsi(Korali::Model& data)
 {
-  double sigma   = data._statisticalVariables[0];
-  double sigma2  = sigma*sigma;
-  double ssn     = 0.0;
-  double fitness = 0.0;
-
-  for(size_t i = 0; i < _referenceDataSize; i++)
-  {
-   double diff = _referenceData[i] - data._results[i];
-   ssn += diff*diff;
-  }
-
-  fitness = -0.5*( _referenceDataSize*log(2*M_PI) + ssn/sigma2) - _referenceDataSize*log(sigma);
-  return fitness;
+ data.addResult(0.0);
 }
 
-double Korali::Problem::Bayesian::likelihoodGaussianMultiplicative(Korali::Model& data)
+void Korali::Problem::Hierarchical::sampleTheta(Korali::Model& data)
 {
-  double sigma    = data._statisticalVariables[0];
-  double ssn      = 0.0;
-  double fitness  = 0.0;
-  double logSigma = 0.0;
-  for(size_t i = 0; i < _referenceDataSize; i++)
-  {
-   double diff   = _referenceData[i] - data._results[i];
-   double denom  = sigma*data._results[i];
-   ssn += diff*diff / (denom*denom);
-   logSigma += log(denom);
-  }
-
-  fitness = -0.5*( _referenceDataSize*log(2*M_PI) + ssn) - _referenceDataSize*logSigma;
-  return fitness;
+ data.addResult(0.0);
 }

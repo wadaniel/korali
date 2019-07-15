@@ -11,6 +11,7 @@
 
 #include "problems/direct.h"
 #include "problems/bayesian.h"
+#include "problems/hierarchical.h"
 
 #include "solvers/cmaes.h"
 #include "solvers/dea.h"

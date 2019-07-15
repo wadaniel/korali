@@ -1,23 +1,18 @@
-#ifndef _KORALI_PROBLEM_LIKELIHOOD_H_
-#define _KORALI_PROBLEM_LIKELIHOOD_H_
+#ifndef _KORALI_PROBLEM_HIERARCHICAL_H_
+#define _KORALI_PROBLEM_HIERARCHICAL_H_
 
 #include "problems/base.h"
 
 namespace Korali { namespace Problem {
 
-enum likelihoodType  {DirectLikelihood, ReferenceLikelihood};
-enum likelihoodModel {AdditiveGaussian, MultiplicativeGaussian};
+enum subProblemType  {SamplePsi, SampleTheta};
 
-class Bayesian : public Base
+class Hierarchical : public Base
 {
  public:
 
  // Reference Data
- std::vector<double> _referenceData;
- double* fitnessArrayPointer;
- size_t _referenceDataSize;
- likelihoodType  _likelihood;
- likelihoodModel _likelihoodModel;
+ subProblemType  _subProblem;
 
  std::vector<size_t> _computationalVariableIndices;
  std::vector<size_t> _statisticalVariableIndices;
@@ -29,17 +24,16 @@ class Bayesian : public Base
  void initialize() override;
  void finalize() override;
 
+ static void samplePsi(Korali::Model& data);
+ static void sampleTheta(Korali::Model& data);
+
  // Serialization Methods
  void getConfiguration() override;
  void setConfiguration() override;
 
-  private:
-
-    double likelihoodGaussianAdditive(Korali::Model& data);
-    double likelihoodGaussianMultiplicative(Korali::Model& data);
 };
 
 } } // namespace Korali::Problem
 
 
-#endif // _KORALI_PROBLEM_LIKELIHOOD_H_
+#endif // _KORALI_PROBLEM_HIERARCHICAL_H_

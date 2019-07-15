@@ -22,8 +22,8 @@ class Bayesian : public Base
  std::vector<size_t> _computationalVariableIndices;
  std::vector<size_t> _statisticalVariableIndices;
 
- void packVariables(double* sample, Korali::ModelData& data) override;
- double evaluateFitness(Korali::ModelData& data) override;
+ void packVariables(double* sample, Korali::Model& data) override;
+ double evaluateFitness(Korali::Model& data) override;
  double evaluateLogPrior(double* sample) override;
 
  void initialize() override;
@@ -35,8 +35,8 @@ class Bayesian : public Base
 
   private:
 
-    double likelihoodGaussianAdditive(Korali::ModelData& data);
-    double likelihoodGaussianMultiplicative(Korali::ModelData& data);
+    double likelihoodGaussianAdditive(Korali::Model& data);
+    double likelihoodGaussianMultiplicative(Korali::Model& data);
 };
 
 } } // namespace Korali::Problem

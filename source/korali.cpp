@@ -5,6 +5,7 @@
 #include <cstdio>
 
 Korali::Engine* Korali::_k;
+Korali::verbosity _korali_verbosity;
 
 /************************************************************************/
 /*                  Python Binding Declarations                         */
@@ -17,16 +18,16 @@ Korali::Engine* Korali::_k;
 #include "pybind11/stl.h"
 
 PYBIND11_MODULE(libkorali, m) {
- pybind11::class_<Korali::ModelData>(m, "ModelData")
-  .def("getVariable",      &Korali::ModelData::getVariable, pybind11::return_value_policy::reference)
-  .def("getVariableCount", &Korali::ModelData::getVariableCount, pybind11::return_value_policy::reference)
-  .def("getVariables",     &Korali::ModelData::getVariables, pybind11::return_value_policy::reference)
-  .def("getResults",       &Korali::ModelData::getResults, pybind11::return_value_policy::reference)
- .def("getSampleId",         &Korali::ModelData::getSampleId, pybind11::return_value_policy::reference)
+ pybind11::class_<Korali::Model>(m, "Model")
+  .def("getVariable",      &Korali::Model::getVariable, pybind11::return_value_policy::reference)
+  .def("getVariableCount", &Korali::Model::getVariableCount, pybind11::return_value_policy::reference)
+  .def("getVariables",     &Korali::Model::getVariables, pybind11::return_value_policy::reference)
+  .def("getResults",       &Korali::Model::getResults, pybind11::return_value_policy::reference)
+ .def("getSampleId",         &Korali::Model::getSampleId, pybind11::return_value_policy::reference)
   #ifdef _KORALI_USE_MPI
-  .def("getCommPointer",   &Korali::ModelData::getCommPointer)
+  .def("getCommPointer",   &Korali::Model::getCommPointer)
   #endif
-  .def("addResult",        &Korali::ModelData::addResult, pybind11::return_value_policy::reference);
+  .def("addResult",        &Korali::Model::addResult, pybind11::return_value_policy::reference);
 
  pybind11::class_<Korali::Engine>(m, "Engine")
  .def(pybind11::init<>())
@@ -90,10 +91,10 @@ void Korali::Engine::getConfiguration()
 
  _js["Seed"]      = _seed;
  
- if (_verbosity == KORALI_SILENT)   _js["Verbosity"] = "Silent";
- if (_verbosity == KORALI_MINIMAL)  _js["Verbosity"] = "Minimal";
- if (_verbosity == KORALI_NORMAL)   _js["Verbosity"] = "Normal";
- if (_verbosity == KORALI_DETAILED) _js["Verbosity"] = "Detailed";
+ if (_korali_verbosity == KORALI_SILENT)   _js["Verbosity"] = "Silent";
+ if (_korali_verbosity == KORALI_MINIMAL)  _js["Verbosity"] = "Minimal";
+ if (_korali_verbosity == KORALI_NORMAL)   _js["Verbosity"] = "Normal";
+ if (_korali_verbosity == KORALI_DETAILED) _js["Verbosity"] = "Detailed";
  
  _js["Result Directory"] = _result_dir;
  _js["Termination Criteria"]["Max Generations"] = maxGenerations;
@@ -134,13 +135,13 @@ void Korali::Engine::setConfiguration()
  maxFunctionEvaluations = consume(_js, { "Termination Criteria", "Max Function Evaluations" }, KORALI_NUMBER, "50000000");
  _isFinished = consume(_js, { "Is Finished" }, KORALI_BOOLEAN, "false");
 
-  _verbosity = KORALI_UNDEFINED;
+ _korali_verbosity = KORALI_UNDEFINED;
  std::string vLevel = consume(_js, { "Verbosity" }, KORALI_STRING, "Normal");
- if (vLevel == "Silent")   _verbosity = KORALI_SILENT;
- if (vLevel == "Minimal")  _verbosity = KORALI_MINIMAL;
- if (vLevel == "Normal")   _verbosity = KORALI_NORMAL;
- if (vLevel == "Detailed") _verbosity = KORALI_DETAILED;
- if (_verbosity == KORALI_UNDEFINED) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Vebosity Level '%s'.", vLevel.c_str()); exit(-1); }
+ if (vLevel == "Silent")   _korali_verbosity = KORALI_SILENT;
+ if (vLevel == "Minimal")  _korali_verbosity = KORALI_MINIMAL;
+ if (vLevel == "Normal")   _korali_verbosity = KORALI_NORMAL;
+ if (vLevel == "Detailed") _korali_verbosity = KORALI_DETAILED;
+ if (_korali_verbosity == KORALI_UNDEFINED) koraliError("Incorrect or undefined Verbosity Level '%s'.", vLevel.c_str());
 
  _result_dir = consume(_js, { "Result Directory" }, KORALI_STRING, "_korali_result");
 
@@ -149,7 +150,7 @@ void Korali::Engine::setConfiguration()
  std::string pName = consume(_js, { "Problem" }, KORALI_STRING);
  if (pName == "Direct Evaluation")  _problem = std::make_shared<Korali::Problem::Direct>(); 
  if (pName == "Bayesian")           _problem = std::make_shared<Korali::Problem::Bayesian>();
- if (_problem == nullptr) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Problem '%s'.", pName.c_str()); exit(-1); }
+ if (_problem == nullptr) koraliError("Incorrect or undefined Problem '%s'.", pName.c_str());
 
  // Create Variables
 
@@ -161,7 +162,7 @@ void Korali::Engine::setConfiguration()
  }
 
  N = _variables.size();
- if (N == 0) { fprintf(stderr, "[Korali] Error: No variables have been defined.\n"); exit(-1); }
+ if (N == 0) koraliError("No variables have been defined.\n");
 
  // Configure Conduit
 
@@ -172,7 +173,7 @@ void Korali::Engine::setConfiguration()
  if (conduitType == "Linked") _conduit = std::make_shared<Korali::Conduit::Linked>();
  if (conduitType == "External") _conduit = std::make_shared<Korali::Conduit::External>();
 
- if (_conduit == nullptr) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Conduit '%s'.\n", conduitType.c_str()); exit(-1); }
+ if (_conduit == nullptr) koraliError("Incorrect or undefined Conduit '%s'.\n", conduitType.c_str());
 
  // Configure Solver
 
@@ -181,7 +182,7 @@ void Korali::Engine::setConfiguration()
  if (solverName == "DEA")    _solver = std::make_shared<Korali::Solver::DEA>();
  if (solverName == "MCMC")   _solver = std::make_shared<Korali::Solver::MCMC>();
  if (solverName == "TMCMC")  _solver = std::make_shared<Korali::Solver::TMCMC>();
- if (_solver == nullptr) { fprintf(stderr, "[Korali] Error: Incorrect or undefined Solver '%s'.", solverName.c_str()); exit(-1); }
+ if (_solver == nullptr) koraliError("Incorrect or undefined Solver '%s'.", solverName.c_str());
 
  // Setting module configuration
  _problem->setConfiguration();
@@ -193,13 +194,13 @@ void Korali::Engine::setConfiguration()
 /*                    Functional Methods                                */
 /************************************************************************/
 
-void Korali::Engine::setModel(std::function<void(Korali::ModelData&)> model)
+void Korali::Engine::setModel(std::function<void(Korali::Model&)> model)
 {
  _model = model;
  _modelDefined = true;
 }
 
-void Korali::Engine::setLikelihood(std::function<void(Korali::ModelData&)> likelihood)
+void Korali::Engine::setLikelihood(std::function<void(Korali::Model&)> likelihood)
 {
  _model = likelihood;
  _likelihoodDefined = true;
@@ -211,12 +212,7 @@ void Korali::Engine::run()
 
  setConfiguration();
 
- if (isEmpty(_js) == false)
- {
-  fprintf(stderr, "[Korali] Error: Unrecognized Settings for Korali:\n");
-  fprintf(stderr, "%s\n", _js.dump(2).c_str());
-  exit(-1);
- }
+ if (isEmpty(_js) == false) koraliError("Unrecognized Settings for Korali:\n %s \n", _js.dump(2).c_str());
 
  // Creating Results directory
  mkdir(_result_dir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
@@ -245,7 +241,7 @@ void Korali::Engine::run()
 
    auto t1 = std::chrono::system_clock::now();
 
-   if(_verbosity >= KORALI_DETAILED) printf("[Korali] Generation Time: %.3fs\n", std::chrono::duration<double>(t1-t0).count());
+   koraliLog(KORALI_DETAILED, "Generation Time: %.3fs\n", std::chrono::duration<double>(t1-t0).count());
 
    if (currentGeneration % consoleOutputFrequency == 0) _solver->printGeneration();
    if (currentGeneration % fileOutputFrequency    == 0) saveState(currentGeneration);
@@ -263,10 +259,10 @@ void Korali::Engine::run()
   for (size_t i = 0; i < N; i++) delete _variables[i];
   _variables.clear();
 
-  if(_verbosity >= KORALI_MINIMAL) printf("[Korali] Total Generations: %lu\n", currentGeneration);
-  if(_verbosity >= KORALI_MINIMAL) printf("[Korali] Total Function Evaluations: %lu\n", functionEvaluationCount);
-  if(_verbosity >= KORALI_MINIMAL) printf("[Korali] Elapsed Time: %.3fs\n", std::chrono::duration<double>(endTime-startTime).count());
-  if(_verbosity >= KORALI_MINIMAL) printf("[Korali] Results saved to folder: '%s'\n", _result_dir.c_str());
+  koraliLog(KORALI_MINIMAL, "Total Generations: %lu\n", currentGeneration);
+  koraliLog(KORALI_MINIMAL, "Total Function Evaluations: %lu\n", functionEvaluationCount);
+  koraliLog(KORALI_MINIMAL, "Elapsed Time: %.3fs\n", std::chrono::duration<double>(endTime-startTime).count());
+  koraliLog(KORALI_MINIMAL, "Results saved to folder: '%s'\n", _result_dir.c_str());
  }
 }
 
@@ -311,10 +307,10 @@ bool Korali::Engine::checkTermination()
    _isFinished = _solver->checkTermination();
    
    if (currentGeneration >= maxGenerations) 
-   { if(_verbosity >= KORALI_MINIMAL) printf("[Korali] Maximum generation count reached (%lu).\n", maxGenerations); _isFinished = true; }
+   { koraliLog(KORALI_MINIMAL, "Maximum generation count reached (%lu).\n", maxGenerations); _isFinished = true; }
    
    if (functionEvaluationCount >= maxFunctionEvaluations) 
-   { if(_verbosity >= KORALI_MINIMAL) printf("[Korali] Maximum function evaluation count reached (%lu).\n", maxFunctionEvaluations); _isFinished = true; }
+   { koraliLog(KORALI_MINIMAL, "Maximum function evaluation count reached (%lu).\n", maxFunctionEvaluations); _isFinished = true; }
 
    return _isFinished;
 }

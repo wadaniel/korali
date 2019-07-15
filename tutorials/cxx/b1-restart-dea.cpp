@@ -11,11 +11,11 @@
 int main(int argc, char* argv[])
 {
  auto k = Korali::Engine();
- k.setModel([](Korali::ModelData& d) { evaluateModel(d.getVariables(), d.getResults()); });
+ k.setModel([](Korali::Model& d) { evaluateModel(d.getVariables(), d.getResults()); });
 
  k["Problem"] = "Direct Evaluation";
  k["Solver"]  = "DEA";
- k["Verbosity"]  = "Detailed";
+ k["Verbosity"]  = "Normal";
 
  k["Variables"][0]["Name"] = "X";
  k["Variables"][0]["DEA"]["Lower Bound"] = -10.0;

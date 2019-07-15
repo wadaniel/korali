@@ -21,25 +21,7 @@
 
 ###### Auxiliar Functions and Variables #########
 
-curdir=$PWD
-logFile=$curdir/test.log
-echo "" > $logFile
-
-function check_result()
-{
- if [ ! $? -eq 0 ]
- then
-  echo "[Korali] Error running test. Please check $logFile."
-  exit -1
- fi 
-}
-
-# Logging and printing function.
-function logEcho ()
-{
- echo "$1"
- echo "$1" >> $logFile
-}
+source ../functions.sh
 
 ############# STEP 1 ##############
 
@@ -50,16 +32,16 @@ do
   logEcho "-------------------------------------"
   logEcho " Running $file"
   logEcho "-------------------------------------"
-  ./"$file" >> $logFile 2>&1
+  ./"$file" >> $logFile
   check_result
 done
 
 ############# STEP 2 ##############
 
-#make clean >> $logFile 2>&1
+#make clean >> $logFile
 #check_result
 
-#make -j 4 >> $logFile 2>&1
+#make -j 4 >> $logFile 
 #check_result
 
 #for file in *.cpp
@@ -67,6 +49,6 @@ done
 #  logEcho "-------------------------------------"
 #  logEcho " Running $file"
 #  logEcho "-------------------------------------"
-#  ./"${file%.*}" >> $logFile 2>&1
+#  ./"${file%.*}" >> $logFile
 #  check_result
 #done

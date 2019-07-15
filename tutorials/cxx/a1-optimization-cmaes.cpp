@@ -11,7 +11,7 @@ int main(int argc, char* argv[])
   auto k = Korali::Engine();
 
   // Setting computational model
-  k.setModel([](Korali::ModelData& d) { evaluateModel(d.getVariables(), d.getResults()); });
+  k.setModel([](Korali::Model& d) { evaluateModel(d.getVariables(), d.getResults()); });
 
   // Selecting problem and solver types.
   k["Problem"] = "Direct Evaluation";

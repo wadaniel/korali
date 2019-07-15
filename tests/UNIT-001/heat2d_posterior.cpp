@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
  k["Solver"] = "CMAES";
  k["CMAES"]["Sample Count"] = 32;
 
- k.setModel([](Korali::ModelData& d) { heat2DSolver(d.getVariables(), d.getResults()); });
+ k.setModel([](Korali::Model& d) { heat2DSolver(d.getVariables(), d.getResults()); });
 
  k.run();
 

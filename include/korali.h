@@ -20,15 +20,14 @@
 #include "conduits/linked.h"
 #include "conduits/external.h"
 
-#include "json/koralijson.h"
+#include "auxiliar.h"
 #include "variable.h"
+#include "model.h"
 
 #ifdef _KORALI_USE_PYTHON
  #undef _POSIX_C_SOURCE
  #undef _XOPEN_SOURCE
 #endif
-
-enum verbosity { KORALI_UNDEFINED = -1, KORALI_SILENT = 0, KORALI_MINIMAL = 1, KORALI_NORMAL = 2, KORALI_DETAILED = 3 };
 
 namespace Korali
 {
@@ -44,7 +43,7 @@ class Engine {
 
  bool _modelDefined;
  bool _likelihoodDefined;
- std::function<void(ModelData&)> _model;
+ std::function<void(Model&)> _model;
  std::vector<fcon> _fconstraints;
 
  size_t N; // Variable Count size_t N; // Variable Count
@@ -66,8 +65,8 @@ class Engine {
  ~Engine();
 
  void run();
- void setModel(std::function<void(Korali::ModelData&)> model);
- void setLikelihood(std::function<void(Korali::ModelData&)> model);
+ void setModel(std::function<void(Korali::Model&)> model);
+ void setLikelihood(std::function<void(Korali::Model&)> model);
  void addConstraint(fcon fconstraint);
 
  // Python Configuration Binding Methods
@@ -87,7 +86,6 @@ class Engine {
  bool checkTermination();
 
  size_t _seed;
- int _verbosity;
  std::string _result_dir;
 
  // Serialization Methods

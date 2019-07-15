@@ -14,7 +14,7 @@ int main(int argc, char* argv[])
   getReferenceData(x, y);
 
   // Setting the model
-  k.setModel([x](Korali::ModelData& d) { posteriorModel(d.getVariables(), d.getResults(), x); });
+  k.setModel([x](Korali::Model& d) { posteriorModel(d.getVariables(), d.getResults(), x); });
 
   // Selecting problem
   k["Problem"] = "Bayesian";

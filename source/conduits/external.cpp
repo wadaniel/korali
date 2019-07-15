@@ -17,11 +17,7 @@ void External::getConfiguration()
 void External::setConfiguration()
 {
  _concurrentJobs = consume(_k->_js, { "Conduit", "Concurrent Jobs" }, KORALI_NUMBER, std::to_string(1));
- if (_concurrentJobs < 1)
- {
-  fprintf(stderr, "[Korali] Error: You need to define at least 1 concurrent job(s) for external models \n");
-  exit(-1);
- }
+ if (_concurrentJobs < 1) koraliError("You need to define at least 1 concurrent job(s) for external models \n");
 }
 
 /************************************************************************/
@@ -40,7 +36,7 @@ void External::finalize()
 
 void External::evaluateSample(double* sampleArray, size_t sampleId)
 {
- Korali::ModelData data;
+ Korali::Model data;
 
  _k->_problem->packVariables(sampleArray, data);
 
@@ -51,11 +47,7 @@ void External::evaluateSample(double* sampleArray, size_t sampleId)
  int launcherId = _launcherQueue.front(); _launcherQueue.pop();
 
  // Opening Inter-process communicator pipes
- if (pipe(_pipeDescriptors[launcherId].data()) == -1)
- {
-  fprintf(stderr, "[Korali] Error: Unable to create inter-process pipe. \n");
-  exit(-1);
- }
+ if (pipe(_pipeDescriptors[launcherId].data()) == -1) koraliError("Unable to create inter-process pipe. \n");
 
  pid_t processId = fork();
 

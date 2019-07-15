@@ -11,7 +11,7 @@
 int main(int argc, char* argv[])
 {
   auto k = Korali::Engine();
-  k.setLikelihood([](Korali::ModelData& d) { evaluateModel(d.getVariables(), d.getResults()); });
+  k.setLikelihood([](Korali::Model& d) { evaluateModel(d.getVariables(), d.getResults()); });
 
   k["Problem"] = "Bayesian";
   k["Solver"] = "TMCMC";

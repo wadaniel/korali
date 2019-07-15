@@ -65,11 +65,7 @@ void Linked::initialize()
 
 
  if(isRoot()) if (_rankCount < _ranksPerTeam + 1)
- {
-  fprintf(stderr, "[Korali] Error: You are running Korali with %d ranks. \n", _rankCount);
-  fprintf(stderr, "[Korali] However, you need at least %d ranks to have at least one worker team. \n", _ranksPerTeam + 1);
-  exit(-1);
- }
+  koraliError("You are running Korali with %d ranks. However, you need at least %d ranks to have at least one worker team. \n", _rankCount, _ranksPerTeam + 1 );
 
  MPI_Barrier(MPI_COMM_WORLD);
 
@@ -130,7 +126,7 @@ void Linked::workerThread()
    MPI_Recv(&sample, _k->N, MPI_DOUBLE, getRootRank(), MPI_TAG_SAMPLE, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
    bool isLeader = (_localRankId == 0);
 
-   Korali::ModelData data;
+   Korali::Model data;
    data._comm = _teamComm;
    data._sampleId = sampleId;
 
@@ -157,7 +153,7 @@ void Linked::evaluateSample(double* sampleArray, size_t sampleId)
  // If Sequential solver, just run the evaluation
  if (_rankCount == 1)
  {
-   Korali::ModelData data;
+   Korali::Model data;
 
   _k->_problem->packVariables(sampleArray, data);
    data._sampleId = sampleId;

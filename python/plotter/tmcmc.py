@@ -100,9 +100,9 @@ def plot_tmcmc(src, live=False, test=False):
     resultfiles = [f for f in os.listdir(src) if os.path.isfile(os.path.join(src, f))]
     resultfiles = sorted(resultfiles)
 
-    seed = -1
-    fig  = None
-    ax   = None 
+    runid = -1
+    fig   = None
+    ax    = None 
     
     if (resultfiles == []):
         print("[Korali] Error: Did not find file {0} in the result folder...".format(src))
@@ -115,11 +115,12 @@ def plot_tmcmc(src, live=False, test=False):
 
             data    = json.load(f)
             
-            if (seed == -1):
-                seed = data['Seed']
+            if (runid == -1):
+                runid = data['Run ID']
   
-            if (data['Seed'] != seed):
-                print("[Korali] Warning: Skipping file {0} (different seed)".format(path))
+            if (data['Run ID'] != runid):
+                print("[Korali] Warning: Skipping file {0}, results origin" \
+                        "from a different experiment (different run id)".format(path))
                 continue
 
             numdim  = len(data['Variables'])

@@ -32,7 +32,7 @@ def plot_cmaes(src, live=False, test=False, evolution=False):
 
     live = live or evolution
 
-    seed     = -1 # seed for safety check
+    runid    = -1 # for safety check
     numdim   = 0  # problem dimension
     names    = [] # description params
     colors   = [] # rgb colors
@@ -83,9 +83,9 @@ def plot_cmaes(src, live=False, test=False, evolution=False):
             state = data[solverName]['Internal']
             gen   = data['Current Generation']
 
-            if (seed == -1):
+            if (runid == -1):
 
-                seed   = data['Seed']
+                runid  = data['Run ID']
                 numdim = len(data['Variables'])
                 names  = [ data['Variables'][i]['Name'] for i in range(numdim) ]
                 colors = hls_colors(numdim)
@@ -119,8 +119,9 @@ def plot_cmaes(src, live=False, test=False, evolution=False):
                 exit(0)
     
 
-            if (data['Seed'] != seed):
-                print("[Korali] Warning: Skipping file {0} (different seed)".format(path))
+            if (data['Run ID'] != runid):
+                print("[Korali] Warning: Skipping file {0}, results origin from" \
+                        "a different experiment (different run id).".format(path))
                 continue
 
             if gen > 1:

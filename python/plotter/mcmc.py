@@ -112,7 +112,7 @@ def plot_samples(fig, ax, data, filename):
 def plot_mcmc(src, live=False, test=False):
      
     plt.style.use('seaborn-dark')
-    seed   = -1
+    runid  = -1
     burnin = -1
     
     resultfiles = [f for f in os.listdir(src) if os.path.isfile(os.path.join(src, f))]
@@ -135,8 +135,8 @@ def plot_mcmc(src, live=False, test=False):
                 burnin   = data['MCMC']['Burn In']
                 chainlen = data['MCMC']['Internal']['Chain Length']
                 
-                if (seed == -1):
-                    seed = data['Seed']
+                if (runid == -1):
+                    seed = data['Run ID']
                     fig, ax = plt.subplots(numdim, numdim, figsize=(8,8))
                     fig.show()
     
@@ -144,8 +144,9 @@ def plot_mcmc(src, live=False, test=False):
                     print("[Korali] Figure closed - Bye!")
                     exit(-1)
 
-                if (data['Seed'] != seed):
-                    print("[Korali] Warning: Skipping file {0} (different seed)".format(path))
+                if (data['Run ID'] != runid):
+                    print("[Korali] Warning: Skipping file {0}, results" \
+                            "origin from a different experiment (different runid)".format(path))
                     continue
 
                 if chainlen > burnin:

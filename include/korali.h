@@ -53,6 +53,7 @@ class Engine {
  size_t fileOutputFrequency; //TODO: should be resultOutputFrequency (aligned with resultfolder) (DW)
  size_t functionEvaluationCount;
  size_t maxFunctionEvaluations;
+ size_t _runid;
  bool _isFinished;
 
  std::vector<Korali::Variable*> _variables;

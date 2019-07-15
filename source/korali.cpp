@@ -71,6 +71,7 @@ PYBIND11_MODULE(libkorali, m) {
 
 Korali::Engine::Engine() : _solver(nullptr), _problem(nullptr), _conduit(nullptr)
 {
+ _runid             = 0;
  _modelDefined      = false;
  _likelihoodDefined = false;
 }
@@ -89,7 +90,8 @@ void Korali::Engine::getConfiguration()
  auto js = nlohmann::json();
  _js = js;
 
- _js["Seed"]      = _seed;
+ _js["Seed"]   = _seed;
+ _js["Run ID"] = _runid;
  
  if (_korali_verbosity == KORALI_SILENT)   _js["Verbosity"] = "Silent";
  if (_korali_verbosity == KORALI_MINIMAL)  _js["Verbosity"] = "Minimal";
@@ -124,7 +126,8 @@ void Korali::Engine::setConfiguration()
   fread(&_seed, 1, sizeof(size_t), fid);
   fclose(fid);
  }
- _seed = consume(_js, { "Seed" }, KORALI_NUMBER, std::to_string(_seed));
+ _seed  = consume(_js, { "Seed" }, KORALI_NUMBER, std::to_string(_seed));
+ _runid = consume(_js, { "Run ID" }, KORALI_NUMBER, std::to_string(_runid));
  gsl_rng_env_setup();
 
  maxGenerations = consume(_js, { "Termination Criteria", "Max Generations" }, KORALI_NUMBER, "5000000");
@@ -208,7 +211,8 @@ void Korali::Engine::setLikelihood(std::function<void(Korali::Model&)> likelihoo
 
 void Korali::Engine::run()
 {
- _k = this;
+ _k = this; 
+ _runid = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch() ).count();
 
  setConfiguration();
 

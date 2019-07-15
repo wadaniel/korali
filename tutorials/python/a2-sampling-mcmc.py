@@ -31,10 +31,6 @@ k["MCMC"]["Burn In"] = 500
 k["MCMC"]["Max Chain Length"] = 5000
 k["MCMC"]["Use Adaptive Sampling"] = False
 
-# Reducint Output
-k["Console Output Frequency"] = 500
-k["File Output Frequency"] = 500
-
 # Setting output directory
 k["Result Directory"] = "_a2_sampling_mcmc_result"
 

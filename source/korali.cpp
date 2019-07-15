@@ -74,6 +74,8 @@ Korali::Engine::Engine() : _solver(nullptr), _problem(nullptr), _conduit(nullptr
  _runid             = 0;
  _modelDefined      = false;
  _likelihoodDefined = false;
+ consoleOutputFrequency = 1;
+ fileOutputFrequency = 1;
 }
 
 Korali::Engine::~Engine()
@@ -130,14 +132,6 @@ void Korali::Engine::setConfiguration()
  _runid = consume(_js, { "Run ID" }, KORALI_NUMBER, std::to_string(_runid));
  gsl_rng_env_setup();
 
- maxGenerations = consume(_js, { "Termination Criteria", "Max Generations" }, KORALI_NUMBER, "5000000");
- currentGeneration = consume(_js, { "Current Generation" }, KORALI_NUMBER, "0");
- consoleOutputFrequency = consume(_js, { "Console Output Frequency" }, KORALI_NUMBER, "1");
- fileOutputFrequency = consume(_js, { "File Output Frequency" }, KORALI_NUMBER, "1");
- functionEvaluationCount = consume(_js, { "Function Evaluation Count" }, KORALI_NUMBER, "0");
- maxFunctionEvaluations = consume(_js, { "Termination Criteria", "Max Function Evaluations" }, KORALI_NUMBER, "50000000");
- _isFinished = consume(_js, { "Is Finished" }, KORALI_BOOLEAN, "false");
-
  _korali_verbosity = KORALI_UNDEFINED;
  std::string vLevel = consume(_js, { "Verbosity" }, KORALI_STRING, "Normal");
  if (vLevel == "Silent")   _korali_verbosity = KORALI_SILENT;
@@ -191,6 +185,16 @@ void Korali::Engine::setConfiguration()
  _problem->setConfiguration();
  _conduit->setConfiguration();
  _solver->setConfiguration();
+
+ // Korali-specific configuration
+
+ maxGenerations = consume(_js, { "Termination Criteria", "Max Generations" }, KORALI_NUMBER, "5000000");
+ currentGeneration = consume(_js, { "Current Generation" }, KORALI_NUMBER, "0");
+ consoleOutputFrequency = consume(_js, { "Console Output Frequency" }, KORALI_NUMBER, std::to_string(consoleOutputFrequency));
+ fileOutputFrequency = consume(_js, { "File Output Frequency" }, KORALI_NUMBER, std::to_string(consoleOutputFrequency));
+ functionEvaluationCount = consume(_js, { "Function Evaluation Count" }, KORALI_NUMBER, "0");
+ maxFunctionEvaluations = consume(_js, { "Termination Criteria", "Max Function Evaluations" }, KORALI_NUMBER, "50000000");
+ _isFinished = consume(_js, { "Is Finished" }, KORALI_BOOLEAN, "false");
 }
 
 /************************************************************************/

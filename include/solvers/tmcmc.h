@@ -372,6 +372,17 @@ Local covariances of chain leaders
 ******************************************************************************/
 std::vector<std::vector<double>> _localCovarianceMatrices;
 
+/******************************************************************************
+Setting Name: Max Generations
+Type: Termination Criterion
+Default Value: 50
+Default Enabled: true
+Description:
+Maximal number of generations to run.
+******************************************************************************/
+size_t _termCondMaxGenerations;
+bool   _termCondMaxGenerationsEnabled;
+
 
 /******************************************************************************
 * Variable Settings

@@ -70,9 +70,9 @@ void Korali::Solver::TMCMC::initialize()
  for (size_t c = 0; c < _chainCount; c++) _currentChainStep[c]    = 0;
  for (size_t c = 0; c < _chainCount; c++) _chainPendingFitness[c] = false;
 
- _burnIn = std::vector<size_t>(1000, _burnInDefault); //TODO: replace 1000 by Max Generation Value
+ _burnIn = std::vector<size_t>(_termCondMaxGenerations, _burnInDefault);
  if(_burnInSteps.size() > _burnIn.size())
- { printf("[Korali] Error: Number of defined Burn In Steps (%zu) larger than Max Generations (1000)\n", _burnInSteps.size()); exit(-1); }
+ { printf("[Korali] Error: Number of defined Burn In Steps (%zu) larger than Max Generations (%zu)\n", _burnInSteps.size(), _termCondMaxGenerations); exit(-1); }
  std::copy(_burnInSteps.begin(), _burnInSteps.end(), _burnIn.begin());
 
  initializeSamples();
@@ -442,7 +442,22 @@ bool Korali::Solver::TMCMC::isFeasibleCandidate(size_t c)
 
 bool Korali::Solver::TMCMC::checkTermination()
 {
- return (_annealingExponent >= 1.0);
+ bool isFinished = false;
+
+ if(_annealingExponent >= 1.0)
+ {
+  isFinished = true;
+  if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Annealing completed (1.0).\n");
+ }
+
+ if( _termCondMaxGenerationsEnabled && (_k->currentGeneration >= _termCondMaxGenerations) )
+ {
+  isFinished = true;
+  if(_k->_verbosity >= KORALI_MINIMAL) printf("[Korali] Maximum number of Generations reached (%lu).\n", _termCondMaxGenerations);
+ }
+
+ return isFinished;
+
 }
 
 void Korali::Solver::TMCMC::finalize()

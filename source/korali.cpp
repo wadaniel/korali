@@ -261,7 +261,6 @@ void Korali::Engine::run()
 
   auto endTime = std::chrono::system_clock::now();
 
-  getConfiguration();
   saveState(currentGeneration);
 
   _solver->finalize();
@@ -288,6 +287,7 @@ void Korali::Engine::addSubProblem(Korali::Engine& problem)
 
 void Korali::Engine::saveState(std::string fileName)
 {
+ getConfiguration();
  if (!_conduit->isRoot()) return;
 
  saveJsonToFile(fileName.c_str(), _js);

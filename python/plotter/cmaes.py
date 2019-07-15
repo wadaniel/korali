@@ -32,6 +32,7 @@ def plot_cmaes(src, live=False, test=False, evolution=False):
 
     live = live or evolution
 
+    seed     = -1 # seed for safety check
     numdim   = 0  # problem dimension
     names    = [] # description params
     colors   = [] # rgb colors
@@ -82,8 +83,9 @@ def plot_cmaes(src, live=False, test=False, evolution=False):
             state = data[solverName]['Internal']
             gen   = data['Current Generation']
 
-            if (fig, ax) == (None, None):
+            if (seed == -1):
 
+                seed   = data['Seed']
                 numdim = len(data['Variables'])
                 names  = [ data['Variables'][i]['Name'] for i in range(numdim) ]
                 colors = hls_colors(numdim)
@@ -115,6 +117,11 @@ def plot_cmaes(src, live=False, test=False, evolution=False):
             if ( (live == True) and (not plt.fignum_exists(fig.number))):
                 print("[Korali] Figure closed - Bye!")
                 exit(0)
+    
+
+            if (data['Seed'] != seed):
+                print("[Korali] Warning: Skipping file {0} (different seed)".format(path))
+                continue
 
             if gen > 1:
 
@@ -133,7 +140,7 @@ def plot_cmaes(src, live=False, test=False, evolution=False):
                     samples_x = [sublist[0] for sublist in state['Samples']]
                     samples_y = [sublist[1] for sublist in state['Samples']]
                 
-                if ccmaes == True:
+                if (ccmaes == True):
                     via.append(state['Viability Boundaries'][0])
                     normal.append(state['Constraint Normal Approximation'])
 

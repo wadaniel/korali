@@ -27,7 +27,7 @@ int main(int argc, char* argv[])
  k["Result Directory"] = "_b1_restart_dea";
 
  k["Termination Criteria"]["Max Generations"] = 500;
- k["Console Output Frequency"] = 10;
+ k["Console Output Frequency"] = 5;
 
  k.run();
 

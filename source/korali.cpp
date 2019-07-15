@@ -41,6 +41,7 @@ PYBIND11_MODULE(libkorali, m) {
  .def("setModel",      &Korali::Engine::setModel, pybind11::return_value_policy::reference)
  .def("setLikelihood", &Korali::Engine::setLikelihood, pybind11::return_value_policy::reference)
  .def("addConstraint", &Korali::Engine::addConstraint, pybind11::return_value_policy::reference)
+ .def("addSubProblem", &Korali::Engine::addSubProblem, pybind11::return_value_policy::reference)
  .def("loadState",     &Korali::Engine::loadState, pybind11::return_value_policy::reference)
  .def("loadConfig",    &Korali::Engine::loadConfig, pybind11::return_value_policy::reference);
 
@@ -280,6 +281,10 @@ void Korali::Engine::addConstraint(fcon fconstraint)
  _fconstraints.push_back(fconstraint);
 }
 
+void Korali::Engine::addSubProblem(Korali::Engine& problem)
+{
+ _subProblems.push_back(problem);
+}
 
 void Korali::Engine::saveState(std::string fileName)
 {

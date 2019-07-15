@@ -46,6 +46,7 @@ class Engine {
  bool _likelihoodDefined;
  std::function<void(Model&)> _model;
  std::vector<fcon> _fconstraints;
+ std::vector<Korali::Engine> _subProblems;
 
  size_t N; // Variable Count size_t N; // Variable Count
  size_t currentGeneration;
@@ -70,6 +71,7 @@ class Engine {
  void setModel(std::function<void(Korali::Model&)> model);
  void setLikelihood(std::function<void(Korali::Model&)> model);
  void addConstraint(fcon fconstraint);
+ void addSubProblem(Korali::Engine& problem);
 
  // Python Configuration Binding Methods
  KoraliJsonWrapper _wr;

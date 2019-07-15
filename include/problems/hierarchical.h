@@ -5,14 +5,14 @@
 
 namespace Korali { namespace Problem {
 
-enum subProblemType  {SamplePsi, SampleTheta};
+enum operationType  {SamplePsi, SampleTheta};
 
 class Hierarchical : public Base
 {
  public:
 
  // Reference Data
- subProblemType  _subProblem;
+ operationType  _operationType;
 
  std::vector<size_t> _computationalVariableIndices;
  std::vector<size_t> _statisticalVariableIndices;

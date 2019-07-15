@@ -30,7 +30,7 @@ int main(int argc, char* argv[])
   k["DEA"]["Termination Criteria"]["Max Generations"]["Value"] = 500;
 
   // Setting output directory
-  k["Result Directory"] = "_a1_optimization_DEA_result";
+  k["Result Directory"] = "_a1_optimization_dea_result";
 
   // Running Korali
   k.run();

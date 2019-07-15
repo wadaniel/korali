@@ -41,14 +41,14 @@ kH.addSubProblem(k1)
 kH.addSubProblem(k2)
 
 kH["Variables"][0]["Name"] = "Psi 1"
-kH["Variables"][0]["Hierarchical Bayesian"]["Prior Distribution"]["Type"] = "Uniform"
-kH["Variables"][0]["Hierarchical Bayesian"]["Prior Distribution"]["Minimum"] = -10.0
-kH["Variables"][0]["Hierarchical Bayesian"]["Prior Distribution"]["Maximum"] = +10.0
+kH["Variables"][0]["Bayesian"]["Prior Distribution"]["Type"] = "Uniform"
+kH["Variables"][0]["Bayesian"]["Prior Distribution"]["Minimum"] = -10.0
+kH["Variables"][0]["Bayesian"]["Prior Distribution"]["Maximum"] = +10.0
 
 kH["Variables"][1]["Name"] = "Psi 2"
-kH["Variables"][1]["Hierarchical Bayesian"]["Prior Distribution"]["Type"] = "Uniform"
-kH["Variables"][1]["Hierarchical Bayesian"]["Prior Distribution"]["Minimum"] = -10.0
-kH["Variables"][1]["Hierarchical Bayesian"]["Prior Distribution"]["Maximum"] = +10.0
+kH["Variables"][1]["Bayesian"]["Prior Distribution"]["Type"] = "Uniform"
+kH["Variables"][1]["Bayesian"]["Prior Distribution"]["Minimum"] = -10.0
+kH["Variables"][1]["Bayesian"]["Prior Distribution"]["Maximum"] = +10.0
 
 kH["Solver"] = "TMCMC"
 kH["TMCMC"]["Population Size"] = 5000

@@ -23,6 +23,7 @@ int main(int argc, char* argv[])
 
   // Selecting the CCMA-ES solver
   k["Solver"]  = "CMAES";
+  k["Seed"]    = 5772;
   k["CMAES"]["Objective"] = "Maximize";
 
   // Creating 7 variables and

@@ -1,124 +1,34 @@
 #!/usr/bin/env python3
+import os
 import sys
-sys.path.append('./helpers')
-
-from reg002_helpers import *
-
+import json
 from math import isclose
 
-import korali
-k = korali.initialize()
-k.setModel(evaluateModel)
-k.addConstraint( g1 )
+sys.path.append('./helpers')
+from reg003_helpers import *
 
-k["Problem"] = "Direct Evaluation"
-k["Solver"]  = "CMAES" 
+src_cxx = "../../tutorials/cxx/_b2_constrained_optimization/"
+src_py  = "../../tutorials/python/_b2_constrained_optimization/"
 
-k["Variables"][0]["Name"] = "X";
-k["Variables"][0]["CMAES"]["Lower Bound"] = -10.0;
-k["Variables"][0]["CMAES"]["Upper Bound"] = +10.0;
+resultfiles_cxx = sorted( [f for f in os.listdir(src_cxx) if os.path.isfile(os.path.join(src_cxx, f))] )
+resultfiles_py  = sorted( [f for f in os.listdir(src_py) if os.path.isfile(os.path.join(src_py, f))] )
 
-k["CMAES"]["Objective"] = "Maximize"
-k["CMAES"]["Sample Count"] = 32
-k["CMAES"]["Termination Criteria"]["Max Generations"]["Value"] = 0
+result_cxx = resultfiles_cxx[-1]
+result_py  = resultfiles_py[-1]
 
-k["Result Directory"] = "_defaults_ccmaes"
-
-k.run()
+json_cxx = open_json(src_cxx, result_cxx)
+json_py  = open_json(src_py, result_py)
 
 ###############################################################################
 
-# Testing Configuration
+# Compare Python and CXX results
 
-assert_value( k["CMAES"]["Covariance Matrix Adaption Strength"], 0.1 )
+assert_value( [ "CMAES", "Internal", "Best Ever Sample" ], json_cxx, json_py)
 
-assert_value( k["CMAES"]["Global Success Learning Rate"], 0.2 )
+assert_value( [ "CMAES", "Internal", "Best Ever Value" ], json_cxx, json_py)
 
-assert_value( k["CMAES"]["Initial Cumulative Covariance"], -1.0 )
+assert_value( [ "CMAES", "Internal", "Conjugate Evolution Path" ], json_cxx, json_py)
 
-assert_value( k["CMAES"]["Initial Damp Factor"], -1.0 )
+assert_value( [ "CMAES", "Internal", "Fitness Vector" ], json_cxx, json_py)
 
-assert_value( k["CMAES"]["Initial Sigma Cumulation Factor"], -1.0 )
-
-assert_boolean( k["CMAES"]["Is Sigma Bounded"], False )
-
-assert_value( k["CMAES"]["Max Covariance Matrix Corrections"], 1e6 )
-
-assert_string( k["CMAES"]["Mu Type"], "Logarithmic" )
-
-assert_value( k["CMAES"]["Mu Value"], 16 )
-
-assert_value( k["CMAES"]["Normal Vector Learning Rate"], 0.3333333333333333 )
-
-assert_string( k["CMAES"]["Objective"], "Maximize" )
-
-assert_value( k["CMAES"]["Sample Count"], 32 )
-
-assert_value( k["CMAES"]["Target Success Rate"], 0.1818 )
-
-
-# Testing Internals
-
-assert_value( k["CMAES"]["Internal"]["Chi Number"], 0.7976190476190477 )
-
-assert_value( k["CMAES"]["Internal"]["Covariance Matrix Adaption Factor"],  0.03333333333333333 )
-
-assert_value( k["CMAES"]["Internal"]["Cumulative Covariance"], 0.7142857142857143 )
-
-assert_value( k["CMAES"]["Internal"]["Current Sample Count"], 2 )
-
-assert_value( k["CMAES"]["Internal"]["Current Sample Mu"], 1 )
-
-assert_value( k["CMAES"]["Internal"]["Damp Factor"], 1.5 )
-
-assert_value( k["CMAES"]["Internal"]["Effective Mu"], 1.0 )
-
-assert_value( k["CMAES"]["Internal"]["Evaluation Sign"], 1.0 )
-
-assert_value( k["CMAES"]["Internal"]["Global Success Rate"], 0.5 )
-
-assert_value( k["CMAES"]["Internal"]["Sigma"], 5.0 )
-
-assert_value( k["CMAES"]["Internal"]["Trace"], 25.0 )
-
-assert_boolean( k["CMAES"]["Internal"]["Is Viability Regime"], True )
-
-
-# Testing Termination Criteria
-
-assert_value( k["CMAES"]["Termination Criteria"]["Max Condition Covariance Matrix"]["Value"], 1e18 )
-
-assert_boolean( k["CMAES"]["Termination Criteria"]["Max Fitness"]["Enabled"], False )
-
-assert_value( k["CMAES"]["Termination Criteria"]["Max Generations"]["Value"], 0 )
-
-assert_value( k["CMAES"]["Termination Criteria"]["Max Infeasible Resampling"]["Value"], 1e9 )
-
-assert_value( k["CMAES"]["Termination Criteria"]["Max Standard Deviation"]["Value"], 1e18)
-
-assert_boolean( k["CMAES"]["Termination Criteria"]["Min Fitness"]["Enabled"], False )
-
-assert_value( k["CMAES"]["Termination Criteria"]["Min Fitness Diff Threshold"]["Value"], 1e-9 )
-
-assert_value( k["CMAES"]["Termination Criteria"]["Min Standard Deviation"]["Value"], 1e-12 )
-
-assert_value( k["CMAES"]["Termination Criteria"]["Min Standard Deviation Step Factor"]["Value"], 1e-18 )
-
-assert_value( k["CMAES"]["Viability Mu"], 1 )
-
-assert_value( k["CMAES"]["Viability Sample Count"], 2 )
-
-
-# Testing Variables
-
-assert_value( k["Variables"][0]["CMAES"]["Initial Mean"], 0.0 )
-
-assert_value( k["Variables"][0]["CMAES"]["Initial Standard Deviation"], 5.0 )
-
-assert_value( k["Variables"][0]["CMAES"]["Lower Bound"], -10.0 )
-
-assert_value( k["Variables"][0]["CMAES"]["Minimum Standard Deviation Changes"], 0.0 )
-
-assert_value( k["Variables"][0]["CMAES"]["Upper Bound"], 10.0 )
-
-
+assert_value( [ "CMAES", "Internal", "Sigma" ], json_cxx, json_py)

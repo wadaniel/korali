@@ -26,6 +26,7 @@ k["Problem"] = "Direct Evaluation"
 
 # Selecting the CCMA-ES solver
 k["Solver"]  = "CMAES"
+k["Seed"]    = 5772
 k["CMAES"]["Objective"] = "Maximize"
 
 # Creating 7 variables and

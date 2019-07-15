@@ -7,7 +7,7 @@ void Korali::Problem::Hierarchical::getConfiguration()
  if (_operationType == SamplePsi)   _k->_js["Hierarchical Bayesian"]["Operation Type"] = "Sample Psi";
  if (_operationType == SampleTheta) _k->_js["Hierarchical Bayesian"]["Operation Type"] = "Sample Theta";
 
- for (size_t i = 0; i < _k->N; i++)  _k->_variables[i]->getDistribution(_k->_js["Variables"][i]["Hierarchical Bayesian"]["Prior Distribution"]);
+ for (size_t i = 0; i < _k->N; i++)  _k->_variables[i]->getDistribution(_k->_js["Variables"][i]["Bayesian"]["Prior Distribution"]);
 }
 
 void Korali::Problem::Hierarchical::setConfiguration()
@@ -21,11 +21,11 @@ void Korali::Problem::Hierarchical::setConfiguration()
   if (isArray(_k->_js, { "Variables" } ))
   for (size_t i = 0; i < _k->N; i++)
   {
-    bool foundPriorDistribution = isDefined(_k->_js["Variables"][i], {"Hierarchical Bayesian", "Prior Distribution" });
+    bool foundPriorDistribution = isDefined(_k->_js["Variables"][i], {"Bayesian", "Prior Distribution" });
     if (foundPriorDistribution == false) { koraliError("No Prior Distribution information provided for variable: %s.\n", _k->_variables[i]->_name.c_str()); exit(-1); }
 
-    _k->_js["Variables"][i]["Hierarchical Bayesian"]["Prior Distribution"]["Seed"] = _k->_seed++;
-    _k->_variables[i]->setDistribution(_k->_js["Variables"][i]["Hierarchical Bayesian"]["Prior Distribution"]);
+    _k->_js["Variables"][i]["Bayesian"]["Prior Distribution"]["Seed"] = _k->_seed++;
+    _k->_variables[i]->setDistribution(_k->_js["Variables"][i]["Bayesian"]["Prior Distribution"]);
   }
 }
 

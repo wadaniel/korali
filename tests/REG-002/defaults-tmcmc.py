@@ -65,11 +65,9 @@ assert_value( k["TMCMC"]["Internal"]["Selection Acceptance Rate"], 1.0 )
 
 # Test Termination Criteria
 
-assert_value( k["Termination Criteria"]["Max Function Evaluations"], 5e7 ) 
-#TODO should be k["MCMC"]["Termination Criteria"]["Max .. "]["Value"] = ..
+assert_value( k["TMCMC"]["Termination Criteria"]["Max Generations"]["Value"], 50 )
 
-assert_value( k["Termination Criteria"]["Max Generations"], 0 )
-#TODO should be k["MCMC"]["Termination Criteria"]["Max .. "]["Value"] = ..
+assert_boolean( k["TMCMC"]["Termination Criteria"]["Max Generations"]["Enabled"], True )
 
 
 # Test Variables

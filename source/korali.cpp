@@ -77,6 +77,7 @@ Korali::Engine::Engine() : _solver(nullptr), _problem(nullptr), _conduit(nullptr
  _likelihoodDefined = false;
  consoleOutputFrequency = 1;
  fileOutputFrequency = 1;
+ _isFinished = false;
 }
 
 Korali::Engine::~Engine()
@@ -260,14 +261,12 @@ void Korali::Engine::run()
 
   auto endTime = std::chrono::system_clock::now();
 
+  getConfiguration();
   saveState(currentGeneration);
 
   _solver->finalize();
   _problem->finalize();
   _conduit->finalize();
-
-  for (size_t i = 0; i < N; i++) delete _variables[i];
-  _variables.clear();
 
   koraliLog(KORALI_MINIMAL, "Total Generations: %lu\n", currentGeneration);
   koraliLog(KORALI_MINIMAL, "Total Function Evaluations: %lu\n", functionEvaluationCount);
@@ -283,14 +282,14 @@ void Korali::Engine::addConstraint(fcon fconstraint)
 
 void Korali::Engine::addSubProblem(Korali::Engine& problem)
 {
- _subProblems.push_back(problem);
+ problem.getConfiguration();
+ _subProblems.push_back(problem._js);
 }
 
 void Korali::Engine::saveState(std::string fileName)
 {
  if (!_conduit->isRoot()) return;
 
- getConfiguration();
  saveJsonToFile(fileName.c_str(), _js);
 }
 

@@ -31,9 +31,12 @@ void Korali::Problem::Hierarchical::setConfiguration()
 
 void Korali::Problem::Hierarchical::initialize()
 {
- if (_k->_modelDefined == true) koraliError("Direct Hierarchical does not require a computational model, but one was provided.\n");
- if (_k->_likelihoodDefined == true) koraliError("Direct Hierarchical does not require a likelihood function, but one was provided.\n");
- if (_k->_subProblems.size() < 2) koraliError("The Hierarchical Bayesian problem requires defining at least two executed sub-problems.\n");
+ if (_k->_modelDefined == true) koraliError("Hierarchical Bayesian does not require a computational model, but one was provided.\n");
+ if (_k->_likelihoodDefined == true) koraliError("Hierarchical Bayesian does not require a likelihood function, but one was provided.\n");
+ if (_k->_subProblems.size() < 2) koraliError("Hierarchical Bayesian problem requires defining at least two executed sub-problems.\n");
+
+ for (size_t i = 0; i < _k->_subProblems.size(); i++)
+   if (_k->_subProblems[i]["Is Finished"] == false) koraliError("The Hierarchical Bayesian requires that all problems have run completely, but Problem %lu has not.\n", i);
 
  if (_operationType == SamplePsi)   _k->setModel(Korali::Problem::Hierarchical::samplePsi);
  if (_operationType == SampleTheta) _k->setModel(Korali::Problem::Hierarchical::sampleTheta);

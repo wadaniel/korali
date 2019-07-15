@@ -16,6 +16,7 @@ int main(int argc, char* argv[])
   // Selecting problem and solver types.
   k["Problem"] = "Direct Evaluation";
   k["Solver"]  = "CMAES";
+  k["Seed"]    = 1337;
 
   // Defining the problem's variables and their CMA-ES bounds.
   k["Variables"][0]["Name"] = "X";

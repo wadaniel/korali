@@ -18,6 +18,7 @@ k.setLikelihood( evaluateModel )
 # Selecting problem and solver types.
 k["Problem"] = "Bayesian"
 k["Solver"] = "TMCMC"
+k["Seed"] = 1618
 
 # Configuring Likelihood type for the bayesian problem
 k["Bayesian"]["Likelihood"]["Type"] = "Direct"

@@ -14,6 +14,7 @@ int main(int argc, char* argv[])
  // Selecting problem and solver types.
  k["Problem"] = "Direct Evaluation";
  k["Solver"]  = "MCMC";
+ k["Seed"]    = 2718;
 
  // Defining problem's variables and their prior distribution
  k["Variables"][0]["Name"] = "X";
@@ -23,7 +24,6 @@ int main(int argc, char* argv[])
  // Configuring the MCMC sampler parameters
  k["MCMC"]["Burn In"] = 500;
  k["MCMC"]["Max Chain Length"] = 5000;
- k["MCMC"]["Use Adaptive Sampling"] = true;
 
  // Setting output directory
  k["Result Directory"] = "_a2_sampling_mcmc_result";

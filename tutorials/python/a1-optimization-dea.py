@@ -19,6 +19,7 @@ k.setModel(evaluateModel)
 # Selecting problem and solver types.
 k["Problem"] = "Direct Evaluation"
 k["Solver"]  = "DEA"
+k["Seed"]    = 31415
 
 # Defining the problem's variables and their DEA bounds.
 k["Variables"][0]["Name"] = "X";

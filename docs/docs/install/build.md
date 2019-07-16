@@ -21,10 +21,11 @@
 | Type             |     Code         |     Description    | 
 | :----------------:|:----------------:|: ----------------:|
 | Regression | [REG-000](https://github.com/cselab/korali/tree/development/tests/REG-000/run_test.sh) | Checks for a correct installation of Korali and its modules. |
-| Regression | [REG-001](https://github.com/cselab/korali/tree/development/tests/REG-002/run_test.sh) | Check that solvers initialize with correct default values. |
-| Regression | [REG-002](https://github.com/cselab/korali/tree/development/tests/REG-003/run_test.sh) | Re-run all tutorials for basic sanity check. |
-| Regression | [REG-003](https://github.com/cselab/korali/tree/development/tests/REG-004/run_test.sh) | Compare python and cxx runs to ensure they produce same results. |
+| Regression | [REG-001](https://github.com/cselab/korali/tree/development/tests/REG-001/run_test.sh) | Re-run all Python tutorials for basic sanity check. |
+| Regression | [REG-002](https://github.com/cselab/korali/tree/development/tests/REG-002/run_test.sh) | Re-run all C++ tutorials for basic sanity check. |
+| Regression | [REG-003](https://github.com/cselab/korali/tree/development/tests/REG-003/run_test.sh) | Compare python and cxx runs to ensure they produce same results. |
 | Regression | [REG-004](https://github.com/cselab/korali/tree/development/tests/REG-004/run_test.sh) | Test correct plotting for all results from tutorial runs. |
+| Statistical | [STAT-000](https://github.com/cselab/korali/tree/development/tests/STAT-000/run_test.sh) | Check that solvers initialize with correct default values. |
 | Unit Test | [UNIT-000](https://github.com/cselab/korali/tree/development/tests/UNIT-000/run_test.sh) | Test for the External Conduit |
 | Unit Test | [UNIT-001](https://github.com/cselab/korali/tree/development/tests/UNIT-001/run_test.sh) | Parallel Linked Conduit for Sequential Bayesian Inference |
 | Unit Test | [UNIT-002](https://github.com/cselab/korali/tree/development/tests/UNIT-002/run_test.sh) | Parallel Linked Conduit for Distributed (MPI) Bayesian Inference |

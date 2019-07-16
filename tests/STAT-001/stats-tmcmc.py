@@ -1,74 +1,20 @@
 #!/usr/bin/env python3
+import os
 import sys
+import json
+from math import isclose
+
 sys.path.append('./helpers')
+from stat001_helpers import *
 
-from reg002_helpers import *
+src_cxx = "../../tutorials/cxx/_a2_sampling_tmcmc/"
+src_py  = "../../tutorials/python/_a2_sampling_tmcmc/"
 
-import korali
-k = korali.initialize()
-k.setLikelihood( evaluateModel )
+resultfiles_cxx = sorted( [f for f in os.listdir(src_cxx) if os.path.isfile(os.path.join(src_cxx, f))] )
+resultfiles_py  = sorted( [f for f in os.listdir(src_py) if os.path.isfile(os.path.join(src_py, f))] )
 
-k["Problem"] = "Bayesian"
-k["Solver"] = "TMCMC"
+result_cxx = resultfiles_cxx[-1]
+result_py  = resultfiles_py[-1]
 
-k["Bayesian"]["Likelihood"]["Type"] = "Direct"
-
-k["Variables"][0]["Name"] = "X"
-k["Variables"][0]["Bayesian"]["Prior Distribution"]["Type"] = "Uniform"
-k["Variables"][0]["Bayesian"]["Prior Distribution"]["Minimum"] = -10.0
-k["Variables"][0]["Bayesian"]["Prior Distribution"]["Maximum"] = +10.0
-
-k["TMCMC"]["Population Size"] = 5000
-k["TMCMC"]["Termination Criteria"]["Max Generations"]["Value"] = 0
-
-k["Result Directory"] = "_defaults_tmcmc"
-
-k.run()
-
-###############################################################################
-
-# Test Configuration
-
-assert_value( k["File Output Frequency"], 1 )
-
-assert_value( k["TMCMC"]["Covariance Scaling"], 0.04 )
-
-assert_value( k["TMCMC"]["Burn In Default"], 0 )
-
-assert_value( k["TMCMC"]["Max Rho Update"], 1.0 )
-
-assert_value( k["TMCMC"]["Min Rho Update"], 1e-5 )
-
-assert_value( k["TMCMC"]["Population Size"], 5000 )
-
-assert_boolean( k["TMCMC"]["Use Local Covariance"], False )
-
-
-# Test Internals
-
-assert_value( k["TMCMC"]["Internal"]["Accepted Samples Count"], 5000 )
-
-assert_value( k["TMCMC"]["Internal"]["Annealing Exponent"], 0.0 )
-
-assert_value( k["TMCMC"]["Internal"]["Coefficient of Variation"], 0.0 )
-
-assert_value( k["TMCMC"]["Internal"]["Covariance Matrix"][0], 0.0 )
-
-assert_value( k["TMCMC"]["Internal"]["Proposals Acceptance Rate"], 1.0 )
-
-assert_value( k["TMCMC"]["Internal"]["Selection Acceptance Rate"], 1.0 )
-
-
-# Test Termination Criteria
-assert_value( k["TMCMC"]["Termination Criteria"]["Max Generations"]["Value"], 0 )
-
-assert_boolean( k["TMCMC"]["Termination Criteria"]["Max Generations"]["Enabled"], True )
-
-
-# Test Variables
-
-assert_value( k["Variables"][0]["Bayesian"]["Prior Distribution"]["Maximum"], 10 )
-
-assert_value( k["Variables"][0]["Bayesian"]["Prior Distribution"]["Minimum"], -10 )
-
-assert_string( k["Variables"][0]["Bayesian"]["Prior Distribution"]["Type"], "Uniform" )
+json_cxx = open_json(src_cxx, result_cxx)
+json_py  = open_json(src_py, result_py)

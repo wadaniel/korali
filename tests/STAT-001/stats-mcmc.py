@@ -1,74 +1,22 @@
 #!/usr/bin/env python3
+import os
 import sys
+import json
+from math import isclose
+
 sys.path.append('./helpers')
+from stat001_helpers import *
 
-from reg002_helpers import *
+src_cxx = "../../tutorials/cxx/_a2_sampling_mcmc_result/"
+src_py  = "../../tutorials/python/_a2_sampling_mcmc_result/"
 
-import korali
-k = korali.initialize()
+resultfiles_cxx = sorted( [f for f in os.listdir(src_cxx) if os.path.isfile(os.path.join(src_cxx, f))] )
+resultfiles_py  = sorted( [f for f in os.listdir(src_py) if os.path.isfile(os.path.join(src_py, f))] )
 
-k.setModel(evaluateModel)
+result_cxx = resultfiles_cxx[-1]
+result_py  = resultfiles_py[-1]
 
-k["Problem"] = "Direct Evaluation"
-k["Solver"]  = "MCMC"
+json_cxx = open_json(src_cxx, result_cxx)
+json_py  = open_json(src_py, result_py)
 
-k["Variables"][0]["Name"] = "X"
-k["Variables"][0]["MCMC"]["Initial Mean"] = 0.0
-k["Variables"][0]["MCMC"]["Standard Deviation"] = 1.000
-
-k["MCMC"]["Max Chain Length"] = 0
-
-k["Console Output Frequency"] = 500
-k["File Output Frequency"] = 500
-
-k["Result Directory"] = "_defaults_mcmc"
-
-k.run()
-
-###############################################################################
-
-# Test Configuration
-
-assert_value( k["Console Output Frequency"], 500 )
-
-assert_value( k["File Output Frequency"], 500 )
-
-assert_value( k["MCMC"]["Burn In"], 0 )
-
-assert_value( k["MCMC"]["Chain Covariance Increment"], 0.001 )
-
-assert_value( k["MCMC"]["Max Chain Length"], 0 ) # should be termination criteria
-
-assert_value( k["MCMC"]["Non Adaption Period"], 0 )
-
-assert_value( k["MCMC"]["Rejection Levels"], 1 )
-
-assert_boolean( k["MCMC"]["Use Adaptive Sampling"], False)
-
-
-# Test Internals
-
-assert_value( k["MCMC"]["Internal"]["Chain Covariance Scaling"], 5.76 )
-
-assert_value( k["MCMC"]["Internal"]["Chain Covariance"][0], 0.0 )
-
-assert_value( k["MCMC"]["Internal"]["Chain Length"], 0.0 )
-
-assert_value( k["MCMC"]["Internal"]["Covariance Matrix"][0], 1.0 )
-
-assert_value( k["MCMC"]["Internal"]["Rejection Alphas"][0], 0.0 )
-
-# Test Termination Criteria
-
-assert_value( k["Termination Criteria"]["Max Function Evaluations"], 5e7 )
-
-assert_value( k["Termination Criteria"]["Max Generations"], 5e6 )
-
-
-# Test Variables
-
-assert_value( k["Variables"][0]["MCMC"]["Initial Mean"], 0.0 )
-
-assert_value( k["Variables"][0]["MCMC"]["Standard Deviation"], 1.0 )
-
-
+samples = json_cxx["MCMC"]["Internal"]["Sample Parameters Database"]

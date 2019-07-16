@@ -113,22 +113,12 @@ set this value to $5%$ of the Chain Length.
 size_t _nonAdaptionPeriod;
 
 /******************************************************************************
-Setting Name: Chain Covariance Increment
-Type: Solver Setting
-Default Value: 0.001
-Default Enabled:
-Description:
-Small constant to avoid singularity of the chain covariance.
-******************************************************************************/
-double _chainCovarianceIncrement;
-
-/******************************************************************************
 Setting Name: Chain Covariance Scaling
-Type: Internal Attribute
-Default Value:
+Type: Solver Setting
+Default Value: 1.0
 Default Enabled:
 Description:
-Small constant to avoid singularity of the chain covariance.
+Multiplier inside of Chain Covariance update in order to control the covariance.
 ******************************************************************************/
 double _chainCovarianceScaling;
 

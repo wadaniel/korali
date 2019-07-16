@@ -83,7 +83,8 @@ void Korali::Solver::MCMC::initialize()
  _databaseEntryCount = 0;
  _chainLeaderLogLikelihood = -std::numeric_limits<double>::max();
  _acceptanceRate  = 1.0;
- _chainCovarianceScaling = 2.4*2.4/_k->N; //[Gelman et. al. 1995]
+
+ if(_chainCovarianceScaling <= 0.0) koraliError("Chain Covariance Scaling must be larger 0.0 (is %lf).\n", _chainCovarianceScaling);
 }
 
 void Korali::Solver::MCMC::processSample(size_t sampleIdx, double fitness)
@@ -221,36 +222,29 @@ void Korali::Solver::MCMC::updateState()
 
  _acceptanceRate = ( (double)_acceptanceCount/ (double)_chainLength );
 
+ if(_databaseEntryCount == 1) for (size_t d = 0; d < _k->N; d++) _chainMean[d] = _chainLeaderParameters[d];
  if(_databaseEntryCount <= 1) return;
  
  for (size_t d = 0; d < _k->N; d++) for (size_t e = 0; e < d; e++)
  {
-   _chainCovariancePlaceholder[d*_k->N+e] = (_databaseEntryCount-1)*_chainMean[d]*_chainMean[e] + _chainLeaderParameters[d]*_chainLeaderParameters[e];
-   _chainCovariancePlaceholder[e*_k->N+d] = (_databaseEntryCount-1)*_chainMean[d]*_chainMean[e] + _chainLeaderParameters[d]*_chainLeaderParameters[e];
+   _chainCovariancePlaceholder[d*_k->N+e] = (_chainMean[d] - _chainLeaderParameters[d]) * (_chainMean[e] - _chainLeaderParameters[e]);
+   _chainCovariancePlaceholder[e*_k->N+d] = (_chainMean[d] - _chainLeaderParameters[d]) * (_chainMean[e] - _chainLeaderParameters[e]);
  }
- for (size_t d = 0; d < _k->N; d++) _chainCovariancePlaceholder[d*_k->N+d] = (_databaseEntryCount-1)*_chainMean[d]*_chainMean[d] + _chainLeaderParameters[d]*_chainLeaderParameters[d];
+ for (size_t d = 0; d < _k->N; d++) _chainCovariancePlaceholder[d*_k->N+d] = (_chainMean[d] - _chainLeaderParameters[d]) * (_chainMean[d] - _chainLeaderParameters[d]);
 
  // Chain Mean
- for (size_t d = 0; d < _k->N; d++) _chainMean[d] = ((_chainMean[d] * (_databaseEntryCount-1) + _chainLeaderParameters[d])) / ((double) _databaseEntryCount);
- 
- for (size_t d = 0; d < _k->N; d++) for (size_t e = 0; e < d; e++)
- {
-    _chainCovariancePlaceholder[d*_k->N+e] -= _databaseEntryCount*_chainMean[d]*_chainMean[e];
-    _chainCovariancePlaceholder[e*_k->N+d] -= _databaseEntryCount*_chainMean[d]*_chainMean[e];
- }
- for (size_t d = 0; d < _k->N; d++) _chainCovariancePlaceholder[d*_k->N+d] -= _databaseEntryCount*_chainMean[d]*_chainMean[d];
- for (size_t d = 0; d < _k->N; d++) _chainCovariancePlaceholder[d*_k->N+d] += _chainCovarianceIncrement;
+ for (size_t d = 0; d < _k->N; d++) _chainMean[d] = (_chainMean[d] * (_databaseEntryCount-1) + _chainLeaderParameters[d]) / _databaseEntryCount;
  
  // Chain Covariance (upper and lower triangle)
  for (size_t d = 0; d < _k->N; d++) for (size_t e = 0; e < d; e++)
  {
-   _chainCovariance[d*_k->N+e] = (_databaseEntryCount-2.0)/(_databaseEntryCount-1.0) * _chainCovariance[d*_k->N+e] + (_chainCovarianceScaling/( (double) _databaseEntryCount))*_chainCovariancePlaceholder[d*_k->N+e];
-   _chainCovariance[e*_k->N+d] = (_databaseEntryCount-2.0)/(_databaseEntryCount-1.0) * _chainCovariance[d*_k->N+e] + (_chainCovarianceScaling/( (double) _databaseEntryCount))*_chainCovariancePlaceholder[d*_k->N+e];
+   _chainCovariance[d*_k->N+e] = (_databaseEntryCount-2.0)/(_databaseEntryCount-1.0) * _chainCovariance[d*_k->N+e] + (_chainCovarianceScaling/_databaseEntryCount)*_chainCovariancePlaceholder[d*_k->N+e];
+   _chainCovariance[e*_k->N+d] = (_databaseEntryCount-2.0)/(_databaseEntryCount-1.0) * _chainCovariance[d*_k->N+e] + (_chainCovarianceScaling/_databaseEntryCount)*_chainCovariancePlaceholder[d*_k->N+e];
  }
 
  // Chain Covariance (diagonal)
  for (size_t d = 0; d < _k->N; d++)
-   _chainCovariance[d*_k->N+d] = (_databaseEntryCount-2.0)/(_databaseEntryCount-1.0) * _chainCovariance[d*_k->N+d] + (_chainCovarianceScaling/( (double) _databaseEntryCount))*_chainCovariancePlaceholder[d*_k->N+d];
+   _chainCovariance[d*_k->N+d] = (_databaseEntryCount-2.0)/(_databaseEntryCount-1.0) * _chainCovariance[d*_k->N+d] + (_chainCovarianceScaling/_databaseEntryCount)*_chainCovariancePlaceholder[d*_k->N+d];
 
  choleskyDecomp(_chainCovariance, _chainCovarianceChol);
 }

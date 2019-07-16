@@ -41,6 +41,7 @@ PYBIND11_MODULE(libkorali, m) {
  .def("setModel",      &Korali::Engine::setModel, pybind11::return_value_policy::reference)
  .def("setLikelihood", &Korali::Engine::setLikelihood, pybind11::return_value_policy::reference)
  .def("addConstraint", &Korali::Engine::addConstraint, pybind11::return_value_policy::reference)
+ .def("addSubProblem", &Korali::Engine::addSubProblem, pybind11::return_value_policy::reference)
  .def("loadState",     &Korali::Engine::loadState, pybind11::return_value_policy::reference)
  .def("loadConfig",    &Korali::Engine::loadConfig, pybind11::return_value_policy::reference);
 
@@ -76,6 +77,7 @@ Korali::Engine::Engine() : _solver(nullptr), _problem(nullptr), _conduit(nullptr
  _likelihoodDefined = false;
  consoleOutputFrequency = 1;
  fileOutputFrequency = 1;
+ _isFinished = false;
 }
 
 Korali::Engine::~Engine()
@@ -147,6 +149,7 @@ void Korali::Engine::setConfiguration()
  std::string pName = consume(_js, { "Problem" }, KORALI_STRING);
  if (pName == "Direct Evaluation")  _problem = std::make_shared<Korali::Problem::Direct>(); 
  if (pName == "Bayesian")           _problem = std::make_shared<Korali::Problem::Bayesian>();
+ if (pName == "Hierarchical Bayesian") _problem = std::make_shared<Korali::Problem::Hierarchical>();
  if (_problem == nullptr) koraliError("Incorrect or undefined Problem '%s'.", pName.c_str());
 
  // Create Variables
@@ -264,9 +267,6 @@ void Korali::Engine::run()
   _problem->finalize();
   _conduit->finalize();
 
-  for (size_t i = 0; i < N; i++) delete _variables[i];
-  _variables.clear();
-
   koraliLog(KORALI_MINIMAL, "Total Generations: %lu\n", currentGeneration);
   koraliLog(KORALI_MINIMAL, "Total Function Evaluations: %lu\n", functionEvaluationCount);
   koraliLog(KORALI_MINIMAL, "Elapsed Time: %.3fs\n", std::chrono::duration<double>(endTime-startTime).count());
@@ -279,12 +279,17 @@ void Korali::Engine::addConstraint(fcon fconstraint)
  _fconstraints.push_back(fconstraint);
 }
 
+void Korali::Engine::addSubProblem(Korali::Engine& problem)
+{
+ problem.getConfiguration();
+ _subProblems.push_back(problem._js);
+}
 
 void Korali::Engine::saveState(std::string fileName)
 {
+ getConfiguration();
  if (!_conduit->isRoot()) return;
 
- getConfiguration();
  saveJsonToFile(fileName.c_str(), _js);
 }
 

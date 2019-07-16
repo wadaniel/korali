@@ -1,5 +1,5 @@
-#ifndef _KORALI_PROBLEM_LIKELIHOOD_H_
-#define _KORALI_PROBLEM_LIKELIHOOD_H_
+#ifndef _KORALI_PROBLEM_BAYESIAN_H_
+#define _KORALI_PROBLEM_BAYESIAN_H_
 
 #include "problems/base.h"
 
@@ -42,4 +42,4 @@ class Bayesian : public Base
 } } // namespace Korali::Problem
 
 
-#endif // _KORALI_PROBLEM_LIKELIHOOD_H_
+#endif // _KORALI_PROBLEM_BAYESIAN_H_

@@ -35,9 +35,9 @@ assert_value( k["File Output Frequency"], 500 )
 
 assert_value( k["MCMC"]["Burn In"], 0 )
 
-assert_value( k["MCMC"]["Chain Covariance Increment"], 0.001 )
+assert_value( k["MCMC"]["Chain Covariance Scaling"], 1.0 )
 
-assert_value( k["MCMC"]["Max Chain Length"], 0 ) # should be termination criteria
+assert_value( k["MCMC"]["Max Chain Length"], 0 )
 
 assert_value( k["MCMC"]["Non Adaption Period"], 0 )
 
@@ -47,8 +47,6 @@ assert_boolean( k["MCMC"]["Use Adaptive Sampling"], False)
 
 
 # Test Internals
-
-assert_value( k["MCMC"]["Internal"]["Chain Covariance Scaling"], 5.76 )
 
 assert_value( k["MCMC"]["Internal"]["Cholesky Decomposition of Chain Covariance"][0], 0.0 )
 

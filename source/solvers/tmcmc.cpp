@@ -80,7 +80,7 @@ void Korali::Solver::TMCMC::initialize()
 
 void Korali::Solver::TMCMC::runGeneration()
 {
- if (_k->currentGeneration > 1) resampleGeneration();
+ resampleGeneration();
 
  while (_finishedChainsCount < _chainCount)
  {
@@ -148,7 +148,7 @@ void Korali::Solver::TMCMC::initializeSamples()
   for (size_t c = 0; c < _populationSize; c++) {
      for (size_t d = 0; d < _k->N; d++) {
        _chainLeadersParameters[c*_k->N + d] = _chainCandidatesParameters[c*_k->N + d] = _k->_variables[d]->getRandomNumber();
-       _chainLeadersLogLikelihoods[c] += log( _k->_variables[d]->getDensity(_chainLeadersParameters[c*_k->N + d]) );
+       _chainLeadersLogLikelihoods[c] += _k->_variables[d]->getLogDensity(_chainLeadersParameters[c*_k->N + d]);
      }
      updateDatabase(&_chainLeadersParameters[c*_k->N], _chainLeadersLogLikelihoods[c]);
      _finishedChainsCount++;

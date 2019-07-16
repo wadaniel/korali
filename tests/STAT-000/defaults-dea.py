@@ -2,7 +2,7 @@
 import sys
 sys.path.append('./helpers')
 
-from reg002_helpers import *
+from stat000_helpers import *
 
 import korali
 

@@ -2,7 +2,7 @@
 import sys
 sys.path.append('./helpers')
 
-from stat000_helpers import *
+from reg002_helpers import *
 
 import korali
 k = korali.initialize()

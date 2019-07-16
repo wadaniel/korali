@@ -2,7 +2,7 @@
 import sys
 sys.path.append('./helpers')
 
-from stat000_helpers import *
+from reg002_helpers import *
 
 import korali
 k = korali.initialize()
@@ -50,11 +50,11 @@ assert_boolean( k["MCMC"]["Use Adaptive Sampling"], False)
 
 assert_value( k["MCMC"]["Internal"]["Chain Covariance Scaling"], 5.76 )
 
-assert_value( k["MCMC"]["Internal"]["Cholesky Decomposition of Chain Covariance"][0], 0.0 )
+assert_value( k["MCMC"]["Internal"]["Chain Covariance"][0], 0.0 )
 
 assert_value( k["MCMC"]["Internal"]["Chain Length"], 0.0 )
 
-assert_value( k["MCMC"]["Internal"]["Cholesky Decomposition of Covariance"][0], 1.0 )
+assert_value( k["MCMC"]["Internal"]["Covariance Matrix"][0], 1.0 )
 
 assert_value( k["MCMC"]["Internal"]["Rejection Alphas"][0], 0.0 )
 

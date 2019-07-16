@@ -72,7 +72,7 @@ PYBIND11_MODULE(libkorali, m) {
 
 Korali::Engine::Engine() : _solver(nullptr), _problem(nullptr), _conduit(nullptr)
 {
- _runid             = 0;
+ _runId             = 0;
  _modelDefined      = false;
  _likelihoodDefined = false;
  consoleOutputFrequency = 1;
@@ -95,7 +95,8 @@ void Korali::Engine::getConfiguration()
  _js = js;
 
  _js["Seed"]   = _seed;
- _js["Run ID"] = _runid;
+ _js["Run ID"] = _runId;
+ _js["Run Timestamp"] = _runTimestamp;
  
  if (_korali_verbosity == KORALI_SILENT)   _js["Verbosity"] = "Silent";
  if (_korali_verbosity == KORALI_MINIMAL)  _js["Verbosity"] = "Minimal";
@@ -122,18 +123,24 @@ void Korali::Engine::setConfiguration()
  // Configure Korali Engine
  _variables.clear();
 
+ // Setting Run Timestamp
+ _runTimestamp = "";
+ _runTimestamp = consume(_js, { "Run Timestamp" }, KORALI_STRING, _runTimestamp);
+
+ time_t rawtime;
+ time (&rawtime);
+ _runTimestamp = ctime (&rawtime);
+
+ // Setting Run Hash Id
+ std::hash<std::string> hasher;
+ _runId = hasher(_runTimestamp);
+ _runId = consume(_js, { "Run ID" }, KORALI_NUMBER, std::to_string(_runId));
+
  // Initializing Seed and GSL Random Environment
- _seed = 0;
- FILE *fid = fopen("/dev/random", "rb");
- if (fid != nullptr)
- {
-  fread(&_seed, 1, sizeof(size_t), fid);
-  fclose(fid);
- }
- _seed  = consume(_js, { "Seed" }, KORALI_NUMBER, std::to_string(_seed));
- _runid = consume(_js, { "Run ID" }, KORALI_NUMBER, std::to_string(_runid));
+ _seed  = consume(_js, { "Seed" }, KORALI_NUMBER, std::to_string(_runId));
  gsl_rng_env_setup();
 
+ // Configuring Korali Settings
  _korali_verbosity = KORALI_UNDEFINED;
  std::string vLevel = consume(_js, { "Verbosity" }, KORALI_STRING, "Normal");
  if (vLevel == "Silent")   _korali_verbosity = KORALI_SILENT;
@@ -145,7 +152,6 @@ void Korali::Engine::setConfiguration()
  _result_dir = consume(_js, { "Result Directory" }, KORALI_STRING, "_korali_result");
 
  // Configure Problem
-
  std::string pName = consume(_js, { "Problem" }, KORALI_STRING);
  if (pName == "Direct Evaluation")  _problem = std::make_shared<Korali::Problem::Direct>(); 
  if (pName == "Bayesian")           _problem = std::make_shared<Korali::Problem::Bayesian>();
@@ -219,7 +225,6 @@ void Korali::Engine::setLikelihood(std::function<void(Korali::Model&)> likelihoo
 void Korali::Engine::run()
 {
  _k = this; 
- _runid = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch() ).count();
 
  setConfiguration();
 

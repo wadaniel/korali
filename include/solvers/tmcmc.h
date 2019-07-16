@@ -412,8 +412,7 @@ std::vector<variableSetting> _variableSettings;
  bool checkTermination() override;
 
   // Internal TMCMC Methods
- void initializeSamples();
- void resampleGeneration();
+ void processGeneration();
  void updateDatabase(double* point, double fitness);
  void generateCandidate(size_t candidate);
  void evaluateSample(size_t candidate);

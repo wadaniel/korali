@@ -6,6 +6,10 @@
 
 Visit: https://www.cse-lab.ethz.ch/korali/ for more information.
 
+## Apps
+
+See: https://github.com/cselab/korali-apps
+
 ## Contact us
 
 The Korali Project is developed and maintained by

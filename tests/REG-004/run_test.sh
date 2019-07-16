@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##############################################################################
-# Brief: Plot all results from tutorials (see REG-002) for basic sanity check. 
+# Brief: Test correct plotting for all results from tutorial runs.
 # Type: Regression Test 
 # Description:
 # This test plots all results in the /tutorials/python/ folder to make sure

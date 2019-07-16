@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##############################################################################
-# Brief: Compare python and cxx results
+# Brief: Compare python and cxx runs to ensure they produce same results.
 # Type: Regression Test 
 # Description:
 # This test compares the results (json files) produced in /tutorials/python/ 

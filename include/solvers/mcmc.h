@@ -133,14 +133,15 @@ Small constant to avoid singularity of the chain covariance.
 double _chainCovarianceScaling;
 
 /******************************************************************************
-Setting Name: Covariance Matrix
+Setting Name: Cholesky Decomposition of Covariance
 Type: Internal Attribute
 Default Value:
 Default Enabled:
 Description:
-Hold the covariance matrix of proposal distribution.
+Cholesky Decomposition of Covariance for sampling (using lower triangular 
+Matrix, rest zeros)
 ******************************************************************************/
-std::vector<double> _covarianceMatrix;
+std::vector<double> _covarianceChol;
 
 /******************************************************************************
 Setting Name: Chain Leader Parameters
@@ -213,14 +214,14 @@ Ratio proposed to accepted samples.
 double _acceptanceRate;
 
 /******************************************************************************
-Setting Name: Rejection Count
+Setting Name: Current Rejection Count
 Type: Internal Attribute
 Default Value:
 Default Enabled:
 Description:
 Number of rejections in the current generation.
 ******************************************************************************/
-size_t _rejectionCount;
+size_t _currentRejectionCount;
 
 /******************************************************************************
 Setting Name: Acceptance Count
@@ -303,6 +304,17 @@ Chain Covariance
 std::vector<double> _chainCovariance;
 
 /******************************************************************************
+Setting Name: Cholesky Decomposition of Chain Covariance
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Cholesky Decomposition of Chain Covariance for sampling (in lower triangular 
+part, rest zeros)
+******************************************************************************/
+std::vector<double> _chainCovarianceChol;
+
+/******************************************************************************
 Setting Name: Chain Length
 Type: Internal Attribute
 Default Value:
@@ -365,6 +377,7 @@ std::vector<variableSetting> _variableSettings;
  void updateDatabase(std::vector<double>&, double fitness);
  void generateCandidate(size_t sampleIdx);
  void sampleCandidate(size_t sampleIdx);
+ void choleskyDecomp(const std::vector<double>& inC, std::vector<double>& outL) const;
  void acceptReject(size_t trial); /* Accept or reject sample with multiple trials */
  double recursiveAlpha(double& D, const double llk0, const double* logliks, size_t N) const; /* calculate acceptance ratio alpha_N */
  void evaluateSample();

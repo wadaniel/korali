@@ -49,7 +49,7 @@ int main(int argc, char* argv[])
   k["Verbosity"] = "Minimal";
 
   // Setting output directory
-  k["Result Directory"] = "_b2_constrained_optimization";
+  k["Result Directory"] = "_b2_constrained_optimization_result";
 
   // Running Korali
   k.run();

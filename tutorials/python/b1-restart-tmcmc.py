@@ -29,13 +29,13 @@ k["Variables"][0]["Bayesian"]["Prior Distribution"]["Maximum"] = +10.0
 k["TMCMC"]["Population Size"] = 5000
 
 # Setting output directory
-k["Result Directory"] = "_b1_restart_tmcmc"
+k["Result Directory"] = "_b1_restart_tmcmc_result"
 
 k.run()
 
 print("\n\nRestarting now:\n\n");
 
 # Now we loadState() to resume the same experiment from generation 5.
-k.loadState("_b1_restart_tmcmc/s00003.json")
+k.loadState("_b1_restart_tmcmc_result/s00003.json")
 
 k.run()

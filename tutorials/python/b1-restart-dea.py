@@ -26,7 +26,7 @@ k["DEA"]["Objective"] = "Maximize"
 k["DEA"]["Sample Count"] = 10
 
 # Setting output directory
-k["Result Directory"] = "_b1_restart_dea"
+k["Result Directory"] = "_b1_restart_dea_result"
 
 # Reducing Output
 k["Termination Criteria"]["Max Generations"] = 500
@@ -37,6 +37,6 @@ k.run()
 print("\n\nRestart Now\n\n")
 
 # Now we loadState() to resume the same experiment from generation 5
-k.loadState("_b1_restart_dea/s00010.json")
+k.loadState("_b1_restart_dea_result/s00010.json")
 
 k.run()

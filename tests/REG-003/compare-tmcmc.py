@@ -7,8 +7,8 @@ from math import isclose
 sys.path.append('./helpers')
 from reg003_helpers import *
 
-src_cxx = "../../tutorials/cxx/_a2_sampling_tmcmc/"
-src_py  = "../../tutorials/python/_a2_sampling_tmcmc/"
+src_cxx = "../../tutorials/cxx/_a2_sampling_tmcmc_result/"
+src_py  = "../../tutorials/python/_a2_sampling_tmcmc_result/"
 
 resultfiles_cxx = sorted( [f for f in os.listdir(src_cxx) if os.path.isfile(os.path.join(src_cxx, f))] )
 resultfiles_py  = sorted( [f for f in os.listdir(src_py) if os.path.isfile(os.path.join(src_py, f))] )

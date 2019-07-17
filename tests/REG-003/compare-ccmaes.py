@@ -7,8 +7,8 @@ from math import isclose
 sys.path.append('./helpers')
 from reg003_helpers import *
 
-src_cxx = "../../tutorials/cxx/_b2_constrained_optimization/"
-src_py  = "../../tutorials/python/_b2_constrained_optimization/"
+src_cxx = "../../tutorials/cxx/_b2_constrained_optimization_result/"
+src_py  = "../../tutorials/python/_b2_constrained_optimization_result/"
 
 resultfiles_cxx = sorted( [f for f in os.listdir(src_cxx) if os.path.isfile(os.path.join(src_cxx, f))] )
 resultfiles_py  = sorted( [f for f in os.listdir(src_py) if os.path.isfile(os.path.join(src_py, f))] )

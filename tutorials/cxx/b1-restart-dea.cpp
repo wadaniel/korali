@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
  k["DEA"]["Objective"] = "Maximize";
  k["DEA"]["Sample Count"] = 10;
 
- k["Result Directory"] = "_b1_restart_dea";
+ k["Result Directory"] = "_b1_restart_dea_result";
 
  k["Termination Criteria"]["Max Generations"] = 500;
  k["Console Output Frequency"] = 5;
@@ -34,7 +34,7 @@ int main(int argc, char* argv[])
  printf("\n\nRestarting now:\n\n");
 
  // Now we loadState() to resume the same experiment from generation 5
- k.loadState("_b1_restart_dea/s00010.json");
+ k.loadState("_b1_restart_dea_result/s00010.json");
 
  k.run();
 

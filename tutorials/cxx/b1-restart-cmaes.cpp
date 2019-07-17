@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
   k["CMAES"]["Objective"] = "Maximize";
   k["CMAES"]["Sample Count"] = 5;
 
-  k["Result Directory"] = "_b1_restart_cmaes";
+  k["Result Directory"] = "_b1_restart_cmaes_result";
 
   k["Termination Criteria"]["Max Generations"] = 500;
   k["Console Output Frequency"] = 10;
@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
   printf("\n\nRestarting now:\n\n");
 
   // Now we loadState() to resume the same experiment from generation 10
-  k.loadState("_b1_restart_cmaes/s00010.json");
+  k.loadState("_b1_restart_cmaes_result/s00010.json");
 
   k.run();
 

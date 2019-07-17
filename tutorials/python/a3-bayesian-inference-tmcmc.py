@@ -53,7 +53,7 @@ k["Solver"] = "TMCMC"
 k["TMCMC"]["Population Size"] = 5000
 
 # Setting output directory
-k["Result Directory"] = "_a3_bayesian_inference_tmcmc"
+k["Result Directory"] = "_a3_bayesian_inference_tmcmc_result"
 
 # Running Korali
 k.run()

@@ -26,7 +26,7 @@ k["CMAES"]["Objective"] = "Maximize"
 k["CMAES"]["Sample Count"] = 5
 
 # Setting output directory
-k["Result Directory"] = "_b1_restart_cmaes"
+k["Result Directory"] = "_b1_restart_cmaes_result"
 
 # Reducing Output
 k["Termination Criteria"]["Max Generations"] = 500
@@ -37,6 +37,6 @@ k.run()
 print("\n\nRestart Now\n\n")
 
 # Now we loadState() to resume the same experiment from generation 10
-k.loadState("_b1_restart_cmaes/s00010.json")
+k.loadState("_b1_restart_cmaes_result/s00010.json")
 
 k.run()

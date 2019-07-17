@@ -7,8 +7,8 @@ import numpy as np
 sys.path.append('./helpers')
 from stat001_helpers import *
 
-src_cxx = "../../tutorials/cxx/_a2_sampling_tmcmc/"
-src_py  = "../../tutorials/python/_a2_sampling_tmcmc/"
+src_cxx = "../../tutorials/cxx/_a2_sampling_tmcmc_result/"
+src_py  = "../../tutorials/python/_a2_sampling_tmcmc_result/"
 
 def checkMean(js, expectedMean, tol):
     samples = js["TMCMC"]["Internal"]["Sample Parameters Database"]

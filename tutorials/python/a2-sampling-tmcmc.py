@@ -33,7 +33,7 @@ k["Variables"][0]["Bayesian"]["Prior Distribution"]["Maximum"] = +10.0
 k["TMCMC"]["Population Size"] = 5000
 
 # Setting output directory
-k["Result Directory"] = "_a2_sampling_tmcmc"
+k["Result Directory"] = "_a2_sampling_tmcmc_result"
 
 # Running Korali
 k.run()

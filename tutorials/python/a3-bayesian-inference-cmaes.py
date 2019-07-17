@@ -67,7 +67,7 @@ k["Console Output Frequency"] = 5
 k["File Output Frequency"] = 5
 
 # Setting output directory
-k["Result Directory"] = "_a3_bayesian_inference_cmaes"
+k["Result Directory"] = "_a3_bayesian_inference_cmaes_result"
 
 # Running Korali
 k.run()

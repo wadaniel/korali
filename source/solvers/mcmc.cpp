@@ -56,9 +56,14 @@ void Korali::Solver::MCMC::runGeneration()
 
 void Korali::Solver::MCMC::initialize()
 {
- 
- if (_k->_fconstraints.size() > 0) koraliError("MCMC does not run problems with constraints\n");
- 
+ // Checking for accepted problem types
+ std::string pName = _k->_js["Problem"];
+ bool acceptableProblem = false;
+ if (pName == "Direct Evaluation")  acceptableProblem = true;
+ if (pName == "Bayesian")  acceptableProblem = true;
+ if (pName == "Hierarchical Bayesian")  acceptableProblem = true;
+ if (acceptableProblem == false) koraliError("MCMC cannot solve problems of type: '%s'.", pName.c_str());
+
  // Allocating MCMC memory
  _covarianceChol.resize(_k->N*_k->N);
  std::fill(std::begin(_covarianceChol), std::end(_covarianceChol), 0.0);

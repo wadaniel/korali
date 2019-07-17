@@ -36,7 +36,12 @@ DEA::~DEA()
 
 void DEA::initialize()
 {
- if (_k->_fconstraints.size() > 0) koraliError("Differential Evolution does not run problems with constraints\n");
+ // Checking for accepted problem types
+  std::string pName = _k->_js["Problem"];
+  bool acceptableProblem = false;
+  if (pName == "Direct Evaluation")  acceptableProblem = true;
+  if (pName == "Bayesian")  acceptableProblem = true;
+  if (acceptableProblem == false) koraliError("DEA cannot solve problems of type: '%s'.", pName.c_str());
 
  // Allocating Memory
  _samplePopulation.resize(_k->N*_sampleCount);

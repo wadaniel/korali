@@ -12,8 +12,10 @@
 #include "problems/direct.h"
 #include "problems/bayesian.h"
 #include "problems/hierarchical.h"
+#include "problems/constrained.h"
 
 #include "solvers/cmaes.h"
+#include "solvers/ccmaes.h"
 #include "solvers/dea.h"
 #include "solvers/mcmc.h"
 #include "solvers/tmcmc.h"
@@ -45,7 +47,7 @@ class Engine {
  bool _modelDefined;
  bool _likelihoodDefined;
  std::function<void(Model&)> _model;
- std::vector<fcon> _fconstraints;
+ std::vector<fcon> _constraints;
  std::vector<nlohmann::json> _subProblems;
 
  size_t N; // Variable Count size_t N; // Variable Count

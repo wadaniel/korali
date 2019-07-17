@@ -120,6 +120,8 @@ void Korali::Engine::getConfiguration()
 
 void Korali::Engine::setConfiguration()
 {
+ auto js = _js;
+
  // Configure Korali Engine
  _variables.clear();
 
@@ -154,6 +156,7 @@ void Korali::Engine::setConfiguration()
  // Configure Problem
  std::string pName = consume(_js, { "Problem" }, KORALI_STRING);
  if (pName == "Direct Evaluation")  _problem = std::make_shared<Korali::Problem::Direct>(); 
+ if (pName == "Constrained Evaluation")  _problem = std::make_shared<Korali::Problem::Constrained>();
  if (pName == "Bayesian")           _problem = std::make_shared<Korali::Problem::Bayesian>();
  if (pName == "Hierarchical Bayesian") _problem = std::make_shared<Korali::Problem::Hierarchical>();
  if (_problem == nullptr) koraliError("Incorrect or undefined Problem '%s'.", pName.c_str());
@@ -182,6 +185,7 @@ void Korali::Engine::setConfiguration()
 
  std::string solverName = consume(_js, { "Solver" }, KORALI_STRING);
  if (solverName == "CMAES")  _solver = std::make_shared<Korali::Solver::CMAES>();
+ if (solverName == "CCMAES") _solver = std::make_shared<Korali::Solver::CCMAES>();
  if (solverName == "DEA")    _solver = std::make_shared<Korali::Solver::DEA>();
  if (solverName == "MCMC")   _solver = std::make_shared<Korali::Solver::MCMC>();
  if (solverName == "TMCMC")  _solver = std::make_shared<Korali::Solver::TMCMC>();
@@ -201,6 +205,9 @@ void Korali::Engine::setConfiguration()
  functionEvaluationCount = consume(_js, { "Function Evaluation Count" }, KORALI_NUMBER, "0");
  maxFunctionEvaluations = consume(_js, { "Termination Criteria", "Max Function Evaluations" }, KORALI_NUMBER, "50000000");
  _isFinished = consume(_js, { "Is Finished" }, KORALI_BOOLEAN, "false");
+
+ if (isEmpty(_js) == false) koraliError("Unrecognized Settings for Korali:\n %s \n", _js.dump(2).c_str());
+ _js = js;
 }
 
 /************************************************************************/
@@ -224,8 +231,6 @@ void Korali::Engine::run()
  _k = this; 
 
  setConfiguration();
-
- if (isEmpty(_js) == false) koraliError("Unrecognized Settings for Korali:\n %s \n", _js.dump(2).c_str());
 
  // Creating Results directory
  mkdir(_result_dir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
@@ -278,7 +283,7 @@ void Korali::Engine::run()
 
 void Korali::Engine::addConstraint(fcon fconstraint)
 {
- _fconstraints.push_back(fconstraint);
+ _constraints.push_back(fconstraint);
 }
 
 void Korali::Engine::addSubProblem(Korali::Engine& problem)

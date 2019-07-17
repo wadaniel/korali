@@ -60,27 +60,16 @@ assert_value( k["CMAES"]["Target Success Rate"], 0.1818 )
 
 assert_value( k["CMAES"]["Internal"]["Chi Number"], 0.7976190476190477 )
 
-assert_value( k["CMAES"]["Internal"]["Covariance Matrix Adaption Factor"], -1.0 )
-
 assert_value( k["CMAES"]["Internal"]["Cumulative Covariance"], 0.564218767613317 )
-
-assert_value( k["CMAES"]["Internal"]["Current Sample Count"], 32 )
-
-assert_value( k["CMAES"]["Internal"]["Current Sample Mu"], 16 )
 
 assert_value( k["CMAES"]["Internal"]["Damp Factor"], 3.892701587864561 )
 
-assert_value( k["CMAES"]["Internal"]["Effective Mu"], 9.17882891362855 )
-
 assert_value( k["CMAES"]["Internal"]["Evaluation Sign"], 1.0 )
-
-assert_value( k["CMAES"]["Internal"]["Global Success Rate"], -1.0 )
 
 assert_value( k["CMAES"]["Internal"]["Sigma"], 5.0 )
 
 assert_value( k["CMAES"]["Internal"]["Trace"], 25.0 )
 
-assert_boolean( k["CMAES"]["Internal"]["Is Viability Regime"], False )
 
 
 # Testing Termination Criteria
@@ -102,10 +91,6 @@ assert_value( k["CMAES"]["Termination Criteria"]["Min Fitness Diff Threshold"]["
 assert_value( k["CMAES"]["Termination Criteria"]["Min Standard Deviation"]["Value"], 1e-12 )
 
 assert_value( k["CMAES"]["Termination Criteria"]["Min Standard Deviation Step Factor"]["Value"], 1e-18 )
-
-assert_value( k["CMAES"]["Viability Mu"], 1 )
-
-assert_value( k["CMAES"]["Viability Sample Count"], 2 )
 
 
 # Testing Variables

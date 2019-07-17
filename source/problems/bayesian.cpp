@@ -65,16 +65,18 @@ void Korali::Problem::Bayesian::initialize()
 {
  if (_likelihood == ReferenceLikelihood)
  {
-	if (_referenceDataSize == 0) koraliError("No Reference Data set provided for the Bayesian Model.\n");
-	if (_k->_modelDefined == false) koraliError("Bayesian Problem requires defining a computational model.\n");
-	if (_statisticalVariableIndices.size() != 1) koraliError("The Bayesian model requires 1 statistical parameter.\n");
+   if (_k->_constraints.size() > 0) koraliError("Bayesian Problems do not allow constraint definitions.\n");
+   if (_referenceDataSize == 0) koraliError("No Reference Data set provided for the Bayesian Model.\n");
+   if (_k->_modelDefined == false) koraliError("Bayesian Problem requires defining a computational model.\n");
+   if (_statisticalVariableIndices.size() != 1) koraliError("The Bayesian model requires 1 statistical parameter.\n");
  }
 
  if (_likelihood == DirectLikelihood)
  {
-	if (_referenceDataSize != 0) koraliError("Reference Data is not required by the Direct Bayesian model.\n");
-	if (_k->_likelihoodDefined == false) koraliError("Direct Bayesian requires defining a likelihood function.\n");
-	if (_statisticalVariableIndices.size() != 0) koraliError("Direct Bayesian Evaluation type requires no statistical parameters.\n");
+   if (_k->_constraints.size() > 0) koraliError("Bayesian Problems do not allow constraint definitions.\n");
+   if (_referenceDataSize != 0) koraliError("Reference Data is not required by the Direct Bayesian model.\n");
+   if (_k->_likelihoodDefined == false) koraliError("Direct Bayesian requires defining a likelihood function.\n");
+   if (_statisticalVariableIndices.size() != 0) koraliError("Direct Bayesian Evaluation type requires no statistical parameters.\n");
  }
 }
 

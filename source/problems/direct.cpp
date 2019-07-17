@@ -21,8 +21,9 @@ void Korali::Problem::Direct::setConfiguration()
 
 void Korali::Problem::Direct::initialize()
 {
- if (_k->_modelDefined == false) koraliError("Direct Problem requires defining a computational model.\n");
- if (_k->_likelihoodDefined == true) koraliError("Direct Problem does not accept a likelihood function, only a computational model.\n");
+ if (_k->_constraints.size() > 0) koraliError("The Direct Evaluation Problem does not allow constraint definitions.\n");
+ if (_k->_modelDefined == false) koraliError("Direct Evaluation Problem requires defining a computational model.\n");
+ if (_k->_likelihoodDefined == true) koraliError("Direct Evaluation Problem does not accept a likelihood function, only a computational model.\n");
 }
 
 void Korali::Problem::Direct::finalize()

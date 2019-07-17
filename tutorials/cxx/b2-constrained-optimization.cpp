@@ -19,12 +19,12 @@ int main(int argc, char* argv[])
   k.addConstraint(g4);
 
   // Selecting problem type
-  k["Problem"] = "Direct Evaluation";
+  k["Problem"] = "Constrained Evaluation";
 
   // Selecting the CCMA-ES solver
-  k["Solver"]  = "CMAES";
+  k["Solver"]  = "CCMAES";
   k["Seed"]    = 5772;
-  k["CMAES"]["Objective"] = "Maximize";
+  k["CCMAES"]["Objective"] = "Maximize";
 
   // Creating 7 variables and
   // Setting up the variables CCMA-ES bounds
@@ -32,17 +32,17 @@ int main(int argc, char* argv[])
   for (int i = 0; i < nParams; i++)
   {
   k["Variables"][i]["Name"] = "X" + std::to_string(i);
-  k["Variables"][i]["CMAES"]["Lower Bound"] = -10.0;
-  k["Variables"][i]["CMAES"]["Upper Bound"] = +10.0;
+  k["Variables"][i]["CCMAES"]["Lower Bound"] = -10.0;
+  k["Variables"][i]["CCMAES"]["Upper Bound"] = +10.0;
   }
 
   // Configuring the constrained optimizer CCMA-ES
-  k["CMAES"]["Is Sigma Bounded"] = true;
-  k["CMAES"]["Sample Count"] = 32;
-  k["CMAES"]["Viability Sample Count"] = 4;
-  k["CMAES"]["Termination Criteria"]["Max Fitness"]["Enabled"] = true;
-  k["CMAES"]["Termination Criteria"]["Max Fitness"]["Value"] = -680.630057374402 - 1e-4;
-  k["CMAES"]["Termination Criteria"]["Max Generations"]["Value"] = 500;
+  k["CCMAES"]["Is Sigma Bounded"] = true;
+  k["CCMAES"]["Sample Count"] = 32;
+  k["CCMAES"]["Viability Sample Count"] = 4;
+  k["CCMAES"]["Termination Criteria"]["Max Fitness"]["Enabled"] = true;
+  k["CCMAES"]["Termination Criteria"]["Max Fitness"]["Value"] = -680.630057374402 - 1e-4;
+  k["CCMAES"]["Termination Criteria"]["Max Generations"]["Value"] = 500;
 
   // Reducing Output
   k["Termination Criteria"]["Max Generations"] = 500;

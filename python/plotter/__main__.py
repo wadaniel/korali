@@ -5,6 +5,7 @@ import json
 import argparse
 import matplotlib
 from korali.plotter.cmaes import plot_cmaes
+from korali.plotter.ccmaes import plot_ccmaes
 from korali.plotter.tmcmc import plot_tmcmc
 from korali.plotter.mcmc import plot_mcmc
 from korali.plotter.dea import plot_dea
@@ -40,6 +41,11 @@ def main(check, path, live, test, evolution):
  if ( 'CMAES' == solver):
   print("[Korali] Running CMAES Plotter...")
   plot_cmaes(path, live, test, evolution)
+  exit(0)
+  
+ if ( 'CCMAES' == solver):
+  print("[Korali] Running CcMAES Plotter...")
+  plot_ccmaes(path, live, test, evolution)
   exit(0)
 
  if ( 'DEA' == solver ):

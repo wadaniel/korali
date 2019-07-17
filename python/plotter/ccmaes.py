@@ -27,8 +27,8 @@ def hls_colors(num, h = 0.01, l=0.6, s=0.65):
     return palette
 
 
-# Plot CMAES results (read from .json files)
-def plot_cmaes(src, live=False, test=False, evolution=False):
+# Plot CCMAES results (read from .json files)
+def plot_ccmaes(src, live=False, test=False, evolution=False):
 
     live = live or evolution
 
@@ -110,7 +110,7 @@ def plot_cmaes(src, live=False, test=False, evolution=False):
                     if (evolution == False):
                         fig, ax = plt.subplots(2,2,num='{0} live diagnostics'.format(solverName), figsize=(8,8))
                     else:
-                        fig, ax = plt.subplots(1,1,num='CMAES Evolution: {0}'.format(src), figsize=(8,8))
+                        fig, ax = plt.subplots(1,1,num='CCMAES Evolution: {0}'.format(src), figsize=(8,8))
 
                     fig.show()
 
@@ -155,7 +155,7 @@ def plot_cmaes(src, live=False, test=False, evolution=False):
                         draw_figure(fig, ax, src, gen, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, axis, ssdev, colors, names, live)
                     else:
                         plt.clf()
-                        fig, ax = plt.subplots(1,1,num='CMAES Evolution: {0}'.format(src), figsize=(8,8))
+                        fig, ax = plt.subplots(1,1,num='CCMAES Evolution: {0}'.format(src), figsize=(8,8))
                         draw_figure_evolution(fig, ax, src, gen, sigma, cov, mu_x, mu_y, samples_x, samples_y, ccmaes, normal, via, X, Y, Z)
 
                     plt_pause_light(0.05)
@@ -213,7 +213,7 @@ def draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, cond, sigma, ps
         ax[1,1].plot(numeval, ssdev[i], color = colors[i], label=names[i])
 
 
-# Plot CMAES samples, proposals, and mean (only 2D, read from .json files)
+# Plot CCMAES samples, proposals, and mean (only 2D, read from .json files)
 def draw_figure_evolution(fig, ax, src, idx, sigma, cov, mu_x, mu_y, samples_x, samples_y, ccmaes, normal, via, X, Y, Z):
  
     plt.suptitle( 'Generation {0}'.format(str(idx).zfill(5)),\

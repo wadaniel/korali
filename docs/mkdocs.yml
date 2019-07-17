@@ -25,6 +25,7 @@ nav:
       - Basics: usage/basics.md
       - Problems:
           - Direct Evaluation: usage/problems/direct.md
+          - Constrained Evaluation: usage/problems/direct.md
           - Bayesian:
             - Direct Likelihood: usage/problems/bayesian/direct.md
             - Reference Likelihood: usage/problems/bayesian/reference.md

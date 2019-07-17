@@ -36,6 +36,8 @@ DEA::~DEA()
 
 void DEA::initialize()
 {
+ if (_k->_fconstraints.size() > 0) koraliError("Differential Evolution does not run problems with constraints\n");
+
  // Allocating Memory
  _samplePopulation.resize(_k->N*_sampleCount);
  _sampleCandidates.resize(_k->N*_sampleCount);

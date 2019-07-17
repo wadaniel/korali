@@ -29,6 +29,9 @@ Korali::Solver::TMCMC::~TMCMC()
 
 void Korali::Solver::TMCMC::initialize()
 {
+ 
+ if (_k->_fconstraints.size() > 0) koraliError("TMCMC does not run problems with constraints\n");
+ 
  // Allocating TMCMC memory
  _covarianceMatrix.resize(_k->N*_k->N);
  _meanTheta.resize(_k->N);

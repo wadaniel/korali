@@ -171,9 +171,6 @@ void Korali::Engine::setConfiguration()
  if (N == 0) koraliError("No variables have been defined.\n");
 
  // Configure Conduit
-
- int rankCount = 1;
-
  std::string conduitType =  consume(_js, { "Conduit", "Type" }, KORALI_STRING, "Linked");
 
  if (conduitType == "Linked") _conduit = std::make_shared<Korali::Conduit::Linked>();

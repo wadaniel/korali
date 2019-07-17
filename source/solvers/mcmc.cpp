@@ -56,6 +56,9 @@ void Korali::Solver::MCMC::runGeneration()
 
 void Korali::Solver::MCMC::initialize()
 {
+ 
+ if (_k->_fconstraints.size() > 0) koraliError("MCMC does not run problems with constraints\n");
+ 
  // Allocating MCMC memory
  _covarianceChol.resize(_k->N*_k->N);
  std::fill(std::begin(_covarianceChol), std::end(_covarianceChol), 0.0);

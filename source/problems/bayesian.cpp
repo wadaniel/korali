@@ -36,8 +36,9 @@ void Korali::Problem::Bayesian::setConfiguration()
   {
     bool foundLikelihoodModel = false;
     std::string likelihoodModelString = consume(_k->_js, { "Bayesian", "Likelihood", "Model" }, KORALI_STRING, "Undefined");
-    if (likelihoodModelString == "Additive Gaussian")          { _likelihoodModel = AdditiveGaussian;       foundLikelihoodModel = true; }
-    if (likelihoodModelString == "Multiplicative Gaussian")    { _likelihoodModel = MultiplicativeGaussian; foundLikelihoodModel = true; }
+    if (likelihoodModelString == "Additive Gaussian")            { _likelihoodModel = AdditiveGaussian;           foundLikelihoodModel = true; }
+    if (likelihoodModelString == "Multiplicative Gaussian")      { _likelihoodModel = MultiplicativeGaussian;     foundLikelihoodModel = true; }
+    if (likelihoodModelString == "Multiplicative Gaussian Data") { _likelihoodModel = MultiplicativeGaussianData; foundLikelihoodModel = true; }
     if (foundLikelihoodModel  == false) { koraliError("Incorrect or no Likelihood Model selected: %s.\n", likelihoodModelString.c_str()); exit(-1); }
   }
 
@@ -100,8 +101,9 @@ double Korali::Problem::Bayesian::evaluateFitness(Korali::Model& data)
    if (data._results.size() != _referenceDataSize)
   	 koraliError("Reference Likelihood requires a %lu-sized result array. Provided: %lu.\n", _referenceDataSize, data._results.size());
 
-   if (_likelihoodModel == AdditiveGaussian)       fitness = likelihoodGaussianAdditive(data);
-   if (_likelihoodModel == MultiplicativeGaussian) fitness = likelihoodGaussianMultiplicative(data);
+   if (_likelihoodModel == AdditiveGaussian)           fitness = likelihoodGaussianAdditive(data);
+   if (_likelihoodModel == MultiplicativeGaussian)     fitness = likelihoodGaussianMultiplicative(data);
+   if (_likelihoodModel == MultiplicativeGaussianData) fitness = likelihoodGaussianMultiplicativeData(data);
  }
 
  if (_likelihood == DirectLikelihood)
@@ -147,6 +149,24 @@ double Korali::Problem::Bayesian::likelihoodGaussianMultiplicative(Korali::Model
   {
    double diff   = _referenceData[i] - data._results[i];
    double denom  = sigma*data._results[i];
+   ssn += diff*diff / (denom*denom);
+   logSigma += log(denom);
+  }
+
+  fitness = -0.5*( _referenceDataSize*log(2*M_PI) + ssn) - _referenceDataSize*logSigma;
+  return fitness;
+}
+
+double Korali::Problem::Bayesian::likelihoodGaussianMultiplicativeData(Korali::Model& data)
+{
+  double sigma    = data._statisticalVariables[0];
+  double ssn      = 0.0;
+  double fitness  = 0.0;
+  double logSigma = 0.0;
+  for(size_t i = 0; i < _referenceDataSize; i++)
+  {
+   double diff   = _referenceData[i] - data._results[i];
+   double denom  = sigma*_referenceData[i];
    ssn += diff*diff / (denom*denom);
    logSigma += log(denom);
   }

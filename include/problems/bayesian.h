@@ -6,7 +6,7 @@
 namespace Korali { namespace Problem {
 
 enum likelihoodType  {DirectLikelihood, ReferenceLikelihood};
-enum likelihoodModel {AdditiveGaussian, MultiplicativeGaussian};
+enum likelihoodModel {AdditiveGaussian, MultiplicativeGaussian, MultiplicativeGaussianData};
 
 class Bayesian : public Base
 {
@@ -37,6 +37,8 @@ class Bayesian : public Base
 
     double likelihoodGaussianAdditive(Korali::Model& data);
     double likelihoodGaussianMultiplicative(Korali::Model& data);
+    double likelihoodGaussianMultiplicativeData(Korali::Model& data);
+
 };
 
 } } // namespace Korali::Problem

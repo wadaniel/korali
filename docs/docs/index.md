@@ -11,10 +11,17 @@ Latest Release: 28/06/2019 - [Korali v1.0.0](https://github.com/cselab/korali.gi
 
 ### **What Korali Does**
 
-??? abstract "Optimization (Constrained and Unconstrained)"
+??? abstract "Optimization"
 	Given any objective function $f:\mathbb{R}^N\rightarrow\mathbb{R}$ Korali can find its minima or maxima:
 
 	$$\vartheta^\star = \mathop{\arg\min}\limits_{\vartheta}  f(\vartheta)$$
+
+??? abstract "Constrained Optimization"
+  Given any objective function $f:\mathbb{R}^N\rightarrow\mathbb{R}$ Korali can find its minima or maxima:
+
+  $$\vartheta^\star = \mathop{\arg\min}\limits_{\vartheta}  f(\vartheta)$$
+
+  Given constraints...
 
 ??? abstract "Distribution Sampling"
 	Given any probability distribution of type $f:\mathbb{R}^N\rightarrow\mathbb{R}$, Korali can draw samples to determine its distribution: 

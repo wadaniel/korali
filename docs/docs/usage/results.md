@@ -82,8 +82,8 @@ k.loadConfig('_korali_result/s00005.json')
 k.setModel(myModel)
 
 #Changing its conduit to run un parallel
-k[Conduit] = "Distributed"
-k["Distributed"]["Ranks Per Team"] = 16
+k["Conduit"] = "Linked"
+k["Conduit"]["Ranks Per Team"] = 16
 
 k.run()
 ```

@@ -54,7 +54,7 @@ k = korali.Engine()
 
 # Setting ranks per team to 1.
 # This is not really necessary since the default value is 1.
-k["Distributed"]["Ranks Per Team"] = 1
+k["Conduit"]["Ranks Per Team"] = 1
 
 k.run()
 ```
@@ -89,7 +89,7 @@ def myModel(data):
 k.setModel(myModel);
 
 # Setting ranks per team to M.
-k["Distributed"]["Ranks Per Team"] = M
+k["Conduit"]["Ranks Per Team"] = M
 
 k.run()
 ```
@@ -116,7 +116,7 @@ k = korali.Engine()
 k.setModel(myModel);
 
 # Setting ranks per team to M.
-k["Distributed"]["Ranks Per Team"] = M
+k["Conduit"]["Ranks Per Team"] = M
 
 k.run()
 ```

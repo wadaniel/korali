@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
   printf("\n\nRestarting now:\n\n");
 
   // Now we loadState() to resume the same experiment from generation 5.
-  k.loadState("_b1_restart_tmcmc_result/s00003.json");
+  k.loadState("_b1_restart_tmcmc_result/s00001.json");
 
   k.run();
 }

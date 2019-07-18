@@ -45,6 +45,7 @@ int main(int argc, char* argv[])
 
  k["Solver"] = "CMAES";
  k["CMAES"]["Sample Count"] = 32;
+ k["Conduit"]["MPI"]["Enabled"] = true;
 
  k.setModel([](Korali::Model& d) { heat2DSolver(d.getVariables(), d.getResults()); });
 

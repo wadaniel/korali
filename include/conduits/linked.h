@@ -21,6 +21,7 @@ class Linked : public Base
  int _teamId;
  int _localRankId;
 
+ bool _useMPI;
  std::vector<size_t> _teamSampleId;
  std::vector<bool> _teamBusy;
  std::vector<double> _teamFitness;

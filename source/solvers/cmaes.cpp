@@ -18,6 +18,8 @@ CMAES::CMAES()
  jsGaussian["Seed"] = _k->_seed++;
  _gaussianGenerator = new Variable();
  _gaussianGenerator->setDistribution(jsGaussian);
+
+ _geometricGenerator = nullptr;
 }
 
 CMAES::~CMAES()
@@ -36,6 +38,7 @@ void CMAES::initialize()
  if (acceptableProblem == false) koraliError("CMAES cannot solve problems of type: '%s'.", pName.c_str());
 
  _chiN = sqrt((double) _k->N) * (1. - 1./(4.*_k->N) + 1./(21.*_k->N*_k->N));
+ _chiS = sqrt((double) _k->N) * (1. - 1./(4.*_k->N) + 1./(21.*_k->N*_k->N));
 
  // Allocating Memory
  _samplePopulation.resize(_k->N*_sampleCount);
@@ -63,6 +66,11 @@ void CMAES::initialize()
 
  _Z.resize(_sampleCount*_k->N);
  _BDZ.resize(_sampleCount*_k->N);
+
+ _granularity.resize(_k->N);
+ _maskingMatrix.resize(_k->N);
+ _maskingMatrixSigma.resize(_k->N);
+ _discreteMutations.resize(_k->N*_sampleCount);
 
  if (_objective == "Maximize")     _evaluationSign = 1.0;
  else if(_objective == "Minimize") _evaluationSign = -1.0;
@@ -95,6 +103,28 @@ void CMAES::initialize()
             _variableSettings[i].lowerBound,
             _variableSettings[i].upperBound);
    _mean[i] = _previousMean[i] = _variableSettings[i].initialMean;
+ }
+ 
+ /* set _granularity for discrete variables */
+ size_t numDiscretes = 0;
+ for (size_t i = 0; i < _k->N; ++i)
+ {
+   if( (_variableSettings[i].discrete == true) && _variableSettings[i].granularity == 0.0) 
+       koraliError("Granularity not set for discrete variable \'%s\'.", _k->_variables[i]->_name.c_str());
+   if (_variableSettings[i].discrete == true) numDiscretes++;
+    _granularity[i] = _variableSettings[i].granularity;
+ }
+
+ _hasDiscreteVariables = (numDiscretes > 0);
+ 
+ if (_hasDiscreteVariables)
+ {
+   auto jsGeometric = nlohmann::json();
+   jsGeometric["Type"] = "Geometric";
+   jsGeometric["Success Probability"] = std::pow(0.7, 1.0/numDiscretes);
+   jsGeometric["Seed"] = _k->_seed++;
+   _geometricGenerator = std::make_shared<Variable>();
+   _geometricGenerator->setDistribution(jsGeometric);
  }
 
 }
@@ -217,6 +247,7 @@ void CMAES::processSample(size_t sampleId, double fitness)
  _finishedSampleCount++;
 }
 
+
 bool CMAES::isFeasible(size_t sampleIdx) const
 {
  for (size_t d = 0; d < _k->N; ++d)
@@ -336,16 +367,8 @@ void CMAES::updateDistribution()
  /* update of C  */
  adaptC(hsig);
 
- double sigma_upper = sqrt(_trace/_k->N);
- // update _sigma & viability boundaries
-  // _sigma *= exp(((sqrt(_rgpsL2Norm)/_chiN)-1.)*_sigmaCumulationFactor/_dampFactor) (orig, alternative)
-  _sigma *= exp(std::min(1.0, ((sqrt(_conjugateEvolutionPathL2Norm)/_chiN)-1.)*_sigmaCumulationFactor/_dampFactor));
-
- if(_sigma > sigma_upper)
-     koraliLog(KORALI_DETAILED, "Sigma exceeding inital value of _sigma (%f > %f), increase Initial Standard Deviation of variables.\n", _sigma, sigma_upper);
- 
- /* upper bound for _sigma */
- if( _isSigmaBounded && (_sigma > sigma_upper) ) _sigma = sigma_upper;
+ /* update of sigma */
+ adaptSigma();
 
  /* numerical error management */
 
@@ -405,6 +428,61 @@ void CMAES::adaptC(int hsig)
   }
  } /* if ccov... */
 }
+
+
+void CMAES::adaptSigma()
+{
+ double sigma_upper = sqrt(_trace/_k->N);
+ 
+ if(_hasDiscreteVariables)
+ {
+   double pathL2 = 0.0;
+   for(size_t d = 0; d < _k->N; ++d) pathL2 += _maskingMatrixSigma[d]*_conjugateEvolutionPath[d]*_conjugateEvolutionPath[d];
+   _sigma *= exp(_sigmaCumulationFactor/_dampFactor*((sqrt(pathL2)/_chiS)-1.));
+ }
+ else
+ {
+   // _sigma *= exp(min(1.0, _sigmaCumulationFactor/_dampFactor*((sqrt(_conjugateEvolutionPathL2Norm)/_chiN)-1.))); (alternative)
+   _sigma *= exp(_sigmaCumulationFactor/_dampFactor*((sqrt(_conjugateEvolutionPathL2Norm)/_chiN)-1.));
+ }
+ if(_sigma > sigma_upper)
+     koraliLog(KORALI_DETAILED, "Sigma exceeding inital value of _sigma (%f > %f), increase Initial Standard Deviation of variables.\n", _sigma, sigma_upper);
+ 
+ /* upper bound for _sigma */
+ if( _isSigmaBounded && (_sigma > sigma_upper) ) _sigma = sigma_upper;
+}
+
+
+void CMAES::updateDiscreteMutationMatrix()
+{
+  // implemented based on 'A CMA-ES for Mixed-Integer Nonlinear Optimization' by
+  // Hansen2011
+  
+  size_t entries = _k->N;
+  std::fill( std::begin(_maskingMatrixSigma), std::end(_maskingMatrixSigma), 1.0);
+  for(size_t d = 0; d < _k->N; ++d) if(_sigma*_axisD[d]/std::sqrt(_sigmaCumulationFactor) < 0.2*_granularity[d]) { _maskingMatrixSigma[d] = 0.0; entries--; }
+  _chiS = sqrt((double) entries) * (1. - 1./(4.*entries) + 1./(21.*entries*entries));
+  
+  size_t nmask = 0;
+  std::fill( std::begin(_maskingMatrix), std::end(_maskingMatrix), 0.0);
+  for(size_t d = 0; d < _k->N; ++d) if(2.0*_sigma*_axisD[d] < _granularity[d]) { _maskingMatrix[d] = 1.0; nmask++; }
+ 
+  double mutation;
+  size_t numDiscreteMutationSamples = std::min( _sampleCount/10.0 + nmask + 1.0, _sampleCount/2.0 - 1.0);
+  
+  std::fill( std::begin(_discreteMutations), std::end(_discreteMutations), 0);
+  for(size_t i = 0; i < numDiscreteMutationSamples; ++i) for(size_t d = 0; d < _k->N; ++d) if(_maskingMatrix[d] == 1.0)
+  {
+    mutation = 1.0;
+    mutation += _geometricGenerator->getRandomNumber();
+    mutation *= _granularity[d];
+
+    if( _gaussianGenerator->getRandomNumber() > 0.0 ) mutation*=-1.0;
+    
+    _discreteMutations[i*_k->N+d] = mutation;
+  }
+}
+
 
 bool CMAES::checkTermination()
 {

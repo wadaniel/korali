@@ -46,10 +46,10 @@ jobs:
           command: cd docs; ./deploy.sh
 
       - store_artifacts:
-          paths: ~/korali/install.log
+          path: ~/korali/install.log
 
       - store_artifacts:
-          paths: ~/korali/tests/test.log
+          path: ~/korali/tests/test.log
 
 
   build_macos:
@@ -82,8 +82,8 @@ jobs:
           command: cd tests; ./run_all_tests.sh
 
       - store_artifacts:
-           paths: ~/korali/install.log
+           path: ~/korali/install.log
 
       - store_artifacts:
-           paths: ~/korali/tests/test.log
+           path: ~/korali/tests/test.log
 

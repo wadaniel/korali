@@ -798,7 +798,7 @@ Flag indicating if at least one of the variables is discrete.
 bool _hasDiscreteVariables;
 
 /******************************************************************************
-Setting Name: Is Eigensystem Updated
+Setting Name: Granularity
 Type: Internal Attribute
 Default Value:
 Default Enabled:

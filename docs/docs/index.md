@@ -12,19 +12,15 @@ Latest Release: 28/06/2019 - [Korali v1.0.0](https://github.com/cselab/korali.gi
 ### **What Korali Does**
 
 ??? abstract "Optimization"
-	<span style="font-size: .84rem !important;">
 	Given any objective function $f:\mathbb{R}^N\rightarrow\mathbb{R}$ Korali can find its minima or maxima:
 
 	$$\vartheta^\star = \mathop{\arg\min}\limits_{\vartheta}  f(\vartheta)$$
-	
-	</span>
-
 ??? abstract "Constrained Optimization"
-  Given any objective function $f:\mathbb{R}^N\rightarrow\mathbb{R}$ Korali can find its minima or maxima:
+	Given any objective function $f:\mathbb{R}^N\rightarrow\mathbb{R}$ Korali can find its minima or maxima:
 
-  $$\vartheta^\star = \mathop{\arg\min}\limits_{\vartheta}  f(\vartheta)$$
+	$$\vartheta^\star = \mathop{\arg\min}\limits_{\vartheta}  f(\vartheta)$$
 
-  Given constraints...
+	Given constraints...
 
 ??? abstract "Sampling"
 	Given any probability distribution of type $f:\mathbb{R}^N\rightarrow\mathbb{R}$, Korali can draw samples to determine its distribution: 
@@ -45,17 +41,17 @@ Latest Release: 28/06/2019 - [Korali v1.0.0](https://github.com/cselab/korali.gi
 	$$\vartheta^{(k)} \sim p(\vartheta | d).$$
 	
 ??? abstract "Hierarchical Bayesian"
-  Given a set of data $d$, the output of a computational model $f(x;\vartheta)$, a likelihood function $p(d|\vartheta)$, and a prior probability density $p(\vartheta)$ Korali will build the posterior distribution:
+	Given a set of data $d$, the output of a computational model $f(x;\vartheta)$, a likelihood function $p(d|\vartheta)$, and a prior probability density $p(\vartheta)$ Korali will build the posterior distribution:
 
-  $$ p(\vartheta | d)  =  \frac{p(d | \vartheta) p(\vartheta)}{p(d)} $$
+	$$ p(\vartheta | d)  =  \frac{p(d | \vartheta) p(\vartheta)}{p(d)} $$
 
-  Allowing users to compute the maximum a posteriori estimate:
+	Allowing users to compute the maximum a posteriori estimate:
 
-  $$\vartheta^\star = \mathop{\arg\min}\limits_{\vartheta}  p(\vartheta | d) $$
+	$$\vartheta^\star = \mathop{\arg\min}\limits_{\vartheta}  p(\vartheta | d) $$
+	
+	Or sample its posterior distribution:
 
-  Or sample its posterior distribution:
-
-  $$\vartheta^{(k)} \sim p(\vartheta | d).$$
+	$$\vartheta^{(k)} \sim p(\vartheta | d).$$
 
 ### **Design Principles**
 

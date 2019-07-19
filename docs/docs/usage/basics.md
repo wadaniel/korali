@@ -109,15 +109,27 @@ A Korali application encapsulates the configuration necessary to run the Korali 
 
 A Problem describes the objective function to be optimized/sampled from. We currently support these problem types:
 
-- [Direct Evaluation](../problems/direct)
-- [Bayesian - Direct Likelihood](../problems/bayesian/direct)
-- [Bayesian - Reference Likelihood](../problems/bayesian/reference)
+- [Optimization](../problems/optimization)
+- [Constrained Optimization](../problems/constrained)
+- [Sampling](../problems/bayesian/sampling)
+- [Bayesian Inference](../problems/bayesian)
+- [Hierarchical Bayesian](../problems/hierarchical)
 
-### Step 2) Define Solver
+###Step 2) Define Variables
+
+A Korali Problem describes the sampling space of the physical or real-world phenomenon to analyze. The number of variables defined by the user represents a dimension of the problem. Variables are created by simply adding their name to the problem configuration:
+
+```python
+# Example: Defining two variables
+k["Variables"][0]["Name"] = "Thermal Conductivity"
+k["Variables"][1]["Name"] = "Heat Source Position"
+```
+
+Variable definitions require additional parameters depending on which problem and solver types have been selected. The syntax for specifying these parameters is explained in each solver/problem page.
+
+### Step 3) Define Solver
 
 The Solver module generates samples for evaluation, performs the statistical analysis, and outputs the results for the problem described in the Korali application. Korali currently provides two types of solvers: *optimizers* and *samplers*:
-
-+ **Optimizers** find the global maximum or minimum of the described problem. The detailed configuration of the currently implemented optimizers can be found below:
 
 ??? abstract "CMA-ES"
 
@@ -139,8 +151,6 @@ The Solver module generates samples for evaluation, performs the statistical ana
 
 	[Click here for detailed information on Differential Evolution](../solvers/de)
 
-+ **Samplers** map the probability distribution of samples in the variable space of the described problem. The detailed configuration of the currently implemented optimizers can be found below:
-
 ??? abstract "Markov-Chain Monte-Carlo"
 
     To select the Markov-Chain Monte-Carlo solver, use the following syntax:
@@ -160,21 +170,6 @@ The Solver module generates samples for evaluation, performs the statistical ana
 	```
 
 	[Click here for detailed information on TMCMC.](../solvers/tmcmc)
-
-
-###Step 3) Define Variables
-
-A Korali Problem describes the sampling space of the physical or real-world phenomenon to analyze. The number of variables defined by the user represents a dimension of the problem. Variables are created by simply adding their name to the problem configuration:
-
-!!! example
-
-	```python
-	# Example: Defining two variables
-	k["Variables"][0]["Name"] = "Thermal Conductivity"
-	k["Variables"][1]["Name"] = "Heat Source Position"
-	```
-
-Variable definitions require additional parameters depending on which problem and solver types have been selected. The syntax for specifying these parameters is explained in each solver/problem page.
 
 ### Step 4) Define Conduit
 
@@ -210,9 +205,17 @@ During execution, the Korali engine will evaluate many *samples*. A Korali sampl
 
 Korali provides several ways to specify external code/applications to provide results to the Korali engine:
 
-- [Simple](../models/simple)
-- [Rerefence](../models/reference)
-- [Constraint](../models/constraint)
+??? abstract "Direct"
+
+   	[Click here for detailed information on Direct models.](../models/direct)
+
+??? abstract "Reference"
+
+   	[Click here for detailed information on Reference models.](../models/reference)	
+
+??? abstract "Constraint"
+
+   	[Click here for detailed information on Constraint models.](../models/constraint)	
 
 ## Running a Korali Application
 

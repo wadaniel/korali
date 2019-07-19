@@ -2,7 +2,6 @@ site_name: Korali
 #repo_name: 'cselab/korali'
 #repo_url: 'https://github.com/cselab/korali'
 edit_uri: ''
-
 nav:
   - Home: index.md
   - Installation:
@@ -24,20 +23,17 @@ nav:
   - User Manual:
       - Basics: usage/basics.md
       - Problems:
-          - Direct Evaluation: usage/problems/direct.md
-          - Constrained Evaluation: usage/problems/constrained.md
-          - Bayesian:
-            - Direct Likelihood: usage/problems/bayesian/direct.md
-            - Reference Likelihood: usage/problems/bayesian/reference.md
+          - Optimization: usage/problems/optimization.md
+          - Constrained Optimization: usage/problems/constrained.md
+          - Sampling: usage/problems/sampling.md
+          - Bayesian Inference: usage/problems/bayesian.md
+          - Hierarchical Bayesian: usage/problems/hierarchical.md
       - Solvers:
-          - Optimizers:
-            - CMA-ES: usage/solvers/cmaes.md
-            - DEA: usage/solvers/dea.md
-          - Constrained Optimizers:
-            - CCMA-ES: usage/solvers/ccmaes.md
-          - Samplers:
-            - MCMC: usage/solvers/mcmc.md
-            - TMCMC: usage/solvers/tmcmc.md
+          - CMA-ES: usage/solvers/cmaes.md
+          - DEA: usage/solvers/dea.md
+          - CCMA-ES: usage/solvers/ccmaes.md
+          - MCMC: usage/solvers/mcmc.md
+          - TMCMC: usage/solvers/tmcmc.md
       - Conduits:
           - Linked: usage/conduits/linked.md
           - External: usage/conduits/external.md
@@ -51,7 +47,6 @@ nav:
           - Resume Execution: usage/results/#resume-execution
   - Publications: publications.md
   - About Us: aboutus.md
-
 theme:
     name: material
     palette:
@@ -62,9 +57,7 @@ theme:
         code: 'Ubuntu Mono'
     logo: 'images/logo.png'
     favicon: 'images/favicon.ico'
-
 # Got logo from https://icons8.com/icon/3036/coral
-
 markdown_extensions:
   - pymdownx.arithmatex
   - pymdownx.details
@@ -72,10 +65,8 @@ markdown_extensions:
   - attr_list
   - admonition
   - codehilite
-
 extra_css:
     - style.css
-
 extra_javascript:
   - 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML'
   

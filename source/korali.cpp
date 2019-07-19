@@ -38,6 +38,7 @@ PYBIND11_MODULE(libkorali, m) {
  .def("__setitem__", pybind11::overload_cast<const std::string&, const int&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
  .def("__setitem__", pybind11::overload_cast<const std::string&, const bool&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
  .def("run", &Korali::Engine::run)
+ .def("dry", &Korali::Engine::dry)
  .def("setModel",      &Korali::Engine::setModel, pybind11::return_value_policy::reference)
  .def("setLikelihood", &Korali::Engine::setLikelihood, pybind11::return_value_policy::reference)
  .def("addConstraint", &Korali::Engine::addConstraint, pybind11::return_value_policy::reference)
@@ -226,7 +227,7 @@ void Korali::Engine::setLikelihood(std::function<void(Korali::Model&)> likelihoo
  _likelihoodDefined = true;
 }
 
-void Korali::Engine::run()
+void Korali::Engine::run(bool isDryRun)
 {
  _k = this; 
 
@@ -242,6 +243,7 @@ void Korali::Engine::run()
  _problem->initialize();
  if (currentGeneration == 0) _solver->initialize();
 
+
  if (_conduit->isRoot())
  {
   saveState(currentGeneration);
@@ -250,6 +252,7 @@ void Korali::Engine::run()
 
   auto startTime = std::chrono::system_clock::now();
 
+  if (isDryRun == false)
   while(checkTermination() == false)
   {
    auto t0 = std::chrono::system_clock::now();
@@ -263,7 +266,6 @@ void Korali::Engine::run()
 
    if (currentGeneration % consoleOutputFrequency == 0) _solver->printGeneration();
    if (currentGeneration % fileOutputFrequency    == 0) saveState(currentGeneration);
-
   }
 
   auto endTime = std::chrono::system_clock::now();

@@ -71,8 +71,12 @@ class Engine {
  Engine();
  ~Engine();
 
- void run(bool isDryRun = false);
- void dry() { run(true); }
+
+ // Start functions
+ void start(bool isDryRun);
+ void run() { start(false); }
+ void dry() { start(true);  }
+
  void setModel(std::function<void(Korali::Model&)> model);
  void setLikelihood(std::function<void(Korali::Model&)> model);
  void addConstraint(fcon fconstraint);

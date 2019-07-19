@@ -227,7 +227,7 @@ void Korali::Engine::setLikelihood(std::function<void(Korali::Model&)> likelihoo
  _likelihoodDefined = true;
 }
 
-void Korali::Engine::run(bool isDryRun)
+void Korali::Engine::start(bool isDryRun)
 {
  _k = this; 
 

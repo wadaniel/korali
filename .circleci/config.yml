@@ -45,6 +45,13 @@ jobs:
           name: deploy webpage
           command: cd docs; ./deploy.sh
 
+      - store_artifacts:
+        path: ~/korali/install.log
+
+      - store_artifacts:
+        path: ~/korali/tests/test.log
+
+
   build_macos:
     macos:
       xcode: "10.0.0"
@@ -73,4 +80,10 @@ jobs:
       - run:
           name: run tests
           command: cd tests; ./run_all_tests.sh
+
+      - store_artifacts:
+        path: ~/korali/install.log
+
+      - store_artifacts:
+        path: ~/korali/tests/test.log
 

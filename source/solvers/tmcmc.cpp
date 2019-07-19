@@ -32,7 +32,6 @@ void Korali::Solver::TMCMC::initialize()
  // Checking for accepted problem types
  std::string pName = _k->_js["Problem"];
  bool acceptableProblem = false;
- if (pName == "Direct Evaluation")  acceptableProblem = true;
  if (pName == "Bayesian")  acceptableProblem = true;
  if (pName == "Hierarchical Bayesian")  acceptableProblem = true;
  if (acceptableProblem == false) koraliError("TMCMC cannot solve problems of type: '%s'.", pName.c_str());

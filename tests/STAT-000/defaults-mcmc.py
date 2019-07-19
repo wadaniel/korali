@@ -9,7 +9,7 @@ k = korali.initialize()
 
 k.setModel(evaluateModel)
 
-k["Problem"] = "Direct Evaluation"
+k["Problem"] = "Sampling"
 k["Solver"]  = "MCMC"
 
 k["Variables"][0]["Name"] = "X"

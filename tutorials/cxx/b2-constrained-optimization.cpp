@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
   k.addConstraint(g4);
 
   // Selecting problem type
-  k["Problem"] = "Constrained Evaluation";
+  k["Problem"] = "Constrained Optimization";
 
   // Selecting the CCMA-ES solver
   k["Solver"]  = "CCMAES";

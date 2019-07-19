@@ -156,9 +156,10 @@ void Korali::Engine::setConfiguration()
 
  // Configure Problem
  std::string pName = consume(_js, { "Problem" }, KORALI_STRING);
- if (pName == "Direct Evaluation")  _problem = std::make_shared<Korali::Problem::Direct>(); 
- if (pName == "Constrained Evaluation")  _problem = std::make_shared<Korali::Problem::Constrained>();
- if (pName == "Bayesian")           _problem = std::make_shared<Korali::Problem::Bayesian>();
+ if (pName == "Optimization")  _problem = std::make_shared<Korali::Problem::Optimization>();
+ if (pName == "Constrained Optimization")  _problem = std::make_shared<Korali::Problem::Constrained>();
+ if (pName == "Sampling") _problem = std::make_shared<Korali::Problem::Sampling>();
+ if (pName == "Bayesian") _problem = std::make_shared<Korali::Problem::Bayesian>();
  if (pName == "Hierarchical Bayesian") _problem = std::make_shared<Korali::Problem::Hierarchical>();
  if (_problem == nullptr) koraliError("Incorrect or undefined Problem '%s'.", pName.c_str());
 

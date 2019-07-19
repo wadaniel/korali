@@ -12,7 +12,7 @@ int main(int argc, char* argv[])
   auto k = Korali::Engine();
   k.setModel([](Korali::Model& d) { evaluateModel(d.getVariables(), d.getResults()); });
 
-  k["Problem"] = "Direct Evaluation";
+  k["Problem"] = "Optimization";
   k["Solver"]  = "CMAES";
 
   k["Variables"][0]["Name"] = "X";

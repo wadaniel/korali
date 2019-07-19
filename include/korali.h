@@ -9,7 +9,8 @@
 #include "mpi.h"
 #endif
 
-#include "problems/direct.h"
+#include "problems/optimization.h"
+#include "problems/sampling.h"
 #include "problems/bayesian.h"
 #include "problems/hierarchical.h"
 #include "problems/constrained.h"

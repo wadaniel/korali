@@ -1,11 +1,11 @@
-#ifndef _KORALI_PROBLEM_DIRECT_H_
-#define _KORALI_PROBLEM_DIRECT_H_
+#ifndef _KORALI_PROBLEM_OPTIMIZATION_H_
+#define _KORALI_PROBLEM_OPTIMIZATION_H_
 
 #include "problems/base.h"
 
 namespace Korali { namespace Problem {
 
-class Direct : public Base
+class Optimization : public Base
 {
  public:
 
@@ -23,4 +23,4 @@ class Direct : public Base
 
 } } // namespace Korali::Problem
 
-#endif // _KORALI_PROBLEM_DIRECT_H_
+#endif // _KORALI_PROBLEM_OPTIMIZATION_H_

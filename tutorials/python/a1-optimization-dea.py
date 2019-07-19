@@ -17,7 +17,7 @@ k = korali.initialize()
 k.setModel(evaluateModel)
 
 # Selecting problem and solver types.
-k["Problem"] = "Direct Evaluation"
+k["Problem"] = "Optimization"
 k["Solver"]  = "DEA"
 k["Seed"]    = 31415
 

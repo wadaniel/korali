@@ -13,7 +13,7 @@ def evaluate(x):
 k = korali.Engine()
 k["Verbosity"] = "Normal";
 
-k["Problem"] = "Direct Evaluation";
+k["Problem"] = "Optimization";
 for i in range(4):
   k["Variables"][i]["Name"] = "X" + str(i)
 

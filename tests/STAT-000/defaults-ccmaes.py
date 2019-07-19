@@ -11,7 +11,7 @@ k = korali.initialize()
 k.setModel(evaluateModel)
 k.addConstraint( g1 )
 
-k["Problem"] = "Constrained Evaluation"
+k["Problem"] = "Constrained Optimization"
 k["Solver"]  = "CCMAES" 
 
 k["Variables"][0]["Name"] = "X";

@@ -12,7 +12,7 @@ int main(int argc, char* argv[])
  k.setModel([](Korali::Model& d) { evaluateModel(d.getVariables(), d.getResults()); });
 
  // Selecting problem and solver types.
- k["Problem"] = "Direct Evaluation";
+ k["Problem"] = "Sampling";
  k["Solver"]  = "MCMC";
  k["Seed"]    = 2718;
 

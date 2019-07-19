@@ -211,6 +211,28 @@ Covariance matrix updates will be optimized for diagonal matrices.
 bool _isDiag;
 
 /******************************************************************************
+Setting Name: Viability Sample Count
+Type: Solver Setting
+Default Value: 2
+Default Enabled:
+Description:
+Specifies the number of samples per generation during the viability
+regime, i.e. during the search for a mean vector not violating the constraints.
+******************************************************************************/
+size_t _viabilitySampleCount;
+
+/******************************************************************************
+Setting Name: Viability Mu
+Type: Solver Setting
+Default Value: 1
+Default Enabled:
+Description:
+Number of best samples used to update the covariance matrix and the mean
+during the viability regime.
+******************************************************************************/
+size_t _viabilityMu;
+
+/******************************************************************************
 Setting Name: Max Covariance Matrix Corrections
 Type: Solver Setting
 Default Value: 1e6

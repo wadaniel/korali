@@ -58,7 +58,7 @@ assert_value( k["CMAES"]["Target Success Rate"], 0.1818 )
 
 # Testing Internals
 
-assert_value( k["CMAES"]["Internal"]["Chi Number"], 0.7976190476190477 )
+assert_value( k["CMAES"]["Internal"]["Chi Square Number"], 0.7976190476190477 )
 
 assert_value( k["CMAES"]["Internal"]["Cumulative Covariance"], 0.564218767613317 )
 

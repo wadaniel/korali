@@ -70,7 +70,6 @@ void CMAES::initialize()
  _granularity.resize(_k->N);
  _maskingMatrix.resize(_k->N);
  _maskingMatrixSigma.resize(_k->N);
- _discreteMutations.resize(_k->N*_sampleCount);
 
  if (_objective == "Maximize")     _evaluationSign = 1.0;
  else if(_objective == "Minimize") _evaluationSign = -1.0;
@@ -126,6 +125,8 @@ void CMAES::initialize()
    _geometricGenerator = std::make_shared<Variable>();
    _geometricGenerator->setDistribution(jsGeometric);
  }
+
+ _numDiscreteMutations = 0; // updated each generation
 
 }
 
@@ -301,6 +302,24 @@ void CMAES::sampleSingle(size_t sampleIdx)
     for (size_t e = 0; e < _k->N; ++e) _BDZ[sampleIdx*_k->N+d] += _B[d*_k->N+e] * _BDZtmp[e];
     _samplePopulation[sampleIdx * _k->N + d] = _mean[d] + _sigma * _BDZ[sampleIdx*_k->N+d];
   }
+
+  if(_hasDiscreteVariables && sampleIdx < _numDiscreteMutations)
+  {
+    double dmutation;
+    for(size_t d = 0; d < _k->N; ++d) if(_maskingMatrix[d] == 1.0)
+    {
+      dmutation = 1.0;
+      dmutation += _geometricGenerator->getRandomNumber();
+      dmutation *= _granularity[d];
+
+      if( _gaussianGenerator->getRandomNumber() > 0.0 ) dmutation*=-1.0;
+      
+      _samplePopulation[sampleIdx*_k->N+d] += dmutation;
+    }
+  }
+
+  if(_hasDiscreteVariables) for(size_t d = 0; d < _k->N; ++d) if(_granularity[d] != 0.0)
+      _samplePopulation[sampleIdx*_k->N+d] = _granularity[d] * std::round(_samplePopulation[sampleIdx*_k->N+d]/_granularity[d]);
 }
 
 
@@ -366,6 +385,9 @@ void CMAES::updateDistribution()
 
  /* update of C  */
  adaptC(hsig);
+
+ /* update masking matrix */
+ if(_hasDiscreteVariables) updateDiscreteMutationMatrix();
 
  /* update of sigma */
  adaptSigma();
@@ -467,20 +489,8 @@ void CMAES::updateDiscreteMutationMatrix()
   std::fill( std::begin(_maskingMatrix), std::end(_maskingMatrix), 0.0);
   for(size_t d = 0; d < _k->N; ++d) if(2.0*_sigma*_axisD[d] < _granularity[d]) { _maskingMatrix[d] = 1.0; nmask++; }
  
-  double mutation;
-  size_t numDiscreteMutationSamples = std::min( _sampleCount/10.0 + nmask + 1.0, _sampleCount/2.0 - 1.0);
+  _numDiscreteMutations = std::min( _sampleCount/10.0 + nmask + 1.0, _sampleCount/2.0 - 1.0);
   
-  std::fill( std::begin(_discreteMutations), std::end(_discreteMutations), 0);
-  for(size_t i = 0; i < numDiscreteMutationSamples; ++i) for(size_t d = 0; d < _k->N; ++d) if(_maskingMatrix[d] == 1.0)
-  {
-    mutation = 1.0;
-    mutation += _geometricGenerator->getRandomNumber();
-    mutation *= _granularity[d];
-
-    if( _gaussianGenerator->getRandomNumber() > 0.0 ) mutation*=-1.0;
-    
-    _discreteMutations[i*_k->N+d] = mutation;
-  }
 }
 
 

@@ -820,6 +820,16 @@ Flag indicating if at least one of the variables is discrete.
 bool _hasDiscreteVariables;
 
 /******************************************************************************
+Setting Name: Number Discrete Mutations
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Number of disxcrete mutations in current generation.
+******************************************************************************/
+size_t _numDiscreteMutations;
+
+/******************************************************************************
 Setting Name: Granularity
 Type: Internal Attribute
 Default Value:
@@ -848,16 +858,6 @@ Description:
 Diagonal Matrix signifying where an integer mutation may be conducted.
 ******************************************************************************/
 std::vector<double> _maskingMatrixSigma;
-
-/******************************************************************************
-Setting Name: Discrete Mutation Matrix
-Type: Internal Attribute
-Default Value:
-Default Enabled:
-Description:
-Diagonal matrix with discrete updates.
-******************************************************************************/
-std::vector<double> _discreteMutations;
 
 /******************************************************************************
 Setting Name: Chi Square Number Integer Mutation

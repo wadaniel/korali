@@ -11,6 +11,16 @@
 source ../functions.sh
 
 #################################################
+ Checking for MPI
+#################################################
+
+if [[ $MPICXX == "" ]]
+then
+ echo "[Korali] MPI not installed, skipping test."
+ exit 0
+fi
+
+#################################################
  Clone korali-apps repository
 #################################################
 

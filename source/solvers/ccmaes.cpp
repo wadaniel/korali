@@ -82,15 +82,15 @@ void CCMAES::initialize()
  // Initailizing Mu
  _muWeights.resize(mu_max);
 
- // CCMA-ES variables
+ // CCMAES variables
  if (_constraintsDefined)
  {
   if( (_globalSuccessLearningRate <= 0.0) || (_globalSuccessLearningRate > 1.0) ) 
-    koraliError("CMA-ES Error: Invalid Global Success Learning Rate (%f), must be greater than 0.0 and less than 1.0\n",  _globalSuccessLearningRate );
+    koraliError("CCMAES Error: Invalid Global Success Learning Rate (%f), must be greater than 0.0 and less than 1.0\n",  _globalSuccessLearningRate );
   if( (_targetSuccessRate <= 0.0) || (_targetSuccessRate > 1.0) )
-  	koraliError("CMA-ES Error: Invalid Target Success Rate (%f), must be greater than 0.0 and less than 1.0\n",  _targetSuccessRate );
+  	koraliError("CCMAES Error: Invalid Target Success Rate (%f), must be greater than 0.0 and less than 1.0\n",  _targetSuccessRate );
   if(_covMatrixAdaptionStrength <= 0.0) 
-  	koraliError(" CMA-ES Error: Invalid Adaption Size (%f), must be greater than 0.0\n", _covMatrixAdaptionStrength );
+  	koraliError(" CCMAES Error: Invalid Adaption Size (%f), must be greater than 0.0\n", _covMatrixAdaptionStrength );
 
   _globalSuccessRate = 0.5;
   _bestValidSample   = -1;
@@ -193,7 +193,7 @@ void CCMAES::initMuWeights(size_t numsamplesmu)
  if      (_muType == "Linear")       for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = numsamplesmu - i;
  else if (_muType == "Equal")        for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = 1.;
  else if (_muType == "Logarithmic")  for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = log(std::max( (double)numsamplesmu, 0.5*_currentSampleCount)+0.5)-log(i+1.);
- else  koraliError("CMA-ES - Invalid setting of Mu Type (%s) (Linear, Equal, or Logarithmic accepted).",  _muType.c_str());
+ else  koraliError("CCMAES - Invalid setting of Mu Type (%s) (Linear, Equal, or Logarithmic accepted).",  _muType.c_str());
 
  // Normalize weights vector and set mueff
  double s1 = 0.0;
@@ -739,19 +739,19 @@ void CCMAES::updateEigensystem(std::vector<double>& M, int flgforce)
  double maxEWtmp = *std::max_element(std::begin(_axisDtmp), std::end(_axisDtmp));
 
  if (minEWtmp <= 0.0) 
- { koraliWarning(KORALI_NORMAL, "Min Eigenvalue smaller or equal 0.0 (%+6.3e) after Eigen decomp (no update possible).\n", minEWtmp ); return; }
+ { koraliWarning(KORALI_DETAILED, "Min Eigenvalue smaller or equal 0.0 (%+6.3e) after Eigen decomp (no update possible).\n", minEWtmp ); return; }
 
  for (size_t d = 0; d < _k->N; ++d) 
  {
      _axisDtmp[d] = sqrt(_axisDtmp[d]); 
      if (std::isfinite(_axisDtmp[d]) == false)
      {
-    	 koraliWarning(KORALI_NORMAL, "Could not calculate root of Eigenvalue (%+6.3e) after Eigen decomp (no update possible).\n", _axisDtmp[d] );
+    	 koraliWarning(KORALI_DETAILED, "Could not calculate root of Eigenvalue (%+6.3e) after Eigen decomp (no update possible).\n", _axisDtmp[d] );
        return; 
      }
     for (size_t e = 0; e < _k->N; ++e) if (std::isfinite(_B[d*_k->N+e]) == false)
     {
-    	koraliWarning(KORALI_NORMAL, "Non finite value detected in B (no update possible).\n");
+    	koraliWarning(KORALI_DETAILED, "Non finite value detected in B (no update possible).\n");
        return;
     }
  }
@@ -820,7 +820,7 @@ void CCMAES::sort_index(const std::vector<double>& vec, std::vector<size_t>& _so
 
 void CCMAES::printGeneration()
 {
- koraliLog(KORALI_MINIMAL, "CMA-ES Generation %zu\n", _k->currentGeneration);
+ koraliLog(KORALI_MINIMAL, "CCMAES Generation %zu\n", _k->currentGeneration);
 
  if ( _constraintsDefined && _isViabilityRegime)
  {
@@ -866,7 +866,7 @@ void CCMAES::printGeneration()
 
 void CCMAES::finalize()
 {
-	koraliLog(KORALI_MINIMAL, "CMA-ES Finished\n");
+	koraliLog(KORALI_MINIMAL, "CCMAES Finished\n");
 	koraliLog(KORALI_MINIMAL, "Optimum found: %e\n", _bestEverValue);
 	koraliLog(KORALI_MINIMAL, "Optimum found at:\n");
 	for (size_t d = 0; d < _k->N; ++d) koraliLogData(KORALI_MINIMAL, "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverSample[d]);

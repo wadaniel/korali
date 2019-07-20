@@ -4,19 +4,13 @@
 // constraints.
 
 #include "korali.h"
-#include "model/g09.h"
+#include "model/model.h"
+#include "model/constraints.h"
 
 int main(int argc, char* argv[])
 {
  // Starting Korali's Engine
  auto k = Korali::Engine();
-
- // Setting model and constraints
- k.setModel([](Korali::Model& d) { g09(d.getVariables(), d.getResults()); });
- k.addConstraint(g1);
- k.addConstraint(g2);
- k.addConstraint(g3);
- k.addConstraint(g4);
 
  // Selecting problem type
  k["Problem"]["Type"] = "Constrained Optimization";
@@ -38,12 +32,17 @@ int main(int argc, char* argv[])
  k["Solver"]["Termination Criteria"]["Max Fitness"]["Enabled"] = true;
  k["Solver"]["Termination Criteria"]["Max Fitness"]["Value"] = -680.630057374402 - 1e-4;
 
-
  // General Settings
  k["General"]["Max Generations"] = 500;
- k["General"]["Console Output"]["Verbosity"] = "Minimal";
- k["General"]["Random Seed"] = 5772;
- k["General"]["Results Output"]["Path"] = "_b2_constrained_optimization_result";
+ k["General"]["Results Output"]["Frequency"] = 50;
+ k["General"]["Console Output"]["Frequency"] = 50;
+
+ // Setting model and constraints
+ k.setModel([](Korali::Model& d) { model(d.getVariables(), d.getResults()); });
+ k.addConstraint(g1);
+ k.addConstraint(g2);
+ k.addConstraint(g3);
+ k.addConstraint(g4);
 
  // Running Korali
  k.run();

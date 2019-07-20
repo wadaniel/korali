@@ -33,7 +33,7 @@ void CMAES::initialize()
  bool acceptableProblem = false;
  if (pName == "Optimization")  acceptableProblem = true;
  if (pName == "Bayesian Inference")  acceptableProblem = true;
- if (acceptableProblem == false) koraliError("CMAES cannot solve problems of type: '%s'.", pName.c_str());
+ if (acceptableProblem == false) koraliError("CMAES cannot solve problems of type: '%s'.\n", pName.c_str());
 
  _chiN = sqrt((double) _k->N) * (1. - 1./(4.*_k->N) + 1./(21.*_k->N*_k->N));
 

@@ -4,16 +4,14 @@
 // In this case, we use the TMCMC method.
 
 #include "korali.h"
-#include "model/evaluateModel.h"
+#include "model/model.h"
 
 int main(int argc, char* argv[])
 {
  auto k = Korali::Engine();
- k.setLikelihood([](Korali::Model& d) { evaluateModel(d.getVariables(), d.getResults()); });
 
  // Selecting problem.
- k["Problem"]["Type"] = "Bayesian Inference";
- k["Problem"]["Likelihood"]["Model"] = "Custom";
+ k["Problem"]["Type"] = "Sampling";
 
  // Defining problem's variables and their prior distribution
  k["Variables"][0]["Name"] = "X";
@@ -25,9 +23,7 @@ int main(int argc, char* argv[])
  k["Solver"]["Type"] = "TMCMC";
  k["Solver"]["Population Size"] = 5000;
 
- // General Settings
- k["General"]["Results Output"]["Path"] = "_a2_sampling_tmcmc_result";
- k["General"]["Random Seed"] = 1618;
+ k.setModel([](Korali::Model& d) { model(d.getVariables(), d.getResults()); });
 
  // Running Korali
  k.run();

@@ -1,6 +1,6 @@
-#include "posteriorModel.h"
+#include "model.h"
 
-void posteriorModel(std::vector<double>& pars, std::vector<double>& result, std::vector<double> x)
+void model(std::vector<double>& pars, std::vector<double>& result, std::vector<double> x)
 {
  for (int i = 0; i < x.size(); i++)
  {

@@ -8,7 +8,7 @@
 # Importing computational model
 import sys
 sys.path.append('./model')
-from directModel import *
+from model import *
 
 # Starting Korali's Engine
 import korali
@@ -27,12 +27,8 @@ k["Solver"]["Type"]  = "MCMC"
 k["Solver"]["Burn In"] = 500
 k["Solver"]["Max Chain Length"] = 5000
 
-# General Settings
-k["General"]["Results Output"]["Path"] = "_a2_sampling_mcmc_result"
-k["General"]["Random Seed"]    = 2718
-
 # Setting Model
-k.setModel(evaluateModel)
+k.setModel(model)
 
 # Running Korali
 k.run()

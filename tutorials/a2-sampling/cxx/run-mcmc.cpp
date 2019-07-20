@@ -4,7 +4,7 @@
 // In this case, we use the MCMC method.
 
 #include "korali.h"
-#include "model/evaluateModel.h"
+#include "model/model.h"
 
 int main(int argc, char* argv[])
 {
@@ -23,12 +23,8 @@ int main(int argc, char* argv[])
  k["Solver"]["Burn In"] = 500;
  k["Solver"]["Max Chain Length"] = 5000;
 
- // General Settings
- k["General"]["Results Output"]["Path"] = "_a2_sampling_mcmc_result";
- k["General"]["Random Seed"] = 2718;
-
  // Setting Model
- k.setModel([](Korali::Model& d) { evaluateModel(d.getVariables(), d.getResults()); });
+ k.setModel([](Korali::Model& d) { model(d.getVariables(), d.getResults()); });
 
  // Running Korali
  k.run();

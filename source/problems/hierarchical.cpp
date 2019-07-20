@@ -16,22 +16,15 @@ void Korali::Problem::Hierarchical::setConfiguration()
   std::string operationTypeString = consume(_k->_js, { "Problem", "Model" }, KORALI_STRING, "Undefined");
   if (operationTypeString == "Sample Psi")   { _operationType = SamplePsi;   foundSubProblemType = true; }
   if (operationTypeString == "Sample Theta") { _operationType = SampleTheta; foundSubProblemType = true; }
-  if (foundSubProblemType == false) { koraliError("Incorrect or no sub-problem Type selected for Hierarchical Bayesian: %s.\n", operationTypeString.c_str()); exit(-1); }
-
-  if (isArray(_k->_js, { "Variables" } ))
-  for (size_t i = 0; i < _k->N; i++)
-  {
-    bool foundPriorDistribution = isDefined(_k->_js["Variables"][i], { "Prior Distribution" });
-    if (foundPriorDistribution == false) { koraliError("No Prior Distribution information provided for variable: %s.\n", _k->_variables[i]->_name.c_str()); exit(-1); }
-
-    _k->_js["Variables"][i]["Prior Distribution"]["Seed"] = _k->_seed++;
-    _k->_variables[i]->setDistribution(_k->_js["Variables"][i]["Prior Distribution"]);
-  }
+  if (foundSubProblemType == false) { koraliError("Incorrect or no sub-problem Type selected for Hierarchical Bayesian: %s.\n", operationTypeString.c_str()); }
 }
 
 void Korali::Problem::Hierarchical::initialize()
 {
- if (_k->_constraints.size() > 0) koraliError("Bayesian Problems do not allow constraint definitions.\n");
+ for(size_t i = 0; i < _k->N; i++) if(_k->_variables[i]->_distributionType == KoraliDefaultDistribution)
+	koraliError("Hierarchical Bayesian problems requires prior distribution for all variables. (Missing for %s).\n", _k->_variables[i]->_name.c_str());
+
+ if (_k->_constraints.size() > 0) koraliError("Hierarchical Bayesian problems do not allow constraint definitions.\n");
  if (_k->_modelDefined == true) koraliError("Hierarchical Bayesian does not require a computational model, but one was provided.\n");
  if (_k->_likelihoodDefined == true) koraliError("Hierarchical Bayesian does not require a likelihood function, but one was provided.\n");
  if (_k->_subProblems.size() < 2) koraliError("Hierarchical Bayesian problem requires defining at least two executed sub-problems.\n");

@@ -32,9 +32,10 @@ void Korali::Solver::TMCMC::initialize()
  // Checking for accepted problem types
  std::string pName = _k->_js["Problem"]["Type"];
  bool acceptableProblem = false;
+ if (pName == "Sampling")  acceptableProblem = true;
  if (pName == "Bayesian Inference")  acceptableProblem = true;
  if (pName == "Hierarchical Bayesian")  acceptableProblem = true;
- if (acceptableProblem == false) koraliError("TMCMC cannot solve problems of type: '%s'.", pName.c_str());
+ if (acceptableProblem == false) koraliError("TMCMC cannot solve problems of type: '%s'.\n", pName.c_str());
 
  // Allocating TMCMC memory
  _covarianceMatrix.resize(_k->N*_k->N);

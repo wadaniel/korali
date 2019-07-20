@@ -108,7 +108,6 @@ void Korali::Engine::getConfiguration()
  if (_korali_verbosity == KORALI_NORMAL)   _js["General"]["Console Output"]["Verbosity"] = "Normal";
  if (_korali_verbosity == KORALI_DETAILED) _js["General"]["Console Output"]["Verbosity"] = "Detailed";
  
-
  _js["General"]["Max Generations"] = maxGenerations;
  _js["General"]["Max Function Evaluations"] = maxFunctionEvaluations;
  _js["General"]["Current Generation"] = currentGeneration;
@@ -153,7 +152,7 @@ void Korali::Engine::setConfiguration()
  if (vLevel == "Minimal")  _korali_verbosity = KORALI_MINIMAL;
  if (vLevel == "Normal")   _korali_verbosity = KORALI_NORMAL;
  if (vLevel == "Detailed") _korali_verbosity = KORALI_DETAILED;
- if (_korali_verbosity == KORALI_UNDEFINED) koraliError("Incorrect or undefined Verbosity Level '%s'.", vLevel.c_str());
+ if (_korali_verbosity == KORALI_UNDEFINED) koraliError("Incorrect or undefined Verbosity Level '%s'\n.", vLevel.c_str());
 
  _result_dir = consume(_js, { "General", "Results Output", "Path" }, KORALI_STRING, "_korali_result");
 
@@ -164,7 +163,7 @@ void Korali::Engine::setConfiguration()
  if (pName == "Sampling") _problem = std::make_shared<Korali::Problem::Sampling>();
  if (pName == "Bayesian Inference") _problem = std::make_shared<Korali::Problem::Bayesian>();
  if (pName == "Hierarchical Bayesian") _problem = std::make_shared<Korali::Problem::Hierarchical>();
- if (_problem == nullptr) koraliError("Incorrect or undefined Problem '%s'.", pName.c_str());
+ if (_problem == nullptr) koraliError("Incorrect or undefined Problem '%s'.\n", pName.c_str());
 
  // Create Variables
 
@@ -172,6 +171,7 @@ void Korali::Engine::setConfiguration()
  for (size_t i = 0; i < _js["Variables"].size(); i++)
  {
   _k->_variables.push_back(new Korali::Variable());
+  _k->_js["Variables"][i]["Prior Distribution"]["Seed"] = _k->_seed++;
   _k->_variables[i]->setConfiguration(_js["Variables"][i]);
  }
 

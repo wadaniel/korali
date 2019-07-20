@@ -62,7 +62,7 @@ void Korali::Solver::MCMC::initialize()
  if (pName == "Sampling")  acceptableProblem = true;
  if (pName == "Bayesian Inference")  acceptableProblem = true;
  if (pName == "Hierarchical Bayesian")  acceptableProblem = true;
- if (acceptableProblem == false) koraliError("MCMC cannot solve problems of type: '%s'.", pName.c_str());
+ if (acceptableProblem == false) koraliError("MCMC cannot solve problems of type: '%s'.\n", pName.c_str());
 
  // Allocating MCMC memory
  _covarianceChol.resize(_k->N*_k->N);

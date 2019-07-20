@@ -32,7 +32,7 @@ void CCMAES::initialize()
  std::string pName = _k->_js["Problem"]["Type"];
  bool acceptableProblem = false;
  if (pName == "Constrained Optimization")  acceptableProblem = true;
- if (acceptableProblem == false) koraliError("CCMAES cannot solve problems of type: '%s'.", pName.c_str());
+ if (acceptableProblem == false) koraliError("CCMAES cannot solve problems of type: '%s'.\n", pName.c_str());
 
  size_t s_max  = std::max(_sampleCount,  _viabilitySampleCount);
  size_t mu_max = std::max(_muValue, _viabilityMu);

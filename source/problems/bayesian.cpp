@@ -34,31 +34,27 @@ void Korali::Problem::Bayesian::setConfiguration()
   if (likelihoodModelString == "Additive Gaussian") { _likelihoodModel = AdditiveGaussianLikelihood; foundLikelihoodModelType = true; }
   if (likelihoodModelString == "Multiplicative Gaussian") { _likelihoodModel = MultiplicativeGaussianLikelihood; foundLikelihoodModelType = true; }
   if (likelihoodModelString == "Multiplicative Gaussian Data") { _likelihoodModel = MultiplicativeGaussianDataLikelihood; foundLikelihoodModelType = true; }
-  if (foundLikelihoodModelType == false) { koraliError("Incorrect or no Likelihood Type selected: %s.\n", likelihoodModelString.c_str()); exit(-1); }
+  if (foundLikelihoodModelType == false) { koraliError("Incorrect or no Likelihood Type selected: %s.\n", likelihoodModelString.c_str()); }
 
   auto ref = consume(_k->_js, { "Problem", "Likelihood", "Reference Data" }, KORALI_ARRAY);
   _referenceDataSize = ref.size();
   _referenceData.resize(_referenceDataSize);
   for (size_t i = 0; i < _referenceDataSize; i++) _referenceData[i] = ref[i];
 
-  if (isArray(_k->_js, { "Variables" } ))
   for (size_t i = 0; i < _k->N; i++)
   {
     auto typeString = consume(_k->_js["Variables"][i], { "Type" }, KORALI_STRING, "Computational");
     if (typeString == "Computational") _computationalVariableIndices.push_back(i);
     if (typeString == "Statistical")   _statisticalVariableIndices.push_back(i);
-
-    bool foundPriorDistribution = isDefined(_k->_js["Variables"][i], { "Prior Distribution" });
-    if (foundPriorDistribution == false) { koraliError("No Prior Distribution information provided for variable: %s.\n", _k->_variables[i]->_name.c_str()); exit(-1); }
-
-    _k->_js["Variables"][i]["Prior Distribution"]["Seed"] = _k->_seed++;
-    _k->_variables[i]->setDistribution(_k->_js["Variables"][i]["Prior Distribution"]);
   }
 }
 
 void Korali::Problem::Bayesian::initialize()
 {
- if (_k->_constraints.size() > 0) koraliError("Bayesian Problems do not allow constraint definitions.\n");
+ for(size_t i = 0; i < _k->N; i++) if(_k->_variables[i]->_distributionType == KoraliDefaultDistribution)
+	koraliError("Bayesian inference requires prior distribution for all variables. (Missing for %s).\n", _k->_variables[i]->_name.c_str());
+
+ if (_k->_constraints.size() > 0) koraliError("Bayesian inference problems do not allow constraint definitions.\n");
 
  if (_likelihoodModel != CustomLikelihood)
  {

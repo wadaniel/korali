@@ -7,7 +7,7 @@
 # Importing computational model
 import sys
 sys.path.append('./model')
-from directModel import *
+from model import *
 
 # Starting Korali's Engine
 import korali
@@ -26,13 +26,8 @@ k["Variables"][0]["Upper Bound"] = +10.0
 k["Solver"]["Type"]  = "CMAES"
 k["Solver"]["Sample Count"] = 32
 
-# General Settings
-k["General"]["Results Output"]["Path"] = "_a1_optimization_cmaes_result"
-k["General"]["Random Seed"] = 1337
-k["General"]["Max Generations"] = 500
-
 # Setting computational model
-k.setModel(evaluateModel)
+k.setModel(model)
 
 # Running Korali
 k.run()

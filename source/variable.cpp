@@ -27,7 +27,7 @@ Korali::Variable::~Variable()
 
 void Korali::Variable::setDistribution(nlohmann::json& js)
 {
- auto dString = consume(js, { "Type" }, KORALI_STRING, "Variable");
+ auto dString = consume(js, { "Type" }, KORALI_STRING, "Default");
  bool foundDistributionType = false;
  if (dString == "Cauchy")      { _distributionType = KoraliCauchyDistribution;      foundDistributionType = true; }
  if (dString == "Default")     { _distributionType = KoraliDefaultDistribution;     foundDistributionType = true; }
@@ -140,12 +140,15 @@ void Korali::Variable::getConfiguration(nlohmann::json& js)
 {
  js["Log Space"] = _isLogSpace;
  js["Name"] = _name;
+
+ getDistribution(js);
 }
 
 void Korali::Variable::setConfiguration(nlohmann::json& js)
 {
  _isLogSpace = consume(js, { "Log Space"}, KORALI_BOOLEAN, "false");
  _name = consume(js, { "Name" }, KORALI_STRING);
+	setDistribution(js["Prior Distribution"]);
 }
 
 double Korali::Variable::getDensity(double x)

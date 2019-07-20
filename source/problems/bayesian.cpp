@@ -2,47 +2,41 @@
 
 void Korali::Problem::Bayesian::getConfiguration()
 {
- _k->_js["Problem"] = "Bayesian";
+ _k->_js["Problem"]["Type"] = "Bayesian Inference";
 
- if (_likelihood == DirectLikelihood)    _k->_js["Bayesian"]["Likelihood"]["Type"] = "Direct";
- if (_likelihood == ReferenceLikelihood) _k->_js["Bayesian"]["Likelihood"]["Type"] = "Reference";
+ if (_likelihoodModel == CustomLikelihood)  _k->_js["Problem"]["Likelihood"]["Model"] = "Custom";
+ if (_likelihoodModel == AdditiveGaussianLikelihood)  _k->_js["Problem"]["Likelihood"]["Model"] = "Additive Gaussian";
+ if (_likelihoodModel == MultiplicativeGaussianLikelihood)  _k->_js["Problem"]["Likelihood"]["Model"] = "Multiplicative Gaussian";
+ if (_likelihoodModel == MultiplicativeGaussianDataLikelihood)  _k->_js["Problem"]["Likelihood"]["Model"] = "Multiplicative Gaussian Data";
 
- for (size_t i = 0; i < _referenceDataSize; i++) _k->_js["Bayesian", "Likelihood", "Reference Data"][i] = _referenceData[i];
+ for (size_t i = 0; i < _referenceDataSize; i++) _k->_js["Problem", "Likelihood", "Reference Data"][i] = _referenceData[i];
 
  for (size_t i = 0; i < _computationalVariableIndices.size(); i++)
  {
   size_t idx = _computationalVariableIndices[i];
-  _k->_js["Variables"][idx]["Bayesian"]["Type"] = "Computational";
+  _k->_js["Variables"][idx]["Type"] = "Computational";
  }
 
  for (size_t i = 0; i < _statisticalVariableIndices.size(); i++)
   {
    size_t idx = _statisticalVariableIndices[i];
-   _k->_js["Variables"][idx]["Bayesian"]["Type"] = "Statistical";
+   _k->_js["Variables"][idx]["Type"] = "Statistical";
   }
 
- for (size_t i = 0; i < _k->N; i++)  _k->_variables[i]->getDistribution(_k->_js["Variables"][i]["Bayesian"]["Prior Distribution"]);
+ for (size_t i = 0; i < _k->N; i++)  _k->_variables[i]->getDistribution(_k->_js["Variables"][i]["Prior Distribution"]);
 }
 
 void Korali::Problem::Bayesian::setConfiguration()
 {
-  bool foundLikelihoodType = false;
-  std::string likelihoodString = consume(_k->_js, { "Bayesian", "Likelihood", "Type" }, KORALI_STRING, "Undefined");
-  if (likelihoodString == "Direct")    { _likelihood = DirectLikelihood;    foundLikelihoodType = true; }
-  if (likelihoodString == "Reference") { _likelihood = ReferenceLikelihood; foundLikelihoodType = true; }
-  if (foundLikelihoodType == false) { koraliError("Incorrect or no Likelihood Type selected: %s.\n", likelihoodString.c_str()); exit(-1); }
+  bool foundLikelihoodModelType = false;
+  std::string likelihoodModelString = consume(_k->_js, { "Problem", "Likelihood", "Model" }, KORALI_STRING, "Undefined");
+  if (likelihoodModelString == "Custom")    { _likelihoodModel = CustomLikelihood;    foundLikelihoodModelType = true; }
+  if (likelihoodModelString == "Additive Gaussian") { _likelihoodModel = AdditiveGaussianLikelihood; foundLikelihoodModelType = true; }
+  if (likelihoodModelString == "Multiplicative Gaussian") { _likelihoodModel = MultiplicativeGaussianLikelihood; foundLikelihoodModelType = true; }
+  if (likelihoodModelString == "Multiplicative Gaussian Data") { _likelihoodModel = MultiplicativeGaussianDataLikelihood; foundLikelihoodModelType = true; }
+  if (foundLikelihoodModelType == false) { koraliError("Incorrect or no Likelihood Type selected: %s.\n", likelihoodModelString.c_str()); exit(-1); }
 
-  if ( _likelihood == ReferenceLikelihood )
-  {
-    bool foundLikelihoodModel = false;
-    std::string likelihoodModelString = consume(_k->_js, { "Bayesian", "Likelihood", "Model" }, KORALI_STRING, "Undefined");
-    if (likelihoodModelString == "Additive Gaussian")            { _likelihoodModel = AdditiveGaussian;           foundLikelihoodModel = true; }
-    if (likelihoodModelString == "Multiplicative Gaussian")      { _likelihoodModel = MultiplicativeGaussian;     foundLikelihoodModel = true; }
-    if (likelihoodModelString == "Multiplicative Gaussian Data") { _likelihoodModel = MultiplicativeGaussianData; foundLikelihoodModel = true; }
-    if (foundLikelihoodModel  == false) { koraliError("Incorrect or no Likelihood Model selected: %s.\n", likelihoodModelString.c_str()); exit(-1); }
-  }
-
-  auto ref = consume(_k->_js, { "Bayesian", "Likelihood", "Reference Data" }, KORALI_ARRAY);
+  auto ref = consume(_k->_js, { "Problem", "Likelihood", "Reference Data" }, KORALI_ARRAY);
   _referenceDataSize = ref.size();
   _referenceData.resize(_referenceDataSize);
   for (size_t i = 0; i < _referenceDataSize; i++) _referenceData[i] = ref[i];
@@ -50,34 +44,34 @@ void Korali::Problem::Bayesian::setConfiguration()
   if (isArray(_k->_js, { "Variables" } ))
   for (size_t i = 0; i < _k->N; i++)
   {
-		auto typeString = consume(_k->_js["Variables"][i], { "Bayesian", "Type" }, KORALI_STRING, "Computational");
-		if (typeString == "Computational") _computationalVariableIndices.push_back(i);
-		if (typeString == "Statistical")   _statisticalVariableIndices.push_back(i);
+    auto typeString = consume(_k->_js["Variables"][i], { "Type" }, KORALI_STRING, "Computational");
+    if (typeString == "Computational") _computationalVariableIndices.push_back(i);
+    if (typeString == "Statistical")   _statisticalVariableIndices.push_back(i);
 
-		bool foundPriorDistribution = isDefined(_k->_js["Variables"][i], {"Bayesian", "Prior Distribution" });
-		if (foundPriorDistribution == false) { koraliError("No Prior Distribution information provided for variable: %s.\n", _k->_variables[i]->_name.c_str()); exit(-1); }
+    bool foundPriorDistribution = isDefined(_k->_js["Variables"][i], { "Prior Distribution" });
+    if (foundPriorDistribution == false) { koraliError("No Prior Distribution information provided for variable: %s.\n", _k->_variables[i]->_name.c_str()); exit(-1); }
 
-		_k->_js["Variables"][i]["Bayesian"]["Prior Distribution"]["Seed"] = _k->_seed++;
-		_k->_variables[i]->setDistribution(_k->_js["Variables"][i]["Bayesian"]["Prior Distribution"]);
+    _k->_js["Variables"][i]["Prior Distribution"]["Seed"] = _k->_seed++;
+    _k->_variables[i]->setDistribution(_k->_js["Variables"][i]["Prior Distribution"]);
   }
 }
 
 void Korali::Problem::Bayesian::initialize()
 {
- if (_likelihood == ReferenceLikelihood)
+ if (_k->_constraints.size() > 0) koraliError("Bayesian Problems do not allow constraint definitions.\n");
+
+ if (_likelihoodModel != CustomLikelihood)
  {
-   if (_k->_constraints.size() > 0) koraliError("Bayesian Problems do not allow constraint definitions.\n");
-   if (_referenceDataSize == 0) koraliError("No Reference Data set provided for the Bayesian Model.\n");
-   if (_k->_modelDefined == false) koraliError("Bayesian Problem requires defining a computational model.\n");
-   if (_statisticalVariableIndices.size() != 1) koraliError("The Bayesian model requires 1 statistical parameter.\n");
+   if (_referenceDataSize == 0) koraliError("The selected likelihood model requires defining reference data.\n");
+   if (_k->_modelDefined == false) koraliError("The selected likelihood model requires defining a computational model.\n");
+   if (_statisticalVariableIndices.size() != 1) koraliError("The selected likelihood model requires 1 statistical parameter.\n");
  }
 
- if (_likelihood == DirectLikelihood)
+ if (_likelihoodModel == CustomLikelihood)
  {
-   if (_k->_constraints.size() > 0) koraliError("Bayesian Problems do not allow constraint definitions.\n");
-   if (_referenceDataSize != 0) koraliError("Reference Data is not required by the Direct Bayesian model.\n");
-   if (_k->_likelihoodDefined == false) koraliError("Direct Bayesian requires defining a likelihood function.\n");
-   if (_statisticalVariableIndices.size() != 0) koraliError("Direct Bayesian Evaluation type requires no statistical parameters.\n");
+   if (_referenceDataSize != 0) koraliError("Custom likelihood models do not accept reference data.\n");
+   if (_k->_likelihoodDefined == false) koraliError("No likelihood model was specified.\n");
+   if (_statisticalVariableIndices.size() != 0) koraliError("Custom likelihood models do not accept statistical variables.\n");
  }
 }
 
@@ -96,19 +90,19 @@ double Korali::Problem::Bayesian::evaluateFitness(Korali::Model& data)
 {
  double fitness = 0.0;
 
- if (_likelihood == ReferenceLikelihood)
+ if (_likelihoodModel != CustomLikelihood)
  {
    if (data._results.size() != _referenceDataSize)
-  	 koraliError("Reference Likelihood requires a %lu-sized result array. Provided: %lu.\n", _referenceDataSize, data._results.size());
+     koraliError("The selected likelihood model requires a %lu-sized result array. Provided: %lu.\n", _referenceDataSize, data._results.size());
 
-   if (_likelihoodModel == AdditiveGaussian)           fitness = likelihoodGaussianAdditive(data);
-   if (_likelihoodModel == MultiplicativeGaussian)     fitness = likelihoodGaussianMultiplicative(data);
-   if (_likelihoodModel == MultiplicativeGaussianData) fitness = likelihoodGaussianMultiplicativeData(data);
+   if (_likelihoodModel == AdditiveGaussianLikelihood)           fitness = likelihoodGaussianAdditive(data);
+   if (_likelihoodModel == MultiplicativeGaussianLikelihood)     fitness = likelihoodGaussianMultiplicative(data);
+   if (_likelihoodModel == MultiplicativeGaussianDataLikelihood) fitness = likelihoodGaussianMultiplicativeData(data);
  }
 
- if (_likelihood == DirectLikelihood)
+ if (_likelihoodModel == CustomLikelihood)
  {
-  if (data._results.size() != 1)  koraliError("Direct Likelihood requires exactly a 1-element result array. Provided: %lu.\n", data._results.size() );
+  if (data._results.size() != 1)  koraliError("Custom likelihoods require exactly a 1-element result array. Provided: %lu.\n", data._results.size() );
   fitness =  data._results[0];
  }
 

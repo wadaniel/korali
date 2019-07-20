@@ -10,29 +10,28 @@
 
 int main(int argc, char* argv[])
 {
-  auto k = Korali::Engine();
-  k.setLikelihood([](Korali::Model& d) { evaluateModel(d.getVariables(), d.getResults()); });
+ auto k = Korali::Engine();
+ k.setLikelihood([](Korali::Model& d) { evaluateModel(d.getVariables(), d.getResults()); });
 
-  k["Problem"] = "Bayesian";
-  k["Solver"] = "TMCMC";
+ k["Problem"]["Type"] = "Bayesian Inference";
+ k["Problem"]["Likelihood"]["Model"] = "Custom";
 
-  k["Bayesian"]["Likelihood"]["Type"] = "Direct";
+ k["Variables"][0]["Name"] = "X";
+ k["Variables"][0]["Prior Distribution"]["Type"] = "Uniform";
+ k["Variables"][0]["Prior Distribution"]["Minimum"] = -10.0;
+ k["Variables"][0]["Prior Distribution"]["Maximum"] = +10.0;
 
-  k["Variables"][0]["Name"] = "X";
-  k["Variables"][0]["Bayesian"]["Prior Distribution"]["Type"] = "Uniform";
-  k["Variables"][0]["Bayesian"]["Prior Distribution"]["Minimum"] = -10.0;
-  k["Variables"][0]["Bayesian"]["Prior Distribution"]["Maximum"] = +10.0;
+ k["Solver"]["Type"] = "TMCMC";
+ k["Solver"]["Population Size"] = 5000;
 
-  k["TMCMC"]["Population Size"] = 5000;
+ k["General"]["Results Output"]["Path"] = "_b1_restart_tmcmc_result";
 
-  k["Result Directory"] = "_b1_restart_tmcmc_result";
+ k.run();
 
-  k.run();
+ printf("\n\nRestarting now:\n\n");
 
-  printf("\n\nRestarting now:\n\n");
+ // Now we loadState() to resume the same experiment from generation 5.
+ k.loadState("_b1_restart_tmcmc_result/s00001.json");
 
-  // Now we loadState() to resume the same experiment from generation 5.
-  k.loadState("_b1_restart_tmcmc_result/s00001.json");
-
-  k.run();
+ k.run();
 }

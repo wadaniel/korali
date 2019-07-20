@@ -11,12 +11,24 @@ void posteriorModel(std::vector<double>& pars, std::vector<double>& result, std:
  }
 }
 
-void getReferenceData(std::vector<double>& x, std::vector<double>& y)
+std::vector<double> getReferencePoints()
 {
- x.push_back(1.0); y.push_back(3.2069);
- x.push_back(2.0); y.push_back(4.1454);
- x.push_back(3.0); y.push_back(4.9393);
- x.push_back(4.0); y.push_back(6.0588);
- x.push_back(5.0); y.push_back(6.8425);
+ std::vector<double> x;
+ x.push_back(1.0);
+ x.push_back(2.0);
+ x.push_back(3.0);
+ x.push_back(4.0);
+ x.push_back(5.0);
+ return x;
 }
 
+std::vector<double> getReferenceData()
+{
+ std::vector<double> y;
+ y.push_back(3.2069);
+ y.push_back(4.1454);
+ y.push_back(4.9393);
+ y.push_back(6.0588);
+ y.push_back(6.8425);
+ return y;
+}

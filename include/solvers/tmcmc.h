@@ -79,7 +79,7 @@ Type: Solver Setting
 Default Value: 0
 Default Enabled:
 Description:
-Specifies the number of additional MCMC steps per sample per generation.
+Specifies the number of additional TMCMC steps per sample per generation.
 Note that only the last sample per chain is considered for the recombination.
 ******************************************************************************/
 size_t _burnInDefault;
@@ -90,7 +90,7 @@ Type: Solver Setting
 Default Value: 0
 Default Enabled:
 Description:
-Specifies the number of additional MCMC steps per sample at specified 
+Specifies the number of additional TMCMC steps per sample at specified
 generations.
 ******************************************************************************/
 std::vector<size_t> _burnInSteps;
@@ -371,18 +371,6 @@ Description:
 Local covariances of chain leaders
 ******************************************************************************/
 std::vector<std::vector<double>> _localCovarianceMatrices;
-
-/******************************************************************************
-Setting Name: Max Generations
-Type: Termination Criterion
-Default Value: 50
-Default Enabled: true
-Description:
-Maximal number of generations to run.
-******************************************************************************/
-size_t _termCondMaxGenerations;
-bool   _termCondMaxGenerationsEnabled;
-
 
 /******************************************************************************
 * Variable Settings

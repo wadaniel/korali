@@ -13,23 +13,20 @@ from directModel import *
 
 import korali
 k = korali.initialize()
+
+k["Problem"]["Type"] = "Bayesian Inference"
+k["Problem"]["Likelihood"]["Model"] = "Custom"
 k.setLikelihood( evaluateModel )
 
-k["Problem"] = "Bayesian"
-k["Solver"]  = "TMCMC"
-
-k["Bayesian"]["Likelihood"]["Type"] = "Direct"
-
 k["Variables"][0]["Name"] = "X"
+k["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"
+k["Variables"][0]["Prior Distribution"]["Minimum"] = -10.0
+k["Variables"][0]["Prior Distribution"]["Maximum"] = +10.0
 
-k["Variables"][0]["Bayesian"]["Prior Distribution"]["Type"] = "Uniform"
-k["Variables"][0]["Bayesian"]["Prior Distribution"]["Minimum"] = -10.0
-k["Variables"][0]["Bayesian"]["Prior Distribution"]["Maximum"] = +10.0
+k["Solver"]["Type"]  = "TMCMC"
+k["Solver"]["Population Size"] = 5000
 
-k["TMCMC"]["Population Size"] = 5000
-
-# Setting output directory
-k["Result Directory"] = "_b1_restart_tmcmc_result"
+k["General"]["Results Output"]["Path"] = "_b1_restart_tmcmc_result"
 
 k.run()
 

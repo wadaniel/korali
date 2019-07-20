@@ -7,52 +7,42 @@
 
 int main(int argc, char* argv[])
 {
-  auto k = Korali::Engine();
+ auto k = Korali::Engine();
 
-  std::vector<double> x, y; // Reference Data
+ // Setting up the reference likelihood for the Bayesian Problem
+ k["Problem"]["Type"] = "Bayesian Inference";
+ k["Problem"]["Likelihood"]["Model"] = "Additive Gaussian";
+ k["Problem"]["Likelihood"]["Reference Data"] = getReferenceData();
 
-  // Setting reference data from the model
-  getReferenceData(x, y);
+ // Configuring the problem's variables and their prior distributions
+ k["Variables"][0]["Name"] = "a";
+ k["Variables"][0]["Type"] = "Computational";
+ k["Variables"][0]["Prior Distribution"]["Type"] = "Uniform";
+ k["Variables"][0]["Prior Distribution"]["Minimum"] = -5.0;
+ k["Variables"][0]["Prior Distribution"]["Maximum"] = +5.0;
 
-  // Setting the model
-  k.setModel([x](Korali::Model& d) { posteriorModel(d.getVariables(), d.getResults(), x); });
+ k["Variables"][1]["Name"] = "b";
+ k["Variables"][1]["Type"] = "Computational";
+ k["Variables"][1]["Prior Distribution"]["Type"] = "Uniform";
+ k["Variables"][1]["Prior Distribution"]["Minimum"] = -5.0;
+ k["Variables"][1]["Prior Distribution"]["Maximum"] = +5.0;
 
-  // Selecting problem
-  k["Problem"] = "Bayesian";
+ k["Variables"][2]["Name"] = "Sigma";
+ k["Variables"][2]["Type"] = "Statistical";
+ k["Variables"][2]["Prior Distribution"]["Type"] = "Uniform";
+ k["Variables"][2]["Prior Distribution"]["Minimum"] = 0.0;
+ k["Variables"][2]["Prior Distribution"]["Maximum"] = +5.0;
 
-  // Setting up the reference likelihood for the Bayesian Problem
-  k["Bayesian"]["Likelihood"]["Type"] = "Reference";
-  k["Bayesian"]["Likelihood"]["Model"] = "Additive Gaussian";
-  k["Bayesian"]["Likelihood"]["Reference Data"] = y;
+ // Configuring Solver
+ k["Solver"]["Type"] = "TMCMC";
+ k["Solver"]["Population Size"] = 5000;
 
-  // Configuring the problem's variables and their prior distributions
-  k["Variables"][0]["Name"] = "a";
-  k["Variables"][0]["Bayesian"]["Type"] = "Computational";
-  k["Variables"][0]["Bayesian"]["Prior Distribution"]["Type"] = "Uniform";
-  k["Variables"][0]["Bayesian"]["Prior Distribution"]["Minimum"] = -5.0;
-  k["Variables"][0]["Bayesian"]["Prior Distribution"]["Maximum"] = +5.0;
+ // Setting output directory
+ k["General"]["Results Output"]["Path"] = "_a3_bayesian_inference_tmcmc_result";
 
-  k["Variables"][1]["Name"] = "b";
-  k["Variables"][1]["Bayesian"]["Type"] = "Computational";
-  k["Variables"][1]["Bayesian"]["Prior Distribution"]["Type"] = "Uniform";
-  k["Variables"][1]["Bayesian"]["Prior Distribution"]["Minimum"] = -5.0;
-  k["Variables"][1]["Bayesian"]["Prior Distribution"]["Maximum"] = +5.0;
+ // Setting the model
+ k.setModel( [](Korali::Model& d) { posteriorModel(d.getVariables(), d.getResults(), getReferencePoints()); });
 
-  k["Variables"][2]["Name"] = "Sigma";
-  k["Variables"][2]["Bayesian"]["Type"] = "Statistical";
-  k["Variables"][2]["Bayesian"]["Prior Distribution"]["Type"] = "Uniform";
-  k["Variables"][2]["Bayesian"]["Prior Distribution"]["Minimum"] = 0.0;
-  k["Variables"][2]["Bayesian"]["Prior Distribution"]["Maximum"] = +5.0;
-
-  // Selecting solver type
-  k["Solver"] = "TMCMC";
-
-  // Configuring TMCMC parameters
-  k["TMCMC"]["Population Size"] = 5000;
-
-  // Setting output directory
-  k["Result Directory"] = "_a3_bayesian_inference_tmcmc_result";
-
-  // Running Korali
-  k.run();
+ // Running Korali
+ k.run();
 }

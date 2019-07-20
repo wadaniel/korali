@@ -13,21 +13,20 @@ int main(int argc, char* argv[])
  auto k = Korali::Engine();
  k.setModel([](Korali::Model& d) { evaluateModel(d.getVariables(), d.getResults()); });
 
- k["Problem"] = "Optimization";
- k["Solver"]  = "DEA";
- k["Verbosity"]  = "Normal";
+ k["Problem"]["Type"] = "Optimization";
+ k["Problem"]["Objective"] = "Maximize";
 
  k["Variables"][0]["Name"] = "X";
- k["Variables"][0]["DEA"]["Lower Bound"] = -10.0;
- k["Variables"][0]["DEA"]["Upper Bound"] = +10.0;
+ k["Variables"][0]["Lower Bound"] = -10.0;
+ k["Variables"][0]["Upper Bound"] = +10.0;
 
- k["DEA"]["Objective"] = "Maximize";
- k["DEA"]["Sample Count"] = 10;
+ k["Solver"]["Type"] = "DEA";
+ k["Solver"]["Sample Count"] = 10;
 
- k["Result Directory"] = "_b1_restart_dea_result";
-
- k["Termination Criteria"]["Max Generations"] = 500;
- k["Console Output Frequency"] = 5;
+ k["General"]["Max Generations"] = 500;
+ k["General"]["Console Output"]["Verbosity"] = "Normal";
+ k["General"]["Console Output"]["Frequency"] = 5;
+ k["General"]["Results Output"]["Path"] = "_b1_restart_dea_result";
 
  k.run();
 

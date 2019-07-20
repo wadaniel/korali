@@ -62,7 +62,7 @@ def writeConfig(solverName, solverType, solverAlias, solverDescription, solverPl
  ## Load Solver Settings
  for i in range(len(settingNames)):   
   if (settingTypes[i] == 'Solver Setting'):
-   consumeValue('_k->_js', settingVariableNames[i], settingDataTypes[i], settingDefaultValues[i], [ solverAlias, settingNames[i] ])
+   consumeValue('_k->_js', settingVariableNames[i], settingDataTypes[i], settingDefaultValues[i], [ 'Solver', settingNames[i] ])
  
  ## Load Variable Settings
  configFile.write('\n')
@@ -72,23 +72,23 @@ def writeConfig(solverName, solverType, solverAlias, solverDescription, solverPl
   
  for i in range(len(settingNames)): 
   if (settingTypes[i] == 'Variable Setting'):
-   consumeValue('_k->_js["Variables"][i]', '_variableSettings[i].' + settingVariableNames[i], settingDataTypes[i], settingDefaultValues[i], [ solverAlias, settingNames[i] ])
+   consumeValue('_k->_js["Variables"][i]', '_variableSettings[i].' + settingVariableNames[i], settingDataTypes[i], settingDefaultValues[i], [ settingNames[i] ])
  configFile.write(' } \n\n')
  
  ## Load Termination Criteria
  
  for i in range(len(settingNames)):   
   if (settingTypes[i] == 'Termination Criterion'):
-   consumeValue('_k->_js', settingVariableNames[i], settingDataTypes[i], settingDefaultValues[i], [ solverAlias, 'Termination Criteria', settingNames[i], 'Value' ])
-   consumeValue('_k->_js', settingStateNames[i], 'bool', settingDefaultStates[i], [ solverAlias, 'Termination Criteria', settingNames[i], 'Enabled' ]) 
+   consumeValue('_k->_js', settingVariableNames[i], settingDataTypes[i], settingDefaultValues[i], [ 'Solver', 'Termination Criteria', settingNames[i], 'Value' ])
+   consumeValue('_k->_js', settingStateNames[i], 'bool', settingDefaultStates[i], [ 'Solver', 'Termination Criteria', settingNames[i], 'Enabled' ]) 
  configFile.write('\n')
  
  ## Load Solver Internal Attributes
  for i in range(len(settingNames)):   
   if (settingTypes[i] == 'Internal Attribute'):
-   configFile.write(' if(isDefined(_k->_js, {"' + solverAlias + '", "Internal", "' + settingNames[i] + '"} )) \n {\n')
-   configFile.write('  ' + settingVariableNames[i] + ' = _k->_js.at("' + solverAlias + '").at("Internal").at("' + settingNames[i] + '").get<' + settingDataTypes[i] + '>();\n')
-   configFile.write('  _k->_js["' + solverAlias + '"]["Internal"].erase("' + settingNames[i] + '"); \n }\n\n')
+   configFile.write(' if(isDefined(_k->_js, {"Solver", "Internal", "' + settingNames[i] + '"} )) \n {\n')
+   configFile.write('  ' + settingVariableNames[i] + ' = _k->_js.at("Solver").at("Internal").at("' + settingNames[i] + '").get<' + settingDataTypes[i] + '>();\n')
+   configFile.write('  _k->_js["Solver"]["Internal"].erase("' + settingNames[i] + '"); \n }\n\n')
  
  configFile.write('} \n\n') 
  
@@ -96,19 +96,19 @@ def writeConfig(solverName, solverType, solverAlias, solverDescription, solverPl
  
  configFile.write('void Korali::Solver::' + solverAlias + '::getConfiguration() \n{\n\n')
 
- configFile.write(' _k->_js["Solver"] = "' + solverAlias + '";\n')
+ configFile.write(' _k->_js["Solver"]["Type"] = "' + solverAlias + '";\n')
 
  ## Save Solver Settings
  for i in range(len(settingNames)):   
   if (settingTypes[i] == 'Solver Setting'):
-   configFile.write(' _k->_js["' + solverAlias + '"]["' + settingNames[i] + '"] = ' + settingVariableNames[i] + ';\n')
+   configFile.write(' _k->_js["Solver"]["' + settingNames[i] + '"] = ' + settingVariableNames[i] + ';\n')
  
  ## Save Variable Settings
  configFile.write('\n\n for(size_t i = 0; i < _k->N; i++) \n { \n')
   
  for i in range(len(settingNames)): 
   if (settingTypes[i] == 'Variable Setting'):
-   configFile.write('  _k->_js["Variables"][i]["' + solverAlias +'"]["' + settingNames[i] + '"] = _variableSettings[i].' + settingVariableNames[i] + ';\n')
+   configFile.write('  _k->_js["Variables"][i]["' + settingNames[i] + '"] = _variableSettings[i].' + settingVariableNames[i] + ';\n')
    
  configFile.write(' } \n\n')
  
@@ -116,8 +116,8 @@ def writeConfig(solverName, solverType, solverAlias, solverDescription, solverPl
  
  for i in range(len(settingNames)):   
   if (settingTypes[i] == 'Termination Criterion'):
-   configFile.write(' _k->_js["' + solverAlias + '"]["Termination Criteria"]["' + settingNames[i] + '"]["Value"] = ' + settingVariableNames[i] + ';\n')
-   configFile.write(' _k->_js["' + solverAlias + '"]["Termination Criteria"]["' + settingNames[i] + '"]["Enabled"] = ' + settingStateNames[i] + ';\n') 
+   configFile.write(' _k->_js["Solver"]["Termination Criteria"]["' + settingNames[i] + '"]["Value"] = ' + settingVariableNames[i] + ';\n')
+   configFile.write(' _k->_js["Solver"]["Termination Criteria"]["' + settingNames[i] + '"]["Enabled"] = ' + settingStateNames[i] + ';\n') 
  
  configFile.write('\n')
  
@@ -125,7 +125,7 @@ def writeConfig(solverName, solverType, solverAlias, solverDescription, solverPl
 
  for i in range(len(settingNames)):   
   if (settingTypes[i] == 'Internal Attribute'):
-   configFile.write(' _k->_js["' + solverAlias + '"]["Internal"]["' + settingNames[i] + '"] = ' + settingVariableNames[i] + ';\n')
+   configFile.write(' _k->_js["Solver"]["Internal"]["' + settingNames[i] + '"] = ' + settingVariableNames[i] + ';\n')
   
  configFile.write('} \n\n')
  
@@ -154,7 +154,7 @@ def writeWeb(solverName, solverType, solverAlias, solverDescription, solverPlott
    webFile.write('\t+ Default Value: ' + settingDefaultValues[i] + '\n')
    webFile.write('\t+ Datatype: ' + settingDataTypes[i] + '\n')
    webFile.write('\t+ Syntax: \n\n')
-   webFile.write('\t```python\n\t\tkorali["' + solverAlias + '"]["' + settingNames[i] + '"] = *value*\n\t```\n\n')
+   webFile.write('\t```python\n\t\tkorali["Solver"]["' + settingNames[i] + '"] = *value*\n\t```\n\n')
   
  webFile.write('## Variable Settings\n\n')
  
@@ -167,7 +167,7 @@ def writeWeb(solverName, solverType, solverAlias, solverDescription, solverPlott
    webFile.write('\t+ Default Value: ' + settingDefaultValues[i] + '\n')
    webFile.write('\t+ Datatype: ' + settingDataTypes[i] + '\n')
    webFile.write('\t+ Syntax: \n\n')
-   webFile.write('\t```python\n\t\tkorali["Variables"][i]["' + solverAlias + '"]["' + settingNames[i] + '"] = *value*\n\t```\n\n')
+   webFile.write('\t```python\n\t\tkorali["Variables"][i]["' + settingNames[i] + '"] = *value*\n\t```\n\n')
 
  webFile.write('## Termination Criteria\n\n')
  
@@ -181,8 +181,8 @@ def writeWeb(solverName, solverType, solverAlias, solverDescription, solverPlott
    webFile.write('\t+ Enabled by Default?: ' + settingDefaultStates[i] + '\n')
    webFile.write('\t+ Datatype: ' + settingDataTypes[i] + '\n')
    webFile.write('\t+ Syntax: \n\n')
-   webFile.write('\t```python\n\t\tkorali["' + solverAlias + '"]["Termination Criteria"]["' + settingNames[i] + '"]["Value"] = *value*\n\t```\n\n')
-   webFile.write('\t```python\n\t\tkorali["' + solverAlias + '"]["Termination Criteria"]["' + settingNames[i] + '"]["Enabled"] = *true / false* \n\t```\n\n')
+   webFile.write('\t```python\n\t\tkorali["Solver"]["Termination Criteria"]["' + settingNames[i] + '"]["Value"] = *value*\n\t```\n\n')
+   webFile.write('\t```python\n\t\tkorali["Solver"]["Termination Criteria"]["' + settingNames[i] + '"]["Enabled"] = *true / false* \n\t```\n\n')
    
  webFile.write('## Plotting\n\n')
  

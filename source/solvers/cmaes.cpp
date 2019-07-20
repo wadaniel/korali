@@ -29,10 +29,10 @@ CMAES::~CMAES()
 void CMAES::initialize()
 {
  // Checking for accepted problem types
- std::string pName = _k->_js["Problem"];
+ std::string pName = _k->_js["Problem"]["Type"];
  bool acceptableProblem = false;
  if (pName == "Optimization")  acceptableProblem = true;
- if (pName == "Bayesian")  acceptableProblem = true;
+ if (pName == "Bayesian Inference")  acceptableProblem = true;
  if (acceptableProblem == false) koraliError("CMAES cannot solve problems of type: '%s'.", pName.c_str());
 
  _chiN = sqrt((double) _k->N) * (1. - 1./(4.*_k->N) + 1./(21.*_k->N*_k->N));
@@ -63,10 +63,6 @@ void CMAES::initialize()
 
  _Z.resize(_sampleCount*_k->N);
  _BDZ.resize(_sampleCount*_k->N);
-
- if (_objective == "Maximize")     _evaluationSign = 1.0;
- else if(_objective == "Minimize") _evaluationSign = -1.0;
- else koraliError("CMA-ES - Objective must be either be initialized to \'Maximize\' or \'Minimize\' (is %s).\n", _objective.c_str());
 
  // Initailizing Mu
  _muWeights.resize(_muValue);
@@ -206,13 +202,8 @@ void CMAES::initCovariance()
 void CMAES::processSample(size_t sampleId, double fitness)
 {
  double logPrior = _k->_problem->evaluateLogPrior(&_samplePopulation[sampleId*_k->N]);
- fitness = _evaluationSign * (logPrior+fitness);
- if(std::isfinite(fitness) == false)
- {
-   fitness = _evaluationSign * std::numeric_limits<double>::max();
-   koraliError("Sample %zu returned non finite fitness (set to %e)!\n", sampleId, fitness);
- }
-
+ fitness = logPrior+fitness;
+ if(std::isfinite(fitness) == false)  koraliError("Sample %zu returned non finite fitness (set to %e)!\n", sampleId, fitness);
  _fitnessVector[sampleId] = fitness;
  _finishedSampleCount++;
 }
@@ -494,12 +485,6 @@ bool CMAES::checkTermination()
 
  }
 
- if( _termCondMaxGenerationsEnabled && (_k->currentGeneration >= _termCondMaxGenerations) )
- {
-  isFinished = true;
-  koraliLog(KORALI_MINIMAL, "Maximum number of Generations reached (%lu).\n", _termCondMaxGenerations);
- }
-
  return isFinished;
 }
 
@@ -622,8 +607,8 @@ void CMAES::printGeneration()
 void CMAES::finalize()
 {
 	koraliLog(KORALI_MINIMAL, "CMA-ES Finished\n");
-	koraliLog(KORALI_MINIMAL, "Optimum (%s) found: %e\n", _objective.c_str(), _bestEverValue);
-	koraliLog(KORALI_MINIMAL, "Optimum (%s) found at:\n", _objective.c_str());
+	koraliLog(KORALI_MINIMAL, "Optimum found: %e\n", _bestEverValue);
+	koraliLog(KORALI_MINIMAL, "Optimum found at:\n");
 	for (size_t d = 0; d < _k->N; ++d) koraliLogData(KORALI_MINIMAL, "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverSample[d]);
 	koraliLog(KORALI_MINIMAL, "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
 	koraliLog(KORALI_MINIMAL, "--------------------------------------------------------------------\n");

@@ -6,12 +6,21 @@
 
 void Korali::Problem::Optimization::getConfiguration()
 {
- _k->_js["Problem"] = "Optimization";
+ _k->_js["Problem"]["Type"] = "Optimization";
+
+ if (_objective == maximizeFitness)  _k->_js["Problem"]["Objective"] = "Maximize";
+ if (_objective == minimizeFitness)  _k->_js["Problem"]["Objective"] = "Minimize";
+
 }
 
 void Korali::Problem::Optimization::setConfiguration()
 {
 
+ bool foundObjective = false;
+ std::string objectiveString = consume(_k->_js, { "Problem", "Objective" }, KORALI_STRING, "Undefined");
+ if (objectiveString == "Maximize") { _objective = maximizeFitness; foundObjective = true; }
+ if (objectiveString == "Minimize") { _objective = minimizeFitness; foundObjective = true; }
+ if (foundObjective == false) { koraliError("Missing or incorrect optimization objective (maximize/minimize): %s.\n", objectiveString.c_str()); exit(-1); }
 
 }
 
@@ -42,7 +51,9 @@ double Korali::Problem::Optimization::evaluateFitness(Korali::Model& data)
  if (data._results.size() != 1)
   koraliError("Optimization problems require exactly a 1-element result array. Provided: %lu.\n", data._results.size());
 
- return data._results[0];
+ double fitnessSign = _objective == maximizeFitness ? 1.0 : -1.0;
+
+ return fitnessSign*data._results[0];
 }
 
 double Korali::Problem::Optimization::evaluateLogPrior(double* sample)

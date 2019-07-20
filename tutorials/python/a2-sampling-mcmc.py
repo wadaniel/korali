@@ -14,25 +14,25 @@ from directModel import *
 import korali
 k = korali.initialize()
 
-# Setting Model
-k.setModel(evaluateModel)
-
 # Selecting problem and solver types.
-k["Problem"] = "Sampling"
-k["Solver"]  = "MCMC"
-k["Seed"]    = 2718
+k["Problem"]["Type"] = "Sampling"
 
-# Defining problem's variables and their prior distribution
+# Defining problem's variables and their MCMC settings
 k["Variables"][0]["Name"] = "X"
-k["Variables"][0]["MCMC"]["Initial Mean"] = 0.0
-k["Variables"][0]["MCMC"]["Standard Deviation"] = 1.0
+k["Variables"][0]["Initial Mean"] = 0.0
+k["Variables"][0]["Initial Standard Deviation"] = 1.0
 
 # Configuring the MCMC sampler parameters
-k["MCMC"]["Burn In"] = 500
-k["MCMC"]["Max Chain Length"] = 5000
+k["Solver"]["Type"]  = "MCMC"
+k["Solver"]["Burn In"] = 500
+k["Solver"]["Max Chain Length"] = 5000
 
-# Setting output directory
-k["Result Directory"] = "_a2_sampling_mcmc_result"
+# General Settings
+k["General"]["Results Output"]["Path"] = "_a2_sampling_mcmc_result"
+k["General"]["Random Seed"]    = 2718
+
+# Setting Model
+k.setModel(evaluateModel)
 
 # Running Korali
 k.run()

@@ -7,32 +7,30 @@
 
 int main(int argc, char* argv[])
 {
-  // Starting Korali's Engine
-  auto k = Korali::Engine();
+ // Starting Korali's Engine
+ auto k = Korali::Engine();
 
-  // Setting computational model
-  k.setModel([](Korali::Model& d) { evaluateModel(d.getVariables(), d.getResults()); });
+ // Selecting problem and solver types.
+ k["Problem"]["Type"] = "Optimization";
+ k["Problem"]["Objective"] = "Maximize";
 
-  // Selecting problem and solver types.
-  k["Problem"] = "Optimization";
-  k["Solver"]  = "DEA";
-  k["Seed"]    = 31415;
+ // Defining the problem's variables and their CMA-ES bounds.
+ k["Variables"][0]["Name"] = "X";
+ k["Variables"][0]["Lower Bound"] = -10.0;
+ k["Variables"][0]["Upper Bound"] = +10.0;
 
-  // Defining the problem's variables and their CMA-ES bounds.
-  k["Variables"][0]["Name"] = "X";
-  k["Variables"][0]["DEA"]["Lower Bound"] = -10.0;
-  k["Variables"][0]["DEA"]["Upper Bound"] = +10.0;
+ // Configuring CMA-ES parameters
+ k["Solver"]["Type"] = "DEA";
+ k["Solver"]["Sample Count"] = 32;
 
-  // Configuring CMA-ES parameters
-  k["DEA"]["Objective"] = "Maximize";
-  k["DEA"]["Sample Count"] = 32;
+ // General Settings
+ k["General"]["Results Output"]["Path"] = "_a1_optimization_dea_result";
+ k["General"]["Max Generations"] = 500;
+ k["General"]["Random Seed"] = 31415;
 
-  k["DEA"]["Termination Criteria"]["Max Generations"]["Value"] = 500;
+ // Setting computational model
+ k.setModel([](Korali::Model& d) { evaluateModel(d.getVariables(), d.getResults()); });
 
-  // Setting output directory
-  k["Result Directory"] = "_a1_optimization_dea_result";
-
-  // Running Korali
-  k.run();
-
+ // Running Korali
+ k.run();
 }

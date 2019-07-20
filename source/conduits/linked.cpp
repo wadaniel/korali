@@ -97,7 +97,7 @@ void Linked::getConfiguration()
 
 void Linked::setConfiguration()
 {
- _ranksPerTeam = consume(_k->_js, { "Conduit", "MPI", "Ranks Per Team" }, KORALI_NUMBER, std::to_string(1));
+ _ranksPerTeam = consume(_k->_js, { "Conduit", "MPI", "Ranks Per Team" }, KORALI_NUMBER, "-1");
  _useMPI = consume(_k->_js, { "Conduit", "MPI", "Enabled" }, KORALI_BOOLEAN, "false");
 }
 

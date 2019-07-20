@@ -15,59 +15,49 @@ k = korali.initialize()
 # Setting reference data from the model
 x, y = getReferenceData()
 
-# Setting the model
-Fx = lambda koraliData: evaluateModel(koraliData, x)
-k.setModel( Fx )
-
-# Selecting problem
-k["Problem"] = "Bayesian"
-
 # Setting up the reference likelihood for the Bayesian Problem
-k["Bayesian"]["Likelihood"]["Type"] = "Reference"
-k["Bayesian"]["Likelihood"]["Model"] = "Additive Gaussian"
-k["Bayesian"]["Likelihood"]["Reference Data"] = y
+k["Problem"]["Type"] = "Bayesian Inference"
+k["Problem"]["Likelihood"]["Model"] = "Additive Gaussian"
+k["Problem"]["Likelihood"]["Reference Data"] = y
 
 # Configuring the problem's variables and their prior distributions
 k["Variables"][0]["Name"] = "a"
-k["Variables"][0]["Bayesian"]["Type"] = "Computational"
-k["Variables"][0]["Bayesian"]["Prior Distribution"]["Type"] = "Uniform"
-k["Variables"][0]["Bayesian"]["Prior Distribution"]["Minimum"] = -5.0
-k["Variables"][0]["Bayesian"]["Prior Distribution"]["Maximum"] = +5.0
+k["Variables"][0]["Type"] = "Computational"
+k["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"
+k["Variables"][0]["Prior Distribution"]["Minimum"] = -5.0
+k["Variables"][0]["Prior Distribution"]["Maximum"] = +5.0
+k["Variables"][0]["Lower Bound"] = -5.0
+k["Variables"][0]["Upper Bound"] = +5.0
 
 k["Variables"][1]["Name"] = "b"
-k["Variables"][1]["Bayesian"]["Type"] = "Computational"
-k["Variables"][1]["Bayesian"]["Prior Distribution"]["Type"] = "Uniform"
-k["Variables"][1]["Bayesian"]["Prior Distribution"]["Minimum"] = -5.0
-k["Variables"][1]["Bayesian"]["Prior Distribution"]["Maximum"] = +5.0
+k["Variables"][1]["Type"] = "Computational"
+k["Variables"][1]["Prior Distribution"]["Type"] = "Uniform"
+k["Variables"][1]["Prior Distribution"]["Minimum"] = -5.0
+k["Variables"][1]["Prior Distribution"]["Maximum"] = +5.0
+k["Variables"][1]["Lower Bound"] = -5.0
+k["Variables"][1]["Upper Bound"] = +5.0
 
 k["Variables"][2]["Name"] = "Sigma"
-k["Variables"][2]["Bayesian"]["Type"] = "Statistical"
-k["Variables"][2]["Bayesian"]["Prior Distribution"]["Type"] = "Uniform"
-k["Variables"][2]["Bayesian"]["Prior Distribution"]["Minimum"] = 0.0
-k["Variables"][2]["Bayesian"]["Prior Distribution"]["Maximum"] = +5.0
-
-# Selecting solver type
-k["Solver"] = "CMAES"
-
-# Configuring the CMA-ES bounds for the variables
-k["Variables"][0]["CMAES"]["Lower Bound"] = -5.0
-k["Variables"][0]["CMAES"]["Upper Bound"] = +5.0
-k["Variables"][1]["CMAES"]["Lower Bound"] = -5.0
-k["Variables"][1]["CMAES"]["Upper Bound"] = +5.0
-k["Variables"][2]["CMAES"]["Lower Bound"] = 0.0
-k["Variables"][2]["CMAES"]["Upper Bound"] = +5.0
+k["Variables"][2]["Type"] = "Statistical"
+k["Variables"][2]["Prior Distribution"]["Type"] = "Uniform"
+k["Variables"][2]["Prior Distribution"]["Minimum"] = 0.0
+k["Variables"][2]["Prior Distribution"]["Maximum"] = +5.0
+k["Variables"][2]["Lower Bound"] = 0.0
+k["Variables"][2]["Upper Bound"] = +5.0
 
 # Configuring CMA-ES parameters
-k["CMAES"]["Objective"] = "Maximize"
-k["CMAES"]["Sample Count"] = 12
+k["Solver"]["Type"] = "CMAES"
+k["Solver"]["Sample Count"] = 12
 
-# Reducing Output
-k["Termination Criteria"]["Max Generations"] = 100
-k["Console Output Frequency"] = 5
-k["File Output Frequency"] = 5
+# General Settings
+k["General"]["Max Generations"] = 100
+k["General"]["Console Output"]["Frequency"] = 5
+k["General"]["Results Output"]["Frequency"] = 5
+k["General"]["Results Output"]["Path"] = "_a3_bayesian_inference_cmaes_result"
 
-# Setting output directory
-k["Result Directory"] = "_a3_bayesian_inference_cmaes_result"
+# Setting the model
+Fx = lambda koraliData: evaluateModel(koraliData, x)
+k.setModel( Fx )
 
 # Running Korali
 k.run()

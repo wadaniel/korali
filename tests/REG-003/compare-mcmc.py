@@ -23,15 +23,15 @@ json_py  = open_json(src_py, result_py)
 
 # Compare Python and CXX results
 
-assert_value( [ "MCMC", "Internal", "Acceptance Count" ], json_cxx, json_py)
+assert_value( [ "Solver", "Internal", "Acceptance Count" ], json_cxx, json_py)
 
-assert_value( [ "MCMC", "Internal", "Acceptance Rate" ], json_cxx, json_py)
+assert_value( [ "Solver", "Internal", "Acceptance Rate" ], json_cxx, json_py)
 
-assert_value( [ "MCMC", "Internal", "Chain Covariance" ], json_cxx, json_py)
+assert_value( [ "Solver", "Internal", "Chain Covariance" ], json_cxx, json_py)
 
-assert_value( [ "MCMC", "Internal", "Chain Mean" ], json_cxx, json_py)
+assert_value( [ "Solver", "Internal", "Chain Mean" ], json_cxx, json_py)
 
-assert_value( [ "MCMC", "Internal", "Sample Fitness Database" ], json_cxx, json_py)
+assert_value( [ "Solver", "Internal", "Sample Fitness Database" ], json_cxx, json_py)
 
-assert_value( [ "MCMC", "Internal", "Rejection Count" ], json_cxx, json_py)
+assert_value( [ "Solver", "Internal", "Rejection Count" ], json_cxx, json_py)
 

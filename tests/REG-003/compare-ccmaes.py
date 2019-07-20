@@ -23,12 +23,12 @@ json_py  = open_json(src_py, result_py)
 
 # Compare Python and CXX results
 
-assert_value( [ "CCMAES", "Internal", "Best Ever Sample" ], json_cxx, json_py)
+assert_value( [ "Solver", "Internal", "Best Ever Sample" ], json_cxx, json_py)
 
-assert_value( [ "CCMAES", "Internal", "Best Ever Value" ], json_cxx, json_py)
+assert_value( [ "Solver", "Internal", "Best Ever Value" ], json_cxx, json_py)
 
-assert_value( [ "CCMAES", "Internal", "Conjugate Evolution Path" ], json_cxx, json_py)
+assert_value( [ "Solver", "Internal", "Conjugate Evolution Path" ], json_cxx, json_py)
 
-assert_value( [ "CCMAES", "Internal", "Fitness Vector" ], json_cxx, json_py)
+assert_value( [ "Solver", "Internal", "Fitness Vector" ], json_cxx, json_py)
 
-assert_value( [ "CCMAES", "Internal", "Sigma" ], json_cxx, json_py)
+assert_value( [ "Solver", "Internal", "Sigma" ], json_cxx, json_py)

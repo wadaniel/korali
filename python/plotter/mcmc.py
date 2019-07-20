@@ -95,8 +95,8 @@ def plot_lower_triangle(ax, theta):
 def plot_samples(fig, ax, data, filename):
     dims     = data['Variables']
     numdim   = len(dims)
-    pop      = data['MCMC']['Internal']['Database Entry Count']
-    samples  = np.reshape( data['MCMC']['Internal']['Sample Parameters Database'][0:pop*numdim], (pop,numdim) )
+    pop      = data['Solver']['Internal']['Database Entry Count']
+    samples  = np.reshape( data['Solver']['Internal']['Sample Parameters Database'][0:pop*numdim], (pop,numdim) )
     
     fig.canvas.set_window_title(filename)
     
@@ -132,11 +132,11 @@ def plot_mcmc(src, live=False, test=False):
             with open(path) as f:
                 data     = json.load(f)
                 numdim   = len(data['Variables'])
-                burnin   = data['MCMC']['Burn In']
-                chainlen = data['MCMC']['Internal']['Chain Length']
+                burnin   = data['Solver']['Burn In']
+                chainlen = data['Solver']['Internal']['Chain Length']
                 
                 if (runid == -1):
-                    seed = data['Run ID']
+                    seed = data['General']['Run ID']
                     fig, ax = plt.subplots(numdim, numdim, figsize=(8,8))
                     fig.show()
     
@@ -144,7 +144,7 @@ def plot_mcmc(src, live=False, test=False):
                     print("[Korali] Figure closed - Bye!")
                     exit(-1)
 
-                if (data['Run ID'] != runid):
+                if (data['General']['Run ID'] != runid):
                     print("[Korali] Warning: Skipping file {0}, results" \
                             "origin from a different experiment (different runid)".format(path))
                     continue
@@ -160,8 +160,8 @@ def plot_mcmc(src, live=False, test=False):
         with open(path) as f:
             data     = json.load(f)
             numdim   = len(data['Variables'])
-            burnin   = data['MCMC']['Burn In']
-            chainlen = data['MCMC']['Internal']['Chain Length']
+            burnin   = data['Solver']['Burn In']
+            chainlen = data['Solver']['Internal']['Chain Length']
             if chainlen <= burnin:
                 print("[Korali] Error: No samples found in file {0}...".format(path))
                 exit(-1)

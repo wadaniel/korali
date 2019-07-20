@@ -95,12 +95,12 @@ def plot_dea(src, live=False, test=False):
         with open(path) as f:
             
             data  = json.load(f)
-            state = data['DEA']['Internal']
-            gen   = data['Current Generation']
+            state = data['Solver']['Internal']
+            gen   = data['General']['Current Generation']
 
             if (runid == -1):
                 
-                runid = data['Run ID']
+                runid = data['General']['Run ID']
                 fig, ax = plt.subplots(2,2,num='DEA live diagnostics: {0}'.format(src),figsize=(8,8))
                 fig.show()
                 
@@ -113,7 +113,7 @@ def plot_dea(src, live=False, test=False):
                     width.append([])
                 continue
                 
-            numeval.append(data['Function Evaluation Count'])
+            numeval.append(data['General']['Function Evaluation Count'])
             dfval.append(abs(state['Current Best Value'] - state['Best Ever Value']))
             fval.append(state['Current Best Value'])
 
@@ -129,7 +129,7 @@ def plot_dea(src, live=False, test=False):
                 print("[Korali] Figure closed - Bye!")
                 exit(0)
       
-            if (data['Run ID'] != runid):
+            if (data['General']['Run ID'] != runid):
                 print("[Korali] Warning: Skipping file {0}, results origin" \
                         "from a different experiment (different run id)".format(path))
                 continue

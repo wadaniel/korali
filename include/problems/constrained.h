@@ -5,9 +5,16 @@
 
 namespace Korali { namespace Problem {
 
+#ifndef KORALI_OPTOBJECTIVE
+#define KORALI_OPTOBJECTIVE
+enum optimizationObjective {maximizeFitness, minimizeFitness};
+#endif
+
 class Constrained : public Base
 {
  public:
+
+ optimizationObjective _objective;
 
  void packVariables(double* sample, Korali::Model& data) override;
  double evaluateFitness(Korali::Model& data) override;

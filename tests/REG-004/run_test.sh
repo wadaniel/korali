@@ -19,12 +19,12 @@ do
   logEcho "-------------------------------------"
   logEcho " Plotting results from $dir ..."
   logEcho "-------------------------------------"
-  python3 -m korali.plotter --test --dir "${dir}" >> $logFile
+  python3 -m korali.plotter --test --dir "${dir}" >> $logFile 2>&1
   check_result
                      
-  python3 -m korali.plotter --test --live --dir "${dir}" >> $logFile
+  python3 -m korali.plotter --test --live --dir "${dir}" >> $logFile 2>&1
   check_result
                      
-  #python3 -m korali.plotter --test --evolution --dir "${dir}" >> $logFile
+  #python3 -m korali.plotter --test --evolution --dir "${dir}" >> $logFile 2>&1
   #check_result
 done 

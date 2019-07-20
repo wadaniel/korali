@@ -27,7 +27,7 @@ def main(check, path, live, test, evolution):
  with open(firstResult) as f:
   data  = json.load(f)
  
- solver = data['Solver']
+ solver = data['Solver']['Type']
  if ( 'TMCMC' == solver ):
   print("[Korali] Running TMCMC Plotter...")
   plot_tmcmc(path, live, test)

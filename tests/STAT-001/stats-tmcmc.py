@@ -11,14 +11,14 @@ src_cxx = "../../tutorials/cxx/_a2_sampling_tmcmc_result/"
 src_py  = "../../tutorials/python/_a2_sampling_tmcmc_result/"
 
 def checkMean(js, expectedMean, tol):
-    samples = js["TMCMC"]["Internal"]["Sample Parameters Database"]
+    samples = js["Solver"]["Internal"]["Sample Parameters Database"]
     
     mean = np.mean(samples)
     assert np.isclose(expectedMean, mean, atol = tol), "Mean of Samples {0}"\
             "deviate from true mean by {1}".format(mean, tol)
 
 def checkStd(js, expectedStd, tol):
-    samples = js["TMCMC"]["Internal"]["Sample Parameters Database"]
+    samples = js["Solver"]["Internal"]["Sample Parameters Database"]
     
     std = np.std(samples)
     assert np.isclose(expectedStd, std, atol = tol), "Standard Deviation of "\

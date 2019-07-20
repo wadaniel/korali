@@ -37,10 +37,10 @@ DEA::~DEA()
 void DEA::initialize()
 {
  // Checking for accepted problem types
-  std::string pName = _k->_js["Problem"];
+  std::string pName = _k->_js["Problem"]["Type"];
   bool acceptableProblem = false;
   if (pName == "Optimization")  acceptableProblem = true;
-  if (pName == "Bayesian")  acceptableProblem = true;
+  if (pName == "Bayesian Inference")  acceptableProblem = true;
   if (acceptableProblem == false) koraliError("DEA cannot solve problems of type: '%s'.", pName.c_str());
 
  // Allocating Memory
@@ -57,10 +57,6 @@ void DEA::initialize()
  _prevfitnessVector.resize(_sampleCount);
  _fitnessVector.resize(_sampleCount);
 
- if (_objective == "Maximize")      _evaluationSign = 1.0;
- else if(_objective == "Minimize")  _evaluationSign = -1.0;
- else koraliError("Objective must be either be initialized to \'Maximize\' or \'Minimize\' (is %s).\n", _objective.c_str());
-
  _infeasibleSampleCount = 0;
  _bestIndex             = 0;
  _previousBestValue     = -std::numeric_limits<double>::max();
@@ -69,7 +65,7 @@ void DEA::initialize()
  _bestEverValue         = -std::numeric_limits<double>::max();
 
  for(size_t d = 0; d < _k->N; ++d)
-	if(_variableSettings[d].upperBound < _variableSettings[d].lowerBound)
+  if(_variableSettings[d].upperBound < _variableSettings[d].lowerBound)
     koraliError("Lower Bound (%.4f) of variable \'%s\'  exceeds Upper Bound (%.4f).\n", _variableSettings[d].lowerBound, _k->_variables[d]->_name.c_str(), _variableSettings[d].upperBound);
 
  initSamples();
@@ -104,20 +100,20 @@ void DEA::prepareGeneration()
  size_t initial_infeasible = _infeasibleSampleCount;
  for (size_t i = 0; i < _sampleCount; ++i)
  {
-	mutateSingle(i);
-	while(isFeasible(i) == false)
-	{
-	_infeasibleSampleCount++;
+  mutateSingle(i);
+  while(isFeasible(i) == false)
+  {
+  _infeasibleSampleCount++;
 
-	if (_fixInfeasible)
-			fixInfeasible(i);
-	else
-			mutateSingle(i);
+  if (_fixInfeasible)
+      fixInfeasible(i);
+  else
+      mutateSingle(i);
 
-	if ( _termCondMaxInfeasibleResamplingsEnabled )
-	if ( (_infeasibleSampleCount - initial_infeasible) > _termCondMaxInfeasibleResamplings )
-	koraliWarning(KORALI_MINIMAL, "Exiting resampling loop (param %zu) because max resamplings (%zu) reached.\n", i, _termCondMaxInfeasibleResamplings);
-	}
+  if ( _termCondMaxInfeasibleResamplingsEnabled )
+  if ( (_infeasibleSampleCount - initial_infeasible) > _termCondMaxInfeasibleResamplings )
+  koraliWarning(KORALI_MINIMAL, "Exiting resampling loop (param %zu) because max resamplings (%zu) reached.\n", i, _termCondMaxInfeasibleResamplings);
+  }
  }
 
  _finishedSampleCount = 0;
@@ -207,16 +203,16 @@ void DEA::evaluateSamples()
   {
     for (size_t i = 0; i < _sampleCount; i++) if (_isInitializedSample[i] == false)
     {
-    	 std::vector<double> _logTransformedSample(_k->N);
+       std::vector<double> _logTransformedSample(_k->N);
 
-		 for(size_t d = 0; d<_k->N; ++d)
-			 if (_k->_variables[d]->_isLogSpace == true)
-					 _logTransformedSample[d] = std::exp(_sampleCandidates[i*_k->N+d]);
-			 else
-					 _logTransformedSample[d] = _sampleCandidates[i*_k->N+d];
+     for(size_t d = 0; d<_k->N; ++d)
+       if (_k->_variables[d]->_isLogSpace == true)
+           _logTransformedSample[d] = std::exp(_sampleCandidates[i*_k->N+d]);
+       else
+           _logTransformedSample[d] = _sampleCandidates[i*_k->N+d];
 
-			_isInitializedSample[i] = true;
-			_k->_conduit->evaluateSample(_logTransformedSample.data(), i);
+      _isInitializedSample[i] = true;
+      _k->_conduit->evaluateSample(_logTransformedSample.data(), i);
     }
     _k->_conduit->checkProgress();
   }
@@ -227,7 +223,7 @@ void DEA::evaluateSamples()
 void DEA::processSample(size_t sampleIdx, double fitness)
 {
  double logPrior = _k->_problem->evaluateLogPrior(&_sampleCandidates[sampleIdx*_k->N]);
- _fitnessVector[sampleIdx] = _evaluationSign * (logPrior+fitness);
+ _fitnessVector[sampleIdx] = logPrior+fitness;
  _finishedSampleCount++;
 }
 
@@ -329,12 +325,6 @@ bool DEA::checkTermination()
    }
  }
  
- if( _termCondMaxGenerationsEnabled && (_k->currentGeneration >= _termCondMaxGenerations) )
- {
-  isFinished = true;
-  koraliLog(KORALI_MINIMAL, "Maximum number of Generations reached (%lu).\n", _termCondMaxGenerations);
- }
-
  return isFinished;
 }
 
@@ -359,8 +349,8 @@ void DEA::printGeneration()
 void DEA::finalize()
 {
  koraliLog(KORALI_MINIMAL, "Differential Evolution Finished\n");
- koraliLog(KORALI_MINIMAL, "Optimum (%s) found: %e\n", _objective.c_str(), _bestEverValue);
- koraliLog(KORALI_MINIMAL, "Optimum (%s) found at:\n", _objective.c_str());
+ koraliLog(KORALI_MINIMAL, "Optimum found: %e\n", _bestEverValue);
+ koraliLog(KORALI_MINIMAL, "Optimum found at:\n");
  for (size_t d = 0; d < _k->N; ++d) koraliLogData(KORALI_MINIMAL, "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverSample[d]);
  koraliLog(KORALI_MINIMAL, "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
  koraliLog(KORALI_MINIMAL, "--------------------------------------------------------------------\n");

@@ -26,7 +26,7 @@ fi
 
 logEcho "[Korali] Cloning korali-apps repository"                                   
 rm -rf korali-apps
-git clone git://github.com/cselab/korali-apps.git
+git clone git://github.com/cselab/korali-apps.git >> $logFile
 check_result
 
 #################################################
@@ -54,7 +54,7 @@ chmod a+x run_dry.py
 check_result
 
 logEcho "[Korali] Running run_dry.py..."
-mpirun -n 3 ./run_dry.py
+mpirun -n 3 ./run_dry.py >> $logFile
 check_result
 
 popd
@@ -76,7 +76,7 @@ chmod a+x run_dry.py
 check_result
 
 logEcho "[Korali] Running run_dry.py..."
-mpirun -n 3 ./run_dry.py
+mpirun -n 3 ./run_dry.py >> $logFile
 check_result
 
 popd

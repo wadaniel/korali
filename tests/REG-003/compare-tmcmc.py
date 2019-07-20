@@ -23,15 +23,15 @@ json_py  = open_json(src_py, result_py)
 
 # Compare Python and CXX results
 
-assert_value( [ "TMCMC", "Internal", "Accepted Samples Count" ], json_cxx, json_py)
+assert_value( [ "Solver", "Internal", "Accepted Samples Count" ], json_cxx, json_py)
 
-assert_value( [ "TMCMC", "Internal", "Chain Candidate Parameters" ], json_cxx, json_py)
+assert_value( [ "Solver", "Internal", "Chain Candidate Parameters" ], json_cxx, json_py)
 
-assert_value( [ "TMCMC", "Internal", "Chain Candidates Loglikelihoods" ], json_cxx, json_py)
+assert_value( [ "Solver", "Internal", "Chain Candidates Loglikelihoods" ], json_cxx, json_py)
 
-assert_value( [ "TMCMC", "Internal", "Chain Count" ], json_cxx, json_py)
+assert_value( [ "Solver", "Internal", "Chain Count" ], json_cxx, json_py)
 
-assert_value( [ "TMCMC", "Internal", "Chain Leader Parameters" ], json_cxx, json_py)
+assert_value( [ "Solver", "Internal", "Chain Leader Parameters" ], json_cxx, json_py)
 
-assert_value( [ "TMCMC", "Internal", "Chain Leaders Loglikelihoods" ], json_cxx, json_py)
+assert_value( [ "Solver", "Internal", "Chain Leaders Loglikelihoods" ], json_cxx, json_py)
 

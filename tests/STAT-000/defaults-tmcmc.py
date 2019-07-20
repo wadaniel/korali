@@ -8,67 +8,42 @@ import korali
 k = korali.initialize()
 k.setLikelihood( evaluateModel )
 
-k["Problem"] = "Bayesian"
-k["Solver"] = "TMCMC"
-
-k["Bayesian"]["Likelihood"]["Type"] = "Direct"
+k["Problem"]["Type"] = "Bayesian Inference"
+k["Problem"]["Likelihood"]["Model"] = "Custom"
 
 k["Variables"][0]["Name"] = "X"
-k["Variables"][0]["Bayesian"]["Prior Distribution"]["Type"] = "Uniform"
-k["Variables"][0]["Bayesian"]["Prior Distribution"]["Minimum"] = -10.0
-k["Variables"][0]["Bayesian"]["Prior Distribution"]["Maximum"] = +10.0
+k["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"
+k["Variables"][0]["Prior Distribution"]["Minimum"] = -10.0
+k["Variables"][0]["Prior Distribution"]["Maximum"] = +10.0
 
-k["TMCMC"]["Population Size"] = 5000
-k["TMCMC"]["Termination Criteria"]["Max Generations"]["Value"] = 0
+k["Solver"]["Type"] = "TMCMC"
+k["Solver"]["Population Size"] = 5000
 
-k["Result Directory"] = "_defaults_tmcmc"
-
-k.run()
+k.dry()
 
 ###############################################################################
 
 # Test Configuration
 
-assert_value( k["File Output Frequency"], 1 )
-
-assert_value( k["TMCMC"]["Covariance Scaling"], 0.04 )
-
-assert_value( k["TMCMC"]["Burn In Default"], 0 )
-
-assert_value( k["TMCMC"]["Max Rho Update"], 1.0 )
-
-assert_value( k["TMCMC"]["Min Rho Update"], 1e-5 )
-
-assert_value( k["TMCMC"]["Population Size"], 5000 )
-
-assert_boolean( k["TMCMC"]["Use Local Covariance"], False )
-
+assert_value( k["Solver"]["Covariance Scaling"], 0.04 )
+assert_value( k["Solver"]["Burn In Default"], 0 )
+assert_value( k["Solver"]["Max Rho Update"], 1.0 )
+assert_value( k["Solver"]["Min Rho Update"], 1e-5 )
+assert_value( k["Solver"]["Population Size"], 5000 )
+assert_boolean( k["Solver"]["Use Local Covariance"], False )
 
 # Test Internals
 
-assert_value( k["TMCMC"]["Internal"]["Accepted Samples Count"], 5000 )
-
-assert_value( k["TMCMC"]["Internal"]["Annealing Exponent"], 0.0 )
-
-assert_value( k["TMCMC"]["Internal"]["Coefficient of Variation"], 0.0 )
-
-assert_value( k["TMCMC"]["Internal"]["Covariance Matrix"][0], 0.0 )
-
-assert_value( k["TMCMC"]["Internal"]["Proposals Acceptance Rate"], 1.0 )
-
-assert_value( k["TMCMC"]["Internal"]["Selection Acceptance Rate"], 1.0 )
-
-
-# Test Termination Criteria
-assert_value( k["TMCMC"]["Termination Criteria"]["Max Generations"]["Value"], 0 )
-
-assert_boolean( k["TMCMC"]["Termination Criteria"]["Max Generations"]["Enabled"], True )
-
+assert_value( k["Solver"]["Internal"]["Accepted Samples Count"], 5000 )
+assert_value( k["Solver"]["Internal"]["Annealing Exponent"], 0.0 )
+assert_value( k["Solver"]["Internal"]["Coefficient of Variation"], 0.0 )
+assert_value( k["Solver"]["Internal"]["Covariance Matrix"][0], 0.0 )
+assert_value( k["Solver"]["Internal"]["Proposals Acceptance Rate"], 1.0 )
+assert_value( k["Solver"]["Internal"]["Selection Acceptance Rate"], 1.0 )
 
 # Test Variables
 
-assert_value( k["Variables"][0]["Bayesian"]["Prior Distribution"]["Maximum"], 10 )
+assert_string( k["Variables"][0]["Prior Distribution"]["Type"], "Uniform" )
+assert_value( k["Variables"][0]["Prior Distribution"]["Maximum"], 10 )
+assert_value( k["Variables"][0]["Prior Distribution"]["Minimum"], -10 )
 
-assert_value( k["Variables"][0]["Bayesian"]["Prior Distribution"]["Minimum"], -10 )
-
-assert_string( k["Variables"][0]["Bayesian"]["Prior Distribution"]["Type"], "Uniform" )

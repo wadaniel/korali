@@ -13,26 +13,26 @@ from directModel import *
 import korali
 k = korali.initialize()
 
-# Setting computational model
-k.setModel(evaluateModel)
-
-# Selecting problem and solver types.
-k["Problem"] = "Optimization"
-k["Solver"]  = "DEA"
-k["Seed"]    = 31415
+# Configuring Problem
+k["Problem"]["Type"] = "Optimization"
+k["Problem"]["Objective"] = "Maximize"
 
 # Defining the problem's variables and their DEA bounds.
 k["Variables"][0]["Name"] = "X";
-k["Variables"][0]["DEA"]["Lower Bound"] = -10.0;
-k["Variables"][0]["DEA"]["Upper Bound"] = +10.0;
+k["Variables"][0]["Lower Bound"] = -10.0;
+k["Variables"][0]["Upper Bound"] = +10.0;
 
-# Configuring DEA parameters
-k["DEA"]["Objective"] = "Maximize"
-k["DEA"]["Sample Count"] = 32
-k["DEA"]["Termination Criteria"]["Max Generations"]["Value"] = 500
+# Configuring Solver
+k["Solver"]["Type"] = "DEA"
+k["Solver"]["Sample Count"] = 32
 
-# Setting output directory
-k["Result Directory"] = "_a1_optimization_dea_result"
+# General Settings
+k["General"]["Results Output"]["Path"] = "_a1_optimization_dea_result"
+k["General"]["Random Seed"]  = 31415
+k["General"]["Max Generations"] = 500
+
+# Setting computational model
+k.setModel(evaluateModel)
 
 # Running Korali
 k.run()

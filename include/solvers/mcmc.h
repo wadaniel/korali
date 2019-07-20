@@ -332,7 +332,7 @@ Specifies the Initial Mean of the proposal distribution.
 double initialMean;
 
 /******************************************************************************
-Setting Name: Standard Deviation
+Setting Name: Initial Standard Deviation
 Type: Variable Setting
 Default Value:
 Default Enabled:

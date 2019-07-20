@@ -50,16 +50,6 @@ class CCMAES : public Base
  public:
 
 /******************************************************************************
-Setting Name: Objective
-Type: Solver Setting
-Default Value: "Maximize"
-Default Enabled:
-Description:
-Specifies whether the problem evaluation is to be minimized or maximized.
-******************************************************************************/
-std::string _objective;
-
-/******************************************************************************
 Setting Name: Sample Count
 Type: Solver Setting
 Default Value: 32
@@ -218,17 +208,6 @@ Required for covariance matrix scaling factor update during viability regime.
 double _globalSuccessLearningRate;
 
 /******************************************************************************
-Setting Name: Max Generations
-Type: Termination Criterion
-Default Value: 1e3
-Default Enabled: true
-Description:
-Maximal number of generations to run.
-******************************************************************************/
-size_t _termCondMaxGenerations;
-bool   _termCondMaxGenerationsEnabled;
-
-/******************************************************************************
 Setting Name: Max Infeasible Resampling
 Type: Termination Criterion
 Default Value: 1e9
@@ -318,17 +297,6 @@ in the direction of the eigenvectors.
 ******************************************************************************/
 double _termCondMinStandardDeviationStepFactor;
 bool   _termCondMinStandardDeviationStepFactorEnabled;
-
-/******************************************************************************
-Setting Name: Evaluation Sign
-Type: Internal Attribute
-Default Value:
-Default Enabled:
-Description:
-The sign for the fitness evaluation to determine whether this is a maximization
-or minimization operation.
-******************************************************************************/
-double _evaluationSign;
 
 /******************************************************************************
 Setting Name: Is Viability Regime

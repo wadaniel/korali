@@ -13,24 +13,22 @@ from directModel import *
 
 import korali
 k = korali.initialize()
-k.setModel(evaluateModel)
 
-k["Problem"] = "Optimization"
-k["Solver"]  = "CMAES"
+k["Problem"]["Type"] = "Optimization"
+k["Problem"]["Objective"] = "Maximize"
 
 k["Variables"][0]["Name"] = "X"
-k["Variables"][0]["CMAES"]["Lower Bound"] = -10.0
-k["Variables"][0]["CMAES"]["Upper Bound"] = +10.0
+k["Variables"][0]["Lower Bound"] = -10.0
+k["Variables"][0]["Upper Bound"] = +10.0
 
-k["CMAES"]["Objective"] = "Maximize"
-k["CMAES"]["Sample Count"] = 5
+k["Solver"]["Type"] = "CMAES"
+k["Solver"]["Sample Count"] = 5
 
-# Setting output directory
-k["Result Directory"] = "_b1_restart_cmaes_result"
+k["General"]["Max Generations"] = 500
+k["General"]["Console Output"]["Frequency"] = 10
+k["General"]["Results Output"]["Path"] = "_b1_restart_cmaes_result"
 
-# Reducing Output
-k["Termination Criteria"]["Max Generations"] = 500
-k["Console Output Frequency"] = 10
+k.setModel(evaluateModel)
 
 k.run()
 

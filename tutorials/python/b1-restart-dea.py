@@ -13,24 +13,22 @@ from directModel import *
 
 import korali
 k = korali.initialize()
-k.setModel(evaluateModel)
 
-k["Problem"] = "Optimization"
-k["Solver"]  = "DEA"
+k["Problem"]["Type"] = "Optimization"
+k["Problem"]["Objective"] = "Maximize"
 
 k["Variables"][0]["Name"] = "X"
-k["Variables"][0]["DEA"]["Lower Bound"] = -10.0
-k["Variables"][0]["DEA"]["Upper Bound"] = +10.0
+k["Variables"][0]["Lower Bound"] = -10.0
+k["Variables"][0]["Upper Bound"] = +10.0
 
-k["DEA"]["Objective"] = "Maximize"
-k["DEA"]["Sample Count"] = 10
+k["Solver"]["Type"]  = "DEA"
+k["Solver"]["Sample Count"] = 10
 
-# Setting output directory
-k["Result Directory"] = "_b1_restart_dea_result"
+k["General"]["Max Generations"] = 500
+k["General"]["Console Output"]["Frequency"] = 5
+k["General"]["Results Output"]["Path"] = "_b1_restart_dea_result"
 
-# Reducing Output
-k["Termination Criteria"]["Max Generations"] = 500
-k["Console Output Frequency"] = 5 
+k.setModel(evaluateModel) 
 
 k.run()
 

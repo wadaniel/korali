@@ -2,10 +2,10 @@
 
 void Korali::Problem::Hierarchical::getConfiguration()
 {
- _k->_js["Problem"] = "Hierarchical Bayesian";
+ _k->_js["Problem"]["Type"] = "Hierarchical Bayesian";
 
- if (_operationType == SamplePsi)   _k->_js["Hierarchical Bayesian"]["Operation Type"] = "Sample Psi";
- if (_operationType == SampleTheta) _k->_js["Hierarchical Bayesian"]["Operation Type"] = "Sample Theta";
+ if (_operationType == SamplePsi)   _k->_js["Problem"]["Model"] = "Sample Psi";
+ if (_operationType == SampleTheta) _k->_js["Problem"]["Model"] = "Sample Theta";
 
  for (size_t i = 0; i < _k->N; i++)  _k->_variables[i]->getDistribution(_k->_js["Variables"][i]["Bayesian"]["Prior Distribution"]);
 }
@@ -13,7 +13,7 @@ void Korali::Problem::Hierarchical::getConfiguration()
 void Korali::Problem::Hierarchical::setConfiguration()
 {
   bool foundSubProblemType = false;
-  std::string operationTypeString = consume(_k->_js, { "Hierarchical Bayesian", "Operation Type" }, KORALI_STRING, "Undefined");
+  std::string operationTypeString = consume(_k->_js, { "Problem", "Model" }, KORALI_STRING, "Undefined");
   if (operationTypeString == "Sample Psi")   { _operationType = SamplePsi;   foundSubProblemType = true; }
   if (operationTypeString == "Sample Theta") { _operationType = SampleTheta; foundSubProblemType = true; }
   if (foundSubProblemType == false) { koraliError("Incorrect or no sub-problem Type selected for Hierarchical Bayesian: %s.\n", operationTypeString.c_str()); exit(-1); }
@@ -21,11 +21,11 @@ void Korali::Problem::Hierarchical::setConfiguration()
   if (isArray(_k->_js, { "Variables" } ))
   for (size_t i = 0; i < _k->N; i++)
   {
-    bool foundPriorDistribution = isDefined(_k->_js["Variables"][i], {"Bayesian", "Prior Distribution" });
+    bool foundPriorDistribution = isDefined(_k->_js["Variables"][i], { "Prior Distribution" });
     if (foundPriorDistribution == false) { koraliError("No Prior Distribution information provided for variable: %s.\n", _k->_variables[i]->_name.c_str()); exit(-1); }
 
-    _k->_js["Variables"][i]["Bayesian"]["Prior Distribution"]["Seed"] = _k->_seed++;
-    _k->_variables[i]->setDistribution(_k->_js["Variables"][i]["Bayesian"]["Prior Distribution"]);
+    _k->_js["Variables"][i]["Prior Distribution"]["Seed"] = _k->_seed++;
+    _k->_variables[i]->setDistribution(_k->_js["Variables"][i]["Prior Distribution"]);
   }
 }
 

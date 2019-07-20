@@ -116,19 +116,19 @@ def plot_tmcmc(src, live=False, test=False):
             data    = json.load(f)
             
             if (runid == -1):
-                runid = data['Run ID']
+                runid = data['General']['Run ID']
   
-            if (data['Run ID'] != runid):
+            if (data['General']['Run ID'] != runid):
                 print("[Korali] Warning: Skipping file {0}, results origin" \
                         "from a different experiment (different run id)".format(path))
                 continue
 
             numdim  = len(data['Variables'])
-            pop     = data['TMCMC']['Population Size']
-            gen     = data['Current Generation']
-            anneal  = data['TMCMC']['Internal']['Annealing Exponent']
-            fitness = data['TMCMC']['Internal']['Sample Fitness Database']
-            samples = np.reshape( data['TMCMC']['Internal']['Sample Parameters Database'], (pop,numdim) )
+            pop     = data['Solver']['Population Size']
+            gen     = data['General']['Current Generation']
+            anneal  = data['Solver']['Internal']['Annealing Exponent']
+            fitness = data['Solver']['Internal']['Sample Fitness Database']
+            samples = np.reshape( data['Solver']['Internal']['Sample Parameters Database'], (pop,numdim) )
             fig, ax = plt.subplots(samples.shape[1], samples.shape[1], figsize=(8,8))
 
             fig.canvas.set_window_title(filename)

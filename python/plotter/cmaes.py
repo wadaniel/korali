@@ -78,14 +78,14 @@ def plot_cmaes(src, live=False, test=False, evolution=False):
         with open(path) as f:
 
             data       = json.load(f)
-            solverName = data['Solver']
+            solverName = 'CMAES'
 
-            state = data[solverName]['Internal']
-            gen   = data['Current Generation']
+            state = data['Solver']['Internal']
+            gen   = data['General']['Current Generation']
 
             if (runid == -1):
 
-                runid  = data['Run ID']
+                runid  = data['General']['Run ID']
                 numdim = len(data['Variables'])
                 names  = [ data['Variables'][i]['Name'] for i in range(numdim) ]
                 colors = hls_colors(numdim)
@@ -119,14 +119,14 @@ def plot_cmaes(src, live=False, test=False, evolution=False):
                 exit(0)
     
 
-            if (data['Run ID'] != runid):
+            if (data['General']['Run ID'] != runid):
                 print("[Korali] Warning: Skipping file {0}, results origin from" \
                         "a different experiment (different run id).".format(path))
                 continue
 
             if gen > 1:
 
-                numeval.append(data['Function Evaluation Count'])
+                numeval.append(data['General']['Function Evaluation Count'])
                 dfval.append(abs(state['Current Best Value'] - state['Best Ever Value']))
                 
                 fval.append(state['Current Best Value'])

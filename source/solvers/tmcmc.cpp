@@ -30,9 +30,9 @@ Korali::Solver::TMCMC::~TMCMC()
 void Korali::Solver::TMCMC::initialize()
 {
  // Checking for accepted problem types
- std::string pName = _k->_js["Problem"];
+ std::string pName = _k->_js["Problem"]["Type"];
  bool acceptableProblem = false;
- if (pName == "Bayesian")  acceptableProblem = true;
+ if (pName == "Bayesian Inference")  acceptableProblem = true;
  if (pName == "Hierarchical Bayesian")  acceptableProblem = true;
  if (acceptableProblem == false) koraliError("TMCMC cannot solve problems of type: '%s'.", pName.c_str());
 
@@ -76,11 +76,6 @@ void Korali::Solver::TMCMC::initialize()
  _chainCount              = _populationSize;
  for (size_t c = 0; c < _chainCount; c++) _currentChainStep[c]    = 0;
  for (size_t c = 0; c < _chainCount; c++) _chainPendingFitness[c] = false;
-
- _burnIn = std::vector<size_t>(_termCondMaxGenerations, _burnInDefault);
- if(_burnInSteps.size() > _burnIn.size())
-    koraliError("[Korali] Error: Number of defined Burn In Steps (%zu) larger than Max Generations (%zu)\n", _burnInSteps.size(), _termCondMaxGenerations);
- std::copy(_burnInSteps.begin(), _burnInSteps.end(), _burnIn.begin());
 
  for (size_t c = 0; c < _populationSize; c++)
  {
@@ -134,7 +129,7 @@ void Korali::Solver::TMCMC::processSample(size_t c, double fitness)
  }
 
  _currentChainStep[c]++;
- if (_currentChainStep[c] > _burnIn[_k->currentGeneration] ) updateDatabase(&_chainLeadersParameters[c*_k->N], _chainLeadersLogLikelihoods[c]);
+ if (_currentChainStep[c] > _burnInDefault ) updateDatabase(&_chainLeadersParameters[c*_k->N], _chainLeadersLogLikelihoods[c]);
  _chainPendingFitness[c] = false;
  if (_currentChainStep[c] == _chainLengths[c]) _finishedChainsCount++;
 }
@@ -239,7 +234,7 @@ void Korali::Solver::TMCMC::processGeneration()
 	 if (sel[i] != 0) {
 		 for (size_t j = 0; j < _k->N ; j++) _chainLeadersParameters[ldi*_k->N + j] = _sampleParametersDatabase[i*_k->N + j];
 		 _chainLeadersLogLikelihoods[ldi] = _sampleFitnessDatabase[i];
-		 _chainLengths[ldi] = sel[i] + _burnIn[_k->currentGeneration];
+		 _chainLengths[ldi] = sel[i] + _burnInDefault;
 		 ldi++;
 	 }
 	}
@@ -445,12 +440,6 @@ bool Korali::Solver::TMCMC::checkTermination()
  {
   isFinished = true;
   koraliLog( KORALI_MINIMAL, "Annealing completed (1.0).\n");
- }
-
- if( _termCondMaxGenerationsEnabled && (_k->currentGeneration >= _termCondMaxGenerations) )
- {
-  isFinished = true;
-  koraliLog(KORALI_MINIMAL, "Maximum number of Generations reached (%lu).\n", _termCondMaxGenerations);
  }
 
  return isFinished;

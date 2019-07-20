@@ -1,32 +1,37 @@
 #!/usr/bin/env python3
 import korali
 import sys
-import subprocess
-
-def evaluate(x):
-  argString = ['./ackley.py']
-  for i in range(x.getVariableCount()):
-    argString.append(str(x.getVariable(i)))
-  retValue = subprocess.check_output(argString)
-  x.addResult(float(retValue.decode()))
+sys.path.append("model")
+from runModel import *
 
 k = korali.Engine()
-k["Verbosity"] = "Normal";
 
-k["Problem"] = "Optimization";
-for i in range(4):
-  k["Variables"][i]["Name"] = "X" + str(i)
+k["Problem"]["Type"] = "Optimization";
+k["Problem"]["Objective"] = "Maximize"
 
+k["Variables"][0]["Name"] = "X0"
+k["Variables"][0]["Lower Bound"] = -32.0;
+k["Variables"][0]["Upper Bound"] = +32.0;
+
+k["Variables"][1]["Name"] = "X1"
+k["Variables"][1]["Lower Bound"] = -32.0;
+k["Variables"][1]["Upper Bound"] = +32.0;
+
+k["Variables"][2]["Name"] = "X2"
+k["Variables"][2]["Lower Bound"] = -32.0;
+k["Variables"][2]["Upper Bound"] = +32.0;
+
+k["Variables"][3]["Name"] = "X3"
+k["Variables"][3]["Lower Bound"] = -32.0;
+k["Variables"][3]["Upper Bound"] = +32.0;
+  
 k["Conduit"]["Type"] = "External"
 k["Conduit"]["Concurrent Jobs"] = int(sys.argv[1])
 
-k["Solver"] = "CMAES"
-k["CMAES"]["Sample Count"] = 10
-for i in range(4):
-  k["Variables"][i]["CMAES"]["Lower Bound"] = -32.0;
-  k["Variables"][i]["CMAES"]["Upper Bound"] = +32.0;
-k["CMAES"]["Termination Criteria"]["Max Generations"]["Value"] = 30
+k["Solver"]["Type"] = "CMAES"
+k["Solver"]["Sample Count"] = 10
+  
+k["General"]["Max Generations"] = 30
 
-k.setModel(evaluate)
-
+k.setModel(runModel)
 k.run()

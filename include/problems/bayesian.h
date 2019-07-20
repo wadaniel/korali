@@ -5,8 +5,7 @@
 
 namespace Korali { namespace Problem {
 
-enum likelihoodType  {DirectLikelihood, ReferenceLikelihood};
-enum likelihoodModel {AdditiveGaussian, MultiplicativeGaussian, MultiplicativeGaussianData};
+enum likelihoodModel {CustomLikelihood, AdditiveGaussianLikelihood, MultiplicativeGaussianLikelihood, MultiplicativeGaussianDataLikelihood};
 
 class Bayesian : public Base
 {
@@ -16,7 +15,6 @@ class Bayesian : public Base
  std::vector<double> _referenceData;
  double* fitnessArrayPointer;
  size_t _referenceDataSize;
- likelihoodType  _likelihood;
  likelihoodModel _likelihoodModel;
 
  std::vector<size_t> _computationalVariableIndices;
@@ -33,11 +31,11 @@ class Bayesian : public Base
  void getConfiguration() override;
  void setConfiguration() override;
 
-  private:
+ private:
 
-    double likelihoodGaussianAdditive(Korali::Model& data);
-    double likelihoodGaussianMultiplicative(Korali::Model& data);
-    double likelihoodGaussianMultiplicativeData(Korali::Model& data);
+   double likelihoodGaussianAdditive(Korali::Model& data);
+   double likelihoodGaussianMultiplicative(Korali::Model& data);
+   double likelihoodGaussianMultiplicativeData(Korali::Model& data);
 
 };
 

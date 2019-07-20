@@ -23,12 +23,12 @@ json_py  = open_json(src_py, result_py)
 
 # Compare Python and CXX results
 
-assert_value( [ "DEA", "Internal", "Best Ever Sample" ], json_cxx, json_py)
+assert_value( [ "Solver", "Internal", "Best Ever Sample" ], json_cxx, json_py)
 
-assert_value( [ "DEA", "Internal", "Best Ever Value" ], json_cxx, json_py)
+assert_value( [ "Solver", "Internal", "Best Ever Value" ], json_cxx, json_py)
 
-assert_value( [ "DEA", "Internal", "Current Best Sample" ], json_cxx, json_py)
+assert_value( [ "Solver", "Internal", "Current Best Sample" ], json_cxx, json_py)
 
-assert_value( [ "DEA", "Internal", "Fitness Vector" ], json_cxx, json_py)
+assert_value( [ "Solver", "Internal", "Fitness Vector" ], json_cxx, json_py)
 
-assert_value( [ "DEA", "Internal", "Sample Candidate" ], json_cxx, json_py)
+assert_value( [ "Solver", "Internal", "Sample Candidate" ], json_cxx, json_py)

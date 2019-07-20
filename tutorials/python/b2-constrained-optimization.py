@@ -22,34 +22,28 @@ k.addConstraint( g3 )
 k.addConstraint( g4 )
 
 # Selecting problem type
-k["Problem"] = "Constrained Optimization"
+k["Problem"]["Type"] = "Constrained Optimization"
+k["Problem"]["Objective"] = "Maximize"
 
-# Selecting the CCMA-ES solver
-k["Solver"]  = "CCMAES"
-k["Seed"]    = 5772
-k["CCMAES"]["Objective"] = "Maximize"
-
-# Creating 7 variables and
-# Setting up the variables CCMA-ES bounds
-nParams = 7
-for i in range(nParams) :
+# Creating 7 variables and setting their CCMA-ES bounds
+for i in range(7) :
   k["Variables"][i]["Name"] = "X" + str(i)
-  k["Variables"][i]["CCMAES"]["Lower Bound"] = -10.0
-  k["Variables"][i]["CCMAES"]["Upper Bound"] = +10.0
+  k["Variables"][i]["Lower Bound"] = -10.0
+  k["Variables"][i]["Upper Bound"] = +10.0
 
 # Configuring the constrained optimizer CCMA-ES
-k["CCMAES"]["Is Sigma Bounded"] = True
-k["CCMAES"]["Sample Count"] = 32
-k["CCMAES"]["Viability Sample Count"] = 4
-k["CCMAES"]["Termination Criteria"]["Max Fitness"]["Enabled"] = True
-k["CCMAES"]["Termination Criteria"]["Max Fitness"]["Value"] = -680.630057374402 - 1e-4
+k["Solver"]["Type"]  = "CCMAES"
+k["Solver"]["Is Sigma Bounded"] = True
+k["Solver"]["Sample Count"] = 32
+k["Solver"]["Viability Sample Count"] = 4
+k["Solver"]["Termination Criteria"]["Max Fitness"]["Enabled"] = True
+k["Solver"]["Termination Criteria"]["Max Fitness"]["Value"] = -680.630057374402 - 1e-4
 
-# Reducing Output
-k["Termination Criteria"]["Max Generations"] = 500
-k["Verbosity"] = "Minimal"
-
-# Setting output directory
-k["Result Directory"] = "_b2_constrained_optimization_result"
+# General Settings
+k["General"]["Random Seed"] = 5772
+k["General"]["Max Generations"] = 500
+k["General"]["Console Output"]["Verbosity"] = "Minimal"
+k["General"]["Results Output"]["Path"] = "_b2_constrained_optimization_result"
 
 # Running Korali
 k.run()

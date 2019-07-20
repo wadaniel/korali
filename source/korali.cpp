@@ -95,23 +95,28 @@ void Korali::Engine::getConfiguration()
  auto js = nlohmann::json();
  _js = js;
 
- _js["Seed"]   = _seed;
- _js["Run ID"] = _runId;
- _js["Run Timestamp"] = _runTimestamp;
+ _js["General"]["Random Seed"]   = _seed;
+ _js["General"]["Run ID"] = _runId;
+
+ time_t rawtime; time (&rawtime);
+ std::string curTime(ctime(&rawtime));
+ _runTimestamp = curTime.substr(0, curTime.size()-1);
+ _js["General"]["Timestamp"] = _runTimestamp;
  
- if (_korali_verbosity == KORALI_SILENT)   _js["Verbosity"] = "Silent";
- if (_korali_verbosity == KORALI_MINIMAL)  _js["Verbosity"] = "Minimal";
- if (_korali_verbosity == KORALI_NORMAL)   _js["Verbosity"] = "Normal";
- if (_korali_verbosity == KORALI_DETAILED) _js["Verbosity"] = "Detailed";
+ if (_korali_verbosity == KORALI_SILENT)   _js["General"]["Console Output"]["Verbosity"] = "Silent";
+ if (_korali_verbosity == KORALI_MINIMAL)  _js["General"]["Console Output"]["Verbosity"] = "Minimal";
+ if (_korali_verbosity == KORALI_NORMAL)   _js["General"]["Console Output"]["Verbosity"] = "Normal";
+ if (_korali_verbosity == KORALI_DETAILED) _js["General"]["Console Output"]["Verbosity"] = "Detailed";
  
- _js["Result Directory"] = _result_dir;
- _js["Termination Criteria"]["Max Generations"] = maxGenerations;
- _js["Termination Criteria"]["Max Function Evaluations"] = maxFunctionEvaluations;
- _js["Current Generation"] = currentGeneration;
- _js["Console Output Frequency"] = consoleOutputFrequency;
- _js["File Output Frequency"] = fileOutputFrequency;
- _js["Function Evaluation Count"] = functionEvaluationCount;
- _js["Is Finished"] = _isFinished;
+
+ _js["General"]["Max Generations"] = maxGenerations;
+ _js["General"]["Max Function Evaluations"] = maxFunctionEvaluations;
+ _js["General"]["Current Generation"] = currentGeneration;
+ _js["General"]["Console Output"]["Frequency"] = consoleOutputFrequency;
+ _js["General"]["Results Output"]["Frequency"] = fileOutputFrequency;
+ _js["General"]["Results Output"]["Path"] = _result_dir;
+ _js["General"]["Function Evaluation Count"] = functionEvaluationCount;
+ _js["General"]["Is Finished"] = _isFinished;
  for (int i = 0; i < _variables.size(); i++) _js["Variables"][i]["Name"] = _variables[i]->_name;
 
  if (_problem != nullptr) _problem->getConfiguration();
@@ -128,38 +133,36 @@ void Korali::Engine::setConfiguration()
 
  // Setting Run Timestamp
  _runTimestamp = "";
- _runTimestamp = consume(_js, { "Run Timestamp" }, KORALI_STRING, _runTimestamp);
-
- time_t rawtime;
- time (&rawtime);
- _runTimestamp = ctime (&rawtime);
+ time_t rawtime; time (&rawtime);
+ std::string curTime(ctime(&rawtime));
+ _runTimestamp = consume(_js, { "General", "Timestamp" }, KORALI_STRING, curTime.substr(0, curTime.size()-1));
 
  // Setting Run Hash Id
  std::hash<std::string> hasher;
  _runId = hasher(_runTimestamp);
- _runId = consume(_js, { "Run ID" }, KORALI_NUMBER, std::to_string(_runId));
+ _runId = consume(_js, { "General", "Run ID" }, KORALI_NUMBER, std::to_string(_runId));
 
  // Initializing Seed and GSL Random Environment
- _seed  = consume(_js, { "Seed" }, KORALI_NUMBER, std::to_string(_runId));
+ _seed  = consume(_js, { "General", "Random Seed" }, KORALI_NUMBER, std::to_string(_runId));
  gsl_rng_env_setup();
 
  // Configuring Korali Settings
  _korali_verbosity = KORALI_UNDEFINED;
- std::string vLevel = consume(_js, { "Verbosity" }, KORALI_STRING, "Normal");
+ std::string vLevel = consume(_js, { "General", "Console Output", "Verbosity" }, KORALI_STRING, "Normal");
  if (vLevel == "Silent")   _korali_verbosity = KORALI_SILENT;
  if (vLevel == "Minimal")  _korali_verbosity = KORALI_MINIMAL;
  if (vLevel == "Normal")   _korali_verbosity = KORALI_NORMAL;
  if (vLevel == "Detailed") _korali_verbosity = KORALI_DETAILED;
  if (_korali_verbosity == KORALI_UNDEFINED) koraliError("Incorrect or undefined Verbosity Level '%s'.", vLevel.c_str());
 
- _result_dir = consume(_js, { "Result Directory" }, KORALI_STRING, "_korali_result");
+ _result_dir = consume(_js, { "General", "Results Output", "Path" }, KORALI_STRING, "_korali_result");
 
  // Configure Problem
- std::string pName = consume(_js, { "Problem" }, KORALI_STRING);
+ std::string pName = consume(_js, { "Problem", "Type" }, KORALI_STRING);
  if (pName == "Optimization")  _problem = std::make_shared<Korali::Problem::Optimization>();
  if (pName == "Constrained Optimization")  _problem = std::make_shared<Korali::Problem::Constrained>();
  if (pName == "Sampling") _problem = std::make_shared<Korali::Problem::Sampling>();
- if (pName == "Bayesian") _problem = std::make_shared<Korali::Problem::Bayesian>();
+ if (pName == "Bayesian Inference") _problem = std::make_shared<Korali::Problem::Bayesian>();
  if (pName == "Hierarchical Bayesian") _problem = std::make_shared<Korali::Problem::Hierarchical>();
  if (_problem == nullptr) koraliError("Incorrect or undefined Problem '%s'.", pName.c_str());
 
@@ -185,7 +188,7 @@ void Korali::Engine::setConfiguration()
 
  // Configure Solver
 
- std::string solverName = consume(_js, { "Solver" }, KORALI_STRING);
+ std::string solverName = consume(_js, { "Solver", "Type" }, KORALI_STRING);
  if (solverName == "CMAES")  _solver = std::make_shared<Korali::Solver::CMAES>();
  if (solverName == "CCMAES") _solver = std::make_shared<Korali::Solver::CCMAES>();
  if (solverName == "DEA")    _solver = std::make_shared<Korali::Solver::DEA>();
@@ -200,13 +203,13 @@ void Korali::Engine::setConfiguration()
 
  // Korali-specific configuration
 
- maxGenerations = consume(_js, { "Termination Criteria", "Max Generations" }, KORALI_NUMBER, "5000000");
- currentGeneration = consume(_js, { "Current Generation" }, KORALI_NUMBER, "0");
- consoleOutputFrequency = consume(_js, { "Console Output Frequency" }, KORALI_NUMBER, std::to_string(consoleOutputFrequency));
- fileOutputFrequency = consume(_js, { "File Output Frequency" }, KORALI_NUMBER, std::to_string(consoleOutputFrequency));
- functionEvaluationCount = consume(_js, { "Function Evaluation Count" }, KORALI_NUMBER, "0");
- maxFunctionEvaluations = consume(_js, { "Termination Criteria", "Max Function Evaluations" }, KORALI_NUMBER, "50000000");
- _isFinished = consume(_js, { "Is Finished" }, KORALI_BOOLEAN, "false");
+ maxGenerations = consume(_js, { "General", "Max Generations" }, KORALI_NUMBER, "5000000");
+ currentGeneration = consume(_js, { "General", "Current Generation" }, KORALI_NUMBER, "0");
+ consoleOutputFrequency = consume(_js, { "General", "Console Output", "Frequency" }, KORALI_NUMBER, std::to_string(consoleOutputFrequency));
+ fileOutputFrequency = consume(_js, { "General", "Results Output", "Frequency" }, KORALI_NUMBER, std::to_string(consoleOutputFrequency));
+ functionEvaluationCount = consume(_js, { "General", "Function Evaluation Count" }, KORALI_NUMBER, "0");
+ maxFunctionEvaluations = consume(_js, { "General", "Max Function Evaluations" }, KORALI_NUMBER, "50000000");
+ _isFinished = consume(_js, { "General", "Is Finished" }, KORALI_BOOLEAN, "false");
 
  if (isEmpty(_js) == false) koraliError("Unrecognized Settings for Korali:\n %s \n", _js.dump(2).c_str());
  _js = js;

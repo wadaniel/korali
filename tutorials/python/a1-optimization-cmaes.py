@@ -13,26 +13,26 @@ from directModel import *
 import korali
 k = korali.initialize()
 
-# Setting computational model
-k.setModel(evaluateModel)
-
-# Selecting problem and solver types.
-k["Problem"] = "Optimization"
-k["Solver"]  = "CMAES"
-k["Seed"]    = 1337
+# Configuring Problem.
+k["Problem"]["Type"] = "Optimization"
+k["Problem"]["Objective"] = "Maximize"
 
 # Defining the problem's variables and their CMA-ES bounds.
 k["Variables"][0]["Name"] = "X"
-k["Variables"][0]["CMAES"]["Lower Bound"] = -10.0
-k["Variables"][0]["CMAES"]["Upper Bound"] = +10.0
+k["Variables"][0]["Lower Bound"] = -10.0
+k["Variables"][0]["Upper Bound"] = +10.0
 
 # Configuring CMA-ES parameters
-k["CMAES"]["Objective"] = "Maximize"
-k["CMAES"]["Sample Count"] = 32
-k["CMAES"]["Termination Criteria"]["Max Generations"]["Value"] = 500
+k["Solver"]["Type"]  = "CMAES"
+k["Solver"]["Sample Count"] = 32
 
-# Setting output directory
-k["Result Directory"] = "_a1_optimization_cmaes_result"
+# General Settings
+k["General"]["Results Output"]["Path"] = "_a1_optimization_cmaes_result"
+k["General"]["Random Seed"] = 1337
+k["General"]["Max Generations"] = 500
+
+# Setting computational model
+k.setModel(evaluateModel)
 
 # Running Korali
 k.run()

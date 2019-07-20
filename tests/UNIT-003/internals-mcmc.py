@@ -13,19 +13,19 @@ def open_json(dirname, filename):
     return data
 
 def compareMean(js):
-    samples = js["MCMC"]["Internal"]["Sample Parameters Database"]
+    samples = js["Solver"]["Internal"]["Sample Parameters Database"]
     
     mean      = np.mean(samples)
-    chainmean = js["MCMC"]["Internal"]["Chain Mean"]
+    chainmean = js["Solver"]["Internal"]["Chain Mean"]
     assert np.isclose(mean, chainmean), "Chain Mean deviates from Mean of "\
             "Samples"
 
 def compareStd(js):
-    samples = js["MCMC"]["Internal"]["Sample Parameters Database"]
+    samples = js["Solver"]["Internal"]["Sample Parameters Database"]
 
     mean     = np.mean(samples)
     std      = np.sqrt(sum((samples - mean)**2)/(len(samples)-1))
-    chainstd = js["MCMC"]["Internal"]["Cholesky Decomposition of Chain Covariance"]
+    chainstd = js["Solver"]["Internal"]["Cholesky Decomposition of Chain Covariance"]
     assert np.isclose(std, chainstd), "Cholesky Decomposition of Chain " \
             "Covariance deviates from Standard Deviation of Samples"
 

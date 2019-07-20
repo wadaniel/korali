@@ -6,7 +6,7 @@
 
 void Korali::Problem::Sampling::getConfiguration()
 {
- _k->_js["Problem"] = "Sampling";
+ _k->_js["Problem"]["Type"] = "Sampling";
 }
 
 void Korali::Problem::Sampling::setConfiguration()

@@ -29,7 +29,7 @@ CCMAES::~CCMAES()
 void CCMAES::initialize()
 {
  // Checking for accepted problem types
- std::string pName = _k->_js["Problem"];
+ std::string pName = _k->_js["Problem"]["Type"];
  bool acceptableProblem = false;
  if (pName == "Constrained Optimization")  acceptableProblem = true;
  if (acceptableProblem == false) koraliError("CCMAES cannot solve problems of type: '%s'.", pName.c_str());
@@ -79,14 +79,9 @@ void CCMAES::initialize()
  _Z.resize(s_max*_k->N);
  _BDZ.resize(s_max*_k->N);
 
- if (_objective == "Maximize")     _evaluationSign = 1.0;
- else if(_objective == "Minimize") _evaluationSign = -1.0;
- else koraliError("CMA-ES - Objective must be either be initialized to \'Maximize\' or \'Minimize\' (is %s).\n", _objective.c_str());
-
  // Initailizing Mu
  _muWeights.resize(mu_max);
 
- 
  // CCMA-ES variables
  if (_constraintsDefined)
  {
@@ -270,13 +265,8 @@ void CCMAES::initCovariance()
 void CCMAES::processSample(size_t sampleId, double fitness)
 {
  double logPrior = _k->_problem->evaluateLogPrior(&_samplePopulation[sampleId*_k->N]);
- fitness = _evaluationSign * (logPrior+fitness);
- if(std::isfinite(fitness) == false)
- {
-   fitness = _evaluationSign * std::numeric_limits<double>::max();
-   koraliError("Sample %zu returned non finite fitness (set to %e)!\n", sampleId, fitness);
- }
-
+ fitness = logPrior+fitness;
+ if(std::isfinite(fitness) == false)  koraliError("Sample %zu returned non finite fitness (set to %e)!\n", sampleId, fitness);
  _fitnessVector[sampleId] = fitness;
  _finishedSampleCount++;
 }
@@ -733,12 +723,6 @@ bool CCMAES::checkTermination()
 
  }
 
- if( _termCondMaxGenerationsEnabled && (_k->currentGeneration >= _termCondMaxGenerations) )
- {
-  isFinished = true;
-  koraliLog(KORALI_MINIMAL, "Maximum number of Generations reached (%lu).\n", _termCondMaxGenerations);
- }
-
  return isFinished;
 }
 
@@ -883,8 +867,8 @@ void CCMAES::printGeneration()
 void CCMAES::finalize()
 {
 	koraliLog(KORALI_MINIMAL, "CMA-ES Finished\n");
-	koraliLog(KORALI_MINIMAL, "Optimum (%s) found: %e\n", _objective.c_str(), _bestEverValue);
-	koraliLog(KORALI_MINIMAL, "Optimum (%s) found at:\n", _objective.c_str());
+	koraliLog(KORALI_MINIMAL, "Optimum found: %e\n", _bestEverValue);
+	koraliLog(KORALI_MINIMAL, "Optimum found at:\n");
 	for (size_t d = 0; d < _k->N; ++d) koraliLogData(KORALI_MINIMAL, "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverSample[d]);
 	if ( _constraintsDefined )
 	{

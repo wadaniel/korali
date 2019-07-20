@@ -7,42 +7,53 @@
 
 # Importing computational model
 import sys
-sys.path.append('./model')
-from directModel import *
+sys.path.append('model')
+from model import *
 import korali
 
 # Running first Bayesian problem
 k1 = korali.initialize()
-k1.setLikelihood( evaluateModel )
+
 k1["Problem"]["Type"] = "Bayesian Inference"
 k1["Problem"]["Likelihood"]["Model"] = "Custom"
+k1.setLikelihood(model)
+
 k1["Variables"][0]["Name"] = "X"
 k1["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"
 k1["Variables"][0]["Prior Distribution"]["Minimum"] = -10.0
 k1["Variables"][0]["Prior Distribution"]["Maximum"] = +10.0
+
 k1["Solver"]["Type"] = "TMCMC"
 k1["Solver"]["Population Size"] = 5000
+
 k1["General"]["Console Output"]["Verbosity"] = "Silent"
 k1["General"]["Max Generations"] = 100
+
 k1.run()
 
 # Running first Bayesian problem
 k2 = korali.initialize()
-k2.setLikelihood( evaluateModel )
+
 k2["Problem"]["Type"] = "Bayesian Inference"
 k2["Problem"]["Likelihood"]["Model"] = "Custom"
+k2.setLikelihood(model)
+
 k2["Variables"][0]["Name"] = "Y"
 k2["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"
 k2["Variables"][0]["Prior Distribution"]["Minimum"] = -10.0
 k2["Variables"][0]["Prior Distribution"]["Maximum"] = +10.0
+
 k2["Solver"]["Type"] = "TMCMC"
 k2["Solver"]["Population Size"] = 5000
+
 k2["General"]["Console Output"]["Verbosity"] = "Silent"
 k2["General"]["Max Generations"] = 100
+
 k2.run()
 
 # Creating hierarchical Bayesian problem from previous two problems
 kH = korali.initialize()
+
 kH["Problem"]["Type"] = "Hierarchical Bayesian"
 kH["Problem"]["Model"] = "Sample Psi"
 kH.addSubProblem(k1)
@@ -62,6 +73,7 @@ kH["Solver"]["Type"] = "TMCMC"
 kH["Solver"]["Population Size"] = 5000
 
 kH["General"]["Max Generations"] = 100
-kH["General"]["Results Output"]["Path"] = "_c1_hierarchical_bayesian_result"
+kH["General"]["Results Output"]["Frequency"] = 20
+kH["General"]["Console Output"]["Frequency"] = 20
 
 kH.run()

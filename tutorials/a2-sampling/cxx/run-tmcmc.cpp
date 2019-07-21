@@ -22,6 +22,7 @@ int main(int argc, char* argv[])
  // Configuring the TMCMC sampler parameters
  k["Solver"]["Type"] = "TMCMC";
  k["Solver"]["Population Size"] = 5000;
+ k["Solver"]["Covariance Scaling"] = 0.001;
 
  k.setModel([](Korali::Model& d) { model(d.getVariables(), d.getResults()); });
 

@@ -8,8 +8,8 @@ from math import isclose
 sys.path.append('./helpers')
 from stat001_helpers import *
 
-src_cxx = "../../tutorials/cxx/_a2_sampling_mcmc_result/"
-src_py  = "../../tutorials/python/_a2_sampling_mcmc_result/"
+src_py  = "../REG-001/tutorials/a2-sampling/python/_result_run-mcmc/"
+src_cxx = "../REG-002/tutorials/a2-sampling/cxx/_result_run-mcmc/"
 
 def checkMean(js, expectedMean, tol):
     samples = js["Solver"]["Internal"]["Sample Parameters Database"]

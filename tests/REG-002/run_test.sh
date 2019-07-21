@@ -37,6 +37,17 @@ do
 
   pushd $dir/cxx >> $logFile 2>&1
 
+  log "[Korali] Adding Random Seeds..."
+  for file in *.cpp
+  do
+    cat $file | sed -e 's/k.run();/k\[\"General\"\]\[\"Random Seed\"\] = 0xC0FFEE; k.run();/g' > tmp
+    check_result
+    
+    log "[Korali] Replacing File..."
+    mv tmp $file
+    check_result
+  done
+    
   logEcho "  + Compiling Tutorial..."
   
   make clean >> $logFile 2>&1

@@ -3,11 +3,6 @@
 # Minus g09
 
 def model(s):
-  nPars = s.getVariableCount();
-  if( nPars != 7 ) :
-    print("Error in g09: Number of variables must be 7.\n");
-    exit();
-
   pars = s.getVariables();
 
   res = (pars[0] - 10.0)**2 + 5.0 * (pars[1] - 12.0)**2           \

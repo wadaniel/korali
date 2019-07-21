@@ -43,8 +43,16 @@ do
   do
     logEcho "  + Running File: ${file%.*}"
 
+    log "[Korali] Adding Random Seed..."
+    cat $file | sed -e 's/k.run()/k\[\"General\"\]\[\"Random Seed\"\] = 0xC0FFEE; k.run()/g' > tmp
+    check_result
+    
+    log "[Korali] Replacing File..."
+    mv tmp $file
+    check_result
+
     log "[Korali] Running $file..."
-    ./"$file" >> $logFile 2>&1
+    python3 ./$file >> $logFile 2>&1
     check_result
     
     log "[Korali] Moving Results..."

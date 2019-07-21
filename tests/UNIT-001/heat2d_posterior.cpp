@@ -48,6 +48,8 @@ int main(int argc, char* argv[])
  k["Conduit"]["Type"] = "MPI";
  k["Conduit"]["Ranks Per Team"] = 1;
 
+ k["General"]["Max Generations"] = 50;
+
  k.setModel([](Korali::Model& d) { heat2DSolver(d.getVariables(), d.getResults()); });
 
  k.run();

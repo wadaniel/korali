@@ -59,6 +59,8 @@ int main(int argc, char* argv[])
  k["Conduit"]["Type"] = "MPI";
  k["Conduit"]["Ranks Per Team"] = atoi(argv[1]);
 
+ k["General"]["Max Generations"] = 50;
+
  k.setModel([](Korali::Model& d) { jacobi(getPointData(), d.getVariables(), d.getResults(), d.getComm()); });
 
  k.run();

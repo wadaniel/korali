@@ -20,11 +20,11 @@ void Korali::Conduit::MPI::initialize()
   koraliError("Running an MPI-based Korali application, but Korali was installed without support for MPI.\n");
  #endif
 
+ #ifdef _KORALI_USE_MPI
  _continueEvaluations = true;
  _rankCount = 1;
  _rankId = 0;
 
- #ifdef _KORALI_USE_MPI
  int isInitialized;
  MPI_Initialized(&isInitialized);
  if (isInitialized == false)  MPI_Init(nullptr, nullptr);
@@ -80,13 +80,17 @@ void Korali::Conduit::MPI::initialize()
 
 void Korali::Conduit::MPI::getConfiguration()
 {
+ #ifdef _KORALI_USE_MPI
  _k->_js["Conduit"]["Type"] = "MPI";
  _k->_js["Conduit"]["Ranks Per Team"] = _ranksPerTeam;
+ #endif
 }
 
 void Korali::Conduit::MPI::setConfiguration()
 {
+ #ifdef _KORALI_USE_MPI
  _ranksPerTeam = consume(_k->_js, { "Conduit", "Ranks Per Team" }, KORALI_NUMBER, "1");
+ #endif
 }
 
 /************************************************************************/

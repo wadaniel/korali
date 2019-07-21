@@ -240,7 +240,7 @@ void CMAES::processSample(size_t sampleId, double fitness)
  fitness = _evaluationSign * (logPrior+fitness);
  if(std::isfinite(fitness) == false)
  {
-   fitness = _evaluationSign * std::numeric_limits<double>::max();
+   fitness = -1.0 * _evaluationSign * std::numeric_limits<double>::max();
    koraliError("Sample %zu returned non finite fitness (set to %e)!\n", sampleId, fitness);
  }
 
@@ -365,7 +365,7 @@ void CMAES::updateDistribution()
 
  _conjugateEvolutionPathL2Norm = 0.0;
 
- /* cumulation for _sigma (ps) using B*z */
+ /* cumulation for conjugate evolution path  */
  for (size_t d = 0; d < _k->N; ++d) {
     double sum = 0.0;
     if (_isDiag) sum = _BDZtmp[d];
@@ -460,7 +460,7 @@ void CMAES::adaptSigma()
  {
    double pathL2 = 0.0;
    for(size_t d = 0; d < _k->N; ++d) pathL2 += _maskingMatrixSigma[d]*_conjugateEvolutionPath[d]*_conjugateEvolutionPath[d];
-   _sigma *= exp(_sigmaCumulationFactor/_dampFactor*((sqrt(pathL2)/_chiS)-1.));
+   _sigma *= exp(_sigmaCumulationFactor/_dampFactor*(sqrt(pathL2)/_chiS-1.));
  }
  else
  {
@@ -480,7 +480,7 @@ void CMAES::updateDiscreteMutationMatrix()
   // implemented based on 'A CMA-ES for Mixed-Integer Nonlinear Optimization' by
   // Hansen2011
   
-  size_t entries = _k->N;
+  size_t entries = _k->N + 1; // +1 to prevent 0-ness
   std::fill( std::begin(_maskingMatrixSigma), std::end(_maskingMatrixSigma), 1.0);
   for(size_t d = 0; d < _k->N; ++d) if(_sigma*_axisD[d]/std::sqrt(_sigmaCumulationFactor) < 0.2*_granularity[d]) { _maskingMatrixSigma[d] = 0.0; entries--; }
   _chiS = sqrt((double) entries) * (1. - 1./(4.*entries) + 1./(21.*entries*entries));

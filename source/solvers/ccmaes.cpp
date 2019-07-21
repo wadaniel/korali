@@ -274,7 +274,7 @@ void CCMAES::processSample(size_t sampleId, double fitness)
  fitness = _evaluationSign * (logPrior+fitness);
  if(std::isfinite(fitness) == false)
  {
-   fitness = _evaluationSign * std::numeric_limits<double>::max();
+   fitness = -1.0 * _evaluationSign * std::numeric_limits<double>::max();
    koraliError("Sample %zu returned non finite fitness (set to %e)!\n", sampleId, fitness);
  }
 

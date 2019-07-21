@@ -9,10 +9,10 @@ KORALILIBS=`python3 -m korali.cxx --libs`
 .PHONY: all 
 all: $(BINARIES)
 
-$(BINARIES) : % : %.o model/libmodels.a
-	$(KORALICXX) -o $@ $^  $(KORALILIBS) -L./model -lmodels
+$(BINARIES) : % : %.o model/libmodel.a
+	$(KORALICXX) -o $@ $^  $(KORALILIBS) -L./model -lmodel
 
-model/libmodels.a:
+model/libmodel.a:
 	$(MAKE) -C model all
 
 %.o: %.cpp

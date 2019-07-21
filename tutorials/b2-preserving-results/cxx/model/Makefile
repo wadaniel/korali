@@ -3,9 +3,9 @@ OBJECTS = $(SOURCES:.cpp=.o)
 
 .PHONY: clean all
 
-all: libmodels.a
+all: libmodel.a
 
-libmodels.a: $(OBJECTS)
+libmodel.a: $(OBJECTS)
 	ar rs $@ $^
 
 clean:; rm -rf *.o *.a

@@ -1,13 +1,8 @@
 #!/usr/bin/env python3
 import math
 
-def estimateHarvest(ph, temp):
- b = getBananaCount(ph, temp)
- o = getOrangeCount(ph, temp)
- a = getAppleCount(ph, temp)
- totalHarvestQuality = b*1.2 + o*0.9 + a*1.1
-   
- return totalHarvestQuality, b, o, a 
+def getHarvestQuality(b, o, a):
+ return b*1.2 + o*0.9 + a*1.1
 
 def getBananaCount(ph, temp):
  a = 100

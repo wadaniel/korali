@@ -19,8 +19,8 @@
  
 # Importing computational model
 import sys
-sys.path.append('./model')
-from qoi import *
+sys.path.append('model')
+from model import *
 
 # Allocating storage for Quantities of Interest
 # In this case we use a dictionary that associates the
@@ -37,14 +37,21 @@ harvestQualities = {}
 # individual fruit counts, but also returning the harvest
 # quality back to Korali to sample around the parameter 
 # space with higher yield.
-def evaluateModel(k):
+def storeResults(d):
  # Gathering sample variable values
- ph = k.getVariable(0)
- temp = k.getVariable(1)
- sampleId = k.getSampleId()
- x, b, o, a = estimateHarvest(ph, temp)
+ ph = d.getVariable(0)
+ temp = d.getVariable(1)
+ sampleId = d.getSampleId()
  
- # Saving quantities of interest
+ # Gathering QOIs
+ b = getBananaCount(ph, temp)
+ o = getOrangeCount(ph, temp)
+ a = getAppleCount(ph, temp)
+ 
+ # Calculating objective function
+ x = getHarvestQuality(b, o, a)
+ 
+ # Storing QOIS
  samplePHs[sampleId] = ph
  sampleTemps[sampleId] = temp
  bananaCounts[sampleId] = b
@@ -53,16 +60,14 @@ def evaluateModel(k):
  harvestQualities[sampleId] = x
  
  # Returning evaluation to Korali
- k.addResult(x)
+ d.addResult(x)
 
 # Starting Korali's Engine
 import korali
 k = korali.initialize()
 
 # Selecting problem and solver types.
-k["Problem"]["Type"] = "Bayesian Inference"
-k["Problem"]["Likelihood"]["Model"] = "Custom"
-k.setLikelihood(evaluateModel)
+k["Problem"]["Type"] = "Sampling"
 
 # Defining the problem's variables and their CMA-ES bounds.
 k["Variables"][0]["Name"] = "Soil pH"
@@ -80,15 +85,15 @@ k["Solver"]["Type"] = "TMCMC"
 k["Solver"]["Population Size"] = 5000
 k["Solver"]["Target Coefficient of Variation"] = 0.2
 
-# Setting output directory
-k["General"]["Results Output"]["Path"] = "_b3_quantities_of_interest_result"
+# Setting Model
+k.setModel(storeResults)
 
 # Running Korali
 k.run()
 
 # Saving quantities of interest
-print('Saving quantities of interest in qoi.txt...')
-configFile = open("qoi.txt","w")
+print('Saving quantities of interest in myResults.txt...')
+configFile = open("myResults.txt","w")
 
 for i in range(len(samplePHs)):
  configFile.write(str(samplePHs[i]) + ', ' + str(sampleTemps[i]) + ', ' + str(orangeCounts[i]) + ', ' + str(bananaCounts[i]) + ', ' + str(appleCounts[i]) + ', ' + str(harvestQualities[i]) + '\n') 

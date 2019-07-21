@@ -1,7 +1,7 @@
-#ifndef _KORALI_AUXILIAR_H_
-#define _KORALI_AUXILIAR_H_
+#ifndef _KORALI_AUXILIAR_HPP_
+#define _KORALI_AUXILIAR_HPP_
 
-#include "json/json.hpp"
+#include "json.hpp"
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -80,4 +80,4 @@ class KoraliJsonWrapper
 };
 
 }
-#endif // _KORALI_MODEL_H
+#endif // _KORALI_AUXILIAR_HPP

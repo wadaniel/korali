@@ -1,9 +1,9 @@
-#ifndef _KORALI_PROBLEM_BASE_H_
-#define _KORALI_PROBLEM_BASE_H_
+#ifndef _KORALI_PROBLEM_BASE_HPP_
+#define _KORALI_PROBLEM_BASE_HPP_
 
-#include "variable.h"
-#include "model.h"
-#include "conduits/base.h"
+#include "variable.hpp"
+#include "model.hpp"
+#include "conduits/base.hpp"
 
 namespace Korali { namespace Problem {
 
@@ -26,4 +26,4 @@ class Base
 } } // namespace Korali::Problem
 
 
-#endif // _KORALI_PROBLEM_BASE_H_
+#endif // _KORALI_PROBLEM_BASE_HPP_

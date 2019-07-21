@@ -1,7 +1,7 @@
-#ifndef _KORALI_SOLVER_TMCMC_H_
-#define _KORALI_SOLVER_TMCMC_H_
+#ifndef _KORALI_SOLVER_TMCMC_HPP_
+#define _KORALI_SOLVER_TMCMC_HPP_
 
-#include "solvers/base.h"
+#include "solvers/base.hpp"
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_vector.h>
 
@@ -417,4 +417,4 @@ std::vector<variableSetting> _variableSettings;
 
 } } // namespace Korali::Solver
 
-#endif // _KORALI_SOLVER_TMCMC_H_
+#endif // _KORALI_SOLVER_TMCMC_HPP_

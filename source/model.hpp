@@ -1,5 +1,5 @@
-#ifndef _KORALI_MODEL_H_
-#define _KORALI_MODEL_H_
+#ifndef _KORALI_MODEL_HPP_
+#define _KORALI_MODEL_HPP_
 
 namespace Korali
 {
@@ -39,4 +39,4 @@ namespace Korali
  };
 }
 
-#endif // _KORALI_MODEL_H
+#endif // _KORALI_MODEL_HPP_

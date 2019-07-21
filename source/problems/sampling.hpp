@@ -1,20 +1,13 @@
-#ifndef _KORALI_PROBLEM_OPTIMIZATION_H_
-#define _KORALI_PROBLEM_OPTIMIZATION_H_
+#ifndef _KORALI_PROBLEM_SAMPLING_HPP_
+#define _KORALI_PROBLEM_SAMPLING_HPP_
 
-#include "problems/base.h"
+#include "problems/base.hpp"
 
 namespace Korali { namespace Problem {
 
-#ifndef KORALI_OPTOBJECTIVE
-#define KORALI_OPTOBJECTIVE
-enum optimizationObjective {maximizeFitness, minimizeFitness};
-#endif
-
-class Optimization : public Base
+class Sampling : public Base
 {
  public:
-
- optimizationObjective _objective;
 
  void packVariables(double* sample, Korali::Model& data) override;
  double evaluateFitness(Korali::Model& data) override;
@@ -30,4 +23,4 @@ class Optimization : public Base
 
 } } // namespace Korali::Problem
 
-#endif // _KORALI_PROBLEM_OPTIMIZATION_H_
+#endif // _KORALI_PROBLEM_SAMPLING_HPP_

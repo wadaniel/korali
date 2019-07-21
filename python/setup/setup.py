@@ -39,14 +39,40 @@ class CopyLibrary(build_ext):
             
         shutil.copy2(koraliSharedLibSrc[0], koraliSharedLibDst)
         shutil.copy2(koraliStaticLibSrc[0], koraliStaticLibDst)
-          
-        koraliIncludesDir = ext.sourcedir + '/include'
+        
+        # Creating include files directories
+        os.makedirs(extdir + '/korali/cxx/include')
+        os.makedirs(extdir + '/korali/cxx/include/solvers')
+        os.makedirs(extdir + '/korali/cxx/include/problems')
+        os.makedirs(extdir + '/korali/cxx/include/conduits')
+        
+        # Copying base directory includes  
+        koraliIncludesDir = ext.sourcedir + '/source/*.hpp'
         koraliIncludesSrc = glob.glob(koraliIncludesDir)
-
-        if (len(koraliIncludesSrc) == 0):
-            raise ValueError('No korali includes found in folder ' + koraliIncludesDir)
+        
+        for file in koraliIncludesSrc:
+            shutil.copy2(file, extdir + '/korali/cxx/include')
+        
+        # Copying solver directory includes    
+        koraliIncludesDir = ext.sourcedir + '/source/solvers/*.hpp'
+        koraliIncludesSrc = glob.glob(koraliIncludesDir)
+        
+        for file in koraliIncludesSrc:
+            shutil.copy2(file, extdir + '/korali/cxx/include/solvers')
+        
+        # Copying problems directory includes    
+        koraliIncludesDir = ext.sourcedir + '/source/problems/*.hpp'
+        koraliIncludesSrc = glob.glob(koraliIncludesDir)
+        
+        for file in koraliIncludesSrc:
+            shutil.copy2(file, extdir + '/korali/cxx/include/problems')
             
-        shutil.copytree(koraliIncludesSrc[0], extdir + '/korali/cxx/include')
+        # Copying conduits directory includes    
+        koraliIncludesDir = ext.sourcedir + '/source/conduits/*.hpp'
+        koraliIncludesSrc = glob.glob(koraliIncludesDir)
+        
+        for file in koraliIncludesSrc:
+            shutil.copy2(file, extdir + '/korali/cxx/include/conduits')
 
 setup(
     name='Korali',

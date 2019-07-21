@@ -1,4 +1,4 @@
-#include "korali.h"
+#include "korali.hpp"
 
 void Korali::Problem::Bayesian::getConfiguration()
 {

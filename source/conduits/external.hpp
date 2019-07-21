@@ -1,7 +1,7 @@
-#ifndef _KORALI_CONDUIT_EXTERNAL_H_
-#define _KORALI_CONDUIT_EXTERNAL_H_
+#ifndef _KORALI_CONDUIT_EXTERNAL_HPP_
+#define _KORALI_CONDUIT_EXTERNAL_HPP_
 
-#include "conduits/base.h"
+#include "conduits/base.hpp"
 #include <sys/types.h>
 #include <unistd.h>
 #include <queue>
@@ -34,4 +34,4 @@ class External : public Base {
 };
 } } // namespace Korali::Conduit
 
-#endif // _KORALI_CONDUIT_EXTERNAL_H_
+#endif // _KORALI_CONDUIT_EXTERNAL_HPP_

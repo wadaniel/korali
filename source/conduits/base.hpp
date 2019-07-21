@@ -1,5 +1,5 @@
-#ifndef _KORALI_CONDUIT_BASE_H_
-#define _KORALI_CONDUIT_BASE_H_
+#ifndef _KORALI_CONDUIT_BASE_HPP_
+#define _KORALI_CONDUIT_BASE_HPP_
 
 namespace Korali { namespace Conduit {
 
@@ -25,5 +25,5 @@ class Conduit;
 } } // namespace Korali::Conduit
 
 
-#endif // _KORALI_CONDUIT_BASE_H_
+#endif // _KORALI_CONDUIT_BASE_HPP_
 

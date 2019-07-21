@@ -1,4 +1,4 @@
-#include "korali.h"
+#include "korali.hpp"
 #include <sys/wait.h>
 
 using namespace Korali::Conduit;

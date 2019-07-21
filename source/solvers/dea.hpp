@@ -1,7 +1,7 @@
-#ifndef _KORALI_SOLVERS_DEA_H_
-#define _KORALI_SOLVERS_DEA_H_
+#ifndef _KORALI_SOLVERS_DEA_HPP_
+#define _KORALI_SOLVERS_DEA_HPP_
 
-#include "solvers/base.h"
+#include "solvers/base.hpp"
 #include <chrono>
 #include <map>
 
@@ -409,4 +409,4 @@ std::vector<variableSetting> _variableSettings;
 
 } } // namespace Korali::Solver
 
-#endif // _KORALI_SOLVERS_DEA_H_
+#endif // _KORALI_SOLVERS_DEA_HPP_

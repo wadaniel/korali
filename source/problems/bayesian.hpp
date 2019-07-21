@@ -1,7 +1,7 @@
-#ifndef _KORALI_PROBLEM_BAYESIAN_H_
-#define _KORALI_PROBLEM_BAYESIAN_H_
+#ifndef _KORALI_PROBLEM_BAYESIAN_HPP_
+#define _KORALI_PROBLEM_BAYESIAN_HPP_
 
-#include "problems/base.h"
+#include "problems/base.hpp"
 
 namespace Korali { namespace Problem {
 
@@ -42,4 +42,4 @@ class Bayesian : public Base
 } } // namespace Korali::Problem
 
 
-#endif // _KORALI_PROBLEM_BAYESIAN_H_
+#endif // _KORALI_PROBLEM_BAYESIAN_HPP_

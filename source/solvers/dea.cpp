@@ -1,4 +1,4 @@
-#include "korali.h"
+#include "korali.hpp"
 #include <stdio.h>
 #include <unistd.h>
 #include <chrono>

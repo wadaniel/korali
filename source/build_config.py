@@ -252,14 +252,14 @@ def parseFile(f):
 
 # Initializing Config File
 
-configFile.write('#include "korali.h"\n')
+configFile.write('#include "korali.hpp"\n')
 configFile.write('#include <stdio.h>\n\n')
 
 # Finding Solver Header Files
-path = '../include/solvers'
+path = './solvers'
 for r, d, f in os.walk(path):
  for filePath in f:
-   if filePath.endswith('.h'):
+   if filePath.endswith('.hpp'):
     print('Processing: ' + filePath + '...')
     parseFile(os.path.join(r, filePath)) 
     

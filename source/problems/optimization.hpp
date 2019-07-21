@@ -1,7 +1,7 @@
-#ifndef _KORALI_PROBLEM_CONSTRAINED_H_
-#define _KORALI_PROBLEM_CONSTRAINED_H_
+#ifndef _KORALI_PROBLEM_OPTIMIZATION_HPP_
+#define _KORALI_PROBLEM_OPTIMIZATION_HPP_
 
-#include "problems/base.h"
+#include "problems/base.hpp"
 
 namespace Korali { namespace Problem {
 
@@ -10,7 +10,7 @@ namespace Korali { namespace Problem {
 enum optimizationObjective {maximizeFitness, minimizeFitness};
 #endif
 
-class Constrained : public Base
+class Optimization : public Base
 {
  public:
 
@@ -30,4 +30,4 @@ class Constrained : public Base
 
 } } // namespace Korali::Problem
 
-#endif // _KORALI_PROBLEM_CONSTRAINED_H_
+#endif // _KORALI_PROBLEM_OPTIMIZATION_HPP_

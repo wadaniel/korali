@@ -1,8 +1,8 @@
-#ifndef _KORALI_SOLVER_MCMC_H_
-#define _KORALI_SOLVER_MCMC_H_
+#ifndef _KORALI_SOLVER_MCMC_HPP_
+#define _KORALI_SOLVER_MCMC_HPP_
 
-#include "solvers/base.h"
-#include "variable.h"
+#include "solvers/base.hpp"
+#include "variable.hpp"
 #include <gsl/gsl_rng.h>
 
 namespace Korali { namespace Solver {
@@ -382,4 +382,4 @@ std::vector<variableSetting> _variableSettings;
 
 } } // namespace Korali::Solver
 
-#endif // _KORALI_SOLVER_MCMC_H_
+#endif // _KORALI_SOLVER_MCMC_HPP_

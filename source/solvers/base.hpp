@@ -1,11 +1,11 @@
-#ifndef _KORALI_SOLVER_BASE_H_
-#define _KORALI_SOLVER_BASE_H_
+#ifndef _KORALI_SOLVER_BASE_HPP_
+#define _KORALI_SOLVER_BASE_HPP_
 
 #include <stdlib.h>
 #include <chrono>
 #include <vector>
 
-#include "problems/base.h"
+#include "problems/base.hpp"
 
 namespace Korali { namespace Solver {
 
@@ -27,4 +27,4 @@ class Base {
 
 } } // namespace Korali::Solver
 
-#endif // _KORALI_SOLVER_BASE_H_
+#endif // _KORALI_SOLVER_BASE_HPP_

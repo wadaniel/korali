@@ -1,5 +1,5 @@
-#ifndef _KORALI_H_
-#define _KORALI_H_
+#ifndef _KORALI_HPP_
+#define _KORALI_HPP_
 
 #include "stdlib.h"
 #include <vector>
@@ -9,24 +9,24 @@
 #include "mpi.h"
 #endif
 
-#include "problems/optimization.h"
-#include "problems/sampling.h"
-#include "problems/bayesian.h"
-#include "problems/hierarchical.h"
-#include "problems/constrained.h"
+#include "problems/optimization.hpp"
+#include "problems/sampling.hpp"
+#include "problems/bayesian.hpp"
+#include "problems/hierarchical.hpp"
+#include "problems/constrained.hpp"
 
-#include "solvers/cmaes.h"
-#include "solvers/ccmaes.h"
-#include "solvers/dea.h"
-#include "solvers/mcmc.h"
-#include "solvers/tmcmc.h"
+#include "solvers/cmaes.hpp"
+#include "solvers/ccmaes.hpp"
+#include "solvers/dea.hpp"
+#include "solvers/mcmc.hpp"
+#include "solvers/tmcmc.hpp"
 
-#include "conduits/linked.h"
-#include "conduits/external.h"
+#include "conduits/linked.hpp"
+#include "conduits/external.hpp"
 
-#include "auxiliar.h"
-#include "variable.h"
-#include "model.h"
+#include "auxiliar.hpp"
+#include "variable.hpp"
+#include "model.hpp"
 
 #ifdef _KORALI_USE_PYTHON
  #undef _POSIX_C_SOURCE
@@ -111,4 +111,4 @@ extern Engine* _k;
 
 } // namespace Korali
 
-#endif // _KORALI_H_
+#endif // _KORALI_HPP_

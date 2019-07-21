@@ -1,12 +1,12 @@
-#ifndef _KORALI_VARIABLE_H_
-#define _KORALI_VARIABLE_H_
+#ifndef _KORALI_VARIABLE_HPP_
+#define _KORALI_VARIABLE_HPP_
 
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_sf.h>
 #include <string>
-#include "json/json.hpp"
+#include "json.hpp"
 
 enum KoraliDistributionType {KoraliCauchyDistribution, KoraliDefaultDistribution, KoraliExponentialDistribution, KoraliGammaDistribution, KoraliGaussianDistribution, KoraliLaplaceDistribution, KoraliUniformDistribution};
 
@@ -47,4 +47,4 @@ class Variable
 
 } // namespace Korali
 
-#endif // _KORALI_VARIABLE_H_
+#endif // _KORALI_VARIABLE_HPP_

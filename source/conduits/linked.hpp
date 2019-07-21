@@ -1,7 +1,7 @@
-#ifndef _KORALI_CONDUIT_LINKED_H_
-#define _KORALI_CONDUIT_LINKED_H_
+#ifndef _KORALI_CONDUIT_LINKED_HPP_
+#define _KORALI_CONDUIT_LINKED_HPP_
 
-#include "conduits/base.h"
+#include "conduits/base.hpp"
 #include <queue>
 #include <vector>
 #include <map>
@@ -52,4 +52,4 @@ class Linked : public Base
 
 } } // namespace Korali::Conduit
 
-#endif // _KORALI_CONDUIT_LINKED_H_
+#endif // _KORALI_CONDUIT_LINKED_HPP_

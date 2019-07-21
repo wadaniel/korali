@@ -1,4 +1,4 @@
-#include "korali.h"
+#include "korali.hpp"
 
 /************************************************************************/
 /*                    Configuration Methods                             */

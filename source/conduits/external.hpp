@@ -27,6 +27,7 @@ class External : public Base {
  void evaluateSample(double* sampleArray, size_t sampleId) override;
  void checkProgress() override;
  bool isRoot() override;
+ void abort() override;
 
  // Serialization Methods
  void getConfiguration() override;

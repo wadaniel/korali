@@ -91,3 +91,8 @@ bool External::isRoot()
 {
  return true;
 }
+
+void External::abort()
+{
+ exit(-1);
+}

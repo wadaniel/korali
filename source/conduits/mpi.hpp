@@ -36,6 +36,8 @@ class MPI : public Base
  bool _continueEvaluations;
  #endif
 
+ MPI();
+
  void initialize() override;
  void finalize() override;
 
@@ -43,6 +45,7 @@ class MPI : public Base
  void evaluateSample(double* sampleArray, size_t sampleId) override;
  void checkProgress() override;
  bool isRoot() override;
+ void abort() override;
  int getRootRank();
 
  // Serialization Methods

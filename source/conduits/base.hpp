@@ -12,6 +12,7 @@ class Base {
  virtual void evaluateSample(double* sampleArray, size_t sampleId) = 0;
  virtual void checkProgress() = 0;
  virtual bool isRoot() = 0;
+ virtual void abort() = 0;
 
  size_t _currentSample;
 

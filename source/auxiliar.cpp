@@ -12,6 +12,8 @@ Korali::verbosity Korali::_korali_verbosity;
 
 void Korali::koraliLogData(const verbosity level, const char* format, ... )
 {
+ if (_k->_conduit != nullptr) if(! _k->_conduit->isRoot()) return;
+
  char* outstr = 0;
  va_list ap;
  va_start(ap, format);
@@ -25,6 +27,8 @@ void Korali::koraliLogData(const verbosity level, const char* format, ... )
 
 void Korali::koraliLog(const verbosity level, const char* format, ... )
 {
+ if (_k->_conduit != nullptr) if(! _k->_conduit->isRoot()) return;
+
  std::string newFormat = "[Korali] ";
  newFormat += format;
 
@@ -41,6 +45,8 @@ void Korali::koraliLog(const verbosity level, const char* format, ... )
 
 void Korali::koraliWarning(const verbosity level, const char* format, ... )
 {
+ if (_k->_conduit != nullptr) if(! _k->_conduit->isRoot()) return;
+
  std::string newFormat = "[Korali] Warning: ";
  newFormat += format;
 
@@ -56,6 +62,8 @@ void Korali::koraliWarning(const verbosity level, const char* format, ... )
 
 void Korali::koraliError(const char* format, ... )
 {
+ if (_k->_conduit != nullptr) if(! _k->_conduit->isRoot()) return;
+
  std::string newFormat = "[Korali] Error: ";
  newFormat += format;
 
@@ -68,6 +76,7 @@ void Korali::koraliError(const char* format, ... )
  fflush(stderr);
  free(outstr);
 
+ if (_k->_conduit != nullptr) _k->_conduit->abort();
  exit(-1);
 }
 

@@ -58,3 +58,8 @@ bool Simple::isRoot()
 {
  return true;
 }
+
+void Simple::abort()
+{
+ exit(-1);
+}

@@ -10,18 +10,9 @@ using namespace Korali::Conduit;
 
 #endif
 
-/************************************************************************/
-/*                  Constructor / Destructor Methods                    */
-/************************************************************************/
-
-void Korali::Conduit::MPI::initialize()
+Korali::Conduit::MPI::MPI()
 {
- #ifndef _KORALI_USE_MPI
-  koraliError("Running an MPI-based Korali application, but Korali was installed without support for MPI.\n");
- #endif
-
  #ifdef _KORALI_USE_MPI
- _continueEvaluations = true;
  _rankCount = 1;
  _rankId = 0;
 
@@ -31,6 +22,17 @@ void Korali::Conduit::MPI::initialize()
 
  MPI_Comm_size(MPI_COMM_WORLD, &_rankCount);
  MPI_Comm_rank(MPI_COMM_WORLD, &_rankId);
+ #endif
+}
+
+void Korali::Conduit::MPI::initialize()
+{
+ #ifndef _KORALI_USE_MPI
+  koraliError("Running an MPI-based Korali application, but Korali was installed without support for MPI.\n");
+ #endif
+
+ #ifdef _KORALI_USE_MPI
+ _continueEvaluations = true;
 
  if (_rankCount == 1) koraliError("Korali MPI applications require at least 2 MPI ranks to run.\n");
 
@@ -137,8 +139,8 @@ void Korali::Conduit::MPI::workerThread()
 
 		 if (isLeader)
 		 {
-			double fitness = _k->_problem->evaluateFitness(data);
-			MPI_Send(&fitness, 1, MPI_DOUBLE, getRootRank(), MPI_TAG_FITNESS, MPI_COMM_WORLD);
+			 double fitness = _k->_problem->evaluateFitness(data);
+			 MPI_Send(&fitness, 1, MPI_DOUBLE, getRootRank(), MPI_TAG_FITNESS, MPI_COMM_WORLD);
 		 }
 
 		 MPI_Barrier(_teamComm);
@@ -162,10 +164,10 @@ void Korali::Conduit::MPI::evaluateSample(double* sampleArray, size_t sampleId)
 
  for (int i = 0; i < _ranksPerTeam; i++)
  {
- int workerId = _teamWorkers[teamId][i];
- int continueFlag = 1;
- MPI_Send(&sampleId, 1, MPI_INT, workerId, MPI_TAG_ID, MPI_COMM_WORLD);
- MPI_Send(sampleArray, _k->N, MPI_DOUBLE, workerId, MPI_TAG_SAMPLE, MPI_COMM_WORLD);
+  int workerId = _teamWorkers[teamId][i];
+  int continueFlag = 1;
+  MPI_Send(&sampleId, 1, MPI_INT, workerId, MPI_TAG_ID, MPI_COMM_WORLD);
+  MPI_Send(sampleArray, _k->N, MPI_DOUBLE, workerId, MPI_TAG_SAMPLE, MPI_COMM_WORLD);
  }
  #endif
 }
@@ -203,4 +205,11 @@ bool Korali::Conduit::MPI::isRoot()
  #endif
 
  return true;
+}
+
+void Korali::Conduit::MPI::abort()
+{
+ #ifdef _KORALI_USE_MPI
+ MPI_Abort(MPI_COMM_WORLD, -1);
+ #endif
 }

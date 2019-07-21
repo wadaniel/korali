@@ -127,6 +127,17 @@ void Korali::Engine::setConfiguration()
 {
  auto js = _js;
 
+ // Configure Conduit
+ std::string conduitType =  consume(_js, { "Conduit", "Type" }, KORALI_STRING, "Simple");
+ if (conduitType == "Simple") _conduit = std::make_shared<Korali::Conduit::Simple>();
+ if (conduitType == "External") _conduit = std::make_shared<Korali::Conduit::External>();
+ if (conduitType == "MPI") _conduit = std::make_shared<Korali::Conduit::MPI>();
+ if (_conduit == nullptr)
+ {
+  _conduit = std::make_shared<Korali::Conduit::Simple>();
+  koraliError("Incorrect or undefined Conduit '%s'.\n", conduitType.c_str());
+ }
+
  // Configure Korali Engine
  _variables.clear();
 
@@ -178,15 +189,7 @@ void Korali::Engine::setConfiguration()
  N = _variables.size();
  if (N == 0) koraliError("No variables have been defined.\n");
 
- // Configure Conduit
- std::string conduitType =  consume(_js, { "Conduit", "Type" }, KORALI_STRING, "Simple");
- if (conduitType == "Simple") _conduit = std::make_shared<Korali::Conduit::Simple>();
- if (conduitType == "External") _conduit = std::make_shared<Korali::Conduit::External>();
- if (conduitType == "MPI") _conduit = std::make_shared<Korali::Conduit::MPI>();
- if (_conduit == nullptr) koraliError("Incorrect or undefined Conduit '%s'.\n", conduitType.c_str());
-
  // Configure Solver
-
  std::string solverName = consume(_js, { "Solver", "Type" }, KORALI_STRING);
  if (solverName == "CMAES")  _solver = std::make_shared<Korali::Solver::CMAES>();
  if (solverName == "CCMAES") _solver = std::make_shared<Korali::Solver::CCMAES>();

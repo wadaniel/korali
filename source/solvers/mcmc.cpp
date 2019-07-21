@@ -29,7 +29,7 @@ Korali::Solver::MCMC::MCMC()
  _uniformGenerator->setDistribution(jsUniform);
 
  _k->consoleOutputFrequency = 500;
- _k->fileOutputFrequency = 500;
+ _k->resultsOutputFrequency = 500;
 }
 
 Korali::Solver::MCMC::~MCMC()

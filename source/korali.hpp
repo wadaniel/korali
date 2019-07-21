@@ -21,7 +21,8 @@
 #include "solvers/mcmc.hpp"
 #include "solvers/tmcmc.hpp"
 
-#include "conduits/linked.hpp"
+#include "conduits/mpi.hpp"
+#include "conduits/simple.hpp"
 #include "conduits/external.hpp"
 
 #include "auxiliar.hpp"
@@ -55,7 +56,7 @@ class Engine {
  size_t currentGeneration;
  size_t maxGenerations;
  size_t consoleOutputFrequency;
- size_t fileOutputFrequency; //TODO: should be resultOutputFrequency (aligned with resultfolder) (DW)
+ size_t resultsOutputFrequency;
  size_t functionEvaluationCount;
  size_t maxFunctionEvaluations;
  size_t _runId;

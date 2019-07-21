@@ -25,11 +25,11 @@ k["Variables"][3]["Name"] = "X3"
 k["Variables"][3]["Lower Bound"] = -32.0;
 k["Variables"][3]["Upper Bound"] = +32.0;
   
-k["Conduit"]["Type"] = "External"
-k["Conduit"]["Concurrent Jobs"] = int(sys.argv[1])
-
 k["Solver"]["Type"] = "CMAES"
 k["Solver"]["Sample Count"] = 10
+
+k["Conduit"]["Type"] = "External"
+k["Conduit"]["Concurrent Jobs"] = int(sys.argv[1])
   
 k["General"]["Max Generations"] = 30
 

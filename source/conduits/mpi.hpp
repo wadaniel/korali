@@ -1,5 +1,5 @@
-#ifndef _KORALI_CONDUIT_LINKED_HPP_
-#define _KORALI_CONDUIT_LINKED_HPP_
+#ifndef _KORALI_CONDUIT_MPI_HPP_
+#define _KORALI_CONDUIT_MPI_HPP_
 
 #include "conduits/base.hpp"
 #include <queue>
@@ -8,9 +8,11 @@
 
 namespace Korali { namespace Conduit {
 
-class Linked : public Base
+class MPI : public Base
 {
  public:
+
+ #ifdef _KORALI_USE_MPI
  int _rankId;
  int _rankCount;
 
@@ -21,20 +23,18 @@ class Linked : public Base
  int _teamId;
  int _localRankId;
 
- bool _useMPI;
  std::vector<size_t> _teamSampleId;
  std::vector<bool> _teamBusy;
  std::vector<double> _teamFitness;
 
- #ifdef _KORALI_USE_MPI
  MPI_Comm _teamComm;
  std::vector<MPI_Request> _teamRequests;
- #endif
 
  std::queue<int> _teamQueue;
  std::map< int, std::vector<int> > _teamWorkers;
 
  bool _continueEvaluations;
+ #endif
 
  void initialize() override;
  void finalize() override;
@@ -52,4 +52,4 @@ class Linked : public Base
 
 } } // namespace Korali::Conduit
 
-#endif // _KORALI_CONDUIT_LINKED_HPP_
+#endif // _KORALI_CONDUIT_MPI_HPP_

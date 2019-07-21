@@ -77,7 +77,7 @@ Korali::Engine::Engine() : _solver(nullptr), _problem(nullptr), _conduit(nullptr
  _modelDefined      = false;
  _likelihoodDefined = false;
  consoleOutputFrequency = 1;
- fileOutputFrequency = 1;
+ resultsOutputFrequency = 1;
  _isFinished = false;
 }
 
@@ -112,7 +112,7 @@ void Korali::Engine::getConfiguration()
  _js["General"]["Max Function Evaluations"] = maxFunctionEvaluations;
  _js["General"]["Current Generation"] = currentGeneration;
  _js["General"]["Console Output"]["Frequency"] = consoleOutputFrequency;
- _js["General"]["Results Output"]["Frequency"] = fileOutputFrequency;
+ _js["General"]["Results Output"]["Frequency"] = resultsOutputFrequency;
  _js["General"]["Results Output"]["Path"] = _result_dir;
  _js["General"]["Function Evaluation Count"] = functionEvaluationCount;
  _js["General"]["Is Finished"] = _isFinished;
@@ -179,11 +179,10 @@ void Korali::Engine::setConfiguration()
  if (N == 0) koraliError("No variables have been defined.\n");
 
  // Configure Conduit
- std::string conduitType =  consume(_js, { "Conduit", "Type" }, KORALI_STRING, "Linked");
-
- if (conduitType == "Linked") _conduit = std::make_shared<Korali::Conduit::Linked>();
+ std::string conduitType =  consume(_js, { "Conduit", "Type" }, KORALI_STRING, "Simple");
+ if (conduitType == "Simple") _conduit = std::make_shared<Korali::Conduit::Simple>();
  if (conduitType == "External") _conduit = std::make_shared<Korali::Conduit::External>();
-
+ if (conduitType == "MPI") _conduit = std::make_shared<Korali::Conduit::MPI>();
  if (_conduit == nullptr) koraliError("Incorrect or undefined Conduit '%s'.\n", conduitType.c_str());
 
  // Configure Solver
@@ -206,7 +205,7 @@ void Korali::Engine::setConfiguration()
  maxGenerations = consume(_js, { "General", "Max Generations" }, KORALI_NUMBER, "5000000");
  currentGeneration = consume(_js, { "General", "Current Generation" }, KORALI_NUMBER, "0");
  consoleOutputFrequency = consume(_js, { "General", "Console Output", "Frequency" }, KORALI_NUMBER, std::to_string(consoleOutputFrequency));
- fileOutputFrequency = consume(_js, { "General", "Results Output", "Frequency" }, KORALI_NUMBER, std::to_string(consoleOutputFrequency));
+ resultsOutputFrequency = consume(_js, { "General", "Results Output", "Frequency" }, KORALI_NUMBER, std::to_string(consoleOutputFrequency));
  functionEvaluationCount = consume(_js, { "General", "Function Evaluation Count" }, KORALI_NUMBER, "0");
  maxFunctionEvaluations = consume(_js, { "General", "Max Function Evaluations" }, KORALI_NUMBER, "50000000");
  _isFinished = consume(_js, { "General", "Is Finished" }, KORALI_BOOLEAN, "false");
@@ -269,7 +268,7 @@ void Korali::Engine::start(bool isDryRun)
    koraliLog(KORALI_DETAILED, "Generation Time: %.3fs\n", std::chrono::duration<double>(t1-t0).count());
 
    if (currentGeneration % consoleOutputFrequency == 0) _solver->printGeneration();
-   if (currentGeneration % fileOutputFrequency    == 0) saveState(currentGeneration);
+   if (currentGeneration % resultsOutputFrequency == 0) saveState(currentGeneration);
   }
 
   auto endTime = std::chrono::system_clock::now();

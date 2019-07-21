@@ -23,7 +23,7 @@ k["Variables"][0]["Initial Mean"] = 0.0
 k["Variables"][0]["Initial Standard Deviation"] = 1.0
 
 # Configuring the MCMC sampler parameters
-k["Solver"]["Type"]  = "MCMC"
+k["Solver"]["Type"]  = "MCMC" 
 k["Solver"]["Burn In"] = 500
 k["Solver"]["Max Chain Length"] = 5000
 

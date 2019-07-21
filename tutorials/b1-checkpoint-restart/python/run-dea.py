@@ -9,7 +9,7 @@
 
 import sys
 sys.path.append('./model')
-from directModel import *
+from model import *
 
 import korali
 k = korali.initialize()
@@ -26,15 +26,14 @@ k["Solver"]["Sample Count"] = 10
 
 k["General"]["Max Generations"] = 500
 k["General"]["Console Output"]["Frequency"] = 5
-k["General"]["Results Output"]["Path"] = "_b1_restart_dea_result"
 
-k.setModel(evaluateModel) 
+k.setModel(model) 
 
 k.run()
 
-print("\n\nRestart Now\n\n")
+print("\n\nRestarting Now...\n\n")
 
 # Now we loadState() to resume the same experiment from generation 5
-k.loadState("_b1_restart_dea_result/s00010.json")
+k.loadState("_korali_result/s00010.json")
 
 k.run()

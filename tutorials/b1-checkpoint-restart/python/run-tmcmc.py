@@ -9,14 +9,12 @@
 
 import sys
 sys.path.append('./model')
-from directModel import *
+from model import *
 
 import korali
 k = korali.initialize()
 
-k["Problem"]["Type"] = "Bayesian Inference"
-k["Problem"]["Likelihood"]["Model"] = "Custom"
-k.setLikelihood( evaluateModel )
+k["Problem"]["Type"] = "Sampling"
 
 k["Variables"][0]["Name"] = "X"
 k["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"
@@ -26,13 +24,12 @@ k["Variables"][0]["Prior Distribution"]["Maximum"] = +10.0
 k["Solver"]["Type"]  = "TMCMC"
 k["Solver"]["Population Size"] = 5000
 
-k["General"]["Results Output"]["Path"] = "_b1_restart_tmcmc_result"
-
+k.setModel(model)
 k.run()
 
 print("\n\nRestarting now:\n\n");
 
 # Now we loadState() to resume the same experiment from generation 5.
-k.loadState("_b1_restart_tmcmc_result/s00001.json")
+k.loadState("_korali_result/s00001.json")
 
 k.run()

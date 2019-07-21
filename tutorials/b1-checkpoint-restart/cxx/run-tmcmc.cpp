@@ -2,19 +2,17 @@
 // be resumed from any point (generation). This is a useful feature
 // for continuing jobs after an error, or to fragment big jobs into
 // smaller ones that can better fit a supercomputer queue.
-//
+
 // First, we run a simple Korali experiment.
 
 #include "korali.h"
-#include "model/evaluateModel.h"
+#include "model/model.h"
 
 int main(int argc, char* argv[])
 {
  auto k = Korali::Engine();
- k.setLikelihood([](Korali::Model& d) { evaluateModel(d.getVariables(), d.getResults()); });
 
- k["Problem"]["Type"] = "Bayesian Inference";
- k["Problem"]["Likelihood"]["Model"] = "Custom";
+ k["Problem"]["Type"] = "Sampling";
 
  k["Variables"][0]["Name"] = "X";
  k["Variables"][0]["Prior Distribution"]["Type"] = "Uniform";
@@ -24,14 +22,13 @@ int main(int argc, char* argv[])
  k["Solver"]["Type"] = "TMCMC";
  k["Solver"]["Population Size"] = 5000;
 
- k["General"]["Results Output"]["Path"] = "_b1_restart_tmcmc_result";
-
+ k.setModel([](Korali::Model& d) { model(d.getVariables(), d.getResults()); });
  k.run();
 
  printf("\n\nRestarting now:\n\n");
 
  // Now we loadState() to resume the same experiment from generation 5.
- k.loadState("_b1_restart_tmcmc_result/s00001.json");
+ k.loadState("_korali_result/s00002.json");
 
  k.run();
 }

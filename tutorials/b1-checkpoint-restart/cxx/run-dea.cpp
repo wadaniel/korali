@@ -2,13 +2,14 @@
 // be resumed from any point (generation). This is a useful feature
 // for continuing jobs after an error, or to fragment big jobs into
 // smaller ones that can better fit a supercomputer queue.
+//
+// First, we run a simple Korali experiment.
 
 #include "korali.h"
-#include "model/evaluateModel.h"
+#include "model/model.h"
 
 int main(int argc, char* argv[])
 {
- // First, we run a simple Korali experiment.
  auto k = Korali::Engine();
 
  k["Problem"]["Type"] = "Optimization";
@@ -18,20 +19,21 @@ int main(int argc, char* argv[])
  k["Variables"][0]["Lower Bound"] = -10.0;
  k["Variables"][0]["Upper Bound"] = +10.0;
 
- k["Solver"]["Type"] = "CMAES";
- k["Solver"]["Sample Count"] = 5;
+ k["Solver"]["Type"] = "DEA";
+ k["Solver"]["Sample Count"] = 10;
 
  k["General"]["Max Generations"] = 500;
- k["General"]["Results Output"]["Path"] = "_b1_restart_cmaes_result";
- k["General"]["Console Output"]["Frequency"] = 10;
+ k["General"]["Console Output"]["Frequency"] = 50;
+ k["General"]["Results Output"]["Frequency"] = 50;
 
- k.setModel([](Korali::Model& d) { evaluateModel(d.getVariables(), d.getResults()); });
+ k.setModel([](Korali::Model& d) { model(d.getVariables(), d.getResults()); });
  k.run();
 
- printf("\n\nRestarting now:\n\n");
+ printf("\n\nRestarting now...\n\n");
 
- // Now we loadState() to resume the same experiment from generation 10
- k.loadState("_b1_restart_cmaes_result/s00010.json");
+ // Now we loadState() to resume the same experiment from generation 5
+ k.loadState("_korali_reesult/s00050.json");
 
  k.run();
+
 }

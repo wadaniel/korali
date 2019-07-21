@@ -2,7 +2,7 @@
 // variables that maximize the objective function, given by a
 // user-provided computational model.
 
-#include "korali.h"
+#include "korali.hpp"
 #include "model/model.h"
 
 int main(int argc, char* argv[])

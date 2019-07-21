@@ -2,7 +2,7 @@
 // that maximize the posterior in a bayesian problem where the likelihood
 // is calculated by providing reference data points and their objective values.
 
-#include "korali.h"
+#include "korali.hpp"
 #include "model/model.h"
 
 int main(int argc, char* argv[])

@@ -3,7 +3,7 @@
 // user-provided computational model, subject to a set of
 // constraints.
 
-#include "korali.h"
+#include "korali.hpp"
 #include "model/model.h"
 #include "model/constraints.h"
 

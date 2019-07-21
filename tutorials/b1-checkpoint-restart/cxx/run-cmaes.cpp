@@ -3,7 +3,7 @@
 // for continuing jobs after an error, or to fragment big jobs into
 // smaller ones that can better fit a supercomputer queue.
 
-#include "korali.h"
+#include "korali.hpp"
 #include "model/model.h"
 
 int main(int argc, char* argv[])

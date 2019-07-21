@@ -1,4 +1,4 @@
-#include "korali.h"
+#include "korali.hpp"
 #include "model/model.h"
 #include <stdio.h>
 #include <map>

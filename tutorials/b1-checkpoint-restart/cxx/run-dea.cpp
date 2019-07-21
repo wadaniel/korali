@@ -5,7 +5,7 @@
 //
 // First, we run a simple Korali experiment.
 
-#include "korali.h"
+#include "korali.hpp"
 #include "model/model.h"
 
 int main(int argc, char* argv[])

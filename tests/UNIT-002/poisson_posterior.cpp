@@ -1,4 +1,4 @@
-#include "korali.h"
+#include "korali.hpp"
 #include "model/jacobi.h"
 
 int main(int argc, char* argv[])

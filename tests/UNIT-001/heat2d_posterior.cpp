@@ -1,5 +1,5 @@
 #include "model/heat2d.h"
-#include "korali.h"
+#include "korali.hpp"
 
 int main(int argc, char* argv[])
 {

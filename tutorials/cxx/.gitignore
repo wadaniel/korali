@@ -8,5 +8,6 @@ b1-restart-cmaes
 b1-restart-dea
 b1-restart-tmcmc
 b2-constrained-optimization
+b3-integer-optimization
 *.o
 *.a

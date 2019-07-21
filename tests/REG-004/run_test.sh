@@ -10,11 +10,11 @@
 
 source ../functions.sh
 
-cd $curdir/../../tutorials/python
+pushd ../REG-001/tutorials
 
 logEcho "[Korali] Beginning plotting tests"                                   
-                                                                                
-for dir in ./_*                                                                 
+
+for dir in ./*/python/_*                                                                 
 do                                                                              
   logEcho "-------------------------------------"
   logEcho " Plotting results from $dir ..."
@@ -28,3 +28,5 @@ do
   #python3 -m korali.plotter --test --evolution --dir "${dir}" >> $logFile 2>&1
   #check_result
 done 
+
+popd

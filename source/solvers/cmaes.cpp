@@ -109,7 +109,7 @@ void CMAES::initialize()
  for (size_t i = 0; i < _k->N; ++i)
  {
    if( (_variableSettings[i].discrete == true) && _variableSettings[i].granularity == 0.0) 
-       koraliError("Granularity not set for discrete variable \'%s\'.", _k->_variables[i]->_name.c_str());
+       koraliError("Granularity not set for discrete variable \'%s\'.\n", _k->_variables[i]->_name.c_str());
    if (_variableSettings[i].discrete == true) numDiscretes++;
     _granularity[i] = _variableSettings[i].granularity;
  }

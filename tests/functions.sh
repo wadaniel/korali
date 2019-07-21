@@ -20,4 +20,12 @@ function logEcho ()
  echo "$1" >> $logFile
 }
 
+# Logging function.
+function log ()
+{
+ echo "$1" >> $logFile
+}
+
+
+
 

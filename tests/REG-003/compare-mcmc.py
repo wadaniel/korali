@@ -7,31 +7,26 @@ from math import isclose
 sys.path.append('./helpers')
 from reg003_helpers import *
 
-src_cxx = "../../tutorials/cxx/_a2_sampling_mcmc_result/"
-src_py  = "../../tutorials/python/_a2_sampling_mcmc_result/"
+src_py  = "../REG-001/tutorials/a2-sampling/python/_result_run-mcmc/"
+src_cxx = "../REG-002/tutorials/a2-sampling/cxx/_result_run-mcmc/"
 
-resultfiles_cxx = sorted( [f for f in os.listdir(src_cxx) if os.path.isfile(os.path.join(src_cxx, f))] )
 resultfiles_py  = sorted( [f for f in os.listdir(src_py) if os.path.isfile(os.path.join(src_py, f))] )
+resultfiles_cxx = sorted( [f for f in os.listdir(src_cxx) if os.path.isfile(os.path.join(src_cxx, f))] )
 
-result_cxx = resultfiles_cxx[-1]
 result_py  = resultfiles_py[-1]
+result_cxx = resultfiles_cxx[-1]
 
-json_cxx = open_json(src_cxx, result_cxx)
 json_py  = open_json(src_py, result_py)
+json_cxx = open_json(src_cxx, result_cxx)
 
 ###############################################################################
 
 # Compare Python and CXX results
 
 assert_value( [ "Solver", "Internal", "Acceptance Count" ], json_cxx, json_py)
-
 assert_value( [ "Solver", "Internal", "Acceptance Rate" ], json_cxx, json_py)
-
 assert_value( [ "Solver", "Internal", "Chain Covariance" ], json_cxx, json_py)
-
 assert_value( [ "Solver", "Internal", "Chain Mean" ], json_cxx, json_py)
-
 assert_value( [ "Solver", "Internal", "Sample Fitness Database" ], json_cxx, json_py)
-
 assert_value( [ "Solver", "Internal", "Rejection Count" ], json_cxx, json_py)
 

@@ -7,28 +7,24 @@ from math import isclose
 sys.path.append('./helpers')
 from reg003_helpers import *
 
-src_cxx = "../../tutorials/cxx/_a1_optimization_dea_result/"
-src_py  = "../../tutorials/python/_a1_optimization_dea_result/"
+src_py  = "../REG-001/tutorials/a1-optimization/python/_result_run-dea/"
+src_cxx = "../REG-002/tutorials/a1-optimization/cxx/_result_run-dea/"
 
-resultfiles_cxx = sorted( [f for f in os.listdir(src_cxx) if os.path.isfile(os.path.join(src_cxx, f))] )
 resultfiles_py  = sorted( [f for f in os.listdir(src_py) if os.path.isfile(os.path.join(src_py, f))] )
+resultfiles_cxx = sorted( [f for f in os.listdir(src_cxx) if os.path.isfile(os.path.join(src_cxx, f))] )
 
-result_cxx = resultfiles_cxx[-1]
 result_py  = resultfiles_py[-1]
+result_cxx = resultfiles_cxx[-1]
 
-json_cxx = open_json(src_cxx, result_cxx)
 json_py  = open_json(src_py, result_py)
+json_cxx = open_json(src_cxx, result_cxx)
 
 ###############################################################################
 
 # Compare Python and CXX results
 
 assert_value( [ "Solver", "Internal", "Best Ever Sample" ], json_cxx, json_py)
-
 assert_value( [ "Solver", "Internal", "Best Ever Value" ], json_cxx, json_py)
-
 assert_value( [ "Solver", "Internal", "Current Best Sample" ], json_cxx, json_py)
-
 assert_value( [ "Solver", "Internal", "Fitness Vector" ], json_cxx, json_py)
-
 assert_value( [ "Solver", "Internal", "Sample Candidate" ], json_cxx, json_py)

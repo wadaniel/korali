@@ -19,26 +19,55 @@ source ../functions.sh
 
 ############# STEP 1 ##############
 
-cd $curdir/../../tutorials/cxx
-
-logEcho "[Korali] Removing old result files"
-rm -rf _*
-
-logEcho "[Korali] Compiling executables"
-
-make clean >> $logFile
+logEcho "[Korali] Copying Tutorials..."
+rm -rf ./tutorials >> $logFile 2>&1
 check_result
 
-make -j 4 >> $logFile
+cp ../../tutorials . -r >> $logFile 2>&1
 check_result
 
-logEcho "[Korali] Beginning c++ tests"
+pushd tutorials
 
-for file in *.cpp
+logEcho "[Korali] Beginning C++ tests"
+
+for dir in ./*                                                                 
 do
   logEcho "-------------------------------------"
-  logEcho " Running $file"
-  logEcho "-------------------------------------"
-  ./"${file%.*}" >> $logFile
+  logEcho " Entering Tutorial: $dir"
+
+  pushd $dir/cxx >> $logFile 2>&1
+
+  logEcho "  + Compiling Tutorial..."
+  
+  make clean >> $logFile 2>&1
   check_result
+  
+  make -j >> $logFile 2>&1
+  check_result
+
+  log "[Korali] Removing any old result files..."
+  rm -rf _korali_results >> $logFile 2>&1
+  check_result
+  
+  for file in *.cpp
+  do
+    logEcho "  + Running File: $file..."
+    
+    log "[Korali] Running $file..."
+    ./"${file%.*}" >> $logFile 2>&1
+    check_result
+    
+    log "[Korali] Moving Results..."
+    rm -rf "_result_${file%.*}" >> $logFile 2>&1
+    check_result
+    
+    mv _korali_result "_result_${file%.*}" >> $logFile 2>&1
+    check_result
+  done
+  
+  popd >> $logFile 2>&1
+  logEcho "-------------------------------------"
 done
+
+popd
+

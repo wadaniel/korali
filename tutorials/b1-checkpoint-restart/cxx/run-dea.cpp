@@ -22,9 +22,9 @@ int main(int argc, char* argv[])
  k["Solver"]["Type"] = "DEA";
  k["Solver"]["Sample Count"] = 10;
 
- k["General"]["Max Generations"] = 500;
- k["General"]["Console Output"]["Frequency"] = 50;
- k["General"]["Results Output"]["Frequency"] = 50;
+ k["General"]["Max Generations"] = 50;
+ k["General"]["Console Output"]["Frequency"] = 5;
+ k["General"]["Results Output"]["Frequency"] = 5;
 
  k.setModel([](Korali::Model& d) { model(d.getVariables(), d.getResults()); });
  k.run();
@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
  printf("\n\nRestarting now...\n\n");
 
  // Now we loadState() to resume the same experiment from generation 5
- k.loadState("_korali_reesult/s00050.json");
+ k.loadState("_korali_result/s00010.json");
 
  k.run();
 

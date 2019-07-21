@@ -26,6 +26,7 @@ k["Solver"]["Sample Count"] = 10
 
 k["General"]["Max Generations"] = 500
 k["General"]["Console Output"]["Frequency"] = 5
+k["General"]["Results Output"]["Frequency"] = 5
 
 k.setModel(model) 
 

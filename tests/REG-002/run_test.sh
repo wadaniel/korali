@@ -23,7 +23,7 @@ logEcho "[Korali] Copying Tutorials..."
 rm -rf ./tutorials >> $logFile 2>&1
 check_result
 
-cp ../../tutorials . -r >> $logFile 2>&1
+cp -R ../../tutorials . >> $logFile 2>&1
 check_result
 
 pushd tutorials

@@ -120,7 +120,7 @@ void CMAES::initialize()
  {
    auto jsGeometric = nlohmann::json();
    jsGeometric["Type"] = "Geometric";
-   jsGeometric["Success Probability"] = std::pow(0.7, 1.0/numDiscretes);
+   jsGeometric["Success Probability"] = std::pow(0.7, 1.0/numDiscretes); // TODO: wrong (set every gen for 1/numdiscradapt)
    jsGeometric["Seed"] = _k->_seed++;
    _geometricGenerator = std::make_shared<Variable>();
    _geometricGenerator->setDistribution(jsGeometric);
@@ -309,7 +309,7 @@ void CMAES::sampleSingle(size_t sampleIdx)
     for(size_t d = 0; d < _k->N; ++d) if(_maskingMatrix[d] == 1.0)
     {
       dmutation = 1.0;
-      dmutation += _geometricGenerator->getRandomNumber();
+      dmutation += ( _geometricGenerator->getRandomNumber() - 1.0 );
       dmutation *= _granularity[d];
 
       if( _gaussianGenerator->getRandomNumber() > 0.0 ) dmutation*=-1.0;
@@ -318,8 +318,6 @@ void CMAES::sampleSingle(size_t sampleIdx)
     }
   }
 
-  if(_hasDiscreteVariables) for(size_t d = 0; d < _k->N; ++d) if(_granularity[d] != 0.0)
-      _samplePopulation[sampleIdx*_k->N+d] = _granularity[d] * std::round(_samplePopulation[sampleIdx*_k->N+d]/_granularity[d]);
 }
 
 

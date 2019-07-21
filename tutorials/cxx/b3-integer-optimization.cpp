@@ -25,15 +25,19 @@ int main(int argc, char* argv[])
     k["Variables"][i]["CMAES"]["Initial Mean"] = 1.0;
     k["Variables"][i]["CMAES"]["Lower Bound"]  = -20.0;
     k["Variables"][i]["CMAES"]["Upper Bound"]  = +20.0;
-    k["Variables"][i]["CMAES"]["Discrete"] = true;
-    k["Variables"][i]["CMAES"]["Granularity"] = 1.0;
+
+    if( i == 0 || i == 1 || i == 3 || i == 6)
+    {
+      k["Variables"][i]["CMAES"]["Discrete"]     = true;
+      k["Variables"][i]["CMAES"]["Granularity"]  = 1.0;
+    }
   }
 
   // Configuring CMA-ES parameters
   k["CMAES"]["Objective"] = "Maximize";
   k["CMAES"]["Sample Count"] = 8;
 
-  k["CMAES"]["Termination Criteria"]["Max Generations"]["Value"] = 500;
+  k["CMAES"]["Termination Criteria"]["Max Generations"]["Value"] = 750;
 
   // Setting output directory
   k["Result Directory"] = "_b3_integer_optimization_result";

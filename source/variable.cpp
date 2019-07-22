@@ -141,7 +141,7 @@ void Korali::Variable::getConfiguration(nlohmann::json& js)
  js["Log Space"] = _isLogSpace;
  js["Name"] = _name;
 
- getDistribution(js);
+ getDistribution(js["Prior Distribution"]);
 }
 
 void Korali::Variable::setConfiguration(nlohmann::json& js)

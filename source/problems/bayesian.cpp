@@ -22,7 +22,7 @@ void Korali::Problem::Bayesian::getConfiguration()
    size_t idx = _statisticalVariableIndices[i];
    _k->_js["Variables"][idx]["Type"] = "Statistical";
   }
- }
+}
 
 void Korali::Problem::Bayesian::setConfiguration()
 {

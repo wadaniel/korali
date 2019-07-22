@@ -28,7 +28,7 @@ def hls_colors(num, h = 0.01, l=0.6, s=0.65):
 
 
 # Plot CMAES results (read from .json files)
-def plot_cmaes(src, live=False, test=False, evolution=False):
+def plot_cmaes(src, plot_mean = False, live=False, test=False, evolution=False):
 
     live = live or evolution
 
@@ -122,8 +122,9 @@ def plot_cmaes(src, live=False, test=False, evolution=False):
     
 
             if (data['Run ID'] != runid):
-                print("[Korali] Warning: Skipping file {0}, results origin from" \
-                        "a different experiment (different run id).".format(path))
+                print("[Korali] Warning: Skipping data from file {0}, results "\
+                        "origin from a different experiment (json contains "\
+                        "different Run ID).".format(path))
                 continue
 
             if gen > 1:
@@ -155,8 +156,7 @@ def plot_cmaes(src, live=False, test=False, evolution=False):
             
                 if (live == True and gen > 1):
                     if (evolution == False):
-                        #draw_figure(fig, ax, src, gen, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, axis, ssdev, colors, names, live)
-                        draw_figure(fig, ax, src, gen, numeval, numdim, fval, dfval, cond, sigma, psL2, mu, axis, ssdev, colors, names, live)
+                        draw_figure(fig, ax, src, gen, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, mu, axis, ssdev, colors, names, plot_mean, live)
                     else:
                         plt.clf()
                         fig, ax = plt.subplots(1,1,num='CMAES Evolution: {0}'.format(src), figsize=(8,8))
@@ -166,7 +166,7 @@ def plot_cmaes(src, live=False, test=False, evolution=False):
 
     if (live == False):
         fig, ax = plt.subplots(2,2,num='{0} live diagnostics'.format(solverName), figsize=(8,8))
-        draw_figure(fig, ax, src, gen, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, axis, ssdev, colors, names, live)
+        draw_figure(fig, ax, src, gen, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, mu, axis, ssdev, colors, names, plot_mean, live)
         fig.show()
     
     if (test == False):
@@ -177,7 +177,7 @@ def plot_cmaes(src, live=False, test=False, evolution=False):
 
 
 # Create Plot from Data
-def draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, cond, sigma, psL2, objVec, axis, ssdev, colors, names, live):
+def draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, mu, axis, ssdev, colors, names, plot_mean, live):
 
     plt.suptitle( 'Generation {0}'.format(str(idx).zfill(5)),\
                       fontweight='bold',\
@@ -195,7 +195,14 @@ def draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, cond, sigma, ps
         ax[0,0].legend(bbox_to_anchor=(0,1.00,1,0.2), loc="lower left", mode="expand", ncol = 3, handlelength=1, fontsize = 8)
 
     # Upper Right Plot
-    ax[0,1].set_title('Objective Variables')
+    objVec = []
+    if (plot_mean):
+        ax[0,1].set_title('Mean of Objective Variables')
+        objVec = mu
+    else:
+        ax[0,1].set_title('Objective Variables')
+        objVec = fvalXvec
+
     ax[0,1].grid(True)
     for i in range(numdim):
         ax[0,1].plot(numeval, objVec[i], color = colors[i], label=names[i])

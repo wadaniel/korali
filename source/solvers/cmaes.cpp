@@ -307,10 +307,11 @@ void CMAES::sampleSingle(size_t sampleIdx)
 
   if(_hasDiscreteVariables)
   {
-    if ( sampleIdx < _numDiscreteMutations)
+    if ( (sampleIdx+1) < _numDiscreteMutations )
     {
       double p_geom = std::pow(0.7, 1.0/_maskingMatrixEntries);
       size_t select = std::floor(_uniformGenerator->getRandomNumber() * _maskingMatrixEntries);
+
       for(size_t d = 0; d < _k->N; ++d) if( (_maskingMatrix[d] == 1.0) && (select-- == 0) )
       {
         double dmutation = 1.0;
@@ -322,13 +323,15 @@ void CMAES::sampleSingle(size_t sampleIdx)
         _samplePopulation[sampleIdx*_k->N+d] += dmutation;
       }
     }
-    /*
-    else if ( sampleIdx == (_sampleCount - 1) )
+    else if ( (sampleIdx+1) == _numDiscreteMutations )
     {
       for(size_t d = 0; d < _k->N; ++d) if( _granularity[d] != 0.0 )
-        _samplePopulation[sampleIdx*_k->N+d] = _bestEverSample[d];
+      {
+        double dmutation = std::round(_bestEverSample[d]/_granularity[d]) * _granularity[d] - _samplePopulation[sampleIdx*_k->N+d];
+        _discreteMutations[sampleIdx*_k->N+d] = dmutation;
+        _samplePopulation[sampleIdx*_k->N+d] += dmutation;
+      }
     }
-    */
   }
 
 }
@@ -446,9 +449,14 @@ void CMAES::adaptC(int hsig)
   /* update covariance matrix */
   for (size_t d = 0; d < _k->N; ++d)
    for (size_t e = _isDiag ? d : 0; e <= d; ++e) {
-     _C[d*_k->N+e] = (1 - ccov1 - ccovmu) * _C[d*_k->N+e] + ccov1 * (_evolutionPath[d] * _evolutionPath[e] + (1-hsig)*ccov1*_cumulativeCovariance*(2.-_cumulativeCovariance) * _C[d*_k->N+e]);
+     _C[d*_k->N+e] = (1 - ccov1 - ccovmu) * _C[d*_k->N+e] 
+                        + ccov1 * (_evolutionPath[d] * _evolutionPath[e] 
+                        + (1-hsig)*ccov1*_cumulativeCovariance*(2.-_cumulativeCovariance) * _C[d*_k->N+e]);
      for (size_t k = 0; k < _muValue; ++k)
-         _C[d*_k->N+e] += ccovmu * _muWeights[k] * std::pow(_samplePopulation[_sortingIndex[k]*_k->N + d] - _discreteMutations[_sortingIndex[k]*_k->N+d] - _previousMean[d], 2.0)  / sigmasquare;
+         _C[d*_k->N+e] += ccovmu * _muWeights[k] 
+                        * (_samplePopulation[_sortingIndex[k]*_k->N + d] - _discreteMutations[_sortingIndex[k]*_k->N+d] - _previousMean[d]) 
+                        * (_samplePopulation[_sortingIndex[k]*_k->N + e] - _discreteMutations[_sortingIndex[k]*_k->N+e] - _previousMean[e])  
+                        / sigmasquare;
      if (e < d) _C[e*_k->N+d] = _C[d*_k->N+e];
    }
 
@@ -456,7 +464,7 @@ void CMAES::adaptC(int hsig)
   _maxDiagCElement = _minDiagCElement = _C[0];
   for (size_t d = 1; d < _k->N; ++d) {
   if (_maxDiagCElement < _C[d*_k->N+d]) _maxDiagCElement = _C[d*_k->N+d];
-  else if (_minDiagCElement > _C[d*_k->N+d])  _minDiagCElement = _C[d*_k->N+d];
+  else if (_minDiagCElement > _C[d*_k->N+d]) _minDiagCElement = _C[d*_k->N+d];
   }
  } /* if ccov... */
 }
@@ -492,14 +500,14 @@ void CMAES::updateDiscreteMutationMatrix()
   
   size_t entries = _k->N + 1; // +1 to prevent 0-ness
   std::fill( std::begin(_maskingMatrixSigma), std::end(_maskingMatrixSigma), 1.0);
-  for(size_t d = 0; d < _k->N; ++d) if(_sigma*_axisD[d]/std::sqrt(_sigmaCumulationFactor) < 0.2*_granularity[d]) { _maskingMatrixSigma[d] = 0.0; entries--; }
+  for(size_t d = 0; d < _k->N; ++d) if(_sigma*std::sqrt(_C[d*_k->N+d])/std::sqrt(_sigmaCumulationFactor) < 0.2*_granularity[d]) { _maskingMatrixSigma[d] = 0.0; entries--; }
   _chiS = sqrt((double) entries) * (1. - 1./(4.*entries) + 1./(21.*entries*entries));
   
   _maskingMatrixEntries = 0;
   std::fill( std::begin(_maskingMatrix), std::end(_maskingMatrix), 0.0);
-  for(size_t d = 0; d < _k->N; ++d) if(2.0*_sigma*_axisD[d] < _granularity[d]) { _maskingMatrix[d] = 1.0; _maskingMatrixEntries++; }
+  for(size_t d = 0; d < _k->N; ++d) if(2.0*_sigma*std::sqrt(_C[d*_k->N+d]) < _granularity[d]) { _maskingMatrix[d] = 1.0; _maskingMatrixEntries++; }
  
-  _numDiscreteMutations = std::min( _sampleCount/10.0 + _maskingMatrixEntries + 1.0, _sampleCount/2.0 - 1.0);
+  _numDiscreteMutations = std::min( std::round(_sampleCount/10.0 + _maskingMatrixEntries + 1) , std::floor(_sampleCount/2.0) - 1);
   std::fill( std::begin(_discreteMutations), std::end(_discreteMutations), 0.0);
   
 }
@@ -545,7 +553,8 @@ bool CMAES::checkTermination()
    if ( _termCondMaxStandardDeviationEnabled && (_sigma * sqrt(_C[idx*_k->N+idx]) > _termCondMaxStandardDeviation * _variableSettings[idx].initialStdDev) )
    {
     isFinished = true;
-    koraliLog(KORALI_MINIMAL, "Standard deviation increased by more than %7.2e, larger initial standard deviation recommended \n", _termCondMaxStandardDeviation * _variableSettings[idx].initialStdDev);
+    koraliLog(KORALI_MINIMAL, "Standard deviation increased by more than %7.2e, larger initial standard deviation recommended \n", 
+            _termCondMaxStandardDeviation * _variableSettings[idx].initialStdDev);
     break;
    }
  }

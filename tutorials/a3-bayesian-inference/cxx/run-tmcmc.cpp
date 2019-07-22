@@ -37,8 +37,8 @@ int main(int argc, char* argv[])
  k["Solver"]["Type"] = "TMCMC";
  k["Solver"]["Population Size"] = 5000;
 
- // Setting the model
- k.setModel([](Korali::Model& d) { model(d.getVariables(), d.getResults(), getReferencePoints()); });
+ // Setting Model
+ k.setModel(model);
 
  // Running Korali
  k.run();

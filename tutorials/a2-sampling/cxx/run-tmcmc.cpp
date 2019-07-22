@@ -24,7 +24,8 @@ int main(int argc, char* argv[])
  k["Solver"]["Population Size"] = 5000;
  k["Solver"]["Covariance Scaling"] = 0.001;
 
- k.setModel([](Korali::Model& d) { model(d.getVariables(), d.getResults()); });
+ // Setting Model
+ k.setModel(model);
 
  // Running Korali
  k.run();

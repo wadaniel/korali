@@ -36,7 +36,6 @@ void Korali::Problem::Hierarchical::initialize()
 
  if (_k->_constraints.size() > 0) koraliError("Hierarchical Bayesian problems do not allow constraint definitions.\n");
  if (_k->_modelDefined == true) koraliError("Hierarchical Bayesian does not require a computational model, but one was provided.\n");
- if (_k->_likelihoodDefined == true) koraliError("Hierarchical Bayesian does not require a likelihood function, but one was provided.\n");
  if (_subProblems.size() < 2) koraliError("Hierarchical Bayesian problem requires defining at least two executed sub-problems.\n");
 
  for (size_t i = 0; i < _subProblems.size(); i++)

@@ -40,7 +40,6 @@ PYBIND11_MODULE(libkorali, m) {
  .def("run", &Korali::Engine::run)
  .def("dry", &Korali::Engine::dry)
  .def("setModel",      &Korali::Engine::setModel, pybind11::return_value_policy::reference)
- .def("setLikelihood", &Korali::Engine::setLikelihood, pybind11::return_value_policy::reference)
  .def("addConstraint", &Korali::Engine::addConstraint, pybind11::return_value_policy::reference)
  .def("getResults", &Korali::Engine::getResults)
  .def("loadState",     &Korali::Engine::loadState, pybind11::return_value_policy::reference);
@@ -74,7 +73,6 @@ Korali::Engine::Engine() : _solver(nullptr), _problem(nullptr), _conduit(nullptr
 {
  _runId             = 0;
  _modelDefined      = false;
- _likelihoodDefined = false;
  consoleOutputFrequency = 1;
  resultsOutputFrequency = 1;
  _isFinished = false;
@@ -225,12 +223,6 @@ void Korali::Engine::setModel(std::function<void(Korali::Model&)> model)
 {
  _model = model;
  _modelDefined = true;
-}
-
-void Korali::Engine::setLikelihood(std::function<void(Korali::Model&)> likelihood)
-{
- _model = likelihood;
- _likelihoodDefined = true;
 }
 
 void Korali::Engine::addConstraint(std::function<void(Korali::Model&)> constraint)

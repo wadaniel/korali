@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
  k["Solver"]["Sample Count"] = 32;
 
  // Setting computational model
- k.setModel([](Korali::Model& d) { model(d.getVariables(), d.getResults()); });
+ k.setModel(model);
 
  // Running Korali
  k.run();

@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
  k["Solver"]["Type"] = "TMCMC";
  k["Solver"]["Population Size"] = 5000;
 
- k.setModel([](Korali::Model& d) { model(d.getVariables(), d.getResults()); });
+ k.setModel(model);
  k.run();
 
  printf("\n\nRestarting now:\n\n");

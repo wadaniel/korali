@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
  k["Solver"]["Max Chain Length"] = 5000;
 
  // Setting Model
- k.setModel([](Korali::Model& d) { model(d.getVariables(), d.getResults()); });
+ k.setModel(model);
 
  // Running Korali
  k.run();

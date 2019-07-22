@@ -47,8 +47,8 @@ int main(int argc, char* argv[])
  k["General"]["Results Output"]["Frequency"] = 5;
  k["General"]["Console Output"]["Frequency"] = 5;
 
- // Setting the model
- k.setModel( [](Korali::Model& d) { model(d.getVariables(), d.getResults(), getReferencePoints()); });
+ // Setting Model
+ k.setModel(model);
 
  // Running Korali
  k.run();

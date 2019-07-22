@@ -1,4 +1,4 @@
-#include <vector>
+#include <korali.hpp>
 
-void model(std::vector<double>& pars, std::vector<double>& result);
+void model(Korali::Model& k);
 

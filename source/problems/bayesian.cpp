@@ -64,7 +64,7 @@ void Korali::Problem::Bayesian::initialize()
  if (_likelihoodModel == CustomLikelihood)
  {
    if (_referenceDataSize != 0) koraliError("Custom likelihood models do not accept reference data.\n");
-   if (_k->_likelihoodDefined == false) koraliError("No likelihood model was specified.\n");
+   if (_k->_modelDefined == false) koraliError("No likelihood model was specified.\n");
    if (_statisticalVariableIndices.size() != 0) koraliError("Custom likelihood models do not accept statistical variables.\n");
  }
 }

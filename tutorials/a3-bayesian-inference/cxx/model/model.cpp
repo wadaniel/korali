@@ -1,13 +1,16 @@
 #include "model.h"
 
-void model(std::vector<double>& pars, std::vector<double>& result, std::vector<double> x)
+void model(Korali::Model& k)
 {
+ std::vector<double> x = getReferencePoints();
+ std::vector<double> v = k.getVariables();
+
  for (int i = 0; i < x.size(); i++)
  {
-  double th0 = pars[0];
-  double th1 = pars[1];
-  double r = th0*x[i] + th1;
-  result.push_back(r);
+  double th0 = v[0];
+  double th1 = v[1];
+  double c = th0*x[i] + th1;
+  k.addResult(c);
  }
 }
 

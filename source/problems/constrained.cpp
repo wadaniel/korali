@@ -32,7 +32,6 @@ void Korali::Problem::Constrained::initialize()
 {
  if (_k->_constraints.size() < 1) koraliError("Constrained Optimization problems require defining at least one constraint.\n");
  if (_k->_modelDefined == false) koraliError("Constrained Optimization problems require defining a computational model.\n");
- if (_k->_likelihoodDefined == true) koraliError("Constrained Optimization problems do not accept a likelihood function, only a computational model.\n");
 }
 
 void Korali::Problem::Constrained::finalize()

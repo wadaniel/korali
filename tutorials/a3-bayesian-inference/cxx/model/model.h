@@ -1,5 +1,6 @@
+#include <korali.hpp>
 #include <vector>
 
-void model(std::vector<double>& pars, std::vector<double>& result, std::vector<double> x);
+void model(Korali::Model& k);
 std::vector<double> getReferenceData();
 std::vector<double> getReferencePoints();

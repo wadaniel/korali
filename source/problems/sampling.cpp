@@ -23,7 +23,6 @@ void Korali::Problem::Sampling::initialize()
 {
  if (_k->_constraints.size() > 0) koraliError("Sampling problems do not allow constraint definitions.\n");
  if (_k->_modelDefined == false) koraliError("Sampling problems require defining a computational model.\n");
- if (_k->_likelihoodDefined == true) koraliError("Sampling problem do not accept a likelihood function, only a computational model.\n");
 }
 
 void Korali::Problem::Sampling::finalize()

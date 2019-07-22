@@ -25,7 +25,7 @@ int main(int argc, char* argv[])
  k["General"]["Console Output"]["Frequency"] = 10;
  k["General"]["Results Output"]["Frequency"] = 10;
 
- k.setModel([](Korali::Model& d) { model(d.getVariables(), d.getResults()); });
+ k.setModel(model);
  k.run();
 
  printf("\n\nRestarting now:\n\n");

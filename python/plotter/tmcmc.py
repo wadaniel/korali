@@ -9,7 +9,7 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 
-from korali.plotter.helpers import readFiles, verifyRunId, plt_pause_light
+from korali.plotter.helpers import readFiles, plt_pause_light
 
 
 # Plot TMCMC results (read from .json files)

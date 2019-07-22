@@ -10,7 +10,7 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 
-from korali.plotter.helpers import readFiles, verifyRunId, hlsColors, plt_pause_light, plt_multicolored_lines
+from korali.plotter.helpers import readFiles, hlsColors, plt_pause_light, plt_multicolored_lines
 
 
 # Plot CMAES results (read from .json files)

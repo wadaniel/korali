@@ -11,7 +11,7 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 
-from korali.plotter.helpers import plt_pause_light, plt_multicolored_lines
+from korali.plotter.helpers import readFiles, plt_pause_light, plt_multicolored_lines
 
 # Get a list of evenly spaced colors in HLS huse space.
 # Credits: seaborn package
@@ -78,16 +78,10 @@ def plot_dea(src, live=False, test=False):
 
     plt.style.use('seaborn-dark')
 
-    resultfiles = [f for f in os.listdir(src) if os.path.isfile(os.path.join(src, f))]
-    resultfiles = sorted(resultfiles)
-
     fig = None
     ax  = None
     
-    if (resultfiles == []):
-        print("[Korali] Error: Did not find file {0} in the result folder...".format(src))
-        exit(-1)
-
+    resultfiles = readFiles(src)
    
     for filename in resultfiles:
         path   = '{0}/{1}'.format(src, filename)

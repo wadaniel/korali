@@ -5,32 +5,16 @@ import sys
 import glob
 import time
 import json
-import colorsys
 import numpy as np
 
 import matplotlib
 import matplotlib.pyplot as plt
-import matplotlib.transforms as transforms
-from matplotlib.patches import Circle, Ellipse
 
-from korali.plotter.helpers import plt_pause_light, plt_multicolored_lines
-
-
-# Get a list of evenly spaced colors in HLS huse space.
-# Credits: seaborn package
-def hls_colors(num, h = 0.01, l=0.6, s=0.65):
-    hues = np.linspace(0, 1, num + 1)[:-1]
-    hues += h
-    hues %= 1
-    hues -= hues.astype(int)
-    palette = [ list(colorsys.hls_to_rgb(h_i, l, s)) for h_i in hues ]
-    return palette
+from korali.plotter.helpers import readFiles, hlsColors, plt_pause_light, plt_multicolored_lines
 
 
 # Plot CMAES results (read from .json files)
-def plot_cmaes(src, plot_mean = False, live=False, test=False, evolution=False):
-
-    live = live or evolution
+def plot_cmaes(src, plot_mean = False, live=False, test=False ):
 
     runid    = -1 # for safety check
     numdim   = 0  # problem dimension
@@ -46,32 +30,13 @@ def plot_cmaes(src, plot_mean = False, live=False, test=False, evolution=False):
     mu       = [] # current mean
     axis     = [] # sqrt(EVals)
     ssdev    = [] # sigma x diag(C)
-    cov      = [] # covariance matrix (for evolution plot)
-    muOld_x  = [] # previous mean dim 1 (for evolution plot)
-    muOld_y  = [] # previous mean dim 2 (for evolution plot)
-    
-    ccmaes   = False
-    via      = None
-    normal   = None
-
-    # Temporary Problem definition
-    x = np.linspace(-32, 32, 1000)
-    y = np.linspace(-32, 32, 1000)
-    X, Y = np.meshgrid(x, y)
-    Z = (np.square(1-X)+100*(np.square(Y+3-np.square(X))))
-
+ 
     plt.style.use('seaborn-dark')
  
-    resultfiles = [f for f in os.listdir(src) if os.path.isfile(os.path.join(src, f))]
-    resultfiles = sorted(resultfiles)
-
     fig = None
     ax  = None
  
-    if (resultfiles == []):
-        print("[Korali] Error: Did not find file {0} in the result folder...".format(src))
-        exit(-1)
-
+    resultfiles = readFiles(src)
 
     for filename in resultfiles:
         path   = '{0}/{1}'.format(src, filename)
@@ -79,7 +44,7 @@ def plot_cmaes(src, plot_mean = False, live=False, test=False, evolution=False):
         with open(path) as f:
 
             data       = json.load(f)
-            solverName = 'CMAES'
+            solverName = data['Solver']
 
             state = data['Solver']['Internal']
             gen   = data['General']['Current Generation']
@@ -89,19 +54,8 @@ def plot_cmaes(src, plot_mean = False, live=False, test=False, evolution=False):
                 runid  = data['General']['Run ID']
                 numdim = len(data['Variables'])
                 names  = [ data['Variables'][i]['Name'] for i in range(numdim) ]
-                colors = hls_colors(numdim)
-                
-                if ( (evolution == True) and (numdim != 2) ):
-                    print("[Korali] Error: Evolution feature only for 2D available - Bye!")
-                    exit(0)
-                else:
-                    cov.append(state['Covariance Matrix'])
-                
-                # TODO check constraints
-                #ccmaes = True
-                #via    = [state['Viability Boundaries'][0]]
-                #normal = [state['Constraint Normal Approximation']]
- 
+                colors = hlsColors(numdim)
+
                 for i in range(numdim):
                     fvalXvec.append([])
                     mu.append([])
@@ -109,11 +63,7 @@ def plot_cmaes(src, plot_mean = False, live=False, test=False, evolution=False):
                     ssdev.append([])
 
                 if (live == True):
-                    if (evolution == False):
-                        fig, ax = plt.subplots(2,2,num='{0} live diagnostics'.format(solverName), figsize=(8,8))
-                    else:
-                        fig, ax = plt.subplots(1,1,num='CMAES Evolution: {0}'.format(src), figsize=(8,8))
-
+                    fig, ax = plt.subplots(2,2,num='{0} live diagnostics'.format(solverName), figsize=(8,8))
                     fig.show()
 
             if ( (live == True) and (not plt.fignum_exists(fig.number))):
@@ -135,17 +85,6 @@ def plot_cmaes(src, plot_mean = False, live=False, test=False, evolution=False):
                 sigma.append(state['Sigma'])
                 cond.append(state['Maximum Covariance Eigenvalue']/state['Minimum Covariance Eigenvalue'])
                 psL2.append(state['Conjugate Evolution Path L2 Norm'])
-                cov.append(state['Covariance Matrix'])
-
-                if (evolution == True):
-                    muOld_x.append(state['PreviousMeanVector'][0])
-                    muOld_y.append(state['PreviousMeanVector'][1])
-                    samples_x = [sublist[0] for sublist in state['Samples']]
-                    samples_y = [sublist[1] for sublist in state['Samples']]
-                
-                if (ccmaes == True):
-                    via.append(state['Viability Boundaries'][0])
-                    normal.append(state['Constraint Normal Approximation'])
 
                 for i in range(numdim):
                     fvalXvec[i].append(state['Current Best Sample'][i])
@@ -154,13 +93,7 @@ def plot_cmaes(src, plot_mean = False, live=False, test=False, evolution=False):
                     ssdev[i].append(sigma[-1]*np.sqrt(state['Covariance Matrix'][i*numdim+i]))
             
                 if (live == True and gen > 1):
-                    if (evolution == False):
-                        draw_figure(fig, ax, src, gen, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, mu, axis, ssdev, colors, names, plot_mean, live)
-                    else:
-                        plt.clf()
-                        fig, ax = plt.subplots(1,1,num='CMAES Evolution: {0}'.format(src), figsize=(8,8))
-                        draw_figure_evolution(fig, ax, src, gen, sigma, cov, muOld_x, muOld_y, samples_x, samples_y, ccmaes, normal, via, X, Y, Z)
-
+                    draw_figure(fig, ax, src, gen, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, mu, axis, ssdev, colors, names, plot_mean, live)
                     plt_pause_light(0.05)
 
     if (live == False):
@@ -218,39 +151,3 @@ def draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, cond, sigma, ps
     ax[1,1].set_yscale('log')
     for i in range(numdim):
         ax[1,1].plot(numeval, ssdev[i], color = colors[i], label=names[i])
-
-
-# Plot CMAES samples, proposals, and mean (only 2D, read from .json files)
-def draw_figure_evolution(fig, ax, src, idx, sigma, cov, muOld_x, muOld_y, samples_x, samples_y, ccmaes, normal, via, X, Y, Z):
- 
-    plt.suptitle( 'Generation {0}'.format(str(idx).zfill(5)),\
-                  fontweight='bold',\
-                  fontsize=12 )
-    
-    lambda_, v = np.linalg.eig(cov[-2])
-    w = 5*sigma[-1]*lambda_[0]
-    h = 5*sigma[-1]*lambda_[1]
-    ang=np.rad2deg(np.arccos(v[0, 0]))
-
-    if ccmaes == True:
-        circle1  = Circle( (0, -2), radius = 1, facecolor = 'None', edgecolor='red', linewidth=2, label = 'Constraint Boundary' )
-        circle2  = Circle( (0, -2), radius = np.sqrt(via[-2]+1), facecolor = 'None', edgecolor='red', linestyle='dashed', label = 'Viability Boundary' )
-    ellipse = Ellipse( (muOld_x[-1], muOld_y[-1]), width=w, height=h, angle=ang, facecolor = 'None', edgecolor='b', label = 'Proposal Distribution' )
-
-    ax.contour(X, Y, Z, [ 5, 55, 105, 155, 205, 255, 305], colors='#34495e', linewidths=1 )
-    ax.set_xlim(-32,32)
-    ax.set_ylim(-32,32)
-    ax.plot(1,-2,'*', color = 'g', label = 'Minimum')
-    ax.plot(samples_x,samples_y,'x', color = 'k', label = 'Samples')
-    ax.plot(muOld_x,muOld_y,'^:', color = 'c', label = 'Historical Means' )
-    ax.plot(muOld_x[-1],muOld_y[-1],'^', color = 'b', label = 'Current Mean')
-    if ccmaes == True:
-        ax.arrow( muOld_x[-1], muOld_y[-1], normal[-2][0][0],normal[-2][0][1],
-                head_width=0.05, head_length=0.1, label = 'Constraint Normal Approximation' )
-        ax.add_patch(circle1)
-        ax.add_patch(circle2)
-    ax.add_patch(ellipse)
-
-    #plt_pause_light(1)
-    #plt.savefig('ccmaes{0}.png'.format(idx), bbox_inches='tight')
-    #if(live == False): time.sleep(0.1)

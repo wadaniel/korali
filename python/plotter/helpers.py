@@ -1,3 +1,5 @@
+import os
+import colorsys
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
@@ -9,6 +11,30 @@ from matplotlib.colors import ListedColormap, BoundaryNorm
 def sig(a, b):
     print("[Korali] Keyboard Interrupt - Bye!")
     exit(0)
+
+
+# Read result files
+def readFiles(src):
+    resultfiles = [f for f in os.listdir(src) if os.path.isfile(os.path.join(src, f))]
+    resultfiles = sorted(resultfiles)
+
+    if (resultfiles == []):
+        print("[Korali] Error: Did not find file {0} in the result folder...".format(src))
+        exit(-1)
+
+    return resultfiles
+
+
+# Get a list of evenly spaced colors in HLS huse space.
+# Credits: seaborn package
+def hlsColors(num, h = 0.01, l=0.6, s=0.65):
+    hues = np.linspace(0, 1, num + 1)[:-1]
+    hues += h
+    hues %= 1
+    hues -= hues.astype(int)
+    palette = [ list(colorsys.hls_to_rgb(h_i, l, s)) for h_i in hues ]
+    return palette
+
 
 # Plot pause without focus
 # Credits: https://stackoverflow.com/questions/45729092/
@@ -23,7 +49,6 @@ def plt_pause_light(interval):
                 canvas.draw()
             canvas.start_event_loop(interval)
             return
-
 
 
 # Finds the continuous segments of colors and returns those segment
@@ -47,7 +72,8 @@ def find_contiguous_colors(y, threshold, clow, chigh):
         prev_color = c
     segs.append(curr_seg)
     return segs
- 
+
+
 # Plots abs(y-threshold) in two colors
 #   clow for y < threshold and chigh else
 def plt_multicolored_lines(ax,x,y,threshold,clow,chigh,lab):

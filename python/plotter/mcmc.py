@@ -8,7 +8,7 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 
-from korali.plotter.helpers import plt_pause_light
+from korali.plotter.helpers import readFiles, plt_pause_light
 
 # Plot histogram of sampes in diagonal
 def plot_histogram(ax, theta):
@@ -114,16 +114,11 @@ def plot_mcmc(src, live=False, test=False):
     plt.style.use('seaborn-dark')
     runid  = -1
     burnin = -1
-    
-    resultfiles = [f for f in os.listdir(src) if os.path.isfile(os.path.join(src, f))]
-    resultfiles = sorted(resultfiles)
-
+   
     fig = None
     ax  = None
- 
-    if (resultfiles == []):
-        print("[Korali] Error: Did not find file {0} in the result folder...".format(src))
-        exit(-1)
+
+    resultfiles = readFiles(src)
 
     if (live == True):
         for filename in resultfiles:

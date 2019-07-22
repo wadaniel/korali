@@ -12,7 +12,7 @@ from korali.plotter.tmcmc import plot_tmcmc
 from korali.plotter.mcmc import plot_mcmc
 from korali.plotter.dea import plot_dea
 
-def main(check, path, mean, live, test, evolution):
+def main(check, path, mean, live, test):
 
  if (check == True):
   print("[Korali] Plotter correctly installed.")
@@ -42,12 +42,12 @@ def main(check, path, mean, live, test, evolution):
 
  if ( 'CMAES' == solver):
    print("[Korali] Running CMAES Plotter...")
-   plot_cmaes(path, mean, live, test, evolution)
+   plot_cmaes(path, mean, live, test)
    exit(0)
   
  if ( 'CCMAES' == solver):
-   print("[Korali] Running CcMAES Plotter...")
-   plot_ccmaes(path, live, test, evolution)
+   print("[Korali] Running cCMAES Plotter...")
+   plot_cmaes(path, mean, live, test)
    exit(0)
 
  if ( 'DEA' == solver ):
@@ -67,8 +67,7 @@ if __name__ == '__main__':
     parser.add_argument('--mean', help='plot mean of objective variables', action='store_true', required = False)
     parser.add_argument('--live', help='run live plotting', action='store_true', required = False)
     parser.add_argument('--test', help='run without graphics', action='store_true', required = False)
-    parser.add_argument('--evolution', help='plot CMA-ES evolution (only in 2D)', action='store_true', required = False)
     args = parser.parse_args()
     signal.signal(signal.SIGINT, sig)
    
-    main(args.check, args.dir, args.mean, args.live, args.test, args.evolution)
+    main(args.check, args.dir, args.mean, args.live, args.test)

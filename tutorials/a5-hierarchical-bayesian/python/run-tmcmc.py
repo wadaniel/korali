@@ -56,8 +56,8 @@ kH = korali.initialize()
 
 kH["Problem"]["Type"] = "Hierarchical Bayesian"
 kH["Problem"]["Model"] = "Sample Psi"
-kH.addSubProblem(k1)
-kH.addSubProblem(k2)
+kH["Problem"]["Sub-Problems"][0] = k1.getResults();
+kH["Problem"]["Sub-Problems"][1] = k2.getResults();
 
 kH["Variables"][0]["Name"] = "Psi 1"
 kH["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"

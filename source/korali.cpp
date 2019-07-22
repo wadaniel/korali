@@ -42,9 +42,8 @@ PYBIND11_MODULE(libkorali, m) {
  .def("setModel",      &Korali::Engine::setModel, pybind11::return_value_policy::reference)
  .def("setLikelihood", &Korali::Engine::setLikelihood, pybind11::return_value_policy::reference)
  .def("addConstraint", &Korali::Engine::addConstraint, pybind11::return_value_policy::reference)
- .def("addSubProblem", &Korali::Engine::addSubProblem, pybind11::return_value_policy::reference)
- .def("loadState",     &Korali::Engine::loadState, pybind11::return_value_policy::reference)
- .def("loadConfig",    &Korali::Engine::loadConfig, pybind11::return_value_policy::reference);
+ .def("getResults", &Korali::Engine::getResults)
+ .def("loadState",     &Korali::Engine::loadState, pybind11::return_value_policy::reference);
 
  pybind11::class_<Korali::KoraliJsonWrapper>(m, "__KoraliJsonWrapper")
  .def(pybind11::init<>())
@@ -294,18 +293,18 @@ void Korali::Engine::addConstraint(fcon fconstraint)
  _constraints.push_back(fconstraint);
 }
 
-void Korali::Engine::addSubProblem(Korali::Engine& problem)
-{
- problem.getConfiguration();
- _subProblems.push_back(problem._js);
-}
-
 void Korali::Engine::saveState(std::string fileName)
 {
  getConfiguration();
  if (!_conduit->isRoot()) return;
 
  saveJsonToFile(fileName.c_str(), _js);
+}
+
+std::string Korali::Engine::getResults()
+{
+ getConfiguration();
+ return _js.dump();
 }
 
 void Korali::Engine::saveState(int fileId)
@@ -322,12 +321,6 @@ void Korali::Engine::saveState(int fileId)
 void Korali::Engine::loadState(std::string fileName)
 {
  _js = loadJsonFromFile(fileName.c_str());
-}
-
-void Korali::Engine::loadConfig(std::string fileName)
-{
- _js = loadJsonFromFile(fileName.c_str());
- if (isDefined(_js, {"State"})) _js.erase("State");
 }
 
 bool Korali::Engine::checkTermination()

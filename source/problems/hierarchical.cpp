@@ -7,7 +7,8 @@ void Korali::Problem::Hierarchical::getConfiguration()
  if (_operationType == SamplePsi)   _k->_js["Problem"]["Model"] = "Sample Psi";
  if (_operationType == SampleTheta) _k->_js["Problem"]["Model"] = "Sample Theta";
 
- for (size_t i = 0; i < _k->N; i++)  _k->_variables[i]->getDistribution(_k->_js["Variables"][i]["Bayesian"]["Prior Distribution"]);
+ for (size_t i = 0; i < _subProblems.size(); i++)
+  _k->_js["Problem"]["Sub-Problems"][i] = _subProblems[i];
 }
 
 void Korali::Problem::Hierarchical::setConfiguration()
@@ -17,6 +18,15 @@ void Korali::Problem::Hierarchical::setConfiguration()
   if (operationTypeString == "Sample Psi")   { _operationType = SamplePsi;   foundSubProblemType = true; }
   if (operationTypeString == "Sample Theta") { _operationType = SampleTheta; foundSubProblemType = true; }
   if (foundSubProblemType == false) { koraliError("Incorrect or no sub-problem Type selected for Hierarchical Bayesian: %s.\n", operationTypeString.c_str()); }
+
+  if (isArray(_k->_js["Problem"], { "Sub-Problems" } ))
+   for (size_t i = 0; i < _k->_js["Problem"]["Sub-Problems"].size(); i++)
+   {
+    std::string str = _k->_js["Problem"]["Sub-Problems"][i];
+    auto js = nlohmann::json::parse(str);
+    _subProblems.push_back(js);
+   }
+  _k->_js["Problem"].erase("Sub-Problems");
 }
 
 void Korali::Problem::Hierarchical::initialize()
@@ -27,10 +37,10 @@ void Korali::Problem::Hierarchical::initialize()
  if (_k->_constraints.size() > 0) koraliError("Hierarchical Bayesian problems do not allow constraint definitions.\n");
  if (_k->_modelDefined == true) koraliError("Hierarchical Bayesian does not require a computational model, but one was provided.\n");
  if (_k->_likelihoodDefined == true) koraliError("Hierarchical Bayesian does not require a likelihood function, but one was provided.\n");
- if (_k->_subProblems.size() < 2) koraliError("Hierarchical Bayesian problem requires defining at least two executed sub-problems.\n");
+ if (_subProblems.size() < 2) koraliError("Hierarchical Bayesian problem requires defining at least two executed sub-problems.\n");
 
- for (size_t i = 0; i < _k->_subProblems.size(); i++)
-   if (_k->_subProblems[i]["Is Finished"] == false) koraliError("The Hierarchical Bayesian requires that all problems have run completely, but Problem %lu has not.\n", i);
+ for (size_t i = 0; i < _subProblems.size(); i++)
+   if (_subProblems[i]["Is Finished"] == false) koraliError("The Hierarchical Bayesian requires that all problems have run completely, but Problem %lu has not.\n", i);
 
  if (_operationType == SamplePsi)   _k->setModel(Korali::Problem::Hierarchical::samplePsi);
  if (_operationType == SampleTheta) _k->setModel(Korali::Problem::Hierarchical::sampleTheta);

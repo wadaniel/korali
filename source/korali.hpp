@@ -50,7 +50,6 @@ class Engine {
  bool _likelihoodDefined;
  std::function<void(Model&)> _model;
  std::vector<fcon> _constraints;
- std::vector<nlohmann::json> _subProblems;
 
  size_t N; // Variable Count size_t N; // Variable Count
  size_t currentGeneration;
@@ -73,7 +72,6 @@ class Engine {
  Engine();
  ~Engine();
 
-
  // Start functions
  void start(bool isDryRun);
  void run() { start(false); }
@@ -82,7 +80,6 @@ class Engine {
  void setModel(std::function<void(Korali::Model&)> model);
  void setLikelihood(std::function<void(Korali::Model&)> model);
  void addConstraint(fcon fconstraint);
- void addSubProblem(Korali::Engine& problem);
 
  // Python Configuration Binding Methods
  KoraliJsonWrapper _wr;
@@ -93,10 +90,10 @@ class Engine {
  void setItem(const std::string& key, const int& val)         { if(_js[key].is_boolean()) _js[key] = val == true; else _js[key] = val; }
  void setItem(const std::string& key, const bool& val)        { _js[key] = val; }
 
- void loadConfig(std::string fileName);
  void loadState(std::string fileName);
  void saveState(std::string fileName);
  void saveState(int fileId);
+ std::string getResults();
 
  bool checkTermination();
 

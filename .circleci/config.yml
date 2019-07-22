@@ -51,6 +51,8 @@ jobs:
       - store_artifacts:
           path: ~/korali/tests/test.log
 
+      - store_artifacts:
+          path: ~/korali/docs/test.log
 
   build_macos:
     macos:

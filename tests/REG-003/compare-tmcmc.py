@@ -23,6 +23,7 @@ json_cxx = open_json(src_cxx, result_cxx)
 
 # Compare Python and CXX results
 
+assert_value( [ "General", "Random Seed" ], json_cxx, json_py)
 assert_value( [ "Solver", "Internal", "Accepted Samples Count" ], json_cxx, json_py)
 assert_value( [ "Solver", "Internal", "Chain Candidate Parameters" ], json_cxx, json_py)
 assert_value( [ "Solver", "Internal", "Chain Candidates Loglikelihoods" ], json_cxx, json_py)

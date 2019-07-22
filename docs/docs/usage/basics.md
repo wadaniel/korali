@@ -13,94 +13,6 @@ k = korali.initialize()
 ...
 ```
 
-### General Settings
-
-The runtime Korali application can be easily configured by accessing the instance of the korali Engine. Here is a list of general settings that apply to any Korali app:
-
-??? abstract "Verbosity"
-
-	Determines the amount of information printed by Korali during rume:
-
-	+ Default Value: "Normal"
-	+ Syntax:
-
-	```python
-			k["Verbosity"] = "Silent" # No output at all.
-			k["Verbosity"] = "Minimal" # Minimal progress report and results.
-			k["Verbosity"] = "Normal" # Balanced progress report and results.
-			k["Verbosity"] = "Detailed" # Verbose progress report, runtime details, and results.
-	```
-	
-??? abstract "Seed"
-
-	Determines the random seed to use for random number generation
-
-	+ Default Value: *taken from /dev/random/*
-	+ Syntax:
-
-	```python
-			k["Seed"] = 0xC0FFEE # Example.
-	```
-	
-??? abstract "Result Directory"
-
-	Determines the path to the directory where to save the results of a Korali run.
-
-	+ Default Value: *_korali_results*
-	+ Syntax:
-
-	```python
-			k["Result Directory"] = './my_result_path'
-	```
-
-??? abstract "Max Generations"
-
-	Determines how many solver generations to run before stopping execution.
-	Execution can be resumed at a later moment.
-
-	+ Default Value: *no limit*
-	+ Syntax:
-
-	```python
-			k["Termination Criteria"]["Max Generations"] = 50
-	```
-
-??? abstract "Max Function Evaluations"
-
-	Determines how many computational model evaluations to run before stopping execution.
-	Execution can be resumed at a later moment.
-
-	+ Default Value: *no limit*
-	+ Syntax:
-
-	```python
-			k["Termination Criteria"]["Max Function Evaluations"] = 5000
-	```
-	
-??? abstract "Console Output Frequency"
-
-	Determines the frequency in which Korali will output results to console.
-	A value of "1" means Korali will output to console results at every generation.
-
-	+ Default Value: 1
-	+ Syntax:
-
-	```python
-			k["Console Output Frequency"] = 5
-	```
-	
-??? abstract "File Output Frequency"
-
-	Determines the frequency in which Korali will output results to the result directory.
-	A value of "1" means Korali will output result files at every generation.
-
-	+ Default Value: 1
-	+ Syntax:
-
-	```python
-			k["File Output Frequency"] = 5
-	```
-	
 ## Creating a Korali Application
 
 A Korali application encapsulates the configuration necessary to run the Korali engine. In this section, we describe the steps required to create a Korali Application:
@@ -115,7 +27,51 @@ A Problem describes the objective function to be optimized/sampled from. We curr
 - [Bayesian Inference](../problems/bayesian)
 - [Hierarchical Bayesian](../problems/hierarchical)
 
-###Step 2) Define Variables
+### Step 2) Define Solver
+
+The Solver module generates samples for evaluation, performs the statistical analysis, and outputs the results for the problem described in the Korali application. Korali currently provides two types of solvers: *optimizers* and *samplers*:
+
+??? abstract "CMA-ES"
+
+    To select the CMA-ES solver, use the following syntax:
+
+  ```python
+   k["Solver"] = "CMA-ES";
+  ```
+
+  [Click here for detailed information on CMA-ES.](../solvers/cmaes)
+
+??? abstract "Differential Evolution Algorithm"
+
+    To select the Differential Evolution Algorithm solver, use the following syntax:
+
+  ```python
+   k["Solver"] = "DEA";
+  ```
+
+  [Click here for detailed information on Differential Evolution](../solvers/de)
+
+??? abstract "Markov-Chain Monte-Carlo"
+
+    To select the Markov-Chain Monte-Carlo solver, use the following syntax:
+
+  ```python
+   k["Solver"] = "MCMC";
+  ```
+
+  [Click here for detailed information on MCMC](../solvers/mcmc)
+
+??? abstract "Transitional Markov-Chain Monte-Carlo"
+
+    To select the Transitional Markov-Chain Monte-Carlo solver, use the following syntax:
+
+  ```python
+   k["Solver"] = "TMCMC";
+  ```
+
+  [Click here for detailed information on TMCMC.](../solvers/tmcmc)
+  
+###Step 3) Define Variables
 
 A Korali Problem describes the sampling space of the physical or real-world phenomenon to analyze. The number of variables defined by the user represents a dimension of the problem. Variables are created by simply adding their name to the problem configuration:
 
@@ -126,50 +82,6 @@ k["Variables"][1]["Name"] = "Heat Source Position"
 ```
 
 Variable definitions require additional parameters depending on which problem and solver types have been selected. The syntax for specifying these parameters is explained in each solver/problem page.
-
-### Step 3) Define Solver
-
-The Solver module generates samples for evaluation, performs the statistical analysis, and outputs the results for the problem described in the Korali application. Korali currently provides two types of solvers: *optimizers* and *samplers*:
-
-??? abstract "CMA-ES"
-
-    To select the CMA-ES solver, use the following syntax:
-
-	```python
-	 k["Solver"] = "CMA-ES";
-	```
-
-	[Click here for detailed information on CMA-ES.](../solvers/cmaes)
-
-??? abstract "Differential Evolution Algorithm"
-
-    To select the Differential Evolution Algorithm solver, use the following syntax:
-
-	```python
-	 k["Solver"] = "DEA";
-	```
-
-	[Click here for detailed information on Differential Evolution](../solvers/de)
-
-??? abstract "Markov-Chain Monte-Carlo"
-
-    To select the Markov-Chain Monte-Carlo solver, use the following syntax:
-
-	```python
-	 k["Solver"] = "MCMC";
-	```
-
-	[Click here for detailed information on MCMC](../solvers/mcmc)
-
-??? abstract "Transitional Markov-Chain Monte-Carlo"
-
-    To select the Transitional Markov-Chain Monte-Carlo solver, use the following syntax:
-
-	```python
-	 k["Solver"] = "TMCMC";
-	```
-
-	[Click here for detailed information on TMCMC.](../solvers/tmcmc)
 
 ### Step 4) Define Conduit
 
@@ -217,6 +129,94 @@ Korali provides several ways to specify external code/applications to provide re
 
    	[Click here for detailed information on Constraint models.](../models/constraint)	
 
+## Defining General Settings
+
+The runtime Korali application can be easily configured by accessing the instance of the korali Engine. Here is a list of general settings that apply to any Korali app:
+
+??? abstract "Verbosity"
+
+  Determines the amount of information printed by Korali during rume:
+
+  + Default Value: "Normal"
+  + Syntax:
+
+  ```python
+      k["Verbosity"] = "Silent" # No output at all.
+      k["Verbosity"] = "Minimal" # Minimal progress report and results.
+      k["Verbosity"] = "Normal" # Balanced progress report and results.
+      k["Verbosity"] = "Detailed" # Verbose progress report, runtime details, and results.
+  ```
+  
+??? abstract "Seed"
+
+  Determines the random seed to use for random number generation
+
+  + Default Value: *taken from /dev/random/*
+  + Syntax:
+
+  ```python
+      k["Seed"] = 0xC0FFEE # Example.
+  ```
+  
+??? abstract "Result Directory"
+
+  Determines the path to the directory where to save the results of a Korali run.
+
+  + Default Value: *_korali_results*
+  + Syntax:
+
+  ```python
+      k["Result Directory"] = './my_result_path'
+  ```
+
+??? abstract "Max Generations"
+
+  Determines how many solver generations to run before stopping execution.
+  Execution can be resumed at a later moment.
+
+  + Default Value: *no limit*
+  + Syntax:
+
+  ```python
+      k["Termination Criteria"]["Max Generations"] = 50
+  ```
+
+??? abstract "Max Function Evaluations"
+
+  Determines how many computational model evaluations to run before stopping execution.
+  Execution can be resumed at a later moment.
+
+  + Default Value: *no limit*
+  + Syntax:
+
+  ```python
+      k["Termination Criteria"]["Max Function Evaluations"] = 5000
+  ```
+  
+??? abstract "Console Output Frequency"
+
+  Determines the frequency in which Korali will output results to console.
+  A value of "1" means Korali will output to console results at every generation.
+
+  + Default Value: 1
+  + Syntax:
+
+  ```python
+      k["Console Output Frequency"] = 5
+  ```
+  
+??? abstract "File Output Frequency"
+
+  Determines the frequency in which Korali will output results to the result directory.
+  A value of "1" means Korali will output result files at every generation.
+
+  + Default Value: 1
+  + Syntax:
+
+  ```python
+      k["File Output Frequency"] = 5
+  ```
+
 ## Running a Korali Application
 
 A Python/C++ application can be run just like any other application, through a shell command:
@@ -232,6 +232,7 @@ For distributed jobs, you can launch your Korali application with the SLURM/MPI/
 > mpirun -n 16 ./myApp myArguments
 > upcxx-run -n 16 ./myApp myArguments
 ```
+
 
 ## Processing Results
 

@@ -206,7 +206,7 @@ Type: Solver Setting
 Default Value: 2
 Default Enabled:
 Description:
-Specifies the number of samples per generation during the viability 
+Specifies the number of samples per generation during the viability
 regime, i.e. during the search for a mean vector not violating the constraints.
 ******************************************************************************/
 size_t _viabilitySampleCount;
@@ -217,7 +217,7 @@ Type: Solver Setting
 Default Value: 1
 Default Enabled:
 Description:
-Number of best samples used to update the covariance matrix and the mean 
+Number of best samples used to update the covariance matrix and the mean
 during the viability regime.
 ******************************************************************************/
 size_t _viabilityMu;
@@ -458,7 +458,7 @@ Default calculated from dimension.
 double _cumulativeCovariance;
 
 /******************************************************************************
-Setting Name: Chi Number
+Setting Name: Chi Square Number
 Type: Internal Attribute
 Default Value:
 Default Enabled:
@@ -777,11 +777,89 @@ Flag determining if the covariance eigensystem is up to date.
 ******************************************************************************/
 bool _isEigenSystemUpdate;
 
+/******************************************************************************
+Setting Name: Has Discrete Variables
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Flag indicating if at least one of the variables is discrete.
+******************************************************************************/
+bool _hasDiscreteVariables;
+
+/******************************************************************************
+Setting Name: Discrete Mutations
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Vector storing discrete mutations, required for covariance matrix update.
+******************************************************************************/
+std::vector<double> _discreteMutations;
+
+/******************************************************************************
+Setting Name: Number Discrete Mutations
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Number of discrete mutations in current generation.
+******************************************************************************/
+size_t _numDiscreteMutations;
+
+/******************************************************************************
+Setting Name: Granularity
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Flag determining if the covariance eigensystem is up to date.
+******************************************************************************/
+std::vector<double> _granularity;
+
+/******************************************************************************
+Setting Name: Masking Matrix Entries
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Number of nonzero entries on diagonal in Masking Matrix
+******************************************************************************/
+size_t _maskingMatrixEntries;
+
+/******************************************************************************
+Setting Name: Masking Matrix 
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Diagonal Matrix signifying where an integer mutation may be conducted.
+******************************************************************************/
+std::vector<double> _maskingMatrix;
+
+/******************************************************************************
+Setting Name: Masking Matrix Sigma
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Diagonal Matrix signifying where an integer mutation may be conducted.
+******************************************************************************/
+std::vector<double> _maskingMatrixSigma;
+
+/******************************************************************************
+Setting Name: Chi Square Number Integer Mutation
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+expectation of $||N(0,I^S)||^2$
+******************************************************************************/
+double _chiS;
 
 /******************************************************************************
 * Variable Settings
 ******************************************************************************/
-
 struct variableSetting
 {
 
@@ -833,6 +911,30 @@ By default, Korali sets this value to 30% of the domain width.
 double initialStdDev;
 
 /******************************************************************************
+Setting Name: Discrete
+Type: Variable Setting
+Default Value: false
+Default Enabled:
+Description:
+Specifies if the variable can only take discrete values within the range of the 
+lower and upper bound.
+******************************************************************************/
+bool discrete;
+
+/******************************************************************************
+Setting Name: Granularity
+Type: Variable Setting
+Default Value: 0.0
+Default Enabled:
+Description:
+Specifies the granulatiry of a discrete variable, a granularity of 1.0
+means that the variable can only take values in (.., -1.0, 0.0, +1.0, +2.0, ..)
+where the levels are set symmetric around the initial mean (here 0.0).
+******************************************************************************/
+double granularity;
+
+
+/******************************************************************************
 Setting Name: Minimum Standard Deviation Changes
 Type: Variable Setting
 Default Value: 0.0
@@ -851,6 +953,7 @@ std::vector<variableSetting> _variableSettings;
 
  // Workspace for GSL
  Variable* _gaussianGenerator;
+ std::shared_ptr<Variable> _uniformGenerator;
 
  CMAES();
  ~CMAES();
@@ -858,6 +961,7 @@ std::vector<variableSetting> _variableSettings;
  void sampleSingle(size_t sampleIdx); /* sample individual */
  void evaluateSamples(); /* evaluate all samples until done */
  void adaptC(int hsig); /* CMAES covariance matrix adaption */
+ void adaptSigma(); /* update Sigma */
  void updateEigensystem(std::vector<double>& M, int flgforce = 1);
  void eigen(size_t N, std::vector<double>& C, std::vector<double>& diag, std::vector<double>& Q) const;
  void sort_index(const std::vector<double>& vec, std::vector<size_t>& _sortingIndex, size_t n) const;
@@ -873,7 +977,8 @@ std::vector<variableSetting> _variableSettings;
 
  void initMuWeights(size_t numsamples); /* init _muWeights and dependencies */
  void initCovariance(); /* init sigma, C and B */
- void checkMeanAndSetRegime(); /* check if mean inside valid domain, if yes, update internal vars */
+
+ void updateDiscreteMutationMatrix(); /* for integer optimization */
 
  void finalize() override;
  void setConfiguration() override;

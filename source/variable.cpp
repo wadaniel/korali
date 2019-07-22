@@ -36,6 +36,7 @@ void Korali::Variable::setDistribution(nlohmann::json& js)
  if (dString == "Gaussian")    { _distributionType = KoraliGaussianDistribution;    foundDistributionType = true; }
  if (dString == "Laplace")     { _distributionType = KoraliLaplaceDistribution;     foundDistributionType = true; }
  if (dString == "Uniform")     { _distributionType = KoraliUniformDistribution;     foundDistributionType = true; }
+ if (dString == "Geometric")   { _distributionType = KoraliGeometricDistribution;   foundDistributionType = true; }
  if (foundDistributionType == false) koraliError("Incorrect or missing distribution for parameter %s.\n", _name.c_str());
 
  if (_distributionType == KoraliCauchyDistribution)
@@ -74,6 +75,11 @@ void Korali::Variable::setDistribution(nlohmann::json& js)
   _b = consume(js, { "Maximum" }, KORALI_NUMBER);
  }
 
+ if (_distributionType == KoraliGeometricDistribution)
+ {
+  _a = consume(js, { "Success Probability" }, KORALI_NUMBER);
+  _b = 0.0;
+ }
  _seed = consume(js, { "Seed" }, KORALI_NUMBER);
  gsl_rng_set(_range, _seed);
 
@@ -83,6 +89,7 @@ void Korali::Variable::setDistribution(nlohmann::json& js)
  if (_distributionType == KoraliGaussianDistribution)    { _aux = -0.5*gsl_sf_log(2*M_PI) - gsl_sf_log(_b);}
  if (_distributionType == KoraliLaplaceDistribution)     { _aux = -gsl_sf_log(2.*_b); }
  if (_distributionType == KoraliUniformDistribution)     { _aux = -gsl_sf_log(_b-_a); }
+ if (_distributionType == KoraliGeometricDistribution)   { _aux = 0.0; }
 };
 
 void Korali::Variable::getDistribution(nlohmann::json& js)
@@ -130,6 +137,13 @@ void Korali::Variable::getDistribution(nlohmann::json& js)
   js["Minimum"] = _a;
   js["Maximum"] = _b;
  }
+ 
+ if (_distributionType == KoraliGeometricDistribution)
+ {
+  js["Type"] = "Geometric";
+  js["Success Probability"] = _a;
+ }
+
 }
 
 /************************************************************************/
@@ -140,7 +154,6 @@ void Korali::Variable::getConfiguration(nlohmann::json& js)
 {
  js["Log Space"] = _isLogSpace;
  js["Name"] = _name;
-
  getDistribution(js["Prior Distribution"]);
 }
 
@@ -148,7 +161,7 @@ void Korali::Variable::setConfiguration(nlohmann::json& js)
 {
  _isLogSpace = consume(js, { "Log Space"}, KORALI_BOOLEAN, "false");
  _name = consume(js, { "Name" }, KORALI_STRING);
-	setDistribution(js["Prior Distribution"]);
+ setDistribution(js["Prior Distribution"]);
 }
 
 double Korali::Variable::getDensity(double x)
@@ -159,6 +172,7 @@ double Korali::Variable::getDensity(double x)
  if (_distributionType == KoraliGaussianDistribution)    { return gsl_ran_gaussian_pdf(x - _a, _b); }
  if (_distributionType == KoraliLaplaceDistribution)     { return gsl_ran_laplace_pdf( x-_a, _b ); }
  if (_distributionType == KoraliUniformDistribution)     { return gsl_ran_flat_pdf(x, _a, _b); }
+ if (_distributionType == KoraliGeometricDistribution)   { return gsl_ran_geometric_pdf((int)x, _a); }
 
  koraliError("Problem requires that variable '%s' has a defined distribution.\n", _name.c_str());
  return 0.0;
@@ -172,6 +186,8 @@ double Korali::Variable::getLogDensity(double x)
  if (_distributionType == KoraliGaussianDistribution)    { double d = (x-_a)/_b; return _aux - 0.5*d*d; }
  if (_distributionType == KoraliLaplaceDistribution)     { return _aux - fabs(x-_a)/_b; }
  if (_distributionType == KoraliUniformDistribution)     { if (x >= _a && x <= _b) return _aux; return -INFINITY; }
+ if (_distributionType == KoraliGeometricDistribution)   { return log(_a) + (x-1)*log(1.0-_a); }
+
 
  koraliError("Problem requires that variable '%s' has a defined distribution.\n", _name.c_str());
  return 0.0;
@@ -185,6 +201,7 @@ double Korali::Variable::getRandomNumber()
  if (_distributionType == KoraliGaussianDistribution)    { return _a + gsl_ran_gaussian(_range, _b); }
  if (_distributionType == KoraliLaplaceDistribution)     { return _a + gsl_ran_laplace(_range, _b); }
  if (_distributionType == KoraliUniformDistribution)     { return gsl_ran_flat(_range, _a, _b); }
+ if (_distributionType == KoraliGeometricDistribution)   { return gsl_ran_geometric(_range, _a); }
 
  koraliError("Problem requires that variable '%s' has a defined distribution.\n", _name.c_str());
  return 0.0;

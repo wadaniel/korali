@@ -28,7 +28,7 @@ def hls_colors(num, h = 0.01, l=0.6, s=0.65):
 
 
 # Plot CMAES results (read from .json files)
-def plot_cmaes(src, live=False, test=False, evolution=False):
+def plot_cmaes(src, plot_mean = False, live=False, test=False, evolution=False):
 
     live = live or evolution
 
@@ -43,11 +43,12 @@ def plot_cmaes(src, live=False, test=False, evolution=False):
     dfval    = [] # abs diff currentBest - bestEver
     fval     = [] # best fval current generation
     fvalXvec = [] # location fval
+    mu       = [] # current mean
     axis     = [] # sqrt(EVals)
     ssdev    = [] # sigma x diag(C)
     cov      = [] # covariance matrix (for evolution plot)
-    mu_x     = [] # current mean dim 1 (for evolution plot)
-    mu_y     = [] # current mean dim 2 (for evolution plot)
+    muOld_x  = [] # previous mean dim 1 (for evolution plot)
+    muOld_y  = [] # previous mean dim 2 (for evolution plot)
     
     ccmaes   = False
     via      = None
@@ -103,6 +104,7 @@ def plot_cmaes(src, live=False, test=False, evolution=False):
  
                 for i in range(numdim):
                     fvalXvec.append([])
+                    mu.append([])
                     axis.append([])
                     ssdev.append([])
 
@@ -121,7 +123,7 @@ def plot_cmaes(src, live=False, test=False, evolution=False):
 
             if (data['General']['Run ID'] != runid):
                 print("[Korali] Warning: Skipping file {0}, results origin from" \
-                        "a different experiment (different run id).".format(path))
+                        " a different experiment (different Run ID).".format(path))
                 continue
 
             if gen > 1:
@@ -136,8 +138,8 @@ def plot_cmaes(src, live=False, test=False, evolution=False):
                 cov.append(state['Covariance Matrix'])
 
                 if (evolution == True):
-                    mu_x.append(state['PreviousMeanVector'][0])
-                    mu_y.append(state['PreviousMeanVector'][1])
+                    muOld_x.append(state['PreviousMeanVector'][0])
+                    muOld_y.append(state['PreviousMeanVector'][1])
                     samples_x = [sublist[0] for sublist in state['Samples']]
                     samples_y = [sublist[1] for sublist in state['Samples']]
                 
@@ -147,22 +149,23 @@ def plot_cmaes(src, live=False, test=False, evolution=False):
 
                 for i in range(numdim):
                     fvalXvec[i].append(state['Current Best Sample'][i])
+                    mu[i].append(state['Mean Proposal'][i])
                     axis[i].append(state['Axis Lengths'][i])
                     ssdev[i].append(sigma[-1]*np.sqrt(state['Covariance Matrix'][i*numdim+i]))
             
                 if (live == True and gen > 1):
                     if (evolution == False):
-                        draw_figure(fig, ax, src, gen, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, axis, ssdev, colors, names, live)
+                        draw_figure(fig, ax, src, gen, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, mu, axis, ssdev, colors, names, plot_mean, live)
                     else:
                         plt.clf()
                         fig, ax = plt.subplots(1,1,num='CMAES Evolution: {0}'.format(src), figsize=(8,8))
-                        draw_figure_evolution(fig, ax, src, gen, sigma, cov, mu_x, mu_y, samples_x, samples_y, ccmaes, normal, via, X, Y, Z)
+                        draw_figure_evolution(fig, ax, src, gen, sigma, cov, muOld_x, muOld_y, samples_x, samples_y, ccmaes, normal, via, X, Y, Z)
 
                     plt_pause_light(0.05)
 
     if (live == False):
         fig, ax = plt.subplots(2,2,num='{0} live diagnostics'.format(solverName), figsize=(8,8))
-        draw_figure(fig, ax, src, gen, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, axis, ssdev, colors, names, live)
+        draw_figure(fig, ax, src, gen, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, mu, axis, ssdev, colors, names, plot_mean, live)
         fig.show()
     
     if (test == False):
@@ -173,7 +176,7 @@ def plot_cmaes(src, live=False, test=False, evolution=False):
 
 
 # Create Plot from Data
-def draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, axis, ssdev, colors, names, live):
+def draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, mu, axis, ssdev, colors, names, plot_mean, live):
 
     plt.suptitle( 'Generation {0}'.format(str(idx).zfill(5)),\
                       fontweight='bold',\
@@ -191,10 +194,17 @@ def draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, cond, sigma, ps
         ax[0,0].legend(bbox_to_anchor=(0,1.00,1,0.2), loc="lower left", mode="expand", ncol = 3, handlelength=1, fontsize = 8)
 
     # Upper Right Plot
-    ax[0,1].set_title('Objective Variables')
+    objVec = []
+    if (plot_mean):
+        ax[0,1].set_title('Mean of Objective Variables')
+        objVec = mu
+    else:
+        ax[0,1].set_title('Objective Variables')
+        objVec = fvalXvec
+
     ax[0,1].grid(True)
     for i in range(numdim):
-        ax[0,1].plot(numeval, fvalXvec[i], color = colors[i], label=names[i])
+        ax[0,1].plot(numeval, objVec[i], color = colors[i], label=names[i])
     if ( (idx == 2) or (live == False) ):
         ax[0,1].legend(bbox_to_anchor=(1.04,0.5), loc="center left", borderaxespad=0, handlelength=1)
 
@@ -214,7 +224,7 @@ def draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, cond, sigma, ps
 
 
 # Plot CMAES samples, proposals, and mean (only 2D, read from .json files)
-def draw_figure_evolution(fig, ax, src, idx, sigma, cov, mu_x, mu_y, samples_x, samples_y, ccmaes, normal, via, X, Y, Z):
+def draw_figure_evolution(fig, ax, src, idx, sigma, cov, muOld_x, muOld_y, samples_x, samples_y, ccmaes, normal, via, X, Y, Z):
  
     plt.suptitle( 'Generation {0}'.format(str(idx).zfill(5)),\
                   fontweight='bold',\
@@ -228,17 +238,17 @@ def draw_figure_evolution(fig, ax, src, idx, sigma, cov, mu_x, mu_y, samples_x, 
     if ccmaes == True:
         circle1  = Circle( (0, -2), radius = 1, facecolor = 'None', edgecolor='red', linewidth=2, label = 'Constraint Boundary' )
         circle2  = Circle( (0, -2), radius = np.sqrt(via[-2]+1), facecolor = 'None', edgecolor='red', linestyle='dashed', label = 'Viability Boundary' )
-    ellipse = Ellipse( (mu_x[-1], mu_y[-1]), width=w, height=h, angle=ang, facecolor = 'None', edgecolor='b', label = 'Proposal Distribution' )
+    ellipse = Ellipse( (muOld_x[-1], muOld_y[-1]), width=w, height=h, angle=ang, facecolor = 'None', edgecolor='b', label = 'Proposal Distribution' )
 
     ax.contour(X, Y, Z, [ 5, 55, 105, 155, 205, 255, 305], colors='#34495e', linewidths=1 )
     ax.set_xlim(-32,32)
     ax.set_ylim(-32,32)
     ax.plot(1,-2,'*', color = 'g', label = 'Minimum')
     ax.plot(samples_x,samples_y,'x', color = 'k', label = 'Samples')
-    ax.plot(mu_x,mu_y,'^:', color = 'c', label = 'Historical Means' )
-    ax.plot(mu_x[-1],mu_y[-1],'^', color = 'b', label = 'Current Mean')
+    ax.plot(muOld_x,muOld_y,'^:', color = 'c', label = 'Historical Means' )
+    ax.plot(muOld_x[-1],muOld_y[-1],'^', color = 'b', label = 'Current Mean')
     if ccmaes == True:
-        ax.arrow( mu_x[-1], mu_y[-1], normal[-2][0][0],normal[-2][0][1],
+        ax.arrow( muOld_x[-1], muOld_y[-1], normal[-2][0][0],normal[-2][0][1],
                 head_width=0.05, head_length=0.1, label = 'Constraint Normal Approximation' )
         ax.add_patch(circle1)
         ax.add_patch(circle2)

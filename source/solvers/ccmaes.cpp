@@ -266,7 +266,7 @@ void CCMAES::processSample(size_t sampleId, double fitness)
 {
  double logPrior = _k->_problem->evaluateLogPrior(&_samplePopulation[sampleId*_k->N]);
  fitness = logPrior+fitness;
- if(std::isfinite(fitness) == false)  koraliError("Sample %zu returned non finite fitness (set to %e)!\n", sampleId, fitness);
+ if(std::isfinite(fitness) == false) koraliError("Sample %zu returned non finite fitness (set to %e)!\n", sampleId, fitness);
  _fitnessVector[sampleId] = fitness;
  _finishedSampleCount++;
 }

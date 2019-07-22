@@ -41,29 +41,8 @@ assert_value( k["Solver"]["Target Success Rate"], 0.1818 )
 
 # Testing Internals
 
-assert_value( k["Solver"]["Internal"]["Chi Number"], 0.7976190476190477 )
+assert_value( k["Solver"]["Internal"]["Chi Square Number"], 0.7976190476190477 )
 assert_value( k["Solver"]["Internal"]["Cumulative Covariance"], 0.564218767613317 )
 assert_value( k["Solver"]["Internal"]["Damp Factor"], 3.892701587864561 )
 assert_value( k["Solver"]["Internal"]["Sigma"], 5.0 )
 assert_value( k["Solver"]["Internal"]["Trace"], 25.0 )
-
-# Testing Termination Criteria
-
-assert_value( k["Solver"]["Termination Criteria"]["Max Condition Covariance Matrix"]["Value"], 1e18 )
-assert_boolean( k["Solver"]["Termination Criteria"]["Max Fitness"]["Enabled"], False )
-assert_value( k["Solver"]["Termination Criteria"]["Max Infeasible Resampling"]["Value"], 1e9 )
-assert_value( k["Solver"]["Termination Criteria"]["Max Standard Deviation"]["Value"], 1e18)
-assert_boolean( k["Solver"]["Termination Criteria"]["Min Fitness"]["Enabled"], False )
-assert_value( k["Solver"]["Termination Criteria"]["Min Fitness Diff Threshold"]["Value"], 1e-9 )
-assert_value( k["Solver"]["Termination Criteria"]["Min Standard Deviation"]["Value"], 1e-12 )
-assert_value( k["Solver"]["Termination Criteria"]["Min Standard Deviation Step Factor"]["Value"], 1e-18 )
-
-# Testing Variables
-
-assert_value( k["Variables"][0]["Initial Mean"], 0.0 )
-assert_value( k["Variables"][0]["Initial Standard Deviation"], 5.0 )
-assert_value( k["Variables"][0]["Lower Bound"], -10.0 )
-assert_value( k["Variables"][0]["Minimum Standard Deviation Changes"], 0.0 )
-assert_value( k["Variables"][0]["Upper Bound"], 10.0 )
-
-

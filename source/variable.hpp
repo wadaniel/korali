@@ -8,7 +8,7 @@
 #include <string>
 #include "json.hpp"
 
-enum KoraliDistributionType {KoraliCauchyDistribution, KoraliDefaultDistribution, KoraliExponentialDistribution, KoraliGammaDistribution, KoraliGaussianDistribution, KoraliLaplaceDistribution, KoraliUniformDistribution};
+enum KoraliDistributionType {KoraliCauchyDistribution, KoraliDefaultDistribution, KoraliExponentialDistribution, KoraliGammaDistribution, KoraliGaussianDistribution, KoraliLaplaceDistribution, KoraliUniformDistribution, KoraliGeometricDistribution};
 
 namespace Korali {
 

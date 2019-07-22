@@ -17,7 +17,7 @@ from korali.plotter.helpers import readFiles, verifyRunId, hlsColors, plt_pause_
 # Plot DEA results (read from .json files)
 def plot_dea(src, live=False, test=False):
 
-    runId    = -1 # for safety check
+    init     = False # init flag
     gen      = 0  # generation
     numdim   = 0  # problem dimension
     names    = [] # description params
@@ -45,9 +45,9 @@ def plot_dea(src, live=False, test=False):
             state = data['Solver']['Internal']
             gen   = data['General']['Current Generation']
 
-            if (runId == -1):
+            if (init == False):
                 
-                runId = data['General']['Run ID']
+                init = True
                 fig, ax = plt.subplots(2,2,num='DEA live diagnostics: {0}'.format(src),figsize=(8,8))
                 fig.show()
                 
@@ -72,12 +72,9 @@ def plot_dea(src, live=False, test=False):
             if (live == False):
                 continue
             
-            if ( not plt.fignum_exists(fig.number)):
+            if ( not plt.fignum_exists(fig.number) ):
                 print("[Korali] Figure closed - Bye!")
                 exit(0)
-     
-            if (verifyRunId(data, path, runId) == False):
-                continue
 
             draw_figure(fig, ax, src, gen, numeval, numdim, fval, dfval, fvalXvec, meanXvec, width, colors, names, live)
             plt_pause_light(0.05)

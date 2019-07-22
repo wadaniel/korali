@@ -15,7 +15,7 @@ from korali.plotter.helpers import readFiles, verifyRunId, plt_pause_light
 def plot_mcmc(src, live=False, test=False):
      
     plt.style.use('seaborn-dark')
-    runId  = -1
+    init   = False 
     burnin = -1
    
     fig = None
@@ -33,17 +33,14 @@ def plot_mcmc(src, live=False, test=False):
                 burnin   = data['Solver']['Burn In']
                 chainlen = data['Solver']['Internal']['Chain Length']
                 
-                if (runId == -1):
-                    seed = data['General']['Run ID']
+                if (init == False):
+                    init = True
                     fig, ax = plt.subplots(numdim, numdim, figsize=(8,8))
                     fig.show()
     
                 if (not plt.fignum_exists(fig.number)):
                     print("[Korali] Figure closed - Bye!")
                     exit(-1)
-
-                if (verifyRunId(data, path, runId) == False):
-                    continue
 
                 if chainlen > burnin:
                     plot_samples(fig, ax, data, filename)

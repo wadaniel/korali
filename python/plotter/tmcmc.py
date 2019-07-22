@@ -17,8 +17,6 @@ def plot_tmcmc(src, live=False, test=False):
      
     plt.style.use('seaborn-dark')
     
-    runId = -1
-    
     fig   = None
     ax    = None 
     
@@ -31,12 +29,6 @@ def plot_tmcmc(src, live=False, test=False):
 
             data    = json.load(f)
             
-            if (runId == -1):
-                runId = data['General']['Run ID']
- 
-            if (verifyRunId(data, path, runId) == False):
-                continue
-
             numdim  = len(data['Variables'])
             pop     = data['Solver']['Population Size']
             gen     = data['General']['Current Generation']

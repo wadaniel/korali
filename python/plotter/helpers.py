@@ -1,4 +1,5 @@
 import os
+import json
 import colorsys
 import numpy as np
 import matplotlib
@@ -15,13 +16,27 @@ def sig(a, b):
 
 # Read result files
 def readFiles(src):
-    resultfiles = [f for f in os.listdir(src) if os.path.isfile(os.path.join(src, f))]
-    resultfiles = sorted(resultfiles)
+    resultfilesTmp = [f for f in os.listdir(src) if os.path.isfile(os.path.join(src, f))]
+    resultfilesTmp = sorted(resultfilesTmp)
 
-    if (resultfiles == []):
+    if (resultfilesTmp == []):
         print("[Korali] Error: Did not find file {0} in the result folder...".format(src))
         exit(-1)
 
+    runId       = -1 # Init Run Id
+    resultfiles = [] # Init Return Value
+
+    for filename in resultfilesTmp:
+        path   = '{0}/{1}'.format(src, filename)
+        
+        with open(path) as f:
+            data       = json.load(f)
+            if (runId == -1):
+                runId  = data['General']['Run ID']
+            
+            if verifyRunId(data, path, runId):
+                resultfiles.append(filename)
+    
     return resultfiles
 
 

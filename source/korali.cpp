@@ -233,6 +233,11 @@ void Korali::Engine::setLikelihood(std::function<void(Korali::Model&)> likelihoo
  _likelihoodDefined = true;
 }
 
+void Korali::Engine::addConstraint(std::function<void(Korali::Model&)> constraint)
+{
+ _constraints.push_back(constraint);
+}
+
 void Korali::Engine::start(bool isDryRun)
 {
  _k = this; 
@@ -287,11 +292,6 @@ void Korali::Engine::start(bool isDryRun)
   koraliLog(KORALI_MINIMAL, "Elapsed Time: %.3fs\n", std::chrono::duration<double>(endTime-startTime).count());
   koraliLog(KORALI_MINIMAL, "Results saved to folder: '%s'\n", _result_dir.c_str());
  }
-}
-
-void Korali::Engine::addConstraint(fcon fconstraint)
-{
- _constraints.push_back(fconstraint);
 }
 
 void Korali::Engine::saveState(std::string fileName)

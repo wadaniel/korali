@@ -88,9 +88,9 @@ void CCMAES::initialize()
   if( (_globalSuccessLearningRate <= 0.0) || (_globalSuccessLearningRate > 1.0) ) 
     koraliError("CCMAES Error: Invalid Global Success Learning Rate (%f), must be greater than 0.0 and less than 1.0\n",  _globalSuccessLearningRate );
   if( (_targetSuccessRate <= 0.0) || (_targetSuccessRate > 1.0) )
-  	koraliError("CCMAES Error: Invalid Target Success Rate (%f), must be greater than 0.0 and less than 1.0\n",  _targetSuccessRate );
+    koraliError("CCMAES Error: Invalid Target Success Rate (%f), must be greater than 0.0 and less than 1.0\n",  _targetSuccessRate );
   if(_covMatrixAdaptionStrength <= 0.0) 
-  	koraliError(" CCMAES Error: Invalid Adaption Size (%f), must be greater than 0.0\n", _covMatrixAdaptionStrength );
+    koraliError(" CCMAES Error: Invalid Adaption Size (%f), must be greater than 0.0\n", _covMatrixAdaptionStrength );
 
   _globalSuccessRate = 0.5;
   _bestValidSample   = -1;
@@ -276,10 +276,15 @@ void CCMAES::checkMeanAndSetRegime()
 {
   if (_isViabilityRegime == false) return; /* mean already inside valid domain, no udpates */
 
-  for (size_t c = 0; c < _k->_constraints.size(); c++){
+  Korali::Model data;
+  for (size_t i = 0; i < _k->N; i++) data._computationalVariables.push_back(_mean[i]);
+  for (size_t c = 0; c < _k->_constraints.size(); c++)
+  {
     _constraintEvaluationCount++;
-    std::vector<double> sample(_mean);
-    if ( _k->_constraints[c](sample) > 0.) return; /* mean violates constraint, do nothing */
+    data._results.clear();
+    _k->_constraints[c](data);
+    if (data._results.size() != 1)  koraliError("Constraints require exactly a 1-element result array. Provided: %lu.\n", data._results.size() );
+    if (data._results[0] > 0.0) return; /* mean violates constraint, do nothing */
   }
 
   /* mean inside domain, switch regime and update internal variables */
@@ -307,9 +312,13 @@ void CCMAES::updateConstraints() //TODO: maybe parallelize constraint evaluation
   for(size_t i = 0; i < _currentSampleCount; ++i)
   {
     _constraintEvaluationCount++;
-    std::vector<double> sample(&_samplePopulation[i*_k->N], &_samplePopulation[(i+1)*_k->N]);
+    Korali::Model data;
+    for (size_t j = 0; j < _k->N; j++)
+     data._computationalVariables.push_back(_samplePopulation[i*_k->N + j]);
 
-    _constraintEvaluations[c][i] = _k->_constraints[c]( sample );
+    _k->_constraints[c](data);
+    if (data._results.size() != 1)  koraliError("Constraints require exactly a 1-element result array. Provided: %lu.\n", data._results.size() );
+    _constraintEvaluations[c][i] = data._results[0];
 
     if ( _constraintEvaluations[c][i] > maxviolation ) maxviolation = _constraintEvaluations[c][i];
     if ( _k->currentGeneration == 0 && _isViabilityRegime ) _viabilityBoundaries[c] = maxviolation;
@@ -331,10 +340,14 @@ void CCMAES::reEvaluateConstraints() //TODO: maybe we can parallelize constraint
     _sampleViolationCounts[i] = 0;
     for(size_t c = 0; c < _k->_constraints.size(); c++)
     {
-      _constraintEvaluationCount++;
-      std::vector<double> sample(&_samplePopulation[i*_k->N], &_samplePopulation[(i+1)*_k->N]);
+     _constraintEvaluationCount++;
+     Korali::Model data;
+     for (size_t j = 0; j < _k->N; j++)
+      data._computationalVariables.push_back(_samplePopulation[i*_k->N + j]);
 
-      _constraintEvaluations[c][i] = _k->_constraints[c]( sample );
+     _k->_constraints[c](data);
+     if (data._results.size() != 1)  koraliError("Constraints require exactly a 1-element result array. Provided: %lu.\n", data._results.size() );
+     _constraintEvaluations[c][i] = data._results[0];
 
       if( _constraintEvaluations[c][i] > _viabilityBoundaries[c] + 1e-12 ) { _viabilityIndicator[c][i] = true; _sampleViolationCounts[i]++; }
       else _viabilityIndicator[c][i] = false;
@@ -627,7 +640,7 @@ void CCMAES::handleConstraints()
 
   if(_adaptationCount - initial_corrections > _maxCovMatrixCorrections)
   {
-  	koraliWarning(KORALI_DETAILED, "Exiting adaption loop, max adaptions (%zu) reached.\n", _maxCovMatrixCorrections);
+    koraliWarning(KORALI_DETAILED, "Exiting adaption loop, max adaptions (%zu) reached.\n", _maxCovMatrixCorrections);
     return;
   }
 
@@ -746,12 +759,12 @@ void CCMAES::updateEigensystem(std::vector<double>& M, int flgforce)
      _axisDtmp[d] = sqrt(_axisDtmp[d]); 
      if (std::isfinite(_axisDtmp[d]) == false)
      {
-    	 koraliWarning(KORALI_DETAILED, "Could not calculate root of Eigenvalue (%+6.3e) after Eigen decomp (no update possible).\n", _axisDtmp[d] );
+       koraliWarning(KORALI_DETAILED, "Could not calculate root of Eigenvalue (%+6.3e) after Eigen decomp (no update possible).\n", _axisDtmp[d] );
        return; 
      }
     for (size_t e = 0; e < _k->N; ++e) if (std::isfinite(_B[d*_k->N+e]) == false)
     {
-    	koraliWarning(KORALI_DETAILED, "Non finite value detected in B (no update possible).\n");
+      koraliWarning(KORALI_DETAILED, "Non finite value detected in B (no update possible).\n");
        return;
     }
  }
@@ -824,8 +837,8 @@ void CCMAES::printGeneration()
 
  if ( _constraintsDefined && _isViabilityRegime)
  {
-	 koraliLog(KORALI_NORMAL, "Searching start (MeanX violates constraints) .. \n");
-	 koraliLog(KORALI_NORMAL, "Viability Bounds:\n");
+   koraliLog(KORALI_NORMAL, "Searching start (MeanX violates constraints) .. \n");
+   koraliLog(KORALI_NORMAL, "Viability Bounds:\n");
    for (size_t c = 0; c < _k->_constraints.size(); c++) koraliLogData(KORALI_NORMAL, "         %s = (%+6.3e)\n", _k->_variables[c]->_name.c_str(), _viabilityBoundaries[c]);
    koraliLog(KORALI_NORMAL, "\n");
  }
@@ -835,47 +848,47 @@ void CCMAES::printGeneration()
  koraliLog(KORALI_NORMAL, "Diagonal Covariance:    Min = %+6.3e -  Max = %+6.3e\n", _minDiagCElement, _maxDiagCElement);
  koraliLog(KORALI_NORMAL, "Covariance Eigenvalues: Min = %+6.3e -  Max = %+6.3e\n", _minCovarianceEigenvalue, _maxCovarianceEigenvalue);
 
-	koraliLog(KORALI_DETAILED, "Variable = (MeanX, BestX):\n");
-	for (size_t d = 0; d < _k->N; d++) koraliLogData(KORALI_DETAILED, "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _mean[d], _bestEverSample[d]);
+  koraliLog(KORALI_DETAILED, "Variable = (MeanX, BestX):\n");
+  for (size_t d = 0; d < _k->N; d++) koraliLogData(KORALI_DETAILED, "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _mean[d], _bestEverSample[d]);
 
-	koraliLog(KORALI_DETAILED, "Constraint Evaluation at Current Function Value:\n");
-	if ( _constraintsDefined )
-	{
-	 if ( _bestValidSample >= 0 )
-			for (size_t c = 0; c < _k->_constraints.size(); c++) koraliLogData(KORALI_DETAILED, "         ( %+6.3e )\n", _constraintEvaluations[c][_bestValidSample]);
-	 else
-			for (size_t c = 0; c < _k->_constraints.size(); c++) koraliLogData(KORALI_DETAILED, "         ( %+6.3e )\n", _constraintEvaluations[c][0]);
-	}
+  koraliLog(KORALI_DETAILED, "Constraint Evaluation at Current Function Value:\n");
+  if ( _constraintsDefined )
+  {
+   if ( _bestValidSample >= 0 )
+      for (size_t c = 0; c < _k->_constraints.size(); c++) koraliLogData(KORALI_DETAILED, "         ( %+6.3e )\n", _constraintEvaluations[c][_bestValidSample]);
+   else
+      for (size_t c = 0; c < _k->_constraints.size(); c++) koraliLogData(KORALI_DETAILED, "         ( %+6.3e )\n", _constraintEvaluations[c][0]);
+  }
 
-	koraliLog(KORALI_DETAILED, "Covariance Matrix:\n");
-	for (size_t d = 0; d < _k->N; d++)
-	{
-	 for (size_t e = 0; e <= d; e++) koraliLogData(KORALI_DETAILED, "   %+6.3e  ",_C[d*_k->N+e]);
-	 koraliLog(KORALI_DETAILED, "\n");
-	}
+  koraliLog(KORALI_DETAILED, "Covariance Matrix:\n");
+  for (size_t d = 0; d < _k->N; d++)
+  {
+   for (size_t e = 0; e <= d; e++) koraliLogData(KORALI_DETAILED, "   %+6.3e  ",_C[d*_k->N+e]);
+   koraliLog(KORALI_DETAILED, "\n");
+  }
 
-	koraliLog(KORALI_DETAILED, "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
-	if ( _constraintsDefined )
-	{
-		koraliLog(KORALI_DETAILED, "Number of Constraint Evaluations: %zu\n", _constraintEvaluationCount);
-		koraliLog(KORALI_DETAILED, "Number of Matrix Corrections: %zu\n", _adaptationCount );
-	}
+  koraliLog(KORALI_DETAILED, "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
+  if ( _constraintsDefined )
+  {
+    koraliLog(KORALI_DETAILED, "Number of Constraint Evaluations: %zu\n", _constraintEvaluationCount);
+    koraliLog(KORALI_DETAILED, "Number of Matrix Corrections: %zu\n", _adaptationCount );
+  }
 
-	koraliLog(KORALI_NORMAL, "--------------------------------------------------------------------\n");
+  koraliLog(KORALI_NORMAL, "--------------------------------------------------------------------\n");
 }
 
 void CCMAES::finalize()
 {
-	koraliLog(KORALI_MINIMAL, "CCMAES Finished\n");
-	koraliLog(KORALI_MINIMAL, "Optimum found: %e\n", _bestEverValue);
-	koraliLog(KORALI_MINIMAL, "Optimum found at:\n");
-	for (size_t d = 0; d < _k->N; ++d) koraliLogData(KORALI_MINIMAL, "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverSample[d]);
-	if ( _constraintsDefined )
-	{
-		koraliLog(KORALI_MINIMAL, "Constraint Evaluation at Optimum:\n");
-		for (size_t c = 0; c < _k->_constraints.size(); c++)
-			koraliLogData(KORALI_MINIMAL, "         ( %+6.3e )\n", _bestEverConstraintEvaluation[c]);
-	}
-	koraliLog(KORALI_MINIMAL, "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
-	koraliLog(KORALI_MINIMAL, "--------------------------------------------------------------------\n");
+  koraliLog(KORALI_MINIMAL, "CCMAES Finished\n");
+  koraliLog(KORALI_MINIMAL, "Optimum found: %e\n", _bestEverValue);
+  koraliLog(KORALI_MINIMAL, "Optimum found at:\n");
+  for (size_t d = 0; d < _k->N; ++d) koraliLogData(KORALI_MINIMAL, "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverSample[d]);
+  if ( _constraintsDefined )
+  {
+    koraliLog(KORALI_MINIMAL, "Constraint Evaluation at Optimum:\n");
+    for (size_t c = 0; c < _k->_constraints.size(); c++)
+      koraliLogData(KORALI_MINIMAL, "         ( %+6.3e )\n", _bestEverConstraintEvaluation[c]);
+  }
+  koraliLog(KORALI_MINIMAL, "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
+  koraliLog(KORALI_MINIMAL, "--------------------------------------------------------------------\n");
 }

@@ -37,8 +37,6 @@
 namespace Korali
 {
 
-using fcon = std::function<double(std::vector<double>&)>;
-
 class Engine {
 
  public:
@@ -48,8 +46,8 @@ class Engine {
 
  bool _modelDefined;
  bool _likelihoodDefined;
- std::function<void(Model&)> _model;
- std::vector<fcon> _constraints;
+ std::function<void(Korali::Model&)> _model;
+ std::vector<std::function<void(Korali::Model&)>> _constraints;
 
  size_t N; // Variable Count size_t N; // Variable Count
  size_t currentGeneration;
@@ -79,7 +77,7 @@ class Engine {
 
  void setModel(std::function<void(Korali::Model&)> model);
  void setLikelihood(std::function<void(Korali::Model&)> model);
- void addConstraint(fcon fconstraint);
+ void addConstraint(std::function<void(Korali::Model&)> constraint);
 
  // Python Configuration Binding Methods
  KoraliJsonWrapper _wr;

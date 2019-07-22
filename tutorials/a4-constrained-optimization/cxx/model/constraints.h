@@ -1,7 +1,8 @@
+#include <korali.hpp>
 #include <vector>
 
-double g1(std::vector<double> x);
-double g2(std::vector<double> x);
-double g3(std::vector<double> x);
-double g4(std::vector<double> x);
+void g1(Korali::Model& d);
+void g2(Korali::Model& d);
+void g3(Korali::Model& d);
+void g4(Korali::Model& d);
 

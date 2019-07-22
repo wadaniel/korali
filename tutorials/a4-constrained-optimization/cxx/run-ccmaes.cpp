@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
  k["General"]["Console Output"]["Frequency"] = 50;
 
  // Setting model and constraints
- k.setModel([](Korali::Model& d) { model(d.getVariables(), d.getResults()); });
+ k.setModel(model);
  k.addConstraint(g1);
  k.addConstraint(g2);
  k.addConstraint(g3);

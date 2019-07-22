@@ -171,6 +171,6 @@ def plot_mcmc(src, live=False, test=False):
             plot_samples(fig, ax, data, resultfiles[-1])
    
     if (test == False):
-        plt.pause(3600) 
+        plt.show() 
     
     print("[Korali] Figure closed - Bye!")

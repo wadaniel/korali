@@ -36,6 +36,7 @@ k["Solver"]["Termination Criteria"]["Min Fitness Diff Threshold"]["Value"] = 1e-
 k["Solver"]["Termination Criteria"]["Min Fitness Diff Threshold"]["Enabled"] = True
 
 k["General"]["Max Generations"] = 1000;
+k["General"]["Results Output"]["Frequency"] = 50
 
 # Setting model and constraints
 k.setModel(model)

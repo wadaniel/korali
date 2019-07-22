@@ -141,8 +141,5 @@ def plot_dea(src, live=False, test=False):
         draw_figure(fig, ax, src, gen, numeval, numdim, fval, dfval, fvalXvec, meanXvec, width, colors, names, live)
         fig.show()
 
-    if test == False: 
-        plt.pause(3600)
-
+    plt.show()
     print("[Korali] Figure closed - Bye!")
-    exit(0)

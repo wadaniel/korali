@@ -1,9 +1,11 @@
 #! /usr/bin/env python3
 import os
 import sys
+import signal
 import json
 import argparse
 import matplotlib
+from korali.plotter.helpers import sig
 from korali.plotter.cmaes import plot_cmaes
 from korali.plotter.ccmaes import plot_ccmaes
 from korali.plotter.tmcmc import plot_tmcmc
@@ -29,32 +31,34 @@ def main(check, path, mean, live, test, evolution):
  
  solver = data['Solver']['Type']
  if ( 'TMCMC' == solver ):
-  print("[Korali] Running TMCMC Plotter...")
-  plot_tmcmc(path, live, test)
-  exit(0)
+   print("[Korali] Running TMCMC Plotter...")
+   plot_tmcmc(path, live, test)
+   exit(0)
  
  if ( 'MCMC' == solver ):
-  print("[Korali] Running MCMC Plotter...")
-  plot_mcmc(path, live, test)
-  exit(0)
+   print("[Korali] Running MCMC Plotter...")
+   plot_mcmc(path, live, test)
+   exit(0)
 
  if ( 'CMAES' == solver):
-  print("[Korali] Running CMAES Plotter...")
-  plot_cmaes(path, mean, live, test, evolution)
-  exit(0)
+   print("[Korali] Running CMAES Plotter...")
+   plot_cmaes(path, mean, live, test, evolution)
+   exit(0)
   
  if ( 'CCMAES' == solver):
-  print("[Korali] Running CcMAES Plotter...")
-  plot_ccmaes(path, live, test, evolution)
-  exit(0)
+   print("[Korali] Running CcMAES Plotter...")
+   plot_ccmaes(path, live, test, evolution)
+   exit(0)
 
  if ( 'DEA' == solver ):
-  print("[Korali] Running DEA Plotter...")
-  plot_dea(path, live, test)
-  exit(0)
+   print("[Korali] Running DEA Plotter...")
+   plot_dea(path, live, test)
+   exit(0)
 
  print("[Korali] Error: Did not recognize method for plotting...")
  exit(-1)
+
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='korali.plotter', description='Process korali results in _korali_result (default) folder.')
@@ -65,5 +69,6 @@ if __name__ == '__main__':
     parser.add_argument('--test', help='run without graphics', action='store_true', required = False)
     parser.add_argument('--evolution', help='plot CMA-ES evolution (only in 2D)', action='store_true', required = False)
     args = parser.parse_args()
-    
+    signal.signal(signal.SIGINT, sig)
+   
     main(args.check, args.dir, args.mean, args.live, args.test, args.evolution)

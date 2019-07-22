@@ -5,6 +5,11 @@ from matplotlib.collections import LineCollection
 from matplotlib.colors import ListedColormap, BoundaryNorm
 
 
+# For simple exit after keyboard interrupt
+def sig(a, b):
+    print("[Korali] Keyboard Interrupt - Bye!")
+    exit(0)
+
 # Plot pause without focus
 # Credits: https://stackoverflow.com/questions/45729092/
 #    make-interactive-matplotlib-window-not-pop-to-front-on-each-update-windows-7/45734500
@@ -58,6 +63,3 @@ def plt_multicolored_lines(ax,x,y,threshold,clow,chigh,lab):
             l, = ax.plot( x[start:end], absy[start:end], c=seg[0], label=lab ) 
             labelled.add(seg[0])
         start = end - 1
-
-
-

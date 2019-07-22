@@ -165,11 +165,8 @@ def plot_ccmaes(src, live=False, test=False, evolution=False):
         draw_figure(fig, ax, src, gen, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, axis, ssdev, colors, names, live)
         fig.show()
     
-    if (test == False):
-        plt.pause(3600)
-    
+    plt.show()
     print("[Korali] Figure closed - Bye!")
-    exit(0)
 
 
 # Create Plot from Data

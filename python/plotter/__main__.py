@@ -7,7 +7,6 @@ import argparse
 import matplotlib
 from korali.plotter.helpers import sig
 from korali.plotter.cmaes import plot_cmaes
-from korali.plotter.ccmaes import plot_ccmaes
 from korali.plotter.tmcmc import plot_tmcmc
 from korali.plotter.mcmc import plot_mcmc
 from korali.plotter.dea import plot_dea

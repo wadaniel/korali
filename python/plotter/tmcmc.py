@@ -9,7 +9,7 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 
-from korali.plotter.helpers import readFiles, plt_pause_light
+from korali.plotter.helpers import readFiles, verifyRunId, plt_pause_light
 
 # Plot histogram of sampes in diagonal
 def plot_histogram(ax, theta):
@@ -97,7 +97,7 @@ def plot_tmcmc(src, live=False, test=False):
      
     plt.style.use('seaborn-dark')
     
-    runid = -1
+    runId = -1
     
     fig   = None
     ax    = None 
@@ -111,12 +111,10 @@ def plot_tmcmc(src, live=False, test=False):
 
             data    = json.load(f)
             
-            if (runid == -1):
-                runid = data['General']['Run ID']
-  
-            if (data['General']['Run ID'] != runid):
-                print("[Korali] Warning: Skipping file {0}, results origin" \
-                        "from a different experiment (different run id)".format(path))
+            if (runId == -1):
+                runId = data['General']['Run ID']
+ 
+            if (verifyRunId(data, path, runId) == False):
                 continue
 
             numdim  = len(data['Variables'])

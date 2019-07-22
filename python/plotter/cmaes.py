@@ -10,13 +10,13 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 
-from korali.plotter.helpers import readFiles, hlsColors, plt_pause_light, plt_multicolored_lines
+from korali.plotter.helpers import readFiles, verifyRunId, hlsColors, plt_pause_light, plt_multicolored_lines
 
 
 # Plot CMAES results (read from .json files)
 def plot_cmaes(src, plot_mean = False, live=False, test=False ):
 
-    runid    = -1 # for safety check
+    runId    = -1 # for safety check
     numdim   = 0  # problem dimension
     names    = [] # description params
     colors   = [] # rgb colors
@@ -49,9 +49,9 @@ def plot_cmaes(src, plot_mean = False, live=False, test=False ):
             state = data['Solver']['Internal']
             gen   = data['General']['Current Generation']
 
-            if (runid == -1):
+            if (runId == -1):
 
-                runid  = data['General']['Run ID']
+                runId  = data['General']['Run ID']
                 numdim = len(data['Variables'])
                 names  = [ data['Variables'][i]['Name'] for i in range(numdim) ]
                 colors = hlsColors(numdim)
@@ -70,10 +70,7 @@ def plot_cmaes(src, plot_mean = False, live=False, test=False ):
                 print("[Korali] Figure closed - Bye!")
                 exit(0)
     
-
-            if (data['General']['Run ID'] != runid):
-                print("[Korali] Warning: Skipping file {0}, results origin from" \
-                        " a different experiment (different Run ID).".format(path))
+            if (verifyRunId(data, path, runId) == False):
                 continue
 
             if gen > 1:

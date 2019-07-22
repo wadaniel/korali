@@ -8,7 +8,7 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 
-from korali.plotter.helpers import readFiles, plt_pause_light
+from korali.plotter.helpers import readFiles, verifyRunId, plt_pause_light
 
 # Plot histogram of sampes in diagonal
 def plot_histogram(ax, theta):
@@ -112,7 +112,7 @@ def plot_samples(fig, ax, data, filename):
 def plot_mcmc(src, live=False, test=False):
      
     plt.style.use('seaborn-dark')
-    runid  = -1
+    runId  = -1
     burnin = -1
    
     fig = None
@@ -130,7 +130,7 @@ def plot_mcmc(src, live=False, test=False):
                 burnin   = data['Solver']['Burn In']
                 chainlen = data['Solver']['Internal']['Chain Length']
                 
-                if (runid == -1):
+                if (runId == -1):
                     seed = data['General']['Run ID']
                     fig, ax = plt.subplots(numdim, numdim, figsize=(8,8))
                     fig.show()
@@ -139,9 +139,7 @@ def plot_mcmc(src, live=False, test=False):
                     print("[Korali] Figure closed - Bye!")
                     exit(-1)
 
-                if (data['General']['Run ID'] != runid):
-                    print("[Korali] Warning: Skipping file {0}, results" \
-                            "origin from a different experiment (different runid)".format(path))
+                if (verifyRunId(data, path, runId) == False):
                     continue
 
                 if chainlen > burnin:

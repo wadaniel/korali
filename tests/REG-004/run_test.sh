@@ -25,8 +25,6 @@ do
   python3 -m korali.plotter --test --live --dir "${dir}" >> $logFile 2>&1
   check_result
                      
-  #python3 -m korali.plotter --test --evolution --dir "${dir}" >> $logFile 2>&1
-  #check_result
 done 
 
 popd

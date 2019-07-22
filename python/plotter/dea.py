@@ -11,17 +11,7 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 
-from korali.plotter.helpers import readFiles, plt_pause_light, plt_multicolored_lines
-
-# Get a list of evenly spaced colors in HLS huse space.
-# Credits: seaborn package
-def hls_colors(num, h = 0.01, l=0.6, s=0.65):
-    hues = np.linspace(0, 1, num + 1)[:-1]
-    hues += h
-    hues %= 1
-    hues -= hues.astype(int)
-    palette = [ list(colorsys.hls_to_rgb(h_i, l, s)) for h_i in hues ]
-    return palette
+from korali.plotter.helpers import readFiles, verifyRunId, hlsColors, plt_pause_light, plt_multicolored_lines
 
 
 # Create Plot from Data
@@ -64,7 +54,7 @@ def draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, fvalXvec, meanX
 # Plot DEA results (read from .json files)
 def plot_dea(src, live=False, test=False):
 
-    runid    = -1 # for safety check
+    runId    = -1 # for safety check
     gen      = 0  # generation
     numdim   = 0  # problem dimension
     names    = [] # description params
@@ -92,15 +82,15 @@ def plot_dea(src, live=False, test=False):
             state = data['Solver']['Internal']
             gen   = data['General']['Current Generation']
 
-            if (runid == -1):
+            if (runId == -1):
                 
-                runid = data['General']['Run ID']
+                runId = data['General']['Run ID']
                 fig, ax = plt.subplots(2,2,num='DEA live diagnostics: {0}'.format(src),figsize=(8,8))
                 fig.show()
                 
                 numdim = len(data['Variables'])
                 names  = [ data['Variables'][i]['Name'] for i in range(numdim) ]
-                colors = hls_colors(numdim)
+                colors = hlsColors(numdim)
                 for i in range(numdim):
                     fvalXvec.append([])
                     meanXvec.append([])
@@ -122,10 +112,8 @@ def plot_dea(src, live=False, test=False):
             if ( not plt.fignum_exists(fig.number)):
                 print("[Korali] Figure closed - Bye!")
                 exit(0)
-      
-            if (data['General']['Run ID'] != runid):
-                print("[Korali] Warning: Skipping file {0}, results origin" \
-                        "from a different experiment (different run id)".format(path))
+     
+            if (verifyRunId(data, path, runId) == False):
                 continue
 
             draw_figure(fig, ax, src, gen, numeval, numdim, fval, dfval, fvalXvec, meanXvec, width, colors, names, live)

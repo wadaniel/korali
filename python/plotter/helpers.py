@@ -25,8 +25,16 @@ def readFiles(src):
     return resultfiles
 
 
+def verifyRunId(data, path, runId): 
+    if (data['General']['Run ID'] != runId):
+        print("[Korali] Warning: Skipping file {0}, results origin from a "\
+                " different experiment (different runid)".format(path))
+        return False
+    else:
+        return True
+
+
 # Get a list of evenly spaced colors in HLS huse space.
-# Credits: seaborn package
 def hlsColors(num, h = 0.01, l=0.6, s=0.65):
     hues = np.linspace(0, 1, num + 1)[:-1]
     hues += h
@@ -37,8 +45,6 @@ def hlsColors(num, h = 0.01, l=0.6, s=0.65):
 
 
 # Plot pause without focus
-# Credits: https://stackoverflow.com/questions/45729092/
-#    make-interactive-matplotlib-window-not-pop-to-front-on-each-update-windows-7/45734500
 def plt_pause_light(interval):
     backend = plt.rcParams['backend']
     if backend in matplotlib.rcsetup.interactive_bk:
@@ -52,7 +58,6 @@ def plt_pause_light(interval):
 
 
 # Finds the continuous segments of colors and returns those segment
-# Credits: http://abhay.harpale.net/blog/python/how-to-plot-multicolored-lines-in-matplotlib/
 def find_contiguous_colors(y, threshold, clow, chigh):
     colors = []
     for val in y:

@@ -6,7 +6,6 @@ from stat000_helpers import *
 
 import korali
 k = korali.initialize()
-k.setLikelihood( evaluateModel )
 
 k["Problem"]["Type"] = "Bayesian Inference"
 k["Problem"]["Likelihood"]["Model"] = "Custom"
@@ -19,6 +18,7 @@ k["Variables"][0]["Prior Distribution"]["Maximum"] = +10.0
 k["Solver"]["Type"] = "TMCMC"
 k["Solver"]["Population Size"] = 5000
 
+k.setModel( evaluateModel )
 k.dry()
 
 ###############################################################################

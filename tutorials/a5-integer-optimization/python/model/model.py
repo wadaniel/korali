@@ -5,9 +5,12 @@
 def model(d):
   pars = d.getVariables();
 
-  res = (pars[0] - 10.0)**2 + 5.0 * (pars[1] - 12.0)**2           \
-        + pars[2]**4  + 3.0 * (pars[3] - 11.0)**2                 \
-        + 10.0 * pars[4]**6 + 7.0 * pars[5]**2 + pars[6]**4.      \
-        - 4.0 * pars[5] * pars[6] - 10.0 * pars[5] - 8.0 * pars[6];
+  npar = 10
+  res = 0.0
+  for i in range(npar):
+    if( i == 0 or i == 1 or i == 3 or i == 6):
+        res += pow( 10, 6.0*i/npar) * round(pars[i]) * round(pars[i])
+    else:
+        res += pow( 10, 6.0*i/npar) * pars[i] * pars[i]
 
   d.addResult(-res);

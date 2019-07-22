@@ -176,7 +176,6 @@ void Linked::evaluateSample(double* sampleArray, size_t sampleId)
   _k->_model(data);
 
   double fitness = _k->_problem->evaluateFitness(data);
-  _k->functionEvaluationCount++;
   _k->_solver->processSample(sampleId, fitness);
   return;
  }

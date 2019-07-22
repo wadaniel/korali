@@ -11,6 +11,54 @@ import matplotlib.pyplot as plt
 
 from korali.plotter.helpers import readFiles, verifyRunId, plt_pause_light
 
+
+# Plot TMCMC results (read from .json files)
+def plot_tmcmc(src, live=False, test=False):
+     
+    plt.style.use('seaborn-dark')
+    
+    runId = -1
+    
+    fig   = None
+    ax    = None 
+    
+    resultfiles = readFiles(src)
+
+    for filename in resultfiles:
+        path   = '{0}/{1}'.format(src, filename)
+ 
+        with open(path) as f:
+
+            data    = json.load(f)
+            
+            if (runId == -1):
+                runId = data['General']['Run ID']
+ 
+            if (verifyRunId(data, path, runId) == False):
+                continue
+
+            numdim  = len(data['Variables'])
+            pop     = data['Solver']['Population Size']
+            gen     = data['General']['Current Generation']
+            anneal  = data['Solver']['Internal']['Annealing Exponent']
+            fitness = data['Solver']['Internal']['Sample Fitness Database']
+            samples = np.reshape( data['Solver']['Internal']['Sample Parameters Database'], (pop,numdim) )
+            fig, ax = plt.subplots(samples.shape[1], samples.shape[1], figsize=(8,8))
+
+            fig.canvas.set_window_title(filename)
+  
+            plt.suptitle( 'TMCMC\nGeneration {0}\nNumber of Samples {1}\n(Annealing Exponent {2:.3e})'.format(str(gen), \
+                            str(pop), anneal), fontweight='bold', fontsize  = 12 )
+
+            fig.show()
+            plot_histogram(ax, samples)
+            plot_upper_triangle(ax, samples, False)
+            plot_lower_triangle(ax, samples)
+
+            plt_pause_light(0.05) 
+
+    plt.show()
+    print("[Korali] Figures closed - Bye!")
 # Plot histogram of sampes in diagonal
 def plot_histogram(ax, theta):
     dim = theta.shape[1]
@@ -90,52 +138,3 @@ def plot_lower_triangle(ax, theta):
                 ax[i, j].set_xticklabels([])
             if j > 0:
                 ax[i, j].set_yticklabels([])
-
-
-# Plot TMCMC results (read from .json files)
-def plot_tmcmc(src, live=False, test=False):
-     
-    plt.style.use('seaborn-dark')
-    
-    runId = -1
-    
-    fig   = None
-    ax    = None 
-    
-    resultfiles = readFiles(src)
-
-    for filename in resultfiles:
-        path   = '{0}/{1}'.format(src, filename)
- 
-        with open(path) as f:
-
-            data    = json.load(f)
-            
-            if (runId == -1):
-                runId = data['General']['Run ID']
- 
-            if (verifyRunId(data, path, runId) == False):
-                continue
-
-            numdim  = len(data['Variables'])
-            pop     = data['Solver']['Population Size']
-            gen     = data['General']['Current Generation']
-            anneal  = data['Solver']['Internal']['Annealing Exponent']
-            fitness = data['Solver']['Internal']['Sample Fitness Database']
-            samples = np.reshape( data['Solver']['Internal']['Sample Parameters Database'], (pop,numdim) )
-            fig, ax = plt.subplots(samples.shape[1], samples.shape[1], figsize=(8,8))
-
-            fig.canvas.set_window_title(filename)
-  
-            plt.suptitle( 'TMCMC\nGeneration {0}\nNumber of Samples {1}\n(Annealing Exponent {2:.3e})'.format(str(gen), \
-                            str(pop), anneal), fontweight='bold', fontsize  = 12 )
-
-            fig.show()
-            plot_histogram(ax, samples)
-            plot_upper_triangle(ax, samples, False)
-            plot_lower_triangle(ax, samples)
-
-            plt_pause_light(0.05) 
-
-    plt.show()
-    print("[Korali] Figures closed - Bye!")

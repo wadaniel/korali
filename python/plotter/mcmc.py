@@ -10,6 +10,68 @@ import matplotlib.pyplot as plt
 
 from korali.plotter.helpers import readFiles, verifyRunId, plt_pause_light
 
+
+# Plot MCMC results (read from .json files)
+def plot_mcmc(src, live=False, test=False):
+     
+    plt.style.use('seaborn-dark')
+    runId  = -1
+    burnin = -1
+   
+    fig = None
+    ax  = None
+
+    resultfiles = readFiles(src)
+
+    if (live == True):
+        for filename in resultfiles:
+            path   = '{0}/{1}'.format(src, filename)
+            
+            with open(path) as f:
+                data     = json.load(f)
+                numdim   = len(data['Variables'])
+                burnin   = data['Solver']['Burn In']
+                chainlen = data['Solver']['Internal']['Chain Length']
+                
+                if (runId == -1):
+                    seed = data['General']['Run ID']
+                    fig, ax = plt.subplots(numdim, numdim, figsize=(8,8))
+                    fig.show()
+    
+                if (not plt.fignum_exists(fig.number)):
+                    print("[Korali] Figure closed - Bye!")
+                    exit(-1)
+
+                if (verifyRunId(data, path, runId) == False):
+                    continue
+
+                if chainlen > burnin:
+                    plot_samples(fig, ax, data, filename)
+                    plt_pause_light(0.5) 
+            
+
+    if (live == False):
+        path = '{0}/{1}'.format(src, resultfiles[-1])
+        
+        with open(path) as f:
+            data     = json.load(f)
+            numdim   = len(data['Variables'])
+            burnin   = data['Solver']['Burn In']
+            chainlen = data['Solver']['Internal']['Chain Length']
+            if chainlen <= burnin:
+                print("[Korali] Error: No samples found in file {0}...".format(path))
+                exit(-1)
+            
+            fig, ax = plt.subplots(numdim, numdim, figsize=(8,8))
+            fig.show()
+            plot_samples(fig, ax, data, resultfiles[-1])
+   
+    if (test == False):
+        plt.show() 
+    
+    print("[Korali] Figure closed - Bye!")
+
+
 # Plot histogram of sampes in diagonal
 def plot_histogram(ax, theta):
     dim = theta.shape[1]
@@ -107,63 +169,3 @@ def plot_samples(fig, ax, data, filename):
     plot_histogram(ax, samples)
     plot_upper_triangle(ax, samples, False)
     plot_lower_triangle(ax, samples)
-
-# Plot MCMC results (read from .json files)
-def plot_mcmc(src, live=False, test=False):
-     
-    plt.style.use('seaborn-dark')
-    runId  = -1
-    burnin = -1
-   
-    fig = None
-    ax  = None
-
-    resultfiles = readFiles(src)
-
-    if (live == True):
-        for filename in resultfiles:
-            path   = '{0}/{1}'.format(src, filename)
-            
-            with open(path) as f:
-                data     = json.load(f)
-                numdim   = len(data['Variables'])
-                burnin   = data['Solver']['Burn In']
-                chainlen = data['Solver']['Internal']['Chain Length']
-                
-                if (runId == -1):
-                    seed = data['General']['Run ID']
-                    fig, ax = plt.subplots(numdim, numdim, figsize=(8,8))
-                    fig.show()
-    
-                if (not plt.fignum_exists(fig.number)):
-                    print("[Korali] Figure closed - Bye!")
-                    exit(-1)
-
-                if (verifyRunId(data, path, runId) == False):
-                    continue
-
-                if chainlen > burnin:
-                    plot_samples(fig, ax, data, filename)
-                    plt_pause_light(0.5) 
-            
-
-    if (live == False):
-        path = '{0}/{1}'.format(src, resultfiles[-1])
-        
-        with open(path) as f:
-            data     = json.load(f)
-            numdim   = len(data['Variables'])
-            burnin   = data['Solver']['Burn In']
-            chainlen = data['Solver']['Internal']['Chain Length']
-            if chainlen <= burnin:
-                print("[Korali] Error: No samples found in file {0}...".format(path))
-                exit(-1)
-            
-            fig, ax = plt.subplots(numdim, numdim, figsize=(8,8))
-            fig.show()
-            plot_samples(fig, ax, data, resultfiles[-1])
-   
-    if (test == False):
-        plt.show() 
-    
-    print("[Korali] Figure closed - Bye!")

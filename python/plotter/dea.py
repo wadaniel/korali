@@ -14,43 +14,6 @@ import matplotlib.pyplot as plt
 from korali.plotter.helpers import readFiles, verifyRunId, hlsColors, plt_pause_light, plt_multicolored_lines
 
 
-# Create Plot from Data
-def draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, fvalXvec, meanXvec, width, colors, names, live):
-    #fig, ax = plt.subplots(2,2,num='DEA live diagnostics: {0}'.format(src),figsize=(8,8))
-
-    plt.suptitle( 'Generation {0}'.format(str(idx).zfill(5)), fontweight='bold', fontsize=12 )
-
-    # Upper Left Plot
-    ax[0,0].grid(True)
-    ax[0,0].set_yscale('log')
-    plt_multicolored_lines(ax[0,0], numeval, fval, 0.0, 'r', 'b', '$| F |$')
-    ax[0,0].plot(numeval, dfval, 'x', color = '#34495e', label = '$| F - F_{best} |$')
-    if ( (idx == 2) or (live == False) ):
-        ax[0,0].legend(bbox_to_anchor=(0,1.00,1,0.2), loc="lower left", mode="expand", ncol = 3, handlelength=1, fontsize = 8)
-
-    # Upper Right Plot
-    ax[0,1].set_title('Objective Variables')
-    ax[0,1].grid(True)
-    for i in range(numdim):
-        ax[0,1].plot(numeval, fvalXvec[i], color = colors[i], label=names[i])
-    if ( (idx == 2) or (live == False) ):
-        ax[0,1].legend(bbox_to_anchor=(1.04,0.5), loc="center left", borderaxespad=0, handlelength=1)
-
-    # Lower Right Plot
-    ax[1,0].set_title('Width Population')
-    ax[1,0].grid(True)
-    for i in range(numdim):
-        ax[1,0].plot(numeval, width[i], color = colors[i])
-
-    # Lower Left Plot
-    ax[1,1].set_title('Mean Population')
-    ax[1,1].grid(True)
-    for i in range(numdim):
-        ax[1,1].plot(numeval, meanXvec[i], color = colors[i], label=names[i])
-    if ( (idx == 2) or (live == False) ):
-        ax[1,1].legend(bbox_to_anchor=(1.04,0.5), loc="center left", borderaxespad=0, handlelength=1)
-
-
 # Plot DEA results (read from .json files)
 def plot_dea(src, live=False, test=False):
 
@@ -125,3 +88,43 @@ def plot_dea(src, live=False, test=False):
 
     plt.show()
     print("[Korali] Figure closed - Bye!")
+
+
+# Create Plot from Data
+def draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, fvalXvec, meanXvec, width, colors, names, live):
+    #fig, ax = plt.subplots(2,2,num='DEA live diagnostics: {0}'.format(src),figsize=(8,8))
+
+    plt.suptitle( 'Generation {0}'.format(str(idx).zfill(5)), fontweight='bold', fontsize=12 )
+
+    # Upper Left Plot
+    ax[0,0].grid(True)
+    ax[0,0].set_yscale('log')
+    plt_multicolored_lines(ax[0,0], numeval, fval, 0.0, 'r', 'b', '$| F |$')
+    ax[0,0].plot(numeval, dfval, 'x', color = '#34495e', label = '$| F - F_{best} |$')
+    if ( (idx == 2) or (live == False) ):
+        ax[0,0].legend(bbox_to_anchor=(0,1.00,1,0.2), loc="lower left", mode="expand", ncol = 3, handlelength=1, fontsize = 8)
+
+    # Upper Right Plot
+    ax[0,1].set_title('Objective Variables')
+    ax[0,1].grid(True)
+    for i in range(numdim):
+        ax[0,1].plot(numeval, fvalXvec[i], color = colors[i], label=names[i])
+    if ( (idx == 2) or (live == False) ):
+        ax[0,1].legend(bbox_to_anchor=(1.04,0.5), loc="center left", borderaxespad=0, handlelength=1)
+
+    # Lower Right Plot
+    ax[1,0].set_title('Width Population')
+    ax[1,0].grid(True)
+    for i in range(numdim):
+        ax[1,0].plot(numeval, width[i], color = colors[i])
+
+    # Lower Left Plot
+    ax[1,1].set_title('Mean Population')
+    ax[1,1].grid(True)
+    for i in range(numdim):
+        ax[1,1].plot(numeval, meanXvec[i], color = colors[i], label=names[i])
+    if ( (idx == 2) or (live == False) ):
+        ax[1,1].legend(bbox_to_anchor=(1.04,0.5), loc="center left", borderaxespad=0, handlelength=1)
+
+
+

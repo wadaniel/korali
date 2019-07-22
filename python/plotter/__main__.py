@@ -11,6 +11,7 @@ from korali.plotter.tmcmc import plot_tmcmc
 from korali.plotter.mcmc import plot_mcmc
 from korali.plotter.dea import plot_dea
 
+
 def main(check, path, mean, live, test):
 
  if (check == True):
@@ -56,7 +57,6 @@ def main(check, path, mean, live, test):
 
  print("[Korali] Error: Did not recognize method for plotting...")
  exit(-1)
-
 
 
 if __name__ == '__main__':

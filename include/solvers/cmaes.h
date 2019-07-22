@@ -820,12 +820,22 @@ Flag indicating if at least one of the variables is discrete.
 bool _hasDiscreteVariables;
 
 /******************************************************************************
+Setting Name: Discrete Mutations
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Vector storing discrete mutations, required for covariance matrix update.
+******************************************************************************/
+std::vector<double> _discreteMutations;
+
+/******************************************************************************
 Setting Name: Number Discrete Mutations
 Type: Internal Attribute
 Default Value:
 Default Enabled:
 Description:
-Number of disxcrete mutations in current generation.
+Number of discrete mutations in current generation.
 ******************************************************************************/
 size_t _numDiscreteMutations;
 
@@ -838,6 +848,16 @@ Description:
 Flag determining if the covariance eigensystem is up to date.
 ******************************************************************************/
 std::vector<double> _granularity;
+
+/******************************************************************************
+Setting Name: Masking Matrix Entries
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Number of nonzero entries on diagonal in Masking Matrix
+******************************************************************************/
+size_t _maskingMatrixEntries;
 
 /******************************************************************************
 Setting Name: Masking Matrix 
@@ -965,7 +985,7 @@ std::vector<variableSetting> _variableSettings;
 
  // Workspace for GSL
  Variable* _gaussianGenerator;
- std::shared_ptr<Variable> _geometricGenerator;
+ std::shared_ptr<Variable> _uniformGenerator;
 
  CMAES();
  ~CMAES();

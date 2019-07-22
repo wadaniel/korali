@@ -19,7 +19,7 @@ CMAES::CMAES()
  _gaussianGenerator = new Variable();
  _gaussianGenerator->setDistribution(jsGaussian);
 
- _geometricGenerator = nullptr;
+ _uniformGenerator = nullptr;
 }
 
 CMAES::~CMAES()
@@ -70,6 +70,7 @@ void CMAES::initialize()
  _granularity.resize(_k->N);
  _maskingMatrix.resize(_k->N);
  _maskingMatrixSigma.resize(_k->N);
+ _maskingMatrixEntries = 0;
 
  if (_objective == "Maximize")     _evaluationSign = 1.0;
  else if(_objective == "Minimize") _evaluationSign = -1.0;
@@ -82,9 +83,6 @@ void CMAES::initialize()
  initMuWeights(_muValue);
 
  initCovariance();
-
- // Setting eigensystem evaluation Frequency
- //if( _covarianceEigenEvalFreq < 0.0) _covarianceEigenEvalFreq = 1.0/_covarianceMatrixLearningRate/((double)_k->N)/10.0;
 
  _isEigenSystemUpdate = true;
  _infeasibleSampleCount = 0;
@@ -118,15 +116,19 @@ void CMAES::initialize()
  
  if (_hasDiscreteVariables)
  {
-   auto jsGeometric = nlohmann::json();
-   jsGeometric["Type"] = "Geometric";
-   jsGeometric["Success Probability"] = std::pow(0.7, 1.0/numDiscretes); // TODO: wrong (set every gen for 1/numdiscradapt)
-   jsGeometric["Seed"] = _k->_seed++;
-   _geometricGenerator = std::make_shared<Variable>();
-   _geometricGenerator->setDistribution(jsGeometric);
+   auto jsUniform = nlohmann::json();
+   jsUniform["Type"] = "Uniform";
+   jsUniform["Minimum"] = 0.0;
+   jsUniform["Maximum"] = 1.0;
+   jsUniform["Seed"] = _k->_seed++;
+   _uniformGenerator = std::make_shared<Variable>();
+   _uniformGenerator->setDistribution(jsUniform);
  }
-
+ 
  _numDiscreteMutations = 0; // updated each generation
+ _discreteMutations.resize(_k->N*_sampleCount);
+ std::fill( std::begin(_discreteMutations), std::end(_discreteMutations), 0.0);
+
 
 }
 
@@ -305,15 +307,16 @@ void CMAES::sampleSingle(size_t sampleIdx)
 
   if(_hasDiscreteVariables && sampleIdx < _numDiscreteMutations)
   {
-    double dmutation;
-    for(size_t d = 0; d < _k->N; ++d) if(_maskingMatrix[d] == 1.0)
+    double p_geom = std::pow(0.7, 1.0/_maskingMatrixEntries);
+    size_t select = std::floor(_uniformGenerator->getRandomNumber() * _maskingMatrixEntries);
+    for(size_t d = 0; d < _k->N; ++d) if( (_maskingMatrix[d] == 1.0) && (select-- == 0) )
     {
-      dmutation = 1.0;
-      dmutation += ( _geometricGenerator->getRandomNumber() - 1.0 );
+      double dmutation = 1.0;
+      while(  _uniformGenerator->getRandomNumber() > p_geom ) dmutation += 1.0;
       dmutation *= _granularity[d];
 
-      if( _gaussianGenerator->getRandomNumber() > 0.0 ) dmutation*=-1.0;
-      
+      if( _uniformGenerator->getRandomNumber() > 0.5 ) dmutation*=-1.0;
+      _discreteMutations[sampleIdx*_k->N+d] = dmutation; 
       _samplePopulation[sampleIdx*_k->N+d] += dmutation;
     }
   }
@@ -436,7 +439,7 @@ void CMAES::adaptC(int hsig)
    for (size_t e = _isDiag ? d : 0; e <= d; ++e) {
      _C[d*_k->N+e] = (1 - ccov1 - ccovmu) * _C[d*_k->N+e] + ccov1 * (_evolutionPath[d] * _evolutionPath[e] + (1-hsig)*ccov1*_cumulativeCovariance*(2.-_cumulativeCovariance) * _C[d*_k->N+e]);
      for (size_t k = 0; k < _muValue; ++k)
-         _C[d*_k->N+e] += ccovmu * _muWeights[k] * (_samplePopulation[_sortingIndex[k]*_k->N + d] - _previousMean[d]) * (_samplePopulation[_sortingIndex[k]*_k->N + e] - _previousMean[e]) / sigmasquare;
+         _C[d*_k->N+e] += ccovmu * _muWeights[k] * std::pow(_samplePopulation[_sortingIndex[k]*_k->N + d] - _discreteMutations[_sortingIndex[k]*_k->N+d] - _previousMean[d], 2.0)  / sigmasquare;
      if (e < d) _C[e*_k->N+d] = _C[d*_k->N+e];
    }
 
@@ -483,11 +486,11 @@ void CMAES::updateDiscreteMutationMatrix()
   for(size_t d = 0; d < _k->N; ++d) if(_sigma*_axisD[d]/std::sqrt(_sigmaCumulationFactor) < 0.2*_granularity[d]) { _maskingMatrixSigma[d] = 0.0; entries--; }
   _chiS = sqrt((double) entries) * (1. - 1./(4.*entries) + 1./(21.*entries*entries));
   
-  size_t nmask = 0;
+  _maskingMatrixEntries = 0;
   std::fill( std::begin(_maskingMatrix), std::end(_maskingMatrix), 0.0);
-  for(size_t d = 0; d < _k->N; ++d) if(2.0*_sigma*_axisD[d] < _granularity[d]) { _maskingMatrix[d] = 1.0; nmask++; }
+  for(size_t d = 0; d < _k->N; ++d) if(2.0*_sigma*_axisD[d] < _granularity[d]) { _maskingMatrix[d] = 1.0; _maskingMatrixEntries++; }
  
-  _numDiscreteMutations = std::min( _sampleCount/10.0 + nmask + 1.0, _sampleCount/2.0 - 1.0);
+  _numDiscreteMutations = std::min( _sampleCount/10.0 + _maskingMatrixEntries + 1.0, _sampleCount/2.0 - 1.0);
   
 }
 

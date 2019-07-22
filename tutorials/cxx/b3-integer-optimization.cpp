@@ -34,10 +34,10 @@ int main(int argc, char* argv[])
   }
 
   // Configuring CMA-ES parameters
-  k["CMAES"]["Objective"] = "Maximize";
+  k["CMAES"]["Objective"]    = "Maximize";
   k["CMAES"]["Sample Count"] = 8;
 
-  k["CMAES"]["Termination Criteria"]["Max Generations"]["Value"] = 750;
+  k["CMAES"]["Termination Criteria"]["Max Generations"]["Value"] = 1000;
 
   // Setting output directory
   k["Result Directory"] = "_b3_integer_optimization_result";

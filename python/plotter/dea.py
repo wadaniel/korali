@@ -11,7 +11,7 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 
-from korali.plotter.helpers import readFiles, hlsColors, plt_pause_light, plt_multicolored_lines
+from korali.plotter.helpers import readFiles, hlsColors, pauseLight, drawMulticoloredLine
 
 
 # Plot DEA results (read from .json files)
@@ -77,7 +77,7 @@ def plot_dea(src, live=False, test=False):
                 exit(0)
 
             draw_figure(fig, ax, src, gen, numeval, numdim, fval, dfval, fvalXvec, meanXvec, width, colors, names, live)
-            plt_pause_light(0.05)
+            pauseLight(0.05)
 
     if live == False: 
         draw_figure(fig, ax, src, gen, numeval, numdim, fval, dfval, fvalXvec, meanXvec, width, colors, names, live)
@@ -96,7 +96,7 @@ def draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, fvalXvec, meanX
     # Upper Left Plot
     ax[0,0].grid(True)
     ax[0,0].set_yscale('log')
-    plt_multicolored_lines(ax[0,0], numeval, fval, 0.0, 'r', 'b', '$| F |$')
+    drawMulticoloredLine(ax[0,0], numeval, fval, 0.0, 'r', 'b', '$| F |$')
     ax[0,0].plot(numeval, dfval, 'x', color = '#34495e', label = '$| F - F_{best} |$')
     if ( (idx == 2) or (live == False) ):
         ax[0,0].legend(bbox_to_anchor=(0,1.00,1,0.2), loc="lower left", mode="expand", ncol = 3, handlelength=1, fontsize = 8)

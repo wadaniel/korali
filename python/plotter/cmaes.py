@@ -10,7 +10,7 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 
-from korali.plotter.helpers import readFiles, hlsColors, plt_pause_light, plt_multicolored_lines
+from korali.plotter.helpers import readFiles, hlsColors, pauseLight, drawMulticoloredLine
 
 
 # Plot CMAES results (read from .json files)
@@ -44,7 +44,7 @@ def plot_cmaes(src, plot_mean = False, live=False, test=False ):
         with open(path) as f:
 
             data       = json.load(f)
-            solverName = data['Solver']
+            solverName = data['Solver']['Type']
 
             state = data['Solver']['Internal']
             gen   = data['General']['Current Generation']
@@ -88,7 +88,7 @@ def plot_cmaes(src, plot_mean = False, live=False, test=False ):
             
                 if (live == True and gen > 1):
                     draw_figure(fig, ax, src, gen, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, mu, axis, ssdev, colors, names, plot_mean, live)
-                    plt_pause_light(0.05)
+                    pauseLight(0.05)
 
     if (live == False):
         fig, ax = plt.subplots(2,2,num='{0} live diagnostics'.format(solverName), figsize=(8,8))
@@ -109,7 +109,7 @@ def draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, cond, sigma, ps
     # Upper Left Plot
     ax[0,0].grid(True)
     ax[0,0].set_yscale('log')
-    plt_multicolored_lines(ax[0,0], numeval, fval, 0.0, 'r', 'b', '$| F |$')
+    drawMulticoloredLine(ax[0,0], numeval, fval, 0.0, 'r', 'b', '$| F |$')
     ax[0,0].plot(numeval, dfval, 'x', color = '#34495e', label = '$| F - F_{best} |$')
     ax[0,0].plot(numeval, cond, color='#98D8D8', label = '$\kappa(\mathbf{C})$')
     ax[0,0].plot(numeval, sigma, color='#F8D030', label = '$\sigma$')

@@ -9,7 +9,7 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 
-from korali.plotter.helpers import readFiles, plt_pause_light
+from korali.plotter.helpers import readFiles, pauseLight
 
 
 # Plot TMCMC results (read from .json files)
@@ -47,7 +47,7 @@ def plot_tmcmc(src, live=False, test=False):
             plot_upper_triangle(ax, samples, False)
             plot_lower_triangle(ax, samples)
 
-            plt_pause_light(0.05) 
+            pauseLight(0.05) 
 
     plt.show()
     print("[Korali] Figures closed - Bye!")

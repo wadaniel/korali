@@ -8,7 +8,7 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 
-from korali.plotter.helpers import readFiles, plt_pause_light
+from korali.plotter.helpers import readFiles, pauseLight
 
 
 # Plot MCMC results (read from .json files)
@@ -44,7 +44,7 @@ def plot_mcmc(src, live=False, test=False):
 
                 if chainlen > burnin:
                     plot_samples(fig, ax, data, filename)
-                    plt_pause_light(0.5) 
+                    pauseLight(0.5) 
             
 
     if (live == False):
@@ -67,6 +67,24 @@ def plot_mcmc(src, live=False, test=False):
         plt.show() 
     
     print("[Korali] Figure closed - Bye!")
+
+
+# Plot MCMC result file
+def plot_samples(fig, ax, data, filename):
+    dims     = data['Variables']
+    numdim   = len(dims)
+    pop      = data['Solver']['Internal']['Database Entry Count']
+    samples  = np.reshape( data['Solver']['Internal']['Sample Parameters Database'][0:pop*numdim], (pop,numdim) )
+    
+    fig.canvas.set_window_title(filename)
+    
+    plt.suptitle( 'MCMC\nNumber of Samples {0}\n'.format(str(pop)),
+                  fontweight='bold',
+                  fontsize  = 12)
+
+    plot_histogram(ax, samples)
+    plot_upper_triangle(ax, samples, False)
+    plot_lower_triangle(ax, samples)
 
 
 # Plot histogram of sampes in diagonal
@@ -148,21 +166,3 @@ def plot_lower_triangle(ax, theta):
                 ax[i, j].set_xticklabels([])
             if j > 0:
                 ax[i, j].set_yticklabels([])
-
-
-# Plot MCMC result file
-def plot_samples(fig, ax, data, filename):
-    dims     = data['Variables']
-    numdim   = len(dims)
-    pop      = data['Solver']['Internal']['Database Entry Count']
-    samples  = np.reshape( data['Solver']['Internal']['Sample Parameters Database'][0:pop*numdim], (pop,numdim) )
-    
-    fig.canvas.set_window_title(filename)
-    
-    plt.suptitle( 'MCMC\nNumber of Samples {0}\n'.format(str(pop)),
-                  fontweight='bold',
-                  fontsize  = 12)
-
-    plot_histogram(ax, samples)
-    plot_upper_triangle(ax, samples, False)
-    plot_lower_triangle(ax, samples)

@@ -60,7 +60,7 @@ def hlsColors(num, h = 0.01, l=0.6, s=0.65):
 
 
 # Plot pause without focus
-def plt_pause_light(interval):
+def pauseLight(interval):
     backend = plt.rcParams['backend']
     if backend in matplotlib.rcsetup.interactive_bk:
         figManager = matplotlib._pylab_helpers.Gcf.get_active()
@@ -73,7 +73,7 @@ def plt_pause_light(interval):
 
 
 # Finds the continuous segments of colors and returns those segment
-def find_contiguous_colors(y, threshold, clow, chigh):
+def findContiguousColors(y, threshold, clow, chigh):
     colors = []
     for val in y:
         if (val < 0): colors.append(clow) 
@@ -96,8 +96,8 @@ def find_contiguous_colors(y, threshold, clow, chigh):
 
 # Plots abs(y-threshold) in two colors
 #   clow for y < threshold and chigh else
-def plt_multicolored_lines(ax,x,y,threshold,clow,chigh,lab):
-    segments = find_contiguous_colors(y, threshold, clow, chigh)
+def drawMulticoloredLine(ax,x,y,threshold,clow,chigh,lab):
+    segments = findContiguousColors(y, threshold, clow, chigh)
     start = 0
     absy = [ abs(val) for val in y ]
     labelled = set()

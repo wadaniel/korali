@@ -119,8 +119,13 @@ double Korali::Problem::Bayesian::likelihoodGaussianAdditive(Korali::Model& data
 
   for(size_t i = 0; i < _referenceDataSize; i++)
   {
-   double diff = _referenceData[i] - data._results[i];
-   ssn += diff*diff;
+    if( !isfinite(data._results[i]) )
+    {
+      koraliWarning(KORALI_NORMAL,"Non-finite value detected in the results passed in the log-likelihood function.");
+      return -1e12;
+    }
+    double diff = _referenceData[i] - data._results[i];
+    ssn += diff*diff;
   }
 
   fitness = -0.5*( _referenceDataSize*log(2*M_PI) + ssn/sigma2) - _referenceDataSize*log(sigma);
@@ -135,10 +140,15 @@ double Korali::Problem::Bayesian::likelihoodGaussianMultiplicative(Korali::Model
   double logSigma = 0.0;
   for(size_t i = 0; i < _referenceDataSize; i++)
   {
-   double diff   = _referenceData[i] - data._results[i];
-   double denom  = sigma*data._results[i];
-   ssn += diff*diff / (denom*denom);
-   logSigma += log(denom);
+    if( !isfinite(data._results[i]) )
+    {
+      koraliWarning(KORALI_NORMAL,"Non-finite value detected in the results passed in the log-likelihood function.");
+      return -1e12;
+    }
+    double diff   = _referenceData[i] - data._results[i];
+    double denom  = sigma*data._results[i];
+    ssn += diff*diff / (denom*denom);
+    logSigma += log(denom);
   }
 
   fitness = -0.5*( _referenceDataSize*log(2*M_PI) + ssn) - _referenceDataSize*logSigma;
@@ -153,10 +163,15 @@ double Korali::Problem::Bayesian::likelihoodGaussianMultiplicativeData(Korali::M
   double logSigma = 0.0;
   for(size_t i = 0; i < _referenceDataSize; i++)
   {
-   double diff   = _referenceData[i] - data._results[i];
-   double denom  = sigma*_referenceData[i];
-   ssn += diff*diff / (denom*denom);
-   logSigma += log(denom);
+    if( !isfinite(data._results[i]) )
+    {
+      koraliWarning(KORALI_NORMAL,"Non-finite value detected in the results passed in the log-likelihood function.");
+      return -1e12;
+    }
+    double diff   = _referenceData[i] - data._results[i];
+    double denom  = sigma*_referenceData[i];
+    ssn += diff*diff / (denom*denom);
+    logSigma += log(denom);
   }
 
   fitness = -0.5*( _referenceDataSize*log(2*M_PI) + ssn) - _referenceDataSize*logSigma;

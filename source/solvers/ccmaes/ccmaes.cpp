@@ -433,7 +433,7 @@ void CCMAES::prepareGeneration()
        _infeasibleSampleCount++;
        sampleSingle(i);
 
-       if ( _maxInfeasibleResamplings_enabled )
+       if ( _maxInfeasibleResamplingsEnabled )
        if ( (_infeasibleSampleCount - initial_infeasible) > _maxInfeasibleResamplings )
         koraliError("Exiting resampling loop (sample %zu), max resamplings (%zu) reached.\n", i, _maxInfeasibleResamplings);
      }
@@ -718,7 +718,7 @@ void CCMAES::handleConstraints()
      _resampledParameterCount++;
      sampleSingle(i);
 
-     if(_maxInfeasibleResamplings_enabled)
+     if(_maxInfeasibleResamplingsEnabled)
      if(_resampledParameterCount-initial_resampled > _maxInfeasibleResamplings)
      {
         koraliWarning(KORALI_DETAILED, "Exiting resampling loop, max resamplings (%zu) reached.\n", _maxInfeasibleResamplings);
@@ -767,20 +767,20 @@ bool CCMAES::checkTermination()
 {
  
  bool isFinished = false;
- if ( _minFitness_enabled && (_isViabilityRegime == false) && (_k->currentGeneration > 1) && (_bestEverValue >= _minFitness) )
+ if ( _minFitnessEnabled && (_isViabilityRegime == false) && (_k->currentGeneration > 1) && (_bestEverValue >= _minFitness) )
  {
   isFinished = true;
   koraliLog(KORALI_MINIMAL, "Min fitness value (%+6.3e) > (%+6.3e).\n",  _bestEverValue, _minFitness);
  }
  
- if ( _maxFitness_enabled && (_isViabilityRegime == false) && (_k->currentGeneration > 1) && (_bestEverValue >= _maxFitness) )
+ if ( _maxFitnessEnabled && (_isViabilityRegime == false) && (_k->currentGeneration > 1) && (_bestEverValue >= _maxFitness) )
  {
   isFinished = true;
   koraliLog(KORALI_MINIMAL, "Max fitness value (%+6.3e) > (%+6.3e)\n",  _bestEverValue, _maxFitness);
  }
 
  double range = fabs(_currentBestValue - _previousBestValue);
- if ( _minFitnessDiffThreshold_enabled && (_k->currentGeneration > 1) && (range <= _minFitnessDiffThreshold) )
+ if ( _minFitnessDiffThresholdEnabled && (_k->currentGeneration > 1) && (range <= _minFitnessDiffThreshold) )
  {
   isFinished = true;
   koraliLog(KORALI_MINIMAL, "Function value differences (%+6.3e) < (%+6.3e)\n",  range, _minFitnessDiffThreshold);
@@ -788,7 +788,7 @@ bool CCMAES::checkTermination()
 
  size_t idx;
  
- if ( _minStandardDeviation_enabled )
+ if ( _minStandardDeviationEnabled )
  {
   size_t cTemp = 0;
   for(idx = 0; idx <_k->N; ++idx )
@@ -800,7 +800,7 @@ bool CCMAES::checkTermination()
   }
 
   for(idx = 0; idx <_k->N; ++idx )
-   if ( _maxStandardDeviation_enabled && (_sigma * sqrt(_covarianceMatrix[idx*_k->N+idx]) > _maxStandardDeviation * _k->_variables[idx]->_initialStandardDeviation) )
+   if ( _maxStandardDeviationEnabled && (_sigma * sqrt(_covarianceMatrix[idx*_k->N+idx]) > _maxStandardDeviation * _k->_variables[idx]->_initialStandardDeviation) )
    {
     isFinished = true;
     koraliLog(KORALI_MINIMAL, "Standard deviation increased by more than %7.2e, larger initial standard deviation recommended \n", 
@@ -809,7 +809,7 @@ bool CCMAES::checkTermination()
    }
  }
 
- if ( _maxConditionCovarianceMatrix_enabled && (_maximumCovarianceEigenvalue >= _minimumCovarianceEigenvalue * _maxConditionCovarianceMatrix) )
+ if ( _maxConditionCovarianceMatrixEnabled && (_maximumCovarianceEigenvalue >= _minimumCovarianceEigenvalue * _maxConditionCovarianceMatrix) )
  {
    isFinished = true;
    koraliLog(KORALI_MINIMAL, "Maximal condition number %7.2e reached. _maximumCovarianceEigenvalue=%7.2e, minEig=%7.2e, _maximumDiagonalCovarianceMatrixElement=%7.2e, _minimumDiagonalCovarianceMatrixElement=%7.2e\n",
@@ -820,7 +820,7 @@ bool CCMAES::checkTermination()
  size_t iAchse = 0;
  size_t iKoo = 0;
  /* Component of _meanUpdate is not changed anymore */
- if( _minStandardDeviationStepFactor_enabled)
+ if( _minStandardDeviationStepFactorEnabled)
  if (!_isDiagonal )
  {
     for (iAchse = 0; iAchse < _k->N; ++iAchse)
@@ -840,7 +840,7 @@ bool CCMAES::checkTermination()
  }
 
  /* Component of _meanUpdate is not changed anymore */
- if( _minStandardDeviationStepFactor_enabled )
+ if( _minStandardDeviationStepFactorEnabled )
  for (iKoo = 0; iKoo < _k->N; ++iKoo)
  {
   if (_meanUpdate[iKoo] == _meanUpdate[iKoo] + _minStandardDeviationStepFactor*_sigma*sqrt(_covarianceMatrix[iKoo*_k->N+iKoo]) )

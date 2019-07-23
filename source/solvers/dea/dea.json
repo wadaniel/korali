@@ -51,31 +51,26 @@
  [
    {
     "Name": "Max Resamplings",
-    "Default": "1e9",
     "Type": "Real",
     "Description": "Max number of mutations per sample per generation if infeasible (only relevant if Fix Infeasible is set False)."
    },
    {
     "Name": "Min Fitness",
-    "Default": "-std::numeric_limits<float>::max()",
     "Type": "Real",
     "Description": "Specifies the target fitness to stop minimization."
    },
    {
     "Name": "Max Fitness",
-    "Default": "+std::numeric_limits<float>::max()",
     "Type": "Real",
     "Description": "Specifies the target fitness to stop maximization."
    },
    {
     "Name": "Min Fitness Diff Threshold",
-    "Default": "1e-9",
     "Type": "Real",
     "Description": "Specifies the minimum fitness differential between two consecutive generations before stopping execution."
    },
    {
     "Name": "Min Step Size",
-    "Default": "1e-12",
     "Type": "Real",
     "Description": "Specifies the minimal step size of the sample mean from one gneration to another."
    }

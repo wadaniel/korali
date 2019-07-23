@@ -90,6 +90,8 @@ void Korali::Variable::setDistribution(nlohmann::json& js)
  if (_distributionType == KoraliLaplaceDistribution)     { _aux = -gsl_sf_log(2.*_b); }
  if (_distributionType == KoraliUniformDistribution)     { _aux = -gsl_sf_log(_b-_a); }
  if (_distributionType == KoraliGeometricDistribution)   { _aux = 0.0; }
+
+ // Setting module-required configuration
 };
 
 void Korali::Variable::getDistribution(nlohmann::json& js)
@@ -144,6 +146,7 @@ void Korali::Variable::getDistribution(nlohmann::json& js)
   js["Success Probability"] = _a;
  }
 
+ // Getting module-required configuration
 }
 
 /************************************************************************/

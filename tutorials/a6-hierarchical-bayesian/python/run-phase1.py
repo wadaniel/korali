@@ -40,12 +40,10 @@ k["General"]["Max Generations"] = 100
 
 for i in range(3):
   dataPath = "setup/data/individual"
-
   resultsPath = "results/individual/" + str(i+1).zfill(3)
   if not os.path.exists(resultsPath):
     os.makedirs(resultsPath)
   k["General"]["Results Output"]["Path"] = resultsPath
-  y = getReferenceData(dataPath,i+1);
-  k["Problem"]["Likelihood"]["Reference Data"] = y
+  k["Problem"]["Likelihood"]["Reference Data"] = getReferenceData(dataPath,i+1);
   k.setModel( lambda d: logistic( getReferencePoints(dataPath,i+1), d) )
   k.dry()

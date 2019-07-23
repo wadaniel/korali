@@ -98,9 +98,15 @@
  "Termination Criteria":
  [
    {
-    "Name": "Max Infeasible Resampling",
+    "Name": "Max Infeasible Resamplings",
     "Type": "Unsigned Integer",
     "Description": "Maximum number of resamplings per candidate per generation if sample is outside of Lower and Upper Bound."
+   },
+   {
+    "Name": "Max Condition Covariance Matrix",
+    "Default": "1e18",
+    "Type": "Real",
+    "Description": "Specifies the maximum condition of the covariance matrix."
    },
    {
     "Name": "Min Fitness",
@@ -121,11 +127,6 @@
     "Name": "Min Standard Deviation",
     "Type": "Real",
     "Description": "Specifies the minimal standard deviation for any dimension in any proposed sample."
-   },
-   {
-    "Name": "Max Standard Deviation",
-    "Type": "Real",
-    "Description": "Specifies the maximal standard deviation for any dimension in any proposed sample."
    },
    {
     "Name": "Max Standard Deviation",
@@ -169,7 +170,7 @@
     "Name": "Minimum Standard Deviation Changes",
     "Type": "Real",
     "Default": "0.0",
-    "Description": "Defines a lower bound for the standard deviation updates of the proposal distribution for a variable. Korali increases the scaling factor $\sigma$ if this value is undershot. By default, Korali sets this value to 0.0 (inactive)."
+    "Description": "Defines a lower bound for the standard deviation updates of the proposal distribution for a variable. Korali increases the scaling factor $\\sigma$ if this value is undershot. By default, Korali sets this value to 0.0 (inactive)."
    },
    {
     "Name": "Is Discrete",
@@ -219,7 +220,7 @@
    },
    {
     "Name": "Effective Mu",
-    "Type": "(Array of) Real",
+    "Type": "Real",
     "Description": "Variance effective selection mass."
    },
    {
@@ -280,7 +281,17 @@
    {
     "Name": "Current Best Value",
     "Type": "Real",
-    "Description": "Best vlaue from current generation."
+    "Description": "Best value from current generation."
+   },
+   {
+    "Name": "Current Best Coordinates",
+    "Type": "(Array of) Real",
+    "Description": "Coordinates of the best sample ever."
+   },
+   {
+    "Name": "Best Ever Coordinates",
+    "Type": "(Array of) Real",
+    "Description": "Coordinates of the best sample ever."
    },
    {
     "Name": "Previous Best Value",
@@ -374,7 +385,7 @@
    },
    {
     "Name": "Previous Mean",
-    "Type": "Real",
+    "Type": "(Array of) Real",
     "Description": "Mean parent on previous generation."
    },
    {
@@ -454,7 +465,7 @@
    },
    {
     "Name": "Viability Boundaries",
-    "Type": "(Array of) (Array of) Real",
+    "Type": "(Array of) Real",
     "Description": "Viability Boundaries."
    },
    {
@@ -494,11 +505,11 @@
    },
    {
     "Name": "Discrete Mutations",
-    "Type": "Boolean",
+    "Type": "(Array of) Real",
     "Description": "Vector storing discrete mutations, required for covariance matrix update."
    },
    {
-    "Name": "Number Discrete Mutations",
+    "Name": "Number Of Discrete Mutations",
     "Type": "Unsigned Integer",
     "Description": "Number of discrete mutations in current generation."
    },

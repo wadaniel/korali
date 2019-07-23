@@ -6,11 +6,11 @@ LDFLAGS = $(SHAREDLIB_FLAG) -L$(GSLPREFIX)/lib -Wl,-rpath -Wl,$(GSLPREFIX)/lib $
 CFLAGS  += $(PYBIND11INCLUDES) $(MPIFLAGS)
 LDFLAGS += $(PYBIND11LIBS)
 
-.PHONY: pre-build clean all
+.PHONY: clean all
 
-all: pre-build libkorali.so libkorali.a
+all: config.cpp libkorali.so libkorali.a
 
-pre-build:
+config.cpp:
 	python3 ./build.py
 
 SOURCES = $(shell find . -name "*.cpp") 
@@ -28,9 +28,6 @@ libkorali.so: $(OBJECTS_SHARED)
 
 libkorali.a: $(OBJECTS_STATIC)
 	ar rs $@ $^
-
-config.cpp:
-	python3 ./build.py
 
 clean:
 	@rm -rf *.so *.a config.cpp $(OBJECTS_STATIC) $(OBJECTS_SHARED)

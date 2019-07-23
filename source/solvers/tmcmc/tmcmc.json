@@ -102,7 +102,7 @@
    },
    {
     "Name": "Current Chain Step",
-    "Type": "Unsigned Integer",
+    "Type": "(Array of) Unsigned Integer", 
     "Description": "The current execution step for every chain."
    },
    {
@@ -111,7 +111,7 @@
     "Description": "Length for each of the chains."
    },
    {
-    "Name": "Coefficient of Variation",
+    "Name": "Coefficient Of Variation",
     "Type": "Real",
     "Description": "Current coefficient of variation."
    },

@@ -240,7 +240,7 @@ void DEA::updateSolver()
     _previousMean.assign(std::begin(_sampleMeans), std::end(_sampleMeans));
     std::fill(std::begin(_sampleMeans), std::end(_sampleMeans), 0.0);
 
-    if(_currentBestValue > _bestEverValue) _bestEverValue.assign(std::begin(_currentBestSample), std::end(_currentBestSample));
+    if(_currentBestValue > _bestEverValue) _bestEverCoordinates.assign(std::begin(_currentBestSample), std::end(_currentBestSample));
 
     switch (str2int(_acceptRule.c_str()))
     {
@@ -339,7 +339,7 @@ void DEA::printGeneration()
  koraliLog(KORALI_NORMAL, "Differential Evolution Generation %zu\n", _k->currentGeneration);
  koraliLog(KORALI_NORMAL, "Current Function Value: Max = %+6.3e - Best = %+6.3e\n", _currentBestValue, _bestEverValue);
  koraliLog(KORALI_DETAILED, "Variable = (MeanX, BestX):\n");
- for (size_t d = 0; d < _k->N; d++) koraliLogData(KORALI_DETAILED, "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _sampleMeans[d], _bestEverValue[d]);
+ for (size_t d = 0; d < _k->N; d++) koraliLogData(KORALI_DETAILED, "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _sampleMeans[d], _bestEverCoordinates[d]);
  koraliLog(KORALI_DETAILED, "Max Width:\n");
  for (size_t d = 0; d < _k->N; d++) koraliLogData(KORALI_DETAILED, "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _maxDistances[d]);
  koraliLog(KORALI_DETAILED, "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
@@ -351,7 +351,7 @@ void DEA::finalize()
  koraliLog(KORALI_MINIMAL, "Differential Evolution Finished\n");
  koraliLog(KORALI_MINIMAL, "Optimum found: %e\n", _bestEverValue);
  koraliLog(KORALI_MINIMAL, "Optimum found at:\n");
- for (size_t d = 0; d < _k->N; ++d) koraliLogData(KORALI_MINIMAL, "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverValue[d]);
+ for (size_t d = 0; d < _k->N; ++d) koraliLogData(KORALI_MINIMAL, "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverCoordinates[d]);
  koraliLog(KORALI_MINIMAL, "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
  koraliLog(KORALI_MINIMAL, "--------------------------------------------------------------------\n");
 }

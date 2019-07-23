@@ -28,6 +28,7 @@ conduitPaths = [x[0] for x in os.walk('./conduits')][1:]
 variableTemplateHeaderFile = './.variable.hpp'
 with open(variableTemplateHeaderFile, 'r') as file: variableHeaderString = file.read()
 variableSettingString = '' 
+variableSettingSet = set()
  
 # Processing Solvers
 for solverPath in solverPaths:
@@ -46,7 +47,9 @@ for solverPath in solverPaths:
     
  for v in solverConfig["Termination Criteria"]:
   solverSettingString += getVariableDeclaration(v) + ';\n'
- 
+  solverSettingString += getVariableDeclaration(v) + '_enabled;\n'
+  solverSettingString += getVariableDeclaration(v) + '_triggered;\n'
+  
  for v in solverConfig["Internal Settings"]:
   solverSettingString += getVariableDeclaration(v) + ';\n'
       
@@ -61,7 +64,9 @@ for solverPath in solverPaths:
  
  # Reading variable-specific configuration
  for v in solverConfig["Variables Configuration"]:
-  variableSettingString += getVariableDeclaration(v) + ';\n'
+  if (not v["Name"] in variableSettingSet):
+   variableSettingString += getVariableDeclaration(v) + ';\n'
+   variableSettingSet.add(v["Name"])
 
 # Saving new variable.hpp file
 variableNewHeaderFile = './variable.hpp'

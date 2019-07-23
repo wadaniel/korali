@@ -65,8 +65,8 @@ void Korali::Solver::MCMC::initialize()
  if (acceptableProblem == false) koraliError("MCMC cannot solve problems of type: '%s'.\n", pName.c_str());
 
  // Allocating MCMC memory
- _covarianceChol.resize(_k->N*_k->N);
- std::fill(std::begin(_covarianceChol), std::end(_covarianceChol), 0.0);
+ _choleskyCovariance.resize(_k->N*_k->N);
+ std::fill(std::begin(_choleskyCovariance), std::end(_choleskyCovariance), 0.0);
  _chainLeaderParameters.resize(_k->N);
  _chainCandidateParameters.resize(_k->N*_rejectionLevels);
  _chainCandidatesLogPriors.resize(_rejectionLevels);
@@ -80,8 +80,8 @@ void Korali::Solver::MCMC::initialize()
  _choleskyCovariance.resize(_k->N*_k->N);
  std::fill(std::begin(_choleskyCovariance), std::end(_choleskyCovariance), 0.0);
 
- for(size_t i = 0; i < _k->N; i++) _chainLeaderParameters[i]  = _variableSettings[i].initialMean;
- for(size_t i = 0; i < _k->N; i++) _covarianceChol[i*_k->N+i] = _variableSettings[i].standardDeviation;
+ for(size_t i = 0; i < _k->N; i++) _chainLeaderParameters[i]  = _k->_variables[i]->_initialMean;
+ for(size_t i = 0; i < _k->N; i++) _choleskyCovariance[i*_k->N+i] = _k->_variables[i]->_initialStandardDeviation;
 
  // Init Generation
  _acceptanceCount = 0;
@@ -211,7 +211,7 @@ void Korali::Solver::MCMC::sampleCandidate(size_t sampleIdx)
  for (size_t d = 0; d < _k->N; ++d) _chainCandidateParameters[sampleIdx*_k->N+d] = 0.0;
 
  if ( (_useAdaptiveSampling == false) || (_databaseEntryCount <= _nonAdaptionPeriod + _burnIn))
-     for (size_t d = 0; d < _k->N; ++d) for (size_t e = 0; e < _k->N; ++e) _chainCandidateParameters[sampleIdx*_k->N+d] += _covarianceChol[d*_k->N+e] * _gaussianGenerator->getRandomNumber();
+     for (size_t d = 0; d < _k->N; ++d) for (size_t e = 0; e < _k->N; ++e) _chainCandidateParameters[sampleIdx*_k->N+d] += _choleskyCovariance[d*_k->N+e] * _gaussianGenerator->getRandomNumber();
  else
      for (size_t d = 0; d < _k->N; ++d) for (size_t e = 0; e < _k->N; ++e) _chainCandidateParameters[sampleIdx*_k->N+d] += _choleskyCovariance[d*_k->N+e] * _gaussianGenerator->getRandomNumber();
 

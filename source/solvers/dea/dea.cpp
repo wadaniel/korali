@@ -110,7 +110,7 @@ void DEA::prepareGeneration()
   else
       mutateSingle(i);
 
-  if ( _maxResamplings_enabled )
+  if ( _maxResamplingsEnabled )
   if ( (_infeasibleSampleCount - initial_infeasible) > _maxResamplings )
   koraliWarning(KORALI_MINIMAL, "Exiting resampling loop (param %zu) because max resamplings (%zu) reached.\n", i, _maxResamplings);
   }
@@ -301,26 +301,26 @@ bool DEA::checkTermination()
 {
 
  bool isFinished = false;
- if ( _minFitness_enabled && (_k->currentGeneration > 1) && (_bestEverValue >= _minFitness) )
+ if ( _minFitnessEnabled && (_k->currentGeneration > 1) && (_bestEverValue >= _minFitness) )
  {
   isFinished = true;
   koraliLog(KORALI_MINIMAL, "Fitness Value (%+6.3e) > (%+6.3e).\n",  _bestEverValue, _minFitness);
  }
  
- if ( _maxFitness_enabled && (_k->currentGeneration > 1) && (_bestEverValue >= _maxFitness) )
+ if ( _maxFitnessEnabled && (_k->currentGeneration > 1) && (_bestEverValue >= _maxFitness) )
  {
   isFinished = true;
   koraliLog(KORALI_MINIMAL, "Fitness Value (%+6.3e) > (%+6.3e).\n",  _bestEverValue, _maxFitness);
  }
 
  double range = fabs(_currentBestValue - _previousBestValue);
- if ( _minFitnessDiffThreshold_enabled && (_k->currentGeneration > 1) && (range < _minFitnessDiffThreshold) )
+ if ( _minFitnessDiffThresholdEnabled && (_k->currentGeneration > 1) && (range < _minFitnessDiffThreshold) )
  {
   isFinished = true;
   koraliLog(KORALI_MINIMAL, "Fitness Diff Threshold (%+6.3e) < (%+6.3e).\n",  range, _minFitnessDiffThreshold);
  }
  
- if ( _minStepSize_enabled && (_k->currentGeneration > 1) )
+ if ( _minStepSizeEnabled && (_k->currentGeneration > 1) )
  {
    size_t cTemp = 0;
    for(size_t d = 0; d < _k->N; ++d) cTemp += (fabs(_sampleMeans[d] - _previousMean[d]) < _minStepSize) ? 1 : 0;

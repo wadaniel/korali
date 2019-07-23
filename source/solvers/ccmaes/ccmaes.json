@@ -104,7 +104,6 @@
    },
    {
     "Name": "Max Condition Covariance Matrix",
-    "Default": "1e18",
     "Type": "Real",
     "Description": "Specifies the maximum condition of the covariance matrix."
    },

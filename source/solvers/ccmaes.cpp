@@ -24,7 +24,6 @@ CCMAES::CCMAES()
 
 CCMAES::~CCMAES()
 {
-  delete _gaussianGenerator;
 }
 
 

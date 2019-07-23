@@ -1079,7 +1079,7 @@ std::vector<variableSetting> _variableSettings;
 /******************************************************************************/
 
  // Workspace for GSL
- std::shared_ptr<Varianle> _gaussianGenerator;
+ std::shared_ptr<Variable> _gaussianGenerator;
  std::shared_ptr<Variable> _uniformGenerator;
 
  CCMAES();

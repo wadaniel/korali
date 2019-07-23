@@ -34,18 +34,22 @@ def consumeValue(base, moduleName, settingName, varName, varType, varDefault, pa
  cString += (' if (isDefined(' + base + ', {')
  for p in path: cString += (' "' + p +'",')
  cString += (' "' + settingName + '"})) \n { \n')
- 
+
  cString += ('  ' + varName + ' = ' + base )
  for p in path: cString += ('.at("' + p +'")')
  getLine = '.at("' + settingName + '").get<' + varType + '>();\n'
- if ('bool' in varType): getLine = '.at("' + settingName + '").get<int>() != 0;\n' 
- cString += (getLine)
+ cString += getLine
  
  cString += ('  ' + base)
  for p in path: cString += ('.at("' + p +'")')
  cString += ('.erase("' + settingName + '");\n')
  
- cString += (' }\n else ')
+ cString += (' }\n')
+ 
+ if (varDefault == 'Korali Skip Default'):
+  return cString
+ 
+ cString += (' else ')
  if (varDefault == ''):
   cString += (' koraliError("No value provided for mandatory setting: ')
   for p in path: cString += ('[' + p + '] > ')
@@ -71,6 +75,7 @@ conduitPaths = [x[0] for x in os.walk('./conduits')][1:]
 
 # Creating new config.cpp
 configFile = open('./config.cpp', 'w')
+configFile.write('#include "korali.hpp"\n')
 
 # Loading template variable header file
 with open('./.variable.hpp', 'r') as file: variableHeaderString = file.read()
@@ -128,11 +133,11 @@ for solverPath in solverPaths:
    configFile.write(consumeValue('_k->_js', solverConfig["Module Alias"], v["Name"], getVariableName(v), getVariableType(v), getVariableDefault(v), [ 'Solver' ]))
  
  for v in solverConfig["Internal Settings"]:
-   configFile.write(consumeValue('_k->_js', solverConfig["Module Alias"], v["Name"], getVariableName(v), getVariableType(v), getVariableDefault(v), [ 'Solver', 'Internals' ]))
+   configFile.write(consumeValue('_k->_js', solverConfig["Module Alias"], v["Name"], getVariableName(v), getVariableType(v), 'Korali Skip Default', [ 'Solver', 'Internals' ]))
  
  for v in solverConfig["Termination Criteria"]:
    configFile.write('\n ' + getVariableName(v) + 'Enabled = false;')
-   terminationString = consumeValue('_k->_js', solverConfig["Module Alias"], v["Name"], getVariableName(v), getVariableType(v), getVariableDefault(v), [ 'Solver', 'Termination Criteria' ]) 
+   terminationString = consumeValue('_k->_js', solverConfig["Module Alias"], v["Name"], getVariableName(v), getVariableType(v), 'Korali Skip Default', [ 'Solver', 'Termination Criteria' ]) 
    terminationString = terminationString.replace(getVariableName(v) + ' = ', getVariableName(v) + 'Enabled = true;\n  ' + getVariableName(v) + ' = ')
    configFile.write(terminationString)
    configFile.write(consumeValue('_k->_js', solverConfig["Module Alias"], v["Name"] + ' Triggered', getVariableName(v) + 'Triggered', 'bool', 'false', [ 'Solver', 'Termination Criteria' ]))
@@ -152,8 +157,7 @@ for solverPath in solverPaths:
    configFile.write(' _k->_js["Solver"]["Internals"]["' + v["Name"] + '"] = ' + getVariableName(v) + ';\n')
  
  for v in solverConfig["Termination Criteria"]: 
-   configFile.write(' _k->_js["Solver"]["Termination Criteria"]["' + v["Name"] + '"] = ' + getVariableName(v) + ';\n')
-   configFile.write(' _k->_js["Solver"]["Termination Criteria"]["' + v["Name"] + ' Enabled"] = ' + getVariableName(v) + 'Enabled;\n')
+   configFile.write(' if (' + getVariableName(v) + 'Enabled == true) _k->_js["Solver"]["Termination Criteria"]["' + v["Name"] + '"] = ' + getVariableName(v) + ';\n')
    configFile.write(' _k->_js["Solver"]["Termination Criteria"]["' + v["Name"] + ' Triggered"] = ' + getVariableName(v) + 'Triggered;\n')
   
  configFile.write(' } \n\n')

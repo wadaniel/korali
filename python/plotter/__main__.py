@@ -5,12 +5,6 @@ import signal
 import json
 import argparse
 import matplotlib
-from korali.plotter.helpers import sig
-from korali.plotter.cmaes import plot_cmaes
-from korali.plotter.tmcmc import plot_tmcmc
-from korali.plotter.mcmc import plot_mcmc
-from korali.plotter.dea import plot_dea
-
 
 def main(check, path, mean, live, test):
 
@@ -21,6 +15,14 @@ def main(check, path, mean, live, test):
  if (test == True):
      matplotlib.use('Agg')
 
+ from korali.plotter.helpers import sig
+ from korali.plotter.cmaes import plot_cmaes
+ from korali.plotter.tmcmc import plot_tmcmc
+ from korali.plotter.mcmc import plot_mcmc
+ from korali.plotter.dea import plot_dea
+
+ signal.signal(signal.SIGINT, sig)
+ 
  firstResult = path + '/s00000.json'
  if ( not os.path.isfile(firstResult) ):
   print("[Korali] Error: Did not find any results in the {0} folder...".format(path))
@@ -67,6 +69,5 @@ if __name__ == '__main__':
     parser.add_argument('--live', help='run live plotting', action='store_true', required = False)
     parser.add_argument('--test', help='run without graphics', action='store_true', required = False)
     args = parser.parse_args()
-    signal.signal(signal.SIGINT, sig)
    
     main(args.check, args.dir, args.mean, args.live, args.test)

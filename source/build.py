@@ -25,7 +25,7 @@ problemPaths = [x[0] for x in os.walk('./problems')][1:]
 conduitPaths = [x[0] for x in os.walk('./conduits')][1:]
 
 # Loading template variable header file
-variableTemplateHeaderFile = '/.variable.hpp'
+variableTemplateHeaderFile = './.variable.hpp'
 with open(variableTemplateHeaderFile, 'r') as file: variableHeaderString = file.read()
 variableSettingString = '' 
  

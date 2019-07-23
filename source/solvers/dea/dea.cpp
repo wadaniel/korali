@@ -65,8 +65,8 @@ void DEA::initialize()
  _bestEverValue         = -std::numeric_limits<double>::max();
 
  for(size_t d = 0; d < _k->N; ++d)
-  if(_k->_variables[d]->upperBound < _k->_variables[d]->lowerBound)
-    koraliError("Lower Bound (%.4f) of variable \'%s\'  exceeds Upper Bound (%.4f).\n", _k->_variables[d]->lowerBound, _k->_variables[d]->_name.c_str(), _k->_variables[d]->upperBound);
+  if(_k->_variables[d]->_upperBound < _k->_variables[d]->_lowerBound)
+    koraliError("Lower Bound (%.4f) of variable \'%s\'  exceeds Upper Bound (%.4f).\n", _k->_variables[d]->_lowerBound, _k->_variables[d]->_name.c_str(), _k->_variables[d]->_upperBound);
 
  initSamples();
 
@@ -89,8 +89,8 @@ void DEA::initSamples()
 {
   for(size_t i = 0; i < _sampleCount; ++i) for(size_t d = 0; d < _k->N; ++d)
   {
-    double width = _k->_variables[d]->upperBound - _k->_variables[d]->lowerBound;
-    _samplePopulation[i*_k->N+d] = _k->_variables[d]->lowerBound + width * _uniformGenerator->getRandomNumber();
+    double width = _k->_variables[d]->_upperBound - _k->_variables[d]->_lowerBound;
+    _samplePopulation[i*_k->N+d] = _k->_variables[d]->_lowerBound + width * _uniformGenerator->getRandomNumber();
   }
 }
 
@@ -110,9 +110,9 @@ void DEA::prepareGeneration()
   else
       mutateSingle(i);
 
-  if ( _termCondMaxInfeasibleResamplingsEnabled )
-  if ( (_infeasibleSampleCount - initial_infeasible) > _termCondMaxInfeasibleResamplings )
-  koraliWarning(KORALI_MINIMAL, "Exiting resampling loop (param %zu) because max resamplings (%zu) reached.\n", i, _termCondMaxInfeasibleResamplings);
+  if ( _maxResamplings_enabled )
+  if ( (_infeasibleSampleCount - initial_infeasible) > _maxResamplings )
+  koraliWarning(KORALI_MINIMAL, "Exiting resampling loop (param %zu) because max resamplings (%zu) reached.\n", i, _maxResamplings);
   }
  }
 
@@ -178,7 +178,7 @@ void DEA::mutateSingle(size_t sampleIdx)
 bool DEA::isFeasible(size_t sampleIdx) const
 {
   for(size_t d = 0; d < _k->N; ++d) 
-    if ( (_sampleCandidates[sampleIdx*_k->N+d] < _k->_variables[d]->lowerBound) || (_sampleCandidates[sampleIdx*_k->N+d] > _k->_variables[d]->upperBound)) return false;
+    if ( (_sampleCandidates[sampleIdx*_k->N+d] < _k->_variables[d]->_lowerBound) || (_sampleCandidates[sampleIdx*_k->N+d] > _k->_variables[d]->_upperBound)) return false;
   return true;
 }
 
@@ -187,11 +187,11 @@ void DEA::fixInfeasible(size_t sampleIdx)
 {
   for(size_t d = 0; d < _k->N; ++d) 
   {
-    if ( _sampleCandidates[sampleIdx*_k->N+d] < _k->_variables[d]->lowerBound )
-    { double len = _samplePopulation[sampleIdx*_k->N+d] - _k->_variables[d]->lowerBound;
+    if ( _sampleCandidates[sampleIdx*_k->N+d] < _k->_variables[d]->_lowerBound )
+    { double len = _samplePopulation[sampleIdx*_k->N+d] - _k->_variables[d]->_lowerBound;
       _sampleCandidates[sampleIdx*_k->N+d] = _samplePopulation[sampleIdx*_k->N+d] - len * _uniformGenerator->getRandomNumber(); }
-    if ( _sampleCandidates[sampleIdx*_k->N+d] > _k->_variables[d]->upperBound )
-    { double len = _k->_variables[d]->upperBound - _samplePopulation[sampleIdx*_k->N+d];
+    if ( _sampleCandidates[sampleIdx*_k->N+d] > _k->_variables[d]->_upperBound )
+    { double len = _k->_variables[d]->_upperBound - _samplePopulation[sampleIdx*_k->N+d];
       _sampleCandidates[sampleIdx*_k->N+d] = _samplePopulation[sampleIdx*_k->N+d] + len * _uniformGenerator->getRandomNumber(); }
   }
 }

@@ -16,8 +16,10 @@ CCMAES::CCMAES()
  jsGaussian["Mean"] = 0.0;
  jsGaussian["Sigma"] = 1.0;
  jsGaussian["Seed"] = _k->_seed++;
- _gaussianGenerator = new Variable();
+ _gaussianGenerator = std::make_shared<Variable>();
  _gaussianGenerator->setDistribution(jsGaussian);
+ 
+ _uniformGenerator = nullptr;
 }
 
 CCMAES::~CCMAES()
@@ -31,13 +33,16 @@ void CCMAES::initialize()
  // Checking for accepted problem types
  std::string pName = _k->_js["Problem"]["Type"];
  bool acceptableProblem = false;
+ if (pName == "Optimization")  acceptableProblem = true;
  if (pName == "Constrained Optimization")  acceptableProblem = true;
+ if (pName == "Bayesian Inference")  acceptableProblem = true;
  if (acceptableProblem == false) koraliError("CCMAES cannot solve problems of type: '%s'.\n", pName.c_str());
 
  size_t s_max  = std::max(_sampleCount,  _viabilitySampleCount);
  size_t mu_max = std::max(_muValue, _viabilityMu);
 
  _chiN = sqrt((double) _k->N) * (1. - 1./(4.*_k->N) + 1./(21.*_k->N*_k->N));
+ _chiS = sqrt((double) _k->N) * (1. - 1./(4.*_k->N) + 1./(21.*_k->N*_k->N));
 
  _constraintsDefined = (_k->_constraints.size() > 0);
  if(_constraintsDefined) { _isViabilityRegime = true; }
@@ -58,12 +63,12 @@ void CCMAES::initialize()
  _evolutionPath.resize(_k->N);
  _conjugateEvolutionPath.resize(_k->N);
  _BDZtmp.resize(_k->N);
- _y.resize(_k->N);
+ _meanUpdate.resize(_k->N);
  _mean.resize(_k->N);
  _previousMean.resize(_k->N);
  _bestEverSample.resize(_k->N);
- _axisD.resize(_k->N);
- _axisDtmp.resize(_k->N);
+ _axisLengths.resize(_k->N);
+ _tmpAxisLengths.resize(_k->N);
  _currentBestSample.resize(_k->N);
 
  _sortingIndex.resize(s_max);
@@ -78,6 +83,16 @@ void CCMAES::initialize()
 
  _Z.resize(s_max*_k->N);
  _BDZ.resize(s_max*_k->N);
+ 
+ _granularity.resize(_k->N);
+ _maskingMatrix.resize(_k->N);
+ _maskingMatrixSigma.resize(_k->N);
+ _discreteMutations.resize(_k->N*_sampleCount);
+ std::fill( std::begin(_discreteMutations), std::end(_discreteMutations), 0.0);
+
+ _numMaskingMatrixEntries = 0;
+ _numDiscreteMutations = 0;
+
 
  // Initailizing Mu
  _muWeights.resize(mu_max);
@@ -89,8 +104,8 @@ void CCMAES::initialize()
     koraliError("CCMAES Error: Invalid Global Success Learning Rate (%f), must be greater than 0.0 and less than 1.0\n",  _globalSuccessLearningRate );
   if( (_targetSuccessRate <= 0.0) || (_targetSuccessRate > 1.0) )
     koraliError("CCMAES Error: Invalid Target Success Rate (%f), must be greater than 0.0 and less than 1.0\n",  _targetSuccessRate );
-  if(_covMatrixAdaptionStrength <= 0.0) 
-    koraliError(" CCMAES Error: Invalid Adaption Size (%f), must be greater than 0.0\n", _covMatrixAdaptionStrength );
+  if(_covarianceMatrixAdaptionStrength <= 0.0) 
+    koraliError(" CCMAES Error: Invalid Adaption Size (%f), must be greater than 0.0\n", _covarianceMatrixAdaptionStrength );
 
   _globalSuccessRate = 0.5;
   _bestValidSample   = -1;
@@ -110,7 +125,7 @@ void CCMAES::initialize()
   _bestEverConstraintEvaluation.resize(_k->_constraints.size());
 
   _normalVectorLearningRate = 1.0/(2.0+_k->N);
-  _beta = _covMatrixAdaptionStrength/(_k->N+2.);
+  _beta = _covarianceMatrixAdaptionStrength/(_k->N+2.);
 
  }
  else
@@ -130,11 +145,6 @@ void CCMAES::initialize()
 
  initCovariance();
 
- // Setting eigensystem evaluation Frequency
- //if( _covarianceEigenEvalFreq < 0.0) _covarianceEigenEvalFreq = 1.0/_covarianceMatrixLearningRate/((double)_k->N)/10.0;
-
- _isEigenSystemUpdate = true;
-
  _infeasibleSampleCount = 0;
  _resampleCount       = 0;
  
@@ -152,6 +162,31 @@ void CCMAES::initialize()
             _variableSettings[i].upperBound);
    _mean[i] = _previousMean[i] = _variableSettings[i].initialMean;
  }
+
+ /* set _granularity for discrete variables */
+ size_t numDiscretes = 0;
+ for (size_t i = 0; i < _k->N; ++i)
+ {
+   if( (_variableSettings[i].discrete == true) && _variableSettings[i].granularity == 0.0) 
+       koraliError("Granularity not set for discrete variable \'%s\'.\n", _k->_variables[i]->_name.c_str());
+   if (_variableSettings[i].discrete == true) numDiscretes++;
+    _granularity[i] = _variableSettings[i].granularity;
+ }
+
+ _hasDiscreteVariables = (numDiscretes > 0);
+ 
+ if (_hasDiscreteVariables)
+ {
+   auto jsUniform = nlohmann::json();
+   jsUniform["Type"] = "Uniform";
+   jsUniform["Minimum"] = 0.0;
+   jsUniform["Maximum"] = 1.0;
+   jsUniform["Seed"] = _k->_seed++;
+   _uniformGenerator = std::make_shared<Variable>();
+   _uniformGenerator->setDistribution(jsUniform);
+ }
+ 
+
 
 }
 
@@ -247,12 +282,12 @@ void CCMAES::initCovariance()
  for (size_t i = 0; i < _k->N; ++i)
  {
   _B[i*_k->N+i] = 1.0;
-  _C[i*_k->N+i] = _axisD[i] = _variableSettings[i].initialStdDev * sqrt(_k->N / _trace);
+  _C[i*_k->N+i] = _axisLengths[i] = _variableSettings[i].initialStdDev * sqrt(_k->N / _trace);
   _C[i*_k->N+i] *= _C[i*_k->N+i];
  }
 
- _minCovarianceEigenvalue = *std::min_element(std::begin(_axisD), std::end(_axisD));
- _maxCovarianceEigenvalue = *std::max_element(std::begin(_axisD), std::end(_axisD));
+ _minCovarianceEigenvalue = *std::min_element(std::begin(_axisLengths), std::end(_axisLengths));
+ _maxCovarianceEigenvalue = *std::max_element(std::begin(_axisLengths), std::end(_axisLengths));
  
  _minCovarianceEigenvalue = _minCovarianceEigenvalue * _minCovarianceEigenvalue;
  _maxCovarianceEigenvalue = _maxCovarianceEigenvalue * _maxCovarianceEigenvalue;
@@ -266,7 +301,11 @@ void CCMAES::processSample(size_t sampleId, double fitness)
 {
  double logPrior = _k->_problem->evaluateLogPrior(&_samplePopulation[sampleId*_k->N]);
  fitness = logPrior+fitness;
- if(std::isfinite(fitness) == false) koraliError("Sample %zu returned non finite fitness (set to %e)!\n", sampleId, fitness);
+ if(std::isfinite(fitness) == false) 
+ {
+   fitness = -1.0 * std::numeric_limits<double>::max();
+   koraliWarning(KORALI_DETAILED,"Sample %zu returned non finite fitness (set to %e)!\n", sampleId, fitness);
+ }
  _fitnessVector[sampleId] = fitness;
  _finishedSampleCount++;
 }
@@ -411,19 +450,49 @@ void CCMAES::sampleSingle(size_t sampleIdx)
   for (size_t d = 0; d < _k->N; ++d)
   {
    _Z[sampleIdx*_k->N+d] = _gaussianGenerator->getRandomNumber();
-   if (_isDiag) {
-     _BDZ[sampleIdx*_k->N+d] = _axisD[d] * _Z[sampleIdx*_k->N+d];
+   if (_isDiagonal) {
+     _BDZ[sampleIdx*_k->N+d] = _axisLengths[d] * _Z[sampleIdx*_k->N+d];
      _samplePopulation[sampleIdx * _k->N + d] = _mean[d] + _sigma * _BDZ[sampleIdx*_k->N+d];
    }
-   else _BDZtmp[d] = _axisD[d] * _Z[sampleIdx*_k->N+d];
+   else _BDZtmp[d] = _axisLengths[d] * _Z[sampleIdx*_k->N+d];
   }
 
-  if (!_isDiag)
+  if (!_isDiagonal)
    for (size_t d = 0; d < _k->N; ++d) {
     _BDZ[sampleIdx*_k->N+d] = 0.0;
     for (size_t e = 0; e < _k->N; ++e) _BDZ[sampleIdx*_k->N+d] += _B[d*_k->N+e] * _BDZtmp[e];
     _samplePopulation[sampleIdx * _k->N + d] = _mean[d] + _sigma * _BDZ[sampleIdx*_k->N+d];
   }
+  
+  if(_hasDiscreteVariables)
+  {
+    if ( (sampleIdx+1) < _numDiscreteMutations )
+    {
+      double p_geom = std::pow(0.7, 1.0/_numMaskingMatrixEntries);
+      size_t select = std::floor(_uniformGenerator->getRandomNumber() * _numMaskingMatrixEntries);
+
+      for(size_t d = 0; d < _k->N; ++d) if( (_maskingMatrix[d] == 1.0) && (select-- == 0) )
+      {
+        double dmutation = 1.0;
+        while(  _uniformGenerator->getRandomNumber() > p_geom ) dmutation += 1.0;
+        dmutation *= _granularity[d];
+
+        if( _uniformGenerator->getRandomNumber() > 0.5 ) dmutation*=-1.0;
+        _discreteMutations[sampleIdx*_k->N+d] = dmutation; 
+        _samplePopulation[sampleIdx*_k->N+d] += dmutation;
+      }
+    }
+    else if ( (sampleIdx+1) == _numDiscreteMutations )
+    {
+      for(size_t d = 0; d < _k->N; ++d) if( _granularity[d] != 0.0 )
+      {
+        double dmutation = std::round(_bestEverSample[d]/_granularity[d]) * _granularity[d] - _samplePopulation[sampleIdx*_k->N+d];
+        _discreteMutations[sampleIdx*_k->N+d] = dmutation;
+        _samplePopulation[sampleIdx*_k->N+d] += dmutation;
+      }
+    }
+  }
+
 }
 
 
@@ -465,16 +534,16 @@ void CCMAES::updateDistribution()
    for (size_t i = 0; i < _currentSampleMu; ++i)
      _mean[d] += _muWeights[i] * _samplePopulation[_sortingIndex[i]*_k->N + d];
 
-   _y[d] = (_mean[d] - _previousMean[d])/_sigma;
+   _meanUpdate[d] = (_mean[d] - _previousMean[d])/_sigma;
  }
 
- /* calculate z := D^(-1) * B^(T) * _y into _BDZtmp */
+ /* calculate z := D^(-1) * B^(T) * _meanUpdate into _BDZtmp */
  for (size_t d = 0; d < _k->N; ++d) {
   double sum = 0.0;
-  if (_isDiag) sum = _y[d];
-  else for (size_t e = 0; e < _k->N; ++e) sum += _B[e*_k->N+d] * _y[e]; /* B^(T) * _y ( iterating B[e][d] = B^(T) ) */
+  if (_isDiagonal) sum = _meanUpdate[d];
+  else for (size_t e = 0; e < _k->N; ++e) sum += _B[e*_k->N+d] * _meanUpdate[e]; /* B^(T) * _meanUpdate ( iterating B[e][d] = B^(T) ) */
 
-  _BDZtmp[d] = sum / _axisD[d]; /* D^(-1) * B^(T) * _y */
+  _BDZtmp[d] = sum / _axisLengths[d]; /* D^(-1) * B^(T) * _meanUpdate */
  }
 
  _conjugateEvolutionPathL2Norm = 0.0;
@@ -482,7 +551,7 @@ void CCMAES::updateDistribution()
  /* cumulation for _sigma (ps) using B*z */
  for (size_t d = 0; d < _k->N; ++d) {
     double sum = 0.0;
-    if (_isDiag) sum = _BDZtmp[d];
+    if (_isDiagonal) sum = _BDZtmp[d];
     else for (size_t e = 0; e < _k->N; ++e) sum += _B[d*_k->N+e] * _BDZtmp[e];
 
     _conjugateEvolutionPath[d] = (1. - _sigmaCumulationFactor) * _conjugateEvolutionPath[d] + sqrt(_sigmaCumulationFactor * (2. - _sigmaCumulationFactor) * _effectiveMu) * sum;
@@ -491,39 +560,106 @@ void CCMAES::updateDistribution()
     _conjugateEvolutionPathL2Norm += _conjugateEvolutionPath[d] * _conjugateEvolutionPath[d];
  }
 
- int hsig = sqrt(_conjugateEvolutionPathL2Norm) / sqrt(1. - pow(1.-_sigmaCumulationFactor, 2.0*(1.0+_k->currentGeneration))) / _chiN  < 1.4 + 2./(_k->N+1);
+ int hsig = (1.4 + 2.0/(_k->N+1) > sqrt(_conjugateEvolutionPathL2Norm) / sqrt(1. - pow(1.-_sigmaCumulationFactor, 2.0*(1.0+_k->currentGeneration))) / _chiN);
 
  /* cumulation for covariance matrix (pc) using B*D*z~_k->N(0,C) */
- for (size_t d = 0; d < _k->N; ++d)
-   _evolutionPath[d] = (1. - _cumulativeCovariance) * _evolutionPath[d] + hsig * sqrt( _cumulativeCovariance * (2. - _cumulativeCovariance) * _effectiveMu ) * _y[d];
+ for (size_t d = 0; d < _k->N; ++d) 
+    _evolutionPath[d] = (1. - _cumulativeCovariance) * _evolutionPath[d] + hsig * sqrt( _cumulativeCovariance * (2. - _cumulativeCovariance) * _effectiveMu ) * _meanUpdate[d];
 
- /* update of C  */
+ /* update covariance matrix  */
  adaptC(hsig);
 
- double sigma_upper = sqrt(_trace/_k->N);
- // update _sigma & viability boundaries
- if( _constraintsDefined && (_isViabilityRegime == false) )
- {
-   updateViabilityBoundaries();
-
-   if ( _previousBestEverValue == _bestEverValue ) _globalSuccessRate = (1-_globalSuccessLearningRate)*_globalSuccessRate;
-   else _globalSuccessRate = (1-_globalSuccessLearningRate)*_globalSuccessRate + _globalSuccessLearningRate;
-   _sigma *= exp(1.0/_dampFactor*(_globalSuccessRate-(_targetSuccessRate/(1.0-_targetSuccessRate))*(1-_globalSuccessRate)));
- }
- else
- {
-   // _sigma *= exp(((sqrt(_rgpsL2Norm)/_chiN)-1.)*_sigmaCumulationFactor/_dampFactor) (orig, alternative)
-   _sigma *= exp(std::min(1.0, ((sqrt(_conjugateEvolutionPathL2Norm)/_chiN)-1.)*_sigmaCumulationFactor/_dampFactor));
- }
-
- if(_sigma > sigma_upper)
-     koraliLog(KORALI_DETAILED, "Sigma exceeding inital value of _sigma (%f > %f), increase Initial Standard Deviation of variables.\n", _sigma, sigma_upper);
+ /* update masking matrix */
+ if(_hasDiscreteVariables) updateDiscreteMutationMatrix();
  
- /* upper bound for _sigma */
- if( _isSigmaBounded && (_sigma > sigma_upper) ) _sigma = sigma_upper;
+ /* update viability bounds */
+ if( _constraintsDefined && (_isViabilityRegime == false) ) updateViabilityBoundaries();
+
+ /* update sigma */
+ updateSigma();
 
  /* numerical error management */
+ numericalErrorTreatment();
 
+}
+
+void CCMAES::adaptC(int hsig)
+{
+  /* definitions for speeding up inner-most loop */
+  //double ccov1  = std::min(_covarianceMatrixLearningRate * (1./_muCovariance) * (_isDiagonal ? (_k->N+1.5) / 3. : 1.), 1.); (orig, alternative)
+  //double ccovmu = std::min(_covarianceMatrixLearningRate * (1-1./_muCovariance) * (_isDiagonal ? (_k->N+1.5) / 3. : 1.), 1.-ccov1); (orig, alternative)
+  double ccov1  = 2.0 / (std::pow(_k->N+1.3,2)+_effectiveMu);
+  double ccovmu = std::min(1.0-ccov1,  2.0 * (_effectiveMu-2+1/_effectiveMu) / (std::pow(_k->N+2.0,2)+_effectiveMu));
+  double sigmasquare = _sigma * _sigma;
+
+  /* update covariance matrix */
+  for (size_t d = 0; d < _k->N; ++d)
+   for (size_t e = _isDiagonal ? d : 0; e <= d; ++e) 
+   {
+     _C[d*_k->N+e] = (1 - ccov1 - ccovmu) * _C[d*_k->N+e] 
+                        + ccov1 * (_evolutionPath[d] * _evolutionPath[e] 
+                        + (1-hsig)*ccov1*_cumulativeCovariance*(2.-_cumulativeCovariance) * _C[d*_k->N+e]);
+     
+     for (size_t k = 0; k < _currentSampleMu; ++k)
+         _C[d*_k->N+e] += ccovmu * _muWeights[k] * (_samplePopulation[_sortingIndex[k]*_k->N + d] 
+                            - _previousMean[d]) * (_samplePopulation[_sortingIndex[k]*_k->N + e] - _previousMean[e]) / sigmasquare;
+     
+     if (e < d) _C[e*_k->N+d] = _C[d*_k->N+e];
+   }
+
+  /* update maximal and minimal diagonal value */
+  _maxDiagCElement = _minDiagCElement = _C[0];
+  for (size_t d = 1; d < _k->N; ++d) {
+  if (_maxDiagCElement < _C[d*_k->N+d]) _maxDiagCElement = _C[d*_k->N+d];
+  else if (_minDiagCElement > _C[d*_k->N+d])  _minDiagCElement = _C[d*_k->N+d];
+  }
+}
+
+
+void CCMAES::updateSigma()
+{
+ /* update for non-viable region */
+ if( _constraintsDefined && (_isViabilityRegime == false) )
+ {
+   _globalSuccessRate = (1-_globalSuccessLearningRate)*_globalSuccessRate;
+   if ( _previousBestEverValue != _bestEverValue ) _globalSuccessRate += _globalSuccessLearningRate;
+
+   _sigma *= exp((_globalSuccessRate-(_targetSuccessRate/(1.0-_targetSuccessRate))*(1-_globalSuccessRate))/_dampFactor);
+ }
+ /* update for discrte variables */
+ else if(_hasDiscreteVariables)
+ {
+   double pathL2 = 0.0;
+   for(size_t d = 0; d < _k->N; ++d) pathL2 += _maskingMatrixSigma[d]*_conjugateEvolutionPath[d]*_conjugateEvolutionPath[d];
+   _sigma *= exp(_sigmaCumulationFactor/_dampFactor*(sqrt(pathL2)/_chiS-1.));
+ }
+ /* standard update */
+ else
+ {
+   // _sigma *= exp(min(1.0, _sigmaCumulationFactor/_dampFactor*((sqrt(_conjugateEvolutionPathL2Norm)/_chiN)-1.))); (alternative)
+   _sigma *= exp(_sigmaCumulationFactor/_dampFactor*(sqrt(_conjugateEvolutionPathL2Norm)/_chiN-1.));
+ }
+
+ /* escape flat fitness */
+ if (_currentBestValue == _fitnessVector[_sortingIndex[(int)_currentSampleMu]]) {
+   _sigma *= exp(0.2+_sigmaCumulationFactor/_dampFactor);
+   koraliWarning(KORALI_DETAILED, "Sigma increased due to equal function values.\n");
+ }
+
+ /* upper bound check for _sigma */
+ double upperBound = sqrt(_trace/_k->N);
+ 
+ if(_sigma > upperBound) 
+ {
+  koraliLog(KORALI_DETAILED, "Sigma exceeding inital value of _sigma (%f > %f), increase Initial Standard Deviation of variables.\n", _sigma, upperBound);
+  if( _isSigmaBounded ) _sigma = upperBound;
+ }
+
+}
+
+
+void CCMAES::numericalErrorTreatment()
+{
  //treat maximal standard deviations
  //TODO
 
@@ -539,47 +675,8 @@ void CCMAES::updateDistribution()
 
  //treat numerical precision provblems
  //TODO
-
- /* Test if function values are identical, escape flat fitness */
- if (_currentBestValue == _fitnessVector[_sortingIndex[(int)_currentSampleMu]]) {
-   _sigma *= exp(0.2+_sigmaCumulationFactor/_dampFactor);
-   koraliWarning(KORALI_DETAILED, "Sigma increased due to equal function values.\n");
- }
-
 }
 
-void CCMAES::adaptC(int hsig)
-{
-
- //if (_covarianceMatrixLearningRate != 0.0)
- if (true)
- {
-  /* definitions for speeding up inner-most loop */
-  //double ccov1  = std::min(_covarianceMatrixLearningRate * (1./_muCovariance) * (_isDiag ? (_k->N+1.5) / 3. : 1.), 1.); (orig, alternative)
-  //double ccovmu = std::min(_covarianceMatrixLearningRate * (1-1./_muCovariance) * (_isDiag ? (_k->N+1.5) / 3. : 1.), 1.-ccov1); (orig, alternative)
-  double ccov1  = 2.0 / (std::pow(_k->N+1.3,2)+_effectiveMu);
-  double ccovmu = std::min(1.0-ccov1,  2.0 * (_effectiveMu-2+1/_effectiveMu) / (std::pow(_k->N+2.0,2)+_effectiveMu));
-  double sigmasquare = _sigma * _sigma;
-
-  _isEigenSystemUpdate = false;
-
-  /* update covariance matrix */
-  for (size_t d = 0; d < _k->N; ++d)
-   for (size_t e = _isDiag ? d : 0; e <= d; ++e) {
-     _C[d*_k->N+e] = (1 - ccov1 - ccovmu) * _C[d*_k->N+e] + ccov1 * (_evolutionPath[d] * _evolutionPath[e] + (1-hsig)*ccov1*_cumulativeCovariance*(2.-_cumulativeCovariance) * _C[d*_k->N+e]);
-     for (size_t k = 0; k < _currentSampleMu; ++k)
-         _C[d*_k->N+e] += ccovmu * _muWeights[k] * (_samplePopulation[_sortingIndex[k]*_k->N + d] - _previousMean[d]) * (_samplePopulation[_sortingIndex[k]*_k->N + e] - _previousMean[e]) / sigmasquare;
-     if (e < d) _C[e*_k->N+d] = _C[d*_k->N+e];
-   }
-
-  /* update maximal and minimal diagonal value */
-  _maxDiagCElement = _minDiagCElement = _C[0];
-  for (size_t d = 1; d < _k->N; ++d) {
-  if (_maxDiagCElement < _C[d*_k->N+d]) _maxDiagCElement = _C[d*_k->N+d];
-  else if (_minDiagCElement > _C[d*_k->N+d])  _minDiagCElement = _C[d*_k->N+d];
-  }
- } /* if ccov... */
-}
 
 void CCMAES::handleConstraints()
 {
@@ -606,8 +703,6 @@ void CCMAES::handleConstraints()
         for( size_t d = 0; d < _k->N; ++d)
           for( size_t e = 0; e < _k->N; ++e)
             _Ctmp[d*_k->N+e] = _Ctmp[d*_k->N+e] - ((_beta * _beta * _constraintNormal[c][d]*_constraintNormal[c][e])/(v2*_sampleViolationCounts[i]*_sampleViolationCounts[i]));
-
-        _isEigenSystemUpdate = false;
     }
    }
 
@@ -638,15 +733,36 @@ void CCMAES::handleConstraints()
 
   reEvaluateConstraints();
 
-  if(_adaptationCount - initial_corrections > _maxCovMatrixCorrections)
+  if(_adaptationCount - initial_corrections > _maxCovarianceMatrixCorrections)
   {
-    koraliWarning(KORALI_DETAILED, "Exiting adaption loop, max adaptions (%zu) reached.\n", _maxCovMatrixCorrections);
+    koraliWarning(KORALI_DETAILED, "Exiting adaption loop, max adaptions (%zu) reached.\n", _maxCovarianceMatrixCorrections);
     return;
   }
 
  }//while _maxViolationCount > 0
 
 }
+
+
+void CCMAES::updateDiscreteMutationMatrix()
+{
+  // implemented based on 'A CMA-ES for Mixed-Integer Nonlinear Optimization' by
+  // Hansen2011
+  
+  size_t entries = _k->N + 1; // +1 to prevent 0-ness
+  std::fill( std::begin(_maskingMatrixSigma), std::end(_maskingMatrixSigma), 1.0);
+  for(size_t d = 0; d < _k->N; ++d) if(_sigma*std::sqrt(_C[d*_k->N+d])/std::sqrt(_sigmaCumulationFactor) < 0.2*_granularity[d]) { _maskingMatrixSigma[d] = 0.0; entries--; }
+  _chiS = sqrt((double) entries) * (1. - 1./(4.*entries) + 1./(21.*entries*entries));
+  
+  _numMaskingMatrixEntries = 0;
+  std::fill( std::begin(_maskingMatrix), std::end(_maskingMatrix), 0.0);
+  for(size_t d = 0; d < _k->N; ++d) if(2.0*_sigma*std::sqrt(_C[d*_k->N+d]) < _granularity[d]) { _maskingMatrix[d] = 1.0; _numMaskingMatrixEntries++; }
+ 
+  _numDiscreteMutations = std::min( std::round(_sampleCount/10.0 + _numMaskingMatrixEntries + 1) , std::floor(_sampleCount/2.0) - 1);
+  std::fill( std::begin(_discreteMutations), std::end(_discreteMutations), 0.0);
+  
+}
+
 
 bool CCMAES::checkTermination()
 {
@@ -688,7 +804,8 @@ bool CCMAES::checkTermination()
    if ( _termCondMaxStandardDeviationEnabled && (_sigma * sqrt(_C[idx*_k->N+idx]) > _termCondMaxStandardDeviation * _variableSettings[idx].initialStdDev) )
    {
     isFinished = true;
-    koraliLog(KORALI_MINIMAL, "Standard deviation increased by more than %7.2e, larger initial standard deviation recommended \n", _termCondMaxStandardDeviation * _variableSettings[idx].initialStdDev);
+    koraliLog(KORALI_MINIMAL, "Standard deviation increased by more than %7.2e, larger initial standard deviation recommended \n", 
+            _termCondMaxStandardDeviation * _variableSettings[idx].initialStdDev);
     break;
    }
  }
@@ -705,11 +822,11 @@ bool CCMAES::checkTermination()
  size_t iKoo = 0;
  /* Component of _mean is not changed anymore */
  if( _termCondMinStandardDeviationStepFactorEnabled)
- if (!_isDiag )
+ if (!_isDiagonal )
  {
     for (iAchse = 0; iAchse < _k->N; ++iAchse)
     {
-    fac = _termCondMinStandardDeviationStepFactor * _sigma * _axisD[iAchse];
+    fac = _termCondMinStandardDeviationStepFactor * _sigma * _axisLengths[iAchse];
     for (iKoo = 0; iKoo < _k->N; ++iKoo){
       if (_mean[iKoo] != _mean[iKoo] + fac * _B[iKoo*_k->N+iAchse])
       break;
@@ -717,7 +834,7 @@ bool CCMAES::checkTermination()
     if (iKoo == _k->N)
     {
       isFinished = true;
-      koraliLog(KORALI_MINIMAL, "Standard deviation %f*%7.2e in principal axis %ld without effect.\n", _termCondMinStandardDeviationStepFactor, _sigma*_axisD[iAchse], iAchse);
+      koraliLog(KORALI_MINIMAL, "Standard deviation %f*%7.2e in principal axis %ld without effect.\n", _termCondMinStandardDeviationStepFactor, _sigma*_axisLengths[iAchse], iAchse);
       break;
     }
   }
@@ -740,26 +857,23 @@ bool CCMAES::checkTermination()
 }
 
 
-void CCMAES::updateEigensystem(std::vector<double>& M, int flgforce)
+void CCMAES::updateEigensystem(std::vector<double>& M)
 {
- if(flgforce == 0 && _isEigenSystemUpdate) return;
- /* if(_k->currentGeneration % _covarianceEigenEvalFreq == 0) return; */
-
- eigen(_k->N, M, _axisDtmp, _Btmp);
+ eigen(_k->N, M, _tmpAxisLengths, _Btmp);
  
  /* find largest and smallest eigenvalue, they are supposed to be sorted anyway */
- double minEWtmp = *std::min_element(std::begin(_axisDtmp), std::end(_axisDtmp));
- double maxEWtmp = *std::max_element(std::begin(_axisDtmp), std::end(_axisDtmp));
+ double minEWtmp = *std::min_element(std::begin(_tmpAxisLengths), std::end(_tmpAxisLengths));
+ double maxEWtmp = *std::max_element(std::begin(_tmpAxisLengths), std::end(_tmpAxisLengths));
 
  if (minEWtmp <= 0.0) 
  { koraliWarning(KORALI_DETAILED, "Min Eigenvalue smaller or equal 0.0 (%+6.3e) after Eigen decomp (no update possible).\n", minEWtmp ); return; }
 
  for (size_t d = 0; d < _k->N; ++d) 
  {
-     _axisDtmp[d] = sqrt(_axisDtmp[d]); 
-     if (std::isfinite(_axisDtmp[d]) == false)
+     _tmpAxisLengths[d] = sqrt(_tmpAxisLengths[d]); 
+     if (std::isfinite(_tmpAxisLengths[d]) == false)
      {
-       koraliWarning(KORALI_DETAILED, "Could not calculate root of Eigenvalue (%+6.3e) after Eigen decomp (no update possible).\n", _axisDtmp[d] );
+       koraliWarning(KORALI_DETAILED, "Could not calculate root of Eigenvalue (%+6.3e) after Eigen decomp (no update possible).\n", _tmpAxisLengths[d] );
        return; 
      }
     for (size_t e = 0; e < _k->N; ++e) if (std::isfinite(_B[d*_k->N+e]) == false)
@@ -770,13 +884,11 @@ void CCMAES::updateEigensystem(std::vector<double>& M, int flgforce)
  }
  
  /* write back */
- for (size_t d = 0; d < _k->N; ++d) _axisD[d] = _axisDtmp[d];
+ for (size_t d = 0; d < _k->N; ++d) _axisLengths[d] = _tmpAxisLengths[d];
  _B.assign(std::begin(_Btmp), std::end(_Btmp));
 
  _minCovarianceEigenvalue = minEWtmp;
  _maxCovarianceEigenvalue = maxEWtmp;
-
- _isEigenSystemUpdate = true;
 }
 
 

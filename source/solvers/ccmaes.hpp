@@ -130,7 +130,7 @@ Default Enabled:
 Description:
 Covariance matrix updates will be optimized for diagonal matrices.
 ******************************************************************************/
-bool _isDiag;
+bool _isDiagonal;
 
 /******************************************************************************
 Setting Name: Viability Sample Count
@@ -163,7 +163,7 @@ Description:
 Max number of covairance matrix adaptions per generation during the constraint 
 handling loop.
 ******************************************************************************/
-size_t _maxCovMatrixCorrections;
+size_t _maxCovarianceMatrixCorrections;
  
 /******************************************************************************
 Setting Name: Target Success Rate
@@ -184,7 +184,7 @@ Default Enabled:
 Description:
 Controls the covariane matrix adaption strength if samples violate constraints.
 ******************************************************************************/
-double _covMatrixAdaptionStrength;
+double _covarianceMatrixAdaptionStrength;
 
 /******************************************************************************
 Setting Name: Normal Vector Learning Rate
@@ -587,7 +587,7 @@ Default Enabled:
 Description:
 Axis lengths (sqrt(Evals))
 ******************************************************************************/
-std::vector<double> _axisD;
+std::vector<double> _axisLengths;
 
 /******************************************************************************
 Setting Name: Temporary Axis Lengths
@@ -597,7 +597,7 @@ Default Enabled:
 Description:
 Temporary storage for Axis lengths
 ******************************************************************************/
-std::vector<double> _axisDtmp;
+std::vector<double> _tmpAxisLengths;
 
 /******************************************************************************
 Setting Name: Random Number Storage
@@ -637,7 +637,7 @@ Default Enabled:
 Description:
 Vector pointing from old mean to mean
 ******************************************************************************/
-std::vector<double> _y;
+std::vector<double> _meanUpdate;
 
 /******************************************************************************
 Setting Name: Evolution Path
@@ -904,6 +904,87 @@ Constraint evaluations for best ever.
 std::vector<double> _bestEverConstraintEvaluation;
 
 /******************************************************************************
+Setting Name: Has Discrete Variables
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Flag indicating if at least one of the variables is discrete.
+******************************************************************************/
+bool _hasDiscreteVariables;
+
+/******************************************************************************
+Setting Name: Discrete Mutations
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Vector storing discrete mutations, required for covariance matrix update.
+******************************************************************************/
+std::vector<double> _discreteMutations;
+
+/******************************************************************************
+Setting Name: Number Discrete Mutations
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Number of discrete mutations in current generation.
+******************************************************************************/
+size_t _numDiscreteMutations;
+
+/******************************************************************************
+Setting Name: Granularity
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Flag determining if the covariance eigensystem is up to date.
+******************************************************************************/
+std::vector<double> _granularity;
+
+/******************************************************************************
+Setting Name: Number Masking Matrix Entries
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Number of nonzero entries on diagonal in Masking Matrix
+******************************************************************************/
+size_t _numMaskingMatrixEntries;
+
+/******************************************************************************
+Setting Name: Masking Matrix 
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Diagonal Matrix signifying where an integer mutation may be conducted.
+******************************************************************************/
+std::vector<double> _maskingMatrix;
+
+/******************************************************************************
+Setting Name: Masking Matrix Sigma
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+Diagonal Matrix signifying where an integer mutation may be conducted.
+******************************************************************************/
+std::vector<double> _maskingMatrixSigma;
+
+/******************************************************************************
+Setting Name: Chi Square Number Discrete Mutations
+Type: Internal Attribute
+Default Value:
+Default Enabled:
+Description:
+expectation of $||N(0,I^S)||^2$ for discrete mutations
+******************************************************************************/
+double _chiS;
+
+
+/******************************************************************************
 * Variable Settings
 ******************************************************************************/
 
@@ -969,13 +1050,37 @@ Korali sets this value to 0.0 (inactive).
 ******************************************************************************/
 double minStdDevChange;
 
+/******************************************************************************
+Setting Name: Discrete
+Type: Variable Setting
+Default Value: false
+Default Enabled:
+Description:
+Specifies if the variable can only take discrete values within the range of the 
+lower and upper bound.
+******************************************************************************/
+bool discrete;
+
+/******************************************************************************
+Setting Name: Granularity
+Type: Variable Setting
+Default Value: 0.0
+Default Enabled:
+Description:
+Specifies the granulatiry of a discrete variable, a granularity of 1.0
+means that the variable can only take values in (.., -1.0, 0.0, +1.0, +2.0, ..)
+where the levels are set symmetric around the initial mean (here 0.0).
+******************************************************************************/
+double granularity;
+
 };
 
 std::vector<variableSetting> _variableSettings;
 /******************************************************************************/
 
  // Workspace for GSL
- Variable* _gaussianGenerator;
+ std::shared_ptr<Varianle> _gaussianGenerator;
+ std::shared_ptr<Variable> _uniformGenerator;
 
  CCMAES();
  ~CCMAES();
@@ -983,7 +1088,9 @@ std::vector<variableSetting> _variableSettings;
  void sampleSingle(size_t sampleIdx); /* sample individual */
  void evaluateSamples(); /* evaluate all samples until done */
  void adaptC(int hsig); /* CCMAES covariance matrix adaption */
- void updateEigensystem(std::vector<double>& M, int flgforce = 1);
+ void updateSigma(); /* update Sigma */
+ void updateEigensystem(std::vector<double>& M);
+ void numericalErrorTreatment();
  void eigen(size_t N, std::vector<double>& C, std::vector<double>& diag, std::vector<double>& Q) const;
  void sort_index(const std::vector<double>& vec, std::vector<size_t>& _sortingIndex, size_t n) const;
  bool isFeasible(size_t sampleIdx) const; /* check if sample inside lower & upper bounds */
@@ -1005,6 +1112,8 @@ std::vector<variableSetting> _variableSettings;
  void handleConstraints(); /* covariance adaption for invalid samples */
  void reEvaluateConstraints(); /* re evaluate constraints, in handleConstraints,  count violations etc.. */
 
+ void updateDiscreteMutationMatrix(); /* for integer optimization */
+ 
  void finalize() override;
  void setConfiguration() override;
  void getConfiguration() override;

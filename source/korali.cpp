@@ -189,7 +189,7 @@ void Korali::Engine::setConfiguration()
 
  // Configure Solver
  std::string solverName = consume(_js, { "Solver", "Type" }, KORALI_STRING);
- if (solverName == "CMAES")  _solver = std::make_shared<Korali::Solver::CMAES>();
+ if (solverName == "CMAES")  _solver = std::make_shared<Korali::Solver::CCMAES>();
  if (solverName == "CCMAES") _solver = std::make_shared<Korali::Solver::CCMAES>();
  if (solverName == "DEA")    _solver = std::make_shared<Korali::Solver::DEA>();
  if (solverName == "MCMC")   _solver = std::make_shared<Korali::Solver::MCMC>();

@@ -41,7 +41,7 @@ assert_value( k["Solver"]["Target Success Rate"], 0.1818 )
 
 # Testing Internals
 
-assert_value( k["Solver"]["Internal"]["Chi Square Number"], 0.7976190476190477 )
+assert_value( k["Solver"]["Internal"]["Chi Number"], 0.7976190476190477 )
 assert_value( k["Solver"]["Internal"]["Cumulative Covariance"], 0.564218767613317 )
 assert_value( k["Solver"]["Internal"]["Damp Factor"], 3.892701587864561 )
 assert_value( k["Solver"]["Internal"]["Sigma"], 5.0 )

@@ -42,7 +42,8 @@ assert_value( k["Solver"]["Target Success Rate"], 0.1818 )
 
 # Testing Internals
 
-assert_value( k["Solver"]["Internal"]["Chi Number"], 0.7976190476190477 )
+assert_value( k["Solver"]["Internal"]["Chi Square Number"], 0.7976190476190477 )
+assert_value( k["Solver"]["Internal"]["Chi Square Number Discrete Mutations"], 0.7976190476190477 )
 assert_value( k["Solver"]["Internal"]["Covariance Matrix Adaption Factor"],  0.03333333333333333 )
 assert_value( k["Solver"]["Internal"]["Cumulative Covariance"], 0.7142857142857143 )
 assert_value( k["Solver"]["Internal"]["Current Sample Count"], 2 )
@@ -53,6 +54,9 @@ assert_value( k["Solver"]["Internal"]["Global Success Rate"], 0.5 )
 assert_value( k["Solver"]["Internal"]["Sigma"], 5.0 )
 assert_value( k["Solver"]["Internal"]["Trace"], 25.0 )
 assert_boolean( k["Solver"]["Internal"]["Is Viability Regime"], True )
+assert_value( k["Solver"]["Internal"]["Granularity"][0], 0.0 )
+assert_value( k["Solver"]["Internal"]["Number Discrete Mutations"], 0 )
+assert_value( k["Solver"]["Internal"]["Number Masking Matrix Entries"], 0 )
 
 # Testing Termination Criteria
 

@@ -420,7 +420,7 @@ Default calculated from dimension.
 double _cumulativeCovariance;
 
 /******************************************************************************
-Setting Name: Chi Number
+Setting Name: Chi Square Number
 Type: Internal Attribute
 Default Value:
 Default Enabled:
@@ -1078,7 +1078,6 @@ double granularity;
 std::vector<variableSetting> _variableSettings;
 /******************************************************************************/
 
- // Workspace for GSL
  std::shared_ptr<Variable> _gaussianGenerator;
  std::shared_ptr<Variable> _uniformGenerator;
 

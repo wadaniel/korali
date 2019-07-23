@@ -13,7 +13,7 @@ all: config.cpp libkorali.so libkorali.a
 config.cpp:
 	python3 ./build.py
 
-SOURCES = $(shell find . -name "*.cpp") 
+SOURCES = $(shell find . -name "*.cpp") config.cpp
 OBJECTS_STATIC = $(SOURCES:.cpp=.static.o)
 OBJECTS_SHARED = $(SOURCES:.cpp=.shared.o)
 

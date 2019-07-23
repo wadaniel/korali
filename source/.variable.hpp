@@ -37,8 +37,6 @@ class Variable
  double getRandomNumber();
  void printDetails();
  void initialize();
-
- // Serialization Methods
  void getConfiguration(nlohmann::json& js);
  void setConfiguration(nlohmann::json& js);
  void setDistribution(nlohmann::json& js);

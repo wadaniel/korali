@@ -24,6 +24,11 @@ solverPaths  = [x[0] for x in os.walk('./solvers')][1:]
 problemPaths = [x[0] for x in os.walk('./problems')][1:]
 conduitPaths = [x[0] for x in os.walk('./conduits')][1:]
 
+# Loading template variable header file
+variableTemplateHeaderFile = '/.variable.hpp'
+with open(variableTemplateHeaderFile, 'r') as file: variableHeaderString = file.read()
+variableSettingString = '' 
+ 
 # Processing Solvers
 for solverPath in solverPaths:
  solverName = solverPath.replace('./solvers/', '')
@@ -34,23 +39,32 @@ for solverPath in solverPaths:
  solverConfig = json.loads(solverJsonString)
  
  # Producing private variable declarations
- privateVars = ''
+ solverSettingString = ''
  
  for v in solverConfig["Module Configuration"]:
-  privateVars += getVariableDeclaration(v) + ';\n'
+  solverSettingString += getVariableDeclaration(v) + ';\n'
     
  for v in solverConfig["Termination Criteria"]:
-  privateVars += getVariableDeclaration(v) + ';\n'
+  solverSettingString += getVariableDeclaration(v) + ';\n'
  
  for v in solverConfig["Internal Settings"]:
-  privateVars += getVariableDeclaration(v) + ';\n'
+  solverSettingString += getVariableDeclaration(v) + ';\n'
       
  # Loading template header .hpp file
  solverTemplateHeaderFile = solverPath + '/.' + solverName + '.hpp'
  with open(solverTemplateHeaderFile, 'r') as file: solverHeaderString = file.read()
- newHeaderString = solverHeaderString.replace('private:', 'private: \n' + privateVars + '\n')
+ newHeaderString = solverHeaderString.replace('private:', 'private: \n' + solverSettingString + '\n')
  
  # Saving new header .hpp file
  solverNewHeaderFile = solverPath + '/' + solverName + '.hpp'
  with open(solverNewHeaderFile, 'w') as file: file.write(newHeaderString)
+ 
+ # Reading variable-specific configuration
+ for v in solverConfig["Variables Configuration"]:
+  variableSettingString += getVariableDeclaration(v) + ';\n'
+
+# Saving new variable.hpp file
+variableNewHeaderFile = './variable.hpp'
+newHeaderString = variableHeaderString.replace('public:', 'public: \n' + variableSettingString + '\n')
+with open(variableNewHeaderFile, 'w') as file: file.write(newHeaderString)
   

@@ -148,11 +148,6 @@
     "Description": "Chain Covariance."
    },
    {
-    "Name": "Chain Covariance",
-    "Type": "(Array of) Real",
-    "Description": "Chain Covariance."
-   },
-   {
     "Name": "Chain Length",
     "Type": "Unsigned Integer",
     "Description": "Current Chain Length."

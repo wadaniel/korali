@@ -15,10 +15,9 @@
 #include "problems/hierarchical.hpp"
 #include "problems/constrained.hpp"
 
-#include "solvers/ccmaes.hpp"
-#include "solvers/dea.hpp"
-#include "solvers/mcmc.hpp"
-#include "solvers/tmcmc.hpp"
+#include "solvers/dea/dea.hpp"
+#include "solvers/mcmc/mcmc.hpp"
+#include "solvers/tmcmc/tmcmc.hpp"
 
 #include "conduits/mpi.hpp"
 #include "conduits/simple.hpp"

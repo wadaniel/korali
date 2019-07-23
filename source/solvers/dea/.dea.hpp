@@ -9,30 +9,29 @@ namespace Korali { namespace Solver {
 
 class DEA : public Base
 {
- public:
+ private:
 
  Variable* _gaussianGenerator;
  Variable* _uniformGenerator;
-
- DEA();
- ~DEA();
 
  void mutateSingle(size_t sampleIdx); /* sample individual */
  bool isFeasible(size_t sampleIdx) const; /* check if sample inside lower & upper bounds */
  void fixInfeasible(size_t sampleIdx); /* force sample inside lower & upper bounds */
  void updateSolver(); /* update states of DEA */
  void evaluateSamples(); /* evaluate all samples until done */
-
  void initSamples();
  void prepareGeneration();
- bool checkTermination() override;
 
+ public:
+
+ DEA();
+ ~DEA();
+
+  bool checkTermination() override;
  void initialize() override;
  void finalize() override;
-
  void runGeneration() override;
  void processSample(size_t sampleId, double fitness) override;
-
  void setConfiguration() override;
  void getConfiguration() override;
  void printGeneration() override;

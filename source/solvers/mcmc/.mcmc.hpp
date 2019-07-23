@@ -2,7 +2,7 @@
 #define _KORALI_SOLVER_MCMC_HPP_
 
 #include "solvers/base.hpp"
-#include "variable/variable.hpp"
+#include "variable.hpp"
 #include <gsl/gsl_rng.h>
 
 namespace Korali { namespace Solver {

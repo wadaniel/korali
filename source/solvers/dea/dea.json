@@ -1,0 +1,188 @@
+{
+ "Module Name": "Differential Evolution Algorithm",
+ "Module Alias": "DEA",
+ 
+ "Module Configuration": 
+ [
+   {
+    "Name": "Sample Count",
+    "Type": "Unsigned Integer",
+    "Description": "Specifies the number of samples to evaluate per generation (preferably 5-10x number of variables)."
+   },
+   {
+    "Name": "Crossover Rate",
+    "Default": "0.9",
+    "Type": "Real",
+    "Description": "Controls the rate at which dimensions from samples are mixed (must be in [0,1])."
+   },
+   {
+    "Name": "Mutation Rate",
+    "Default": "0.5",
+    "Type": "Real",
+    "Description": "Controls the scaling of the vector differentials (must be in [0,2], preferably < 1)."
+   },
+   {
+    "Name": "Mutation Rule",
+    "Default": "Fixed",
+    "Type": "String",
+    "Description": "Controls the Mutation Rate: 'Fixed' or 'Self Adaptive' (udpating rule in [Brest2006])."
+   },
+   {
+    "Name": "Parent Selection Rule",
+    "Default": "Random",
+    "Type": "String",
+    "Description": "Controls the selection of the parent vecor: 'Random' or 'Best' (best sample from previous generation)."
+   },
+   {
+    "Name": "Accept Rule",
+    "Default": "Greedy",
+    "Type": "String",
+    "Description": "Sets the sample accept rule after mutation and evaluation: 'Best', 'Greedy', 'Iterative' or 'Improved'."
+   },
+   {
+    "Name": "Fix Infeasible",
+    "Default": "true",
+    "Type": "Boolean",
+    "Description": "If set true, Korali samples a random sample between Parent and the voiolated  boundary. If set false, infeasible samples are mutated again until feasible."
+   }
+ ],
+ 
+ "Termination Criteria":
+ [
+   {
+    "Name": "Max Resamplings",
+    "Default": "1e9",
+    "Type": "Real",
+    "Description": "Max number of mutations per sample per generation if infeasible (only relevant if Fix Infeasible is set False)."
+   },
+   {
+    "Name": "Min Fitness",
+    "Default": "-std::numeric_limits<float>::max()",
+    "Type": "Real",
+    "Description": "Specifies the target fitness to stop minimization."
+   },
+   {
+    "Name": "Max Fitness",
+    "Default": "+std::numeric_limits<float>::max()",
+    "Type": "Real",
+    "Description": "Specifies the target fitness to stop maximization."
+   },
+   {
+    "Name": "Min Fitness Diff Threshold",
+    "Default": "1e-9",
+    "Type": "Real",
+    "Description": "Specifies the minimum fitness differential between two consecutive generations before stopping execution."
+   },
+   {
+    "Name": "Min Step Size",
+    "Default": "1e-12",
+    "Type": "Real",
+    "Description": "Specifies the minimal step size of the sample mean from one gneration to another."
+   }
+ ],
+ 
+ "Variables Configuration": 
+ [
+   {
+    "Name": "Lower Bound",
+    "Type": "Real",
+    "Default": "-std::numeric_limits<float>::max()",
+    "Description": "Specifies the lower bound for the variable's value. Korali will not generate samples for which this variable falls below the specified minimum. By default, Korali sets this value to -Infinity."
+   },
+   {
+    "Name": "Upper Bound",
+    "Type": "Real",
+    "Default": "+std::numeric_limits<float>::max()",
+    "Description": "Specifies the upper bound for the variable's value. Korali will not generate samples for which this variable falls below the specified maximum. By default, Korali sets this value to +Infinity."
+   }
+ ],
+ 
+ "Internal Settings": 
+ [
+   {
+    "Name": "Fitness Vector",
+    "Type": "(Array of) Real",
+    "Description": "Objection Function Values."
+   },
+   {
+    "Name": "Previous Fitness Vector",
+    "Type": "(Array of) Real",
+    "Description": "Objection Function Values from previous evaluations."
+   },
+   {
+    "Name": "Sample Population",
+    "Type": "(Array of) Real",
+    "Description": "Sample coordinate information."
+   },
+   {
+    "Name": "Sample Candidates",
+    "Type": "(Array of) Real",
+    "Description": "Sample Candidates to evaluate."
+   },
+   {
+    "Name": "Is Initialized Sample",
+    "Type": "(Array of) Real",
+    "Description": "Determines which samples are initialized."
+   },
+   {
+    "Name": "Finished Sample Count",
+    "Type": "Unsigned Integer",
+    "Description": "Counter of evaluated samples to terminate evaluation."
+   },
+   {
+    "Name": "Current Best Value",
+    "Type": "Real",
+    "Description": "Best vlaue from current generation."
+   },
+   {
+    "Name": "Previous Best Value",
+    "Type": "Real",
+    "Description": "Best fitness from previous generation."
+   },
+   {
+    "Name": "Best Sample Index",
+    "Type": "Unsigned Integer",
+    "Description": "Index of the best sample so far."
+   },
+   {
+    "Name": "Best Ever Value",
+    "Type": "Real",
+    "Description": "Value of the best sample so far."
+   },
+   {
+    "Name": "Previous Best Ever Value",
+    "Type": "Real",
+    "Description": "Value of the previous best sample ever."
+   },
+   {
+    "Name": "Sample Means",
+    "Type": "(Array of) Real",
+    "Description": "Sample Means."
+   },
+   {
+    "Name": "Previous Mean",
+    "Type": "(Array of) Real",
+    "Description": "Previous Mean Parents."
+   },
+   {
+    "Name": "Best Ever Coordinates",
+    "Type": "(Array of) Real",
+    "Description": "Coordinates of the best sample ever."
+   },
+   {
+    "Name": "Current Best Sample",
+    "Type": "(Array of) Real",
+    "Description": "Coordinates of the current best sample."
+   },
+   {
+    "Name": "Max Distances",
+    "Type": "(Array of) Real",
+    "Description": "Max distance between samples per dimension."
+   },
+   {
+    "Name": "Infeasible Sample Count",
+    "Type": "Unsigned Integer",
+    "Description": "Keeps count of the number of function evaluations so far."
+   }
+ ]
+}

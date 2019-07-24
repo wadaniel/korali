@@ -26,6 +26,7 @@ k["Solver"]["Sample Count"] = 5
 
 k["General"]["Max Generations"] = 500
 k["General"]["Console Output"]["Frequency"] = 10
+k["General"]["Results Output"]["Path"] = "_result_run-cmaes"
 
 k.setModel(model)
 
@@ -34,6 +35,6 @@ k.run()
 print("\n\nRestarting Now...\n\n")
 
 # Now we loadState() to resume the same experiment from generation 10
-k.loadState("_korali_result/s00010.json")
+k.loadState("_result_run-cmaes/s00010.json")
 
 k.run()

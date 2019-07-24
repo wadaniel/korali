@@ -25,6 +25,7 @@ k["Variables"][0]["Upper Bound"] = +10.0;
 # Configuring Solver
 k["Solver"]["Type"] = "DEA"
 k["Solver"]["Sample Count"] = 32
+k["Solver"]["Termination Criteria"]["Min Fitness Diff Threshold"] = 1e-7
 
 # Setting computational model
 k.setModel(model)

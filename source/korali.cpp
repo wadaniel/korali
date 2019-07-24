@@ -114,11 +114,11 @@ void Korali::Engine::getConfiguration()
  _js["General"]["Function Evaluation Count"] = functionEvaluationCount;
  _js["General"]["Is Finished"] = _isFinished;
 
- for (int i = 0; i < _variables.size(); i++) _variables[i]->getConfiguration(_js["Variables"][i]);
-
  if (_problem != nullptr) _problem->getConfiguration();
  if (_conduit != nullptr) _conduit->getConfiguration();
  if (_conduit != nullptr) _solver->getConfiguration();
+
+ for (int i = 0; i < _variables.size(); i++) _variables[i]->getConfiguration(_js["Variables"][i]);
 }
 
 void Korali::Engine::setConfiguration()
@@ -189,12 +189,11 @@ void Korali::Engine::setConfiguration()
 
  // Configure Solver
  std::string solverName = consume(_js, { "Solver", "Type" }, KORALI_STRING);
- if (solverName == "CMAES")  _solver = std::make_shared<Korali::Solver::CCMAES>();
- if (solverName == "CCMAES") _solver = std::make_shared<Korali::Solver::CCMAES>();
+ if (solverName == "CMAES") _solver = std::make_shared<Korali::Solver::CMAES>();
  if (solverName == "DEA")    _solver = std::make_shared<Korali::Solver::DEA>();
  if (solverName == "MCMC")   _solver = std::make_shared<Korali::Solver::MCMC>();
  if (solverName == "TMCMC")  _solver = std::make_shared<Korali::Solver::TMCMC>();
- if (_solver == nullptr) koraliError("Incorrect or undefined Solver '%s'.", solverName.c_str());
+ if (_solver == nullptr) koraliError("Incorrect or undefined Solver '%s'.\n", solverName.c_str());
 
  // Setting module configuration
  _problem->setConfiguration();

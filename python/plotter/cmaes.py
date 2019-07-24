@@ -81,8 +81,8 @@ def plot_cmaes(src, plot_mean = False, live=False, test=False ):
                 psL2.append(state['Conjugate Evolution Path L2 Norm'])
 
                 for i in range(numdim):
-                    fvalXvec[i].append(state['Current Best Sample'][i])
-                    mu[i].append(state['Mean Proposal'][i])
+                    fvalXvec[i].append(state['Current Best Coordinates'][i])
+                    mu[i].append(state['Current Mean'][i])
                     axis[i].append(state['Axis Lengths'][i])
                     ssdev[i].append(sigma[-1]*np.sqrt(state['Covariance Matrix'][i*numdim+i]))
             

@@ -26,17 +26,17 @@ for i in range(10) :
   k["Variables"][i]["Upper Bound"]  = +21.0
 
   if( i == 0 or i == 1 or i == 3 or i == 6 ): 
-      k["Variables"][i]["Discrete"]    = True
+      k["Variables"][i]["Is Discrete"] = True
       k["Variables"][i]["Granularity"] = 1.0
  
 # Configuring CMA-ES parameters
 k["Solver"]["Type"] = "CMAES"
 k["Solver"]["Sample Count"] = 8
-k["Solver"]["Termination Criteria"]["Min Fitness Diff Threshold"]["Value"] = 1e-9
-k["Solver"]["Termination Criteria"]["Min Fitness Diff Threshold"]["Enabled"] = True
+k["Solver"]["Termination Criteria"]["Min Fitness Diff Threshold"] = 1e-9
 
-k["General"]["Max Generations"] = 1000;
-k["General"]["Results Output"]["Frequency"] = 50
+k["General"]["Max Generations"] = 500;
+k["General"]["Results Output"]["Frequency"] = 50 
+k["General"]["Console Output"]["Frequency"] = 50 
 
 # Setting model and constraints
 k.setModel(model)

@@ -40,7 +40,9 @@ do
   log "[Korali] Adding Random Seeds..."
   for file in *.cpp
   do
-    cat $file | sed -e 's/k.run();/k\[\"General\"\]\[\"Random Seed\"\] = 0xC0FFEE; k.run();/g' > tmp
+    resultPath="_result_${file%.*}"
+    cat $file | sed -e 's/k.run()/k\[\"General\"\]\[\"Random Seed\"\] = 0xC0FFEE; k.run()/g' \
+                    -e 's/k.run()/k\[\"General\"\][\"Results Output\"\][\"Path\"\] = \"'$resultPath'\"; k.run()/g' > tmp
     check_result
     
     log "[Korali] Replacing File..."
@@ -63,17 +65,13 @@ do
   for file in *.cpp
   do
     logEcho "  + Running File: $file..."
+
+    resultPath="_result_${file%.*}"    
+    rm -rf $resultPath >> $logFile 2>&1
+    check_result
     
     log "[Korali] Running $file..."
     ./"${file%.*}" >> $logFile 2>&1
-    check_result
-    
-    log "[Korali] Moving Results..."
-    rm -rf "_result_${file%.*}" >> $logFile 2>&1
-    check_result
-    
-    mv _korali_result "_result_${file%.*}" >> $logFile 2>&1
-    check_result
   done
   
   popd >> $logFile 2>&1

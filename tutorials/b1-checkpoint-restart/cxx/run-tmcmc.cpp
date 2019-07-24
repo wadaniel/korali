@@ -22,13 +22,15 @@ int main(int argc, char* argv[])
  k["Solver"]["Type"] = "TMCMC";
  k["Solver"]["Population Size"] = 5000;
 
+ k["General"]["Results Output"]["Path"] = "_result_run-tmcmc";
+
  k.setModel(model);
  k.run();
 
  printf("\n\nRestarting now:\n\n");
 
  // Now we loadState() to resume the same experiment from generation 5.
- k.loadState("_korali_result/s00002.json");
+ k.loadState("_result_run-tmcmc/s00002.json");
 
  k.run();
 }

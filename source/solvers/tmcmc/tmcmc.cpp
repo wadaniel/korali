@@ -42,9 +42,9 @@ void Korali::Solver::TMCMC::initialize()
  // Allocating TMCMC memory
  _covarianceMatrix.resize(_k->N*_k->N);
  _meanTheta.resize(_k->N);
- _chainCandidatesParameters.resize(_k->N*_populationSize);
+ _chainCandidateParameters.resize(_k->N*_populationSize);
  _chainCandidatesLogLikelihoods.resize(_populationSize);
- _chainLeadersParameters.resize(_k->N*_populationSize);
+ _chainLeaderParameters.resize(_k->N*_populationSize);
  _chainLeadersLogLikelihoods.resize(_populationSize);
  _chainPendingFitness.resize(_populationSize);
  _currentChainStep.resize(_populationSize);
@@ -64,7 +64,7 @@ void Korali::Solver::TMCMC::initialize()
 
  // Initializing Runtime Variables
  for (size_t c = 0; c < _populationSize; c++) _currentChainStep[c] = 0;
- for (size_t c = 0; c < _populationSize; c++) _chainLengths[c] = 1 + _burnInDefault;
+ for (size_t c = 0; c < _populationSize; c++) _chainLengths[c] = 1 + _defaultBurnIn;
  for (size_t c = 0; c < _populationSize; c++) _chainPendingFitness[c] = false;
 
  // Init Generation
@@ -84,10 +84,10 @@ void Korali::Solver::TMCMC::initialize()
  {
    for (size_t d = 0; d < _k->N; d++)
    {
-      _chainLeadersParameters[c*_k->N + d] = _chainCandidatesParameters[c*_k->N + d] = _k->_variables[d]->getRandomNumber();
-      _chainLeadersLogLikelihoods[c] += _k->_variables[d]->getLogDensity(_chainLeadersParameters[c*_k->N + d]);
+      _chainLeaderParameters[c*_k->N + d] = _chainCandidateParameters[c*_k->N + d] = _k->_variables[d]->getRandomNumber();
+      _chainLeadersLogLikelihoods[c] += _k->_variables[d]->getLogDensity(_chainLeaderParameters[c*_k->N + d]);
    }
-    updateDatabase(&_chainLeadersParameters[c*_k->N], _chainLeadersLogLikelihoods[c]);
+    updateDatabase(&_chainLeaderParameters[c*_k->N], _chainLeadersLogLikelihoods[c]);
  }
 }
 
@@ -119,32 +119,30 @@ void Korali::Solver::TMCMC::runGeneration()
 
 void Korali::Solver::TMCMC::processSample(size_t sampleId, double fitness)
 {
-
  if(std::isfinite(fitness) == false) 
  {
    fitness = -1.0 * std::numeric_limits<double>::max();
    _chainCandidatesLogLikelihoods[sampleId] = fitness;
-   koraliWarning(KORALI_NORMAL,"Sample %zu returned non finite fitness (fitness set to %e)!\n", sampleId, fitness);
+   koraliWarning(KORALI_DETAILED,"Sample %zu returned non finite fitness (fitness set to %e)!\n", sampleId, fitness);
  }
  else
  {
    _chainCandidatesLogLikelihoods[sampleId] = fitness;
-   double ccLogPrior = _k->_problem->evaluateLogPrior(&_chainCandidatesParameters[sampleId*_k->N]);
-   double clLogPrior = _k->_problem->evaluateLogPrior(&_chainLeadersParameters[sampleId*_k->N]);
+   double ccLogPrior = _k->_problem->evaluateLogPrior(&_chainCandidateParameters[sampleId*_k->N]);
+   double clLogPrior = _k->_problem->evaluateLogPrior(&_chainLeaderParameters[sampleId*_k->N]);
    double L = exp((_chainCandidatesLogLikelihoods[sampleId]-_chainLeadersLogLikelihoods[sampleId])*_annealingExponent + (ccLogPrior-clLogPrior));
 
    if ( L >= 1.0 || L > gsl_ran_flat(range, 0.0, 1.0) ) {
-     for (size_t i = 0; i < _k->N; i++) _chainLeadersParameters[sampleId*_k->N + i] = _chainCandidatesParameters[sampleId*_k->N + i];
+     for (size_t i = 0; i < _k->N; i++) _chainLeaderParameters[sampleId*_k->N + i] = _chainCandidateParameters[sampleId*_k->N + i];
      _chainLeadersLogLikelihoods[sampleId] = _chainCandidatesLogLikelihoods[sampleId];
-     if (_currentChainStep[sampleId]+1 > _burnInDefault) _acceptedSamplesCount++;
+     if (_currentChainStep[sampleId]+1 > _defaultBurnIn) _acceptedSamplesCount++;
    }
  }
 
  _currentChainStep[sampleId]++;
  _chainPendingFitness[sampleId] = false;
- if (_currentChainStep[sampleId] >  _burnInDefault) updateDatabase(&_chainLeadersParameters[sampleId*_k->N], _chainLeadersLogLikelihoods[sampleId]); 
+ if (_currentChainStep[sampleId] >  _defaultBurnIn) updateDatabase(&_chainLeaderParameters[sampleId*_k->N], _chainLeadersLogLikelihoods[sampleId]);
  if (_currentChainStep[sampleId] == _chainLengths[sampleId]) _finishedChainsCount++;
- 
 }
 
 void Korali::Solver::TMCMC::evaluateSample(size_t c)
@@ -153,9 +151,9 @@ void Korali::Solver::TMCMC::evaluateSample(size_t c)
 
   for(size_t d = 0; d<_k->N; ++d) 
     if (_k->_variables[d]->_isLogSpace == true)
-        _logTransformedSample[d] = std::exp(_chainCandidatesParameters[c*_k->N+d]);
+        _logTransformedSample[d] = std::exp(_chainCandidateParameters[c*_k->N+d]);
     else 
-        _logTransformedSample[d] = _chainCandidatesParameters[c*_k->N+d];
+        _logTransformedSample[d] = _chainCandidateParameters[c*_k->N+d];
 
   _k->_conduit->evaluateSample(_logTransformedSample.data(), c);
 }
@@ -170,9 +168,9 @@ void Korali::Solver::TMCMC::updateDatabase(double* point, double fitness)
 void Korali::Solver::TMCMC::generateCandidate(size_t c)
 {
  double* covariance = _useLocalCovariance ? &_localCovarianceMatrices[c][0] : &_covarianceMatrix[0];
- gsl_vector_view out_view    = gsl_vector_view_array(&_chainCandidatesParameters[c*_k->N], _k->N);
+ gsl_vector_view out_view    = gsl_vector_view_array(&_chainCandidateParameters[c*_k->N], _k->N);
  gsl_matrix_view sigma_view  = gsl_matrix_view_array(covariance, _k->N,_k->N);
- gsl_vector_view mean_view   = gsl_vector_view_array(&_chainLeadersParameters[c*_k->N], _k->N);
+ gsl_vector_view mean_view   = gsl_vector_view_array(&_chainLeaderParameters[c*_k->N], _k->N);
  gsl_ran_multivariate_gaussian(range, &mean_view.vector, &sigma_view.matrix, &out_view.vector);
 }
 
@@ -185,7 +183,7 @@ void Korali::Solver::TMCMC::processGeneration()
 	std::vector<size_t> sel(_databaseEntryCount);
 
 	double fmin = 0, xmin = 0;
-	minSearch(&_sampleFitnessDatabase[0], _databaseEntryCount, _annealingExponent, _targetCVar, xmin, fmin);
+	minSearch(&_sampleFitnessDatabase[0], _databaseEntryCount, _annealingExponent, _targetCoefficientofVariation, xmin, fmin);
 
 	double _prevAnnealingExponent = _annealingExponent;
 
@@ -193,18 +191,18 @@ void Korali::Solver::TMCMC::processGeneration()
 	{
 	koraliWarning(KORALI_DETAILED, "Annealing Step larger than Max Rho Update, updating Annealing Exponent by %f (Max Rho Update). \n", _maxRhoUpdate);
 	_annealingExponent      = _prevAnnealingExponent + _maxRhoUpdate;
-	_coefficientOfVariation = sqrt(tmcmc_objlogp(_annealingExponent, &_sampleFitnessDatabase[0], _databaseEntryCount, _prevAnnealingExponent, _targetCVar)) + _targetCVar;
+	_coefficientOfVariation = sqrt(tmcmc_objlogp(_annealingExponent, &_sampleFitnessDatabase[0], _databaseEntryCount, _prevAnnealingExponent, _targetCoefficientofVariation)) + _targetCoefficientofVariation;
 	}
 	else if (xmin > _prevAnnealingExponent)
 	{
 	_annealingExponent      = xmin;
-	_coefficientOfVariation = sqrt(fmin) + _targetCVar;
+	_coefficientOfVariation = sqrt(fmin) + _targetCoefficientofVariation;
 	}
 	else
 	{
 	 koraliWarning(KORALI_DETAILED, "Annealing Step smaller than Min Rho Update, updating Annealing Exponent by %f (Min Rho Update). \n", _minRhoUpdate);
 	_annealingExponent      = _prevAnnealingExponent + _minRhoUpdate;
-	_coefficientOfVariation = sqrt(tmcmc_objlogp(_annealingExponent, &_sampleFitnessDatabase[0], _databaseEntryCount, _prevAnnealingExponent, _targetCVar)) + _targetCVar;
+	_coefficientOfVariation = sqrt(tmcmc_objlogp(_annealingExponent, &_sampleFitnessDatabase[0], _databaseEntryCount, _prevAnnealingExponent, _targetCoefficientofVariation)) + _targetCoefficientofVariation;
 	}
 
 	/* Compute weights and normalize*/
@@ -246,13 +244,13 @@ void Korali::Solver::TMCMC::processGeneration()
 	size_t leaderId = 0;
 	for (size_t i = 0; i < _databaseEntryCount; i++) {
 	 while (sel[i] != 0) {
-		 for (size_t j = 0; j < _k->N ; j++) _chainLeadersParameters[leaderId*_k->N + j] = _sampleParametersDatabase[i*_k->N + j];
+		 for (size_t j = 0; j < _k->N ; j++) _chainLeaderParameters[leaderId*_k->N + j] = _sampleParametersDatabase[i*_k->N + j];
 		 _chainLeadersLogLikelihoods[leaderId] = _sampleFitnessDatabase[i];
          
          if (sel[i] > _maxChainLength) leaderChainLen = _maxChainLength;
          else leaderChainLen = sel[i];
          
-		 _chainLengths[leaderId] = leaderChainLen + _burnInDefault;
+		 _chainLengths[leaderId] = leaderChainLen + _defaultBurnIn;
          sel[i] -= leaderChainLen;
 		 leaderId++;
 	 }
@@ -292,7 +290,7 @@ void Korali::Solver::TMCMC::computeChainCovariances(std::vector< std::vector<dou
   // find neighbors in a rectangle - O(_populationSize^2)
   for (pos = 0; pos < newchains; ++pos) {
    nn_count[pos] = 0;
-   double* curr = &_chainLeadersParameters[pos*_k->N];
+   double* curr = &_chainLeaderParameters[pos*_k->N];
    for (size_t i = 0; i < _populationSize; i++) {
     double* s = &_sampleParametersDatabase[i*_k->N];
     bool isInRectangle = true;
@@ -446,7 +444,7 @@ void Korali::Solver::TMCMC::minSearch(double const *fj, size_t fn, double pj, do
 
 bool Korali::Solver::TMCMC::isFeasibleCandidate(size_t c)
 {
- double clLogPrior = _k->_problem->evaluateLogPrior(&_chainLeadersParameters[c*_k->N]);
+ double clLogPrior = _k->_problem->evaluateLogPrior(&_chainLeaderParameters[c*_k->N]);
  if (clLogPrior > -INFINITY) return true;
  return false;
 }

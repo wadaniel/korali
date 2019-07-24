@@ -95,15 +95,15 @@ void Korali::Solver::MCMC::initialize()
  if(_chainCovarianceScaling <= 0.0) koraliError("Chain Covariance Scaling must be larger 0.0 (is %lf).\n", _chainCovarianceScaling);
 }
 
-void Korali::Solver::MCMC::processSample(size_t sampleIdx, double fitness)
+void Korali::Solver::MCMC::processSample(size_t sampleId, double fitness)
 {
- fitness += _chainCandidatesLogPriors[sampleIdx];
+ fitness += _chainCandidatesLogPriors[sampleId];
  if(std::isfinite(fitness) == false) 
  {
    fitness = -1.0 * std::numeric_limits<double>::max();
    koraliWarning(KORALI_NORMAL,"Sample %zu returned non finite fitness (fitness set to %e)!\n", sampleId, fitness);
  }
- _chainCandidatesLogLikelihoods[sampleIdx] = fitness;
+ _chainCandidatesLogLikelihoods[sampleId] = fitness;
 }
 
 void Korali::Solver::MCMC::choleskyDecomp(const std::vector<double>& inC, std::vector<double>& outL) const

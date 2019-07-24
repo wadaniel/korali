@@ -77,8 +77,8 @@ void Korali::Solver::MCMC::initialize()
  _chainMean.resize(_k->N);
  _chainCovariancePlaceholder.resize(_k->N*_k->N);
  _chainCovariance.resize(_k->N*_k->N);
- _choleskyCovariance.resize(_k->N*_k->N);
- std::fill(std::begin(_choleskyCovariance), std::end(_choleskyCovariance), 0.0);
+ _chainCholeskyCovariance.resize(_k->N*_k->N);
+ std::fill(std::begin(_chainCholeskyCovariance), std::end(_chainCholeskyCovariance), 0.0);
 
  for(size_t i = 0; i < _k->N; i++) _chainLeaderParameters[i]  = _k->_variables[i]->_initialMean;
  for(size_t i = 0; i < _k->N; i++) _choleskyCovariance[i*_k->N+i] = _k->_variables[i]->_initialStandardDeviation;
@@ -219,7 +219,7 @@ void Korali::Solver::MCMC::sampleCandidate(size_t sampleIdx)
  if ( (_useAdaptiveSampling == false) || (_databaseEntryCount <= _nonAdaptionPeriod + _burnIn))
      for (size_t d = 0; d < _k->N; ++d) for (size_t e = 0; e < _k->N; ++e) _chainCandidateParameters[sampleIdx*_k->N+d] += _choleskyCovariance[d*_k->N+e] * _gaussianGenerator->getRandomNumber();
  else
-     for (size_t d = 0; d < _k->N; ++d) for (size_t e = 0; e < _k->N; ++e) _chainCandidateParameters[sampleIdx*_k->N+d] += _choleskyCovariance[d*_k->N+e] * _gaussianGenerator->getRandomNumber();
+     for (size_t d = 0; d < _k->N; ++d) for (size_t e = 0; e < _k->N; ++e) _chainCandidateParameters[sampleIdx*_k->N+d] += _chainCholeskyCovariance[d*_k->N+e] * _gaussianGenerator->getRandomNumber();
 
  for (size_t d = 0; d < _k->N; ++d) _chainLeaderParameters[d] += _chainCandidateParameters[sampleIdx*_k->N+d];
 }
@@ -260,7 +260,7 @@ void Korali::Solver::MCMC::updateState()
  for (size_t d = 0; d < _k->N; d++)
    _chainCovariance[d*_k->N+d] = (_databaseEntryCount-2.0)/(_databaseEntryCount-1.0) * _chainCovariance[d*_k->N+d] + (_chainCovarianceScaling/_databaseEntryCount)*_chainCovariancePlaceholder[d*_k->N+d];
 
- choleskyDecomp(_chainCovariance, _choleskyCovariance);
+ choleskyDecomp(_chainCovariance, _chainCholeskyCovariance);
 }
 
 bool Korali::Solver::MCMC::checkTermination()
@@ -290,17 +290,16 @@ void Korali::Solver::MCMC::printGeneration()
  koraliLog(KORALI_DETAILED, "Current Chain Covariance:\n");
  for (size_t d = 0; d < _k->N; d++)
  {
-	 for (size_t e = 0; e <= d; e++) koraliLogData(KORALI_DETAILED, "   %+6.3e  ", _chainCovariance[d*_k->N+e]);
-	 koraliLog(KORALI_DETAILED, "\n");
+  for (size_t e = 0; e <= d; e++) koraliLogData(KORALI_DETAILED, "   %+6.3e  ", _chainCovariance[d*_k->N+e]);
+  koraliLog(KORALI_DETAILED, "\n");
  }
 }
 
 void Korali::Solver::MCMC::finalize()
 {
-	koraliLog(KORALI_MINIMAL, "MCMC Finished\n");
-	koraliLog(KORALI_MINIMAL, "Number of Generated Samples: %zu\n", _proposedSampleCount);
-	koraliLog(KORALI_MINIMAL, "Acceptance Rate: %.2f%%\n", 100*_acceptanceRate);
-	if (_databaseEntryCount == _chainLength) koraliLog(KORALI_MINIMAL, "Max Samples Reached.\n");
-	koraliLog(KORALI_MINIMAL, "--------------------------------------------------------------------\n");
+ koraliLog(KORALI_MINIMAL, "MCMC Finished\n");
+ koraliLog(KORALI_MINIMAL, "Number of Generated Samples: %zu\n", _proposedSampleCount);
+ koraliLog(KORALI_MINIMAL, "Acceptance Rate: %.2f%%\n", 100*_acceptanceRate);
+ if (_databaseEntryCount == _chainLength) koraliLog(KORALI_MINIMAL, "Max Samples Reached.\n");
+ koraliLog(KORALI_MINIMAL, "--------------------------------------------------------------------\n");
 }
-

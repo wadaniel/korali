@@ -68,6 +68,11 @@
     "Description": "Cholesky Decomposition of Covariance for sampling (using a lower triangular matrix, with rest zeros)."
    },
    {
+    "Name": "Chain Cholesky Covariance",
+    "Type": "(Array of) Real",
+    "Description": "Chain Cholesky Decomposition of Covariance for sampling (using a lower triangular matrix, with rest zeros)."
+   },
+   {
     "Name": "Chain Leader Parameters",
     "Type": "(Array of) Real",
     "Description": "Parameters of the current sample."

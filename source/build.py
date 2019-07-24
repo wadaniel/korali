@@ -138,7 +138,7 @@ for solverPath in solverPaths:
    configFile.write(consumeValue('_k->_js', solverConfig["Module Alias"], v["Name"], getVariableName(v), getVariableType(v), getVariableDefault(v), [ 'Solver' ]))
  
  for v in solverConfig["Internal Settings"]:
-   configFile.write(consumeValue('_k->_js', solverConfig["Module Alias"], v["Name"], getVariableName(v), getVariableType(v), 'Korali Skip Default', [ 'Solver', 'Internals' ]))
+   configFile.write(consumeValue('_k->_js', solverConfig["Module Alias"], v["Name"], getVariableName(v), getVariableType(v), 'Korali Skip Default', [ 'Solver', 'Internal' ]))
  
  for v in solverConfig["Termination Criteria"]:
    configFile.write('\n ' + getVariableName(v) + 'Enabled = 0;')
@@ -164,7 +164,7 @@ for solverPath in solverPaths:
    configFile.write(' _k->_js["Solver"]["' + v["Name"] + '"] = ' + getVariableName(v) + ';\n')
    
  for v in solverConfig["Internal Settings"]: 
-   configFile.write(' _k->_js["Solver"]["Internals"]["' + v["Name"] + '"] = ' + getVariableName(v) + ';\n')
+   configFile.write(' _k->_js["Solver"]["Internal"]["' + v["Name"] + '"] = ' + getVariableName(v) + ';\n')
  
  for v in solverConfig["Termination Criteria"]: 
    configFile.write(' if (' + getVariableName(v) + 'Enabled == 1) _k->_js["Solver"]["Termination Criteria"]["' + v["Name"] + '"] = ' + getVariableName(v) + ';\n')

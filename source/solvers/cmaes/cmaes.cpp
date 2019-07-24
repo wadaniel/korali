@@ -183,41 +183,6 @@ void CMAES::initialize()
 
  _infeasibleSampleCount = 0;
  _resampledParameterCount = 0;
-
- /* check variable defaults */
- for (size_t i = 0; i < _k->N; ++i)
- {
-   if( std::isnan(_variableSettings[i].initialMean) ) 
-     koraliError("Lower/ Upper Bounds and Initial Mean of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
-   if( std::isnan(_variableSettings[i].initialStdDev) )
-     koraliError("Lower/ Upper Bounds and Initial Standard Deviation of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
- }
- 
- /* set _mean */
- for (size_t i = 0; i < _k->N; ++i)
- {
-   if( std::isnan(_variableSettings[i].lowerBound) ) _variableSettings[i].lowerBound = -1.0*std::numeric_limits<double>::max(); 
-   if( std::isnan(_variableSettings[i].upperBound) ) _variableSettings[i].upperBound = +1.0*std::numeric_limits<double>::max(); 
-
-   if(_variableSettings[i].initialMean < _variableSettings[i].lowerBound || _variableSettings[i].initialMean > _variableSettings[i].upperBound)
-   koraliError("Initial Mean (%.4f) of variable \'%s\' is out of bounds (%.4f-%.4f).\n",
-            _variableSettings[i].initialMean,
-            _k->_variables[i]->_name.c_str(),
-            _variableSettings[i].lowerBound,
-            _variableSettings[i].upperBound);
-
-   _mean[i] = _previousMean[i] = _variableSettings[i].initialMean;
- }
- 
- /* set _granularity for discrete variables */
- size_t numDiscretes = 0;
- for (size_t i = 0; i < _k->N; ++i)
- {
-   if( (_k->_variables[i]->_isDiscrete == true) && _k->_variables[i]->_granularity == 0.0)
-       koraliError("Granularity not set for discrete variable \'%s\'.\n", _k->_variables[i]->_name.c_str());
-   if (_k->_variables[i]->_isDiscrete == true) numDiscretes++;
-    _granularity[i] = _k->_variables[i]->_granularity;
- }
  _bestEverValue = -std::numeric_limits<double>::max();
  _currentBestValue = -std::numeric_limits<double>::max();
 

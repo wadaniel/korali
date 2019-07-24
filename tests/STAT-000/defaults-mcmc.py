@@ -36,13 +36,12 @@ assert_value( k["Solver"]["Chain Covariance Scaling"], 1.0 )
 assert_value( k["Solver"]["Max Chain Length"], 0 )
 assert_value( k["Solver"]["Non Adaption Period"], 0 )
 assert_value( k["Solver"]["Rejection Levels"], 1 )
-assert_boolean( k["Solver"]["Use Adaptive Sampling"], False)
+assert_value( k["Solver"]["Use Adaptive Sampling"], False)
 
 # Test Internals
 
-assert_value( k["Solver"]["Internal"]["Cholesky Decomposition of Chain Covariance"][0], 0.0 )
 assert_value( k["Solver"]["Internal"]["Chain Length"], 0.0 )
-assert_value( k["Solver"]["Internal"]["Cholesky Decomposition of Covariance"][0], 1.0 )
+assert_value( k["Solver"]["Internal"]["Cholesky Covariance"][0], 1.0 )
 assert_value( k["Solver"]["Internal"]["Rejection Alphas"][0], 0.0 )
 
 # Test Variables

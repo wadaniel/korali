@@ -114,11 +114,11 @@ void Korali::Engine::getConfiguration()
  _js["General"]["Function Evaluation Count"] = functionEvaluationCount;
  _js["General"]["Is Finished"] = _isFinished;
 
- for (int i = 0; i < _variables.size(); i++) _variables[i]->getConfiguration(_js["Variables"][i]);
-
  if (_problem != nullptr) _problem->getConfiguration();
  if (_conduit != nullptr) _conduit->getConfiguration();
  if (_conduit != nullptr) _solver->getConfiguration();
+
+ for (int i = 0; i < _variables.size(); i++) _variables[i]->getConfiguration(_js["Variables"][i]);
 }
 
 void Korali::Engine::setConfiguration()

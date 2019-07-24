@@ -24,6 +24,7 @@ int main(int argc, char* argv[])
 
  k["General"]["Console Output"]["Frequency"] = 1000;
  k["General"]["Results Output"]["Frequency"] = 1000;
+ k["General"]["Results Output"]["Path"] = "_result_run-mcmc";
 
  k.setModel(model);
  k.run();
@@ -31,7 +32,7 @@ int main(int argc, char* argv[])
  printf("\n\nRestarting now:\n\n");
 
  // Now we loadState() to resume the same experiment from generation 5.
- k.loadState("_korali_result/s01000.json");
+ k.loadState("_result_run-mcmc/s01000.json");
 
  k.run();
 }

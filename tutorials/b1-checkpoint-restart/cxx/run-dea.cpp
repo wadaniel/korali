@@ -25,6 +25,7 @@ int main(int argc, char* argv[])
  k["General"]["Max Generations"] = 50;
  k["General"]["Console Output"]["Frequency"] = 5;
  k["General"]["Results Output"]["Frequency"] = 5;
+ k["General"]["Results Output"]["Path"] = "_result_run-dea";
 
  k.setModel(model);
  k.run();
@@ -32,7 +33,7 @@ int main(int argc, char* argv[])
  printf("\n\nRestarting now...\n\n");
 
  // Now we loadState() to resume the same experiment from generation 5
- k.loadState("_korali_result/s00010.json");
+ k.loadState("_result_run-dea/s00010.json");
 
  k.run();
 

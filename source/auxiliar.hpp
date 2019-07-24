@@ -33,12 +33,13 @@ class KoraliJsonWrapper
 {
  public:
   nlohmann::json* _js;
+  std::string _key;
 
   double getValue()
   {
    double val = 0.0;
    if (_js->is_number()) val = *_js;
-   else { fprintf(stderr, "[Korali] Error: Attempted getValue() on non-numeric field.\n");  exit(-1); }
+   else { fprintf(stderr, "[Korali] Error: Attempted getValue() on non-numeric field: %s.\n", _key.c_str());  exit(-1); }
    return val;
   }
 
@@ -46,7 +47,7 @@ class KoraliJsonWrapper
   {
    bool tf = false;
    if (_js->is_boolean()) tf = *_js;
-   else { fprintf(stderr, "[Korali] Error: Attempted getBoolean() on non-boolean field.\n");  exit(-1); }
+   else { fprintf(stderr, "[Korali] Error: Attempted getBoolean() on non-boolean field: %s.\n", _key.c_str());  exit(-1); }
    return tf;
   }
 
@@ -54,7 +55,7 @@ class KoraliJsonWrapper
   {
    std::string str;
    if (_js->is_string()) str = *_js;
-   else { fprintf(stderr, "[Korali] Error: Attempted getString() on non-string field.\n");  exit(-1); }
+   else { fprintf(stderr, "[Korali] Error: Attempted getString() on non-string field: %s.\n", _key.c_str());  exit(-1); }
    return str;
   }
 
@@ -62,21 +63,21 @@ class KoraliJsonWrapper
   {
    std::vector<double> vec;
    if (_js->is_array() && (*_js)[0].is_number()) vec = _js->get<std::vector<double>>();
-   else { fprintf(stderr, "[Korali] Error: Attempted getArray() on non-array field or non-numeric array.\n");  exit(-1); }
+   else { fprintf(stderr, "[Korali] Error: Attempted getArray() on non-array field or non-numeric array: %s.\n", _key.c_str());  exit(-1); }
    return vec;
   }
 
-  KoraliJsonWrapper& getItem(const std::string& key)                   { _js = &((*_js)[key]); return *this;}
-  KoraliJsonWrapper& getItem(const unsigned long int& key)             { _js = &((*_js)[key]); return *this;}
-  void setItem(const std::string& key, const std::string& val)         { (*_js)[key] = val; }
-  void setItem(const std::string& key, const double& val)              { (*_js)[key] = val; }
-  void setItem(const std::string& key, const int& val)                 { (*_js)[key] = val; }
-  void setItem(const std::string& key, const bool& val)                { (*_js)[key] = val; }
-  void setItem(const std::string& key, const std::vector<double>& val) { (*_js)[key] = val; }
-  void setItem(const int& key, const std::string& val)                 { (*_js)[key] = val; }
-  void setItem(const int& key, const double& val)                      { (*_js)[key] = val; }
-  void setItem(const int& key, const int& val)                         { (*_js)[key] = val; }
-  void setItem(const int& key, const bool& val)                        { (*_js)[key] = val; }
+  KoraliJsonWrapper& getItem(const std::string& key)                   { _key = key; _js = &((*_js)[key]); return *this;}
+  KoraliJsonWrapper& getItem(const unsigned long int& key)             { _key = key; _js = &((*_js)[key]); return *this;}
+  void setItem(const std::string& key, const std::string& val)         { _key = key; (*_js)[key] = val; }
+  void setItem(const std::string& key, const double& val)              { _key = key; (*_js)[key] = val; }
+  void setItem(const std::string& key, const int& val)                 { _key = key; (*_js)[key] = val; }
+  void setItem(const std::string& key, const bool& val)                { _key = key; (*_js)[key] = val; }
+  void setItem(const std::string& key, const std::vector<double>& val) { _key = key; (*_js)[key] = val; }
+  void setItem(const int& key, const std::string& val)                 { _key = key; (*_js)[key] = val; }
+  void setItem(const int& key, const double& val)                      { _key = key; (*_js)[key] = val; }
+  void setItem(const int& key, const int& val)                         { _key = key; (*_js)[key] = val; }
+  void setItem(const int& key, const bool& val)                        { _key = key; (*_js)[key] = val; }
 };
 
 }

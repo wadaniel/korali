@@ -81,14 +81,12 @@
    {
     "Name": "Lower Bound",
     "Type": "Real",
-    "Default": "NAN",
-    "Description": "Specifies the lower bound for the variable's value. Korali will not generate samples for which this variable falls below the specified minimum. By default, Korali sets this value to -Infinity."
+    "Description": "Specifies the lower bound for the variable's value. Korali will not generate samples for which this variable falls below the specified minimum."
    },
    {
     "Name": "Upper Bound",
     "Type": "Real",
-    "Default": "NAN",
-    "Description": "Specifies the upper bound for the variable's value. Korali will not generate samples for which this variable falls below the specified maximum. By default, Korali sets this value to +Infinity."
+    "Description": "Specifies the upper bound for the variable's value. Korali will not generate samples for which this variable falls below the specified maximum."
    }
  ],
  

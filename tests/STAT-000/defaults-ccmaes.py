@@ -18,7 +18,7 @@ k["Variables"][0]["Name"] = "X";
 k["Variables"][0]["Lower Bound"] = -10.0;
 k["Variables"][0]["Upper Bound"] = +10.0;
 
-k["Solver"]["Type"]  = "CCMAES" 
+k["Solver"]["Type"]  = "CMAES" 
 k["Solver"]["Sample Count"] = 32
 
 k.dry()
@@ -32,7 +32,7 @@ assert_value( k["Solver"]["Global Success Learning Rate"], 0.2 )
 assert_value( k["Solver"]["Initial Cumulative Covariance"], -1.0 )
 assert_value( k["Solver"]["Initial Damp Factor"], -1.0 )
 assert_value( k["Solver"]["Initial Sigma Cumulation Factor"], -1.0 )
-assert_boolean( k["Solver"]["Is Sigma Bounded"], False )
+assert_value( k["Solver"]["Is Sigma Bounded"], False )
 assert_value( k["Solver"]["Max Covariance Matrix Corrections"], 1e6 )
 assert_string( k["Solver"]["Mu Type"], "Logarithmic" )
 assert_value( k["Solver"]["Mu Value"], 16 )
@@ -53,7 +53,7 @@ assert_value( k["Solver"]["Internal"]["Effective Mu"], 1.0 )
 assert_value( k["Solver"]["Internal"]["Global Success Rate"], 0.5 )
 assert_value( k["Solver"]["Internal"]["Sigma"], 6.0 )
 assert_value( k["Solver"]["Internal"]["Trace"], 36.0 )
-assert_boolean( k["Solver"]["Internal"]["Is Viability Regime"], True )
+assert_value( k["Solver"]["Internal"]["Is Viability Regime"], True )
 assert_value( k["Solver"]["Internal"]["Granularity"][0], 0.0 )
 assert_value( k["Solver"]["Internal"]["Number Discrete Mutations"], 0 )
 assert_value( k["Solver"]["Internal"]["Number Masking Matrix Entries"], 0 )
@@ -61,10 +61,10 @@ assert_value( k["Solver"]["Internal"]["Number Masking Matrix Entries"], 0 )
 # Testing Termination Criteria
 
 assert_value( k["Solver"]["Termination Criteria"]["Max Condition Covariance Matrix"]["Value"], 1e18 )
-assert_boolean( k["Solver"]["Termination Criteria"]["Max Fitness"]["Enabled"], False )
+assert_value( k["Solver"]["Termination Criteria"]["Max Fitness"]["Enabled"], False )
 assert_value( k["Solver"]["Termination Criteria"]["Max Infeasible Resampling"]["Value"], 1e9 )
 assert_value( k["Solver"]["Termination Criteria"]["Max Standard Deviation"]["Value"], 1e18)
-assert_boolean( k["Solver"]["Termination Criteria"]["Min Fitness"]["Enabled"], False )
+assert_value( k["Solver"]["Termination Criteria"]["Min Fitness"]["Enabled"], False )
 assert_value( k["Solver"]["Termination Criteria"]["Min Fitness Diff Threshold"]["Value"], 1e-9 )
 assert_value( k["Solver"]["Termination Criteria"]["Min Standard Deviation"]["Value"], 1e-12 )
 assert_value( k["Solver"]["Termination Criteria"]["Min Standard Deviation Step Factor"]["Value"], 1e-18 )

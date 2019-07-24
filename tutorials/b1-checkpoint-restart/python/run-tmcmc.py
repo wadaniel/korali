@@ -24,12 +24,14 @@ k["Variables"][0]["Prior Distribution"]["Maximum"] = +10.0
 k["Solver"]["Type"]  = "TMCMC"
 k["Solver"]["Population Size"] = 5000
 
+k["General"]["Results Output"]["Path"] = "_result_run-tmcmc"
+
 k.setModel(model)
 k.run()
 
 print("\n\nRestarting now:\n\n");
 
 # Now we loadState() to resume the same experiment from generation 5.
-k.loadState("_korali_result/s00001.json")
+k.loadState("_result_run-tmcmc/s00002.json")
 
 k.run()

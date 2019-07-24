@@ -365,7 +365,7 @@
    {
     "Name": "Current Mean",
     "Type": "(Array of) Real",
-    "Description": "Vector pointing from old mean to mean."
+    "Description": "Current Mean Distribution Proposal."
    },
    {
     "Name": "Evolution Path",

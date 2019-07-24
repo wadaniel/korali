@@ -144,7 +144,6 @@ void Korali::Variable::getDistribution(nlohmann::json& js)
   js["Success Probability"] = _a;
  }
 
- getSolverSettings(js);
 }
 
 /************************************************************************/

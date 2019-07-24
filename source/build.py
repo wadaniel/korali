@@ -31,27 +31,27 @@ def getVariableDefault(v):
 def consumeValue(base, moduleName, settingName, varName, varType, varDefault, path = []):
  cString = '\n'
  
- cString += (' if (isDefined(' + base + ', {')
+ cString += ('  if (isDefined(' + base + ', {')
  for p in path: cString += (' "' + p +'",')
- cString += (' "' + settingName + '"})) \n { \n')
+ cString += (' "' + settingName + '"})) \n  { \n')
 
- cString += ('  ' + varName + ' = ' + base )
+ cString += ('   ' + varName + ' = ' + base )
  for p in path: cString += ('.at("' + p +'")')
  getLine = '.at("' + settingName + '").get<' + varType + '>();\n'
  cString += getLine
  
- cString += ('  ' + base)
+ cString += ('   ' + base)
  for p in path: cString += ('.at("' + p +'")')
  cString += ('.erase("' + settingName + '");\n')
  
- cString += (' }\n')
+ cString += ('  }\n')
  
  if (varDefault == 'Korali Skip Default'):
   return cString
  
- cString += (' else ')
+ cString += ('  else ')
  if (varDefault == ''):
-  cString += (' koraliError("No value provided for mandatory setting: ')
+  cString += ('  koraliError("No value provided for mandatory setting: ')
   for p in path: cString += ('[' + p + '] > ')
   cString += ('[' + settingName + '], required by ' + moduleName + '.\\n"); ')
  else:
@@ -79,8 +79,12 @@ configFile.write('#include "korali.hpp"\n')
 
 # Loading template variable header file
 with open('./.variable.hpp', 'r') as file: variableHeaderString = file.read()
-variableSettingString = '' 
+variableSettingDeclarationsString = '' 
 variableSettingSet = set()
+
+# Creating External Setting Strings for Variables
+variableSetSolverSettingString = ''
+variableGetSolverSettingString = ''
  
 # Processing Solvers
 for solverPath in solverPaths:
@@ -121,7 +125,7 @@ for solverPath in solverPaths:
  # Reading variable-specific configuration
  for v in solverConfig["Variables Configuration"]:
   if (not v["Name"] in variableSettingSet):
-   variableSettingString += getVariableType(v) + ' ' + getVariableName(v) + ';\n'
+   variableSettingDeclarationsString += getVariableType(v) + ' ' + getVariableName(v) + ';\n'
    variableSettingSet.add(v["Name"])
    
  ###### Creating Solver Set Configuration routine
@@ -141,7 +145,12 @@ for solverPath in solverPaths:
    terminationString = terminationString.replace(getVariableName(v) + ' = ', getVariableName(v) + 'Enabled = true;\n  ' + getVariableName(v) + ' = ')
    configFile.write(terminationString)
    configFile.write(consumeValue('_k->_js', solverConfig["Module Alias"], v["Name"] + ' Triggered', getVariableName(v) + 'Triggered', 'bool', 'false', [ 'Solver', 'Termination Criteria' ]))
-   
+ 
+ variableSetSolverSettingString += ' if (_k->_js["Solver"] == "' + solverConfig["Module Alias"] + '")\n {\n'
+ for v in solverConfig["Variables Configuration"]: 
+   variableSetSolverSettingString += consumeValue('js', solverConfig["Module Alias"], v["Name"], getVariableName(v), getVariableType(v), 'Korali Skip Default', [  ])
+ variableSetSolverSettingString += ' }\n'
+ 
  configFile.write('} \n\n')
  
  ###### Creating Solver Get Configuration routine
@@ -159,14 +168,29 @@ for solverPath in solverPaths:
  for v in solverConfig["Termination Criteria"]: 
    configFile.write(' if (' + getVariableName(v) + 'Enabled == true) _k->_js["Solver"]["Termination Criteria"]["' + v["Name"] + '"] = ' + getVariableName(v) + ';\n')
    configFile.write(' _k->_js["Solver"]["Termination Criteria"]["' + v["Name"] + ' Triggered"] = ' + getVariableName(v) + 'Triggered;\n')
-  
+ 
+ variableGetSolverSettingString += ' if (_k->_js["Solver"] == "' + solverConfig["Module Alias"] + '")\n {\n'
+ for v in solverConfig["Variables Configuration"]: 
+   variableGetSolverSettingString += '  js["' + v["Name"] + '"] = ' + getVariableName(v) + ';\n'
+ variableGetSolverSettingString += ' }\n\n'
+ 
  configFile.write(' } \n\n')
  
  ###### Finished Parsing Solver
 
+# Saving variable solver configuration
+configFile.write('void Korali::Variable::setSolverSettings(nlohmann::json& js)\n{\n')
+configFile.write(variableSetSolverSettingString)
+configFile.write('}\n\n')
+
+# Saving variable solver configuration
+configFile.write('void Korali::Variable::getSolverSettings(nlohmann::json& js)\n{\n')
+configFile.write(variableGetSolverSettingString)
+configFile.write('}\n\n')
+
 # Saving new variable.hpp file
 variableNewHeaderFile = './variable.hpp'
-newHeaderString = variableHeaderString.replace('public:', 'public: \n' + variableSettingString + '\n')
+newHeaderString = variableHeaderString.replace('public:', 'public: \n' + variableSettingDeclarationsString + '\n')
 with open(variableNewHeaderFile, 'w') as file: file.write(newHeaderString)
 
 configFile.close()

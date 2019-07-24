@@ -25,8 +25,10 @@ k["Variables"][0]["Upper Bound"] = +10.0
 # Configuring CMA-ES parameters
 k["Solver"]["Type"] = "CMAES"
 k["Solver"]["Sample Count"] = 32
+k["Solver"]["Termination Criteria"]["Min Fitness Diff Threshold"] = 1e-7
 
 # Setting computational model
+k["General"]["Max Generations"] = 100;
 k.setModel(model)
 
 # Running Korali

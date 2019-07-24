@@ -66,8 +66,8 @@ def plot_dea(src, live=False, test=False):
 
             for i in range(numdim):
                 fvalXvec[i].append(state['Current Best Sample'][i])
-                meanXvec[i].append(state['Mean'][i])
-                width[i].append(state['Max Width'][i])
+                meanXvec[i].append(state['Sample Means'][i])
+                width[i].append(state['Max Distances'][i])
 
             if (live == False):
                 continue

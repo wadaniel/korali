@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
 
     if( i == 0 || i == 1 || i == 3 || i == 6)
     {
-      k["Variables"][i]["Discrete"]    = true;
+      k["Variables"][i]["Is Discrete"]    = true;
       k["Variables"][i]["Granularity"] = 1.0;
     }
   }
@@ -36,10 +36,11 @@ int main(int argc, char* argv[])
   // Configuring CMA-ES parameters
   k["Solver"]["Type"] = "CMAES";
   k["Solver"]["Sample Count"] = 8;
-  k["Solver"]["Termination Criteria"]["Min Fitness Diff Threshold"]["Value"] = 1e-9;
-  k["Solver"]["Termination Criteria"]["Min Fitness Diff Threshold"]["Enabled"] = true;
+  k["Solver"]["Termination Criteria"]["Min Fitness Diff Threshold"] = 1e-9;
 
-  k["General"]["Max Generations"] = 1000;
+  k["General"]["Max Generations"] = 500;
+  k["General"]["Console Output"]["Frequency"] = 50;
+  k["General"]["Results Output"]["Frequency"] = 50;
 
   // Running Korali
   k.run();

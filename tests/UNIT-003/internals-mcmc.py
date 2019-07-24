@@ -25,8 +25,8 @@ def compareStd(js):
 
     mean     = np.mean(samples)
     std      = np.sqrt(sum((samples - mean)**2)/(len(samples)-1))
-    chainstd = js["Solver"]["Internal"]["Cholesky Decomposition of Chain Covariance"]
-    assert np.isclose(std, chainstd), "Cholesky Decomposition of Chain " \
+    chainstd = js["Solver"]["Internal"]["Chain Cholesky Covariance"]
+    assert np.isclose(std, chainstd), "Cholesky Decomposition of Chain" \
             "Covariance deviates from Standard Deviation of Samples"
 
 src_py  = "../REG-001/tutorials/a2-sampling/python/_result_run-mcmc/"

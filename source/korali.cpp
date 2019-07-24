@@ -71,8 +71,8 @@ PYBIND11_MODULE(libkorali, m) {
 
 Korali::Engine::Engine() : _solver(nullptr), _problem(nullptr), _conduit(nullptr)
 {
- _runId             = 0;
- _modelDefined      = false;
+ _runId        = 0;
+ _modelDefined = false;
  consoleOutputFrequency = 1;
  resultsOutputFrequency = 1;
  _isFinished = false;
@@ -231,6 +231,7 @@ void Korali::Engine::addConstraint(std::function<void(Korali::Model&)> constrain
 
 void Korali::Engine::start(bool isDryRun)
 {
+ if(_isFinished) { koraliWarning(KORALI_MINIMAL, "Cannot restart engine, a previous run has already been executed."); return; }
  _k = this; 
 
  setConfiguration();

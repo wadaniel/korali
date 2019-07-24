@@ -23,7 +23,7 @@ k["Variables"][0]["Lower Bound"] = -10.0
 k["Variables"][0]["Upper Bound"] = +10.0
 
 # Configuring CMA-ES parameters
-k["Solver"]["Type"]  = "CMAES"
+k["Solver"]["Type"] = "CMAES"
 k["Solver"]["Sample Count"] = 32
 
 # Setting computational model

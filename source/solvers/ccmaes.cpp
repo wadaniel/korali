@@ -100,11 +100,11 @@ void CCMAES::initialize()
  if (_constraintsDefined)
  {
   if( (_globalSuccessLearningRate <= 0.0) || (_globalSuccessLearningRate > 1.0) ) 
-    koraliError("CCMAES Error: Invalid Global Success Learning Rate (%f), must be greater than 0.0 and less than 1.0\n",  _globalSuccessLearningRate );
+    koraliError("Invalid Global Success Learning Rate (%f), must be greater than 0.0 and less than 1.0\n",  _globalSuccessLearningRate );
   if( (_targetSuccessRate <= 0.0) || (_targetSuccessRate > 1.0) )
-    koraliError("CCMAES Error: Invalid Target Success Rate (%f), must be greater than 0.0 and less than 1.0\n",  _targetSuccessRate );
+    koraliError("Invalid Target Success Rate (%f), must be greater than 0.0 and less than 1.0\n",  _targetSuccessRate );
   if(_covarianceMatrixAdaptionStrength <= 0.0) 
-    koraliError(" CCMAES Error: Invalid Adaption Size (%f), must be greater than 0.0\n", _covarianceMatrixAdaptionStrength );
+    koraliError("Invalid Adaption Size (%f), must be greater than 0.0\n", _covarianceMatrixAdaptionStrength );
 
   _globalSuccessRate = 0.5;
   _bestValidSample   = -1;
@@ -150,18 +150,31 @@ void CCMAES::initialize()
  _bestEverValue = -std::numeric_limits<double>::max();
  _conjugateEvolutionPathL2Norm = 0.0;
 
+ /* check variable defaults */
+ for (size_t i = 0; i < _k->N; ++i)
+ {
+   if( std::isnan(_variableSettings[i].initialMean) ) 
+     koraliError("Lower/ Upper Bounds and Initial Mean of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
+   if( std::isnan(_variableSettings[i].initialStdDev) )
+     koraliError("Lower/ Upper Bounds and Initial Standard Deviation of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
+ }
+ 
  /* set _mean */
  for (size_t i = 0; i < _k->N; ++i)
  {
+   if( std::isnan(_variableSettings[i].lowerBound) ) _variableSettings[i].lowerBound = -1.0*std::numeric_limits<double>::max(); 
+   if( std::isnan(_variableSettings[i].upperBound) ) _variableSettings[i].upperBound = +1.0*std::numeric_limits<double>::max(); 
+
    if(_variableSettings[i].initialMean < _variableSettings[i].lowerBound || _variableSettings[i].initialMean > _variableSettings[i].upperBound)
-   koraliWarning(KORALI_MINIMAL, "Initial Value (%.4f) of variable \'%s\' is out of bounds (%.4f-%.4f).\n",
+   koraliError("Initial Mean (%.4f) of variable \'%s\' is out of bounds (%.4f-%.4f).\n",
             _variableSettings[i].initialMean,
             _k->_variables[i]->_name.c_str(),
             _variableSettings[i].lowerBound,
             _variableSettings[i].upperBound);
+
    _mean[i] = _previousMean[i] = _variableSettings[i].initialMean;
  }
-
+ 
  /* set _granularity for discrete variables */
  size_t numDiscretes = 0;
  for (size_t i = 0; i < _k->N; ++i)
@@ -184,8 +197,6 @@ void CCMAES::initialize()
    _uniformGenerator = std::make_shared<Variable>();
    _uniformGenerator->setDistribution(jsUniform);
  }
- 
-
 
 }
 
@@ -227,7 +238,7 @@ void CCMAES::initMuWeights(size_t numsamplesmu)
  if      (_muType == "Linear")       for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = numsamplesmu - i;
  else if (_muType == "Equal")        for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = 1.;
  else if (_muType == "Logarithmic")  for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = log(std::max( (double)numsamplesmu, 0.5*_currentSampleCount)+0.5)-log(i+1.);
- else  koraliError("CCMAES - Invalid setting of Mu Type (%s) (Linear, Equal, or Logarithmic accepted).",  _muType.c_str());
+ else  koraliError("Invalid setting of Mu Type (%s) (Linear, Equal, or Logarithmic accepted).",  _muType.c_str());
 
  // Normalize weights vector and set mueff
  double s1 = 0.0;
@@ -263,15 +274,6 @@ void CCMAES::initMuWeights(size_t numsamplesmu)
 void CCMAES::initCovariance()
 {
 
- for(size_t d = 0; d < _k->N; ++d)
- {
-    if ( _variableSettings[d].initialStdDev<0 )
-    if ( std::isfinite(_variableSettings[d].lowerBound) && std::isfinite(_variableSettings[d].upperBound ) )
-            _variableSettings[d].initialStdDev = 0.3*(_variableSettings[d].upperBound-_variableSettings[d].lowerBound);
-    else 
-        koraliError("Lower/Upper Bound not defined, and Initial Standard Dev not defined for variable '%s'\n", _k->_variables[d]->_name.c_str());
- }
- 
  // Setting Sigma
  _trace = 0.0;
  for (size_t i = 0; i < _k->N; ++i) _trace += _variableSettings[i].initialStdDev*_variableSettings[i].initialStdDev;
@@ -944,7 +946,7 @@ void CCMAES::sort_index(const std::vector<double>& vec, std::vector<size_t>& _so
 
 void CCMAES::printGeneration()
 {
- koraliLog(KORALI_MINIMAL, "CCMAES Generation %zu\n", _k->currentGeneration);
+ koraliLog(KORALI_MINIMAL, "Generation %zu\n", _k->currentGeneration);
 
  if ( _constraintsDefined && _isViabilityRegime)
  {
@@ -990,7 +992,7 @@ void CCMAES::printGeneration()
 
 void CCMAES::finalize()
 {
-  koraliLog(KORALI_MINIMAL, "CCMAES Finished\n");
+  koraliLog(KORALI_MINIMAL, "Finished\n");
   koraliLog(KORALI_MINIMAL, "Optimum found: %e\n", _bestEverValue);
   koraliLog(KORALI_MINIMAL, "Optimum found at:\n");
   for (size_t d = 0; d < _k->N; ++d) koraliLogData(KORALI_MINIMAL, "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverSample[d]);

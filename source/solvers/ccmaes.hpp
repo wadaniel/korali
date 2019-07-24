@@ -515,7 +515,7 @@ Type: Internal Attribute
 Default Value:
 Default Enabled:
 Description:
-Sorting _sortingIndex of current sample pop (_sortingIndex[0] idx of current best).
+Sorted indeces of samples according to their fitness value.
 ******************************************************************************/
 std::vector<size_t> _sortingIndex;
 
@@ -994,47 +994,47 @@ struct variableSetting
 /******************************************************************************
 Setting Name: Lower Bound
 Type: Variable Setting
-Default Value: -std::numeric_limits<float>::max()
+Default Value: NAN
 Default Enabled:
 Description:
-Specifies the lower bound for the variable's value. Korali will not generate samples
-for which this variable falls below the specified minimum. By default, Korali sets this
-value to -Infinity.
+Specifies the lower bound for the variable's value. Korali will not generate 
+samples for which this variable falls below the specified minimum. By default, 
+Korali sets this value to NAN.
 ******************************************************************************/
 double lowerBound;
 
 /******************************************************************************
 Setting Name: Upper Bound
 Type: Variable Setting
-Default Value: +std::numeric_limits<float>::max()
+Default Value: NAN
 Default Enabled:
 Description:
-Specifies the upper bound for the variable's value. Korali will not generate samples
-for which this variable falls below the specified maximum. By default, Korali sets this
-value to +Infinity.
+Specifies the upper bound for the variable's value. Korali will not generate 
+samples for which this variable falls below the specified maximum. By default, 
+Korali sets this value to NAN.
 ******************************************************************************/
 double upperBound;
 
 /******************************************************************************
 Setting Name: Initial Mean
 Type: Variable Setting
-Default Value: (_variableSettings[i].upperBound + _variableSettings[i].lowerBound)*0.5
+Default Value: 0.5*(_variableSettings[i].upperBound + _variableSettings[i].lowerBound)
 Default Enabled:
 Description:
-Defines the initial mean for the proposal distribution. This value must be defined
-between the variable's Mininum and Maximum settings By default, Korali sets this
-value in the center of the domain.
+Defines the initial mean for the proposal distribution. This value must be 
+defined between the variable's Mininum and Maximum settings. By default, Korali
+sets this value in the center of the domain.
 ******************************************************************************/
 double initialMean;
 
 /******************************************************************************
 Setting Name: Initial Standard Deviation
 Type: Variable Setting
-Default Value: (_variableSettings[i].upperBound - _variableSettings[i].lowerBound)*0.25
+Default Value: 0.3*(_variableSettings[i].upperBound - _variableSettings[i].lowerBound)
 Default Enabled:
 Description:
-Defines the initial standard deviation of the proposal distribution for a variable.
-By default, Korali sets this value to 30% of the domain width.
+Defines the initial standard deviation of the proposal distribution for a 
+variable. By default, Korali sets this value to 30% of the domain width.
 ******************************************************************************/
 double initialStdDev;
 
@@ -1044,9 +1044,9 @@ Type: Variable Setting
 Default Value: 0.0
 Default Enabled:
 Description:
-Defines a lower bound for the standard deviation updates of the proposal distribution for a variable.
-Korali increases the scaling factor $\sigma$ if this value is undershot. By default,
-Korali sets this value to 0.0 (inactive).
+Defines a lower bound for the standard deviation updates of the proposal
+distribution for a variable. Korali increases the scaling factor $\sigma$ if 
+this value is undershot. By default, Korali sets this value to 0.0 (inactive).
 ******************************************************************************/
 double minStdDevChange;
 

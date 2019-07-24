@@ -37,6 +37,8 @@ void Korali::Solver::TMCMC::initialize()
  if (pName == "Hierarchical Bayesian")  acceptableProblem = true;
  if (acceptableProblem == false) koraliError("TMCMC cannot solve problems of type: '%s'.\n", pName.c_str());
 
+ if(_maxChainLength == 0) koraliError("Max Chain Length must be greater 0.");
+
  // Allocating TMCMC memory
  _covarianceMatrix.resize(_k->N*_k->N);
  _meanTheta.resize(_k->N);
@@ -240,13 +242,19 @@ void Korali::Solver::TMCMC::processGeneration()
 	gsl_matrix_view sigma = gsl_matrix_view_array(&_covarianceMatrix[0], _k->N,_k->N);
 	gsl_linalg_cholesky_decomp( &sigma.matrix );
 
-	size_t ldi = 0;
+    size_t leaderChainLen; 
+	size_t leaderId = 0;
 	for (size_t i = 0; i < _databaseEntryCount; i++) {
-	 if (sel[i] != 0) {
-		 for (size_t j = 0; j < _k->N ; j++) _chainLeadersParameters[ldi*_k->N + j] = _sampleParametersDatabase[i*_k->N + j];
-		 _chainLeadersLogLikelihoods[ldi] = _sampleFitnessDatabase[i];
-		 _chainLengths[ldi] = sel[i] + _burnInDefault;
-		 ldi++;
+	 while (sel[i] != 0) {
+		 for (size_t j = 0; j < _k->N ; j++) _chainLeadersParameters[leaderId*_k->N + j] = _sampleParametersDatabase[i*_k->N + j];
+		 _chainLeadersLogLikelihoods[leaderId] = _sampleFitnessDatabase[i];
+         
+         if (sel[i] > _maxChainLength) leaderChainLen = _maxChainLength;
+         else leaderChainLen = sel[i];
+         
+		 _chainLengths[leaderId] = leaderChainLen + _burnInDefault;
+         sel[i] -= leaderChainLen;
+		 leaderId++;
 	 }
 	}
 

@@ -119,6 +119,17 @@ By default, Korali sets this value 0.04 as suggested in [Ching2007].
 double _covarianceScaling;
 
 /******************************************************************************
+Setting Name: Max Chain Length
+Type: Solver Setting
+Default Value: std::numeric_limits<size_t>::max()
+Default Enabled:
+Description:
+Chains longer than Max Chain Length will be broken and samples will be 
+duplicated (replacing samples associated with a chain length of 0).
+******************************************************************************/
+double _maxChainLength;
+
+/******************************************************************************
 Setting Name: Use Local Covariance
 Type: Solver Setting
 Default Value: false

@@ -8,7 +8,7 @@
 
 namespace Korali { namespace Solver {
 
-class CCMAES : public Base
+class CMAES : public Base
 {
  private:
 
@@ -18,14 +18,14 @@ class CCMAES : public Base
   void prepareGeneration();
   void sampleSingle(size_t sampleIdx); /* sample individual */
   void evaluateSamples(); /* evaluate all samples until done */
-  void adaptC(int hsig); /* CCMAES covariance matrix adaption */
+  void adaptC(int hsig); /* CMAES covariance matrix adaption */
   void updateSigma(); /* update Sigma */
   void updateEigensystem(std::vector<double>& M);
   void numericalErrorTreatment();
   void eigen(size_t N, std::vector<double>& C, std::vector<double>& diag, std::vector<double>& Q) const;
   void sort_index(const std::vector<double>& vec, std::vector<size_t>& _sortingIndex, size_t n) const;
   bool isFeasible(size_t sampleIdx) const; /* check if sample inside lower & upper bounds */
-  // Private CCCMAES-Specific Methods
+  // Private CCMAES-Specific Methods
   void initMuWeights(size_t numsamples); /* init _muWeights and dependencies */
   void initCovariance(); /* init sigma, C and B */
   void checkMeanAndSetRegime(); /* check if mean inside valid domain, if yes, update internal vars */
@@ -38,8 +38,8 @@ class CCMAES : public Base
 
  public:
 
- CCMAES();
- ~CCMAES();
+ CMAES();
+ ~CMAES();
 
  bool checkTermination() override;
  void updateDistribution();

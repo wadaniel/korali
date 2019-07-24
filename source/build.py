@@ -9,7 +9,7 @@ def getVariableType(v):
  if ('Signed Integer' in v["Type"]): cTypeString = 'int'
  if ('Unsigned Integer' in v["Type"]): cTypeString = 'size_t'
  if ('String' in v["Type"]): cTypeString = 'std::string'
- if ('Boolean' in v["Type"]): cTypeString = 'bool'
+ if ('Boolean' in v["Type"]): cTypeString = 'int'
  
  arrayDepth = v["Type"].count("(Array of)")
  for x in range(arrayDepth):
@@ -105,8 +105,8 @@ for solverPath in solverPaths:
     
  for v in solverConfig["Termination Criteria"]:
   solverSettingString += getVariableType(v) + ' ' + getVariableName(v) + ';\n'
-  solverSettingString += 'bool ' + getVariableName(v) + 'Enabled;\n'
-  solverSettingString += 'bool ' + getVariableName(v) + 'Triggered;\n'
+  solverSettingString += 'int ' + getVariableName(v) + 'Enabled;\n'
+  solverSettingString += 'int ' + getVariableName(v) + 'Triggered;\n'
   
  for v in solverConfig["Internal Settings"]:
   solverSettingString += getVariableType(v) + ' ' + getVariableName(v) + ';\n'
@@ -140,13 +140,13 @@ for solverPath in solverPaths:
    configFile.write(consumeValue('_k->_js', solverConfig["Module Alias"], v["Name"], getVariableName(v), getVariableType(v), 'Korali Skip Default', [ 'Solver', 'Internals' ]))
  
  for v in solverConfig["Termination Criteria"]:
-   configFile.write('\n ' + getVariableName(v) + 'Enabled = false;')
+   configFile.write('\n ' + getVariableName(v) + 'Enabled = 0;')
    terminationString = consumeValue('_k->_js', solverConfig["Module Alias"], v["Name"], getVariableName(v), getVariableType(v), 'Korali Skip Default', [ 'Solver', 'Termination Criteria' ]) 
-   terminationString = terminationString.replace(getVariableName(v) + ' = ', getVariableName(v) + 'Enabled = true;\n  ' + getVariableName(v) + ' = ')
+   terminationString = terminationString.replace(getVariableName(v) + ' = ', getVariableName(v) + 'Enabled = 1;\n  ' + getVariableName(v) + ' = ')
    configFile.write(terminationString)
-   configFile.write(consumeValue('_k->_js', solverConfig["Module Alias"], v["Name"] + ' Triggered', getVariableName(v) + 'Triggered', 'bool', 'false', [ 'Solver', 'Termination Criteria' ]))
+   configFile.write(consumeValue('_k->_js', solverConfig["Module Alias"], v["Name"] + ' Triggered', getVariableName(v) + 'Triggered', 'int', '0', [ 'Solver', 'Termination Criteria' ]))
  
- variableSetSolverSettingString += ' if (_k->_js["Solver"] == "' + solverConfig["Module Alias"] + '")\n {\n'
+ variableSetSolverSettingString += ' if (isDefined(_k->_js, { "Solver", "Type" })) if (_k->_js["Solver"]["Type"] == "' + solverConfig["Module Alias"] + '")\n {\n'
  for v in solverConfig["Variables Configuration"]: 
    variableSetSolverSettingString += consumeValue('js', solverConfig["Module Alias"], v["Name"], getVariableName(v), getVariableType(v), 'Korali Skip Default', [  ])
  variableSetSolverSettingString += ' }\n'
@@ -166,10 +166,10 @@ for solverPath in solverPaths:
    configFile.write(' _k->_js["Solver"]["Internals"]["' + v["Name"] + '"] = ' + getVariableName(v) + ';\n')
  
  for v in solverConfig["Termination Criteria"]: 
-   configFile.write(' if (' + getVariableName(v) + 'Enabled == true) _k->_js["Solver"]["Termination Criteria"]["' + v["Name"] + '"] = ' + getVariableName(v) + ';\n')
+   configFile.write(' if (' + getVariableName(v) + 'Enabled == 1) _k->_js["Solver"]["Termination Criteria"]["' + v["Name"] + '"] = ' + getVariableName(v) + ';\n')
    configFile.write(' _k->_js["Solver"]["Termination Criteria"]["' + v["Name"] + ' Triggered"] = ' + getVariableName(v) + 'Triggered;\n')
  
- variableGetSolverSettingString += ' if (_k->_js["Solver"] == "' + solverConfig["Module Alias"] + '")\n {\n'
+ variableGetSolverSettingString += ' if (isDefined(_k->_js, { "Solver", "Type" })) if (_k->_js["Solver"]["Type"] == "' + solverConfig["Module Alias"] + '")\n {\n'
  for v in solverConfig["Variables Configuration"]: 
    variableGetSolverSettingString += '  js["' + v["Name"] + '"] = ' + getVariableName(v) + ';\n'
  variableGetSolverSettingString += ' }\n\n'

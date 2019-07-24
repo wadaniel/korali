@@ -90,8 +90,6 @@ void Korali::Variable::setDistribution(nlohmann::json& js)
  if (_distributionType == KoraliLaplaceDistribution)     { _aux = -gsl_sf_log(2.*_b); }
  if (_distributionType == KoraliUniformDistribution)     { _aux = -gsl_sf_log(_b-_a); }
  if (_distributionType == KoraliGeometricDistribution)   { _aux = 0.0; }
-
- setSolverSettings(js);
 };
 
 void Korali::Variable::getDistribution(nlohmann::json& js)
@@ -158,6 +156,7 @@ void Korali::Variable::getConfiguration(nlohmann::json& js)
  js["Log Space"] = _isLogSpace;
  js["Name"] = _name;
  getDistribution(js["Prior Distribution"]);
+ getSolverSettings(js);
 }
 
 void Korali::Variable::setConfiguration(nlohmann::json& js)
@@ -165,6 +164,7 @@ void Korali::Variable::setConfiguration(nlohmann::json& js)
  _isLogSpace = consume(js, { "Log Space"}, KORALI_BOOLEAN, "false");
  _name = consume(js, { "Name" }, KORALI_STRING);
  setDistribution(js["Prior Distribution"]);
+ setSolverSettings(js);
 }
 
 double Korali::Variable::getDensity(double x)

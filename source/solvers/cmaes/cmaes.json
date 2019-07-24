@@ -1,6 +1,6 @@
 {
- "Module Name": "Constrained Covariance Matrix Adaptation Evolution Strategy",
- "Module Alias": "CCMAES",
+ "Module Name": "Covariance Matrix Adaptation Evolution Strategy",
+ "Module Alias": "CMAES",
  
  "Module Configuration": 
  [

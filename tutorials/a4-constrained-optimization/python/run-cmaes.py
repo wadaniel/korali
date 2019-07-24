@@ -26,7 +26,7 @@ for i in range(7) :
   k["Variables"][i]["Upper Bound"] = +10.0
 
 # Configuring the constrained optimizer CCMA-ES
-k["Solver"]["Type"]  = "CCMAES"
+k["Solver"]["Type"]  = "CMAES"
 k["Solver"]["Is Sigma Bounded"] = True
 k["Solver"]["Sample Count"] = 32
 k["Solver"]["Viability Sample Count"] = 4

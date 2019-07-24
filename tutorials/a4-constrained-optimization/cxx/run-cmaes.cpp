@@ -25,12 +25,11 @@ int main(int argc, char* argv[])
  }
 
  // Configuring the constrained optimizer CCMAES
- k["Solver"]["Type"]  = "CCMAES";
+ k["Solver"]["Type"]  = "CMAES";
  k["Solver"]["Is Sigma Bounded"] = true;
  k["Solver"]["Sample Count"] = 32;
  k["Solver"]["Viability Sample Count"] = 4;
- k["Solver"]["Termination Criteria"]["Max Fitness"]["Enabled"] = true;
- k["Solver"]["Termination Criteria"]["Max Fitness"]["Value"] = -680.630057374402 - 1e-4;
+ k["Solver"]["Termination Criteria"]["Max Fitness"] = -680.630057374402 - 1e-4;
 
  // General Settings
  k["General"]["Max Generations"] = 500;

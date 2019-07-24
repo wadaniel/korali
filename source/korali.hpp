@@ -15,7 +15,7 @@
 #include "problems/hierarchical.hpp"
 #include "problems/constrained.hpp"
 
-#include "solvers/ccmaes/ccmaes.hpp"
+#include "solvers/cmaes/cmaes.hpp"
 #include "solvers/dea/dea.hpp"
 #include "solvers/mcmc/mcmc.hpp"
 #include "solvers/tmcmc/tmcmc.hpp"

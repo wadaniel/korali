@@ -8,7 +8,7 @@
 
 using namespace Korali::Solver;
 
-CCMAES::CCMAES()
+CMAES::CMAES()
 {
  // Initializing Gaussian Generator
  auto jsGaussian = nlohmann::json();
@@ -22,12 +22,12 @@ CCMAES::CCMAES()
  _uniformGenerator = nullptr;
 }
 
-CCMAES::~CCMAES()
+CMAES::~CMAES()
 {
 }
 
 
-void CCMAES::initialize()
+void CMAES::initialize()
 {
  // Checking for accepted problem types
  std::string pName = _k->_js["Problem"]["Type"];
@@ -35,7 +35,7 @@ void CCMAES::initialize()
  if (pName == "Optimization")  acceptableProblem = true;
  if (pName == "Constrained Optimization")  acceptableProblem = true;
  if (pName == "Bayesian Inference")  acceptableProblem = true;
- if (acceptableProblem == false) koraliError("CCMAES cannot solve problems of type: '%s'.\n", pName.c_str());
+ if (acceptableProblem == false) koraliError("CMAES cannot solve problems of type: '%s'.\n", pName.c_str());
 
  size_t s_max  = std::max(_sampleCount,  _viabilitySampleCount);
  size_t mu_max = std::max(_muValue, _viabilityMu);
@@ -96,15 +96,15 @@ void CCMAES::initialize()
  // Initailizing Mu
  _muWeights.resize(mu_max);
 
- // CCMAES variables
+ // CMAES variables
  if (_constraintsDefined)
  {
   if( (_globalSuccessLearningRate <= 0.0) || (_globalSuccessLearningRate > 1.0) ) 
-    koraliError("CCMAES Error: Invalid Global Success Learning Rate (%f), must be greater than 0.0 and less than 1.0\n",  _globalSuccessLearningRate );
+    koraliError("CMAES Error: Invalid Global Success Learning Rate (%f), must be greater than 0.0 and less than 1.0\n",  _globalSuccessLearningRate );
   if( (_targetSuccessRate <= 0.0) || (_targetSuccessRate > 1.0) )
-    koraliError("CCMAES Error: Invalid Target Success Rate (%f), must be greater than 0.0 and less than 1.0\n",  _targetSuccessRate );
+    koraliError("CMAES Error: Invalid Target Success Rate (%f), must be greater than 0.0 and less than 1.0\n",  _targetSuccessRate );
   if(_covarianceMatrixAdaptionStrength <= 0.0) 
-    koraliError(" CCMAES Error: Invalid Adaption Size (%f), must be greater than 0.0\n", _covarianceMatrixAdaptionStrength );
+    koraliError(" CMAES Error: Invalid Adaption Size (%f), must be greater than 0.0\n", _covarianceMatrixAdaptionStrength );
 
   _globalSuccessRate = 0.5;
   _bestValidSample   = -1;
@@ -190,7 +190,7 @@ void CCMAES::initialize()
 }
 
 
-void CCMAES::runGeneration()
+void CMAES::runGeneration()
 {
  if ( _constraintsDefined ) checkMeanAndSetRegime();
  prepareGeneration();
@@ -200,7 +200,7 @@ void CCMAES::runGeneration()
 }
 
 
-void CCMAES::evaluateSamples()
+void CMAES::evaluateSamples()
 {
   while (_finishedSampleCount < _currentSampleCount)
   {
@@ -221,13 +221,13 @@ void CCMAES::evaluateSamples()
   }
 }
 
-void CCMAES::initMuWeights(size_t numsamplesmu)
+void CMAES::initMuWeights(size_t numsamplesmu)
 {
  // Initializing Mu Weights
  if      (_muType == "Linear")       for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = numsamplesmu - i;
  else if (_muType == "Equal")        for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = 1.;
  else if (_muType == "Logarithmic")  for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = log(std::max( (double)numsamplesmu, 0.5*_currentSampleCount)+0.5)-log(i+1.);
- else  koraliError("CCMAES - Invalid setting of Mu Type (%s) (Linear, Equal, or Logarithmic accepted).",  _muType.c_str());
+ else  koraliError("CMAES - Invalid setting of Mu Type (%s) (Linear, Equal, or Logarithmic accepted).",  _muType.c_str());
 
  // Normalize weights vector and set mueff
  double s1 = 0.0;
@@ -260,7 +260,7 @@ void CCMAES::initMuWeights(size_t numsamplesmu)
 }
 
 
-void CCMAES::initCovariance()
+void CMAES::initCovariance()
 {
 
  for(size_t d = 0; d < _k->N; ++d)
@@ -296,7 +296,7 @@ void CCMAES::initCovariance()
 }
 
 
-void CCMAES::processSample(size_t sampleId, double fitness)
+void CMAES::processSample(size_t sampleId, double fitness)
 {
  double logPrior = _k->_problem->evaluateLogPrior(&_samplePopulation[sampleId*_k->N]);
  fitness = logPrior+fitness;
@@ -310,7 +310,7 @@ void CCMAES::processSample(size_t sampleId, double fitness)
 }
 
 
-void CCMAES::checkMeanAndSetRegime()
+void CMAES::checkMeanAndSetRegime()
 {
   if (_isViabilityRegime == false) return; /* mean already inside valid domain, no udpates */
 
@@ -338,7 +338,7 @@ void CCMAES::checkMeanAndSetRegime()
 }
 
 
-void CCMAES::updateConstraints() //TODO: maybe parallelize constraint evaluations (DW)
+void CMAES::updateConstraints() //TODO: maybe parallelize constraint evaluations (DW)
 {
 
  for(size_t i = 0; i < _currentSampleCount; i++) _sampleConstraintViolationCounts[i] = 0;
@@ -370,7 +370,7 @@ void CCMAES::updateConstraints() //TODO: maybe parallelize constraint evaluation
 }
 
 
-void CCMAES::reEvaluateConstraints() //TODO: maybe we can parallelize constraint evaluations (DW)
+void CMAES::reEvaluateConstraints() //TODO: maybe we can parallelize constraint evaluations (DW)
 {
   _maximumViolationCount = 0;
   for(size_t i = 0; i < _currentSampleCount; ++i) if(_sampleConstraintViolationCounts[i] > 0)
@@ -396,7 +396,7 @@ void CCMAES::reEvaluateConstraints() //TODO: maybe we can parallelize constraint
 }
 
 
-void CCMAES::updateViabilityBoundaries()
+void CMAES::updateViabilityBoundaries()
 {
  for(size_t c = 0; c < _k->_constraints.size(); c++)
  {
@@ -409,7 +409,7 @@ void CCMAES::updateViabilityBoundaries()
 }
 
 
-bool CCMAES::isFeasible(size_t sampleIdx) const
+bool CMAES::isFeasible(size_t sampleIdx) const
 {
  for (size_t d = 0; d < _k->N; ++d)
   if (_samplePopulation[ sampleIdx*_k->N+d ] < _k->_variables[d]->_lowerBound || _samplePopulation[ sampleIdx*_k->N+d ] > _k->_variables[d]->_upperBound) return false;
@@ -417,7 +417,7 @@ bool CCMAES::isFeasible(size_t sampleIdx) const
 }
 
 
-void CCMAES::prepareGeneration()
+void CMAES::prepareGeneration()
 {
 
  /* calculate eigensystem */
@@ -444,7 +444,7 @@ void CCMAES::prepareGeneration()
 }
 
 
-void CCMAES::sampleSingle(size_t sampleIdx)
+void CMAES::sampleSingle(size_t sampleIdx)
 {
   for (size_t d = 0; d < _k->N; ++d)
   {
@@ -495,7 +495,7 @@ void CCMAES::sampleSingle(size_t sampleIdx)
 }
 
 
-void CCMAES::updateDistribution()
+void CMAES::updateDistribution()
 {
 
  /* Generate _sortingIndex */
@@ -582,7 +582,7 @@ void CCMAES::updateDistribution()
 
 }
 
-void CCMAES::adaptC(int hsig)
+void CMAES::adaptC(int hsig)
 {
   /* definitions for speeding up inner-most loop */
   //double ccov1  = std::min(_covarianceMatrixLearningRate * (1./_muCovariance) * (_isDiagonal ? (_k->N+1.5) / 3. : 1.), 1.); (orig, alternative)
@@ -615,7 +615,7 @@ void CCMAES::adaptC(int hsig)
 }
 
 
-void CCMAES::updateSigma()
+void CMAES::updateSigma()
 {
  /* update for non-viable region */
  if( _constraintsDefined && (_isViabilityRegime == false) )
@@ -657,7 +657,7 @@ void CCMAES::updateSigma()
 }
 
 
-void CCMAES::numericalErrorTreatment()
+void CMAES::numericalErrorTreatment()
 {
  //treat maximal standard deviations
  //TODO
@@ -677,7 +677,7 @@ void CCMAES::numericalErrorTreatment()
 }
 
 
-void CCMAES::handleConstraints()
+void CMAES::handleConstraints()
 {
  size_t initial_resampled = _resampledParameterCount;
  size_t initial_corrections = _covarianceMatrixAdaptationCount;
@@ -743,7 +743,7 @@ void CCMAES::handleConstraints()
 }
 
 
-void CCMAES::updateDiscreteMutationMatrix()
+void CMAES::updateDiscreteMutationMatrix()
 {
   // implemented based on 'A CMA-ES for Mixed-Integer Nonlinear Optimization' by
   // Hansen2011
@@ -763,7 +763,7 @@ void CCMAES::updateDiscreteMutationMatrix()
 }
 
 
-bool CCMAES::checkTermination()
+bool CMAES::checkTermination()
 {
  
  bool isFinished = false;
@@ -855,7 +855,7 @@ bool CCMAES::checkTermination()
 }
 
 
-void CCMAES::updateEigensystem(std::vector<double>& M)
+void CMAES::updateEigensystem(std::vector<double>& M)
 {
  eigen(_k->N, M, _temporaryAxisLengths, _auxiliarCovarianceEigenvectorMatrix);
  
@@ -895,7 +895,7 @@ void CCMAES::updateEigensystem(std::vector<double>& M)
 /************************************************************************/
 
 
-void CCMAES::eigen(size_t size, std::vector<double>& M,  std::vector<double>& diag, std::vector<double>& Q) const
+void CMAES::eigen(size_t size, std::vector<double>& M,  std::vector<double>& diag, std::vector<double>& Q) const
 {
  std::vector<double> data(size * size);
 
@@ -930,7 +930,7 @@ void CCMAES::eigen(size_t size, std::vector<double>& M,  std::vector<double>& di
 }
 
 
-void CCMAES::sort_index(const std::vector<double>& vec, std::vector<size_t>& _sortingIndex, size_t n) const
+void CMAES::sort_index(const std::vector<double>& vec, std::vector<size_t>& _sortingIndex, size_t n) const
 {
   // initialize original _sortingIndex locations
   std::iota(std::begin(_sortingIndex), std::begin(_sortingIndex)+n, (size_t) 0);
@@ -941,9 +941,9 @@ void CCMAES::sort_index(const std::vector<double>& vec, std::vector<size_t>& _so
 }
 
 
-void CCMAES::printGeneration()
+void CMAES::printGeneration()
 {
- koraliLog(KORALI_MINIMAL, "CCMAES Generation %zu\n", _k->currentGeneration);
+ koraliLog(KORALI_MINIMAL, "CMAES Generation %zu\n", _k->currentGeneration);
 
  if ( _constraintsDefined && _isViabilityRegime)
  {
@@ -987,9 +987,9 @@ void CCMAES::printGeneration()
   koraliLog(KORALI_NORMAL, "--------------------------------------------------------------------\n");
 }
 
-void CCMAES::finalize()
+void CMAES::finalize()
 {
-  koraliLog(KORALI_MINIMAL, "CCMAES Finished\n");
+  koraliLog(KORALI_MINIMAL, "CMAES Finished\n");
   koraliLog(KORALI_MINIMAL, "Optimum found: %e\n", _bestEverValue);
   koraliLog(KORALI_MINIMAL, "Optimum found at:\n");
   for (size_t d = 0; d < _k->N; ++d) koraliLogData(KORALI_MINIMAL, "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverCoordinates[d]);

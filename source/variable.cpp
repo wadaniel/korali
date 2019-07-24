@@ -137,7 +137,7 @@ void Korali::Variable::getDistribution(nlohmann::json& js)
   js["Minimum"] = _a;
   js["Maximum"] = _b;
  }
- 
+
  if (_distributionType == KoraliGeometricDistribution)
  {
   js["Type"] = "Geometric";

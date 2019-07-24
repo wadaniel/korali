@@ -27,7 +27,7 @@ class CopyLibrary(build_ext):
         
         # Creating symlinks
         if (os.path.exists(extdir + '/libkorali.so')): os.remove(extdir + '/libkorali.so')
-        os.symlink(extdir + '/korali/cxx/source/libkorali.so', extdir + 'libkorali.so') 
+        os.symlink(extdir + '/korali/cxx/source/libkorali.so', extdir + '/libkorali.so') 
         
 setup(
     name='Korali',

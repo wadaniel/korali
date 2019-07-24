@@ -81,13 +81,13 @@
    {
     "Name": "Lower Bound",
     "Type": "Real",
-    "Default": "-std::numeric_limits<float>::max()",
+    "Default": "NAN",
     "Description": "Specifies the lower bound for the variable's value. Korali will not generate samples for which this variable falls below the specified minimum. By default, Korali sets this value to -Infinity."
    },
    {
     "Name": "Upper Bound",
     "Type": "Real",
-    "Default": "+std::numeric_limits<float>::max()",
+    "Default": "NAN",
     "Description": "Specifies the upper bound for the variable's value. Korali will not generate samples for which this variable falls below the specified maximum. By default, Korali sets this value to +Infinity."
    }
  ],

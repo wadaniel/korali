@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 import os
 import json
 
@@ -148,7 +149,7 @@ for solverPath in solverPaths:
  
  variableSetSolverSettingString += ' if (isDefined(_k->_js, { "Solver", "Type" })) if (_k->_js["Solver"]["Type"] == "' + solverConfig["Module Alias"] + '")\n {\n'
  for v in solverConfig["Variables Configuration"]: 
-   variableSetSolverSettingString += consumeValue('js', solverConfig["Module Alias"], v["Name"], getVariableName(v), getVariableType(v), 'Korali Skip Default', [  ])
+   variableSetSolverSettingString += consumeValue('js', solverConfig["Module Alias"], v["Name"], getVariableName(v), getVariableType(v), getVariableDefault(v), [  ])
  variableSetSolverSettingString += ' }\n'
  
  configFile.write('} \n\n')

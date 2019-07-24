@@ -30,5 +30,5 @@ libkorali.a: $(OBJECTS_STATIC)
 	ar rs $@ $^
 
 clean:
-	@rm -rf *.so *.a config.cpp $(OBJECTS_STATIC) $(OBJECTS_SHARED)
+	@rm -rf *.so *.a config.cpp solvers/*/*.hpp $(OBJECTS_STATIC) $(OBJECTS_SHARED)
 

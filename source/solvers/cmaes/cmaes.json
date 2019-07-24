@@ -144,14 +144,14 @@
    {
     "Name": "Lower Bound",
     "Type": "Real",
-    "Default": "-std::numeric_limits<float>::max()",
-    "Description": "Specifies the lower bound for the variable's value. Korali will not generate samples for which this variable falls below the specified minimum. By default, Korali sets this value to -Infinity."
+    "Default": "NAN",
+    "Description": "Specifies the lower bound for the variable's value. Korali will not generate samples for which this variable falls below the specified minimum."
    },
    {
     "Name": "Upper Bound",
     "Type": "Real",
-    "Default": "+std::numeric_limits<float>::max()",
-    "Description": "Specifies the upper bound for the variable's value. Korali will not generate samples for which this variable falls below the specified maximum. By default, Korali sets this value to +Infinity."
+    "Default": "NAN",
+    "Description": "Specifies the upper bound for the variable's value. Korali will not generate samples for which this variable falls below the specified maximum."
    },
    {
     "Name": "Initial Mean",
@@ -315,7 +315,7 @@
    {
     "Name": "Sorting Index",
     "Type": "(Array of) Unsigned Integer",
-    "Description": "Sorting _sortingIndex of current sample pop (_sortingIndex[0] idx of current best)."
+    "Description": "Sorted indeces of samples according to their fitness value."
    },
    {
     "Name": "Covariance Matrix",
@@ -363,7 +363,7 @@
     "Description": "Auxiliar Temporary storage to hold B*D*randn()."
    },
    {
-    "Name": "Mean Update",
+    "Name": "Current Mean",
     "Type": "(Array of) Real",
     "Description": "Vector pointing from old mean to mean."
    },

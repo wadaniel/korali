@@ -37,24 +37,9 @@ void CMAES::initialize()
  if (pName == "Bayesian Inference")  acceptableProblem = true;
  if (acceptableProblem == false) koraliError("CMAES cannot solve problems of type: '%s'.\n", pName.c_str());
 
+ // Determining max sample counts and mu
  size_t s_max  = std::max(_sampleCount,  _viabilitySampleCount);
  size_t mu_max = std::max(_muValue, _viabilityMu);
-
- _chiSquareNumber = sqrt((double) _k->N) * (1. - 1./(4.*_k->N) + 1./(21.*_k->N*_k->N));
- _chiSquareNumberDiscreteMutations = sqrt((double) _k->N) * (1. - 1./(4.*_k->N) + 1./(21.*_k->N*_k->N));
-
- _constraintsDefined = (_k->_constraints.size() > 0);
- if(_constraintsDefined) { _isViabilityRegime = true; }
- else                    _isViabilityRegime = false;
-
-
- if(_isViabilityRegime) {
-     _currentSampleCount  = _viabilitySampleCount;
-     _currentSampleMu = _viabilityMu;
- } else {
-     _currentSampleCount  = _sampleCount;
-     _currentSampleMu = _muValue;
- }
 
  // Allocating Memory
  _samplePopulation.resize(_k->N*s_max);
@@ -62,8 +47,8 @@ void CMAES::initialize()
  _evolutionPath.resize(_k->N);
  _conjugateEvolutionPath.resize(_k->N);
  _temporaryBDZMatrix.resize(_k->N);
- _meanUpdate.resize(_k->N);
- _meanUpdate.resize(_k->N);
+ _currentMean.resize(_k->N);
+ _currentMean.resize(_k->N);
  _previousMean.resize(_k->N);
  _bestEverCoordinates.resize(_k->N);
  _axisLengths.resize(_k->N);
@@ -82,16 +67,68 @@ void CMAES::initialize()
 
  _randomNumberStorage.resize(s_max*_k->N);
  _bDZMatrix.resize(s_max*_k->N);
- 
+
  _granularity.resize(_k->N);
  _maskingMatrix.resize(_k->N);
  _maskingMatrixSigma.resize(_k->N);
  _discreteMutations.resize(_k->N*_sampleCount);
  std::fill( std::begin(_discreteMutations), std::end(_discreteMutations), 0.0);
 
- _numberMaskingMatrixEntries = 0;
- _numberOfDiscreteMutations = 0;
+ /* check variable defaults */
+  for (size_t i = 0; i < _k->N; ++i)
+  {
+    if( std::isnan(_k->_variables[i]->_initialMean) )
+      koraliError("Lower/Upper Bounds and Initial Mean of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
+    if( std::isnan(_k->_variables[i]->_initialStandardDeviation) )
+      koraliError("Lower/Upper Bounds and Initial Standard Deviation of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
+  }
 
+  /* set _currentMean */
+  for (size_t i = 0; i < _k->N; ++i)
+  {
+    if( std::isnan(_k->_variables[i]->_lowerBound) ) _k->_variables[i]->_lowerBound = -1.0*std::numeric_limits<double>::max();
+    if( std::isnan(_k->_variables[i]->_upperBound) ) _k->_variables[i]->_upperBound = +1.0*std::numeric_limits<double>::max();
+
+    if(_k->_variables[i]->_initialMean < _k->_variables[i]->_lowerBound || _k->_variables[i]->_initialMean > _k->_variables[i]->_upperBound)
+    koraliError("Initial Mean (%.4f) of variable \'%s\' is out of bounds (%.4f-%.4f).\n",
+             _k->_variables[i]->_initialMean,
+             _k->_variables[i]->_name.c_str(),
+             _k->_variables[i]->_lowerBound,
+             _k->_variables[i]->_upperBound);
+
+    _currentMean[i] = _previousMean[i] = _k->_variables[i]->_initialMean;
+  }
+
+  /* set _granularity for discrete variables */
+  size_t numDiscretes = 0;
+  for (size_t i = 0; i < _k->N; ++i)
+  {
+    if( (_k->_variables[i]->_isDiscrete == true) && _k->_variables[i]->_granularity == 0.0)
+        koraliError("Granularity not set for discrete variable \'%s\'.\n", _k->_variables[i]->_name.c_str());
+    if (_k->_variables[i]->_isDiscrete == true) numDiscretes++;
+     _granularity[i] = _k->_variables[i]->_granularity;
+  }
+
+  _hasDiscreteVariables = (numDiscretes > 0);
+  _numberMaskingMatrixEntries = 0;
+  _numberOfDiscreteMutations = 0;
+
+
+ _chiSquareNumber = sqrt((double) _k->N) * (1. - 1./(4.*_k->N) + 1./(21.*_k->N*_k->N));
+ _chiSquareNumberDiscreteMutations = sqrt((double) _k->N) * (1. - 1./(4.*_k->N) + 1./(21.*_k->N*_k->N));
+
+ _constraintsDefined = (_k->_constraints.size() > 0);
+ if(_constraintsDefined) { _isViabilityRegime = true; }
+ else                    _isViabilityRegime = false;
+
+
+ if(_isViabilityRegime) {
+     _currentSampleCount  = _viabilitySampleCount;
+     _currentSampleMu = _viabilityMu;
+ } else {
+     _currentSampleCount  = _sampleCount;
+     _currentSampleMu = _muValue;
+ }
 
  // Initailizing Mu
  _muWeights.resize(mu_max);
@@ -145,10 +182,7 @@ void CMAES::initialize()
  initCovariance();
 
  _infeasibleSampleCount = 0;
- _resampledParameterCount       = 0;
- 
- _bestEverValue = -std::numeric_limits<double>::max();
- _conjugateEvolutionPathL2Norm = 0.0;
+ _resampledParameterCount = 0;
 
  /* check variable defaults */
  for (size_t i = 0; i < _k->N; ++i)
@@ -184,9 +218,11 @@ void CMAES::initialize()
    if (_k->_variables[i]->_isDiscrete == true) numDiscretes++;
     _granularity[i] = _k->_variables[i]->_granularity;
  }
+ _bestEverValue = -std::numeric_limits<double>::max();
+ _currentBestValue = -std::numeric_limits<double>::max();
 
- _hasDiscreteVariables = (numDiscretes > 0);
- 
+ _conjugateEvolutionPathL2Norm = 0.0;
+
  if (_hasDiscreteVariables)
  {
    auto jsUniform = nlohmann::json();
@@ -273,8 +309,6 @@ void CMAES::initMuWeights(size_t numsamplesmu)
 
 void CMAES::initCovariance()
 {
-
- // Setting Sigma
  _trace = 0.0;
  for (size_t i = 0; i < _k->N; ++i) _trace += _k->_variables[i]->_initialStandardDeviation*_k->_variables[i]->_initialStandardDeviation;
  _sigma = sqrt(_trace/_k->N);
@@ -317,7 +351,7 @@ void CMAES::checkMeanAndSetRegime()
   if (_isViabilityRegime == false) return; /* mean already inside valid domain, no udpates */
 
   Korali::Model data;
-  for (size_t i = 0; i < _k->N; i++) data._computationalVariables.push_back(_meanUpdate[i]);
+  for (size_t i = 0; i < _k->N; i++) data._computationalVariables.push_back(_currentMean[i]);
   for (size_t c = 0; c < _k->_constraints.size(); c++)
   {
     _constraintEvaluationCount++;
@@ -453,7 +487,7 @@ void CMAES::sampleSingle(size_t sampleIdx)
    _randomNumberStorage[sampleIdx*_k->N+d] = _gaussianGenerator->getRandomNumber();
    if (_isDiagonal) {
      _bDZMatrix[sampleIdx*_k->N+d] = _axisLengths[d] * _randomNumberStorage[sampleIdx*_k->N+d];
-     _samplePopulation[sampleIdx * _k->N + d] = _meanUpdate[d] + _sigma * _bDZMatrix[sampleIdx*_k->N+d];
+     _samplePopulation[sampleIdx * _k->N + d] = _currentMean[d] + _sigma * _bDZMatrix[sampleIdx*_k->N+d];
    }
    else _temporaryBDZMatrix[d] = _axisLengths[d] * _randomNumberStorage[sampleIdx*_k->N+d];
   }
@@ -462,7 +496,7 @@ void CMAES::sampleSingle(size_t sampleIdx)
    for (size_t d = 0; d < _k->N; ++d) {
     _bDZMatrix[sampleIdx*_k->N+d] = 0.0;
     for (size_t e = 0; e < _k->N; ++e) _bDZMatrix[sampleIdx*_k->N+d] += _covarianceEigenvectorMatrix[d*_k->N+e] * _temporaryBDZMatrix[e];
-    _samplePopulation[sampleIdx * _k->N + d] = _meanUpdate[d] + _sigma * _bDZMatrix[sampleIdx*_k->N+d];
+    _samplePopulation[sampleIdx * _k->N + d] = _currentMean[d] + _sigma * _bDZMatrix[sampleIdx*_k->N+d];
   }
   
   if(_hasDiscreteVariables)
@@ -530,21 +564,21 @@ void CMAES::updateDistribution()
 
  /* set weights */
  for (size_t d = 0; d < _k->N; ++d) {
-   _previousMean[d] = _meanUpdate[d];
-   _meanUpdate[d] = 0.;
+   _previousMean[d] = _currentMean[d];
+   _currentMean[d] = 0.;
    for (size_t i = 0; i < _currentSampleMu; ++i)
-     _meanUpdate[d] += _muWeights[i] * _samplePopulation[_sortingIndex[i]*_k->N + d];
+     _currentMean[d] += _muWeights[i] * _samplePopulation[_sortingIndex[i]*_k->N + d];
 
-   _meanUpdate[d] = (_meanUpdate[d] - _previousMean[d])/_sigma;
+   _currentMean[d] = (_currentMean[d] - _previousMean[d])/_sigma;
  }
 
- /* calculate z := D^(-1) * B^(T) * _meanUpdate into _temporaryBDZMatrix */
+ /* calculate z := D^(-1) * B^(T) * _currentMean into _temporaryBDZMatrix */
  for (size_t d = 0; d < _k->N; ++d) {
   double sum = 0.0;
-  if (_isDiagonal) sum = _meanUpdate[d];
-  else for (size_t e = 0; e < _k->N; ++e) sum += _covarianceEigenvectorMatrix[e*_k->N+d] * _meanUpdate[e]; /* B^(T) * _meanUpdate ( iterating B[e][d] = B^(T) ) */
+  if (_isDiagonal) sum = _currentMean[d];
+  else for (size_t e = 0; e < _k->N; ++e) sum += _covarianceEigenvectorMatrix[e*_k->N+d] * _currentMean[e]; /* B^(T) * _currentMean ( iterating B[e][d] = B^(T) ) */
 
-  _temporaryBDZMatrix[d] = sum / _axisLengths[d]; /* D^(-1) * B^(T) * _meanUpdate */
+  _temporaryBDZMatrix[d] = sum / _axisLengths[d]; /* D^(-1) * B^(T) * _currentMean */
  }
 
  _conjugateEvolutionPathL2Norm = 0.0;
@@ -565,7 +599,7 @@ void CMAES::updateDistribution()
 
  /* cumulation for covariance matrix (pc) using B*D*z~_k->N(0,C) */
  for (size_t d = 0; d < _k->N; ++d) 
-    _evolutionPath[d] = (1. - _cumulativeCovariance) * _evolutionPath[d] + hsig * sqrt( _cumulativeCovariance * (2. - _cumulativeCovariance) * _effectiveMu ) * _meanUpdate[d];
+    _evolutionPath[d] = (1. - _cumulativeCovariance) * _evolutionPath[d] + hsig * sqrt( _cumulativeCovariance * (2. - _cumulativeCovariance) * _effectiveMu ) * _currentMean[d];
 
  /* update covariance matrix  */
  adaptC(hsig);
@@ -648,12 +682,12 @@ void CMAES::updateSigma()
  }
 
  /* upper bound check for _sigma */
- double upperBound = sqrt(_trace/_k->N);
+ double _upperBound = sqrt(_trace/_k->N);
  
- if(_sigma > upperBound) 
+ if(_sigma > _upperBound)
  {
-  koraliLog(KORALI_DETAILED, "Sigma exceeding inital value of _sigma (%f > %f), increase Initial Standard Deviation of variables.\n", _sigma, upperBound);
-  if( _isSigmaBounded ) _sigma = upperBound;
+  koraliLog(KORALI_DETAILED, "Sigma exceeding inital value of _sigma (%f > %f), increase Initial Standard Deviation of variables.\n", _sigma, _upperBound);
+  if( _isSigmaBounded ) _sigma = _upperBound;
  }
 
 }
@@ -761,7 +795,6 @@ void CMAES::updateDiscreteMutationMatrix()
  
   _numberOfDiscreteMutations = std::min( std::round(_sampleCount/10.0 + _numberMaskingMatrixEntries + 1) , std::floor(_sampleCount/2.0) - 1);
   std::fill( std::begin(_discreteMutations), std::end(_discreteMutations), 0.0);
-  
 }
 
 
@@ -821,7 +854,7 @@ bool CMAES::checkTermination()
  double fac;
  size_t iAchse = 0;
  size_t iKoo = 0;
- /* Component of _meanUpdate is not changed anymore */
+ /* Component of _currentMean is not changed anymore */
  if( _minStandardDeviationStepFactorEnabled)
  if (!_isDiagonal )
  {
@@ -829,7 +862,7 @@ bool CMAES::checkTermination()
     {
     fac = _minStandardDeviationStepFactor * _sigma * _axisLengths[iAchse];
     for (iKoo = 0; iKoo < _k->N; ++iKoo){
-      if (_meanUpdate[iKoo] != _meanUpdate[iKoo] + fac * _covarianceEigenvectorMatrix[iKoo*_k->N+iAchse])
+      if (_currentMean[iKoo] != _currentMean[iKoo] + fac * _covarianceEigenvectorMatrix[iKoo*_k->N+iAchse])
       break;
     }
     if (iKoo == _k->N)
@@ -841,11 +874,11 @@ bool CMAES::checkTermination()
   }
  }
 
- /* Component of _meanUpdate is not changed anymore */
+ /* Component of _currentMean is not changed anymore */
  if( _minStandardDeviationStepFactorEnabled )
  for (iKoo = 0; iKoo < _k->N; ++iKoo)
  {
-  if (_meanUpdate[iKoo] == _meanUpdate[iKoo] + _minStandardDeviationStepFactor*_sigma*sqrt(_covarianceMatrix[iKoo*_k->N+iKoo]) )
+  if (_currentMean[iKoo] == _currentMean[iKoo] + _minStandardDeviationStepFactor*_sigma*sqrt(_covarianceMatrix[iKoo*_k->N+iKoo]) )
   {
    isFinished = true;
    koraliLog(KORALI_MINIMAL, "Standard deviation %f*%7.2e in coordinate %ld without effect.\n", _minStandardDeviationStepFactor, _sigma*sqrt(_covarianceMatrix[iKoo*_k->N+iKoo]), iKoo);
@@ -961,7 +994,7 @@ void CMAES::printGeneration()
  koraliLog(KORALI_NORMAL, "Covariance Eigenvalues: Min = %+6.3e -  Max = %+6.3e\n", _minimumCovarianceEigenvalue, _maximumCovarianceEigenvalue);
 
   koraliLog(KORALI_DETAILED, "Variable = (MeanX, BestX):\n");
-  for (size_t d = 0; d < _k->N; d++) koraliLogData(KORALI_DETAILED, "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _meanUpdate[d], _bestEverCoordinates[d]);
+  for (size_t d = 0; d < _k->N; d++) koraliLogData(KORALI_DETAILED, "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _currentMean[d], _bestEverCoordinates[d]);
 
   koraliLog(KORALI_DETAILED, "Constraint Evaluation at Current Function Value:\n");
   if ( _constraintsDefined )

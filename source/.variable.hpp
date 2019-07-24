@@ -41,7 +41,9 @@ class Variable
  void setConfiguration(nlohmann::json& js);
  void setDistribution(nlohmann::json& js);
  void getDistribution(nlohmann::json& js);
-};
+ void setSolverSettings(nlohmann::json& js);
+ void getSolverSettings(nlohmann::json& js);
+ };
 
 } // namespace Korali
 

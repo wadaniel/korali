@@ -194,7 +194,7 @@ void Korali::Engine::setConfiguration()
  if (solverName == "DEA")    _solver = std::make_shared<Korali::Solver::DEA>();
  if (solverName == "MCMC")   _solver = std::make_shared<Korali::Solver::MCMC>();
  if (solverName == "TMCMC")  _solver = std::make_shared<Korali::Solver::TMCMC>();
- if (_solver == nullptr) koraliError("Incorrect or undefined Solver '%s'.", solverName.c_str());
+ if (_solver == nullptr) koraliError("Incorrect or undefined Solver '%s'.\n", solverName.c_str());
 
  // Setting module configuration
  _problem->setConfiguration();

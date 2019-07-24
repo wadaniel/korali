@@ -368,6 +368,16 @@
     "Description": "Current Mean Distribution Proposal."
    },
    {
+    "Name": "Previous Mean",
+    "Type": "(Array of) Real",
+    "Description": "Mean parent on previous generation."
+   },
+   {
+    "Name": "Mean Update",
+    "Type": "(Array of) Real",
+    "Description": "Update differential from previous to current means."
+   },
+   {
     "Name": "Evolution Path",
     "Type": "(Array of) Real",
     "Description": "Evolution path for Covariance Matrix update."
@@ -381,11 +391,6 @@
     "Name": "Conjugate Evolution Path L2 Norm",
     "Type": "Real",
     "Description": "L2 Norm of the conjugate evolution path."
-   },
-   {
-    "Name": "Previous Mean",
-    "Type": "(Array of) Real",
-    "Description": "Mean parent on previous generation."
    },
    {
     "Name": "Infeasible Sample Count",

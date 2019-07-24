@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
  k["Solver"]["Sample Count"] = 12;
 
  // General Settings
- k["General"]["Max Generations"] = 500;
+ k["General"]["Max Generations"] = 1000;
  k["General"]["Results Output"]["Frequency"] = 5;
  k["General"]["Console Output"]["Frequency"] = 5;
 

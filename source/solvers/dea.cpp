@@ -223,7 +223,13 @@ void DEA::evaluateSamples()
 void DEA::processSample(size_t sampleIdx, double fitness)
 {
  double logPrior = _k->_problem->evaluateLogPrior(&_sampleCandidates[sampleIdx*_k->N]);
- _fitnessVector[sampleIdx] = logPrior+fitness;
+ fitness += logPrior
+ if(std::isfinite(fitness) == false) 
+ {
+   fitness = -1.0 * std::numeric_limits<double>::max();
+   koraliWarning(KORALI_NORMAL,"Sample %zu returned non finite fitness (fitness set to %e)!\n", sampleId, fitness);
+ }
+ _fitnessVector[sampleIdx] = fitness;
  _finishedSampleCount++;
 }
 

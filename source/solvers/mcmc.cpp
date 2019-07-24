@@ -97,7 +97,13 @@ void Korali::Solver::MCMC::initialize()
 
 void Korali::Solver::MCMC::processSample(size_t sampleIdx, double fitness)
 {
- _chainCandidatesLogLikelihoods[sampleIdx] = fitness + _chainCandidatesLogPriors[sampleIdx];
+ fitness += _chainCandidatesLogPriors[sampleIdx];
+ if(std::isfinite(fitness) == false) 
+ {
+   fitness = -1.0 * std::numeric_limits<double>::max();
+   koraliWarning(KORALI_NORMAL,"Sample %zu returned non finite fitness (fitness set to %e)!\n", sampleId, fitness);
+ }
+ _chainCandidatesLogLikelihoods[sampleIdx] = fitness;
 }
 
 void Korali::Solver::MCMC::choleskyDecomp(const std::vector<double>& inC, std::vector<double>& outL) const

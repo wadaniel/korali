@@ -117,22 +117,29 @@ void Korali::Solver::TMCMC::runGeneration()
 
 void Korali::Solver::TMCMC::processSample(size_t c, double fitness)
 {
- double ccLogPrior = _k->_problem->evaluateLogPrior(&_chainCandidatesParameters[c*_k->N]);
- double clLogPrior = _k->_problem->evaluateLogPrior(&_chainLeadersParameters[c*_k->N]);
 
- _chainCandidatesLogLikelihoods[c] = fitness;
- double L = exp((_chainCandidatesLogLikelihoods[c]-_chainLeadersLogLikelihoods[c])*_annealingExponent + (ccLogPrior-clLogPrior));
+ if(std::isfinite(fitness) == false) 
+ {
+   koraliWarning(KORALI_NORMAL,"Sample %zu returned non finite fitness (sample rejected)!\n", sampleId, fitness);
+ }
+ else
+ {
+   double ccLogPrior = _k->_problem->evaluateLogPrior(&_chainCandidatesParameters[c*_k->N]);
+   double clLogPrior = _k->_problem->evaluateLogPrior(&_chainLeadersParameters[c*_k->N]);
+   double L = exp((_chainCandidatesLogLikelihoods[c]-_chainLeadersLogLikelihoods[c])*_annealingExponent + (ccLogPrior-clLogPrior));
 
- if ( L >= 1.0 || L > gsl_ran_flat(range, 0.0, 1.0) ) {
-   for (size_t i = 0; i < _k->N; i++) _chainLeadersParameters[c*_k->N + i] = _chainCandidatesParameters[c*_k->N + i];
-   _chainLeadersLogLikelihoods[c] = _chainCandidatesLogLikelihoods[c];
-   if (_currentChainStep[c] == _chainLengths[c]-1) _acceptedSamplesCount++; // XXX: is that correct? (DW)
+   if ( L >= 1.0 || L > gsl_ran_flat(range, 0.0, 1.0) ) {
+     for (size_t i = 0; i < _k->N; i++) _chainLeadersParameters[c*_k->N + i] = _chainCandidatesParameters[c*_k->N + i];
+     _chainLeadersLogLikelihoods[c] = _chainCandidatesLogLikelihoods[c];
+     if (_currentChainStep[c] == _chainLengths[c]-1) _acceptedSamplesCount++; // XXX: is that correct? (DW)
+   }
  }
 
  _currentChainStep[c]++;
  if (_currentChainStep[c] > _burnInDefault ) updateDatabase(&_chainLeadersParameters[c*_k->N], _chainLeadersLogLikelihoods[c]);
  _chainPendingFitness[c] = false;
  if (_currentChainStep[c] == _chainLengths[c]) _finishedChainsCount++;
+
 }
 
 void Korali::Solver::TMCMC::evaluateSample(size_t c)

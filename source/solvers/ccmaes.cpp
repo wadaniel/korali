@@ -299,11 +299,11 @@ void CCMAES::initCovariance()
 void CCMAES::processSample(size_t sampleId, double fitness)
 {
  double logPrior = _k->_problem->evaluateLogPrior(&_samplePopulation[sampleId*_k->N]);
- fitness = logPrior+fitness;
+ fitness += logPrior;
  if(std::isfinite(fitness) == false) 
  {
    fitness = -1.0 * std::numeric_limits<double>::max();
-   koraliWarning(KORALI_DETAILED,"Sample %zu returned non finite fitness (set to %e)!\n", sampleId, fitness);
+   koraliWarning(KORALI_NORMAL,"Sample %zu returned non finite fitness (fitness set to %e)!\n", sampleId, fitness);
  }
  _fitnessVector[sampleId] = fitness;
  _finishedSampleCount++;

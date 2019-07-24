@@ -141,7 +141,6 @@ void Korali::Solver::TMCMC::processSample(size_t sampleId, double fitness)
  _chainPendingFitness[sampleId] = false;
  if (_currentChainStep[sampleId] >  _defaultBurnIn) updateDatabase(&_chainLeaderParameters[sampleId*_k->N], _chainLeadersLogLikelihoods[sampleId]);
  if (_currentChainStep[sampleId] == _chainLengths[sampleId]) _finishedChainsCount++;
- 
 }
 
 void Korali::Solver::TMCMC::evaluateSample(size_t c)

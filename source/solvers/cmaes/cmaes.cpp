@@ -121,6 +121,46 @@ void CMAES::initialize()
  if(_constraintsDefined) { _isViabilityRegime = true; }
  else                    _isViabilityRegime = false;
 
+    if(_k->_variables[i]->_initialMean < _k->_variables[i]->_lowerBound || _k->_variables[i]->_initialMean > _k->_variables[i]->_upperBound)
+    koraliError("Initial Mean (%.4f) of variable \'%s\' is out of bounds (%.4f-%.4f).\n",
+             _k->_variables[i]->_initialMean,
+             _k->_variables[i]->_name.c_str(),
+             _k->_variables[i]->_lowerBound,
+             _k->_variables[i]->_upperBound);
+
+    _currentMean[i] = _previousMean[i] = _k->_variables[i]->_initialMean;
+  }
+
+  /* set _granularity for discrete variables */
+  size_t numDiscretes = 0;
+  for (size_t i = 0; i < _k->N; ++i)
+  {
+    if( (_k->_variables[i]->_isDiscrete == true) && _k->_variables[i]->_granularity == 0.0)
+        koraliError("Granularity not set for discrete variable \'%s\'.\n", _k->_variables[i]->_name.c_str());
+    if (_k->_variables[i]->_isDiscrete == true) numDiscretes++;
+     _granularity[i] = _k->_variables[i]->_granularity;
+  }
+
+  _hasDiscreteVariables = (numDiscretes > 0);
+  _numberMaskingMatrixEntries = 0;
+  _numberOfDiscreteMutations = 0;
+
+
+ _chiSquareNumber = sqrt((double) _k->N) * (1. - 1./(4.*_k->N) + 1./(21.*_k->N*_k->N));
+ _chiSquareNumberDiscreteMutations = sqrt((double) _k->N) * (1. - 1./(4.*_k->N) + 1./(21.*_k->N*_k->N));
+
+ _constraintsDefined = (_k->_constraints.size() > 0);
+ if(_constraintsDefined) { _isViabilityRegime = true; }
+ else                    _isViabilityRegime = false;
+
+
+ if(_isViabilityRegime) {
+     _currentSampleCount  = _viabilitySampleCount;
+     _currentSampleMu = _viabilityMu;
+ } else {
+     _currentSampleCount  = _sampleCount;
+     _currentSampleMu = _muValue;
+ }
 
  if(_isViabilityRegime) {
      _currentSampleCount  = _viabilitySampleCount;

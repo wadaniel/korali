@@ -143,7 +143,6 @@ void Korali::Variable::getDistribution(nlohmann::json& js)
   js["Type"] = "Geometric";
   js["Success Probability"] = _a;
  }
-
 }
 
 /************************************************************************/

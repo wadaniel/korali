@@ -181,8 +181,7 @@ void Korali::Solver::TMCMC::processGeneration()
 	std::vector<double> flcp(_databaseEntryCount);
 	std::vector<double> weight(_databaseEntryCount);
 	std::vector<double> q(_databaseEntryCount);
-	std::vector<unsigned int> nn(_databaseEntryCount);
-	std::vector<size_t> sel(_databaseEntryCount);
+	std::vector<unsigned int> numselections(_databaseEntryCount);
 
 	double fmin = 0, xmin = 0;
 	minSearch(&_sampleFitnessDatabase[0], _databaseEntryCount, _annealingExponent, _targetCVar, xmin, fmin);
@@ -208,7 +207,6 @@ void Korali::Solver::TMCMC::processGeneration()
 	}
 
 	/* Compute weights and normalize*/
-
 	for (size_t i = 0; i < _databaseEntryCount; i++) flcp[i] = _sampleFitnessDatabase[i]*(_annealingExponent-_prevAnnealingExponent);
 	const double fjmax = gsl_stats_max(flcp.data(), 1, _databaseEntryCount);
 	for (size_t i = 0; i < _databaseEntryCount; i++) weight[i] = exp( flcp[i] - fjmax );
@@ -218,15 +216,11 @@ void Korali::Solver::TMCMC::processGeneration()
 
 	for (size_t i = 0; i < _databaseEntryCount; i++) q[i] = weight[i]/sum_weight;
 
-	gsl_ran_multinomial(range, _databaseEntryCount, _populationSize, q.data(), nn.data());
-	size_t zeroCount = 0;
-	for (size_t i = 0; i < _databaseEntryCount; i++) { sel[i] = nn[i]; if ( nn[i] == 0 ) zeroCount++; }
-
-	size_t uniqueSelections   = _databaseEntryCount - zeroCount;
-	_proposalsAcceptanceRate  = (1.0*_acceptedSamplesCount)/_populationSize;
-	_selectionAcceptanceRate = (1.0*uniqueSelections)/_populationSize;
-
-	for (size_t i = 0; i < _k->N; i++)
+    /* Sample candidate selections based on database entries */
+	gsl_ran_multinomial(range, _databaseEntryCount, _populationSize, q.data(), numselections.data());
+	
+    /* Update mean and covariance */
+    for (size_t i = 0; i < _k->N; i++)
 	{
 	_meanTheta[i] = 0;
 	for (size_t j = 0; j < _databaseEntryCount; j++) _meanTheta[i] += _sampleParametersDatabase[j*_k->N + i]*q[j];
@@ -242,21 +236,31 @@ void Korali::Solver::TMCMC::processGeneration()
 	gsl_matrix_view sigma = gsl_matrix_view_array(&_covarianceMatrix[0], _k->N,_k->N);
 	gsl_linalg_cholesky_decomp( &sigma.matrix );
 
+    /* Init new chains */
+    std::fill(std::begin(_chainLengths), std::end(_chainLengths), 0);
+    
     size_t leaderChainLen; 
+    size_t zeroCount = 0;
 	size_t leaderId = 0;
 	for (size_t i = 0; i < _databaseEntryCount; i++) {
-	 while (sel[i] != 0) {
+     if (numselections[i] == 0) zeroCount++;
+	 while (numselections[i] != 0) {
 		 for (size_t j = 0; j < _k->N ; j++) _chainLeadersParameters[leaderId*_k->N + j] = _sampleParametersDatabase[i*_k->N + j];
 		 _chainLeadersLogLikelihoods[leaderId] = _sampleFitnessDatabase[i];
          
-         if (sel[i] > _maxChainLength) leaderChainLen = _maxChainLength;
-         else leaderChainLen = sel[i];
+         if (numselections[i] > _maxChainLength) leaderChainLen = _maxChainLength;
+         else leaderChainLen = numselections[i];
          
 		 _chainLengths[leaderId] = leaderChainLen + _burnInDefault;
-         sel[i] -= leaderChainLen;
+         numselections[i] -= leaderChainLen;
 		 leaderId++;
 	 }
-	}
+	}	
+    
+    /* Update acceptance statistics */
+    size_t uniqueSelections  = _databaseEntryCount - zeroCount;
+	_proposalsAcceptanceRate = (1.0*_acceptedSamplesCount)/_populationSize;
+	_selectionAcceptanceRate = (1.0*uniqueSelections)/_populationSize;
 
 	if (_useLocalCovariance) computeChainCovariances(_localCovarianceMatrices, uniqueSelections);
 

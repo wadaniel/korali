@@ -77,8 +77,6 @@ void Korali::Solver::TMCMC::initialize()
  _selectionAcceptanceRate = 1.0;
  _acceptedSamplesCount    = _populationSize;
  _chainCount              = _populationSize;
- for (size_t c = 0; c < _chainCount; c++) _currentChainStep[c]    = 0;
- for (size_t c = 0; c < _chainCount; c++) _chainPendingFitness[c] = false;
 
  for (size_t c = 0; c < _populationSize; c++)
  {
@@ -142,7 +140,7 @@ void Korali::Solver::TMCMC::processSample(size_t sampleId, double fitness)
 
  _currentChainStep[sampleId]++;
  _chainPendingFitness[sampleId] = false;
- if (_currentChainStep[sampleId] >  _burnInDefault) updateDatabase(&_chainLeadersParameters[sampleId*_k->N], _chainLeadersLogLikelihoods[sampleId]); 
+ if (_currentChainStep[sampleId] > _burnInDefault) updateDatabase(&_chainLeadersParameters[sampleId*_k->N], _chainLeadersLogLikelihoods[sampleId]); 
  if (_currentChainStep[sampleId] == _chainLengths[sampleId]) _finishedChainsCount++;
  
 }

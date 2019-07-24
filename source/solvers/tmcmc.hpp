@@ -125,7 +125,7 @@ Default Value: std::numeric_limits<size_t>::max()
 Default Enabled:
 Description:
 Chains longer than Max Chain Length will be broken and samples will be 
-duplicated (replacing samples associated with a chain length of 0).
+duplicated (replacing samples associated with a chain length of 0)
 ******************************************************************************/
 double _maxChainLength;
 

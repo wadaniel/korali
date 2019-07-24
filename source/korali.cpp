@@ -274,6 +274,7 @@ void Korali::Engine::start(bool isDryRun)
   auto endTime = std::chrono::system_clock::now();
 
   saveState(currentGeneration);
+  saveState("final.json");
 
   _solver->finalize();
   _problem->finalize();
@@ -291,6 +292,7 @@ void Korali::Engine::saveState(std::string fileName)
  getConfiguration();
  if (!_conduit->isRoot()) return;
 
+ fileName = "./" + _result_dir + "/" + fileName;
  saveJsonToFile(fileName.c_str(), _js);
 }
 
@@ -306,7 +308,7 @@ void Korali::Engine::saveState(int fileId)
 
  char fileName[256];
 
- sprintf(fileName, "./%s/s%05d.json", _result_dir.c_str(), fileId);
+ sprintf(fileName, "s%05d.json", fileId);
 
  saveState(fileName);
 }

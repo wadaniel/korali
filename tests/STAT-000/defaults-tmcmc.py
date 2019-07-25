@@ -26,17 +26,17 @@ k.dry()
 # Test Configuration
 
 assert_value( k["Solver"]["Covariance Scaling"], 0.04 )
-assert_value( k["Solver"]["Burn In Default"], 0 )
+assert_value( k["Solver"]["Default Burn In"], 0 )
 assert_value( k["Solver"]["Max Rho Update"], 1.0 )
 assert_value( k["Solver"]["Min Rho Update"], 1e-5 )
 assert_value( k["Solver"]["Population Size"], 5000 )
-assert_boolean( k["Solver"]["Use Local Covariance"], False )
+assert_value( k["Solver"]["Use Local Covariance"], False )
 
 # Test Internals
 
 assert_value( k["Solver"]["Internal"]["Accepted Samples Count"], 5000 )
 assert_value( k["Solver"]["Internal"]["Annealing Exponent"], 0.0 )
-assert_value( k["Solver"]["Internal"]["Coefficient of Variation"], 0.0 )
+assert_value( k["Solver"]["Internal"]["Coefficient Of Variation"], 0.0 )
 assert_value( k["Solver"]["Internal"]["Covariance Matrix"][0], 0.0 )
 assert_value( k["Solver"]["Internal"]["Proposals Acceptance Rate"], 1.0 )
 assert_value( k["Solver"]["Internal"]["Selection Acceptance Rate"], 1.0 )

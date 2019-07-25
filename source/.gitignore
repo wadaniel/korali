@@ -1,3 +1,5 @@
 Makefile.conf
+variable.hpp
+variable.cpp
 config.cpp
 

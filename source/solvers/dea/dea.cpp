@@ -47,33 +47,33 @@ void DEA::initialize()
  _samplePopulation.resize(_k->N*_sampleCount);
  _sampleCandidates.resize(_k->N*_sampleCount);
 
- _oldMean.resize(_k->N);
- _mean.resize(_k->N);
- _bestEverSample.resize(_k->N);
+ _previousMean.resize(_k->N);
+ _sampleMeans.resize(_k->N);
+ _bestEverCoordinates.resize(_k->N);
  _currentBestSample.resize(_k->N);
- _maxWidth.resize(_k->N);
+ _maxDistances.resize(_k->N);
 
  _isInitializedSample.resize(_sampleCount);
- _prevfitnessVector.resize(_sampleCount);
+ _previousFitnessVector.resize(_sampleCount);
  _fitnessVector.resize(_sampleCount);
 
  _infeasibleSampleCount = 0;
- _bestIndex             = 0;
+ _bestSampleIndex             = 0;
  _previousBestValue     = -std::numeric_limits<double>::max();
  _currentBestValue      = -std::numeric_limits<double>::max();
  _previousBestEverValue = -std::numeric_limits<double>::max();
  _bestEverValue         = -std::numeric_limits<double>::max();
 
  for(size_t d = 0; d < _k->N; ++d)
-  if(_variableSettings[d].upperBound < _variableSettings[d].lowerBound)
-    koraliError("Lower Bound (%.4f) of variable \'%s\'  exceeds Upper Bound (%.4f).\n", _variableSettings[d].lowerBound, _k->_variables[d]->_name.c_str(), _variableSettings[d].upperBound);
+  if(_k->_variables[d]->_upperBound < _k->_variables[d]->_lowerBound)
+    koraliError("Lower Bound (%.4f) of variable \'%s\'  exceeds Upper Bound (%.4f).\n", _k->_variables[d]->_lowerBound, _k->_variables[d]->_name.c_str(), _k->_variables[d]->_upperBound);
 
  initSamples();
 
- for(size_t d = 0; d < _k->N; ++d) { _oldMean[d] = 0.0; _mean[d] = 0.0; }
+ for(size_t d = 0; d < _k->N; ++d) { _previousMean[d] = 0.0; _sampleMeans[d] = 0.0; }
 
  for(size_t i = 0; i < _sampleCount; ++i) for(size_t d = 0; d < _k->N; ++d) 
-   _mean[d] += _samplePopulation[i*_k->N+d]/((double)_sampleCount);
+   _sampleMeans[d] += _samplePopulation[i*_k->N+d]/((double)_sampleCount);
 
 }
 
@@ -89,8 +89,8 @@ void DEA::initSamples()
 {
   for(size_t i = 0; i < _sampleCount; ++i) for(size_t d = 0; d < _k->N; ++d)
   {
-    double width = _variableSettings[d].upperBound - _variableSettings[d].lowerBound;
-    _samplePopulation[i*_k->N+d] = _variableSettings[d].lowerBound + width * _uniformGenerator->getRandomNumber();
+    double width = _k->_variables[d]->_upperBound - _k->_variables[d]->_lowerBound;
+    _samplePopulation[i*_k->N+d] = _k->_variables[d]->_lowerBound + width * _uniformGenerator->getRandomNumber();
   }
 }
 
@@ -110,16 +110,16 @@ void DEA::prepareGeneration()
   else
       mutateSingle(i);
 
-  if ( _termCondMaxInfeasibleResamplingsEnabled )
-  if ( (_infeasibleSampleCount - initial_infeasible) > _termCondMaxInfeasibleResamplings )
-  koraliWarning(KORALI_MINIMAL, "Exiting resampling loop (param %zu) because max resamplings (%zu) reached.\n", i, _termCondMaxInfeasibleResamplings);
+  if ( _maxResamplingsEnabled )
+  if ( (_infeasibleSampleCount - initial_infeasible) > _maxResamplings )
+  koraliWarning(KORALI_MINIMAL, "Exiting resampling loop (param %zu) because max resamplings (%zu) reached.\n", i, _maxResamplings);
   }
  }
 
  _finishedSampleCount = 0;
  for (size_t i = 0; i < _sampleCount; i++) _isInitializedSample[i] = false;
 
- _prevfitnessVector.assign(std::begin(_fitnessVector), std::end(_fitnessVector));
+ _previousFitnessVector.assign(std::begin(_fitnessVector), std::end(_fitnessVector));
 }
 
 
@@ -161,7 +161,7 @@ void DEA::mutateSingle(size_t sampleIdx)
     }
     else /* _parentSelectionRule == "Best" */
     {
-        parent = &_samplePopulation[_bestIndex*_k->N];
+        parent = &_samplePopulation[_bestSampleIndex*_k->N];
     }
 
     size_t rn = _uniformGenerator->getRandomNumber()*_k->N;
@@ -178,7 +178,7 @@ void DEA::mutateSingle(size_t sampleIdx)
 bool DEA::isFeasible(size_t sampleIdx) const
 {
   for(size_t d = 0; d < _k->N; ++d) 
-    if ( (_sampleCandidates[sampleIdx*_k->N+d] < _variableSettings[d].lowerBound) || (_sampleCandidates[sampleIdx*_k->N+d] > _variableSettings[d].upperBound)) return false;
+    if ( (_sampleCandidates[sampleIdx*_k->N+d] < _k->_variables[d]->_lowerBound) || (_sampleCandidates[sampleIdx*_k->N+d] > _k->_variables[d]->_upperBound)) return false;
   return true;
 }
 
@@ -187,11 +187,11 @@ void DEA::fixInfeasible(size_t sampleIdx)
 {
   for(size_t d = 0; d < _k->N; ++d) 
   {
-    if ( _sampleCandidates[sampleIdx*_k->N+d] < _variableSettings[d].lowerBound ) 
-    { double len = _samplePopulation[sampleIdx*_k->N+d] - _variableSettings[d].lowerBound; 
+    if ( _sampleCandidates[sampleIdx*_k->N+d] < _k->_variables[d]->_lowerBound )
+    { double len = _samplePopulation[sampleIdx*_k->N+d] - _k->_variables[d]->_lowerBound;
       _sampleCandidates[sampleIdx*_k->N+d] = _samplePopulation[sampleIdx*_k->N+d] - len * _uniformGenerator->getRandomNumber(); }
-    if ( _sampleCandidates[sampleIdx*_k->N+d] > _variableSettings[d].upperBound )
-    { double len = _variableSettings[d].upperBound - _samplePopulation[sampleIdx*_k->N+d]; 
+    if ( _sampleCandidates[sampleIdx*_k->N+d] > _k->_variables[d]->_upperBound )
+    { double len = _k->_variables[d]->_upperBound - _samplePopulation[sampleIdx*_k->N+d];
       _sampleCandidates[sampleIdx*_k->N+d] = _samplePopulation[sampleIdx*_k->N+d] + len * _uniformGenerator->getRandomNumber(); }
   }
 }
@@ -220,40 +220,46 @@ void DEA::evaluateSamples()
 }
 
 
-void DEA::processSample(size_t sampleIdx, double fitness)
+void DEA::processSample(size_t sampleId, double fitness)
 {
- double logPrior = _k->_problem->evaluateLogPrior(&_sampleCandidates[sampleIdx*_k->N]);
- _fitnessVector[sampleIdx] = logPrior+fitness;
+ double logPrior = _k->_problem->evaluateLogPrior(&_sampleCandidates[sampleId*_k->N]);
+ fitness += logPrior;
+ if(std::isfinite(fitness) == false) 
+ {
+   fitness = -1.0 * std::numeric_limits<double>::max();
+   koraliWarning(KORALI_NORMAL,"Sample %zu returned non finite fitness (fitness set to %e)!\n", sampleId, fitness);
+ }
+ _fitnessVector[sampleId] = fitness;
  _finishedSampleCount++;
 }
 
 
 void DEA::updateSolver()
 {
-    _bestIndex = std::distance( std::begin(_fitnessVector), std::max_element(std::begin(_fitnessVector), std::end(_fitnessVector)) );
+    _bestSampleIndex = std::distance( std::begin(_fitnessVector), std::max_element(std::begin(_fitnessVector), std::end(_fitnessVector)) );
     _previousBestEverValue  = _bestEverValue;
     _previousBestValue = _currentBestValue;
-    _currentBestValue  = _fitnessVector[_bestIndex];
+    _currentBestValue  = _fitnessVector[_bestSampleIndex];
 
-    for(size_t d = 0; d < _k->N; ++d) _currentBestSample[d] = _sampleCandidates[_bestIndex*_k->N+d];
+    for(size_t d = 0; d < _k->N; ++d) _currentBestSample[d] = _sampleCandidates[_bestSampleIndex*_k->N+d];
     
-    _oldMean.assign(std::begin(_mean), std::end(_mean));
-    std::fill(std::begin(_mean), std::end(_mean), 0.0); 
+    _previousMean.assign(std::begin(_sampleMeans), std::end(_sampleMeans));
+    std::fill(std::begin(_sampleMeans), std::end(_sampleMeans), 0.0);
 
-    if(_currentBestValue > _bestEverValue) _bestEverSample.assign(std::begin(_currentBestSample), std::end(_currentBestSample));
+    if(_currentBestValue > _bestEverValue) _bestEverCoordinates.assign(std::begin(_currentBestSample), std::end(_currentBestSample));
 
     switch (str2int(_acceptRule.c_str()))
     {
         case str2int("Best") : // only update best sample
             if(_currentBestValue > _bestEverValue)
             {
-              for(size_t d = 0; d < _k->N; ++d) _samplePopulation[_bestIndex*_k->N+d] = _sampleCandidates[_bestIndex*_k->N+d];
+              for(size_t d = 0; d < _k->N; ++d) _samplePopulation[_bestSampleIndex*_k->N+d] = _sampleCandidates[_bestSampleIndex*_k->N+d];
               _bestEverValue = _currentBestValue;
             }
             break;
 
         case str2int("Greedy") : // accept all mutations better than parent
-            for(size_t i = 0; i < _sampleCount; ++i) if(_fitnessVector[i] > _prevfitnessVector[i])
+            for(size_t i = 0; i < _sampleCount; ++i) if(_fitnessVector[i] > _previousFitnessVector[i])
                 for(size_t d = 0; d < _k->N; ++d) _samplePopulation[i*_k->N+d] = _sampleCandidates[i*_k->N+d];
             if(_currentBestValue > _bestEverValue) _bestEverValue = _currentBestValue;
             break;
@@ -274,7 +280,7 @@ void DEA::updateSolver()
     }
 
     for(size_t i = 0; i < _sampleCount; ++i) for(size_t d = 0; d < _k->N; ++d) 
-        _mean[d] += _samplePopulation[i*_k->N+d]/((double)_sampleCount);
+        _sampleMeans[d] += _samplePopulation[i*_k->N+d]/((double)_sampleCount);
 
     for(size_t d = 0; d < _k->N; ++d) 
     {
@@ -285,7 +291,7 @@ void DEA::updateSolver()
             if (_samplePopulation[i*_k->N+d] > max) max = _samplePopulation[i*_k->N+d];
             if (_samplePopulation[i*_k->N+d] < min) min = _samplePopulation[i*_k->N+d];
         }
-        _maxWidth[d] = max-min;
+        _maxDistances[d] = max-min;
     }
 
 }
@@ -295,33 +301,33 @@ bool DEA::checkTermination()
 {
 
  bool isFinished = false;
- if ( _termCondMinFitnessEnabled && (_k->currentGeneration > 1) && (_bestEverValue >= _termCondMinFitness) )
+ if ( _minFitnessEnabled && (_k->currentGeneration > 1) && (_bestEverValue >= _minFitness) )
  {
   isFinished = true;
-  koraliLog(KORALI_MINIMAL, "Fitness Value (%+6.3e) > (%+6.3e).\n",  _bestEverValue, _termCondMinFitness);
+  koraliLog(KORALI_MINIMAL, "Fitness Value (%+6.3e) > (%+6.3e).\n",  _bestEverValue, _minFitness);
  }
  
- if ( _termCondMaxFitnessEnabled && (_k->currentGeneration > 1) && (_bestEverValue >= _termCondMaxFitness) )
+ if ( _maxFitnessEnabled && (_k->currentGeneration > 1) && (_bestEverValue >= _maxFitness) )
  {
   isFinished = true;
-  koraliLog(KORALI_MINIMAL, "Fitness Value (%+6.3e) > (%+6.3e).\n",  _bestEverValue, _termCondMaxFitness);
+  koraliLog(KORALI_MINIMAL, "Fitness Value (%+6.3e) > (%+6.3e).\n",  _bestEverValue, _maxFitness);
  }
 
  double range = fabs(_currentBestValue - _previousBestValue);
- if ( _termCondMinFitnessDiffThresholdEnabled && (_k->currentGeneration > 1) && (range < _termCondMinFitnessDiffThreshold) )
+ if ( _minFitnessDiffThresholdEnabled && (_k->currentGeneration > 1) && (range < _minFitnessDiffThreshold) )
  {
   isFinished = true;
-  koraliLog(KORALI_MINIMAL, "Fitness Diff Threshold (%+6.3e) < (%+6.3e).\n",  range, _termCondMinFitnessDiffThreshold);
+  koraliLog(KORALI_MINIMAL, "Fitness Diff Threshold (%+6.3e) < (%+6.3e).\n",  range, _minFitnessDiffThreshold);
  }
  
- if ( _termCondMinStepSizeEnabled && (_k->currentGeneration > 1) )
+ if ( _minStepSizeEnabled && (_k->currentGeneration > 1) )
  {
    size_t cTemp = 0;
-   for(size_t d = 0; d < _k->N; ++d) cTemp += (fabs(_mean[d] - _oldMean[d]) < _termCondMinStepSize) ? 1 : 0;
+   for(size_t d = 0; d < _k->N; ++d) cTemp += (fabs(_sampleMeans[d] - _previousMean[d]) < _minStepSize) ? 1 : 0;
    if (cTemp == _k->N) 
    {
     isFinished = true;
-    koraliLog(KORALI_MINIMAL, "Mean changes < %+6.3e for all variables.\n", _termCondMinStepSize);
+    koraliLog(KORALI_MINIMAL, "Mean changes < %+6.3e for all variables.\n", _minStepSize);
    }
  }
  
@@ -339,9 +345,9 @@ void DEA::printGeneration()
  koraliLog(KORALI_NORMAL, "Differential Evolution Generation %zu\n", _k->currentGeneration);
  koraliLog(KORALI_NORMAL, "Current Function Value: Max = %+6.3e - Best = %+6.3e\n", _currentBestValue, _bestEverValue);
  koraliLog(KORALI_DETAILED, "Variable = (MeanX, BestX):\n");
- for (size_t d = 0; d < _k->N; d++) koraliLogData(KORALI_DETAILED, "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _mean[d], _bestEverSample[d]);
+ for (size_t d = 0; d < _k->N; d++) koraliLogData(KORALI_DETAILED, "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _sampleMeans[d], _bestEverCoordinates[d]);
  koraliLog(KORALI_DETAILED, "Max Width:\n");
- for (size_t d = 0; d < _k->N; d++) koraliLogData(KORALI_DETAILED, "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _maxWidth[d]);
+ for (size_t d = 0; d < _k->N; d++) koraliLogData(KORALI_DETAILED, "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _maxDistances[d]);
  koraliLog(KORALI_DETAILED, "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
  koraliLog(KORALI_NORMAL, "--------------------------------------------------------------------\n");
 }
@@ -351,7 +357,7 @@ void DEA::finalize()
  koraliLog(KORALI_MINIMAL, "Differential Evolution Finished\n");
  koraliLog(KORALI_MINIMAL, "Optimum found: %e\n", _bestEverValue);
  koraliLog(KORALI_MINIMAL, "Optimum found at:\n");
- for (size_t d = 0; d < _k->N; ++d) koraliLogData(KORALI_MINIMAL, "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverSample[d]);
+ for (size_t d = 0; d < _k->N; ++d) koraliLogData(KORALI_MINIMAL, "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverCoordinates[d]);
  koraliLog(KORALI_MINIMAL, "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
  koraliLog(KORALI_MINIMAL, "--------------------------------------------------------------------\n");
 }

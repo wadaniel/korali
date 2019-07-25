@@ -21,59 +21,14 @@ class CopyLibrary(build_ext):
 
     def copy_extension(self, ext):
         extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
-        
-        koraliLibDirSrc = ext.sourcedir + '/source'
-        koraliSharedLibSrc = glob.glob(koraliLibDirSrc + '/libkorali.so')
-        koraliStaticLibSrc = glob.glob(koraliLibDirSrc + '/libkorali.a')
 
-        koraliSharedLibDst = extdir
-        koraliStaticLibDst = extdir + '/korali/cxx/lib'
-
-        os.makedirs(koraliStaticLibDst)
-
-        if (len(koraliSharedLibSrc) == 0):
-            raise ValueError('No libkorali.so found in folder ' + koraliLibDirSrc)
-
-        if (len(koraliStaticLibSrc) == 0):
-            raise ValueError('No libkorali.a found in folder ' + koraliLibDirSrc)
-            
-        shutil.copy2(koraliSharedLibSrc[0], koraliSharedLibDst)
-        shutil.copy2(koraliStaticLibSrc[0], koraliStaticLibDst)
+        # Creating include directory
+        shutil.copytree(ext.sourcedir + '/source', extdir + '/korali/cxx/source')
         
-        # Creating include files directories
-        os.makedirs(extdir + '/korali/cxx/include')
-        os.makedirs(extdir + '/korali/cxx/include/solvers')
-        os.makedirs(extdir + '/korali/cxx/include/problems')
-        os.makedirs(extdir + '/korali/cxx/include/conduits')
+        # Creating symlinks
+        if (os.path.exists(extdir + '/libkorali.so')): os.remove(extdir + '/libkorali.so')
+        os.symlink(extdir + '/korali/cxx/source/libkorali.so', extdir + '/libkorali.so') 
         
-        # Copying base directory includes  
-        koraliIncludesDir = ext.sourcedir + '/source/*.hpp'
-        koraliIncludesSrc = glob.glob(koraliIncludesDir)
-        
-        for file in koraliIncludesSrc:
-            shutil.copy2(file, extdir + '/korali/cxx/include')
-        
-        # Copying solver directory includes    
-        koraliIncludesDir = ext.sourcedir + '/source/solvers/*.hpp'
-        koraliIncludesSrc = glob.glob(koraliIncludesDir)
-        
-        for file in koraliIncludesSrc:
-            shutil.copy2(file, extdir + '/korali/cxx/include/solvers')
-        
-        # Copying problems directory includes    
-        koraliIncludesDir = ext.sourcedir + '/source/problems/*.hpp'
-        koraliIncludesSrc = glob.glob(koraliIncludesDir)
-        
-        for file in koraliIncludesSrc:
-            shutil.copy2(file, extdir + '/korali/cxx/include/problems')
-            
-        # Copying conduits directory includes    
-        koraliIncludesDir = ext.sourcedir + '/source/conduits/*.hpp'
-        koraliIncludesSrc = glob.glob(koraliIncludesDir)
-        
-        for file in koraliIncludesSrc:
-            shutil.copy2(file, extdir + '/korali/cxx/include/conduits')
-
 setup(
     name='Korali',
     version=1.00,

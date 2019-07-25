@@ -1,12 +1,17 @@
 include Makefile.conf
 
-CFLAGS  = -g $(OPTFLAGS) -I. $(GSLCFLAGS) $(CXXARCH) -Wno-deprecated-declarations
+CFLAGS  = -g $(OPTFLAGS) -I. $(GSLCFLAGS) $(CXXARCH) -Wno-deprecated-declarations -Wfatal-errors
 LDFLAGS = $(SHAREDLIB_FLAG) -L$(GSLPREFIX)/lib -Wl,-rpath -Wl,$(GSLPREFIX)/lib $(GSLLIBS) 
 
 CFLAGS  += $(PYBIND11INCLUDES) $(MPIFLAGS)
 LDFLAGS += $(PYBIND11LIBS)
 
-all: libkorali.so libkorali.a
+.PHONY: clean all
+
+all: config.cpp libkorali.so libkorali.a
+
+config.cpp:
+	python3 ./build.py
 
 SOURCES = $(shell find . -name "*.cpp") config.cpp
 OBJECTS_STATIC = $(SOURCES:.cpp=.static.o)
@@ -24,10 +29,6 @@ libkorali.so: $(OBJECTS_SHARED)
 libkorali.a: $(OBJECTS_STATIC)
 	ar rs $@ $^
 
-config.cpp:
-	python3 ./build_config.py
-
 clean:
-	@rm -rf *.so *.a config.cpp $(OBJECTS_STATIC) $(OBJECTS_SHARED)
+	@rm -rf *.so *.a config.cpp solvers/*/*.hpp $(OBJECTS_STATIC) $(OBJECTS_SHARED)
 
-.PHONY: clean all

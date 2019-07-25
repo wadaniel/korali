@@ -25,13 +25,15 @@ int main(int argc, char* argv[])
  k["General"]["Console Output"]["Frequency"] = 10;
  k["General"]["Results Output"]["Frequency"] = 10;
 
+ k["General"]["Results Output"]["Path"] = "_result_run-cmaes";
+
  k.setModel(model);
  k.run();
 
  printf("\n\nRestarting now:\n\n");
 
  // Now we loadState() to resume the same experiment from generation 10
- k.loadState("_korali_result/s00010.json");
+ k.loadState("_result_run-cmaes/s00010.json");
 
  k.run();
 }

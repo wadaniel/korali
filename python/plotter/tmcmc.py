@@ -22,6 +22,9 @@ def plot_tmcmc(src, live=False, test=False):
     
     resultfiles = readFiles(src)
 
+    if (live == False):
+        resultfiles = [resultfiles[-1]]
+
     for filename in resultfiles:
         path   = '{0}/{1}'.format(src, filename)
  

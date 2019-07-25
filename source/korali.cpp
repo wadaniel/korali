@@ -71,8 +71,8 @@ PYBIND11_MODULE(libkorali, m) {
 
 Korali::Engine::Engine() : _solver(nullptr), _problem(nullptr), _conduit(nullptr)
 {
- _runId             = 0;
- _modelDefined      = false;
+ _runId        = 0;
+ _modelDefined = false;
  consoleOutputFrequency = 1;
  resultsOutputFrequency = 1;
  _isFinished = false;
@@ -114,11 +114,11 @@ void Korali::Engine::getConfiguration()
  _js["General"]["Function Evaluation Count"] = functionEvaluationCount;
  _js["General"]["Is Finished"] = _isFinished;
 
- for (int i = 0; i < _variables.size(); i++) _variables[i]->getConfiguration(_js["Variables"][i]);
-
  if (_problem != nullptr) _problem->getConfiguration();
  if (_conduit != nullptr) _conduit->getConfiguration();
  if (_conduit != nullptr) _solver->getConfiguration();
+
+ for (int i = 0; i < _variables.size(); i++) _variables[i]->getConfiguration(_js["Variables"][i]);
 }
 
 void Korali::Engine::setConfiguration()
@@ -189,12 +189,11 @@ void Korali::Engine::setConfiguration()
 
  // Configure Solver
  std::string solverName = consume(_js, { "Solver", "Type" }, KORALI_STRING);
- if (solverName == "CMAES")  _solver = std::make_shared<Korali::Solver::CCMAES>();
- if (solverName == "CCMAES") _solver = std::make_shared<Korali::Solver::CCMAES>();
+ if (solverName == "CMAES") _solver = std::make_shared<Korali::Solver::CMAES>();
  if (solverName == "DEA")    _solver = std::make_shared<Korali::Solver::DEA>();
  if (solverName == "MCMC")   _solver = std::make_shared<Korali::Solver::MCMC>();
  if (solverName == "TMCMC")  _solver = std::make_shared<Korali::Solver::TMCMC>();
- if (_solver == nullptr) koraliError("Incorrect or undefined Solver '%s'.", solverName.c_str());
+ if (_solver == nullptr) koraliError("Incorrect or undefined Solver '%s'.\n", solverName.c_str());
 
  // Setting module configuration
  _problem->setConfiguration();
@@ -232,6 +231,7 @@ void Korali::Engine::addConstraint(std::function<void(Korali::Model&)> constrain
 
 void Korali::Engine::start(bool isDryRun)
 {
+ if(_isFinished) { koraliWarning(KORALI_MINIMAL, "Cannot restart engine, a previous run has already been executed."); return; }
  _k = this; 
 
  setConfiguration();
@@ -274,6 +274,7 @@ void Korali::Engine::start(bool isDryRun)
   auto endTime = std::chrono::system_clock::now();
 
   saveState(currentGeneration);
+  saveState("final.json");
 
   _solver->finalize();
   _problem->finalize();
@@ -291,6 +292,7 @@ void Korali::Engine::saveState(std::string fileName)
  getConfiguration();
  if (!_conduit->isRoot()) return;
 
+ fileName = "./" + _result_dir + "/" + fileName;
  saveJsonToFile(fileName.c_str(), _js);
 }
 
@@ -306,7 +308,7 @@ void Korali::Engine::saveState(int fileId)
 
  char fileName[256];
 
- sprintf(fileName, "./%s/s%05d.json", _result_dir.c_str(), fileId);
+ sprintf(fileName, "s%05d.json", fileId);
 
  saveState(fileName);
 }

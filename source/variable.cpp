@@ -143,7 +143,6 @@ void Korali::Variable::getDistribution(nlohmann::json& js)
   js["Type"] = "Geometric";
   js["Success Probability"] = _a;
  }
-
 }
 
 /************************************************************************/
@@ -155,6 +154,7 @@ void Korali::Variable::getConfiguration(nlohmann::json& js)
  js["Log Space"] = _isLogSpace;
  js["Name"] = _name;
  getDistribution(js["Prior Distribution"]);
+ getSolverSettings(js);
 }
 
 void Korali::Variable::setConfiguration(nlohmann::json& js)
@@ -162,6 +162,7 @@ void Korali::Variable::setConfiguration(nlohmann::json& js)
  _isLogSpace = consume(js, { "Log Space"}, KORALI_BOOLEAN, "false");
  _name = consume(js, { "Name" }, KORALI_STRING);
  setDistribution(js["Prior Distribution"]);
+ setSolverSettings(js);
 }
 
 double Korali::Variable::getDensity(double x)

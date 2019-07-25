@@ -6,8 +6,7 @@ sys.path.append('setup/model')
 from model import *
 import korali
 
-#i = int(sys.argv[1])
-i = 3
+i = int(sys.argv[1])
 dataPath    = "setup/data/individual"
 resultsPath = "results/individual/" + str(i).zfill(3)
 if os.path.exists(resultsPath):

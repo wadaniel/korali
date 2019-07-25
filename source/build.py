@@ -74,16 +74,6 @@ solverPaths  = [x[0] for x in os.walk('./solvers')][1:]
 problemPaths = [x[0] for x in os.walk('./problems')][1:]
 conduitPaths = [x[0] for x in os.walk('./conduits')][1:]
 
-# Creating setup.py
-with open('./.setup.py', 'r') as file: setupString = file.read()
-installFiles = ['libkorali.a', '../libkorali.so']
-for dirpath, subdirs, files in os.walk('.'):
- for x in files:
-  if x.endswith(".hpp"):
-   installFiles.append(os.path.join(dirpath, x))
-setupString = setupString.replace('installFiles', str(installFiles))
-with open('./setup.py', 'w') as file: file.write(setupString)
-
 # Creating cxx commands.
 makefileConfFile = open("./Makefile.conf", "r")
 CXXFLAGS=''
@@ -212,9 +202,20 @@ configFile.write('void Korali::Variable::getSolverSettings(nlohmann::json& js)\n
 configFile.write(variableGetSolverSettingString)
 configFile.write('}\n\n')
 
+configFile.close()
+
 # Saving new variable.hpp file
 variableNewHeaderFile = './variable.hpp'
 newHeaderString = variableHeaderString.replace('public:', 'public: \n' + variableSettingDeclarationsString + '\n')
 with open(variableNewHeaderFile, 'w') as file: file.write(newHeaderString)
 
-configFile.close()
+# Creating setup.py
+with open('./.setup.py', 'r') as file: setupString = file.read()
+installFiles = ['libkorali.so', 'libkorali.a', '../libkorali.so']
+for dirpath, subdirs, files in os.walk('.'):
+ for x in files:
+  if x.endswith(".hpp"):
+   installFiles.append(os.path.join(dirpath, x))
+setupString = setupString.replace('installFiles', str(installFiles))
+with open('./setup.py', 'w') as file: file.write(setupString)
+

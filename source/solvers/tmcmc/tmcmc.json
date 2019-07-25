@@ -19,13 +19,13 @@
     "Name": "Default Burn In",
     "Type": "Unsigned Integer",
     "Default": "0",
-    "Description": "Specifies the number of additional TMCMC steps per sample per generation. Note that only the last sample per chain is considered for the recombination."
+    "Description": "Specifies the number of additional TMCMC steps per chain per generation."
    },
    {
     "Name": "Burn In Steps",
-    "Type": "Unsigned Integer",
+    "Type": "(Array of) Unsigned Integer",
     "Default": "0",
-    "Description": "Specifies the number of additional TMCMC steps per sample at specified generations."
+    "Description": "Specifies the number of additional TMCMC steps per chain at specified generations."
    },
    {
     "Name": "Target Coefficient of Variation",
@@ -72,9 +72,9 @@
  "Internal Settings": 
  [
    {
-    "Name": "Burn In",
-    "Type": "(Array of) Unsigned Integer",
-    "Description": "Actual placeholder for burn in steps per generation, initialized from $Burn In Default$ and $Burn In Steps$."
+    "Name": "Current Burn In",
+    "Type": "Unsigned Integer",
+    "Description": "Actual placeholder for burn in steps per generation, calculated from $Burn In Default$, $Burn In Steps$ and current generation."
    },
    {
     "Name": "Chain Pending Fitness",

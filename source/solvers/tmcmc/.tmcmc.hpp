@@ -12,6 +12,7 @@ class TMCMC : public Base
  private:
 
  gsl_rng  *range;
+ void setBurnIn();
  void processGeneration();
  void updateDatabase(double* point, double fitness);
  void generateCandidate(size_t candidate);

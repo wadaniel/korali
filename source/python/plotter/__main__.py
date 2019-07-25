@@ -6,7 +6,7 @@ import json
 import argparse
 import matplotlib
 
-def main(check, path, mean, live, test):
+def main(path, allFiles, live, generation, mean, check, test):
 
  if (check == True):
   print("[Korali] Plotter correctly installed.")
@@ -14,6 +14,11 @@ def main(check, path, mean, live, test):
  
  if (test == True):
      matplotlib.use('Agg')
+
+ if ( (allFiles == True) and (generation is not None)):
+    print("korali.plotter: error: argument --all and argument --generation "\
+            "GENERATION cannot be combined")
+    exit(-1)
 
  from korali.plotter.helpers import sig
  from korali.plotter.cmaes import plot_cmaes
@@ -34,27 +39,27 @@ def main(check, path, mean, live, test):
  solver = data['Solver']['Type']
  if ( 'TMCMC' == solver ):
    print("[Korali] Running TMCMC Plotter...")
-   plot_tmcmc(path, live, test)
+   plot_tmcmc(path, allFiles, live, generation, test)
    exit(0)
  
  if ( 'MCMC' == solver ):
    print("[Korali] Running MCMC Plotter...")
-   plot_mcmc(path, live, test)
+   plot_mcmc(path, allFiles, live, generation, test)
    exit(0)
 
  if ( 'CMAES' == solver):
    print("[Korali] Running CMAES Plotter...")
-   plot_cmaes(path, mean, live, test)
+   plot_cmaes(path, allFiles, live, generation, test, mean)
    exit(0)
   
  if ( 'CCMAES' == solver):
    print("[Korali] Running cCMAES Plotter...")
-   plot_cmaes(path, mean, live, test)
+   plot_cmaes(path, allFiles, live, generation, test, mean)
    exit(0)
 
  if ( 'DEA' == solver ):
    print("[Korali] Running DEA Plotter...")
-   plot_dea(path, live, test)
+   plot_dea(path, allFiles, live, generation, test, mean)
    exit(0)
 
  print("[Korali] Error: Did not recognize method for plotting...")
@@ -63,11 +68,13 @@ def main(check, path, mean, live, test):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='korali.plotter', description='Process korali results in _korali_result (default) folder.')
-    parser.add_argument('--check', help='verifies that korali.plotter is available', action='store_true', required = False)
     parser.add_argument('--dir', help='directory of result files', default='_korali_result', required = False)
+    parser.add_argument('--all', help='plot all available results', action='store_true', required = False)
+    parser.add_argument('--live', help='no auto close, keep polling for new result files', action='store_true', required = False)
+    parser.add_argument('--generation', help='no auto close, keep polling for new result files', action='store', type=int, required = False)
     parser.add_argument('--mean', help='plot mean of objective variables', action='store_true', required = False)
-    parser.add_argument('--live', help='run live plotting', action='store_true', required = False)
-    parser.add_argument('--test', help='run without graphics', action='store_true', required = False)
+    parser.add_argument('--check', help='verifies that korali.plotter is available', action='store_true', required = False)
+    parser.add_argument('--test', help='run without graphics (for testing purpose)', action='store_true', required = False)
     args = parser.parse_args()
-   
-    main(args.check, args.dir, args.mean, args.live, args.test)
+
+    main( args.dir, args.all, args.live, args.generation, args.mean, args.check, args.test)

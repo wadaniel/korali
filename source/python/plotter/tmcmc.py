@@ -13,7 +13,7 @@ from korali.plotter.helpers import readFiles, pauseLight
 
 
 # Plot TMCMC results (read from .json files)
-def plot_tmcmc(src, live=False, test=False):
+def plot_tmcmc(src, allFiles=False, live=False, generation=None, test=False):
      
     plt.style.use('seaborn-dark')
     

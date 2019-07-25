@@ -14,7 +14,7 @@ from korali.plotter.helpers import readFiles, hlsColors, pauseLight, drawMultico
 
 
 # Plot CMAES results (read from .json files)
-def plot_cmaes(src, plot_mean = False, live=False, test=False ):
+def plot_cmaes(src, allFiles=False, live=False, generation=None, test=False, plot_mean=False ):
 
     init     = False # init flag
     numdim   = 0  # problem dimension

@@ -12,7 +12,7 @@ from korali.plotter.helpers import readFiles, pauseLight
 
 
 # Plot MCMC results (read from .json files)
-def plot_mcmc(src, live=False, test=False):
+def plot_mcmc(src, allFiles=False, live=False, generation=None, test=False):
      
     plt.style.use('seaborn-dark')
     init   = False 

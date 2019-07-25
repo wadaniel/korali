@@ -15,7 +15,7 @@ from korali.plotter.helpers import readFiles, hlsColors, pauseLight, drawMultico
 
 
 # Plot DEA results (read from .json files)
-def plot_dea(src, live=False, test=False):
+def plot_dea(src, allFiles=False, live=False, generation=None, test=False, plot_mean=False ):
 
     init     = False # init flag
     gen      = 0  # generation

@@ -42,14 +42,25 @@ k.setModel(evaluateModel)
 print("[Korali] Run TMCMC..")
 k.run()
 
+
+#################################################
+#  Prepare Expected Values
+#################################################
+
+gen = 0
+currentBurnIn = [10, 7, 5]
+
+
 #################################################
 # Read Results
 #################################################
 
 print("[Korali] Read & Evaluate Output..")
+
 src = "_korali_result"
 resultfiles = [f for f in os.listdir(src) if os.path.isfile(os.path.join(src, f))]
-resultfiles = sorted(resultfiles) 
+resultfiles = sorted(resultfiles)
+resultfiles = resultfiles[1:]
 
 for filename in resultfiles:
   path   = '{0}/{1}'.format(src, filename)
@@ -61,5 +72,9 @@ for filename in resultfiles:
 # Test Results
 #################################################
 
+    print("[Korali] Checking generation {0} inside file {1} ..".format(gen, path))
+    
     assert_value( data['Solver']['Default Burn In'], 5 )
+    #assert_value( data['Solver']['Internal']['Current Burn In'], currentBurnIn[gen] )
 
+    gen = gen + 1

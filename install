@@ -296,24 +296,6 @@ echo GSLLIBS=$GSLLIBS  >> source/Makefile.conf
 echo PYBIND11INCLUDES=$PYBIND11INCLUDES >> source/Makefile.conf 
 echo PYBIND11LIBS=$PYBIND11LIBS >> source/Makefile.conf
 
-######## Creating Python Config File ########
-
-log "[Korali] Creating Python Config File..."
-
-echo CXX=\'$USE_CXX\' > python/cxx/cxx.conf
-echo CXXARCH=\'$CXXARCH\' >> python/cxx/cxx.conf
-echo MPIFLAGS=\'$MPIFLAGS\' >> python/cxx/cxx.conf
-echo GSLPREFIX=\'$GSLPREFIX\' >> python/cxx/cxx.conf
-echo GSLCFLAGS=\'$GSLCFLAGS\' >> python/cxx/cxx.conf
-echo GSLLIBS=\'$GSLLIBS\'  >> python/cxx/cxx.conf
-echo OPTFLAGS=\'$OPTFLAGS\' >> python/cxx/cxx.conf
-echo PYBIND11INCLUDES=\'$PYBIND11INCLUDES\' >> python/cxx/cxx.conf
-echo PYBIND11LIBS=\'$PYBIND11LIBS\' >> python/cxx/cxx.conf
-
-cat ./python/cxx/cxx.conf ./python/cxx/cflags.py.base > ./python/cxx/cflags.py
-cat ./python/cxx/cxx.conf ./python/cxx/compiler.py.base > ./python/cxx/compiler.py
-cat ./python/cxx/cxx.conf ./python/cxx/libs.py.base > ./python/cxx/libs.py
-
 ######## Compiling Korali C++ Engine #########
 
 logEcho "[Korali] Compiling Korali..."
@@ -325,15 +307,19 @@ fi
 
 ######## Installing Korali using pip3 ########
 logEcho "[Korali] Installing Korali..."
-ln -sf ./python/setup/setup.py setup.py
-pip3 install . --user --upgrade >> $logFile 2>&1
 
+cp source/libkorali.so . >> $logFile 2>&1
+if [ $? -ne 0 ]; then
+  logEcho "[Korali] Error obtaining libkorali.so"
+  exitWithError
+fi
+
+pip3 install ./source --user --upgrade >> $logFile 2>&1
 if [ $? -ne 0 ]; then
   logEcho "[Korali] Error installing Korali's Python module."
   exitWithError
 fi
-
-rm -f setup.py
+rm -f libkorali.so >> $logFile 2>&1 
 
 echo "------------------------------------------------------------------"
 echo "[Korali] Finished installation successfully."

@@ -74,6 +74,29 @@ solverPaths  = [x[0] for x in os.walk('./solvers')][1:]
 problemPaths = [x[0] for x in os.walk('./problems')][1:]
 conduitPaths = [x[0] for x in os.walk('./conduits')][1:]
 
+# Creating setup.py
+with open('./.setup.py', 'r') as file: setupString = file.read()
+installFiles = ['libkorali.a', '../libkorali.so']
+for dirpath, subdirs, files in os.walk('.'):
+ for x in files:
+  if x.endswith(".hpp"):
+   installFiles.append(os.path.join(dirpath, x))
+setupString = setupString.replace('installFiles', str(installFiles))
+with open('./setup.py', 'w') as file: file.write(setupString)
+
+# Creating cxx commands.
+makefileConfFile = open("./Makefile.conf", "r")
+CXXFLAGS=''
+for line in makefileConfFile:
+  CXXFLAGS += line.replace('=', '=\'', 1).replace('\n', '') + '\'\n'
+
+with open('./python/cxx/cflags.py.base', 'r') as file: cFlagsString = file.read()
+with open('./python/cxx/compiler.py.base', 'r') as file: compilerString = file.read()
+with open('./python/cxx/libs.py.base', 'r') as file: libString = file.read()
+with open('./python/cxx/cflags.py', 'w+') as file: file.write(CXXFLAGS + '\n' + cFlagsString)
+with open('./python/cxx/compiler.py', 'w+') as file: file.write(CXXFLAGS + '\n' + compilerString)
+with open('./python/cxx/libs.py', 'w+') as file: libString = file.write(CXXFLAGS + '\n' + libString)
+ 
 # Creating new config.cpp
 configFile = open('./config.cpp', 'w')
 configFile.write('#include "korali.hpp"\n')

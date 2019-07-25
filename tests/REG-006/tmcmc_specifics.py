@@ -13,7 +13,7 @@ from reg006_helpers import *
 #################################################
 
 gen = 0
-currentBurnIn = [10, 7, 5, 5, 5, 5, 5, 5]
+currentBurnIn = [10, 7, 5, 5, 5, 5, 5, 5, 5]
 
 eps = 1e-12
 prevRho = 0.0
@@ -45,9 +45,9 @@ k["Solver"]["Default Burn In"] = 5
 k["Solver"]["Burn In Steps"][0] = 10
 k["Solver"]["Burn In Steps"][1] = 7
 k["Solver"]["Max Chain Length"] = 1
-k["Solver"]["Target Coefficient of Variation"] = 0.5
-k["Solver"]["Min Rho Update"] = minRhoUpdate
-k["Solver"]["Max Rho Update"] = maxRhoUpdate
+k["Solver"]["Target Coefficient Of Variation"] = 0.5
+k["Solver"]["Min Annealing Exponent Update"] = minRhoUpdate
+k["Solver"]["Max Annealing Exponent Update"] = maxRhoUpdate
 
 k["General"]["Random Seed"] = 314
 
@@ -71,7 +71,7 @@ print("[Korali] Read & Evaluate Output..")
 src = "_korali_result"
 resultfiles = [f for f in os.listdir(src) if os.path.isfile(os.path.join(src, f))]
 resultfiles = sorted(resultfiles)
-resultfiles = resultfiles[2:]
+resultfiles = resultfiles[1:]
 
 for filename in resultfiles:
   path   = '{0}/{1}'.format(src, filename)
@@ -91,10 +91,12 @@ for filename in resultfiles:
     assert_value( data['Solver']['Internal']['Current Burn In'], currentBurnIn[gen] )
     
     # Testing Correctness of (min/max) Rho Update
-    assert_value( data['Solver']['Min Rho Update'], minRhoUpdate )
-    assert_value( data['Solver']['Max Rho Update'], maxRhoUpdate )
+    assert_value( data['Solver']['Min Annealing Exponent Update'], minRhoUpdate )
+    assert_value( data['Solver']['Max Annealing Exponent Update'], maxRhoUpdate )
     rho =  data['Solver']['Internal']['Annealing Exponent']
-    assert_value(rho - prevRho >= minRhoUpdate, True)
+    
+    if (gen>0):
+      assert_value(rho - prevRho >= minRhoUpdate, True)
     
     finished = data['General']['Is Finished']
     if finished == True:

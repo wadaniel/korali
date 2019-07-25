@@ -24,7 +24,6 @@ int main(int argc, char* argv[])
  // Configuring the TMCMC sampler parameters
  k["Solver"]["Type"] = "TMCMC";
  k["Solver"]["Population Size"] = 5000;
- k["Solver"]["Target Coefficient of Variation"] = 0.2;
 
  // Setting Model
  k.setModel(storeResults);

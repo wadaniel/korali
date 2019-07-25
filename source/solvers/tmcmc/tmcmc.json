@@ -46,13 +46,13 @@
     "Description": "If $true, TMCMC calculates a local covariance matrix per sample from its neighbours."
    },
    {
-    "Name": "Min Rho Update",
+    "Name": "Min Annealing Exponent Update",
     "Type": "Real",
     "Default": "0.00001",
     "Description": "Minimum increment of the exponent $\rho_{i+1}$. This parameter prevents TMCMC from stalling."
    },
    {
-    "Name": "Max Rho Update",
+    "Name": "Max Annealing Exponent Update",
     "Type": "Real",
     "Default": "1.0",
     "Description": "Maximum increment of the exponent $\rho{i+1}$. By default, Korali will set this value to 1.0 (inactive)."

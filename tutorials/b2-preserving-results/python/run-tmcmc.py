@@ -30,7 +30,6 @@ k["Variables"][1]["Prior Distribution"]["Maximum"] = +50.0
 # Configuring the TMCMC sampler parameters
 k["Solver"]["Type"] = "TMCMC"
 k["Solver"]["Population Size"] = 5000
-k["Solver"]["Target Coefficient of Variation"] = 0.2
 
 # Setting Model
 k.setModel(storeResults)

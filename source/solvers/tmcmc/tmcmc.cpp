@@ -183,26 +183,26 @@ void Korali::Solver::TMCMC::processGeneration()
 	std::vector<unsigned int> numselections(_databaseEntryCount);
 
 	double fmin = 0, xmin = 0;
-	minSearch(&_sampleFitnessDatabase[0], _databaseEntryCount, _annealingExponent, _targetCoefficientofVariation, xmin, fmin);
+	minSearch(&_sampleFitnessDatabase[0], _databaseEntryCount, _annealingExponent, _targetCoefficientOfVariation, xmin, fmin);
 
 	double _prevAnnealingExponent = _annealingExponent;
 
-	if (xmin > _prevAnnealingExponent + _maxRhoUpdate)
+	if (xmin > _prevAnnealingExponent + _maxAnnealingExponentUpdate)
 	{
-	koraliWarning(KORALI_DETAILED, "Annealing Step larger than Max Rho Update, updating Annealing Exponent by %f (Max Rho Update). \n", _maxRhoUpdate);
-	_annealingExponent      = _prevAnnealingExponent + _maxRhoUpdate;
-	_coefficientOfVariation = sqrt(tmcmc_objlogp(_annealingExponent, &_sampleFitnessDatabase[0], _databaseEntryCount, _prevAnnealingExponent, _targetCoefficientofVariation)) + _targetCoefficientofVariation;
+	koraliWarning(KORALI_DETAILED, "Annealing Step larger than Max Rho Update, updating Annealing Exponent by %f (Max Rho Update). \n", _maxAnnealingExponentUpdate);
+	_annealingExponent      = _prevAnnealingExponent + _maxAnnealingExponentUpdate;
+	_coefficientOfVariation = sqrt(tmcmc_objlogp(_annealingExponent, &_sampleFitnessDatabase[0], _databaseEntryCount, _prevAnnealingExponent, _targetCoefficientOfVariation)) + _targetCoefficientOfVariation;
 	}
 	else if (xmin > _prevAnnealingExponent)
 	{
 	_annealingExponent      = xmin;
-	_coefficientOfVariation = sqrt(fmin) + _targetCoefficientofVariation;
+	_coefficientOfVariation = sqrt(fmin) + _targetCoefficientOfVariation;
 	}
 	else
 	{
-	 koraliWarning(KORALI_DETAILED, "Annealing Step smaller than Min Rho Update, updating Annealing Exponent by %f (Min Rho Update). \n", _minRhoUpdate);
-	_annealingExponent      = _prevAnnealingExponent + _minRhoUpdate;
-	_coefficientOfVariation = sqrt(tmcmc_objlogp(_annealingExponent, &_sampleFitnessDatabase[0], _databaseEntryCount, _prevAnnealingExponent, _targetCoefficientofVariation)) + _targetCoefficientofVariation;
+	 koraliWarning(KORALI_DETAILED, "Annealing Step smaller than Min Rho Update, updating Annealing Exponent by %f (Min Rho Update). \n", _minAnnealingExponentUpdate);
+	_annealingExponent      = _prevAnnealingExponent + _minAnnealingExponentUpdate;
+	_coefficientOfVariation = sqrt(tmcmc_objlogp(_annealingExponent, &_sampleFitnessDatabase[0], _databaseEntryCount, _prevAnnealingExponent, _targetCoefficientOfVariation)) + _targetCoefficientOfVariation;
 	}
 
 	/* Compute weights and normalize*/
@@ -455,8 +455,7 @@ bool Korali::Solver::TMCMC::isFeasibleCandidate(size_t c)
 
 void Korali::Solver::TMCMC::setBurnIn()
 {
-  if (_k->currentGeneration == 0) _currentBurnIn = 0;
-  if (_k->currentGeneration < _burnInSteps.size()+1) _currentBurnIn = _burnInSteps[_k->currentGeneration];
+  if (_k->currentGeneration < _burnInSteps.size()) _currentBurnIn = _burnInSteps[_k->currentGeneration];
   else _currentBurnIn = _defaultBurnIn;
 }
 

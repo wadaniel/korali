@@ -71,7 +71,7 @@ if __name__ == '__main__':
     parser.add_argument('--dir', help='directory of result files', default='_korali_result', required = False)
     parser.add_argument('--all', help='plot all available results', action='store_true', required = False)
     parser.add_argument('--live', help='no auto close, keep polling for new result files', action='store_true', required = False)
-    parser.add_argument('--generation', help='no auto close, keep polling for new result files', action='store', type=int, required = False)
+    parser.add_argument('--generation', help='plot results of generation GENERATION', action='store', type=int, required = False)
     parser.add_argument('--mean', help='plot mean of objective variables', action='store_true', required = False)
     parser.add_argument('--check', help='verifies that korali.plotter is available', action='store_true', required = False)
     parser.add_argument('--test', help='run without graphics (for testing purpose)', action='store_true', required = False)

@@ -28,7 +28,7 @@
     "Description": "Specifies the number of additional TMCMC steps per chain at specified generations."
    },
    {
-    "Name": "Target Coefficient of Variation",
+    "Name": "Target Coefficient Of Variation",
     "Type": "Real",
     "Default": "1.0",
     "Description": "Initial value for the target coefficient of variation to search for the exponent $\rho_{i+1}$. By default, Korali will set this value to 1.00 as suggested in [Ching2007]."

@@ -7,6 +7,20 @@ import korali
 sys.path.append('./helpers')
 from reg006_helpers import *
 
+
+#################################################
+#  Prepare Expected Values
+#################################################
+
+gen = 0
+currentBurnIn = [10, 7, 5, 5, 5, 5, 5, 5]
+
+eps = 1e-12
+prevRho = 0.0
+minRhoUpdate = 1e-3
+maxRhoUpdate = 0.2
+
+
 #################################################
 # Set Up  TMCMC run
 #################################################
@@ -30,10 +44,15 @@ k["Solver"]["Covariance Scaling"] = 0.001
 k["Solver"]["Default Burn In"] = 5
 k["Solver"]["Burn In Steps"][0] = 10
 k["Solver"]["Burn In Steps"][1] = 7
+k["Solver"]["Max Chain Length"] = 1
+k["Solver"]["Target Coefficient of Variation"] = 0.5
+k["Solver"]["Min Rho Update"] = minRhoUpdate
+k["Solver"]["Max Rho Update"] = maxRhoUpdate
 
 k["General"]["Random Seed"] = 314
 
 k.setModel(evaluateModel)
+
 
 #################################################
 #  Run TMCMC
@@ -44,15 +63,7 @@ k.run()
 
 
 #################################################
-#  Prepare Expected Values
-#################################################
-
-gen = 0
-currentBurnIn = [10, 7, 5]
-
-
-#################################################
-# Read Results
+# Read Result Files
 #################################################
 
 print("[Korali] Read & Evaluate Output..")
@@ -60,7 +71,7 @@ print("[Korali] Read & Evaluate Output..")
 src = "_korali_result"
 resultfiles = [f for f in os.listdir(src) if os.path.isfile(os.path.join(src, f))]
 resultfiles = sorted(resultfiles)
-resultfiles = resultfiles[1:]
+resultfiles = resultfiles[2:]
 
 for filename in resultfiles:
   path   = '{0}/{1}'.format(src, filename)
@@ -68,13 +79,29 @@ for filename in resultfiles:
   with open(path) as f:
     data  = json.load(f)
 
+
 #################################################
-# Test Results
+# Test Result
 #################################################
 
     print("[Korali] Checking generation {0} inside file {1} ..".format(gen, path))
     
+    # Testing Burn In Assignments
     assert_value( data['Solver']['Default Burn In'], 5 )
-    #assert_value( data['Solver']['Internal']['Current Burn In'], currentBurnIn[gen] )
-
+    assert_value( data['Solver']['Internal']['Current Burn In'], currentBurnIn[gen] )
+    
+    # Testing Correctness of (min/max) Rho Update
+    assert_value( data['Solver']['Min Rho Update'], minRhoUpdate )
+    assert_value( data['Solver']['Max Rho Update'], maxRhoUpdate )
+    rho =  data['Solver']['Internal']['Annealing Exponent']
+    assert_value(rho - prevRho >= minRhoUpdate, True)
+    
+    finished = data['General']['Is Finished']
+    if finished == True:
+        assert_value(rho - prevRho >= maxRhoUpdate-eps, False)
+    if finished == False:
+        assert_value(rho - prevRho <= maxRhoUpdate+eps, True)
+ 
+    # Updates
+    prevRho = rho
     gen = gen + 1

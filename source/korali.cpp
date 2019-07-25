@@ -204,8 +204,8 @@ void Korali::Engine::start(bool isDryRun)
   {
    auto t0 = std::chrono::system_clock::now();
 
-   _solver->runGeneration();
    currentGeneration++;
+   _solver->runGeneration();
 
    auto t1 = std::chrono::system_clock::now();
 

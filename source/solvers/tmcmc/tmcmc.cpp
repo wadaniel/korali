@@ -455,7 +455,8 @@ bool Korali::Solver::TMCMC::isFeasibleCandidate(size_t c)
 
 void Korali::Solver::TMCMC::setBurnIn()
 {
-  if (_k->currentGeneration < _burnInSteps.size()) _currentBurnIn = _burnInSteps[_k->currentGeneration];
+  if (_k->currentGeneration == 0) _currentBurnIn = 0;
+  if (_k->currentGeneration < _burnInSteps.size()+1) _currentBurnIn = _burnInSteps[_k->currentGeneration];
   else _currentBurnIn = _defaultBurnIn;
 }
 

@@ -10,6 +10,64 @@
 
 Korali::verbosity Korali::_korali_verbosity;
 
+/************************************************************************/
+/*                  Python Binding Declarations                         */
+/************************************************************************/
+
+#ifdef _KORALI_USE_PYTHON
+
+#include "pybind11/pybind11.h"
+#include "pybind11/functional.h"
+#include "pybind11/stl.h"
+
+PYBIND11_MODULE(libkorali, m) {
+ pybind11::class_<Korali::Model>(m, "Model")
+  .def("getVariable",      &Korali::Model::getVariable, pybind11::return_value_policy::reference)
+  .def("getVariableCount", &Korali::Model::getVariableCount, pybind11::return_value_policy::reference)
+  .def("getVariables",     &Korali::Model::getVariables, pybind11::return_value_policy::reference)
+  .def("getResults",       &Korali::Model::getResults, pybind11::return_value_policy::reference)
+ .def("getSampleId",         &Korali::Model::getSampleId, pybind11::return_value_policy::reference)
+  #ifdef _KORALI_USE_MPI
+  .def("getCommPointer",   &Korali::Model::getCommPointer)
+  #endif
+  .def("addResult",        &Korali::Model::addResult, pybind11::return_value_policy::reference);
+
+ pybind11::class_<Korali::Engine>(m, "Engine")
+ .def(pybind11::init<>())
+ .def("__getitem__", pybind11::overload_cast<const std::string&>(&Korali::Engine::getItem), pybind11::return_value_policy::reference)
+ .def("__getitem__", pybind11::overload_cast<const unsigned long int&>(&Korali::Engine::getItem), pybind11::return_value_policy::reference)
+ .def("__setitem__", pybind11::overload_cast<const std::string&, const std::string&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
+ .def("__setitem__", pybind11::overload_cast<const std::string&, const double&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
+ .def("__setitem__", pybind11::overload_cast<const std::string&, const int&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
+ .def("__setitem__", pybind11::overload_cast<const std::string&, const bool&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
+ .def("run", &Korali::Engine::run)
+ .def("dry", &Korali::Engine::dry)
+ .def("setModel",      &Korali::Engine::setModel, pybind11::return_value_policy::reference)
+ .def("addConstraint", &Korali::Engine::addConstraint, pybind11::return_value_policy::reference)
+ .def("getResults", &Korali::Engine::getResults)
+ .def("loadState",     &Korali::Engine::loadState, pybind11::return_value_policy::reference);
+
+ pybind11::class_<Korali::KoraliJsonWrapper>(m, "__KoraliJsonWrapper")
+ .def(pybind11::init<>())
+ .def("getValue", &Korali::KoraliJsonWrapper::getValue)
+ .def("getBoolean", &Korali::KoraliJsonWrapper::getBoolean)
+ .def("getString", &Korali::KoraliJsonWrapper::getString)
+ .def("getArray", &Korali::KoraliJsonWrapper::getArray)
+ .def("__getitem__", pybind11::overload_cast<const std::string&>(&Korali::KoraliJsonWrapper::getItem), pybind11::return_value_policy::reference)
+ .def("__getitem__", pybind11::overload_cast<const unsigned long int&>(&Korali::KoraliJsonWrapper::getItem), pybind11::return_value_policy::reference)
+ .def("__setitem__", pybind11::overload_cast<const std::string&, const std::string&>(&Korali::KoraliJsonWrapper::setItem), pybind11::return_value_policy::reference)
+ .def("__setitem__", pybind11::overload_cast<const std::string&, const double&>(&Korali::KoraliJsonWrapper::setItem), pybind11::return_value_policy::reference)
+ .def("__setitem__", pybind11::overload_cast<const std::string&, const int&>(&Korali::KoraliJsonWrapper::setItem), pybind11::return_value_policy::reference)
+ .def("__setitem__", pybind11::overload_cast<const std::string&, const bool&>(&Korali::KoraliJsonWrapper::setItem), pybind11::return_value_policy::reference)
+ .def("__setitem__", pybind11::overload_cast<const std::string&, const std::vector<double>&>(&Korali::KoraliJsonWrapper::setItem), pybind11::return_value_policy::reference)
+ .def("__setitem__", pybind11::overload_cast<const int&, const std::string&>(&Korali::KoraliJsonWrapper::setItem), pybind11::return_value_policy::reference)
+ .def("__setitem__", pybind11::overload_cast<const int&, const double&>(&Korali::KoraliJsonWrapper::setItem), pybind11::return_value_policy::reference)
+ .def("__setitem__", pybind11::overload_cast<const int&, const int&>(&Korali::KoraliJsonWrapper::setItem), pybind11::return_value_policy::reference)
+ .def("__setitem__", pybind11::overload_cast<const int&, const bool&>(&Korali::KoraliJsonWrapper::setItem), pybind11::return_value_policy::reference);
+}
+
+#endif
+
 void Korali::koraliLogData(const verbosity level, const char* format, ... )
 {
  if (_k->_conduit != nullptr) if(! _k->_conduit->isRoot()) return;

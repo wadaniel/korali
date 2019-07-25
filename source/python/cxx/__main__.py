@@ -6,7 +6,7 @@ from korali.cxx.libs import getlibs
 from korali.cxx.compiler import getcompiler
 
 def main():
- extdir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
+ extdir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)) + '/../') 
  
  correctSyntax=False
  

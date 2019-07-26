@@ -8,83 +8,79 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 
-from korali.plotter.helpers import readFiles, pauseLight
+from korali.plotter.helpers import readFiles, hlsColors, pauseLight, drawMulticoloredLine, checkFigure
+from korali.plotter.helpers import initDefaults, getStateAndGeneration, appendStates, appendStateVectors
 
 
 # Plot MCMC results (read from .json files)
-def plot_mcmc(src, allFiles=False, live=False, generation=None, test=False):
-     
+def plot_mcmc(src, plotAll=False, live=False, generation=None, test=False):
     plt.style.use('seaborn-dark')
-    init   = False 
-    burnin = -1
+    
+    stateNames = ['Chain Length', 'Database Entry Count']
+    vecStateNames = ['Sample Parameters Database']
+
+    chainlen, numdbentries, samples = ([] for i in range(3))
    
-    fig = None
-    ax  = None
-
     resultfiles = readFiles(src, 0, generation)
+    solverName, names, numdim, gen = initDefaults(src, resultfiles[0], [samples])
 
-    if (live == True):
+    updateLegend = live or plotAll
+         
+    fig, ax = plt.subplots(numdim, numdim, figsize=(8,8))
+    if (updateLegend):
+        fig.show()
+    
+    while True:
+ 
+        if (not plotAll):
+            resultfiles = [resultfiles[-1]]
         for filename in resultfiles:
-            path   = '{0}/{1}'.format(src, filename)
+            path = '{0}/{1}'.format(src, filename)
             
             with open(path) as f:
-                data     = json.load(f)
-                numdim   = len(data['Variables'])
-                burnin   = data['Solver']['Burn In']
-                chainlen = data['Solver']['Internal']['Chain Length']
+                data = json.load(f)
                 
-                if (init == False):
-                    init = True
-                    fig, ax = plt.subplots(numdim, numdim, figsize=(8,8))
-                    fig.show()
-    
-                if (not plt.fignum_exists(fig.number)):
-                    print("[Korali] Figure closed - Bye!")
-                    exit(-1)
+                state, gen = getStateAndGeneration(data)
 
-                if chainlen > burnin:
-                    plot_samples(fig, ax, data, filename)
-                    pauseLight(0.5) 
+                if updateLegend:
+                    checkFigure(fig.number)
+ 
+                appendStates(state, (chainlen , numdbentries), stateNames)
+                burnin = data['Solver']['Burn In']
+
+                if(numdbentries[-1] > 0):
+                    samples  = np.reshape( data['Solver']['Internal']['Sample Parameters Database'][0:numdbentries[-1]*numdim], (numdbentries[-1],numdim) )
+                    plot_samples(fig, ax, gen, numdim, numdbentries[-1], samples)
             
 
-    if (live == False):
-        path = '{0}/{1}'.format(src, resultfiles[-1])
+        checkFigure(fig.number)
+        if(numdbentries[-1] == 0):
+            print("[Korali] Error: No samples found in file {0}...".format(path))
+            exit(-1)
+ 
+        plot_samples(fig, ax, gen, numdim, numdbentries[-1], samples)
+ 
+        if (live == False):
+            break
         
-        with open(path) as f:
-            data     = json.load(f)
-            numdim   = len(data['Variables'])
-            burnin   = data['Solver']['Burn In']
-            chainlen = data['Solver']['Internal']['Chain Length']
-            if chainlen <= burnin:
-                print("[Korali] Error: No samples found in file {0}...".format(path))
-                exit(-1)
-            
-            fig, ax = plt.subplots(numdim, numdim, figsize=(8,8))
-            fig.show()
-            plot_samples(fig, ax, data, resultfiles[-1])
-   
-    if (test == False):
-        plt.show() 
-    
+        resultfiles = readFiles(src, gen, generation)
+
+    plt.show() 
     print("[Korali] Figure closed - Bye!")
 
 
 # Plot MCMC result file
-def plot_samples(fig, ax, data, filename):
-    dims     = data['Variables']
-    numdim   = len(dims)
-    pop      = data['Solver']['Internal']['Database Entry Count']
-    samples  = np.reshape( data['Solver']['Internal']['Sample Parameters Database'][0:pop*numdim], (pop,numdim) )
+def plot_samples(fig, ax, generation, numdim, numentries, samples):
+    samplesTmp = np.reshape( samples, (numentries,numdim) )
     
-    fig.canvas.set_window_title(filename)
-    
-    plt.suptitle( 'MCMC\nNumber of Samples {0}\n'.format(str(pop)),
+    plt.suptitle( 'MCMC\nGeneration {0}\nNumber of Samples {1}\n'.format(str(generation), str(numentries)),
                   fontweight='bold',
                   fontsize  = 12)
 
-    plot_histogram(ax, samples)
-    plot_upper_triangle(ax, samples, False)
-    plot_lower_triangle(ax, samples)
+    plot_histogram(ax, samplesTmp)
+    plot_upper_triangle(ax, samplesTmp, False)
+    plot_lower_triangle(ax, samplesTmp)
+    pauseLight(0.5) 
 
 
 # Plot histogram of sampes in diagonal

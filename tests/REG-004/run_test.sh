@@ -22,7 +22,7 @@ do
   python3 -m korali.plotter --test --dir "${dir}" >> $logFile 2>&1
   check_result
                      
-  python3 -m korali.plotter --test --live --dir "${dir}" >> $logFile 2>&1
+  python3 -m korali.plotter --test --all --gen 1000 --dir "${dir}" >> $logFile 2>&1
   check_result
                      
 done 

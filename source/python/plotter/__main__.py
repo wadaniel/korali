@@ -15,9 +15,10 @@ def main(path, allFiles, live, generation, mean, check, test):
  if (test == True):
      matplotlib.use('Agg')
 
- if ( (allFiles == True) and (generation is not None)):
-    print("korali.plotter: error: argument --all and argument --generation "\
+ if ( (live == True) and (generation is not None)):
+    print("korali.plotter: error: argument --live and argument --generation "\
             "GENERATION cannot be combined")
+ 
     exit(-1)
 
  from korali.plotter.helpers import sig

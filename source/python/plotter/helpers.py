@@ -14,8 +14,54 @@ def sig(a, b):
     exit(0)
 
 
+# Initialize list of lists and return solver & variable names, dimension, and
+# generation
+def initDefaults(directory, filename, lists):
+    path   = '{0}/{1}'.format(directory, filename)
+    with open(path) as f:
+        data = json.load(f)
+ 
+        solver = data['Solver']['Type']
+        gen    = data['General']['Current Generation']
+        numdim = len(data['Variables'])
+        names  = [ data['Variables'][i]['Name'] for i in range(numdim) ]
+
+        for li in lists:
+            for i in range(numdim):
+                li.append([])
+
+    return (solver, names, numdim, gen)
+
+
+# Extract state from data and return current ceneration
+def getStateAndGeneration(data): 
+    state = data['Solver']['Internal']
+    gen   = data['General']['Current Generation']
+    return (state, gen)
+
+
+# Append data to lists read from states (stateNames)
+def appendStates(state, lists, stateNames):
+    for i, name in enumerate(stateNames):
+        lists[i].append(state[name])
+
+
+# Append data (list) to lists read from states (stateNames)
+def appendStateVectors(state, lists, stateNames):
+    for i, name in enumerate(stateNames):
+        for dim, data in enumerate(state[name]):
+            lists[i][dim].append(data)
+
+
+# Verify if figure exists and exit if not
+def checkFigure(num):
+    if ( plt.fignum_exists(num) == False ):
+        print("[Korali] Figure closed - Bye!")
+        exit(0)
+     
+
 # Read result files
-def readFiles(src):
+def readFiles(src, start=None, end=None):
     resultfilesTmp = [f for f in os.listdir(src) if os.path.isfile(os.path.join(src, f))]
     resultfilesTmp = sorted(resultfilesTmp)
     resultfilesTmp.remove('final.json')
@@ -31,23 +77,33 @@ def readFiles(src):
         path   = '{0}/{1}'.format(src, filename)
         
         with open(path) as f:
-            data       = json.load(f)
+            data = json.load(f)
+            gen  = data['General']['Current Generation']
             if (runId == -1):
                 runId  = data['General']['Run ID']
             
-            if verifyRunId(data, path, runId):
+            if verifyFile(data, path, runId, start, end):
                 resultfiles.append(filename)
     
     return resultfiles
 
 
-def verifyRunId(data, path, runId): 
+# Open file and verify runId and current generation in [start, end]
+def verifyFile(data, path, runId, start=None, end=None): 
     if (data['General']['Run ID'] != runId):
         print("[Korali] Warning: Skipping file {0}, results origin from a "\
                 " different experiment (different runid)".format(path))
         return False
-    else:
-        return True
+
+    currentGeneration = data['General']['Current Generation']
+
+    if ( (start is not None) and (currentGeneration < start)):
+        return False
+
+    if ( (end is not None) and (currentGeneration > end)):
+        return False
+
+    return True
 
 
 # Get a list of evenly spaced colors in HLS huse space.

@@ -10,97 +10,78 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 
-from korali.plotter.helpers import readFiles, hlsColors, pauseLight, drawMulticoloredLine
-
+from korali.plotter.helpers import readFiles, hlsColors, pauseLight, drawMulticoloredLine, checkFigure
+from korali.plotter.helpers import initDefaults, getStateAndGeneration, appendStates, appendStateVectors
 
 # Plot CMAES results (read from .json files)
-def plot_cmaes(src, allFiles=False, live=False, generation=None, test=False, plot_mean=False ):
-
-    init     = False # init flag
-    numdim   = 0  # problem dimension
-    names    = [] # description params
-    colors   = [] # rgb colors
-    numeval  = [] # number obj function evaluations
-    sigma    = [] # scaling parameter
-    cond     = [] # condition of C (largest EW / smallest EW)
-    psL2     = [] # conjugate evolution path L2 norm
-    dfval    = [] # abs diff currentBest - bestEver
-    fval     = [] # best fval current generation
-    fvalXvec = [] # location fval
-    mu       = [] # current mean
-    axis     = [] # sqrt(EVals)
-    ssdev    = [] # sigma x diag(C)
- 
+def plot_cmaes(src, plotAll=False, live=False, generation=None, test=False, plot_mean=False ):
     plt.style.use('seaborn-dark')
  
-    fig = None
-    ax  = None
+    stateNames = ['Current Best Value', 'Best Ever Value', 'Sigma', 'Conjugate Evolution Path L2 Norm']
+    vecStateNames = ['Current Best Coordinates', 'Current Mean', 'Axis Lengths']
+
+    names, colors, numeval, sigma, cond, psL2, dfval, fval, best, fvalXvec, mu, axis, ssdev = ([] for i in range(13))
  
-    resultfiles = readFiles(src)
-
-    for filename in resultfiles:
-        path   = '{0}/{1}'.format(src, filename)
-        
-        with open(path) as f:
-
-            data       = json.load(f)
-            solverName = data['Solver']['Type']
-
-            state = data['Solver']['Internal']
-            gen   = data['General']['Current Generation']
-
-            if (init == False):
+    fig, ax = (None, None)
     
-                init   = True
-                numdim = len(data['Variables'])
-                names  = [ data['Variables'][i]['Name'] for i in range(numdim) ]
-                colors = hlsColors(numdim)
+    resultfiles = readFiles(src, 0, generation)
 
-                for i in range(numdim):
-                    fvalXvec.append([])
-                    mu.append([])
-                    axis.append([])
-                    ssdev.append([])
+    solverName, names, numdim, gen = initDefaults(src, resultfiles[0], (fvalXvec, mu, axis, ssdev))
+    colors = hlsColors(numdim)
 
-                if (live == True):
-                    fig, ax = plt.subplots(2,2,num='{0} live diagnostics'.format(solverName), figsize=(8,8))
-                    fig.show()
-
-            if ( (live == True) and (not plt.fignum_exists(fig.number))):
-                print("[Korali] Figure closed - Bye!")
-                exit(0)
+    updateLegend = live or plotAll
     
-            if gen > 1:
-
-                numeval.append(data['General']['Function Evaluation Count'])
-                dfval.append(abs(state['Current Best Value'] - state['Best Ever Value']))
-                
-                fval.append(state['Current Best Value'])
-                sigma.append(state['Sigma'])
-                cond.append(state['Maximum Covariance Eigenvalue']/state['Minimum Covariance Eigenvalue'])
-                psL2.append(state['Conjugate Evolution Path L2 Norm'])
-
-                for i in range(numdim):
-                    fvalXvec[i].append(state['Current Best Coordinates'][i])
-                    mu[i].append(state['Current Mean'][i])
-                    axis[i].append(state['Axis Lengths'][i])
-                    ssdev[i].append(sigma[-1]*np.sqrt(state['Covariance Matrix'][i*numdim+i]))
-            
-                if (live == True and gen > 1):
-                    draw_figure(fig, ax, src, gen, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, mu, axis, ssdev, colors, names, plot_mean, live)
-                    pauseLight(0.05)
-
-    if (live == False):
-        fig, ax = plt.subplots(2,2,num='{0} live diagnostics'.format(solverName), figsize=(8,8))
-        draw_figure(fig, ax, src, gen, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, mu, axis, ssdev, colors, names, plot_mean, live)
+    fig, ax = plt.subplots(2,2,num='{0} live diagnostics'.format(solverName), figsize=(8,8))
+    if (updateLegend):
         fig.show()
-    
+
+    while True:
+        for filename in resultfiles:
+            path   = '{0}/{1}'.format(src, filename)
+            
+            with open(path) as f:
+
+                data = json.load(f)
+                state, gen = getStateAndGeneration(data)
+      
+                if updateLegend:
+                    checkFigure(fig.number)
+       
+                if gen > 1:
+
+                    appendStates(state, (fval, best, sigma, psL2), stateNames)
+                    appendStateVectors(state, (fvalXvec, mu, axis), vecStateNames)
+
+                    numeval.append(data['General']['Function Evaluation Count'])
+                    cond.append(state['Maximum Covariance Eigenvalue']/state['Minimum Covariance Eigenvalue'])
+                    dfval.append(abs(state['Current Best Value'] - state['Best Ever Value']))
+
+                    for i in range(numdim):
+                       ssdev[i].append(sigma[-1]*np.sqrt(state['Covariance Matrix'][i*numdim+i]))
+                
+                    if (plotAll == True):
+                        draw_figure(fig, ax, src, gen, numeval, numdim, fval, 
+                                dfval, cond, sigma, psL2, fvalXvec, mu, axis,
+                                ssdev, colors, names, plot_mean, updateLegend)
+        
+        
+        checkFigure(fig.number)
+        draw_figure(fig, ax, src, gen, numeval, numdim, fval, dfval, cond,
+                sigma, psL2, fvalXvec, mu, axis, ssdev, colors, names,
+                plot_mean, updateLegend)
+
+        if live == False:
+            break
+
+        resultfiles = readFiles(src, gen+1, generation)
+
     plt.show()
     print("[Korali] Figure closed - Bye!")
 
 
 # Create Plot from Data
-def draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, cond, sigma, psL2, fvalXvec, mu, axis, ssdev, colors, names, plot_mean, live):
+def draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, cond, sigma,
+        psL2, fvalXvec, mu, axis, ssdev, colors, names, plot_mean, updateLegend):
 
     plt.suptitle( 'Generation {0}'.format(str(idx).zfill(5)),\
                       fontweight='bold',\
@@ -114,7 +95,7 @@ def draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, cond, sigma, ps
     ax[0,0].plot(numeval, cond, color='#98D8D8', label = '$\kappa(\mathbf{C})$')
     ax[0,0].plot(numeval, sigma, color='#F8D030', label = '$\sigma$')
     ax[0,0].plot(numeval, psL2,  color='k', label = '$|| \mathbf{p}_{\sigma} ||$')
-    if ( (idx == 2) or (live == False) ):
+    if ( (idx == 2) or (updateLegend == False) ):
         ax[0,0].legend(bbox_to_anchor=(0,1.00,1,0.2), loc="lower left", mode="expand", ncol = 3, handlelength=1, fontsize = 8)
 
     # Upper Right Plot
@@ -129,7 +110,7 @@ def draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, cond, sigma, ps
     ax[0,1].grid(True)
     for i in range(numdim):
         ax[0,1].plot(numeval, objVec[i], color = colors[i], label=names[i])
-    if ( (idx == 2) or (live == False) ):
+    if ( (idx == 2) or (updateLegend == False) ):
         ax[0,1].legend(bbox_to_anchor=(1.04,0.5), loc="center left", borderaxespad=0, handlelength=1)
 
     # Lower Right Plot
@@ -145,3 +126,5 @@ def draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, cond, sigma, ps
     ax[1,1].set_yscale('log')
     for i in range(numdim):
         ax[1,1].plot(numeval, ssdev[i], color = colors[i], label=names[i])
+        
+    pauseLight(0.05)

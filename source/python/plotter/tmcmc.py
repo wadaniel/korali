@@ -20,7 +20,7 @@ def plot_tmcmc(src, allFiles=False, live=False, generation=None, test=False):
     fig   = None
     ax    = None 
     
-    resultfiles = readFiles(src)
+    resultfiles = readFiles(src, 0, generation)
 
     if (live == False):
         resultfiles = [resultfiles[-1]]

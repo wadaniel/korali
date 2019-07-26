@@ -21,7 +21,7 @@ def plot_mcmc(src, allFiles=False, live=False, generation=None, test=False):
     fig = None
     ax  = None
 
-    resultfiles = readFiles(src)
+    resultfiles = readFiles(src, 0, generation)
 
     if (live == True):
         for filename in resultfiles:

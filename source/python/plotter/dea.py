@@ -34,7 +34,7 @@ def plot_dea(src, allFiles=False, live=False, generation=None, test=False, plot_
     fig = None
     ax  = None
     
-    resultfiles = readFiles(src)
+    resultfiles = readFiles(src, 0, generation)
    
     for filename in resultfiles:
         path   = '{0}/{1}'.format(src, filename)

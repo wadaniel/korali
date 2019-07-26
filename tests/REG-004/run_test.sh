@@ -5,7 +5,7 @@
 # Type: Regression Test 
 # Description:
 # This test plots all results in the /tutorials/python/ folder to make sure
-# the typical use cases work.
+# the typical use cases work. Note: flag --all untested.
 ###############################################################################
 
 source ../functions.sh
@@ -24,7 +24,7 @@ do
                      
   python3 -m korali.plotter --test --all --gen 1000 --dir "${dir}" >> $logFile 2>&1
   check_result
-                     
+  
 done 
 
 popd

@@ -61,18 +61,17 @@ def plot_cmaes(src, plotAll=False, live=False, generation=None, test=False, plot
                         draw_figure(fig, ax, src, gen, numeval, numdim, fval, 
                                 dfval, cond, sigma, psL2, fvalXvec, mu, axis,
                                 ssdev, colors, names, plot_mean, updateLegend)
-        
-        
+     
         checkFigure(fig.number)
         draw_figure(fig, ax, src, gen, numeval, numdim, fval, dfval, cond,
                 sigma, psL2, fvalXvec, mu, axis, ssdev, colors, names,
                 plot_mean, updateLegend)
-
+            
         if live == False:
             break
 
         resultfiles = readFiles(src, gen+1, generation)
-
+     
     plt.show()
     print("[Korali] Figure closed - Bye!")
 

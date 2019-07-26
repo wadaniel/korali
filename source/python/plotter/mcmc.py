@@ -53,18 +53,18 @@ def plot_mcmc(src, plotAll=False, live=False, generation=None, test=False):
                     plot_samples(fig, ax, gen, numdim, numdbentries[-1], samples)
             
 
-        checkFigure(fig.number)
-        if(numdbentries[-1] == 0):
-            print("[Korali] Error: No samples found in file {0}...".format(path))
-            exit(-1)
- 
-        plot_samples(fig, ax, gen, numdim, numdbentries[-1], samples)
- 
+
         if (live == False):
             break
         
         resultfiles = readFiles(src, gen, generation)
+    
+    if(numdbentries[-1] == 0):
+        print("[Korali] Error: No samples found in file {0}...".format(path))
+        exit(-1)
 
+    checkFigure(fig.number)
+    plot_samples(fig, ax, gen, numdim, numdbentries[-1], samples)
     plt.show() 
     print("[Korali] Figure closed - Bye!")
 

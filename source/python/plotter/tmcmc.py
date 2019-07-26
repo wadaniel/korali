@@ -52,10 +52,7 @@ def plot_tmcmc(src, plotAll=False, live=False, generation=None, test=False):
          
                 samples = np.reshape( data['Solver']['Internal']['Sample Parameters Database'], (numdbentries[-1],numdim) )
                 plot_samples(ax, gen, numdbentries[-1], anneal[-1], samples)
- 
         
-        checkFigure(fig.number)
-        plot_samples(ax, gen, numdbentries[-1], anneal[-1], samples)
        
         if (live == False):
             break
@@ -63,6 +60,8 @@ def plot_tmcmc(src, plotAll=False, live=False, generation=None, test=False):
         resultfiles = readFiles(src, gen, generation)
 
 
+    checkFigure(fig.number)
+    plot_samples(ax, gen, numdbentries[-1], anneal[-1], samples)
     plt.show()
     print("[Korali] Figures closed - Bye!")
 

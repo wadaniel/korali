@@ -65,7 +65,6 @@ def plot_dea(src, plotAll=False, live=False, generation=None, test=False, plot_m
                 dfval, fvalXvec, meanXvec, width, colors, names,
                 updateLegend)
 
-
         if (live == False):
             break
 

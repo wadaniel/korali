@@ -90,11 +90,6 @@ def readFiles(src, start=None, end=None):
 
 # Open file and verify runId and current generation in [start, end]
 def verifyFile(data, path, runId, start=None, end=None): 
-    if (data['General']['Run ID'] != runId):
-        print("[Korali] Warning: Skipping file {0}, results origin from a "\
-                " different experiment (different runid)".format(path))
-        return False
-
     currentGeneration = data['General']['Current Generation']
 
     if ( (start is not None) and (currentGeneration < start)):
@@ -103,6 +98,12 @@ def verifyFile(data, path, runId, start=None, end=None):
     if ( (end is not None) and (currentGeneration > end)):
         return False
 
+    if (data['General']['Run ID'] != runId):
+        print("[Korali] Warning: Skipping file {0}, results origin from a "\
+                " different experiment (different runid)".format(path))
+        return False
+
+ 
     return True
 
 

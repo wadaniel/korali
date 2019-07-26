@@ -11,84 +11,74 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 
-from korali.plotter.helpers import readFiles, hlsColors, pauseLight, drawMulticoloredLine
+from korali.plotter.helpers import readFiles, hlsColors, pauseLight, drawMulticoloredLine, checkFigure
+from korali.plotter.helpers import initDefaults, getStateAndGeneration, appendStates, appendStateVectors
 
 
 # Plot DEA results (read from .json files)
-def plot_dea(src, allFiles=False, live=False, generation=None, test=False, plot_mean=False ):
-
-    init     = False # init flag
-    gen      = 0  # generation
-    numdim   = 0  # problem dimension
-    names    = [] # description params
-    colors   = [] # rgb colors
-    numeval  = [] # number obj function evaluations
-    dfval    = [] # abs diff currentBest - bestEver
-    fval     = [] # best fval current generation
-    fvalXvec = [] # location fval
-    meanXvec = [] # location mean population
-    width    = [] # spread population
-
+def plot_dea(src, plotAll=False, live=False, generation=None, test=False, plot_mean=False ):
     plt.style.use('seaborn-dark')
 
-    fig = None
-    ax  = None
-    
-    resultfiles = readFiles(src, 0, generation)
-   
-    for filename in resultfiles:
-        path   = '{0}/{1}'.format(src, filename)
+    stateNames = ['Current Best Value', 'Best Ever Value']
+    vecStateNames = ['Current Best Sample', 'Sample Means', 'Max Distances']
  
-        with open(path) as f:
-            
-            data  = json.load(f)
-            state = data['Solver']['Internal']
-            gen   = data['General']['Current Generation']
+    numdim, names, colors, numeval, dfval, fval, best, fvalXvec, meanXvec, width = ([] for i in range(10))
 
-            if (init == False):
-                
-                init = True
-                fig, ax = plt.subplots(2,2,num='DEA live diagnostics: {0}'.format(src),figsize=(8,8))
-                fig.show()
-                
-                numdim = len(data['Variables'])
-                names  = [ data['Variables'][i]['Name'] for i in range(numdim) ]
-                colors = hlsColors(numdim)
-                for i in range(numdim):
-                    fvalXvec.append([])
-                    meanXvec.append([])
-                    width.append([])
-                continue
-                
-            numeval.append(data['General']['Function Evaluation Count'])
-            dfval.append(abs(state['Current Best Value'] - state['Best Ever Value']))
-            fval.append(state['Current Best Value'])
-
-            for i in range(numdim):
-                fvalXvec[i].append(state['Current Best Sample'][i])
-                meanXvec[i].append(state['Sample Means'][i])
-                width[i].append(state['Max Distances'][i])
-
-            if (live == False):
-                continue
-            
-            if ( not plt.fignum_exists(fig.number) ):
-                print("[Korali] Figure closed - Bye!")
-                exit(0)
-
-            draw_figure(fig, ax, src, gen, numeval, numdim, fval, dfval, fvalXvec, meanXvec, width, colors, names, live)
-            pauseLight(0.05)
-
-    if live == False: 
-        draw_figure(fig, ax, src, gen, numeval, numdim, fval, dfval, fvalXvec, meanXvec, width, colors, names, live)
+    resultfiles = readFiles(src, 0, generation)
+    
+    solverName, names, numdim, gen = initDefaults(src, resultfiles[0], (fvalXvec, meanXvec, width))
+    colors = hlsColors(numdim)
+    
+    updateLegend = live or plotAll
+    
+    fig, ax = plt.subplots(2,2,num='DEA live diagnostics: {0}'.format(src),figsize=(8,8))
+    if (updateLegend):
         fig.show()
+   
+    while True:
+        for filename in resultfiles:
+            path = '{0}/{1}'.format(src, filename)
+ 
+            with open(path) as f:
+                
+                data  = json.load(f)
+                state, gen = getStateAndGeneration(data)
+
+                if updateLegend:
+                    checkFigure(fig.number)
+                
+                if (gen > 1):
+                        
+                    appendStates(state, (fval, best), stateNames)
+                    appendStateVectors(state, (fvalXvec, meanXvec, width), vecStateNames)
+                        
+                    numeval.append(data['General']['Function Evaluation Count'])
+                    dfval.append(abs(state['Current Best Value'] - state['Best Ever Value']))
+                    
+                    if (plotAll == True):
+                        draw_figure(fig, ax, src, gen, numeval, numdim, fval,
+                                dfval, fvalXvec, meanXvec, width, colors, names,
+                                updateLegend)
+
+        checkFigure(fig.number) 
+        draw_figure(fig, ax, src, gen, numeval, numdim, fval,
+                dfval, fvalXvec, meanXvec, width, colors, names,
+                updateLegend)
+
+
+        if (live == False):
+            break
+
+        resultfiles = readFiles(src, gen+1, generation)
 
     plt.show()
     print("[Korali] Figure closed - Bye!")
 
 
 # Create Plot from Data
-def draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, fvalXvec, meanXvec, width, colors, names, live):
+def draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, fvalXvec,
+        meanXvec, width, colors, names, updateLegend):
+
     #fig, ax = plt.subplots(2,2,num='DEA live diagnostics: {0}'.format(src),figsize=(8,8))
 
     plt.suptitle( 'Generation {0}'.format(str(idx).zfill(5)), fontweight='bold', fontsize=12 )
@@ -98,7 +88,7 @@ def draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, fvalXvec, meanX
     ax[0,0].set_yscale('log')
     drawMulticoloredLine(ax[0,0], numeval, fval, 0.0, 'r', 'b', '$| F |$')
     ax[0,0].plot(numeval, dfval, 'x', color = '#34495e', label = '$| F - F_{best} |$')
-    if ( (idx == 2) or (live == False) ):
+    if ( (idx == 2) or (updateLegend == False) ):
         ax[0,0].legend(bbox_to_anchor=(0,1.00,1,0.2), loc="lower left", mode="expand", ncol = 3, handlelength=1, fontsize = 8)
 
     # Upper Right Plot
@@ -106,7 +96,7 @@ def draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, fvalXvec, meanX
     ax[0,1].grid(True)
     for i in range(numdim):
         ax[0,1].plot(numeval, fvalXvec[i], color = colors[i], label=names[i])
-    if ( (idx == 2) or (live == False) ):
+    if ( (idx == 2) or (updateLegend == False) ):
         ax[0,1].legend(bbox_to_anchor=(1.04,0.5), loc="center left", borderaxespad=0, handlelength=1)
 
     # Lower Right Plot
@@ -120,8 +110,8 @@ def draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, fvalXvec, meanX
     ax[1,1].grid(True)
     for i in range(numdim):
         ax[1,1].plot(numeval, meanXvec[i], color = colors[i], label=names[i])
-    if ( (idx == 2) or (live == False) ):
+    if ( (idx == 2) or (updateLegend == False) ):
         ax[1,1].legend(bbox_to_anchor=(1.04,0.5), loc="center left", borderaxespad=0, handlelength=1)
 
-
+    pauseLight(0.05)
 

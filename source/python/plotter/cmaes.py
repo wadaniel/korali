@@ -22,8 +22,6 @@ def plot_cmaes(src, plotAll=False, live=False, generation=None, test=False, plot
 
     names, colors, numeval, sigma, cond, psL2, dfval, fval, best, fvalXvec, mu, axis, ssdev = ([] for i in range(13))
  
-    fig, ax = (None, None)
-    
     resultfiles = readFiles(src, 0, generation)
 
     solverName, names, numdim, gen = initDefaults(src, resultfiles[0], (fvalXvec, mu, axis, ssdev))
@@ -37,7 +35,7 @@ def plot_cmaes(src, plotAll=False, live=False, generation=None, test=False, plot
 
     while True:
         for filename in resultfiles:
-            path   = '{0}/{1}'.format(src, filename)
+            path = '{0}/{1}'.format(src, filename)
             
             with open(path) as f:
 

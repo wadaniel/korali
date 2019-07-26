@@ -41,13 +41,13 @@ def plot_mcmc(src, plotAll=False, live=False, generation=None, test=False):
                 data = json.load(f)
                 
                 state, gen = getStateAndGeneration(data)
-
-                if updateLegend:
-                    checkFigure(fig.number)
  
                 appendStates(state, (chainlen , numdbentries), stateNames)
                 burnin = data['Solver']['Burn In']
 
+                if updateLegend:
+                    checkFigure(fig.number)
+ 
                 if(numdbentries[-1] > 0):
                     samples  = np.reshape( data['Solver']['Internal']['Sample Parameters Database'][0:numdbentries[-1]*numdim], (numdbentries[-1],numdim) )
                     plot_samples(fig, ax, gen, numdim, numdbentries[-1], samples)

@@ -9,51 +9,77 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 
-from korali.plotter.helpers import readFiles, pauseLight
+from korali.plotter.helpers import readFiles, hlsColors, pauseLight, drawMulticoloredLine, checkFigure
+from korali.plotter.helpers import initDefaults, getStateAndGeneration, appendStates, appendStateVectors
 
 
 # Plot TMCMC results (read from .json files)
-def plot_tmcmc(src, allFiles=False, live=False, generation=None, test=False):
-     
+def plot_tmcmc(src, plotAll=False, live=False, generation=None, test=False):
     plt.style.use('seaborn-dark')
     
-    fig   = None
-    ax    = None 
+    stateNames = ['Annealing Exponent', 'Database Entry Count']
+    resultfiles = readFiles(src, 0, generation)
+    
+    anneal, numdbentries, samples = ([] for i in range(3))
+    
+    solverName, names, numdim, gen = initDefaults(src, resultfiles[0], [samples])
     
     resultfiles = readFiles(src, 0, generation)
+    solverName, names, numdim, gen = initDefaults(src, resultfiles[0], [samples])
+    
+    fig, ax = plt.subplots(numdim, numdim, figsize=(8,8))
+    
+    updateLegend = live or plotAll
+    if (updateLegend):
+        fig.show()
 
-    if (live == False):
-        resultfiles = [resultfiles[-1]]
+    while True: 
+        
+        if (not plotAll):
+            resultfiles = [resultfiles[-1]]
+        for filename in resultfiles:
+            path   = '{0}/{1}'.format(src, filename)
+     
+            with open(path) as f:
 
-    for filename in resultfiles:
-        path   = '{0}/{1}'.format(src, filename)
+                data    = json.load(f)
+                
+                state, gen = getStateAndGeneration(data)
+                appendStates(state, (anneal, numdbentries), stateNames)
+        
+                if updateLegend:
+                    checkFigure(fig.number)
+         
+                samples = np.reshape( data['Solver']['Internal']['Sample Parameters Database'], (numdbentries[-1],numdim) )
+                plot_samples(ax, gen, numdbentries[-1], anneal[-1], samples)
  
-        with open(path) as f:
+        
+        checkFigure(fig.number)
+        plot_samples(ax, gen, numdbentries[-1], anneal[-1], samples)
+       
+        if (live == False):
+            break
+        
+        resultfiles = readFiles(src, gen, generation)
 
-            data    = json.load(f)
-            
-            numdim  = len(data['Variables'])
-            pop     = data['Solver']['Population Size']
-            gen     = data['General']['Current Generation']
-            anneal  = data['Solver']['Internal']['Annealing Exponent']
-            fitness = data['Solver']['Internal']['Sample Fitness Database']
-            samples = np.reshape( data['Solver']['Internal']['Sample Parameters Database'], (pop,numdim) )
-            fig, ax = plt.subplots(samples.shape[1], samples.shape[1], figsize=(8,8))
-
-            fig.canvas.set_window_title(filename)
-  
-            plt.suptitle( 'TMCMC\nGeneration {0}\nNumber of Samples {1}\n(Annealing Exponent {2:.3e})'.format(str(gen), \
-                            str(pop), anneal), fontweight='bold', fontsize  = 12 )
-
-            fig.show()
-            plot_histogram(ax, samples)
-            plot_upper_triangle(ax, samples, False)
-            plot_lower_triangle(ax, samples)
-
-            pauseLight(0.05) 
 
     plt.show()
     print("[Korali] Figures closed - Bye!")
+
+
+# General plotting function
+def plot_samples(ax, gen, numentries, anneal, samples): 
+    plt.suptitle( 'TMCMC\nGeneration {0}\n' \
+            'Number of Samples {1}\n' \
+            '(Annealing Exponent {2:.3e})'.format(str(gen), \
+            str(numentries), anneal), fontweight='bold', fontsize  = 12 )
+
+    plot_histogram(ax, samples)
+    plot_upper_triangle(ax, samples, False)
+    plot_lower_triangle(ax, samples)
+    pauseLight(0.05) 
+
+
 # Plot histogram of sampes in diagonal
 def plot_histogram(ax, theta):
     dim = theta.shape[1]

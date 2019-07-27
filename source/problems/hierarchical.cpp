@@ -7,8 +7,15 @@ void Korali::Problem::Hierarchical::getConfiguration()
  if (_operationType == SamplePsi)   _k->_js["Problem"]["Model"] = "Sample Psi";
  if (_operationType == SampleTheta) _k->_js["Problem"]["Model"] = "Sample Theta";
 
- for (size_t i = 0; i < _subProblems.size(); i++)
-  _k->_js["Problem"]["Sub-Problems"][i] = _subProblems[i];
+ for (size_t i = 0; i < _conditionalPriors.size(); i++)
+ {
+  _conditionalPriors[i]->_variable->getDistribution(_k->_js["Problem"]["Conditional Priors"][i]);
+  for (size_t j = 0; j < _conditionalPriors[i]->_properties.size(); j++)
+  {
+   _k->_js["Problem"]["Conditional Priors"][i][_conditionalPriors[i]->_properties[j].first] =
+     _k->_variables[_conditionalPriors[i]->_properties[j].second]->_name;
+  }
+ }
 }
 
 void Korali::Problem::Hierarchical::setConfiguration()
@@ -17,7 +24,7 @@ void Korali::Problem::Hierarchical::setConfiguration()
   std::string operationTypeString = consume(_k->_js, { "Problem", "Model" }, KORALI_STRING, "Undefined");
   if (operationTypeString == "Sample Psi")   { _operationType = SamplePsi;   foundSubProblemType = true; }
   if (operationTypeString == "Sample Theta") { _operationType = SampleTheta; foundSubProblemType = true; }
-  if (foundSubProblemType == false) { koraliError("Incorrect or no sub-problem Type selected for Hierarchical Bayesian: %s.\n", operationTypeString.c_str()); }
+  if (foundSubProblemType == false) koraliError("Incorrect or no sub-problem Type selected for Hierarchical Bayesian: %s.\n", operationTypeString.c_str());
 
   if (isArray(_k->_js["Problem"], { "Sub-Problems" } ))
    for (size_t i = 0; i < _k->_js["Problem"]["Sub-Problems"].size(); i++)
@@ -27,11 +34,42 @@ void Korali::Problem::Hierarchical::setConfiguration()
     _subProblems.push_back(js);
    }
   _k->_js["Problem"].erase("Sub-Problems");
+
+  if (isArray(_k->_js["Problem"], { "Conditional Priors" } ))
+  for (size_t i = 0; i < _k->_js["Problem"]["Conditional Priors"].size(); i++)
+  {
+   auto prior = new conditionalPrior();
+   prior->_variable = new Korali::Variable();
+   _k->_js["Problem"]["Conditional Priors"][i]["Seed"] = _k->_seed++;
+   prior->_variable->setDistribution(_k->_js["Problem"]["Conditional Priors"][i]);
+
+   // Processing references to hyperparameters
+   for (auto& property : _k->_js["Problem"]["Conditional Priors"][i].items())
+   {
+    prior->_variable->setProperty(property.key(), 1.0); // Testing property exists.
+    if (_k->_js["Problem"]["Conditional Priors"][i][property.key()].is_string())
+    {
+     bool foundHyperparameter = false;
+     for (size_t v = 0; v < _k->_variables.size(); v++)
+      if (_k->_variables[v]->_name == property.value())
+      {
+       prior->_properties.push_back(std::make_pair(property.key(), v));
+       foundHyperparameter = true;
+      }
+     if (foundSubProblemType == false) koraliError("Conditional Prior %d references a hyperparameter (%s) which was not defined as problem variable.\n", i, property.key().c_str());
+    }
+   }
+   _conditionalPriors.push_back(prior);
+  }
+
+  _k->_js["Problem"].erase("Conditional Priors");
 }
 
 void Korali::Problem::Hierarchical::initialize()
 {
- for(size_t i = 0; i < _k->N; i++) if(_k->_variables[i]->_distributionType == KoraliDefaultDistribution)
+ if (_conditionalPriors.size() == 0) koraliError("Hierarchical Bayesian problems require at least one conditional prior\n");
+
+ for(size_t i = 0; i < _k->N; i++) if(_k->_variables[i]->_distributionType == "No Distribution")
 	koraliError("Hierarchical Bayesian problems requires prior distribution for all variables. (Missing for %s).\n", _k->_variables[i]->_name.c_str());
 
  if (_k->_constraints.size() > 0) koraliError("Hierarchical Bayesian problems do not allow constraint definitions.\n");
@@ -57,9 +95,26 @@ void Korali::Problem::Hierarchical::packVariables(double* sample, Korali::Model&
 
 double Korali::Problem::Hierarchical::evaluateFitness(Korali::Model& data)
 {
- double fitness = 0.0;
+ // Now re-configuring conditional priors given hyperparameters
+ for (size_t i = 0; i < _conditionalPriors.size(); i++)
+ {
+  for (size_t j = 0; j < _conditionalPriors[i]->_properties.size(); j++)
+  {
+   std::string propertyName = _conditionalPriors[i]->_properties[j].first;
+   size_t variableId = _conditionalPriors[i]->_properties[j].second;
+   double propertyValue = data.getVariable(variableId);
+   _conditionalPriors[i]->_variable->setProperty(propertyName, propertyValue);
+  }
+ }
 
- fitness = data._results[0];
+ double fitness = 1.0;
+
+ for (size_t i = 0; i < _conditionalPriors.size(); i++)
+ {
+  // George: I just put gibberish here. I'll let you to do the rest.
+  double x = _conditionalPriors[i]->_variable->getRandomNumber();
+  fitness *= _conditionalPriors[i]->_variable->getLogDensity(x);
+ }
 
  return fitness;
 }

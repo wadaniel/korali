@@ -8,8 +8,6 @@
 #include <string>
 #include "json.hpp"
 
-enum KoraliDistributionType {KoraliCauchyDistribution, KoraliDefaultDistribution, KoraliExponentialDistribution, KoraliGammaDistribution, KoraliGaussianDistribution, KoraliLaplaceDistribution, KoraliUniformDistribution, KoraliGeometricDistribution};
-
 namespace Korali {
 
 class Variable
@@ -26,7 +24,7 @@ class Variable
 
  bool _isLogSpace;
  std::string _name;
- KoraliDistributionType _distributionType;
+ std::string _distributionType;
 
  // Constructor / Destructor
  Variable();
@@ -37,6 +35,8 @@ class Variable
  double getRandomNumber();
  void printDetails();
  void initialize();
+ void setDistributionType(std::string distributionType);
+ void setProperty(std::string propertyName, double value);
  void getConfiguration(nlohmann::json& js);
  void setConfiguration(nlohmann::json& js);
  void setDistribution(nlohmann::json& js);

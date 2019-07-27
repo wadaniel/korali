@@ -49,7 +49,7 @@ void Korali::Problem::Bayesian::setConfiguration()
 
 void Korali::Problem::Bayesian::initialize()
 {
- for(size_t i = 0; i < _k->N; i++) if(_k->_variables[i]->_distributionType == KoraliDefaultDistribution)
+ for(size_t i = 0; i < _k->N; i++) if(_k->_variables[i]->_distributionType == "No Distribution")
 	koraliError("Bayesian inference requires prior distribution for all variables. (Missing for %s).\n", _k->_variables[i]->_name.c_str());
 
  if (_k->_constraints.size() > 0) koraliError("Bayesian inference problems do not allow constraint definitions.\n");

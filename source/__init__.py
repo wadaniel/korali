@@ -7,4 +7,6 @@ from libkorali import *
  
 def initialize():
  return Engine()
-
+ 
+def getResults(fileName = ''):
+ return Engine.getResults(fileName)

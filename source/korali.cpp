@@ -240,10 +240,10 @@ void Korali::Engine::saveState(std::string fileName)
  saveJsonToFile(fileName.c_str(), _js);
 }
 
-std::string Korali::Engine::getResults()
+std::string Korali::Engine::getResults(std::string fileName)
 {
- getConfiguration();
- return _js.dump();
+ auto js = loadJsonFromFile(fileName.c_str());
+ return js.dump();
 }
 
 void Korali::Engine::saveState(int fileId)

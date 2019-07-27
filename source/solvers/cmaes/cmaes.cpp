@@ -14,7 +14,7 @@ CMAES::CMAES()
  auto jsGaussian = nlohmann::json();
  jsGaussian["Type"] = "Gaussian";
  jsGaussian["Mean"] = 0.0;
- jsGaussian["Sigma"] = 1.0;
+ jsGaussian["Standard Deviation"] = 1.0;
  jsGaussian["Seed"] = _k->_seed++;
  _gaussianGenerator = std::make_shared<Variable>();
  _gaussianGenerator->setDistribution(jsGaussian);
@@ -25,7 +25,6 @@ CMAES::CMAES()
 CMAES::~CMAES()
 {
 }
-
 
 void CMAES::initialize()
 {

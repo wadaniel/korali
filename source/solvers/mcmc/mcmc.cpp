@@ -28,8 +28,8 @@ Korali::Solver::MCMC::MCMC()
  _uniformGenerator = new Variable();
  _uniformGenerator->setDistribution(jsUniform);
 
- _k->consoleOutputFrequency = 500;
- _k->resultsOutputFrequency = 500;
+ _k->_consoleOutputFrequency = 500;
+ _k->_resultsOutputFrequency = 500;
 }
 
 Korali::Solver::MCMC::~MCMC()
@@ -270,6 +270,22 @@ bool Korali::Solver::MCMC::checkTermination()
  {
    koraliLog(KORALI_MINIMAL, "Chainlength (%zu) reached.\n",  _chainLength);
    isFinished = true;
+ }
+
+ if(_maxGenerationsEnabled)
+  if(_k->_currentGeneration > _maxGenerations)
+  {
+   _maxGenerationsTriggered = true;
+   koraliLog( KORALI_MINIMAL, "Max Generations Reached.\n", _maxGenerations);
+   isFinished = true;
+  }
+
+ if(_maxModelEvaluationsEnabled)
+ if(_k->_functionEvaluationCount > _maxModelEvaluations)
+ {
+  _maxModelEvaluationsTriggered = true;
+  koraliLog( KORALI_MINIMAL, "Max Model Evaluations Reached.\n", _maxModelEvaluations);
+  isFinished = true;
  }
 
  return isFinished;

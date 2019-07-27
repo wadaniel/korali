@@ -48,12 +48,10 @@ class Engine {
  std::vector<std::function<void(Korali::Model&)>> _constraints;
 
  size_t N; // Variable Count size_t N; // Variable Count
- size_t currentGeneration;
- size_t maxGenerations;
- size_t consoleOutputFrequency;
- size_t resultsOutputFrequency;
- size_t functionEvaluationCount;
- size_t maxFunctionEvaluations;
+ size_t _currentGeneration;
+ size_t _consoleOutputFrequency;
+ size_t _resultsOutputFrequency;
+ size_t _functionEvaluationCount;
  size_t _runId;
  std::string _runTimestamp;
 
@@ -89,8 +87,6 @@ class Engine {
  void saveState(std::string fileName);
  void saveState(int fileId);
  static std::string getResults(std::string fileName);
-
- bool checkTermination();
 
  size_t _seed;
  std::string _result_dir;

@@ -42,9 +42,9 @@ int main(int argc, char* argv[])
  // Configuring Solver
  k["Solver"]["Type"] = "CMAES";
  k["Solver"]["Sample Count"] = 12;
+ k["Solver"]["Termination Criteria"]["Max Generations"] = 500;
 
  // General Settings
- k["General"]["Max Generations"] = 1000;
  k["General"]["Results Output"]["Frequency"] = 5;
  k["General"]["Console Output"]["Frequency"] = 5;
 

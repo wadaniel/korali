@@ -23,8 +23,8 @@ k["Variables"][0]["Upper Bound"] = +10.0
 
 k["Solver"]["Type"] = "CMAES"
 k["Solver"]["Sample Count"] = 5
+k["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
-k["General"]["Max Generations"] = 500
 k["General"]["Console Output"]["Frequency"] = 10
 k["General"]["Results Output"]["Path"] = "_result_run-cmaes"
 

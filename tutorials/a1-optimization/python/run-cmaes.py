@@ -26,9 +26,9 @@ k["Variables"][0]["Upper Bound"] = +10.0
 k["Solver"]["Type"] = "CMAES"
 k["Solver"]["Sample Count"] = 32
 k["Solver"]["Termination Criteria"]["Min Fitness Diff Threshold"] = 1e-7
+k["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
 # Setting computational model
-k["General"]["Max Generations"] = 100;
 k.setModel(model)
 
 # Running Korali

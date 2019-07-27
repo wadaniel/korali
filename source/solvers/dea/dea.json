@@ -50,6 +50,16 @@
  "Termination Criteria":
  [
    {
+    "Name": "Max Generations",
+    "Type": "Unsigned Integer",
+    "Description": "Determines how many solver generations to run before stopping execution. Execution can be resumed at a later moment."
+   },
+   {
+    "Name": "Max Model Evaluations",
+    "Type": "Unsigned Integer",
+    "Description": "Determines how many computational model evaluations to run before stopping execution. Execution can be resumed at a later moment."
+   },
+   {
     "Name": "Max Resamplings",
     "Type": "Real",
     "Description": "Max number of mutations per sample per generation if infeasible (only relevant if Fix Infeasible is set False)."

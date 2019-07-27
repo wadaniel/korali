@@ -27,11 +27,10 @@ k["Variables"][3]["Upper Bound"] = +32.0;
   
 k["Solver"]["Type"] = "CMAES"
 k["Solver"]["Sample Count"] = 10
+k["Solver"]["Termination Criteria"]["Max Generations"] = 30
 
 k["Conduit"]["Type"] = "External"
 k["Conduit"]["Concurrent Jobs"] = int(sys.argv[1])
   
-k["General"]["Max Generations"] = 30
-
 k.setModel(runModel)
 k.run()

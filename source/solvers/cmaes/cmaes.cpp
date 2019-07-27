@@ -360,7 +360,7 @@ void CMAES::updateConstraints() //TODO: maybe parallelize constraint evaluations
     _constraintEvaluations[c][i] = data._results[0];
 
     if ( _constraintEvaluations[c][i] > maxviolation ) maxviolation = _constraintEvaluations[c][i];
-    if ( _k->currentGeneration == 0 && _isViabilityRegime ) _viabilityBoundaries[c] = maxviolation;
+    if ( _k->_currentGeneration == 0 && _isViabilityRegime ) _viabilityBoundaries[c] = maxviolation;
 
     if ( _constraintEvaluations[c][i] > _viabilityBoundaries[c] + 1e-12 ) _sampleConstraintViolationCounts[i]++;
     if ( _sampleConstraintViolationCounts[i] > _maximumViolationCount ) _maximumViolationCount = _sampleConstraintViolationCounts[i];
@@ -560,7 +560,7 @@ void CMAES::updateDistribution()
     _conjugateEvolutionPathL2Norm += _conjugateEvolutionPath[d] * _conjugateEvolutionPath[d];
  }
 
- int hsig = (1.4 + 2.0/(_k->N+1) > sqrt(_conjugateEvolutionPathL2Norm) / sqrt(1. - pow(1.-_sigmaCumulationFactor, 2.0*(1.0+_k->currentGeneration))) / _chiSquareNumber);
+ int hsig = (1.4 + 2.0/(_k->N+1) > sqrt(_conjugateEvolutionPathL2Norm) / sqrt(1. - pow(1.-_sigmaCumulationFactor, 2.0*(1.0+_k->_currentGeneration))) / _chiSquareNumber);
 
  /* cumulation for covariance matrix (pc) using B*D*z~_k->N(0,C) */
  for (size_t d = 0; d < _k->N; ++d) 
@@ -768,20 +768,20 @@ bool CMAES::checkTermination()
 {
  
  bool isFinished = false;
- if ( _minFitnessEnabled && (_isViabilityRegime == false) && (_k->currentGeneration > 1) && (_bestEverValue >= _minFitness) )
+ if ( _minFitnessEnabled && (_isViabilityRegime == false) && (_k->_currentGeneration > 1) && (_bestEverValue >= _minFitness) )
  {
   isFinished = true;
   koraliLog(KORALI_MINIMAL, "Min fitness value (%+6.3e) > (%+6.3e).\n",  _bestEverValue, _minFitness);
  }
  
- if ( _maxFitnessEnabled && (_isViabilityRegime == false) && (_k->currentGeneration > 1) && (_bestEverValue >= _maxFitness) )
+ if ( _maxFitnessEnabled && (_isViabilityRegime == false) && (_k->_currentGeneration > 1) && (_bestEverValue >= _maxFitness) )
  {
   isFinished = true;
   koraliLog(KORALI_MINIMAL, "Max fitness value (%+6.3e) > (%+6.3e)\n",  _bestEverValue, _maxFitness);
  }
 
  double range = fabs(_currentBestValue - _previousBestValue);
- if ( _minFitnessDiffThresholdEnabled && (_k->currentGeneration > 1) && (range <= _minFitnessDiffThreshold) )
+ if ( _minFitnessDiffThresholdEnabled && (_k->_currentGeneration > 1) && (range <= _minFitnessDiffThreshold) )
  {
   isFinished = true;
   koraliLog(KORALI_MINIMAL, "Function value differences (%+6.3e) < (%+6.3e)\n",  range, _minFitnessDiffThreshold);
@@ -851,6 +851,22 @@ bool CMAES::checkTermination()
    break;
   }
 
+ }
+
+ if(_maxGenerationsEnabled)
+ if(_k->_currentGeneration > _maxGenerations)
+ {
+  _maxGenerationsTriggered = true;
+  koraliLog( KORALI_MINIMAL, "Max Generations Reached.\n", _maxGenerations);
+  isFinished = true;
+ }
+
+ if(_maxModelEvaluationsEnabled)
+ if(_k->_functionEvaluationCount > _maxModelEvaluations)
+ {
+  _maxModelEvaluationsTriggered = true;
+  koraliLog( KORALI_MINIMAL, "Max Model Evaluations Reached.\n", _maxModelEvaluations);
+  isFinished = true;
  }
 
  return isFinished;
@@ -945,7 +961,7 @@ void CMAES::sort_index(const std::vector<double>& vec, std::vector<size_t>& _sor
 
 void CMAES::printGeneration()
 {
- koraliLog(KORALI_MINIMAL, "Generation %zu\n", _k->currentGeneration);
+ koraliLog(KORALI_MINIMAL, "Generation %zu\n", _k->_currentGeneration);
 
  if ( _constraintsDefined && _isViabilityRegime)
  {

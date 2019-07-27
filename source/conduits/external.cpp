@@ -63,7 +63,7 @@ void External::evaluateSample(double* sampleArray, size_t sampleId)
   exit(0);
  }
 
- _k->functionEvaluationCount++;
+ _k->_functionEvaluationCount++;
 
 }
 

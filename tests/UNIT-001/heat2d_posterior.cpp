@@ -44,11 +44,10 @@ int main(int argc, char* argv[])
 
  k["Solver"]["Type"] = "CMAES";
  k["Solver"]["Sample Count"] = 32;
+ k["Solver"]["Termination Criteria"]["Max Generations"] = 50;
 
  k["Conduit"]["Type"] = "MPI";
  k["Conduit"]["Ranks Per Team"] = 1;
-
- k["General"]["Max Generations"] = 50;
 
  k.setModel([](Korali::Model& d) { heat2DSolver(d.getVariables(), d.getResults()); });
 

@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
 
  kH["Solver"]["Type"] = "TMCMC";
  kH["Solver"]["Population Size"] = 5000;
- kH["General"]["Max Generations"] = 100;
+ kH["Solver"]["Termination Criteria"]["Max Generations"] = 500;
 
  kH.run();
 }

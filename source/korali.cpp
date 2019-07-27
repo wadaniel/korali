@@ -14,8 +14,8 @@ Korali::Engine::Engine()
 {
  _runId        = 0;
  _modelDefined = false;
- consoleOutputFrequency = 1;
- resultsOutputFrequency = 1;
+ _consoleOutputFrequency = 1;
+ _resultsOutputFrequency = 1;
  _isFinished = false;
  _solver = nullptr;
  _problem = nullptr;
@@ -49,13 +49,11 @@ void Korali::Engine::getConfiguration()
  if (_korali_verbosity == KORALI_NORMAL)   _js["General"]["Console Output"]["Verbosity"] = "Normal";
  if (_korali_verbosity == KORALI_DETAILED) _js["General"]["Console Output"]["Verbosity"] = "Detailed";
  
- _js["General"]["Max Generations"] = maxGenerations;
- _js["General"]["Max Function Evaluations"] = maxFunctionEvaluations;
- _js["General"]["Current Generation"] = currentGeneration;
- _js["General"]["Console Output"]["Frequency"] = consoleOutputFrequency;
- _js["General"]["Results Output"]["Frequency"] = resultsOutputFrequency;
+ _js["General"]["Current Generation"] = _currentGeneration;
+ _js["General"]["Console Output"]["Frequency"] = _consoleOutputFrequency;
+ _js["General"]["Results Output"]["Frequency"] = _resultsOutputFrequency;
  _js["General"]["Results Output"]["Path"] = _result_dir;
- _js["General"]["Function Evaluation Count"] = functionEvaluationCount;
+ _js["General"]["Function Evaluation Count"] = _functionEvaluationCount;
  _js["General"]["Is Finished"] = _isFinished;
 
  if (_problem != nullptr) _problem->getConfiguration();
@@ -146,12 +144,10 @@ void Korali::Engine::setConfiguration()
 
  // Korali-specific configuration
 
- maxGenerations = consume(_js, { "General", "Max Generations" }, KORALI_NUMBER, "5000000");
- currentGeneration = consume(_js, { "General", "Current Generation" }, KORALI_NUMBER, "0");
- consoleOutputFrequency = consume(_js, { "General", "Console Output", "Frequency" }, KORALI_NUMBER, std::to_string(consoleOutputFrequency));
- resultsOutputFrequency = consume(_js, { "General", "Results Output", "Frequency" }, KORALI_NUMBER, std::to_string(consoleOutputFrequency));
- functionEvaluationCount = consume(_js, { "General", "Function Evaluation Count" }, KORALI_NUMBER, "0");
- maxFunctionEvaluations = consume(_js, { "General", "Max Function Evaluations" }, KORALI_NUMBER, "50000000");
+ _currentGeneration = consume(_js, { "General", "Current Generation" }, KORALI_NUMBER, "0");
+ _consoleOutputFrequency = consume(_js, { "General", "Console Output", "Frequency" }, KORALI_NUMBER, std::to_string(_consoleOutputFrequency));
+ _resultsOutputFrequency = consume(_js, { "General", "Results Output", "Frequency" }, KORALI_NUMBER, std::to_string(_consoleOutputFrequency));
+ _functionEvaluationCount = consume(_js, { "General", "Function Evaluation Count" }, KORALI_NUMBER, "0");
  _isFinished = consume(_js, { "General", "Is Finished" }, KORALI_BOOLEAN, "false");
 
  if (isEmpty(_js) == false) koraliError("Unrecognized Settings for Korali:\n %s \n", _js.dump(2).c_str());
@@ -188,44 +184,44 @@ void Korali::Engine::start(bool isDryRun)
  // Running Engine
  _conduit->initialize();
  _problem->initialize();
- if (currentGeneration == 0) _solver->initialize();
+ if (_currentGeneration == 0) _solver->initialize();
 
 
  if (_conduit->isRoot())
  {
-  saveState(currentGeneration);
+  saveState(_currentGeneration);
 
   _solver->printGeneration();
 
   auto startTime = std::chrono::system_clock::now();
 
   if (isDryRun == false)
-  while(checkTermination() == false)
+  while(_solver->checkTermination() == false)
   {
    auto t0 = std::chrono::system_clock::now();
 
-   currentGeneration++;
+   _currentGeneration++;
    _solver->runGeneration();
 
    auto t1 = std::chrono::system_clock::now();
 
    koraliLog(KORALI_DETAILED, "Generation Time: %.3fs\n", std::chrono::duration<double>(t1-t0).count());
 
-   if (currentGeneration % consoleOutputFrequency == 0) _solver->printGeneration();
-   if (currentGeneration % resultsOutputFrequency == 0) saveState(currentGeneration);
+   if (_currentGeneration % _consoleOutputFrequency == 0) _solver->printGeneration();
+   if (_currentGeneration % _resultsOutputFrequency == 0) saveState(_currentGeneration);
   }
 
   auto endTime = std::chrono::system_clock::now();
 
-  saveState(currentGeneration);
+  saveState(_currentGeneration);
   saveState("final.json");
 
   _solver->finalize();
   _problem->finalize();
   _conduit->finalize();
 
-  koraliLog(KORALI_MINIMAL, "Total Generations: %lu\n", currentGeneration);
-  koraliLog(KORALI_MINIMAL, "Total Function Evaluations: %lu\n", functionEvaluationCount);
+  koraliLog(KORALI_MINIMAL, "Total Generations: %lu\n", _currentGeneration);
+  koraliLog(KORALI_MINIMAL, "Total Function Evaluations: %lu\n", _functionEvaluationCount);
   koraliLog(KORALI_MINIMAL, "Elapsed Time: %.3fs\n", std::chrono::duration<double>(endTime-startTime).count());
   koraliLog(KORALI_MINIMAL, "Results saved to folder: '%s'\n", _result_dir.c_str());
  }
@@ -260,17 +256,4 @@ void Korali::Engine::saveState(int fileId)
 void Korali::Engine::loadState(std::string fileName)
 {
  _js = loadJsonFromFile(fileName.c_str());
-}
-
-bool Korali::Engine::checkTermination()
-{
-   _isFinished = _solver->checkTermination();
-   
-   if (currentGeneration >= maxGenerations) 
-   { koraliLog(KORALI_MINIMAL, "Maximum generation count reached (%lu).\n", maxGenerations); _isFinished = true; }
-   
-   if (functionEvaluationCount >= maxFunctionEvaluations) 
-   { koraliLog(KORALI_MINIMAL, "Maximum function evaluation count reached (%lu).\n", maxFunctionEvaluations); _isFinished = true; }
-
-   return _isFinished;
 }

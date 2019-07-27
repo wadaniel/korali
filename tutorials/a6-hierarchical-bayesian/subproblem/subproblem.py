@@ -17,6 +17,7 @@ k = korali.initialize()
 
 k["Problem"]["Type"] = "Bayesian Inference"
 k["Problem"]["Likelihood"]["Model"] = "Additive Gaussian"
+k["Problem"]["Likelihood"]["Reference Data"] = getReferenceData(dataPath,i);
 
 k["Variables"][0]["Name"] = "C1"
 k["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"
@@ -43,12 +44,11 @@ k["Solver"]["Type"] = "TMCMC"
 k["Solver"]["Population Size"] = 50
 k["Solver"]["Target Coefficient Of Variation"] = 0.6
 k["Solver"]["Covariance Scaling"] = 0.1
+k["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
+k["General"]["Results Output"]["Path"] = resultsPath
 k["General"]["Console Output"]["Verbosity"] = "Silent"
-k["General"]["Max Generations"] = 100
 
 x = getReferencePoints(dataPath,i);
-k["General"]["Results Output"]["Path"] = resultsPath
-k["Problem"]["Likelihood"]["Reference Data"] = getReferenceData(dataPath,i);
 k.setModel( lambda d: logistic( x, d) )
 k.run()

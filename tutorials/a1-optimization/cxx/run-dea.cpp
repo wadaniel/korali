@@ -23,6 +23,7 @@ int main(int argc, char* argv[])
  k["Solver"]["Type"] = "DEA";
  k["Solver"]["Sample Count"] = 32;
  k["Solver"]["Termination Criteria"]["Min Fitness Diff Threshold"] = 1e-7;
+ k["Solver"]["Termination Criteria"]["Max Generations"] = 100;
 
  // Setting computational model
  k.setModel(model);

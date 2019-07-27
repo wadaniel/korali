@@ -46,6 +46,6 @@ kH["Variables"][2]["Prior Distribution"]["Maximum"] = +10.0
 
 kH["Solver"]["Type"] = "TMCMC"
 kH["Solver"]["Population Size"] = 5000
-kH["General"]["Max Generations"] = 100
+kH["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
 kH.run()

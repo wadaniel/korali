@@ -301,26 +301,26 @@ bool DEA::checkTermination()
 {
 
  bool isFinished = false;
- if ( _minFitnessEnabled && (_k->currentGeneration > 1) && (_bestEverValue >= _minFitness) )
+ if ( _minFitnessEnabled && (_k->_currentGeneration > 1) && (_bestEverValue >= _minFitness) )
  {
   isFinished = true;
   koraliLog(KORALI_MINIMAL, "Fitness Value (%+6.3e) > (%+6.3e).\n",  _bestEverValue, _minFitness);
  }
  
- if ( _maxFitnessEnabled && (_k->currentGeneration > 1) && (_bestEverValue >= _maxFitness) )
+ if ( _maxFitnessEnabled && (_k->_currentGeneration > 1) && (_bestEverValue >= _maxFitness) )
  {
   isFinished = true;
   koraliLog(KORALI_MINIMAL, "Fitness Value (%+6.3e) > (%+6.3e).\n",  _bestEverValue, _maxFitness);
  }
 
  double range = fabs(_currentBestValue - _previousBestValue);
- if ( _minFitnessDiffThresholdEnabled && (_k->currentGeneration > 1) && (range < _minFitnessDiffThreshold) )
+ if ( _minFitnessDiffThresholdEnabled && (_k->_currentGeneration > 1) && (range < _minFitnessDiffThreshold) )
  {
   isFinished = true;
   koraliLog(KORALI_MINIMAL, "Fitness Diff Threshold (%+6.3e) < (%+6.3e).\n",  range, _minFitnessDiffThreshold);
  }
  
- if ( _minStepSizeEnabled && (_k->currentGeneration > 1) )
+ if ( _minStepSizeEnabled && (_k->_currentGeneration > 1) )
  {
    size_t cTemp = 0;
    for(size_t d = 0; d < _k->N; ++d) cTemp += (fabs(_sampleMeans[d] - _previousMean[d]) < _minStepSize) ? 1 : 0;
@@ -331,6 +331,22 @@ bool DEA::checkTermination()
    }
  }
  
+ if(_maxGenerationsEnabled)
+  if(_k->_currentGeneration > _maxGenerations)
+  {
+   _maxGenerationsTriggered = true;
+   koraliLog( KORALI_MINIMAL, "Max Generations Reached.\n", _maxGenerations);
+   isFinished = true;
+  }
+
+ if(_maxModelEvaluationsEnabled)
+ if(_k->_functionEvaluationCount > _maxModelEvaluations)
+ {
+  _maxModelEvaluationsTriggered = true;
+  koraliLog( KORALI_MINIMAL, "Max Model Evaluations Reached.\n", _maxModelEvaluations);
+  isFinished = true;
+ }
+
  return isFinished;
 }
 
@@ -342,7 +358,7 @@ bool DEA::checkTermination()
 
 void DEA::printGeneration()
 {
- koraliLog(KORALI_NORMAL, "Differential Evolution Generation %zu\n", _k->currentGeneration);
+ koraliLog(KORALI_NORMAL, "Differential Evolution Generation %zu\n", _k->_currentGeneration);
  koraliLog(KORALI_NORMAL, "Current Function Value: Max = %+6.3e - Best = %+6.3e\n", _currentBestValue, _bestEverValue);
  koraliLog(KORALI_DETAILED, "Variable = (MeanX, BestX):\n");
  for (size_t d = 0; d < _k->N; d++) koraliLogData(KORALI_DETAILED, "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _sampleMeans[d], _bestEverCoordinates[d]);

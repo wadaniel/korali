@@ -455,7 +455,7 @@ bool Korali::Solver::TMCMC::isFeasibleCandidate(size_t c)
 
 void Korali::Solver::TMCMC::setBurnIn()
 {
-  if (_k->currentGeneration < _burnInSteps.size()) _currentBurnIn = _burnInSteps[_k->currentGeneration];
+  if (_k->_currentGeneration < _burnInSteps.size()) _currentBurnIn = _burnInSteps[_k->_currentGeneration];
   else _currentBurnIn = _defaultBurnIn;
 }
 
@@ -469,8 +469,23 @@ bool Korali::Solver::TMCMC::checkTermination()
   koraliLog( KORALI_MINIMAL, "Annealing completed (1.0).\n");
  }
 
- return isFinished;
+ if(_maxGenerationsEnabled)
+ if(_k->_currentGeneration > _maxGenerations)
+ {
+  _maxGenerationsTriggered = true;
+  koraliLog( KORALI_MINIMAL, "Max Generations Reached.\n", _maxGenerations);
+  isFinished = true;
+ }
 
+ if(_maxModelEvaluationsEnabled)
+ if(_k->_functionEvaluationCount > _maxModelEvaluations)
+ {
+  _maxModelEvaluationsTriggered = true;
+  koraliLog( KORALI_MINIMAL, "Max Model Evaluations Reached.\n", _maxModelEvaluations);
+  isFinished = true;
+ }
+
+ return isFinished;
 }
 
 void Korali::Solver::TMCMC::finalize()
@@ -481,7 +496,7 @@ void Korali::Solver::TMCMC::finalize()
 void Korali::Solver::TMCMC::printGeneration()
 {
  koraliLog(KORALI_MINIMAL, "--------------------------------------------------------------------\n");
- koraliLog(KORALI_MINIMAL, "Generation %ld - Annealing Exponent:  %.3e.\n", _k->currentGeneration, _annealingExponent);
+ koraliLog(KORALI_MINIMAL, "Generation %ld - Annealing Exponent:  %.3e.\n", _k->_currentGeneration, _annealingExponent);
 
  koraliLog(KORALI_NORMAL, "Acceptance Rate (proposals / selections): (%.2f%% / %.2f%%)\n", 100*_proposalsAcceptanceRate, 100*_selectionAcceptanceRate);
  koraliLog(KORALI_NORMAL, "Coefficient of Variation: %.2f%%\n", 100.0*_coefficientOfVariation);

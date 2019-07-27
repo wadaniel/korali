@@ -14,7 +14,7 @@ DEA::DEA()
  auto jsGaussian = nlohmann::json();
  jsGaussian["Type"]  = "Gaussian";
  jsGaussian["Mean"]  = 0.0;
- jsGaussian["Sigma"] = 1.0;
+ jsGaussian["Standard Deviation"] = 1.0;
  jsGaussian["Seed"]  = _k->_seed++;
  _gaussianGenerator  = new Variable();
  _gaussianGenerator->setDistribution(jsGaussian);

@@ -11,6 +11,7 @@ Korali::Variable::Variable()
  _b = 1.0;
  _aux = 0.0;
  _seed = 0;
+ _name = "Unnamed";
  _distributionType = "No Distribution";
  _isLogSpace = false;
  _range = gsl_rng_alloc (gsl_rng_default);
@@ -32,52 +33,51 @@ void Korali::Variable::setProperty(std::string propertyName, double value)
   {
     if (propertyName == "Location") { _a = value; _recognizedProperty = true; }
     if (propertyName == "Scale") { _b = value; _recognizedProperty = true; }
+    if (_b > 0) _aux = -gsl_sf_log( _b * M_PI );
   }
 
   if (_distributionType == "Exponential")
   {
    if (propertyName == "Mean") { _a = value; _recognizedProperty = true; }
    if (propertyName == "Location") { _b = value; _recognizedProperty = true; }
+   _aux = 0.0;
   }
 
   if (_distributionType == "Gamma")
   {
    if (propertyName == "Scale") { _a = value; _recognizedProperty = true; }
    if (propertyName == "Shape") { _b = value; _recognizedProperty = true; }
+   if (_b > 0 && _a > 0) _aux = -gsl_sf_lngamma(_b) - _b*log(_a);
   }
 
   if (_distributionType == "Gaussian")
   {
    if (propertyName == "Mean") { _a = value; _recognizedProperty = true; }
-   if (propertyName == "Sigma") { _b = value; _recognizedProperty = true; }
+   if (propertyName == "Standard Deviation") { _b = value; _recognizedProperty = true; }
+   if (_b > 0) _aux = -0.5*gsl_sf_log(2*M_PI) - gsl_sf_log(_b);
   }
 
   if (_distributionType == "Laplace")
   {
    if (propertyName == "Mean") { _a = value; _recognizedProperty = true; }
    if (propertyName == "Width") { _b = value; _recognizedProperty = true; }
+   if (_b > 0) _aux = -gsl_sf_log(2.*_b);
   }
 
   if (_distributionType == "Uniform")
   {
    if (propertyName == "Minimum") { _a = value; _recognizedProperty = true; }
    if (propertyName == "Maximum") { _b = value; _recognizedProperty = true; }
+   if (_b-_a > 0) _aux = -gsl_sf_log(_b-_a);
   }
 
   if (_distributionType == "Geometric")
   {
    if (propertyName == "Success Probability") { _a = value; _recognizedProperty = true; }
+   _aux = 0.0;
   }
 
-  if (_recognizedProperty == false) koraliError("Incorrect or missing property %s for distribution type %s on variable %s.\n", propertyName.c_str(), _distributionType.c_str(), _name.c_str());
-
-  if (_distributionType == "Cauchy")      { _aux = -gsl_sf_log( _b * M_PI );}
-  if (_distributionType == "Exponential") { _aux = 0.0; }
-  if (_distributionType == "Gamma")       { _aux = -gsl_sf_lngamma(_b) - _b*log(_a); }
-  if (_distributionType == "Gaussian")    { _aux = -0.5*gsl_sf_log(2*M_PI) - gsl_sf_log(_b);}
-  if (_distributionType == "Laplace")     { _aux = -gsl_sf_log(2.*_b); }
-  if (_distributionType == "Uniform")     { _aux = -gsl_sf_log(_b-_a); }
-  if (_distributionType == "Geometric")   { _aux = 0.0; }
+  if (_recognizedProperty == false) koraliError("Incorrect or missing property %s for distribution type %s.\n", propertyName.c_str(), _distributionType.c_str());
 }
 
 void Korali::Variable::setDistributionType(std::string distributionType)
@@ -104,7 +104,13 @@ void Korali::Variable::setDistribution(nlohmann::json& js)
  setDistributionType(dString);
 
  for (auto& property : js.items())
-  setProperty(property.key(), property.value());
+ {
+  if (js[property.key()].is_number())
+   {
+    setProperty(property.key(), property.value());
+    js.erase(property.key());
+   }
+ }
 }
 
 void Korali::Variable::getDistribution(nlohmann::json& js)
@@ -133,7 +139,7 @@ void Korali::Variable::getDistribution(nlohmann::json& js)
  if (_distributionType == "Gaussian")
  {
   js["Mean"] = _a;
-  js["Sigma"] = _b;
+  js["Standard Deviation"] = _b;
  }
 
  if (_distributionType == "Laplace")

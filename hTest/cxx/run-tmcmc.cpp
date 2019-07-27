@@ -44,10 +44,10 @@ int main(int argc, char* argv[])
  kH["Variables"][1]["Prior Distribution"]["Minimum"] =   0.0;
  kH["Variables"][1]["Prior Distribution"]["Maximum"] = +10.0;
 
- kH["Variables"][1]["Name"] = "Psi 3";
- kH["Variables"][1]["Prior Distribution"]["Type"] = "Uniform";
- kH["Variables"][1]["Prior Distribution"]["Minimum"] = -10.0;
- kH["Variables"][1]["Prior Distribution"]["Maximum"] = +10.0;
+ kH["Variables"][2]["Name"] = "Psi 3";
+ kH["Variables"][2]["Prior Distribution"]["Type"] = "Uniform";
+ kH["Variables"][2]["Prior Distribution"]["Minimum"] = -10.0;
+ kH["Variables"][2]["Prior Distribution"]["Maximum"] = +10.0;
 
  kH["Solver"]["Type"] = "TMCMC";
  kH["Solver"]["Population Size"] = 5000;

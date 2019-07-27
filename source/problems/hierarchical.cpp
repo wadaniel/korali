@@ -7,16 +7,13 @@ void Korali::Problem::Hierarchical::getConfiguration()
  if (_operationType == SamplePsi)   _k->_js["Problem"]["Model"] = "Sample Psi";
  if (_operationType == SampleTheta) _k->_js["Problem"]["Model"] = "Sample Theta";
 
- for (size_t i = 0; i < _subProblems.size(); i++)
-  _k->_js["Problem"]["Sub-Problems"][i] = _subProblems[i];
-
  for (size_t i = 0; i < _conditionalPriors.size(); i++)
  {
-  _conditionalPriors[i]._variable->getDistribution(_k->_js["Problem"]["Sub-Problems"][i]);
-  for (size_t j = 0; j < _conditionalPriors[i]._properties.size(); j++)
+  _conditionalPriors[i]->_variable->getDistribution(_k->_js["Problem"]["Conditional Priors"][i]);
+  for (size_t j = 0; j < _conditionalPriors[i]->_properties.size(); j++)
   {
-   _k->_js["Problem"]["Sub-Problems"][i][_conditionalPriors[i]._properties[j].first] =
-     _k->_variables[_conditionalPriors[i]._properties[j].second]->_name;
+   _k->_js["Problem"]["Conditional Priors"][i][_conditionalPriors[i]->_properties[j].first] =
+     _k->_variables[_conditionalPriors[i]->_properties[j].second]->_name;
   }
  }
 }
@@ -41,13 +38,31 @@ void Korali::Problem::Hierarchical::setConfiguration()
   if (isArray(_k->_js["Problem"], { "Conditional Priors" } ))
   for (size_t i = 0; i < _k->_js["Problem"]["Conditional Priors"].size(); i++)
   {
-   conditionalPrior prior;
-   prior._variable = new Korali::Variable();
+   auto prior = new conditionalPrior();
+   prior->_variable = new Korali::Variable();
    _k->_js["Problem"]["Conditional Priors"][i]["Seed"] = _k->_seed++;
-   prior._variable->setDistribution(_k->_js["Problem"]["Conditional Priors"][i]);
+   prior->_variable->setDistribution(_k->_js["Problem"]["Conditional Priors"][i]);
+
+   // Processing references to hyperparameters
+   for (auto& property : _k->_js["Problem"]["Conditional Priors"][i].items())
+   {
+    prior->_variable->setProperty(property.key(), 1.0); // Testing property exists.
+    if (_k->_js["Problem"]["Conditional Priors"][i][property.key()].is_string())
+    {
+     bool foundHyperparameter = false;
+     for (size_t v = 0; v < _k->_variables.size(); v++)
+      if (_k->_variables[v]->_name == property.value())
+      {
+       prior->_properties.push_back(std::make_pair(property.key(), v));
+       foundHyperparameter = true;
+      }
+     if (foundSubProblemType == false) koraliError("Conditional Prior %d references a hyperparameter (%s) which was not defined as problem variable.\n", i, property.key().c_str());
+    }
+   }
    _conditionalPriors.push_back(prior);
   }
 
+  _k->_js["Problem"].erase("Conditional Priors");
 }
 
 void Korali::Problem::Hierarchical::initialize()

@@ -27,11 +27,19 @@ void Korali::Problem::Hierarchical::setConfiguration()
     _subProblems.push_back(js);
    }
   _k->_js["Problem"].erase("Sub-Problems");
+
+  if (isArray(_k->_js["Problem"], { "Conditional Priors" } ))
+   for (size_t i = 0; i < _k->_js["Problem"]["Conditional Priors"].size(); i++)
+   {
+      std::string str = _k->_js["Problem"]["Sub-Conditional Priors"][i];
+      auto js = nlohmann::json::parse(str);
+      _subProblems.push_back(js);
+   }
 }
 
 void Korali::Problem::Hierarchical::initialize()
 {
- for(size_t i = 0; i < _k->N; i++) if(_k->_variables[i]->_distributionType == KoraliDefaultDistribution)
+ for(size_t i = 0; i < _k->N; i++) if(_k->_variables[i]->_distributionType == "No Distribution")
 	koraliError("Hierarchical Bayesian problems requires prior distribution for all variables. (Missing for %s).\n", _k->_variables[i]->_name.c_str());
 
  if (_k->_constraints.size() > 0) koraliError("Hierarchical Bayesian problems do not allow constraint definitions.\n");

@@ -7,11 +7,11 @@
 
 Korali::Variable::Variable()
 {
- _a = 0.0;
- _b = 0.0;
+ _a = 1.0;
+ _b = 1.0;
  _aux = 0.0;
  _seed = 0;
- _distributionType = KoraliDefaultDistribution;
+ _distributionType = "No Distribution";
  _isLogSpace = false;
  _range = gsl_rng_alloc (gsl_rng_default);
 }
@@ -24,123 +24,132 @@ Korali::Variable::~Variable()
 /************************************************************************/
 /*                    Configuration Methods                             */
 /************************************************************************/
+void Korali::Variable::setProperty(std::string propertyName, double value)
+{
+ bool _recognizedProperty = false;
+
+ if (_distributionType == "Cauchy")
+  {
+    if (propertyName == "Location") { _a = value; _recognizedProperty = true; }
+    if (propertyName == "Scale") { _b = value; _recognizedProperty = true; }
+  }
+
+  if (_distributionType == "Exponential")
+  {
+   if (propertyName == "Mean") { _a = value; _recognizedProperty = true; }
+   if (propertyName == "Location") { _b = value; _recognizedProperty = true; }
+  }
+
+  if (_distributionType == "Gamma")
+  {
+   if (propertyName == "Scale") { _a = value; _recognizedProperty = true; }
+   if (propertyName == "Shape") { _b = value; _recognizedProperty = true; }
+  }
+
+  if (_distributionType == "Gaussian")
+  {
+   if (propertyName == "Mean") { _a = value; _recognizedProperty = true; }
+   if (propertyName == "Sigma") { _b = value; _recognizedProperty = true; }
+  }
+
+  if (_distributionType == "Laplace")
+  {
+   if (propertyName == "Mean") { _a = value; _recognizedProperty = true; }
+   if (propertyName == "Width") { _b = value; _recognizedProperty = true; }
+  }
+
+  if (_distributionType == "Uniform")
+  {
+   if (propertyName == "Minimum") { _a = value; _recognizedProperty = true; }
+   if (propertyName == "Maximum") { _b = value; _recognizedProperty = true; }
+  }
+
+  if (_distributionType == "Geometric")
+  {
+   if (propertyName == "Success Probability") { _a = value; _recognizedProperty = true; }
+  }
+
+  if (_recognizedProperty == false) koraliError("Incorrect or missing property %s for distribution type %s on variable %s.\n", propertyName.c_str(), _distributionType.c_str(), _name.c_str());
+
+  if (_distributionType == "Cauchy")      { _aux = -gsl_sf_log( _b * M_PI );}
+  if (_distributionType == "Exponential") { _aux = 0.0; }
+  if (_distributionType == "Gamma")       { _aux = -gsl_sf_lngamma(_b) - _b*log(_a); }
+  if (_distributionType == "Gaussian")    { _aux = -0.5*gsl_sf_log(2*M_PI) - gsl_sf_log(_b);}
+  if (_distributionType == "Laplace")     { _aux = -gsl_sf_log(2.*_b); }
+  if (_distributionType == "Uniform")     { _aux = -gsl_sf_log(_b-_a); }
+  if (_distributionType == "Geometric")   { _aux = 0.0; }
+}
+
+void Korali::Variable::setDistributionType(std::string distributionType)
+{
+ bool foundDistributionType = false;
+ if (distributionType == "No Distribution")     foundDistributionType = true;
+ if (distributionType == "Cauchy")      foundDistributionType = true;
+ if (distributionType == "Exponential") foundDistributionType = true;
+ if (distributionType == "Gamma")       foundDistributionType = true;
+ if (distributionType == "Gaussian")    foundDistributionType = true;
+ if (distributionType == "Laplace")     foundDistributionType = true;
+ if (distributionType == "Uniform")     foundDistributionType = true;
+ if (distributionType == "Geometric")   foundDistributionType = true;
+ if (foundDistributionType == false) koraliError("Incorrect or missing distribution %s for parameter %s.\n", distributionType.c_str(), _name.c_str());
+ _distributionType = distributionType;
+}
 
 void Korali::Variable::setDistribution(nlohmann::json& js)
 {
- auto dString = consume(js, { "Type" }, KORALI_STRING, "Default");
- bool foundDistributionType = false;
- if (dString == "Cauchy")      { _distributionType = KoraliCauchyDistribution;      foundDistributionType = true; }
- if (dString == "Default")     { _distributionType = KoraliDefaultDistribution;     foundDistributionType = true; }
- if (dString == "Exponential") { _distributionType = KoraliExponentialDistribution; foundDistributionType = true; }
- if (dString == "Gamma")       { _distributionType = KoraliGammaDistribution;       foundDistributionType = true; }
- if (dString == "Gaussian")    { _distributionType = KoraliGaussianDistribution;    foundDistributionType = true; }
- if (dString == "Laplace")     { _distributionType = KoraliLaplaceDistribution;     foundDistributionType = true; }
- if (dString == "Uniform")     { _distributionType = KoraliUniformDistribution;     foundDistributionType = true; }
- if (dString == "Geometric")   { _distributionType = KoraliGeometricDistribution;   foundDistributionType = true; }
- if (foundDistributionType == false) koraliError("Incorrect or missing distribution for parameter %s.\n", _name.c_str());
-
- if (_distributionType == KoraliCauchyDistribution)
- {
-  _a = consume(js, { "Location" }, KORALI_NUMBER);
-  _b = consume(js, { "Scale" }, KORALI_NUMBER);
- }
-
- if (_distributionType == KoraliExponentialDistribution)
- {
-  _a = consume(js, { "Mean" },     KORALI_NUMBER);
-  _b = consume(js, { "Location" }, KORALI_NUMBER);
- }
-
- if (_distributionType == KoraliGammaDistribution)
- {
-  _a = consume(js, { "Scale" }, KORALI_NUMBER);
-  _b = consume(js, { "Shape" }, KORALI_NUMBER);
- }
-
- if (_distributionType == KoraliGaussianDistribution)
- {
-  _a = consume(js, { "Mean" },  KORALI_NUMBER);
-  _b = consume(js, { "Sigma" }, KORALI_NUMBER);
- }
-
- if (_distributionType == KoraliLaplaceDistribution)
- {
-  _a = consume(js, { "Mean" },  KORALI_NUMBER);
-  _b = consume(js, { "Width" }, KORALI_NUMBER);
- }
-
- if (_distributionType == KoraliUniformDistribution)
- {
-  _a = consume(js, { "Minimum" }, KORALI_NUMBER);
-  _b = consume(js, { "Maximum" }, KORALI_NUMBER);
- }
-
- if (_distributionType == KoraliGeometricDistribution)
- {
-  _a = consume(js, { "Success Probability" }, KORALI_NUMBER);
-  _b = 0.0;
- }
  _seed = consume(js, { "Seed" }, KORALI_NUMBER);
  gsl_rng_set(_range, _seed);
 
- if (_distributionType == KoraliCauchyDistribution)      { _aux = -gsl_sf_log( _b * M_PI );}
- if (_distributionType == KoraliExponentialDistribution) { _aux = 0.0; }
- if (_distributionType == KoraliGammaDistribution)       { _aux = -gsl_sf_lngamma(_b) - _b*log(_a); }
- if (_distributionType == KoraliGaussianDistribution)    { _aux = -0.5*gsl_sf_log(2*M_PI) - gsl_sf_log(_b);}
- if (_distributionType == KoraliLaplaceDistribution)     { _aux = -gsl_sf_log(2.*_b); }
- if (_distributionType == KoraliUniformDistribution)     { _aux = -gsl_sf_log(_b-_a); }
- if (_distributionType == KoraliGeometricDistribution)   { _aux = 0.0; }
-};
+ auto dString = consume(js, { "Type" }, KORALI_STRING, "No Distribution");
+ setDistributionType(dString);
+
+ for (auto& property : js.items())
+  setProperty(property.key(), property.value());
+}
 
 void Korali::Variable::getDistribution(nlohmann::json& js)
 {
  js["Seed"] = _seed;
+ js["Type"] = _distributionType;
 
- if (_distributionType == KoraliCauchyDistribution)
+ if (_distributionType == "Cauchy")
  {
-  js["Type"] = "Cauchy";
   js["Location"] = _a;
   js["Scale"] = _b;
  }
 
- if (_distributionType == KoraliExponentialDistribution)
+ if (_distributionType == "Exponential")
  {
-  js["Type"] = "Exponential";
   js["Mean"] = _a;
   js["Location"] = _b;
  }
 
- if (_distributionType == KoraliGammaDistribution)
+ if (_distributionType == "Gamma")
  {
-  js["Type"] = "Gamma";
   js["Scale"] = _a;
   js["Shape"] = _b;
  }
 
- if (_distributionType == KoraliGaussianDistribution)
+ if (_distributionType == "Gaussian")
  {
-  js["Type"] = "Gaussian";
   js["Mean"] = _a;
   js["Sigma"] = _b;
  }
 
- if (_distributionType == KoraliLaplaceDistribution)
+ if (_distributionType == "Laplace")
  {
-  js["Type"] = "Laplace";
   js["Mean"] = _a;
   js["Width"] = _b;
  }
 
- if (_distributionType == KoraliUniformDistribution)
+ if (_distributionType == "Uniform")
  {
-  js["Type"] = "Uniform";
   js["Minimum"] = _a;
   js["Maximum"] = _b;
  }
 
- if (_distributionType == KoraliGeometricDistribution)
+ if (_distributionType == "Geometric")
  {
-  js["Type"] = "Geometric";
   js["Success Probability"] = _a;
  }
 }
@@ -161,19 +170,22 @@ void Korali::Variable::setConfiguration(nlohmann::json& js)
 {
  _isLogSpace = consume(js, { "Log Space"}, KORALI_BOOLEAN, "false");
  _name = consume(js, { "Name" }, KORALI_STRING);
+
  setDistribution(js["Prior Distribution"]);
+ js.erase("Prior Distribution");
+
  setSolverSettings(js);
 }
 
 double Korali::Variable::getDensity(double x)
 {
- if (_distributionType == KoraliCauchyDistribution)      { return gsl_ran_cauchy_pdf( x-_a, _b ); }
- if (_distributionType == KoraliExponentialDistribution) { return gsl_ran_exponential_pdf(x-_b, _a); }
- if (_distributionType == KoraliGammaDistribution)       { return gsl_ran_gamma_pdf( x, _b, _a ); }
- if (_distributionType == KoraliGaussianDistribution)    { return gsl_ran_gaussian_pdf(x - _a, _b); }
- if (_distributionType == KoraliLaplaceDistribution)     { return gsl_ran_laplace_pdf( x-_a, _b ); }
- if (_distributionType == KoraliUniformDistribution)     { return gsl_ran_flat_pdf(x, _a, _b); }
- if (_distributionType == KoraliGeometricDistribution)   { return gsl_ran_geometric_pdf((int)x, _a); }
+ if (_distributionType == "Cauchy")      { return gsl_ran_cauchy_pdf( x-_a, _b ); }
+ if (_distributionType == "Exponential") { return gsl_ran_exponential_pdf(x-_b, _a); }
+ if (_distributionType == "Gamma")       { return gsl_ran_gamma_pdf( x, _b, _a ); }
+ if (_distributionType == "Gaussian")    { return gsl_ran_gaussian_pdf(x - _a, _b); }
+ if (_distributionType == "Laplace")     { return gsl_ran_laplace_pdf( x-_a, _b ); }
+ if (_distributionType == "Uniform")     { return gsl_ran_flat_pdf(x, _a, _b); }
+ if (_distributionType == "Geometric")   { return gsl_ran_geometric_pdf((int)x, _a); }
 
  koraliError("Problem requires that variable '%s' has a defined distribution.\n", _name.c_str());
  return 0.0;
@@ -181,14 +193,13 @@ double Korali::Variable::getDensity(double x)
 
 double Korali::Variable::getLogDensity(double x)
 {
- if (_distributionType == KoraliCauchyDistribution)      { return _aux - gsl_sf_log( 1. + gsl_sf_pow_int((x-_a)/_b,2) ); }
- if (_distributionType == KoraliExponentialDistribution) { if (x-_b < 0) return -INFINITY; return - log(_a) - (x-_b)/_a; }
- if (_distributionType == KoraliGammaDistribution)       { if(x < 0) return -INFINITY; return _aux + (_b-1)*log(x) - x/_a; }
- if (_distributionType == KoraliGaussianDistribution)    { double d = (x-_a)/_b; return _aux - 0.5*d*d; }
- if (_distributionType == KoraliLaplaceDistribution)     { return _aux - fabs(x-_a)/_b; }
- if (_distributionType == KoraliUniformDistribution)     { if (x >= _a && x <= _b) return _aux; return -INFINITY; }
- if (_distributionType == KoraliGeometricDistribution)   { return log(_a) + (x-1)*log(1.0-_a); }
-
+ if (_distributionType == "Cauchy")      { return _aux - gsl_sf_log( 1. + gsl_sf_pow_int((x-_a)/_b,2) ); }
+ if (_distributionType == "Exponential") { if (x-_b < 0) return -INFINITY; return - log(_a) - (x-_b)/_a; }
+ if (_distributionType == "Gamma")       { if(x < 0) return -INFINITY; return _aux + (_b-1)*log(x) - x/_a; }
+ if (_distributionType == "Gaussian")    { double d = (x-_a)/_b; return _aux - 0.5*d*d; }
+ if (_distributionType == "Laplace")     { return _aux - fabs(x-_a)/_b; }
+ if (_distributionType == "Uniform")     { if (x >= _a && x <= _b) return _aux; return -INFINITY; }
+ if (_distributionType == "Geometric")   { return log(_a) + (x-1)*log(1.0-_a); }
 
  koraliError("Problem requires that variable '%s' has a defined distribution.\n", _name.c_str());
  return 0.0;
@@ -196,13 +207,13 @@ double Korali::Variable::getLogDensity(double x)
 
 double Korali::Variable::getRandomNumber()
 {
- if (_distributionType == KoraliCauchyDistribution)      { return _a + gsl_ran_cauchy(_range, _b); }
- if (_distributionType == KoraliExponentialDistribution) { return _b + gsl_ran_exponential(_range, _a); }
- if (_distributionType == KoraliGammaDistribution)       { return gsl_ran_gamma(_range, _b, _a); }
- if (_distributionType == KoraliGaussianDistribution)    { return _a + gsl_ran_gaussian(_range, _b); }
- if (_distributionType == KoraliLaplaceDistribution)     { return _a + gsl_ran_laplace(_range, _b); }
- if (_distributionType == KoraliUniformDistribution)     { return gsl_ran_flat(_range, _a, _b); }
- if (_distributionType == KoraliGeometricDistribution)   { return gsl_ran_geometric(_range, _a); }
+ if (_distributionType == "Cauchy")      { return _a + gsl_ran_cauchy(_range, _b); }
+ if (_distributionType == "Exponential") { return _b + gsl_ran_exponential(_range, _a); }
+ if (_distributionType == "Gamma")       { return gsl_ran_gamma(_range, _b, _a); }
+ if (_distributionType == "Gaussian")    { return _a + gsl_ran_gaussian(_range, _b); }
+ if (_distributionType == "Laplace")     { return _a + gsl_ran_laplace(_range, _b); }
+ if (_distributionType == "Uniform")     { return gsl_ran_flat(_range, _a, _b); }
+ if (_distributionType == "Geometric")   { return gsl_ran_geometric(_range, _a); }
 
  koraliError("Problem requires that variable '%s' has a defined distribution.\n", _name.c_str());
  return 0.0;

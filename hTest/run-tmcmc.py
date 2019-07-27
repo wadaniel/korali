@@ -33,13 +33,13 @@ for i in range(N):
   kH["Problem"]["Sub-Problems"][i] = k[i].getResults();
 
 # Add probability of theta given psi
-kH["Problem"]["Conditional Prior"][0]["Type"] = "Gaussian"
-kH["Problem"]["Conditional Prior"][1]["Mean"] = "Psi 1"
-kH["Problem"]["Conditional Prior"][1]["Standard Deviation"] = "Psi 2"
+kH["Problem"]["Conditional Priors"][0]["Type"] = "Gaussian"
+kH["Problem"]["Conditional Priors"][0]["Mean"] = "Psi 1"
+kH["Problem"]["Conditional Priors"][0]["Standard Deviation"] = "Psi 2"
 
-kH["Problem"]["Conditional Prior"][1]["Type"] = "Uniform"
-kH["Problem"]["Conditional Prior"][1]["Minimum"] = 1.0
-kH["Problem"]["Conditional Prior"][1]["Maximum"] = "Psi 3"
+kH["Problem"]["Conditional Priors"][1]["Type"] = "Uniform"
+kH["Problem"]["Conditional Priors"][1]["Minimum"] = 1.0
+kH["Problem"]["Conditional Priors"][1]["Maximum"] = "Psi 3"
 
 kH["Variables"][0]["Name"] = "Psi 1"
 kH["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"

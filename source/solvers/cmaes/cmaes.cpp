@@ -26,7 +26,6 @@ CMAES::~CMAES()
 {
 }
 
-
 void CMAES::initialize()
 {
  // Checking for accepted problem types

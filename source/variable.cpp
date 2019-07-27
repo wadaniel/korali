@@ -103,14 +103,16 @@ void Korali::Variable::setDistribution(nlohmann::json& js)
  auto dString = consume(js, { "Type" }, KORALI_STRING, "No Distribution");
  setDistributionType(dString);
 
+ std::vector<std::string> detectedProperties;
  for (auto& property : js.items())
  {
   if (js[property.key()].is_number())
    {
     setProperty(property.key(), property.value());
-    js.erase(property.key());
+    detectedProperties.push_back(property.key());
    }
  }
+ for(size_t i = 0; i < detectedProperties.size(); i++)  js.erase(detectedProperties[i]);
 }
 
 void Korali::Variable::getDistribution(nlohmann::json& js)

@@ -43,6 +43,8 @@ void Korali::Problem::Hierarchical::setConfiguration()
    _k->_js["Problem"]["Conditional Priors"][i]["Seed"] = _k->_seed++;
    prior->_variable->setDistribution(_k->_js["Problem"]["Conditional Priors"][i]);
 
+   std::vector<std::string> detectedProperties;
+
    // Processing references to hyperparameters
    for (auto& property : _k->_js["Problem"]["Conditional Priors"][i].items())
    {
@@ -57,12 +59,14 @@ void Korali::Problem::Hierarchical::setConfiguration()
        foundHyperparameter = true;
       }
      if (foundSubProblemType == false) koraliError("Conditional Prior %d references a hyperparameter (%s) which was not defined as problem variable.\n", i, property.key().c_str());
+     detectedProperties.push_back(property.key());
     }
    }
+   for(size_t p = 0; p < detectedProperties.size(); p++)
+    _k->_js["Problem"]["Conditional Priors"][i].erase(detectedProperties[p]);
+
    _conditionalPriors.push_back(prior);
   }
-
-  _k->_js["Problem"].erase("Conditional Priors");
 }
 
 void Korali::Problem::Hierarchical::initialize()

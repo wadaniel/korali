@@ -41,7 +41,7 @@ k["Variables"][3]["Prior Distribution"]["Maximum"] = 30.0
 
 k["Solver"]["Type"] = "TMCMC" 
 k["Solver"]["Population Size"] = 50
-k["Solver"]["Target Coefficient of Variation"] = 0.6
+k["Solver"]["Target Coefficient Of Variation"] = 0.6
 k["Solver"]["Covariance Scaling"] = 0.1
 
 k["General"]["Console Output"]["Verbosity"] = "Silent"

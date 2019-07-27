@@ -9,11 +9,11 @@
 import sys
 import korali
 
-thetaFiles = [ 'results/individual/001/s00009.json', \
-               'results/individual/002/s00011.json', \
-               'results/individual/003/s00012.json', \
-               'results/individual/004/s00013.json', \
-               'results/individual/005/s00010.json' \
+thetaFiles = [ 'results/individual/001/s00005.json', \
+               'results/individual/002/s00005.json', \
+               'results/individual/003/s00005.json', \
+               'results/individual/004/s00005.json', \
+               'results/individual/005/s00005.json' \
              ]
 
 N = len(thetaFiles)

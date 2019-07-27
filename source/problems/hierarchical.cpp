@@ -9,6 +9,16 @@ void Korali::Problem::Hierarchical::getConfiguration()
 
  for (size_t i = 0; i < _subProblems.size(); i++)
   _k->_js["Problem"]["Sub-Problems"][i] = _subProblems[i];
+
+ for (size_t i = 0; i < _conditionalPriors.size(); i++)
+ {
+  _conditionalPriors[i]._variable->getDistribution(_k->_js["Problem"]["Sub-Problems"][i]);
+  for (size_t j = 0; j < _conditionalPriors[i]._properties.size(); j++)
+  {
+   _k->_js["Problem"]["Sub-Problems"][i][_conditionalPriors[i]._properties[j].first] =
+     _k->_variables[_conditionalPriors[i]._properties[j].second]->_name;
+  }
+ }
 }
 
 void Korali::Problem::Hierarchical::setConfiguration()
@@ -17,7 +27,7 @@ void Korali::Problem::Hierarchical::setConfiguration()
   std::string operationTypeString = consume(_k->_js, { "Problem", "Model" }, KORALI_STRING, "Undefined");
   if (operationTypeString == "Sample Psi")   { _operationType = SamplePsi;   foundSubProblemType = true; }
   if (operationTypeString == "Sample Theta") { _operationType = SampleTheta; foundSubProblemType = true; }
-  if (foundSubProblemType == false) { koraliError("Incorrect or no sub-problem Type selected for Hierarchical Bayesian: %s.\n", operationTypeString.c_str()); }
+  if (foundSubProblemType == false) koraliError("Incorrect or no sub-problem Type selected for Hierarchical Bayesian: %s.\n", operationTypeString.c_str());
 
   if (isArray(_k->_js["Problem"], { "Sub-Problems" } ))
    for (size_t i = 0; i < _k->_js["Problem"]["Sub-Problems"].size(); i++)
@@ -29,16 +39,21 @@ void Korali::Problem::Hierarchical::setConfiguration()
   _k->_js["Problem"].erase("Sub-Problems");
 
   if (isArray(_k->_js["Problem"], { "Conditional Priors" } ))
-   for (size_t i = 0; i < _k->_js["Problem"]["Conditional Priors"].size(); i++)
-   {
-      std::string str = _k->_js["Problem"]["Sub-Conditional Priors"][i];
-      auto js = nlohmann::json::parse(str);
-      _subProblems.push_back(js);
-   }
+  for (size_t i = 0; i < _k->_js["Problem"]["Conditional Priors"].size(); i++)
+  {
+   conditionalPrior prior;
+   prior._variable = new Korali::Variable();
+   _k->_js["Problem"]["Conditional Priors"][i]["Seed"] = _k->_seed++;
+   prior._variable->setDistribution(_k->_js["Problem"]["Conditional Priors"][i]);
+   _conditionalPriors.push_back(prior);
+  }
+
 }
 
 void Korali::Problem::Hierarchical::initialize()
 {
+ if (_conditionalPriors.size() == 0) koraliError("Hierarchical Bayesian problems require at least one conditional prior\n");
+
  for(size_t i = 0; i < _k->N; i++) if(_k->_variables[i]->_distributionType == "No Distribution")
 	koraliError("Hierarchical Bayesian problems requires prior distribution for all variables. (Missing for %s).\n", _k->_variables[i]->_name.c_str());
 

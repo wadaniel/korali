@@ -7,6 +7,12 @@ namespace Korali { namespace Problem {
 
 enum operationType  {SamplePsi, SampleTheta};
 
+struct conditionalPrior
+{
+ Korali::Variable* _variable;
+ std::vector<std::pair<std::string, double>> _properties;
+};
+
 class Hierarchical : public Base
 {
  public:
@@ -14,7 +20,7 @@ class Hierarchical : public Base
  // Reference Data
  operationType  _operationType;
  std::vector<nlohmann::json> _subProblems;
- std::vector<Korali::Variable*> _conditionalPriors;
+ std::vector<conditionalPrior> _conditionalPriors;
 
  void packVariables(double* sample, Korali::Model& data) override;
  double evaluateFitness(Korali::Model& data) override;

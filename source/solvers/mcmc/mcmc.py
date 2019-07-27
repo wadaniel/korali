@@ -12,7 +12,7 @@ from korali.plotter.helpers import readFiles, hlsColors, pauseLight, drawMultico
 from korali.plotter.helpers import initDefaults, getStateAndGeneration, appendStates, appendStateVectors
 
 # Plot MCMC results (read from .json files)
-def plot_mcmc(src, plotAll=False, live=False, generation=None, test=False):
+def plot_mcmc(src, plotAll=False, live=False, generation=None, test=False, mean=''):
     plt.style.use('seaborn-dark')
     
     stateNames = ['Chain Length', 'Database Entry Count']

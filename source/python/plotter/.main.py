@@ -5,11 +5,9 @@ import signal
 import json
 import argparse
 import matplotlib
-import matplotlib.pyplot as plt
 
 curdir = os.path.abspath(os.path.dirname(os.path.realpath(__file__))) 
 
-# Including Solvers
 
 def main(path, allFiles, live, generation, mean, check, test):
 
@@ -25,6 +23,8 @@ def main(path, allFiles, live, generation, mean, check, test):
             "GENERATION cannot be combined")
  
     exit(-1)
+
+# Including Solvers
 
  from korali.plotter.helpers import sig
  signal.signal(signal.SIGINT, sig)

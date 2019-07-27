@@ -14,9 +14,9 @@ from korali.plotter.helpers import initDefaults, getStateAndGeneration, appendSt
 
 
 # Plot TMCMC results (read from .json files)
-def plot_tmcmc(src, plotAll=False, live=False, generation=None, test=False):
+def plot_tmcmc(src, plotAll=False, live=False, generation=None, test=False, mean=''):
     plt.style.use('seaborn-dark')
-    
+        
     stateNames = ['Annealing Exponent', 'Database Entry Count']
     resultfiles = readFiles(src, 0, generation)
     

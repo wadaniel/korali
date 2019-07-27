@@ -20,7 +20,7 @@ def buildPlotter(koraliDir):
    if (not os.path.isfile(solverPythonFile)): continue 
    #print(solverPath)
    
-   importsString += "from korali.plotter." + solverName + " import plot_" + solverName + "\n"
+   importsString += " from korali.plotter." + solverName + " import plot_" + solverName + "\n"
    copyfile(solverPythonFile, curdir + '/' + solverName + '.py')
    
    detectString += " if ( '" + solverName.upper() + "' == solver):\n"

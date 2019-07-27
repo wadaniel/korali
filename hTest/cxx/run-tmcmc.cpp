@@ -2,29 +2,15 @@
 
 int main(int argc, char* argv[])
 {
- std::vector<std::string> thetaFiles =
- {
-   "results/individual/001/s00005.json",
-   "results/individual/002/s00005.json",
-   "results/individual/003/s00005.json",
-   "results/individual/004/s00005.json",
-   "results/individual/005/s00005.json"
- };
-
- size_t N = thetaFiles.size();
- std::vector<Korali::Engine> k;
- k.resize(N);
- for (size_t i = 0; i < N; i++)
- {
-  k[i] = Korali::Engine();
-  k[i].loadState(thetaFiles[i]);
- }
-
  auto kH = Korali::Engine();
 
  kH["Problem"]["Type"]  = "Hierarchical Bayesian";
  kH["Problem"]["Model"] = "Sample Psi";
- for (size_t i = 0; i < N; i++) kH["Problem"]["Sub-Problems"][i] = k[i].getResults();
+ kH["Problem"]["Sub-Problems"][0] = Korali::Engine::getResults("../data/000/final.json");
+ kH["Problem"]["Sub-Problems"][1] = Korali::Engine::getResults("../data/001/final.json");
+ kH["Problem"]["Sub-Problems"][2] = Korali::Engine::getResults("../data/002/final.json");
+ kH["Problem"]["Sub-Problems"][3] = Korali::Engine::getResults("../data/003/final.json");
+ kH["Problem"]["Sub-Problems"][4] = Korali::Engine::getResults("../data/004/final.json");
 
  kH["Problem"]["Conditional Priors"][0]["Type"] = "Gaussian";
  kH["Problem"]["Conditional Priors"][0]["Mean"] = "Psi 1";
@@ -51,7 +37,6 @@ int main(int argc, char* argv[])
 
  kH["Solver"]["Type"] = "TMCMC";
  kH["Solver"]["Population Size"] = 5000;
-
  kH["General"]["Max Generations"] = 100;
 
  kH.run();

@@ -88,7 +88,7 @@ class Engine {
  void loadState(std::string fileName);
  void saveState(std::string fileName);
  void saveState(int fileId);
- std::string getResults();
+ static std::string getResults(std::string fileName);
 
  bool checkTermination();
 

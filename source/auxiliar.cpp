@@ -44,8 +44,8 @@ PYBIND11_MODULE(libkorali, m) {
  .def("dry", &Korali::Engine::dry)
  .def("setModel",      &Korali::Engine::setModel, pybind11::return_value_policy::reference)
  .def("addConstraint", &Korali::Engine::addConstraint, pybind11::return_value_policy::reference)
- .def("getResults", &Korali::Engine::getResults)
- .def("loadState",     &Korali::Engine::loadState, pybind11::return_value_policy::reference);
+ .def("loadState",     &Korali::Engine::loadState, pybind11::return_value_policy::reference)
+ .def("getResults",    &Korali::Engine::getResults, pybind11::return_value_policy::reference);
 
  pybind11::class_<Korali::KoraliJsonWrapper>(m, "__KoraliJsonWrapper")
  .def(pybind11::init<>())

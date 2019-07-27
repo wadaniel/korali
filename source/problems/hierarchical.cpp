@@ -111,8 +111,7 @@ double Korali::Problem::Hierarchical::evaluateFitness(Korali::Model& data)
 
  for (size_t i = 0; i < _conditionalPriors.size(); i++)
  {
-  // George: is this correct? Do you take random numbers to 'sample' the log distribution density?
-  // I feel like I'm missing something here.
+  // George: I just put gibberish here. I'll let you to do the rest.
   double x = _conditionalPriors[i]->_variable->getRandomNumber();
   fitness *= _conditionalPriors[i]->_variable->getLogDensity(x);
  }

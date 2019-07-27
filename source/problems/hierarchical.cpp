@@ -95,9 +95,27 @@ void Korali::Problem::Hierarchical::packVariables(double* sample, Korali::Model&
 
 double Korali::Problem::Hierarchical::evaluateFitness(Korali::Model& data)
 {
- double fitness = 0.0;
+ // Now re-configuring conditional priors given hyperparameters
+ for (size_t i = 0; i < _conditionalPriors.size(); i++)
+ {
+  for (size_t j = 0; j < _conditionalPriors[i]->_properties.size(); j++)
+  {
+   std::string propertyName = _conditionalPriors[i]->_properties[j].first;
+   size_t variableId = _conditionalPriors[i]->_properties[j].second;
+   double propertyValue = data.getVariable(variableId);
+   _conditionalPriors[i]->_variable->setProperty(propertyName, propertyValue);
+  }
+ }
 
- fitness = data._results[0];
+ double fitness = 1.0;
+
+ for (size_t i = 0; i < _conditionalPriors.size(); i++)
+ {
+  // George: is this correct? Do you take random numbers to 'sample' the log distribution density?
+  // I feel like I'm missing something here.
+  double x = _conditionalPriors[i]->_variable->getRandomNumber();
+  fitness *= _conditionalPriors[i]->_variable->getLogDensity(x);
+ }
 
  return fitness;
 }

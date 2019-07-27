@@ -53,8 +53,6 @@ int main(int argc, char* argv[])
  kH["Solver"]["Population Size"] = 5000;
 
  kH["General"]["Max Generations"] = 100;
- kH["General"]["Results Output"]["Frequency"] = 20;
- kH["General"]["Console Output"]["Frequency"] = 20;
 
- kH.dry();
+ kH.run();
 }

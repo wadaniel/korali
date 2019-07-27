@@ -3,10 +3,10 @@
 import os
 import sys
 
-def buildCXX():
+def buildCXX(koraliDir):
  print('[Korali] Building C++ compilation commands...')
  curdir = os.path.abspath(os.path.dirname(os.path.realpath(__file__))) 
- makefileConfFile = open(curdir + '/../../Makefile.conf', 'r')
+ makefileConfFile = open(koraliDir + '/Makefile.conf', 'r')
  CXXFLAGS=''
  for line in makefileConfFile:
    CXXFLAGS += line.replace('=', '=\'', 1).replace('\n', '') + '\'\n'

@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 from korali.plotter.helpers import readFiles, hlsColors, pauseLight, drawMulticoloredLine, checkFigure
 from korali.plotter.helpers import initDefaults, getStateAndGeneration, appendStates, appendStateVectors
 
-
 # Plot MCMC results (read from .json files)
 def plot_mcmc(src, plotAll=False, live=False, generation=None, test=False):
     plt.style.use('seaborn-dark')

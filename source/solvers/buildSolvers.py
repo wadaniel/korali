@@ -4,9 +4,9 @@ import json
 sys.path.append('../')
 from auxiliar import *
 
-def buildSolvers():
+def buildSolvers(koraliDir):
  # Processing Solvers
- curdir = os.path.abspath(os.path.dirname(os.path.realpath(__file__))) 
+ curdir = koraliDir + '/solvers' 
  
  # Creating new config.cpp
  configFileName = curdir + '/config.cpp'

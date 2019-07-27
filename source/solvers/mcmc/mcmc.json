@@ -6,36 +6,36 @@
  [
    {
     "Name": "Max Chain Length",
-    "Type": "Unsigned Integer",
+    "Type": "size_t",
     "Description": "Maximum number of samples to evaluate per chain per generation."
    },
    {
     "Name": "Burn In",
-    "Type": "Unsigned Integer",
+    "Type": "size_t",
     "Default": "0",
     "Description": "Specifies the number of preliminary MCMC steps before samples are being drawn. This may reduce effects from improper initialization."
    },
    {
     "Name": "Rejection Levels",
-    "Type": "Unsigned Integer",
+    "Type": "size_t",
     "Default": "1",
     "Description": "Controls the number of accept-reject stages per MCMC step."
    },
    {
     "Name": "Use Adaptive Sampling",
-    "Type": "Boolean",
+    "Type": "bool",
     "Default": "false",
     "Description": "Specifies if covariance matrix of the proposal distribution is calculated from the samples."
    },
    {
     "Name": "Non Adaption Period",
-    "Type": "Unsigned Integer",
+    "Type": "size_t",
     "Default": "0",
     "Description": "Number of steps (after Burn In steps) during which the initial standard deviation is used (only relevant for Adaptive Sampling). If 0 is specified, Korali will set this value to $5%$ of the Chain Length."
    },
    {
     "Name": "Chain Covariance Scaling",
-    "Type": "Real",
+    "Type": "double",
     "Default": "1.0",
     "Description": "Multiplier inside of Chain Covariance update in order to control the covariance."
    }
@@ -45,12 +45,12 @@
  [
    {
     "Name": "Max Generations",
-    "Type": "Unsigned Integer",
+    "Type": "size_t",
     "Description": "Determines how many solver generations to run before stopping execution. Execution can be resumed at a later moment."
    },
    {
     "Name": "Max Model Evaluations",
-    "Type": "Unsigned Integer",
+    "Type": "size_t",
     "Description": "Determines how many computational model evaluations to run before stopping execution. Execution can be resumed at a later moment."
    }
  ],
@@ -59,12 +59,12 @@
  [
    {
     "Name": "Initial Mean",
-    "Type": "Real",
+    "Type": "double",
     "Description": "Specifies the Initial Mean of the proposal distribution."
    },
    {
     "Name": "Initial Standard Deviation",
-    "Type": "Real",
+    "Type": "double",
     "Description": "Specifies the Standard Deviation for each variable. The proposal distribution is defined through a covariance matrix with the variance of the variables in its diagonal."
    }
  ],
@@ -73,97 +73,97 @@
  [
    {
     "Name": "Cholesky Covariance",
-    "Type": "(Array of) Real",
+    "Type": "std::vector<double>",
     "Description": "Cholesky Decomposition of Covariance for sampling (using a lower triangular matrix, with rest zeros)."
    },
    {
     "Name": "Chain Cholesky Covariance",
-    "Type": "(Array of) Real",
+    "Type": "std::vector<double>",
     "Description": "Chain Cholesky Decomposition of Covariance for sampling (using a lower triangular matrix, with rest zeros)."
    },
    {
     "Name": "Chain Leader Parameters",
-    "Type": "(Array of) Real",
+    "Type": "std::vector<double>",
     "Description": "Parameters of the current sample."
    },
    {
     "Name": "Chain Leader LogLikelihood",
-    "Type": "Real",
+    "Type": "double",
     "Description": "The logLikelihood of the current sample."
    },
    {
     "Name": "Chain Candidate Parameters",
-    "Type": "(Array of) Real",
+    "Type": "std::vector<double>",
     "Description": "Current (theta) parameters of the chain leader sample."
    },
    {
     "Name": "Chain Candidates LogLikelihoods",
-    "Type": "(Array of) Real",
+    "Type": "std::vector<double>",
     "Description": "The logLikelihoods of the chain candidates."
    },
    {
     "Name": "Chain Candidates LogPriors",
-    "Type": "(Array of) Real",
+    "Type": "std::vector<double>",
     "Description": "The logPriors of the chain candidates."
    },
    {
     "Name": "Rejection Alphas",
-    "Type": "(Array of) Real",
+    "Type": "std::vector<double>",
     "Description": "Alphas for recursive calculation of delayed rejection schemes."
    },
    {
     "Name": "Acceptance Rate",
-    "Type": "Real",
+    "Type": "double",
     "Description": "Ratio proposed to accepted samples."
    },
    {
     "Name": "Current Rejection Count",
-    "Type": "Unsigned Integer",
+    "Type": "size_t",
     "Description": "Number of rejections in the current generation."
    },
    {
     "Name": "Acceptance Count",
-    "Type": "Unsigned Integer",
+    "Type": "size_t",
     "Description": "Number of accepted samples."
    },
    {
     "Name": "Proposed Sample Count",
-    "Type": "Unsigned Integer",
+    "Type": "size_t",
     "Description": "Number of proposed samples."
    },
    {
     "Name": "Database Entry Count",
-    "Type": "Unsigned Integer",
+    "Type": "size_t",
     "Description": "Number of accepted samples stored in the database."
    },
    {
     "Name": "Sample Parameters Database",
-    "Type": "(Array of) Real",
+    "Type": "std::vector<double>",
     "Description": "Variable values of samples stored in the database."
    },
    {
     "Name": "Sample Fitness Database",
-    "Type": "(Array of) Real",
+    "Type": "std::vector<double>",
     "Description": "Fitness of the samples stored in the database."
    },
    {
     "Name": "Chain Mean",
-    "Type": "(Array of) Real",
+    "Type": "std::vector<double>",
     "Description": "Mean of Markov Chain Monte Carlo Chain."
    },
    {
     "Name": "Chain Covariance Placeholder",
-    "Type": "(Array of) Real",
+    "Type": "std::vector<double>",
     "Description": "Placeholder chain covariance calculation."
    },
    {
     "Name": "Chain Covariance",
-    "Type": "(Array of) Real",
+    "Type": "std::vector<double>",
     "Description": "Chain Covariance."
    },
    {
     "Name": "Chain Length",
-    "Type": "Unsigned Integer",
+    "Type": "size_t",
     "Description": "Current Chain Length."
    }
  ]

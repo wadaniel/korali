@@ -11,7 +11,7 @@
 source ../functions.sh
 
 #################################################
- Checking for MPI
+# Checking for MPI
 #################################################
 
 if [[ $MPICXX == "" ]]
@@ -21,7 +21,7 @@ then
 fi
 
 #################################################
- Clone korali-apps repository
+# Clone korali-apps repository
 #################################################
 
 logEcho "[Korali] Cloning korali-apps repository"                                   
@@ -33,7 +33,7 @@ check_result
 # Test Korali+LAMMPS
 #################################################
 
-pushd korali-apps/LAMMPS/LJ
+pushd korali-apps/LAMMPS
 logEcho "[Korali] Testing Korali+LAMMPS..."
 
 logEcho "[Korali] Converting to dry run..."

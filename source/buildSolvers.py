@@ -90,9 +90,9 @@ def buildSolvers(koraliDir):
    solverHeaderString += getVariableType(v) + ' ' + getVariableName(v) + ';\n'
        
   # Loading template header .hpp file
-  solverTemplateHeaderFile = solverPath + '/.' + solverName + '.hpp'
-  with open(solverTemplateHeaderFile, 'r') as file: solverHeaderString = file.read()
-  newHeaderString = solverHeaderString.replace('private:', 'private: \n' + solverHeaderString + '\n')
+  solverTemplateHeaderFile = solverPath + '/' + solverName + '._hpp'
+  with open(solverTemplateHeaderFile, 'r') as file: solverTemplateHeaderString = file.read()
+  newHeaderString = solverTemplateHeaderString.replace('private:', 'private: \n' + solverHeaderString + '\n')
   
   # Saving new header .hpp file
   solverNewHeaderFile = solverPath + '/' + solverName + '.hpp'
@@ -101,7 +101,7 @@ def buildSolvers(koraliDir):
   
   ###### Producing solver.cpp
   
-  solverCodeString += 'void Korali::Solver::' + solverConfig["Module Alias"] + '::setConfiguration() \n{\n'
+  solverCodeString = 'void Korali::Solver::' + solverConfig["Module Alias"] + '::setConfiguration() \n{\n'
  
   # Consume Solver Settings
   for v in solverConfig["Module Configuration"]:
@@ -112,9 +112,8 @@ def buildSolvers(koraliDir):
   
   for v in solverConfig["Termination Criteria"]:
     solverCodeString += '\n ' + getVariableName(v) + 'Enabled = 0;'
-    terminationString = consumeValue('_k->_js', solverConfig["Module Alias"], v["Name"], getVariableName(v), getVariableType(v), 'Korali Skip Default', [ 'Solver', 'Termination Criteria' ] 
-    terminationString = terminationString.replace(getVariableName(v) + ' = ', getVariableName(v) + 'Enabled = 1;\n  ' + getVariableName(v) + ' = '
-    solverCodeString += terminationString
+    terminationString = consumeValue('_k->_js', solverConfig["Module Alias"], v["Name"], getVariableName(v), getVariableType(v), 'Korali Skip Default', [ 'Solver', 'Termination Criteria' ]) 
+    solverCodeString += terminationString.replace(getVariableName(v) + ' = ', getVariableName(v) + 'Enabled = 1;\n  ' + getVariableName(v) + ' = ')
     solverCodeString += consumeValue('_k->_js', solverConfig["Module Alias"], v["Name"] + ' Triggered', getVariableName(v) + 'Triggered', 'int', '0', [ 'Solver', 'Termination Criteria' ])
   
   solverCodeString += '} \n\n'
@@ -122,7 +121,6 @@ def buildSolvers(koraliDir):
   ###### Creating Solver Get Configuration routine
   
   solverCodeString += 'void Korali::Solver::' + solverConfig["Module Alias"]  + '::getConfiguration() \n{\n\n'
- 
   solverCodeString += ' _k->_js["Solver"]["Type"] = "' + solverConfig["Module Alias"] + '";\n'
  
   for v in solverConfig["Module Configuration"]: 
@@ -138,8 +136,8 @@ def buildSolvers(koraliDir):
   solverCodeString += ' } \n\n'
   
   ###### Creating code file
-  with open(solverPath + '/' + solverName +._cpp', 'r') as file: solverBaseCodeString = file.read()
+  with open(solverPath + '/' + solverName + '._cpp', 'r') as file: solverBaseCodeString = file.read()
   solverBaseCodeString += '\n\n' + solverCodeString
-  solverNewCodeFile = solverPath + '/' + solverName +.cpp'
+  solverNewCodeFile = solverPath + '/' + solverName + '.cpp'
   print('[Korali] Creating: ' + solverNewCodeFile + '...')
   with open(solverNewCodeFile, 'w') as file: file.write(solverBaseCodeString)

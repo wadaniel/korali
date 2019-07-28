@@ -6,9 +6,7 @@ import sys
 
 curdir = os.path.abspath(os.path.dirname(os.path.realpath(__file__))) 
 
-sys.path.append('./solvers')
 from buildSolvers import *
-
 from buildVariables import *
 
 sys.path.append('./python/cxx/')

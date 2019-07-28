@@ -8,12 +8,12 @@ LDFLAGS += $(PYBIND11LIBS)
 
 .PHONY: clean all
 
-all: solvers/config.cpp libkorali.so libkorali.a
+all: build libkorali.so libkorali.a
 
-solvers/config.cpp:
+build:
 	python3 ./buildKorali.py
 
-SOURCES = $(shell find . -name "*.cpp") solvers/config.cpp
+SOURCES = $(shell find . -name "*.cpp") 
 OBJECTS_STATIC = $(SOURCES:.cpp=.static.o)
 OBJECTS_SHARED = $(SOURCES:.cpp=.shared.o)
 

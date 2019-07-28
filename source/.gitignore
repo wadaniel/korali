@@ -1,5 +1,4 @@
 Makefile.conf
-variable.hpp
-variable.cpp
-config.cpp
-
+*.hpp
+*.py
+*.cpp

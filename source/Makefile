@@ -11,7 +11,7 @@ LDFLAGS += $(PYBIND11LIBS)
 all: build libkorali.so libkorali.a
 
 build:
-	python3 ./buildKorali.py
+	python3 python/build/buildKorali.py
 
 SOURCES = $(shell find . -name "*.cpp") 
 OBJECTS_STATIC = $(SOURCES:.cpp=.static.o)
@@ -30,5 +30,7 @@ libkorali.a: $(OBJECTS_STATIC)
 	ar rs $@ $^
 
 clean:
-	@rm -rf *.so *.a solvers/config.cpp solvers/*/*.hpp $(OBJECTS_STATIC) $(OBJECTS_SHARED)
+	@rm -rf *.so *.a solvers/*/*.hpp solvers/*/*.cpp 
+	@rm -rf *.so *.a variable.cpp variable.hpp setup.py
+	@rm -rf *.so *.a $(OBJECTS_STATIC) $(OBJECTS_SHARED)
 

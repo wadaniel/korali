@@ -6,8 +6,7 @@ from shutil import copyfile
 
 def buildPlotter(koraliDir):
  print('[Korali] Building plotter script...')
- curdir = os.path.abspath(os.path.dirname(os.path.realpath(__file__))) 
- with open(curdir + '/.main.py', 'r') as file: plotterString = file.read()
+ with open(koraliDir + '/python/plotter/__main__._py', 'r') as file: plotterString = file.read()
  
  importsString = ''
  detectString = ''
@@ -21,7 +20,7 @@ def buildPlotter(koraliDir):
    #print(solverPath)
    
    importsString += " from korali.plotter." + solverName + " import plot_" + solverName + "\n"
-   copyfile(solverPythonFile, curdir + '/' + solverName + '.py')
+   copyfile(solverPythonFile, koraliDir + '/python/plotter/' + solverName + '.py')
    
    detectString += " if ( '" + solverName.upper() + "' == solver):\n"
    detectString += '  print("[Korali] Running ' + solverName.upper() + ' Plotter...")\n'
@@ -34,4 +33,4 @@ def buildPlotter(koraliDir):
  plotterString = plotterString.replace('# Including Solvers', importsString)
  plotterString = plotterString.replace(' # Detecting Solver Type', detectString)
  
- with open(curdir + '/__main__.py', 'w') as file: file.write(plotterString)
+ with open(koraliDir + '/python/plotter/__main__.py', 'w') as file: file.write(plotterString)

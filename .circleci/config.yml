@@ -26,6 +26,14 @@ jobs:
             - korali-dependencies-linux
 
       - run:
+          name: build webpage
+          command: cd docs; timeout 10m ./build.sh
+
+      - run:
+          name: deploy webpage
+          command: cd docs; ./deploy.sh
+
+      - run:
           name: build Korali
           command: timeout 10m ./install
 
@@ -37,14 +45,6 @@ jobs:
           name: run tests
           command: cd tests; ./run_all_tests.sh
       
-      - run:
-          name: build webpage
-          command: cd docs; timeout 10m ./build.sh
-
-      - run:
-          name: deploy webpage
-          command: cd docs; ./deploy.sh
-
       - store_artifacts:
           path: ~/korali/install.log
 

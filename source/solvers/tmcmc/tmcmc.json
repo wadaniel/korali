@@ -1,8 +1,8 @@
 {
- "Module Name": "Transitional Markov Chain Monte Carlo",
- "Module Alias": "TMCMC",
+ "Name": "Transitional Markov Chain Monte Carlo",
+ "Alias": "TMCMC",
  
- "Module Configuration": 
+ "Solver Configuration": 
  [
    {
     "Name": "Population Size",

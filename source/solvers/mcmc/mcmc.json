@@ -1,8 +1,8 @@
 {
- "Module Name": "Markov Chain Monte Carlo",
- "Module Alias": "MCMC",
+ "Name": "Markov Chain Monte Carlo",
+ "Alias": "MCMC",
  
- "Module Configuration": 
+ "Solver Configuration": 
  [
    {
     "Name": "Burn In",

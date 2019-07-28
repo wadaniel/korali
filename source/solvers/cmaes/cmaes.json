@@ -1,8 +1,8 @@
 {
- "Module Name": "Covariance Matrix Adaptation Evolution Strategy",
- "Module Alias": "CMAES",
+ "Name": "Covariance Matrix Adaptation Evolution Strategy",
+ "Alias": "CMAES",
  
- "Module Configuration": 
+ "Solver Configuration": 
  [
    {
     "Name": "Sample Count",

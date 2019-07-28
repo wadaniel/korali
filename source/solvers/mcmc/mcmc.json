@@ -41,6 +41,7 @@
    {
     "Name": "Max Chain Length",
     "Type": "size_t",
+    "Default": "7000",
     "Criteria": "_databaseEntryCount >= _maxChainLength",
     "Description": "Maximum number of samples to evaluate for the MCMC chain."
    }

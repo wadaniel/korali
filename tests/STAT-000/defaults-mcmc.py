@@ -16,7 +16,6 @@ k["Variables"][0]["Initial Mean"] = 0.0
 k["Variables"][0]["Initial Standard Deviation"] = 1.000
 
 k["Solver"]["Type"]  = "MCMC"
-k["Solver"]["Max Chain Length"] = 0
 
 k["General"]["Console Output"]["Frequency"] = 500
 k["General"]["Results Output"]["Frequency"] = 500
@@ -33,7 +32,6 @@ assert_value( k["General"]["Results Output"]["Frequency"], 500 )
 # Test Solver Configuration
 assert_value( k["Solver"]["Burn In"], 0 )
 assert_value( k["Solver"]["Chain Covariance Scaling"], 1.0 )
-assert_value( k["Solver"]["Max Chain Length"], 0 )
 assert_value( k["Solver"]["Non Adaption Period"], 0 )
 assert_value( k["Solver"]["Rejection Levels"], 1 )
 assert_value( k["Solver"]["Use Adaptive Sampling"], False)

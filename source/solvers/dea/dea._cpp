@@ -285,8 +285,11 @@ void DEA::updateSolver()
     {
         double max = std::numeric_limits<double>::lowest();
         double min = std::numeric_limits<double>::max();
-        for(size_t i = 0; i < _sampleCount; ++i) std::max(max, _samplePopulation[i*_k->N+d]);
-        for(size_t i = 0; i < _sampleCount; ++i) std::min(min, _samplePopulation[i*_k->N+d]);
+        for(size_t i = 0; i < _sampleCount; ++i)
+        {
+            if (_samplePopulation[i*_k->N+d] > max) max = _samplePopulation[i*_k->N+d];
+            if (_samplePopulation[i*_k->N+d] < min) min = _samplePopulation[i*_k->N+d];
+        }
         _maxDistances[d] = max-min;
     }
 

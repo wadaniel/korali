@@ -31,15 +31,17 @@ def buildProblems(koraliDir):
   
   problemDocString = '# ' + problemConfig["Name"] + '\n\n' + problemDocString 
   
-  #problemSettingsString = '### Problem Settings\n\n'
-  #for v in problemConfig["Problem Configuration"]:
-  # problemSettingsString += getVariableInfo(v, problemName)
-  #problemDocString = problemDocString.replace('### Problem Settings', problemSettingsString + '\n\n')  
+  problemSettingsString = '### Problem Settings\n\n'
+  if (not problemConfig["Problem Configuration"]): problemSettingsString += '*none*'
+  for v in problemConfig["Problem Configuration"]:
+   problemSettingsString += getVariableInfo(v, problemName)
+  problemDocString = problemDocString.replace('### Problem Settings', problemSettingsString + '\n\n')  
     
-  #variableSettingsString = '### Variable-Specific Settings\n\n'
-  #for v in problemConfig["Variables Configuration"]: 
-  #  variableSettingsString += getVariableInfo(v, problemName)
-  #problemDocString = problemDocString.replace('### Variable-Specific Settings', variableSettingsString + '\n\n')
+  variableSettingsString = '### Variable-Specific Settings\n\n'
+  if (not problemConfig["Variables Configuration"]): variableSettingsString += '*none*'
+  for v in problemConfig["Variables Configuration"]: 
+    variableSettingsString += getVariableInfo(v, problemName)
+  problemDocString = problemDocString.replace('### Variable-Specific Settings', variableSettingsString + '\n\n')
     
   mdFileName = koraliDir + '/docs/docs/usage/problems/' + problemName + '.md'
   print('[Korali] Creating ' + mdFileName + '...')    

@@ -1,5 +1,17 @@
 {
  "Name": "Bayesian Inference",
- "Alias": "Bayesian"
+ "Alias": "Bayesian",
  
- }
+ "Problem Configuration": 
+ [
+ ],
+ 
+ "Variables Configuration": 
+ [
+ ],
+ 
+ "Internal Settings": 
+ [
+ ]
+}
+ 

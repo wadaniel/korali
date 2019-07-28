@@ -49,8 +49,16 @@ With a *Custom Likelihood*, the function $p(d|\vartheta)$ is given directly by a
 ## Configuration
 
 ### Problem Settings
+
+*none*
+
+
  
 ### Variable-Specific Settings
+
+*none*
+
+
 
 ??? abstract "Prior Distribution"
 

@@ -1,5 +1,16 @@
 {
  "Name": "Hierarchical Bayesian Modeling",
- "Alias": "Hierarchical Bayesian"
+ "Alias": "Hierarchical Bayesian",
  
- }
+ "Problem Configuration": 
+ [
+ ],
+ 
+ "Variables Configuration": 
+ [
+ ],
+ 
+ "Internal Settings": 
+ [
+ ]
+}

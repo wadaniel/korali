@@ -1,5 +1,16 @@
 {
  "Name": "Sampling",
- "Alias": "Sampling"
+ "Alias": "Sampling",
  
- }
+ "Problem Configuration": 
+ [
+ ],
+ 
+ "Variables Configuration": 
+ [
+ ],
+ 
+ "Internal Settings": 
+ [
+ ]
+}

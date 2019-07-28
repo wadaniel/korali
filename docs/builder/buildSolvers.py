@@ -32,16 +32,19 @@ def buildSolvers(koraliDir):
   solverDocString = '# ' + solverConfig["Name"] + '\n\n' + solverDocString 
   
   solverSettingsString = '### Solver Settings\n\n'
+  if (not solverConfig["Solver Configuration"]): solverSettingsString += '*none*'
   for v in solverConfig["Solver Configuration"]:
    solverSettingsString += getVariableInfo(v, solverName)
   solverDocString = solverDocString.replace('### Solver Settings', solverSettingsString + '\n\n')  
     
   variableSettingsString = '### Variable-Specific Settings\n\n'
+  if (not solverConfig["Variables Configuration"]): variableSettingsString += '*none*'
   for v in solverConfig["Variables Configuration"]: 
     variableSettingsString += getVariableInfo(v, solverName)
   solverDocString = solverDocString.replace('### Variable-Specific Settings', variableSettingsString + '\n\n')
     
   terminationSettingsString = '### Termination Criteria\n\n'
+  if (not solverConfig["Termination Criteria"]): terminationSettingsString += '*none*'
   for v in solverConfig["Termination Criteria"]: 
     terminationSettingsString += getVariableInfo(v, solverName)
   solverDocString = solverDocString.replace('### Termination Criteria', terminationSettingsString + '\n\n')

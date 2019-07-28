@@ -14,12 +14,6 @@ Latest Release: 28/06/2019 - [Korali v1.0.0](https://github.com/cselab/korali.gi
 ??? abstract "Optimization"
 	Given any objective function $f:\mathbb{R}^N\rightarrow\mathbb{R}$ Korali can find its minima or maxima:
 
-	$$\vartheta^\star = \mathop{\arg\min}\limits_{\vartheta}  f(\vartheta)$$
-??? abstract "Constrained Optimization"
-	Given any objective function $f:\mathbb{R}^N\rightarrow\mathbb{R}$ Korali can find its minima or maxima:
-
-	$$\vartheta^\star = \mathop{\arg\min}\limits_{\vartheta}  f(\vartheta)$$
-
 	Given constraints...
 
 ??? abstract "Sampling"
@@ -40,7 +34,7 @@ Latest Release: 28/06/2019 - [Korali v1.0.0](https://github.com/cselab/korali.gi
 
 	$$\vartheta^{(k)} \sim p(\vartheta | d).$$
 	
-??? abstract "Hierarchical Bayesian"
+??? abstract "Hierarchical Bayesian Modeling"
 	Given a set of data $d$, the output of a computational model $f(x;\vartheta)$, a likelihood function $p(d|\vartheta)$, and a prior probability density $p(\vartheta)$ Korali will build the posterior distribution:
 
 	$$ p(\vartheta | d)  =  \frac{p(d | \vartheta) p(\vartheta)}{p(d)} $$

@@ -1,5 +1,16 @@
 {
  "Name": "Optimization",
- "Alias": "Optimization"
+ "Alias": "Optimization",
  
- }
+ "Problem Configuration": 
+ [
+ ],
+ 
+ "Variables Configuration": 
+ [
+ ],
+ 
+ "Internal Settings": 
+ [
+ ]
+}

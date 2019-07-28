@@ -17,6 +17,14 @@ In an *Optimization* problem, the computational model is assumed to be of the fo
 ## Configuration
 
 ### Problem Settings
+
+*none*
+
+
  
 ### Variable-Specific Settings
+
+*none*
+
+
 

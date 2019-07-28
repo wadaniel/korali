@@ -16,5 +16,12 @@ In a *Sampling* problem, the computational model is assumed to be of the form: $
 ## Configuration
 
 ### Problem Settings
+
+*none*
+
+
  
 ### Variable-Specific Settings
+
+*none*
+

@@ -6,8 +6,16 @@ Hierarchical Bayesian description
 ## Configuration
 
 ### Problem Settings
+
+*none*
+
+
 	
 ### Variable-Specific Settings
+
+*none*
+
+
 
 ??? abstract "Prior Distribution"
 

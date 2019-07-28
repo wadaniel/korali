@@ -86,7 +86,7 @@ def buildSolvers(koraliDir):
     solverCodeString += ' if (' + getVariableName(v) + 'Enabled == 1) _k->_js["Solver"]["Termination Criteria"]["' + v["Name"] + '"] = ' + getVariableName(v) + ';\n'
     solverCodeString += ' _k->_js["Solver"]["Termination Criteria"]["' + v["Name"] + ' Triggered"] = ' + getVariableName(v) + 'Triggered;\n'
   
-  solverCodeString += ' } \n\n'
+  solverCodeString += '} \n\n'
   
   ###### Creating Solver Check Termination routine
   

@@ -5,8 +5,8 @@ from buildAux import *
 
 def buildSolvers(koraliDir):
  # Processing Solvers
- solversDir = koraliDir + '/solvers' 
- 
+ solversDir = koraliDir + '/source/solvers' 
+ print(solversDir)
  # Detecting Solvers
  solverPaths  = [x[0] for x in os.walk(solversDir)][1:]
  for solverPath in solverPaths:

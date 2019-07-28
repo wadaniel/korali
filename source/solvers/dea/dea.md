@@ -2,7 +2,7 @@ This is an implementation of the *Differential Evolution Algorithm* algorithm, a
 
 DEA optimizes a problem by updating a population of candidate solutions through mutation and recombination. The update rules are simple and the objective function must not be differentiable. Our implementation includes various adaption and updating strategies [Brest2006](https://ieeexplore.ieee.org/document/4016057).
 
-** Usage **
+**Usage:**
 
 ```python
   k["Solver"]["Type"] = "DEA"
@@ -15,5 +15,11 @@ DEA optimizes a problem by updating a population of candidate solutions through 
 + The *Upper Bound* needs to be defined for every variable.
 
 ## Configuration
+
+### Solver Settings
+ 
+### Variable-Specific Settings
+
+### Termination Criteria
 
 ## Plotting

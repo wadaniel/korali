@@ -2,7 +2,7 @@ This is an implementation of the *Delayed Rejection Adaptive Metropolis* algorit
 as published in [Haario2006](https://link.springer.com/article/10.1007%2Fs11222-006-9438-0).
 This solver can also be configured to run the standard *Metropolis Hastings* method.
 
-** Usage **
+**Usage:**
 
 ```python
   k["Solver"]["Type"] = "MCMC"
@@ -15,6 +15,12 @@ This solver can also be configured to run the standard *Metropolis Hastings* met
 + The *Standard Deviation* of the proposal distribution for each variable.
 
 ## Configuration
+
+### Solver Settings
+ 
+### Variable-Specific Settings
+
+### Termination Criteria
 
 ## Plotting
 

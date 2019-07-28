@@ -13,7 +13,7 @@ int main(int argc, char* argv[])
  auto k = Korali::Engine();
 
  // Selecting problem type
- k["Problem"]["Type"] = "Constrained Optimization";
+ k["Problem"]["Type"] = "Optimization";
  k["Problem"]["Objective"] = "Maximize";
 
  // Setting up 7 variables

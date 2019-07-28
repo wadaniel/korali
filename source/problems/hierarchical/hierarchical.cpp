@@ -101,7 +101,6 @@ double Korali::Problem::Hierarchical::evaluateFitness(Korali::Model& data)
 {
  // Now re-configuring conditional priors given hyperparameters
  for (size_t i = 0; i < _conditionalPriors.size(); i++)
- {
   for (size_t j = 0; j < _conditionalPriors[i]->_properties.size(); j++)
   {
    std::string propertyName = _conditionalPriors[i]->_properties[j].first;
@@ -109,7 +108,6 @@ double Korali::Problem::Hierarchical::evaluateFitness(Korali::Model& data)
    double propertyValue = data.getVariable(variableId);
    _conditionalPriors[i]->_variable->setProperty(propertyName, propertyValue);
   }
- }
 
  double fitness = 1.0;
 

@@ -11,7 +11,7 @@ k = korali.initialize()
 k.setModel(evaluateModel)
 k.addConstraint( g1 )
 
-k["Problem"]["Type"] = "Constrained Optimization"
+k["Problem"]["Type"] = "Optimization"
 k["Problem"]["Objective"] = "Maximize"
 
 k["Variables"][0]["Name"] = "X";

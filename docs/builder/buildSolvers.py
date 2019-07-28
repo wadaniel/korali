@@ -31,22 +31,21 @@ def buildSolvers(koraliDir):
   
   solverDocString = '# ' + solverConfig["Name"] + '\n\n' + solverDocString 
   
-  solverSettingsString = ''
-  
-  solverSettingsString += '### Solver Settings\n\n'
+  solverSettingsString = '### Solver Settings\n\n'
   for v in solverConfig["Solver Configuration"]:
    solverSettingsString += getVariableInfo(v, solverName)
+  solverDocString = solverDocString.replace('### Solver Settings', solverSettingsString + '\n\n')  
     
-  solverSettingsString += '### Variable-Specific Settings\n\n'
+  variableSettingsString = '### Variable-Specific Settings\n\n'
   for v in solverConfig["Variables Configuration"]: 
-    solverSettingsString += getVariableInfo(v, solverName)
+    variableSettingsString += getVariableInfo(v, solverName)
+  solverDocString = solverDocString.replace('### Variable-Specific Settings', variableSettingsString + '\n\n')
     
-  solverSettingsString += '### Termination Criteria\n\n'
+  terminationSettingsString = '### Termination Criteria\n\n'
   for v in solverConfig["Termination Criteria"]: 
-    solverSettingsString += getVariableInfo(v, solverName)
+    terminationSettingsString += getVariableInfo(v, solverName)
+  solverDocString = solverDocString.replace('### Termination Criteria', terminationSettingsString + '\n\n')
   
-  solverDocString = solverDocString.replace('## Configuration', '## Configuration\n\n' + solverSettingsString + '\n\n') 
-
   mdFileName = koraliDir + '/docs/docs/usage/solvers/' + solverName + '.md'
   print('[Korali] Creating ' + mdFileName + '...')    
   with open(mdFileName, 'w+') as file: file.write(solverDocString)

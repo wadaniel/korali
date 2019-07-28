@@ -6,7 +6,7 @@ TMCMC avoids sampling from difficult target probability densities
 a series of intermediate PDFs that converge to the target PDF.
 This technique is also known as Sampling Importance Resampling in the Bayesian community.
 
-** Usage **
+**Usage:**
 
 ```python
   k["Solver"] = "TMCMC"
@@ -19,6 +19,11 @@ This technique is also known as Sampling Importance Resampling in the Bayesian c
 
 ## Configuration
 
+### Solver Settings
+ 
+### Variable-Specific Settings
+
+### Termination Criteria
 
 ## Plotting
 

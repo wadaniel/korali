@@ -1,3 +1,5 @@
+# Bayesian Inference
+
 In a *Bayesian Inference* problem, the defines and a prior probability density $p(\vartheta)$ for the problem variables, and the solver is applied to the of the posterior distribution:
 
  $$ p(\vartheta | d) = \frac{p(d | \vartheta) p(\vartheta)}{p(d)} $$

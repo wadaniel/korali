@@ -2,7 +2,7 @@ This is the implementation of the *Covariance Matrix Adaptation Evolution Strate
 In an evolution strategy, new candidate solutions are sampled according to a multivariate normal distribution in $\mathbb {R} ^{n}$. Recombination amounts to selecting a new mean value for the distribution. Mutation amounts to adding a random vector, a perturbation with zero mean. Pairwise dependencies between the variables in the distribution are represented by a covariance matrix. The covariance matrix adaptation (CMA) is a method to update the covariance matrix of this distribution.
 CMAES works iteratively, evaluating a number $\lambda$ of samples per generation, and improving the covariance matrix for the samples in the next generation.
 
-** Usage **
+**Usage:**
 ```python
   k["Solver"] = "CMAES"
 ```
@@ -33,6 +33,12 @@ CCMAES is an extension of [CCMAES](/usage/solvers/optimizers/cmaes/) for constra
 + The *Initial Standard Deviation* needs to be defined for every variable.
 
 ## Configuration
+
+### Solver Settings
+ 
+### Variable-Specific Settings
+
+### Termination Criteria
 
 ## Plotting
 

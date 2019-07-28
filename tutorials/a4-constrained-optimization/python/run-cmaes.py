@@ -16,7 +16,7 @@ import korali
 k = korali.initialize()
 
 # Selecting problem type
-k["Problem"]["Type"] = "Constrained Optimization"
+k["Problem"]["Type"] = "Optimization"
 k["Problem"]["Objective"] = "Maximize"
 
 # Creating 7 variables and setting their CCMA-ES bounds

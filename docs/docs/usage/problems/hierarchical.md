@@ -1,3 +1,5 @@
+# Hierarchical Bayesian Modeling
+
 Hierarchical Bayesian description
 
 

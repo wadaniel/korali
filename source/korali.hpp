@@ -24,8 +24,8 @@
 #include "conduits/simple.hpp"
 #include "conduits/external.hpp"
 
-#include "auxiliar.hpp"
 #include "variable.hpp"
+#include "auxiliar.hpp"
 #include "model.hpp"
 
 #ifdef _KORALI_USE_PYTHON

@@ -3,12 +3,13 @@
 import os
 import json
 import sys
-from auxiliar import *
 
 curdir = os.path.abspath(os.path.dirname(os.path.realpath(__file__))) 
 
 sys.path.append('./solvers')
 from buildSolvers import *
+
+from buildVariables import *
 
 sys.path.append('./python/cxx/')
 from buildCXX import *
@@ -27,13 +28,10 @@ buildCXX(curdir)
 buildPlotter(curdir) 
  
 # Processing Solvers
-variableSettingDeclarationsString = buildSolvers(curdir)
+buildSolvers(curdir)
 
-# Saving new variable.hpp file
-with open('./.variable.hpp', 'r') as file: variableHeaderString = file.read()
-variableNewHeaderFile = './variable.hpp'
-newHeaderString = variableHeaderString.replace('public:', 'public: \n' + variableSettingDeclarationsString + '\n')
-with open(variableNewHeaderFile, 'w') as file: file.write(newHeaderString)
+# Processing Variables
+buildVariables(curdir)
 
 # Creating setup.py
 with open('./.setup.py', 'r') as file: setupString = file.read()

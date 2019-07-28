@@ -4,6 +4,11 @@
  
  "Problem Configuration": 
  [
+   {
+    "Name": "Objective",
+    "Type": "std::string",
+    "Description": "Indicates whether Korali will minimize or maximize the function evaluation."
+   }
  ],
  
  "Variables Configuration": 

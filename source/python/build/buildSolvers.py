@@ -99,7 +99,7 @@ def buildSolvers(koraliDir):
     solverCodeString += ' if (' + v["Criteria"] + ')\n'
     solverCodeString += ' {\n'
     solverCodeString += '  ' + getVariableName(v) + 'Triggered = true;\n'
-    solverCodeString += '  koraliLog(KORALI_MINIMAL, "' + solverConfig["Module Alias"] + ' Termination Criteria met: \\"' + v["Name"] + '\\".\\n");\n'
+    solverCodeString += '  koraliLog(KORALI_MINIMAL, "' + solverConfig["Module Alias"] + ' Termination Criteria met: \\"' + v["Name"] + '\\" (%s).\\n", std::to_string(' + getVariableName(v)  +').c_str());\n'
     solverCodeString += '  hasFinished = true;\n'
     solverCodeString += ' }\n\n'
   

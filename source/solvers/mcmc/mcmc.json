@@ -5,11 +5,6 @@
  "Module Configuration": 
  [
    {
-    "Name": "Max Chain Length",
-    "Type": "size_t",
-    "Description": "Maximum number of samples to evaluate per chain per generation."
-   },
-   {
     "Name": "Burn In",
     "Type": "size_t",
     "Default": "0",
@@ -44,14 +39,10 @@
  "Termination Criteria":
  [
    {
-    "Name": "Max Generations",
+    "Name": "Max Chain Length",
     "Type": "size_t",
-    "Description": "Determines how many solver generations to run before stopping execution. Execution can be resumed at a later moment."
-   },
-   {
-    "Name": "Max Model Evaluations",
-    "Type": "size_t",
-    "Description": "Determines how many computational model evaluations to run before stopping execution. Execution can be resumed at a later moment."
+    "Criteria": "_databaseEntryCount >= _maxChainLength",
+    "Description": "Maximum number of samples to evaluate for the MCMC chain."
    }
  ],
  

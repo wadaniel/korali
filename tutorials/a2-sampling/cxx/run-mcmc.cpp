@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
  // Configuring the MCMC sampler parameters
  k["Solver"]["Type"]  = "MCMC";
  k["Solver"]["Burn In"] = 500;
- k["Solver"]["Max Chain Length"] = 5000;
+ k["Solver"]["Termination Criteria"]["Max Chain Length"] = 5000;
 
  // Setting Model
  k.setModel(model);

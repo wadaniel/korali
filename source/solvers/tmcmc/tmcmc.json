@@ -62,13 +62,22 @@
  "Termination Criteria":
  [
    {
+    "Name": "Target Annealing Exponent",
+    "Type": "size_t",
+    "Criteria": "_annealingExponent >= _targetAnnealingExponent",
+    "Default": "1.0",
+    "Description": "Determines the annealing exponent to achieve before termination."
+   },
+   {
     "Name": "Max Generations",
     "Type": "size_t",
+    "Criteria": "_k->_currentGeneration > _maxGenerations",
     "Description": "Determines how many solver generations to run before stopping execution. Execution can be resumed at a later moment."
    },
    {
     "Name": "Max Model Evaluations",
     "Type": "size_t",
+    "Criteria": "_k->_functionEvaluationCount > _maxModelEvaluations",
     "Description": "Determines how many computational model evaluations to run before stopping execution. Execution can be resumed at a later moment."
    }
  ],

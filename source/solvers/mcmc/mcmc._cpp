@@ -57,12 +57,11 @@ void Korali::Solver::MCMC::runGeneration()
 void Korali::Solver::MCMC::initialize()
 {
  // Checking for accepted problem types
- std::string pName = _k->_js["Problem"]["Type"];
  bool acceptableProblem = false;
- if (pName == "Sampling")  acceptableProblem = true;
- if (pName == "Bayesian Inference")  acceptableProblem = true;
- if (pName == "Hierarchical Bayesian")  acceptableProblem = true;
- if (acceptableProblem == false) koraliError("MCMC cannot solve problems of type: '%s'.\n", pName.c_str());
+ if (_k->_problemType == "Sampling")  acceptableProblem = true;
+ if (_k->_problemType == "Bayesian Inference")  acceptableProblem = true;
+ if (_k->_problemType == "Hierarchical Bayesian")  acceptableProblem = true;
+ if (acceptableProblem == false) koraliError("MCMC cannot solve problems of type: '%s'.\n", _k->_problemType.c_str());
 
  // Allocating MCMC memory
  _choleskyCovariance.resize(_k->N*_k->N);
@@ -89,7 +88,7 @@ void Korali::Solver::MCMC::initialize()
  _chainLength = 0;
  _currentRejectionCount = 0;
  _databaseEntryCount = 0;
- _chainLeaderLogLikelihood = -std::numeric_limits<double>::max();
+ _chainLeaderLogLikelihood = std::numeric_limits<double>::lowest();
  _acceptanceRate  = 1.0;
 
  if(_chainCovarianceScaling <= 0.0) koraliError("Chain Covariance Scaling must be larger 0.0 (is %lf).\n", _chainCovarianceScaling);
@@ -263,34 +262,6 @@ void Korali::Solver::MCMC::updateState()
  choleskyDecomp(_chainCovariance, _chainCholeskyCovariance);
 }
 
-bool Korali::Solver::MCMC::checkTermination()
-{
- bool isFinished = false;
- if ( _databaseEntryCount == _maxChainLength)
- {
-   koraliLog(KORALI_MINIMAL, "Chainlength (%zu) reached.\n",  _chainLength);
-   isFinished = true;
- }
-
- if(_maxGenerationsEnabled)
-  if(_k->_currentGeneration > _maxGenerations)
-  {
-   _maxGenerationsTriggered = true;
-   koraliLog( KORALI_MINIMAL, "Max Generations Reached.\n", _maxGenerations);
-   isFinished = true;
-  }
-
- if(_maxModelEvaluationsEnabled)
- if(_k->_functionEvaluationCount > _maxModelEvaluations)
- {
-  _maxModelEvaluationsTriggered = true;
-  koraliLog( KORALI_MINIMAL, "Max Model Evaluations Reached.\n", _maxModelEvaluations);
-  isFinished = true;
- }
-
- return isFinished;
-}
- 
 void Korali::Solver::MCMC::printGeneration()
 {
  koraliLog(KORALI_MINIMAL, "--------------------------------------------------------------------\n");

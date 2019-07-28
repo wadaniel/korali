@@ -54,6 +54,11 @@ class Engine {
  size_t _functionEvaluationCount;
  size_t _runId;
  std::string _runTimestamp;
+ bool _hasComputedGeneration;
+
+ std::string _solverType;
+ std::string _conduitType;
+ std::string _problemType;
 
  bool _isFinished;
 

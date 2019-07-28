@@ -30,15 +30,13 @@ Korali::Solver::TMCMC::~TMCMC()
 void Korali::Solver::TMCMC::initialize()
 {
  // Checking for accepted problem types
- std::string pName = _k->_js["Problem"]["Type"];
  bool acceptableProblem = false;
- if (pName == "Sampling")  acceptableProblem = true;
- if (pName == "Bayesian Inference")  acceptableProblem = true;
- if (pName == "Hierarchical Bayesian")  acceptableProblem = true;
- if (acceptableProblem == false) koraliError("TMCMC cannot solve problems of type: '%s'.\n", pName.c_str());
+ if (_k->_problemType == "Sampling")  acceptableProblem = true;
+ if (_k->_problemType == "Bayesian Inference")  acceptableProblem = true;
+ if (_k->_problemType == "Hierarchical Bayesian")  acceptableProblem = true;
+ if (acceptableProblem == false) koraliError("TMCMC cannot solve problems of type: '%s'.\n", _k->_problemType.c_str());
 
  if(_maxChainLength == 0) koraliError("Max Chain Length must be greater 0.");
-
 
  // Allocating TMCMC memory
  _covarianceMatrix.resize(_k->N*_k->N);
@@ -457,35 +455,6 @@ void Korali::Solver::TMCMC::setBurnIn()
 {
   if (_k->_currentGeneration < _burnInSteps.size()) _currentBurnIn = _burnInSteps[_k->_currentGeneration];
   else _currentBurnIn = _defaultBurnIn;
-}
-
-bool Korali::Solver::TMCMC::checkTermination()
-{
- bool isFinished = false;
-
- if(_annealingExponent >= 1.0)
- {
-  isFinished = true;
-  koraliLog( KORALI_MINIMAL, "Annealing completed (1.0).\n");
- }
-
- if(_maxGenerationsEnabled)
- if(_k->_currentGeneration > _maxGenerations)
- {
-  _maxGenerationsTriggered = true;
-  koraliLog( KORALI_MINIMAL, "Max Generations Reached.\n", _maxGenerations);
-  isFinished = true;
- }
-
- if(_maxModelEvaluationsEnabled)
- if(_k->_functionEvaluationCount > _maxModelEvaluations)
- {
-  _maxModelEvaluationsTriggered = true;
-  koraliLog( KORALI_MINIMAL, "Max Model Evaluations Reached.\n", _maxModelEvaluations);
-  isFinished = true;
- }
-
- return isFinished;
 }
 
 void Korali::Solver::TMCMC::finalize()

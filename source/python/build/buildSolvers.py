@@ -56,11 +56,19 @@ def buildSolvers(koraliDir):
     solverCodeString += consumeValue('_k->_js', solverConfig["Module Alias"], v["Name"], getVariableName(v), getVariableType(v), 'Korali Skip Default', [ 'Solver', 'Internal' ])
   
   for v in solverConfig["Termination Criteria"]:
-    solverCodeString += '\n ' + getVariableName(v) + 'Enabled = 0;'
-    terminationString = consumeValue('_k->_js', solverConfig["Module Alias"], v["Name"], getVariableName(v), getVariableType(v), 'Korali Skip Default', [ 'Solver', 'Termination Criteria' ]) 
-    solverCodeString += terminationString.replace(getVariableName(v) + ' = ', getVariableName(v) + 'Enabled = 1;\n  ' + getVariableName(v) + ' = ')
-    solverCodeString += consumeValue('_k->_js', solverConfig["Module Alias"], v["Name"] + ' Triggered', getVariableName(v) + 'Triggered', 'int', '0', [ 'Solver', 'Termination Criteria' ])
+   terminationString = ''
+   
+   if (not getVariableDefault(v)): 
+    solverCodeString += '\n ' + getVariableName(v) + 'Enabled = false;'
+    terminationString = consumeValue('_k->_js', solverConfig["Module Alias"], v["Name"], getVariableName(v), getVariableType(v), 'Korali Skip Default', [ 'Solver', 'Termination Criteria' ])
+    terminationString = terminationString.replace(getVariableName(v) + ' = ', getVariableName(v) + 'Enabled = true;\n  ' + getVariableName(v) + ' = ') 
+   else:
+    solverCodeString += '\n ' + getVariableName(v) + 'Enabled = true;'
+    terminationString = consumeValue('_k->_js', solverConfig["Module Alias"], v["Name"], getVariableName(v), getVariableType(v), getVariableDefault(v), [ 'Solver', 'Termination Criteria' ])
   
+   solverCodeString += terminationString
+   solverCodeString += consumeValue('_k->_js', solverConfig["Module Alias"], v["Name"] + ' Triggered', getVariableName(v) + 'Triggered', 'int', 'false', [ 'Solver', 'Termination Criteria' ])  
+ 
   solverCodeString += '} \n\n'
   
   ###### Creating Solver Get Configuration routine
@@ -79,6 +87,24 @@ def buildSolvers(koraliDir):
     solverCodeString += ' _k->_js["Solver"]["Termination Criteria"]["' + v["Name"] + ' Triggered"] = ' + getVariableName(v) + 'Triggered;\n'
   
   solverCodeString += ' } \n\n'
+  
+  ###### Creating Solver Check Termination routine
+  
+  solverCodeString += 'bool Korali::Solver::' + solverConfig["Module Alias"]  + '::checkTermination()\n'
+  solverCodeString += '{\n'
+  solverCodeString += ' bool hasFinished = false;\n\n'
+ 
+  for v in solverConfig["Termination Criteria"]: 
+    solverCodeString += ' if (' + getVariableName(v) + 'Enabled == true)\n'
+    solverCodeString += ' if (' + v["Criteria"] + ')\n'
+    solverCodeString += ' {\n'
+    solverCodeString += '  ' + getVariableName(v) + 'Triggered = true;\n'
+    solverCodeString += '  koraliLog(KORALI_MINIMAL, "' + solverConfig["Module Alias"] + ' Termination Criteria met: \\"' + v["Name"] + '\\".\\n");\n'
+    solverCodeString += '  hasFinished = true;\n'
+    solverCodeString += ' }\n\n'
+  
+  solverCodeString += ' return hasFinished;\n'
+  solverCodeString += '}'
   
   ###### Creating code file
   with open(solverPath + '/' + solverName + '._cpp', 'r') as file: solverBaseCodeString = file.read()

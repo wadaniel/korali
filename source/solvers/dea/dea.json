@@ -52,36 +52,43 @@
    {
     "Name": "Max Generations",
     "Type": "size_t",
+    "Criteria": "_k->_currentGeneration > _maxGenerations",
     "Description": "Determines how many solver generations to run before stopping execution. Execution can be resumed at a later moment."
    },
    {
     "Name": "Max Model Evaluations",
     "Type": "size_t",
+    "Criteria": "_k->_functionEvaluationCount > _maxModelEvaluations",
     "Description": "Determines how many computational model evaluations to run before stopping execution. Execution can be resumed at a later moment."
    },
    {
     "Name": "Max Resamplings",
     "Type": "double",
+    "Criteria": "_infeasibleSampleCountChange > _maxResamplings",
     "Description": "Max number of mutations per sample per generation if infeasible (only relevant if Fix Infeasible is set False)."
    },
    {
     "Name": "Min Fitness",
     "Type": "double",
+    "Criteria": "_bestEverValue < _minFitness",
     "Description": "Specifies the target fitness to stop minimization."
    },
    {
     "Name": "Max Fitness",
     "Type": "double",
+    "Criteria": "_bestEverValue > _maxFitness",
     "Description": "Specifies the target fitness to stop maximization."
    },
    {
     "Name": "Min Fitness Diff Threshold",
     "Type": "double",
+    "Criteria": "_k->_hasComputedGeneration && (fabs(_currentBestValue - _previousBestValue) < _minFitnessDiffThreshold)",
     "Description": "Specifies the minimum fitness differential between two consecutive generations before stopping execution."
    },
    {
     "Name": "Min Step Size",
     "Type": "double",
+    "Criteria": "_currentMinimumStepSize < _minStepSize",
     "Description": "Specifies the minimal step size of the sample mean from one gneration to another."
    }
  ],
@@ -185,7 +192,17 @@
    {
     "Name": "Infeasible Sample Count",
     "Type": "size_t",
-    "Description": "Keeps count of the number of function evaluations so far."
+    "Description": "Keeps count of infeasible sample re-evaluations so far."
+   },
+   {
+    "Name": "Infeasible Sample Count Change",
+    "Type": "size_t",
+    "Description": "Number of resamples in the current generation."
+   },
+   {
+    "Name": "Current Minimum Step Size",
+    "Type": "double",
+    "Description": "Minimum step size of any variable in the current generation."
    }
  ]
 }

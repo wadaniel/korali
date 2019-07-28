@@ -29,12 +29,11 @@ CMAES::~CMAES()
 void CMAES::initialize()
 {
  // Checking for accepted problem types
- std::string pName = _k->_js["Problem"]["Type"];
  bool acceptableProblem = false;
- if (pName == "Optimization")  acceptableProblem = true;
- if (pName == "Constrained Optimization")  acceptableProblem = true;
- if (pName == "Bayesian Inference")  acceptableProblem = true;
- if (acceptableProblem == false) koraliError("CMAES cannot solve problems of type: '%s'.\n", pName.c_str());
+ if (_k->_problemType == "Optimization")  acceptableProblem = true;
+ if (_k->_problemType == "Constrained Optimization")  acceptableProblem = true;
+ if (_k->_problemType == "Bayesian Inference")  acceptableProblem = true;
+ if (acceptableProblem == false) koraliError("CMAES cannot solve problems of type: '%s'.\n", _k->_problemType.c_str());
 
  size_t s_max  = std::max(_sampleCount,  _viabilitySampleCount);
  size_t mu_max = std::max(_muValue, _viabilityMu);
@@ -146,7 +145,7 @@ void CMAES::initialize()
  _infeasibleSampleCount = 0;
  _resampledParameterCount       = 0;
 
- _bestEverValue = -std::numeric_limits<double>::max();
+ _bestEverValue = std::numeric_limits<double>::lowest();
  _conjugateEvolutionPathL2Norm = 0.0;
 
  /* check variable defaults */
@@ -197,6 +196,10 @@ void CMAES::initialize()
    _uniformGenerator->setDistribution(jsUniform);
  }
 
+ _currentMinStandardDeviation = std::numeric_limits<double>::max();
+ _currentMaxStandardDeviation = std::numeric_limits<double>::lowest();
+ _currentMinStandardDeviationStep = std::numeric_limits<double>::max();
+   
 }
 
 
@@ -333,7 +336,7 @@ void CMAES::checkMeanAndSetRegime()
   _currentSampleCount = _sampleCount;
   _currentSampleMu = _muValue;
 
-  _bestEverValue = -std::numeric_limits<double>::max();
+  _bestEverValue = std::numeric_limits<double>::lowest();
   initMuWeights(_currentSampleMu);
   initCovariance();
 }
@@ -581,6 +584,18 @@ void CMAES::updateDistribution()
  /* numerical error management */
  numericalErrorTreatment();
 
+ _currentMinStandardDeviation = std::numeric_limits<double>::max();
+ _currentMaxStandardDeviation = std::numeric_limits<double>::lowest();
+ _currentMinStandardDeviationStep = std::numeric_limits<double>::max();
+
+ // Calculating current Minimum and Maximum STD Devs
+ for(size_t i = 0; i <_k->N; ++i )
+ {
+  _currentMinStandardDeviation = std::min(_currentMinStandardDeviation, _sigma * sqrt(_covarianceMatrix[i*_k->N+i]));
+  _currentMaxStandardDeviation = std::max(_currentMaxStandardDeviation, _sigma * sqrt(_covarianceMatrix[i*_k->N+i]));
+  _currentMinStandardDeviationStep = std::min(_currentMinStandardDeviationStep, _sigma*_axisLengths[i]);
+ }
+ 
 }
 
 void CMAES::adaptC(int hsig)
@@ -762,116 +777,6 @@ void CMAES::updateDiscreteMutationMatrix()
   std::fill( std::begin(_discreteMutations), std::end(_discreteMutations), 0.0);
 
 }
-
-
-bool CMAES::checkTermination()
-{
- 
- bool isFinished = false;
- if ( _minFitnessEnabled && (_isViabilityRegime == false) && (_k->_currentGeneration > 1) && (_bestEverValue >= _minFitness) )
- {
-  isFinished = true;
-  koraliLog(KORALI_MINIMAL, "Min fitness value (%+6.3e) > (%+6.3e).\n",  _bestEverValue, _minFitness);
- }
- 
- if ( _maxFitnessEnabled && (_isViabilityRegime == false) && (_k->_currentGeneration > 1) && (_bestEverValue >= _maxFitness) )
- {
-  isFinished = true;
-  koraliLog(KORALI_MINIMAL, "Max fitness value (%+6.3e) > (%+6.3e)\n",  _bestEverValue, _maxFitness);
- }
-
- double range = fabs(_currentBestValue - _previousBestValue);
- if ( _minFitnessDiffThresholdEnabled && (_k->_currentGeneration > 1) && (range <= _minFitnessDiffThreshold) )
- {
-  isFinished = true;
-  koraliLog(KORALI_MINIMAL, "Function value differences (%+6.3e) < (%+6.3e)\n",  range, _minFitnessDiffThreshold);
- }
-
- size_t idx;
- 
- if ( _minStandardDeviationEnabled )
- {
-  size_t cTemp = 0;
-  for(idx = 0; idx <_k->N; ++idx )
-   cTemp += (_sigma * sqrt(_covarianceMatrix[idx*_k->N+idx]) < _minStandardDeviation * _k->_variables[idx]->_initialStandardDeviation) ? 1 : 0;
-  
-  if (cTemp == _k->N) {
-   isFinished = true;
-   koraliLog(KORALI_MINIMAL, "Object variable changes < %+6.3e\n", _minStandardDeviation * _k->_variables[idx]->_initialStandardDeviation);
-  }
-
-  for(idx = 0; idx <_k->N; ++idx )
-   if ( _maxStandardDeviationEnabled && (_sigma * sqrt(_covarianceMatrix[idx*_k->N+idx]) > _maxStandardDeviation * _k->_variables[idx]->_initialStandardDeviation) )
-   {
-    isFinished = true;
-    koraliLog(KORALI_MINIMAL, "Standard deviation increased by more than %7.2e, larger initial standard deviation recommended \n", 
-            _maxStandardDeviation * _k->_variables[idx]->_initialStandardDeviation);
-    break;
-   }
- }
-
- if ( _maxConditionCovarianceMatrixEnabled && (_maximumCovarianceEigenvalue >= _minimumCovarianceEigenvalue * _maxConditionCovarianceMatrix) )
- {
-   isFinished = true;
-   koraliLog(KORALI_MINIMAL, "Maximal condition number %7.2e reached. _maximumCovarianceEigenvalue=%7.2e, minEig=%7.2e, _maximumDiagonalCovarianceMatrixElement=%7.2e, _minimumDiagonalCovarianceMatrixElement=%7.2e\n",
-                                _maxConditionCovarianceMatrix, _maximumCovarianceEigenvalue, _minimumCovarianceEigenvalue, _maximumDiagonalCovarianceMatrixElement, _minimumDiagonalCovarianceMatrixElement);
- }
-
- double fac;
- size_t iAchse = 0;
- size_t iKoo = 0;
- /* Component of _currentMean is not changed anymore */
- if( _minStandardDeviationStepFactorEnabled)
- if (!_isDiagonal )
- {
-    for (iAchse = 0; iAchse < _k->N; ++iAchse)
-    {
-    fac = _minStandardDeviationStepFactor * _sigma * _axisLengths[iAchse];
-    for (iKoo = 0; iKoo < _k->N; ++iKoo){
-      if (_currentMean[iKoo] != _currentMean[iKoo] + fac * _covarianceEigenvectorMatrix[iKoo*_k->N+iAchse])
-      break;
-    }
-    if (iKoo == _k->N)
-    {
-      isFinished = true;
-      koraliLog(KORALI_MINIMAL, "Standard deviation %f*%7.2e in principal axis %ld without effect.\n", _minStandardDeviationStepFactor, _sigma*_axisLengths[iAchse], iAchse);
-      break;
-    }
-  }
- }
-
- /* Component of _currentMean is not changed anymore */
- if( _minStandardDeviationStepFactorEnabled )
- for (iKoo = 0; iKoo < _k->N; ++iKoo)
- {
-  if (_currentMean[iKoo] == _currentMean[iKoo] + _minStandardDeviationStepFactor*_sigma*sqrt(_covarianceMatrix[iKoo*_k->N+iKoo]) )
-  {
-   isFinished = true;
-   koraliLog(KORALI_MINIMAL, "Standard deviation %f*%7.2e in coordinate %ld without effect.\n", _minStandardDeviationStepFactor, _sigma*sqrt(_covarianceMatrix[iKoo*_k->N+iKoo]), iKoo);
-   break;
-  }
-
- }
-
- if(_maxGenerationsEnabled)
- if(_k->_currentGeneration > _maxGenerations)
- {
-  _maxGenerationsTriggered = true;
-  koraliLog( KORALI_MINIMAL, "Max Generations Reached.\n", _maxGenerations);
-  isFinished = true;
- }
-
- if(_maxModelEvaluationsEnabled)
- if(_k->_functionEvaluationCount > _maxModelEvaluations)
- {
-  _maxModelEvaluationsTriggered = true;
-  koraliLog( KORALI_MINIMAL, "Max Model Evaluations Reached.\n", _maxModelEvaluations);
-  isFinished = true;
- }
-
- return isFinished;
-}
-
 
 void CMAES::updateEigensystem(std::vector<double>& M)
 {

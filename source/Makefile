@@ -8,7 +8,7 @@ LDFLAGS += $(PYBIND11LIBS)
 
 .PHONY: clean all
 
-all: build libkorali.so libkorali.a
+all: libkorali.so libkorali.a
 
 build:
 	python3 python/build/buildKorali.py

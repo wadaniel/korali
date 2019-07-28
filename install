@@ -298,8 +298,15 @@ echo PYBIND11LIBS=$PYBIND11LIBS >> source/Makefile.conf
 
 ######## Compiling Korali C++ Engine #########
 
+logEcho "[Korali] Building Korali Source..."
+make -C source build >> $logFile 2>&1
+if [ $? -ne 0 ]; then
+  logEcho "[Korali] Error building Korali."
+  exitWithError
+fi
+
 logEcho "[Korali] Compiling Korali..."
-make -j$NJOBS -C source >> $logFile 2>&1
+make -j$NJOBS -C source all >> $logFile 2>&1
 if [ $? -ne 0 ]; then
   logEcho "[Korali] Error compiling Korali."
   exitWithError

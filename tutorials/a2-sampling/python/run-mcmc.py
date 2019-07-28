@@ -25,7 +25,7 @@ k["Variables"][0]["Initial Standard Deviation"] = 1.0
 # Configuring the MCMC sampler parameters
 k["Solver"]["Type"]  = "MCMC" 
 k["Solver"]["Burn In"] = 500
-k["Solver"]["Max Chain Length"] = 5000
+k["Solver"]["Termination Criteria"]["Max Chain Length"] = 5000
 
 # Setting Model
 k.setModel(model)

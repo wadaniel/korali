@@ -20,6 +20,7 @@ Korali::Engine::Engine()
  _solver = nullptr;
  _problem = nullptr;
  _conduit = nullptr;
+ _hasComputedGeneration = false;
 }
 
 Korali::Engine::~Engine()
@@ -38,6 +39,7 @@ void Korali::Engine::getConfiguration()
 
  _js["General"]["Random Seed"]   = _seed;
  _js["General"]["Run ID"] = _runId;
+ _js["General"]["Has Computed Generation"] = _hasComputedGeneration;
 
  time_t rawtime; time (&rawtime);
  std::string curTime(ctime(&rawtime));
@@ -56,6 +58,10 @@ void Korali::Engine::getConfiguration()
  _js["General"]["Function Evaluation Count"] = _functionEvaluationCount;
  _js["General"]["Is Finished"] = _isFinished;
 
+ _js["Solver"]["Type"] = _solverType;
+ _js["Conduit"]["Type"] = _conduitType;
+ _js["Problem"]["Type"] = _problemType;
+
  if (_problem != nullptr) _problem->getConfiguration();
  if (_conduit != nullptr) _conduit->getConfiguration();
  if (_conduit != nullptr) _solver->getConfiguration();
@@ -68,15 +74,11 @@ void Korali::Engine::setConfiguration()
  auto js = _js;
 
  // Configure Conduit
- std::string conduitType =  consume(_js, { "Conduit", "Type" }, KORALI_STRING, "Simple");
- if (conduitType == "Simple") _conduit = std::make_shared<Korali::Conduit::Simple>();
- if (conduitType == "External") _conduit = std::make_shared<Korali::Conduit::External>();
- if (conduitType == "MPI") _conduit = std::make_shared<Korali::Conduit::MPI>();
- if (_conduit == nullptr)
- {
-  _conduit = std::make_shared<Korali::Conduit::Simple>();
-  koraliError("Incorrect or undefined Conduit '%s'.\n", conduitType.c_str());
- }
+ _conduitType =  consume(_js, { "Conduit", "Type" }, KORALI_STRING, "Simple");
+ if (_conduitType == "Simple") _conduit = std::make_shared<Korali::Conduit::Simple>();
+ if (_conduitType == "External") _conduit = std::make_shared<Korali::Conduit::External>();
+ if (_conduitType == "MPI") _conduit = std::make_shared<Korali::Conduit::MPI>();
+ if (_conduit == nullptr) {  fprintf(stderr, "Incorrect or undefined Conduit '%s'.\n", _conduitType.c_str()); exit(-1); }
 
  // Configure Korali Engine
  _variables.clear();
@@ -108,13 +110,13 @@ void Korali::Engine::setConfiguration()
  _result_dir = consume(_js, { "General", "Results Output", "Path" }, KORALI_STRING, "_korali_result");
 
  // Configure Problem
- std::string pName = consume(_js, { "Problem", "Type" }, KORALI_STRING);
- if (pName == "Optimization")  _problem = std::make_shared<Korali::Problem::Optimization>();
- if (pName == "Constrained Optimization")  _problem = std::make_shared<Korali::Problem::Constrained>();
- if (pName == "Sampling") _problem = std::make_shared<Korali::Problem::Sampling>();
- if (pName == "Bayesian Inference") _problem = std::make_shared<Korali::Problem::Bayesian>();
- if (pName == "Hierarchical Bayesian") _problem = std::make_shared<Korali::Problem::Hierarchical>();
- if (_problem == nullptr) koraliError("Incorrect or undefined Problem '%s'.\n", pName.c_str());
+ _problemType = consume(_js, { "Problem", "Type" }, KORALI_STRING);
+ if (_problemType == "Optimization")  _problem = std::make_shared<Korali::Problem::Optimization>();
+ if (_problemType == "Constrained Optimization")  _problem = std::make_shared<Korali::Problem::Constrained>();
+ if (_problemType == "Sampling") _problem = std::make_shared<Korali::Problem::Sampling>();
+ if (_problemType == "Bayesian Inference") _problem = std::make_shared<Korali::Problem::Bayesian>();
+ if (_problemType == "Hierarchical Bayesian") _problem = std::make_shared<Korali::Problem::Hierarchical>();
+ if (_problem == nullptr) koraliError("Incorrect or undefined Problem '%s'.\n", _problemType.c_str());
 
  // Create Variables
 
@@ -130,12 +132,12 @@ void Korali::Engine::setConfiguration()
  if (N == 0) koraliError("No variables have been defined.\n");
 
  // Configure Solver
- std::string solverName = consume(_js, { "Solver", "Type" }, KORALI_STRING);
- if (solverName == "CMAES") _solver = std::make_shared<Korali::Solver::CMAES>();
- if (solverName == "DEA")    _solver = std::make_shared<Korali::Solver::DEA>();
- if (solverName == "MCMC")   _solver = std::make_shared<Korali::Solver::MCMC>();
- if (solverName == "TMCMC")  _solver = std::make_shared<Korali::Solver::TMCMC>();
- if (_solver == nullptr) koraliError("Incorrect or undefined Solver '%s'.\n", solverName.c_str());
+ _solverType = consume(_js, { "Solver", "Type" }, KORALI_STRING);
+ if (_solverType == "CMAES") _solver = std::make_shared<Korali::Solver::CMAES>();
+ if (_solverType == "DEA")    _solver = std::make_shared<Korali::Solver::DEA>();
+ if (_solverType == "MCMC")   _solver = std::make_shared<Korali::Solver::MCMC>();
+ if (_solverType == "TMCMC")  _solver = std::make_shared<Korali::Solver::TMCMC>();
+ if (_solver == nullptr) koraliError("Incorrect or undefined Solver '%s'.\n", _solverType.c_str());
 
  // Setting module configuration
  _problem->setConfiguration();
@@ -144,6 +146,7 @@ void Korali::Engine::setConfiguration()
 
  // Korali-specific configuration
 
+ _hasComputedGeneration = consume(_js, { "General", "Has Computed Generation" }, KORALI_BOOLEAN, "false");
  _currentGeneration = consume(_js, { "General", "Current Generation" }, KORALI_NUMBER, "0");
  _consoleOutputFrequency = consume(_js, { "General", "Console Output", "Frequency" }, KORALI_NUMBER, std::to_string(_consoleOutputFrequency));
  _resultsOutputFrequency = consume(_js, { "General", "Results Output", "Frequency" }, KORALI_NUMBER, std::to_string(_consoleOutputFrequency));
@@ -202,6 +205,7 @@ void Korali::Engine::start(bool isDryRun)
 
    _currentGeneration++;
    _solver->runGeneration();
+   _hasComputedGeneration = true;
 
    auto t1 = std::chrono::system_clock::now();
 

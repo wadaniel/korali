@@ -9,11 +9,10 @@
 #include "mpi.h"
 #endif
 
-#include "problems/optimization.hpp"
-#include "problems/sampling.hpp"
-#include "problems/bayesian.hpp"
-#include "problems/hierarchical.hpp"
-#include "problems/constrained.hpp"
+#include "problems/optimization/optimization.hpp"
+#include "problems/sampling/sampling.hpp"
+#include "problems/bayesian/bayesian.hpp"
+#include "problems/hierarchical/hierarchical.hpp"
 
 #include "solvers/cmaes/cmaes.hpp"
 #include "solvers/dea/dea.hpp"

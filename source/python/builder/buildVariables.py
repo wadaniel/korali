@@ -37,14 +37,14 @@ def buildVariables(koraliDir):
     
   # Creating set variable configuration
   
-  variableSetSolverSettingString += ' if (isDefined(_k->_js, { "Solver", "Type" })) if (_k->_js["Solver"]["Type"] == "' + solverConfig["Module Alias"] + '")\n {\n'
+  variableSetSolverSettingString += ' if (isDefined(_k->_js, { "Solver", "Type" })) if (_k->_js["Solver"]["Type"] == "' + solverConfig["Alias"] + '")\n {\n'
   for v in solverConfig["Variables Configuration"]: 
-    variableSetSolverSettingString += consumeValue('js', solverConfig["Module Alias"], v["Name"], getVariableName(v), getVariableType(v), getVariableDefault(v), [  ])
+    variableSetSolverSettingString += consumeValue('js', solverConfig["Alias"], v["Name"], getVariableName(v), getVariableType(v), getVariableDefault(v), [  ])
   variableSetSolverSettingString += ' }\n'
   
   # Creating get variable configuration
   
-  variableGetSolverSettingString += ' if (isDefined(_k->_js, { "Solver", "Type" })) if (_k->_js["Solver"]["Type"] == "' + solverConfig["Module Alias"] + '")\n {\n'
+  variableGetSolverSettingString += ' if (isDefined(_k->_js, { "Solver", "Type" })) if (_k->_js["Solver"]["Type"] == "' + solverConfig["Alias"] + '")\n {\n'
   for v in solverConfig["Variables Configuration"]: 
     variableGetSolverSettingString += '  js["' + v["Name"] + '"] = ' + getVariableName(v) + ';\n'
   variableGetSolverSettingString += ' }\n\n'

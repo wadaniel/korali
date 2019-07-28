@@ -112,7 +112,6 @@ void Korali::Engine::setConfiguration()
  // Configure Problem
  _problemType = consume(_js, { "Problem", "Type" }, KORALI_STRING);
  if (_problemType == "Optimization")  _problem = std::make_shared<Korali::Problem::Optimization>();
- if (_problemType == "Constrained Optimization")  _problem = std::make_shared<Korali::Problem::Constrained>();
  if (_problemType == "Sampling") _problem = std::make_shared<Korali::Problem::Sampling>();
  if (_problemType == "Bayesian Inference") _problem = std::make_shared<Korali::Problem::Bayesian>();
  if (_problemType == "Hierarchical Bayesian") _problem = std::make_shared<Korali::Problem::Hierarchical>();

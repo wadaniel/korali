@@ -5,12 +5,12 @@ from buildAux import *
 
 def buildSolvers(koraliDir):
  # Processing Solvers
- curdir = koraliDir + '/solvers' 
+ solversDir = koraliDir + '/solvers' 
  
  # Detecting Solvers
- solverPaths  = [x[0] for x in os.walk(curdir)][1:]
+ solverPaths  = [x[0] for x in os.walk(solversDir)][1:]
  for solverPath in solverPaths:
-  solverName = solverPath.replace(curdir + '/', '')
+  solverName = solverPath.replace(solversDir + '/', '')
   
   # Loading JSON Configuration
   solverJsonFile = solverPath + '/' + solverName + '.json'
@@ -41,4 +41,4 @@ def buildSolvers(koraliDir):
   
   solverDocString = solverDocString.replace('## Configuration', '## Configuration\n\n' + solverSettingsString + '\n\n') 
     
-  with open('../docs/usage/solvers/' + solverName + '.md', 'w+') as file: file.write(solverDocString)
+  with open(koraliDir + '/docs/docs/usage/solvers/' + solverName + '.md', 'w+') as file: file.write(solverDocString)

@@ -17,6 +17,9 @@ This technique is also known as Sampling Importance Resampling in the Bayesian c
 + The *Population Size* used at every generation needs to be defined.
 + The *Problem* needs to be of type Bayesian.
 
+## Configuration
+
+
 ## Plotting
 
 Here we explain technical details of the **TMCMC** result plot.

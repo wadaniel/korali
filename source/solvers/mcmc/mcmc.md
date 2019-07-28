@@ -14,8 +14,10 @@ This solver can also be configured to run the standard *Metropolis Hastings* met
 + The *Initial Mean* of the proposal distribution for each variable.
 + The *Standard Deviation* of the proposal distribution for each variable.
 
+## Configuration
 
-## Plotting:
+## Plotting
+
 Here we explain technical details of the **MCMC** result plot.
 
 The `python3 -m korali.plotter` command plots the distribution of the samples at every

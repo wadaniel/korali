@@ -1,6 +1,10 @@
 #ifndef _KORALI_CONDUIT_MPI_HPP_
 #define _KORALI_CONDUIT_MPI_HPP_
 
+#ifdef _KORALI_USE_MPI
+#include "mpi.h"
+#endif
+
 #include "conduits/base.hpp"
 #include <queue>
 #include <vector>

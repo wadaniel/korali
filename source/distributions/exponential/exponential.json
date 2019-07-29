@@ -1,17 +1,17 @@
 {
- "Name": "Cauchy Distribution",
- "Alias": "Cauchy",
- "Class": "Cauchy",
+ "Name": "Exponential Distribution",
+ "Alias": "Exponential",
+ "Class": "Exponential",
  
  "Distribution Configuration": 
  [
    {
     "Name": [ "Location" ],
-    "Description": "Specifies the location of the peak of the distribution."
+    "Description": ""
    },
    {
-    "Name": [ "Scale" ],
-    "Description": "Specifies the half-width at half-maximum (HWHM)"
+    "Name": [ "Mean" ],
+    "Description": ""
    }
  ]
  

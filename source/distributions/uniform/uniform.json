@@ -1,17 +1,17 @@
 {
- "Name": "Cauchy Distribution",
- "Alias": "Cauchy",
- "Class": "Cauchy",
+ "Name": "Uniform Distribution",
+ "Alias": "Uniform",
+ "Class": "Uniform",
  
  "Distribution Configuration": 
  [
    {
-    "Name": [ "Location" ],
-    "Description": "Specifies the location of the peak of the distribution."
+    "Name": [ "Minimum" ],
+    "Description": ""
    },
    {
-    "Name": [ "Scale" ],
-    "Description": "Specifies the half-width at half-maximum (HWHM)"
+    "Name": [ "Maximum" ],
+    "Description": ""
    }
  ]
  

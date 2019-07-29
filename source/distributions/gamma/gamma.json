@@ -1,17 +1,17 @@
 {
- "Name": "Cauchy Distribution",
- "Alias": "Cauchy",
- "Class": "Cauchy",
+ "Name": "Gamma Distribution",
+ "Alias": "Gamma",
+ "Class": "Gamma",
  
  "Distribution Configuration": 
  [
    {
-    "Name": [ "Location" ],
-    "Description": "Specifies the location of the peak of the distribution."
+    "Name": [ "Shape" ],
+    "Description": ""
    },
    {
     "Name": [ "Scale" ],
-    "Description": "Specifies the half-width at half-maximum (HWHM)"
+    "Description": ""
    }
  ]
  

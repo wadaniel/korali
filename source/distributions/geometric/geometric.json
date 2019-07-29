@@ -1,17 +1,13 @@
 {
- "Name": "Cauchy Distribution",
- "Alias": "Cauchy",
- "Class": "Cauchy",
+ "Name": "Geometric Distribution",
+ "Alias": "Geometric",
+ "Class": "Geometric",
  
  "Distribution Configuration": 
  [
    {
-    "Name": [ "Location" ],
-    "Description": "Specifies the location of the peak of the distribution."
-   },
-   {
-    "Name": [ "Scale" ],
-    "Description": "Specifies the half-width at half-maximum (HWHM)"
+    "Name": [ "Success Probability" ],
+    "Description": ""
    }
  ]
  

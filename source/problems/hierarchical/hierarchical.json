@@ -14,6 +14,11 @@
     "Name": [ "Sub Problems" ],
     "Type": "std::vector<std::string>",
     "Description": "Provides results from previous Korali executions."
+   },
+   {
+    "Name": [ "Conditional Priors" ],
+    "Type": "std::vector<Korali::Distribution>",
+    "Description": "Eh..."
    }
  ],
  

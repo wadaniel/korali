@@ -4,9 +4,13 @@
 #include <vector>
 #include <functional>
 
-#ifdef _KORALI_USE_MPI
-#include "mpi.h"
-#endif
+#include "distributions/cauchy/cauchy.hpp"
+#include "distributions/exponential/exponential.hpp"
+#include "distributions/gamma/gamma.hpp"
+#include "distributions/gaussian/gaussian.hpp"
+#include "distributions/geometric/geometric.hpp"
+#include "distributions/laplace/laplace.hpp"
+#include "distributions/uniform/uniform.hpp"
 
 #include "problems/optimization/optimization.hpp"
 #include "problems/sampling/sampling.hpp"

@@ -64,12 +64,12 @@
  "Internal Settings": 
  [
    {
-    "Name": "Cholesky Covariance",
+    "Name": "Cholesky Decomposition Covariance",
     "Type": "std::vector<double>",
     "Description": "Cholesky Decomposition of Covariance for sampling (using a lower triangular matrix, with rest zeros)."
    },
    {
-    "Name": "Chain Cholesky Covariance",
+    "Name": "Cholesky Decomposition Chain Covariance",
     "Type": "std::vector<double>",
     "Description": "Chain Cholesky Decomposition of Covariance for sampling (using a lower triangular matrix, with rest zeros)."
    },

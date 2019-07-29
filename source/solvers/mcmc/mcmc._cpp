@@ -64,8 +64,8 @@ void Korali::Solver::MCMC::initialize()
  if (acceptableProblem == false) koraliError("MCMC cannot solve problems of type: '%s'.\n", _k->_problemType.c_str());
 
  // Allocating MCMC memory
- _choleskyCovariance.resize(_k->N*_k->N);
- std::fill(std::begin(_choleskyCovariance), std::end(_choleskyCovariance), 0.0);
+ _choleskyDecompositionCovariance.resize(_k->N*_k->N);
+ std::fill(std::begin(_choleskyDecompositionCovariance), std::end(_choleskyDecompositionCovariance), 0.0);
  _chainLeaderParameters.resize(_k->N);
  _chainCandidateParameters.resize(_k->N*_rejectionLevels);
  _chainCandidatesLogPriors.resize(_rejectionLevels);
@@ -76,11 +76,11 @@ void Korali::Solver::MCMC::initialize()
  _chainMean.resize(_k->N);
  _chainCovariancePlaceholder.resize(_k->N*_k->N);
  _chainCovariance.resize(_k->N*_k->N);
- _chainCholeskyCovariance.resize(_k->N*_k->N);
- std::fill(std::begin(_chainCholeskyCovariance), std::end(_chainCholeskyCovariance), 0.0);
+ _choleskyDecompositionChainCovariance.resize(_k->N*_k->N);
+ std::fill(std::begin(_choleskyDecompositionChainCovariance), std::end(_choleskyDecompositionChainCovariance), 0.0);
 
  for(size_t i = 0; i < _k->N; i++) _chainLeaderParameters[i]  = _k->_variables[i]->_initialMean;
- for(size_t i = 0; i < _k->N; i++) _choleskyCovariance[i*_k->N+i] = _k->_variables[i]->_initialStandardDeviation;
+ for(size_t i = 0; i < _k->N; i++) _choleskyDecompositionCovariance[i*_k->N+i] = _k->_variables[i]->_initialStandardDeviation;
 
  // Init Generation
  _acceptanceCount = 0;
@@ -216,9 +216,9 @@ void Korali::Solver::MCMC::sampleCandidate(size_t sampleIdx)
  for (size_t d = 0; d < _k->N; ++d) _chainCandidateParameters[sampleIdx*_k->N+d] = 0.0;
 
  if ( (_useAdaptiveSampling == false) || (_databaseEntryCount <= _nonAdaptionPeriod + _burnIn))
-     for (size_t d = 0; d < _k->N; ++d) for (size_t e = 0; e < _k->N; ++e) _chainCandidateParameters[sampleIdx*_k->N+d] += _choleskyCovariance[d*_k->N+e] * _gaussianGenerator->getRandomNumber();
+     for (size_t d = 0; d < _k->N; ++d) for (size_t e = 0; e < _k->N; ++e) _chainCandidateParameters[sampleIdx*_k->N+d] += _choleskyDecompositionCovariance[d*_k->N+e] * _gaussianGenerator->getRandomNumber();
  else
-     for (size_t d = 0; d < _k->N; ++d) for (size_t e = 0; e < _k->N; ++e) _chainCandidateParameters[sampleIdx*_k->N+d] += _chainCholeskyCovariance[d*_k->N+e] * _gaussianGenerator->getRandomNumber();
+     for (size_t d = 0; d < _k->N; ++d) for (size_t e = 0; e < _k->N; ++e) _chainCandidateParameters[sampleIdx*_k->N+d] += _choleskyDecompositionChainCovariance[d*_k->N+e] * _gaussianGenerator->getRandomNumber();
 
  for (size_t d = 0; d < _k->N; ++d) _chainLeaderParameters[d] += _chainCandidateParameters[sampleIdx*_k->N+d];
 }
@@ -259,7 +259,7 @@ void Korali::Solver::MCMC::updateState()
  for (size_t d = 0; d < _k->N; d++)
    _chainCovariance[d*_k->N+d] = (_databaseEntryCount-2.0)/(_databaseEntryCount-1.0) * _chainCovariance[d*_k->N+d] + (_chainCovarianceScaling/_databaseEntryCount)*_chainCovariancePlaceholder[d*_k->N+d];
 
- choleskyDecomp(_chainCovariance, _chainCholeskyCovariance);
+ choleskyDecomp(_chainCovariance, _choleskyDecompositionChainCovariance);
 }
 
 void Korali::Solver::MCMC::printGeneration()

@@ -30,7 +30,7 @@ k["Solver"]["Type"]  = "CMAES"
 k["Solver"]["Is Sigma Bounded"] = True
 k["Solver"]["Sample Count"] = 32
 k["Solver"]["Viability Sample Count"] = 4
-k["Solver"]["Termination Criteria"]["Max Fitness"] = -680.630057374402 - 1e-4
+k["Solver"]["Termination Criteria"]["Max Value"] = -680.630057374402 - 1e-4
 k["Solver"]["Termination Criteria"]["Max Generations"] = 500
 
 # General Settings

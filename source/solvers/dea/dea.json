@@ -69,21 +69,21 @@
     "Description": "Max number of mutations per sample per generation if infeasible (only relevant if Fix Infeasible is set False)."
    },
    {
-    "Name": "Min Fitness",
+    "Name": "Min Value",
     "Type": "double",
-    "Criteria": "_bestEverValue < _minFitness",
+    "Criteria": "_bestEverValue < _minValue",
     "Description": "Specifies the target fitness to stop minimization."
    },
    {
-    "Name": "Max Fitness",
+    "Name": "Max Value",
     "Type": "double",
-    "Criteria": "_bestEverValue > _maxFitness",
+    "Criteria": "_bestEverValue > _maxValue",
     "Description": "Specifies the target fitness to stop maximization."
    },
    {
-    "Name": "Min Fitness Diff Threshold",
+    "Name": "Min Value Difference Threshold",
     "Type": "double",
-    "Criteria": "_k->_hasComputedGeneration && (fabs(_currentBestValue - _previousBestValue) < _minFitnessDiffThreshold)",
+    "Criteria": "_k->_hasComputedGeneration && (fabs(_currentBestValue - _previousBestValue) < _minValueDifferenceThreshold)",
     "Description": "Specifies the minimum fitness differential between two consecutive generations before stopping execution."
    },
    {
@@ -111,12 +111,12 @@
  "Internal Settings": 
  [
    {
-    "Name": "Fitness Vector",
+    "Name": "Value Vector",
     "Type": "std::vector<double>",
     "Description": "Objection Function Values."
    },
    {
-    "Name": "Previous Fitness Vector",
+    "Name": "Previous Value Vector",
     "Type": "std::vector<double>",
     "Description": "Objection Function Values from previous evaluations."
    },
@@ -128,11 +128,11 @@
    {
     "Name": "Sample Candidates",
     "Type": "std::vector<double>",
-    "Description": "Sample Candidates to evaluate."
+    "Description": "Sample candidate coordinates to evaluate."
    },
    {
     "Name": "Is Initialized Sample",
-    "Type": "std::vector<double>",
+    "Type": "std::vector<bool>",
     "Description": "Determines which samples are initialized."
    },
    {

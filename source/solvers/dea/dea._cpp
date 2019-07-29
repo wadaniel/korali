@@ -53,8 +53,8 @@ void DEA::initialize()
  _maxDistances.resize(_k->N);
 
  _isInitializedSample.resize(_sampleCount);
- _previousFitnessVector.resize(_sampleCount);
- _fitnessVector.resize(_sampleCount);
+ _previousValueVector.resize(_sampleCount);
+ _valueVector.resize(_sampleCount);
 
  _infeasibleSampleCount = 0;
  _bestSampleIndex             = 0;
@@ -118,7 +118,7 @@ void DEA::prepareGeneration()
  _finishedSampleCount = 0;
  for (size_t i = 0; i < _sampleCount; i++) _isInitializedSample[i] = false;
 
- _previousFitnessVector.assign(std::begin(_fitnessVector), std::end(_fitnessVector));
+ _previousValueVector.assign(std::begin(_valueVector), std::end(_valueVector));
 }
 
 
@@ -228,17 +228,17 @@ void DEA::processSample(size_t sampleId, double fitness)
    fitness = -1.0 * std::numeric_limits<double>::max();
    koraliWarning(KORALI_NORMAL,"Sample %zu returned non finite fitness (fitness set to %e)!\n", sampleId, fitness);
  }
- _fitnessVector[sampleId] = fitness;
+ _valueVector[sampleId] = fitness;
  _finishedSampleCount++;
 }
 
 
 void DEA::updateSolver()
 {
-    _bestSampleIndex = std::distance( std::begin(_fitnessVector), std::max_element(std::begin(_fitnessVector), std::end(_fitnessVector)) );
+    _bestSampleIndex = std::distance( std::begin(_valueVector), std::max_element(std::begin(_valueVector), std::end(_valueVector)) );
     _previousBestEverValue  = _bestEverValue;
     _previousBestValue = _currentBestValue;
-    _currentBestValue  = _fitnessVector[_bestSampleIndex];
+    _currentBestValue  = _valueVector[_bestSampleIndex];
 
     for(size_t d = 0; d < _k->N; ++d) _currentBestSample[d] = _sampleCandidates[_bestSampleIndex*_k->N+d];
     
@@ -258,20 +258,20 @@ void DEA::updateSolver()
             break;
 
         case str2int("Greedy") : // accept all mutations better than parent
-            for(size_t i = 0; i < _sampleCount; ++i) if(_fitnessVector[i] > _previousFitnessVector[i])
+            for(size_t i = 0; i < _sampleCount; ++i) if(_valueVector[i] > _previousValueVector[i])
                 for(size_t d = 0; d < _k->N; ++d) _samplePopulation[i*_k->N+d] = _sampleCandidates[i*_k->N+d];
             if(_currentBestValue > _bestEverValue) _bestEverValue = _currentBestValue;
             break;
 
         case str2int("Improved") : // update all samples better than _bestEverValue
-            for(size_t i = 0; i < _sampleCount; ++i) if(_fitnessVector[i] > _bestEverValue)
+            for(size_t i = 0; i < _sampleCount; ++i) if(_valueVector[i] > _bestEverValue)
                 for(size_t d = 0; d < _k->N; ++d) _samplePopulation[i*_k->N+d] = _sampleCandidates[i*_k->N+d];
             if(_currentBestValue > _bestEverValue) _bestEverValue = _currentBestValue;
             break;
 
         case str2int("Iterative") : // iteratibely update _bestEverValue and accept samples
-            for(size_t i = 0; i < _sampleCount; ++i) if(_fitnessVector[i] > _bestEverValue)
-             { for(size_t d = 0; d < _k->N; ++d) _samplePopulation[i*_k->N+d] = _sampleCandidates[i*_k->N+d]; _bestEverValue = _fitnessVector[i]; }
+            for(size_t i = 0; i < _sampleCount; ++i) if(_valueVector[i] > _bestEverValue)
+             { for(size_t d = 0; d < _k->N; ++d) _samplePopulation[i*_k->N+d] = _sampleCandidates[i*_k->N+d]; _bestEverValue = _valueVector[i]; }
             break;
 
         default :

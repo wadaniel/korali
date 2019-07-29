@@ -39,7 +39,7 @@ assert_value( k["Solver"]["Use Adaptive Sampling"], False)
 # Test Internals
 
 assert_value( k["Solver"]["Internal"]["Chain Length"], 0.0 )
-assert_value( k["Solver"]["Internal"]["Cholesky Covariance"][0], 1.0 )
+assert_value( k["Solver"]["Internal"]["Cholesky Decomposition Covariance"][0], 1.0 )
 assert_value( k["Solver"]["Internal"]["Rejection Alphas"][0], 0.0 )
 
 # Test Variables

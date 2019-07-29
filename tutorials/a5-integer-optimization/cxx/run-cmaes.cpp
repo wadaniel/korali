@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
   // Configuring CMA-ES parameters
   k["Solver"]["Type"] = "CMAES";
   k["Solver"]["Sample Count"] = 8;
-  k["Solver"]["Termination Criteria"]["Min Fitness Diff Threshold"] = 1e-9;
+  k["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-9;
   k["Solver"]["Termination Criteria"]["Max Generations"] = 500;
 
   k["General"]["Console Output"]["Frequency"] = 50;

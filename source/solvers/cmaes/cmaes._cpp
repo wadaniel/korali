@@ -70,7 +70,7 @@ void CMAES::initialize()
  _sortingIndex.resize(s_max);
 
  _isInitializedSample.resize(s_max);
- _fitnessVector.resize(s_max);
+ _valueVector.resize(s_max);
 
  _covarianceMatrix.resize(_k->N*_k->N);
  _auxiliarCovarianceMatrix.resize(_k->N*_k->N);
@@ -308,7 +308,7 @@ void CMAES::processSample(size_t sampleId, double fitness)
    fitness = -1.0 * std::numeric_limits<double>::max();
    koraliWarning(KORALI_NORMAL,"Sample %zu returned non finite fitness (fitness set to %e)!\n", sampleId, fitness);
  }
- _fitnessVector[sampleId] = fitness;
+ _valueVector[sampleId] = fitness;
  _finishedSampleCount++;
 }
 
@@ -502,7 +502,7 @@ void CMAES::updateDistribution()
 {
 
  /* Generate _sortingIndex */
- sort_index(_fitnessVector, _sortingIndex, _currentSampleCount);
+ sort_index(_valueVector, _sortingIndex, _currentSampleCount);
 
  if( (_areConstraintsDefined == false) ||  _isViabilityRegime )
   _bestValidSample = 0;
@@ -517,7 +517,7 @@ void CMAES::updateDistribution()
  _previousBestValue = _currentBestValue;
 
  /* update current best */
- _currentBestValue = _fitnessVector[_bestValidSample];
+ _currentBestValue = _valueVector[_bestValidSample];
  for (size_t d = 0; d < _k->N; ++d) _currentBestCoordinates[d] = _samplePopulation[_bestValidSample*_k->N + d];
 
  /* update xbestever */
@@ -655,7 +655,7 @@ void CMAES::updateSigma()
  }
 
  /* escape flat fitness */
- if (_currentBestValue == _fitnessVector[_sortingIndex[(int)_currentSampleMu]]) {
+ if (_currentBestValue == _valueVector[_sortingIndex[(int)_currentSampleMu]]) {
    _sigma *= exp(0.2+_sigmaCumulationFactor/_dampFactor);
    koraliWarning(KORALI_DETAILED, "Sigma increased due to equal function values.\n");
  }

@@ -130,7 +130,6 @@ void Korali::Engine::setConfiguration()
  for (size_t i = 0; i < _js["Variables"].size(); i++)
  {
   _k->_variables.push_back(new Korali::Variable());
-  _k->_js["Variables"][i]["Prior Distribution"]["Seed"] = _k->_seed++;
   _k->_variables[i]->setConfiguration(_js["Variables"][i]);
  }
 

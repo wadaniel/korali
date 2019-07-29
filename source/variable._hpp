@@ -14,8 +14,7 @@ class Variable
 {
  private:
 
- size_t _seed;
- gsl_rng* _range;
+
  double _aux;
  double _a;
  double _b;

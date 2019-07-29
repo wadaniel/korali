@@ -14,12 +14,12 @@ Korali::Variable::Variable()
  _name = "Unnamed";
  _distributionType = "No Distribution";
  _isLogSpace = false;
- _range = gsl_rng_alloc (gsl_rng_default);
+
 }
 
 Korali::Variable::~Variable()
 {
- gsl_rng_free(_range);
+
 }
 
 /************************************************************************/
@@ -28,13 +28,6 @@ Korali::Variable::~Variable()
 void Korali::Variable::setProperty(std::string propertyName, double value)
 {
  bool _recognizedProperty = false;
-
- if (_distributionType == "Cauchy")
-  {
-    if (propertyName == "Location") { _a = value; _recognizedProperty = true; }
-    if (propertyName == "Scale") { _b = value; _recognizedProperty = true; }
-    if (_b > 0) _aux = -gsl_sf_log( _b * M_PI );
-  }
 
   if (_distributionType == "Exponential")
   {

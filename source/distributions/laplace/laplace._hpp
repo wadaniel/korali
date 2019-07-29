@@ -1,0 +1,24 @@
+#ifndef _KORALI_DISTRIBUTION_EXPONENTIAL_HPP_
+#define _KORALI_DISTRIBUTION_EXPONENTIAL_HPP_
+
+namespace Korali { namespace Distribution {
+
+class Exponential : public Base {
+
+ private:
+
+ public:
+
+ void setProperty(std::string propertyName, double value) override;
+ double getDensity(double x) override;
+ double getLogDensity(double x) override;
+ double getRandomNumber() override;
+ void initialize() override;
+ void finalize() override;
+ void setConfiguration() override;
+ void getConfiguration() override;
+};
+
+} } // namespace Korali::Distribution
+
+#endif // _KORALI_DISTRIBUTION_EXPONENTIAL_HPP_

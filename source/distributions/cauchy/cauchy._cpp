@@ -1,0 +1,32 @@
+#include "korali.hpp"
+
+void Korali::Cauchy::initialize()
+{
+ Korali::Base::initialize();
+
+ if (_scale > 0) _aux = -gsl_sf_log( _scale * M_PI);
+}
+
+void Korali::Cauchy::finalize()
+{
+}
+
+void setProperty(std::string propertyName, double value)
+{
+}
+
+double Korali::Cauchy::getDensity(double x)
+{
+ return gsl_ran_cauchy_pdf( x-_location, _scale );
+}
+
+double Korali::Cauchy::getLogDensity(double x)
+{
+ return _aux - gsl_sf_log( 1. + gsl_sf_pow_int((x-_location)/_scale,2) );
+}
+
+double Korali::Cauchy::getRandomNumber()
+{
+ return _location + gsl_ran_cauchy(_range, _scale);
+}
+

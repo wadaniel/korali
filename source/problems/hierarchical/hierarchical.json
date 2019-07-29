@@ -6,7 +6,7 @@
  "Problem Configuration": 
  [
    {
-    "Name": [ "Operation Type" ],
+    "Name": [ "Model" ],
     "Type": "std::string",
     "Description": "Determines the hierarchical bayesian evaluation model."
    },

@@ -14,11 +14,11 @@ kH = korali.initialize()
 
 kH["Problem"]["Type"]  = "Hierarchical Bayesian"
 kH["Problem"]["Model"] = "Sample Psi"
-kH["Problem"]["Sub-Problems"][0] = korali.getResults('../data/000/final.json')
-kH["Problem"]["Sub-Problems"][1] = korali.getResults('../data/001/final.json')
-kH["Problem"]["Sub-Problems"][2] = korali.getResults('../data/002/final.json')
-kH["Problem"]["Sub-Problems"][3] = korali.getResults('../data/003/final.json')
-kH["Problem"]["Sub-Problems"][4] = korali.getResults('../data/004/final.json')
+kH["Problem"]["Sub Problems"][0] = korali.getResults('../data/000/final.json')
+kH["Problem"]["Sub Problems"][1] = korali.getResults('../data/001/final.json')
+kH["Problem"]["Sub Problems"][2] = korali.getResults('../data/002/final.json')
+kH["Problem"]["Sub Problems"][3] = korali.getResults('../data/003/final.json')
+kH["Problem"]["Sub Problems"][4] = korali.getResults('../data/004/final.json')
 
 # Add probability of theta given psi
 kH["Problem"]["Conditional Priors"][0]["Type"] = "Gaussian"

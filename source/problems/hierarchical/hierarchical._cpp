@@ -2,10 +2,10 @@
 
 void Korali::Problem::Hierarchical::initialize()
 {
- bool foundOperationType = false;
- if (_operationType == "Sample Psi")   foundOperationType = true;
- if (_operationType == "Sample Theta") foundOperationType = true;
- if (foundOperationType == false) koraliError("Incorrect or no operation type selected for Hierarchical Bayesian: %s.\n", _operationType.c_str());
+ bool foundModel = false;
+ if (_model == "Sample Psi")   foundModel = true;
+ if (_model == "Sample Theta") foundModel = true;
+ if (foundModel == false) koraliError("Incorrect or no model selected for Hierarchical Bayesian: %s.\n", _model.c_str());
 
  if (_conditionalPriors.size() == 0) koraliError("Hierarchical Bayesian problems require at least one conditional prior\n");
 
@@ -18,7 +18,7 @@ void Korali::Problem::Hierarchical::initialize()
 
  for (size_t i = 0; i < _subProblemsJson.size(); i++)
    if (_subProblemsJson[i]["Is Finished"] == false) koraliError("The Hierarchical Bayesian requires that all problems have run completely, but Problem %lu has not.\n", i);
-
+  
  // Creating JSON object from string
  for (size_t i = 0; i < _subProblemsJson.size(); i++) _subProblemsJson.push_back(nlohmann::json::parse(_subProblems[i]));
 }

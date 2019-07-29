@@ -6,11 +6,11 @@ int main(int argc, char* argv[])
 
  kH["Problem"]["Type"]  = "Hierarchical Bayesian";
  kH["Problem"]["Model"] = "Sample Psi";
- kH["Problem"]["Sub-Problems"][0] = Korali::Engine::getResults("../data/000/final.json");
- kH["Problem"]["Sub-Problems"][1] = Korali::Engine::getResults("../data/001/final.json");
- kH["Problem"]["Sub-Problems"][2] = Korali::Engine::getResults("../data/002/final.json");
- kH["Problem"]["Sub-Problems"][3] = Korali::Engine::getResults("../data/003/final.json");
- kH["Problem"]["Sub-Problems"][4] = Korali::Engine::getResults("../data/004/final.json");
+ kH["Problem"]["Sub Problems"][0] = Korali::Engine::getResults("../data/000/final.json");
+ kH["Problem"]["Sub Problems"][1] = Korali::Engine::getResults("../data/001/final.json");
+ kH["Problem"]["Sub Problems"][2] = Korali::Engine::getResults("../data/002/final.json");
+ kH["Problem"]["Sub Problems"][3] = Korali::Engine::getResults("../data/003/final.json");
+ kH["Problem"]["Sub Problems"][4] = Korali::Engine::getResults("../data/004/final.json");
 
  kH["Problem"]["Conditional Priors"][0]["Type"] = "Gaussian";
  kH["Problem"]["Conditional Priors"][0]["Mean"] = "Psi 1";

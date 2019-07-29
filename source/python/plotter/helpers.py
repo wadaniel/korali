@@ -64,7 +64,7 @@ def checkFigure(num):
 def readFiles(src, start=None, end=None, noisy=True):
     resultfilesTmp = [f for f in os.listdir(src) if os.path.isfile(os.path.join(src, f))]
     resultfilesTmp = sorted(resultfilesTmp)
-    resultfilesTmp.remove('final.json')
+    if ('final.json' in resultfilesTmp): resultfilesTmp.remove('final.json')
 
     if (resultfilesTmp == []):
         print("[Korali] Error: Did not find file {0} in the result folder...".format(src))

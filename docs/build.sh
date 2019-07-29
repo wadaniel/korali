@@ -9,6 +9,10 @@ function check()
  fi 
 }
 
+# Build pages from source code
+python3 ./builder/buildWeb.py
+check
+
 # Installing mkdocs and materials theme
 pip install mkdocs --user
 check

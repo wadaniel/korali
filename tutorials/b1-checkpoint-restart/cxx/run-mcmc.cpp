@@ -20,7 +20,7 @@ int main(int argc, char* argv[])
 
  k["Solver"]["Type"] = "MCMC";
  k["Solver"]["Burn In"] = 500;
- k["Solver"]["Max Chain Length"] = 5000;
+ k["Solver"]["Termination Criteria"]["Max Chain Length"] = 5000;
 
  k["General"]["Console Output"]["Frequency"] = 1000;
  k["General"]["Results Output"]["Frequency"] = 1000;

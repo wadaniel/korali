@@ -9,11 +9,10 @@
 #include "mpi.h"
 #endif
 
-#include "problems/optimization.hpp"
-#include "problems/sampling.hpp"
-#include "problems/bayesian.hpp"
-#include "problems/hierarchical.hpp"
-#include "problems/constrained.hpp"
+#include "problems/optimization/optimization.hpp"
+#include "problems/sampling/sampling.hpp"
+#include "problems/bayesian/bayesian.hpp"
+#include "problems/hierarchical/hierarchical.hpp"
 
 #include "solvers/cmaes/cmaes.hpp"
 #include "solvers/dea/dea.hpp"
@@ -24,8 +23,8 @@
 #include "conduits/simple.hpp"
 #include "conduits/external.hpp"
 
-#include "auxiliar.hpp"
 #include "variable.hpp"
+#include "auxiliar.hpp"
 #include "model.hpp"
 
 #ifdef _KORALI_USE_PYTHON
@@ -48,14 +47,17 @@ class Engine {
  std::vector<std::function<void(Korali::Model&)>> _constraints;
 
  size_t N; // Variable Count size_t N; // Variable Count
- size_t currentGeneration;
- size_t maxGenerations;
- size_t consoleOutputFrequency;
- size_t resultsOutputFrequency;
- size_t functionEvaluationCount;
- size_t maxFunctionEvaluations;
+ size_t _currentGeneration;
+ size_t _consoleOutputFrequency;
+ size_t _resultsOutputFrequency;
+ size_t _functionEvaluationCount;
  size_t _runId;
  std::string _runTimestamp;
+ bool _hasComputedGeneration;
+
+ std::string _solverType;
+ std::string _conduitType;
+ std::string _problemType;
 
  bool _isFinished;
 
@@ -88,9 +90,7 @@ class Engine {
  void loadState(std::string fileName);
  void saveState(std::string fileName);
  void saveState(int fileId);
- std::string getResults();
-
- bool checkTermination();
+ static std::string getResults(std::string fileName);
 
  size_t _seed;
  std::string _result_dir;

@@ -37,8 +37,8 @@ int main(int argc, char* argv[])
   k["Solver"]["Type"] = "CMAES";
   k["Solver"]["Sample Count"] = 8;
   k["Solver"]["Termination Criteria"]["Min Fitness Diff Threshold"] = 1e-9;
+  k["Solver"]["Termination Criteria"]["Max Generations"] = 500;
 
-  k["General"]["Max Generations"] = 500;
   k["General"]["Console Output"]["Frequency"] = 50;
   k["General"]["Results Output"]["Frequency"] = 50;
 

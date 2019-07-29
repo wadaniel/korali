@@ -21,8 +21,8 @@ int main(int argc, char* argv[])
 
  k["Solver"]["Type"] = "DEA";
  k["Solver"]["Sample Count"] = 10;
+ k["Solver"]["Termination Criteria"]["Max Generations"] = 100;
 
- k["General"]["Max Generations"] = 50;
  k["General"]["Console Output"]["Frequency"] = 5;
  k["General"]["Results Output"]["Frequency"] = 5;
  k["General"]["Results Output"]["Path"] = "_result_run-dea";

@@ -151,7 +151,7 @@ void Korali::Conduit::MPI::workerThread()
 
 void Korali::Conduit::MPI::evaluateSample(double* sampleArray, size_t sampleId)
 {
- _k->functionEvaluationCount++;
+ _k->_functionEvaluationCount++;
 
  #ifdef _KORALI_USE_MPI
  while (_teamQueue.empty()) checkProgress();

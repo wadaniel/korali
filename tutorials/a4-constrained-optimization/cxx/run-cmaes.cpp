@@ -13,7 +13,7 @@ int main(int argc, char* argv[])
  auto k = Korali::Engine();
 
  // Selecting problem type
- k["Problem"]["Type"] = "Constrained Optimization";
+ k["Problem"]["Type"] = "Optimization";
  k["Problem"]["Objective"] = "Maximize";
 
  // Setting up 7 variables
@@ -30,9 +30,9 @@ int main(int argc, char* argv[])
  k["Solver"]["Sample Count"] = 32;
  k["Solver"]["Viability Sample Count"] = 4;
  k["Solver"]["Termination Criteria"]["Max Fitness"] = -680.630057374402 - 1e-4;
+ k["Solver"]["Termination Criteria"]["Max Generations"] = 500;
 
  // General Settings
- k["General"]["Max Generations"] = 500;
  k["General"]["Results Output"]["Frequency"] = 50;
  k["General"]["Console Output"]["Frequency"] = 50;
 

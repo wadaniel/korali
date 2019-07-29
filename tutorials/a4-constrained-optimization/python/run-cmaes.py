@@ -16,7 +16,7 @@ import korali
 k = korali.initialize()
 
 # Selecting problem type
-k["Problem"]["Type"] = "Constrained Optimization"
+k["Problem"]["Type"] = "Optimization"
 k["Problem"]["Objective"] = "Maximize"
 
 # Creating 7 variables and setting their CCMA-ES bounds
@@ -31,9 +31,9 @@ k["Solver"]["Is Sigma Bounded"] = True
 k["Solver"]["Sample Count"] = 32
 k["Solver"]["Viability Sample Count"] = 4
 k["Solver"]["Termination Criteria"]["Max Fitness"] = -680.630057374402 - 1e-4
+k["Solver"]["Termination Criteria"]["Max Generations"] = 500
 
 # General Settings
-k["General"]["Max Generations"] = 500
 k["General"]["Console Output"]["Frequency"] = 50
 k["General"]["Results Output"]["Frequency"] = 50
 

@@ -11,7 +11,7 @@
 source ../functions.sh
 
 #################################################
- Checking for MPI
+# Checking for MPI
 #################################################
 
 if [[ $MPICXX == "" ]]
@@ -21,7 +21,7 @@ then
 fi
 
 #################################################
- Clone korali-apps repository
+# Clone korali-apps repository
 #################################################
 
 logEcho "[Korali] Cloning korali-apps repository"                                   
@@ -33,8 +33,21 @@ check_result
 # Test Korali+LAMMPS
 #################################################
 
-pushd korali-apps/LAMMPS/LJ
+pushd korali-apps/LAMMPS
 logEcho "[Korali] Testing Korali+LAMMPS..."
+
+logEcho "[Korali] Converting to dry run..."
+cat optimize.py | sed -e 's/run()/dry()/g' > optimize_dry.py
+check_result
+
+logEcho "[Korali] Setting permissions..."
+chmod a+x optimize_dry.py
+check_result
+
+logEcho "[Korali] Running optimize_dry.py..."
+./optimize_dry.py >> $logFile
+check_result
+
 popd
 
 #################################################

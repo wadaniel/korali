@@ -20,11 +20,10 @@ int main(int argc, char* argv[])
 
  k["Solver"]["Type"] = "CMAES";
  k["Solver"]["Sample Count"] = 16;
+ k["Solver"]["Termination Criteria"]["Max Generations"] = 100;
 
- k["General"]["Max Generations"] = 500;
  k["General"]["Console Output"]["Frequency"] = 10;
  k["General"]["Results Output"]["Frequency"] = 10;
-
  k["General"]["Results Output"]["Path"] = "_result_run-cmaes";
 
  k.setModel(model);

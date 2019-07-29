@@ -4,7 +4,7 @@ void Korali::Laplace::initialize()
 {
  Korali::Base::initialize();
 
- if (_scale > 0) _aux = -gsl_sf_log( _scale * M_PI);
+ if (_width > 0) _aux = -gsl_sf_log(2.*_width);
 }
 
 void Korali::Laplace::finalize()
@@ -17,16 +17,16 @@ void setProperty(std::string propertyName, double value)
 
 double Korali::Laplace::getDensity(double x)
 {
- return gsl_ran_laplace_pdf( x-_a, _b );
+ return gsl_ran_laplace_pdf( x-_mean, _width );
 }
 
 double Korali::Laplace::getLogDensity(double x)
 {
- return _aux - fabs(x-_a)/_b;
+ return _aux - fabs(x-_mean)/_width;
 }
 
 double Korali::Laplace::getRandomNumber()
 {
- return _a + gsl_ran_laplace(_range, _b);
+ return _mean + gsl_ran_laplace(_range, _width);
 }
 

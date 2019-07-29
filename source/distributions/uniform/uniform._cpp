@@ -4,7 +4,7 @@ void Korali::Uniform::initialize()
 {
  Korali::Base::initialize();
 
- if (_scale > 0) _aux = -gsl_sf_log( _scale * M_PI);
+ if (_maximum-_minimum > 0) _aux = -gsl_sf_log(_maximum-_minimum);
 }
 
 void Korali::Uniform::finalize()
@@ -17,16 +17,16 @@ void setProperty(std::string propertyName, double value)
 
 double Korali::Uniform::getDensity(double x)
 {
- return gsl_ran_flat_pdf(x, _a, _b);
+ return gsl_ran_flat_pdf(x, _minimum, _maximum);
 }
 
 double Korali::Uniform::getLogDensity(double x)
 {
- if (x >= _a && x <= _b) return _aux; return -INFINITY;
+ if (x >= _minimum && x <= _maximum) return _aux; return -INFINITY;
 }
 
 double Korali::Uniform::getRandomNumber()
 {
- return gsl_ran_flat(_range, _a, _b);
+ return gsl_ran_flat(_range, _minimum, _maximum);
 }
 

@@ -4,7 +4,7 @@ void Korali::Geometric::initialize()
 {
  Korali::Base::initialize();
 
- if (_scale > 0) _aux = -gsl_sf_log( _scale * M_PI);
+ _aux = 0.0;
 }
 
 void Korali::Geometric::finalize()
@@ -17,16 +17,16 @@ void setProperty(std::string propertyName, double value)
 
 double Korali::Geometric::getDensity(double x)
 {
- return gsl_ran_geometric_pdf((int)x, _a);
+ return gsl_ran_geometric_pdf((int)x, _successProbability);
 }
 
 double Korali::Geometric::getLogDensity(double x)
 {
- return log(_a) + (x-1)*log(1.0-_a);
+ return log(_successProbability) + (x-1)*log(1.0-_successProbability);
 }
 
 double Korali::Geometric::getRandomNumber()
 {
- return gsl_ran_geometric(_range, _a);
+ return gsl_ran_geometric(_range, _successProbability);
 }
 

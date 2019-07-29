@@ -1,0 +1,33 @@
+#include "korali.hpp"
+
+void Korali::Gaussian::initialize()
+{
+ Korali::Base::initialize();
+
+ if (_scale > 0) _aux = -gsl_sf_log( _scale * M_PI);
+}
+
+void Korali::Gaussian::finalize()
+{
+}
+
+void setProperty(std::string propertyName, double value)
+{
+}
+
+double Korali::Gaussian::getDensity(double x)
+{
+ return gsl_ran_gaussian_pdf(x - _a, _b);
+}
+
+double Korali::Gaussian::getLogDensity(double x)
+{
+ double d = (x-_a)/_b;
+ return _aux - 0.5*d*d;
+}
+
+double Korali::Gaussian::getRandomNumber()
+{
+ return  _a + gsl_ran_gaussian(_range, _b);
+}
+

@@ -1,9 +1,9 @@
-#ifndef _KORALI_DISTRIBUTION_GAMMA_HPP_
-#define _KORALI_DISTRIBUTION_GAMMA_HPP_
+#ifndef _KORALI_DISTRIBUTION_GAUSSIAN_HPP_
+#define _KORALI_DISTRIBUTION_GAUSSIAN_HPP_
 
 namespace Korali { namespace Distribution {
 
-class Gamma : public Base {
+class Gaussian : public Base {
 
  private:
 
@@ -21,4 +21,4 @@ class Gamma : public Base {
 
 } } // namespace Korali::Distribution
 
-#endif // _KORALI_DISTRIBUTION_GAMMA_HPP_
+#endif // _KORALI_DISTRIBUTION_GAUSSIAN_HPP_

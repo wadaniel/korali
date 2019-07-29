@@ -1,13 +1,13 @@
 #include "korali.hpp"
 
-void Korali::Exponential::initialize()
+void Korali::Gamma::initialize()
 {
  Korali::Base::initialize();
 
  if (_scale > 0) _aux = -gsl_sf_log( _scale * M_PI);
 }
 
-void Korali::Exponential::finalize()
+void Korali::Gamma::finalize()
 {
 }
 
@@ -15,18 +15,18 @@ void setProperty(std::string propertyName, double value)
 {
 }
 
-double Korali::Exponential::getDensity(double x)
+double Korali::Gamma::getDensity(double x)
 {
- return gsl_ran_cauchy_pdf( x-_location, _scale );
+ return gsl_ran_gamma_pdf( x, _b, _a );
 }
 
-double Korali::Exponential::getLogDensity(double x)
+double Korali::Gamma::getLogDensity(double x)
 {
- return _aux - gsl_sf_log( 1. + gsl_sf_pow_int((x-_location)/_scale,2) );
+ if(x < 0) return -INFINITY; return _aux + (_b-1)*log(x) - x/_a;
 }
 
-double Korali::Exponential::getRandomNumber()
+double Korali::Gamma::getRandomNumber()
 {
- return _location + gsl_ran_cauchy(_range, _scale);
+ return gsl_ran_gamma(_range, _b, _a);
 }
 

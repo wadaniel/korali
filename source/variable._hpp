@@ -29,9 +29,6 @@ class Variable
  Variable();
  ~Variable();
 
- double getDensity(double x);
- double getLogDensity(double x);
- double getRandomNumber();
  void printDetails();
  void initialize();
  void setDistributionType(std::string distributionType);

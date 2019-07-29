@@ -1,10 +1,7 @@
 #include "json.hpp"
 #include <stdlib.h>
 #include <stdio.h>
-#include <stdarg.h>
-#include <type_traits>
 #include <vector>
-#include <iostream>
 #include "auxiliar.hpp"
 #include "korali.hpp"
 

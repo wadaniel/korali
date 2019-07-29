@@ -1,9 +1,10 @@
 #ifndef _KORALI_DISTRIBUTION_BASE_HPP_
 #define _KORALI_DISTRIBUTION_BASE_HPP_
 
-#include <stdlib.h>
-#include <chrono>
-#include <vector>
+#include <gsl/gsl_rng.h>
+#include <gsl/gsl_randist.h>
+#include <gsl/gsl_math.h>
+#include <gsl/gsl_sf.h>
 
 namespace Korali { namespace Distribution {
 

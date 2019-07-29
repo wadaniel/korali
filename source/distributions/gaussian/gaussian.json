@@ -1,0 +1,19 @@
+{
+ "Name": "Cauchy Distribution",
+ "Alias": "Cauchy",
+ "Class": "Cauchy",
+ 
+ "Distribution Configuration": 
+ [
+   {
+    "Name": [ "Location" ],
+    "Description": "Specifies the location of the peak of the distribution."
+   },
+   {
+    "Name": [ "Scale" ],
+    "Description": "Specifies the half-width at half-maximum (HWHM)"
+   }
+ ]
+ 
+}
+ 

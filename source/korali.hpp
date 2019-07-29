@@ -1,7 +1,6 @@
 #ifndef _KORALI_HPP_
 #define _KORALI_HPP_
 
-#include "stdlib.h"
 #include <vector>
 #include <functional>
 

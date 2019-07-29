@@ -70,7 +70,7 @@ def plot_cmaes(src, plotAll=False, live=False, generation=None, test=False, plot
         if live == False:
             break
 
-        resultfiles = readFiles(src, gen+1, generation)
+        resultfiles = readFiles(src, gen+1, generation, False)
      
     plt.show()
     print("[Korali] Figure closed - Bye!")

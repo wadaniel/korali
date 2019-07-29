@@ -57,7 +57,7 @@ def plot_tmcmc(src, plotAll=False, live=False, generation=None, test=False):
         if (live == False):
             break
         
-        resultfiles = readFiles(src, gen, generation)
+        resultfiles = readFiles(src, gen, generation, False)
 
 
     checkFigure(fig.number)

@@ -57,7 +57,7 @@ def plot_mcmc(src, plotAll=False, live=False, generation=None, test=False):
         if (live == False):
             break
         
-        resultfiles = readFiles(src, gen, generation)
+        resultfiles = readFiles(src, gen, generation, False)
     
     if(numdbentries[-1] == 0):
         print("[Korali] Error: No samples found in file {0}...".format(path))

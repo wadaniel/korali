@@ -61,7 +61,7 @@ def checkFigure(num):
      
 
 # Read result files
-def readFiles(src, start=None, end=None):
+def readFiles(src, start=None, end=None, noisy=True):
     resultfilesTmp = [f for f in os.listdir(src) if os.path.isfile(os.path.join(src, f))]
     resultfilesTmp = sorted(resultfilesTmp)
     resultfilesTmp.remove('final.json')
@@ -82,14 +82,14 @@ def readFiles(src, start=None, end=None):
             if (runId == -1):
                 runId  = data['General']['Run ID']
             
-            if verifyFile(data, path, runId, start, end):
+            if verifyFile(data, path, runId, start, end, noisy):
                 resultfiles.append(filename)
     
     return resultfiles
 
 
 # Open file and verify runId and current generation in [start, end]
-def verifyFile(data, path, runId, start=None, end=None): 
+def verifyFile(data, path, runId, start=None, end=None, noisy=True): 
     currentGeneration = data['General']['Current Generation']
 
     if ( (start is not None) and (currentGeneration < start)):
@@ -99,7 +99,9 @@ def verifyFile(data, path, runId, start=None, end=None):
         return False
 
     if (data['General']['Run ID'] != runId):
-        print("[Korali] Warning: Skipping file {0}, results origin from a "\
+       
+        if(noisy == True):
+            print("[Korali] Warning: Skipping file {0}, results origin from a "\
                 " different experiment (different runid)".format(path))
         return False
 

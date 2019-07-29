@@ -1,16 +1,17 @@
 {
  "Name": "Hierarchical Bayesian Modeling",
- "Alias": "Hierarchical",
+ "Alias": "Hierarchical Bayesian",
+ "Class": "Hierarchical",
  
  "Problem Configuration": 
  [
    {
-    "Name": "Operation Type",
+    "Name": [ "Operation Type" ],
     "Type": "std::string",
     "Description": "Determines the hierarchical bayesian evaluation model."
    },
    {
-    "Name": "Sub Problems",
+    "Name": [ "Sub Problems" ],
     "Type": "std::vector<std::string>",
     "Description": "Provides results from previous Korali executions."
    }

@@ -171,6 +171,7 @@ void Korali::Variable::getConfiguration(nlohmann::json& js)
  js["Log Space"] = _isLogSpace;
  js["Name"] = _name;
  getDistribution(js["Prior Distribution"]);
+ getProblemSettings(js);
  getSolverSettings(js);
 }
 
@@ -183,6 +184,7 @@ void Korali::Variable::setConfiguration(nlohmann::json& js)
  js.erase("Prior Distribution");
 
  setSolverSettings(js);
+ setProblemSettings(js);
 }
 
 double Korali::Variable::getDensity(double x)

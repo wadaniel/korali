@@ -1,11 +1,12 @@
 {
  "Name": "Optimization",
  "Alias": "Optimization",
+ "Class": "Optimization",
  
  "Problem Configuration": 
  [
    {
-    "Name": "Objective",
+    "Name": [ "Objective" ],
     "Type": "std::string",
     "Description": "Indicates whether Korali will minimize or maximize the function evaluation."
    }

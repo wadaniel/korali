@@ -167,9 +167,26 @@ bool Korali::isEmpty(nlohmann::json& js)
  return empty;
 }
 
-bool Korali::isDefined(nlohmann::json js, std::vector<std::string> settings)
+void Korali::eraseValue(nlohmann::json& js, std::string path)
+{
+ std::vector<std::string> settings = getJsonPath(path);
+
+ nlohmann::json* aux = &js;
+ size_t i = 0;
+ for (; i < settings.size()-1; i++)
+  aux = &aux->at(settings[i]);
+ aux->erase(settings[i]);
+}
+
+bool Korali::isDefined(nlohmann::json& js, std::string path)
+{
+ return Korali::isDefined(js, getJsonPath(path));
+}
+
+bool Korali::isDefined(nlohmann::json& js, std::vector<std::string> settings)
 {
  auto tmp = js;
+
  for (size_t i = 0; i < settings.size(); i++)
  {
   if (tmp.find(settings[i]) == tmp.end()) return false;
@@ -178,7 +195,32 @@ bool Korali::isDefined(nlohmann::json js, std::vector<std::string> settings)
  return true;
 }
 
-bool Korali::isArray(nlohmann::json js, std::vector<std::string> settings)
+std::vector<std::string> Korali::getJsonPath(std::string path)
+{
+ std::vector<size_t> positions;
+
+ size_t curpos = 0;
+ while (curpos != std::string::npos)
+ {
+  if (curpos > 0) positions.push_back(curpos);
+  curpos = path.find("'", curpos + 1);
+ }
+
+ if (positions.size() % 2 != 0) koraliError("Incorrect path description: %s\n", path.c_str());
+
+ std::vector<std::string> settings;
+
+ for (size_t i = 0; i < positions.size(); i += 2)
+ {
+  size_t start = positions[i] + 1;
+  size_t length = positions[i+1] - start;
+  settings.push_back(path.substr(start, length));
+ }
+
+ return settings;
+}
+
+bool Korali::isArray(nlohmann::json& js, std::vector<std::string> settings)
 {
  if (isDefined(js, settings))
  {
@@ -272,7 +314,7 @@ nlohmann::json Korali::loadJsonFromFile(const char* fileName)
  return js;
 }
 
-void Korali::saveJsonToFile(const char* fileName, nlohmann::json js)
+void Korali::saveJsonToFile(const char* fileName, nlohmann::json& js)
 {
  FILE *fid = fopen(fileName, "w");
  if (fid != NULL)

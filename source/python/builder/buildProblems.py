@@ -24,10 +24,10 @@ def buildProblems(koraliDir):
   problemHeaderString = ''
   
   for v in problemConfig["Problem Configuration"]:
-   problemHeaderString += getVariableType(v) + ' ' + getVariableName(v) + ';\n'
+   problemHeaderString += getVariableType(v) + ' ' + getCXXVariableName(v) + ';\n'
      
   for v in problemConfig["Internal Settings"]:
-   problemHeaderString += getVariableType(v) + ' ' + getVariableName(v) + ';\n'
+   problemHeaderString += getVariableType(v) + ' ' + getCXXVariableName(v) + ';\n'
        
   # Loading template header .hpp file
   problemTemplateHeaderFile = problemPath + '/' + problemName + '._hpp'
@@ -41,27 +41,27 @@ def buildProblems(koraliDir):
   
   ###### Producing problem.cpp
   
-  problemCodeString = 'void Korali::Problem::' + problemConfig["Alias"] + '::setConfiguration() \n{\n'
+  problemCodeString = 'void Korali::Problem::' + problemConfig["Class"] + '::setConfiguration() \n{\n'
  
   # Consume Problem Settings
   for v in problemConfig["Problem Configuration"]:
-    problemCodeString += consumeValue('_k->_js', problemConfig["Alias"], v["Name"], getVariableName(v), getVariableType(v), getVariableDefault(v), [ 'Problem' ])
+    problemCodeString += consumeValue('_k->_js', problemConfig["Alias"], '["Problem"]' + getVariablePath(v), getCXXVariableName(v), getVariableType(v), getVariableDefault(v))
   
   for v in problemConfig["Internal Settings"]:
-    problemCodeString += consumeValue('_k->_js', problemConfig["Alias"], v["Name"], getVariableName(v), getVariableType(v), 'Korali Skip Default', [ 'Problem', 'Internal' ])
+    problemCodeString += consumeValue('_k->_js', problemConfig["Alias"], '["Problem"]["Internal"]' + getVariablePath(v),  getCXXVariableName(v), getVariableType(v), 'Korali Skip Default')
   
   problemCodeString += '} \n\n'
   
   ###### Creating Problem Get Configuration routine
   
-  problemCodeString += 'void Korali::Problem::' + problemConfig["Alias"]  + '::getConfiguration() \n{\n\n'
+  problemCodeString += 'void Korali::Problem::' + problemConfig["Class"]  + '::getConfiguration() \n{\n\n'
   problemCodeString += ' _k->_js["Problem"]["Type"] = "' + problemConfig["Alias"] + '";\n'
  
   for v in problemConfig["Problem Configuration"]: 
-    problemCodeString += ' _k->_js["Problem"]["' + v["Name"] + '"] = ' + getVariableName(v) + ';\n'
+    problemCodeString += ' _k->_js["Problem"]' + getVariablePath(v) + ' = ' + getCXXVariableName(v) + ';\n'
     
   for v in problemConfig["Internal Settings"]: 
-    problemCodeString += ' _k->_js["Problem"]["Internal"]["' + v["Name"] + '"] = ' + getVariableName(v) + ';\n'
+    problemCodeString += ' _k->_js["Problem"]["Internal"]' + getVariablePath(v) + ' = ' + getCXXVariableName(v) + ';\n'
   
   problemCodeString += '} \n\n'
   

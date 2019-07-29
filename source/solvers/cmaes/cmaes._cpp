@@ -40,8 +40,8 @@ void CMAES::initialize()
  _chiSquareNumber = sqrt((double) _k->N) * (1. - 1./(4.*_k->N) + 1./(21.*_k->N*_k->N));
  _chiSquareNumberDiscreteMutations = sqrt((double) _k->N) * (1. - 1./(4.*_k->N) + 1./(21.*_k->N*_k->N));
 
- _constraintsDefined = (_k->_constraints.size() > 0);
- if(_constraintsDefined) { _isViabilityRegime = true; }
+ _areConstraintsDefined = (_k->_constraints.size() > 0);
+ if(_areConstraintsDefined) { _isViabilityRegime = true; }
  else                    _isViabilityRegime = false;
 
 
@@ -58,13 +58,13 @@ void CMAES::initialize()
 
  _evolutionPath.resize(_k->N);
  _conjugateEvolutionPath.resize(_k->N);
- _temporaryBDZMatrix.resize(_k->N);
+ _auxiliarBDZMatrix.resize(_k->N);
  _meanUpdate.resize(_k->N);
  _currentMean.resize(_k->N);
  _previousMean.resize(_k->N);
  _bestEverCoordinates.resize(_k->N);
  _axisLengths.resize(_k->N);
- _temporaryAxisLengths.resize(_k->N);
+ _auxiliarAxisLengths.resize(_k->N);
  _currentBestCoordinates.resize(_k->N);
 
  _sortingIndex.resize(s_max);
@@ -94,7 +94,7 @@ void CMAES::initialize()
  _muWeights.resize(mu_max);
 
  // CMAES variables
- if (_constraintsDefined)
+ if (_areConstraintsDefined)
  {
   if( (_globalSuccessLearningRate <= 0.0) || (_globalSuccessLearningRate > 1.0) ) 
     koraliError("Invalid Global Success Learning Rate (%f), must be greater than 0.0 and less than 1.0\n",  _globalSuccessLearningRate );
@@ -136,7 +136,7 @@ void CMAES::initialize()
  _maximumViolationCount         = 0;
 
  // Setting algorithm internal variables
- if (_constraintsDefined) { initMuWeights(_viabilityMu); }
+ if (_areConstraintsDefined) { initMuWeights(_viabilityMu); }
  else initMuWeights(_muValue);
 
  initCovariance();
@@ -204,9 +204,9 @@ void CMAES::initialize()
 
 void CMAES::runGeneration()
 {
- if ( _constraintsDefined ) checkMeanAndSetRegime();
+ if ( _areConstraintsDefined ) checkMeanAndSetRegime();
  prepareGeneration();
- if ( _constraintsDefined ){ updateConstraints(); handleConstraints(); }
+ if ( _areConstraintsDefined ){ updateConstraints(); handleConstraints(); }
  evaluateSamples();
  updateDistribution();
 }
@@ -261,7 +261,7 @@ void CMAES::initMuWeights(size_t numsamplesmu)
  // Setting Sigma Cumulation Factor
  _sigmaCumulationFactor = _initialSigmaCumulationFactor;
  if (_sigmaCumulationFactor <= 0 || _sigmaCumulationFactor >= 1) 
-    if (_constraintsDefined) _sigmaCumulationFactor = sqrt(_effectiveMu) / ( sqrt(_effectiveMu) + sqrt(_k->N) );
+    if (_areConstraintsDefined) _sigmaCumulationFactor = sqrt(_effectiveMu) / ( sqrt(_effectiveMu) + sqrt(_k->N) );
     else                     _sigmaCumulationFactor = (_effectiveMu + 2.0) / (_k->N + _effectiveMu + 3.0);
 
  // Setting Damping Factor
@@ -456,13 +456,13 @@ void CMAES::sampleSingle(size_t sampleIdx)
      _bDZMatrix[sampleIdx*_k->N+d] = _axisLengths[d] * _randomNumberStorage[sampleIdx*_k->N+d];
      _samplePopulation[sampleIdx * _k->N + d] = _currentMean[d] + _sigma * _bDZMatrix[sampleIdx*_k->N+d];
    }
-   else _temporaryBDZMatrix[d] = _axisLengths[d] * _randomNumberStorage[sampleIdx*_k->N+d];
+   else _auxiliarBDZMatrix[d] = _axisLengths[d] * _randomNumberStorage[sampleIdx*_k->N+d];
   }
 
   if (!_isDiagonal)
    for (size_t d = 0; d < _k->N; ++d) {
     _bDZMatrix[sampleIdx*_k->N+d] = 0.0;
-    for (size_t e = 0; e < _k->N; ++e) _bDZMatrix[sampleIdx*_k->N+d] += _covarianceEigenvectorMatrix[d*_k->N+e] * _temporaryBDZMatrix[e];
+    for (size_t e = 0; e < _k->N; ++e) _bDZMatrix[sampleIdx*_k->N+d] += _covarianceEigenvectorMatrix[d*_k->N+e] * _auxiliarBDZMatrix[e];
     _samplePopulation[sampleIdx * _k->N + d] = _currentMean[d] + _sigma * _bDZMatrix[sampleIdx*_k->N+d];
   }
   
@@ -504,7 +504,7 @@ void CMAES::updateDistribution()
  /* Generate _sortingIndex */
  sort_index(_fitnessVector, _sortingIndex, _currentSampleCount);
 
- if( (_constraintsDefined == false) ||  _isViabilityRegime )
+ if( (_areConstraintsDefined == false) ||  _isViabilityRegime )
   _bestValidSample = 0;
  else
  {
@@ -539,13 +539,13 @@ void CMAES::updateDistribution()
    _meanUpdate[d] = (_currentMean[d] - _previousMean[d])/_sigma;
  }
 
- /* calculate z := D^(-1) * B^(T) * _meanUpdate into _temporaryBDZMatrix */
+ /* calculate z := D^(-1) * B^(T) * _meanUpdate into _auxiliarBDZMatrix */
  for (size_t d = 0; d < _k->N; ++d) {
   double sum = 0.0;
   if (_isDiagonal) sum = _meanUpdate[d];
   else for (size_t e = 0; e < _k->N; ++e) sum += _covarianceEigenvectorMatrix[e*_k->N+d] * _meanUpdate[e]; /* B^(T) * _meanUpdate ( iterating B[e][d] = B^(T) ) */
 
-  _temporaryBDZMatrix[d] = sum / _axisLengths[d]; /* D^(-1) * B^(T) * _meanUpdate */
+  _auxiliarBDZMatrix[d] = sum / _axisLengths[d]; /* D^(-1) * B^(T) * _meanUpdate */
  }
 
  _conjugateEvolutionPathL2Norm = 0.0;
@@ -553,8 +553,8 @@ void CMAES::updateDistribution()
  /* cumulation for _sigma (ps) using B*z */
  for (size_t d = 0; d < _k->N; ++d) {
     double sum = 0.0;
-    if (_isDiagonal) sum = _temporaryBDZMatrix[d];
-    else for (size_t e = 0; e < _k->N; ++e) sum += _covarianceEigenvectorMatrix[d*_k->N+e] * _temporaryBDZMatrix[e];
+    if (_isDiagonal) sum = _auxiliarBDZMatrix[d];
+    else for (size_t e = 0; e < _k->N; ++e) sum += _covarianceEigenvectorMatrix[d*_k->N+e] * _auxiliarBDZMatrix[e];
 
     _conjugateEvolutionPath[d] = (1. - _sigmaCumulationFactor) * _conjugateEvolutionPath[d] + sqrt(_sigmaCumulationFactor * (2. - _sigmaCumulationFactor) * _effectiveMu) * sum;
 
@@ -575,7 +575,7 @@ void CMAES::updateDistribution()
  if(_hasDiscreteVariables) updateDiscreteMutationMatrix();
  
  /* update viability bounds */
- if( _constraintsDefined && (_isViabilityRegime == false) ) updateViabilityBoundaries();
+ if( _areConstraintsDefined && (_isViabilityRegime == false) ) updateViabilityBoundaries();
 
  /* update sigma */
  updateSigma();
@@ -633,7 +633,7 @@ void CMAES::adaptC(int hsig)
 void CMAES::updateSigma()
 {
  /* update for non-viable region */
- if( _constraintsDefined && (_isViabilityRegime == false) )
+ if( _areConstraintsDefined && (_isViabilityRegime == false) )
  {
    _globalSuccessRate = (1-_globalSuccessLearningRate)*_globalSuccessRate;
    if ( _previousBestEverValue != _bestEverValue ) _globalSuccessRate += _globalSuccessLearningRate;
@@ -779,21 +779,21 @@ void CMAES::updateDiscreteMutationMatrix()
 
 void CMAES::updateEigensystem(std::vector<double>& M)
 {
- eigen(_k->N, M, _temporaryAxisLengths, _auxiliarCovarianceEigenvectorMatrix);
+ eigen(_k->N, M, _auxiliarAxisLengths, _auxiliarCovarianceEigenvectorMatrix);
  
  /* find largest and smallest eigenvalue, they are supposed to be sorted anyway */
- double minEWtmp = *std::min_element(std::begin(_temporaryAxisLengths), std::end(_temporaryAxisLengths));
- double maxEWtmp = *std::max_element(std::begin(_temporaryAxisLengths), std::end(_temporaryAxisLengths));
+ double minEWtmp = *std::min_element(std::begin(_auxiliarAxisLengths), std::end(_auxiliarAxisLengths));
+ double maxEWtmp = *std::max_element(std::begin(_auxiliarAxisLengths), std::end(_auxiliarAxisLengths));
 
  if (minEWtmp <= 0.0) 
  { koraliWarning(KORALI_DETAILED, "Min Eigenvalue smaller or equal 0.0 (%+6.3e) after Eigen decomp (no update possible).\n", minEWtmp ); return; }
 
  for (size_t d = 0; d < _k->N; ++d) 
  {
-     _temporaryAxisLengths[d] = sqrt(_temporaryAxisLengths[d]);
-     if (std::isfinite(_temporaryAxisLengths[d]) == false)
+     _auxiliarAxisLengths[d] = sqrt(_auxiliarAxisLengths[d]);
+     if (std::isfinite(_auxiliarAxisLengths[d]) == false)
      {
-       koraliWarning(KORALI_DETAILED, "Could not calculate root of Eigenvalue (%+6.3e) after Eigen decomp (no update possible).\n", _temporaryAxisLengths[d] );
+       koraliWarning(KORALI_DETAILED, "Could not calculate root of Eigenvalue (%+6.3e) after Eigen decomp (no update possible).\n", _auxiliarAxisLengths[d] );
        return; 
      }
     for (size_t e = 0; e < _k->N; ++e) if (std::isfinite(_covarianceEigenvectorMatrix[d*_k->N+e]) == false)
@@ -804,7 +804,7 @@ void CMAES::updateEigensystem(std::vector<double>& M)
  }
  
  /* write back */
- for (size_t d = 0; d < _k->N; ++d) _axisLengths[d] = _temporaryAxisLengths[d];
+ for (size_t d = 0; d < _k->N; ++d) _axisLengths[d] = _auxiliarAxisLengths[d];
  _covarianceEigenvectorMatrix.assign(std::begin(_auxiliarCovarianceEigenvectorMatrix), std::end(_auxiliarCovarianceEigenvectorMatrix));
 
  _minimumCovarianceEigenvalue = minEWtmp;
@@ -867,7 +867,7 @@ void CMAES::printGeneration()
 {
  koraliLog(KORALI_MINIMAL, "Generation %zu\n", _k->_currentGeneration);
 
- if ( _constraintsDefined && _isViabilityRegime)
+ if ( _areConstraintsDefined && _isViabilityRegime)
  {
    koraliLog(KORALI_NORMAL, "Searching start (MeanX violates constraints) .. \n");
    koraliLog(KORALI_NORMAL, "Viability Bounds:\n");
@@ -884,7 +884,7 @@ void CMAES::printGeneration()
   for (size_t d = 0; d < _k->N; d++) koraliLogData(KORALI_DETAILED, "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _currentMean[d], _bestEverCoordinates[d]);
 
   koraliLog(KORALI_DETAILED, "Constraint Evaluation at Current Function Value:\n");
-  if ( _constraintsDefined )
+  if ( _areConstraintsDefined )
   {
    if ( _bestValidSample >= 0 )
       for (size_t c = 0; c < _k->_constraints.size(); c++) koraliLogData(KORALI_DETAILED, "         ( %+6.3e )\n", _constraintEvaluations[c][_bestValidSample]);
@@ -900,7 +900,7 @@ void CMAES::printGeneration()
   }
 
   koraliLog(KORALI_DETAILED, "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
-  if ( _constraintsDefined )
+  if ( _areConstraintsDefined )
   {
     koraliLog(KORALI_DETAILED, "Number of Constraint Evaluations: %zu\n", _constraintEvaluationCount);
     koraliLog(KORALI_DETAILED, "Number of Matrix Corrections: %zu\n", _covarianceMatrixAdaptationCount );
@@ -915,7 +915,7 @@ void CMAES::finalize()
   koraliLog(KORALI_MINIMAL, "Optimum found: %e\n", _bestEverValue);
   koraliLog(KORALI_MINIMAL, "Optimum found at:\n");
   for (size_t d = 0; d < _k->N; ++d) koraliLogData(KORALI_MINIMAL, "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverCoordinates[d]);
-  if ( _constraintsDefined )
+  if ( _areConstraintsDefined )
   {
     koraliLog(KORALI_MINIMAL, "Constraint Evaluation at Optimum:\n");
     for (size_t c = 0; c < _k->_constraints.size(); c++)

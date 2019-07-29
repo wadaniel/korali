@@ -364,7 +364,7 @@
     "Description": "Axis lengths (sqrt(Evals))"
    },
    {
-    "Name": "Temporary Axis Lengths",
+    "Name": "Auxiliar Axis Lengths",
     "Type": "std::vector<double>",
     "Description": "Temporary storage for Axis lengths."
    },
@@ -379,9 +379,9 @@
     "Description": "Temporary storage to hold B*D*randn()."
    },
    {
-    "Name": "Temporary BDZ Matrix",
+    "Name": "Auxiliar BDZ Matrix",
     "Type": "std::vector<double>",
-    "Description": "Auxiliar Temporary storage to hold B*D*randn()."
+    "Description": "Temporary storage to hold B*D*randn()."
    },
    {
     "Name": "Current Mean",
@@ -406,7 +406,7 @@
    {
     "Name": "Conjugate Evolution Path",
     "Type": "std::vector<double>",
-    "Description": "Conjugate evolution path for Covariance Matrix update for sigma update."
+    "Description": "Conjugate evolution path for sigma update."
    },
    {
     "Name": "Conjugate Evolution Path L2 Norm",
@@ -449,7 +449,7 @@
     "Description": "Evaluation of each constraint for each sample."
    },
    {
-    "Name": "Constraints Defined",
+    "Name": "Are Constraints Defined",
     "Type": "bool",
     "Description": "True if the number of constraints is higher than zero."
    },
@@ -461,7 +461,7 @@
    {
     "Name": "Best Valid Sample",
     "Type": "int",
-    "Description": "Best sample without constraint violations (otherwise -1)."
+    "Description": "Index of best sample without constraint violations (otherwise -1)."
    },
    {
     "Name": "Global Success Rate",

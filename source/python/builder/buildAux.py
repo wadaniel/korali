@@ -8,32 +8,42 @@ def getVariableType(v):
  # Replacing bools with ints for Python compatibility
  return v['Type'].replace('bool', 'int')
  
-def getVariableName(v):
- cVarName = v["Name"].replace(" ", "")
+def getCXXVariableName(v):
+ cVarName = ''
+ for name in v["Name"]: cVarName += name 
+ cVarName = cVarName.replace(" ", "")
  cVarName = '_' + cVarName[0].lower() + cVarName[1:]
  return cVarName
+
+def getVariablePath(v):
+ cVarPath = ''
+ for name in v["Name"]: cVarPath += '["' + name + '"]' 
+ return cVarPath
  
 def getVariableDefault(v):
  return v.get('Default', '')
-
+ 
+def getVariableEnabledDefault(v):
+ if ( v.get('Default', '') ): return 'true'
+ return 'false'
+ 
+def getVariableDescriptor(v):
+ if ('size_t' in v['Type']): return '%lu'
+ if ('int' in v['Type']): return '%d'
+ if ('bool' in v['Type']): return '%b'
+ if ('double' in v['Type']): return '%e'
+ if ('float' in v['Type']): return '%e'
+ print('Error: Unrecognized type')
+ exit(-1)
+ 
 #####################################################################
 
-def consumeValue(base, moduleName, settingName, varName, varType, varDefault, path = []):
+def consumeValue(base, moduleName, path, varName, varType, varDefault):
  cString = '\n'
  
- cString += ('  if (isDefined(' + base + ', {')
- for p in path: cString += (' "' + p +'",')
- cString += (' "' + settingName + '"})) \n  { \n')
-
- cString += ('   ' + varName + ' = ' + base )
- for p in path: cString += ('.at("' + p +'")')
- getLine = '.at("' + settingName + '").get<' + varType + '>();\n'
- cString += getLine
- 
- cString += ('   ' + base)
- for p in path: cString += ('.at("' + p +'")')
- cString += ('.erase("' + settingName + '");\n')
- 
+ cString += (' if (isDefined(' + base + ', "' + path.replace('"', "'") + '"))  \n  { \n')
+ cString += ('   ' + varName + ' = ' + base + path + '.get<' + varType + '>();\n' )
+ cString += ('   eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n')
  cString += ('  }\n')
  
  if (varDefault == 'Korali Skip Default'):
@@ -41,9 +51,7 @@ def consumeValue(base, moduleName, settingName, varName, varType, varDefault, pa
  
  cString += ('  else ')
  if (varDefault == ''):
-  cString += ('  koraliError("No value provided for mandatory setting: ')
-  for p in path: cString += ('[' + p + '] > ')
-  cString += ('[' + settingName + '], required by ' + moduleName + '.\\n"); ')
+  cString += ('  koraliError("No value provided for mandatory setting: ' + path.replace('"', "'") + ' required by ' + moduleName + '.\\n"); ')
  else:
   if ("std::string" in varType): varDefault = '"' + varDefault + '"'
   defaultLine = varName + ' = ' + varDefault + ';'

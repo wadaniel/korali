@@ -22,12 +22,15 @@ void koraliLogData(const verbosity level, const char* format, ... );
 void koraliLog(const verbosity level, const char* format, ... );
 void koraliWarning(const verbosity level, const char* format, ... );
 void koraliError(const char* format, ... );
+std::vector<std::string> getJsonPath(std::string path);
 bool isEmpty(nlohmann::json& js);
-bool isDefined(nlohmann::json js, std::vector<std::string> settings);
-bool isArray(nlohmann::json js, std::vector<std::string> settings);
+void eraseValue(nlohmann::json& js, std::string path);
+bool isDefined(nlohmann::json& js, std::vector<std::string> settings);
+bool isDefined(nlohmann::json& js, std::string path);
+bool isArray(nlohmann::json& js, std::vector<std::string> settings);
 nlohmann::json consume(nlohmann::json& js, std::vector<std::string> settings, jsonType type, std::string def = "__NO_DEFAULT" );
 nlohmann::json loadJsonFromFile(const char* fileName);
-void saveJsonToFile(const char* fileName, nlohmann::json js);
+void saveJsonToFile(const char* fileName, nlohmann::json& js);
 
 class KoraliJsonWrapper
 {

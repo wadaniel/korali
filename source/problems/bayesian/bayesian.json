@@ -1,16 +1,17 @@
 {
  "Name": "Bayesian Inference",
- "Alias": "Bayesian",
+ "Alias": "Bayesian Inference",
+ "Class": "Bayesian",
  
  "Problem Configuration": 
  [
    {
-    "Name": "Likelihood Model",
+    "Name": [ "Likelihood", "Model" ],
     "Type": "std::string",
     "Description": "Indicates how Korali will evaluate the likelihood component."
    },
    {
-    "Name": "Reference Data",
+    "Name": [ "Likelihood", "Reference Data" ],
     "Type": "std::vector<double>",
     "Description": "Evaluation of the model on specific data points, required to calculate likelihood."
    }
@@ -19,7 +20,7 @@
  "Variables Configuration": 
  [
    {
-    "Name": "Type",
+    "Name": [ "Type" ],
     "Type": "std::string",
     "Default": "Computational",
     "Description": "Specifies the purpose of the variable for the bayesian model."
@@ -29,12 +30,12 @@
  "Internal Settings": 
  [
    {
-    "Name": "Computational Variable Indices",
+    "Name": [ "Computational Variable Indices" ],
     "Type": "std::vector<size_t>",
     "Description": "Stores the indices of variables that are of computational type."
    },
    {
-    "Name": "Statistical Variable Indices",
+    "Name": [ "Statistical Variable Indices" ],
     "Type": "std::vector<size_t>",
     "Description": "Stores the indices of variables that are of statistical type."
    }

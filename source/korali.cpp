@@ -117,8 +117,15 @@ void Korali::Engine::setConfiguration()
  if (_problemType == "Hierarchical Bayesian") _problem = std::make_shared<Korali::Problem::Hierarchical>();
  if (_problem == nullptr) koraliError("Incorrect or undefined Problem '%s'.\n", _problemType.c_str());
 
- // Create Variables
+ // Configure Solver
+ _solverType = consume(_js, { "Solver", "Type" }, KORALI_STRING);
+ if (_solverType == "CMAES") _solver = std::make_shared<Korali::Solver::CMAES>();
+ if (_solverType == "DEA")    _solver = std::make_shared<Korali::Solver::DEA>();
+ if (_solverType == "MCMC")   _solver = std::make_shared<Korali::Solver::MCMC>();
+ if (_solverType == "TMCMC")  _solver = std::make_shared<Korali::Solver::TMCMC>();
+ if (_solver == nullptr) koraliError("Incorrect or undefined Solver '%s'.\n", _solverType.c_str());
 
+ // Create Variables
  if (isArray(_js, { "Variables" } ))
  for (size_t i = 0; i < _js["Variables"].size(); i++)
  {
@@ -129,14 +136,6 @@ void Korali::Engine::setConfiguration()
 
  N = _variables.size();
  if (N == 0) koraliError("No variables have been defined.\n");
-
- // Configure Solver
- _solverType = consume(_js, { "Solver", "Type" }, KORALI_STRING);
- if (_solverType == "CMAES") _solver = std::make_shared<Korali::Solver::CMAES>();
- if (_solverType == "DEA")    _solver = std::make_shared<Korali::Solver::DEA>();
- if (_solverType == "MCMC")   _solver = std::make_shared<Korali::Solver::MCMC>();
- if (_solverType == "TMCMC")  _solver = std::make_shared<Korali::Solver::TMCMC>();
- if (_solver == nullptr) koraliError("Incorrect or undefined Solver '%s'.\n", _solverType.c_str());
 
  // Setting module configuration
  _problem->setConfiguration();

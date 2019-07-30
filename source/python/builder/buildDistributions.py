@@ -88,3 +88,8 @@ def buildDistributions(koraliDir):
  newBaseString = distributionBaseCodeString.replace('  // Distribution list', distributionCreationList) 
  with open(curdir + '/base.cpp', 'w+') as file: file.write(newBaseString)
  
+  ###### Creating base header file
+ with open(curdir + '/base._hpp', 'r') as file: distributionBaseHeaderString = file.read()
+ newBaseString = distributionBaseHeaderString
+ with open(curdir + '/base.hpp', 'w+') as file: file.write(newBaseString)
+ 

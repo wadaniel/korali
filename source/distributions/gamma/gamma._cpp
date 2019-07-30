@@ -1,13 +1,13 @@
 #include "korali.hpp"
 
-void Korali::Gamma::initialize()
+void Korali::Distribution::Gamma::initialize()
 {
- Korali::Base::initialize();
+ Korali::Distribution::Base::initialize();
 
  if (_shape > 0 && _scale > 0) _aux = -gsl_sf_lngamma(_shape) - _shape*log(_scale);
 }
 
-void Korali::Gamma::finalize()
+void Korali::Distribution::Gamma::finalize()
 {
 }
 
@@ -15,17 +15,17 @@ void setProperty(std::string propertyName, double value)
 {
 }
 
-double Korali::Gamma::getDensity(double x)
+double Korali::Distribution::Gamma::getDensity(double x)
 {
  return gsl_ran_gamma_pdf( x, _shape, _scale );
 }
 
-double Korali::Gamma::getLogDensity(double x)
+double Korali::Distribution::Gamma::getLogDensity(double x)
 {
  if(x < 0) return -INFINITY; return _aux + (_shape-1)*log(x) - x/_scale;
 }
 
-double Korali::Gamma::getRandomNumber()
+double Korali::Distribution::Gamma::getRandomNumber()
 {
  return gsl_ran_gamma(_range, _shape, _scale);
 }

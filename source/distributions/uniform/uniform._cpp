@@ -1,13 +1,13 @@
 #include "korali.hpp"
 
-void Korali::Uniform::initialize()
+void Korali::Distribution::Uniform::initialize()
 {
- Korali::Base::initialize();
+ Korali::Distribution::Base::initialize();
 
  if (_maximum-_minimum > 0) _aux = -gsl_sf_log(_maximum-_minimum);
 }
 
-void Korali::Uniform::finalize()
+void Korali::Distribution::Uniform::finalize()
 {
 }
 
@@ -15,17 +15,17 @@ void setProperty(std::string propertyName, double value)
 {
 }
 
-double Korali::Uniform::getDensity(double x)
+double Korali::Distribution::Uniform::getDensity(double x)
 {
  return gsl_ran_flat_pdf(x, _minimum, _maximum);
 }
 
-double Korali::Uniform::getLogDensity(double x)
+double Korali::Distribution::Uniform::getLogDensity(double x)
 {
  if (x >= _minimum && x <= _maximum) return _aux; return -INFINITY;
 }
 
-double Korali::Uniform::getRandomNumber()
+double Korali::Distribution::Uniform::getRandomNumber()
 {
  return gsl_ran_flat(_range, _minimum, _maximum);
 }

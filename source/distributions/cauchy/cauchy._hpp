@@ -12,6 +12,7 @@ class Cauchy : public Base {
  public:
 
  void setProperty(std::string propertyName, double value) override;
+ void updateDistribution(std::vector<double> sample) override;
  double getDensity(double x) override;
  double getLogDensity(double x) override;
  double getRandomNumber() override;

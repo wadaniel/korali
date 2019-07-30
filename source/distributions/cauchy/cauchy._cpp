@@ -12,9 +12,7 @@ void Korali::Distribution::Cauchy::finalize()
  Korali::Distribution::Base::finalize();
 }
 
-void setProperty(std::string propertyName, double value)
-{
-}
+
 
 double Korali::Distribution::Cauchy::getDensity(double x)
 {

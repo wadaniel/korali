@@ -56,6 +56,7 @@ def buildDistributions(koraliDir):
  
   # Consume Distribution Settings
   for v in distributionConfig["Distribution Configuration"]:
+    distributionCodeString += ' ' + getCXXVariableName(v) + 'Conditional = "";\n'
     distributionCodeString += ' if(js' + getVariablePath(v) + '.is_number()) ' + getCXXVariableName(v) + ' = js' + getVariablePath(v) + ';\n'
     distributionCodeString += ' if(js' + getVariablePath(v) + '.is_string()) ' + getCXXVariableName(v) + 'Conditional = js' + getVariablePath(v) + ';\n' 
     distributionCodeString += ' eraseValue(js, "' + getVariablePath(v).replace('"', "'") + '");\n\n' 
@@ -71,8 +72,8 @@ def buildDistributions(koraliDir):
   distributionCodeString += 'js["Type"] = "' + distributionConfig["Alias"] + '";\n'
  
   for v in distributionConfig["Distribution Configuration"]: 
-    distributionCodeString += ' if(' + getCXXVariableName(v) + 'Conditional.empty() == false)js' + getVariablePath(v) + ' = ' + getCXXVariableName(v) + ';\n'
-    distributionCodeString += ' if(' + getCXXVariableName(v) + 'Conditional.empty() == true) js' + getVariablePath(v) + ' = ' + getCXXVariableName(v) + 'Conditional;\n'
+    distributionCodeString += ' if(' + getCXXVariableName(v) + 'Conditional == "") js' + getVariablePath(v) + ' = ' + getCXXVariableName(v) + ';\n'
+    distributionCodeString += ' if(' + getCXXVariableName(v) + 'Conditional != "") js' + getVariablePath(v) + ' = ' + getCXXVariableName(v) + 'Conditional;\n'
     
   for v in distributionConfig["Internal Settings"]: 
     distributionCodeString += 'js["Internal"]' + getVariablePath(v) + ' = ' + getCXXVariableName(v) + ';\n'
@@ -103,6 +104,8 @@ def buildDistributions(koraliDir):
     conditionalCheckString += '  if (_k->_variables[i]->_name == ' + getCXXVariableName(v) + 'Conditional) \n'
     conditionalCheckString += '  {\n'
     conditionalCheckString += '   ' + getCXXVariableName(v) + 'Recognized = true;\n'
+    conditionalCheckString += '   hasConditionals = true;\n'
+    
     conditionalCheckString += '   _conditionalIndexes.push_back(i);\n'
     conditionalCheckString += '   _conditionalPointers.push_back(&' + getCXXVariableName(v) + ');\n'
     conditionalCheckString += '  }\n'

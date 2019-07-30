@@ -3,10 +3,11 @@
 void Korali::Distribution::Geometric::initialize()
 {
  Korali::Distribution::Base::initialize();
+ bool hasConditionals = false;
 
  // Check for conditional properties
 
- updateDistribution();
+ if (hasConditionals == false) updateDistribution();
 }
 
 void Korali::Distribution::Geometric::finalize()

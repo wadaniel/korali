@@ -54,9 +54,7 @@ def buildVariables(koraliDir):
   
   variableGetSettingString += ' if (_k->_solverType == "' + solverConfig["Alias"] + '")\n {\n'
   for v in solverConfig["Variables Configuration"]: 
-    variableGetSettingString += ' if (is' + getCXXVariableName(v) + 'Defined == false)'
     variableGetSettingString += saveValue('js', getVariablePath(v), getCXXVariableName(v), getVariableType(v))
-    variableGetSettingString += ' is' + getCXXVariableName(v) + 'Defined = true;\n\n'
     
   variableGetSettingString += ' }\n\n'
  
@@ -100,9 +98,7 @@ def buildVariables(koraliDir):
   
   variableGetSettingString += ' if ( _k->_problemType == "' + problemConfig["Alias"] + '")\n {\n'
   for v in problemConfig["Variables Configuration"]: 
-    variableGetSettingString += ' if (is' + getCXXVariableName(v) + 'Defined == false)'
     variableGetSettingString += saveValue('js', getVariablePath(v), getCXXVariableName(v), getVariableType(v))
-    variableSetSettingString += ' is' + getCXXVariableName(v) + 'Defined = true;\n\n'
     
   variableGetSettingString += ' }\n\n'
  

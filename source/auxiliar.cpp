@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <vector>
+#include <cstdlib>
 #include "auxiliar.hpp"
 #include "korali.hpp"
 
@@ -129,7 +130,7 @@ void Korali::koraliError(const char* format, ... )
  fflush(stderr);
  free(outstr);
 
- exit(-1);
+ std::abort();
 }
 
 bool Korali::isEmpty(nlohmann::json& js)

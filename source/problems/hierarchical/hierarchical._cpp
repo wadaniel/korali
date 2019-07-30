@@ -2,16 +2,16 @@
 
 void Korali::Problem::Hierarchical::initialize()
 {
- bool foundModel = false;
- if (_model == "Sample Psi")   foundModel = true;
- if (_model == "Sample Theta") foundModel = true;
- if (foundModel == false) koraliError("Incorrect or no model selected for Hierarchical Bayesian: %s.\n", _model.c_str());
-
  if (_conditionalPriors.size() == 0) koraliError("Hierarchical Bayesian problems require at least one conditional prior\n");
 
  if (_k->_constraints.size() > 0) koraliError("Hierarchical Bayesian problems do not allow constraint definitions.\n");
  if (_k->_modelDefined == true) koraliError("Hierarchical Bayesian does not require a computational model, but one was provided.\n");
  if (_subProblems.size() < 2) koraliError("Hierarchical Bayesian problem requires defining at least two executed sub-problems.\n");
+
+ bool foundModel = false;
+ if (_model == "Sample Psi")   { foundModel = true; _k->setModel(Korali::Problem::Hierarchical::samplePsi); }
+ if (_model == "Sample Theta") { foundModel = true; _k->setModel(Korali::Problem::Hierarchical::sampleTheta); }
+ if (foundModel == false) koraliError("Incorrect or no model selected for Hierarchical Bayesian: %s.\n", _model.c_str());
 
  // Creating JSON object from string
  for (size_t i = 0; i < _subProblemsJson.size(); i++) _subProblemsJson.push_back(nlohmann::json::parse(_subProblems[i]));

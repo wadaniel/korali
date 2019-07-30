@@ -26,23 +26,27 @@ kH["Problem"]["Conditional Priors"][0]["Mean"] = "Psi 1"
 kH["Problem"]["Conditional Priors"][0]["Standard Deviation"] = "Psi 2"
 
 kH["Problem"]["Conditional Priors"][1]["Type"] = "Uniform"
-kH["Problem"]["Conditional Priors"][1]["Minimum"] = 1.0
+kH["Problem"]["Conditional Priors"][1]["Minimum"] = -10.0
 kH["Problem"]["Conditional Priors"][1]["Maximum"] = "Psi 3"
 
 kH["Variables"][0]["Name"] = "Psi 1"
 kH["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"
-kH["Variables"][0]["Prior Distribution"]["Minimum"] = -10.0
-kH["Variables"][0]["Prior Distribution"]["Maximum"] = +10.0
+kH["Variables"][0]["Prior Distribution"]["Minimum"] = -1000.0
+kH["Variables"][0]["Prior Distribution"]["Maximum"] = +1000.0
 
 kH["Variables"][1]["Name"] = "Psi 2"
 kH["Variables"][1]["Prior Distribution"]["Type"] = "Uniform"
-kH["Variables"][1]["Prior Distribution"]["Minimum"] =   0.0
-kH["Variables"][1]["Prior Distribution"]["Maximum"] = +10.0
+kH["Variables"][1]["Prior Distribution"]["Minimum"] = +20.0
+kH["Variables"][1]["Prior Distribution"]["Maximum"] = +30.0
 
 kH["Variables"][2]["Name"] = "Psi 3"
 kH["Variables"][2]["Prior Distribution"]["Type"] = "Uniform"
-kH["Variables"][2]["Prior Distribution"]["Minimum"] = -10.0
-kH["Variables"][2]["Prior Distribution"]["Maximum"] = +10.0
+kH["Variables"][2]["Prior Distribution"]["Minimum"] = +10.0
+kH["Variables"][2]["Prior Distribution"]["Maximum"] = +20.0
+
+kH["Solver"]["Type"] = "TMCMC"
+kH["Solver"]["Population Size"] = 5000
+kH["Solver"]["Termination Criteria"]["Max Generations"] = 500
 
 kH["Solver"]["Type"] = "TMCMC"
 kH["Solver"]["Population Size"] = 5000

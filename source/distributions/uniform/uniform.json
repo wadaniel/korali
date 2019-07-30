@@ -1,0 +1,23 @@
+{
+ "Name": "Uniform Distribution",
+ "Alias": "Uniform",
+ "Class": "Uniform",
+ 
+ "Distribution Configuration": 
+ [
+   {
+    "Name": [ "Minimum" ],
+    "Description": ""
+   },
+   {
+    "Name": [ "Maximum" ],
+    "Description": ""
+   }
+ ],
+ 
+ "Internal Settings": 
+ [
+ ]
+ 
+}
+ 

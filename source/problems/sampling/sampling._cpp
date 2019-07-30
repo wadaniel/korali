@@ -1,24 +1,5 @@
 #include "korali.hpp"
 
-/************************************************************************/
-/*                    Configuration Methods                             */
-/************************************************************************/
-
-void Korali::Problem::Sampling::getConfiguration()
-{
- _k->_js["Problem"]["Type"] = "Sampling";
-}
-
-void Korali::Problem::Sampling::setConfiguration()
-{
-
-
-}
-
-/************************************************************************/
-/*                    Functional Methods                                */
-/************************************************************************/
-
 void Korali::Problem::Sampling::initialize()
 {
  if (_k->_constraints.size() > 0) koraliError("Sampling problems do not allow constraint definitions.\n");

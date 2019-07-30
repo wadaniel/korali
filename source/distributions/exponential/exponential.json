@@ -1,0 +1,23 @@
+{
+ "Name": "Exponential Distribution",
+ "Alias": "Exponential",
+ "Class": "Exponential",
+ 
+ "Distribution Configuration": 
+ [
+   {
+    "Name": [ "Location" ],
+    "Description": ""
+   },
+   {
+    "Name": [ "Mean" ],
+    "Description": ""
+   }
+ ],
+ 
+ "Internal Settings": 
+ [
+ ]
+ 
+}
+ 

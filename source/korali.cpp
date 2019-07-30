@@ -73,8 +73,12 @@ void Korali::Engine::setConfiguration()
 {
  auto js = _js;
 
- // Configure Conduit
+ // Obtaining module selections
+ _solverType = consume(_js, { "Solver", "Type" }, KORALI_STRING);
+ _problemType = consume(_js, { "Problem", "Type" }, KORALI_STRING);
  _conduitType =  consume(_js, { "Conduit", "Type" }, KORALI_STRING, "Simple");
+
+ // Configure Conduit
  if (_conduitType == "Simple") _conduit = std::make_shared<Korali::Conduit::Simple>();
  if (_conduitType == "External") _conduit = std::make_shared<Korali::Conduit::External>();
  if (_conduitType == "MPI") _conduit = std::make_shared<Korali::Conduit::MPI>();
@@ -109,29 +113,24 @@ void Korali::Engine::setConfiguration()
 
  _result_dir = consume(_js, { "General", "Results Output", "Path" }, KORALI_STRING, "_korali_result");
 
+ // Create Variables
+ if (isArray(_js, { "Variables" } ))
+  for (size_t i = 0; i < _js["Variables"].size(); i++) _variables.push_back(new Korali::Variable());
+
+ N = _variables.size();
+ if (N == 0) koraliError("No variables have been defined.\n");
+
+ for (size_t i = 0; i < N; i++) _variables[i]->setConfiguration(_js["Variables"][i]);
+
  // Configure Problem
- _problemType = consume(_js, { "Problem", "Type" }, KORALI_STRING);
  if (_problemType == "Optimization")  _problem = std::make_shared<Korali::Problem::Optimization>();
  if (_problemType == "Sampling") _problem = std::make_shared<Korali::Problem::Sampling>();
  if (_problemType == "Bayesian Inference") _problem = std::make_shared<Korali::Problem::Bayesian>();
  if (_problemType == "Hierarchical Bayesian") _problem = std::make_shared<Korali::Problem::Hierarchical>();
  if (_problem == nullptr) koraliError("Incorrect or undefined Problem '%s'.\n", _problemType.c_str());
 
- // Create Variables
-
- if (isArray(_js, { "Variables" } ))
- for (size_t i = 0; i < _js["Variables"].size(); i++)
- {
-  _k->_variables.push_back(new Korali::Variable());
-  _k->_js["Variables"][i]["Prior Distribution"]["Seed"] = _k->_seed++;
-  _k->_variables[i]->setConfiguration(_js["Variables"][i]);
- }
-
- N = _variables.size();
- if (N == 0) koraliError("No variables have been defined.\n");
-
  // Configure Solver
- _solverType = consume(_js, { "Solver", "Type" }, KORALI_STRING);
+
  if (_solverType == "CMAES") _solver = std::make_shared<Korali::Solver::CMAES>();
  if (_solverType == "DEA")    _solver = std::make_shared<Korali::Solver::DEA>();
  if (_solverType == "MCMC")   _solver = std::make_shared<Korali::Solver::MCMC>();
@@ -173,7 +172,7 @@ void Korali::Engine::addConstraint(std::function<void(Korali::Model&)> constrain
 
 void Korali::Engine::start(bool isDryRun)
 {
- if(_isFinished) { koraliWarning(KORALI_MINIMAL, "Cannot restart engine, a previous run has already been executed."); return; }
+ if(_isFinished) { koraliWarning(KORALI_MINIMAL, "Cannot restart engine, a previous run has already been executed.\n"); return; }
  _k = this; 
 
  setConfiguration();
@@ -184,16 +183,13 @@ void Korali::Engine::start(bool isDryRun)
  std::chrono::time_point<std::chrono::system_clock> startTime, endTime;
 
  // Running Engine
- _conduit->initialize();
  _problem->initialize();
  if (_currentGeneration == 0) _solver->initialize();
-
+ _conduit->initialize();
 
  if (_conduit->isRoot())
  {
   saveState(_currentGeneration);
-
-  _solver->printGeneration();
 
   auto startTime = std::chrono::system_clock::now();
 
@@ -208,9 +204,14 @@ void Korali::Engine::start(bool isDryRun)
 
    auto t1 = std::chrono::system_clock::now();
 
-   koraliLog(KORALI_DETAILED, "Generation Time: %.3fs\n", std::chrono::duration<double>(t1-t0).count());
+   if (_currentGeneration % _consoleOutputFrequency == 0)
+   {
+    koraliLog(KORALI_MINIMAL,  "--------------------------------------------------------------------\n");
+    koraliLog(KORALI_MINIMAL,  "Generation: #%zu\n", _currentGeneration);
+    koraliLog(KORALI_DETAILED, "Generation Time: %.3fs\n", std::chrono::duration<double>(t1-t0).count());
+    _solver->printGeneration();
+   }
 
-   if (_currentGeneration % _consoleOutputFrequency == 0) _solver->printGeneration();
    if (_currentGeneration % _resultsOutputFrequency == 0) saveState(_currentGeneration);
   }
 
@@ -219,10 +220,14 @@ void Korali::Engine::start(bool isDryRun)
   saveState(_currentGeneration);
   saveState("final.json");
 
+  koraliLog(KORALI_MINIMAL, "--------------------------------------------------------------------\n");
+  koraliLog(KORALI_MINIMAL, "%s finished correctly.\n", _solverType.c_str(), _currentGeneration);
+
   _solver->finalize();
   _problem->finalize();
   _conduit->finalize();
 
+  koraliLog(KORALI_MINIMAL, "--------------------------------------------------------------------\n");
   koraliLog(KORALI_MINIMAL, "Total Generations: %lu\n", _currentGeneration);
   koraliLog(KORALI_MINIMAL, "Total Function Evaluations: %lu\n", _functionEvaluationCount);
   koraliLog(KORALI_MINIMAL, "Elapsed Time: %.3fs\n", std::chrono::duration<double>(endTime-startTime).count());

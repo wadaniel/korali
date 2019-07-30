@@ -1,0 +1,29 @@
+#ifndef _KORALI_VARIABLE_HPP_
+#define _KORALI_VARIABLE_HPP_
+
+#include <string>
+#include "json.hpp"
+
+namespace Korali {
+
+class Variable
+{
+ private:
+
+ public:
+
+ bool _isLogSpace;
+ std::string _name;
+
+ Variable();
+ ~Variable();
+
+ void getConfiguration(nlohmann::json& js);
+ void setConfiguration(nlohmann::json& js);
+ void setInheritedSettings(nlohmann::json& js);
+ void getInheritedSettings(nlohmann::json& js);
+ };
+
+} // namespace Korali
+
+#endif // _KORALI_VARIABLE_HPP_

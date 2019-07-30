@@ -1,0 +1,23 @@
+{
+ "Name": "Gaussian Distribution",
+ "Alias": "Gaussian",
+ "Class": "Gaussian",
+ 
+ "Distribution Configuration": 
+ [
+   {
+    "Name": [ "Mean" ],
+    "Description": ""
+   },
+   {
+    "Name": [ "Standard Deviation" ],
+    "Description": ""
+   }
+ ],
+ 
+ "Internal Settings": 
+ [
+ ]
+ 
+}
+ 

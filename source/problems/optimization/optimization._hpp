@@ -5,25 +5,18 @@
 
 namespace Korali { namespace Problem {
 
-#ifndef KORALI_OPTOBJECTIVE
-#define KORALI_OPTOBJECTIVE
-enum optimizationObjective {maximizeFitness, minimizeFitness};
-#endif
-
 class Optimization : public Base
 {
- public:
+ private:
 
- optimizationObjective _objective;
+
+ public:
 
  void packVariables(double* sample, Korali::Model& data) override;
  double evaluateFitness(Korali::Model& data) override;
  double evaluateLogPrior(double* sample) override;
-
  void initialize() override;
  void finalize() override;
-
- // Serialization Methods
  void getConfiguration() override;
  void setConfiguration() override;
 };

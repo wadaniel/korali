@@ -24,15 +24,15 @@ def buildSolvers(koraliDir):
   solverHeaderString = ''
   
   for v in solverConfig["Solver Configuration"]:
-   solverHeaderString += getVariableType(v) + ' ' + getVariableName(v) + ';\n'
+   solverHeaderString += getVariableType(v) + ' ' + getCXXVariableName(v) + ';\n'
      
   for v in solverConfig["Termination Criteria"]:
-   solverHeaderString += getVariableType(v) + ' ' + getVariableName(v) + ';\n'
-   solverHeaderString += 'int ' + getVariableName(v) + 'Enabled;\n'
-   solverHeaderString += 'int ' + getVariableName(v) + 'Triggered;\n'
+   solverHeaderString += getVariableType(v) + ' ' + getCXXVariableName(v) + ';\n'
+   solverHeaderString += 'int ' + getCXXVariableName(v) + 'Enabled;\n'
+   solverHeaderString += 'int ' + getCXXVariableName(v) + 'Triggered;\n'
    
   for v in solverConfig["Internal Settings"]:
-   solverHeaderString += getVariableType(v) + ' ' + getVariableName(v) + ';\n'
+   solverHeaderString += getVariableType(v) + ' ' + getCXXVariableName(v) + ';\n'
        
   # Loading template header .hpp file
   solverTemplateHeaderFile = solverPath + '/' + solverName + '._hpp'
@@ -46,60 +46,46 @@ def buildSolvers(koraliDir):
   
   ###### Producing solver.cpp
   
-  solverCodeString = 'void Korali::Solver::' + solverConfig["Alias"] + '::setConfiguration() \n{\n'
+  solverCodeString = 'void Korali::Solver::' + solverConfig["Class"] + '::setConfiguration() \n{\n'
  
   # Consume Solver Settings
   for v in solverConfig["Solver Configuration"]:
-    solverCodeString += consumeValue('_k->_js', solverConfig["Alias"], v["Name"], getVariableName(v), getVariableType(v), getVariableDefault(v), [ 'Solver' ])
+    solverCodeString += consumeValue('_k->_js', solverConfig["Alias"], '["Solver"]' + getVariablePath(v), getCXXVariableName(v), getVariableType(v), getVariableDefault(v))
   
   for v in solverConfig["Internal Settings"]:
-    solverCodeString += consumeValue('_k->_js', solverConfig["Alias"], v["Name"], getVariableName(v), getVariableType(v), 'Korali Skip Default', [ 'Solver', 'Internal' ])
+    solverCodeString += consumeValue('_k->_js', solverConfig["Alias"], '["Solver"]["Internal"]' + getVariablePath(v), getCXXVariableName(v), getVariableType(v), 'Korali Skip Default')
   
   for v in solverConfig["Termination Criteria"]:
-   terminationString = ''
-   
-   if (not getVariableDefault(v)): 
-    solverCodeString += '\n ' + getVariableName(v) + 'Enabled = false;'
-    terminationString = consumeValue('_k->_js', solverConfig["Alias"], v["Name"], getVariableName(v), getVariableType(v), 'Korali Skip Default', [ 'Solver', 'Termination Criteria' ])
-    terminationString = terminationString.replace(getVariableName(v) + ' = ', getVariableName(v) + 'Enabled = true;\n  ' + getVariableName(v) + ' = ') 
-   else:
-    solverCodeString += '\n ' + getVariableName(v) + 'Enabled = true;'
-    terminationString = consumeValue('_k->_js', solverConfig["Alias"], v["Name"], getVariableName(v), getVariableType(v), getVariableDefault(v), [ 'Solver', 'Termination Criteria' ])
-  
-   solverCodeString += terminationString
-   solverCodeString += consumeValue('_k->_js', solverConfig["Alias"], v["Name"] + ' Triggered', getVariableName(v) + 'Triggered', 'int', 'false', [ 'Solver', 'Termination Criteria' ])  
+    solverCodeString += consumeValue('_k->_js', solverConfig["Alias"], '["Solver"]["Termination Criteria"]' + getVariablePath(v), getCXXVariableName(v), getVariableType(v), getVariableDefault(v))
  
   solverCodeString += '} \n\n'
   
   ###### Creating Solver Get Configuration routine
   
-  solverCodeString += 'void Korali::Solver::' + solverConfig["Alias"]  + '::getConfiguration() \n{\n\n'
+  solverCodeString += 'void Korali::Solver::' + solverConfig["Class"]  + '::getConfiguration() \n{\n\n'
   solverCodeString += ' _k->_js["Solver"]["Type"] = "' + solverConfig["Alias"] + '";\n'
- 
+  
   for v in solverConfig["Solver Configuration"]: 
-    solverCodeString += ' _k->_js["Solver"]["' + v["Name"] + '"] = ' + getVariableName(v) + ';\n'
+    solverCodeString += saveValue('_k->_js', '["Solver"]' + getVariablePath(v), getCXXVariableName(v), getVariableType(v))
     
   for v in solverConfig["Internal Settings"]: 
-    solverCodeString += ' _k->_js["Solver"]["Internal"]["' + v["Name"] + '"] = ' + getVariableName(v) + ';\n'
+    solverCodeString += saveValue('_k->_js', '["Solver"]["Internal"]' + getVariablePath(v), getCXXVariableName(v), getVariableType(v))
   
   for v in solverConfig["Termination Criteria"]: 
-    solverCodeString += ' if (' + getVariableName(v) + 'Enabled == 1) _k->_js["Solver"]["Termination Criteria"]["' + v["Name"] + '"] = ' + getVariableName(v) + ';\n'
-    solverCodeString += ' _k->_js["Solver"]["Termination Criteria"]["' + v["Name"] + ' Triggered"] = ' + getVariableName(v) + 'Triggered;\n'
+    solverCodeString += saveValue('_k->_js', '["Solver"]["Termination Criteria"]' + getVariablePath(v), getCXXVariableName(v), getVariableType(v))
   
-  solverCodeString += ' } \n\n'
+  solverCodeString += '} \n\n'
   
   ###### Creating Solver Check Termination routine
   
-  solverCodeString += 'bool Korali::Solver::' + solverConfig["Alias"]  + '::checkTermination()\n'
+  solverCodeString += 'bool Korali::Solver::' + solverConfig["Class"]  + '::checkTermination()\n'
   solverCodeString += '{\n'
   solverCodeString += ' bool hasFinished = false;\n\n'
  
   for v in solverConfig["Termination Criteria"]: 
-    solverCodeString += ' if (' + getVariableName(v) + 'Enabled == true)\n'
     solverCodeString += ' if (' + v["Criteria"] + ')\n'
     solverCodeString += ' {\n'
-    solverCodeString += '  ' + getVariableName(v) + 'Triggered = true;\n'
-    solverCodeString += '  koraliLog(KORALI_MINIMAL, "' + solverConfig["Alias"] + ' Termination Criteria met: \\"' + v["Name"] + '\\" (%s).\\n", std::to_string(' + getVariableName(v)  +').c_str());\n'
+    solverCodeString += '  koraliLog(KORALI_MINIMAL, "' + solverConfig["Alias"] + ' Termination Criteria met: \\"' + getVariablePath(v).replace('"', "'") + '\\" (' + getVariableDescriptor(v) + ').\\n", ' + getCXXVariableName(v)  +');\n'
     solverCodeString += '  hasFinished = true;\n'
     solverCodeString += ' }\n\n'
   

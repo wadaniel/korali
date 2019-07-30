@@ -30,7 +30,9 @@ libkorali.a: $(OBJECTS_STATIC)
 	ar rs $@ $^
 
 clean:
-	@rm -rf *.so *.a solvers/*/*.hpp solvers/*/*.cpp 
-	@rm -rf *.so *.a variable.cpp variable.hpp setup.py
-	@rm -rf *.so *.a $(OBJECTS_STATIC) $(OBJECTS_SHARED)
+	@rm -f solvers/*/*.hpp solvers/*/*.cpp 
+	@rm -f distributions/*/*.hpp distributions/*/*.cpp distributions/*.cpp distributions/*.hpp 
+	@rm -f variable/*.cpp variable/*.hpp setup.py
+	@rm -f setup.py
+	@rm -f *.o ./*/*.o *.so *.a $(OBJECTS_STATIC) $(OBJECTS_SHARED)
 

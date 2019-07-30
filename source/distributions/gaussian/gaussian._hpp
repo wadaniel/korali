@@ -1,0 +1,28 @@
+#ifndef _KORALI_DISTRIBUTION_GAUSSIAN_HPP_
+#define _KORALI_DISTRIBUTION_GAUSSIAN_HPP_
+
+#include <distributions/base.hpp>
+
+namespace Korali { namespace Distribution {
+
+class Gaussian : public Base {
+
+ private:
+
+ public:
+
+ void updateConditionals(const std::vector<double>& sample) override;
+ void setProperty(std::string propertyName, double value) override;
+ void updateDistribution() override;
+ double getDensity(double x) override;
+ double getLogDensity(double x) override;
+ double getRandomNumber() override;
+ void initialize() override;
+ void finalize() override;
+ void setConfiguration(nlohmann::json& js) override;
+ void getConfiguration(nlohmann::json& js) override;
+};
+
+} } // namespace Korali::Distribution
+
+#endif // _KORALI_DISTRIBUTION_GAUSSIAN_HPP_

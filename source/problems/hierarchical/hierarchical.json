@@ -17,13 +17,18 @@
    },
    {
     "Name": [ "Conditional Priors" ],
-    "Type": "std::vector<Korali::Distribution*>",
+    "Type": "std::vector<Korali::Distribution::Base*>",
     "Description": "Eh..."
    }
  ],
  
  "Variables Configuration": 
  [
+   {
+    "Name": [ "Prior Distribution" ],
+    "Type": "Korali::Distribution::Base*",
+    "Description": "Eh..."
+   }
  ],
  
  "Internal Settings": 

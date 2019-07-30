@@ -1,6 +1,8 @@
 #ifndef _KORALI_DISTRIBUTION_CAUCHY_HPP_
 #define _KORALI_DISTRIBUTION_CAUCHY_HPP_
 
+#include <distributions/base.hpp>
+
 namespace Korali { namespace Distribution {
 
 class Cauchy : public Base {

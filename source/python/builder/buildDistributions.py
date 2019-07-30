@@ -23,7 +23,7 @@ def buildDistributions(koraliDir):
   
   ####### Adding distribution to list
   
-  distributionCreationList += 'distribution = new Korali::Distribution::' + distributionConfig["Class"] + '();'
+  distributionCreationList += '  if(distributionName == "' + distributionConfig["Alias"] + '") distribution = new Korali::Distribution::' + distributionConfig["Class"] + '();\n'
   
   ####### Producing distribution.hpp
   
@@ -85,6 +85,6 @@ def buildDistributions(koraliDir):
  
  ###### Creating base configuration file
  with open(curdir + '/base._hpp', 'r') as file: distributionBaseHeaderString = file.read()
- distributionBaseHeaderString distributionBaseHeaderString.replace(' // Distribution list', distributionCreationList) 
- with open(curdir + '/base.hpp', 'w+') as file: file.write(distributionBaseHeaderString)
+ newBaseString = distributionBaseHeaderString.replace('  // Distribution list', distributionCreationList) 
+ with open(curdir + '/base.hpp', 'w+') as file: file.write(newBaseString)
  

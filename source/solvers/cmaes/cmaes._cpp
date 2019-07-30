@@ -10,15 +10,14 @@ using namespace Korali::Solver;
 
 CMAES::CMAES()
 {
- // Initializing Gaussian Generator
+ // Initializing RNGs
  auto jsGaussian = nlohmann::json();
  jsGaussian["Type"] = "Gaussian";
  jsGaussian["Mean"] = 0.0;
  jsGaussian["Standard Deviation"] = 1.0;
  jsGaussian["Seed"] = _k->_seed++;
- _gaussianGenerator = std::make_shared<Variable>();
- _gaussianGenerator->setDistribution(jsGaussian);
- 
+ _gaussianGenerator = Korali::Distribution::Base::getDistribution(jsGaussian);
+
  _uniformGenerator = nullptr;
 }
 

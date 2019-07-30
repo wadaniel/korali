@@ -42,12 +42,12 @@ def consumeValue(base, moduleName, path, varName, varType, varDefault):
  cString = '\n'
  
  if (varType == 'Korali::Distribution*'):
-  cString =  ' ' + varName + ' = Korali::Distribution::getDistribution(' + base + path + ');\n'
+  cString =  ' ' + varName + ' = Korali::Distribution::Base::getDistribution(' + base + path + ');\n'
   cString += ' eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n' 
   return cString
   
  if (varType == 'std::vector<Korali::Distribution*>'):
-  cString  = ' for(size_t i = 0; i < ' + base + path + '.size(); i++)' + varName + '[i] = Korali::Distribution::getDistribution(' + base + path + '[i]);\n'
+  cString  = ' for(size_t i = 0; i < ' + base + path + '.size(); i++)' + varName + '[i] = Korali::Distribution::Base::getDistribution(' + base + path + '[i]);\n'
   cString += ' eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n\n' 
   return cString
  

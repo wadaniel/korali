@@ -24,6 +24,11 @@
     "Type": "std::string",
     "Default": "Computational",
     "Description": "Specifies the purpose of the variable for the bayesian model."
+   },
+   {
+    "Name": [ "Prior Distribution" ],
+    "Type": "Korali::Distribution::Base*",
+    "Description": "Eh..."
    }
  ],
  

@@ -1,6 +1,8 @@
 #ifndef _KORALI_DISTRIBUTION_GAMMA_HPP_
 #define _KORALI_DISTRIBUTION_GAMMA_HPP_
 
+#include <distributions/base.hpp>
+
 namespace Korali { namespace Distribution {
 
 class Gamma : public Base {

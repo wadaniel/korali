@@ -26,7 +26,6 @@
 #include "conduits/simple.hpp"
 #include "conduits/external.hpp"
 
-#include "variable.hpp"
 #include "auxiliar.hpp"
 #include "model.hpp"
 

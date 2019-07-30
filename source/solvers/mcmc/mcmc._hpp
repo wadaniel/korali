@@ -2,7 +2,8 @@
 #define _KORALI_SOLVER_MCMC_HPP_
 
 #include "solvers/base.hpp"
-#include "variable.hpp"
+#include "distributions/gaussian/gaussian.hpp"
+#include "distributions/uniform/uniform.hpp"
 #include <gsl/gsl_rng.h>
 
 namespace Korali { namespace Solver {
@@ -11,8 +12,8 @@ class MCMC : public Base
 {
  private: 
 
-  Korali::Variable* _gaussianGenerator; /* Gaussian random number generator */
- Korali::Variable* _uniformGenerator; /* Uniform random number generator */
+ Korali::Distribution::Gaussian* _gaussianGenerator; /* Gaussian random number generator */
+ Korali::Distribution::Uniform* _uniformGenerator; /* Uniform random number generator */
 
  double recursiveAlpha(double& D, const double llk0, const double* logliks, size_t N) const; /* calculate acceptance ratio alpha_N */
  void evaluateSample();

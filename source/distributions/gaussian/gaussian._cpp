@@ -9,6 +9,7 @@ void Korali::Distribution::Gaussian::initialize()
 
 void Korali::Distribution::Gaussian::finalize()
 {
+ Korali::Distribution::Base::finalize();
 }
 
 void setProperty(std::string propertyName, double value)

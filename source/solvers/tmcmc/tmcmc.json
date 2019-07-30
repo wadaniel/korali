@@ -87,7 +87,11 @@
  
  "Variables Configuration": 
  [
-   
+   {
+    "Name": [ "Prior Distribution" ],
+    "Type": "Korali::Distribution::Base*",
+    "Description": "Eh..."
+   }
  ],
  
  "Internal Settings": 

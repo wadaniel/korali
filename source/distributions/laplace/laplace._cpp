@@ -9,6 +9,7 @@ void Korali::Distribution::Laplace::initialize()
 
 void Korali::Distribution::Laplace::finalize()
 {
+ Korali::Distribution::Base::finalize();
 }
 
 void setProperty(std::string propertyName, double value)

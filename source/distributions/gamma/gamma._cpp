@@ -9,6 +9,7 @@ void Korali::Distribution::Gamma::initialize()
 
 void Korali::Distribution::Gamma::finalize()
 {
+ Korali::Distribution::Base::finalize();
 }
 
 void setProperty(std::string propertyName, double value)

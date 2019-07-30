@@ -9,6 +9,7 @@ void Korali::Distribution::Exponential::initialize()
 
 void Korali::Distribution::Exponential::finalize()
 {
+ Korali::Distribution::Base::finalize();
 }
 
 void setProperty(std::string propertyName, double value)

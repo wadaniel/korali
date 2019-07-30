@@ -9,6 +9,7 @@ void Korali::Distribution::Cauchy::initialize()
 
 void Korali::Distribution::Cauchy::finalize()
 {
+ Korali::Distribution::Base::finalize();
 }
 
 void setProperty(std::string propertyName, double value)

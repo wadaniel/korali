@@ -10,23 +10,20 @@ constexpr size_t str2int(const char* str, int h = 0) { return !str[h] ? 5381 : (
 
 DEA::DEA()
 {
- // Initializing Generators
+ // Initializing RNGs
  auto jsGaussian = nlohmann::json();
- jsGaussian["Type"]  = "Gaussian";
- jsGaussian["Mean"]  = 0.0;
+ jsGaussian["Type"] = "Gaussian";
+ jsGaussian["Mean"] = 0.0;
  jsGaussian["Standard Deviation"] = 1.0;
- jsGaussian["Seed"]  = _k->_seed++;
- _gaussianGenerator  = new Variable();
- _gaussianGenerator->setDistribution(jsGaussian);
+ jsGaussian["Seed"] = _k->_seed++;
+ _gaussianGenerator = Korali::Distribution::Base::getDistribution(jsGaussian);
 
  auto jsUniform = nlohmann::json();
  jsUniform["Type"] = "Uniform";
  jsUniform["Minimum"] = 0.0;
  jsUniform["Maximum"] = 1.0;
  jsUniform["Seed"] = _k->_seed++;
-
- _uniformGenerator = new Variable();
- _uniformGenerator->setDistribution(jsUniform);
+ _uniformGenerator = Korali::Distribution::Base::getDistribution(jsUniform);
 }
 
 DEA::~DEA()

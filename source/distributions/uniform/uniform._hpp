@@ -1,6 +1,8 @@
 #ifndef _KORALI_DISTRIBUTION_UNIFORM_HPP_
 #define _KORALI_DISTRIBUTION_UNIFORM_HPP_
 
+#include <distributions/base.hpp>
+
 namespace Korali { namespace Distribution {
 
 class Uniform : public Base {

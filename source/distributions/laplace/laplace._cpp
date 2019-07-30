@@ -4,16 +4,14 @@ void Korali::Distribution::Laplace::initialize()
 {
  Korali::Distribution::Base::initialize();
 
- if (_width > 0) _aux = -gsl_sf_log(2.*_width);
+ // Check for conditional properties
+
+ updateDistribution();
 }
 
 void Korali::Distribution::Laplace::finalize()
 {
  Korali::Distribution::Base::finalize();
-}
-
-void setProperty(std::string propertyName, double value)
-{
 }
 
 double Korali::Distribution::Laplace::getDensity(double x)
@@ -31,3 +29,15 @@ double Korali::Distribution::Laplace::getRandomNumber()
  return _mean + gsl_ran_laplace(_range, _width);
 }
 
+void Korali::Distribution::Laplace::updateDistribution()
+{
+ if (_width <= 0.0)  koraliError("Incorrect Width parameter of Laplace distribution: %f.\n", _width);
+
+ _aux = -gsl_sf_log(2.*_width);
+}
+
+void Korali::Distribution::Laplace::updateConditionals(const std::vector<double>& sample)
+{
+ Korali::Distribution::Base::updateConditionals(sample);
+ updateDistribution();
+}

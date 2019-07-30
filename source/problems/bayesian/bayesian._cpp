@@ -9,9 +9,6 @@ void Korali::Problem::Bayesian::initialize()
  if (_likelihoodModel == "Multiplicative Gaussian Data") recognizedModel = true;
  if (recognizedModel == false) koraliError("Incorrect or no Likelihood Model selected: %s.\n", _likelihoodModel.c_str()); 
 
- for(size_t i = 0; i < _k->N; i++) if(_k->_variables[i]->_distributionType == "No Distribution")
-	koraliError("Bayesian inference requires prior distribution for all variables. (Missing for %s).\n", _k->_variables[i]->_name.c_str());
-
  for (size_t i = 0; i < _k->N; i++)
   {
     auto typeString = _k->_variables[i]->_type;
@@ -75,7 +72,7 @@ double Korali::Problem::Bayesian::evaluateFitness(Korali::Model& data)
 double Korali::Problem::Bayesian::evaluateLogPrior(double* sample)
 {
  double logPrior = 0.0;
- for (size_t i = 0; i < _k->N; i++) logPrior += _k->_variables[i]->getLogDensity(sample[i]);
+ for (size_t i = 0; i < _k->N; i++) logPrior += _k->_variables[i]->_priorDistribution->getLogDensity(sample[i]);
  return logPrior;
 }
 

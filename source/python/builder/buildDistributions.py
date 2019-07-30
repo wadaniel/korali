@@ -21,6 +21,9 @@ def buildDistributions(koraliDir):
   with open(distributionJsonFile, 'r') as file: distributionJsonString = file.read()
   distributionConfig = json.loads(distributionJsonString)
   
+  # Creating check for conditional properties string
+  conditionalCheckString = ''
+ 
   ####### Adding distribution to list
   
   distributionCreationList += '  if(distributionName == "' + distributionConfig["Alias"] + '") distribution = new Korali::Distribution::' + distributionConfig["Class"] + '();\n'
@@ -32,7 +35,7 @@ def buildDistributions(koraliDir):
   
   for v in distributionConfig["Distribution Configuration"]:
    distributionHeaderString += 'double ' + getCXXVariableName(v) + ';\n'
-   distributionHeaderString += 'std::string ' + getCXXVariableName(v) + 'Reference;\n'
+   distributionHeaderString += 'std::string ' + getCXXVariableName(v) + 'Conditional;\n'
      
   for v in distributionConfig["Internal Settings"]:
    distributionHeaderString += getVariableType(v) + ' ' + getCXXVariableName(v) + ';\n'
@@ -49,36 +52,72 @@ def buildDistributions(koraliDir):
   
   ###### Producing distribution.cpp
   
-  distributionCodeString = 'void Korali::Distribution::' + distributionConfig["Class"] + '::setConfiguration() \n{\n'
+  distributionCodeString = 'void Korali::Distribution::' + distributionConfig["Class"] + '::setConfiguration(nlohmann::json& js) \n{\n'
  
   # Consume Distribution Settings
   for v in distributionConfig["Distribution Configuration"]:
     distributionCodeString += ' if(js' + getVariablePath(v) + '.is_number()) ' + getCXXVariableName(v) + ' = js' + getVariablePath(v) + ';\n'
-    distributionCodeString += ' if(js' + getVariablePath(v) + '.is_string()) ' + getCXXVariableName(v) + 'Reference = js' + getVariablePath(v) + ';\n' 
+    distributionCodeString += ' if(js' + getVariablePath(v) + '.is_string()) ' + getCXXVariableName(v) + 'Conditional = js' + getVariablePath(v) + ';\n' 
     distributionCodeString += ' eraseValue(js, "' + getVariablePath(v).replace('"', "'") + '");\n\n' 
     
   for v in distributionConfig["Internal Settings"]:
-    distributionCodeString += consumeValue('_k->_js', distributionConfig["Alias"], '["Distribution"]["Internal"]' + getVariablePath(v),  getCXXVariableName(v), getVariableType(v), 'Korali Skip Default')
+    distributionCodeString += consumeValue('_k->_js', distributionConfig["Alias"], '["Internal"]' + getVariablePath(v),  getCXXVariableName(v), getVariableType(v), 'Korali Skip Default')
   
   distributionCodeString += '} \n\n'
   
   ###### Creating Distribution Get Configuration routine
   
-  distributionCodeString += 'void Korali::Distribution::' + distributionConfig["Class"]  + '::getConfiguration() \n{\n\n'
-  distributionCodeString += ' _k->_js["Distribution"]["Type"] = "' + distributionConfig["Alias"] + '";\n'
+  distributionCodeString += 'void Korali::Distribution::' + distributionConfig["Class"]  + '::getConfiguration(nlohmann::json& js) \n{\n\n'
+  distributionCodeString += 'js["Type"] = "' + distributionConfig["Alias"] + '";\n'
  
   for v in distributionConfig["Distribution Configuration"]: 
-    distributionCodeString += ' if(' + getCXXVariableName(v) + 'Reference.empty() == false) _k->_js["Distribution"]' + getVariablePath(v) + ' = ' + getCXXVariableName(v) + ';\n'
-    distributionCodeString += ' if(' + getCXXVariableName(v) + 'Reference.empty() == true)  _k->_js["Distribution"]' + getVariablePath(v) + ' = ' + getCXXVariableName(v) + 'Reference;\n'
+    distributionCodeString += ' if(' + getCXXVariableName(v) + 'Conditional.empty() == false)js' + getVariablePath(v) + ' = ' + getCXXVariableName(v) + ';\n'
+    distributionCodeString += ' if(' + getCXXVariableName(v) + 'Conditional.empty() == true) js' + getVariablePath(v) + ' = ' + getCXXVariableName(v) + 'Conditional;\n'
     
   for v in distributionConfig["Internal Settings"]: 
-    distributionCodeString += ' _k->_js["Distribution"]["Internal"]' + getVariablePath(v) + ' = ' + getCXXVariableName(v) + ';\n'
+    distributionCodeString += 'js["Internal"]' + getVariablePath(v) + ' = ' + getCXXVariableName(v) + ';\n'
   
   distributionCodeString += '} \n\n'
   
+  ###### Creating Set property routine
+  
+  distributionCodeString += 'void Korali::Distribution::' + distributionConfig["Class"]  + '::setProperty(std::string propertyName, double value)\n'
+  distributionCodeString += '{\n'
+  distributionCodeString += ' bool recognizedProperty = false;\n'
+ 
+  for v in distributionConfig["Distribution Configuration"]: 
+    distributionCodeString += ' if (propertyName == "' + v["Name"][-1] + '") { ' + getCXXVariableName(v) + ' = value; recognizedProperty = true; }\n'
+  
+  distributionCodeString += ' if (recognizedProperty == false) koraliError("Unrecognized property: %s for the ' + distributionConfig["Alias"] + ' distribution", propertyName);\n'
+  distributionCodeString += '} \n\n'
+  
+  ###### Creating Check for conditional properties
+  
+  for v in distributionConfig["Distribution Configuration"]: 
+    conditionalCheckString += ' bool ' + getCXXVariableName(v) + 'Recognized = false;\n'
+    
+  conditionalCheckString += ' for (size_t i = 0; i < _k->N; i++)\n'
+  conditionalCheckString += ' {\n'
+    
+  for v in distributionConfig["Distribution Configuration"]: 
+    conditionalCheckString += '  if (_k->_variables[i]->_name == ' + getCXXVariableName(v) + 'Conditional) \n'
+    conditionalCheckString += '  {\n'
+    conditionalCheckString += '   ' + getCXXVariableName(v) + 'Recognized = true;\n'
+    conditionalCheckString += '   _conditionalIndexes.push_back(i);\n'
+    conditionalCheckString += '   _conditionalPointers.push_back(&' + getCXXVariableName(v) + ');\n'
+    conditionalCheckString += '  }\n'
+    
+  conditionalCheckString += ' }\n'
+
+  for v in distributionConfig["Distribution Configuration"]: 
+    conditionalCheckString += ' if ( !' + getCXXVariableName(v) + 'Conditional.empty() && ' + getCXXVariableName(v) + 'Recognized == false)\n'
+    conditionalCheckString += '  koraliError("Could not find a variable whose name coincides with reference %s made by conditional property: ' + v["Name"][-1] + '.\\n", ' + getCXXVariableName(v) + 'Conditional);\n'
+  
   ###### Creating code file
+  
   with open(distributionPath + '/' + distributionName + '._cpp', 'r') as file: distributionBaseCodeString = file.read()
   distributionBaseCodeString += '\n\n' + distributionCodeString
+  distributionBaseCodeString = distributionBaseCodeString.replace(' // Check for conditional properties', conditionalCheckString)
   distributionNewCodeFile = distributionPath + '/' + distributionName + '.cpp'
   print('[Korali] Creating: ' + distributionNewCodeFile + '...')
   with open(distributionNewCodeFile, 'w') as file: file.write(distributionBaseCodeString)
@@ -88,7 +127,7 @@ def buildDistributions(koraliDir):
  newBaseString = distributionBaseCodeString.replace('  // Distribution list', distributionCreationList) 
  with open(curdir + '/base.cpp', 'w+') as file: file.write(newBaseString)
  
-  ###### Creating base header file
+ ###### Creating base header file
  with open(curdir + '/base._hpp', 'r') as file: distributionBaseHeaderString = file.read()
  newBaseString = distributionBaseHeaderString
  with open(curdir + '/base.hpp', 'w+') as file: file.write(newBaseString)

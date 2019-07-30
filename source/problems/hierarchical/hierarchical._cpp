@@ -9,18 +9,15 @@ void Korali::Problem::Hierarchical::initialize()
 
  if (_conditionalPriors.size() == 0) koraliError("Hierarchical Bayesian problems require at least one conditional prior\n");
 
- for(size_t i = 0; i < _k->N; i++) if(_k->_variables[i]->_distributionType == "No Distribution")
-	koraliError("Hierarchical Bayesian problems requires prior distribution for all variables. (Missing for %s).\n", _k->_variables[i]->_name.c_str());
-
  if (_k->_constraints.size() > 0) koraliError("Hierarchical Bayesian problems do not allow constraint definitions.\n");
  if (_k->_modelDefined == true) koraliError("Hierarchical Bayesian does not require a computational model, but one was provided.\n");
- if (_subProblemsJson.size() < 2) koraliError("Hierarchical Bayesian problem requires defining at least two executed sub-problems.\n");
+ if (_subProblems.size() < 2) koraliError("Hierarchical Bayesian problem requires defining at least two executed sub-problems.\n");
+
+ // Creating JSON object from string
+ for (size_t i = 0; i < _subProblemsJson.size(); i++) _subProblemsJson.push_back(nlohmann::json::parse(_subProblems[i]));
 
  for (size_t i = 0; i < _subProblemsJson.size(); i++)
    if (_subProblemsJson[i]["Is Finished"] == false) koraliError("The Hierarchical Bayesian requires that all problems have run completely, but Problem %lu has not.\n", i);
-  
- // Creating JSON object from string
- for (size_t i = 0; i < _subProblemsJson.size(); i++) _subProblemsJson.push_back(nlohmann::json::parse(_subProblems[i]));
 }
 
 void Korali::Problem::Hierarchical::finalize()
@@ -37,21 +34,15 @@ double Korali::Problem::Hierarchical::evaluateFitness(Korali::Model& data)
 {
  // Now re-configuring conditional priors given hyperparameters
  for (size_t i = 0; i < _conditionalPriors.size(); i++)
-  for (size_t j = 0; j < _conditionalPriors[i]->_properties.size(); j++)
-  {
-   std::string propertyName = _conditionalPriors[i]->_properties[j].first;
-   size_t variableId = _conditionalPriors[i]->_properties[j].second;
-   double propertyValue = data.getVariable(variableId);
-   _conditionalPriors[i]->_variable->setProperty(propertyName, propertyValue);
-  }
+  _conditionalPriors[i]->updateConditionals(data.getVariables());
 
  double fitness = 1.0;
 
  for (size_t i = 0; i < _conditionalPriors.size(); i++)
  {
   // George: I just put gibberish here. I'll let you to do the rest.
-  double x = _conditionalPriors[i]->_variable->getRandomNumber();
-  fitness *= _conditionalPriors[i]->_variable->getLogDensity(x);
+  double x = _conditionalPriors[i]->getRandomNumber();
+  fitness *= _conditionalPriors[i]->getLogDensity(x);
  }
 
  return fitness;
@@ -60,7 +51,7 @@ double Korali::Problem::Hierarchical::evaluateFitness(Korali::Model& data)
 double Korali::Problem::Hierarchical::evaluateLogPrior(double* sample)
 {
  double logPrior = 0.0;
- for (size_t i = 0; i < _k->N; i++) logPrior += _k->_variables[i]->getLogDensity(sample[i]);
+ for (size_t i = 0; i < _k->N; i++) logPrior += _k->_variables[i]->_priorDistribution->getLogDensity(sample[i]);
  return logPrior;
 }
 

@@ -66,13 +66,13 @@ def buildSolvers(koraliDir):
   solverCodeString += ' _k->_js["Solver"]["Type"] = "' + solverConfig["Alias"] + '";\n'
  
   for v in solverConfig["Solver Configuration"]: 
-    solverCodeString += ' _k->_js["Solver"]' + getVariablePath(v) + ' = ' + getCXXVariableName(v) + ';\n'
+    solverCodeString += saveValue('_k->_js', '["Solver"]' + getVariablePath(v), getCXXVariableName(v), getVariableType(v))
     
   for v in solverConfig["Internal Settings"]: 
-    solverCodeString += ' _k->_js["Solver"]["Internal"]' + getVariablePath(v) + ' = ' + getCXXVariableName(v) + ';\n'
+    solverCodeString += saveValue('_k->_js', '["Solver"]["Internal"]' + getVariablePath(v), getCXXVariableName(v), getVariableType(v))
   
   for v in solverConfig["Termination Criteria"]: 
-    solverCodeString += '_k->_js["Solver"]["Termination Criteria"]' + getVariablePath(v) + ' = ' + getCXXVariableName(v) + ';\n'
+    solverCodeString += saveValue('_k->_js', '["Solver"]["Termination Criteria"]' + getVariablePath(v), getCXXVariableName(v), getVariableType(v))
   
   solverCodeString += '} \n\n'
   

@@ -4,16 +4,14 @@ void Korali::Distribution::Geometric::initialize()
 {
  Korali::Distribution::Base::initialize();
 
- _aux = 0.0;
+ // Check for conditional properties
+
+ updateDistribution();
 }
 
 void Korali::Distribution::Geometric::finalize()
 {
  Korali::Distribution::Base::finalize();
-}
-
-void setProperty(std::string propertyName, double value)
-{
 }
 
 double Korali::Distribution::Geometric::getDensity(double x)
@@ -31,3 +29,13 @@ double Korali::Distribution::Geometric::getRandomNumber()
  return gsl_ran_geometric(_range, _successProbability);
 }
 
+void Korali::Distribution::Geometric::updateDistribution()
+{
+ _aux = 0.0;
+}
+
+void Korali::Distribution::Geometric::updateConditionals(const std::vector<double>& sample)
+{
+ Korali::Distribution::Base::updateConditionals(sample);
+ updateDistribution();
+}

@@ -98,15 +98,15 @@ def buildVariables(koraliDir):
   
   variableGetProblemSettingString += ' if ( _k->_problemType == "' + problemConfig["Alias"] + '")\n {\n'
   for v in problemConfig["Variables Configuration"]: 
-    variableGetProblemSettingString += '  js' + getVariablePath(v) + ' = ' + getCXXVariableName(v) + ';\n'
+    variableGetProblemSettingString += saveValue('_k->_js', getVariablePath(v), getCXXVariableName(v), getVariableType(v))
   variableGetProblemSettingString += ' }\n\n'
  
- # Saving variable problem configuration
+ # Saving set variable problem configuration
  variableCodeString += 'void Korali::Variable::setProblemSettings(nlohmann::json& js)\n{\n'
  variableCodeString += variableSetProblemSettingString
  variableCodeString += '}\n\n'
  
- # Saving variable problem configuration
+ # Saving get variable problem configuration
  variableCodeString += 'void Korali::Variable::getProblemSettings(nlohmann::json& js)\n{\n'
  variableCodeString += variableGetProblemSettingString
  variableCodeString += '}\n\n'

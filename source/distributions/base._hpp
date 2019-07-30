@@ -14,17 +14,20 @@ class Base {
 
  private:
 
+ public:
+
+ std::vector<size_t> _conditionalIndexes;
+ std::vector<double*> _conditionalPointers;
  size_t _seed;
  gsl_rng* _range;
  double _aux;
 
- public:
-
  virtual void initialize();
  virtual void finalize();
+ virtual void updateDistribution() = 0;
+ virtual void updateConditionals(const std::vector<double>& sample);
  static Base* getDistribution(nlohmann::json& js);
- virtual setProperty(std::string propertyName, double value) = 0;
- virtual updateDistribution(std::vector<double> sample) = 0;
+ virtual void setProperty(std::string propertyName, double value) = 0;
  virtual double getDensity(double x) = 0;
  virtual double getLogDensity(double x) = 0;
  virtual double getRandomNumber() = 0;

@@ -4,15 +4,15 @@ void Korali::Distribution::Cauchy::initialize()
 {
  Korali::Distribution::Base::initialize();
 
- if (_scale > 0) _aux = -gsl_sf_log( _scale * M_PI);
+ // Check for conditional properties
+
+ updateDistribution();
 }
 
 void Korali::Distribution::Cauchy::finalize()
 {
  Korali::Distribution::Base::finalize();
 }
-
-
 
 double Korali::Distribution::Cauchy::getDensity(double x)
 {
@@ -27,5 +27,18 @@ double Korali::Distribution::Cauchy::getLogDensity(double x)
 double Korali::Distribution::Cauchy::getRandomNumber()
 {
  return _location + gsl_ran_cauchy(_range, _scale);
+}
+
+void Korali::Distribution::Cauchy::updateDistribution()
+{
+ if (_scale <= 0) koraliError("Incorrect Scale parameter of Cauchy distribution: %f.\n", _scale);
+
+  _aux = -gsl_sf_log( _scale * M_PI);
+}
+
+void Korali::Distribution::Cauchy::updateConditionals(const std::vector<double>& sample)
+{
+ Korali::Distribution::Base::updateConditionals(sample);
+ updateDistribution();
 }
 

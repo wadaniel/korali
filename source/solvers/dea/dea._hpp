@@ -13,8 +13,8 @@ class DEA : public Base
 {
  private:
 
- Korali::Distribution::Gaussian* _gaussianGenerator; /* Gaussian random number generator */
- Korali::Distribution::Uniform* _uniformGenerator; /* Uniform random number generator */
+ Korali::Distribution::Base* _gaussianGenerator; /* Gaussian random number generator */
+ Korali::Distribution::Base* _uniformGenerator; /* Uniform random number generator */
 
  void mutateSingle(size_t sampleIdx); /* sample individual */
  bool isFeasible(size_t sampleIdx) const; /* check if sample inside lower & upper bounds */

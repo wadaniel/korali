@@ -58,10 +58,10 @@ def buildProblems(koraliDir):
   problemCodeString += ' _k->_js["Problem"]["Type"] = "' + problemConfig["Alias"] + '";\n'
  
   for v in problemConfig["Problem Configuration"]: 
-    problemCodeString += ' _k->_js["Problem"]' + getVariablePath(v) + ' = ' + getCXXVariableName(v) + ';\n'
+    problemCodeString += saveValue('_k->_js', '["Problem"]' + getVariablePath(v), getCXXVariableName(v), getVariableType(v))
     
   for v in problemConfig["Internal Settings"]: 
-    problemCodeString += ' _k->_js["Problem"]["Internal"]' + getVariablePath(v) + ' = ' + getCXXVariableName(v) + ';\n'
+    problemCodeString += saveValue('_k->_js', '["Problem"]["Internal"]' + getVariablePath(v), getCXXVariableName(v), getVariableType(v))
   
   problemCodeString += '} \n\n'
   

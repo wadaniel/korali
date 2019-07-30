@@ -4,16 +4,14 @@ void Korali::Distribution::Exponential::initialize()
 {
  Korali::Distribution::Base::initialize();
 
- _aux = 0.0;
+ // Check for conditional properties
+
+ updateDistribution();
 }
 
 void Korali::Distribution::Exponential::finalize()
 {
  Korali::Distribution::Base::finalize();
-}
-
-void setProperty(std::string propertyName, double value)
-{
 }
 
 double Korali::Distribution::Exponential::getDensity(double x)
@@ -29,5 +27,16 @@ double Korali::Distribution::Exponential::getLogDensity(double x)
 double Korali::Distribution::Exponential::getRandomNumber()
 {
  return _location + gsl_ran_exponential(_range, _mean);
+}
+
+void Korali::Distribution::Exponential::updateDistribution()
+{
+ _aux = 0.0;
+}
+
+void Korali::Distribution::Exponential::updateConditionals(const std::vector<double>& sample)
+{
+ Korali::Distribution::Base::updateConditionals(sample);
+ updateDistribution();
 }
 

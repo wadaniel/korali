@@ -14,7 +14,6 @@ class Variable
 
  bool _isLogSpace;
  std::string _name;
- Korali::Distribution* _distribution;
 
  void getConfiguration(nlohmann::json& js);
  void setConfiguration(nlohmann::json& js);

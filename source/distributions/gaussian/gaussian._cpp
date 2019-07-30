@@ -4,16 +4,14 @@ void Korali::Distribution::Gaussian::initialize()
 {
  Korali::Distribution::Base::initialize();
 
- if (_standardDeviation > 0) _aux = -0.5*gsl_sf_log(2*M_PI) - gsl_sf_log(_standardDeviation);
+ // Check for conditional properties
+
+ updateDistribution();
 }
 
 void Korali::Distribution::Gaussian::finalize()
 {
  Korali::Distribution::Base::finalize();
-}
-
-void setProperty(std::string propertyName, double value)
-{
 }
 
 double Korali::Distribution::Gaussian::getDensity(double x)
@@ -30,5 +28,18 @@ double Korali::Distribution::Gaussian::getLogDensity(double x)
 double Korali::Distribution::Gaussian::getRandomNumber()
 {
  return  _mean + gsl_ran_gaussian(_range, _standardDeviation);
+}
+
+void Korali::Distribution::Gaussian::updateDistribution()
+{
+ if (_standardDeviation <= 0.0)  koraliError("Incorrect Standard Deviation parameter of Gaussian distribution: %f.\n", _standardDeviation);
+
+ _aux = -0.5*gsl_sf_log(2*M_PI) - gsl_sf_log(_standardDeviation);
+}
+
+void Korali::Distribution::Gaussian::updateConditionals(const std::vector<double>& sample)
+{
+ Korali::Distribution::Base::updateConditionals(sample);
+ updateDistribution();
 }
 

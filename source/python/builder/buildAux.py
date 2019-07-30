@@ -41,12 +41,12 @@ def getVariableDescriptor(v):
 def consumeValue(base, moduleName, path, varName, varType, varDefault):
  cString = '\n'
  
- if (varType == 'Korali::Distribution*'):
+ if (varType == 'Korali::Distribution::Base*'):
   cString =  ' ' + varName + ' = Korali::Distribution::Base::getDistribution(' + base + path + ');\n'
   cString += ' eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n' 
   return cString
   
- if (varType == 'std::vector<Korali::Distribution*>'):
+ if (varType == 'std::vector<Korali::Distribution::Base*>'):
   cString  = ' for(size_t i = 0; i < ' + base + path + '.size(); i++)' + varName + '[i] = Korali::Distribution::Base::getDistribution(' + base + path + '[i]);\n'
   cString += ' eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n\n' 
   return cString
@@ -70,3 +70,14 @@ def consumeValue(base, moduleName, path, varName, varType, varDefault):
  return cString
 
 #####################################################################
+
+def saveValue(base, path, varName, varType):
+ cString = '   ' + base + path + ' = ' + varName + ';\n'
+
+ if (varType == 'Korali::Distribution::Base*'):
+  cString =  ' ' + varName + '.getConfiguration(' + base + path + ');\n'
+  
+ if (varType == 'std::vector<Korali::Distribution::Base*>'):
+  cString  = ' for(size_t i = 0; i < ' + varName + '.size(); i++) ' + varName + '[i]->getConfiguration(' + base + path + '[i]);\n'
+ 
+ return cString

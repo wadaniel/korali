@@ -34,3 +34,8 @@ Base* Korali::Distribution::Base::getDistribution(nlohmann::json& js)
  return distribution;
 }
 
+void Korali::Distribution::Base::updateConditionals(const std::vector<double>& sample)
+{
+ for (size_t i = 0; i < _conditionalIndexes.size(); i++)
+  *(_conditionalPointers[i]) = sample[_conditionalIndexes[i]];
+}

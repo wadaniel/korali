@@ -18,7 +18,12 @@ CMAES::CMAES()
  jsGaussian["Seed"] = _k->_seed++;
  _gaussianGenerator = Korali::Distribution::Base::getDistribution(jsGaussian);
 
- _uniformGenerator = nullptr;
+ auto jsUniform = nlohmann::json();
+ jsUniform["Type"] = "Uniform";
+ jsUniform["Minimum"] = 0.0;
+ jsUniform["Maximum"] = 1.0;
+ jsUniform["Seed"] = _k->_seed++;
+ _uniformGenerator = Korali::Distribution::Base::getDistribution(jsUniform);
 }
 
 CMAES::~CMAES()
@@ -182,17 +187,6 @@ void CMAES::initialize()
  }
 
  _hasDiscreteVariables = (numDiscretes > 0);
-
- if (_hasDiscreteVariables)
- {
-   auto jsUniform = nlohmann::json();
-   jsUniform["Type"] = "Uniform";
-   jsUniform["Minimum"] = 0.0;
-   jsUniform["Maximum"] = 1.0;
-   jsUniform["Seed"] = _k->_seed++;
-   _uniformGenerator = std::make_shared<Variable>();
-   _uniformGenerator->setDistribution(jsUniform);
- }
 
  _currentMinStandardDeviation = std::numeric_limits<double>::max();
  _currentMaxStandardDeviation = std::numeric_limits<double>::lowest();

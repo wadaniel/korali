@@ -31,6 +31,8 @@ libkorali.a: $(OBJECTS_STATIC)
 
 clean:
 	@rm -f solvers/*/*.hpp solvers/*/*.cpp 
-	@rm -f variable.cpp variable.hpp setup.py
+	@rm -f distributions/*/*.hpp distributions/*/*.cpp distributions/*.cpp distributions/*.hpp 
+	@rm -f variable/*.cpp variable/*.hpp setup.py
+	@rm -f setup.py
 	@rm -f *.o ./*/*.o *.so *.a $(OBJECTS_STATIC) $(OBJECTS_SHARED)
 

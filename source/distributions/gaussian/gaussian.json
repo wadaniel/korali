@@ -1,7 +1,7 @@
 {
  "Name": "Gaussian Distribution",
- "Alias": "Cauchy",
- "Class": "Cauchy",
+ "Alias": "Gaussian",
+ "Class": "Gaussian",
  
  "Distribution Configuration": 
  [

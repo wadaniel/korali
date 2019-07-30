@@ -64,7 +64,7 @@ def buildSolvers(koraliDir):
   
   solverCodeString += 'void Korali::Solver::' + solverConfig["Class"]  + '::getConfiguration() \n{\n\n'
   solverCodeString += ' _k->_js["Solver"]["Type"] = "' + solverConfig["Alias"] + '";\n'
- 
+  
   for v in solverConfig["Solver Configuration"]: 
     solverCodeString += saveValue('_k->_js', '["Solver"]' + getVariablePath(v), getCXXVariableName(v), getVariableType(v))
     

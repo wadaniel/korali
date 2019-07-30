@@ -21,6 +21,7 @@ class Base {
  size_t _seed;
  gsl_rng* _range;
  double _aux;
+ bool _initialized;
 
  virtual void initialize();
  virtual void finalize();

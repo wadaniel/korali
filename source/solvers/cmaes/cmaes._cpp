@@ -858,7 +858,6 @@ void CMAES::sort_index(const std::vector<double>& vec, std::vector<size_t>& _sor
 
 void CMAES::printGeneration()
 {
- koraliLog(KORALI_MINIMAL, "Generation %zu\n", _k->_currentGeneration);
 
  if ( _constraintsDefined && _isViabilityRegime)
  {
@@ -898,13 +897,10 @@ void CMAES::printGeneration()
     koraliLog(KORALI_DETAILED, "Number of Constraint Evaluations: %zu\n", _constraintEvaluationCount);
     koraliLog(KORALI_DETAILED, "Number of Matrix Corrections: %zu\n", _covarianceMatrixAdaptationCount );
   }
-
-  koraliLog(KORALI_NORMAL, "--------------------------------------------------------------------\n");
 }
 
 void CMAES::finalize()
 {
-  koraliLog(KORALI_MINIMAL, "Finished\n");
   koraliLog(KORALI_MINIMAL, "Optimum found: %e\n", _bestEverValue);
   koraliLog(KORALI_MINIMAL, "Optimum found at:\n");
   for (size_t d = 0; d < _k->N; ++d) koraliLogData(KORALI_MINIMAL, "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverCoordinates[d]);
@@ -915,5 +911,4 @@ void CMAES::finalize()
       koraliLogData(KORALI_MINIMAL, "         ( %+6.3e )\n", _bestConstraintEvaluations[c]);
   }
   koraliLog(KORALI_MINIMAL, "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
-  koraliLog(KORALI_MINIMAL, "--------------------------------------------------------------------\n");
 }

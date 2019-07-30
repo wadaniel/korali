@@ -4,19 +4,18 @@ import json
 from buildAux import *
 
 def buildVariables(koraliDir):
-  # Reading base variable file
+ # Reading base variable file
  with open(koraliDir + '/variable/variable._cpp', 'r') as file: variableCodeString = file.read()
  
  # Creating variable settings
  variableSettingDeclarationsString = '' 
  variableSettingSet = set()
  
- ########  Detecting Solvers
- 
  # Creating External Setting Strings for Variables
- variableSetSolverSettingString = ''
- variableGetSolverSettingString = ''
+ variableSetSettingString = ''
+ variableGetSettingString = ''
  
+ ########  Detecting Solvers
  solverdir = koraliDir + '/solvers' 
  solverPaths  = [x[0] for x in os.walk(solverdir)][1:]
  for solverPath in solverPaths:
@@ -34,38 +33,34 @@ def buildVariables(koraliDir):
   
   for v in solverConfig["Variables Configuration"]:
    if (not getVariablePath(v) in variableSettingSet):
+    variableGetSettingString += ' bool is' + getCXXVariableName(v) + 'Defined = false;\n'
+    variableSetSettingString += ' bool is' + getCXXVariableName(v) + 'Defined = false;\n'
     variableSettingDeclarationsString += getVariableType(v) + ' ' + getCXXVariableName(v) + ';\n'
     variableSettingSet.add(getVariablePath(v)) 
     
   # Creating set variable configuration
   
-  variableSetSolverSettingString += ' if (_k->_solverType == "' + solverConfig["Alias"] + '")\n {\n'
+  variableSetSettingString += ' if (_k->_solverType == "' + solverConfig["Alias"] + '")\n {\n'
   for v in solverConfig["Variables Configuration"]: 
-    variableSetSolverSettingString += consumeValue('js', solverConfig["Alias"], getVariablePath(v), getCXXVariableName(v), getVariableType(v), getVariableDefault(v))
-  variableSetSolverSettingString += ' }\n'
+    variableSetSettingString += ' if (is' + getCXXVariableName(v) + 'Defined == false)'
+    variableSetSettingString += ' {\n'
+    variableSetSettingString += consumeValue('js', solverConfig["Alias"], getVariablePath(v), getCXXVariableName(v), getVariableType(v), getVariableDefault(v))
+    variableSetSettingString += '  is' + getCXXVariableName(v) + 'Defined = true;\n\n'
+    variableSetSettingString += ' }\n'
+    
+  variableSetSettingString += ' }\n\n'
   
   # Creating get variable configuration
   
-  variableGetSolverSettingString += ' if (_k->_solverType == "' + solverConfig["Alias"] + '")\n {\n'
+  variableGetSettingString += ' if (_k->_solverType == "' + solverConfig["Alias"] + '")\n {\n'
   for v in solverConfig["Variables Configuration"]: 
-    variableGetSolverSettingString += '  js' + getVariablePath(v) + ' = ' + getCXXVariableName(v) + ';\n'
-  variableGetSolverSettingString += ' }\n\n'
- 
- # Saving variable solver configuration
- variableCodeString += 'void Korali::Variable::setSolverSettings(nlohmann::json& js)\n{\n'
- variableCodeString += variableSetSolverSettingString
- variableCodeString += '}\n\n'
- 
- # Saving variable solver configuration
- variableCodeString += 'void Korali::Variable::getSolverSettings(nlohmann::json& js)\n{\n'
- variableCodeString += variableGetSolverSettingString
- variableCodeString += '}\n\n'
+    variableGetSettingString += ' if (is' + getCXXVariableName(v) + 'Defined == false)'
+    variableGetSettingString += saveValue('js', getVariablePath(v), getCXXVariableName(v), getVariableType(v))
+    variableGetSettingString += ' is' + getCXXVariableName(v) + 'Defined = true;\n\n'
+    
+  variableGetSettingString += ' }\n\n'
  
  ########  Detecting Problems
- 
- # Creating External Setting Strings for Variables
- variableSetProblemSettingString = ''
- variableGetProblemSettingString = ''
  
  problemdir = koraliDir + '/problems'
  problemPaths  = [x[0] for x in os.walk(problemdir)][1:]
@@ -84,31 +79,42 @@ def buildVariables(koraliDir):
   
   for v in problemConfig["Variables Configuration"]:
    if (not getVariablePath(v) in variableSettingSet):
+    variableGetSettingString += ' bool is' + getCXXVariableName(v) + 'Defined = false;\n'
+    variableSetSettingString += ' bool is' + getCXXVariableName(v) + 'Defined = false;\n'
     variableSettingDeclarationsString += getVariableType(v) + ' ' + getCXXVariableName(v) + ';\n'
     variableSettingSet.add(getVariablePath(v))
     
   # Creating set variable configuration
   
-  variableSetProblemSettingString += ' if ( _k->_problemType == "' + problemConfig["Alias"] + '")\n {\n'
+  variableSetSettingString += ' if ( _k->_problemType == "' + problemConfig["Alias"] + '")\n {\n'
   for v in problemConfig["Variables Configuration"]: 
-    variableSetProblemSettingString += consumeValue('js', problemConfig["Alias"], getVariablePath(v), getCXXVariableName(v), getVariableType(v), getVariableDefault(v))
-  variableSetProblemSettingString += ' }\n'
+    variableSetSettingString += ' if (is' + getCXXVariableName(v) + 'Defined == false)'
+    variableSetSettingString += ' {\n'
+    variableSetSettingString += consumeValue('js', problemConfig["Alias"], getVariablePath(v), getCXXVariableName(v), getVariableType(v), getVariableDefault(v))
+    variableSetSettingString += '  is' + getCXXVariableName(v) + 'Defined = true;\n'
+    variableSetSettingString += ' }\n\n'
+    
+  variableSetSettingString += ' }\n\n'
   
   # Creating get variable configuration
   
-  variableGetProblemSettingString += ' if ( _k->_problemType == "' + problemConfig["Alias"] + '")\n {\n'
+  variableGetSettingString += ' if ( _k->_problemType == "' + problemConfig["Alias"] + '")\n {\n'
   for v in problemConfig["Variables Configuration"]: 
-    variableGetProblemSettingString += saveValue('_k->_js', getVariablePath(v), getCXXVariableName(v), getVariableType(v))
-  variableGetProblemSettingString += ' }\n\n'
+    variableGetSettingString += ' if (is' + getCXXVariableName(v) + 'Defined == false)'
+    variableGetSettingString += saveValue('js', getVariablePath(v), getCXXVariableName(v), getVariableType(v))
+    variableSetSettingString += ' is' + getCXXVariableName(v) + 'Defined = true;\n\n'
+    
+  variableGetSettingString += ' }\n\n'
  
- # Saving set variable problem configuration
- variableCodeString += 'void Korali::Variable::setProblemSettings(nlohmann::json& js)\n{\n'
- variableCodeString += variableSetProblemSettingString
+ ###### Saving variable inherited set configuration
+ 
+ variableCodeString += 'void Korali::Variable::setInheritedSettings(nlohmann::json& js)\n{\n'
+ variableCodeString += variableSetSettingString
  variableCodeString += '}\n\n'
  
- # Saving get variable problem configuration
- variableCodeString += 'void Korali::Variable::getProblemSettings(nlohmann::json& js)\n{\n'
- variableCodeString += variableGetProblemSettingString
+ ###### Saving variable inherited get configuration
+ variableCodeString += 'void Korali::Variable::getInheritedSettings(nlohmann::json& js)\n{\n'
+ variableCodeString += variableGetSettingString
  variableCodeString += '}\n\n'
  
  ###### Finished Parsing Problems

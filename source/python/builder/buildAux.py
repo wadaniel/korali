@@ -64,7 +64,7 @@ def consumeValue(base, moduleName, path, varName, varType, varDefault):
   cString += '  koraliError("No value provided for mandatory setting: ' + path.replace('"', "'") + ' required by ' + moduleName + '.\\n"); \n'
  else:
   if ("std::string" in varType): varDefault = '"' + varDefault + '"'
-  cString = varName + ' = ' + varDefault + ';'
+  cString += varName + ' = ' + varDefault + ';'
    
  cString += '\n'
  return cString
@@ -72,12 +72,12 @@ def consumeValue(base, moduleName, path, varName, varType, varDefault):
 #####################################################################
 
 def saveValue(base, path, varName, varType):
- cString = '   ' + base + path + ' = ' + varName + ';\n'
+ sString = '   ' + base + path + ' = ' + varName + ';\n'
 
  if (varType == 'Korali::Distribution::Base*'):
-  cString =  ' ' + varName + '.getConfiguration(' + base + path + ');\n'
+  sString =  ' ' + varName + '->getConfiguration(' + base + path + ');\n'
   
  if (varType == 'std::vector<Korali::Distribution::Base*>'):
-  cString  = ' for(size_t i = 0; i < ' + varName + '.size(); i++) ' + varName + '[i]->getConfiguration(' + base + path + '[i]);\n'
+  sString  = ' for(size_t i = 0; i < ' + varName + '.size(); i++) ' + varName + '[i]->getConfiguration(' + base + path + '[i]);\n'
  
- return cString
+ return sString

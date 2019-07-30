@@ -464,9 +464,7 @@ void Korali::Solver::TMCMC::finalize()
 
 void Korali::Solver::TMCMC::printGeneration()
 {
- koraliLog(KORALI_MINIMAL, "--------------------------------------------------------------------\n");
- koraliLog(KORALI_MINIMAL, "Generation %ld - Annealing Exponent:  %.3e.\n", _k->_currentGeneration, _annealingExponent);
-
+ koraliLog(KORALI_MINIMAL, "Annealing Exponent:  %.3e.\n", _annealingExponent);
  koraliLog(KORALI_NORMAL, "Acceptance Rate (proposals / selections): (%.2f%% / %.2f%%)\n", 100*_proposalsAcceptanceRate, 100*_selectionAcceptanceRate);
  koraliLog(KORALI_NORMAL, "Coefficient of Variation: %.2f%%\n", 100.0*_coefficientOfVariation);
 

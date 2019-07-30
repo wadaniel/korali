@@ -25,7 +25,7 @@
    {
     "Name": [ "Burn In Steps" ],
     "Type": "std::vector<size_t>",
-    "Default": "0",
+    "Default": "std::vector<size_t>(0)",
     "Description": "Specifies the number of additional TMCMC steps per chain at specified generations."
    },
    {

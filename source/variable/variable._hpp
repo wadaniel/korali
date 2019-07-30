@@ -15,12 +15,13 @@ class Variable
  bool _isLogSpace;
  std::string _name;
 
+ Variable();
+ ~Variable();
+
  void getConfiguration(nlohmann::json& js);
  void setConfiguration(nlohmann::json& js);
- void setProblemSettings(nlohmann::json& js);
- void getProblemSettings(nlohmann::json& js);
- void setSolverSettings(nlohmann::json& js);
- void getSolverSettings(nlohmann::json& js);
+ void setInheritedSettings(nlohmann::json& js);
+ void getInheritedSettings(nlohmann::json& js);
  };
 
 } // namespace Korali

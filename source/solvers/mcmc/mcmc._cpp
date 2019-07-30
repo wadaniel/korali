@@ -262,7 +262,6 @@ void Korali::Solver::MCMC::updateState()
 
 void Korali::Solver::MCMC::printGeneration()
 {
- koraliLog(KORALI_MINIMAL, "--------------------------------------------------------------------\n");
  koraliLog(KORALI_MINIMAL, "Database Entries %ld\n", _databaseEntryCount);
 
  koraliLog(KORALI_NORMAL, "Accepted Samples: %zu\n", _acceptanceCount);
@@ -282,9 +281,7 @@ void Korali::Solver::MCMC::printGeneration()
 
 void Korali::Solver::MCMC::finalize()
 {
- koraliLog(KORALI_MINIMAL, "MCMC Finished\n");
  koraliLog(KORALI_MINIMAL, "Number of Generated Samples: %zu\n", _proposedSampleCount);
  koraliLog(KORALI_MINIMAL, "Acceptance Rate: %.2f%%\n", 100*_acceptanceRate);
  if (_databaseEntryCount == _chainLength) koraliLog(KORALI_MINIMAL, "Max Samples Reached.\n");
- koraliLog(KORALI_MINIMAL, "--------------------------------------------------------------------\n");
 }

@@ -12,7 +12,7 @@ void Korali::Distribution::Base::finalize()
  gsl_rng_free(_range);
 }
 
-Base* Korali::Distribution::Base::getDistribution(nlohmann::json& js)
+Korali::Distribution::Base* Korali::Distribution::Base::getDistribution(nlohmann::json& js)
 {
  std::string distributionType = "Undefined";
 
@@ -21,9 +21,9 @@ Base* Korali::Distribution::Base::getDistribution(nlohmann::json& js)
   distributionType = js["Type"].get<std::string>();
    eraseValue(js, "['Type']");
  }
- koraliError("No distribution type provided.\n");
+ else koraliError("No distribution type provided.\n");
 
- Base* distribution = nullptr;
+ Korali::Distribution::Base* distribution = nullptr;
 
  // Distribution list
 

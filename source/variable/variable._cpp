@@ -22,8 +22,7 @@ void Korali::Variable::getConfiguration(nlohmann::json& js)
  js["Log Space"] = _isLogSpace;
  js["Name"] = _name;
 
- getProblemSettings(js);
- getSolverSettings(js);
+ getInheritedSettings(js);
 }
 
 void Korali::Variable::setConfiguration(nlohmann::json& js)
@@ -31,7 +30,6 @@ void Korali::Variable::setConfiguration(nlohmann::json& js)
  _isLogSpace = consume(js, { "Log Space"}, KORALI_BOOLEAN, "false");
  _name = consume(js, { "Name" }, KORALI_STRING);
 
- setSolverSettings(js);
- setProblemSettings(js);
+ setInheritedSettings(js);
 }
 

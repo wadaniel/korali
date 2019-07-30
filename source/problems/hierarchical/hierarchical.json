@@ -17,7 +17,7 @@
    },
    {
     "Name": [ "Conditional Priors" ],
-    "Type": "std::vector<Korali::Distribution>",
+    "Type": "std::vector<Korali::Distribution*>",
     "Description": "Eh..."
    }
  ],

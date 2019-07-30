@@ -41,27 +41,32 @@ def getVariableDescriptor(v):
 def consumeValue(base, moduleName, path, varName, varType, varDefault):
  cString = '\n'
  
- cString += (' if (isDefined(' + base + ', "' + path.replace('"', "'") + '"))  \n  { \n')
- cString += ('   ' + varName + ' = ' + base + path + '.get<' + varType + '>();\n' )
- cString += ('   eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n')
- cString += ('  }\n')
+ if (varType == 'Korali::Distribution*'):
+  cString =  ' ' + varName + ' = Korali::Distribution::getDistribution(' + base + path + ');\n'
+  cString += ' eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n' 
+  return cString
+  
+ if (varType == 'std::vector<Korali::Distribution*>'):
+  cString  = ' for(size_t i = 0; i < ' + base + path + '.size(); i++)' + varName + '[i] = Korali::Distribution::getDistribution(' + base + path + '[i]);\n'
+  cString += ' eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n\n' 
+  return cString
+ 
+ cString += ' if (isDefined(' + base + ', "' + path.replace('"', "'") + '"))  \n  { \n'
+ cString += '   ' + varName + ' = ' + base + path + '.get<' + varType + '>();\n' 
+ cString += '   eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n'
+ cString += '  }\n'
  
  if (varDefault == 'Korali Skip Default'):
   return cString
  
- cString += ('  else ')
+ cString += '  else '
  if (varDefault == ''):
-  cString += ('  koraliError("No value provided for mandatory setting: ' + path.replace('"', "'") + ' required by ' + moduleName + '.\\n"); ')
+  cString += '  koraliError("No value provided for mandatory setting: ' + path.replace('"', "'") + ' required by ' + moduleName + '.\\n"); \n'
  else:
   if ("std::string" in varType): varDefault = '"' + varDefault + '"'
-  defaultLine = varName + ' = ' + varDefault + ';'
-  if ('std::vector<' in varType):
-   defaultLine = 'for(size_t i = 0; i < ' + varName + '.size(); i++) ' + varName + '[i] = ' + varDefault + ';'
-  if ('std::vector<std::vector<' in varType):
-   defaultLine = 'for(size_t i = 0; i < ' + varName + '.size(); i++) ' + 'for(size_t j = 0; j < ' + varName + '[i].size(); j++) ' + varName + '[i][j] = ' + varDefault + ';'
-  cString += (defaultLine)
+  cString = varName + ' = ' + varDefault + ';'
    
- cString += ('\n')
+ cString += '\n'
  return cString
 
 #####################################################################

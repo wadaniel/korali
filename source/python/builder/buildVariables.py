@@ -5,7 +5,7 @@ from buildAux import *
 
 def buildVariables(koraliDir):
   # Reading base variable file
- with open(koraliDir + '/variable._cpp', 'r') as file: variableCodeString = file.read()
+ with open(koraliDir + '/variable/variable._cpp', 'r') as file: variableCodeString = file.read()
  
  # Creating variable settings
  variableSettingDeclarationsString = '' 
@@ -114,13 +114,13 @@ def buildVariables(koraliDir):
  ###### Finished Parsing Problems
   
  # Saving new variables.hpp file
- with open(koraliDir + '/variable._hpp', 'r') as file: variableHeaderString = file.read()
- variableNewHeaderFile = koraliDir + '/variable.hpp'
+ with open(koraliDir + '/variable/variable._hpp', 'r') as file: variableHeaderString = file.read()
+ variableNewHeaderFile = koraliDir + '/variable/variable.hpp'
  newHeaderString = variableHeaderString.replace('public:', 'public: \n' + variableSettingDeclarationsString + '\n')
  print('[Korali] Creating: ' + variableNewHeaderFile + '...')
  with open(variableNewHeaderFile, 'w') as file: file.write(newHeaderString)
  
- variableNewCodeFile = koraliDir + '/variable.cpp'
+ variableNewCodeFile = koraliDir + '/variable/variable.cpp'
  print('[Korali] Creating: ' + variableNewCodeFile + '...')
  with open(variableNewCodeFile, 'w') as file: file.write(variableCodeString)
  

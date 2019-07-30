@@ -6,6 +6,7 @@ koraliDir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)) + '/../.
 from buildSolvers import *
 from buildProblems import *
 from buildVariables import *
+from buildDistributions import *
 from buildCxx import *
 from buildPlotter import *
 from buildSetup import *
@@ -21,6 +22,9 @@ buildSolvers(koraliDir)
 
 # Processing Solvers
 buildProblems(koraliDir)
+
+# Processing Distributions
+buildDistributions(koraliDir)
 
 # Processing Variables
 buildVariables(koraliDir) 

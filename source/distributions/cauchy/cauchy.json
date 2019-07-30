@@ -13,6 +13,10 @@
     "Name": [ "Scale" ],
     "Description": "Specifies the half-width at half-maximum (HWHM)"
    }
+ ],
+ 
+ "Internal Settings": 
+ [
  ]
  
 }

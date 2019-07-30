@@ -114,7 +114,7 @@ def buildDistributions(koraliDir):
 
   for v in distributionConfig["Distribution Configuration"]: 
     conditionalCheckString += ' if ( !' + getCXXVariableName(v) + 'Conditional.empty() && ' + getCXXVariableName(v) + 'Recognized == false)\n'
-    conditionalCheckString += '  koraliError("Could not find a variable whose name coincides with reference %s made by conditional property: ' + v["Name"][-1] + '.\\n", ' + getCXXVariableName(v) + 'Conditional);\n'
+    conditionalCheckString += '  koraliError("Could not find a variable whose name coincides with reference %s made by conditional property: ' + v["Name"][-1] + '.\\n", ' + getCXXVariableName(v) + 'Conditional.c_str());\n'
   
   ###### Creating code file
   

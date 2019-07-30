@@ -183,10 +183,9 @@ void Korali::Engine::start(bool isDryRun)
  std::chrono::time_point<std::chrono::system_clock> startTime, endTime;
 
  // Running Engine
- _conduit->initialize();
  _problem->initialize();
  if (_currentGeneration == 0) _solver->initialize();
-
+ _conduit->initialize();
 
  if (_conduit->isRoot())
  {

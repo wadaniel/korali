@@ -20,6 +20,11 @@ Korali::Solver::TMCMC::TMCMC()
 {
  range = gsl_rng_alloc (gsl_rng_default);
  gsl_rng_set(range, _k->_seed++);
+
+ auto jsMultivariate = nlohmann::json();
+ jsMultivariate["Type"] = "Multivariate Gaussian";
+ jsMultivariate["Seed"] = _k->_seed++;
+ _multivariateGenerator = Korali::Distribution::Base::getDistribution(jsMultivariate);
 }
 
 Korali::Solver::TMCMC::~TMCMC()
@@ -173,7 +178,14 @@ void Korali::Solver::TMCMC::generateCandidate(size_t c)
  gsl_vector_view out_view    = gsl_vector_view_array(&_chainCandidateParameters[c*_k->N], _k->N);
  gsl_matrix_view sigma_view  = gsl_matrix_view_array(covariance, _k->N,_k->N);
  gsl_vector_view mean_view   = gsl_vector_view_array(&_chainLeaderParameters[c*_k->N], _k->N);
- gsl_ran_multivariate_gaussian(range, &mean_view.vector, &sigma_view.matrix, &out_view.vector);
+
+ std::vector<double> _currentMean;
+  for (size_t i = 0; i < _k->N; i++) _currentMean.push_back(_chainLeaderParameters[c*_k->N + i]);
+
+ _multivariateGenerator->setPropertyVector("Covariance Matrix", _covarianceMatrix);
+ _multivariateGenerator->setPropertyVector("Mean Vector", _currentMean);
+ _multivariateGenerator->updateDistribution();
+ _multivariateGenerator->getRandomVector(&_chainCandidateParameters[c*_k->N],  _k->N);
 }
 
 void Korali::Solver::TMCMC::processGeneration()

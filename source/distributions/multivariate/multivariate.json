@@ -8,10 +8,12 @@
   {
    "Name": [ "Mean Vector" ],
    "Type": "std::vector<double>",
+   "Default": "std::vector<double>(0)",
    "Description": ""
   },
   {
    "Name": [ "Covariance Matrix" ],
+   "Default": "std::vector<double>(0)",
    "Type": "std::vector<double>",
    "Description": ""
   }

@@ -23,6 +23,8 @@ class TMCMC : public Base
  static double tmcmc_objlogp(double x, const double *fj, size_t fn, double pj, double zero);
  static double objLog(const gsl_vector *v, void *param);
 
+ Korali::Distribution::Base* _multivariateGenerator; /* Multivariate Gaussian random number generator */
+
  public:
 
  TMCMC();

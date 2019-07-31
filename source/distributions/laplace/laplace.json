@@ -1,0 +1,23 @@
+{
+ "Name": "Laplace Distribution",
+ "Alias": "Laplace",
+ "Class": "Laplace",
+ 
+ "Distribution Configuration": 
+ [
+   {
+    "Name": [ "Mean" ],
+    "Description": ""
+   },
+   {
+    "Name": [ "Width" ],
+    "Description": ""
+   }
+ ],
+ 
+ "Internal Settings": 
+ [
+ ]
+ 
+}
+ 

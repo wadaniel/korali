@@ -1,6 +1,10 @@
 #ifndef _KORALI_MODEL_HPP_
 #define _KORALI_MODEL_HPP_
 
+#ifdef _KORALI_USE_MPI
+#include "mpi.h"
+#endif
+
 namespace Korali
 {
  class Model {

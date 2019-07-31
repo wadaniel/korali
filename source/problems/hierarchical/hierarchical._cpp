@@ -1,0 +1,68 @@
+#include "korali.hpp"
+
+void Korali::Problem::Hierarchical::initialize()
+{
+ if (_conditionalPriors.size() == 0) koraliError("Hierarchical Bayesian problems require at least one conditional prior\n");
+
+ if (_k->_constraints.size() > 0) koraliError("Hierarchical Bayesian problems do not allow constraint definitions.\n");
+ if (_k->_modelDefined == true) koraliError("Hierarchical Bayesian does not require a computational model, but one was provided.\n");
+ if (_subProblems.size() < 2) koraliError("Hierarchical Bayesian problem requires defining at least two executed sub-problems.\n");
+
+ bool foundModel = false;
+ if (_model == "Sample Psi")   { foundModel = true; _k->setModel(Korali::Problem::Hierarchical::samplePsi); }
+ if (_model == "Sample Theta") { foundModel = true; _k->setModel(Korali::Problem::Hierarchical::sampleTheta); }
+ if (foundModel == false) koraliError("Incorrect or no model selected for Hierarchical Bayesian: %s.\n", _model.c_str());
+
+ // Creating JSON object from string
+ for (size_t i = 0; i < _subProblemsJson.size(); i++) _subProblemsJson.push_back(nlohmann::json::parse(_subProblems[i]));
+
+ for (size_t i = 0; i < _subProblemsJson.size(); i++)
+   if (_subProblemsJson[i]["Is Finished"] == false) koraliError("The Hierarchical Bayesian requires that all problems have run completely, but Problem %lu has not.\n", i);
+
+ for (size_t i = 0; i < _k->N; i++) _k->_variables[i]->_priorDistribution->initialize();
+}
+
+void Korali::Problem::Hierarchical::finalize()
+{
+
+}
+
+void Korali::Problem::Hierarchical::packVariables(double* sample, Korali::Model& data)
+{
+ for (size_t i = 0; i < _k->N; i++) data._computationalVariables.push_back(sample[i]);
+}
+
+double Korali::Problem::Hierarchical::evaluateFitness(Korali::Model& data)
+{
+ // Now re-configuring conditional priors given hyperparameters
+ for (size_t i = 0; i < _conditionalPriors.size(); i++)
+  _conditionalPriors[i]->updateConditionals(data.getVariables());
+
+ double fitness = 1.0;
+
+ for (size_t i = 0; i < _conditionalPriors.size(); i++)
+ {
+  // George: I just put gibberish here. I'll let you to do the rest.
+  double x = _conditionalPriors[i]->getRandomNumber();
+  fitness *= _conditionalPriors[i]->getLogDensity(x);
+ }
+
+ return fitness;
+}
+
+double Korali::Problem::Hierarchical::evaluateLogPrior(double* sample)
+{
+ double logPrior = 0.0;
+ for (size_t i = 0; i < _k->N; i++) logPrior += _k->_variables[i]->_priorDistribution->getLogDensity(sample[i]);
+ return logPrior;
+}
+
+void Korali::Problem::Hierarchical::samplePsi(Korali::Model& data)
+{
+ data.addResult(0.0);
+}
+
+void Korali::Problem::Hierarchical::sampleTheta(Korali::Model& data)
+{
+ data.addResult(0.0);
+}

@@ -1,0 +1,23 @@
+{
+ "Name": "Gamma Distribution",
+ "Alias": "Gamma",
+ "Class": "Gamma",
+ 
+ "Distribution Configuration": 
+ [
+   {
+    "Name": [ "Shape" ],
+    "Description": ""
+   },
+   {
+    "Name": [ "Scale" ],
+    "Description": ""
+   }
+ ],
+ 
+ "Internal Settings": 
+ [
+ ]
+ 
+}
+ 

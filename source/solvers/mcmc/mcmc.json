@@ -1,35 +1,36 @@
 {
  "Name": "Markov Chain Monte Carlo",
  "Alias": "MCMC",
+ "Class": "MCMC",
  
  "Solver Configuration": 
  [
    {
-    "Name": "Burn In",
+    "Name": [ "Burn In" ],
     "Type": "size_t",
     "Default": "0",
     "Description": "Specifies the number of preliminary MCMC steps before samples are being drawn. This may reduce effects from improper initialization."
    },
    {
-    "Name": "Rejection Levels",
+    "Name": [ "Rejection Levels" ],
     "Type": "size_t",
     "Default": "1",
     "Description": "Controls the number of accept-reject stages per MCMC step."
    },
    {
-    "Name": "Use Adaptive Sampling",
+    "Name": [ "Use Adaptive Sampling" ],
     "Type": "bool",
     "Default": "false",
     "Description": "Specifies if covariance matrix of the proposal distribution is calculated from the samples."
    },
    {
-    "Name": "Non Adaption Period",
+    "Name": [ "Non Adaption Period" ],
     "Type": "size_t",
     "Default": "0",
     "Description": "Number of steps (after Burn In steps) during which the initial standard deviation is used (only relevant for Adaptive Sampling). If 0 is specified, Korali will set this value to $5%$ of the Chain Length."
    },
    {
-    "Name": "Chain Covariance Scaling",
+    "Name": [ "Chain Covariance Scaling" ],
     "Type": "double",
     "Default": "1.0",
     "Description": "Multiplier inside of Chain Covariance update in order to control the covariance."
@@ -39,7 +40,7 @@
  "Termination Criteria":
  [
    {
-    "Name": "Max Chain Length",
+    "Name": [ "Max Chain Length" ],
     "Type": "size_t",
     "Default": "7000",
     "Criteria": "_databaseEntryCount >= _maxChainLength",
@@ -50,12 +51,12 @@
  "Variables Configuration": 
  [
    {
-    "Name": "Initial Mean",
+    "Name": [ "Initial Mean" ],
     "Type": "double",
     "Description": "Specifies the Initial Mean of the proposal distribution."
    },
    {
-    "Name": "Initial Standard Deviation",
+    "Name": [ "Initial Standard Deviation" ],
     "Type": "double",
     "Description": "Specifies the Standard Deviation for each variable. The proposal distribution is defined through a covariance matrix with the variance of the variables in its diagonal."
    }
@@ -64,97 +65,97 @@
  "Internal Settings": 
  [
    {
-    "Name": "Cholesky Decomposition Covariance",
+    "Name": [ "Cholesky Decomposition Covariance" ],
     "Type": "std::vector<double>",
     "Description": "Cholesky Decomposition of Covariance for sampling (using a lower triangular matrix, with rest zeros)."
    },
    {
-    "Name": "Cholesky Decomposition Chain Covariance",
+    "Name": [ "Cholesky Decomposition Chain Covariance" ],
     "Type": "std::vector<double>",
     "Description": "Chain Cholesky Decomposition of Covariance for sampling (using a lower triangular matrix, with rest zeros)."
    },
    {
-    "Name": "Chain Leader Parameters",
+    "Name": [ "Chain Leader Parameters" ],
     "Type": "std::vector<double>",
     "Description": "Parameters of the current sample."
    },
    {
-    "Name": "Chain Leader LogLikelihood",
+    "Name": [ "Chain Leader LogLikelihood" ],
     "Type": "double",
     "Description": "The logLikelihood of the current sample."
    },
    {
-    "Name": "Chain Candidate Parameters",
+    "Name": [ "Chain Candidate Parameters" ],
     "Type": "std::vector<double>",
     "Description": "Current parameters of the chain leader sample."
    },
    {
-    "Name": "Chain Candidates LogLikelihoods",
+    "Name": [ "Chain Candidates LogLikelihoods" ],
     "Type": "std::vector<double>",
     "Description": "The logLikelihoods of the chain candidates."
    },
    {
-    "Name": "Chain Candidates LogPriors",
+    "Name": [ "Chain Candidates LogPriors" ],
     "Type": "std::vector<double>",
     "Description": "The logPriors of the chain candidates."
    },
    {
-    "Name": "Rejection Alphas",
+    "Name": [ "Rejection Alphas" ],
     "Type": "std::vector<double>",
     "Description": "Alphas for recursive calculation of delayed rejection schemes."
    },
    {
-    "Name": "Acceptance Rate",
+    "Name": [ "Acceptance Rate" ],
     "Type": "double",
     "Description": "Ratio proposed to accepted samples."
    },
    {
-    "Name": "Current Rejection Count",
+    "Name": [ "Current Rejection Count" ],
     "Type": "size_t",
     "Description": "Number of rejections in the current generation."
    },
    {
-    "Name": "Acceptance Count",
+    "Name": [ "Acceptance Count" ],
     "Type": "size_t",
     "Description": "Number of accepted samples."
    },
    {
-    "Name": "Proposed Sample Count",
+    "Name": [ "Proposed Sample Count" ],
     "Type": "size_t",
     "Description": "Number of proposed samples."
    },
    {
-    "Name": "Database Entry Count",
+    "Name": [ "Database Entry Count" ],
     "Type": "size_t",
     "Description": "Number of accepted samples stored in the database."
    },
    {
-    "Name": "Sample Parameters Database",
+    "Name": [ "Sample Parameters Database" ],
     "Type": "std::vector<double>",
     "Description": "Variable values of samples stored in the database."
    },
    {
-    "Name": "Sample Fitness Database",
+    "Name": [ "Sample Fitness Database" ],
     "Type": "std::vector<double>",
     "Description": "Fitness of the samples stored in the database."
    },
    {
-    "Name": "Chain Mean",
+    "Name": [ "Chain Mean" ],
     "Type": "std::vector<double>",
     "Description": "Mean of Markov Chain Monte Carlo Chain."
    },
    {
-    "Name": "Chain Covariance Placeholder",
+    "Name": [ "Chain Covariance Placeholder" ],
     "Type": "std::vector<double>",
     "Description": "Placeholder chain covariance calculation."
    },
    {
-    "Name": "Chain Covariance",
+    "Name": [ "Chain Covariance" ],
     "Type": "std::vector<double>",
     "Description": "Chain Covariance."
    },
    {
-    "Name": "Chain Length",
+    "Name": [ "Chain Length" ],
     "Type": "size_t",
     "Description": "Current Chain Length."
    }

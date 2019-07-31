@@ -2,6 +2,8 @@
 #define _KORALI_SOLVERS_DEA_HPP_
 
 #include "solvers/base.hpp"
+#include "distributions/gaussian/gaussian.hpp"
+#include "distributions/uniform/uniform.hpp"
 #include <chrono>
 #include <map>
 
@@ -11,8 +13,8 @@ class DEA : public Base
 {
  private:
 
- Variable* _gaussianGenerator;
- Variable* _uniformGenerator;
+ Korali::Distribution::Base* _gaussianGenerator; /* Gaussian random number generator */
+ Korali::Distribution::Base* _uniformGenerator; /* Uniform random number generator */
 
  void mutateSingle(size_t sampleIdx); /* sample individual */
  bool isFeasible(size_t sampleIdx) const; /* check if sample inside lower & upper bounds */

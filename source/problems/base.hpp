@@ -1,9 +1,7 @@
 #ifndef _KORALI_PROBLEM_BASE_HPP_
 #define _KORALI_PROBLEM_BASE_HPP_
 
-#include "variable.hpp"
 #include "model.hpp"
-#include "conduits/base.hpp"
 
 namespace Korali { namespace Problem {
 

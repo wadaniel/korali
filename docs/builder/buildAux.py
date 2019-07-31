@@ -11,16 +11,22 @@ def getVariableName(v):
  
 def getVariableDefault(v):
  return v.get('Default', '*none*')
+
+def getJsonPath(path):
+ nameString = ''
+ for item in path:
+  nameString += '["' + item + '"]'
+ return nameString
  
 def getVariableInfo(v, moduleName):
  varString = ''
- varString += '??? abstract "' + v["Name"] + '"\n\n'
+ varString += '??? abstract "' + getJsonPath(v["Name"]) + '"\n\n'
  varString += '\t' + v["Description"] + '\n'
  varString += '\n'
  varString += '\t+ Default Value: ' + getVariableDefault(v) + '\n'
  varString += '\t+ Datatype: ' + v["Type"] + '\n'
  varString += '\t+ Syntax: \n\n' 
- varString += '\t```python\n\t\tkorali["Variables"][i]["' + moduleName + '"]["' + v["Name"] + '"] = *value*\n\t```\n\n'
+ varString += '\t```python\n\t\tkorali["Variables"][i]["' + moduleName + '"]["' + getJsonPath(v["Name"]) + '"] = *value*\n\t```\n\n'
  return varString
 
-#####################################################################
+##################################################################### 

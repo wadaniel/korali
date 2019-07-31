@@ -1,13 +1,16 @@
 #ifndef _KORALI_HPP_
 #define _KORALI_HPP_
 
-#include "stdlib.h"
 #include <vector>
 #include <functional>
 
-#ifdef _KORALI_USE_MPI
-#include "mpi.h"
-#endif
+#include "distributions/cauchy/cauchy.hpp"
+#include "distributions/exponential/exponential.hpp"
+#include "distributions/gamma/gamma.hpp"
+#include "distributions/gaussian/gaussian.hpp"
+#include "distributions/geometric/geometric.hpp"
+#include "distributions/laplace/laplace.hpp"
+#include "distributions/uniform/uniform.hpp"
 
 #include "problems/optimization/optimization.hpp"
 #include "problems/sampling/sampling.hpp"
@@ -23,7 +26,7 @@
 #include "conduits/simple.hpp"
 #include "conduits/external.hpp"
 
-#include "variable.hpp"
+#include "variable/variable.hpp"
 #include "auxiliar.hpp"
 #include "model.hpp"
 

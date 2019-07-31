@@ -10,16 +10,20 @@ using namespace Korali::Solver;
 
 CMAES::CMAES()
 {
- // Initializing Gaussian Generator
+ // Initializing RNGs
  auto jsGaussian = nlohmann::json();
  jsGaussian["Type"] = "Gaussian";
  jsGaussian["Mean"] = 0.0;
  jsGaussian["Standard Deviation"] = 1.0;
  jsGaussian["Seed"] = _k->_seed++;
- _gaussianGenerator = std::make_shared<Variable>();
- _gaussianGenerator->setDistribution(jsGaussian);
- 
- _uniformGenerator = nullptr;
+ _gaussianGenerator = Korali::Distribution::Base::getDistribution(jsGaussian);
+
+ auto jsUniform = nlohmann::json();
+ jsUniform["Type"] = "Uniform";
+ jsUniform["Minimum"] = 0.0;
+ jsUniform["Maximum"] = 1.0;
+ jsUniform["Seed"] = _k->_seed++;
+ _uniformGenerator = Korali::Distribution::Base::getDistribution(jsUniform);
 }
 
 CMAES::~CMAES()
@@ -183,17 +187,6 @@ void CMAES::initialize()
  }
 
  _hasDiscreteVariables = (numDiscretes > 0);
-
- if (_hasDiscreteVariables)
- {
-   auto jsUniform = nlohmann::json();
-   jsUniform["Type"] = "Uniform";
-   jsUniform["Minimum"] = 0.0;
-   jsUniform["Maximum"] = 1.0;
-   jsUniform["Seed"] = _k->_seed++;
-   _uniformGenerator = std::make_shared<Variable>();
-   _uniformGenerator->setDistribution(jsUniform);
- }
 
  _currentMinStandardDeviation = std::numeric_limits<double>::max();
  _currentMaxStandardDeviation = std::numeric_limits<double>::lowest();
@@ -865,7 +858,6 @@ void CMAES::sort_index(const std::vector<double>& vec, std::vector<size_t>& _sor
 
 void CMAES::printGeneration()
 {
- koraliLog(KORALI_MINIMAL, "Generation %zu\n", _k->_currentGeneration);
 
  if ( _areConstraintsDefined && _isViabilityRegime)
  {
@@ -905,13 +897,10 @@ void CMAES::printGeneration()
     koraliLog(KORALI_DETAILED, "Number of Constraint Evaluations: %zu\n", _constraintEvaluationCount);
     koraliLog(KORALI_DETAILED, "Number of Matrix Corrections: %zu\n", _covarianceMatrixAdaptationCount );
   }
-
-  koraliLog(KORALI_NORMAL, "--------------------------------------------------------------------\n");
 }
 
 void CMAES::finalize()
 {
-  koraliLog(KORALI_MINIMAL, "Finished\n");
   koraliLog(KORALI_MINIMAL, "Optimum found: %e\n", _bestEverValue);
   koraliLog(KORALI_MINIMAL, "Optimum found at:\n");
   for (size_t d = 0; d < _k->N; ++d) koraliLogData(KORALI_MINIMAL, "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverCoordinates[d]);
@@ -922,5 +911,4 @@ void CMAES::finalize()
       koraliLogData(KORALI_MINIMAL, "         ( %+6.3e )\n", _bestConstraintEvaluations[c]);
   }
   koraliLog(KORALI_MINIMAL, "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
-  koraliLog(KORALI_MINIMAL, "--------------------------------------------------------------------\n");
 }

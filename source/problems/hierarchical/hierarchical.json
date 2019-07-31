@@ -1,16 +1,38 @@
 {
  "Name": "Hierarchical Bayesian Modeling",
  "Alias": "Hierarchical Bayesian",
+ "Class": "Hierarchical",
  
  "Problem Configuration": 
  [
+   {
+    "Name": [ "Model" ],
+    "Type": "std::string",
+    "Description": "Determines the hierarchical bayesian evaluation model."
+   },
+   {
+    "Name": [ "Sub Problems" ],
+    "Type": "std::vector<std::string>",
+    "Description": "Provides results from previous Korali executions."
+   },
+   {
+    "Name": [ "Conditional Priors" ],
+    "Type": "std::vector<Korali::Distribution::Base*>",
+    "Description": "Eh..."
+   }
  ],
  
  "Variables Configuration": 
  [
+   {
+    "Name": [ "Prior Distribution" ],
+    "Type": "Korali::Distribution::Base*",
+    "Description": "Eh..."
+   }
  ],
  
  "Internal Settings": 
  [
+ 
  ]
 }

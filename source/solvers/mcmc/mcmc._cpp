@@ -11,22 +11,20 @@
 
 Korali::Solver::MCMC::MCMC()
 {
- // Initializing Gaussian Generator
+ // Initializing RNGs
  auto jsGaussian = nlohmann::json();
  jsGaussian["Type"] = "Gaussian";
  jsGaussian["Mean"] = 0.0;
  jsGaussian["Standard Deviation"] = 1.0;
  jsGaussian["Seed"] = _k->_seed++;
- _gaussianGenerator = new Variable();
- _gaussianGenerator->setDistribution(jsGaussian);
+ _gaussianGenerator = Korali::Distribution::Base::getDistribution(jsGaussian);
 
  auto jsUniform = nlohmann::json();
  jsUniform["Type"] = "Uniform";
  jsUniform["Minimum"] = 0.0;
  jsUniform["Maximum"] = 1.0;
  jsUniform["Seed"] = _k->_seed++;
- _uniformGenerator = new Variable();
- _uniformGenerator->setDistribution(jsUniform);
+ _uniformGenerator = Korali::Distribution::Base::getDistribution(jsUniform);
 
  _k->_consoleOutputFrequency = 500;
  _k->_resultsOutputFrequency = 500;
@@ -34,8 +32,6 @@ Korali::Solver::MCMC::MCMC()
 
 Korali::Solver::MCMC::~MCMC()
 {
- delete _gaussianGenerator;
- delete _uniformGenerator;
 }
 
 void Korali::Solver::MCMC::runGeneration()
@@ -264,7 +260,6 @@ void Korali::Solver::MCMC::updateState()
 
 void Korali::Solver::MCMC::printGeneration()
 {
- koraliLog(KORALI_MINIMAL, "--------------------------------------------------------------------\n");
  koraliLog(KORALI_MINIMAL, "Database Entries %ld\n", _databaseEntryCount);
 
  koraliLog(KORALI_NORMAL, "Accepted Samples: %zu\n", _acceptanceCount);
@@ -284,9 +279,7 @@ void Korali::Solver::MCMC::printGeneration()
 
 void Korali::Solver::MCMC::finalize()
 {
- koraliLog(KORALI_MINIMAL, "MCMC Finished\n");
  koraliLog(KORALI_MINIMAL, "Number of Generated Samples: %zu\n", _proposedSampleCount);
  koraliLog(KORALI_MINIMAL, "Acceptance Rate: %.2f%%\n", 100*_acceptanceRate);
  if (_databaseEntryCount == _chainLength) koraliLog(KORALI_MINIMAL, "Max Samples Reached.\n");
- koraliLog(KORALI_MINIMAL, "--------------------------------------------------------------------\n");
 }

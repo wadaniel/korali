@@ -2,6 +2,7 @@
 #define _KORALI_SOLVERS_CCMAES_HPP_
 
 #include "solvers/base.hpp"
+#include "distributions/gaussian/gaussian.hpp"
 #include <chrono>
 #include <vector>
 #include <map>
@@ -12,8 +13,8 @@ class CMAES : public Base
 {
  private:
 
-  std::shared_ptr<Variable> _gaussianGenerator;
-  std::shared_ptr<Variable> _uniformGenerator;
+ Korali::Distribution::Base* _gaussianGenerator; /* Gaussian random number generator */
+ Korali::Distribution::Base* _uniformGenerator; /* Uniform random number generator */
 
   void prepareGeneration();
   void sampleSingle(size_t sampleIdx); /* sample individual */

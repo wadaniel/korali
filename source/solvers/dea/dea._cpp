@@ -28,7 +28,6 @@ DEA::DEA()
 
 DEA::~DEA()
 {
-  delete _uniformGenerator;
 }
 
 void DEA::initialize()

@@ -32,8 +32,6 @@ Korali::Solver::MCMC::MCMC()
 
 Korali::Solver::MCMC::~MCMC()
 {
- delete _gaussianGenerator;
- delete _uniformGenerator;
 }
 
 void Korali::Solver::MCMC::runGeneration()

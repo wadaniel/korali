@@ -25,6 +25,13 @@ Korali::Solver::TMCMC::TMCMC()
  jsMultivariate["Type"] = "Multivariate Gaussian";
  jsMultivariate["Seed"] = _k->_seed++;
  _multivariateGenerator = Korali::Distribution::Base::getDistribution(jsMultivariate);
+
+ auto jsUniform = nlohmann::json();
+ jsUniform["Type"] = "Uniform";
+ jsUniform["Minimum"] = 0.0;
+ jsUniform["Maximum"] = 1.0;
+ jsUniform["Seed"] = _k->_seed++;
+ _uniformGenerator = Korali::Distribution::Base::getDistribution(jsUniform);
 }
 
 Korali::Solver::TMCMC::~TMCMC()
@@ -138,7 +145,7 @@ void Korali::Solver::TMCMC::processSample(size_t sampleId, double fitness)
    _chainLeadersLogPriors[sampleId] = _k->_problem->evaluateLogPrior(&_chainLeaderParameters[sampleId*_k->N]);
    double L = exp((_chainCandidatesLogLikelihoods[sampleId]-_chainLeadersLogLikelihoods[sampleId])*_annealingExponent + (ccLogPrior-_chainLeadersLogPriors[sampleId]));
 
-   if ( L >= 1.0 || L > gsl_ran_flat(range, 0.0, 1.0) ) {
+   if ( L >= 1.0 || L > _uniformGenerator->getRandomNumber() ) {
      for (size_t i = 0; i < _k->N; i++) _chainLeaderParameters[sampleId*_k->N + i] = _chainCandidateParameters[sampleId*_k->N + i];
      _chainLeadersLogLikelihoods[sampleId] = _chainCandidatesLogLikelihoods[sampleId];
      if (_currentChainStep[sampleId]+1 > _currentBurnIn) _acceptedSamplesCount++;

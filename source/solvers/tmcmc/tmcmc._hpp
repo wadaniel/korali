@@ -24,6 +24,7 @@ class TMCMC : public Base
  static double objLog(const gsl_vector *v, void *param);
 
  Korali::Distribution::Base* _multivariateGenerator; /* Multivariate Gaussian random number generator */
+ Korali::Distribution::Base* _uniformGenerator; /* Uniform random number generator */
 
  public:
 

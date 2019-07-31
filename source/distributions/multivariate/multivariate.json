@@ -5,11 +5,6 @@
  
  "Distribution Configuration": 
  [
-
- ],
- 
- "Internal Settings": 
- [
   {
    "Name": [ "Mean Vector" ],
    "Type": "std::vector<double>",
@@ -19,7 +14,17 @@
    "Name": [ "Covariance Matrix" ],
    "Type": "std::vector<double>",
    "Description": ""
-  },
+  }
+ ],
+ 
+ "Conditional Variables":
+ [
+
+ ],
+ 
+ 
+ "Internal Settings": 
+ [
   {
     "Name": [ "Work Vector" ],
     "Type": "std::vector<double>",
@@ -28,4 +33,4 @@
  ]
  
 }
- 
+  

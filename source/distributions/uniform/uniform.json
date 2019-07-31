@@ -5,6 +5,11 @@
  
  "Distribution Configuration": 
  [
+   
+ ],
+ 
+ "Conditional Variables":
+ [
    {
     "Name": [ "Minimum" ],
     "Description": ""

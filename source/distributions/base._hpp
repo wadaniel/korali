@@ -28,12 +28,13 @@ class Base {
  virtual void updateDistribution() = 0;
  virtual void updateConditionals(const std::vector<double>& sample);
  static Base* getDistribution(nlohmann::json& js);
- virtual void setProperty(std::string propertyName, double value) = 0;
 
+ virtual void setProperty(std::string propertyName, double value) = 0;
  virtual double getDensity(double x) = 0;
  virtual double getLogDensity(double x) = 0;
  virtual double getRandomNumber() = 0;
 
+ virtual void setPropertyVector(std::string propertyName, std::vector<double> values) = 0;
  virtual void getDensityVector(double *x, double* result, size_t n) = 0;
  virtual void getLogDensityVector(double *x, double* result, size_t n) = 0;
  virtual void getRandomVector(double *x, size_t n) = 0;

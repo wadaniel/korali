@@ -93,7 +93,6 @@ class Engine {
  void loadState(std::string fileName);
  void saveState(std::string fileName);
  void saveState(int fileId);
- static std::string getResults(std::string fileName);
 
  size_t _seed;
  std::string _result_dir;

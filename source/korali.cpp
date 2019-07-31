@@ -131,7 +131,7 @@ void Korali::Engine::setConfiguration()
 
  // Configure Solver
 
- if (_solverType == "CMAES") _solver = std::make_shared<Korali::Solver::CMAES>();
+ if (_solverType == "CMAES")  _solver = std::make_shared<Korali::Solver::CMAES>();
  if (_solverType == "DEA")    _solver = std::make_shared<Korali::Solver::DEA>();
  if (_solverType == "MCMC")   _solver = std::make_shared<Korali::Solver::MCMC>();
  if (_solverType == "TMCMC")  _solver = std::make_shared<Korali::Solver::TMCMC>();
@@ -242,12 +242,6 @@ void Korali::Engine::saveState(std::string fileName)
 
  fileName = "./" + _result_dir + "/" + fileName;
  saveJsonToFile(fileName.c_str(), _js);
-}
-
-std::string Korali::Engine::getResults(std::string fileName)
-{
- auto js = loadJsonFromFile(fileName.c_str());
- return js.dump();
 }
 
 void Korali::Engine::saveState(int fileId)

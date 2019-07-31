@@ -122,9 +122,14 @@
     "Description": "Current (theta) parameters of the chain leader sample."
    },
    {
-    "Name": [ "Chain Leaders LogLikelihoods" ],
+    "Name": [ "Chain Leaders Log Likelihoods" ],
     "Type": "std::vector<double>",
     "Description": "The logLikelihoods of the chain leaders."
+   },
+   {
+    "Name": [ "Chain Leaders Log Priors" ],
+    "Type": "std::vector<double>",
+    "Description": "The logPriors of the chain leaders."
    },
    {
     "Name": [ "Finished Chains Count" ],
@@ -200,6 +205,11 @@
     "Name": [ "Sample Fitness Database" ],
     "Type": "std::vector<double>",
     "Description": "Fitness of the samples stored in the database."
+   },
+   {
+    "Name": [ "Sample Log Prior Database" ],
+    "Type": "std::vector<double>",
+    "Description": "Log priors of the samples stored in the database."
    },
    {
     "Name": [ "Local Covariance Matrices" ],

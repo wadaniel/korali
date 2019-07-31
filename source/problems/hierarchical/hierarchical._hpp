@@ -9,9 +9,6 @@ class Hierarchical : public Base
 {
  private:
 
- static void samplePsi(Korali::Model& data);
- static void sampleTheta(Korali::Model& data);
-
  std::vector<nlohmann::json> _subProblemsJson;
 
  public:

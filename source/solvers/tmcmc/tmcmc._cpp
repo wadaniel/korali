@@ -45,6 +45,7 @@ void Korali::Solver::TMCMC::initialize()
  _chainCandidatesLogLikelihoods.resize(_populationSize);
  _chainLeaderParameters.resize(_k->N*_populationSize);
  _chainLeadersLogLikelihoods.resize(_populationSize);
+ _chainLeadersLogPriors.resize(_populationSize);
  _chainPendingFitness.resize(_populationSize);
  _currentChainStep.resize(_populationSize);
  _chainLengths.resize(_populationSize);
@@ -83,9 +84,10 @@ void Korali::Solver::TMCMC::initialize()
    for (size_t d = 0; d < _k->N; d++)
    {
       _chainLeaderParameters[c*_k->N + d] = _chainCandidateParameters[c*_k->N + d] = _k->_variables[d]->_priorDistribution->getRandomNumber();
-      _chainLeadersLogLikelihoods[c] += _k->_variables[d]->_priorDistribution->getLogDensity(_chainLeaderParameters[c*_k->N + d]);
+      _chainLeadersLogLikelihoods[c] = 0.0;
+      _chainLeadersLogPriors[c] = _k->_variables[d]->_priorDistribution->getLogDensity(_chainLeaderParameters[c*_k->N + d]);
    }
-    updateDatabase(&_chainLeaderParameters[c*_k->N], _chainLeadersLogLikelihoods[c]);
+    updateDatabase(&_chainLeaderParameters[c*_k->N], _chainLeadersLogLikelihoods[c], _chainLeadersLogPriors[c]);
  }
 }
 
@@ -128,8 +130,8 @@ void Korali::Solver::TMCMC::processSample(size_t sampleId, double fitness)
  {
    _chainCandidatesLogLikelihoods[sampleId] = fitness;
    double ccLogPrior = _k->_problem->evaluateLogPrior(&_chainCandidateParameters[sampleId*_k->N]);
-   double clLogPrior = _k->_problem->evaluateLogPrior(&_chainLeaderParameters[sampleId*_k->N]);
-   double L = exp((_chainCandidatesLogLikelihoods[sampleId]-_chainLeadersLogLikelihoods[sampleId])*_annealingExponent + (ccLogPrior-clLogPrior));
+   _chainLeadersLogPriors[sampleId] = _k->_problem->evaluateLogPrior(&_chainLeaderParameters[sampleId*_k->N]);
+   double L = exp((_chainCandidatesLogLikelihoods[sampleId]-_chainLeadersLogLikelihoods[sampleId])*_annealingExponent + (ccLogPrior-_chainLeadersLogPriors[sampleId]));
 
    if ( L >= 1.0 || L > gsl_ran_flat(range, 0.0, 1.0) ) {
      for (size_t i = 0; i < _k->N; i++) _chainLeaderParameters[sampleId*_k->N + i] = _chainCandidateParameters[sampleId*_k->N + i];
@@ -140,7 +142,7 @@ void Korali::Solver::TMCMC::processSample(size_t sampleId, double fitness)
 
  _currentChainStep[sampleId]++;
  _chainPendingFitness[sampleId] = false;
- if (_currentChainStep[sampleId] > _currentBurnIn) updateDatabase(&_chainLeaderParameters[sampleId*_k->N], _chainLeadersLogLikelihoods[sampleId]); 
+ if (_currentChainStep[sampleId] > _currentBurnIn) updateDatabase(&_chainLeaderParameters[sampleId*_k->N], _chainLeadersLogLikelihoods[sampleId], _chainLeadersLogPriors[sampleId] );
  if (_currentChainStep[sampleId] == _chainLengths[sampleId]) _finishedChainsCount++;
 }
 
@@ -157,10 +159,11 @@ void Korali::Solver::TMCMC::evaluateSample(size_t c)
   _k->_conduit->evaluateSample(_logTransformedSample.data(), c);
 }
 
-void Korali::Solver::TMCMC::updateDatabase(double* point, double fitness)
+void Korali::Solver::TMCMC::updateDatabase(double* point, double fitness, double logPrior)
 {
  for (size_t i = 0; i < _k->N; i++) _sampleParametersDatabase.push_back(point[i]);
  _sampleFitnessDatabase.push_back(fitness);
+ _sampleLogPriorDatabase.push_back(logPrior);
  _databaseEntryCount++;
 }
 

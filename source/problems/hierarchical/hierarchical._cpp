@@ -9,17 +9,54 @@ void Korali::Problem::Hierarchical::initialize()
  if (_subProblems.size() < 2) koraliError("Hierarchical Bayesian problem requires defining at least two executed sub-problems.\n");
 
  bool foundModel = false;
- if (_model == "Sample Psi")   { foundModel = true; _k->setModel(Korali::Problem::Hierarchical::samplePsi); }
- if (_model == "Sample Theta") { foundModel = true; _k->setModel(Korali::Problem::Hierarchical::sampleTheta); }
+ if (_model == "Sample Psi")   foundModel = true;
+ if (_model == "Sample Theta") foundModel = true;
  if (foundModel == false) koraliError("Incorrect or no model selected for Hierarchical Bayesian: %s.\n", _model.c_str());
 
+ // Setting null model evaluator because Hierarchical is pure calculation
+ _k->_model = [](Korali::Model& data){};
+
+ // Obtaining sub problem count and variable counts
+ _subProblemCount = _subProblems.size();
+ _subProblemVariablesCount = _conditionalPriors.size();
+
  // Creating JSON object from string
- for (size_t i = 0; i < _subProblemsJson.size(); i++) _subProblemsJson.push_back(nlohmann::json::parse(_subProblems[i]));
+ for (size_t i = 0; i < _subProblemCount; i++)  _subProblemsJson.push_back(loadJsonFromFile(_subProblems[i].c_str()));
 
- for (size_t i = 0; i < _subProblemsJson.size(); i++)
-   if (_subProblemsJson[i]["Is Finished"] == false) koraliError("The Hierarchical Bayesian requires that all problems have run completely, but Problem %lu has not.\n", i);
+ // Sub-problem correctness checks
+ for (size_t i = 0; i < _subProblemCount; i++)
+ {
+  if (_subProblemsJson[i]["Problem"]["Type"] != "Bayesian Inference")
+   koraliError("The Hierarchical Bayesian can only accept sub-problems of type 'Bayesian Inference' but sub-Problem %lu is of type: '%s'.\n", i, _subProblemsJson[i]["Problem"]["Type"].get<std::string>().c_str());
 
- for (size_t i = 0; i < _k->N; i++) _k->_variables[i]->_priorDistribution->initialize();
+  if (_conditionalPriors.size() != _subProblemsJson[i]["Variables"].size())
+   koraliError("Sub-problem %lu contains a different number of variables (%lu) than conditional priors in the Hierarchical Bayesian problem (%lu).\n", i, _subProblemsJson[i]["Problem"]["Variables"].size(), _conditionalPriors.size());
+
+  if (_subProblemsJson[i]["Is Finished"] == false)
+   koraliError("The Hierarchical Bayesian requires that all problems have run completely, but Problem %lu has not.\n", i);
+ }
+
+ _subProblemSampleCoordinates.resize(_subProblemCount);
+ _subProblemSampleLogLikelihoods.resize(_subProblemCount);
+ _subProblemSampleLogPriors.resize(_subProblemCount);
+
+ for (size_t i = 0; i < _subProblemCount; i++)
+ {
+  size_t sampleCount = _subProblemsJson[i]["Solver"]["Internal"]["Database Entry Count"].get<size_t>();
+
+  _subProblemSampleCoordinates[i].resize(sampleCount * _subProblemVariablesCount);
+  _subProblemSampleLogLikelihoods[i].resize(sampleCount);
+  _subProblemSampleLogPriors[i].resize(sampleCount);
+
+  for (size_t j = 0; j < sampleCount; j++)
+  {
+   _subProblemSampleLogLikelihoods[i][j] = _subProblemsJson[i]["Solver"]["Internal"]["Sample Fitness Database"][j];
+   _subProblemSampleLogPriors[i][j] = _subProblemsJson[i]["Solver"]["Internal"]["Sample Log Prior Database"][j];
+
+   for (size_t k = 0; k < _subProblemVariablesCount; k++)
+    _subProblemSampleCoordinates[i][j*_subProblemVariablesCount + k] = _subProblemsJson[i]["Solver"]["Internal"]["Sample Parameters Database"][j*_subProblemVariablesCount + k];
+  }
+ }
 }
 
 void Korali::Problem::Hierarchical::finalize()
@@ -35,19 +72,35 @@ void Korali::Problem::Hierarchical::packVariables(double* sample, Korali::Model&
 double Korali::Problem::Hierarchical::evaluateFitness(Korali::Model& data)
 {
  // Now re-configuring conditional priors given hyperparameters
- for (size_t i = 0; i < _conditionalPriors.size(); i++)
-  _conditionalPriors[i]->updateConditionals(data.getVariables());
+  for (size_t i = 0; i < _conditionalPriors.size(); i++)
+   _conditionalPriors[i]->updateConditionals(data.getVariables());
 
- double fitness = 1.0;
+ double logFitness = 0.0;
 
- for (size_t i = 0; i < _conditionalPriors.size(); i++)
+ if (_model == "Sample Psi")
  {
-  // George: I just put gibberish here. I'll let you to do the rest.
-  double x = _conditionalPriors[i]->getRandomNumber();
-  fitness *= _conditionalPriors[i]->getLogDensity(x);
+  for (size_t i = 0; i < _subProblemCount; i++)
+  for (size_t j = 0; j < _subProblemSampleLogLikelihoods[i].size(); j++)
+  {
+   // Starting with sample's logLikelihood and logPriors.
+   // These are hyperparameters-invariants so perhaps could be taken out of loop eventually.
+
+   logFitness += _subProblemSampleLogLikelihoods[i][j];
+
+   logFitness += _subProblemSampleLogPriors[i][j];
+
+   // Calculating each conditional prior's logDensity for each subproblem's sample, given hyperparameters.
+   for (size_t k = 0; k < _conditionalPriors.size(); k++)
+    logFitness += _conditionalPriors[k]->getLogDensity(_subProblemSampleCoordinates[i][j*_subProblemVariablesCount + k]);
+  }
  }
 
- return fitness;
+ if (_model == "Sample Theta")
+ {
+  // I don't know who this one works
+ }
+
+ return logFitness;
 }
 
 double Korali::Problem::Hierarchical::evaluateLogPrior(double* sample)
@@ -55,14 +108,4 @@ double Korali::Problem::Hierarchical::evaluateLogPrior(double* sample)
  double logPrior = 0.0;
  for (size_t i = 0; i < _k->N; i++) logPrior += _k->_variables[i]->_priorDistribution->getLogDensity(sample[i]);
  return logPrior;
-}
-
-void Korali::Problem::Hierarchical::samplePsi(Korali::Model& data)
-{
- data.addResult(0.0);
-}
-
-void Korali::Problem::Hierarchical::sampleTheta(Korali::Model& data)
-{
- data.addResult(0.0);
 }

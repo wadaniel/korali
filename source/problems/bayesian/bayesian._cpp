@@ -33,8 +33,6 @@ void Korali::Problem::Bayesian::initialize()
    if (_k->_modelDefined == false) koraliError("No likelihood model was specified.\n");
    if (_statisticalVariableIndices.size() != 0) koraliError("Custom likelihood models do not accept statistical variables.\n");
  }
-
- for (size_t i = 0; i < _k->N; i++) _k->_variables[i]->_priorDistribution->initialize();
 }
 
 void Korali::Problem::Bayesian::finalize()

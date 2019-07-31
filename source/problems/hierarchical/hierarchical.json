@@ -33,6 +33,30 @@
  
  "Internal Settings": 
  [
- 
+  {
+   "Name": [ "Sub Problem Count" ],
+   "Type": "size_t",
+   "Description": "Number of sub-problems defined."
+  },
+  {
+   "Name": [ "Sub Problem Variables Count" ],
+   "Type": "size_t",
+   "Description": "Number of variables in each sub-problem. Must be equal to the number of conditional priors in the hierarchical problem."
+  },
+  {
+   "Name": [ "Sub Problem Sample Coordinates" ],
+   "Type": "std::vector<std::vector<double>>",
+   "Description": "Coordinates for each sample on each sub-problem."
+  },
+  {
+   "Name": [ "Sub Problem Sample Log Likelihoods" ],
+   "Type": "std::vector<std::vector<double>>",
+   "Description": "Likelihood for each sample on each sub-problem."
+  },
+  {
+   "Name": [ "Sub Problem Sample Log Priors" ],
+   "Type": "std::vector<std::vector<double>>",
+   "Description": "Log Priors for each sample on each sub-problem"
+  }
  ]
 }

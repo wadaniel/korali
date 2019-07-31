@@ -8,6 +8,7 @@ koraliDir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)) + '/../.
 
 from buildSolvers import *
 from buildProblems import *
+from buildTutorials import *
 
 mkdocsFileSrc = koraliDir + '/docs/mkdocs._yml'
 with open(mkdocsFileSrc, 'r') as file: mkdocsSourceString = file.read()
@@ -19,6 +20,10 @@ mkdocsSourceString = mkdocsSourceString.replace('- Solvers:', '- Solvers:\n' + s
 # Processing Problems
 problemYamlEntries = buildProblems(koraliDir)
 mkdocsSourceString = mkdocsSourceString.replace('- Problems:', '- Problems:\n' + problemYamlEntries)
+
+# Processing Tutorials
+problemYamlEntries = buildTutorials(koraliDir)
+mkdocsSourceString = mkdocsSourceString.replace('- Tutorials:', '- Tutorials:\n' + problemYamlEntries)
 
 mkdocsFileDst = koraliDir + '/docs/mkdocs.yml'
 print('[Korali] Creating ' + mkdocsFileDst + '...')

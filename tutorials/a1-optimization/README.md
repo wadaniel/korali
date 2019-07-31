@@ -1,16 +1,9 @@
+# Tutorial: Optimization
+
 In this tutorial we show how to **optimize** directly from a given function.
 
-!!! info
-	The full Python codes for this tutorial can be found in:
-	
-	+ [tutorials/python/a1-optimization-cmaes.py](https://github.com/cselab/skorali/blob/development/tutorials/python/a1-optimization-cmaes.py)
-	+ [tutorials/python/a1-optimization-dea.py](https://github.com/cselab/skorali/blob/development/tutorials/python/a1-optimization-dea.py)
+## Source Code
 
-	The full C++ code for this tutorial can be found in:
-	
-	+ [tutorials/cxx/a1-optimization-cmaes.cpp](https://github.com/cselab/skorali/blob/development/tutorials/cxx/a1-optimization-cmaes.cpp)	
-	+ [tutorials/cxx/a1-optimization-dea.cpp](https://github.com/cselab/skorali/blob/development/tutorials/cxx/a1-optimization-dea.cpp)
-	
 ## Problem Setup
 We are given the function $f(\vartheta)=-\vartheta^2$ for $\vartheta\in[-10,10]$.
 We want to find the maximum of the function in the given interval.

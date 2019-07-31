@@ -1,12 +1,8 @@
+# Tutorial: Checkpoint / Restart
+
 In this tutorial we show how to restart a previous Korali run.
 
-!!! info
-	An example Python code for this tutorial can be found in:
-	[tutorials/python/b1-restart.py](https://github.com/cselab/skorali/blob/master/tutorials/python/b1-restart.py)
-	
-	An example C++ code for this tutorial can be found in:
-	[tutorials/cxx/b1-restart.cpp](https://github.com/cselab/skorali/blob/master/tutorials/cxx/b1-restart.cpp)
-
+## Source Code
 
 Assume that we want to resume a previous Korali run, restarting from the one of the last generations. All we need to do is to run the following script:
 

@@ -1,3 +1,5 @@
+# Tutorial: Bayesian Inference
+
 In this tutorial we show how to **optimize** and **sample** the posterior
 distribution of a Bayesian inference problem.
 
@@ -12,6 +14,7 @@ distribution of a Bayesian inference problem.
 	+ [tutorials/cxx/a3-bayesian-inference-cmaes.cpp](https://github.com/cselab/skorali/blob/master/tutorials/cxx/a3-bayesian-inference-cmaes.cpp)
 	+ [tutorials/cxx/a3-bayesian-inference-tmcmc.cpp](https://github.com/cselab/skorali/blob/master/tutorials/cxx/a3-bayesian-inference-tmcmc.cpp)
 
+## Source Code
 
 ## Problem Setup
 In this example we will solve the inverse problem of estimating the Variables

@@ -1,3 +1,5 @@
+# Tutorial: Sampling
+
 In this tutorial we show how to **sample** directly from a given function.
 
 !!! info
@@ -10,6 +12,8 @@ In this tutorial we show how to **sample** directly from a given function.
 	
 	+ [tutorials/cxx/a2-sampling-mcmc.cpp](https://github.com/cselab/skorali/blob/master/tutorials/cxx/a2-sampling-mcmc.cpp).
 	+ [tutorials/cxx/a2-sampling-tmcmc.cpp](https://github.com/cselab/skorali/blob/master/tutorials/cxx/a2-sampling-tmcmc.cpp).
+
+## Source Code
 
 ## Problem Setup
 We are given the function $g(\vartheta)=\exp(-\vartheta^2)$ for $\vartheta\in[-10,10]$.

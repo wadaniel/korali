@@ -1,4 +1,4 @@
-
+# Tutorial: Constrained Optimization
 
 In this tutorial we show how to solve a **constrained optimization** problem ([CEC 2006](http://web.mysites.ntu.edu.sg/epnsugan/PublicSite/Shared%20Documents/CEC-2006/technical_report.pdf) Test Problem g09), defined as: Find $x^\star = \mathop{\arg\min}\limits_{x}  \,\,\, f(x) \,,$ under the constraints $g_i(x) \leq 0.$
 
@@ -10,6 +10,7 @@ In this tutorial we show how to solve a **constrained optimization** problem ([C
 	An example C++ code for this tutorial can be found in:
 	[tutorials/cxx/b2-constrained-optimization.cpp](https://github.com/cselab/skorali/blob/master/tutorials/cxx/b2-constrained-optimization.cpp)
 
+## Source Code
 
 ## Problem Setup
 

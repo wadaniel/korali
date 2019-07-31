@@ -9,6 +9,7 @@
 #include "distributions/gamma/gamma.hpp"
 #include "distributions/gaussian/gaussian.hpp"
 #include "distributions/geometric/geometric.hpp"
+#include "distributions/multivariate/multivariate.hpp"
 #include "distributions/laplace/laplace.hpp"
 #include "distributions/uniform/uniform.hpp"
 

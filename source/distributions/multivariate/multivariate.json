@@ -1,0 +1,31 @@
+{
+ "Name": "Multivariate Gaussian Distribution",
+ "Alias": "Multivariate Gaussian",
+ "Class": "Multivariate",
+ 
+ "Distribution Configuration": 
+ [
+
+ ],
+ 
+ "Internal Settings": 
+ [
+  {
+   "Name": [ "Mean Vector" ],
+   "Type": "std::vector<double>",
+   "Description": ""
+  },
+  {
+   "Name": [ "Covariance Matrix" ],
+   "Type": "std::vector<double>",
+   "Description": ""
+  },
+  {
+    "Name": [ "Work Vector" ],
+    "Type": "std::vector<double>",
+    "Description": "An auxiliar vector for performing work."
+  }
+ ]
+ 
+}
+ 

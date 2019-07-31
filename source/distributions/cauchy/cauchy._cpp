@@ -30,6 +30,24 @@ double Korali::Distribution::Cauchy::getRandomNumber()
  return _location + gsl_ran_cauchy(_range, _scale);
 }
 
+void Korali::Distribution::Cauchy::getRandomVector(double *x, size_t n)
+{
+ for (size_t i = 0; i < n; i++)
+  x[i] = getRandomNumber();
+}
+
+void Korali::Distribution::Cauchy::getDensityVector(double *x, double* result, size_t n)
+{
+ for (size_t i = 0; i < n; i++)
+   result[i] = getDensity(x[i]);
+}
+
+void Korali::Distribution::Cauchy::getLogDensityVector(double *x, double* result, size_t n)
+{
+ for (size_t i = 0; i < n; i++)
+   result[i] = getLogDensity(x[i]);
+}
+
 void Korali::Distribution::Cauchy::updateDistribution()
 {
  if (_scale <= 0) koraliError("Incorrect Scale parameter of Cauchy distribution: %f.\n", _scale);

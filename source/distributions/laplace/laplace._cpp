@@ -30,6 +30,24 @@ double Korali::Distribution::Laplace::getRandomNumber()
  return _mean + gsl_ran_laplace(_range, _width);
 }
 
+void Korali::Distribution::Laplace::getRandomVector(double *x, size_t n)
+{
+ for (size_t i = 0; i < n; i++)
+  x[i] = getRandomNumber();
+}
+
+void Korali::Distribution::Laplace::getDensityVector(double *x, double* result, size_t n)
+{
+ for (size_t i = 0; i < n; i++)
+   result[i] = getDensity(x[i]);
+}
+
+void Korali::Distribution::Laplace::getLogDensityVector(double *x, double* result, size_t n)
+{
+ for (size_t i = 0; i < n; i++)
+   result[i] = getLogDensity(x[i]);
+}
+
 void Korali::Distribution::Laplace::updateDistribution()
 {
  if (_width <= 0.0)  koraliError("Incorrect Width parameter of Laplace distribution: %f.\n", _width);

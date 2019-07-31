@@ -30,6 +30,24 @@ double Korali::Distribution::Uniform::getRandomNumber()
  return gsl_ran_flat(_range, _minimum, _maximum);
 }
 
+void Korali::Distribution::Uniform::getRandomVector(double *x, size_t n)
+{
+ for (size_t i = 0; i < n; i++)
+  x[i] = getRandomNumber();
+}
+
+void Korali::Distribution::Uniform::getDensityVector(double *x, double* result, size_t n)
+{
+ for (size_t i = 0; i < n; i++)
+   result[i] = getDensity(x[i]);
+}
+
+void Korali::Distribution::Uniform::getLogDensityVector(double *x, double* result, size_t n)
+{
+ for (size_t i = 0; i < n; i++)
+   result[i] = getLogDensity(x[i]);
+}
+
 void Korali::Distribution::Uniform::updateDistribution()
 {
  if (_maximum-_minimum <= 0.0)  koraliError("Maximum (%f) bound must be higher than Minimum (%f) bound in a Uniform distribution.\n", _maximum, _minimum);

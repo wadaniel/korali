@@ -1,13 +1,17 @@
-#ifndef _KORALI_DISTRIBUTION_GAMMA_HPP_
-#define _KORALI_DISTRIBUTION_GAMMA_HPP_
+#ifndef _KORALI_DISTRIBUTION_MULTIVARIATE_HPP_
+#define _KORALI_DISTRIBUTION_MULTIVARIATE_HPP_
 
 #include <distributions/base.hpp>
 
 namespace Korali { namespace Distribution {
 
-class Gamma : public Base {
+class Multivariate : public Base {
 
  private:
+
+ gsl_matrix_view _sigma_view;
+ gsl_vector_view _mean_view;
+ gsl_vector_view _work_view;
 
  public:
 
@@ -31,4 +35,4 @@ class Gamma : public Base {
 
 } } // namespace Korali::Distribution
 
-#endif // _KORALI_DISTRIBUTION_GAMMA_HPP_
+#endif // _KORALI_DISTRIBUTION_MULTIVARIATE_HPP_

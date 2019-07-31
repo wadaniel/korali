@@ -30,6 +30,24 @@ double Korali::Distribution::Gamma::getRandomNumber()
  return gsl_ran_gamma(_range, _shape, _scale);
 }
 
+void Korali::Distribution::Gamma::getRandomVector(double *x, size_t n)
+{
+ for (size_t i = 0; i < n; i++)
+  x[i] = getRandomNumber();
+}
+
+void Korali::Distribution::Gamma::getDensityVector(double *x, double* result, size_t n)
+{
+ for (size_t i = 0; i < n; i++)
+   result[i] = getDensity(x[i]);
+}
+
+void Korali::Distribution::Gamma::getLogDensityVector(double *x, double* result, size_t n)
+{
+ for (size_t i = 0; i < n; i++)
+   result[i] = getLogDensity(x[i]);
+}
+
 void Korali::Distribution::Gamma::updateDistribution()
 {
  if (_shape <= 0.0)  koraliError("Incorrect Shape parameter of Gamma distribution: %f.\n", _shape);

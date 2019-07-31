@@ -14,9 +14,15 @@ class Gaussian : public Base {
  void updateConditionals(const std::vector<double>& sample) override;
  void setProperty(std::string propertyName, double value) override;
  void updateDistribution() override;
+
  double getDensity(double x) override;
  double getLogDensity(double x) override;
  double getRandomNumber() override;
+
+ void getDensityVector(double *x, double* result, size_t n) override;
+ void getLogDensityVector(double *x, double* result, size_t n) override;
+ void getRandomVector(double *x, size_t n) override;
+
  void initialize() override;
  void finalize() override;
  void setConfiguration(nlohmann::json& js) override;

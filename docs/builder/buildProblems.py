@@ -8,7 +8,7 @@ def buildProblems(koraliDir):
  problemsDir = koraliDir + '/source/problems'
  
  # Creating directory
- outputDir = koraliDir + '/docs/docs/problems/'
+ outputDir = koraliDir + '/docs/docs/usage/problems/'
  if (not os.path.isdir(outputDir)): os.makedirs(outputDir)
  
  # Initializing Mkdocs entries string

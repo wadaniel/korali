@@ -8,7 +8,7 @@ def buildSolvers(koraliDir):
  solversDir = koraliDir + '/source/solvers'
  
  # Creating directory
- outputDir = koraliDir + '/docs/docs/solvers/'
+ outputDir = koraliDir + '/docs/docs/usage/solvers/'
  if (not os.path.isdir(outputDir)): os.makedirs(outputDir)
  
  # Initializing Mkdocs entries string

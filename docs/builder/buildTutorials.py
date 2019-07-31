@@ -22,7 +22,7 @@ def buildTutorials(koraliDir):
    tutorialName = tutorialPath.replace(tutorialsDir + '/', '')
    
    # Adding yaml entry
-   mkdocsEntriesString += '          - ' + tutorialName + ': usage/tutorials/' + tutorialName + '.md\n'
+   mkdocsEntriesString += '          - ' + tutorialName + ': tutorials/' + tutorialName + '.md\n'
    
    ####### Producing tutorial page
    

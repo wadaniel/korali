@@ -5,6 +5,7 @@ In this tutorial we show how to **optimize** directly from a given function.
 ## Source Code
 
 ## Problem Setup
+
 We are given the function $f(\vartheta)=-\vartheta^2$ for $\vartheta\in[-10,10]$.
 We want to find the maximum of the function in the given interval.
 

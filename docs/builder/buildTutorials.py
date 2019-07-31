@@ -30,11 +30,8 @@ def buildTutorials(koraliDir):
    with open(tutorialDocFile, 'r') as file: tutorialDocString = file.read()
    
    sourceCodeString = '!!! info\n'
-   sourceCodeString += '\tThe Python source for this tutorial can be found at:\n\n'
-   sourceCodeString += '\t+ [' + tutorialName + '/python/](https://github.com/cselab/korali/tree/master/tutorials/' + tutorialName + '/python/)\n\n'
-   sourceCodeString += '\tThe C++ source for this tutorial can be found at:\n\n'
-   sourceCodeString += '\t+ [' + tutorialName + '/cxx/](https://github.com/cselab/korali/tree/master/tutorials/' + tutorialName + '/cxx/)\n\n'
-   sourceCodeString += '\n'
+   sourceCodeString += '\tThe **Python** source for this tutorial can be found at: **[' + tutorialName + '/python/](https://github.com/cselab/korali/tree/master/tutorials/' + tutorialName + '/python/)**\n\n'
+   sourceCodeString += '\tThe **C++** source for this tutorial can be found at: **[' + tutorialName + '/cxx/](https://github.com/cselab/korali/tree/master/tutorials/' + tutorialName + '/cxx/)**\n\n'
    
    tutorialDocString = tutorialDocString.replace('## Source Code', '## Source Code\n\n' + sourceCodeString)
    

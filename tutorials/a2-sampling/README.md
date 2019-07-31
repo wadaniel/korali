@@ -2,17 +2,6 @@
 
 In this tutorial we show how to **sample** directly from a given function.
 
-!!! info
-	The full Python codes for this tutorial can be found in:
-	
-	+ [tutorials/python/a2-sampling-mcmc.py](https://github.com/cselab/skorali/blob/master/tutorials/python/a2-sampling-mcmc.py).
-	+ [tutorials/python/a2-sampling-tmcmc.py](https://github.com/cselab/skorali/blob/master/tutorials/python/a2-sampling-tmcmc.py).
-	
-	The full C++ codes for this tutorial can be found in:
-	
-	+ [tutorials/cxx/a2-sampling-mcmc.cpp](https://github.com/cselab/skorali/blob/master/tutorials/cxx/a2-sampling-mcmc.cpp).
-	+ [tutorials/cxx/a2-sampling-tmcmc.cpp](https://github.com/cselab/skorali/blob/master/tutorials/cxx/a2-sampling-tmcmc.cpp).
-
 ## Source Code
 
 ## Problem Setup

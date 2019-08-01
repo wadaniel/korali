@@ -5,7 +5,6 @@ workflows:
   build:
     jobs:
       - build_linux
-      - build_macos
 
 jobs:
   build_linux:
@@ -17,75 +16,10 @@ jobs:
       - checkout
 
       - run:
-          name: install MPI
-          command: sudo apt-get install mpich;
-                   echo 'export MPICXX=mpicxx' >> $BASH_ENV
-
-      - restore_cache:
-          keys:
-            - korali-dependencies-linux
-
-      - run:
           name: build webpage
           command: cd docs; timeout 10m ./build.sh
 
       - run:
           name: deploy webpage
           command: cd docs; ./deploy.sh
-
-      - run:
-          name: build Korali
-          command: timeout 10m ./install
-
-      - save_cache:
-          key: korali-dependencies-linux
-          paths:
-            - "~/korali/build"
-      - run:
-          name: run tests
-          command: cd tests; ./run_all_tests.sh
-      
-      - store_artifacts:
-          path: ~/korali/install.log
-
-      - store_artifacts:
-          path: ~/korali/tests/test.log
-
-      - store_artifacts:
-          path: ~/korali/docs/test.log
-
-  build_macos:
-    macos:
-      xcode: "10.0.0"
-    working_directory: ~/korali
-    steps:
-
-      - checkout
-
-      - restore_cache:
-          keys:
-            - korali-dependencies-macos
-
-      - run:
-          name: Install wget dependency
-          command: HOMEBREW_NO_AUTO_UPDATE=1 brew install wget;
-                   HOMEBREW_NO_AUTO_UPDATE=1 brew install coreutils
-      - run:
-          name: build Korali
-          command: gtimeout 10m ./install
-
-      - save_cache:
-          key: korali-dependencies-macos
-          paths:
-            - "~/korali/build"
-
-      - run:
-          name: run tests
-          command: cd tests; ./run_all_tests.sh
-
-      - store_artifacts:
-           path: ~/korali/install.log
-
-      - store_artifacts:
-           path: ~/korali/tests/test.log
 

@@ -1,0 +1,6 @@
+{
+ "Code": "B.1",
+ "Title": "Resuming a previous Korali run.",
+ "Solvers": [ "CMAES", "DEA", "TMCMC", "MCMC" ]
+}
+ 

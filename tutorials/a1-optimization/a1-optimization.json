@@ -1,0 +1,6 @@
+{
+ "Code": "A.1",
+ "Title": "Function optimization with Korali.",
+ "Solvers": [ "CMAES", "DEA" ] 
+}
+ 

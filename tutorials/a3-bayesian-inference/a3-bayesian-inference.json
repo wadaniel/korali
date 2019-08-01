@@ -1,0 +1,6 @@
+{
+ "Code": "A.3",
+ "Title": "Bayesian Inference with Korali.",
+ "Solvers": [ "CMAES", "TMCMC" ] 
+}
+ 

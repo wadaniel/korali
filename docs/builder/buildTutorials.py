@@ -11,12 +11,32 @@ def buildTutorials(koraliDir):
  outputDir = koraliDir + '/docs/docs/tutorials/'
  if (not os.path.isdir(outputDir)): os.makedirs(outputDir)
  
+ # Table Rows Strings
+ tableRowsStringDict = { 'A': [], 'B': [], 'C': [], 'D': [] }
+ 
  # Detecting Tutorials
  tutorialPaths  = os.listdir(tutorialsDir)
  for tutorialPath in tutorialPaths:
   tutorialPath =  tutorialsDir + '/' + tutorialPath
   if (os.path.isdir(tutorialPath)):
    tutorialName = tutorialPath.replace(tutorialsDir + '/', '')
+   
+   ###### Loading JSON Configuration
+   
+   tutorialJsonFile = tutorialPath + '/' + tutorialName + '.json'
+   if (not os.path.isfile(tutorialJsonFile)): continue 
+   with open(tutorialJsonFile, 'r') as file: tutorialJsonString = file.read()
+   tutorialConfig = json.loads(tutorialJsonString)
+   
+   ####### Link to tutorial
+   
+   tutorialLink = '/tutorials/' + tutorialName + '.md'
+   
+   ####### Producing Table Entry
+   
+   tutorialCategory = tutorialConfig["Code"][0]
+   rowString  = ' | ' + tutorialConfig["Code"] + ' | [' + tutorialConfig["Title"] + '](' + tutorialLink + ') | \n'
+   tableRowsStringDict[tutorialCategory].append(rowString)
    
    ####### Producing tutorial page
    
@@ -32,3 +52,15 @@ def buildTutorials(koraliDir):
    mdFileName = outputDir + tutorialName + '.md'
    print('[Korali] Creating ' + mdFileName + '...')    
    with open(mdFileName, 'w+') as file: file.write(tutorialDocString)
+
+ ###### Creating Tutorial Tables
+ 
+ for category in tableRowsStringDict:
+  tutorialTableString = " |:---:|:--------------------------------------------:|\n"
+  for row in tableRowsStringDict[category]:
+   tutorialTableString += row
+   tutorialTableString += " | --- | -------------------------------------------- |\n"
+  print(tutorialTableString)
+  
+   
+   

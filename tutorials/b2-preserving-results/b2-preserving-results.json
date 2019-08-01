@@ -1,0 +1,6 @@
+{
+ "Code": "B.2",
+ "Title": "Obtaining and saving quantities of interest.",
+ "Solvers": [ "TMCMC" ]
+}
+ 

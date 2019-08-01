@@ -1,0 +1,6 @@
+{
+ "Code": "A.5",
+ "Title": "Discrete (integer) function optimization with Korali.",
+ "Solvers": [ "CMAES" ]
+}
+ 

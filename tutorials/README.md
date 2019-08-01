@@ -6,7 +6,7 @@ Here you will find tutorials to help you quickly get acquainted with all of Kora
 
 These tutorials provide a quick start of how to solve a variety of problems with Korali.
 
-[//]: # Tutorials List A
+<!--- Tutorials A List --->
 
 ### B - Useful Korali Features
 

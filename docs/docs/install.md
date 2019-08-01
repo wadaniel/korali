@@ -18,8 +18,6 @@ To build and install Korali, simply run:
 cd korali
 ./install
 ```
-<br />
-<br />
 
 ??? question "Trouble Installing Korali?"
 	If you are experiencing problems installing or running Korali, please check the following hints:
@@ -32,7 +30,6 @@ cd korali
 
 	- For further questions, feel free to [contact us](aboutus).
 
-<br />
 ## System Requirements
 
 ??? info "Mandatory Requirements"
@@ -73,8 +70,6 @@ cd korali
   
 	+ **UPC++ Library**
 	One way to enable support distributed conduits and computational models is to configure Korali to compile with an UPC++ compiler. The installer will check the *upcxx-meta* command avaiable through $PATH to determine a valid UPC++ compiler.
-
-<br />
 
 ## Build Status
 

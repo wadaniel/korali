@@ -30,7 +30,7 @@ def buildTutorials(koraliDir):
    
    ####### Link to tutorial
    
-   tutorialLink = '/tutorials/' + tutorialName + '.md'
+   tutorialLink = 'tutorials/' + tutorialName + '.md'
    
    ####### Producing Table Entry
    
@@ -53,6 +53,10 @@ def buildTutorials(koraliDir):
    print('[Korali] Creating ' + mdFileName + '...')    
    with open(mdFileName, 'w+') as file: file.write(tutorialDocString)
 
+ ###### Loading tutorials web page
+
+ with open(tutorialsDir + '/README.md', 'r') as file: tutorialWebString = file.read()
+   
  ###### Creating Tutorial Tables
  
  for category in tableRowsStringDict:
@@ -60,7 +64,10 @@ def buildTutorials(koraliDir):
   for row in tableRowsStringDict[category]:
    tutorialTableString += row
    tutorialTableString += " | --- | -------------------------------------------- |\n"
-  print(tutorialTableString)
+  tutorialWebString = tutorialWebString.replace('<!--- Tutorials ' + category + ' List --->', tutorialTableString)
   
-   
-   
+ ###### Saving tutorials web page
+ 
+ webFileName = koraliDir + '/docs/docs/tutorials.md'
+ print('[Korali] Creating ' + webFileName + '...')  
+ with open(webFileName, 'w+') as file: file.write(tutorialWebString)

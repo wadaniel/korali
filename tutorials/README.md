@@ -12,12 +12,16 @@ These tutorials provide a quick start of how to solve a variety of problems with
 
 These tutorials showcase many of Korali's useful features.
 
+<!--- Tutorials B List --->
+
 ### C - High-Performance
 
 These tutorials show examples of how to use Korali to achieve high-performance executions.
+
+<!--- Tutorials C List --->
 
 ### D - Advanced Korali Features
 
 These tutorials showcase more advanced features of Korali.
 
-
+<!--- Tutorials D List --->

@@ -16,7 +16,7 @@ def buildTutorials(koraliDir):
  
  # Detecting Tutorials
  tutorialPaths  = os.listdir(tutorialsDir)
- for tutorialPath in tutorialPaths:
+ for tutorialPath in sorted(tutorialPaths):
   tutorialPath =  tutorialsDir + '/' + tutorialPath
   if (os.path.isdir(tutorialPath)):
    tutorialName = tutorialPath.replace(tutorialsDir + '/', '')

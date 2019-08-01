@@ -23,7 +23,7 @@ The first step of building a Korali application is to indicate which problem to 
    k["Problem"]["Type"] = "Sampling";
   ```
 
-For a complete list of Korali-supported problems, **(click here)[/usage/problems.md]**.
+For a complete list of Korali-supported problems, **[click here](/usage/problems.md)**.
 
 ### Step 2) Define Solver
 
@@ -33,7 +33,7 @@ The Solver module generates samples for evaluation, performs the statistical ana
    k["Solver"]["Type"] = "TMCMC";
   ```
 
-For a complete list of Korali-supported solvers, **(click here)[/usage/solvers.md]**.
+For a complete list of Korali-supported solvers, **[click here](/usage/solvers.md)**.
 
 ###Step 3) Define Variables
 
@@ -54,13 +54,13 @@ The evaluation conduit module executes the computational model(s) for a given sa
 	```python
 	 k["Conduit"] = "External";
 	```
-For a complete list of Korali-supported conduits, **(click here)[/usage/conduits.md]**.
+For a complete list of Korali-supported conduits, **[click here](/usage/conduits.md)**.
 
 ### Step 5) Define Model(s)
 
 During execution, the Korali engine will evaluate many *samples*. A Korali sample is a vector containing a particular set of values for all (computational and statistical) variables defined in the problem. Korali will stochastically produce new samples to be evaluated by a user-provided computational model.
 
-For a complete list of Korali-supported models and their syntax, **(click here)[/usage/models.md]**.
+For a complete list of Korali-supported models and their syntax, **[click here](/usage/models.md)**.
 
 ## Defining General Settings
 
@@ -70,7 +70,7 @@ The runtime Korali application can be easily configured by accessing the instanc
       k["General"]["Verbosity"] = "Silent" # Do not produce console output.
   ```
   
-For a complete list of Korali's general settings, **(click here)[/usage/general.md]**.
+For a complete list of Korali's general settings, **[click here](/usage/general.md)**.
 
 ## Running a Korali Application
 

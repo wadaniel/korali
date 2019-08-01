@@ -91,16 +91,14 @@ void Korali::Solver::TMCMC::initialize()
  for (size_t c = 0; c < _populationSize; c++) _chainLengths[c] = 1 + _currentBurnIn;
  for (size_t c = 0; c < _populationSize; c++) _chainPendingFitness[c] = false;
 
+ // Initializing generation zero with random numbers from prior distributions
+ if (_k->_currentGeneration == 0)
  for (size_t c = 0; c < _populationSize; c++)
- {
    for (size_t d = 0; d < _k->N; d++)
    {
-      _chainLeaderParameters[c*_k->N + d] = _chainCandidateParameters[c*_k->N + d] = _k->_variables[d]->_priorDistribution->getRandomNumber();
-      _chainLeadersLogLikelihoods[c] = 0.0;
-      _chainLeadersLogPriors[c] = _k->_variables[d]->_priorDistribution->getLogDensity(_chainLeaderParameters[c*_k->N + d]);
+     _chainCandidateParameters[c*_k->N + d] = _k->_variables[d]->_priorDistribution->getRandomNumber();
+     _chainLeaderParameters[c*_k->N + d] = _chainCandidateParameters[c*_k->N + d];
    }
-    updateDatabase(&_chainLeaderParameters[c*_k->N], _chainLeadersLogLikelihoods[c], _chainLeadersLogPriors[c]);
- }
 }
 
 void Korali::Solver::TMCMC::runGeneration()
@@ -132,24 +130,22 @@ void Korali::Solver::TMCMC::runGeneration()
 
 void Korali::Solver::TMCMC::processSample(size_t sampleId, double fitness)
 {
- if(std::isfinite(fitness) == false) 
+ if(std::isfinite(fitness) == false)
  {
-   fitness = -1.0 * std::numeric_limits<double>::max();
-   _chainCandidatesLogLikelihoods[sampleId] = fitness;
-   koraliWarning(KORALI_DETAILED,"Sample %zu returned non finite fitness (fitness set to %e)!\n", sampleId, fitness);
+  koraliWarning(KORALI_DETAILED, "Sample %zu returned non finite model evaluation %e.\n", sampleId, fitness);
+  fitness = std::numeric_limits<double>::lowest();
  }
- else
- {
-   _chainCandidatesLogLikelihoods[sampleId] = fitness;
-   double ccLogPrior = _k->_problem->evaluateLogPrior(&_chainCandidateParameters[sampleId*_k->N]);
-   _chainLeadersLogPriors[sampleId] = _k->_problem->evaluateLogPrior(&_chainLeaderParameters[sampleId*_k->N]);
-   double L = exp((_chainCandidatesLogLikelihoods[sampleId]-_chainLeadersLogLikelihoods[sampleId])*_annealingExponent + (ccLogPrior-_chainLeadersLogPriors[sampleId]));
 
-   if ( L >= 1.0 || L > _uniformGenerator->getRandomNumber() ) {
-     for (size_t i = 0; i < _k->N; i++) _chainLeaderParameters[sampleId*_k->N + i] = _chainCandidateParameters[sampleId*_k->N + i];
-     _chainLeadersLogLikelihoods[sampleId] = _chainCandidatesLogLikelihoods[sampleId];
-     if (_currentChainStep[sampleId]+1 > _currentBurnIn) _acceptedSamplesCount++;
-   }
+ _chainCandidatesLogLikelihoods[sampleId] = fitness;
+ double ccLogPrior = _k->_problem->evaluateLogPrior(&_chainCandidateParameters[sampleId*_k->N]);
+ _chainLeadersLogPriors[sampleId] = _k->_problem->evaluateLogPrior(&_chainLeaderParameters[sampleId*_k->N]);
+ double L = exp((_chainCandidatesLogLikelihoods[sampleId]-_chainLeadersLogLikelihoods[sampleId])*_annealingExponent + (ccLogPrior-_chainLeadersLogPriors[sampleId]));
+
+ if (L > _uniformGenerator->getRandomNumber() || _k->_currentGeneration == 0)
+ {
+   for (size_t i = 0; i < _k->N; i++) _chainLeaderParameters[sampleId*_k->N + i] = _chainCandidateParameters[sampleId*_k->N + i];
+   _chainLeadersLogLikelihoods[sampleId] = _chainCandidatesLogLikelihoods[sampleId];
+   if (_currentChainStep[sampleId]+1 > _currentBurnIn) _acceptedSamplesCount++;
  }
 
  _currentChainStep[sampleId]++;
@@ -181,6 +177,9 @@ void Korali::Solver::TMCMC::updateDatabase(double* point, double fitness, double
 
 void Korali::Solver::TMCMC::generateCandidate(size_t c)
 {
+ // If generation zero, we do not need other than the randomly generated samples we had.
+ if (_k->_currentGeneration == 0) return;
+
  double* covariance = _useLocalCovariance ? &_localCovarianceMatrices[c][0] : &_covarianceMatrix[0];
  gsl_vector_view out_view    = gsl_vector_view_array(&_chainCandidateParameters[c*_k->N], _k->N);
  gsl_matrix_view sigma_view  = gsl_matrix_view_array(covariance, _k->N,_k->N);

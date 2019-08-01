@@ -29,8 +29,8 @@ int main(int argc, char* argv[])
 
  printf("\n\nRestarting now:\n\n");
 
- // Now we loadState() to resume the same experiment from generation 5.
- k.loadState("_result_run-tmcmc/s00002.json");
+ // Now we loadState() to resume the same experiment from an intermediate generation.
+ k.loadState("_result_run-tmcmc/s00001.json");
 
  k.run();
 }

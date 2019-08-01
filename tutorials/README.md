@@ -2,27 +2,25 @@
 
 Here you will find guides and tutorials to help you kickstart your own application. 
 
-## Guides
+### Guides
 
 + [Building a Korali Application](tutorials/g0-building-korali.md)
 + [Extending Korali with your own solver](tutorials/g1-adding-solver.md)
 + [Adding a new problem type into Korali](tutorials/g2-adding-problem.md)
 
-## Example Applications
-
-### Simple Problems
+### Example Applications
 
 <!--- Tutorials A List --->
 
-### Useful Korali Features
+### Useful Features Tutorials
 
 <!--- Tutorials B List --->
 
-### High-Performance
+### High-Performance Tutorials
 
 <!--- Tutorials C List --->
 
-### Advanced Korali Features
+### Advanced Tutorials
 
 <!--- Tutorials D List --->
 

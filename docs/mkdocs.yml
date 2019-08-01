@@ -4,11 +4,7 @@ site_name: Korali
 edit_uri: ''
 nav:
   - Home: index.md
-  - Installation:
-     - 'Installation Guide': install/install.md
-     - 'System Requirements': install/requirements.md
-     - 'Release Notes': https://github.com/cselab/korali/blob/master/docs/RELEASE-NOTES
-     - 'Build Status': install/build.md
+  - Installation: install.md
   - Tutorials: tutorials.md
   - User Manual:
       - Problems:usage/problems.md

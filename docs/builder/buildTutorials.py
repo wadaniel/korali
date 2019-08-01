@@ -11,8 +11,8 @@ def buildTutorials(koraliDir):
  outputDir = koraliDir + '/docs/docs/tutorials/'
  if (not os.path.isdir(outputDir)): os.makedirs(outputDir)
  
- # Table Rows Strings
- tableRowsStringDict = { 'A': [], 'B': [], 'C': [], 'D': [] }
+ # List Rows Strings
+ listRowsStringDict = { 'A': [], 'B': [], 'C': [], 'D': [] }
  
  # Detecting Tutorials
  tutorialPaths  = os.listdir(tutorialsDir)
@@ -32,11 +32,11 @@ def buildTutorials(koraliDir):
    
    tutorialLink = 'tutorials/' + tutorialName + '.md'
    
-   ####### Producing Table Entry
+   ####### Producing List Entry
    
    tutorialCategory = tutorialConfig["Code"][0]
-   rowString  = ' | ' + tutorialConfig["Code"] + ' | [' + tutorialConfig["Title"] + '](' + tutorialLink + ') | \n'
-   tableRowsStringDict[tutorialCategory].append(rowString)
+   rowString  = '\t + **(' + tutorialConfig["Code"] + ')** - [' + tutorialConfig["Title"] + '](' + tutorialLink + ')  \n'
+   listRowsStringDict[tutorialCategory].append(rowString)
    
    ####### Producing tutorial page
    
@@ -57,13 +57,12 @@ def buildTutorials(koraliDir):
 
  with open(tutorialsDir + '/README.md', 'r') as file: tutorialWebString = file.read()
    
- ###### Creating Tutorial Tables
+ ###### Creating Tutorial Lists
  
- for category in tableRowsStringDict:
-  tutorialTableString =  " |     |  Tutorial                                    |\n"
-  tutorialTableString += " |:---:|:--------------------------------------------:|\n"
-  for row in tableRowsStringDict[category]:  tutorialTableString += row
-  tutorialWebString = tutorialWebString.replace('<!--- Tutorials ' + category + ' List --->', tutorialTableString)
+ for category in listRowsStringDict:
+  tutorialListString = ''
+  for row in listRowsStringDict[category]:  tutorialListString += row
+  tutorialWebString = tutorialWebString.replace('<!--- Tutorials ' + category + ' List --->', tutorialListString)
   
  ###### Saving tutorials web page
  

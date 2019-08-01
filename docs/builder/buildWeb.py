@@ -10,20 +10,12 @@ from buildSolvers import *
 from buildProblems import *
 from buildTutorials import *
 
-mkdocsFileSrc = koraliDir + '/docs/mkdocs._yml'
-with open(mkdocsFileSrc, 'r') as file: mkdocsSourceString = file.read()
- 
 # Processing Solvers
-solverYamlEntries = buildSolvers(koraliDir)
-mkdocsSourceString = mkdocsSourceString.replace('- Solvers:', '- Solvers:\n' + solverYamlEntries)
+buildSolvers(koraliDir)
 
 # Processing Problems
-problemYamlEntries = buildProblems(koraliDir)
-mkdocsSourceString = mkdocsSourceString.replace('- Problems:', '- Problems:\n' + problemYamlEntries)
+buildProblems(koraliDir)
 
 # Processing Tutorials
-problemYamlEntries = buildTutorials(koraliDir)
+buildTutorials(koraliDir)
 
-mkdocsFileDst = koraliDir + '/docs/mkdocs.yml'
-print('[Korali] Creating ' + mkdocsFileDst + '...')
-with open(mkdocsFileDst, 'w+') as file: file.write(mkdocsSourceString)

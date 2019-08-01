@@ -1,6 +1,14 @@
 # Tutorials
 
-Here you will find tutorials to help you quickly get acquainted with all of Korali's features and capabilities. We have separated tutorials into the following categories:
+## Korali Guides
+
+The following guides will help you get started with Korali's concepts.
+
++ (Building a Korali Application)[tutorials/g0-building-korali.md]
+
+## Example Tutorials
+
+Here you will find tutorials to help you kickstart your own application. We have separated tutorials into the following categories:
 
 ### A - Getting Started
 

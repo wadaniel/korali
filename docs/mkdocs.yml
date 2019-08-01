@@ -12,19 +12,11 @@ nav:
   - Tutorials: tutorials.md
   - User Manual:
       - Basics: usage/basics.md
-      - Problems:
-      - Solvers:
-      - Conduits:
-          - Linked: usage/conduits/linked.md
-          - External: usage/conduits/external.md
-      - Models:
-          - Simple: usage/models/simple.md
-          - Rerefence: usage/models/reference.md
-          - Constraint: usage/models/constraint.md
-      - Results:
-          - Accessing Results: usage/results/#accessing-results
-          - Plotting Results: usage/results/#plotting-results
-          - Resume Execution: usage/results/#resume-execution
+      - Problems:usage/problems.md
+      - Solvers: usage/solvers.md
+      - Conduits: usage/conduits.md
+      - Models: usage/models.md
+      - Results: usage/results.md
   - Publications: publications.md
   - About Us: aboutus.md
 theme:

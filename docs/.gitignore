@@ -1,6 +1,7 @@
 site
 docs/tutorials.md
+docs/problems.md
+docs/solvers.md
 docs/tutorials/
 docs/usage/problems/
 docs/usage/solvers/
-mkdocs.yml

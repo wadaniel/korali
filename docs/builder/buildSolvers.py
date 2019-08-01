@@ -59,4 +59,19 @@ def buildSolvers(koraliDir):
    print('[Korali] Creating ' + mdFileName + '...')    
    with open(mdFileName, 'w+') as file: file.write(solverDocString)
 
- return mkdocsEntriesString
+ ###### Loading solvers web page
+
+ with open(solversDir + '/README.md', 'r') as file: solverWebString = file.read()
+   
+ ###### Creating Solver Lists
+ 
+ #for category in listRowsStringDict:
+ # solverListString = ''
+ # for row in listRowsStringDict[category]:  solverListString += row
+ # solverWebString = solverWebString.replace('<!--- Solvers ' + category + ' List --->', solverListString)
+  
+ ###### Saving solvers web page
+ 
+ webFileName = koraliDir + '/docs/docs/solvers.md'
+ print('[Korali] Creating ' + webFileName + '...')  
+ with open(webFileName, 'w+') as file: file.write(solverWebString)

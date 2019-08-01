@@ -53,4 +53,19 @@ def buildProblems(koraliDir):
    print('[Korali] Creating ' + mdFileName + '...')    
    with open(mdFileName, 'w+') as file: file.write(problemDocString)
 
- return mkdocsEntriesString
+ ###### Loading problems web page
+
+ with open(problemsDir + '/README.md', 'r') as file: problemWebString = file.read()
+   
+ ###### Creating Problem Lists
+ 
+ #for category in listRowsStringDict:
+ # problemListString = ''
+ # for row in listRowsStringDict[category]:  problemListString += row
+ # problemWebString = problemWebString.replace('<!--- Problems ' + category + ' List --->', problemListString)
+  
+ ###### Saving problems web page
+ 
+ webFileName = koraliDir + '/docs/docs/problems.md'
+ print('[Korali] Creating ' + webFileName + '...')  
+ with open(webFileName, 'w+') as file: file.write(problemWebString)

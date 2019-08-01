@@ -62,9 +62,7 @@ def buildTutorials(koraliDir):
  for category in tableRowsStringDict:
   tutorialTableString =  " |     |  Tutorial                                    |\n"
   tutorialTableString += " |:---:|:--------------------------------------------:|\n"
-  for row in tableRowsStringDict[category]:
-   tutorialTableString += row
-   tutorialTableString += " | --- | -------------------------------------------- |\n"
+  for row in tableRowsStringDict[category]:  tutorialTableString += row
   tutorialWebString = tutorialWebString.replace('<!--- Tutorials ' + category + ' List --->', tutorialTableString)
   
  ###### Saving tutorials web page

@@ -35,7 +35,7 @@ def buildTutorials(koraliDir):
    ####### Producing List Entry
    
    tutorialCategory = tutorialConfig["Code"][0]
-   rowString  = '\t + **(' + tutorialConfig["Code"] + ')** - [' + tutorialConfig["Title"] + '](' + tutorialLink + ')  \n'
+   rowString  = '- **(' + tutorialConfig["Code"] + ')** - [' + tutorialConfig["Title"] + '](' + tutorialLink + ')  \n'
    listRowsStringDict[tutorialCategory].append(rowString)
    
    ####### Producing tutorial page

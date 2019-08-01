@@ -4,7 +4,7 @@
 
 The following guides will help you get started with Korali's concepts.
 
-+ (Building a Korali Application)[tutorials/g0-building-korali.md]
++ [Building a Korali Application](tutorials/g0-building-korali.md)
 
 ## Example Tutorials
 

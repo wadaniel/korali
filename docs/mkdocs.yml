@@ -11,7 +11,6 @@ nav:
      - 'Build Status': install/build.md
   - Tutorials: tutorials.md
   - User Manual:
-      - Basics: usage/basics.md
       - Problems:usage/problems.md
       - Solvers: usage/solvers.md
       - Conduits: usage/conduits.md

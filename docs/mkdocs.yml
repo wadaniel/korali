@@ -7,7 +7,7 @@ nav:
   - Installation: install.md
   - Tutorials: tutorials.md
   - User Manual:
-      - Problems:usage/problems.md
+      - Problems: usage/problems.md
       - Solvers: usage/solvers.md
       - Conduits: usage/conduits.md
       - Models: usage/models.md

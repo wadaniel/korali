@@ -66,6 +66,6 @@ def buildProblems(koraliDir):
   
  ###### Saving problems web page
  
- webFileName = koraliDir + '/docs/docs/problems.md'
+ webFileName = koraliDir + '/docs/docs/usage/problems.md'
  print('[Korali] Creating ' + webFileName + '...')  
  with open(webFileName, 'w+') as file: file.write(problemWebString)

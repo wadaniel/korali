@@ -72,6 +72,6 @@ def buildSolvers(koraliDir):
   
  ###### Saving solvers web page
  
- webFileName = koraliDir + '/docs/docs/solvers.md'
+ webFileName = koraliDir + '/docs/docs/usage/solvers.md'
  print('[Korali] Creating ' + webFileName + '...')  
  with open(webFileName, 'w+') as file: file.write(solverWebString)

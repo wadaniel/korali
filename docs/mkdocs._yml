@@ -9,7 +9,7 @@ nav:
      - 'System Requirements': install/requirements.md
      - 'Release Notes': https://github.com/cselab/korali/blob/master/docs/RELEASE-NOTES
      - 'Build Status': install/build.md
-  - Tutorials:
+  - Tutorials: tutorials.md
   - User Manual:
       - Basics: usage/basics.md
       - Problems:

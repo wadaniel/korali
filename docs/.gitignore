@@ -1,2 +1,5 @@
 site
+docs/tutorials/
+docs/usage/problems/
+docs/usage/solvers/
 mkdocs.yml

@@ -23,7 +23,6 @@ mkdocsSourceString = mkdocsSourceString.replace('- Problems:', '- Problems:\n' +
 
 # Processing Tutorials
 problemYamlEntries = buildTutorials(koraliDir)
-mkdocsSourceString = mkdocsSourceString.replace('- Tutorials:', '- Tutorials:\n' + problemYamlEntries)
 
 mkdocsFileDst = koraliDir + '/docs/mkdocs.yml'
 print('[Korali] Creating ' + mkdocsFileDst + '...')

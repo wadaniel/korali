@@ -11,18 +11,12 @@ def buildTutorials(koraliDir):
  outputDir = koraliDir + '/docs/docs/tutorials/'
  if (not os.path.isdir(outputDir)): os.makedirs(outputDir)
  
- # Initializing Mkdocs entries string
- mkdocsEntriesString = ''
-  
  # Detecting Tutorials
  tutorialPaths  = os.listdir(tutorialsDir)
  for tutorialPath in tutorialPaths:
   tutorialPath =  tutorialsDir + '/' + tutorialPath
   if (os.path.isdir(tutorialPath)):
    tutorialName = tutorialPath.replace(tutorialsDir + '/', '')
-   
-   # Adding yaml entry
-   mkdocsEntriesString += '          - ' + tutorialName + ': tutorials/' + tutorialName + '.md\n'
    
    ####### Producing tutorial page
    
@@ -38,5 +32,3 @@ def buildTutorials(koraliDir):
    mdFileName = outputDir + tutorialName + '.md'
    print('[Korali] Creating ' + mdFileName + '...')    
    with open(mdFileName, 'w+') as file: file.write(tutorialDocString)
-
- return mkdocsEntriesString

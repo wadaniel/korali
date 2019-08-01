@@ -21,21 +21,21 @@ def buildTutorials(koraliDir):
   if (os.path.isdir(tutorialPath)):
    tutorialName = tutorialPath.replace(tutorialsDir + '/', '')
    
-   ###### Loading JSON Configuration
-   
-   tutorialJsonFile = tutorialPath + '/' + tutorialName + '.json'
-   if (not os.path.isfile(tutorialJsonFile)): continue 
-   with open(tutorialJsonFile, 'r') as file: tutorialJsonString = file.read()
-   tutorialConfig = json.loads(tutorialJsonString)
-   
    ####### Link to tutorial
    
    tutorialLink = 'tutorials/' + tutorialName + '.md'
    
+   ###### Obtaining tutorial information
+   
+   tutorialReadmeFile = tutorialPath + '/README.md'
+   with open(tutorialReadmeFile, 'r') as file: tutorialReadmeString = file.read()
+   tutorialTitle = tutorialReadmeString.partition('\n')[0].partition('- ')[2]
+   tutorialCode = tutorialReadmeString.partition('\n')[0].partition('- ')[0].replace('#','').strip()
+   tutorialCategory = tutorialCode[0]
+   
    ####### Producing List Entry
    
-   tutorialCategory = tutorialConfig["Code"][0]
-   rowString  = '- **(' + tutorialConfig["Code"] + ')** - [' + tutorialConfig["Title"] + '](' + tutorialLink + ')  \n'
+   rowString  = '- **(' + tutorialCode + ')** - [' + tutorialTitle + '](' + tutorialLink + ')  \n'
    listRowsStringDict[tutorialCategory].append(rowString)
    
    ####### Producing tutorial page

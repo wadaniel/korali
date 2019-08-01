@@ -1,3 +1,3 @@
-# Tutorial: Hierarchical Bayesian Modeling
+# A.6 - Hierarchical Bayesian Modeling
 
 ## Source Code

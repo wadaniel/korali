@@ -1,4 +1,4 @@
-# Tutorial: Optimization
+# A.1 - Model Optimization: Finding the Global Maximum
 
 In this tutorial we show how to **optimize** directly from a given function.
 

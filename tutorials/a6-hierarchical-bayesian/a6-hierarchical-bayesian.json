@@ -1,6 +1,0 @@
-{
- "Code": "A.6",
- "Title": "Hierarchical Bayesian Modeling with Korali",
- "Solvers": [ "TMCMC" ]
-}
- 

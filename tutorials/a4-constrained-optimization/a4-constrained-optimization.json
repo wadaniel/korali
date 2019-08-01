@@ -1,6 +1,0 @@
-{
- "Code": "A.4",
- "Title": "Constrained Function Optimization with Korali.",
- "Solvers": [ "CMAES" ]
-}
- 

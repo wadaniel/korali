@@ -1,6 +1,0 @@
-{
- "Code": "A.2",
- "Title": "Sampling Distributions with Korali.",
- "Solvers": [ "MCMC", "TMCMC" ] 
-}
- 

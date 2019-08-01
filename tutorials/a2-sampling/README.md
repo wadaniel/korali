@@ -1,4 +1,4 @@
-# Tutorial: Sampling
+# A.2 - Model Sampling: Finding the Underlying Distribution
 
 In this tutorial we show how to **sample** directly from a given function.
 

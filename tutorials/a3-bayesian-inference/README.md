@@ -1,4 +1,4 @@
-# Tutorial: Bayesian Inference
+# A.3 - Inferring Parameter Values with Bayes' Theorem 
 
 In this tutorial we show how to **optimize** and **sample** the posterior
 distribution of a Bayesian inference problem.

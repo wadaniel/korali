@@ -10,7 +10,7 @@
 
 source ../functions.sh
 
-pushd ../REG-001/tutorials
+pushd ../tutorials
 
 logEcho "[Korali] Beginning plotting tests"                                   
 

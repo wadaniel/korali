@@ -4,31 +4,20 @@
 
 - **1. Download Korali**
 
-Download the latest stable release of Korali with the following command:
+	Download the latest stable release of Korali with the following command:
 
-```shell
-git clone https://github.com/cselab/korali.git
-```
+	```shell
+	git clone https://github.com/cselab/korali.git
+	```
 
 - **2. Install Korali**
 
-To build and install Korali, simply run:
+	To build and install Korali, simply run:
 
-```shell
-cd korali
-./install
-```
-
-??? question "Trouble Installing Korali?"
-	If you are experiencing problems installing or running Korali, please check the following hints:
-
-	- Visit the [system requirements](../requirements) page to verify that your system meets the software requirements to install and run Korali.
-
-	- Check the [build](#build-status) to see if Korali is currently building correctly.
-
-	- If the problem persists, please submit a new [issue report](https://github.com/cselab/korali/issues) on our Github repository detailing the problem, your system information, and the steps to replicate it and we will promptly address it.
-
-	- For further questions, feel free to [contact us](aboutus).
+	```shell
+	cd korali
+	./install
+	```
 
 ## System Requirements
 
@@ -70,6 +59,17 @@ cd korali
   
 	+ **UPC++ Library**
 	One way to enable support distributed conduits and computational models is to configure Korali to compile with an UPC++ compiler. The installer will check the *upcxx-meta* command avaiable through $PATH to determine a valid UPC++ compiler.
+
+??? question "Trouble Installing Korali?"
+	If you are experiencing problems installing or running Korali, please check the following hints:
+
+	- Check the [system requirements](#system-requirements) to verify that your system meets the software requirements to install and run Korali.
+
+	- Check the [build](#build-status) to see if Korali is currently building correctly.
+
+	- If the problem persists, please submit a new [issue report](https://github.com/cselab/korali/issues) on our Github repository detailing the problem, your system information, and the steps to replicate it and we will promptly address it.
+
+	- For further questions, feel free to [contact us](aboutus).
 
 ## Build Status
 

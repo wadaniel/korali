@@ -60,7 +60,8 @@ def buildTutorials(koraliDir):
  ###### Creating Tutorial Tables
  
  for category in tableRowsStringDict:
-  tutorialTableString = " |:---:|:--------------------------------------------:|\n"
+  tutorialTableString =  " |     |  Tutorial                                    |\n"
+  tutorialTableString += " |:---:|:--------------------------------------------:|\n"
   for row in tableRowsStringDict[category]:
    tutorialTableString += row
    tutorialTableString += " | --- | -------------------------------------------- |\n"

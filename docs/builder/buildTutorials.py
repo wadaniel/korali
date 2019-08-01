@@ -12,7 +12,7 @@ def buildTutorials(koraliDir):
  if (not os.path.isdir(outputDir)): os.makedirs(outputDir)
  
  # List Rows Strings
- listRowsStringDict = { 'A': [], 'B': [], 'C': [], 'D': [] }
+ listRowsStringDict = { 'A': [], 'B': [], 'C': [], 'D': [], 'G': [] }
  
  # Detecting Tutorials
  tutorialPaths  = os.listdir(tutorialsDir)

@@ -19,13 +19,21 @@ source ../functions.sh
 ############# STEP 1 ##############
 
 logEcho "[Korali] Copying Tutorials..."
-rm -rf ./tutorials >> $logFile 2>&1
+rm -rf ../tutorials >> $logFile 2>&1
 check_result
 
-cp -R ../../tutorials . >> $logFile 2>&1
+cp -R ../../tutorials ../ >> $logFile 2>&1
 check_result
 
-pushd tutorials
+pushd ../tutorials
+
+log "[Korali] Removing guides..."
+rm -r g*
+check_result
+
+log "[Korali] Removing other files..."
+rm README.md
+check_result
 
 logEcho "[Korali] Beginning python tests"
 

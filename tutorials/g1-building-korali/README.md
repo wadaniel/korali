@@ -1,4 +1,4 @@
-# Building a Korali Application
+# G.1 - Building a Korali Application
 
 Korali provides a range of optimization and uncertainty quantification tools. To use these tools, a user needs to create a *Korali Application*. This application serves as a nexus between the computational models (user-provided C++ objects, Python modules, or pre-compiled applications), and the Korali's main solver engine.
 

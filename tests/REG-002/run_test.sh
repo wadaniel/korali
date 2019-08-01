@@ -19,14 +19,7 @@ source ../functions.sh
 
 ############# STEP 1 ##############
 
-logEcho "[Korali] Copying Tutorials..."
-rm -rf ./tutorials >> $logFile 2>&1
-check_result
-
-cp -R ../../tutorials . >> $logFile 2>&1
-check_result
-
-pushd tutorials
+pushd ../tutorials
 
 logEcho "[Korali] Beginning C++ tests"
 

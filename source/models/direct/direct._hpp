@@ -1,0 +1,23 @@
+#ifndef _KORALI_MODELS_DIRECT_HPP_
+#define _KORALI_MODELS_DIRECT_HPP_
+
+#include "models/base.hpp"
+
+
+
+namespace Korali { namespace Model {
+
+class Direct : public Base
+{
+  private:
+
+  double _result;
+
+  public:
+
+  void setResult(double x) { _self->_result = x; }
+};
+
+} } // namespace Korali::Solver
+
+#endif // _KORALI_MODELS_DIRECT_HPP_

@@ -23,9 +23,9 @@
 #include "solvers/mcmc/mcmc.hpp"
 #include "solvers/tmcmc/tmcmc.hpp"
 
-#include "conduits/mpi.hpp"
-#include "conduits/simple.hpp"
-#include "conduits/external.hpp"
+#include "conduits/mpi/mpi.hpp"
+#include "conduits/simple/simple.hpp"
+#include "conduits/external/external.hpp"
 
 #include "variable/variable.hpp"
 #include "auxiliar.hpp"

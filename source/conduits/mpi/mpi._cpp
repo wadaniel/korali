@@ -75,30 +75,6 @@ void Korali::Conduit::MPI::initialize()
 }
 
 
-/************************************************************************/
-/*                    Configuration Methods                             */
-/************************************************************************/
-
-
-void Korali::Conduit::MPI::getConfiguration()
-{
- #ifdef _KORALI_USE_MPI
- _k->_js["Conduit"]["Type"] = "MPI";
- _k->_js["Conduit"]["Ranks Per Team"] = _ranksPerTeam;
- #endif
-}
-
-void Korali::Conduit::MPI::setConfiguration()
-{
- #ifdef _KORALI_USE_MPI
- _ranksPerTeam = consume(_k->_js, { "Conduit", "Ranks Per Team" }, KORALI_NUMBER, "1");
- #endif
-}
-
-/************************************************************************/
-/*                    Functional Methods                                */
-/************************************************************************/
-
 void Korali::Conduit::MPI::finalize()
 {
  #ifdef _KORALI_USE_MPI

@@ -3,29 +3,9 @@
 
 using namespace Korali::Conduit;
 
-
-/************************************************************************/
-/*                    Configuration Methods                             */
-/************************************************************************/
-
-void External::getConfiguration()
-{
- _k->_js["Conduit"]["Type"] = "External";
- _k->_js["Conduit"]["Concurrent Jobs"] = _concurrentJobs;
-}
-
-void External::setConfiguration()
-{
- _concurrentJobs = consume(_k->_js, { "Conduit", "Concurrent Jobs" }, KORALI_NUMBER, std::to_string(1));
- if (_concurrentJobs < 1) koraliError("You need to define at least 1 concurrent job(s) for external models \n");
-}
-
-/************************************************************************/
-/*                    Functional Methods                                */
-/************************************************************************/
-
 void External::initialize()
 {
+ if (_concurrentJobs < 1) koraliError("You need to define at least 1 concurrent job(s) for external models \n");
  for (int i = 0; i < _concurrentJobs; i++) _pipeDescriptors.push_back(std::vector<int>(2));
  for (int i = 0; i < _concurrentJobs; i++) _launcherQueue.push(i);
 }

@@ -11,19 +11,7 @@ void Simple::initialize()
 
 }
 
-/************************************************************************/
-/*                    Configuration Methods                             */
-/************************************************************************/
 
-void Simple::getConfiguration()
-{
- _k->_js["Conduit"]["Type"] = "Simple";
-}
-
-void Simple::setConfiguration()
-{
-
-}
 
 /************************************************************************/
 /*                    Functional Methods                                */

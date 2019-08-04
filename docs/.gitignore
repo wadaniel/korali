@@ -1,7 +1,4 @@
 site
 docs/tutorials.md
 docs/tutorials/
-docs/usage/problems.md
-docs/usage/solvers.md
-docs/usage/problems/
-docs/usage/solvers/
+docs/manual

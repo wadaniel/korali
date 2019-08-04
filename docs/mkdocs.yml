@@ -11,7 +11,6 @@ nav:
       - Solvers: usage/solvers.md
       - Conduits: usage/conduits.md
       - Models: usage/models.md
-      - Results: usage/results.md
   - Publications: publications.md
   - About Us: aboutus.md
 theme:

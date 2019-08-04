@@ -8,12 +8,9 @@ def buildSolvers(koraliDir):
  solversDir = koraliDir + '/source/solvers'
  
  # Creating directory
- outputDir = koraliDir + '/docs/docs/usage/solvers/'
+ outputDir = koraliDir + '/docs/docs/manual/solvers/'
  if (not os.path.isdir(outputDir)): os.makedirs(outputDir)
  
- # Initializing Mkdocs entries string
- mkdocsEntriesString = ''
-  
  # Detecting Solvers
  solverPaths  = os.listdir(solversDir)
  for solverPath in solverPaths:
@@ -26,9 +23,6 @@ def buildSolvers(koraliDir):
    if (not os.path.isfile(solverJsonFile)): continue 
    with open(solverJsonFile, 'r') as file: solverJsonString = file.read()
    solverConfig = json.loads(solverJsonString)
-   
-   # Adding yaml entry
-   mkdocsEntriesString += '          - ' + solverConfig["Alias"] + ': usage/solvers/' + solverName + '.md\n'
    
    ####### Producing solver page
  
@@ -55,7 +49,7 @@ def buildSolvers(koraliDir):
      terminationSettingsString += getVariableInfo(v, solverName)
    solverDocString = solverDocString.replace('### Termination Criteria', terminationSettingsString + '\n\n')
    
-   mdFileName = koraliDir + '/docs/docs/usage/solvers/' + solverName + '.md'
+   mdFileName = koraliDir + '/docs/docs/manual/solvers/' + solverName + '.md'
    print('[Korali] Creating ' + mdFileName + '...')    
    with open(mdFileName, 'w+') as file: file.write(solverDocString)
 
@@ -72,6 +66,6 @@ def buildSolvers(koraliDir):
   
  ###### Saving solvers web page
  
- webFileName = koraliDir + '/docs/docs/usage/solvers.md'
+ webFileName = koraliDir + '/docs/docs/manual/solvers.md'
  print('[Korali] Creating ' + webFileName + '...')  
  with open(webFileName, 'w+') as file: file.write(solverWebString)

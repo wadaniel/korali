@@ -8,12 +8,9 @@ def buildProblems(koraliDir):
  problemsDir = koraliDir + '/source/problems'
  
  # Creating directory
- outputDir = koraliDir + '/docs/docs/usage/problems/'
+ outputDir = koraliDir + '/docs/docs/manual/problems/'
  if (not os.path.isdir(outputDir)): os.makedirs(outputDir)
  
- # Initializing Mkdocs entries string
- mkdocsEntriesString = ''
-  
  # Detecting Problems
  problemPaths  = os.listdir(problemsDir)
  for problemPath in problemPaths:
@@ -26,9 +23,6 @@ def buildProblems(koraliDir):
    if (not os.path.isfile(problemJsonFile)): continue 
    with open(problemJsonFile, 'r') as file: problemJsonString = file.read()
    problemConfig = json.loads(problemJsonString)
-   
-   # Adding yaml entry
-   mkdocsEntriesString += '          - ' + problemConfig["Alias"] + ': usage/problems/' + problemName + '.md\n'
    
    ####### Producing problem page
  
@@ -49,7 +43,7 @@ def buildProblems(koraliDir):
      variableSettingsString += getVariableInfo(v, problemName)
    problemDocString = problemDocString.replace('### Variable-Specific Settings', variableSettingsString + '\n\n')
      
-   mdFileName = koraliDir + '/docs/docs/usage/problems/' + problemName + '.md'
+   mdFileName = koraliDir + '/docs/docs/manual/problems/' + problemName + '.md'
    print('[Korali] Creating ' + mdFileName + '...')    
    with open(mdFileName, 'w+') as file: file.write(problemDocString)
 
@@ -66,6 +60,6 @@ def buildProblems(koraliDir):
   
  ###### Saving problems web page
  
- webFileName = koraliDir + '/docs/docs/usage/problems.md'
+ webFileName = koraliDir + '/docs/docs/manual/problems.md'
  print('[Korali] Creating ' + webFileName + '...')  
  with open(webFileName, 'w+') as file: file.write(problemWebString)

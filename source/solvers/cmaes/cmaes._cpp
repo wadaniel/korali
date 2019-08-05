@@ -310,15 +310,13 @@ void CMAES::checkMeanAndSetRegime()
 {
   if (_isViabilityRegime == false) return; /* mean already inside valid domain, no udpates */
 
-  Korali::Model data;
-  for (size_t i = 0; i < _k->N; i++) data._computationalVariables.push_back(_currentMean[i]);
+  Korali::Model::Constraint data;
+  for (size_t i = 0; i < _k->N; i++) data._variables.push_back(_currentMean[i]);
   for (size_t c = 0; c < _k->_constraints.size(); c++)
   {
     _constraintEvaluationCount++;
-    data._results.clear();
     _k->_constraints[c](data);
-    if (data._results.size() != 1)  koraliError("Constraints require exactly a 1-element result array. Provided: %lu.\n", data._results.size() );
-    if (data._results[0] > 0.0) return; /* mean violates constraint, do nothing */
+    if (data._evaluation > 0.0) return; /* mean violates constraint, do nothing */
   }
 
   /* mean inside domain, switch regime and update internal variables */
@@ -346,13 +344,12 @@ void CMAES::updateConstraints() //TODO: maybe parallelize constraint evaluations
   for(size_t i = 0; i < _currentSampleCount; ++i)
   {
     _constraintEvaluationCount++;
-    Korali::Model data;
+    Korali::Model::Constraint data;
     for (size_t j = 0; j < _k->N; j++)
-     data._computationalVariables.push_back(_samplePopulation[i*_k->N + j]);
+     data._variables.push_back(_samplePopulation[i*_k->N + j]);
 
     _k->_constraints[c](data);
-    if (data._results.size() != 1)  koraliError("Constraints require exactly a 1-element result array. Provided: %lu.\n", data._results.size() );
-    _constraintEvaluations[c][i] = data._results[0];
+    _constraintEvaluations[c][i] = data._evaluation;
 
     if ( _constraintEvaluations[c][i] > maxviolation ) maxviolation = _constraintEvaluations[c][i];
     if ( _k->_currentGeneration == 0 && _isViabilityRegime ) _viabilityBoundaries[c] = maxviolation;
@@ -375,13 +372,12 @@ void CMAES::reEvaluateConstraints() //TODO: maybe we can parallelize constraint 
     for(size_t c = 0; c < _k->_constraints.size(); c++)
     {
      _constraintEvaluationCount++;
-     Korali::Model data;
+     Korali::Model::Constraint data;
      for (size_t j = 0; j < _k->N; j++)
-      data._computationalVariables.push_back(_samplePopulation[i*_k->N + j]);
+      data._variables.push_back(_samplePopulation[i*_k->N + j]);
 
      _k->_constraints[c](data);
-     if (data._results.size() != 1)  koraliError("Constraints require exactly a 1-element result array. Provided: %lu.\n", data._results.size() );
-     _constraintEvaluations[c][i] = data._results[0];
+     _constraintEvaluations[c][i] = data._evaluation;
 
       if( _constraintEvaluations[c][i] > _viabilityBoundaries[c] + 1e-12 ) { _viabilityIndicator[c][i] = true; _sampleConstraintViolationCounts[i]++; }
       else _viabilityIndicator[c][i] = false;

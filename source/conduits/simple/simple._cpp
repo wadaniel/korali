@@ -26,13 +26,11 @@ void Simple::evaluateSample(double* sampleArray, size_t sampleId)
 {
  _k->_functionEvaluationCount++;
 
-  Korali::Model data;
+ std::vector<double> sampleVector;
+ for (size_t i = 0; i < _k->N; i++) sampleVector.push_back(sampleArray[i]);
 
- _k->_problem->packVariables(sampleArray, data);
-  data._sampleId = sampleId;
- _k->_model(data);
+ double fitness = _k->_problem->evaluateFitness(sampleVector, sampleId);
 
- double fitness = _k->_problem->evaluateFitness(data);
  _k->_functionEvaluationCount++;
  _k->_solver->processSample(sampleId, fitness);
 }

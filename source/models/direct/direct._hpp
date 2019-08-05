@@ -3,21 +3,22 @@
 
 #include "models/base.hpp"
 
-
-
 namespace Korali { namespace Model {
 
 class Direct : public Base
 {
   private:
 
-  double _result;
-
   public:
 
-  void setResult(double x) { _self->_result = x; }
+  double _result;
+
+  void setResult(double x)
+  {
+   ((Direct*)_self)->_result = x;
+  }
 };
 
-} } // namespace Korali::Solver
+} } // namespace Korali::Model
 
 #endif // _KORALI_MODELS_DIRECT_HPP_

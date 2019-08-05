@@ -29,7 +29,7 @@ k["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-7
 k["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
 # Setting computational model
-k.setModel(model)
+k.setDirectModel(model)
 
 # Running Korali
 k.run()

@@ -28,7 +28,7 @@ k["Solver"]["Burn In"] = 500
 k["Solver"]["Termination Criteria"]["Max Chain Length"] = 5000
 
 # Setting Model
-k.setModel(model)
+k.setDirectModel(model)
 
 # Running Korali
 k.run()

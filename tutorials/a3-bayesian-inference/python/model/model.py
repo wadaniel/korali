@@ -7,7 +7,7 @@ def model( s, x ):
   th0 = s.getVariable(0)
   th1 = s.getVariable(1)
   r  =  th0*x[i] + th1
-  s.addResult(r)
+  s.addReferenceEvaluation(r)
 
 def getReferenceData():
  y=[]

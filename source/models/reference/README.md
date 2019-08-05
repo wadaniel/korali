@@ -1,4 +1,4 @@
-# Models / Reference
+# Reference Data Model
 
 Korali exposes a single interface for computational models, regardless of the chosen conduit/evaluation type. The computational model is specified via Korali's ```setModel(myModel)``` function, which receieves a function pointer that accepts a single argument of type ```KoraliData```.
 

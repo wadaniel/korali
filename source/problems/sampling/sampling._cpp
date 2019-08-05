@@ -2,8 +2,8 @@
 
 void Korali::Problem::Sampling::initialize()
 {
+ if (_k->_modelType != "Direct") koraliError("Sampling problems require defining a direct computational model. Used: %s\n", _k->_modelType.c_str());
  if (_k->_constraints.size() > 0) koraliError("Sampling problems do not allow constraint definitions.\n");
- if (_k->_modelDefined == false) koraliError("Sampling problems require defining a computational model.\n");
 }
 
 void Korali::Problem::Sampling::finalize()
@@ -11,18 +11,17 @@ void Korali::Problem::Sampling::finalize()
 
 }
 
-void Korali::Problem::Sampling::packVariables(double* sample, Korali::Model& data)
+double Korali::Problem::Sampling::evaluateFitness(std::vector<double> sample, size_t sampleId)
 {
- for (size_t i = 0; i < _k->N; i++) data._computationalVariables.push_back(sample[i]);
-}
+ // Creating model data.
+ Korali::Model::Direct data;
+ data._sampleId = sampleId;
+ data._variables = sample;
 
-double Korali::Problem::Sampling::evaluateFitness(Korali::Model& data)
-{
+ // Executing Model
+ _k->_directModel(data);
 
- if (data._results.size() != 1)
-  koraliError("Sampling problems require exactly a 1-element result array. Provided: %lu.\n", data._results.size());
-
- return data._results[0];
+ return data._result;
 }
 
 double Korali::Problem::Sampling::evaluateLogPrior(double* sample)

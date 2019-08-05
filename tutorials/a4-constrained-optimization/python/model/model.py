@@ -10,4 +10,4 @@ def model(d):
         + 10.0 * pars[4]**6 + 7.0 * pars[5]**2 + pars[6]**4.      \
         - 4.0 * pars[5] * pars[6] - 10.0 * pars[5] - 8.0 * pars[6];
 
-  d.addResult(-res);
+  d.setResult(-res);

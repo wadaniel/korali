@@ -4,5 +4,5 @@
 def model( s ):
   x = s.getVariable(0)
   r = -0.5*x*x
-  s.addResult(r)
+  s.setResult(r)
 

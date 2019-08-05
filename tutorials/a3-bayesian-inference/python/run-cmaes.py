@@ -52,7 +52,7 @@ k["General"]["Results Output"]["Frequency"] = 5
 k["General"]["Console Output"]["Frequency"] = 5
 
 # Setting the model
-k.setModel(lambda modelData: model(modelData, getReferencePoints()))
+k.setReferenceModel(lambda modelData: model(modelData, getReferencePoints()))
 
 # Running Korali
 k.run()

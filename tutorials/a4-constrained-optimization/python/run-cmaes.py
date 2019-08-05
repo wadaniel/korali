@@ -38,7 +38,7 @@ k["General"]["Console Output"]["Frequency"] = 50
 k["General"]["Results Output"]["Frequency"] = 50
 
 # Setting model and constraints
-k.setModel(model)
+k.setDirectModel(model)
 k.addConstraint(g1)
 k.addConstraint(g2)
 k.addConstraint(g3)

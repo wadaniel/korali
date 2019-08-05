@@ -7,6 +7,7 @@ from buildSolvers import *
 from buildProblems import *
 from buildVariables import *
 from buildConduits import *
+from buildModels import *
 from buildDistributions import *
 from buildCxx import *
 from buildPlotter import *
@@ -23,6 +24,9 @@ buildSolvers(koraliDir)
 
 # Processing Problems
 buildProblems(koraliDir)
+
+# Processing Models
+buildModels(koraliDir)
 
 # Processing Conduits
 buildConduits(koraliDir)

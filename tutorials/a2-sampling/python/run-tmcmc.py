@@ -29,7 +29,7 @@ k["Solver"]["Population Size"] = 5000
 k["Solver"]["Covariance Scaling"] = 0.001
 
 # Setting Model
-k.setModel(model)
+k.setDirectModel(model)
 
 # Running Korali
 k.run()

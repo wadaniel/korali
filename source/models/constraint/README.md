@@ -1,4 +1,4 @@
-# Models / Constraint
+# Constraint Model
 
 A Constraint is a function of the form: $g:\mathbb{R}^N\rightarrow\mathbb{R}$, where *N* is the number of inputs, representing the variables values of a sample, that returns:
 

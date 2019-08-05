@@ -10,28 +10,28 @@ void Korali::Problem::Bayesian::initialize()
  if (recognizedModel == false) koraliError("Incorrect or no Likelihood Model selected: %s.\n", _likelihoodModel.c_str()); 
 
  for (size_t i = 0; i < _k->N; i++)
-  {
-    auto typeString = _k->_variables[i]->_type;
-    bool recognizedType = false;
-    if (typeString == "Computational") { _computationalVariableIndices.push_back(i); recognizedType = true; }
-    if (typeString == "Statistical")   { _statisticalVariableIndices.push_back(i); recognizedType = true; }
-    if (recognizedType == false) koraliError("Incorrect Bayesian variable type selected: %s.\n", typeString.c_str());
-  }
+ {
+   auto typeString = _k->_variables[i]->_type;
+   bool recognizedType = false;
+   if (typeString == "Computational") { _computationalVariableIndices.push_back(i); recognizedType = true; }
+   if (typeString == "Statistical")   { _statisticalVariableIndices.push_back(i); recognizedType = true; }
+   if (recognizedType == false) koraliError("Incorrect Bayesian variable type selected: %s.\n", typeString.c_str());
+ }
 
  if (_k->_constraints.size() > 0) koraliError("Bayesian inference problems do not allow constraint definitions.\n");
 
- if (_likelihoodModel != "Custom")
+ if (_likelihoodModel == "Additive Gaussian" || _likelihoodModel == "Multiplicative Gaussian" || _likelihoodModel == "Multiplicative Gaussian Data")
  {
-   if (_likelihoodReferenceData.size() == 0) koraliError("The %s likelihood model requires defining reference data.\n", _likelihoodModel.c_str());
-   if (_k->_modelDefined == false) koraliError("The %s likelihood model requires defining a computational model.\n", _likelihoodModel.c_str());
-   if (_statisticalVariableIndices.size() != 1) koraliError("The %s likelihood model requires 1 statistical parameter.\n", _likelihoodModel.c_str());
+   if (_likelihoodReferenceData.size() == 0) koraliError("Bayesian (%s) problems require defining reference data.\n", _likelihoodModel.c_str());
+   if (_k->_modelType != "Reference") koraliError("Bayesian (%s) problems require defining a refererence computational model. Used: %s\n", _likelihoodModel.c_str(), _k->_modelType.c_str());
+   if (_statisticalVariableIndices.size() != 1) koraliError("Bayesian (%s) problems require exactly 1 statistical parameter.\n", _likelihoodModel.c_str());
  }
 
  if (_likelihoodModel == "Custom")
  {
-   if (_likelihoodReferenceData.size() != 0) koraliError("Custom likelihood models do not accept reference data.\n");
-   if (_k->_modelDefined == false) koraliError("No likelihood model was specified.\n");
-   if (_statisticalVariableIndices.size() != 0) koraliError("Custom likelihood models do not accept statistical variables.\n");
+   if (_likelihoodReferenceData.size() != 0) koraliError("Bayesian (Custom) problems do not accept reference data.\n");
+   if (_k->_modelType != "Likelihood") koraliError("Bayesian (Custom) problems require defining a likelihood computational model. Used: %s\n", _likelihoodModel.c_str(), _k->_modelType.c_str());
+   if (_statisticalVariableIndices.size() != 0) koraliError("Bayesian (Custom) problems do not accept statistical variables.\n");
  }
 }
 
@@ -40,30 +40,39 @@ void Korali::Problem::Bayesian::finalize()
 
 }
 
-void Korali::Problem::Bayesian::packVariables(double* sample, Korali::Model& data)
-{
- for (size_t i = 0; i < _computationalVariableIndices.size(); i++) data._computationalVariables.push_back(sample[_computationalVariableIndices[i]]);
- for (size_t i = 0; i < _statisticalVariableIndices.size();   i++) data._statisticalVariables.push_back(sample[_statisticalVariableIndices[i]]);
-}
-
-double Korali::Problem::Bayesian::evaluateFitness(Korali::Model& data)
+double Korali::Problem::Bayesian::evaluateFitness(std::vector<double> sample, size_t sampleId)
 {
  double fitness = 0.0;
 
- if (_likelihoodModel != "Custom")
+ if (_likelihoodModel == "Additive Gaussian" || _likelihoodModel == "Multiplicative Gaussian" || _likelihoodModel == "Multiplicative Gaussian Data")
  {
-   if (data._results.size() != _likelihoodReferenceData.size())
-     koraliError("The %s likelihood model requires a %lu-sized result array. Provided: %lu.\n", _likelihoodModel.c_str(), _likelihoodReferenceData.size(), data._results.size());
+  // Creating model data.
+  Korali::Model::Reference data;
+  data._sampleId = sampleId;
+  data._variables = sample;
 
-   if (_likelihoodModel == "Additive Gaussian")            fitness = likelihoodGaussianAdditive(data);
-   if (_likelihoodModel == "Multiplicative Gaussian")      fitness = likelihoodGaussianMultiplicative(data);
-   if (_likelihoodModel == "Multiplicative Gaussian Data") fitness = likelihoodGaussianMultiplicativeData(data);
+  // Executing Model
+  _k->_referenceModel(data);
+
+  if (data._evaluations.size() != _likelihoodReferenceData.size())
+     koraliError("Bayesian (%s) problems require a %lu-sized reference result array. Provided: %lu.\n", _likelihoodModel.c_str(), _likelihoodReferenceData.size(), data._evaluations.size());
+
+  if (_likelihoodModel == "Additive Gaussian")            fitness = likelihoodGaussianAdditive(data);
+  if (_likelihoodModel == "Multiplicative Gaussian")      fitness = likelihoodGaussianMultiplicative(data);
+  if (_likelihoodModel == "Multiplicative Gaussian Data") fitness = likelihoodGaussianMultiplicativeData(data);
  }
 
  if (_likelihoodModel == "Custom")
  {
-  if (data._results.size() != 1)  koraliError("Custom likelihoods require exactly a 1-element result array. Provided: %lu.\n", data._results.size() );
-  fitness =  data._results[0];
+  // Creating model data.
+  Korali::Model::Likelihood data;
+  data._sampleId = sampleId;
+  data._variables = sample;
+
+  // Executing Model
+  _k->_likelihoodModel(data);
+
+  fitness =  data._likelihood;
  }
 
  return fitness;
@@ -76,21 +85,21 @@ double Korali::Problem::Bayesian::evaluateLogPrior(double* sample)
  return logPrior;
 }
 
-double Korali::Problem::Bayesian::likelihoodGaussianAdditive(Korali::Model& data)
+double Korali::Problem::Bayesian::likelihoodGaussianAdditive(Korali::Model::Reference& data)
 {
-  double sigma   = data._statisticalVariables[0];
+  double sigma   = data._variables[_statisticalVariableIndices[0]];
   double sigma2  = sigma*sigma;
   double ssn     = 0.0;
   double fitness = 0.0;
 
   for(size_t i = 0; i < _likelihoodReferenceData.size(); i++)
   {
-    if( !isfinite(data._results[i]) )
+    if( !isfinite(data._evaluations[i]) )
     {
       koraliWarning(KORALI_NORMAL,"Non-finite value detected in the results passed in the log-likelihood function.");
-      return -1e12;
+      return std::numeric_limits<double>::lowest();
     }
-    double diff = _likelihoodReferenceData[i] - data._results[i];
+    double diff = _likelihoodReferenceData[i] - data._evaluations[i];
     ssn += diff*diff;
   }
 
@@ -98,21 +107,22 @@ double Korali::Problem::Bayesian::likelihoodGaussianAdditive(Korali::Model& data
   return fitness;
 }
 
-double Korali::Problem::Bayesian::likelihoodGaussianMultiplicative(Korali::Model& data)
+double Korali::Problem::Bayesian::likelihoodGaussianMultiplicative(Korali::Model::Reference& data)
 {
-  double sigma    = data._statisticalVariables[0];
+  double sigma    = data._variables[_statisticalVariableIndices[0]];
   double ssn      = 0.0;
   double fitness  = 0.0;
   double logSigma = 0.0;
   for(size_t i = 0; i < _likelihoodReferenceData.size(); i++)
   {
-    if( !isfinite(data._results[i]) )
+    if( !isfinite(data._evaluations[i]) )
     {
       koraliWarning(KORALI_NORMAL,"Non-finite value detected in the results passed in the log-likelihood function.");
-      return -1e12;
+      return std::numeric_limits<double>::lowest();
     }
-    double diff   = _likelihoodReferenceData[i] - data._results[i];
-    double denom  = sigma*data._results[i];
+
+    double diff   = _likelihoodReferenceData[i] - data._evaluations[i];
+    double denom  = sigma*data._evaluations[i];
     ssn += diff*diff / (denom*denom);
     logSigma += log(denom);
   }
@@ -121,20 +131,21 @@ double Korali::Problem::Bayesian::likelihoodGaussianMultiplicative(Korali::Model
   return fitness;
 }
 
-double Korali::Problem::Bayesian::likelihoodGaussianMultiplicativeData(Korali::Model& data)
+double Korali::Problem::Bayesian::likelihoodGaussianMultiplicativeData(Korali::Model::Reference& data)
 {
-  double sigma    = data._statisticalVariables[0];
+  double sigma    = data._variables[_statisticalVariableIndices[0]];
   double ssn      = 0.0;
   double fitness  = 0.0;
   double logSigma = 0.0;
   for(size_t i = 0; i < _likelihoodReferenceData.size(); i++)
   {
-    if( !isfinite(data._results[i]) )
+    if( !isfinite(data._evaluations[i]) )
     {
       koraliWarning(KORALI_NORMAL,"Non-finite value detected in the results passed in the log-likelihood function.");
-      return -1e12;
+      return std::numeric_limits<double>::lowest();
     }
-    double diff   = _likelihoodReferenceData[i] - data._results[i];
+
+    double diff   = _likelihoodReferenceData[i] - data._evaluations[i];
     double denom  = sigma*_likelihoodReferenceData[i];
     ssn += diff*diff / (denom*denom);
     logSigma += log(denom);

@@ -13,11 +13,12 @@ class Hierarchical : public Base
 
  public:
 
- void packVariables(double* sample, Korali::Model& data) override;
- double evaluateFitness(Korali::Model& data) override;
+ double evaluateFitness(std::vector<double>, size_t sampleId) override;
  double evaluateLogPrior(double* sample) override;
+
  void initialize() override;
  void finalize() override;
+
  void getConfiguration() override;
  void setConfiguration() override;
 };

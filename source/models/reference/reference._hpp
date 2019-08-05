@@ -21,6 +21,12 @@ class Reference : public Base
    ((Reference*)_self)->_evaluations.push_back(x);
   }
 
+  std::vector<double>& getEvaluations()
+  {
+    // Check for result correctness
+   return ((Reference*)_self)->_evaluations;
+  }
+
 };
 
 } } // namespace Korali::Model

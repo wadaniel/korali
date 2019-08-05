@@ -49,7 +49,7 @@ int main(int argc, char* argv[])
  k["Conduit"]["Type"] = "MPI";
  k["Conduit"]["Ranks Per Team"] = 1;
 
- k.setModel([](Korali::Model& d) { heat2DSolver(d.getVariables(), d.getResults()); });
+ k.setReferenceModel([](Korali::Model::Reference& d) { heat2DSolver(d.getVariables(), d.getEvaluations()); });
 
  k.run();
 

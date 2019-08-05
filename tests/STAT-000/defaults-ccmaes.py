@@ -2,13 +2,13 @@
 import sys
 sys.path.append('./helpers')
 
-from stat000_helpers import *
+from helpers import *
 
 from math import isclose
 
 import korali
 k = korali.initialize()
-k.setModel(evaluateModel)
+k.setDirectModel(evaluateModel)
 k.addConstraint( g1 )
 
 k["Problem"]["Type"] = "Optimization"

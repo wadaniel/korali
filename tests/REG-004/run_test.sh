@@ -1,30 +1,33 @@
 #!/bin/bash
 
 ##############################################################################
-# Brief: Test correct plotting for all results from tutorial runs.
+# Brief: Test correct execution of solvers with non 0815 parametrization.
 # Type: Regression Test 
 # Description:
-# This test plots all results in the /tutorials/python/ folder to make sure
-# the typical use cases work. Note: flag --all untested.
+# This test run python scripts that set up a Korali problem  and run Korali 
+# solvers. Solvers will be extensively configured to check for corner cases.
 ###############################################################################
 
 source ../functions.sh
 
-pushd ../tutorials
+#################################################
+# Execute Solver Scripts
+#################################################
 
-logEcho "[Korali] Beginning plotting tests"                                   
+logEcho "[Korali] Beginning solver tests"
 
-for dir in ./*/python/_*                                                                 
-do                                                                              
+for file in *.py
+do
   logEcho "-------------------------------------"
-  logEcho " Plotting results from $dir ..."
-  logEcho "-------------------------------------"
-  python3 -m korali.plotter --test --dir "${dir}" >> $logFile 2>&1
-  check_result
-                     
-  python3 -m korali.plotter --test --all --gen 1000 --dir "${dir}" >> $logFile 2>&1
-  check_result
+  logEcho "Running File: ${file%.*}"
   
-done 
+  python3 ./$file >> $logFile 2>&1
+  check_result
 
-popd
+  log "[Korali] Removing results..."
+  rm -rf "_korali_result" >> $logFile 2>&1
+  check_result
+
+  logEcho "-------------------------------------"
+done
+

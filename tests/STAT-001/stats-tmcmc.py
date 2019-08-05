@@ -5,10 +5,9 @@ import json
 import numpy as np
 
 sys.path.append('./helpers')
-from stat001_helpers import *
+from helpers import *
 
-src_py  = "../tutorials/a2-sampling/python/_result_run-tmcmc/"
-src_cxx = "../tutorials/a2-sampling/cxx/_result_run-tmcmc/"
+src  = "../../tutorials/a2-sampling/_result_run-tmcmc/"
 
 def checkMean(js, expectedMean, tol):
     samples = js["Solver"]["Internal"]["Sample Parameters Database"]
@@ -25,19 +24,7 @@ def checkStd(js, expectedStd, tol):
         "Samples {0} deviate from true Std by {1}".format(std, tol)
 
 
-resultfiles_cxx = sorted( [f for f in os.listdir(src_cxx) if os.path.isfile(os.path.join(src_cxx, f))] )
-resultfiles_py  = sorted( [f for f in os.listdir(src_py) if os.path.isfile(os.path.join(src_py, f))] )
-
-result_cxx = resultfiles_cxx[-1]
-result_py  = resultfiles_py[-1]
-
-json_cxx = open_json(src_cxx, result_cxx)
-json_py  = open_json(src_py, result_py)
-
-# Check CXX results
-checkMean(json_cxx, 0.0, 0.05)
-checkStd(json_cxx, 1.0, 0.5)
-
-# Check python results
-checkMean(json_py, 0.0, 0.05)
-checkStd(json_py, 1.0, 0.5)
+result  = 'final.json'
+json  = open_json(src, result)
+checkMean(json, 0.0, 0.05)
+checkStd(json, 1.0, 0.5)

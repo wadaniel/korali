@@ -32,5 +32,5 @@ k["Solver"]["Termination Criteria"]["Max Generations"] = 30
 k["Conduit"]["Type"] = "External"
 k["Conduit"]["Concurrent Jobs"] = int(sys.argv[1])
   
-k.setModel(runModel)
+k.setDirectModel(runModel)
 k.run()

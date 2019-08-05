@@ -2,7 +2,7 @@
 import sys
 sys.path.append('./helpers')
 
-from stat000_helpers import *
+from helpers import *
 
 import korali
 k = korali.initialize()
@@ -18,7 +18,7 @@ k["Variables"][0]["Prior Distribution"]["Maximum"] = +10.0
 k["Solver"]["Type"] = "TMCMC"
 k["Solver"]["Population Size"] = 5000
 
-k.setModel( evaluateModel )
+k.setLikelihoodModel(evaluateModel)
 k.dry()
 
 ###############################################################################

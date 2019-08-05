@@ -1,26 +1,95 @@
 #!/bin/bash
 
 ##############################################################################
-# Brief: Compare python and cxx runs to ensure they produce same results.
+# Brief: Test correct configuration of Korali-Apps
 # Type: Regression Test 
 # Description:
-# This test compares the results (json files) produced in /tutorials/python/ 
-# with the results from /tutorials/cxx/
+# This test configures (without running) all the applications in the korali-
+# apps repository to make sure they are up-to-date with Korali's syntax.
 ###############################################################################
-
-###### Auxiliar Functions and Variables #########
 
 source ../functions.sh
 
-############# STEP 1 ##############
+#################################################
+# Checking for MPI
+#################################################
 
-logEcho "[Korali] Beginning comparison tests"
+if [[ $MPICXX == "" ]]
+then
+ echo "[Korali] MPI not installed, skipping test."
+ exit 0
+fi
 
-for file in *.py
-do
-  logEcho "-------------------------------------"
-  logEcho " Running $file"
-  logEcho "-------------------------------------"
-  ./"$file" >> $logFile
-  check_result
-done
+#################################################
+# Clone korali-apps repository
+#################################################
+
+logEcho "[Korali] Cloning korali-apps repository"                                   
+rm -rf korali-apps
+git clone git://github.com/cselab/korali-apps.git >> $logFile
+check_result
+
+#################################################
+# Test Korali+LAMMPS
+#################################################
+
+pushd korali-apps/LAMMPS
+logEcho "[Korali] Testing Korali+LAMMPS..."
+
+logEcho "[Korali] Converting to dry run..."
+cat optimize.py | sed -e 's/run()/dry()/g' > optimize_dry.py
+check_result
+
+logEcho "[Korali] Setting permissions..."
+chmod a+x optimize_dry.py
+check_result
+
+logEcho "[Korali] Running optimize_dry.py..."
+./optimize_dry.py >> $logFile
+check_result
+
+popd
+
+#################################################
+# Test Korali+Mirheo
+#################################################
+
+logEcho "[Korali] Testing Korali+Mirheo..."
+
+pushd korali-apps/mirheo/rbc_stretching
+
+logEcho "[Korali] Converting to dry run..."
+cat run.py | sed -e 's/run()/dry()/g' > run_dry.py
+check_result
+
+logEcho "[Korali] Setting permissions..."
+chmod a+x run_dry.py
+check_result
+
+logEcho "[Korali] Running run_dry.py..."
+mpirun -n 3 ./run_dry.py >> $logFile
+check_result
+
+popd
+
+#################################################
+# Test Korali+MSolve
+#################################################
+
+logEcho "[Korali] Testing Korali+MSolve (Heat EQ)..."
+
+pushd korali-apps/MSolve/heatEq
+
+logEcho "[Korali] Converting to dry run..."
+cat heatPosterior.py | sed -e 's/run()/dry()/g' > run_dry.py
+check_result
+
+logEcho "[Korali] Setting permissions..."
+chmod a+x run_dry.py
+check_result
+
+logEcho "[Korali] Running run_dry.py..."
+mpirun -n 3 ./run_dry.py >> $logFile
+check_result
+
+popd

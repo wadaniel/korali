@@ -1,10 +1,10 @@
 #!/bin/bash
 
 ##############################################################################
-# Brief: Re-run all Python tutorials for basic sanity check. 
+# Brief: Re-run all Python example applications for basic sanity check. 
 # Type: Regression Test 
 # Description:
-# This test finds and runs tutorials in the /tutorials folder to make sure
+# This test finds and runs A Tutorials /tutorials folder to make sure
 # the typical use cases still work.
 # Steps: 
 # 1 - Operation: List and run all .py scripts in the tutorials/python folder.
@@ -18,12 +18,11 @@ source ../functions.sh
 
 ############# STEP 1 ##############
 
-
 pushd ../../tutorials
 
 logEcho "[Korali] Beginning tutorial tests..."
 
-for dir in ./*/
+for dir in ./a*/
 do
   logEcho "-------------------------------------"
   logEcho " Entering Folder: $dir"
@@ -37,19 +36,9 @@ do
   do
     if [ ! -f $file ]; then continue; fi
 
-    logEcho "  + Running File: ${file%.*}"
+    logEcho "  + Running File: $file"
 
-    log "[Korali] Adding Random Seed..."
-    
-    resultPath="_result_${file%.*}"
-    cat $file | sed -e 's/k.run()/k\[\"General\"\]\[\"Random Seed\"\] = 0xC0FFEE; k.run()/g' \
-                    -e 's/k.run()/k\[\"General\"\][\"Results Output\"\][\"Path\"\] = \"'$resultPath'\"; k.run()/g' > tmp.py
-    check_result
-    
-    python3 ./tmp.py >> $logFile 2>&1
-    check_result
-
-    rm ./tmp.py >> $logFile 2>&1
+    python3 $file >> $logFile 2>&1
     check_result
   done
   

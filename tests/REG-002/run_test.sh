@@ -1,10 +1,10 @@
 #!/bin/bash
 
 ##############################################################################
-# Brief: Test correct plotting for all results from tutorial runs.
+# Brief: Test correct plotting for all results from example applications.
 # Type: Regression Test 
 # Description:
-# This test plots all results in the /tutorials/python/ folder to make sure
+# This test plots all results in the /tutorials/a* folders to make sure
 # the typical use cases work. Note: flag --all untested.
 ###############################################################################
 
@@ -14,7 +14,7 @@ pushd ../../tutorials/
 
 logEcho "[Korali] Beginning plotting tests"                                   
 
-for dir in ./*/_result_*/
+for dir in ./a*/_result_*/
 do                                                                              
   logEcho "-------------------------------------"
   logEcho " Plotting results from $dir ..."

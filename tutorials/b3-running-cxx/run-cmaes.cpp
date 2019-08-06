@@ -44,10 +44,7 @@ int main(int argc, char* argv[])
 
  k["Solver"]["Type"] = "CMAES";
  k["Solver"]["Sample Count"] = 32;
- k["Solver"]["Termination Criteria"]["Max Generations"] = 50;
-
- k["Conduit"]["Type"] = "MPI";
- k["Conduit"]["Ranks Per Team"] = 1;
+ k["Solver"]["Termination Criteria"]["Max Generations"] = 20;
 
  k.setReferenceModel([](Korali::Model::Reference& d) { heat2DSolver(d.getVariables(), d.getEvaluations()); });
 

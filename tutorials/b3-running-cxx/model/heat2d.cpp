@@ -207,7 +207,7 @@ pointsInfoStruct& heat2DInit(int* argc, char** argv[])
  {
   // Read solution from file
   printf("Heat2D - Running problem from data.in... \n");
-  problemFile = fopen("data.in", "r");
+  problemFile = fopen("model/data.in", "r");
   fscanf(problemFile, "%lu", &nPoints);
  }
 

@@ -29,7 +29,7 @@ def compareStd(js):
     assert np.isclose(std, chainstd), "Cholesky Decomposition of Chain" \
             "Covariance deviates from Standard Deviation of Samples"
 
-src  = "../../tutorials/a2-sampling/_result_run-mcmc"
+src  = "_result_run-mcmc"
 json  = open_json(src, 'final.json')
 compareMean(json)
 compareStd(json)

@@ -9,7 +9,6 @@
 #include <math.h>
 #include <limits>
 #include "heat2d.h"
-#include "mpi.h"
 #include "string.h"
 
 pointsInfo __p;
@@ -193,31 +192,19 @@ void freeGrids(gridLevel* g, int gridCount)
 
 pointsInfoStruct& heat2DInit(int* argc, char** argv[])
 {
- MPI_Init(argc, argv);
- int myRank, rankCount;
- MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
- MPI_Comm_size(MPI_COMM_WORLD, &rankCount);
-
  int problemNumber = 1;
  FILE *problemFile;
 
  size_t nPoints = 0;
 
- if (myRank == 0)
- {
-  // Read solution from file
-  printf("Heat2D - Running problem from data.in... \n");
-  problemFile = fopen("model/data.in", "r");
-  fscanf(problemFile, "%lu", &nPoints);
- }
-
- MPI_Bcast(&nPoints, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
+ printf("Heat2D - Running problem from data.in... \n");
+ problemFile = fopen("model/data.in", "r");
+ fscanf(problemFile, "%lu", &nPoints);
 
  __p.xPos.resize(nPoints);
  __p.yPos.resize(nPoints);
  __p.refTemp.resize(nPoints);
 
- if (myRank == 0)
  for (size_t i = 0; i < nPoints; i++)
  {
   double val;
@@ -225,10 +212,6 @@ pointsInfoStruct& heat2DInit(int* argc, char** argv[])
   fscanf(problemFile, "%le ", &val); __p.yPos[i] = val;
   fscanf(problemFile, "%le ", &val); __p.refTemp[i] = val;
  }
-
-  MPI_Bcast(__p.xPos.data(),    nPoints, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-  MPI_Bcast(__p.yPos.data(),    nPoints, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-  MPI_Bcast(__p.refTemp.data(), nPoints, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
  return __p;
 }

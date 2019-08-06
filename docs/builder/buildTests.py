@@ -32,7 +32,7 @@ def buildTests(koraliDir):
    if ('UNIT' in testName): testType = 'Unit Test'
    if ('STAT' in testName): testType = 'Statistical Test'
    
-   testTableString += '| ' + testType + ' | ' + testName + ' | ' + testDescription + ' | \n' 
+   testTableString += '| ' + testType + ' | [' + testName + '](https://github.com/cselab/korali/tree/master/tests/' + testName + ') | ' + testDescription + ' | \n' 
     
  ###### Saving tests web page
  
@@ -41,3 +41,4 @@ def buildTests(koraliDir):
  webFileName = koraliDir + '/docs/docs/install.md'
  print('[Korali] Creating ' + webFileName + '...')  
  with open(webFileName, 'w+') as file: file.write(installString)
+  

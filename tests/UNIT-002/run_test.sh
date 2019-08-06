@@ -1,28 +1,5 @@
 #!/bin/bash
 
-##############################################################################
-# Brief: MPI Conduit for Distributed (MPI) Bayesian Inference
-# Type: Unit Test 
-# Description:
-# Tests the distributed Linked conduit for a bayesian inference problem using
-# a sequential heat diffusion solver on 2D. 
-# Steps:
-# 1 - Operation: Compile test case.
-#     Expected result: Correct compilation with rc = 0.
-#     If MPI is not installed (e.g., macOs) , it will not compile. 
-# 2 - Operation: Run 8x1 distribution.
-#     Expected result: 8 Concurrent teams of 1 MPI rank run with rc = 0.
-#     If MPI is not installed (e.g., macOs) , it will not run.
-# 3 - Operation: Run 4x2 distribution.
-#     Expected result: 4 Concurrent teams of 2 MPI rank run with rc = 0.
-#     If MPI is not installed (e.g., macOs) , it will not run.
-# 4 - Operation: Run 1x8 distribution.
-#     Expected result: 1 Teams of 8 MPI ranks run with rc = 0.
-#     If MPI is not installed (e.g., macOs) , it will not run.
-###############################################################################
-
-###### Auxiliar Functions and Variables #########
-
 source ../functions.sh
 
 ############# Preparing Test ##############

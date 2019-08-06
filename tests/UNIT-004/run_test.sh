@@ -1,17 +1,6 @@
 #!/bin/bash
 
-##############################################################################
-# Brief: Testing Checkpoint/Restart
-# Type: Unit Test 
-# Description:
-# Testing Korali's restart capability
-###############################################################################
-
-###### Auxiliar Functions and Variables #########
-
 source ../functions.sh
-
-############# STEP 1 ##############
 
 logEcho "[Korali] Running Checkpoint/Restart Test..."
 

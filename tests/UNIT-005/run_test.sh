@@ -1,17 +1,6 @@
 #!/bin/bash
 
-##############################################################################
-# Brief: Preserving Results
-# Type: Unit Test 
-# Description:
-# Testing an application that saves quantities of interest during sampling
-###############################################################################
-
-###### Auxiliar Functions and Variables #########
-
 source ../functions.sh
-
-############# STEP 1 ##############
 
 logEcho "[Korali] Running Checkpoint/Restart Test..."
 

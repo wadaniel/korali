@@ -1,17 +1,6 @@
 #!/bin/bash
 
-##############################################################################
-# Brief: Running Korali with C++
-# Type: Unit Test 
-# Description:
-# Run a C++ model using a C++ Korali Application
-###############################################################################
-
-###### Auxiliar Functions and Variables #########
-
 source ../functions.sh
-
-############# STEP 1 ##############
 
 logEcho "[Korali] Running C++ Test..."
 

@@ -1,13 +1,5 @@
 #!/bin/bash
 
-##############################################################################
-# Brief: Test correct plotting for all results from example applications.
-# Type: Regression Test 
-# Description:
-# This test plots all results in the /tutorials/a* folders to make sure
-# the typical use cases work. Note: flag --all untested.
-###############################################################################
-
 source ../functions.sh
 
 pushd ../../tutorials/

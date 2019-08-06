@@ -1,13 +1,5 @@
 #!/bin/bash
 
-##############################################################################
-# Brief: Test correct execution of solvers with non 0815 parametrization.
-# Type: Regression Test 
-# Description:
-# This test run python scripts that set up a Korali problem  and run Korali 
-# solvers. Solvers will be extensively configured to check for corner cases.
-###############################################################################
-
 source ../functions.sh
 
 #################################################

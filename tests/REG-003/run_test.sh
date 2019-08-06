@@ -1,13 +1,5 @@
 #!/bin/bash
 
-##############################################################################
-# Brief: Test correct configuration of Korali-Apps
-# Type: Regression Test 
-# Description:
-# This test configures (without running) all the applications in the korali-
-# apps repository to make sure they are up-to-date with Korali's syntax.
-###############################################################################
-
 source ../functions.sh
 
 #################################################

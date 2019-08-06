@@ -289,6 +289,7 @@ echo CXXARCH=$CXXARCH >> source/Makefile.conf
 echo SHAREDLIB_FLAG=$SHAREDLIB_FLAG >> source/Makefile.conf
 echo MPIFLAGS=$MPIFLAGS >> source/Makefile.conf
 echo OPTFLAGS=$OPTFLAGS >> source/Makefile.conf
+echo MACHINEARCH=$arch >> source/Makefile.conf
 
 echo GSLPREFIX=$GSLPREFIX >> source/Makefile.conf
 echo GSLCFLAGS=$GSLCFLAGS >> source/Makefile.conf

@@ -21,7 +21,6 @@ class MPI : public Base
  int _rankCount;
 
  // Team Management
- int _ranksPerTeam;
  int _teamCount;
 
  int _teamId;

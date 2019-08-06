@@ -5,6 +5,7 @@ source ../functions.sh
 archString=`uname -a`
 if [[ $archString == *"Darwin"* ]]; then
   echo "Skipping C++ tests on Darwin"
+  exit 0
 fi
 
 logEcho "[Korali] Running C++ Test..."

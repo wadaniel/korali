@@ -3,4 +3,4 @@
 def getcompiler(extdir):
  exportString = ''
  if ('Darwin' in MACHINEARCH): exportString = 'DYLD_LIBRARY_PATH=' + extdir 
- print(exportString + CXX)
+ print(exportString + ' ' + CXX)

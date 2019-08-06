@@ -7,7 +7,7 @@ import numpy as np
 sys.path.append('./helpers')
 from helpers import *
 
-src  = "../../tutorials/a2-sampling/_result_run-tmcmc/"
+src  = "_result_run-tmcmc/"
 
 def checkMean(js, expectedMean, tol):
     samples = js["Solver"]["Internal"]["Sample Parameters Database"]

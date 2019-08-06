@@ -8,7 +8,7 @@ from math import isclose
 sys.path.append('./helpers')
 from helpers import *
 
-src  = "../../tutorials/a2-sampling/_result_run-mcmc/"
+src  = "_result_run-mcmc/"
 
 def checkMean(js, expectedMean, tol):
     samples = js["Solver"]["Internal"]["Sample Parameters Database"]

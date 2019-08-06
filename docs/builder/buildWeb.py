@@ -9,6 +9,7 @@ koraliDir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)) + '/../.
 from buildSolvers import *
 from buildProblems import *
 from buildModels import *
+from buildTests import *
 from buildConduits import *
 from buildTutorials import *
 
@@ -26,4 +27,7 @@ buildModels(koraliDir)
 
 # Processing Tutorials
 buildTutorials(koraliDir)
+
+# Processing Tests
+buildTests(koraliDir)
 

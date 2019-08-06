@@ -2,6 +2,11 @@
 
 source ../functions.sh
 
+archString=`uname -a`
+if [[ $archString == *"Darwin"* ]]; then
+  echo "Skipping C++ tests on Darwin"
+fi
+
 logEcho "[Korali] Running C++ Test..."
 
 pushd ../../tutorials/b3-running-cxx/

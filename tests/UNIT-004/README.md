@@ -1,10 +1,10 @@
 # Test: UNIT-004
 
-Testing Checkpoint/Restart
+Preserving Results
 
 ## Description
 
-Testing Korali's restart capability
+Testing an application that saves quantities of interest during sampling.
 
 ## Source
 
@@ -14,6 +14,6 @@ Testing Korali's restart capability
 
 ### Step 1
 
-+ Operation: Run all .py files in the checkpoint/restart tutorial
++ Operation: Run all .py files in the preserving results tutorial.
 + Expected: Runs without errors and rc = 0. 
 

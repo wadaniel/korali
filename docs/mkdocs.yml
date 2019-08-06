@@ -7,10 +7,10 @@ nav:
   - Installation: install.md
   - Tutorials: tutorials.md
   - User Manual:
-      - Problems: usage/problems.md
-      - Solvers: usage/solvers.md
-      - Conduits: usage/conduits.md
-      - Models: usage/models.md
+      - Problems: manual/problems.md
+      - Solvers: manual/solvers.md
+      - Conduits: manual/conduits.md
+      - Models: manual/models.md
   - Publications: publications.md
   - About Us: aboutus.md
 theme:

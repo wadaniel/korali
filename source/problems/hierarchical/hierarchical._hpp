@@ -13,7 +13,8 @@ class Hierarchical : public Base
 
  public:
 
- double evaluateFitness(std::vector<double>, size_t sampleId) override;
+ void runModel(std::vector<double>, size_t sampleId) override;
+ double evaluateFitness() override;
  double evaluateLogPrior(double* sample) override;
 
  void initialize() override;

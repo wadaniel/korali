@@ -40,40 +40,45 @@ void Korali::Problem::Bayesian::finalize()
 
 }
 
-double Korali::Problem::Bayesian::evaluateFitness(std::vector<double> sample, size_t sampleId)
+void Korali::Problem::Bayesian::runModel(std::vector<double> sample, size_t sampleId)
 {
- double fitness = 0.0;
-
  if (_likelihoodModel == "Additive Gaussian" || _likelihoodModel == "Multiplicative Gaussian" || _likelihoodModel == "Multiplicative Gaussian Data")
  {
   // Creating model data.
-  Korali::Model::Reference data;
-  data._sampleId = sampleId;
-  data._variables = sample;
+  _referenceModelData._evaluations.clear();
+  _referenceModelData._sampleId = sampleId;
+  _referenceModelData._variables = sample;
 
   // Executing Model
-  _k->_referenceModel(data);
-
-  if (data._evaluations.size() != _likelihoodReferenceData.size())
-     koraliError("Bayesian (%s) problems require a %lu-sized reference result array. Provided: %lu.\n", _likelihoodModel.c_str(), _likelihoodReferenceData.size(), data._evaluations.size());
-
-  if (_likelihoodModel == "Additive Gaussian")            fitness = likelihoodGaussianAdditive(data);
-  if (_likelihoodModel == "Multiplicative Gaussian")      fitness = likelihoodGaussianMultiplicative(data);
-  if (_likelihoodModel == "Multiplicative Gaussian Data") fitness = likelihoodGaussianMultiplicativeData(data);
+  _k->_referenceModel(_referenceModelData);
  }
 
  if (_likelihoodModel == "Custom")
  {
   // Creating model data.
-  Korali::Model::Likelihood data;
-  data._sampleId = sampleId;
-  data._variables = sample;
+  _likelihoodModelData._sampleId = sampleId;
+  _likelihoodModelData._variables = sample;
 
   // Executing Model
-  _k->_likelihoodModel(data);
-
-  fitness =  data._likelihood;
+  _k->_likelihoodModel(_likelihoodModelData);
  }
+}
+
+double Korali::Problem::Bayesian::evaluateFitness()
+{
+ double fitness = 0.0;
+
+ if (_likelihoodModel == "Additive Gaussian" || _likelihoodModel == "Multiplicative Gaussian" || _likelihoodModel == "Multiplicative Gaussian Data")
+ {
+  if (_referenceModelData._evaluations.size() != _likelihoodReferenceData.size())
+     koraliError("Bayesian (%s) problems require a %lu-sized reference result array. Provided: %lu.\n", _likelihoodModel.c_str(), _likelihoodReferenceData.size(), _referenceModelData._evaluations.size());
+
+  if (_likelihoodModel == "Additive Gaussian")            fitness = likelihoodGaussianAdditive(_referenceModelData);
+  if (_likelihoodModel == "Multiplicative Gaussian")      fitness = likelihoodGaussianMultiplicative(_referenceModelData);
+  if (_likelihoodModel == "Multiplicative Gaussian Data") fitness = likelihoodGaussianMultiplicativeData(_referenceModelData);
+ }
+
+ if (_likelihoodModel == "Custom") fitness =  _likelihoodModelData._likelihood;
 
  return fitness;
 }

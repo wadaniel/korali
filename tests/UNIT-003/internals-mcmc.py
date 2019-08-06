@@ -29,22 +29,7 @@ def compareStd(js):
     assert np.isclose(std, chainstd), "Cholesky Decomposition of Chain" \
             "Covariance deviates from Standard Deviation of Samples"
 
-src_py  = "../tutorials/a2-sampling/python/_result_run-mcmc/"
-src_cxx = "../tutorials/a2-sampling/cxx/_result_run-mcmc/"
-
-resultfiles_py  = sorted( [f for f in os.listdir(src_py) if os.path.isfile(os.path.join(src_py, f))] )
-resultfiles_cxx = sorted( [f for f in os.listdir(src_cxx) if os.path.isfile(os.path.join(src_cxx, f))] )
-
-result_py  = resultfiles_py[-1]
-result_cxx = resultfiles_cxx[-1]
-
-json_py  = open_json(src_py, result_py)
-json_cxx = open_json(src_cxx, result_cxx)
-
-# Compare CXX
-compareMean(json_cxx)
-compareStd(json_cxx)
-
-# Compare Python
-compareMean(json_py)
-compareStd(json_py)
+src  = "../../tutorials/a2-sampling/_result_run-mcmc"
+json  = open_json(src, 'final.json')
+compareMean(json)
+compareStd(json)

@@ -11,17 +11,19 @@ void Korali::Problem::Sampling::finalize()
 
 }
 
-double Korali::Problem::Sampling::evaluateFitness(std::vector<double> sample, size_t sampleId)
+void Korali::Problem::Sampling::runModel(std::vector<double> sample, size_t sampleId)
 {
  // Creating model data.
- Korali::Model::Direct data;
- data._sampleId = sampleId;
- data._variables = sample;
+  _directModelData._sampleId = sampleId;
+  _directModelData._variables = sample;
 
- // Executing Model
- _k->_directModel(data);
+  // Executing Model
+  _k->_directModel(_directModelData);
+}
 
- return data._result;
+double Korali::Problem::Sampling::evaluateFitness()
+{
+ return _directModelData._result;
 }
 
 double Korali::Problem::Sampling::evaluateLogPrior(double* sample)

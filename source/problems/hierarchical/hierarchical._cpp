@@ -61,12 +61,15 @@ void Korali::Problem::Hierarchical::finalize()
 
 }
 
-double Korali::Problem::Hierarchical::evaluateFitness(std::vector<double> sample, size_t sampleId)
+void Korali::Problem::Hierarchical::runModel(std::vector<double> sample, size_t sampleId)
 {
- // Now re-configuring conditional priors given hyperparameters
-  for (size_t i = 0; i < _conditionalPriors.size(); i++)
-   _conditionalPriors[i]->updateConditionals(sample);
+ // Re-configuring conditional priors given hyperparameters
+ for (size_t i = 0; i < _conditionalPriors.size(); i++)
+  _conditionalPriors[i]->updateConditionals(sample);
+}
 
+double Korali::Problem::Hierarchical::evaluateFitness()
+{
  double logFitness = 0.0;
 
  if (_model == "Sample Psi")

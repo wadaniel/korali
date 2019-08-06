@@ -31,7 +31,6 @@ class MPI : public Base
  std::vector<bool> _teamBusy;
  std::vector<double> _teamFitness;
 
- MPI_Comm _teamComm;
  std::vector<MPI_Request> _teamRequests;
 
  std::queue<int> _teamQueue;

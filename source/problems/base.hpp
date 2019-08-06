@@ -7,7 +7,8 @@ class Base
 {
   public:
 
-  virtual double evaluateFitness(std::vector<double> sample, size_t sampleId) = 0;
+  virtual void runModel(std::vector<double>, size_t sampleId) = 0;
+  virtual double evaluateFitness() = 0;
   virtual double evaluateLogPrior(double* sample) = 0;
 
   virtual void initialize() = 0;

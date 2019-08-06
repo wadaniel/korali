@@ -34,7 +34,9 @@ void External::evaluateSample(double* sampleArray, size_t sampleId)
   std::vector<double> sampleVector;
   for (size_t i = 0; i < _k->N; i++) sampleVector.push_back(sampleArray[i]);
 
-  double fitness = _k->_problem->evaluateFitness(sampleVector, sampleId);
+  _k->_problem->runModel(sampleVector, sampleId);
+  double fitness = _k->_problem->evaluateFitness();
+
   write(_pipeDescriptors[launcherId][1], &fitness, sizeof(double));
   exit(0);
  }

@@ -10,19 +10,21 @@ void Korali::Problem::Optimization::finalize()
 
 }
 
-double Korali::Problem::Optimization::evaluateFitness(std::vector<double> sample, size_t sampleId)
+void Korali::Problem::Optimization::runModel(std::vector<double> sample, size_t sampleId)
 {
  // Creating model data.
- Korali::Model::Direct data;
- data._sampleId = sampleId;
- data._variables = sample;
+ _directModelData._sampleId = sampleId;
+ _directModelData._variables = sample;
 
  // Executing Model
- _k->_directModel(data);
+ _k->_directModel(_directModelData);
+}
 
+double Korali::Problem::Optimization::evaluateFitness()
+{
  double fitnessSign = _objective == "Maximize" ? 1.0 : -1.0;
 
- return fitnessSign*data._result;
+ return fitnessSign*_directModelData._result;
 }
 
 double Korali::Problem::Optimization::evaluateLogPrior(double* sample)

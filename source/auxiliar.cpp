@@ -8,6 +8,10 @@
 
 Korali::verbosity Korali::_korali_verbosity;
 
+#ifdef _KORALI_USE_MPI
+MPI_Comm __KoraliTeamComm;
+#endif
+
 /************************************************************************/
 /*                  Python Binding Declarations                         */
 /************************************************************************/

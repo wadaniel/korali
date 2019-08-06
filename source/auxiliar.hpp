@@ -9,6 +9,11 @@
 #include <vector>
 #include <iostream>
 
+#ifdef _KORALI_USE_MPI
+#include "mpi.h"
+extern MPI_Comm __KoraliTeamComm;
+#endif
+
 namespace Korali
 {
 

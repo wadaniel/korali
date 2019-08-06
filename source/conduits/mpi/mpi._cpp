@@ -60,7 +60,7 @@ void Korali::Conduit::MPI::initialize()
  _teamRequests.resize(_teamCount);
  _teamBusy.resize(_teamCount);
 
- MPI_Comm_split(MPI_COMM_WORLD, _teamId, _rankId, &_teamComm);
+ MPI_Comm_split(MPI_COMM_WORLD, _teamId, _rankId, &__KoraliTeamComm);
 
  int mpiSize = -1;
  MPI_Comm_size(MPI_COMM_WORLD, &mpiSize);
@@ -103,18 +103,20 @@ void Korali::Conduit::MPI::workerThread()
    {
     double sample[_k->N];
     MPI_Recv(&sample, _k->N, MPI_DOUBLE, getRootRank(), MPI_TAG_SAMPLE, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    bool isLeader = (_localRankId == 0);
-
-    //data._comm = _teamComm;
 
     std::vector<double> sampleVector;
     for (size_t i = 0; i < _k->N; i++) sampleVector.push_back(sample[i]);
 
-    double fitness = _k->_problem->evaluateFitness(sampleVector, sampleId);
+    _k->_problem->runModel(sampleVector, sampleId);
 
-    if (isLeader) MPI_Send(&fitness, 1, MPI_DOUBLE, getRootRank(), MPI_TAG_FITNESS, MPI_COMM_WORLD);
+    bool isLeader = (_localRankId == 0);
+    if (isLeader)
+    {
+     double fitness = _k->_problem->evaluateFitness();
+     MPI_Send(&fitness, 1, MPI_DOUBLE, getRootRank(), MPI_TAG_FITNESS, MPI_COMM_WORLD);
+    }
 
-    MPI_Barrier(_teamComm);
+    MPI_Barrier(__KoraliTeamComm);
    }
  }
  #endif

@@ -31,9 +31,8 @@ class Base {
  size_t& getSampleId() { return _self->_sampleId; }
 
  #ifdef _KORALI_USE_MPI
- MPI_Comm _comm;
- MPI_Comm getComm() { return _self->_comm; }
- long int getCommPointer() { return (long int)(&_self->_comm); }
+ MPI_Comm getComm() { return __KoraliTeamComm; }
+ long int getCommPointer() { return (long int)(&__KoraliTeamComm); }
  #endif
 };
 

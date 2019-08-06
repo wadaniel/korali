@@ -6,7 +6,7 @@ pushd ../../tutorials/
 
 logEcho "[Korali] Beginning plotting tests"                                   
 
-for dir in ./a*/_result_*/
+for dir in ./a*/_korali_*/
 do                                                                              
   logEcho "-------------------------------------"
   logEcho " Plotting results from $dir ..."
@@ -14,9 +14,6 @@ do
   python3 -m korali.plotter --test --dir "${dir}" >> $logFile 2>&1
   check_result
                      
-  python3 -m korali.plotter --test --all --gen 1000 --dir "${dir}" >> $logFile 2>&1
-  check_result
-  
 done 
 
 popd

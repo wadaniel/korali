@@ -11,9 +11,11 @@
 namespace Korali { namespace Conduit {
 
 class External : public Base {
+
+ private:
+
  public:
 
- int _concurrentJobs;
  std::vector<std::vector<int>> _pipeDescriptors;
  std::queue<int> _launcherQueue;
 

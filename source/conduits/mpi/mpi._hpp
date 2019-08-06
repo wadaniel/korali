@@ -14,6 +14,9 @@ namespace Korali { namespace Conduit {
 
 class MPI : public Base
 {
+
+ private:
+
  public:
 
  #ifdef _KORALI_USE_MPI

@@ -10,6 +10,8 @@ namespace Korali { namespace Conduit {
 
 class Simple : public Base
 {
+ private:
+
  public:
 
  void initialize() override;

@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 
-# In this example, we demonstrate how Korali samples the posterior
-# distribution in a bayesian problem where the likelihood
-# is provided directly by the computational model.
-# In this case, we use the TMCMC method.
-
 # Importing computational model
 import sys
 sys.path.append('./model')
@@ -32,5 +27,7 @@ k["Solver"]["Covariance Scaling"] = 0.001
 k.setDirectModel(model)
 
 # Running Korali
+k["General"]["Random Seed"] = 0xC0FFEE
 k["General"]["Results Output"]["Path"] = "_result_run-tmcmc"
+
 k.run()

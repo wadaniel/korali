@@ -26,5 +26,6 @@ k["Solver"]["Termination Criteria"]["Max Chain Length"] = 5000
 k.setDirectModel(model)
 
 # Running Korali
+k["General"]["Random Seed"] = 0xC0FFEE
 k["General"]["Results Output"]["Path"] = "_result_run-mcmc"
 k.run()

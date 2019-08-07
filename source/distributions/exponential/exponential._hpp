@@ -5,7 +5,7 @@
 
 namespace Korali { namespace Distribution {
 
-class Exponential : public Base {
+class Exponential : public Korali::Distribution::Base {
 
  private:
 

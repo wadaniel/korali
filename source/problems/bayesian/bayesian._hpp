@@ -7,7 +7,7 @@
 
 namespace Korali { namespace Problem {
 
-class Bayesian : public Base
+class Bayesian : public Korali::Problem::Base
 {
  private:
 

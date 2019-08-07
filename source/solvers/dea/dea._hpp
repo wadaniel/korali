@@ -9,7 +9,7 @@
 
 namespace Korali { namespace Solver {
 
-class DEA : public Base
+class DEA : public Korali::Solver::Base
 {
  private:
 

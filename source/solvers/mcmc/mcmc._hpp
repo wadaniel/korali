@@ -8,7 +8,7 @@
 
 namespace Korali { namespace Solver {
 
-class MCMC : public Base
+class MCMC : public Korali::Solver::Base
 {
  private: 
 

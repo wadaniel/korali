@@ -5,29 +5,29 @@
 
 namespace Korali { namespace Distribution {
 
-class LogNormal : public Base {
+class LogNormal : public Korali::Distribution::Base {
 
   private:
 
   public:
 
-    void updateConditionals(const std::vector<double>& sample) override;
-    void updateDistribution() override;
+  void updateConditionals(const std::vector<double>& sample) override;
+  void updateDistribution() override;
 
-    void setProperty(std::string propertyName, double value) override;
-    double getDensity(double x) override;
-    double getLogDensity(double x) override;
-    double getRandomNumber() override;
+  void setProperty(std::string propertyName, double value) override;
+  double getDensity(double x) override;
+  double getLogDensity(double x) override;
+  double getRandomNumber() override;
 
-    void setPropertyVector(std::string propertyName, std::vector<double> values) override;
-    void getDensityVector(double *x, double* result, size_t n) override;
-    void getLogDensityVector(double *x, double* result, size_t n) override;
-    void getRandomVector(double *x, size_t n) override;
+  void setPropertyVector(std::string propertyName, std::vector<double> values) override;
+  void getDensityVector(double *x, double* result, size_t n) override;
+  void getLogDensityVector(double *x, double* result, size_t n) override;
+  void getRandomVector(double *x, size_t n) override;
 
-    void initialize() override;
-    void finalize() override;
-    void setConfiguration(nlohmann::json& js) override;
-    void getConfiguration(nlohmann::json& js) override;
+  void initialize() override;
+  void finalize() override;
+  void setConfiguration(nlohmann::json& js) override;
+  void getConfiguration(nlohmann::json& js) override;
 };
 
 } } // namespace Korali::Distribution

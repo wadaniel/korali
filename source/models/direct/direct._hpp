@@ -5,7 +5,7 @@
 
 namespace Korali { namespace Model {
 
-class Direct : public Base
+class Direct : public Korali::Model::Base
 {
   private:
 

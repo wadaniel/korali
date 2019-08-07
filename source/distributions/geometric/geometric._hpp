@@ -5,7 +5,7 @@
 
 namespace Korali { namespace Distribution {
 
-class Geometric : public Base {
+class Geometric : public Korali::Distribution::Base {
 
  private:
 

@@ -6,7 +6,7 @@
 
 namespace Korali { namespace Model {
 
-class Likelihood : public Base
+class Likelihood : public Korali::Model::Base
 {
   private:
 

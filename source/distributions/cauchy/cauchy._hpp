@@ -5,7 +5,7 @@
 
 namespace Korali { namespace Distribution {
 
-class Cauchy : public Base {
+class Cauchy : public Korali::Distribution::Base {
 
  private:
 

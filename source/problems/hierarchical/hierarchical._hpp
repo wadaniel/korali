@@ -5,7 +5,7 @@
 
 namespace Korali { namespace Problem {
 
-class Hierarchical : public Base
+class Hierarchical : public Korali::Problem::Base
 {
  private:
 

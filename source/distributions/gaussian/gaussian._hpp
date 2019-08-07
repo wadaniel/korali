@@ -5,7 +5,7 @@
 
 namespace Korali { namespace Distribution {
 
-class Gaussian : public Base {
+class Gaussian : public Korali::Distribution::Base {
 
  private:
 

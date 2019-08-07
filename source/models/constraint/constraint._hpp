@@ -5,7 +5,7 @@
 
 namespace Korali { namespace Model {
 
-class Constraint : public Base
+class Constraint : public Korali::Model::Base
 {
   private:
 

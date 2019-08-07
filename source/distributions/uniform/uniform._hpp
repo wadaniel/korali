@@ -5,7 +5,7 @@
 
 namespace Korali { namespace Distribution {
 
-class Uniform : public Base {
+class Uniform : public Korali::Distribution::Base {
 
  private:
 

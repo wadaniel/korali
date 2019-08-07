@@ -7,7 +7,7 @@
 
 namespace Korali { namespace Solver {
 
-class TMCMC : public Base
+class TMCMC : public Korali::Solver::Base
 {
  private:
 

@@ -6,7 +6,7 @@
 
 namespace Korali { namespace Problem {
 
-class Sampling : public Base
+class Sampling : public Korali::Problem::Base
 {
  private:
 

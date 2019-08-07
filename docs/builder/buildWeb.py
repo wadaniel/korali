@@ -6,6 +6,7 @@ import sys
 
 koraliDir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)) + '/../..') 
 
+from buildDistributions import *
 from buildProblems import *
 from buildSolvers import *
 from buildModels import *
@@ -14,6 +15,9 @@ from buildConduits import *
 from buildTutorials import *
 
 with open(koraliDir + '/docs/docs/manual._md', 'r') as file: manualString = file.read()
+
+# Processing Distributions
+buildDistributions(koraliDir)
 
 # Processing Problems
 problemListString = buildProblems(koraliDir)

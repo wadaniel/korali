@@ -121,10 +121,11 @@ def buildVariables(koraliDir):
  newHeaderString = variableHeaderString.replace('public:', 'public: \n' + variableSettingDeclarationsString + '\n')
  print('[Korali] Creating: ' + variableNewHeaderFile + '...')
  with open(variableNewHeaderFile, 'w') as file: file.write(newHeaderString)
- 
- variableNewCodeFile = koraliDir + '/variable/variable.cpp'
- print('[Korali] Creating: ' + variableNewCodeFile + '...')
- with open(variableNewCodeFile, 'w') as file: file.write(variableCodeString)
+
+ variableNewCodeFile = koraliDir + '/variable/variable.cpp' 
+ if (not os.path.exists(variableNewCodeFile)):
+  print('[Korali] Creating: ' + variableNewCodeFile + '...')
+  with open(variableNewCodeFile, 'w') as file: file.write(variableCodeString)
  
  
  

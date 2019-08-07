@@ -145,18 +145,31 @@ def buildDistributions(koraliDir):
   
   ###### Creating code file
   
-  with open(distributionPath + '/' + distributionName + '._cpp', 'r') as file: distributionBaseCodeString = file.read()
-  distributionBaseCodeString += '\n\n' + distributionCodeString
-  distributionBaseCodeString = distributionBaseCodeString.replace(' // Check for conditional properties', conditionalCheckString)
+  distributionBaseFileName = distributionPath + '/' + distributionName + '._cpp'
   distributionNewCodeFile = distributionPath + '/' + distributionName + '.cpp'
-  print('[Korali] Creating: ' + distributionNewCodeFile + '...')
-  with open(distributionNewCodeFile, 'w') as file: file.write(distributionBaseCodeString)
+  baseFileTime = os.path.getmtime(distributionBaseFileName)
+  newFileTime = baseFileTime
+  if (os.path.exists(distributionNewCodeFile)): newFileTime = os.path.getmtime(distributionNewCodeFile)
+  
+  if (baseFileTime > newFileTime):
+    with open(distributionBaseFileName, 'r') as file: distributionBaseCodeString = file.read()
+    distributionBaseCodeString += '\n\n' + distributionCodeString
+    print('[Korali] Creating: ' + distributionNewCodeFile + '...')
+    with open(distributionNewCodeFile, 'w') as file: file.write(distributionBaseCodeString)
  
  ###### Creating base configuration file
- with open(curdir + '/base._cpp', 'r') as file: distributionBaseCodeString = file.read()
- newBaseString = distributionBaseCodeString.replace(' // Distribution list', distributionCreationList) 
- with open(curdir + '/base.cpp', 'w+') as file: file.write(newBaseString)
  
+ distributionBaseFileName = curdir + '/base._cpp'
+ distributionNewCodeFile = curdir + '/base.cpp'
+ baseFileTime = os.path.getmtime(distributionBaseFileName)
+ newFileTime = baseFileTime
+ if (os.path.exists(distributionNewCodeFile)): newFileTime = os.path.getmtime(distributionNewCodeFile)
+  
+ if (baseFileTime > newFileTime):
+   with open(distributionBaseFileName, 'r') as file: distributionBaseCodeString = file.read()
+   newBaseString = distributionBaseCodeString.replace(' // Distribution list', distributionCreationList) 
+   with open(distributionNewCodeFile, 'w') as file: file.write(newBaseString)
+   
  ###### Creating base header file
  with open(curdir + '/base._hpp', 'r') as file: distributionBaseHeaderString = file.read()
  newBaseString = distributionBaseHeaderString

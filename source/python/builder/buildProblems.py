@@ -66,8 +66,15 @@ def buildProblems(koraliDir):
   problemCodeString += '} \n\n'
   
   ###### Creating code file
-  with open(problemPath + '/' + problemName + '._cpp', 'r') as file: problemBaseCodeString = file.read()
-  problemBaseCodeString += '\n\n' + problemCodeString
+  
+  problemBaseFileName = problemPath + '/' + problemName + '._cpp'
   problemNewCodeFile = problemPath + '/' + problemName + '.cpp'
-  print('[Korali] Creating: ' + problemNewCodeFile + '...')
-  with open(problemNewCodeFile, 'w') as file: file.write(problemBaseCodeString)
+  baseFileTime = os.path.getmtime(problemBaseFileName)
+  newFileTime = baseFileTime
+  if (os.path.exists(problemNewCodeFile)): newFileTime = os.path.getmtime(problemNewCodeFile)
+  
+  if (baseFileTime > newFileTime):
+    with open(problemBaseFileName, 'r') as file: problemBaseCodeString = file.read()
+    problemBaseCodeString += '\n\n' + problemCodeString
+    print('[Korali] Creating: ' + problemNewCodeFile + '...')
+    with open(problemNewCodeFile, 'w') as file: file.write(problemBaseCodeString)

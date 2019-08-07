@@ -57,8 +57,15 @@ def buildConduits(koraliDir):
   conduitCodeString += '} \n\n'
   
   ###### Creating code file
-  with open(conduitPath + '/' + conduitName + '._cpp', 'r') as file: conduitBaseCodeString = file.read()
-  conduitBaseCodeString += '\n\n' + conduitCodeString
+  
+  conduitBaseFileName = conduitPath + '/' + conduitName + '._cpp'
   conduitNewCodeFile = conduitPath + '/' + conduitName + '.cpp'
-  print('[Korali] Creating: ' + conduitNewCodeFile + '...')
-  with open(conduitNewCodeFile, 'w') as file: file.write(conduitBaseCodeString)
+  baseFileTime = os.path.getmtime(conduitBaseFileName)
+  newFileTime = baseFileTime
+  if (os.path.exists(conduitNewCodeFile)): newFileTime = os.path.getmtime(conduitNewCodeFile)
+  
+  if (baseFileTime > newFileTime):
+    with open(conduitBaseFileName, 'r') as file: conduitBaseCodeString = file.read()
+    conduitBaseCodeString += '\n\n' + conduitCodeString
+    print('[Korali] Creating: ' + conduitNewCodeFile + '...')
+    with open(conduitNewCodeFile, 'w') as file: file.write(conduitBaseCodeString)

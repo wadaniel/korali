@@ -70,7 +70,7 @@ Below is a complete list of conduits currently implemented in Korali:
 
 Next, the user needs to specify the computational model(s) that will evaluate the problem. Korali will run the model many times, given a *sample* -- a vector of stochastically-generated values for each variable defined in Step 1 --.
 
-Each problem type have their specific model requirements. Nevertheless, below is a complete list of model-types currently implemented in Korali:
+Each problem type have their specific model requirements. Nevertheless, below is a complete list of model-types currently implemented in Korali and their syntax:
 
 <!--- Models go here --->
 

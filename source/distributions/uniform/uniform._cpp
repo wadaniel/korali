@@ -3,7 +3,7 @@
 void Korali::Distribution::Uniform::initialize()
 {
  _minimum = 0.0;
- _maximum = 1.0;
+ _maximum = 2.0;
 
  Korali::Distribution::Base::initialize();
  bool hasConditionals = false;
@@ -25,6 +25,7 @@ double Korali::Distribution::Uniform::getDensity(double x)
 
 double Korali::Distribution::Uniform::getLogDensity(double x)
 {
+  printf("oooooooo>>> %lf   %lf   %lf",x,_minimum,_maximum);
  if (x >= _minimum && x <= _maximum) return _aux; return -INFINITY;
 }
 

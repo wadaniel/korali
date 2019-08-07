@@ -44,7 +44,7 @@ kH["Variables"][0]["Prior Distribution"]["Maximum"] = 320.0
 kH["Variables"][1]["Name"] = "Psi 2"
 kH["Variables"][1]["Prior Distribution"]["Type"] = "Uniform"
 kH["Variables"][1]["Prior Distribution"]["Minimum"] = 1e-2
-kH["Variables"][1]["Prior Distribution"]["Maximum"] = 1.0
+kH["Variables"][1]["Prior Distribution"]["Maximum"] = 10.0
 
 kH["Variables"][2]["Name"] = "Psi 3"
 kH["Variables"][2]["Prior Distribution"]["Type"] = "Uniform"
@@ -73,4 +73,4 @@ kH["Solver"]["Termination Criteria"]["Max Generations"] = 500
 
 kH["General"]["Console Output"]["Verbosity"] = "Detailed"
 
-kH.dry()
+kH.run()

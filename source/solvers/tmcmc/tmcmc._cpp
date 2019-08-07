@@ -85,7 +85,7 @@ void Korali::Solver::TMCMC::initialize()
  _selectionAcceptanceRate = 1.0;
  _acceptedSamplesCount    = _populationSize;
  _chainCount              = _populationSize;
- 
+
  // Initializing Runtime Variables
  for (size_t c = 0; c < _populationSize; c++) _currentChainStep[c] = 0;
  for (size_t c = 0; c < _populationSize; c++) _chainLengths[c] = 1 + _currentBurnIn;
@@ -132,7 +132,7 @@ void Korali::Solver::TMCMC::processSample(size_t sampleId, double fitness)
 {
  if(std::isfinite(fitness) == false)
  {
-  koraliWarning(KORALI_DETAILED, "Sample %zu returned non finite model evaluation %e.\n", sampleId, fitness);
+  // koraliWarning(KORALI_DETAILED, "Sample %zu returned non finite model evaluation %e.\n", sampleId, fitness);
   fitness = std::numeric_limits<double>::lowest();
  }
 
@@ -158,10 +158,10 @@ void Korali::Solver::TMCMC::evaluateSample(size_t c)
 {
   std::vector<double> _logTransformedSample(_k->N);
 
-  for(size_t d = 0; d<_k->N; ++d) 
+  for(size_t d = 0; d<_k->N; ++d)
     if (_k->_variables[d]->_isLogSpace == true)
         _logTransformedSample[d] = std::exp(_chainCandidateParameters[c*_k->N+d]);
-    else 
+    else
         _logTransformedSample[d] = _chainCandidateParameters[c*_k->N+d];
 
   _k->_conduit->evaluateSample(_logTransformedSample.data(), c);
@@ -236,7 +236,7 @@ void Korali::Solver::TMCMC::processGeneration()
 
     /* Sample candidate selections based on database entries */
 	gsl_ran_multinomial(range, _databaseEntryCount, _populationSize, q.data(), numselections.data());
-	
+
     /* Update mean and covariance */
     for (size_t i = 0; i < _k->N; i++)
 	{
@@ -256,8 +256,8 @@ void Korali::Solver::TMCMC::processGeneration()
 
     /* Init new chains */
     std::fill(std::begin(_chainLengths), std::end(_chainLengths), 0);
-    
-    size_t leaderChainLen; 
+
+    size_t leaderChainLen;
     size_t zeroCount = 0;
 	size_t leaderId = 0;
 	for (size_t i = 0; i < _databaseEntryCount; i++) {
@@ -265,15 +265,15 @@ void Korali::Solver::TMCMC::processGeneration()
 	 while (numselections[i] != 0) {
 		 for (size_t j = 0; j < _k->N ; j++) _chainLeaderParameters[leaderId*_k->N + j] = _sampleParametersDatabase[i*_k->N + j];
 		 _chainLeadersLogLikelihoods[leaderId] = _sampleFitnessDatabase[i];
-         
+
          if (numselections[i] > _maxChainLength) leaderChainLen = _maxChainLength;
          else leaderChainLen = numselections[i];
 		 _chainLengths[leaderId] = leaderChainLen + _currentBurnIn;
          numselections[i] -= leaderChainLen;
 		 leaderId++;
 	 }
-	}	
-    
+	}
+
     /* Update acceptance statistics */
     size_t uniqueSelections  = _databaseEntryCount - zeroCount;
 	_proposalsAcceptanceRate = (1.0*_acceptedSamplesCount)/_populationSize;
@@ -382,7 +382,7 @@ double Korali::Solver::TMCMC::tmcmc_objlogp(double x, const double *fj, size_t f
 
  double mean_q = gsl_stats_mean(q.data(), 1, fn);
  double std_q  = gsl_stats_sd_m(q.data(), 1, fn, mean_q);
- double cov2   = (std_q/mean_q-zero); 
+ double cov2   = (std_q/mean_q-zero);
  cov2 *= cov2;
 
  return cov2;

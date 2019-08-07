@@ -89,7 +89,7 @@ double Korali::Problem::Hierarchical::evaluateFitness()
         prior1 = 0.0;
         for( size_t k = 0; k < _conditionalPriors.size(); k++ ){
           double xxx = _conditionalPriors[k]->getLogDensity(_subProblemSampleCoordinates[i][j*_subProblemVariablesCount + k]);
-          // printf("---------->  %le  --- %le\n", _subProblemSampleCoordinates[i][j*_subProblemVariablesCount + k] , xxx);
+          printf("---------->  %lf  --- %lf\n", _subProblemSampleCoordinates[i][j*_subProblemVariablesCount + k] , xxx);
           prior1 += xxx;
         }
 
@@ -97,7 +97,7 @@ double Korali::Problem::Hierarchical::evaluateFitness()
         // logFitness += _subProblemSampleLogLikelihoods[i][j];
         prior2 = _subProblemSampleLogPriors[i][j];
 
-        // printf("--->  %lf  ---  %lf\n",prior1,prior2);
+        printf("--->  %lf  ---  %lf\n",prior1,prior2);
 
         tmp = exp(prior2-prior1);
 

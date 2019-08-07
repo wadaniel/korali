@@ -24,6 +24,9 @@ jobs:
       - restore_cache:
           keys:
             - korali-dependencies-linux
+
+      - restore_cache:
+          keys:
             - web-dependencies-linux
 
       - run:

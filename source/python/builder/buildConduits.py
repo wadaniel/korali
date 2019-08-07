@@ -64,7 +64,7 @@ def buildConduits(koraliDir):
   newFileTime = baseFileTime
   if (os.path.exists(conduitNewCodeFile)): newFileTime = os.path.getmtime(conduitNewCodeFile)
   
-  if (baseFileTime > newFileTime):
+  if (baseFileTime >= newFileTime):
     with open(conduitBaseFileName, 'r') as file: conduitBaseCodeString = file.read()
     conduitBaseCodeString += '\n\n' + conduitCodeString
     print('[Korali] Creating: ' + conduitNewCodeFile + '...')

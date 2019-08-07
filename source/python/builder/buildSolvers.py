@@ -100,7 +100,7 @@ def buildSolvers(koraliDir):
   newFileTime = baseFileTime
   if (os.path.exists(solverNewCodeFile)): newFileTime = os.path.getmtime(solverNewCodeFile)
   
-  if (baseFileTime > newFileTime):
+  if (baseFileTime >= newFileTime):
     with open(solverBaseFileName, 'r') as file: solverBaseCodeString = file.read()
     solverBaseCodeString += '\n\n' + solverCodeString
     print('[Korali] Creating: ' + solverNewCodeFile + '...')

@@ -165,7 +165,7 @@ def buildDistributions(koraliDir):
  newFileTime = baseFileTime
  if (os.path.exists(distributionNewCodeFile)): newFileTime = os.path.getmtime(distributionNewCodeFile)
   
- if (baseFileTime > newFileTime):
+ if (baseFileTime >= newFileTime):
    with open(distributionBaseFileName, 'r') as file: distributionBaseCodeString = file.read()
    newBaseString = distributionBaseCodeString.replace(' // Distribution list', distributionCreationList) 
    with open(distributionNewCodeFile, 'w') as file: file.write(newBaseString)

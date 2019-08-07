@@ -52,13 +52,6 @@ void Korali::Solver::MCMC::runGeneration()
 
 void Korali::Solver::MCMC::initialize()
 {
- // Checking for accepted problem types
- bool acceptableProblem = false;
- if (_k->_problemType == "Sampling")  acceptableProblem = true;
- if (_k->_problemType == "Bayesian Inference")  acceptableProblem = true;
- if (_k->_problemType == "Hierarchical Bayesian")  acceptableProblem = true;
- if (acceptableProblem == false) koraliError("MCMC cannot solve problems of type: '%s'.\n", _k->_problemType.c_str());
-
  // Allocating MCMC memory
  _choleskyDecompositionCovariance.resize(_k->N*_k->N);
  std::fill(std::begin(_choleskyDecompositionCovariance), std::end(_choleskyDecompositionCovariance), 0.0);

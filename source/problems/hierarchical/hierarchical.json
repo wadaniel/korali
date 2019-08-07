@@ -2,6 +2,7 @@
  "Name":  "Hierarchical Bayesian Modeling",
  "Alias": "Hierarchical Bayesian",
  "Class": "Hierarchical",
+ "Compatible Solvers": [ "CMAES", "DEA", "MCMC", "TMCMC" ],
 
  "Problem Configuration":
  [

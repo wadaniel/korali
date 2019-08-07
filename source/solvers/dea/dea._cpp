@@ -32,12 +32,6 @@ DEA::~DEA()
 
 void DEA::initialize()
 {
- // Checking for accepted problem types
-  bool acceptableProblem = false;
-  if (_k->_problemType == "Optimization")  acceptableProblem = true;
-  if (_k->_problemType == "Bayesian Inference")  acceptableProblem = true;
-  if (acceptableProblem == false) koraliError("DEA cannot solve problems of type: '%s'.\n", _k->_problemType.c_str());
-
  // Allocating Memory
  _samplePopulation.resize(_k->N*_sampleCount);
  _sampleCandidates.resize(_k->N*_sampleCount);

@@ -21,6 +21,7 @@ def buildProblems(koraliDir):
   ####### Producing problem.hpp
   
   # Producing private variable declarations
+  
   problemHeaderString = ''
   
   for v in problemConfig["Problem Configuration"]:
@@ -42,6 +43,12 @@ def buildProblems(koraliDir):
   ###### Producing problem.cpp
   
   problemCodeString = 'void Korali::Problem::' + problemConfig["Class"] + '::setConfiguration() \n{\n'
+ 
+  # Checking whether solver is accepted
+  problemCodeString += ' bool __acceptedSolver = false;\n'
+  for v in problemConfig["Compatible Solvers"]:
+   problemCodeString += ' if (_k->_solverType == "' + v + '") __acceptedSolver = true;\n'
+  problemCodeString += ' if (__acceptedSolver == false) koraliError("Selected solver %s not compatible with problem type ' + problemConfig["Name"] + '", _k->_solverType.c_str()); \n\n' 
  
   # Consume Problem Settings
   for v in problemConfig["Problem Configuration"]:

@@ -32,12 +32,6 @@ CMAES::~CMAES()
 
 void CMAES::initialize()
 {
- // Checking for accepted problem types
- bool acceptableProblem = false;
- if (_k->_problemType == "Optimization")  acceptableProblem = true;
- if (_k->_problemType == "Bayesian Inference")  acceptableProblem = true;
- if (acceptableProblem == false) koraliError("CMAES cannot solve problems of type: '%s'.\n", _k->_problemType.c_str());
-
  size_t s_max  = std::max(_sampleCount,  _viabilitySampleCount);
  size_t mu_max = std::max(_muValue, _viabilityMu);
 

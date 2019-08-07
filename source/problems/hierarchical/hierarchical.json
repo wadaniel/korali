@@ -1,9 +1,9 @@
 {
- "Name": "Hierarchical Bayesian Modeling",
+ "Name":  "Hierarchical Bayesian Modeling",
  "Alias": "Hierarchical Bayesian",
  "Class": "Hierarchical",
- 
- "Problem Configuration": 
+
+ "Problem Configuration":
  [
    {
     "Name": [ "Model" ],
@@ -21,8 +21,8 @@
     "Description": "Eh..."
    }
  ],
- 
- "Variables Configuration": 
+
+ "Variables Configuration":
  [
    {
     "Name": [ "Prior Distribution" ],
@@ -30,8 +30,8 @@
     "Description": "Eh..."
    }
  ],
- 
- "Internal Settings": 
+
+ "Internal Settings":
  [
   {
    "Name": [ "Sub Problem Count" ],

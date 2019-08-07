@@ -4,16 +4,16 @@ source ../functions.sh
 
 pushd ../../tutorials/
 
-logEcho "[Korali] Beginning plotting tests"                                   
+logEcho "[Korali] Beginning plotting tests"
 
 for dir in ./a*/_korali_*/
-do                                                                              
+do
   logEcho "-------------------------------------"
   logEcho " Plotting results from $dir ..."
   logEcho "-------------------------------------"
   python3 -m korali.plotter --test --dir "${dir}" >> $logFile 2>&1
   check_result
-                     
-done 
+
+done
 
 popd

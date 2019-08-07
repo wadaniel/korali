@@ -12,6 +12,7 @@
 #include "distributions/multivariate/multivariate.hpp"
 #include "distributions/laplace/laplace.hpp"
 #include "distributions/uniform/uniform.hpp"
+#include "distributions/lognormal/lognormal.hpp"
 
 #include "problems/optimization/optimization.hpp"
 #include "problems/sampling/sampling.hpp"

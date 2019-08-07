@@ -2,13 +2,13 @@
 import sys
 import os
 import shutil
-sys.path.append('model')
+sys.path.append('../setup/model')
 from model import *
 import korali
 
 i = int(sys.argv[1])
-dataPath    = "data/"
-resultsPath = "../data/" + str(i).zfill(3)
+dataPath    = "../setup/data/"
+resultsPath = "../setup/results_phase_1/" + str(i).zfill(3)
 if os.path.exists(resultsPath):  shutil.rmtree(resultsPath)
 if not os.path.exists(resultsPath): os.makedirs(resultsPath)
 
@@ -40,14 +40,14 @@ k["Variables"][3]["Prior Distribution"]["Type"] = "Uniform"
 k["Variables"][3]["Prior Distribution"]["Minimum"] = 0.0
 k["Variables"][3]["Prior Distribution"]["Maximum"] = 30.0
 
-k["Solver"]["Type"] = "TMCMC" 
-k["Solver"]["Population Size"] = 50
+k["Solver"]["Type"] = "TMCMC"
+k["Solver"]["Population Size"] = 1000
 k["Solver"]["Target Coefficient Of Variation"] = 0.6
 k["Solver"]["Covariance Scaling"] = 0.1
 k["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
 k["General"]["Results Output"]["Path"] = resultsPath
-k["General"]["Console Output"]["Verbosity"] = "Silent"
+k["General"]["Console Output"]["Verbosity"] = "Detailed"
 
 x = getReferencePoints(dataPath,i);
 k.setModel( lambda d: logistic( x, d) )

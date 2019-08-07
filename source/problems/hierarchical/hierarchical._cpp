@@ -76,29 +76,47 @@ double Korali::Problem::Hierarchical::evaluateFitness(Korali::Model& data)
    _conditionalPriors[i]->updateConditionals(data.getVariables());
 
  double logFitness = 0.0;
+ double prior1, prior2;
 
- if (_model == "Sample Psi")
- {
-  for (size_t i = 0; i < _subProblemCount; i++)
-  for (size_t j = 0; j < _subProblemSampleLogLikelihoods[i].size(); j++)
+  if( _model == "Sample Psi" )
   {
-   // Starting with sample's logLikelihood and logPriors.
-   // These are hyperparameters-invariants so perhaps could be taken out of loop eventually.
+    for( size_t i = 0; i < _subProblemCount; i++ )
+    {
+      double localSum = 0.0;
+      double tmp;
+      for (size_t j = 0; j < _subProblemSampleLogLikelihoods[i].size(); j++)
+      {
+        // Calculating each conditional prior's logDensity for each subproblem's sample, given hyperparameters.
+        prior1 = 0.0;
+        for( size_t k = 0; k < _conditionalPriors.size(); k++ ){
+          double xxx = _conditionalPriors[k]->getLogDensity(_subProblemSampleCoordinates[i][j*_subProblemVariablesCount + k]);
+          // printf("---------->  %le  --- %le\n", _subProblemSampleCoordinates[i][j*_subProblemVariablesCount + k] , xxx);
+          prior1 += xxx;
+        }
 
-   logFitness += _subProblemSampleLogLikelihoods[i][j];
+        // These are hyperparameters-invariants so perhaps could be taken out of loop eventually.
+        // logFitness += _subProblemSampleLogLikelihoods[i][j];
+        prior2 = _subProblemSampleLogPriors[i][j];
 
-   logFitness += _subProblemSampleLogPriors[i][j];
+        // printf("--->  %lf  ---  %lf\n",prior1,prior2);
 
-   // Calculating each conditional prior's logDensity for each subproblem's sample, given hyperparameters.
-   for (size_t k = 0; k < _conditionalPriors.size(); k++)
-    logFitness += _conditionalPriors[k]->getLogDensity(_subProblemSampleCoordinates[i][j*_subProblemVariablesCount + k]);
+        tmp = exp(prior2-prior1);
+
+        if( std::isfinite(exp(prior2)) == false )
+          koraliError("Non finite prior has been detected in the denominator of the Hierarchical likelihood. (%lf)\n", exp(prior2) );
+
+        localSum += tmp;
+      }
+      printf("--->  %le\n", log(localSum));
+      // if( ~isfinite(localSum) ) koraliError("Non finite term has been detected in the Hierarchical likelihood.\n");
+      logFitness += log(localSum);
+    }
   }
- }
 
- if (_model == "Sample Theta")
- {
-  // I don't know who this one works
- }
+  if (_model == "Sample Theta")
+  {
+    // I don't know who this one works
+  }
 
  return logFitness;
 }

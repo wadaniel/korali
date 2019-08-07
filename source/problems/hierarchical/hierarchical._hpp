@@ -7,19 +7,18 @@ namespace Korali { namespace Problem {
 
 class Hierarchical : public Base
 {
- private:
+  private:
+    std::vector<nlohmann::json> _subProblemsJson;
+    std::vector<std::vector<double>> tmptmp;
 
- std::vector<nlohmann::json> _subProblemsJson;
-
- public:
-
- void packVariables(double* sample, Korali::Model& data) override;
- double evaluateFitness(Korali::Model& data) override;
- double evaluateLogPrior(double* sample) override;
- void initialize() override;
- void finalize() override;
- void getConfiguration() override;
- void setConfiguration() override;
+  public:
+    void packVariables(double* sample, Korali::Model& data) override;
+    double evaluateFitness(Korali::Model& data) override;
+    double evaluateLogPrior(double* sample) override;
+    void initialize() override;
+    void finalize() override;
+    void getConfiguration() override;
+    void setConfiguration() override;
 };
 
 } } // namespace Korali::Problem

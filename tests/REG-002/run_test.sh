@@ -27,6 +27,12 @@ for dir in ./*
 do
   logEcho "-------------------------------------"
   logEcho " Entering Tutorial: $dir"
+  
+  if [ ! -d "$dir/cxx" ]; then
+    echo "  + No folder named 'cxx' found inside $dir"
+    continue
+  fi
+  
 
   pushd $dir/cxx >> $logFile 2>&1
 

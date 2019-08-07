@@ -58,7 +58,7 @@ def buildSolvers(koraliDir):
 
    ####### Adding model list entry
    
-   solverListString += '+ [' + solverConfig["Name"] + '](manual/solvers/' + solverName + ')\n'
+   solverListString += '+ [' + solverConfig["Name"] + '](/manual/solvers/' + solverName + '.md)\n'
    
  ###### Returning problem list
  

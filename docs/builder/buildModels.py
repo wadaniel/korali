@@ -32,7 +32,7 @@ def buildModels(koraliDir):
 
    ####### Adding model list entry
    
-   modelListString += '+ [' + modelName.capitalize() + ' Model](/manual/models/' + modelName + ')\n'
+   modelListString += '+ [' + modelName.capitalize() + ' Model](/manual/models/' + modelName + '.md)\n'
    
  ###### Returning Model list
  

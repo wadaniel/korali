@@ -9,7 +9,9 @@
 
 PYBIND11_MODULE(libkorali, m)
 {
-  m.def("getKoraliMPIComm", &getKoraliMPICommPointer);
+  #ifdef _KORALI_USE_MPI
+   m.def("getKoraliMPIComm", &getKoraliMPICommPointer);
+  #endif
 
   pybind11::class_<Korali::Model::Likelihood>(m, "LikelihoodModel")
     .def("getVariable",     &Korali::Model::Likelihood::getVariable, pybind11::return_value_policy::reference)

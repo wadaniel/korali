@@ -11,7 +11,8 @@ function check()
 
 # Copying website to falcon (gateway)
 echo $FALCON_FINGERPRINT >> ~/.ssh/known_hosts
-scp -r site/* circleci@falcon.ethz.ch:websites/korali
+tar -zcvf site.tar.gz site
+scp -r site.tar.gz circleci@falcon.ethz.ch:websites/korali
 check
 
 # Copying from falcon to vladimirovich (host)

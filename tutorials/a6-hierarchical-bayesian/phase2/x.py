@@ -71,6 +71,6 @@ kH["Solver"]["Type"] = "TMCMC"
 kH["Solver"]["Population Size"] = 5000
 kH["Solver"]["Termination Criteria"]["Max Generations"] = 500
 
-kH["Verbosity"] = "Detailed"
+kH["General"]["Console Output"]["Verbosity"] = "Detailed"
 
 kH.dry()

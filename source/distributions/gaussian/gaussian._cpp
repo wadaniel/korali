@@ -2,6 +2,9 @@
 
 void Korali::Distribution::Gaussian::initialize()
 {
+ _mean = 0.0;
+ _standardDeviation = 1.0;
+
  Korali::Distribution::Base::initialize();
  bool hasConditionals = false;
 
@@ -51,7 +54,7 @@ void Korali::Distribution::Gaussian::getLogDensityVector(double *x, double* resu
 
 void Korali::Distribution::Gaussian::updateDistribution()
 {
- if (_standardDeviation <= 0.0)  koraliError("Incorrect Standard Deviation parameter of Gaussian distribution: %f.\n", _standardDeviation);
+ if (_standardDeviation <= 0.0)  koraliError("Incorrect Standard Deviation parameter of Gaussian distribution: %e.\n", _standardDeviation);
 
  _aux = -0.5*gsl_sf_log(2*M_PI) - gsl_sf_log(_standardDeviation);
 }

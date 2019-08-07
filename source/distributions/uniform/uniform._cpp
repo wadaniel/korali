@@ -2,6 +2,9 @@
 
 void Korali::Distribution::Uniform::initialize()
 {
+ _minimum = 0.0;
+ _maximum = 1.0;
+
  Korali::Distribution::Base::initialize();
  bool hasConditionals = false;
 

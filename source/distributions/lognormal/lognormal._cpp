@@ -2,6 +2,9 @@
 
 void Korali::Distribution::LogNormal::initialize()
 {
+ _mu = 1.0;
+ _sigma = 1.0;
+
   Korali::Distribution::Base::initialize();
   bool hasConditionals = false;
 

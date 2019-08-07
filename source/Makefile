@@ -17,7 +17,7 @@ SOURCES = $(shell find . -name "*.cpp")
 OBJECTS = $(SOURCES:.cpp=.o)
 
 %.o: %.cpp
-	$(CXX) $(CFLAGS) -fPIC -c $< -o $@ -D_KORALI_USE_PYTHON
+	$(CXX) $(CFLAGS) -fPIC -c $< -o $@
 
 libkorali.so: $(OBJECTS)
 	$(CXX) $^ -o $@ $(LDFLAGS)

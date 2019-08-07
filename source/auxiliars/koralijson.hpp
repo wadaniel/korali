@@ -1,5 +1,5 @@
-#ifndef _KORALI_AUXILIAR_HPP_
-#define _KORALI_AUXILIAR_HPP_
+#ifndef _KORALI_AUXILIARS_KORALIJSON_HPP_
+#define _KORALI_AUXILIARS_KORALIJSON_HPP_
 
 #include "auxiliars/json.hpp"
 #include <stdlib.h>
@@ -9,24 +9,13 @@
 #include <vector>
 #include <iostream>
 
-#ifdef _KORALI_USE_MPI
-#include "mpi.h"
-extern MPI_Comm __KoraliTeamComm;
-#endif
-
 namespace Korali
 {
 
 #pragma GCC diagnostic ignored "-Wunused-function"
 
-enum verbosity { KORALI_UNDEFINED = -1, KORALI_SILENT = 0, KORALI_MINIMAL = 1, KORALI_NORMAL = 2, KORALI_DETAILED = 3 };
 enum jsonType { KORALI_STRING, KORALI_NUMBER, KORALI_ARRAY, KORALI_BOOLEAN};
-extern verbosity _korali_verbosity;
 
-void koraliLogData(const verbosity level, const char* format, ... );
-void koraliLog(const verbosity level, const char* format, ... );
-void koraliWarning(const verbosity level, const char* format, ... );
-void koraliError(const char* format, ... );
 std::vector<std::string> getJsonPath(std::string path);
 bool isEmpty(nlohmann::json& js);
 void eraseValue(nlohmann::json& js, std::string path);
@@ -89,4 +78,4 @@ class KoraliJsonWrapper
 };
 
 }
-#endif // _KORALI_AUXILIAR_HPP
+#endif // _KORALI_AUXILIARS_KORALIJSON_HPP_

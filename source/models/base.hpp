@@ -1,11 +1,7 @@
 #ifndef _KORALI_MODEL_BASE_HPP_
 #define _KORALI_MODEL_BASE_HPP_
 
-#include "auxiliars/auxiliar.hpp"
-
-#ifdef _KORALI_USE_MPI
-#include "mpi.h"
-#endif
+#include "auxiliars/logger.hpp"
 
 namespace Korali { namespace Model {
 
@@ -30,10 +26,6 @@ class Base {
 
  size_t& getSampleId() { return _self->_sampleId; }
 
- #ifdef _KORALI_USE_MPI
- MPI_Comm getComm() { return __KoraliTeamComm; }
- long int getCommPointer() { return (long int)(&__KoraliTeamComm); }
- #endif
 };
 
 } } // namespace Korali::Solver

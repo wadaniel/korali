@@ -7,7 +7,9 @@ using namespace Korali::Conduit;
 #define MPI_TAG_FITNESS 1
 #define MPI_TAG_SAMPLE 2
 #define MPI_TAG_ID 3
-
+MPI_Comm __KoraliTeamComm;
+MPI_Comm getKoraliMPIComm() { return __KoraliTeamComm; }
+long int getKoraliMPICommPointer() { return (long int)(&__KoraliTeamComm); }
 #endif
 
 Korali::Conduit::MPI::MPI()

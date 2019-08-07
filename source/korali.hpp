@@ -34,12 +34,10 @@
 
 #include "variable/variable.hpp"
 
-#include "auxiliars/auxiliar.hpp"
-
-#ifdef _KORALI_USE_PYTHON
- #undef _POSIX_C_SOURCE
- #undef _XOPEN_SOURCE
-#endif
+#include "auxiliars/json.hpp"
+#include "auxiliars/koralijson.hpp"
+#include "auxiliars/logger.hpp"
+#include "auxiliars/python.hpp"
 
 namespace Korali
 {

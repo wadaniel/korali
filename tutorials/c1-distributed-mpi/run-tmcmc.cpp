@@ -6,6 +6,8 @@ int main(int argc, char* argv[])
  MPI_Init(&argc, &argv);
  auto k = Korali::Engine();
 
+ if (argc != 2) { printf("Error: this example requires 'Ranks Per Team' passed as argument.\n"); exit(-1); }
+
  k["Problem"]["Type"] = "Bayesian Inference";
  k["Problem"]["Likelihood"]["Model"] = "Additive Gaussian";
  k["Problem"]["Likelihood"]["Reference Data"] = getReferenceData();
@@ -61,7 +63,7 @@ int main(int argc, char* argv[])
  k["Conduit"]["Ranks Per Team"] = atoi(argv[1]);
 
  k.setReferenceModel([](Korali::Model::Reference& d)
-   { jacobi(getPointData(), d.getVariables(), d.getEvaluations(), d.getComm()); });
+   { jacobi(getPointData(), d.getVariables(), d.getEvaluations(), getKoraliMPIComm()); });
 
  k.run();
 

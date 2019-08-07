@@ -1,7 +1,7 @@
 #ifndef _KORALI_MODEL_BASE_HPP_
 #define _KORALI_MODEL_BASE_HPP_
 
-#include "auxiliar.hpp"
+#include "auxiliars/auxiliar.hpp"
 
 #ifdef _KORALI_USE_MPI
 #include "mpi.h"

@@ -33,7 +33,8 @@
 #include "models/reference/reference.hpp"
 
 #include "variable/variable.hpp"
-#include "auxiliar.hpp"
+
+#include "auxiliars/auxiliar.hpp"
 
 #ifdef _KORALI_USE_PYTHON
  #undef _POSIX_C_SOURCE

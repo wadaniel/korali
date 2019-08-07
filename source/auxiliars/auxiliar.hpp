@@ -1,7 +1,7 @@
 #ifndef _KORALI_AUXILIAR_HPP_
 #define _KORALI_AUXILIAR_HPP_
 
-#include "json.hpp"
+#include "auxiliars/json.hpp"
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>

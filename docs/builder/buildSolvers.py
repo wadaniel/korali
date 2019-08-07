@@ -11,6 +11,9 @@ def buildSolvers(koraliDir):
  outputDir = koraliDir + '/docs/docs/manual/solvers/'
  if (not os.path.isdir(outputDir)): os.makedirs(outputDir)
  
+ # Creating solver list string
+ solverListString = ''
+ 
  # Detecting Solvers
  solverPaths  = os.listdir(solversDir)
  for solverPath in solverPaths:
@@ -53,19 +56,10 @@ def buildSolvers(koraliDir):
    print('[Korali] Creating ' + mdFileName + '...')    
    with open(mdFileName, 'w+') as file: file.write(solverDocString)
 
- ###### Loading solvers web page
-
- with open(solversDir + '/README.md', 'r') as file: solverWebString = file.read()
+   ####### Adding model list entry
    
- ###### Creating Solver Lists
+   solverListString += '+ [' + solverConfig["Name"] + '](' + mdFileName + ')\n'
+   
+ ###### Returning problem list
  
- #for category in listRowsStringDict:
- # solverListString = ''
- # for row in listRowsStringDict[category]:  solverListString += row
- # solverWebString = solverWebString.replace('<!--- Solvers ' + category + ' List --->', solverListString)
-  
- ###### Saving solvers web page
- 
- webFileName = koraliDir + '/docs/docs/manual/solvers.md'
- print('[Korali] Creating ' + webFileName + '...')  
- with open(webFileName, 'w+') as file: file.write(solverWebString)
+ return solverListString

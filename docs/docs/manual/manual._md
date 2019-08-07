@@ -17,26 +17,6 @@ A Korali application encapsulates the configuration necessary to run the Korali 
 
 ### Step 1) Define Problem
 
-The first step of building a Korali application is to indicate which problem to be solved. For example: 
-
-  ```python
-   k["Problem"]["Type"] = "Sampling";
-  ```
-
-For a complete list of Korali-supported problems, **[click here](/usage/problems.md)**.
-
-### Step 2) Define Solver
-
-The Solver module generates samples for evaluation, performs the statistical analysis, and outputs the results for the problem described in the Korali application. For example: 
-
-  ```python
-   k["Solver"]["Type"] = "TMCMC";
-  ```
-
-For a complete list of Korali-supported solvers, **[click here](/usage/solvers.md)**.
-
-###Step 3) Define Variables
-
 A Korali Problem describes the sampling space of the physical or real-world phenomenon to analyze. The number of variables defined by the user represents a dimension of the problem. Variables are created by simply adding their name to the problem configuration:
 
 ```python
@@ -45,24 +25,56 @@ k["Variables"][0]["Name"] = "Thermal Conductivity"
 k["Variables"][1]["Name"] = "Heat Source Position"
 ```
 
-Variable definitions require additional parameters depending on which problem and solver types have been selected. The syntax for specifying these parameters is explained in each solver/problem page.
+Variable definitions require additional parameters depending on which problem and solver types have been selected. These parameters are explained in detail at each solver/problem page.
 
-### Step 4) Define Conduit
+Then, we need to tell Korali what information we would like to know about the problem. We call this 'Problem Type'. 
 
-The evaluation conduit module executes the computational model(s) for a given sample and returns their raw results back to the solver. The choice of conduit depends on the design and requirements of the computational model. For example:
+For example, the following type will sample the probability distribution of the variables: 
+
+  ```python
+   k["Problem"]["Type"] = "Sampling";
+  ```
+
+Below is a complete list of Korali-supported problem types:
+
+<!--- Problems go here --->
+
+### Step 2) Define Solver
+
+The next step is to choose which solver algorithm should be used to obtain the results required by the problem. We call this 'Solver Type'. 
+
+For example, the following solver will obtain the probability distribution using the TMCMC method: 
+
+  ```python
+   k["Solver"]["Type"] = "TMCMC";
+  ```
+
+Below is a complete list of solvers currently implemented in Korali:
+
+<!--- Solvers go here --->
+
+### Step 3) Define Conduit
+
+The evaluation conduit module executes the computational model(s) for each sample and returns their raw results back to the solver. 
+
+The choice of conduit depends on the design and requirements of the computational model. The simple (default) conduit is one that evaluates samples sequentially:
 
 	```python
-	 k["Conduit"] = "External";
+	 k["Conduit"]["Type"] = "Simple";
 	```
-For a complete list of Korali-supported conduits, **[click here](/usage/conduits.md)**.
+Below is a complete list of conduits currently implemented in Korali:
 
-### Step 5) Define Model(s)
+<!--- Conduits go here --->
 
-During execution, the Korali engine will evaluate many *samples*. A Korali sample is a vector containing a particular set of values for all (computational and statistical) variables defined in the problem. Korali will stochastically produce new samples to be evaluated by a user-provided computational model.
+### Step 4) Define Model(s)
 
-For a complete list of Korali-supported models and their syntax, **[click here](/usage/models.md)**.
+Next, the user needs to specify the computational model(s) that will evaluate the problem. Korali will run the model many times, given a *sample* -- a vector of stochastically-generated values for each variable defined in Step 1 --.
 
-## Defining General Settings
+Each problem type have their specific model requirements. Nevertheless, below is a complete list of model-types currently implemented in Korali:
+
+<!--- Models go here --->
+
+### Step 5) General Settings
 
 The runtime Korali application can be easily configured by accessing the instance of the korali Engine. Here is a list of general settings that apply to any Korali app:
 
@@ -70,29 +82,27 @@ The runtime Korali application can be easily configured by accessing the instanc
       k["General"]["Verbosity"] = "Silent" # Do not produce console output.
   ```
   
-For a complete list of Korali's general settings, **[click here](/usage/general.md)**.
+Below is a complete list of general settings currently implemented in Korali:
 
-## Running a Korali Application
+<!--- General Settings go here --->
+
+### Step 6) Running your Korali Application
 
 A Python/C++ application can be run just like any other application, through a shell command:
 
 ```bash
 > ./myApp myArguments
 ```
-
-For distributed jobs, you can launch your Korali application with the SLURM/MPI/UPC++ launcher, specifying the number of cores, for example:
+For distributed jobs, you can launch your Korali application with the SLURM/MPI launcher, specifying the number of cores, for example:
 
 ```bash
 > srun -n 16 ./myApp myArguments
 > mpirun -n 16 ./myApp myArguments
-> upcxx-run -n 16 ./myApp myArguments
 ```
-
-## Processing Results
 
 Once the Korali engine has started running, it will execute non-preemptively until a termination criterion is met. Each solver method exposes a configurable set of termination criteria.
 
-After execution, Korali will automatically create a results folder ```_korali_result``` where it will save the entire state of the engine (i.e., a *checkpoint*) after each generation. Users can perform several operations on these results:
+After execution, Korali will automatically create a results folder where it will save the entire state of the engine (i.e., a *checkpoint*) after each generation. Users can perform several operations on these results:
 
 - [Accessing Results](../results/#accessing-results)
 - [Generate Plots](../results/#generate-plots)

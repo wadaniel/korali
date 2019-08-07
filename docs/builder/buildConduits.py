@@ -11,6 +11,9 @@ def buildConduits(koraliDir):
  outputDir = koraliDir + '/docs/docs/manual/conduits/'
  if (not os.path.isdir(outputDir)): os.makedirs(outputDir)
  
+ # Creating conduit list string
+ conduitListString = ''
+ 
  # Detecting Conduits
  conduitPaths  = os.listdir(conduitsDir)
  for conduitPath in conduitPaths:
@@ -41,19 +44,10 @@ def buildConduits(koraliDir):
    print('[Korali] Creating ' + mdFileName + '...')    
    with open(mdFileName, 'w+') as file: file.write(conduitDocString)
 
- ###### Loading conduits web page
-
- with open(conduitsDir + '/README.md', 'r') as file: conduitWebString = file.read()
+   ####### Adding model list entry
    
- ###### Creating Conduit Lists
+   conduitListString += '+ [' + conduitConfig["Name"] + '](' + mdFileName + ')\n'
+   
+ ###### Returning problem list
  
- #for category in listRowsStringDict:
- # conduitListString = ''
- # for row in listRowsStringDict[category]:  conduitListString += row
- # conduitWebString = conduitWebString.replace('<!--- Conduits ' + category + ' List --->', conduitListString)
-  
- ###### Saving conduits web page
- 
- webFileName = koraliDir + '/docs/docs/manual/conduits.md'
- print('[Korali] Creating ' + webFileName + '...')  
- with open(webFileName, 'w+') as file: file.write(conduitWebString)
+ return conduitListString

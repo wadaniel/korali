@@ -11,6 +11,9 @@ def buildModels(koraliDir):
  outputDir = koraliDir + '/docs/docs/manual/models/'
  if (not os.path.isdir(outputDir)): os.makedirs(outputDir)
  
+ # Creating model list string
+ modelListString = ''
+ 
  # Detecting Models
  modelPaths  = os.listdir(modelsDir)
  for modelPath in modelPaths:
@@ -27,12 +30,10 @@ def buildModels(koraliDir):
    print('[Korali] Creating ' + mdFileName + '...')    
    with open(mdFileName, 'w+') as file: file.write(modelDocString)
 
- ###### Loading models web page
-
- with open(modelsDir + '/README.md', 'r') as file: modelWebString = file.read()
-  
- ###### Saving models web page
+   ####### Adding model list entry
+   
+   modelListString += '+ [' + modelName + '](' + mdFileName + ')\n'
+   
+ ###### Returning Model list
  
- webFileName = koraliDir + '/docs/docs/manual/models.md'
- print('[Korali] Creating ' + webFileName + '...')  
- with open(webFileName, 'w+') as file: file.write(modelWebString)
+ return modelListString

@@ -11,6 +11,9 @@ def buildProblems(koraliDir):
  outputDir = koraliDir + '/docs/docs/manual/problems/'
  if (not os.path.isdir(outputDir)): os.makedirs(outputDir)
  
+ # Creating problem list string
+ problemListString = ''
+ 
  # Detecting Problems
  problemPaths  = os.listdir(problemsDir)
  for problemPath in problemPaths:
@@ -47,19 +50,11 @@ def buildProblems(koraliDir):
    print('[Korali] Creating ' + mdFileName + '...')    
    with open(mdFileName, 'w+') as file: file.write(problemDocString)
 
- ###### Loading problems web page
-
- with open(problemsDir + '/README.md', 'r') as file: problemWebString = file.read()
+   ####### Adding model list entry
    
- ###### Creating Problem Lists
+   problemListString += '+ [' + problemConfig["Name"] + '](' + mdFileName + ')\n'
+   
+ ###### Returning problem list
  
- #for category in listRowsStringDict:
- # problemListString = ''
- # for row in listRowsStringDict[category]:  problemListString += row
- # problemWebString = problemWebString.replace('<!--- Problems ' + category + ' List --->', problemListString)
-  
- ###### Saving problems web page
- 
- webFileName = koraliDir + '/docs/docs/manual/problems.md'
- print('[Korali] Creating ' + webFileName + '...')  
- with open(webFileName, 'w+') as file: file.write(problemWebString)
+ return problemListString
+

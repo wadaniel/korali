@@ -10,7 +10,7 @@ def logistic( X, s ):
   for x in X:
     f = math.exp(th3*x)
     y = ( th1*th2*f )/( th1 + th2*(f-1) )
-    s.addResult(y)
+    s.addReferenceEvaluation(y)
 
 
 def getReferenceData( path, i ):

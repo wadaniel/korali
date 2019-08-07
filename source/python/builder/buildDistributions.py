@@ -151,7 +151,7 @@ def buildDistributions(koraliDir):
   newFileTime = baseFileTime
   if (os.path.exists(distributionNewCodeFile)): newFileTime = os.path.getmtime(distributionNewCodeFile)
   
-  if (baseFileTime > newFileTime):
+  if (baseFileTime >= newFileTime):
     with open(distributionBaseFileName, 'r') as file: distributionBaseCodeString = file.read()
     distributionBaseCodeString += '\n\n' + distributionCodeString
     print('[Korali] Creating: ' + distributionNewCodeFile + '...')

@@ -52,7 +52,7 @@ def buildProblems(koraliDir):
 
    ####### Adding model list entry
    
-   problemListString += '+ [' + problemConfig["Name"] + '](problems/' + problemName + '.md)\n'
+   problemListString += '+ [' + problemConfig["Name"] + '](problems/' + problemName + ')\n'
    
  ###### Returning problem list
  

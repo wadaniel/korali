@@ -46,7 +46,7 @@ def buildConduits(koraliDir):
 
    ####### Adding model list entry
    
-   conduitListString += '+ [' + conduitConfig["Name"] + '](conduits/' + conduitName + '.md)\n'
+   conduitListString += '+ [' + conduitConfig["Name"] + '](conduits/' + conduitName + ')\n'
    
  ###### Returning problem list
  

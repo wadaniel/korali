@@ -46,7 +46,7 @@ def buildDistributions(koraliDir):
 
    ####### Adding model list entry
    
-   distributionListString += '+ [' + distributionConfig["Name"] + '](distributions/' + distributionName + ')\n'
+   distributionListString += '\t+ [' + distributionConfig["Name"] + '](../distributions/' + distributionName + ')\n'
    
  ###### Saving distribution list
 

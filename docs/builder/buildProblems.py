@@ -30,9 +30,14 @@ def buildProblems(koraliDir):
    ####### Producing problem page
  
    problemDocFile = problemPath + '/' + problemName + '.md'
-   with open(problemDocFile, 'r') as file: problemDocString = file.read()
+   with open(problemDocFile, 'r') as file: problemDocStringFile = file.read()
    
-   problemDocString = '# ' + problemConfig["Name"] + '\n\n' + problemDocString 
+   problemDocString = '# ' + problemConfig["Name"] + '\n\n'
+   problemDocString += '### Compatible Solvers: \n'
+   for v in problemConfig["Compatible Solvers"]:
+    problemDocString += '+ ' + v + '\n\n' 
+   
+   problemDocString += problemDocStringFile 
    
    problemSettingsString = '### Problem Settings\n\n'
    if (not problemConfig["Problem Configuration"]): problemSettingsString += '*none*'

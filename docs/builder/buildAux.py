@@ -26,7 +26,7 @@ def getVariableInfo(v, moduleName):
  
  if ('Korali::Distribution' in v["Type"]):
   with open('distributionList.txt', 'r') as file: distributionListString = file.read()
-  varString += '\tAvailable Distributions: \n'
+  varString += '\t**Available Distributions**: \n'
   varString += distributionListString
   return varString
   

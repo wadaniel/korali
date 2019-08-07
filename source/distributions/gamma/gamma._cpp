@@ -1,10 +1,13 @@
 #include "korali.hpp"
 
-void Korali::Distribution::Gamma::initialize()
+Korali::Distribution::Gamma::Gamma()
 {
  _shape = 1.0;
  _scale = 1.0;
+}
 
+void Korali::Distribution::Gamma::initialize()
+{
  Korali::Distribution::Base::initialize();
  bool hasConditionals = false;
 

@@ -11,6 +11,8 @@ class Exponential : public Base {
 
  public:
 
+ Exponential();
+
  void updateConditionals(const std::vector<double>& sample) override;
  void updateDistribution() override;
 

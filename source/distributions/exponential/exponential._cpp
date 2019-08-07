@@ -1,9 +1,12 @@
 #include "korali.hpp"
 
-void Korali::Distribution::Exponential::initialize()
+Korali::Distribution::Exponential::Exponential()
 {
  _mean = 1.0;
+}
 
+void Korali::Distribution::Exponential::initialize()
+{
  Korali::Distribution::Base::initialize();
  bool hasConditionals = false;
 

@@ -1,9 +1,13 @@
 #include "korali.hpp"
 
+Korali::Distribution::Laplace::Laplace()
+{
+ _mean = 0.0;
+ _width = 1.0;
+}
+
 void Korali::Distribution::Laplace::initialize()
 {
- _width = 1.0;
-
  Korali::Distribution::Base::initialize();
  bool hasConditionals = false;
 

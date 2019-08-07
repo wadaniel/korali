@@ -1,10 +1,13 @@
 #include "korali.hpp"
 
-void Korali::Distribution::Gaussian::initialize()
+Korali::Distribution::Gaussian::Gaussian()
 {
  _mean = 0.0;
  _standardDeviation = 1.0;
+}
 
+void Korali::Distribution::Gaussian::initialize()
+{
  Korali::Distribution::Base::initialize();
  bool hasConditionals = false;
 

@@ -11,6 +11,8 @@ class Geometric : public Base {
 
  public:
 
+ Geometric();
+
  void updateConditionals(const std::vector<double>& sample) override;
  void updateDistribution() override;
 

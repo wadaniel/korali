@@ -11,6 +11,8 @@ class Gaussian : public Base {
 
  public:
 
+ Gaussian();
+
  void updateConditionals(const std::vector<double>& sample) override;
  void updateDistribution() override;
 

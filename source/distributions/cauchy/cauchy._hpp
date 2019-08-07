@@ -11,6 +11,8 @@ class Cauchy : public Base {
 
  public:
 
+ Cauchy();
+
  void updateConditionals(const std::vector<double>& sample) override;
  void updateDistribution() override;
 

@@ -2,6 +2,7 @@
 #define _KORALI_PROBLEM_OPTIMIZATION_HPP_
 
 #include "problems/base.hpp"
+#include "models/direct/direct.hpp"
 
 namespace Korali { namespace Problem {
 
@@ -9,14 +10,17 @@ class Optimization : public Base
 {
  private:
 
+ Korali::Model::Direct  _directModelData;
 
  public:
 
- void packVariables(double* sample, Korali::Model& data) override;
- double evaluateFitness(Korali::Model& data) override;
+ void runModel(std::vector<double>, size_t sampleId) override;
+ double evaluateFitness() override;
  double evaluateLogPrior(double* sample) override;
+
  void initialize() override;
  void finalize() override;
+
  void getConfiguration() override;
  void setConfiguration() override;
 };

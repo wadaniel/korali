@@ -7,7 +7,7 @@ def buildSetup(koraliDir):
  print('[Korali] Building installation setup...')
  with open(koraliDir + '/setup._py', 'r') as file: setupString = file.read()
  
- installFiles = ['libkorali.so', 'libkorali.a']
+ installFiles = ['libkorali.so']
  
  for dirpath, subdirs, files in os.walk(koraliDir):
   for x in files:

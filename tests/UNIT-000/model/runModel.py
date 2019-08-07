@@ -4,8 +4,8 @@ import subprocess
 
 def runModel(x):
   argString = ['model/model.py']
-  for i in range(x.getVariableCount()):
-    argString.append(str(x.getVariable(i)))
+  v = x.getVariables()
+  for i in v: argString.append(str(i))
   retValue = subprocess.check_output(argString)
-  x.addResult(float(retValue.decode()))
+  x.setResult(float(retValue.decode()))
 

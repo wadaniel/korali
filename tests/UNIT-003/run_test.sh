@@ -1,28 +1,29 @@
 #!/bin/bash
 
-##############################################################################
-# Brief: Check Chain Mean and Chain Covariance in MCMC
-# Type: Unit Test
-# Description:
-# This test calculates the mean and standard deviation of the samples produced
-# and compares the values with the internal variables of MCMC. For this the
-# results from the tutorials are reused.
-################################################################################
-
-###### Auxiliar Functions and Variables #########
-
 source ../functions.sh
 
-############# STEP 1 ##############
+logEcho "[Korali] Running Checkpoint/Restart Test..."
 
-logEcho "[Korali] Beginning Unit Test 003"
+pushd ../../tutorials/b1-checkpoint-restart/
+dir=$PWD
+
+logEcho "-------------------------------------"
+logEcho " Entering Folder: $dir"
+
+log "[Korali] Removing any old result files..."
+rm -rf _korali_results >> $logFile 2>&1
+check_result
 
 for file in *.py
 do
-  logEcho "-------------------------------------"
-  logEcho " Running $file"
-  logEcho "-------------------------------------"
-  ./"$file" >> $logFile
+  if [ ! -f $file ]; then continue; fi
+
+  logEcho "  + Running File: $file"
+  ./$file >> $logFile 2>&1
   check_result
 done
+
+logEcho "-------------------------------------"
+
+popd
 

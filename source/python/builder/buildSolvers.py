@@ -93,8 +93,15 @@ def buildSolvers(koraliDir):
   solverCodeString += '}'
   
   ###### Creating code file
-  with open(solverPath + '/' + solverName + '._cpp', 'r') as file: solverBaseCodeString = file.read()
-  solverBaseCodeString += '\n\n' + solverCodeString
+  
+  solverBaseFileName = solverPath + '/' + solverName + '._cpp'
   solverNewCodeFile = solverPath + '/' + solverName + '.cpp'
-  print('[Korali] Creating: ' + solverNewCodeFile + '...')
-  with open(solverNewCodeFile, 'w') as file: file.write(solverBaseCodeString)
+  baseFileTime = os.path.getmtime(solverBaseFileName)
+  newFileTime = baseFileTime
+  if (os.path.exists(solverNewCodeFile)): newFileTime = os.path.getmtime(solverNewCodeFile)
+  
+  if (baseFileTime >= newFileTime):
+    with open(solverBaseFileName, 'r') as file: solverBaseCodeString = file.read()
+    solverBaseCodeString += '\n\n' + solverCodeString
+    print('[Korali] Creating: ' + solverNewCodeFile + '...')
+    with open(solverNewCodeFile, 'w') as file: file.write(solverBaseCodeString)

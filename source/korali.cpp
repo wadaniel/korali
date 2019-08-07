@@ -13,13 +13,13 @@ Korali::Engine* Korali::_k;
 Korali::Engine::Engine()
 {
  _runId        = 0;
- _modelDefined = false;
  _consoleOutputFrequency = 1;
  _resultsOutputFrequency = 1;
  _isFinished = false;
  _solver = nullptr;
  _problem = nullptr;
  _conduit = nullptr;
+ _modelType = "Unassigned";
  _hasComputedGeneration = false;
 }
 
@@ -159,13 +159,25 @@ void Korali::Engine::setConfiguration()
 /*                    Functional Methods                                */
 /************************************************************************/
 
-void Korali::Engine::setModel(std::function<void(Korali::Model&)> model)
+void Korali::Engine::setDirectModel(std::function<void(Korali::Model::Direct&)> model)
 {
- _model = model;
- _modelDefined = true;
+ _modelType = "Direct";
+ _directModel = model;
 }
 
-void Korali::Engine::addConstraint(std::function<void(Korali::Model&)> constraint)
+void Korali::Engine::setLikelihoodModel(std::function<void(Korali::Model::Likelihood&)> model)
+{
+ _modelType = "Likelihood";
+ _likelihoodModel = model;
+}
+
+void Korali::Engine::setReferenceModel(std::function<void(Korali::Model::Reference&)> model)
+{
+ _modelType = "Reference";
+ _referenceModel = model;
+}
+
+void Korali::Engine::addConstraint(std::function<void(Korali::Model::Constraint&)> constraint)
 {
  _constraints.push_back(constraint);
 }

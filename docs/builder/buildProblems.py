@@ -8,12 +8,12 @@ def buildProblems(koraliDir):
  problemsDir = koraliDir + '/source/problems'
  
  # Creating directory
- outputDir = koraliDir + '/docs/docs/usage/problems/'
+ outputDir = koraliDir + '/docs/docs/manual/problems/'
  if (not os.path.isdir(outputDir)): os.makedirs(outputDir)
  
- # Initializing Mkdocs entries string
- mkdocsEntriesString = ''
-  
+ # Creating problem list string
+ problemListString = ''
+ 
  # Detecting Problems
  problemPaths  = os.listdir(problemsDir)
  for problemPath in problemPaths:
@@ -26,9 +26,6 @@ def buildProblems(koraliDir):
    if (not os.path.isfile(problemJsonFile)): continue 
    with open(problemJsonFile, 'r') as file: problemJsonString = file.read()
    problemConfig = json.loads(problemJsonString)
-   
-   # Adding yaml entry
-   mkdocsEntriesString += '          - ' + problemConfig["Alias"] + ': usage/problems/' + problemName + '.md\n'
    
    ####### Producing problem page
  
@@ -49,23 +46,15 @@ def buildProblems(koraliDir):
      variableSettingsString += getVariableInfo(v, problemName)
    problemDocString = problemDocString.replace('### Variable-Specific Settings', variableSettingsString + '\n\n')
      
-   mdFileName = koraliDir + '/docs/docs/usage/problems/' + problemName + '.md'
+   mdFileName = koraliDir + '/docs/docs/manual/problems/' + problemName + '.md'
    print('[Korali] Creating ' + mdFileName + '...')    
    with open(mdFileName, 'w+') as file: file.write(problemDocString)
 
- ###### Loading problems web page
-
- with open(problemsDir + '/README.md', 'r') as file: problemWebString = file.read()
+   ####### Adding model list entry
    
- ###### Creating Problem Lists
+   problemListString += '+ [' + problemConfig["Name"] + '](problems/' + problemName + ')\n'
+   
+ ###### Returning problem list
  
- #for category in listRowsStringDict:
- # problemListString = ''
- # for row in listRowsStringDict[category]:  problemListString += row
- # problemWebString = problemWebString.replace('<!--- Problems ' + category + ' List --->', problemListString)
-  
- ###### Saving problems web page
- 
- webFileName = koraliDir + '/docs/docs/usage/problems.md'
- print('[Korali] Creating ' + webFileName + '...')  
- with open(webFileName, 'w+') as file: file.write(problemWebString)
+ return problemListString
+

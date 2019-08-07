@@ -12,7 +12,6 @@
 #     and rc = 0.
 ###############################################################################
 
-
 ###### Auxiliar Functions and Variables #########
 
 source ../functions.sh
@@ -26,15 +25,8 @@ logEcho "[Korali] Beginning tutorial tests..."
 for dir in ./a*/
 do
   logEcho "-------------------------------------"
-  logEcho " Entering Tutorial: $dir"
-
-  if [ ! -d "$dir/python" ]; then
-    echo "  + No folder named 'python' found inside $dir"
-    continue
-  fi
-
-  pushd $dir/python >> $logFile 2>&1
-
+  logEcho " Entering Folder: $dir"
+  pushd $dir >> $logFile 2>&1
 
   log "[Korali] Removing any old result files..."
   rm -rf _korali_results >> $logFile 2>&1
@@ -42,15 +34,11 @@ do
 
   for file in run-*.py
   do
-
     # In case there are no files matching the pattern 'run-*.py', break
     if [ ! -f "$file" ]; then
-      echo "  + No run*-.py file found!"
+      echo "  + No run-*.py file found!"
       continue
     fi
-
-
-    logEcho "  + Running File: ${file%.*}"
 
     logEcho "  + Running File: $file"
 

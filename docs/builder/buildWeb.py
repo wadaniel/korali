@@ -13,7 +13,7 @@ from buildTests import *
 from buildConduits import *
 from buildTutorials import *
 
-with open(koraliDir + '/docs/docs/manual/manual._md', 'r') as file: manualString = file.read()
+with open(koraliDir + '/docs/docs/manual._md', 'r') as file: manualString = file.read()
 
 # Processing Problems
 problemListString = buildProblems(koraliDir)
@@ -33,7 +33,7 @@ buildTutorials(koraliDir)
 # Processing Tests
 buildTests(koraliDir)
 
-newManualFileName = koraliDir + '/docs/docs/manual/manual.md'
+newManualFileName = koraliDir + '/docs/docs/manual.md'
 manualString = manualString.replace('<!--- Problems go here --->', problemListString)
 manualString = manualString.replace('<!--- Solvers go here --->', solverListString)
 manualString = manualString.replace('<!--- Conduits go here --->', conduitsListString)

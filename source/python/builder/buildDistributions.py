@@ -155,6 +155,7 @@ def buildDistributions(koraliDir):
   if (baseFileTime >= newFileTime):
     with open(distributionBaseFileName, 'r') as file: distributionBaseCodeString = file.read()
     distributionBaseCodeString += '\n\n' + distributionCodeString
+    distributionBaseCodeString = distributionBaseCodeString.replace('// Check for conditional properties', conditionalCheckString)
     print('[Korali] Creating: ' + distributionNewCodeFile + '...')
     with open(distributionNewCodeFile, 'w') as file: file.write(distributionBaseCodeString)
  

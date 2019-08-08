@@ -77,7 +77,7 @@ std::vector<std::string> Korali::getJsonPath(std::string path)
   curpos = path.find("'", curpos + 1);
  }
 
- if (positions.size() % 2 != 0) koraliError("Incorrect path description: %s\n", path.c_str());
+ if (positions.size() % 2 != 0) Korali::logError("Incorrect path description: %s\n", path.c_str());
 
  std::vector<std::string> settings;
 
@@ -143,16 +143,16 @@ nlohmann::json Korali::consume(nlohmann::json& js, std::vector<std::string> sett
   }
   else
   {
-   if (type == KORALI_STRING)  koraliError("Passing non-string value to string-type option: %s.\n", fullOption.c_str());
-   if (type == KORALI_NUMBER)  koraliError("Passing non-numeric value to numeric option: %s.\n", fullOption.c_str());
-   if (type == KORALI_ARRAY)   koraliError("Passing non-array value to array option: %s.\n", fullOption.c_str());
-   if (type == KORALI_BOOLEAN) koraliError("Passing non-boolean and non-numeric value to boolean option: %s.\n", fullOption.c_str());
+   if (type == KORALI_STRING)  Korali::logError("Passing non-string value to string-type option: %s.\n", fullOption.c_str());
+   if (type == KORALI_NUMBER)  Korali::logError("Passing non-numeric value to numeric option: %s.\n", fullOption.c_str());
+   if (type == KORALI_ARRAY)   Korali::logError("Passing non-array value to array option: %s.\n", fullOption.c_str());
+   if (type == KORALI_BOOLEAN) Korali::logError("Passing non-boolean and non-numeric value to boolean option: %s.\n", fullOption.c_str());
   }
  }
 
  if (type == KORALI_ARRAY) return nlohmann::json();
 
- if (hasDefault == false) koraliError("No value passed for non-default option: %s.\n", fullOption.c_str());
+ if (hasDefault == false) Korali::logError("No value passed for non-default option: %s.\n", fullOption.c_str());
 
  if (type == KORALI_STRING) def = "\"" + def + "\"";
  return nlohmann::json::parse(def);
@@ -180,7 +180,7 @@ nlohmann::json Korali::loadJsonFromFile(const char* fileName)
    free(string);
  }
  else
-  koraliError("Could not load file: %s.\n", fileName);
+  Korali::logError("Could not load file: %s.\n", fileName);
 
  return js;
 }
@@ -194,6 +194,6 @@ void Korali::saveJsonToFile(const char* fileName, nlohmann::json& js)
    fclose(fid);
  }
  else
-  koraliError("Could not write to file: %s.\n", fileName);
+  Korali::logError("Could not write to file: %s.\n", fileName);
 
 }

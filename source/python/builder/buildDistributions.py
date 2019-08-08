@@ -103,7 +103,7 @@ def buildDistributions(koraliDir):
   for v in distributionConfig["Conditional Variables"]: 
     distributionCodeString += ' if (propertyName == "' + v["Name"][-1] + '") { ' + getCXXVariableName(v) + ' = value; recognizedProperty = true; }\n'
   
-  distributionCodeString += ' if (recognizedProperty == false) koraliError("Unrecognized property: %s for the ' + distributionConfig["Alias"] + ' distribution", propertyName.c_str());\n'
+  distributionCodeString += ' if (recognizedProperty == false) Korali::logError("Unrecognized property: %s for the ' + distributionConfig["Alias"] + ' distribution", propertyName.c_str());\n'
   distributionCodeString += '} \n\n'
   
   ###### Creating Set multiple element property routine
@@ -116,7 +116,7 @@ def buildDistributions(koraliDir):
    if (getVariableType(v) == 'std::vector<double>'):
     distributionCodeString += ' if (propertyName == "' + v["Name"][-1] + '") { ' + getCXXVariableName(v) + ' = values; recognizedProperty = true; }\n'
   
-  distributionCodeString += ' if (recognizedProperty == false) koraliError("Unrecognized property: %s for the ' + distributionConfig["Alias"] + ' distribution", propertyName.c_str());\n'
+  distributionCodeString += ' if (recognizedProperty == false) Korali::logError("Unrecognized property: %s for the ' + distributionConfig["Alias"] + ' distribution", propertyName.c_str());\n'
   distributionCodeString += '} \n\n'
   
   ###### Creating Check for conditional properties
@@ -141,7 +141,7 @@ def buildDistributions(koraliDir):
 
   for v in distributionConfig["Conditional Variables"]: 
     conditionalCheckString += ' if ( !' + getCXXVariableName(v) + 'Conditional.empty() && ' + getCXXVariableName(v) + 'Recognized == false)\n'
-    conditionalCheckString += '  koraliError("Could not find a variable whose name coincides with reference %s made by conditional property: ' + v["Name"][-1] + '.\\n", ' + getCXXVariableName(v) + 'Conditional.c_str());\n'
+    conditionalCheckString += '  Korali::logError("Could not find a variable whose name coincides with reference %s made by conditional property: ' + v["Name"][-1] + '.\\n", ' + getCXXVariableName(v) + 'Conditional.c_str());\n'
   
   ###### Creating code file
   

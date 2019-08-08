@@ -50,8 +50,8 @@ void Korali::Distribution::Gamma::getLogDensityVector(double *x, double* result,
 
 void Korali::Distribution::Gamma::updateDistribution()
 {
- if (_shape <= 0.0)  koraliError("Incorrect Shape parameter of Gamma distribution: %f.\n", _shape);
- if (_scale <= 0.0)  koraliError("Incorrect Scale parameter of Gamma distribution: %f.\n", _scale);
+ if (_shape <= 0.0)  Korali::logError("Incorrect Shape parameter of Gamma distribution: %f.\n", _shape);
+ if (_scale <= 0.0)  Korali::logError("Incorrect Scale parameter of Gamma distribution: %f.\n", _scale);
 
  _aux = -gsl_sf_lngamma(_shape) - _shape*log(_scale);
 }

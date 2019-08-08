@@ -49,7 +49,7 @@ void Korali::Distribution::LogNormal::getLogDensityVector(double *x, double* res
 
 void Korali::Distribution::LogNormal::updateDistribution()
 {
-  if (_sigma <= 0.0)  koraliError("Incorrect Sigma parameter of LogNormal distribution: %f.\n", _sigma);
+  if (_sigma <= 0.0)  Korali::logError("Incorrect Sigma parameter of LogNormal distribution: %f.\n", _sigma);
 
   _aux = -0.5*gsl_sf_log(2*M_PI) - gsl_sf_log(_sigma);
 }

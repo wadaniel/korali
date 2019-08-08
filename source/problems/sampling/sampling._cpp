@@ -2,8 +2,8 @@
 
 void Korali::Problem::Sampling::initialize()
 {
- if (_k->_modelType != "Direct") koraliError("Sampling problems require defining a direct computational model. Used: %s\n", _k->_modelType.c_str());
- if (_k->_constraints.size() > 0) koraliError("Sampling problems do not allow constraint definitions.\n");
+ if (_k->_modelType != "Direct") Korali::logError("Sampling problems require defining a direct computational model. Used: %s\n", _k->_modelType.c_str());
+ if (_k->_constraints.size() > 0) Korali::logError("Sampling problems do not allow constraint definitions.\n");
 }
 
 void Korali::Problem::Sampling::finalize()

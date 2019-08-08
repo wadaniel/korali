@@ -5,7 +5,7 @@ using namespace Korali::Conduit;
 
 void External::initialize()
 {
- if (_concurrentJobs < 1) koraliError("You need to define at least 1 concurrent job(s) for external models \n");
+ if (_concurrentJobs < 1) Korali::logError("You need to define at least 1 concurrent job(s) for external models \n");
  for (int i = 0; i < _concurrentJobs; i++) _pipeDescriptors.push_back(std::vector<int>(2));
  for (int i = 0; i < _concurrentJobs; i++) _launcherQueue.push(i);
 }
@@ -21,7 +21,7 @@ void External::evaluateSample(double* sampleArray, size_t sampleId)
  int launcherId = _launcherQueue.front(); _launcherQueue.pop();
 
  // Opening Inter-process communicator pipes
- if (pipe(_pipeDescriptors[launcherId].data()) == -1) koraliError("Unable to create inter-process pipe. \n");
+ if (pipe(_pipeDescriptors[launcherId].data()) == -1) Korali::logError("Unable to create inter-process pipe. \n");
 
  pid_t processId = fork();
 

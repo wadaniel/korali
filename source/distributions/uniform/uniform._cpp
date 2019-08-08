@@ -50,7 +50,7 @@ void Korali::Distribution::Uniform::getLogDensityVector(double *x, double* resul
 
 void Korali::Distribution::Uniform::updateDistribution()
 {
- if (_maximum-_minimum <= 0.0)  koraliError("Maximum (%f) bound must be higher than Minimum (%f) bound in a Uniform distribution.\n", _maximum, _minimum);
+ if (_maximum-_minimum <= 0.0)  Korali::logError("Maximum (%f) bound must be higher than Minimum (%f) bound in a Uniform distribution.\n", _maximum, _minimum);
 
  _aux = -gsl_sf_log(_maximum-_minimum);
 }

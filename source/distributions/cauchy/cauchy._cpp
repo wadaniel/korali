@@ -50,7 +50,7 @@ void Korali::Distribution::Cauchy::getLogDensityVector(double *x, double* result
 
 void Korali::Distribution::Cauchy::updateDistribution()
 {
- if (_scale <= 0) koraliError("Incorrect Scale parameter of Cauchy distribution: %f.\n", _scale);
+ if (_scale <= 0) Korali::logError("Incorrect Scale parameter of Cauchy distribution: %f.\n", _scale);
 
   _aux = -gsl_sf_log( _scale * M_PI);
 }

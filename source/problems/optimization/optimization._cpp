@@ -2,7 +2,7 @@
 
 void Korali::Problem::Optimization::initialize()
 {
- if (_k->_modelType != "Direct") koraliError("Optimization problems require defining a direct computational model. Used: %s\n", _k->_modelType.c_str());
+ if (_k->_modelType != "Direct") Korali::logError("Optimization problems require defining a direct computational model. Used: %s\n", _k->_modelType.c_str());
 }
 
 void Korali::Problem::Optimization::finalize()

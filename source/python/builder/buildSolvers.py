@@ -85,7 +85,7 @@ def buildSolvers(koraliDir):
   for v in solverConfig["Termination Criteria"]: 
     solverCodeString += ' if (' + v["Criteria"] + ')\n'
     solverCodeString += ' {\n'
-    solverCodeString += '  koraliLog(KORALI_MINIMAL, "' + solverConfig["Alias"] + ' Termination Criteria met: \\"' + getVariablePath(v).replace('"', "'") + '\\" (' + getVariableDescriptor(v) + ').\\n", ' + getCXXVariableName(v)  +');\n'
+    solverCodeString += '  Korali::logInfo(KORALI_MINIMAL, "' + solverConfig["Alias"] + ' Termination Criteria met: \\"' + getVariablePath(v).replace('"', "'") + '\\" (' + getVariableDescriptor(v) + ').\\n", ' + getCXXVariableName(v)  +');\n'
     solverCodeString += '  hasFinished = true;\n'
     solverCodeString += ' }\n\n'
   

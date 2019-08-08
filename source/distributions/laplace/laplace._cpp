@@ -50,7 +50,7 @@ void Korali::Distribution::Laplace::getLogDensityVector(double *x, double* resul
 
 void Korali::Distribution::Laplace::updateDistribution()
 {
- if (_width <= 0.0)  koraliError("Incorrect Width parameter of Laplace distribution: %f.\n", _width);
+ if (_width <= 0.0)  Korali::logError("Incorrect Width parameter of Laplace distribution: %f.\n", _width);
 
  _aux = -gsl_sf_log(2.*_width);
 }

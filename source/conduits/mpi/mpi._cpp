@@ -30,13 +30,13 @@ Korali::Conduit::MPI::MPI()
 void Korali::Conduit::MPI::initialize()
 {
  #ifndef _KORALI_USE_MPI
-  koraliError("Running an MPI-based Korali application, but Korali was installed without support for MPI.\n");
+  Korali::logError("Running an MPI-based Korali application, but Korali was installed without support for MPI.\n");
  #endif
 
  #ifdef _KORALI_USE_MPI
  _continueEvaluations = true;
 
- if (_rankCount == 1) koraliError("Korali MPI applications require at least 2 MPI ranks to run.\n");
+ if (_rankCount == 1) Korali::logError("Korali MPI applications require at least 2 MPI ranks to run.\n");
 
  _teamCount = (_rankCount-1) / _ranksPerTeam;
  _teamId = -1;
@@ -68,7 +68,7 @@ void Korali::Conduit::MPI::initialize()
  MPI_Comm_size(MPI_COMM_WORLD, &mpiSize);
 
  if(isRoot()) if (_rankCount < _ranksPerTeam + 1)
- koraliError("You are running Korali with %d ranks. However, you need at least %d ranks to have at least one worker team. \n", _rankCount, _ranksPerTeam + 1 );
+ Korali::logError("You are running Korali with %d ranks. However, you need at least %d ranks to have at least one worker team. \n", _rankCount, _ranksPerTeam + 1 );
 
  MPI_Barrier(MPI_COMM_WORLD);
 

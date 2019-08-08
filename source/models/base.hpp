@@ -20,7 +20,7 @@ class Base {
  std::vector<double>& getVariables() { return _self->_variables; }
  double getVariable(size_t i)
  {
-  if (i >= _self->_variables.size()) koraliError("Requesting variable with index %lu, but problem has only %lu variables.\n", i, _self->_variables.size());
+  if (i >= _self->_variables.size()) Korali::logError("Requesting variable with index %lu, but problem has only %lu variables.\n", i, _self->_variables.size());
   return _self->_variables[i];
  }
 

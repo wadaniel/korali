@@ -3,9 +3,9 @@
 #include "logger.hpp"
 #include "korali.hpp"
 
-_korali_verbosity_levels_ _korali_verbosity;
+Korali::_korali_verbosity_levels_ Korali::_korali_verbosity;
 
-void koraliLogData(const _korali_verbosity_levels_ level, const char* format, ... )
+void Korali::logData(const _korali_verbosity_levels_ level, const char* format, ... )
 {
  if (Korali::_k->_conduit != nullptr) if(! Korali::_k->_conduit->isRoot()) return;
 
@@ -20,7 +20,7 @@ void koraliLogData(const _korali_verbosity_levels_ level, const char* format, ..
  free(outstr);
 }
 
-void koraliLog(const _korali_verbosity_levels_ level, const char* format, ... )
+void Korali::logInfo(const _korali_verbosity_levels_ level, const char* format, ... )
 {
  if (Korali::_k->_conduit != nullptr) if(! Korali::_k->_conduit->isRoot()) return;
 
@@ -38,7 +38,7 @@ void koraliLog(const _korali_verbosity_levels_ level, const char* format, ... )
  free(outstr);
 }
 
-void koraliWarning(const _korali_verbosity_levels_ level, const char* format, ... )
+void Korali::logWarning(const _korali_verbosity_levels_ level, const char* format, ... )
 {
  if (Korali::_k->_conduit != nullptr) if(! Korali::_k->_conduit->isRoot()) return;
 
@@ -55,7 +55,7 @@ void koraliWarning(const _korali_verbosity_levels_ level, const char* format, ..
  free(outstr);
 }
 
-void koraliError(const char* format, ... )
+void Korali::logError(const char* format, ... )
 {
  std::string newFormat = "[Korali] Error: ";
  newFormat += format;

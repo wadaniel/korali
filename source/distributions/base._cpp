@@ -21,13 +21,13 @@ Korali::Distribution::Base* Korali::Distribution::Base::getDistribution(nlohmann
   distributionType = js["Type"].get<std::string>();
    eraseValue(js, "['Type']");
  }
- else koraliError("No distribution type provided.\n");
+ else Korali::logError("No distribution type provided.\n");
 
  Korali::Distribution::Base* distribution = nullptr;
 
  // Distribution list
 
- if (distribution == nullptr) koraliError("Unrecognized distribution type provided: ['Type'] = %s.\n", distributionType.c_str());
+ if (distribution == nullptr) Korali::logError("Unrecognized distribution type provided: ['Type'] = %s.\n", distributionType.c_str());
 
  distribution->setConfiguration(js);
  distribution->initialize();

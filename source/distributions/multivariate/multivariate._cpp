@@ -17,26 +17,26 @@ void Korali::Distribution::Multivariate::finalize()
 
 double Korali::Distribution::Multivariate::getDensity(double x)
 {
- koraliError("(getDensity) Multivariate Gaussian distribution cannot calculate single value densities.\n");
+ Korali::logError("(getDensity) Multivariate Gaussian distribution cannot calculate single value densities.\n");
  return 0.0;
 }
 
 double Korali::Distribution::Multivariate::getLogDensity(double x)
 {
- koraliError("(getLogDensity) Multivariate Gaussian distribution cannot calculate single value log densities.\n");
+ Korali::logError("(getLogDensity) Multivariate Gaussian distribution cannot calculate single value log densities.\n");
  return 0.0;
 }
 
 double Korali::Distribution::Multivariate::getRandomNumber()
 {
- koraliError("(getRandomNumber) Multivariate Gaussian distribution does not produce single value random numbers.\n");
+ Korali::logError("(getRandomNumber) Multivariate Gaussian distribution does not produce single value random numbers.\n");
  return 0.0;
 }
 
 void Korali::Distribution::Multivariate::getDensityVector(double *x, double* result, size_t n)
 {
  if (_workVector.size() != n)
-  koraliError("Multivariate::getDensityVector Error - requested %lu densities, but distribution is configured with %lu.\n", n, _workVector.size());
+  Korali::logError("Multivariate::getDensityVector Error - requested %lu densities, but distribution is configured with %lu.\n", n, _workVector.size());
 
  gsl_vector_view _input_view = gsl_vector_view_array(x, n);
 
@@ -63,10 +63,10 @@ void Korali::Distribution::Multivariate::updateDistribution()
 
  size_t sideSize = sqrt(covarianceMatrixSize);
  if ((sideSize * sideSize) != covarianceMatrixSize)
-  koraliError("Size of Multivariate Gaussian covariance matrix size (%lu) is not a perfect square number.\n", covarianceMatrixSize);
+  Korali::logError("Size of Multivariate Gaussian covariance matrix size (%lu) is not a perfect square number.\n", covarianceMatrixSize);
 
  size_t meanSize = _meanVector.size();
- if (sideSize != meanSize) koraliError("Size of Multivariate Gaussian mean vector (%lu) is not the same as the side of covariance matrix (%lu).\n", meanSize, sideSize);
+ if (sideSize != meanSize) Korali::logError("Size of Multivariate Gaussian mean vector (%lu) is not the same as the side of covariance matrix (%lu).\n", meanSize, sideSize);
 
  _workVector.resize(meanSize);
 

@@ -48,7 +48,7 @@ def buildProblems(koraliDir):
   problemCodeString += ' bool __acceptedSolver = false;\n'
   for v in problemConfig["Compatible Solvers"]:
    problemCodeString += ' if (_k->_solverType == "' + v + '") __acceptedSolver = true;\n'
-  problemCodeString += ' if (__acceptedSolver == false) koraliError("Selected solver %s not compatible with problem type ' + problemConfig["Name"] + '", _k->_solverType.c_str()); \n\n' 
+  problemCodeString += ' if (__acceptedSolver == false) Korali::logError("Selected solver %s not compatible with problem type ' + problemConfig["Name"] + '", _k->_solverType.c_str()); \n\n' 
  
   # Consume Problem Settings
   for v in problemConfig["Problem Configuration"]:

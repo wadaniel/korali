@@ -1,20 +1,18 @@
 #include "korali.hpp"
 #include <sys/wait.h>
 
-using namespace Korali::Conduit;
-
-void External::initialize()
+void Korali::Conduit::External::initialize()
 {
  if (_concurrentJobs < 1) Korali::logError("You need to define at least 1 concurrent job(s) for external models \n");
  for (int i = 0; i < _concurrentJobs; i++) _pipeDescriptors.push_back(std::vector<int>(2));
  for (int i = 0; i < _concurrentJobs; i++) _launcherQueue.push(i);
 }
 
-void External::finalize()
+void Korali::Conduit::External::finalize()
 {
 }
 
-void External::evaluateSample(double* sampleArray, size_t sampleId)
+void Korali::Conduit::External::evaluateSample(double* sampleArray, size_t sampleId)
 {
  while (_launcherQueue.empty()) checkProgress();
 
@@ -45,7 +43,7 @@ void External::evaluateSample(double* sampleArray, size_t sampleId)
 
 }
 
-void External::checkProgress()
+void Korali::Conduit::External::checkProgress()
 {
  int status;
  pid_t processId;
@@ -65,12 +63,12 @@ void External::checkProgress()
 
 }
 
-bool External::isRoot()
+bool Korali::Conduit::External::isRoot()
 {
  return true;
 }
 
-void External::abort()
+void Korali::Conduit::External::abort()
 {
  exit(-1);
 }

@@ -1,28 +1,16 @@
 #include "korali.hpp"
 
-using namespace Korali::Conduit;
-
-/************************************************************************/
-/*                  Constructor / Destructor Methods                    */
-/************************************************************************/
-
-void Simple::initialize()
+void Korali::Conduit::Simple::initialize()
 {
 
 }
 
-
-
-/************************************************************************/
-/*                    Functional Methods                                */
-/************************************************************************/
-
-void Simple::finalize()
+void Korali::Conduit::Simple::finalize()
 {
 
 }
 
-void Simple::evaluateSample(double* sampleArray, size_t sampleId)
+void Korali::Conduit::Simple::evaluateSample(double* sampleArray, size_t sampleId)
 {
  _k->_functionEvaluationCount++;
 
@@ -36,17 +24,17 @@ void Simple::evaluateSample(double* sampleArray, size_t sampleId)
  _k->_solver->processSample(sampleId, fitness);
 }
 
-void Simple::checkProgress()
+void Korali::Conduit::Simple::checkProgress()
 {
 
 }
 
-bool Simple::isRoot()
+bool Korali::Conduit::Simple::isRoot()
 {
  return true;
 }
 
-void Simple::abort()
+void Korali::Conduit::Simple::abort()
 {
  exit(-1);
 }

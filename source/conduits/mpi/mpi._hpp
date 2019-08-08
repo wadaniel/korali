@@ -15,7 +15,7 @@
 
 namespace Korali { namespace Conduit {
 
-class MPI : public Base
+class MPI : public Korali::Conduit::Base
 {
 
  private:

@@ -10,7 +10,7 @@
 
 namespace Korali { namespace Conduit {
 
-class External : public Base {
+class External : public Korali::Conduit::Base {
 
  private:
 

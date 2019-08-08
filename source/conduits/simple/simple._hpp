@@ -8,7 +8,7 @@
 
 namespace Korali { namespace Conduit {
 
-class Simple : public Base
+class Simple : public Korali::Conduit::Base
 {
  private:
 

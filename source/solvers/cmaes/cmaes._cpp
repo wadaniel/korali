@@ -6,9 +6,7 @@
 #include <numeric>   // std::iota
 #include <algorithm> // std::sort
 
-using namespace Korali::Solver;
-
-CMAES::CMAES()
+Korali::Solver::CMAES::CMAES()
 {
  // Initializing RNGs
  auto jsGaussian = nlohmann::json();
@@ -26,11 +24,11 @@ CMAES::CMAES()
  _uniformGenerator = Korali::Distribution::Base::getDistribution(jsUniform);
 }
 
-CMAES::~CMAES()
+Korali::Solver::CMAES::~CMAES()
 {
 }
 
-void CMAES::initialize()
+void Korali::Solver::CMAES::initialize()
 {
  size_t s_max  = std::max(_sampleCount,  _viabilitySampleCount);
  size_t mu_max = std::max(_muValue, _viabilityMu);
@@ -189,7 +187,7 @@ void CMAES::initialize()
 }
 
 
-void CMAES::runGeneration()
+void Korali::Solver::CMAES::runGeneration()
 {
  if ( _areConstraintsDefined ) checkMeanAndSetRegime();
  prepareGeneration();
@@ -199,7 +197,7 @@ void CMAES::runGeneration()
 }
 
 
-void CMAES::evaluateSamples()
+void Korali::Solver::CMAES::evaluateSamples()
 {
   while (_finishedSampleCount < _currentSampleCount)
   {
@@ -220,7 +218,7 @@ void CMAES::evaluateSamples()
   }
 }
 
-void CMAES::initMuWeights(size_t numsamplesmu)
+void Korali::Solver::CMAES::initMuWeights(size_t numsamplesmu)
 {
  // Initializing Mu Weights
  if      (_muType == "Linear")       for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = numsamplesmu - i;
@@ -259,7 +257,7 @@ void CMAES::initMuWeights(size_t numsamplesmu)
 }
 
 
-void CMAES::initCovariance()
+void Korali::Solver::CMAES::initCovariance()
 {
 
  // Setting Sigma
@@ -286,7 +284,7 @@ void CMAES::initCovariance()
 }
 
 
-void CMAES::processSample(size_t sampleId, double fitness)
+void Korali::Solver::CMAES::processSample(size_t sampleId, double fitness)
 {
  double logPrior = _k->_problem->evaluateLogPrior(&_samplePopulation[sampleId*_k->N]);
  fitness += logPrior;
@@ -300,7 +298,7 @@ void CMAES::processSample(size_t sampleId, double fitness)
 }
 
 
-void CMAES::checkMeanAndSetRegime()
+void Korali::Solver::CMAES::checkMeanAndSetRegime()
 {
   if (_isViabilityRegime == false) return; /* mean already inside valid domain, no udpates */
 
@@ -326,7 +324,7 @@ void CMAES::checkMeanAndSetRegime()
 }
 
 
-void CMAES::updateConstraints() //TODO: maybe parallelize constraint evaluations (DW)
+void Korali::Solver::CMAES::updateConstraints() //TODO: maybe parallelize constraint evaluations (DW)
 {
 
  for(size_t i = 0; i < _currentSampleCount; i++) _sampleConstraintViolationCounts[i] = 0;
@@ -357,7 +355,7 @@ void CMAES::updateConstraints() //TODO: maybe parallelize constraint evaluations
 }
 
 
-void CMAES::reEvaluateConstraints() //TODO: maybe we can parallelize constraint evaluations (DW)
+void Korali::Solver::CMAES::reEvaluateConstraints() //TODO: maybe we can parallelize constraint evaluations (DW)
 {
   _maximumViolationCount = 0;
   for(size_t i = 0; i < _currentSampleCount; ++i) if(_sampleConstraintViolationCounts[i] > 0)
@@ -382,7 +380,7 @@ void CMAES::reEvaluateConstraints() //TODO: maybe we can parallelize constraint 
 }
 
 
-void CMAES::updateViabilityBoundaries()
+void Korali::Solver::CMAES::updateViabilityBoundaries()
 {
  for(size_t c = 0; c < _k->_constraints.size(); c++)
  {
@@ -395,7 +393,7 @@ void CMAES::updateViabilityBoundaries()
 }
 
 
-bool CMAES::isFeasible(size_t sampleIdx) const
+bool Korali::Solver::CMAES::isFeasible(size_t sampleIdx) const
 {
  for (size_t d = 0; d < _k->N; ++d)
   if (_samplePopulation[ sampleIdx*_k->N+d ] < _k->_variables[d]->_lowerBound || _samplePopulation[ sampleIdx*_k->N+d ] > _k->_variables[d]->_upperBound) return false;
@@ -403,7 +401,7 @@ bool CMAES::isFeasible(size_t sampleIdx) const
 }
 
 
-void CMAES::prepareGeneration()
+void Korali::Solver::CMAES::prepareGeneration()
 {
 
  /* calculate eigensystem */
@@ -430,7 +428,7 @@ void CMAES::prepareGeneration()
 }
 
 
-void CMAES::sampleSingle(size_t sampleIdx)
+void Korali::Solver::CMAES::sampleSingle(size_t sampleIdx)
 {
   for (size_t d = 0; d < _k->N; ++d)
   {
@@ -481,7 +479,7 @@ void CMAES::sampleSingle(size_t sampleIdx)
 }
 
 
-void CMAES::updateDistribution()
+void Korali::Solver::CMAES::updateDistribution()
 {
 
  /* Generate _sortingIndex */
@@ -580,7 +578,7 @@ void CMAES::updateDistribution()
  
 }
 
-void CMAES::adaptC(int hsig)
+void Korali::Solver::CMAES::adaptC(int hsig)
 {
   /* definitions for speeding up inner-most loop */
   //double ccov1  = std::min(_covarianceMatrixLearningRate * (1./_muCovariance) * (_isDiagonal ? (_k->N+1.5) / 3. : 1.), 1.); (orig, alternative)
@@ -613,7 +611,7 @@ void CMAES::adaptC(int hsig)
 }
 
 
-void CMAES::updateSigma()
+void Korali::Solver::CMAES::updateSigma()
 {
  /* update for non-viable region */
  if( _areConstraintsDefined && (_isViabilityRegime == false) )
@@ -655,7 +653,7 @@ void CMAES::updateSigma()
 }
 
 
-void CMAES::numericalErrorTreatment()
+void Korali::Solver::CMAES::numericalErrorTreatment()
 {
  //treat maximal standard deviations
  //TODO
@@ -675,7 +673,7 @@ void CMAES::numericalErrorTreatment()
 }
 
 
-void CMAES::handleConstraints()
+void Korali::Solver::CMAES::handleConstraints()
 {
  size_t initial_resampled = _resampledParameterCount;
  size_t initial_corrections = _covarianceMatrixAdaptationCount;
@@ -741,7 +739,7 @@ void CMAES::handleConstraints()
 }
 
 
-void CMAES::updateDiscreteMutationMatrix()
+void Korali::Solver::CMAES::updateDiscreteMutationMatrix()
 {
   // implemented based on 'A CMA-ES for Mixed-Integer Nonlinear Optimization' by
   // Hansen2011
@@ -760,7 +758,7 @@ void CMAES::updateDiscreteMutationMatrix()
 
 }
 
-void CMAES::updateEigensystem(std::vector<double>& M)
+void Korali::Solver::CMAES::updateEigensystem(std::vector<double>& M)
 {
  eigen(_k->N, M, _auxiliarAxisLengths, _auxiliarCovarianceEigenvectorMatrix);
  
@@ -800,7 +798,7 @@ void CMAES::updateEigensystem(std::vector<double>& M)
 /************************************************************************/
 
 
-void CMAES::eigen(size_t size, std::vector<double>& M,  std::vector<double>& diag, std::vector<double>& Q) const
+void Korali::Solver::CMAES::eigen(size_t size, std::vector<double>& M,  std::vector<double>& diag, std::vector<double>& Q) const
 {
  std::vector<double> data(size * size);
 
@@ -835,7 +833,7 @@ void CMAES::eigen(size_t size, std::vector<double>& M,  std::vector<double>& dia
 }
 
 
-void CMAES::sort_index(const std::vector<double>& vec, std::vector<size_t>& _sortingIndex, size_t n) const
+void Korali::Solver::CMAES::sort_index(const std::vector<double>& vec, std::vector<size_t>& _sortingIndex, size_t n) const
 {
   // initialize original _sortingIndex locations
   std::iota(std::begin(_sortingIndex), std::begin(_sortingIndex)+n, (size_t) 0);
@@ -846,7 +844,7 @@ void CMAES::sort_index(const std::vector<double>& vec, std::vector<size_t>& _sor
 }
 
 
-void CMAES::printGeneration()
+void Korali::Solver::CMAES::printGeneration()
 {
 
  if ( _areConstraintsDefined && _isViabilityRegime)
@@ -889,7 +887,7 @@ void CMAES::printGeneration()
   }
 }
 
-void CMAES::finalize()
+void Korali::Solver::CMAES::finalize()
 {
   Korali::logInfo(KORALI_MINIMAL, "Optimum found: %e\n", _bestEverValue);
   Korali::logInfo(KORALI_MINIMAL, "Optimum found at:\n");

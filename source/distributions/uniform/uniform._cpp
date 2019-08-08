@@ -28,7 +28,6 @@ double Korali::Distribution::Uniform::getDensity(double x)
 
 double Korali::Distribution::Uniform::getLogDensity(double x)
 {
-  printf("oooooooo>>> %lf   %lf   %lf",x,_minimum,_maximum);
  if (x >= _minimum && x <= _maximum) return _aux; return -INFINITY;
 }
 

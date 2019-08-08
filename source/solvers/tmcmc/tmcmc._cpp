@@ -23,14 +23,12 @@ Korali::Solver::TMCMC::TMCMC()
 
  auto jsMultivariate = nlohmann::json();
  jsMultivariate["Type"] = "Multivariate Gaussian";
- jsMultivariate["Seed"] = _k->_seed++;
  _multivariateGenerator = Korali::Distribution::Base::getDistribution(jsMultivariate);
 
  auto jsUniform = nlohmann::json();
  jsUniform["Type"] = "Uniform";
  jsUniform["Minimum"] = 0.0;
  jsUniform["Maximum"] = 1.0;
- jsUniform["Seed"] = _k->_seed++;
  _uniformGenerator = Korali::Distribution::Base::getDistribution(jsUniform);
 }
 

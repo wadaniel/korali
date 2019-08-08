@@ -87,7 +87,7 @@
    {
     "Name": [ "Chain Candidate Parameters" ],
     "Type": "std::vector<double>",
-    "Description": "Current parameters of the chain leader sample."
+    "Description": "Current (theta) parameters of the chain leader sample."
    },
    {
     "Name": [ "Chain Candidates LogLikelihoods" ],

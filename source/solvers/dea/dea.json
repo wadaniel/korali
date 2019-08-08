@@ -8,7 +8,7 @@
    {
     "Name": [ "Sample Count" ],
     "Type": "size_t",
-    "Description": "Specifies the number of samples (parameters) to evaluate per generation (preferably 5-10x number of variables)."
+    "Description": "Specifies the number of samples to evaluate per generation (preferably 5-10x number of variables)."
    },
    {
     "Name": [ "Crossover Rate" ],
@@ -68,7 +68,7 @@
     "Name": [ "Max Resamplings" ],
     "Type": "size_t",
     "Default": "std::numeric_limits<size_t>::max()",
-    "Criteria": "_infeasibleParameterCountChange > _maxResamplings",
+    "Criteria": "_infeasibleSampleCountChange > _maxResamplings",
     "Description": "Max number of mutations per sample per generation if infeasible (only relevant if Fix Infeasible is set False)."
    },
    {
@@ -130,12 +130,12 @@
    {
     "Name": [ "Sample Population" ],
     "Type": "std::vector<double>",
-    "Description": "Parameter population."
+    "Description": "Sample coordinate information."
    },
    {
     "Name": [ "Sample Candidates" ],
     "Type": "std::vector<double>",
-    "Description": "Sample candidate parameters to evaluate."
+    "Description": "Sample candidate coordinates to evaluate."
    },
    {
     "Name": [ "Is Initialized Sample" ],
@@ -183,14 +183,14 @@
     "Description": "Previous Mean Parents."
    },
    {
-    "Name": [ "Best Ever Parameters" ],
+    "Name": [ "Best Ever Coordinates" ],
     "Type": "std::vector<double>",
-    "Description": "Parameters of the best sample ever."
+    "Description": "Coordinates of the best sample ever."
    },
    {
-    "Name": [ "Current Best Parameter" ],
+    "Name": [ "Current Best Sample" ],
     "Type": "std::vector<double>",
-    "Description": "Parameter of the current best sample."
+    "Description": "Coordinates of the current best sample."
    },
    {
     "Name": [ "Max Distances" ],
@@ -198,12 +198,12 @@
     "Description": "Max distance between samples per dimension."
    },
    {
-    "Name": [ "Infeasible Parameter Count" ],
+    "Name": [ "Infeasible Sample Count" ],
     "Type": "size_t",
     "Description": "Keeps count of infeasible sample re-evaluations so far."
    },
    {
-    "Name": [ "Infeasible Parameter Count Change" ],
+    "Name": [ "Infeasible Sample Count Change" ],
     "Type": "size_t",
     "Description": "Number of resamples in the current generation."
    },

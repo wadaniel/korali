@@ -38,7 +38,7 @@ def buildTests(koraliDir):
  
  installString = installString.replace('<!--- Test list goes here --->', testTableString)
  
- #webFileName = koraliDir + '/docs/docs/install.md'
- #print('[Korali] Creating ' + webFileName + '...')  
- #with open(webFileName, 'w+') as file: file.write(installString)
+ webFileName = koraliDir + '/docs/docs/install.md'
+ print('[Korali] Creating ' + webFileName + '...')  
+ with open(webFileName, 'w+') as file: file.write(installString)
   

@@ -1,0 +1,46 @@
+{
+ "Problem Configuration": 
+ [
+   {
+    "Name": [ "Likelihood", "Model" ],
+    "Type": "std::string",
+    "Description": "Indicates how Korali will evaluate the likelihood component."
+   },
+   {
+    "Name": [ "Likelihood", "Reference Data" ],
+    "Type": "std::vector<double>",
+    "Default": "std::vector<double>(0)",
+    "Description": "Evaluation of the model on specific data points, required to calculate likelihood."
+   }
+ ],
+ 
+ "Variables Configuration": 
+ [
+   {
+    "Name": [ "Type" ],
+    "Type": "std::string",
+    "Default": "Computational",
+    "Description": "Specifies the purpose of the variable for the bayesian model."
+   },
+   {
+    "Name": [ "Prior Distribution" ],
+    "Type": "Korali::Distribution::Base*",
+    "Description": "Eh..."
+   }
+ ],
+ 
+ "Internal Settings": 
+ [
+   {
+    "Name": [ "Computational Variable Indices" ],
+    "Type": "std::vector<size_t>",
+    "Description": "Stores the indices of variables that are of computational type."
+   },
+   {
+    "Name": [ "Statistical Variable Indices" ],
+    "Type": "std::vector<size_t>",
+    "Description": "Stores the indices of variables that are of statistical type."
+   }
+ ]
+}
+ 

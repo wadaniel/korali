@@ -79,9 +79,9 @@ void Korali::Engine::setConfiguration()
  _conduitType =  consume(_js, { "Conduit", "Type" }, KORALI_STRING, "Simple");
 
  // Configure Conduit
- if (_conduitType == "Simple") _conduit = std::make_shared<Korali::Conduit::Simple>();
- if (_conduitType == "External") _conduit = std::make_shared<Korali::Conduit::External>();
- if (_conduitType == "MPI") _conduit = std::make_shared<Korali::Conduit::MPI>();
+ if (_conduitType == "Simple") _conduit = new Korali::Conduit::Simple();
+ if (_conduitType == "External") _conduit = new Korali::Conduit::External();
+ if (_conduitType == "MPI") _conduit = new Korali::Conduit::MPI();
  if (_conduit == nullptr) {  fprintf(stderr, "Incorrect or undefined Conduit '%s'.\n", _conduitType.c_str()); exit(-1); }
 
  // Configure Korali Engine
@@ -114,18 +114,18 @@ void Korali::Engine::setConfiguration()
  _result_dir = consume(_js, { "General", "Results Output", "Path" }, KORALI_STRING, "_korali_result");
 
  // Configure Problem
- if (_problemType == "Optimization")  _problem = std::make_shared<Korali::Problem::Optimization>();
- if (_problemType == "Sampling") _problem = std::make_shared<Korali::Problem::Sampling>();
- if (_problemType == "Bayesian Inference") _problem = std::make_shared<Korali::Problem::Bayesian>();
- if (_problemType == "Hierarchical Bayesian") _problem = std::make_shared<Korali::Problem::Hierarchical>();
+ if (_problemType == "Optimization")  _problem = new Korali::Problem::Optimization();
+ if (_problemType == "Sampling") _problem = new Korali::Problem::Sampling();
+ if (_problemType == "Bayesian Inference") _problem = new Korali::Problem::Bayesian();
+ if (_problemType == "Hierarchical Bayesian") _problem = new Korali::Problem::Hierarchical();
  if (_problem == nullptr) Korali::logError("Incorrect or undefined Problem '%s'.\n", _problemType.c_str());
 
  // Configure Solver
 
- if (_solverType == "CMAES")  _solver = std::make_shared<Korali::Solver::CMAES>();
- if (_solverType == "DEA")    _solver = std::make_shared<Korali::Solver::DEA>();
- if (_solverType == "MCMC")   _solver = std::make_shared<Korali::Solver::MCMC>();
- if (_solverType == "TMCMC")  _solver = std::make_shared<Korali::Solver::TMCMC>();
+ if (_solverType == "CMAES")  _solver = new Korali::Solver::CMAES();
+ if (_solverType == "DEA")    _solver = new Korali::Solver::DEA();
+ if (_solverType == "MCMC")   _solver = new Korali::Solver::MCMC();
+ if (_solverType == "TMCMC")  _solver = new Korali::Solver::TMCMC();
  if (_solver == nullptr) Korali::logError("Incorrect or undefined Solver '%s'.\n", _solverType.c_str());
 
  // Create Variables

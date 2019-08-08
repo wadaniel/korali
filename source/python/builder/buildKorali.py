@@ -1,42 +1,32 @@
-#!/usr/bin/env python3
+import sys
 import os
+import json
+from buildAux import *
 
-koraliDir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)) + '/../..') 
-
-from buildSolvers import *
-from buildProblems import *
-from buildVariables import *
-from buildConduits import *
-from buildModels import *
-from buildDistributions import *
-from buildCxx import *
-from buildPlotter import *
-from buildSetup import *
-
-# Creating cxx commands.
-buildCxx(koraliDir)
+def buildKorali(koraliDir):
+ # Reading base variable file
+ with open(koraliDir + '/variable/variable._cpp', 'r') as file: variableCodeString = file.read()
  
-# Creating plotter main.
-buildPlotter(koraliDir) 
+ koraliTemplateHeaderFile = koraliDir + '/korali._hpp'
+ koraliNewHeaderFile = koraliDir + '/korali.hpp'
+ with open(koraliTemplateHeaderFile, 'r') as file: newHeaderString = file.read()
  
-# Processing Solvers
-buildSolvers(koraliDir)
-
-# Processing Problems
-buildProblems(koraliDir)
-
-# Processing Models
-buildModels(koraliDir)
-
-# Processing Conduits
-buildConduits(koraliDir)
-
-# Processing Distributions
-buildDistributions(koraliDir)
-
-# Processing Variables
-buildVariables(koraliDir) 
-
-# Creating setup.py
-buildSetup(koraliDir) 
-
+ koraliTemplateCodeFile = koraliDir + '/korali._cpp'
+ koraliNewCodeFile = koraliDir + '/korali.cpp'
+ with open(koraliTemplateCodeFile, 'r') as file: newCodeString = file.read()
+  
+ # Loading JSON Configuration
+ koraliJsonFile = koraliDir + '/korali.json'
+ with open(koraliJsonFile, 'r') as file: koraliJsonString = file.read()
+ koraliConfig = json.loads(solverJsonString) 
+   
+  
+ print('[Korali] Creating: ' + koraliNewHeaderFile + '...')
+ with open(koraliNewHeaderFile, 'w') as file: file.write(newHeaderString)
+ 
+ print('[Korali] Creating: ' + koraliNewCodeFile + '...')
+ with open(koraliNewCodeFile, 'w') as file: file.write(newCodeString)
+ 
+ 
+ 
+ 

@@ -1,5 +1,4 @@
 #include "korali.hpp"
-#include <cmath>
 
 Korali::Distribution::Gaussian::Gaussian()
 {

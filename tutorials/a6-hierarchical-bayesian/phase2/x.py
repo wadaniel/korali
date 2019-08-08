@@ -44,8 +44,8 @@ kH["Variables"][0]["Prior Distribution"]["Maximum"] = 50.0
 
 kH["Variables"][1]["Name"] = "Psi 2"
 kH["Variables"][1]["Prior Distribution"]["Type"] = "Uniform"
-kH["Variables"][1]["Prior Distribution"]["Minimum"] =  5.0
-kH["Variables"][1]["Prior Distribution"]["Maximum"] = 15.0
+kH["Variables"][1]["Prior Distribution"]["Minimum"] =  0.001
+kH["Variables"][1]["Prior Distribution"]["Maximum"] = 20.0
 
 kH["Variables"][2]["Name"] = "Psi 3"
 kH["Variables"][2]["Prior Distribution"]["Type"] = "Uniform"
@@ -60,7 +60,7 @@ kH["Variables"][3]["Prior Distribution"]["Maximum"] = 1.0
 
 kH["Solver"]["Type"] = "TMCMC"
 kH["Solver"]["Population Size"] = 100
-kH["Solver"]["Termination Criteria"]["Max Generations"] = 0
+kH["Solver"]["Termination Criteria"]["Max Generations"] = 20
 
 kH["General"]["Console Output"]["Verbosity"] = "Detailed"
 

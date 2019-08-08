@@ -1,4 +1,5 @@
 #include "korali.hpp"
+#include <cmath>
 
 Korali::Distribution::Gaussian::Gaussian()
 {
@@ -57,9 +58,10 @@ void Korali::Distribution::Gaussian::getLogDensityVector(double *x, double* resu
 
 void Korali::Distribution::Gaussian::updateDistribution()
 {
- if (_standardDeviation <= 0.0)  koraliError("Incorrect Standard Deviation parameter of Gaussian distribution: %e.\n", _standardDeviation);
-
- _aux = -0.5*gsl_sf_log(2*M_PI) - gsl_sf_log(_standardDeviation);
+ if (_standardDeviation <= 0.0) 
+  _aux = NAN; //koraliError("Incorrect Standard Deviation parameter of Gaussian distribution: %e.\n", _standardDeviation);
+ else 
+  _aux = -0.5*gsl_sf_log(2*M_PI) - gsl_sf_log(_standardDeviation);
 }
 
 void Korali::Distribution::Gaussian::updateConditionals(const std::vector<double>& sample)

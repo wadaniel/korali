@@ -42,8 +42,8 @@ def buildProblems(koraliDir):
   
   ###### Producing problem.cpp
   
-  problemCodeString = 'void Korali::Problem::' + problemConfig["Class"] + '::setConfiguration() \n{\n'
- 
+  problemCodeString = 'void Korali::Problem::' + problemConfig["Class"] + '::setConfiguration(nlohmann::json& js) \n{\n'
+  
   # Checking whether solver is accepted
   problemCodeString += ' bool __acceptedSolver = false;\n'
   for v in problemConfig["Compatible Solvers"]:
@@ -52,23 +52,23 @@ def buildProblems(koraliDir):
  
   # Consume Problem Settings
   for v in problemConfig["Problem Configuration"]:
-    problemCodeString += consumeValue('_k->_js', problemConfig["Alias"], '["Problem"]' + getVariablePath(v), getCXXVariableName(v), getVariableType(v), getVariableDefault(v))
+    problemCodeString += consumeValue('js', problemConfig["Alias"], getVariablePath(v), getCXXVariableName(v), getVariableType(v), getVariableDefault(v))
   
   for v in problemConfig["Internal Settings"]:
-    problemCodeString += consumeValue('_k->_js', problemConfig["Alias"], '["Problem"]["Internal"]' + getVariablePath(v),  getCXXVariableName(v), getVariableType(v), 'Korali Skip Default')
+    problemCodeString += consumeValue('js', problemConfig["Alias"], '["Internal"]' + getVariablePath(v),  getCXXVariableName(v), getVariableType(v), 'Korali Skip Default')
   
+  problemCodeString += ' if(isEmpty(js) == false) Korali::logError("Unrecognized settings for the ' + problemConfig["Name"] + ' problem: \\n%s\\n", js.dump(2).c_str());\n'
   problemCodeString += '} \n\n'
   
   ###### Creating Problem Get Configuration routine
   
-  problemCodeString += 'void Korali::Problem::' + problemConfig["Class"]  + '::getConfiguration() \n{\n\n'
-  problemCodeString += ' _k->_js["Problem"]["Type"] = "' + problemConfig["Alias"] + '";\n'
+  problemCodeString += 'void Korali::Problem::' + problemConfig["Class"]  + '::getConfiguration(nlohmann::json& js) \n{\n\n'
  
   for v in problemConfig["Problem Configuration"]: 
-    problemCodeString += saveValue('_k->_js', '["Problem"]' + getVariablePath(v), getCXXVariableName(v), getVariableType(v))
+    problemCodeString += saveValue('js', getVariablePath(v), getCXXVariableName(v), getVariableType(v))
     
   for v in problemConfig["Internal Settings"]: 
-    problemCodeString += saveValue('_k->_js', '["Problem"]["Internal"]' + getVariablePath(v), getCXXVariableName(v), getVariableType(v))
+    problemCodeString += saveValue('js', '["Internal"]' + getVariablePath(v), getCXXVariableName(v), getVariableType(v))
   
   problemCodeString += '} \n\n'
   

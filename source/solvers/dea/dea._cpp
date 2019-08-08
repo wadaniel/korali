@@ -14,14 +14,12 @@ Korali::Solver::DEA::DEA()
  jsGaussian["Type"] = "Gaussian";
  jsGaussian["Mean"] = 0.0;
  jsGaussian["Standard Deviation"] = 1.0;
- jsGaussian["Seed"] = _k->_seed++;
  _gaussianGenerator = Korali::Distribution::Base::getDistribution(jsGaussian);
 
  auto jsUniform = nlohmann::json();
  jsUniform["Type"] = "Uniform";
  jsUniform["Minimum"] = 0.0;
  jsUniform["Maximum"] = 1.0;
- jsUniform["Seed"] = _k->_seed++;
  _uniformGenerator = Korali::Distribution::Base::getDistribution(jsUniform);
 }
 

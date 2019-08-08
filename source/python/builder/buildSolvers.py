@@ -46,33 +46,33 @@ def buildSolvers(koraliDir):
   
   ###### Producing solver.cpp
   
-  solverCodeString = 'void Korali::Solver::' + solverConfig["Class"] + '::setConfiguration() \n{\n'
+  solverCodeString = 'void Korali::Solver::' + solverConfig["Class"] + '::setConfiguration(nlohmann::json& js) \n{\n'
  
   # Consume Solver Settings
   for v in solverConfig["Solver Configuration"]:
-    solverCodeString += consumeValue('_k->_js', solverConfig["Alias"], '["Solver"]' + getVariablePath(v), getCXXVariableName(v), getVariableType(v), getVariableDefault(v))
+    solverCodeString += consumeValue('js', solverConfig["Alias"], getVariablePath(v), getCXXVariableName(v), getVariableType(v), getVariableDefault(v))
   
   for v in solverConfig["Internal Settings"]:
-    solverCodeString += consumeValue('_k->_js', solverConfig["Alias"], '["Solver"]["Internal"]' + getVariablePath(v), getCXXVariableName(v), getVariableType(v), 'Korali Skip Default')
+    solverCodeString += consumeValue('js', solverConfig["Alias"], '["Internal"]' + getVariablePath(v), getCXXVariableName(v), getVariableType(v), 'Korali Skip Default')
   
   for v in solverConfig["Termination Criteria"]:
-    solverCodeString += consumeValue('_k->_js', solverConfig["Alias"], '["Solver"]["Termination Criteria"]' + getVariablePath(v), getCXXVariableName(v), getVariableType(v), getVariableDefault(v))
+    solverCodeString += consumeValue('js', solverConfig["Alias"], '["Termination Criteria"]' + getVariablePath(v), getCXXVariableName(v), getVariableType(v), getVariableDefault(v))
  
+  solverCodeString += ' if(isEmpty(js) == false) Korali::logError("Unrecognized settings for the ' + solverConfig["Name"] + ' solver: \\n%s\\n", js.dump(2).c_str());\n'
   solverCodeString += '} \n\n'
-  
+   
   ###### Creating Solver Get Configuration routine
-  
-  solverCodeString += 'void Korali::Solver::' + solverConfig["Class"]  + '::getConfiguration() \n{\n\n'
-  solverCodeString += ' _k->_js["Solver"]["Type"] = "' + solverConfig["Alias"] + '";\n'
+    
+  solverCodeString += 'void Korali::Solver::' + solverConfig["Class"]  + '::getConfiguration(nlohmann::json& js) \n{\n\n' 
   
   for v in solverConfig["Solver Configuration"]: 
-    solverCodeString += saveValue('_k->_js', '["Solver"]' + getVariablePath(v), getCXXVariableName(v), getVariableType(v))
+    solverCodeString += saveValue('js', getVariablePath(v), getCXXVariableName(v), getVariableType(v))
     
   for v in solverConfig["Internal Settings"]: 
-    solverCodeString += saveValue('_k->_js', '["Solver"]["Internal"]' + getVariablePath(v), getCXXVariableName(v), getVariableType(v))
+    solverCodeString += saveValue('js', '["Internal"]' + getVariablePath(v), getCXXVariableName(v), getVariableType(v))
   
   for v in solverConfig["Termination Criteria"]: 
-    solverCodeString += saveValue('_k->_js', '["Solver"]["Termination Criteria"]' + getVariablePath(v), getCXXVariableName(v), getVariableType(v))
+    solverCodeString += saveValue('js', '["Termination Criteria"]' + getVariablePath(v), getCXXVariableName(v), getVariableType(v))
   
   solverCodeString += '} \n\n'
   

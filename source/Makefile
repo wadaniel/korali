@@ -24,6 +24,7 @@ libkorali.so: $(OBJECTS)
 
 clean:
 	@rm -f solvers/*/*.hpp solvers/*/*.cpp 
+	@rm -f conduits/*/*.hpp conduits/*/*.cpp 
 	@rm -f problems/*/*.hpp problems/*/*.cpp 
 	@rm -f models/*/*.hpp
 	@rm -f distributions/*/*.hpp distributions/*/*.cpp distributions/*.cpp distributions/*.hpp 

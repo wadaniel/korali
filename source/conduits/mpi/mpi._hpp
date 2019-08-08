@@ -57,8 +57,8 @@ class MPI : public Korali::Conduit::Base
  int getRootRank();
 
  // Serialization Methods
- void getConfiguration() override;
- void setConfiguration() override;
+ void getConfiguration(nlohmann::json& js) override;
+ void setConfiguration(nlohmann::json& js) override;
 };
 
 } } // namespace Korali::Conduit

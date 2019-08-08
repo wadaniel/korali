@@ -23,8 +23,8 @@ class Simple : public Korali::Conduit::Base
  void abort() override;
 
  // Serialization Methods
- void getConfiguration() override;
- void setConfiguration() override;
+ void getConfiguration(nlohmann::json& js) override;
+ void setConfiguration(nlohmann::json& js) override;
 };
 
 } } // namespace Korali::Conduit

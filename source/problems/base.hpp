@@ -1,6 +1,8 @@
 #ifndef _KORALI_PROBLEM_BASE_HPP_
 #define _KORALI_PROBLEM_BASE_HPP_
 
+#include "auxiliars/json.hpp"
+
 namespace Korali { namespace Problem {
 
 class Base
@@ -15,8 +17,8 @@ class Base
   virtual void finalize() = 0;
 
   // Serialization Methods
-  virtual void getConfiguration() = 0;
-  virtual void setConfiguration() = 0;
+  virtual void getConfiguration(nlohmann::json& js) = 0;
+  virtual void setConfiguration(nlohmann::json& js) = 0;
 };
 
 } } // namespace Korali::Problem

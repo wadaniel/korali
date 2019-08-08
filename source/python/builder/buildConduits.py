@@ -38,21 +38,21 @@ def buildConduits(koraliDir):
   
   ###### Producing conduit.cpp
   
-  conduitCodeString = 'void Korali::Conduit::' + conduitConfig["Class"] + '::setConfiguration() \n{\n'
+  conduitCodeString = 'void Korali::Conduit::' + conduitConfig["Class"] + '::setConfiguration(nlohmann::json& js) \n{\n'
  
   # Consume Conduit Settings
   for v in conduitConfig["Conduit Configuration"]:
-    conduitCodeString += consumeValue('_k->_js', conduitConfig["Alias"], '["Conduit"]' + getVariablePath(v), getCXXVariableName(v), getVariableType(v), getVariableDefault(v))
+    conduitCodeString += consumeValue('js', conduitConfig["Alias"], getVariablePath(v), getCXXVariableName(v), getVariableType(v), getVariableDefault(v))
   
   conduitCodeString += '} \n\n'
   
   ###### Creating Conduit Get Configuration routine
   
-  conduitCodeString += 'void Korali::Conduit::' + conduitConfig["Class"]  + '::getConfiguration() \n{\n\n'
-  conduitCodeString += ' _k->_js["Conduit"]["Type"] = "' + conduitConfig["Alias"] + '";\n'
+  conduitCodeString += 'void Korali::Conduit::' + conduitConfig["Class"]  + '::getConfiguration(nlohmann::json& js) \n{\n\n'
+  conduitCodeString += ' js["Type"] = "' + conduitConfig["Alias"] + '";\n'
  
   for v in conduitConfig["Conduit Configuration"]: 
-    conduitCodeString += saveValue('_k->_js', '["Conduit"]' + getVariablePath(v), getCXXVariableName(v), getVariableType(v))
+    conduitCodeString += saveValue('js', getVariablePath(v), getCXXVariableName(v), getVariableType(v))
     
   conduitCodeString += '} \n\n'
   

@@ -35,8 +35,8 @@ class MCMC : public Korali::Solver::Base
  void runGeneration() override;
  void processSample(size_t c, double fitness) override;
  bool checkTermination() override;
- void setConfiguration() override;
- void getConfiguration() override;
+ void setConfiguration(nlohmann::json& js) override;
+ void getConfiguration(nlohmann::json& js) override;
  void printGeneration() override;
 };
 

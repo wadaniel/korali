@@ -48,8 +48,8 @@ class CMAES : public Korali::Solver::Base
  void runGeneration() override;
  void processSample(size_t sampleId, double fitness) override;
  void finalize() override;
- void setConfiguration() override;
- void getConfiguration() override;
+ void setConfiguration(nlohmann::json& js) override;
+ void getConfiguration(nlohmann::json& js) override;
  void printGeneration() override;
 };
 

@@ -34,8 +34,8 @@ class DEA : public Korali::Solver::Base
  void finalize() override;
  void runGeneration() override;
  void processSample(size_t sampleId, double fitness) override;
- void setConfiguration() override;
- void getConfiguration() override;
+ void setConfiguration(nlohmann::json& js) override;
+ void getConfiguration(nlohmann::json& js) override;
  void printGeneration() override;
 };
 

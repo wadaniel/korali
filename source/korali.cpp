@@ -62,9 +62,9 @@ void Korali::Engine::getConfiguration()
  _js["Conduit"]["Type"] = _conduitType;
  _js["Problem"]["Type"] = _problemType;
 
- if (_problem != nullptr) _problem->getConfiguration();
- if (_conduit != nullptr) _conduit->getConfiguration();
- if (_conduit != nullptr) _solver->getConfiguration();
+ if (_problem != nullptr) _problem->getConfiguration(_js["Problem"]);
+ if (_conduit != nullptr) _conduit->getConfiguration(_js["Conduit"]);
+ if (_conduit != nullptr) _solver->getConfiguration(_js["Solver"]);
 
  for (int i = 0; i < _variables.size(); i++) _variables[i]->getConfiguration(_js["Variables"][i]);
 }
@@ -113,15 +113,6 @@ void Korali::Engine::setConfiguration()
 
  _result_dir = consume(_js, { "General", "Results Output", "Path" }, KORALI_STRING, "_korali_result");
 
- // Create Variables
- if (isArray(_js, { "Variables" } ))
-  for (size_t i = 0; i < _js["Variables"].size(); i++) _variables.push_back(new Korali::Variable());
-
- N = _variables.size();
- if (N == 0) Korali::logError("No variables have been defined.\n");
-
- for (size_t i = 0; i < N; i++) _variables[i]->setConfiguration(_js["Variables"][i]);
-
  // Configure Problem
  if (_problemType == "Optimization")  _problem = std::make_shared<Korali::Problem::Optimization>();
  if (_problemType == "Sampling") _problem = std::make_shared<Korali::Problem::Sampling>();
@@ -137,13 +128,20 @@ void Korali::Engine::setConfiguration()
  if (_solverType == "TMCMC")  _solver = std::make_shared<Korali::Solver::TMCMC>();
  if (_solver == nullptr) Korali::logError("Incorrect or undefined Solver '%s'.\n", _solverType.c_str());
 
- // Setting module configuration
- _problem->setConfiguration();
- _conduit->setConfiguration();
- _solver->setConfiguration();
+ // Create Variables
+ if (isArray(_js, { "Variables" } ))
+  for (size_t i = 0; i < _js["Variables"].size(); i++) _variables.push_back(new Korali::Variable());
+
+ N = _variables.size();
+ if (N == 0) Korali::logError("No variables have been defined.\n");
+
+ // Setting configuration for the modules
+ for (size_t i = 0; i < N; i++) _variables[i]->setConfiguration(_js["Variables"][i]);
+ _problem->setConfiguration(_js["Problem"]);
+ _conduit->setConfiguration(_js["Conduit"]);
+ _solver->setConfiguration(_js["Solver"]);
 
  // Korali-specific configuration
-
  _hasComputedGeneration = consume(_js, { "General", "Has Computed Generation" }, KORALI_BOOLEAN, "false");
  _currentGeneration = consume(_js, { "General", "Current Generation" }, KORALI_NUMBER, "0");
  _consoleOutputFrequency = consume(_js, { "General", "Console Output", "Frequency" }, KORALI_NUMBER, std::to_string(_consoleOutputFrequency));

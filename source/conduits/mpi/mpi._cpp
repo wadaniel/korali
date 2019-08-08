@@ -1,7 +1,5 @@
 #include "korali.hpp"
 
-using namespace Korali::Conduit;
-
 #ifdef _KORALI_USE_MPI
 
 #define MPI_TAG_FITNESS 1

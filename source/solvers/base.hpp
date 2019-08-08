@@ -19,8 +19,8 @@ class Base {
  virtual void runGeneration() = 0;
  virtual bool checkTermination() = 0;
 
- virtual void setConfiguration() = 0;
- virtual void getConfiguration() = 0;
+ virtual void setConfiguration(nlohmann::json& js) = 0;
+ virtual void getConfiguration(nlohmann::json& js) = 0;
 
  virtual void processSample(size_t sampleId, double fitness) = 0;
 };

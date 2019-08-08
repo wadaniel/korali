@@ -18,9 +18,8 @@ def buildKorali(koraliDir):
  # Loading JSON Configuration
  koraliJsonFile = koraliDir + '/korali.json'
  with open(koraliJsonFile, 'r') as file: koraliJsonString = file.read()
- koraliConfig = json.loads(solverJsonString) 
+ koraliConfig = json.loads(koraliJsonString) 
    
-  
  print('[Korali] Creating: ' + koraliNewHeaderFile + '...')
  with open(koraliNewHeaderFile, 'w') as file: file.write(newHeaderString)
  

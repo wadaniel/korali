@@ -95,7 +95,7 @@ void Korali::Engine::setConfiguration()
 
  // Setting Run Hash Id
  std::hash<std::string> hasher;
- _runId = hasher(_runTimestamp);
+ _runId = hasher(_runTimestamp) + hasher(_solverType);
  _runId = consume(_js, { "General", "Run ID" }, KORALI_NUMBER, std::to_string(_runId));
 
  // Initializing Seed and GSL Random Environment

@@ -72,7 +72,6 @@ def readFiles(src, start=None, end=None, noisy=True):
 
     runId       = -1 # Init Run Id
     resultfiles = [] # Init Return Value
-
     for filename in resultfilesTmp:
         path   = '{0}/{1}'.format(src, filename)
         

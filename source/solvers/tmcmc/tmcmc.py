@@ -16,15 +16,12 @@ from korali.plotter.helpers import initDefaults, getStateAndGeneration, appendSt
 # Plot TMCMC results (read from .json files)
 def plot_tmcmc(src, plotAll=False, live=False, generation=None, test=False, mean=''):
     plt.style.use('seaborn-dark')
-        
+    
     stateNames = ['Annealing Exponent', 'Database Entry Count']
     resultfiles = readFiles(src, 0, generation)
     
     anneal, numdbentries, samples = ([] for i in range(3))
     
-    solverName, names, numdim, gen = initDefaults(src, resultfiles[0], [samples])
-    
-    resultfiles = readFiles(src, 0, generation)
     solverName, names, numdim, gen = initDefaults(src, resultfiles[0], [samples])
     
     fig, ax = plt.subplots(numdim, numdim, figsize=(8,8))
@@ -34,9 +31,6 @@ def plot_tmcmc(src, plotAll=False, live=False, generation=None, test=False, mean
         fig.show()
 
     while True: 
-        
-        if (not plotAll):
-            resultfiles = ['final.json']
         for filename in resultfiles:
             path   = '{0}/{1}'.format(src, filename)
      

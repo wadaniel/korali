@@ -30,9 +30,6 @@ def plot_mcmc(src, plotAll=False, live=False, generation=None, test=False, mean=
         fig.show()
     
     while True:
- 
-        if (not plotAll):
-            resultfiles = ['final.json']
         for filename in resultfiles:
             path = '{0}/{1}'.format(src, filename)
             

@@ -70,7 +70,8 @@ def buildDistributions(koraliDir):
     
   for v in distributionConfig["Internal Settings"]:
     distributionCodeString += consumeValue('js', distributionConfig["Alias"], '["Internal"]' + getVariablePath(v),  getCXXVariableName(v), getVariableType(v), 'Korali Skip Default')
-  
+   
+  distributionCodeString += ' if(isEmpty(js) == false) koraliError("Unrecognized settings for the ' + distributionConfig["Name"] + ' distribution: \\n%s\\n", js.dump(2).c_str());\n'   
   distributionCodeString += '} \n\n'
   
   ###### Creating Distribution Get Configuration routine

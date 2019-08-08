@@ -1,9 +1,5 @@
 #include "korali.hpp"
 
-/************************************************************************/
-/*                  Constructor / Destructor Methods                    */
-/************************************************************************/
-
 Korali::Variable::Variable()
 {
  _name = "Unnamed";
@@ -14,8 +10,6 @@ Korali::Variable::~Variable()
 {
 
 }
-
-/************************************************************************/
 
 void Korali::Variable::getConfiguration(nlohmann::json& js)
 {

@@ -21,6 +21,7 @@ def buildProblems(koraliDir):
   ####### Producing problem.hpp
   
   # Producing private variable declarations
+  
   problemHeaderString = ''
   
   for v in problemConfig["Problem Configuration"]:
@@ -42,6 +43,12 @@ def buildProblems(koraliDir):
   ###### Producing problem.cpp
   
   problemCodeString = 'void Korali::Problem::' + problemConfig["Class"] + '::setConfiguration() \n{\n'
+ 
+  # Checking whether solver is accepted
+  problemCodeString += ' bool __acceptedSolver = false;\n'
+  for v in problemConfig["Compatible Solvers"]:
+   problemCodeString += ' if (_k->_solverType == "' + v + '") __acceptedSolver = true;\n'
+  problemCodeString += ' if (__acceptedSolver == false) Korali::logError("Selected solver %s not compatible with problem type ' + problemConfig["Name"] + '", _k->_solverType.c_str()); \n\n' 
  
   # Consume Problem Settings
   for v in problemConfig["Problem Configuration"]:
@@ -66,8 +73,15 @@ def buildProblems(koraliDir):
   problemCodeString += '} \n\n'
   
   ###### Creating code file
-  with open(problemPath + '/' + problemName + '._cpp', 'r') as file: problemBaseCodeString = file.read()
-  problemBaseCodeString += '\n\n' + problemCodeString
+  
+  problemBaseFileName = problemPath + '/' + problemName + '._cpp'
   problemNewCodeFile = problemPath + '/' + problemName + '.cpp'
-  print('[Korali] Creating: ' + problemNewCodeFile + '...')
-  with open(problemNewCodeFile, 'w') as file: file.write(problemBaseCodeString)
+  baseFileTime = os.path.getmtime(problemBaseFileName)
+  newFileTime = baseFileTime
+  if (os.path.exists(problemNewCodeFile)): newFileTime = os.path.getmtime(problemNewCodeFile)
+  
+  if (baseFileTime >= newFileTime):
+    with open(problemBaseFileName, 'r') as file: problemBaseCodeString = file.read()
+    problemBaseCodeString += '\n\n' + problemCodeString
+    print('[Korali] Creating: ' + problemNewCodeFile + '...')
+    with open(problemNewCodeFile, 'w') as file: file.write(problemBaseCodeString)

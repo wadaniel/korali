@@ -1,13 +1,9 @@
 # Korali  ![](images/logo.png){: style="height:25px;width:25px"}
 <center>**High-performance framework for uncertainty quantification of large-scale models.**</center>
 
-### **Download**
+### **Download Korali**
 
-Latest Release: 28/06/2019 - [Korali v1.0.0](https://github.com/cselab/korali.git) - Build Status: [![CircleCI](https://circleci.com/gh/cselab/korali.svg?style=svg&circle-token=d73f56a4d14073880f8fe1140964afb58f2b1c35)](install/build)
-
- + [Installation Guide](install/install.md)
- + [Release Notes](https://github.com/cselab/korali/blob/master/docs/RELEASE-NOTES)
- + [System Requirements](install/requirements.md)
+Latest Release: 28/06/2019 - **[Korali v1.0.0](install.md)** ([Release Notes](https://github.com/cselab/korali/blob/master/docs/RELEASE-NOTES))
 
 ### **What Korali Does**
 

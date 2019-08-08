@@ -85,7 +85,7 @@ def buildSolvers(koraliDir):
   for v in solverConfig["Termination Criteria"]: 
     solverCodeString += ' if (' + v["Criteria"] + ')\n'
     solverCodeString += ' {\n'
-    solverCodeString += '  koraliLog(KORALI_MINIMAL, "' + solverConfig["Alias"] + ' Termination Criteria met: \\"' + getVariablePath(v).replace('"', "'") + '\\" (' + getVariableDescriptor(v) + ').\\n", ' + getCXXVariableName(v)  +');\n'
+    solverCodeString += '  Korali::logInfo(KORALI_MINIMAL, "' + solverConfig["Alias"] + ' Termination Criteria met: \\"' + getVariablePath(v).replace('"', "'") + '\\" (' + getVariableDescriptor(v) + ').\\n", ' + getCXXVariableName(v)  +');\n'
     solverCodeString += '  hasFinished = true;\n'
     solverCodeString += ' }\n\n'
   
@@ -93,8 +93,15 @@ def buildSolvers(koraliDir):
   solverCodeString += '}'
   
   ###### Creating code file
-  with open(solverPath + '/' + solverName + '._cpp', 'r') as file: solverBaseCodeString = file.read()
-  solverBaseCodeString += '\n\n' + solverCodeString
+  
+  solverBaseFileName = solverPath + '/' + solverName + '._cpp'
   solverNewCodeFile = solverPath + '/' + solverName + '.cpp'
-  print('[Korali] Creating: ' + solverNewCodeFile + '...')
-  with open(solverNewCodeFile, 'w') as file: file.write(solverBaseCodeString)
+  baseFileTime = os.path.getmtime(solverBaseFileName)
+  newFileTime = baseFileTime
+  if (os.path.exists(solverNewCodeFile)): newFileTime = os.path.getmtime(solverNewCodeFile)
+  
+  if (baseFileTime >= newFileTime):
+    with open(solverBaseFileName, 'r') as file: solverBaseCodeString = file.read()
+    solverBaseCodeString += '\n\n' + solverCodeString
+    print('[Korali] Creating: ' + solverNewCodeFile + '...')
+    with open(solverNewCodeFile, 'w') as file: file.write(solverBaseCodeString)

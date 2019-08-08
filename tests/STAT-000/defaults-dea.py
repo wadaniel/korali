@@ -2,13 +2,13 @@
 import sys
 sys.path.append('./helpers')
 
-from stat000_helpers import *
+from helpers import *
 
 import korali
 
 k = korali.initialize()
 
-k.setModel(evaluateModel)
+k.setDirectModel(evaluateModel)
 
 k["Problem"]["Type"] = "Optimization"
 k["Problem"]["Objective"] = "Maximize"

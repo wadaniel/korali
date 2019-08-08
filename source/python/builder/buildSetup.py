@@ -2,12 +2,13 @@
 
 import os
 import sys
+from shutil import copyfile
 
 def buildSetup(koraliDir):
  print('[Korali] Building installation setup...')
- with open(koraliDir + '/setup._py', 'r') as file: setupString = file.read()
+ with open(koraliDir + '/python/setup/setup.py', 'r') as file: setupString = file.read()
  
- installFiles = ['libkorali.so', 'libkorali.a']
+ installFiles = ['libkorali.so']
  
  for dirpath, subdirs, files in os.walk(koraliDir):
   for x in files:
@@ -19,4 +20,4 @@ def buildSetup(koraliDir):
  setupString = setupString.replace('installFiles', str(installFiles))
  with open(koraliDir + '/setup.py', 'w') as file: file.write(setupString)
  
-  
+ copyfile(koraliDir + '/python/setup/__init__.py', koraliDir + '/__init__.py') 

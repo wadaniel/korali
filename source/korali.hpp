@@ -9,8 +9,10 @@
 #include "distributions/gamma/gamma.hpp"
 #include "distributions/gaussian/gaussian.hpp"
 #include "distributions/geometric/geometric.hpp"
+#include "distributions/multivariate/multivariate.hpp"
 #include "distributions/laplace/laplace.hpp"
 #include "distributions/uniform/uniform.hpp"
+#include "distributions/lognormal/lognormal.hpp"
 
 #include "problems/optimization/optimization.hpp"
 #include "problems/sampling/sampling.hpp"
@@ -22,18 +24,21 @@
 #include "solvers/mcmc/mcmc.hpp"
 #include "solvers/tmcmc/tmcmc.hpp"
 
-#include "conduits/mpi.hpp"
-#include "conduits/simple.hpp"
-#include "conduits/external.hpp"
+#include "conduits/mpi/mpi.hpp"
+#include "conduits/simple/simple.hpp"
+#include "conduits/external/external.hpp"
+
+#include "models/constraint/constraint.hpp"
+#include "models/direct/direct.hpp"
+#include "models/likelihood/likelihood.hpp"
+#include "models/reference/reference.hpp"
 
 #include "variable/variable.hpp"
-#include "auxiliar.hpp"
-#include "model.hpp"
 
-#ifdef _KORALI_USE_PYTHON
- #undef _POSIX_C_SOURCE
- #undef _XOPEN_SOURCE
-#endif
+#include "auxiliars/json.hpp"
+#include "auxiliars/koralijson.hpp"
+#include "auxiliars/logger.hpp"
+#include "auxiliars/python.hpp"
 
 namespace Korali
 {
@@ -44,10 +49,6 @@ class Engine {
 
  nlohmann::json  _js;
  nlohmann::json& operator[](std::string key) { return _js[key]; }
-
- bool _modelDefined;
- std::function<void(Korali::Model&)> _model;
- std::vector<std::function<void(Korali::Model&)>> _constraints;
 
  size_t N; // Variable Count size_t N; // Variable Count
  size_t _currentGeneration;
@@ -61,6 +62,7 @@ class Engine {
  std::string _solverType;
  std::string _conduitType;
  std::string _problemType;
+ std::string _modelType;
 
  bool _isFinished;
 
@@ -78,8 +80,15 @@ class Engine {
  void run() { start(false); }
  void dry() { start(true);  }
 
- void setModel(std::function<void(Korali::Model&)> model);
- void addConstraint(std::function<void(Korali::Model&)> constraint);
+ std::function<void(Korali::Model::Direct&)> _directModel;
+ std::function<void(Korali::Model::Likelihood&)> _likelihoodModel;
+ std::function<void(Korali::Model::Reference&)> _referenceModel;
+ std::vector<std::function<void(Korali::Model::Constraint&)>> _constraints;
+
+ void setDirectModel(std::function<void(Korali::Model::Direct&)> model);
+ void setLikelihoodModel(std::function<void(Korali::Model::Likelihood&)> model);
+ void setReferenceModel(std::function<void(Korali::Model::Reference&)> model);
+ void addConstraint(std::function<void(Korali::Model::Constraint&)> constraint);
 
  // Python Configuration Binding Methods
  KoraliJsonWrapper _wr;
@@ -93,7 +102,6 @@ class Engine {
  void loadState(std::string fileName);
  void saveState(std::string fileName);
  void saveState(int fileId);
- static std::string getResults(std::string fileName);
 
  size_t _seed;
  std::string _result_dir;

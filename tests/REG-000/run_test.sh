@@ -1,18 +1,5 @@
 #!/bin/bash
 
-##############################################################################
-# Brief: Checks for a correct installation of Korali and its modules.
-# Type: Regression Test 
-# Description:
-# Checks whether the Korali module is correctly installed, and then checks
-# the rest of its modules.
-# Steps: 
-# 1 - Operation: Check the existence of the korali.engine module.
-#     Expected Result: The module is found, and rc = 0.
-# 2 - Operation: Checking Korali's modules.
-#     Expected Result: All modules execute correctly and rc = 0.
-###############################################################################
-
 ###### Auxiliar Functions and Variables #########
 
 source ../functions.sh

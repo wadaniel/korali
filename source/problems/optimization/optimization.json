@@ -2,6 +2,7 @@
  "Name": "Optimization",
  "Alias": "Optimization",
  "Class": "Optimization",
+ "Compatible Solvers": [ "CMAES", "DEA" ],
  
  "Problem Configuration": 
  [

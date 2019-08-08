@@ -1,0 +1,25 @@
+#ifndef _KORALI_MODELS_CONSTRAINT_HPP_
+#define _KORALI_MODELS_CONSTRAINT_HPP_
+
+#include "models/base.hpp"
+
+namespace Korali { namespace Model {
+
+class Constraint : public Korali::Model::Base
+{
+  private:
+
+  public:
+
+  double _evaluation;
+
+  void setConstraintEvaluation(double x)
+  {
+    // Check for result correctness
+   ((Constraint*)_self)->_evaluation = x;
+  }
+};
+
+} } // namespace Korali::Model
+
+#endif // _KORALI_MODELS_CONSTRAINT_HPP_

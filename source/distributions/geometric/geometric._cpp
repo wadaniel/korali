@@ -30,6 +30,24 @@ double Korali::Distribution::Geometric::getRandomNumber()
  return gsl_ran_geometric(_range, _successProbability);
 }
 
+void Korali::Distribution::Geometric::getRandomVector(double *x, size_t n)
+{
+ for (size_t i = 0; i < n; i++)
+  x[i] = getRandomNumber();
+}
+
+void Korali::Distribution::Geometric::getDensityVector(double *x, double* result, size_t n)
+{
+ for (size_t i = 0; i < n; i++)
+   result[i] = getDensity(x[i]);
+}
+
+void Korali::Distribution::Geometric::getLogDensityVector(double *x, double* result, size_t n)
+{
+ for (size_t i = 0; i < n; i++)
+   result[i] = getLogDensity(x[i]);
+}
+
 void Korali::Distribution::Geometric::updateDistribution()
 {
  _aux = 0.0;

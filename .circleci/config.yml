@@ -25,9 +25,18 @@ jobs:
           keys:
             - korali-dependencies-linux
 
+      - restore_cache:
+          keys:
+            - web-dependencies-linux
+
       - run:
           name: build webpage
           command: cd docs; timeout 10m ./build.sh
+
+      - save_cache:
+          key: web-dependencies-linux 
+          paths:
+            - "~/.local/lib/python3.7/site-packages"
 
       - run:
           name: deploy webpage

@@ -9,7 +9,7 @@
 
 namespace Korali { namespace Solver {
 
-class CMAES : public Base
+class CMAES : public Korali::Solver::Base
 {
  private:
 

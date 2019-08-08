@@ -2,6 +2,7 @@
  "Name": "Bayesian Inference",
  "Alias": "Bayesian Inference",
  "Class": "Bayesian",
+ "Compatible Solvers": [ "CMAES", "DEA", "MCMC", "TMCMC" ],
  
  "Problem Configuration": 
  [

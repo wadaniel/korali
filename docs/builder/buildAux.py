@@ -23,6 +23,13 @@ def getVariableInfo(v, moduleName):
  varString += '??? abstract "' + getJsonPath(v["Name"]) + '"\n\n'
  varString += '\t' + v["Description"] + '\n'
  varString += '\n'
+ 
+ if ('Korali::Distribution' in v["Type"]):
+  with open('distributionList.txt', 'r') as file: distributionListString = file.read()
+  varString += '\t**Available Distributions**: \n'
+  varString += distributionListString
+  return varString
+  
  varString += '\t+ Default Value: ' + getVariableDefault(v) + '\n'
  varString += '\t+ Datatype: ' + v["Type"] + '\n'
  varString += '\t+ Syntax: \n\n' 

@@ -13,13 +13,13 @@ Korali::Engine* Korali::_k;
 Korali::Engine::Engine()
 {
  _runId        = 0;
- _modelDefined = false;
  _consoleOutputFrequency = 1;
  _resultsOutputFrequency = 1;
  _isFinished = false;
  _solver = nullptr;
  _problem = nullptr;
  _conduit = nullptr;
+ _modelType = "Unassigned";
  _hasComputedGeneration = false;
 }
 
@@ -109,7 +109,7 @@ void Korali::Engine::setConfiguration()
  if (vLevel == "Minimal")  _korali_verbosity = KORALI_MINIMAL;
  if (vLevel == "Normal")   _korali_verbosity = KORALI_NORMAL;
  if (vLevel == "Detailed") _korali_verbosity = KORALI_DETAILED;
- if (_korali_verbosity == KORALI_UNDEFINED) koraliError("Incorrect or undefined Verbosity Level '%s'\n.", vLevel.c_str());
+ if (_korali_verbosity == KORALI_UNDEFINED) Korali::logError("Incorrect or undefined Verbosity Level '%s'\n.", vLevel.c_str());
 
  _result_dir = consume(_js, { "General", "Results Output", "Path" }, KORALI_STRING, "_korali_result");
 
@@ -118,7 +118,7 @@ void Korali::Engine::setConfiguration()
   for (size_t i = 0; i < _js["Variables"].size(); i++) _variables.push_back(new Korali::Variable());
 
  N = _variables.size();
- if (N == 0) koraliError("No variables have been defined.\n");
+ if (N == 0) Korali::logError("No variables have been defined.\n");
 
  for (size_t i = 0; i < N; i++) _variables[i]->setConfiguration(_js["Variables"][i]);
 
@@ -127,15 +127,15 @@ void Korali::Engine::setConfiguration()
  if (_problemType == "Sampling") _problem = std::make_shared<Korali::Problem::Sampling>();
  if (_problemType == "Bayesian Inference") _problem = std::make_shared<Korali::Problem::Bayesian>();
  if (_problemType == "Hierarchical Bayesian") _problem = std::make_shared<Korali::Problem::Hierarchical>();
- if (_problem == nullptr) koraliError("Incorrect or undefined Problem '%s'.\n", _problemType.c_str());
+ if (_problem == nullptr) Korali::logError("Incorrect or undefined Problem '%s'.\n", _problemType.c_str());
 
  // Configure Solver
 
- if (_solverType == "CMAES") _solver = std::make_shared<Korali::Solver::CMAES>();
+ if (_solverType == "CMAES")  _solver = std::make_shared<Korali::Solver::CMAES>();
  if (_solverType == "DEA")    _solver = std::make_shared<Korali::Solver::DEA>();
  if (_solverType == "MCMC")   _solver = std::make_shared<Korali::Solver::MCMC>();
  if (_solverType == "TMCMC")  _solver = std::make_shared<Korali::Solver::TMCMC>();
- if (_solver == nullptr) koraliError("Incorrect or undefined Solver '%s'.\n", _solverType.c_str());
+ if (_solver == nullptr) Korali::logError("Incorrect or undefined Solver '%s'.\n", _solverType.c_str());
 
  // Setting module configuration
  _problem->setConfiguration();
@@ -151,7 +151,7 @@ void Korali::Engine::setConfiguration()
  _functionEvaluationCount = consume(_js, { "General", "Function Evaluation Count" }, KORALI_NUMBER, "0");
  _isFinished = consume(_js, { "General", "Is Finished" }, KORALI_BOOLEAN, "false");
 
- if (isEmpty(_js) == false) koraliError("Unrecognized Settings for Korali:\n %s \n", _js.dump(2).c_str());
+ if (isEmpty(_js) == false) Korali::logError("Unrecognized Settings for Korali:\n %s \n", _js.dump(2).c_str());
  _js = js;
 }
 
@@ -159,20 +159,32 @@ void Korali::Engine::setConfiguration()
 /*                    Functional Methods                                */
 /************************************************************************/
 
-void Korali::Engine::setModel(std::function<void(Korali::Model&)> model)
+void Korali::Engine::setDirectModel(std::function<void(Korali::Model::Direct&)> model)
 {
- _model = model;
- _modelDefined = true;
+ _modelType = "Direct";
+ _directModel = model;
 }
 
-void Korali::Engine::addConstraint(std::function<void(Korali::Model&)> constraint)
+void Korali::Engine::setLikelihoodModel(std::function<void(Korali::Model::Likelihood&)> model)
+{
+ _modelType = "Likelihood";
+ _likelihoodModel = model;
+}
+
+void Korali::Engine::setReferenceModel(std::function<void(Korali::Model::Reference&)> model)
+{
+ _modelType = "Reference";
+ _referenceModel = model;
+}
+
+void Korali::Engine::addConstraint(std::function<void(Korali::Model::Constraint&)> constraint)
 {
  _constraints.push_back(constraint);
 }
 
 void Korali::Engine::start(bool isDryRun)
 {
- if(_isFinished) { koraliWarning(KORALI_MINIMAL, "Cannot restart engine, a previous run has already been executed.\n"); return; }
+ if(_isFinished) { Korali::logWarning(KORALI_MINIMAL, "Cannot restart engine, a previous run has already been executed.\n"); return; }
  _k = this; 
 
  setConfiguration();
@@ -206,9 +218,9 @@ void Korali::Engine::start(bool isDryRun)
 
    if (_currentGeneration % _consoleOutputFrequency == 0)
    {
-    koraliLog(KORALI_MINIMAL,  "--------------------------------------------------------------------\n");
-    koraliLog(KORALI_MINIMAL,  "Generation: #%zu\n", _currentGeneration);
-    koraliLog(KORALI_DETAILED, "Generation Time: %.3fs\n", std::chrono::duration<double>(t1-t0).count());
+    Korali::logInfo(KORALI_MINIMAL,  "--------------------------------------------------------------------\n");
+    Korali::logInfo(KORALI_MINIMAL,  "Generation: #%zu\n", _currentGeneration);
+    Korali::logInfo(KORALI_DETAILED, "Generation Time: %.3fs\n", std::chrono::duration<double>(t1-t0).count());
     _solver->printGeneration();
    }
 
@@ -220,18 +232,18 @@ void Korali::Engine::start(bool isDryRun)
   saveState(_currentGeneration);
   saveState("final.json");
 
-  koraliLog(KORALI_MINIMAL, "--------------------------------------------------------------------\n");
-  koraliLog(KORALI_MINIMAL, "%s finished correctly.\n", _solverType.c_str(), _currentGeneration);
+  Korali::logInfo(KORALI_MINIMAL, "--------------------------------------------------------------------\n");
+  Korali::logInfo(KORALI_MINIMAL, "%s finished correctly.\n", _solverType.c_str(), _currentGeneration);
 
   _solver->finalize();
   _problem->finalize();
   _conduit->finalize();
 
-  koraliLog(KORALI_MINIMAL, "--------------------------------------------------------------------\n");
-  koraliLog(KORALI_MINIMAL, "Total Generations: %lu\n", _currentGeneration);
-  koraliLog(KORALI_MINIMAL, "Total Function Evaluations: %lu\n", _functionEvaluationCount);
-  koraliLog(KORALI_MINIMAL, "Elapsed Time: %.3fs\n", std::chrono::duration<double>(endTime-startTime).count());
-  koraliLog(KORALI_MINIMAL, "Results saved to folder: '%s'\n", _result_dir.c_str());
+  Korali::logInfo(KORALI_MINIMAL, "--------------------------------------------------------------------\n");
+  Korali::logInfo(KORALI_MINIMAL, "Total Generations: %lu\n", _currentGeneration);
+  Korali::logInfo(KORALI_MINIMAL, "Total Function Evaluations: %lu\n", _functionEvaluationCount);
+  Korali::logInfo(KORALI_MINIMAL, "Elapsed Time: %.3fs\n", std::chrono::duration<double>(endTime-startTime).count());
+  Korali::logInfo(KORALI_MINIMAL, "Results saved to folder: '%s'\n", _result_dir.c_str());
  }
 }
 
@@ -242,12 +254,6 @@ void Korali::Engine::saveState(std::string fileName)
 
  fileName = "./" + _result_dir + "/" + fileName;
  saveJsonToFile(fileName.c_str(), _js);
-}
-
-std::string Korali::Engine::getResults(std::string fileName)
-{
- auto js = loadJsonFromFile(fileName.c_str());
- return js.dump();
 }
 
 void Korali::Engine::saveState(int fileId)

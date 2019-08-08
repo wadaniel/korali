@@ -1,0 +1,32 @@
+#ifndef _KORALI_MODELS_LIKELIHOOD_HPP_
+#define _KORALI_MODELS_LIKELIHOOD_HPP_
+
+#include "models/base.hpp"
+#include "math.h"
+
+namespace Korali { namespace Model {
+
+class Likelihood : public Korali::Model::Base
+{
+  private:
+
+  public:
+
+  double _likelihood;
+
+  void setLikelihood(double x)
+  {
+    // Check for result correctness
+   ((Likelihood*)_self)->_likelihood = x;
+  }
+
+  void setLogLikelihood(double x)
+  {
+      // Check for result correctness
+   ((Likelihood*)_self)->_likelihood = exp(x);
+  }
+};
+
+} } // namespace Korali::Model
+
+#endif // _KORALI_MODELS_CONSTRAINT_HPP_

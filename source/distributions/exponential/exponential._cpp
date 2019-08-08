@@ -30,6 +30,24 @@ double Korali::Distribution::Exponential::getRandomNumber()
  return _location + gsl_ran_exponential(_range, _mean);
 }
 
+void Korali::Distribution::Exponential::getRandomVector(double *x, size_t n)
+{
+ for (size_t i = 0; i < n; i++)
+  x[i] = getRandomNumber();
+}
+
+void Korali::Distribution::Exponential::getDensityVector(double *x, double* result, size_t n)
+{
+ for (size_t i = 0; i < n; i++)
+   result[i] = getDensity(x[i]);
+}
+
+void Korali::Distribution::Exponential::getLogDensityVector(double *x, double* result, size_t n)
+{
+ for (size_t i = 0; i < n; i++)
+   result[i] = getLogDensity(x[i]);
+}
+
 void Korali::Distribution::Exponential::updateDistribution()
 {
  _aux = 0.0;

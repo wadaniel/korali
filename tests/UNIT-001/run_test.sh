@@ -1,42 +1,43 @@
 #!/bin/bash
 
-##############################################################################
-# Brief: Distributed Linked Conduit for Sequential Bayesian Inference
-# Type: Unit Test 
-# Description:
-# Tests the distributed linked conduit for a bayesian inference problem using
-# a sequential heat diffusion solver on 2D. 
-# Steps: 
-# 1 - Operation: Compile test case.
-#     Expected result: Correct compilation with rc = 0.
-#     If MPI is not installed (e.g., macOs) , it will not compile. 
-# 2 - Operation: Run 8x1 distribution.
-#     Expected result: 8 Concurrent teams of 1 MPI rank run with rc = 0.
-#     If MPI is not installed (e.g., macOs) , it will not run.
-###############################################################################
-
-###### Auxiliar Functions and Variables #########
-
 source ../functions.sh
 
-############# STEP 1 ##############
-
-if [[ $MPICXX == "" ]]
-then
- echo "[Korali] MPI not installed, skipping test."
- exit 0
+archString=`uname -a`
+if [[ $archString == *"Darwin"* ]]; then
+  echo "Skipping C++ tests on Darwin"
+  exit 0
 fi
 
-logEcho "[Korali] Compiling heat2d_posterior..."
+logEcho "[Korali] Running C++ Test..."
 
-make clean >> $logFile 
+pushd ../../tutorials/b3-running-cxx/
+dir=$PWD
+
+logEcho "-------------------------------------"
+logEcho " Entering Folder: $dir"
+
+log "[Korali] Removing any old result files..."
+rm -rf _korali_results >> $logFile 2>&1
 check_result
 
-make -j 4 >> $logFile
+log "[Korali] Compiling test case..."
+make clean >> $logFile 2>&1
 check_result
 
-############# STEP 2 ##############
-
-logEcho "[Korali] Running mpirun -n 9 ./heat2d_posterior..."
-mpirun -n 9 ./heat2d_posterior >> $logFile
+make -j >> $logFile 2>&1
 check_result
+
+for file in *.cpp
+do
+  if [ ! -f $file ]; then continue; fi
+
+  execName=${file%.*}
+  logEcho "  + Running File: $execName"
+  ./$execName >> $logFile 2>&1
+  check_result
+done
+
+logEcho "-------------------------------------"
+
+popd
+

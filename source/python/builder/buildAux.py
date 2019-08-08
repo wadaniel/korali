@@ -61,7 +61,7 @@ def consumeValue(base, moduleName, path, varName, varType, varDefault):
  
  cString += '  else '
  if (varDefault == ''):
-  cString += '  koraliError("No value provided for mandatory setting: ' + path.replace('"', "'") + ' required by ' + moduleName + '.\\n"); \n'
+  cString += '  Korali::logError("No value provided for mandatory setting: ' + path.replace('"', "'") + ' required by ' + moduleName + '.\\n"); \n'
  else:
   if ("std::string" in varType): varDefault = '"' + varDefault + '"'
   cString += varName + ' = ' + varDefault + ';'

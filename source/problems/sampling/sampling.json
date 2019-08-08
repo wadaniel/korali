@@ -2,6 +2,7 @@
  "Name": "Sampling",
  "Alias": "Sampling",
  "Class": "Sampling",
+ "Compatible Solvers": [ "MCMC", "TMCMC" ],
  
  "Problem Configuration": 
  [

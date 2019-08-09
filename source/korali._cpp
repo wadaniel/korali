@@ -113,6 +113,13 @@ void Korali::Engine::setConfiguration()
 
  _result_dir = consume(_js, { "General", "Results Output", "Path" }, KORALI_STRING, "_korali_result");
 
+ // Create Variables
+ if (isArray(_js, { "Variables" } ))
+  for (size_t i = 0; i < _js["Variables"].size(); i++) _variables.push_back(new Korali::Variable());
+
+ N = _variables.size();
+ if (N == 0) Korali::logError("No variables have been defined.\n");
+
  // Configure Problem
  if (_problemType == "Optimization")  _problem = new Korali::Problem::Optimization();
  if (_problemType == "Sampling") _problem = new Korali::Problem::Sampling();
@@ -127,13 +134,6 @@ void Korali::Engine::setConfiguration()
  if (_solverType == "MCMC")   _solver = new Korali::Solver::MCMC();
  if (_solverType == "TMCMC")  _solver = new Korali::Solver::TMCMC();
  if (_solver == nullptr) Korali::logError("Incorrect or undefined Solver '%s'.\n", _solverType.c_str());
-
- // Create Variables
- if (isArray(_js, { "Variables" } ))
-  for (size_t i = 0; i < _js["Variables"].size(); i++) _variables.push_back(new Korali::Variable());
-
- N = _variables.size();
- if (N == 0) Korali::logError("No variables have been defined.\n");
 
  // Setting configuration for the modules
  for (size_t i = 0; i < N; i++) _variables[i]->setConfiguration(_js["Variables"][i]);

@@ -115,19 +115,25 @@
     "Name": [ "Chain Candidates LogLikelihoods" ],
     "Type": "std::vector<double>",
     "Description": "The logLikelihoods of the chain candidates."
+   }, 
+   {
+    "Name": [ "Chain Candidates LogPriors" ],
+    "Type": "std::vector<double>",
+    "Description": "The logPriors of the chain candidates."
    },
+
    {
     "Name": [ "Chain Leader Parameters" ],
     "Type": "std::vector<double>",
     "Description": "Current (theta) parameters of the chain leader sample."
    },
    {
-    "Name": [ "Chain Leaders Log Likelihoods" ],
+    "Name": [ "Chain Leaders LogLikelihoods" ],
     "Type": "std::vector<double>",
     "Description": "The logLikelihoods of the chain leaders."
    },
    {
-    "Name": [ "Chain Leaders Log Priors" ],
+    "Name": [ "Chain Leaders LogPriors" ],
     "Type": "std::vector<double>",
     "Description": "The logPriors of the chain leaders."
    },

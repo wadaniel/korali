@@ -1,7 +1,7 @@
 {
- "Name":  "Hierarchical Bayesian Modeling",
- "Alias": "Hierarchical Bayesian",
- "Class": "Hierarchical",
+ "Name":  "Hierarchical Bayesian (Psi)",
+ "Alias": "Hierarchical Bayesian (Psi)",
+ "Class": "HierarchicalPsi",
  "Compatible Solvers": [ "CMAES", "DEA", "MCMC", "TMCMC" ],
 
  "Problem Configuration":

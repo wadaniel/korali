@@ -112,7 +112,7 @@ void Korali::Engine::setConfiguration()
  if (_problemType == "Optimization")  _problem = new Korali::Problem::Optimization();
  if (_problemType == "Sampling") _problem = new Korali::Problem::Sampling();
  if (_problemType == "Bayesian Inference") _problem = new Korali::Problem::Bayesian();
- if (_problemType == "Hierarchical Bayesian") _problem = new Korali::Problem::Hierarchical();
+ if (_problemType == "Hierarchical Bayesian (Psi)") _problem = new Korali::Problem::HierarchicalPsi();
  if (_problem == nullptr) Korali::logError("Incorrect or undefined Problem '%s'.\n", _problemType.c_str());
 
  _problem->setConfiguration(_js["Problem"]);

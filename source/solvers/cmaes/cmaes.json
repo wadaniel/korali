@@ -8,43 +8,43 @@
    {
     "Name": [ "Sample Count" ],
     "Type": "size_t",
-    "Description": "Specifies the number of samples to evaluate per generation (preferably 4+3*log(N) number of variables)."
+    "Description": "Specifies the number of samples to evaluate per generation (by default it's $4+3*log(N)$, where $N$ is the number of variables)."
    },
    {
     "Name": [ "Mu Value" ],
     "Default": "_sampleCount*0.5",
     "Type": "size_t",
-    "Description": "Number of best samples used to update the covariance matrix and the mean."
+    "Description": "Number of best samples used to update the covariance matrix and the mean (by default it is half the Sample Count)."
    },
    {
     "Name": [ "Mu Type" ],
     "Default": "Logarithmic",
     "Type": "std::string",
-    "Description": "Weights given to the Mu best values to update the covariance matrix and the mean."
+    "Description": "Weights given to the Mu best values to update the covariance matrix and the mean (possible options are Linear, Equal or Logarithmic, by default it is Linear)."
    },
    {
     "Name": [ "Initial Sigma Cumulation Factor" ],
     "Default": "-1.0",
     "Type": "double",
-    "Description": "Controls the learning rate of the conjugate evolution path."
+    "Description": "Controls the learning rate of the conjugate evolution path (by default this variable is internally calibrated)."
    },
    {
     "Name": [ "Initial Damp Factor" ],
     "Default": "-1.0",
     "Type": "double",
-    "Description": "Controls the updates of the covariance matrix scaling factor."
+    "Description": "Controls the updates of the covariance matrix scaling factor (by default this variable is internally calibrated)."
    },
    {
     "Name": [ "Is Sigma Bounded" ],
     "Default": "false",
     "Type": "bool",
-    "Description": "Sets an upper bound for the covariance matrix scaling factor. The upper bound is given by the average of the initial standard deviation of the variables"
+    "Description": "Sets an upper bound for the covariance matrix scaling factor. The upper bound is given by the average of the initial standard deviation of the variables."
    },
    {
     "Name": [ "Initial Cumulative Covariance" ],
     "Default": "-1.0",
     "Type": "double",
-    "Description": "Controls the learning rate of the evolution path for the covariance update (must be in (0,1])."
+    "Description": "Controls the learning rate of the evolution path for the covariance update (must be in (0,1], by default this variable is internally calibrated)."
    },
    {
     "Name": [ "Is Diagonal" ],
@@ -62,7 +62,7 @@
     "Name": [ "Viability Mu" ],
     "Default": "2",
     "Type": "size_t",
-    "Description": "Number of best samples used to update the covariance matrix and the mean during the viability regime."
+    "Description": "Number of best samples used to update the covariance matrix and the mean during the viability regime (by default this variable is hald the Viability Sample Count)."
    },
    {
     "Name": [ "Max Covariance Matrix Corrections" ],
@@ -86,13 +86,13 @@
     "Name": [ "Normal Vector Learning Rate" ],
     "Default": "-1.0",
     "Type": "double",
-    "Description": "Learning rate of constraint normal vectors (must be in (0, 1]), or -1 to disable."
+    "Description": "Learning rate of constraint normal vectors (must be in (0, 1], by default this variable is internally calibrated)."
    },
    {
     "Name": [ "Global Success Learning Rate" ],
     "Default": "0.2",
     "Type": "double",
-    "Description": "Learning rate of success probability of objective function improvements. Required for covariance matrix scaling factor update during viability regime."
+    "Description": "Learning rate of success probability of objective function improvements."
    }
  ],
  
@@ -152,14 +152,14 @@
     "Type": "double",
     "Default": "std::numeric_limits<double>::lowest()",
     "Criteria": "_currentMinStandardDeviation < _minStandardDeviation",
-    "Description": "Specifies the minimal standard deviation for any dimension in any proposed sample."
+    "Description": "Specifies the minimal standard deviation for any variable in any proposed sample."
    },
    {
     "Name": [ "Max Standard Deviation" ],
     "Type": "double",
     "Default": "std::numeric_limits<double>::max()",
     "Criteria": "_currentMaxStandardDeviation > _maxStandardDeviation",
-    "Description": "Specifies the maximal standard deviation for any dimension in any proposed sample."
+    "Description": "Specifies the maximal standard deviation for any variable in any proposed sample."
    },
    {
     "Name": [ "Min Standard Deviation Step Factor" ],
@@ -176,31 +176,31 @@
     "Name": [ "Lower Bound" ],
     "Type": "double",
     "Default": "NAN",
-    "Description": "Specifies the lower bound for the variable's value. Korali will not generate samples for which this variable falls below the specified minimum."
+    "Description": "Specifies the lower bound for the variable's value. Korali will not generate samples for which its value falls below the Lower Bound."
    },
    {
     "Name": [ "Upper Bound" ],
     "Type": "double",
     "Default": "NAN",
-    "Description": "Specifies the upper bound for the variable's value. Korali will not generate samples for which this variable falls below the specified maximum."
+    "Description": "Specifies the upper bound for the variable's value. Korali will not generate samples for which its value falls above the Upper Bound."
    },
    {
     "Name": [ "Initial Mean" ],
     "Type": "double",
     "Default": "(_upperBound + _lowerBound)*0.5",
-    "Description": "Defines the initial mean for the proposal distribution. This value must be defined between the variable's Mininum and Maximum settings By default, Korali sets this value in the center of the domain."
+    "Description": "Defines the initial mean for the proposal distribution. This value must be defined between the variable's Mininum and Maximum settings (by default, this value is given by the center of the variable domain)."
    },
    {
     "Name": [ "Initial Standard Deviation" ],
     "Type": "double",
     "Default": "(_upperBound - _lowerBound)*0.3",
-    "Description": "Defines the initial standard deviation of the proposal distribution for a variable. By default, Korali sets this value to 30% of the domain width."
+    "Description": "Defines the initial standard deviation of the proposal distribution for a variable (by default, this value is given by 30% of the variable domain width)."
    },
    {
     "Name": [ "Minimum Standard Deviation Changes" ],
     "Type": "double",
     "Default": "0.0",
-    "Description": "Defines a lower bound for the standard deviation updates of the proposal distribution for a variable. Korali increases the scaling factor $\\sigma$ if this value is undershot. By default, Korali sets this value to 0.0 (inactive)."
+    "Description": "Defines a lower bound for the standard deviation updates of the proposal distribution for a variable. Korali increases the scaling factor $\\sigma$ if this value is undershot."
    },
    {
     "Name": [ "Is Discrete" ],
@@ -231,7 +231,7 @@
    {
     "Name": [ "Previous Value Vector" ],
     "Type": "std::vector<double>",
-    "Description": "Objection Function Values from previous evaluations."
+    "Description": "Objection Function Values from previous generation."
    },
    {
     "Name": [ "Current Sample Count" ],
@@ -256,17 +256,17 @@
    {
     "Name": [ "Sigma Cumulation Factor" ],
     "Type": "double",
-    "Description": "Increment for sigma, default calculated from muEffective and dimension (must be in (0,1) )."
+    "Description": "Increment for sigma, calculated from muEffective and dimension."
    },
    {
     "Name": [ "Damp Factor" ],
     "Type": "double",
-    "Description": "Dampening parameter controls step size adaption (must be in (0,1) )."
+    "Description": "Dampening parameter controls step size adaption."
    },
    {
     "Name": [ "Cumulative Covariance" ],
     "Type": "double",
-    "Description": "Default calculated from dimension."
+    "Description": "Controls the step size adaption."
    },
    {
     "Name": [ "Chi Square Number" ],
@@ -286,7 +286,7 @@
    {
     "Name": [ "Trace" ],
     "Type": "double",
-    "Description": "Variable to init sigma (or set upper bound)."
+    "Description": "The trace of the initial covariance matrix."
    },
    {
     "Name": [ "Sample Population" ],
@@ -296,7 +296,7 @@
    {
     "Name": [ "Sample Candidates" ],
     "Type": "std::vector<double>",
-    "Description": "Sample candidate coordinates to evaluate."
+    "Description": "Sample candidates coordinate information."
    },
    {
     "Name": [ "Is Initialized Sample" ],
@@ -311,12 +311,12 @@
    {
     "Name": [ "Current Best Value" ],
     "Type": "double",
-    "Description": "Best value from current generation."
+    "Description": "Best model evaluation from current generation."
    },
    {
     "Name": [ "Current Best Coordinates" ],
     "Type": "std::vector<double>",
-    "Description": "Coordinates of the best sample ever."
+    "Description": "Coordinates of the best sample."
    },
    {
     "Name": [ "Best Ever Coordinates" ],
@@ -326,27 +326,27 @@
    {
     "Name": [ "Previous Best Value" ],
     "Type": "double",
-    "Description": "Best fitness from previous generation."
+    "Description": "Best model evaluation from previous generation."
    },
    {
     "Name": [ "Best Sample Index" ],
     "Type": "size_t",
-    "Description": "Index of the best sample so far."
+    "Description": "Index of the best sample in current generation."
    },
    {
     "Name": [ "Best Ever Value" ],
     "Type": "double",
-    "Description": "Value of the best sample so far."
+    "Description": "Best ever model evaluation."
    },
    {
     "Name": [ "Previous Best Ever Value" ],
     "Type": "double",
-    "Description": "Value of the previous best sample ever."
+    "Description": "Best ever model evaluation as of previous generation."
    },
    {
     "Name": [ "Sorting Index" ],
     "Type": "std::vector<size_t>",
-    "Description": "Sorted indeces of samples according to their fitness value."
+    "Description": "Sorted indeces of samples according to their model evaluation."
    },
    {
     "Name": [ "Covariance Matrix" ],
@@ -386,22 +386,22 @@
    {
     "Name": [ "BDZ Matrix" ],
     "Type": "std::vector<double>",
-    "Description": "Temporary storage to hold B*D*randn()."
+    "Description": "Temporary storage."
    },
    {
     "Name": [ "Auxiliar BDZ Matrix" ] ,
     "Type": "std::vector<double>",
-    "Description": "Temporary storage to hold B*D*randn()."
+    "Description": "Temporary storage."
    },
    {
     "Name": [ "Current Mean" ],
     "Type": "std::vector<double>",
-    "Description": "Current Mean Distribution Proposal."
+    "Description": "Current mean of proposal distribution."
    },
    {
     "Name": [ "Previous Mean" ],
     "Type": "std::vector<double>",
-    "Description": "Mean parent on previous generation."
+    "Description": "Previous mean of proposal distribution."
    },
    {
     "Name": [ "Mean Update" ],

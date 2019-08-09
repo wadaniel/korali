@@ -11,6 +11,8 @@ class Gamma : public Korali::Distribution::Base {
 
  public:
 
+ Gamma();
+
  void updateConditionals(const std::vector<double>& sample) override;
  void updateDistribution() override;
 

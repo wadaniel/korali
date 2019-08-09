@@ -1,5 +1,10 @@
 #include "korali.hpp"
 
+Korali::Distribution::Gaussian::Gaussian()
+{
+ _standardDeviation = 1.0;
+}
+
 void Korali::Distribution::Gaussian::initialize()
 {
  Korali::Distribution::Base::initialize();

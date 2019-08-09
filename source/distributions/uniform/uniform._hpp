@@ -11,6 +11,8 @@ class Uniform : public Korali::Distribution::Base {
 
  public:
 
+ Uniform();
+
  void updateConditionals(const std::vector<double>& sample) override;
  void updateDistribution() override;
 

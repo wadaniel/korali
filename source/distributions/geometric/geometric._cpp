@@ -1,5 +1,9 @@
 #include "korali.hpp"
 
+Korali::Distribution::Geometric::Geometric()
+{
+}
+
 void Korali::Distribution::Geometric::initialize()
 {
  Korali::Distribution::Base::initialize();

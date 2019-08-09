@@ -1,5 +1,12 @@
 #include "korali.hpp"
 
+Korali::Distribution::Uniform::Uniform()
+{
+ _minimum = 1.0;
+ _maximum = 2.0;
+}
+
+
 void Korali::Distribution::Uniform::initialize()
 {
  Korali::Distribution::Base::initialize();

@@ -70,7 +70,8 @@ def buildDistributions(koraliDir):
     
   for v in distributionConfig["Internal Settings"]:
     distributionCodeString += consumeValue('js', distributionConfig["Alias"], '["Internal"]' + getVariablePath(v),  getCXXVariableName(v), getVariableType(v), 'Korali Skip Default')
-  
+   
+  distributionCodeString += ' if(isEmpty(js) == false) Korali::logError("Unrecognized settings for the ' + distributionConfig["Name"] + ' distribution: \\n%s\\n", js.dump(2).c_str());\n'   
   distributionCodeString += '} \n\n'
   
   ###### Creating Distribution Get Configuration routine
@@ -124,11 +125,11 @@ def buildDistributions(koraliDir):
   for v in distributionConfig["Conditional Variables"]: 
     conditionalCheckString += ' bool ' + getCXXVariableName(v) + 'Recognized = false;\n'
     
-  conditionalCheckString += ' for (size_t i = 0; i < _k->N; i++)\n'
+  conditionalCheckString += ' for (size_t i = 0; i < _k->_problem->getSampleSize(); i++)\n'
   conditionalCheckString += ' {\n'
     
   for v in distributionConfig["Conditional Variables"]: 
-    conditionalCheckString += '  if (_k->_variables[i]->_name == ' + getCXXVariableName(v) + 'Conditional) \n'
+    conditionalCheckString += '  if (_k->_problem->getVariable(i)->_name == ' + getCXXVariableName(v) + 'Conditional) \n'
     conditionalCheckString += '  {\n'
     conditionalCheckString += '   ' + getCXXVariableName(v) + 'Recognized = true;\n'
     conditionalCheckString += '   hasConditionals = true;\n'
@@ -154,6 +155,7 @@ def buildDistributions(koraliDir):
   if (baseFileTime >= newFileTime):
     with open(distributionBaseFileName, 'r') as file: distributionBaseCodeString = file.read()
     distributionBaseCodeString += '\n\n' + distributionCodeString
+    distributionBaseCodeString = distributionBaseCodeString.replace('// Check for conditional properties', conditionalCheckString)
     print('[Korali] Creating: ' + distributionNewCodeFile + '...')
     with open(distributionNewCodeFile, 'w') as file: file.write(distributionBaseCodeString)
  

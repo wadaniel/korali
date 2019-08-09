@@ -166,7 +166,7 @@
     "Type": "double",
     "Default": "std::numeric_limits<double>::lowest()",
     "Criteria": "_k->_hasComputedGeneration && (_currentMinStandardDeviationStep < _minStandardDeviationStepFactor)",
-    "Description": "Specifies a scaling factor under which the standard deviation does not change in the direction of the eigenvectors."
+    "Description": "Specifies the minimum standard deviation in the direction of the eigenvectors."
    }
  ],
  

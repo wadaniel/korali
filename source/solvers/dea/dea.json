@@ -30,7 +30,7 @@
    },
    {
     "Name": [ "Parent Selection Rule" ],
-    "Default": "Best",
+    "Default": "Random",
     "Type": "std::string",
     "Description": "Defines the selection rule of the parent vecor: 'Random' or 'Best'."
    },

@@ -14,9 +14,9 @@ k.addConstraint( g1 )
 k["Problem"]["Type"] = "Optimization"
 k["Problem"]["Objective"] = "Maximize"
 
-k["Variables"][0]["Name"] = "X";
-k["Variables"][0]["Lower Bound"] = -10.0;
-k["Variables"][0]["Upper Bound"] = +10.0;
+k["Problem"]["Variables"][0]["Name"] = "X";
+k["Problem"]["Variables"][0]["Lower Bound"] = -10.0;
+k["Problem"]["Variables"][0]["Upper Bound"] = +10.0;
 
 k["Solver"]["Type"]  = "CMAES" 
 k["Solver"]["Sample Count"] = 32
@@ -59,10 +59,10 @@ assert_value( k["Solver"]["Internal"]["Number Of Discrete Mutations"], 0 )
 assert_value( k["Solver"]["Internal"]["Number Masking Matrix Entries"], 0 )
 
 # Testing Variables
-assert_value( k["Variables"][0]["Initial Mean"], 0.0 )
-assert_value( k["Variables"][0]["Initial Standard Deviation"], 6.0 )
-assert_value( k["Variables"][0]["Lower Bound"], -10.0 )
-assert_value( k["Variables"][0]["Minimum Standard Deviation Changes"], 0.0 )
-assert_value( k["Variables"][0]["Upper Bound"], 10.0 )
+assert_value( k["Problem"]["Variables"][0]["Initial Mean"], 0.0 )
+assert_value( k["Problem"]["Variables"][0]["Initial Standard Deviation"], 6.0 )
+assert_value( k["Problem"]["Variables"][0]["Lower Bound"], -10.0 )
+assert_value( k["Problem"]["Variables"][0]["Minimum Standard Deviation Changes"], 0.0 )
+assert_value( k["Problem"]["Variables"][0]["Upper Bound"], 10.0 )
 
 

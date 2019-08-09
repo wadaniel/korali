@@ -6,6 +6,11 @@
  
  "Problem Configuration": 
  [
+   {
+    "Name": [ "Variables" ],
+    "Type": "std::vector<Korali::Variable*>",
+    "Description": "The set of problems variables."
+   }
  ],
  
  "Variables Configuration": 

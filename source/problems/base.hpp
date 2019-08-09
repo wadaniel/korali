@@ -2,6 +2,7 @@
 #define _KORALI_PROBLEM_BASE_HPP_
 
 #include "auxiliars/json.hpp"
+#include "variable/variable.hpp"
 
 namespace Korali { namespace Problem {
 
@@ -10,8 +11,12 @@ class Base
   public:
 
   virtual void runModel(std::vector<double>, size_t sampleId) = 0;
-  virtual double evaluateFitness() = 0;
-  virtual double evaluateLogPrior(double* sample) = 0;
+
+  virtual size_t getSampleSize() = 0;
+  virtual Korali::Variable* getVariable(size_t variableId) = 0;
+
+  virtual double evaluateSampleFitness() = 0;
+  virtual double evaluateSampleLogPrior(double* sample) = 0;
 
   virtual void initialize() = 0;
   virtual void finalize() = 0;

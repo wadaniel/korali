@@ -101,18 +101,19 @@ void Korali::Conduit::MPI::workerThread()
 
    if (sampleId != -1)
    {
-    double sample[_k->N];
-    MPI_Recv(&sample, _k->N, MPI_DOUBLE, getRootRank(), MPI_TAG_SAMPLE, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    size_t sampleSize = _k->_problem->getSampleSize();
+    double sample[sampleSize];
+    MPI_Recv(&sample, sampleSize, MPI_DOUBLE, getRootRank(), MPI_TAG_SAMPLE, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
     std::vector<double> sampleVector;
-    for (size_t i = 0; i < _k->N; i++) sampleVector.push_back(sample[i]);
+    for (size_t i = 0; i < sampleSize; i++) sampleVector.push_back(sample[i]);
 
     _k->_problem->runModel(sampleVector, sampleId);
 
     bool isLeader = (_localRankId == 0);
     if (isLeader)
     {
-     double fitness = _k->_problem->evaluateFitness();
+     double fitness = _k->_problem->evaluateSampleFitness();
      MPI_Send(&fitness, 1, MPI_DOUBLE, getRootRank(), MPI_TAG_FITNESS, MPI_COMM_WORLD);
     }
 
@@ -137,10 +138,11 @@ void Korali::Conduit::MPI::evaluateSample(double* sampleArray, size_t sampleId)
 
  for (int i = 0; i < _ranksPerTeam; i++)
  {
+  size_t sampleSize = _k->_problem->getSampleSize();
   int workerId = _teamWorkers[teamId][i];
   int continueFlag = 1;
   MPI_Send(&sampleId, 1, MPI_INT, workerId, MPI_TAG_ID, MPI_COMM_WORLD);
-  MPI_Send(sampleArray, _k->N, MPI_DOUBLE, workerId, MPI_TAG_SAMPLE, MPI_COMM_WORLD);
+  MPI_Send(sampleArray, sampleSize, MPI_DOUBLE, workerId, MPI_TAG_SAMPLE, MPI_COMM_WORLD);
  }
  #endif
 }

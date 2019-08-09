@@ -17,9 +17,9 @@ k = korali.initialize()
 k["Problem"]["Type"] = "Optimization"
 k["Problem"]["Objective"] = "Maximize"
 
-k["Variables"][0]["Name"] = "X"
-k["Variables"][0]["Lower Bound"] = -10.0
-k["Variables"][0]["Upper Bound"] = +10.0
+k["Problem"]["Variables"][0]["Name"] = "X"
+k["Problem"]["Variables"][0]["Lower Bound"] = -10.0
+k["Problem"]["Variables"][0]["Upper Bound"] = +10.0
 
 k["Solver"]["Type"]  = "DEA"
 k["Solver"]["Sample Count"] = 10

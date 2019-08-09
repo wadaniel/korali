@@ -33,8 +33,6 @@
 #include "models/likelihood/likelihood.hpp"
 #include "models/reference/reference.hpp"
 
-#include "variable/variable.hpp"
-
 #include "auxiliars/json.hpp"
 #include "auxiliars/koralijson.hpp"
 #include "auxiliars/logger.hpp"
@@ -50,7 +48,6 @@ class Engine {
  nlohmann::json  _js;
  nlohmann::json& operator[](std::string key) { return _js[key]; }
 
- size_t N;
  size_t _currentGeneration;
  size_t _consoleOutputFrequency;
  size_t _resultsOutputFrequency;
@@ -67,7 +64,6 @@ class Engine {
  std::string _problemType;
  std::string _modelType;
 
- std::vector<Korali::Variable*> _variables;
  Korali::Conduit::Base* _conduit;
  Korali::Problem::Base* _problem;
  Korali::Solver::Base*  _solver;

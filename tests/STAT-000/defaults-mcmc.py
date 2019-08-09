@@ -11,9 +11,9 @@ k.setDirectModel(evaluateModel)
 
 k["Problem"]["Type"] = "Sampling"
 
-k["Variables"][0]["Name"] = "X"
-k["Variables"][0]["Initial Mean"] = 0.0
-k["Variables"][0]["Initial Standard Deviation"] = 1.000
+k["Problem"]["Variables"][0]["Name"] = "X"
+k["Problem"]["Variables"][0]["Initial Mean"] = 0.0
+k["Problem"]["Variables"][0]["Initial Standard Deviation"] = 1.000
 
 k["Solver"]["Type"]  = "MCMC"
 
@@ -44,7 +44,7 @@ assert_value( k["Solver"]["Internal"]["Rejection Alphas"][0], 0.0 )
 
 # Test Variables
 
-assert_value( k["Variables"][0]["Initial Mean"], 0.0 )
-assert_value( k["Variables"][0]["Initial Standard Deviation"], 1.0 )
+assert_value( k["Problem"]["Variables"][0]["Initial Mean"], 0.0 )
+assert_value( k["Problem"]["Variables"][0]["Initial Standard Deviation"], 1.0 )
 
 

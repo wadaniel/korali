@@ -7,6 +7,11 @@
  "Problem Configuration": 
  [
    {
+    "Name": [ "Variables" ],
+    "Type": "std::vector<Korali::Variable*>",
+    "Description": "The set of problems variables."
+   },
+   {
     "Name": [ "Objective" ],
     "Type": "std::string",
     "Description": "Indicates whether Korali will minimize or maximize the function evaluation."
@@ -19,5 +24,6 @@
  
  "Internal Settings": 
  [
+
  ]
 }

@@ -65,8 +65,6 @@ void Korali::Engine::getConfiguration()
  if (_problem != nullptr) _problem->getConfiguration(_js["Problem"]);
  if (_conduit != nullptr) _conduit->getConfiguration(_js["Conduit"]);
  if (_conduit != nullptr) _solver->getConfiguration(_js["Solver"]);
-
- for (int i = 0; i < _variables.size(); i++) _variables[i]->getConfiguration(_js["Variables"][i]);
 }
 
 void Korali::Engine::setConfiguration()
@@ -83,9 +81,6 @@ void Korali::Engine::setConfiguration()
  if (_conduitType == "External") _conduit = new Korali::Conduit::External();
  if (_conduitType == "MPI") _conduit = new Korali::Conduit::MPI();
  if (_conduit == nullptr) {  fprintf(stderr, "Incorrect or undefined Conduit '%s'.\n", _conduitType.c_str()); exit(-1); }
-
- // Configure Korali Engine
- _variables.clear();
 
  // Setting Run Timestamp
  _runTimestamp = "";
@@ -113,13 +108,6 @@ void Korali::Engine::setConfiguration()
 
  _result_dir = consume(_js, { "General", "Results Output", "Path" }, KORALI_STRING, "_korali_result");
 
- // Create Variables
- if (isArray(_js, { "Variables" } ))
-  for (size_t i = 0; i < _js["Variables"].size(); i++) _variables.push_back(new Korali::Variable());
-
- N = _variables.size();
- if (N == 0) Korali::logError("No variables have been defined.\n");
-
  // Configure Problem
  if (_problemType == "Optimization")  _problem = new Korali::Problem::Optimization();
  if (_problemType == "Sampling") _problem = new Korali::Problem::Sampling();
@@ -127,19 +115,19 @@ void Korali::Engine::setConfiguration()
  if (_problemType == "Hierarchical Bayesian") _problem = new Korali::Problem::Hierarchical();
  if (_problem == nullptr) Korali::logError("Incorrect or undefined Problem '%s'.\n", _problemType.c_str());
 
- // Configure Solver
+ _problem->setConfiguration(_js["Problem"]);
 
+ // Configure Solver
  if (_solverType == "CMAES")  _solver = new Korali::Solver::CMAES();
  if (_solverType == "DEA")    _solver = new Korali::Solver::DEA();
  if (_solverType == "MCMC")   _solver = new Korali::Solver::MCMC();
  if (_solverType == "TMCMC")  _solver = new Korali::Solver::TMCMC();
  if (_solver == nullptr) Korali::logError("Incorrect or undefined Solver '%s'.\n", _solverType.c_str());
 
- // Setting configuration for the modules
- for (size_t i = 0; i < N; i++) _variables[i]->setConfiguration(_js["Variables"][i]);
- _problem->setConfiguration(_js["Problem"]);
- _conduit->setConfiguration(_js["Conduit"]);
  _solver->setConfiguration(_js["Solver"]);
+
+ // Setting configuration for the conduit
+ _conduit->setConfiguration(_js["Conduit"]);
 
  // Korali-specific configuration
  _hasComputedGeneration = consume(_js, { "General", "Has Computed Generation" }, KORALI_BOOLEAN, "false");
@@ -194,7 +182,7 @@ void Korali::Engine::start(bool isDryRun)
 
  // Running Engine
  _problem->initialize();
- if (_currentGeneration == 0) _solver->initialize();
+ _solver->initialize();
  _conduit->initialize();
 
  if (_conduit->isRoot())

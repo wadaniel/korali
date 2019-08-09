@@ -18,23 +18,23 @@ k["Problem"]["Likelihood"]["Model"] = "Additive Gaussian"
 k["Problem"]["Likelihood"]["Reference Data"] = getReferenceData()
 
 # Configuring the problem's variables and their prior distributions
-k["Variables"][0]["Name"] = "a"
-k["Variables"][0]["Type"] = "Computational"
-k["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"
-k["Variables"][0]["Prior Distribution"]["Minimum"] = -5.0
-k["Variables"][0]["Prior Distribution"]["Maximum"] = +5.0
+k["Problem"]["Variables"][0]["Name"] = "a"
+k["Problem"]["Variables"][0]["Type"] = "Computational"
+k["Problem"]["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"
+k["Problem"]["Variables"][0]["Prior Distribution"]["Minimum"] = -5.0
+k["Problem"]["Variables"][0]["Prior Distribution"]["Maximum"] = +5.0
 
-k["Variables"][1]["Name"] = "b"
-k["Variables"][1]["Type"] = "Computational"
-k["Variables"][1]["Prior Distribution"]["Type"] = "Uniform"
-k["Variables"][1]["Prior Distribution"]["Minimum"] = -5.0
-k["Variables"][1]["Prior Distribution"]["Maximum"] = +5.0
+k["Problem"]["Variables"][1]["Name"] = "b"
+k["Problem"]["Variables"][1]["Type"] = "Computational"
+k["Problem"]["Variables"][1]["Prior Distribution"]["Type"] = "Uniform"
+k["Problem"]["Variables"][1]["Prior Distribution"]["Minimum"] = -5.0
+k["Problem"]["Variables"][1]["Prior Distribution"]["Maximum"] = +5.0
 
-k["Variables"][2]["Name"] = "Sigma"
-k["Variables"][2]["Type"] = "Statistical"
-k["Variables"][2]["Prior Distribution"]["Type"] = "Uniform"
-k["Variables"][2]["Prior Distribution"]["Minimum"] = 0.0
-k["Variables"][2]["Prior Distribution"]["Maximum"] = +5.0
+k["Problem"]["Variables"][2]["Name"] = "Sigma"
+k["Problem"]["Variables"][2]["Type"] = "Statistical"
+k["Problem"]["Variables"][2]["Prior Distribution"]["Type"] = "Uniform"
+k["Problem"]["Variables"][2]["Prior Distribution"]["Minimum"] = 0.0
+k["Problem"]["Variables"][2]["Prior Distribution"]["Maximum"] = +5.0
 
 # Configuring TMCMC parameters
 k["Solver"]["Type"] = "TMCMC"

@@ -1,0 +1,52 @@
+#include "korali.hpp"
+
+using namespace Korali::Conduit;
+
+/************************************************************************/
+/*                  Constructor / Destructor Methods                    */
+/************************************************************************/
+
+void Simple::initialize()
+{
+
+}
+
+
+
+/************************************************************************/
+/*                    Functional Methods                                */
+/************************************************************************/
+
+void Simple::finalize()
+{
+
+}
+
+void Simple::evaluateSample(double* sampleArray, size_t sampleId)
+{
+ _k->_functionEvaluationCount++;
+
+ std::vector<double> sampleVector;
+ for (size_t i = 0; i < _k->N; i++) sampleVector.push_back(sampleArray[i]);
+
+ _k->_problem->runModel(sampleVector, sampleId);
+ double fitness = _k->_problem->evaluateFitness();
+
+ _k->_functionEvaluationCount++;
+ _k->_solver->processSample(sampleId, fitness);
+}
+
+void Simple::checkProgress()
+{
+
+}
+
+bool Simple::isRoot()
+{
+ return true;
+}
+
+void Simple::abort()
+{
+ exit(-1);
+}

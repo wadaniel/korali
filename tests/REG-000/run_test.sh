@@ -1,18 +1,27 @@
 #!/bin/bash
 
-function check_result()
-{
- if [ ! $? -eq 0 ]
- then
-  echo "[Korali] Error running test. Please check $logfile."
-  exit -1
- fi 
-}
+###### Auxiliar Functions and Variables #########
 
-#Running tutorials
+source ../functions.sh
 
-curdir=$PWD
-logfile=$curdir/test.log
+############# STEP 1 ##############
 
-echo "[Korali] Beginning python tests" > $logfile
+logEcho "[Korali] Checking Pip Installation"
+pip check korali
+check_result
 
+############# STEP 2 ##############
+
+logEcho "[Korali] Checking korali.plotter"
+python3 -m korali.plotter --check
+check_result
+
+logEcho "[Korali] Checking korali.cxx"
+python3 -m korali.cxx --cflags
+check_result
+
+python3 -m korali.cxx --compiler
+check_result
+
+python3 -m korali.cxx --libs
+check_result

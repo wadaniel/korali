@@ -1,0 +1,62 @@
+{
+ "Name":  "Hierarchical Bayesian Modeling",
+ "Alias": "Hierarchical Bayesian",
+ "Class": "Hierarchical",
+
+ "Problem Configuration":
+ [
+   {
+    "Name": [ "Model" ],
+    "Type": "std::string",
+    "Description": "Determines the hierarchical bayesian evaluation model."
+   },
+   {
+    "Name": [ "Sub Problems" ],
+    "Type": "std::vector<std::string>",
+    "Description": "Provides results from previous Korali executions."
+   },
+   {
+    "Name": [ "Conditional Priors" ],
+    "Type": "std::vector<Korali::Distribution::Base*>",
+    "Description": "Eh..."
+   }
+ ],
+
+ "Variables Configuration":
+ [
+   {
+    "Name": [ "Prior Distribution" ],
+    "Type": "Korali::Distribution::Base*",
+    "Description": "Eh..."
+   }
+ ],
+
+ "Internal Settings":
+ [
+  {
+   "Name": [ "Sub Problem Count" ],
+   "Type": "size_t",
+   "Description": "Number of sub-problems defined."
+  },
+  {
+   "Name": [ "Sub Problem Variables Count" ],
+   "Type": "size_t",
+   "Description": "Number of variables in each sub-problem. Must be equal to the number of conditional priors in the hierarchical problem."
+  },
+  {
+   "Name": [ "Sub Problem Sample Coordinates" ],
+   "Type": "std::vector<std::vector<double>>",
+   "Description": "Coordinates for each sample on each sub-problem."
+  },
+  {
+   "Name": [ "Sub Problem Sample Log Likelihoods" ],
+   "Type": "std::vector<std::vector<double>>",
+   "Description": "Likelihood for each sample on each sub-problem."
+  },
+  {
+   "Name": [ "Sub Problem Sample Log Priors" ],
+   "Type": "std::vector<std::vector<double>>",
+   "Description": "Log Priors for each sample on each sub-problem"
+  }
+ ]
+}

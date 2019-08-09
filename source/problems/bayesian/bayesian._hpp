@@ -1,0 +1,37 @@
+#ifndef _KORALI_PROBLEM_BAYESIAN_HPP_
+#define _KORALI_PROBLEM_BAYESIAN_HPP_
+
+#include "problems/base.hpp"
+#include "models/reference/reference.hpp"
+#include "models/likelihood/likelihood.hpp"
+
+namespace Korali { namespace Problem {
+
+class Bayesian : public Base
+{
+ private:
+
+ Korali::Model::Reference  _referenceModelData;
+ Korali::Model::Likelihood _likelihoodModelData;
+
+ double likelihoodGaussianAdditive(Korali::Model::Reference& data);
+ double likelihoodGaussianMultiplicative(Korali::Model::Reference& data);
+ double likelihoodGaussianMultiplicativeData(Korali::Model::Reference& data);
+
+ public:
+
+ void runModel(std::vector<double>, size_t sampleId) override;
+ double evaluateFitness() override;
+ double evaluateLogPrior(double* sample) override;
+
+ void initialize() override;
+ void finalize() override;
+
+ void getConfiguration() override;
+ void setConfiguration() override;
+};
+
+} } // namespace Korali::Problem
+
+
+#endif // _KORALI_PROBLEM_BAYESIAN_HPP_

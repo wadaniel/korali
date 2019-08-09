@@ -1,22 +1,18 @@
 # Korali  ![](images/logo.png){: style="height:25px;width:25px"}
 <center>**High-performance framework for uncertainty quantification of large-scale models.**</center>
 
-### **Download**
+### **Download Korali**
 
-Latest Release: 28/06/2019 - [Korali v1.0.0](https://github.com/cselab/korali.git) - Build Status: [![CircleCI](https://circleci.com/gh/cselab/korali.svg?style=svg&circle-token=d73f56a4d14073880f8fe1140964afb58f2b1c35)](install/build)
-
- + [Installation Guide](install/install.md)
- + [Release Notes](https://github.com/cselab/korali/blob/master/docs/RELEASE-NOTES)
- + [System Requirements](install/requirements.md)
+Latest Release: 28/06/2019 - **[Korali v1.0.0](install.md)** ([Release Notes](https://github.com/cselab/korali/blob/master/docs/RELEASE-NOTES))
 
 ### **What Korali Does**
 
-??? abstract "Optimization (Constrained and Unconstrained)"
+??? abstract "Optimization"
 	Given any objective function $f:\mathbb{R}^N\rightarrow\mathbb{R}$ Korali can find its minima or maxima:
 
-	$$\vartheta^\star = \mathop{\arg\min}\limits_{\vartheta}  f(\vartheta)$$
+	Given constraints...
 
-??? abstract "Distribution Sampling"
+??? abstract "Sampling"
 	Given any probability distribution of type $f:\mathbb{R}^N\rightarrow\mathbb{R}$, Korali can draw samples to determine its distribution: 
 	
 	$$\vartheta^{(k)} \sim f.$$
@@ -30,6 +26,19 @@ Latest Release: 28/06/2019 - [Korali v1.0.0](https://github.com/cselab/korali.gi
 
 	$$\vartheta^\star = \mathop{\arg\min}\limits_{\vartheta}  p(\vartheta | d) $$
 
+	Or sample its posterior distribution:
+
+	$$\vartheta^{(k)} \sim p(\vartheta | d).$$
+	
+??? abstract "Hierarchical Bayesian Modeling"
+	Given a set of data $d$, the output of a computational model $f(x;\vartheta)$, a likelihood function $p(d|\vartheta)$, and a prior probability density $p(\vartheta)$ Korali will build the posterior distribution:
+
+	$$ p(\vartheta | d)  =  \frac{p(d | \vartheta) p(\vartheta)}{p(d)} $$
+
+	Allowing users to compute the maximum a posteriori estimate:
+
+	$$\vartheta^\star = \mathop{\arg\min}\limits_{\vartheta}  p(\vartheta | d) $$
+	
 	Or sample its posterior distribution:
 
 	$$\vartheta^{(k)} \sim p(\vartheta | d).$$
@@ -53,6 +62,3 @@ Latest Release: 28/06/2019 - [Korali v1.0.0](https://github.com/cselab/korali.gi
 
 	Korali applications can be programmed in either C++ or Python. Additionally, Korali can sample from C++/Fortran/Python and pre-compiled computational models.
 
-??? success "Multi-Intrusiveness"
-
-	A novelty in Korali is its support for multi-intrusive evaluation. That is, Korali can sample from computational models either semi-instrusively, through static linking or dynamic loading of Python modules; or nonintrusively, through shell command execution.

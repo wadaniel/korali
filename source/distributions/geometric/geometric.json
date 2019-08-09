@@ -1,0 +1,24 @@
+{
+ "Name": "Geometric Distribution",
+ "Alias": "Geometric",
+ "Class": "Geometric",
+ 
+ "Distribution Configuration": 
+ [
+   
+ ],
+ 
+ "Conditional Variables":
+ [
+   {
+    "Name": [ "Success Probability" ],
+    "Description": ""
+   }
+ ],
+ 
+ "Internal Settings": 
+ [
+ ]
+ 
+}
+ 

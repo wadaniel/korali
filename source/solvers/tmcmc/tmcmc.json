@@ -1,0 +1,226 @@
+{
+ "Name": "Transitional Markov Chain Monte Carlo",
+ "Alias": "TMCMC",
+ "Class": "TMCMC",
+ 
+ "Solver Configuration": 
+ [
+   {
+    "Name": [ "Population Size" ],
+    "Type": "size_t",
+    "Description": "Specifies the number of samples drawn from the posterior distribution at each generation."
+   },
+   {
+    "Name": [ "Max Chain Length" ],
+    "Type": "size_t",
+    "Default": "std::numeric_limits<size_t>::max()",
+    "Description": "Chains longer than Max Chain Length will be broken and samples will be duplicated (replacing samples associated with a chain length of 0)."
+   },
+   {
+    "Name": [ "Default Burn In" ],
+    "Type": "size_t",
+    "Default": "0",
+    "Description": "Specifies the number of additional TMCMC steps per chain per generation."
+   },
+   {
+    "Name": [ "Burn In Steps" ],
+    "Type": "std::vector<size_t>",
+    "Default": "std::vector<size_t>(0)",
+    "Description": "Specifies the number of additional TMCMC steps per chain at specified generations."
+   },
+   {
+    "Name": [ "Target Coefficient Of Variation" ],
+    "Type": "double",
+    "Default": "1.0",
+    "Description": "Initial value for the target coefficient of variation to search for the exponent $\rho_{i+1}$. By default, Korali will set this value to 1.00 as suggested in [Ching2007]."
+   },
+   {
+    "Name": [ "Covariance Scaling" ],
+    "Type": "double",
+    "Default": "0.04",
+    "Description": "Covariance scaling factor $\beta^2$ of proposal distribution. By default, Korali sets this value 0.04 as suggested in [Ching2007]."
+   },
+   {
+    "Name": [ "Use Local Covariance" ],
+    "Type": "bool",
+    "Default": "false",
+    "Description": "If $true, TMCMC calculates a local covariance matrix per sample from its neighbours."
+   },
+   {
+    "Name": [ "Min Annealing Exponent Update" ],
+    "Type": "double",
+    "Default": "0.00001",
+    "Description": "Minimum increment of the exponent $\rho_{i+1}$. This parameter prevents TMCMC from stalling."
+   },
+   {
+    "Name": [ "Max Annealing Exponent Update" ],
+    "Type": "double",
+    "Default": "1.0",
+    "Description": "Maximum increment of the exponent $\rho{i+1}$. By default, Korali will set this value to 1.0 (inactive)."
+   }
+ ],
+ 
+ "Termination Criteria":
+ [
+   {
+    "Name": [ "Target Annealing Exponent" ],
+    "Type": "size_t",
+    "Criteria": "_annealingExponent >= _targetAnnealingExponent",
+    "Default": "1.0",
+    "Description": "Determines the annealing exponent to achieve before termination."
+   },
+   {
+    "Name": [ "Max Generations" ],
+    "Type": "size_t",
+    "Default": "100",
+    "Criteria": "_k->_currentGeneration > _maxGenerations",
+    "Description": "Determines how many solver generations to run before stopping execution. Execution can be resumed at a later moment."
+   },
+   {
+    "Name": [ "Max Model Evaluations" ],
+    "Type": "size_t",
+    "Default": "std::numeric_limits<size_t>::max()",
+    "Criteria": "_k->_functionEvaluationCount > _maxModelEvaluations",
+    "Description": "Determines how many computational model evaluations to run before stopping execution. Execution can be resumed at a later moment."
+   }
+ ],
+ 
+ "Variables Configuration": 
+ [
+   {
+    "Name": [ "Prior Distribution" ],
+    "Type": "Korali::Distribution::Base*",
+    "Description": "Eh..."
+   }
+ ],
+ 
+ "Internal Settings": 
+ [
+   {
+    "Name": [ "Current Burn In" ],
+    "Type": "size_t",
+    "Description": "Actual placeholder for burn in steps per generation, calculated from $Burn In Default$, $Burn In Steps$ and current generation."
+   },
+   {
+    "Name": [ "Chain Pending Fitness" ],
+    "Type": "std::vector<bool>",
+    "Description": "Indicates that the fitness result for the chain is pending."
+   },
+   {
+    "Name": [ "Chain Candidate Parameters" ],
+    "Type": "std::vector<double>",
+    "Description": "Current (theta) parameters of the chain leader sample."
+   },
+   {
+    "Name": [ "Chain Candidates LogLikelihoods" ],
+    "Type": "std::vector<double>",
+    "Description": "The logLikelihoods of the chain candidates."
+   }, 
+   {
+    "Name": [ "Chain Candidates LogPriors" ],
+    "Type": "std::vector<double>",
+    "Description": "The logPriors of the chain candidates."
+   },
+
+   {
+    "Name": [ "Chain Leader Parameters" ],
+    "Type": "std::vector<double>",
+    "Description": "Current (theta) parameters of the chain leader sample."
+   },
+   {
+    "Name": [ "Chain Leaders LogLikelihoods" ],
+    "Type": "std::vector<double>",
+    "Description": "The logLikelihoods of the chain leaders."
+   },
+   {
+    "Name": [ "Chain Leaders LogPriors" ],
+    "Type": "std::vector<double>",
+    "Description": "The logPriors of the chain leaders."
+   },
+   {
+    "Name": [ "Finished Chains Count" ],
+    "Type": "size_t",
+    "Description": "Number of finished chains."
+   },
+   {
+    "Name": [ "Current Chain Step" ],
+    "Type": "std::vector<size_t>", 
+    "Description": "The current execution step for every chain."
+   },
+   {
+    "Name": [ "Chain Lengths" ],
+    "Type": "std::vector<size_t>",
+    "Description": "Length for each of the chains."
+   },
+   {
+    "Name": [ "Coefficient Of Variation" ],
+    "Type": "double",
+    "Description": "Current coefficient of variation."
+   },
+   {
+    "Name": [ "Chain Count" ],
+    "Type": "size_t",
+    "Description": "Unique selections after resampling (forming new chain)."
+   },
+   {
+    "Name": [ "Annealing Exponent" ],
+    "Type": "double",
+    "Description": "how the calculated distribution fits the real distribution"
+   },
+   {
+    "Name": [ "Accepted Samples Count" ],
+    "Type": "size_t",
+    "Description": "Accepted samples after proposal."
+   },
+   {
+    "Name": [ "LogEvidence" ],
+    "Type": "double",
+    "Description": "Calculated logEvidence of the model so far."
+   },
+   {
+    "Name": [ "Proposals Acceptance Rate" ],
+    "Type": "double",
+    "Description": "Acceptance rate calculated from samples."
+   },
+   {
+    "Name": [ "Selection Acceptance Rate" ],
+    "Type": "double",
+    "Description": "Acceptance rate calculated from chain count."
+   },
+   {
+    "Name": [ "Covariance Matrix" ],
+    "Type": "std::vector<double>",
+    "Description": "Sample covariance of leader fitness values."
+   },
+   {
+    "Name": [ "Mean Theta" ],
+    "Type": "std::vector<double>",
+    "Description": "Mean of leader fitness values."
+   },
+   {
+    "Name": [ "Database Entry Count" ],
+    "Type": "size_t",
+    "Description": "Number of accepted samples stored in the database."
+   },
+   {
+    "Name": [ "Sample Parameters Database" ],
+    "Type": "std::vector<double>",
+    "Description": "Variable values of samples stored in the database."
+   },
+   {
+    "Name": [ "Sample Fitness Database" ],
+    "Type": "std::vector<double>",
+    "Description": "Fitness of the samples stored in the database."
+   },
+   {
+    "Name": [ "Sample Log Prior Database" ],
+    "Type": "std::vector<double>",
+    "Description": "Log priors of the samples stored in the database."
+   },
+   {
+    "Name": [ "Local Covariance Matrices" ],
+    "Type": "std::vector<std::vector<double>>",
+    "Description": "Local covariances of chain leaders."
+   }
+ ]
+}

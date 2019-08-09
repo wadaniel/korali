@@ -5,7 +5,6 @@
 
 h1 {
   text-align: center;
-  line-height: 10px !important;
   font-weight: bold !important;
   color: rgb(35, 127, 188) !important;
 }
@@ -27,6 +26,13 @@ h3 {
   background-color: rgb(253, 254, 255);
   background-position: 50% 50%;
   visibility: visible !important;
+  position: fixed !important;
+  z-index: 0;
+}
+
+.md-footer
+{
+  height: 50px;
 }
 
 li .md-nav__item{
@@ -39,3 +45,9 @@ li .md-nav__item{
   font-size: 1.5em !important;
   color: rgb(15, 107, 168);
 }
+
+.md-nav--primary .md-nav__title
+{
+ display: none;
+}
+

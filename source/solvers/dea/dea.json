@@ -1,0 +1,216 @@
+{
+ "Name": "Differential Evolution Algorithm",
+ "Alias": "DEA",
+ "Class": "DEA",
+ 
+ "Solver Configuration": 
+ [
+   {
+    "Name": [ "Sample Count" ],
+    "Type": "size_t",
+    "Description": "Specifies the number of samples to evaluate per generation (preferably 5-10x number of variables)."
+   },
+   {
+    "Name": [ "Crossover Rate" ],
+    "Default": "0.9",
+    "Type": "double",
+    "Description": "Controls the rate at which dimensions from samples are mixed (must be in [0,1])."
+   },
+   {
+    "Name": [ "Mutation Rate" ],
+    "Default": "0.5",
+    "Type": "double",
+    "Description": "Controls the scaling of the vector differentials (must be in [0,2], preferably < 1)."
+   },
+   {
+    "Name": [ "Mutation Rule" ],
+    "Default": "Fixed",
+    "Type": "std::string",
+    "Description": "Controls the Mutation Rate: 'Fixed' or 'Self Adaptive' (udpating rule in [Brest2006])."
+   },
+   {
+    "Name": [ "Parent Selection Rule" ],
+    "Default": "Random",
+    "Type": "std::string",
+    "Description": "Controls the selection of the parent vecor: 'Random' or 'Best' (best sample from previous generation)."
+   },
+   {
+    "Name": [ "Accept Rule" ],
+    "Default": "Greedy",
+    "Type": "std::string",
+    "Description": "Sets the sample accept rule after mutation and evaluation: 'Best', 'Greedy', 'Iterative' or 'Improved'."
+   },
+   {
+    "Name": [ "Fix Infeasible" ],
+    "Default": "true",
+    "Type": "bool",
+    "Description": "If set true, Korali samples a random sample between Parent and the voiolated  boundary. If set false, infeasible samples are mutated again until feasible."
+   }
+ ],
+ 
+ "Termination Criteria":
+ [
+   {
+    "Name": [ "Max Generations" ],
+    "Type": "size_t",
+    "Default": "200",
+    "Criteria": "_k->_currentGeneration > _maxGenerations",
+    "Description": "Determines how many solver generations to run before stopping execution. Execution can be resumed at a later moment."
+   },
+   {
+    "Name": [ "Max Model Evaluations" ],
+    "Type": "size_t",
+    "Default": "std::numeric_limits<size_t>::max()",
+    "Criteria": "_k->_functionEvaluationCount > _maxModelEvaluations",
+    "Description": "Determines how many computational model evaluations to run before stopping execution. Execution can be resumed at a later moment."
+   },
+   {
+    "Name": [ "Max Resamplings" ],
+    "Type": "size_t",
+    "Default": "std::numeric_limits<size_t>::max()",
+    "Criteria": "_infeasibleSampleCountChange > _maxResamplings",
+    "Description": "Max number of mutations per sample per generation if infeasible (only relevant if Fix Infeasible is set False)."
+   },
+   {
+    "Name": [ "Min Value" ],
+    "Type": "double",
+    "Default": "std::numeric_limits<double>::lowest()",
+    "Criteria": "_bestEverValue < _minValue",
+    "Description": "Specifies the target fitness to stop minimization."
+   },
+   {
+    "Name": [ "Max Value" ],
+    "Type": "double",
+    "Default": "std::numeric_limits<double>::max()",
+    "Criteria": "_bestEverValue > _maxValue",
+    "Description": "Specifies the target fitness to stop maximization."
+   },
+   {
+    "Name": [ "Min Value Difference Threshold" ],
+    "Type": "double",
+    "Default": "std::numeric_limits<double>::lowest()",
+    "Criteria": "_k->_hasComputedGeneration && (fabs(_currentBestValue - _previousBestValue) < _minValueDifferenceThreshold)",
+    "Description": "Specifies the minimum fitness differential between two consecutive generations before stopping execution."
+   },
+   {
+    "Name": [ "Min Step Size" ],
+    "Type": "double",
+    "Default": "std::numeric_limits<double>::lowest()",
+    "Criteria": "_currentMinimumStepSize < _minStepSize",
+    "Description": "Specifies the minimal step size of the sample mean from one gneration to another."
+   }
+ ],
+ 
+ "Variables Configuration": 
+ [
+   {
+    "Name": [ "Lower Bound" ],
+    "Type": "double",
+    "Description": "Specifies the lower bound for the variable's value. Korali will not generate samples for which this variable falls below the specified minimum."
+   },
+   {
+    "Name": [ "Upper Bound" ],
+    "Type": "double",
+    "Description": "Specifies the upper bound for the variable's value. Korali will not generate samples for which this variable falls below the specified maximum."
+   }
+ ],
+ 
+ "Internal Settings": 
+ [
+   {
+    "Name": [ "Value Vector" ],
+    "Type": "std::vector<double>",
+    "Description": "Objection Function Values."
+   },
+   {
+    "Name": [ "Previous Value Vector" ],
+    "Type": "std::vector<double>",
+    "Description": "Objection Function Values from previous evaluations."
+   },
+   {
+    "Name": [ "Sample Population" ],
+    "Type": "std::vector<double>",
+    "Description": "Sample coordinate information."
+   },
+   {
+    "Name": [ "Sample Candidates" ],
+    "Type": "std::vector<double>",
+    "Description": "Sample candidate coordinates to evaluate."
+   },
+   {
+    "Name": [ "Is Initialized Sample" ],
+    "Type": "std::vector<bool>",
+    "Description": "Determines which samples are initialized."
+   },
+   {
+    "Name": [ "Finished Sample Count" ],
+    "Type": "size_t",
+    "Description": "Counter of evaluated samples to terminate evaluation."
+   },
+   {
+    "Name": [ "Current Best Value" ],
+    "Type": "double",
+    "Description": "Best vlaue from current generation."
+   },
+   {
+    "Name": [ "Previous Best Value" ],
+    "Type": "double",
+    "Description": "Best fitness from previous generation."
+   },
+   {
+    "Name": [ "Best Sample Index" ],
+    "Type": "size_t",
+    "Description": "Index of the best sample so far."
+   },
+   {
+    "Name": [ "Best Ever Value" ],
+    "Type": "double",
+    "Description": "Value of the best sample so far."
+   },
+   {
+    "Name": [ "Previous Best Ever Value" ],
+    "Type": "double",
+    "Description": "Value of the previous best sample ever."
+   },
+   {
+    "Name": [ "Sample Means" ],
+    "Type": "std::vector<double>",
+    "Description": "Sample Means."
+   },
+   {
+    "Name": [ "Previous Mean" ],
+    "Type": "std::vector<double>",
+    "Description": "Previous Mean Parents."
+   },
+   {
+    "Name": [ "Best Ever Coordinates" ],
+    "Type": "std::vector<double>",
+    "Description": "Coordinates of the best sample ever."
+   },
+   {
+    "Name": [ "Current Best Sample" ],
+    "Type": "std::vector<double>",
+    "Description": "Coordinates of the current best sample."
+   },
+   {
+    "Name": [ "Max Distances" ],
+    "Type": "std::vector<double>",
+    "Description": "Max distance between samples per dimension."
+   },
+   {
+    "Name": [ "Infeasible Sample Count" ],
+    "Type": "size_t",
+    "Description": "Keeps count of infeasible sample re-evaluations so far."
+   },
+   {
+    "Name": [ "Infeasible Sample Count Change" ],
+    "Type": "size_t",
+    "Description": "Number of resamples in the current generation."
+   },
+   {
+    "Name": [ "Current Minimum Step Size" ],
+    "Type": "double",
+    "Description": "Minimum step size of any variable in the current generation."
+   }
+ ]
+}

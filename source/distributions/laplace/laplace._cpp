@@ -1,0 +1,68 @@
+#include "korali.hpp"
+
+Korali::Distribution::Laplace::Laplace()
+{
+ _mean = 0.0;
+ _width = 1.0;
+}
+
+void Korali::Distribution::Laplace::initialize()
+{
+ Korali::Distribution::Base::initialize();
+ bool hasConditionals = false;
+
+ // Check for conditional properties
+
+ if (hasConditionals == false) updateDistribution();
+}
+
+void Korali::Distribution::Laplace::finalize()
+{
+ Korali::Distribution::Base::finalize();
+}
+
+double Korali::Distribution::Laplace::getDensity(double x)
+{
+ return gsl_ran_laplace_pdf( x-_mean, _width );
+}
+
+double Korali::Distribution::Laplace::getLogDensity(double x)
+{
+ return _aux - fabs(x-_mean)/_width;
+}
+
+double Korali::Distribution::Laplace::getRandomNumber()
+{
+ return _mean + gsl_ran_laplace(_range, _width);
+}
+
+void Korali::Distribution::Laplace::getRandomVector(double *x, size_t n)
+{
+ for (size_t i = 0; i < n; i++)
+  x[i] = getRandomNumber();
+}
+
+void Korali::Distribution::Laplace::getDensityVector(double *x, double* result, size_t n)
+{
+ for (size_t i = 0; i < n; i++)
+   result[i] = getDensity(x[i]);
+}
+
+void Korali::Distribution::Laplace::getLogDensityVector(double *x, double* result, size_t n)
+{
+ for (size_t i = 0; i < n; i++)
+   result[i] = getLogDensity(x[i]);
+}
+
+void Korali::Distribution::Laplace::updateDistribution()
+{
+ if (_width <= 0.0)  koraliError("Incorrect Width parameter of Laplace distribution: %f.\n", _width);
+
+ _aux = -gsl_sf_log(2.*_width);
+}
+
+void Korali::Distribution::Laplace::updateConditionals(const std::vector<double>& sample)
+{
+ Korali::Distribution::Base::updateConditionals(sample);
+ updateDistribution();
+}

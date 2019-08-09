@@ -1,0 +1,28 @@
+{
+ "Name": "Gamma Distribution",
+ "Alias": "Gamma",
+ "Class": "Gamma",
+ 
+ "Distribution Configuration": 
+ [
+   
+ ],
+ 
+ "Conditional Variables":
+ [
+   {
+    "Name": [ "Shape" ],
+    "Description": ""
+   },
+   {
+    "Name": [ "Scale" ],
+    "Description": ""
+   }
+ ],
+ 
+ "Internal Settings": 
+ [
+ ]
+ 
+}
+ 

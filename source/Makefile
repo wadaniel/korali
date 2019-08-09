@@ -1,30 +1,33 @@
 include Makefile.conf
 
-CFLAGS  = -g $(OPTFLAGS) -I../include $(GSLCFLAGS) $(CXXARCH) -Wno-deprecated-declarations
+CFLAGS  = -g $(OPTFLAGS) -I. $(GSLCFLAGS) $(CXXARCH) -Wno-deprecated-declarations -Wfatal-errors
 LDFLAGS = $(SHAREDLIB_FLAG) -L$(GSLPREFIX)/lib -Wl,-rpath -Wl,$(GSLPREFIX)/lib $(GSLLIBS) 
 
 CFLAGS  += $(PYBIND11INCLUDES) $(MPIFLAGS)
 LDFLAGS += $(PYBIND11LIBS)
 
-all: libkorali.so libkorali.a
+.PHONY: clean all
 
-SOURCES = $(shell find . -name "*.cpp")
-OBJECTS_STATIC = $(SOURCES:.cpp=.static.o)
-OBJECTS_SHARED = $(SOURCES:.cpp=.shared.o)
+all: libkorali.so
 
-%.static.o: %.cpp
-	$(CXX) $(CFLAGS) -c $< -o $@ 
+build:
+	python3 python/builder/buildKorali.py
 
-%.shared.o: %.cpp
-	$(CXX) $(CFLAGS) -fPIC -c $< -o $@ -D_KORALI_USE_PYTHON
+SOURCES = $(shell find . -name "*.cpp") 
+OBJECTS = $(SOURCES:.cpp=.o)
 
-libkorali.so: $(OBJECTS_SHARED)
+%.o: %.cpp
+	$(CXX) $(CFLAGS) -fPIC -c $< -o $@
+
+libkorali.so: $(OBJECTS)
 	$(CXX) $^ -o $@ $(LDFLAGS)
 
-libkorali.a: $(OBJECTS_STATIC)
-	ar rs $@ $^
-
 clean:
-	@rm -rf *.so *.a $(OBJECTS_STATIC) $(OBJECTS_SHARED)
+	@rm -f solvers/*/*.hpp solvers/*/*.cpp 
+	@rm -f problems/*/*.hpp problems/*/*.cpp 
+	@rm -f models/*/*.hpp
+	@rm -f distributions/*/*.hpp distributions/*/*.cpp distributions/*.cpp distributions/*.hpp 
+	@rm -f variable/*.cpp variable/*.hpp setup.py
+	@rm -f setup.py
+	@rm -f *.o ./*/*.o *.so *.a $(OBJECTS) 
 
-.PHONY: clean all

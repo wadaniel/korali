@@ -1,5 +1,0 @@
-
-
-def getcflags(extdir):
- fixedflags='-g -O3 -I' + extdir + '/include'
- print(fixedflags + ' ' + OPTFLAGS + ' ' + MPIFLAGS + ' ' + GSLCFLAGS + ' ' + CXXARCH)

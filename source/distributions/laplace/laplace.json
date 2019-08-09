@@ -1,0 +1,28 @@
+{
+ "Name": "Laplace Distribution",
+ "Alias": "Laplace",
+ "Class": "Laplace",
+ 
+ "Distribution Configuration": 
+ [
+   
+ ],
+ 
+ "Conditional Variables":
+ [
+   {
+    "Name": [ "Mean" ],
+    "Description": ""
+   },
+   {
+    "Name": [ "Width" ],
+    "Description": ""
+   }
+ ],
+ 
+ "Internal Settings": 
+ [
+ ]
+ 
+}
+ 

@@ -1,4 +1,5 @@
 _korali_result
+_result_*
 build
 .exrc
 setup.py
@@ -8,7 +9,6 @@ __pycache__
 *.cfg
 *.o
 *.log
-*.json
 *.so
 *.pyc
 *.a
@@ -19,6 +19,8 @@ __pycache__
 *.err
 *.mk
 *.result
+*.orig
 .tags
 .tags1
 .korali.config
+.DS_Store

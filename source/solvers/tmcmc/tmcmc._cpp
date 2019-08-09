@@ -152,12 +152,12 @@ void Korali::Solver::TMCMC::evaluateSample(size_t sampleId)
   std::vector<double> _logTransformedSample(N);
 
   for(size_t d = 0; d < N; ++d)
-    if (_k->_variables[d]->_isLogSpace == true)
+    if (_k->_problem->getVariable(d)->_isLogSpace == true)
         _logTransformedSample[d] = std::exp(_chainCandidateParameters[sampleId*N+d]);
     else
         _logTransformedSample[d] = _chainCandidateParameters[sampleId*N+d];
 
-  _chainCandidatesLogPriors[sampleId] = _k->_problem->evaluateLogPrior(&_chainCandidateParameters[sampleId*N]);
+  _chainCandidatesLogPriors[sampleId] = _k->_problem->evaluateSampleLogPrior(&_chainCandidateParameters[sampleId*N]);
 
   if(std::isfinite(_chainCandidatesLogPriors[sampleId]) == false) finishSample(sampleId);
   else _k->_conduit->evaluateSample(_logTransformedSample.data(), sampleId);

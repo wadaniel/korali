@@ -50,5 +50,5 @@ k["General"]["Results Output"]["Path"] = resultsPath
 k["General"]["Console Output"]["Verbosity"] = "Detailed"
 
 x = getReferencePoints(dataPath,i);
-k.setModel( lambda d: logistic( x, d) )
+k.setReferenceModel( lambda d: logistic( x, d) )
 k.run()

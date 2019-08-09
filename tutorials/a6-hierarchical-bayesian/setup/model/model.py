@@ -10,7 +10,7 @@ def logistic( X, s ):
   for x in X:
     f = math.exp(th3*x)
     y = ( th1*th2*f )/( th1 + th2*(f-1) )
-    s.addResult(y)
+    s.addReferenceEvaluation(y)
 
 
 def getReferenceData( path, i ):
@@ -18,11 +18,11 @@ def getReferenceData( path, i ):
   y = readColumnFromFile(fileName,1)
   return y
 
+
 def getReferencePoints( path, i ):
   fileName = path + "/data_set_" + str(i).zfill(3) + ".dat"
   y = readColumnFromFile(fileName,0)
   return y
-
 
 
 def readColumnFromFile( FileName, Column ):
@@ -45,3 +45,4 @@ def readColumnFromFile( FileName, Column ):
     raise
 
   return y
+

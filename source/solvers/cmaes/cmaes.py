@@ -11,12 +11,14 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 from korali.plotter.helpers import readFiles, hlsColors, pauseLight, drawMulticoloredLine, checkFigure
-from korali.plotter.helpers import initDefaults, getStateAndGeneration, appendStates, appendStateVectors
+from korali.plotter.helpers import verifyGeneration, initDefaults, getStateAndGeneration, appendStates, appendStateVectors
 
 # Plot CMAES results (read from .json files)
 def plot_cmaes(src, plotAll=False, live=False, generation=None, test=False, plot_mean=False ):
     plt.style.use('seaborn-dark')
  
+    verifyGeneration(generation, 3)
+    
     stateNames = ['Current Best Value', 'Best Ever Value', 'Sigma', 'Conjugate Evolution Path L2 Norm']
     vecStateNames = ['Current Best Coordinates', 'Current Mean', 'Axis Lengths']
 

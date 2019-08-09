@@ -9,12 +9,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from korali.plotter.helpers import readFiles, hlsColors, pauseLight, drawMulticoloredLine, checkFigure
-from korali.plotter.helpers import initDefaults, getStateAndGeneration, appendStates, appendStateVectors
+from korali.plotter.helpers import verifyGeneration, initDefaults, getStateAndGeneration, appendStates, appendStateVectors
 
 # Plot MCMC results (read from .json files)
 def plot_mcmc(src, plotAll=False, live=False, generation=None, test=False, mean=''):
-    plt.style.use('seaborn-dark')
+    plt.style.use('seaborn-dark') 
     
+    verifyGeneration(generation, 0)
+
     stateNames = ['Chain Length', 'Database Entry Count']
     vecStateNames = ['Sample Parameters Database']
 
@@ -31,8 +33,6 @@ def plot_mcmc(src, plotAll=False, live=False, generation=None, test=False, mean=
     
     while True:
  
-        if (not plotAll):
-            resultfiles = ['final.json']
         for filename in resultfiles:
             path = '{0}/{1}'.format(src, filename)
             

@@ -102,11 +102,19 @@ def verifyFile(data, path, runId, start=None, end=None, noisy=True):
        
         if(noisy == True):
             print("[Korali] Warning: Skipping file {0}, results origin from a "\
-                " different experiment (different runid)".format(path))
+                "different experiment (different runid)".format(path))
         return False
 
  
     return True
+
+
+# Check generation greater equal lowerBound
+def verifyGeneration(generation, lowerBound):
+    if (generation is not None and generation < lowerBound):
+        print("[Korali] GENERATION must be greater equal "\
+                "{0}.".format(str(lowerBound)))
+        exit(-1)
 
 
 # Get a list of evenly spaced colors in HLS huse space.

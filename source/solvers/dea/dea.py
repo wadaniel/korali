@@ -5,20 +5,21 @@ import sys
 import glob
 import time
 import json
-import colorsys
 import numpy as np
 
 import matplotlib
 import matplotlib.pyplot as plt
 
 from korali.plotter.helpers import readFiles, hlsColors, pauseLight, drawMulticoloredLine, checkFigure
-from korali.plotter.helpers import initDefaults, getStateAndGeneration, appendStates, appendStateVectors
+from korali.plotter.helpers import verifyGeneration, initDefaults, getStateAndGeneration, appendStates, appendStateVectors
 
 
 # Plot DEA results (read from .json files)
 def plot_dea(src, plotAll=False, live=False, generation=None, test=False, plot_mean=False ):
     plt.style.use('seaborn-dark')
 
+    verifyGeneration(generation, 3)
+    
     stateNames = ['Current Best Value', 'Best Ever Value']
     vecStateNames = ['Current Best Sample', 'Sample Means', 'Max Distances']
  

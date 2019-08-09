@@ -8,7 +8,7 @@
    {
     "Name": [ "Sample Count" ],
     "Type": "size_t",
-    "Description": "Specifies the number of samples to evaluate per generation (by default it's $4+3*log(N)$, where $N$ is the number of variables)."
+    "Description": "Specifies the number of samples to evaluate per generation (preferably $4+3*log(N)$, where $N$ is the number of variables)."
    },
    {
     "Name": [ "Mu Value" ],
@@ -20,7 +20,7 @@
     "Name": [ "Mu Type" ],
     "Default": "Logarithmic",
     "Type": "std::string",
-    "Description": "Weights given to the Mu best values to update the covariance matrix and the mean (possible options are Linear, Equal or Logarithmic, by default it is Linear)."
+    "Description": "Weights given to the Mu best values to update the covariance matrix and the mean (possible options are 'Linear', 'Equal' or 'Logarithmic')."
    },
    {
     "Name": [ "Initial Sigma Cumulation Factor" ],

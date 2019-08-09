@@ -14,7 +14,7 @@
     "Name": [ "Crossover Rate" ],
     "Default": "0.9",
     "Type": "double",
-    "Description": "Controls the rate at which dimensions from samples are mixed (must be in [0,1])."
+    "Description": "Controls the rate at which dimensions of the samples are mixed (must be in [0,1])."
    },
    {
     "Name": [ "Mutation Rate" ],
@@ -30,21 +30,21 @@
    },
    {
     "Name": [ "Parent Selection Rule" ],
-    "Default": "Random",
+    "Default": "Best",
     "Type": "std::string",
-    "Description": "Controls the selection of the parent vecor: 'Random' or 'Best' (best sample from previous generation)."
+    "Description": "Defines the selection rule of the parent vecor: 'Random' or 'Best'."
    },
    {
     "Name": [ "Accept Rule" ],
     "Default": "Greedy",
     "Type": "std::string",
-    "Description": "Sets the sample accept rule after mutation and evaluation: 'Best', 'Greedy', 'Iterative' or 'Improved'."
+    "Description": "Sets the accept rule after sample mutation and evaluation: 'Best', 'Greedy', 'Iterative' or 'Improved'."
    },
    {
     "Name": [ "Fix Infeasible" ],
     "Default": "true",
     "Type": "bool",
-    "Description": "If set true, Korali samples a random sample between Parent and the voiolated  boundary. If set false, infeasible samples are mutated again until feasible."
+    "Description": "If set true, Korali samples a random sample between Parent and the voiolated boundary. If set false, infeasible samples are mutated again until feasible."
    }
  ],
  
@@ -97,7 +97,7 @@
     "Type": "double",
     "Default": "std::numeric_limits<double>::lowest()",
     "Criteria": "_currentMinimumStepSize < _minStepSize",
-    "Description": "Specifies the minimal step size of the sample mean from one gneration to another."
+    "Description": "Specifies the minimal step size of the population mean from one gneration to another."
    }
  ],
  
@@ -106,12 +106,12 @@
    {
     "Name": [ "Lower Bound" ],
     "Type": "double",
-    "Description": "Specifies the lower bound for the variable's value. Korali will not generate samples for which this variable falls below the specified minimum."
+    "Description": "Specifies the lower bound for the variable's value. Korali will not generate samples for which its value falls below the Lower Bound."
    },
    {
     "Name": [ "Upper Bound" ],
     "Type": "double",
-    "Description": "Specifies the upper bound for the variable's value. Korali will not generate samples for which this variable falls below the specified maximum."
+    "Description": "Specifies the upper bound for the variable's value. Korali will not generate samples for which its value falls above the Upper Bound."
    }
  ],
  
@@ -120,12 +120,12 @@
    {
     "Name": [ "Value Vector" ],
     "Type": "std::vector<double>",
-    "Description": "Objection Function Values."
+    "Description": "Objective Function Values."
    },
    {
     "Name": [ "Previous Value Vector" ],
     "Type": "std::vector<double>",
-    "Description": "Objection Function Values from previous evaluations."
+    "Description": "Objective Function Values from previous evaluations."
    },
    {
     "Name": [ "Sample Population" ],
@@ -135,7 +135,7 @@
    {
     "Name": [ "Sample Candidates" ],
     "Type": "std::vector<double>",
-    "Description": "Sample candidate coordinates to evaluate."
+    "Description": "Sample candidates coordinate information."
    },
    {
     "Name": [ "Is Initialized Sample" ],
@@ -150,37 +150,37 @@
    {
     "Name": [ "Current Best Value" ],
     "Type": "double",
-    "Description": "Best vlaue from current generation."
+    "Description": "Best model evaluation from current generation."
    },
    {
     "Name": [ "Previous Best Value" ],
     "Type": "double",
-    "Description": "Best fitness from previous generation."
+    "Description": "Best model evaluation from previous generation."
    },
    {
     "Name": [ "Best Sample Index" ],
     "Type": "size_t",
-    "Description": "Index of the best sample so far."
+    "Description": "Index of the best sample in current generation."
    },
    {
     "Name": [ "Best Ever Value" ],
     "Type": "double",
-    "Description": "Value of the best sample so far."
+    "Description": "Best ever model evaluation."
    },
    {
     "Name": [ "Previous Best Ever Value" ],
     "Type": "double",
-    "Description": "Value of the previous best sample ever."
+    "Description": "Best ever model evaluation as of previous generation."
    },
    {
-    "Name": [ "Sample Means" ],
+    "Name": [ "Current Mean" ],
     "Type": "std::vector<double>",
-    "Description": "Sample Means."
+    "Description": "Current mean of population."
    },
    {
     "Name": [ "Previous Mean" ],
     "Type": "std::vector<double>",
-    "Description": "Previous Mean Parents."
+    "Description": "Previous mean of population."
    },
    {
     "Name": [ "Best Ever Coordinates" ],

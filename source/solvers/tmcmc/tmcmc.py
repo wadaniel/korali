@@ -21,21 +21,24 @@ def plot_tmcmc(src, plotAll=False, live=False, generation=None, test=False, mean
 
     stateNames = ['Annealing Exponent', 'Database Entry Count']
     resultfiles = readFiles(src, 1, generation)
-    
+ 
+    if (plotAll == False):
+        resultfiles = [resultfiles[-1]]
+
     anneal, numdbentries, samples = ([] for i in range(3))
     solverName, names, numdim, gen = initDefaults(src, resultfiles[0], [samples])
-    
-    fig, ax = plt.subplots(numdim, numdim, figsize=(8,8))
-    
-    updateLegend = live or plotAll
-    if (updateLegend):
-        fig.show()
-
+ 
     while True: 
         
         for filename in resultfiles:
             path   = '{0}/{1}'.format(src, filename)
-     
+         
+            fig, ax = plt.subplots(numdim, numdim, figsize=(8,8))
+            
+            updateLegend = live or plotAll
+            if (updateLegend):
+                fig.show()
+        
             with open(path) as f:
 
                 data    = json.load(f)
@@ -49,7 +52,6 @@ def plot_tmcmc(src, plotAll=False, live=False, generation=None, test=False, mean
                 samples = np.reshape( data['Solver']['Internal']['Sample Parameters Database'], (numdbentries[-1],numdim) )
                 plot_samples(ax, gen, numdbentries[-1], anneal[-1], samples)
         
-       
         if (live == False):
             break
         
@@ -57,7 +59,6 @@ def plot_tmcmc(src, plotAll=False, live=False, generation=None, test=False, mean
 
 
     checkFigure(fig.number)
-    plot_samples(ax, gen, numdbentries[-1], anneal[-1], samples)
     plt.show()
     print("[Korali] Figures closed - Bye!")
 
@@ -69,9 +70,9 @@ def plot_samples(ax, gen, numentries, anneal, samples):
             '(Annealing Exponent {2:.3e})'.format(str(gen), \
             str(numentries), anneal), fontweight='bold', fontsize  = 12 )
 
-    #plot_histogram(ax, samples)
+    plot_histogram(ax, samples)
     plot_upper_triangle(ax, samples, False)
-    #plot_lower_triangle(ax, samples)
+    plot_lower_triangle(ax, samples)
     pauseLight(0.05) 
 
 
@@ -79,7 +80,6 @@ def plot_samples(ax, gen, numentries, anneal, samples):
 def plot_histogram(ax, theta):
     dim = theta.shape[1]
     num_bins = 50
-    
     for i in range(dim):
 
         if (dim == 1): 
@@ -115,7 +115,6 @@ def plot_histogram(ax, theta):
             ax_loc.set_xticklabels([])
             ax_loc.set_yticklabels([])
         ax_loc.tick_params(axis='both', which='both', length=0)
-        time.sleep(25)
 
 
 #Plot scatter plot in upper triangle of figure

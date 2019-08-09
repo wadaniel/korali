@@ -21,6 +21,10 @@ def main(path, allFiles, live, generation, mean, check, test):
  if ( (live == True) and (generation is not None)):
     print("korali.plotter: error: argument --live and argument --generation "\
             "GENERATION cannot be combined")
+  
+ if ( (live == True) and (allFiles is not None)):
+    print("korali.plotter: error: argument --live and argument --all "\
+            "cannot be combined")
  
     exit(-1)
 

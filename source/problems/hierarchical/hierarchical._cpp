@@ -95,7 +95,7 @@ double Korali::Problem::Hierarchical::evaluateFitness()
         double logConditionalPrior = 0.0;
         for( size_t k = 0; k < _conditionalPriors.size(); k++ ){
           double xxx = _conditionalPriors[k]->getLogDensity(_subProblemSampleCoordinates[i][j*_subProblemVariablesCount + k]);
-          printf("=============> %lf  (%lf) \n", xxx, _subProblemSampleCoordinates[i][j*_subProblemVariablesCount + k] );
+          // printf("=============> %lf  (%lf) \n", xxx, _subProblemSampleCoordinates[i][j*_subProblemVariablesCount + k] );
           logConditionalPrior += xxx;
         }
         expValues[j] = logConditionalPrior - _subProblemSampleLogPriors[i][j];
@@ -107,14 +107,14 @@ double Korali::Problem::Hierarchical::evaluateFitness()
       double sumExpValues = 0.0;
       for (auto& v : expValues){
         sumExpValues += exp( v - maxExpValues );
-        printf("--------------------> %lf  %lf   %lf  %lf  \n", v, maxExpValues, v - maxExpValues, exp( v - maxExpValues ));
+        // printf("--------------------> %lf  %lf   %lf  %lf  \n", v, maxExpValues, v - maxExpValues, exp( v - maxExpValues ));
       }
 
-      printf("-----> (%zu) max = %lf ---  sum = %lf ---  (%lf)  \n",i,maxExpValues,sumExpValues,   maxExpValues + log(sumExpValues)  );
+      // printf("-----> (%zu) max = %lf ---  sum = %lf ---  (%lf)  \n",i,maxExpValues,sumExpValues,   maxExpValues + log(sumExpValues)  );
 
       logLikelihood += maxExpValues + log(sumExpValues);
     }
-    printf("============> log-likelihood = %lf \n", logLikelihood);
+    // printf("============> log-likelihood = %lf \n", logLikelihood);
   }
 
  if (_model == "Sample Theta")

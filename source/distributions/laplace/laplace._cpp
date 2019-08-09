@@ -1,5 +1,9 @@
 #include "korali.hpp"
 
+Korali::Distribution::Laplace::Laplace()
+{
+}
+
 void Korali::Distribution::Laplace::initialize()
 {
  Korali::Distribution::Base::initialize();

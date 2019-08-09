@@ -11,6 +11,8 @@ class Laplace : public Korali::Distribution::Base {
 
  public:
 
+ Laplace();
+
  void updateConditionals(const std::vector<double>& sample) override;
  void updateDistribution() override;
 

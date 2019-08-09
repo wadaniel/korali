@@ -11,6 +11,8 @@ class LogNormal : public Korali::Distribution::Base {
 
   public:
 
+  LogNormal();
+
   void updateConditionals(const std::vector<double>& sample) override;
   void updateDistribution() override;
 

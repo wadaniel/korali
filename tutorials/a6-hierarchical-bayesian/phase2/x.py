@@ -9,8 +9,7 @@ import korali
 # Creating hierarchical Bayesian problem from previous two problems
 kH = korali.initialize()
 
-kH["Problem"]["Type"]  = "Hierarchical Bayesian"
-kH["Problem"]["Model"] = "Sample Psi"
+kH["Problem"]["Type"]  = "Hierarchical Bayesian (Psi)"
 resultsPath = "../setup/results_phase_1/"
 for i in range(10):
   kH["Problem"]["Sub Problems"][i] = resultsPath + str(i).zfill(3) + '/final.json'

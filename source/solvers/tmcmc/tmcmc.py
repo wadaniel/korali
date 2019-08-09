@@ -69,9 +69,9 @@ def plot_samples(ax, gen, numentries, anneal, samples):
             '(Annealing Exponent {2:.3e})'.format(str(gen), \
             str(numentries), anneal), fontweight='bold', fontsize  = 12 )
 
-    plot_histogram(ax, samples)
+    #plot_histogram(ax, samples)
     plot_upper_triangle(ax, samples, False)
-    plot_lower_triangle(ax, samples)
+    #plot_lower_triangle(ax, samples)
     pauseLight(0.05) 
 
 
@@ -115,6 +115,7 @@ def plot_histogram(ax, theta):
             ax_loc.set_xticklabels([])
             ax_loc.set_yticklabels([])
         ax_loc.tick_params(axis='both', which='both', length=0)
+        time.sleep(25)
 
 
 #Plot scatter plot in upper triangle of figure

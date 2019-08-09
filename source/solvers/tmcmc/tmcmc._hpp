@@ -17,6 +17,7 @@ class TMCMC : public Korali::Solver::Base
  void updateDatabase(double* point, double fitness, double logPrior);
  void generateCandidate(size_t candidate);
  void evaluateSample(size_t candidate);
+ void finishSample(size_t sampleId);
  void computeChainCovariances(std::vector< std::vector<double> >& chain_cov, size_t newchains);
  void minSearch(double const *fj, size_t fn, double pj, double objTol, double& xmin, double& fmin);
  bool isFeasibleCandidate(size_t candidate);

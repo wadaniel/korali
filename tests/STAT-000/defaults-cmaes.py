@@ -16,9 +16,9 @@ k["Problem"]["Objective"] = "Maximize"
 k["Solver"]["Type"]  = "CMAES" 
 k["Solver"]["Sample Count"] = 32
 
-k["Variables"][0]["Name"] = "X";
-k["Variables"][0]["Lower Bound"] = -10.0;
-k["Variables"][0]["Upper Bound"] = +10.0;
+k["Problem"]["Variables"][0]["Name"] = "X";
+k["Problem"]["Variables"][0]["Lower Bound"] = -10.0;
+k["Problem"]["Variables"][0]["Upper Bound"] = +10.0;
 
 k.dry()
 

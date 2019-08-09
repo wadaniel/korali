@@ -2,6 +2,8 @@
 
 void Korali::Problem::Bayesian::initialize()
 {
+ if (_variables.size() == 0) Korali::logError("Bayesian inference problems require at least one variable.\n");
+
  bool recognizedModel = false;
  if (_likelihoodModel == "Custom") recognizedModel = true;
  if (_likelihoodModel == "Additive Gaussian") recognizedModel = true;
@@ -9,9 +11,9 @@ void Korali::Problem::Bayesian::initialize()
  if (_likelihoodModel == "Multiplicative Gaussian Data") recognizedModel = true;
  if (recognizedModel == false) Korali::logError("Incorrect or no Likelihood Model selected: %s.\n", _likelihoodModel.c_str());
 
- for (size_t i = 0; i < _k->N; i++)
+ for (size_t i = 0; i < _variables.size(); i++)
  {
-   auto typeString = _k->_variables[i]->_type;
+   auto typeString = _variables[i]->_type;
    bool recognizedType = false;
    if (typeString == "Computational") { _computationalVariableIndices.push_back(i); recognizedType = true; }
    if (typeString == "Statistical")   { _statisticalVariableIndices.push_back(i); recognizedType = true; }
@@ -40,6 +42,16 @@ void Korali::Problem::Bayesian::finalize()
 
 }
 
+size_t Korali::Problem::Bayesian::getSampleSize()
+{
+ return _variables.size();
+}
+
+Korali::Variable* Korali::Problem::Bayesian::getVariable(size_t variableId)
+{
+ return _variables[variableId];
+}
+
 void Korali::Problem::Bayesian::runModel(std::vector<double> sample, size_t sampleId)
 {
  if (_likelihoodModel == "Additive Gaussian" || _likelihoodModel == "Multiplicative Gaussian" || _likelihoodModel == "Multiplicative Gaussian Data")
@@ -64,7 +76,7 @@ void Korali::Problem::Bayesian::runModel(std::vector<double> sample, size_t samp
  }
 }
 
-double Korali::Problem::Bayesian::evaluateFitness()
+double Korali::Problem::Bayesian::evaluateSampleFitness()
 {
  double fitness = 0.0;
 
@@ -83,10 +95,11 @@ double Korali::Problem::Bayesian::evaluateFitness()
  return fitness;
 }
 
-double Korali::Problem::Bayesian::evaluateLogPrior(double* sample)
+double Korali::Problem::Bayesian::evaluateSampleLogPrior(double* sample)
 {
  double logPrior = 0.0;
- for (size_t i = 0; i < _k->N; i++) logPrior += _k->_variables[i]->_priorDistribution->getLogDensity(sample[i]);
+ for (size_t i = 0; i < _variables.size(); i++)
+  logPrior += _variables[i]->_priorDistribution->getLogDensity(sample[i]);
  return logPrior;
 }
 

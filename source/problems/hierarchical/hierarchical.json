@@ -7,9 +7,9 @@
  "Problem Configuration":
  [
    {
-    "Name": [ "Model" ],
-    "Type": "std::string",
-    "Description": "Determines the hierarchical bayesian evaluation model."
+    "Name": [ "Variables" ],
+    "Type": "std::vector<Korali::Variable*>",
+    "Description": "The set of problems variables."
    },
    {
     "Name": [ "Sub Problems" ],

@@ -18,10 +18,10 @@ k = korali.initialize()
 k["Problem"]["Type"] = "Sampling"
 
 # Defining problem's variables and prior distribution for TMCMC
-k["Variables"][0]["Name"] = "X"
-k["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"
-k["Variables"][0]["Prior Distribution"]["Minimum"] = -10.0
-k["Variables"][0]["Prior Distribution"]["Maximum"] = +10.0
+k["Problem"]["Variables"][0]["Name"] = "X"
+k["Problem"]["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"
+k["Problem"]["Variables"][0]["Prior Distribution"]["Minimum"] = -10.0
+k["Problem"]["Variables"][0]["Prior Distribution"]["Maximum"] = +10.0
 
 # Configuring the TMCMC sampler parameters
 k["Solver"]["Type"] = "TMCMC"

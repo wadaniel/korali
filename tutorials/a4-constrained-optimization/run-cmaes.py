@@ -21,9 +21,9 @@ k["Problem"]["Objective"] = "Maximize"
 
 # Creating 7 variables and setting their CCMA-ES bounds
 for i in range(7) :
-  k["Variables"][i]["Name"] = "X" + str(i)
-  k["Variables"][i]["Lower Bound"] = -10.0
-  k["Variables"][i]["Upper Bound"] = +10.0
+  k["Problem"]["Variables"][i]["Name"] = "X" + str(i)
+  k["Problem"]["Variables"][i]["Lower Bound"] = -10.0
+  k["Problem"]["Variables"][i]["Upper Bound"] = +10.0
 
 # Configuring the constrained optimizer CCMA-ES
 k["Solver"]["Type"]  = "CMAES"

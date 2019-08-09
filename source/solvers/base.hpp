@@ -12,6 +12,8 @@ namespace Korali { namespace Solver {
 class Base {
  public:
 
+ size_t N; // Number of variables in the problem
+
  virtual void initialize() = 0;
  virtual void finalize() = 0;
 

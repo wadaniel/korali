@@ -32,10 +32,10 @@ k = korali.initialize()
 
 k["Problem"]["Type"] = "Sampling"
 
-k["Variables"][0]["Name"] = "X"
-k["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"
-k["Variables"][0]["Prior Distribution"]["Minimum"] = -10.0
-k["Variables"][0]["Prior Distribution"]["Maximum"] = +10.0
+k["Problem"]["Variables"][0]["Name"] = "X"
+k["Problem"]["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"
+k["Problem"]["Variables"][0]["Prior Distribution"]["Minimum"] = -10.0
+k["Problem"]["Variables"][0]["Prior Distribution"]["Maximum"] = +10.0
 
 k["Solver"]["Type"] = "TMCMC"
 k["Solver"]["Population Size"] = 5000

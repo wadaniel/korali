@@ -27,6 +27,8 @@ class TMCMC : public Korali::Solver::Base
  Korali::Distribution::Base* _multivariateGenerator; /* Multivariate Gaussian random number generator */
  Korali::Distribution::Base* _uniformGenerator; /* Uniform random number generator */
 
+ size_t N; // Number of variables
+
  public:
 
  TMCMC();

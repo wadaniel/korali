@@ -13,9 +13,9 @@ k = korali.initialize()
 k["Problem"]["Type"] = "Sampling"
 
 # Defining problem's variables and their MCMC settings
-k["Variables"][0]["Name"] = "X"
-k["Variables"][0]["Initial Mean"] = 0.0
-k["Variables"][0]["Initial Standard Deviation"] = 1.0
+k["Problem"]["Variables"][0]["Name"] = "X"
+k["Problem"]["Variables"][0]["Initial Mean"] = 0.0
+k["Problem"]["Variables"][0]["Initial Standard Deviation"] = 1.0
 
 # Configuring the MCMC sampler parameters
 k["Solver"]["Type"]  = "MCMC" 

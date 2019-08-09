@@ -17,15 +17,15 @@ k = korali.initialize()
 k["Problem"]["Type"] = "Sampling"
 
 # Defining the problem's variables and their CMA-ES bounds.
-k["Variables"][0]["Name"] = "Soil pH"
-k["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"
-k["Variables"][0]["Prior Distribution"]["Minimum"] = 3.0
-k["Variables"][0]["Prior Distribution"]["Maximum"] = 9.0
+k["Problem"]["Variables"][0]["Name"] = "Soil pH"
+k["Problem"]["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"
+k["Problem"]["Variables"][0]["Prior Distribution"]["Minimum"] = 3.0
+k["Problem"]["Variables"][0]["Prior Distribution"]["Maximum"] = 9.0
 
-k["Variables"][1]["Name"] = "Average Temperature (C)"
-k["Variables"][1]["Prior Distribution"]["Type"] = "Uniform"
-k["Variables"][1]["Prior Distribution"]["Minimum"] = +10.0
-k["Variables"][1]["Prior Distribution"]["Maximum"] = +50.0
+k["Problem"]["Variables"][1]["Name"] = "Average Temperature (C)"
+k["Problem"]["Variables"][1]["Prior Distribution"]["Type"] = "Uniform"
+k["Problem"]["Variables"][1]["Prior Distribution"]["Minimum"] = +10.0
+k["Problem"]["Variables"][1]["Prior Distribution"]["Maximum"] = +50.0
 
 # Configuring the TMCMC sampler parameters
 k["Solver"]["Type"] = "TMCMC"

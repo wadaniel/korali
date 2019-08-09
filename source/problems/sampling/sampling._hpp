@@ -15,8 +15,12 @@ class Sampling : public Korali::Problem::Base
  public:
 
  void runModel(std::vector<double>, size_t sampleId) override;
- double evaluateFitness() override;
- double evaluateLogPrior(double* sample) override;
+
+ size_t getSampleSize() override;
+ Korali::Variable* getVariable(size_t variableId) override;
+
+ double evaluateSampleFitness() override;
+ double evaluateSampleLogPrior(double* sample) override;
 
  void initialize() override;
  void finalize() override;

@@ -23,6 +23,9 @@ def plot_mcmc(src, plotAll=False, live=False, generation=None, test=False, mean=
     chainlen, numdbentries, samples = ([] for i in range(3))
    
     resultfiles = readFiles(src, 0, generation)
+    if (plotAll == False):
+        resultfiles = [resultfiles[-1]]
+
     solverName, names, numdim, gen = initDefaults(src, resultfiles[0], [samples])
 
     updateLegend = live or plotAll

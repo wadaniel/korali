@@ -18,7 +18,7 @@ k["Problem"]["Variables"][0]["Lower Bound"] = -10.0;
 k["Problem"]["Variables"][0]["Upper Bound"] = +10.0;
 
 k["Solver"]["Type"] = "DEA"
-k["Solver"]["Sample Count"] = 32
+k["Solver"]["Population Size"] = 32
 
 k.dry()
 

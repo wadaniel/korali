@@ -294,11 +294,6 @@
     "Description": "Sample coordinate information."
    },
    {
-    "Name": [ "Sample Candidates" ],
-    "Type": "std::vector<double>",
-    "Description": "Sample candidates coordinate information."
-   },
-   {
     "Name": [ "Is Initialized Sample" ],
     "Type": "std::vector<bool>",
     "Description": "Determines which samples are initialized."
@@ -314,14 +309,14 @@
     "Description": "Best model evaluation from current generation."
    },
    {
-    "Name": [ "Current Best Coordinates" ],
+    "Name": [ "Current Best Variables" ],
     "Type": "std::vector<double>",
-    "Description": "Coordinates of the best sample."
+    "Description": "Best variables of current generation."
    },
    {
-    "Name": [ "Best Ever Coordinates" ],
+    "Name": [ "Best Ever Variables" ],
     "Type": "std::vector<double>",
-    "Description": "Coordinates of the best sample ever."
+    "Description": "Best ever found variables."
    },
    {
     "Name": [ "Previous Best Value" ],
@@ -406,7 +401,7 @@
    {
     "Name": [ "Mean Update" ],
     "Type": "std::vector<double>",
-    "Description": "Update differential from previous to current means."
+    "Description": "Update differential from previous to current mean."
    },
    {
     "Name": [ "Evolution Path" ],

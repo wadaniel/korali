@@ -21,7 +21,7 @@ def plot_dea(src, plotAll=False, live=False, generation=None, test=False, plot_m
     verifyGeneration(generation, 3)
     
     stateNames = ['Current Best Value', 'Best Ever Value']
-    vecStateNames = ['Current Best Sample', 'Current Mean', 'Max Distances']
+    vecStateNames = ['Current Best Variables', 'Current Mean', 'Max Distances']
  
     numdim, names, colors, numeval, dfval, fval, best, fvalXvec, meanXvec, width = ([] for i in range(10))
 

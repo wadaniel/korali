@@ -38,18 +38,18 @@ void Korali::Solver::DEA::initialize()
  if (_k->_currentGeneration > 0) return;
 
  // Allocating Memory
- _samplePopulation.resize(N*_sampleCount);
- _sampleCandidates.resize(N*_sampleCount);
+ _samplePopulation.resize(N*_populationSize);
+ _sampleCandidates.resize(N*_populationSize);
 
  _previousMean.resize(N);
  _currentMean.resize(N);
- _bestEverCoordinates.resize(N);
- _currentBestSample.resize(N);
+ _bestEverVariables.resize(N);
+ _currentBestVariables.resize(N);
  _maxDistances.resize(N);
 
- _isInitializedSample.resize(_sampleCount);
- _previousValueVector.resize(_sampleCount);
- _valueVector.resize(_sampleCount);
+ _isInitializedSample.resize(_populationSize);
+ _previousValueVector.resize(_populationSize);
+ _valueVector.resize(_populationSize);
 
  _infeasibleSampleCount = 0;
  _bestSampleIndex             = 0;
@@ -63,8 +63,8 @@ void Korali::Solver::DEA::initialize()
 
  for(size_t d = 0; d < N; ++d) { _previousMean[d] = 0.0; _currentMean[d] = 0.0; }
 
- for(size_t i = 0; i < _sampleCount; ++i) for(size_t d = 0; d < N; ++d)
-   _currentMean[d] += _samplePopulation[i*N+d]/((double)_sampleCount);
+ for(size_t i = 0; i < _populationSize; ++i) for(size_t d = 0; d < N; ++d)
+   _currentMean[d] += _samplePopulation[i*N+d]/((double)_populationSize);
 
 }
 
@@ -78,7 +78,7 @@ void Korali::Solver::DEA::runGeneration()
 
 void Korali::Solver::DEA::initSamples()
 {
-  for(size_t i = 0; i < _sampleCount; ++i) for(size_t d = 0; d < N; ++d)
+  for(size_t i = 0; i < _populationSize; ++i) for(size_t d = 0; d < N; ++d)
   {
     double width = _k->_problem->getVariable(d)->_upperBound - _k->_problem->getVariable(d)->_lowerBound;
     _samplePopulation[i*N+d] = _k->_problem->getVariable(d)->_lowerBound + width * _uniformGenerator->getRandomNumber();
@@ -90,7 +90,7 @@ void Korali::Solver::DEA::prepareGeneration()
 {
  size_t initial_infeasible = _infeasibleSampleCount;
 
- for (size_t i = 0; i < _sampleCount; ++i)
+ for (size_t i = 0; i < _populationSize; ++i)
  {
   mutateSingle(i);
   while(isFeasible(i) == false)
@@ -107,7 +107,7 @@ void Korali::Solver::DEA::prepareGeneration()
  }
 
  _finishedSampleCount = 0;
- for (size_t i = 0; i < _sampleCount; i++) _isInitializedSample[i] = false;
+ for (size_t i = 0; i < _populationSize; i++) _isInitializedSample[i] = false;
 
  _previousValueVector.assign(std::begin(_valueVector), std::end(_valueVector));
 }
@@ -116,8 +116,8 @@ void Korali::Solver::DEA::prepareGeneration()
 void Korali::Solver::DEA::mutateSingle(size_t sampleIdx)
 {
     size_t a, b;
-    do{ a = _uniformGenerator->getRandomNumber()*_sampleCount; } while(a == sampleIdx);
-    do{ b = _uniformGenerator->getRandomNumber()*_sampleCount; } while(b == sampleIdx || b == a);
+    do{ a = _uniformGenerator->getRandomNumber()*_populationSize; } while(a == sampleIdx);
+    do{ b = _uniformGenerator->getRandomNumber()*_populationSize; } while(b == sampleIdx || b == a);
 
     if (_mutationRule == "Self Adaptive")
     {
@@ -146,7 +146,7 @@ void Korali::Solver::DEA::mutateSingle(size_t sampleIdx)
     if(_parentSelectionRule == "Random")
     {
         size_t c;
-        do{ c = _uniformGenerator->getRandomNumber()*_sampleCount; } while(c == sampleIdx || c == a || c == b);
+        do{ c = _uniformGenerator->getRandomNumber()*_populationSize; } while(c == sampleIdx || c == a || c == b);
         parent = &_samplePopulation[c*N];
     }
     else /* _parentSelectionRule == "Best" */
@@ -189,9 +189,9 @@ void Korali::Solver::DEA::fixInfeasible(size_t sampleIdx)
 
 void Korali::Solver::DEA::evaluateSamples()
 {
-  while (_finishedSampleCount < _sampleCount)
+  while (_finishedSampleCount < _populationSize)
   {
-    for (size_t i = 0; i < _sampleCount; i++) if (_isInitializedSample[i] == false)
+    for (size_t i = 0; i < _populationSize; i++) if (_isInitializedSample[i] == false)
     {
        std::vector<double> _logTransformedSample(N);
 
@@ -231,12 +231,12 @@ void Korali::Solver::DEA::updateSolver()
     _previousBestValue = _currentBestValue;
     _currentBestValue  = _valueVector[_bestSampleIndex];
 
-    for(size_t d = 0; d < N; ++d) _currentBestSample[d] = _sampleCandidates[_bestSampleIndex*N+d];
+    for(size_t d = 0; d < N; ++d) _currentBestVariables[d] = _sampleCandidates[_bestSampleIndex*N+d];
     
     _previousMean.assign(std::begin(_currentMean), std::end(_currentMean));
     std::fill(std::begin(_currentMean), std::end(_currentMean), 0.0);
 
-    if(_currentBestValue > _bestEverValue) _bestEverCoordinates.assign(std::begin(_currentBestSample), std::end(_currentBestSample));
+    if(_currentBestValue > _bestEverValue) _bestEverVariables.assign(std::begin(_currentBestVariables), std::end(_currentBestVariables));
 
     switch (__korali__str2int(_acceptRule.c_str()))
     {
@@ -249,19 +249,19 @@ void Korali::Solver::DEA::updateSolver()
             break;
 
         case __korali__str2int("Greedy") : // accept all mutations better than parent
-            for(size_t i = 0; i < _sampleCount; ++i) if(_valueVector[i] > _previousValueVector[i])
+            for(size_t i = 0; i < _populationSize; ++i) if(_valueVector[i] > _previousValueVector[i])
                 for(size_t d = 0; d < N; ++d) _samplePopulation[i*N+d] = _sampleCandidates[i*N+d];
             if(_currentBestValue > _bestEverValue) _bestEverValue = _currentBestValue;
             break;
 
         case __korali__str2int("Improved") : // update all samples better than _bestEverValue
-            for(size_t i = 0; i < _sampleCount; ++i) if(_valueVector[i] > _bestEverValue)
+            for(size_t i = 0; i < _populationSize; ++i) if(_valueVector[i] > _bestEverValue)
                 for(size_t d = 0; d < N; ++d) _samplePopulation[i*N+d] = _sampleCandidates[i*N+d];
             if(_currentBestValue > _bestEverValue) _bestEverValue = _currentBestValue;
             break;
 
         case __korali__str2int("Iterative") : // iteratibely update _bestEverValue and accept samples
-            for(size_t i = 0; i < _sampleCount; ++i) if(_valueVector[i] > _bestEverValue)
+            for(size_t i = 0; i < _populationSize; ++i) if(_valueVector[i] > _bestEverValue)
              { for(size_t d = 0; d < N; ++d) _samplePopulation[i*N+d] = _sampleCandidates[i*N+d]; _bestEverValue = _valueVector[i]; }
             break;
 
@@ -269,14 +269,14 @@ void Korali::Solver::DEA::updateSolver()
             Korali::logError("Accept Rule (%s) not recognized.\n",  _acceptRule.c_str());
     }
 
-    for(size_t i = 0; i < _sampleCount; ++i) for(size_t d = 0; d < N; ++d)
-        _currentMean[d] += _samplePopulation[i*N+d]/((double)_sampleCount);
+    for(size_t i = 0; i < _populationSize; ++i) for(size_t d = 0; d < N; ++d)
+        _currentMean[d] += _samplePopulation[i*N+d]/((double)_populationSize);
 
     for(size_t d = 0; d < N; ++d)
     {
         double max = std::numeric_limits<double>::lowest();
         double min = std::numeric_limits<double>::max();
-        for(size_t i = 0; i < _sampleCount; ++i)
+        for(size_t i = 0; i < _populationSize; ++i)
         {
             if (_samplePopulation[i*N+d] > max) max = _samplePopulation[i*N+d];
             if (_samplePopulation[i*N+d] < min) min = _samplePopulation[i*N+d];
@@ -298,7 +298,7 @@ void Korali::Solver::DEA::printGeneration()
 {
  Korali::logInfo(KORALI_NORMAL, "Current Function Value: Max = %+6.3e - Best = %+6.3e\n", _currentBestValue, _bestEverValue);
  Korali::logInfo(KORALI_DETAILED, "Variable = (MeanX, BestX):\n");
- for (size_t d = 0; d < N; d++) Korali::logData(KORALI_DETAILED, "         %s = (%+6.3e, %+6.3e)\n", _k->_problem->getVariable(d)->_name.c_str(), _currentMean[d], _bestEverCoordinates[d]);
+ for (size_t d = 0; d < N; d++) Korali::logData(KORALI_DETAILED, "         %s = (%+6.3e, %+6.3e)\n", _k->_problem->getVariable(d)->_name.c_str(), _currentMean[d], _bestEverVariables[d]);
  Korali::logInfo(KORALI_DETAILED, "Max Width:\n");
  for (size_t d = 0; d < N; d++) Korali::logData(KORALI_DETAILED, "         %s = %+6.3e\n", _k->_problem->getVariable(d)->_name.c_str(), _maxDistances[d]);
  Korali::logInfo(KORALI_DETAILED, "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
@@ -308,6 +308,6 @@ void Korali::Solver::DEA::finalize()
 {
  Korali::logInfo(KORALI_MINIMAL, "Optimum found: %e\n", _bestEverValue);
  Korali::logInfo(KORALI_MINIMAL, "Optimum found at:\n");
- for (size_t d = 0; d < N; ++d) Korali::logData(KORALI_MINIMAL, "         %s = %+6.3e\n", _k->_problem->getVariable(d)->_name.c_str(), _bestEverCoordinates[d]);
+ for (size_t d = 0; d < N; ++d) Korali::logData(KORALI_MINIMAL, "         %s = %+6.3e\n", _k->_problem->getVariable(d)->_name.c_str(), _bestEverVariables[d]);
  Korali::logInfo(KORALI_MINIMAL, "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
 }

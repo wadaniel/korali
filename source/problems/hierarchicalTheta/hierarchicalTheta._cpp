@@ -33,8 +33,9 @@ void Korali::Problem::HierarchicalTheta::initialize()
  // Setting Korali problem objects
  _subProblemKorali.setConfiguration(subProblemJson["Problem"]);
  _psiProblemKorali.setConfiguration(psiProblemJson["Problem"]);
+
+ // Initialize the subProblem
  _subProblemKorali.initialize();
- _psiProblemKorali.initialize();
 }
 
 void Korali::Problem::HierarchicalTheta::finalize()

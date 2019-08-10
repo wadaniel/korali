@@ -11,9 +11,12 @@ void Korali::Problem::Bayesian::initialize()
  if (_likelihoodModel == "Multiplicative Gaussian Data") recognizedModel = true;
  if (recognizedModel == false) Korali::logError("Incorrect or no Likelihood Model selected: %s.\n", _likelihoodModel.c_str());
 
+ _computationalVariableIndices.clear();
+ _statisticalVariableIndices.clear();
  for (size_t i = 0; i < _variables.size(); i++)
  {
-   auto typeString = _variables[i]->_type;
+   printf("Name: %s, Type: %s\n", _variables[i]->_name.c_str(), _variables[i]->_type.c_str());
+   std::string typeString = _variables[i]->_type;
    bool recognizedType = false;
    if (typeString == "Computational") { _computationalVariableIndices.push_back(i); recognizedType = true; }
    if (typeString == "Statistical")   { _statisticalVariableIndices.push_back(i); recognizedType = true; }
@@ -26,7 +29,7 @@ void Korali::Problem::Bayesian::initialize()
  {
    if (_likelihoodReferenceData.size() == 0) Korali::logError("Bayesian (%s) problems require defining reference data.\n", _likelihoodModel.c_str());
    if (_k->_modelType != "Reference") Korali::logError("Bayesian (%s) problems require defining a refererence computational model. Used: %s\n", _likelihoodModel.c_str(), _k->_modelType.c_str());
-   if (_statisticalVariableIndices.size() != 1) Korali::logError("Bayesian (%s) problems require exactly 1 statistical parameter.\n", _likelihoodModel.c_str());
+   if (_statisticalVariableIndices.size() != 1) Korali::logError("Bayesian (%s) problems require exactly 1 statistical parameter, provided: %lu.\n", _likelihoodModel.c_str(), _statisticalVariableIndices.size());
  }
 
  if (_likelihoodModel == "Custom")

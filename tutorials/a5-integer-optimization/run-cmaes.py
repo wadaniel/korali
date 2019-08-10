@@ -40,7 +40,7 @@ k["Problem"]["Variables"][6]["Granularity"] = 1.0
  
 # Configuring CMA-ES parameters
 k["Solver"]["Type"] = "CMAES"
-k["Solver"]["Sample Count"] = 8
+k["Solver"]["Population Size"] = 8
 k["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-9
 k["Solver"]["Termination Criteria"]["Max Generations"] = 500
 

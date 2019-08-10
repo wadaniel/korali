@@ -26,7 +26,7 @@ k["Problem"]["Variables"][3]["Lower Bound"] = -32.0;
 k["Problem"]["Variables"][3]["Upper Bound"] = +32.0;
   
 k["Solver"]["Type"] = "CMAES"
-k["Solver"]["Sample Count"] = 10
+k["Solver"]["Population Size"] = 10
 k["Solver"]["Termination Criteria"]["Max Generations"] = 10
 
 k["Conduit"]["Type"] = "External"

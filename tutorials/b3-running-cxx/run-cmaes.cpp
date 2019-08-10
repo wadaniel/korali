@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
  k["Problem"]["Variables"][3]["Upper Bound"] = 20.0;
 
  k["Solver"]["Type"] = "CMAES";
- k["Solver"]["Sample Count"] = 32;
+ k["Solver"]["Population Size"] = 32;
  k["Solver"]["Termination Criteria"]["Max Generations"] = 20;
 
  k.setReferenceModel([](Korali::Model::Reference& d) { heat2DSolver(d.getVariables(), d.getEvaluations()); });

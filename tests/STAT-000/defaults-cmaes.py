@@ -14,7 +14,7 @@ k["Problem"]["Type"] = "Optimization"
 k["Problem"]["Objective"] = "Maximize"
 
 k["Solver"]["Type"]  = "CMAES" 
-k["Solver"]["Sample Count"] = 32
+k["Solver"]["Population Size"] = 32
 
 k["Problem"]["Variables"][0]["Name"] = "X";
 k["Problem"]["Variables"][0]["Lower Bound"] = -10.0;
@@ -36,7 +36,7 @@ assert_value( k["Solver"]["Max Covariance Matrix Corrections"], 1e6 )
 assert_string( k["Solver"]["Mu Type"], "Logarithmic" )
 assert_value( k["Solver"]["Mu Value"], 16 )
 assert_value( k["Solver"]["Normal Vector Learning Rate"], -1.0 )
-assert_value( k["Solver"]["Sample Count"], 32 )
+assert_value( k["Solver"]["Population Size"], 32 )
 assert_value( k["Solver"]["Target Success Rate"], 0.1818 )
 
 # Testing Internals

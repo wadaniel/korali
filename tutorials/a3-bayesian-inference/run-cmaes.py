@@ -44,7 +44,7 @@ k["Problem"]["Variables"][2]["Upper Bound"] = +5.0
 
 # Configuring CMA-ES parameters
 k["Solver"]["Type"] = "CMAES"
-k["Solver"]["Sample Count"] = 24 
+k["Solver"]["Population Size"] = 24 
 k["Solver"]["Termination Criteria"]["Max Generations"] = 500
 
 # General Settings

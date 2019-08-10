@@ -22,7 +22,7 @@ k["Problem"]["Variables"][0]["Lower Bound"] = -10.0
 k["Problem"]["Variables"][0]["Upper Bound"] = +10.0
 
 k["Solver"]["Type"] = "CMAES"
-k["Solver"]["Sample Count"] = 5
+k["Solver"]["Population Size"] = 5
 k["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
 k["General"]["Console Output"]["Frequency"] = 10

@@ -6,13 +6,13 @@
  "Solver Configuration": 
  [
    {
-    "Name": [ "Sample Count" ],
+    "Name": [ "Population Size" ],
     "Type": "size_t",
     "Description": "Specifies the number of samples to evaluate per generation (preferably $4+3*log(N)$, where $N$ is the number of variables)."
    },
    {
     "Name": [ "Mu Value" ],
-    "Default": "_sampleCount*0.5",
+    "Default": "_populationSize*0.5",
     "Type": "size_t",
     "Description": "Number of best samples used to update the covariance matrix and the mean (by default it is half the Sample Count)."
    },
@@ -53,14 +53,14 @@
     "Description": "Covariance matrix updates will be optimized for diagonal matrices."
    },
    {
-    "Name": [ "Viability Sample Count" ],
+    "Name": [ "Viability Population Size" ],
     "Default": "2",
     "Type": "size_t",
-    "Description": "Specifies the number of samples per generation during the viability regime, i.e. during the search for a mean vector not violating the constraints."
+    "Description": "Specifies the number of samples per generation during the viability regime, i.e. during the search for a parameter vector not violating the constraints."
    },
    {
-    "Name": [ "Viability Mu" ],
-    "Default": "2",
+    "Name": [ "Viability Mu Value" ],
+    "Default": "_viabilityPopulationSize*0.5",
     "Type": "size_t",
     "Description": "Number of best samples used to update the covariance matrix and the mean during the viability regime (by default this variable is hald the Viability Sample Count)."
    },
@@ -197,7 +197,7 @@
     "Description": "Defines the initial standard deviation of the proposal distribution for a variable (by default, this value is given by 30% of the variable domain width)."
    },
    {
-    "Name": [ "Minimum Standard Deviation Changes" ],
+    "Name": [ "Minimum Standard Deviation Update" ],
     "Type": "double",
     "Default": "0.0",
     "Description": "Defines a lower bound for the standard deviation updates of the proposal distribution for a variable. Korali increases the scaling factor $\\sigma$ if this value is undershot."
@@ -226,22 +226,22 @@
    {
     "Name": [ "Value Vector" ],
     "Type": "std::vector<double>",
-    "Description": "Objection Function Values."
+    "Description": "Objective function values."
    },
    {
     "Name": [ "Previous Value Vector" ],
     "Type": "std::vector<double>",
-    "Description": "Objection Function Values from previous generation."
+    "Description": "Objective function values from previous generation."
    },
    {
-    "Name": [ "Current Sample Count" ],
+    "Name": [ "Current Population Size" ],
     "Type": "size_t",
-    "Description": "Number of samples active ( _s or _via_s )."
+    "Description": "Actual number of samples used per generation (Population Size or Viability Population Size)."
    },
    {
-    "Name": [ "Current Sample Mu" ],
+    "Name": [ "Current Mu Value" ],
     "Type": "size_t",
-    "Description": "Active mu number ( _mu or _mu_s )."
+    "Description": "Actual value of mu (Mu Value or Viability Mu Value)."
    },
    {
     "Name": [ "Mu Weights" ],

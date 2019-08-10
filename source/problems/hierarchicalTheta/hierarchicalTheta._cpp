@@ -1,0 +1,71 @@
+#include "korali.hpp"
+
+void Korali::Problem::HierarchicalTheta::initialize()
+{
+ if (_k->_constraints.size() > 0) Korali::logError("Hierarchical Bayesian (Theta) problems do not allow constraint definitions.\n");
+
+ // Creating sub-problem JSON object from string
+ nlohmann::json subProblemJson = loadJsonFromFile(_subProblem.c_str());
+
+ // Sub-problem correctness checks
+ std::string subProblemType = consume(subProblemJson, { "Problem", "Type" }, KORALI_STRING);
+ if (subProblemType != "Bayesian Inference")
+  Korali::logError("The Hierarchical Bayesian (Theta) can only accept sub-problems of type 'Bayesian Inference' but sub-Problem is of type: '%s'.\n", subProblemType.c_str());
+
+ if (subProblemJson["Is Finished"] == false)
+  Korali::logError("The Hierarchical Bayesian (Theta) requires that the subproblem has run completely, but it has not.\n");
+
+ // Creating Psi-problem JSON object from string
+ nlohmann::json psiProblemJson = loadJsonFromFile(_psiProblem.c_str());
+
+ // Psi-problem correctness checks
+ std::string psiProblemType = consume(psiProblemJson, { "Problem", "Type" }, KORALI_STRING);
+ if (psiProblemType != "Hierarchical Bayesian (Psi)")
+  Korali::logError("The Hierarchical Bayesian (Theta) can only accept a psi-problem of type 'Hierarchical Bayesian (Psi)' but psi-Problem is of type: '%s'.\n", psiProblemType.c_str());
+
+ if (psiProblemJson["Is Finished"] == false)
+  Korali::logError("The Hierarchical Bayesian (Theta) requires that the psi-problem has run completely, but it has not.\n");
+
+ // Cross-checks
+ if (psiProblemJson["Problem"]["Conditional Priors"].size() != subProblemJson["Problem"]["Variables"].size())
+  Korali::logError("Sub-problem contains a different number of variables (%lu) than conditional priors in the Hierarchical Bayesian (Psi) problem (%lu).\n", psiProblemJson["Problem"]["Variables"].size(), psiProblemJson["Problem"]["Conditional Priors"].size());
+
+ // Setting Korali problem objects
+ _subProblemKorali.setConfiguration(subProblemJson["Problem"]);
+ _psiProblemKorali.setConfiguration(psiProblemJson["Problem"]);
+ _subProblemKorali.initialize();
+ _psiProblemKorali.initialize();
+}
+
+void Korali::Problem::HierarchicalTheta::finalize()
+{
+
+}
+
+size_t Korali::Problem::HierarchicalTheta::getSampleSize()
+{
+ return _psiProblemKorali.getSampleSize();
+}
+
+Korali::Variable* Korali::Problem::HierarchicalTheta::getVariable(size_t variableId)
+{
+ return _psiProblemKorali.getVariable(variableId);
+}
+
+void Korali::Problem::HierarchicalTheta::runModel(std::vector<double> sample, size_t sampleId)
+{
+ _psiProblemKorali.updateConditionalPriors(sample);
+}
+
+double Korali::Problem::HierarchicalTheta::evaluateSampleFitness()
+{
+ double logLikelihood = 0.0;
+
+ return logLikelihood;
+}
+
+double Korali::Problem::HierarchicalTheta::evaluateSampleLogPrior(double* sample)
+{
+ double logPrior = 0.0;
+ return logPrior;
+}

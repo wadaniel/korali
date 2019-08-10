@@ -46,7 +46,7 @@ void Korali::Problem::HierarchicalPsi::initialize()
   for (size_t j = 0; j < sampleCount; j++)
   {
    _subProblemSampleLogLikelihoods[i][j] = _subProblemsJson[i]["Solver"]["Internal"]["Sample Fitness Database"][j];
-   _subProblemSampleLogPriors[i][j]      = _subProblemsJson[i]["Solver"]["Internal"]["Sample Log Prior Database"][j];
+   _subProblemSampleLogPriors[i][j]      = _subProblemsJson[i]["Solver"]["Internal"]["Sample LogPrior Database"][j];
 
    double expPrior = exp(_subProblemSampleLogPriors[i][j]);
    if( std::isfinite(expPrior) == false )
@@ -73,11 +73,16 @@ Korali::Variable* Korali::Problem::HierarchicalPsi::getVariable(size_t variableI
  return _variables[variableId];
 }
 
-void Korali::Problem::HierarchicalPsi::runModel(std::vector<double> sample, size_t sampleId)
+void Korali::Problem::HierarchicalPsi::updateConditionalPriors(std::vector<double> sample)
 {
-  // Re-configuring conditional priors given hyperparameters
+ // Re-configuring conditional priors given hyperparameters
   for (size_t i = 0; i < _conditionalPriors.size(); i++)
     _conditionalPriors[i]->updateConditionals(sample);
+}
+
+void Korali::Problem::HierarchicalPsi::runModel(std::vector<double> sample, size_t sampleId)
+{
+ updateConditionalPriors(sample);
 }
 
 double Korali::Problem::HierarchicalPsi::evaluateSampleFitness()

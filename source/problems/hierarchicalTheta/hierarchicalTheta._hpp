@@ -1,19 +1,19 @@
-#ifndef _KORALI_PROBLEM_HIERARCHICALPSI_HPP_
-#define _KORALI_PROBLEM_HIERARCHICALPSI_HPP_
+#ifndef _KORALI_PROBLEM_HIERARCHICALTHETA_HPP_
+#define _KORALI_PROBLEM_HIERARCHICALTHETA_HPP_
 
 #include "problems/base.hpp"
 
 namespace Korali { namespace Problem {
 
-class HierarchicalPsi : public Korali::Problem::Base
+class HierarchicalTheta : public Korali::Problem::Base
 {
  private:
 
- std::vector<nlohmann::json> _subProblemsJson;
+ Korali::Problem::Bayesian _subProblemKorali;
+ Korali::Problem::HierarchicalPsi _psiProblemKorali;
 
  public:
 
- void updateConditionalPriors(std::vector<double> sample);
  void runModel(std::vector<double>, size_t sampleId) override;
 
  size_t getSampleSize() override;
@@ -32,4 +32,4 @@ class HierarchicalPsi : public Korali::Problem::Base
 } } // namespace Korali::Problem
 
 
-#endif // _KORALI_PROBLEM_HIERARCHICALPSI_HPP_
+#endif // _KORALI_PROBLEM_HIERARCHICALTHETA_HPP_

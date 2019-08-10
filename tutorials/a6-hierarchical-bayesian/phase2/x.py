@@ -58,5 +58,6 @@ kH["Solver"]["Termination Criteria"]["Max Generations"] = 10
 kH["Solver"]["Target Coefficient Of Variation"] = 0.6
 
 kH["General"]["Console Output"]["Verbosity"] = "Detailed"
+kH["General"]["Results Output"]["Path"] = "../setup/results_phase_2/"
 
 kH.run()

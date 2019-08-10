@@ -6,4 +6,3 @@ Hierarchical Bayesian description
 ### Problem Settings
 	
 ### Variable-Specific Settings
-

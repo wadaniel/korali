@@ -1,0 +1,64 @@
+{
+ "Name":  "Hierarchical Bayesian (Theta)",
+ "Alias": "Hierarchical Bayesian (Theta)",
+ "Class": "HierarchicalTheta",
+ "Compatible Solvers": [ "CMAES", "DEA", "MCMC", "TMCMC" ],
+
+ "Problem Configuration":
+ [
+   {
+    "Name": [ "Variables" ],
+    "Type": "std::vector<Korali::Variable*>",
+    "Description": "The set of problems variables."
+   },
+   {
+    "Name": [ "Sub Problem" ],
+    "Type": "std::string",
+    "Description": "Provides results from one previous Korali execution."
+   },
+   {
+    "Name": [ "Psi Problem" ],
+    "Type": "std::string",
+    "Description": "Provides results from the hierarchical problem (Psi)."
+   }
+ ],
+
+ "Variables Configuration":
+ [
+   {
+    "Name": [ "Type" ],
+    "Type": "std::string",
+    "Default": "Computational",
+    "Description": "Specifies the purpose of the variable for the bayesian model."
+   },
+   {
+    "Name": [ "Prior Distribution" ],
+    "Type": "Korali::Distribution::Base*",
+    "Description": "Eh..."
+   }
+ ],
+
+ "Internal Settings":
+ [
+  {
+   "Name": [ "Sub Problem Variables Count" ],
+   "Type": "size_t",
+   "Description": "Number of variables in the sub-problem. Must be equal to the number of conditional priors in the hierarchical problem."
+  },
+  {
+   "Name": [ "Sub Problem Sample Coordinates" ],
+   "Type": "std::vector<double>",
+   "Description": "Coordinates for each sample on the sub-problem."
+  },
+  {
+   "Name": [ "Sub Problem Sample Log Likelihoods" ],
+   "Type": "std::vector<double>",
+   "Description": "Likelihood for each sample on the sub-problem."
+  },
+  {
+   "Name": [ "Sub Problem Sample Log Priors" ],
+   "Type": "std::vector<double>",
+   "Description": "Log Priors for each sample on the sub-problem"
+  }
+ ]
+}

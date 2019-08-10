@@ -32,19 +32,19 @@
     "Name": [ "Target Coefficient Of Variation" ],
     "Type": "double",
     "Default": "1.0",
-    "Description": "Initial value for the target coefficient of variation to search for the exponent $\rho_{i+1}$. By default, Korali will set this value to 1.00 as suggested in [Ching2007]."
+    "Description": "Target coefficient of variation to search for the exponent $\rho_{i+1}$ (by default, this value is 1.00 as suggested in [Ching2007])."
    },
    {
     "Name": [ "Covariance Scaling" ],
     "Type": "double",
     "Default": "0.04",
-    "Description": "Covariance scaling factor $\beta^2$ of proposal distribution. By default, Korali sets this value 0.04 as suggested in [Ching2007]."
+    "Description": "Covariance scaling factor $\beta^2$ of proposal distribution (by default, this value is 0.04 as suggested in [Ching2007])."
    },
    {
     "Name": [ "Use Local Covariance" ],
     "Type": "bool",
     "Default": "false",
-    "Description": "If $true, TMCMC calculates a local covariance matrix per sample from its neighbours."
+    "Description": "If $true$, TMCMC calculates a local covariance matrix per sample from its neighbours."
    },
    {
     "Name": [ "Min Annealing Exponent Update" ],
@@ -56,7 +56,7 @@
     "Name": [ "Max Annealing Exponent Update" ],
     "Type": "double",
     "Default": "1.0",
-    "Description": "Maximum increment of the exponent $\rho{i+1}$. By default, Korali will set this value to 1.0 (inactive)."
+    "Description": "Maximum increment of the exponent $\rho{i+1}$ (by default, this value is 1.0 (inactive))."
    }
  ],
  
@@ -67,7 +67,7 @@
     "Type": "size_t",
     "Criteria": "_annealingExponent >= _targetAnnealingExponent",
     "Default": "1.0",
-    "Description": "Determines the annealing exponent to achieve before termination."
+    "Description": "Determines the annealing exponent $rho$ to achieve before termination. TMCMC converges if $rho$ equals 1.0."
    },
    {
     "Name": [ "Max Generations" ],
@@ -90,7 +90,7 @@
    {
     "Name": [ "Prior Distribution" ],
     "Type": "Korali::Distribution::Base*",
-    "Description": "Eh..."
+    "Description": "Prior distribution of the parameters. Also it is evaluated for each sample to calculate the posterior."
    }
  ],
  
@@ -104,37 +104,37 @@
    {
     "Name": [ "Chain Pending Fitness" ],
     "Type": "std::vector<bool>",
-    "Description": "Indicates that the fitness result for the chain is pending."
+    "Description": "Indicates that the model evaluation for the chain is pending."
    },
    {
     "Name": [ "Chain Candidate Parameters" ],
     "Type": "std::vector<double>",
-    "Description": "Current (theta) parameters of the chain leader sample."
+    "Description": "Current candidates to evaluate in order to advance the markov chains."
    },
    {
     "Name": [ "Chain Candidates LogLikelihoods" ],
     "Type": "std::vector<double>",
-    "Description": "The logLikelihoods of the chain candidates."
+    "Description": "The loglikelihoods of the chain candidates."
    },
    {
     "Name": [ "Chain Candidates LogPriors" ],
     "Type": "std::vector<double>",
-    "Description": "The logPriors of the chain candidates."
+    "Description": "The logpriors of the chain candidates."
    },
    {
     "Name": [ "Chain Leader Parameters" ],
     "Type": "std::vector<double>",
-    "Description": "Current (theta) parameters of the chain leader sample."
+    "Description": "Current leading parameters to be accepted."
    },
    {
     "Name": [ "Chain Leaders LogLikelihoods" ],
     "Type": "std::vector<double>",
-    "Description": "The logLikelihoods of the chain leaders."
+    "Description": "The loglikelihoods of the chain leaders."
    },
    {
     "Name": [ "Chain Leaders LogPriors" ],
     "Type": "std::vector<double>",
-    "Description": "The logPriors of the chain leaders."
+    "Description": "The logpriors of the chain leaders."
    },
    {
     "Name": [ "Finished Chains Count" ],
@@ -149,52 +149,52 @@
    {
     "Name": [ "Chain Lengths" ],
     "Type": "std::vector<size_t>",
-    "Description": "Length for each of the chains."
+    "Description": "Lengths for each of the chains."
    },
    {
     "Name": [ "Coefficient Of Variation" ],
     "Type": "double",
-    "Description": "Current coefficient of variation."
+    "Description": "Actual coefficient of variation after $rho$ has beed updated."
    },
    {
     "Name": [ "Chain Count" ],
     "Type": "size_t",
-    "Description": "Unique selections after resampling (forming new chain)."
+    "Description": "Unique selections after resampling stage."
    },
    {
     "Name": [ "Annealing Exponent" ],
     "Type": "double",
-    "Description": "how the calculated distribution fits the real distribution"
+    "Description": "Exponent of the likelihood. If $rho$ equals 1.0, TMCMC converged."
    },
    {
     "Name": [ "Accepted Samples Count" ],
     "Type": "size_t",
-    "Description": "Accepted samples after proposal."
+    "Description": "Accepted candidates after proposal."
    },
    {
     "Name": [ "LogEvidence" ],
     "Type": "double",
-    "Description": "Calculated logEvidence of the model so far."
+    "Description": "Calculated logEvidence of the model."
    },
    {
     "Name": [ "Proposals Acceptance Rate" ],
     "Type": "double",
-    "Description": "Acceptance rate calculated from samples."
+    "Description": "Acceptance rate calculated from accepted samples."
    },
    {
     "Name": [ "Selection Acceptance Rate" ],
     "Type": "double",
-    "Description": "Acceptance rate calculated from chain count."
+    "Description": "Acceptance rate calculated from unique samples (chain count) after recombination."
    },
    {
     "Name": [ "Covariance Matrix" ],
     "Type": "std::vector<double>",
-    "Description": "Sample covariance of leader fitness values."
+    "Description": "Sample covariance of the current leaders updated at every generation."
    },
    {
     "Name": [ "Mean Theta" ],
     "Type": "std::vector<double>",
-    "Description": "Mean of leader fitness values."
+    "Description": "Mean of the current leaders updated at every generation."
    },
    {
     "Name": [ "Database Entry Count" ],
@@ -204,22 +204,22 @@
    {
     "Name": [ "Sample Parameters Database" ],
     "Type": "std::vector<double>",
-    "Description": "Variable values of samples stored in the database."
+    "Description": "Parameters stored in the database (taken from the chain leaders)."
    },
    {
     "Name": [ "Sample Fitness Database" ],
     "Type": "std::vector<double>",
-    "Description": "Fitness of the samples stored in the database."
+    "Description": "Fitness of the parameters stored in the database."
    },
    {
-    "Name": [ "Sample Log Prior Database" ],
+    "Name": [ "Sample LogPrior Database" ],
     "Type": "std::vector<double>",
     "Description": "Log priors of the samples stored in the database."
    },
    {
     "Name": [ "Local Covariance Matrices" ],
     "Type": "std::vector<std::vector<double>>",
-    "Description": "Local covariances of chain leaders."
+    "Description": "Local covariance matrices of chain leaders."
    }
  ]
 }

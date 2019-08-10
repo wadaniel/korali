@@ -276,5 +276,5 @@ void Korali::Solver::MCMC::finalize()
 {
  Korali::logInfo(KORALI_MINIMAL, "Number of Generated Samples: %zu\n", _proposedSampleCount);
  Korali::logInfo(KORALI_MINIMAL, "Acceptance Rate: %.2f%%\n", 100*_acceptanceRate);
- if (_databaseEntryCount == _chainLength) Korali::logInfo(KORALI_MINIMAL, "Max Samples Reached.\n");
+ if (_maxChainLength == _chainLength) Korali::logInfo(KORALI_MINIMAL, "Max Samples Reached.\n");
 }

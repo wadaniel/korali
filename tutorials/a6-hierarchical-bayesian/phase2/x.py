@@ -28,7 +28,7 @@ kH["Problem"]["Conditional Priors"][2]["Mu"]    = "Psi 3"
 kH["Problem"]["Conditional Priors"][2]["Sigma"] = "Psi 4"
 
 kH["Problem"]["Conditional Priors"][3]["Type"] = "Uniform"
-kH["Problem"]["Conditional Priors"][3]["Minimum"] = 0.1
+kH["Problem"]["Conditional Priors"][3]["Minimum"] = "Psi 5"
 kH["Problem"]["Conditional Priors"][3]["Maximum"] = 15.
 
 kH["Problem"]["Variables"][0]["Name"] = "Psi 1"
@@ -50,6 +50,11 @@ kH["Problem"]["Variables"][3]["Name"] = "Psi 4"
 kH["Problem"]["Variables"][3]["Prior Distribution"]["Type"] = "Uniform"
 kH["Problem"]["Variables"][3]["Prior Distribution"]["Minimum"] = 0.0
 kH["Problem"]["Variables"][3]["Prior Distribution"]["Maximum"] = 10.0
+
+kH["Problem"]["Variables"][4]["Name"] = "Psi 5"
+kH["Problem"]["Variables"][4]["Prior Distribution"]["Type"] = "Uniform"
+kH["Problem"]["Variables"][4]["Prior Distribution"]["Minimum"] = 3.0
+kH["Problem"]["Variables"][4]["Prior Distribution"]["Maximum"] = 7.0
 
 kH["Solver"]["Type"] = "TMCMC"
 kH["Solver"]["Population Size"] = 5000

@@ -18,6 +18,7 @@ class Optimization : public Korali::Problem::Base
 
  size_t getSampleSize() override;
  Korali::Variable* getVariable(size_t variableId) override;
+ bool isSampleFeasible(double* sample) override;
 
  double evaluateSampleFitness() override;
  double evaluateSampleLogPrior(double* sample) override;

@@ -114,9 +114,9 @@ void Korali::Solver::TMCMC::runGeneration()
  {
   for (size_t c = 0; c < _chainCount; c++) if ( (_chainPendingFitness[c] == false) && (_currentChainStep[c] < _chainLengths[c]) )
   {
-  _chainPendingFitness[c] = true;
-  generateCandidate(c);
-  evaluateSample(c);
+   _chainPendingFitness[c] = true;
+   generateCandidate(c);
+   evaluateSample(c);
   }
   _k->_conduit->checkProgress();
  }
@@ -159,8 +159,15 @@ void Korali::Solver::TMCMC::evaluateSample(size_t sampleId)
 
   _chainCandidatesLogPriors[sampleId] = _k->_problem->evaluateSampleLogPrior(&_chainCandidateParameters[sampleId*N]);
 
-  if(std::isfinite(_chainCandidatesLogPriors[sampleId]) == false) finishSample(sampleId);
-  else _k->_conduit->evaluateSample(_logTransformedSample.data(), sampleId);
+  if(_k->_problem->isSampleFeasible(&_chainCandidateParameters[sampleId*N]))
+   _k->_conduit->evaluateSample(_logTransformedSample.data(), sampleId);
+  else
+  {
+   _chainCandidatesLogLikelihoods[sampleId] = std::numeric_limits<double>::lowest();
+   _chainCandidatesLogPriors[sampleId] = std::numeric_limits<double>::lowest();
+   finishSample(sampleId);
+  }
+
 }
 
 void Korali::Solver::TMCMC::finishSample(size_t sampleId)
@@ -468,13 +475,6 @@ void Korali::Solver::TMCMC::minSearch(double const *fj, size_t fn, double pj, do
  gsl_multimin_fminimizer_free (s);
 }
 
-
-bool Korali::Solver::TMCMC::isFeasibleCandidate(size_t c) //TODO: not used anymore? (DW)
-{
- double clLogPrior = _k->_problem->evaluateSampleLogPrior(&_chainLeaderParameters[c*N]);
- if (clLogPrior > -INFINITY) return true;
- return false;
-}
 
 void Korali::Solver::TMCMC::setBurnIn()
 {

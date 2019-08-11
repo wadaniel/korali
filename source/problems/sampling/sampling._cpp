@@ -13,6 +13,13 @@ void Korali::Problem::Sampling::finalize()
 
 }
 
+bool Korali::Problem::Sampling::isSampleFeasible(double* sample)
+{
+ for (size_t i = 0; i < _variables.size(); i++)
+  if (isfinite(_variables[i]->_priorDistribution->getLogDensity(sample[i])) == false) return false;
+ return true;
+}
+
 void Korali::Problem::Sampling::runModel(std::vector<double> sample, size_t sampleId)
 {
  // Creating model data.

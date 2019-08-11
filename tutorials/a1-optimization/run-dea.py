@@ -24,7 +24,7 @@ k["Problem"]["Variables"][0]["Upper Bound"] = +10.0;
 
 # Configuring Solver
 k["Solver"]["Type"] = "DEA"
-k["Solver"]["Sample Count"] = 32
+k["Solver"]["Population Size"] = 32
 k["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-7
 k["Solver"]["Termination Criteria"]["Max Generations"] = 100
 

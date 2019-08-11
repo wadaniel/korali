@@ -20,7 +20,7 @@ def plot_cmaes(src, plotAll=False, live=False, generation=None, test=False, plot
     verifyGeneration(generation, 3)
     
     stateNames = ['Current Best Value', 'Best Ever Value', 'Sigma', 'Conjugate Evolution Path L2 Norm']
-    vecStateNames = ['Current Best Coordinates', 'Current Mean', 'Axis Lengths']
+    vecStateNames = ['Current Best Variables', 'Current Mean', 'Axis Lengths']
 
     names, colors, numeval, sigma, cond, psL2, dfval, fval, best, fvalXvec, mu, axis, ssdev = ([] for i in range(13))
  

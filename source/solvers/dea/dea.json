@@ -6,7 +6,7 @@
  "Solver Configuration": 
  [
    {
-    "Name": [ "Sample Count" ],
+    "Name": [ "Population Size" ],
     "Type": "size_t",
     "Description": "Specifies the number of samples to evaluate per generation (preferably 5-10x number of variables)."
    },
@@ -26,19 +26,19 @@
     "Name": [ "Mutation Rule" ],
     "Default": "Fixed",
     "Type": "std::string",
-    "Description": "Controls the Mutation Rate: 'Fixed' or 'Self Adaptive' (udpating rule in [Brest2006])."
+    "Description": "Controls the Mutation Rate: 'Fixed' or 'Self Adaptive' (varying Crossover Rate and Mutation Rate, according to [Brest2006])."
    },
    {
     "Name": [ "Parent Selection Rule" ],
     "Default": "Random",
     "Type": "std::string",
-    "Description": "Defines the selection rule of the parent vecor: 'Random' or 'Best'."
+    "Description": "Defines the selection rule of the parent vecor: 'Random' (randomly select parent) or 'Best' (mutate only best variables)."
    },
    {
     "Name": [ "Accept Rule" ],
     "Default": "Greedy",
     "Type": "std::string",
-    "Description": "Sets the accept rule after sample mutation and evaluation: 'Best', 'Greedy', 'Iterative' or 'Improved'."
+    "Description": "Sets the accept rule after sample mutation and evaluation: 'Best' (update best sample if better than Best Ever Sample), 'Greedy' (accept all candiates better than parent), 'Iterative' (iterate through candidates and accept if Best Ever Value improved) or 'Improved' (accept all candidates better than Best Ever Sample)."
    },
    {
     "Name": [ "Fix Infeasible" ],
@@ -130,12 +130,12 @@
    {
     "Name": [ "Sample Population" ],
     "Type": "std::vector<double>",
-    "Description": "Sample coordinate information."
+    "Description": "Sample variable information."
    },
    {
     "Name": [ "Sample Candidates" ],
     "Type": "std::vector<double>",
-    "Description": "Sample candidates coordinate information."
+    "Description": "Sample candidates variable information."
    },
    {
     "Name": [ "Is Initialized Sample" ],
@@ -183,14 +183,14 @@
     "Description": "Previous mean of population."
    },
    {
-    "Name": [ "Best Ever Coordinates" ],
+    "Name": [ "Best Ever Variables" ],
     "Type": "std::vector<double>",
-    "Description": "Coordinates of the best sample ever."
+    "Description": "Best ever found variables."
    },
    {
-    "Name": [ "Current Best Sample" ],
+    "Name": [ "Current Best Variables" ],
     "Type": "std::vector<double>",
-    "Description": "Coordinates of the current best sample."
+    "Description": "Best variables of current generation."
    },
    {
     "Name": [ "Max Distances" ],

@@ -22,7 +22,7 @@ k["Problem"]["Variables"][0]["Lower Bound"] = -10.0
 k["Problem"]["Variables"][0]["Upper Bound"] = +10.0
 
 k["Solver"]["Type"]  = "DEA"
-k["Solver"]["Sample Count"] = 10
+k["Solver"]["Population Size"] = 10
 k["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
 k["General"]["Console Output"]["Frequency"] = 5

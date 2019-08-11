@@ -46,11 +46,6 @@
    "Description": "Evaluation of the conditional-prior generated samples from the subproblem."
   },
   {
-   "Name": [ "Psi Problem Variables Count" ],
-   "Type": "size_t",
-   "Description": "Number of variables in the psi-problem. Must be equal to the number of conditional priors in the hierarchical problem."
-  },
-  {
    "Name": [ "Psi Problem Sample Coordinates" ],
    "Type": "std::vector<double>",
    "Description": "Coordinates for each sample on the psi-problem."

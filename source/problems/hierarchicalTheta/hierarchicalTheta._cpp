@@ -40,8 +40,7 @@ void Korali::Problem::HierarchicalTheta::initialize()
  // Loading Psi problem results
  size_t sampleCount = psiProblemJson["Solver"]["Internal"]["Database Entry Count"].get<size_t>();
 
- _psiProblemVariablesCount = _subProblemKorali.getSampleSize();
- _psiProblemSampleCoordinates.resize(sampleCount * _psiProblemVariablesCount);
+ _psiProblemSampleCoordinates.resize(sampleCount * _psiProblemKorali.getSampleSize());
  _psiProblemSampleLogLikelihoods.resize(sampleCount);
  _psiProblemSampleLogPriors.resize(sampleCount);
 
@@ -54,9 +53,13 @@ void Korali::Problem::HierarchicalTheta::initialize()
   if( std::isfinite(expPrior) == false )
     Korali::logError("Non finite (%lf) prior has been detected at sample %zu in subproblem.\n", expPrior, j );
 
-  for (size_t k = 0; k < _psiProblemVariablesCount; k++)
-   _psiProblemSampleCoordinates[j*_psiProblemVariablesCount + k] = psiProblemJson["Solver"]["Internal"]["Sample Parameters Database"][j*_psiProblemVariablesCount + k];
+  for (size_t k = 0; k < _psiProblemKorali.getSampleSize(); k++)
+   _psiProblemSampleCoordinates[j*_psiProblemKorali.getSampleSize() + k] = psiProblemJson["Solver"]["Internal"]["Sample Parameters Database"][j*_psiProblemKorali.getSampleSize() + k];
  }
+
+ // Now inheriting Psi problem's variables
+ for (size_t i = 0; i < _psiProblemKorali.getSampleSize(); i++)
+    _variables.push_back(_psiProblemKorali.getVariable(i));
 }
 
 void Korali::Problem::HierarchicalTheta::finalize()

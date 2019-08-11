@@ -49,7 +49,7 @@ def plot_tmcmc(src, plotAll=False, live=False, generation=None, test=False, mean
                 if updateLegend:
                     checkFigure(fig.number)
          
-                samples = np.reshape( data['Solver']['Internal']['Sample Parameters Database'], (numdbentries[-1],numdim) )
+                samples = np.reshape( data['Solver']['Internal']['Sample Database'], (numdbentries[-1],numdim) )
                 plot_samples(ax, gen, numdbentries[-1], anneal[-1], samples)
         
         if (live == False):

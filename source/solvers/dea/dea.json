@@ -133,7 +133,7 @@
     "Description": "Sample variable information."
    },
    {
-    "Name": [ "Sample Candidates" ],
+    "Name": [ "Candidate Population" ],
     "Type": "std::vector<double>",
     "Description": "Sample candidates variable information."
    },

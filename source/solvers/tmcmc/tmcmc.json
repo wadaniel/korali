@@ -14,7 +14,7 @@
     "Name": [ "Max Chain Length" ],
     "Type": "size_t",
     "Default": "std::numeric_limits<size_t>::max()",
-    "Description": "Chains longer than Max Chain Length will be broken and samples will be duplicated (replacing samples associated with a chain length of 0)."
+    "Description": "Chains longer than Max Chain Length will be broken and samples will be duplicated (replacing samples associated with a chain length of 0). Max Chain Length of 1 corresponds to the BASIS algorithm [Wu2018]."
    },
    {
     "Name": [ "Default Burn In" ],
@@ -23,40 +23,34 @@
     "Description": "Specifies the number of additional TMCMC steps per chain per generation."
    },
    {
-    "Name": [ "Burn In Steps" ],
+    "Name": [ "Burn In" ],
     "Type": "std::vector<size_t>",
     "Default": "std::vector<size_t>(0)",
-    "Description": "Specifies the number of additional TMCMC steps per chain at specified generations."
+    "Description": "Specifies the number of additional TMCMC steps per chain at specified generations (this property will overwrite Default Burn In at specified generations)."
    },
    {
     "Name": [ "Target Coefficient Of Variation" ],
     "Type": "double",
     "Default": "1.0",
-    "Description": "Target coefficient of variation to search for the exponent $\rho_{i+1}$ (by default, this value is 1.00 as suggested in [Ching2007])."
+    "Description": "Target coefficient of variation of the plausibility weights to update the annealing exponent $\rho$ (by default, this value is 1.00 as suggested in [Ching2007])."
    },
    {
     "Name": [ "Covariance Scaling" ],
     "Type": "double",
     "Default": "0.04",
-    "Description": "Covariance scaling factor $\beta^2$ of proposal distribution (by default, this value is 0.04 as suggested in [Ching2007])."
-   },
-   {
-    "Name": [ "Use Local Covariance" ],
-    "Type": "bool",
-    "Default": "false",
-    "Description": "If $true$, TMCMC calculates a local covariance matrix per sample from its neighbours."
+    "Description": "Scaling factor $\beta^2$ of Covariance Matrix (by default, this value is 0.04 as suggested in [Ching2007])."
    },
    {
     "Name": [ "Min Annealing Exponent Update" ],
     "Type": "double",
     "Default": "0.00001",
-    "Description": "Minimum increment of the exponent $\rho_{i+1}$. This parameter prevents TMCMC from stalling."
+    "Description": "Minimum increment of the exponent $\rho$. This parameter prevents TMCMC from stalling."
    },
    {
     "Name": [ "Max Annealing Exponent Update" ],
     "Type": "double",
     "Default": "1.0",
-    "Description": "Maximum increment of the exponent $\rho{i+1}$ (by default, this value is 1.0 (inactive))."
+    "Description": "Maximum increment of the exponent $\rho$ (by default, this value is 1.0 (inactive))."
    }
  ],
  
@@ -74,7 +68,7 @@
     "Type": "size_t",
     "Default": "100",
     "Criteria": "_k->_currentGeneration > _maxGenerations",
-    "Description": "Determines how many solver generations to run before stopping execution. Execution can be resumed at a later moment."
+    "Description": "Determines how many generations to run before stopping execution. Execution can be resumed at a later moment."
    },
    {
     "Name": [ "Max Model Evaluations" ],
@@ -90,7 +84,7 @@
    {
     "Name": [ "Prior Distribution" ],
     "Type": "Korali::Distribution::Base*",
-    "Description": "Prior distribution of the parameters. Also it is evaluated for each sample to calculate the posterior."
+    "Description": "Prior distribution of the parameters. Distribution to sample the first generation. Also it is evaluated for each sample during the calculation of the posterior."
    }
  ],
  
@@ -99,7 +93,7 @@
    {
     "Name": [ "Current Burn In" ],
     "Type": "size_t",
-    "Description": "Actual placeholder for burn in steps per generation, calculated from $Burn In Default$, $Burn In Steps$ and current generation."
+    "Description": "Actual placeholder for burn in steps per generation, calculated from Burn In Default, Burn In and Current Generation."
    },
    {
     "Name": [ "Chain Pending Fitness" ],
@@ -107,9 +101,9 @@
     "Description": "Indicates that the model evaluation for the chain is pending."
    },
    {
-    "Name": [ "Chain Candidate Parameters" ],
+    "Name": [ "Chain Candidates" ],
     "Type": "std::vector<double>",
-    "Description": "Current candidates to evaluate in order to advance the markov chains."
+    "Description": "Candidates of all chains to evaluate in order to advance the markov chains."
    },
    {
     "Name": [ "Chain Candidates LogLikelihoods" ],
@@ -122,9 +116,9 @@
     "Description": "The logpriors of the chain candidates."
    },
    {
-    "Name": [ "Chain Leader Parameters" ],
+    "Name": [ "Chain Leaders" ],
     "Type": "std::vector<double>",
-    "Description": "Current leading parameters to be accepted."
+    "Description": "Leading parameters of all chains to be accepted."
    },
    {
     "Name": [ "Chain Leaders LogLikelihoods" ],
@@ -202,7 +196,7 @@
     "Description": "Number of accepted samples stored in the database."
    },
    {
-    "Name": [ "Sample Parameters Database" ],
+    "Name": [ "Sample Database" ],
     "Type": "std::vector<double>",
     "Description": "Parameters stored in the database (taken from the chain leaders)."
    },

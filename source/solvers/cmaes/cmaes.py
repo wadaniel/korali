@@ -1,13 +1,7 @@
 #! /usr/bin/env python3
 
-import os
-import sys
-import glob
-import time
 import json
 import numpy as np
-
-import matplotlib
 import matplotlib.pyplot as plt
 
 from korali.plotter.helpers import readFiles, hlsColors, pauseLight, drawMulticoloredLine, checkFigure

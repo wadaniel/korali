@@ -13,7 +13,7 @@ def open_json(dirname, filename):
     return data
 
 def compareMean(js):
-    samples = js["Solver"]["Internal"]["Sample Parameters Database"]
+    samples = js["Solver"]["Internal"]["Sample Database"]
     
     mean      = np.mean(samples)
     chainmean = js["Solver"]["Internal"]["Chain Mean"]
@@ -21,7 +21,7 @@ def compareMean(js):
             "Samples"
 
 def compareStd(js):
-    samples = js["Solver"]["Internal"]["Sample Parameters Database"]
+    samples = js["Solver"]["Internal"]["Sample Database"]
 
     mean     = np.mean(samples)
     std      = np.sqrt(sum((samples - mean)**2)/(len(samples)-1))

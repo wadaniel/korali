@@ -36,11 +36,39 @@ void Korali::Problem::HierarchicalTheta::initialize()
 
  // Initialize the subProblem
  _subProblemKorali.initialize();
+
+ // Loading Psi problem results
+ size_t sampleCount = psiProblemJson["Solver"]["Internal"]["Database Entry Count"].get<size_t>();
+
+ _psiProblemVariablesCount = _subProblemKorali.getSampleSize();
+ _psiProblemSampleCoordinates.resize(sampleCount * _psiProblemVariablesCount);
+ _psiProblemSampleLogLikelihoods.resize(sampleCount);
+ _psiProblemSampleLogPriors.resize(sampleCount);
+
+ for (size_t j = 0; j < sampleCount; j++)
+ {
+  _psiProblemSampleLogLikelihoods[j] = psiProblemJson["Solver"]["Internal"]["Sample Fitness Database"][j];
+  _psiProblemSampleLogPriors[j]      = psiProblemJson["Solver"]["Internal"]["Sample LogPrior Database"][j];
+
+  double expPrior = exp(_psiProblemSampleLogPriors[j]);
+  if( std::isfinite(expPrior) == false )
+    Korali::logError("Non finite (%lf) prior has been detected at sample %zu in subproblem.\n", expPrior, j );
+
+  for (size_t k = 0; k < _psiProblemVariablesCount; k++)
+   _psiProblemSampleCoordinates[j*_psiProblemVariablesCount + k] = psiProblemJson["Solver"]["Internal"]["Sample Parameters Database"][j*_psiProblemVariablesCount + k];
+ }
 }
 
 void Korali::Problem::HierarchicalTheta::finalize()
 {
 
+}
+
+bool Korali::Problem::HierarchicalTheta::isSampleFeasible(double* sample)
+{
+ for (size_t i = 0; i < _psiProblemKorali.getSampleSize(); i++)
+  if (isfinite(_psiProblemKorali.getVariable(i)->_priorDistribution->getLogDensity(sample[i])) == false) return false;
+ return true;
 }
 
 size_t Korali::Problem::HierarchicalTheta::getSampleSize()
@@ -56,11 +84,38 @@ Korali::Variable* Korali::Problem::HierarchicalTheta::getVariable(size_t variabl
 void Korali::Problem::HierarchicalTheta::runModel(std::vector<double> sample, size_t sampleId)
 {
  _psiProblemKorali.updateConditionalPriors(sample);
+
+ // Sergio to George: I am generating a sample for the subproblem with
+ // random numbers from the conditional priors of the psi problem
+ // is this the way it should be done?
+ std::vector<double> subProblemSample;
+ for (size_t i = 0; i < _subProblemKorali.getSampleSize(); i++)
+  subProblemSample.push_back(_psiProblemKorali.getConditionalPrior(i)->getRandomNumber());
+
+ if (_subProblemKorali.isSampleFeasible(subProblemSample.data()) == true)
+ {
+  // printf("Is Feasible\n");
+  _subProblemKorali.runModel(subProblemSample, sampleId);
+  _subProblemLogLikelihood = _subProblemKorali.evaluateSampleFitness();
+ }
+ else
+ {
+  // printf("Is Not Feasible\n");
+  _subProblemLogLikelihood = std::numeric_limits<double>::lowest();
+ }
+
 }
 
 double Korali::Problem::HierarchicalTheta::evaluateSampleFitness()
 {
  double logLikelihood = 0.0;
+
+ // Sergio to George:
+ // The variable _subProblemLogLikelihood contains the first term of the 3-term
+ // formula you showed me on Friday. At least, I think that is what you showed me.
+ // Please make sure by taking a look at Korali::Problem::HierarchicalTheta::runModel()
+
+ logLikelihood += _subProblemLogLikelihood;
 
  return logLikelihood;
 }

@@ -13,11 +13,13 @@ class HierarchicalPsi : public Korali::Problem::Base
 
  public:
 
+ Korali::Distribution::Base* getConditionalPrior(size_t idx);
  void updateConditionalPriors(std::vector<double> sample);
  void runModel(std::vector<double>, size_t sampleId) override;
 
  size_t getSampleSize() override;
  Korali::Variable* getVariable(size_t variableId) override;
+ bool isSampleFeasible(double* sample) override;
 
  double evaluateSampleFitness() override;
  double evaluateSampleLogPrior(double* sample) override;

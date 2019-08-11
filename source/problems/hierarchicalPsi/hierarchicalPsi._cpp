@@ -58,9 +58,21 @@ void Korali::Problem::HierarchicalPsi::initialize()
  }
 }
 
+bool Korali::Problem::HierarchicalPsi::isSampleFeasible(double* sample)
+{
+ for (size_t i = 0; i < _variables.size(); i++)
+  if (isfinite(_variables[i]->_priorDistribution->getLogDensity(sample[i])) == false) return false;
+ return true;
+}
+
 void Korali::Problem::HierarchicalPsi::finalize()
 {
 
+}
+
+Korali::Distribution::Base* Korali::Problem::HierarchicalPsi::getConditionalPrior(size_t idx)
+{
+ return _conditionalPriors[idx];
 }
 
 size_t Korali::Problem::HierarchicalPsi::getSampleSize()

@@ -14,6 +14,7 @@ class Base
 
   virtual size_t getSampleSize() = 0;
   virtual Korali::Variable* getVariable(size_t variableId) = 0;
+  virtual bool isSampleFeasible(double* sample) = 0;
 
   virtual double evaluateSampleFitness() = 0;
   virtual double evaluateSampleLogPrior(double* sample) = 0;

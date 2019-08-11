@@ -15,7 +15,6 @@ void Korali::Problem::Bayesian::initialize()
  _statisticalVariableIndices.clear();
  for (size_t i = 0; i < _variables.size(); i++)
  {
-   printf("Name: %s, Type: %s\n", _variables[i]->_name.c_str(), _variables[i]->_type.c_str());
    std::string typeString = _variables[i]->_type;
    bool recognizedType = false;
    if (typeString == "Computational") { _computationalVariableIndices.push_back(i); recognizedType = true; }
@@ -43,6 +42,13 @@ void Korali::Problem::Bayesian::initialize()
 void Korali::Problem::Bayesian::finalize()
 {
 
+}
+
+bool Korali::Problem::Bayesian::isSampleFeasible(double* sample)
+{
+ for (size_t i = 0; i < _variables.size(); i++)
+  if (isfinite(_variables[i]->_priorDistribution->getLogDensity(sample[i])) == false) return false;
+ return true;
 }
 
 size_t Korali::Problem::Bayesian::getSampleSize()

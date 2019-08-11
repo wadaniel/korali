@@ -1,9 +1,5 @@
 #! /usr/bin/env python3
 
-import os
-import re
-import sys
-import time
 import json
 import numpy as np
 import matplotlib.pyplot as plt

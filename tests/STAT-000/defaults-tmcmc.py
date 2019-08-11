@@ -30,7 +30,6 @@ assert_value( k["Solver"]["Default Burn In"], 0 )
 assert_value( k["Solver"]["Max Annealing Exponent Update"], 1.0 )
 assert_value( k["Solver"]["Min Annealing Exponent Update"], 1e-5 )
 assert_value( k["Solver"]["Population Size"], 5000 )
-assert_value( k["Solver"]["Use Local Covariance"], False )
 
 # Test Internals
 

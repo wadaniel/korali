@@ -42,8 +42,8 @@ k["Solver"]["Population Size"] = 5000
 k["Solver"]["Covariance Scaling"] = 0.001
 
 k["Solver"]["Default Burn In"] = 5
-k["Solver"]["Burn In Steps"][0] = 10
-k["Solver"]["Burn In Steps"][1] = 7
+k["Solver"]["Burn In"][0] = 10
+k["Solver"]["Burn In"][1] = 7
 k["Solver"]["Max Chain Length"] = 1
 k["Solver"]["Target Coefficient Of Variation"] = 0.5
 k["Solver"]["Min Annealing Exponent Update"] = minRhoUpdate

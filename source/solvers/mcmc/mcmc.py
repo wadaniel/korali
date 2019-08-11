@@ -18,7 +18,7 @@ def plot_mcmc(src, plotAll=False, live=False, generation=None, test=False, mean=
     verifyGeneration(generation, 0)
 
     stateNames = ['Chain Length', 'Database Entry Count']
-    vecStateNames = ['Sample Parameters Database']
+    vecStateNames = ['Sample Database']
 
     chainlen, numdbentries, samples = ([] for i in range(3))
    
@@ -51,7 +51,7 @@ def plot_mcmc(src, plotAll=False, live=False, generation=None, test=False, mean=
                     checkFigure(fig.number)
  
                 if(numdbentries[-1] > 0):
-                    samples  = np.reshape( data['Solver']['Internal']['Sample Parameters Database'][0:numdbentries[-1]*numdim], (numdbentries[-1],numdim) )
+                    samples  = np.reshape( data['Solver']['Internal']['Sample Database'][0:numdbentries[-1]*numdim], (numdbentries[-1],numdim) )
                     plot_samples(fig, ax, gen, numdim, numdbentries[-1], samples)
             
 

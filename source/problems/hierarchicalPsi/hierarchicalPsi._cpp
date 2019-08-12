@@ -53,7 +53,7 @@ void Korali::Problem::HierarchicalPsi::initialize()
      Korali::logError("Non finite (%lf) prior has been detected at sample %zu in subproblem %zu.\n", expPrior, j, i );
 
    for (size_t k = 0; k < _subProblemVariablesCount; k++)
-    _subProblemSampleCoordinates[i][j*_subProblemVariablesCount + k] = _subProblemsJson[i]["Solver"]["Internal"]["Sample Parameters Database"][j*_subProblemVariablesCount + k];
+    _subProblemSampleCoordinates[i][j*_subProblemVariablesCount + k] = _subProblemsJson[i]["Solver"]["Internal"]["Sample Database"][j*_subProblemVariablesCount + k];
   }
  }
 }

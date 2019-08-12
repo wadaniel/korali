@@ -54,7 +54,7 @@ void Korali::Problem::HierarchicalTheta::initialize()
     Korali::logError("Non finite (%lf) prior has been detected at sample %zu in subproblem.\n", expPrior, j );
 
   for (size_t k = 0; k < _psiProblemKorali.getSampleSize(); k++)
-   _psiProblemSampleCoordinates[j*_psiProblemKorali.getSampleSize() + k] = psiProblemJson["Solver"]["Internal"]["Sample Parameters Database"][j*_psiProblemKorali.getSampleSize() + k];
+   _psiProblemSampleCoordinates[j*_psiProblemKorali.getSampleSize() + k] = psiProblemJson["Solver"]["Internal"]["Sample Database"][j*_psiProblemKorali.getSampleSize() + k];
  }
 
  // Now inheriting Psi problem's variables

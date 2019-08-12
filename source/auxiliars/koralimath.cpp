@@ -1,5 +1,8 @@
 #include "koralimath.hpp"
-#include <math.h>
+#include <cmath>
+#include <algorithm>
+
+using namespace std;
 
 // Computes:
 //  log sum_{i=1}^N x_i
@@ -10,7 +13,7 @@
 //
 double logSumExp( vector<double> logValues )
 {
-  double maxLogValues =  *max_element(begin(logValues), end(logValues));
+  double maxLogValues =  *std::max_element(begin(logValues), end(logValues));
   double sumExpValues = 0.0;
   for (auto& v : logValues) sumExpValues += exp( v - maxLogValues );
 

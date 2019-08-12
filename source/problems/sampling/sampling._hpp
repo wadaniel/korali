@@ -16,7 +16,7 @@ class Sampling : public Korali::Problem::Base
 
  void runModel(std::vector<double>, size_t sampleId) override;
 
- size_t getSampleSize() override;
+ size_t getVariableCount() override;
  Korali::Variable* getVariable(size_t variableId) override;
  bool isSampleFeasible(double* sample) override;
 

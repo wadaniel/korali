@@ -28,7 +28,7 @@ Korali::Solver::CMAES::~CMAES()
 
 void Korali::Solver::CMAES::initialize()
 {
- N = _k->_problem->getSampleSize();
+ N = _k->_problem->getVariableCount();
 
  if (_k->_currentGeneration > 0) return;
 

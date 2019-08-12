@@ -12,7 +12,7 @@ class Base
 
   virtual void runModel(std::vector<double>, size_t sampleId) = 0;
 
-  virtual size_t getSampleSize() = 0;
+  virtual size_t getVariableCount() = 0;
   virtual Korali::Variable* getVariable(size_t variableId) = 0;
   virtual bool isSampleFeasible(double* sample) = 0;
 

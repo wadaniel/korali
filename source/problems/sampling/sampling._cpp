@@ -30,7 +30,7 @@ void Korali::Problem::Sampling::runModel(std::vector<double> sample, size_t samp
   _k->_directModel(_directModelData);
 }
 
-size_t Korali::Problem::Sampling::getSampleSize()
+size_t Korali::Problem::Sampling::getVariableCount()
 {
  return _variables.size();
 }

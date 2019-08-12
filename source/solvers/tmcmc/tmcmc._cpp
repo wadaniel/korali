@@ -39,7 +39,7 @@ Korali::Solver::TMCMC::~TMCMC()
 
 void Korali::Solver::TMCMC::initialize()
 {
- N = _k->_problem->getSampleSize();
+ N = _k->_problem->getVariableCount();
 
  if(_maxChainLength == 0) Korali::logError("Max Chain Length must be greater 0.");
 
@@ -69,7 +69,7 @@ void Korali::Solver::TMCMC::initialize()
  _selectionAcceptanceRate = 1.0;
  _acceptedSamplesCount    = _populationSize;
  _chainCount              = _populationSize;
- 
+
  // Initializing Runtime Variables
  for (size_t c = 0; c < _populationSize; c++) _currentChainStep[c] = 0;
  for (size_t c = 0; c < _populationSize; c++) _chainLengths[c] = 1 + _currentBurnIn;
@@ -254,8 +254,8 @@ void Korali::Solver::TMCMC::processGeneration()
 
     /* Init new chains */
     std::fill(std::begin(_chainLengths), std::end(_chainLengths), 0);
-    
-    size_t leaderChainLen; 
+
+    size_t leaderChainLen;
     size_t zeroCount = 0;
   size_t leaderId = 0;
   for (size_t i = 0; i < _databaseEntryCount; i++) {
@@ -263,7 +263,7 @@ void Korali::Solver::TMCMC::processGeneration()
    while (numselections[i] != 0) {
      for (size_t j = 0; j < N ; j++) _chainLeaders[leaderId*N + j] = _sampleDatabase[i*N + j];
      _chainLeadersLogLikelihoods[leaderId] = _sampleFitnessDatabase[i];
-         
+
          if (numselections[i] > _maxChainLength) leaderChainLen = _maxChainLength;
          else leaderChainLen = numselections[i];
      _chainLengths[leaderId] = leaderChainLen + _currentBurnIn;
@@ -271,7 +271,7 @@ void Korali::Solver::TMCMC::processGeneration()
      leaderId++;
    }
   }
-    
+
     /* Update acceptance statistics */
     size_t uniqueSelections  = _databaseEntryCount - zeroCount;
   _proposalsAcceptanceRate = (1.0*_acceptedSamplesCount)/_populationSize;
@@ -293,7 +293,7 @@ double Korali::Solver::TMCMC::tmcmc_objlogp(double x, const double *fj, size_t f
 
  double mean_q = gsl_stats_mean(q.data(), 1, fn);
  double std_q  = gsl_stats_sd_m(q.data(), 1, fn, mean_q);
- double cov2   = (std_q/mean_q-zero); 
+ double cov2   = (std_q/mean_q-zero);
  cov2 *= cov2;
 
  return cov2;

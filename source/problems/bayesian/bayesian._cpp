@@ -51,7 +51,7 @@ bool Korali::Problem::Bayesian::isSampleFeasible(double* sample)
  return true;
 }
 
-size_t Korali::Problem::Bayesian::getSampleSize()
+size_t Korali::Problem::Bayesian::getVariableCount()
 {
  return _variables.size();
 }

@@ -30,7 +30,7 @@ void Korali::Conduit::External::evaluateSample(double* sampleArray, size_t sampl
  if (processId == 0)
  {
   std::vector<double> sampleVector;
-  for (size_t i = 0; i < _k->_problem->getSampleSize(); i++)
+  for (size_t i = 0; i < _k->_problem->getVariableCount(); i++)
    sampleVector.push_back(sampleArray[i]);
 
   _k->_problem->runModel(sampleVector, sampleId);

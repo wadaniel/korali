@@ -29,7 +29,7 @@ Korali::Solver::DEA::~DEA()
 
 void Korali::Solver::DEA::initialize()
 {
- N = _k->_problem->getSampleSize();
+ N = _k->_problem->getVariableCount();
 
  for(size_t d = 0; d < N; ++d)
   if(_k->_problem->getVariable(d)->_upperBound < _k->_problem->getVariable(d)->_lowerBound)

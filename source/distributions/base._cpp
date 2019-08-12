@@ -1,7 +1,8 @@
 #include "korali.hpp"
 
-void Korali::Distribution::Base::initialize()
+void Korali::Distribution::Base::initialize(Korali::Problem::Base* problem)
 {
+ _problem = problem;
  _seed = _k->_seed++;
  _range = gsl_rng_alloc (gsl_rng_default);
  gsl_rng_set(_range, _seed);
@@ -12,7 +13,7 @@ void Korali::Distribution::Base::finalize()
  gsl_rng_free(_range);
 }
 
-Korali::Distribution::Base* Korali::Distribution::Base::getDistribution(nlohmann::json& js)
+Korali::Distribution::Base* Korali::Distribution::Base::getDistribution(Korali::Problem::Base* problem, nlohmann::json& js)
 {
  std::string distributionType = "Undefined";
 
@@ -30,7 +31,7 @@ Korali::Distribution::Base* Korali::Distribution::Base::getDistribution(nlohmann
  if (distribution == nullptr) Korali::logError("Unrecognized distribution type provided: ['Type'] = %s.\n", distributionType.c_str());
 
  distribution->setConfiguration(js);
- distribution->initialize();
+ distribution->initialize(problem);
  return distribution;
 }
 

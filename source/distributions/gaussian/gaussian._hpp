@@ -26,7 +26,7 @@ class Gaussian : public Korali::Distribution::Base {
  void getLogDensityVector(double *x, double* result, size_t n) override;
  void getRandomVector(double *x, size_t n) override;
 
- void initialize() override;
+ void initialize(Korali::Problem::Base* problem) override;
  void finalize() override;
  void setConfiguration(nlohmann::json& js) override;
  void getConfiguration(nlohmann::json& js) override;

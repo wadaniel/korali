@@ -6,9 +6,9 @@ Korali::Distribution::Gamma::Gamma()
  _scale = 1.0;
 }
 
-void Korali::Distribution::Gamma::initialize()
+void Korali::Distribution::Gamma::initialize(Korali::Problem::Base* problem)
 {
- Korali::Distribution::Base::initialize();
+ Korali::Distribution::Base::initialize(problem);
  bool hasConditionals = false;
 
  // Check for conditional properties

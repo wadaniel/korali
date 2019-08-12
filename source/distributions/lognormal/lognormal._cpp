@@ -5,9 +5,9 @@ Korali::Distribution::LogNormal::LogNormal()
  _sigma = 1.0;
 }
 
-void Korali::Distribution::LogNormal::initialize()
+void Korali::Distribution::LogNormal::initialize(Korali::Problem::Base* problem)
 {
-  Korali::Distribution::Base::initialize();
+  Korali::Distribution::Base::initialize(problem);
   bool hasConditionals = false;
 
   // Check for conditional properties

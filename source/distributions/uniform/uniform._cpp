@@ -7,9 +7,9 @@ Korali::Distribution::Uniform::Uniform()
 }
 
 
-void Korali::Distribution::Uniform::initialize()
+void Korali::Distribution::Uniform::initialize(Korali::Problem::Base* problem)
 {
- Korali::Distribution::Base::initialize();
+ Korali::Distribution::Base::initialize(problem);
  bool hasConditionals = false;
 
  // Check for conditional properties

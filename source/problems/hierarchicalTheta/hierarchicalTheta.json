@@ -2,7 +2,7 @@
  "Name":  "Hierarchical Bayesian (Theta)",
  "Alias": "Hierarchical Bayesian (Theta)",
  "Class": "HierarchicalTheta",
- "Compatible Solvers": [ "CMAES", "DEA", "MCMC", "TMCMC" ],
+ "Compatible Solvers": [ "TMCMC" ],
 
  "Problem Configuration":
  [
@@ -40,6 +40,16 @@
 
  "Internal Settings":
  [
+  {
+   "Name": [ "Psi Problem Sample Count" ],
+   "Type": "size_t",
+   "Description": "Number of samples on the Psi problem."
+  },
+  {
+   "Name": [ "Sub Problem Sample Count" ],
+   "Type": "size_t",
+   "Description": "Number of samples on the sub problem."
+  },
   {
    "Name": [ "Psi Problem Sample Coordinates" ],
    "Type": "std::vector<double>",

@@ -16,13 +16,13 @@ Korali::Solver::MCMC::MCMC()
  jsGaussian["Type"] = "Gaussian";
  jsGaussian["Mean"] = 0.0;
  jsGaussian["Standard Deviation"] = 1.0;
- _gaussianGenerator = Korali::Distribution::Base::getDistribution(jsGaussian);
+ _gaussianGenerator = Korali::Distribution::Base::getDistribution(_k->_problem, jsGaussian);
 
  auto jsUniform = nlohmann::json();
  jsUniform["Type"] = "Uniform";
  jsUniform["Minimum"] = 0.0;
  jsUniform["Maximum"] = 1.0;
- _uniformGenerator = Korali::Distribution::Base::getDistribution(jsUniform);
+ _uniformGenerator = Korali::Distribution::Base::getDistribution(_k->_problem, jsUniform);
 
  _k->_consoleOutputFrequency = 500;
  _k->_resultsOutputFrequency = 500;

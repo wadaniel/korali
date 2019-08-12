@@ -1,9 +1,11 @@
 #include "korali.hpp"
+#include "problems/base.hpp"
 
-Korali::Variable::Variable()
+Korali::Variable::Variable(Korali::Problem::Base* problem)
 {
  _name = "Unnamed";
  _isLogSpace = false;
+ _problem = problem;
 }
 
 Korali::Variable::~Variable()

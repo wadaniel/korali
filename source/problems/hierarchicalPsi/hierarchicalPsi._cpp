@@ -37,23 +37,17 @@ void Korali::Problem::HierarchicalPsi::initialize()
 
  for (size_t i = 0; i < _subProblemCount; i++)
  {
-  size_t sampleCount = _subProblemsJson[i]["Solver"]["Internal"]["Database Entry Count"].get<size_t>();
-
-  _subProblemSampleCoordinates[i].resize(sampleCount * _subProblemVariablesCount);
-  _subProblemSampleLogLikelihoods[i].resize(sampleCount);
-  _subProblemSampleLogPriors[i].resize(sampleCount);
-
-  for (size_t j = 0; j < sampleCount; j++)
+  for (size_t j = 0; j < _subProblemsJson[i]["Solver"]["Internal"]["Chain Leaders LogLikelihoods"].size(); j++)
   {
-   _subProblemSampleLogLikelihoods[i][j] = _subProblemsJson[i]["Solver"]["Internal"]["Sample Fitness Database"][j];
-   _subProblemSampleLogPriors[i][j]      = _subProblemsJson[i]["Solver"]["Internal"]["Sample LogPrior Database"][j];
+   _subProblemSampleLogLikelihoods[i].push_back(_subProblemsJson[i]["Solver"]["Internal"]["Chain Leaders LogLikelihoods"][j]);
+   _subProblemSampleLogPriors[i].push_back(_subProblemsJson[i]["Solver"]["Internal"]["Chain Leaders LogPriors"][j]);
 
    double expPrior = exp(_subProblemSampleLogPriors[i][j]);
    if( std::isfinite(expPrior) == false )
      Korali::logError("Non finite (%lf) prior has been detected at sample %zu in subproblem %zu.\n", expPrior, j, i );
 
    for (size_t k = 0; k < _subProblemVariablesCount; k++)
-    _subProblemSampleCoordinates[i][j*_subProblemVariablesCount + k] = _subProblemsJson[i]["Solver"]["Internal"]["Sample Database"][j*_subProblemVariablesCount + k];
+    _subProblemSampleCoordinates[i].push_back(_subProblemsJson[i]["Solver"]["Internal"]["Chain Leaders"][j*_subProblemVariablesCount + k]);
   }
  }
 }

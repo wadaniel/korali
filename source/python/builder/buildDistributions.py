@@ -125,11 +125,11 @@ def buildDistributions(koraliDir):
   for v in distributionConfig["Conditional Variables"]: 
     conditionalCheckString += ' bool ' + getCXXVariableName(v) + 'Recognized = false;\n'
     
-  conditionalCheckString += ' for (size_t i = 0; i < _k->_problem->getSampleSize(); i++)\n'
+  conditionalCheckString += ' for (size_t i = 0; i < _problem->getSampleSize(); i++)\n'
   conditionalCheckString += ' {\n'
     
   for v in distributionConfig["Conditional Variables"]: 
-    conditionalCheckString += '  if (_k->_problem->getVariable(i)->_name == ' + getCXXVariableName(v) + 'Conditional) \n'
+    conditionalCheckString += '  if (_problem->getVariable(i)->_name == ' + getCXXVariableName(v) + 'Conditional) \n'
     conditionalCheckString += '  {\n'
     conditionalCheckString += '   ' + getCXXVariableName(v) + 'Recognized = true;\n'
     conditionalCheckString += '   hasConditionals = true;\n'

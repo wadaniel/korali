@@ -32,51 +32,42 @@ void Korali::Problem::HierarchicalTheta::initialize()
 
  // Setting Korali problem objects
  _subProblemKorali.setConfiguration(subProblemJson["Problem"]);
+ _psiProblemKorali.setConfiguration(psiProblemJson["Problem"]);
 
  // Loading Psi problem results
- size_t psiSampleCount = psiProblemJson["Solver"]["Internal"]["Database Entry Count"].get<size_t>();
-
- _psiProblemSampleCoordinates.resize(psiSampleCount * _psiProblemKorali.getSampleSize());
- _psiProblemSampleLogLikelihoods.resize(psiSampleCount);
- _psiProblemSampleLogPriors.resize(psiSampleCount);
-
- for (size_t j = 0; j < psiSampleCount; j++)
+ _psiProblemSampleCount = psiProblemJson["Solver"]["Internal"]["Chain Leaders LogLikelihoods"].size();
+ for (size_t j = 0; j < _psiProblemSampleCount; j++)
  {
-  _psiProblemSampleLogLikelihoods[j] = psiProblemJson["Solver"]["Internal"]["Sample Fitness Database"][j];
-  _psiProblemSampleLogPriors[j]      = psiProblemJson["Solver"]["Internal"]["Sample LogPrior Database"][j];
+  _psiProblemSampleLogLikelihoods.push_back(psiProblemJson["Solver"]["Internal"]["Chain Leaders LogLikelihoods"][j]);
+  _psiProblemSampleLogPriors.push_back(psiProblemJson["Solver"]["Internal"]["Chain Leaders LogPriors"][j]);
 
   double expPrior = exp(_psiProblemSampleLogPriors[j]);
   if( std::isfinite(expPrior) == false )
     Korali::logError("Non finite (%lf) prior has been detected at sample %zu in subproblem.\n", expPrior, j );
 
   for (size_t k = 0; k < _psiProblemKorali.getSampleSize(); k++)
-   _psiProblemSampleCoordinates[j*_psiProblemKorali.getSampleSize() + k] = psiProblemJson["Solver"]["Internal"]["Sample Database"][j*_psiProblemKorali.getSampleSize() + k];
+   _psiProblemSampleCoordinates.push_back(psiProblemJson["Solver"]["Internal"]["Chain Leaders"][j*_psiProblemKorali.getSampleSize() + k]);
  }
 
  // Loading Sub problem results
- size_t subSampleCount = subProblemJson["Solver"]["Internal"]["Database Entry Count"].get<size_t>();
-
- _subProblemSampleCoordinates.resize(subSampleCount * _subProblemKorali.getSampleSize());
- _subProblemSampleLogLikelihoods.resize(subSampleCount);
- _subProblemSampleLogPriors.resize(subSampleCount);
-
- for (size_t j = 0; j < subSampleCount; j++)
+ _subProblemSampleCount = subProblemJson["Solver"]["Internal"]["Chain Leaders LogLikelihoods"].size();
+ for (size_t j = 0; j < _subProblemSampleCount; j++)
  {
-  _subProblemSampleLogLikelihoods[j] = subProblemJson["Solver"]["Internal"]["Sample Fitness Database"][j];
-  _subProblemSampleLogPriors[j]      = subProblemJson["Solver"]["Internal"]["Sample LogPrior Database"][j];
+  _subProblemSampleLogLikelihoods.push_back(subProblemJson["Solver"]["Internal"]["Chain Leaders LogLikelihoods"][j]);
+  _subProblemSampleLogPriors.push_back(subProblemJson["Solver"]["Internal"]["Chain Leaders LogPriors"][j]);
 
   double expPrior = exp(_subProblemSampleLogPriors[j]);
   if( std::isfinite(expPrior) == false )
     Korali::logError("Non finite (%lf) prior has been detected at sample %zu in subproblem.\n", expPrior, j );
 
   for (size_t k = 0; k < _subProblemKorali.getSampleSize(); k++)
-   _subProblemSampleCoordinates[j*_subProblemKorali.getSampleSize() + k] = subProblemJson["Solver"]["Internal"]["Sample Database"][j*_subProblemKorali.getSampleSize() + k];
+   _subProblemSampleCoordinates.push_back(subProblemJson["Solver"]["Internal"]["Chain Leaders"][j*_subProblemKorali.getSampleSize() + k]);
  }
 
  // Initialize the subProblem
  _subProblemKorali.initialize();
 
- // Now inheriting Psi problem's variables
+ // Now inheriting Sub problem's variables
  for (size_t i = 0; i < _subProblemKorali.getSampleSize(); i++)
     _variables.push_back(_subProblemKorali.getVariable(i));
 }
@@ -113,6 +104,24 @@ double Korali::Problem::HierarchicalTheta::evaluateSampleFitness()
  double logLikelihood = 0.0;
 
  logLikelihood += _subProblemKorali.evaluateSampleFitness();
+
+ size_t N = _psiProblemKorali.getSampleSize();
+ std::vector<double> psiSample;
+ psiSample.resize(N);
+ for (size_t i = 0; i < _psiProblemSampleCount; i++)
+ {
+  for (size_t j = 0; j < _psiProblemKorali.getSampleSize(); j++)
+   psiSample[j] = _psiProblemSampleCoordinates[i*N + j];
+
+  _psiProblemKorali.updateConditionalPriors(psiSample);
+
+  double logPriorSum = 0.0;
+  for (size_t i = 0; i < _subProblemKorali.getSampleSize(); i++)
+  {
+   logPriorSum += _psiProblemKorali.getConditionalPrior(i)->getLogDensity(1.0);
+  }
+  printf("Sample's logPriorSum: %f\n", logPriorSum);
+ }
 
  return logLikelihood;
 }

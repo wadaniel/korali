@@ -1,8 +1,8 @@
 #include "korali.hpp"
 
-void Korali::Distribution::Cauchy::initialize()
+void Korali::Distribution::Cauchy::initialize(Korali::Problem::Base* problem)
 {
- Korali::Distribution::Base::initialize();
+ Korali::Distribution::Base::initialize(problem);
  bool hasConditionals = false;
 
  // Check for conditional properties

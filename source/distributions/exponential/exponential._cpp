@@ -5,9 +5,9 @@ Korali::Distribution::Exponential::Exponential()
 
 }
 
-void Korali::Distribution::Exponential::initialize()
+void Korali::Distribution::Exponential::initialize(Korali::Problem::Base* problem)
 {
- Korali::Distribution::Base::initialize();
+ Korali::Distribution::Base::initialize(problem);
  bool hasConditionals = false;
 
  // Check for conditional properties

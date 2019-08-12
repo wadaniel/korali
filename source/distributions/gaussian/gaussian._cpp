@@ -5,9 +5,9 @@ Korali::Distribution::Gaussian::Gaussian()
  _standardDeviation = 1.0;
 }
 
-void Korali::Distribution::Gaussian::initialize()
+void Korali::Distribution::Gaussian::initialize(Korali::Problem::Base* problem)
 {
- Korali::Distribution::Base::initialize();
+ Korali::Distribution::Base::initialize(problem);
  bool hasConditionals = false;
 
  // Check for conditional properties

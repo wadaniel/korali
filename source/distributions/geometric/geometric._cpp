@@ -4,9 +4,9 @@ Korali::Distribution::Geometric::Geometric()
 {
 }
 
-void Korali::Distribution::Geometric::initialize()
+void Korali::Distribution::Geometric::initialize(Korali::Problem::Base* problem)
 {
- Korali::Distribution::Base::initialize();
+ Korali::Distribution::Base::initialize(problem);
  bool hasConditionals = false;
 
  // Check for conditional properties

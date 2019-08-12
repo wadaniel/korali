@@ -4,18 +4,26 @@
 #include <string>
 #include "auxiliars/json.hpp"
 
+
 namespace Korali {
+
+namespace Problem
+{
+ class Base;
+}
 
 class Variable
 {
  private:
+
+ Korali::Problem::Base* _problem;
 
  public:
 
  bool _isLogSpace;
  std::string _name;
 
- Variable();
+ Variable(Korali::Problem::Base* problem);
  ~Variable();
 
  void getConfiguration(nlohmann::json& js);

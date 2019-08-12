@@ -41,11 +41,6 @@
  "Internal Settings":
  [
   {
-   "Name": [ "Sub Problem LogLikelihood" ],
-   "Type": "double",
-   "Description": "Evaluation of the conditional-prior generated samples from the subproblem."
-  },
-  {
    "Name": [ "Psi Problem Sample Coordinates" ],
    "Type": "std::vector<double>",
    "Description": "Coordinates for each sample on the psi-problem."
@@ -59,6 +54,21 @@
    "Name": [ "Psi Problem Sample Log Priors" ],
    "Type": "std::vector<double>",
    "Description": "Log Priors for each sample on the psi-problem"
+  },
+  {
+   "Name": [ "Sub Problem Sample Coordinates" ],
+   "Type": "std::vector<double>",
+   "Description": "Coordinates for each sample on the sub-problem."
+  },
+  {
+   "Name": [ "Sub Problem Sample Log Likelihoods" ],
+   "Type": "std::vector<double>",
+   "Description": "Likelihood for each sample on the sub-problem."
+  },
+  {
+   "Name": [ "Sub Problem Sample Log Priors" ],
+   "Type": "std::vector<double>",
+   "Description": "Log Priors for each sample on the sub-problem"
   }
  ]
 }

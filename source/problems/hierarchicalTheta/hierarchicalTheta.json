@@ -78,7 +78,12 @@
   {
    "Name": [ "Sub Problem Sample Log Priors" ],
    "Type": "std::vector<double>",
-   "Description": "Log Priors for each sample on the sub-problem"
+   "Description": "Log Priors for each sample on the sub-problem."
+  },
+  {
+   "Name": [ "Precomputed Log Denominator" ],
+   "Type": "std::vector<double>",
+   "Description": "Constant term precomputed for efficiency."
   }
  ]
 }

@@ -12,6 +12,8 @@ class HierarchicalTheta : public Korali::Problem::Base
  Korali::Problem::Bayesian _subProblemKorali;
  Korali::Problem::HierarchicalPsi _psiProblemKorali;
 
+ std::vector<double> _sample;
+
  public:
 
  void runModel(std::vector<double>, size_t sampleId) override;

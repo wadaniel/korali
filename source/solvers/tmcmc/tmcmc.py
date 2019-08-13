@@ -14,13 +14,12 @@ def plot_tmcmc(src, plotAll=False, live=False, generation=None, test=False, mean
         
     verifyGeneration(generation, 1)
 
-    stateNames = ['Annealing Exponent', 'Accepted Samples Count']
     resultfiles = readFiles(src, 1, generation)
  
     if (plotAll == False):
         resultfiles = [resultfiles[-1]]
 
-    anneal, numdbentries, samples = ([] for i in range(3))
+    samples = []
     solverName, names, numdim, gen = initDefaults(src, resultfiles[0], [samples])
  
     while True: 
@@ -39,14 +38,14 @@ def plot_tmcmc(src, plotAll=False, live=False, generation=None, test=False, mean
                 data    = json.load(f)
                 
                 state, gen = getStateAndGeneration(data)
-                samplePopulation = int(data['Solver']['Population Size'])
-                appendStates(state, (anneal, numdbentries), stateNames)
+                anneal = float(data['Solver']['Internal']['Annealing Exponent'])
+                populationSize = int(data['Solver']['Population Size'])
         
                 if updateLegend:
                     checkFigure(fig.number)
          
-                samples = np.reshape( data['Solver']['Internal']['Sample Database'], (samplePopulation,numdim) )
-                plot_samples(ax, gen, samplePopulation, anneal[-1], samples)
+                samples = np.reshape( data['Solver']['Internal']['Sample Database'], (populationSize,numdim) )
+                plot_samples(ax, gen, populationSize, anneal, samples)
         
         if (live == False):
             break

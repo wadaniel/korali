@@ -87,7 +87,7 @@ void Korali::Problem::HierarchicalTheta::initialize()
       double logConditionalPrior = 0;
       for (size_t k = 0; k < Ntheta; k++)
       {
-        double theta = _psiProblemSampleCoordinates[j*Ntheta + k];
+        double theta = _subProblemSampleCoordinates[j*Ntheta + k];
         logConditionalPrior += _psiProblemKorali.getConditionalPrior(k)->getLogDensity(theta);
       }
 
@@ -97,15 +97,15 @@ void Korali::Problem::HierarchicalTheta::initialize()
     double localSum = -log(_subProblemSampleCount) + logSumExp(logValues);
 
     _precomputedLogDenominator.push_back( localSum );
+
   }
-
-
   // Initialize the subProblem
   _subProblemKorali.initialize();
 
   // Now inheriting Sub problem's variables
   for (size_t i = 0; i < _subProblemKorali.getVariableCount(); i++)
     _variables.push_back(_subProblemKorali.getVariable(i));
+
 }
 
 void Korali::Problem::HierarchicalTheta::finalize()
@@ -142,7 +142,6 @@ double Korali::Problem::HierarchicalTheta::evaluateSampleFitness()
 
   logLikelihood += _subProblemKorali.evaluateSampleFitness();
 
-
   size_t Npsi = _psiProblemKorali.getVariableCount();
   std::vector<double> psiSample;
   psiSample.resize(Npsi);
@@ -163,9 +162,12 @@ double Korali::Problem::HierarchicalTheta::evaluateSampleFitness()
       logConditionalPrior += _psiProblemKorali.getConditionalPrior(k)->getLogDensity( _sample[k] );
 
     logValues[i] = logConditionalPrior - _precomputedLogDenominator[i];
+    // printf("-----> %lf --- %lf --- %lf \n",  logValues[i], logConditionalPrior, _precomputedLogDenominator[i] );
   }
 
   logLikelihood += -log(_psiProblemSampleCount) + logSumExp(logValues);
+
+  // printf("==========> %lf \n",  logLikelihood );
 
   return logLikelihood;
 }

@@ -13,6 +13,7 @@ class HierarchicalTheta : public Korali::Problem::Base
  Korali::Problem::HierarchicalPsi _psiProblemKorali;
 
  std::vector<double> _sample;
+ std::vector<double> _precomputedLogDenominator;
 
  public:
 

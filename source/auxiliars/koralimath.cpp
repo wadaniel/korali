@@ -14,6 +14,12 @@ using namespace std;
 double logSumExp( vector<double> logValues )
 {
   double maxLogValues =  *std::max_element(begin(logValues), end(logValues));
+
+  if( isinf(maxLogValues)==true ){
+    if(maxLogValues<0) return 0;
+    else return INFINITY;
+  }
+
   double sumExpValues = 0.0;
   for (auto& v : logValues) sumExpValues += exp( v - maxLogValues );
 

@@ -14,7 +14,7 @@ def plot_tmcmc(src, plotAll=False, live=False, generation=None, test=False, mean
         
     verifyGeneration(generation, 1)
 
-    stateNames = ['Annealing Exponent', 'Database Entry Count']
+    stateNames = ['Annealing Exponent', 'Accepted Samples Count']
     resultfiles = readFiles(src, 1, generation)
  
     if (plotAll == False):
@@ -39,13 +39,14 @@ def plot_tmcmc(src, plotAll=False, live=False, generation=None, test=False, mean
                 data    = json.load(f)
                 
                 state, gen = getStateAndGeneration(data)
+                samplePopulation = int(data['Solver']['Population Size'])
                 appendStates(state, (anneal, numdbentries), stateNames)
         
                 if updateLegend:
                     checkFigure(fig.number)
          
-                samples = np.reshape( data['Solver']['Internal']['Sample Database'], (numdbentries[-1],numdim) )
-                plot_samples(ax, gen, numdbentries[-1], anneal[-1], samples)
+                samples = np.reshape( data['Solver']['Internal']['Sample Database'], (samplePopulation,numdim) )
+                plot_samples(ax, gen, samplePopulation, anneal[-1], samples)
         
         if (live == False):
             break

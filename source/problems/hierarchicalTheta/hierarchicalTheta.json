@@ -41,12 +41,12 @@
  "Internal Settings":
  [
   {
-   "Name": [ "Psi Problem Sample Count" ],
+   "Name": [ "Psi Problem Population Size" ],
    "Type": "size_t",
    "Description": "Number of samples on the Psi problem."
   },
   {
-   "Name": [ "Sub Problem Sample Count" ],
+   "Name": [ "Sub Problem Population Size" ],
    "Type": "size_t",
    "Description": "Number of samples on the sub problem."
   },

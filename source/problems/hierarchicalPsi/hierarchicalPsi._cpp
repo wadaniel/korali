@@ -37,7 +37,7 @@ void Korali::Problem::HierarchicalPsi::initialize()
 
  for (size_t i = 0; i < _subProblemCount; i++)
  {
-  size_t sampleCount = _subProblemsJson[i]["Solver"]["Internal"]["Database Entry Count"].get<size_t>();
+  size_t sampleCount = _subProblemsJson[i]["Solver"]["Population Size"].get<size_t>();
 
   _subProblemSampleCoordinates[i].resize(sampleCount * _subProblemVariablesCount);
   _subProblemSampleLogLikelihoods[i].resize(sampleCount);

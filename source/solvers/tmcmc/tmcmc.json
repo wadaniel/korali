@@ -191,11 +191,6 @@
     "Description": "Mean of the current leaders updated at every generation."
    },
    {
-    "Name": [ "Database Entry Count" ],
-    "Type": "size_t",
-    "Description": "Number of accepted samples stored in the database."
-   },
-   {
     "Name": [ "Sample Database" ],
     "Type": "std::vector<double>",
     "Description": "Parameters stored in the database (taken from the chain leaders)."

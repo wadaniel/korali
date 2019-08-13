@@ -2,8 +2,8 @@
  "Name": "Transitional Markov Chain Monte Carlo",
  "Alias": "TMCMC",
  "Class": "TMCMC",
- 
- "Solver Configuration": 
+
+ "Solver Configuration":
  [
    {
     "Name": [ "Population Size" ],
@@ -13,7 +13,7 @@
    {
     "Name": [ "Max Chain Length" ],
     "Type": "size_t",
-    "Default": "std::numeric_limits<size_t>::max()",
+    "Default": "1",
     "Description": "Chains longer than Max Chain Length will be broken and samples will be duplicated (replacing samples associated with a chain length of 0). Max Chain Length of 1 corresponds to the BASIS algorithm [Wu2018]."
    },
    {
@@ -53,7 +53,7 @@
     "Description": "Maximum increment of the exponent $\rho$ (by default, this value is 1.0 (inactive))."
    }
  ],
- 
+
  "Termination Criteria":
  [
    {
@@ -78,8 +78,8 @@
     "Description": "Determines how many computational model evaluations to run before stopping execution. Execution can be resumed at a later moment."
    }
  ],
- 
- "Variables Configuration": 
+
+ "Variables Configuration":
  [
    {
     "Name": [ "Prior Distribution" ],
@@ -87,8 +87,8 @@
     "Description": "Prior distribution of the parameters. Distribution to sample the first generation. Also it is evaluated for each sample during the calculation of the posterior."
    }
  ],
- 
- "Internal Settings": 
+
+ "Internal Settings":
  [
    {
     "Name": [ "Current Burn In" ],
@@ -137,7 +137,7 @@
    },
    {
     "Name": [ "Current Chain Step" ],
-    "Type": "std::vector<size_t>", 
+    "Type": "std::vector<size_t>",
     "Description": "The current execution step for every chain."
    },
    {

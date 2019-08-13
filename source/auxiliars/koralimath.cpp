@@ -2,7 +2,6 @@
 #include <cmath>
 #include <algorithm>
 
-using namespace std;
 
 // Computes:
 //  log sum_{i=1}^N x_i
@@ -11,11 +10,11 @@ using namespace std;
 //
 // Input: vector of log(x_i)
 //
-double logSumExp( vector<double> logValues )
+double logSumExp( std::vector<double> logValues )
 {
-  double maxLogValues =  *std::max_element(begin(logValues), end(logValues));
+  double maxLogValues =  *std::max_element(std::begin(logValues), std::end(logValues));
 
-  if( isinf(maxLogValues)==true ){
+  if( std::isinf(maxLogValues)==true ){
     if(maxLogValues<0) return 0;
     else return INFINITY;
   }

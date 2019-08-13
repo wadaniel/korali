@@ -4,8 +4,7 @@
 #include <stdlib.h>
 #include <vector>
 
-using namespace std;
 
-double logSumExp( vector<double> logValues );
+double logSumExp( std::vector<double> logValues );
 
 #endif // _KORALI_AUXILIARS_KORALIMATH_HPP_

@@ -1,0 +1,59 @@
+{
+ "Name":  "Hierarchical Bayesian (Theta New)",
+ "Alias": "Hierarchical Bayesian (Theta New)",
+ "Class": "HierarchicalThetaNew",
+ "Compatible Solvers": [ "TMCMC" ],
+
+ "Problem Configuration":
+ [
+   {
+    "Name": [ "Variables" ],
+    "Type": "std::vector<Korali::Variable*>",
+    "Description": "The set of problems variables."
+   },
+   {
+    "Name": [ "Psi Problem" ],
+    "Type": "std::string",
+    "Description": "Provides results from the hierarchical problem (Psi)."
+   }
+ ],
+
+ "Variables Configuration":
+ [
+   {
+    "Name": [ "Type" ],
+    "Type": "std::string",
+    "Default": "Computational",
+    "Description": "Specifies the purpose of the variable for the bayesian model."
+   },
+   {
+    "Name": [ "Prior Distribution" ],
+    "Type": "Korali::Distribution::Base*",
+    "Description": "Eh..."
+   }
+ ],
+
+ "Internal Settings":
+ [
+  {
+   "Name": [ "Psi Problem Sample Count" ],
+   "Type": "size_t",
+   "Description": "Number of samples on the Psi problem."
+  },
+  {
+   "Name": [ "Psi Problem Sample Coordinates" ],
+   "Type": "std::vector<double>",
+   "Description": "Coordinates for each sample on the psi-problem."
+  },
+  {
+   "Name": [ "Psi Problem Sample Log Likelihoods" ],
+   "Type": "std::vector<double>",
+   "Description": "Likelihood for each sample on the psi-problem."
+  },
+  {
+   "Name": [ "Psi Problem Sample Log Priors" ],
+   "Type": "std::vector<double>",
+   "Description": "Log Priors for each sample on the psi-problem"
+  }
+ ]
+}

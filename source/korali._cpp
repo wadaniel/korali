@@ -45,12 +45,12 @@ void Korali::Engine::getConfiguration()
  std::string curTime(ctime(&rawtime));
  _runTimestamp = curTime.substr(0, curTime.size()-1);
  _js["General"]["Timestamp"] = _runTimestamp;
- 
+
  if (_korali_verbosity == KORALI_SILENT)   _js["General"]["Console Output"]["Verbosity"] = "Silent";
  if (_korali_verbosity == KORALI_MINIMAL)  _js["General"]["Console Output"]["Verbosity"] = "Minimal";
  if (_korali_verbosity == KORALI_NORMAL)   _js["General"]["Console Output"]["Verbosity"] = "Normal";
  if (_korali_verbosity == KORALI_DETAILED) _js["General"]["Console Output"]["Verbosity"] = "Detailed";
- 
+
  _js["General"]["Current Generation"] = _currentGeneration;
  _js["General"]["Console Output"]["Frequency"] = _consoleOutputFrequency;
  _js["General"]["Results Output"]["Frequency"] = _resultsOutputFrequency;
@@ -114,6 +114,7 @@ void Korali::Engine::setConfiguration()
  if (_problemType == "Bayesian Inference") _problem = new Korali::Problem::Bayesian();
  if (_problemType == "Hierarchical Bayesian (Psi)") _problem = new Korali::Problem::HierarchicalPsi();
  if (_problemType == "Hierarchical Bayesian (Theta)") _problem = new Korali::Problem::HierarchicalTheta();
+ if (_problemType == "Hierarchical Bayesian (Theta New)") _problem = new Korali::Problem::HierarchicalThetaNew();
  if (_problem == nullptr) Korali::logError("Incorrect or undefined Problem '%s'.\n", _problemType.c_str());
 
  _problem->setConfiguration(_js["Problem"]);
@@ -172,7 +173,7 @@ void Korali::Engine::addConstraint(std::function<void(Korali::Model::Constraint&
 void Korali::Engine::start(bool isDryRun)
 {
  if(_isFinished) { Korali::logWarning(KORALI_MINIMAL, "Cannot restart engine, a previous run has already been executed.\n"); return; }
- _k = this; 
+ _k = this;
 
  setConfiguration();
 

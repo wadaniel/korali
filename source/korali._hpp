@@ -19,6 +19,7 @@
 #include "problems/bayesian/bayesian.hpp"
 #include "problems/hierarchicalPsi/hierarchicalPsi.hpp"
 #include "problems/hierarchicalTheta/hierarchicalTheta.hpp"
+#include "problems/hierarchicalThetaNew/hierarchicalThetaNew.hpp"
 
 #include "solvers/cmaes/cmaes.hpp"
 #include "solvers/dea/dea.hpp"

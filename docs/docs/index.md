@@ -1,6 +1,10 @@
 # Korali  ![](images/logo.png){: style="height:25px;width:25px"}
 <center>**High-performance framework for uncertainty quantification of large-scale models.**</center>
 
+Korali is a high-performance framework for uncertainty quantification of large-scale models. Korali's multi-language interface allows the execution of any type of computational model, either sequential or distributed (MPI), C++ or Python, and even pre-compiled/legacy applications. Korali's execution engine enables scalable sampling on large-scale HPC systems.
+
+Korali provides a simple interface that allows users to easily describe statistical problems and choose the algorithms to solve them, allowing users to apply a wide range of operations on the same problem with minimal re-configuration efforts. Finally, users can easily extend Korali to describe new problems and test new experimental algorithms
+
 ### **Download Korali**
 
 Latest Release: 28/06/2019 - **[Korali v1.0.0](install.md)** ([Release Notes](https://github.com/cselab/korali/blob/master/docs/RELEASE-NOTES))
@@ -42,23 +46,4 @@ Latest Release: 28/06/2019 - **[Korali v1.0.0](install.md)** ([Release Notes](ht
 	Or sample its posterior distribution:
 
 	$$\vartheta^{(k)} \sim p(\vartheta | d).$$
-
-### **Design Principles**
-
-??? success "High-Performance"
-
-	Korali's work distribution engine has been optimized to fully harness computational resources of large-scale supercomputers, maximizing throughput and minimizing latency and load imbalance.
-	
-	Furthermore, Korali supports the execution of parallel (OpenMP, Pthreads), distributed (MPI, UPC++), and GPU-based (CUDA) models.
-	
-??? success "Ease of Use"
-	Korali provides an intuitive string-based interface that is mostly language-independent.
-
-??? success "Extensibility"
-
-	Korali is designed as a completely modular and extensible software. Researchers can easily integrate and test new statistical methods for optimization and sampling into Korali. Likewise, new problems types can be easily added into Korali's engine.
-
-??? success "Multi-Language"
-
-	Korali applications can be programmed in either C++ or Python. Additionally, Korali can sample from C++/Fortran/Python and pre-compiled computational models.
 

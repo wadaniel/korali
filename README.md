@@ -1,6 +1,12 @@
 # Korali
 
-**Korali** is a high-performance framework for uncertainty quantification of large-scale models.
+High-performance framework for uncertainty quantification of large-scale models.
+
+## Description
+
+Korali is a high-performance framework for uncertainty quantification of large-scale models. Korali's multi-language interface allows the execution of any type of computational model, either sequential or distributed (MPI), C++ or Python, and even pre-compiled/legacy applications. Korali's execution engine enables scalable sampling on large-scale HPC systems. 
+
+Korali provides a simple interface that allows users to easily describe statistical problems and choose the algorithms to solve them, allowing users to apply a wide range of operations on the same problem with minimal re-configuration efforts. Finally, users can easily extend Korali to describe new problems and test new experimental algorithms
 
 ## Website
 
@@ -23,4 +29,4 @@ Director:
 
 Korali's code includes a properly credited and licensed copy of [Niels Lohmann's Json for C++](https://github.com/nlohmann/json).
 
-Our implementation of CMA-ES has been inspired by [Alexander Fabisch's](https://github.com/AlexanderFabisch/CMA-ESpp) C++ implementation.
+Our implementation of CMA-ES is based on [Alexander Fabisch's](https://github.com/AlexanderFabisch/CMA-ESpp) C++ implementation.

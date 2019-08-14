@@ -14,6 +14,7 @@
 #include "distributions/simple/lognormal/lognormal.hpp"
 
 #include "distributions/complex/multivariateNormal/multivariateNormal.hpp"
+#include "distributions/complex/multinomial/multinomial.hpp"
 
 #include "problems/optimization/optimization.hpp"
 #include "problems/sampling/sampling.hpp"

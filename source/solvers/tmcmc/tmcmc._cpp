@@ -18,9 +18,7 @@ typedef struct fparam_s {
 
 Korali::Solver::TMCMC::TMCMC()
 {
- range = gsl_rng_alloc (gsl_rng_default);
- gsl_rng_set(range, _k->_seed++);
-
+ _multinomialGenerator = new Korali::Distribution::Multinomial(_k->_seed++);
  _multivariateGenerator = new Korali::Distribution::MultivariateNormal(_k->_seed++);
 
  auto jsUniform = nlohmann::json();
@@ -32,7 +30,6 @@ Korali::Solver::TMCMC::TMCMC()
 
 Korali::Solver::TMCMC::~TMCMC()
 {
- gsl_rng_free(range);
 }
 
 void Korali::Solver::TMCMC::initialize()
@@ -228,7 +225,7 @@ void Korali::Solver::TMCMC::processGeneration()
   for (size_t i = 0; i < _populationSize; i++) q[i] = weight[i]/sum_weight;
 
     /* Sample candidate selections based on database entries */
-  gsl_ran_multinomial(range, _populationSize, _populationSize, q.data(), numselections.data());
+  _multinomialGenerator->getSelections(q, numselections);
 
     /* Update mean and covariance */
     for (size_t i = 0; i < N; i++)

@@ -1,4 +1,5 @@
 #include "korali.hpp"
+#include "distributions/complex/multivariateNormal/multivariateNormal.hpp"
 
 Korali::Distribution::MultivariateNormal::MultivariateNormal(size_t seed)
 {

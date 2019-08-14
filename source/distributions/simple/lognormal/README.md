@@ -13,7 +13,7 @@ $\sigma > 0$.
 Example:
 
 ```python
-# Setting a Gaussian prior distribution for variable 3
+# Setting a Normal prior distribution for variable 3
 k["Variables"][3]["Bayesian"]["Prior Distribution"]["Type"] = "Lognormal"
 k["Variables"][3]["Bayesian"]["Prior Distribution"]["Mu"] = -1.0
 k["Variables"][3]["Bayesian"]["Prior Distribution"]["Sigma"] = +2.0

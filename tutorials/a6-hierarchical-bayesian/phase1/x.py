@@ -16,7 +16,7 @@ if not os.path.exists(resultsPath): os.makedirs(resultsPath)
 k = korali.initialize()
 
 k["Problem"]["Type"] = "Bayesian Inference"
-k["Problem"]["Likelihood"]["Model"] = "Additive Gaussian"
+k["Problem"]["Likelihood"]["Model"] = "Additive Normal"
 k["Problem"]["Likelihood"]["Reference Data"] = getReferenceData(dataPath,i);
 
 k["Problem"]["Variables"][0]["Name"] = "C1"

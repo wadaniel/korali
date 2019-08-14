@@ -6,9 +6,9 @@ void Korali::Problem::Bayesian::initialize()
 
  bool recognizedModel = false;
  if (_likelihoodModel == "Custom") recognizedModel = true;
- if (_likelihoodModel == "Additive Gaussian") recognizedModel = true;
- if (_likelihoodModel == "Multiplicative Gaussian") recognizedModel = true;
- if (_likelihoodModel == "Multiplicative Gaussian Data") recognizedModel = true;
+ if (_likelihoodModel == "Additive Normal") recognizedModel = true;
+ if (_likelihoodModel == "Multiplicative Normal") recognizedModel = true;
+ if (_likelihoodModel == "Multiplicative Normal Data") recognizedModel = true;
  if (recognizedModel == false) Korali::logError("Incorrect or no Likelihood Model selected: %s.\n", _likelihoodModel.c_str());
 
  _computationalVariableIndices.clear();
@@ -24,7 +24,7 @@ void Korali::Problem::Bayesian::initialize()
 
  if (_k->_constraints.size() > 0) Korali::logError("Bayesian inference problems do not allow constraint definitions.\n");
 
- if (_likelihoodModel == "Additive Gaussian" || _likelihoodModel == "Multiplicative Gaussian" || _likelihoodModel == "Multiplicative Gaussian Data")
+ if (_likelihoodModel == "Additive Normal" || _likelihoodModel == "Multiplicative Normal" || _likelihoodModel == "Multiplicative Normal Data")
  {
    if (_likelihoodReferenceData.size() == 0) Korali::logError("Bayesian (%s) problems require defining reference data.\n", _likelihoodModel.c_str());
    if (_k->_modelType != "Reference") Korali::logError("Bayesian (%s) problems require defining a refererence computational model. Used: %s\n", _likelihoodModel.c_str(), _k->_modelType.c_str());
@@ -63,7 +63,7 @@ Korali::Variable* Korali::Problem::Bayesian::getVariable(size_t variableId)
 
 void Korali::Problem::Bayesian::runModel(std::vector<double> sample, size_t sampleId)
 {
- if (_likelihoodModel == "Additive Gaussian" || _likelihoodModel == "Multiplicative Gaussian" || _likelihoodModel == "Multiplicative Gaussian Data")
+ if (_likelihoodModel == "Additive Normal" || _likelihoodModel == "Multiplicative Normal" || _likelihoodModel == "Multiplicative Normal Data")
  {
   // Creating model data.
   _referenceModelData._evaluations.clear();
@@ -89,14 +89,14 @@ double Korali::Problem::Bayesian::evaluateSampleFitness()
 {
  double fitness = 0.0;
 
- if (_likelihoodModel == "Additive Gaussian" || _likelihoodModel == "Multiplicative Gaussian" || _likelihoodModel == "Multiplicative Gaussian Data")
+ if (_likelihoodModel == "Additive Normal" || _likelihoodModel == "Multiplicative Normal" || _likelihoodModel == "Multiplicative Normal Data")
  {
   if (_referenceModelData._evaluations.size() != _likelihoodReferenceData.size())
      Korali::logError("Bayesian (%s) problems require a %lu-sized reference result array. Provided: %lu.\n", _likelihoodModel.c_str(), _likelihoodReferenceData.size(), _referenceModelData._evaluations.size());
 
-  if (_likelihoodModel == "Additive Gaussian")            fitness = likelihoodGaussianAdditive(_referenceModelData);
-  if (_likelihoodModel == "Multiplicative Gaussian")      fitness = likelihoodGaussianMultiplicative(_referenceModelData);
-  if (_likelihoodModel == "Multiplicative Gaussian Data") fitness = likelihoodGaussianMultiplicativeData(_referenceModelData);
+  if (_likelihoodModel == "Additive Normal")            fitness = likelihoodNormalAdditive(_referenceModelData);
+  if (_likelihoodModel == "Multiplicative Normal")      fitness = likelihoodNormalMultiplicative(_referenceModelData);
+  if (_likelihoodModel == "Multiplicative Normal Data") fitness = likelihoodNormalMultiplicativeData(_referenceModelData);
  }
 
  if (_likelihoodModel == "Custom") fitness =  _likelihoodModelData._likelihood;
@@ -112,7 +112,7 @@ double Korali::Problem::Bayesian::evaluateSampleLogPrior(double* sample)
  return logPrior;
 }
 
-double Korali::Problem::Bayesian::likelihoodGaussianAdditive(Korali::Model::Reference& data)
+double Korali::Problem::Bayesian::likelihoodNormalAdditive(Korali::Model::Reference& data)
 {
   double sigma   = data._variables[_statisticalVariableIndices[0]];
   double sigma2  = sigma*sigma;
@@ -134,7 +134,7 @@ double Korali::Problem::Bayesian::likelihoodGaussianAdditive(Korali::Model::Refe
   return fitness;
 }
 
-double Korali::Problem::Bayesian::likelihoodGaussianMultiplicative(Korali::Model::Reference& data)
+double Korali::Problem::Bayesian::likelihoodNormalMultiplicative(Korali::Model::Reference& data)
 {
   double sigma    = data._variables[_statisticalVariableIndices[0]];
   double ssn      = 0.0;
@@ -158,7 +158,7 @@ double Korali::Problem::Bayesian::likelihoodGaussianMultiplicative(Korali::Model
   return fitness;
 }
 
-double Korali::Problem::Bayesian::likelihoodGaussianMultiplicativeData(Korali::Model::Reference& data)
+double Korali::Problem::Bayesian::likelihoodNormalMultiplicativeData(Korali::Model::Reference& data)
 {
   double sigma    = data._variables[_statisticalVariableIndices[0]];
   double ssn      = 0.0;

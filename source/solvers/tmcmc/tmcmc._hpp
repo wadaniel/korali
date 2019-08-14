@@ -2,6 +2,7 @@
 #define _KORALI_SOLVER_TMCMC_HPP_
 
 #include "solvers/base.hpp"
+#include "distributions/complex/multinomial/multinomial.hpp"
 #include "distributions/complex/multivariateNormal/multivariateNormal.hpp"
 #include "distributions/simple/uniform/uniform.hpp"
 #include <gsl/gsl_rng.h>
@@ -13,7 +14,6 @@ class TMCMC : public Korali::Solver::Base
 {
  private:
 
- gsl_rng  *range;
  void setBurnIn();
  void processGeneration();
  void updateDatabase(double* point, double fitness, double logPrior);
@@ -24,6 +24,7 @@ class TMCMC : public Korali::Solver::Base
  static double tmcmc_objlogp(double x, const double *fj, size_t fn, double pj, double zero);
  static double objLog(const gsl_vector *v, void *param);
 
+ Korali::Distribution::Multinomial* _multinomialGenerator; /* Multivariate Normal random number generator */
  Korali::Distribution::MultivariateNormal* _multivariateGenerator; /* Multivariate Normal random number generator */
  Korali::Distribution::Base* _uniformGenerator; /* Uniform random number generator */
 

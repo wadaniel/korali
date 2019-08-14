@@ -7,7 +7,7 @@ int main(int argc, char* argv[])
  auto p = heat2DInit(&argc, &argv);
 
  k["Problem"]["Type"] = "Bayesian Inference";
- k["Problem"]["Likelihood"]["Model"] = "Additive Gaussian";
+ k["Problem"]["Likelihood"]["Model"] = "Additive Normal";
  k["Problem"]["Likelihood"]["Reference Data"] = p.refTemp;
 
  k["Problem"]["Variables"][0]["Name"] = "Intensity";

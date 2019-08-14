@@ -261,8 +261,13 @@ void Korali::Solver::TMCMC::processGeneration()
      for (size_t j = 0; j < N ; j++) _chainLeaders[leaderId*N + j] = _sampleDatabase[i*N + j];
      _chainLeadersLogLikelihoods[leaderId] = _sampleFitnessDatabase[i];
 
-     if (numselections[i] > _maxChainLength) leaderChainLen = _maxChainLength;
-     else leaderChainLen = numselections[i];
+     if (numselections[i] > _maxChainLength){
+       /* uniform splitting of chains */
+       size_t rest = (numselections[i] % _maxChainLength != 0);
+       leaderChainLen = _maxChainLength - rest;
+     }
+     else 
+       leaderChainLen = numselections[i];
      _chainLengths[leaderId] = leaderChainLen + _currentBurnIn;
      numselections[i] -= leaderChainLen;
      leaderId++;

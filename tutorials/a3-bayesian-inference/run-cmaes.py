@@ -14,7 +14,7 @@ k = korali.initialize()
 
 # Setting up the reference likelihood for the Bayesian Problem
 k["Problem"]["Type"] = "Bayesian Inference"
-k["Problem"]["Likelihood"]["Model"] = "Additive Gaussian"
+k["Problem"]["Likelihood"]["Model"] = "Additive Normal"
 k["Problem"]["Likelihood"]["Reference Data"] = getReferenceData()
 
 # Configuring the problem's variables and their prior distributions

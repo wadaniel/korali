@@ -9,7 +9,7 @@ int main(int argc, char* argv[])
  if (argc != 2) { printf("Error: this example requires 'Ranks Per Team' passed as argument.\n"); exit(-1); }
 
  k["Problem"]["Type"] = "Bayesian Inference";
- k["Problem"]["Likelihood"]["Model"] = "Additive Gaussian";
+ k["Problem"]["Likelihood"]["Model"] = "Additive Normal";
  k["Problem"]["Likelihood"]["Reference Data"] = getReferenceData();
 
  k["Problem"]["Variables"][0]["Name"] = "X0";

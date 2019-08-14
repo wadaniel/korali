@@ -14,9 +14,9 @@ class Bayesian : public Korali::Problem::Base
  Korali::Model::Reference  _referenceModelData;
  Korali::Model::Likelihood _likelihoodModelData;
 
- double likelihoodGaussianAdditive(Korali::Model::Reference& data);
- double likelihoodGaussianMultiplicative(Korali::Model::Reference& data);
- double likelihoodGaussianMultiplicativeData(Korali::Model::Reference& data);
+ double likelihoodNormalAdditive(Korali::Model::Reference& data);
+ double likelihoodNormalMultiplicative(Korali::Model::Reference& data);
+ double likelihoodNormalMultiplicativeData(Korali::Model::Reference& data);
 
  public:
 

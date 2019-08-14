@@ -18,7 +18,7 @@ kH["Problem"]["Conditional Priors"][0]["Type"] = "Uniform"
 kH["Problem"]["Conditional Priors"][0]["Minimum"] = 280
 kH["Problem"]["Conditional Priors"][0]["Maximum"] = 320
 
-kH["Problem"]["Conditional Priors"][1]["Type"] = "Gaussian"
+kH["Problem"]["Conditional Priors"][1]["Type"] = "Normal"
 kH["Problem"]["Conditional Priors"][1]["Mean"] = "Psi 1"
 kH["Problem"]["Conditional Priors"][1]["Standard Deviation"] = "Psi 2"
 

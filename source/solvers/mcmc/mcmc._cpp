@@ -12,11 +12,11 @@
 Korali::Solver::MCMC::MCMC()
 {
  // Initializing RNGs
- auto jsGaussian = nlohmann::json();
- jsGaussian["Type"] = "Gaussian";
- jsGaussian["Mean"] = 0.0;
- jsGaussian["Standard Deviation"] = 1.0;
- _gaussianGenerator = Korali::Distribution::Base::getDistribution(_k->_problem, jsGaussian);
+ auto jsNormal = nlohmann::json();
+ jsNormal["Type"] = "Normal";
+ jsNormal["Mean"] = 0.0;
+ jsNormal["Standard Deviation"] = 1.0;
+ _normalGenerator = Korali::Distribution::Base::getDistribution(_k->_problem, jsNormal);
 
  auto jsUniform = nlohmann::json();
  jsUniform["Type"] = "Uniform";
@@ -208,9 +208,9 @@ void Korali::Solver::MCMC::sampleCandidate(size_t sampleIdx)
  for (size_t d = 0; d < N; ++d) _chainCandidate[sampleIdx*N+d] = 0.0;
 
  if ( (_useAdaptiveSampling == false) || (_databaseEntryCount <= _nonAdaptionPeriod + _burnIn))
-     for (size_t d = 0; d < N; ++d) for (size_t e = 0; e < N; ++e) _chainCandidate[sampleIdx*N+d] += _choleskyDecompositionCovariance[d*N+e] * _gaussianGenerator->getRandomNumber();
+     for (size_t d = 0; d < N; ++d) for (size_t e = 0; e < N; ++e) _chainCandidate[sampleIdx*N+d] += _choleskyDecompositionCovariance[d*N+e] * _normalGenerator->getRandomNumber();
  else
-     for (size_t d = 0; d < N; ++d) for (size_t e = 0; e < N; ++e) _chainCandidate[sampleIdx*N+d] += _choleskyDecompositionChainCovariance[d*N+e] * _gaussianGenerator->getRandomNumber();
+     for (size_t d = 0; d < N; ++d) for (size_t e = 0; e < N; ++e) _chainCandidate[sampleIdx*N+d] += _choleskyDecompositionChainCovariance[d*N+e] * _normalGenerator->getRandomNumber();
 
  for (size_t d = 0; d < N; ++d) _chainLeader[d] += _chainCandidate[sampleIdx*N+d];
 }

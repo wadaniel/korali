@@ -9,11 +9,11 @@
 Korali::Solver::CMAES::CMAES()
 {
  // Initializing RNGs
- auto jsGaussian = nlohmann::json();
- jsGaussian["Type"] = "Gaussian";
- jsGaussian["Mean"] = 0.0;
- jsGaussian["Standard Deviation"] = 1.0;
- _gaussianGenerator = Korali::Distribution::Base::getDistribution(_k->_problem, jsGaussian);
+ auto jsNormal = nlohmann::json();
+ jsNormal["Type"] = "Normal";
+ jsNormal["Mean"] = 0.0;
+ jsNormal["Standard Deviation"] = 1.0;
+ _normalGenerator = Korali::Distribution::Base::getDistribution(_k->_problem, jsNormal);
 
  auto jsUniform = nlohmann::json();
  jsUniform["Type"] = "Uniform";
@@ -434,7 +434,7 @@ void Korali::Solver::CMAES::sampleSingle(size_t sampleIdx)
 {
   for (size_t d = 0; d < N; ++d)
   {
-   _randomNumberStorage[sampleIdx*N+d] = _gaussianGenerator->getRandomNumber();
+   _randomNumberStorage[sampleIdx*N+d] = _normalGenerator->getRandomNumber();
    if (_isDiagonal) {
      _bDZMatrix[sampleIdx*N+d] = _axisLengths[d] * _randomNumberStorage[sampleIdx*N+d];
      _samplePopulation[sampleIdx * N + d] = _currentMean[d] + _sigma * _bDZMatrix[sampleIdx*N+d];

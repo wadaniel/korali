@@ -10,11 +10,11 @@ constexpr size_t __korali__str2int(const char* str, int h = 0) { return !str[h] 
 Korali::Solver::DEA::DEA()
 {
  // Initializing RNGs
- auto jsGaussian = nlohmann::json();
- jsGaussian["Type"] = "Gaussian";
- jsGaussian["Mean"] = 0.0;
- jsGaussian["Standard Deviation"] = 1.0;
- _gaussianGenerator = Korali::Distribution::Base::getDistribution(_k->_problem, jsGaussian);
+ auto jsNormal = nlohmann::json();
+ jsNormal["Type"] = "Normal";
+ jsNormal["Mean"] = 0.0;
+ jsNormal["Standard Deviation"] = 1.0;
+ _normalGenerator = Korali::Distribution::Base::getDistribution(_k->_problem, jsNormal);
 
  auto jsUniform = nlohmann::json();
  jsUniform["Type"] = "Uniform";

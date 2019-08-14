@@ -12,8 +12,6 @@ void Korali::Conduit::Simple::finalize()
 
 void Korali::Conduit::Simple::evaluateSample(double* sampleArray, size_t sampleId)
 {
- _k->_functionEvaluationCount++;
-
  std::vector<double> sampleVector;
  for (size_t i = 0; i < _k->_problem->getVariableCount(); i++)
   sampleVector.push_back(sampleArray[i]);

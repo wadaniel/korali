@@ -28,6 +28,7 @@ k["Solver"]["Type"] = "TMCMC"
 k["Solver"]["Population Size"] = 5000
 k["Solver"]["Covariance Scaling"] = 0.001
 
+k["Solver"]["Termination Criteria"]["Max Generations"] = 0
 # Setting Model
 k.setDirectModel(model)
 

@@ -14,6 +14,8 @@ from model import *
 import korali
 k = korali.initialize()
 
+resultDir = '_result_run-dea'
+
 k["Problem"]["Type"] = "Optimization"
 k["Problem"]["Objective"] = "Maximize"
 
@@ -23,19 +25,21 @@ k["Problem"]["Variables"][0]["Upper Bound"] = +10.0
 
 k["Solver"]["Type"]  = "DEA"
 k["Solver"]["Population Size"] = 10
-k["Solver"]["Termination Criteria"]["Max Generations"] = 100
+k["Solver"]["Termination Criteria"]["Max Generations"] = 50
 
 k["General"]["Console Output"]["Frequency"] = 5
 k["General"]["Results Output"]["Frequency"] = 5
-k["General"]["Results Output"]["Path"] = "_result_run-dea"
+k["General"]["Results Output"]["Path"] = resultDir
 
 k.setDirectModel(model) 
 
 k.run()
 
-print("\n\nRestarting Now...\n\n")
+print("\n-------------------------------------------------------------")
+print("Now loading results from Gen 50 and running until Gen 100...")
+print("-------------------------------------------------------------\n")
 
-# Now we loadState() to resume the same experiment from generation 5
-k.loadState("_result_run-dea/s00010.json")
-
+resultFile = korali.getLatestResult(resultDir)
+k.loadState(resultFile)
+k["Solver"]["Termination Criteria"]["Max Generations"] = 100
 k.run()

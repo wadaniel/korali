@@ -14,6 +14,8 @@ from model import *
 import korali
 k = korali.initialize()
 
+resultDir = '_result_run-mcmc'
+
 k["Problem"]["Type"] = "Sampling"
 
 k["Problem"]["Variables"][0]["Name"] = "X"
@@ -22,18 +24,20 @@ k["Problem"]["Variables"][0]["Initial Standard Deviation"] = 1.0
 
 k["Solver"]["Type"]  = "MCMC"
 k["Solver"]["Burn In"] = 500
-k["Solver"]["Termination Criteria"]["Max Chain Length"] = 5000
+k["Solver"]["Termination Criteria"]["Max Chain Length"] = 1000
 
 k["General"]["Console Output"]["Frequency"] = 1000
 k["General"]["Results Output"]["Frequency"] = 1000
-k["General"]["Results Output"]["Path"] = "_result_run-mcmc"
+k["General"]["Results Output"]["Path"] = resultDir
 
 k.setDirectModel(model)
 k.run()
 
-print("\n\nRestarting now:\n\n");
+print("\n-------------------------------------------------------------")
+print("Now continuing from Chain Length = 1000 until Gen 5000...")
+print("-------------------------------------------------------------\n")
 
-# Now we loadState() to resume the same experiment from generation 5.
-k.loadState("_result_run-mcmc/s01000.json")
-
+resultFile = korali.getLatestResult(resultDir)
+k.loadState(resultFile)
+k["Solver"]["Termination Criteria"]["Max Chain Length"] = 5000
 k.run()

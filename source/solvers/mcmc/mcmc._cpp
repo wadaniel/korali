@@ -54,11 +54,8 @@ void Korali::Solver::MCMC::initialize()
 
  if(_chainCovarianceScaling <= 0.0) Korali::logError("Chain Covariance Scaling must be larger 0.0 (is %lf).\n", _chainCovarianceScaling);
 
- if (_k->_currentGeneration > 0) return;
-
  // Allocating MCMC memory
  _choleskyDecompositionCovariance.resize(N*N);
- std::fill(std::begin(_choleskyDecompositionCovariance), std::end(_choleskyDecompositionCovariance), 0.0);
  _chainLeader.resize(N);
  _chainCandidate.resize(N*_rejectionLevels);
  _chainCandidatesLogPriors.resize(_rejectionLevels);
@@ -70,6 +67,10 @@ void Korali::Solver::MCMC::initialize()
  _chainCovariancePlaceholder.resize(N*N);
  _chainCovariance.resize(N*N);
  _choleskyDecompositionChainCovariance.resize(N*N);
+
+ if (_k->_currentGeneration > 0) return;
+
+ std::fill(std::begin(_choleskyDecompositionCovariance), std::end(_choleskyDecompositionCovariance), 0.0);
  std::fill(std::begin(_choleskyDecompositionChainCovariance), std::end(_choleskyDecompositionChainCovariance), 0.0);
 
  for(size_t i = 0; i < N; i++) _chainLeader[i]  = _k->_problem->getVariable(i)->_initialMean;

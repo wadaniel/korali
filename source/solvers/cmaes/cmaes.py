@@ -4,7 +4,8 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 
-from korali.plotter.helpers import readFiles, hlsColors, pauseLight, drawMulticoloredLine, checkFigure
+from korali.auxiliars.fileIO import *
+from korali.plotter.helpers import hlsColors, pauseLight, drawMulticoloredLine, checkFigure
 from korali.plotter.helpers import verifyGeneration, initDefaults, getStateAndGeneration, appendStates, appendStateVectors
 
 # Plot CMAES results (read from .json files)
@@ -18,7 +19,10 @@ def plot_cmaes(src, plotAll=False, live=False, generation=None, test=False, plot
 
     names, colors, numeval, sigma, cond, psL2, dfval, fval, best, fvalXvec, mu, axis, ssdev = ([] for i in range(13))
  
-    resultfiles = readFiles(src, 0, generation)
+    resultfiles = getResultFiles(src, 0, generation)
+    if (resultfiles == []):
+      print("[Korali] Error: Did not find Korali results in the folder...".format(src))
+      exit(-1)
 
     solverName, names, numdim, gen = initDefaults(src, "initial.json", (fvalXvec, mu, axis, ssdev))
     colors = hlsColors(numdim)
@@ -66,7 +70,10 @@ def plot_cmaes(src, plotAll=False, live=False, generation=None, test=False, plot
         if live == False:
             break
 
-        resultfiles = readFiles(src, gen+1, generation, False)
+        resultfiles = getResultFiles(src, gen+1, generation, False)
+        if (resultfiles == []):
+         print("[Korali] Error: Did not find Korali results in the folder...".format(src))
+         exit(-1)
      
     plt.show()
     print("[Korali] Figure closed - Bye!")

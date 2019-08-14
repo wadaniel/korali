@@ -4,7 +4,8 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 
-from korali.plotter.helpers import readFiles, hlsColors, pauseLight, drawMulticoloredLine, checkFigure
+from korali.auxiliars.fileIO import *
+from korali.plotter.helpers import hlsColors, pauseLight, drawMulticoloredLine, checkFigure
 from korali.plotter.helpers import verifyGeneration, initDefaults, getStateAndGeneration, appendStates, appendStateVectors
 
 
@@ -14,7 +15,10 @@ def plot_tmcmc(src, plotAll=False, live=False, generation=None, test=False, mean
         
     verifyGeneration(generation, 1)
 
-    resultfiles = readFiles(src, 1, generation)
+    resultfiles = getResultFiles(src, 1, generation)
+    if (resultfiles == []):
+     print("[Korali] Error: Did not find Korali results in the folder...".format(src))
+     exit(-1)
  
     if (plotAll == False):
         resultfiles = [resultfiles[-1]]
@@ -50,8 +54,10 @@ def plot_tmcmc(src, plotAll=False, live=False, generation=None, test=False, mean
         if (live == False):
             break
         
-        resultfiles = readFiles(src, gen, generation, False)
-
+        resultfiles = getResultFiles(src, gen, generation, False)
+        if (resultfiles == []):
+         print("[Korali] Error: Did not find Korali results in the folder...".format(src))
+         exit(-1)
 
     checkFigure(fig.number)
     plt.show()

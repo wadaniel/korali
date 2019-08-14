@@ -4,6 +4,7 @@ import colorsys
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
+from korali.auxiliars.fileIO import *
 from matplotlib.collections import LineCollection
 from matplotlib.colors import ListedColormap, BoundaryNorm
 

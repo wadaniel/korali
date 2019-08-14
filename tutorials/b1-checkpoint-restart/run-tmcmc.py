@@ -14,6 +14,8 @@ from model import *
 import korali
 k = korali.initialize()
 
+resultDir = '_result_run-tmcmc'
+
 k["Problem"]["Type"] = "Sampling"
 
 k["Problem"]["Variables"][0]["Name"] = "X"
@@ -23,15 +25,19 @@ k["Problem"]["Variables"][0]["Prior Distribution"]["Maximum"] = +10.0
 
 k["Solver"]["Type"]  = "TMCMC"
 k["Solver"]["Population Size"] = 5000
+k["Solver"]["Termination Criteria"]["Max Generations"] = 1
 
-k["General"]["Results Output"]["Path"] = "_result_run-tmcmc"
+k["General"]["Results Output"]["Path"] = resultDir
+k["General"]["Random Seed"] = 0xC0FFEE
 
 k.setDirectModel(model)
 k.run()
 
-print("\n\nRestarting now:\n\n");
+print("\n-------------------------------------------------------------")
+print("Now continuing from Generation 2 to end...")
+print("-------------------------------------------------------------\n")
 
-# Now we loadState() to resume the same experiment from generation 5.
-k.loadState("_result_run-tmcmc/s00001.json")
-
+resultFile = korali.getLatestResult(resultDir)
+k.loadState(resultFile)
+k["Solver"]["Termination Criteria"]["Max Generations"] = 50
 k.run()

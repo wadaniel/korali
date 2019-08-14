@@ -4,9 +4,6 @@ import json
 from buildAux import *
 
 def buildKorali(koraliDir):
- # Reading base variable file
- with open(koraliDir + '/variable/variable._cpp', 'r') as file: variableCodeString = file.read()
- 
  koraliTemplateHeaderFile = koraliDir + '/korali._hpp'
  koraliNewHeaderFile = koraliDir + '/korali.hpp'
  with open(koraliTemplateHeaderFile, 'r') as file: newHeaderString = file.read()

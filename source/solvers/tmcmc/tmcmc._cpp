@@ -112,9 +112,9 @@ void Korali::Solver::TMCMC::runGeneration()
 
 void Korali::Solver::TMCMC::processSample(size_t sampleId, double fitness)
 {
- if(std::isfinite(fitness) == false)
+ if(std::isnan(fitness) == true)
  {
-  Korali::logWarning(KORALI_DETAILED, "Sample %zu returned non finite model evaluation %e.\n", sampleId, fitness);
+  Korali::logError("Sample %zu returned NaN function evaluation.\n", sampleId);
   fitness = std::numeric_limits<double>::lowest();
  }
 
@@ -266,7 +266,7 @@ void Korali::Solver::TMCMC::processGeneration()
        size_t rest = (numselections[i] % _maxChainLength != 0);
        leaderChainLen = _maxChainLength - rest;
      }
-     else 
+     else
        leaderChainLen = numselections[i];
      _chainLengths[leaderId] = leaderChainLen + _currentBurnIn;
      numselections[i] -= leaderChainLen;

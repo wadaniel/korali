@@ -43,6 +43,9 @@
 namespace Korali
 {
 
+const double NaN = std::numeric_limits<double>::quiet_NaN();
+const double Inf = std::numeric_limits<double>::infinity();
+
 class Engine {
 
  public:

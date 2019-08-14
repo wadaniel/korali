@@ -16,7 +16,7 @@ double logSumExp( std::vector<double> logValues )
 
   if( std::isinf(maxLogValues)==true ){
     if(maxLogValues<0) return 0;
-    else return INFINITY;
+    else return  std::numeric_limits<double>::infinity();
   }
 
   double sumExpValues = 0.0;

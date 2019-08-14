@@ -41,11 +41,10 @@ k["Problem"]["Variables"][3]["Prior Distribution"]["Minimum"] = 0.0
 k["Problem"]["Variables"][3]["Prior Distribution"]["Maximum"] = 30.0
 
 k["Solver"]["Type"] = "TMCMC"
-k["Solver"]["Population Size"] = 1000
+k["Solver"]["Population Size"] = 2000
 k["Solver"]["Target Coefficient Of Variation"] = 0.6
-k["Solver"]["Covariance Scaling"] = 0.1
-k["Solver"]["Termination Criteria"]["Max Generations"] = 100
- k["Solver"]["Default Burn In"] = 3;
+k["Solver"]["Covariance Scaling"] = 0.02
+k["Solver"]["Default Burn In"] = 3;
 
 k["General"]["Results Output"]["Path"] = resultsPath
 k["General"]["Console Output"]["Verbosity"] = "Detailed"

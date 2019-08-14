@@ -65,8 +65,6 @@ void Korali::Problem::HierarchicalTheta::initialize()
       _subProblemSampleCoordinates.push_back(subProblemJson["Solver"]["Internal"]["Sample Database"][j*_subProblemKorali.getVariableCount() + k]);
   }
 
-
-
   size_t Npsi = _psiProblemKorali.getVariableCount();
   std::vector<double> psiSample;
   psiSample.resize(Npsi);

@@ -29,12 +29,14 @@ k["Problem"]["Variables"][3]["Name"] = "Sigma"
 k["Problem"]["Variables"][3]["Type"] = "Statistical"
 k["Problem"]["Variables"][3]["Prior Distribution"]["Type"] = "Uniform"
 k["Problem"]["Variables"][3]["Prior Distribution"]["Minimum"] = 0.0
-k["Problem"]["Variables"][3]["Prior Distribution"]["Maximum"] = 30.0
+k["Problem"]["Variables"][3]["Prior Distribution"]["Maximum"] = 15
 
 k["Solver"]["Type"] = "TMCMC"
 k["Solver"]["Population Size"] = 5000
-k["Solver"]["Termination Criteria"]["Max Generations"] = 30
 k["Solver"]["Target Coefficient Of Variation"] = 0.6
+k["Solver"]["Covariance Scaling"] = 0.02
+k["Solver"]["Default Burn In"] = 0;
+# k["Solver"]["Termination Criteria"]["Max Generations"] = 2;
 
 k["General"]["Console Output"]["Verbosity"] = "Detailed"
 k["General"]["Results Output"]["Path"] = "../setup/results_phase_3b/"

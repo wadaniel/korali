@@ -3,12 +3,15 @@ import json
 
 # Read result files
 def getResultFiles(src, start=None, end=None, noisy=False):
+    if not os.path.exists(src):
+     return []
+    
     resultfilesTmp = [f for f in os.listdir(src) if os.path.isfile(os.path.join(src, f))]
     resultfilesTmp = sorted(resultfilesTmp)
 
     if ('initial.json' not in resultfilesTmp):
-        print("[Korali] Error: Did not find file 'initial.json' in the result folder...")
-        exit(-1)
+        #print("[Korali] Error: Did not find file 'initial.json' in the result folder...")
+        return []
     
     resultfilesTmp.remove('initial.json')
     if ('final.json' in resultfilesTmp): 

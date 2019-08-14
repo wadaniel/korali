@@ -20,7 +20,7 @@ def plot_tmcmc(src, plotAll=False, live=False, generation=None, test=False, mean
         resultfiles = [resultfiles[-1]]
 
     samples = []
-    solverName, names, numdim, gen = initDefaults(src, resultfiles[0], [samples])
+    solverName, names, numdim, gen = initDefaults(src, "initial.json", [samples])
  
     while True: 
         

@@ -64,23 +64,32 @@ def checkFigure(num):
 def readFiles(src, start=None, end=None, noisy=True):
     resultfilesTmp = [f for f in os.listdir(src) if os.path.isfile(os.path.join(src, f))]
     resultfilesTmp = sorted(resultfilesTmp)
-    if ('final.json' in resultfilesTmp): resultfilesTmp.remove('final.json')
+
+    if ('initial.json' not in resultfilesTmp):
+        print("[Korali] Error: Did not find file 'initial.json' in the result folder...")
+        exit(-1)
+    
+    resultfilesTmp.remove('initial.json')
+    if ('final.json' in resultfilesTmp): 
+        resultfilesTmp.remove('final.json')
 
     if (resultfilesTmp == []):
         print("[Korali] Error: Did not find file {0} in the result folder...".format(src))
         exit(-1)
 
-    runId       = -1 # Init Run Id
-    resultfiles = [] # Init Return Value
+    initialpath = '{0}/initial.json'.format(src)
+    runId = None
+    with open(initialpath) as f:
+        data  = json.load(f) 
+        runId = data['General']['Run ID']
 
+    resultfiles = [] # Init Return Value
     for filename in resultfilesTmp:
         path   = '{0}/{1}'.format(src, filename)
         
         with open(path) as f:
             data = json.load(f)
             gen  = data['General']['Current Generation']
-            if (runId == -1):
-                runId  = data['General']['Run ID']
             
             if verifyFile(data, path, runId, start, end, noisy):
                 resultfiles.append(filename)

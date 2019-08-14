@@ -20,7 +20,7 @@ def plot_cmaes(src, plotAll=False, live=False, generation=None, test=False, plot
  
     resultfiles = readFiles(src, 0, generation)
 
-    solverName, names, numdim, gen = initDefaults(src, resultfiles[0], (fvalXvec, mu, axis, ssdev))
+    solverName, names, numdim, gen = initDefaults(src, "initial.json", (fvalXvec, mu, axis, ssdev))
     colors = hlsColors(numdim)
 
     updateLegend = live or plotAll
@@ -42,7 +42,7 @@ def plot_cmaes(src, plotAll=False, live=False, generation=None, test=False, plot
                     checkFigure(fig.number)
        
                 if gen > 1:
-
+    
                     appendStates(state, (fval, best, sigma, psL2), stateNames)
                     appendStateVectors(state, (fvalXvec, mu, axis), vecStateNames)
 

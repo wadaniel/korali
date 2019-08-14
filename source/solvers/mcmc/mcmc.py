@@ -22,7 +22,7 @@ def plot_mcmc(src, plotAll=False, live=False, generation=None, test=False, mean=
     if (plotAll == False):
         resultfiles = [resultfiles[-1]]
 
-    solverName, names, numdim, gen = initDefaults(src, resultfiles[0], [samples])
+    solverName, names, numdim, gen = initDefaults(src, "initial.json", [samples])
 
     updateLegend = live or plotAll
          

@@ -20,7 +20,7 @@ def plot_dea(src, plotAll=False, live=False, generation=None, test=False, plot_m
 
     resultfiles = readFiles(src, 0, generation)
     
-    solverName, names, numdim, gen = initDefaults(src, resultfiles[0], (fvalXvec, meanXvec, width))
+    solverName, names, numdim, gen = initDefaults(src, "initial.json", (fvalXvec, meanXvec, width))
     colors = hlsColors(numdim)
     
     updateLegend = live or plotAll

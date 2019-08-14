@@ -33,7 +33,7 @@ def main(path, allFiles, live, generation, mean, check, test):
  from korali.plotter.helpers import sig
  signal.signal(signal.SIGINT, sig)
  
- firstResult = path + '/s00000.json'
+ firstResult = path + '/initial.json'
  if ( not os.path.isfile(firstResult) ):
   print("[Korali] Error: Did not find any results in the {0} folder...".format(path))
   exit(-1)

@@ -15,5 +15,6 @@ def getResults(fileName = ''):
 
 def getLatestResult(src):
  resultFiles = getResultFiles(src)
+ if (not resultFiles): return ''
  return src + '/' + resultFiles[-1]
  

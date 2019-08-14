@@ -1,0 +1,32 @@
+#ifndef _KORALI_DISTRIBUTION_LOGNORMAL_HPP_
+#define _KORALI_DISTRIBUTION_LOGNORMAL_HPP_
+
+#include <distributions/simple/base.hpp>
+
+namespace Korali { namespace Distribution {
+
+class LogNormal : public Korali::Distribution::Base {
+
+  private:
+
+  public:
+
+  LogNormal();
+
+  void updateConditionals(const std::vector<double>& sample) override;
+  void updateDistribution() override;
+
+  void setProperty(std::string propertyName, double value) override;
+  double getDensity(double x) override;
+  double getLogDensity(double x) override;
+  double getRandomNumber() override;
+
+  void initialize(Korali::Problem::Base* problem) override;
+  void finalize() override;
+  void setConfiguration(nlohmann::json& js) override;
+  void getConfiguration(nlohmann::json& js) override;
+};
+
+} } // namespace Korali::Distribution
+
+#endif // _KORALI_DISTRIBUTION_LOGNORMAL_HPP_

@@ -2,8 +2,8 @@
 #define _KORALI_SOLVERS_DEA_HPP_
 
 #include "solvers/base.hpp"
-#include "distributions/gaussian/gaussian.hpp"
-#include "distributions/uniform/uniform.hpp"
+#include "distributions/simple/normal/normal.hpp"
+#include "distributions/simple/uniform/uniform.hpp"
 #include <chrono>
 #include <map>
 
@@ -13,7 +13,7 @@ class DEA : public Korali::Solver::Base
 {
  private:
 
- Korali::Distribution::Base* _gaussianGenerator; /* Gaussian random number generator */
+ Korali::Distribution::Base* _normalGenerator; /* Normal random number generator */
  Korali::Distribution::Base* _uniformGenerator; /* Uniform random number generator */
 
  void mutateSingle(size_t sampleIdx); /* sample individual */

@@ -2,6 +2,8 @@
 #define _KORALI_SOLVER_TMCMC_HPP_
 
 #include "solvers/base.hpp"
+#include "distributions/complex/multivariateNormal/multivariateNormal.hpp"
+#include "distributions/simple/uniform/uniform.hpp"
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_vector.h>
 
@@ -22,7 +24,7 @@ class TMCMC : public Korali::Solver::Base
  static double tmcmc_objlogp(double x, const double *fj, size_t fn, double pj, double zero);
  static double objLog(const gsl_vector *v, void *param);
 
- Korali::Distribution::Base* _multivariateGenerator; /* Multivariate Gaussian random number generator */
+ Korali::Distribution::MultivariateNormal* _multivariateGenerator; /* Multivariate Normal random number generator */
  Korali::Distribution::Base* _uniformGenerator; /* Uniform random number generator */
 
  size_t N; // Number of variables

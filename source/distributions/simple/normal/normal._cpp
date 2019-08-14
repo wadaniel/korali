@@ -1,0 +1,51 @@
+#include "korali.hpp"
+
+Korali::Distribution::Normal::Normal()
+{
+ _standardDeviation = 1.0;
+}
+
+void Korali::Distribution::Normal::initialize(Korali::Problem::Base* problem)
+{
+ Korali::Distribution::Base::initialize(problem);
+ bool hasConditionals = false;
+
+ // Check for conditional properties
+
+ if (hasConditionals == false) updateDistribution();
+}
+
+void Korali::Distribution::Normal::finalize()
+{
+ Korali::Distribution::Base::finalize();
+}
+
+double Korali::Distribution::Normal::getDensity(double x)
+{
+ return gsl_ran_gaussian_pdf(x - _mean, _standardDeviation);
+}
+
+double Korali::Distribution::Normal::getLogDensity(double x)
+{
+ double d = (x-_mean)/_standardDeviation;
+ return _aux - 0.5*d*d;
+}
+
+double Korali::Distribution::Normal::getRandomNumber()
+{
+ return  _mean + gsl_ran_gaussian(_range, _standardDeviation);
+}
+
+void Korali::Distribution::Normal::updateDistribution()
+{
+ if (_standardDeviation <= 0.0)  Korali::logError("Incorrect Standard Deviation parameter of Normal distribution: %f.\n", _standardDeviation);
+
+ _aux = -0.5*gsl_sf_log(2*M_PI) - gsl_sf_log(_standardDeviation);
+}
+
+void Korali::Distribution::Normal::updateConditionals(const std::vector<double>& sample)
+{
+ Korali::Distribution::Base::updateConditionals(sample);
+ updateDistribution();
+}
+

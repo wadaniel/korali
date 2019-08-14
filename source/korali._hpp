@@ -4,15 +4,16 @@
 #include <vector>
 #include <functional>
 
-#include "distributions/cauchy/cauchy.hpp"
-#include "distributions/exponential/exponential.hpp"
-#include "distributions/gamma/gamma.hpp"
-#include "distributions/gaussian/gaussian.hpp"
-#include "distributions/geometric/geometric.hpp"
-#include "distributions/multivariate/multivariate.hpp"
-#include "distributions/laplace/laplace.hpp"
-#include "distributions/uniform/uniform.hpp"
-#include "distributions/lognormal/lognormal.hpp"
+#include "distributions/simple/cauchy/cauchy.hpp"
+#include "distributions/simple/exponential/exponential.hpp"
+#include "distributions/simple/gamma/gamma.hpp"
+#include "distributions/simple/normal/normal.hpp"
+#include "distributions/simple/geometric/geometric.hpp"
+#include "distributions/simple/laplace/laplace.hpp"
+#include "distributions/simple/uniform/uniform.hpp"
+#include "distributions/simple/lognormal/lognormal.hpp"
+
+#include "distributions/complex/multivariateNormal/multivariateNormal.hpp"
 
 #include "problems/optimization/optimization.hpp"
 #include "problems/sampling/sampling.hpp"

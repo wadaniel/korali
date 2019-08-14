@@ -5,7 +5,7 @@ from buildAux import *
 
 def buildDistributions(koraliDir):
  # Processing Distributions
- curdir = koraliDir + '/distributions'
+ curdir = koraliDir + '/distributions/simple'
 
  # Creating distribution creation list
  distributionCreationList = ''
@@ -98,24 +98,10 @@ def buildDistributions(koraliDir):
   distributionCodeString += ' bool recognizedProperty = false;\n'
 
   for v in distributionConfig["Distribution Configuration"]:
-   if (getVariableType(v) == 'double'):
     distributionCodeString += ' if (propertyName == "' + v["Name"][-1] + '") { ' + getCXXVariableName(v) + ' = value; recognizedProperty = true; }\n'
 
   for v in distributionConfig["Conditional Variables"]:
     distributionCodeString += ' if (propertyName == "' + v["Name"][-1] + '") { ' + getCXXVariableName(v) + ' = value; recognizedProperty = true; }\n'
-
-  distributionCodeString += ' if (recognizedProperty == false) Korali::logError("Unrecognized property: %s for the ' + distributionConfig["Alias"] + ' distribution", propertyName.c_str());\n'
-  distributionCodeString += '} \n\n'
-
-  ###### Creating Set multiple element property routine
-
-  distributionCodeString += 'void Korali::Distribution::' + distributionConfig["Class"]  + '::setPropertyVector(std::string propertyName, std::vector<double> values)\n'
-  distributionCodeString += '{\n'
-  distributionCodeString += ' bool recognizedProperty = false;\n'
-
-  for v in distributionConfig["Distribution Configuration"]:
-   if (getVariableType(v) == 'std::vector<double>'):
-    distributionCodeString += ' if (propertyName == "' + v["Name"][-1] + '") { ' + getCXXVariableName(v) + ' = values; recognizedProperty = true; }\n'
 
   distributionCodeString += ' if (recognizedProperty == false) Korali::logError("Unrecognized property: %s for the ' + distributionConfig["Alias"] + ' distribution", propertyName.c_str());\n'
   distributionCodeString += '} \n\n'

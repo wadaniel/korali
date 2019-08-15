@@ -6394,7 +6394,6 @@ class lexer
         {
             case 'I':
             {
-              get();
               scan_literal("Infinity", 8, token_type::literal_inf);
               value_float = std::numeric_limits<double>::infinity();
               return token_type::value_float;
@@ -6972,7 +6971,7 @@ scan_number_done:
 
             // number
             case '-':
-            case '+':
+            case 'I':
             case '0':
             case '1':
             case '2':

@@ -40,7 +40,7 @@ def plot_dea(src, plotAll=False, live=False, generation=None, test=False, plot_m
             with open(path) as f:
                 
                 dataString = f.read()
-                dataString = dataString.replace('+INFINITY', '1.0e+300').replace('-INFINITY', '-1.0e+300').replace('NaN', '-1.0e+300')
+                dataString = dataString.replace('+INFINITY', '1.0e+100').replace('-INFINITY', '-1.0e+100').replace('NaN', '-1.0e+100')
                 data  = json.loads(dataString)
                 state, gen = getStateAndGeneration(data)
 

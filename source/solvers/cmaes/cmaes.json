@@ -101,21 +101,21 @@
    {
     "Name": [ "Max Generations" ],
     "Type": "size_t",
-    "Default": "200",
+    "Default": "1000",
     "Criteria": "_k->_currentGeneration >= _maxGenerations",
     "Description": "Determines how many solver generations to run before stopping execution. Execution can be resumed at a later moment."
    },
    {
     "Name": [ "Max Model Evaluations" ],
     "Type": "size_t",
-    "Default": "+INFINITY",
+    "Default": "1000000000",
     "Criteria": "_k->_computationalModelEvaluationCount > _maxModelEvaluations",
     "Description": "Determines how many computational model evaluations to run before stopping execution. Execution can be resumed at a later moment."
    },
    {
     "Name": [ "Max Infeasible Resamplings" ],
     "Type": "size_t",
-    "Default": "+INFINITY",
+    "Default": "1000000000",
     "Criteria": "_infeasibleSampleCount >= _maxInfeasibleResamplings",
     "Description": "Maximum number of resamplings per candidate per generation if sample is outside of Lower and Upper Bound."
    },
@@ -129,7 +129,7 @@
    {
     "Name": [ "Min Value" ], 
     "Type": "double",
-    "Default": "-std::numeric_limits<double>::infinity()",
+    "Default": "-INFINITY",
     "Criteria": "_bestEverValue < _minValue",
     "Description": "Specifies the minimum target fitness to stop minimization."
    },
@@ -143,14 +143,14 @@
    {
     "Name": [ "Min Value Difference Threshold" ],
     "Type": "double",
-    "Default": "-std::numeric_limits<double>::infinity()",
+    "Default": "-INFINITY",
     "Criteria": "_k->_hasComputedGeneration && (fabs(_currentBestValue - _previousBestValue) <= _minValueDifferenceThreshold)",
     "Description": "Specifies the minimum fitness differential between two consecutive generations before stopping execution."
    },
    {
     "Name": [ "Min Standard Deviation" ],
     "Type": "double",
-    "Default": "-std::numeric_limits<double>::infinity()",
+    "Default": "-INFINITY",
     "Criteria": "_currentMinStandardDeviation < _minStandardDeviation",
     "Description": "Specifies the minimal standard deviation for any variable in any proposed sample."
    },
@@ -164,7 +164,7 @@
    {
     "Name": [ "Min Standard Deviation Step Factor" ],
     "Type": "double",
-    "Default": "-std::numeric_limits<double>::infinity()",
+    "Default": "-INFINITY",
     "Criteria": "_k->_hasComputedGeneration && (_currentMinStandardDeviationStep < _minStandardDeviationStepFactor)",
     "Description": "Specifies the minimum standard deviation in the direction of the eigenvectors."
    }
@@ -175,13 +175,13 @@
    {
     "Name": [ "Lower Bound" ],
     "Type": "double",
-    "Default": "NAN",
+    "Default": "-INFINITY",
     "Description": "Specifies the lower bound for the variable's value. Korali will not generate samples for which its value falls below the Lower Bound."
    },
    {
     "Name": [ "Upper Bound" ],
     "Type": "double",
-    "Default": "NAN",
+    "Default": "+INFINITY",
     "Description": "Specifies the upper bound for the variable's value. Korali will not generate samples for which its value falls above the Upper Bound."
    },
    {

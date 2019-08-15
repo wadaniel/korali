@@ -53,28 +53,28 @@
    {
     "Name": [ "Max Generations" ],
     "Type": "size_t",
-    "Default": "200",
+    "Default": "10000",
     "Criteria": "_k->_currentGeneration >= _maxGenerations",
     "Description": "Determines how many solver generations to run before stopping execution. Execution can be resumed at a later moment."
    },
    {
     "Name": [ "Max Model Evaluations" ],
     "Type": "size_t",
-    "Default": "+INFINITY",
+    "Default": "1000000000",
     "Criteria": "_k->_computationalModelEvaluationCount > _maxModelEvaluations",
     "Description": "Determines how many computational model evaluations to run before stopping execution. Execution can be resumed at a later moment."
    },
    {
     "Name": [ "Max Resamplings" ],
     "Type": "size_t",
-    "Default": "+INFINITY",
+    "Default": "1000000000",
     "Criteria": "_infeasibleSampleCountChange > _maxResamplings",
     "Description": "Max number of mutations per sample per generation if infeasible (only relevant if Fix Infeasible is set False)."
    },
    {
     "Name": [ "Min Value" ],
     "Type": "double",
-    "Default": "-std::numeric_limits<double>::infinity()",
+    "Default": "-INFINITY",
     "Criteria": "_bestEverValue < _minValue",
     "Description": "Specifies the target fitness to stop minimization."
    },
@@ -88,14 +88,14 @@
    {
     "Name": [ "Min Value Difference Threshold" ],
     "Type": "double",
-    "Default": "-std::numeric_limits<double>::infinity()",
+    "Default": "-INFINITY",
     "Criteria": "_k->_hasComputedGeneration && (fabs(_currentBestValue - _previousBestValue) < _minValueDifferenceThreshold)",
     "Description": "Specifies the minimum fitness differential between two consecutive generations before stopping execution."
    },
    {
     "Name": [ "Min Step Size" ],
     "Type": "double",
-    "Default": "-std::numeric_limits<double>::infinity()",
+    "Default": "-INFINITY",
     "Criteria": "_currentMinimumStepSize < _minStepSize",
     "Description": "Specifies the minimal step size of the population mean from one gneration to another."
    }

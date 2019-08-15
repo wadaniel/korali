@@ -419,9 +419,9 @@ void Korali::Solver::CMAES::prepareGeneration()
        _infeasibleSampleCount++;
        sampleSingle(i);
 
-       if ( _maxInfeasibleResamplingsEnabled )
-       if ( (_infeasibleSampleCount - initial_infeasible) > _maxInfeasibleResamplings )
-        Korali::logError("Exiting resampling loop (sample %zu), max resamplings (%zu) reached.\n", i, _maxInfeasibleResamplings);
+       //if ( _maxInfeasibleResamplingsEnabled )
+       //if ( (_infeasibleSampleCount - initial_infeasible) > _maxInfeasibleResamplings )
+       // Korali::logError("Exiting resampling loop (sample %zu), max resamplings (%zu) reached.\n", i, _maxInfeasibleResamplings);
      }
  }
 

@@ -5547,7 +5547,7 @@ class lexer
         literal_true,     ///< the `true` literal
         literal_false,    ///< the `false` literal
         literal_null,     ///< the `null` literal
-        literal_inf,     ///< the `INFINITY` literal
+        literal_inf,     ///< the `Infinity` literal
         literal_nan,     ///< the `NaN` literal
         value_string,     ///< a string -- use get_string() for actual value
         value_unsigned,   ///< an unsigned integer -- use get_number_unsigned() for actual value
@@ -5580,7 +5580,7 @@ class lexer
             case token_type::literal_nan:
                 return "NaN literal";
             case token_type::literal_inf:
-                return "INFINITY literal";
+                return "Infinity literal";
             case token_type::value_string:
                 return "string literal";
             case lexer::token_type::value_unsigned:
@@ -6395,7 +6395,7 @@ class lexer
             case '+':
             {
               get();
-              scan_literal("INFINITY", 8, token_type::literal_inf);
+              scan_literal("Infinity", 8, token_type::literal_inf);
               value_float = std::numeric_limits<double>::infinity();
               return token_type::value_float;
             }
@@ -6437,7 +6437,7 @@ scan_number_minus:
         switch (get())
         {
             case 'I':
-             scan_literal("INFINITY", 8, token_type::literal_inf);
+             scan_literal("Infinity", 8, token_type::literal_inf);
              value_float = -std::numeric_limits<double>::infinity();
              return token_type::value_float;
 
@@ -12705,8 +12705,8 @@ class serializer
         // NaN / inf
         if (std::isinf(x))
         {
-         if (x > 0) o->write_characters("+INFINITY", 9);
-         if (x < 0) o->write_characters("-INFINITY", 9);
+         if (x > 0) o->write_characters("+Infinity", 9);
+         if (x < 0) o->write_characters("-Infinity", 9);
          return;
         }
 

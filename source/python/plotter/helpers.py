@@ -20,7 +20,9 @@ def sig(a, b):
 def initDefaults(directory, filename, lists):
     path   = '{0}/{1}'.format(directory, filename)
     with open(path) as f:
-        data = json.load(f)
+        dataString = f.read()
+        dataString = dataString.replace('+INFINITY', '1.0e+300').replace('-INFINITY', '-1.0e+300').replace('NaN', '-1.0e+300')
+        data  = json.loads(dataString)
  
         solver = data['Solver']['Type']
         gen    = data['General']['Current Generation']
@@ -81,7 +83,9 @@ def readFiles(src, start=None, end=None, noisy=True):
     initialpath = '{0}/initial.json'.format(src)
     runId = None
     with open(initialpath) as f:
-        data  = json.load(f) 
+        dataString = f.read()
+        dataString = dataString.replace('+INFINITY', '1.0e+300').replace('-INFINITY', '-1.0e+300').replace('NaN', '-1.0e+300')
+        data  = json.loads(dataString)
         runId = data['General']['Run ID']
 
     resultfiles = [] # Init Return Value
@@ -89,7 +93,9 @@ def readFiles(src, start=None, end=None, noisy=True):
         path   = '{0}/{1}'.format(src, filename)
         
         with open(path) as f:
-            data = json.load(f)
+            dataString = f.read()
+            dataString = dataString.replace('+INFINITY', '1.0e+300').replace('-INFINITY', '-1.0e+300').replace('NaN', '-1.0e+300')
+            data  = json.loads(dataString)
             gen  = data['General']['Current Generation']
             
             if verifyFile(data, path, runId, start, end, noisy):

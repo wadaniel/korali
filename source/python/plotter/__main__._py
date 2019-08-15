@@ -38,8 +38,9 @@ def main(path, allFiles, live, generation, mean, check, test):
   print("[Korali] Error: Did not find any results in the {0} folder...".format(path))
   exit(-1)
 
- with open(firstResult) as f:
-  data  = json.load(f)
+ with open(firstResult, 'r') as file: resultString = file.read()
+ resultString = resultString.replace('+INFINITY', '1.0e+300').replace('-INFINITY', '-1.0e+300').replace('NaN', '-1.0e+300')
+ data  = json.loads(resultString)
  
  solver = data['Solver']['Type']
 

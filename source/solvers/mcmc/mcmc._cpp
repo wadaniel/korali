@@ -82,7 +82,7 @@ void Korali::Solver::MCMC::initialize()
  _chainLength = 0;
  _currentRejectionCount = 0;
  _databaseEntryCount = 0;
- _chainLeaderLogLikelihood = std::numeric_limits<double>::lowest();
+ _chainLeaderLogLikelihood = -std::numeric_limits<double>::infinity();
  _acceptanceRate  = 1.0;
 }
 
@@ -91,7 +91,7 @@ void Korali::Solver::MCMC::processSample(size_t sampleId, double fitness)
  fitness += _chainCandidatesLogPriors[sampleId];
  if(std::isfinite(fitness) == false) 
  {
-   fitness = -1.0 * std::numeric_limits<double>::max();
+   fitness = -std::numeric_limits<double>::infinity();
    Korali::logWarning(KORALI_NORMAL,"Sample %zu returned non finite fitness (fitness set to %e)!\n", sampleId, fitness);
  }
  _chainCandidatesLogLikelihoods[sampleId] = fitness;

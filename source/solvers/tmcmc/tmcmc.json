@@ -58,7 +58,7 @@
  [
    {
     "Name": [ "Target Annealing Exponent" ],
-    "Type": "size_t",
+    "Type": "double",
     "Criteria": "_annealingExponent >= _targetAnnealingExponent",
     "Default": "1.0",
     "Description": "Determines the annealing exponent $rho$ to achieve before termination. TMCMC converges if $rho$ equals 1.0."
@@ -73,7 +73,7 @@
    {
     "Name": [ "Max Model Evaluations" ],
     "Type": "size_t",
-    "Default": "std::numeric_limits<size_t>::max()",
+    "Default": "1000000000",
     "Criteria": "_k->_computationalModelEvaluationCount > _maxModelEvaluations",
     "Description": "Determines how many computational model evaluations to run before stopping execution. Execution can be resumed at a later moment."
    }

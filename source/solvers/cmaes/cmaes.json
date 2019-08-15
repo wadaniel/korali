@@ -108,63 +108,63 @@
    {
     "Name": [ "Max Model Evaluations" ],
     "Type": "size_t",
-    "Default": "std::numeric_limits<size_t>::max()",
+    "Default": "+INFINITY",
     "Criteria": "_k->_computationalModelEvaluationCount > _maxModelEvaluations",
     "Description": "Determines how many computational model evaluations to run before stopping execution. Execution can be resumed at a later moment."
    },
    {
     "Name": [ "Max Infeasible Resamplings" ],
     "Type": "size_t",
-    "Default": "std::numeric_limits<size_t>::max()",
+    "Default": "+INFINITY",
     "Criteria": "_infeasibleSampleCount >= _maxInfeasibleResamplings",
     "Description": "Maximum number of resamplings per candidate per generation if sample is outside of Lower and Upper Bound."
    },
    {
     "Name": [ "Max Condition Covariance Matrix" ],
     "Type": "double",
-    "Default": "std::numeric_limits<double>::max()",
+    "Default": "+INFINITY",
     "Criteria": "_maximumCovarianceEigenvalue >= _minimumCovarianceEigenvalue * _maxConditionCovarianceMatrix",
     "Description": "Specifies the maximum condition of the covariance matrix."
    },
    {
     "Name": [ "Min Value" ], 
     "Type": "double",
-    "Default": "std::numeric_limits<double>::lowest()",
+    "Default": "-std::numeric_limits<double>::infinity()",
     "Criteria": "_bestEverValue < _minValue",
     "Description": "Specifies the minimum target fitness to stop minimization."
    },
    {
     "Name": [ "Max Value" ],
     "Type": "double",
-    "Default": "std::numeric_limits<double>::max()",
+    "Default": "+INFINITY",
     "Criteria": "_bestEverValue > _maxValue",
     "Description": "Specifies the maximum target fitness to stop maximization."
    },
    {
     "Name": [ "Min Value Difference Threshold" ],
     "Type": "double",
-    "Default": "std::numeric_limits<double>::lowest()",
+    "Default": "-std::numeric_limits<double>::infinity()",
     "Criteria": "_k->_hasComputedGeneration && (fabs(_currentBestValue - _previousBestValue) <= _minValueDifferenceThreshold)",
     "Description": "Specifies the minimum fitness differential between two consecutive generations before stopping execution."
    },
    {
     "Name": [ "Min Standard Deviation" ],
     "Type": "double",
-    "Default": "std::numeric_limits<double>::lowest()",
+    "Default": "-std::numeric_limits<double>::infinity()",
     "Criteria": "_currentMinStandardDeviation < _minStandardDeviation",
     "Description": "Specifies the minimal standard deviation for any variable in any proposed sample."
    },
    {
     "Name": [ "Max Standard Deviation" ],
     "Type": "double",
-    "Default": "std::numeric_limits<double>::max()",
+    "Default": "+INFINITY",
     "Criteria": "_currentMaxStandardDeviation > _maxStandardDeviation",
     "Description": "Specifies the maximal standard deviation for any variable in any proposed sample."
    },
    {
     "Name": [ "Min Standard Deviation Step Factor" ],
     "Type": "double",
-    "Default": "std::numeric_limits<double>::lowest()",
+    "Default": "-std::numeric_limits<double>::infinity()",
     "Criteria": "_k->_hasComputedGeneration && (_currentMinStandardDeviationStep < _minStandardDeviationStepFactor)",
     "Description": "Specifies the minimum standard deviation in the direction of the eigenvectors."
    }

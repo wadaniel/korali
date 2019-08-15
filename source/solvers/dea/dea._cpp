@@ -53,11 +53,11 @@ void Korali::Solver::DEA::initialize()
 
  _infeasibleSampleCount = 0;
  _bestSampleIndex             = 0;
- _previousBestValue     = std::numeric_limits<double>::lowest();
- _currentBestValue      = std::numeric_limits<double>::lowest();
- _previousBestEverValue = std::numeric_limits<double>::lowest();
- _bestEverValue         = std::numeric_limits<double>::lowest();
- _currentMinimumStepSize = std::numeric_limits<double>::max();
+ _previousBestValue     = -std::numeric_limits<double>::infinity();
+ _currentBestValue      = -std::numeric_limits<double>::infinity();
+ _previousBestEverValue = -std::numeric_limits<double>::infinity();
+ _bestEverValue         = -std::numeric_limits<double>::infinity();
+ _currentMinimumStepSize = +std::numeric_limits<double>::infinity();
 
  initSamples();
 
@@ -216,7 +216,7 @@ void Korali::Solver::DEA::processSample(size_t sampleId, double fitness)
  fitness += logPrior;
  if(std::isfinite(fitness) == false) 
  {
-   fitness = -1.0 * std::numeric_limits<double>::max();
+   fitness = -std::numeric_limits<double>::infinity();
    Korali::logWarning(KORALI_NORMAL,"Sample %zu returned non finite fitness (fitness set to %e)!\n", sampleId, fitness);
  }
  _valueVector[sampleId] = fitness;
@@ -274,8 +274,8 @@ void Korali::Solver::DEA::updateSolver()
 
     for(size_t d = 0; d < N; ++d)
     {
-        double max = std::numeric_limits<double>::lowest();
-        double min = std::numeric_limits<double>::max();
+        double max = -std::numeric_limits<double>::infinity();
+        double min = +std::numeric_limits<double>::infinity();
         for(size_t i = 0; i < _populationSize; ++i)
         {
             if (_samplePopulation[i*N+d] > max) max = _samplePopulation[i*N+d];
@@ -284,7 +284,7 @@ void Korali::Solver::DEA::updateSolver()
         _maxDistances[d] = max-min;
     }
 
-    _currentMinimumStepSize = std::numeric_limits<double>::max();
+    _currentMinimumStepSize = +std::numeric_limits<double>::infinity();
     for(size_t d = 0; d < N; ++d)  std::min(_currentMinimumStepSize, fabs(_currentMean[d] - _previousMean[d]));
 }
 

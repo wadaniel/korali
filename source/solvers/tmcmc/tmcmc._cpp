@@ -110,7 +110,7 @@ void Korali::Solver::TMCMC::processSample(size_t sampleId, double fitness)
  if(std::isnan(fitness) == true)
  {
   Korali::logError("Sample %zu returned NaN function evaluation.\n", sampleId);
-  fitness = std::numeric_limits<double>::lowest();
+  fitness = -std::numeric_limits<double>::infinity();
  }
 
  _chainCandidatesLogLikelihoods[sampleId] = fitness;
@@ -144,8 +144,8 @@ void Korali::Solver::TMCMC::evaluateSample(size_t sampleId)
    _k->_conduit->evaluateSample(_logTransformedSample.data(), sampleId);
   else
   {
-   _chainCandidatesLogLikelihoods[sampleId] = std::numeric_limits<double>::lowest();
-   _chainCandidatesLogPriors[sampleId] = std::numeric_limits<double>::lowest();
+   _chainCandidatesLogLikelihoods[sampleId] = -std::numeric_limits<double>::infinity();
+   _chainCandidatesLogPriors[sampleId] = -std::numeric_limits<double>::infinity();
    finishSample(sampleId);
   }
 

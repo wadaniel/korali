@@ -38,8 +38,6 @@ void Korali::Solver::DEA::initialize()
   if(_k->_problem->getVariable(d)->_upperBound < _k->_problem->getVariable(d)->_lowerBound)
     Korali::logError("Lower Bound (%.4f) of variable \'%s\'  exceeds Upper Bound (%.4f).\n", _k->_problem->getVariable(d)->_lowerBound, _k->_problem->getVariable(d)->_name.c_str(), _k->_problem->getVariable(d)->_upperBound);
 
- if (_k->_currentGeneration > 0) return;
-
  // Allocating Memory
  _samplePopulation.resize(N*_populationSize);
  _candidatePopulation.resize(N*_populationSize);
@@ -53,6 +51,8 @@ void Korali::Solver::DEA::initialize()
  _isInitializedSample.resize(_populationSize);
  _previousValueVector.resize(_populationSize);
  _valueVector.resize(_populationSize);
+
+ if (_k->_currentGeneration > 0) return;
 
  _previousBestValue     = -std::numeric_limits<double>::infinity();
  _currentBestValue      = -std::numeric_limits<double>::infinity();

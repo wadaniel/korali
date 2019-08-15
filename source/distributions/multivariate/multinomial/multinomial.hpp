@@ -20,7 +20,7 @@ class Multinomial {
  Multinomial(size_t seed);
  ~Multinomial();
 
- void getSelections(std::vector<double>& p, std::vector<unsigned int>& n);
+ void getSelections(std::vector<double>& p, std::vector<unsigned int>& n, int N);
 };
 
 } } // namespace Korali::Distribution

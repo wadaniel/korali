@@ -108,14 +108,14 @@
    {
     "Name": [ "Max Model Evaluations" ],
     "Type": "size_t",
-    "Default": "1000000000",
+    "Default": "10000000",
     "Criteria": "_k->_computationalModelEvaluationCount > _maxModelEvaluations",
     "Description": "Determines how many computational model evaluations to run before stopping execution. Execution can be resumed at a later moment."
    },
    {
     "Name": [ "Max Infeasible Resamplings" ],
     "Type": "size_t",
-    "Default": "1000000000",
+    "Default": "10000000",
     "Criteria": "_infeasibleSampleCount >= _maxInfeasibleResamplings",
     "Description": "Maximum number of resamplings per candidate per generation if sample is outside of Lower and Upper Bound."
    },

@@ -73,7 +73,7 @@
    {
     "Name": [ "Max Model Evaluations" ],
     "Type": "size_t",
-    "Default": "1000000000",
+    "Default": "10000000",
     "Criteria": "_k->_computationalModelEvaluationCount > _maxModelEvaluations",
     "Description": "Determines how many computational model evaluations to run before stopping execution. Execution can be resumed at a later moment."
    }

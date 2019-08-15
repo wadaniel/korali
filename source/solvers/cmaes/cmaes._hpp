@@ -2,7 +2,7 @@
 #define _KORALI_SOLVERS_CCMAES_HPP_
 
 #include "solvers/base.hpp"
-#include "distributions/simple/normal/normal.hpp"
+#include "distributions/univariate/normal/normal.hpp"
 #include <chrono>
 #include <vector>
 #include <map>

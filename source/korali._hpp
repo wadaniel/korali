@@ -4,17 +4,17 @@
 #include <vector>
 #include <functional>
 
-#include "distributions/simple/cauchy/cauchy.hpp"
-#include "distributions/simple/exponential/exponential.hpp"
-#include "distributions/simple/gamma/gamma.hpp"
-#include "distributions/simple/normal/normal.hpp"
-#include "distributions/simple/geometric/geometric.hpp"
-#include "distributions/simple/laplace/laplace.hpp"
-#include "distributions/simple/uniform/uniform.hpp"
-#include "distributions/simple/lognormal/lognormal.hpp"
+#include "distributions/univariate/cauchy/cauchy.hpp"
+#include "distributions/univariate/exponential/exponential.hpp"
+#include "distributions/univariate/gamma/gamma.hpp"
+#include "distributions/univariate/normal/normal.hpp"
+#include "distributions/univariate/geometric/geometric.hpp"
+#include "distributions/univariate/laplace/laplace.hpp"
+#include "distributions/univariate/uniform/uniform.hpp"
+#include "distributions/univariate/lognormal/lognormal.hpp"
 
-#include "distributions/complex/multivariateNormal/multivariateNormal.hpp"
-#include "distributions/complex/multinomial/multinomial.hpp"
+#include "distributions/multivariate/multivariateNormal/multivariateNormal.hpp"
+#include "distributions/multivariate/multinomial/multinomial.hpp"
 
 #include "problems/optimization/optimization.hpp"
 #include "problems/sampling/sampling.hpp"
@@ -47,6 +47,8 @@ namespace Korali
 
 const double NaN = std::numeric_limits<double>::quiet_NaN();
 const double Inf = std::numeric_limits<double>::infinity();
+const double Lowest = std::numeric_limits<double>::lowest();
+const double Max = std::numeric_limits<double>::max();
 
 class Engine {
 

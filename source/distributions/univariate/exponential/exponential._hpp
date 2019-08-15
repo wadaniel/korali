@@ -1,17 +1,17 @@
-#ifndef _KORALI_DISTRIBUTION_GEOMETRIC_HPP_
-#define _KORALI_DISTRIBUTION_GEOMETRIC_HPP_
+#ifndef _KORALI_DISTRIBUTION_EXPONENTIAL_HPP_
+#define _KORALI_DISTRIBUTION_EXPONENTIAL_HPP_
 
-#include <distributions/simple/base.hpp>
+#include <distributions/univariate/base.hpp>
 
 namespace Korali { namespace Distribution {
 
-class Geometric : public Korali::Distribution::Base {
+class Exponential : public Korali::Distribution::Base {
 
  private:
 
  public:
 
- Geometric();
+ Exponential();
 
  void updateConditionals(const std::vector<double>& sample) override;
  void updateDistribution() override;
@@ -29,4 +29,4 @@ class Geometric : public Korali::Distribution::Base {
 
 } } // namespace Korali::Distribution
 
-#endif // _KORALI_DISTRIBUTION_GEOMETRIC_HPP_
+#endif // _KORALI_DISTRIBUTION_EXPONENTIAL_HPP_

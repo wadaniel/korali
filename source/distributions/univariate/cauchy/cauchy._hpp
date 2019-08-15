@@ -1,7 +1,7 @@
 #ifndef _KORALI_DISTRIBUTION_CAUCHY_HPP_
 #define _KORALI_DISTRIBUTION_CAUCHY_HPP_
 
-#include <distributions/simple/base.hpp>
+#include <distributions/univariate/base.hpp>
 
 namespace Korali { namespace Distribution {
 

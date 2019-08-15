@@ -2,8 +2,8 @@
 #define _KORALI_SOLVERS_DEA_HPP_
 
 #include "solvers/base.hpp"
-#include "distributions/simple/normal/normal.hpp"
-#include "distributions/simple/uniform/uniform.hpp"
+#include "distributions/univariate/normal/normal.hpp"
+#include "distributions/univariate/uniform/uniform.hpp"
 #include <chrono>
 #include <map>
 

@@ -79,35 +79,32 @@ double Korali::Problem::HierarchicalThetaNew::evaluateSampleFitness()
   size_t Ntheta = getVariableCount();
 
   std::vector<double> psiSample( Npsi, 0.0 );
-
   std::vector<double> logValues( _psiProblemSampleCount, 0.0);
 
   for (size_t i = 0; i < _psiProblemSampleCount; i++)
   {
-    for (size_t j = 0; j < Npsi; j++){
+    for (size_t j = 0; j < Npsi; j++)
       psiSample[j] = _psiProblemSampleCoordinates[i*Npsi + j];
-      // printf(">->->->->  %lf    \n", psiSample[j] );
-    }
 
     _psiProblemKorali.updateConditionalPriors( psiSample );
 
     logValues[i] = 0.;
     for (size_t k = 0; k < Ntheta; k++){
+      // size_t k=2;
       logValues[i] += _psiProblemKorali.getConditionalPrior(k)->getLogDensity( _directModelData._variables[k] );
       // logValues2[i] += _psiProblemKorali.getConditionalPrior(k)->getLogDensity( _directModelData._variables[k] );
       // printf("----->   %lf  ===  %lf \n", _directModelData._variables[k], _psiProblemKorali.getConditionalPrior(k)->getLogDensity( _directModelData._variables[k] ) );
     }
 
-    // printf("-----> log_i = %lf \n",  logValues[i] );
-
   }
 
   logLikelihood += -log(_psiProblemSampleCount) + logSumExp(logValues);
 
-  // printf("==========> loglike = %lf \n",  logLikelihood );
+  // printf("==========> loglike = %lf   ----- %lf\n",  logLikelihood, logSumExp(logValues) );
   // for (size_t i=0; i<Ntheta; i++)
   //   printf("%lf   ", _directModelData._variables[i] );
   // printf("%lf\n",  logLikelihood );
+  // exit(1);
 
   return logLikelihood;
 }

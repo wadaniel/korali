@@ -1,6 +1,7 @@
 #ifndef _KORALI_AUXILIARS_KORALIMATH_HPP_
 #define _KORALI_AUXILIARS_KORALIMATH_HPP_
 
+#include "korali.hpp"
 #include <stdlib.h>
 #include <vector>
 

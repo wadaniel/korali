@@ -1,3 +1,6 @@
+// The following library was modified by the authors of Korali to support
+// loading/saving infinity, -infinity, and NaN values.
+
 /*
     __ _____ _____ _____
  __|  |   __|     |   | |  JSON for Modern C++
@@ -5544,6 +5547,8 @@ class lexer
         literal_true,     ///< the `true` literal
         literal_false,    ///< the `false` literal
         literal_null,     ///< the `null` literal
+        literal_inf,     ///< the `INFINITY` literal
+        literal_nan,     ///< the `NaN` literal
         value_string,     ///< a string -- use get_string() for actual value
         value_unsigned,   ///< an unsigned integer -- use get_number_unsigned() for actual value
         value_integer,    ///< a signed integer -- use get_number_integer() for actual value
@@ -5572,6 +5577,10 @@ class lexer
                 return "false literal";
             case token_type::literal_null:
                 return "null literal";
+            case token_type::literal_nan:
+                return "NaN literal";
+            case token_type::literal_inf:
+                return "INFINITY literal";
             case token_type::value_string:
                 return "string literal";
             case lexer::token_type::value_unsigned:
@@ -6383,6 +6392,14 @@ class lexer
         // state (init): we just found out we need to scan a number
         switch (current)
         {
+            case '+':
+            {
+              get();
+              scan_literal("INFINITY", 8, token_type::literal_inf);
+              value_float = std::numeric_limits<double>::infinity();
+              return token_type::value_float;
+            }
+
             case '-':
             {
                 add(current);
@@ -6419,6 +6436,11 @@ scan_number_minus:
         number_type = token_type::value_integer;
         switch (get())
         {
+            case 'I':
+             scan_literal("INFINITY", 8, token_type::literal_inf);
+             value_float = -std::numeric_limits<double>::infinity();
+             return token_type::value_float;
+
             case '0':
             {
                 add(current);
@@ -6939,6 +6961,10 @@ scan_number_done:
                 return scan_literal("false", 5, token_type::literal_false);
             case 'n':
                 return scan_literal("null", 4, token_type::literal_null);
+            case 'N':
+             scan_literal("NaN", 3, token_type::literal_nan);
+             value_float = std::numeric_limits<double>::quiet_NaN();
+             return token_type::value_float;
 
             // string
             case '\"':
@@ -6946,6 +6972,7 @@ scan_number_done:
 
             // number
             case '-':
+            case '+':
             case '0':
             case '1':
             case '2':
@@ -7270,12 +7297,12 @@ class parser
                     {
                         const auto res = m_lexer.get_number_float();
 
-                        if (JSON_UNLIKELY(not std::isfinite(res)))
-                        {
-                            return sax->parse_error(m_lexer.get_position(),
-                                                    m_lexer.get_token_string(),
-                                                    out_of_range::create(406, "number overflow parsing '" + m_lexer.get_token_string() + "'"));
-                        }
+//                        if (JSON_UNLIKELY(not std::isfinite(res)))
+//                        {
+//                            return sax->parse_error(m_lexer.get_position(),
+//                                                    m_lexer.get_token_string(),
+//                                                    out_of_range::create(406, "number overflow parsing '" + m_lexer.get_token_string() + "'"));
+//                        }
 
                         if (JSON_UNLIKELY(not sax->number_float(res, m_lexer.get_string())))
                         {
@@ -12676,10 +12703,17 @@ class serializer
     void dump_float(number_float_t x)
     {
         // NaN / inf
-        if (not std::isfinite(x))
+        if (std::isinf(x))
         {
-            o->write_characters("null", 4);
-            return;
+         if (x > 0) o->write_characters("+INFINITY", 9);
+         if (x < 0) o->write_characters("-INFINITY", 9);
+         return;
+        }
+
+        if (std::isnan(x))
+        {
+          o->write_characters("NaN", 3);
+          return;
         }
 
         // If number_float_t is an IEEE-754 single or double precision number,

@@ -38,10 +38,7 @@ def plot_dea(src, plotAll=False, live=False, generation=None, test=False, plot_m
             path = '{0}/{1}'.format(src, filename)
  
             with open(path) as f:
-                
-                dataString = f.read()
-                dataString = dataString.replace('+INFINITY', '1.0e+100').replace('-INFINITY', '-1.0e+100').replace('NaN', '-1.0e+100')
-                data  = json.loads(dataString)
+                data  = json.load(f)
                 state, gen = getStateAndGeneration(data)
 
                 if updateLegend:

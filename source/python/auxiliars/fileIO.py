@@ -23,9 +23,7 @@ def getResultFiles(src, start=None, end=None, noisy=False):
     initialpath = '{0}/initial.json'.format(src)
     runId = None
     with open(initialpath) as f:
-        dataString = f.read()
-        dataString = dataString.replace('+INFINITY', '1.0e+300').replace('-INFINITY', '-1.0e+300').replace('NaN', '-1.0e+300')
-        data  = json.loads(dataString)
+        data  = json.load(f) 
         runId = data['General']['Run ID']
 
     resultfiles = [] # Init Return Value
@@ -33,9 +31,7 @@ def getResultFiles(src, start=None, end=None, noisy=False):
         path   = '{0}/{1}'.format(src, filename)
         
         with open(path) as f:
-            dataString = f.read()
-            dataString = dataString.replace('+INFINITY', '1.0e+300').replace('-INFINITY', '-1.0e+300').replace('NaN', '-1.0e+300')
-            data  = json.loads(dataString)
+            data = json.load(f)
             gen  = data['General']['Current Generation']
             
             if verifyResultFile(data, path, runId, start, end, noisy):

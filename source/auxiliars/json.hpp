@@ -6392,7 +6392,7 @@ class lexer
         // state (init): we just found out we need to scan a number
         switch (current)
         {
-            case '+':
+            case 'I':
             {
               get();
               scan_literal("Infinity", 8, token_type::literal_inf);
@@ -12705,7 +12705,7 @@ class serializer
         // NaN / inf
         if (std::isinf(x))
         {
-         if (x > 0) o->write_characters("+Infinity", 9);
+         if (x > 0) o->write_characters("Infinity", 8);
          if (x < 0) o->write_characters("-Infinity", 9);
          return;
         }

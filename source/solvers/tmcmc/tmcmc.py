@@ -38,10 +38,7 @@ def plot_tmcmc(src, plotAll=False, live=False, generation=None, test=False, mean
                 fig.show()
         
             with open(path) as f:
-
-                dataString = f.read()
-                dataString = dataString.replace('+INFINITY', '1.0e+300').replace('-INFINITY', '-1.0e+300').replace('NaN', '-1.0e+300')
-                data  = json.loads(dataString)
+                data    = json.load(f)
                 
                 state, gen = getStateAndGeneration(data)
                 anneal = float(data['Solver']['Internal']['Annealing Exponent'])

@@ -180,61 +180,68 @@ void Korali::Engine::start(bool isDryRun)
  // Creating Results directory
  mkdir(_result_dir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
- std::chrono::time_point<std::chrono::system_clock> startTime, endTime;
-
- // Running Engine
+ // Initializing Korali Components
  _problem->initialize();
  _solver->initialize();
  _conduit->initialize();
 
- if (_conduit->isRoot())
- {
-  saveState("initial.json");
+ // If this is a worker process (not root), there's nothing else to do
+ if (_conduit->isRoot() == false) return;
 
-  auto startTime = std::chrono::system_clock::now();
-
-  if (isDryRun == false)
+ // If this is a dry run and configuration succeeded, print sucess and return
+ if (isDryRun)
   {
-   while(_solver->checkTermination() == false)
-   {
-    auto t0 = std::chrono::system_clock::now();
-
-    _currentGeneration++;
-    _solver->runGeneration();
-    _hasComputedGeneration = true;
-
-    auto t1 = std::chrono::system_clock::now();
-
-    if (_currentGeneration % _consoleOutputFrequency == 0)
-    {
-     Korali::logInfo(KORALI_MINIMAL,  "--------------------------------------------------------------------\n");
-     Korali::logInfo(KORALI_MINIMAL,  "Generation: #%zu\n", _currentGeneration);
-     Korali::logInfo(KORALI_DETAILED, "Generation Time: %.3fs\n", std::chrono::duration<double>(t1-t0).count());
-     _solver->printGeneration();
-    }
-
-    if (_currentGeneration % _resultsOutputFrequency == 0) saveState(_currentGeneration);
-   }
-
-   saveState(_currentGeneration);
-   saveState("final.json");
+   Korali::logInfo(KORALI_MINIMAL,  "--------------------------------------------------------------------\n");
+   Korali::logInfo(KORALI_MINIMAL,  "Dry Run Successful.\n", _currentGeneration);
+   Korali::logInfo(KORALI_MINIMAL,  "--------------------------------------------------------------------\n");
+   return;
   }
 
-  auto endTime = std::chrono::system_clock::now();
+ // Saving initial state
+ saveState("initial.json");
 
-  Korali::logInfo(KORALI_MINIMAL, "--------------------------------------------------------------------\n");
-  Korali::logInfo(KORALI_MINIMAL, "%s finished correctly.\n", _solverType.c_str(), _currentGeneration);
+ auto startTime = std::chrono::system_clock::now();
 
-  _solver->finalize();
-  _problem->finalize();
-  _conduit->finalize();
+ // Running Solver by generations until at least one termination criterion is satisfied
+ while(_solver->checkTermination() == false)
+ {
+  auto t0 = std::chrono::system_clock::now();
 
-  Korali::logInfo(KORALI_MINIMAL, "--------------------------------------------------------------------\n");
-  Korali::logInfo(KORALI_MINIMAL, "Total Generations: %lu\n", _currentGeneration);
-  Korali::logInfo(KORALI_MINIMAL, "Total Computational Model Evaluations: %lu\n", _computationalModelEvaluationCount);
-  Korali::logInfo(KORALI_MINIMAL, "Elapsed Time: %.3fs\n", std::chrono::duration<double>(endTime-startTime).count());
-  Korali::logInfo(KORALI_MINIMAL, "Results saved to folder: '%s'\n", _result_dir.c_str());
+  _currentGeneration++;
+  _solver->runGeneration();
+  _hasComputedGeneration = true;
+
+  auto t1 = std::chrono::system_clock::now();
+
+  if (_currentGeneration % _consoleOutputFrequency == 0)
+  {
+   Korali::logInfo(KORALI_MINIMAL,  "--------------------------------------------------------------------\n");
+   Korali::logInfo(KORALI_MINIMAL,  "Generation: #%zu\n", _currentGeneration);
+   Korali::logInfo(KORALI_DETAILED, "Generation Time: %.3fs\n", std::chrono::duration<double>(t1-t0).count());
+   _solver->printGeneration();
+  }
+
+  if (_currentGeneration % _resultsOutputFrequency == 0) saveState(_currentGeneration);
  }
+
+ // Saving last generation and final.json
+ saveState(_currentGeneration);
+ saveState("final.json");
+
+ auto endTime = std::chrono::system_clock::now();
+
+ Korali::logInfo(KORALI_MINIMAL, "--------------------------------------------------------------------\n");
+ Korali::logInfo(KORALI_MINIMAL, "%s finished correctly.\n", _solverType.c_str(), _currentGeneration);
+
+ _solver->finalize();
+ _problem->finalize();
+ _conduit->finalize();
+
+ Korali::logInfo(KORALI_MINIMAL, "--------------------------------------------------------------------\n");
+ Korali::logInfo(KORALI_MINIMAL, "Total Generations: %lu\n", _currentGeneration);
+ Korali::logInfo(KORALI_MINIMAL, "Total Computational Model Evaluations: %lu\n", _computationalModelEvaluationCount);
+ Korali::logInfo(KORALI_MINIMAL, "Elapsed Time: %.3fs\n", std::chrono::duration<double>(endTime-startTime).count());
+ Korali::logInfo(KORALI_MINIMAL, "Results saved to folder: '%s'\n", _result_dir.c_str());
 }
 
 void Korali::Engine::saveState(std::string fileName)

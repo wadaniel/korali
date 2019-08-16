@@ -49,7 +49,7 @@ def plot_dea(src, plotAll=False, live=False, generation=None, test=False, plot_m
                     appendStates(state, (fval, best), stateNames)
                     appendStateVectors(state, (fvalXvec, meanXvec, width), vecStateNames)
                         
-                    numeval.append(data['General']['Function Evaluation Count'])
+                    numeval.append(data['General']['Model Evaluation Count'])
                     dfval.append(abs(state['Current Best Value'] - state['Best Ever Value']))
                     
                     if (plotAll == True):

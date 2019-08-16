@@ -41,7 +41,7 @@ def run_cmaes_with_termination_criterion(criterion, value):
         assert_value(k["General"]["Current Generation"].getValue(), value)
         
     elif (criterion == "Max Model Evaluations"):
-        assert_greatereq(k["General"]["Function Evaluation Count"].getValue(), value)
+        assert_greatereq(k["General"]["Model Evaluation Count"].getValue(), value)
     
     elif (criterion == "Max Infeasible Resamplings"):
         assert_greatereq(k["Solver"]["Internal"]["Infeasible Sample Count"].getValue(), value)

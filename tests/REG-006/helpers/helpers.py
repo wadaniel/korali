@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import json
 
 def evaluateModel( s ):
    x = s.getVariable(0)

@@ -16,6 +16,19 @@ def buildKorali(koraliDir):
  koraliJsonFile = koraliDir + '/korali.json'
  with open(koraliJsonFile, 'r') as file: koraliJsonString = file.read()
  koraliConfig = json.loads(koraliJsonString) 
+ 
+ ##### Processing header file
+ 
+ headerFilesString= ''
+ for root, dirs, files in os.walk(koraliDir):
+  for file in files:
+   if file.endswith(".hpp"):
+    relPath = os.path.relpath(root, koraliDir)
+    headerFilesString += '#include "' + os.path.join(relPath, file) + '"\n'
+
+ newHeaderString = newHeaderString.replace('// Include Files', headerFilesString)
+ 
+ ##### Processing code file
    
  print('[Korali] Creating: ' + koraliNewHeaderFile + '...')
  with open(koraliNewHeaderFile, 'w') as file: file.write(newHeaderString)

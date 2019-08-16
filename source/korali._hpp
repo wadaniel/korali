@@ -4,43 +4,7 @@
 #include <vector>
 #include <functional>
 
-#include "distributions/univariate/cauchy/cauchy.hpp"
-#include "distributions/univariate/exponential/exponential.hpp"
-#include "distributions/univariate/gamma/gamma.hpp"
-#include "distributions/univariate/normal/normal.hpp"
-#include "distributions/univariate/geometric/geometric.hpp"
-#include "distributions/univariate/laplace/laplace.hpp"
-#include "distributions/univariate/uniform/uniform.hpp"
-#include "distributions/univariate/lognormal/lognormal.hpp"
-
-#include "distributions/multivariate/multivariateNormal/multivariateNormal.hpp"
-#include "distributions/multivariate/multinomial/multinomial.hpp"
-
-#include "problems/optimization/optimization.hpp"
-#include "problems/sampling/sampling.hpp"
-#include "problems/bayesian/bayesian.hpp"
-#include "problems/hierarchicalPsi/hierarchicalPsi.hpp"
-#include "problems/hierarchicalTheta/hierarchicalTheta.hpp"
-#include "problems/hierarchicalThetaNew/hierarchicalThetaNew.hpp"
-
-#include "solvers/cmaes/cmaes.hpp"
-#include "solvers/dea/dea.hpp"
-#include "solvers/mcmc/mcmc.hpp"
-#include "solvers/tmcmc/tmcmc.hpp"
-
-#include "conduits/mpi/mpi.hpp"
-#include "conduits/simple/simple.hpp"
-#include "conduits/external/external.hpp"
-
-#include "models/constraint/constraint.hpp"
-#include "models/direct/direct.hpp"
-#include "models/likelihood/likelihood.hpp"
-#include "models/reference/reference.hpp"
-
-#include "auxiliars/json.hpp"
-#include "auxiliars/koralijson.hpp"
-#include "auxiliars/logger.hpp"
-#include "auxiliars/python.hpp"
+// Include Files
 
 namespace Korali
 {

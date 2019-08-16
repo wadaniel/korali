@@ -2,8 +2,8 @@
 #define _KORALI_VARIABLE_HPP_
 
 #include <string>
+#include "distributions/univariate/base.hpp"
 #include "auxiliars/json.hpp"
-
 
 namespace Korali {
 

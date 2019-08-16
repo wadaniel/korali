@@ -25,7 +25,7 @@ def run_cmaes_with_termination_criterion(criterion, value):
     k["Problem"]["Objective"] = "Maximize"
 
     k["Problem"]["Variables"][0]["Name"] = "X"
-    k["Problem"]["Variables"][0]["Lower Bound"] = -10.0
+    k["Problem"]["Variables"][0]["Lower Bound"] = +1.0
     k["Problem"]["Variables"][0]["Upper Bound"] = +10.0
 
     k["Solver"]["Type"] = "CMAES"
@@ -63,9 +63,6 @@ def run_cmaes_with_termination_criterion(criterion, value):
  
     elif (criterion == "Max Standard Deviation"):
         assert_greatereq(k["Solver"]["Internal"]["Current Max Standard Deviation"].getValue(), value)
-
-    elif (criterion == "Min Standard Deviation Step Factor"):
-        assert_smallereq(k["Solver"]["Internal"]["Current Min Standard Deviation Step"].getValue(), value)
  
     elif (criterion == "Min Value"):
         print("TODO: Min Val")

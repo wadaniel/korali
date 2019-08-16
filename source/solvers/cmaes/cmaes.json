@@ -123,7 +123,7 @@
     "Name": [ "Max Condition Covariance Matrix" ],
     "Type": "double",
     "Default": "+INFINITY",
-    "Criteria": "_maximumCovarianceEigenvalue >= _minimumCovarianceEigenvalue * _maxConditionCovarianceMatrix",
+    "Criteria": "_maximumCovarianceEigenvalue >= _maxConditionCovarianceMatrix * _minimumCovarianceEigenvalue",
     "Description": "Specifies the maximum condition of the covariance matrix."
    },
    {
@@ -160,13 +160,6 @@
     "Default": "+INFINITY",
     "Criteria": "_currentMaxStandardDeviation > _maxStandardDeviation",
     "Description": "Specifies the maximal standard deviation for any variable in any proposed sample."
-   },
-   {
-    "Name": [ "Min Standard Deviation Step Factor" ],
-    "Type": "double",
-    "Default": "-INFINITY",
-    "Criteria": "_k->_hasComputedGeneration && (_currentMinStandardDeviationStep < _minStandardDeviationStepFactor)",
-    "Description": "Specifies the minimum standard deviation in the direction of the eigenvectors."
    }
  ],
  
@@ -577,11 +570,6 @@
     "Name": [ "Current Max Standard Deviation" ],
     "Type": "double",
     "Description": "Current maximum standard deviation of any variable."
-   },
-   {
-    "Name": [ "Current Min Standard Deviation Step" ],
-    "Type": "double",
-    "Description": "Current minimum standard deviation step of any variable."
    }
  ]
 }

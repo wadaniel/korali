@@ -7,12 +7,11 @@ cmaes_criteria=(
 "Max Generations" 
 "Max Model Evaluations" 
 "Max Infeasible Resamplings" 
-"Max Value" 
 "Min Value Difference Threshold"
 "Min Standard Deviation" 
 "Max Standard Deviation"
-"Min Standard Deviation Step Factor"
 "Max Condition Covariance Matrix" 
+"Max Value" 
 "Min Value"
 )
 
@@ -21,12 +20,11 @@ cmaes_values=(
 2     # Max Generations
 20    # Max Model Evaluations
 1     # Max Infeasible Resamplings
--0.2  # Max Value
 0.1   # Min Value Difference Threshold
 0.1   # Min Standard Deviation
 0.9   # Max Standard Deviation
-1.5   # Max Condition Covariance
-0.3   # Min Standard Deviation Step Factor
+3.5   # Max Condition Covariance
+-1.2  # Max Value
 -1.0  # Min Value
 )
 
@@ -72,7 +70,7 @@ dea_values=(
 
 logEcho "[Korali] Beginning CMA-ES termination criterion tests"
 
-for ((i=0;i<${#criteria[@]};++i)); do
+for ((i=0;i<${#cmaes_criteria[@]};++i)); do
 
   logEcho "-------------------------------------"
   logEcho "Testing Termination Criterion: ${cmaes_criteria[$i]}"

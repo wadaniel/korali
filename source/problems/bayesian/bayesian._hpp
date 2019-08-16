@@ -18,6 +18,9 @@ class Bayesian : public Korali::Problem::Base
  double likelihoodNormalMultiplicative(Korali::Model::Reference& data);
  double likelihoodNormalMultiplicativeData(Korali::Model::Reference& data);
 
+ double likelihoodTruncatedNormal(Korali::Model::Likelihood& data);
+
+
  public:
 
  void runModel(std::vector<double>, size_t sampleId) override;

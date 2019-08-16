@@ -219,7 +219,7 @@ void Korali::Solver::DEA::processSample(size_t sampleId, double fitness)
  if(std::isfinite(fitness) == false) 
  {
    fitness = -std::numeric_limits<double>::infinity();
-   Korali::logWarning(KORALI_NORMAL,"Sample %zu returned non finite fitness (fitness set to %e)!\n", sampleId, fitness);
+   Korali::logWarning("Normal","Sample %zu returned non finite fitness (fitness set to %e)!\n", sampleId, fitness);
  }
  _valueVector[sampleId] = fitness;
  _finishedSampleCount++;
@@ -298,18 +298,18 @@ void Korali::Solver::DEA::updateSolver()
 
 void Korali::Solver::DEA::printGeneration()
 {
- Korali::logInfo(KORALI_NORMAL, "Current Function Value: Max = %+6.3e - Best = %+6.3e\n", _currentBestValue, _bestEverValue);
- Korali::logInfo(KORALI_DETAILED, "Variable = (MeanX, BestX):\n");
- for (size_t d = 0; d < N; d++) Korali::logData(KORALI_DETAILED, "         %s = (%+6.3e, %+6.3e)\n", _k->_problem->getVariable(d)->_name.c_str(), _currentMean[d], _bestEverVariables[d]);
- Korali::logInfo(KORALI_DETAILED, "Max Width:\n");
- for (size_t d = 0; d < N; d++) Korali::logData(KORALI_DETAILED, "         %s = %+6.3e\n", _k->_problem->getVariable(d)->_name.c_str(), _maxDistances[d]);
- Korali::logInfo(KORALI_DETAILED, "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
+ Korali::logInfo("Normal", "Current Function Value: Max = %+6.3e - Best = %+6.3e\n", _currentBestValue, _bestEverValue);
+ Korali::logInfo("Detailed", "Variable = (MeanX, BestX):\n");
+ for (size_t d = 0; d < N; d++) Korali::logData("Detailed", "         %s = (%+6.3e, %+6.3e)\n", _k->_problem->getVariable(d)->_name.c_str(), _currentMean[d], _bestEverVariables[d]);
+ Korali::logInfo("Detailed", "Max Width:\n");
+ for (size_t d = 0; d < N; d++) Korali::logData("Detailed", "         %s = %+6.3e\n", _k->_problem->getVariable(d)->_name.c_str(), _maxDistances[d]);
+ Korali::logInfo("Detailed", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
 }
 
 void Korali::Solver::DEA::finalize()
 {
- Korali::logInfo(KORALI_MINIMAL, "Optimum found: %e\n", _bestEverValue);
- Korali::logInfo(KORALI_MINIMAL, "Optimum found at:\n");
- for (size_t d = 0; d < N; ++d) Korali::logData(KORALI_MINIMAL, "         %s = %+6.3e\n", _k->_problem->getVariable(d)->_name.c_str(), _bestEverVariables[d]);
- Korali::logInfo(KORALI_MINIMAL, "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
+ Korali::logInfo("Minimal", "Optimum found: %e\n", _bestEverValue);
+ Korali::logInfo("Minimal", "Optimum found at:\n");
+ for (size_t d = 0; d < N; ++d) Korali::logData("Minimal", "         %s = %+6.3e\n", _k->_problem->getVariable(d)->_name.c_str(), _bestEverVariables[d]);
+ Korali::logInfo("Minimal", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
 }

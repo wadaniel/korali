@@ -33,13 +33,8 @@ void Korali::Engine::getConfiguration()
  _js["General"]["Run ID"] = _runId;
  _js["General"]["Has Computed Generation"] = _hasComputedGeneration;
  _js["General"]["Timestamp"] = _runTimestamp;
-
- if (_korali_verbosity == KORALI_SILENT)   _js["General"]["Console Output"]["Verbosity"] = "Silent";
- if (_korali_verbosity == KORALI_MINIMAL)  _js["General"]["Console Output"]["Verbosity"] = "Minimal";
- if (_korali_verbosity == KORALI_NORMAL)   _js["General"]["Console Output"]["Verbosity"] = "Normal";
- if (_korali_verbosity == KORALI_DETAILED) _js["General"]["Console Output"]["Verbosity"] = "Detailed";
-
  _js["General"]["Current Generation"] = _currentGeneration;
+ _js["General"]["Console Output"]["Verbosity"] = _consoleOutputVerbosity;
  _js["General"]["Console Output"]["Frequency"] = _consoleOutputFrequency;
  _js["General"]["Results Output"]["Frequency"] = _resultsOutputFrequency;
  _js["General"]["Results Output"]["Path"] = _result_dir;
@@ -67,7 +62,7 @@ void Korali::Engine::setConfiguration()
  _runTimestamp = consume(_js, { "General", "Timestamp" }, KORALI_STRING, "");
  _runId = consume(_js, { "General", "Run ID" }, KORALI_NUMBER, "0");
  _seed  = consume(_js, { "General", "Random Seed" }, KORALI_NUMBER, "0");
- _verbosity = consume(_js, { "General", "Console Output", "Verbosity" }, KORALI_STRING, "Normal");
+ _consoleOutputVerbosity = consume(_js, { "General", "Console Output", "Verbosity" }, KORALI_STRING, "Normal");
  _result_dir = consume(_js, { "General", "Results Output", "Path" }, KORALI_STRING, "_korali_result");
 
  // Korali-specific configuration
@@ -89,19 +84,19 @@ void Korali::Engine::setConfiguration()
 void Korali::Engine::initialize()
 {
  // Initializing Verbosity
- _korali_verbosity = KORALI_UNDEFINED;
- if (_verbosity == "Silent")   _korali_verbosity = KORALI_SILENT;
- if (_verbosity == "Minimal")  _korali_verbosity = KORALI_MINIMAL;
- if (_verbosity == "Normal")   _korali_verbosity = KORALI_NORMAL;
- if (_verbosity == "Detailed") _korali_verbosity = KORALI_DETAILED;
- if (_korali_verbosity == KORALI_UNDEFINED) Korali::logError("Incorrect or undefined Verbosity Level '%s'\n.", _verbosity.c_str());
+ bool verbosityDefined = false;
+ if (_consoleOutputVerbosity == "Silent")   verbosityDefined = true;
+ if (_consoleOutputVerbosity == "Minimal")  verbosityDefined = true;
+ if (_consoleOutputVerbosity == "Normal")   verbosityDefined = true;
+ if (_consoleOutputVerbosity == "Detailed") verbosityDefined = true;
+ if (verbosityDefined == false) Korali::logError("Incorrect or undefined Verbosity Level '%s'\n.", _consoleOutputVerbosity.c_str());
 
  // Setting Run ID, if not already defined
  if (_runId == 0)
  {
   _runTimestamp = "";
   time_t rawtime; time (&rawtime);
-  std::string curTime(ctime(&rawtime))
+  std::string curTime(ctime(&rawtime));
   std::hash<std::string> hasher;
   _runId = hasher(_runTimestamp) + hasher(_solverType);
  }
@@ -208,9 +203,9 @@ void Korali::Engine::start(bool isDryRun)
 
   if (_currentGeneration % _consoleOutputFrequency == 0)
   {
-   Korali::logInfo(KORALI_MINIMAL,  "--------------------------------------------------------------------\n");
-   Korali::logInfo(KORALI_MINIMAL,  "Generation: #%zu\n", _currentGeneration);
-   Korali::logInfo(KORALI_DETAILED, "Generation Time: %.3fs\n", std::chrono::duration<double>(t1-t0).count());
+   Korali::logInfo("Minimal",  "--------------------------------------------------------------------\n");
+   Korali::logInfo("Minimal",  "Generation: #%zu\n", _currentGeneration);
+   Korali::logInfo("Detailed", "Generation Time: %.3fs\n", std::chrono::duration<double>(t1-t0).count());
    _solver->printGeneration();
   }
 
@@ -223,18 +218,18 @@ void Korali::Engine::start(bool isDryRun)
 
  auto endTime = std::chrono::system_clock::now();
 
- Korali::logInfo(KORALI_MINIMAL, "--------------------------------------------------------------------\n");
- Korali::logInfo(KORALI_MINIMAL, "%s finished correctly.\n", _solverType.c_str(), _currentGeneration);
+ Korali::logInfo("Minimal", "--------------------------------------------------------------------\n");
+ Korali::logInfo("Minimal", "%s finished correctly.\n", _solverType.c_str(), _currentGeneration);
 
  _solver->finalize();
  _problem->finalize();
  _conduit->finalize();
 
- Korali::logInfo(KORALI_MINIMAL, "--------------------------------------------------------------------\n");
- Korali::logInfo(KORALI_MINIMAL, "Total Generations: %lu\n", _currentGeneration);
- Korali::logInfo(KORALI_MINIMAL, "Total Computational Model Evaluations: %lu\n", _computationalModelEvaluationCount);
- Korali::logInfo(KORALI_MINIMAL, "Elapsed Time: %.3fs\n", std::chrono::duration<double>(endTime-startTime).count());
- Korali::logInfo(KORALI_MINIMAL, "Results saved to folder: '%s'\n", _result_dir.c_str());
+ Korali::logInfo("Minimal", "--------------------------------------------------------------------\n");
+ Korali::logInfo("Minimal", "Total Generations: %lu\n", _currentGeneration);
+ Korali::logInfo("Minimal", "Total Computational Model Evaluations: %lu\n", _computationalModelEvaluationCount);
+ Korali::logInfo("Minimal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(endTime-startTime).count());
+ Korali::logInfo("Minimal", "Results saved to folder: '%s'\n", _result_dir.c_str());
 }
 
 void Korali::Engine::saveState(std::string fileName)

@@ -1,6 +1,8 @@
 #ifndef _KORALI_AUXILIARS_LOGGER_HPP_
 #define _KORALI_AUXILIARS_LOGGER_HPP_
 
+#include <string>
+
 namespace Korali
 {
 

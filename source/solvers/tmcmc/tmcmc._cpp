@@ -212,7 +212,7 @@ void Korali::Solver::TMCMC::processGeneration()
 
   if (xmin > _prevAnnealingExponent + _maxAnnealingExponentUpdate)
   {
-    Korali::logWarning(KORALI_DETAILED, "Annealing Step larger than Max Rho Update, updating Annealing Exponent by %f (Max Rho Update). \n", _maxAnnealingExponentUpdate);
+    Korali::logWarning("Detailed", "Annealing Step larger than Max Rho Update, updating Annealing Exponent by %f (Max Rho Update). \n", _maxAnnealingExponentUpdate);
     _annealingExponent      = _prevAnnealingExponent + _maxAnnealingExponentUpdate;
     _coefficientOfVariation = sqrt(tmcmc_objlogp(_annealingExponent, &_sampleFitnessDatabase[0], _populationSize, _prevAnnealingExponent, _targetCoefficientOfVariation)) + _targetCoefficientOfVariation;
   }
@@ -223,7 +223,7 @@ void Korali::Solver::TMCMC::processGeneration()
   }
   else
   {
-    Korali::logWarning(KORALI_DETAILED, "Annealing Step smaller than Min Rho Update, updating Annealing Exponent by %f (Min Rho Update). \n", _minAnnealingExponentUpdate);
+    Korali::logWarning("Detailed", "Annealing Step smaller than Min Rho Update, updating Annealing Exponent by %f (Min Rho Update). \n", _minAnnealingExponentUpdate);
     _annealingExponent      = _prevAnnealingExponent + _minAnnealingExponentUpdate;
     _coefficientOfVariation = sqrt(tmcmc_objlogp(_annealingExponent, &_sampleFitnessDatabase[0], _populationSize, _prevAnnealingExponent, _targetCoefficientOfVariation)) + _targetCoefficientOfVariation;
   }
@@ -369,10 +369,10 @@ void Korali::Solver::TMCMC::minSearch(double const *fj, size_t fn, double pj, do
    status = gsl_multimin_test_size (size, Tol);
  } while (status == GSL_CONTINUE && iter < MaxIter);
 
- if(status == GSL_SUCCESS && s->fval >  Tol) Korali::logInfo(KORALI_DETAILED, "Min Search converged but did not find minimum. \n");
- if(status != GSL_SUCCESS && s->fval <= Tol) Korali::logInfo(KORALI_DETAILED, "Min Search did not converge but minimum found\n");
- if(status != GSL_SUCCESS && s->fval >  Tol) Korali::logInfo(KORALI_DETAILED, "Min Search did not converge and did not find minimum\n");
- if(iter >= MaxIter) Korali::logInfo(KORALI_DETAILED, "[Korali] Min Search MaxIter (%zu) reached\n", MaxIter);
+ if(status == GSL_SUCCESS && s->fval >  Tol) Korali::logInfo("Detailed", "Min Search converged but did not find minimum. \n");
+ if(status != GSL_SUCCESS && s->fval <= Tol) Korali::logInfo("Detailed", "Min Search did not converge but minimum found\n");
+ if(status != GSL_SUCCESS && s->fval >  Tol) Korali::logInfo("Detailed", "Min Search did not converge and did not find minimum\n");
+ if(iter >= MaxIter) Korali::logInfo("Detailed", "[Korali] Min Search MaxIter (%zu) reached\n", MaxIter);
 
  if (s->fval <= Tol) {
    fmin = s->fval;
@@ -407,19 +407,19 @@ void Korali::Solver::TMCMC::finalize()
 
 void Korali::Solver::TMCMC::printGeneration()
 {
- Korali::logInfo(KORALI_MINIMAL, "Annealing Exponent:  %.3e.\n", _annealingExponent);
- Korali::logInfo(KORALI_NORMAL, "Acceptance Rate (proposals / selections): (%.2f%% / %.2f%%)\n", 100*_proposalsAcceptanceRate, 100*_selectionAcceptanceRate);
- Korali::logInfo(KORALI_NORMAL, "Coefficient of Variation: %.2f%%\n", 100.0*_coefficientOfVariation);
+ Korali::logInfo("Minimal", "Annealing Exponent:  %.3e.\n", _annealingExponent);
+ Korali::logInfo("Normal", "Acceptance Rate (proposals / selections): (%.2f%% / %.2f%%)\n", 100*_proposalsAcceptanceRate, 100*_selectionAcceptanceRate);
+ Korali::logInfo("Normal", "Coefficient of Variation: %.2f%%\n", 100.0*_coefficientOfVariation);
 
- Korali::logInfo(KORALI_DETAILED, "Sample Mean:\n");
- for (size_t i = 0; i < N; i++) Korali::logData(KORALI_DETAILED, " %s = %+6.3e\n", _k->_problem->getVariable(i)->_name.c_str(), _meanTheta[i]);
- Korali::logInfo(KORALI_DETAILED, "Sample Covariance:\n");
+ Korali::logInfo("Detailed", "Sample Mean:\n");
+ for (size_t i = 0; i < N; i++) Korali::logData("Detailed", " %s = %+6.3e\n", _k->_problem->getVariable(i)->_name.c_str(), _meanTheta[i]);
+ Korali::logInfo("Detailed", "Sample Covariance:\n");
  for (size_t i = 0; i < N; i++)
   {
-   Korali::logData(KORALI_DETAILED, "   | ");
+   Korali::logData("Detailed", "   | ");
    for (size_t j = 0; j < N; j++)
-    if(j <= i)  Korali::logData(KORALI_DETAILED, "%+6.3e  ",_covarianceMatrix[i*N+j]);
-    else        Korali::logData(KORALI_DETAILED, "     -      ");
-   Korali::logData(KORALI_DETAILED, " |\n");
+    if(j <= i)  Korali::logData("Detailed", "%+6.3e  ",_covarianceMatrix[i*N+j]);
+    else        Korali::logData("Detailed", "     -      ");
+   Korali::logData("Detailed", " |\n");
   }
 }

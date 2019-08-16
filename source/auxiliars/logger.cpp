@@ -14,7 +14,7 @@ size_t Korali::getVerbosityLevel(std::string verbosityLevel)
 bool Korali::isEnoughVerbosity(std::string verbosityLevel)
 {
   size_t messageLevel = getVerbosityLevel(verbosityLevel);
-  size_t koraliLevel = getVerbosityLevel(_k->_verbosity);
+  size_t koraliLevel = getVerbosityLevel(_k->_consoleOutputVerbosity);
 
   if (messageLevel <= koraliLevel) return true;
   return false;

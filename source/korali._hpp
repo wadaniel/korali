@@ -26,7 +26,7 @@ class Engine {
  int _isFinished;
  size_t _seed;
  std::string _result_dir;
- std::string _verbosity;
+ std::string _consoleOutputVerbosity;
 
  std::string _solverType;
  std::string _conduitType;

@@ -292,7 +292,7 @@ void Korali::Solver::CMAES::processSample(size_t sampleId, double fitness)
  if(std::isfinite(fitness) == false) 
  {
    fitness = -std::numeric_limits<double>::infinity();
-   Korali::logWarning(KORALI_NORMAL,"Sample %zu returned non finite fitness (fitness set to %e)!\n", sampleId, fitness);
+   Korali::logWarning("Normal","Sample %zu returned non finite fitness (fitness set to %e)!\n", sampleId, fitness);
  }
  _valueVector[sampleId] = fitness;
  _finishedSampleCount++;
@@ -492,7 +492,7 @@ void Korali::Solver::CMAES::updateDistribution()
  {
   _bestValidSample = -1;
   for (size_t i = 0; i < _currentPopulationSize; i++) if(_sampleConstraintViolationCounts[_sortingIndex[i]] == 0) _bestValidSample = _sortingIndex[i];
-  if(_bestValidSample == -1) { Korali::logWarning(KORALI_DETAILED, "All samples violate constraints, no updates taking place.\n"); return; }
+  if(_bestValidSample == -1) { Korali::logWarning("Detailed", "All samples violate constraints, no updates taking place.\n"); return; }
  }
 
  /* update function value history */
@@ -637,7 +637,7 @@ void Korali::Solver::CMAES::updateSigma()
  /* escape flat fitness */
  if (_currentBestValue == _valueVector[_sortingIndex[(int)_currentMuValue]]) {
    _sigma *= exp(0.2+_sigmaCumulationFactor/_dampFactor);
-   Korali::logWarning(KORALI_DETAILED, "Sigma increased due to equal function values.\n");
+   Korali::logWarning("Detailed", "Sigma increased due to equal function values.\n");
  }
 
  /* upper bound check for _sigma */
@@ -645,7 +645,7 @@ void Korali::Solver::CMAES::updateSigma()
  
  if(_sigma > _upperBound)
  {
-  Korali::logInfo(KORALI_DETAILED, "Sigma exceeding inital value of _sigma (%f > %f), increase Initial Standard Deviation of variables.\n", _sigma, _upperBound);
+  Korali::logInfo("Detailed", "Sigma exceeding inital value of _sigma (%f > %f), increase Initial Standard Deviation of variables.\n", _sigma, _upperBound);
   if( _isSigmaBounded ) _sigma = _upperBound;
  }
 
@@ -661,7 +661,7 @@ void Korali::Solver::CMAES::numericalErrorTreatment()
  for (size_t d = 0; d < N; ++d) if (_sigma * sqrt(_covarianceMatrix[d*N+d]) < _k->_problem->getVariable(d)->_minimumStandardDeviationUpdate)
  {
    _sigma = (_k->_problem->getVariable(d)->_minimumStandardDeviationUpdate)/sqrt(_covarianceMatrix[d*N+d]) * exp(0.05+_sigmaCumulationFactor/_dampFactor);
-   Korali::logWarning(KORALI_DETAILED, "Sigma increased due to minimal standard deviation.\n");
+   Korali::logWarning("Detailed", "Sigma increased due to minimal standard deviation.\n");
  }
 
  //too low coordinate axis deviations
@@ -716,7 +716,7 @@ void Korali::Solver::CMAES::handleConstraints()
      if(_maxInfeasibleResamplingsEnabled)
      if(_resampledParameterCount-initial_resampled > _maxInfeasibleResamplings)
      {
-        Korali::logWarning(KORALI_DETAILED, "Exiting resampling loop, max resamplings (%zu) reached.\n", _maxInfeasibleResamplings);
+        Korali::logWarning("Detailed", "Exiting resampling loop, max resamplings (%zu) reached.\n", _maxInfeasibleResamplings);
         reEvaluateConstraints();
         return;
      }
@@ -729,7 +729,7 @@ void Korali::Solver::CMAES::handleConstraints()
 
   if(_covarianceMatrixAdaptationCount - initial_corrections > _maxCovarianceMatrixCorrections)
   {
-    Korali::logWarning(KORALI_DETAILED, "Exiting adaption loop, max adaptions (%zu) reached.\n", _maxCovarianceMatrixCorrections);
+    Korali::logWarning("Detailed", "Exiting adaption loop, max adaptions (%zu) reached.\n", _maxCovarianceMatrixCorrections);
     return;
   }
 
@@ -766,19 +766,19 @@ void Korali::Solver::CMAES::updateEigensystem(std::vector<double>& M)
  double maxEWtmp = *std::max_element(std::begin(_auxiliarAxisLengths), std::end(_auxiliarAxisLengths));
 
  if (minEWtmp <= 0.0) 
- { Korali::logWarning(KORALI_DETAILED, "Min Eigenvalue smaller or equal 0.0 (%+6.3e) after Eigen decomp (no update possible).\n", minEWtmp ); return; }
+ { Korali::logWarning("Detailed", "Min Eigenvalue smaller or equal 0.0 (%+6.3e) after Eigen decomp (no update possible).\n", minEWtmp ); return; }
 
  for (size_t d = 0; d < N; ++d)
  {
      _auxiliarAxisLengths[d] = sqrt(_auxiliarAxisLengths[d]);
      if (std::isfinite(_auxiliarAxisLengths[d]) == false)
      {
-       Korali::logWarning(KORALI_DETAILED, "Could not calculate root of Eigenvalue (%+6.3e) after Eigen decomp (no update possible).\n", _auxiliarAxisLengths[d] );
+       Korali::logWarning("Detailed", "Could not calculate root of Eigenvalue (%+6.3e) after Eigen decomp (no update possible).\n", _auxiliarAxisLengths[d] );
        return; 
      }
     for (size_t e = 0; e < N; ++e) if (std::isfinite(_covarianceEigenvectorMatrix[d*N+e]) == false)
     {
-      Korali::logWarning(KORALI_DETAILED, "Non finite value detected in B (no update possible).\n");
+      Korali::logWarning("Detailed", "Non finite value detected in B (no update possible).\n");
        return;
     }
  }
@@ -848,54 +848,54 @@ void Korali::Solver::CMAES::printGeneration()
 
  if ( _areConstraintsDefined && _isViabilityRegime)
  {
-   Korali::logInfo(KORALI_NORMAL, "Searching start (MeanX violates constraints) .. \n");
-   Korali::logInfo(KORALI_NORMAL, "Viability Bounds:\n");
-   for (size_t c = 0; c < _k->_constraints.size(); c++) Korali::logData(KORALI_NORMAL, "         %s = (%+6.3e)\n", _k->_problem->getVariable(c)->_name.c_str(), _viabilityBoundaries[c]);
-   Korali::logInfo(KORALI_NORMAL, "\n");
+   Korali::logInfo("Normal", "Searching start (MeanX violates constraints) .. \n");
+   Korali::logInfo("Normal", "Viability Bounds:\n");
+   for (size_t c = 0; c < _k->_constraints.size(); c++) Korali::logData("Normal", "         %s = (%+6.3e)\n", _k->_problem->getVariable(c)->_name.c_str(), _viabilityBoundaries[c]);
+   Korali::logInfo("Normal", "\n");
  }
 
- Korali::logInfo(KORALI_NORMAL, "Sigma:                        %+6.3e\n", _sigma);
- Korali::logInfo(KORALI_NORMAL, "Current Function Value: Max = %+6.3e - Best = %+6.3e\n", _currentBestValue, _bestEverValue);
- Korali::logInfo(KORALI_NORMAL, "Diagonal Covariance:    Min = %+6.3e -  Max = %+6.3e\n", _minimumDiagonalCovarianceMatrixElement, _maximumDiagonalCovarianceMatrixElement);
- Korali::logInfo(KORALI_NORMAL, "Covariance Eigenvalues: Min = %+6.3e -  Max = %+6.3e\n", _minimumCovarianceEigenvalue, _maximumCovarianceEigenvalue);
+ Korali::logInfo("Normal", "Sigma:                        %+6.3e\n", _sigma);
+ Korali::logInfo("Normal", "Current Function Value: Max = %+6.3e - Best = %+6.3e\n", _currentBestValue, _bestEverValue);
+ Korali::logInfo("Normal", "Diagonal Covariance:    Min = %+6.3e -  Max = %+6.3e\n", _minimumDiagonalCovarianceMatrixElement, _maximumDiagonalCovarianceMatrixElement);
+ Korali::logInfo("Normal", "Covariance Eigenvalues: Min = %+6.3e -  Max = %+6.3e\n", _minimumCovarianceEigenvalue, _maximumCovarianceEigenvalue);
 
-  Korali::logInfo(KORALI_DETAILED, "Variable = (MeanX, BestX):\n");
-  for (size_t d = 0; d < N; d++) Korali::logData(KORALI_DETAILED, "         %s = (%+6.3e, %+6.3e)\n", _k->_problem->getVariable(d)->_name.c_str(), _currentMean[d], _bestEverVariables[d]);
+  Korali::logInfo("Detailed", "Variable = (MeanX, BestX):\n");
+  for (size_t d = 0; d < N; d++) Korali::logData("Detailed", "         %s = (%+6.3e, %+6.3e)\n", _k->_problem->getVariable(d)->_name.c_str(), _currentMean[d], _bestEverVariables[d]);
 
-  Korali::logInfo(KORALI_DETAILED, "Constraint Evaluation at Current Function Value:\n");
+  Korali::logInfo("Detailed", "Constraint Evaluation at Current Function Value:\n");
   if ( _areConstraintsDefined )
   {
    if ( _bestValidSample >= 0 )
-      for (size_t c = 0; c < _k->_constraints.size(); c++) Korali::logData(KORALI_DETAILED, "         ( %+6.3e )\n", _constraintEvaluations[c][_bestValidSample]);
+      for (size_t c = 0; c < _k->_constraints.size(); c++) Korali::logData("Detailed", "         ( %+6.3e )\n", _constraintEvaluations[c][_bestValidSample]);
    else
-      for (size_t c = 0; c < _k->_constraints.size(); c++) Korali::logData(KORALI_DETAILED, "         ( %+6.3e )\n", _constraintEvaluations[c][0]);
+      for (size_t c = 0; c < _k->_constraints.size(); c++) Korali::logData("Detailed", "         ( %+6.3e )\n", _constraintEvaluations[c][0]);
   }
 
-  Korali::logInfo(KORALI_DETAILED, "Covariance Matrix:\n");
+  Korali::logInfo("Detailed", "Covariance Matrix:\n");
   for (size_t d = 0; d < N; d++)
   {
-   for (size_t e = 0; e <= d; e++) Korali::logData(KORALI_DETAILED, "   %+6.3e  ",_covarianceMatrix[d*N+e]);
-   Korali::logInfo(KORALI_DETAILED, "\n");
+   for (size_t e = 0; e <= d; e++) Korali::logData("Detailed", "   %+6.3e  ",_covarianceMatrix[d*N+e]);
+   Korali::logInfo("Detailed", "\n");
   }
 
-  Korali::logInfo(KORALI_DETAILED, "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
+  Korali::logInfo("Detailed", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
   if ( _areConstraintsDefined )
   {
-    Korali::logInfo(KORALI_DETAILED, "Number of Constraint Evaluations: %zu\n", _constraintEvaluationCount);
-    Korali::logInfo(KORALI_DETAILED, "Number of Matrix Corrections: %zu\n", _covarianceMatrixAdaptationCount );
+    Korali::logInfo("Detailed", "Number of Constraint Evaluations: %zu\n", _constraintEvaluationCount);
+    Korali::logInfo("Detailed", "Number of Matrix Corrections: %zu\n", _covarianceMatrixAdaptationCount );
   }
 }
 
 void Korali::Solver::CMAES::finalize()
 {
-  Korali::logInfo(KORALI_MINIMAL, "Optimum found: %e\n", _bestEverValue);
-  Korali::logInfo(KORALI_MINIMAL, "Optimum found at:\n");
-  for (size_t d = 0; d < N; ++d) Korali::logData(KORALI_MINIMAL, "         %s = %+6.3e\n", _k->_problem->getVariable(d)->_name.c_str(), _bestEverVariables[d]);
+  Korali::logInfo("Minimal", "Optimum found: %e\n", _bestEverValue);
+  Korali::logInfo("Minimal", "Optimum found at:\n");
+  for (size_t d = 0; d < N; ++d) Korali::logData("Minimal", "         %s = %+6.3e\n", _k->_problem->getVariable(d)->_name.c_str(), _bestEverVariables[d]);
   if ( _areConstraintsDefined )
   {
-    Korali::logInfo(KORALI_MINIMAL, "Constraint Evaluation at Optimum:\n");
+    Korali::logInfo("Minimal", "Constraint Evaluation at Optimum:\n");
     for (size_t c = 0; c < _k->_constraints.size(); c++)
-      Korali::logData(KORALI_MINIMAL, "         ( %+6.3e )\n", _bestConstraintEvaluations[c]);
+      Korali::logData("Minimal", "         ( %+6.3e )\n", _bestConstraintEvaluations[c]);
   }
-  Korali::logInfo(KORALI_MINIMAL, "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
+  Korali::logInfo("Minimal", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
 }

@@ -64,7 +64,7 @@ case $i in
     ;;
     --rebuild)
     logEcho "[Korali] Cleaning Korali for new build..."
-    pip uninstall -y korali
+    pip uninstall -y korali >> $logFile 2>&1
     make -C source clean >> $logFile 2>&1
     shift 
     ;;

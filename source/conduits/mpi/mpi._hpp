@@ -9,6 +9,7 @@
 #endif
 
 #include "conduits/base.hpp"
+#include "auxiliars/json.hpp"
 #include <queue>
 #include <vector>
 #include <map>

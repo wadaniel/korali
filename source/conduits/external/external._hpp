@@ -2,6 +2,7 @@
 #define _KORALI_CONDUIT_EXTERNAL_HPP_
 
 #include "conduits/base.hpp"
+#include "auxiliars/json.hpp"
 #include <sys/types.h>
 #include <unistd.h>
 #include <queue>

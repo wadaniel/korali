@@ -2,6 +2,7 @@
 #define _KORALI_CONDUIT_SIMPLE_HPP_
 
 #include "conduits/base.hpp"
+#include "auxiliars/json.hpp"
 #include <queue>
 #include <vector>
 #include <map>

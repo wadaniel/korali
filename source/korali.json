@@ -18,6 +18,12 @@
     "Type": "std::string",
     "Default": "Simple",
     "Description": "Specifies the method for the model evaluations."
+   },
+   {
+    "Name": [ "Model Type" ],
+    "Type": "std::string",
+    "Default": "Unassigned",
+    "Description": "Specifies the evaluation model type chosen, if any."
    }
  ],
  

@@ -6,30 +6,13 @@
 
 Korali::Engine* Korali::_k;
 
-Korali::Engine::Engine()
-{
- _runId        = 0;
- _consoleOutputFrequency = 1;
- _resultsOutputFrequency = 1;
- _isFinished = false;
- _solver = nullptr;
- _problem = nullptr;
- _conduit = nullptr;
- _modelType = "Unassigned";
-}
-
-Korali::Engine::~Engine()
-{
-
-}
-
 void Korali::Engine::getConfiguration()
 {
  auto js = nlohmann::json();
  _js = js;
 
- _js["General"]["Random Seed"]   = _seed;
- _js["General"]["Run ID"] = _runId;
+ _js["General"]["Random Seed"]   = _randomSeed;
+ _js["General"]["Run ID"] = _runID;
  _js["General"]["Timestamp"] = _timestamp;
  _js["General"]["Current Generation"] = _currentGeneration;
  _js["General"]["Console Output"]["Verbosity"] = _consoleOutputVerbosity;
@@ -43,9 +26,9 @@ void Korali::Engine::getConfiguration()
  _js["Conduit"]["Type"] = _conduitType;
  _js["Problem"]["Type"] = _problemType;
 
- if (_problem != nullptr) _problem->getConfiguration(_js["Problem"]);
- if (_conduit != nullptr) _conduit->getConfiguration(_js["Conduit"]);
- if (_solver != nullptr) _solver->getConfiguration(_js["Solver"]);
+ _problem->getConfiguration(_js["Problem"]);
+ _conduit->getConfiguration(_js["Conduit"]);
+ _solver->getConfiguration(_js["Solver"]);
 }
 
 void Korali::Engine::setConfiguration()
@@ -58,8 +41,8 @@ void Korali::Engine::setConfiguration()
  _conduitType =  consume(_js, { "Conduit", "Type" }, KORALI_STRING, "Simple");
 
  _timestamp = consume(_js, { "General", "Timestamp" }, KORALI_STRING, "");
- _runId = consume(_js, { "General", "Run ID" }, KORALI_NUMBER, "0");
- _seed  = consume(_js, { "General", "Random Seed" }, KORALI_NUMBER, "0");
+ _runID = consume(_js, { "General", "Run ID" }, KORALI_NUMBER, "0");
+ _randomSeed  = consume(_js, { "General", "Random Seed" }, KORALI_NUMBER, "0");
  _consoleOutputVerbosity = consume(_js, { "General", "Console Output", "Verbosity" }, KORALI_STRING, "Normal");
  _resultsOutputPath = consume(_js, { "General", "Results Output", "Path" }, KORALI_STRING, "_korali_result");
 
@@ -70,17 +53,20 @@ void Korali::Engine::setConfiguration()
  _modelEvaluationCount = consume(_js, { "General", "Model Evaluation Count" }, KORALI_NUMBER, "0");
  _isFinished = consume(_js, { "General", "Is Finished" }, KORALI_BOOLEAN, "false");
 
+ bool recognizedConduit = false;
+ bool recognizedProblem = false;
+ bool recognizedSolver = false;
+
  // Configuring Conduit
- if (_conduitType == "MPI") _conduit = new Korali::Conduit::MPI();
- if (_conduit == nullptr) Korali::logError("Incorrect or undefined Conduit '%s'.\n", _conduitType.c_str());
+ if (recognizedConduit == false) Korali::logError("Incorrect or undefined Conduit '%s'.\n", _conduitType.c_str());
  _conduit->setConfiguration(_js["Conduit"]);
 
  // Configuring Problem
- if (_problem == nullptr) Korali::logError("Incorrect or undefined Problem '%s'.\n", _problemType.c_str());
+ if (recognizedProblem == false) Korali::logError("Incorrect or undefined Problem '%s'.\n", _problemType.c_str());
  _problem->setConfiguration(_js["Problem"]);
 
  // Configuring Solver
- if (_solver == nullptr) Korali::logError("Incorrect or undefined Solver '%s'.\n", _solverType.c_str());
+ if (recognizedSolver == false) Korali::logError("Incorrect or undefined Solver '%s'.\n", _solverType.c_str());
  _solver->setConfiguration(_js["Solver"]);
 
  if (isEmpty(_js) == false) Korali::logError("Unrecognized Settings for Korali:\n %s \n", _js.dump(2).c_str());
@@ -102,17 +88,17 @@ void Korali::Engine::initialize()
  if (verbosityDefined == false) Korali::logError("Incorrect or undefined Verbosity Level '%s'\n.", _consoleOutputVerbosity.c_str());
 
  // Setting Run ID, if not already defined
- if (_runId == 0)
+ if (_runID == 0)
  {
   _timestamp = "";
   time_t rawtime; time (&rawtime);
   std::string curTime(ctime(&rawtime));
   std::hash<std::string> hasher;
-  _runId = hasher(_timestamp) + hasher(_solverType);
+  _runID = hasher(_timestamp) + hasher(_solverType);
  }
 
  // Configuring Seed
- if (_seed == 0) _seed = _runId;
+ if (_randomSeed == 0) _randomSeed = _runID;
 
  // Initializing GSL
  gsl_rng_env_setup();

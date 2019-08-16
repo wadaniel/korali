@@ -3,7 +3,7 @@
 void Korali::Distribution::Base::initialize(Korali::Problem::Base* problem)
 {
  _problem = problem;
- _seed = _k->_seed++;
+ _seed = _k->_randomSeed++;
  _range = gsl_rng_alloc (gsl_rng_default);
  gsl_rng_set(_range, _seed);
 }

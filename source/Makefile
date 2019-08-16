@@ -27,7 +27,7 @@ clean:
 	@rm -f conduits/*/*.hpp conduits/*/*.cpp 
 	@rm -f problems/*/*.hpp problems/*/*.cpp 
 	@rm -f models/*/*.hpp
-	@rm -f distributions/simple/*/*.hpp distributions/simple/*/*.cpp distributions/simple/*.cpp distributions/simple/*.hpp 
+	@rm -f distributions/univariate/*/*.hpp distributions/univariate/*/*.cpp distributions/univariate/*.cpp distributions/univariate/*.hpp 
 	@rm -f variable/*.cpp variable/*.hpp setup.py
 	@rm -f setup.py
 	@rm -f *.o ./*/*.o *.so *.a $(OBJECTS) 

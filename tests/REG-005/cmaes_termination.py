@@ -44,8 +44,10 @@ def run_cmaes(criteria, value):
         assert_greatereq(k["Solver"]["Internal"]["Infeasible Sample Count"].getValue(), value)
     
     elif (criteria == "Max Condition Covariance Matrix"):
-        print("TODO: Max Cond Cov")
-            
+        minEw = k["Solver"]["Internal"]["Minimum Covariance Eigenvalue"].getValue()
+        maxEw = k["Solver"]["Internal"]["Maximum Covariance Eigenvalue"].getValue()
+        assert_greatereq(maxEw/minEw, value)
+
     elif (criteria == "Max Value"):
         assert_greatereq(k["Solver"]["Internal"]["Best Ever Value"].getValue(), value)
   
@@ -64,7 +66,7 @@ def run_cmaes(criteria, value):
         assert_greatereq(k["Solver"]["Internal"]["Current Max Standard Deviation"].getValue(), value)
 
     elif (criteria == "Min Standard Deviation Step Factor"):
-        print("TODO: Min Stand Dev Step Fac")
+        assert_smallereq(k["Solver"]["Internal"]["Current Min Standard Deviation Step"].getValue(), value)
 
     else:
         print("Termination Criteria not recognized!")

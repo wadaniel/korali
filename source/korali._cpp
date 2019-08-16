@@ -194,31 +194,33 @@ void Korali::Engine::start(bool isDryRun)
   auto startTime = std::chrono::system_clock::now();
 
   if (isDryRun == false)
-  while(_solver->checkTermination() == false)
   {
-   auto t0 = std::chrono::system_clock::now();
-
-   _currentGeneration++;
-   _solver->runGeneration();
-   _hasComputedGeneration = true;
-
-   auto t1 = std::chrono::system_clock::now();
-
-   if (_currentGeneration % _consoleOutputFrequency == 0)
+   while(_solver->checkTermination() == false)
    {
-    Korali::logInfo(KORALI_MINIMAL,  "--------------------------------------------------------------------\n");
-    Korali::logInfo(KORALI_MINIMAL,  "Generation: #%zu\n", _currentGeneration);
-    Korali::logInfo(KORALI_DETAILED, "Generation Time: %.3fs\n", std::chrono::duration<double>(t1-t0).count());
-    _solver->printGeneration();
+    auto t0 = std::chrono::system_clock::now();
+
+    _currentGeneration++;
+    _solver->runGeneration();
+    _hasComputedGeneration = true;
+
+    auto t1 = std::chrono::system_clock::now();
+
+    if (_currentGeneration % _consoleOutputFrequency == 0)
+    {
+     Korali::logInfo(KORALI_MINIMAL,  "--------------------------------------------------------------------\n");
+     Korali::logInfo(KORALI_MINIMAL,  "Generation: #%zu\n", _currentGeneration);
+     Korali::logInfo(KORALI_DETAILED, "Generation Time: %.3fs\n", std::chrono::duration<double>(t1-t0).count());
+     _solver->printGeneration();
+    }
+
+    if (_currentGeneration % _resultsOutputFrequency == 0) saveState(_currentGeneration);
    }
 
-   if (_currentGeneration % _resultsOutputFrequency == 0) saveState(_currentGeneration);
+   saveState(_currentGeneration);
+   saveState("final.json");
   }
 
   auto endTime = std::chrono::system_clock::now();
-
-  saveState(_currentGeneration);
-  saveState("final.json");
 
   Korali::logInfo(KORALI_MINIMAL, "--------------------------------------------------------------------\n");
   Korali::logInfo(KORALI_MINIMAL, "%s finished correctly.\n", _solverType.c_str(), _currentGeneration);

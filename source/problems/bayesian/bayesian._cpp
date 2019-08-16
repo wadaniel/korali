@@ -124,7 +124,7 @@ double Korali::Problem::Bayesian::likelihoodNormalAdditive(Korali::Model::Refere
     if( !isfinite(data._evaluations[i]) )
     {
       Korali::logWarning(KORALI_NORMAL,"Non-finite value detected in the results passed in the log-likelihood function.");
-      return std::numeric_limits<double>::lowest();
+      return -std::numeric_limits<double>::infinity();
     }
     double diff = _likelihoodReferenceData[i] - data._evaluations[i];
     ssn += diff*diff;
@@ -145,7 +145,7 @@ double Korali::Problem::Bayesian::likelihoodNormalMultiplicative(Korali::Model::
     if( !isfinite(data._evaluations[i]) )
     {
       Korali::logWarning(KORALI_NORMAL,"Non-finite value detected in the results passed in the log-likelihood function.");
-      return std::numeric_limits<double>::lowest();
+      return -std::numeric_limits<double>::infinity();
     }
 
     double diff   = _likelihoodReferenceData[i] - data._evaluations[i];
@@ -169,7 +169,7 @@ double Korali::Problem::Bayesian::likelihoodNormalMultiplicativeData(Korali::Mod
     if( !isfinite(data._evaluations[i]) )
     {
       Korali::logWarning(KORALI_NORMAL,"Non-finite value detected in the results passed in the log-likelihood function.");
-      return std::numeric_limits<double>::lowest();
+      return -std::numeric_limits<double>::infinity();
     }
 
     double diff   = _likelihoodReferenceData[i] - data._evaluations[i];

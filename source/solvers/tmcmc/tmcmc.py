@@ -38,7 +38,6 @@ def plot_tmcmc(src, plotAll=False, live=False, generation=None, test=False, mean
                 fig.show()
         
             with open(path) as f:
-
                 data    = json.load(f)
                 
                 state, gen = getStateAndGeneration(data)

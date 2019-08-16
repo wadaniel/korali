@@ -15,8 +15,8 @@ double logSumExp( std::vector<double> logValues )
   double maxLogValues =  *std::max_element(std::begin(logValues), std::end(logValues));
 
   if( std::isinf(maxLogValues)==true ){
-    if(maxLogValues<0) return 0;
-    else return  std::numeric_limits<double>::infinity();
+    if( maxLogValues<0 )  return -Korali::Inf;
+    else                  return  Korali::Inf;
   }
 
   double sumExpValues = 0.0;

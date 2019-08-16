@@ -38,7 +38,6 @@ def plot_cmaes(src, plotAll=False, live=False, generation=None, test=False, plot
             path = '{0}/{1}'.format(src, filename)
             
             with open(path) as f:
-
                 data = json.load(f)
                 state, gen = getStateAndGeneration(data)
       

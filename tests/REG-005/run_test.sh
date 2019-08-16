@@ -31,7 +31,7 @@ values=(
 0.1   # Min Value Difference Threshold
 0.1   # Min Standard Deviation
 0.9   # Max Standard Deviation
--1.0  # Max Condition Covariance
+1.5   # Max Condition Covariance
 -1.0  # Min Value
 -1.0  # Min Standard Deviation Step Factor
 )

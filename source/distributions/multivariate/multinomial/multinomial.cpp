@@ -1,5 +1,5 @@
 #include "korali.hpp"
-#include "distributions/complex/multinomial/multinomial.hpp"
+#include "distributions/multivariate/multinomial/multinomial.hpp"
 
 Korali::Distribution::Multinomial::Multinomial(size_t seed)
 {
@@ -16,5 +16,3 @@ void Korali::Distribution::Multinomial::getSelections(std::vector<double>& p, st
 {
  gsl_ran_multinomial(_range, p.size(), n.size(), p.data(), n.data());
 }
-
-

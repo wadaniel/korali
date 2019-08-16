@@ -1,5 +1,5 @@
 #include "korali.hpp"
-#include "distributions/complex/multivariateNormal/multivariateNormal.hpp"
+#include "distributions/multivariate/multivariateNormal/multivariateNormal.hpp"
 
 Korali::Distribution::MultivariateNormal::MultivariateNormal(size_t seed)
 {
@@ -61,4 +61,3 @@ void Korali::Distribution::MultivariateNormal::setProperty(std::string propertyN
  if (propertyName == "Covariance Matrix") { _covarianceMatrix = values; recognizedProperty = true; }
  if (recognizedProperty == false) Korali::logError("Unrecognized property: %s for the Multivariate Normal distribution", propertyName.c_str());
 }
-

@@ -142,7 +142,7 @@ void Korali::Solver::CMAES::initialize()
  _infeasibleSampleCount = 0;
  _resampledParameterCount = 0;
 
- _bestEverValue = std::numeric_limits<double>::lowest();
+ _bestEverValue = -std::numeric_limits<double>::infinity();
  _conjugateEvolutionPathL2Norm = 0.0;
 
  /* check variable defaults */
@@ -157,8 +157,8 @@ void Korali::Solver::CMAES::initialize()
  /* set _currentMean */
  for (size_t i = 0; i < N; ++i)
  {
-   if( std::isnan(_k->_problem->getVariable(i)->_lowerBound) ) _k->_problem->getVariable(i)->_lowerBound = -1.0*std::numeric_limits<double>::max();
-   if( std::isnan(_k->_problem->getVariable(i)->_upperBound) ) _k->_problem->getVariable(i)->_upperBound = +1.0*std::numeric_limits<double>::max();
+   if( std::isnan(_k->_problem->getVariable(i)->_lowerBound) ) _k->_problem->getVariable(i)->_lowerBound = -std::numeric_limits<double>::infinity();
+   if( std::isnan(_k->_problem->getVariable(i)->_upperBound) ) _k->_problem->getVariable(i)->_upperBound = +std::numeric_limits<double>::infinity();
 
    if(_k->_problem->getVariable(i)->_initialMean < _k->_problem->getVariable(i)->_lowerBound || _k->_problem->getVariable(i)->_initialMean > _k->_problem->getVariable(i)->_upperBound)
    Korali::logError("Initial Mean (%.4f) of variable \'%s\' is out of bounds (%.4f-%.4f).\n",
@@ -182,9 +182,9 @@ void Korali::Solver::CMAES::initialize()
 
  _hasDiscreteVariables = (numDiscretes > 0);
 
- _currentMinStandardDeviation = std::numeric_limits<double>::max();
- _currentMaxStandardDeviation = std::numeric_limits<double>::lowest();
- _currentMinStandardDeviationStep = std::numeric_limits<double>::max();
+ _currentMinStandardDeviation = +std::numeric_limits<double>::infinity();
+ _currentMaxStandardDeviation = -std::numeric_limits<double>::infinity();
+ _currentMinStandardDeviationStep = +std::numeric_limits<double>::infinity();
    
 }
 
@@ -292,7 +292,7 @@ void Korali::Solver::CMAES::processSample(size_t sampleId, double fitness)
  fitness += logPrior;
  if(std::isfinite(fitness) == false) 
  {
-   fitness = -1.0 * std::numeric_limits<double>::max();
+   fitness = -std::numeric_limits<double>::infinity();
    Korali::logWarning(KORALI_NORMAL,"Sample %zu returned non finite fitness (fitness set to %e)!\n", sampleId, fitness);
  }
  _valueVector[sampleId] = fitness;
@@ -320,7 +320,7 @@ void Korali::Solver::CMAES::checkMeanAndSetRegime()
   _currentPopulationSize = _populationSize;
   _currentMuValue = _muValue;
 
-  _bestEverValue = std::numeric_limits<double>::lowest();
+  _bestEverValue = -std::numeric_limits<double>::infinity();
   initMuWeights(_currentMuValue);
   initCovariance();
 }
@@ -566,9 +566,9 @@ void Korali::Solver::CMAES::updateDistribution()
  /* numerical error management */
  numericalErrorTreatment();
 
- _currentMinStandardDeviation = std::numeric_limits<double>::max();
- _currentMaxStandardDeviation = std::numeric_limits<double>::lowest();
- _currentMinStandardDeviationStep = std::numeric_limits<double>::max();
+ _currentMinStandardDeviation = std::numeric_limits<double>::infinity();
+ _currentMaxStandardDeviation = -std::numeric_limits<double>::infinity();
+ _currentMinStandardDeviationStep = std::numeric_limits<double>::infinity();
 
  // Calculating current Minimum and Maximum STD Devs
  for(size_t i = 0; i <N; ++i )

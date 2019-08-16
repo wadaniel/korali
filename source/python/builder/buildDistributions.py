@@ -5,7 +5,7 @@ from buildAux import *
 
 def buildDistributions(koraliDir):
  # Processing Distributions
- curdir = koraliDir + '/distributions/simple'
+ curdir = koraliDir + '/distributions/univariate'
 
  # Creating distribution creation list
  distributionCreationList = ''

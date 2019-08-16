@@ -38,7 +38,6 @@ def plot_dea(src, plotAll=False, live=False, generation=None, test=False, plot_m
             path = '{0}/{1}'.format(src, filename)
  
             with open(path) as f:
-                
                 data  = json.load(f)
                 state, gen = getStateAndGeneration(data)
 

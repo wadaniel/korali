@@ -40,7 +40,7 @@ void Korali::Conduit::External::evaluateSample(double* sampleArray, size_t sampl
   exit(0);
  }
 
- _k->_computationalModelEvaluationCount++;
+ _k->_modelEvaluationCount++;
 
 }
 

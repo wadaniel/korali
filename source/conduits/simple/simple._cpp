@@ -19,7 +19,7 @@ void Korali::Conduit::Simple::evaluateSample(double* sampleArray, size_t sampleI
  _k->_problem->runModel(sampleVector, sampleId);
  double fitness = _k->_problem->evaluateSampleFitness();
 
- _k->_computationalModelEvaluationCount++;
+ _k->_modelEvaluationCount++;
  _k->_solver->processSample(sampleId, fitness);
 }
 

@@ -78,19 +78,20 @@ void Korali::Solver::DEA::runGeneration()
 
 void Korali::Solver::DEA::initSamples()
 {
+  /* skip sampling in gen 1 */
   for(size_t i = 0; i < _populationSize; ++i) for(size_t d = 0; d < N; ++d)
   {
     double width = _k->_problem->getVariable(d)->_upperBound - _k->_problem->getVariable(d)->_lowerBound;
     _candidatePopulation[i*N+d] = _k->_problem->getVariable(d)->_lowerBound + width * _uniformGenerator->getRandomNumber();
+    _samplePopulation[i*N+d] = _candidatePopulation[i*N+d];
   }
 }
 
 
 void Korali::Solver::DEA::prepareGeneration()
 {
- size_t initial_infeasible = _infeasibleSampleCount;
-
- if(_k->_currentGeneration > 1) /* at gen 1 candidates initialized in initialize() */
+ /* at gen 1 candidates initialized in initialize() */
+ if(_k->_currentGeneration > 1)
  for (size_t i = 0; i < _populationSize; ++i)
  {
   mutateSingle(i);
@@ -177,12 +178,13 @@ void Korali::Solver::DEA::fixInfeasible(size_t sampleIdx)
 {
   for(size_t d = 0; d < N; ++d)
   {
-    if ( _candidatePopulation[sampleIdx*N+d] < _k->_problem->getVariable(d)->_lowerBound )
-    { double len = _samplePopulation[sampleIdx*N+d] - _k->_problem->getVariable(d)->_lowerBound;
-      _candidatePopulation[sampleIdx*N+d] = _samplePopulation[sampleIdx*N+d] - len * _uniformGenerator->getRandomNumber(); }
+    double len = 0.0;
+    if ( _candidatePopulation[sampleIdx*N+d] < _k->_problem->getVariable(d)->_lowerBound ) 
+      len = _candidatePopulation[sampleIdx*N+d] - _k->_problem->getVariable(d)->_lowerBound;
     if ( _candidatePopulation[sampleIdx*N+d] > _k->_problem->getVariable(d)->_upperBound )
-    { double len = _k->_problem->getVariable(d)->_upperBound - _samplePopulation[sampleIdx*N+d];
-      _candidatePopulation[sampleIdx*N+d] = _samplePopulation[sampleIdx*N+d] + len * _uniformGenerator->getRandomNumber(); }
+      len = _candidatePopulation[sampleIdx*N+d] - _k->_problem->getVariable(d)->_upperBound;
+
+    _candidatePopulation[sampleIdx*N+d] = _samplePopulation[sampleIdx*N+d] - len * _uniformGenerator->getRandomNumber();
   }
 }
 

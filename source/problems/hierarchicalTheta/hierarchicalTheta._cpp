@@ -160,12 +160,9 @@ double Korali::Problem::HierarchicalTheta::evaluateSampleFitness()
       logConditionalPrior += _psiProblemKorali.getConditionalPrior(k)->getLogDensity( _sample[k] );
 
     logValues[i] = logConditionalPrior - _precomputedLogDenominator[i];
-    // printf("-----> %lf --- %lf --- %lf \n",  logValues[i], logConditionalPrior, _precomputedLogDenominator[i] );
   }
 
   logLikelihood += -log(_psiProblemPopulationSize) + logSumExp(logValues);
-
-  // printf("==========> %lf \n",  logLikelihood );
 
   return logLikelihood;
 }

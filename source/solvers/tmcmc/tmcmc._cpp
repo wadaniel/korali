@@ -38,10 +38,10 @@ void Korali::Solver::TMCMC::initialize()
  if(_maxChainLength == 0) Korali::logError("Max Chain Length must be greater 0.");
  
  if (_burnIn.size() > 0 && _burnIn[0] != 0)
- Korali::logWarning("Normal", "The first entry of the Burn In vector is being ignored (corresponding to Generation 0) - Burn In set 0");
+ Korali::logWarning("Normal", "The first entry of the Burn In vector (%zu) is being ignored (corresponding to Generation 0) - Burn In set 0", _burnIn[0]);
  
  if (_burnIn.size() > 1 && _burnIn[1] != 0)
- Korali::logWarning("Normal", "The second entry of the Burn In vector is being ignored (corresponding to Generation 0) - Burn In set 0");
+ Korali::logWarning("Normal", "The second entry of the Burn In vector (%zu) is being ignored (corresponding to Generation 1) - Burn In set 0", _burnIn[1]);
 
  if (_k->_currentGeneration > 0) return;
 

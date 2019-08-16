@@ -58,7 +58,7 @@ jobs:
           path: ~/korali/install.log
 
       - store_artifacts:
-          path: ~/korali/tests/test.log
+          path: ~/korali/tests
 
       - store_artifacts:
           path: ~/korali/docs/test.log
@@ -96,5 +96,5 @@ jobs:
            path: ~/korali/install.log
 
       - store_artifacts:
-           path: ~/korali/tests/test.log
+          path: ~/korali/tests/
 

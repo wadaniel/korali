@@ -19,7 +19,7 @@ class Engine {
  size_t _currentGeneration;
  size_t _consoleOutputFrequency;
  size_t _resultsOutputFrequency;
- size_t _computationalModelEvaluationCount;
+ size_t _modelEvaluationCount;
  size_t _runId;
  std::string _timestamp;
  int _hasComputedGeneration;

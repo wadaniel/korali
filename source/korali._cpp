@@ -38,7 +38,7 @@ void Korali::Engine::getConfiguration()
  _js["General"]["Console Output"]["Frequency"] = _consoleOutputFrequency;
  _js["General"]["Results Output"]["Frequency"] = _resultsOutputFrequency;
  _js["General"]["Results Output"]["Path"] = _resultsOutputPath;
- _js["General"]["Function Evaluation Count"] = _computationalModelEvaluationCount;
+ _js["General"]["Model Evaluation Count"] = _modelEvaluationCount;
  _js["General"]["Is Finished"] = _isFinished;
 
  _js["Solver"]["Type"] = _solverType;
@@ -70,7 +70,7 @@ void Korali::Engine::setConfiguration()
  _currentGeneration = consume(_js, { "General", "Current Generation" }, KORALI_NUMBER, "0");
  _consoleOutputFrequency = consume(_js, { "General", "Console Output", "Frequency" }, KORALI_NUMBER, "1");
  _resultsOutputFrequency = consume(_js, { "General", "Results Output", "Frequency" }, KORALI_NUMBER, "1");
- _computationalModelEvaluationCount = consume(_js, { "General", "Function Evaluation Count" }, KORALI_NUMBER, "0");
+ _modelEvaluationCount = consume(_js, { "General", "Model Evaluation Count" }, KORALI_NUMBER, "0");
  _isFinished = consume(_js, { "General", "Is Finished" }, KORALI_BOOLEAN, "false");
 
  // Configure Conduit
@@ -227,7 +227,7 @@ void Korali::Engine::start(bool isDryRun)
 
  Korali::logInfo("Minimal", "--------------------------------------------------------------------\n");
  Korali::logInfo("Minimal", "Total Generations: %lu\n", _currentGeneration);
- Korali::logInfo("Minimal", "Total Computational Model Evaluations: %lu\n", _computationalModelEvaluationCount);
+ Korali::logInfo("Minimal", "Total Computational Model Evaluations: %lu\n", _modelEvaluationCount);
  Korali::logInfo("Minimal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(endTime-startTime).count());
  Korali::logInfo("Minimal", "Results saved to folder: '%s'\n", _resultsOutputPath.c_str());
 }

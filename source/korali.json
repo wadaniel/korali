@@ -1,4 +1,71 @@
 {
-
+ "Korali Configuration": 
+ [
+   {
+    "Name": [ "Random Seed" ],
+    "Type": "size_t",
+    "Default": "0",
+    "Description": "Specifies the initializing seed for the generation of random numbers. If 0 is specified, Korali will automatically derivate a new seed base on the current time."
+   },
+   {
+    "Name": [ "Console Output", "Verbosity"],
+    "Type": "std::string",
+    "Default": "Normal",
+    "Description": "Specifies how much information will be displayed on console when running Korali."
+   },
+   {
+    "Name": [ "Console Output", "Frequency" ],
+    "Type": "size_t",
+    "Default": "1",
+    "Description": "Specifies how often (in generations) will partial results be printed on console. The default, 1, indicates that every generation's results will be printed."
+   },
+   {
+    "Name": [ "Results Output", "Path"],
+    "Type": "std::string",
+    "Default": "_korali_result",
+    "Description": "Specifies the path of the results directory."
+   },
+   {
+    "Name": [ "Results Output", "Frequency" ],
+    "Type": "size_t",
+    "Default": "1",
+    "Description": "Specifies how often (in generations) will partial result files be saved on the results directory. The default, 1, indicates that every generation's results will be saved."
+   }
+ ],
+ 
+ "Internal Settings": 
+ [
+   {
+    "Name": [ "Timestamp" ],
+    "Type": "std::string",
+    "Default": "0",
+    "Description": "Indicates the current time when saving a result file."
+   },
+   {
+    "Name": [ "Run ID" ],
+    "Type": "size_t",
+    "Default": "0",
+    "Description": "Specifies the Korali run's unique identifier. Used to distinguish run results when two or more use the same output directory."
+   },
+   {
+    "Name": [ "Current Generation" ],
+    "Type": "size_t",
+    "Default": "0",
+    "Description": "Indicates the current generation in execution."
+   },
+   {
+    "Name": [ "Model Evaluation Count" ],
+    "Type": "size_t",
+    "Default": "0",
+    "Description": "Keeps track of how many model evaluations has the conduit performed so far."
+   },
+   {
+    "Name": [ "Is Finished" ],
+    "Type": "bool",
+    "Default": "false",
+    "Description": "Indicates whether execution has reached a termination criterion."
+   }
+ ]
+ 
 }
  

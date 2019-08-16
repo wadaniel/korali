@@ -22,7 +22,6 @@ void eraseValue(nlohmann::json& js, std::string path);
 bool isDefined(nlohmann::json& js, std::vector<std::string> settings);
 bool isDefined(nlohmann::json& js, std::string path);
 bool isArray(nlohmann::json& js, std::vector<std::string> settings);
-nlohmann::json consume(nlohmann::json& js, std::vector<std::string> settings, jsonType type, std::string def = "__NO_DEFAULT" );
 nlohmann::json loadJsonFromFile(const char* fileName);
 void saveJsonToFile(const char* fileName, nlohmann::json& js);
 

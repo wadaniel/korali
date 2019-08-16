@@ -2,6 +2,7 @@
 #define _KORALI_PROBLEM_HIERARCHICALTHETANEW_HPP_
 
 #include "problems/base.hpp"
+#include "problems/hierarchicalPsi/hierarchicalPsi.hpp"
 #include "models/direct/direct.hpp"
 
 namespace Korali { namespace Problem {

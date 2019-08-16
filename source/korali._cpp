@@ -32,12 +32,12 @@ void Korali::Engine::getConfiguration()
  _js["General"]["Random Seed"]   = _seed;
  _js["General"]["Run ID"] = _runId;
  _js["General"]["Has Computed Generation"] = _hasComputedGeneration;
- _js["General"]["Timestamp"] = _runTimestamp;
+ _js["General"]["Timestamp"] = _timestamp;
  _js["General"]["Current Generation"] = _currentGeneration;
  _js["General"]["Console Output"]["Verbosity"] = _consoleOutputVerbosity;
  _js["General"]["Console Output"]["Frequency"] = _consoleOutputFrequency;
  _js["General"]["Results Output"]["Frequency"] = _resultsOutputFrequency;
- _js["General"]["Results Output"]["Path"] = _result_dir;
+ _js["General"]["Results Output"]["Path"] = _resultsOutputPath;
  _js["General"]["Function Evaluation Count"] = _computationalModelEvaluationCount;
  _js["General"]["Is Finished"] = _isFinished;
 
@@ -59,11 +59,11 @@ void Korali::Engine::setConfiguration()
  _problemType = consume(_js, { "Problem", "Type" }, KORALI_STRING);
  _conduitType =  consume(_js, { "Conduit", "Type" }, KORALI_STRING, "Simple");
 
- _runTimestamp = consume(_js, { "General", "Timestamp" }, KORALI_STRING, "");
+ _timestamp = consume(_js, { "General", "Timestamp" }, KORALI_STRING, "");
  _runId = consume(_js, { "General", "Run ID" }, KORALI_NUMBER, "0");
  _seed  = consume(_js, { "General", "Random Seed" }, KORALI_NUMBER, "0");
  _consoleOutputVerbosity = consume(_js, { "General", "Console Output", "Verbosity" }, KORALI_STRING, "Normal");
- _result_dir = consume(_js, { "General", "Results Output", "Path" }, KORALI_STRING, "_korali_result");
+ _resultsOutputPath = consume(_js, { "General", "Results Output", "Path" }, KORALI_STRING, "_korali_result");
 
  // Korali-specific configuration
  _hasComputedGeneration = consume(_js, { "General", "Has Computed Generation" }, KORALI_BOOLEAN, "false");
@@ -119,11 +119,11 @@ void Korali::Engine::initialize()
  // Setting Run ID, if not already defined
  if (_runId == 0)
  {
-  _runTimestamp = "";
+  _timestamp = "";
   time_t rawtime; time (&rawtime);
   std::string curTime(ctime(&rawtime));
   std::hash<std::string> hasher;
-  _runId = hasher(_runTimestamp) + hasher(_solverType);
+  _runId = hasher(_timestamp) + hasher(_solverType);
  }
 
  // Configuring Seed
@@ -133,7 +133,7 @@ void Korali::Engine::initialize()
  gsl_rng_env_setup();
 
  // Creating Results directory
- mkdir(_result_dir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+ mkdir(_resultsOutputPath.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
  // Initializing Korali Components
  _problem->initialize();
@@ -229,7 +229,7 @@ void Korali::Engine::start(bool isDryRun)
  Korali::logInfo("Minimal", "Total Generations: %lu\n", _currentGeneration);
  Korali::logInfo("Minimal", "Total Computational Model Evaluations: %lu\n", _computationalModelEvaluationCount);
  Korali::logInfo("Minimal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(endTime-startTime).count());
- Korali::logInfo("Minimal", "Results saved to folder: '%s'\n", _result_dir.c_str());
+ Korali::logInfo("Minimal", "Results saved to folder: '%s'\n", _resultsOutputPath.c_str());
 }
 
 void Korali::Engine::saveState(std::string fileName)
@@ -237,14 +237,14 @@ void Korali::Engine::saveState(std::string fileName)
  // Updating run timestamp
  time_t rawtime; time (&rawtime);
  std::string curTime(ctime(&rawtime));
- _runTimestamp = curTime.substr(0, curTime.size()-1);
+ _timestamp = curTime.substr(0, curTime.size()-1);
 
  // Updating configuration
  getConfiguration();
 
  // Only the root rank saves files
  if (!_conduit->isRoot()) return;
- fileName = "./" + _result_dir + "/" + fileName;
+ fileName = "./" + _resultsOutputPath + "/" + fileName;
  saveJsonToFile(fileName.c_str(), _js);
 }
 

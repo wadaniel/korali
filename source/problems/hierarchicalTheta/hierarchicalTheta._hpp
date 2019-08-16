@@ -2,6 +2,8 @@
 #define _KORALI_PROBLEM_HIERARCHICALTHETA_HPP_
 
 #include "problems/base.hpp"
+#include "problems/bayesian/bayesian.hpp"
+#include "problems/hierarchicalPsi/hierarchicalPsi.hpp"
 
 namespace Korali { namespace Problem {
 

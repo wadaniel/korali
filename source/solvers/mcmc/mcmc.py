@@ -54,8 +54,6 @@ def plot_mcmc(src, plotAll=False, live=False, generation=None, test=False, mean=
                 if(numdbentries[-1] > 0):
                     samples  = np.reshape( data['Solver']['Internal']['Sample Database'][0:numdbentries[-1]*numdim], (numdbentries[-1],numdim) )
                     plot_samples(fig, ax, gen, numdim, numdbentries[-1], samples)
-            
-
 
         if (live == False):
             break

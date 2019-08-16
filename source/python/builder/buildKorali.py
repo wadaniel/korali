@@ -73,7 +73,7 @@ def buildKorali(koraliDir):
  koraliConfig = json.loads(koraliJsonString)
   
  ## Producing private variable declarations
-  
+ 
  koraliHeaderString = ''
   
  for v in koraliConfig["Module Selections"]:
@@ -86,6 +86,46 @@ def buildKorali(koraliDir):
   koraliHeaderString += getVariableType(v) + ' ' + getCXXVariableName(v) + ';\n'
 
  newHeaderString = newHeaderString.replace(' public:', ' public:\n' + koraliHeaderString)
+
+ ### Producing getConfiguration
+ 
+ ## Consume Korali Settings
+ 
+ # Detecting Modules
+ 
+ koraliConsumeString = ''
+ 
+ for v in koraliConfig["Module Selections"]:
+  koraliConsumeString += consumeValue('_js', 'Korali', getVariablePath(v), getCXXVariableName(v), getVariableType(v), getVariableDefault(v))
+  
+ newCodeString = newCodeString.replace(' // Detecting Korali Modules', koraliConsumeString) 
+  
+ # Detecting Settings
+  
+ koraliConsumeString = ''
+ 
+ for v in koraliConfig["General Settings"]:
+  koraliConsumeString += consumeValue('js', 'Korali', '["General"]' + getVariablePath(v),  getCXXVariableName(v), getVariableType(v), getVariableDefault(v))
+  
+ for v in koraliConfig["Internal Settings"]:
+  koraliConsumeString += consumeValue('js', 'Korali', '["Internal"]' + getVariablePath(v),  getCXXVariableName(v), getVariableType(v), getVariableDefault(v))
+ 
+ newCodeString = newCodeString.replace(' // Configuring Korali Engine', koraliConsumeString)
+ 
+ # Saving Korali Settings
+ 
+ koraliGetString = ''
+ 
+ for v in koraliConfig["Module Selections"]: 
+  koraliGetString += saveValue('_js', getVariablePath(v), getCXXVariableName(v), getVariableType(v))
+ 
+ for v in koraliConfig["General Settings"]: 
+  koraliGetString += saveValue('_js', '["General"]' + getVariablePath(v), getCXXVariableName(v), getVariableType(v))
+    
+ for v in koraliConfig["Internal Settings"]: 
+  koraliGetString += saveValue('_js', '["Internal"]' + getVariablePath(v), getCXXVariableName(v), getVariableType(v))
+     
+ newCodeString = newCodeString.replace(' // Obtaining Korali Engine Settings', koraliGetString)
 
  ##### Saving output files
    

@@ -99,7 +99,7 @@ for filename in resultfiles:
     if (gen>0):
       assert_value(rho - prevRho >= minRhoUpdate, True)
     
-    finished = data['General']['Is Finished']
+    finished = data['Internal']['Is Finished']
     if finished == True:
         assert_value(rho - prevRho >= maxRhoUpdate-eps, False)
     if finished == False:

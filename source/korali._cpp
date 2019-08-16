@@ -16,7 +16,6 @@ Korali::Engine::Engine()
  _problem = nullptr;
  _conduit = nullptr;
  _modelType = "Unassigned";
- _hasComputedGeneration = false;
 }
 
 Korali::Engine::~Engine()
@@ -31,7 +30,6 @@ void Korali::Engine::getConfiguration()
 
  _js["General"]["Random Seed"]   = _seed;
  _js["General"]["Run ID"] = _runId;
- _js["General"]["Has Computed Generation"] = _hasComputedGeneration;
  _js["General"]["Timestamp"] = _timestamp;
  _js["General"]["Current Generation"] = _currentGeneration;
  _js["General"]["Console Output"]["Verbosity"] = _consoleOutputVerbosity;
@@ -66,7 +64,6 @@ void Korali::Engine::setConfiguration()
  _resultsOutputPath = consume(_js, { "General", "Results Output", "Path" }, KORALI_STRING, "_korali_result");
 
  // Korali-specific configuration
- _hasComputedGeneration = consume(_js, { "General", "Has Computed Generation" }, KORALI_BOOLEAN, "false");
  _currentGeneration = consume(_js, { "General", "Current Generation" }, KORALI_NUMBER, "0");
  _consoleOutputFrequency = consume(_js, { "General", "Console Output", "Frequency" }, KORALI_NUMBER, "1");
  _resultsOutputFrequency = consume(_js, { "General", "Results Output", "Frequency" }, KORALI_NUMBER, "1");
@@ -197,7 +194,6 @@ void Korali::Engine::start(bool isDryRun)
 
   _currentGeneration++;
   _solver->runGeneration();
-  _hasComputedGeneration = true;
 
   auto t1 = std::chrono::system_clock::now();
 

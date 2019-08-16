@@ -7,8 +7,6 @@ def model( s, x ):
   th0 = s.getVariable(0)
   th1 = s.getVariable(1)
   r  =  th0*x[i] + th1
-  if(abs(x[0]) < 3.0): 
-      r = -float('nan')
   s.addReferenceEvaluation(r)
 
 def getReferenceData():

@@ -184,7 +184,6 @@ void Korali::Solver::CMAES::initialize()
 
  _currentMinStandardDeviation = +std::numeric_limits<double>::infinity();
  _currentMaxStandardDeviation = -std::numeric_limits<double>::infinity();
- _currentMinStandardDeviationStep = +std::numeric_limits<double>::infinity();
    
 }
 
@@ -568,14 +567,12 @@ void Korali::Solver::CMAES::updateDistribution()
 
  _currentMinStandardDeviation = std::numeric_limits<double>::infinity();
  _currentMaxStandardDeviation = -std::numeric_limits<double>::infinity();
- _currentMinStandardDeviationStep = std::numeric_limits<double>::infinity();
 
  // Calculating current Minimum and Maximum STD Devs
  for(size_t i = 0; i <N; ++i )
  {
   _currentMinStandardDeviation = std::min(_currentMinStandardDeviation, _sigma * sqrt(_covarianceMatrix[i*N+i]));
   _currentMaxStandardDeviation = std::max(_currentMaxStandardDeviation, _sigma * sqrt(_covarianceMatrix[i*N+i]));
-  _currentMinStandardDeviationStep = std::min(_currentMinStandardDeviationStep, _sigma*_axisLengths[i]);
  }
  
 }

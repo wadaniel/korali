@@ -1,5 +1,33 @@
 {
- "Korali Configuration": 
+ "Name": "Korali Engine",
+
+ "Module Selections": 
+ [
+   {
+    "Name": [ "Problem", "Type" ],
+    "Type": "std::string",
+    "Description": "Specifies the problem type to solve."
+   },
+   {
+    "Name": [ "Solver", "Type" ],
+    "Type": "std::string",
+    "Description": "Specifies the solver algorithm to employ."
+   },
+   {
+    "Name": [ "Conduit", "Type" ],
+    "Type": "std::string",
+    "Default": "Simple",
+    "Description": "Specifies the method for the model evaluations."
+   },
+   {
+    "Name": [ "Model", "Type" ],
+    "Type": "std::string",
+    "Default": "Unassigned",
+    "Description": "Specifies the evaluation model type chosen, if any."
+   }
+ ],
+ 
+ "General Settings": 
  [
    {
     "Name": [ "Random Seed" ],

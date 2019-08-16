@@ -28,8 +28,6 @@ def buildSolvers(koraliDir):
      
   for v in solverConfig["Termination Criteria"]:
    solverHeaderString += getVariableType(v) + ' ' + getCXXVariableName(v) + ';\n'
-   solverHeaderString += 'int ' + getCXXVariableName(v) + 'Enabled;\n'
-   solverHeaderString += 'int ' + getCXXVariableName(v) + 'Triggered;\n'
    
   for v in solverConfig["Internal Settings"]:
    solverHeaderString += getVariableType(v) + ' ' + getCXXVariableName(v) + ';\n'

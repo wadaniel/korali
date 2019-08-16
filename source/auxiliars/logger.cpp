@@ -9,6 +9,7 @@ size_t Korali::getVerbosityLevel(std::string verbosityLevel)
  if (verbosityLevel == "Minimal") return 1;
  if (verbosityLevel == "Normal") return 2;
  if (verbosityLevel == "Detailed") return 3;
+ return 0;
 }
 
 bool Korali::isEnoughVerbosity(std::string verbosityLevel)

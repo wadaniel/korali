@@ -6,164 +6,6 @@
 
 Korali::Engine* Korali::_k;
 
-Korali::Engine::Engine()
-{
- _runId        = 0;
- _consoleOutputFrequency = 1;
- _resultsOutputFrequency = 1;
- _isFinished = false;
- _solver = nullptr;
- _problem = nullptr;
- _conduit = nullptr;
- _modelType = "Unassigned";
- _hasComputedGeneration = false;
-}
-
-Korali::Engine::~Engine()
-{
-
-}
-
-void Korali::Engine::getConfiguration()
-{
- auto js = nlohmann::json();
- _js = js;
-
- _js["General"]["Random Seed"]   = _seed;
- _js["General"]["Run ID"] = _runId;
- _js["General"]["Has Computed Generation"] = _hasComputedGeneration;
- _js["General"]["Timestamp"] = _timestamp;
- _js["General"]["Current Generation"] = _currentGeneration;
- _js["General"]["Console Output"]["Verbosity"] = _consoleOutputVerbosity;
- _js["General"]["Console Output"]["Frequency"] = _consoleOutputFrequency;
- _js["General"]["Results Output"]["Frequency"] = _resultsOutputFrequency;
- _js["General"]["Results Output"]["Path"] = _resultsOutputPath;
- _js["General"]["Model Evaluation Count"] = _modelEvaluationCount;
- _js["General"]["Is Finished"] = _isFinished;
-
- _js["Solver"]["Type"] = _solverType;
- _js["Conduit"]["Type"] = _conduitType;
- _js["Problem"]["Type"] = _problemType;
-
- if (_problem != nullptr) _problem->getConfiguration(_js["Problem"]);
- if (_conduit != nullptr) _conduit->getConfiguration(_js["Conduit"]);
- if (_solver != nullptr) _solver->getConfiguration(_js["Solver"]);
-}
-
-void Korali::Engine::setConfiguration()
-{
- auto js = _js;
-
- // Obtaining module selections
- _solverType = consume(_js, { "Solver", "Type" }, KORALI_STRING);
- _problemType = consume(_js, { "Problem", "Type" }, KORALI_STRING);
- _conduitType =  consume(_js, { "Conduit", "Type" }, KORALI_STRING, "Simple");
-
- _timestamp = consume(_js, { "General", "Timestamp" }, KORALI_STRING, "");
- _runId = consume(_js, { "General", "Run ID" }, KORALI_NUMBER, "0");
- _seed  = consume(_js, { "General", "Random Seed" }, KORALI_NUMBER, "0");
- _consoleOutputVerbosity = consume(_js, { "General", "Console Output", "Verbosity" }, KORALI_STRING, "Normal");
- _resultsOutputPath = consume(_js, { "General", "Results Output", "Path" }, KORALI_STRING, "_korali_result");
-
- // Korali-specific configuration
- _hasComputedGeneration = consume(_js, { "General", "Has Computed Generation" }, KORALI_BOOLEAN, "false");
- _currentGeneration = consume(_js, { "General", "Current Generation" }, KORALI_NUMBER, "0");
- _consoleOutputFrequency = consume(_js, { "General", "Console Output", "Frequency" }, KORALI_NUMBER, "1");
- _resultsOutputFrequency = consume(_js, { "General", "Results Output", "Frequency" }, KORALI_NUMBER, "1");
- _modelEvaluationCount = consume(_js, { "General", "Model Evaluation Count" }, KORALI_NUMBER, "0");
- _isFinished = consume(_js, { "General", "Is Finished" }, KORALI_BOOLEAN, "false");
-
- // Configure Conduit
- if (_conduitType == "Simple") _conduit = new Korali::Conduit::Simple();
- if (_conduitType == "External") _conduit = new Korali::Conduit::External();
- if (_conduitType == "MPI") _conduit = new Korali::Conduit::MPI();
- if (_conduit == nullptr) Korali::logError("Incorrect or undefined Conduit '%s'.\n", _conduitType.c_str());
- _conduit->setConfiguration(_js["Conduit"]);
-
- // Configuring Problem
- if (_problemType == "Optimization")  _problem = new Korali::Problem::Optimization();
- if (_problemType == "Sampling") _problem = new Korali::Problem::Sampling();
- if (_problemType == "Bayesian Inference") _problem = new Korali::Problem::Bayesian();
- if (_problemType == "Hierarchical Bayesian (Psi)") _problem = new Korali::Problem::HierarchicalPsi();
- if (_problemType == "Hierarchical Bayesian (Theta)") _problem = new Korali::Problem::HierarchicalTheta();
- if (_problemType == "Hierarchical Bayesian (Theta New)") _problem = new Korali::Problem::HierarchicalThetaNew();
- if (_problem == nullptr) Korali::logError("Incorrect or undefined Problem '%s'.\n", _problemType.c_str());
- _problem->setConfiguration(_js["Problem"]);
-
- // Configure Solver
- if (_solverType == "CMAES")  _solver = new Korali::Solver::CMAES();
- if (_solverType == "DEA")    _solver = new Korali::Solver::DEA();
- if (_solverType == "MCMC")   _solver = new Korali::Solver::MCMC();
- if (_solverType == "TMCMC")  _solver = new Korali::Solver::TMCMC();
- if (_solver == nullptr) Korali::logError("Incorrect or undefined Solver '%s'.\n", _solverType.c_str());
- _solver->setConfiguration(_js["Solver"]);
-
- if (isEmpty(_js) == false) Korali::logError("Unrecognized Settings for Korali:\n %s \n", _js.dump(2).c_str());
- _js = js;
-}
-
-/************************************************************************/
-/*                    Functional Methods                                */
-/************************************************************************/
-
-void Korali::Engine::initialize()
-{
- // Initializing Verbosity
- bool verbosityDefined = false;
- if (_consoleOutputVerbosity == "Silent")   verbosityDefined = true;
- if (_consoleOutputVerbosity == "Minimal")  verbosityDefined = true;
- if (_consoleOutputVerbosity == "Normal")   verbosityDefined = true;
- if (_consoleOutputVerbosity == "Detailed") verbosityDefined = true;
- if (verbosityDefined == false) Korali::logError("Incorrect or undefined Verbosity Level '%s'\n.", _consoleOutputVerbosity.c_str());
-
- // Setting Run ID, if not already defined
- if (_runId == 0)
- {
-  _timestamp = "";
-  time_t rawtime; time (&rawtime);
-  std::string curTime(ctime(&rawtime));
-  std::hash<std::string> hasher;
-  _runId = hasher(_timestamp) + hasher(_solverType);
- }
-
- // Configuring Seed
- if (_seed == 0) _seed = _runId;
-
- // Initializing GSL
- gsl_rng_env_setup();
-
- // Creating Results directory
- mkdir(_resultsOutputPath.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-
- // Initializing Korali Components
- _problem->initialize();
- _solver->initialize();
- _conduit->initialize();
-}
-
-void Korali::Engine::setDirectModel(std::function<void(Korali::Model::Direct&)> model)
-{
- _modelType = "Direct";
- _directModel = model;
-}
-
-void Korali::Engine::setLikelihoodModel(std::function<void(Korali::Model::Likelihood&)> model)
-{
- _modelType = "Likelihood";
- _likelihoodModel = model;
-}
-
-void Korali::Engine::setReferenceModel(std::function<void(Korali::Model::Reference&)> model)
-{
- _modelType = "Reference";
- _referenceModel = model;
-}
-
-void Korali::Engine::addConstraint(std::function<void(Korali::Model::Constraint&)> constraint)
-{
- _constraints.push_back(constraint);
-}
-
 void Korali::Engine::start(bool isDryRun)
 {
  _k = this;
@@ -197,7 +39,6 @@ void Korali::Engine::start(bool isDryRun)
 
   _currentGeneration++;
   _solver->runGeneration();
-  _hasComputedGeneration = true;
 
   auto t1 = std::chrono::system_clock::now();
 
@@ -232,6 +73,64 @@ void Korali::Engine::start(bool isDryRun)
  Korali::logInfo("Minimal", "Results saved to folder: '%s'\n", _resultsOutputPath.c_str());
 }
 
+void Korali::Engine::initialize()
+{
+ // Initializing Verbosity
+ bool verbosityDefined = false;
+ if (_consoleOutputVerbosity == "Silent")   verbosityDefined = true;
+ if (_consoleOutputVerbosity == "Minimal")  verbosityDefined = true;
+ if (_consoleOutputVerbosity == "Normal")   verbosityDefined = true;
+ if (_consoleOutputVerbosity == "Detailed") verbosityDefined = true;
+ if (verbosityDefined == false) Korali::logError("Incorrect or undefined Verbosity Level '%s'\n.", _consoleOutputVerbosity.c_str());
+
+ // Setting Run ID, if not already defined
+ if (_runID == 0)
+ {
+  _timestamp = "";
+  time_t rawtime; time (&rawtime);
+  std::string curTime(ctime(&rawtime));
+  std::hash<std::string> hasher;
+  _runID = hasher(_timestamp) + hasher(_solverType);
+ }
+
+ // Configuring Seed
+ if (_randomSeed == 0) _randomSeed = _runID;
+
+ // Initializing GSL
+ gsl_rng_env_setup();
+
+ // Creating Results directory
+ mkdir(_resultsOutputPath.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+
+ // Initializing Korali Components
+ _problem->initialize();
+ _solver->initialize();
+ _conduit->initialize();
+}
+
+void Korali::Engine::setDirectModel(std::function<void(Korali::Model::Direct&)> model)
+{
+ _js["Model"]["Type"] = "Direct";
+ _directModel = model;
+}
+
+void Korali::Engine::setLikelihoodModel(std::function<void(Korali::Model::Likelihood&)> model)
+{
+ _js["Model"]["Type"] = "Likelihood";
+ _likelihoodModel = model;
+}
+
+void Korali::Engine::setReferenceModel(std::function<void(Korali::Model::Reference&)> model)
+{
+ _js["Model"]["Type"] = "Reference";
+ _referenceModel = model;
+}
+
+void Korali::Engine::addConstraint(std::function<void(Korali::Model::Constraint&)> constraint)
+{
+ _constraints.push_back(constraint);
+}
+
 void Korali::Engine::saveState(std::string fileName)
 {
  // Updating run timestamp
@@ -262,4 +161,44 @@ void Korali::Engine::saveState(int fileId)
 void Korali::Engine::loadState(std::string fileName)
 {
  _js = loadJsonFromFile(fileName.c_str());
+}
+
+void Korali::Engine::getConfiguration()
+{
+ auto js = nlohmann::json();
+ _js = js;
+
+ // Obtaining Korali Engine Settings
+
+ _problem->getConfiguration(_js["Problem"]);
+ _conduit->getConfiguration(_js["Conduit"]);
+ _solver->getConfiguration(_js["Solver"]);
+}
+
+void Korali::Engine::setConfiguration()
+{
+ // Detecting Korali Modules
+
+ auto js = _js;
+
+ // Configuring Korali Engine
+
+ bool recognizedConduit = false;
+ bool recognizedProblem = false;
+ bool recognizedSolver = false;
+
+ // Configuring Conduit
+ if (recognizedConduit == false) Korali::logError("Incorrect or undefined Conduit '%s'.\n", _conduitType.c_str());
+ _conduit->setConfiguration(js["Conduit"]);
+
+ // Configuring Problem
+ if (recognizedProblem == false) Korali::logError("Incorrect or undefined Problem '%s'.\n", _problemType.c_str());
+ _problem->setConfiguration(js["Problem"]);
+
+ // Configuring Solver
+ if (recognizedSolver == false) Korali::logError("Incorrect or undefined Solver '%s'.\n", _solverType.c_str());
+ _solver->setConfiguration(js["Solver"]);
+
+ if (isEmpty(js) == false) Korali::logError("Unrecognized Settings for Korali:\n %s \n", js.dump(2).c_str());
+ _js = js;
 }

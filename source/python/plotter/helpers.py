@@ -25,7 +25,7 @@ def initDefaults(directory, filename, lists):
         data  = json.loads(dataString)
  
         solver = data['Solver']['Type']
-        gen    = data['General']['Current Generation']
+        gen    = data['Internal']['Current Generation']
         numdim = len(data['Problem']['Variables'])
         names  = [ data['Problem']['Variables'][i]['Name'] for i in range(numdim) ]
 
@@ -39,7 +39,7 @@ def initDefaults(directory, filename, lists):
 # Extract state from data and return current ceneration
 def getStateAndGeneration(data): 
     state = data['Solver']['Internal']
-    gen   = data['General']['Current Generation']
+    gen   = data['Internal']['Current Generation']
     return (state, gen)
 
 
@@ -86,7 +86,7 @@ def readFiles(src, start=None, end=None, noisy=True):
         dataString = f.read()
         dataString = dataString.replace('+INFINITY', '1.0e+300').replace('-INFINITY', '-1.0e+300').replace('NaN', '-1.0e+300')
         data  = json.loads(dataString)
-        runId = data['General']['Run ID']
+        runId = data['Internal']['Run ID']
 
     resultfiles = [] # Init Return Value
     for filename in resultfilesTmp:
@@ -96,7 +96,7 @@ def readFiles(src, start=None, end=None, noisy=True):
             dataString = f.read()
             dataString = dataString.replace('+INFINITY', '1.0e+300').replace('-INFINITY', '-1.0e+300').replace('NaN', '-1.0e+300')
             data  = json.loads(dataString)
-            gen  = data['General']['Current Generation']
+            gen  = data['Internal']['Current Generation']
             
             if verifyFile(data, path, runId, start, end, noisy):
                 resultfiles.append(filename)
@@ -106,7 +106,7 @@ def readFiles(src, start=None, end=None, noisy=True):
 
 # Open file and verify runId and current generation in [start, end]
 def verifyFile(data, path, runId, start=None, end=None, noisy=True): 
-    currentGeneration = data['General']['Current Generation']
+    currentGeneration = data['Internal']['Current Generation']
 
     if ( (start is not None) and (currentGeneration < start)):
         return False
@@ -114,7 +114,7 @@ def verifyFile(data, path, runId, start=None, end=None, noisy=True):
     if ( (end is not None) and (currentGeneration > end)):
         return False
 
-    if (data['General']['Run ID'] != runId):
+    if (data['Internal']['Run ID'] != runId):
        
         if(noisy == True):
             print("[Korali] Warning: Skipping file {0}, results origin from a "\

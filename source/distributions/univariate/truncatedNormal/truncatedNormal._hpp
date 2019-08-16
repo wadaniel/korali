@@ -1,19 +1,20 @@
-#ifndef _KORALI_DISTRIBUTION_NORMAL_HPP_
-#define _KORALI_DISTRIBUTION_NORMAL_HPP_
+#ifndef _KORALI_DISTRIBUTION_TRUNCATEDNORMAL_HPP_
+#define _KORALI_DISTRIBUTION_TRUNCATEDNORMAL_HPP_
 
 #include <distributions/univariate/base.hpp>
 
 namespace Korali { namespace Distribution {
 
-class Normal : public Korali::Distribution::Base {
+class TruncatedNormal : public Korali::Distribution::Base {
 
  private:
+
    double _normalization;
    double _logNormalization;
-   
+
  public:
 
- Normal();
+ TruncatedNormal();
 
  void updateConditionals(const std::vector<double>& sample) override;
  void updateDistribution() override;
@@ -31,4 +32,4 @@ class Normal : public Korali::Distribution::Base {
 
 } } // namespace Korali::Distribution
 
-#endif // _KORALI_DISTRIBUTION_NORMAL_HPP_
+#endif // _KORALI_DISTRIBUTION_TRUNCATEDNORMAL_HPP_

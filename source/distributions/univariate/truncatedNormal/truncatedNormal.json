@@ -1,0 +1,35 @@
+{
+ "Name": "Truncated Normal Distribution",
+ "Alias": "TruncatedNormal",
+ "Class": "TruncatedNormal",
+
+ "Distribution Configuration":
+ [
+
+ ],
+
+ "Conditional Variables":
+ [
+   {
+    "Name": [ "Mu" ],
+    "Description": ""
+   },
+   {
+    "Name": [ "Sigma" ],
+    "Description": ""
+  },
+  {
+   "Name": [ "Minimum" ],
+   "Description": ""
+  },
+  {
+   "Name": [ "Maximum" ],
+   "Description": ""
+  }
+ ],
+
+ "Internal Settings":
+ [
+ ]
+
+}

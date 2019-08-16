@@ -17,6 +17,7 @@ kH["Problem"]["Psi Problem"] = '../setup/results_phase_2/final.json'
 
 kH["Solver"]["Type"] = "TMCMC"
 kH["Solver"]["Population Size"] = 5000
+kH["Solver"]["Termination Criteria"]["Max Generations"] = 30
 # kH["Solver"]["Burn In Steps"] = [ 3 ];
 kH["Solver"]["Target Coefficient Of Variation"] = 0.6
 

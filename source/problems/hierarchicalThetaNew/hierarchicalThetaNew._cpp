@@ -30,8 +30,9 @@ void Korali::Problem::HierarchicalThetaNew::initialize()
 
   for (size_t j = 0; j < _psiProblemSampleCount; j++)
   {
-    _psiProblemSampleLogLikelihoods.push_back(psiProblemJson["Solver"]["Internal"]["Chain Leaders LogLikelihoods"][j]);
-    _psiProblemSampleLogPriors.push_back(psiProblemJson["Solver"]["Internal"]["Chain Leaders LogPriors"][j]);
+
+    _psiProblemSampleLogLikelihoods.push_back(psiProblemJson["Solver"]["Internal"]["Sample Fitness Database"][j]);
+    _psiProblemSampleLogPriors.push_back(psiProblemJson["Solver"]["Internal"]["Sample LogPrior Database"][j]);
 
     double expPrior = exp(_psiProblemSampleLogPriors[j]);
     if( std::isfinite(expPrior) == false )

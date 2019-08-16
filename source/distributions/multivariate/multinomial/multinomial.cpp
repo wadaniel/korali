@@ -12,7 +12,7 @@ Korali::Distribution::Multinomial::~Multinomial()
  gsl_rng_free(_range);
 }
 
-void Korali::Distribution::Multinomial::getSelections(std::vector<double>& p, std::vector<unsigned int>& n)
+void Korali::Distribution::Multinomial::getSelections(std::vector<double>& p, std::vector<unsigned int>& n, int N )
 {
- gsl_ran_multinomial(_range, p.size(), n.size(), p.data(), n.data());
+ gsl_ran_multinomial(_range, p.size(), N, p.data(), n.data());
 }

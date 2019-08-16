@@ -32,12 +32,12 @@ k["Problem"]["Variables"][3]["Prior Distribution"]["Minimum"] = 0
 k["Problem"]["Variables"][3]["Prior Distribution"]["Maximum"] = 20
 
 k["Solver"]["Type"] = "TMCMC"
-k["Solver"]["Population Size"] = 1000
+k["Solver"]["Population Size"] = 5000
 k["Solver"]["Target Coefficient Of Variation"] = 0.6
 k["Solver"]["Covariance Scaling"] = 0.02
-k["Solver"]["Default Burn In"] = 1;
+k["Solver"]["Default Burn In"] = 2;
 k["Solver"]["Max Chain Length"] = 1;
-k["Solver"]["Termination Criteria"]["Max Generations"] = 2;
+# k["Solver"]["Termination Criteria"]["Max Generations"] = 3;
 
 k["General"]["Console Output"]["Verbosity"] = "Detailed"
 k["General"]["Results Output"]["Path"] = "../setup/results_phase_3b/"

@@ -4,13 +4,12 @@
 namespace Korali
 {
 
-enum _korali_verbosity_levels_ { KORALI_UNDEFINED = -1, KORALI_SILENT = 0, KORALI_MINIMAL = 1, KORALI_NORMAL = 2, KORALI_DETAILED = 3 };
+size_t getVerbosityLevel(std::string verbosityLevel);
+bool isEnoughVerbosity(std::string verbosityLevel);
 
-extern _korali_verbosity_levels_ _korali_verbosity;
-
-void logData(const _korali_verbosity_levels_ level, const char* format, ... );
-void logInfo(const _korali_verbosity_levels_ level, const char* format, ... );
-void logWarning(const _korali_verbosity_levels_ level, const char* format, ... );
+void logData(std::string verbosityLevel, const char* format, ... );
+void logInfo(std::string verbosityLevel, const char* format, ... );
+void logWarning(std::string verbosityLevel, const char* format, ... );
 void logError(const char* format, ... );
 
 }

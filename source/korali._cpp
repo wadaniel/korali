@@ -73,6 +73,31 @@ void Korali::Engine::setConfiguration()
  _computationalModelEvaluationCount = consume(_js, { "General", "Function Evaluation Count" }, KORALI_NUMBER, "0");
  _isFinished = consume(_js, { "General", "Is Finished" }, KORALI_BOOLEAN, "false");
 
+ // Configure Conduit
+ if (_conduitType == "Simple") _conduit = new Korali::Conduit::Simple();
+ if (_conduitType == "External") _conduit = new Korali::Conduit::External();
+ if (_conduitType == "MPI") _conduit = new Korali::Conduit::MPI();
+ if (_conduit == nullptr) Korali::logError("Incorrect or undefined Conduit '%s'.\n", _conduitType.c_str());
+ _conduit->setConfiguration(_js["Conduit"]);
+
+ // Configuring Problem
+ if (_problemType == "Optimization")  _problem = new Korali::Problem::Optimization();
+ if (_problemType == "Sampling") _problem = new Korali::Problem::Sampling();
+ if (_problemType == "Bayesian Inference") _problem = new Korali::Problem::Bayesian();
+ if (_problemType == "Hierarchical Bayesian (Psi)") _problem = new Korali::Problem::HierarchicalPsi();
+ if (_problemType == "Hierarchical Bayesian (Theta)") _problem = new Korali::Problem::HierarchicalTheta();
+ if (_problemType == "Hierarchical Bayesian (Theta New)") _problem = new Korali::Problem::HierarchicalThetaNew();
+ if (_problem == nullptr) Korali::logError("Incorrect or undefined Problem '%s'.\n", _problemType.c_str());
+ _problem->setConfiguration(_js["Problem"]);
+
+ // Configure Solver
+ if (_solverType == "CMAES")  _solver = new Korali::Solver::CMAES();
+ if (_solverType == "DEA")    _solver = new Korali::Solver::DEA();
+ if (_solverType == "MCMC")   _solver = new Korali::Solver::MCMC();
+ if (_solverType == "TMCMC")  _solver = new Korali::Solver::TMCMC();
+ if (_solver == nullptr) Korali::logError("Incorrect or undefined Solver '%s'.\n", _solverType.c_str());
+ _solver->setConfiguration(_js["Solver"]);
+
  if (isEmpty(_js) == false) Korali::logError("Unrecognized Settings for Korali:\n %s \n", _js.dump(2).c_str());
  _js = js;
 }
@@ -109,31 +134,6 @@ void Korali::Engine::initialize()
 
  // Creating Results directory
  mkdir(_result_dir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-
- // Configure Conduit
- if (_conduitType == "Simple") _conduit = new Korali::Conduit::Simple();
- if (_conduitType == "External") _conduit = new Korali::Conduit::External();
- if (_conduitType == "MPI") _conduit = new Korali::Conduit::MPI();
- if (_conduit == nullptr) Korali::logError("Incorrect or undefined Conduit '%s'.\n", _conduitType.c_str());
- _conduit->setConfiguration(_js["Conduit"]);
-
- // Configuring Problem
- if (_problemType == "Optimization")  _problem = new Korali::Problem::Optimization();
- if (_problemType == "Sampling") _problem = new Korali::Problem::Sampling();
- if (_problemType == "Bayesian Inference") _problem = new Korali::Problem::Bayesian();
- if (_problemType == "Hierarchical Bayesian (Psi)") _problem = new Korali::Problem::HierarchicalPsi();
- if (_problemType == "Hierarchical Bayesian (Theta)") _problem = new Korali::Problem::HierarchicalTheta();
- if (_problemType == "Hierarchical Bayesian (Theta New)") _problem = new Korali::Problem::HierarchicalThetaNew();
- if (_problem == nullptr) Korali::logError("Incorrect or undefined Problem '%s'.\n", _problemType.c_str());
- _problem->setConfiguration(_js["Problem"]);
-
- // Configure Solver
- if (_solverType == "CMAES")  _solver = new Korali::Solver::CMAES();
- if (_solverType == "DEA")    _solver = new Korali::Solver::DEA();
- if (_solverType == "MCMC")   _solver = new Korali::Solver::MCMC();
- if (_solverType == "TMCMC")  _solver = new Korali::Solver::TMCMC();
- if (_solver == nullptr) Korali::logError("Incorrect or undefined Solver '%s'.\n", _solverType.c_str());
- _solver->setConfiguration(_js["Solver"]);
 
  // Initializing Korali Components
  _problem->initialize();

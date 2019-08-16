@@ -33,7 +33,7 @@ void Korali::Variable::setConfiguration(nlohmann::json& js)
 
  if (isDefined(js, "['Is Log Space']"))
    {
-    _isLogSpace = js["Log Space"].get<int>();
+    _isLogSpace = js["Is Log Space"].get<int>();
     eraseValue(js, "['Is Log Space']");
    }
  else _isLogSpace = false;

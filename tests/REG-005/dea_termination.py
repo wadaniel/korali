@@ -9,27 +9,27 @@ sys.path.append('./helpers')
 from helpers import *
 
 #################################################
-# CMAES run method
+# DEA run method
 #################################################
 
-def run_cmaes_with_termination_criterion(criterion, value):
+def run_dea_with_termination_criterion(criterion, value):
 
-    print("[Korali] Prepare CMAES run with Termination Criteria "\
+    print("[Korali] Prepare DEA run with Termination Criteria "\
             "'{0}'".format(criterion))
 
     k = korali.initialize()
 
     k.setDirectModel(evaluateModel)
-
+    
     k["Problem"]["Type"] = "Optimization"
     k["Problem"]["Objective"] = "Maximize"
 
-    k["Problem"]["Variables"][0]["Name"] = "X"
-    k["Problem"]["Variables"][0]["Lower Bound"] = -10.0
-    k["Problem"]["Variables"][0]["Upper Bound"] = +10.0
+    k["Problem"]["Variables"][0]["Name"] = "X";
+    k["Problem"]["Variables"][0]["Lower Bound"] = -10.0;
+    k["Problem"]["Variables"][0]["Upper Bound"] = +10.0;
 
-    k["Solver"]["Type"] = "CMAES"
-    k["Solver"]["Population Size"] = 8
+    k["Solver"]["Type"] = "DEA"
+    k["Solver"]["Population Size"] = 10
     k["Solver"]["Termination Criteria"][criterion] = value
 
     k["General"]["Results Output"]["Frequency"] = 1000
@@ -45,11 +45,6 @@ def run_cmaes_with_termination_criterion(criterion, value):
     elif (criterion == "Max Infeasible Resamplings"):
         assert_greatereq(k["Solver"]["Internal"]["Infeasible Sample Count"].getValue(), value)
     
-    elif (criterion == "Max Condition Covariance Matrix"):
-        minEw = k["Solver"]["Internal"]["Minimum Covariance Eigenvalue"].getValue()
-        maxEw = k["Solver"]["Internal"]["Maximum Covariance Eigenvalue"].getValue()
-        assert_greatereq(maxEw/minEw, value)
-
     elif (criterion == "Max Value"):
         assert_greatereq(k["Solver"]["Internal"]["Best Ever Value"].getValue(), value)
   
@@ -58,14 +53,8 @@ def run_cmaes_with_termination_criterion(criterion, value):
         current  = k["Solver"]["Internal"]["Best Ever Value"].getValue()
         assert_smallereq(previous-current, value)
  
-    elif (criterion == "Min Standard Deviation"):
-        assert_smallereq(k["Solver"]["Internal"]["Current Min Standard Deviation"].getValue(), value)
- 
-    elif (criterion == "Max Standard Deviation"):
-        assert_greatereq(k["Solver"]["Internal"]["Current Max Standard Deviation"].getValue(), value)
-
-    elif (criterion == "Min Standard Deviation Step Factor"):
-        assert_smallereq(k["Solver"]["Internal"]["Current Min Standard Deviation Step"].getValue(), value)
+    elif (criterion == "Min Step Size"):
+        print("TODO: Min Val")
  
     elif (criterion == "Min Value"):
         print("TODO: Min Val")
@@ -85,7 +74,7 @@ if __name__ == '__main__':
     parser.add_argument('--value', help='Value of Termination Criterion', action='store', type = float, required = True)
     args = parser.parse_args()
     
-    run_cmaes_with_termination_criterion(args.criterion, args.value)
+    run_dea_with_termination_criterion(args.criterion, args.value)
 
 
 

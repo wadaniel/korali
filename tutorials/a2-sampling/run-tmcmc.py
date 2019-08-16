@@ -25,7 +25,7 @@ k["Problem"]["Variables"][0]["Prior Distribution"]["Maximum"] = +10.0
 
 # Configuring the TMCMC sampler parameters
 k["Solver"]["Type"] = "TMCMC"
-k["Solver"]["Population Size"] = 5000
+k["Solver"]["Population Size"] = 500
 k["Solver"]["Covariance Scaling"] = 0.001
 
 # Setting Model

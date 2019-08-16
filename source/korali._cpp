@@ -191,6 +191,7 @@ void Korali::Engine::start(bool isDryRun)
  // If this is a dry run and configuration succeeded, print sucess and return
  if (isDryRun)
   {
+   getConfiguration();
    Korali::logInfo(KORALI_MINIMAL,  "--------------------------------------------------------------------\n");
    Korali::logInfo(KORALI_MINIMAL,  "Dry Run Successful.\n", _currentGeneration);
    Korali::logInfo(KORALI_MINIMAL,  "--------------------------------------------------------------------\n");

@@ -21,6 +21,7 @@ k["Problem"]["Variables"][0]["Upper Bound"] = +10.0;
 k["Solver"]["Type"]  = "CMAES" 
 k["Solver"]["Population Size"] = 32
 
+
 k.dry()
 
 ###############################################################################
@@ -64,5 +65,3 @@ assert_value( k["Problem"]["Variables"][0]["Initial Standard Deviation"], 6.0 )
 assert_value( k["Problem"]["Variables"][0]["Lower Bound"], -10.0 )
 assert_value( k["Problem"]["Variables"][0]["Minimum Standard Deviation Update"], 0.0 )
 assert_value( k["Problem"]["Variables"][0]["Upper Bound"], 10.0 )
-
-

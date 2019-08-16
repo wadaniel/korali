@@ -34,6 +34,7 @@ def run_tmcmc_with_termination_criterion(criterion, value):
     k["Solver"]["Termination Criteria"][criterion] = value
 
     k["General"]["Results Output"]["Frequency"] = 1000
+    k["General"]["Random Seed"] = 1337
 
     k.run()
 

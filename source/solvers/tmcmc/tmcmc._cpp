@@ -36,6 +36,12 @@ void Korali::Solver::TMCMC::initialize()
 {
  N = _k->_problem->getVariableCount();
  if(_maxChainLength == 0) Korali::logError("Max Chain Length must be greater 0.");
+ 
+ if (_burnIn.size() > 0 && _burnIn[0] != 0)
+ Korali::logWarning(KORALI_NORMAL, "The first entry of the Burn In vector is being ignored (corresponding to Generation 0) - Burn In set 0");
+ 
+ if (_burnIn.size() > 1 && _burnIn[1] != 0)
+ Korali::logWarning(KORALI_NORMAL, "The second entry of the Burn In vector is being ignored (corresponding to Generation 0) - Burn In set 0");
 
  if (_k->_currentGeneration > 0) return;
 
@@ -53,7 +59,6 @@ void Korali::Solver::TMCMC::initialize()
  _chainLengths.resize(_populationSize);
 
  // Init Generation
- setBurnIn();
  _annealingExponent       = 0.0;
  _logEvidence             = 0.0;
  _coefficientOfVariation  = 0.0;
@@ -68,7 +73,8 @@ void Korali::Solver::TMCMC::initialize()
  for (size_t c = 0; c < _populationSize; c++) _chainLengths[c] = 1 + _currentBurnIn;
  for (size_t c = 0; c < _populationSize; c++) _chainPendingFitness[c] = false;
 
- // Initializing generation zero with random numbers from prior distributions
+ // Initializing generation one with random numbers from prior distributions
+ // Skip sampling in first generation
  for (size_t c = 0; c < _populationSize; c++)
    for (size_t d = 0; d < N; d++)
    {
@@ -232,12 +238,8 @@ void Korali::Solver::TMCMC::processGeneration()
 
   for (size_t i = 0; i < _populationSize; i++) q[i] = weight[i]/sum_weight;
 
-
-
   /* Sample candidate selections based on database entries */
   _multinomialGenerator->getSelections(q, numselections, _populationSize);
-
-  // for (size_t i = 0; i < _populationSize; i++) printf("----------> (%lf)  %lf      --   %lf  -- %d \n",sum_weight,weight[i],_sampleFitnessDatabase[i], numselections[i]);
 
   /* Update mean and covariance */
   for (size_t i = 0; i < N; i++)
@@ -390,7 +392,7 @@ void Korali::Solver::TMCMC::minSearch(double const *fj, size_t fn, double pj, do
 
 void Korali::Solver::TMCMC::setBurnIn()
 {
-  if( _k->_currentGeneration==0 || _k->_currentGeneration==1 )
+  if( _k->_currentGeneration == 0 || _k->_currentGeneration==1 )
     _currentBurnIn = 0;
   else if (_k->_currentGeneration < _burnIn.size())
     _currentBurnIn = _burnIn[_k->_currentGeneration];

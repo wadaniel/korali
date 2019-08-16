@@ -59,6 +59,7 @@ void Korali::Solver::TMCMC::initialize()
  _chainLengths.resize(_populationSize);
 
  // Init Generation
+ _currentBurnIn           = 0;
  _annealingExponent       = 0.0;
  _logEvidence             = 0.0;
  _coefficientOfVariation  = 0.0;

@@ -118,7 +118,7 @@ done
 
 logEcho "[Korali] Beginning TMCMC termination criterion tests"
 
-for ((i=0;i<${#criteria[@]};++i)); do
+for ((i=0;i<${#tmcmc_criteria[@]};++i)); do
 
   logEcho "-------------------------------------"
   logEcho "Testing Termination Criterion: ${tmcmc_criteria[$i]}"

@@ -24,7 +24,7 @@ def getResultFiles(src, start=None, end=None, noisy=False):
     runId = None
     with open(initialpath) as f:
         data  = json.load(f) 
-        runId = data['General']['Run ID']
+        runId = data['Internal']['Run ID']
 
     resultfiles = [] # Init Return Value
     for filename in resultfilesTmp:
@@ -32,7 +32,7 @@ def getResultFiles(src, start=None, end=None, noisy=False):
         
         with open(path) as f:
             data = json.load(f)
-            gen  = data['General']['Current Generation']
+            gen  = data['Internal']['Current Generation']
             
             if verifyResultFile(data, path, runId, start, end, noisy):
                 resultfiles.append(filename)
@@ -42,7 +42,7 @@ def getResultFiles(src, start=None, end=None, noisy=False):
 
 # Open file and verify runId and current generation in [start, end]
 def verifyResultFile(data, path, runId, start=None, end=None, noisy=True): 
-    currentGeneration = data['General']['Current Generation']
+    currentGeneration = data['Internal']['Current Generation']
 
     if ( (start is not None) and (currentGeneration < start)):
         return False
@@ -50,7 +50,7 @@ def verifyResultFile(data, path, runId, start=None, end=None, noisy=True):
     if ( (end is not None) and (currentGeneration > end)):
         return False
 
-    if (data['General']['Run ID'] != runId):
+    if (data['Internal']['Run ID'] != runId):
        
         if(noisy == True):
             print("[Korali] Warning: Skipping file {0}, results origin from a different experiment (different runid)".format(path))

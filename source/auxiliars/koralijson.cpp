@@ -102,62 +102,6 @@ bool Korali::isArray(nlohmann::json& js, std::vector<std::string> settings)
  return false;
 }
 
-nlohmann::json Korali::consume(nlohmann::json& js, std::vector<std::string> settings, jsonType type, std::string def)
-{
- bool hasDefault = true;
-
- if (def == "__NO_DEFAULT") hasDefault = false;
-
- size_t sz =  settings.size();
- std::string fullOption = "";
- for(size_t i = 0; i < sz; i++) fullOption += ">" + settings[i];
-
- if (isDefined(js, settings))
- {
-  nlohmann::json tmp = js;
-  nlohmann::json* ptr = &tmp;
-  for (size_t i = 0; i < sz-1; i++) ptr = &((*ptr)[settings[i]]);
-
-  bool isCorrect = false;
-  if (type == KORALI_STRING && (*ptr)[settings[sz-1]].is_string()) isCorrect = true;
-  if (type == KORALI_NUMBER && (*ptr)[settings[sz-1]].is_number()) isCorrect = true;
-  if (type == KORALI_ARRAY && (*ptr)[settings[sz-1]].is_array()) isCorrect = true;
-  if (type == KORALI_BOOLEAN)
-   {
-     if ( (*ptr)[settings[sz-1]].is_boolean() || (*ptr)[settings[sz-1]].is_number() ) isCorrect = true;
-     if ( (*ptr)[settings[sz-1]].is_number() )
-     {
-       int val = (*ptr)[settings[sz-1]];
-       nlohmann::json newVal = nlohmann::json(val != 0);
-       (*ptr)[settings[sz-1]] = newVal;
-     }
-   }
-
-
-  if (isCorrect)
-  {
-   nlohmann::json ret = (*ptr)[settings[sz-1]];
-   ptr->erase(settings[sz-1]);
-   js = tmp;
-   return ret;
-  }
-  else
-  {
-   if (type == KORALI_STRING)  Korali::logError("Passing non-string value to string-type option: %s.\n", fullOption.c_str());
-   if (type == KORALI_NUMBER)  Korali::logError("Passing non-numeric value to numeric option: %s.\n", fullOption.c_str());
-   if (type == KORALI_ARRAY)   Korali::logError("Passing non-array value to array option: %s.\n", fullOption.c_str());
-   if (type == KORALI_BOOLEAN) Korali::logError("Passing non-boolean and non-numeric value to boolean option: %s.\n", fullOption.c_str());
-  }
- }
-
- if (type == KORALI_ARRAY) return nlohmann::json();
-
- if (hasDefault == false) Korali::logError("No value passed for non-default option: %s.\n", fullOption.c_str());
-
- if (type == KORALI_STRING) def = "\"" + def + "\"";
- return nlohmann::json::parse(def);
-}
-
 nlohmann::json Korali::loadJsonFromFile(const char* fileName)
 {
  nlohmann::json js;

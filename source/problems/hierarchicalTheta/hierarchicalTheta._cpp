@@ -9,7 +9,7 @@ void Korali::Problem::HierarchicalTheta::initialize()
   nlohmann::json subProblemJson = loadJsonFromFile(_subProblem.c_str());
 
   // Sub-problem correctness checks
-  std::string subProblemType = consume(subProblemJson, { "Problem", "Type" }, KORALI_STRING);
+  std::string subProblemType = subProblemJson["Problem"]["Type"];
   if (subProblemType != "Bayesian Inference")
     Korali::logError("The Hierarchical Bayesian (Theta) can only accept sub-problems of type 'Bayesian Inference' but sub-Problem is of type: '%s'.\n", subProblemType.c_str());
 
@@ -20,7 +20,7 @@ void Korali::Problem::HierarchicalTheta::initialize()
   nlohmann::json psiProblemJson = loadJsonFromFile(_psiProblem.c_str());
 
   // Psi-problem correctness checks
-  std::string psiProblemType = consume(psiProblemJson, { "Problem", "Type" }, KORALI_STRING);
+  std::string psiProblemType = psiProblemJson["Problem"]["Type"];
   if (psiProblemType != "Hierarchical Bayesian (Psi)")
     Korali::logError("The Hierarchical Bayesian (Theta) can only accept a psi-problem of type 'Hierarchical Bayesian (Psi)' but psi-Problem is of type: '%s'.\n", psiProblemType.c_str());
 

@@ -18,8 +18,8 @@ typedef struct fparam_s {
 
 Korali::Solver::TMCMC::TMCMC()
 {
- _multinomialGenerator = new Korali::Distribution::Multinomial(_k->_seed++);
- _multivariateGenerator = new Korali::Distribution::MultivariateNormal(_k->_seed++);
+ _multinomialGenerator = new Korali::Distribution::Multinomial(_k->_randomSeed++);
+ _multivariateGenerator = new Korali::Distribution::MultivariateNormal(_k->_randomSeed++);
 
  auto jsUniform = nlohmann::json();
  jsUniform["Type"] = "Uniform";

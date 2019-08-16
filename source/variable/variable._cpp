@@ -15,7 +15,7 @@ Korali::Variable::~Variable()
 
 void Korali::Variable::getConfiguration(nlohmann::json& js)
 {
- js["Log Space"] = _isLogSpace;
+ js["Is Log Space"] = _isLogSpace;
  js["Name"] = _name;
 
  getInheritedSettings(js);
@@ -23,8 +23,20 @@ void Korali::Variable::getConfiguration(nlohmann::json& js)
 
 void Korali::Variable::setConfiguration(nlohmann::json& js)
 {
- _isLogSpace = consume(js, { "Log Space"}, KORALI_BOOLEAN, "false");
- _name = consume(js, { "Name" }, KORALI_STRING);
+
+ if (isDefined(js, "['Name']"))
+ {
+ _name = js["Name"].get<std::string>();
+  eraseValue(js, "['Name']");
+ }
+ else Korali::logError("No value provided for mandatory setting: ['Name'] required by variables.\n");
+
+ if (isDefined(js, "['Is Log Space']"))
+ {
+  _isLogSpace = js["Is Log Space"].get<int>();
+  eraseValue(js, "['Is Log Space']");
+ }
+ else _isLogSpace = false;
 
  setInheritedSettings(js);
 }

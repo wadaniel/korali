@@ -81,7 +81,7 @@ void Korali::Solver::DEA::initSamples()
   for(size_t i = 0; i < _populationSize; ++i) for(size_t d = 0; d < N; ++d)
   {
     double width = _k->_problem->getVariable(d)->_upperBound - _k->_problem->getVariable(d)->_lowerBound;
-    _samplePopulation[i*N+d] = _k->_problem->getVariable(d)->_lowerBound + width * _uniformGenerator->getRandomNumber();
+    _candidatePopulation[i*N+d] = _k->_problem->getVariable(d)->_lowerBound + width * _uniformGenerator->getRandomNumber();
   }
 }
 
@@ -90,6 +90,7 @@ void Korali::Solver::DEA::prepareGeneration()
 {
  size_t initial_infeasible = _infeasibleSampleCount;
 
+ if(_k->_currentGeneration > 1) /* at gen 1 candidates initialized in initialize() */
  for (size_t i = 0; i < _populationSize; ++i)
  {
   mutateSingle(i);
@@ -103,7 +104,6 @@ void Korali::Solver::DEA::prepareGeneration()
       mutateSingle(i);
   }
 
-  _infeasibleSampleCountChange = _infeasibleSampleCount - initial_infeasible;
  }
 
  _finishedSampleCount = 0;
@@ -227,9 +227,9 @@ void Korali::Solver::DEA::processSample(size_t sampleId, double fitness)
 void Korali::Solver::DEA::updateSolver()
 {
     _bestSampleIndex = std::distance( std::begin(_valueVector), std::max_element(std::begin(_valueVector), std::end(_valueVector)) );
-    _previousBestEverValue  = _bestEverValue;
-    _previousBestValue = _currentBestValue;
-    _currentBestValue  = _valueVector[_bestSampleIndex];
+    _previousBestEverValue = _bestEverValue;
+    _previousBestValue     = _currentBestValue;
+    _currentBestValue      = _valueVector[_bestSampleIndex];
 
     for(size_t d = 0; d < N; ++d) _currentBestVariables[d] = _candidatePopulation[_bestSampleIndex*N+d];
     

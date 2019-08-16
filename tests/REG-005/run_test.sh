@@ -23,7 +23,7 @@ cmaes_values=(
 0.1   # Min Value Difference Threshold
 0.1   # Min Standard Deviation
 0.9   # Max Standard Deviation
-3.5   # Max Condition Covariance
+1.0   # Max Condition Covariance
 -1.2  # Max Value
 -1.0  # Min Value
 )
@@ -43,8 +43,8 @@ dea_values=(
 0     # Max Generations
 2     # Max Generations
 20    # Max Model Evaluations
-1     # Max Infeasible Resamplings
--0.2  # Max Value
+0     # Max Infeasible Resamplings
+-1.2  # Max Value
 0.1   # Min Value Difference Threshold
 0.3   # Min Step Size
 -1.0  # Min Value
@@ -57,7 +57,7 @@ tmcmc_criteria=(
 "Target Annealing Exponent"
 )
 
-dea_values=(
+tmcmc_values=(
 0     # Max Generations
 1     # Max Generations
 600   # Max Model Evaluations
@@ -94,13 +94,13 @@ done
 
 logEcho "[Korali] Beginning DEA termination criterion tests"
 
-for ((i=0;i<${#criteria[@]};++i)); do
+for ((i=0;i<${#dea_criteria[@]};++i)); do
 
   logEcho "-------------------------------------"
   logEcho "Testing Termination Criterion: ${dea_criteria[$i]}"
   logEcho "Running File: dea_termination.py"
 
-  python3 ./cmaes_termination.py --criterion "${dea_criteria[$i]}" --value ${dea_values[$i]} >> $logFile 2>&1
+  python3 ./dea_termination.py --criterion "${dea_criteria[$i]}" --value ${dea_values[$i]} >> $logFile 2>&1
   check_result
 
   log "[Korali] Removing results..."
@@ -124,7 +124,7 @@ for ((i=0;i<${#criteria[@]};++i)); do
   logEcho "Testing Termination Criterion: ${tmcmc_criteria[$i]}"
   logEcho "Running File: tmcmc_termination.py"
 
-  python3 ./cmaes_termination.py --criterion "${tmcmc_criteria[$i]}" --value ${tmcmc_values[$i]} >> $logFile 2>&1
+  python3 ./tmcmc_termination.py --criterion "${tmcmc_criteria[$i]}" --value ${tmcmc_values[$i]} >> $logFile 2>&1
   check_result
 
   log "[Korali] Removing results..."

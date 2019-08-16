@@ -68,21 +68,21 @@
     "Name": [ "Max Infeasible Resamplings" ],
     "Type": "size_t",
     "Default": "10000000",
-    "Criteria": "_infeasibleSampleCountChange > _maxInfeasibleResamplings",
+    "Criteria": "_infeasibleSampleCount > _maxInfeasibleResamplings",
     "Description": "Max number of mutations per sample per generation if infeasible (only relevant if Fix Infeasible is set False)."
    },
    {
     "Name": [ "Min Value" ],
     "Type": "double",
     "Default": "-INFINITY",
-    "Criteria": "_bestEverValue < _minValue",
+    "Criteria": "_k->_hasComputedGeneration && (_bestEverValue < _minValue)",
     "Description": "Specifies the target fitness to stop minimization."
    },
    {
     "Name": [ "Max Value" ],
     "Type": "double",
     "Default": "+INFINITY",
-    "Criteria": "_bestEverValue > _maxValue",
+    "Criteria": "_k->_hasComputedGeneration && (_bestEverValue > _maxValue)",
     "Description": "Specifies the target fitness to stop maximization."
    },
    {
@@ -200,12 +200,7 @@
    {
     "Name": [ "Infeasible Sample Count" ],
     "Type": "size_t",
-    "Description": "Keeps count of infeasible sample re-evaluations so far."
-   },
-   {
-    "Name": [ "Infeasible Sample Count Change" ],
-    "Type": "size_t",
-    "Description": "Number of resamples in the current generation."
+    "Description": "Keeps count of infeasible samples so far."
    },
    {
     "Name": [ "Current Minimum Step Size" ],

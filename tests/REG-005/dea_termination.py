@@ -25,7 +25,7 @@ def run_dea_with_termination_criterion(criterion, value):
     k["Problem"]["Objective"] = "Maximize"
 
     k["Problem"]["Variables"][0]["Name"] = "X";
-    k["Problem"]["Variables"][0]["Lower Bound"] = -10.0;
+    k["Problem"]["Variables"][0]["Lower Bound"] = +1.0;
     k["Problem"]["Variables"][0]["Upper Bound"] = +10.0;
 
     k["Solver"]["Type"] = "DEA"

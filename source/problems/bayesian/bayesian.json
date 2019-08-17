@@ -3,8 +3,8 @@
  "Alias": "Bayesian Inference",
  "Class": "Bayesian",
  "Compatible Solvers": [ "CMAES", "DEA", "MCMC", "TMCMC" ],
- 
- "Problem Configuration": 
+
+ "Problem Configuration":
  [
    {
     "Name": [ "Variables" ],
@@ -20,11 +20,11 @@
     "Name": [ "Likelihood", "Reference Data" ],
     "Type": "std::vector<double>",
     "Default": "std::vector<double>(0)",
-    "Description": "Evaluation of the model on specific data points, required to calculate likelihood."
+    "Description": "Reference data required to calculate likelihood. Model evaluations are compared against these data."
    }
  ],
- 
- "Variables Configuration": 
+
+ "Variables Configuration":
  [
    {
     "Name": [ "Type" ],
@@ -38,8 +38,8 @@
     "Description": "Eh..."
    }
  ],
- 
- "Internal Settings": 
+
+ "Internal Settings":
  [
    {
     "Name": [ "Computational Variable Indices" ],
@@ -53,4 +53,3 @@
    }
  ]
 }
- 

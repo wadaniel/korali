@@ -6,7 +6,6 @@ Korali::Distribution::Uniform::Uniform()
  _maximum = 2.0;
 }
 
-
 void Korali::Distribution::Uniform::initialize(Korali::Problem::Base* problem)
 {
  Korali::Distribution::Base::initialize(problem);

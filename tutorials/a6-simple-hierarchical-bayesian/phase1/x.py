@@ -16,39 +16,30 @@ if not os.path.exists(resultsPath): os.makedirs(resultsPath)
 k = korali.initialize()
 
 k["Problem"]["Type"] = "Bayesian Inference"
-k["Problem"]["Likelihood"]["Model"] = "Additive Normal"
+k["Problem"]["Likelihood"]["Model"] = "Normal (No Model)"
 k["Problem"]["Likelihood"]["Reference Data"] = getReferenceData(dataPath,i);
 
-k["Problem"]["Variables"][0]["Name"] = "C1"
+k["Problem"]["Variables"][0]["Name"] = "mu"
+k["Problem"]["Variables"][0]["Type"] = "Statistical"
 k["Problem"]["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"
-k["Problem"]["Variables"][0]["Prior Distribution"]["Minimum"] = 280.0
-k["Problem"]["Variables"][0]["Prior Distribution"]["Maximum"] = 320.0
+k["Problem"]["Variables"][0]["Prior Distribution"]["Minimum"] =  0.0
+k["Problem"]["Variables"][0]["Prior Distribution"]["Maximum"] = 20.0
 
-k["Problem"]["Variables"][1]["Name"] = "C2"
+k["Problem"]["Variables"][1]["Name"] = "sigma"
+k["Problem"]["Variables"][1]["Type"] = "Statistical"
 k["Problem"]["Variables"][1]["Prior Distribution"]["Type"] = "Uniform"
-k["Problem"]["Variables"][1]["Prior Distribution"]["Minimum"] = 10.0
-k["Problem"]["Variables"][1]["Prior Distribution"]["Maximum"] = 70.0
+k["Problem"]["Variables"][1]["Prior Distribution"]["Minimum"] = 0.0
+k["Problem"]["Variables"][1]["Prior Distribution"]["Maximum"] = 10.0
 
-k["Problem"]["Variables"][2]["Name"] = "C3"
-k["Problem"]["Variables"][2]["Prior Distribution"]["Type"] = "Uniform"
-k["Problem"]["Variables"][2]["Prior Distribution"]["Minimum"] = 0.0
-k["Problem"]["Variables"][2]["Prior Distribution"]["Maximum"] = 5.0
-
-k["Problem"]["Variables"][3]["Name"] = "Sigma"
-k["Problem"]["Variables"][3]["Type"] = "Statistical"
-k["Problem"]["Variables"][3]["Prior Distribution"]["Type"] = "Uniform"
-k["Problem"]["Variables"][3]["Prior Distribution"]["Minimum"] = 0.0
-k["Problem"]["Variables"][3]["Prior Distribution"]["Maximum"] = 30.0
 
 k["Solver"]["Type"] = "TMCMC"
-k["Solver"]["Population Size"] = 2000
+k["Solver"]["Population Size"] = 1000
 k["Solver"]["Target Coefficient Of Variation"] = 0.6
 k["Solver"]["Covariance Scaling"] = 0.02
-k["Solver"]["Default Burn In"] = 3;
+k["Solver"]["Default Burn In"] = 0;
+
 
 k["General"]["Results Output"]["Path"] = resultsPath
 k["General"]["Console Output"]["Verbosity"] = "Detailed"
 
-x = getReferencePoints(dataPath,i);
-k.setReferenceModel( lambda d: logistic( x, d) )
 k.run()

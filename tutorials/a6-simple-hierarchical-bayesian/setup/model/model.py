@@ -3,16 +3,10 @@ import sys
 import math
 import scipy.stats as stats
 
-def truncated_normal( X, s ):
-    s.addReferenceEvaluation(1)
-
-
 def getReferenceData( path, i ):
   fileName = path + "/data_set_" + str(i).zfill(3) + ".dat"
-  y = readColumnFromFile(fileName,1)
+  y = readColumnFromFile(fileName,0)
   return y
-
-
 
 def readColumnFromFile( FileName, Column ):
   try:

@@ -9,7 +9,8 @@ void Korali::Problem::Bayesian::initialize()
   if (_likelihoodModel == "Additive Normal") recognizedModel = true;
   if (_likelihoodModel == "Multiplicative Normal") recognizedModel = true;
   if (_likelihoodModel == "Multiplicative Normal Data") recognizedModel = true;
-  if (_likelihoodModel == "Truncated Normal") recognizedModel = true;
+  if (_likelihoodModel == "Truncated Normal (No Model)") recognizedModel = true;
+  if (_likelihoodModel == "Normal (No Model)") recognizedModel = true;
   if (recognizedModel == false) Korali::logError("Incorrect or no Likelihood Model selected: %s.\n", _likelihoodModel.c_str());
 
   _computationalVariableIndices.clear();
@@ -33,11 +34,10 @@ void Korali::Problem::Bayesian::initialize()
     if (_statisticalVariableIndices.size() != 1) Korali::logError("Bayesian (%s) problems require exactly 1 statistical parameter, provided: %lu.\n", _likelihoodModel.c_str(), _statisticalVariableIndices.size());
   }
 
-  if (_likelihoodModel == "Truncated Normal")
+  if (_likelihoodModel == "Truncated Normal (No Model)" || _likelihoodModel == "Normal (No Model)" )
   {
     if (_likelihoodReferenceData.size() == 0)  Korali::logError("Bayesian (%s) problems require defining reference data.\n", _likelihoodModel.c_str());
     if (_computationalVariableIndices.size() != 0) Korali::logError("Bayesian (%s) problems do not accept computational parameters.\n", _likelihoodModel.c_str() );
-    if (_statisticalVariableIndices.size() != 4) Korali::logError("Bayesian (%s) problems require exactly 4 statistical parameter, provided: %lu.\n", _likelihoodModel.c_str(), _statisticalVariableIndices.size());
   }
 
   if (_likelihoodModel == "Custom")
@@ -91,7 +91,7 @@ void Korali::Problem::Bayesian::runModel(std::vector<double> sample, size_t samp
     _k->_likelihoodModel(_likelihoodModelData);
   }
 
-  if (_likelihoodModel == "Truncated Normal"){
+  if (_likelihoodModel == "Truncated Normal (No Model)" || _likelihoodModel == "Normal (No Model)" ){
     _likelihoodModelData._sampleId = sampleId;
     _likelihoodModelData._variables = sample;
   }
@@ -114,7 +114,8 @@ double Korali::Problem::Bayesian::evaluateSampleFitness()
 
   if (_likelihoodModel == "Custom") fitness =  _likelihoodModelData._likelihood;
 
-  if (_likelihoodModel == "Truncated Normal") fitness = likelihoodTruncatedNormal(_likelihoodModelData);
+  if (_likelihoodModel == "Truncated Normal (No Model)") fitness = likelihoodTruncatedNormalNoModel(_likelihoodModelData);
+  if (_likelihoodModel == "Normal (No Model)")           fitness = likelihoodNormalNoModel(_likelihoodModelData);
 
   return fitness;
 }
@@ -127,9 +128,26 @@ double Korali::Problem::Bayesian::evaluateSampleLogPrior(double* sample)
   return logPrior;
 }
 
-double Korali::Problem::Bayesian::likelihoodTruncatedNormal(Korali::Model::Likelihood& data)
+double Korali::Problem::Bayesian::likelihoodNormalNoModel(Korali::Model::Likelihood& data)
 {
+  double mu     = data._variables[_statisticalVariableIndices[0]];
+  double sigma  = data._variables[_statisticalVariableIndices[1]];
+  double sigma2 = sigma*sigma;
 
+  double logNormalization = 0.5 * M_SQRT2 * M_SQRTPI * sigma ;
+  logNormalization = _likelihoodReferenceData.size() * gsl_sf_log(logNormalization);
+
+  double ssn = 0.;
+  for (auto& d : _likelihoodReferenceData){
+    double diff = d - mu;
+    ssn += diff*diff;
+  }
+
+  return -logNormalization - 0.5*ssn/sigma2;
+}
+
+double Korali::Problem::Bayesian::likelihoodTruncatedNormalNoModel(Korali::Model::Likelihood& data)
+{
   double a      = data._variables[_statisticalVariableIndices[0]];
   double b      = data._variables[_statisticalVariableIndices[1]];
   double mu     = data._variables[_statisticalVariableIndices[2]];
@@ -147,14 +165,11 @@ double Korali::Problem::Bayesian::likelihoodTruncatedNormal(Korali::Model::Likel
   logNormalization = _likelihoodReferenceData.size() * gsl_sf_log(logNormalization);
 
   double ssn = 0.;
-  for (auto& d : _likelihoodReferenceData)
-  {
+  for (auto& d : _likelihoodReferenceData){
     if( d>b || d<a) return -Korali::Inf;
     double diff = d - mu;
     ssn += diff*diff;
-    // printf("-->    %lf   --   %lf   --    %lf \n",d,mu,diff);
   }
-  // printf("========>  logZ = %lf    ---   sum = %lf   (%lf) \n", -logNormalization, -0.5*ssn/sigma2, -logNormalization -0.5*ssn/sigma2 );
 
   return -logNormalization - 0.5*ssn/sigma2;
 }

@@ -18,7 +18,8 @@ class Bayesian : public Korali::Problem::Base
  double likelihoodNormalMultiplicative(Korali::Model::Reference& data);
  double likelihoodNormalMultiplicativeData(Korali::Model::Reference& data);
 
- double likelihoodTruncatedNormal(Korali::Model::Likelihood& data);
+ double likelihoodTruncatedNormalNoModel(Korali::Model::Likelihood& data);
+ double likelihoodNormalNoModel(Korali::Model::Likelihood& data);
 
 
  public:

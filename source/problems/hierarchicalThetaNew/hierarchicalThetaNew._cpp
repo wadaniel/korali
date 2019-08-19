@@ -5,7 +5,6 @@ void Korali::Problem::HierarchicalThetaNew::initialize()
 {
   if (_k->_constraints.size() > 0) Korali::logError("Hierarchical Bayesian (Theta New) problems do not allow constraint definitions.\n");
 
-
   // Creating Psi-problem JSON object from string
   nlohmann::json psiProblemJson = loadJsonFromFile(_psiProblem.c_str());
 
@@ -22,7 +21,6 @@ void Korali::Problem::HierarchicalThetaNew::initialize()
     Korali::logError("THe problem contains a different number of variables (%lu) than conditional priors in the Hierarchical Bayesian (Psi) problem (%lu).\n", getVariableCount(), psiProblemJson["Problem"]["Conditional Priors"].size());
 
   // Setting Korali problem objects
-  eraseValue(psiProblemJson, "['Problem']['Type']");
   _psiProblemKorali.setConfiguration(psiProblemJson["Problem"]);
 
   // Loading Psi problem results

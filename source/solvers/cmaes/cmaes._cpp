@@ -131,7 +131,7 @@ void Korali::Solver::CMAES::initialize()
   
  _constraintEvaluationCount = 0;
  _covarianceMatrixAdaptationCount = 0;
- _maximumViolationCount = 0;
+ _maxConstraintViolationCount = 0;
 
  // Setting algorithm internal variables
  if (_areConstraintsDefined) initMuWeights(_viabilityMuValue);
@@ -329,7 +329,7 @@ void Korali::Solver::CMAES::updateConstraints() //TODO: maybe parallelize constr
 {
 
  for(size_t i = 0; i < _currentPopulationSize; i++) _sampleConstraintViolationCounts[i] = 0;
- _maximumViolationCount = 0;
+ _maxConstraintViolationCount = 0;
 
  for(size_t c = 0; c < _k->_constraints.size(); c++)
  {
@@ -348,7 +348,7 @@ void Korali::Solver::CMAES::updateConstraints() //TODO: maybe parallelize constr
     if ( _k->_currentGeneration == 0 && _isViabilityRegime ) _viabilityBoundaries[c] = maxviolation;
 
     if ( _constraintEvaluations[c][i] > _viabilityBoundaries[c] + 1e-12 ) _sampleConstraintViolationCounts[i]++;
-    if ( _sampleConstraintViolationCounts[i] > _maximumViolationCount ) _maximumViolationCount = _sampleConstraintViolationCounts[i];
+    if ( _sampleConstraintViolationCounts[i] > _maxConstraintViolationCount ) _maxConstraintViolationCount = _sampleConstraintViolationCounts[i];
 
   }
  }
@@ -358,7 +358,7 @@ void Korali::Solver::CMAES::updateConstraints() //TODO: maybe parallelize constr
 
 void Korali::Solver::CMAES::reEvaluateConstraints() //TODO: maybe we can parallelize constraint evaluations (DW)
 {
-  _maximumViolationCount = 0;
+  _maxConstraintViolationCount = 0;
   for(size_t i = 0; i < _currentPopulationSize; ++i) if(_sampleConstraintViolationCounts[i] > 0)
   {
     _sampleConstraintViolationCounts[i] = 0;
@@ -376,7 +376,7 @@ void Korali::Solver::CMAES::reEvaluateConstraints() //TODO: maybe we can paralle
       else _viabilityIndicator[c][i] = false;
 
     }
-    if (_sampleConstraintViolationCounts[i] > _maximumViolationCount) _maximumViolationCount = _sampleConstraintViolationCounts[i];
+    if (_sampleConstraintViolationCounts[i] > _maxConstraintViolationCount) _maxConstraintViolationCount = _sampleConstraintViolationCounts[i];
   }
 }
 
@@ -553,7 +553,7 @@ void Korali::Solver::CMAES::updateDistribution()
  if(_hasDiscreteVariables) updateDiscreteMutationMatrix();
  
  /* update viability bounds */
- if( _areConstraintsDefined && (_isViabilityRegime == false) ) updateViabilityBoundaries();
+ if( _areConstraintsDefined && (_isViabilityRegime == true) ) updateViabilityBoundaries();
 
  /* update sigma */
  updateSigma();
@@ -609,7 +609,7 @@ void Korali::Solver::CMAES::adaptC(int hsig)
 void Korali::Solver::CMAES::updateSigma()
 {
  /* update for non-viable region */
- if( _areConstraintsDefined && (_isViabilityRegime == false) )
+ if( _areConstraintsDefined && (_isViabilityRegime == true) )
  {
    _globalSuccessRate = (1-_globalSuccessLearningRate)*_globalSuccessRate;
    if ( _previousBestEverValue != _bestEverValue ) _globalSuccessRate += _globalSuccessLearningRate;
@@ -673,7 +673,7 @@ void Korali::Solver::CMAES::handleConstraints()
  size_t initial_resampled = _resampledParameterCount;
  size_t initial_corrections = _covarianceMatrixAdaptationCount;
 
- while( _maximumViolationCount > 0 )
+ while( _maxConstraintViolationCount > 0 )
  {
   for (size_t i = 0; i < N; i++) _auxiliarCovarianceMatrix.assign(std::begin(_covarianceMatrix), std::end(_covarianceMatrix));
 
@@ -728,7 +728,7 @@ void Korali::Solver::CMAES::handleConstraints()
     return;
   }
 
- }//while _maximumViolationCount > 0
+ }//while _maxConstraintViolationCount > 0
 
 }
 

@@ -29,7 +29,7 @@ do
   pushd $dir >> $logFile 2>&1
 
   log "[Korali] Removing any old result files..."
-  rm -rf _korali_results >> $logFile 2>&1
+  rm -rf *_result* >> $logFile 2>&1
   check_result
 
   for file in run-*.py

@@ -45,7 +45,6 @@ def run_ccmaes(constraint):
 
 
     if (constraint == "None"):
-        pass
         k.run()
         assert_greatereq(k["Solver"]["Internal"]["Best Ever Value"].getValue(),-6*1e-17)
 

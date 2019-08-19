@@ -185,7 +185,7 @@ double Korali::Problem::Bayesian::likelihoodNormalAdditive(Korali::Model::Refere
   {
     if( !isfinite(data._evaluations[i]) )
     {
-      Korali::logWarning("Normal","Non-finite value detected in the results passed in the log-likelihood function.");
+      Korali::logWarning("Normal","Non-finite value detected in the results passed in the log-likelihood function.\n");
       return -Korali::Inf;
     }
     double diff = _likelihoodReferenceData[i] - data._evaluations[i];
@@ -206,7 +206,7 @@ double Korali::Problem::Bayesian::likelihoodNormalMultiplicative(Korali::Model::
   {
     if( !isfinite(data._evaluations[i]) )
     {
-      Korali::logWarning("Normal","Non-finite value detected in the results passed in the log-likelihood function.");
+      Korali::logWarning("Normal","Non-finite value detected in the results passed in the log-likelihood function.\n");
       return -Korali::Inf;
     }
 
@@ -230,7 +230,7 @@ double Korali::Problem::Bayesian::likelihoodNormalMultiplicativeData(Korali::Mod
   {
     if( !isfinite(data._evaluations[i]) )
     {
-      Korali::logWarning("Normal","Non-finite value detected in the results passed in the log-likelihood function.");
+      Korali::logWarning("Normal","Non-finite value detected in the results passed in the log-likelihood function.\n");
       return -Korali::Inf;
     }
 

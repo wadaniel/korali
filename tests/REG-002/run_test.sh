@@ -6,7 +6,7 @@ pushd ../../tutorials/
 
 logEcho "[Korali] Beginning plotting tests"
 
-for dir in ./a*/_korali_*/
+for dir in ./a*/*_result*/
 do
   logEcho "-------------------------------------"
   logEcho " Plotting results from $dir ..."

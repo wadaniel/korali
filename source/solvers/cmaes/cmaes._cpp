@@ -345,7 +345,7 @@ void Korali::Solver::CMAES::updateConstraints() //TODO: maybe parallelize constr
     _constraintEvaluations[c][i] = data._evaluation;
 
     if ( _constraintEvaluations[c][i] > maxviolation ) maxviolation = _constraintEvaluations[c][i];
-    if ( _k->_currentGeneration == 0 && _isViabilityRegime ) _viabilityBoundaries[c] = maxviolation;
+    if ( _k->_currentGeneration == 1 && _isViabilityRegime ) _viabilityBoundaries[c] = maxviolation;
 
     if ( _constraintEvaluations[c][i] > _viabilityBoundaries[c] + 1e-12 ) _sampleConstraintViolationCounts[i]++;
     if ( _sampleConstraintViolationCounts[i] > _maxConstraintViolationCount ) _maxConstraintViolationCount = _sampleConstraintViolationCounts[i];
@@ -642,7 +642,11 @@ void Korali::Solver::CMAES::updateSigma()
  if(_sigma > _upperBound)
  {
   Korali::logInfo("Detailed", "Sigma exceeding inital value of _sigma (%f > %f), increase Initial Standard Deviation of variables.\n", _sigma, _upperBound);
-  if( _isSigmaBounded ) _sigma = _upperBound;
+  if( _isSigmaBounded ) 
+  {
+    _sigma = _upperBound;
+    Korali::logInfo("Detailed", "Sigma set to upper bound (%f) due to solver configuration 'Is Sigma Bounded' = 'true'.\n", _sigma);
+  }
  }
 
 }
@@ -841,11 +845,11 @@ void Korali::Solver::CMAES::sort_index(const std::vector<double>& vec, std::vect
 void Korali::Solver::CMAES::printGeneration()
 {
 
- if ( _areConstraintsDefined && _isViabilityRegime)
+ if ( _areConstraintsDefined && _isViabilityRegime )
  {
    Korali::logInfo("Normal", "Searching start (MeanX violates constraints) .. \n");
    Korali::logInfo("Normal", "Viability Bounds:\n");
-   for (size_t c = 0; c < _k->_constraints.size(); c++) Korali::logData("Normal", "         %s = (%+6.3e)\n", _k->_problem->getVariable(c)->_name.c_str(), _viabilityBoundaries[c]);
+   for (size_t c = 0; c < _k->_constraints.size(); c++) Korali::logData("Normal", "         (%+6.3e)\n", _viabilityBoundaries[c]);
    Korali::logInfo("Normal", "\n");
  }
 

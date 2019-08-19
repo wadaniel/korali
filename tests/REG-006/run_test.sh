@@ -5,6 +5,12 @@ source ../functions.sh
 constraints=(
 "None"
 "Inactive"
+"Active at Max 1"
+"Active at Max 2"
+"Inactive at Max 1"
+"Inactive at Max 1"
+"Mixed"
+"Stress"
 )
 
 #################################################

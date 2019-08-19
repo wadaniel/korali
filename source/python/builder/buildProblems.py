@@ -44,6 +44,9 @@ def buildProblems(koraliDir):
   
   problemCodeString = 'void Korali::Problem::' + problemConfig["Class"] + '::setConfiguration(nlohmann::json& js) \n{\n'
   
+  # Erase problem type, if exists.
+  problemCodeString += ' if(isDefined(js, "[\'Type\']")) eraseValue(js, "[\'Type\']");\n'
+
   # Checking whether solver is accepted
   problemCodeString += ' bool __acceptedSolver = false;\n'
   for v in problemConfig["Compatible Solvers"]:

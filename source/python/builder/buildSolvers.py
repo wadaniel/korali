@@ -56,7 +56,7 @@ def buildSolvers(koraliDir):
   for v in solverConfig["Termination Criteria"]:
     solverCodeString += consumeValue('js', solverConfig["Alias"], '["Termination Criteria"]' + getVariablePath(v), getCXXVariableName(v), getVariableType(v), getVariableDefault(v))
  
-  solverCodeString += ' if(isEmpty(js) == false) Korali::logError("Unrecognized settings for the ' + solverConfig["Name"] + ' solver: \\n%s\\n", js.dump(2).c_str());\n'
+  solverCodeString += ' if(isEmpty(js) == false) Korali::logError("Unrecognized settings for the ' + solverConfig["Name"] + ' (' + solverConfig["Alias"] + ') solver: \\n%s\\n", js.dump(2).c_str());\n'
   solverCodeString += '} \n\n'
    
   ###### Creating Solver Get Configuration routine

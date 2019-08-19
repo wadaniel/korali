@@ -13,7 +13,7 @@ def checkMean(js, expectedMean, tol):
     samples = js["Solver"]["Internal"]["Sample Database"]
     
     mean = np.mean(samples)
-    assert np.isclose(expectedMean, mean, atol = tol), "Mean of Samples {0}"\
+    assert np.isclose(expectedMean, mean, atol = tol), "Mean of Samples {0} "\
             "deviate from true mean by more than {1}".format(mean, tol)
 
 def checkStd(js, expectedStd, tol):
@@ -26,5 +26,5 @@ def checkStd(js, expectedStd, tol):
 
 result  = 'final.json'
 json  = open_json(src, result)
-checkMean(json, 0.0, 0.25)
-checkStd(json, 1.83, 0.5)
+checkMean(json, 0.0, 0.05)
+checkStd(json, 1.0, 0.05)

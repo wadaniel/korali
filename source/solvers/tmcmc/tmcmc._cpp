@@ -38,10 +38,10 @@ void Korali::Solver::TMCMC::initialize()
  if(_maxChainLength == 0) Korali::logError("Max Chain Length must be greater 0.");
  
  if (_burnIn.size() > 0 && _burnIn[0] != 0)
- Korali::logWarning("Normal", "The first entry of the Burn In vector is being ignored (corresponding to Generation 0) - Burn In set 0");
+ Korali::logWarning("Normal", "The 0th entry of the Burn In vector is being ignored (corresponding to Generation 0)\n");
  
  if (_burnIn.size() > 1 && _burnIn[1] != 0)
- Korali::logWarning("Normal", "The second entry of the Burn In vector is being ignored (corresponding to Generation 0) - Burn In set 0");
+ Korali::logWarning("Normal", "The 1st entry of the Burn In vector is being ignored (corresponding to Generation 1)\n");
 
  if (_k->_currentGeneration > 0) return;
 
@@ -87,6 +87,9 @@ void Korali::Solver::TMCMC::initialize()
 
 void Korali::Solver::TMCMC::runGeneration()
 {
+ 
+ if(_k->_currentGeneration > 1) prepareGeneration();
+
  _sampleFitnessDatabase.clear();
  _sampleDatabase.clear();
 
@@ -108,7 +111,6 @@ void Korali::Solver::TMCMC::runGeneration()
   _k->_conduit->checkProgress();
  }
 
- processGeneration();
 }
 
 void Korali::Solver::TMCMC::processSample(size_t sampleId, double fitness)
@@ -198,7 +200,7 @@ void Korali::Solver::TMCMC::generateCandidate(size_t c)
  _multivariateGenerator->getRandomVector(&_chainCandidates[c*N],  N);
 }
 
-void Korali::Solver::TMCMC::processGeneration()
+void Korali::Solver::TMCMC::prepareGeneration()
 {
   std::vector<double> flcp(_populationSize);
   std::vector<double> weight(_populationSize);

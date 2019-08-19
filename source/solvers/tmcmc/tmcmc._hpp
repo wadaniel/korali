@@ -15,7 +15,7 @@ class TMCMC : public Korali::Solver::Base
  private:
 
  void setBurnIn();
- void processGeneration();
+ void prepareGeneration();
  void updateDatabase(double* point, double fitness, double logPrior);
  void generateCandidate(size_t candidate);
  void evaluateCandidate(size_t candidate);

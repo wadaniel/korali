@@ -13,7 +13,7 @@ from helpers import *
 #################################################
 
 gen = 0
-currentBurnIn = [10, 7, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
+currentBurnIn = [0, 0, 10, 7, 5, 5, 5, 5, 5, 5, 5, 5]
 
 eps = 1e-12
 prevRho = 0.0
@@ -70,8 +70,9 @@ print("[Korali] Read & Evaluate Output..")
 
 src = "_korali_result"
 resultfiles = [f for f in os.listdir(src) if os.path.isfile(os.path.join(src, f))]
+resultfiles.remove("initial.json")
+resultfiles.remove("final.json")
 resultfiles = sorted(resultfiles)
-resultfiles = resultfiles[1:]
 
 for filename in resultfiles:
   path   = '{0}/{1}'.format(src, filename)

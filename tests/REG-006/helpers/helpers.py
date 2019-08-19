@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
-import json
+import math
 
 def evaluateModel( s ):
-   x = s.getVariable(0)
-   r = -x*x      
+   x1 = s.getVariable(0)
+   x2 = s.getVariable(1)
+   r = -x1**2*x2**2-math.sin(x1)**2-math.sin(x2)**2
    s.setResult(r)
+
+def inactive( k ):
+  k.setConstraintEvaluation(-10);
 
 def assert_value( val, expected ):
     assert val  == expected, "Error: Value should be {0} but is {1}\n".format(expected, val)

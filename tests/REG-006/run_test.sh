@@ -4,6 +4,7 @@ source ../functions.sh
 
 constraints=(
 "None"
+"Inactive"
 )
 
 #################################################
@@ -19,7 +20,7 @@ do
   logEcho "Testing Constraints: ${c}"
   logEcho "Running File: run-ccmaes.py"
 
-  python3 ./run-ccmaes.py --constraint "$c" >> $logFile 2>&1
+  python3 ./run-ccmaes.py --constraint "${c}" >> $logFile 2>&1
   check_result
 
   log "[Korali] Removing results..."

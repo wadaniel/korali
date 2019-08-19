@@ -214,7 +214,7 @@
    {
     "Name": [ "Is Viability Regime" ],
     "Type": "bool",
-    "Description": "True if mean is outside feasible domain."
+    "Description": "True if mean is outside feasible domain. During viability regime CMA-ES is working with relaxed constraint boundaries that contract towards the true constraint boundaries."
    },
    {
     "Name": [ "Value Vector" ],
@@ -497,9 +497,9 @@
     "Description": "Sample evaluations larger than fviability."
    },
    {
-    "Name": [ "Maximum Violation Count" ],
+    "Name": [ "Max Constraint Violation Count" ],
     "Type": "size_t",
-    "Description": "Maximal amount of constraint violations."
+    "Description": "Temporary counter of maximal amount of constraint violations attained by a sample (must be 0)."
    },
    {
     "Name": [ "Sample Constraint Violation Counts" ],

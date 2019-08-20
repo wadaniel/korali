@@ -17,7 +17,7 @@ class Base {
  virtual void abort() = 0;
  virtual bool checkTermination() = 0;
 
- size_t _currentSample;
+ static Base* getConduit(nlohmann::json& js);
 
  // Serialization Methods
  virtual void getConfiguration(nlohmann::json& js) = 0;

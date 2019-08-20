@@ -7,6 +7,9 @@ def buildSolvers(koraliDir):
  # Processing Solvers
  curdir = koraliDir + '/solvers' 
  
+ # Solvers List
+ solverDetectionList = ''
+ 
  # Detecting Solvers
  solverPaths  = [x[0] for x in os.walk(curdir)][1:]
  for solverPath in solverPaths:
@@ -17,6 +20,10 @@ def buildSolvers(koraliDir):
   if (not os.path.isfile(solverJsonFile)): continue 
   with open(solverJsonFile, 'r') as file: solverJsonString = file.read()
   solverConfig = json.loads(solverJsonString)
+  
+  ####### Adding solver to list
+
+  solverDetectionList += '  if(solverType == "' + solverConfig["Alias"] + '") solver = new Korali::Solver::' + solverConfig["C++ Class"] + '();\n'
   
   ###### Producing solver code
 
@@ -50,3 +57,21 @@ def buildSolvers(koraliDir):
    solverBaseCodeString += '\n\n' + solverCodeString
    print('[Korali] Creating: ' + solverNewCodeFile + '...')
    with open(solverNewCodeFile, 'w') as file: file.write(solverBaseCodeString)
+
+ ###### Creating base configuration file
+
+ solverBaseFileName = curdir + '/base._cpp'
+ solverNewCodeFile = curdir + '/base.cpp'
+ baseFileTime = os.path.getmtime(solverBaseFileName)
+ newFileTime = baseFileTime
+ if (os.path.exists(solverNewCodeFile)): newFileTime = os.path.getmtime(solverNewCodeFile)
+
+ if (baseFileTime >= newFileTime):
+   with open(solverBaseFileName, 'r') as file: solverBaseCodeString = file.read()
+   newBaseString = solverBaseCodeString.replace(' // Solver list', solverDetectionList)
+   with open(solverNewCodeFile, 'w') as file: file.write(newBaseString)
+
+ ###### Creating base header file
+ with open(curdir + '/base._hpp', 'r') as file: solverBaseHeaderString = file.read()
+ newBaseString = solverBaseHeaderString
+ with open(curdir + '/base.hpp', 'w+') as file: file.write(newBaseString)

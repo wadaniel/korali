@@ -2,10 +2,15 @@
  "Type": "Solver",
  "Name": "Covariance Matrix Adaptation Evolution Strategy",
  "Alias": "CMAES",
- "C++ Class": "CMAES",
+ "C++ Class": "Korali::Solver::CMAES",
  
  "Configuration Settings": 
  [
+   {
+    "Name": [ "Type" ],
+    "Type": "std::string",
+    "Description": "Stores the solver name, as chosen by the user."
+   },
    {
     "Name": [ "Population Size" ],
     "Type": "size_t",

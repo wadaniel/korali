@@ -2,11 +2,16 @@
  "Type": "Problem",
  "Name": "Sampling",
  "Alias": "Sampling",
- "C++ Class": "Sampling",
+ "C++ Class": "Korali::Problem::Sampling",
  "Compatible Solvers": [ "MCMC", "TMCMC" ],
  
  "Configuration Settings": 
  [
+   {
+    "Name": [ "Type" ],
+    "Type": "std::string",
+    "Description": "Stores the problem name, as chosen by the user."
+   },
    {
     "Name": [ "Variables" ],
     "Type": "std::vector<Korali::Variable*>",

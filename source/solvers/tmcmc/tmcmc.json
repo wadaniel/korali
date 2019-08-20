@@ -2,10 +2,15 @@
  "Type": "Solver",
  "Name": "Transitional Markov Chain Monte Carlo",
  "Alias": "TMCMC",
- "C++ Class": "TMCMC",
+ "C++ Class": "Korali::Solver::TMCMC",
 
  "Configuration Settings":
  [
+   {
+    "Name": [ "Type" ],
+    "Type": "std::string",
+    "Description": "Stores the solver name, as chosen by the user."
+   },
    {
     "Name": [ "Population Size" ],
     "Type": "size_t",

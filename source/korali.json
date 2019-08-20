@@ -1,39 +1,37 @@
 {
  "Name": "Korali Engine",
+ "Alias": "Korali",
+ "C++ Class": "Korali::Engine",
 
- "Module Selections": 
- [
-   {
-    "Name": [ "Problem", "Type" ],
-    "Type": "std::string",
-    "Description": "Specifies the problem type to solve."
-   },
-   {
-    "Name": [ "Solver", "Type" ],
-    "Type": "std::string",
-    "Description": "Specifies the solver algorithm to employ."
-   },
-   {
-    "Name": [ "Conduit", "Type" ],
-    "Type": "std::string",
-    "Default": "Simple",
-    "Description": "Specifies the method for the model evaluations."
-   },
-   {
-    "Name": [ "Model", "Type" ],
-    "Type": "std::string",
-    "Default": "Unassigned",
-    "Description": "Specifies the evaluation model type chosen, if any."
-   }
- ],
- 
- "General Settings": 
+ "Configuration Settings": 
  [
    {
     "Name": [ "Random Seed" ],
     "Type": "size_t",
     "Default": "0",
     "Description": "Specifies the initializing seed for the generation of random numbers. If 0 is specified, Korali will automatically derivate a new seed base on the current time."
+   },
+   {
+    "Name": [ "Model", "Type" ],
+    "Type": "std::string",
+    "Default": "Unassigned",
+    "Description": "Specifies the evaluation model type chosen, if any."
+   },
+   {
+    "Name": [ "Problem" ],
+    "Type": "Korali::Problem::Base*",
+    "Description": "Specifies the problem type to solve."
+   },
+   {
+    "Name": [ "Solver" ],
+    "Type": "Korali::Solver::Base*",
+    "Description": "Specifies the solver algorithm to employ."
+   },
+   {
+    "Name": [ "Conduit" ],
+    "Type": "Korali::Conduit::Base*",
+    "Default": "Simple",
+    "Description": "Specifies the method for the model evaluations."
    },
    {
     "Name": [ "Console Output", "Verbosity"],

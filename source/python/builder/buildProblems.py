@@ -7,6 +7,9 @@ def buildProblems(koraliDir):
  # Processing Problems
  curdir = koraliDir + '/problems' 
  
+ # Problems List
+ problemDetectionList = ''
+ 
  # Detecting Problems
  problemPaths  = [x[0] for x in os.walk(curdir)][1:]
  for problemPath in problemPaths:
@@ -17,6 +20,10 @@ def buildProblems(koraliDir):
   if (not os.path.isfile(problemJsonFile)): continue 
   with open(problemJsonFile, 'r') as file: problemJsonString = file.read()
   problemConfig = json.loads(problemJsonString)
+  
+  ####### Adding problem to list
+
+  problemDetectionList += '  if(problemType == "' + problemConfig["Alias"] + '") problem = new Korali::Problem::' + problemConfig["C++ Class"] + '();\n'
   
   ###### Producing problem code
 
@@ -50,3 +57,21 @@ def buildProblems(koraliDir):
    problemBaseCodeString += '\n\n' + problemCodeString
    print('[Korali] Creating: ' + problemNewCodeFile + '...')
    with open(problemNewCodeFile, 'w') as file: file.write(problemBaseCodeString)
+
+ ###### Creating base configuration file
+
+ problemBaseFileName = curdir + '/base._cpp'
+ problemNewCodeFile = curdir + '/base.cpp'
+ baseFileTime = os.path.getmtime(problemBaseFileName)
+ newFileTime = baseFileTime
+ if (os.path.exists(problemNewCodeFile)): newFileTime = os.path.getmtime(problemNewCodeFile)
+
+ if (baseFileTime >= newFileTime):
+   with open(problemBaseFileName, 'r') as file: problemBaseCodeString = file.read()
+   newBaseString = problemBaseCodeString.replace(' // Problem list', problemDetectionList)
+   with open(problemNewCodeFile, 'w') as file: file.write(newBaseString)
+
+ ###### Creating base header file
+ with open(curdir + '/base._hpp', 'r') as file: problemBaseHeaderString = file.read()
+ newBaseString = problemBaseHeaderString
+ with open(curdir + '/base.hpp', 'w+') as file: file.write(newBaseString)

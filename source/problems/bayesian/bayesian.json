@@ -2,11 +2,16 @@
  "Type": "Problem",
  "Name": "Bayesian Inference",
  "Alias": "Bayesian Inference",
- "C++ Class": "Bayesian",
+ "C++ Class": "Korali::Problem::Bayesian",
  "Compatible Solvers": [ "CMAES", "DEA", "MCMC", "TMCMC" ],
 
  "Configuration Settings":
  [
+   {
+    "Name": [ "Type" ],
+    "Type": "std::string",
+    "Description": "Stores the problem name, as chosen by the user."
+   },
    {
     "Name": [ "Variables" ],
     "Type": "std::vector<Korali::Variable*>",

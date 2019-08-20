@@ -46,11 +46,26 @@ def consumeValue(base, moduleName, path, varName, varType, varDefault):
   cString += ' eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n' 
   return cString
   
+ if (varType == 'Korali::Problem::Base*'):
+  cString =  ' ' + varName + ' = Korali::Problem::Base::getProblem(_k->_problem, ' + base + path + ');\n'
+  cString += ' eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n' 
+  return cString  
+  
+ if (varType == 'Korali::Solver::Base*'):
+  cString =  ' ' + varName + ' = Korali::Solver::Base::getSolver(_k->_problem, ' + base + path + ');\n'
+  cString += ' eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n' 
+  return cString  
+  
+ if (varType == 'Korali::Conduit::Base*'):
+  cString =  ' ' + varName + ' = Korali::Conduit::Base::getConduit(_k->_problem, ' + base + path + ');\n'
+  cString += ' eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n' 
+  return cString  
+  
  if (varType == 'std::vector<Korali::Distribution::Base*>'):
   cString  = ' for(size_t i = 0; i < ' + base + path + '.size(); i++)' + varName + '.push_back(Korali::Distribution::Base::getDistribution(this, ' + base + path + '[i]));\n'
   cString += ' eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n\n' 
   return cString
- 
+  
  if (varType == 'std::vector<Korali::Variable*>'):
   cString  = ' for(size_t i = 0; i < ' + base + path + '.size(); i++)' + varName + '.push_back(new Korali::Variable(this)); \n'
   cString += ' for(size_t i = 0; i < ' + base + path + '.size(); i++)' + varName + '[i]->setConfiguration(' + base + path + '[i]);\n'
@@ -82,6 +97,15 @@ def saveValue(base, path, varName, varType):
 
  if (varType == 'Korali::Distribution::Base*'):
   sString =  ' ' + varName + '->getConfiguration(' + base + path + ');\n'
+ 
+ if (varType == 'Korali::Solver::Base*'):
+  sString =  ' ' + varName + '->getConfiguration(' + base + path + ');\n'
+  
+ if (varType == 'Korali::Problem::Base*'):
+  sString =  ' ' + varName + '->getConfiguration(' + base + path + ');\n' 
+ 
+ if (varType == 'Korali::Conduit::Base*'):
+  sString =  ' ' + varName + '->getConfiguration(' + base + path + ');\n'  
   
  if (varType == 'std::vector<Korali::Distribution::Base*>'):
   sString  = ' for(size_t i = 0; i < ' + varName + '.size(); i++) ' + varName + '[i]->getConfiguration(' + base + path + '[i]);\n'
@@ -94,7 +118,7 @@ def saveValue(base, path, varName, varType):
 ####################################################################
 
 def createSetConfiguration(module):
- codeString = 'void Korali::' + module["Type"] + '::' + module["C++ Class"] + '::setConfiguration(nlohmann::json& js) \n{\n'
+ codeString = 'void ' + module["C++ Class"] + '::setConfiguration(nlohmann::json& js) \n{\n'
   
  # Erase type, if exists.
  codeString += ' if(isDefined(js, "[\'Type\']")) eraseValue(js, "[\'Type\']");\n'
@@ -127,10 +151,14 @@ def createSetConfiguration(module):
 ####################################################################
   
 def createGetConfiguration(module):  
- codeString = 'void Korali::' + module["Type"] + '::' + module["C++ Class"]  + '::getConfiguration(nlohmann::json& js) \n{\n\n'
+ codeString = 'void ' + module["C++ Class"]  + '::getConfiguration(nlohmann::json& js) \n{\n\n'
  
  if 'Configuration Settings' in module:
   for v in module["Configuration Settings"]: 
+   codeString += saveValue('js', getVariablePath(v), getCXXVariableName(v), getVariableType(v))
+ 
+ if 'Termination Criteria' in module:
+  for v in module["Termination Criteria"]: 
    codeString += saveValue('js', getVariablePath(v), getCXXVariableName(v), getVariableType(v))
    
  if 'Internal Settings' in module:   
@@ -144,7 +172,7 @@ def createGetConfiguration(module):
 ####################################################################
 
 def createCheckTermination(module):  
- codeString = 'bool Korali::' + module["Type"] + '::' + module["C++ Class"]  + '::checkTermination()\n'
+ codeString = 'bool ' + module["C++ Class"]  + '::checkTermination()\n'
  codeString += '{\n'
  codeString += ' bool hasFinished = false;\n\n'
  

@@ -2,11 +2,16 @@
  "Type": "Problem",
  "Name":  "Hierarchical Bayesian (Psi)",
  "Alias": "Hierarchical Bayesian (Psi)",
- "C++ Class": "HierarchicalPsi",
+ "C++ Class": "Korali::Problem::HierarchicalPsi",
  "Compatible Solvers": [ "TMCMC" ],
 
  "Configuration Settings":
  [
+   {
+    "Name": [ "Type" ],
+    "Type": "std::string",
+    "Description": "Stores the problem name, as chosen by the user."
+   },
    {
     "Name": [ "Variables" ],
     "Type": "std::vector<Korali::Variable*>",

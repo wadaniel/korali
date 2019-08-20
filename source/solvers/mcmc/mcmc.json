@@ -2,10 +2,15 @@
  "Type": "Solver",
  "Name": "Markov Chain Monte Carlo",
  "Alias": "MCMC",
- "C++ Class": "MCMC",
+ "C++ Class": "Korali::Solver::MCMC",
  
  "Configuration Settings": 
  [
+   {
+    "Name": [ "Type" ],
+    "Type": "std::string",
+    "Description": "Stores the solver name, as chosen by the user."
+   },
    {
     "Name": [ "Burn In" ],
     "Type": "size_t",

@@ -2,11 +2,16 @@
  "Type": "Problem",
  "Name":  "Hierarchical Bayesian (Theta New)",
  "Alias": "Hierarchical Bayesian (Theta New)",
- "C++ Class": "HierarchicalThetaNew",
+ "C++ Class": "Korali::Problem::HierarchicalThetaNew",
  "Compatible Solvers": [ "TMCMC" ],
 
  "Configuration Settings":
  [
+   {
+    "Name": [ "Type" ],
+    "Type": "std::string",
+    "Description": "Stores the problem name, as chosen by the user."
+   },
    {
     "Name": [ "Variables" ],
     "Type": "std::vector<Korali::Variable*>",

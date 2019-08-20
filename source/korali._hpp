@@ -13,11 +13,6 @@ class Engine {
 
  public:
 
- // Module Containers
- Korali::Conduit::Base* _conduit;
- Korali::Problem::Base* _problem;
- Korali::Solver::Base*  _solver;
-
  // Start functions
  void initialize();
  void start(bool isDryRun);
@@ -53,8 +48,8 @@ class Engine {
  void saveState(int fileId);
 
  // Serialization Methods
- void getConfiguration();
- void setConfiguration();
+ void getConfiguration(nlohmann::json& js);
+ void setConfiguration(nlohmann::json& js);
 };
 
 extern Engine* _k;

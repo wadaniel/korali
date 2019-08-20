@@ -2,7 +2,7 @@
  "Type": "Solver",
  "Name": "Differential Evolution Algorithm",
  "Alias": "DEA",
- "C++ Class": "DEA",
+ "C++ Class": "Korali::Solver::DEA",
  
  "Configuration Settings": 
  [

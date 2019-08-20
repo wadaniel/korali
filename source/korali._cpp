@@ -10,9 +10,9 @@ void Korali::Engine::start(bool isDryRun)
 {
  _k = this;
 
- setConfiguration();
-
  initialize();
+
+ setConfiguration(_js);
 
  // If this is a worker process (not root), there's nothing else to do
  if (_conduit->isRoot() == false) return;
@@ -20,7 +20,7 @@ void Korali::Engine::start(bool isDryRun)
  // If this is a dry run and configuration succeeded, print sucess and return
  if (isDryRun)
   {
-   getConfiguration();
+   saveState("dry.json");
    Korali::logInfo("Minimal",  "--------------------------------------------------------------------\n");
    Korali::logInfo("Minimal",  "Dry Run Successful.\n", _currentGeneration);
    Korali::logInfo("Minimal",  "--------------------------------------------------------------------\n");
@@ -75,54 +75,34 @@ void Korali::Engine::start(bool isDryRun)
 
 void Korali::Engine::initialize()
 {
- // Initializing Verbosity
- bool verbosityDefined = false;
- if (_consoleOutputVerbosity == "Silent")   verbosityDefined = true;
- if (_consoleOutputVerbosity == "Minimal")  verbosityDefined = true;
- if (_consoleOutputVerbosity == "Normal")   verbosityDefined = true;
- if (_consoleOutputVerbosity == "Detailed") verbosityDefined = true;
- if (verbosityDefined == false) Korali::logError("Incorrect or undefined Verbosity Level '%s'\n.", _consoleOutputVerbosity.c_str());
-
- // Setting Run ID, if not already defined
- if (_runID == 0)
- {
-  _timestamp = "";
-  time_t rawtime; time (&rawtime);
-  std::string curTime(ctime(&rawtime));
-  std::hash<std::string> hasher;
-  _runID = hasher(_timestamp) + hasher(_solverType);
- }
+ _timestamp = "";
+ time_t rawtime; time (&rawtime);
+ std::string curTime(ctime(&rawtime));
+ std::hash<std::string> hasher;
+ _runID = hasher(_timestamp) + hasher(_solverType);
 
  // Configuring Seed
  if (_randomSeed == 0) _randomSeed = _runID;
 
- // Initializing GSL
- gsl_rng_env_setup();
-
  // Creating Results directory
  mkdir(_resultsOutputPath.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-
- // Initializing Korali Components
- _problem->initialize();
- _solver->initialize();
- _conduit->initialize();
 }
 
 void Korali::Engine::setDirectModel(std::function<void(Korali::Model::Direct&)> model)
 {
- _js["Model"]["Type"] = "Direct";
+ _modelType = "Direct";
  _directModel = model;
 }
 
 void Korali::Engine::setLikelihoodModel(std::function<void(Korali::Model::Likelihood&)> model)
 {
- _js["Model"]["Type"] = "Likelihood";
+ _modelType = "Likelihood";
  _likelihoodModel = model;
 }
 
 void Korali::Engine::setReferenceModel(std::function<void(Korali::Model::Reference&)> model)
 {
- _js["Model"]["Type"] = "Reference";
+ _modelType = "Reference";
  _referenceModel = model;
 }
 
@@ -138,13 +118,14 @@ void Korali::Engine::saveState(std::string fileName)
  std::string curTime(ctime(&rawtime));
  _timestamp = curTime.substr(0, curTime.size()-1);
 
- // Updating configuration
- getConfiguration();
+ // Getting configuration
+ auto js = nlohmann::json();
+ this->getConfiguration(js);
 
  // Only the root rank saves files
  if (!_conduit->isRoot()) return;
  fileName = "./" + _resultsOutputPath + "/" + fileName;
- saveJsonToFile(fileName.c_str(), _js);
+ saveJsonToFile(fileName.c_str(), js);
 }
 
 void Korali::Engine::saveState(int fileId)
@@ -161,44 +142,4 @@ void Korali::Engine::saveState(int fileId)
 void Korali::Engine::loadState(std::string fileName)
 {
  _js = loadJsonFromFile(fileName.c_str());
-}
-
-void Korali::Engine::getConfiguration()
-{
- auto js = nlohmann::json();
- _js = js;
-
- // Obtaining Korali Engine Settings
-
- _problem->getConfiguration(_js["Problem"]);
- _conduit->getConfiguration(_js["Conduit"]);
- _solver->getConfiguration(_js["Solver"]);
-}
-
-void Korali::Engine::setConfiguration()
-{
- // Detecting Korali Modules
-
- auto js = _js;
-
- // Configuring Korali Engine
-
- bool recognizedConduit = false;
- bool recognizedProblem = false;
- bool recognizedSolver = false;
-
- // Configuring Conduit
- if (recognizedConduit == false) Korali::logError("Incorrect or undefined Conduit '%s'.\n", _conduitType.c_str());
- _conduit->setConfiguration(js["Conduit"]);
-
- // Configuring Problem
- if (recognizedProblem == false) Korali::logError("Incorrect or undefined Problem '%s'.\n", _problemType.c_str());
- _problem->setConfiguration(js["Problem"]);
-
- // Configuring Solver
- if (recognizedSolver == false) Korali::logError("Incorrect or undefined Solver '%s'.\n", _solverType.c_str());
- _solver->setConfiguration(js["Solver"]);
-
- if (isEmpty(js) == false) Korali::logError("Unrecognized Settings for Korali:\n %s \n", js.dump(2).c_str());
- _js = js;
 }

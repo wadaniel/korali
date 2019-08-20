@@ -2,11 +2,15 @@
  "Type": "Conduit",
  "Name": "Simple Conduit",
  "Alias": "Simple",
- "C++ Class": "Simple",
+ "C++ Class": "Korali::Conduit::Simple",
  
  "Configuration Settings": 
  [
-
+  {
+   "Name": [ "Type" ],
+   "Type": "std::string",
+   "Description": "Stores the conduit name, as chosen by the user."
+  }
  ]
  
 }

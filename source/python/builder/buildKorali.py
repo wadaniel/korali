@@ -38,7 +38,7 @@ def buildKorali(koraliDir):
    if file.endswith(".json"):
     filePath = os.path.join(root, file)
     with open(filePath, 'r') as file: conduitConfig = json.load(file)
-    conduitDetectString += ' if (_conduitType == "' + conduitConfig['Alias'] + '") { _conduit = new Korali::Conduit::' + conduitConfig['Class'] + '(); recognizedConduit = true; }\n' 
+    conduitDetectString += ' if (_conduitType == "' + conduitConfig['Alias'] + '") { _conduit = new Korali::Conduit::' + conduitConfig['C++ Class'] + '(); recognizedConduit = true; }\n' 
  
  newCodeString = newCodeString.replace(' // Configuring Conduit', conduitDetectString)
  

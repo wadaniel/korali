@@ -129,11 +129,13 @@ def createSetConfiguration(module):
 def createGetConfiguration(module):  
  codeString = 'void Korali::' + module["Type"] + '::' + module["C++ Class"]  + '::getConfiguration(nlohmann::json& js) \n{\n\n'
  
- for v in module["Configuration Settings"]: 
-  codeString += saveValue('js', getVariablePath(v), getCXXVariableName(v), getVariableType(v))
-    
- for v in module["Internal Settings"]: 
-  codeString += saveValue('js', '["Internal"]' + getVariablePath(v), getCXXVariableName(v), getVariableType(v))
+ if 'Configuration Settings' in module:
+  for v in module["Configuration Settings"]: 
+   codeString += saveValue('js', getVariablePath(v), getCXXVariableName(v), getVariableType(v))
+   
+ if 'Internal Settings' in module:   
+  for v in module["Internal Settings"]: 
+   codeString += saveValue('js', '["Internal"]' + getVariablePath(v), getCXXVariableName(v), getVariableType(v))
   
  codeString += '} \n\n'
  
@@ -158,4 +160,22 @@ def createCheckTermination(module):
  codeString += '}'
  
  return codeString
-  
+ 
+####################################################################
+
+def createHeaderDeclarations(module):  
+ headerString = ''
+ 
+ if 'Configuration Settings' in module:
+  for v in module["Configuration Settings"]:
+   headerString += getVariableType(v) + ' ' + getCXXVariableName(v) + ';\n'
+ 
+ if 'Internal Settings' in module:    
+  for v in module["Internal Settings"]:
+   headerString += getVariableType(v) + ' ' + getCXXVariableName(v) + ';\n'
+ 
+ if 'Termination Criteria' in module:
+  for v in module["Termination Criteria"]:
+   headerString += getVariableType(v) + ' ' + getCXXVariableName(v) + ';\n'
+ 
+ return headerString

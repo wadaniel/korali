@@ -1,9 +1,10 @@
 {
+ "Type": "Conduit",
  "Name": "Simple Conduit",
  "Alias": "Simple",
- "Class": "Simple",
+ "C++ Class": "Simple",
  
- "Conduit Configuration": 
+ "Configuration Settings": 
  [
 
  ]

@@ -18,20 +18,15 @@ def buildSolvers(koraliDir):
   with open(solverJsonFile, 'r') as file: solverJsonString = file.read()
   solverConfig = json.loads(solverJsonString)
   
-  ####### Producing solver.hpp
+  ###### Producing solver code
+
+  solverHeaderString = createHeaderDeclarations(solverConfig)
+  solverCodeString = createSetConfiguration(solverConfig)
+  solverCodeString += createGetConfiguration(solverConfig)
+  solverCodeString += createCheckTermination(solverConfig)
+
+  ####### Producing header file
   
-  # Producing private variable declarations
-  solverHeaderString = ''
-  
-  for v in solverConfig["Configuration Settings"]:
-   solverHeaderString += getVariableType(v) + ' ' + getCXXVariableName(v) + ';\n'
-     
-  for v in solverConfig["Termination Criteria"]:
-   solverHeaderString += getVariableType(v) + ' ' + getCXXVariableName(v) + ';\n'
-   
-  for v in solverConfig["Internal Settings"]:
-   solverHeaderString += getVariableType(v) + ' ' + getCXXVariableName(v) + ';\n'
-       
   # Loading template header .hpp file
   solverTemplateHeaderFile = solverPath + '/' + solverName + '._hpp'
   with open(solverTemplateHeaderFile, 'r') as file: solverTemplateHeaderString = file.read()
@@ -42,13 +37,6 @@ def buildSolvers(koraliDir):
   print('[Korali] Creating: ' + solverNewHeaderFile + '...')
   with open(solverNewHeaderFile, 'w') as file: file.write(newHeaderString)
   
-  ###### Producing solver code
-  
-  solverCodeString = ''  
-  solverCodeString += createSetConfiguration(solverConfig)
-  solverCodeString += createGetConfiguration(solverConfig)
-  solverCodeString += createCheckTermination(solverConfig)
-  
   ###### Creating code file
   
   solverBaseFileName = solverPath + '/' + solverName + '._cpp'
@@ -58,7 +46,7 @@ def buildSolvers(koraliDir):
   if (os.path.exists(solverNewCodeFile)): newFileTime = os.path.getmtime(solverNewCodeFile)
   
   if (baseFileTime >= newFileTime):
-    with open(solverBaseFileName, 'r') as file: solverBaseCodeString = file.read()
-    solverBaseCodeString += '\n\n' + solverCodeString
-    print('[Korali] Creating: ' + solverNewCodeFile + '...')
-    with open(solverNewCodeFile, 'w') as file: file.write(solverBaseCodeString)
+   with open(solverBaseFileName, 'r') as file: solverBaseCodeString = file.read()
+   solverBaseCodeString += '\n\n' + solverCodeString
+   print('[Korali] Creating: ' + solverNewCodeFile + '...')
+   with open(solverNewCodeFile, 'w') as file: file.write(solverBaseCodeString)

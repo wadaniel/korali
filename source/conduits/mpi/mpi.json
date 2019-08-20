@@ -1,9 +1,10 @@
 {
- "Name": "MPI Conduit",
+ "Type": "Conduit",
+ "Name": "Distributed (MPI) Conduit",
  "Alias": "MPI",
- "Class": "MPI",
+ "C++ Class": "MPI",
  
- "Conduit Configuration": 
+ "Configuration Settings": 
  [
    {
     "Name": [ "Ranks Per Team" ],

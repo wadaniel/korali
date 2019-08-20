@@ -15,6 +15,7 @@ class Base {
  virtual void checkProgress() = 0;
  virtual bool isRoot() = 0;
  virtual void abort() = 0;
+ virtual bool checkTermination() = 0;
 
  size_t _currentSample;
 

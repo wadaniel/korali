@@ -1,9 +1,10 @@
 {
+ "Type": "Conduit",
  "Name": "External Conduit",
  "Alias": "External",
- "Class": "External",
+ "C++ Class": "External",
  
- "Conduit Configuration": 
+ "Configuration Settings": 
  [
    {
     "Name": [ "Concurrent Jobs" ],

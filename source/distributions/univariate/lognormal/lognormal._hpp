@@ -2,6 +2,7 @@
 #define _KORALI_DISTRIBUTION_LOGNORMAL_HPP_
 
 #include <distributions/univariate/base.hpp>
+#include <problems/base.hpp>
 
 namespace Korali { namespace Distribution {
 

@@ -24,7 +24,7 @@ def buildProblems(koraliDir):
   
   problemHeaderString = ''
   
-  for v in problemConfig["Problem Configuration"]:
+  for v in problemConfig["Configuration Settings"]:
    problemHeaderString += getVariableType(v) + ' ' + getCXXVariableName(v) + ';\n'
      
   for v in problemConfig["Internal Settings"]:
@@ -40,40 +40,12 @@ def buildProblems(koraliDir):
   print('[Korali] Creating: ' + problemNewHeaderFile + '...')
   with open(problemNewHeaderFile, 'w') as file: file.write(newHeaderString)
   
-  ###### Producing problem.cpp
-  
-  problemCodeString = 'void Korali::Problem::' + problemConfig["Class"] + '::setConfiguration(nlohmann::json& js) \n{\n'
-  
-  # Erase problem type, if exists.
-  problemCodeString += ' if(isDefined(js, "[\'Type\']")) eraseValue(js, "[\'Type\']");\n'
+  ###### Producing problem code
 
-  # Checking whether solver is accepted
-  problemCodeString += ' bool __acceptedSolver = false;\n'
-  for v in problemConfig["Compatible Solvers"]:
-   problemCodeString += ' if (_k->_solverType == "' + v + '") __acceptedSolver = true;\n'
-  problemCodeString += ' if (__acceptedSolver == false) Korali::logError("Selected solver %s not compatible with problem type ' + problemConfig["Name"] + '", _k->_solverType.c_str()); \n\n' 
- 
-  # Consume Problem Settings
-  for v in problemConfig["Problem Configuration"]:
-    problemCodeString += consumeValue('js', problemConfig["Alias"], getVariablePath(v), getCXXVariableName(v), getVariableType(v), getVariableDefault(v))
-  
-  for v in problemConfig["Internal Settings"]:
-    problemCodeString += consumeValue('js', problemConfig["Alias"], '["Internal"]' + getVariablePath(v),  getCXXVariableName(v), getVariableType(v), 'Korali Skip Default')
-  
-  problemCodeString += ' if(isEmpty(js) == false) Korali::logError("Unrecognized settings for the ' + problemConfig["Name"] + ' problem: \\n%s\\n", js.dump(2).c_str());\n'
-  problemCodeString += '} \n\n'
-  
-  ###### Creating Problem Get Configuration routine
-  
-  problemCodeString += 'void Korali::Problem::' + problemConfig["Class"]  + '::getConfiguration(nlohmann::json& js) \n{\n\n'
- 
-  for v in problemConfig["Problem Configuration"]: 
-    problemCodeString += saveValue('js', getVariablePath(v), getCXXVariableName(v), getVariableType(v))
-    
-  for v in problemConfig["Internal Settings"]: 
-    problemCodeString += saveValue('js', '["Internal"]' + getVariablePath(v), getCXXVariableName(v), getVariableType(v))
-  
-  problemCodeString += '} \n\n'
+  problemCodeString = ''  
+  problemCodeString += createSetConfiguration(problemConfig)
+  problemCodeString += createGetConfiguration(problemConfig)
+  problemCodeString += createCheckTermination(problemConfig)
   
   ###### Creating code file
   

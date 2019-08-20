@@ -1,10 +1,11 @@
 {
+ "Type": "Problem",
  "Name":  "Hierarchical Bayesian (Theta)",
  "Alias": "Hierarchical Bayesian (Theta)",
- "Class": "HierarchicalTheta",
+ "C++ Class": "HierarchicalTheta",
  "Compatible Solvers": [ "TMCMC" ],
 
- "Problem Configuration":
+ "Configuration Settings":
  [
    {
     "Name": [ "Variables" ],

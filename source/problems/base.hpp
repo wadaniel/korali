@@ -19,6 +19,7 @@ class Base
   virtual double evaluateSampleFitness() = 0;
   virtual double evaluateSampleLogPrior(double* sample) = 0;
 
+  virtual bool checkTermination() = 0;
   virtual void initialize() = 0;
   virtual void finalize() = 0;
 

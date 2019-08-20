@@ -1,9 +1,10 @@
 {
+ "Type": "Solver",
  "Name": "Transitional Markov Chain Monte Carlo",
  "Alias": "TMCMC",
- "Class": "TMCMC",
+ "C++ Class": "TMCMC",
 
- "Solver Configuration":
+ "Configuration Settings":
  [
    {
     "Name": [ "Population Size" ],

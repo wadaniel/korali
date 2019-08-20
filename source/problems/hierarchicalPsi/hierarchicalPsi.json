@@ -1,10 +1,11 @@
 {
+ "Type": "Problem",
  "Name":  "Hierarchical Bayesian (Psi)",
  "Alias": "Hierarchical Bayesian (Psi)",
- "Class": "HierarchicalPsi",
+ "C++ Class": "HierarchicalPsi",
  "Compatible Solvers": [ "TMCMC" ],
 
- "Problem Configuration":
+ "Configuration Settings":
  [
    {
     "Name": [ "Variables" ],

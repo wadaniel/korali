@@ -1,9 +1,10 @@
 {
+ "Type": "Solver",
  "Name": "Covariance Matrix Adaptation Evolution Strategy",
  "Alias": "CMAES",
- "Class": "CMAES",
+ "C++ Class": "CMAES",
  
- "Solver Configuration": 
+ "Configuration Settings": 
  [
    {
     "Name": [ "Population Size" ],

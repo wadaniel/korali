@@ -1,9 +1,10 @@
 {
+ "Type": "Solver",
  "Name": "Markov Chain Monte Carlo",
  "Alias": "MCMC",
- "Class": "MCMC",
+ "C++ Class": "MCMC",
  
- "Solver Configuration": 
+ "Configuration Settings": 
  [
    {
     "Name": [ "Burn In" ],

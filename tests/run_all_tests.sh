@@ -9,7 +9,7 @@ do
   echo "[Korali] Running test in folder ${dir} ..." 
   pushd $dir
   ./run_test.sh
-  check_result
+  if [ ! $? -eq 0 ]; then exit -1; fi
   popd 
 done
 

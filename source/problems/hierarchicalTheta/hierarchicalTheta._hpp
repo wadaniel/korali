@@ -28,6 +28,7 @@ class HierarchicalTheta : public Korali::Problem::Base
  double evaluateSampleFitness() override;
  double evaluateSampleLogPrior(double* sample) override;
 
+ bool checkTermination() override;
  void initialize() override;
  void finalize() override;
 

@@ -90,3 +90,72 @@ def saveValue(base, path, varName, varType):
   sString  = ' for(size_t i = 0; i < ' + varName + '.size(); i++) ' + varName + '[i]->getConfiguration(' + base + path + '[i]);\n'
  
  return sString
+ 
+####################################################################
+
+def createSetConfiguration(module):
+ codeString = 'void Korali::' + module["Type"] + '::' + module["C++ Class"] + '::setConfiguration(nlohmann::json& js) \n{\n'
+  
+ # Erase type, if exists.
+ codeString += ' if(isDefined(js, "[\'Type\']")) eraseValue(js, "[\'Type\']");\n'
+
+ # Checking whether solver is accepted
+ if 'Compatible Solvers' in module:
+  codeString += ' bool __acceptedSolver = false;\n'
+  for v in module["Compatible Solvers"]: 
+   codeString += ' if (_k->_solverType == "' + v + '") __acceptedSolver = true;\n'
+  codeString += ' if (__acceptedSolver == false) Korali::logError("Selected solver %s not compatible with  type ' + module["Name"] + '", _k->_solverType.c_str()); \n\n' 
+ 
+ # Consume Configuration Settings
+ if 'Configuration Settings' in module:
+  for v in module["Configuration Settings"]:
+   codeString += consumeValue('js', module["Alias"], getVariablePath(v), getCXXVariableName(v), getVariableType(v), getVariableDefault(v))
+ 
+ if 'Internal Settings' in module: 
+  for v in module["Internal Settings"]:
+   codeString += consumeValue('js', module["Alias"], '["Internal"]' + getVariablePath(v),  getCXXVariableName(v), getVariableType(v), 'Korali Skip Default')
+  
+ if 'Termination Criteria' in module:
+  for v in module["Termination Criteria"]:
+   codeString += consumeValue('js', module["Alias"], '["Termination Criteria"]' + getVariablePath(v), getCXXVariableName(v), getVariableType(v), getVariableDefault(v))
+ 
+ codeString += ' if(isEmpty(js) == false) Korali::logError("Unrecognized settings for ' + module["Name"] + ' (' + module["Alias"] + '): \\n%s\\n", js.dump(2).c_str());\n'
+ codeString += '} \n\n'
+  
+ return codeString
+  
+####################################################################
+  
+def createGetConfiguration(module):  
+ codeString = 'void Korali::' + module["Type"] + '::' + module["C++ Class"]  + '::getConfiguration(nlohmann::json& js) \n{\n\n'
+ 
+ for v in module["Configuration Settings"]: 
+  codeString += saveValue('js', getVariablePath(v), getCXXVariableName(v), getVariableType(v))
+    
+ for v in module["Internal Settings"]: 
+  codeString += saveValue('js', '["Internal"]' + getVariablePath(v), getCXXVariableName(v), getVariableType(v))
+  
+ codeString += '} \n\n'
+ 
+ return codeString
+
+####################################################################
+
+def createCheckTermination(module):  
+ codeString = 'bool Korali::' + module["Type"] + '::' + module["C++ Class"]  + '::checkTermination()\n'
+ codeString += '{\n'
+ codeString += ' bool hasFinished = false;\n\n'
+ 
+ if 'Termination Criteria' in module:
+  for v in module["Termination Criteria"]: 
+   codeString += ' if (' + v["Criteria"] + ')\n'
+   codeString += ' {\n'
+   codeString += '  Korali::logInfo("Minimal", "' + module["Alias"] + ' Termination Criteria met: \\"' + getVariablePath(v).replace('"', "'") + '\\" (' + getVariableDescriptor(v) + ').\\n", ' + getCXXVariableName(v)  +');\n'
+   codeString += '  hasFinished = true;\n'
+   codeString += ' }\n\n'
+  
+ codeString += ' return hasFinished;\n'
+ codeString += '}'
+ 
+ return codeString
+  

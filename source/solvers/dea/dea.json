@@ -1,9 +1,10 @@
 {
+ "Type": "Solver",
  "Name": "Differential Evolution Algorithm",
  "Alias": "DEA",
- "Class": "DEA",
+ "C++ Class": "DEA",
  
- "Solver Configuration": 
+ "Configuration Settings": 
  [
    {
     "Name": [ "Population Size" ],

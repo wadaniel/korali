@@ -1,10 +1,11 @@
 {
+ "Type": "Problem",
  "Name": "Optimization",
  "Alias": "Optimization",
- "Class": "Optimization",
+ "C++ Class": "Optimization",
  "Compatible Solvers": [ "CMAES", "DEA" ],
  
- "Problem Configuration": 
+ "Configuration Settings": 
  [
    {
     "Name": [ "Variables" ],

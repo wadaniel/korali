@@ -1,10 +1,11 @@
 {
+ "Type": "Problem",
  "Name": "Sampling",
  "Alias": "Sampling",
- "Class": "Sampling",
+ "C++ Class": "Sampling",
  "Compatible Solvers": [ "MCMC", "TMCMC" ],
  
- "Problem Configuration": 
+ "Configuration Settings": 
  [
    {
     "Name": [ "Variables" ],

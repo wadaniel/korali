@@ -50,7 +50,7 @@ def buildKorali(koraliDir):
    if file.endswith(".json"):
     filePath = os.path.join(root, file)
     with open(filePath, 'r') as file: problemConfig = json.load(file)
-    problemDetectString += ' if (_problemType == "' + problemConfig['Alias'] + '") { _problem = new Korali::Problem::' + problemConfig['Class'] + '(); recognizedProblem = true; }\n' 
+    problemDetectString += ' if (_problemType == "' + problemConfig['Alias'] + '") { _problem = new Korali::Problem::' + problemConfig['C++ Class'] + '(); recognizedProblem = true; }\n' 
  
  newCodeString = newCodeString.replace(' // Configuring Problem', problemDetectString)
  
@@ -62,7 +62,7 @@ def buildKorali(koraliDir):
    if file.endswith(".json"):
     filePath = os.path.join(root, file)
     with open(filePath, 'r') as file: solverConfig = json.load(file)
-    solverDetectString += ' if (_solverType == "' + solverConfig['Alias'] + '") { _solver = new Korali::Solver::' + solverConfig['Class'] + '(); recognizedSolver = true; }\n' 
+    solverDetectString += ' if (_solverType == "' + solverConfig['Alias'] + '") { _solver = new Korali::Solver::' + solverConfig['C++ Class'] + '(); recognizedSolver = true; }\n' 
  
  newCodeString = newCodeString.replace(' // Configuring Solver', solverDetectString)
    

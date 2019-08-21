@@ -3,8 +3,6 @@
 void Korali::Problem::Optimization::initialize()
 {
  if (_variables.size() == 0) Korali::logError("Optimization problems require at least one variable.\n");
-
- if (_k->_modelType != "Direct") Korali::logError("Optimization problems require defining a direct computational model. Used: %s\n", _k->_modelType.c_str());
 }
 
 void Korali::Problem::Optimization::finalize()
@@ -26,7 +24,7 @@ void Korali::Problem::Optimization::runModel(std::vector<double> sample, size_t 
  _directModelData._variables = sample;
 
  // Executing Model
- _k->_directModel(_directModelData);
+ _objectiveFunction(_directModelData);
 }
 
 size_t Korali::Problem::Optimization::getVariableCount()

@@ -5,6 +5,7 @@
 #include <cstdio>
 
 Korali::Engine* Korali::_k;
+std::vector<std::function<void(Korali::Model::Direct&)>> Korali::__korali_models;
 
 void Korali::Engine::start(bool isDryRun)
 {
@@ -105,6 +106,7 @@ void Korali::Engine::setDirectModel(std::function<void(Korali::Model::Direct&)> 
 {
  _modelType = "Direct";
  _directModel = model;
+ printf("A) Function Pointer: 0x%X\n", (unsigned long int)&model);
 }
 
 void Korali::Engine::setLikelihoodModel(std::function<void(Korali::Model::Likelihood&)> model)

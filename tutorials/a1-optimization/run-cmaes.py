@@ -16,6 +16,7 @@ k = korali.initialize()
 # Configuring Problem.
 k["Problem"]["Type"] = "Optimization"
 k["Problem"]["Objective"] = "Maximize"
+k["Problem"]["Objective Function"] = model
 
 # Defining the problem's variables and their CMA-ES bounds.
 k["Problem"]["Variables"][0]["Name"] = "X"
@@ -27,9 +28,6 @@ k["Solver"]["Type"] = "CMAES"
 k["Solver"]["Population Size"] = 32
 k["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-7
 k["Solver"]["Termination Criteria"]["Max Generations"] = 100
-
-# Setting computational model
-k.setDirectModel(model)
 
 # Running Korali
 k.run()

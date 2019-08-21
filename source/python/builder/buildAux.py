@@ -42,13 +42,13 @@ def consumeValue(base, moduleName, path, varName, varType, varDefault):
  cString = '\n'
  
  if (varType == 'Korali::Distribution::Base*'):
-  cString =  ' ' + varName + ' = Korali::Distribution::Base::getDistribution(_k->_problem, ' + base + path + ');\n'
+  cString +=  ' ' + varName + ' = Korali::Distribution::Base::getDistribution(_k->_problem, ' + base + path + ');\n'
   cString += ' eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n' 
   return cString
   
  if (varType == 'Korali::Problem::Base*'):
   if (varDefault): cString += ' if (! isDefined(' + base + ', "' + path.replace('"', "'") + '[\'Type\']")) ' + base + path + '["Type"] = "' + varDefault + '"; \n'
-  cString =  ' ' + varName + ' = Korali::Problem::Base::getProblem(' + base + path + ');\n'
+  cString +=  ' ' + varName + ' = Korali::Problem::Base::getProblem(' + base + path + ');\n'
   cString += ' ' + varName + '->setConfiguration(' + base + path + ');\n'
   return cString  
   
@@ -64,13 +64,18 @@ def consumeValue(base, moduleName, path, varName, varType, varDefault):
   cString += ' ' + varName + '->setConfiguration(' + base + path + ');\n'
   return cString  
   
+ if ('std::function' in varType):
+  cString += ' ' + varName + ' = __korali_models[' + base + path + '.get<size_t>()];\n'
+  cString += '   eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n'
+  return cString 
+  
  if (varType == 'std::vector<Korali::Distribution::Base*>'):
-  cString  = ' for(size_t i = 0; i < ' + base + path + '.size(); i++)' + varName + '.push_back(Korali::Distribution::Base::getDistribution(this, ' + base + path + '[i]));\n'
+  cString += ' for(size_t i = 0; i < ' + base + path + '.size(); i++)' + varName + '.push_back(Korali::Distribution::Base::getDistribution(this, ' + base + path + '[i]));\n'
   cString += ' eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n\n' 
   return cString
   
  if (varType == 'std::vector<Korali::Variable*>'):
-  cString  = ' for(size_t i = 0; i < ' + base + path + '.size(); i++)' + varName + '.push_back(new Korali::Variable(this)); \n'
+  cString += ' for(size_t i = 0; i < ' + base + path + '.size(); i++)' + varName + '.push_back(new Korali::Variable(this)); \n'
   cString += ' for(size_t i = 0; i < ' + base + path + '.size(); i++)' + varName + '[i]->setConfiguration(' + base + path + '[i]);\n'
   cString += ' eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n\n' 
   return cString
@@ -116,6 +121,9 @@ def saveValue(base, path, varName, varType):
  if (varType == 'std::vector<Korali::Variable*>'):
   sString  = ' for(size_t i = 0; i < ' + varName + '.size(); i++) ' + varName + '[i]->getConfiguration(' + base + path + '[i]);\n'
  
+ if ('std::function' in varType):
+  sString = ''
+  
  return sString
  
 ####################################################################

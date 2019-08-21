@@ -53,6 +53,7 @@ class Engine {
 };
 
 extern Engine* _k;
+extern std::vector<std::function<void(Korali::Model::Direct&)>> __korali_models;
 
 } // namespace Korali
 

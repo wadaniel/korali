@@ -16,6 +16,11 @@
     "Name": [ "Objective" ],
     "Type": "std::string",
     "Description": "Indicates whether Korali will minimize or maximize the function evaluation."
+   },
+   {
+    "Name": [ "Objective Function" ],
+    "Type": "std::function<void(Korali::Model::Direct&)>",
+    "Description": "Stores the objective function."
    }
  ],
  

@@ -43,7 +43,12 @@ def buildModules(moduleDir):
   # Loading template header .hpp file
   moduleTemplateHeaderFile = modulePath + '/' + moduleName + '._hpp'
   with open(moduleTemplateHeaderFile, 'r') as file: moduleTemplateHeaderString = file.read()
-  newHeaderString = moduleTemplateHeaderString
+  
+  # Adding declarations
+  declarationsString = ''
+  for declaration in moduleDeclarationsSet:
+   declarationsString += declaration + '\n'
+  newHeaderString = moduleTemplateHeaderString.replace('public:', 'public: \n' + declarationsString + '\n')
   
   # Saving new header .hpp file
   moduleNewHeaderFile = modulePath + '/' + moduleName + '.hpp'
@@ -78,10 +83,7 @@ def buildModules(moduleDir):
    with open(moduleNewCodeFile, 'w') as file: file.write(newBaseString)
 
  ###### Creating base header file
- declarationsString = ''
- for declaration in moduleDeclarationsSet:
-  declarationsString += declaration + '\n'
  
  with open(moduleDir + '/base._hpp', 'r') as file: moduleBaseHeaderString = file.read()
- newBaseString = moduleBaseHeaderString.replace('public:', 'public: \n' + declarationsString + '\n')
+ newBaseString = moduleBaseHeaderString
  with open(moduleDir + '/base.hpp', 'w+') as file: file.write(newBaseString)

@@ -1,18 +1,19 @@
 #include "korali.hpp"
 
-Korali::Problem::Base* Korali::Problem::Base::getProblem(Korali::Problem::Base* problem, nlohmann::json& js)
+Korali::Problem::Base* Korali::Problem::Base::getProblem(nlohmann::json& js)
 {
- std::string problemType = "Undefined";
+ std::string moduleType = "Undefined";
 
  if (! isDefined(js, "['Type']")) Korali::logError("No problem type provided.\n");
 
- problemType = js["Type"].get<std::string>();
+ moduleType = js["Type"].get<std::string>();
+ eraseValue(js, "['Type']");
 
- // Problem list
+ Korali::Problem::Base* module = nullptr;
 
- if (problem == nullptr) Korali::logError("Unrecognized problem type provided: ['Type'] = %s.\n", problemType.c_str());
+ // Module List
 
- problem->setConfiguration(js);
- problem->initialize(problem);
- return problem;
+ if (module == nullptr) Korali::logError("Unrecognized problem type provided: %s.\n", moduleType.c_str());
+
+ return module;
 }

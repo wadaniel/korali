@@ -47,18 +47,21 @@ def consumeValue(base, moduleName, path, varName, varType, varDefault):
   return cString
   
  if (varType == 'Korali::Problem::Base*'):
-  cString =  ' ' + varName + ' = Korali::Problem::Base::getProblem(_k->_problem, ' + base + path + ');\n'
-  cString += ' eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n' 
+  if (varDefault): cString += ' if (! isDefined(' + base + ', "' + path.replace('"', "'") + '[\'Type\']")) ' + base + path + '["Type"] = "' + varDefault + '"; \n'
+  cString =  ' ' + varName + ' = Korali::Problem::Base::getProblem(' + base + path + ');\n'
+  cString += ' ' + varName + '->setConfiguration(' + base + path + ');\n'
   return cString  
   
  if (varType == 'Korali::Solver::Base*'):
-  cString =  ' ' + varName + ' = Korali::Solver::Base::getSolver(_k->_problem, ' + base + path + ');\n'
-  cString += ' eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n' 
+  if (varDefault): cString = ' if (! isDefined(' + base + ', "' + path.replace('"', "'") + '[\'Type\']")) ' + base + path + '["Type"] = "' + varDefault + '"; \n'
+  cString +=  ' ' + varName + ' = Korali::Solver::Base::getSolver(' + base + path + ');\n'
+  cString += ' ' + varName + '->setConfiguration(' + base + path + ');\n'
   return cString  
   
  if (varType == 'Korali::Conduit::Base*'):
-  cString =  ' ' + varName + ' = Korali::Conduit::Base::getConduit(_k->_problem, ' + base + path + ');\n'
-  cString += ' eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n' 
+  if (varDefault): cString = ' if (! isDefined(' + base + ', "' + path.replace('"', "'") + '[\'Type\']")) ' + base + path + '["Type"] = "' + varDefault + '"; \n'
+  cString +=  ' ' + varName + ' = Korali::Conduit::Base::getConduit(' + base + path + ');\n'
+  cString += ' ' + varName + '->setConfiguration(' + base + path + ');\n'
   return cString  
   
  if (varType == 'std::vector<Korali::Distribution::Base*>'):
@@ -120,15 +123,12 @@ def saveValue(base, path, varName, varType):
 def createSetConfiguration(module):
  codeString = 'void ' + module["C++ Class"] + '::setConfiguration(nlohmann::json& js) \n{\n'
   
- # Erase type, if exists.
- codeString += ' if(isDefined(js, "[\'Type\']")) eraseValue(js, "[\'Type\']");\n'
-
  # Checking whether solver is accepted
  if 'Compatible Solvers' in module:
   codeString += ' bool __acceptedSolver = false;\n'
   for v in module["Compatible Solvers"]: 
-   codeString += ' if (_k->_solverType == "' + v + '") __acceptedSolver = true;\n'
-  codeString += ' if (__acceptedSolver == false) Korali::logError("Selected solver %s not compatible with  type ' + module["Name"] + '", _k->_solverType.c_str()); \n\n' 
+   codeString += ' if (_k->_solver->getType() == "' + v + '") __acceptedSolver = true;\n'
+  codeString += ' if (__acceptedSolver == false) Korali::logError("Selected solver %s not compatible with  type ' + module["Name"] + '", _k->_solver->getType().c_str()); \n\n' 
  
  # Consume Configuration Settings
  if 'Configuration Settings' in module:

@@ -57,6 +57,7 @@ class MPI : public Korali::Conduit::Base
  void abort() override;
  int getRootRank();
  bool checkTermination() override;
+ std::string getType() override;
 
  // Serialization Methods
  void getConfiguration(nlohmann::json& js) override;

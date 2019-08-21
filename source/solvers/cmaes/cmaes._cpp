@@ -6,7 +6,7 @@
 #include <numeric>   // std::iota
 #include <algorithm> // std::sort
 
-Korali::Solver::CMAES::CMAES()
+void Korali::Solver::CMAES::initialize()
 {
  // Initializing RNGs
  auto jsNormal = nlohmann::json();
@@ -20,14 +20,7 @@ Korali::Solver::CMAES::CMAES()
  jsUniform["Minimum"] = 0.0;
  jsUniform["Maximum"] = 1.0;
  _uniformGenerator = Korali::Distribution::Base::getDistribution(_k->_problem, jsUniform);
-}
 
-Korali::Solver::CMAES::~CMAES()
-{
-}
-
-void Korali::Solver::CMAES::initialize()
-{
  N = _k->_problem->getVariableCount();
 
  if (_k->_currentGeneration > 0) return;

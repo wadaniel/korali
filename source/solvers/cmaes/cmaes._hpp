@@ -39,9 +39,6 @@ class CMAES : public Korali::Solver::Base
 
  public:
 
- CMAES();
- ~CMAES();
-
  bool checkTermination() override;
  void updateDistribution();
  void initialize() override;
@@ -51,6 +48,7 @@ class CMAES : public Korali::Solver::Base
  void setConfiguration(nlohmann::json& js) override;
  void getConfiguration(nlohmann::json& js) override;
  void printGeneration() override;
+ std::string getType() override;
 };
 
 } // namespace Korali::Solver

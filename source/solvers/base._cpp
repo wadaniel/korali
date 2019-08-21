@@ -1,18 +1,19 @@
 #include "korali.hpp"
 
-Korali::Solver::Base* Korali::Solver::Base::getSolver(Korali::Solver::Base* solver, nlohmann::json& js)
+Korali::Solver::Base* Korali::Solver::Base::getSolver(nlohmann::json& js)
 {
- std::string solverType = "Undefined";
+ std::string moduleType = "Undefined";
 
  if (! isDefined(js, "['Type']")) Korali::logError("No solver type provided.\n");
 
- solverType = js["Type"].get<std::string>();
+ moduleType = js["Type"].get<std::string>();
+ eraseValue(js, "['Type']");
 
- // Solver list
+ Korali::Solver::Base* module = nullptr;
 
- if (solver == nullptr) Korali::logError("Unrecognized solver type provided: ['Type'] = %s.\n", solverType.c_str());
+ // Module List
 
- solver->setConfiguration(js);
- solver->initialize(solver);
- return solver;
+ if (module == nullptr) Korali::logError("Unrecognized solver type provided: = %s.\n", moduleType.c_str());
+
+ return module;
 }

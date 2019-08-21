@@ -38,6 +38,7 @@ class MCMC : public Korali::Solver::Base
  void setConfiguration(nlohmann::json& js) override;
  void getConfiguration(nlohmann::json& js) override;
  void printGeneration() override;
+ std::string getType() override;
 };
 
 } } // namespace Korali::Solver

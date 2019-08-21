@@ -18,6 +18,7 @@ class Base {
  virtual bool checkTermination() = 0;
 
  static Base* getConduit(nlohmann::json& js);
+ virtual std::string getType() = 0;
 
  // Serialization Methods
  virtual void getConfiguration(nlohmann::json& js) = 0;

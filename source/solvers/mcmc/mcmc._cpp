@@ -11,6 +11,16 @@
 
 Korali::Solver::MCMC::MCMC()
 {
+ _k->_consoleOutputFrequency = 500;
+ _k->_resultsOutputFrequency = 500;
+}
+
+Korali::Solver::MCMC::~MCMC()
+{
+}
+
+void Korali::Solver::MCMC::runGeneration()
+{
  // Initializing RNGs
  auto jsNormal = nlohmann::json();
  jsNormal["Type"] = "Normal";
@@ -24,16 +34,6 @@ Korali::Solver::MCMC::MCMC()
  jsUniform["Maximum"] = 1.0;
  _uniformGenerator = Korali::Distribution::Base::getDistribution(_k->_problem, jsUniform);
 
- _k->_consoleOutputFrequency = 500;
- _k->_resultsOutputFrequency = 500;
-}
-
-Korali::Solver::MCMC::~MCMC()
-{
-}
-
-void Korali::Solver::MCMC::runGeneration()
-{
  _currentRejectionCount = 0;
  while( _currentRejectionCount < _rejectionLevels )
  {

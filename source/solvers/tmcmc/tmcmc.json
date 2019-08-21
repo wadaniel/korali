@@ -7,11 +7,6 @@
  "Configuration Settings":
  [
    {
-    "Name": [ "Type" ],
-    "Type": "std::string",
-    "Description": "Stores the solver name, as chosen by the user."
-   },
-   {
     "Name": [ "Population Size" ],
     "Type": "size_t",
     "Description": "Specifies the number of samples drawn from the posterior distribution at each generation."
@@ -29,7 +24,7 @@
     "Description": "Specifies the number of additional TMCMC steps per chain per generation."
    },
    {
-    "Name": [ "Burn In" ],
+    "Name": [ "Per Generation Burn In" ],
     "Type": "std::vector<size_t>",
     "Default": "std::vector<size_t>(0)",
     "Description": "Specifies the number of additional TMCMC steps per chain at specified generations (this property will overwrite Default Burn In at specified generations)."

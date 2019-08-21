@@ -32,9 +32,6 @@ class TMCMC : public Korali::Solver::Base
 
  public:
 
- TMCMC();
- ~TMCMC();
-
  void initialize() override;
  void finalize() override;
  void runGeneration() override;
@@ -43,6 +40,7 @@ class TMCMC : public Korali::Solver::Base
  void setConfiguration(nlohmann::json& js) override;
  void getConfiguration(nlohmann::json& js) override;
  void printGeneration() override;
+ std::string getType() override;
 };
 
 } } // namespace Korali::Solver

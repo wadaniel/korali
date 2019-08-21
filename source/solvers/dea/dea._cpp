@@ -7,7 +7,7 @@
 
 constexpr size_t __korali__str2int(const char* str, int h = 0) { return !str[h] ? 5381 : (__korali__str2int(str, h+1) * 33) ^ str[h]; }
 
-Korali::Solver::DEA::DEA()
+void Korali::Solver::DEA::initialize()
 {
  // Initializing RNGs
  auto jsNormal = nlohmann::json();
@@ -21,14 +21,7 @@ Korali::Solver::DEA::DEA()
  jsUniform["Minimum"] = 0.0;
  jsUniform["Maximum"] = 1.0;
  _uniformGenerator = Korali::Distribution::Base::getDistribution(_k->_problem, jsUniform);
-}
 
-Korali::Solver::DEA::~DEA()
-{
-}
-
-void Korali::Solver::DEA::initialize()
-{
  N = _k->_problem->getVariableCount();
 
  for(size_t d = 0; d < N; ++d)

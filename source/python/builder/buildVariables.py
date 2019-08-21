@@ -40,7 +40,7 @@ def buildVariables(koraliDir):
     
   # Creating set variable configuration
   
-  variableSetSettingString += ' if (_k->_solverType == "' + solverConfig["Alias"] + '")\n {\n'
+  variableSetSettingString += ' if (_k->_solver->getType() == "' + solverConfig["Alias"] + '")\n {\n'
   for v in solverConfig["Variables Configuration"]: 
     variableSetSettingString += ' if (is' + getCXXVariableName(v) + 'Defined == false)'
     variableSetSettingString += ' {\n'
@@ -52,7 +52,7 @@ def buildVariables(koraliDir):
   
   # Creating get variable configuration
   
-  variableGetSettingString += ' if (_k->_solverType == "' + solverConfig["Alias"] + '")\n {\n'
+  variableGetSettingString += ' if (_k->_solver->getType() == "' + solverConfig["Alias"] + '")\n {\n'
   for v in solverConfig["Variables Configuration"]: 
     variableGetSettingString += saveValue('js', getVariablePath(v), getCXXVariableName(v), getVariableType(v))
     
@@ -84,7 +84,7 @@ def buildVariables(koraliDir):
     
   # Creating set variable configuration
   
-  variableSetSettingString += ' if ( _k->_problemType == "' + problemConfig["Alias"] + '")\n {\n'
+  variableSetSettingString += ' if ( _k->_problem->getType() == "' + problemConfig["Alias"] + '")\n {\n'
   for v in problemConfig["Variables Configuration"]: 
     variableSetSettingString += ' if (is' + getCXXVariableName(v) + 'Defined == false)'
     variableSetSettingString += ' {\n'
@@ -96,7 +96,7 @@ def buildVariables(koraliDir):
   
   # Creating get variable configuration
   
-  variableGetSettingString += ' if ( _k->_problemType == "' + problemConfig["Alias"] + '")\n {\n'
+  variableGetSettingString += ' if ( _k->_problem->getType() == "' + problemConfig["Alias"] + '")\n {\n'
   for v in problemConfig["Variables Configuration"]: 
     variableGetSettingString += saveValue('js', getVariablePath(v), getCXXVariableName(v), getVariableType(v))
     

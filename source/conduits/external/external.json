@@ -7,11 +7,6 @@
  "Configuration Settings": 
  [
    {
-    "Name": [ "Type" ],
-    "Type": "std::string",
-    "Description": "Stores the conduit name, as chosen by the user."
-   },
-   {
     "Name": [ "Concurrent Jobs" ],
     "Type": "size_t",
     "Default": "1",

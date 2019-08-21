@@ -7,11 +7,6 @@
  "Configuration Settings": 
  [
    {
-    "Name": [ "Type" ],
-    "Type": "std::string",
-    "Description": "Stores the solver name, as chosen by the user."
-   },
-   {
     "Name": [ "Population Size" ],
     "Type": "size_t",
     "Description": "Specifies the number of samples to evaluate per generation (preferably $4+3*log(N)$, where $N$ is the number of variables)."

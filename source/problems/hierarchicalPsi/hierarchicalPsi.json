@@ -8,11 +8,6 @@
  "Configuration Settings":
  [
    {
-    "Name": [ "Type" ],
-    "Type": "std::string",
-    "Description": "Stores the problem name, as chosen by the user."
-   },
-   {
     "Name": [ "Variables" ],
     "Type": "std::vector<Korali::Variable*>",
     "Description": "The set of problems variables."
@@ -41,27 +36,27 @@
  "Internal Settings":
  [
   {
-   "Name": [ "Sub Problem Count" ],
+   "Name": [ "Sub Problems Count" ],
    "Type": "size_t",
    "Description": "Number of sub-problems defined."
   },
   {
-   "Name": [ "Sub Problem Variables Count" ],
+   "Name": [ "Sub Problems Variables Count" ],
    "Type": "size_t",
    "Description": "Number of variables in each sub-problem. Must be equal to the number of conditional priors in the hierarchical problem."
   },
   {
-   "Name": [ "Sub Problem Sample Coordinates" ],
+   "Name": [ "Sub Problems Sample Coordinates" ],
    "Type": "std::vector<std::vector<double>>",
    "Description": "Coordinates for each sample on each sub-problem."
   },
   {
-   "Name": [ "Sub Problem Sample Log Likelihoods" ],
+   "Name": [ "Sub Problems Sample Log Likelihoods" ],
    "Type": "std::vector<std::vector<double>>",
    "Description": "Likelihood for each sample on each sub-problem."
   },
   {
-   "Name": [ "Sub Problem Sample Log Priors" ],
+   "Name": [ "Sub Problems Sample Log Priors" ],
    "Type": "std::vector<std::vector<double>>",
    "Description": "Log Priors for each sample on each sub-problem"
   }

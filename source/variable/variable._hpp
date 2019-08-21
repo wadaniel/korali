@@ -30,7 +30,8 @@ class Variable
  void setConfiguration(nlohmann::json& js);
  void setInheritedSettings(nlohmann::json& js);
  void getInheritedSettings(nlohmann::json& js);
- };
+
+};
 
 } // namespace Korali
 

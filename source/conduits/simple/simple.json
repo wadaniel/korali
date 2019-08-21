@@ -6,11 +6,7 @@
  
  "Configuration Settings": 
  [
-  {
-   "Name": [ "Type" ],
-   "Type": "std::string",
-   "Description": "Stores the conduit name, as chosen by the user."
-  }
+
  ]
  
 }

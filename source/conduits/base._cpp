@@ -1,18 +1,19 @@
 #include "korali.hpp"
 
-Korali::Conduit::Base* Korali::Conduit::Base::getConduit(Korali::Conduit::Base* conduit, nlohmann::json& js)
+Korali::Conduit::Base* Korali::Conduit::Base::getConduit(nlohmann::json& js)
 {
- std::string conduitType = "Undefined";
+ std::string moduleType = "Undefined";
 
  if (! isDefined(js, "['Type']")) Korali::logError("No conduit type provided.\n");
 
- conduitType = js["Type"].get<std::string>();
+ moduleType = js["Type"].get<std::string>();
+ eraseValue(js, "['Type']");
 
- // Conduit list
+ Korali::Conduit::Base* module = nullptr;
 
- if (conduit == nullptr) Korali::logError("Unrecognized conduit type provided: ['Type'] = %s.\n", conduitType.c_str());
+ // Module List
 
- conduit->setConfiguration(js);
- conduit->initialize(conduit);
- return conduit;
+ if (module == nullptr) Korali::logError("Unrecognized conduit type provided: = %s.\n", moduleType.c_str());
+
+ return module;
 }

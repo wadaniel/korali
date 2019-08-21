@@ -31,6 +31,7 @@ class HierarchicalTheta : public Korali::Problem::Base
  bool checkTermination() override;
  void initialize() override;
  void finalize() override;
+ std::string getType() override;
 
  void getConfiguration(nlohmann::json&) override;
  void setConfiguration(nlohmann::json&) override;

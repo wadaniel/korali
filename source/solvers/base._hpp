@@ -27,6 +27,7 @@ class Base {
  virtual void getConfiguration(nlohmann::json& js) = 0;
 
  virtual void processSample(size_t sampleId, double fitness) = 0;
+ virtual std::string getType() = 0;
 };
 
 } } // namespace Korali::Solver

@@ -16,7 +16,8 @@ typedef struct fparam_s {
     double        cov;
 } fparam_t;
 
-Korali::Solver::TMCMC::TMCMC()
+
+void Korali::Solver::TMCMC::initialize()
 {
  _multinomialGenerator = new Korali::Distribution::Multinomial(_k->_randomSeed++);
  _multivariateGenerator = new Korali::Distribution::MultivariateNormal(_k->_randomSeed++);
@@ -26,21 +27,14 @@ Korali::Solver::TMCMC::TMCMC()
  jsUniform["Minimum"] = 0.0;
  jsUniform["Maximum"] = 1.0;
  _uniformGenerator = Korali::Distribution::Base::getDistribution(_k->_problem, jsUniform);
-}
 
-Korali::Solver::TMCMC::~TMCMC()
-{
-}
-
-void Korali::Solver::TMCMC::initialize()
-{
  N = _k->_problem->getVariableCount();
  if(_maxChainLength == 0) Korali::logError("Max Chain Length must be greater 0.");
  
- if (_burnIn.size() > 0 && _burnIn[0] != 0)
+ if (_perGenerationBurnIn.size() > 0 && _perGenerationBurnIn[0] != 0)
  Korali::logWarning("Normal", "The 0th entry of the Burn In vector is being ignored (corresponding to Generation 0)\n");
  
- if (_burnIn.size() > 1 && _burnIn[1] != 0)
+ if (_perGenerationBurnIn.size() > 1 && _perGenerationBurnIn[1] != 0)
  Korali::logWarning("Normal", "The 1st entry of the Burn In vector is being ignored (corresponding to Generation 1)\n");
 
  if (_k->_currentGeneration > 0) return;
@@ -410,8 +404,8 @@ void Korali::Solver::TMCMC::setBurnIn()
 {
   if( _k->_currentGeneration == 0 || _k->_currentGeneration==1 )
     _currentBurnIn = 0;
-  else if (_k->_currentGeneration < _burnIn.size())
-    _currentBurnIn = _burnIn[_k->_currentGeneration];
+  else if (_k->_currentGeneration < _perGenerationBurnIn.size())
+    _currentBurnIn = _perGenerationBurnIn[_k->_currentGeneration];
   else
     _currentBurnIn = _defaultBurnIn;
 }

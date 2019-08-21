@@ -3,10 +3,8 @@ import os
 
 koraliDir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)) + '/../..') 
  
-from buildSolvers import *
-from buildProblems import *
 from buildVariables import *
-from buildConduits import *
+from buildModules import *
 from buildModels import *
 from buildDistributions import *
 from buildCxx import *
@@ -21,16 +19,16 @@ buildCxx(koraliDir)
 buildPlotter(koraliDir) 
  
 # Processing Solvers
-buildSolvers(koraliDir)
+buildModules(koraliDir + '/solvers')
  
 # Processing Problems
-buildProblems(koraliDir)
+buildModules(koraliDir + '/problems')
 
 # Processing Models
 buildModels(koraliDir)
 
 # Processing Conduits
-buildConduits(koraliDir)
+buildModules(koraliDir + '/conduits')
 
 # Processing Distributions
 buildDistributions(koraliDir)

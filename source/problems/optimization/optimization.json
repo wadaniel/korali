@@ -8,11 +8,6 @@
  "Configuration Settings": 
  [
    {
-    "Name": [ "Type" ],
-    "Type": "std::string",
-    "Description": "Stores the problem name, as chosen by the user."
-   },
-   {
     "Name": [ "Variables" ],
     "Type": "std::vector<Korali::Variable*>",
     "Description": "The set of problems variables."

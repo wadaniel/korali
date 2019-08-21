@@ -32,6 +32,7 @@ class External : public Korali::Conduit::Base {
  bool isRoot() override;
  void abort() override;
  bool checkTermination() override;
+ std::string getType() override;
 
  // Serialization Methods
  void getConfiguration(nlohmann::json& js) override;

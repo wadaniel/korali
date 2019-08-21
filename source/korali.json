@@ -8,7 +8,7 @@
    {
     "Name": [ "Random Seed" ],
     "Type": "size_t",
-    "Default": "0",
+    "Default": "_runID",
     "Description": "Specifies the initializing seed for the generation of random numbers. If 0 is specified, Korali will automatically derivate a new seed base on the current time."
    },
    {
@@ -18,20 +18,20 @@
     "Description": "Specifies the evaluation model type chosen, if any."
    },
    {
-    "Name": [ "Problem" ],
-    "Type": "Korali::Problem::Base*",
-    "Description": "Specifies the problem type to solve."
-   },
-   {
     "Name": [ "Solver" ],
     "Type": "Korali::Solver::Base*",
-    "Description": "Specifies the solver algorithm to employ."
+    "Description": "Represents the state and configuration of the solver algorithm."
+   },
+   {
+    "Name": [ "Problem" ],
+    "Type": "Korali::Problem::Base*",
+    "Description": "Represents the configuration of the problem to solve."
    },
    {
     "Name": [ "Conduit" ],
     "Type": "Korali::Conduit::Base*",
     "Default": "Simple",
-    "Description": "Specifies the method for the model evaluations."
+    "Description": "Represents the configuration of the execution conduit."
    },
    {
     "Name": [ "Console Output", "Verbosity"],
@@ -70,7 +70,7 @@
    {
     "Name": [ "Run ID" ],
     "Type": "size_t",
-    "Default": "0",
+    "Default": "_runID",
     "Description": "Specifies the Korali run's unique identifier. Used to distinguish run results when two or more use the same output directory."
    },
    {

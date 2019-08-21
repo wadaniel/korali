@@ -26,10 +26,7 @@ class DEA : public Korali::Solver::Base
 
  public:
 
- DEA();
- ~DEA();
-
-  bool checkTermination() override;
+ bool checkTermination() override;
  void initialize() override;
  void finalize() override;
  void runGeneration() override;
@@ -37,6 +34,7 @@ class DEA : public Korali::Solver::Base
  void setConfiguration(nlohmann::json& js) override;
  void getConfiguration(nlohmann::json& js) override;
  void printGeneration() override;
+ std::string getType() override;
 };
 
 } } // namespace Korali::Solver

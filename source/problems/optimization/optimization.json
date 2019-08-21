@@ -19,8 +19,8 @@
    },
    {
     "Name": [ "Objective Function" ],
-    "Type": "std::function<void(Korali::Model::Direct&)>",
-    "Description": "Stores the objective function."
+    "Type": "std::function<void(Korali::Model&)>",
+    "Description": "Stores the objective function to optimize."
    }
  ],
  

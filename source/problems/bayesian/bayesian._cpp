@@ -25,12 +25,9 @@ void Korali::Problem::Bayesian::initialize()
     if (recognizedType == false) Korali::logError("Incorrect Bayesian variable type selected: %s.\n", typeString.c_str());
   }
 
-  if (_k->_constraints.size() > 0) Korali::logError("Bayesian inference problems do not allow constraint definitions.\n");
-
   if (_likelihoodModel == "Additive Normal" || _likelihoodModel == "Multiplicative Normal" || _likelihoodModel == "Multiplicative Normal Data")
   {
     if (_likelihoodReferenceData.size() == 0) Korali::logError("Bayesian (%s) problems require defining reference data.\n", _likelihoodModel.c_str());
-    if (_k->_modelType != "Reference") Korali::logError("Bayesian (%s) problems require defining a refererence computational model. Used: %s\n", _likelihoodModel.c_str(), _k->_modelType.c_str());
     if (_statisticalVariableIndices.size() != 1) Korali::logError("Bayesian (%s) problems require exactly 1 statistical parameter, provided: %lu.\n", _likelihoodModel.c_str(), _statisticalVariableIndices.size());
   }
 
@@ -43,7 +40,6 @@ void Korali::Problem::Bayesian::initialize()
   if (_likelihoodModel == "Custom")
   {
     if (_likelihoodReferenceData.size() != 0) Korali::logError("Bayesian (Custom) problems do not accept reference data.\n");
-    if (_k->_modelType != "Likelihood") Korali::logError("Bayesian (Custom) problems require defining a likelihood computational model. Used: %s\n", _likelihoodModel.c_str(), _k->_modelType.c_str());
     if (_statisticalVariableIndices.size() != 0) Korali::logError("Bayesian (Custom) problems do not accept statistical variables.\n");
   }
 }
@@ -72,50 +68,36 @@ Korali::Variable* Korali::Problem::Bayesian::getVariable(size_t variableId)
 
 void Korali::Problem::Bayesian::runModel(std::vector<double> sample, size_t sampleId)
 {
-  if (_likelihoodModel == "Additive Normal" || _likelihoodModel == "Multiplicative Normal" || _likelihoodModel == "Multiplicative Normal Data")
-  {
-    _referenceModelData._evaluations.clear();
-    _referenceModelData._sampleId = sampleId;
-    _referenceModelData._variables = sample;
+  _modelData.setSample(sampleId, sample);
 
-    // Executing Model
-    _k->_referenceModel(_referenceModelData);
-  }
-
-  if (_likelihoodModel == "Custom")
-  {
-    _likelihoodModelData._sampleId = sampleId;
-    _likelihoodModelData._variables = sample;
-
-    // Executing Model
-    _k->_likelihoodModel(_likelihoodModelData);
-  }
-
-  if (_likelihoodModel == "Truncated Normal (No Model)" || _likelihoodModel == "Normal (No Model)" ){
-    _likelihoodModelData._sampleId = sampleId;
-    _likelihoodModelData._variables = sample;
-  }
+//  if (_likelihoodModel == "Additive Normal" || _likelihoodModel == "Multiplicative Normal" || _likelihoodModel == "Multiplicative Normal Data")
+//    _referenceModel(_modelData);
+//
+//  if (_likelihoodModel == "Custom")
+//    _likelihoodModel(_modelData);
+//
+//  if (_likelihoodModel == "Truncated Normal (No Model)" || _likelihoodModel == "Normal (No Model)" )
 }
 
 double Korali::Problem::Bayesian::evaluateSampleFitness()
 {
   double fitness = 0.0;
 
-  if (_likelihoodModel == "Additive Normal" || _likelihoodModel == "Multiplicative Normal" || _likelihoodModel == "Multiplicative Normal Data")
-  {
-    if (_referenceModelData._evaluations.size() != _likelihoodReferenceData.size())
-      Korali::logError("Bayesian (%s) problems require a %lu-sized reference result array. Provided: %lu.\n", _likelihoodModel.c_str(), _likelihoodReferenceData.size(), _referenceModelData._evaluations.size());
-
-    if (_likelihoodModel == "Additive Normal")            fitness = likelihoodNormalAdditive(_referenceModelData);
-    if (_likelihoodModel == "Multiplicative Normal")      fitness = likelihoodNormalMultiplicative(_referenceModelData);
-    if (_likelihoodModel == "Multiplicative Normal Data") fitness = likelihoodNormalMultiplicativeData(_referenceModelData);
-
-  }
-
-  if (_likelihoodModel == "Custom") fitness =  _likelihoodModelData._likelihood;
-
-  if (_likelihoodModel == "Truncated Normal (No Model)") fitness = likelihoodTruncatedNormalNoModel(_likelihoodModelData);
-  if (_likelihoodModel == "Normal (No Model)")           fitness = likelihoodNormalNoModel(_likelihoodModelData);
+//  if (_likelihoodModel == "Additive Normal" || _likelihoodModel == "Multiplicative Normal" || _likelihoodModel == "Multiplicative Normal Data")
+//  {
+//    if (_modelData.getResultsSize() != _likelihoodReferenceData.size())
+//      Korali::logError("Bayesian (%s) problems require a %lu-sized reference result array. Provided: %lu.\n", _likelihoodModel.c_str(), _likelihoodReferenceData.size(), _modelData.getResultsSize());
+//
+//    if (_likelihoodModel == "Additive Normal")            fitness = likelihoodNormalAdditive(_modelData);
+//    if (_likelihoodModel == "Multiplicative Normal")      fitness = likelihoodNormalMultiplicative(_modelData);
+//    if (_likelihoodModel == "Multiplicative Normal Data") fitness = likelihoodNormalMultiplicativeData(_modelData);
+//
+//  }
+//
+//  if (_likelihoodModel == "Custom") fitness =  _modelData._likelihood;
+//
+//  if (_likelihoodModel == "Truncated Normal (No Model)") fitness = likelihoodTruncatedNormalNoModel(_modelData);
+//  if (_likelihoodModel == "Normal (No Model)")           fitness = likelihoodNormalNoModel(_modelData);
 
   return fitness;
 }
@@ -128,10 +110,10 @@ double Korali::Problem::Bayesian::evaluateSampleLogPrior(double* sample)
   return logPrior;
 }
 
-double Korali::Problem::Bayesian::likelihoodNormalNoModel(Korali::Model::Likelihood& data)
+double Korali::Problem::Bayesian::likelihoodNormalNoModel(Korali::Model& data)
 {
-  double mu     = data._variables[_statisticalVariableIndices[0]];
-  double sigma  = data._variables[_statisticalVariableIndices[1]];
+  double mu     = data[_statisticalVariableIndices[0]];
+  double sigma  = data[_statisticalVariableIndices[1]];
   double sigma2 = sigma*sigma;
 
   double logNormalization = 0.5 * M_SQRT2 * M_SQRTPI * sigma ;
@@ -146,12 +128,12 @@ double Korali::Problem::Bayesian::likelihoodNormalNoModel(Korali::Model::Likelih
   return -logNormalization - 0.5*ssn/sigma2;
 }
 
-double Korali::Problem::Bayesian::likelihoodTruncatedNormalNoModel(Korali::Model::Likelihood& data)
+double Korali::Problem::Bayesian::likelihoodTruncatedNormalNoModel(Korali::Model& data)
 {
-  double a      = data._variables[_statisticalVariableIndices[0]];
-  double b      = data._variables[_statisticalVariableIndices[1]];
-  double mu     = data._variables[_statisticalVariableIndices[2]];
-  double sigma  = data._variables[_statisticalVariableIndices[3]];
+  double a      = data[_statisticalVariableIndices[0]];
+  double b      = data[_statisticalVariableIndices[1]];
+  double mu     = data[_statisticalVariableIndices[2]];
+  double sigma  = data[_statisticalVariableIndices[3]];
   double sigma2 = sigma*sigma;
   double an = (a-mu)/sigma;
   double bn = (b-mu)/sigma;
@@ -174,21 +156,21 @@ double Korali::Problem::Bayesian::likelihoodTruncatedNormalNoModel(Korali::Model
   return -logNormalization - 0.5*ssn/sigma2;
 }
 
-double Korali::Problem::Bayesian::likelihoodNormalAdditive(Korali::Model::Reference& data)
+double Korali::Problem::Bayesian::likelihoodNormalAdditive(Korali::Model& data)
 {
-  double sigma   = data._variables[_statisticalVariableIndices[0]];
+  double sigma   = data[_statisticalVariableIndices[0]];
   double sigma2  = sigma*sigma;
   double ssn     = 0.0;
   double fitness = 0.0;
 
   for(size_t i = 0; i < _likelihoodReferenceData.size(); i++)
   {
-    if( !isfinite(data._evaluations[i]) )
+    if( !isfinite(data.getResults()[i]) )
     {
       Korali::logWarning("Normal","Non-finite value detected in the results passed in the log-likelihood function.\n");
       return -Korali::Inf;
     }
-    double diff = _likelihoodReferenceData[i] - data._evaluations[i];
+    double diff = _likelihoodReferenceData[i] - data.getResults()[i];
     ssn += diff*diff;
   }
 
@@ -196,22 +178,22 @@ double Korali::Problem::Bayesian::likelihoodNormalAdditive(Korali::Model::Refere
   return fitness;
 }
 
-double Korali::Problem::Bayesian::likelihoodNormalMultiplicative(Korali::Model::Reference& data)
+double Korali::Problem::Bayesian::likelihoodNormalMultiplicative(Korali::Model& data)
 {
-  double sigma    = data._variables[_statisticalVariableIndices[0]];
+  double sigma    = data[_statisticalVariableIndices[0]];
   double ssn      = 0.0;
   double fitness  = 0.0;
   double logSigma = 0.0;
   for(size_t i = 0; i < _likelihoodReferenceData.size(); i++)
   {
-    if( !isfinite(data._evaluations[i]) )
+    if( !isfinite(data.getResults()[i]) )
     {
       Korali::logWarning("Normal","Non-finite value detected in the results passed in the log-likelihood function.\n");
       return -Korali::Inf;
     }
 
-    double diff   = _likelihoodReferenceData[i] - data._evaluations[i];
-    double denom  = sigma*data._evaluations[i];
+    double diff   = _likelihoodReferenceData[i] - data.getResults()[i];
+    double denom  = sigma*data.getResults()[i];
     ssn += diff*diff / (denom*denom);
     logSigma += log(denom);
   }
@@ -220,21 +202,21 @@ double Korali::Problem::Bayesian::likelihoodNormalMultiplicative(Korali::Model::
   return fitness;
 }
 
-double Korali::Problem::Bayesian::likelihoodNormalMultiplicativeData(Korali::Model::Reference& data)
+double Korali::Problem::Bayesian::likelihoodNormalMultiplicativeData(Korali::Model& data)
 {
-  double sigma    = data._variables[_statisticalVariableIndices[0]];
+  double sigma    = data[_statisticalVariableIndices[0]];
   double ssn      = 0.0;
   double fitness  = 0.0;
   double logSigma = 0.0;
   for(size_t i = 0; i < _likelihoodReferenceData.size(); i++)
   {
-    if( !isfinite(data._evaluations[i]) )
+    if( !isfinite(data.getResults()[i]) )
     {
       Korali::logWarning("Normal","Non-finite value detected in the results passed in the log-likelihood function.\n");
       return -Korali::Inf;
     }
 
-    double diff   = _likelihoodReferenceData[i] - data._evaluations[i];
+    double diff   = _likelihoodReferenceData[i] - data.getResults()[i];
     double denom  = sigma*_likelihoodReferenceData[i];
     ssn += diff*diff / (denom*denom);
     logSigma += log(denom);

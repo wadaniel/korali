@@ -2,8 +2,6 @@
 #define _KORALI_PROBLEM_BAYESIAN_HPP_
 
 #include "problems/base.hpp"
-#include "models/reference/reference.hpp"
-#include "models/likelihood/likelihood.hpp"
 
 namespace Korali { namespace Problem {
 
@@ -11,16 +9,12 @@ class Bayesian : public Korali::Problem::Base
 {
  private:
 
- Korali::Model::Reference  _referenceModelData;
- Korali::Model::Likelihood _likelihoodModelData;
+ double likelihoodNormalAdditive(Korali::Model& data);
+ double likelihoodNormalMultiplicative(Korali::Model& data);
+ double likelihoodNormalMultiplicativeData(Korali::Model& data);
 
- double likelihoodNormalAdditive(Korali::Model::Reference& data);
- double likelihoodNormalMultiplicative(Korali::Model::Reference& data);
- double likelihoodNormalMultiplicativeData(Korali::Model::Reference& data);
-
- double likelihoodTruncatedNormalNoModel(Korali::Model::Likelihood& data);
- double likelihoodNormalNoModel(Korali::Model::Likelihood& data);
-
+ double likelihoodTruncatedNormalNoModel(Korali::Model& data);
+ double likelihoodNormalNoModel(Korali::Model& data);
 
  public:
 

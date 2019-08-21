@@ -2,7 +2,7 @@
 #define _KORALI_AUXILIARS_KORALIJSON_HPP_
 
 #include "auxiliars/json.hpp"
-#include "models/direct/direct.hpp"
+#include "model.hpp"
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -66,7 +66,7 @@ class KoraliJsonWrapper
 
   KoraliJsonWrapper& getItem(const std::string& key)                   { _key = key; _js = &((*_js)[key]); return *this;}
   KoraliJsonWrapper& getItem(const unsigned long int& key)             { _key = key; _js = &((*_js)[key]); return *this;}
-  void setItem(const std::string& key, const std::function<void(Korali::Model::Direct&)> val);
+  void setItem(const std::string& key, const std::function<void(Korali::Model&)> val);
   void setItem(const std::string& key, const std::string& val)         { _key = key; (*_js)[key] = val; }
   void setItem(const std::string& key, const double& val)              { _key = key; (*_js)[key] = val; }
   void setItem(const std::string& key, const int& val)                 { _key = key; (*_js)[key] = val; }

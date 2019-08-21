@@ -3,8 +3,6 @@
 
 void Korali::Problem::HierarchicalThetaNew::initialize()
 {
-  if (_k->_constraints.size() > 0) Korali::logError("Hierarchical Bayesian (Theta New) problems do not allow constraint definitions.\n");
-
   // Creating Psi-problem JSON object from string
   nlohmann::json psiProblemJson = loadJsonFromFile(_psiProblem.c_str());
 
@@ -66,8 +64,7 @@ Korali::Variable* Korali::Problem::HierarchicalThetaNew::getVariable(size_t vari
 
 void Korali::Problem::HierarchicalThetaNew::runModel(std::vector<double> sample, size_t sampleId)
 {
-  _directModelData._sampleId = sampleId;
-  _directModelData._variables = sample;
+ _modelData.setSample(sampleId, sample);
 }
 
 double Korali::Problem::HierarchicalThetaNew::evaluateSampleFitness()
@@ -90,9 +87,9 @@ double Korali::Problem::HierarchicalThetaNew::evaluateSampleFitness()
     logValues[i] = 0.;
     for (size_t k = 0; k < Ntheta; k++){
       // size_t k=2;
-      logValues[i] += _psiProblemKorali.getConditionalPrior(k)->getLogDensity( _directModelData._variables[k] );
-      // logValues2[i] += _psiProblemKorali.getConditionalPrior(k)->getLogDensity( _directModelData._variables[k] );
-      // printf("----->   %lf  ===  %lf \n", _directModelData._variables[k], _psiProblemKorali.getConditionalPrior(k)->getLogDensity( _directModelData._variables[k] ) );
+      logValues[i] += _psiProblemKorali.getConditionalPrior(k)->getLogDensity( _modelData[k] );
+      // logValues2[i] += _psiProblemKorali.getConditionalPrior(k)->getLogDensity( _modelData[k] );
+      // printf("----->   %lf  ===  %lf \n", _modelData._variables[k], _psiProblemKorali.getConditionalPrior(k)->getLogDensity( _modelData[k] ) );
     }
 
   }
@@ -101,7 +98,7 @@ double Korali::Problem::HierarchicalThetaNew::evaluateSampleFitness()
 
   // printf("==========> loglike = %lf   ----- %lf\n",  logLikelihood, logSumExp(logValues) );
   // for (size_t i=0; i<Ntheta; i++)
-  //   printf("%lf   ", _directModelData._variables[i] );
+  //   printf("%lf   ", _modelData[i] );
   // printf("%lf\n",  logLikelihood );
   // exit(1);
 

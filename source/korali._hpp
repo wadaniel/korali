@@ -1,5 +1,5 @@
-#ifndef _KORALI_HPP_
-#define _KORALI_HPP_
+#ifndef _KORALI_ENGINE_HPP_
+#define _KORALI_ENGINE_HPP_
 
 #include <vector>
 #include <functional>
@@ -18,17 +18,6 @@ class Engine {
  void start(bool isDryRun);
  void run() { start(false); }
  void dry() { start(true);  }
-
- // Model configuration methods
- std::function<void(Korali::Model::Direct&)> _directModel;
- std::function<void(Korali::Model::Likelihood&)> _likelihoodModel;
- std::function<void(Korali::Model::Reference&)> _referenceModel;
- std::vector<std::function<void(Korali::Model::Constraint&)>> _constraints;
-
- void setDirectModel(std::function<void(Korali::Model::Direct&)> model);
- void setLikelihoodModel(std::function<void(Korali::Model::Likelihood&)> model);
- void setReferenceModel(std::function<void(Korali::Model::Reference&)> model);
- void addConstraint(std::function<void(Korali::Model::Constraint&)> constraint);
 
  // Python and Json Configuration Binding Methods
  nlohmann::json  _js;
@@ -53,8 +42,8 @@ class Engine {
 };
 
 extern Engine* _k;
-extern std::vector<std::function<void(Korali::Model::Direct&)>> __korali_models;
+extern std::vector<std::function<void(Korali::Model&)>> __korali_models;
 
 } // namespace Korali
 
-#endif // _KORALI_HPP_
+#endif // _KORALI_ENGINE_HPP_

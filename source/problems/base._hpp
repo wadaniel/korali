@@ -3,12 +3,15 @@
 
 #include "auxiliars/json.hpp"
 #include "variable/variable.hpp"
+#include "model.hpp"
 
 namespace Korali { namespace Problem {
 
 class Base
 {
-  public:
+ public:
+
+  Korali::Model  _modelData;
 
   virtual void runModel(std::vector<double>, size_t sampleId) = 0;
 

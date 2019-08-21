@@ -1,6 +1,8 @@
 #ifndef _KORALI_AUXILIARS_KORALIMATH_HPP_
 #define _KORALI_AUXILIARS_KORALIMATH_HPP_
 
+// Auxiliar library for Korali's math and time operations.
+
 #include "korali.hpp"
 #include <stdlib.h>
 #include <vector>
@@ -16,6 +18,8 @@ const double Min    = std::numeric_limits<double>::min();
 const double Eps    = std::numeric_limits<double>::epsilon();
 
 double logSumExp( std::vector<double> logValues );
+std::string getTimestamp();
+size_t getTimehash();
 
 }
 

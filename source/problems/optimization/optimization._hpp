@@ -2,16 +2,11 @@
 #define _KORALI_PROBLEM_OPTIMIZATION_HPP_
 
 #include "problems/base.hpp"
-#include "models/direct/direct.hpp"
 
 namespace Korali { namespace Problem {
 
 class Optimization : public Korali::Problem::Base
 {
- private:
-
- Korali::Model::Direct  _directModelData;
-
  public:
 
  void runModel(std::vector<double>, size_t sampleId) override;

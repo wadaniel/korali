@@ -11,6 +11,11 @@
     "Name": [ "Variables" ],
     "Type": "std::vector<Korali::Variable*>",
     "Description": "The set of problems variables."
+   },
+   {
+    "Name": [ "Objective Function" ],
+    "Type": "std::function<void(Korali::Model&)>",
+    "Description": "Stores the function to sample from."
    }
  ],
  

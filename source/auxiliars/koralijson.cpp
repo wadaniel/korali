@@ -6,7 +6,7 @@
 #include "koralijson.hpp"
 #include "korali.hpp"
 
-void Korali::KoraliJsonWrapper::setItem(const std::string& key, const std::function<void(Korali::Model::Direct&)> val)
+void Korali::KoraliJsonWrapper::setItem(const std::string& key, const std::function<void(Korali::Model&)> val)
 {
  _key = key;
  size_t pos = __korali_models.size();

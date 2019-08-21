@@ -3,8 +3,6 @@
 
 void Korali::Problem::HierarchicalTheta::initialize()
 {
-  if (_k->_constraints.size() > 0) Korali::logError("Hierarchical Bayesian (Theta) problems do not allow constraint definitions.\n");
-
   // Creating sub-problem JSON object from string
   nlohmann::json subProblemJson = loadJsonFromFile(_subProblem.c_str());
 

@@ -1,7 +1,7 @@
 #include "koralimath.hpp"
 #include <cmath>
 #include <algorithm>
-
+#include <chrono>
 
 // Computes: log sum_{i=1}^N x_i
 // using the log-sum-exp trick:
@@ -21,3 +21,18 @@ double Korali::logSumExp( std::vector<double> logValues )
 
   return maxLogValues + log(sumExpValues);
 }
+
+
+std::string Korali::getTimestamp()
+{
+ time_t rawtime;
+ time (&rawtime);
+ std::string curTime(ctime(&rawtime));
+ return curTime.substr(0, curTime.size()-1);
+}
+
+size_t getTimehash()
+{
+ return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+}
+

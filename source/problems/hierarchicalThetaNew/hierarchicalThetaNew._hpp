@@ -3,7 +3,6 @@
 
 #include "problems/base.hpp"
 #include "problems/hierarchicalPsi/hierarchicalPsi.hpp"
-#include "models/direct/direct.hpp"
 
 namespace Korali { namespace Problem {
 
@@ -12,8 +11,6 @@ class HierarchicalThetaNew : public Korali::Problem::Base
  private:
 
  Korali::Problem::HierarchicalPsi _psiProblemKorali;
-
- Korali::Model::Direct  _directModelData;
 
  public:
 

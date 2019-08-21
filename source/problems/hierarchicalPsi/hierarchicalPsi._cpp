@@ -5,8 +5,6 @@ void Korali::Problem::HierarchicalPsi::initialize()
 {
  if (_conditionalPriors.size() == 0) Korali::logError("Hierarchical Bayesian (Psi) problems require at least one conditional prior\n");
 
- if (_k->_constraints.size() > 0) Korali::logError("Hierarchical Bayesian (Psi) problems do not allow constraint definitions.\n");
- if (_k->_modelType != "Unassigned") Korali::logError("Hierarchical Bayesian (Psi) does not require a computational model, but one was provided.\n");
  if (_subProblems.size() < 2) Korali::logError("Hierarchical Bayesian (Psi) problem requires defining at least two executed sub-problems.\n");
 
  // Obtaining sub problem count and variable counts
@@ -57,7 +55,6 @@ void Korali::Problem::HierarchicalPsi::initialize()
     _subProblemsSampleCoordinates[i][j*_subProblemsVariablesCount + k] = _subProblemsJson[i]["Solver"]["Internal"]["Sample Database"][j*_subProblemsVariablesCount + k];
   }
  }
-
 
 }
 

@@ -6,14 +6,9 @@ Korali::Distribution::Gamma::Gamma()
  _scale = 1.0;
 }
 
-void Korali::Distribution::Gamma::initialize(Korali::Problem::Base* problem)
+void Korali::Distribution::Gamma::initialize()
 {
- Korali::Distribution::Base::initialize(problem);
- bool hasConditionals = false;
-
- // Check for conditional properties
-
- if (hasConditionals == false) updateDistribution();
+ Korali::Distribution::Base::initialize();
 }
 
 void Korali::Distribution::Gamma::finalize()
@@ -44,9 +39,9 @@ void Korali::Distribution::Gamma::updateDistribution()
  _aux = -gsl_sf_lngamma(_shape) - _shape*log(_scale);
 }
 
-void Korali::Distribution::Gamma::updateConditionals(const std::vector<double>& sample)
+void Korali::Distribution::Gamma::updateConditionals(const std::vector<std::string>& propertyNames, const std::vector<double>& propertyValues)
 {
- Korali::Distribution::Base::updateConditionals(sample);
+ // Check for conditional properties
  updateDistribution();
 }
 

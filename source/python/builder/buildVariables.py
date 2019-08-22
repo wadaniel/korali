@@ -16,7 +16,7 @@ def buildVariables(koraliDir):
  variableGetSettingString = ''
  
  ########  Detecting Solvers
- solverdir = koraliDir + '/solvers' 
+ solverdir = koraliDir + '/modules/solvers' 
  solverPaths  = [x[0] for x in os.walk(solverdir)][1:]
  for solverPath in solverPaths:
   solverName = solverPath.replace(solverdir + '/', '')
@@ -60,7 +60,7 @@ def buildVariables(koraliDir):
  
  ########  Detecting Problems
  
- problemdir = koraliDir + '/problems'
+ problemdir = koraliDir + '/modules/problems'
  problemPaths  = [x[0] for x in os.walk(problemdir)][1:]
  for problemPath in problemPaths:
   problemName = problemPath.replace(problemdir + '/', '')

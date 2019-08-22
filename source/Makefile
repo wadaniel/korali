@@ -23,12 +23,8 @@ libkorali.so: $(OBJECTS)
 	$(CXX) $^ -o $@ $(LDFLAGS)
 
 clean:
-	@rm -f solvers/*/*.hpp solvers/*/*.cpp 
-	@rm -f conduits/*/*.hpp conduits/*/*.cpp 
-	@rm -f problems/*/*.hpp problems/*/*.cpp 
-	@rm -f models/*/*.hpp
-	@rm -f distributions/univariate/*/*.hpp distributions/univariate/*/*.cpp distributions/univariate/*.cpp distributions/univariate/*.hpp 
-	@rm -f variable/*.cpp variable/*.hpp setup.py
+	@rm -f `find . -name "*._hpp" | sed 's/._hpp/.hpp/g'`
+	@rm -f `find . -name "*._cpp" | sed 's/._cpp/.cpp/g'`
 	@rm -f setup.py
 	@rm -f *.o ./*/*.o *.so *.a $(OBJECTS) 
 

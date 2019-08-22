@@ -111,23 +111,16 @@ def buildDistributions(koraliDir):
   for v in distributionConfig["Conditional Variables"]:
     conditionalCheckString += ' bool ' + getCXXVariableName(v) + 'Recognized = false;\n'
 
-  conditionalCheckString += ' for (size_t i = 0; i < _problem->getVariableCount(); i++)\n'
+  conditionalCheckString += ' for (size_t i = 0; i < propertyNames.size(); i++)\n'
   conditionalCheckString += ' {\n'
 
   for v in distributionConfig["Conditional Variables"]:
-    conditionalCheckString += '  if (_problem->getVariable(i)->_name == ' + getCXXVariableName(v) + 'Conditional) \n'
-    conditionalCheckString += '  {\n'
-    conditionalCheckString += '   ' + getCXXVariableName(v) + 'Recognized = true;\n'
-    conditionalCheckString += '   hasConditionals = true;\n'
-
-    conditionalCheckString += '   _conditionalIndexes.push_back(i);\n'
-    conditionalCheckString += '   _conditionalPointers.push_back(&' + getCXXVariableName(v) + ');\n'
-    conditionalCheckString += '  }\n'
+    conditionalCheckString += '  if (propertyNames[i] == ' + getCXXVariableName(v) + 'Conditional) { ' + getCXXVariableName(v) + ' = propertyValues[i]; ' + getCXXVariableName(v) + 'Recognized = true; }\n'
 
   conditionalCheckString += ' }\n'
 
   for v in distributionConfig["Conditional Variables"]:
-    conditionalCheckString += ' if ( !' + getCXXVariableName(v) + 'Conditional.empty() && ' + getCXXVariableName(v) + 'Recognized == false)\n'
+    conditionalCheckString += ' if ( ' + getCXXVariableName(v) + 'Conditional.empty() && ' + getCXXVariableName(v) + 'Recognized == false)\n'
     conditionalCheckString += '  Korali::logError("Could not find a variable whose name coincides with reference %s made by conditional property: ' + v["Name"][-1] + '.\\n", ' + getCXXVariableName(v) + 'Conditional.c_str());\n'
 
   ###### Creating code file

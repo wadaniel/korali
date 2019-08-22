@@ -1,0 +1,38 @@
+#ifndef _KORALI_PROBLEM_HIERARCHICALTHETANEW_HPP_
+#define _KORALI_PROBLEM_HIERARCHICALTHETANEW_HPP_
+
+#include "modules/problems/base.hpp"
+#include "modules/problems/hierarchicalPsi/hierarchicalPsi.hpp"
+
+namespace Korali { namespace Problem {
+
+class HierarchicalThetaNew : public Korali::Problem::Base
+{
+ private:
+
+ Korali::Problem::HierarchicalPsi _psiProblemKorali;
+
+ public:
+
+ void runModel(std::vector<double>, size_t sampleId) override;
+
+ size_t getVariableCount() override;
+ Korali::Variable* getVariable(size_t variableId) override;
+ bool isSampleFeasible(double* sample) override;
+
+ double evaluateSampleFitness() override;
+ double evaluateSampleLogPrior(double* sample) override;
+
+ bool checkTermination() override;
+ void initialize() override;
+ void finalize() override;
+ std::string getType() override;
+
+ void getConfiguration(nlohmann::json&) override;
+ void setConfiguration(nlohmann::json&) override;
+};
+
+} } // namespace Korali::Problem
+
+
+#endif // _KORALI_PROBLEM_HIERARCHICALTHETANEW_HPP_

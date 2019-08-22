@@ -1,0 +1,69 @@
+#ifndef _KORALI_CONDUIT_MPI_HPP_
+#define _KORALI_CONDUIT_MPI_HPP_
+
+#ifdef _KORALI_USE_MPI
+ #include "mpi.h"
+ extern MPI_Comm __KoraliTeamComm;
+ extern MPI_Comm getKoraliMPIComm();
+ extern long int getKoraliMPICommPointer();
+#endif
+
+#include "modules/conduits/base.hpp"
+#include "auxiliars/json.hpp"
+#include <queue>
+#include <vector>
+#include <map>
+
+namespace Korali { namespace Conduit {
+
+class MPI : public Korali::Conduit::Base
+{
+
+ private:
+
+ public:
+
+ #ifdef _KORALI_USE_MPI
+ int _rankId;
+ int _rankCount;
+
+ // Team Management
+ int _teamCount;
+
+ int _teamId;
+ int _localRankId;
+
+ std::vector<size_t> _teamSampleId;
+ std::vector<bool> _teamBusy;
+ std::vector<double> _teamFitness;
+
+ std::vector<MPI_Request> _teamRequests;
+
+ std::queue<int> _teamQueue;
+ std::map< int, std::vector<int> > _teamWorkers;
+
+ bool _continueEvaluations;
+ #endif
+
+ MPI();
+
+ void initialize() override;
+ void finalize() override;
+
+ void workerThread();
+ void evaluateSample(double* sampleArray, size_t sampleId) override;
+ void checkProgress() override;
+ bool isRoot() override;
+ void abort() override;
+ int getRootRank();
+ bool checkTermination() override;
+ std::string getType() override;
+
+ // Serialization Methods
+ void getConfiguration(nlohmann::json& js) override;
+ void setConfiguration(nlohmann::json& js) override;
+};
+
+} } // namespace Korali::Conduit
+
+#endif // _KORALI_CONDUIT_MPI_HPP_

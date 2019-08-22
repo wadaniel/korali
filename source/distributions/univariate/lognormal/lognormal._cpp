@@ -5,13 +5,9 @@ Korali::Distribution::LogNormal::LogNormal()
  _sigma = 1.0;
 }
 
-void Korali::Distribution::LogNormal::initialize(Korali::Problem::Base* problem)
+void Korali::Distribution::LogNormal::initialize()
 {
-  Korali::Distribution::Base::initialize(problem);
-  bool hasConditionals = false;
-
-  // Check for conditional properties
-  if (hasConditionals == false) updateDistribution();
+  Korali::Distribution::Base::initialize();
 }
 
 void Korali::Distribution::LogNormal::finalize()
@@ -44,8 +40,9 @@ void Korali::Distribution::LogNormal::updateDistribution()
   _aux = -0.5*gsl_sf_log(2*M_PI) - gsl_sf_log(_sigma);
 }
 
-void Korali::Distribution::LogNormal::updateConditionals(const std::vector<double>& sample)
+void Korali::Distribution::LogNormal::updateConditionals(const std::vector<std::string>& propertyNames, const std::vector<double>& propertyValues)
 {
-  Korali::Distribution::Base::updateConditionals(sample);
+ // Check for conditional properties
+
   updateDistribution();
 }

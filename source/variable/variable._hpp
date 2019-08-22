@@ -7,23 +7,16 @@
 
 namespace Korali {
 
-namespace Problem
-{
- class Base;
-}
-
 class Variable
 {
  private:
-
- Korali::Problem::Base* _problem;
 
  public:
 
  bool _isLogSpace;
  std::string _name;
 
- Variable(Korali::Problem::Base* problem);
+ Variable();
  ~Variable();
 
  void getConfiguration(nlohmann::json& js);

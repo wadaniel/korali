@@ -6,13 +6,9 @@ Korali::Distribution::TruncatedNormal::TruncatedNormal()
  _sigma = 1.0;
 }
 
-void Korali::Distribution::TruncatedNormal::initialize(Korali::Problem::Base* problem)
+void Korali::Distribution::TruncatedNormal::initialize()
 {
- Korali::Distribution::Base::initialize(problem);
- bool hasConditionals = false;
-
- // Check for conditional properties
- if (hasConditionals == false) updateDistribution();
+ Korali::Distribution::Base::initialize();
 }
 
 void Korali::Distribution::TruncatedNormal::finalize()
@@ -54,8 +50,8 @@ void Korali::Distribution::TruncatedNormal::updateDistribution()
   }
 }
 
-void Korali::Distribution::TruncatedNormal::updateConditionals(const std::vector<double>& sample)
+void Korali::Distribution::TruncatedNormal::updateConditionals(const std::vector<std::string>& propertyNames, const std::vector<double>& propertyValues)
 {
-  Korali::Distribution::Base::updateConditionals(sample);
+  // Check for conditional properties
   updateDistribution();
 }

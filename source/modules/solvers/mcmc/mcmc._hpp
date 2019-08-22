@@ -1,0 +1,44 @@
+#ifndef _KORALI_SOLVER_MCMC_HPP_
+#define _KORALI_SOLVER_MCMC_HPP_
+
+#include "modules/solvers/base.hpp"
+#include "distributions/univariate/base.hpp"
+
+namespace Korali { namespace Solver {
+
+class MCMC : public Korali::Solver::Base
+{
+ private: 
+
+ Korali::Distribution::Base* _normalGenerator; /* Normal random number generator */
+ Korali::Distribution::Base* _uniformGenerator; /* Uniform random number generator */
+
+ double recursiveAlpha(double& D, const double llk0, const double* logliks, size_t N) const; /* calculate acceptance ratio alpha_N */
+ void evaluateSample();
+ void updateState();
+ bool setCandidatePriorAndCheck(size_t sampleIdx);
+ void generateCandidate(size_t sampleIdx);
+ void sampleCandidate(size_t sampleIdx);
+ void updateDatabase(std::vector<double>&, double fitness);
+ void choleskyDecomp(const std::vector<double>& inC, std::vector<double>& outL) const;
+ void acceptReject(size_t trial); /* Accept or reject sample with multiple trials */
+
+ public:
+
+ MCMC();
+ ~MCMC();
+
+ void initialize() override;
+ void finalize() override;
+ void runGeneration() override;
+ void processSample(size_t c, double fitness) override;
+ bool checkTermination() override;
+ void setConfiguration(nlohmann::json& js) override;
+ void getConfiguration(nlohmann::json& js) override;
+ void printGeneration() override;
+ std::string getType() override;
+};
+
+} } // namespace Korali::Solver
+
+#endif // _KORALI_SOLVER_MCMC_HPP_

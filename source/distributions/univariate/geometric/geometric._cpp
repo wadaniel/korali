@@ -4,14 +4,9 @@ Korali::Distribution::Geometric::Geometric()
 {
 }
 
-void Korali::Distribution::Geometric::initialize(Korali::Problem::Base* problem)
+void Korali::Distribution::Geometric::initialize()
 {
- Korali::Distribution::Base::initialize(problem);
- bool hasConditionals = false;
-
- // Check for conditional properties
-
- if (hasConditionals == false) updateDistribution();
+ Korali::Distribution::Base::initialize();
 }
 
 void Korali::Distribution::Geometric::finalize()
@@ -39,8 +34,9 @@ void Korali::Distribution::Geometric::updateDistribution()
  _aux = 0.0;
 }
 
-void Korali::Distribution::Geometric::updateConditionals(const std::vector<double>& sample)
+void Korali::Distribution::Geometric::updateConditionals(const std::vector<std::string>& propertyNames, const std::vector<double>& propertyValues)
 {
- Korali::Distribution::Base::updateConditionals(sample);
+ // Check for conditional properties
+
  updateDistribution();
 }

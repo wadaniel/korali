@@ -1,13 +1,8 @@
 #include "korali.hpp"
 
-void Korali::Distribution::Cauchy::initialize(Korali::Problem::Base* problem)
+void Korali::Distribution::Cauchy::initialize()
 {
- Korali::Distribution::Base::initialize(problem);
- bool hasConditionals = false;
-
- // Check for conditional properties
-
- if (hasConditionals == false) updateDistribution();
+ Korali::Distribution::Base::initialize();
 }
 
 void Korali::Distribution::Cauchy::finalize()
@@ -37,9 +32,10 @@ void Korali::Distribution::Cauchy::updateDistribution()
   _aux = -gsl_sf_log( _scale * M_PI);
 }
 
-void Korali::Distribution::Cauchy::updateConditionals(const std::vector<double>& sample)
+void Korali::Distribution::Cauchy::updateConditionals(const std::vector<std::string>& propertyNames, const std::vector<double>& propertyValues)
 {
- Korali::Distribution::Base::updateConditionals(sample);
+ // Check for conditional properties
+
  updateDistribution();
 }
 

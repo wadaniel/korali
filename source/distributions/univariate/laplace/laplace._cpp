@@ -4,14 +4,9 @@ Korali::Distribution::Laplace::Laplace()
 {
 }
 
-void Korali::Distribution::Laplace::initialize(Korali::Problem::Base* problem)
+void Korali::Distribution::Laplace::initialize()
 {
- Korali::Distribution::Base::initialize(problem);
- bool hasConditionals = false;
-
- // Check for conditional properties
-
- if (hasConditionals == false) updateDistribution();
+ Korali::Distribution::Base::initialize();
 }
 
 void Korali::Distribution::Laplace::finalize()
@@ -41,8 +36,8 @@ void Korali::Distribution::Laplace::updateDistribution()
  _aux = -gsl_sf_log(2.*_width);
 }
 
-void Korali::Distribution::Laplace::updateConditionals(const std::vector<double>& sample)
+void Korali::Distribution::Laplace::updateConditionals(const std::vector<std::string>& propertyNames, const std::vector<double>& propertyValues)
 {
- Korali::Distribution::Base::updateConditionals(sample);
+ // Check for conditional properties
  updateDistribution();
 }

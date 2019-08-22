@@ -11,30 +11,21 @@
 
 namespace Korali {
 
-namespace Problem
-{
- class Base;
-}
-
 namespace Distribution {
 
 class Base {
 
  public:
 
- Korali::Problem::Base* _problem;
- std::vector<size_t> _conditionalIndexes;
- std::vector<double*> _conditionalPointers;
  size_t _seed;
  gsl_rng* _range;
  double _aux;
- bool _initialized;
 
- virtual void initialize(Korali::Problem::Base* problem);
+ virtual void initialize();
  virtual void finalize();
  virtual void updateDistribution() = 0;
- virtual void updateConditionals(const std::vector<double>& sample);
- static Base* getDistribution(Korali::Problem::Base* problem, nlohmann::json& js);
+ virtual void updateConditionals(const std::vector<std::string>& propertyNames, const std::vector<double>& propertyValues) = 0;
+ static Base* getDistribution(nlohmann::json& js);
 
  virtual void setProperty(std::string propertyName, double value) = 0;
  virtual double getDensity(double x) = 0;

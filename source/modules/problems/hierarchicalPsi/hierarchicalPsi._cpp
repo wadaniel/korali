@@ -1,0 +1,134 @@
+#include "korali.hpp"
+#include "auxiliars/koralimath.hpp"
+
+void Korali::Problem::HierarchicalPsi::initialize()
+{
+ if (_conditionalPriors.size() == 0) Korali::logError("Hierarchical Bayesian (Psi) problems require at least one conditional prior\n");
+
+ if (_subProblems.size() < 2) Korali::logError("Hierarchical Bayesian (Psi) problem requires defining at least two executed sub-problems.\n");
+
+ // Obtaining sub problem count and variable counts
+ _subProblemsCount = _subProblems.size();
+ _subProblemsVariablesCount = _conditionalPriors.size();
+
+ // Creating JSON object from string
+ for (size_t i = 0; i < _subProblemsCount; i++){
+   // std::cout << "---->" << _subProblems[i].c_str() << std::endl;
+   _subProblemsJson.push_back(loadJsonFromFile(_subProblems[i].c_str()));
+ }
+
+ // Sub-problem correctness checks
+ for (size_t i = 0; i < _subProblemsCount; i++)
+ {
+  if (_subProblemsJson[i]["Problem"]["Type"] != "Bayesian Inference")
+   Korali::logError("The Hierarchical Bayesian (Psi) can only accept sub-problems of type 'Bayesian Inference' but sub-Problem %lu is of type: '%s'.\n", i, _subProblemsJson[i]["Problem"]["Type"].get<std::string>().c_str());
+
+  if (_conditionalPriors.size() != _subProblemsJson[i]["Problem"]["Variables"].size())
+   Korali::logError("Sub-problem %lu contains a different number of variables (%lu) than conditional priors in the Hierarchical Bayesian (Psi) problem (%lu).\n", i, _subProblemsJson[i]["Problem"]["Variables"].size(), _conditionalPriors.size());
+
+  if (_subProblemsJson[i]["Is Finished"] == false)
+   Korali::logError("The Hierarchical Bayesian (Psi) requires that all problems have run completely, but Problem %lu has not.\n", i);
+ }
+
+ _subProblemsSampleCoordinates.resize(_subProblemsCount);
+ _subProblemsSampleLogLikelihoods.resize(_subProblemsCount);
+ _subProblemsSampleLogPriors.resize(_subProblemsCount);
+
+ for (size_t i = 0; i < _subProblemsCount; i++)
+ {
+  size_t sampleCount = _subProblemsJson[i]["Solver"]["Population Size"].get<size_t>();
+
+  _subProblemsSampleCoordinates[i].resize(sampleCount * _subProblemsVariablesCount);
+  _subProblemsSampleLogLikelihoods[i].resize(sampleCount);
+  _subProblemsSampleLogPriors[i].resize(sampleCount);
+
+  for (size_t j = 0; j < sampleCount; j++)
+  {
+   _subProblemsSampleLogLikelihoods[i][j] = _subProblemsJson[i]["Solver"]["Internal"]["Sample Fitness Database"][j];
+   _subProblemsSampleLogPriors[i][j]      = _subProblemsJson[i]["Solver"]["Internal"]["Sample LogPrior Database"][j];
+
+   double expPrior = exp(_subProblemsSampleLogPriors[i][j]);
+   if( std::isfinite(expPrior) == false )
+     Korali::logError("Non finite (%lf) prior has been detected at sample %zu in subproblem %zu.\n", expPrior, j, i );
+
+   for (size_t k = 0; k < _subProblemsVariablesCount; k++)
+    _subProblemsSampleCoordinates[i][j*_subProblemsVariablesCount + k] = _subProblemsJson[i]["Solver"]["Internal"]["Sample Database"][j*_subProblemsVariablesCount + k];
+  }
+ }
+
+}
+
+bool Korali::Problem::HierarchicalPsi::isSampleFeasible(double* sample)
+{
+ for (size_t i = 0; i < _variables.size(); i++)
+  if (isfinite(_variables[i]->_priorDistribution->getLogDensity(sample[i])) == false) return false;
+ return true;
+}
+
+void Korali::Problem::HierarchicalPsi::finalize()
+{
+
+}
+
+Korali::Distribution::Base* Korali::Problem::HierarchicalPsi::getConditionalPrior(size_t idx)
+{
+ return _conditionalPriors[idx];
+}
+
+size_t Korali::Problem::HierarchicalPsi::getVariableCount()
+{
+ return _variables.size();
+}
+
+Korali::Variable* Korali::Problem::HierarchicalPsi::getVariable(size_t variableId)
+{
+ return _variables[variableId];
+}
+
+void Korali::Problem::HierarchicalPsi::updateConditionalPriors(std::vector<double> sample)
+{
+ // Re-configuring conditional priors given hyperparameters
+ std::vector<std::string> _variableNames;
+ for (size_t i = 0; i < _variables.size(); i++) _variableNames.push_back(_variables[i]->_name);
+ for (size_t i = 0; i < _conditionalPriors.size(); i++)  _conditionalPriors[i]->updateConditionals(_variableNames, sample);
+}
+
+void Korali::Problem::HierarchicalPsi::runModel(std::vector<double> sample, size_t sampleId)
+{
+ updateConditionalPriors(sample);
+}
+
+double Korali::Problem::HierarchicalPsi::evaluateSampleFitness()
+{
+  double logLikelihood = 0.0;
+
+  for (size_t i = 0; i < _subProblemsCount; i++ )
+  {
+    std::vector<double> logValues( _subProblemsSampleLogPriors[i].size(), 0.0 );
+
+    for (size_t j = 0; j < _subProblemsSampleLogPriors[i].size(); j++)
+    {
+      double logConditionalPrior = 0.0;
+      double tmp;
+      for( size_t k = 0; k < _conditionalPriors.size(); k++ ){
+        double tmp = _conditionalPriors[k]->getLogDensity(_subProblemsSampleCoordinates[i][j*_subProblemsVariablesCount + k]);
+        logConditionalPrior += tmp;
+      }
+      logValues[j] = logConditionalPrior - _subProblemsSampleLogPriors[i][j];
+    }
+
+    logLikelihood += logSumExp(logValues);
+
+    if( std::isnan(logLikelihood)==true ) return -Korali::Inf;
+  }
+
+  return logLikelihood;
+}
+
+double Korali::Problem::HierarchicalPsi::evaluateSampleLogPrior(double* sample)
+{
+ double logPrior = 0.0;
+ for (size_t i = 0; i < _variables.size(); i++)
+  logPrior += _variables[i]->_priorDistribution->getLogDensity(sample[i]);
+ return logPrior;
+}

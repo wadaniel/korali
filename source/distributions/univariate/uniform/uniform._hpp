@@ -2,7 +2,6 @@
 #define _KORALI_DISTRIBUTION_UNIFORM_HPP_
 
 #include <distributions/univariate/base.hpp>
-#include <problems/base.hpp>
 
 namespace Korali { namespace Distribution {
 
@@ -14,7 +13,7 @@ class Uniform : public Korali::Distribution::Base {
 
  Uniform();
 
- void updateConditionals(const std::vector<double>& sample) override;
+ void updateConditionals(const std::vector<std::string>& propertyNames, const std::vector<double>& propertyValues) override;
  void updateDistribution() override;
 
  void setProperty(std::string propertyName, double value) override;
@@ -22,7 +21,7 @@ class Uniform : public Korali::Distribution::Base {
  double getLogDensity(double x) override;
  double getRandomNumber() override;
 
- void initialize(Korali::Problem::Base* problem) override;
+ void initialize() override;
  void finalize() override;
  void setConfiguration(nlohmann::json& js) override;
  void getConfiguration(nlohmann::json& js) override;

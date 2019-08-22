@@ -6,14 +6,9 @@ Korali::Distribution::Uniform::Uniform()
  _maximum = 2.0;
 }
 
-void Korali::Distribution::Uniform::initialize(Korali::Problem::Base* problem)
+void Korali::Distribution::Uniform::initialize()
 {
- Korali::Distribution::Base::initialize(problem);
- bool hasConditionals = false;
-
- // Check for conditional properties
-
- if (hasConditionals == false) updateDistribution();
+ Korali::Distribution::Base::initialize();
 }
 
 void Korali::Distribution::Uniform::finalize()
@@ -49,8 +44,8 @@ void Korali::Distribution::Uniform::updateDistribution()
   else  _aux = -gsl_sf_log(_maximum-_minimum);
 }
 
-void Korali::Distribution::Uniform::updateConditionals(const std::vector<double>& sample)
+void Korali::Distribution::Uniform::updateConditionals(const std::vector<std::string>& propertyNames, const std::vector<double>& propertyValues)
 {
- Korali::Distribution::Base::updateConditionals(sample);
+ // Check for conditional properties
  updateDistribution();
 }

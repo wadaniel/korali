@@ -1,0 +1,32 @@
+#ifndef _KORALI_DISTRIBUTION_UNIFORM_HPP_
+#define _KORALI_DISTRIBUTION_UNIFORM_HPP_
+
+#include "modules/distributions/base.hpp"
+
+namespace Korali { namespace Distribution {
+
+class Uniform : public Korali::Distribution::Base {
+
+ private:
+
+ public:
+
+ Uniform();
+
+ void updateConditionals(const std::vector<std::string>& propertyNames, const std::vector<double>& propertyValues) override;
+ void updateDistribution() override;
+
+ void setProperty(std::string propertyName, double value) override;
+ double getDensity(double x) override;
+ double getLogDensity(double x) override;
+ double getRandomNumber() override;
+
+ void initialize() override;
+ void finalize() override;
+ void setConfiguration(nlohmann::json& js) override;
+ void getConfiguration(nlohmann::json& js) override;
+};
+
+} } // namespace Korali::Distribution
+
+#endif // _KORALI_DISTRIBUTION_UNIFORM_HPP_

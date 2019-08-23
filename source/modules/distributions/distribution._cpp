@@ -1,0 +1,15 @@
+#include "korali.hpp"
+
+void Korali::Distribution::Base::initialize()
+{
+ _seed = _k->_randomSeed++;
+ _range = gsl_rng_alloc (gsl_rng_default);
+ gsl_rng_set(_range, _seed);
+}
+
+void Korali::Distribution::Base::finalize()
+{
+ gsl_rng_free(_range);
+}
+
+

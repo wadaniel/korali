@@ -1,0 +1,19 @@
+{
+ "Type": "Distribution",
+ "Name": "LogNormal Distribution",
+ "Alias": "LogNormal",
+ "C++ Class": "Korali::Distribution::LogNormal",
+
+ "Conditional Variables": 
+ [
+   {
+    "Name": [ "Mu" ],
+    "Description": "Check: https://en.wikipedia.org/wiki/Log-normal_distribution"
+   },
+   {
+    "Name": [ "Sigma" ],
+    "Description": "Check: https://en.wikipedia.org/wiki/Log-normal_distribution"
+   }
+ ]
+
+}

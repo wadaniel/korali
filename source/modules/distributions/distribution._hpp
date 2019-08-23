@@ -1,0 +1,42 @@
+#ifndef _KORALI_DISTRIBUTION_BASE_HPP_
+#define _KORALI_DISTRIBUTION_BASE_HPP_
+
+#include "auxiliars/json.hpp"
+#include <map>
+#include <limits>
+#include <gsl/gsl_rng.h>
+#include <gsl/gsl_randist.h>
+#include <gsl/gsl_math.h>
+#include <gsl/gsl_sf.h>
+
+namespace Korali {
+
+namespace Distribution : public Korali::Module {
+
+class Base {
+
+ protected:
+
+ std::map<std::string, double*> _conditionalsMap;
+ size_t _seed;
+ gsl_rng* _range;
+ double _aux;
+
+ public:
+
+ void updateConditionals(const std::vector<std::string>& propertyNames, const std::vector<double>& propertyValues);
+
+ void initialize() override;
+ void finalize() override;
+
+ virtual void updateDistribution() = 0;
+ virtual void setProperty(std::string propertyName, double value) = 0;
+ virtual double getDensity(double x) = 0;
+ virtual double getLogDensity(double x) = 0;
+ virtual double getRandomNumber() = 0;
+
+};
+
+} } // namespace Korali::Distribution
+
+#endif // _KORALI_DISTRIBUTION_BASE_HPP_

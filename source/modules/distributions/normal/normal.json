@@ -1,0 +1,19 @@
+{
+ "Type": "Distribution",
+ "Name": "Normal Distribution",
+ "Alias": "Normal",
+ "C++ Class": "Korali::Distribution::Normal",
+ 
+ "Conditional Variables": 
+ [
+   {
+    "Name": [ "Mean" ],
+    "Description": ""
+   },
+   {
+    "Name": [ "Standard Deviation" ],
+    "Description": ""
+   }
+ ]
+}
+ 

@@ -1,39 +1,15 @@
 #include "korali.hpp"
 
-void Korali::Conduit::Simple::initialize()
-{
-
-}
-
-void Korali::Conduit::Simple::finalize()
-{
-
-}
-
-void Korali::Conduit::Simple::evaluateSample(double* sampleArray, size_t sampleId)
+void Korali::Conduit::Simple::evaluateSample(double* target, size_t targetId)
 {
  std::vector<double> sampleVector;
  for (size_t i = 0; i < _k->_problem->getVariableCount(); i++)
-  sampleVector.push_back(sampleArray[i]);
+  sampleVector.push_back(target[i]);
 
- _k->_problem->runModel(sampleVector, sampleId);
- double fitness = _k->_problem->evaluateSampleFitness();
+ _k->_problem->runModel(sampleVector, targetId);
+ double fitness = _k->_problem->evaluateTarget();
 
  _k->_modelEvaluationCount++;
- _k->_solver->processSample(sampleId, fitness);
+ _k->_solver->processEvaluation(targetId, fitness);
 }
 
-void Korali::Conduit::Simple::checkProgress()
-{
-
-}
-
-bool Korali::Conduit::Simple::isRoot()
-{
- return true;
-}
-
-void Korali::Conduit::Simple::abort()
-{
- exit(-1);
-}

@@ -7,24 +7,18 @@ def buildModules(baseDir):
  # modules List
  moduleDetectionList = ''
  
- # Variable Declarations List
- moduleDeclarationsSet = set()
- 
  # Detecting modules' json file
  for moduleDir, d, fileNames in os.walk(baseDir):
   for fileName in fileNames: 
    if '.json' in fileName:
     with open(moduleDir + '/' + fileName, 'r') as file: moduleConfig = json.load(file)
     moduleName = fileName.replace('.json', '')
-       
+
     ####### Adding module to list
   
     moduleDetectionList += '  if(moduleType == "' + moduleConfig["Alias"] + '") module = new ' + moduleConfig["C++ Class"] + '();\n'
     
     ###### Producing module code
-  
-    for declaration in createHeaderDeclarations(moduleConfig).splitlines():
-     moduleDeclarationsSet.add(declaration)
     
     ## Adding getType()
     getTypeString = 'std::string ' + moduleConfig["C++ Class"] + '::getType() { return "' + moduleConfig["Alias"] + '"; }'
@@ -41,9 +35,7 @@ def buildModules(baseDir):
     with open(moduleTemplateHeaderFile, 'r') as file: moduleTemplateHeaderString = file.read()
     
     # Adding declarations
-    declarationsString = ''
-    for declaration in moduleDeclarationsSet:
-     declarationsString += declaration + '\n'
+    declarationsString = createHeaderDeclarations(moduleConfig)
     newHeaderString = moduleTemplateHeaderString.replace('public:', 'public: \n' + declarationsString + '\n')
     
     # Saving new header .hpp file

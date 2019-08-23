@@ -80,15 +80,6 @@
    }
  ],
 
- "Variables Configuration":
- [
-   {
-    "Name": [ "Prior Distribution" ],
-    "Type": "Korali::Distribution::Base*",
-    "Description": "Prior distribution of the parameters. Distribution to sample the first generation. Also it is evaluated for each sample during the calculation of the posterior."
-   }
- ],
-
  "Internal Settings":
  [
    {

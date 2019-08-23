@@ -5,38 +5,27 @@ void Korali::Problem::Optimization::initialize()
  if (_variables.size() == 0) Korali::logError("Optimization problems require at least one variable.\n");
 }
 
-void Korali::Problem::Optimization::finalize()
+bool Korali::Problem::Bayesian::isTargetFeasible(double* target)
 {
-
+  for (size_t i = 0; i < _variables.size(); i++)
+  {
+    if (isfinite(target[i]) == false) return false;
+    if (target[i] < _variables[i]._lowerBound) return false;
+    if (target[i] > _variables[i]._upperBound) return false;
+  }
+  return true;
 }
 
-bool Korali::Problem::Optimization::isSampleFeasible(double* sample)
-{
- for (size_t i = 0; i < _variables.size(); i++)
-  if (isfinite(_variables[i]->_priorDistribution->getLogDensity(sample[i])) == false) return false;
- return true;
-}
-
-void Korali::Problem::Optimization::runModel(std::vector<double> sample, size_t sampleId)
+void Korali::Problem::Optimization::runModel(std::vector<double> target, size_t targetId)
 {
  // Creating model data.
- _modelData.setSample(sampleId, sample);
+ _modelData.setSample(targetId, target);
 
  // Executing Model
  _objectiveFunction(_modelData);
 }
 
-size_t Korali::Problem::Optimization::getVariableCount()
-{
- return _variables.size();
-}
-
-Korali::Variable* Korali::Problem::Optimization::getVariable(size_t variableId)
-{
- return _variables[variableId];
-}
-
-double Korali::Problem::Optimization::evaluateSampleFitness()
+double Korali::Problem::Optimization::evaluateTarget()
 {
  double fitnessSign = _objective == "Maximize" ? 1.0 : -1.0;
 

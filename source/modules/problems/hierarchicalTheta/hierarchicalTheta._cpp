@@ -104,39 +104,24 @@ void Korali::Problem::HierarchicalTheta::initialize()
 
 }
 
-void Korali::Problem::HierarchicalTheta::finalize()
-{
-
-}
-
-bool Korali::Problem::HierarchicalTheta::isSampleFeasible(double* sample)
+bool Korali::Problem::HierarchicalTheta::isTargetFeasible(double* target)
 {
  for (size_t i = 0; i < _subProblemKorali.getVariableCount(); i++)
-  if (isfinite(_subProblemKorali.getVariable(i)->_priorDistribution->getLogDensity(sample[i])) == false) return false;
+  if (isfinite(_subProblemKorali.getVariable(i)->_priorDistribution->getLogDensity(target[i])) == false) return false;
  return true;
 }
 
-size_t Korali::Problem::HierarchicalTheta::getVariableCount()
+void Korali::Problem::HierarchicalTheta::runModel(std::vector<double> target, size_t targetId)
 {
- return _subProblemKorali.getVariableCount();
+  _subProblemKorali.runModel(target, targetId);
+  _sample.assign( target.begin(), target.end() );
 }
 
-Korali::Variable* Korali::Problem::HierarchicalTheta::getVariable(size_t variableId)
-{
- return _subProblemKorali.getVariable(variableId);
-}
-
-void Korali::Problem::HierarchicalTheta::runModel(std::vector<double> sample, size_t sampleId)
-{
-  _subProblemKorali.runModel(sample, sampleId);
-  _sample.assign( sample.begin(), sample.end() );
-}
-
-double Korali::Problem::HierarchicalTheta::evaluateSampleFitness()
+double Korali::Problem::HierarchicalTheta::evaluateTarget()
 {
   double logLikelihood = 0.0;
 
-  logLikelihood += _subProblemKorali.evaluateSampleFitness();
+  logLikelihood += _subProblemKorali.evaluateSample();
 
   size_t Npsi = _psiProblemKorali.getVariableCount();
   std::vector<double> psiSample;

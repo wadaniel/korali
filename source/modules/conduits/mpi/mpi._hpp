@@ -21,6 +21,8 @@ class MPI : public Korali::Conduit::Base
 
  private:
 
+ void workerThread();
+
  public:
 
  #ifdef _KORALI_USE_MPI
@@ -45,13 +47,10 @@ class MPI : public Korali::Conduit::Base
  bool _continueEvaluations;
  #endif
 
- MPI();
-
  void initialize() override;
  void finalize() override;
 
- void workerThread();
- void evaluateSample(double* sampleArray, size_t sampleId) override;
+ void requestEvaluation(double* target, size_t targetId) override;
  void checkProgress() override;
  bool isRoot() override;
  void abort() override;

@@ -3,7 +3,6 @@ import os
 
 koraliDir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)) + '/../..') 
  
-from buildVariables import *
 from buildModules import *
 from buildDistributions import *
 from buildCxx import *
@@ -22,9 +21,6 @@ buildModules(koraliDir + '/modules')
  
 # Processing Distributions
 buildDistributions(koraliDir)
-
-# Processing Variables
-buildVariables(koraliDir) 
 
 # Creating Korali
 buildKorali(koraliDir) 

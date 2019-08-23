@@ -18,14 +18,11 @@ class Bayesian : public Korali::Problem::Base
 
  public:
 
- void runModel(std::vector<double>, size_t sampleId) override;
+ double evaluateSampleLogPrior(double* sample);
 
- size_t getVariableCount() override;
- Korali::Variable* getVariable(size_t variableId) override;
- bool isSampleFeasible(double* sample) override;
-
- double evaluateSampleFitness() override;
- double evaluateSampleLogPrior(double* sample) override;
+ void runModel(std::vector<double> target, size_t targetId) override;
+ bool isTargetFeasible(double* target) override;
+ double evaluateTarget() override;
 
  bool checkTermination() override;
  void initialize() override;

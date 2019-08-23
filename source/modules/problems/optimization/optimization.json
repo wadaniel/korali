@@ -8,11 +8,6 @@
  "Configuration Settings": 
  [
    {
-    "Name": [ "Variables" ],
-    "Type": "std::vector<Korali::Variable*>",
-    "Description": "The set of problems variables."
-   },
-   {
     "Name": [ "Objective" ],
     "Type": "std::string",
     "Description": "Indicates whether Korali will minimize or maximize the function evaluation."
@@ -26,6 +21,28 @@
  
  "Variables Configuration": 
  [
+  {
+   "Name": [ "Lower Bound" ],
+   "Type": "double",
+   "Description": "Specifies the lower bound for the variable's value."
+  },
+  {
+   "Name": [ "Upper Bound" ],
+   "Type": "double",
+   "Description": "Specifies the upper bound for the variable's value."
+  },
+  {
+   "Name": [ "Is Discrete" ],
+   "Type": "bool",
+   "Default": "false",
+   "Description": "Specifies if the variable can only take discrete values within the range of the lower and upper bound."
+  },
+  {
+   "Name": [ "Granularity" ],
+   "Type": "double",
+   "Default": "0.0",
+   "Description": "Specifies the granularity of a discrete variable, a granularity of 1.0 means that the variable can only take values in (.., -1.0, 0.0, +1.0, +2.0, ..) where the levels are set symmetric around the initial mean (here 0.0)."
+  }
  ],
  
  "Internal Settings": 

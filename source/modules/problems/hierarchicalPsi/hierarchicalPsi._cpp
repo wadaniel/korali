@@ -58,16 +58,11 @@ void Korali::Problem::HierarchicalPsi::initialize()
 
 }
 
-bool Korali::Problem::HierarchicalPsi::isSampleFeasible(double* sample)
+bool Korali::Problem::HierarchicalPsi::isTargetFeasible(double* target)
 {
  for (size_t i = 0; i < _variables.size(); i++)
-  if (isfinite(_variables[i]->_priorDistribution->getLogDensity(sample[i])) == false) return false;
+  if (isfinite(_variables[i]._priorDistribution->getLogDensity(target[i])) == false) return false;
  return true;
-}
-
-void Korali::Problem::HierarchicalPsi::finalize()
-{
-
 }
 
 Korali::Distribution::Base* Korali::Problem::HierarchicalPsi::getConditionalPrior(size_t idx)
@@ -75,22 +70,12 @@ Korali::Distribution::Base* Korali::Problem::HierarchicalPsi::getConditionalPrio
  return _conditionalPriors[idx];
 }
 
-size_t Korali::Problem::HierarchicalPsi::getVariableCount()
-{
- return _variables.size();
-}
-
-Korali::Variable* Korali::Problem::HierarchicalPsi::getVariable(size_t variableId)
-{
- return _variables[variableId];
-}
-
-void Korali::Problem::HierarchicalPsi::updateConditionalPriors(std::vector<double> sample)
+void Korali::Problem::HierarchicalPsi::updateConditionalPriors(std::vector<double> target)
 {
  // Re-configuring conditional priors given hyperparameters
  std::vector<std::string> _variableNames;
- for (size_t i = 0; i < _variables.size(); i++) _variableNames.push_back(_variables[i]->_name);
- for (size_t i = 0; i < _conditionalPriors.size(); i++)  _conditionalPriors[i]->updateConditionals(_variableNames, sample);
+ for (size_t i = 0; i < _variables.size(); i++) _variableNames.push_back(_variables[i]._name);
+ for (size_t i = 0; i < _conditionalPriors.size(); i++)  _conditionalPriors[i]->updateConditionals(_variableNames, target);
 }
 
 void Korali::Problem::HierarchicalPsi::runModel(std::vector<double> sample, size_t sampleId)
@@ -98,7 +83,7 @@ void Korali::Problem::HierarchicalPsi::runModel(std::vector<double> sample, size
  updateConditionalPriors(sample);
 }
 
-double Korali::Problem::HierarchicalPsi::evaluateSampleFitness()
+double Korali::Problem::HierarchicalPsi::evaluateSample()
 {
   double logLikelihood = 0.0;
 
@@ -123,12 +108,4 @@ double Korali::Problem::HierarchicalPsi::evaluateSampleFitness()
   }
 
   return logLikelihood;
-}
-
-double Korali::Problem::HierarchicalPsi::evaluateSampleLogPrior(double* sample)
-{
- double logPrior = 0.0;
- for (size_t i = 0; i < _variables.size(); i++)
-  logPrior += _variables[i]->_priorDistribution->getLogDensity(sample[i]);
- return logPrior;
 }

@@ -18,7 +18,7 @@ void Korali::Problem::Bayesian::initialize()
 
   for (size_t i = 0; i < _variables.size(); i++)
   {
-    std::string typeString = _variables[i]->_type;
+    std::string typeString = _variables[i]._type;
     bool recognizedType = false;
     if (typeString == "Computational") { _computationalVariableIndices.push_back(i); recognizedType = true; }
     if (typeString == "Statistical")   { _statisticalVariableIndices.push_back(i);   recognizedType = true; }
@@ -44,31 +44,16 @@ void Korali::Problem::Bayesian::initialize()
   }
 }
 
-void Korali::Problem::Bayesian::finalize()
-{
-
-}
-
-bool Korali::Problem::Bayesian::isSampleFeasible(double* sample)
+bool Korali::Problem::Bayesian::isTargetFeasible(double* target)
 {
   for (size_t i = 0; i < _variables.size(); i++)
-    if (isfinite(_variables[i]->_priorDistribution->getLogDensity(sample[i])) == false) return false;
+    if (isfinite(_variables[i]._priorDistribution->getLogDensity(target[i])) == false) return false;
   return true;
 }
 
-size_t Korali::Problem::Bayesian::getVariableCount()
+void Korali::Problem::Bayesian::runModel(std::vector<double> target, size_t targetId)
 {
-  return _variables.size();
-}
-
-Korali::Variable* Korali::Problem::Bayesian::getVariable(size_t variableId)
-{
-  return _variables[variableId];
-}
-
-void Korali::Problem::Bayesian::runModel(std::vector<double> sample, size_t sampleId)
-{
-  _modelData.setSample(sampleId, sample);
+  _modelData.setSample(targetId, target);
 
 //  if (_likelihoodModel == "Additive Normal" || _likelihoodModel == "Multiplicative Normal" || _likelihoodModel == "Multiplicative Normal Data")
 //    _referenceModel(_modelData);
@@ -79,7 +64,7 @@ void Korali::Problem::Bayesian::runModel(std::vector<double> sample, size_t samp
 //  if (_likelihoodModel == "Truncated Normal (No Model)" || _likelihoodModel == "Normal (No Model)" )
 }
 
-double Korali::Problem::Bayesian::evaluateSampleFitness()
+double Korali::Problem::Bayesian::evaluateTarget()
 {
   double fitness = 0.0;
 
@@ -100,14 +85,6 @@ double Korali::Problem::Bayesian::evaluateSampleFitness()
 //  if (_likelihoodModel == "Normal (No Model)")           fitness = likelihoodNormalNoModel(_modelData);
 
   return fitness;
-}
-
-double Korali::Problem::Bayesian::evaluateSampleLogPrior(double* sample)
-{
-  double logPrior = 0.0;
-  for (size_t i = 0; i < _variables.size(); i++)
-    logPrior += _variables[i]->_priorDistribution->getLogDensity(sample[i]);
-  return logPrior;
 }
 
 double Korali::Problem::Bayesian::likelihoodNormalNoModel(Korali::Model& data)

@@ -40,34 +40,19 @@ void Korali::Problem::HierarchicalThetaNew::initialize()
 
 }
 
-void Korali::Problem::HierarchicalThetaNew::finalize()
-{
-
-}
-
-bool Korali::Problem::HierarchicalThetaNew::isSampleFeasible(double* sample)
+bool Korali::Problem::HierarchicalThetaNew::isTargetFeasible(double* target)
 {
  for (size_t i = 0; i < getVariableCount(); i++)
-  if (isfinite(_variables[i]->_priorDistribution->getLogDensity(sample[i])) == false) return false;
+  if (isfinite(_variables[i]._priorDistribution->getLogDensity(target[i])) == false) return false;
  return true;
 }
 
-size_t Korali::Problem::HierarchicalThetaNew::getVariableCount()
+void Korali::Problem::HierarchicalThetaNew::runModel(std::vector<double> target, size_t targetId)
 {
- return _variables.size();
+ _modelData.setSample(targetId, target);
 }
 
-Korali::Variable* Korali::Problem::HierarchicalThetaNew::getVariable(size_t variableId)
-{
- return _variables[variableId];
-}
-
-void Korali::Problem::HierarchicalThetaNew::runModel(std::vector<double> sample, size_t sampleId)
-{
- _modelData.setSample(sampleId, sample);
-}
-
-double Korali::Problem::HierarchicalThetaNew::evaluateSampleFitness()
+double Korali::Problem::HierarchicalThetaNew::evaluateTarget()
 {
   double logLikelihood = 0.0;
 

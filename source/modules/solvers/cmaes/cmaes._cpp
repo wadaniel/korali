@@ -280,8 +280,6 @@ void Korali::Solver::CMAES::initCovariance()
 
 void Korali::Solver::CMAES::processSample(size_t sampleId, double fitness)
 {
- double logPrior = _k->_problem->evaluateSampleLogPrior(&_samplePopulation[sampleId*N]);
- fitness += logPrior;
  if(std::isfinite(fitness) == false) 
  {
    fitness = -std::numeric_limits<double>::infinity();

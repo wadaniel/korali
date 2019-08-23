@@ -9,10 +9,10 @@ class Base : public Korali::Module {
 
  public:
 
- virtual void evaluateSample(double* sampleArray, size_t sampleId) = 0;
- virtual void checkProgress() = 0;
- virtual bool isRoot() = 0;
- virtual void abort() = 0;
+ virtual void requestEvaluation(double* target, size_t targetId) = 0;
+ virtual void checkProgress() { }
+ virtual bool isRoot() { return true; }
+ virtual void abort() { exit(-1); }
 
 };
 

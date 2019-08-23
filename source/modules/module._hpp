@@ -9,9 +9,9 @@ class Module
 
   static Module* getModule(nlohmann::json& js);
 
-  virtual bool checkTermination() = 0;
-  virtual void initialize() = 0;
-  virtual void finalize() = 0;
+  virtual bool checkTermination() { return false; }
+  virtual void initialize() { }
+  virtual void finalize() { }
   virtual std::string getType() = 0;
 
   // Module serialization

@@ -18,7 +18,7 @@ class Simple : public Korali::Conduit::Base
  void initialize() override;
  void finalize() override;
 
- void evaluateSample(double* sampleArray, size_t sampleId) override;
+ void requestEvaluation(double* sampleArray, size_t sampleId) override;
  void checkProgress() override;
  bool isRoot() override;
  void abort() override;

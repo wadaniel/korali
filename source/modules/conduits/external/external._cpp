@@ -8,11 +8,7 @@ void Korali::Conduit::External::initialize()
  for (int i = 0; i < _concurrentJobs; i++) _launcherQueue.push(i);
 }
 
-void Korali::Conduit::External::finalize()
-{
-}
-
-void Korali::Conduit::External::evaluateSample(double* sampleArray, size_t sampleId)
+void Korali::Conduit::External::requestEvaluation(double* target, size_t targetId)
 {
  while (_launcherQueue.empty()) checkProgress();
 
@@ -23,7 +19,7 @@ void Korali::Conduit::External::evaluateSample(double* sampleArray, size_t sampl
 
  pid_t processId = fork();
 
- _launcherIdToSamplerIdMap[launcherId] = sampleId;
+ _launcherIdToSamplerIdMap[launcherId] = targetId;
  _launcherIdToProcessIdMap[launcherId] = processId;
  _processIdMapToLauncherIdMap[processId] = launcherId;
 
@@ -31,12 +27,12 @@ void Korali::Conduit::External::evaluateSample(double* sampleArray, size_t sampl
  {
   std::vector<double> sampleVector;
   for (size_t i = 0; i < _k->_problem->getVariableCount(); i++)
-   sampleVector.push_back(sampleArray[i]);
+   sampleVector.push_back(target[i]);
 
-  _k->_problem->runModel(sampleVector, sampleId);
-  double fitness = _k->_problem->evaluateSampleFitness();
+  _k->_problem->runModel(sampleVector, targetId);
+  double evaluation = _k->_problem->getTargetEvaluation());
 
-  write(_pipeDescriptors[launcherId][1], &fitness, sizeof(double));
+  write(_pipeDescriptors[launcherId][1], &evaluation, sizeof(double));
   exit(0);
  }
 
@@ -53,23 +49,13 @@ void Korali::Conduit::External::checkProgress()
  if (processId > 0)
  {
   int launcherId = _processIdMapToLauncherIdMap[processId];
-  double fitness = 0.0;
-  size_t sampleId = _launcherIdToSamplerIdMap[launcherId];
-  read(_pipeDescriptors[launcherId][0], &fitness, sizeof(double));
-  _k->_solver->processSample(sampleId, fitness);
+  double evaluation = 0.0;
+  size_t targetId = _launcherIdToSamplerIdMap[launcherId];
+  read(_pipeDescriptors[launcherId][0], &evaluation, sizeof(double));
+  _k->_solver->processEvaluation(targetId, evaluation);
   close(_pipeDescriptors[launcherId][1]); // Closing pipes
   close(_pipeDescriptors[launcherId][0]); // Closing pipes
   _launcherQueue.push(launcherId);
  }
 
-}
-
-bool Korali::Conduit::External::isRoot()
-{
- return true;
-}
-
-void Korali::Conduit::External::abort()
-{
- exit(-1);
 }

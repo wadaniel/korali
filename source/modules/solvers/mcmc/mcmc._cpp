@@ -215,9 +215,17 @@ void Korali::Solver::MCMC::sampleCandidate(size_t sampleIdx)
  for (size_t d = 0; d < N; ++d) _chainLeader[d] += _chainCandidate[sampleIdx*N+d];
 }
 
+double Korali::Solver::MCMC::evaluateSampleLogPrior(double* sample)
+{
+  double logPrior = 0.0;
+  for (size_t i = 0; i < _variables.size(); i++)
+    logPrior += _k->_problem->_variables[i]->_priorDistribution->getLogDensity(sample[i]);
+  return logPrior;
+}
+
 bool Korali::Solver::MCMC::setCandidatePriorAndCheck(size_t sampleIdx)
 {
- _chainCandidatesLogPriors[sampleIdx] = _k->_problem->evaluateSampleLogPrior(&_chainCandidate[N*sampleIdx]);
+ _chainCandidatesLogPriors[sampleIdx] = evaluateSampleLogPrior(&_chainCandidate[N*sampleIdx]);
  if (_chainCandidatesLogPriors[sampleIdx] > -INFINITY) return true;
  return false;
 }

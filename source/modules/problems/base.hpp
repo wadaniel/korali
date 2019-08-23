@@ -3,7 +3,6 @@
 
 #include "modules/module.hpp"
 #include "auxiliars/json.hpp"
-#include "variable/variable.hpp"
 #include "model.hpp"
 
 namespace Korali { namespace Problem {
@@ -14,14 +13,9 @@ class Base : public Korali::Module
 
   Korali::Model  _modelData;
 
-  virtual void runModel(std::vector<double>, size_t sampleId) = 0;
-
-  virtual size_t getVariableCount() = 0;
-  virtual Korali::Variable* getVariable(size_t variableId) = 0;
-  virtual bool isSampleFeasible(double* sample) = 0;
-
-  virtual double evaluateSampleFitness() = 0;
-  virtual double evaluateSampleLogPrior(double* sample) = 0;
+  virtual void runModel(std::vector<double> target, size_t targetId) = 0;
+  virtual bool isTargetFeasible(double* target) = 0;
+  virtual double evaluateTarget() = 0;
 };
 
 } } // namespace Korali

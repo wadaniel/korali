@@ -126,6 +126,14 @@ void Korali::Solver::TMCMC::generateCandidate(size_t c)
 }
 
 
+double Korali::Solver::TMCMC::evaluateSampleLogPrior(double* sample)
+{
+  double logPrior = 0.0;
+  for (size_t i = 0; i < _variables.size(); i++)
+    logPrior += _k->_problem->_variables[i]->_priorDistribution->getLogDensity(sample[i]);
+  return logPrior;
+}
+
 void Korali::Solver::TMCMC::evaluateCandidate(size_t sampleId)
 {
   std::vector<double> _logTransformedSample(N);
@@ -136,9 +144,9 @@ void Korali::Solver::TMCMC::evaluateCandidate(size_t sampleId)
     else
         _logTransformedSample[d] = _chainCandidates[sampleId*N+d];
 
-  _chainCandidatesLogPriors[sampleId] = _k->_problem->evaluateSampleLogPrior(&_chainCandidates[sampleId*N]);
+  _chainCandidatesLogPriors[sampleId] = evaluateSampleLogPrior(&_chainCandidates[sampleId*N]);
 
-  if(_k->_problem->isSampleFeasible(&_chainCandidates[sampleId*N]))
+  if(isSampleFeasible(&_chainCandidates[sampleId*N]))
    _k->_conduit->evaluateSample(_logTransformedSample.data(), sampleId);
   else
   {
@@ -149,6 +157,12 @@ void Korali::Solver::TMCMC::evaluateCandidate(size_t sampleId)
 
 }
 
+bool Korali::Solver::TMCMC::isSampleFeasible(double* sample)
+{
+ for (size_t i = 0; i < getVariableCount(); i++)
+  if (isfinite(_variables[i]->_priorDistribution->getLogDensity(sample[i])) == false) return false;
+ return true;
+}
 
 void Korali::Solver::TMCMC::processSample(size_t sampleId, double fitness)
 {
@@ -159,7 +173,7 @@ void Korali::Solver::TMCMC::processSample(size_t sampleId, double fitness)
  }
 
  _chainCandidatesLogLikelihoods[sampleId] = fitness;
- _chainLeadersLogPriors[sampleId] = _k->_problem->evaluateSampleLogPrior(&_chainLeaders[sampleId*N]);
+ _chainLeadersLogPriors[sampleId] = evaluateSampleLogPrior(&_chainLeaders[sampleId*N]);
 
  if (_k->_currentGeneration == 1)
  {

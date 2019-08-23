@@ -207,8 +207,6 @@ void Korali::Solver::DEA::evaluateSamples()
 
 void Korali::Solver::DEA::processSample(size_t sampleId, double fitness)
 {
- double logPrior = _k->_problem->evaluateSampleLogPrior(&_candidatePopulation[sampleId*N]);
- fitness += logPrior;
  if(std::isfinite(fitness) == false) 
  {
    fitness = -std::numeric_limits<double>::infinity();

@@ -22,6 +22,7 @@ class MCMC : public Korali::Solver::Base
  void updateDatabase(std::vector<double>&, double fitness);
  void choleskyDecomp(const std::vector<double>& inC, std::vector<double>& outL) const;
  void acceptReject(size_t trial); /* Accept or reject sample with multiple trials */
+ double evaluateSampleLogPrior(double* sample);
 
  public:
 

@@ -10,8 +10,14 @@ def getVariableType(v):
  
 def getCXXVariableName(v):
  cVarName = ''
- for name in v["Name"]: cVarName += name 
+ for name in v: cVarName += name 
  cVarName = cVarName.replace(" ", "")
+ cVarName = cVarName.replace("(", "")
+ cVarName = cVarName.replace(")", "")
+ cVarName = cVarName.replace("+", "")
+ cVarName = cVarName.replace("-", "")
+ cVarName = cVarName.replace("[", "")
+ cVarName = cVarName.replace("]", "")
  cVarName = '_' + cVarName[0].lower() + cVarName[1:]
  return cVarName
 
@@ -55,12 +61,6 @@ def consumeValue(base, moduleName, path, varName, varType, varDefault):
   cString += ' for(size_t i = 0; i < ' + base + path + '.size(); i++) ' + varName + '.push_back(Korali::Distribution::Base::getDistribution(' + base + path + '[i]));\n'
   cString += ' eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n\n' 
   return cString
-  
- if (varType == 'std::vector<Korali::Variable*>'):
-  cString += ' for(size_t i = 0; i < ' + base + path + '.size(); i++) ' + varName + '.push_back(new Korali::Variable()); \n'
-  cString += ' for(size_t i = 0; i < ' + base + path + '.size(); i++) ' + varName + '[i]->setConfiguration(' + base + path + '[i]);\n'
-  cString += ' eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n\n' 
-  return cString 
   
  if ('Korali::' in varType):
   if (varDefault): cString = ' if (! isDefined(' + base + ', "' + path.replace('"', "'") + '[\'Type\']")) ' + base + path + '["Type"] = "' + varDefault + '"; \n'
@@ -106,9 +106,6 @@ def saveValue(base, path, varName, varType):
  if (varType == 'std::vector<Korali::Distribution::Base*>'):
   sString  = ' for(size_t i = 0; i < ' + varName + '.size(); i++) ' + varName + '[i]->getConfiguration(' + base + path + '[i]);\n'
   
- if (varType == 'std::vector<Korali::Variable*>'):
-  sString  = ' for(size_t i = 0; i < ' + varName + '.size(); i++) ' + varName + '[i]->getConfiguration(' + base + path + '[i]);\n'
- 
  if ('std::function' in varType):
   sString = ''
   
@@ -129,15 +126,20 @@ def createSetConfiguration(module):
  # Consume Configuration Settings
  if 'Configuration Settings' in module:
   for v in module["Configuration Settings"]:
-   codeString += consumeValue('js', module["Alias"], getVariablePath(v), getCXXVariableName(v), getVariableType(v), getVariableDefault(v))
+   codeString += consumeValue('js', module["Alias"], getVariablePath(v), getCXXVariableName(v["Name"]), getVariableType(v), getVariableDefault(v))
  
  if 'Internal Settings' in module: 
   for v in module["Internal Settings"]:
-   codeString += consumeValue('js', module["Alias"], '["Internal"]' + getVariablePath(v),  getCXXVariableName(v), getVariableType(v), 'Korali Skip Default')
+   codeString += consumeValue('js', module["Alias"], '["Internal"]' + getVariablePath(v),  getCXXVariableName(v["Name"]), getVariableType(v), 'Korali Skip Default')
   
  if 'Termination Criteria' in module:
   for v in module["Termination Criteria"]:
-   codeString += consumeValue('js', module["Alias"], '["Termination Criteria"]' + getVariablePath(v), getCXXVariableName(v), getVariableType(v), getVariableDefault(v))
+   codeString += consumeValue('js', module["Alias"], '["Termination Criteria"]' + getVariablePath(v), getCXXVariableName(v["Name"]), getVariableType(v), getVariableDefault(v))
+ 
+ # Variable-specific Configuration Settings
+ #if 'Configuration Settings' in module:
+ # for v in module["Configuration Settings"]:
+ #  codeString += consumeValue('js', module["Alias"], getVariablePath(v), getCXXVariableName(v["Name"]), getVariableType(v), getVariableDefault(v))
  
  codeString += ' if(isEmpty(js) == false) Korali::logError("Unrecognized settings for ' + module["Name"] + ' (' + module["Alias"] + '): \\n%s\\n", js.dump(2).c_str());\n'
  codeString += '} \n\n'
@@ -151,15 +153,15 @@ def createGetConfiguration(module):
  
  if 'Configuration Settings' in module:
   for v in module["Configuration Settings"]: 
-   codeString += saveValue('js', getVariablePath(v), getCXXVariableName(v), getVariableType(v))
+   codeString += saveValue('js', getVariablePath(v), getCXXVariableName(v["Name"]), getVariableType(v))
  
  if 'Termination Criteria' in module:
   for v in module["Termination Criteria"]: 
-   codeString += saveValue('js', getVariablePath(v), getCXXVariableName(v), getVariableType(v))
+   codeString += saveValue('js', getVariablePath(v), getCXXVariableName(v["Name"]), getVariableType(v))
    
  if 'Internal Settings' in module:   
   for v in module["Internal Settings"]: 
-   codeString += saveValue('js', '["Internal"]' + getVariablePath(v), getCXXVariableName(v), getVariableType(v))
+   codeString += saveValue('js', '["Internal"]' + getVariablePath(v), getCXXVariableName(v["Name"]), getVariableType(v))
   
  codeString += '} \n\n'
  
@@ -176,7 +178,7 @@ def createCheckTermination(module):
   for v in module["Termination Criteria"]: 
    codeString += ' if (' + v["Criteria"] + ')\n'
    codeString += ' {\n'
-   codeString += '  Korali::logInfo("Minimal", "' + module["Alias"] + ' Termination Criteria met: \\"' + getVariablePath(v).replace('"', "'") + '\\" (' + getVariableDescriptor(v) + ').\\n", ' + getCXXVariableName(v)  +');\n'
+   codeString += '  Korali::logInfo("Minimal", "' + module["Alias"] + ' Termination Criteria met: \\"' + getVariablePath(v).replace('"', "'") + '\\" (' + getVariableDescriptor(v) + ').\\n", ' + getCXXVariableName(v["Name"])  +');\n'
    codeString += '  hasFinished = true;\n'
    codeString += ' }\n\n'
   
@@ -192,14 +194,22 @@ def createHeaderDeclarations(module):
  
  if 'Configuration Settings' in module:
   for v in module["Configuration Settings"]:
-   headerString += getVariableType(v) + ' ' + getCXXVariableName(v) + ';\n'
+   headerString += ' ' + getVariableType(v) + ' ' + getCXXVariableName(v["Name"]) + ';\n'
  
  if 'Internal Settings' in module:    
   for v in module["Internal Settings"]:
-   headerString += getVariableType(v) + ' ' + getCXXVariableName(v) + ';\n'
+   headerString += ' ' + getVariableType(v) + ' ' + getCXXVariableName(v["Name"]) + ';\n'
  
  if 'Termination Criteria' in module:
   for v in module["Termination Criteria"]:
-   headerString += getVariableType(v) + ' ' + getCXXVariableName(v) + ';\n'
+   headerString += ' ' + getVariableType(v) + ' ' + getCXXVariableName(v["Name"]) + ';\n'
+ 
+ if 'Variables Configuration' in module:
+  varStructName = '_' + getCXXVariableName(module["Name"]) + '_variableStruct'
+  headerString += '\n struct ' + varStructName + ' {\n'
+  for v in module["Variables Configuration"]:
+   headerString += '  ' + getVariableType(v) + ' ' + getCXXVariableName(v["Name"]) + ';\n'
+  headerString += ' };\n'
+  headerString += ' std::vector<' + varStructName + '> _variables;\n'
  
  return headerString

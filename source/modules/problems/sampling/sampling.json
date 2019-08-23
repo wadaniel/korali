@@ -8,11 +8,6 @@
  "Configuration Settings": 
  [
    {
-    "Name": [ "Variables" ],
-    "Type": "std::vector<Korali::Variable*>",
-    "Description": "The set of problems variables."
-   },
-   {
     "Name": [ "Objective Function" ],
     "Type": "std::function<void(Korali::Model&)>",
     "Description": "Stores the function to sample from."
@@ -21,6 +16,16 @@
  
  "Variables Configuration": 
  [
+  {
+   "Name": [ "Lower Bound" ],
+   "Type": "double",
+   "Description": "Specifies the lower bound for the variable's value."
+  },
+  {
+   "Name": [ "Upper Bound" ],
+   "Type": "double",
+   "Description": "Specifies the upper bound for the variable's value."
+  }
  ],
  
  "Internal Settings": 

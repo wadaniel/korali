@@ -10,9 +10,9 @@ LDFLAGS += $(PYBIND11LIBS)
 
 all: libkorali.so
 
+BUILDFILES = $(shell find . -name "build.py") 
 build:
-	find . -name "build.py"
-	#python3 python/builder/buildAll.py
+	@for buildfile in $(BUILDFILES); do python3 $$buildfile; done
 
 SOURCES = $(shell find . -name "*.cpp") 
 OBJECTS = $(SOURCES:.cpp=.o)

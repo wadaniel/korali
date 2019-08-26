@@ -1,0 +1,29 @@
+{
+ "Type": "Problem",
+ "Name": "Bayesian Inference (Reference Likelihood)",
+ "Alias": "Bayesian Inference (Reference Likelihood)",
+ "C++ Class": "Korali::Problem::Bayesian::Reference",
+
+ "Configuration Settings":
+ [
+   {
+    "Name": [ "Computational Model" ],
+    "Type": "std::function<void(Korali::Model&)>",
+    "Description": "Stores the computational model. It should the evaluation of the model at the given reference data points."
+   },
+   {
+    "Name": [ "Reference Data" ],
+    "Type": "std::vector<double>",
+    "Default": "std::vector<double>(0)",
+    "Description": "Reference data required to calculate likelihood. Model evaluations are compared against these data."
+   }
+ ],
+
+ "Variables Configuration":
+ [
+ ],
+
+ "Internal Settings":
+ [
+ ]
+}

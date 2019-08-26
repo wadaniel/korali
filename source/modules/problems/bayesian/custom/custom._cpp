@@ -1,0 +1,32 @@
+#include "korali.hpp"
+
+void Korali::Problem::Bayesian::Custom::initialize()
+{
+  Korali::Problem::Bayesian::Base::initialize();
+
+  if (_variables.size() == 0) Korali::logError("Bayesian inference problems require at least one variable.\n");
+
+  bool recognizedModel = false;
+  if (_likelihoodModel == "Custom") recognizedModel = true;
+  if (recognizedModel == false) Korali::logError("Incorrect or no Likelihood Model selected: %s.\n", _likelihoodModel.c_str());
+
+  if (_likelihoodReferenceData.size() != 0) Korali::logError("Bayesian (Custom) problems do not accept reference data.\n");
+  if (_statisticalVariableIndices.size() != 0) Korali::logError("Bayesian (Custom) problems do not accept statistical variables.\n");
+}
+
+void Korali::Problem::Bayesian::Custom::runModel(std::vector<double> target, size_t targetId)
+{
+  _modelData.setSample(targetId, target);
+
+  _likelihoodModel(_modelData);
+}
+
+double Korali::Problem::Bayesian::Custom::evaluateTarget()
+{
+  double fitness = 0.0;
+
+  fitness =  _modelData._likelihood;
+
+  return fitness;
+}
+

@@ -1,23 +1,13 @@
 {
  "Type": "Problem",
- "Name": "Bayesian Inference",
- "Alias": "Bayesian Inference",
- "C++ Class": "Korali::Problem::Bayesian",
+ "Name": "Bayesian Inference (Base)",
+ "Alias": "Bayesian Inference (Base)",
+ "C++ Class": "Korali::Problem::Bayesian::Base",
  "Compatible Solvers": [ "CMAES", "DEA", "MCMC", "TMCMC" ],
 
  "Configuration Settings":
  [
-   {
-    "Name": [ "Likelihood", "Model" ],
-    "Type": "std::string",
-    "Description": "Indicates how Korali will evaluate the likelihood component."
-   },
-   {
-    "Name": [ "Likelihood", "Reference Data" ],
-    "Type": "std::vector<double>",
-    "Default": "std::vector<double>(0)",
-    "Description": "Reference data required to calculate likelihood. Model evaluations are compared against these data."
-   }
+ 
  ],
 
  "Variables Configuration":

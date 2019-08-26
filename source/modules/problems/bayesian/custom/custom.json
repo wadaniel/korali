@@ -1,0 +1,23 @@
+{
+ "Type": "Problem",
+ "Name": "Bayesian Inference (Custom Likelihood)",
+ "Alias": "Bayesian Inference (Custom Likelihood)",
+ "C++ Class": "Korali::Problem::Bayesian::Custom",
+
+ "Configuration Settings":
+ [
+   {
+    "Name": [ "Likelihood Model" ],
+    "Type": "std::function<void(Korali::Model&)>",
+    "Description": "Stores the likelihood model. It should return the value of the Log Likelihood of the given sample."
+   }
+ ],
+
+ "Variables Configuration":
+ [
+ ],
+
+ "Internal Settings":
+ [
+ ]
+}

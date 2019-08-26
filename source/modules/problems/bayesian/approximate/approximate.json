@@ -1,0 +1,24 @@
+{
+ "Type": "Problem",
+ "Name": "Bayesian Inference (Approximate Likelihood)",
+ "Alias": "Bayesian Inference (Approximate Likelihood)",
+ "C++ Class": "Korali::Problem::Bayesian::Approximate",
+
+ "Configuration Settings":
+ [
+   {
+    "Name": [ "Reference Data" ],
+    "Type": "std::vector<double>",
+    "Default": "std::vector<double>(0)",
+    "Description": "Reference data required to calculate likelihood. Model evaluations are compared against these data."
+   }
+ ],
+
+ "Variables Configuration":
+ [
+ ],
+
+ "Internal Settings":
+ [
+ ]
+}

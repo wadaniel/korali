@@ -3,37 +3,22 @@
 
 #include "modules/problems/base.hpp"
 
-namespace Korali { namespace Problem {
+namespace Korali { namespace Problem { namespace Bayesian {
 
-class Bayesian : public Korali::Problem::Base
+class Base : public Korali::Problem::Base
 {
  private:
 
- double likelihoodNormalAdditive(Korali::Model& data);
- double likelihoodNormalMultiplicative(Korali::Model& data);
- double likelihoodNormalMultiplicativeData(Korali::Model& data);
-
- double likelihoodTruncatedNormalNoModel(Korali::Model& data);
- double likelihoodNormalNoModel(Korali::Model& data);
-
  public:
 
- double evaluateSampleLogPrior(double* sample);
-
- void runModel(std::vector<double> target, size_t targetId) override;
  bool isTargetFeasible(double* target) override;
- double evaluateTarget() override;
 
- bool checkTermination() override;
- void initialize() override;
- void finalize() override;
- std::string getType() override;
-
- void getConfiguration(nlohmann::json&) override;
- void setConfiguration(nlohmann::json&) override;
+ double evaluateLogPrior(double* sample);
+ virtual double evaluateLogLikelihood(double* sample) = 0;
+ double evaluateLogPosterior(double* sample);
 };
 
-} } // namespace Korali::Problem
+} } } // namespace Korali::Problem::Bayesian
 
 
 #endif // _KORALI_PROBLEM_BAYESIAN_HPP_

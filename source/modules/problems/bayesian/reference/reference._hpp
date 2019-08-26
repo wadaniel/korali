@@ -1,0 +1,24 @@
+#ifndef _KORALI_PROBLEM_BAYESIAN_REFERENCE_HPP_
+#define _KORALI_PROBLEM_BAYESIAN_REFERENCE_HPP_
+
+#include "modules/problems/bayesian/base.hpp"
+
+namespace Korali { namespace Problem { namespace Bayesian {
+
+class Reference : public Korali::Problem::Bayesian::Base
+{
+ private:
+
+ double likelihoodNormalAdditive(Korali::Model& data);
+ double likelihoodNormalMultiplicative(Korali::Model& data);
+ double likelihoodNormalMultiplicativeData(Korali::Model& data);
+
+ public:
+
+ double evaluateLogLikelihood(double* sample) override;
+};
+
+} } } // namespace Korali::Problem::Bayesian
+
+
+#endif // _KORALI_PROBLEM_BAYESIAN_REFERENCE_HPP_

@@ -1,0 +1,113 @@
+#include "korali.hpp"
+
+void Korali::Problem::Bayesian::Reference::initialize()
+{
+  Korali::Problem::Bayesian::Base::initialize();
+
+  bool recognizedModel = false;
+  if (_likelihoodModel == "Additive Normal") recognizedModel = true;
+  if (_likelihoodModel == "Multiplicative Normal") recognizedModel = true;
+  if (_likelihoodModel == "Multiplicative Normal Data") recognizedModel = true;
+  if (recognizedModel == false) Korali::logError("Incorrect or no Likelihood Model selected: %s.\n", _likelihoodModel.c_str());
+
+  if (_likelihoodReferenceData.size() == 0) Korali::logError("Bayesian (%s) problems require defining reference data.\n", _likelihoodModel.c_str());
+  if (_statisticalVariableIndices.size() != 1) Korali::logError("Bayesian (%s) problems require exactly 1 statistical parameter, provided: %lu.\n", _likelihoodModel.c_str(), _statisticalVariableIndices.size());
+}
+
+bool Korali::Problem::Bayesian::Reference::isTargetFeasible(double* target)
+{
+  for (size_t i = 0; i < _variables.size(); i++)
+    if (isfinite(_variables[i]._priorDistribution->getLogDensity(target[i])) == false) return false;
+  return true;
+}
+
+void Korali::Problem::Bayesian::Reference::runModel(std::vector<double> target, size_t targetId)
+{
+  _modelData.setSample(targetId, target);
+
+  _referenceModel(_modelData);
+}
+
+double Korali::Problem::Bayesian::Reference::evaluateTarget()
+{
+  double fitness = 0.0;
+
+  if (_modelData.getResultsSize() != _likelihoodReferenceData.size())
+    Korali::logError("Bayesian (%s) problems require a %lu-sized reference result array. Provided: %lu.\n", _likelihoodModel.c_str(), _likelihoodReferenceData.size(), _modelData.getResultsSize());
+
+  if (_likelihoodModel == "Additive Normal")            fitness = likelihoodNormalAdditive(_modelData);
+  if (_likelihoodModel == "Multiplicative Normal")      fitness = likelihoodNormalMultiplicative(_modelData);
+  if (_likelihoodModel == "Multiplicative Normal Data") fitness = likelihoodNormalMultiplicativeData(_modelData);
+
+  return fitness;
+}
+
+double Korali::Problem::Bayesian::Reference::likelihoodNormalAdditive(Korali::Model& data)
+{
+  double sigma   = data[_statisticalVariableIndices[0]];
+  double sigma2  = sigma*sigma;
+  double ssn     = 0.0;
+  double fitness = 0.0;
+
+  for(size_t i = 0; i < _likelihoodReferenceData.size(); i++)
+  {
+    if( !isfinite(data.getResults()[i]) )
+    {
+      Korali::logWarning("Normal","Non-finite value detected in the results passed in the log-likelihood function.\n");
+      return -Korali::Inf;
+    }
+    double diff = _likelihoodReferenceData[i] - data.getResults()[i];
+    ssn += diff*diff;
+  }
+
+  fitness = -0.5*( _likelihoodReferenceData.size()*log(2*M_PI) + ssn/sigma2) - _likelihoodReferenceData.size()*log(sigma);
+  return fitness;
+}
+
+double Korali::Problem::Bayesian::Reference::likelihoodNormalMultiplicative(Korali::Model& data)
+{
+  double sigma    = data[_statisticalVariableIndices[0]];
+  double ssn      = 0.0;
+  double fitness  = 0.0;
+  double logSigma = 0.0;
+  for(size_t i = 0; i < _likelihoodReferenceData.size(); i++)
+  {
+    if( !isfinite(data.getResults()[i]) )
+    {
+      Korali::logWarning("Normal","Non-finite value detected in the results passed in the log-likelihood function.\n");
+      return -Korali::Inf;
+    }
+
+    double diff   = _likelihoodReferenceData[i] - data.getResults()[i];
+    double denom  = sigma*data.getResults()[i];
+    ssn += diff*diff / (denom*denom);
+    logSigma += log(denom);
+  }
+
+  fitness = -0.5*( _likelihoodReferenceData.size()*log(2*M_PI) + ssn) - _likelihoodReferenceData.size()*logSigma;
+  return fitness;
+}
+
+double Korali::Problem::Bayesian::likelihoodNormalMultiplicativeData(Korali::Model& data)
+{
+  double sigma    = data[_statisticalVariableIndices[0]];
+  double ssn      = 0.0;
+  double fitness  = 0.0;
+  double logSigma = 0.0;
+  for(size_t i = 0; i < _likelihoodReferenceData.size(); i++)
+  {
+    if( !isfinite(data.getResults()[i]) )
+    {
+      Korali::logWarning("Normal","Non-finite value detected in the results passed in the log-likelihood function.\n");
+      return -Korali::Inf;
+    }
+
+    double diff   = _likelihoodReferenceData[i] - data.getResults()[i];
+    double denom  = sigma*_likelihoodReferenceData[i];
+    ssn += diff*diff / (denom*denom);
+    logSigma += log(denom);
+  }
+
+  fitness = -0.5*( _likelihoodReferenceData.size()*log(2*M_PI) + ssn) - _likelihoodReferenceData.size()*logSigma;
+  return fitness;
+}

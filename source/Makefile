@@ -12,7 +12,8 @@ all: libkorali.so
 
 BUILDFILES = $(shell find . -name "build.py") 
 build:
-	@for buildfile in $(BUILDFILES); do python3 $$buildfile; done
+	echo $(BUILDFILES)
+	#@for buildfile in $(BUILDFILES); do python3 $$buildfile; done
 
 SOURCES = $(shell find . -name "*.cpp") 
 OBJECTS = $(SOURCES:.cpp=.o)

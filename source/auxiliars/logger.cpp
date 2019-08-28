@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "logger.hpp"
-#include "korali.hpp"
 
 size_t Korali::getVerbosityLevel(std::string verbosityLevel)
 {
@@ -23,7 +22,6 @@ bool Korali::isEnoughVerbosity(std::string verbosityLevel)
 
 void Korali::logData(std::string verbosityLevel, const char* format, ... )
 {
- if (Korali::_k->_conduit != nullptr) if(! Korali::_k->_conduit->isRoot()) return;
  if (isEnoughVerbosity(verbosityLevel) == false) return;
 
  char* outstr = 0;
@@ -39,7 +37,6 @@ void Korali::logData(std::string verbosityLevel, const char* format, ... )
 
 void Korali::logInfo(std::string verbosityLevel, const char* format, ... )
 {
- if (Korali::_k->_conduit != nullptr) if(! Korali::_k->_conduit->isRoot()) return;
  if (isEnoughVerbosity(verbosityLevel) == false) return;
 
  std::string newFormat = "[Korali] ";
@@ -57,7 +54,6 @@ void Korali::logInfo(std::string verbosityLevel, const char* format, ... )
 
 void Korali::logWarning(std::string verbosityLevel, const char* format, ... )
 {
- if (Korali::_k->_conduit != nullptr) if(! Korali::_k->_conduit->isRoot()) return;
  if (isEnoughVerbosity(verbosityLevel) == false) return;
 
  std::string newFormat = "[Korali] Warning: ";

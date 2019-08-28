@@ -1,5 +1,5 @@
-#ifndef _KORALI_MULTIVARIATE_NORMAL_HPP_
-#define _KORALI_MULTIVARIATE_NORMAL_HPP_
+#ifndef _KORALI_AUXILIARS_MULTIVARIATE_NORMAL_HPP_
+#define _KORALI_AUXILIARS_MULTIVARIATE_NORMAL_HPP_
 
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
@@ -7,7 +7,7 @@
 #include <gsl/gsl_sf.h>
 #include <auxiliars/json.hpp>
 
-namespace Korali { namespace Distribution {
+namespace Korali {
 
 class MultivariateNormal {
 
@@ -34,6 +34,6 @@ class MultivariateNormal {
  void getRandomVector(double *x, size_t n);
 };
 
-} } // namespace Korali::Distribution
+} // namespace Korali
 
-#endif // _KORALI_MULTIVARIATE_NORMAL_HPP_
+#endif // _KORALI_AUXILIARS_MULTIVARIATE_NORMAL_HPP_

@@ -1,4 +1,5 @@
-#include "korali.hpp"
+#include "modules/problems/bayesian/approximate/approximate.hpp"
+#include "auxiliars/koralimath.hpp"
 
 void Korali::Problem::Bayesian::Approximate::initialize()
 {
@@ -9,7 +10,7 @@ void Korali::Problem::Bayesian::Approximate::initialize()
   if (_likelihoodModel == "Normal") recognizedModel = true;
   if (recognizedModel == false) Korali::logError("Incorrect or no Likelihood Model selected: %s.\n", _likelihoodModel.c_str());
 
-  if (_likelihoodReferenceData.size() == 0)  Korali::logError("Bayesian (%s) problems require defining reference data.\n", _likelihoodModel.c_str());
+  if (_referenceData.size() == 0)  Korali::logError("Bayesian (%s) problems require defining reference data.\n", _likelihoodModel.c_str());
   if (_computationalVariableIndices.size() != 0) Korali::logError("Bayesian (%s) problems do not accept computational parameters.\n", _likelihoodModel.c_str() );
 }
 
@@ -20,12 +21,12 @@ void Korali::Problem::Bayesian::Approximate::runModel(std::vector<double> target
 
 double Korali::Problem::Bayesian::Approximate::evaluateLogLikelihood()
 {
-  double likelihood = 0.0;
+  double logLikelihood = 0.0;
 
-  if (_likelihoodModel == "Truncated Normal") likelihood = likelihoodTruncatedNormal(_modelData);
-  if (_likelihoodModel == "Normal")           likelihood = likelihoodNormal(_modelData);
+  if (_likelihoodModel == "Truncated Normal") logLikelihood = likelihoodTruncatedNormal(_modelData);
+  if (_likelihoodModel == "Normal")           logLikelihood = likelihoodNormal(_modelData);
 
-  return likelihood;
+  return logLikelihood;
 }
 
 double Korali::Problem::Bayesian::Approximate::likelihoodNormal(Korali::Model& data)
@@ -35,10 +36,10 @@ double Korali::Problem::Bayesian::Approximate::likelihoodNormal(Korali::Model& d
   double sigma2 = sigma*sigma;
 
   double logNormalization = 0.5 * M_SQRT2 * M_SQRTPI * sigma ;
-  logNormalization = _likelihoodReferenceData.size() * gsl_sf_log(logNormalization);
+  logNormalization = _referenceData.size() * gsl_sf_log(logNormalization);
 
   double ssn = 0.;
-  for (auto& d : _likelihoodReferenceData){
+  for (auto& d : _referenceData){
     double diff = d - mu;
     ssn += diff*diff;
   }
@@ -62,10 +63,10 @@ double Korali::Problem::Bayesian::Approximate::likelihoodTruncatedNormal(Korali:
 
   if( logNormalization == 0.) return -Korali::Inf;
 
-  logNormalization = _likelihoodReferenceData.size() * gsl_sf_log(logNormalization);
+  logNormalization = _referenceData.size() * gsl_sf_log(logNormalization);
 
   double ssn = 0.;
-  for (auto& d : _likelihoodReferenceData){
+  for (auto& d : _referenceData){
     if( d>b || d<a) return -Korali::Inf;
     double diff = d - mu;
     ssn += diff*diff;

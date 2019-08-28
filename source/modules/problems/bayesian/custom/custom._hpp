@@ -1,7 +1,7 @@
 #ifndef _KORALI_PROBLEM_BAYESIAN_CUSTOM_HPP_
 #define _KORALI_PROBLEM_BAYESIAN_CUSTOM_HPP_
 
-#include "modules/problems/base.hpp"
+#include "modules/problems/bayesian/base.hpp"
 
 namespace Korali { namespace Problem { namespace Bayesian {
 
@@ -11,12 +11,13 @@ class Custom : public Korali::Problem::Bayesian::Base
 
  public:
 
- double evaluateLogLikelihood(double* sample) override;
+ double evaluateLogLikelihood() override;
+ void initialize() override;
+ void finalize() override;
  void runModel(std::vector<double> target, size_t targetId) override;
-
 };
 
-} } } // namespace Korali::Problem
+} } } // namespace Korali::Problem::Bayesian
 
 
 #endif // _KORALI_PROBLEM_BAYESIAN_CUSTOM_HPP_

@@ -9,12 +9,10 @@
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_sf.h>
 
-namespace Korali {
+namespace Korali { namespace Distribution {
 
-namespace Distribution : public Korali::Module {
-
-class Base {
-
+class Base : public Korali::Base
+{
  protected:
 
  std::map<std::string, double*> _conditionalsMap;

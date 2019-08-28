@@ -1,5 +1,5 @@
-#ifndef __KORALI_MODEL_HPP_
-#define __KORALI_MODEL_HPP_
+#ifndef __KORALI_AUXILIARS_MODEL_HPP_
+#define __KORALI_AUXILIARS_MODEL_HPP_
 
 #include <vector>
 #include "auxiliars/logger.hpp"

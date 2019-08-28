@@ -232,16 +232,19 @@ koraliDir = currentDir + '/../'
 
 # modules List
 moduleDetectionList = ''
+moduleIncludeList = ''
 
 # Detecting modules' json file
-for moduleDir, d, fileNames in os.walk(currentDir):
+for moduleDir, relDir, fileNames in os.walk(currentDir):
  for fileName in fileNames: 
   if '.json' in fileName:
    with open(moduleDir + '/' + fileName, 'r') as file: moduleConfig = json.load(file)
    moduleName = fileName.replace('.json', '')
-
+   
    ####### Adding module to list
- 
+   relpath = os.path.relpath(moduleDir, koraliDir)
+   filepath = os.path.join(relpath, moduleName + '.hpp')
+   moduleIncludeList += '#include "' + filepath + '" \n'
    moduleDetectionList += '  if(moduleType == "' + moduleConfig["Alias"] + '") module = new ' + moduleConfig["C++ Class"] + '();\n'
    
    ###### Producing module code
@@ -260,9 +263,17 @@ for moduleDir, d, fileNames in os.walk(currentDir):
    moduleTemplateHeaderFile = moduleDir + '/' + moduleName + '._hpp'
    with open(moduleTemplateHeaderFile, 'r') as file: moduleTemplateHeaderString = file.read()
    
+   # Adding overridden function declarations
+   functionOverrideString = ''
+   functionOverrideString += ' std::string getType() override;\n'
+   functionOverrideString += ' bool checkTermination() override;\n'
+   functionOverrideString += ' void getConfiguration(nlohmann::json& js) override;\n'
+   functionOverrideString += ' void setConfiguration(nlohmann::json& js) override;\n'
+   newHeaderString = moduleTemplateHeaderString.replace('public:', 'public: \n' + functionOverrideString + '\n')
+   
    # Adding declarations
    declarationsString = createHeaderDeclarations(moduleConfig)
-   newHeaderString = moduleTemplateHeaderString.replace('public:', 'public: \n' + declarationsString + '\n')
+   newHeaderString = newHeaderString.replace('public:', 'public: \n' + declarationsString + '\n')
    
    # Saving new header .hpp file
    moduleNewHeaderFile = moduleDir + '/' + moduleName + '.hpp'
@@ -285,22 +296,23 @@ for moduleDir, d, fileNames in os.walk(currentDir):
 
 ###### Updating module configuration file 
 
-moduleBaseCodeFileName = currentDir + '/module._cpp' 
-moduleNewCodeFile = currentDir + '/module.cpp'
+moduleBaseCodeFileName = currentDir + '/base._cpp' 
+moduleNewCodeFile = currentDir + '/base.cpp'
 baseFileTime = os.path.getmtime(moduleBaseCodeFileName)
 newFileTime = baseFileTime
 if (os.path.exists(moduleNewCodeFile)): newFileTime = os.path.getmtime(moduleNewCodeFile)
 
 if (baseFileTime >= newFileTime):
   with open(moduleBaseCodeFileName, 'r') as file: moduleBaseCodeString = file.read()
-  newBaseString = moduleBaseCodeString.replace(' // Module List', ' // Module List' + moduleDetectionList)
+  newBaseString = moduleBaseCodeString.replace('// Module Include List',  moduleIncludeList)
+  newBaseString = newBaseString.replace(' // Module Selection List', moduleDetectionList)
   print('[Korali] Creating: ' + moduleNewCodeFile + '...')
   with open(moduleNewCodeFile, 'w') as file: file.write(newBaseString)
 
 ###### Creating base header file
 
-moduleBaseHeaderFileName = currentDir + '/module._hpp'
-moduleNewHeaderFile = currentDir + '/module.hpp'
+moduleBaseHeaderFileName = currentDir + '/base._hpp'
+moduleNewHeaderFile = currentDir + '/base.hpp'
 with open(moduleBaseHeaderFileName, 'r') as file: moduleBaseHeaderString = file.read()
 newBaseString = moduleBaseHeaderString
 print('[Korali] Creating: ' + moduleNewHeaderFile + '...')

@@ -1,7 +1,7 @@
 #ifndef _KORALI_PROBLEM_BAYESIAN_APPROXIMATE_HPP_
 #define _KORALI_PROBLEM_BAYESIAN_APPROXIMATE_HPP_
 
-#include "modules/problems/base.hpp"
+#include "modules/problems/bayesian/base.hpp"
 
 namespace Korali { namespace Problem { namespace Bayesian {
 
@@ -9,19 +9,17 @@ class Approximate : public Korali::Problem::Bayesian::Base
 {
  private:
 
- double likelihoodTruncatedNormalNoModel(Korali::Model& data);
- double likelihoodNormalNoModel(Korali::Model& data);
+ double likelihoodTruncatedNormal(Korali::Model& data);
+ double likelihoodNormal(Korali::Model& data);
 
  public:
 
- double evaluateLogLikelihood(double* sample) override;
- double evaluateLogPosterior(double* sample) override;
-
+ double evaluateLogLikelihood() override;
+ void initialize() override;
  void runModel(std::vector<double> target, size_t targetId) override;
-
 };
 
-} } // namespace Korali::Problem
+} } } // namespace Korali::Problem::Bayesian
 
 
 #endif // _KORALI_PROBLEM_BAYESIAN_APPROXIMATE_HPP_

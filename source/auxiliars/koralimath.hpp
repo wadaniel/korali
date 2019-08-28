@@ -3,7 +3,6 @@
 
 // Auxiliar library for Korali's math and time operations.
 
-#include "korali.hpp"
 #include <stdlib.h>
 #include <vector>
 

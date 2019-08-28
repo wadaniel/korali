@@ -3,13 +3,15 @@
 
 #include <vector>
 #include <functional>
-
-// Include Files
+#include "auxiliars/koralijson.hpp"
+#include "modules/problems/base.hpp"
+#include "modules/solvers/base.hpp"
+#include "modules/conduits/base.hpp"
 
 namespace Korali
 {
 
-class Engine {
+class Engine : public Korali::Base {
 
  public:
 
@@ -35,10 +37,6 @@ class Engine {
  void loadState(std::string fileName);
  void saveState(std::string fileName);
  void saveState(int fileId);
-
- // Serialization Methods
- void getConfiguration(nlohmann::json& js);
- void setConfiguration(nlohmann::json& js);
 };
 
 extern Engine* _k;

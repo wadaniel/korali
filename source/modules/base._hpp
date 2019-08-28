@@ -1,20 +1,21 @@
 #ifndef _KORALI_MODULE_HPP_
 #define _KORALI_MODULE_HPP_
 
+#include "auxiliars/json.hpp"
+
 namespace Korali {
 
-class Module
+class Base
 {
  public:
 
-  static Module* getModule(nlohmann::json& js);
+  static Base* getModule(nlohmann::json& js);
 
-  virtual bool checkTermination() { return false; }
   virtual void initialize() { }
   virtual void finalize() { }
-  virtual std::string getType() = 0;
 
-  // Module serialization
+  virtual std::string getType() = 0;
+  virtual bool checkTermination() = 0;
   virtual void getConfiguration(nlohmann::json& js) = 0;
   virtual void setConfiguration(nlohmann::json& js) = 0;
 };

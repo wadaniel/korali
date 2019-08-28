@@ -1,13 +1,12 @@
 #ifndef _KORALI_PROBLEM_BASE_HPP_
 #define _KORALI_PROBLEM_BASE_HPP_
 
-#include "modules/module.hpp"
-#include "auxiliars/json.hpp"
-#include "model.hpp"
+#include "modules/base.hpp"
+#include "auxiliars/model.hpp"
 
 namespace Korali { namespace Problem {
 
-class Base : public Korali::Module
+class Base : public Korali::Base
 {
  public:
 

@@ -1,11 +1,11 @@
 #ifndef _KORALI_CONDUIT_BASE_HPP_
 #define _KORALI_CONDUIT_BASE_HPP_
 
-#include "auxiliars/json.hpp"
+#include "modules/base.hpp"
 
 namespace Korali { namespace Conduit {
 
-class Base : public Korali::Module {
+class Base : public Korali::Base {
 
  public:
 

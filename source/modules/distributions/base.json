@@ -1,0 +1,6 @@
+{
+ "Type": "Distribution",
+ "Name": "Distribution (Base)",
+ "Alias": "Distribution (Base)",
+ "C++ Class": "Korali::Distribution::Base"
+}

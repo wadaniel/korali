@@ -1,0 +1,6 @@
+{
+ "Type": "Problem",
+ "Name": "Problem (Base)",
+ "Alias": "Problem (Base)",
+ "C++ Class": "Korali::Problem::Base"
+}

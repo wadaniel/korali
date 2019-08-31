@@ -2,6 +2,7 @@
 #define _KORALI_PROBLEM_SAMPLING_HPP_
 
 #include "modules/problems/base.hpp"
+#include "modules/engine/engine.hpp"
 
 namespace Korali { namespace Problem {
 
@@ -10,15 +11,9 @@ class Sampling : public Korali::Problem::Base
  public:
 
  void runModel(std::vector<double> target, size_t targetId) override;
- bool isTargetFeasible(double* target) override;
-
- bool checkTermination() override;
+ bool isTargetFeasible(const std::vector<double>& target) override;
+ double evaluateTarget() override;
  void initialize() override;
- void finalize() override;
- std::string getType() override;
-
- void getConfiguration(nlohmann::json&) override;
- void setConfiguration(nlohmann::json&) override;
 };
 
 } } // namespace Korali::Problem

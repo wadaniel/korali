@@ -1,0 +1,27 @@
+{
+ "Type": "Problem",
+ "Name": "Optimization",
+ "Alias": "Optimization",
+ "C++ Class": "Korali::Problem::Direct::Optimization",
+ "Compatible Solvers": [ "CMAES", "DEA" ],
+ 
+ "Configuration Settings": 
+ [
+   {
+    "Name": [ "Objective" ],
+    "Type": "std::string",
+    "Options": [ "Minimize", "Maximize" ],
+    "Description": "Indicates whether Korali will minimize or maximize the function evaluation."
+   }
+ ],
+ 
+ "Variables Configuration": 
+ [
+
+ ],
+ 
+ "Internal Settings": 
+ [
+
+ ]
+}

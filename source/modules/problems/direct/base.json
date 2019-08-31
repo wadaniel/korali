@@ -1,25 +1,19 @@
 {
  "Type": "Problem",
- "Name": "Optimization",
- "Alias": "Optimization",
- "C++ Class": "Korali::Problem::Optimization",
- "Compatible Solvers": [ "CMAES", "DEA" ],
- 
- "Configuration Settings": 
+ "Name": "Direct Evaluation (Base)",
+ "Alias": "Direct Evaluation (Base)",
+ "C++ Class": "Korali::Problem::Direct::Base",
+
+ "Configuration Settings":
  [
-   {
-    "Name": [ "Objective" ],
-    "Type": "std::string",
-    "Description": "Indicates whether Korali will minimize or maximize the function evaluation."
-   },
    {
     "Name": [ "Objective Function" ],
     "Type": "std::function<void(Korali::Model&)>",
-    "Description": "Stores the objective function to optimize."
+    "Description": "Stores the function to evaluate."
    }
  ],
- 
- "Variables Configuration": 
+
+ "Variables Configuration":
  [
   {
    "Name": [ "Lower Bound" ],
@@ -44,9 +38,9 @@
    "Description": "Specifies the granularity of a discrete variable, a granularity of 1.0 means that the variable can only take values in (.., -1.0, 0.0, +1.0, +2.0, ..) where the levels are set symmetric around the initial mean (here 0.0)."
   }
  ],
- 
- "Internal Settings": 
- [
 
+ "Internal Settings":
+ [
+ 
  ]
 }

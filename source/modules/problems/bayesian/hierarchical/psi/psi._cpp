@@ -1,7 +1,9 @@
-#include "korali.hpp"
+#include "modules/problems/bayesian/hierarchical/psi/psi.hpp"
+#include "modules/engine/engine.hpp"
 #include "auxiliars/koralimath.hpp"
+#include "auxiliars/koralijson.hpp"
 
-void Korali::Problem::HierarchicalPsi::initialize()
+void Korali::Problem::Bayesian::Hierarchical::Psi::initialize()
 {
  if (_conditionalPriors.size() == 0) Korali::logError("Hierarchical Bayesian (Psi) problems require at least one conditional prior\n");
 
@@ -58,32 +60,25 @@ void Korali::Problem::HierarchicalPsi::initialize()
 
 }
 
-bool Korali::Problem::HierarchicalPsi::isTargetFeasible(double* target)
-{
- for (size_t i = 0; i < _variables.size(); i++)
-  if (isfinite(_variables[i]._priorDistribution->getLogDensity(target[i])) == false) return false;
- return true;
-}
-
-Korali::Distribution::Base* Korali::Problem::HierarchicalPsi::getConditionalPrior(size_t idx)
+Korali::Distribution::Base* Korali::Problem::Bayesian::Hierarchical::Psi::getConditionalPrior(size_t idx)
 {
  return _conditionalPriors[idx];
 }
 
-void Korali::Problem::HierarchicalPsi::updateConditionalPriors(std::vector<double> target)
+void Korali::Problem::Bayesian::Hierarchical::Psi::updateConditionalPriors(std::vector<double> target)
 {
  // Re-configuring conditional priors given hyperparameters
  std::vector<std::string> _variableNames;
- for (size_t i = 0; i < _variables.size(); i++) _variableNames.push_back(_variables[i]._name);
+ for (size_t i = 0; i < _k->_variables.size(); i++) _variableNames.push_back(_k->_variables[i]->_name);
  for (size_t i = 0; i < _conditionalPriors.size(); i++)  _conditionalPriors[i]->updateConditionals(_variableNames, target);
 }
 
-void Korali::Problem::HierarchicalPsi::runModel(std::vector<double> sample, size_t sampleId)
+void Korali::Problem::Bayesian::Hierarchical::Psi::runModel(std::vector<double> sample, size_t sampleId)
 {
  updateConditionalPriors(sample);
 }
 
-double Korali::Problem::HierarchicalPsi::evaluateSample()
+double Korali::Problem::Bayesian::Hierarchical::Psi::evaluateLogLikelihood()
 {
   double logLikelihood = 0.0;
 

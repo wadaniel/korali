@@ -1,10 +1,11 @@
 #include "modules/problems/bayesian/custom/custom.hpp"
+#include "modules/engine/engine.hpp"
 
 void Korali::Problem::Bayesian::Custom::initialize()
 {
   Korali::Problem::Bayesian::Base::initialize();
 
-  if (_variables.size() == 0) Korali::logError("Bayesian inference problems require at least one variable.\n");
+  if (_k->_variables.size() == 0) Korali::logError("Bayesian inference problems require at least one variable.\n");
   if (_statisticalVariableIndices.size() != 0) Korali::logError("Bayesian (Custom) problems do not accept statistical variables.\n");
 }
 

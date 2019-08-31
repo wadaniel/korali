@@ -1,0 +1,6 @@
+{
+ "Type": "Conduit",
+ "Name": "Conduit (Base)",
+ "Alias": "Conduit (Base)",
+ "C++ Class": "Korali::Conduit::Base"
+}

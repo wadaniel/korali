@@ -2,7 +2,7 @@
  "Type": "Problem",
  "Name":  "Hierarchical Bayesian (Theta New)",
  "Alias": "Hierarchical Bayesian (Theta New)",
- "C++ Class": "Korali::Problem::HierarchicalThetaNew",
+ "C++ Class": "Korali::Problem::Bayesian::Hierarchical::ThetaNew",
  "Compatible Solvers": [ "TMCMC" ],
 
  "Configuration Settings":
@@ -16,17 +16,7 @@
 
  "Variables Configuration":
  [
-   {
-    "Name": [ "Type" ],
-    "Type": "std::string",
-    "Default": "Computational",
-    "Description": "Specifies the purpose of the variable for the bayesian model."
-   },
-   {
-    "Name": [ "Prior Distribution" ],
-    "Type": "Korali::Distribution::Base*",
-    "Description": "Eh..."
-   }
+
  ],
 
  "Internal Settings":

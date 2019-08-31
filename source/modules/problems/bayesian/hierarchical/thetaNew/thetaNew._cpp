@@ -1,7 +1,7 @@
-#include "korali.hpp"
+#include "modules/problems/hierarchical/thetaNew/thetaNew.hpp"
 #include "auxiliars/koralimath.hpp"
 
-void Korali::Problem::HierarchicalThetaNew::initialize()
+void Korali::Problem::Bayesian::Hierarchical::ThetaNew::initialize()
 {
   // Creating Psi-problem JSON object from string
   nlohmann::json psiProblemJson = loadJsonFromFile(_psiProblem.c_str());
@@ -40,19 +40,19 @@ void Korali::Problem::HierarchicalThetaNew::initialize()
 
 }
 
-bool Korali::Problem::HierarchicalThetaNew::isTargetFeasible(double* target)
+bool Korali::Problem::Bayesian::Hierarchical::ThetaNew::isTargetFeasible(const std::vector<double>& target)
 {
  for (size_t i = 0; i < getVariableCount(); i++)
   if (isfinite(_variables[i]._priorDistribution->getLogDensity(target[i])) == false) return false;
  return true;
 }
 
-void Korali::Problem::HierarchicalThetaNew::runModel(std::vector<double> target, size_t targetId)
+void Korali::Problem::Bayesian::Hierarchical::ThetaNew::runModel(std::vector<double> target, size_t targetId)
 {
  _modelData.setSample(targetId, target);
 }
 
-double Korali::Problem::HierarchicalThetaNew::evaluateTarget()
+double Korali::Problem::Bayesian::Hierarchical::ThetaNew::evaluateTarget()
 {
   double logLikelihood = 0.0;
 
@@ -88,9 +88,4 @@ double Korali::Problem::HierarchicalThetaNew::evaluateTarget()
   // exit(1);
 
   return logLikelihood;
-}
-
-double Korali::Problem::HierarchicalThetaNew::evaluateSampleLogPrior(double* sample)
-{
-  return 0.0;
 }

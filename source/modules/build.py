@@ -54,19 +54,15 @@ def consumeValue(base, moduleName, path, varName, varType, varDefault):
   cString += '   eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n'
   return cString 
   
- if (varType == 'Korali::Distribution::Base*'):
-  cString +=  ' ' + varName + ' = Korali::Distribution::Base::getDistribution(' + base + path + ');\n'
-  cString += ' eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n' 
-  return cString
- 
- if (varType == 'std::vector<Korali::Distribution::Base*>'):
-  cString += ' for(size_t i = 0; i < ' + base + path + '.size(); i++) ' + varName + '.push_back(Korali::Distribution::Base::getDistribution(' + base + path + '[i]));\n'
+ if ('std::vector<Korali::' in varType):
+  baseType = varType.replace('std::vector<', '').replace('>','')
+  cString += ' for(size_t i = 0; i < ' + base + path + '.size(); i++) ' + varName + '.push_back((' + baseType + ')Korali::Base::getModule(' + base + path + '[i]));\n'
   cString += ' eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n\n' 
   return cString
   
  if ('Korali::' in varType):
   if (varDefault): cString = ' if (! isDefined(' + base + ', "' + path.replace('"', "'") + '[\'Type\']")) ' + base + path + '["Type"] = "' + varDefault + '"; \n'
-  cString += ' ' + varName + ' = ' + varType + '::getModule(' + base + path + ');\n'
+  cString += ' ' + varName + ' = Korali::Base::getModule(' + base + path + ');\n'
   cString += ' ' + varName + '->setConfiguration(' + base + path + ');\n'
   return cString  
   
@@ -91,26 +87,19 @@ def consumeValue(base, moduleName, path, varName, varType, varDefault):
 #####################################################################
 
 def saveValue(base, path, varName, varType):
- sString = '   ' + base + path + ' = ' + varName + ';\n'
-
- if (varType == 'Korali::Distribution::Base*'):
-  sString =  ' ' + varName + '->getConfiguration(' + base + path + ');\n'
- 
- if (varType == 'Korali::Solver::Base*'):
-  sString =  ' ' + varName + '->getConfiguration(' + base + path + ');\n'
-  
- if (varType == 'Korali::Problem::Base*'):
-  sString =  ' ' + varName + '->getConfiguration(' + base + path + ');\n' 
- 
- if (varType == 'Korali::Conduit::Base*'):
-  sString =  ' ' + varName + '->getConfiguration(' + base + path + ');\n'  
-  
- if (varType == 'std::vector<Korali::Distribution::Base*>'):
-  sString  = ' for(size_t i = 0; i < ' + varName + '.size(); i++) ' + varName + '[i]->getConfiguration(' + base + path + '[i]);\n'
-  
  if ('std::function' in varType):
   sString = ''
-  
+  return sString
+
+ if ('std::vector<Korali::' in varType):
+  sString = ' for(size_t i = 0; i < ' + varName + '.size(); i++) ' + varName + '[i]->getConfiguration(' + base + path + '[i]);\n'
+  return sString
+    
+ if ('Korali::' in varType):
+  sString =  ' ' + varName + '->getConfiguration(' + base + path + ');\n'  
+  return sString
+    
+ sString = '   ' + base + path + ' = ' + varName + ';\n'  
  return sString
  
 ####################################################################
@@ -213,15 +202,19 @@ def createHeaderDeclarations(module):
   for v in module["Termination Criteria"]:
    headerString += ' ' + getVariableType(v) + ' ' + getCXXVariableName(v["Name"]) + ';\n'
  
- if 'Variables Configuration' in module:
-  varStructName = '_' + getCXXVariableName(module["Name"]) + '_variableStruct'
-  headerString += '\n struct ' + varStructName + ' {\n'
-  for v in module["Variables Configuration"]:
-   headerString += '  ' + getVariableType(v) + ' ' + getCXXVariableName(v["Name"]) + ';\n'
-  headerString += ' };\n'
-  headerString += ' std::vector<' + varStructName + '> _variables;\n'
- 
  return headerString
+ 
+  
+####################################################################
+
+def createVariableDeclarations(module):  
+ variableDeclarationString = ''
+ 
+ if 'Variables Configuration' in module:
+  for v in module["Variables Configuration"]:
+   variableDeclarationString += '  ' + getVariableType(v) + ' ' + getCXXVariableName(v["Name"]) + ';\n'
+ 
+ return variableDeclarationString
  
 ####################################################################
 # Main Parser Routine
@@ -233,6 +226,9 @@ koraliDir = currentDir + '/../'
 # modules List
 moduleDetectionList = ''
 moduleIncludeList = ''
+
+# Variable Declaration List
+varDeclarationSet = set()
 
 # Detecting modules' json file
 for moduleDir, relDir, fileNames in os.walk(currentDir):
@@ -275,6 +271,10 @@ for moduleDir, relDir, fileNames in os.walk(currentDir):
    declarationsString = createHeaderDeclarations(moduleConfig)
    newHeaderString = newHeaderString.replace('public:', 'public: \n' + declarationsString + '\n')
    
+   # Retrieving variable declarations
+   for varDecl in createVariableDeclarations(moduleConfig).splitlines():
+    varDeclarationSet.add(varDecl)
+   
    # Saving new header .hpp file
    moduleNewHeaderFile = moduleDir + '/' + moduleName + '.hpp'
    print('[Korali] Creating: ' + moduleNewHeaderFile + '...')
@@ -294,7 +294,7 @@ for moduleDir, relDir, fileNames in os.walk(currentDir):
     print('[Korali] Creating: ' + moduleNewCodeFile + '...')
     with open(moduleNewCodeFile, 'w') as file: file.write(moduleBaseCodeString)
 
-###### Updating module configuration file 
+###### Updating module source file 
 
 moduleBaseCodeFileName = currentDir + '/base._cpp' 
 moduleNewCodeFile = currentDir + '/base.cpp'
@@ -309,7 +309,7 @@ if (baseFileTime >= newFileTime):
   print('[Korali] Creating: ' + moduleNewCodeFile + '...')
   with open(moduleNewCodeFile, 'w') as file: file.write(newBaseString)
 
-###### Creating base header file
+###### Updating base header file
 
 moduleBaseHeaderFileName = currentDir + '/base._hpp'
 moduleNewHeaderFile = currentDir + '/base.hpp'
@@ -317,3 +317,16 @@ with open(moduleBaseHeaderFileName, 'r') as file: moduleBaseHeaderString = file.
 newBaseString = moduleBaseHeaderString
 print('[Korali] Creating: ' + moduleNewHeaderFile + '...')
 with open(moduleNewHeaderFile, 'w+') as file: file.write(newBaseString)
+
+###### Updating variable header file
+variableDeclarationList = ''
+for varDecl in varDeclarationSet:
+ variableDeclarationList += varDecl + '\n'
+
+variableBaseHeaderFileName = currentDir + '/engine/variable._hpp'
+variableNewHeaderFile = currentDir + '/engine/variable.hpp'
+with open(variableBaseHeaderFileName, 'r') as file: variableBaseHeaderString = file.read()
+newBaseString = variableBaseHeaderString
+newBaseString = newBaseString.replace(' // Variable Declaration List', variableDeclarationList)
+print('[Korali] Creating: ' + variableNewHeaderFile + '...')
+with open(variableNewHeaderFile, 'w+') as file: file.write(newBaseString)

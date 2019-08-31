@@ -1,0 +1,26 @@
+#ifndef _KORALI_PROBLEM_THETANEW_HPP_
+#define _KORALI_PROBLEM_THETANEW_HPP_
+
+#include "modules/problems/base.hpp"
+#include "modules/problems/hierarchical/Psi.hpp"
+
+namespace Korali { namespace Problem { namespace Bayesian { namespace Hierarchical {
+
+class ThetaNew : public Korali::Problem::Bayesian::Hierarchical::Base
+{
+ private:
+
+ Korali::Problem::Hierarchical::Psi _psiProblemKorali;
+
+ public:
+
+ void runModel(std::vector<double>, size_t sampleId) override;
+ bool isTargetFeasible(const std::vector<double>& target) override;
+ double evaluateTarget() override;
+ void initialize() override;
+};
+
+} } } } // namespace Korali::Problem::Bayesian::Hierarchical
+
+
+#endif // _KORALI_PROBLEM_THETANEW_HPP_

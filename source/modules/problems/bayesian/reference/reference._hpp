@@ -15,7 +15,9 @@ class Reference : public Korali::Problem::Bayesian::Base
 
  public:
 
- double evaluateLogLikelihood(double* sample) override;
+ double evaluateLogLikelihood() override;
+ void initialize() override;
+ void runModel(std::vector<double> target, size_t targetId) override;
 };
 
 } } } // namespace Korali::Problem::Bayesian

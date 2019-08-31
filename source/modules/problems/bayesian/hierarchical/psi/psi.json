@@ -2,7 +2,7 @@
  "Type": "Problem",
  "Name":  "Hierarchical Bayesian (Psi)",
  "Alias": "Hierarchical Bayesian (Psi)",
- "C++ Class": "Korali::Problem::HierarchicalPsi",
+ "C++ Class": "Korali::Problem::Bayesian::Hierarchical::Psi",
  "Compatible Solvers": [ "TMCMC" ],
 
  "Configuration Settings":
@@ -21,11 +21,7 @@
 
  "Variables Configuration":
  [
-   {
-    "Name": [ "Prior Distribution" ],
-    "Type": "Korali::Distribution::Base*",
-    "Description": "Eh..."
-   }
+ 
  ],
 
  "Internal Settings":

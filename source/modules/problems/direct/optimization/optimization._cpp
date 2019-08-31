@@ -1,15 +1,15 @@
-#include "korali.hpp"
+#include "modules/problems/optimization/optimization.hpp"
 
 void Korali::Problem::Optimization::initialize()
 {
  if (_variables.size() == 0) Korali::logError("Optimization problems require at least one variable.\n");
 }
 
-bool Korali::Problem::Bayesian::isTargetFeasible(double* target)
+bool Korali::Problem::Optimization::isTargetFeasible(const std::vector<double>& target)
 {
-  for (size_t i = 0; i < _variables.size(); i++)
+  for (size_t i = 0; i < target.size(); i++)
   {
-    if (isfinite(target[i]) == false) return false;
+    if (std::isfinite(target[i]) == false) return false;
     if (target[i] < _variables[i]._lowerBound) return false;
     if (target[i] > _variables[i]._upperBound) return false;
   }
@@ -34,9 +34,4 @@ double Korali::Problem::Optimization::evaluateTarget()
  double result = _modelData.getResults()[0];
 
  return fitnessSign * result;
-}
-
-double Korali::Problem::Optimization::evaluateSampleLogPrior(double* sample)
-{
-  return 0.0;
 }

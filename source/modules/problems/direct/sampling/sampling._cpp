@@ -1,15 +1,15 @@
-#include "korali.hpp"
+#include "modules/problems/sampling/sampling.hpp"
 
 void Korali::Problem::Sampling::initialize()
 {
  if (_variables.size() == 0) Korali::logError("Sampling problems require at least one variable.\n");
 }
 
-bool Korali::Problem::Bayesian::isTargetFeasible(double* target)
+bool Korali::Problem::Sampling::isTargetFeasible(const std::vector<double>& target)
 {
-  for (size_t i = 0; i < _variables.size(); i++)
+  for (size_t i = 0; i < target.size(); i++)
   {
-    if (isfinite(target[i]) == false) return false;
+    if (std::isfinite(target[i]) == false) return false;
     if (target[i] < _variables[i]._lowerBound) return false;
     if (target[i] > _variables[i]._upperBound) return false;
   }
@@ -30,9 +30,4 @@ double Korali::Problem::Sampling::evaluateTarget()
  size_t resultSize = _modelData.getResultsSize();
  if (resultSize != 0) Korali::logError("Sampling problems require exactly 1 result. Provided: %lu.\n", resultSize);
  return _modelData.getResults()[0];
-}
-
-double Korali::Problem::Sampling::evaluateSampleLogPrior(double* sample)
-{
-  return 0.0;
 }

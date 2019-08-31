@@ -2,8 +2,6 @@
 #define _KORALI_PROBLEM_BAYESIAN_HPP_
 
 #include "modules/problems/base.hpp"
-#include "modules/engine/engine.hpp"
-#include "modules/distributions/base.hpp"
 
 namespace Korali { namespace Problem { namespace Bayesian {
 
@@ -13,11 +11,13 @@ class Base : public Korali::Problem::Base
 
  public:
 
- bool isTargetFeasible(double* target) override;
+ void initialize() override;
+ bool isTargetFeasible(const std::vector<double>& target) override;
+ virtual double evaluateTarget() override;
 
- double evaluateLogPrior(double* sample);
+ double evaluateLogPrior();
  virtual double evaluateLogLikelihood() = 0;
- double evaluateLogPosterior(double* sample);
+ double evaluateLogPosterior();
 };
 
 } } } // namespace Korali::Problem::Bayesian

@@ -2,7 +2,7 @@
 #define _KORALI_AUXILIARS_KORALIJSON_HPP_
 
 #include "auxiliars/json.hpp"
-#include "model.hpp"
+#include "modules/engine/model.hpp"
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>

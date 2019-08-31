@@ -16,6 +16,11 @@
     "Type": "std::vector<double>",
     "Default": "std::vector<double>(0)",
     "Description": "Reference data required to calculate likelihood. Model evaluations are compared against these data."
+   },
+   {
+    "Name": [ "Likelihood Model" ],
+    "Type": "std::string",
+    "Description": "Specifies the likelihood model to approximate the reference data to."
    }
  ],
 

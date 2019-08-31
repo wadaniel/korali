@@ -2,6 +2,7 @@
 #define _KORALI_DISTRIBUTION_BASE_HPP_
 
 #include "auxiliars/json.hpp"
+#include "modules/base.hpp"
 #include <map>
 #include <limits>
 #include <gsl/gsl_rng.h>

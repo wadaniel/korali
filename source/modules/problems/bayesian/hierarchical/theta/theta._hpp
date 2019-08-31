@@ -1,0 +1,29 @@
+#ifndef _KORALI_PROBLEM_THETA_HPP_
+#define _KORALI_PROBLEM_THETA_HPP_
+
+#include "modules/problems/base.hpp"
+#include "modules/problems/bayesian/base.hpp"
+#include "modules/problems/bayesian/hierarchical/psi/psi.hpp"
+
+namespace Korali { namespace Problem { namespace Bayesian { namespace Hierarchical {
+
+class Theta : public Korali::Problem::Bayesian::Hierarchical::Base
+{
+ private:
+
+ Korali::Problem::Bayesian::Base* _subProblemKorali;
+ Korali::Problem::Bayesian::Hierarchical::Psi* _psiProblemKorali;
+
+ std::vector<double> _precomputedLogDenominator;
+
+ public:
+
+ void runModel(std::vector<double> target, size_t targetId) override;
+ double evaluateLogLikelihood() override;
+ void initialize() override;
+};
+
+} } } } // namespace Korali::Problem::Bayesian::Hierarchical
+
+
+#endif // _KORALI_PROBLEM_THETA_HPP_

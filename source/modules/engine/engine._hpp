@@ -4,6 +4,8 @@
 #include <vector>
 #include <functional>
 #include "auxiliars/koralijson.hpp"
+#include "modules/engine/model.hpp"
+#include "modules/engine/variable.hpp"
 #include "modules/problems/base.hpp"
 #include "modules/solvers/base.hpp"
 #include "modules/conduits/base.hpp"

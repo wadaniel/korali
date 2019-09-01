@@ -1,4 +1,5 @@
-#include "korali.hpp"
+#include "modules/solvers/mcmc/mcmc.hpp"
+
 #include <numeric>
 #include <limits>
 #include <chrono>
@@ -23,16 +24,16 @@ void Korali::Solver::MCMC::runGeneration()
 {
  // Initializing RNGs
  auto jsNormal = nlohmann::json();
- jsNormal["Type"] = "Normal";
+ jsNormal["Type"] = "Normal Distribution";
  jsNormal["Mean"] = 0.0;
  jsNormal["Standard Deviation"] = 1.0;
- _normalGenerator = Korali::Distribution::Base::getDistribution(jsNormal);
+ _normalGenerator = dynamic_cast<Korali::Distribution::Normal*>(Korali::Base::getModule(jsNormal));
 
  auto jsUniform = nlohmann::json();
- jsUniform["Type"] = "Uniform";
+ jsUniform["Type"] = "Uniform Distribution";
  jsUniform["Minimum"] = 0.0;
  jsUniform["Maximum"] = 1.0;
- _uniformGenerator = Korali::Distribution::Base::getDistribution(jsUniform);
+ _uniformGenerator = dynamic_cast<Korali::Distribution::Uniform*>(Korali::Base::getModule(jsUniform));
 
  _currentRejectionCount = 0;
  while( _currentRejectionCount < _rejectionLevels )

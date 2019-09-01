@@ -2,9 +2,9 @@
 #define _KORALI_SOLVER_TMCMC_HPP_
 
 #include "modules/solvers/base.hpp"
-#include "distributions/multivariate/multinomial/multinomial.hpp"
-#include "distributions/multivariate/multivariateNormal/multivariateNormal.hpp"
-#include "distributions/univariate/base.hpp"
+#include "modules/distributions/base.hpp"
+#include "auxiliars/multinomial.hpp"
+#include "auxiliars/multivariateNormal.hpp"
 #include <gsl/gsl_vector.h>
 
 namespace Korali { namespace Solver {
@@ -37,11 +37,7 @@ class TMCMC : public Korali::Solver::Base
  void finalize() override;
  void runGeneration() override;
  void processSample(size_t c, double fitness) override;
- bool checkTermination() override;
- void setConfiguration(nlohmann::json& js) override;
- void getConfiguration(nlohmann::json& js) override;
  void printGeneration() override;
- std::string getType() override;
 };
 
 } } // namespace Korali::Solver

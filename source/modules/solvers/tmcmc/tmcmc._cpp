@@ -1,4 +1,5 @@
-#include "korali.hpp"
+#include "modules/solvers/tmcmc/tmcmc.hpp"
+
 #include <numeric>
 #include <limits>
 #include <chrono>
@@ -26,7 +27,7 @@ void Korali::Solver::TMCMC::initialize()
  jsUniform["Type"] = "Uniform";
  jsUniform["Minimum"] = 0.0;
  jsUniform["Maximum"] = 1.0;
- _uniformGenerator = Korali::Distribution::Base::getDistribution(jsUniform);
+ _uniformGenerator = dynamic_cast<Korali::Distribution::Uniform*>(Korali::Base::getModule(jsUniform));
 
  N = _k->_problem->getVariableCount();
  if(_maxChainLength == 0) Korali::logError("Max Chain Length must be greater 0.");

@@ -2,8 +2,8 @@
 #define _KORALI_SOLVERS_DEA_HPP_
 
 #include "modules/solvers/base.hpp"
-#include "distributions/univariate/normal/normal.hpp"
-#include "distributions/univariate/uniform/uniform.hpp"
+#include "modules/distributions/normal/normal.hpp"
+#include "modules/distributions/uniform/uniform.hpp"
 #include <chrono>
 #include <map>
 
@@ -26,15 +26,11 @@ class DEA : public Korali::Solver::Base
 
  public:
 
- bool checkTermination() override;
  void initialize() override;
  void finalize() override;
  void runGeneration() override;
  void processSample(size_t sampleId, double fitness) override;
- void setConfiguration(nlohmann::json& js) override;
- void getConfiguration(nlohmann::json& js) override;
  void printGeneration() override;
- std::string getType() override;
 };
 
 } } // namespace Korali::Solver

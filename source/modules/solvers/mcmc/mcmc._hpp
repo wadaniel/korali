@@ -2,7 +2,7 @@
 #define _KORALI_SOLVER_MCMC_HPP_
 
 #include "modules/solvers/base.hpp"
-#include "distributions/univariate/base.hpp"
+#include "modules/distributions/base.hpp"
 
 namespace Korali { namespace Solver {
 
@@ -33,11 +33,7 @@ class MCMC : public Korali::Solver::Base
  void finalize() override;
  void runGeneration() override;
  void processSample(size_t c, double fitness) override;
- bool checkTermination() override;
- void setConfiguration(nlohmann::json& js) override;
- void getConfiguration(nlohmann::json& js) override;
  void printGeneration() override;
- std::string getType() override;
 };
 
 } } // namespace Korali::Solver

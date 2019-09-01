@@ -1,8 +1,8 @@
 #ifndef _KORALI_PROBLEM_THETANEW_HPP_
 #define _KORALI_PROBLEM_THETANEW_HPP_
 
-#include "modules/problems/base.hpp"
-#include "modules/problems/hierarchical/Psi.hpp"
+#include "modules/problems/bayesian/hierarchical/base.hpp"
+#include "modules/problems/bayesian/hierarchical/psi/psi.hpp"
 
 namespace Korali { namespace Problem { namespace Bayesian { namespace Hierarchical {
 
@@ -10,7 +10,7 @@ class ThetaNew : public Korali::Problem::Bayesian::Hierarchical::Base
 {
  private:
 
- Korali::Problem::Hierarchical::Psi _psiProblemKorali;
+ Korali::Problem::Bayesian::Hierarchical::Psi _psiProblemKorali;
 
  public:
 

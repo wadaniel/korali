@@ -1,22 +1,11 @@
-#include "modules/problems/sampling/sampling.hpp"
+#include "modules/problems/direct/sampling/sampling.hpp"
 
-void Korali::Problem::Sampling::initialize()
+void Korali::Problem::Direct::Sampling::initialize()
 {
  if (_variables.size() == 0) Korali::logError("Sampling problems require at least one variable.\n");
 }
 
-bool Korali::Problem::Sampling::isTargetFeasible(const std::vector<double>& target)
-{
-  for (size_t i = 0; i < target.size(); i++)
-  {
-    if (std::isfinite(target[i]) == false) return false;
-    if (target[i] < _variables[i]._lowerBound) return false;
-    if (target[i] > _variables[i]._upperBound) return false;
-  }
-  return true;
-}
-
-void Korali::Problem::Sampling::runModel(std::vector<double> target, size_t targetId)
+void Korali::Problem::Direct::Sampling::runModel(std::vector<double> target, size_t targetId)
 {
  // Creating model data.
   _modelData.setSample(targetId, target);
@@ -25,7 +14,7 @@ void Korali::Problem::Sampling::runModel(std::vector<double> target, size_t targ
   _objectiveFunction(_modelData);
 }
 
-double Korali::Problem::Sampling::evaluateTarget()
+double Korali::Problem::Direct::Sampling::evaluateTarget()
 {
  size_t resultSize = _modelData.getResultsSize();
  if (resultSize != 0) Korali::logError("Sampling problems require exactly 1 result. Provided: %lu.\n", resultSize);

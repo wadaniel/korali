@@ -3,7 +3,6 @@
  "Name": "Bayesian Inference (Base)",
  "Alias": "Bayesian Inference (Base)",
  "C++ Class": "Korali::Problem::Bayesian::Base",
- "Compatible Solvers": [ "CMAES", "DEA", "MCMC", "TMCMC" ],
 
  "Configuration Settings":
  [

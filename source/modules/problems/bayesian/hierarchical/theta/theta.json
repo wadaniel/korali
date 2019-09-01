@@ -2,8 +2,7 @@
  "Type": "Problem",
  "Name":  "Hierarchical Bayesian (Theta)",
  "Alias": "Hierarchical Bayesian (Theta)",
- "C++ Class": "Korali::Problem::Hierarchical::Theta",
- "Compatible Solvers": [ "TMCMC" ],
+ "C++ Class": "Korali::Problem::Bayesian::Hierarchical::Theta",
 
  "Configuration Settings":
  [

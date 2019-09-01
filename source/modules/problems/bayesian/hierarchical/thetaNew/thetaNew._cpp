@@ -1,5 +1,6 @@
-#include "modules/problems/hierarchical/thetaNew/thetaNew.hpp"
+#include "modules/problems/bayesian/hierarchical/thetaNew/thetaNew.hpp"
 #include "auxiliars/koralimath.hpp"
+#include "auxiliars/koralijson.hpp"
 
 void Korali::Problem::Bayesian::Hierarchical::ThetaNew::initialize()
 {
@@ -15,15 +16,15 @@ void Korali::Problem::Bayesian::Hierarchical::ThetaNew::initialize()
     Korali::logError("The Hierarchical Bayesian (Theta New) requires that the psi-problem has run completely, but it has not.\n");
 
   // Cross-checks
-  if (psiProblemJson["Problem"]["Conditional Priors"].size() != getVariableCount() )
-    Korali::logError("THe problem contains a different number of variables (%lu) than conditional priors in the Hierarchical Bayesian (Psi) problem (%lu).\n", getVariableCount(), psiProblemJson["Problem"]["Conditional Priors"].size());
+  if (psiProblemJson["Problem"]["Conditional Priors"].size() != _variables.size() )
+    Korali::logError("THe problem contains a different number of variables (%lu) than conditional priors in the Hierarchical Bayesian (Psi) problem (%lu).\n", _variables.size(), psiProblemJson["Problem"]["Conditional Priors"].size());
 
   // Setting Korali problem objects
   _psiProblemKorali.setConfiguration(psiProblemJson["Problem"]);
 
   // Loading Psi problem results
   _psiProblemSampleCount = psiProblemJson["Solver"]["Internal"]["Chain Leaders LogLikelihoods"].size();
-  size_t Npsi = _psiProblemKorali.getVariableCount();
+  size_t Npsi = _psiProblemKorali._variables.size();
 
   for (size_t j = 0; j < _psiProblemSampleCount; j++)
   {
@@ -42,8 +43,8 @@ void Korali::Problem::Bayesian::Hierarchical::ThetaNew::initialize()
 
 bool Korali::Problem::Bayesian::Hierarchical::ThetaNew::isTargetFeasible(const std::vector<double>& target)
 {
- for (size_t i = 0; i < getVariableCount(); i++)
-  if (isfinite(_variables[i]._priorDistribution->getLogDensity(target[i])) == false) return false;
+ for (size_t i = 0; i < _variables.size(); i++)
+  if (isfinite(_variables[i]->_priorDistribution->getLogDensity(target[i])) == false) return false;
  return true;
 }
 
@@ -56,8 +57,8 @@ double Korali::Problem::Bayesian::Hierarchical::ThetaNew::evaluateTarget()
 {
   double logLikelihood = 0.0;
 
-  size_t Npsi   = _psiProblemKorali.getVariableCount();
-  size_t Ntheta = getVariableCount();
+  size_t Npsi   = _psiProblemKorali._variables.size();
+  size_t Ntheta = _variables.size();
 
   std::vector<double> psiSample( Npsi, 0.0 );
   std::vector<double> logValues( _psiProblemSampleCount, 0.0);

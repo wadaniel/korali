@@ -98,15 +98,15 @@ void Korali::Problem::Bayesian::Hierarchical::Theta::initialize()
   // Initialize the subProblem
   _subProblemKorali->initialize();
 
-  // Now inheriting Sub problem's variables
-  for (size_t i = 0; i < _thetaVariableCount; i++)
-    _k->_variables.push_back(_subProblemKorali.getVariable(i));
+  // REVIEW: Now inheriting Sub problem's variables
+//  for (size_t i = 0; i < _thetaVariableCount; i++)
+//    _variables.push_back(_subProblemKorali->getVariable(i));
 
 }
 
 void Korali::Problem::Bayesian::Hierarchical::Theta::runModel(std::vector<double> target, size_t targetId)
 {
-  _subProblemKorali.runModel(target, targetId);
+  _subProblemKorali->runModel(target, targetId);
 
   _modelData.setSample(targetId, target);
 }
@@ -115,7 +115,7 @@ double Korali::Problem::Bayesian::Hierarchical::Theta::evaluateLogLikelihood()
 {
   double logLikelihood = 0.0;
 
-  logLikelihood += _subProblemKorali.evaluateSample();
+  logLikelihood += _subProblemKorali->evaluateLogLikelihood();
 
   std::vector<double> psiSample;
   psiSample.resize(_psiVariableCount);

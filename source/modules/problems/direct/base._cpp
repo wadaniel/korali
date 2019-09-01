@@ -1,44 +1,13 @@
-#include "modules/problems/bayesian/base.hpp"
+#include "modules/problems/direct/base.hpp"
 #include "modules/engine/engine.hpp"
 
-void Korali::Problem::Bayesian::Base::initialize()
-{
-  if (_k->_variables.size() == 0) Korali::logError("Bayesian inference problems require at least one variable.\n");
-
-  _computationalVariableIndices.clear();
-  _statisticalVariableIndices.clear();
-
-  for (size_t i = 0; i < _k->_variables.size(); i++)
-  {
-   std::string typeString = _k->_variables[i]._type;
-   bool recognizedType = false;
-   if (typeString == "Computational") { _computationalVariableIndices.push_back(i); recognizedType = true; }
-   if (typeString == "Statistical")   { _statisticalVariableIndices.push_back(i);   recognizedType = true; }
-   if (recognizedType == false) Korali::logError("Incorrect Bayesian variable type selected: %s.\n", typeString.c_str());
-  }
-}
-
-double Korali::Problem::Bayesian::Base::evaluateLogPrior()
-{
-  double logPrior = 0.0;
-  for (size_t i = 0; i < _modelData.getSampleSize(); i++)
-    logPrior += _k->_variables[i]._priorDistribution->getLogDensity(_modelData[i]);
-  return logPrior;
-}
-
-double Korali::Problem::Bayesian::Base::evaluateLogPosterior()
-{
-  return evaluateLogPrior() + evaluateLogLikelihood();
-}
-
-bool Korali::Problem::Bayesian::Base::isTargetFeasible(const std::vector<double>& target)
+bool Korali::Problem::Direct::Base::isTargetFeasible(const std::vector<double>& target)
 {
   for (size_t i = 0; i < target.size(); i++)
-    if (isfinite(_k->_variables[i]._priorDistribution->getLogDensity(target[i])) == false) return false;
+  {
+    if (std::isfinite(target[i]) == false) return false;
+    if (target[i] < _variables[i]->_lowerBound) return false;
+    if (target[i] > _variables[i]->_upperBound) return false;
+  }
   return true;
-}
-
-double Korali::Problem::Bayesian::Base::evaluateTarget()
-{
- return evaluateLogPosterior();
 }

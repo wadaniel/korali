@@ -1,2 +1,2 @@
-#include "modules/problems/hierarchical/base.hpp"
-
+#include "modules/problems/bayesian/hierarchical/base.hpp"
+#include "auxiliars/koralijson.hpp"

@@ -18,11 +18,6 @@
     "Description": "Specifies the evaluation model type chosen, if any."
    },
    {
-    "Name": [ "Variables" ],
-    "Type": "std::vector<Korali::Variable*>",
-    "Description": "Represents the variable space of the problem."
-   },
-   {
     "Name": [ "Solver" ],
     "Type": "Korali::Solver::Base*",
     "Description": "Represents the state and configuration of the solver algorithm."
@@ -61,15 +56,6 @@
     "Type": "size_t",
     "Default": "1",
     "Description": "Specifies how often (in generations) will partial result files be saved on the results directory. The default, 1, indicates that every generation's results will be saved."
-   }
- ],
- 
-  "Variables Configuration":
- [
-   {
-    "Name": [ "Name" ],
-    "Type": "std::string",
-    "Description": "Defines the name of the variable."
    }
  ],
  

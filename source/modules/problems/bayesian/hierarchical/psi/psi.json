@@ -3,7 +3,6 @@
  "Name":  "Hierarchical Bayesian (Psi)",
  "Alias": "Hierarchical Bayesian (Psi)",
  "C++ Class": "Korali::Problem::Bayesian::Hierarchical::Psi",
- "Compatible Solvers": [ "TMCMC" ],
 
  "Configuration Settings":
  [

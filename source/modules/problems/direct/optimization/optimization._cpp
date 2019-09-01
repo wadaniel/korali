@@ -1,22 +1,11 @@
-#include "modules/problems/optimization/optimization.hpp"
+#include "modules/problems/direct/optimization/optimization.hpp"
 
-void Korali::Problem::Optimization::initialize()
+void Korali::Problem::Direct::Optimization::initialize()
 {
  if (_variables.size() == 0) Korali::logError("Optimization problems require at least one variable.\n");
 }
 
-bool Korali::Problem::Optimization::isTargetFeasible(const std::vector<double>& target)
-{
-  for (size_t i = 0; i < target.size(); i++)
-  {
-    if (std::isfinite(target[i]) == false) return false;
-    if (target[i] < _variables[i]._lowerBound) return false;
-    if (target[i] > _variables[i]._upperBound) return false;
-  }
-  return true;
-}
-
-void Korali::Problem::Optimization::runModel(std::vector<double> target, size_t targetId)
+void Korali::Problem::Direct::Optimization::runModel(std::vector<double> target, size_t targetId)
 {
  // Creating model data.
  _modelData.setSample(targetId, target);
@@ -25,7 +14,7 @@ void Korali::Problem::Optimization::runModel(std::vector<double> target, size_t 
  _objectiveFunction(_modelData);
 }
 
-double Korali::Problem::Optimization::evaluateTarget()
+double Korali::Problem::Direct::Optimization::evaluateTarget()
 {
  double fitnessSign = _objective == "Maximize" ? 1.0 : -1.0;
 

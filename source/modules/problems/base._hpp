@@ -1,7 +1,9 @@
 #ifndef _KORALI_PROBLEM_BASE_HPP_
 #define _KORALI_PROBLEM_BASE_HPP_
 
+#include <vector>
 #include "modules/base.hpp"
+#include "modules/engine/variable.hpp"
 #include "modules/engine/model.hpp"
 
 namespace Korali { namespace Problem {
@@ -10,7 +12,8 @@ class Base : public Korali::Base
 {
  public:
 
-  Korali::Model  _modelData;
+  std::vector<Korali::Variable*> _variables;
+  Korali::Model _modelData;
 
   virtual void runModel(std::vector<double> target, size_t targetId) = 0;
   virtual bool isTargetFeasible(const std::vector<double>& target) = 0;

@@ -1,21 +1,19 @@
 #ifndef _KORALI_PROBLEM_SAMPLING_HPP_
 #define _KORALI_PROBLEM_SAMPLING_HPP_
 
-#include "modules/problems/base.hpp"
-#include "modules/engine/engine.hpp"
+#include "modules/problems/direct/base.hpp"
 
-namespace Korali { namespace Problem {
+namespace Korali { namespace Problem { namespace Direct {
 
-class Sampling : public Korali::Problem::Base
+class Sampling : public Korali::Problem::Direct::Base
 {
  public:
 
  void runModel(std::vector<double> target, size_t targetId) override;
- bool isTargetFeasible(const std::vector<double>& target) override;
  double evaluateTarget() override;
  void initialize() override;
 };
 
-} } // namespace Korali::Problem
+} } } // namespace Korali::Problem::Direct
 
 #endif // _KORALI_PROBLEM_SAMPLING_HPP_

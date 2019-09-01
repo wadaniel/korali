@@ -62,7 +62,7 @@ def consumeValue(base, moduleName, path, varName, varType, varDefault):
   
  if ('Korali::' in varType):
   if (varDefault): cString = ' if (! isDefined(' + base + ', "' + path.replace('"', "'") + '[\'Type\']")) ' + base + path + '["Type"] = "' + varDefault + '"; \n'
-  cString += ' ' + varName + ' = Korali::Base::getModule(' + base + path + ');\n'
+  cString += ' ' + varName + ' = dynamic_cast<' + varType + '>(Korali::Base::getModule(' + base + path + '));\n'
   cString += ' ' + varName + '->setConfiguration(' + base + path + ');\n'
   return cString  
   
@@ -101,19 +101,21 @@ def saveValue(base, path, varName, varType):
     
  sString = '   ' + base + path + ' = ' + varName + ';\n'  
  return sString
+
+####################################################################
+ 
+def getParentClass(module):
+  className = module["C++ Class"]
+  parentName = className.rsplit('::', 1)[0]
+  if ('::Base' in className): parentName = className.rsplit('::', 2)[0]
+  parentName += '::Base'
+  return parentName
  
 ####################################################################
 
 def createSetConfiguration(module):
  codeString = 'void ' + module["C++ Class"] + '::setConfiguration(nlohmann::json& js) \n{\n'
   
- # Checking whether solver is accepted
- if 'Compatible Solvers' in module:
-  codeString += ' bool __acceptedSolver = false;\n'
-  for v in module["Compatible Solvers"]: 
-   codeString += ' if (_k->_solver->getType() == "' + v + '") __acceptedSolver = true;\n'
-  codeString += ' if (__acceptedSolver == false) Korali::logError("Selected solver %s not compatible with  type ' + module["Name"] + '", _k->_solver->getType().c_str()); \n\n' 
- 
  # Consume Configuration Settings
  if 'Configuration Settings' in module:
   for v in module["Configuration Settings"]:
@@ -127,12 +129,20 @@ def createSetConfiguration(module):
   for v in module["Termination Criteria"]:
    codeString += consumeValue('js', module["Alias"], '["Termination Criteria"]' + getVariablePath(v), getCXXVariableName(v["Name"]), getVariableType(v), getVariableDefault(v))
  
+ if 'Variables Configuration' in module:
+  codeString += ' for (size_t i = 0; i < _variables.size(); i++) { \n'
+  for v in module["Variables Configuration"]:
+   codeString += consumeValue('js["Variables"][i]', module["Alias"], getVariablePath(v), '_variables[i]->' + getCXXVariableName(v["Name"]), getVariableType(v), getVariableDefault(v))
+  codeString += ' } \n'
+   
  if 'Conditional Variables' in module:
   for v in module["Conditional Variables"]:
    codeString += ' ' + getCXXVariableName(v) + 'Conditional = "";\n'
    codeString += ' if(js' + getVariablePath(v) + '.is_number()) ' + getCXXVariableName(v) + ' = js' + getVariablePath(v) + ';\n'
    codeString += ' if(js' + getVariablePath(v) + '.is_string()) ' + getCXXVariableName(v) + 'Conditional = js' + getVariablePath(v) + ';\n'
    codeString += ' eraseValue(js, "' + getVariablePath(v).replace('"', "'") + '");\n\n'
+ 
+ codeString += ' ' + getParentClass(module) + '::setConfiguration(js);\n'
  
  codeString += ' if(isEmpty(js) == false) Korali::logError("Unrecognized settings for ' + module["Name"] + ' (' + module["Alias"] + '): \\n%s\\n", js.dump(2).c_str());\n'
  codeString += '} \n\n'
@@ -156,10 +166,18 @@ def createGetConfiguration(module):
   for v in module["Internal Settings"]: 
    codeString += saveValue('js', '["Internal"]' + getVariablePath(v), getCXXVariableName(v["Name"]), getVariableType(v))
    
+ if 'Variables Configuration' in module:
+  codeString += ' for (size_t i = 0; i < _variables.size(); i++) { \n'
+  for v in module["Variables Configuration"]:
+   codeString += saveValue('js["Variables"][i]', getVariablePath(v), '_variables[i]->' + getCXXVariableName(v["Name"]), getVariableType(v))
+  codeString += ' } \n'  
+   
  if 'Conditional Variables' in module: 
   for v in module["Conditional Variables"]:
    codeString += ' if(' + getCXXVariableName(v) + 'Conditional == "") js' + getVariablePath(v) + ' = ' + getCXXVariableName(v) + ';\n'
    codeString += ' if(' + getCXXVariableName(v) + 'Conditional != "") js' + getVariablePath(v) + ' = ' + getCXXVariableName(v) + 'Conditional;\n'
+ 
+ codeString += ' ' + getParentClass(module) + '::getConfiguration(js);\n'
  
  codeString += '} \n\n'
  
@@ -179,7 +197,8 @@ def createCheckTermination(module):
    codeString += '  Korali::logInfo("Minimal", "' + module["Alias"] + ' Termination Criteria met: \\"' + getVariablePath(v).replace('"', "'") + '\\" (' + getVariableDescriptor(v) + ').\\n", ' + getCXXVariableName(v["Name"])  +');\n'
    codeString += '  hasFinished = true;\n'
    codeString += ' }\n\n'
-  
+ 
+   codeString += ' hasFinished = hasFinished || ' + getParentClass(module) + '::createCheckTermination();\n' 
  codeString += ' return hasFinished;\n'
  codeString += '}'
  

@@ -1,8 +1,16 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdarg.h>
 #include "logger.hpp"
 
-size_t Korali::getVerbosityLevel(std::string verbosityLevel)
+size_t Korali::__verbosityLevel;
+
+void Korali::setVerbosityLevel(const  std::string verbosityLevel)
+{
+ __verbosityLevel = getVerbosityLevel(verbosityLevel);
+}
+
+size_t Korali::getVerbosityLevel(const  std::string verbosityLevel)
 {
  if (verbosityLevel == "Silent") return 0;
  if (verbosityLevel == "Minimal") return 1;
@@ -11,16 +19,15 @@ size_t Korali::getVerbosityLevel(std::string verbosityLevel)
  return 0;
 }
 
-bool Korali::isEnoughVerbosity(std::string verbosityLevel)
+bool Korali::isEnoughVerbosity(const std::string verbosityLevel)
 {
   size_t messageLevel = getVerbosityLevel(verbosityLevel);
-  size_t koraliLevel = getVerbosityLevel(_k->_consoleOutputVerbosity);
 
-  if (messageLevel <= koraliLevel) return true;
+  if (messageLevel <= __verbosityLevel) return true;
   return false;
 }
 
-void Korali::logData(std::string verbosityLevel, const char* format, ... )
+void Korali::logData(const std::string verbosityLevel, const char* format, ... )
 {
  if (isEnoughVerbosity(verbosityLevel) == false) return;
 
@@ -35,7 +42,7 @@ void Korali::logData(std::string verbosityLevel, const char* format, ... )
 
 }
 
-void Korali::logInfo(std::string verbosityLevel, const char* format, ... )
+void Korali::logInfo(const std::string verbosityLevel, const char* format, ... )
 {
  if (isEnoughVerbosity(verbosityLevel) == false) return;
 
@@ -52,7 +59,7 @@ void Korali::logInfo(std::string verbosityLevel, const char* format, ... )
  free(outstr);
 }
 
-void Korali::logWarning(std::string verbosityLevel, const char* format, ... )
+void Korali::logWarning(const std::string verbosityLevel, const char* format, ... )
 {
  if (isEnoughVerbosity(verbosityLevel) == false) return;
 

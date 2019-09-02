@@ -13,13 +13,11 @@ class Theta : public Korali::Problem::Bayesian::Hierarchical::Base
 
  Korali::Problem::Bayesian::Base* _subProblemKorali;
  Korali::Problem::Bayesian::Hierarchical::Psi* _psiProblemKorali;
-
  std::vector<double> _precomputedLogDenominator;
 
  public:
 
- void runModel(std::vector<double> target, size_t targetId) override;
- double evaluateLogLikelihood() override;
+ double evaluateLogLikelihood(const std::vector<double>& sample) override;
  void initialize() override;
 };
 

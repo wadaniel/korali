@@ -11,10 +11,8 @@ class Custom : public Korali::Problem::Bayesian::Base
 
  public:
 
- double evaluateLogLikelihood() override;
+ double evaluateLogLikelihood(const std::vector<double>& sample) override;
  void initialize() override;
- void finalize() override;
- void runModel(std::vector<double> target, size_t targetId) override;
 };
 
 } } } // namespace Korali::Problem::Bayesian

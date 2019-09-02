@@ -12,12 +12,12 @@ class Base : public Korali::Problem::Base
  public:
 
  void initialize() override;
- bool isTargetFeasible(const std::vector<double>& target) override;
- virtual double evaluateTarget() override;
 
- double evaluateLogPrior();
- virtual double evaluateLogLikelihood() = 0;
- double evaluateLogPosterior();
+ bool isSampleFeasible(const std::vector<double>& sample) override;
+ virtual double evaluateSample(const std::vector<double>& sample) override;
+ double evaluateLogPrior(const std::vector<double>& sample);
+ virtual double evaluateLogLikelihood(const std::vector<double>& sample) = 0;
+ double evaluateLogPosterior(const std::vector<double>& sample);
 };
 
 } } } // namespace Korali::Problem::Bayesian

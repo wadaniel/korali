@@ -85,7 +85,7 @@ void Korali::Problem::Bayesian::Hierarchical::Theta::initialize()
       for (size_t k = 0; k < _thetaVariableCount; k++)
       {
         double theta = _subProblemSampleCoordinates[j*_thetaVariableCount + k];
-        logConditionalPrior += _psiProblemKorali->getConditionalPrior(k)->getLogDensity(theta);
+        logConditionalPrior += _psiProblemKorali->_conditionalPriors[k]->getLogDensity(theta);
       }
 
       logValues[j] = logConditionalPrior - _subProblemSampleLogPriors[j];
@@ -104,18 +104,11 @@ void Korali::Problem::Bayesian::Hierarchical::Theta::initialize()
 
 }
 
-void Korali::Problem::Bayesian::Hierarchical::Theta::runModel(std::vector<double> target, size_t targetId)
-{
-  _subProblemKorali->runModel(target, targetId);
-
-  _modelData.setSample(targetId, target);
-}
-
-double Korali::Problem::Bayesian::Hierarchical::Theta::evaluateLogLikelihood()
+double Korali::Problem::Bayesian::Hierarchical::Theta::evaluateLogLikelihood(const std::vector<double>& sample)
 {
   double logLikelihood = 0.0;
 
-  logLikelihood += _subProblemKorali->evaluateLogLikelihood();
+  logLikelihood += _subProblemKorali->evaluateLogLikelihood(sample);
 
   std::vector<double> psiSample;
   psiSample.resize(_psiVariableCount);
@@ -131,7 +124,7 @@ double Korali::Problem::Bayesian::Hierarchical::Theta::evaluateLogLikelihood()
 
     double logConditionalPrior = 0.;
     for (size_t k = 0; k < _thetaVariableCount; k++)
-      logConditionalPrior += _psiProblemKorali->getConditionalPrior(k)->getLogDensity( _modelData[k] );
+      logConditionalPrior += _psiProblemKorali->_conditionalPriors[k]->getLogDensity( sample[k] );
 
     logValues[i] = logConditionalPrior - _precomputedLogDenominator[i];
     // printf("-----> %lf --- %lf --- %lf \n",  logValues[i], logConditionalPrior, _precomputedLogDenominator[i] );

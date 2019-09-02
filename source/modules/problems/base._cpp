@@ -1,3 +1,10 @@
 #include "modules/problems/base.hpp"
+#include "modules/engine/engine.hpp"
 #include "auxiliars/koralijson.hpp"
 
+void Korali::Problem::Base::requestEvaluation(const std::vector<double>& sample, const size_t sampleId)
+{
+ double evaluation = evaluateSample(sample);
+
+ _k->_solver->processEvaluation(evaluation, sampleId);
+}

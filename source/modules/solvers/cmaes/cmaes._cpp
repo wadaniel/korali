@@ -1,4 +1,5 @@
 #include "modules/solvers/cmaes/cmaes.hpp"
+#include "modules/problems/base.hpp"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -197,18 +198,9 @@ void Korali::Solver::CMAES::evaluateSamples()
   {
     for (size_t i = 0; i < _currentPopulationSize; i++) if (_isInitializedSample[i] == false)
     {
-     std::vector<double> _logTransformedSample(N);
-
-     for(size_t d = 0; d<N; ++d)
-       if (_k->_problem->getVariable(d)->_isLogSpace == true)
-           _logTransformedSample[d] = std::exp(_samplePopulation[i*N+d]);
-       else
-           _logTransformedSample[d] = _samplePopulation[i*N+d];
-
-      _isInitializedSample[i] = true;
-      _k->_conduit->evaluateSample(_logTransformedSample.data(), i);
+     _isInitializedSample[i] = true;
+     _k->_problem->evaluateSample(&_samplePopulation[i*N]);
     }
-    _k->_conduit->checkProgress();
   }
 }
 
@@ -278,14 +270,14 @@ void Korali::Solver::CMAES::initCovariance()
 }
 
 
-void Korali::Solver::CMAES::processSample(size_t sampleId, double fitness)
+void Korali::Solver::CMAES::processEvaluation(size_t sampleId, double evaluation)
 {
- if(std::isfinite(fitness) == false) 
+ if(std::isfinite(evaluation) == false)
  {
-   fitness = -std::numeric_limits<double>::infinity();
-   Korali::logWarning("Normal","Sample %zu returned non finite fitness (fitness set to %e)!\n", sampleId, fitness);
+   evaluation = -std::numeric_limits<double>::infinity();
+   Korali::logWarning("Normal","Sample %zu returned non finite evaluation (evaluation set to %e)!\n", sampleId, evaluation);
  }
- _valueVector[sampleId] = fitness;
+ _valueVector[sampleId] = evaluation;
  _finishedSampleCount++;
 }
 
@@ -388,7 +380,7 @@ void Korali::Solver::CMAES::updateViabilityBoundaries()
 bool Korali::Solver::CMAES::isFeasible(size_t sampleIdx) const
 {
  for (size_t d = 0; d < N; ++d)
-  if (_samplePopulation[ sampleIdx*N+d ] < _k->_problem->getVariable(d)->_lowerBound || _samplePopulation[ sampleIdx*N+d ] > _k->_problem->getVariable(d)->_upperBound) return false;
+  if (_samplePopulation[ sampleIdx*N+d ] < _k->_problem->_variables[d]->_lowerBound || _samplePopulation[ sampleIdx*N+d ] > _k->_problem->_variables[d]->_upperBound) return false;
  return true;
 }
 
@@ -621,7 +613,7 @@ void Korali::Solver::CMAES::updateSigma()
    _sigma *= exp(_sigmaCumulationFactor/_dampFactor*(sqrt(_conjugateEvolutionPathL2Norm)/_chiSquareNumber-1.));
  }
 
- /* escape flat fitness */
+ /* escape flat evaluation */
  if (_currentBestValue == _valueVector[_sortingIndex[(int)_currentMuValue]]) {
    _sigma *= exp(0.2+_sigmaCumulationFactor/_dampFactor);
    Korali::logWarning("Detailed", "Sigma increased due to equal function values.\n");
@@ -649,9 +641,9 @@ void Korali::Solver::CMAES::numericalErrorTreatment()
  //TODO
 
  //treat minimal standard deviations
- for (size_t d = 0; d < N; ++d) if (_sigma * sqrt(_covarianceMatrix[d*N+d]) < _k->_problem->getVariable(d)->_minimumStandardDeviationUpdate)
+ for (size_t d = 0; d < N; ++d) if (_sigma * sqrt(_covarianceMatrix[d*N+d]) < _k->_problem->_variables[d]->_minimumStandardDeviationUpdate)
  {
-   _sigma = (_k->_problem->getVariable(d)->_minimumStandardDeviationUpdate)/sqrt(_covarianceMatrix[d*N+d]) * exp(0.05+_sigmaCumulationFactor/_dampFactor);
+   _sigma = (_k->_problem->_variables[d]->_minimumStandardDeviationUpdate)/sqrt(_covarianceMatrix[d*N+d]) * exp(0.05+_sigmaCumulationFactor/_dampFactor);
    Korali::logWarning("Detailed", "Sigma increased due to minimal standard deviation.\n");
  }
 
@@ -850,7 +842,7 @@ void Korali::Solver::CMAES::printGeneration()
  Korali::logInfo("Normal", "Covariance Eigenvalues: Min = %+6.3e -  Max = %+6.3e\n", _minimumCovarianceEigenvalue, _maximumCovarianceEigenvalue);
 
   Korali::logInfo("Detailed", "Variable = (MeanX, BestX):\n");
-  for (size_t d = 0; d < N; d++) Korali::logData("Detailed", "         %s = (%+6.3e, %+6.3e)\n", _k->_problem->getVariable(d)->_name.c_str(), _currentMean[d], _bestEverVariables[d]);
+  for (size_t d = 0; d < N; d++) Korali::logData("Detailed", "         %s = (%+6.3e, %+6.3e)\n", _k->_problem->_variables[d]->_name.c_str(), _currentMean[d], _bestEverVariables[d]);
 
   Korali::logInfo("Detailed", "Constraint Evaluation at Current Function Value:\n");
   if ( _areConstraintsDefined )
@@ -880,7 +872,7 @@ void Korali::Solver::CMAES::finalize()
 {
   Korali::logInfo("Minimal", "Optimum found: %e\n", _bestEverValue);
   Korali::logInfo("Minimal", "Optimum found at:\n");
-  for (size_t d = 0; d < N; ++d) Korali::logData("Minimal", "         %s = %+6.3e\n", _k->_problem->getVariable(d)->_name.c_str(), _bestEverVariables[d]);
+  for (size_t d = 0; d < N; ++d) Korali::logData("Minimal", "         %s = %+6.3e\n", _k->_problem->_variables[d]->_name.c_str(), _bestEverVariables[d]);
   if ( _areConstraintsDefined )
   {
     Korali::logInfo("Minimal", "Constraint Evaluation at Optimum:\n");

@@ -3,8 +3,8 @@
 /************************************************************************/
 
 #include "auxiliars/koralijson.hpp"
-#include "auxiliars/model.hpp"
 
+#include "modules/engine/model.hpp"
 #include "modules/engine/engine.hpp"
 #include "modules/conduits/mpi.hpp"
 

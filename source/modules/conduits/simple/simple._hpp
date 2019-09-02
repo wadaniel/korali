@@ -3,9 +3,7 @@
 
 #include "modules/conduits/base.hpp"
 #include "auxiliars/json.hpp"
-#include <queue>
 #include <vector>
-#include <map>
 
 namespace Korali { namespace Conduit {
 
@@ -15,19 +13,7 @@ class Simple : public Korali::Conduit::Base
 
  public:
 
- void initialize() override;
- void finalize() override;
-
- void requestEvaluation(double* sampleArray, size_t sampleId) override;
- void checkProgress() override;
- bool isRoot() override;
- void abort() override;
- bool checkTermination() override;
- std::string getType() override;
-
- // Serialization Methods
- void getConfiguration(nlohmann::json& js) override;
- void setConfiguration(nlohmann::json& js) override;
+ void requestEvaluation(std::vector<double> sample, size_t sampleId) override;
 };
 
 } } // namespace Korali::Conduit

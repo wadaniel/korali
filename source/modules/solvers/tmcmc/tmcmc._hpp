@@ -3,6 +3,7 @@
 
 #include "modules/solvers/base.hpp"
 #include "modules/distributions/base.hpp"
+#include "modules/distributions/uniform/uniform.hpp"
 #include "auxiliars/multinomial.hpp"
 #include "auxiliars/multivariateNormal.hpp"
 #include <gsl/gsl_vector.h>
@@ -25,8 +26,8 @@ class TMCMC : public Korali::Solver::Base
  bool isSampleFeasible(double* sample);
  double evaluateSampleLogPrior(double* sample);
 
- Korali::Distribution::Multinomial* _multinomialGenerator; /* Multivariate Normal random number generator */
- Korali::Distribution::MultivariateNormal* _multivariateGenerator; /* Multivariate Normal random number generator */
+ Korali::Multinomial* _multinomialGenerator; /* Multivariate Normal random number generator */
+ Korali::MultivariateNormal* _multivariateGenerator; /* Multivariate Normal random number generator */
  Korali::Distribution::Base* _uniformGenerator; /* Uniform random number generator */
 
  size_t N; // Number of variables
@@ -36,7 +37,7 @@ class TMCMC : public Korali::Solver::Base
  void initialize() override;
  void finalize() override;
  void runGeneration() override;
- void processSample(size_t c, double fitness) override;
+ void processEvaluation(size_t sampleId, double evaluation) override;
  void printGeneration() override;
 };
 

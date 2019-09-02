@@ -1,4 +1,6 @@
 #include "modules/solvers/mcmc/mcmc.hpp"
+#include "modules/problems/base.hpp"
+#include "modules/engine/engine.hpp"
 
 #include <numeric>
 #include <limits>
@@ -40,7 +42,6 @@ void Korali::Solver::MCMC::runGeneration()
  {
   generateCandidate(_currentRejectionCount);
   evaluateSample();
-  _k->_conduit->checkProgress();
   acceptReject(_currentRejectionCount);
   _currentRejectionCount++;
  }
@@ -51,7 +52,7 @@ void Korali::Solver::MCMC::runGeneration()
 
 void Korali::Solver::MCMC::initialize()
 {
- N = _k->_problem->getVariableCount();
+ N = _k->_problem->_variables.size();
 
  if(_chainCovarianceScaling <= 0.0) Korali::logError("Chain Covariance Scaling must be larger 0.0 (is %lf).\n", _chainCovarianceScaling);
 
@@ -87,7 +88,7 @@ void Korali::Solver::MCMC::initialize()
  _acceptanceRate  = 1.0;
 }
 
-void Korali::Solver::MCMC::processSample(size_t sampleId, double fitness)
+void Korali::Solver::MCMC::processEvaluation(size_t sampleId, double evaluation)
 {
  fitness += _chainCandidatesLogPriors[sampleId];
  if(std::isfinite(fitness) == false) 
@@ -196,7 +197,7 @@ void Korali::Solver::MCMC::evaluateSample()
  std::vector<double> _logTransformedSample(N);
 
  for(size_t d = 0; d<N; ++d)
-   if (_k->_problem->getVariable(d)->_isLogSpace == true)
+   if (_k->_problem->_variables[d]->_isLogSpace == true)
        _logTransformedSample[d] = std::exp(_chainCandidate[_currentRejectionCount*N+d]);
    else
        _logTransformedSample[d] = _chainCandidate[_currentRejectionCount*N+d];
@@ -271,9 +272,9 @@ void Korali::Solver::MCMC::printGeneration()
  Korali::logInfo("Normal", "Acceptance Rate Proposals: %.2f%%\n", 100*_acceptanceRate);
 
  Korali::logInfo("Detailed", "Variable = (Current Sample, Current Candidate):\n");
- for (size_t d = 0; d < N; d++)  Korali::logData("Detailed", "         %s = (%+6.3e, %+6.3e)\n", _k->_problem->getVariable(d)->_name.c_str(), _chainLeader[d], _chainCandidate[d]);
+ for (size_t d = 0; d < N; d++)  Korali::logData("Detailed", "         %s = (%+6.3e, %+6.3e)\n", _k->_problem->_variables[d]->_name.c_str(), _chainLeader[d], _chainCandidate[d]);
  Korali::logInfo("Detailed", "Current Chain Mean:\n");
- for (size_t d = 0; d < N; d++) Korali::logData("Detailed", " %s = %+6.3e\n", _k->_problem->getVariable(d)->_name.c_str(), _chainMean[d]);
+ for (size_t d = 0; d < N; d++) Korali::logData("Detailed", " %s = %+6.3e\n", _k->_problem->_variables[d]->_name.c_str(), _chainMean[d]);
  Korali::logInfo("Detailed", "Current Chain Covariance:\n");
  for (size_t d = 0; d < N; d++)
  {

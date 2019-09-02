@@ -1,12 +1,11 @@
-#include "korali.hpp"
+#include "modules/conduits/simple/simple.hpp"
+#include "modules/engine/engine.hpp"
+#include "modules/problems/base.hpp"
+#include "modules/solvers/base.hpp"
 
-void Korali::Conduit::Simple::evaluateSample(double* target, size_t targetId)
+void Korali::Conduit::Simple::requestEvaluation(std::vector<double> sample, size_t sampleId)
 {
- std::vector<double> sampleVector;
- for (size_t i = 0; i < _k->_problem->getVariableCount(); i++)
-  sampleVector.push_back(target[i]);
-
- _k->_problem->runModel(sampleVector, targetId);
+ _k->_problem->runModel(sample, targetId);
  double fitness = _k->_problem->evaluateTarget();
 
  _k->_modelEvaluationCount++;

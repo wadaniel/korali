@@ -8,7 +8,7 @@ import json
 
 def getVariableType(v):
  # Replacing bools with ints for Python compatibility
- return v['Type'].replace('bool', 'int')
+ return v['Type'].replace('bool', 'int').replace('std::function<void(Korali::Model&)>', 'size_t')
  
 def getCXXVariableName(v):
  cVarName = ''
@@ -50,7 +50,7 @@ def consumeValue(base, moduleName, path, varName, varType, varDefault):
  cString = '\n'
  
  if ('std::function' in varType):
-  cString += ' ' + varName + ' = __korali_models[' + base + path + '.get<size_t>()];\n'
+  cString += ' ' + varName + ' = ' + base + path + '.get<size_t>();\n'
   cString += '   eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n'
   return cString 
   
@@ -87,10 +87,6 @@ def consumeValue(base, moduleName, path, varName, varType, varDefault):
 #####################################################################
 
 def saveValue(base, path, varName, varType):
- if ('std::function' in varType):
-  sString = ''
-  return sString
-
  if ('std::vector<Korali::' in varType):
   sString = ' for(size_t i = 0; i < ' + varName + '.size(); i++) ' + varName + '[i]->getConfiguration(' + base + path + '[i]);\n'
   return sString
@@ -257,16 +253,15 @@ for moduleDir, relDir, fileNames in os.walk(currentDir):
    moduleName = fileName.replace('.json', '')
    
    ####### Adding module to list
-   relpath = os.path.relpath(moduleDir, koraliDir)
-   filepath = os.path.join(relpath, moduleName + '.hpp')
-   moduleIncludeList += '#include "' + filepath + '" \n'
-   moduleDetectionList += '  if(moduleType == "' + moduleConfig["Alias"] + '") module = new ' + moduleConfig["C++ Class"] + '();\n'
+   if (not '(Base)' in moduleConfig["Name"]):
+    relpath = os.path.relpath(moduleDir, koraliDir)
+    filepath = os.path.join(relpath, moduleName + '.hpp')
+    moduleIncludeList += '#include "' + filepath + '" \n'
+    moduleDetectionList += '  if(moduleType == "' + moduleConfig["Alias"] + '") module = new ' + moduleConfig["C++ Class"] + '();\n'
    
    ###### Producing module code
-   
-   ## Adding getType()
-   getTypeString = 'std::string ' + moduleConfig["C++ Class"] + '::getType() { return "' + moduleConfig["Alias"] + '"; }'
-   
+
+   getTypeString = 'std::string ' + moduleConfig["C++ Class"] + '::getType() { return "' + moduleConfig["Alias"] + '"; }'   
    moduleCodeString = createSetConfiguration(moduleConfig)
    moduleCodeString += createGetConfiguration(moduleConfig)
    moduleCodeString += createCheckTermination(moduleConfig)

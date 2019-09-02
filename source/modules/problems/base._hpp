@@ -3,8 +3,7 @@
 
 #include <vector>
 #include "modules/base.hpp"
-#include "modules/engine/variable.hpp"
-#include "modules/engine/model.hpp"
+#include "modules/engine/engine.hpp"
 
 namespace Korali { namespace Problem {
 
@@ -13,11 +12,10 @@ class Base : public Korali::Base
  public:
 
   std::vector<Korali::Variable*> _variables;
-  Korali::Model _modelData;
 
-  virtual void runModel(std::vector<double> target, size_t targetId) = 0;
-  virtual bool isTargetFeasible(const std::vector<double>& target) = 0;
-  virtual double evaluateTarget() = 0;
+  virtual bool isSampleFeasible(const std::vector<double>& sample) = 0;
+  virtual double evaluateSample(const std::vector<double>& sample) = 0;
+  void requestEvaluation(const std::vector<double>& sample);
 };
 
 } } // namespace Korali

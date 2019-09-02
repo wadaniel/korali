@@ -1,26 +1,17 @@
 #include "modules/problems/direct/optimization/optimization.hpp"
+#include "modules/conduits/base.hpp"
 
 void Korali::Problem::Direct::Optimization::initialize()
 {
  if (_variables.size() == 0) Korali::logError("Optimization problems require at least one variable.\n");
 }
 
-void Korali::Problem::Direct::Optimization::runModel(std::vector<double> target, size_t targetId)
-{
- // Creating model data.
- _modelData.setSample(targetId, target);
-
- // Executing Model
- _objectiveFunction(_modelData);
-}
-
-double Korali::Problem::Direct::Optimization::evaluateTarget()
+double Korali::Problem::Direct::Optimization::evaluateSample(const std::vector<double>& sample)
 {
  double fitnessSign = _objective == "Maximize" ? 1.0 : -1.0;
 
- size_t resultSize = _modelData.getResultsSize();
- if (resultSize != 0) Korali::logError("Optimization problems require exactly 1 result. Provided: %lu.\n", resultSize);
- double result = _modelData.getResults()[0];
+ std::vector<double> result = _k->_conduit->evaluateSample(sample, _objectiveFunction);
+ if (result.size() != 1) Korali::logError("Optimization problems require exactly 1 result. Provided: %lu.\n", result.size());
 
- return fitnessSign * result;
+ return fitnessSign * result[0];
 }

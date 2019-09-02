@@ -2,5 +2,16 @@
  "Type": "Conduit",
  "Name": "Conduit (Base)",
  "Alias": "Conduit (Base)",
- "C++ Class": "Korali::Conduit::Base"
+ "C++ Class": "Korali::Conduit::Base",
+ 
+ "Internal Settings": 
+ [
+   {
+    "Name": [ "Sample Id" ],
+    "Type": "size_t",
+    "Default": "0",
+    "Description": "Indicates the identifier for the next issued sample."
+   }
+ ]
 }
+

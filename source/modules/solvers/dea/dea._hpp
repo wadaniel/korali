@@ -4,8 +4,7 @@
 #include "modules/solvers/base.hpp"
 #include "modules/distributions/normal/normal.hpp"
 #include "modules/distributions/uniform/uniform.hpp"
-#include <chrono>
-#include <map>
+#include <vector>
 
 namespace Korali { namespace Solver {
 
@@ -29,7 +28,7 @@ class DEA : public Korali::Solver::Base
  void initialize() override;
  void finalize() override;
  void runGeneration() override;
- void processSample(size_t sampleId, double fitness) override;
+ void processEvaluation(size_t sampleId, double evaluation) override;
  void printGeneration() override;
 };
 

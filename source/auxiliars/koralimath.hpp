@@ -4,6 +4,8 @@
 // Auxiliar library for Korali's math and time operations.
 
 #include <stdlib.h>
+#include <limits>
+#include <string>
 #include <vector>
 
 namespace Korali

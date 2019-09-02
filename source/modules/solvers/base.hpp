@@ -3,8 +3,7 @@
 
 #include <vector>
 #include "modules/base.hpp"
-#include "modules/engine/variable.hpp"
-#include "modules/engine/model.hpp"
+#include "modules/engine/engine.hpp"
 
 namespace Korali { namespace Solver {
 
@@ -15,7 +14,7 @@ class Base : public Korali::Base
  std::vector<Korali::Variable*> _variables;
  size_t N; // Sample Size
 
- virtual void processSample(size_t sampleId, double fitness) = 0;
+ virtual void processEvaluation(const double evaluation, const size_t sampleId) = 0;
  virtual void printGeneration() = 0;
  virtual void runGeneration() = 0;
 };

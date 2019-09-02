@@ -1,4 +1,5 @@
 #include "auxiliars/multivariateNormal.hpp"
+#include <auxiliars/logger.hpp>
 
 Korali::MultivariateNormal::MultivariateNormal(size_t seed)
 {

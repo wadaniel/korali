@@ -4,7 +4,6 @@
 #include "auxiliars/json.hpp"
 #include "modules/base.hpp"
 #include <map>
-#include <limits>
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_math.h>
@@ -29,7 +28,6 @@ class Base : public Korali::Base
  void finalize() override;
 
  virtual void updateDistribution() = 0;
- virtual void setProperty(std::string propertyName, double value) = 0;
  virtual double getDensity(double x) = 0;
  virtual double getLogDensity(double x) = 0;
  virtual double getRandomNumber() = 0;

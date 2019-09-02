@@ -1,4 +1,7 @@
-#include "korali.hpp"
+#include "modules/conduits/external/external.hpp"
+#include "modules/engine/engine.hpp"
+#include "modules/problems/base.hpp"
+#include "modules/solvers/base.hpp"
 #include <sys/wait.h>
 
 void Korali::Conduit::External::initialize()
@@ -8,7 +11,7 @@ void Korali::Conduit::External::initialize()
  for (int i = 0; i < _concurrentJobs; i++) _launcherQueue.push(i);
 }
 
-void Korali::Conduit::External::requestEvaluation(double* target, size_t targetId)
+void Korali::Conduit::External::requestEvaluation(std::vector<double> sample, size_t sampleId)
 {
  while (_launcherQueue.empty()) checkProgress();
 
@@ -19,18 +22,14 @@ void Korali::Conduit::External::requestEvaluation(double* target, size_t targetI
 
  pid_t processId = fork();
 
- _launcherIdToSamplerIdMap[launcherId] = targetId;
+ _launcherIdToSamplerIdMap[launcherId] = sampleId;
  _launcherIdToProcessIdMap[launcherId] = processId;
  _processIdMapToLauncherIdMap[processId] = launcherId;
 
  if (processId == 0)
  {
-  std::vector<double> sampleVector;
-  for (size_t i = 0; i < _k->_problem->getVariableCount(); i++)
-   sampleVector.push_back(target[i]);
-
-  _k->_problem->runModel(sampleVector, targetId);
-  double evaluation = _k->_problem->getTargetEvaluation());
+  _k->_problem->runModel(sample, sampleId);
+  double evaluation = _k->_problem->evaluateTarget());
 
   write(_pipeDescriptors[launcherId][1], &evaluation, sizeof(double));
   exit(0);
@@ -50,9 +49,9 @@ void Korali::Conduit::External::checkProgress()
  {
   int launcherId = _processIdMapToLauncherIdMap[processId];
   double evaluation = 0.0;
-  size_t targetId = _launcherIdToSamplerIdMap[launcherId];
+  size_t sampleId = _launcherIdToSamplerIdMap[launcherId];
   read(_pipeDescriptors[launcherId][0], &evaluation, sizeof(double));
-  _k->_solver->processEvaluation(targetId, evaluation);
+  _k->_solver->processEvaluation(sampleId, evaluation);
   close(_pipeDescriptors[launcherId][1]); // Closing pipes
   close(_pipeDescriptors[launcherId][0]); // Closing pipes
   _launcherQueue.push(launcherId);

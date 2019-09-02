@@ -1,4 +1,8 @@
-#include "korali.hpp"
+#include "modules/conduits/mpi/mpi.hpp"
+#include "modules/engine/engine.hpp"
+#include "modules/problems/base.hpp"
+#include "modules/solvers/base.hpp"
+
 
 #ifdef _KORALI_USE_MPI
 

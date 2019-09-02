@@ -9,8 +9,7 @@ class Sampling : public Korali::Problem::Direct::Base
 {
  public:
 
- void runModel(std::vector<double> target, size_t targetId) override;
- double evaluateTarget() override;
+ double evaluateSample(const std::vector<double>& sample) override;
  void initialize() override;
 };
 

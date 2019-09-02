@@ -2,6 +2,8 @@
 #define _KORALI_CONDUIT_BASE_HPP_
 
 #include "modules/base.hpp"
+#include "modules/engine/engine.hpp"
+#include <vector>
 
 namespace Korali { namespace Conduit {
 
@@ -9,8 +11,7 @@ class Base : public Korali::Base {
 
  public:
 
- virtual void requestEvaluation(double* target, size_t targetId) = 0;
- virtual void checkProgress() { }
+ virtual std::vector<double> evaluateSample(std::vector<double> sample, size_t model) = 0;
  virtual bool isRoot() { return true; }
  virtual void abort() { exit(-1); }
 

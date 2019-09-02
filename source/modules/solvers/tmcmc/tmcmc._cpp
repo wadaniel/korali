@@ -1,5 +1,6 @@
 #include "modules/solvers/tmcmc/tmcmc.hpp"
-
+#include <module/engine/engine.hpp>
+#include "modules/problems/base.hpp"
 #include <numeric>
 #include <limits>
 #include <chrono>
@@ -20,8 +21,8 @@ typedef struct fparam_s {
 
 void Korali::Solver::TMCMC::initialize()
 {
- _multinomialGenerator = new Korali::Distribution::Multinomial(_k->_randomSeed++);
- _multivariateGenerator = new Korali::Distribution::MultivariateNormal(_k->_randomSeed++);
+ _multinomialGenerator = new Korali::Multinomial(_k->_randomSeed++);
+ _multivariateGenerator = new Korali::MultivariateNormal(_k->_randomSeed++);
 
  auto jsUniform = nlohmann::json();
  jsUniform["Type"] = "Uniform";
@@ -73,7 +74,7 @@ void Korali::Solver::TMCMC::initialize()
  for (size_t c = 0; c < _populationSize; c++)
    for (size_t d = 0; d < N; d++)
    {
-     _chainCandidates[c*N + d] = _k->_problem->getVariable(d)->_priorDistribution->getRandomNumber();
+     _chainCandidates[c*N + d] = _k->_problem->_variables[d]->_priorDistribution->getRandomNumber();
      _chainLeaders[c*N + d] = _chainCandidates[c*N + d];
    }
 
@@ -102,11 +103,8 @@ void Korali::Solver::TMCMC::runGeneration()
     generateCandidate(c);
     evaluateCandidate(c);
   }
-  _k->_conduit->checkProgress();
  }
-
 }
-
 
 void Korali::Solver::TMCMC::generateCandidate(size_t c)
 {
@@ -140,7 +138,7 @@ void Korali::Solver::TMCMC::evaluateCandidate(size_t sampleId)
   std::vector<double> _logTransformedSample(N);
 
   for(size_t d = 0; d < N; ++d)
-    if (_k->_problem->getVariable(d)->_isLogSpace == true)
+    if (_k->_problem->_variables[d]->_isLogSpace == true)
         _logTransformedSample[d] = std::exp(_chainCandidates[sampleId*N+d]);
     else
         _logTransformedSample[d] = _chainCandidates[sampleId*N+d];
@@ -165,7 +163,7 @@ bool Korali::Solver::TMCMC::isSampleFeasible(double* sample)
  return true;
 }
 
-void Korali::Solver::TMCMC::processSample(size_t sampleId, double fitness)
+void Korali::Solver::TMCMC::processEvaluation(size_t sampleId, double evaluation)
 {
  if(std::isnan(fitness) == true)
  {

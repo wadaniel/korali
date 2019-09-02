@@ -3,9 +3,9 @@
 
 #include "modules/solvers/base.hpp"
 #include "modules/distributions/base.hpp"
-#include <chrono>
+#include "modules/distributions/normal/normal.hpp"
+#include "modules/distributions/uniform/uniform.hpp"
 #include <vector>
-#include <map>
 
 namespace Korali { namespace Solver {
 
@@ -44,7 +44,7 @@ class CMAES : public Korali::Solver::Base
  void finalize() override;
  void runGeneration() override;
  void printGeneration() override;
- void processSample(size_t sampleId, double fitness) override;
+ void processEvaluation(size_t sampleId, double evaluation) override;
 };
 
 } } // namespace Korali::Solver

@@ -1,22 +1,14 @@
 #include "modules/problems/direct/sampling/sampling.hpp"
+#include "modules/conduits/base.hpp"
 
 void Korali::Problem::Direct::Sampling::initialize()
 {
  if (_variables.size() == 0) Korali::logError("Sampling problems require at least one variable.\n");
 }
 
-void Korali::Problem::Direct::Sampling::runModel(std::vector<double> target, size_t targetId)
+double Korali::Problem::Direct::Sampling::evaluateSample(const std::vector<double>& sample)
 {
- // Creating model data.
-  _modelData.setSample(targetId, target);
-
-  // Executing Model
-  _objectiveFunction(_modelData);
-}
-
-double Korali::Problem::Direct::Sampling::evaluateTarget()
-{
- size_t resultSize = _modelData.getResultsSize();
- if (resultSize != 0) Korali::logError("Sampling problems require exactly 1 result. Provided: %lu.\n", resultSize);
- return _modelData.getResults()[0];
+ std::vector<double> result = _k->_conduit->evaluateSample(sample, _objectiveFunction);
+ if (result.size() != 0) Korali::logError("Sampling problems require exactly 1 result. Provided: %lu.\n", result.size());
+ return result[0];
 }

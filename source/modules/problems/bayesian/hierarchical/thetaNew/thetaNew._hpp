@@ -14,9 +14,7 @@ class ThetaNew : public Korali::Problem::Bayesian::Hierarchical::Base
 
  public:
 
- void runModel(std::vector<double>, size_t sampleId) override;
- bool isTargetFeasible(const std::vector<double>& target) override;
- double evaluateTarget() override;
+ double evaluateLogLikelihood(const std::vector<double>& sample) override;
  void initialize() override;
 };
 

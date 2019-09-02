@@ -1,4 +1,5 @@
 #include "modules/problems/bayesian/base.hpp"
+#include "modules/conduits/base.hpp"
 #include "modules/engine/engine.hpp"
 
 void Korali::Problem::Bayesian::Base::initialize()
@@ -18,27 +19,27 @@ void Korali::Problem::Bayesian::Base::initialize()
   }
 }
 
-double Korali::Problem::Bayesian::Base::evaluateLogPrior()
+double Korali::Problem::Bayesian::Base::evaluateLogPrior(const std::vector<double>& sample)
 {
   double logPrior = 0.0;
-  for (size_t i = 0; i < _modelData.getSampleSize(); i++)
-    logPrior += _variables[i]->_priorDistribution->getLogDensity(_modelData[i]);
+  for (size_t i = 0; i < sample.size(); i++)
+    logPrior += _variables[i]->_priorDistribution->getLogDensity(sample[i]);
   return logPrior;
 }
 
-double Korali::Problem::Bayesian::Base::evaluateLogPosterior()
+double Korali::Problem::Bayesian::Base::evaluateLogPosterior(const std::vector<double>& sample)
 {
-  return evaluateLogPrior() + evaluateLogLikelihood();
+  return evaluateLogPrior(sample) + evaluateLogLikelihood(sample);
 }
 
-bool Korali::Problem::Bayesian::Base::isTargetFeasible(const std::vector<double>& target)
+bool Korali::Problem::Bayesian::Base::isSampleFeasible(const std::vector<double>& sample)
 {
-  for (size_t i = 0; i < target.size(); i++)
-    if (isfinite(_variables[i]->_priorDistribution->getLogDensity(target[i])) == false) return false;
+  for (size_t i = 0; i < sample.size(); i++)
+    if (isfinite(_variables[i]->_priorDistribution->getLogDensity(sample[i])) == false) return false;
   return true;
 }
 
-double Korali::Problem::Bayesian::Base::evaluateTarget()
+double Korali::Problem::Bayesian::Base::evaluateSample(const std::vector<double>& sample)
 {
- return evaluateLogPosterior();
+ return evaluateLogPosterior(sample);
 }

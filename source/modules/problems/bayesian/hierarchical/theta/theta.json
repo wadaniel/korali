@@ -7,14 +7,14 @@
  "Configuration Settings":
  [
    {
-    "Name": [ "Sub Problem" ],
+    "Name": [ "Sub Problem Path" ],
     "Type": "std::string",
-    "Description": "Provides results from one previous Korali execution."
+    "Description": "Path to results from one previous Korali execution."
    },
    {
-    "Name": [ "Psi Problem" ],
+    "Name": [ "Psi Problem Path" ],
     "Type": "std::string",
-    "Description": "Provides results from the hierarchical problem (Psi)."
+    "Description": "Path to results from the hierarchical problem (Psi)."
    }
  ],
 

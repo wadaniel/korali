@@ -7,11 +7,6 @@
  "Variables Configuration":
  [
   {
-   "Name": [ "Name" ],
-   "Type": "std::string",
-   "Description": "Defines the name of the variable."
-  },
-  {
    "Name": [ "Lower Bound" ],
    "Type": "double",
    "Default": "-INFINITY",

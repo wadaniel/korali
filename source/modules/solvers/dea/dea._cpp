@@ -26,11 +26,11 @@ void Korali::Solver::DEA::initialize()
  jsUniform["Maximum"] = 1.0;
  _uniformGenerator = dynamic_cast<Korali::Distribution::Uniform*>(Korali::Base::getModule(jsUniform));
 
- N = _k->_problem->_variables.size();
+ N = _k->_variables.size();
 
  for(size_t d = 0; d < N; ++d)
-  if(_k->_problem->_variables[d]->_upperBound < _k->_problem->_variables[d]->_lowerBound)
-    Korali::logError("Lower Bound (%.4f) of variable \'%s\'  exceeds Upper Bound (%.4f).\n", _k->_problem->_variables[d]->_lowerBound, _k->_problem->_variables[d]->_name.c_str(), _k->_problem->_variables[d]->_upperBound);
+  if(_k->_variables[d]->_upperBound < _k->_variables[d]->_lowerBound)
+    Korali::logError("Lower Bound (%.4f) of variable \'%s\'  exceeds Upper Bound (%.4f).\n", _k->_variables[d]->_lowerBound, _k->_variables[d]->_name.c_str(), _k->_variables[d]->_upperBound);
 
  // Allocating Memory
 
@@ -82,8 +82,8 @@ void Korali::Solver::DEA::initSamples()
   /* skip sampling in gen 1 */
   for(size_t i = 0; i < _populationSize; ++i) for(size_t d = 0; d < N; ++d)
   {
-    double width = _k->_problem->_variables[d]->_upperBound - _k->_problem->_variables[d]->_lowerBound;
-    _candidatePopulation[i][d] = _k->_problem->_variables[d]->_lowerBound + width * _uniformGenerator->getRandomNumber();
+    double width = _k->_variables[d]->_upperBound - _k->_variables[d]->_lowerBound;
+    _candidatePopulation[i][d] = _k->_variables[d]->_lowerBound + width * _uniformGenerator->getRandomNumber();
     _samplePopulation[i][d] = _candidatePopulation[i][d];
   }
 }
@@ -171,10 +171,10 @@ void Korali::Solver::DEA::fixInfeasible(size_t sampleIdx)
   for(size_t d = 0; d < N; ++d)
   {
     double len = 0.0;
-    if ( _candidatePopulation[sampleIdx][d] < _k->_problem->_variables[d]->_lowerBound )
-      len = _candidatePopulation[sampleIdx][d] - _k->_problem->_variables[d]->_lowerBound;
-    if ( _candidatePopulation[sampleIdx][d] > _k->_problem->_variables[d]->_upperBound )
-      len = _candidatePopulation[sampleIdx][d] - _k->_problem->_variables[d]->_upperBound;
+    if ( _candidatePopulation[sampleIdx][d] < _k->_variables[d]->_lowerBound )
+      len = _candidatePopulation[sampleIdx][d] - _k->_variables[d]->_lowerBound;
+    if ( _candidatePopulation[sampleIdx][d] > _k->_variables[d]->_upperBound )
+      len = _candidatePopulation[sampleIdx][d] - _k->_variables[d]->_upperBound;
 
     _candidatePopulation[sampleIdx][d] = _samplePopulation[sampleIdx][d] - len * _uniformGenerator->getRandomNumber();
   }
@@ -281,9 +281,9 @@ void Korali::Solver::DEA::printGeneration()
 {
  Korali::logInfo("Normal", "Current Function Value: Max = %+6.3e - Best = %+6.3e\n", _currentBestValue, _bestEverValue);
  Korali::logInfo("Detailed", "Variable = (MeanX, BestX):\n");
- for (size_t d = 0; d < N; d++) Korali::logData("Detailed", "         %s = (%+6.3e, %+6.3e)\n", _k->_problem->_variables[d]->_name.c_str(), _currentMean[d], _bestEverVariables[d]);
+ for (size_t d = 0; d < N; d++) Korali::logData("Detailed", "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _currentMean[d], _bestEverVariables[d]);
  Korali::logInfo("Detailed", "Max Width:\n");
- for (size_t d = 0; d < N; d++) Korali::logData("Detailed", "         %s = %+6.3e\n", _k->_problem->_variables[d]->_name.c_str(), _maxDistances[d]);
+ for (size_t d = 0; d < N; d++) Korali::logData("Detailed", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _maxDistances[d]);
  Korali::logInfo("Detailed", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
 }
 
@@ -291,6 +291,6 @@ void Korali::Solver::DEA::finalize()
 {
  Korali::logInfo("Minimal", "Optimum found: %e\n", _bestEverValue);
  Korali::logInfo("Minimal", "Optimum found at:\n");
- for (size_t d = 0; d < N; ++d) Korali::logData("Minimal", "         %s = %+6.3e\n", _k->_problem->_variables[d]->_name.c_str(), _bestEverVariables[d]);
+ for (size_t d = 0; d < N; ++d) Korali::logData("Minimal", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverVariables[d]);
  Korali::logInfo("Minimal", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
 }

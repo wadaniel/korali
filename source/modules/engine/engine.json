@@ -12,10 +12,9 @@
     "Description": "Specifies the initializing seed for the generation of random numbers. If 0 is specified, Korali will automatically derivate a new seed base on the current time."
    },
    {
-    "Name": [ "Model", "Type" ],
-    "Type": "std::string",
-    "Default": "Unassigned",
-    "Description": "Specifies the evaluation model type chosen, if any."
+    "Name": [ "Variables" ],
+    "Type": "std::vector<Korali::Variable*>",
+    "Description": "Sample coordinate information."
    },
    {
     "Name": [ "Solver" ],

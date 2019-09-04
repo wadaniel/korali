@@ -351,8 +351,8 @@ variableDeclarationList = ''
 for varDecl in varDeclarationSet:
  variableDeclarationList += varDecl + '\n'
 
-variableBaseHeaderFileName = currentDir + '/engine/variable._hpp'
-variableNewHeaderFile = currentDir + '/engine/variable.hpp'
+variableBaseHeaderFileName = currentDir + '/variable/variable.hpp'
+variableNewHeaderFile = currentDir + '/variable/variable.hpp'
 with open(variableBaseHeaderFileName, 'r') as file: variableBaseHeaderString = file.read()
 newBaseString = variableBaseHeaderString
 newBaseString = newBaseString.replace(' // Variable Declaration List', variableDeclarationList)

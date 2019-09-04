@@ -5,7 +5,7 @@
 #include <functional>
 #include "auxiliars/koralijson.hpp"
 #include "modules/sample/sample.hpp"
-#include "modules/engine/variable.hpp"
+#include "modules/variable/variable.hpp"
 
 namespace Korali
 {

@@ -23,7 +23,7 @@ void Korali::Solver::CMAES::initialize()
  jsUniform["Maximum"] = 1.0;
  _uniformGenerator = dynamic_cast<Korali::Distribution::Uniform*>(Korali::Base::getModule(jsUniform));
 
- N = _k->_problem->_variables.size();
+ N = _k->_variables.size();
 
  if (_k->_currentGeneration > 0) return;
 
@@ -144,36 +144,36 @@ void Korali::Solver::CMAES::initialize()
  /* check variable defaults */
  for (size_t i = 0; i < N; ++i)
  {
-   if( std::isnan(_k->_problem->_variables[i]->_initialMean) )
-     Korali::logError("Lower/ Upper Bounds and Initial Mean of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_problem->_variables[i]->_name.c_str());
-   if( std::isnan(_k->_problem->_variables[i]->_initialStandardDeviation) )
-     Korali::logError("Lower/ Upper Bounds and Initial Standard Deviation of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_problem->_variables[i]->_name.c_str());
+   if( std::isnan(_k->_variables[i]->_initialMean) )
+     Korali::logError("Lower/ Upper Bounds and Initial Mean of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
+   if( std::isnan(_k->_variables[i]->_initialStandardDeviation) )
+     Korali::logError("Lower/ Upper Bounds and Initial Standard Deviation of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
  }
 
  /* set _currentMean */
  for (size_t i = 0; i < N; ++i)
  {
-   if( std::isnan(_k->_problem->_variables[i]->_lowerBound) ) _k->_problem->_variables[i]->_lowerBound = -std::numeric_limits<double>::infinity();
-   if( std::isnan(_k->_problem->_variables[i]->_upperBound) ) _k->_problem->_variables[i]->_upperBound = +std::numeric_limits<double>::infinity();
+   if( std::isnan(_k->_variables[i]->_lowerBound) ) _k->_variables[i]->_lowerBound = -std::numeric_limits<double>::infinity();
+   if( std::isnan(_k->_variables[i]->_upperBound) ) _k->_variables[i]->_upperBound = +std::numeric_limits<double>::infinity();
 
-   if(_k->_problem->_variables[i]->_initialMean < _k->_problem->_variables[i]->_lowerBound || _k->_problem->_variables[i]->_initialMean > _k->_problem->_variables[i]->_upperBound)
+   if(_k->_variables[i]->_initialMean < _k->_variables[i]->_lowerBound || _k->_variables[i]->_initialMean > _k->_variables[i]->_upperBound)
    Korali::logError("Initial Mean (%.4f) of variable \'%s\' is out of bounds (%.4f-%.4f).\n",
-            _k->_problem->_variables[i]->_initialMean,
-            _k->_problem->_variables[i]->_name.c_str(),
-            _k->_problem->_variables[i]->_lowerBound,
-            _k->_problem->_variables[i]->_upperBound);
+            _k->_variables[i]->_initialMean,
+            _k->_variables[i]->_name.c_str(),
+            _k->_variables[i]->_lowerBound,
+            _k->_variables[i]->_upperBound);
 
-   _currentMean[i] = _previousMean[i] = _k->_problem->_variables[i]->_initialMean;
+   _currentMean[i] = _previousMean[i] = _k->_variables[i]->_initialMean;
  }
 
  /* set _granularity for discrete variables */
  size_t numDiscretes = 0;
  for (size_t i = 0; i < N; ++i)
  {
-   if( (_k->_problem->_variables[i]->_isDiscrete == true) && _k->_problem->_variables[i]->_granularity == 0.0)
-       Korali::logError("Granularity not set for discrete variable \'%s\'.\n", _k->_problem->_variables[i]->_name.c_str());
-   if (_k->_problem->_variables[i]->_isDiscrete == true) numDiscretes++;
-    _granularity[i] = _k->_problem->_variables[i]->_granularity;
+   if( (_k->_variables[i]->_isDiscrete == true) && _k->_variables[i]->_granularity == 0.0)
+       Korali::logError("Granularity not set for discrete variable \'%s\'.\n", _k->_variables[i]->_name.c_str());
+   if (_k->_variables[i]->_isDiscrete == true) numDiscretes++;
+    _granularity[i] = _k->_variables[i]->_granularity;
  }
 
  _hasDiscreteVariables = (numDiscretes > 0);
@@ -250,14 +250,14 @@ void Korali::Solver::CMAES::initCovariance()
 
  // Setting Sigma
  _trace = 0.0;
- for (size_t i = 0; i < N; ++i) _trace += _k->_problem->_variables[i]->_initialStandardDeviation*_k->_problem->_variables[i]->_initialStandardDeviation;
+ for (size_t i = 0; i < N; ++i) _trace += _k->_variables[i]->_initialStandardDeviation*_k->_variables[i]->_initialStandardDeviation;
  _sigma = sqrt(_trace/N);
 
  // Setting B, C and _axisD
  for (size_t i = 0; i < N; ++i)
  {
   _covarianceEigenvectorMatrix[i*N+i] = 1.0;
-  _covarianceMatrix[i*N+i] = _axisLengths[i] = _k->_problem->_variables[i]->_initialStandardDeviation * sqrt(N / _trace);
+  _covarianceMatrix[i*N+i] = _axisLengths[i] = _k->_variables[i]->_initialStandardDeviation * sqrt(N / _trace);
   _covarianceMatrix[i*N+i] *= _covarianceMatrix[i*N+i];
  }
 
@@ -635,9 +635,9 @@ void Korali::Solver::CMAES::numericalErrorTreatment()
  //TODO
 
  //treat minimal standard deviations
- for (size_t d = 0; d < N; ++d) if (_sigma * sqrt(_covarianceMatrix[d*N+d]) < _k->_problem->_variables[d]->_minimumStandardDeviationUpdate)
+ for (size_t d = 0; d < N; ++d) if (_sigma * sqrt(_covarianceMatrix[d*N+d]) < _k->_variables[d]->_minimumStandardDeviationUpdate)
  {
-   _sigma = (_k->_problem->_variables[d]->_minimumStandardDeviationUpdate)/sqrt(_covarianceMatrix[d*N+d]) * exp(0.05+_sigmaCumulationFactor/_dampFactor);
+   _sigma = (_k->_variables[d]->_minimumStandardDeviationUpdate)/sqrt(_covarianceMatrix[d*N+d]) * exp(0.05+_sigmaCumulationFactor/_dampFactor);
    Korali::logWarning("Detailed", "Sigma increased due to minimal standard deviation.\n");
  }
 
@@ -836,7 +836,7 @@ void Korali::Solver::CMAES::printGeneration()
  Korali::logInfo("Normal", "Covariance Eigenvalues: Min = %+6.3e -  Max = %+6.3e\n", _minimumCovarianceEigenvalue, _maximumCovarianceEigenvalue);
 
   Korali::logInfo("Detailed", "Variable = (MeanX, BestX):\n");
-  for (size_t d = 0; d < N; d++) Korali::logData("Detailed", "         %s = (%+6.3e, %+6.3e)\n", _k->_problem->_variables[d]->_name.c_str(), _currentMean[d], _bestEverVariables[d]);
+  for (size_t d = 0; d < N; d++) Korali::logData("Detailed", "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _currentMean[d], _bestEverVariables[d]);
 
   Korali::logInfo("Detailed", "Constraint Evaluation at Current Function Value:\n");
   if ( _areConstraintsDefined )
@@ -866,7 +866,7 @@ void Korali::Solver::CMAES::finalize()
 {
   Korali::logInfo("Minimal", "Optimum found: %e\n", _bestEverValue);
   Korali::logInfo("Minimal", "Optimum found at:\n");
-  for (size_t d = 0; d < N; ++d) Korali::logData("Minimal", "         %s = %+6.3e\n", _k->_problem->_variables[d]->_name.c_str(), _bestEverVariables[d]);
+  for (size_t d = 0; d < N; ++d) Korali::logData("Minimal", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverVariables[d]);
   if ( _areConstraintsDefined )
   {
     Korali::logInfo("Minimal", "Constraint Evaluation at Optimum:\n");

@@ -5,8 +5,8 @@ bool Korali::Problem::Direct::Base::isSampleFeasible(Korali::Sample* sample)
   for (size_t i = 0; i < sample->getSample().size(); i++)
   {
     if (std::isfinite(sample->getSample()[i]) == false) return false;
-    if (sample->getSample()[i] < _variables[i]->_lowerBound) return false;
-    if (sample->getSample()[i] > _variables[i]->_upperBound) return false;
+    if (sample->getSample()[i] < _k->_variables[i]->_lowerBound) return false;
+    if (sample->getSample()[i] > _k->_variables[i]->_upperBound) return false;
   }
   return true;
 }

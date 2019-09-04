@@ -3,7 +3,7 @@
 
 void Korali::Problem::Direct::Optimization::initialize()
 {
- if (_variables.size() == 0) Korali::logError("Optimization problems require at least one variable.\n");
+ if (_k->_variables.size() == 0) Korali::logError("Optimization problems require at least one variable.\n");
 }
 
 double Korali::Problem::Direct::Optimization::evaluateSample(Korali::Sample* sample)

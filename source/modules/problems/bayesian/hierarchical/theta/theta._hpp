@@ -11,8 +11,9 @@ class Theta : public Korali::Problem::Bayesian::Hierarchical::Base
 {
  private:
 
- Korali::Problem::Bayesian::Base* _subProblemKorali;
- Korali::Problem::Bayesian::Hierarchical::Psi* _psiProblemKorali;
+ Korali::Engine _subProblemEngine;
+ Korali::Engine _psiProblemEngine;
+
  std::vector<double> _precomputedLogDenominator;
 
  public:

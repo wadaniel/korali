@@ -10,7 +10,7 @@ class ThetaNew : public Korali::Problem::Bayesian::Hierarchical::Base
 {
  private:
 
- Korali::Problem::Bayesian::Hierarchical::Psi _psiProblemKorali;
+ Korali::Engine _psiProblemEngine;
 
  public:
 

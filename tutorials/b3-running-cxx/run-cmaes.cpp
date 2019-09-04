@@ -6,9 +6,9 @@ int main(int argc, char* argv[])
  auto k = Korali::Engine();
  auto p = heat2DInit(&argc, &argv);
 
- k["Problem"]["Type"] = "Bayesian Inference";
- k["Problem"]["Likelihood"]["Model"] = "Additive Normal";
- k["Problem"]["Likelihood"]["Reference Data"] = p.refTemp;
+ k["Problem"]["Type"] = "Bayesian Inference (Reference Likelihood)";
+ k["Problem"]["Likelihood Model"] = "Additive Normal";
+ k["Problem"]["Reference Data"] = p.refTemp;
  k["Problem"]["Computational Model"] = [](Korali::Sample& d) { heat2DSolver(d.getSample(), d.getResult()); };
 
  k["Problem"]["Variables"][0]["Name"] = "Intensity";

@@ -11,9 +11,9 @@ void Korali::Conduit::External::initialize()
  for (int i = 0; i < _concurrentJobs; i++) _launcherQueue.push(i);
 }
 
-void Korali::Conduit::External::requestEvaluation(std::vector<double> sample, size_t sampleId)
+void Korali::Conduit::External::runModel(size_t modelId, Korali::Sample& sample)
 {
- while (_launcherQueue.empty()) checkProgress();
+// while (_launcherQueue.empty()) checkProgress();
 
  int launcherId = _launcherQueue.front(); _launcherQueue.pop();
 
@@ -22,16 +22,16 @@ void Korali::Conduit::External::requestEvaluation(std::vector<double> sample, si
 
  pid_t processId = fork();
 
- _launcherIdToSamplerIdMap[launcherId] = sampleId;
+ //_launcherIdToSamplerIdMap[launcherId] = sampleId;
  _launcherIdToProcessIdMap[launcherId] = processId;
  _processIdMapToLauncherIdMap[processId] = launcherId;
 
  if (processId == 0)
  {
-  _k->_problem->runModel(sample, sampleId);
-  double evaluation = _k->_problem->evaluateTarget());
+  __korali_models[modelId](sample);
+  //double evaluation = _k->_problem->evaluateTarget());
 
-  write(_pipeDescriptors[launcherId][1], &evaluation, sizeof(double));
+  //write(_pipeDescriptors[launcherId][1], &evaluation, sizeof(double));
   exit(0);
  }
 
@@ -39,22 +39,22 @@ void Korali::Conduit::External::requestEvaluation(std::vector<double> sample, si
 
 }
 
-void Korali::Conduit::External::checkProgress()
-{
- int status;
- pid_t processId;
-
- processId = wait(&status);
- if (processId > 0)
- {
-  int launcherId = _processIdMapToLauncherIdMap[processId];
-  double evaluation = 0.0;
-  size_t sampleId = _launcherIdToSamplerIdMap[launcherId];
-  read(_pipeDescriptors[launcherId][0], &evaluation, sizeof(double));
-  _k->_solver->processEvaluation(sampleId, evaluation);
-  close(_pipeDescriptors[launcherId][1]); // Closing pipes
-  close(_pipeDescriptors[launcherId][0]); // Closing pipes
-  _launcherQueue.push(launcherId);
- }
-
-}
+//void Korali::Conduit::External::checkProgress()
+//{
+// int status;
+// pid_t processId;
+//
+// processId = wait(&status);
+// if (processId > 0)
+// {
+//  int launcherId = _processIdMapToLauncherIdMap[processId];
+//  double evaluation = 0.0;
+//  size_t sampleId = _launcherIdToSamplerIdMap[launcherId];
+//  read(_pipeDescriptors[launcherId][0], &evaluation, sizeof(double));
+//  _k->_solver->processEvaluation(sampleId, evaluation);
+//  close(_pipeDescriptors[launcherId][1]); // Closing pipes
+//  close(_pipeDescriptors[launcherId][0]); // Closing pipes
+//  _launcherQueue.push(launcherId);
+// }
+//
+//}

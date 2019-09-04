@@ -17,37 +17,37 @@ void Korali::Problem::Bayesian::Reference::initialize()
   if (_statisticalVariableIndices.size() != 1) Korali::logError("Bayesian (%s) problems require exactly 1 statistical parameter, provided: %lu.\n", _likelihoodModel.c_str(), _statisticalVariableIndices.size());
 }
 
-double Korali::Problem::Bayesian::Reference::evaluateLogLikelihood(const std::vector<double>& sample)
+double Korali::Problem::Bayesian::Reference::evaluateLogLikelihood(Korali::Sample* sample)
 {
   double fitness = 0.0;
 
-  std::vector<double> result = _k->_conduit->evaluateSample(sample, _computationalModel);
+  //_k->_conduit->runModel(_computationalModel, sample);
 
-  if (result.size() != _referenceData.size())
-    Korali::logError("Bayesian (%s) problems require a %lu-sized reference result array. Provided: %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), result.size());
+  if (sample->getResult().size() != _referenceData.size())
+    Korali::logError("Bayesian (%s) problems require a %lu-sized reference sample->getResult() array. Provided: %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), sample->getResult().size());
 
-  if (_likelihoodModel == "Additive Normal")            fitness = likelihoodNormalAdditive(sample, result);
-  if (_likelihoodModel == "Multiplicative Normal")      fitness = likelihoodNormalMultiplicative(sample, result);
-  if (_likelihoodModel == "Multiplicative Normal Data") fitness = likelihoodNormalMultiplicativeData(sample, result);
+  if (_likelihoodModel == "Additive Normal")            fitness = likelihoodNormalAdditive(sample);
+  if (_likelihoodModel == "Multiplicative Normal")      fitness = likelihoodNormalMultiplicative(sample);
+  if (_likelihoodModel == "Multiplicative Normal Data") fitness = likelihoodNormalMultiplicativeData(sample);
 
   return fitness;
 }
 
-double Korali::Problem::Bayesian::Reference::likelihoodNormalAdditive(const std::vector<double>& sample, const std::vector<double>& result)
+double Korali::Problem::Bayesian::Reference::likelihoodNormalAdditive(Korali::Sample* sample)
 {
-  double sigma   = sample[_statisticalVariableIndices[0]];
+  double sigma   = (*sample)[_statisticalVariableIndices[0]];
   double sigma2  = sigma*sigma;
   double ssn     = 0.0;
   double fitness = 0.0;
 
   for(size_t i = 0; i < _referenceData.size(); i++)
   {
-    if( !isfinite(result[i]) )
+    if( !isfinite(sample->getResult()[i]) )
     {
       Korali::logWarning("Normal","Non-finite value detected in the results passed in the log-likelihood function.\n");
       return -Korali::Inf;
     }
-    double diff = _referenceData[i] - result[i];
+    double diff = _referenceData[i] - sample->getResult()[i];
     ssn += diff*diff;
   }
 
@@ -55,22 +55,22 @@ double Korali::Problem::Bayesian::Reference::likelihoodNormalAdditive(const std:
   return fitness;
 }
 
-double Korali::Problem::Bayesian::Reference::likelihoodNormalMultiplicative(const std::vector<double>& sample, const std::vector<double>& result)
+double Korali::Problem::Bayesian::Reference::likelihoodNormalMultiplicative(Korali::Sample* sample)
 {
-  double sigma    = sample[_statisticalVariableIndices[0]];
+  double sigma    = (*sample)[_statisticalVariableIndices[0]];
   double ssn      = 0.0;
   double fitness  = 0.0;
   double logSigma = 0.0;
   for(size_t i = 0; i < _referenceData.size(); i++)
   {
-    if( !isfinite(result[i]) )
+    if( !isfinite(sample->getResult()[i]) )
     {
       Korali::logWarning("Normal","Non-finite value detected in the results passed in the log-likelihood function.\n");
       return -Korali::Inf;
     }
 
-    double diff   = _referenceData[i] - result[i];
-    double denom  = sigma*result[i];
+    double diff   = _referenceData[i] - sample->getResult()[i];
+    double denom  = sigma*sample->getResult()[i];
     ssn += diff*diff / (denom*denom);
     logSigma += log(denom);
   }
@@ -79,21 +79,21 @@ double Korali::Problem::Bayesian::Reference::likelihoodNormalMultiplicative(cons
   return fitness;
 }
 
-double Korali::Problem::Bayesian::Reference::likelihoodNormalMultiplicativeData(const std::vector<double>& sample, const std::vector<double>& result)
+double Korali::Problem::Bayesian::Reference::likelihoodNormalMultiplicativeData(Korali::Sample* sample)
 {
-  double sigma    = sample[_statisticalVariableIndices[0]];
+  double sigma    = (*sample)[_statisticalVariableIndices[0]];
   double ssn      = 0.0;
   double fitness  = 0.0;
   double logSigma = 0.0;
   for(size_t i = 0; i < _referenceData.size(); i++)
   {
-    if( !isfinite(result[i]) )
+    if( !isfinite(sample->getResult()[i]) )
     {
       Korali::logWarning("Normal","Non-finite value detected in the results passed in the log-likelihood function.\n");
       return -Korali::Inf;
     }
 
-    double diff   = _referenceData[i] - result[i];
+    double diff   = _referenceData[i] - sample->getResult()[i];
     double denom  = sigma*_referenceData[i];
     ssn += diff*diff / (denom*denom);
     logSigma += log(denom);

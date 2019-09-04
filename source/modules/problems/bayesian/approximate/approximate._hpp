@@ -9,12 +9,12 @@ class Approximate : public Korali::Problem::Bayesian::Base
 {
  private:
 
- double likelihoodTruncatedNormal(const std::vector<double>& sample);
- double likelihoodNormal(const std::vector<double>& sample);
+ double likelihoodTruncatedNormal(Korali::Sample* sample);
+ double likelihoodNormal(Korali::Sample* sample);
 
  public:
 
- double evaluateLogLikelihood(const std::vector<double>& sample) override;
+ double evaluateLogLikelihood(Korali::Sample* sample) override;
  void initialize() override;
 };
 

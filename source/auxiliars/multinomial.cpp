@@ -1,4 +1,4 @@
-#include "auxiliar/multinomial.hpp"
+#include "auxiliars/multinomial.hpp"
 
 Korali::Multinomial::Multinomial(size_t seed)
 {

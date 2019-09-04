@@ -8,7 +8,7 @@
 
 #define MPI_TAG_FITNESS 1
 #define MPI_TAG_SAMPLE 2
-#define MPI_TAG_ID 3
+#define MPI_MODEL_ID 3
 MPI_Comm __KoraliTeamComm;
 MPI_Comm getKoraliMPIComm() { return __KoraliTeamComm; }
 long int getKoraliMPICommPointer() { return (long int)(&__KoraliTeamComm); }
@@ -84,7 +84,7 @@ void Korali::Conduit::MPI::finalize()
   int stopFlag = -1;
     for (int i = 0; i < _teamCount; i++)
       for (int j = 0; j < _ranksPerTeam; j++)
-      MPI_Send(&stopFlag, 1, MPI_INT, _teamWorkers[i][j], MPI_TAG_ID, MPI_COMM_WORLD);
+      MPI_Send(&stopFlag, 1, MPI_INT, _teamWorkers[i][j], MPI_MODEL_ID, MPI_COMM_WORLD);
  }
   MPI_Barrier(MPI_COMM_WORLD);
  #endif
@@ -95,27 +95,24 @@ void Korali::Conduit::MPI::workerThread()
  #ifdef _KORALI_USE_MPI
  if (_teamId == -1) return;
 
- int targetId = 0;
- while (targetId != -1)
+ int modelId = 0;
+ while (modelId != -1)
  {
-   MPI_Recv(&targetId, 1, MPI_INT, getRootRank(), MPI_TAG_ID, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+   MPI_Recv(&modelId, 1, MPI_LONG, getRootRank(), MPI_MODEL_ID, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-   if (targetId != -1)
+   if (modelId != -1)
    {
-    size_t variableCount = _k->_problem->getVariableCount();
+    size_t variableCount = _k->_problem->_variables.size();
     double sample[variableCount];
     MPI_Recv(&sample, variableCount, MPI_DOUBLE, getRootRank(), MPI_TAG_SAMPLE, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-    std::vector<double> sampleVector;
-    for (size_t i = 0; i < variableCount; i++) sampleVector.push_back(sample[i]);
-
-    _k->_problem->runModel(sampleVector, targetId);
+    //__korali_models[modelId](sample);
 
     bool isLeader = (_localRankId == 0);
     if (isLeader)
     {
-     double fitness = _k->_problem->requestEvaluationFitness();
-     MPI_Send(&fitness, 1, MPI_DOUBLE, getRootRank(), MPI_TAG_FITNESS, MPI_COMM_WORLD);
+     //double fitness = _k->_problem->requestEvaluationFitness();
+     //MPI_Send(&fitness, 1, MPI_DOUBLE, getRootRank(), MPI_TAG_FITNESS, MPI_COMM_WORLD);
     }
 
     MPI_Barrier(__KoraliTeamComm);
@@ -124,46 +121,46 @@ void Korali::Conduit::MPI::workerThread()
  #endif
 }
 
-void Korali::Conduit::MPI::requestEvaluation(double* target, size_t targetId)
+void Korali::Conduit::MPI::runModel(size_t modelId, Korali::Sample& sample)
 {
  _k->_modelEvaluationCount++;
 
  #ifdef _KORALI_USE_MPI
- while (_teamQueue.empty()) checkProgress();
+ //while (_teamQueue.empty()) checkProgress();
 
  int teamId = _teamQueue.front(); _teamQueue.pop();
- _teamSampleId[teamId] = targetId;
+ _teamSampleId[teamId] = 0;
 
  MPI_Irecv(&_teamFitness[teamId], 1, MPI_DOUBLE, _teamWorkers[teamId][0], MPI_TAG_FITNESS, MPI_COMM_WORLD, &_teamRequests[teamId]);
  _teamBusy[teamId] = true;
 
  for (int i = 0; i < _ranksPerTeam; i++)
  {
-  size_t variableCount = _k->_problem->getVariableCount();
+  size_t variableCount = _k->_problem->_variables.size();
   int workerId = _teamWorkers[teamId][i];
   int continueFlag = 1;
-  MPI_Send(&targetId, 1, MPI_INT, workerId, MPI_TAG_ID, MPI_COMM_WORLD);
-  MPI_Send(target, variableCount, MPI_DOUBLE, workerId, MPI_TAG_SAMPLE, MPI_COMM_WORLD);
+  MPI_Send(&modelId, 1, MPI_LONG, workerId, MPI_MODEL_ID, MPI_COMM_WORLD);
+  //MPI_Send(sample.getSample(), sample.getSample().size(), MPI_DOUBLE, workerId, MPI_TAG_SAMPLE, MPI_COMM_WORLD);
  }
  #endif
 }
 
-void Korali::Conduit::MPI::checkProgress()
-{
- #ifdef _KORALI_USE_MPI
- for (int i = 0; i < _teamCount; i++) if (_teamBusy[i] == true)
- {
-    int flag;
-    MPI_Test(&_teamRequests[i], &flag, MPI_STATUS_IGNORE);
-    if (flag)
-    {
-   _k->_solver->processEvaluation(_teamSampleId[i], _teamFitness[i]);
-   _teamBusy[i] = false;
-   _teamQueue.push(i);
-    }
- }
- #endif
-}
+//void Korali::Conduit::MPI::checkProgress()
+//{
+// #ifdef _KORALI_USE_MPI
+// for (int i = 0; i < _teamCount; i++) if (_teamBusy[i] == true)
+// {
+//    int flag;
+//    MPI_Test(&_teamRequests[i], &flag, MPI_STATUS_IGNORE);
+//    if (flag)
+//    {
+//   _k->_solver->processEvaluation(_teamSampleId[i], _teamFitness[i]);
+//   _teamBusy[i] = false;
+//   _teamQueue.push(i);
+//    }
+// }
+// #endif
+//}
 
 int Korali::Conduit::MPI::getRootRank()
 {

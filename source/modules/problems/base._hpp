@@ -13,9 +13,8 @@ class Base : public Korali::Base
 
   std::vector<Korali::Variable*> _variables;
 
-  virtual bool isSampleFeasible(const std::vector<double>& sample) = 0;
-  virtual double evaluateSample(const std::vector<double>& sample) = 0;
-  void requestEvaluation(const std::vector<double>& sample);
+  virtual bool isSampleFeasible(Korali::Sample*) = 0;
+  virtual double evaluateSample(Korali::Sample*) = 0;
 };
 
 } } // namespace Korali

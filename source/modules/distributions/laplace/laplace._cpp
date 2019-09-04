@@ -1,4 +1,4 @@
-#include "korali.hpp"
+#include "modules/distributions/laplace/laplace.hpp"
 
 double Korali::Distribution::Laplace::getDensity(double x)
 {

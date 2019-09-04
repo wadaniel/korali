@@ -1,4 +1,4 @@
-#include "korali.hpp"
+#include "modules/distributions/exponential/exponential.hpp"
 
 double Korali::Distribution::Exponential::getDensity(double x)
 {

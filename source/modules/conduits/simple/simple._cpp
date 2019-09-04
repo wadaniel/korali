@@ -3,12 +3,8 @@
 #include "modules/problems/base.hpp"
 #include "modules/solvers/base.hpp"
 
-void Korali::Conduit::Simple::requestEvaluation(std::vector<double> sample, size_t sampleId)
+void Korali::Conduit::Simple::runModel(size_t modelId, Korali::Sample& sample)
 {
- _k->_problem->runModel(sample, targetId);
- double fitness = _k->_problem->evaluateTarget();
-
- _k->_modelEvaluationCount++;
- _k->_solver->processEvaluation(targetId, fitness);
+ __korali_models[modelId](sample);
 }
 

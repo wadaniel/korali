@@ -8,7 +8,7 @@
  [
    {
     "Name": [ "Computational Model" ],
-    "Type": "std::function<void(Korali::Model&)>",
+    "Type": "std::function<void(Korali::Sample&)>",
     "Description": "Stores the computational model. It should the evaluation of the model at the given reference data points."
    },
    {

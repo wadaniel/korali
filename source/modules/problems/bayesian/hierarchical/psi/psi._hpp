@@ -15,8 +15,8 @@ class Psi : public Korali::Problem::Bayesian::Hierarchical::Base
  public:
 
  void updateConditionalPriors(const std::vector<double>& sample);
- bool isSampleFeasible(const std::vector<double>& sample) override;
- double evaluateLogLikelihood(const std::vector<double>& sample) override;
+ bool isSampleFeasible(Korali::Sample* sample) override;
+ double evaluateLogLikelihood(Korali::Sample* sample) override;
  void initialize() override;
 };
 

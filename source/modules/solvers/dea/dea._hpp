@@ -16,7 +16,6 @@ class DEA : public Korali::Solver::Base
  Korali::Distribution::Base* _uniformGenerator; /* Uniform random number generator */
 
  void mutateSingle(size_t sampleIdx); /* sample individual */
- bool isFeasible(size_t sampleIdx) const; /* check if sample inside lower & upper bounds */
  void fixInfeasible(size_t sampleIdx); /* force sample inside lower & upper bounds */
  void updateSolver(); /* update states of DEA */
  void evaluateSamples(); /* evaluate all samples until done */
@@ -28,7 +27,7 @@ class DEA : public Korali::Solver::Base
  void initialize() override;
  void finalize() override;
  void runGeneration() override;
- void processEvaluation(size_t sampleId, double evaluation) override;
+ void processEvaluation(const double evaluation, const size_t sampleId) override;
  void printGeneration() override;
 };
 

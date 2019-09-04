@@ -9,7 +9,7 @@ class Optimization : public Korali::Problem::Direct::Base
 {
  public:
 
- double evaluateSample(const std::vector<double>& sample) override;
+ double evaluateSample(Korali::Sample* sample) override;
  void initialize() override;
 };
 

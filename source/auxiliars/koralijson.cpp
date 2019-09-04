@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include "koralijson.hpp"
 #include "modules/engine/engine.hpp"
+#include "modules/sample/sample.hpp"
 
-void Korali::KoraliJsonWrapper::setItem(const std::string& key, const std::function<void(Korali::Model&)> val)
+void Korali::KoraliJsonWrapper::setItem(const std::string& key, const std::function<void(Korali::Sample&)> val)
 {
  _key = key;
  size_t pos = __korali_models.size();

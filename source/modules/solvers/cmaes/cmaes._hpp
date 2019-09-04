@@ -2,6 +2,7 @@
 #define _KORALI_SOLVERS_CCMAES_HPP_
 
 #include "modules/solvers/base.hpp"
+#include "modules/sample/sample.hpp"
 #include "modules/distributions/base.hpp"
 #include "modules/distributions/normal/normal.hpp"
 #include "modules/distributions/uniform/uniform.hpp"
@@ -25,7 +26,6 @@ class CMAES : public Korali::Solver::Base
   void numericalErrorTreatment();
   void eigen(size_t N, std::vector<double>& C, std::vector<double>& diag, std::vector<double>& Q) const;
   void sort_index(const std::vector<double>& vec, std::vector<size_t>& _sortingIndex, size_t n) const;
-  bool isFeasible(size_t sampleIdx) const; /* check if sample inside lower & upper bounds */
   // Private CCMAES-Specific Methods
   void initMuWeights(size_t numsamples); /* init _muWeights and dependencies */
   void initCovariance(); /* init sigma, C and B */
@@ -44,7 +44,7 @@ class CMAES : public Korali::Solver::Base
  void finalize() override;
  void runGeneration() override;
  void printGeneration() override;
- void processEvaluation(size_t sampleId, double evaluation) override;
+ void processEvaluation(const double evaluation, const size_t sampleId) override;
 };
 
 } } // namespace Korali::Solver

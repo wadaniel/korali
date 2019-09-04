@@ -9,13 +9,13 @@ class Reference : public Korali::Problem::Bayesian::Base
 {
  private:
 
- double likelihoodNormalAdditive(const std::vector<double>& sample, const std::vector<double>& result);
- double likelihoodNormalMultiplicative(const std::vector<double>& sample, const std::vector<double>& result);
- double likelihoodNormalMultiplicativeData(const std::vector<double>& sample, const std::vector<double>& result);
+ double likelihoodNormalAdditive(Korali::Sample* sample);
+ double likelihoodNormalMultiplicative(Korali::Sample* sample);
+ double likelihoodNormalMultiplicativeData(Korali::Sample* sample);
 
  public:
 
- double evaluateLogLikelihood(const std::vector<double>& sample) override;
+ double evaluateLogLikelihood(Korali::Sample* sample) override;
  void initialize() override;
 };
 

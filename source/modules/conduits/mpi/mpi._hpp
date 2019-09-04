@@ -50,8 +50,9 @@ class MPI : public Korali::Conduit::Base
  void initialize() override;
  void finalize() override;
 
- void requestEvaluation(double* target, size_t targetId) override;
- void checkProgress() override;
+ void runModel(size_t modelId, Korali::Sample& sample) override;
+// void checkProgress() override;
+ int getRootRank();
  bool isRoot() override;
  void abort() override;
 };

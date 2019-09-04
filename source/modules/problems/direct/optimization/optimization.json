@@ -12,6 +12,11 @@
     "Type": "std::string",
     "Options": [ "Minimize", "Maximize" ],
     "Description": "Indicates whether Korali will minimize or maximize the function evaluation."
+   },
+   {
+    "Name": [ "Constraints" ],
+    "Type": "std::vector<std::function<void(Korali::Sample&)>>",
+    "Description": "Stores constraints to the objective function."
    }
  ],
  

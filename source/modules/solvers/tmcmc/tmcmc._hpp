@@ -16,15 +16,13 @@ class TMCMC : public Korali::Solver::Base
 
  void setBurnIn();
  void prepareGeneration();
- void updateDatabase(double* point, double fitness, double logPrior);
+ void updateDatabase(double* point, double evaluation, double logPrior);
  void generateCandidate(size_t candidate);
  void evaluateCandidate(size_t candidate);
  void finishSample(size_t sampleId);
  void minSearch(double const *fj, size_t fn, double pj, double objTol, double& xmin, double& fmin);
  static double tmcmc_objlogp(double x, const double *fj, size_t fn, double pj, double zero);
  static double objLog(const gsl_vector *v, void *param);
- bool isSampleFeasible(double* sample);
- double evaluateSampleLogPrior(double* sample);
 
  Korali::Multinomial* _multinomialGenerator; /* Multivariate Normal random number generator */
  Korali::MultivariateNormal* _multivariateGenerator; /* Multivariate Normal random number generator */
@@ -37,7 +35,7 @@ class TMCMC : public Korali::Solver::Base
  void initialize() override;
  void finalize() override;
  void runGeneration() override;
- void processEvaluation(size_t sampleId, double evaluation) override;
+ void processEvaluation(const double evaluation, const size_t sampleId) override;
  void printGeneration() override;
 };
 

@@ -1,0 +1,27 @@
+{
+ "Name": "Korali Sample",
+ "Alias": "Sample",
+ "C++ Class": "Korali::Sample",
+
+ "Internal Settings": 
+ [
+   {
+    "Name": [ "Sample" ],
+    "Type": "std::vector<double>",
+    "Description": "Contains the values describing the sample."
+   },
+   {
+    "Name": [ "Result" ],
+    "Type": "std::vector<double>",
+    "Description": "Contains the result of an evaluation."
+   },
+   {
+    "Name": [ "Sample Id" ],
+    "Type": "size_t",
+    "Default": "0",
+    "Description": "Indicates the current generation in execution."
+   }
+ ]
+ 
+}
+ 

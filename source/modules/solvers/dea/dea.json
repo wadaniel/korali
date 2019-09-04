@@ -116,12 +116,12 @@
    },
    {
     "Name": [ "Sample Population" ],
-    "Type": "std::vector<double>",
+    "Type": "std::vector<Korali::Sample>",
     "Description": "Sample variable information."
    },
    {
     "Name": [ "Candidate Population" ],
-    "Type": "std::vector<double>",
+    "Type": "std::vector<Korali::Sample>",
     "Description": "Sample candidates variable information."
    },
    {

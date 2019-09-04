@@ -49,6 +49,10 @@ def getVariableDescriptor(v):
 def consumeValue(base, moduleName, path, varName, varType, varDefault):
  cString = '\n'
  
+ if ('Korali::Sample' in varType):
+  cString = ''
+  return cString
+ 
  if ('std::function' in varType):
   cString += ' ' + varName + ' = ' + base + path + '.get<size_t>();\n'
   cString += '   eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n'
@@ -87,6 +91,11 @@ def consumeValue(base, moduleName, path, varName, varType, varDefault):
 #####################################################################
 
 def saveValue(base, path, varName, varType):
+
+ if ('Korali::Sample' in varType):
+  sString = ''
+  return sString
+  
  if ('std::vector<Korali::' in varType):
   sString = ' for(size_t i = 0; i < ' + varName + '.size(); i++) ' + varName + '[i]->getConfiguration(' + base + path + '[i]);\n'
   return sString
@@ -133,9 +142,9 @@ def createSetConfiguration(module):
    
  if 'Conditional Variables' in module:
   for v in module["Conditional Variables"]:
-   codeString += ' ' + getCXXVariableName(v) + 'Conditional = "";\n'
-   codeString += ' if(js' + getVariablePath(v) + '.is_number()) ' + getCXXVariableName(v) + ' = js' + getVariablePath(v) + ';\n'
-   codeString += ' if(js' + getVariablePath(v) + '.is_string()) ' + getCXXVariableName(v) + 'Conditional = js' + getVariablePath(v) + ';\n'
+   codeString += ' ' + getCXXVariableName(v["Name"]) + 'Conditional = "";\n'
+   codeString += ' if(js' + getVariablePath(v) + '.is_number()) ' + getCXXVariableName(v["Name"]) + ' = js' + getVariablePath(v) + ';\n'
+   codeString += ' if(js' + getVariablePath(v) + '.is_string()) ' + getCXXVariableName(v["Name"]) + 'Conditional = js' + getVariablePath(v) + ';\n'
    codeString += ' eraseValue(js, "' + getVariablePath(v).replace('"', "'") + '");\n\n'
  
  codeString += ' ' + getParentClass(module) + '::setConfiguration(js);\n'
@@ -170,8 +179,8 @@ def createGetConfiguration(module):
    
  if 'Conditional Variables' in module: 
   for v in module["Conditional Variables"]:
-   codeString += ' if(' + getCXXVariableName(v) + 'Conditional == "") js' + getVariablePath(v) + ' = ' + getCXXVariableName(v) + ';\n'
-   codeString += ' if(' + getCXXVariableName(v) + 'Conditional != "") js' + getVariablePath(v) + ' = ' + getCXXVariableName(v) + 'Conditional;\n'
+   codeString += ' if(' + getCXXVariableName(v["Name"]) + 'Conditional == "") js' + getVariablePath(v) + ' = ' + getCXXVariableName(v["Name"]) + ';\n'
+   codeString += ' if(' + getCXXVariableName(v["Name"]) + 'Conditional != "") js' + getVariablePath(v) + ' = ' + getCXXVariableName(v["Name"]) + 'Conditional;\n'
  
  codeString += ' ' + getParentClass(module) + '::getConfiguration(js);\n'
  
@@ -194,7 +203,7 @@ def createCheckTermination(module):
    codeString += '  hasFinished = true;\n'
    codeString += ' }\n\n'
  
-   codeString += ' hasFinished = hasFinished || ' + getParentClass(module) + '::createCheckTermination();\n' 
+   codeString += ' hasFinished = hasFinished || ' + getParentClass(module) + '::checkTermination();\n' 
  codeString += ' return hasFinished;\n'
  codeString += '}'
  
@@ -216,6 +225,11 @@ def createHeaderDeclarations(module):
  if 'Termination Criteria' in module:
   for v in module["Termination Criteria"]:
    headerString += ' ' + getVariableType(v) + ' ' + getCXXVariableName(v["Name"]) + ';\n'
+   
+ if 'Conditional Variables' in module:
+  for v in module["Conditional Variables"]:
+   headerString += ' double ' + getCXXVariableName(v["Name"]) + ';\n'
+   headerString += ' std::string ' + getCXXVariableName(v["Name"]) + 'Conditional;\n'
  
  return headerString
  

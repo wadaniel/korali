@@ -13,7 +13,7 @@ class Simple : public Korali::Conduit::Base
 
  public:
 
- void requestEvaluation(std::vector<double> sample, size_t sampleId) override;
+ void runModel(size_t modelId, Korali::Sample& sample) override;
 };
 
 } } // namespace Korali::Conduit

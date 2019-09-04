@@ -94,7 +94,7 @@
    },
    {
     "Name": [ "Chain Candidates" ],
-    "Type": "std::vector<double>",
+    "Type": "std::vector<Korali::Sample>",
     "Description": "Candidates of all chains to evaluate in order to advance the markov chains."
    },
    {
@@ -109,7 +109,7 @@
    },
    {
     "Name": [ "Chain Leaders" ],
-    "Type": "std::vector<double>",
+    "Type": "std::vector<Korali::Sample>",
     "Description": "Leading parameters of all chains to be accepted."
    },
    {

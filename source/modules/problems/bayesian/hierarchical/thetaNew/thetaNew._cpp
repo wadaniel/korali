@@ -40,7 +40,7 @@ void Korali::Problem::Bayesian::Hierarchical::ThetaNew::initialize()
   }
 }
 
-double Korali::Problem::Bayesian::Hierarchical::ThetaNew::evaluateLogLikelihood(const std::vector<double>& sample)
+double Korali::Problem::Bayesian::Hierarchical::ThetaNew::evaluateLogLikelihood(Korali::Sample* sample)
 {
   double logLikelihood = 0.0;
 
@@ -55,14 +55,14 @@ double Korali::Problem::Bayesian::Hierarchical::ThetaNew::evaluateLogLikelihood(
     for (size_t j = 0; j < Npsi; j++)
       psiSample[j] = _psiProblemSampleCoordinates[i*Npsi + j];
 
-    _psiProblemKorali.updateConditionalPriors( psiSample );
+    _psiProblemKorali.updateConditionalPriors(psiSample);
 
     logValues[i] = 0.;
     for (size_t k = 0; k < Ntheta; k++){
       // size_t k=2;
-      logValues[i] += _psiProblemKorali._conditionalPriors[k]->getLogDensity( sample[k] );
-      // logValues2[i] += _psiProblemKorali._conditionalPriors[k]->getLogDensity( sample[k] );
-      // printf("----->   %lf  ===  %lf \n", _modelData._variables[k], _psiProblemKorali._conditionalPriors[k]->getLogDensity( sample[k] ) );
+      logValues[i] += _psiProblemKorali._conditionalPriors[k]->getLogDensity( sample->getSample()[k] );
+      // logValues2[i] += _psiProblemKorali._conditionalPriors[k]->getLogDensity( sample->getSample()[k] );
+      // printf("----->   %lf  ===  %lf \n", _modelData._variables[k], _psiProblemKorali._conditionalPriors[k]->getLogDensity( sample->getSample()[k] ) );
     }
 
   }

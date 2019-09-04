@@ -169,13 +169,13 @@
    {
     "Name": [ "Initial Mean" ],
     "Type": "double",
-    "Default": "(_upperBound + _lowerBound)*0.5",
+    "Default": "(_k->_problem->_variables[i]->_upperBound + _k->_problem->_variables[i]->_lowerBound)*0.5",
     "Description": "Defines the initial mean for the proposal distribution. This value must be defined between the variable's Mininum and Maximum settings (by default, this value is given by the center of the variable domain)."
    },
    {
     "Name": [ "Initial Standard Deviation" ],
     "Type": "double",
-    "Default": "(_upperBound - _lowerBound)*0.3",
+    "Default": "(_k->_problem->_variables[i]->_upperBound - _k->_problem->_variables[i]->_lowerBound)*0.3",
     "Description": "Defines the initial standard deviation of the proposal distribution for a variable (by default, this value is given by 30% of the variable domain width)."
    },
    {
@@ -260,7 +260,7 @@
    },
    {
     "Name": [ "Sample Population" ],
-    "Type": "std::vector<double>",
+    "Type": "std::vector<Korali::Sample>",
     "Description": "Sample coordinate information."
    },
    {

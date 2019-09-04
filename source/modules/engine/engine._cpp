@@ -1,11 +1,15 @@
-#include "korali.hpp"
+#include "modules/engine/engine.hpp"
+#include "modules/conduits/base.hpp"
+#include "modules/solvers/base.hpp"
+#include "modules/problems/base.hpp"
+#include "auxiliars/koralimath.hpp"
 #include <chrono>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <cstdio>
 
 Korali::Engine* Korali::_k;
-std::vector<std::function<void(Korali::Model&)>> Korali::__korali_models;
+std::vector<std::function<void(Korali::Sample&)>> Korali::__korali_models;
 
 void Korali::Engine::start(bool isDryRun)
 {

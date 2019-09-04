@@ -8,7 +8,7 @@
  [
    {
     "Name": [ "Objective Function" ],
-    "Type": "std::function<void(Korali::Model&)>",
+    "Type": "std::function<void(Korali::Sample&)>",
     "Description": "Stores the function to evaluate."
    }
  ],

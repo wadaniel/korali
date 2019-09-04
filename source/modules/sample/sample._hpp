@@ -1,0 +1,41 @@
+#ifndef __KORALI_SAMPLE_HPP_
+#define __KORALI_SAMPLE_HPP_
+
+#include <vector>
+#include "auxiliars/json.hpp"
+#include "auxiliars/logger.hpp"
+#include "modules/base.hpp"
+
+namespace Korali
+{
+
+class Sample : public Korali::Base {
+
+ private:
+
+ Sample* _self;
+
+ public:
+
+ Sample() { _self = this; }
+
+ double& operator[](size_t i)
+ {
+  if (i >= _self->_sample.size())
+   Korali::logError("Requesting index %lu, but the sample contains only %lu values.\n", i, _self->_sample.size());
+  return _self->_sample[i];
+ }
+
+ std::vector<double>& getSample() { return _self->_sample; }
+ std::vector<double>& getResult() { return _self->_result; }
+
+ size_t getSampleId() { return _self->_sampleId; }
+
+ void setResult(const double& result) { _self->_result.clear(); _self->_result.push_back(result); }
+ void setResult(const std::vector<double>& results) { _self->_result = results; }
+ void setSample(const size_t& sampleId, const std::vector<double>& sample) { _self->_sampleId = sampleId; _self->_sample = sample; }
+};
+
+}
+
+#endif // __KORALI_SAMPLE_HPP_

@@ -1,4 +1,4 @@
-#include "korali.hpp"
+#include "modules/distributions/normal/normal.hpp"
 
 double Korali::Distribution::Normal::getDensity(double x)
 {

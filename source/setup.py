@@ -1,5 +1,17 @@
 #!/usr/bin/env python3
+import os
 from setuptools import *
+
+print('[Korali] Building installation setup...')
+
+sourceDir = os.path.abspath(os.path.dirname(os.path.realpath(__file__))) 
+installFiles = ['libkorali.so']
+for dirpath, subdirs, files in os.walk(sourceDir):
+ for x in files:
+  if (x.endswith(".hpp") or x.endswith(".py")):
+   relDir = os.path.relpath(dirpath, sourceDir)
+   relFile = os.path.join(relDir, x)
+   installFiles.append(relFile)
 
 setup(
     name='Korali',

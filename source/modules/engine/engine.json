@@ -17,14 +17,14 @@
     "Description": "Sample coordinate information."
    },
    {
-    "Name": [ "Solver" ],
-    "Type": "Korali::Solver::Base*",
-    "Description": "Represents the state and configuration of the solver algorithm."
-   },
-   {
     "Name": [ "Problem" ],
     "Type": "Korali::Problem::Base*",
     "Description": "Represents the configuration of the problem to solve."
+   },
+   {
+    "Name": [ "Solver" ],
+    "Type": "Korali::Solver::Base*",
+    "Description": "Represents the state and configuration of the solver algorithm."
    },
    {
     "Name": [ "Conduit" ],

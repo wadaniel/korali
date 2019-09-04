@@ -6,6 +6,7 @@
 #include "modules/distributions/base.hpp"
 #include "modules/distributions/normal/normal.hpp"
 #include "modules/distributions/uniform/uniform.hpp"
+#include "modules/problems/direct/optimization/optimization.hpp"
 #include <vector>
 
 namespace Korali { namespace Solver {
@@ -16,6 +17,7 @@ class CMAES : public Korali::Solver::Base
 
  Korali::Distribution::Base* _normalGenerator; /* Normal random number generator */
  Korali::Distribution::Base* _uniformGenerator; /* Uniform random number generator */
+ Korali::Problem::Direct::Optimization* _constrainedProblem;
 
   void prepareGeneration();
   void sampleSingle(size_t sampleIdx); /* sample individual */

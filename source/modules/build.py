@@ -8,7 +8,7 @@ import json
 
 def getVariableType(v):
  # Replacing bools with ints for Python compatibility
- return v['Type'].replace('bool', 'int').replace('std::function<void(Korali::Model&)>', 'size_t')
+ return v['Type'].replace('bool', 'int').replace('std::function<void(Korali::Sample&)>', 'size_t')
  
 def getCXXVariableName(v):
  cVarName = ''
@@ -49,14 +49,19 @@ def getVariableDescriptor(v):
 def consumeValue(base, moduleName, path, varName, varType, varDefault):
  cString = '\n'
  
- if ('Korali::Sample' in varType):
-  cString = ''
-  return cString
- 
  if ('std::function' in varType):
   cString += ' ' + varName + ' = ' + base + path + '.get<size_t>();\n'
   cString += '   eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n'
   return cString 
+
+ if ('Korali::Sample' in varType):
+  cString = ''
+  return cString
+
+ if ('std::vector<Korali::Variable' in varType):
+  baseType = varType.replace('std::vector<', '').replace('>','')
+  cString += ' for(size_t i = 0; i < ' + base + path + '.size(); i++) ' + varName + '.push_back(new Korali::Variable);\n'
+  return cString
   
  if ('std::vector<Korali::' in varType):
   baseType = varType.replace('std::vector<', '').replace('>','')
@@ -135,9 +140,9 @@ def createSetConfiguration(module):
    codeString += consumeValue('js', module["Alias"], '["Termination Criteria"]' + getVariablePath(v), getCXXVariableName(v["Name"]), getVariableType(v), getVariableDefault(v))
  
  if 'Variables Configuration' in module:
-  codeString += ' for (size_t i = 0; i < _variables.size(); i++) { \n'
+  codeString += ' for (size_t i = 0; i < _k->_js["Variables"].size(); i++) { \n'
   for v in module["Variables Configuration"]:
-   codeString += consumeValue('js["Variables"][i]', module["Alias"], getVariablePath(v), '_variables[i]->' + getCXXVariableName(v["Name"]), getVariableType(v), getVariableDefault(v))
+   codeString += consumeValue('_k->_js["Variables"][i]', module["Alias"], getVariablePath(v), '_k->_variables[i]->' + getCXXVariableName(v["Name"]), getVariableType(v), getVariableDefault(v))
   codeString += ' } \n'
    
  if 'Conditional Variables' in module:
@@ -172,9 +177,9 @@ def createGetConfiguration(module):
    codeString += saveValue('js', '["Internal"]' + getVariablePath(v), getCXXVariableName(v["Name"]), getVariableType(v))
    
  if 'Variables Configuration' in module:
-  codeString += ' for (size_t i = 0; i < _variables.size(); i++) { \n'
+  codeString += ' for (size_t i = 0; i <  _k->_js["Variables"].size(); i++) { \n'
   for v in module["Variables Configuration"]:
-   codeString += saveValue('js["Variables"][i]', getVariablePath(v), '_variables[i]->' + getCXXVariableName(v["Name"]), getVariableType(v))
+   codeString += saveValue('_k->_js["Variables"][i]', getVariablePath(v), '_k->_variables[i]->' + getCXXVariableName(v["Name"]), getVariableType(v))
   codeString += ' } \n'  
    
  if 'Conditional Variables' in module: 

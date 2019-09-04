@@ -11,8 +11,6 @@ class Base : public Korali::Base
 {
  public:
 
-  std::vector<Korali::Variable*> _variables;
-
   virtual bool isSampleFeasible(Korali::Sample*) = 0;
   virtual double evaluateSample(Korali::Sample*) = 0;
 };

@@ -11,7 +11,7 @@ void Korali::Problem::Bayesian::Base::initialize()
 
   for (size_t i = 0; i < _k->_variables.size(); i++)
   {
-   std::string typeString = _k->_variables[i]->_type;
+   std::string typeString = _k->_variables[i]->_bayesianType;
    bool recognizedType = false;
    if (typeString == "Computational") { _computationalVariableIndices.push_back(i); recognizedType = true; }
    if (typeString == "Statistical")   { _statisticalVariableIndices.push_back(i);   recognizedType = true; }

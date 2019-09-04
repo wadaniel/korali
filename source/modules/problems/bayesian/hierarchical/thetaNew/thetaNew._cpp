@@ -16,15 +16,15 @@ void Korali::Problem::Bayesian::Hierarchical::ThetaNew::initialize()
     Korali::logError("The Hierarchical Bayesian (Theta New) requires that the psi-problem has run completely, but it has not.\n");
 
   // Cross-checks
-  if (psiProblemJson["Problem"]["Conditional Priors"].size() != _variables.size() )
-    Korali::logError("THe problem contains a different number of variables (%lu) than conditional priors in the Hierarchical Bayesian (Psi) problem (%lu).\n", _variables.size(), psiProblemJson["Problem"]["Conditional Priors"].size());
+  if (psiProblemJson["Problem"]["Conditional Priors"].size() != _k->_variables.size() )
+    Korali::logError("THe problem contains a different number of variables (%lu) than conditional priors in the Hierarchical Bayesian (Psi) problem (%lu).\n", _k->_variables.size(), psiProblemJson["Problem"]["Conditional Priors"].size());
 
   // Setting Korali problem objects
   _psiProblemEngine.setConfiguration(psiProblemJson);
 
   // Loading Psi problem results
   _psiProblemSampleCount = psiProblemJson["Solver"]["Internal"]["Chain Leaders LogLikelihoods"].size();
-  size_t Npsi = _psiProblemEngine._problem->_variables.size();
+  size_t Npsi = _psiProblemEngine._variables.size();
 
   for (size_t j = 0; j < _psiProblemSampleCount; j++)
   {
@@ -45,7 +45,7 @@ double Korali::Problem::Bayesian::Hierarchical::ThetaNew::evaluateLogLikelihood(
   double logLikelihood = 0.0;
 
   size_t Npsi   = _psiProblemEngine._variables.size();
-  size_t Ntheta = _variables.size();
+  size_t Ntheta = _k->_variables.size();
 
   std::vector<double> psiSample( Npsi, 0.0 );
   std::vector<double> logValues( _psiProblemSampleCount, 0.0);

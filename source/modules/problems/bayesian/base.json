@@ -12,7 +12,7 @@
  "Variables Configuration":
  [
    {
-    "Name": [ "Type" ],
+    "Name": [ "Bayesian Type" ],
     "Type": "std::string",
     "Default": "Computational",
     "Description": "Specifies the purpose of the variable for the bayesian model."

@@ -27,13 +27,13 @@ void Korali::Solver::MCMC::runGeneration()
 {
  // Initializing RNGs
  auto jsNormal = nlohmann::json();
- jsNormal["Type"] = "Normal Distribution";
+ jsNormal["Type"] = "Normal";
  jsNormal["Mean"] = 0.0;
  jsNormal["Standard Deviation"] = 1.0;
  _normalGenerator = dynamic_cast<Korali::Distribution::Normal*>(Korali::Base::getModule(jsNormal));
 
  auto jsUniform = nlohmann::json();
- jsUniform["Type"] = "Uniform Distribution";
+ jsUniform["Type"] = "Uniform";
  jsUniform["Minimum"] = 0.0;
  jsUniform["Maximum"] = 1.0;
  _uniformGenerator = dynamic_cast<Korali::Distribution::Uniform*>(Korali::Base::getModule(jsUniform));
@@ -215,7 +215,7 @@ void Korali::Solver::MCMC::sampleCandidate(size_t sampleIdx)
 double Korali::Solver::MCMC::evaluateSampleLogPrior(double* sample)
 {
   double logPrior = 0.0;
-  for (size_t i = 0; i < _variables.size(); i++)
+  for (size_t i = 0; i < _k->_variables.size(); i++)
     logPrior += _k->_variables[i]->_priorDistribution->getLogDensity(sample[i]);
   return logPrior;
 }

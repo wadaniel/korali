@@ -100,7 +100,7 @@ void Korali::Problem::Bayesian::Hierarchical::Theta::initialize()
 
   // REVIEW: Now inheriting Sub problem's variables
 //  for (size_t i = 0; i < _thetaVariableCount; i++)
-//    _variables.push_back(_subProblemEngineKorali->getVariable(i));
+//    _k->_variables.push_back(_subProblemEngineKorali->getVariable(i));
 
 }
 

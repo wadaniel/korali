@@ -1,5 +1,6 @@
 {
- "Name": "Korali Sample",
+ "Type": "Sample",
+ "Name": "Sample",
  "Alias": "Sample",
  "C++ Class": "Korali::Sample",
 

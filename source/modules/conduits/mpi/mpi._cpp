@@ -102,9 +102,9 @@ void Korali::Conduit::MPI::workerThread()
 
    if (modelId != -1)
    {
-    size_t variableCount = _k->_problem->_variables.size();
-    double sample[variableCount];
-    MPI_Recv(&sample, variableCount, MPI_DOUBLE, getRootRank(), MPI_TAG_SAMPLE, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    //size_t variableCount = _k->_problem->_variables.size();
+    //double sample[variableCount];
+    //MPI_Recv(&sample, variableCount, MPI_DOUBLE, getRootRank(), MPI_TAG_SAMPLE, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
     //__korali_models[modelId](sample);
 
@@ -136,10 +136,10 @@ void Korali::Conduit::MPI::runModel(size_t modelId, Korali::Sample& sample)
 
  for (int i = 0; i < _ranksPerTeam; i++)
  {
-  size_t variableCount = _k->_problem->_variables.size();
-  int workerId = _teamWorkers[teamId][i];
-  int continueFlag = 1;
-  MPI_Send(&modelId, 1, MPI_LONG, workerId, MPI_MODEL_ID, MPI_COMM_WORLD);
+  //size_t variableCount = _k->_problem->_variables.size();
+  //int workerId = _teamWorkers[teamId][i];
+  //int continueFlag = 1;
+  //MPI_Send(&modelId, 1, MPI_LONG, workerId, MPI_MODEL_ID, MPI_COMM_WORLD);
   //MPI_Send(sample.getSample(), sample.getSample().size(), MPI_DOUBLE, workerId, MPI_TAG_SAMPLE, MPI_COMM_WORLD);
  }
  #endif

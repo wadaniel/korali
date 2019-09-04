@@ -15,13 +15,13 @@ void Korali::Solver::DEA::initialize()
 {
  // Initializing RNGs
  auto jsNormal = nlohmann::json();
- jsNormal["Type"] = "Normal Distribution";
+ jsNormal["Type"] = "Normal";
  jsNormal["Mean"] = 0.0;
  jsNormal["Standard Deviation"] = 1.0;
  _normalGenerator = dynamic_cast<Korali::Distribution::Normal*>(Korali::Base::getModule(jsNormal));
 
  auto jsUniform = nlohmann::json();
- jsUniform["Type"] = "Uniform Distribution";
+ jsUniform["Type"] = "Uniform";
  jsUniform["Minimum"] = 0.0;
  jsUniform["Maximum"] = 1.0;
  _uniformGenerator = dynamic_cast<Korali::Distribution::Uniform*>(Korali::Base::getModule(jsUniform));

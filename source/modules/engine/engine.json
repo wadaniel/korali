@@ -58,6 +58,15 @@
    }
  ],
  
+ "Variables Configuration":
+ [
+  {
+   "Name": [ "Name" ],
+   "Type": "std::string",
+   "Description": "Defines the name of the variable."
+  }
+ ],
+  
  "Internal Settings": 
  [
    {

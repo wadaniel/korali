@@ -31,7 +31,7 @@ std::string Korali::getTimestamp()
  return curTime.substr(0, curTime.size()-1);
 }
 
-size_t getTimehash()
+size_t Korali::getTimehash()
 {
  return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }

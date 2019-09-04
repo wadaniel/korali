@@ -65,7 +65,7 @@ void Korali::Problem::Bayesian::Hierarchical::Psi::updateConditionalPriors(const
  // Re-configuring conditional priors given hyperparameters
  std::vector<std::string> _variableNames;
  for (size_t i = 0; i < _variables.size(); i++) _variableNames.push_back(_variables[i]->_name);
- for (size_t i = 0; i < _conditionalPriors.size(); i++)  _conditionalPriors[i]->updateConditionals(_variableNames, sample);
+ //for (size_t i = 0; i < _conditionalPriors.size(); i++)  _conditionalPriors[i]->updateConditionals(_variableNames, sample);
 }
 
 double Korali::Problem::Bayesian::Hierarchical::Psi::evaluateLogLikelihood(Korali::Sample* sample)

@@ -16,8 +16,8 @@ class Base
 
   virtual std::string getType() = 0;
   virtual bool checkTermination() = 0;
-  virtual void getConfiguration(nlohmann::json& js) = 0;
-  virtual void setConfiguration(nlohmann::json& js) = 0;
+  virtual void getConfiguration(nlohmann::json& js) {};
+  virtual void setConfiguration(nlohmann::json& js) {};
 };
 
 } // namespace Korali

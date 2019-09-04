@@ -11,6 +11,14 @@ void Korali::KoraliJsonWrapper::setItem(const std::string& key, const std::funct
  (*_js)[key] = pos;
 }
 
+
+void Korali::KoraliJsonWrapper::operator=(const std::function<void(Korali::Sample&)> val)
+{
+ size_t pos = __korali_models.size();
+ __korali_models.push_back(val);
+ *_js = pos;
+}
+
 bool Korali::isEmpty(nlohmann::json& js)
 {
  bool empty = true;

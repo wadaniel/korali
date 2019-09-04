@@ -11,8 +11,6 @@ class Laplace : public Korali::Distribution::Base {
 
  public:
 
- Laplace();
-
  void updateDistribution() override;
  double getDensity(double x) override;
  double getLogDensity(double x) override;

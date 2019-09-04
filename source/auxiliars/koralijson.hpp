@@ -66,16 +66,23 @@ class KoraliJsonWrapper
 
   KoraliJsonWrapper& getItem(const std::string& key)                   { _key = key; _js = &((*_js)[key]); return *this;}
   KoraliJsonWrapper& getItem(const unsigned long int& key)             { _key = key; _js = &((*_js)[key]); return *this;}
+  KoraliJsonWrapper& operator[](const std::string& key)                { _key = key; _js = &((*_js)[key]); return *this;}
+  KoraliJsonWrapper& operator[](const unsigned long int& key)          { _key = key; _js = &((*_js)[key]); return *this;}
+
   void setItem(const std::string& key, const std::function<void(Korali::Sample&)> val);
   void setItem(const std::string& key, const std::string& val)         { _key = key; (*_js)[key] = val; }
   void setItem(const std::string& key, const double& val)              { _key = key; (*_js)[key] = val; }
   void setItem(const std::string& key, const int& val)                 { _key = key; (*_js)[key] = val; }
-  void setItem(const std::string& key, const bool& val)                { _key = key; (*_js)[key] = val; }
   void setItem(const std::string& key, const std::vector<double>& val) { _key = key; (*_js)[key] = val; }
   void setItem(const int& key, const std::string& val)                 { _key = key; (*_js)[key] = val; }
   void setItem(const int& key, const double& val)                      { _key = key; (*_js)[key] = val; }
   void setItem(const int& key, const int& val)                         { _key = key; (*_js)[key] = val; }
-  void setItem(const int& key, const bool& val)                        { _key = key; (*_js)[key] = val; }
+
+  void operator=(const std::function<void(Korali::Sample&)> val);
+  void operator=(const std::string& val)         { *_js = val; }
+  void operator=(const double& val)              { *_js = val; }
+  void operator=(const int& val)                 { *_js = val; }
+  void operator=(const std::vector<double>& val) { *_js = val; }
 };
 
 }

@@ -11,8 +11,6 @@ class LogNormal : public Korali::Distribution::Base {
 
   public:
 
-  LogNormal();
-
   void updateDistribution() override;
   double getDensity(double x) override;
   double getLogDensity(double x) override;

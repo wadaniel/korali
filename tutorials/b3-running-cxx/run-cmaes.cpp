@@ -9,6 +9,7 @@ int main(int argc, char* argv[])
  k["Problem"]["Type"] = "Bayesian Inference";
  k["Problem"]["Likelihood"]["Model"] = "Additive Normal";
  k["Problem"]["Likelihood"]["Reference Data"] = p.refTemp;
+ k["Problem"]["Computational Model"] = [](Korali::Sample& d) { heat2DSolver(d.getSample(), d.getResult()); };
 
  k["Problem"]["Variables"][0]["Name"] = "Intensity";
  k["Problem"]["Variables"][0]["Type"] = "Computational";
@@ -45,8 +46,6 @@ int main(int argc, char* argv[])
  k["Solver"]["Type"] = "CMAES";
  k["Solver"]["Population Size"] = 32;
  k["Solver"]["Termination Criteria"]["Max Generations"] = 20;
-
- k.setReferenceModel([](Korali::Model::Reference& d) { heat2DSolver(d.getVariables(), d.getEvaluations()); });
 
  k.run();
 

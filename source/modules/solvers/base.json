@@ -1,0 +1,11 @@
+{
+ "Type": "Solver",
+ "Name": "Solver (Base)",
+ "Alias": "Solver (Base)",
+ "C++ Class": "Korali::Solver::Base",
+
+ "Variables Configuration":
+ [
+ ]
+
+}

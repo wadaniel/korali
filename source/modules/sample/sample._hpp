@@ -2,6 +2,7 @@
 #define __KORALI_SAMPLE_HPP_
 
 #include <vector>
+#include <functional>
 #include "auxiliars/json.hpp"
 #include "auxiliars/logger.hpp"
 #include "modules/base.hpp"
@@ -34,6 +35,8 @@ class Sample : public Korali::Base {
  void setResult(const double& result) { _self->_result.clear(); _self->_result.push_back(result); }
  void setResult(const std::vector<double>& results) { _self->_result = results; }
  void setSample(const size_t& sampleId, const std::vector<double>& sample) { _self->_sampleId = sampleId; _self->_sample = sample; }
+
+ void run(const std::function<void()> evaluationFunction);
 };
 
 }

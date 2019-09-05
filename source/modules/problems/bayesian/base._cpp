@@ -39,7 +39,7 @@ bool Korali::Problem::Bayesian::Base::isSampleFeasible(Korali::Sample* sample)
   return true;
 }
 
-double Korali::Problem::Bayesian::Base::evaluateSample(Korali::Sample* sample)
+double Korali::Problem::Bayesian::Base::getBasicEvaluation(Korali::Sample* sample)
 {
  return evaluateLogPosterior(sample);
 }

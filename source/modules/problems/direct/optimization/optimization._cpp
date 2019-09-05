@@ -6,7 +6,7 @@ void Korali::Problem::Direct::Optimization::initialize()
  if (_k->_variables.size() == 0) Korali::logError("Optimization problems require at least one variable.\n");
 }
 
-double Korali::Problem::Direct::Optimization::evaluateSample(Korali::Sample* sample)
+double Korali::Problem::Direct::Optimization::getBasicEvaluation(Korali::Sample* sample)
 {
  double fitnessSign = _objective == "Maximize" ? 1.0 : -1.0;
 

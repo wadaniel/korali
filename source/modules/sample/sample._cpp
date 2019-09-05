@@ -1,3 +1,8 @@
 #include "modules/sample/sample.hpp"
 #include "auxiliars/koralijson.hpp"
 
+void Korali::Sample::run(const std::function<void()> evaluationFunction)
+{
+ printf("Hallo, ich bin sample n. %lu\n", this->getSampleId());
+}
+

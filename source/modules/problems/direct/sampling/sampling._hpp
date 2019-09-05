@@ -9,7 +9,7 @@ class Sampling : public Korali::Problem::Direct::Base
 {
  public:
 
- double evaluateSample(Korali::Sample* sample) override;
+ double getBasicEvaluation(Korali::Sample* sample) override;
  void initialize() override;
 };
 

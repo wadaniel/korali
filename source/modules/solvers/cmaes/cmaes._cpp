@@ -15,12 +15,14 @@ void Korali::Solver::CMAES::initialize()
  jsNormal["Mean"] = 0.0;
  jsNormal["Standard Deviation"] = 1.0;
  _normalGenerator = dynamic_cast<Korali::Distribution::Normal*>(Korali::Base::getModule(jsNormal));
+ _normalGenerator->initialize();
 
  auto jsUniform = nlohmann::json();
  jsUniform["Type"] = "Uniform";
  jsUniform["Minimum"] = 0.0;
  jsUniform["Maximum"] = 1.0;
  _uniformGenerator = dynamic_cast<Korali::Distribution::Uniform*>(Korali::Base::getModule(jsUniform));
+ _uniformGenerator->initialize();
 
  N = _k->_variables.size();
 

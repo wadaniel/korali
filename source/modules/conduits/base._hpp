@@ -11,7 +11,7 @@ class Base : public Korali::Base {
 
  public:
 
- virtual void runModel(size_t modelId, Korali::Sample& sample) = 0;
+ virtual void runModel(size_t modelId, Korali::Sample* sample) = 0;
  virtual bool isRoot() { return true; }
  virtual void abort() { exit(-1); }
 

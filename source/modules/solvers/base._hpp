@@ -13,7 +13,7 @@ class Base : public Korali::Base
 
  size_t N; // Sample Size
 
- virtual void processEvaluation(const double evaluation, const size_t sampleId) = 0;
+ virtual void processEvaluation(const double evaluation, const size_t sampleId) { };
  virtual void printGeneration() = 0;
  virtual void runGeneration() = 0;
 };

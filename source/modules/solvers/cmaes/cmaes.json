@@ -100,18 +100,11 @@
  "Termination Criteria":
  [
    {
-    "Name": [ "Max Generations" ],
+    "Name": ["Max Generations" ],
     "Type": "size_t",
-    "Default": "1000",
+    "Default": "100",
     "Criteria": "_k->_currentGeneration >= _maxGenerations",
     "Description": "Determines how many solver generations to run before stopping execution. Execution can be resumed at a later moment."
-   },
-   {
-    "Name": [ "Max Model Evaluations" ],
-    "Type": "size_t",
-    "Default": "std::numeric_limits<size_t>::max()",
-    "Criteria": "_k->_modelEvaluationCount >= _maxModelEvaluations",
-    "Description": "Determines how many computational model evaluations to run before stopping execution. Execution can be resumed at a later moment."
    },
    {
     "Name": [ "Max Infeasible Resamplings" ],
@@ -262,11 +255,6 @@
     "Name": [ "Sample Population" ],
     "Type": "std::vector<Korali::Sample>",
     "Description": "Sample coordinate information."
-   },
-   {
-    "Name": [ "Is Initialized Sample" ],
-    "Type": "std::vector<bool>",
-    "Description": "Determines which samples are initialized."
    },
    {
     "Name": [ "Finished Sample Count" ],

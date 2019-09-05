@@ -71,8 +71,6 @@ void Korali::Solver::CMAES::initialize()
  _currentBestVariables.resize(N);
 
  _sortingIndex.resize(s_max);
-
- _isInitializedSample.resize(s_max);
  _valueVector.resize(s_max);
 
  _covarianceMatrix.resize(N*N);
@@ -214,20 +212,19 @@ void Korali::Solver::CMAES::runGeneration()
  if ( _areConstraintsDefined ) checkMeanAndSetRegime();
  prepareGeneration();
  if ( _areConstraintsDefined ){ updateConstraints(); handleConstraints(); }
- evaluateSamples();
- updateDistribution();
-}
 
-void Korali::Solver::CMAES::evaluateSamples()
-{
-  while (_finishedSampleCount < _currentPopulationSize)
-  {
-    for (size_t i = 0; i < _currentPopulationSize; i++) if (_isInitializedSample[i] == false)
-    {
-     _isInitializedSample[i] = true;
-     _samplePopulation[i].run(Korali::Problem::Base::basicEvaluation);
-    }
-  }
+ // Initializing Sample Evaluation
+ for (size_t i = 0; i < _currentPopulationSize; i++)
+  _samplePopulation[i].start(Korali::Problem::Base::basicEvaluation);
+
+ // Waiting for samples to finish
+ Korali::Sample::waitAll(_samplePopulation);
+
+ // Processing results
+ for (size_t i = 0; i < _currentPopulationSize; i++)
+  _valueVector[i] = _samplePopulation[i].getResult()[0];
+
+ updateDistribution();
 }
 
 void Korali::Solver::CMAES::initMuWeights(size_t numsamplesmu)
@@ -293,18 +290,6 @@ void Korali::Solver::CMAES::initCovariance()
 
  _maximumDiagonalCovarianceMatrixElement=_covarianceMatrix[0]; for(size_t i=1;i<N;++i) if(_maximumDiagonalCovarianceMatrixElement<_covarianceMatrix[i*N+i]) _maximumDiagonalCovarianceMatrixElement=_covarianceMatrix[i*N+i];
  _minimumDiagonalCovarianceMatrixElement=_covarianceMatrix[0]; for(size_t i=1;i<N;++i) if(_minimumDiagonalCovarianceMatrixElement>_covarianceMatrix[i*N+i]) _minimumDiagonalCovarianceMatrixElement=_covarianceMatrix[i*N+i];
-}
-
-
-void Korali::Solver::CMAES::processEvaluation(const double evaluation, const size_t sampleId)
-{
-// if(std::isfinite(evaluation) == false)
-// {
-//   evaluation = -std::numeric_limits<double>::infinity();
-//   Korali::logWarning("Normal","Sample %zu returned non finite evaluation (evaluation set to %e)!\n", sampleId, evaluation);
-// }
- _valueVector[sampleId] = evaluation;
- _finishedSampleCount++;
 }
 
 
@@ -420,9 +405,6 @@ void Korali::Solver::CMAES::prepareGeneration()
        sampleSingle(i);
      }
  }
-
- _finishedSampleCount = 0;
- for (size_t i = 0; i < _currentPopulationSize; i++) _isInitializedSample[i] = false;
 }
 
 
@@ -504,8 +486,13 @@ void Korali::Solver::CMAES::updateDistribution()
  {
   _previousBestEverValue = _bestEverValue;
   _bestEverValue = _currentBestValue;
-  for (size_t d = 0; d < N; ++d) _bestEverVariables[d] = _currentBestVariables[d];
-  for (size_t c = 0; c < _constrainedProblem->_constraints.size(); c++) _bestConstraintEvaluations[c] = _constraintEvaluations[c][_bestValidSample];
+
+  for (size_t d = 0; d < N; ++d)
+   _bestEverVariables[d] = _currentBestVariables[d];
+
+  if ( _areConstraintsDefined )
+   for (size_t c = 0; c < _constrainedProblem->_constraints.size(); c++)
+    _bestConstraintEvaluations[c] = _constraintEvaluations[c][_bestValidSample];
  }
 
  /* set weights */

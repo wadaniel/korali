@@ -21,10 +21,10 @@ double Korali::Problem::Bayesian::Reference::evaluateLogLikelihood(Korali::Sampl
 {
   double fitness = 0.0;
 
-  //_k->_conduit->runModel(_computationalModel, sample);
+  _k->_conduit->runModel(_computationalModel, sample);
 
   if (sample->getResult().size() != _referenceData.size())
-    Korali::logError("Bayesian (%s) problems require a %lu-sized reference sample->getResult() array. Provided: %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), sample->getResult().size());
+    Korali::logError("This Bayesian (%s) problem requires a %lu-sized result array. Provided: %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), sample->getResult().size());
 
   if (_likelihoodModel == "Additive Normal")            fitness = likelihoodNormalAdditive(sample);
   if (_likelihoodModel == "Multiplicative Normal")      fitness = likelihoodNormalMultiplicative(sample);

@@ -32,7 +32,7 @@ void Korali::Engine::start(bool isDryRun)
  {
   saveState("dry.json");
   Korali::logInfo("Minimal",  "--------------------------------------------------------------------\n");
-  Korali::logInfo("Minimal",  "Dry Run Successful.\n", _currentGeneration);
+  Korali::logInfo("Minimal",  "Dry Run Successful.\n");
   Korali::logInfo("Minimal",  "--------------------------------------------------------------------\n");
   return;
  }
@@ -43,7 +43,7 @@ void Korali::Engine::start(bool isDryRun)
  auto startTime = std::chrono::system_clock::now();
 
  // Running Solver by generations until at least one termination criterion is satisfied
- while(_solver->checkTermination() == false)
+ while(isExecutionFinished() == false)
  {
   auto t0 = std::chrono::system_clock::now();
 
@@ -78,7 +78,7 @@ void Korali::Engine::start(bool isDryRun)
 
  Korali::logInfo("Minimal", "--------------------------------------------------------------------\n");
  Korali::logInfo("Minimal", "Total Generations: %lu\n", _currentGeneration);
- Korali::logInfo("Minimal", "Total Computational Model Evaluations: %lu\n", _modelEvaluationCount);
+ Korali::logInfo("Minimal", "Total Computational Model Evaluations: %lu\n", _conduit->_modelEvaluationCount);
  Korali::logInfo("Minimal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(endTime-startTime).count());
  Korali::logInfo("Minimal", "Results saved to folder: '%s'\n", _resultsOutputPath.c_str());
 }
@@ -102,6 +102,11 @@ void Korali::Engine::initialize()
  _problem->initialize();
  _solver->initialize();
  _conduit->initialize();
+}
+
+bool Korali::Engine::isExecutionFinished()
+{
+  return _solver->checkTermination() || _conduit->checkTermination() || _problem->checkTermination();
 }
 
 void Korali::Engine::saveState(std::string fileName)

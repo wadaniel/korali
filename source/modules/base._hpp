@@ -15,7 +15,7 @@ class Base
   virtual void finalize() { }
 
   virtual std::string getType() = 0;
-  virtual bool checkTermination() = 0;
+  virtual bool checkTermination() { return false; };
   virtual void getConfiguration(nlohmann::json& js) {};
   virtual void setConfiguration(nlohmann::json& js) {};
 };

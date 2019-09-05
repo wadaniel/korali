@@ -16,33 +16,37 @@ class Sample : public Korali::Base {
  private:
 
  Sample* _self;
+ cothread_t _mainThread;
+ cothread_t _sampleThread;
+ void(*_function)(Korali::Sample*);
+ bool _isFinished;
 
  public:
 
  Sample() { _self = this; }
 
- cothread_t _mainThread;
- cothread_t _sampleThread;
- void(*_evaluationFunction)(Korali::Sample*);
+ // Sample Setting Functions
+ size_t getSampleId() { return _self->_sampleId; }
+ std::vector<double>& getSample() { return _self->_sample; }
+ void setSample(const std::vector<double>& sample) {_self->_sample = sample; }
 
  double& operator[](size_t i)
- {
-  if (i >= _self->_sample.size())
-   Korali::logError("Requesting index %lu, but the sample contains only %lu values.\n", i, _self->_sample.size());
-  return _self->_sample[i];
- }
+  {
+   if (i >= _self->_sample.size())
+    Korali::logError("Requesting index %lu, but the sample contains only %lu values.\n", i, _self->_sample.size());
+   return _self->_sample[i];
+  }
 
- std::vector<double>& getSample() { return _self->_sample; }
+ // Result Functions
  std::vector<double>& getResult() { return _self->_result; }
-
- size_t getSampleId() { return _self->_sampleId; }
-
  void setResult(const double& result) { _self->_result.clear(); _self->_result.push_back(result); }
  void setResult(const std::vector<double>& results) { _self->_result = results; }
- void setSample(const size_t& sampleId, const std::vector<double>& sample) { _self->_sampleId = sampleId; _self->_sample = sample; }
 
- void run(void(*evaluationFunction)(Korali::Sample*));
+ // Execution Control Functions
+ void start(void(*function)(Korali::Sample*));
+ bool isFinished();
  static void threadCallWrapper();
+ static void waitAll(std::vector<Korali::Sample>& samples);
 };
 
 extern Korali::Sample* __current_sample;

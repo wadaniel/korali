@@ -6,7 +6,7 @@
  "Configuration Settings": 
  [
    {
-    "Name": [ "Random Seed" ],
+    "Name": ["Random Seed" ],
     "Type": "size_t",
     "Default": "_runID",
     "Description": "Specifies the initializing seed for the generation of random numbers. If 0 is specified, Korali will automatically derivate a new seed base on the current time."
@@ -33,25 +33,25 @@
     "Description": "Represents the configuration of the execution conduit."
    },
    {
-    "Name": [ "Console Output", "Verbosity"],
+    "Name": ["Console Output", "Verbosity"],
     "Type": "std::string",
     "Default": "Normal",
     "Description": "Specifies how much information will be displayed on console when running Korali."
    },
    {
-    "Name": [ "Console Output", "Frequency" ],
+    "Name": ["Console Output", "Frequency" ],
     "Type": "size_t",
     "Default": "1",
     "Description": "Specifies how often (in generations) will partial results be printed on console. The default, 1, indicates that every generation's results will be printed."
    },
    {
-    "Name": [ "Results Output", "Path"],
+    "Name": ["Results Output", "Path"],
     "Type": "std::string",
     "Default": "_korali_result",
     "Description": "Specifies the path of the results directory."
    },
    {
-    "Name": [ "Results Output", "Frequency" ],
+    "Name": ["Results Output", "Frequency" ],
     "Type": "size_t",
     "Default": "1",
     "Description": "Specifies how often (in generations) will partial result files be saved on the results directory. The default, 1, indicates that every generation's results will be saved."
@@ -86,12 +86,6 @@
     "Type": "size_t",
     "Default": "0",
     "Description": "Indicates the current generation in execution."
-   },
-   {
-    "Name": [ "Model Evaluation Count" ],
-    "Type": "size_t",
-    "Default": "0",
-    "Description": "Keeps track of how many model evaluations has the conduit performed so far."
    },
    {
     "Name": [ "Is Finished" ],

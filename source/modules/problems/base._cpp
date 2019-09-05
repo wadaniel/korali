@@ -4,5 +4,5 @@
 
 void Korali::Problem::Base::basicEvaluation(Korali::Sample* sample)
 {
- printf("Evaluating Sample: %lu\n", sample->getSampleId());
+ sample->setResult(_k->_problem->getBasicEvaluation(sample));
 }

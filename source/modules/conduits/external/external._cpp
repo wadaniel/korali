@@ -11,7 +11,7 @@ void Korali::Conduit::External::initialize()
  for (int i = 0; i < _concurrentJobs; i++) _launcherQueue.push(i);
 }
 
-void Korali::Conduit::External::runModel(size_t modelId, Korali::Sample& sample)
+void Korali::Conduit::External::runModel(size_t modelId, Korali::Sample* sample)
 {
 // while (_launcherQueue.empty()) checkProgress();
 
@@ -28,14 +28,14 @@ void Korali::Conduit::External::runModel(size_t modelId, Korali::Sample& sample)
 
  if (processId == 0)
  {
-  __korali_models[modelId](sample);
+  //__korali_models[modelId](sample);
   //double evaluation = _k->_problem->evaluateTarget());
 
   //write(_pipeDescriptors[launcherId][1], &evaluation, sizeof(double));
   exit(0);
  }
 
- _k->_modelEvaluationCount++;
+ _modelEvaluationCount++;
 
 }
 

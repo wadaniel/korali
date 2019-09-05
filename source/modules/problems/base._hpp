@@ -13,7 +13,6 @@ class Base : public Korali::Base
 
   virtual bool isSampleFeasible(Korali::Sample*) = 0;
   virtual double getBasicEvaluation(Korali::Sample*) = 0;
-
   static void basicEvaluation(Korali::Sample*);
 };
 

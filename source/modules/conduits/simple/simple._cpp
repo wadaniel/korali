@@ -3,8 +3,10 @@
 #include "modules/problems/base.hpp"
 #include "modules/solvers/base.hpp"
 
-void Korali::Conduit::Simple::runModel(size_t modelId, Korali::Sample& sample)
+void Korali::Conduit::Simple::runModel(size_t modelId, Korali::Sample* sample)
 {
- __korali_models[modelId](sample);
+ sample->_result.clear();
+ __korali_models[modelId](*sample);
+ _modelEvaluationCount++;
 }
 

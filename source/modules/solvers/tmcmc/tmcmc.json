@@ -58,25 +58,18 @@
  "Termination Criteria":
  [
    {
+    "Name": ["Max Generations" ],
+    "Type": "size_t",
+    "Default": "12",
+    "Criteria": "_k->_currentGeneration >= _maxGenerations",
+    "Description": "Determines how many solver generations to run before stopping execution. Execution can be resumed at a later moment."
+   },
+   {
     "Name": [ "Target Annealing Exponent" ],
     "Type": "double",
     "Criteria": "_annealingExponent >= _targetAnnealingExponent",
     "Default": "1.0",
     "Description": "Determines the annealing exponent $rho$ to achieve before termination. TMCMC converges if $rho$ equals 1.0."
-   },
-   {
-    "Name": [ "Max Generations" ],
-    "Type": "size_t",
-    "Default": "100",
-    "Criteria": "_k->_currentGeneration >= _maxGenerations",
-    "Description": "Determines how many generations to run before stopping execution. Execution can be resumed at a later moment."
-   },
-   {
-    "Name": [ "Max Model Evaluations" ],
-    "Type": "size_t",
-    "Default": "10000000",
-    "Criteria": "_k->_modelEvaluationCount > _maxModelEvaluations",
-    "Description": "Determines how many computational model evaluations to run before stopping execution. Execution can be resumed at a later moment."
    }
  ],
 

@@ -35,6 +35,7 @@ class Engine : public Korali::Base {
  void setItem(const std::string& key, const int& val)         { if(_js[key].is_boolean()) _js[key] = val == true; else _js[key] = val; }
 
  // State save/load methods
+ bool isExecutionFinished();
  void loadState(std::string fileName);
  void saveState(std::string fileName);
  void saveState(int fileId);

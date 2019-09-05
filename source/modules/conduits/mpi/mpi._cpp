@@ -121,9 +121,9 @@ void Korali::Conduit::MPI::workerThread()
  #endif
 }
 
-void Korali::Conduit::MPI::runModel(size_t modelId, Korali::Sample& sample)
+void Korali::Conduit::MPI::runModel(size_t modelId, Korali::Sample* sample)
 {
- _k->_modelEvaluationCount++;
+ _modelEvaluationCount++;
 
  #ifdef _KORALI_USE_MPI
  //while (_teamQueue.empty()) checkProgress();

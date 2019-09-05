@@ -24,7 +24,7 @@ class External : public Korali::Conduit::Base {
  std::map<int, pid_t> _launcherIdToProcessIdMap;
  std::map<pid_t, int> _processIdMapToLauncherIdMap;
 
- void runModel(size_t modelId, Korali::Sample& sample) override;
+ void runModel(size_t modelId, Korali::Sample* sample) override;
  void initialize() override;
 // void checkProgress() override;
 

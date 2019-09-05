@@ -6,6 +6,7 @@
 #include "auxiliars/json.hpp"
 #include "auxiliars/logger.hpp"
 #include "modules/base.hpp"
+#include "modules/sample/libco/libco.h"
 
 namespace Korali
 {
@@ -19,6 +20,10 @@ class Sample : public Korali::Base {
  public:
 
  Sample() { _self = this; }
+
+ cothread_t _mainThread;
+ cothread_t _sampleThread;
+ void(*_evaluationFunction)(Korali::Sample*);
 
  double& operator[](size_t i)
  {
@@ -36,8 +41,11 @@ class Sample : public Korali::Base {
  void setResult(const std::vector<double>& results) { _self->_result = results; }
  void setSample(const size_t& sampleId, const std::vector<double>& sample) { _self->_sampleId = sampleId; _self->_sample = sample; }
 
- void run(const std::function<void()> evaluationFunction);
+ void run(void(*evaluationFunction)(Korali::Sample*));
+ static void threadCallWrapper();
 };
+
+extern Korali::Sample* __current_sample;
 
 }
 

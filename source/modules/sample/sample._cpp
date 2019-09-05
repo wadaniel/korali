@@ -1,8 +1,24 @@
 #include "modules/sample/sample.hpp"
 #include "auxiliars/koralijson.hpp"
 
-void Korali::Sample::run(const std::function<void()> evaluationFunction)
+Korali::Sample* Korali::__current_sample;
+
+void Korali::Sample::threadCallWrapper()
+{
+ Korali::Sample* currentSample = Korali::__current_sample;
+ currentSample->_evaluationFunction(currentSample);
+ co_switch(currentSample->_mainThread);
+}
+
+void Korali::Sample::run(void(*evaluationFunction)(Korali::Sample*))
 {
  printf("Hallo, ich bin sample n. %lu\n", this->getSampleId());
+
+ _sampleThread = co_create(4096*sizeof(void*), Korali::Sample::threadCallWrapper);
+ _mainThread = co_active();
+ _evaluationFunction = evaluationFunction;
+ __current_sample = this;
+ co_switch(_sampleThread);
+
 }
 

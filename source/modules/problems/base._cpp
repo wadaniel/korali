@@ -2,7 +2,7 @@
 #include "modules/engine/engine.hpp"
 #include "auxiliars/koralijson.hpp"
 
-void Korali::Problem::Base::basicEvaluation()
+void Korali::Problem::Base::basicEvaluation(Korali::Sample* sample)
 {
- printf("Evaluating Sample");
+ printf("Evaluating Sample: %lu\n", sample->getSampleId());
 }

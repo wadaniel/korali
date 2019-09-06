@@ -8,9 +8,9 @@ void Korali::Problem::Direct::Sampling::initialize()
 
 double Korali::Problem::Direct::Sampling::getBasicEvaluation(Korali::Sample& sample)
 {
- //_k->_conduit->runModel(sample, _objectiveFunction);
-
+ _k->_conduit->runModel(_objectiveFunction, sample);
  std::vector<double> result = sample.getResult();
- if (result.size() != 0) Korali::logError("Sampling problems require exactly 1 result. Provided: %lu.\n", result.size());
+ if (result.size() != 1) Korali::logError("Sampling problems require exactly 1 result. Provided: %lu.\n", result.size());
+
  return result[0];
 }

@@ -17,15 +17,11 @@ class MCMC : public Korali::Solver::Base
  Korali::Distribution::Base* _uniformGenerator; /* Uniform random number generator */
 
  double recursiveAlpha(double& D, const double llk0, const double* logliks, size_t N) const; /* calculate acceptance ratio alpha_N */
- void evaluateSample();
  void updateState();
- bool setCandidatePriorAndCheck(size_t sampleIdx);
  void generateCandidate(size_t sampleIdx);
- void sampleCandidate(size_t sampleIdx);
  void updateDatabase(std::vector<double>&, double fitness);
  void choleskyDecomp(const std::vector<double>& inC, std::vector<double>& outL) const;
- void acceptReject(size_t trial); /* Accept or reject sample with multiple trials */
- double evaluateSampleLogPrior(double* sample);
+ void finishSample(size_t sampleId);
 
  public:
 
@@ -35,7 +31,6 @@ class MCMC : public Korali::Solver::Base
  void initialize() override;
  void finalize() override;
  void runGeneration() override;
- void processEvaluation(const double evaluation, const size_t sampleId);
  void printGeneration() override;
 };
 

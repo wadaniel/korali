@@ -40,3 +40,9 @@ bool Korali::Sample::isFinished()
  free(_self->_sampleThread);
  return _self->_isFinished;
 }
+
+void Korali::Sample::wait()
+{
+ while(isFinished() == false);
+ return;
+}

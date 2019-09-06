@@ -163,6 +163,8 @@ def createSetConfiguration(module):
 def createGetConfiguration(module):  
  codeString = 'void ' + module["C++ Class"]  + '::getConfiguration(nlohmann::json& js) \n{\n\n'
  
+ codeString += ' js["Type"] = "' + module["Alias"] + '";\n'
+ 
  if 'Configuration Settings' in module:
   for v in module["Configuration Settings"]: 
    codeString += saveValue('js', getVariablePath(v), getCXXVariableName(v["Name"]), getVariableType(v))

@@ -115,13 +115,13 @@ void Korali::Engine::saveState(std::string fileName)
  _timestamp = Korali::getTimestamp();
 
  // Getting configuration
- auto js = nlohmann::json();
- this->getConfiguration(js);
+ _js = nlohmann::json();
+ this->getConfiguration(_js);
 
  // Only the root rank saves files
  if (!_conduit->isRoot()) return;
  fileName = "./" + _resultsOutputPath + "/" + fileName;
- saveJsonToFile(fileName.c_str(), js);
+ saveJsonToFile(fileName.c_str(), _js);
 }
 
 void Korali::Engine::saveState(int fileId)

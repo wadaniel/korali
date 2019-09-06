@@ -16,6 +16,7 @@
    {
     "Name": [ "Constraints" ],
     "Type": "std::vector<std::function<void(Korali::Sample&)>>",
+    "Default": "std::vector<size_t>(0)",
     "Description": "Stores constraints to the objective function."
    }
  ],

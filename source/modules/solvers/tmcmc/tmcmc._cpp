@@ -46,10 +46,10 @@ void Korali::Solver::TMCMC::initialize()
  // Allocating TMCMC memory
 
  _chainLeaders.resize(_populationSize);
- for(size_t i = 0; i < _populationSize; i++) _chainLeaders[i]._sample.resize(N);
+ for(size_t i = 0; i < _populationSize; i++) _chainLeaders[i].resize(N);
 
  _chainCandidates.resize(_populationSize);
- for(size_t i = 0; i < _populationSize; i++) _chainCandidates[i]._sample.resize(N);
+ for(size_t i = 0; i < _populationSize; i++) _chainCandidates[i].resize(N);
 
  _covarianceMatrix.resize(N*N);
  _meanTheta.resize(N);

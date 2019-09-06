@@ -60,8 +60,8 @@ void Korali::Solver::MCMC::initialize()
  if(_chainCovarianceScaling <= 0.0) Korali::logError("Chain Covariance Scaling must be larger 0.0 (is %lf).\n", _chainCovarianceScaling);
 
  // Allocating MCMC memory
- _chainCandidate.resize(_rejectionLevels);
- for(size_t i = 0; i < _rejectionLevels; i++) _chainCandidate[i]._sample.resize(N);
+ _chainCandidate.resize(_maxChainLength);
+ for(size_t i = 0; i < _maxChainLength; i++) _chainCandidate[i].resize(N);
 
  _choleskyDecompositionCovariance.resize(N*N);
  _chainLeader.resize(N);

@@ -253,7 +253,7 @@
    },
    {
     "Name": [ "Sample Population" ],
-    "Type": "std::vector<Korali::Sample>",
+    "Type": "std::vector<std::vector<double>>",
     "Description": "Sample coordinate information."
    },
    {
@@ -330,11 +330,6 @@
     "Name": [ "Auxiliar Axis Lengths" ],
     "Type": "std::vector<double>",
     "Description": "Temporary storage for Axis lengths."
-   },
-   {
-    "Name": [ "Random Number Storage" ],
-    "Type": "std::vector<double>",
-    "Description": "Temporary storage for Random Number Generation."
    },
    {
     "Name": [ "BDZ Matrix" ],

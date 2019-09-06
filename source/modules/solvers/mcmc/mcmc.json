@@ -87,7 +87,7 @@
    },
    {
     "Name": [ "Chain Candidate" ],
-    "Type": "std::vector<Korali::Sample>",
+    "Type": "std::vector<std::vector<double>>",
     "Description": "Candidate variables to be accepted or rejected after comparison with the Chain Leader."
    },
    {

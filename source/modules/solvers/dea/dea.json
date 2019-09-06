@@ -109,23 +109,13 @@
    },
    {
     "Name": [ "Sample Population" ],
-    "Type": "std::vector<Korali::Sample>",
+    "Type": "std::vector<std::vector<double>>",
     "Description": "Sample variable information."
    },
    {
     "Name": [ "Candidate Population" ],
-    "Type": "std::vector<Korali::Sample>",
+    "Type": "std::vector<std::vector<double>>",
     "Description": "Sample candidates variable information."
-   },
-   {
-    "Name": [ "Is Initialized Sample" ],
-    "Type": "std::vector<bool>",
-    "Description": "Determines which samples are initialized."
-   },
-   {
-    "Name": [ "Finished Sample Count" ],
-    "Type": "size_t",
-    "Description": "Counter of evaluated samples to terminate evaluation."
    },
    {
     "Name": [ "Current Best Value" ],

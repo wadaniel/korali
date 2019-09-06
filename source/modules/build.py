@@ -72,7 +72,6 @@ def consumeValue(base, moduleName, path, varName, varType, varDefault):
  if ('Korali::' in varType):
   if (varDefault): cString = ' if (! isDefined(' + base + ', "' + path.replace('"', "'") + '[\'Type\']")) ' + base + path + '["Type"] = "' + varDefault + '"; \n'
   cString += ' ' + varName + ' = dynamic_cast<' + varType + '>(Korali::Base::getModule(' + base + path + '));\n'
-  cString += ' ' + varName + '->setConfiguration(' + base + path + ');\n'
   return cString  
   
  cString += ' if (isDefined(' + base + ', "' + path.replace('"', "'") + '"))  \n  { \n'
@@ -148,8 +147,8 @@ def createSetConfiguration(module):
  if 'Conditional Variables' in module:
   for v in module["Conditional Variables"]:
    codeString += ' ' + getCXXVariableName(v["Name"]) + 'Conditional = "";\n'
-   codeString += ' if(js' + getVariablePath(v) + '.is_number()) ' + getCXXVariableName(v["Name"]) + ' = js' + getVariablePath(v) + ';\n'
-   codeString += ' if(js' + getVariablePath(v) + '.is_string()) ' + getCXXVariableName(v["Name"]) + 'Conditional = js' + getVariablePath(v) + ';\n'
+   codeString += ' if(js' + getVariablePath(v) + '.is_number()) { printf("IsNumber\\n"); ' + getCXXVariableName(v["Name"]) + ' = js' + getVariablePath(v) + '; }\n'
+   codeString += ' if(js' + getVariablePath(v) + '.is_string()) { printf("IsString\\n"); ' + getCXXVariableName(v["Name"]) + 'Conditional = js' + getVariablePath(v) + ';} \n'
    codeString += ' eraseValue(js, "' + getVariablePath(v).replace('"', "'") + '");\n\n'
  
  codeString += ' ' + getParentClass(module) + '::setConfiguration(js);\n'

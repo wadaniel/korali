@@ -7,7 +7,7 @@
  "Internal Settings": 
  [
    {
-    "Name": [ "Sample" ],
+    "Name": [ "Sample Data" ],
     "Type": "std::vector<double>",
     "Description": "Contains the values describing the sample."
    },

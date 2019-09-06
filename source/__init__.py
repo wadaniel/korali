@@ -11,7 +11,6 @@ def initialize():
  
 def getResults(fileName = ''):
  return Engine.getResults(fileName)
- 
 
 def getLatestResult(src):
  resultFiles = getResultFiles(src)

@@ -18,10 +18,10 @@ k["Problem"]["Type"] = "Optimization"
 k["Problem"]["Objective"] = "Maximize"
 k["Problem"]["Objective Function"] = model
 
-# Defining the problem's variables and their CMA-ES bounds.
-k["Problem"]["Variables"][0]["Name"] = "X"
-k["Problem"]["Variables"][0]["Lower Bound"] = -10.0
-k["Problem"]["Variables"][0]["Upper Bound"] = +10.0
+# Defining the problem's variables.
+k["Variables"][0]["Name"] = "X"
+k["Variables"][0]["Lower Bound"] = -10.0
+k["Variables"][0]["Upper Bound"] = +10.0
 
 # Configuring CMA-ES parameters
 k["Solver"]["Type"] = "CMAES"

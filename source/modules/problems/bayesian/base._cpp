@@ -22,8 +22,8 @@ void Korali::Problem::Bayesian::Base::initialize()
 double Korali::Problem::Bayesian::Base::evaluateLogPrior(Korali::Sample* sample)
 {
   double logPrior = 0.0;
-  for (size_t i = 0; i < sample->getSample().size(); i++)
-    logPrior += _k->_variables[i]->_priorDistribution->getLogDensity(sample->getSample()[i]);
+  for (size_t i = 0; i < sample->getSampleData().size(); i++)
+    logPrior += _k->_variables[i]->_priorDistribution->getLogDensity(sample[i]);
   return logPrior;
 }
 
@@ -34,8 +34,8 @@ double Korali::Problem::Bayesian::Base::evaluateLogPosterior(Korali::Sample* sam
 
 bool Korali::Problem::Bayesian::Base::isSampleFeasible(Korali::Sample* sample)
 {
-  for (size_t i = 0; i < sample->getSample().size(); i++)
-    if (isfinite(_k->_variables[i]->_priorDistribution->getLogDensity(sample->getSample()[i])) == false) return false;
+  for (size_t i = 0; i < sample->getSampleData().size(); i++)
+    if (isfinite(_k->_variables[i]->_priorDistribution->getLogDensity(sample[i])) == false) return false;
   return true;
 }
 

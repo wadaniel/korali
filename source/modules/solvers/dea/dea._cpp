@@ -37,10 +37,10 @@ void Korali::Solver::DEA::initialize()
  // Allocating Memory
 
  _samplePopulation.resize(_populationSize);
- for(size_t i = 0; i < _populationSize; i++) _samplePopulation[i]._sample.resize(N);
+ for(size_t i = 0; i < _populationSize; i++) _samplePopulation[i].resize(N);
 
  _candidatePopulation.resize(_populationSize);
- for(size_t i = 0; i < _populationSize; i++) _candidatePopulation[i]._sample.resize(N);
+ for(size_t i = 0; i < _populationSize; i++) _candidatePopulation[i].resize(N);
 
  _previousMean.resize(N);
  _currentMean.resize(N);
@@ -98,22 +98,18 @@ void Korali::Solver::DEA::prepareGeneration()
  for (size_t i = 0; i < _populationSize; ++i)
  {
   mutateSingle(i);
-  while(_k->_problem->isSampleFeasible(&_candidatePopulation[i]) == false)
-  {
-  _infeasibleSampleCount++;
 
-  if (_fixInfeasible)
-      fixInfeasible(i);
-  else
-      mutateSingle(i);
+  sample.setSampleData(_candidatePopulation[i]);
+  while(_k->_problem->isSampleFeasible(Korali::Sample(_candidatePopulation[i])) == false)
+  {
+   _infeasibleSampleCount++;
+   if (_fixInfeasible) fixInfeasible(i);
+   else  mutateSingle(i);
   }
 
  }
 
- _finishedSampleCount = 0;
- for (size_t i = 0; i < _populationSize; i++) _isInitializedSample[i] = false;
-
- _previousValueVector.assign(std::begin(_valueVector), std::end(_valueVector));
+ _previousValueVector = _valueVector;
 }
 
 

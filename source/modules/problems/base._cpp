@@ -2,7 +2,7 @@
 #include "modules/engine/engine.hpp"
 #include "auxiliars/koralijson.hpp"
 
-void Korali::Problem::Base::basicEvaluation(Korali::Sample* sample)
+void Korali::Problem::Base::basicEvaluation(Korali::Sample& sample)
 {
- sample->setResult(_k->_problem->getBasicEvaluation(sample));
+ sample.setResult(_k->_problem->getBasicEvaluation(sample));
 }

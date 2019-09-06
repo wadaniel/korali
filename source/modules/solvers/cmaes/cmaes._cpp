@@ -210,8 +210,8 @@ void Korali::Solver::CMAES::runGeneration()
  std::vector<Korali::Sample> samples(_currentPopulationSize);
  for (size_t i = 0; i < _currentPopulationSize; i++)
  {
+  samples[i] = _samplePopulation[i];
   samples[i].setSampleId(i);
-  samples[i].setSampleData(_samplePopulation[i]);
   samples[i].start(Korali::Problem::Base::basicEvaluation);
  }
 
@@ -401,11 +401,14 @@ void Korali::Solver::CMAES::prepareGeneration()
  {
    size_t initial_infeasible = _infeasibleSampleCount;
    sampleSingle(i);
-   while( _k->_problem->isSampleFeasible(&Korali::Sample(_samplePopulation[i])) == false )
+
+   auto sample = Korali::Sample(_samplePopulation[i]);
+   while( _k->_problem->isSampleFeasible(sample) == false )
    {
      printf("Infeasible\n");
      _infeasibleSampleCount++;
      sampleSingle(i);
+     sample = _samplePopulation[i];
    }
    printf("Feasible\n");
  }
@@ -702,6 +705,8 @@ void Korali::Solver::CMAES::handleConstraints()
   //resample invalid points
   for(size_t i = 0; i < _currentPopulationSize; ++i) if(_sampleConstraintViolationCounts[i] > 0)
   {
+    auto sample = Korali::Sample();
+
     do
     {
      _resampledParameterCount++;
@@ -714,8 +719,9 @@ void Korali::Solver::CMAES::handleConstraints()
         return;
      }
 
+     sample = _samplePopulation[i];
     }
-    while( _k->_problem->isSampleFeasible(&_samplePopulation[i]) == false );
+    while( _k->_problem->isSampleFeasible(sample) == false );
   }
 
   reEvaluateConstraints();

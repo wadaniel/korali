@@ -133,9 +133,11 @@ void Korali::Solver::TMCMC::generateCandidate(size_t c)
 
 void Korali::Solver::TMCMC::evaluateCandidate(size_t sampleId)
 {
-  _chainCandidatesLogPriors[sampleId] = (dynamic_cast<Korali::Problem::Bayesian::Base*>(_k->_problem))->evaluateLogPrior(&_chainCandidates[sampleId]);
+  auto sample = Korali::Sample(_chainCandidates[sampleId]);
 
-  if(_k->_problem->isSampleFeasible(&_chainCandidates[sampleId]))
+  _chainCandidatesLogPriors[sampleId] = (dynamic_cast<Korali::Problem::Bayesian::Base*>(_k->_problem))->evaluateLogPrior(sample);
+
+  if(_k->_problem->isSampleFeasible(sample))
   {
    //_k->_conduit->evaluateSample(_chainCandidates[sampleId], sampleId);
   }
@@ -156,8 +158,10 @@ void Korali::Solver::TMCMC::processEvaluation(const double evaluation, const siz
 //  evaluation = std::numeric_limits<double>::lowest();
 // }
 
+ auto sample = Korali::Sample(_chainLeaders[sampleId]);
+
  _chainCandidatesLogLikelihoods[sampleId] = evaluation;
- _chainLeadersLogPriors[sampleId] = (dynamic_cast<Korali::Problem::Bayesian::Base*>(_k->_problem))->evaluateLogPrior(&_chainLeaders[sampleId]);
+ _chainLeadersLogPriors[sampleId] = (dynamic_cast<Korali::Problem::Bayesian::Base*>(_k->_problem))->evaluateLogPrior(sample);
 
  if (_k->_currentGeneration == 1)
  {

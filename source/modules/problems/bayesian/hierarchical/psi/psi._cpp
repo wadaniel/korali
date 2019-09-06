@@ -68,7 +68,7 @@ void Korali::Problem::Bayesian::Hierarchical::Psi::updateConditionalPriors(const
  //for (size_t i = 0; i < _conditionalPriors.size(); i++)  _conditionalPriors[i]->updateConditionals(_variableNames, sample);
 }
 
-double Korali::Problem::Bayesian::Hierarchical::Psi::evaluateLogLikelihood(Korali::Sample* sample)
+double Korali::Problem::Bayesian::Hierarchical::Psi::evaluateLogLikelihood(Korali::Sample& sample)
 {
   double logLikelihood = 0.0;
 

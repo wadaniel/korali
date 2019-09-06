@@ -104,7 +104,7 @@ void Korali::Problem::Bayesian::Hierarchical::Theta::initialize()
 
 }
 
-double Korali::Problem::Bayesian::Hierarchical::Theta::evaluateLogLikelihood(Korali::Sample* sample)
+double Korali::Problem::Bayesian::Hierarchical::Theta::evaluateLogLikelihood(Korali::Sample& sample)
 {
   double logLikelihood = 0.0;
 
@@ -124,7 +124,7 @@ double Korali::Problem::Bayesian::Hierarchical::Theta::evaluateLogLikelihood(Kor
 
     double logConditionalPrior = 0.;
     for (size_t k = 0; k < _thetaVariableCount; k++)
-      logConditionalPrior += dynamic_cast<Korali::Problem::Bayesian::Hierarchical::Psi*>(_psiProblemEngine._problem)->_conditionalPriors[k]->getLogDensity( (*sample)[k] );
+      logConditionalPrior += dynamic_cast<Korali::Problem::Bayesian::Hierarchical::Psi*>(_psiProblemEngine._problem)->_conditionalPriors[k]->getLogDensity( sample[k] );
 
     logValues[i] = logConditionalPrior - _precomputedLogDenominator[i];
     // printf("-----> %lf --- %lf --- %lf \n",  logValues[i], logConditionalPrior, _precomputedLogDenominator[i] );

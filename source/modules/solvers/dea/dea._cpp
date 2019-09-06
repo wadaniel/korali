@@ -48,7 +48,6 @@ void Korali::Solver::DEA::initialize()
  _currentBestVariables.resize(N);
  _maxDistances.resize(N);
 
- _isInitializedSample.resize(_populationSize);
  _previousValueVector.resize(_populationSize);
  _valueVector.resize(_populationSize);
 
@@ -99,12 +98,13 @@ void Korali::Solver::DEA::prepareGeneration()
  {
   mutateSingle(i);
 
-  sample.setSampleData(_candidatePopulation[i]);
-  while(_k->_problem->isSampleFeasible(Korali::Sample(_candidatePopulation[i])) == false)
+  auto sample = Korali::Sample(_candidatePopulation[i]);
+  while(_k->_problem->isSampleFeasible(sample) == false)
   {
    _infeasibleSampleCount++;
    if (_fixInfeasible) fixInfeasible(i);
    else  mutateSingle(i);
+   sample = _candidatePopulation[i];
   }
 
  }
@@ -181,14 +181,14 @@ void Korali::Solver::DEA::fixInfeasible(size_t sampleIdx)
 
 void Korali::Solver::DEA::evaluateSamples()
 {
-  while (_finishedSampleCount < _populationSize)
-  {
-    for (size_t i = 0; i < _populationSize; i++) if (_isInitializedSample[i] == false)
-    {
-      _isInitializedSample[i] = true;
-      //_k->_problem->evaluateSample(&_candidatePopulation[i][0], i);
-    }
-  }
+//  while (_finishedSampleCount < _populationSize)
+//  {
+//    for (size_t i = 0; i < _populationSize; i++) if (_isInitializedSample[i] == false)
+//    {
+//      _isInitializedSample[i] = true;
+//      //_k->_problem->evaluateSample(&_candidatePopulation[i][0], i);
+//    }
+//  }
 
 }
 
@@ -201,7 +201,6 @@ void Korali::Solver::DEA::processEvaluation(const double evaluation, const size_
 //   Korali::logWarning("Normal","Sample %zu returned non finite evaluation (evaluation set to %e)!\n", sampleId, evaluation);
 // }
  _valueVector[sampleId] = evaluation;
- _finishedSampleCount++;
 }
 
 

@@ -6,12 +6,12 @@ void Korali::Problem::Direct::Optimization::initialize()
  if (_k->_variables.size() == 0) Korali::logError("Optimization problems require at least one variable.\n");
 }
 
-double Korali::Problem::Direct::Optimization::getBasicEvaluation(Korali::Sample* sample)
+double Korali::Problem::Direct::Optimization::getBasicEvaluation(Korali::Sample& sample)
 {
  double fitnessSign = _objective == "Maximize" ? 1.0 : -1.0;
 
  //_k->_conduit->runModel(sample, _objectiveFunction);
- std::vector<double> result = sample->getResult();
+ std::vector<double> result = sample.getResult();
  if (result.size() != 1) Korali::logError("Optimization problems require exactly 1 result. Provided: %lu.\n", result.size());
 
  return fitnessSign * result[0];

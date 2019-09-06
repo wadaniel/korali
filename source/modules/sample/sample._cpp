@@ -7,12 +7,12 @@ void Korali::Sample::threadCallWrapper()
 {
  Korali::Sample* currentSample = Korali::__current_sample;
  currentSample->_isFinished = false;
- currentSample->_function(currentSample);
+ currentSample->_function(*currentSample);
  currentSample->_isFinished = true;
  co_switch(currentSample->_mainThread);
 }
 
-void Korali::Sample::start(void(*function)(Korali::Sample*))
+void Korali::Sample::start(void(*function)(Korali::Sample&))
 {
  printf("Hallo, ich bin sample n. %lu\n", this->getSampleId());
 

@@ -14,7 +14,7 @@ class ThetaNew : public Korali::Problem::Bayesian::Hierarchical::Base
 
  public:
 
- double evaluateLogLikelihood(Korali::Sample* sample) override;
+ double evaluateLogLikelihood(Korali::Sample& sample) override;
  void initialize() override;
 };
 

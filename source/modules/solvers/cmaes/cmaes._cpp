@@ -383,7 +383,6 @@ void Korali::Solver::CMAES::updateViabilityBoundaries()
  }
 }
 
-
 void Korali::Solver::CMAES::prepareGeneration()
 {
  for (size_t d = 0; d < N; ++d) _auxiliarCovarianceMatrix = _covarianceMatrix;
@@ -402,7 +401,6 @@ void Korali::Solver::CMAES::prepareGeneration()
    }
  }
 }
-
 
 void Korali::Solver::CMAES::sampleSingle(size_t sampleIdx)
 {

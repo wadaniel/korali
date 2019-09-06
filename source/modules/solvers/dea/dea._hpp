@@ -18,7 +18,6 @@ class DEA : public Korali::Solver::Base
  void mutateSingle(size_t sampleIdx); /* sample individual */
  void fixInfeasible(size_t sampleIdx); /* force sample inside lower & upper bounds */
  void updateSolver(); /* update states of DEA */
- void evaluateSamples(); /* evaluate all samples until done */
  void initSamples();
  void prepareGeneration();
 
@@ -27,7 +26,6 @@ class DEA : public Korali::Solver::Base
  void initialize() override;
  void finalize() override;
  void runGeneration() override;
- void processEvaluation(const double evaluation, const size_t sampleId) override;
  void printGeneration() override;
 };
 

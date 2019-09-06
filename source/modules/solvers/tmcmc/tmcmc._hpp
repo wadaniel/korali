@@ -35,7 +35,7 @@ class TMCMC : public Korali::Solver::Base
  void initialize() override;
  void finalize() override;
  void runGeneration() override;
- void processEvaluation(const double evaluation, const size_t sampleId) override;
+ void processEvaluation(const double evaluation, const size_t sampleId);
  void printGeneration() override;
 };
 

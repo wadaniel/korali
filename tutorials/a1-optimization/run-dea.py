@@ -16,11 +16,7 @@ k = korali.initialize()
 # Configuring Problem
 k["Problem"]["Type"] = "Optimization"
 k["Problem"]["Objective"] = "Maximize"
-
-# Defining the problem's variables and their DEA bounds.
-k["Problem"]["Variables"][0]["Name"] = "X";
-k["Problem"]["Variables"][0]["Lower Bound"] = -10.0;
-k["Problem"]["Variables"][0]["Upper Bound"] = +10.0;
+k["Problem"]["Objective Function"] = model
 
 # Configuring Solver
 k["Solver"]["Type"] = "DEA"
@@ -28,8 +24,10 @@ k["Solver"]["Population Size"] = 32
 k["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-7
 k["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
-# Setting computational model
-k.setDirectModel(model)
+# Defining the problem's variables and their bounds.
+k["Variables"][0]["Name"] = "X";
+k["Variables"][0]["Lower Bound"] = -10.0;
+k["Variables"][0]["Upper Bound"] = +10.0;
 
 # Running Korali
 k.run()

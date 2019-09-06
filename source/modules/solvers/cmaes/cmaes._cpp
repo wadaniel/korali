@@ -204,8 +204,6 @@ void Korali::Solver::CMAES::runGeneration()
  prepareGeneration();
  if ( _areConstraintsDefined ){ updateConstraints(); handleConstraints(); }
 
- printf("HelloA\n");
-
  // Initializing Sample Evaluation
  std::vector<Korali::Sample> samples(_currentPopulationSize);
  for (size_t i = 0; i < _currentPopulationSize; i++)
@@ -215,12 +213,8 @@ void Korali::Solver::CMAES::runGeneration()
   samples[i].start(Korali::Problem::Base::basicEvaluation);
  }
 
- printf("HelloB\n");
-
  // Waiting for samples to finish
  Korali::Sample::waitAll(samples);
-
- printf("HelloC\n");
 
  // Processing results
  for (size_t i = 0; i < _currentPopulationSize; i++)
@@ -392,9 +386,6 @@ void Korali::Solver::CMAES::updateViabilityBoundaries()
 
 void Korali::Solver::CMAES::prepareGeneration()
 {
-
- /* calculate eigensystem */
-
  for (size_t d = 0; d < N; ++d) _auxiliarCovarianceMatrix = _covarianceMatrix;
  updateEigensystem(_auxiliarCovarianceMatrix);
  for (size_t i = 0; i < _currentPopulationSize; ++i)
@@ -405,14 +396,11 @@ void Korali::Solver::CMAES::prepareGeneration()
    auto sample = Korali::Sample(_samplePopulation[i]);
    while( _k->_problem->isSampleFeasible(sample) == false )
    {
-     printf("Infeasible\n");
      _infeasibleSampleCount++;
      sampleSingle(i);
      sample = _samplePopulation[i];
    }
-   printf("Feasible\n");
  }
-
 }
 
 

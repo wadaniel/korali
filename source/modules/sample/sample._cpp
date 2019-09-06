@@ -14,7 +14,7 @@ void Korali::Sample::threadCallWrapper()
 
 void Korali::Sample::start(void(*function)(Korali::Sample&))
 {
- printf("Hallo, ich bin sample n. %lu\n", this->getSampleId());
+ // printf("Hallo, ich bin sample n. %lu\n", this->getSampleId());
 
  _sampleThread = co_create(8192*sizeof(void*), Korali::Sample::threadCallWrapper);
  _mainThread = co_active();

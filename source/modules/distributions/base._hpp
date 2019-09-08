@@ -1,0 +1,35 @@
+#ifndef _KORALI_DISTRIBUTION_BASE_HPP_
+#define _KORALI_DISTRIBUTION_BASE_HPP_
+
+#include "auxiliars/json.hpp"
+#include "auxiliars/logger.hpp"
+#include "auxiliars/koralimath.hpp"
+#include "modules/base.hpp"
+#include <map>
+#include <gsl/gsl_rng.h>
+#include <gsl/gsl_randist.h>
+#include <gsl/gsl_math.h>
+#include <gsl/gsl_sf.h>
+
+namespace Korali { namespace Distribution {
+
+class Base : public Korali::Base
+{
+ protected:
+
+ std::map<std::string, double*> _conditionalsMap;
+ size_t _seed;
+ gsl_rng* _range;
+ double _aux;
+
+ public:
+
+ void initialize() override;
+ void finalize() override;
+ virtual void updateDistribution() = 0;
+
+};
+
+} } // namespace Korali::Distribution
+
+#endif // _KORALI_DISTRIBUTION_BASE_HPP_

@@ -1,0 +1,5 @@
+{
+ "Name": "Multivariate Distribution (Base)",
+ "Alias": "Multivariate Distribution (Base)",
+ "C++ Class": "Korali::Distribution::Multivariate::Base"
+}

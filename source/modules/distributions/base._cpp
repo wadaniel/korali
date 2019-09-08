@@ -1,0 +1,17 @@
+#include "modules/distributions/base.hpp"
+#include "modules/engine/engine.hpp"
+
+void Korali::Distribution::Base::initialize()
+{
+ _seed = _k->_randomSeed++;
+ _range = gsl_rng_alloc (gsl_rng_default);
+ gsl_rng_set(_range, _seed);
+ updateDistribution();
+}
+
+void Korali::Distribution::Base::finalize()
+{
+ gsl_rng_free(_range);
+}
+
+

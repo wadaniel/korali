@@ -1,4 +1,4 @@
-#include "koralimath.hpp"
+#include "math.hpp"
 #include <cmath>
 #include <algorithm>
 #include <chrono>

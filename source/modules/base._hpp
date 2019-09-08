@@ -2,6 +2,8 @@
 #define _KORALI_MODULE_HPP_
 
 #include "auxiliars/json.hpp"
+#include "auxiliars/logger.hpp"
+#include "auxiliars/math.hpp"
 
 namespace Korali {
 

@@ -1,9 +1,6 @@
 #ifndef _KORALI_DISTRIBUTION_BASE_HPP_
 #define _KORALI_DISTRIBUTION_BASE_HPP_
 
-#include "auxiliars/json.hpp"
-#include "auxiliars/logger.hpp"
-#include "auxiliars/koralimath.hpp"
 #include "modules/base.hpp"
 #include <map>
 #include <gsl/gsl_rng.h>

@@ -9,7 +9,6 @@
 #include "pybind11/functional.h"
 #include "pybind11/stl.h"
 
-#include "auxiliars/koralimath.hpp"
 #include <chrono>
 #include <sys/types.h>
 #include <sys/stat.h>

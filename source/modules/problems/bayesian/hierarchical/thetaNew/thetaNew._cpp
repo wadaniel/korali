@@ -1,5 +1,4 @@
 #include "modules/problems/bayesian/hierarchical/thetaNew/thetaNew.hpp"
-#include "auxiliars/koralimath.hpp"
 
 void Korali::Problem::Bayesian::Hierarchical::ThetaNew::initialize()
 {

@@ -7,6 +7,9 @@
 #include "modules/sample/sample.hpp"
 #include "modules/variable/variable.hpp"
 
+#undef _POSIX_C_SOURCE
+#undef _XOPEN_SOURCE
+
 namespace Korali
 {
 

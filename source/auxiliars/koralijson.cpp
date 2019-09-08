@@ -3,22 +3,6 @@
 #include "modules/engine/engine.hpp"
 #include "modules/sample/sample.hpp"
 
-void Korali::KoraliJsonWrapper::setItem(const std::string& key, const std::function<void(Korali::Sample&)> val)
-{
- _key = key;
- size_t pos = __korali_models.size();
- __korali_models.push_back(val);
- (*_js)[key] = pos;
-}
-
-
-void Korali::KoraliJsonWrapper::operator=(const std::function<void(Korali::Sample&)> val)
-{
- size_t pos = __korali_models.size();
- __korali_models.push_back(val);
- *_js = pos;
-}
-
 bool Korali::isEmpty(nlohmann::json& js)
 {
  bool empty = true;
@@ -102,17 +86,6 @@ std::vector<std::string> Korali::getJsonPath(std::string path)
  }
 
  return settings;
-}
-
-bool Korali::isArray(nlohmann::json& js, std::vector<std::string> settings)
-{
- if (isDefined(js, settings))
- {
-  auto tmp = js;
-  for (size_t i = 0; i < settings.size(); i++)  tmp = tmp[settings[i]];
-  if (tmp.is_array()) if (tmp.size() > 0) return true;
- }
- return false;
 }
 
 nlohmann::json Korali::loadJsonFromFile(const char* fileName)

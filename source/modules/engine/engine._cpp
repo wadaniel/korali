@@ -3,6 +3,11 @@
 #include "modules/solvers/base.hpp"
 #include "modules/problems/base.hpp"
 #include "modules/sample/sample.hpp"
+#include "modules/conduits/mpi/mpi.hpp"
+
+#include "pybind11/pybind11.h"
+#include "pybind11/functional.h"
+#include "pybind11/stl.h"
 
 #include "auxiliars/koralimath.hpp"
 #include <chrono>
@@ -149,4 +154,34 @@ void Korali::Engine::setItem(const std::string& key, const std::function<void(Ko
  (*_opt)[key] = pos;
  _opt = &_js;
 }
+
+PYBIND11_MODULE(libkorali, m)
+{
+  #ifdef _KORALI_USE_MPI
+   m.def("getKoraliMPIComm", &getKoraliMPICommPointer);
+  #endif
+
+  pybind11::class_<Korali::Sample>(m, "Sample")
+    .def("__getitem__",     &Korali::Sample::operator[], pybind11::return_value_policy::reference)
+    .def("getSampleId",  &Korali::Sample::getSampleId, pybind11::return_value_policy::reference)
+    .def("setResult", pybind11::overload_cast<const double&>(&Korali::Sample::setResult), pybind11::return_value_policy::reference)
+    .def("setResult", pybind11::overload_cast<const std::vector<double>&>(&Korali::Sample::setResult), pybind11::return_value_policy::reference);
+
+ pybind11::class_<Korali::Engine>(m, "Engine")
+   .def(pybind11::init<>())
+   .def("__getitem__", pybind11::overload_cast<const std::string&>(&Korali::Engine::getItem), pybind11::return_value_policy::reference)
+   .def("__getitem__", pybind11::overload_cast<const unsigned long int&>(&Korali::Engine::getItem), pybind11::return_value_policy::reference)
+   .def("__setitem__", pybind11::overload_cast<const std::string&, const std::function<void(Korali::Sample&)>>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
+   .def("__setitem__", pybind11::overload_cast<const std::string&, const std::string&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
+   .def("__setitem__", pybind11::overload_cast<const std::string&, const double&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
+   .def("__setitem__", pybind11::overload_cast<const std::string&, const int&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
+   .def("__setitem__", pybind11::overload_cast<const std::string&, const std::vector<double>&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
+   .def("__setitem__", pybind11::overload_cast<const int&, const std::string&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
+   .def("__setitem__", pybind11::overload_cast<const int&, const double&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
+   .def("__setitem__", pybind11::overload_cast<const int&, const int&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
+   .def("run", &Korali::Engine::run)
+   .def("dry", &Korali::Engine::dry)
+   .def("loadState",     &Korali::Engine::loadState, pybind11::return_value_policy::reference);
+}
+
 

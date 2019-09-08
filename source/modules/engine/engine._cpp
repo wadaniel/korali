@@ -2,6 +2,8 @@
 #include "modules/conduits/base.hpp"
 #include "modules/solvers/base.hpp"
 #include "modules/problems/base.hpp"
+#include "modules/sample/sample.hpp"
+
 #include "auxiliars/koralimath.hpp"
 #include <chrono>
 #include <sys/types.h>
@@ -139,3 +141,12 @@ void Korali::Engine::loadState(std::string fileName)
 {
  _js = loadJsonFromFile(fileName.c_str());
 }
+
+void Korali::Engine::setItem(const std::string& key, const std::function<void(Korali::Sample&)> val)
+{
+ size_t pos = __korali_models.size();
+ __korali_models.push_back(val);
+ (*_opt)[key] = pos;
+ _opt = &_js;
+}
+

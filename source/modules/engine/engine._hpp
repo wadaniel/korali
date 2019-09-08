@@ -24,15 +24,28 @@ class Engine : public Korali::Base {
  void run() { start(false); }
  void dry() { start(true);  }
 
- // Python and Json Configuration Binding Methods
+
+ // Constructor
+ Engine() { _opt = &_js; }
+ // JSON-based configuration
  nlohmann::json  _js;
- KoraliJsonWrapper _wr;
- KoraliJsonWrapper& operator[](std::string key) { _wr._js = &(_js[key]); return _wr; }
- KoraliJsonWrapper& getItem(const std::string& key)           { _wr._js = &(_js[key]); return _wr;}
- KoraliJsonWrapper& getItem(const unsigned long int& key)     { _wr._js = &(_js[key]); return _wr;}
- void setItem(const std::string& key, const std::string& val) { _js[key] = val; }
- void setItem(const std::string& key, const double& val)      { _js[key] = val; }
- void setItem(const std::string& key, const int& val)         { if(_js[key].is_boolean()) _js[key] = val == true; else _js[key] = val; }
+
+ // Python and Json Configuration Binding Methods
+ nlohmann::json*  _opt;
+
+ Engine& getItem(const std::string& key)                   { _opt = &((*_opt)[key]); return *this;}
+ Engine& getItem(const unsigned long int& key)             { _opt = &((*_opt)[key]); return *this;}
+ Engine& operator[](const std::string& key)                { _opt = &((*_opt)[key]); return *this;}
+ Engine& operator[](const unsigned long int& key)          { _opt = &((*_opt)[key]); return *this;}
+
+ void setItem(const std::string& key, const std::function<void(Korali::Sample&)> val);
+ void setItem(const std::string& key, const std::string& val)         { (*_opt)[key] = val; _opt = &_js; }
+ void setItem(const std::string& key, const double& val)              { (*_opt)[key] = val; _opt = &_js; }
+ void setItem(const std::string& key, const int& val)                 { (*_opt)[key] = val; _opt = &_js; }
+ void setItem(const std::string& key, const std::vector<double>& val) { (*_opt)[key] = val; _opt = &_js; }
+ void setItem(const int& key, const std::string& val)                 { (*_opt)[key] = val; _opt = &_js; }
+ void setItem(const int& key, const double& val)                      { (*_opt)[key] = val; _opt = &_js; }
+ void setItem(const int& key, const int& val)                         { (*_opt)[key] = val; _opt = &_js; }
 
  // State save/load methods
  bool isExecutionFinished();

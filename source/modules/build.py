@@ -132,7 +132,9 @@ def createSetConfiguration(module):
  
  if 'Internal Settings' in module: 
   for v in module["Internal Settings"]:
-   codeString += consumeValue('js', module["Alias"], '["Internal"]' + getVariablePath(v),  getCXXVariableName(v["Name"]), getVariableType(v), 'Korali Skip Default')
+   varDefault = getVariableDefault(v)
+   if (varDefault == ''): varDefault = 'Korali Skip Default'
+   codeString += consumeValue('js', module["Alias"], '["Internal"]' + getVariablePath(v),  getCXXVariableName(v["Name"]), getVariableType(v), varDefault)
   
  if 'Termination Criteria' in module:
   for v in module["Termination Criteria"]:

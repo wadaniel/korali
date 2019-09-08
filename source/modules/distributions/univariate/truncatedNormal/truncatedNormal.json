@@ -1,0 +1,25 @@
+{
+ "Name": "Truncated Normal Distribution",
+ "Alias": "Truncated Normal",
+ "C++ Class": "Korali::Distribution::Univariate::TruncatedNormal",
+
+ "Conditional Variables": 
+ [
+   {
+    "Name": [ "Mu" ],
+    "Description": ""
+   },
+   {
+    "Name": [ "Sigma" ],
+    "Description": ""
+  },
+  {
+   "Name": [ "Minimum" ],
+   "Description": ""
+  },
+  {
+   "Name": [ "Maximum" ],
+   "Description": ""
+  }
+ ]
+}

@@ -8,8 +8,9 @@ Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 SPDX-License-Identifier: MIT
 Copyright (c) 2013-2019 Niels Lohmann <http://nlohmann.me>.
 
-The following library was modified by the authors of Korali to support
-loading/saving infinity, -infinity, and NaN values.
+The following library was modified by to support loading/saving infinity,
+-infinity, and NaN values. Modifications by Korali Team:
+https://www.cse-lab.ethz.ch/korali/
 
 Permission is hereby  granted, free of charge, to any  person obtaining a copy
 of this software and associated  documentation files (the "Software"), to deal

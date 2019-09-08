@@ -2,8 +2,8 @@
 #define _KORALI_SOLVERS_DEA_HPP_
 
 #include "modules/solvers/base.hpp"
-#include "modules/distributions/normal/normal.hpp"
-#include "modules/distributions/uniform/uniform.hpp"
+#include "modules/distributions/univariate/normal/normal.hpp"
+#include "modules/distributions/univariate/uniform/uniform.hpp"
 #include <vector>
 
 namespace Korali { namespace Solver {
@@ -12,8 +12,8 @@ class DEA : public Korali::Solver::Base
 {
  private:
 
- Korali::Distribution::Base* _normalGenerator; /* Normal random number generator */
- Korali::Distribution::Base* _uniformGenerator; /* Uniform random number generator */
+ Korali::Distribution::Univariate::Normal* _normalGenerator; /* Normal random number generator */
+ Korali::Distribution::Univariate::Uniform* _uniformGenerator; /* Uniform random number generator */
 
  void mutateSingle(size_t sampleIdx); /* sample individual */
  void fixInfeasible(size_t sampleIdx); /* force sample inside lower & upper bounds */

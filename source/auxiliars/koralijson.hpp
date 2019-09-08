@@ -16,7 +16,6 @@ namespace Korali
 #pragma GCC diagnostic ignored "-Wunused-function"
 
 std::vector<std::string> getJsonPath(std::string path);
-bool isEmpty(nlohmann::json& js);
 void eraseValue(nlohmann::json& js, std::string path);
 bool isDefined(nlohmann::json& js, std::vector<std::string> settings);
 bool isDefined(nlohmann::json& js, std::string path);

@@ -1,38 +1,6 @@
 #include <stdio.h>
 #include "koralijson.hpp"
 
-bool Korali::isEmpty(nlohmann::json& js)
-{
- bool empty = true;
-
- if (js.is_null()) return true;
- if (js.is_primitive()) return false;
-
- if (js.is_array())
- {
-  for (size_t i = 0; i < js.size(); i++)
-  {
-   bool elEmpty = isEmpty(js[i]);
-   if (elEmpty) js.erase(i--);
-   empty = empty && elEmpty;
-  }
- }
-
- if (js.is_object())
- {
-  std::vector<std::string> erasedKeys;
-  for (auto& el : js.items())
-  {
-   bool elEmpty = isEmpty(el.value());
-   if (elEmpty == true) erasedKeys.push_back(el.key());
-   empty = empty && elEmpty;
-  }
-  for (size_t i = 0; i < erasedKeys.size(); i++) js.erase(erasedKeys[i]);
- }
-
- return empty;
-}
-
 void Korali::eraseValue(nlohmann::json& js, std::string path)
 {
  std::vector<std::string> settings = getJsonPath(path);

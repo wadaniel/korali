@@ -1,5 +1,4 @@
 {
- "Type": "Problem",
  "Name": "Direct Evaluation (Base)",
  "Alias": "Direct Evaluation (Base)",
  "C++ Class": "Korali::Problem::Direct::Base",

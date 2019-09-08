@@ -1,0 +1,18 @@
+{
+ "Name": "Laplace Distribution",
+ "Alias": "Laplace",
+ "C++ Class": "Korali::Distribution::Univariate::Laplace",
+ 
+ "Conditional Variables": 
+ [
+   {
+    "Name": [ "Mean" ],
+    "Description": ""
+   },
+   {
+    "Name": [ "Width" ],
+    "Description": ""
+   }
+ ]
+}
+ 

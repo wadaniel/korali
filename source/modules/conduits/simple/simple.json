@@ -1,5 +1,4 @@
 {
- "Type": "Conduit",
  "Name": "Simple Conduit",
  "Alias": "Simple",
  "C++ Class": "Korali::Conduit::Simple",

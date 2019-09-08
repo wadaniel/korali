@@ -1,5 +1,4 @@
 {
- "Type": "Solver",
  "Name": "Covariance Matrix Adaptation Evolution Strategy",
  "Alias": "CMAES",
  "C++ Class": "Korali::Solver::CMAES",

@@ -1,5 +1,4 @@
 {
- "Type": "Problem",
  "Name":  "Hierarchical Bayesian (Theta New)",
  "Alias": "Hierarchical Bayesian (Theta New)",
  "C++ Class": "Korali::Problem::Bayesian::Hierarchical::ThetaNew",

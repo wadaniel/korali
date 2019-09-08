@@ -3,9 +3,8 @@
 
 #include "modules/solvers/base.hpp"
 #include "modules/sample/sample.hpp"
-#include "modules/distributions/base.hpp"
-#include "modules/distributions/normal/normal.hpp"
-#include "modules/distributions/uniform/uniform.hpp"
+#include "modules/distributions/univariate/normal/normal.hpp"
+#include "modules/distributions/univariate/uniform/uniform.hpp"
 #include "modules/problems/direct/optimization/optimization.hpp"
 #include <vector>
 
@@ -15,8 +14,8 @@ class CMAES : public Korali::Solver::Base
 {
  private:
 
- Korali::Distribution::Base* _normalGenerator; /* Normal random number generator */
- Korali::Distribution::Base* _uniformGenerator; /* Uniform random number generator */
+ Korali::Distribution::Univariate::Normal* _normalGenerator; /* Normal random number generator */
+ Korali::Distribution::Univariate::Uniform* _uniformGenerator; /* Uniform random number generator */
  Korali::Problem::Direct::Optimization* _constrainedProblem;
 
  void prepareGeneration();

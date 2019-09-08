@@ -1,5 +1,4 @@
 {
- "Type": "Problem",
  "Name": "Sampling",
  "Alias": "Sampling",
  "C++ Class": "Korali::Problem::Direct::Sampling",

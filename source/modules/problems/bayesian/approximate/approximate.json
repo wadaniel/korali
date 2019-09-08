@@ -1,5 +1,4 @@
 {
- "Type": "Problem",
  "Name": "Bayesian Inference (Approximate Likelihood)",
  "Alias": "Bayesian Inference (Approximate Likelihood)",
  "C++ Class": "Korali::Problem::Bayesian::Approximate",

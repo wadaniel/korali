@@ -1,0 +1,20 @@
+#ifndef _KORALI_DISTRIBUTION_UNIVARIATE_BASE_HPP_
+#define _KORALI_DISTRIBUTION_UNIVARIATE_BASE_HPP_
+
+#include "modules/distributions/base.hpp"
+
+namespace Korali { namespace Distribution { namespace Univariate {
+
+class Base : public Korali::Distribution::Base
+{
+ public:
+
+ virtual double getDensity(double x) = 0;
+ virtual double getLogDensity(double x) = 0;
+ virtual double getRandomNumber() = 0;
+
+};
+
+} } } // namespace Korali::Distribution::Univariate
+
+#endif // _KORALI_DISTRIBUTION_BASE_HPP_

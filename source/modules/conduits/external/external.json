@@ -1,5 +1,4 @@
 {
- "Type": "Conduit",
  "Name": "External Conduit",
  "Alias": "External",
  "C++ Class": "Korali::Conduit::External",

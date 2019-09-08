@@ -5,7 +5,7 @@
 #include "auxiliars/json.hpp"
 #include "auxiliars/logger.hpp"
 #include "modules/base.hpp"
-#include "modules/distributions/base.hpp"
+#include "modules/distributions/univariate/base.hpp"
 
 namespace Korali
 {

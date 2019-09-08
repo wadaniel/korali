@@ -1,5 +1,4 @@
 {
- "Type": "Conduit",
  "Name": "Distributed (MPI) Conduit",
  "Alias": "MPI",
  "C++ Class": "Korali::Conduit::MPI",

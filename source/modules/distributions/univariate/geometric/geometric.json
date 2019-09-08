@@ -1,0 +1,15 @@
+{
+ "Name": "Geometric Distribution",
+ "Alias": "Geometric",
+ "C++ Class": "Korali::Distribution::Univariate::Geometric",
+ 
+ "Conditional Variables": 
+ [
+   {
+    "Name": [ "Success Probability" ],
+    "Description": ""
+   }
+ ]
+ 
+}
+ 

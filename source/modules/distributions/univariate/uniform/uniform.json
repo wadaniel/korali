@@ -1,0 +1,18 @@
+{
+ "Name": "Uniform Distribution",
+ "Alias": "Uniform",
+ "C++ Class": "Korali::Distribution::Univariate::Uniform",
+ 
+ "Conditional Variables": 
+ [
+   {
+    "Name": [ "Minimum" ],
+    "Description": ""
+   },
+   {
+    "Name": [ "Maximum" ],
+    "Description": ""
+   }
+ ]
+}
+ 

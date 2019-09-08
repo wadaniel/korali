@@ -1,5 +1,4 @@
 {
- "Type": "Problem",
  "Name": "Bayesian Inference (Base)",
  "Alias": "Bayesian Inference (Base)",
  "C++ Class": "Korali::Problem::Bayesian::Base",
@@ -19,7 +18,7 @@
    },
    {
     "Name": [ "Prior Distribution" ],
-    "Type": "Korali::Distribution::Base*",
+    "Type": "Korali::Distribution::Univariate::Base*",
     "Description": "Eh..."
    }
  ],

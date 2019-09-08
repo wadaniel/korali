@@ -1,5 +1,4 @@
 {
- "Type": "Problem",
  "Name": "Optimization",
  "Alias": "Optimization",
  "C++ Class": "Korali::Problem::Direct::Optimization",

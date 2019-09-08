@@ -23,13 +23,15 @@ typedef struct fparam_s {
 void Korali::Solver::TMCMC::initialize()
 {
  _multinomialGenerator = new Korali::Multinomial(_k->_randomSeed++);
- _multivariateGenerator = new Korali::MultivariateNormal(_k->_randomSeed++);
+
+ _multivariateGenerator = new Korali::Distribution::Multivariate::Normal();
+ _multivariateGenerator->initialize();
 
  auto jsUniform = nlohmann::json();
  jsUniform["Type"] = "Uniform";
  jsUniform["Minimum"] = 0.0;
  jsUniform["Maximum"] = 1.0;
- _uniformGenerator = dynamic_cast<Korali::Distribution::Uniform*>(Korali::Base::getModule(jsUniform));
+ _uniformGenerator = dynamic_cast<Korali::Distribution::Univariate::Uniform*>(Korali::Base::getModule(jsUniform));
  _uniformGenerator->initialize();
 
  N = _k->_variables.size();
@@ -125,8 +127,10 @@ void Korali::Solver::TMCMC::generateCandidate(size_t c)
  std::vector<double> _currentMean;
   for (size_t i = 0; i < N; i++) _currentMean.push_back(_chainLeaders[c][i]);
 
- _multivariateGenerator->setProperty("Covariance Matrix", _covarianceMatrix);
- _multivariateGenerator->setProperty("Mean Vector", _currentMean);
+ auto jsMultivariateNormalConfig = nlohmann::json();
+ jsMultivariateNormalConfig["Covariance Matrix"] = _covarianceMatrix;
+ jsMultivariateNormalConfig["Mean Vector"] = _currentMean;
+ _multivariateGenerator->setConfiguration(jsMultivariateNormalConfig);
  _multivariateGenerator->updateDistribution();
  _multivariateGenerator->getRandomVector(&_chainCandidates[c][0],  N);
 }

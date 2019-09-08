@@ -1,5 +1,4 @@
 {
- "Type": "Solver",
  "Name": "Transitional Markov Chain Monte Carlo",
  "Alias": "TMCMC",
  "C++ Class": "Korali::Solver::TMCMC",

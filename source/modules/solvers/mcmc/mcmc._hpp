@@ -2,9 +2,8 @@
 #define _KORALI_SOLVER_MCMC_HPP_
 
 #include "modules/solvers/base.hpp"
-#include "modules/distributions/base.hpp"
-#include "modules/distributions/normal/normal.hpp"
-#include "modules/distributions/uniform/uniform.hpp"
+#include "modules/distributions/univariate/normal/normal.hpp"
+#include "modules/distributions/univariate/uniform/uniform.hpp"
 #include <vector>
 
 namespace Korali { namespace Solver {
@@ -13,8 +12,8 @@ class MCMC : public Korali::Solver::Base
 {
  private: 
 
- Korali::Distribution::Base* _normalGenerator; /* Normal random number generator */
- Korali::Distribution::Base* _uniformGenerator; /* Uniform random number generator */
+ Korali::Distribution::Univariate::Normal* _normalGenerator; /* Normal random number generator */
+ Korali::Distribution::Univariate::Uniform* _uniformGenerator; /* Uniform random number generator */
 
  double recursiveAlpha(double& D, const double llk0, const double* logliks, size_t N) const; /* calculate acceptance ratio alpha_N */
  void updateState();

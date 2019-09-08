@@ -1,5 +1,4 @@
 {
- "Type": "Problem",
  "Name": "Bayesian Inference (Custom Likelihood)",
  "Alias": "Bayesian Inference (Custom Likelihood)",
  "C++ Class": "Korali::Problem::Bayesian::Custom",

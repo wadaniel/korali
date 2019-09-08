@@ -1,0 +1,19 @@
+{
+ "Name": "Gamma Distribution",
+ "Alias": "Gamma",
+ "C++ Class": "Korali::Distribution::Univariate::Gamma",
+ 
+ "Conditional Variables": 
+ [
+   {
+    "Name": [ "Shape" ],
+    "Description": ""
+   },
+   {
+    "Name": [ "Scale" ],
+    "Description": ""
+   }
+ ]
+ 
+}
+ 

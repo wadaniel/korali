@@ -1,5 +1,4 @@
 {
- "Type": "Solver",
  "Name": "Markov Chain Monte Carlo",
  "Alias": "MCMC",
  "C++ Class": "Korali::Solver::MCMC",

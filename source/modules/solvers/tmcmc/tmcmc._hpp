@@ -5,7 +5,7 @@
 #include "modules/distributions/base.hpp"
 #include "modules/distributions/univariate/uniform/uniform.hpp"
 #include "modules/distributions/multivariate/normal/normal.hpp"
-#include "auxiliars/multinomial.hpp"
+#include "modules/distributions/specific/multinomial/multinomial.hpp"
 #include <gsl/gsl_vector.h>
 
 namespace Korali { namespace Solver {
@@ -24,7 +24,7 @@ class TMCMC : public Korali::Solver::Base
  static double tmcmc_objlogp(double x, const double *fj, size_t fn, double pj, double zero);
  static double objLog(const gsl_vector *v, void *param);
 
- Korali::Multinomial* _multinomialGenerator; /* Multivariate Normal random number generator */
+ Korali::Distribution::Specific::Multinomial* _multinomialGenerator; /* Multivariate Normal random number generator */
  Korali::Distribution::Multivariate::Normal* _multivariateGenerator; /* Multivariate Normal random number generator */
  Korali::Distribution::Univariate::Uniform* _uniformGenerator; /* Uniform random number generator */
 

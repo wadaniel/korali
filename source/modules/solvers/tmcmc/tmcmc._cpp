@@ -1,7 +1,6 @@
 #include "modules/solvers/tmcmc/tmcmc.hpp"
 #include <modules/engine/engine.hpp>
 #include "modules/problems/bayesian/base.hpp"
-#include "auxiliars/koralimath.hpp"
 #include <numeric>
 #include <limits>
 #include <chrono>
@@ -22,7 +21,8 @@ typedef struct fparam_s {
 
 void Korali::Solver::TMCMC::initialize()
 {
- _multinomialGenerator = new Korali::Multinomial(_k->_randomSeed++);
+ _multinomialGenerator = new Korali::Distribution::Specific::Multinomial();
+ _multinomialGenerator->initialize();
 
  _multivariateGenerator = new Korali::Distribution::Multivariate::Normal();
  _multivariateGenerator->initialize();

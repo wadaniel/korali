@@ -26,7 +26,7 @@ class Base : public Korali::Base
 
  void initialize() override;
  void finalize() override;
- virtual void updateDistribution() = 0;
+ virtual void updateDistribution() { };
 
 };
 

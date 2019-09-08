@@ -51,7 +51,7 @@ def consumeValue(base, moduleName, path, varName, varType, varDefault):
  
  if ('std::function' in varType):
   cString += ' ' + varName + ' = ' + base + path + '.get<size_t>();\n'
-  cString += '   eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n'
+  cString += '   Korali::JsonInterface::eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n'
   return cString 
 
  if ('Korali::Sample' in varType):
@@ -66,17 +66,17 @@ def consumeValue(base, moduleName, path, varName, varType, varDefault):
  if ('std::vector<Korali::' in varType):
   baseType = varType.replace('std::vector<', '').replace('>','')
   cString += ' for(size_t i = 0; i < ' + base + path + '.size(); i++) ' + varName + '.push_back((' + baseType + ')Korali::Base::getModule(' + base + path + '[i]));\n'
-  cString += ' eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n\n' 
+  cString += ' Korali::JsonInterface::eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n\n' 
   return cString
   
  if ('Korali::' in varType):
-  if (varDefault): cString = ' if (! isDefined(' + base + ', "' + path.replace('"', "'") + '[\'Type\']")) ' + base + path + '["Type"] = "' + varDefault + '"; \n'
+  if (varDefault): cString = ' if (! Korali::JsonInterface::isDefined(' + base + ', "' + path.replace('"', "'") + '[\'Type\']")) ' + base + path + '["Type"] = "' + varDefault + '"; \n'
   cString += ' ' + varName + ' = dynamic_cast<' + varType + '>(Korali::Base::getModule(' + base + path + '));\n'
   return cString  
   
- cString += ' if (isDefined(' + base + ', "' + path.replace('"', "'") + '"))  \n  { \n'
+ cString += ' if (Korali::JsonInterface::isDefined(' + base + ', "' + path.replace('"', "'") + '"))  \n  { \n'
  cString += '   ' + varName + ' = ' + base + path + '.get<' + varType + '>();\n' 
- cString += '   eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n'
+ cString += '   Korali::JsonInterface::eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n'
  cString += '  }\n'
  
  if (varDefault == 'Korali Skip Default'):
@@ -151,7 +151,7 @@ def createSetConfiguration(module):
    codeString += ' ' + getCXXVariableName(v["Name"]) + 'Conditional = "";\n'
    codeString += ' if(js' + getVariablePath(v) + '.is_number()) ' + getCXXVariableName(v["Name"]) + ' = js' + getVariablePath(v) + ';\n'
    codeString += ' if(js' + getVariablePath(v) + '.is_string()) ' + getCXXVariableName(v["Name"]) + 'Conditional = js' + getVariablePath(v) + ';\n'
-   codeString += ' eraseValue(js, "' + getVariablePath(v).replace('"', "'") + '");\n\n'
+   codeString += ' Korali::JsonInterface::eraseValue(js, "' + getVariablePath(v).replace('"', "'") + '");\n\n'
  
  codeString += ' ' + getParentClass(module) + '::setConfiguration(js);\n'
  

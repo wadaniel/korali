@@ -1,11 +1,10 @@
 #include "modules/problems/bayesian/hierarchical/theta/theta.hpp"
 #include "auxiliars/koralimath.hpp"
-#include "auxiliars/koralijson.hpp"
 
 void Korali::Problem::Bayesian::Hierarchical::Theta::initialize()
 {
   // Creating sub-problem JSON object from string
-  nlohmann::json subProblemJson = loadJsonFromFile(_subProblemPath.c_str());
+  nlohmann::json subProblemJson = Korali::JsonInterface::loadJsonFromFile(_subProblemPath.c_str());
 
   // Sub-problem correctness checks
   std::string subProblemType = subProblemJson["Problem"]["Type"];
@@ -16,7 +15,7 @@ void Korali::Problem::Bayesian::Hierarchical::Theta::initialize()
     Korali::logError("The Hierarchical Bayesian (Theta) requires that the subproblem has run completely, but it has not.\n");
 
   // Creating Psi-problem JSON object from string
-  nlohmann::json psiProblemJson = loadJsonFromFile(_psiProblemPath.c_str());
+  nlohmann::json psiProblemJson = Korali::JsonInterface::loadJsonFromFile(_psiProblemPath.c_str());
 
   // Psi-problem correctness checks
   std::string psiProblemType = psiProblemJson["Problem"]["Type"];

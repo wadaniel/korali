@@ -3,7 +3,6 @@
 
 #include <vector>
 #include <functional>
-#include "auxiliars/json.hpp"
 #include "auxiliars/logger.hpp"
 #include "modules/base.hpp"
 #include "modules/sample/libco/libco.h"

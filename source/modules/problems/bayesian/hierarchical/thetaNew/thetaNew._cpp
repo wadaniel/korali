@@ -1,11 +1,10 @@
 #include "modules/problems/bayesian/hierarchical/thetaNew/thetaNew.hpp"
 #include "auxiliars/koralimath.hpp"
-#include "auxiliars/koralijson.hpp"
 
 void Korali::Problem::Bayesian::Hierarchical::ThetaNew::initialize()
 {
   // Creating Psi-problem JSON object from string
-  nlohmann::json psiProblemJson = loadJsonFromFile(_psiProblemPath.c_str());
+  nlohmann::json psiProblemJson = Korali::JsonInterface::loadJsonFromFile(_psiProblemPath.c_str());
 
   // Psi-problem correctness checks
   std::string psiProblemType = psiProblemJson["Problem"]["Type"];

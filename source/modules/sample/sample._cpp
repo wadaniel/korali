@@ -1,5 +1,4 @@
 #include "modules/sample/sample.hpp"
-#include "auxiliars/koralijson.hpp"
 
 Korali::Sample* Korali::__current_sample;
 

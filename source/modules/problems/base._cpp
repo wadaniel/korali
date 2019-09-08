@@ -1,6 +1,5 @@
 #include "modules/problems/base.hpp"
 #include "modules/engine/engine.hpp"
-#include "auxiliars/koralijson.hpp"
 
 void Korali::Problem::Base::basicEvaluation(Korali::Sample& sample)
 {

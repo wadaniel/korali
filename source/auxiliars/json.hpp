@@ -34,6 +34,7 @@ SOFTWARE.
 #ifndef INCLUDE_NLOHMANN_JSON_HPP_
 #define INCLUDE_NLOHMANN_JSON_HPP_
 
+
 #define NLOHMANN_JSON_VERSION_MAJOR 3
 #define NLOHMANN_JSON_VERSION_MINOR 6
 #define NLOHMANN_JSON_VERSION_PATCH 1
@@ -51,12 +52,11 @@ SOFTWARE.
 #include <string> // string, stoi, to_string
 #include <utility> // declval, forward, move, pair, swap
 #include <vector> // vector
-
 // #include <nlohmann/adl_serializer.hpp>
 
 
 #include <utility>
-
+#include "auxiliars/logger.hpp"
 // #include <nlohmann/detail/conversions/from_json.hpp>
 
 
@@ -87,6 +87,7 @@ SOFTWARE.
 
 namespace nlohmann
 {
+
 namespace detail
 {
 /// struct to capture the start position of the current token
@@ -20751,7 +20752,121 @@ class basic_json
 
     /// @}
 };
+
+
 } // namespace nlohmann
+
+namespace Korali
+{
+
+/*********************************************************************
+ * The following class was introduced for support to Korali:
+ *********************************************************************/
+
+class JsonInterface
+{
+
+public:
+
+static std::vector<std::string> getJsonPath(std::string path)
+{
+ std::vector<size_t> positions;
+
+ size_t curpos = 0;
+ while (curpos != std::string::npos)
+ {
+  if (curpos > 0) positions.push_back(curpos);
+  curpos = path.find("'", curpos + 1);
+ }
+
+ if (positions.size() % 2 != 0) Korali::logError("Incorrect path description: %s\n", path.c_str());
+
+ std::vector<std::string> settings;
+
+ for (size_t i = 0; i < positions.size(); i += 2)
+ {
+  size_t start = positions[i] + 1;
+  size_t length = positions[i+1] - start;
+  settings.push_back(path.substr(start, length));
+ }
+
+ return settings;
+}
+
+static void eraseValue(nlohmann::json& js, std::string path)
+{
+ std::vector<std::string> settings = getJsonPath(path);
+
+ nlohmann::json* aux = &js;
+ size_t i = 0;
+ for (; i < settings.size()-1; i++)
+  aux = &aux->at(settings[i]);
+ aux->erase(settings[i]);
+}
+
+static bool isDefined(nlohmann::json& js, std::vector<std::string> settings)
+{
+ auto tmp = js;
+
+ for (size_t i = 0; i < settings.size(); i++)
+ {
+  if (tmp.find(settings[i]) == tmp.end()) return false;
+  tmp = tmp[settings[i]];
+ }
+ return true;
+}
+
+static bool isDefined(nlohmann::json& js, std::string path)
+{
+ return isDefined(js, getJsonPath(path));
+}
+
+static nlohmann::json loadJsonFromFile(const char* fileName)
+{
+ nlohmann::json js;
+
+ FILE *fid = fopen(fileName, "r");
+ if (fid != NULL)
+ {
+   fseek(fid, 0, SEEK_END);
+   long fsize = ftell(fid);
+   fseek(fid, 0, SEEK_SET);  /* same as rewind(f); */
+
+   char *string = (char*) malloc(fsize + 1);
+   fread(string, 1, fsize, fid);
+   fclose(fid);
+
+   string[fsize] = '\0';
+
+   js = nlohmann::json::parse(string);
+
+   free(string);
+ }
+ else
+  Korali::logError("Could not load file: %s.\n", fileName);
+
+ return js;
+}
+
+static void saveJsonToFile(const char* fileName, nlohmann::json& js)
+{
+ FILE *fid = fopen(fileName, "w");
+ if (fid != NULL)
+ {
+   fprintf(fid, "%s", js.dump(1).c_str());
+   fclose(fid);
+ }
+ else
+  Korali::logError("Could not write to file: %s.\n", fileName);
+}
+
+
+/********************************************************
+ * End of additional class by the Korali team:
+ *******************************************************/
+};
+
+}
 
 ///////////////////////
 // nonmember support //

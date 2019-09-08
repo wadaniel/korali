@@ -3,7 +3,6 @@
 
 #include <vector>
 #include <functional>
-#include "auxiliars/koralijson.hpp"
 #include "modules/sample/sample.hpp"
 #include "modules/variable/variable.hpp"
 

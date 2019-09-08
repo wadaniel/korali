@@ -155,7 +155,7 @@ def createSetConfiguration(module):
  
  codeString += ' ' + getParentClass(module) + '::setConfiguration(js);\n'
  
- codeString += ' if(isEmpty(js) == false) Korali::logError("Unrecognized settings for ' + module["Name"] + ' (' + module["Alias"] + '): \\n%s\\n", js.dump(2).c_str());\n'
+ codeString += ' if(js.empty() == false) Korali::logError("Unrecognized settings for ' + module["Name"] + ' (' + module["Alias"] + '): \\n%s\\n", js.dump(2).c_str());\n'
  codeString += '} \n\n'
   
  return codeString

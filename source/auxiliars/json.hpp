@@ -1,15 +1,15 @@
-// The following library was modified by the authors of Korali to support
-// loading/saving infinity, -infinity, and NaN values.
-
 /*
     __ _____ _____ _____
  __|  |   __|     |   | |  JSON for Modern C++
-|  |  |__   |  |  | | | |  version 3.6.1
+|  |  |__   |  |  | | | |  Modified for Korali from version 3.6.1
 |_____|_____|_____|_|___|  https://github.com/nlohmann/json
 
 Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 SPDX-License-Identifier: MIT
 Copyright (c) 2013-2019 Niels Lohmann <http://nlohmann.me>.
+
+The following library was modified by the authors of Korali to support
+loading/saving infinity, -infinity, and NaN values.
 
 Permission is hereby  granted, free of charge, to any  person obtaining a copy
 of this software and associated  documentation files (the "Software"), to deal

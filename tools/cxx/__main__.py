@@ -15,9 +15,9 @@ def main():
  makeFlags = dict()
  lineList = [line.rstrip('\n') for line in open(koraliDir + '/Makefile.conf')]
  for line in lineList:
-  item = [i.strip() for i in line.split('=')]
+  item = [i.strip() for i in line.split('=', 1)]
   makeFlags[item[0]] = item[1]
-   
+ 
  if (sys.argv[1] == '--cflags'):
    correctSyntax=True
    getcflags(koraliDir, makeFlags)

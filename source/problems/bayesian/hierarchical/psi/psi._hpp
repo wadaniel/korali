@@ -1,0 +1,25 @@
+#ifndef _KORALI_PROBLEM_PSI_HPP_
+#define _KORALI_PROBLEM_PSI_HPP_
+
+#include "problems/bayesian/hierarchical/base.hpp"
+#include "distributions/base.hpp"
+
+namespace Korali { namespace Problem { namespace Bayesian { namespace Hierarchical {
+
+class Psi : public Korali::Problem::Bayesian::Hierarchical::Base
+{
+ private:
+
+ std::vector<nlohmann::json> _subProblemsJson;
+
+ public:
+
+ void updateConditionalPriors(const std::vector<double>& sample);
+ double evaluateLogLikelihood(Korali::Sample& sample) override;
+ void initialize() override;
+};
+
+} } } } // namespace Korali::Problem::Bayesian::Hierarchical
+
+
+#endif // _KORALI_PROBLEM_PSI_HPP_

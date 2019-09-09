@@ -1,0 +1,62 @@
+#ifndef __KORALI_SAMPLE_HPP_
+#define __KORALI_SAMPLE_HPP_
+
+#include <vector>
+#include <functional>
+#include "auxiliars/logger.hpp"
+#include "module.hpp"
+#include "sample/libco/libco.h"
+
+namespace Korali
+{
+
+class Sample : public Korali::Module {
+
+ private:
+
+ Sample* _self;
+ cothread_t _mainThread;
+ cothread_t _sampleThread;
+ void(*_function)(Korali::Sample&);
+ bool _isFinished;
+
+ public:
+
+ Sample(const std::vector<double>& sampleData) { _sampleData = sampleData; _self = this; }
+ Sample() { _self = this; }
+
+ // Sample Setting Functions
+ size_t getSampleId() { return _self->_sampleId; }
+ void setSampleId(size_t sampleId) { _self->_sampleId = sampleId; }
+
+ std::vector<double>& getSampleData() { return _self->_sampleData; }
+
+ double& operator[](size_t i)
+ {
+  if (i >= _self->_sampleData.size())
+   Korali::logError("Requesting index %lu, but the sample contains only %lu values.\n", i, _self->_sampleData.size());
+  return _self->_sampleData[i];
+ }
+
+ void operator=(const std::vector<double>& sampleData) { _self->_sampleData = sampleData; }
+ size_t size(){ return _self->_sampleData.size(); }
+
+
+ // Result Functions
+ std::vector<double>& getResult() { return _self->_result; }
+ void setResult(const double& result) { _self->_result.clear(); _self->_result.push_back(result); }
+ void setResult(const std::vector<double>& results) { _self->_result = results; }
+
+ // Execution Control Functions
+ void start(void(*function)(Korali::Sample&));
+ bool isFinished();
+ void wait();
+ static void threadCallWrapper();
+ static void waitAll(std::vector<Korali::Sample>& samples);
+};
+
+extern Korali::Sample* __current_sample;
+
+}
+
+#endif // __KORALI_SAMPLE_HPP_

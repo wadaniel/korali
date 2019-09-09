@@ -1,7 +1,0 @@
-#include "modules/problems/base.hpp"
-#include "modules/engine/engine.hpp"
-
-void Korali::Problem::Base::basicEvaluation(Korali::Sample& sample)
-{
- sample.setResult(_k->_problem->getBasicEvaluation(sample));
-}

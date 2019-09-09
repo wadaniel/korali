@@ -1,0 +1,44 @@
+#ifndef _KORALI_SOLVER_TMCMC_HPP_
+#define _KORALI_SOLVER_TMCMC_HPP_
+
+#include "solvers/base.hpp"
+#include "distributions/base.hpp"
+#include "distributions/univariate/uniform/uniform.hpp"
+#include "distributions/multivariate/normal/normal.hpp"
+#include "distributions/specific/multinomial/multinomial.hpp"
+#include <gsl/gsl_vector.h>
+
+namespace Korali { namespace Solver {
+
+class TMCMC : public Korali::Solver::Base
+{
+ private:
+
+ void setBurnIn();
+ void prepareGeneration();
+ void updateDatabase(double* point, double evaluation, double logPrior);
+ void generateCandidate(size_t candidate);
+ void evaluateCandidate(size_t candidate);
+ void finishSample(size_t sampleId);
+ void minSearch(double const *fj, size_t fn, double pj, double objTol, double& xmin, double& fmin);
+ static double tmcmc_objlogp(double x, const double *fj, size_t fn, double pj, double zero);
+ static double objLog(const gsl_vector *v, void *param);
+
+ Korali::Distribution::Specific::Multinomial* _multinomialGenerator; /* Multivariate Normal random number generator */
+ Korali::Distribution::Multivariate::Normal* _multivariateGenerator; /* Multivariate Normal random number generator */
+ Korali::Distribution::Univariate::Uniform* _uniformGenerator; /* Uniform random number generator */
+
+ size_t N; // Number of variables
+
+ public:
+
+ void initialize() override;
+ void finalize() override;
+ void runGeneration() override;
+ void processEvaluation(const double evaluation, const size_t sampleId);
+ void printGeneration() override;
+};
+
+} } // namespace Korali::Solver
+
+#endif // _KORALI_SOLVER_TMCMC_HPP_

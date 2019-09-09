@@ -1,0 +1,12 @@
+#include "conduits/simple/simple.hpp"
+#include "engine/engine.hpp"
+#include "problems/base.hpp"
+#include "solvers/base.hpp"
+
+void Korali::Conduit::Simple::runModel(size_t modelId, Korali::Sample& sample)
+{
+ sample._result.clear();
+ __korali_models[modelId](sample);
+ _modelEvaluationCount++;
+}
+

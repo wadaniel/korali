@@ -1,0 +1,22 @@
+#ifndef _KORALI_SOLVER_BASE_HPP_
+#define _KORALI_SOLVER_BASE_HPP_
+
+#include <vector>
+#include "module.hpp"
+#include "engine/engine.hpp"
+
+namespace Korali { namespace Solver {
+
+class Base : public Korali::Module
+{
+ public:
+
+ size_t N; // Sample Size
+
+ virtual void printGeneration() = 0;
+ virtual void runGeneration() = 0;
+};
+
+} } // namespace Korali::Solver
+
+#endif // _KORALI_SOLVER_BASE_HPP_

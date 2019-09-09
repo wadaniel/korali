@@ -1,0 +1,47 @@
+#include "sample/sample.hpp"
+
+Korali::Sample* Korali::__current_sample;
+
+void Korali::Sample::threadCallWrapper()
+{
+ Korali::Sample* currentSample = Korali::__current_sample;
+ currentSample->_isFinished = false;
+ currentSample->_function(*currentSample);
+ currentSample->_isFinished = true;
+ co_switch(currentSample->_mainThread);
+}
+
+void Korali::Sample::start(void(*function)(Korali::Sample&))
+{
+ // printf("Hallo, ich bin sample n. %lu\n", this->getSampleId());
+
+ _sampleThread = co_create(8192*sizeof(void*), Korali::Sample::threadCallWrapper);
+ _mainThread = co_active();
+ _function = function;
+ __current_sample = this;
+ co_switch(_sampleThread);
+}
+
+
+void Korali::Sample::waitAll(std::vector<Korali::Sample>& samples)
+{
+ bool isFinished = false;
+ while (isFinished == false)
+ {
+  isFinished = true;
+  for (size_t i = 0; i < samples.size(); i++)
+   if (samples[i].isFinished() == false) isFinished = false;
+ }
+}
+
+bool Korali::Sample::isFinished()
+{
+ free(_self->_sampleThread);
+ return _self->_isFinished;
+}
+
+void Korali::Sample::wait()
+{
+ while(isFinished() == false);
+ return;
+}

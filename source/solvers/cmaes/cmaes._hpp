@@ -1,0 +1,51 @@
+#ifndef _KORALI_SOLVERS_CCMAES_HPP_
+#define _KORALI_SOLVERS_CCMAES_HPP_
+
+#include "solvers/base.hpp"
+#include "sample/sample.hpp"
+#include "distributions/univariate/normal/normal.hpp"
+#include "distributions/univariate/uniform/uniform.hpp"
+#include "problems/direct/optimization/optimization.hpp"
+#include <vector>
+
+namespace Korali { namespace Solver {
+
+class CMAES : public Korali::Solver::Base
+{
+ private:
+
+ Korali::Distribution::Univariate::Normal* _normalGenerator; /* Normal random number generator */
+ Korali::Distribution::Univariate::Uniform* _uniformGenerator; /* Uniform random number generator */
+ Korali::Problem::Direct::Optimization* _constrainedProblem;
+
+ void prepareGeneration();
+ void sampleSingle(size_t sampleIdx); /* sample individual */
+ void adaptC(int hsig); /* CMAES covariance matrix adaption */
+ void updateSigma(); /* update Sigma */
+ void updateEigensystem(std::vector<double>& M);
+ void numericalErrorTreatment();
+ void eigen(size_t N, std::vector<double>& C, std::vector<double>& diag, std::vector<double>& Q) const;
+ void sort_index(const std::vector<double>& vec, std::vector<size_t>& _sortingIndex, size_t n) const;
+ // Private CCMAES-Specific Methods
+ void initMuWeights(size_t numsamples); /* init _muWeights and dependencies */
+ void initCovariance(); /* init sigma, C and B */
+ void checkMeanAndSetRegime(); /* check if mean inside valid domain, if yes, update internal vars */
+ void updateConstraints();
+ void updateViabilityBoundaries(); /* update & shrink viability boundaries */
+ void handleConstraints(); /* covariance adaption for invalid samples */
+ void reEvaluateConstraints(); /* re evaluate constraints, in handleConstraints,  count violations etc.. */
+ // Integer Optimization
+ void updateDiscreteMutationMatrix();
+ void updateDistribution();
+
+ public:
+
+ void initialize() override;
+ void finalize() override;
+ void runGeneration() override;
+ void printGeneration() override;
+};
+
+} } // namespace Korali::Solver
+
+#endif // _KORALI_SOLVERS_CCMAES_HPP_

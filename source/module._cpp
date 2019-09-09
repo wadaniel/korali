@@ -1,0 +1,23 @@
+#include "module.hpp"
+
+// Module Include List
+
+Korali::Module* Korali::Module::getModule(nlohmann::json& js)
+{
+ std::string moduleType = "Undefined";
+
+ if (! Korali::JsonInterface::isDefined(js, "['Type']")) Korali::logError("No module type provided.\n");
+
+ moduleType = js["Type"].get<std::string>();
+ Korali::JsonInterface::eraseValue(js, "['Type']");
+
+ Korali::Module* module = nullptr;
+
+ // Module Selection List
+
+ if (module == nullptr) Korali::logError("Unrecognized module: %s.\n", moduleType.c_str());
+
+ module->setConfiguration(js);
+
+ return module;
+}

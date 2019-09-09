@@ -1,0 +1,23 @@
+#ifndef _KORALI_DISTRIBUTION_UNIVARIATE_GAMMA_HPP_
+#define _KORALI_DISTRIBUTION_UNIVARIATE_GAMMA_HPP_
+
+#include "distributions/univariate/base.hpp"
+
+namespace Korali { namespace Distribution { namespace Univariate {
+
+class Gamma : public Korali::Distribution::Univariate::Base {
+
+ private:
+
+ public:
+
+ void updateDistribution() override;
+ double getDensity(double x) override;
+ double getLogDensity(double x) override;
+ double getRandomNumber() override;
+
+};
+
+} } } // namespace Korali::Distribution::Univariate
+
+#endif // _KORALI_DISTRIBUTION_UNIVARIATE_GAMMA_HPP_

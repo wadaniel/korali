@@ -1,0 +1,34 @@
+#ifndef _KORALI_SOLVERS_DEA_HPP_
+#define _KORALI_SOLVERS_DEA_HPP_
+
+#include "solvers/base.hpp"
+#include "distributions/univariate/normal/normal.hpp"
+#include "distributions/univariate/uniform/uniform.hpp"
+#include <vector>
+
+namespace Korali { namespace Solver {
+
+class DEA : public Korali::Solver::Base
+{
+ private:
+
+ Korali::Distribution::Univariate::Normal* _normalGenerator; /* Normal random number generator */
+ Korali::Distribution::Univariate::Uniform* _uniformGenerator; /* Uniform random number generator */
+
+ void mutateSingle(size_t sampleIdx); /* sample individual */
+ void fixInfeasible(size_t sampleIdx); /* force sample inside lower & upper bounds */
+ void updateSolver(); /* update states of DEA */
+ void initSamples();
+ void prepareGeneration();
+
+ public:
+
+ void initialize() override;
+ void finalize() override;
+ void runGeneration() override;
+ void printGeneration() override;
+};
+
+} } // namespace Korali::Solver
+
+#endif // _KORALI_SOLVERS_DEA_HPP_

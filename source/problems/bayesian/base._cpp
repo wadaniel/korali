@@ -1,0 +1,45 @@
+#include "problems/bayesian/base.hpp"
+#include "conduits/base.hpp"
+#include "engine/engine.hpp"
+
+void Korali::Problem::Bayesian::Base::initialize()
+{
+  if (_k->_variables.size() == 0) Korali::logError("Bayesian inference problems require at least one variable.\n");
+
+  _computationalVariableIndices.clear();
+  _statisticalVariableIndices.clear();
+
+  for (size_t i = 0; i < _k->_variables.size(); i++)
+  {
+   std::string typeString = _k->_variables[i]->_bayesianType;
+   bool recognizedType = false;
+   if (typeString == "Computational") { _computationalVariableIndices.push_back(i); recognizedType = true; }
+   if (typeString == "Statistical")   { _statisticalVariableIndices.push_back(i);   recognizedType = true; }
+   if (recognizedType == false) Korali::logError("Incorrect Bayesian variable type selected: %s.\n", typeString.c_str());
+  }
+}
+
+double Korali::Problem::Bayesian::Base::evaluateLogPrior(Korali::Sample& sample)
+{
+  double logPrior = 0.0;
+  for (size_t i = 0; i < sample.getSampleData().size(); i++)
+    logPrior += _k->_variables[i]->_priorDistribution->getLogDensity(sample[i]);
+  return logPrior;
+}
+
+double Korali::Problem::Bayesian::Base::evaluateLogPosterior(Korali::Sample& sample)
+{
+  return evaluateLogPrior(sample) + evaluateLogLikelihood(sample);
+}
+
+bool Korali::Problem::Bayesian::Base::isSampleFeasible(Korali::Sample& sample)
+{
+  for (size_t i = 0; i < sample.getSampleData().size(); i++)
+    if (isfinite(_k->_variables[i]->_priorDistribution->getLogDensity(sample[i])) == false) return false;
+  return true;
+}
+
+double Korali::Problem::Bayesian::Base::getBasicEvaluation(Korali::Sample& sample)
+{
+ return evaluateLogPosterior(sample);
+}

@@ -1,0 +1,22 @@
+#ifndef _KORALI_PROBLEM_BASE_HPP_
+#define _KORALI_PROBLEM_BASE_HPP_
+
+#include <vector>
+#include "module.hpp"
+#include "engine/engine.hpp"
+
+namespace Korali { namespace Problem {
+
+class Base : public Korali::Module
+{
+ public:
+
+  virtual bool isSampleFeasible(Korali::Sample&) = 0;
+  virtual double getBasicEvaluation(Korali::Sample&) = 0;
+  static void basicEvaluation(Korali::Sample&);
+};
+
+} } // namespace Korali
+
+
+#endif // _KORALI_PROBLEM_BASE_HPP_

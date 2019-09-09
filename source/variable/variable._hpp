@@ -1,0 +1,20 @@
+#ifndef __KORALI_VARIABLE_HPP_
+#define __KORALI_VARIABLE_HPP_
+
+#include <vector>
+#include "module.hpp"
+#include "distributions/univariate/base.hpp"
+
+namespace Korali
+{
+
+class Variable : public Korali::Module {
+
+ public:
+   // Variable Declaration List
+
+};
+
+}
+
+#endif // __KORALI_VARIABLE_HPP_

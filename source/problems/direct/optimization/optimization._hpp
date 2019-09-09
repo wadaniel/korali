@@ -1,0 +1,18 @@
+#ifndef _KORALI_PROBLEM_OPTIMIZATION_HPP_
+#define _KORALI_PROBLEM_OPTIMIZATION_HPP_
+
+#include "problems/direct/base.hpp"
+
+namespace Korali { namespace Problem { namespace Direct {
+
+class Optimization : public Korali::Problem::Direct::Base
+{
+ public:
+
+ double getBasicEvaluation(Korali::Sample& sample) override;
+ void initialize() override;
+};
+
+} } } // namespace Korali::Problem::Direct
+
+#endif // _KORALI_PROBLEM_OPTIMIZATION_HPP_

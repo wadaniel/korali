@@ -4,7 +4,7 @@ import colorsys
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-from korali.auxiliars.fileIO import *
+from korali.fileIO import *
 from matplotlib.collections import LineCollection
 from matplotlib.colors import ListedColormap, BoundaryNorm
 
@@ -35,19 +35,16 @@ def initDefaults(directory, filename, lists):
 
     return (solver, names, numdim, gen)
 
-
 # Extract state from data and return current ceneration
 def getStateAndGeneration(data): 
     state = data['Solver']['Internal']
     gen   = data['Internal']['Current Generation']
     return (state, gen)
 
-
 # Append data to lists read from states (stateNames)
 def appendStates(state, lists, stateNames):
     for i, name in enumerate(stateNames):
         lists[i].append(state[name])
-
 
 # Append data (list) to lists read from states (stateNames)
 def appendStateVectors(state, lists, stateNames):
@@ -55,13 +52,11 @@ def appendStateVectors(state, lists, stateNames):
         for dim, data in enumerate(state[name]):
             lists[i][dim].append(data)
 
-
 # Verify if figure exists and exit if not
 def checkFigure(num):
     if ( plt.fignum_exists(num) == False ):
         print("[Korali] Figure closed - Bye!")
         exit(0)
-     
 
 # Read result files
 def readFiles(src, start=None, end=None, noisy=True):

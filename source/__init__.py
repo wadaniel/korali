@@ -1,6 +1,6 @@
 import os
 extdir = os.path.abspath(os.path.dirname(os.path.realpath(__file__))) 
-from korali.auxiliars.fileIO import * 
+from korali.fileIO import * 
 
 import sys
 sys.path.append(extdir)

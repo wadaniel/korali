@@ -4,7 +4,7 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 
-from korali.auxiliars.fileIO import *
+from korali.fileIO import *
 from korali.plotter.helpers import hlsColors, pauseLight, drawMulticoloredLine, checkFigure
 from korali.plotter.helpers import verifyGeneration, initDefaults, getStateAndGeneration, appendStates, appendStateVectors
 

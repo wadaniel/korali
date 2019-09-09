@@ -1,9 +1,0 @@
-
-
-def getlibs(extdir):
- flags=''
- pythonLibPaths=[ p for p in PYBIND11LIBS.split() if p.startswith('-L') ]
- for p in pythonLibPaths: flags += ' -Wl,-rpath,' + p.replace('-L', '') + ' '  
- flags+='-L' + extdir + ' -lkorali -Wl,-rpath -Wl,' + extdir + ' '
- flags+='-L' + GSLPREFIX + '/lib -Wl,-rpath -Wl,' + GSLPREFIX + '/lib ' 
- print(flags + ' ' + GSLLIBS + ' ' + PYBIND11LIBS)

@@ -6,25 +6,34 @@ from korali.cxx.libs import getlibs
 from korali.cxx.compiler import getcompiler
 
 def main():
- extdir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)) + '/../') 
- 
- correctSyntax=False
- 
+ koraliDir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)) + '/../')
+
+ if (len(sys.argv) != 2):
+  print('[Korali] Syntax error on call to korali.cxx module: Exactly one argument is required (--cflags, --libs, or --compiler).')
+  exit(-1)
+  
+ makeFlags = dict()
+ lineList = [line.rstrip('\n') for line in open(koraliDir + '/Makefile.conf')]
+ for line in lineList:
+  item = [i.strip() for i in line.split('=')]
+  makeFlags[item[0]] = item[1]
+   
  if (sys.argv[1] == '--cflags'):
    correctSyntax=True
-   getcflags(extdir)
-   
+   getcflags(koraliDir, makeFlags)
+   exit(0)
+
  if (sys.argv[1] == '--libs'):
    correctSyntax=True
-   getlibs(extdir)
+   getlibs(koraliDir, makeFlags)
    
  if (sys.argv[1] == '--compiler'):
    correctSyntax=True
-   getcompiler(extdir)
+   getcompiler(koraliDir, makeFlags)
+   exit(0)
   
- if (correctSyntax==False):
-   print('[Korali] Syntax error on call to korali.cxx module.')
-   exit -1 
+ print('[Korali] Syntax error on call to korali.cxx module.')
+ exit -1 
   
 if __name__ == '__main__':
     main()

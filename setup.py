@@ -5,7 +5,7 @@ from setuptools import *
 print('[Korali] Building installation setup...')
 
 sourceDir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)) + '/source/') 
-installFiles = ['libkorali.so']
+installFiles = ['libkorali.so', 'Makefile.conf']
 for dirpath, subdirs, files in os.walk(sourceDir):
  for x in files:
   if (x.endswith(".hpp") or (x.endswith(".h")) or (x.endswith(".json")) or x.endswith(".py")):

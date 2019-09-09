@@ -42,7 +42,7 @@ def main(path, allFiles, live, generation, mean, check, test):
  requestedSolver = data['Solver']['Type']
  
  # Detecting solvers
- solversDir = curdir + '/../modules/solvers/'
+ solversDir = curdir + '/../solvers/'
  for moduleDir, relDir, fileNames in os.walk(solversDir):
   for fileName in fileNames: 
    if '.json' in fileName:

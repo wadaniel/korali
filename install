@@ -322,7 +322,7 @@ if [ $? -ne 0 ]; then
   exitWithError
 fi
 
-pip3 install ./source --user --upgrade >> $logFile 2>&1
+pip3 install . --user --upgrade >> $logFile 2>&1
 if [ $? -ne 0 ]; then
   logEcho "[Korali] Error installing Korali's Python module."
   exitWithError

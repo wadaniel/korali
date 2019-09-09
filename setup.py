@@ -4,7 +4,7 @@ from setuptools import *
 
 print('[Korali] Building installation setup...')
 
-sourceDir = os.path.abspath(os.path.dirname(os.path.realpath(__file__))) 
+sourceDir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)) + '/source/') 
 installFiles = ['libkorali.so']
 for dirpath, subdirs, files in os.walk(sourceDir):
  for x in files:
@@ -21,7 +21,7 @@ setup(
     description='High Performance Library for Uncertainty Quantification',
     long_description='',
     packages = ['korali', 'korali.fileIO', 'korali.plotter', 'korali.cxx'],
-    package_dir = {'korali' : '.',
+    package_dir = {'korali' : './source/',
                    'korali.fileIO' : './tools/fileIO', 
                    'korali.plotter' : './tools/plotter', 
                    'korali.cxx' : './tools/cxx',

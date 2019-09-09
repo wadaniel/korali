@@ -8,8 +8,10 @@ from korali.auxiliars.fileIO import *
 from korali.plotter.helpers import hlsColors, pauseLight, drawMulticoloredLine, checkFigure
 from korali.plotter.helpers import verifyGeneration, initDefaults, getStateAndGeneration, appendStates, appendStateVectors
 
+print('Loading MCMC...')
+
 # Plot MCMC results (read from .json files)
-def plot_mcmc(src, plotAll=False, live=False, generation=None, test=False, mean=''):
+def plot(src, plotAll=False, live=False, generation=None, test=False, mean=''):
     plt.style.use('seaborn-dark') 
     
     verifyGeneration(generation, 0)

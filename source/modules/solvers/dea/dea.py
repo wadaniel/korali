@@ -9,7 +9,7 @@ from korali.plotter.helpers import hlsColors, pauseLight, drawMulticoloredLine, 
 from korali.plotter.helpers import verifyGeneration, initDefaults, getStateAndGeneration, appendStates, appendStateVectors
 
 # Plot DEA results (read from .json files)
-def plot_dea(src, plotAll=False, live=False, generation=None, test=False, plot_mean=False ):
+def plot(src, plotAll=False, live=False, generation=None, test=False, plot_mean=False ):
     plt.style.use('seaborn-dark')
 
     verifyGeneration(generation, 3)

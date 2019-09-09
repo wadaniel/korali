@@ -5,9 +5,9 @@ import signal
 import json
 import argparse
 import matplotlib
+import importlib
 
 curdir = os.path.abspath(os.path.dirname(os.path.realpath(__file__))) 
-
 
 def main(path, allFiles, live, generation, mean, check, test):
 
@@ -28,8 +28,6 @@ def main(path, allFiles, live, generation, mean, check, test):
  
     exit(-1)
 
-# Including Solvers
-
  from korali.plotter.helpers import sig
  signal.signal(signal.SIGINT, sig)
  
@@ -41,9 +39,23 @@ def main(path, allFiles, live, generation, mean, check, test):
  with open(firstResult) as f:
   data  = json.load(f)
  
- solver = data['Solver']['Type']
-
- # Detecting Solver Type
+ requestedSolver = data['Solver']['Type']
+ 
+ # Detecting solvers
+ solversDir = curdir + '/../modules/solvers/'
+ for moduleDir, relDir, fileNames in os.walk(solversDir):
+  for fileName in fileNames: 
+   if '.json' in fileName:
+    with open(moduleDir + '/' + fileName, 'r') as file: moduleConfig = json.load(file)
+    solverAlias = moduleConfig.get('Alias', '') 
+    if (solverAlias == requestedSolver):
+     solverName = fileName.replace('.json', '')
+     solverFileName = moduleDir + '/' + solverName + '.py'
+     print('Appending: ' + moduleDir)
+     sys.path.append(moduleDir)
+     solverLib = importlib.import_module(solverName, package=None)
+     solverLib.plot(path, allFiles, live, generation, test, mean)
+     exit(0)
 
  print("[Korali] Error: Did not recognize method for plotting...")
  exit(-1)

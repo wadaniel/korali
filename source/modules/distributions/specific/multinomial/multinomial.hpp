@@ -10,7 +10,6 @@ class Multinomial : public Korali::Distribution::Specific::Base {
  public: 
 
  
- std::string getType() override;
  bool checkTermination() override;
  void getConfiguration(nlohmann::json& js) override;
  void setConfiguration(nlohmann::json& js) override;

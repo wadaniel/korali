@@ -165,6 +165,8 @@ def createSetConfiguration(module):
  codeString += ' if(js.count("Variables") == 1) for (size_t i = 0; i < js["Variables"].size(); i++) if (js["Variables"][i].empty()) js["Variables"].erase(i);\n'
  codeString += ' if(js.count("Variables") == 1) if (js["Variables"].empty()) js.erase("Variables");\n'
  
+ codeString += ' _type = "' + module["Alias"] + '";\n'
+ 
  codeString += ' if(js.empty() == false) Korali::logError("Unrecognized settings for ' + module["Name"] + ' (' + module["Alias"] + '): \\n%s\\n", js.dump(2).c_str());\n'
  codeString += '} \n\n'
   
@@ -175,7 +177,7 @@ def createSetConfiguration(module):
 def createGetConfiguration(module):  
  codeString = 'void ' + module["C++ Class"]  + '::getConfiguration(nlohmann::json& js) \n{\n\n'
  
- codeString += ' js["Type"] = "' + module["Alias"] + '";\n'
+ codeString += ' js["Type"] = _type;\n'
  
  if 'Configuration Settings' in module:
   for v in module["Configuration Settings"]: 
@@ -293,11 +295,9 @@ for moduleDir, relDir, fileNames in os.walk(currentDir):
    
    ###### Producing module code
 
-   getTypeString = 'std::string ' + moduleConfig["C++ Class"] + '::getType() { return "' + moduleConfig["Alias"] + '"; }'   
    moduleCodeString = createSetConfiguration(moduleConfig)
    moduleCodeString += createGetConfiguration(moduleConfig)
    moduleCodeString += createCheckTermination(moduleConfig)
-   moduleCodeString += '\n\n' + getTypeString + '\n\n'
  
    ####### Producing header file
    
@@ -307,7 +307,6 @@ for moduleDir, relDir, fileNames in os.walk(currentDir):
    
    # Adding overridden function declarations
    functionOverrideString = ''
-   functionOverrideString += ' std::string getType() override;\n'
    functionOverrideString += ' bool checkTermination() override;\n'
    functionOverrideString += ' void getConfiguration(nlohmann::json& js) override;\n'
    functionOverrideString += ' void setConfiguration(nlohmann::json& js) override;\n'

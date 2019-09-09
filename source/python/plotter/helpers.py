@@ -26,8 +26,8 @@ def initDefaults(directory, filename, lists):
  
         solver = data['Solver']['Type']
         gen    = data['Internal']['Current Generation']
-        numdim = len(data['Problem']['Variables'])
-        names  = [ data['Problem']['Variables'][i]['Name'] for i in range(numdim) ]
+        numdim = len(data['Variables'])
+        names  = [ data['Variables'][i]['Name'] for i in range(numdim) ]
 
         for li in lists:
             for i in range(numdim):

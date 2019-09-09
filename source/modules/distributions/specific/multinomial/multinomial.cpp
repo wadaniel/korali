@@ -18,13 +18,14 @@ void Korali::Distribution::Specific::Multinomial::setConfiguration(nlohmann::jso
  if(js.count("Conduit") == 1) if (js["Conduit"].empty()) js.erase("Conduit");
  if(js.count("Variables") == 1) for (size_t i = 0; i < js["Variables"].size(); i++) if (js["Variables"][i].empty()) js["Variables"].erase(i);
  if(js.count("Variables") == 1) if (js["Variables"].empty()) js.erase("Variables");
+ _type = "Multinomial";
  if(js.empty() == false) Korali::logError("Unrecognized settings for Multinomial Generator (Multinomial): \n%s\n", js.dump(2).c_str());
 } 
 
 void Korali::Distribution::Specific::Multinomial::getConfiguration(nlohmann::json& js) 
 {
 
- js["Type"] = "Multinomial";
+ js["Type"] = _type;
  Korali::Distribution::Specific::Base::getConfiguration(js);
 } 
 
@@ -34,6 +35,3 @@ bool Korali::Distribution::Specific::Multinomial::checkTermination()
 
  return hasFinished;
 }
-
-std::string Korali::Distribution::Specific::Multinomial::getType() { return "Multinomial"; }
-

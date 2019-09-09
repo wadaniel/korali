@@ -10,7 +10,7 @@ from korali.plotter.helpers import verifyGeneration, initDefaults, getStateAndGe
 
 
 # Plot TMCMC results (read from .json files)
-def plot_tmcmc(src, plotAll=False, live=False, generation=None, test=False, mean=''):
+def plot(src, plotAll=False, live=False, generation=None, test=False, mean=''):
     plt.style.use('seaborn-dark')
         
     verifyGeneration(generation, 1)

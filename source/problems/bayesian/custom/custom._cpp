@@ -12,8 +12,9 @@ void Korali::Problem::Bayesian::Custom::initialize()
 
 double Korali::Problem::Bayesian::Custom::evaluateLogLikelihood(Korali::Sample& sample)
 {
- //std::vector<double> result = _k->_conduit->runModel(_likelihoodModel, sample);
- if (sample.getResult().size() != 1) Korali::logError("The specified likelihood model did not return a single result. Received: %lu results.\n", sample.getResult().size());
- return sample.getResult()[0];
+ _k->_conduit->runModel(_likelihoodModel, sample);
+ std::vector<double> result = sample.getResult();
+ if (result.size() != 1) Korali::logError("The specified likelihood model did not return a single result. Received: %lu results.\n", result.size());
+ return result[0];
 }
 

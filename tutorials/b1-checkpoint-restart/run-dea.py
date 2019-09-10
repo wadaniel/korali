@@ -18,20 +18,19 @@ resultDir = '_result_run-dea'
 
 k["Problem"]["Type"] = "Optimization"
 k["Problem"]["Objective"] = "Maximize"
-
-k["Problem"]["Variables"][0]["Name"] = "X"
-k["Problem"]["Variables"][0]["Lower Bound"] = -10.0
-k["Problem"]["Variables"][0]["Upper Bound"] = +10.0
+k["Problem"]["Objective Function"] = model
 
 k["Solver"]["Type"]  = "DEA"
 k["Solver"]["Population Size"] = 10
 k["Solver"]["Termination Criteria"]["Max Generations"] = 50
 
-k["General"]["Console Output"]["Frequency"] = 5
-k["General"]["Results Output"]["Frequency"] = 5
-k["General"]["Results Output"]["Path"] = resultDir
+k["Variables"][0]["Name"] = "X"
+k["Variables"][0]["Lower Bound"] = -10.0
+k["Variables"][0]["Upper Bound"] = +10.0
 
-k.setDirectModel(model) 
+k["Console Output"]["Frequency"] = 5
+k["Results Output"]["Frequency"] = 5
+k["Results Output"]["Path"] = resultDir
 
 k.run()
 

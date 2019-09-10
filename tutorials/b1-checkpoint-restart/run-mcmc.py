@@ -17,20 +17,20 @@ k = korali.initialize()
 resultDir = '_result_run-mcmc'
 
 k["Problem"]["Type"] = "Sampling"
-
-k["Problem"]["Variables"][0]["Name"] = "X"
-k["Problem"]["Variables"][0]["Initial Mean"] = 0.0
-k["Problem"]["Variables"][0]["Initial Standard Deviation"] = 1.0
+k["Problem"]["Objective Function"] = model
 
 k["Solver"]["Type"]  = "MCMC"
 k["Solver"]["Burn In"] = 500
 k["Solver"]["Termination Criteria"]["Max Chain Length"] = 1000
 
-k["General"]["Console Output"]["Frequency"] = 1000
-k["General"]["Results Output"]["Frequency"] = 1000
-k["General"]["Results Output"]["Path"] = resultDir
+k["Variables"][0]["Name"] = "X"
+k["Variables"][0]["Initial Mean"] = 0.0
+k["Variables"][0]["Initial Standard Deviation"] = 1.0
 
-k.setDirectModel(model)
+k["Console Output"]["Frequency"] = 1000
+k["Results Output"]["Frequency"] = 1000
+k["Results Output"]["Path"] = resultDir
+
 k.run()
 
 print("\n-------------------------------------------------------------")

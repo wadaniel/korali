@@ -60,7 +60,14 @@ def consumeValue(base, moduleName, path, varName, varType, varDefault):
 
  if ('std::vector<Korali::Variable' in varType):
   baseType = varType.replace('std::vector<', '').replace('>','')
+  cString += ' ' + varName + '.clear();\n'
   cString += ' for(size_t i = 0; i < ' + base + path + '.size(); i++) ' + varName + '.push_back(new Korali::Variable);\n'
+  return cString
+  
+ if ('std::vector<Korali::Variable*>' in varType):
+  baseType = varType.replace('std::vector<', '').replace('>','')
+  cString += ' for(size_t i = 0; i < ' + base + path + '.size(); i++) ' + varName + '.push_back(new Korali::Variable());\n'
+  cString += ' Korali::JsonInterface::eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n\n' 
   return cString
   
  if ('std::vector<Korali::' in varType):
@@ -97,6 +104,10 @@ def consumeValue(base, moduleName, path, varName, varType, varDefault):
 def saveValue(base, path, varName, varType):
 
  if ('Korali::Sample' in varType):
+  sString = ''
+  return sString
+  
+ if ('Korali::Variable' in varType):
   sString = ''
   return sString
   
@@ -157,6 +168,7 @@ def createSetConfiguration(module):
  codeString += ' ' + getParentClass(module) + '::setConfiguration(js);\n'
  
  codeString += ' _type = "' + module["Alias"] + '";\n'
+ codeString += ' if(Korali::JsonInterface::isDefined(js, "[\'Type\']")) Korali::JsonInterface::eraseValue(js, "[\'Type\']");\n'   
  
  codeString += ' if(Korali::JsonInterface::isEmpty(js) == false) Korali::logError("Unrecognized settings for ' + module["Name"] + ' (' + module["Alias"] + '): \\n%s\\n", js.dump(2).c_str());\n'
  codeString += '} \n\n'
@@ -176,14 +188,14 @@ def createGetConfiguration(module):
  
  if 'Termination Criteria' in module:
   for v in module["Termination Criteria"]: 
-   codeString += saveValue('js', getVariablePath(v), getCXXVariableName(v["Name"]), getVariableType(v))
+   codeString += saveValue('js', '["Termination Criteria"]' + getVariablePath(v), getCXXVariableName(v["Name"]), getVariableType(v))
    
  if 'Internal Settings' in module:   
   for v in module["Internal Settings"]: 
    codeString += saveValue('js', '["Internal"]' + getVariablePath(v), getCXXVariableName(v["Name"]), getVariableType(v))
    
  if 'Variables Configuration' in module:
-  codeString += ' for (size_t i = 0; i <  _k->_js["Variables"].size(); i++) { \n'
+  codeString += ' for (size_t i = 0; i <  _k->_variables.size(); i++) { \n'
   for v in module["Variables Configuration"]:
    codeString += saveValue('_k->_js["Variables"][i]', getVariablePath(v), '_k->_variables[i]->' + getCXXVariableName(v["Name"]), getVariableType(v))
   codeString += ' } \n'  
@@ -358,7 +370,7 @@ variableDeclarationList = ''
 for varDecl in varDeclarationSet:
  variableDeclarationList += varDecl + '\n'
 
-variableBaseHeaderFileName = koraliDir + '/variable/variable.hpp'
+variableBaseHeaderFileName = koraliDir + '/variable/variable._hpp'
 variableNewHeaderFile = koraliDir + '/variable/variable.hpp'
 with open(variableBaseHeaderFileName, 'r') as file: variableBaseHeaderString = file.read()
 newBaseString = variableBaseHeaderString

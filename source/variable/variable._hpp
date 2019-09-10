@@ -2,13 +2,12 @@
 #define __KORALI_VARIABLE_HPP_
 
 #include <vector>
-#include "module.hpp"
 #include "distributions/univariate/base.hpp"
 
 namespace Korali
 {
 
-class Variable : public Korali::Module {
+class Variable{
 
  public:
    // Variable Declaration List

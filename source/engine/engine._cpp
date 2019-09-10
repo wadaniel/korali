@@ -180,6 +180,7 @@ PYBIND11_MODULE(libkorali, m)
   pybind11::class_<Korali::Sample>(m, "Sample")
     .def("__getitem__",     &Korali::Sample::operator[], pybind11::return_value_policy::reference)
     .def("getSampleId",  &Korali::Sample::getSampleId, pybind11::return_value_policy::reference)
+    .def("getSampleData",  &Korali::Sample::getSampleData, pybind11::return_value_policy::reference)
     .def("setResult", pybind11::overload_cast<const double&>(&Korali::Sample::setResult), pybind11::return_value_policy::reference)
     .def("setResult", pybind11::overload_cast<const std::vector<double>&>(&Korali::Sample::setResult), pybind11::return_value_policy::reference);
 

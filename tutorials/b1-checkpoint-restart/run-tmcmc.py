@@ -16,21 +16,21 @@ k = korali.initialize()
 
 resultDir = '_result_run-tmcmc'
 
-k["Problem"]["Type"] = "Sampling"
-
-k["Problem"]["Variables"][0]["Name"] = "X"
-k["Problem"]["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"
-k["Problem"]["Variables"][0]["Prior Distribution"]["Minimum"] = -10.0
-k["Problem"]["Variables"][0]["Prior Distribution"]["Maximum"] = +10.0
+k["Problem"]["Type"] = "Bayesian Inference (Custom Likelihood)"
+k["Problem"]["Likelihood Model"] = model
 
 k["Solver"]["Type"]  = "TMCMC"
 k["Solver"]["Population Size"] = 5000
 k["Solver"]["Termination Criteria"]["Max Generations"] = 1
 
-k["General"]["Results Output"]["Path"] = resultDir
-k["General"]["Random Seed"] = 0xC0FFEE
+k["Variables"][0]["Name"] = "X"
+k["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"
+k["Variables"][0]["Prior Distribution"]["Minimum"] = -10.0
+k["Variables"][0]["Prior Distribution"]["Maximum"] = +10.0
 
-k.setDirectModel(model)
+k["Results Output"]["Path"] = resultDir
+k["Random Seed"] = 0xC0FFEE
+
 k.run()
 
 print("\n-------------------------------------------------------------")

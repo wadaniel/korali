@@ -3,7 +3,7 @@
 # Minus g09
 
 def model(d):
-  pars = d.getVariables();
+  pars = d.getSampleData();
 
   npar = 10
   res = 0.0

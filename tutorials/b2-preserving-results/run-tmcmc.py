@@ -15,26 +15,25 @@ k = korali.initialize()
 
 # Selecting problem and solver types.
 k["Problem"]["Type"] = "Sampling"
+k["Problem"]["Objective Function"] = storeResults
 
 # Defining the problem's variables and their CMA-ES bounds.
-k["Problem"]["Variables"][0]["Name"] = "Soil pH"
-k["Problem"]["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"
-k["Problem"]["Variables"][0]["Prior Distribution"]["Minimum"] = 3.0
-k["Problem"]["Variables"][0]["Prior Distribution"]["Maximum"] = 9.0
+k["Variables"][0]["Name"] = "Soil pH"
+k["Variables"][0]["Initial Mean"] = 6.0
+k["Variables"][0]["Initial Standard Deviation"] = 1.0
 
-k["Problem"]["Variables"][1]["Name"] = "Average Temperature (C)"
-k["Problem"]["Variables"][1]["Prior Distribution"]["Type"] = "Uniform"
-k["Problem"]["Variables"][1]["Prior Distribution"]["Minimum"] = +10.0
-k["Problem"]["Variables"][1]["Prior Distribution"]["Maximum"] = +50.0
+k["Variables"][1]["Name"] = "Average Temperature (C)"
+k["Variables"][1]["Initial Mean"] = +30.0
+k["Variables"][1]["Initial Standard Deviation"] = +5.0
 
 # Configuring the TMCMC sampler parameters
-k["Solver"]["Type"] = "TMCMC"
-k["Solver"]["Population Size"] = 5000
-
-# Setting Model
-k.setDirectModel(storeResults)
+k["Solver"]["Type"] = "MCMC"
+k["Solver"]["Burn In"] = 500
+k["Solver"]["Termination Criteria"]["Max Chain Length"] = 1000
 
 # Running Korali
+k["Console Output"]["Frequency"] = 500
+k["Results Output"]["Frequency"] = 500
 k.run()
 
 # Saving quantities of interest

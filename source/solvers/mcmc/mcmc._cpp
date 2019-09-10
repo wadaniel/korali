@@ -38,7 +38,7 @@ void Korali::Solver::MCMC::runGeneration()
   double evaluation = -Korali::Inf;
   if (_k->_problem->isSampleFeasible(sample))
   {
-   sample.setSampleId(i);
+   sample.setSampleId(_databaseEntryCount);
    sample.start(Korali::Problem::Base::basicEvaluation);
    sample.wait();
    evaluation = sample.getResult()[0];

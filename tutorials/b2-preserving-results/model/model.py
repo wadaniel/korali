@@ -32,8 +32,8 @@ harvestQualities = {}
  
 def storeResults(d):
  # Gathering sample variable values
- ph = d.getVariable(0)
- temp = d.getVariable(1)
+ ph = d[0]
+ temp = d[1]
  sampleId = d.getSampleId()
  
  # Gathering QOIs
@@ -54,7 +54,6 @@ def storeResults(d):
  
  # Returning evaluation to Korali
  d.setResult(x)
-
 
 def getHarvestQuality(b, o, a):
  return b*1.2 + o*0.9 + a*1.1

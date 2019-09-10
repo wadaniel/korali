@@ -11,6 +11,8 @@ class Optimization : public Korali::Problem::Direct::Base
 
  double getBasicEvaluation(Korali::Sample& sample) override;
  void initialize() override;
+ std::vector<double> getConstraintsEvaluation(Korali::Sample&);
+ static void evaluateConstraints(Korali::Sample&);
 };
 
 } } } // namespace Korali::Problem::Direct

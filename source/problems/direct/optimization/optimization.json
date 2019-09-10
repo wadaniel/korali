@@ -27,6 +27,11 @@
  
  "Internal Settings": 
  [
-
+   {
+    "Name": [ "Constraint Evaluation Count" ],
+    "Type": "size_t",
+    "Default": "0",
+    "Description": "Number of Constraint Evaluations."
+   }
  ]
 }

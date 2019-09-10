@@ -16,3 +16,24 @@ double Korali::Problem::Direct::Optimization::getBasicEvaluation(Korali::Sample&
 
  return fitnessSign * result[0];
 }
+
+std::vector<double> Korali::Problem::Direct::Optimization::getConstraintsEvaluation(Korali::Sample& sample)
+{
+ std::vector<double> evaluations;
+
+ for (size_t i = 0; i < _constraints.size(); i++)
+ {
+  _k->_conduit->runModel(_constraints[i], sample);
+  std::vector<double> constraintResult = sample.getResult();
+  if (constraintResult.size() != 1) Korali::logError("Costraint evaluations should return exactly 1 result. Provided: %lu.\n", constraintResult.size());
+  evaluations.push_back(constraintResult[0]);
+  _constraintEvaluationCount++;
+ }
+
+ return evaluations;
+}
+
+void Korali::Problem::Direct::Optimization::evaluateConstraints(Korali::Sample& sample)
+{
+ sample.setResult(dynamic_cast<Korali::Problem::Direct::Optimization*>(_k->_problem)->getConstraintsEvaluation(sample));
+}

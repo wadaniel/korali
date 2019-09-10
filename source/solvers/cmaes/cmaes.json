@@ -441,11 +441,6 @@
     "Description": "Number of Covariance Matrix Adaptations."
    },
    {
-    "Name": [ "Constraint Evaluation Count" ],
-    "Type": "size_t",
-    "Description": "Number of Covariance Matrix Adaptations."
-   },
-   {
     "Name": [ "Viability Boundaries" ],
     "Type": "std::vector<double>",
     "Description": "Viability Boundaries."

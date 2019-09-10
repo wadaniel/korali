@@ -10,3 +10,4 @@ bool Korali::Problem::Direct::Base::isSampleFeasible(Korali::Sample& sample)
   }
   return true;
 }
+

@@ -18,12 +18,17 @@ k = korali.initialize()
 # Selecting problem type
 k["Problem"]["Type"] = "Optimization"
 k["Problem"]["Objective"] = "Maximize"
+k["Problem"]["Objective Function"] = model
+k["Problem"]["Constraints"][0] = g1
+k["Problem"]["Constraints"][1] = g2
+k["Problem"]["Constraints"][2] = g3
+k["Problem"]["Constraints"][3] = g4
 
 # Creating 7 variables and setting their CCMA-ES bounds
 for i in range(7) :
-  k["Problem"]["Variables"][i]["Name"] = "X" + str(i)
-  k["Problem"]["Variables"][i]["Lower Bound"] = -10.0
-  k["Problem"]["Variables"][i]["Upper Bound"] = +10.0
+  k["Variables"][i]["Name"] = "X" + str(i)
+  k["Variables"][i]["Lower Bound"] = -10.0
+  k["Variables"][i]["Upper Bound"] = +10.0
 
 # Configuring the constrained optimizer CCMA-ES
 k["Solver"]["Type"] = "CMAES"
@@ -34,15 +39,8 @@ k["Solver"]["Termination Criteria"]["Max Value"] = -680.630057374402 - 1e-4
 k["Solver"]["Termination Criteria"]["Max Generations"] = 500
 
 # General Settings
-k["General"]["Console Output"]["Frequency"] = 50
-k["General"]["Results Output"]["Frequency"] = 50
-
-# Setting model and constraints
-k.setDirectModel(model)
-k.addConstraint(g1)
-k.addConstraint(g2)
-k.addConstraint(g3)
-k.addConstraint(g4)
+k["Console Output"]["Frequency"] = 50
+k["Results Output"]["Frequency"] = 50
 
 # Running Korali
 k.run()

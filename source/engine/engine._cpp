@@ -155,6 +155,14 @@ void Korali::Engine::setItem(const std::string& key, const std::function<void(Ko
  _opt = &_js;
 }
 
+void Korali::Engine::setItem(const int& key, const std::function<void(Korali::Sample&)> val)
+{
+ size_t pos = __korali_models.size();
+ __korali_models.push_back(val);
+ (*_opt)[key] = pos;
+ _opt = &_js;
+}
+
 void Korali::Engine::operator=(const std::function<void(Korali::Sample&)> val)
 {
  size_t pos = __korali_models.size();
@@ -184,6 +192,7 @@ PYBIND11_MODULE(libkorali, m)
    .def("__setitem__", pybind11::overload_cast<const std::string&, const double&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
    .def("__setitem__", pybind11::overload_cast<const std::string&, const int&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
    .def("__setitem__", pybind11::overload_cast<const std::string&, const std::vector<double>&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
+   .def("__setitem__", pybind11::overload_cast<const int&, const std::function<void(Korali::Sample&)>>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
    .def("__setitem__", pybind11::overload_cast<const int&, const std::string&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
    .def("__setitem__", pybind11::overload_cast<const int&, const double&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
    .def("__setitem__", pybind11::overload_cast<const int&, const int&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)

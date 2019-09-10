@@ -162,7 +162,6 @@ void Korali::Solver::CMAES::initialize()
   _bestValidSample = 0;
  }
   
- _constraintEvaluationCount = 0;
  _covarianceMatrixAdaptationCount = 0;
  _maxConstraintViolationCount = 0;
 
@@ -291,83 +290,79 @@ void Korali::Solver::CMAES::initCovariance()
 
 void Korali::Solver::CMAES::checkMeanAndSetRegime()
 {
-//  if (_isViabilityRegime == false) return; /* mean already inside valid domain, no udpates */
-//
-//  Korali::Model::Constraint data;
-//  for (size_t i = 0; i < N; i++) data._variables.push_back(_currentMean[i]);
-//  for (size_t c = 0; c < _constrainedProblem->_constraints.size(); c++)
-//  {
-//    _constraintEvaluationCount++;
-//    _constrainedProblem->_constraints[c](data);
-//    if (data._evaluation > 0.0) return; /* mean violates constraint, do nothing */
-//  }
-//
-//  /* mean inside domain, switch regime and update internal variables */
-//  _isViabilityRegime = false;
-//
-//  for (size_t c = 0; c < _constrainedProblem->_constraints.size(); c++) { _viabilityBoundaries[c] = 0; }
-//  _currentPopulationSize = _populationSize;
-//  _currentMuValue = _muValue;
-//
-//  _bestEverValue = -std::numeric_limits<double>::infinity();
-//  initMuWeights(_currentMuValue);
-//  initCovariance();
+  if (_isViabilityRegime == false) return; /* mean already inside valid domain, no udpates */
+
+  Korali::Sample mean(_currentMean);
+  mean.start(Korali::Problem::Direct::Optimization::evaluateConstraints);
+  mean.wait();
+
+  for (size_t c = 0; c < _constrainedProblem->_constraints.size(); c++)
+    if (mean.getResult()[c] > 0.0) return; /* mean violates constraint, do nothing */
+
+  /* mean inside domain, switch regime and update internal variables */
+  _isViabilityRegime = false;
+
+  for (size_t c = 0; c < _constrainedProblem->_constraints.size(); c++) { _viabilityBoundaries[c] = 0; }
+  _currentPopulationSize = _populationSize;
+  _currentMuValue = _muValue;
+
+  _bestEverValue = -std::numeric_limits<double>::infinity();
+  initMuWeights(_currentMuValue);
+  initCovariance();
 }
 
 
-void Korali::Solver::CMAES::updateConstraints() //TODO: maybe parallelize constraint evaluations (DW)
+void Korali::Solver::CMAES::updateConstraints()
 {
+ for(size_t i = 0; i < _currentPopulationSize; i++)
+ {
+  _sampleConstraintViolationCounts[i] = 0;
+  Korali::Sample mean(_samplePopulation[i]);
+  mean.start(Korali::Problem::Direct::Optimization::evaluateConstraints);
+  mean.wait();
+  for(size_t c = 0; c < _constrainedProblem->_constraints.size(); c++) _constraintEvaluations[c][i] = mean.getResult()[c];
+ }
 
-// for(size_t i = 0; i < _currentPopulationSize; i++) _sampleConstraintViolationCounts[i] = 0;
-// _maxConstraintViolationCount = 0;
-//
-// for(size_t c = 0; c < _constrainedProblem->_constraints.size(); c++)
-// {
-//  double maxviolation = 0.0;
-//  for(size_t i = 0; i < _currentPopulationSize; ++i)
-//  {
-//    _constraintEvaluationCount++;
-//    Korali::Model::Constraint data;
-//    for (size_t j = 0; j < N; j++)
-//     data._variables.push_back(_samplePopulation[i][j]);
-//
-//    _constrainedProblem->_constraints[c](data);
-//    _constraintEvaluations[c][i] = data._evaluation;
-//
-//    if ( _constraintEvaluations[c][i] > maxviolation ) maxviolation = _constraintEvaluations[c][i];
-//    if ( _k->_currentGeneration == 1 && _isViabilityRegime ) _viabilityBoundaries[c] = maxviolation;
-//
-//    if ( _constraintEvaluations[c][i] > _viabilityBoundaries[c] + 1e-12 ) _sampleConstraintViolationCounts[i]++;
-//    if ( _sampleConstraintViolationCounts[i] > _maxConstraintViolationCount ) _maxConstraintViolationCount = _sampleConstraintViolationCounts[i];
-//
-//  }
-// }
+ _maxConstraintViolationCount = 0;
 
+ for(size_t c = 0; c < _constrainedProblem->_constraints.size(); c++)
+ {
+  double maxviolation = 0.0;
+  for(size_t i = 0; i < _currentPopulationSize; ++i)
+  {
+    if ( _constraintEvaluations[c][i] > maxviolation ) maxviolation = _constraintEvaluations[c][i];
+    if ( _k->_currentGeneration == 1 && _isViabilityRegime ) _viabilityBoundaries[c] = maxviolation;
+
+    if ( _constraintEvaluations[c][i] > _viabilityBoundaries[c] + 1e-12 ) _sampleConstraintViolationCounts[i]++;
+    if ( _sampleConstraintViolationCounts[i] > _maxConstraintViolationCount ) _maxConstraintViolationCount = _sampleConstraintViolationCounts[i];
+  }
+ }
 }
 
 
-void Korali::Solver::CMAES::reEvaluateConstraints() //TODO: maybe we can parallelize constraint evaluations (DW)
+void Korali::Solver::CMAES::reEvaluateConstraints()
 {
-//  _maxConstraintViolationCount = 0;
-//  for(size_t i = 0; i < _currentPopulationSize; ++i) if(_sampleConstraintViolationCounts[i] > 0)
-//  {
-//    _sampleConstraintViolationCounts[i] = 0;
-//    for(size_t c = 0; c < _constrainedProblem->_constraints.size(); c++)
-//    {
-//     _constraintEvaluationCount++;
-//     Korali::Model::Constraint data;
-//     for (size_t j = 0; j < N; j++)
-//      data._variables.push_back(_samplePopulation[i][j]);
-//
-//     _constrainedProblem->_constraints[c](data);
-//     _constraintEvaluations[c][i] = data._evaluation;
-//
-//      if( _constraintEvaluations[c][i] > _viabilityBoundaries[c] + 1e-12 ) { _viabilityIndicator[c][i] = true; _sampleConstraintViolationCounts[i]++; }
-//      else _viabilityIndicator[c][i] = false;
-//
-//    }
-//    if (_sampleConstraintViolationCounts[i] > _maxConstraintViolationCount) _maxConstraintViolationCount = _sampleConstraintViolationCounts[i];
-//  }
+  for(size_t i = 0; i < _currentPopulationSize; i++) if(_sampleConstraintViolationCounts[i] > 0)
+  {
+   _sampleConstraintViolationCounts[i] = 0;
+   Korali::Sample mean(_samplePopulation[i]);
+   mean.start(Korali::Problem::Direct::Optimization::evaluateConstraints);
+   mean.wait();
+   for(size_t c = 0; c < _constrainedProblem->_constraints.size(); c++) _constraintEvaluations[c][i] = mean.getResult()[c];
+  }
+
+  _maxConstraintViolationCount = 0;
+
+  for(size_t i = 0; i < _currentPopulationSize; ++i) if(_sampleConstraintViolationCounts[i] > 0)
+  {
+    _sampleConstraintViolationCounts[i] = 0;
+    for(size_t c = 0; c < _constrainedProblem->_constraints.size(); c++)
+    {
+      if( _constraintEvaluations[c][i] > _viabilityBoundaries[c] + 1e-12 ) { _viabilityIndicator[c][i] = true; _sampleConstraintViolationCounts[i]++; }
+      else _viabilityIndicator[c][i] = false;
+    }
+    if (_sampleConstraintViolationCounts[i] > _maxConstraintViolationCount) _maxConstraintViolationCount = _sampleConstraintViolationCounts[i];
+  }
 }
 
 
@@ -866,7 +861,7 @@ void Korali::Solver::CMAES::printGeneration()
   Korali::logInfo("Detailed", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
   if ( _areConstraintsDefined )
   {
-    Korali::logInfo("Detailed", "Number of Constraint Evaluations: %zu\n", _constraintEvaluationCount);
+    Korali::logInfo("Detailed", "Number of Constraint Evaluations: %zu\n", _constrainedProblem->_constraintEvaluationCount);
     Korali::logInfo("Detailed", "Number of Matrix Corrections: %zu\n", _covarianceMatrixAdaptationCount );
   }
 }

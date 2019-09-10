@@ -26,6 +26,7 @@ def main():
  if (sys.argv[1] == '--libs'):
    correctSyntax=True
    getlibs(koraliDir, makeFlags)
+   exit(0)
    
  if (sys.argv[1] == '--compiler'):
    correctSyntax=True
@@ -33,7 +34,7 @@ def main():
    exit(0)
   
  print('[Korali] Syntax error on call to korali.cxx module.')
- exit -1 
+ exit(-1) 
   
 if __name__ == '__main__':
     main()

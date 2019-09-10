@@ -27,7 +27,6 @@ class Engine : public Korali::Module {
  void run() { start(false); }
  void dry() { start(true);  }
 
-
  // Constructor
  Engine() { _opt = &_js; }
  // JSON-based configuration
@@ -49,6 +48,12 @@ class Engine : public Korali::Module {
  void setItem(const int& key, const std::string& val)                 { (*_opt)[key] = val; _opt = &_js; }
  void setItem(const int& key, const double& val)                      { (*_opt)[key] = val; _opt = &_js; }
  void setItem(const int& key, const int& val)                         { (*_opt)[key] = val; _opt = &_js; }
+
+ void operator=(const std::function<void(Korali::Sample&)> val);
+ void operator=(const std::string& val)         { (*_opt) = val; _opt = &_js; }
+ void operator=(const double& val)              { (*_opt) = val; _opt = &_js; }
+ void operator=(const int& val)                 { (*_opt) = val; _opt = &_js; }
+ void operator=(const std::vector<double>& val) { (*_opt) = val; _opt = &_js; }
 
  // State save/load methods
  bool isExecutionFinished();

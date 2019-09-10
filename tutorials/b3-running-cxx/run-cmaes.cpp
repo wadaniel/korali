@@ -9,7 +9,7 @@ int main(int argc, char* argv[])
  k["Problem"]["Type"] = "Bayesian Inference (Reference Likelihood)";
  k["Problem"]["Likelihood Model"] = "Additive Normal";
  k["Problem"]["Reference Data"] = p.refTemp;
- k["Problem"]["Computational Model"] = [](Korali::Sample& d) { heat2DSolver(d.getSample(), d.getResult()); };
+ k["Problem"]["Computational Model"] = [](Korali::Sample& d) { heat2DSolver(d.getSampleData(), d.getResult()); };
 
  k["Solver"]["Type"] = "CMAES";
  k["Solver"]["Population Size"] = 32;

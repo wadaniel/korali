@@ -156,19 +156,9 @@ def createSetConfiguration(module):
  
  codeString += ' ' + getParentClass(module) + '::setConfiguration(js);\n'
  
- codeString += ' if(js.count("Configuration Settings") == 1) if (js["Configuration Settings"].empty()) js.erase("Configuration Settings");\n'
- codeString += ' if(js.count("Internal Settings") == 1) if (js["Internal Settings"].empty()) js.erase("Internal Settings");\n'
- codeString += ' if(js.count("Termination Criteria") == 1) if (js["Termination Criteria"].empty()) js.erase("Termination Criteria");\n'
- codeString += ' if(js.count("Variable Configuration") == 1) if (js["Variable Configuration"].empty()) js.erase("Variable Configuration");\n'
- codeString += ' if(js.count("Solver") == 1) if (js["Solver"].empty()) js.erase("Solver");\n'
- codeString += ' if(js.count("Problem") == 1) if (js["Problem"].empty()) js.erase("Problem");\n'
- codeString += ' if(js.count("Conduit") == 1) if (js["Conduit"].empty()) js.erase("Conduit");\n'
- codeString += ' if(js.count("Variables") == 1) for (size_t i = 0; i < js["Variables"].size(); i++) if (js["Variables"][i].empty()) js["Variables"].erase(i);\n'
- codeString += ' if(js.count("Variables") == 1) if (js["Variables"].empty()) js.erase("Variables");\n'
- 
  codeString += ' _type = "' + module["Alias"] + '";\n'
  
- codeString += ' if(js.empty() == false) Korali::logError("Unrecognized settings for ' + module["Name"] + ' (' + module["Alias"] + '): \\n%s\\n", js.dump(2).c_str());\n'
+ codeString += ' if(Korali::JsonInterface::isEmpty(js) == false) Korali::logError("Unrecognized settings for ' + module["Name"] + ' (' + module["Alias"] + '): \\n%s\\n", js.dump(2).c_str());\n'
  codeString += '} \n\n'
   
  return codeString

@@ -18,6 +18,8 @@ class Base : public Korali::Problem::Base
  double evaluateLogPrior(Korali::Sample& sample);
  virtual double evaluateLogLikelihood(Korali::Sample& sample) = 0;
  double evaluateLogPosterior(Korali::Sample& sample);
+
+ static void logLikelihood(Korali::Sample&);
 };
 
 } } } // namespace Korali::Problem::Bayesian

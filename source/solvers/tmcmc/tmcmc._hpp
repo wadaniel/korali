@@ -16,11 +16,10 @@ class TMCMC : public Korali::Solver::Base
 
  void setBurnIn();
  void prepareGeneration();
- void updateDatabase(double* point, double evaluation, double logPrior);
+ void processGeneration();
  void generateCandidate(size_t candidate);
- void evaluateCandidate(size_t candidate);
- void finishSample(size_t sampleId);
  void minSearch(double const *fj, size_t fn, double pj, double objTol, double& xmin, double& fmin);
+ void processEvaluation(const size_t sampleId);
  static double tmcmc_objlogp(double x, const double *fj, size_t fn, double pj, double zero);
  static double objLog(const gsl_vector *v, void *param);
 
@@ -35,7 +34,6 @@ class TMCMC : public Korali::Solver::Base
  void initialize() override;
  void finalize() override;
  void runGeneration() override;
- void processEvaluation(const double evaluation, const size_t sampleId);
  void printGeneration() override;
 };
 

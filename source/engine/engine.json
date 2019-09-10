@@ -84,7 +84,7 @@
    {
     "Name": [ "Current Generation" ],
     "Type": "size_t",
-    "Default": "0",
+    "Default": "1",
     "Description": "Indicates the current generation in execution."
    },
    {

@@ -26,7 +26,7 @@ void Korali::Solver::CMAES::initialize()
 
  N = _k->_variables.size();
 
- if (_k->_currentGeneration > 0) return;
+ if (_k->_currentGeneration > 1) return;
 
  size_t s_max  = std::max(_populationSize,  _viabilityPopulationSize);
  size_t mu_max = std::max(_muValue, _viabilityMuValue);

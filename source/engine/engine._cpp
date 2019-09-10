@@ -53,7 +53,6 @@ void Korali::Engine::start(bool isDryRun)
  {
   auto t0 = std::chrono::system_clock::now();
 
-  _currentGeneration++;
   _solver->runGeneration();
 
   auto t1 = std::chrono::system_clock::now();
@@ -67,6 +66,8 @@ void Korali::Engine::start(bool isDryRun)
   }
 
   if (_currentGeneration % _resultsOutputFrequency == 0) saveState(_currentGeneration);
+
+  _currentGeneration++;
  }
 
  // Saving last generation and final.json

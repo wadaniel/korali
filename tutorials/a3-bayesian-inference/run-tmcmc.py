@@ -13,35 +13,33 @@ import korali
 k = korali.initialize()
 
 # Setting up the reference likelihood for the Bayesian Problem
-k["Problem"]["Type"] = "Bayesian Inference"
-k["Problem"]["Likelihood"]["Model"] = "Additive Normal"
-k["Problem"]["Likelihood"]["Reference Data"] = getReferenceData()
-
-# Configuring the problem's variables and their prior distributions
-k["Problem"]["Variables"][0]["Name"] = "a"
-k["Problem"]["Variables"][0]["Type"] = "Computational"
-k["Problem"]["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"
-k["Problem"]["Variables"][0]["Prior Distribution"]["Minimum"] = -5.0
-k["Problem"]["Variables"][0]["Prior Distribution"]["Maximum"] = +5.0
-
-k["Problem"]["Variables"][1]["Name"] = "b"
-k["Problem"]["Variables"][1]["Type"] = "Computational"
-k["Problem"]["Variables"][1]["Prior Distribution"]["Type"] = "Uniform"
-k["Problem"]["Variables"][1]["Prior Distribution"]["Minimum"] = -5.0
-k["Problem"]["Variables"][1]["Prior Distribution"]["Maximum"] = +5.0
-
-k["Problem"]["Variables"][2]["Name"] = "Sigma"
-k["Problem"]["Variables"][2]["Type"] = "Statistical"
-k["Problem"]["Variables"][2]["Prior Distribution"]["Type"] = "Uniform"
-k["Problem"]["Variables"][2]["Prior Distribution"]["Minimum"] = 0.0
-k["Problem"]["Variables"][2]["Prior Distribution"]["Maximum"] = +5.0
+k["Problem"]["Type"] = "Bayesian Inference (Reference Likelihood)"
+k["Problem"]["Likelihood Model"] = "Additive Normal"
+k["Problem"]["Reference Data"] = getReferenceData()
+k["Problem"]["Computational Model"] = lambda modelData: model(modelData, getReferencePoints())
 
 # Configuring TMCMC parameters
 k["Solver"]["Type"] = "TMCMC"
 k["Solver"]["Population Size"] = 5000
 
-# Setting the model
-k.setReferenceModel(lambda modelData: model(modelData, getReferencePoints()))
+# Configuring the problem's variables and their prior distributions
+k["Variables"][0]["Name"] = "a"
+k["Variables"][0]["Bayesian Type"] = "Computational"
+k["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"
+k["Variables"][0]["Prior Distribution"]["Minimum"] = -5.0
+k["Variables"][0]["Prior Distribution"]["Maximum"] = +5.0
+
+k["Variables"][1]["Name"] = "b"
+k["Variables"][1]["Bayesian Type"] = "Computational"
+k["Variables"][1]["Prior Distribution"]["Type"] = "Uniform"
+k["Variables"][1]["Prior Distribution"]["Minimum"] = -5.0
+k["Variables"][1]["Prior Distribution"]["Maximum"] = +5.0
+
+k["Variables"][2]["Name"] = "Sigma"
+k["Variables"][2]["Bayesian Type"] = "Statistical"
+k["Variables"][2]["Prior Distribution"]["Type"] = "Uniform"
+k["Variables"][2]["Prior Distribution"]["Minimum"] = 0.0
+k["Variables"][2]["Prior Distribution"]["Maximum"] = +5.0
 
 # Running Korali
 k.run()

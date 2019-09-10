@@ -80,7 +80,7 @@
     "Description": "Actual placeholder for burn in steps per generation, calculated from Burn In Default, Burn In and Current Generation."
    },
    {
-    "Name": [ "Chain Pending Fitness" ],
+    "Name": [ "Chain Pending Evaluation" ],
     "Type": "std::vector<bool>",
     "Description": "Indicates that the model evaluation for the chain is pending."
    },
@@ -176,13 +176,13 @@
    },
    {
     "Name": [ "Sample Database" ],
-    "Type": "std::vector<double>",
+    "Type": "std::vector<std::vector<double>>",
     "Description": "Parameters stored in the database (taken from the chain leaders)."
    },
    {
-    "Name": [ "Sample Fitness Database" ],
+    "Name": [ "Sample Evaluation Database" ],
     "Type": "std::vector<double>",
-    "Description": "Fitness of the parameters stored in the database."
+    "Description": "Evaluation of the parameters stored in the database."
    },
    {
     "Name": [ "Sample LogPrior Database" ],

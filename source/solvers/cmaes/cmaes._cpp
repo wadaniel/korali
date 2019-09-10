@@ -342,22 +342,18 @@ void Korali::Solver::CMAES::updateConstraints()
 
 void Korali::Solver::CMAES::reEvaluateConstraints()
 {
-  for(size_t i = 0; i < _currentPopulationSize; i++) if(_sampleConstraintViolationCounts[i] > 0)
-  {
-   _sampleConstraintViolationCounts[i] = 0;
-   Korali::Sample mean(_samplePopulation[i]);
-   mean.start(Korali::Problem::Direct::Optimization::evaluateConstraints);
-   mean.wait();
-   for(size_t c = 0; c < _constrainedProblem->_constraints.size(); c++) _constraintEvaluations[c][i] = mean.getResult()[c];
-  }
-
   _maxConstraintViolationCount = 0;
 
   for(size_t i = 0; i < _currentPopulationSize; ++i) if(_sampleConstraintViolationCounts[i] > 0)
   {
+    Korali::Sample mean(_samplePopulation[i]);
+    mean.start(Korali::Problem::Direct::Optimization::evaluateConstraints);
+    mean.wait();
+
     _sampleConstraintViolationCounts[i] = 0;
     for(size_t c = 0; c < _constrainedProblem->_constraints.size(); c++)
     {
+      _constraintEvaluations[c][i] = mean.getResult()[c];
       if( _constraintEvaluations[c][i] > _viabilityBoundaries[c] + 1e-12 ) { _viabilityIndicator[c][i] = true; _sampleConstraintViolationCounts[i]++; }
       else _viabilityIndicator[c][i] = false;
     }
@@ -657,7 +653,7 @@ void Korali::Solver::CMAES::handleConstraints()
 
  while( _maxConstraintViolationCount > 0 )
  {
-  for (size_t i = 0; i < N; i++) _auxiliarCovarianceMatrix.assign(std::begin(_covarianceMatrix), std::end(_covarianceMatrix));
+  _auxiliarCovarianceMatrix = _covarianceMatrix;
 
   for(size_t i = 0; i < _currentPopulationSize; ++i) if (_sampleConstraintViolationCounts[i] > 0)
   {

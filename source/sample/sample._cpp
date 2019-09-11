@@ -4,11 +4,14 @@ Korali::Sample* Korali::__current_sample;
 
 void Korali::Sample::threadCallWrapper()
 {
+ // This is not a thread-safe operation. For that to be the case, it would need
+ // a mutex lock activated before setting __current_sample, and freed after reading it
+
  Korali::Sample* currentSample = Korali::__current_sample;
  currentSample->_isFinished = false;
  currentSample->_function(*currentSample);
  currentSample->_isFinished = true;
- co_switch(currentSample->_mainThread);
+ currentSample->yield();
 }
 
 void Korali::Sample::start(void(*function)(Korali::Sample&))
@@ -34,9 +37,15 @@ void Korali::Sample::waitAll(std::vector<Korali::Sample>& samples)
  }
 }
 
+void Korali::Sample::yield()
+{
+ co_switch(_mainThread);
+}
+
 bool Korali::Sample::isFinished()
 {
- free(_self->_sampleThread);
+ if (_self->_isFinished == false) co_switch(_sampleThread);
+ if (_self->_isFinished == true) free(_self->_sampleThread);
  return _self->_isFinished;
 }
 

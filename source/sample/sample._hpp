@@ -50,6 +50,7 @@ class Sample : public Korali::Module {
  // Execution Control Functions
  void start(void(*function)(Korali::Sample&));
  bool isFinished();
+ void yield();
  void wait();
  static void threadCallWrapper();
  static void waitAll(std::vector<Korali::Sample>& samples);

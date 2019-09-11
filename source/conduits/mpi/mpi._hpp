@@ -35,12 +35,6 @@ class MPI : public Korali::Conduit::Base
  int _teamId;
  int _localRankId;
 
- std::vector<size_t> _teamSampleId;
- std::vector<bool> _teamBusy;
- std::vector<double> _teamFitness;
-
- std::vector<MPI_Request> _teamRequests;
-
  std::queue<int> _teamQueue;
  std::map< int, std::vector<int> > _teamWorkers;
 

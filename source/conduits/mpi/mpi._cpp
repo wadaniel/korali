@@ -85,7 +85,6 @@ void Korali::Conduit::MPI::finalize()
    for (int j = 0; j < _ranksPerTeam; j++)
     MPI_Send(&stopFlag, 1, MPI_INT, _teamWorkers[i][j], MPI_TAG_MODELID, MPI_COMM_WORLD);
  }
-  MPI_Barrier(MPI_COMM_WORLD);
  #endif
 }
 
@@ -139,7 +138,7 @@ void Korali::Conduit::MPI::runModel(size_t modelId, Korali::Sample& sample)
 
  for (int i = 0; i < _ranksPerTeam; i++)
  {
-  size_t sampleSize = sample.getResult().size();
+  size_t sampleSize = sample.getSampleData().size();
   size_t sampleId = sample.getSampleId();
   int workerId = _teamWorkers[teamId][i];
 
@@ -160,7 +159,7 @@ void Korali::Conduit::MPI::runModel(size_t modelId, Korali::Sample& sample)
   if (flag)
   {
     std::vector<double> resultVector(resultSize);
-    MPI_Recv(resultVector.data(), 1, MPI_DOUBLE, _teamWorkers[teamId][0], MPI_TAG_RESULTDATA, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    MPI_Recv(resultVector.data(), resultSize, MPI_DOUBLE, _teamWorkers[teamId][0], MPI_TAG_RESULTDATA, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     sample.setResult(resultVector);
     _teamQueue.push(teamId);
   }

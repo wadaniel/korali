@@ -15,7 +15,13 @@
 #include <cstdio>
 
 Korali::Engine* Korali::_k;
-std::vector<std::function<void(Korali::Sample&)>> Korali::__korali_models;
+std::vector<std::function<void(Korali::Sample&)>>* Korali::__korali_models;
+
+Korali::Engine::Engine()
+{
+ _opt = &_js;
+ Korali::__korali_models = new std::vector<std::function<void(Korali::Sample&)>>(0);
+}
 
 void Korali::Engine::start(bool isDryRun)
 {
@@ -69,6 +75,8 @@ void Korali::Engine::start(bool isDryRun)
 
   _currentGeneration++;
  }
+
+ _currentGeneration--;
 
  // Saving last generation and final.json
  saveState(_currentGeneration);
@@ -149,26 +157,62 @@ void Korali::Engine::loadState(std::string fileName)
 
 void Korali::Engine::setItem(const std::string& key, const std::function<void(Korali::Sample&)> val)
 {
- size_t pos = __korali_models.size();
- __korali_models.push_back(val);
+ size_t pos = __korali_models->size();
+ __korali_models->push_back(val);
  (*_opt)[key] = pos;
  _opt = &_js;
 }
 
 void Korali::Engine::setItem(const int& key, const std::function<void(Korali::Sample&)> val)
 {
- size_t pos = __korali_models.size();
- __korali_models.push_back(val);
+ size_t pos = __korali_models->size();
+ __korali_models->push_back(val);
  (*_opt)[key] = pos;
  _opt = &_js;
 }
 
 void Korali::Engine::operator=(const std::function<void(Korali::Sample&)> val)
 {
- size_t pos = __korali_models.size();
- __korali_models.push_back(val);
+ size_t pos = __korali_models->size();
+ __korali_models->push_back(val);
  (*_opt) = pos;
  _opt = &_js;
+}
+
+double Korali::Engine::getValue()
+{
+ double val = 0.0;
+ if (_opt->is_number()) val = *_opt;
+ else Korali::logError("[Korali] Error: Attempted getValue() on non-numeric field.\n");
+ _opt = &_js;
+ return val;
+}
+
+bool Korali::Engine::getBoolean()
+{
+ bool tf = false;
+ if (_opt->is_boolean()) tf = *_opt;
+ else Korali::logError("[Korali] Error: Attempted getBoolean() on non-boolean field.\n");
+ _opt = &_js;
+ return tf;
+}
+
+std::string Korali::Engine::getString()
+{
+ std::string str;
+ if (_opt->is_string()) str = *_opt;
+ else Korali::logError("[Korali] Error: Attempted getString() on non-string field.\n");
+ _opt = &_js;
+ return str;
+}
+
+std::vector<double> Korali::Engine::getArray()
+{
+ std::vector<double> vec;
+ if (_opt->is_array() && (*_opt)[0].is_number()) vec = _opt->get<std::vector<double>>();
+ else Korali::logError("[Korali] Error: Attempted getArray() on non-array field or non-numeric array.\n");
+ _opt = &_js;
+ return vec;
 }
 
 PYBIND11_MODULE(libkorali, m)
@@ -186,6 +230,10 @@ PYBIND11_MODULE(libkorali, m)
 
  pybind11::class_<Korali::Engine>(m, "Engine")
    .def(pybind11::init<>())
+   .def("getValue", &Korali::Engine::getValue)
+   .def("getBoolean", &Korali::Engine::getBoolean)
+   .def("getString", &Korali::Engine::getString)
+   .def("getArray", &Korali::Engine::getArray)
    .def("__getitem__", pybind11::overload_cast<const std::string&>(&Korali::Engine::getItem), pybind11::return_value_policy::reference)
    .def("__getitem__", pybind11::overload_cast<const unsigned long int&>(&Korali::Engine::getItem), pybind11::return_value_policy::reference)
    .def("__setitem__", pybind11::overload_cast<const std::string&, const std::function<void(Korali::Sample&)>>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)

@@ -8,17 +8,17 @@ from math import isclose
 
 import korali
 k = korali.initialize()
-k.setDirectModel(evaluateModel)
 
 k["Problem"]["Type"] = "Optimization"
 k["Problem"]["Objective"] = "Maximize"
+k["Problem"]["Objective Function"] = evaluateModel
 
 k["Solver"]["Type"]  = "CMAES" 
 k["Solver"]["Population Size"] = 32
 
-k["Problem"]["Variables"][0]["Name"] = "X";
-k["Problem"]["Variables"][0]["Lower Bound"] = -10.0;
-k["Problem"]["Variables"][0]["Upper Bound"] = +10.0;
+k["Variables"][0]["Name"] = "X";
+k["Variables"][0]["Lower Bound"] = -10.0;
+k["Variables"][0]["Upper Bound"] = +10.0;
 
 k.dry()
 

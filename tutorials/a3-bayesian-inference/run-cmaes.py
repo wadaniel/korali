@@ -16,12 +16,12 @@ k = korali.initialize()
 k["Problem"]["Type"] = "Bayesian Inference (Reference Likelihood)"
 k["Problem"]["Likelihood Model"] = "Additive Normal"
 k["Problem"]["Reference Data"] = getReferenceData()
-k["Problem"]["Computational Model"] = lambda modelData: model(modelData, getReferencePoints())
+k["Problem"]["Computational Model"] = lambda sampleData: model(sampleData, getReferencePoints())
 
 # Configuring CMA-ES parameters
 k["Solver"]["Type"] = "CMAES"
 k["Solver"]["Population Size"] = 24 
-k["Solver"]["Termination Criteria"]["Max Generations"] = 500
+k["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
 # Configuring the problem's variables and their prior distributions
 k["Variables"][0]["Name"] = "a"

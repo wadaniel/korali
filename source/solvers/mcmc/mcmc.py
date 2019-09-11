@@ -54,7 +54,7 @@ def plot(src, plotAll=False, live=False, generation=None, test=False, mean=''):
                     checkFigure(fig.number)
  
                 if(numdbentries[-1] > 0):
-                    samples  = np.reshape( data['Solver']['Internal']['Sample Database'][0:numdbentries[-1]*numdim], (numdbentries[-1],numdim) )
+                    samples  = np.reshape( data['Solver']['Internal']['Sample Database'][0:numdbentries[-1]*numdim], (numdbentries[-1]-1,numdim) )
                     plot_samples(fig, ax, gen, numdim, numdbentries[-1], samples)
 
         if (live == False):
@@ -77,7 +77,7 @@ def plot(src, plotAll=False, live=False, generation=None, test=False, mean=''):
 
 # Plot MCMC result file
 def plot_samples(fig, ax, generation, numdim, numentries, samples):
-    samplesTmp = np.reshape( samples, (numentries,numdim) )
+    samplesTmp = np.reshape( samples, (numentries-1,numdim) )
     
     plt.suptitle( 'MCMC\nGeneration {0}\nNumber of Samples {1}\n'.format(str(generation), str(numentries)),
                   fontweight='bold',

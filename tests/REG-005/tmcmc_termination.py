@@ -19,31 +19,27 @@ def run_tmcmc_with_termination_criterion(criterion, value):
 
     k = korali.initialize()
 
-    k.setDirectModel(evaluateModel)
-    
-    k["Problem"]["Type"] = "Sampling"
+    k["Problem"]["Type"] = "Bayesian Inference (Custom Likelihood)"
+    k["Problem"]["Likelihood Model"] = evaluateModel
 
-    k["Problem"]["Variables"][0]["Name"] = "X"
-    k["Problem"]["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"
-    k["Problem"]["Variables"][0]["Prior Distribution"]["Minimum"] = -10.0
-    k["Problem"]["Variables"][0]["Prior Distribution"]["Maximum"] = +10.0
+    k["Variables"][0]["Name"] = "X"
+    k["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"
+    k["Variables"][0]["Prior Distribution"]["Minimum"] = -10.0
+    k["Variables"][0]["Prior Distribution"]["Maximum"] = +10.0
 
     k["Solver"]["Type"] = "TMCMC"
     k["Solver"]["Population Size"] = 5000
     k["Solver"]["Covariance Scaling"] = 0.001
     k["Solver"]["Termination Criteria"][criterion] = value
 
-    k["General"]["Results Output"]["Frequency"] = 1000
-    k["General"]["Random Seed"] = 1337
+    k["Results Output"]["Frequency"] = 1000
+    k["Random Seed"] = 1337
 
     k.run()
 
     if (criterion == "Max Generations"):
         assert_value(k["Internal"]["Current Generation"].getValue(), value)
         
-    elif (criterion == "Max Model Evaluations"):
-        assert_greatereq(k["Internal"]["Model Evaluation Count"].getValue(), value)
-    
     elif (criterion == "Target Annealing Exponent"):
         assert_greatereq(k["Solver"]["Internal"]["Annealing Exponent"].getValue(), value)
     

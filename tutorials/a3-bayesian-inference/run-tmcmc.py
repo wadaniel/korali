@@ -16,7 +16,7 @@ k = korali.initialize()
 k["Problem"]["Type"] = "Bayesian Inference (Reference Likelihood)"
 k["Problem"]["Likelihood Model"] = "Additive Normal"
 k["Problem"]["Reference Data"] = getReferenceData()
-k["Problem"]["Computational Model"] = lambda modelData: model(modelData, getReferencePoints())
+k["Problem"]["Computational Model"] = lambda sampleData: model(sampleData, getReferencePoints())
 
 # Configuring TMCMC parameters
 k["Solver"]["Type"] = "TMCMC"

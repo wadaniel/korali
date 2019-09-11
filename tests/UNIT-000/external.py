@@ -6,8 +6,11 @@ from runModel import *
 
 k = korali.Engine()
 
+ if (argc != 2) { printf("Error: this example requires 'Concurrent Jobs' passed as argument.\n"); exit(-1); }
+ 
 k["Problem"]["Type"] = "Optimization";
 k["Problem"]["Objective"] = "Maximize"
+k["Problem"]["Objective Function"] = runModel
 
 k["Problem"]["Variables"][0]["Name"] = "X0"
 k["Problem"]["Variables"][0]["Lower Bound"] = -32.0;
@@ -32,5 +35,4 @@ k["Solver"]["Termination Criteria"]["Max Generations"] = 10
 k["Conduit"]["Type"] = "External"
 k["Conduit"]["Concurrent Jobs"] = int(sys.argv[1])
   
-k.setDirectModel(runModel)
 k.run()

@@ -19,30 +19,26 @@ def run_dea_with_termination_criterion(criterion, value):
 
     k = korali.initialize()
 
-    k.setDirectModel(evaluateModel)
-    
     k["Problem"]["Type"] = "Optimization"
     k["Problem"]["Objective"] = "Maximize"
+    k["Problem"]["Objective Function"] = evaluateModel
 
-    k["Problem"]["Variables"][0]["Name"] = "X";
-    k["Problem"]["Variables"][0]["Lower Bound"] = +1.0;
-    k["Problem"]["Variables"][0]["Upper Bound"] = +10.0;
+    k["Variables"][0]["Name"] = "X";
+    k["Variables"][0]["Lower Bound"] = +1.0;
+    k["Variables"][0]["Upper Bound"] = +10.0;
 
     k["Solver"]["Type"] = "DEA"
     k["Solver"]["Population Size"] = 10
     k["Solver"]["Termination Criteria"][criterion] = value
 
-    k["General"]["Results Output"]["Frequency"] = 1000
-    k["General"]["Random Seed"] = 1337
+    k["Results Output"]["Frequency"] = 1000
+    k["Random Seed"] = 1337
 
     k.run()
 
     if (criterion == "Max Generations"):
         assert_value(k["Internal"]["Current Generation"].getValue(), value)
         
-    elif (criterion == "Max Model Evaluations"):
-        assert_greatereq(k["Internal"]["Model Evaluation Count"].getValue(), value)
-    
     elif (criterion == "Max Infeasible Resamplings"):
         assert_greatereq(k["Solver"]["Internal"]["Infeasible Sample Count"].getValue(), value)
     

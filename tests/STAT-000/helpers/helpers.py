@@ -12,7 +12,7 @@ def assert_string( field, val ):
 
 
 def evaluateModel( s ):
-   x = s.getVariable(0)
+   x = s[0]
    r = -x*x      
    s.setResult(r)
 

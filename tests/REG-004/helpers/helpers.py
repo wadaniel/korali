@@ -2,8 +2,7 @@
 import json
 
 def evaluateModel( s ):
-   x = s.getVariable(0)
-   r = -x*x      
+   r = -s[0]*s[0]      
    s.setResult(r)
 
 def assert_value( val, expected ):

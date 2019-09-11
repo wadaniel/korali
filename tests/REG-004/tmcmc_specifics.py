@@ -12,7 +12,7 @@ from helpers import *
 #  Prepare Expected Values
 #################################################
 
-gen = 0
+gen = 1
 currentBurnIn = [0, 0, 10, 7, 5, 5, 5, 5, 5, 5, 5, 5]
 
 eps = 1e-12
@@ -30,28 +30,27 @@ print("[Korali] Prepare TMCMC run")
 # Starting Korali's Engine
 k = korali.initialize()
 
-k["Problem"]["Type"] = "Sampling"
+k["Problem"]["Type"] = "Bayesian Inference (Custom Likelihood)"
+k["Problem"]["Likelihood Model"] = evaluateModel
 
-k["Problem"]["Variables"][0]["Name"] = "X"
-k["Problem"]["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"
-k["Problem"]["Variables"][0]["Prior Distribution"]["Minimum"] = -10.0
-k["Problem"]["Variables"][0]["Prior Distribution"]["Maximum"] = +10.0
+k["Variables"][0]["Name"] = "X"
+k["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"
+k["Variables"][0]["Prior Distribution"]["Minimum"] = -10.0
+k["Variables"][0]["Prior Distribution"]["Maximum"] = +10.0
 
 k["Solver"]["Type"] = "TMCMC"
 k["Solver"]["Population Size"] = 5000
 k["Solver"]["Covariance Scaling"] = 0.001
 
 k["Solver"]["Default Burn In"] = 5
-k["Solver"]["Burn In"][0] = 10
-k["Solver"]["Burn In"][1] = 7
+k["Solver"]["Per Generation Burn In"][0] = 10
+k["Solver"]["Per Generation Burn In"][1] = 7
 k["Solver"]["Max Chain Length"] = 1
 k["Solver"]["Target Coefficient Of Variation"] = 0.5
 k["Solver"]["Min Annealing Exponent Update"] = minRhoUpdate
 k["Solver"]["Max Annealing Exponent Update"] = maxRhoUpdate
 
-k["General"]["Random Seed"] = 314
-
-k.setDirectModel(evaluateModel)
+k["Random Seed"] = 314
 
 
 #################################################
@@ -97,7 +96,7 @@ for filename in resultfiles:
     assert_value( data['Solver']['Max Annealing Exponent Update'], maxRhoUpdate )
     rho =  data['Solver']['Internal']['Annealing Exponent']
     
-    if (gen>0):
+    if (gen>1):
       assert_value(rho - prevRho >= minRhoUpdate, True)
     
     finished = data['Internal']['Is Finished']

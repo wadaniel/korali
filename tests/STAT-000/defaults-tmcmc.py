@@ -7,18 +7,17 @@ from helpers import *
 import korali
 k = korali.initialize()
 
-k["Problem"]["Type"] = "Bayesian Inference"
-k["Problem"]["Likelihood"]["Model"] = "Custom"
+k["Problem"]["Type"] = "Bayesian Inference (Custom Likelihood)"
+k["Problem"]["Likelihood Model"] = evaluateModel
 
-k["Problem"]["Variables"][0]["Name"] = "X"
-k["Problem"]["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"
-k["Problem"]["Variables"][0]["Prior Distribution"]["Minimum"] = -10.0
-k["Problem"]["Variables"][0]["Prior Distribution"]["Maximum"] = +10.0
+k["Variables"][0]["Name"] = "X"
+k["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"
+k["Variables"][0]["Prior Distribution"]["Minimum"] = -10.0
+k["Variables"][0]["Prior Distribution"]["Maximum"] = +10.0
 
 k["Solver"]["Type"] = "TMCMC"
 k["Solver"]["Population Size"] = 5000
 
-k.setLikelihoodModel(evaluateModel)
 k.dry()
 
 ###############################################################################
@@ -42,7 +41,7 @@ assert_value( k["Solver"]["Internal"]["Selection Acceptance Rate"], 1.0 )
 
 # Test Variables
 
-assert_string( k["Problem"]["Variables"][0]["Prior Distribution"]["Type"], "Uniform" )
-assert_value( k["Problem"]["Variables"][0]["Prior Distribution"]["Maximum"], 10 )
-assert_value( k["Problem"]["Variables"][0]["Prior Distribution"]["Minimum"], -10 )
+assert_string( k["Variables"][0]["Prior Distribution"]["Type"], "Uniform" )
+assert_value( k["Variables"][0]["Prior Distribution"]["Maximum"], 10 )
+assert_value( k["Variables"][0]["Prior Distribution"]["Minimum"], -10 )
 

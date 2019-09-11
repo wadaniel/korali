@@ -5,7 +5,6 @@ source ../functions.sh
 cmaes_criteria=(
 "Max Generations" 
 "Max Generations" 
-"Max Model Evaluations" 
 "Max Infeasible Resamplings" 
 "Min Value Difference Threshold"
 "Min Standard Deviation" 
@@ -16,9 +15,8 @@ cmaes_criteria=(
 )
 
 cmaes_values=(
-0     # Max Generations
-2     # Max Generations
-20    # Max Model Evaluations
+1     # Max Generations
+3     # Max Generations
 1     # Max Infeasible Resamplings
 0.1   # Min Value Difference Threshold
 0.1   # Min Standard Deviation
@@ -31,7 +29,6 @@ cmaes_values=(
 dea_criteria=(
 "Max Generations" 
 "Max Generations" 
-"Max Model Evaluations" 
 "Max Infeasible Resamplings" 
 "Max Value" 
 "Min Value Difference Threshold"
@@ -40,9 +37,8 @@ dea_criteria=(
 )
 
 dea_values=(
-0     # Max Generations
-2     # Max Generations
-20    # Max Model Evaluations
+1     # Max Generations
+3     # Max Generations
 0     # Max Infeasible Resamplings
 -1.2  # Max Value
 0.1   # Min Value Difference Threshold
@@ -53,14 +49,12 @@ dea_values=(
 tmcmc_criteria=(
 "Max Generations" 
 "Max Generations" 
-"Max Model Evaluations" 
 "Target Annealing Exponent"
 )
 
 tmcmc_values=(
-0     # Max Generations
 1     # Max Generations
-600   # Max Model Evaluations
+3     # Max Generations
 0.6   # Target Annealing Exponent
 )
 

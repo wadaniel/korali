@@ -19,18 +19,17 @@ def run_ccmaes(constraint):
 
     k = korali.initialize()
 
-    k.setDirectModel(evaluateModel)
-
     k["Problem"]["Type"] = "Optimization"
     k["Problem"]["Objective"] = "Maximize"
+    k["Problem"]["Objective Function"] = evaluateModel
 
-    k["Problem"]["Variables"][0]["Name"] = "X"
-    k["Problem"]["Variables"][0]["Lower Bound"] = -10.0
-    k["Problem"]["Variables"][0]["Upper Bound"] = +10.0
+    k["Variables"][0]["Name"] = "X"
+    k["Variables"][0]["Lower Bound"] = -10.0
+    k["Variables"][0]["Upper Bound"] = +10.0
  
-    k["Problem"]["Variables"][1]["Name"] = "Y"
-    k["Problem"]["Variables"][1]["Lower Bound"] = -10.0
-    k["Problem"]["Variables"][1]["Upper Bound"] = +10.0
+    k["Variables"][1]["Name"] = "Y"
+    k["Variables"][1]["Lower Bound"] = -10.0
+    k["Variables"][1]["Upper Bound"] = +10.0
 
 
     k["Solver"]["Type"] = "CMAES"
@@ -39,9 +38,9 @@ def run_ccmaes(constraint):
     k["Solver"]["Termination Criteria"]["Max Generations"] = 100
     k["Solver"]["Is Sigma Bounded"] = 1
 
-    k["General"]["Console Output"]["Verbosity"] = "Detailed"
-    k["General"]["Results Output"]["Frequency"] = 1000
-    k["General"]["Random Seed"] = 1337
+    k["Console Output"]["Verbosity"] = "Detailed"
+    k["Results Output"]["Frequency"] = 1000
+    k["Random Seed"] = 1337
 
 
     if (constraint == "None"):
@@ -49,69 +48,68 @@ def run_ccmaes(constraint):
         assert_greatereq(k["Solver"]["Internal"]["Best Ever Value"].getValue(),-6*1e-17)
 
     elif (constraint == "Inactive"):
-        k.addConstraint(inactive1)
-        k.addConstraint(inactive2)
+        k["Problem"]["Constraints"][0] = inactive1
+        k["Problem"]["Constraints"][1] = inactive2
         k.run()
         assert_greatereq(k["Solver"]["Internal"]["Best Ever Value"].getValue(),-1.8*1e-20)
 
     elif (constraint == "Active at Max 1"):
-        k.addConstraint(activeMax1)
-        k.addConstraint(activeMax2)
+        k["Problem"]["Constraints"][0] = activeMax1
+        k["Problem"]["Constraints"][1] = activeMax2
         k.run()
         assert_greatereq(k["Solver"]["Internal"]["Best Ever Value"].getValue(),-4.826824e+00)
 
     elif (constraint == "Active at Max 2"):
-        k.addConstraint(activeMax1)
-        k.addConstraint(activeMax2)
-        k.addConstraint(activeMax3)
-        k.addConstraint(activeMax4)
+        k["Problem"]["Constraints"][0] = activeMax1
+        k["Problem"]["Constraints"][1] = activeMax2
+        k["Problem"]["Constraints"][2] = activeMax3
+        k["Problem"]["Constraints"][3] = activeMax4
         k.run()
         assert_greatereq(k["Solver"]["Internal"]["Best Ever Value"].getValue(),-9.653645e+00)
 
-
     elif (constraint == "Inactive at Max 1"):
-        k.addConstraint(inactiveMax1)
-        k.addConstraint(inactiveMax2)
+        k["Problem"]["Constraints"][0] = inactiveMax1
+        k["Problem"]["Constraints"][1] = inactiveMax2
         k.run()
         assert_greatereq(k["Solver"]["Internal"]["Best Ever Value"].getValue(),-2.19963e-19)
  
     elif (constraint == "Inactive at Max 2"):
-        k.addConstraint(inactiveMax1)
-        k.addConstraint(inactiveMax2)
-        k.addConstraint(inactiveMax3)
-        k.addConstraint(inactiveMax4)
+        k["Problem"]["Constraints"][0] = inactiveMax1
+        k["Problem"]["Constraints"][1] = inactiveMax2
+        k["Problem"]["Constraints"][2] = inactiveMax3
+        k["Problem"]["Constraints"][3] = inactiveMax4
         k.run()
         assert_greatereq(k["Solver"]["Internal"]["Best Ever Value"].getValue(),-4.626392e-17)
  
     elif (constraint == "Mixed"):
-        k.addConstraint(activeMax1)
-        k.addConstraint(activeMax2)
-        k.addConstraint(activeMax3)
-        k.addConstraint(activeMax4)
-        k.addConstraint(inactiveMax1)
-        k.addConstraint(inactiveMax2)
-        k.addConstraint(inactiveMax3)
-        k.addConstraint(inactiveMax4)
+        k["Problem"]["Constraints"][0] = activeMax1
+        k["Problem"]["Constraints"][1] = activeMax2
+        k["Problem"]["Constraints"][2] = activeMax3
+        k["Problem"]["Constraints"][3] = activeMax4
+        k["Problem"]["Constraints"][4] = inactiveMax1
+        k["Problem"]["Constraints"][5] = inactiveMax2
+        k["Problem"]["Constraints"][6] = inactiveMax3
+        k["Problem"]["Constraints"][7] = inactiveMax4
         k.run()
         assert_greatereq(k["Solver"]["Internal"]["Best Ever Value"].getValue(),-7.895685e+01)
    
     elif (constraint == "Stress"):
-        k.addConstraint(activeMax1)
-        k.addConstraint(activeMax2)
-        k.addConstraint(activeMax3)
-        k.addConstraint(activeMax4)
-        k.addConstraint(inactiveMax1)
-        k.addConstraint(inactiveMax2)
-        k.addConstraint(inactiveMax3)
-        k.addConstraint(inactiveMax4)
-        k.addConstraint(stress1)
-        k.addConstraint(stress2)
-        k.addConstraint(stress3)
-        k.addConstraint(stress4)
-        k.addConstraint(stress5)
-        k.addConstraint(stress6)
-        k.addConstraint(stress7)
-        k.addConstraint(stress8)
+        k["Problem"]["Constraints"][0] = activeMax1
+        k["Problem"]["Constraints"][1] = activeMax2
+        k["Problem"]["Constraints"][2] = activeMax3
+        k["Problem"]["Constraints"][3] = activeMax4
+        k["Problem"]["Constraints"][4] = inactiveMax1
+        k["Problem"]["Constraints"][5] = inactiveMax2
+        k["Problem"]["Constraints"][6] = inactiveMax3
+        k["Problem"]["Constraints"][7] = inactiveMax4
+        k["Problem"]["Constraints"][8] = stress1
+        k["Problem"]["Constraints"][9] = stress2
+        k["Problem"]["Constraints"][10] = stress3
+        k["Problem"]["Constraints"][11] = stress4
+        k["Problem"]["Constraints"][12] = stress5
+        k["Problem"]["Constraints"][13] = stress6
+        k["Problem"]["Constraints"][14] = stress7
+        k["Problem"]["Constraints"][15] = stress8
         k.run()
         assert_greatereq(k["Solver"]["Internal"]["Best Ever Value"].getValue(),-7.895685e+01)
 

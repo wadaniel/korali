@@ -187,7 +187,6 @@ void Korali::Solver::CMAES::initialize()
        Korali::logError("Granularity not set for discrete variable \'%s\'.\n", _k->_variables[i]->_name.c_str());
    if (_k->_variables[i]->_isDiscrete == true) numDiscretes++;
     _granularity[i] = _k->_variables[i]->_granularity;
-    printf("Granularity: %f\n", _granularity[i]);
  }
 
  _hasDiscreteVariables = (numDiscretes > 0);

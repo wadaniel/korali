@@ -5,17 +5,15 @@ sys.path.append('./helpers')
 from helpers import *
 
 import korali
-
 k = korali.initialize()
-
-k.setDirectModel(evaluateModel)
 
 k["Problem"]["Type"] = "Optimization"
 k["Problem"]["Objective"] = "Maximize"
+k["Problem"]["Objective Function"] = evaluateModel
 
-k["Problem"]["Variables"][0]["Name"] = "X";
-k["Problem"]["Variables"][0]["Lower Bound"] = -10.0;
-k["Problem"]["Variables"][0]["Upper Bound"] = +10.0;
+k["Variables"][0]["Name"] = "X";
+k["Variables"][0]["Lower Bound"] = -10.0;
+k["Variables"][0]["Upper Bound"] = +10.0;
 
 k["Solver"]["Type"] = "DEA"
 k["Solver"]["Population Size"] = 32

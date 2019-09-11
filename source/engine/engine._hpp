@@ -28,7 +28,8 @@ class Engine : public Korali::Module {
  void dry() { start(true);  }
 
  // Constructor
- Engine() { _opt = &_js; }
+ Engine();
+
  // JSON-based configuration
  nlohmann::json  _js;
 
@@ -51,6 +52,11 @@ class Engine : public Korali::Module {
  void setItem(const int& key, const double& val)                      { (*_opt)[key] = val; _opt = &_js; }
  void setItem(const int& key, const int& val)                         { (*_opt)[key] = val; _opt = &_js; }
 
+ double getValue();
+ bool getBoolean();
+ std::string getString();
+ std::vector<double> getArray();
+
  void operator=(const std::function<void(Korali::Sample&)> val);
  void operator=(const std::string& val)         { (*_opt) = val; _opt = &_js; }
  void operator=(const double& val)              { (*_opt) = val; _opt = &_js; }
@@ -65,7 +71,7 @@ class Engine : public Korali::Module {
 };
 
 extern Engine* _k;
-extern std::vector<std::function<void(Korali::Sample&)>> __korali_models;
+extern std::vector<std::function<void(Korali::Sample&)>>* __korali_models;
 
 } // namespace Korali
 

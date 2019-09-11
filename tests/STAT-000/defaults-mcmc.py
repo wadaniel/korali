@@ -7,18 +7,17 @@ from helpers import *
 import korali
 k = korali.initialize()
 
-k.setDirectModel(evaluateModel)
-
 k["Problem"]["Type"] = "Sampling"
+k["Problem"]["Objective Function"] = evaluateModel
 
-k["Problem"]["Variables"][0]["Name"] = "X"
-k["Problem"]["Variables"][0]["Initial Mean"] = 0.0
-k["Problem"]["Variables"][0]["Initial Standard Deviation"] = 1.000
+k["Variables"][0]["Name"] = "X"
+k["Variables"][0]["Initial Mean"] = 0.0
+k["Variables"][0]["Initial Standard Deviation"] = 1.000
 
 k["Solver"]["Type"]  = "MCMC"
 
-k["General"]["Console Output"]["Frequency"] = 500
-k["General"]["Results Output"]["Frequency"] = 500
+k["Console Output"]["Frequency"] = 500
+k["Results Output"]["Frequency"] = 500
 
 k.dry()
 
@@ -26,8 +25,8 @@ k.dry()
 
 # Test General Configuration
 
-assert_value( k["General"]["Console Output"]["Frequency"], 500 )
-assert_value( k["General"]["Results Output"]["Frequency"], 500 )
+assert_value( k["Console Output"]["Frequency"], 500 )
+assert_value( k["Results Output"]["Frequency"], 500 )
 
 # Test Solver Configuration
 assert_value( k["Solver"]["Burn In"], 0 )
@@ -44,7 +43,7 @@ assert_value( k["Solver"]["Internal"]["Rejection Alphas"][0], 0.0 )
 
 # Test Variables
 
-assert_value( k["Problem"]["Variables"][0]["Initial Mean"], 0.0 )
-assert_value( k["Problem"]["Variables"][0]["Initial Standard Deviation"], 1.0 )
+assert_value( k["Variables"][0]["Initial Mean"], 0.0 )
+assert_value( k["Variables"][0]["Initial Standard Deviation"], 1.0 )
 
 

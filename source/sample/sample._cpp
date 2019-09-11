@@ -35,6 +35,8 @@ void Korali::Sample::waitAll(std::vector<Korali::Sample>& samples)
   for (size_t i = 0; i < samples.size(); i++)
    if (samples[i].isFinished() == false) isFinished = false;
  }
+
+ for (size_t i = 0; i < samples.size(); i++) free(samples[i]._sampleThread);
 }
 
 void Korali::Sample::yield()
@@ -45,12 +47,12 @@ void Korali::Sample::yield()
 bool Korali::Sample::isFinished()
 {
  if (_self->_isFinished == false) co_switch(_sampleThread);
- if (_self->_isFinished == true) free(_self->_sampleThread);
  return _self->_isFinished;
 }
 
 void Korali::Sample::wait()
 {
  while(isFinished() == false);
+ free(_self->_sampleThread);
  return;
 }

@@ -4,8 +4,9 @@ import subprocess
 
 def runModel(x):
   argString = ['model/model.py']
-  v = x.getVariables()
+  v = x.getSampleData()
   for i in v: argString.append(str(i))
   retValue = subprocess.check_output(argString)
-  x.setResult(float(retValue.decode()))
+  result = float(retValue.decode())
+  x.setResult(result)
 

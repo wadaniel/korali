@@ -26,7 +26,7 @@ class External : public Korali::Conduit::Base {
 
  void runModel(size_t modelId, Korali::Sample& sample) override;
  void initialize() override;
-// void checkProgress() override;
+ void finalize() override;
 
 };
 } } // namespace Korali::Conduit

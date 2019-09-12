@@ -15,22 +15,21 @@ if not os.path.exists(resultsPath): os.makedirs(resultsPath)
 # Running first Bayesian problem
 k = korali.initialize()
 
-k["Problem"]["Type"] = "Bayesian Inference"
-k["Problem"]["Likelihood"]["Model"] = "Normal (No Model)"
-k["Problem"]["Likelihood"]["Reference Data"] = getReferenceData(dataPath,i);
+k["Problem"]["Type"] = "Bayesian Inference (Approximate Likelihood)"
+k["Problem"]["Likelihood Model"] = "Normal"
+k["Problem"]["Reference Data"] = getReferenceData(dataPath,i);
 
-k["Problem"]["Variables"][0]["Name"] = "mu"
-k["Problem"]["Variables"][0]["Type"] = "Statistical"
-k["Problem"]["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"
-k["Problem"]["Variables"][0]["Prior Distribution"]["Minimum"] =  0.0
-k["Problem"]["Variables"][0]["Prior Distribution"]["Maximum"] = 20.0
+k["Variables"][0]["Name"] = "mu"
+k["Variables"][0]["Bayesian Type"] = "Statistical"
+k["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"
+k["Variables"][0]["Prior Distribution"]["Minimum"] =  0.0
+k["Variables"][0]["Prior Distribution"]["Maximum"] = 20.0
 
-k["Problem"]["Variables"][1]["Name"] = "sigma"
-k["Problem"]["Variables"][1]["Type"] = "Statistical"
-k["Problem"]["Variables"][1]["Prior Distribution"]["Type"] = "Uniform"
-k["Problem"]["Variables"][1]["Prior Distribution"]["Minimum"] = 0.0
-k["Problem"]["Variables"][1]["Prior Distribution"]["Maximum"] = 10.0
-
+k["Variables"][1]["Name"] = "sigma"
+k["Variables"][1]["Bayesian Type"] = "Statistical"
+k["Variables"][1]["Prior Distribution"]["Type"] = "Uniform"
+k["Variables"][1]["Prior Distribution"]["Minimum"] = 0.0
+k["Variables"][1]["Prior Distribution"]["Maximum"] = 10.0
 
 k["Solver"]["Type"] = "TMCMC"
 k["Solver"]["Population Size"] = 1000
@@ -38,8 +37,7 @@ k["Solver"]["Target Coefficient Of Variation"] = 0.6
 k["Solver"]["Covariance Scaling"] = 0.02
 k["Solver"]["Default Burn In"] = 0;
 
-
-k["General"]["Results Output"]["Path"] = resultsPath
-k["General"]["Console Output"]["Verbosity"] = "Detailed"
+k["Results Output"]["Path"] = resultsPath
+k["Console Output"]["Verbosity"] = "Detailed"
 
 k.run()

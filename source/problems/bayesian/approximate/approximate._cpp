@@ -12,6 +12,9 @@ void Korali::Problem::Bayesian::Approximate::initialize()
 
   if (_referenceData.size() == 0)  Korali::logError("Bayesian (%s) problems require defining reference data.\n", _likelihoodModel.c_str());
   if (_computationalVariableIndices.size() != 0) Korali::logError("Bayesian (%s) problems do not accept computational parameters.\n", _likelihoodModel.c_str() );
+
+  if (_likelihoodModel == "Truncated Normal") if (_statisticalVariableIndices.size() != 4) Korali::logError("Approximate Truncated Normal problems require exactly four statistical parameters.\n");
+  if (_likelihoodModel == "Normal") if (_statisticalVariableIndices.size() != 2) Korali::logError("Approximate Normal problems require exactly two statistical parameters.\n");
 }
 
 double Korali::Problem::Bayesian::Approximate::evaluateLogLikelihood(Korali::Sample& sample)
@@ -30,7 +33,10 @@ double Korali::Problem::Bayesian::Approximate::likelihoodNormal(Korali::Sample& 
   double sigma  = sample[_statisticalVariableIndices[1]];
   double sigma2 = sigma*sigma;
 
-  double logNormalization = 0.5 * M_SQRT2 * M_SQRTPI * sigma ;
+  double logNormalization = 0.5 * M_SQRT2 * M_SQRTPI * sigma;
+
+  if( logNormalization <= 0.) return -Korali::Inf;
+
   logNormalization = _referenceData.size() * gsl_sf_log(logNormalization);
 
   double ssn = 0.;
@@ -54,9 +60,10 @@ double Korali::Problem::Bayesian::Approximate::likelihoodTruncatedNormal(Korali:
 
   if(a>b) return -Korali::Inf;
 
+
   double logNormalization = 0.5 * M_SQRT2 * M_SQRTPI * sigma * ( gsl_sf_erf(bn*M_SQRT1_2) - gsl_sf_erf(an*M_SQRT1_2) ) ;
 
-  if( logNormalization == 0.) return -Korali::Inf;
+  if( logNormalization <= 0.) return -Korali::Inf;
 
   logNormalization = _referenceData.size() * gsl_sf_log(logNormalization);
 

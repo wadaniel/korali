@@ -27,8 +27,6 @@ void Korali::Solver::MCMC::runGeneration()
 {
  bool _sampleAccepted = false;
 
- updateState();
-
  for(size_t i = 0; i < _rejectionLevels && _sampleAccepted == false; i++)
  {
   generateCandidate(i);
@@ -62,6 +60,8 @@ void Korali::Solver::MCMC::runGeneration()
   if ( _chainLength >= _burnIn ) if ( (_sampleAccepted == true) || (i == _rejectionLevels-1) )
    updateDatabase(_chainLeader, _chainLeaderEvaluation);
  }
+
+ updateState();
 
  _chainLength++;
 }

@@ -206,8 +206,9 @@ void Korali::Solver::MCMC::updateState()
 
  _acceptanceRate = ( (double)_acceptanceCount/ (double)_chainLength );
 
- if(_databaseEntryCount == 0) { _chainMean = _chainLeader; return; }
- 
+ if(_databaseEntryCount == 1) for (size_t d = 0; d < N; d++) _chainMean[d] = _chainLeader[d];
+ if(_databaseEntryCount <= 1) return;
+
  for (size_t d = 0; d < N; d++) for (size_t e = 0; e < d; e++)
  {
    _chainCovariancePlaceholder[d*N+e] = (_chainMean[d] - _chainLeader[d]) * (_chainMean[e] - _chainLeader[e]);
@@ -218,19 +219,17 @@ void Korali::Solver::MCMC::updateState()
  // Chain Mean
  for (size_t d = 0; d < N; d++) _chainMean[d] = (_chainMean[d] * (_databaseEntryCount-1) + _chainLeader[d]) / _databaseEntryCount;
  
- // Chain Covariance (upper and lower triangle)
  for (size_t d = 0; d < N; d++) for (size_t e = 0; e < d; e++)
  {
    _chainCovariance[d*N+e] = (_databaseEntryCount-2.0)/(_databaseEntryCount-1.0) * _chainCovariance[d*N+e] + (_chainCovarianceScaling/_databaseEntryCount)*_chainCovariancePlaceholder[d*N+e];
    _chainCovariance[e*N+d] = (_databaseEntryCount-2.0)/(_databaseEntryCount-1.0) * _chainCovariance[d*N+e] + (_chainCovarianceScaling/_databaseEntryCount)*_chainCovariancePlaceholder[d*N+e];
  }
-
- // Chain Covariance (diagonal)
  for (size_t d = 0; d < N; d++)
-   _chainCovariance[d*N+d] = (_databaseEntryCount-2.0)/(_databaseEntryCount-1.0) * _chainCovariance[d*N+d] + (_chainCovarianceScaling/_databaseEntryCount)*_chainCovariancePlaceholder[d*N+d];
+ _chainCovariance[d*N+d] = (_databaseEntryCount-2.0)/(_databaseEntryCount-1.0) * _chainCovariance[d*N+d] + (_chainCovarianceScaling/_databaseEntryCount)*_chainCovariancePlaceholder[d*N+d];
 
- choleskyDecomp(_chainCovariance, _choleskyDecompositionChainCovariance);
+ if (( _useAdaptiveSampling == true) && (_databaseEntryCount > _nonAdaptionPeriod)) choleskyDecomp(_chainCovariance, _choleskyDecompositionChainCovariance);
 }
+
 
 void Korali::Solver::MCMC::printGeneration()
 {

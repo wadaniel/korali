@@ -4,7 +4,7 @@ source ../functions.sh
 
 logEcho "[Korali] Running Checkpoint/Restart Test..."
 
-pushd ../../tutorials/b2-preserving-results/
+pushd ../../tutorials/b1-checkpoint-restart/
 dir=$PWD
 
 logEcho "-------------------------------------"

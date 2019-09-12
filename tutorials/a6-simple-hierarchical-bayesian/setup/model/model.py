@@ -1,7 +1,18 @@
 #!/usr/bin/env python3
 import sys
-import math
-import scipy.stats as stats
+import os
+import numpy as np
+
+def normal_rnds( s, Ns ):
+  th1 = s.getVariable(0)
+  th2 = s.getVariable(1)
+  k = s.getSampleId()
+  y = np.random.normal( th1, th2, Ns )
+  dataFolder = "../setup/data/"
+  if not os.path.exists(dataFolder): os.makedirs(dataFolder)
+  dataFile = dataFolder + "/data_set_" + str(k).zfill(3) + ".dat"
+  np.savetxt( dataFile, np.transpose(y) )
+
 
 def getReferenceData( path, i ):
   fileName = path + "/data_set_" + str(i).zfill(3) + ".dat"

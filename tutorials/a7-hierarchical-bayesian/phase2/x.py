@@ -61,10 +61,10 @@ kH["Problem"]["Variables"][5]["Prior Distribution"]["Minimum"] = 0.0
 kH["Problem"]["Variables"][5]["Prior Distribution"]["Maximum"] = 15.0
 
 kH["Solver"]["Type"] = "TMCMC"
-kH["Solver"]["Population Size"] = 5000
-kH["Solver"]["Default Burn In"] = 10;
+kH["Solver"]["Population Size"] = 2000
+kH["Solver"]["Default Burn In"] = 5;
 kH["Solver"]["Target Coefficient Of Variation"] = 0.6
-kH["Solver"]["Covariance Scaling"] = 0.005
+kH["Solver"]["Covariance Scaling"] = 0.01
 
 kH["General"]["Console Output"]["Verbosity"] = "Detailed"
 kH["General"]["Results Output"]["Path"] = "../setup/results_phase_2/"

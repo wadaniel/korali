@@ -48,7 +48,7 @@ kH["Solver"]["Type"] = "TMCMC"
 kH["Solver"]["Population Size"] = 2000
 kH["Solver"]["Default Burn In"] = 1;
 kH["Solver"]["Target Coefficient Of Variation"] = 0.6
-kH["Solver"]["Covariance Scaling"] = 0.01
+kH["Solver"]["Covariance Scaling"] = 0.1
 
 kH["General"]["Console Output"]["Verbosity"] = "Detailed"
 kH["General"]["Results Output"]["Path"] = "../setup/results_phase_2/"

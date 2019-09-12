@@ -1,31 +1,45 @@
 #!/usr/bin/env python3
 
 # Importing computational model
-import sys
-import os
 import korali
-sys.path.append('../setup/model')
-from model import *
 
 # Creating hierarchical Bayesian problem from previous two problems
-kH = korali.initialize()
+k = korali.initialize()
 
-kH["Problem"]["Type"]  = "Hierarchical Bayesian (Theta)"
+k["Problem"]["Type"]  = "Hierarchical Bayesian (Theta New)"
 
-kH["Problem"]["Sub Problem"] = '../setup/results_phase_1/000/final.json'
-kH["Problem"]["Psi Problem"] = '../setup/results_phase_2/final.json'
+k["Problem"]["Psi Problem"] = '../setup/results_phase_2/final.json'
 
-kH["Solver"]["Type"] = "TMCMC"
-kH["Solver"]["Population Size"] = 5000
-kH["Solver"]["Termination Criteria"]["Max Generations"] = 30
-kH["Solver"]["Burn In Steps"] = 0;
-kH["Solver"]["Target Coefficient Of Variation"] = 0.6
+k["Problem"]["Variables"][0]["Name"] = "C1"
+k["Problem"]["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"
+k["Problem"]["Variables"][0]["Prior Distribution"]["Minimum"] = 280.0
+k["Problem"]["Variables"][0]["Prior Distribution"]["Maximum"] = 320.0
 
-kH["General"]["Console Output"]["Verbosity"] = "Detailed"
-kH["General"]["Results Output"]["Path"] = "../setup/results_phase_3a/"
+k["Problem"]["Variables"][1]["Name"] = "C2"
+k["Problem"]["Variables"][1]["Prior Distribution"]["Type"] = "Uniform"
+k["Problem"]["Variables"][1]["Prior Distribution"]["Minimum"] = 10.0
+k["Problem"]["Variables"][1]["Prior Distribution"]["Maximum"] = 70.0
 
-dataPath    = "../setup/data/"
-x = getReferencePoints(dataPath,0);
-kH.setReferenceModel( lambda d: logistic( x, d) )
+k["Problem"]["Variables"][2]["Name"] = "C3"
+k["Problem"]["Variables"][2]["Prior Distribution"]["Type"] = "Uniform"
+k["Problem"]["Variables"][2]["Prior Distribution"]["Minimum"] = 0.0
+k["Problem"]["Variables"][2]["Prior Distribution"]["Maximum"] = 5.0
 
-kH.run()
+k["Problem"]["Variables"][3]["Name"] = "Sigma"
+k["Problem"]["Variables"][3]["Type"] = "Statistical"
+k["Problem"]["Variables"][3]["Prior Distribution"]["Type"] = "Uniform"
+k["Problem"]["Variables"][3]["Prior Distribution"]["Minimum"] = 0
+k["Problem"]["Variables"][3]["Prior Distribution"]["Maximum"] = 20
+
+k["Solver"]["Type"] = "TMCMC"
+k["Solver"]["Population Size"] = 1000
+k["Solver"]["Target Coefficient Of Variation"] = 0.6
+k["Solver"]["Covariance Scaling"] = 0.02
+k["Solver"]["Default Burn In"] = 2;
+k["Solver"]["Max Chain Length"] = 1;
+# k["Solver"]["Termination Criteria"]["Max Generations"] = 3;
+
+k["General"]["Console Output"]["Verbosity"] = "Detailed"
+k["General"]["Results Output"]["Path"] = "../setup/results_phase_3a/"
+
+k.run()

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import sys
-import math
+import os
+import numpy as np
+
 
 def logistic( X, s ):
   th1 = s.getVariable(0)
@@ -8,9 +10,29 @@ def logistic( X, s ):
   th3 = s.getVariable(2)
 
   for x in X:
-    f = math.exp(th3*x)
+    f = np.exp(th3*x)
     y = ( th1*th2*f )/( th1 + th2*(f-1) )
     s.addReferenceEvaluation(y)
+
+
+def logistic_reference( s ):
+  th = np.zeros(4)
+  for i in range(4):
+    th[i] = s.getVariable(i)
+
+  X = np.linspace( 0.0, 10.0, num=21 )
+  Y = np.zeros(X.size)
+  for i in range(X.size):
+    f = np.exp(th[2]*X[i])
+    Y[i] = ( th[0]*th[1]*f )/( th[0] + th[1]*(f-1) )
+
+  Y = Y +  np.random.normal( 0, th[3], X.size )
+  k = s.getSampleId()
+  dataFolder = "../setup/data/"
+  if not os.path.exists(dataFolder): os.makedirs(dataFolder)
+  dataFile = dataFolder + "/data_set_" + str(k).zfill(3) + ".dat"
+  np.savetxt( dataFile,  np.transpose([ X, Y ]) )
+
 
 
 def getReferenceData( path, i ):
@@ -45,4 +67,3 @@ def readColumnFromFile( FileName, Column ):
     raise
 
   return y
-

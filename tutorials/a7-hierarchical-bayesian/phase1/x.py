@@ -44,7 +44,7 @@ k["Solver"]["Type"] = "TMCMC"
 k["Solver"]["Population Size"] = 2000
 k["Solver"]["Target Coefficient Of Variation"] = 0.6
 k["Solver"]["Covariance Scaling"] = 0.02
-k["Solver"]["Default Burn In"] = 3;
+k["Solver"]["Default Burn In"] = 2;
 
 k["General"]["Results Output"]["Path"] = resultsPath
 k["General"]["Console Output"]["Verbosity"] = "Detailed"

@@ -2,6 +2,8 @@
 
 void Korali::Problem::Bayesian::Hierarchical::ThetaNew::initialize()
 {
+  Korali::Problem::Bayesian::Base::initialize();
+
   // Creating Psi-problem JSON object from string
   nlohmann::json psiProblemJson = Korali::JsonInterface::loadJsonFromFile(_psiProblemPath.c_str());
 

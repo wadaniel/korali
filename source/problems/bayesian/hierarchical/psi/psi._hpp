@@ -11,6 +11,11 @@ class Psi : public Korali::Problem::Bayesian::Hierarchical::Base
  private:
 
  std::vector<nlohmann::json> _subProblemsJson;
+ size_t _subProblemsCount;
+ size_t _subProblemsVariablesCount;
+ std::vector<std::vector<std::vector<double>>> _subProblemsSampleCoordinates;
+ std::vector<std::vector<double>> _subProblemsSampleLogLikelihoods;
+ std::vector<std::vector<double>> _subProblemsSampleLogPriors;
 
  public:
 

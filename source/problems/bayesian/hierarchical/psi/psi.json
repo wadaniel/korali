@@ -15,39 +15,5 @@
     "Type": "std::vector<Korali::Distribution::Univariate::Base*>",
     "Description": "Eh..."
    }
- ],
-
- "Variables Configuration":
- [
- 
- ],
-
- "Internal Settings":
- [
-  {
-   "Name": [ "Sub Problems Count" ],
-   "Type": "size_t",
-   "Description": "Number of sub-problems defined."
-  },
-  {
-   "Name": [ "Sub Problems Variables Count" ],
-   "Type": "size_t",
-   "Description": "Number of variables in each sub-problem. Must be equal to the number of conditional priors in the hierarchical problem."
-  },
-  {
-   "Name": [ "Sub Problems Sample Coordinates" ],
-   "Type": "std::vector<std::vector<double>>",
-   "Description": "Coordinates for each sample on each sub-problem."
-  },
-  {
-   "Name": [ "Sub Problems Sample Log Likelihoods" ],
-   "Type": "std::vector<std::vector<double>>",
-   "Description": "Likelihood for each sample on each sub-problem."
-  },
-  {
-   "Name": [ "Sub Problems Sample Log Priors" ],
-   "Type": "std::vector<std::vector<double>>",
-   "Description": "Log Priors for each sample on each sub-problem"
-  }
  ]
 }

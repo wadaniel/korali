@@ -2,6 +2,8 @@
 
 void Korali::Problem::Bayesian::Hierarchical::Theta::initialize()
 {
+  Korali::Problem::Bayesian::Base::initialize();
+
   // Creating sub-problem JSON object from string
   nlohmann::json subProblemJson = Korali::JsonInterface::loadJsonFromFile(_subProblemPath.c_str());
 

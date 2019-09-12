@@ -33,23 +33,32 @@ def buildProblems(koraliDir):
    with open(problemDocFile, 'r') as file: problemDocStringFile = file.read()
    
    problemDocString = '# ' + problemConfig["Name"] + '\n\n'
-   problemDocString += '### Compatible Solvers: \n'
-   for v in problemConfig["Compatible Solvers"]:
+   problemDocString += '### Compatible Problems: \n'
+   for v in problemConfig["Compatible Problems"]:
     problemDocString += '+ ' + v + '\n\n' 
    
    problemDocString += problemDocStringFile 
    
-   problemSettingsString = '### Problem Settings\n\n'
-   if (not problemConfig["Problem Configuration"]): problemSettingsString += '*none*'
-   for v in problemConfig["Problem Configuration"]:
-    problemSettingsString += getVariableInfo(v, problemName)
+   problemSettingsString = '### Configuration Settings\n\n'
+   if (not "Configuration Settings" in problemConfig): problemSettingsString += '*none*'
+   else:
+    for v in problemConfig["Configuration Settings"]:
+     problemSettingsString += getVariableInfo(v, problemName)
    problemDocString = problemDocString.replace('### Problem Settings', problemSettingsString + '\n\n')  
      
    variableSettingsString = '### Variable-Specific Settings\n\n'
-   if (not problemConfig["Variables Configuration"]): variableSettingsString += '*none*'
-   for v in problemConfig["Variables Configuration"]: 
+   if (not "Variables Configuration" in problemConfig): variableSettingsString += '*none*'
+   else:
+    for v in problemConfig["Variables Configuration"]: 
      variableSettingsString += getVariableInfo(v, problemName)
    problemDocString = problemDocString.replace('### Variable-Specific Settings', variableSettingsString + '\n\n')
+     
+   terminationSettingsString = '### Termination Criteria\n\n'
+   if (not "Termination Criteria" in problemConfig): terminationSettingsString += '*none*'
+   else:
+    for v in problemConfig["Termination Criteria"]: 
+     terminationSettingsString += getVariableInfo(v, problemName)
+   problemDocString = problemDocString.replace('### Termination Criteria', terminationSettingsString + '\n\n')
      
    mdFileName = koraliDir + '/docs/docs/manual/problems/' + problemName + '.md'
    print('[Korali] Creating ' + mdFileName + '...')    

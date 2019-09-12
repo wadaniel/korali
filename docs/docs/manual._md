@@ -66,15 +66,7 @@ Below is a complete list of conduits currently implemented in Korali:
 
 <!--- Conduits go here --->
 
-### Step 4) Define Model(s)
-
-Next, the user needs to specify the computational model(s) that will evaluate the problem. Korali will run the model many times, given a *sample* -- a vector of stochastically-generated values for each variable defined in Step 1 --.
-
-Each problem type have their specific model requirements. Nevertheless, below is a complete list of model-types currently implemented in Korali and their syntax:
-
-<!--- Models go here --->
-
-### Step 5) General Settings
+### Step 4) General Settings
 
 The runtime Korali application can be easily configured by accessing the instance of the korali Engine. Here is a list of general settings that apply to any Korali app:
 
@@ -86,7 +78,7 @@ Below is a complete list of general settings currently implemented in Korali:
 
 <!--- General Settings go here --->
 
-### Step 6) Running your Korali Application
+### Step 5) Running your Korali Application
 
 A Python/C++ application can be run just like any other application, through a shell command:
 

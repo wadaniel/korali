@@ -34,11 +34,26 @@ def buildConduits(koraliDir):
    
    conduitDocString = '# ' + conduitConfig["Name"] + '\n\n' + conduitDocString 
    
-   conduitSettingsString = '### Conduit Settings\n\n'
-   if (not conduitConfig["Conduit Configuration"]): conduitSettingsString += '*none*'
-   for v in conduitConfig["Conduit Configuration"]:
-    conduitSettingsString += getVariableInfo(v, conduitName)
+   conduitSettingsString = '### Configuration Settings\n\n'
+   if (not "Configuration Settings" in conduitConfig): conduitSettingsString += '*none*'
+   else:
+    for v in conduitConfig["Configuration Settings"]:
+     conduitSettingsString += getVariableInfo(v, conduitName)
    conduitDocString = conduitDocString.replace('### Conduit Settings', conduitSettingsString + '\n\n')  
+     
+   variableSettingsString = '### Variable-Specific Settings\n\n'
+   if (not "Variables Configuration" in conduitConfig): variableSettingsString += '*none*'
+   else:
+    for v in conduitConfig["Variables Configuration"]: 
+     variableSettingsString += getVariableInfo(v, conduitName)
+   conduitDocString = conduitDocString.replace('### Variable-Specific Settings', variableSettingsString + '\n\n')
+     
+   terminationSettingsString = '### Termination Criteria\n\n'
+   if (not "Termination Criteria" in conduitConfig): terminationSettingsString += '*none*'
+   else:
+    for v in conduitConfig["Termination Criteria"]: 
+     terminationSettingsString += getVariableInfo(v, conduitName)
+   conduitDocString = conduitDocString.replace('### Termination Criteria', terminationSettingsString + '\n\n')
      
    mdFileName = koraliDir + '/docs/docs/manual/conduits/' + conduitName + '.md'
    print('[Korali] Creating ' + mdFileName + '...')    
@@ -48,6 +63,6 @@ def buildConduits(koraliDir):
    
    conduitListString += '+ [' + conduitConfig["Name"] + '](conduits/' + conduitName + ')\n'
    
- ###### Returning problem list
+ ###### Returning conduit list
  
  return conduitListString

@@ -77,7 +77,7 @@ void Korali::Problem::Bayesian::Hierarchical::Theta::initialize()
   {
     for (size_t j = 0; j < _psiVariableCount; j++) psiSample[j] = _psiProblemSampleCoordinates[i*_psiVariableCount + j];
 
-    dynamic_cast<Korali::Problem::Bayesian::Hierarchical::Psi*>(_psiProblemEngine._problem)->updateConditionalPriors( psiSample );
+    //dynamic_cast<Korali::Problem::Bayesian::Hierarchical::Psi*>(_psiProblemEngine._problem)->updateConditionalPriors( sample );
 
     for (size_t j = 0;  j < _subProblemPopulationSize; j++)
     {
@@ -120,7 +120,7 @@ double Korali::Problem::Bayesian::Hierarchical::Theta::evaluateLogLikelihood(Kor
   {
     for (size_t j = 0; j < _psiVariableCount; j++) psiSample[j] = _psiProblemSampleCoordinates[i*_psiVariableCount + j];
 
-    dynamic_cast<Korali::Problem::Bayesian::Hierarchical::Psi*>(_psiProblemEngine._problem)->updateConditionalPriors(psiSample);
+    dynamic_cast<Korali::Problem::Bayesian::Hierarchical::Psi*>(_psiProblemEngine._problem)->updateConditionalPriors(sample);
 
     double logConditionalPrior = 0.;
     for (size_t k = 0; k < _thetaVariableCount; k++)

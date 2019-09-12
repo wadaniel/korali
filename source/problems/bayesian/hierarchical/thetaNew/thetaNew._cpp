@@ -55,7 +55,7 @@ double Korali::Problem::Bayesian::Hierarchical::ThetaNew::evaluateLogLikelihood(
     for (size_t j = 0; j < Npsi; j++)
       psiSample[j] = _psiProblemSampleCoordinates[i*Npsi + j];
 
-    dynamic_cast<Korali::Problem::Bayesian::Hierarchical::Psi*>(_psiProblemEngine._problem)->updateConditionalPriors(psiSample);
+    dynamic_cast<Korali::Problem::Bayesian::Hierarchical::Psi*>(_psiProblemEngine._problem)->updateConditionalPriors(sample);
 
     logValues[i] = 0.;
     for (size_t k = 0; k < Ntheta; k++){

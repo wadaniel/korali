@@ -119,7 +119,7 @@ void Korali::Solver::TMCMC::runGeneration()
     _chainCandidatesLogLikelihoods[c] = samples[c].getResult()[0];
     _chainCandidatesLogPriors[c] = (dynamic_cast<Korali::Problem::Bayesian::Base*>(_k->_problem))->evaluateLogPrior(samples[c]);
     processEvaluation(c);
-    if (_currentChainStep[c] == _chainLengths[c]) _finishedChainsCount++;
+    if (_currentChainStep[c] == _chainLengths[c] + _currentBurnIn) _finishedChainsCount++;
    }
   }
  }
@@ -154,7 +154,7 @@ void Korali::Solver::TMCMC::generateCandidate(size_t c)
 void Korali::Solver::TMCMC::processEvaluation(const size_t sampleId)
 {
  double L = 0.0;
- if( std::isfinite(_chainCandidatesLogLikelihoods[sampleId]) )
+ if( std::isfinite(_chainCandidatesLogLikelihoods[sampleId]) && std::isfinite(_chainCandidatesLogPriors[sampleId]))
    L = exp((_chainCandidatesLogLikelihoods[sampleId]-_chainLeadersLogLikelihoods[sampleId])*_annealingExponent + (_chainCandidatesLogPriors[sampleId]-_chainLeadersLogPriors[sampleId]));
 
  if (L > _uniformGenerator->getRandomNumber() || _k->_currentGeneration == 1)

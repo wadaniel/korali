@@ -1,0 +1,22 @@
+#ifndef _KORALI_SOLVERS_PROPAGATOR_HPP_
+#define _KORALI_SOLVERS_PROPAGATOR_HPP_
+
+#include "solvers/base.hpp"
+#include "problems/propagation/propagation.hpp"
+
+namespace Korali { namespace Solver {
+
+class Propagator : public Korali::Solver::Base
+{
+  private:
+
+  Korali::Problem::Propagation* _propagationProblem;
+
+  public:
+    void initialize() override;
+    void runGeneration() override;
+};
+
+} } // namespace Korali::Solver
+
+#endif // _KORALI_SOLVERS_PROPAGATOR_HPP_

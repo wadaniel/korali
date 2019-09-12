@@ -1,0 +1,21 @@
+#ifndef _KORALI_PROBLEM_PROPAGATION_HPP_
+#define _KORALI_PROBLEM_PROPAGATION_HPP_
+
+#include "problems/base.hpp"
+
+namespace Korali { namespace Problem {
+
+class Propagation : public Korali::Problem::Base
+{
+ public:
+
+   double getBasicEvaluation(Korali::Sample& sample) override;
+   void initialize() override;
+   void propagate(Korali::Sample& sample);
+   static void performPropagation(Korali::Sample&);
+};
+
+} } // namespace Korali::Problem
+
+
+#endif // _KORALI_PROBLEM_PROPAGATION_HPP_

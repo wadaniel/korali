@@ -13,7 +13,7 @@ class Base : public Korali::Module
 
  size_t N; // Sample Size
 
- virtual void printGeneration() = 0;
+ virtual void printGeneration() { };
  virtual void runGeneration() = 0;
 };
 

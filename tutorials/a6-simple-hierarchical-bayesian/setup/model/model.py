@@ -4,8 +4,8 @@ import os
 import numpy as np
 
 def normal_rnds( s, Ns ):
-  th1 = s.getVariable(0)
-  th2 = s.getVariable(1)
+  th1 = s[0]
+  th2 = s[1]
   k = s.getSampleId()
   y = np.random.normal( th1, th2, Ns )
   dataFolder = "../setup/data/"

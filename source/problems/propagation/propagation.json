@@ -1,0 +1,24 @@
+{
+ "Name": "Propagation",
+ "Alias": "Propagation",
+ "C++ Class": "Korali::Problem::Propagation",
+
+ "Configuration Settings":
+ [
+   {
+    "Name": [ "Propagation Model" ],
+    "Type": "std::function<void(Korali::Sample&)>",
+    "Description": "Stores the function to evaluate."
+   }
+ ],
+
+ "Variables Configuration":
+ [
+   {
+    "Name": [ "Loaded Values" ],
+    "Type": "std::vector<double>",
+    "Description": "Contains precomputed values for the variables."
+   }
+ ]
+
+}

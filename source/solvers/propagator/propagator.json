@@ -1,0 +1,17 @@
+{
+ "Name": "Propagator",
+ "Alias": "Propagator",
+ "C++ Class": "Korali::Solver::Propagator",
+
+ "Termination Criteria":
+ [
+   {
+    "Name": [ "Max Generations" ],
+    "Type": "size_t",
+    "Default": "1",
+    "Criteria": "_k->_currentGeneration != 1",
+    "Description": "This solver only runs for one generation"
+   }
+ ]
+ 
+}

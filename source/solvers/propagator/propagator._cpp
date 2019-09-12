@@ -1,0 +1,34 @@
+#include "solvers/propagator/propagator.hpp"
+
+void Korali::Solver::Propagator::initialize()
+{
+ // Initializing variable defaults
+ _propagationProblem = dynamic_cast<Korali::Problem::Propagation*>(_k->_problem);
+
+ if (_propagationProblem == NULL)
+   Korali::logError("Propagator solver can only solve problems of type 'Propagation'.\n");
+}
+
+void Korali::Solver::Propagator::runGeneration()
+{
+  size_t Ntheta = _k->_variables.size();
+  size_t Ns     = _k->_variables[0]->_loadedValues.size();
+
+  std::vector<Korali::Sample> samples(Ns);
+
+  for (size_t i = 0; i < Ns; i++)
+  {
+    std::vector<double> sampleData;
+    for (size_t j = 0; j < Ntheta; j++) sampleData.push_back(_k->_variables[j]->_loadedValues[i]);
+
+    Korali::logInfo("Detailed", "Running sample %zu with values:\n         ", i);
+    for(auto& x : sampleData) Korali::logData("Detailed", " %le   ", x);
+    Korali::logData("Detailed", "\n");
+
+    samples[i] = sampleData;
+    samples[i].setSampleId(i);
+    samples[i].start(Korali::Problem::Propagation::performPropagation);
+  }
+
+  Korali::Sample::waitAll(samples);
+}

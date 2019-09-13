@@ -6,11 +6,9 @@ void Korali::Problem::Direct::Sampling::initialize()
  if (_k->_variables.size() == 0) Korali::logError("Sampling problems require at least one variable.\n");
 }
 
-double Korali::Problem::Direct::Sampling::getBasicEvaluation(Korali::Sample& sample)
+void Korali::Problem::Direct::Sampling::evaluateSample(Korali::Sample& sample)
 {
  _k->_conduit->runModel(_objectiveFunction, sample);
  std::vector<double> result = sample.getResult();
  if (result.size() != 1) Korali::logError("Sampling problems require exactly 1 result. Provided: %lu.\n", result.size());
-
- return result[0];
 }

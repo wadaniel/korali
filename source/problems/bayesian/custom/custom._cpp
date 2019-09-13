@@ -10,11 +10,10 @@ void Korali::Problem::Bayesian::Custom::initialize()
   if (_statisticalVariableIndices.size() != 0) Korali::logError("Bayesian (Custom) problems do not accept statistical variables.\n");
 }
 
-double Korali::Problem::Bayesian::Custom::evaluateLogLikelihood(Korali::Sample& sample)
+void Korali::Problem::Bayesian::Custom::evaluateLogLikelihood(Korali::Sample& sample)
 {
  _k->_conduit->runModel(_likelihoodModel, sample);
  std::vector<double> result = sample.getResult();
  if (result.size() != 1) Korali::logError("The specified likelihood model did not return a single result. Received: %lu results.\n", result.size());
- return result[0];
 }
 

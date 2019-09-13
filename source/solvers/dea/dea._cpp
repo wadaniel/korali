@@ -28,6 +28,9 @@ void Korali::Solver::DEA::initialize()
  _uniformGenerator = dynamic_cast<Korali::Distribution::Univariate::Uniform*>(Korali::Module::getModule(jsUniform));
  _uniformGenerator->initialize();
 
+ _problem = dynamic_cast<Korali::Problem::Base*>(_k->_problem);
+ if (_problem == NULL) Korali::logError( "DEA: Error creating problem pointer.\n");
+
  N = _k->_variables.size();
 
  for(size_t d = 0; d < N; ++d)
@@ -83,7 +86,7 @@ void Korali::Solver::DEA::runGeneration()
  {
   samples[i] = _candidatePopulation[i];
   samples[i].setSampleId(i);
-  samples[i].start(Korali::Problem::Base::basicEvaluation);
+  samples[i].start([problem = _problem](Korali::Sample& sample){ problem->evaluateSample(sample); });
  }
 
  // Waiting for samples to finish
@@ -118,7 +121,7 @@ void Korali::Solver::DEA::prepareGeneration()
   mutateSingle(i);
 
   auto sample = Korali::Sample(_candidatePopulation[i]);
-  while(_k->_problem->isSampleFeasible(sample) == false)
+  while(_problem->isSampleFeasible(sample) == false)
   {
    _infeasibleSampleCount++;
    if (_fixInfeasible) fixInfeasible(i);

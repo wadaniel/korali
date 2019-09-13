@@ -14,13 +14,11 @@ void Korali::Sample::threadCallWrapper()
  currentSample->yield();
 }
 
-void Korali::Sample::start(void(*function)(Korali::Sample&))
+void Korali::Sample::start(std::function<void(Korali::Sample&)> func)
 {
- // printf("Hallo, ich bin sample n. %lu\n", this->getSampleId());
-
  _sampleThread = co_create(8192*sizeof(void*), Korali::Sample::threadCallWrapper);
  _mainThread = co_active();
- _function = function;
+ _function = func;
  __current_sample = this;
  co_switch(_sampleThread);
 }

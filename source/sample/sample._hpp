@@ -17,7 +17,7 @@ class Sample : public Korali::Module {
  Sample* _self;
  cothread_t _mainThread;
  cothread_t _sampleThread;
- void(*_function)(Korali::Sample&);
+ std::function<void(Korali::Sample&)> _function;
  bool _isFinished;
 
  public:
@@ -48,7 +48,7 @@ class Sample : public Korali::Module {
  void setResult(const std::vector<double>& results) { _self->_result = results; }
 
  // Execution Control Functions
- void start(void(*function)(Korali::Sample&));
+ void start(std::function<void(Korali::Sample&)> func);
 
  bool isFinished();
  void yield();

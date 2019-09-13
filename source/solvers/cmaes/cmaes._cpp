@@ -24,6 +24,11 @@ void Korali::Solver::CMAES::initialize()
  _uniformGenerator = dynamic_cast<Korali::Distribution::Univariate::Uniform*>(Korali::Module::getModule(jsUniform));
  _uniformGenerator->initialize();
 
+ _problem = dynamic_cast<Korali::Problem::Base*>(_k->_problem);
+ if (_problem == NULL) Korali::logError( "CMAES: Error creating problem pointer.\n");
+
+ _constrainedProblem = dynamic_cast<Korali::Problem::Direct::Optimization*>(_problem);
+
  N = _k->_variables.size();
 
  if (_k->_currentGeneration > 1) return;
@@ -33,8 +38,6 @@ void Korali::Solver::CMAES::initialize()
 
  _chiSquareNumber = sqrt((double) N) * (1. - 1./(4.*N) + 1./(21.*N*N));
  _chiSquareNumberDiscreteMutations = sqrt((double) N) * (1. - 1./(4.*N) + 1./(21.*N*N));
-
- _constrainedProblem = dynamic_cast<Korali::Problem::Direct::Optimization*>(_k->_problem);
 
  if (_constrainedProblem == NULL)
   _areConstraintsDefined = false;
@@ -86,7 +89,7 @@ void Korali::Solver::CMAES::initialize()
  _muWeights.resize(mu_max);
 
  // Initializing variable defaults
- bool isDirectProblem = dynamic_cast<Korali::Problem::Direct::Base*>(_k->_problem) != NULL;
+ bool isDirectProblem = dynamic_cast<Korali::Problem::Direct::Base*>(_problem) != NULL;
 
  if (isDirectProblem == false)
  {
@@ -209,7 +212,7 @@ void Korali::Solver::CMAES::runGeneration()
  {
   samples[i] = _samplePopulation[i];
   samples[i].setSampleId(i);
-  samples[i].start(Korali::Problem::Base::basicEvaluation);
+  samples[i].start([problem = _problem](Korali::Sample& sample){ problem->evaluateSample(sample); });
  }
 
  // Waiting for samples to finish
@@ -293,7 +296,7 @@ void Korali::Solver::CMAES::checkMeanAndSetRegime()
   if (_isViabilityRegime == false) return; /* mean already inside valid domain, no udpates */
 
   Korali::Sample mean(_currentMean);
-  mean.start(Korali::Problem::Direct::Optimization::evaluateConstraints);
+  mean.start([problem = _constrainedProblem](Korali::Sample& sample){ problem->evaluateConstraints(sample); });
   mean.wait();
 
   for (size_t c = 0; c < _constrainedProblem->_constraints.size(); c++)
@@ -317,10 +320,10 @@ void Korali::Solver::CMAES::updateConstraints()
  for(size_t i = 0; i < _currentPopulationSize; i++)
  {
   _sampleConstraintViolationCounts[i] = 0;
-  Korali::Sample mean(_samplePopulation[i]);
-  mean.start(Korali::Problem::Direct::Optimization::evaluateConstraints);
-  mean.wait();
-  for(size_t c = 0; c < _constrainedProblem->_constraints.size(); c++) _constraintEvaluations[c][i] = mean.getResult()[c];
+  Korali::Sample sample(_samplePopulation[i]);
+  sample.start([problem = _constrainedProblem](Korali::Sample& sample){ problem->evaluateConstraints(sample); });
+  sample.wait();
+  for(size_t c = 0; c < _constrainedProblem->_constraints.size(); c++) _constraintEvaluations[c][i] = sample.getResult()[c];
  }
 
  _maxConstraintViolationCount = 0;
@@ -346,14 +349,14 @@ void Korali::Solver::CMAES::reEvaluateConstraints()
 
   for(size_t i = 0; i < _currentPopulationSize; ++i) if(_sampleConstraintViolationCounts[i] > 0)
   {
-    Korali::Sample mean(_samplePopulation[i]);
-    mean.start(Korali::Problem::Direct::Optimization::evaluateConstraints);
-    mean.wait();
+    Korali::Sample sample(_samplePopulation[i]);
+    sample.start([problem = _constrainedProblem](Korali::Sample& sample){ problem->evaluateConstraints(sample); });
+    sample.wait();
 
     _sampleConstraintViolationCounts[i] = 0;
     for(size_t c = 0; c < _constrainedProblem->_constraints.size(); c++)
     {
-      _constraintEvaluations[c][i] = mean.getResult()[c];
+      _constraintEvaluations[c][i] = sample.getResult()[c];
       if( _constraintEvaluations[c][i] > _viabilityBoundaries[c] + 1e-12 ) { _viabilityIndicator[c][i] = true; _sampleConstraintViolationCounts[i]++; }
       else _viabilityIndicator[c][i] = false;
     }
@@ -384,7 +387,7 @@ void Korali::Solver::CMAES::prepareGeneration()
    sampleSingle(i);
 
    auto sample = Korali::Sample(_samplePopulation[i]);
-   while( _k->_problem->isSampleFeasible(sample) == false )
+   while( _problem->isSampleFeasible(sample) == false )
    {
      _infeasibleSampleCount++;
      sampleSingle(i);
@@ -698,7 +701,7 @@ void Korali::Solver::CMAES::handleConstraints()
 
      sample = _samplePopulation[i];
     }
-    while( _k->_problem->isSampleFeasible(sample) == false );
+    while( _problem->isSampleFeasible(sample) == false );
   }
 
   reEvaluateConstraints();

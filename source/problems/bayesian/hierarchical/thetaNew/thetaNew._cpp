@@ -40,7 +40,7 @@ void Korali::Problem::Bayesian::Hierarchical::ThetaNew::initialize()
   }
 }
 
-double Korali::Problem::Bayesian::Hierarchical::ThetaNew::evaluateLogLikelihood(Korali::Sample& sample)
+void Korali::Problem::Bayesian::Hierarchical::ThetaNew::evaluateLogLikelihood(Korali::Sample& sample)
 {
  double logLikelihood = 0.0;
 
@@ -71,5 +71,5 @@ double Korali::Problem::Bayesian::Hierarchical::ThetaNew::evaluateLogLikelihood(
  // printf("%lf\n",  logLikelihood );
  // exit(1);
 
- return logLikelihood;
+ sample.setResult(logLikelihood);
 }

@@ -1,6 +1,5 @@
 #include "solvers/tmcmc/tmcmc.hpp"
 #include <engine/engine.hpp>
-#include "problems/bayesian/base.hpp"
 #include <numeric>
 #include <limits>
 #include <chrono>
@@ -42,6 +41,9 @@ void Korali::Solver::TMCMC::initialize()
  
  if (_perGenerationBurnIn.size() > 1 && _perGenerationBurnIn[1] != 0)
  Korali::logWarning("Normal", "The 1st entry of the Burn In vector is being ignored (corresponding to Generation 1)\n");
+
+ _bayesianProblem = dynamic_cast<Korali::Problem::Bayesian::Base*>(_k->_problem);
+ if (_bayesianProblem == NULL) Korali::logError( "TMCMC requires that the problem is of type 'Bayesian'.\n");
 
  if (_k->_currentGeneration > 1) return;
 
@@ -110,7 +112,7 @@ void Korali::Solver::TMCMC::runGeneration()
      _chainPendingEvaluation[c] = true;
      samples[c] = _chainCandidates[c];
      samples[c].setSampleId(c);
-     samples[c].start(Korali::Problem::Bayesian::Base::logLikelihood);
+     samples[c].start([problem = _bayesianProblem](Korali::Sample& sample){ problem->evaluateLogLikelihood(sample); });
    }
 
    if (_chainPendingEvaluation[c] == true && samples[c].isFinished())
@@ -118,7 +120,8 @@ void Korali::Solver::TMCMC::runGeneration()
     _chainPendingEvaluation[c] = false;
     _currentChainStep[c]++;
     _chainCandidatesLogLikelihoods[c] = samples[c].getResult()[0];
-    _chainCandidatesLogPriors[c] = (dynamic_cast<Korali::Problem::Bayesian::Base*>(_k->_problem))->evaluateLogPrior(samples[c]);
+    _bayesianProblem->evaluateLogPrior(samples[c]);
+    _chainCandidatesLogPriors[c] = samples[c].getResult()[0];
     processEvaluation(c);
     if (_currentChainStep[c] == _chainLengths[c] + _currentBurnIn) _finishedChainsCount++;
    }

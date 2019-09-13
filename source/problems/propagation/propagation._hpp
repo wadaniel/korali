@@ -9,10 +9,9 @@ class Propagation : public Korali::Problem::Base
 {
  public:
 
-   double getBasicEvaluation(Korali::Sample& sample) override;
+   void evaluateSample(Korali::Sample& sample) override;
    void initialize() override;
-   void propagate(Korali::Sample& sample);
-   static void performPropagation(Korali::Sample&);
+   void propagateSample(Korali::Sample& sample);
 };
 
 } } // namespace Korali::Problem

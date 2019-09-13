@@ -11,7 +11,7 @@ class Custom : public Korali::Problem::Bayesian::Base
 
  public:
 
- double evaluateLogLikelihood(Korali::Sample& sample) override;
+ void evaluateLogLikelihood(Korali::Sample& sample) override;
  void initialize() override;
 };
 

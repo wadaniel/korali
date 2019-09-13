@@ -27,7 +27,7 @@ void Korali::Solver::Propagator::runGeneration()
 
     samples[i] = sampleData;
     samples[i].setSampleId(i);
-    samples[i].start(Korali::Problem::Propagation::performPropagation);
+    samples[i].start([problem = _propagationProblem](Korali::Sample& sample){ problem->propagateSample(sample); });
   }
 
   Korali::Sample::waitAll(samples);

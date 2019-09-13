@@ -36,10 +36,10 @@ void Korali::Solver::MCMC::runGeneration()
 
   // Obtaining Result
   double evaluation = -Korali::Inf;
-  if (_k->_problem->isSampleFeasible(sample))
+  if (_problem->isSampleFeasible(sample))
   {
    sample.setSampleId(_databaseEntryCount);
-   sample.start(Korali::Problem::Base::basicEvaluation);
+   sample.start([problem = _problem](Korali::Sample& sample){ problem->evaluateSample(sample); });
    sample.wait();
    evaluation = sample.getResult()[0];
   }
@@ -102,6 +102,9 @@ void Korali::Solver::MCMC::initialize()
  _chainCovariancePlaceholder.resize(N*N);
  _chainCovariance.resize(N*N);
  _choleskyDecompositionChainCovariance.resize(N*N);
+
+ _problem = dynamic_cast<Korali::Problem::Base*>(_k->_problem);
+ if (_problem == NULL) Korali::logError( "MCMC: Error creating problem pointer.\n");
 
  if (_k->_currentGeneration > 1) return;
 

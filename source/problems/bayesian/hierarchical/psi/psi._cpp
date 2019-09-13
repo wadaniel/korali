@@ -84,10 +84,10 @@ void Korali::Problem::Bayesian::Hierarchical::Psi::updateConditionalPriors(Koral
  }
 }
 
-double Korali::Problem::Bayesian::Hierarchical::Psi::evaluateLogLikelihood(Korali::Sample& sample)
+void Korali::Problem::Bayesian::Hierarchical::Psi::evaluateLogLikelihood(Korali::Sample& sample)
 {
 
- if (isSampleFeasible(sample) == false) return -Korali::Inf;
+ if (isSampleFeasible(sample) == false) { sample.setResult(-Korali::Inf); return; };
 
  updateConditionalPriors(sample);
 
@@ -106,8 +106,8 @@ double Korali::Problem::Bayesian::Hierarchical::Psi::evaluateLogLikelihood(Koral
 
    logLikelihood += logSumExp(logValues);
 
-   if( std::isnan(logLikelihood)) return -Korali::Inf;
+   if( std::isnan(logLikelihood)) { sample.setResult(-Korali::Inf); return; };
  }
 
- return logLikelihood;
+ sample.setResult(logLikelihood);
 }

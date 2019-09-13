@@ -17,17 +17,13 @@ void Korali::Problem::Bayesian::Approximate::initialize()
   if (_likelihoodModel == "Normal") if (_statisticalVariableIndices.size() != 2) Korali::logError("Approximate Normal problems require exactly two statistical parameters.\n");
 }
 
-double Korali::Problem::Bayesian::Approximate::evaluateLogLikelihood(Korali::Sample& sample)
+void Korali::Problem::Bayesian::Approximate::evaluateLogLikelihood(Korali::Sample& sample)
 {
-  double logLikelihood = 0.0;
-
-  if (_likelihoodModel == "Truncated Normal") logLikelihood = likelihoodTruncatedNormal(sample);
-  if (_likelihoodModel == "Normal")           logLikelihood = likelihoodNormal(sample);
-
-  return logLikelihood;
+  if (_likelihoodModel == "Truncated Normal") likelihoodTruncatedNormal(sample);
+  if (_likelihoodModel == "Normal")           likelihoodNormal(sample);
 }
 
-double Korali::Problem::Bayesian::Approximate::likelihoodNormal(Korali::Sample& sample)
+void Korali::Problem::Bayesian::Approximate::likelihoodNormal(Korali::Sample& sample)
 {
   double mu     = sample[_statisticalVariableIndices[0]];
   double sigma  = sample[_statisticalVariableIndices[1]];
@@ -35,7 +31,7 @@ double Korali::Problem::Bayesian::Approximate::likelihoodNormal(Korali::Sample& 
 
   double logNormalization = 0.5 * M_SQRT2 * M_SQRTPI * sigma;
 
-  if( logNormalization <= 0.) return -Korali::Inf;
+  if( logNormalization <= 0.) { sample.setResult(-Korali::Inf); return; }
 
   logNormalization = _referenceData.size() * gsl_sf_log(logNormalization);
 
@@ -45,10 +41,10 @@ double Korali::Problem::Bayesian::Approximate::likelihoodNormal(Korali::Sample& 
     ssn += diff*diff;
   }
 
-  return -logNormalization - 0.5*ssn/sigma2;
+  sample.setResult(-logNormalization - 0.5*ssn/sigma2);
 }
 
-double Korali::Problem::Bayesian::Approximate::likelihoodTruncatedNormal(Korali::Sample& sample)
+void Korali::Problem::Bayesian::Approximate::likelihoodTruncatedNormal(Korali::Sample& sample)
 {
   double a      = sample[_statisticalVariableIndices[0]];
   double b      = sample[_statisticalVariableIndices[1]];
@@ -58,21 +54,21 @@ double Korali::Problem::Bayesian::Approximate::likelihoodTruncatedNormal(Korali:
   double an = (a-mu)/sigma;
   double bn = (b-mu)/sigma;
 
-  if(a>b) return -Korali::Inf;
+  if(a>b) { sample.setResult(-Korali::Inf); return; };
 
 
   double logNormalization = 0.5 * M_SQRT2 * M_SQRTPI * sigma * ( gsl_sf_erf(bn*M_SQRT1_2) - gsl_sf_erf(an*M_SQRT1_2) ) ;
 
-  if( logNormalization <= 0.) return -Korali::Inf;
+  if( logNormalization <= 0.) { sample.setResult(-Korali::Inf); return; }
 
   logNormalization = _referenceData.size() * gsl_sf_log(logNormalization);
 
   double ssn = 0.;
   for (auto& d : _referenceData){
-    if( d>b || d<a) return -Korali::Inf;
+    if( d>b || d<a) { sample.setResult(-Korali::Inf); return; };
     double diff = d - mu;
     ssn += diff*diff;
   }
 
-  return -logNormalization - 0.5*ssn/sigma2;
+  sample.setResult(-logNormalization - 0.5*ssn/sigma2);
 }

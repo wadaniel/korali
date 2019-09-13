@@ -14,12 +14,10 @@ class Base : public Korali::Problem::Base
  void initialize() override;
 
  bool isSampleFeasible(Korali::Sample& sample) override;
- virtual double getBasicEvaluation(Korali::Sample& sample) override;
- double evaluateLogPrior(Korali::Sample& sample);
- virtual double evaluateLogLikelihood(Korali::Sample& sample) = 0;
- double evaluateLogPosterior(Korali::Sample& sample);
-
- static void logLikelihood(Korali::Sample&);
+ virtual void evaluateSample(Korali::Sample& sample) override;
+ void evaluateLogPrior(Korali::Sample& sample);
+ virtual void evaluateLogLikelihood(Korali::Sample& sample) = 0;
+ void evaluateLogPosterior(Korali::Sample& sample);
 };
 
 } } } // namespace Korali::Problem::Bayesian

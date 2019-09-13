@@ -12,20 +12,15 @@ void Korali::Problem::Propagation::initialize()
   }
 }
 
-double Korali::Problem::Propagation::getBasicEvaluation(Korali::Sample& sample)
+void Korali::Problem::Propagation::evaluateSample(Korali::Sample& sample)
 {
- Korali::logError("Propagation problem cannot produce basic sample evaluations.\n");
- return 0.0;
+ Korali::logError("Propagation problem cannot evaluate samples, only propagate them.\n");
 }
 
-void Korali::Problem::Propagation::propagate(Korali::Sample& sample)
+void Korali::Problem::Propagation::propagateSample(Korali::Sample& sample)
 {
  _k->_conduit->runModel(_propagationModel, sample);
  std::vector<double> result = sample.getResult();
  if (result.size() != 0) Korali::logError("Propagation model should return no result. Provided: %lu.\n", result.size());
 }
 
-void Korali::Problem::Propagation::performPropagation(Korali::Sample& sample)
-{
- dynamic_cast<Korali::Problem::Propagation*>(_k->_problem)->propagate(sample);
-}

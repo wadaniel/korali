@@ -6,6 +6,7 @@
 #include "distributions/univariate/uniform/uniform.hpp"
 #include "distributions/multivariate/normal/normal.hpp"
 #include "distributions/specific/multinomial/multinomial.hpp"
+#include "problems/bayesian/base.hpp"
 #include <gsl/gsl_vector.h>
 
 namespace Korali { namespace Solver {
@@ -28,6 +29,7 @@ class TMCMC : public Korali::Solver::Base
  Korali::Distribution::Univariate::Uniform* _uniformGenerator; /* Uniform random number generator */
 
  size_t N; // Number of variables
+ Korali::Problem::Bayesian::Base* _bayesianProblem;
 
  public:
 

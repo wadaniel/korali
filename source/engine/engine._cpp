@@ -14,19 +14,8 @@
 #include <sys/stat.h>
 #include <cstdio>
 
-Korali::Engine* Korali::_k;
-std::vector<std::function<void(Korali::Sample&)>>* Korali::__korali_models;
-
-Korali::Engine::Engine()
-{
- _opt = &_js;
- Korali::__korali_models = new std::vector<std::function<void(Korali::Sample&)>>(0);
-}
-
 void Korali::Engine::start(bool isDryRun)
 {
- _k = this;
-
  // Setting Run ID
  _runID = Korali::getTimehash();
 
@@ -119,6 +108,18 @@ void Korali::Engine::initialize()
  _conduit->initialize();
 }
 
+Korali::Engine::Engine()
+{
+ _opt = &_js;
+ _k = this;
+}
+
+Korali::Engine::Engine(nlohmann::json js) : Korali::Engine::Engine()
+{
+ _js = js;
+ setConfiguration(_js);
+}
+
 bool Korali::Engine::isExecutionFinished()
 {
   return _solver->checkTermination() || _conduit->checkTermination() || _problem->checkTermination();
@@ -157,24 +158,24 @@ void Korali::Engine::loadState(std::string fileName)
 
 void Korali::Engine::setItem(const std::string& key, const std::function<void(Korali::Sample&)> val)
 {
- size_t pos = __korali_models->size();
- __korali_models->push_back(val);
+ size_t pos = _models.size();
+ _models.push_back(val);
  (*_opt)[key] = pos;
  _opt = &_js;
 }
 
 void Korali::Engine::setItem(const int& key, const std::function<void(Korali::Sample&)> val)
 {
- size_t pos = __korali_models->size();
- __korali_models->push_back(val);
+ size_t pos = _models.size();
+ _models.push_back(val);
  (*_opt)[key] = pos;
  _opt = &_js;
 }
 
 void Korali::Engine::operator=(const std::function<void(Korali::Sample&)> val)
 {
- size_t pos = __korali_models->size();
- __korali_models->push_back(val);
+ size_t pos = _models.size();
+ _models.push_back(val);
  (*_opt) = pos;
  _opt = &_js;
 }

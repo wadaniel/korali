@@ -27,8 +27,12 @@ class Engine : public Korali::Module {
  void run() { start(false); }
  void dry() { start(true);  }
 
- // Constructor
+ // Constructors
  Engine();
+ Engine(nlohmann::json js);
+
+ // Model Collection
+ std::vector<std::function<void(Korali::Sample&)>> _models;
 
  // JSON-based configuration
  nlohmann::json  _js;
@@ -69,9 +73,6 @@ class Engine : public Korali::Module {
  void saveState(std::string fileName);
  void saveState(int fileId);
 };
-
-extern Engine* _k;
-extern std::vector<std::function<void(Korali::Sample&)>>* __korali_models;
 
 } // namespace Korali
 

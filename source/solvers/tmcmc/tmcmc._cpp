@@ -20,10 +20,14 @@ typedef struct fparam_s {
 
 void Korali::Solver::TMCMC::initialize()
 {
- _multinomialGenerator = new Korali::Distribution::Specific::Multinomial();
+ auto jsMultinomial = nlohmann::json();
+ jsMultinomial["Type"] = "Multinomial";
+ _multinomialGenerator = dynamic_cast<Korali::Distribution::Specific::Multinomial*>(Korali::Module::getModule(jsMultinomial));
  _multinomialGenerator->initialize();
 
- _multivariateGenerator = new Korali::Distribution::Multivariate::Normal();
+ auto jsMultivariate = nlohmann::json();
+ jsMultivariate["Type"] = "Multivariate Normal";
+ _multivariateGenerator = dynamic_cast<Korali::Distribution::Multivariate::Normal*>(Korali::Module::getModule(jsMultivariate));
  _multivariateGenerator->initialize();
 
  auto jsUniform = nlohmann::json();

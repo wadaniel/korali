@@ -27,9 +27,6 @@ class MCMC : public Korali::Solver::Base
 
  public:
 
- MCMC();
- ~MCMC();
-
  void initialize() override;
  void finalize() override;
  void runGeneration() override;

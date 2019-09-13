@@ -40,7 +40,7 @@ void Korali::Conduit::External::runModel(size_t modelId, Korali::Sample& sample)
 
  if (processId == 0)
  {
-  (*__korali_models)[modelId](sample);
+  _k->_models[modelId](sample);
   size_t resultSize = sample.getResult().size();
   write(_pipeDescriptors[launcherId][1], &resultSize, sizeof(size_t));
   write(_pipeDescriptors[launcherId][1], sample.getResult().data(), resultSize * sizeof(double));

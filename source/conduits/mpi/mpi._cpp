@@ -112,7 +112,7 @@ void Korali::Conduit::MPI::workerThread()
 
     auto sample = Korali::Sample(sampleData);
     sample.setSampleId(sampleId);
-    (*__korali_models)[modelId](sample);
+    _k->_models[modelId](sample);
 
     if (_localRankId == 0)
     {

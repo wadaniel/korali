@@ -12,18 +12,6 @@
     "Description": "Specifies the initializing seed for the generation of random numbers. If 0 is specified, Korali will automatically derivate a new seed base on the current time."
    },
    {
-    "Name": ["Console Output", "Verbosity"],
-    "Type": "std::string",
-    "Default": "Normal",
-    "Description": "Specifies how much information will be displayed on console when running Korali."
-   },
-   {
-    "Name": ["Console Output", "Frequency" ],
-    "Type": "size_t",
-    "Default": "1",
-    "Description": "Specifies how often (in generations) will partial results be printed on console. The default, 1, indicates that every generation's results will be printed."
-   },
-   {
     "Name": ["Results Output", "Path"],
     "Type": "std::string",
     "Default": "_korali_result",
@@ -55,6 +43,18 @@
     "Type": "Korali::Conduit::Base*",
     "Default": "Simple",
     "Description": "Represents the configuration of the execution conduit."
+   },
+   {
+    "Name": ["Console Output", "Verbosity"],
+    "Type": "std::string",
+    "Default": "Normal",
+    "Description": "Specifies how much information will be displayed on console when running Korali."
+   },
+   {
+    "Name": ["Console Output", "Frequency" ],
+    "Type": "size_t",
+    "Default": "1",
+    "Description": "Specifies how often (in generations) will partial results be printed on console. The default, 1, indicates that every generation's results will be printed."
    }
  ],
  

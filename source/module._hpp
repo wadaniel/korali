@@ -14,8 +14,9 @@ class Module
  public:
 
   std::string _type;
+  Korali::Engine* _k;
 
-  static Module* getModule(nlohmann::json& js);
+  Module* getModule(nlohmann::json& js);
 
   virtual void initialize() { }
   virtual void finalize() { }

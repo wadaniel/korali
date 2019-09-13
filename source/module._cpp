@@ -17,6 +17,7 @@ Korali::Module* Korali::Module::getModule(nlohmann::json& js)
 
  if (module == nullptr) Korali::logError("Unrecognized module: %s.\n", moduleType.c_str());
 
+ module->_k = _k;
  module->setConfiguration(js);
 
  return module;

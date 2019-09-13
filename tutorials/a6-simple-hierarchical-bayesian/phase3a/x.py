@@ -7,20 +7,19 @@ import korali
 k = korali.initialize()
 
 k["Problem"]["Type"]  = "Hierarchical Bayesian (Theta New)"
+k["Problem"]["Psi Problem Path"] = '../setup/results_phase_2/final.json'
 
-k["Problem"]["Psi Problem"] = '../setup/results_phase_2/final.json'
+k["Variables"][0]["Name"] = "mu"
+k["Variables"][0]["Bayesian Type"] = "Statistical"
+k["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"
+k["Variables"][0]["Prior Distribution"]["Minimum"] =  -20.0
+k["Variables"][0]["Prior Distribution"]["Maximum"] = 40.0
 
-k["Problem"]["Variables"][0]["Name"] = "mu"
-k["Problem"]["Variables"][0]["Type"] = "Statistical"
-k["Problem"]["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"
-k["Problem"]["Variables"][0]["Prior Distribution"]["Minimum"] =  -20.0
-k["Problem"]["Variables"][0]["Prior Distribution"]["Maximum"] = 40.0
-
-k["Problem"]["Variables"][1]["Name"] = "sigma"
-k["Problem"]["Variables"][1]["Type"] = "Statistical"
-k["Problem"]["Variables"][1]["Prior Distribution"]["Type"] = "Uniform"
-k["Problem"]["Variables"][1]["Prior Distribution"]["Minimum"] = 0.0
-k["Problem"]["Variables"][1]["Prior Distribution"]["Maximum"] = 10.0
+k["Variables"][1]["Name"] = "sigma"
+k["Variables"][1]["Bayesian Type"] = "Statistical"
+k["Variables"][1]["Prior Distribution"]["Type"] = "Uniform"
+k["Variables"][1]["Prior Distribution"]["Minimum"] = 0.0
+k["Variables"][1]["Prior Distribution"]["Maximum"] = 10.0
 
 k["Solver"]["Type"] = "TMCMC"
 k["Solver"]["Population Size"] = 5000
@@ -29,7 +28,7 @@ k["Solver"]["Covariance Scaling"] = 0.02
 k["Solver"]["Default Burn In"] = 1;
 # k["Solver"]["Termination Criteria"]["Max Generations"] = 3;
 
-k["General"]["Console Output"]["Verbosity"] = "Detailed"
-k["General"]["Results Output"]["Path"] = "../setup/results_phase_3a/"
+k["Console Output"]["Verbosity"] = "Detailed"
+k["Results Output"]["Path"] = "../setup/results_phase_3a/"
 
 k.run()

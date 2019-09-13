@@ -83,7 +83,8 @@ void Korali::Solver::TMCMC::initialize()
 void Korali::Solver::TMCMC::prepareGeneration()
 {
  setBurnIn();
-  _sampleEvaluationDatabase.clear();
+  _sampleLogLikelihoodDatabase.clear();
+  _sampleLogPriorDatabase.clear();
   _sampleDatabase.clear();
   _acceptedSamplesCount = 0;
   _finishedChainsCount  = 0;
@@ -168,7 +169,7 @@ void Korali::Solver::TMCMC::processEvaluation(const size_t sampleId)
  if (_currentChainStep[sampleId] > _currentBurnIn)
  {
   _sampleDatabase.push_back(_chainLeaders[sampleId]);
-  _sampleEvaluationDatabase.push_back(_chainLeadersLogLikelihoods[sampleId]);
+  _sampleLogLikelihoodDatabase.push_back(_chainLeadersLogLikelihoods[sampleId]);
   _sampleLogPriorDatabase.push_back(_chainLeadersLogPriors[sampleId]);
  }
 }
@@ -183,7 +184,7 @@ void Korali::Solver::TMCMC::processGeneration()
 
   // Compute annealing exponent for next generation
   double fmin = 0, xmin = 0;
-  minSearch(_sampleEvaluationDatabase.data(), _populationSize, _annealingExponent, _targetCoefficientOfVariation, xmin, fmin);
+  minSearch(_sampleLogLikelihoodDatabase.data(), _populationSize, _annealingExponent, _targetCoefficientOfVariation, xmin, fmin);
 
   double _prevAnnealingExponent = _annealingExponent;
 
@@ -191,7 +192,7 @@ void Korali::Solver::TMCMC::processGeneration()
   {
     Korali::logWarning("Detailed", "Annealing Step larger than Max Rho Update, updating Annealing Exponent by %f (Max Rho Update). \n", _maxAnnealingExponentUpdate);
     _annealingExponent      = _prevAnnealingExponent + _maxAnnealingExponentUpdate;
-    _coefficientOfVariation = sqrt(tmcmc_objlogp(_annealingExponent, _sampleEvaluationDatabase.data(), _populationSize, _prevAnnealingExponent, _targetCoefficientOfVariation)) + _targetCoefficientOfVariation;
+    _coefficientOfVariation = sqrt(tmcmc_objlogp(_annealingExponent, _sampleLogLikelihoodDatabase.data(), _populationSize, _prevAnnealingExponent, _targetCoefficientOfVariation)) + _targetCoefficientOfVariation;
   }
   else if (xmin > _prevAnnealingExponent)
   {
@@ -202,11 +203,11 @@ void Korali::Solver::TMCMC::processGeneration()
   {
     Korali::logWarning("Detailed", "Annealing Step smaller than Min Rho Update, updating Annealing Exponent by %f (Min Rho Update). \n", _minAnnealingExponentUpdate);
     _annealingExponent      = _prevAnnealingExponent + _minAnnealingExponentUpdate;
-    _coefficientOfVariation = sqrt(tmcmc_objlogp(_annealingExponent, &_sampleEvaluationDatabase[0], _populationSize, _prevAnnealingExponent, _targetCoefficientOfVariation)) + _targetCoefficientOfVariation;
+    _coefficientOfVariation = sqrt(tmcmc_objlogp(_annealingExponent, &_sampleLogLikelihoodDatabase[0], _populationSize, _prevAnnealingExponent, _targetCoefficientOfVariation)) + _targetCoefficientOfVariation;
   }
 
   /* Compute weights and normalize*/
-  for (size_t i = 0; i < _populationSize; i++) flcp[i] = _sampleEvaluationDatabase[i]*(_annealingExponent-_prevAnnealingExponent);
+  for (size_t i = 0; i < _populationSize; i++) flcp[i] = _sampleLogLikelihoodDatabase[i]*(_annealingExponent-_prevAnnealingExponent);
   const double fjmax = gsl_stats_max(flcp.data(), 1, _populationSize);
   for (size_t i = 0; i < _populationSize; i++) weight[i] = exp( flcp[i] - fjmax );
 
@@ -245,7 +246,7 @@ void Korali::Solver::TMCMC::processGeneration()
    if (numselections[i] == 0) zeroCount++;
    while (numselections[i] != 0) {
      for (size_t j = 0; j < N ; j++) _chainLeaders[leaderId][j] = _sampleDatabase[i][j];
-     _chainLeadersLogLikelihoods[leaderId] = _sampleEvaluationDatabase[i];
+     _chainLeadersLogLikelihoods[leaderId] = _sampleLogLikelihoodDatabase[i];
 
      if (numselections[i] > _maxChainLength){
        /* uniform splitting of chains */

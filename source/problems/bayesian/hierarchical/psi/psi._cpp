@@ -32,7 +32,6 @@ void Korali::Problem::Bayesian::Hierarchical::Psi::initialize()
 
   if (_subProblemsJson[i]["Internal"]["Is Finished"] == false)
    Korali::logError("The Hierarchical Bayesian (Psi) requires that all problems have run completely, but Problem %lu has not.\n", i);
-
  }
 
  _subProblemsSampleCoordinates.resize(_subProblemsCount);
@@ -41,24 +40,15 @@ void Korali::Problem::Bayesian::Hierarchical::Psi::initialize()
 
  for (size_t i = 0; i < _subProblemsCount; i++)
  {
-  size_t sampleCount = _subProblemsJson[i]["Solver"]["Population Size"].get<size_t>();
+  _subProblemsSampleLogPriors[i]      = _subProblemsJson[i]["Solver"]["Internal"]["Sample LogPrior Database"].get<std::vector<double>>();
+  _subProblemsSampleLogLikelihoods[i] = _subProblemsJson[i]["Solver"]["Internal"]["Sample LogLikelihood Database"].get<std::vector<double>>();
+  _subProblemsSampleCoordinates[i] = _subProblemsJson[i]["Solver"]["Internal"]["Sample Database"].get<std::vector<std::vector<double>>>();
 
-  _subProblemsSampleCoordinates[i].resize(sampleCount);
-  _subProblemsSampleLogLikelihoods[i].resize(sampleCount);
-  _subProblemsSampleLogPriors[i].resize(sampleCount);
-
-  for (size_t j = 0; j < sampleCount; j++)
+  for (size_t j = 0; j < _subProblemsSampleLogPriors.size(); j++)
   {
-   _subProblemsSampleLogLikelihoods[i][j] = _subProblemsJson[i]["Solver"]["Internal"]["Sample Evaluation Database"][j];
-   _subProblemsSampleLogPriors[i][j]      = _subProblemsJson[i]["Solver"]["Internal"]["Sample LogPrior Database"][j];
-
    double expPrior = exp(_subProblemsSampleLogPriors[i][j]);
    if( std::isfinite(expPrior) == false )
      Korali::logError("Non finite (%lf) prior has been detected at sample %zu in subproblem %zu.\n", expPrior, j, i );
-
-   _subProblemsSampleCoordinates[i][j].resize(_subProblemsVariablesCount);
-   for (size_t k = 0; k < _subProblemsVariablesCount; k++)
-    _subProblemsSampleCoordinates[i][j][k] = _subProblemsJson[i]["Solver"]["Internal"]["Sample Database"][j][k];
   }
  }
 }
@@ -105,17 +95,13 @@ double Korali::Problem::Bayesian::Hierarchical::Psi::evaluateLogLikelihood(Koral
 
  for (size_t i = 0; i < _subProblemsCount; i++ )
  {
-   std::vector<double> logValues( _subProblemsSampleLogPriors[i].size(), 0.0 );
+   std::vector<double> logValues(_subProblemsSampleLogPriors[i].size());
 
    for (size_t j = 0; j < _subProblemsSampleLogPriors[i].size(); j++)
    {
-     double logConditionalPrior = 0.0;
-     double tmp;
-     for( size_t k = 0; k < _conditionalPriors.size(); k++ ){
-       double tmp = _conditionalPriors[k]->getLogDensity(_subProblemsSampleCoordinates[i][j][k]);
-       logConditionalPrior += tmp;
-     }
-     logValues[j] = logConditionalPrior - _subProblemsSampleLogPriors[i][j];
+    logValues[j] = -_subProblemsSampleLogPriors[i][j];
+    for( size_t k = 0; k < _conditionalPriors.size(); k++ )
+     logValues[j] += _conditionalPriors[k]->getLogDensity(_subProblemsSampleCoordinates[i][j][k]);
    }
 
    logLikelihood += logSumExp(logValues);

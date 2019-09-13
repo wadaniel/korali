@@ -25,7 +25,6 @@ void Korali::Sample::start(void(*function)(Korali::Sample&))
  co_switch(_sampleThread);
 }
 
-
 void Korali::Sample::waitAll(std::vector<Korali::Sample>& samples)
 {
  bool isFinished = false;

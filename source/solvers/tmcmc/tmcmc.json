@@ -180,9 +180,9 @@
     "Description": "Parameters stored in the database (taken from the chain leaders)."
    },
    {
-    "Name": [ "Sample Evaluation Database" ],
+    "Name": [ "Sample LogLikelihood Database" ],
     "Type": "std::vector<double>",
-    "Description": "Evaluation of the parameters stored in the database."
+    "Description": "LogLikelihood Evaluation of the parameters stored in the database."
    },
    {
     "Name": [ "Sample LogPrior Database" ],

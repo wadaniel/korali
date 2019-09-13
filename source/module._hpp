@@ -7,6 +7,8 @@
 
 namespace Korali {
 
+class Engine;
+
 class Module
 {
  public:

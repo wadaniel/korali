@@ -34,8 +34,8 @@ def buildProblems(koraliDir):
    
    problemDocString = '# ' + problemConfig["Name"] + '\n\n'
    problemDocString += '### Compatible Problems: \n'
-   for v in problemConfig["Compatible Problems"]:
-    problemDocString += '+ ' + v + '\n\n' 
+  # for v in problemConfig["Compatible Problems"]:
+  #  problemDocString += '+ ' + v + '\n\n' 
    
    problemDocString += problemDocStringFile 
    

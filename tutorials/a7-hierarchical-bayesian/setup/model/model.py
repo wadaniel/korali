@@ -5,20 +5,23 @@ import numpy as np
 
 
 def logistic( X, s ):
-  th1 = s.getVariable(0)
-  th2 = s.getVariable(1)
-  th3 = s.getVariable(2)
+  th1 = s[0]
+  th2 = s[1]
+  th3 = s[2]
 
+  result = []
+  
   for x in X:
     f = np.exp(th3*x)
     y = ( th1*th2*f )/( th1 + th2*(f-1) )
-    s.addReferenceEvaluation(y)
-
+    result.append(y)
+    
+  s.setResult(result)
 
 def logistic_reference( s ):
   th = np.zeros(4)
   for i in range(4):
-    th[i] = s.getVariable(i)
+    th[i] = s[i]
 
   X = np.linspace( 0.0, 10.0, num=21 )
   Y = np.zeros(X.size)

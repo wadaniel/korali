@@ -11,6 +11,7 @@ N = 10;
 k = korali.initialize()
 
 k["Problem"]["Type"] = "Propagation"
+k["Problem"]["Propagation Model"] = lambda modelData: logistic_reference(modelData)
 
 k["Variables"][0]["Name"] = "V1"
 k["Variables"][1]["Name"] = "V2"
@@ -23,10 +24,6 @@ k["Variables"][2]["Loaded Values"] = np.random.lognormal( 0, 0.5, N )
 k["Variables"][3]["Loaded Values"] = 5*np.ones(N)
 
 k["Solver"]["Type"] = "Propagator"
-
-k["General"]["Console Output"]["Verbosity"] = "Detailed"
-
-# Setting the model
-k.setNoresultModel( lambda modelData: logistic_reference(modelData) )
+k["Console Output"]["Verbosity"] = "Detailed"
 
 k.run()

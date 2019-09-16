@@ -22,7 +22,7 @@ class Engine : public Korali::Module {
  public:
 
  // Start functions
- void initialize();
+ void initialize() override;
  void start(bool isDryRun);
  void run() { start(false); }
  void dry() { start(true);  }

@@ -76,7 +76,7 @@ void Korali::Problem::Bayesian::Hierarchical::Psi::updateConditionalPriors(Koral
     foundValue = true;
    }
 
-   if(foundValue == false) Korali::logError("Non variable name specified that satisfies conditional prior property %s with key: %s.\n", key.c_str(), value.c_str());
+   if(foundValue == false) Korali::logError("No variable name specified that satisfies conditional prior property %s with key: %s.\n", key.c_str(), value.c_str());
   }
 
   _conditionalPriors[i]->setConfiguration(priorJs);

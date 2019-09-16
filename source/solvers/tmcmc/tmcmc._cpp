@@ -262,7 +262,7 @@ void Korali::Solver::TMCMC::processGeneration()
      }
      else
        leaderChainLen = numselections[i];
-     _chainLengths[leaderId] = leaderChainLen + _currentBurnIn;
+     _chainLengths[leaderId] = leaderChainLen;
      numselections[i] -= leaderChainLen;
      leaderId++;
    }

@@ -2,137 +2,116 @@
 
 void Korali::Problem::Bayesian::Hierarchical::Theta::initialize()
 {
-  Korali::Problem::Bayesian::Base::initialize();
-
-  // Creating sub-problem JSON object from string
-  nlohmann::json subProblemJson = Korali::JsonInterface::loadJsonFromFile(_subProblemPath.c_str());
+  // Creating problems JSON files
+  nlohmann::json thetaProblemJson = Korali::JsonInterface::loadJsonFromFile(_thetaProblemPath.c_str());
+  nlohmann::json psiProblemJson = Korali::JsonInterface::loadJsonFromFile(_psiProblemPath.c_str());
 
   // Sub-problem correctness checks
-  std::string subProblemType = subProblemJson["Problem"]["Type"];
-  if (subProblemType != "Bayesian Inference")
-    Korali::logError("The Hierarchical Bayesian (Theta) can only accept sub-problems of type 'Bayesian Inference' but sub-Problem is of type: '%s'.\n", subProblemType.c_str());
+  std::string problemName = thetaProblemJson["Problem"]["Type"];
+  if (problemName.rfind("Bayesian Inference", 0) != 0)
+   Korali::logError("The Hierarchical Bayesian (Theta) can only accept sub-problems of type 'Bayesian Inference' but is of type: '%s'.\n", thetaProblemJson["Problem"]["Type"].get<std::string>().c_str());
 
-  if (subProblemJson["Is Finished"] == false)
-    Korali::logError("The Hierarchical Bayesian (Theta) requires that the subproblem has run completely, but it has not.\n");
-
-  // Creating Psi-problem JSON object from string
-  nlohmann::json psiProblemJson = Korali::JsonInterface::loadJsonFromFile(_psiProblemPath.c_str());
+  if (thetaProblemJson["Is Finished"] == false)
+    Korali::logError("The Hierarchical Bayesian (Theta) requires that the thetaproblem has run completely, but it has not.\n");
 
   // Psi-problem correctness checks
   std::string psiProblemType = psiProblemJson["Problem"]["Type"];
   if (psiProblemType != "Hierarchical Bayesian (Psi)")
     Korali::logError("The Hierarchical Bayesian (Theta) can only accept a psi-problem of type 'Hierarchical Bayesian (Psi)' but psi-Problem is of type: '%s'.\n", psiProblemType.c_str());
 
-  if (psiProblemJson["Is Finished"] == false)
-    Korali::logError("The Hierarchical Bayesian (Theta) requires that the psi-problem has run completely, but it has not.\n");
-
   // Cross-checks
-  if (psiProblemJson["Problem"]["Conditional Priors"].size() != subProblemJson["Problem"]["Variables"].size())
-    Korali::logError("Sub-problem contains a different number of variables (%lu) than conditional priors in the Hierarchical Bayesian (Psi) problem (%lu).\n", psiProblemJson["Problem"]["Variables"].size(), psiProblemJson["Problem"]["Conditional Priors"].size());
+  if (psiProblemJson["Problem"]["Conditional Priors"].size() != thetaProblemJson["Variables"].size())
+    Korali::logError("Sub-problem contains a different number of variables (%lu) than conditional priors in the Hierarchical Bayesian (Psi) problem (%lu).\n", thetaProblemJson["Variables"].size(), psiProblemJson["Problem"]["Conditional Priors"].size());
 
   // Setting Korali problem objects
-  _subProblemEngine.setConfiguration(subProblemJson["Problem"]);
-  _psiProblemEngine.setConfiguration(psiProblemJson["Problem"]);
+  _psiProblemEngine = new Korali::Engine(psiProblemJson);
+  _psiProblemEngine->initialize();
 
-  _thetaVariableCount = _subProblemEngine._variables.size();
-  _psiVariableCount   = _psiProblemEngine._variables.size();
+  _thetaProblemEngine = new Korali::Engine(thetaProblemJson);
+  _thetaProblemEngine->initialize();
+
+  // Now inheriting Sub problem's variables
+  _k->_variables = _thetaProblemEngine->_variables;
+
+  _thetaVariableCount = _thetaProblemEngine->_variables.size();
+  _psiVariableCount   = _psiProblemEngine->_variables.size();
 
   // Loading Psi problem results
-  _psiProblemPopulationSize = psiProblemJson["Solver"]["Population Size"].get<size_t>();
-  for (size_t j = 0; j < _psiProblemPopulationSize; j++)
+  _psiProblemSampleCount = psiProblemJson["Solver"]["Internal"]["Chain Leaders LogLikelihoods"].size();
+  _psiProblemSampleLogLikelihoods = psiProblemJson["Solver"]["Internal"]["Sample LogLikelihood Database"].get<std::vector<double>>();
+  _psiProblemSampleLogPriors = psiProblemJson["Solver"]["Internal"]["Sample LogPrior Database"].get<std::vector<double>>();
+  _psiProblemSampleCoordinates = psiProblemJson["Solver"]["Internal"]["Sample Database"].get<std::vector<std::vector<double>>>();
+
+  for (size_t i = 0; i < _psiProblemSampleLogPriors.size(); i++)
   {
-    _psiProblemSampleLogLikelihoods.push_back(psiProblemJson["Solver"]["Internal"]["Sample Fitness Database"][j]);
-    _psiProblemSampleLogPriors.push_back(psiProblemJson["Solver"]["Internal"]["Sample LogPrior Database"][j]);
-
-    double expPrior = exp(_psiProblemSampleLogPriors[j]);
+    double expPrior = exp(_psiProblemSampleLogPriors[i]);
     if( std::isfinite(expPrior) == false )
-      Korali::logError("Non finite (%lf) prior has been detected at sample %zu in subproblem.\n", expPrior, j );
-
-    for (size_t k = 0; k < _psiVariableCount; k++)
-      _psiProblemSampleCoordinates.push_back(psiProblemJson["Solver"]["Internal"]["Sample Database"][j*_psiVariableCount + k]);
- }
-
-  // Loading Sub problem results
-  _subProblemPopulationSize = subProblemJson["Solver"]["Population Size"].get<size_t>();
-  for (size_t j = 0; j < _subProblemPopulationSize; j++)
-  {
-    _subProblemSampleLogLikelihoods.push_back(subProblemJson["Solver"]["Internal"]["Sample Fitness Database"][j]);
-    _subProblemSampleLogPriors.push_back(subProblemJson["Solver"]["Internal"]["Sample LogPrior Database"][j]);
-
-    double expPrior = exp(_subProblemSampleLogPriors[j]);
-    if( std::isfinite(expPrior) == false )
-      Korali::logError("Non finite (%lf) prior has been detected at sample %zu in subproblem.\n", expPrior, j );
-
-    for (size_t k = 0; k < _thetaVariableCount; k++)
-      _subProblemSampleCoordinates.push_back(subProblemJson["Solver"]["Internal"]["Sample Database"][j*_thetaVariableCount + k]);
+      Korali::logError("Non finite (%lf) prior has been detected at sample %zu in Psi problem.\n", expPrior, i );
   }
 
-  std::vector<double> psiSample;
-  psiSample.resize(_psiVariableCount);
+  // Loading Theta problem results
+  _thetaProblemSampleCount = thetaProblemJson["Solver"]["Internal"]["Chain Leaders LogLikelihoods"].size();
+  _thetaProblemSampleLogLikelihoods = thetaProblemJson["Solver"]["Internal"]["Sample LogLikelihood Database"].get<std::vector<double>>();
+  _thetaProblemSampleLogPriors = thetaProblemJson["Solver"]["Internal"]["Sample LogPrior Database"].get<std::vector<double>>();
+  _thetaProblemSampleCoordinates = thetaProblemJson["Solver"]["Internal"]["Sample Database"].get<std::vector<std::vector<double>>>();
+
+  for (size_t i = 0; i < _thetaProblemSampleLogPriors.size(); i++)
+  {
+    double expPrior = exp(_thetaProblemSampleLogPriors[i]);
+    if( std::isfinite(expPrior) == false )
+      Korali::logError("Non finite (%lf) prior has been detected at sample %zu in Theta problem.\n", expPrior, i );
+  }
 
   std::vector<double> logValues;
-  logValues.resize(_subProblemPopulationSize);
+  logValues.resize(_thetaProblemSampleCount);
 
-  for (size_t i = 0; i < _psiProblemPopulationSize; i++)
+  _psiProblem = dynamic_cast<Korali::Problem::Bayesian::Hierarchical::Psi*>(_psiProblemEngine->_problem);
+
+  for (size_t i = 0; i < _psiProblemSampleCount; i++)
   {
-    for (size_t j = 0; j < _psiVariableCount; j++) psiSample[j] = _psiProblemSampleCoordinates[i*_psiVariableCount + j];
+    Korali::Sample psiSample(_psiProblemSampleCoordinates[i]);
 
-    //dynamic_cast<Korali::Problem::Bayesian::Hierarchical::Psi*>(_psiProblemEngine._problem)->updateConditionalPriors( sample );
+    _psiProblem->updateConditionalPriors(psiSample);
 
-    for (size_t j = 0;  j < _subProblemPopulationSize; j++)
+    for (size_t j = 0;  j < _thetaProblemSampleCount; j++)
     {
       double logConditionalPrior = 0;
       for (size_t k = 0; k < _thetaVariableCount; k++)
-      {
-        double theta = _subProblemSampleCoordinates[j*_thetaVariableCount + k];
-        logConditionalPrior += dynamic_cast<Korali::Problem::Bayesian::Hierarchical::Psi*>(_psiProblemEngine._problem)->_conditionalPriors[k]->getLogDensity(theta);
-      }
+        logConditionalPrior += _psiProblem->_conditionalPriors[k]->getLogDensity( _thetaProblemSampleCoordinates[j][k] );
 
-      logValues[j] = logConditionalPrior - _subProblemSampleLogPriors[j];
+      logValues[j] = logConditionalPrior - _thetaProblemSampleLogPriors[j];
     }
 
-    double localSum = -log(_subProblemPopulationSize) + logSumExp(logValues);
+    double localSum = -log(_thetaProblemSampleCount) + logSumExp(logValues);
 
-    _precomputedLogDenominator.push_back( localSum );
+    _precomputedLogDenominator.push_back(localSum);
   }
-  // Initialize the subProblem
-  _subProblemEngine.initialize();
 
-  // REVIEW: Now inheriting Sub problem's variables
-//  for (size_t i = 0; i < _thetaVariableCount; i++)
-//    _k->_variables.push_back(_subProblemEngineKorali->getVariable(i));
 
+  Korali::Problem::Bayesian::Base::initialize();
 }
 
 void Korali::Problem::Bayesian::Hierarchical::Theta::evaluateLogLikelihood(Korali::Sample& sample)
 {
   double logLikelihood = 0.0;
 
-  dynamic_cast<Korali::Problem::Bayesian::Base*>(_subProblemEngine._problem)->evaluateLogLikelihood(sample);
-
-  std::vector<double> psiSample;
-  psiSample.resize(_psiVariableCount);
-
   std::vector<double> logValues;
-  logValues.resize(_psiProblemPopulationSize);
+  logValues.resize(_psiProblemSampleCount);
 
-  for (size_t i = 0; i < _psiProblemPopulationSize; i++)
+  for (size_t i = 0; i < _psiProblemSampleCount; i++)
   {
-    for (size_t j = 0; j < _psiVariableCount; j++) psiSample[j] = _psiProblemSampleCoordinates[i*_psiVariableCount + j];
+    Korali::Sample psiSample(_psiProblemSampleCoordinates[i]);
 
-    dynamic_cast<Korali::Problem::Bayesian::Hierarchical::Psi*>(_psiProblemEngine._problem)->updateConditionalPriors(sample);
+    _psiProblem->updateConditionalPriors(psiSample);
 
     double logConditionalPrior = 0.;
     for (size_t k = 0; k < _thetaVariableCount; k++)
-      logConditionalPrior += dynamic_cast<Korali::Problem::Bayesian::Hierarchical::Psi*>(_psiProblemEngine._problem)->_conditionalPriors[k]->getLogDensity( sample[k] );
+      logConditionalPrior += _psiProblem->_conditionalPriors[k]->getLogDensity(sample[k]);
 
     logValues[i] = logConditionalPrior - _precomputedLogDenominator[i];
-    // printf("-----> %lf --- %lf --- %lf \n",  logValues[i], logConditionalPrior, _precomputedLogDenominator[i] );
   }
 
-  logLikelihood += -log(_psiProblemPopulationSize) + logSumExp(logValues);
-
-  // printf("==========> %lf \n",  logLikelihood );
+  logLikelihood += -log(_psiProblemSampleCount) + logSumExp(logValues);
 
   sample.setResult(logLikelihood);
 }

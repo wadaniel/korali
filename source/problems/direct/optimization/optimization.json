@@ -11,27 +11,6 @@
     "Type": "std::string",
     "Options": [ "Minimize", "Maximize" ],
     "Description": "Indicates whether Korali will minimize or maximize the function evaluation."
-   },
-   {
-    "Name": [ "Constraints" ],
-    "Type": "std::vector<std::function<void(Korali::Sample&)>>",
-    "Default": "std::vector<size_t>(0)",
-    "Description": "Stores constraints to the objective function."
-   }
- ],
- 
- "Variables Configuration": 
- [
-
- ],
- 
- "Internal Settings": 
- [
-   {
-    "Name": [ "Constraint Evaluation Count" ],
-    "Type": "size_t",
-    "Default": "0",
-    "Description": "Number of Constraint Evaluations."
    }
  ]
 }

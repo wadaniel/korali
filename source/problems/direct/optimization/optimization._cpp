@@ -4,6 +4,7 @@
 void Korali::Problem::Direct::Optimization::initialize()
 {
  if (_k->_variables.size() == 0) Korali::logError("Optimization problems require at least one variable.\n");
+ Korali::Problem::Direct::Base::initialize();
 }
 
 void Korali::Problem::Direct::Optimization::evaluateSample(Korali::Sample& sample)
@@ -15,20 +16,4 @@ void Korali::Problem::Direct::Optimization::evaluateSample(Korali::Sample& sampl
  if (result.size() != 1) Korali::logError("Optimization problems require exactly 1 result. Provided: %lu.\n", result.size());
 
  sample.setResult(evaluationSign * result[0]);
-}
-
-void Korali::Problem::Direct::Optimization::evaluateConstraints(Korali::Sample& sample)
-{
- std::vector<double> evaluations;
-
- for (size_t i = 0; i < _constraints.size(); i++)
- {
-  _k->_conduit->runModel(_constraints[i], sample);
-  std::vector<double> constraintResult = sample.getResult();
-  if (constraintResult.size() != 1) Korali::logError("Costraint evaluations should return exactly 1 result. Provided: %lu.\n", constraintResult.size());
-  evaluations.push_back(constraintResult[0]);
-  _constraintEvaluationCount++;
- }
-
- sample.setResult(evaluations);
 }

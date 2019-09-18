@@ -4,6 +4,7 @@
 void Korali::Problem::Direct::Sampling::initialize()
 {
  if (_k->_variables.size() == 0) Korali::logError("Sampling problems require at least one variable.\n");
+ Korali::Problem::Direct::Base::initialize();
 }
 
 void Korali::Problem::Direct::Sampling::evaluateSample(Korali::Sample& sample)

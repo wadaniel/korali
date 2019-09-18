@@ -17,7 +17,7 @@ class CMAES : public Korali::Solver::Base
 
  Korali::Distribution::Univariate::Normal* _normalGenerator; /* Normal random number generator */
  Korali::Distribution::Univariate::Uniform* _uniformGenerator; /* Uniform random number generator */
- Korali::Problem::Direct::Optimization* _constrainedProblem;
+ Korali::Problem::Direct::Base* _directProblem;
  Korali::Problem::Base* _problem;
 
  void prepareGeneration();

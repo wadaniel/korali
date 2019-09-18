@@ -9,6 +9,12 @@
     "Name": [ "Objective Function" ],
     "Type": "std::function<void(Korali::Sample&)>",
     "Description": "Stores the function to evaluate."
+   },
+   {
+    "Name": [ "Constraints" ],
+    "Type": "std::vector<std::function<void(Korali::Sample&)>>",
+    "Default": "std::vector<size_t>(0)",
+    "Description": "Stores constraints to the objective function."
    }
  ],
 
@@ -27,12 +33,6 @@
    "Description": "Specifies the upper bound for the variable's value."
   },
   {
-   "Name": [ "Is Discrete" ],
-   "Type": "bool",
-   "Default": "false",
-   "Description": "Specifies if the variable can only take discrete values within the range of the lower and upper bound."
-  },
-  {
    "Name": [ "Granularity" ],
    "Type": "double",
    "Default": "0.0",
@@ -42,6 +42,16 @@
 
  "Internal Settings":
  [
- 
+   {
+    "Name": [ "Has Discrete Variables" ],
+    "Type": "bool",
+    "Description": "Flag indicating if at least one of the variables is discrete."
+   },
+   {
+    "Name": [ "Constraint Evaluation Count" ],
+    "Type": "size_t",
+    "Default": "0",
+    "Description": "Number of Constraint Evaluations."
+   }
  ]
 }

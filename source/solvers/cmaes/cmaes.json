@@ -413,6 +413,7 @@
    {
     "Name": [ "Covariance Matrix Adaption Factor" ],
     "Type": "double",
+    "Default": "false",
     "Description": "This is the $\beta$ factor that indicates how fast the covariance matrix is adapted."
    },
    {
@@ -478,6 +479,7 @@
    {
     "Name": [ "Has Discrete Variables" ],
     "Type": "bool",
+    "Default": "false",
     "Description": "Flag indicating if at least one of the variables is discrete."
    },
    {
@@ -489,11 +491,6 @@
     "Name": [ "Number Of Discrete Mutations" ],
     "Type": "size_t",
     "Description": "Number of discrete mutations in current generation."
-   },
-   {
-    "Name": [ "Granularity" ],
-    "Type": "std::vector<double>",
-    "Description": "Flag determining if the covariance eigensystem is up to date."
    },
    {
     "Name": [ "Number Masking Matrix Entries" ],

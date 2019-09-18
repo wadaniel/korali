@@ -17,7 +17,7 @@ k = korali.initialize()
 # Selecting problem type
 k["Problem"]["Type"] = "Optimization"
 k["Problem"]["Objective"] = "Maximize"
-k["Problem"]["Objective Function"] = model 
+k["Problem"]["Objective Function"] = model
 
 # Creating 10 variables and setting their CMA-ES bounds
 for i in range(10) :
@@ -27,26 +27,18 @@ for i in range(10) :
   k["Variables"][i]["Upper Bound"]  = +21.0
 
 # We set some of them as discrete.
-k["Variables"][0]["Is Discrete"] = True
 k["Variables"][0]["Granularity"] = 1.0
-
-k["Variables"][1]["Is Discrete"] = True
 k["Variables"][1]["Granularity"] = 1.0
-
-k["Variables"][3]["Is Discrete"] = True
 k["Variables"][3]["Granularity"] = 1.0
-
-k["Variables"][6]["Is Discrete"] = True
 k["Variables"][6]["Granularity"] = 1.0
  
 # Configuring CMA-ES parameters
 k["Solver"]["Type"] = "CMAES"
 k["Solver"]["Population Size"] = 8
 k["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-9
-k["Solver"]["Termination Criteria"]["Max Generations"] = 500
+k["Solver"]["Termination Criteria"]["Max Generations"] = 5000
 
 k["Results Output"]["Frequency"] = 50 
 k["Console Output"]["Frequency"] = 50 
 
-# Running Korali
 k.run()

@@ -11,7 +11,6 @@ class Optimization : public Korali::Problem::Direct::Base
 
  void initialize() override;
  void evaluateSample(Korali::Sample& sample) override;
- void evaluateConstraints(Korali::Sample&);
 };
 
 } } } // namespace Korali::Problem::Direct

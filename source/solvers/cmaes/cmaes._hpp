@@ -45,7 +45,8 @@ class CMAES : public Korali::Solver::Base
  void initialize() override;
  void finalize() override;
  void runGeneration() override;
- void printGeneration() override;
+ void printGenerationBefore() override;
+ void printGenerationAfter() override;
 };
 
 } } // namespace Korali::Solver

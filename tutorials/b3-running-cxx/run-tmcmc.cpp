@@ -12,7 +12,7 @@ int main(int argc, char* argv[])
  k["Problem"]["Computational Model"] = [](Korali::Sample& d) { heat2DSolver(d.getSampleData(), d.getResult()); };
 
  k["Solver"]["Type"] = "TMCMC";
- k["Solver"]["Population Size"] = 500;
+ k["Solver"]["Population Size"] = 200;
 
  k["Variables"][0]["Name"] = "Intensity";
  k["Variables"][0]["Bayesian Type"] = "Computational";

@@ -815,7 +815,9 @@ void Korali::Solver::CMAES::sort_index(const std::vector<double>& vec, std::vect
 }
 
 
-void Korali::Solver::CMAES::printGeneration()
+void Korali::Solver::CMAES::printGenerationBefore() { return; }
+
+void Korali::Solver::CMAES::printGenerationAfter()
 {
 
  if ( _areConstraintsDefined && _isViabilityRegime )

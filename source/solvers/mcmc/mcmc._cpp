@@ -138,39 +138,39 @@ void Korali::Solver::MCMC::choleskyDecomp(const std::vector<double>& inC, std::v
   gsl_matrix_free(A);
 }
 
-double Korali::Solver::MCMC::recursiveAlpha(double& denom, const double llk0, const double* logliks, size_t N) const
+double Korali::Solver::MCMC::recursiveAlpha(double& deonominator, const double leaderLoglikelihood, const double* loglikelihoods, size_t N) const
 {
  // recursive formula from Trias[2009]
 
  if(N==0)
  {
-  denom = exp(llk0);
-  return std::min(1.0, exp(logliks[0] - llk0));
+  deonominator = exp(leaderLoglikelihood);
+  return std::min(1.0, exp(loglikelihoods[0] - leaderLoglikelihood));
  }
  else
  {
   // revert sample array
-  double* revLlks = new double[N];
-  for(size_t i = 0; i < N; ++i) revLlks[i] = logliks[N-1-i];
+  double* reversedLogLikelihoods = new double[N];
+  for(size_t i = 0; i < N; ++i) reversedLogLikelihoods[i] = loglikelihoods[N-1-i];
   
   // update numerator (w. recursive calls)
-  double numerator = std::exp(logliks[N]);
+  double numerator = std::exp(loglikelihoods[N]);
   for(size_t i = 0; i < N; ++i)
   {
-   double denom2;
-   double recalpha2 = recursiveAlpha(denom2, logliks[N], revLlks, i);
-   numerator *=  ( 1.0 - recalpha2 );
+   double dummyDenominator;
+   double alphaNumerator = recursiveAlpha(dummyDenominator, loglikelihoods[N], reversedLogLikelihoods, i);
+   numerator *=  ( 1.0 - alphaNumerator );
   }
-  delete [] revLlks;
+  delete [] reversedLogLikelihoods;
 
   if (numerator == 0.0) return 0.0;
 
   // update denomiator
-  double denom1;
-  double recalpha1 = recursiveAlpha(denom1, llk0, logliks, N-1);
-  denom = denom1 * (1.0 - recalpha1);
+  double denominatorStar;
+  double alphaDenominator = recursiveAlpha(denominatorStar, leaderLoglikelihood, loglikelihoods, N-1);
+  deonominator = denominatorStar * (1.0 - alphaDenominator);
 
-  return std::min(1.0, numerator/denom);
+  return std::min(1.0, numerator/deonominator);
  }
 }
 
@@ -227,7 +227,9 @@ void Korali::Solver::MCMC::updateState()
 }
 
 
-void Korali::Solver::MCMC::printGeneration()
+void Korali::Solver::MCMC::printGenerationBefore() { return; }
+
+void Korali::Solver::MCMC::printGenerationAfter()
 {
  Korali::logInfo("Minimal", "Database Entries %ld\n", _databaseEntryCount);
 
@@ -235,7 +237,8 @@ void Korali::Solver::MCMC::printGeneration()
  Korali::logInfo("Normal", "Acceptance Rate Proposals: %.2f%%\n", 100*_acceptanceRate);
 
  Korali::logInfo("Detailed", "Variable = (Current Sample, Current Candidate):\n");
- for (size_t d = 0; d < N; d++)  Korali::logData("Detailed", "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _chainLeader[d], _chainCandidate[0][d]);
+ for (size_t d = 0; d < N; d++)  Korali::logData("Detailed", "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _chainLeader[d], _chainCandidate[d]);
+
  Korali::logInfo("Detailed", "Current Chain Mean:\n");
  for (size_t d = 0; d < N; d++) Korali::logData("Detailed", " %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _chainMean[d]);
  Korali::logInfo("Detailed", "Current Chain Covariance:\n");

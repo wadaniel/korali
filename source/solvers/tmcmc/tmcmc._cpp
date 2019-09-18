@@ -101,7 +101,6 @@ void Korali::Solver::TMCMC::prepareGeneration()
 
 void Korali::Solver::TMCMC::runGeneration()
 {
- if (_k->_currentGeneration > 1) processGeneration();
  prepareGeneration();
 
  std::vector<Korali::Sample> samples(_chainCount);
@@ -132,6 +131,8 @@ void Korali::Solver::TMCMC::runGeneration()
    }
   }
  }
+
+ processGeneration();
 }
 
 void Korali::Solver::TMCMC::generateCandidate(size_t c)
@@ -192,15 +193,15 @@ void Korali::Solver::TMCMC::processGeneration()
   double fmin = 0, xmin = 0;
   minSearch(_sampleLogLikelihoodDatabase.data(), _populationSize, _annealingExponent, _targetCoefficientOfVariation, xmin, fmin);
 
-  double _prevAnnealingExponent = _annealingExponent;
+  _previousAnnealingExponent = _annealingExponent;
 
-  if (xmin > _prevAnnealingExponent + _maxAnnealingExponentUpdate)
+  if (xmin > _previousAnnealingExponent + _maxAnnealingExponentUpdate)
   {
     Korali::logWarning("Detailed", "Annealing Step larger than Max Rho Update, updating Annealing Exponent by %f (Max Rho Update). \n", _maxAnnealingExponentUpdate);
-    _annealingExponent      = _prevAnnealingExponent + _maxAnnealingExponentUpdate;
-    _coefficientOfVariation = sqrt(tmcmc_objlogp(_annealingExponent, _sampleLogLikelihoodDatabase.data(), _populationSize, _prevAnnealingExponent, _targetCoefficientOfVariation)) + _targetCoefficientOfVariation;
+    _annealingExponent      = _previousAnnealingExponent + _maxAnnealingExponentUpdate;
+    _coefficientOfVariation = sqrt(tmcmc_objlogp(_annealingExponent, _sampleLogLikelihoodDatabase.data(), _populationSize, _previousAnnealingExponent, _targetCoefficientOfVariation)) + _targetCoefficientOfVariation;
   }
-  else if (xmin > _prevAnnealingExponent)
+  else if (xmin > _previousAnnealingExponent)
   {
     _annealingExponent      = xmin;
     _coefficientOfVariation = sqrt(fmin) + _targetCoefficientOfVariation;
@@ -208,12 +209,12 @@ void Korali::Solver::TMCMC::processGeneration()
   else
   {
     Korali::logWarning("Detailed", "Annealing Step smaller than Min Rho Update, updating Annealing Exponent by %f (Min Rho Update). \n", _minAnnealingExponentUpdate);
-    _annealingExponent      = _prevAnnealingExponent + _minAnnealingExponentUpdate;
-    _coefficientOfVariation = sqrt(tmcmc_objlogp(_annealingExponent, &_sampleLogLikelihoodDatabase[0], _populationSize, _prevAnnealingExponent, _targetCoefficientOfVariation)) + _targetCoefficientOfVariation;
+    _annealingExponent      = _previousAnnealingExponent + _minAnnealingExponentUpdate;
+    _coefficientOfVariation = sqrt(tmcmc_objlogp(_annealingExponent, &_sampleLogLikelihoodDatabase[0], _populationSize, _previousAnnealingExponent, _targetCoefficientOfVariation)) + _targetCoefficientOfVariation;
   }
 
   /* Compute weights and normalize*/
-  for (size_t i = 0; i < _populationSize; i++) flcp[i] = _sampleLogLikelihoodDatabase[i]*(_annealingExponent-_prevAnnealingExponent);
+  for (size_t i = 0; i < _populationSize; i++) flcp[i] = _sampleLogLikelihoodDatabase[i]*(_annealingExponent-_previousAnnealingExponent);
   const double fjmax = gsl_stats_max(flcp.data(), 1, _populationSize);
   for (size_t i = 0; i < _populationSize; i++) weight[i] = exp( flcp[i] - fjmax );
 
@@ -389,10 +390,14 @@ void Korali::Solver::TMCMC::finalize()
 
 }
 
-void Korali::Solver::TMCMC::printGeneration()
+void Korali::Solver::TMCMC::printGenerationBefore()
 {
- Korali::logInfo("Minimal", "Annealing Exponent:  %.3e.\n", _annealingExponent);
- Korali::logInfo("Normal", "Acceptance Rate (proposals / selections): (%.2f%% / %.2f%%)\n", 100*_proposalsAcceptanceRate, 100*_selectionAcceptanceRate);
+ Korali::logInfo("Minimal", "Annealing Exponent:          %.3e.\n", _annealingExponent);
+}
+
+void Korali::Solver::TMCMC::printGenerationAfter()
+{
+ Korali::logInfo("Minimal", "Acceptance Rate (proposals / selections): (%.2f%% / %.2f%%)\n", 100*_proposalsAcceptanceRate, 100*_selectionAcceptanceRate);
  Korali::logInfo("Normal", "Coefficient of Variation: %.2f%%\n", 100.0*_coefficientOfVariation);
 
  Korali::logInfo("Detailed", "Sample Mean:\n");

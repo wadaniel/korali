@@ -55,7 +55,6 @@ assert_value( k["Solver"]["Internal"]["Global Success Rate"], 0.5 )
 assert_value( k["Solver"]["Internal"]["Sigma"], 6.0 )
 assert_value( k["Solver"]["Internal"]["Trace"], 36.0 )
 assert_value( k["Solver"]["Internal"]["Is Viability Regime"], True )
-assert_value( k["Solver"]["Internal"]["Granularity"][0], 0.0 )
 assert_value( k["Solver"]["Internal"]["Number Of Discrete Mutations"], 0 )
 assert_value( k["Solver"]["Internal"]["Number Masking Matrix Entries"], 0 )
 

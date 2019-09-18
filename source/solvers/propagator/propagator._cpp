@@ -32,3 +32,12 @@ void Korali::Solver::Propagator::runGeneration()
 
   Korali::Sample::waitAll(samples);
 }
+
+void Korali::Solver::Propagator::printGenerationBefore()
+{
+}
+
+void Korali::Solver::Propagator::printGenerationAfter()
+{
+ Korali::logInfo("Minimal", "Total Propagations %lu.\n", _propagationProblem->_propagationCount);
+}

@@ -16,7 +16,7 @@ class MCMC : public Korali::Solver::Base
  Korali::Distribution::Univariate::Normal* _normalGenerator; /* Normal random number generator */
  Korali::Distribution::Univariate::Uniform* _uniformGenerator; /* Uniform random number generator */
 
- double recursiveAlpha(double& D, const double llk0, const double* logliks, size_t N) const; /* calculate acceptance ratio alpha_N */
+ double recursiveAlpha(double& deonominator, const double leaderLoglikelihood, const double* loglikelihoods, size_t N) const;
  void updateState();
  void generateCandidate(size_t sampleIdx);
  void updateDatabase(std::vector<double>&, double fitness);
@@ -30,7 +30,8 @@ class MCMC : public Korali::Solver::Base
  void initialize() override;
  void finalize() override;
  void runGeneration() override;
- void printGeneration() override;
+ void printGenerationBefore() override;
+ void printGenerationAfter() override;
 };
 
 } } // namespace Korali::Solver

@@ -66,7 +66,7 @@
    {
     "Name": [ "Target Annealing Exponent" ],
     "Type": "double",
-    "Criteria": "_annealingExponent >= _targetAnnealingExponent",
+    "Criteria": "_previousAnnealingExponent >= _targetAnnealingExponent",
     "Default": "1.0",
     "Description": "Determines the annealing exponent $rho$ to achieve before termination. TMCMC converges if $rho$ equals 1.0."
    }
@@ -143,6 +143,11 @@
     "Name": [ "Annealing Exponent" ],
     "Type": "double",
     "Description": "Exponent of the likelihood. If $rho$ equals 1.0, TMCMC converged."
+   },
+   {
+    "Name": [ "Previous Annealing Exponent" ],
+    "Type": "double",
+    "Description": "Previous Exponent of the likelihood. If $rho$ equals 1.0, TMCMC converged."
    },
    {
     "Name": [ "Accepted Samples Count" ],

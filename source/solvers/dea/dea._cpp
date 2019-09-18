@@ -270,7 +270,9 @@ void Korali::Solver::DEA::updateSolver()
 /************************************************************************/
 
 
-void Korali::Solver::DEA::printGeneration()
+void Korali::Solver::DEA::printGenerationBefore() { return; }
+
+void Korali::Solver::DEA::printGenerationAfter()
 {
  Korali::logInfo("Normal", "Current Function Value: Max = %+6.3e - Best = %+6.3e\n", _currentBestValue, _bestEverValue);
  Korali::logInfo("Detailed", "Variable = (MeanX, BestX):\n");

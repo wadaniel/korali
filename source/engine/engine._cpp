@@ -46,6 +46,13 @@ void Korali::Engine::start(bool isDryRun)
  // Running Solver by generations until at least one termination criterion is satisfied
  while(isExecutionFinished() == false)
  {
+  if (_currentGeneration % _consoleOutputFrequency == 0)
+    {
+     Korali::logInfo("Minimal",  "--------------------------------------------------------------------\n");
+     Korali::logInfo("Minimal",  "Starting Generation: #%zu\n", _currentGeneration);
+     _solver->printGenerationBefore();
+    }
+
   auto t0 = std::chrono::system_clock::now();
 
   _solver->runGeneration();
@@ -54,10 +61,8 @@ void Korali::Engine::start(bool isDryRun)
 
   if (_currentGeneration % _consoleOutputFrequency == 0)
   {
-   Korali::logInfo("Minimal",  "--------------------------------------------------------------------\n");
-   Korali::logInfo("Minimal",  "Generation: #%zu\n", _currentGeneration);
+   _solver->printGenerationAfter();
    Korali::logInfo("Detailed", "Generation Time: %.3fs\n", std::chrono::duration<double>(t1-t0).count());
-   _solver->printGeneration();
   }
 
   if (_currentGeneration % _resultsOutputFrequency == 0) saveState(_currentGeneration);
@@ -75,16 +80,18 @@ void Korali::Engine::start(bool isDryRun)
 
  Korali::logInfo("Minimal", "--------------------------------------------------------------------\n");
  Korali::logInfo("Minimal", "%s finished correctly.\n", _solver->getType().c_str(), _currentGeneration);
+ for (size_t i = 0; i < _solver->_terminationCriteria.size(); i++) Korali::logInfo("Normal", "Termination Criterion Met: %s\n", _solver->_terminationCriteria[i].c_str());
+ for (size_t i = 0; i < _problem->_terminationCriteria.size(); i++) Korali::logInfo("Normal", "Termination Criterion Met: %s\n", _problem->_terminationCriteria[i].c_str());
+ for (size_t i = 0; i < _conduit->_terminationCriteria.size(); i++) Korali::logInfo("Normal", "Termination Criterion Met: %s\n", _conduit->_terminationCriteria[i].c_str());
 
  _solver->finalize();
  _problem->finalize();
  _conduit->finalize();
 
- Korali::logInfo("Minimal", "--------------------------------------------------------------------\n");
- Korali::logInfo("Minimal", "Total Generations: %lu\n", _currentGeneration);
- Korali::logInfo("Minimal", "Total Computational Model Evaluations: %lu\n", _conduit->_modelEvaluationCount);
- Korali::logInfo("Minimal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(endTime-startTime).count());
- Korali::logInfo("Minimal", "Results saved to folder: '%s'\n", _resultsOutputPath.c_str());
+ Korali::logInfo("Normal", "Total Generations: %lu\n", _currentGeneration);
+ Korali::logInfo("Normal", "Total Computational Model Evaluations: %lu\n", _conduit->_modelEvaluationCount);
+ Korali::logInfo("Normal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(endTime-startTime).count());
+ Korali::logInfo("Normal", "Results saved to folder: '%s'\n", _resultsOutputPath.c_str());
 }
 
 void Korali::Engine::initialize()

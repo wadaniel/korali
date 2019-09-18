@@ -35,15 +35,6 @@ def getVariableEnabledDefault(v):
  if ( v.get('Default', '') ): return 'true'
  return 'false'
  
-def getVariableDescriptor(v):
- if ('size_t' in v['Type']): return '%lu'
- if ('int' in v['Type']): return '%d'
- if ('bool' in v['Type']): return '%b'
- if ('double' in v['Type']): return '%e'
- if ('float' in v['Type']): return '%e'
- print('Error: Unrecognized type')
- exit(-1)
- 
 #####################################################################
 
 def consumeValue(base, moduleName, path, varName, varType, varDefault):
@@ -221,7 +212,7 @@ def createCheckTermination(module):
   for v in module["Termination Criteria"]: 
    codeString += ' if (' + v["Criteria"] + ')\n'
    codeString += ' {\n'
-   codeString += '  Korali::logInfo("Minimal", "' + module["Alias"] + ' Termination Criteria met: \\"' + getVariablePath(v).replace('"', "'") + '\\" (' + getVariableDescriptor(v) + ').\\n", ' + getCXXVariableName(v["Name"])  +');\n'
+   codeString += '  _terminationCriteria.push_back("' + module["Alias"] + getVariablePath(v).replace('"', "'") + ' = " + std::to_string(' + getCXXVariableName(v["Name"]) +') + ".");\n'
    codeString += '  hasFinished = true;\n'
    codeString += ' }\n\n'
  

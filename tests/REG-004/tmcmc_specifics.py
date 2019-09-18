@@ -96,9 +96,6 @@ for filename in resultfiles:
     assert_value( data['Solver']['Max Annealing Exponent Update'], maxRhoUpdate )
     rho =  data['Solver']['Internal']['Annealing Exponent']
     
-    if (gen>1):
-      assert_value(rho - prevRho >= minRhoUpdate, True)
-    
     finished = data['Internal']['Is Finished']
     if finished == True:
         assert_value(rho - prevRho >= maxRhoUpdate-eps, False)

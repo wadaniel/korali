@@ -3,14 +3,43 @@
  "Alias": "Propagator",
  "C++ Class": "Korali::Solver::Propagator",
 
+ "Configuration Settings": 
+ [
+   {
+    "Name": [ "Propagations Per Generation" ],
+    "Type": "size_t",
+    "Default": "0",
+    "Description": "Specifies the number of propagations per generation. By default this setting is 0, meaning that all propagations will be performed in the first generation. Otherwise, propagations will be split into the desired number of generations, allowing for storing temporary results and resuming at a later point."
+   }
+ ],
+ 
  "Termination Criteria":
  [
    {
-    "Name": [ "Max Generations" ],
+    "Name": [ "Max Propagations" ],
     "Type": "size_t",
-    "Default": "1",
-    "Criteria": "_k->_currentGeneration != 1",
-    "Description": "This solver only runs for one generation"
+    "Default": "0",
+    "Criteria": "_currentSample == _maxPropagations",
+    "Description": "Indicates the maximum number of propagations to perform. By default this setting is 0, meaning that as many propagations as samples will be performed."
+   }
+ ],
+ 
+  "Internal Settings": 
+ [
+   {
+    "Name": [ "Theta Count" ],
+    "Type": "size_t",
+    "Description": "Number of variables in the samples to propagate."
+   },
+   {
+    "Name": [ "Sample Count" ],
+    "Type": "size_t",
+    "Description": "Number of samples to propagate."
+   },
+   {
+    "Name": [ "Current Sample" ],
+    "Type": "size_t",
+    "Description": "Current Sample to process."
    }
  ]
  

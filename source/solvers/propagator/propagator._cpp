@@ -7,27 +7,35 @@ void Korali::Solver::Propagator::initialize()
 
  if (_propagationProblem == NULL)
    Korali::logError("Propagator solver can only solve problems of type 'Propagation'.\n");
+
+ _thetaCount = _k->_variables.size();
+ _sampleCount = _k->_variables[0]->_loadedValues.size();
+
+ if (_propagationsPerGeneration == 0) _propagationsPerGeneration = _sampleCount;
+ if (_maxPropagations == 0) _maxPropagations = _sampleCount;
+
+ _currentSample = 0;
 }
 
 void Korali::Solver::Propagator::runGeneration()
 {
-  size_t Ntheta = _k->_variables.size();
-  size_t Ns     = _k->_variables[0]->_loadedValues.size();
+  if (_currentSample + _propagationsPerGeneration > _maxPropagations) _propagationsPerGeneration = _maxPropagations - _currentSample;
 
-  std::vector<Korali::Sample> samples(Ns);
+  std::vector<Korali::Sample> samples(_propagationsPerGeneration);
 
-  for (size_t i = 0; i < Ns; i++)
+  for (size_t i = 0; i < _propagationsPerGeneration; i++)
   {
     std::vector<double> sampleData;
-    for (size_t j = 0; j < Ntheta; j++) sampleData.push_back(_k->_variables[j]->_loadedValues[i]);
+    for (size_t j = 0; j < _thetaCount; j++) sampleData.push_back(_k->_variables[j]->_loadedValues[_currentSample]);
 
-    Korali::logInfo("Detailed", "Running sample %zu with values:\n         ", i);
+    Korali::logInfo("Detailed", "Running sample %zu with values:\n         ", _currentSample);
     for(auto& x : sampleData) Korali::logData("Detailed", " %le   ", x);
     Korali::logData("Detailed", "\n");
 
     samples[i] = sampleData;
-    samples[i].setSampleId(i);
+    samples[i].setSampleId(_currentSample);
     samples[i].start([problem = _propagationProblem](Korali::Sample& sample){ problem->propagateSample(sample); });
+    _currentSample++;
   }
 
   Korali::Sample::waitAll(samples);

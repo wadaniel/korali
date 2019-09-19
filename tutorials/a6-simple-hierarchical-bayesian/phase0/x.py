@@ -22,6 +22,7 @@ k["Variables"][0]["Loaded Values"] = np.random.normal( 10, 4, N )
 k["Variables"][1]["Loaded Values"] = np.random.lognormal( 0, 1, N )
 
 k["Solver"]["Type"] = "Propagator"
+k["Solver"]["Propagations Per Generation"] = 1
 k["Console Output"]["Verbosity"] = "Detailed"
 
 k.run()

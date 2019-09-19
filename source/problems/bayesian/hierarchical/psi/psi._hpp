@@ -10,12 +10,21 @@ class Psi : public Korali::Problem::Bayesian::Hierarchical::Base
 {
  private:
 
+ struct conditionalPriorInfo
+ {
+  nlohmann::json _conditionalJson;
+  std::vector<size_t> _samplePositions;
+  std::vector<std::string> _sampleKeys;
+ };
+
  std::vector<nlohmann::json> _subProblemsJson;
  size_t _subProblemsCount;
  size_t _subProblemsVariablesCount;
  std::vector<std::vector<std::vector<double>>> _subProblemsSampleCoordinates;
  std::vector<std::vector<double>> _subProblemsSampleLogLikelihoods;
  std::vector<std::vector<double>> _subProblemsSampleLogPriors;
+
+ std::vector<conditionalPriorInfo> _conditionalPriorInfos;
 
  public:
 

@@ -62,36 +62,52 @@ void Korali::Problem::Bayesian::Hierarchical::Psi::initialize()
    _psiProblem->evaluatePsiLikelihood(sample);
   }
  );
-}
 
-void Korali::Problem::Bayesian::Hierarchical::Psi::updateConditionalPriors(Korali::Sample& sample)
-{
- // Re-configuring conditional priors given hyperparameters
+ // Configuring conditional priors given hyperparameters
+ _conditionalPriorInfos.resize(_conditionalPriors.size());
+
  for (size_t i = 0; i < _conditionalPriors.size(); i++)
  {
-  auto priorJs = nlohmann::json();
-  _conditionalPriors[i]->getConfiguration(priorJs);
+  _conditionalPriors[i]->getConfiguration(_conditionalPriorInfos[i]._conditionalJson);
 
-  for (auto it = priorJs.begin(); it != priorJs.end(); ++it) if (it.value().is_string())
+  for (auto it = _conditionalPriorInfos[i]._conditionalJson.begin(); it != _conditionalPriorInfos[i]._conditionalJson.end(); ++it) if (it.value().is_string())
   {
    std::string key(it.key());
    std::string value(it.value().get<std::string>());
+   size_t position = 0;
 
    if (key == "Type") continue;
 
    bool foundValue = false;
-   for (size_t k = 0; k < _k->_variables.size(); k++) if (_k->_variables[k]->_name == value)
-   {
-    priorJs[it.key()] = sample[k];
-    //printf("Updating Conditional %lu, property: %s - of name %s, with value: %f, from variable %lu (%s)\n", i, key.c_str(), value.c_str(), sample[k], k, _k->_variables[k]->_name.c_str());
-    foundValue = true;
-   }
+   for (size_t k = 0; k < _k->_variables.size(); k++) if (_k->_variables[k]->_name == value) { position = k; foundValue = true; }
 
    if(foundValue == false) Korali::logError("No variable name specified that satisfies conditional prior property %s with key: %s.\n", key.c_str(), value.c_str());
+
+   _conditionalPriorInfos[i]._sampleKeys.push_back(key);
+   _conditionalPriorInfos[i]._samplePositions.push_back(position);
+  }
+ }
+}
+
+void Korali::Problem::Bayesian::Hierarchical::Psi::updateConditionalPriors(Korali::Sample& sample)
+{
+ for (size_t i = 0; i < _conditionalPriors.size(); i++)
+ {
+  bool hasChanged = false;
+
+  for (size_t j = 0; j < _conditionalPriorInfos[i]._sampleKeys.size(); j++)
+  {
+   std::string key = _conditionalPriorInfos[i]._sampleKeys[j];
+   double value = sample[_conditionalPriorInfos[i]._samplePositions[j]];
+   _conditionalPriorInfos[i]._conditionalJson[key] = value;
+   hasChanged = true;
   }
 
-  _conditionalPriors[i]->setConfiguration(priorJs);
-  _conditionalPriors[i]->updateDistribution();
+  if (hasChanged)
+  {
+   _conditionalPriors[i]->setConfiguration(_conditionalPriorInfos[i]._conditionalJson);
+   _conditionalPriors[i]->updateDistribution();
+  }
  }
 }
 

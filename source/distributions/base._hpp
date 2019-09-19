@@ -24,6 +24,7 @@ class Base : public Korali::Module
  void initialize() override;
  void finalize() override;
  virtual void updateDistribution() { };
+ virtual void updateProperty(std::string property, double value) { };
 
 };
 

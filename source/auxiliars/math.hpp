@@ -18,7 +18,7 @@ const double Max    = std::numeric_limits<double>::max();
 const double Min    = std::numeric_limits<double>::min();
 const double Eps    = std::numeric_limits<double>::epsilon();
 
-double logSumExp( std::vector<double> logValues );
+double logSumExp(const std::vector<double>& logValues );
 std::string getTimestamp();
 size_t getTimehash();
 

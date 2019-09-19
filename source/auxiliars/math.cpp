@@ -7,9 +7,9 @@
 // using the log-sum-exp trick:
 // https://en.wikipedia.org/wiki/LogSumExp#log-sum-exp_trick_for_log-domain_calculations
 // Input: vector of log(x_i)
-double Korali::logSumExp( std::vector<double> logValues )
+double Korali::logSumExp(const std::vector<double>& logValues )
 {
-  double maxLogValues =  *std::max_element(std::begin(logValues), std::end(logValues));
+  double maxLogValues = *std::max_element(std::begin(logValues), std::end(logValues));
 
   if( std::isinf(maxLogValues)==true ){
     if( maxLogValues<0 )  return -Korali::Inf;
@@ -17,7 +17,7 @@ double Korali::logSumExp( std::vector<double> logValues )
   }
 
   double sumExpValues = 0.0;
-  for (auto& v : logValues) sumExpValues += exp( v - maxLogValues );
+  for (size_t i = 0; i < logValues.size(); i++) sumExpValues += exp(logValues[i] - maxLogValues);
 
   return maxLogValues + log(sumExpValues);
 }

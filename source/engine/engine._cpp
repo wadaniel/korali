@@ -223,12 +223,12 @@ std::vector<double> Korali::Engine::getArray()
  return vec;
 }
 
+#ifdef _KORALI_USE_MPI
+long int Korali::Engine::getMPICommPointer() { return (long int)(&__KoraliTeamComm); }
+#endif
+
 PYBIND11_MODULE(libkorali, m)
 {
-  #ifdef _KORALI_USE_MPI
-   m.def("getKoraliMPIComm", &getKoraliMPICommPointer);
-  #endif
-
   pybind11::class_<Korali::Sample>(m, "Sample")
     .def("__getitem__",     &Korali::Sample::operator[], pybind11::return_value_policy::reference)
     .def("getSampleId",  &Korali::Sample::getSampleId, pybind11::return_value_policy::reference)
@@ -242,6 +242,9 @@ PYBIND11_MODULE(libkorali, m)
    .def("getBoolean", &Korali::Engine::getBoolean)
    .def("getString", &Korali::Engine::getString)
    .def("getArray", &Korali::Engine::getArray)
+    #ifdef _KORALI_USE_MPI
+   .def("getMPIComm", &Korali::Engine::getMPICommPointer)
+    #endif
    .def("__getitem__", pybind11::overload_cast<const std::string&>(&Korali::Engine::getItem), pybind11::return_value_policy::reference)
    .def("__getitem__", pybind11::overload_cast<const unsigned long int&>(&Korali::Engine::getItem), pybind11::return_value_policy::reference)
    .def("__setitem__", pybind11::overload_cast<const std::string&, const std::function<void(Korali::Sample&)>>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)

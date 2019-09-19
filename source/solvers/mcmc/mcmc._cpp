@@ -236,15 +236,15 @@ void Korali::Solver::MCMC::printGenerationAfter()
  Korali::logInfo("Normal", "Accepted Samples: %zu\n", _acceptanceCount);
  Korali::logInfo("Normal", "Acceptance Rate Proposals: %.2f%%\n", 100*_acceptanceRate);
 
- Korali::logInfo("Detailed", "Variable = (Current Sample, Current Candidate):\n");
- for (size_t d = 0; d < N; d++)  Korali::logData("Detailed", "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _chainLeader[d], _chainCandidate[d]);
+ Korali::logInfo("Detailed", "Current Sample:\n");
+ for (size_t d = 0; d < N; d++)  Korali::logData("Detailed", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _chainLeader[d]);
 
  Korali::logInfo("Detailed", "Current Chain Mean:\n");
- for (size_t d = 0; d < N; d++) Korali::logData("Detailed", " %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _chainMean[d]);
+ for (size_t d = 0; d < N; d++) Korali::logData("Detailed", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _chainMean[d]);
  Korali::logInfo("Detailed", "Current Chain Covariance:\n");
  for (size_t d = 0; d < N; d++)
  {
-  for (size_t e = 0; e <= d; e++) Korali::logData("Detailed", "   %+6.3e  ", _chainCovariance[d*N+e]);
+  for (size_t e = 0; e <= d; e++) Korali::logData("Detailed", "         %+6.3e  ", _chainCovariance[d*N+e]);
   Korali::logInfo("Detailed", "\n");
  }
 }

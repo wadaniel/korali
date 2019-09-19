@@ -28,5 +28,7 @@ k["Variables"][0]["Name"] = "X"
 k["Variables"][0]["Initial Mean"] = 0.0
 k["Variables"][0]["Initial Standard Deviation"] = 1.0
 
+k["Console Output"]["Verbosity"] = "Detailed"
+
 # Running Korali
 k.run()

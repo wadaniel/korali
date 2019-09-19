@@ -1,39 +1,15 @@
 {
- "Name": "Bayesian Inference (Base)",
- "Alias": "Bayesian Inference (Base)",
+ "Name": "Bayesian Problem (Base)",
+ "Alias": "Bayesian Problem (Base)",
  "C++ Class": "Korali::Problem::Bayesian::Base",
-
- "Configuration Settings":
- [
- 
- ],
 
  "Variables Configuration":
  [
-   {
-    "Name": [ "Bayesian Type" ],
-    "Type": "std::string",
-    "Default": "Computational",
-    "Description": "Specifies the purpose of the variable for the bayesian model."
-   },
    {
     "Name": [ "Prior Distribution" ],
     "Type": "Korali::Distribution::Univariate::Base*",
     "Description": "Eh..."
    }
- ],
-
- "Internal Settings":
- [
-   {
-    "Name": [ "Computational Variable Indices" ],
-    "Type": "std::vector<size_t>",
-    "Description": "Stores the indices of variables that are of computational type."
-   },
-   {
-    "Name": [ "Statistical Variable Indices" ],
-    "Type": "std::vector<size_t>",
-    "Description": "Stores the indices of variables that are of statistical type."
-   }
  ]
+
 }

@@ -4,21 +4,7 @@
 
 void Korali::Problem::Bayesian::Base::initialize()
 {
-  if (_k->_variables.size() == 0) Korali::logError("Bayesian inference problems require at least one variable.\n");
-
-  _computationalVariableIndices.clear();
-  _statisticalVariableIndices.clear();
-
-  for (size_t i = 0; i < _k->_variables.size(); i++) _k->_variables[i]->_priorDistribution->initialize();
-
-  for (size_t i = 0; i < _k->_variables.size(); i++)
-  {
-   std::string typeString = _k->_variables[i]->_bayesianType;
-   bool recognizedType = false;
-   if (typeString == "Computational") { _computationalVariableIndices.push_back(i); recognizedType = true; }
-   if (typeString == "Statistical")   { _statisticalVariableIndices.push_back(i);   recognizedType = true; }
-   if (recognizedType == false) Korali::logError("Incorrect Bayesian variable type selected: %s.\n", typeString.c_str());
-  }
+  if (_k->_variables.size() == 0) Korali::logError("Bayesian problems require at least one variable.\n");
 }
 
 void Korali::Problem::Bayesian::Base::evaluateLogPrior(Korali::Sample& sample)

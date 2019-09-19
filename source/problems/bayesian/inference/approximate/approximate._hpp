@@ -1,0 +1,24 @@
+#ifndef _KORALI_PROBLEM_BAYESIAN_APPROXIMATE_HPP_
+#define _KORALI_PROBLEM_BAYESIAN_APPROXIMATE_HPP_
+
+#include "problems/bayesian/inference/base.hpp"
+
+namespace Korali { namespace Problem { namespace Bayesian { namespace Inference {
+
+class Approximate : public Korali::Problem::Bayesian::Inference::Base
+{
+ private:
+
+ void likelihoodTruncatedNormal(Korali::Sample& sample);
+ void likelihoodNormal(Korali::Sample& sample);
+
+ public:
+
+ void evaluateLogLikelihood(Korali::Sample& sample) override;
+ void initialize() override;
+};
+
+} } } } // namespace Korali::Problem::Bayesian::Inference
+
+
+#endif // _KORALI_PROBLEM_BAYESIAN_APPROXIMATE_HPP_

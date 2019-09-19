@@ -8,19 +8,22 @@ sys.path.append('../setup/model')
 from model import *
 
 # Creating hierarchical Bayesian problem from previous two problems
-kH = korali.initialize()
+k = korali.initialize()
 
-kH["Problem"]["Type"]  = "Hierarchical Bayesian (Theta)"
-kH["Problem"]["Theta Problem Path"] = '../setup/results_phase_1/000/final.json'
-kH["Problem"]["Psi Problem Path"] = '../setup/results_phase_2/final.json'
+k["Problem"]["Type"]  = "Hierarchical Bayesian (Theta)"
+k["Problem"]["Theta Problem Path"] = '../setup/results_phase_1/000/final.json'
+k["Problem"]["Psi Problem Path"] = '../setup/results_phase_2/final.json'
 
-kH["Solver"]["Type"] = "TMCMC"
-kH["Solver"]["Population Size"] = 1000
-kH["Solver"]["Termination Criteria"]["Max Generations"] = 30
-kH["Solver"]["Default Burn In"] = 2;
-kH["Solver"]["Target Coefficient Of Variation"] = 0.6
+k["Solver"]["Type"] = "TMCMC"
+k["Solver"]["Population Size"] = 1000
+k["Solver"]["Termination Criteria"]["Max Generations"] = 30
+k["Solver"]["Default Burn In"] = 1;
+k["Solver"]["Target Coefficient Of Variation"] = 0.6
 
-kH["Console Output"]["Verbosity"] = "Detailed"
-kH["Results Output"]["Path"] = "../setup/results_phase_3b/"
+k["Conduit"]["Type"] = "External"
+k["Conduit"]["Concurrent Jobs"] = 8
 
-kH.run()
+k["Console Output"]["Verbosity"] = "Detailed"
+k["Results Output"]["Path"] = "../setup/results_phase_3b/"
+
+k.run()

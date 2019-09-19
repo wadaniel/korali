@@ -1,4 +1,5 @@
 #include "problems/bayesian/hierarchical/theta/theta.hpp"
+#include "conduits/base.hpp"
 
 void Korali::Problem::Bayesian::Hierarchical::Theta::initialize()
 {
@@ -87,31 +88,45 @@ void Korali::Problem::Bayesian::Hierarchical::Theta::initialize()
     _precomputedLogDenominator.push_back(localSum);
   }
 
+  // Setting computation model to be solved (evaluateThetaLikelihood)
+ _k->_models.push_back(
+   [](Korali::Sample& sample)
+   {
+    Korali::Engine* k = sample._k;
+    auto _thetaProblem = dynamic_cast<Korali::Problem::Bayesian::Hierarchical::Theta*>(k->_problem);
+    _thetaProblem->evaluateThetaLikelihood(sample);
+   }
+ );
 
   Korali::Problem::Bayesian::Base::initialize();
 }
 
 void Korali::Problem::Bayesian::Hierarchical::Theta::evaluateLogLikelihood(Korali::Sample& sample)
 {
-  double logLikelihood = 0.0;
+ _k->_conduit->runModel(0, sample);
+}
 
-  std::vector<double> logValues;
-  logValues.resize(_psiProblemSampleCount);
+void Korali::Problem::Bayesian::Hierarchical::Theta::evaluateThetaLikelihood(Korali::Sample& sample)
+{
+ double logLikelihood = 0.0;
 
-  for (size_t i = 0; i < _psiProblemSampleCount; i++)
-  {
-    Korali::Sample psiSample(_psiProblemSampleCoordinates[i]);
+ std::vector<double> logValues;
+ logValues.resize(_psiProblemSampleCount);
 
-    _psiProblem->updateConditionalPriors(psiSample);
+ for (size_t i = 0; i < _psiProblemSampleCount; i++)
+ {
+   Korali::Sample psiSample(_psiProblemSampleCoordinates[i]);
 
-    double logConditionalPrior = 0.;
-    for (size_t k = 0; k < _thetaVariableCount; k++)
-      logConditionalPrior += _psiProblem->_conditionalPriors[k]->getLogDensity(sample[k]);
+   _psiProblem->updateConditionalPriors(psiSample);
 
-    logValues[i] = logConditionalPrior - _precomputedLogDenominator[i];
-  }
+   double logConditionalPrior = 0.;
+   for (size_t k = 0; k < _thetaVariableCount; k++)
+     logConditionalPrior += _psiProblem->_conditionalPriors[k]->getLogDensity(sample[k]);
 
-  logLikelihood += -log(_psiProblemSampleCount) + logSumExp(logValues);
+   logValues[i] = logConditionalPrior - _precomputedLogDenominator[i];
+ }
 
-  sample.setResult(logLikelihood);
+ logLikelihood += -log(_psiProblemSampleCount) + logSumExp(logValues);
+
+ sample.setResult(logLikelihood);
 }

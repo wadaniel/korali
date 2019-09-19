@@ -1,4 +1,5 @@
 #include "problems/bayesian/hierarchical/thetaNew/thetaNew.hpp"
+#include "conduits/base.hpp"
 
 void Korali::Problem::Bayesian::Hierarchical::ThetaNew::initialize()
 {
@@ -35,9 +36,24 @@ void Korali::Problem::Bayesian::Hierarchical::ThetaNew::initialize()
     if( std::isfinite(expPrior) == false )
       Korali::logError("Non finite (%lf) prior has been detected at sample %zu in subproblem.\n", expPrior, i );
   }
+
+  // Setting computation model to be solved (evaluateThetaLikelihood)
+ _k->_models.push_back(
+   [](Korali::Sample& sample)
+   {
+    Korali::Engine* k = sample._k;
+    auto _thetaNewProblem = dynamic_cast<Korali::Problem::Bayesian::Hierarchical::ThetaNew*>(k->_problem);
+    _thetaNewProblem->evaluateThetaLikelihood(sample);
+   }
+ );
 }
 
 void Korali::Problem::Bayesian::Hierarchical::ThetaNew::evaluateLogLikelihood(Korali::Sample& sample)
+{
+ _k->_conduit->runModel(0, sample);
+}
+
+void Korali::Problem::Bayesian::Hierarchical::ThetaNew::evaluateThetaLikelihood(Korali::Sample& sample)
 {
  double logLikelihood = 0.0;
  auto  _psiProblem = dynamic_cast<Korali::Problem::Bayesian::Hierarchical::Psi*>(_psiEngine->_problem);

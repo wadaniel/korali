@@ -7,7 +7,7 @@ from model import *
 import korali
 
 # N : number of datasets
-N = 10
+N = 5 
 # Ns: number os samples in each dataset
 Ns = 100
 

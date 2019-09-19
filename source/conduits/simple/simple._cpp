@@ -6,6 +6,7 @@
 void Korali::Conduit::Simple::runModel(size_t modelId, Korali::Sample& sample)
 {
  sample._result.clear();
+ sample._k = _k;
  _k->_models[modelId](sample);
  _modelEvaluationCount++;
 }

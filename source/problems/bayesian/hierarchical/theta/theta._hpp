@@ -30,6 +30,7 @@ class Theta : public Korali::Problem::Bayesian::Hierarchical::Base
 
  public:
 
+ void evaluateThetaLikelihood(Korali::Sample& sample);
  void evaluateLogLikelihood(Korali::Sample& sample) override;
  void initialize() override;
 };

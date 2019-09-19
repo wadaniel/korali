@@ -6,49 +6,49 @@ import os
 import korali
 
 # Creating hierarchical Bayesian problem from previous two problems
-kH = korali.initialize()
+k = korali.initialize()
 
-kH["Problem"]["Type"]  = "Hierarchical Bayesian (Psi)"
+k["Problem"]["Type"]  = "Hierarchical Bayesian (Psi)"
 resultsPath = "../setup/results_phase_1/"
-for i in range(10):
-  kH["Problem"]["Sub Problems"][i] = resultsPath + str(i).zfill(3) + '/final.json'
+for i in range(5):
+  k["Problem"]["Sub Problems"][i] = resultsPath + str(i).zfill(3) + '/final.json'
 
 # Add probability of theta given psi, one per subproblem variable.
-kH["Problem"]["Conditional Priors"][0]["Type"] = "Normal"
-kH["Problem"]["Conditional Priors"][0]["Mean"] = "Psi 1"
-kH["Problem"]["Conditional Priors"][0]["Standard Deviation"] = "Psi 2"
+k["Problem"]["Conditional Priors"][0]["Type"] = "Normal"
+k["Problem"]["Conditional Priors"][0]["Mean"] = "Psi 1"
+k["Problem"]["Conditional Priors"][0]["Standard Deviation"] = "Psi 2"
 
-kH["Problem"]["Conditional Priors"][1]["Type"] = "LogNormal"
-kH["Problem"]["Conditional Priors"][1]["Mu"]    = "Psi 3"
-kH["Problem"]["Conditional Priors"][1]["Sigma"] = "Psi 4"
+k["Problem"]["Conditional Priors"][1]["Type"] = "LogNormal"
+k["Problem"]["Conditional Priors"][1]["Mu"]    = "Psi 3"
+k["Problem"]["Conditional Priors"][1]["Sigma"] = "Psi 4"
 
-kH["Variables"][0]["Name"] = "Psi 1"
-kH["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"
-kH["Variables"][0]["Prior Distribution"]["Minimum"] =  0.0
-kH["Variables"][0]["Prior Distribution"]["Maximum"] = 20.0
+k["Variables"][0]["Name"] = "Psi 1"
+k["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"
+k["Variables"][0]["Prior Distribution"]["Minimum"] =  0.0
+k["Variables"][0]["Prior Distribution"]["Maximum"] = 20.0
 
-kH["Variables"][1]["Name"] = "Psi 2"
-kH["Variables"][1]["Prior Distribution"]["Type"] = "Uniform"
-kH["Variables"][1]["Prior Distribution"]["Minimum"] =  0.0
-kH["Variables"][1]["Prior Distribution"]["Maximum"] = 20.0
+k["Variables"][1]["Name"] = "Psi 2"
+k["Variables"][1]["Prior Distribution"]["Type"] = "Uniform"
+k["Variables"][1]["Prior Distribution"]["Minimum"] =  0.0
+k["Variables"][1]["Prior Distribution"]["Maximum"] = 20.0
 
-kH["Variables"][2]["Name"] = "Psi 3"
-kH["Variables"][2]["Prior Distribution"]["Type"] = "Uniform"
-kH["Variables"][2]["Prior Distribution"]["Minimum"] = -2.0
-kH["Variables"][2]["Prior Distribution"]["Maximum"] = +2.0
+k["Variables"][2]["Name"] = "Psi 3"
+k["Variables"][2]["Prior Distribution"]["Type"] = "Uniform"
+k["Variables"][2]["Prior Distribution"]["Minimum"] = -2.0
+k["Variables"][2]["Prior Distribution"]["Maximum"] = +2.0
 
-kH["Variables"][3]["Name"] = "Psi 4"
-kH["Variables"][3]["Prior Distribution"]["Type"] = "Uniform"
-kH["Variables"][3]["Prior Distribution"]["Minimum"] = 0.0
-kH["Variables"][3]["Prior Distribution"]["Maximum"] = 5.0
+k["Variables"][3]["Name"] = "Psi 4"
+k["Variables"][3]["Prior Distribution"]["Type"] = "Uniform"
+k["Variables"][3]["Prior Distribution"]["Minimum"] = 0.0
+k["Variables"][3]["Prior Distribution"]["Maximum"] = 5.0
 
-kH["Solver"]["Type"] = "TMCMC"
-kH["Solver"]["Population Size"] = 2000
-kH["Solver"]["Default Burn In"] = 1;
-kH["Solver"]["Target Coefficient Of Variation"] = 0.6
-kH["Solver"]["Covariance Scaling"] = 0.1
+k["Solver"]["Type"] = "TMCMC"
+k["Solver"]["Population Size"] = 2000
+k["Solver"]["Default Burn In"] = 1;
+k["Solver"]["Target Coefficient Of Variation"] = 0.6
+k["Solver"]["Covariance Scaling"] = 0.1
 
-kH["Console Output"]["Verbosity"] = "Detailed"
-kH["Results Output"]["Path"] = "../setup/results_phase_2/"
+k["Console Output"]["Verbosity"] = "Detailed"
+k["Results Output"]["Path"] = "../setup/results_phase_2/"
 
-kH.run()
+k.run()

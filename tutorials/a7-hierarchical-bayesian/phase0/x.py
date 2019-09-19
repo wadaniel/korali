@@ -6,7 +6,7 @@ from model import *
 
 import korali
 
-N = 10;
+N = 5;
 
 k = korali.initialize()
 

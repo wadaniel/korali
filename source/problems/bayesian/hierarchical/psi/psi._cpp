@@ -1,6 +1,7 @@
 #include "problems/bayesian/hierarchical/psi/psi.hpp"
 #include "distributions/univariate/normal/normal.hpp"
 #include "engine/engine.hpp"
+#include "conduits/base.hpp"
 
 void Korali::Problem::Bayesian::Hierarchical::Psi::initialize()
 {
@@ -51,6 +52,16 @@ void Korali::Problem::Bayesian::Hierarchical::Psi::initialize()
      Korali::logError("Non finite (%lf) prior has been detected at sample %zu in subproblem %zu.\n", expPrior, j, i );
   }
  }
+
+ // Setting computation model to be solved (evaluatePsiLikelihood)
+ _k->_models.push_back(
+  [](Korali::Sample& sample)
+  {
+   Korali::Engine* k = sample._k;
+   auto _psiProblem = dynamic_cast<Korali::Problem::Bayesian::Hierarchical::Psi*>(k->_problem);
+   _psiProblem->evaluatePsiLikelihood(sample);
+  }
+ );
 }
 
 void Korali::Problem::Bayesian::Hierarchical::Psi::updateConditionalPriors(Korali::Sample& sample)
@@ -84,9 +95,14 @@ void Korali::Problem::Bayesian::Hierarchical::Psi::updateConditionalPriors(Koral
  }
 }
 
+
 void Korali::Problem::Bayesian::Hierarchical::Psi::evaluateLogLikelihood(Korali::Sample& sample)
 {
+ _k->_conduit->runModel(0, sample);
+}
 
+void Korali::Problem::Bayesian::Hierarchical::Psi::evaluatePsiLikelihood(Korali::Sample& sample)
+{
  if (isSampleFeasible(sample) == false) { sample.setResult(-Korali::Inf); return; };
 
  updateConditionalPriors(sample);

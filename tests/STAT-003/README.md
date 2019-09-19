@@ -9,7 +9,7 @@ returns Infs and Nans, correct execution under this conditions will be tested.
 
 ## Source
 
-[https://github.com/cselab/korali/tree/master/tests/REG-007](https://github.com/cselab/korali/tree/master/tests/REG-007)
+[https://github.com/cselab/korali/tree/master/tests/STAT-003](https://github.com/cselab/korali/tree/master/tests/STAT-003)
 
 ## Steps
 

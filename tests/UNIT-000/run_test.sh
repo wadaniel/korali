@@ -19,3 +19,6 @@ check_result
 logEcho "[Korali] Running external.py 8..."
 ./external.py 8 >> $logFile
 check_result
+
+rm -rf _korali_result >> $logFile 2>&1
+check_result

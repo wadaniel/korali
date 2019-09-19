@@ -37,3 +37,11 @@ void Korali::Problem::Direct::Base::evaluateConstraints(Korali::Sample& sample)
 
  sample.setResult(evaluations);
 }
+
+
+void Korali::Problem::Direct::Base::evaluateObjectiveFunction(Korali::Sample& sample)
+{
+ _k->_conduit->runModel(_objectiveFunction, sample);
+ std::vector<double> result = sample.getResult();
+ if (result.size() != 1) Korali::logError("Direct Evaluation problems require exactly 1 result. Provided: %lu.\n", result.size());
+}

@@ -8,7 +8,7 @@ Shell script will execute run-ccmaes.py with different input arguments in order 
 
 ## Source
 
-[https://github.com/cselab/korali/tree/master/tests/REG-004](https://github.com/cselab/korali/tree/master/tests/REG-006)
+[https://github.com/cselab/korali/tree/master/tests/REG-006](https://github.com/cselab/korali/tree/master/tests/REG-006)
 
 ## Steps
 

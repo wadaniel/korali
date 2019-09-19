@@ -8,7 +8,7 @@ Shell script will execute python scripts with different input arguments in order
 
 ## Source
 
-[https://github.com/cselab/korali/tree/master/tests/REG-004](https://github.com/cselab/korali/tree/master/tests/REG-005)
+[https://github.com/cselab/korali/tree/master/tests/REG-005](https://github.com/cselab/korali/tree/master/tests/REG-005)
 
 ### Step 1
 

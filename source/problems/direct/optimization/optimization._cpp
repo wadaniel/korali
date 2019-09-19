@@ -9,11 +9,12 @@ void Korali::Problem::Direct::Optimization::initialize()
 
 void Korali::Problem::Direct::Optimization::evaluateSample(Korali::Sample& sample)
 {
+ evaluateObjectiveFunction(sample);
+
  double evaluationSign = _objective == "Maximize" ? 1.0 : -1.0;
+ double result = sample.getResult()[0];
 
- _k->_conduit->runModel(_objectiveFunction, sample);
- std::vector<double> result = sample.getResult();
- if (result.size() != 1) Korali::logError("Optimization problems require exactly 1 result. Provided: %lu.\n", result.size());
-
- sample.setResult(evaluationSign * result[0]);
+ // If result is not a finite number, objective function evaluates to -Infinity
+ if(std::isnan(result)) sample.setResult(-Korali::Inf);
+ else sample.setResult(evaluationSign * result);
 }

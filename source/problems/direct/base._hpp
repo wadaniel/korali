@@ -15,6 +15,8 @@ class Base : public Korali::Problem::Base
  void initialize() override;
  bool isSampleFeasible(Korali::Sample& sample) override;
  void evaluateConstraints(Korali::Sample&);
+ void evaluateObjectiveFunction(Korali::Sample&);
+
 };
 
 } } } // namespace Korali::Problem::Bayesian

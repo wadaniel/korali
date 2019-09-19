@@ -209,10 +209,10 @@ void Korali::Solver::DEA::updateSolver()
 
     for(size_t d = 0; d < N; ++d) _currentBestVariables[d] = _candidatePopulation[_bestSampleIndex][d];
     
-    _previousMean.assign(std::begin(_currentMean), std::end(_currentMean));
+    _previousMean = _currentMean;
     std::fill(std::begin(_currentMean), std::end(_currentMean), 0.0);
 
-    if(_currentBestValue > _bestEverValue) _bestEverVariables.assign(std::begin(_currentBestVariables), std::end(_currentBestVariables));
+    if(_currentBestValue > _bestEverValue) _bestEverVariables = _currentBestVariables;
 
     switch (__korali__str2int(_acceptRule.c_str()))
     {

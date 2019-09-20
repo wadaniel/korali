@@ -5,6 +5,7 @@
 void Korali::Problem::Bayesian::Base::initialize()
 {
   if (_k->_variables.size() == 0) Korali::logError("Bayesian problems require at least one variable.\n");
+  for (size_t i = 0; i < _k->_variables.size(); i++) _k->_variables[i]->_priorDistribution->initialize();
 }
 
 void Korali::Problem::Bayesian::Base::evaluateLogPrior(Korali::Sample& sample)

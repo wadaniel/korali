@@ -5,7 +5,7 @@
 
 void Korali::Problem::Bayesian::Hierarchical::Psi::initialize()
 {
- Korali::Problem::Bayesian::Base::initialize();
+ Korali::Problem::Bayesian::Hierarchical::Base::initialize();
 
  if (_conditionalPriors.size() == 0) Korali::logError("Hierarchical Bayesian (Psi) problems require at least one conditional prior\n");
 

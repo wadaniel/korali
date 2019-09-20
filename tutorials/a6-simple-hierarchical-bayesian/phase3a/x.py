@@ -10,13 +10,11 @@ k["Problem"]["Type"]  = "Hierarchical Bayesian (Theta New)"
 k["Problem"]["Psi Problem Path"] = '../setup/results_phase_2/final.json'
 
 k["Variables"][0]["Name"] = "mu"
-k["Variables"][0]["Bayesian Type"] = "Statistical"
 k["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"
 k["Variables"][0]["Prior Distribution"]["Minimum"] =  -20.0
 k["Variables"][0]["Prior Distribution"]["Maximum"] = 40.0
 
 k["Variables"][1]["Name"] = "sigma"
-k["Variables"][1]["Bayesian Type"] = "Statistical"
 k["Variables"][1]["Prior Distribution"]["Type"] = "Uniform"
 k["Variables"][1]["Prior Distribution"]["Minimum"] = 0.0
 k["Variables"][1]["Prior Distribution"]["Maximum"] = 10.0

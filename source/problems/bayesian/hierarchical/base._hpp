@@ -11,6 +11,8 @@ class Base : public Korali::Problem::Bayesian::Base
 
  public:
 
+  void initialize() override;
+
 };
 
 } } } } // namespace Korali::Problem::Bayesian::Hierarchical

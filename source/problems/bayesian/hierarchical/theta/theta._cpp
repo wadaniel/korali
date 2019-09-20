@@ -98,7 +98,7 @@ void Korali::Problem::Bayesian::Hierarchical::Theta::initialize()
    }
  );
 
-  Korali::Problem::Bayesian::Base::initialize();
+ Korali::Problem::Bayesian::Hierarchical::Base::initialize();
 }
 
 void Korali::Problem::Bayesian::Hierarchical::Theta::evaluateLogLikelihood(Korali::Sample& sample)

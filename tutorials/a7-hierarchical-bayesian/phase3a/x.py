@@ -26,7 +26,6 @@ k["Variables"][2]["Prior Distribution"]["Minimum"] = 0.0
 k["Variables"][2]["Prior Distribution"]["Maximum"] = 5.0
 
 k["Variables"][3]["Name"] = "Sigma"
-k["Variables"][3]["Bayesian Type"] = "Statistical"
 k["Variables"][3]["Prior Distribution"]["Type"] = "Uniform"
 k["Variables"][3]["Prior Distribution"]["Minimum"] = 0
 k["Variables"][3]["Prior Distribution"]["Maximum"] = 20

@@ -5,11 +5,6 @@ void Korali::Problem::Bayesian::Inference::Approximate::initialize()
 {
   Korali::Problem::Bayesian::Inference::Base::initialize();
 
-  bool recognizedModel = false;
-  if (_likelihoodModel == "Truncated Normal") recognizedModel = true;
-  if (_likelihoodModel == "Normal") recognizedModel = true;
-  if (recognizedModel == false) Korali::logError("Incorrect or no Likelihood Model selected: %s.\n", _likelihoodModel.c_str());
-
   if (_referenceData.size() == 0)  Korali::logError("Bayesian (%s) problems require defining reference data.\n", _likelihoodModel.c_str());
   if (_computationalVariableIndices.size() != 0) Korali::logError("Bayesian (%s) problems do not accept computational parameters.\n", _likelihoodModel.c_str() );
 

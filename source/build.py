@@ -31,13 +31,20 @@ def getVariablePath(v):
 def getVariableDefault(v):
  return v.get('Default', '')
  
+def getVariableOptions(v):
+ options = []
+ if ( v.get('Options', '') ):
+  for item in v["Options"]:
+   options.append(item["Value"])
+ return options
+ 
 def getVariableEnabledDefault(v):
  if ( v.get('Default', '') ): return 'true'
  return 'false'
  
 #####################################################################
 
-def consumeValue(base, moduleName, path, varName, varType, varDefault):
+def consumeValue(base, moduleName, path, varName, varType, varDefault, options):
  cString = '\n'
  
  if ('std::function' in varType):
@@ -77,16 +84,25 @@ def consumeValue(base, moduleName, path, varName, varType, varDefault):
  cString += '   Korali::JsonInterface::eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n'
  cString += '  }\n'
  
- if (varDefault == 'Korali Skip Default'):
-  return cString
+ if (not varDefault == 'Korali Skip Default'):
+  cString += '  else '
+  if (varDefault == ''):
+   cString += '  Korali::logError("No value provided for mandatory setting: ' + path.replace('"', "'") + ' required by ' + moduleName + '.\\n"); \n'
+  else:
+   if ("std::string" in varType): varDefault = '"' + varDefault + '"'
+   cString += varName + ' = ' + varDefault + ';'
  
- cString += '  else '
- if (varDefault == ''):
-  cString += '  Korali::logError("No value provided for mandatory setting: ' + path.replace('"', "'") + ' required by ' + moduleName + '.\\n"); \n'
- else:
-  if ("std::string" in varType): varDefault = '"' + varDefault + '"'
-  cString += varName + ' = ' + varDefault + ';'
-   
+ cString += '\n'
+ 
+ if (options):
+  cString += '{\n'
+  validVarName = 'validOption' 
+  cString += ' bool ' + validVarName + ' = false; \n'
+  for v in options:
+   cString += ' if (' + varName + ' == "' + v + '") ' + validVarName + ' = true; \n'
+  cString += ' if (' + validVarName + ' == false) Korali::logError("Unrecognized value provided for mandatory setting: ' + path.replace('"', "'") + ' required by ' + moduleName + '.\\n"); \n'   
+  cString += '}\n'
+    
  cString += '\n'
  return cString
 
@@ -131,22 +147,22 @@ def createSetConfiguration(module):
  # Consume Configuration Settings
  if 'Configuration Settings' in module:
   for v in module["Configuration Settings"]:
-   codeString += consumeValue('js', module["Alias"], getVariablePath(v), getCXXVariableName(v["Name"]), getVariableType(v), getVariableDefault(v))
+   codeString += consumeValue('js', module["Alias"], getVariablePath(v), getCXXVariableName(v["Name"]), getVariableType(v), getVariableDefault(v), getVariableOptions(v))
   
  if 'Internal Settings' in module: 
   for v in module["Internal Settings"]:
    varDefault = getVariableDefault(v)
    if (varDefault == ''): varDefault = 'Korali Skip Default'
-   codeString += consumeValue('js', module["Alias"], '["Internal"]' + getVariablePath(v),  getCXXVariableName(v["Name"]), getVariableType(v), varDefault)
+   codeString += consumeValue('js', module["Alias"], '["Internal"]' + getVariablePath(v),  getCXXVariableName(v["Name"]), getVariableType(v), varDefault, getVariableOptions(v))
   
  if 'Termination Criteria' in module:
   for v in module["Termination Criteria"]:
-   codeString += consumeValue('js', module["Alias"], '["Termination Criteria"]' + getVariablePath(v), getCXXVariableName(v["Name"]), getVariableType(v), getVariableDefault(v))
+   codeString += consumeValue('js', module["Alias"], '["Termination Criteria"]' + getVariablePath(v), getCXXVariableName(v["Name"]), getVariableType(v), getVariableDefault(v), getVariableOptions(v))
  
  if 'Variables Configuration' in module:
   codeString += ' for (size_t i = 0; i < _k->_js["Variables"].size(); i++) { \n'
   for v in module["Variables Configuration"]:
-   codeString += consumeValue('_k->_js["Variables"][i]', module["Alias"], getVariablePath(v), '_k->_variables[i]->' + getCXXVariableName(v["Name"]), getVariableType(v), getVariableDefault(v))
+   codeString += consumeValue('_k->_js["Variables"][i]', module["Alias"], getVariablePath(v), '_k->_variables[i]->' + getCXXVariableName(v["Name"]), getVariableType(v), getVariableDefault(v), getVariableOptions(v))
   codeString += ' } \n'
    
  if 'Conditional Variables' in module:

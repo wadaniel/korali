@@ -2,14 +2,16 @@
  "Name": "Optimization",
  "Alias": "Optimization",
  "C++ Class": "Korali::Problem::Direct::Optimization",
- "Compatible Solvers": [ "CMAES", "DEA" ],
  
  "Configuration Settings": 
  [
    {
     "Name": [ "Objective" ],
     "Type": "std::string",
-    "Options": [ "Minimize", "Maximize" ],
+    "Options": [
+                { "Value": "Minimize", "Description": "Korali will find the point of minimum evaluation of the provided model." },
+                { "Value": "Maximize", "Description": "Korali will find the point of maximum evaluation of the provided model." }
+               ],
     "Description": "Indicates whether Korali will minimize or maximize the function evaluation."
    }
  ]

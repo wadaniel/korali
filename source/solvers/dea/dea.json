@@ -26,19 +26,33 @@
     "Name": [ "Mutation Rule" ],
     "Default": "Fixed",
     "Type": "std::string",
-    "Description": "Controls the Mutation Rate: 'Fixed' or 'Self Adaptive' (varying Crossover Rate and Mutation Rate, according to [Brest2006])."
+    "Options": [
+                { "Value": "Fixed", "Description": "What does this mean?." },
+                { "Value": "Self Adaptive", "Description": "What does this mean?." }
+               ],
+    "Description": "Controls the Mutation Rate:  (varying Crossover Rate and Mutation Rate, according to [Brest2006])."
    },
    {
     "Name": [ "Parent Selection Rule" ],
     "Default": "Random",
     "Type": "std::string",
-    "Description": "Defines the selection rule of the parent vecor: 'Random' (randomly select parent) or 'Best' (mutate only best variables)."
+    "Options": [
+                { "Value": "Random", "Description": "Select parent randomly." },
+                { "Value": "Best", "Description": "Mutate only best variables." }
+               ],
+    "Description": "Defines the selection rule of the parent vector."
    },
    {
     "Name": [ "Accept Rule" ],
     "Default": "Greedy",
     "Type": "std::string",
-    "Description": "Sets the accept rule after sample mutation and evaluation: 'Best' (update best sample if better than Best Ever Sample), 'Greedy' (accept all candiates better than parent), 'Iterative' (iterate through candidates and accept if Best Ever Value improved) or 'Improved' (accept all candidates better than Best Ever Sample)."
+    "Options": [
+                { "Value": "Best", "Description": "Update best sample if better than Best Ever Sample." },
+                { "Value": "Greedy", "Description": "Accept all candiates better than parent." },
+                { "Value": "Iterative", "Description": "Iterate through candidates and accept if Best Ever Value improved." },
+                { "Value": "Improved", "Description": "Accept all candidates better than Best Ever Sample." }
+               ],
+    "Description": "Sets the accept rule after sample mutation and evaluation."
    },
    {
     "Name": [ "Fix Infeasible" ],

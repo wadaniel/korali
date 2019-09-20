@@ -96,14 +96,6 @@ void Korali::Engine::start(bool isDryRun)
 
 void Korali::Engine::initialize()
 {
- // Initializing Verbosity
- bool verbosityDefined = false;
- if (_consoleOutputVerbosity == "Silent")   verbosityDefined = true;
- if (_consoleOutputVerbosity == "Minimal")  verbosityDefined = true;
- if (_consoleOutputVerbosity == "Normal")   verbosityDefined = true;
- if (_consoleOutputVerbosity == "Detailed") verbosityDefined = true;
- if (verbosityDefined == false) Korali::logError("Incorrect or undefined Verbosity Level '%s'\n.", _consoleOutputVerbosity.c_str());
-
  Korali::setVerbosityLevel(_consoleOutputVerbosity);
 
  // Creating Results directory

@@ -1,20 +1,5 @@
 {
  "Name": "Hierarchical Bayesian (Base)",
  "Alias": "Hierarchical Bayesian (Base)",
- "C++ Class": "Korali::Problem::Bayesian::Hierarchical::Base",
-
- "Configuration Settings":
- [
- 
- ],
-
- "Variables Configuration":
- [
- 
- ],
-
- "Internal Settings":
- [
- 
- ]
+ "C++ Class": "Korali::Problem::Bayesian::Hierarchical::Base"
 }

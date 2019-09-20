@@ -1,20 +1,5 @@
 {
  "Name": "Sampling",
  "Alias": "Sampling",
- "C++ Class": "Korali::Problem::Direct::Sampling",
- "Compatible Solvers": [ "MCMC", "TMCMC" ],
- 
- "Configuration Settings": 
- [
-
- ],
- 
- "Variables Configuration": 
- [
-
- ],
- 
- "Internal Settings": 
- [
- ]
+ "C++ Class": "Korali::Problem::Direct::Sampling"
 }

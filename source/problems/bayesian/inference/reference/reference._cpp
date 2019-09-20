@@ -6,12 +6,6 @@ void Korali::Problem::Bayesian::Inference::Reference::initialize()
 {
   Korali::Problem::Bayesian::Inference::Base::initialize();
 
-  bool recognizedModel = false;
-  if (_likelihoodModel == "Additive Normal") recognizedModel = true;
-  if (_likelihoodModel == "Multiplicative Normal") recognizedModel = true;
-  if (_likelihoodModel == "Multiplicative Normal Data") recognizedModel = true;
-  if (recognizedModel == false) Korali::logError("Incorrect or no Likelihood Model selected: %s.\n", _likelihoodModel.c_str());
-
   if (_referenceData.size() == 0) Korali::logError("Bayesian (%s) problems require defining reference data.\n", _likelihoodModel.c_str());
   if (_statisticalVariableIndices.size() != 1) Korali::logError("Bayesian (%s) problems require exactly 1 statistical parameter, provided: %lu.\n", _likelihoodModel.c_str(), _statisticalVariableIndices.size());
 }

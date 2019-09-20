@@ -19,6 +19,11 @@
    {
     "Name": [ "Likelihood Model" ],
     "Type": "std::string",
+    "Options": [
+                { "Value": "Additive Normal", "Description": "Uses an additive normal process to produce the likelihood." },
+                { "Value": "Multiplicative Normal", "Description": "Uses a multipicative normal process to produce the likelihood." },
+                { "Value": "Multiplicative Normal Data", "Description": "Uses an multiplicative normal process (data) to produce the likelihood." }
+               ],
     "Description": "Specifies the likelihood model to approximate the reference data to."
    }
  ],

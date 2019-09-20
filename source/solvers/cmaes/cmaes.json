@@ -20,7 +20,12 @@
     "Name": [ "Mu Type" ],
     "Default": "Logarithmic",
     "Type": "std::string",
-    "Description": "Weights given to the Mu best values to update the covariance matrix and the mean (possible options are 'Linear', 'Equal' or 'Logarithmic')."
+    "Options": [
+                { "Value": "Linear", "Description": "Distributes Mu values linearly." },
+                { "Value": "Equal", "Description": "Distributes Mu values equally." },
+                { "Value": "Logarithmic", "Description": "Distributes Mu values logarithmically." }
+               ],
+    "Description": "Weights given to the Mu best values to update the covariance matrix and the mean."
    },
    {
     "Name": [ "Initial Sigma Cumulation Factor" ],

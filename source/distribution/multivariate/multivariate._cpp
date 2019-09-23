@@ -1,4 +1,4 @@
-#include "distributions/multivariate.hpp"
+#include "distribution/multivariate/multivariate.hpp"
 #include "engine/engine.hpp"
 
 

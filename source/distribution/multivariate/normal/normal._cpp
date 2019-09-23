@@ -1,5 +1,5 @@
-#include "distributions/multivariate/normal/normal.hpp"
-#include <auxiliars/logger.hpp>
+#include "distribution/multivariate/normal/normal.hpp"
+#include <auxiliar/logger.hpp>
 
 void korali::distribution::multivariate::Normal::getDensity(double *x, double* result, size_t n)
 {

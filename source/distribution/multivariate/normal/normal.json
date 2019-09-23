@@ -1,6 +1,6 @@
 {
- "Name": "Multivariate Normal Distribution",
- "Alias": "Multivariate Normal",
+ "Name": "Normal",
+ "Alias": "Normal",
  "C++ Class": "korali::distribution::multivariate::Normal",
  
  "Configuration Settings": 

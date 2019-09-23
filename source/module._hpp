@@ -1,9 +1,9 @@
 #ifndef _KORALI_MODULE_HPP_
 #define _KORALI_MODULE_HPP_
 
-#include "auxiliars/json.hpp"
-#include "auxiliars/logger.hpp"
-#include "auxiliars/math.hpp"
+#include "auxiliar/json.hpp"
+#include "auxiliar/logger.hpp"
+#include "auxiliar/math.hpp"
 
 namespace korali {
 

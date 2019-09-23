@@ -9,16 +9,16 @@
 #include "problems/evaluation/direct/direct.hpp"
 #include <vector>
 
-namespace Korali { namespace Solver {
+namespace korali { namespace solver {
 
-class CMAES : public Korali::Solver::Base
+class CMAES : public korali::solver::Base
 {
  private:
 
- Korali::Distribution::Univariate::Normal* _normalGenerator; /* Normal random number generator */
- Korali::Distribution::Univariate::Uniform* _uniformGenerator; /* Uniform random number generator */
- Korali::Problem::Evaluation::Direct* _directProblem;
- Korali::Problem::Evaluation::Base* _problem;
+ korali::Distribution::Univariate::Normal* _normalGenerator; /* Normal random number generator */
+ korali::Distribution::Univariate::Uniform* _uniformGenerator; /* Uniform random number generator */
+ korali::problem::Evaluation::Direct* _directProblem;
+ korali::problem::Evaluation::Base* _problem;
 
  void prepareGeneration();
  void sampleSingle(size_t sampleIdx); /* sample individual */
@@ -49,6 +49,6 @@ class CMAES : public Korali::Solver::Base
  void printGenerationAfter() override;
 };
 
-} } // namespace Korali::Solver
+} } // namespace korali::Solver
 
 #endif // _KORALI_SOLVERS_CCMAES_HPP_

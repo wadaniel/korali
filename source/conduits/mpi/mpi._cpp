@@ -18,7 +18,7 @@ MPI_Comm getKoraliMPIComm() { return __KoraliTeamComm; }
 long int getKoraliMPICommPointer() { return (long int)(&__KoraliTeamComm); }
 #endif
 
-void Korali::Conduit::MPI::initialize()
+void korali::conduit::MPI::initialize()
 {
  #ifdef _KORALI_USE_MPI
  _rankCount = 1;
@@ -33,13 +33,13 @@ void Korali::Conduit::MPI::initialize()
  #endif
 
  #ifndef _KORALI_USE_MPI
-  Korali::logError("Running an MPI-based Korali application, but Korali was installed without support for MPI.\n");
+  korali::logError("Running an MPI-based Korali application, but Korali was installed without support for MPI.\n");
  #endif
 
  #ifdef _KORALI_USE_MPI
  _continueEvaluations = true;
 
- if (_rankCount == 1) Korali::logError("Korali MPI applications require at least 2 MPI ranks to run.\n");
+ if (_rankCount == 1) korali::logError("Korali MPI applications require at least 2 MPI ranks to run.\n");
 
  _teamCount = (_rankCount-1) / _ranksPerTeam;
  _teamId = -1;
@@ -66,7 +66,7 @@ void Korali::Conduit::MPI::initialize()
  MPI_Comm_size(MPI_COMM_WORLD, &mpiSize);
 
  if(isRoot()) if (_rankCount < _ranksPerTeam + 1)
- Korali::logError("You are running Korali with %d ranks. However, you need at least %d ranks to have at least one worker team. \n", _rankCount, _ranksPerTeam + 1 );
+ korali::logError("You are running Korali with %d ranks. However, you need at least %d ranks to have at least one worker team. \n", _rankCount, _ranksPerTeam + 1 );
 
  MPI_Barrier(MPI_COMM_WORLD);
 
@@ -75,7 +75,7 @@ void Korali::Conduit::MPI::initialize()
 }
 
 
-void Korali::Conduit::MPI::finalize()
+void korali::conduit::MPI::finalize()
 {
  #ifdef _KORALI_USE_MPI
  if (isRoot())
@@ -88,7 +88,7 @@ void Korali::Conduit::MPI::finalize()
  #endif
 }
 
-void Korali::Conduit::MPI::workerThread()
+void korali::conduit::MPI::workerThread()
 {
  #ifdef _KORALI_USE_MPI
  if (_teamId == -1) return;
@@ -110,7 +110,7 @@ void Korali::Conduit::MPI::workerThread()
 
     MPI_Recv(sampleData.data(), sampleSize, MPI_DOUBLE, getRootRank(), MPI_TAG_SAMPLEDATA, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-    auto sample = Korali::Sample(sampleData);
+    auto sample = korali::Sample(sampleData);
     sample.setSampleId(sampleId);
     sample._k = _k;
     _k->_models[modelId](sample);
@@ -128,7 +128,7 @@ void Korali::Conduit::MPI::workerThread()
  #endif
 }
 
-void Korali::Conduit::MPI::runModel(size_t modelId, Korali::Sample& sample)
+void korali::conduit::MPI::runModel(size_t modelId, korali::Sample& sample)
 {
  _modelEvaluationCount++;
 
@@ -170,7 +170,7 @@ void Korali::Conduit::MPI::runModel(size_t modelId, Korali::Sample& sample)
  #endif
 }
 
-int Korali::Conduit::MPI::getRootRank()
+int korali::conduit::MPI::getRootRank()
 {
  #ifdef _KORALI_USE_MPI
  return _rankCount-1;
@@ -179,7 +179,7 @@ int Korali::Conduit::MPI::getRootRank()
  return 0;
 }
 
-bool Korali::Conduit::MPI::isRoot()
+bool korali::conduit::MPI::isRoot()
 {
  #ifdef _KORALI_USE_MPI
  return _rankId == getRootRank();
@@ -188,7 +188,7 @@ bool Korali::Conduit::MPI::isRoot()
  return true;
 }
 
-void Korali::Conduit::MPI::abort()
+void korali::conduit::MPI::abort()
 {
  #ifdef _KORALI_USE_MPI
  MPI_Abort(MPI_COMM_WORLD, -1);

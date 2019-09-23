@@ -4,14 +4,14 @@
 #include "module.hpp"
 #include "engine/engine.hpp"
 
-namespace Korali { namespace Problem {
+namespace korali { namespace problem {
 
-class Base : public Korali::Module
+class Base : public korali::Module
 {
  public:
 };
 
-} } // namespace Korali
+} } // namespace korali
 
 
 #endif // _KORALI_PROBLEM_BASE_HPP_

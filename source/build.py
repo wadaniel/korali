@@ -8,7 +8,7 @@ import json
 
 def getVariableType(v):
  # Replacing bools with ints for Python compatibility
- return v['Type'].replace('bool', 'int').replace('std::function<void(Korali::Sample&)>', 'size_t')
+ return v['Type'].replace('bool', 'int').replace('std::function<void(korali::Sample&)>', 'size_t')
  
 def getCXXVariableName(v):
  cVarName = ''
@@ -49,45 +49,45 @@ def consumeValue(base, moduleName, path, varName, varType, varDefault, options):
  
  if ('std::function' in varType):
   cString += ' ' + varName + ' = ' + base + path + '.get<size_t>();\n'
-  cString += '   Korali::JsonInterface::eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n'
+  cString += '   korali::JsonInterface::eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n'
   return cString 
 
- if ('Korali::Sample' in varType):
+ if ('korali::Sample' in varType):
   cString = ''
   return cString
 
- if ('std::vector<Korali::Variable' in varType):
+ if ('std::vector<korali::Variable' in varType):
   baseType = varType.replace('std::vector<', '').replace('>','')
   cString += ' ' + varName + '.clear();\n'
-  cString += ' for(size_t i = 0; i < ' + base + path + '.size(); i++) ' + varName + '.push_back(new Korali::Variable);\n'
+  cString += ' for(size_t i = 0; i < ' + base + path + '.size(); i++) ' + varName + '.push_back(new korali::Variable);\n'
   return cString
   
- if ('std::vector<Korali::Variable*>' in varType):
+ if ('std::vector<korali::Variable*>' in varType):
   baseType = varType.replace('std::vector<', '').replace('>','')
-  cString += ' for(size_t i = 0; i < ' + base + path + '.size(); i++) ' + varName + '.push_back(new Korali::Variable());\n'
-  cString += ' Korali::JsonInterface::eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n\n' 
+  cString += ' for(size_t i = 0; i < ' + base + path + '.size(); i++) ' + varName + '.push_back(new korali::Variable());\n'
+  cString += ' korali::JsonInterface::eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n\n' 
   return cString
   
- if ('std::vector<Korali::' in varType):
+ if ('std::vector<korali::' in varType):
   baseType = varType.replace('std::vector<', '').replace('>','')
-  cString += ' for(size_t i = 0; i < ' + base + path + '.size(); i++) ' + varName + '.push_back((' + baseType + ')Korali::Module::getModule(' + base + path + '[i]));\n'
-  cString += ' Korali::JsonInterface::eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n\n' 
+  cString += ' for(size_t i = 0; i < ' + base + path + '.size(); i++) ' + varName + '.push_back((' + baseType + ')korali::Module::getModule(' + base + path + '[i]));\n'
+  cString += ' korali::JsonInterface::eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n\n' 
   return cString
   
- if ('Korali::' in varType):
-  if (varDefault): cString = ' if (! Korali::JsonInterface::isDefined(' + base + ', "' + path.replace('"', "'") + '[\'Type\']")) ' + base + path + '["Type"] = "' + varDefault + '"; \n'
-  cString += ' ' + varName + ' = dynamic_cast<' + varType + '>(Korali::Module::getModule(' + base + path + '));\n'
+ if ('korali::' in varType):
+  if (varDefault): cString = ' if (! korali::JsonInterface::isDefined(' + base + ', "' + path.replace('"', "'") + '[\'Type\']")) ' + base + path + '["Type"] = "' + varDefault + '"; \n'
+  cString += ' ' + varName + ' = dynamic_cast<' + varType + '>(korali::Module::getModule(' + base + path + '));\n'
   return cString  
   
- cString += ' if (Korali::JsonInterface::isDefined(' + base + ', "' + path.replace('"', "'") + '"))  \n  { \n'
+ cString += ' if (korali::JsonInterface::isDefined(' + base + ', "' + path.replace('"', "'") + '"))  \n  { \n'
  cString += '   ' + varName + ' = ' + base + path + '.get<' + varType + '>();\n' 
- cString += '   Korali::JsonInterface::eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n'
+ cString += '   korali::JsonInterface::eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n'
  cString += '  }\n'
  
  if (not varDefault == 'Korali Skip Default'):
   cString += '  else '
   if (varDefault == ''):
-   cString += '  Korali::logError("No value provided for mandatory setting: ' + path.replace('"', "'") + ' required by ' + moduleName + '.\\n"); \n'
+   cString += '  korali::logError("No value provided for mandatory setting: ' + path.replace('"', "'") + ' required by ' + moduleName + '.\\n"); \n'
   else:
    if ("std::string" in varType): varDefault = '"' + varDefault + '"'
    cString += varName + ' = ' + varDefault + ';'
@@ -100,7 +100,7 @@ def consumeValue(base, moduleName, path, varName, varType, varDefault, options):
   cString += ' bool ' + validVarName + ' = false; \n'
   for v in options:
    cString += ' if (' + varName + ' == "' + v + '") ' + validVarName + ' = true; \n'
-  cString += ' if (' + validVarName + ' == false) Korali::logError("Unrecognized value provided for mandatory setting: ' + path.replace('"', "'") + ' required by ' + moduleName + '.\\n"); \n'   
+  cString += ' if (' + validVarName + ' == false) korali::logError("Unrecognized value provided for mandatory setting: ' + path.replace('"', "'") + ' required by ' + moduleName + '.\\n"); \n'   
   cString += '}\n'
     
  cString += '\n'
@@ -110,19 +110,19 @@ def consumeValue(base, moduleName, path, varName, varType, varDefault, options):
 
 def saveValue(base, path, varName, varType):
 
- if ('Korali::Sample' in varType):
+ if ('korali::Sample' in varType):
   sString = ''
   return sString
   
- if ('Korali::Variable' in varType):
+ if ('korali::Variable' in varType):
   sString = ''
   return sString
   
- if ('std::vector<Korali::' in varType):
+ if ('std::vector<korali::' in varType):
   sString = ' for(size_t i = 0; i < ' + varName + '.size(); i++) ' + varName + '[i]->getConfiguration(' + base + path + '[i]);\n'
   return sString
     
- if ('Korali::' in varType):
+ if ('korali::' in varType):
   sString =  ' ' + varName + '->getConfiguration(' + base + path + ');\n'  
   return sString
     
@@ -136,7 +136,7 @@ def getParentClass(module):
   parentName = className.rsplit('::', 1)[0]
   if ('::Base' in className): parentName = className.rsplit('::', 2)[0]
   parentName += '::Base'
-  if (parentName == 'Korali::Base'): parentName = 'Korali::Module'
+  if (parentName == 'korali::Base'): parentName = 'korali::Module'
   return parentName
  
 ####################################################################
@@ -169,14 +169,14 @@ def createSetConfiguration(module):
   for v in module["Conditional Variables"]:
    codeString += ' if(js' + getVariablePath(v) + '.is_number()) ' + getCXXVariableName(v["Name"]) + ' = js' + getVariablePath(v) + ';\n'
    codeString += ' if(js' + getVariablePath(v) + '.is_string()) ' + getCXXVariableName(v["Name"]) + 'Conditional = js' + getVariablePath(v) + ';\n'
-   codeString += ' Korali::JsonInterface::eraseValue(js, "' + getVariablePath(v).replace('"', "'") + '");\n\n'
+   codeString += ' korali::JsonInterface::eraseValue(js, "' + getVariablePath(v).replace('"', "'") + '");\n\n'
  
  codeString += ' ' + getParentClass(module) + '::setConfiguration(js);\n'
  
  codeString += ' _type = "' + module["Alias"] + '";\n'
- codeString += ' if(Korali::JsonInterface::isDefined(js, "[\'Type\']")) Korali::JsonInterface::eraseValue(js, "[\'Type\']");\n'   
+ codeString += ' if(korali::JsonInterface::isDefined(js, "[\'Type\']")) korali::JsonInterface::eraseValue(js, "[\'Type\']");\n'   
  
- codeString += ' if(Korali::JsonInterface::isEmpty(js) == false) Korali::logError("Unrecognized settings for ' + module["Name"] + ' (' + module["Alias"] + '): \\n%s\\n", js.dump(2).c_str());\n'
+ codeString += ' if(korali::JsonInterface::isEmpty(js) == false) korali::logError("Unrecognized settings for ' + module["Name"] + ' (' + module["Alias"] + '): \\n%s\\n", js.dump(2).c_str());\n'
  codeString += '} \n\n'
   
  return codeString

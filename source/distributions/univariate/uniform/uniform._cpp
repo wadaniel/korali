@@ -1,29 +1,29 @@
 #include "distributions/univariate/uniform/uniform.hpp"
 
-double Korali::Distribution::Univariate::Uniform::getDensity(double x)
+double korali::Distribution::Univariate::Uniform::getDensity(double x)
 {
-  if( _maximum-_minimum <= 0.0 ) return Korali::NaN;
+  if( _maximum-_minimum <= 0.0 ) return korali::NaN;
   return gsl_ran_flat_pdf(x, _minimum, _maximum);
 }
 
-double Korali::Distribution::Univariate::Uniform::getLogDensity(double x)
+double korali::Distribution::Univariate::Uniform::getLogDensity(double x)
 {
-  if( _maximum-_minimum <= 0.0 ) return Korali::NaN;
+  if( _maximum-_minimum <= 0.0 ) return korali::NaN;
 
   if (x >= _minimum && x <= _maximum) return _aux;
-  return -Korali::Inf;
+  return -korali::Inf;
 }
 
-double Korali::Distribution::Univariate::Uniform::getRandomNumber()
+double korali::Distribution::Univariate::Uniform::getRandomNumber()
 {
   if( _maximum-_minimum <= 0.0 )
-    Korali::logError("Maximum (%f) bound must be higher than Minimum (%f) bound in a Uniform distribution in order to draw a random number.\n", _maximum, _minimum);
+    korali::logError("Maximum (%f) bound must be higher than Minimum (%f) bound in a Uniform distribution in order to draw a random number.\n", _maximum, _minimum);
 
   return gsl_ran_flat(_range, _minimum, _maximum);
 }
 
-void Korali::Distribution::Univariate::Uniform::updateDistribution()
+void korali::Distribution::Univariate::Uniform::updateDistribution()
 {
-  if (_maximum-_minimum <= 0.0) _aux = Korali::NaN ;
+  if (_maximum-_minimum <= 0.0) _aux = korali::NaN ;
   else  _aux = -gsl_sf_log(_maximum-_minimum);
 }

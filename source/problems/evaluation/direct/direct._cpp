@@ -1,7 +1,7 @@
 #include "problems/evaluation/direct/direct.hpp"
 #include "conduits/base.hpp"
 
-bool Korali::Problem::Evaluation::Direct::isSampleFeasible(Korali::Sample& sample)
+bool korali::problem::Evaluation::direct::isSampleFeasible(korali::Sample& sample)
 {
   for (size_t i = 0; i < sample.size(); i++)
   {
@@ -12,19 +12,19 @@ bool Korali::Problem::Evaluation::Direct::isSampleFeasible(Korali::Sample& sampl
   return true;
 }
 
-void Korali::Problem::Evaluation::Direct::initialize()
+void korali::problem::Evaluation::direct::initialize()
 {
- if (_k->_variables.size() == 0) Korali::logError("Direct Evaluation problems require at least one variable.\n");
+ if (_k->_variables.size() == 0) korali::logError("Direct Evaluation problems require at least one variable.\n");
 
 /* check _granularity for discrete variables */
  for (size_t i = 0; i < _k->_variables.size(); i++)
  {
-   if(_k->_variables[i]->_granularity < 0.0)   Korali::logError("Negative granularity for variable \'%s\'.\n", _k->_variables[i]->_name.c_str());
+   if(_k->_variables[i]->_granularity < 0.0)   korali::logError("Negative granularity for variable \'%s\'.\n", _k->_variables[i]->_name.c_str());
    if(_k->_variables[i]->_granularity > 0.0)  _hasDiscreteVariables = true;
  }
 }
 
-void Korali::Problem::Evaluation::Direct::evaluateConstraints(Korali::Sample& sample)
+void korali::problem::Evaluation::direct::evaluateConstraints(korali::Sample& sample)
 {
  std::vector<double> evaluations;
 
@@ -32,7 +32,7 @@ void Korali::Problem::Evaluation::Direct::evaluateConstraints(Korali::Sample& sa
  {
   _k->_conduit->runModel(_constraints[i], sample);
   std::vector<double> constraintResult = sample.getResult();
-  if (constraintResult.size() != 1) Korali::logError("Constraint evaluations should return exactly 1 result. Provided: %lu.\n", constraintResult.size());
+  if (constraintResult.size() != 1) korali::logError("Constraint evaluations should return exactly 1 result. Provided: %lu.\n", constraintResult.size());
   evaluations.push_back(constraintResult[0]);
   _constraintEvaluationCount++;
  }
@@ -40,16 +40,16 @@ void Korali::Problem::Evaluation::Direct::evaluateConstraints(Korali::Sample& sa
  sample.setResult(evaluations);
 }
 
-void Korali::Problem::Evaluation::Direct::evaluateSample(Korali::Sample& sample)
+void korali::problem::Evaluation::direct::evaluateSample(korali::Sample& sample)
 {
  _k->_conduit->runModel(_objectiveFunction, sample);
  std::vector<double> resultVector = sample.getResult();
- if (resultVector.size() != 1) Korali::logError("Direct Evaluation problems require exactly 1 result. Provided: %lu.\n", resultVector.size());
+ if (resultVector.size() != 1) korali::logError("Direct Evaluation problems require exactly 1 result. Provided: %lu.\n", resultVector.size());
 
  double evaluationSign = _objective == "Maximize" ? 1.0 : -1.0;
  double result = sample.getResult()[0];
 
  // If result is not a finite number, objective function evaluates to -Infinity
- if(std::isnan(result)) sample.setResult(-Korali::Inf);
+ if(std::isnan(result)) sample.setResult(-korali::Inf);
  else sample.setResult(evaluationSign * result);
 }

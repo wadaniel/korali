@@ -1,7 +1,7 @@
 {
  "Name":  "Hierarchical Bayesian (Theta New)",
  "Alias": "Hierarchical Bayesian (Theta New)",
- "C++ Class": "Korali::Problem::Evaluation::Bayesian::Hierarchical::ThetaNew",
+ "C++ Class": "korali::problem::Evaluation::Bayesian::Hierarchical::ThetaNew",
 
  "Configuration Settings":
  [

@@ -1,7 +1,7 @@
 {
  "Name": "Cauchy Distribution",
  "Alias": "Cauchy",
- "C++ Class": "Korali::Distribution::Univariate::Cauchy",
+ "C++ Class": "korali::Distribution::Univariate::Cauchy",
  
  "Conditional Variables": 
  [

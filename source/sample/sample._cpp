@@ -1,29 +1,29 @@
 #include "sample/sample.hpp"
 
-Korali::Sample* Korali::__current_sample;
+korali::Sample* korali::__current_sample;
 
-void Korali::Sample::threadCallWrapper()
+void korali::Sample::threadCallWrapper()
 {
  // This is not a thread-safe operation. For that to be the case, it would need
  // a mutex lock activated before setting __current_sample, and freed after reading it
 
- Korali::Sample* currentSample = Korali::__current_sample;
+ korali::Sample* currentSample = korali::__current_sample;
  currentSample->_isFinished = false;
  currentSample->_function(*currentSample);
  currentSample->_isFinished = true;
  currentSample->yield();
 }
 
-void Korali::Sample::start(std::function<void(Korali::Sample&)> func)
+void korali::Sample::start(std::function<void(korali::Sample&)> func)
 {
- _sampleThread = co_create(8192*sizeof(void*), Korali::Sample::threadCallWrapper);
+ _sampleThread = co_create(8192*sizeof(void*), korali::Sample::threadCallWrapper);
  _mainThread = co_active();
  _function = func;
  __current_sample = this;
  co_switch(_sampleThread);
 }
 
-void Korali::Sample::waitAll(std::vector<Korali::Sample>& samples)
+void korali::Sample::waitAll(std::vector<korali::Sample>& samples)
 {
  bool isFinished = false;
  while (isFinished == false)
@@ -36,18 +36,18 @@ void Korali::Sample::waitAll(std::vector<Korali::Sample>& samples)
  for (size_t i = 0; i < samples.size(); i++) free(samples[i]._sampleThread);
 }
 
-void Korali::Sample::yield()
+void korali::Sample::yield()
 {
  co_switch(_mainThread);
 }
 
-bool Korali::Sample::isFinished()
+bool korali::Sample::isFinished()
 {
  if (_self->_isFinished == false) co_switch(_sampleThread);
  return _self->_isFinished;
 }
 
-void Korali::Sample::wait()
+void korali::Sample::wait()
 {
  while(isFinished() == false);
  free(_self->_sampleThread);

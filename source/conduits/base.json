@@ -1,7 +1,7 @@
 {
  "Name": "Conduit (Base)",
  "Alias": "Conduit (Base)",
- "C++ Class": "Korali::Conduit::Base",
+ "C++ Class": "korali::conduit::Base",
  
  "Internal Settings": 
  [

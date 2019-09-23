@@ -14,10 +14,10 @@
 #include <sys/stat.h>
 #include <cstdio>
 
-void Korali::Engine::start(bool isDryRun)
+void korali::Engine::start(bool isDryRun)
 {
  // Setting Run ID
- _runID = Korali::getTimehash();
+ _runID = korali::getTimehash();
 
  // Setting Configuration
  setConfiguration(_js);
@@ -32,9 +32,9 @@ void Korali::Engine::start(bool isDryRun)
  if (isDryRun)
  {
   saveState("dry.json");
-  Korali::logInfo("Minimal",  "--------------------------------------------------------------------\n");
-  Korali::logInfo("Minimal",  "Dry Run Successful.\n");
-  Korali::logInfo("Minimal",  "--------------------------------------------------------------------\n");
+  korali::logInfo("Minimal",  "--------------------------------------------------------------------\n");
+  korali::logInfo("Minimal",  "Dry Run Successful.\n");
+  korali::logInfo("Minimal",  "--------------------------------------------------------------------\n");
   return;
  }
 
@@ -48,8 +48,8 @@ void Korali::Engine::start(bool isDryRun)
  {
   if (_currentGeneration % _consoleOutputFrequency == 0)
     {
-     Korali::logInfo("Minimal",  "--------------------------------------------------------------------\n");
-     Korali::logInfo("Minimal",  "Starting Generation: #%zu\n", _currentGeneration);
+     korali::logInfo("Minimal",  "--------------------------------------------------------------------\n");
+     korali::logInfo("Minimal",  "Starting Generation: #%zu\n", _currentGeneration);
      _solver->printGenerationBefore();
     }
 
@@ -62,7 +62,7 @@ void Korali::Engine::start(bool isDryRun)
   if (_currentGeneration % _consoleOutputFrequency == 0)
   {
    _solver->printGenerationAfter();
-   Korali::logInfo("Detailed", "Generation Time: %.3fs\n", std::chrono::duration<double>(t1-t0).count());
+   korali::logInfo("Detailed", "Generation Time: %.3fs\n", std::chrono::duration<double>(t1-t0).count());
   }
 
   if (_currentGeneration % _resultsOutputFrequency == 0) saveState(_currentGeneration);
@@ -78,25 +78,25 @@ void Korali::Engine::start(bool isDryRun)
 
  auto endTime = std::chrono::system_clock::now();
 
- Korali::logInfo("Minimal", "--------------------------------------------------------------------\n");
- Korali::logInfo("Minimal", "%s finished correctly.\n", _solver->getType().c_str(), _currentGeneration);
- for (size_t i = 0; i < _solver->_terminationCriteria.size(); i++) Korali::logInfo("Normal", "Termination Criterion Met: %s\n", _solver->_terminationCriteria[i].c_str());
- for (size_t i = 0; i < _problem->_terminationCriteria.size(); i++) Korali::logInfo("Normal", "Termination Criterion Met: %s\n", _problem->_terminationCriteria[i].c_str());
- for (size_t i = 0; i < _conduit->_terminationCriteria.size(); i++) Korali::logInfo("Normal", "Termination Criterion Met: %s\n", _conduit->_terminationCriteria[i].c_str());
+ korali::logInfo("Minimal", "--------------------------------------------------------------------\n");
+ korali::logInfo("Minimal", "%s finished correctly.\n", _solver->getType().c_str(), _currentGeneration);
+ for (size_t i = 0; i < _solver->_terminationCriteria.size(); i++) korali::logInfo("Normal", "Termination Criterion Met: %s\n", _solver->_terminationCriteria[i].c_str());
+ for (size_t i = 0; i < _problem->_terminationCriteria.size(); i++) korali::logInfo("Normal", "Termination Criterion Met: %s\n", _problem->_terminationCriteria[i].c_str());
+ for (size_t i = 0; i < _conduit->_terminationCriteria.size(); i++) korali::logInfo("Normal", "Termination Criterion Met: %s\n", _conduit->_terminationCriteria[i].c_str());
 
  _solver->finalize();
  _problem->finalize();
  _conduit->finalize();
 
- Korali::logInfo("Normal", "Total Generations: %lu\n", _currentGeneration);
- Korali::logInfo("Normal", "Total Computational Model Evaluations: %lu\n", _conduit->_modelEvaluationCount);
- Korali::logInfo("Normal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(endTime-startTime).count());
- Korali::logInfo("Normal", "Results saved to folder: '%s'\n", _resultsOutputPath.c_str());
+ korali::logInfo("Normal", "Total Generations: %lu\n", _currentGeneration);
+ korali::logInfo("Normal", "Total Computational Model Evaluations: %lu\n", _conduit->_modelEvaluationCount);
+ korali::logInfo("Normal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(endTime-startTime).count());
+ korali::logInfo("Normal", "Results saved to folder: '%s'\n", _resultsOutputPath.c_str());
 }
 
-void Korali::Engine::initialize()
+void korali::Engine::initialize()
 {
- Korali::setVerbosityLevel(_consoleOutputVerbosity);
+ korali::setVerbosityLevel(_consoleOutputVerbosity);
 
  // Creating Results directory
  mkdir(_resultsOutputPath.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
@@ -107,27 +107,27 @@ void Korali::Engine::initialize()
  _conduit->initialize();
 }
 
-Korali::Engine::Engine()
+korali::Engine::Engine()
 {
  _opt = &_js;
  _k = this;
 }
 
-Korali::Engine::Engine(nlohmann::json js) : Korali::Engine::Engine()
+korali::Engine::Engine(nlohmann::json js) : korali::Engine::Engine()
 {
  _js = js;
  setConfiguration(_js);
 }
 
-bool Korali::Engine::isExecutionFinished()
+bool korali::Engine::isExecutionFinished()
 {
   return _solver->checkTermination() || _conduit->checkTermination() || _problem->checkTermination();
 }
 
-void Korali::Engine::saveState(std::string fileName)
+void korali::Engine::saveState(std::string fileName)
 {
  // Updating run timestamp
- _timestamp = Korali::getTimestamp();
+ _timestamp = korali::getTimestamp();
 
  // Getting configuration
  _js = nlohmann::json();
@@ -136,10 +136,10 @@ void Korali::Engine::saveState(std::string fileName)
  // Only the root rank saves files
  if (!_conduit->isRoot()) return;
  fileName = "./" + _resultsOutputPath + "/" + fileName;
- Korali::JsonInterface::saveJsonToFile(fileName.c_str(), _js);
+ korali::JsonInterface::saveJsonToFile(fileName.c_str(), _js);
 }
 
-void Korali::Engine::saveState(int fileId)
+void korali::Engine::saveState(int fileId)
 {
  if (!_conduit->isRoot()) return;
 
@@ -150,20 +150,12 @@ void Korali::Engine::saveState(int fileId)
  saveState(fileName);
 }
 
-void Korali::Engine::loadState(std::string fileName)
+void korali::Engine::loadState(std::string fileName)
 {
- _js = Korali::JsonInterface::loadJsonFromFile(fileName.c_str());
+ _js = korali::JsonInterface::loadJsonFromFile(fileName.c_str());
 }
 
-void Korali::Engine::setItem(const std::string& key, const std::function<void(Korali::Sample&)> val)
-{
- size_t pos = _models.size();
- _models.push_back(val);
- (*_opt)[key] = pos;
- _opt = &_js;
-}
-
-void Korali::Engine::setItem(const int& key, const std::function<void(Korali::Sample&)> val)
+void korali::Engine::setItem(const std::string& key, const std::function<void(korali::Sample&)> val)
 {
  size_t pos = _models.size();
  _models.push_back(val);
@@ -171,7 +163,15 @@ void Korali::Engine::setItem(const int& key, const std::function<void(Korali::Sa
  _opt = &_js;
 }
 
-void Korali::Engine::operator=(const std::function<void(Korali::Sample&)> val)
+void korali::Engine::setItem(const int& key, const std::function<void(korali::Sample&)> val)
+{
+ size_t pos = _models.size();
+ _models.push_back(val);
+ (*_opt)[key] = pos;
+ _opt = &_js;
+}
+
+void korali::Engine::operator=(const std::function<void(korali::Sample&)> val)
 {
  size_t pos = _models.size();
  _models.push_back(val);
@@ -179,78 +179,78 @@ void Korali::Engine::operator=(const std::function<void(Korali::Sample&)> val)
  _opt = &_js;
 }
 
-double Korali::Engine::getValue()
+double korali::Engine::getValue()
 {
  double val = 0.0;
  if (_opt->is_number()) val = *_opt;
- else Korali::logError("[Korali] Error: Attempted getValue() on non-numeric field.\n");
+ else korali::logError("[Korali] Error: Attempted getValue() on non-numeric field.\n");
  _opt = &_js;
  return val;
 }
 
-bool Korali::Engine::getBoolean()
+bool korali::Engine::getBoolean()
 {
  bool tf = false;
  if (_opt->is_boolean()) tf = *_opt;
- else Korali::logError("[Korali] Error: Attempted getBoolean() on non-boolean field.\n");
+ else korali::logError("[Korali] Error: Attempted getBoolean() on non-boolean field.\n");
  _opt = &_js;
  return tf;
 }
 
-std::string Korali::Engine::getString()
+std::string korali::Engine::getString()
 {
  std::string str;
  if (_opt->is_string()) str = *_opt;
- else Korali::logError("[Korali] Error: Attempted getString() on non-string field.\n");
+ else korali::logError("[Korali] Error: Attempted getString() on non-string field.\n");
  _opt = &_js;
  return str;
 }
 
-std::vector<double> Korali::Engine::getArray()
+std::vector<double> korali::Engine::getArray()
 {
  std::vector<double> vec;
  if (_opt->is_array() && (*_opt)[0].is_number()) vec = _opt->get<std::vector<double>>();
- else Korali::logError("[Korali] Error: Attempted getArray() on non-array field or non-numeric array.\n");
+ else korali::logError("[Korali] Error: Attempted getArray() on non-array field or non-numeric array.\n");
  _opt = &_js;
  return vec;
 }
 
 #ifdef _KORALI_USE_MPI
-long int Korali::Engine::getMPICommPointer() { return (long int)(&__KoraliTeamComm); }
+long int korali::Engine::getMPICommPointer() { return (long int)(&__KoraliTeamComm); }
 #endif
 
 PYBIND11_MODULE(libkorali, m)
 {
-  pybind11::class_<Korali::Sample>(m, "Sample")
-    .def("__getitem__",     &Korali::Sample::operator[], pybind11::return_value_policy::reference)
-    .def("getSampleId",  &Korali::Sample::getSampleId, pybind11::return_value_policy::reference)
-    .def("getSampleData",  &Korali::Sample::getSampleData, pybind11::return_value_policy::reference)
-    .def("setResult", pybind11::overload_cast<const double&>(&Korali::Sample::setResult), pybind11::return_value_policy::reference)
-    .def("setResult", pybind11::overload_cast<const std::vector<double>&>(&Korali::Sample::setResult), pybind11::return_value_policy::reference);
+  pybind11::class_<korali::Sample>(m, "Sample")
+    .def("__getitem__",     &korali::Sample::operator[], pybind11::return_value_policy::reference)
+    .def("getSampleId",  &korali::Sample::getSampleId, pybind11::return_value_policy::reference)
+    .def("getSampleData",  &korali::Sample::getSampleData, pybind11::return_value_policy::reference)
+    .def("setResult", pybind11::overload_cast<const double&>(&korali::Sample::setResult), pybind11::return_value_policy::reference)
+    .def("setResult", pybind11::overload_cast<const std::vector<double>&>(&korali::Sample::setResult), pybind11::return_value_policy::reference);
 
- pybind11::class_<Korali::Engine>(m, "Engine")
+ pybind11::class_<korali::Engine>(m, "Engine")
    .def(pybind11::init<>())
-   .def("getValue", &Korali::Engine::getValue)
-   .def("getBoolean", &Korali::Engine::getBoolean)
-   .def("getString", &Korali::Engine::getString)
-   .def("getArray", &Korali::Engine::getArray)
+   .def("getValue", &korali::Engine::getValue)
+   .def("getBoolean", &korali::Engine::getBoolean)
+   .def("getString", &korali::Engine::getString)
+   .def("getArray", &korali::Engine::getArray)
     #ifdef _KORALI_USE_MPI
-   .def("getMPIComm", &Korali::Engine::getMPICommPointer)
+   .def("getMPIComm", &korali::Engine::getMPICommPointer)
     #endif
-   .def("__getitem__", pybind11::overload_cast<const std::string&>(&Korali::Engine::getItem), pybind11::return_value_policy::reference)
-   .def("__getitem__", pybind11::overload_cast<const unsigned long int&>(&Korali::Engine::getItem), pybind11::return_value_policy::reference)
-   .def("__setitem__", pybind11::overload_cast<const std::string&, const std::function<void(Korali::Sample&)>>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
-   .def("__setitem__", pybind11::overload_cast<const std::string&, const std::string&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
-   .def("__setitem__", pybind11::overload_cast<const std::string&, const double&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
-   .def("__setitem__", pybind11::overload_cast<const std::string&, const int&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
-   .def("__setitem__", pybind11::overload_cast<const std::string&, const std::vector<double>&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
-   .def("__setitem__", pybind11::overload_cast<const int&, const std::function<void(Korali::Sample&)>>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
-   .def("__setitem__", pybind11::overload_cast<const int&, const std::string&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
-   .def("__setitem__", pybind11::overload_cast<const int&, const double&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
-   .def("__setitem__", pybind11::overload_cast<const int&, const int&>(&Korali::Engine::setItem), pybind11::return_value_policy::reference)
-   .def("run", &Korali::Engine::run)
-   .def("dry", &Korali::Engine::dry)
-   .def("loadState",     &Korali::Engine::loadState, pybind11::return_value_policy::reference);
+   .def("__getitem__", pybind11::overload_cast<const std::string&>(&korali::Engine::getItem), pybind11::return_value_policy::reference)
+   .def("__getitem__", pybind11::overload_cast<const unsigned long int&>(&korali::Engine::getItem), pybind11::return_value_policy::reference)
+   .def("__setitem__", pybind11::overload_cast<const std::string&, const std::function<void(korali::Sample&)>>(&korali::Engine::setItem), pybind11::return_value_policy::reference)
+   .def("__setitem__", pybind11::overload_cast<const std::string&, const std::string&>(&korali::Engine::setItem), pybind11::return_value_policy::reference)
+   .def("__setitem__", pybind11::overload_cast<const std::string&, const double&>(&korali::Engine::setItem), pybind11::return_value_policy::reference)
+   .def("__setitem__", pybind11::overload_cast<const std::string&, const int&>(&korali::Engine::setItem), pybind11::return_value_policy::reference)
+   .def("__setitem__", pybind11::overload_cast<const std::string&, const std::vector<double>&>(&korali::Engine::setItem), pybind11::return_value_policy::reference)
+   .def("__setitem__", pybind11::overload_cast<const int&, const std::function<void(korali::Sample&)>>(&korali::Engine::setItem), pybind11::return_value_policy::reference)
+   .def("__setitem__", pybind11::overload_cast<const int&, const std::string&>(&korali::Engine::setItem), pybind11::return_value_policy::reference)
+   .def("__setitem__", pybind11::overload_cast<const int&, const double&>(&korali::Engine::setItem), pybind11::return_value_policy::reference)
+   .def("__setitem__", pybind11::overload_cast<const int&, const int&>(&korali::Engine::setItem), pybind11::return_value_policy::reference)
+   .def("run", &korali::Engine::run)
+   .def("dry", &korali::Engine::dry)
+   .def("loadState",     &korali::Engine::loadState, pybind11::return_value_policy::reference);
 }
 
 

@@ -1,7 +1,7 @@
 {
  "Name": "Sample",
  "Alias": "Sample",
- "C++ Class": "Korali::Sample",
+ "C++ Class": "korali::Sample",
 
  "Internal Settings": 
  [

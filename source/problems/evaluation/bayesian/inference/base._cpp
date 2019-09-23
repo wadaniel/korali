@@ -1,8 +1,8 @@
 #include "problems/evaluation/bayesian/inference/base.hpp"
 
-void Korali::Problem::Evaluation::Bayesian::Inference::Base::initialize()
+void korali::problem::Evaluation::Bayesian::Inference::Base::initialize()
 {
- Korali::Problem::Evaluation::Bayesian::Base::initialize();
+ korali::problem::Evaluation::Bayesian::Base::initialize();
 
  _computationalVariableIndices.clear();
  _statisticalVariableIndices.clear();
@@ -13,7 +13,7 @@ void Korali::Problem::Evaluation::Bayesian::Inference::Base::initialize()
   bool recognizedType = false;
   if (typeString == "Computational") { _computationalVariableIndices.push_back(i); recognizedType = true; }
   if (typeString == "Statistical")   { _statisticalVariableIndices.push_back(i);   recognizedType = true; }
-  if (recognizedType == false) Korali::logError("Incorrect Bayesian variable type selected: %s.\n", typeString.c_str());
+  if (recognizedType == false) korali::logError("Incorrect Bayesian variable type selected: %s.\n", typeString.c_str());
  }
 
 }

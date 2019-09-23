@@ -7,14 +7,14 @@
 #include "problems/evaluation/base.hpp"
 #include <vector>
 
-namespace Korali { namespace Solver {
+namespace korali { namespace solver {
 
-class DEA : public Korali::Solver::Base
+class DEA : public korali::solver::Base
 {
  private:
 
- Korali::Distribution::Univariate::Normal* _normalGenerator; /* Normal random number generator */
- Korali::Distribution::Univariate::Uniform* _uniformGenerator; /* Uniform random number generator */
+ korali::Distribution::Univariate::Normal* _normalGenerator; /* Normal random number generator */
+ korali::Distribution::Univariate::Uniform* _uniformGenerator; /* Uniform random number generator */
 
  void mutateSingle(size_t sampleIdx); /* sample individual */
  void fixInfeasible(size_t sampleIdx); /* force sample inside lower & upper bounds */
@@ -22,7 +22,7 @@ class DEA : public Korali::Solver::Base
  void initSamples();
  void prepareGeneration();
 
- Korali::Problem::Evaluation::Base* _problem;
+ korali::problem::Evaluation::Base* _problem;
 
  public:
 
@@ -33,6 +33,6 @@ class DEA : public Korali::Solver::Base
  void printGenerationAfter() override;
 };
 
-} } // namespace Korali::Solver
+} } // namespace korali::Solver
 
 #endif // _KORALI_SOLVERS_DEA_HPP_

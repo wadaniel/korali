@@ -5,7 +5,7 @@
 #include "auxiliars/logger.hpp"
 #include "auxiliars/math.hpp"
 
-namespace Korali {
+namespace korali {
 
 class Engine;
 
@@ -15,7 +15,7 @@ class Module
 
   std::string _type;
   std::vector<std::string> _terminationCriteria;
-  Korali::Engine* _k;
+  korali::Engine* _k;
 
   Module* getModule(nlohmann::json& js);
 
@@ -28,7 +28,7 @@ class Module
   virtual void setConfiguration(nlohmann::json& js) {};
 };
 
-} // namespace Korali
+} // namespace korali
 
 #endif // _KORALI_MODULE_HPP_
 

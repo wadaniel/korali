@@ -9,9 +9,9 @@
 #include "problems/evaluation/bayesian/base.hpp"
 #include <gsl/gsl_vector.h>
 
-namespace Korali { namespace Solver {
+namespace korali { namespace solver {
 
-class TMCMC : public Korali::Solver::Base
+class TMCMC : public korali::solver::Base
 {
  private:
 
@@ -24,12 +24,12 @@ class TMCMC : public Korali::Solver::Base
  static double tmcmc_objlogp(double x, const double *fj, size_t fn, double pj, double zero);
  static double objLog(const gsl_vector *v, void *param);
 
- Korali::Distribution::Specific::Multinomial* _multinomialGenerator; /* Multivariate Normal random number generator */
- Korali::Distribution::Multivariate::Normal* _multivariateGenerator; /* Multivariate Normal random number generator */
- Korali::Distribution::Univariate::Uniform* _uniformGenerator; /* Uniform random number generator */
+ korali::Distribution::Specific::Multinomial* _multinomialGenerator; /* Multivariate Normal random number generator */
+ korali::Distribution::Multivariate::Normal* _multivariateGenerator; /* Multivariate Normal random number generator */
+ korali::Distribution::Univariate::Uniform* _uniformGenerator; /* Uniform random number generator */
 
  size_t N; // Number of variables
- Korali::Problem::Evaluation::Bayesian::Base* _bayesianProblem;
+ korali::problem::Evaluation::Bayesian::Base* _bayesianProblem;
 
  public:
 
@@ -40,6 +40,6 @@ class TMCMC : public Korali::Solver::Base
  void printGenerationAfter() override;
 };
 
-} } // namespace Korali::Solver
+} } // namespace korali::Solver
 
 #endif // _KORALI_SOLVER_TMCMC_HPP_

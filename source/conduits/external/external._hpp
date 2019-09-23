@@ -9,9 +9,9 @@
 #include <vector>
 #include <map>
 
-namespace Korali { namespace Conduit {
+namespace korali { namespace conduit {
 
-class External : public Korali::Conduit::Base {
+class External : public korali::conduit::Base {
 
  private:
 
@@ -24,11 +24,11 @@ class External : public Korali::Conduit::Base {
  std::map<int, pid_t> _launcherIdToProcessIdMap;
  std::map<pid_t, int> _processIdMapToLauncherIdMap;
 
- void runModel(size_t modelId, Korali::Sample& sample) override;
+ void runModel(size_t modelId, korali::Sample& sample) override;
  void initialize() override;
  void finalize() override;
 
 };
-} } // namespace Korali::Conduit
+} } // namespace korali::Conduit
 
 #endif // _KORALI_CONDUIT_EXTERNAL_HPP_

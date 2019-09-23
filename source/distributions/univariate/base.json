@@ -1,5 +1,5 @@
 {
  "Name": "Univariate Distribution (Base)",
  "Alias": "Univariate Distribution (Base)",
- "C++ Class": "Korali::Distribution::Univariate::Base"
+ "C++ Class": "korali::Distribution::Univariate::Base"
 }

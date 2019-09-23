@@ -8,9 +8,9 @@
 #include <gsl/gsl_sf.h>
 #include "module.hpp"
 
-namespace Korali { namespace Distribution {
+namespace korali { namespace Distribution {
 
-class Base : public Korali::Module
+class Base : public korali::Module
 {
  protected:
 
@@ -28,6 +28,6 @@ class Base : public Korali::Module
 
 };
 
-} } // namespace Korali::Distribution
+} } // namespace korali::Distribution
 
 #endif // _KORALI_DISTRIBUTION_BASE_HPP_

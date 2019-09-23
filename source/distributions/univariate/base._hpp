@@ -3,9 +3,9 @@
 
 #include "distributions/base.hpp"
 
-namespace Korali { namespace Distribution { namespace Univariate {
+namespace korali { namespace Distribution { namespace Univariate {
 
-class Base : public Korali::Distribution::Base
+class Base : public korali::Distribution::Base
 {
  public:
 
@@ -15,6 +15,6 @@ class Base : public Korali::Distribution::Base
 
 };
 
-} } } // namespace Korali::Distribution::Univariate
+} } } // namespace korali::Distribution::Univariate
 
 #endif // _KORALI_DISTRIBUTION_BASE_HPP_

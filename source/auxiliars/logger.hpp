@@ -3,7 +3,7 @@
 
 #include <string>
 
-namespace Korali
+namespace korali
 {
 
 extern size_t __verbosityLevel;

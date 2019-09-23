@@ -4,20 +4,20 @@
 #include "problems/base.hpp"
 #include "sample/sample.hpp"
 
-namespace Korali { namespace Problem { namespace Evaluation {
+namespace korali { namespace problem { namespace Evaluation {
 
-class Base : public Korali::Problem::Base
+class Base : public korali::problem::Base
 {
  private:
 
  public:
 
-  virtual bool isSampleFeasible(Korali::Sample&) = 0;
-  virtual void evaluateSample(Korali::Sample&) = 0;
+  virtual bool isSampleFeasible(korali::Sample&) = 0;
+  virtual void evaluateSample(korali::Sample&) = 0;
 
 };
 
-} } } // namespace Korali::Problem::Evaluation
+} } } // namespace korali::problem::Evaluation
 
 
 #endif // _KORALI_PROBLEM_EVALUATION_HPP_

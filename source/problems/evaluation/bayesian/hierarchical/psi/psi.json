@@ -1,7 +1,7 @@
 {
  "Name":  "Hierarchical Bayesian (Psi)",
  "Alias": "Hierarchical Bayesian (Psi)",
- "C++ Class": "Korali::Problem::Evaluation::Bayesian::Hierarchical::Psi",
+ "C++ Class": "korali::problem::Evaluation::Bayesian::Hierarchical::Psi",
 
  "Configuration Settings":
  [
@@ -12,7 +12,7 @@
    },
    {
     "Name": [ "Conditional Priors" ],
-    "Type": "std::vector<Korali::Distribution::Univariate::Base*>",
+    "Type": "std::vector<korali::Distribution::Univariate::Base*>",
     "Description": "Eh..."
    }
  ]

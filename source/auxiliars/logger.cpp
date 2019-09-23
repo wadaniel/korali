@@ -3,14 +3,14 @@
 #include <stdarg.h>
 #include "logger.hpp"
 
-size_t Korali::__verbosityLevel;
+size_t korali::__verbosityLevel;
 
-void Korali::setVerbosityLevel(const  std::string verbosityLevel)
+void korali::setVerbosityLevel(const  std::string verbosityLevel)
 {
  __verbosityLevel = getVerbosityLevel(verbosityLevel);
 }
 
-size_t Korali::getVerbosityLevel(const  std::string verbosityLevel)
+size_t korali::getVerbosityLevel(const  std::string verbosityLevel)
 {
  if (verbosityLevel == "Silent") return 0;
  if (verbosityLevel == "Minimal") return 1;
@@ -19,7 +19,7 @@ size_t Korali::getVerbosityLevel(const  std::string verbosityLevel)
  return 0;
 }
 
-bool Korali::isEnoughVerbosity(const std::string verbosityLevel)
+bool korali::isEnoughVerbosity(const std::string verbosityLevel)
 {
   size_t messageLevel = getVerbosityLevel(verbosityLevel);
 
@@ -27,7 +27,7 @@ bool Korali::isEnoughVerbosity(const std::string verbosityLevel)
   return false;
 }
 
-void Korali::logData(const std::string verbosityLevel, const char* format, ... )
+void korali::logData(const std::string verbosityLevel, const char* format, ... )
 {
  if (isEnoughVerbosity(verbosityLevel) == false) return;
 
@@ -42,7 +42,7 @@ void Korali::logData(const std::string verbosityLevel, const char* format, ... )
 
 }
 
-void Korali::logInfo(const std::string verbosityLevel, const char* format, ... )
+void korali::logInfo(const std::string verbosityLevel, const char* format, ... )
 {
  if (isEnoughVerbosity(verbosityLevel) == false) return;
 
@@ -59,7 +59,7 @@ void Korali::logInfo(const std::string verbosityLevel, const char* format, ... )
  free(outstr);
 }
 
-void Korali::logWarning(const std::string verbosityLevel, const char* format, ... )
+void korali::logWarning(const std::string verbosityLevel, const char* format, ... )
 {
  if (isEnoughVerbosity(verbosityLevel) == false) return;
 
@@ -76,7 +76,7 @@ void Korali::logWarning(const std::string verbosityLevel, const char* format, ..
  free(outstr);
 }
 
-void Korali::logError(const char* format, ... )
+void korali::logError(const char* format, ... )
 {
  std::string newFormat = "[Korali] Error: ";
  newFormat += format;

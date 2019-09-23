@@ -1,7 +1,7 @@
 {
  "Name": "Korali Engine",
  "Alias": "Engine",
- "C++ Class": "Korali::Engine",
+ "C++ Class": "korali::Engine",
 
  "Configuration Settings": 
  [
@@ -25,22 +25,22 @@
    },
    {
     "Name": [ "Variables" ],
-    "Type": "std::vector<Korali::Variable*>",
+    "Type": "std::vector<korali::Variable*>",
     "Description": "Sample coordinate information."
    },
    {
     "Name": [ "Problem" ],
-    "Type": "Korali::Problem::Base*",
+    "Type": "korali::problem::Base*",
     "Description": "Represents the configuration of the problem to solve."
    },
    {
     "Name": [ "Solver" ],
-    "Type": "Korali::Solver::Base*",
+    "Type": "korali::solver::Base*",
     "Description": "Represents the state and configuration of the solver algorithm."
    },
    {
     "Name": [ "Conduit" ],
-    "Type": "Korali::Conduit::Base*",
+    "Type": "korali::conduit::Base*",
     "Default": "Simple",
     "Description": "Represents the configuration of the execution conduit."
    },

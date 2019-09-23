@@ -2,18 +2,18 @@
 #include "conduits/base.hpp"
 #include "engine/engine.hpp"
 
-void Korali::Problem::Evaluation::Bayesian::Inference::Custom::initialize()
+void korali::problem::Evaluation::Bayesian::Inference::Custom::initialize()
 {
-  Korali::Problem::Evaluation::Bayesian::Inference::Base::initialize();
+  korali::problem::Evaluation::Bayesian::Inference::Base::initialize();
 
-  if (_k->_variables.size() == 0) Korali::logError("Bayesian inference problems require at least one variable.\n");
-  if (_statisticalVariableIndices.size() != 0) Korali::logError("Bayesian (Custom) problems do not accept statistical variables.\n");
+  if (_k->_variables.size() == 0) korali::logError("Bayesian inference problems require at least one variable.\n");
+  if (_statisticalVariableIndices.size() != 0) korali::logError("Bayesian (Custom) problems do not accept statistical variables.\n");
 }
 
-void Korali::Problem::Evaluation::Bayesian::Inference::Custom::evaluateLogLikelihood(Korali::Sample& sample)
+void korali::problem::Evaluation::Bayesian::Inference::Custom::evaluateLogLikelihood(korali::Sample& sample)
 {
  _k->_conduit->runModel(_likelihoodModel, sample);
  std::vector<double> result = sample.getResult();
- if (result.size() != 1) Korali::logError("The specified likelihood model did not return a single result. Received: %lu results.\n", result.size());
+ if (result.size() != 1) korali::logError("The specified likelihood model did not return a single result. Received: %lu results.\n", result.size());
 }
 

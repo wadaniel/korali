@@ -1,12 +1,12 @@
 #include "solvers/propagator/propagator.hpp"
 
-void Korali::Solver::Propagator::initialize()
+void korali::solver::Propagator::initialize()
 {
  // Initializing variable defaults
- _propagationProblem = dynamic_cast<Korali::Problem::Propagation*>(_k->_problem);
+ _propagationProblem = dynamic_cast<korali::problem::Propagation*>(_k->_problem);
 
  if (_propagationProblem == NULL)
-   Korali::logError("Propagator solver can only solve problems of type 'Propagation'.\n");
+   korali::logError("Propagator solver can only solve problems of type 'Propagation'.\n");
 
  _thetaCount = _k->_variables.size();
  _sampleCount = _k->_variables[0]->_loadedValues.size();
@@ -17,35 +17,35 @@ void Korali::Solver::Propagator::initialize()
  _currentSample = 0;
 }
 
-void Korali::Solver::Propagator::runGeneration()
+void korali::solver::Propagator::runGeneration()
 {
   if (_currentSample + _propagationsPerGeneration > _maxPropagations) _propagationsPerGeneration = _maxPropagations - _currentSample;
 
-  std::vector<Korali::Sample> samples(_propagationsPerGeneration);
+  std::vector<korali::Sample> samples(_propagationsPerGeneration);
 
   for (size_t i = 0; i < _propagationsPerGeneration; i++)
   {
     std::vector<double> sampleData;
     for (size_t j = 0; j < _thetaCount; j++) sampleData.push_back(_k->_variables[j]->_loadedValues[_currentSample]);
 
-    Korali::logInfo("Detailed", "Running sample %zu with values:\n         ", _currentSample);
-    for(auto& x : sampleData) Korali::logData("Detailed", " %le   ", x);
-    Korali::logData("Detailed", "\n");
+    korali::logInfo("Detailed", "Running sample %zu with values:\n         ", _currentSample);
+    for(auto& x : sampleData) korali::logData("Detailed", " %le   ", x);
+    korali::logData("Detailed", "\n");
 
     samples[i] = sampleData;
     samples[i].setSampleId(_currentSample);
-    samples[i].start([problem = _propagationProblem](Korali::Sample& sample){ problem->propagateSample(sample); });
+    samples[i].start([problem = _propagationProblem](korali::Sample& sample){ problem->propagateSample(sample); });
     _currentSample++;
   }
 
-  Korali::Sample::waitAll(samples);
+  korali::Sample::waitAll(samples);
 }
 
-void Korali::Solver::Propagator::printGenerationBefore()
+void korali::solver::Propagator::printGenerationBefore()
 {
 }
 
-void Korali::Solver::Propagator::printGenerationAfter()
+void korali::solver::Propagator::printGenerationAfter()
 {
- Korali::logInfo("Minimal", "Total Propagations %lu.\n", _propagationProblem->_propagationCount);
+ korali::logInfo("Minimal", "Total Propagations %lu.\n", _propagationProblem->_propagationCount);
 }

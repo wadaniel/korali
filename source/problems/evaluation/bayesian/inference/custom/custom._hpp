@@ -3,19 +3,19 @@
 
 #include "problems/evaluation/bayesian/inference/base.hpp"
 
-namespace Korali { namespace Problem { namespace Evaluation { namespace Bayesian { namespace Inference {
+namespace korali { namespace problem { namespace Evaluation { namespace Bayesian { namespace Inference {
 
-class Custom : public Korali::Problem::Evaluation::Bayesian::Inference::Base
+class Custom : public korali::problem::Evaluation::Bayesian::Inference::Base
 {
  private:
 
  public:
 
- void evaluateLogLikelihood(Korali::Sample& sample) override;
+ void evaluateLogLikelihood(korali::Sample& sample) override;
  void initialize() override;
 };
 
-} } } } } // namespace Korali::Problem::Evaluation::Bayesian::Inference
+} } } } } // namespace korali::problem::Evaluation::Bayesian::Inference
 
 
 #endif // _KORALI_PROBLEM_BAYESIAN_CUSTOM_HPP_

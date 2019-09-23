@@ -14,9 +14,9 @@
 #include <vector>
 #include <map>
 
-namespace Korali { namespace Conduit {
+namespace korali { namespace conduit {
 
-class MPI : public Korali::Conduit::Base
+class MPI : public korali::conduit::Base
 {
 
  private:
@@ -44,13 +44,13 @@ class MPI : public Korali::Conduit::Base
  void initialize() override;
  void finalize() override;
 
- void runModel(size_t modelId, Korali::Sample& sample) override;
+ void runModel(size_t modelId, korali::Sample& sample) override;
 // void checkProgress() override;
  int getRootRank();
  bool isRoot() override;
  void abort() override;
 };
 
-} } // namespace Korali::Conduit
+} } // namespace korali::Conduit
 
 #endif // _KORALI_CONDUIT_MPI_HPP_

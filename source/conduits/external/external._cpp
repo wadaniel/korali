@@ -5,18 +5,18 @@
 #include <sys/wait.h>
 #include <sys/types.h>
 
-void Korali::Conduit::External::initialize()
+void korali::conduit::External::initialize()
 {
- if (_concurrentJobs < 1) Korali::logError("You need to define at least 1 concurrent job(s) for external models \n");
+ if (_concurrentJobs < 1) korali::logError("You need to define at least 1 concurrent job(s) for external models \n");
  for (int i = 0; i < _concurrentJobs; i++) _pipeDescriptors.push_back(std::vector<int>(2));
  for (int i = 0; i < _concurrentJobs; i++) _launcherQueue.push(i);
 
  // Opening Inter-process communicator pipes
  for (int i = 0; i < _concurrentJobs; i++)
-  if (pipe(_pipeDescriptors[i].data()) == -1) Korali::logError("Unable to create inter-process pipe. \n");
+  if (pipe(_pipeDescriptors[i].data()) == -1) korali::logError("Unable to create inter-process pipe. \n");
 }
 
-void Korali::Conduit::External::finalize()
+void korali::conduit::External::finalize()
 {
  for (int i = 0; i < _concurrentJobs; i++)
  {
@@ -25,7 +25,7 @@ void Korali::Conduit::External::finalize()
  }
 }
 
-void Korali::Conduit::External::runModel(size_t modelId, Korali::Sample& sample)
+void korali::conduit::External::runModel(size_t modelId, korali::Sample& sample)
 {
  while (_launcherQueue.empty()) sample.yield();
 

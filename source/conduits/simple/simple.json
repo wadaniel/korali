@@ -1,7 +1,7 @@
 {
  "Name": "Simple Conduit",
  "Alias": "Simple",
- "C++ Class": "Korali::Conduit::Simple",
+ "C++ Class": "korali::conduit::Simple",
  
  "Configuration Settings": 
  [

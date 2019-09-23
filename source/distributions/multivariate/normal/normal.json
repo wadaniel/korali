@@ -1,7 +1,7 @@
 {
  "Name": "Multivariate Normal Distribution",
  "Alias": "Multivariate Normal",
- "C++ Class": "Korali::Distribution::Multivariate::Normal",
+ "C++ Class": "korali::Distribution::Multivariate::Normal",
  
  "Configuration Settings": 
  [

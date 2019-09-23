@@ -3,9 +3,9 @@
 
 #include "problems/evaluation/bayesian/base.hpp"
 
-namespace Korali { namespace Problem { namespace Evaluation { namespace Bayesian { namespace Hierarchical {
+namespace korali { namespace problem { namespace Evaluation { namespace Bayesian { namespace Hierarchical {
 
-class Base : public Korali::Problem::Evaluation::Bayesian::Base
+class Base : public korali::problem::Evaluation::Bayesian::Base
 {
  private:
 
@@ -15,7 +15,7 @@ class Base : public Korali::Problem::Evaluation::Bayesian::Base
 
 };
 
-} } } } } // namespace Korali::Problem::Evaluation::Bayesian::Hierarchical
+} } } } } // namespace korali::problem::Evaluation::Bayesian::Hierarchical
 
 
 #endif // _KORALI_PROBLEM_HIERARCHICAL_HPP_

@@ -1,22 +1,22 @@
 #include "problems/propagation/propagation.hpp"
 #include "conduits/base.hpp"
 
-void Korali::Problem::Propagation::initialize()
+void korali::problem::Propagation::initialize()
 {
-  if (_k->_variables.size() == 0) Korali::logError("Propagation problems require at least one variable.\n");
+  if (_k->_variables.size() == 0) korali::logError("Propagation problems require at least one variable.\n");
 
   // Validate the _loadedValues dimensions
   size_t Ns = _k->_variables[0]->_loadedValues.size();
   for (size_t i = 1; i < _k->_variables.size(); i++){
-    if (_k->_variables[i]->_loadedValues.size() != Ns)  Korali::logError("All 'Loaded Values' must have the same length ");
+    if (_k->_variables[i]->_loadedValues.size() != Ns)  korali::logError("All 'Loaded Values' must have the same length ");
   }
 }
 
-void Korali::Problem::Propagation::propagateSample(Korali::Sample& sample)
+void korali::problem::Propagation::propagateSample(korali::Sample& sample)
 {
  _k->_conduit->runModel(_propagationModel, sample);
  _propagationCount++;
  std::vector<double> result = sample.getResult();
- if (result.size() != 0) Korali::logError("Propagation model should return no result. Provided: %lu.\n", result.size());
+ if (result.size() != 0) korali::logError("Propagation model should return no result. Provided: %lu.\n", result.size());
 }
 

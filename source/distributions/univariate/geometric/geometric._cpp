@@ -1,21 +1,21 @@
 #include "distributions/univariate/geometric/geometric.hpp"
 
-double Korali::Distribution::Univariate::Geometric::getDensity(double x)
+double korali::Distribution::Univariate::Geometric::getDensity(double x)
 {
  return gsl_ran_geometric_pdf((int)x, _successProbability);
 }
 
-double Korali::Distribution::Univariate::Geometric::getLogDensity(double x)
+double korali::Distribution::Univariate::Geometric::getLogDensity(double x)
 {
  return log(_successProbability) + (x-1)*log(1.0-_successProbability);
 }
 
-double Korali::Distribution::Univariate::Geometric::getRandomNumber()
+double korali::Distribution::Univariate::Geometric::getRandomNumber()
 {
  return gsl_ran_geometric(_range, _successProbability);
 }
 
-void Korali::Distribution::Univariate::Geometric::updateDistribution()
+void korali::Distribution::Univariate::Geometric::updateDistribution()
 {
  _aux = 0.0;
 }

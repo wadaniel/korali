@@ -3,17 +3,17 @@
 
 #include "problems/base.hpp"
 
-namespace Korali { namespace Problem {
+namespace korali { namespace problem {
 
-class Propagation : public Korali::Problem::Base
+class Propagation : public korali::problem::Base
 {
  public:
 
    void initialize() override;
-   void propagateSample(Korali::Sample& sample);
+   void propagateSample(korali::Sample& sample);
 };
 
-} } // namespace Korali::Problem
+} } // namespace korali::Problem
 
 
 #endif // _KORALI_PROBLEM_PROPAGATION_HPP_

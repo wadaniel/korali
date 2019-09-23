@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-namespace Korali
+namespace korali
 {
 
 const double NaN    = std::numeric_limits<double>::quiet_NaN();

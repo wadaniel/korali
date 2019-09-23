@@ -4,9 +4,9 @@
 #include "distributions/multivariate/base.hpp"
 #include <auxiliars/json.hpp>
 
-namespace Korali { namespace Distribution { namespace Multivariate {
+namespace korali { namespace Distribution { namespace Multivariate {
 
-class Normal : public Korali::Distribution::Multivariate::Base {
+class Normal : public korali::Distribution::Multivariate::Base {
 
  private:
 
@@ -23,6 +23,6 @@ class Normal : public Korali::Distribution::Multivariate::Base {
  void getRandomVector(double *x, size_t n) override;
 };
 
-} } } // namespace Korali::Distribution::Multivariate
+} } } // namespace korali::Distribution::Multivariate
 
 #endif // _KORALI_DISTRIBUTION_MULTIVARIATE_NORMAL_HPP_

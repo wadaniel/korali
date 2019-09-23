@@ -5,17 +5,17 @@
 #include "auxiliars/json.hpp"
 #include <vector>
 
-namespace Korali { namespace Conduit {
+namespace korali { namespace conduit {
 
-class Simple : public Korali::Conduit::Base
+class Simple : public korali::conduit::Base
 {
  private:
 
  public:
 
- void runModel(size_t modelId, Korali::Sample& sample) override;
+ void runModel(size_t modelId, korali::Sample& sample) override;
 };
 
-} } // namespace Korali::Conduit
+} } // namespace korali::Conduit
 
 #endif // _KORALI_CONDUIT_SIMPLE_HPP_

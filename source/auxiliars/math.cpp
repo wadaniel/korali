@@ -7,13 +7,13 @@
 // using the log-sum-exp trick:
 // https://en.wikipedia.org/wiki/LogSumExp#log-sum-exp_trick_for_log-domain_calculations
 // Input: vector of log(x_i)
-double Korali::logSumExp(const std::vector<double>& logValues )
+double korali::logSumExp(const std::vector<double>& logValues )
 {
   double maxLogValues = *std::max_element(std::begin(logValues), std::end(logValues));
 
   if( std::isinf(maxLogValues)==true ){
-    if( maxLogValues<0 )  return -Korali::Inf;
-    else                  return  Korali::Inf;
+    if( maxLogValues<0 )  return -korali::Inf;
+    else                  return  korali::Inf;
   }
 
   double sumExpValues = 0.0;
@@ -23,7 +23,7 @@ double Korali::logSumExp(const std::vector<double>& logValues )
 }
 
 
-std::string Korali::getTimestamp()
+std::string korali::getTimestamp()
 {
  time_t rawtime;
  time (&rawtime);
@@ -31,7 +31,7 @@ std::string Korali::getTimestamp()
  return curTime.substr(0, curTime.size()-1);
 }
 
-size_t Korali::getTimehash()
+size_t korali::getTimehash()
 {
  return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }

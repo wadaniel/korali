@@ -3,7 +3,7 @@
 #include "problems/base.hpp"
 #include "solvers/base.hpp"
 
-void Korali::Conduit::Simple::runModel(size_t modelId, Korali::Sample& sample)
+void korali::conduit::Simple::runModel(size_t modelId, korali::Sample& sample)
 {
  sample._result.clear();
  sample._k = _k;

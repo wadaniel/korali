@@ -3,9 +3,9 @@
 
 #include "problems/evaluation/base.hpp"
 
-namespace Korali { namespace Problem { namespace Evaluation { namespace Bayesian {
+namespace korali { namespace problem { namespace Evaluation { namespace Bayesian {
 
-class Base : public Korali::Problem::Evaluation::Base
+class Base : public korali::problem::Evaluation::Base
 {
  private:
 
@@ -13,14 +13,14 @@ class Base : public Korali::Problem::Evaluation::Base
 
  void initialize() override;
 
- bool isSampleFeasible(Korali::Sample& sample) override;
- virtual void evaluateSample(Korali::Sample& sample) override;
- void evaluateLogPrior(Korali::Sample& sample);
- virtual void evaluateLogLikelihood(Korali::Sample& sample) = 0;
- void evaluateLogPosterior(Korali::Sample& sample);
+ bool isSampleFeasible(korali::Sample& sample) override;
+ virtual void evaluateSample(korali::Sample& sample) override;
+ void evaluateLogPrior(korali::Sample& sample);
+ virtual void evaluateLogLikelihood(korali::Sample& sample) = 0;
+ void evaluateLogPosterior(korali::Sample& sample);
 };
 
-} } } } // namespace Korali::Problem::Evaluation::Bayesian
+} } } } // namespace korali::problem::Evaluation::Bayesian
 
 
 #endif // _KORALI_PROBLEM_BAYESIAN_HPP_

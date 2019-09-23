@@ -1,7 +1,7 @@
 {
  "Name": "Propagator",
  "Alias": "Propagator",
- "C++ Class": "Korali::Solver::Propagator",
+ "C++ Class": "korali::solver::Propagator",
 
  "Configuration Settings": 
  [

@@ -1,7 +1,7 @@
 {
  "Name": "Solver (Base)",
  "Alias": "Solver (Base)",
- "C++ Class": "Korali::Solver::Base",
+ "C++ Class": "korali::solver::Base",
 
  "Variables Configuration":
  [

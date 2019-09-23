@@ -3,9 +3,9 @@
 
 #include "distributions/univariate/base.hpp"
 
-namespace Korali { namespace Distribution { namespace Univariate {
+namespace korali { namespace Distribution { namespace Univariate {
 
-class TruncatedNormal : public Korali::Distribution::Univariate::Base {
+class TruncatedNormal : public korali::Distribution::Univariate::Base {
 
  private:
 
@@ -20,6 +20,6 @@ class TruncatedNormal : public Korali::Distribution::Univariate::Base {
  double getRandomNumber() override;
 };
 
-} } } // namespace Korali::Distribution::Univariate
+} } } // namespace korali::Distribution::Univariate
 
 #endif // _KORALI_DISTRIBUTION_UNIVARIATE_TRUNCATEDNORMAL_HPP_

@@ -10,14 +10,14 @@
 #undef _POSIX_C_SOURCE
 #undef _XOPEN_SOURCE
 
-namespace Korali
+namespace korali
 {
 
-namespace Solver { class Base; }
-namespace Problem { class Base; }
-namespace Conduit { class Base; }
+namespace solver { class Base; }
+namespace problem { class Base; }
+namespace conduit { class Base; }
 
-class Engine : public Korali::Module {
+class Engine : public korali::Module {
 
  public:
 
@@ -32,7 +32,7 @@ class Engine : public Korali::Module {
  Engine(nlohmann::json js);
 
  // Model Collection
- std::vector<std::function<void(Korali::Sample&)>> _models;
+ std::vector<std::function<void(korali::Sample&)>> _models;
 
  // JSON-based configuration
  nlohmann::json  _js;
@@ -45,13 +45,13 @@ class Engine : public Korali::Module {
  Engine& operator[](const std::string& key)                { _opt = &((*_opt)[key]); return *this;}
  Engine& operator[](const unsigned long int& key)          { _opt = &((*_opt)[key]); return *this;}
 
- void setItem(const std::string& key, const std::function<void(Korali::Sample&)> val);
+ void setItem(const std::string& key, const std::function<void(korali::Sample&)> val);
  void setItem(const std::string& key, const std::string& val)         { (*_opt)[key] = val; _opt = &_js; }
  void setItem(const std::string& key, const double& val)              { (*_opt)[key] = val; _opt = &_js; }
  void setItem(const std::string& key, const int& val)                 { (*_opt)[key] = val; _opt = &_js; }
  void setItem(const std::string& key, const std::vector<double>& val) { (*_opt)[key] = val; _opt = &_js; }
 
- void setItem(const int& key, const std::function<void(Korali::Sample&)> val);
+ void setItem(const int& key, const std::function<void(korali::Sample&)> val);
  void setItem(const int& key, const std::string& val)                 { (*_opt)[key] = val; _opt = &_js; }
  void setItem(const int& key, const double& val)                      { (*_opt)[key] = val; _opt = &_js; }
  void setItem(const int& key, const int& val)                         { (*_opt)[key] = val; _opt = &_js; }
@@ -61,7 +61,7 @@ class Engine : public Korali::Module {
  std::string getString();
  std::vector<double> getArray();
 
- void operator=(const std::function<void(Korali::Sample&)> val);
+ void operator=(const std::function<void(korali::Sample&)> val);
  void operator=(const std::string& val)         { (*_opt) = val; _opt = &_js; }
  void operator=(const double& val)              { (*_opt) = val; _opt = &_js; }
  void operator=(const int& val)                 { (*_opt) = val; _opt = &_js; }
@@ -77,6 +77,6 @@ class Engine : public Korali::Module {
  long int getMPICommPointer();
 };
 
-} // namespace Korali
+} // namespace korali
 
 #endif // _KORALI_ENGINE_HPP_

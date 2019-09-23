@@ -4,13 +4,13 @@
 #include "solvers/base.hpp"
 #include "problems/propagation/propagation.hpp"
 
-namespace Korali { namespace Solver {
+namespace korali { namespace solver {
 
-class Propagator : public Korali::Solver::Base
+class Propagator : public korali::solver::Base
 {
   private:
 
-  Korali::Problem::Propagation* _propagationProblem;
+  korali::problem::Propagation* _propagationProblem;
 
   public:
     void initialize() override;
@@ -19,6 +19,6 @@ class Propagator : public Korali::Solver::Base
     void printGenerationAfter() override;
 };
 
-} } // namespace Korali::Solver
+} } // namespace korali::Solver
 
 #endif // _KORALI_SOLVERS_PROPAGATOR_HPP_

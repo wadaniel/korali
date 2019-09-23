@@ -1,5 +1,5 @@
 {
  "Name": "Evaluation (Base)",
  "Alias": "Evaluation (Base)",
- "C++ Class": "Korali::Problem::Evaluation::Base"
+ "C++ Class": "korali::problem::Evaluation::Base"
 }

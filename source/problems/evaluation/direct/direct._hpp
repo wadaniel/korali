@@ -4,22 +4,22 @@
 #include "problems/evaluation/base.hpp"
 #include "sample/sample.hpp"
 
-namespace Korali { namespace Problem { namespace Evaluation {
+namespace korali { namespace problem { namespace Evaluation {
 
-class Direct : public Korali::Problem::Evaluation::Base
+class Direct : public korali::problem::Evaluation::Base
 {
  private:
 
  public:
 
  void initialize() override;
- bool isSampleFeasible(Korali::Sample& sample) override;
- void evaluateSample(Korali::Sample&) override;
- void evaluateConstraints(Korali::Sample&);
+ bool isSampleFeasible(korali::Sample& sample) override;
+ void evaluateSample(korali::Sample&) override;
+ void evaluateConstraints(korali::Sample&);
 
 };
 
-} } } // namespace Korali::Problem::Evaluation
+} } } // namespace korali::problem::Evaluation
 
 
 #endif // _KORALI_PROBLEM_DIRECT_HPP_

@@ -20756,7 +20756,7 @@ class basic_json
 
 } // namespace nlohmann
 
-namespace Korali
+namespace korali
 {
 
 /*********************************************************************
@@ -20811,7 +20811,7 @@ static std::vector<std::string> getJsonPath(std::string path)
   curpos = path.find("'", curpos + 1);
  }
 
- if (positions.size() % 2 != 0) Korali::logError("Incorrect path description: %s\n", path.c_str());
+ if (positions.size() % 2 != 0) korali::logError("Incorrect path description: %s\n", path.c_str());
 
  std::vector<std::string> settings;
 
@@ -20875,7 +20875,7 @@ static nlohmann::json loadJsonFromFile(const char* fileName)
    free(string);
  }
  else
-  Korali::logError("Could not load file: %s.\n", fileName);
+  korali::logError("Could not load file: %s.\n", fileName);
 
  return js;
 }
@@ -20889,7 +20889,7 @@ static void saveJsonToFile(const char* fileName, nlohmann::json& js)
    fclose(fid);
  }
  else
-  Korali::logError("Could not write to file: %s.\n", fileName);
+  korali::logError("Could not write to file: %s.\n", fileName);
 }
 
 

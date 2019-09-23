@@ -1,30 +1,30 @@
 #include "distributions/univariate/truncatedNormal/truncatedNormal.hpp"
 #include "rtnormCpp/src/rtnorm.hpp"
 
-double Korali::Distribution::Univariate::TruncatedNormal::getDensity(double x)
+double korali::Distribution::Univariate::TruncatedNormal::getDensity(double x)
 {
   double d = (x-_mu)/_sigma;
   return gsl_sf_exp(-0.5*d*d) / _normalization;
 }
 
-double Korali::Distribution::Univariate::TruncatedNormal::getLogDensity(double x)
+double korali::Distribution::Univariate::TruncatedNormal::getLogDensity(double x)
 {
   double d = (x-_mu)/_sigma;
   return _logNormalization - 0.5*d*d;
 }
 
-double Korali::Distribution::Univariate::TruncatedNormal::getRandomNumber()
+double korali::Distribution::Univariate::TruncatedNormal::getRandomNumber()
 {
   std::pair<double, double> s = rtnorm( _range, _minimum, _maximum, _mu, _sigma );
   return s.first;
 }
 
-void Korali::Distribution::Univariate::TruncatedNormal::updateDistribution()
+void korali::Distribution::Univariate::TruncatedNormal::updateDistribution()
 {
-  if (_sigma <= 0.0)  Korali::logError("Incorrect Standard Deviation parameter of Truncated Normal distribution: %f.\n", _sigma);
+  if (_sigma <= 0.0)  korali::logError("Incorrect Standard Deviation parameter of Truncated Normal distribution: %f.\n", _sigma);
 
   if (_maximum-_minimum <= 0.0)
-    _aux = Korali::NaN;
+    _aux = korali::NaN;
 
   else{
     double a = (_minimum-_mu)/_sigma;

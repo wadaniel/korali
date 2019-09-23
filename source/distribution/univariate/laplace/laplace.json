@@ -1,5 +1,5 @@
 {
- "Name": "Laplace Distribution",
+ "Name": "Laplace",
  "Alias": "Laplace",
  "C++ Class": "korali::distribution::univariate::Laplace",
  

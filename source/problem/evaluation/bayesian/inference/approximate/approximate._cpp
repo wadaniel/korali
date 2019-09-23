@@ -1,9 +1,9 @@
-#include "problems/evaluation/bayesian/inference/approximate/approximate.hpp"
+#include "problem/evaluation/bayesian/inference/approximate/approximate.hpp"
 #include "engine/engine.hpp"
 
 void korali::problem::evaluation::bayesian::inference::Approximate::initialize()
 {
-  korali::problem::evaluation::bayesian::inference::Base::initialize();
+  korali::problem::evaluation::bayesian::Inference::initialize();
 
   if (_referenceData.size() == 0)  korali::logError("Bayesian (%s) problems require defining reference data.\n", _likelihoodModel.c_str());
   if (_computationalVariableIndices.size() != 0) korali::logError("Bayesian (%s) problems do not accept computational parameters.\n", _likelihoodModel.c_str() );

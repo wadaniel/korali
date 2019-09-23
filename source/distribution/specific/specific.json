@@ -1,5 +1,5 @@
 {
- "Name": "Specific Distribution (Base)",
- "Alias": "Specific Distribution (Base)",
+ "Name": "Specific",
+ "Alias": "Specific",
  "C++ Class": "korali::distribution::specific::Base"
 }

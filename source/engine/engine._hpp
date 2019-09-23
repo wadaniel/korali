@@ -13,9 +13,9 @@
 namespace korali
 {
 
-namespace solver { class Base; }
-namespace problem { class Base; }
-namespace conduit { class Base; }
+class Solver;
+class Problem;
+class Conduit;
 
 class Engine : public korali::Module {
 

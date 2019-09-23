@@ -1,17 +1,17 @@
-#ifndef _KORALI_SOLVERS_CCMAES_HPP_
-#define _KORALI_SOLVERS_CCMAES_HPP_
+#ifndef _KORALI_SOLVER_CMAES_HPP_
+#define _KORALI_SOLVER_CMAES_HPP_
 
-#include "solvers/base.hpp"
+#include "solvers.hpp"
 #include "sample/sample.hpp"
 #include "distributions/univariate/normal/normal.hpp"
 #include "distributions/univariate/uniform/uniform.hpp"
-#include "problems/evaluation/base.hpp"
+#include "problems/evaluation.hpp"
 #include "problems/evaluation/direct/direct.hpp"
 #include <vector>
 
 namespace korali { namespace solver {
 
-class CMAES : public korali::solver::Base
+class CMAES : public korali::Solver
 {
  private:
 
@@ -49,6 +49,6 @@ class CMAES : public korali::solver::Base
  void printGenerationAfter() override;
 };
 
-} } // namespace korali::Solver
+} } // namespace korali::solver
 
-#endif // _KORALI_SOLVERS_CCMAES_HPP_
+#endif // _KORALI_SOLVER_CMAES_HPP_

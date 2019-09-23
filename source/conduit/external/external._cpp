@@ -1,7 +1,7 @@
 #include "conduits/external/external.hpp"
 #include "engine/engine.hpp"
-#include "problems/base.hpp"
-#include "solvers/base.hpp"
+#include "problem/problem.hpp"
+#include "solver/solver.hpp"
 #include <sys/wait.h>
 #include <sys/types.h>
 

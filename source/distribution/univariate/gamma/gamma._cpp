@@ -1,4 +1,4 @@
-#include "distributions/univariate/gamma/gamma.hpp"
+#include "distribution/univariate/gamma/gamma.hpp"
 
 double korali::distribution::univariate::Gamma::getDensity(double x)
 {

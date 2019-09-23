@@ -1,4 +1,4 @@
-#include "distributions/specific/multinomial/multinomial.hpp"
+#include "distribution/specific/multinomial/multinomial.hpp"
 
 void korali::distribution::specific::Multinomial::getSelections(std::vector<double>& p, std::vector<unsigned int>& n, int N )
 {

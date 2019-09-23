@@ -1,11 +1,11 @@
 #ifndef _KORALI_DISTRIBUTION_UNIVARIATE_GAMMA_HPP_
 #define _KORALI_DISTRIBUTION_UNIVARIATE_GAMMA_HPP_
 
-#include "distributions/univariate/base.hpp"
+#include "distribution/univariate/univariate.hpp"
 
 namespace korali { namespace distribution { namespace univariate {
 
-class Gamma : public korali::distribution::univariate::Base {
+class Gamma : public korali::distribution::Univariate {
 
  private:
 
@@ -18,6 +18,6 @@ class Gamma : public korali::distribution::univariate::Base {
 
 };
 
-} } } // namespace korali::distribution::Univariate
+} } } // namespace korali::distribution::univariate
 
 #endif // _KORALI_DISTRIBUTION_UNIVARIATE_GAMMA_HPP_

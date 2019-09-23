@@ -1,12 +1,12 @@
 #ifndef _KORALI_PROBLEM_DIRECT_HPP_
 #define _KORALI_PROBLEM_DIRECT_HPP_
 
-#include "problems/evaluation/base.hpp"
+#include "problem/evaluation/evaluation.hpp"
 #include "sample/sample.hpp"
 
 namespace korali { namespace problem { namespace evaluation {
 
-class Direct : public korali::problem::evaluation::Base
+class Direct : public korali::problem::Evaluation
 {
  private:
 
@@ -19,7 +19,7 @@ class Direct : public korali::problem::evaluation::Base
 
 };
 
-} } } // namespace korali::problem::Evaluation
+} } } // namespace korali::problem::evaluation
 
 
 #endif // _KORALI_PROBLEM_DIRECT_HPP_

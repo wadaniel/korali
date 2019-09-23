@@ -1,11 +1,11 @@
-#include "problems/evaluation/bayesian/hierarchical/psi/psi.hpp"
-#include "distributions/univariate/normal/normal.hpp"
+#include "problem/evaluation/bayesian/hierarchical/psi/psi.hpp"
+#include "distribution/univariate/normal/normal.hpp"
 #include "engine/engine.hpp"
-#include "conduits/base.hpp"
+#include "conduit/conduit.hpp"
 
 void korali::problem::evaluation::bayesian::hierarchical::Psi::initialize()
 {
- korali::problem::evaluation::bayesian::hierarchical::Base::initialize();
+ korali::problem::evaluation::bayesian::Hierarchical::initialize();
 
  if (_conditionalPriors.size() == 0) korali::logError("Hierarchical Bayesian (Psi) problems require at least one conditional prior\n");
 

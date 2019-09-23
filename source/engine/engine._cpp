@@ -1,9 +1,9 @@
 #include "engine/engine.hpp"
-#include "conduits/base.hpp"
-#include "solvers/base.hpp"
-#include "problems/base.hpp"
+#include "conduit/conduit.hpp"
+#include "solver/solver.hpp"
+#include "problem/problem.hpp"
 #include "sample/sample.hpp"
-#include "conduits/mpi/mpi.hpp"
+#include "conduit/mpi/mpi.hpp"
 
 #include "pybind11/pybind11.h"
 #include "pybind11/functional.h"

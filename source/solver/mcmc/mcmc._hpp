@@ -1,15 +1,15 @@
 #ifndef _KORALI_SOLVER_MCMC_HPP_
 #define _KORALI_SOLVER_MCMC_HPP_
 
-#include "solvers/base.hpp"
-#include "distributions/univariate/normal/normal.hpp"
-#include "distributions/univariate/uniform/uniform.hpp"
-#include "problems/evaluation/base.hpp"
+#include "solver/solver.hpp"
+#include "distribution/univariate/normal/normal.hpp"
+#include "distribution/univariate/uniform/uniform.hpp"
+#include "problem/evaluation.hpp"
 #include <vector>
 
 namespace korali { namespace solver {
 
-class MCMC : public korali::solver::Base
+class MCMC : public korali::Solver
 {
  private: 
 
@@ -23,7 +23,7 @@ class MCMC : public korali::solver::Base
  void choleskyDecomp(const std::vector<double>& inC, std::vector<double>& outL) const;
  void finishSample(size_t sampleId);
 
- korali::problem::evaluation::Base* _problem;
+ korali::problem::Evaluation* _problem;
 
  public:
 

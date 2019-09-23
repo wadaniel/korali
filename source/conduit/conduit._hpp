@@ -5,9 +5,9 @@
 #include "engine/engine.hpp"
 #include <vector>
 
-namespace korali { namespace conduit {
+namespace korali {
 
-class Base : public korali::Module {
+class Conduit : public korali::Module {
 
  public:
 
@@ -17,9 +17,7 @@ class Base : public korali::Module {
 
 };
 
-class Conduit;
-
-} } // namespace korali::Conduit
+} // namespace korali
 
 
 #endif // _KORALI_CONDUIT_BASE_HPP_

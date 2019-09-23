@@ -2,7 +2,7 @@
 #define __KORALI_VARIABLE_HPP_
 
 #include <vector>
-#include "distributions/univariate/base.hpp"
+#include "distributions/univariate.hpp"
 
 namespace korali
 {

@@ -1,5 +1,5 @@
 {
- "Name": "Cauchy Distribution",
+ "Name": "Cauchy",
  "Alias": "Cauchy",
  "C++ Class": "korali::distribution::univariate::Cauchy",
  

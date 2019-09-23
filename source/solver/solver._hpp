@@ -5,9 +5,9 @@
 #include "module.hpp"
 #include "engine/engine.hpp"
 
-namespace korali { namespace solver {
+namespace korali {
 
-class Base : public korali::Module
+class Solver : public korali::Module
 {
  public:
 
@@ -18,6 +18,6 @@ class Base : public korali::Module
  virtual void runGeneration() = 0;
 };
 
-} } // namespace korali::Solver
+} // namespace korali
 
 #endif // _KORALI_SOLVER_BASE_HPP_

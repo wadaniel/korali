@@ -1,2 +1,2 @@
-#include "problems/base.hpp"
+#include "problem/problem.hpp"
 #include "engine/engine.hpp"

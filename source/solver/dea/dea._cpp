@@ -1,5 +1,5 @@
-#include "solvers/dea/dea.hpp"
-#include "problems/base.hpp"
+#include "solver/dea/dea.hpp"
+#include "problem/problem.hpp"
 #include "engine/engine.hpp"
 #include "sample/sample.hpp"
 

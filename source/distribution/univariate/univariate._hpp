@@ -1,11 +1,11 @@
 #ifndef _KORALI_DISTRIBUTION_UNIVARIATE_BASE_HPP_
 #define _KORALI_DISTRIBUTION_UNIVARIATE_BASE_HPP_
 
-#include "distributions/base.hpp"
+#include "distribution/distribution.hpp"
 
-namespace korali { namespace distribution { namespace univariate {
+namespace korali { namespace distribution {
 
-class Base : public korali::distribution::Base
+class Univariate : public korali::Distribution
 {
  public:
 
@@ -15,6 +15,6 @@ class Base : public korali::distribution::Base
 
 };
 
-} } } // namespace korali::distribution::Univariate
+} } // namespace korali::distribution
 
 #endif // _KORALI_DISTRIBUTION_BASE_HPP_

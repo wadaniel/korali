@@ -8,7 +8,7 @@
  extern long int getKoraliMPICommPointer();
 #endif
 
-#include "conduits/base.hpp"
+#include "conduit/conduit.hpp"
 #include "auxiliars/json.hpp"
 #include <queue>
 #include <vector>
@@ -16,7 +16,7 @@
 
 namespace korali { namespace conduit {
 
-class MPI : public korali::conduit::Base
+class MPI : public korali::Conduit
 {
 
  private:

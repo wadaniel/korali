@@ -1,4 +1,4 @@
-#include "distributions/univariate/exponential/exponential.hpp"
+#include "distribution/univariate/exponential/exponential.hpp"
 
 double korali::distribution::univariate::Exponential::getDensity(double x)
 {

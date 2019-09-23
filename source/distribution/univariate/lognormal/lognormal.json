@@ -1,5 +1,5 @@
 {
- "Name": "LogNormal Distribution",
+ "Name": "LogNormal",
  "Alias": "LogNormal",
  "C++ Class": "korali::distribution::univariate::LogNormal",
 

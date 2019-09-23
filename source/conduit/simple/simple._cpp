@@ -1,7 +1,7 @@
-#include "conduits/simple/simple.hpp"
+#include "conduit/simple/simple.hpp"
 #include "engine/engine.hpp"
-#include "problems/base.hpp"
-#include "solvers/base.hpp"
+#include "problem/problem.hpp"
+#include "solver/solver.hpp"
 
 void korali::conduit::Simple::runModel(size_t modelId, korali::Sample& sample)
 {

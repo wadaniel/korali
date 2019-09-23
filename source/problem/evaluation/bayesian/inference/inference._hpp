@@ -1,11 +1,11 @@
 #ifndef _KORALI_PROBLEM_BAYESIAN_INFERENCE_HPP_
 #define _KORALI_PROBLEM_BAYESIAN_INFERENCE_HPP_
 
-#include "problems/evaluation/bayesian/base.hpp"
+#include "problem/evaluation/bayesian/bayesian.hpp"
 
-namespace korali { namespace problem { namespace evaluation { namespace bayesian { namespace inference {
+namespace korali { namespace problem { namespace evaluation { namespace bayesian {
 
-class Base : public korali::problem::evaluation::bayesian::Base
+class Inference : public korali::problem::evaluation::Bayesian
 {
  public:
 
@@ -14,7 +14,7 @@ class Base : public korali::problem::evaluation::bayesian::Base
   void initialize() override;
 };
 
-} } } } } // namespace korali::problem::evaluation::bayesian::Inference
+} } } } // namespace korali::problem::evaluation::bayesian
 
 
 #endif // _KORALI_PROBLEM_BAYESIAN_INFERENCE_HPP_

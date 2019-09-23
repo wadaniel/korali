@@ -1,5 +1,5 @@
-#include "problems/propagation/propagation.hpp"
-#include "conduits/base.hpp"
+#include "problem/propagation/propagation.hpp"
+#include "conduits.hpp"
 
 void korali::problem::Propagation::initialize()
 {

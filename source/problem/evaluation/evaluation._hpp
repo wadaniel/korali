@@ -1,12 +1,12 @@
 #ifndef _KORALI_PROBLEM_EVALUATION_HPP_
 #define _KORALI_PROBLEM_EVALUATION_HPP_
 
-#include "problems/base.hpp"
+#include "problems.hpp"
 #include "sample/sample.hpp"
 
-namespace korali { namespace problem { namespace evaluation {
+namespace korali { namespace problem {
 
-class Base : public korali::problem::Base
+class Evaluation : public korali::Problem
 {
  private:
 
@@ -17,7 +17,7 @@ class Base : public korali::problem::Base
 
 };
 
-} } } // namespace korali::problem::Evaluation
+} } // namespace korali::problem
 
 
 #endif // _KORALI_PROBLEM_EVALUATION_HPP_

@@ -1,12 +1,12 @@
 #ifndef _KORALI_DISTRIBUTION_MULTIVARIATE_NORMAL_HPP_
 #define _KORALI_DISTRIBUTION_MULTIVARIATE_NORMAL_HPP_
 
-#include "distributions/multivariate/base.hpp"
+#include "distribution/multivariate/multivariate.hpp"
 #include <auxiliars/json.hpp>
 
 namespace korali { namespace distribution { namespace multivariate {
 
-class Normal : public korali::distribution::multivariate::Base {
+class Normal : public korali::distribution::Multivariate {
 
  private:
 
@@ -23,6 +23,6 @@ class Normal : public korali::distribution::multivariate::Base {
  void getRandomVector(double *x, size_t n) override;
 };
 
-} } } // namespace korali::distribution::Multivariate
+} } } // namespace korali::distribution::multivariate
 
 #endif // _KORALI_DISTRIBUTION_MULTIVARIATE_NORMAL_HPP_

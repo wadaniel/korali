@@ -1,5 +1,5 @@
 {
- "Name": "Korali Engine",
+ "Name": "Engine",
  "Alias": "Engine",
  "C++ Class": "korali::Engine",
 
@@ -30,17 +30,17 @@
    },
    {
     "Name": [ "Problem" ],
-    "Type": "korali::problem::Base*",
+    "Type": "korali::Problem*",
     "Description": "Represents the configuration of the problem to solve."
    },
    {
     "Name": [ "Solver" ],
-    "Type": "korali::solver::Base*",
+    "Type": "korali::Solver*",
     "Description": "Represents the state and configuration of the solver algorithm."
    },
    {
     "Name": [ "Conduit" ],
-    "Type": "korali::conduit::Base*",
+    "Type": "korali::Conduit*",
     "Default": "Simple",
     "Description": "Represents the configuration of the execution conduit."
    },

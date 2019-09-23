@@ -1,4 +1,4 @@
-#include "distributions/univariate/geometric/geometric.hpp"
+#include "distribution/univariate/geometric/geometric.hpp"
 
 double korali::distribution::univariate::Geometric::getDensity(double x)
 {

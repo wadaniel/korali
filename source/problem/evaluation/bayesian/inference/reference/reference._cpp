@@ -1,10 +1,10 @@
-#include "problems/evaluation/bayesian/inference/reference/reference.hpp"
-#include "conduits/base.hpp"
+#include "problem/evaluation/bayesian/inference/reference/reference.hpp"
+#include "conduit/conduit.hpp"
 #include "engine/engine.hpp"
 
 void korali::problem::evaluation::bayesian::inference::Reference::initialize()
 {
-  korali::problem::evaluation::bayesian::inference::Base::initialize();
+  korali::problem::evaluation::bayesian::Inference::initialize();
 
   if (_referenceData.size() == 0) korali::logError("Bayesian (%s) problems require defining reference data.\n", _likelihoodModel.c_str());
   if (_statisticalVariableIndices.size() != 1) korali::logError("Bayesian (%s) problems require exactly 1 statistical parameter, provided: %lu.\n", _likelihoodModel.c_str(), _statisticalVariableIndices.size());

@@ -1,5 +1,5 @@
 {
- "Name": "Distributed (MPI) Conduit",
+ "Name": "MPI",
  "Alias": "MPI",
  "C++ Class": "korali::conduit::MPI",
  

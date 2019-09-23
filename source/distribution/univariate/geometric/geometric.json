@@ -1,5 +1,5 @@
 {
- "Name": "Geometric Distribution",
+ "Name": "Geometric",
  "Alias": "Geometric",
  "C++ Class": "korali::distribution::univariate::Geometric",
  

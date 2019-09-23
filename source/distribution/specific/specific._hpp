@@ -1,11 +1,11 @@
 #ifndef _KORALI_DISTRIBUTION_SPECIFIC_BASE_HPP_
 #define _KORALI_DISTRIBUTION_SPECIFIC_BASE_HPP_
 
-#include "distributions/base.hpp"
+#include "distribution/distribution.hpp"
 
-namespace korali { namespace distribution { namespace specific {
+namespace korali { namespace distribution {
 
-class Base : public korali::distribution::Base
+class Specific : public korali::Distribution
 {
  public:
 

@@ -1,9 +1,9 @@
-#include "problems/evaluation/bayesian/hierarchical/thetaNew/thetaNew.hpp"
-#include "conduits/base.hpp"
+#include "problem/evaluation/bayesian/hierarchical/thetaNew/thetaNew.hpp"
+#include "conduit/conduit.hpp"
 
 void korali::problem::evaluation::bayesian::hierarchical::ThetaNew::initialize()
 {
-  korali::problem::evaluation::bayesian::hierarchical::Base::initialize();
+  korali::problem::evaluation::bayesian::Hierarchical::initialize();
 
   // Creating Psi-problem JSON object from string
   nlohmann::json psiProblemJson = korali::JsonInterface::loadJsonFromFile(_psiProblemPath.c_str());

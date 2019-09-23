@@ -1,5 +1,5 @@
-#include "problems/evaluation/direct/direct.hpp"
-#include "conduits/base.hpp"
+#include "problem/evaluation/direct/direct.hpp"
+#include "conduit/conduit.hpp"
 
 bool korali::problem::evaluation::Direct::isSampleFeasible(korali::Sample& sample)
 {

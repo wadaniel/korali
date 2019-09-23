@@ -1,11 +1,11 @@
 #ifndef _KORALI_DISTRIBUTION_UNIVARIATE_LOGNORMAL_HPP_
 #define _KORALI_DISTRIBUTION_UNIVARIATE_LOGNORMAL_HPP_
 
-#include "distributions/univariate/base.hpp"
+#include "distribution/univariate/univariate.hpp"
 
 namespace korali { namespace distribution { namespace univariate {
 
-class LogNormal : public korali::distribution::univariate::Base {
+class LogNormal : public korali::distribution::Univariate {
 
   private:
 
@@ -17,6 +17,6 @@ class LogNormal : public korali::distribution::univariate::Base {
   double getRandomNumber() override;
 };
 
-} } } // namespace korali::distribution::Univariate
+} } } // namespace korali::distribution::univariate
 
 #endif // _KORALI_DISTRIBUTION_UNIVARIATE_LOGNORMAL_HPP_

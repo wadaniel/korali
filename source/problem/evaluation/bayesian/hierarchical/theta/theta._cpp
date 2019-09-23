@@ -1,5 +1,5 @@
 #include "problems/evaluation/bayesian/hierarchical/theta/theta.hpp"
-#include "conduits/base.hpp"
+#include "conduits.hpp"
 
 void korali::problem::evaluation::bayesian::hierarchical::Theta::initialize()
 {
@@ -98,7 +98,7 @@ void korali::problem::evaluation::bayesian::hierarchical::Theta::initialize()
    }
  );
 
- korali::problem::evaluation::bayesian::hierarchical::Base::initialize();
+ korali::problem::evaluation::bayesian::Hierarchical::initialize();
 }
 
 void korali::problem::evaluation::bayesian::hierarchical::Theta::evaluateLogLikelihood(korali::Sample& sample)

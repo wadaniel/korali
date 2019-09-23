@@ -1,11 +1,11 @@
 #ifndef _KORALI_DISTRIBUTION_MULTIVARIATE_BASE_HPP_
 #define _KORALI_DISTRIBUTION_MULTIVARIATE_BASE_HPP_
 
-#include "distributions/base.hpp"
+#include "distribution/distribution.hpp"
 
-namespace korali { namespace distribution { namespace multivariate {
+namespace korali { namespace distribution {
 
-class Base : public korali::distribution::Base
+class Multivariate : public korali::Distribution
 {
  public:
 
@@ -16,6 +16,6 @@ class Base : public korali::distribution::Base
 
 };
 
-} } } // namespace korali::distribution::Multivariate
+} } // namespace korali::distribution
 
 #endif // _KORALI_DISTRIBUTION_MULTIVARIATE_BASE_HPP_

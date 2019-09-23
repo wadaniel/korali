@@ -1,12 +1,12 @@
-#ifndef _KORALI_SOLVERS_PROPAGATOR_HPP_
-#define _KORALI_SOLVERS_PROPAGATOR_HPP_
+#ifndef _KORALI_SOLVER_PROPAGATOR_HPP_
+#define _KORALI_SOLVER_PROPAGATOR_HPP_
 
-#include "solvers/base.hpp"
-#include "problems/propagation/propagation.hpp"
+#include "solver/solver.hpp"
+#include "problem/propagation/propagation.hpp"
 
 namespace korali { namespace solver {
 
-class Propagator : public korali::solver::Base
+class Propagator : public korali::Solver
 {
   private:
 
@@ -19,6 +19,6 @@ class Propagator : public korali::solver::Base
     void printGenerationAfter() override;
 };
 
-} } // namespace korali::Solver
+} } // namespace korali::solver
 
-#endif // _KORALI_SOLVERS_PROPAGATOR_HPP_
+#endif // _KORALI_SOLVER_PROPAGATOR_HPP_

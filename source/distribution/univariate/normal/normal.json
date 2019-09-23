@@ -1,5 +1,5 @@
 {
- "Name": "Normal Distribution",
+ "Name": "Normal",
  "Alias": "Normal",
  "C++ Class": "korali::distribution::univariate::Normal",
  

@@ -1,12 +1,12 @@
 #ifndef _KORALI_PROBLEM_PSI_HPP_
 #define _KORALI_PROBLEM_PSI_HPP_
 
-#include "problems/evaluation/bayesian/hierarchical/base.hpp"
-#include "distributions/base.hpp"
+#include "problem/evaluation/bayesian/hieararchical/hierarchical.hpp"
+#include "distribution/distribution.hpp"
 
 namespace korali { namespace problem { namespace evaluation { namespace bayesian { namespace hierarchical {
 
-class Psi : public korali::problem::evaluation::bayesian::hierarchical::Base
+class Psi : public korali::problem::evaluation::bayesian::Hierarchical
 {
  private:
 
@@ -34,7 +34,7 @@ class Psi : public korali::problem::evaluation::bayesian::hierarchical::Base
  void initialize() override;
 };
 
-} } } } } // namespace korali::problem::evaluation::bayesian::Hierarchical
+} } } } } // namespace korali::problem::evaluation::bayesian::hierarchical
 
 
 #endif // _KORALI_PROBLEM_PSI_HPP_

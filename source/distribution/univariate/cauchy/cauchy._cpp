@@ -1,4 +1,4 @@
-#include "distributions/univariate/cauchy/cauchy.hpp"
+#include "distribution/univariate/cauchy/cauchy.hpp"
 
 double korali::distribution::univariate::Cauchy::getDensity(double x)
 {

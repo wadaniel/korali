@@ -1,13 +1,13 @@
 #ifndef _KORALI_CONDUIT_SIMPLE_HPP_
 #define _KORALI_CONDUIT_SIMPLE_HPP_
 
-#include "conduits/base.hpp"
+#include "conduit/conduit.hpp"
 #include "auxiliars/json.hpp"
 #include <vector>
 
 namespace korali { namespace conduit {
 
-class Simple : public korali::conduit::Base
+class Simple : public korali::Conduit
 {
  private:
 
@@ -16,6 +16,6 @@ class Simple : public korali::conduit::Base
  void runModel(size_t modelId, korali::Sample& sample) override;
 };
 
-} } // namespace korali::Conduit
+} } // namespace korali
 
 #endif // _KORALI_CONDUIT_SIMPLE_HPP_

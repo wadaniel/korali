@@ -1,7 +1,7 @@
 #ifndef _KORALI_CONDUIT_EXTERNAL_HPP_
 #define _KORALI_CONDUIT_EXTERNAL_HPP_
 
-#include "conduits/base.hpp"
+#include "conduit/conduit.hpp"
 #include "auxiliars/json.hpp"
 #include <sys/types.h>
 #include <unistd.h>
@@ -11,7 +11,7 @@
 
 namespace korali { namespace conduit {
 
-class External : public korali::conduit::Base {
+class External : public korali::Conduit {
 
  private:
 
@@ -29,6 +29,7 @@ class External : public korali::conduit::Base {
  void finalize() override;
 
 };
-} } // namespace korali::Conduit
+
+} } // namespace korali::conduit
 
 #endif // _KORALI_CONDUIT_EXTERNAL_HPP_

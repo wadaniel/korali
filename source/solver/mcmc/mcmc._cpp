@@ -1,5 +1,5 @@
 #include "solvers/mcmc/mcmc.hpp"
-#include "problems/base.hpp"
+#include "problems.hpp"
 #include "sample/sample.hpp"
 #include "engine/engine.hpp"
 

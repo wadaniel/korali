@@ -1,4 +1,4 @@
-#include "distributions/univariate/laplace/laplace.hpp"
+#include "distribution/univariate/laplace/laplace.hpp"
 
 double korali::distribution::univariate::Laplace::getDensity(double x)
 {

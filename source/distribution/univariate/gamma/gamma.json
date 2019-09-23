@@ -1,5 +1,5 @@
 {
- "Name": "Gamma Distribution",
+ "Name": "Gamma",
  "Alias": "Gamma",
  "C++ Class": "korali::distribution::univariate::Gamma",
  

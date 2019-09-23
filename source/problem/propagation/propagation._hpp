@@ -1,11 +1,11 @@
 #ifndef _KORALI_PROBLEM_PROPAGATION_HPP_
 #define _KORALI_PROBLEM_PROPAGATION_HPP_
 
-#include "problems/base.hpp"
+#include "problem/problem.hpp"
 
 namespace korali { namespace problem {
 
-class Propagation : public korali::problem::Base
+class Propagation : public korali::Problem
 {
  public:
 
@@ -13,7 +13,7 @@ class Propagation : public korali::problem::Base
    void propagateSample(korali::Sample& sample);
 };
 
-} } // namespace korali::Problem
+} } // namespace korali::problem
 
 
 #endif // _KORALI_PROBLEM_PROPAGATION_HPP_

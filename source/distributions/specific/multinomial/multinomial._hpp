@@ -3,15 +3,15 @@
 
 #include "distributions/specific/base.hpp"
 
-namespace korali { namespace Distribution { namespace Specific {
+namespace korali { namespace distribution { namespace specific {
 
-class Multinomial : public korali::Distribution::Specific::Base {
+class Multinomial : public korali::distribution::specific::Base {
 
  public:
 
  void getSelections(std::vector<double>& p, std::vector<unsigned int>& n, int N);
 };
 
-} } } // namespace korali::Distribution::Specific
+} } } // namespace korali::distribution::Specific
 
 #endif // _KORALI_DISTRIBUTION_MULTINOMIAL_HPP_

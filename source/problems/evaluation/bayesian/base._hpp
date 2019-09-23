@@ -3,9 +3,9 @@
 
 #include "problems/evaluation/base.hpp"
 
-namespace korali { namespace problem { namespace Evaluation { namespace Bayesian {
+namespace korali { namespace problem { namespace evaluation { namespace bayesian {
 
-class Base : public korali::problem::Evaluation::Base
+class Base : public korali::problem::evaluation::Base
 {
  private:
 
@@ -20,7 +20,7 @@ class Base : public korali::problem::Evaluation::Base
  void evaluateLogPosterior(korali::Sample& sample);
 };
 
-} } } } // namespace korali::problem::Evaluation::Bayesian
+} } } } // namespace korali::problem::evaluation::Bayesian
 
 
 #endif // _KORALI_PROBLEM_BAYESIAN_HPP_

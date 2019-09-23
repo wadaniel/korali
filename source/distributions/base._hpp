@@ -8,7 +8,7 @@
 #include <gsl/gsl_sf.h>
 #include "module.hpp"
 
-namespace korali { namespace Distribution {
+namespace korali { namespace distribution {
 
 class Base : public korali::Module
 {

@@ -24,12 +24,12 @@ class TMCMC : public korali::solver::Base
  static double tmcmc_objlogp(double x, const double *fj, size_t fn, double pj, double zero);
  static double objLog(const gsl_vector *v, void *param);
 
- korali::Distribution::Specific::Multinomial* _multinomialGenerator; /* Multivariate Normal random number generator */
- korali::Distribution::Multivariate::Normal* _multivariateGenerator; /* Multivariate Normal random number generator */
- korali::Distribution::Univariate::Uniform* _uniformGenerator; /* Uniform random number generator */
+ korali::distribution::specific::Multinomial* _multinomialGenerator; /* Multivariate Normal random number generator */
+ korali::distribution::multivariate::Normal* _multivariateGenerator; /* Multivariate Normal random number generator */
+ korali::distribution::univariate::Uniform* _uniformGenerator; /* Uniform random number generator */
 
  size_t N; // Number of variables
- korali::problem::Evaluation::Bayesian::Base* _bayesianProblem;
+ korali::problem::evaluation::bayesian::Base* _bayesianProblem;
 
  public:
 

@@ -1,7 +1,7 @@
 {
  "Name": "Direct Evaluation (Base)",
  "Alias": "Direct Evaluation (Base)",
- "C++ Class": "korali::problem::Evaluation::Direct",
+ "C++ Class": "korali::problem::evaluation::Direct",
 
  "Configuration Settings":
  [

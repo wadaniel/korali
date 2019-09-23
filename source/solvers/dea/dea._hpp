@@ -13,8 +13,8 @@ class DEA : public korali::solver::Base
 {
  private:
 
- korali::Distribution::Univariate::Normal* _normalGenerator; /* Normal random number generator */
- korali::Distribution::Univariate::Uniform* _uniformGenerator; /* Uniform random number generator */
+ korali::distribution::univariate::Normal* _normalGenerator; /* Normal random number generator */
+ korali::distribution::univariate::Uniform* _uniformGenerator; /* Uniform random number generator */
 
  void mutateSingle(size_t sampleIdx); /* sample individual */
  void fixInfeasible(size_t sampleIdx); /* force sample inside lower & upper bounds */
@@ -22,7 +22,7 @@ class DEA : public korali::solver::Base
  void initSamples();
  void prepareGeneration();
 
- korali::problem::Evaluation::Base* _problem;
+ korali::problem::evaluation::Base* _problem;
 
  public:
 

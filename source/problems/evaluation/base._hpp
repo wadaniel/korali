@@ -4,7 +4,7 @@
 #include "problems/base.hpp"
 #include "sample/sample.hpp"
 
-namespace korali { namespace problem { namespace Evaluation {
+namespace korali { namespace problem { namespace evaluation {
 
 class Base : public korali::problem::Base
 {

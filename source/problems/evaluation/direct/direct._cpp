@@ -1,7 +1,7 @@
 #include "problems/evaluation/direct/direct.hpp"
 #include "conduits/base.hpp"
 
-bool korali::problem::Evaluation::direct::isSampleFeasible(korali::Sample& sample)
+bool korali::problem::evaluation::Direct::isSampleFeasible(korali::Sample& sample)
 {
   for (size_t i = 0; i < sample.size(); i++)
   {
@@ -12,7 +12,7 @@ bool korali::problem::Evaluation::direct::isSampleFeasible(korali::Sample& sampl
   return true;
 }
 
-void korali::problem::Evaluation::direct::initialize()
+void korali::problem::evaluation::Direct::initialize()
 {
  if (_k->_variables.size() == 0) korali::logError("Direct Evaluation problems require at least one variable.\n");
 
@@ -24,7 +24,7 @@ void korali::problem::Evaluation::direct::initialize()
  }
 }
 
-void korali::problem::Evaluation::direct::evaluateConstraints(korali::Sample& sample)
+void korali::problem::evaluation::Direct::evaluateConstraints(korali::Sample& sample)
 {
  std::vector<double> evaluations;
 
@@ -40,7 +40,7 @@ void korali::problem::Evaluation::direct::evaluateConstraints(korali::Sample& sa
  sample.setResult(evaluations);
 }
 
-void korali::problem::Evaluation::direct::evaluateSample(korali::Sample& sample)
+void korali::problem::evaluation::Direct::evaluateSample(korali::Sample& sample)
 {
  _k->_conduit->runModel(_objectiveFunction, sample);
  std::vector<double> resultVector = sample.getResult();

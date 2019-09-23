@@ -1,7 +1,7 @@
 #include "distributions/base.hpp"
 #include "engine/engine.hpp"
 
-void korali::Distribution::Base::initialize()
+void korali::distribution::Base::initialize()
 {
  _seed = _k->_randomSeed++;
  _range = gsl_rng_alloc (gsl_rng_default);
@@ -9,7 +9,7 @@ void korali::Distribution::Base::initialize()
  updateDistribution();
 }
 
-void korali::Distribution::Base::finalize()
+void korali::distribution::Base::finalize()
 {
  gsl_rng_free(_range);
 }

@@ -1,7 +1,7 @@
 {
  "Name": "Bayesian Inference (Reference Likelihood)",
  "Alias": "Bayesian Inference (Reference Likelihood)",
- "C++ Class": "korali::problem::Evaluation::Bayesian::Inference::Reference",
+ "C++ Class": "korali::problem::evaluation::bayesian::inference::Reference",
 
  "Configuration Settings":
  [

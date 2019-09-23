@@ -1,21 +1,21 @@
 #include "distributions/univariate/exponential/exponential.hpp"
 
-double korali::Distribution::Univariate::Exponential::getDensity(double x)
+double korali::distribution::univariate::Exponential::getDensity(double x)
 {
  return gsl_ran_exponential_pdf(x-_location, _mean);
 }
 
-double korali::Distribution::Univariate::Exponential::getLogDensity(double x)
+double korali::distribution::univariate::Exponential::getLogDensity(double x)
 {
  if (x-_location < 0) return -INFINITY; return - log(_mean) - (x-_location)/_mean;
 }
 
-double korali::Distribution::Univariate::Exponential::getRandomNumber()
+double korali::distribution::univariate::Exponential::getRandomNumber()
 {
  return _location + gsl_ran_exponential(_range, _mean);
 }
 
-void korali::Distribution::Univariate::Exponential::updateDistribution()
+void korali::distribution::univariate::Exponential::updateDistribution()
 {
  _aux = 0.0;
 }

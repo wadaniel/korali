@@ -1,7 +1,7 @@
 {
  "Name": "Multinomial Generator",
  "Alias": "Multinomial",
- "C++ Class": "korali::Distribution::Specific::Multinomial"
+ "C++ Class": "korali::distribution::specific::Multinomial"
  
 }
  

@@ -2,15 +2,15 @@
 #include "conduits/base.hpp"
 #include "engine/engine.hpp"
 
-void korali::problem::Evaluation::Bayesian::Inference::Custom::initialize()
+void korali::problem::evaluation::bayesian::inference::Custom::initialize()
 {
-  korali::problem::Evaluation::Bayesian::Inference::Base::initialize();
+  korali::problem::evaluation::bayesian::inference::Base::initialize();
 
   if (_k->_variables.size() == 0) korali::logError("Bayesian inference problems require at least one variable.\n");
   if (_statisticalVariableIndices.size() != 0) korali::logError("Bayesian (Custom) problems do not accept statistical variables.\n");
 }
 
-void korali::problem::Evaluation::Bayesian::Inference::Custom::evaluateLogLikelihood(korali::Sample& sample)
+void korali::problem::evaluation::bayesian::inference::Custom::evaluateLogLikelihood(korali::Sample& sample)
 {
  _k->_conduit->runModel(_likelihoodModel, sample);
  std::vector<double> result = sample.getResult();

@@ -3,9 +3,9 @@
 
 #include "distributions/univariate/base.hpp"
 
-namespace korali { namespace Distribution { namespace Univariate {
+namespace korali { namespace distribution { namespace univariate {
 
-class Geometric : public korali::Distribution::Univariate::Base {
+class Geometric : public korali::distribution::univariate::Base {
 
  private:
 
@@ -17,6 +17,6 @@ class Geometric : public korali::Distribution::Univariate::Base {
  double getRandomNumber() override;
 };
 
-} } } // namespace korali::Distribution::Univariate
+} } } // namespace korali::distribution::Univariate
 
 #endif // _KORALI_DISTRIBUTION_UNIVARIATE_GEOMETRIC_HPP_

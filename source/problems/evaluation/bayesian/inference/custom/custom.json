@@ -1,7 +1,7 @@
 {
  "Name": "Bayesian Inference (Custom Likelihood)",
  "Alias": "Bayesian Inference (Custom Likelihood)",
- "C++ Class": "korali::problem::Evaluation::Bayesian::Inference::Custom",
+ "C++ Class": "korali::problem::evaluation::bayesian::inference::Custom",
 
  "Configuration Settings":
  [

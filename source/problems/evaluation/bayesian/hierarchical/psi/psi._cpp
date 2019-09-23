@@ -3,9 +3,9 @@
 #include "engine/engine.hpp"
 #include "conduits/base.hpp"
 
-void korali::problem::Evaluation::Bayesian::Hierarchical::Psi::initialize()
+void korali::problem::evaluation::bayesian::hierarchical::Psi::initialize()
 {
- korali::problem::Evaluation::Bayesian::Hierarchical::Base::initialize();
+ korali::problem::evaluation::bayesian::hierarchical::Base::initialize();
 
  if (_conditionalPriors.size() == 0) korali::logError("Hierarchical Bayesian (Psi) problems require at least one conditional prior\n");
 
@@ -58,7 +58,7 @@ void korali::problem::Evaluation::Bayesian::Hierarchical::Psi::initialize()
   [](korali::Sample& sample)
   {
    korali::Engine* k = sample._k;
-   auto _psiProblem = dynamic_cast<korali::problem::Evaluation::Bayesian::Hierarchical::Psi*>(k->_problem);
+   auto _psiProblem = dynamic_cast<korali::problem::evaluation::bayesian::hierarchical::Psi*>(k->_problem);
    _psiProblem->evaluatePsiLikelihood(sample);
   }
  );
@@ -89,7 +89,7 @@ void korali::problem::Evaluation::Bayesian::Hierarchical::Psi::initialize()
  }
 }
 
-void korali::problem::Evaluation::Bayesian::Hierarchical::Psi::updateConditionalPriors(korali::Sample& sample)
+void korali::problem::evaluation::bayesian::hierarchical::Psi::updateConditionalPriors(korali::Sample& sample)
 {
  for (size_t i = 0; i < _conditionalPriors.size(); i++)
  {
@@ -112,12 +112,12 @@ void korali::problem::Evaluation::Bayesian::Hierarchical::Psi::updateConditional
 }
 
 
-void korali::problem::Evaluation::Bayesian::Hierarchical::Psi::evaluateLogLikelihood(korali::Sample& sample)
+void korali::problem::evaluation::bayesian::hierarchical::Psi::evaluateLogLikelihood(korali::Sample& sample)
 {
  _k->_conduit->runModel(0, sample);
 }
 
-void korali::problem::Evaluation::Bayesian::Hierarchical::Psi::evaluatePsiLikelihood(korali::Sample& sample)
+void korali::problem::evaluation::bayesian::hierarchical::Psi::evaluatePsiLikelihood(korali::Sample& sample)
 {
  if (isSampleFeasible(sample) == false) { sample.setResult(-korali::Inf); return; };
 

@@ -1,21 +1,21 @@
 #include "distributions/univariate/cauchy/cauchy.hpp"
 
-double korali::Distribution::Univariate::Cauchy::getDensity(double x)
+double korali::distribution::univariate::Cauchy::getDensity(double x)
 {
  return gsl_ran_cauchy_pdf( x-_location, _scale );
 }
 
-double korali::Distribution::Univariate::Cauchy::getLogDensity(double x)
+double korali::distribution::univariate::Cauchy::getLogDensity(double x)
 {
  return _aux - gsl_sf_log( 1. + gsl_sf_pow_int((x-_location)/_scale,2) );
 }
 
-double korali::Distribution::Univariate::Cauchy::getRandomNumber()
+double korali::distribution::univariate::Cauchy::getRandomNumber()
 {
  return _location + gsl_ran_cauchy(_range, _scale);
 }
 
-void korali::Distribution::Univariate::Cauchy::updateDistribution()
+void korali::distribution::univariate::Cauchy::updateDistribution()
 {
  if (_scale <= 0) korali::logError("Incorrect Scale parameter of Cauchy distribution: %f.\n", _scale);
 

@@ -2,15 +2,15 @@
 #include "conduits/base.hpp"
 #include "engine/engine.hpp"
 
-void korali::problem::Evaluation::Bayesian::Inference::Reference::initialize()
+void korali::problem::evaluation::bayesian::inference::Reference::initialize()
 {
-  korali::problem::Evaluation::Bayesian::Inference::Base::initialize();
+  korali::problem::evaluation::bayesian::inference::Base::initialize();
 
   if (_referenceData.size() == 0) korali::logError("Bayesian (%s) problems require defining reference data.\n", _likelihoodModel.c_str());
   if (_statisticalVariableIndices.size() != 1) korali::logError("Bayesian (%s) problems require exactly 1 statistical parameter, provided: %lu.\n", _likelihoodModel.c_str(), _statisticalVariableIndices.size());
 }
 
-void korali::problem::Evaluation::Bayesian::Inference::Reference::evaluateLogLikelihood(korali::Sample& sample)
+void korali::problem::evaluation::bayesian::inference::Reference::evaluateLogLikelihood(korali::Sample& sample)
 {
   _k->_conduit->runModel(_computationalModel, sample);
 
@@ -22,7 +22,7 @@ void korali::problem::Evaluation::Bayesian::Inference::Reference::evaluateLogLik
   if (_likelihoodModel == "Multiplicative Normal Data") likelihoodNormalMultiplicativeData(sample);
 }
 
-void korali::problem::Evaluation::Bayesian::Inference::Reference::likelihoodNormalAdditive(korali::Sample& sample)
+void korali::problem::evaluation::bayesian::inference::Reference::likelihoodNormalAdditive(korali::Sample& sample)
 {
   double sigma   = sample[_statisticalVariableIndices[0]];
   double sigma2  = sigma*sigma;
@@ -46,7 +46,7 @@ void korali::problem::Evaluation::Bayesian::Inference::Reference::likelihoodNorm
   sample.setResult(likelihood);
 }
 
-void korali::problem::Evaluation::Bayesian::Inference::Reference::likelihoodNormalMultiplicative(korali::Sample& sample)
+void korali::problem::evaluation::bayesian::inference::Reference::likelihoodNormalMultiplicative(korali::Sample& sample)
 {
   double sigma    = sample[_statisticalVariableIndices[0]];
   double ssn      = 0.0;
@@ -72,7 +72,7 @@ void korali::problem::Evaluation::Bayesian::Inference::Reference::likelihoodNorm
   sample.setResult(likelihood);
 }
 
-void korali::problem::Evaluation::Bayesian::Inference::Reference::likelihoodNormalMultiplicativeData(korali::Sample& sample)
+void korali::problem::evaluation::bayesian::inference::Reference::likelihoodNormalMultiplicativeData(korali::Sample& sample)
 {
   double sigma    = sample[_statisticalVariableIndices[0]];
   double ssn      = 0.0;

@@ -1,7 +1,7 @@
 {
  "Name": "Truncated Normal Distribution",
  "Alias": "Truncated Normal",
- "C++ Class": "korali::Distribution::Univariate::TruncatedNormal",
+ "C++ Class": "korali::distribution::univariate::TruncatedNormal",
 
  "Conditional Variables": 
  [

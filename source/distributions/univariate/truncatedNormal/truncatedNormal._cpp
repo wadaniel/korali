@@ -1,25 +1,25 @@
 #include "distributions/univariate/truncatedNormal/truncatedNormal.hpp"
 #include "rtnormCpp/src/rtnorm.hpp"
 
-double korali::Distribution::Univariate::TruncatedNormal::getDensity(double x)
+double korali::distribution::univariate::TruncatedNormal::getDensity(double x)
 {
   double d = (x-_mu)/_sigma;
   return gsl_sf_exp(-0.5*d*d) / _normalization;
 }
 
-double korali::Distribution::Univariate::TruncatedNormal::getLogDensity(double x)
+double korali::distribution::univariate::TruncatedNormal::getLogDensity(double x)
 {
   double d = (x-_mu)/_sigma;
   return _logNormalization - 0.5*d*d;
 }
 
-double korali::Distribution::Univariate::TruncatedNormal::getRandomNumber()
+double korali::distribution::univariate::TruncatedNormal::getRandomNumber()
 {
   std::pair<double, double> s = rtnorm( _range, _minimum, _maximum, _mu, _sigma );
   return s.first;
 }
 
-void korali::Distribution::Univariate::TruncatedNormal::updateDistribution()
+void korali::distribution::univariate::TruncatedNormal::updateDistribution()
 {
   if (_sigma <= 0.0)  korali::logError("Incorrect Standard Deviation parameter of Truncated Normal distribution: %f.\n", _sigma);
 

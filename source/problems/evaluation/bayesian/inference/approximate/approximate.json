@@ -1,7 +1,7 @@
 {
  "Name": "Bayesian Inference (Approximate Likelihood)",
  "Alias": "Bayesian Inference (Approximate Likelihood)",
- "C++ Class": "korali::problem::Evaluation::Bayesian::Inference::Approximate",
+ "C++ Class": "korali::problem::evaluation::bayesian::inference::Approximate",
 
  "Configuration Settings":
  [

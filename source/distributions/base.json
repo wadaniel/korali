@@ -1,5 +1,5 @@
 {
  "Name": "Distribution (Base)",
  "Alias": "Distribution (Base)",
- "C++ Class": "korali::Distribution::Base"
+ "C++ Class": "korali::distribution::Base"
 }

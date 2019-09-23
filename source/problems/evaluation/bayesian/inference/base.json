@@ -1,7 +1,7 @@
 {
  "Name": "Bayesian Inference (Base)",
  "Alias": "Bayesian Inference (Base)",
- "C++ Class": "korali::problem::Evaluation::Bayesian::Inference::Base",
+ "C++ Class": "korali::problem::evaluation::bayesian::inference::Base",
 
  "Variables Configuration":
  [

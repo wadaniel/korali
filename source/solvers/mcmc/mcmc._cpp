@@ -64,14 +64,14 @@ void korali::solver::MCMC::initialize()
  jsNormal["Type"] = "Normal";
  jsNormal["Mean"] = 0.0;
  jsNormal["Standard Deviation"] = 1.0;
- _normalGenerator = dynamic_cast<korali::Distribution::Univariate::Normal*>(korali::Module::getModule(jsNormal));
+ _normalGenerator = dynamic_cast<korali::distribution::univariate::Normal*>(korali::Module::getModule(jsNormal));
  _normalGenerator->initialize();
 
  auto jsUniform = nlohmann::json();
  jsUniform["Type"] = "Uniform";
  jsUniform["Minimum"] = 0.0;
  jsUniform["Maximum"] = 1.0;
- _uniformGenerator = dynamic_cast<korali::Distribution::Univariate::Uniform*>(korali::Module::getModule(jsUniform));
+ _uniformGenerator = dynamic_cast<korali::distribution::univariate::Uniform*>(korali::Module::getModule(jsUniform));
  _uniformGenerator->initialize();
 
  N = _k->_variables.size();
@@ -96,7 +96,7 @@ void korali::solver::MCMC::initialize()
  _chainCovariance.resize(N*N);
  _choleskyDecompositionChainCovariance.resize(N*N);
 
- _problem = dynamic_cast<korali::problem::Evaluation::Base*>(_k->_problem);
+ _problem = dynamic_cast<korali::problem::evaluation::Base*>(_k->_problem);
  if (_problem == NULL) korali::logError( "MCMC can only sample problems of type 'Evaluation' or derived problem types.\n");
 
  if (_k->_currentGeneration > 1) return;

@@ -1,5 +1,5 @@
 {
  "Name": "Hierarchical Bayesian (Base)",
  "Alias": "Hierarchical Bayesian (Base)",
- "C++ Class": "korali::problem::Evaluation::Bayesian::Hierarchical::Base"
+ "C++ Class": "korali::problem::evaluation::bayesian::hierarchical::Base"
 }

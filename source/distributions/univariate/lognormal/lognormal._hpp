@@ -3,9 +3,9 @@
 
 #include "distributions/univariate/base.hpp"
 
-namespace korali { namespace Distribution { namespace Univariate {
+namespace korali { namespace distribution { namespace univariate {
 
-class LogNormal : public korali::Distribution::Univariate::Base {
+class LogNormal : public korali::distribution::univariate::Base {
 
   private:
 
@@ -17,6 +17,6 @@ class LogNormal : public korali::Distribution::Univariate::Base {
   double getRandomNumber() override;
 };
 
-} } } // namespace korali::Distribution::Univariate
+} } } // namespace korali::distribution::Univariate
 
 #endif // _KORALI_DISTRIBUTION_UNIVARIATE_LOGNORMAL_HPP_

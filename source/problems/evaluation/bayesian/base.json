@@ -1,13 +1,13 @@
 {
  "Name": "Bayesian Problem (Base)",
  "Alias": "Bayesian Problem (Base)",
- "C++ Class": "korali::problem::Evaluation::Bayesian::Base",
+ "C++ Class": "korali::problem::evaluation::bayesian::Base",
 
  "Variables Configuration":
  [
    {
     "Name": [ "Prior Distribution" ],
-    "Type": "korali::Distribution::Univariate::Base*",
+    "Type": "korali::distribution::univariate::Base*",
     "Description": "Eh..."
    }
  ]

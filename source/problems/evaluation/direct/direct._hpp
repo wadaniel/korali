@@ -4,9 +4,9 @@
 #include "problems/evaluation/base.hpp"
 #include "sample/sample.hpp"
 
-namespace korali { namespace problem { namespace Evaluation {
+namespace korali { namespace problem { namespace evaluation {
 
-class Direct : public korali::problem::Evaluation::Base
+class Direct : public korali::problem::evaluation::Base
 {
  private:
 

@@ -1,8 +1,8 @@
 #include "problems/evaluation/bayesian/inference/base.hpp"
 
-void korali::problem::Evaluation::Bayesian::Inference::Base::initialize()
+void korali::problem::evaluation::bayesian::inference::Base::initialize()
 {
- korali::problem::Evaluation::Bayesian::Base::initialize();
+ korali::problem::evaluation::bayesian::Base::initialize();
 
  _computationalVariableIndices.clear();
  _statisticalVariableIndices.clear();

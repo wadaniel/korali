@@ -3,14 +3,14 @@
 
 #include "distributions/base.hpp"
 
-namespace korali { namespace Distribution { namespace Specific {
+namespace korali { namespace distribution { namespace specific {
 
-class Base : public korali::Distribution::Base
+class Base : public korali::distribution::Base
 {
  public:
 
 };
 
-} } } // namespace korali::Distribution::Specific
+} } } // namespace korali::distribution::Specific
 
 #endif // _KORALI_DISTRIBUTION_SPECIFIC_BASE_HPP_

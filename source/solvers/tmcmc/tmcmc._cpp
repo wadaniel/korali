@@ -22,19 +22,19 @@ void korali::solver::TMCMC::initialize()
 {
  auto jsMultinomial = nlohmann::json();
  jsMultinomial["Type"] = "Multinomial";
- _multinomialGenerator = dynamic_cast<korali::Distribution::Specific::Multinomial*>(korali::Module::getModule(jsMultinomial));
+ _multinomialGenerator = dynamic_cast<korali::distribution::specific::Multinomial*>(korali::Module::getModule(jsMultinomial));
  _multinomialGenerator->initialize();
 
  auto jsMultivariate = nlohmann::json();
  jsMultivariate["Type"] = "Multivariate Normal";
- _multivariateGenerator = dynamic_cast<korali::Distribution::Multivariate::Normal*>(korali::Module::getModule(jsMultivariate));
+ _multivariateGenerator = dynamic_cast<korali::distribution::multivariate::Normal*>(korali::Module::getModule(jsMultivariate));
  _multivariateGenerator->initialize();
 
  auto jsUniform = nlohmann::json();
  jsUniform["Type"] = "Uniform";
  jsUniform["Minimum"] = 0.0;
  jsUniform["Maximum"] = 1.0;
- _uniformGenerator = dynamic_cast<korali::Distribution::Univariate::Uniform*>(korali::Module::getModule(jsUniform));
+ _uniformGenerator = dynamic_cast<korali::distribution::univariate::Uniform*>(korali::Module::getModule(jsUniform));
  _uniformGenerator->initialize();
 
  N = _k->_variables.size();
@@ -46,7 +46,7 @@ void korali::solver::TMCMC::initialize()
  if (_perGenerationBurnIn.size() > 1 && _perGenerationBurnIn[1] != 0)
  korali::logWarning("Normal", "The 1st entry of the Burn In vector is being ignored (corresponding to Generation 1)\n");
 
- _bayesianProblem = dynamic_cast<korali::problem::Evaluation::Bayesian::Base*>(_k->_problem);
+ _bayesianProblem = dynamic_cast<korali::problem::evaluation::bayesian::Base*>(_k->_problem);
  if (_bayesianProblem == NULL) korali::logError( "TMCMC requires that the problem is of type 'Bayesian'.\n");
 
  if (_k->_currentGeneration > 1) return;

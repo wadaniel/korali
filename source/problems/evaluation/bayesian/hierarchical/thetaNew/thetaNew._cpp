@@ -1,9 +1,9 @@
 #include "problems/evaluation/bayesian/hierarchical/thetaNew/thetaNew.hpp"
 #include "conduits/base.hpp"
 
-void korali::problem::Evaluation::Bayesian::Hierarchical::ThetaNew::initialize()
+void korali::problem::evaluation::bayesian::hierarchical::ThetaNew::initialize()
 {
-  korali::problem::Evaluation::Bayesian::Hierarchical::Base::initialize();
+  korali::problem::evaluation::bayesian::hierarchical::Base::initialize();
 
   // Creating Psi-problem JSON object from string
   nlohmann::json psiProblemJson = korali::JsonInterface::loadJsonFromFile(_psiProblemPath.c_str());
@@ -42,21 +42,21 @@ void korali::problem::Evaluation::Bayesian::Hierarchical::ThetaNew::initialize()
    [](korali::Sample& sample)
    {
     korali::Engine* k = sample._k;
-    auto _thetaNewProblem = dynamic_cast<korali::problem::Evaluation::Bayesian::Hierarchical::ThetaNew*>(k->_problem);
+    auto _thetaNewProblem = dynamic_cast<korali::problem::evaluation::bayesian::hierarchical::ThetaNew*>(k->_problem);
     _thetaNewProblem->evaluateThetaLikelihood(sample);
    }
  );
 }
 
-void korali::problem::Evaluation::Bayesian::Hierarchical::ThetaNew::evaluateLogLikelihood(korali::Sample& sample)
+void korali::problem::evaluation::bayesian::hierarchical::ThetaNew::evaluateLogLikelihood(korali::Sample& sample)
 {
  _k->_conduit->runModel(0, sample);
 }
 
-void korali::problem::Evaluation::Bayesian::Hierarchical::ThetaNew::evaluateThetaLikelihood(korali::Sample& sample)
+void korali::problem::evaluation::bayesian::hierarchical::ThetaNew::evaluateThetaLikelihood(korali::Sample& sample)
 {
  double logLikelihood = 0.0;
- auto  _psiProblem = dynamic_cast<korali::problem::Evaluation::Bayesian::Hierarchical::Psi*>(_psiEngine->_problem);
+ auto  _psiProblem = dynamic_cast<korali::problem::evaluation::bayesian::hierarchical::Psi*>(_psiEngine->_problem);
 
  size_t Ntheta = _k->_variables.size();
  std::vector<double> logValues( _psiProblemSampleCount, 0.0);

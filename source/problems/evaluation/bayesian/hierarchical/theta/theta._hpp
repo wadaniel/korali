@@ -4,9 +4,9 @@
 #include "problems/evaluation/bayesian/base.hpp"
 #include "problems/evaluation/bayesian/hierarchical/psi/psi.hpp"
 
-namespace korali { namespace problem { namespace Evaluation { namespace Bayesian { namespace Hierarchical {
+namespace korali { namespace problem { namespace evaluation { namespace bayesian { namespace hierarchical {
 
-class Theta : public korali::problem::Evaluation::Bayesian::Hierarchical::Base
+class Theta : public korali::problem::evaluation::bayesian::hierarchical::Base
 {
  private:
 
@@ -16,7 +16,7 @@ class Theta : public korali::problem::Evaluation::Bayesian::Hierarchical::Base
  std::vector<std::vector<double>> _psiProblemSampleCoordinates;
  std::vector<double> _psiProblemSampleLogLikelihoods;
  std::vector<double> _psiProblemSampleLogPriors;
- korali::problem::Evaluation::Bayesian::Hierarchical::Psi* _psiProblem;
+ korali::problem::evaluation::bayesian::hierarchical::Psi* _psiProblem;
 
  korali::Engine* _thetaProblemEngine;
  size_t _thetaVariableCount;
@@ -34,7 +34,7 @@ class Theta : public korali::problem::Evaluation::Bayesian::Hierarchical::Base
  void initialize() override;
 };
 
-} } } } } // namespace korali::problem::Evaluation::Bayesian::Hierarchical
+} } } } } // namespace korali::problem::evaluation::bayesian::Hierarchical
 
 
 #endif // _KORALI_PROBLEM_THETA_HPP_

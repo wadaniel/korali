@@ -1,7 +1,6 @@
 #ifndef _KORALI_PROBLEM_BASE_HPP_
 #define _KORALI_PROBLEM_BASE_HPP_
 
-#include <vector>
 #include "module.hpp"
 #include "engine/engine.hpp"
 
@@ -10,9 +9,6 @@ namespace Korali { namespace Problem {
 class Base : public Korali::Module
 {
  public:
-
-  virtual bool isSampleFeasible(Korali::Sample&) { return true; };
-  virtual void evaluateSample(Korali::Sample&) = 0;
 };
 
 } } // namespace Korali

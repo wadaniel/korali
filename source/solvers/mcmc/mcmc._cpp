@@ -96,8 +96,8 @@ void Korali::Solver::MCMC::initialize()
  _chainCovariance.resize(N*N);
  _choleskyDecompositionChainCovariance.resize(N*N);
 
- _problem = dynamic_cast<Korali::Problem::Base*>(_k->_problem);
- if (_problem == NULL) Korali::logError( "MCMC: Error creating problem pointer.\n");
+ _problem = dynamic_cast<Korali::Problem::Evaluation::Base*>(_k->_problem);
+ if (_problem == NULL) Korali::logError( "MCMC can only sample problems of type 'Evaluation' or derived problem types.\n");
 
  if (_k->_currentGeneration > 1) return;
 

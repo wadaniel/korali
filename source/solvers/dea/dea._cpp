@@ -28,8 +28,8 @@ void Korali::Solver::DEA::initialize()
  _uniformGenerator = dynamic_cast<Korali::Distribution::Univariate::Uniform*>(Korali::Module::getModule(jsUniform));
  _uniformGenerator->initialize();
 
- _problem = dynamic_cast<Korali::Problem::Base*>(_k->_problem);
- if (_problem == NULL) Korali::logError( "DEA: Error creating problem pointer.\n");
+ _problem = dynamic_cast<Korali::Problem::Evaluation::Base*>(_k->_problem);
+ if (_problem == NULL) Korali::logError( "DEA can only sample problems of type 'Evaluation' or derived problem types.\n");
 
  N = _k->_variables.size();
 

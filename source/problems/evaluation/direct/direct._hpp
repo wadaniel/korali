@@ -1,0 +1,25 @@
+#ifndef _KORALI_PROBLEM_DIRECT_HPP_
+#define _KORALI_PROBLEM_DIRECT_HPP_
+
+#include "problems/evaluation/base.hpp"
+#include "sample/sample.hpp"
+
+namespace Korali { namespace Problem { namespace Evaluation {
+
+class Direct : public Korali::Problem::Evaluation::Base
+{
+ private:
+
+ public:
+
+ void initialize() override;
+ bool isSampleFeasible(Korali::Sample& sample) override;
+ void evaluateSample(Korali::Sample&) override;
+ void evaluateConstraints(Korali::Sample&);
+
+};
+
+} } } // namespace Korali::Problem::Evaluation
+
+
+#endif // _KORALI_PROBLEM_DIRECT_HPP_

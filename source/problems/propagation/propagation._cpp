@@ -12,11 +12,6 @@ void Korali::Problem::Propagation::initialize()
   }
 }
 
-void Korali::Problem::Propagation::evaluateSample(Korali::Sample& sample)
-{
- Korali::logError("Propagation problem cannot evaluate samples, only propagate them.\n");
-}
-
 void Korali::Problem::Propagation::propagateSample(Korali::Sample& sample)
 {
  _k->_conduit->runModel(_propagationModel, sample);

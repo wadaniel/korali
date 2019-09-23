@@ -4,7 +4,7 @@
 #include "solvers/base.hpp"
 #include "distributions/univariate/normal/normal.hpp"
 #include "distributions/univariate/uniform/uniform.hpp"
-#include "problems/base.hpp"
+#include "problems/evaluation/base.hpp"
 #include <vector>
 
 namespace Korali { namespace Solver {
@@ -22,7 +22,7 @@ class DEA : public Korali::Solver::Base
  void initSamples();
  void prepareGeneration();
 
- Korali::Problem::Base* _problem;
+ Korali::Problem::Evaluation::Base* _problem;
 
  public:
 

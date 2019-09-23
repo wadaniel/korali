@@ -1,0 +1,20 @@
+#ifndef _KORALI_PROBLEM_BAYESIAN_INFERENCE_HPP_
+#define _KORALI_PROBLEM_BAYESIAN_INFERENCE_HPP_
+
+#include "problems/evaluation/bayesian/base.hpp"
+
+namespace Korali { namespace Problem { namespace Evaluation { namespace Bayesian { namespace Inference {
+
+class Base : public Korali::Problem::Evaluation::Bayesian::Base
+{
+ public:
+
+  std::vector<size_t> _computationalVariableIndices;
+  std::vector<size_t> _statisticalVariableIndices;
+  void initialize() override;
+};
+
+} } } } } // namespace Korali::Problem::Evaluation::Bayesian::Inference
+
+
+#endif // _KORALI_PROBLEM_BAYESIAN_INFERENCE_HPP_

@@ -1,0 +1,55 @@
+#include "problems/evaluation/direct/direct.hpp"
+#include "conduits/base.hpp"
+
+bool Korali::Problem::Evaluation::Direct::isSampleFeasible(Korali::Sample& sample)
+{
+  for (size_t i = 0; i < sample.size(); i++)
+  {
+    if (std::isfinite(sample[i]) == false) return false;
+    if (sample[i] < _k->_variables[i]->_lowerBound) return false;
+    if (sample[i] > _k->_variables[i]->_upperBound) return false;
+  }
+  return true;
+}
+
+void Korali::Problem::Evaluation::Direct::initialize()
+{
+ if (_k->_variables.size() == 0) Korali::logError("Direct Evaluation problems require at least one variable.\n");
+
+/* check _granularity for discrete variables */
+ for (size_t i = 0; i < _k->_variables.size(); i++)
+ {
+   if(_k->_variables[i]->_granularity < 0.0)   Korali::logError("Negative granularity for variable \'%s\'.\n", _k->_variables[i]->_name.c_str());
+   if(_k->_variables[i]->_granularity > 0.0)  _hasDiscreteVariables = true;
+ }
+}
+
+void Korali::Problem::Evaluation::Direct::evaluateConstraints(Korali::Sample& sample)
+{
+ std::vector<double> evaluations;
+
+ for (size_t i = 0; i < _constraints.size(); i++)
+ {
+  _k->_conduit->runModel(_constraints[i], sample);
+  std::vector<double> constraintResult = sample.getResult();
+  if (constraintResult.size() != 1) Korali::logError("Constraint evaluations should return exactly 1 result. Provided: %lu.\n", constraintResult.size());
+  evaluations.push_back(constraintResult[0]);
+  _constraintEvaluationCount++;
+ }
+
+ sample.setResult(evaluations);
+}
+
+void Korali::Problem::Evaluation::Direct::evaluateSample(Korali::Sample& sample)
+{
+ _k->_conduit->runModel(_objectiveFunction, sample);
+ std::vector<double> resultVector = sample.getResult();
+ if (resultVector.size() != 1) Korali::logError("Direct Evaluation problems require exactly 1 result. Provided: %lu.\n", resultVector.size());
+
+ double evaluationSign = _objective == "Maximize" ? 1.0 : -1.0;
+ double result = sample.getResult()[0];
+
+ // If result is not a finite number, objective function evaluates to -Infinity
+ if(std::isnan(result)) sample.setResult(-Korali::Inf);
+ else sample.setResult(evaluationSign * result);
+}

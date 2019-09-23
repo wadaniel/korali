@@ -1,0 +1,19 @@
+{
+ "Name": "Bayesian Inference (Base)",
+ "Alias": "Bayesian Inference (Base)",
+ "C++ Class": "Korali::Problem::Evaluation::Bayesian::Inference::Base",
+
+ "Variables Configuration":
+ [
+   {
+    "Name": [ "Bayesian Type" ],
+    "Type": "std::string",
+    "Default": "Computational",
+    "Options": [
+                { "Value": "Computational", "Description": "The variable is part of the sample processed by the model." },
+                { "Value": "Statistical", "Description": "The variable is used by the likelihood model as statistical parameter." }
+               ],
+    "Description": "Specifies the purpose of the variable for the bayesian model."
+   }
+ ]
+}

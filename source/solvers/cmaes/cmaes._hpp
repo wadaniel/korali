@@ -5,8 +5,8 @@
 #include "sample/sample.hpp"
 #include "distributions/univariate/normal/normal.hpp"
 #include "distributions/univariate/uniform/uniform.hpp"
-#include "problems/direct/optimization/optimization.hpp"
-#include "problems/base.hpp"
+#include "problems/evaluation/base.hpp"
+#include "problems/evaluation/direct/direct.hpp"
 #include <vector>
 
 namespace Korali { namespace Solver {
@@ -17,8 +17,8 @@ class CMAES : public Korali::Solver::Base
 
  Korali::Distribution::Univariate::Normal* _normalGenerator; /* Normal random number generator */
  Korali::Distribution::Univariate::Uniform* _uniformGenerator; /* Uniform random number generator */
- Korali::Problem::Direct::Base* _directProblem;
- Korali::Problem::Base* _problem;
+ Korali::Problem::Evaluation::Direct* _directProblem;
+ Korali::Problem::Evaluation::Base* _problem;
 
  void prepareGeneration();
  void sampleSingle(size_t sampleIdx); /* sample individual */

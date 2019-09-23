@@ -4,7 +4,7 @@
 #include "solvers/base.hpp"
 #include "distributions/univariate/normal/normal.hpp"
 #include "distributions/univariate/uniform/uniform.hpp"
-#include "problems/base.hpp"
+#include "problems/evaluation/base.hpp"
 #include <vector>
 
 namespace Korali { namespace Solver {
@@ -23,7 +23,7 @@ class MCMC : public Korali::Solver::Base
  void choleskyDecomp(const std::vector<double>& inC, std::vector<double>& outL) const;
  void finishSample(size_t sampleId);
 
- Korali::Problem::Base* _problem;
+ Korali::Problem::Evaluation::Base* _problem;
 
  public:
 

@@ -1,0 +1,26 @@
+#ifndef _KORALI_PROBLEM_BAYESIAN_HPP_
+#define _KORALI_PROBLEM_BAYESIAN_HPP_
+
+#include "problems/evaluation/base.hpp"
+
+namespace Korali { namespace Problem { namespace Evaluation { namespace Bayesian {
+
+class Base : public Korali::Problem::Evaluation::Base
+{
+ private:
+
+ public:
+
+ void initialize() override;
+
+ bool isSampleFeasible(Korali::Sample& sample) override;
+ virtual void evaluateSample(Korali::Sample& sample) override;
+ void evaluateLogPrior(Korali::Sample& sample);
+ virtual void evaluateLogLikelihood(Korali::Sample& sample) = 0;
+ void evaluateLogPosterior(Korali::Sample& sample);
+};
+
+} } } } // namespace Korali::Problem::Evaluation::Bayesian
+
+
+#endif // _KORALI_PROBLEM_BAYESIAN_HPP_

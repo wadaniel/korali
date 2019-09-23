@@ -24,10 +24,10 @@ void Korali::Solver::CMAES::initialize()
  _uniformGenerator = dynamic_cast<Korali::Distribution::Univariate::Uniform*>(Korali::Module::getModule(jsUniform));
  _uniformGenerator->initialize();
 
- _problem = dynamic_cast<Korali::Problem::Base*>(_k->_problem);
- if (_problem == NULL) Korali::logError( "CMAES: Error creating problem pointer.\n");
+ _problem = dynamic_cast<Korali::Problem::Evaluation::Base*>(_k->_problem);
+ if (_problem == NULL) Korali::logError( "CMAES can only sample problems of type 'Evaluation' or derived problem types.\n");
 
- _directProblem = dynamic_cast<Korali::Problem::Direct::Base*>(_problem);
+ _directProblem = dynamic_cast<Korali::Problem::Evaluation::Direct*>(_problem);
 
  N = _k->_variables.size();
 
@@ -94,7 +94,7 @@ void Korali::Solver::CMAES::initialize()
  _muWeights.resize(mu_max);
 
  // Initializing variable defaults
- bool isDirectProblem = dynamic_cast<Korali::Problem::Direct::Base*>(_problem) != NULL;
+ bool isDirectProblem = dynamic_cast<Korali::Problem::Evaluation::Direct*>(_problem) != NULL;
 
  if (isDirectProblem == false)
  {

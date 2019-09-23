@@ -46,7 +46,7 @@ void Korali::Solver::TMCMC::initialize()
  if (_perGenerationBurnIn.size() > 1 && _perGenerationBurnIn[1] != 0)
  Korali::logWarning("Normal", "The 1st entry of the Burn In vector is being ignored (corresponding to Generation 1)\n");
 
- _bayesianProblem = dynamic_cast<Korali::Problem::Bayesian::Base*>(_k->_problem);
+ _bayesianProblem = dynamic_cast<Korali::Problem::Evaluation::Bayesian::Base*>(_k->_problem);
  if (_bayesianProblem == NULL) Korali::logError( "TMCMC requires that the problem is of type 'Bayesian'.\n");
 
  if (_k->_currentGeneration > 1) return;

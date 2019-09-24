@@ -1,5 +1,2 @@
 {
- "Name": "Univariate",
- "Alias": "Univariate",
- "C++ Class": "korali::distribution::Univariate"
 }

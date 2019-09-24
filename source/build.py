@@ -41,6 +41,33 @@ def getVariableOptions(v):
 def getVariableEnabledDefault(v):
  if ( v.get('Default', '') ): return 'true'
  return 'false'
+
+def getModuleName(path):
+ nameList = path.rsplit('/', 1)
+ moduleName = nameList[-1].capitalize()
+ return moduleName
+
+def getClassName(path):
+ nameList = path.rsplit('/')
+ className = 'korali::'
+ for name in nameList[:-1]:
+  className += name + '::'
+ className += getModuleName(path)
+ return className
+ 
+def getParentClassName(className):
+ nameString = className.rsplit('::', 2)
+ if (len(nameString) == 2): return 'korali::Module'
+ parentClass = nameString[0] + '::' + nameString[-2].capitalize()
+ return parentClass
+
+def isLeafModule(path):
+ for curDir, relDir, fileNames in os.walk(path):
+  if (curDir != path):
+   for fileName in fileNames: 
+    if '.json' in fileName:
+     return False
+ return True
  
 #####################################################################
 
@@ -129,40 +156,31 @@ def saveValue(base, path, varName, varType):
  sString = '   ' + base + path + ' = ' + varName + ';\n'  
  return sString
 
-####################################################################
- 
-def getParentClass(module):
-  className = module["C++ Class"]
-  parentName = className.rsplit('::', 1)[0]
-  if ('::Base' in className): parentName = className.rsplit('::', 2)[0]
-  parentName += '::Base'
-  if (parentName == 'korali::Base'): parentName = 'korali::Module'
-  return parentName
  
 ####################################################################
 
 def createSetConfiguration(module):
- codeString = 'void ' + module["C++ Class"] + '::setConfiguration(nlohmann::json& js) \n{\n'
+ codeString = 'void ' + module["Class"] + '::setConfiguration(nlohmann::json& js) \n{\n'
   
  # Consume Configuration Settings
  if 'Configuration Settings' in module:
   for v in module["Configuration Settings"]:
-   codeString += consumeValue('js', module["Alias"], getVariablePath(v), getCXXVariableName(v["Name"]), getVariableType(v), getVariableDefault(v), getVariableOptions(v))
+   codeString += consumeValue('js', module["Name"], getVariablePath(v), getCXXVariableName(v["Name"]), getVariableType(v), getVariableDefault(v), getVariableOptions(v))
   
  if 'Internal Settings' in module: 
   for v in module["Internal Settings"]:
    varDefault = getVariableDefault(v)
    if (varDefault == ''): varDefault = 'Korali Skip Default'
-   codeString += consumeValue('js', module["Alias"], '["Internal"]' + getVariablePath(v),  getCXXVariableName(v["Name"]), getVariableType(v), varDefault, getVariableOptions(v))
+   codeString += consumeValue('js', module["Name"], '["Internal"]' + getVariablePath(v),  getCXXVariableName(v["Name"]), getVariableType(v), varDefault, getVariableOptions(v))
   
  if 'Termination Criteria' in module:
   for v in module["Termination Criteria"]:
-   codeString += consumeValue('js', module["Alias"], '["Termination Criteria"]' + getVariablePath(v), getCXXVariableName(v["Name"]), getVariableType(v), getVariableDefault(v), getVariableOptions(v))
+   codeString += consumeValue('js', module["Name"], '["Termination Criteria"]' + getVariablePath(v), getCXXVariableName(v["Name"]), getVariableType(v), getVariableDefault(v), getVariableOptions(v))
  
  if 'Variables Configuration' in module:
   codeString += ' for (size_t i = 0; i < _k->_js["Variables"].size(); i++) { \n'
   for v in module["Variables Configuration"]:
-   codeString += consumeValue('_k->_js["Variables"][i]', module["Alias"], getVariablePath(v), '_k->_variables[i]->' + getCXXVariableName(v["Name"]), getVariableType(v), getVariableDefault(v), getVariableOptions(v))
+   codeString += consumeValue('_k->_js["Variables"][i]', module["Name"], getVariablePath(v), '_k->_variables[i]->' + getCXXVariableName(v["Name"]), getVariableType(v), getVariableDefault(v), getVariableOptions(v))
   codeString += ' } \n'
    
  if 'Conditional Variables' in module:
@@ -171,12 +189,12 @@ def createSetConfiguration(module):
    codeString += ' if(js' + getVariablePath(v) + '.is_string()) ' + getCXXVariableName(v["Name"]) + 'Conditional = js' + getVariablePath(v) + ';\n'
    codeString += ' korali::JsonInterface::eraseValue(js, "' + getVariablePath(v).replace('"', "'") + '");\n\n'
  
- codeString += ' ' + getParentClass(module) + '::setConfiguration(js);\n'
+ codeString += ' ' + module["Parent Class"] + '::setConfiguration(js);\n'
  
- codeString += ' _type = "' + module["Alias"] + '";\n'
+ codeString += ' _type = "' + module["Name"] + '";\n'
  codeString += ' if(korali::JsonInterface::isDefined(js, "[\'Type\']")) korali::JsonInterface::eraseValue(js, "[\'Type\']");\n'   
  
- codeString += ' if(korali::JsonInterface::isEmpty(js) == false) korali::logError("Unrecognized settings for ' + module["Name"] + ' (' + module["Alias"] + '): \\n%s\\n", js.dump(2).c_str());\n'
+ codeString += ' if(korali::JsonInterface::isEmpty(js) == false) korali::logError("Unrecognized settings for ' + module["Name"] + ' (' + module["Name"] + '): \\n%s\\n", js.dump(2).c_str());\n'
  codeString += '} \n\n'
   
  return codeString
@@ -184,7 +202,7 @@ def createSetConfiguration(module):
 ####################################################################
   
 def createGetConfiguration(module):  
- codeString = 'void ' + module["C++ Class"]  + '::getConfiguration(nlohmann::json& js) \n{\n\n'
+ codeString = 'void ' + module["Class"]  + '::getConfiguration(nlohmann::json& js) \n{\n\n'
  
  codeString += ' js["Type"] = _type;\n'
  
@@ -211,7 +229,7 @@ def createGetConfiguration(module):
    codeString += ' if(' + getCXXVariableName(v["Name"]) + 'Conditional == "") js' + getVariablePath(v) + ' = ' + getCXXVariableName(v["Name"]) + ';\n'
    codeString += ' if(' + getCXXVariableName(v["Name"]) + 'Conditional != "") js' + getVariablePath(v) + ' = ' + getCXXVariableName(v["Name"]) + 'Conditional;\n'
  
- codeString += ' ' + getParentClass(module) + '::getConfiguration(js);\n'
+ codeString += ' ' + module["Parent Class"] + '::getConfiguration(js);\n'
  
  codeString += '} \n\n'
  
@@ -220,7 +238,7 @@ def createGetConfiguration(module):
 ####################################################################
 
 def createCheckTermination(module):  
- codeString = 'bool ' + module["C++ Class"]  + '::checkTermination()\n'
+ codeString = 'bool ' + module["Class"]  + '::checkTermination()\n'
  codeString += '{\n'
  codeString += ' bool hasFinished = false;\n\n'
  
@@ -228,11 +246,11 @@ def createCheckTermination(module):
   for v in module["Termination Criteria"]: 
    codeString += ' if (' + v["Criteria"] + ')\n'
    codeString += ' {\n'
-   codeString += '  _terminationCriteria.push_back("' + module["Alias"] + getVariablePath(v).replace('"', "'") + ' = " + std::to_string(' + getCXXVariableName(v["Name"]) +') + ".");\n'
+   codeString += '  _terminationCriteria.push_back("' + module["Name"] + getVariablePath(v).replace('"', "'") + ' = " + std::to_string(' + getCXXVariableName(v["Name"]) +') + ".");\n'
    codeString += '  hasFinished = true;\n'
    codeString += ' }\n\n'
  
-   codeString += ' hasFinished = hasFinished || ' + getParentClass(module) + '::checkTermination();\n' 
+   codeString += ' hasFinished = hasFinished || ' + module["Parent Class"] + '::checkTermination();\n' 
  codeString += ' return hasFinished;\n'
  codeString += '}'
  
@@ -292,14 +310,21 @@ for moduleDir, relDir, fileNames in os.walk(koraliDir):
  for fileName in fileNames: 
   if '.json' in fileName:
    with open(moduleDir + '/' + fileName, 'r') as file: moduleConfig = json.load(file)
-   moduleName = fileName.replace('.json', '')
+   moduleFilename = fileName.replace('.json', '')
+   
+   # Processing Module information
+   modulePath = os.path.relpath(moduleDir, koraliDir)
+   moduleConfig["Name"] =  getModuleName(modulePath)
+   moduleConfig["Class"] =  getClassName(modulePath)
+   moduleConfig["Parent Class"] =  getParentClassName(moduleConfig["Class"])
+   moduleConfig["Is Leaf"] = isLeafModule(modulePath)
    
    ####### Adding module to list
-   if (not '(Base)' in moduleConfig["Name"]):
+   if (moduleConfig["Is Leaf"]):
     relpath = os.path.relpath(moduleDir, koraliDir)
-    filepath = os.path.join(relpath, moduleName + '.hpp')
+    filepath = os.path.join(relpath, moduleFilename + '.hpp')
     moduleIncludeList += '#include "' + filepath + '" \n'
-    moduleDetectionList += '  if(moduleType == "' + moduleConfig["Alias"] + '") module = new ' + moduleConfig["C++ Class"] + '();\n'
+    moduleDetectionList += '  if(moduleType == "' + moduleConfig["Name"] + '") module = new ' + moduleConfig["Class"] + '();\n'
    
    ###### Producing module code
 
@@ -310,7 +335,7 @@ for moduleDir, relDir, fileNames in os.walk(koraliDir):
    ####### Producing header file
    
    # Loading template header .hpp file
-   moduleTemplateHeaderFile = moduleDir + '/' + moduleName + '._hpp'
+   moduleTemplateHeaderFile = moduleDir + '/' + moduleFilename + '._hpp'
    with open(moduleTemplateHeaderFile, 'r') as file: moduleTemplateHeaderString = file.read()
    
    # Adding overridden function declarations
@@ -329,14 +354,14 @@ for moduleDir, relDir, fileNames in os.walk(koraliDir):
     varDeclarationSet.add(varDecl)
    
    # Saving new header .hpp file
-   moduleNewHeaderFile = moduleDir + '/' + moduleName + '.hpp'
+   moduleNewHeaderFile = moduleDir + '/' + moduleFilename + '.hpp'
    print('[Korali] Creating: ' + moduleNewHeaderFile + '...')
    with open(moduleNewHeaderFile, 'w') as file: file.write(newHeaderString)
    
    ###### Creating code file
    
-   moduleBaseCodeFileName = moduleDir + '/' + moduleName + '._cpp'
-   moduleNewCodeFile = moduleDir + '/' + moduleName + '.cpp'
+   moduleBaseCodeFileName = moduleDir + '/' + moduleFilename + '._cpp'
+   moduleNewCodeFile = moduleDir + '/' + moduleFilename + '.cpp'
    baseFileTime = os.path.getmtime(moduleBaseCodeFileName)
    newFileTime = baseFileTime
    if (os.path.exists(moduleNewCodeFile)): newFileTime = os.path.getmtime(moduleNewCodeFile)

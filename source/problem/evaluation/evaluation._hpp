@@ -1,7 +1,7 @@
 #ifndef _KORALI_PROBLEM_EVALUATION_HPP_
 #define _KORALI_PROBLEM_EVALUATION_HPP_
 
-#include "problems.hpp"
+#include "problem/problem.hpp"
 #include "sample/sample.hpp"
 
 namespace korali { namespace problem {

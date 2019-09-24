@@ -1,8 +1,4 @@
 {
- "Name":  "Theta",
- "Alias": "Theta",
- "C++ Class": "korali::problem::evaluation::bayesian::hierarchical::Theta",
-
  "Configuration Settings":
  [
    {

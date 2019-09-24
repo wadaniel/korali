@@ -1,10 +1,2 @@
 {
- "Name": "Solver",
- "Alias": "Solver",
- "C++ Class": "korali::Solver",
-
- "Variables Configuration":
- [
- ]
-
 }

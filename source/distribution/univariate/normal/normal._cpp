@@ -1,4 +1,4 @@
-#include "distributions/univariate/normal/normal.hpp"
+#include "distribution/univariate/normal/normal.hpp"
 
 double korali::distribution::univariate::Normal::getDensity(double x)
 {

@@ -4,7 +4,7 @@
 #include "solver/solver.hpp"
 #include "distribution/univariate/normal/normal.hpp"
 #include "distribution/univariate/uniform/uniform.hpp"
-#include "problem/evaluation.hpp"
+#include "problem/evaluation/evaluation.hpp"
 #include <vector>
 
 namespace korali { namespace solver {

@@ -1,8 +1,4 @@
 {
- "Name": "Exponential",
- "Alias": "Exponential",
- "C++ Class": "korali::distribution::univariate::Exponential",
- 
  "Conditional Variables": 
  [
    {

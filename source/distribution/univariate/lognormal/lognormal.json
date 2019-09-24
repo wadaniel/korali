@@ -1,8 +1,4 @@
 {
- "Name": "LogNormal",
- "Alias": "LogNormal",
- "C++ Class": "korali::distribution::univariate::LogNormal",
-
  "Conditional Variables": 
  [
    {

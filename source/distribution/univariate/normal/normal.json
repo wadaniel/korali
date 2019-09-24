@@ -1,8 +1,4 @@
 {
- "Name": "Normal",
- "Alias": "Normal",
- "C++ Class": "korali::distribution::univariate::Normal",
- 
  "Conditional Variables": 
  [
    {

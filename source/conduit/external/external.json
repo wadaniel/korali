@@ -1,8 +1,4 @@
 {
- "Name": "External Conduit",
- "Alias": "External",
- "C++ Class": "korali::conduit::External",
- 
  "Configuration Settings": 
  [
    {

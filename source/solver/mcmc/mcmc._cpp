@@ -1,5 +1,5 @@
-#include "solvers/mcmc/mcmc.hpp"
-#include "problems.hpp"
+#include "solver/mcmc/mcmc.hpp"
+#include "problem/problem.hpp"
 #include "sample/sample.hpp"
 #include "engine/engine.hpp"
 
@@ -96,7 +96,7 @@ void korali::solver::MCMC::initialize()
  _chainCovariance.resize(N*N);
  _choleskyDecompositionChainCovariance.resize(N*N);
 
- _problem = dynamic_cast<korali::problem::evaluation::Base*>(_k->_problem);
+ _problem = dynamic_cast<korali::problem::Evaluation*>(_k->_problem);
  if (_problem == NULL) korali::logError( "MCMC can only sample problems of type 'Evaluation' or derived problem types.\n");
 
  if (_k->_currentGeneration > 1) return;

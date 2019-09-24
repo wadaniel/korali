@@ -1,7 +1,7 @@
 #ifndef _KORALI_PROBLEM_PSI_HPP_
 #define _KORALI_PROBLEM_PSI_HPP_
 
-#include "problem/evaluation/bayesian/hieararchical/hierarchical.hpp"
+#include "problem/evaluation/bayesian/hierarchical/hierarchical.hpp"
 #include "distribution/distribution.hpp"
 
 namespace korali { namespace problem { namespace evaluation { namespace bayesian { namespace hierarchical {

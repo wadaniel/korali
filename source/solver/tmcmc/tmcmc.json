@@ -1,8 +1,4 @@
 {
- "Name": "Transitional Markov Chain Monte Carlo",
- "Alias": "TMCMC",
- "C++ Class": "korali::solver::TMCMC",
-
  "Configuration Settings":
  [
    {

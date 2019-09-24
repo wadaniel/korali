@@ -1,8 +1,4 @@
 {
- "Name": "Custom",
- "Alias": "Custom",
- "C++ Class": "korali::problem::evaluation::bayesian::inference::Custom",
-
  "Configuration Settings":
  [
    {

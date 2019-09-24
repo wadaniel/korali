@@ -1,8 +1,4 @@
 {
- "Name": "MPI",
- "Alias": "MPI",
- "C++ Class": "korali::conduit::MPI",
- 
  "Configuration Settings": 
  [
    {

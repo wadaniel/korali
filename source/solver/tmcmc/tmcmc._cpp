@@ -1,4 +1,4 @@
-#include "solvers/tmcmc/tmcmc.hpp"
+#include "solver/tmcmc/tmcmc.hpp"
 #include <engine/engine.hpp>
 #include <numeric>
 #include <limits>
@@ -46,7 +46,7 @@ void korali::solver::TMCMC::initialize()
  if (_perGenerationBurnIn.size() > 1 && _perGenerationBurnIn[1] != 0)
  korali::logWarning("Normal", "The 1st entry of the Burn In vector is being ignored (corresponding to Generation 1)\n");
 
- _bayesianProblem = dynamic_cast<korali::problem::evaluation::bayesian::Base*>(_k->_problem);
+ _bayesianProblem = dynamic_cast<korali::problem::evaluation::Bayesian*>(_k->_problem);
  if (_bayesianProblem == NULL) korali::logError( "TMCMC requires that the problem is of type 'Bayesian'.\n");
 
  if (_k->_currentGeneration > 1) return;

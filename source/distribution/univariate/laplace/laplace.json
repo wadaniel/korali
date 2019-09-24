@@ -1,8 +1,4 @@
 {
- "Name": "Laplace",
- "Alias": "Laplace",
- "C++ Class": "korali::distribution::univariate::Laplace",
- 
  "Conditional Variables": 
  [
    {

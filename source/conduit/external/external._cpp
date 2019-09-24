@@ -1,4 +1,4 @@
-#include "conduits/external/external.hpp"
+#include "conduit/external/external.hpp"
 #include "engine/engine.hpp"
 #include "problem/problem.hpp"
 #include "solver/solver.hpp"

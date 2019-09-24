@@ -1,8 +1,4 @@
 {
- "Name": "Engine",
- "Alias": "Engine",
- "C++ Class": "korali::Engine",
-
  "Configuration Settings": 
  [
    {

@@ -1,4 +1,4 @@
-#include "distributions/univariate/uniform/uniform.hpp"
+#include "distribution/univariate/uniform/uniform.hpp"
 
 double korali::distribution::univariate::Uniform::getDensity(double x)
 {

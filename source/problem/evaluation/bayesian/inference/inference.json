@@ -1,8 +1,4 @@
 {
- "Name": "Inference",
- "Alias": "Inference",
- "C++ Class": "korali::problem::evaluation::bayesian::Inference",
-
  "Variables Configuration":
  [
    {

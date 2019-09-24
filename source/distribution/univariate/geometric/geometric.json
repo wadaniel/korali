@@ -1,8 +1,4 @@
 {
- "Name": "Geometric",
- "Alias": "Geometric",
- "C++ Class": "korali::distribution::univariate::Geometric",
- 
  "Conditional Variables": 
  [
    {

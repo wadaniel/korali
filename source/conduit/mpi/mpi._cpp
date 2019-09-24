@@ -1,7 +1,7 @@
 #include "conduit/mpi/mpi.hpp"
 #include "engine/engine.hpp"
-#include "problems.hpp"
-#include "solvers.hpp"
+#include "problem/problem.hpp"
+#include "solver/solver.hpp"
 
 
 #ifdef _KORALI_USE_MPI

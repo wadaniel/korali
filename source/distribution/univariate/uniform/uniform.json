@@ -1,8 +1,4 @@
 {
- "Name": "Uniform Distribution",
- "Alias": "Uniform",
- "C++ Class": "korali::distribution::univariate::Uniform",
- 
  "Conditional Variables": 
  [
    {

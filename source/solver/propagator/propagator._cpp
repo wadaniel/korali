@@ -1,4 +1,4 @@
-#include "solvers/propagator/propagator.hpp"
+#include "solver/propagator/propagator.hpp"
 
 void korali::solver::Propagator::initialize()
 {

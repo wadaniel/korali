@@ -1,8 +1,4 @@
 {
- "Name": "Propagation",
- "Alias": "Propagation",
- "C++ Class": "korali::problem::Propagation",
-
  "Configuration Settings":
  [
    {

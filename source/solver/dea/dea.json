@@ -1,8 +1,4 @@
 {
- "Name": "Differential Evolution Algorithm",
- "Alias": "DEA",
- "C++ Class": "korali::solver::DEA",
- 
  "Configuration Settings": 
  [
    {

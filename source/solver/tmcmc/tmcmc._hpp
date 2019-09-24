@@ -6,7 +6,7 @@
 #include "distribution/univariate/uniform/uniform.hpp"
 #include "distribution/multivariate/normal/normal.hpp"
 #include "distribution/specific/multinomial/multinomial.hpp"
-#include "problem/evaluation/bayesian.hpp"
+#include "problem/evaluation/bayesian/bayesian.hpp"
 #include <gsl/gsl_vector.h>
 
 namespace korali { namespace solver {

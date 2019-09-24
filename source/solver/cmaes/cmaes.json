@@ -1,8 +1,4 @@
 {
- "Name": "Covariance Matrix Adaptation Evolution Strategy",
- "Alias": "CMAES",
- "C++ Class": "korali::solver::CMAES",
- 
  "Configuration Settings": 
  [
    {

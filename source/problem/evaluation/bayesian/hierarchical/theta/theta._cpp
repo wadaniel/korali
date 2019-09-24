@@ -1,5 +1,5 @@
-#include "problems/evaluation/bayesian/hierarchical/theta/theta.hpp"
-#include "conduits.hpp"
+#include "problem/evaluation/bayesian/hierarchical/theta/theta.hpp"
+#include "conduit/conduit.hpp"
 
 void korali::problem::evaluation::bayesian::hierarchical::Theta::initialize()
 {

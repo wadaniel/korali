@@ -1,4 +1,4 @@
-#include "problems/evaluation/bayesian/inference.hpp"
+#include "problem/evaluation/bayesian/inference/inference.hpp"
 
 void korali::problem::evaluation::bayesian::Inference::initialize()
 {

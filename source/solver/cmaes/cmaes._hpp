@@ -1,12 +1,12 @@
 #ifndef _KORALI_SOLVER_CMAES_HPP_
 #define _KORALI_SOLVER_CMAES_HPP_
 
-#include "solvers.hpp"
+#include "solver/solver.hpp"
 #include "sample/sample.hpp"
-#include "distributions/univariate/normal/normal.hpp"
-#include "distributions/univariate/uniform/uniform.hpp"
-#include "problems/evaluation.hpp"
-#include "problems/evaluation/direct/direct.hpp"
+#include "distribution/univariate/normal/normal.hpp"
+#include "distribution/univariate/uniform/uniform.hpp"
+#include "problem/evaluation/evaluation.hpp"
+#include "problem/evaluation/direct/direct.hpp"
 #include <vector>
 
 namespace korali { namespace solver {
@@ -18,7 +18,7 @@ class CMAES : public korali::Solver
  korali::distribution::univariate::Normal* _normalGenerator; /* Normal random number generator */
  korali::distribution::univariate::Uniform* _uniformGenerator; /* Uniform random number generator */
  korali::problem::evaluation::Direct* _directProblem;
- korali::problem::evaluation::Base* _problem;
+ korali::problem::Evaluation* _problem;
 
  void prepareGeneration();
  void sampleSingle(size_t sampleIdx); /* sample individual */

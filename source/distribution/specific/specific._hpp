@@ -11,6 +11,6 @@ class Specific : public korali::Distribution
 
 };
 
-} } } // namespace korali::distribution
+} } // namespace korali::distribution
 
 #endif // _KORALI_DISTRIBUTION_SPECIFIC_BASE_HPP_

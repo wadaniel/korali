@@ -10,11 +10,11 @@ if (len(sys.argv) != 2):
  print('Error: this example requires the number of concurrent jobs passed as numerical argument.\n')
  exit(-1)
  
-k["Problem"]["Type"] = "Optimization";
+k["Problem"]["Type"] = "Evaluation/Direct";
 k["Problem"]["Objective"] = "Maximize"
 k["Problem"]["Objective Function"] = runModel
 
-k["Solver"]["Type"] = "CMAES"
+k["Solver"]["Type"] = "Optimizer/CMAES"
 k["Solver"]["Population Size"] = 12
 k["Solver"]["Termination Criteria"]["Max Generations"] = 10
 

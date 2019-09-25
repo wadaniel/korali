@@ -10,7 +10,7 @@ import korali
 k = korali.initialize()
 
 # Selecting problem and solver types.
-k["Problem"]["Type"] = "Sampling"
+k["Problem"]["Type"] = "Evaluation/Direct"
 k["Problem"]["Objective Function"] = model
 
 # Defining problem's variables and their MCMC settings
@@ -19,7 +19,7 @@ k["Variables"][0]["Initial Mean"] = 0.0
 k["Variables"][0]["Initial Standard Deviation"] = 2.0
 
 # Configuring the MCMC sampler parameters
-k["Solver"]["Type"] = "MCMC" 
+k["Solver"]["Type"] = "Sampler/MCMC" 
 k["Solver"]["Burn In"] = 500
 k["Solver"]["Rejection Levels"] = 3
 k["Solver"]["Termination Criteria"]["Max Chain Length"] = 5000

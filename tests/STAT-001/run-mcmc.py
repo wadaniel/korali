@@ -12,11 +12,11 @@ k["Random Seed"] = 0xC0FFEE
 k["Results Output"]["Path"] = "_result_run-mcmc"
 
 # Selecting problem and solver types.
-k["Problem"]["Type"] = "Sampling"
+k["Problem"]["Type"] = "Evaluation/Direct"
 k["Problem"]["Objective Function"] = model
 
 # Configuring the MCMC sampler parameters
-k["Solver"]["Type"]  = "MCMC" 
+k["Solver"]["Type"]  = "Sampler/MCMC" 
 k["Solver"]["Burn In"] = 500
 k["Solver"]["Termination Criteria"]["Max Chain Length"] = 5000
 

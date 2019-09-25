@@ -15,7 +15,7 @@ import korali
 k = korali.initialize()
 
 # Selecting problem type
-k["Problem"]["Type"] = "Optimization"
+k["Problem"]["Type"] = "Evaluation/Direct"
 k["Problem"]["Objective"] = "Maximize"
 k["Problem"]["Objective Function"] = model
 
@@ -33,7 +33,7 @@ k["Variables"][3]["Granularity"] = 1.0
 k["Variables"][6]["Granularity"] = 1.0
  
 # Configuring CMA-ES parameters
-k["Solver"]["Type"] = "CMAES"
+k["Solver"]["Type"] = "Optimizer/CMAES"
 k["Solver"]["Population Size"] = 8
 k["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-9
 k["Solver"]["Termination Criteria"]["Max Generations"] = 5000

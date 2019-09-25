@@ -22,7 +22,6 @@ void korali::solver::sampler::MCMC::runGeneration()
  for(size_t i = 0; i < _rejectionLevels && _sampleAccepted == false; i++)
  {
   generateCandidate(i);
-  // SM: DW, what happens here if sample is infeasible?
 
   auto sample = korali::Sample(_chainCandidate[i]);
 
@@ -63,14 +62,14 @@ void korali::solver::sampler::MCMC::initialize()
 {
  // Initializing RNGs
  auto jsNormal = nlohmann::json();
- jsNormal["Type"] = "Normal";
+ jsNormal["Type"] = "Univariate/Normal";
  jsNormal["Mean"] = 0.0;
  jsNormal["Standard Deviation"] = 1.0;
  _normalGenerator = dynamic_cast<korali::distribution::univariate::Normal*>(korali::Module::getModule(jsNormal));
  _normalGenerator->initialize();
 
  auto jsUniform = nlohmann::json();
- jsUniform["Type"] = "Uniform";
+ jsUniform["Type"] = "Univariate/Uniform";
  jsUniform["Minimum"] = 0.0;
  jsUniform["Maximum"] = 1.0;
  _uniformGenerator = dynamic_cast<korali::distribution::univariate::Uniform*>(korali::Module::getModule(jsUniform));

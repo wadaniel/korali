@@ -14,7 +14,7 @@ import korali
 k = korali.initialize()
 
 # Selecting problem and solver types.
-k["Problem"]["Type"] = "Sampling"
+k["Problem"]["Type"] = "Evaluation/Direct"
 k["Problem"]["Objective Function"] = storeResults
 
 # Defining the problem's variables and their CMA-ES bounds.
@@ -27,7 +27,7 @@ k["Variables"][1]["Initial Mean"] = +30.0
 k["Variables"][1]["Initial Standard Deviation"] = +5.0
 
 # Configuring the TMCMC sampler parameters
-k["Solver"]["Type"] = "MCMC"
+k["Solver"]["Type"] = "Sampler/MCMC"
 k["Solver"]["Burn In"] = 500
 k["Solver"]["Termination Criteria"]["Max Chain Length"] = 1000
 

@@ -19,7 +19,7 @@ def run_cmaes_with_termination_criterion(criterion, value):
 
     k = korali.initialize()
 
-    k["Problem"]["Type"] = "Optimization"
+    k["Problem"]["Type"] = "Evaluation/Direct"
     k["Problem"]["Objective"] = "Maximize"
     k["Problem"]["Objective Function"] = evaluateModel
 
@@ -27,7 +27,7 @@ def run_cmaes_with_termination_criterion(criterion, value):
     k["Variables"][0]["Lower Bound"] = +1.0
     k["Variables"][0]["Upper Bound"] = +10.0
 
-    k["Solver"]["Type"] = "CMAES"
+    k["Solver"]["Type"] = "Optimizer/CMAES"
     k["Solver"]["Population Size"] = 8
     k["Solver"]["Termination Criteria"][criterion] = value
 

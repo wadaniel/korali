@@ -1,2 +1,2 @@
 #include "engine/engine.hpp"
-#include "conduits/mpi/mpi.hpp"
+#include "conduit/MPI/MPI.hpp"

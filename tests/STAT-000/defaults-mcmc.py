@@ -7,14 +7,14 @@ from helpers import *
 import korali
 k = korali.initialize()
 
-k["Problem"]["Type"] = "Sampling"
+k["Problem"]["Type"] = "Evaluation/Direct"
 k["Problem"]["Objective Function"] = evaluateModel
 
 k["Variables"][0]["Name"] = "X"
 k["Variables"][0]["Initial Mean"] = 0.0
 k["Variables"][0]["Initial Standard Deviation"] = 1.000
 
-k["Solver"]["Type"]  = "MCMC"
+k["Solver"]["Type"]  = "Sampler/MCMC"
 
 k["Console Output"]["Frequency"] = 500
 k["Results Output"]["Frequency"] = 500

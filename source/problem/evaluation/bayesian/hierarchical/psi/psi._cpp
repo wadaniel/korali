@@ -25,8 +25,8 @@ void korali::problem::evaluation::bayesian::hierarchical::Psi::initialize()
  for (size_t i = 0; i < _subProblemsCount; i++)
  {
   std::string problemName = _subProblemsJson[i]["Problem"]["Type"];
-  if (problemName.rfind("Bayesian Inference", 0) != 0)
-   korali::logError("The Hierarchical Bayesian (Psi) can only accept sub-problems of type 'Bayesian Inference' but sub-Problem %lu is of type: '%s'.\n", i, _subProblemsJson[i]["Problem"]["Type"].get<std::string>().c_str());
+  if (problemName.rfind("Evaluation/Bayesian/Inference", 0) != 0)
+   korali::logError("The Hierarchical Bayesian (Psi) can only accept sub-problems of type 'Evaluation/Bayesian/Inference' but sub-Problem %lu is of type: '%s'.\n", i, _subProblemsJson[i]["Problem"]["Type"].get<std::string>().c_str());
 
   if (_conditionalPriors.size() != _subProblemsJson[i]["Variables"].size())
    korali::logError("Sub-problem %lu contains a different number of variables (%lu) than conditional priors in the Hierarchical Bayesian (Psi) problem (%lu).\n", i, _subProblemsJson[i]["Problem"]["Variables"].size(), _conditionalPriors.size());

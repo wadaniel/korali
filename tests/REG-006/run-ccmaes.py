@@ -19,7 +19,7 @@ def run_ccmaes(constraint):
 
     k = korali.initialize()
 
-    k["Problem"]["Type"] = "Optimization"
+    k["Problem"]["Type"] = "Evaluation/Direct"
     k["Problem"]["Objective"] = "Maximize"
     k["Problem"]["Objective Function"] = evaluateModel
 
@@ -31,8 +31,7 @@ def run_ccmaes(constraint):
     k["Variables"][1]["Lower Bound"] = -10.0
     k["Variables"][1]["Upper Bound"] = +10.0
 
-
-    k["Solver"]["Type"] = "CMAES"
+    k["Solver"]["Type"] = "Optimizer/CMAES"
     k["Solver"]["Population Size"] = 8
     k["Solver"]["Viability Population Size"] = 2
     k["Solver"]["Termination Criteria"]["Max Generations"] = 100

@@ -7,15 +7,15 @@ from helpers import *
 import korali
 k = korali.initialize()
 
-k["Problem"]["Type"] = "Bayesian Inference (Custom Likelihood)"
+k["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Custom"
 k["Problem"]["Likelihood Model"] = evaluateModel
 
 k["Variables"][0]["Name"] = "X"
-k["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"
+k["Variables"][0]["Prior Distribution"]["Type"] = "Univariate/Uniform"
 k["Variables"][0]["Prior Distribution"]["Minimum"] = -10.0
 k["Variables"][0]["Prior Distribution"]["Maximum"] = +10.0
 
-k["Solver"]["Type"] = "TMCMC"
+k["Solver"]["Type"] = "Sampler/TMCMC"
 k["Solver"]["Population Size"] = 5000
 
 k.dry()
@@ -41,7 +41,7 @@ assert_value( k["Solver"]["Internal"]["Selection Acceptance Rate"], 1.0 )
 
 # Test Variables
 
-assert_string( k["Variables"][0]["Prior Distribution"]["Type"], "Uniform" )
+assert_string( k["Variables"][0]["Prior Distribution"]["Type"], "Univariate/Uniform" )
 assert_value( k["Variables"][0]["Prior Distribution"]["Maximum"], 10 )
 assert_value( k["Variables"][0]["Prior Distribution"]["Minimum"], -10 )
 

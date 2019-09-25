@@ -8,6 +8,7 @@
                 { "Value": "Minimize", "Description": "Korali will find the point of minimum evaluation of the provided model." },
                 { "Value": "Maximize", "Description": "Korali will find the point of maximum evaluation of the provided model." }
                ],
+    "Default": "Maximize",
     "Description": "Indicates whether Korali will minimize or maximize the objective evaluation."
    },
    {

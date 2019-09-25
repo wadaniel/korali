@@ -16,7 +16,7 @@ import korali
 k = korali.initialize()
 
 # Selecting problem type
-k["Problem"]["Type"] = "Optimization"
+k["Problem"]["Type"] = "Evaluation/Direct"
 k["Problem"]["Objective"] = "Maximize"
 k["Problem"]["Objective Function"] = model
 k["Problem"]["Constraints"][0] = g1
@@ -31,7 +31,7 @@ for i in range(7) :
   k["Variables"][i]["Upper Bound"] = +10.0
 
 # Configuring the constrained optimizer CCMA-ES
-k["Solver"]["Type"] = "CMAES"
+k["Solver"]["Type"] = "Optimizer/CMAES"
 k["Solver"]["Is Sigma Bounded"] = True
 k["Solver"]["Population Size"] = 32
 k["Solver"]["Viability Population Size"] = 4

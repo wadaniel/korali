@@ -16,11 +16,11 @@ k = korali.initialize()
 
 resultDir = '_result_run-cmaes'
 
-k["Problem"]["Type"] = "Optimization"
+k["Problem"]["Type"] = "Evaluation/Direct"
 k["Problem"]["Objective"] = "Maximize"
 k["Problem"]["Objective Function"] = model
 
-k["Solver"]["Type"] = "CMAES"
+k["Solver"]["Type"] = "Optimizer/CMAES"
 k["Solver"]["Population Size"] = 5
 k["Solver"]["Termination Criteria"]["Max Generations"] = 50
 

@@ -16,10 +16,10 @@ k = korali.initialize()
 
 resultDir = '_result_run-mcmc'
 
-k["Problem"]["Type"] = "Sampling"
+k["Problem"]["Type"] = "Evaluation/Direct"
 k["Problem"]["Objective Function"] = model
 
-k["Solver"]["Type"]  = "MCMC"
+k["Solver"]["Type"]  = "Sampler/MCMC"
 k["Solver"]["Burn In"] = 500
 k["Solver"]["Termination Criteria"]["Max Chain Length"] = 1000
 

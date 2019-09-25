@@ -13,14 +13,14 @@ void korali::solver::optimizer::CMAES::initialize()
 
  // Initializing RNGs
  auto jsNormal = nlohmann::json();
- jsNormal["Type"] = "Normal";
+ jsNormal["Type"] = "Univariate/Normal";
  jsNormal["Mean"] = 0.0;
  jsNormal["Standard Deviation"] = 1.0;
  _normalGenerator = dynamic_cast<korali::distribution::univariate::Normal*>(korali::Module::getModule(jsNormal));
  _normalGenerator->initialize();
 
  auto jsUniform = nlohmann::json();
- jsUniform["Type"] = "Uniform";
+ jsUniform["Type"] = "Univariate/Uniform";
  jsUniform["Minimum"] = 0.0;
  jsUniform["Maximum"] = 1.0;
  _uniformGenerator = dynamic_cast<korali::distribution::univariate::Uniform*>(korali::Module::getModule(jsUniform));

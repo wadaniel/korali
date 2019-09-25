@@ -28,4 +28,4 @@ def checkStd(js, expectedStd, tol):
 result  = 'final.json'
 json  = open_json(src, result)
 checkMean(json, 0.0, 0.05)
-checkStd(json, 2.0, 0.05)
+checkStd(json, 1.303, 0.05)

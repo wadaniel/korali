@@ -40,22 +40,18 @@ def main(path, allFiles, live, generation, mean, check, test):
   data  = json.load(f)
  
  requestedSolver = data['Solver']['Type']
+ solverName = requestedSolver.rsplit('/')[-1]
  
- # Detecting solvers
- solversDir = curdir + '/../solvers/'
- for moduleDir, relDir, fileNames in os.walk(solversDir):
-  for fileName in fileNames: 
-   if '.json' in fileName:
-    with open(moduleDir + '/' + fileName, 'r') as file: moduleConfig = json.load(file)
-    solverAlias = moduleConfig.get('Alias', '') 
-    if (solverAlias == requestedSolver):
-     solverName = fileName.replace('.json', '')
-     solverFileName = moduleDir + '/' + solverName + '.py'
-     print('Appending: ' + moduleDir)
-     sys.path.append(moduleDir)
-     solverLib = importlib.import_module(solverName, package=None)
-     solverLib.plot(path, allFiles, live, generation, test, mean)
-     exit(0)
+ solverDir = curdir + '/../solver/'
+ for folder in requestedSolver.rsplit('/')[:-1]: solverDir += folder.lower()
+ solverDir += '/' + solverName 
+ solverFile = solverDir + '/' + solverName + '.py'
+ 
+ if os.path.isfile(solverFile):
+  sys.path.append(solverDir)
+  solverLib = importlib.import_module(solverName, package=None)
+  solverLib.plot(path, allFiles, live, generation, test, mean)
+  exit(0)
 
  print("[Korali] Error: Did not recognize method for plotting...")
  exit(-1)

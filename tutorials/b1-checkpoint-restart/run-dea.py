@@ -16,11 +16,11 @@ k = korali.initialize()
 
 resultDir = '_result_run-dea'
 
-k["Problem"]["Type"] = "Optimization"
+k["Problem"]["Type"] = "Evaluation/Direct"
 k["Problem"]["Objective"] = "Maximize"
 k["Problem"]["Objective Function"] = model
 
-k["Solver"]["Type"]  = "DEA"
+k["Solver"]["Type"]  = "Optimizer/DEA"
 k["Solver"]["Population Size"] = 10
 k["Solver"]["Termination Criteria"]["Max Generations"] = 50
 

@@ -7,7 +7,7 @@ from helpers import *
 import korali
 k = korali.initialize()
 
-k["Problem"]["Type"] = "Optimization"
+k["Problem"]["Type"] = "Evaluation/Direct"
 k["Problem"]["Objective"] = "Maximize"
 k["Problem"]["Objective Function"] = evaluateModel
 
@@ -15,7 +15,7 @@ k["Variables"][0]["Name"] = "X";
 k["Variables"][0]["Lower Bound"] = -10.0;
 k["Variables"][0]["Upper Bound"] = +10.0;
 
-k["Solver"]["Type"] = "DEA"
+k["Solver"]["Type"] = "Optimizer/DEA"
 k["Solver"]["Population Size"] = 32
 
 k.dry()

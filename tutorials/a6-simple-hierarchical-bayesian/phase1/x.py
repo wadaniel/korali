@@ -15,23 +15,23 @@ if not os.path.exists(resultsPath): os.makedirs(resultsPath)
 # Running first Bayesian problem
 k = korali.initialize()
 
-k["Problem"]["Type"] = "Bayesian Inference (Approximate Likelihood)"
+k["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Approximate"
 k["Problem"]["Likelihood Model"] = "Normal"
 k["Problem"]["Reference Data"] = getReferenceData(dataPath,i);
 
 k["Variables"][0]["Name"] = "mu"
 k["Variables"][0]["Bayesian Type"] = "Statistical"
-k["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"
+k["Variables"][0]["Prior Distribution"]["Type"] = "Univariate/Uniform"
 k["Variables"][0]["Prior Distribution"]["Minimum"] =  0.0
 k["Variables"][0]["Prior Distribution"]["Maximum"] = 20.0
 
 k["Variables"][1]["Name"] = "sigma"
 k["Variables"][1]["Bayesian Type"] = "Statistical"
-k["Variables"][1]["Prior Distribution"]["Type"] = "Uniform"
+k["Variables"][1]["Prior Distribution"]["Type"] = "Univariate/Uniform"
 k["Variables"][1]["Prior Distribution"]["Minimum"] = 0.0
 k["Variables"][1]["Prior Distribution"]["Maximum"] = 10.0
 
-k["Solver"]["Type"] = "TMCMC"
+k["Solver"]["Type"] = "Sampler/TMCMC"
 k["Solver"]["Population Size"] = 1000
 k["Solver"]["Target Coefficient Of Variation"] = 0.6
 k["Solver"]["Covariance Scaling"] = 0.02

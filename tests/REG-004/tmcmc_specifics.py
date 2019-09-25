@@ -30,15 +30,15 @@ print("[Korali] Prepare TMCMC run")
 # Starting Korali's Engine
 k = korali.initialize()
 
-k["Problem"]["Type"] = "Bayesian Inference (Custom Likelihood)"
+k["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Custom"
 k["Problem"]["Likelihood Model"] = evaluateModel
 
 k["Variables"][0]["Name"] = "X"
-k["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"
+k["Variables"][0]["Prior Distribution"]["Type"] = "Univariate/Uniform"
 k["Variables"][0]["Prior Distribution"]["Minimum"] = -10.0
 k["Variables"][0]["Prior Distribution"]["Maximum"] = +10.0
 
-k["Solver"]["Type"] = "TMCMC"
+k["Solver"]["Type"] = "Sampler/TMCMC"
 k["Solver"]["Population Size"] = 5000
 k["Solver"]["Covariance Scaling"] = 0.001
 

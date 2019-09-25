@@ -9,20 +9,20 @@ void korali::problem::evaluation::bayesian::hierarchical::Theta::initialize()
 
   // Sub-problem correctness checks
   std::string problemName = thetaProblemJson["Problem"]["Type"];
-  if (problemName.rfind("Bayesian Inference", 0) != 0)
-   korali::logError("The Hierarchical Bayesian (Theta) can only accept sub-problems of type 'Bayesian Inference' but is of type: '%s'.\n", thetaProblemJson["Problem"]["Type"].get<std::string>().c_str());
+  if (problemName.rfind("Evaluation/Bayesian/Inference", 0) != 0)
+   korali::logError("The Hierarchical Bayesian (Theta) can only accept sub-problems of type 'Evaluation/Bayesian/Inference' but is of type: '%s'.\n", thetaProblemJson["Problem"]["Type"].get<std::string>().c_str());
 
   if (thetaProblemJson["Is Finished"] == false)
-    korali::logError("The Hierarchical Bayesian (Theta) requires that the thetaproblem has run completely, but it has not.\n");
+    korali::logError("The Hierarchical Bayesian (Theta) requires that the theta problem has run completely, but this one has not.\n");
 
   // Psi-problem correctness checks
   std::string psiProblemType = psiProblemJson["Problem"]["Type"];
-  if (psiProblemType != "Hierarchical Bayesian (Psi)")
-    korali::logError("The Hierarchical Bayesian (Theta) can only accept a psi-problem of type 'Hierarchical Bayesian (Psi)' but psi-Problem is of type: '%s'.\n", psiProblemType.c_str());
+  if (psiProblemType != "Evaluation/Bayesian/Hierarchical/Psi")
+    korali::logError("The Hierarchical Bayesian (Theta) can only accept a psi-problem of type 'Evaluation/Bayesian/Hierarchical/Psi' but psi-Problem is of type: '%s'.\n", psiProblemType.c_str());
 
   // Cross-checks
   if (psiProblemJson["Problem"]["Conditional Priors"].size() != thetaProblemJson["Variables"].size())
-    korali::logError("Sub-problem contains a different number of variables (%lu) than conditional priors in the Hierarchical Bayesian (Psi) problem (%lu).\n", thetaProblemJson["Variables"].size(), psiProblemJson["Problem"]["Conditional Priors"].size());
+    korali::logError("Sub-problem contains a different number of variables (%lu) than conditional priors in the Evaluation/Bayesian/Hierarchical/Psi problem (%lu).\n", thetaProblemJson["Variables"].size(), psiProblemJson["Problem"]["Conditional Priors"].size());
 
   // Setting Korali problem objects
   _psiProblemEngine = new korali::Engine(psiProblemJson);

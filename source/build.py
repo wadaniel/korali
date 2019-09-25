@@ -42,6 +42,14 @@ def getVariableEnabledDefault(v):
  if ( v.get('Default', '') ): return 'true'
  return 'false'
 
+def getOptionName(path):
+ nameList = path.rsplit('/')
+ optionName = ''
+ for name in nameList[1:-1]:
+  optionName += name[0].capitalize() + name[1:] + '/'
+ optionName += getModuleName(path)
+ return optionName
+
 def getModuleName(path):
  nameList = path.rsplit('/', 1)
  moduleName = nameList[-1]
@@ -192,7 +200,7 @@ def createSetConfiguration(module):
  
  codeString += ' ' + module["Parent Class"] + '::setConfiguration(js);\n'
  
- codeString += ' _type = "' + module["Name"] + '";\n'
+ codeString += ' _type = "' + module["Option Name"] + '";\n'
  codeString += ' if(korali::JsonInterface::isDefined(js, "[\'Type\']")) korali::JsonInterface::eraseValue(js, "[\'Type\']");\n'   
  
  codeString += ' if(korali::JsonInterface::isEmpty(js) == false) korali::logError("Unrecognized settings for ' + module["Name"] + ' (' + module["Name"] + '): \\n%s\\n", js.dump(2).c_str());\n'
@@ -318,16 +326,17 @@ for moduleDir, relDir, fileNames in os.walk(koraliDir):
    moduleConfig["Name"] =  getModuleName(modulePath)
    moduleConfig["Class"] =  getClassName(modulePath)
    moduleConfig["Parent Class"] =  getParentClassName(moduleConfig["Class"])
+   moduleConfig["Option Name"] = getOptionName(modulePath)
    moduleConfig["Is Leaf"] = isLeafModule(modulePath)
    
-   print(moduleConfig["Class"])
+   print(moduleConfig["Option Name"])
    
    ####### Adding module to list
    if (moduleConfig["Is Leaf"]):
     relpath = os.path.relpath(moduleDir, koraliDir)
     filepath = os.path.join(relpath, moduleFilename + '.hpp')
     moduleIncludeList += '#include "' + filepath + '" \n'
-    moduleDetectionList += '  if(moduleType == "' + moduleConfig["Name"] + '") module = new ' + moduleConfig["Class"] + '();\n'
+    moduleDetectionList += '  if(moduleType == "' + moduleConfig["Option Name"] + '") module = new ' + moduleConfig["Class"] + '();\n'
    
    ###### Producing module code
 

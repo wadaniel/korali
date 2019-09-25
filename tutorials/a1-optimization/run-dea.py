@@ -14,12 +14,12 @@ import korali
 k = korali.initialize()
 
 # Configuring Problem
-k["Problem"]["Type"] = "Optimization"
+k["Problem"]["Type"] = "Evaluation/Direct"
 k["Problem"]["Objective"] = "Maximize"
 k["Problem"]["Objective Function"] = model
 
 # Configuring Solver
-k["Solver"]["Type"] = "DEA"
+k["Solver"]["Type"] = "Optimizer/DEA"
 k["Solver"]["Population Size"] = 32
 k["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-7
 k["Solver"]["Termination Criteria"]["Max Generations"] = 100

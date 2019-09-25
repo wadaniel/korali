@@ -16,16 +16,16 @@ from buildTutorials import *
 with open(koraliDir + '/docs/docs/manual._md', 'r') as file: manualString = file.read()
 
 # Processing Distributions
-buildDistributions(koraliDir)
+#buildDistributions(koraliDir)
 
 # Processing Problems
-problemListString = buildProblems(koraliDir)
+#problemListString = buildProblems(koraliDir)
    
 # Processing Solvers
-solverListString = buildSolvers(koraliDir)
+#solverListString = buildSolvers(koraliDir)
 
 # Processing Conduits
-conduitsListString = buildConduits(koraliDir)
+#conduitsListString = buildConduits(koraliDir)
 
 # Processing Tutorials
 buildTutorials(koraliDir)
@@ -34,8 +34,8 @@ buildTutorials(koraliDir)
 buildTests(koraliDir)
 
 newManualFileName = koraliDir + '/docs/docs/manual.md'
-manualString = manualString.replace('<!--- Problems go here --->', problemListString)
-manualString = manualString.replace('<!--- Solvers go here --->', solverListString)
-manualString = manualString.replace('<!--- Conduits go here --->', conduitsListString)
+#manualString = manualString.replace('<!--- Problems go here --->', problemListString)
+#manualString = manualString.replace('<!--- Solvers go here --->', solverListString)
+#manualString = manualString.replace('<!--- Conduits go here --->', conduitsListString)
 print('[Korali] Creating ' + newManualFileName + '...')  
 with open(newManualFileName, 'w+') as file: file.write(manualString)

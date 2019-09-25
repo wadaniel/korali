@@ -5,10 +5,10 @@ from buildAux import *
 
 def buildProblems(koraliDir):
  # Processing Problems
- problemsDir = koraliDir + '/source/problems'
+ problemsDir = koraliDir + '/source/problem'
  
  # Creating directory
- outputDir = koraliDir + '/docs/docs/manual/problems/'
+ outputDir = koraliDir + '/docs/docs/manual/problem/'
  if (not os.path.isdir(outputDir)): os.makedirs(outputDir)
  
  # Creating problem list string
@@ -60,13 +60,13 @@ def buildProblems(koraliDir):
      terminationSettingsString += getVariableInfo(v, problemName)
    problemDocString = problemDocString.replace('### Termination Criteria', terminationSettingsString + '\n\n')
      
-   mdFileName = koraliDir + '/docs/docs/manual/problems/' + problemName + '.md'
+   mdFileName = koraliDir + '/docs/docs/manual/problem/' + problemName + '.md'
    print('[Korali] Creating ' + mdFileName + '...')    
    with open(mdFileName, 'w+') as file: file.write(problemDocString)
 
    ####### Adding model list entry
    
-   problemListString += '+ [' + problemConfig["Name"] + '](problems/' + problemName + ')\n'
+   problemListString += '+ [' + problemConfig["Name"] + '](problem/' + problemName + ')\n'
    
  ###### Returning problem list
  

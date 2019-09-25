@@ -5,10 +5,10 @@ from buildAux import *
 
 def buildConduits(koraliDir):
  # Processing Conduits
- conduitsDir = koraliDir + '/source/conduits'
+ conduitsDir = koraliDir + '/source/conduit'
  
  # Creating directory
- outputDir = koraliDir + '/docs/docs/manual/conduits/'
+ outputDir = koraliDir + '/docs/docs/manual/conduit/'
  if (not os.path.isdir(outputDir)): os.makedirs(outputDir)
  
  # Creating conduit list string
@@ -55,13 +55,13 @@ def buildConduits(koraliDir):
      terminationSettingsString += getVariableInfo(v, conduitName)
    conduitDocString = conduitDocString.replace('### Termination Criteria', terminationSettingsString + '\n\n')
      
-   mdFileName = koraliDir + '/docs/docs/manual/conduits/' + conduitName + '.md'
+   mdFileName = koraliDir + '/docs/docs/manual/conduit/' + conduitName + '.md'
    print('[Korali] Creating ' + mdFileName + '...')    
    with open(mdFileName, 'w+') as file: file.write(conduitDocString)
 
    ####### Adding model list entry
    
-   conduitListString += '+ [' + conduitConfig["Name"] + '](conduits/' + conduitName + ')\n'
+   conduitListString += '+ [' + conduitConfig["Name"] + '](conduit/' + conduitName + ')\n'
    
  ###### Returning conduit list
  

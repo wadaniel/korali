@@ -5,10 +5,10 @@ from buildAux import *
 
 def buildSolvers(koraliDir):
  # Processing Solvers
- solversDir = koraliDir + '/source/solvers'
+ solversDir = koraliDir + '/source/solver'
  
  # Creating directory
- outputDir = koraliDir + '/docs/docs/manual/solvers/'
+ outputDir = koraliDir + '/docs/docs/manual/solver/'
  if (not os.path.isdir(outputDir)): os.makedirs(outputDir)
  
  # Creating solver list string
@@ -55,13 +55,13 @@ def buildSolvers(koraliDir):
      terminationSettingsString += getVariableInfo(v, solverName)
    solverDocString = solverDocString.replace('### Termination Criteria', terminationSettingsString + '\n\n')
    
-   mdFileName = koraliDir + '/docs/docs/manual/solvers/' + solverName + '.md'
+   mdFileName = koraliDir + '/docs/docs/manual/solver/' + solverName + '.md'
    print('[Korali] Creating ' + mdFileName + '...')    
    with open(mdFileName, 'w+') as file: file.write(solverDocString)
 
    ####### Adding model list entry
    
-   solverListString += '+ [' + solverConfig["Name"] + '](solvers/' + solverName + ')\n'
+   solverListString += '+ [' + solverConfig["Name"] + '](solver/' + solverName + ')\n'
    
  ###### Returning problem list
  

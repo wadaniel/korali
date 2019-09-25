@@ -5,10 +5,10 @@ from buildAux import *
 
 def buildDistributions(koraliDir):
  # Processing Distributions
- distributionsDir = koraliDir + '/source/distributions'
+ distributionsDir = koraliDir + '/source/distribution'
  
  # Creating directory
- outputDir = koraliDir + '/docs/docs/manual/distributions/'
+ outputDir = koraliDir + '/docs/docs/manual/distribution/'
  if (not os.path.isdir(outputDir)): os.makedirs(outputDir)
  
  # Creating distribution list string
@@ -29,7 +29,7 @@ def buildDistributions(koraliDir):
    
    ####### Producing distribution page
  
-   distributionDocFile = distributionPath + '/README.md'
+   distributionDocFile = distributionPath + '/' + distributionName + '.md'
    with open(distributionDocFile, 'r') as file: distributionDocString = file.read()
    
    distributionDocString = '# ' + distributionConfig["Name"] + '\n\n' + distributionDocString 
@@ -40,13 +40,13 @@ def buildDistributions(koraliDir):
     distributionSettingsString += getVariableInfo(v, distributionName)
    distributionDocString = distributionDocString.replace('### Distribution Settings', distributionSettingsString + '\n\n')  
      
-   mdFileName = koraliDir + '/docs/docs/manual/distributions/' + distributionName + '.md'
+   mdFileName = koraliDir + '/docs/docs/manual/distribution/' + distributionName + '.md'
    print('[Korali] Creating ' + mdFileName + '...')    
    with open(mdFileName, 'w+') as file: file.write(distributionDocString)
 
    ####### Adding model list entry
    
-   distributionListString += '\t+ [' + distributionConfig["Name"] + '](../distributions/' + distributionName + ')\n'
+   distributionListString += '\t+ [' + distributionConfig["Name"] + '](../distribution/' + distributionName + ')\n'
    
  ###### Saving distribution list
 

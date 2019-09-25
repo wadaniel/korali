@@ -44,7 +44,8 @@ def getVariableEnabledDefault(v):
 
 def getModuleName(path):
  nameList = path.rsplit('/', 1)
- moduleName = nameList[-1].capitalize()
+ moduleName = nameList[-1]
+ moduleName = moduleName[0].capitalize() + moduleName[1:]
  return moduleName
 
 def getClassName(path):
@@ -318,6 +319,8 @@ for moduleDir, relDir, fileNames in os.walk(koraliDir):
    moduleConfig["Class"] =  getClassName(modulePath)
    moduleConfig["Parent Class"] =  getParentClassName(moduleConfig["Class"])
    moduleConfig["Is Leaf"] = isLeafModule(modulePath)
+   
+   print(moduleConfig["Class"])
    
    ####### Adding module to list
    if (moduleConfig["Is Leaf"]):

@@ -1,5 +1,5 @@
-#ifndef _KORALI_CONDUIT_BASE_HPP_
-#define _KORALI_CONDUIT_BASE_HPP_
+#ifndef _KORALI_CONDUITHPP_
+#define _KORALI_CONDUITHPP_
 
 #include "module.hpp"
 #include "engine/engine.hpp"
@@ -20,5 +20,5 @@ class Conduit : public korali::Module {
 } // namespace korali
 
 
-#endif // _KORALI_CONDUIT_BASE_HPP_
+#endif // _KORALI_CONDUITHPP_
 

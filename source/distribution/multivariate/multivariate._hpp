@@ -1,5 +1,5 @@
-#ifndef _KORALI_DISTRIBUTION_MULTIVARIATE_BASE_HPP_
-#define _KORALI_DISTRIBUTION_MULTIVARIATE_BASE_HPP_
+#ifndef _KORALI_DISTRIBUTION_MULTIVARIATEHPP_
+#define _KORALI_DISTRIBUTION_MULTIVARIATEHPP_
 
 #include "distribution/distribution.hpp"
 
@@ -18,4 +18,4 @@ class Multivariate : public korali::Distribution
 
 } } // namespace korali::distribution
 
-#endif // _KORALI_DISTRIBUTION_MULTIVARIATE_BASE_HPP_
+#endif // _KORALI_DISTRIBUTION_MULTIVARIATEHPP_

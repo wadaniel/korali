@@ -1,5 +1,5 @@
-#ifndef _KORALI_DISTRIBUTION_UNIVARIATE_BASE_HPP_
-#define _KORALI_DISTRIBUTION_UNIVARIATE_BASE_HPP_
+#ifndef _KORALI_DISTRIBUTION_UNIVARIATEHPP_
+#define _KORALI_DISTRIBUTION_UNIVARIATEHPP_
 
 #include "distribution/distribution.hpp"
 
@@ -17,4 +17,4 @@ class Univariate : public korali::Distribution
 
 } } // namespace korali::distribution
 
-#endif // _KORALI_DISTRIBUTION_BASE_HPP_
+#endif // _KORALI_DISTRIBUTIONHPP_

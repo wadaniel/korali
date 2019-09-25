@@ -3,7 +3,7 @@
 #include "solver/solver.hpp"
 #include "problem/problem.hpp"
 #include "sample/sample.hpp"
-#include "conduit/mpi/mpi.hpp"
+#include "conduit/MPI/MPI.hpp"
 
 #include "pybind11/pybind11.h"
 #include "pybind11/functional.h"

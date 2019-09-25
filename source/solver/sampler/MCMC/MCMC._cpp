@@ -1,4 +1,4 @@
-#include "solver/mcmc/mcmc.hpp"
+#include "solver/sampler/MCMC/MCMC.hpp"
 #include "problem/problem.hpp"
 #include "sample/sample.hpp"
 #include "engine/engine.hpp"
@@ -13,8 +13,10 @@
 #include <gsl/gsl_statistics.h>
 #include <gsl/gsl_multimin.h>
 
-void korali::solver::MCMC::runGeneration()
+void korali::solver::sampler::MCMC::runGeneration()
 {
+ korali::solver::Sampler::initialize();
+
  bool _sampleAccepted = false;
 
  for(size_t i = 0; i < _rejectionLevels && _sampleAccepted == false; i++)
@@ -57,7 +59,7 @@ void korali::solver::MCMC::runGeneration()
 }
 
 
-void korali::solver::MCMC::initialize()
+void korali::solver::sampler::MCMC::initialize()
 {
  // Initializing RNGs
  auto jsNormal = nlohmann::json();
@@ -116,7 +118,7 @@ void korali::solver::MCMC::initialize()
  _acceptanceRate  = 1.0;
 }
 
-void korali::solver::MCMC::choleskyDecomp(const std::vector<double>& inC, std::vector<double>& outL) const
+void korali::solver::sampler::MCMC::choleskyDecomp(const std::vector<double>& inC, std::vector<double>& outL) const
 {
   gsl_matrix* A = gsl_matrix_alloc(N, N);
 
@@ -138,7 +140,7 @@ void korali::solver::MCMC::choleskyDecomp(const std::vector<double>& inC, std::v
   gsl_matrix_free(A);
 }
 
-double korali::solver::MCMC::recursiveAlpha(double& deonominator, const double leaderLoglikelihood, const double* loglikelihoods, size_t N) const
+double korali::solver::sampler::MCMC::recursiveAlpha(double& deonominator, const double leaderLoglikelihood, const double* loglikelihoods, size_t N) const
 {
  // recursive formula from Trias[2009]
 
@@ -175,7 +177,7 @@ double korali::solver::MCMC::recursiveAlpha(double& deonominator, const double l
 }
 
 
-void korali::solver::MCMC::updateDatabase(std::vector<double>& point, double loglik)
+void korali::solver::sampler::MCMC::updateDatabase(std::vector<double>& point, double loglik)
 {
  for (size_t d = 0; d < N; d++) _sampleDatabase[_databaseEntryCount*N + d] = point[d];
  _sampleEvaluationDatabase[_databaseEntryCount] = loglik;
@@ -183,7 +185,7 @@ void korali::solver::MCMC::updateDatabase(std::vector<double>& point, double log
 }
 
 
-void korali::solver::MCMC::generateCandidate(size_t sampleIdx)
+void korali::solver::sampler::MCMC::generateCandidate(size_t sampleIdx)
 {  
  _proposedSampleCount++;
 
@@ -197,7 +199,7 @@ void korali::solver::MCMC::generateCandidate(size_t sampleIdx)
  _chainLeader = _chainCandidate[sampleIdx];
 }
 
-void korali::solver::MCMC::updateState()
+void korali::solver::sampler::MCMC::updateState()
 {
 
  _acceptanceRate = ( (double)_acceptanceCount/ (double)_chainLength );
@@ -227,9 +229,9 @@ void korali::solver::MCMC::updateState()
 }
 
 
-void korali::solver::MCMC::printGenerationBefore() { return; }
+void korali::solver::sampler::MCMC::printGenerationBefore() { return; }
 
-void korali::solver::MCMC::printGenerationAfter()
+void korali::solver::sampler::MCMC::printGenerationAfter()
 {
  korali::logInfo("Minimal", "Database Entries %ld\n", _databaseEntryCount);
 
@@ -249,7 +251,7 @@ void korali::solver::MCMC::printGenerationAfter()
  }
 }
 
-void korali::solver::MCMC::finalize()
+void korali::solver::sampler::MCMC::finalize()
 {
  korali::logInfo("Minimal", "Number of Generated Samples: %zu\n", _proposedSampleCount);
  korali::logInfo("Minimal", "Acceptance Rate: %.2f%%\n", 100*_acceptanceRate);

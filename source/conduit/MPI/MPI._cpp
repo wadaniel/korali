@@ -1,4 +1,4 @@
-#include "conduit/mpi/mpi.hpp"
+#include "conduit/MPI/MPI.hpp"
 #include "engine/engine.hpp"
 #include "problem/problem.hpp"
 #include "solver/solver.hpp"

@@ -1,5 +1,5 @@
-#ifndef _KORALI_SOLVER_BASE_HPP_
-#define _KORALI_SOLVER_BASE_HPP_
+#ifndef _KORALI_SOLVERHPP_
+#define _KORALI_SOLVERHPP_
 
 #include <vector>
 #include "module.hpp"
@@ -20,4 +20,4 @@ class Solver : public korali::Module
 
 } // namespace korali
 
-#endif // _KORALI_SOLVER_BASE_HPP_
+#endif // _KORALI_SOLVERHPP_

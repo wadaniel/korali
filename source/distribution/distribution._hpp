@@ -1,5 +1,5 @@
-#ifndef _KORALI_DISTRIBUTION_BASE_HPP_
-#define _KORALI_DISTRIBUTION_BASE_HPP_
+#ifndef _KORALI_DISTRIBUTIONHPP_
+#define _KORALI_DISTRIBUTIONHPP_
 
 #include <map>
 #include <gsl/gsl_rng.h>
@@ -30,4 +30,4 @@ class Distribution : public korali::Module
 
 } // namespace korali
 
-#endif // _KORALI_DISTRIBUTION_BASE_HPP_
+#endif // _KORALI_DISTRIBUTIONHPP_

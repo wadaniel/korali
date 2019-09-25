@@ -1,4 +1,4 @@
-#include "solver/tmcmc/tmcmc.hpp"
+#include "solver/sampler/TMCMC/TMCMC.hpp"
 #include <engine/engine.hpp>
 #include <numeric>
 #include <limits>
@@ -18,8 +18,10 @@ typedef struct fparam_s {
 } fparam_t;
 
 
-void korali::solver::TMCMC::initialize()
+void korali::solver::sampler::TMCMC::initialize()
 {
+ korali::solver::Sampler::initialize();
+
  auto jsMultinomial = nlohmann::json();
  jsMultinomial["Type"] = "Multinomial";
  _multinomialGenerator = dynamic_cast<korali::distribution::specific::Multinomial*>(korali::Module::getModule(jsMultinomial));
@@ -86,7 +88,7 @@ void korali::solver::TMCMC::initialize()
  for (size_t c = 0; c < _populationSize; c++) _chainPendingEvaluation[c] = false;
 }
 
-void korali::solver::TMCMC::prepareGeneration()
+void korali::solver::sampler::TMCMC::prepareGeneration()
 {
  setBurnIn();
   _sampleLogLikelihoodDatabase.clear();
@@ -99,7 +101,7 @@ void korali::solver::TMCMC::prepareGeneration()
   for (size_t c = 0; c < _chainCount; c++) generateCandidate(c);
 }
 
-void korali::solver::TMCMC::runGeneration()
+void korali::solver::sampler::TMCMC::runGeneration()
 {
  prepareGeneration();
 
@@ -135,7 +137,7 @@ void korali::solver::TMCMC::runGeneration()
  processGeneration();
 }
 
-void korali::solver::TMCMC::generateCandidate(size_t c)
+void korali::solver::sampler::TMCMC::generateCandidate(size_t c)
 {
  /* in generation one (zero in [Chen2007]), we take initialized samples from prior */
  if (_k->_currentGeneration == 1)
@@ -159,7 +161,7 @@ void korali::solver::TMCMC::generateCandidate(size_t c)
  _multivariateGenerator->getRandomVector(&_chainCandidates[c][0],  N);
 }
 
-void korali::solver::TMCMC::processEvaluation(const size_t sampleId)
+void korali::solver::sampler::TMCMC::processEvaluation(const size_t sampleId)
 {
  double L = 0.0;
  if( std::isfinite(_chainCandidatesLogLikelihoods[sampleId]) && std::isfinite(_chainCandidatesLogPriors[sampleId]))
@@ -182,7 +184,7 @@ void korali::solver::TMCMC::processEvaluation(const size_t sampleId)
 }
 
 
-void korali::solver::TMCMC::processGeneration()
+void korali::solver::sampler::TMCMC::processGeneration()
 {
   std::vector<double> flcp(_populationSize);
   std::vector<double> weight(_populationSize);
@@ -277,7 +279,7 @@ void korali::solver::TMCMC::processGeneration()
 }
 
 
-double korali::solver::TMCMC::tmcmc_objlogp(double x, const double *fj, size_t fn, double pj, double zero)
+double korali::solver::sampler::TMCMC::tmcmc_objlogp(double x, const double *fj, size_t fn, double pj, double zero)
 {
  std::vector<double> weight(fn);
  std::vector<double> q(fn);
@@ -298,14 +300,14 @@ double korali::solver::TMCMC::tmcmc_objlogp(double x, const double *fj, size_t f
   return cov2;
 }
 
-double korali::solver::TMCMC::objLog(const gsl_vector *v, void *param)
+double korali::solver::sampler::TMCMC::objLog(const gsl_vector *v, void *param)
 {
  double x = gsl_vector_get(v, 0);
  fparam_t *fp = (fparam_t *) param;
- return korali::solver::TMCMC::tmcmc_objlogp(x, fp->fj, fp->fn, fp->pj, fp->cov);
+ return korali::solver::sampler::TMCMC::tmcmc_objlogp(x, fp->fj, fp->fn, fp->pj, fp->cov);
 }
 
-void korali::solver::TMCMC::minSearch(double const *fj, size_t fn, double pj, double objCov, double& xmin, double& fmin)
+void korali::solver::sampler::TMCMC::minSearch(double const *fj, size_t fn, double pj, double objCov, double& xmin, double& fmin)
 {
  // Minimizer Options
  const size_t MaxIter     = 1000;  /* Max number of search iterations */
@@ -375,7 +377,7 @@ void korali::solver::TMCMC::minSearch(double const *fj, size_t fn, double pj, do
 }
 
 
-void korali::solver::TMCMC::setBurnIn()
+void korali::solver::sampler::TMCMC::setBurnIn()
 {
   if( _k->_currentGeneration==1 )
     _currentBurnIn = 0;
@@ -385,17 +387,17 @@ void korali::solver::TMCMC::setBurnIn()
     _currentBurnIn = _defaultBurnIn;
 }
 
-void korali::solver::TMCMC::finalize()
+void korali::solver::sampler::TMCMC::finalize()
 {
 
 }
 
-void korali::solver::TMCMC::printGenerationBefore()
+void korali::solver::sampler::TMCMC::printGenerationBefore()
 {
  korali::logInfo("Minimal", "Annealing Exponent:          %.3e.\n", _annealingExponent);
 }
 
-void korali::solver::TMCMC::printGenerationAfter()
+void korali::solver::sampler::TMCMC::printGenerationAfter()
 {
  korali::logInfo("Minimal", "Acceptance Rate (proposals / selections): (%.2f%% / %.2f%%)\n", 100*_proposalsAcceptanceRate, 100*_selectionAcceptanceRate);
  korali::logInfo("Normal", "Coefficient of Variation: %.2f%%\n", 100.0*_coefficientOfVariation);

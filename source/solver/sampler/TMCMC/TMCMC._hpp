@@ -1,7 +1,7 @@
 #ifndef _KORALI_SOLVER_TMCMC_HPP_
 #define _KORALI_SOLVER_TMCMC_HPP_
 
-#include "solver/solver.hpp"
+#include "solver/sampler/sampler.hpp"
 #include "distribution/distribution.hpp"
 #include "distribution/univariate/uniform/uniform.hpp"
 #include "distribution/multivariate/normal/normal.hpp"
@@ -9,9 +9,9 @@
 #include "problem/evaluation/bayesian/bayesian.hpp"
 #include <gsl/gsl_vector.h>
 
-namespace korali { namespace solver {
+namespace korali { namespace solver { namespace sampler {
 
-class TMCMC : public korali::Solver
+class TMCMC : public korali::solver::Sampler
 {
  private:
 
@@ -40,6 +40,6 @@ class TMCMC : public korali::Solver
  void printGenerationAfter() override;
 };
 
-} } // namespace korali::solver
+} } } // namespace korali::solver::sampler
 
 #endif // _KORALI_SOLVER_TMCMC_HPP_

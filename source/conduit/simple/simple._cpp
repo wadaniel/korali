@@ -3,11 +3,24 @@
 #include "problem/problem.hpp"
 #include "solver/solver.hpp"
 
+void korali::conduit::Simple::initialize()
+{
+ // Initializing profiling information
+ _profileInfoVector = std::vector<ProfileInfo>(1);
+}
+
+void korali::conduit::Simple::finalize()
+{
+ korali::Conduit::finalize();
+}
+
 void korali::conduit::Simple::runModel(size_t modelId, korali::Sample& sample)
 {
+ _profileInfoVector[0].startWorkSegment(sample.getSampleId());
  sample._result.clear();
  sample._k = _k;
  _k->_models[modelId](sample);
  _modelEvaluationCount++;
+ _profileInfoVector[0].endWorkSegment();
 }
 

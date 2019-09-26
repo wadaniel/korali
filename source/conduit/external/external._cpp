@@ -14,6 +14,9 @@ void korali::conduit::External::initialize()
  // Opening Inter-process communicator pipes
  for (int i = 0; i < _concurrentJobs; i++)
   if (pipe(_pipeDescriptors[i].data()) == -1) korali::logError("Unable to create inter-process pipe. \n");
+
+ // Initializing profiling information
+_profileInfoVector = std::vector<ProfileInfo>(_concurrentJobs);
 }
 
 void korali::conduit::External::finalize()
@@ -23,6 +26,8 @@ void korali::conduit::External::finalize()
   close(_pipeDescriptors[i][1]); // Closing pipes
   close(_pipeDescriptors[i][0]); // Closing pipes
  }
+
+ korali::Conduit::finalize();
 }
 
 void korali::conduit::External::runModel(size_t modelId, korali::Sample& sample)
@@ -32,6 +37,7 @@ void korali::conduit::External::runModel(size_t modelId, korali::Sample& sample)
  _modelEvaluationCount++;
 
  int launcherId = _launcherQueue.front(); _launcherQueue.pop();
+_profileInfoVector[launcherId].startWorkSegment(sample.getSampleId());
 
  pid_t processId = fork();
 
@@ -65,4 +71,6 @@ void korali::conduit::External::runModel(size_t modelId, korali::Sample& sample)
   }
   else sample.yield();
  }
+
+_profileInfoVector[launcherId].endWorkSegment();
 }

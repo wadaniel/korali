@@ -13,6 +13,8 @@ class Simple : public korali::Conduit
 
  public:
 
+ void initialize() override;
+ void finalize() override;
  void runModel(size_t modelId, korali::Sample& sample) override;
 };
 

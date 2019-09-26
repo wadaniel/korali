@@ -41,7 +41,6 @@ class Sample : public korali::Module {
  void operator=(const std::vector<double>& sampleData) { _self->_sampleData = sampleData; }
  size_t size(){ return _self->_sampleData.size(); }
 
-
  // Result Functions
  std::vector<double>& getResult() { return _self->_result; }
  void setResult(const double& result) { _self->_result.clear(); _self->_result.push_back(result); }
@@ -51,6 +50,7 @@ class Sample : public korali::Module {
  void start(std::function<void(korali::Sample&)> func);
 
  bool isFinished();
+ void resume();
  void yield();
  void wait();
  static void threadCallWrapper();

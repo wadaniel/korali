@@ -4,6 +4,7 @@
 #include "auxiliar/json.hpp"
 #include "auxiliar/logger.hpp"
 #include "auxiliar/math.hpp"
+#include "auxiliar/profiling.hpp"
 
 namespace korali {
 

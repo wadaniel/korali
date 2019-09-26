@@ -16,6 +16,9 @@
 
 void korali::Engine::start(bool isDryRun)
 {
+ // Initializing Profile Information
+ _profileInfo.startWorkSegment();
+
  // Setting Run ID
  _runID = korali::getTimehash();
 
@@ -53,10 +56,17 @@ void korali::Engine::start(bool isDryRun)
      _solver->printGenerationBefore();
     }
 
+  // Timing and Profiling Start
   auto t0 = std::chrono::system_clock::now();
+  _profileInfo.endWorkSegment();
+  _solver->_profileInfo.startWorkSegment();
 
   _solver->runGeneration();
 
+  _profileInfo.startWorkSegment();
+  _solver->_profileInfo.endWorkSegment();
+
+  // Timing and Profiling End
   auto t1 = std::chrono::system_clock::now();
 
   if (_currentGeneration % _consoleOutputFrequency == 0)

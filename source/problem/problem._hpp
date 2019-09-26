@@ -9,6 +9,8 @@ namespace korali {
 class Problem : public korali::Module
 {
  public:
+
+ ProfileInfo _profileInfo;
 };
 
 } // namespace korali

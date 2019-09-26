@@ -1,4 +1,7 @@
 #include "sample/sample.hpp"
+#include "engine/engine.hpp"
+#include "problem/problem.hpp"
+#include "solver/solver.hpp"
 
 korali::Sample* korali::__current_sample;
 
@@ -20,7 +23,7 @@ void korali::Sample::start(std::function<void(korali::Sample&)> func)
  _mainThread = co_active();
  _function = func;
  __current_sample = this;
- co_switch(_sampleThread);
+ resume();
 }
 
 void korali::Sample::waitAll(std::vector<korali::Sample>& samples)
@@ -38,12 +41,21 @@ void korali::Sample::waitAll(std::vector<korali::Sample>& samples)
 
 void korali::Sample::yield()
 {
+ _k->_problem->_profileInfo.endWorkSegment();
+ _k->_solver->_profileInfo.startWorkSegment();
  co_switch(_mainThread);
+}
+
+void korali::Sample::resume()
+{
+ _k->_solver->_profileInfo.endWorkSegment();
+ _k->_problem->_profileInfo.startWorkSegment(_self->_sampleId);
+ co_switch(_sampleThread);
 }
 
 bool korali::Sample::isFinished()
 {
- if (_self->_isFinished == false) co_switch(_sampleThread);
+ if (_self->_isFinished == false) _self->resume();
  return _self->_isFinished;
 }
 

@@ -1,9 +1,10 @@
-#ifndef _KORALI_CONDUITHPP_
-#define _KORALI_CONDUITHPP_
+#ifndef _KORALI_CONDUIT_HPP_
+#define _KORALI_CONDUIT_HPP_
 
 #include "module.hpp"
 #include "engine/engine.hpp"
 #include <vector>
+#include <chrono>
 
 namespace korali {
 
@@ -14,11 +15,13 @@ class Conduit : public korali::Module {
  virtual void runModel(size_t modelId, korali::Sample& sample) = 0;
  virtual bool isRoot() { return true; }
  virtual void abort() { exit(-1); }
+ void finalize() override;
 
+ std::vector<ProfileInfo> _profileInfoVector;
 };
 
 } // namespace korali
 
 
-#endif // _KORALI_CONDUITHPP_
+#endif // _KORALI_CONDUIT_HPP_
 

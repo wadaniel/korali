@@ -16,6 +16,8 @@ class Solver : public korali::Module
  virtual void printGenerationBefore() { };
  virtual void printGenerationAfter() { };
  virtual void runGeneration() = 0;
+
+ ProfileInfo _profileInfo;
 };
 
 } // namespace korali

@@ -73,6 +73,9 @@ class Engine : public korali::Module {
  void saveState(std::string fileName);
  void saveState(int fileId);
 
+ // Profiling Information
+ ProfileInfo _profileInfo;
+
  // Communicator Methods
  long int getMPICommPointer();
 };

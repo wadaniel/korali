@@ -71,6 +71,9 @@ void korali::conduit::MPI::initialize()
  MPI_Barrier(MPI_COMM_WORLD);
 
  if (!isRoot()) workerThread();
+
+ // Initializing profiling information
+ _profileInfoVector = std::vector<ProfileInfo>(_teamCount);
  #endif
 }
 
@@ -86,6 +89,8 @@ void korali::conduit::MPI::finalize()
     MPI_Send(&stopFlag, 1, MPI_INT, _teamWorkers[i][j], MPI_TAG_MODELID, MPI_COMM_WORLD);
  }
  #endif
+
+ korali::Conduit::finalize();
 }
 
 void korali::conduit::MPI::workerThread()
@@ -136,6 +141,7 @@ void korali::conduit::MPI::runModel(size_t modelId, korali::Sample& sample)
  while (_teamQueue.empty()) sample.yield();
 
  int teamId = _teamQueue.front(); _teamQueue.pop();
+ _profileInfoVector[teamId].startWorkSegment(sample.getSampleId());
 
  for (int i = 0; i < _ranksPerTeam; i++)
  {
@@ -167,6 +173,7 @@ void korali::conduit::MPI::runModel(size_t modelId, korali::Sample& sample)
   else sample.yield();
  }
 
+ _profileInfoVector[teamId].endWorkSegment();
  #endif
 }
 

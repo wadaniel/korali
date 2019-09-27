@@ -23,6 +23,7 @@ void korali::Sample::start(std::function<void(korali::Sample&)> func)
  _mainThread = co_active();
  _function = func;
  __current_sample = this;
+ _hasProgressed = true;
  resume();
 }
 
@@ -41,16 +42,24 @@ void korali::Sample::waitAll(std::vector<korali::Sample>& samples)
 
 void korali::Sample::yield()
 {
- _k->_problem->_profileInfo.endWorkSegment();
- _k->_solver->_profileInfo.startWorkSegment();
  co_switch(_mainThread);
 }
 
 void korali::Sample::resume()
 {
- _k->_solver->_profileInfo.endWorkSegment();
- _k->_problem->_profileInfo.startWorkSegment(_self->_sampleId);
+ if (_hasProgressed)
+ {
+  _profileInfo["Solver"].endWorkSegment();
+  _profileInfo["Problem"].startWorkSegment(_self->_sampleId);
+ }
+
  co_switch(_sampleThread);
+
+ if (_hasProgressed)
+ {
+  _profileInfo["Problem"].endWorkSegment();
+  _profileInfo["Solver"].startWorkSegment();
+ }
 }
 
 bool korali::Sample::isFinished()

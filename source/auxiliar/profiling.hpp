@@ -3,6 +3,7 @@
 
 #include <chrono>
 #include <vector>
+#include <map>
 
 namespace korali {
 
@@ -24,6 +25,7 @@ class ProfileInfo
   void endWorkSegment();
 };
 
+extern std::map<std::string, ProfileInfo> _profileInfo;
 
 } // namespace korali
 

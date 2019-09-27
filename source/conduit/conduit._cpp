@@ -2,9 +2,5 @@
 
 void korali::Conduit::finalize()
 {
- for (size_t i = 0; i < _profileInfoVector.size(); i++)
- {
-  _profileInfoVector[i].startWorkSegment(0);
-  korali::logInfo("Normal", "[Worker %lu] - Runtime: %f, Idle Time: %f, Busy Time: %f\n", i, _profileInfoVector[i]._runTime, _profileInfoVector[i]._idleTime, _profileInfoVector[i]._workTime);
- }
+
 }

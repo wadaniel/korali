@@ -13,6 +13,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <cstdio>
+#include <map>
 
 void korali::Engine::start(bool isDryRun)
 {
@@ -101,6 +102,13 @@ void korali::Engine::start(bool isDryRun)
  korali::logInfo("Normal", "Total Generations: %lu\n", _currentGeneration);
  korali::logInfo("Normal", "Total Computational Model Evaluations: %lu\n", _conduit->_modelEvaluationCount);
  korali::logInfo("Normal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(endTime-startTime).count());
+
+ for (auto& x : korali::_profileInfo)
+ {
+   x.second.startWorkSegment(0);
+   korali::logInfo("Detailed", "   [%s] Idle Time: %f, Busy Time: %f\n", x.first.c_str(), x.second._runTime, x.second._idleTime, x.second._workTime);
+ }
+
  korali::logInfo("Normal", "Results saved to folder: '%s'\n", _resultsOutputPath.c_str());
 }
 

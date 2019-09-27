@@ -1,6 +1,8 @@
 #include "auxiliar/profiling.hpp"
 #include "stdio.h"
 
+std::map<std::string, korali::ProfileInfo> korali::_profileInfo;
+
 korali::ProfileInfo::ProfileInfo()
 {
  _runTime = 0.0;
@@ -13,13 +15,13 @@ korali::ProfileInfo::ProfileInfo()
 
 void korali::ProfileInfo::startWorkSegment(int segmentId)
 {
- _segmentId.push_back(segmentId);
- _segmentStart.push_back(std::chrono::high_resolution_clock::now());
-
  size_t currentSegment = _segmentStart.size() - 1;
- size_t previousSegment = _segmentStart.size() - 2;
- std::chrono::duration<double> elapsed = _segmentStart[currentSegment] - _segmentStart[previousSegment];
+ auto currentTime = std::chrono::high_resolution_clock::now();
+ std::chrono::duration<double> elapsed = currentTime - _segmentStart[currentSegment];
  double segmentTime = elapsed.count();
+
+ _segmentId.push_back(segmentId);
+ _segmentStart.push_back(currentTime);
 
  _runTime += segmentTime;
  if (segmentId == -1) _workTime += segmentTime;

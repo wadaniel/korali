@@ -16,8 +16,6 @@ class Conduit : public korali::Module {
  virtual bool isRoot() { return true; }
  virtual void abort() { exit(-1); }
  void finalize() override;
-
- std::vector<ProfileInfo> _profileInfoVector;
 };
 
 } // namespace korali

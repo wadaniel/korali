@@ -19,6 +19,7 @@ class Sample : public korali::Module {
  cothread_t _sampleThread;
  std::function<void(korali::Sample&)> _function;
  bool _isFinished;
+ bool _hasProgressed;
 
  public:
 

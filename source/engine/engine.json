@@ -57,6 +57,17 @@
     "Type": "size_t",
     "Default": "1",
     "Description": "Specifies how often (in generations) will partial results be printed on console. The default, 1, indicates that every generation's results will be printed."
+   },
+   {
+    "Name": ["Results Output", "Profiling" ],
+    "Type": "std::string",
+    "Default": "Normal",
+    "Options": [
+                { "Value": "Disabled", "Description": "Calculates and stores no profiling information." },
+                { "Value": "Minimal", "Description": "Calculates only aggregate profiling information." },
+                { "Value": "Full", "Description": "Stores all the raw data about the execution of Korali to produce a timeline or perform an in-depth analysis." }
+               ],
+    "Description": "Specifies the level of detail of profiling information to gather and store."
    }
  ],
  

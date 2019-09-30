@@ -13,7 +13,7 @@ class ProfileInfo
 
   // Timeline segments
   std::vector<int> _segmentId; // -1 for idle time
-  std::vector<std::chrono::time_point<std::chrono::system_clock>> _segmentTimes;
+  std::vector<std::chrono::time_point<std::chrono::high_resolution_clock>> _segmentTimes;
 
   double _runTime;
   double _workTime;

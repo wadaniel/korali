@@ -10,21 +10,25 @@
 namespace korali
 {
 
+enum class SampleState { uninitialized, initialized, waiting, finished };
+
 class Sample : public korali::Module {
 
  private:
 
  Sample* _self;
+ SampleState _state;
  cothread_t _mainThread;
+ cothread_t _terminationThread;
  cothread_t _sampleThread;
  std::function<void(korali::Sample&)> _function;
- bool _isFinished;
- bool _hasProgressed;
 
  public:
 
- Sample(const std::vector<double>& sampleData) { _sampleData = sampleData; _self = this; }
- Sample() { _self = this; }
+ bool _hasProgressed;
+
+ Sample(const std::vector<double>& sampleData);
+ Sample();
 
  // Sample Setting Functions
  size_t getSampleId() { return _self->_sampleId; }
@@ -50,12 +54,13 @@ class Sample : public korali::Module {
  // Execution Control Functions
  void start(std::function<void(korali::Sample&)> func);
 
- bool isFinished();
  void resume();
  void yield();
  void wait();
  static void threadCallWrapper();
+ static void terminationContext();
  static void waitAll(std::vector<korali::Sample>& samples);
+ static size_t waitAny(std::vector<korali::Sample>& samples);
 };
 
 extern korali::Sample* __current_sample;

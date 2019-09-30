@@ -111,8 +111,7 @@ void korali::solver::sampler::TMCMC::runGeneration()
  {
   for (size_t c = 0; c < _chainCount; c++)
   {
-   if (_currentChainStep[c] >= _chainLengths[c] + _currentBurnIn) continue;
-
+   if (_currentChainStep[c] < _chainLengths[c] + _currentBurnIn)
    if (_chainPendingEvaluation[c] == false)
    {
      _chainPendingEvaluation[c] = true;
@@ -120,18 +119,16 @@ void korali::solver::sampler::TMCMC::runGeneration()
      samples[c].setSampleId(c);
      samples[c].start([problem = _bayesianProblem](korali::Sample& sample){ problem->evaluateLogLikelihood(sample); });
    }
-
-   if (_chainPendingEvaluation[c] == true && samples[c].isFinished())
-   {
-    _chainPendingEvaluation[c] = false;
-    _currentChainStep[c]++;
-    _chainCandidatesLogLikelihoods[c] = samples[c].getResult()[0];
-    _bayesianProblem->evaluateLogPrior(samples[c]);
-    _chainCandidatesLogPriors[c] = samples[c].getResult()[0];
-    processEvaluation(c);
-    if (_currentChainStep[c] == _chainLengths[c] + _currentBurnIn) _finishedChainsCount++;
-   }
   }
+
+  size_t finishedId = korali::Sample::waitAny(samples);
+  _chainPendingEvaluation[finishedId] = false;
+  _currentChainStep[finishedId]++;
+  _chainCandidatesLogLikelihoods[finishedId] = samples[finishedId].getResult()[0];
+  _bayesianProblem->evaluateLogPrior(samples[finishedId]);
+  _chainCandidatesLogPriors[finishedId] = samples[finishedId].getResult()[0];
+  processEvaluation(finishedId);
+  if (_currentChainStep[finishedId] == _chainLengths[finishedId] + _currentBurnIn) _finishedChainsCount++;
  }
 
  processGeneration();

@@ -34,7 +34,6 @@ void korali::conduit::External::runModel(size_t modelId, korali::Sample& sample)
  _modelEvaluationCount++;
 
  int launcherId = _launcherQueue.front(); _launcherQueue.pop();
- _profileInfo["Conduit " + std::to_string(launcherId)].startWorkSegment(sample.getSampleId());
 
  pid_t processId = fork();
 
@@ -51,6 +50,8 @@ void korali::conduit::External::runModel(size_t modelId, korali::Sample& sample)
   exit(0);
  }
 
+ _profileInfo["Conduit " + std::to_string(launcherId)].startSegment(sample.getSampleId());
+
  int flag = 0;
  while(flag == 0)
  {
@@ -65,9 +66,14 @@ void korali::conduit::External::runModel(size_t modelId, korali::Sample& sample)
 
    sample.setResult(resultVector);
    _launcherQueue.push(launcherId);
+   sample._hasProgressed = true;
   }
-  else sample.yield();
+  else
+  {
+   sample._hasProgressed = false;
+   sample.yield();
+  }
  }
 
-_profileInfo["Conduit " + std::to_string(launcherId)].endWorkSegment();
+_profileInfo["Conduit " + std::to_string(launcherId)].commitSegment();
 }

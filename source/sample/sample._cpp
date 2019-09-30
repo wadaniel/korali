@@ -5,39 +5,51 @@
 
 korali::Sample* korali::__current_sample;
 
+korali::Sample::Sample(const std::vector<double>& sampleData) : korali::Sample::Sample()
+{
+ _sampleData = sampleData;
+}
+
+korali::Sample::Sample()
+{
+ _self = this;
+ _terminationThread = co_create(64*sizeof(void*), korali::Sample::terminationContext);
+ _state = SampleState::uninitialized;
+}
+
 void korali::Sample::threadCallWrapper()
 {
- // This is not a thread-safe operation. For that to be the case, it would need
- // a mutex lock activated before setting __current_sample, and freed after reading it
+  // This is not a thread-safe operation. For that to be the case, it would need
+  // a mutex lock activated before setting __current_sample, and freed after reading it
+  korali::Sample* currentSample = korali::__current_sample;
+  currentSample->_function(*currentSample);
+  korali::__current_sample = currentSample;
+  co_switch(currentSample->_terminationThread);
+}
 
- korali::Sample* currentSample = korali::__current_sample;
- currentSample->_isFinished = false;
- currentSample->_function(*currentSample);
- currentSample->_isFinished = true;
- currentSample->yield();
+void korali::Sample::terminationContext()
+{
+ while(true)
+ {
+  korali::Sample* currentSample = korali::__current_sample;
+  free(currentSample->_sampleThread);
+  currentSample->_state = SampleState::finished;
+  co_switch(currentSample->_mainThread);
+ }
 }
 
 void korali::Sample::start(std::function<void(korali::Sample&)> func)
 {
+ if (_state != SampleState::uninitialized) korali::logError("Sample has already been initialized.\n");
+
  _sampleThread = co_create(8192*sizeof(void*), korali::Sample::threadCallWrapper);
  _mainThread = co_active();
  _function = func;
- __current_sample = this;
+ _state = SampleState::initialized;
  _hasProgressed = true;
+
+ __current_sample = this;
  resume();
-}
-
-void korali::Sample::waitAll(std::vector<korali::Sample>& samples)
-{
- bool isFinished = false;
- while (isFinished == false)
- {
-  isFinished = true;
-  for (size_t i = 0; i < samples.size(); i++)
-   if (samples[i].isFinished() == false) isFinished = false;
- }
-
- for (size_t i = 0; i < samples.size(); i++) free(samples[i]._sampleThread);
 }
 
 void korali::Sample::yield()
@@ -47,30 +59,66 @@ void korali::Sample::yield()
 
 void korali::Sample::resume()
 {
- if (_hasProgressed)
- {
-  _profileInfo["Solver"].endWorkSegment();
-  _profileInfo["Problem"].startWorkSegment(_self->_sampleId);
- }
+ if(_state ==  SampleState::uninitialized) korali::logError("Trying to resume an uninitialized sample.\n");
+ if(_state ==  SampleState::finished) korali::logError("Trying to resume a finished sample.\n");
+
+ _profileInfo["Problem"].startSegment();
 
  co_switch(_sampleThread);
 
- if (_hasProgressed)
- {
-  _profileInfo["Problem"].endWorkSegment();
-  _profileInfo["Solver"].startWorkSegment();
- }
-}
-
-bool korali::Sample::isFinished()
-{
- if (_self->_isFinished == false) _self->resume();
- return _self->_isFinished;
+ if (_hasProgressed == true)  _profileInfo["Problem"].commitSegment();
+ if (_hasProgressed == false) _profileInfo["Problem"].discardSegment();
 }
 
 void korali::Sample::wait()
 {
- while(isFinished() == false);
- free(_self->_sampleThread);
- return;
+ _profileInfo["Solver"].commitSegment();
+
+ while(_self->_state != SampleState::finished) _self->resume();
+
+ _profileInfo["Solver"].startSegment();
+}
+
+size_t korali::Sample::waitAny(std::vector<korali::Sample>& samples)
+{
+ _profileInfo["Solver"].commitSegment();
+
+ bool isFinished = false;
+ size_t currentSample;
+
+ while (isFinished == false)
+ {
+  for (currentSample = 0; currentSample < samples.size(); currentSample++)
+  {
+   if (samples[currentSample]._state == SampleState::waiting)
+    samples[currentSample].resume();
+
+   if (samples[currentSample]._state == SampleState::finished)
+   {
+//    printf("Finished: %lu - %lu\n", samples[currentSample].getSampleId(), currentSample);
+    samples[currentSample]._state = SampleState::uninitialized;
+    isFinished = true;
+    break;
+   }
+  }
+ }
+
+ _profileInfo["Solver"].startSegment();
+
+ return currentSample;
+}
+
+void korali::Sample::waitAll(std::vector<korali::Sample>& samples)
+{
+ _profileInfo["Solver"].commitSegment();
+
+ bool isFinished = false;
+ while (isFinished == false)
+ {
+  isFinished = true;
+  for (size_t i = 0; i < samples.size(); i++)
+   if (samples[i]._state != SampleState::finished) { isFinished = false; samples[i].resume(); }
+ }
+
+ _profileInfo["Solver"].startSegment();
 }

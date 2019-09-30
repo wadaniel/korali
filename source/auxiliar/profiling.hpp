@@ -13,16 +13,16 @@ class ProfileInfo
 
   // Timeline segments
   std::vector<int> _segmentId; // -1 for idle time
-  std::vector<std::chrono::time_point<std::chrono::system_clock>> _segmentStart;
-  std::vector<std::chrono::time_point<std::chrono::system_clock>> _segmentEnd;
+  std::vector<std::chrono::time_point<std::chrono::system_clock>> _segmentTimes;
 
   double _runTime;
   double _workTime;
   double _idleTime;
 
   ProfileInfo();
-  void startWorkSegment(int segmentId = 0);
-  void endWorkSegment();
+  void startSegment(int segmentId = 0);
+  void commitSegment();
+  void discardSegment();
 };
 
 extern std::map<std::string, ProfileInfo> _profileInfo;

@@ -10,25 +10,32 @@ korali::ProfileInfo::ProfileInfo()
  _idleTime = 0.0;
 
  _segmentId.push_back(-1);
- _segmentStart.push_back(std::chrono::high_resolution_clock::now());
+ _segmentTimes.push_back(std::chrono::high_resolution_clock::now());
 }
 
-void korali::ProfileInfo::startWorkSegment(int segmentId)
+void korali::ProfileInfo::startSegment(int segmentId)
 {
- size_t currentSegment = _segmentStart.size() - 1;
+ size_t currentSegment = _segmentTimes.size() - 1;
  auto currentTime = std::chrono::high_resolution_clock::now();
- std::chrono::duration<double> elapsed = currentTime - _segmentStart[currentSegment];
+ std::chrono::duration<double> elapsed = currentTime - _segmentTimes[currentSegment];
  double segmentTime = elapsed.count();
 
  _segmentId.push_back(segmentId);
- _segmentStart.push_back(currentTime);
+ _segmentTimes.push_back(currentTime);
 
  _runTime += segmentTime;
  if (segmentId == -1) _workTime += segmentTime;
  if (segmentId != -1) _idleTime += segmentTime;
 }
 
-void korali::ProfileInfo::endWorkSegment()
+void korali::ProfileInfo::commitSegment()
 {
- startWorkSegment(-1);
+ startSegment(-1);
+}
+
+void korali::ProfileInfo::discardSegment()
+{
+ size_t currentSegment = _segmentTimes.size() - 1;
+ _segmentId.erase(_segmentId.begin() + currentSegment);
+ _segmentTimes.erase(_segmentTimes.begin() + currentSegment);
 }

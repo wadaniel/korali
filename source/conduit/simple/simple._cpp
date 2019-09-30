@@ -5,11 +5,11 @@
 
 void korali::conduit::Simple::runModel(size_t modelId, korali::Sample& sample)
 {
- _profileInfo["Conduit 0"].startWorkSegment(sample.getSampleId());
+ _profileInfo["Conduit 0"].startSegment(sample.getSampleId());
  sample._result.clear();
  sample._k = _k;
  _k->_models[modelId](sample);
  _modelEvaluationCount++;
- _profileInfo["Conduit 0"].endWorkSegment();
+ _profileInfo["Conduit 0"].commitSegment();
 }
 

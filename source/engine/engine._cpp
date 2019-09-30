@@ -18,7 +18,7 @@
 void korali::Engine::start(bool isDryRun)
 {
  // Initializing Profile Information
- _profileInfo.startWorkSegment();
+ _profileInfo["Engine"].startSegment();
 
  // Setting Run ID
  _runID = korali::getTimehash();
@@ -59,13 +59,12 @@ void korali::Engine::start(bool isDryRun)
 
   // Timing and Profiling Start
   auto t0 = std::chrono::system_clock::now();
-  _profileInfo.endWorkSegment();
-  _solver->_profileInfo.startWorkSegment();
 
+  _profileInfo["Engine"].commitSegment();
+  _profileInfo["Solver"].startSegment();
   _solver->runGeneration();
-
-  _profileInfo.startWorkSegment();
-  _solver->_profileInfo.endWorkSegment();
+  _profileInfo["Solver"].commitSegment();
+  _profileInfo["Engine"].startSegment();
 
   // Timing and Profiling End
   auto t1 = std::chrono::system_clock::now();
@@ -103,11 +102,9 @@ void korali::Engine::start(bool isDryRun)
  korali::logInfo("Normal", "Total Computational Model Evaluations: %lu\n", _conduit->_modelEvaluationCount);
  korali::logInfo("Normal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(endTime-startTime).count());
 
+ _profileInfo["Engine"].commitSegment();
  for (auto& x : korali::_profileInfo)
- {
-   x.second.startWorkSegment(0);
-   korali::logInfo("Detailed", "   [%s] Idle Time: %f, Busy Time: %f\n", x.first.c_str(), x.second._runTime, x.second._idleTime, x.second._workTime);
- }
+   korali::logInfo("Normal", "   [%s] Segments: %lu,  Busy Time: %f\n", x.first.c_str(), x.second._segmentTimes.size(), x.second._workTime);
 
  korali::logInfo("Normal", "Results saved to folder: '%s'\n", _resultsOutputPath.c_str());
 }

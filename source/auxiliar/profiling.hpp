@@ -2,6 +2,7 @@
 #define _KORALI_PROFILING_HPP_
 
 #include <chrono>
+#include <string>
 #include <vector>
 #include <map>
 

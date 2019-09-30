@@ -47,13 +47,13 @@ void korali::Sample::start(std::function<void(korali::Sample&)> func)
  _function = func;
  _state = SampleState::initialized;
  _hasProgressed = true;
-
  __current_sample = this;
  resume();
 }
 
 void korali::Sample::yield()
 {
+ _state = SampleState::waiting;
  co_switch(_mainThread);
 }
 

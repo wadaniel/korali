@@ -29,6 +29,8 @@ void korali::conduit::External::finalize()
 
 void korali::conduit::External::runModel(size_t modelId, korali::Sample& sample)
 {
+ sample._hasProgressed = false;
+
  while (_launcherQueue.empty()) sample.yield();
 
  _modelEvaluationCount++;
@@ -66,14 +68,12 @@ void korali::conduit::External::runModel(size_t modelId, korali::Sample& sample)
 
    sample.setResult(resultVector);
    _launcherQueue.push(launcherId);
-   sample._hasProgressed = true;
   }
   else
-  {
-   sample._hasProgressed = false;
    sample.yield();
-  }
  }
 
 _profileInfo["Conduit " + std::to_string(launcherId)].commitSegment();
+
+ sample._hasProgressed = true;
 }

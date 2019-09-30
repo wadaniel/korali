@@ -133,6 +133,7 @@ void korali::conduit::MPI::workerThread()
 void korali::conduit::MPI::runModel(size_t modelId, korali::Sample& sample)
 {
  _modelEvaluationCount++;
+ sample._hasProgressed = false;
 
  #ifdef _KORALI_USE_MPI
  while (_teamQueue.empty()) sample.yield();
@@ -167,17 +168,14 @@ void korali::conduit::MPI::runModel(size_t modelId, korali::Sample& sample)
     MPI_Recv(resultVector.data(), resultSize, MPI_DOUBLE, _teamWorkers[teamId][0], MPI_TAG_RESULTDATA, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     sample.setResult(resultVector);
     _teamQueue.push(teamId);
-    sample._hasProgressed = true;
   }
-  else
-  {
-   sample._hasProgressed = false;
-   sample.yield();
-  }
+  else sample.yield();
  }
 
  _profileInfo["Conduit " + std::to_string(teamId)].commitSegment();
  #endif
+
+ sample._hasProgressed = true;
 }
 
 int korali::conduit::MPI::getRootRank()

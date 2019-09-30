@@ -104,7 +104,7 @@ void korali::Engine::start(bool isDryRun)
 
  _profileInfo["Engine"].commitSegment();
  for (auto& x : korali::_profileInfo)
-   korali::logInfo("Normal", "   [%s] Segments: %lu,  Busy Time: %f\n", x.first.c_str(), x.second._segmentTimes.size(), x.second._workTime);
+   korali::logInfo("Detailed", "   [%s] Segments: %lu,  Busy Time: %f\n", x.first.c_str(), x.second._segmentTimes.size(), x.second._workTime);
 
  korali::logInfo("Normal", "Results saved to folder: '%s'\n", _resultsOutputPath.c_str());
 }

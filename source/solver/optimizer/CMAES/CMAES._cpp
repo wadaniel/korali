@@ -203,6 +203,7 @@ void korali::solver::optimizer::CMAES::runGeneration()
  for (size_t i = 0; i < _currentPopulationSize; i++)
  {
   samples[i] = _samplePopulation[i];
+  samples[i]._data["Parameters"] = _samplePopulation[i];
   samples[i].setSampleId(i);
   samples[i].start([problem = _problem](korali::Sample& sample){ problem->evaluateSample(sample); });
  }

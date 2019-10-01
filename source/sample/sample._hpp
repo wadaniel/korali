@@ -6,6 +6,9 @@
 #include "auxiliar/logger.hpp"
 #include "module.hpp"
 #include "sample/libco/libco.h"
+#include <string>
+#include <vector>
+#include <map>
 
 namespace korali
 {
@@ -24,6 +27,8 @@ class Sample : public korali::Module {
  std::function<void(korali::Sample&)> _function;
 
  public:
+
+ std::map<std::string, std::vector<double>> _data;
 
  bool _hasProgressed;
 

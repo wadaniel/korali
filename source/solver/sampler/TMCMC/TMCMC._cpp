@@ -117,6 +117,7 @@ void korali::solver::sampler::TMCMC::runGeneration()
      _chainPendingEvaluation[c] = true;
      samples[c] = _chainCandidates[c];
      samples[c].setSampleId(c);
+     samples[c]._data["Parameters"] = _chainCandidates[c];
      samples[c].start([problem = _bayesianProblem](korali::Sample& sample){ problem->evaluateLogLikelihood(sample); });
    }
   }

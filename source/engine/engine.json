@@ -61,7 +61,7 @@
    {
     "Name": ["Results Output", "Profiling" ],
     "Type": "std::string",
-    "Default": "Normal",
+    "Default": "Minimal",
     "Options": [
                 { "Value": "Disabled", "Description": "Calculates and stores no profiling information." },
                 { "Value": "Minimal", "Description": "Calculates only aggregate profiling information." },

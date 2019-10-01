@@ -112,9 +112,31 @@ void korali::conduit::MPI::workerThread()
 
     MPI_Recv(sampleData.data(), sampleSize, MPI_DOUBLE, getRootRank(), MPI_TAG_SAMPLEDATA, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
+    size_t elementCount;
+    MPI_Recv(&elementCount, 1, MPI_UNSIGNED_LONG, getRootRank(), MPI_TAG_SAMPLEDATA, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
     auto sample = korali::Sample(sampleData);
     sample.setSampleId(sampleId);
     sample._k = _k;
+
+    for (size_t i = 0; i < elementCount; i++)
+    {
+     size_t keySize;
+     MPI_Recv(&keySize, 1, MPI_UNSIGNED_LONG, getRootRank(), MPI_TAG_SAMPLEDATA, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+     char key[keySize + 1];
+     MPI_Recv(key, keySize, MPI_CHAR, getRootRank(), MPI_TAG_SAMPLEDATA, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+     key[keySize] = '\0';
+
+     size_t vectorSize;
+     MPI_Recv(&vectorSize, 1, MPI_UNSIGNED_LONG, getRootRank(), MPI_TAG_SAMPLEDATA, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+     std::vector<double> elementData(vectorSize);
+     MPI_Recv(elementData.data(), vectorSize, MPI_DOUBLE, getRootRank(), MPI_TAG_SAMPLEDATA, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+     sample._data[key] = elementData;
+    }
+
     _k->_models[modelId](sample);
 
     if (_localRankId == 0)
@@ -150,6 +172,22 @@ void korali::conduit::MPI::runModel(size_t modelId, korali::Sample& sample)
   MPI_Send(&sampleId, 1, MPI_UNSIGNED_LONG, workerId, MPI_TAG_SAMPLEID, MPI_COMM_WORLD);
   MPI_Send(&sampleSize, 1, MPI_UNSIGNED_LONG, workerId, MPI_TAG_SAMPLESIZE, MPI_COMM_WORLD);
   MPI_Send(sample.getSampleData().data(), sampleSize, MPI_DOUBLE, workerId, MPI_TAG_SAMPLEDATA, MPI_COMM_WORLD);
+
+  size_t elementCount = sample._data.size();
+  MPI_Send(&elementCount, 1, MPI_UNSIGNED_LONG, workerId, MPI_TAG_SAMPLEDATA, MPI_COMM_WORLD);
+  printf("Val Normal: %f, Val Reference: %f\n", sample.getSampleData()[0], sample._data["Parameters"][0]);
+
+  for (auto& x : sample._data)
+  {
+   size_t keySize = x.first.size();
+   MPI_Send(&keySize, 1, MPI_UNSIGNED_LONG, workerId, MPI_TAG_SAMPLEDATA, MPI_COMM_WORLD);
+   MPI_Send(x.first.c_str(), keySize, MPI_CHAR, workerId, MPI_TAG_SAMPLEDATA, MPI_COMM_WORLD);
+
+   size_t vectorSize = x.second.size();
+   MPI_Send(&vectorSize, 1, MPI_UNSIGNED_LONG, workerId, MPI_TAG_SAMPLEDATA, MPI_COMM_WORLD);
+   MPI_Send(x.second.data(), vectorSize, MPI_DOUBLE, workerId, MPI_TAG_SAMPLEDATA, MPI_COMM_WORLD);
+  }
+
  }
 
  size_t resultSize;

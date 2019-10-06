@@ -13,7 +13,6 @@ class Optimizer : public korali::Solver
 
  void initialize() override;
 
- korali::problem::Evaluation* _problem;
 };
 
 } } // namespace korali:solver

@@ -7,73 +7,69 @@
 
 void korali::conduit::External::initialize()
 {
- if (_concurrentJobs < 1) korali::logError("You need to define at least 1 concurrent job(s) for external models \n");
- for (int i = 0; i < _concurrentJobs; i++) _pipeDescriptors.push_back(std::vector<int>(2));
- for (int i = 0; i < _concurrentJobs; i++) _launcherQueue.push(i);
-
- // Opening Inter-process communicator pipes
- for (int i = 0; i < _concurrentJobs; i++)
-  if (pipe(_pipeDescriptors[i].data()) == -1) korali::logError("Unable to create inter-process pipe. \n");
+// if (_concurrentJobs < 1) korali::logError("You need to define at least 1 concurrent job(s) for external models \n");
+// for (int i = 0; i < _concurrentJobs; i++) _pipeDescriptors.push_back(std::vector<int>(2));
+// for (int i = 0; i < _concurrentJobs; i++) _launcherQueue.push(i);
+//
+// // Opening Inter-process communicator pipes
+// for (int i = 0; i < _concurrentJobs; i++)
+//  if (pipe(_pipeDescriptors[i].data()) == -1) korali::logError("Unable to create inter-process pipe. \n");
 }
 
 void korali::conduit::External::finalize()
 {
- for (int i = 0; i < _concurrentJobs; i++)
- {
-  close(_pipeDescriptors[i][1]); // Closing pipes
-  close(_pipeDescriptors[i][0]); // Closing pipes
- }
-
- korali::Conduit::finalize();
+// for (int i = 0; i < _concurrentJobs; i++)
+// {
+//  close(_pipeDescriptors[i][1]); // Closing pipes
+//  close(_pipeDescriptors[i][0]); // Closing pipes
+// }
+//
+// korali::Conduit::finalize();
 }
 
-void korali::conduit::External::runModel(size_t modelId, korali::Sample& sample)
+void korali::conduit::External::processSample(korali::Sample& sample)
 {
- sample._hasProgressed = false;
-
- while (_launcherQueue.empty()) sample.yield();
-
- _modelEvaluationCount++;
-
- int launcherId = _launcherQueue.front(); _launcherQueue.pop();
-
- pid_t processId = fork();
-
- _launcherIdToProcessIdMap[launcherId] = processId;
- _processIdMapToLauncherIdMap[processId] = launcherId;
-
- if (processId == 0)
- {
-  sample._k = _k;
-  _k->_models[modelId](sample);
-  size_t resultSize = sample.getResult().size();
-  write(_pipeDescriptors[launcherId][1], &resultSize, sizeof(size_t));
-  write(_pipeDescriptors[launcherId][1], sample.getResult().data(), resultSize * sizeof(double));
-  exit(0);
- }
-
- _profileInfo["Conduit " + std::to_string(launcherId)].startSegment(sample.getSampleId());
-
- int flag = 0;
- while(flag == 0)
- {
-  flag = waitpid(processId, &flag, WNOHANG);
-  if (flag)
-  {
-   size_t resultSize;
-   read(_pipeDescriptors[launcherId][0], &resultSize, sizeof(size_t));
-
-   std::vector<double> resultVector(resultSize);
-   read(_pipeDescriptors[launcherId][0], resultVector.data(), resultSize * sizeof(double));
-
-   sample.setResult(resultVector);
-   _launcherQueue.push(launcherId);
-  }
-  else
-   sample.yield();
- }
-
-_profileInfo["Conduit " + std::to_string(launcherId)].commitSegment();
-
- sample._hasProgressed = true;
+// while (_launcherQueue.empty()) sample.yield();
+//
+// _modelEvaluationCount++;
+//
+// int launcherId = _launcherQueue.front(); _launcherQueue.pop();
+//
+// pid_t processId = fork();
+//
+// _launcherIdToProcessIdMap[launcherId] = processId;
+// _processIdMapToLauncherIdMap[processId] = launcherId;
+//
+// if (processId == 0)
+// {
+//  sample._k = _k;
+//  _k->_models[modelId](sample);
+//  size_t resultSize = sample.getResult().size();
+//  write(_pipeDescriptors[launcherId][1], &resultSize, sizeof(size_t));
+//  write(_pipeDescriptors[launcherId][1], sample.getResult().data(), resultSize * sizeof(double));
+//  exit(0);
+// }
+//
+// _profileInfo["Conduit " + std::to_string(launcherId)].startSegment(sample.getSampleId());
+//
+// int flag = 0;
+// while(flag == 0)
+// {
+//  flag = waitpid(processId, &flag, WNOHANG);
+//  if (flag)
+//  {
+//   size_t resultSize;
+//   read(_pipeDescriptors[launcherId][0], &resultSize, sizeof(size_t));
+//
+//   std::vector<double> resultVector(resultSize);
+//   read(_pipeDescriptors[launcherId][0], resultVector.data(), resultSize * sizeof(double));
+//
+//   sample.setResult(resultVector);
+//   _launcherQueue.push(launcherId);
+//  }
+//  else
+//   sample.yield();
+// }
+//
+//_profileInfo["Conduit " + std::to_string(launcherId)].commitSegment();
 }

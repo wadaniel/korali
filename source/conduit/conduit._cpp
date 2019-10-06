@@ -1,6 +1,105 @@
 #include "conduit/conduit.hpp"
 
-void korali::Conduit::finalize()
-{
+korali::Conduit* korali::__conduit;
 
+korali::Conduit::Conduit()
+{
+ __conduit = this;
+ _mainThread = co_active();
+}
+
+void korali::Conduit::coroutineWrapper()
+{
+ korali::Sample* currentSample = __conduit->_currentSample;
+ co_switch(__conduit->_mainThread);
+
+ __conduit->processSample(*currentSample);
+ co_switch(__conduit->_mainThread);
+
+ if (currentSample->_state != SampleState::uninitialized) korali::logError("Resuming a finished sample\n");
+}
+
+void korali::Conduit::start(korali::Sample& sample)
+{
+ if (sample._state != SampleState::uninitialized) korali::logError("Sample has already been initialized.\n");
+
+ sample._sampleThread = co_create(8192*sizeof(void*), korali::Conduit::coroutineWrapper);
+ sample._state = SampleState::initialized;
+ __conduit->_currentSample = &sample;
+ co_switch(sample._sampleThread);
+}
+
+void korali::Conduit::wait(korali::Sample& sample)
+{
+ _profileInfo["Solver"].commitSegment();
+ _profileInfo["Problem"].startSegment();
+
+ while(sample._state != SampleState::finished)
+ {
+  sample._state = SampleState::running;
+  co_switch(sample._sampleThread);
+ }
+
+ free(sample._sampleThread);
+
+ _profileInfo["Problem"].commitSegment();
+ _profileInfo["Solver"].startSegment();
+}
+
+size_t korali::Conduit::waitAny(std::vector<korali::Sample>& samples)
+{
+ _profileInfo["Solver"].commitSegment();
+ _profileInfo["Problem"].startSegment();
+
+ bool isFinished = false;
+ size_t currentSample;
+
+ while (isFinished == false)
+ {
+  for (currentSample = 0; currentSample < samples.size(); currentSample++)
+  {
+   if (samples[currentSample]._state == SampleState::waiting)
+   {
+    samples[currentSample]._state = SampleState::running;
+    co_switch(samples[currentSample]._sampleThread);
+   }
+
+   if (samples[currentSample]._state == SampleState::finished)
+   {
+    free(samples[currentSample]._sampleThread);
+    samples[currentSample]._state = SampleState::uninitialized;
+    isFinished = true;
+    break;
+   }
+  }
+ }
+
+ _profileInfo["Problem"].commitSegment();
+ _profileInfo["Solver"].startSegment();
+
+ return currentSample;
+}
+
+void korali::Conduit::waitAll(std::vector<korali::Sample>& samples)
+{
+ _profileInfo["Solver"].commitSegment();
+ _profileInfo["Problem"].startSegment();
+
+ bool isFinished = false;
+ while (isFinished == false)
+ {
+  isFinished = true;
+  for (size_t i = 0; i < samples.size(); i++)
+   if (samples[i]._state != SampleState::finished)
+   {
+    isFinished = false;
+    samples[i]._state = SampleState::running;
+    co_switch(samples[i]._sampleThread);
+   }
+ }
+
+ for (size_t i = 0; i < samples.size(); i++) free(samples[i]._sampleThread);
+
+ _profileInfo["Problem"].commitSegment();
+ _profileInfo["Solver"].startSegment();
 }

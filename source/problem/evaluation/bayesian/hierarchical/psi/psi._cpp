@@ -53,16 +53,6 @@ void korali::problem::evaluation::bayesian::hierarchical::Psi::initialize()
   }
  }
 
- // Setting computation model to be solved (evaluatePsiLikelihood)
- _k->_models.push_back(
-  [](korali::Sample& sample)
-  {
-   korali::Engine* k = sample._k;
-   auto _psiProblem = dynamic_cast<korali::problem::evaluation::bayesian::hierarchical::Psi*>(k->_problem);
-   _psiProblem->evaluatePsiLikelihood(sample);
-  }
- );
-
  // Configuring conditional priors given hyperparameters
  _conditionalPriorInfos.resize(_conditionalPriors.size());
 
@@ -98,7 +88,7 @@ void korali::problem::evaluation::bayesian::hierarchical::Psi::updateConditional
   for (size_t j = 0; j < _conditionalPriorInfos[i]._sampleKeys.size(); j++)
   {
    std::string key = _conditionalPriorInfos[i]._sampleKeys[j];
-   double value = sample[_conditionalPriorInfos[i]._samplePositions[j]];
+   double value = sample["Parameters"][_conditionalPriorInfos[i]._samplePositions[j]];
    _conditionalPriorInfos[i]._conditionalJson[key] = value;
    hasChanged = true;
   }
@@ -111,15 +101,9 @@ void korali::problem::evaluation::bayesian::hierarchical::Psi::updateConditional
  }
 }
 
-
 void korali::problem::evaluation::bayesian::hierarchical::Psi::evaluateLogLikelihood(korali::Sample& sample)
 {
- _k->_conduit->runModel(0, sample);
-}
-
-void korali::problem::evaluation::bayesian::hierarchical::Psi::evaluatePsiLikelihood(korali::Sample& sample)
-{
- if (isSampleFeasible(sample) == false) { sample.setResult(-korali::Inf); return; };
+ if (isSampleFeasible(sample) == false) { sample["logLikelihood"] = -korali::Inf; return; };
 
  updateConditionalPriors(sample);
 
@@ -138,8 +122,8 @@ void korali::problem::evaluation::bayesian::hierarchical::Psi::evaluatePsiLikeli
 
    logLikelihood += logSumExp(logValues);
 
-   if( std::isnan(logLikelihood)) { sample.setResult(-korali::Inf); return; };
+   if( std::isnan(logLikelihood)) { sample["logLikelihood"] = -korali::Inf; return; };
  }
 
- sample.setResult(logLikelihood);
+ sample["logLikelihood"] = logLikelihood;
 }

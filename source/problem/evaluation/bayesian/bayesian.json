@@ -1,4 +1,26 @@
 {
+ "Available Operations":
+ [
+  {
+   "Name": "Evaluate logPrior",
+   "Function": "evaluateLogPrior",
+   "Description": "Evaluates the logPrior of the sample.",
+   "Results": [ { "Name": "logPrior", "Description": "Contains a single number with the log prior evaluation of the sample." } ]
+  },
+  {
+   "Name": "Evaluate logLikelihood",
+   "Function": "evaluateLogLikelihood",
+   "Description": "Evaluates the logLikelihood of the sample.",
+   "Results": [ { "Name": "logLikelihood", "Description": "Contains a single number with the log likelihood evaluation of the sample." } ]
+  },
+  {
+   "Name": "Evaluate logPosterior",
+   "Function": "evaluateLogPosterior",
+   "Description": "Evaluates the logLikelihood of the sample.",
+   "Results": [ { "Name": "logPosterior", "Description": "Contains a single number with the log posterior evaluation of the sample." } ]
+  }
+ ],
+ 
  "Variables Configuration":
  [
    {

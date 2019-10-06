@@ -11,35 +11,35 @@ void korali::problem::evaluation::Bayesian::initialize()
 void korali::problem::evaluation::Bayesian::evaluateLogPrior(korali::Sample& sample)
 {
   double logPrior = 0.0;
-  for (size_t i = 0; i < sample.getSampleData().size(); i++)
-    logPrior += _k->_variables[i]->_priorDistribution->getLogDensity(sample[i]);
+  for (size_t i = 0; i < sample["Parameters"].size(); i++)
+    logPrior += _k->_variables[i]->_priorDistribution->getLogDensity(sample["Parameters"][i]);
 
-  sample.setResult(logPrior);
+  sample["logPrior"] = logPrior;
 }
 
 void korali::problem::evaluation::Bayesian::evaluateLogPosterior(korali::Sample& sample)
 {
   evaluateLogPrior(sample);
-  double logPrior = sample.getResult()[0];
-
   evaluateLogLikelihood(sample);
-  double logLikelihood = sample.getResult()[0];
 
+  double logPrior = sample["logPrior"];
+  double logLikelihood = sample["logLikelihood"];
   double logPosterior = logPrior + logLikelihood;
 
-  if(std::isnan(logPosterior) == true) korali::logError("Sample %zu returned NaN logPosterior evaluation.\n", sample.getSampleId());
+  if(std::isnan(logPosterior) == true) korali::logError("Sample %zu returned NaN logPosterior evaluation.\n", sample["Sample Id"]);
 
-  sample.setResult(logPosterior);
+  sample["logPosterior"] = logPrior + logLikelihood;
 }
 
 bool korali::problem::evaluation::Bayesian::isSampleFeasible(korali::Sample& sample)
 {
-  for (size_t i = 0; i < sample.getSampleData().size(); i++)
-    if (isfinite(_k->_variables[i]->_priorDistribution->getLogDensity(sample[i])) == false) return false;
+  for (size_t i = 0; i < sample["Parameters"].size(); i++)
+    if (isfinite(_k->_variables[i]->_priorDistribution->getLogDensity(sample["Parameters"][i])) == false) return false;
   return true;
 }
 
-void korali::problem::evaluation::Bayesian::evaluateSample(korali::Sample& sample)
+void korali::problem::evaluation::Bayesian::basicEvaluation(korali::Sample& sample)
 {
  evaluateLogPosterior(sample);
+ sample["Evaluation"] = sample["logPosterior"];
 }

@@ -2,6 +2,6 @@
 
 void korali::solver::Optimizer::initialize()
 {
- _problem = dynamic_cast<korali::problem::Evaluation*>(_k->_problem);
- if (_problem == NULL) korali::logError( "Optimizers can work with problems of type 'Evaluation' or derived problem types.\n");
+ auto problem = dynamic_cast<korali::problem::Evaluation*>(_k->_problem);
+ if (problem == NULL) korali::logError( "Optimizers can work with problems of type 'Evaluation' or derived problem types.\n");
 }

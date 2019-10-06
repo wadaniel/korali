@@ -36,26 +36,10 @@ void korali::problem::evaluation::bayesian::hierarchical::ThetaNew::initialize()
     if( std::isfinite(expPrior) == false )
       korali::logError("Non finite (%lf) prior has been detected at sample %zu in subproblem.\n", expPrior, i );
   }
-
-  // Setting computation model to be solved (evaluateThetaLikelihood)
- _k->_models.push_back(
-   [](korali::Sample& sample)
-   {
-    korali::Engine* k = sample._k;
-    auto _thetaNewProblem = dynamic_cast<korali::problem::evaluation::bayesian::hierarchical::ThetaNew*>(k->_problem);
-    _thetaNewProblem->evaluateThetaLikelihood(sample);
-   }
- );
 }
 
 void korali::problem::evaluation::bayesian::hierarchical::ThetaNew::evaluateLogLikelihood(korali::Sample& sample)
 {
- _k->_conduit->runModel(0, sample);
-}
-
-void korali::problem::evaluation::bayesian::hierarchical::ThetaNew::evaluateThetaLikelihood(korali::Sample& sample)
-{
- double logLikelihood = 0.0;
  auto  _psiProblem = dynamic_cast<korali::problem::evaluation::bayesian::hierarchical::Psi*>(_psiEngine->_problem);
 
  size_t Ntheta = _k->_variables.size();
@@ -63,16 +47,15 @@ void korali::problem::evaluation::bayesian::hierarchical::ThetaNew::evaluateThet
 
  for (size_t i = 0; i < _psiProblemSampleCount; i++)
  {
-   korali::Sample psiSample(_psiProblemSampleCoordinates[i]);
+   korali::Sample psiSample;
+   psiSample["Parameters"] = _psiProblemSampleCoordinates[i];
 
    _psiProblem->updateConditionalPriors(psiSample);
 
    logValues[i] = 0.;
    for (size_t k = 0; k < Ntheta; k++)
-     logValues[i] += _psiProblem->_conditionalPriors[k]->getLogDensity(sample[k]);
+     logValues[i] += _psiProblem->_conditionalPriors[k]->getLogDensity(sample["Paramaters"][k]);
  }
 
- logLikelihood += -log(_psiProblemSampleCount) + logSumExp(logValues);
-
- sample.setResult(logLikelihood);
+ sample["logLikelihood"] += -log(_psiProblemSampleCount) + logSumExp(logValues);
 }

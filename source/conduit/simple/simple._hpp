@@ -13,7 +13,8 @@ class Simple : public korali::Conduit
 
  public:
 
- void runModel(size_t modelId, korali::Sample& sample) override;
+ void processSample(korali::Sample& sample) override;
+
 };
 
 } } // namespace korali

@@ -8,7 +8,7 @@ import json
 
 def getVariableType(v):
  # Replacing bools with ints for Python compatibility
- return v['Type'].replace('bool', 'int').replace('std::function<void(korali::Sample&)>', 'size_t')
+ return v['Type'].replace('bool', 'int').replace('std::function<void(korali::Sample&)>', 'std::uint64_t')
  
 def getCXXVariableName(v):
  cVarName = ''
@@ -259,11 +259,32 @@ def createCheckTermination(module):
    codeString += '  hasFinished = true;\n'
    codeString += ' }\n\n'
  
-   codeString += ' hasFinished = hasFinished || ' + module["Parent Class"] + '::checkTermination();\n' 
+ codeString += ' hasFinished = hasFinished || ' + module["Parent Class"] + '::checkTermination();\n' 
  codeString += ' return hasFinished;\n'
- codeString += '}'
+ codeString += '}\n\n'
  
  return codeString
+ 
+####################################################################
+
+def createRunOperation(module):  
+  codeString = 'bool ' + module["Class"]  + '::runOperation(std::string operation, korali::Sample& sample)\n'
+  codeString += '{\n'
+  codeString += ' bool operationDetected = false;\n\n'
+ 
+  for v in module["Available Operations"]: 
+   codeString += ' if (operation == "' + v["Name"] + '")\n'
+   codeString += ' {\n'
+   codeString += '  ' + v["Function"] + '(sample);\n'
+   codeString += '  operationDetected = true;\n'
+   codeString += ' }\n\n'
+ 
+  codeString += ' operationDetected = operationDetected || ' + module["Parent Class"] + '::runOperation(operation, sample);\n' 
+  codeString += ' if (operationDetected == false) korali::logError("Operation %s not recognized for problem ' + module["Class"] + '.\\n", operation.c_str());\n'
+  codeString += ' return operationDetected;\n'
+  codeString += '}\n\n'
+ 
+  return codeString
  
 ####################################################################
 
@@ -318,7 +339,9 @@ varDeclarationSet = set()
 for moduleDir, relDir, fileNames in os.walk(koraliDir):
  for fileName in fileNames: 
   if '.json' in fileName:
-   with open(moduleDir + '/' + fileName, 'r') as file: moduleConfig = json.load(file)
+   filePath = moduleDir + '/' + fileName;
+   print('[Korali] Opening: ' + filePath + '...')
+   with open(filePath, 'r') as file: moduleConfig = json.load(file)
    moduleFilename = fileName.replace('.json', '')
    
    # Processing Module information
@@ -328,8 +351,6 @@ for moduleDir, relDir, fileNames in os.walk(koraliDir):
    moduleConfig["Parent Class"] =  getParentClassName(moduleConfig["Class"])
    moduleConfig["Option Name"] = getOptionName(modulePath)
    moduleConfig["Is Leaf"] = isLeafModule(modulePath)
-   
-   print(moduleConfig["Option Name"])
    
    ####### Adding module to list
    if (moduleConfig["Is Leaf"]):
@@ -343,6 +364,9 @@ for moduleDir, relDir, fileNames in os.walk(koraliDir):
    moduleCodeString = createSetConfiguration(moduleConfig)
    moduleCodeString += createGetConfiguration(moduleConfig)
    moduleCodeString += createCheckTermination(moduleConfig)
+   
+   if 'Available Operations' in moduleConfig:
+     moduleCodeString += createRunOperation(moduleConfig)
  
    ####### Producing header file
    
@@ -355,6 +379,10 @@ for moduleDir, relDir, fileNames in os.walk(koraliDir):
    functionOverrideString += ' bool checkTermination() override;\n'
    functionOverrideString += ' void getConfiguration(nlohmann::json& js) override;\n'
    functionOverrideString += ' void setConfiguration(nlohmann::json& js) override;\n'
+   
+   if 'Available Operations' in moduleConfig:
+     functionOverrideString += ' bool runOperation(std::string, korali::Sample& sample) override;\n'
+     
    newHeaderString = moduleTemplateHeaderString.replace('public:', 'public: \n' + functionOverrideString + '\n')
    
    # Adding declarations
@@ -413,8 +441,8 @@ variableDeclarationList = ''
 for varDecl in varDeclarationSet:
  variableDeclarationList += varDecl + '\n'
 
-variableBaseHeaderFileName = koraliDir + '/variable/variable._hpp'
-variableNewHeaderFile = koraliDir + '/variable/variable.hpp'
+variableBaseHeaderFileName = koraliDir + '/engine/variable/variable._hpp'
+variableNewHeaderFile = koraliDir + '/engine/variable/variable.hpp'
 with open(variableBaseHeaderFileName, 'r') as file: variableBaseHeaderString = file.read()
 newBaseString = variableBaseHeaderString
 newBaseString = newBaseString.replace(' // Variable Declaration List', variableDeclarationList)

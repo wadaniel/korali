@@ -1,9 +1,9 @@
 all: heat2d.o
-
-CXXFLAGS += -march=native -D NOALIAS -O3 -g
+KORALICXX=$(shell python3 -m korali.cxx --compiler)
+KORALICFLAGS=`python3 -m korali.cxx --cflags`
 
 heat2d.o: heat2d.cpp 
-	$(CXX) -c $< $(CXXFLAGS) 
+	$(KORALICXX) -c $< $(KORALICFLAGS) 
 
 clean:; rm -rf $(TARGET) *.o
 

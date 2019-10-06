@@ -24,6 +24,16 @@
    }
  ],
 
+ "Available Operations":
+ [
+  {
+   "Name": "Evaluate Constraints",
+   "Function": "evaluateConstraints", 
+   "Description": "Evaluates the feasibility of a sample, given the described constraints.",
+   "Results": [ { "Name": "Constraint Evaluation", "Description": "Contains the evaluation of all constraints given a sample." } ]
+  }
+ ],
+
  "Variables Configuration":
  [
   {
@@ -52,12 +62,6 @@
     "Name": [ "Has Discrete Variables" ],
     "Type": "bool",
     "Description": "Flag indicating if at least one of the variables is discrete."
-   },
-   {
-    "Name": [ "Constraint Evaluation Count" ],
-    "Type": "size_t",
-    "Default": "0",
-    "Description": "Number of Constraint Evaluations."
    }
  ]
 }

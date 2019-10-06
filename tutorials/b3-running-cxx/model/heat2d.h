@@ -1,5 +1,6 @@
 #ifndef _HEAT2D_H_
 #define _HEAT2D_H_
+#include "korali.hpp"
 
 #include <stdlib.h>
 #include <vector>
@@ -22,10 +23,10 @@ typedef struct gridLevelStruct {
 } gridLevel;
 
 // Main solver
-void heat2DSolver(std::vector<double>& pars, std::vector<double>& result);
+void heat2DSolver(korali::Sample& k);
 
 // Helper Functions
-gridLevel* generateInitialConditions(size_t N0, int gridCount, std::vector<double>& pars);
+gridLevel* generateInitialConditions(size_t N0, int gridCount, std::vector<double> pars);
 pointsInfoStruct& heat2DInit(int* argc, char** argv[]);
 void freeGrids(gridLevel* g, int gridCount);
 

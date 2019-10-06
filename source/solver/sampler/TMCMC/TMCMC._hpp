@@ -29,7 +29,6 @@ class TMCMC : public korali::solver::Sampler
  korali::distribution::univariate::Uniform* _uniformGenerator; /* Uniform random number generator */
 
  size_t N; // Number of variables
- korali::problem::evaluation::Bayesian* _bayesianProblem;
 
  public:
 

@@ -10,7 +10,7 @@ class Propagation : public korali::Problem
  public:
 
    void initialize() override;
-   void propagateSample(korali::Sample& sample);
+   void propagate(korali::Sample& sample);
 };
 
 } } // namespace korali::problem

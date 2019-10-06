@@ -44,8 +44,7 @@ class MPI : public korali::Conduit
  void initialize() override;
  void finalize() override;
 
- void runModel(size_t modelId, korali::Sample& sample) override;
-// void checkProgress() override;
+ void processSample(korali::Sample& sample) override;
  int getRootRank();
  bool isRoot() override;
  void abort() override;

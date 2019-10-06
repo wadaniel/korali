@@ -1,7 +1,7 @@
 #include "solver/sampler/MCMC/MCMC.hpp"
 #include "problem/problem.hpp"
-#include "sample/sample.hpp"
 #include "engine/engine.hpp"
+#include "conduit/conduit.hpp"
 
 #include <numeric>
 #include <limits>
@@ -23,16 +23,17 @@ void korali::solver::sampler::MCMC::runGeneration()
  {
   generateCandidate(i);
 
-  auto sample = korali::Sample(_chainCandidate[i]);
+  auto sample = korali::Sample();
+  sample["Sample Id"] = _databaseEntryCount;
+  sample["Parameters"] = _chainCandidate[i];
 
   // Obtaining Result
   double evaluation = -korali::Inf;
   if (_problem->isSampleFeasible(sample))
   {
-   sample.setSampleId(_databaseEntryCount);
-   sample.start([problem = _problem](korali::Sample& sample){ problem->evaluateSample(sample); });
-   sample.wait();
-   evaluation = sample.getResult()[0];
+   _k->_conduit->start(sample);
+   _k->_conduit->wait(sample);
+   evaluation = sample["Evaluation"][0];
   }
 
   _chainCandidatesEvaluations[i] = evaluation;

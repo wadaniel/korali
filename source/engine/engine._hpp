@@ -3,8 +3,9 @@
 
 #include <vector>
 #include <functional>
-#include "sample/sample.hpp"
-#include "variable/variable.hpp"
+#include "engine/sample/sample.hpp"
+#include "engine/variable/variable.hpp"
+#include "auxiliar/py2json.hpp"
 #include "module.hpp"
 
 #undef _POSIX_C_SOURCE
@@ -40,32 +41,23 @@ class Engine : public korali::Module {
  // Python and Json Configuration Binding Methods
  nlohmann::json*  _opt;
 
- Engine& getItem(const std::string& key)                   { _opt = &((*_opt)[key]); return *this;}
- Engine& getItem(const unsigned long int& key)             { _opt = &((*_opt)[key]); return *this;}
- Engine& operator[](const std::string& key)                { _opt = &((*_opt)[key]); return *this;}
- Engine& operator[](const unsigned long int& key)          { _opt = &((*_opt)[key]); return *this;}
-
- void setItem(const std::string& key, const std::function<void(korali::Sample&)> val);
- void setItem(const std::string& key, const std::string& val)         { (*_opt)[key] = val; _opt = &_js; }
- void setItem(const std::string& key, const double& val)              { (*_opt)[key] = val; _opt = &_js; }
- void setItem(const std::string& key, const int& val)                 { (*_opt)[key] = val; _opt = &_js; }
- void setItem(const std::string& key, const std::vector<double>& val) { (*_opt)[key] = val; _opt = &_js; }
-
- void setItem(const int& key, const std::function<void(korali::Sample&)> val);
- void setItem(const int& key, const std::string& val)                 { (*_opt)[key] = val; _opt = &_js; }
- void setItem(const int& key, const double& val)                      { (*_opt)[key] = val; _opt = &_js; }
- void setItem(const int& key, const int& val)                         { (*_opt)[key] = val; _opt = &_js; }
-
- double getValue();
- bool getBoolean();
- std::string getString();
- std::vector<double> getArray();
+ Engine& getItem(const std::string& key);
+ Engine& getItem(const unsigned long int& key);
+ Engine& operator[](const std::string& key);
+ Engine& operator[](const unsigned long int& key);
+ void setItem(const std::string& key, const pybind11::object& val);
+ void setItem(const int& key, const pybind11::object& val);
 
  void operator=(const std::function<void(korali::Sample&)> val);
  void operator=(const std::string& val)         { (*_opt) = val; _opt = &_js; }
  void operator=(const double& val)              { (*_opt) = val; _opt = &_js; }
  void operator=(const int& val)                 { (*_opt) = val; _opt = &_js; }
  void operator=(const std::vector<double>& val) { (*_opt) = val; _opt = &_js; }
+
+ double getValue();
+ bool getBoolean();
+ std::string getString();
+ std::vector<double> getArray();
 
  // State save/load methods
  bool isExecutionFinished();

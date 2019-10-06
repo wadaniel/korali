@@ -16,6 +16,8 @@ class DEA : public korali::solver::Optimizer
  korali::distribution::univariate::Normal* _normalGenerator; /* Normal random number generator */
  korali::distribution::univariate::Uniform* _uniformGenerator; /* Uniform random number generator */
 
+ korali::problem::Evaluation* _evaluationProblem;
+
  void mutateSingle(size_t sampleIdx); /* sample individual */
  void fixInfeasible(size_t sampleIdx); /* force sample inside lower & upper bounds */
  void updateSolver(); /* update states of DEA */

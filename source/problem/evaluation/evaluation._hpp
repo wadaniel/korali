@@ -2,7 +2,6 @@
 #define _KORALI_PROBLEM_EVALUATION_HPP_
 
 #include "problem/problem.hpp"
-#include "sample/sample.hpp"
 
 namespace korali { namespace problem {
 
@@ -13,7 +12,7 @@ class Evaluation : public korali::Problem
  public:
 
   virtual bool isSampleFeasible(korali::Sample&) = 0;
-  virtual void evaluateSample(korali::Sample&) = 0;
+  virtual void basicEvaluation(korali::Sample&) = 0;
 
 };
 

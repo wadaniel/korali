@@ -1,4 +1,5 @@
 #include "solver/sampler/TMCMC/TMCMC.hpp"
+#include "conduit/conduit.hpp"
 #include <engine/engine.hpp>
 #include <numeric>
 #include <limits>
@@ -47,9 +48,6 @@ void korali::solver::sampler::TMCMC::initialize()
  
  if (_perGenerationBurnIn.size() > 1 && _perGenerationBurnIn[1] != 0)
  korali::logWarning("Normal", "The 1st entry of the Burn In vector is being ignored (corresponding to Generation 1)\n");
-
- _bayesianProblem = dynamic_cast<korali::problem::evaluation::Bayesian*>(_k->_problem);
- if (_bayesianProblem == NULL) korali::logError( "TMCMC requires that the problem is of type 'Bayesian'.\n");
 
  if (_k->_currentGeneration > 1) return;
 
@@ -115,21 +113,19 @@ void korali::solver::sampler::TMCMC::runGeneration()
    if (_chainPendingEvaluation[c] == false)
    {
      _chainPendingEvaluation[c] = true;
-     samples[c] = _chainCandidates[c];
-     samples[c].setSampleId(c);
-     samples[c]._data["Parameters"] = _chainCandidates[c];
-     samples[c].start([problem = _bayesianProblem](korali::Sample& sample){ problem->evaluateLogLikelihood(sample); });
+     samples[c]["Parameters"] = _chainCandidates[c];
+     samples[c]["Sample Id"] = c;
+     _k->_conduit->start(samples[c]);
    }
   }
 
-  size_t finishedId = korali::Sample::waitAny(samples);
+  size_t finishedId = _k->_conduit->waitAny(samples);
+
   _chainPendingEvaluation[finishedId] = false;
   _currentChainStep[finishedId]++;
-  _chainCandidatesLogLikelihoods[finishedId] = samples[finishedId].getResult()[0];
-  _bayesianProblem->evaluateLogPrior(samples[finishedId]);
-  _chainCandidatesLogPriors[finishedId] = samples[finishedId].getResult()[0];
+  _chainCandidatesLogLikelihoods[finishedId] = samples[finishedId]["Log Likelihood"];
+  _chainCandidatesLogPriors[finishedId] = samples[finishedId]["Log Prior"];
   processEvaluation(finishedId);
-  if (_currentChainStep[finishedId] == _chainLengths[finishedId] + _currentBurnIn) _finishedChainsCount++;
  }
 
  processGeneration();
@@ -179,6 +175,8 @@ void korali::solver::sampler::TMCMC::processEvaluation(const size_t sampleId)
   _sampleLogLikelihoodDatabase.push_back(_chainLeadersLogLikelihoods[sampleId]);
   _sampleLogPriorDatabase.push_back(_chainLeadersLogPriors[sampleId]);
  }
+
+ if (_currentChainStep[sampleId] == _chainLengths[sampleId] + _currentBurnIn) _finishedChainsCount++;
 }
 
 

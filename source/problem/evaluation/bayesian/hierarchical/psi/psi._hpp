@@ -30,7 +30,6 @@ class Psi : public korali::problem::evaluation::bayesian::Hierarchical
 
  void updateConditionalPriors(korali::Sample& sample);
  void evaluateLogLikelihood(korali::Sample& sample) override;
- void evaluatePsiLikelihood(korali::Sample& sample);
  void initialize() override;
 };
 

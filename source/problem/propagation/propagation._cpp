@@ -12,11 +12,8 @@ void korali::problem::Propagation::initialize()
   }
 }
 
-void korali::problem::Propagation::propagateSample(korali::Sample& sample)
+void korali::problem::Propagation::propagate(korali::Sample& sample)
 {
- _k->_conduit->runModel(_propagationModel, sample);
- _propagationCount++;
- std::vector<double> result = sample.getResult();
- if (result.size() != 0) korali::logError("Propagation model should return no result. Provided: %lu.\n", result.size());
+ _k->_models[_propagationModel](sample);
 }
 

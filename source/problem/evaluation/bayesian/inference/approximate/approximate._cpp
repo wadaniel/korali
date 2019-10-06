@@ -20,13 +20,13 @@ void korali::problem::evaluation::bayesian::inference::Approximate::evaluateLogL
 
 void korali::problem::evaluation::bayesian::inference::Approximate::likelihoodNormal(korali::Sample& sample)
 {
-  double mu     = sample[_statisticalVariableIndices[0]];
-  double sigma  = sample[_statisticalVariableIndices[1]];
+  double mu     = sample["Parameters"][_statisticalVariableIndices[0]];
+  double sigma  = sample["Parameters"][_statisticalVariableIndices[1]];
   double sigma2 = sigma*sigma;
 
   double logNormalization = 0.5 * M_SQRT2 * M_SQRTPI * sigma;
 
-  if( logNormalization <= 0.) { sample.setResult(-korali::Inf); return; }
+  if( logNormalization <= 0.) { sample["logLikelihood"] = -korali::Inf; return; }
 
   logNormalization = _referenceData.size() * gsl_sf_log(logNormalization);
 
@@ -36,34 +36,34 @@ void korali::problem::evaluation::bayesian::inference::Approximate::likelihoodNo
     ssn += diff*diff;
   }
 
-  sample.setResult(-logNormalization - 0.5*ssn/sigma2);
+  sample["logLikelihood"] = -logNormalization - 0.5*ssn/sigma2;
 }
 
 void korali::problem::evaluation::bayesian::inference::Approximate::likelihoodTruncatedNormal(korali::Sample& sample)
 {
-  double a      = sample[_statisticalVariableIndices[0]];
-  double b      = sample[_statisticalVariableIndices[1]];
-  double mu     = sample[_statisticalVariableIndices[2]];
-  double sigma  = sample[_statisticalVariableIndices[3]];
+  double a      = sample["Parameters"][_statisticalVariableIndices[0]];
+  double b      = sample["Parameters"][_statisticalVariableIndices[1]];
+  double mu     = sample["Parameters"][_statisticalVariableIndices[2]];
+  double sigma  = sample["Parameters"][_statisticalVariableIndices[3]];
   double sigma2 = sigma*sigma;
   double an = (a-mu)/sigma;
   double bn = (b-mu)/sigma;
 
-  if(a>b) { sample.setResult(-korali::Inf); return; };
+  if(a>b) { sample["logLikelihood"] = -korali::Inf; return; };
 
 
   double logNormalization = 0.5 * M_SQRT2 * M_SQRTPI * sigma * ( gsl_sf_erf(bn*M_SQRT1_2) - gsl_sf_erf(an*M_SQRT1_2) ) ;
 
-  if( logNormalization <= 0.) { sample.setResult(-korali::Inf); return; }
+  if( logNormalization <= 0.) { sample["logLikelihood"] = -korali::Inf; return; }
 
   logNormalization = _referenceData.size() * gsl_sf_log(logNormalization);
 
   double ssn = 0.;
   for (auto& d : _referenceData){
-    if( d>b || d<a) { sample.setResult(-korali::Inf); return; };
+    if( d>b || d<a) { sample["logLikelihood"] = -korali::Inf; return; };
     double diff = d - mu;
     ssn += diff*diff;
   }
 
-  sample.setResult(-logNormalization - 0.5*ssn/sigma2);
+  sample["logLikelihood"] = -logNormalization - 0.5*ssn/sigma2;
 }

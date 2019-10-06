@@ -3,13 +3,14 @@
 #include "problem/problem.hpp"
 #include "solver/solver.hpp"
 
-void korali::conduit::Simple::runModel(size_t modelId, korali::Sample& sample)
+
+void korali::conduit::Simple::processSample(korali::Sample& sample)
 {
- _profileInfo["Conduit 0"].startSegment(sample.getSampleId());
- sample._result.clear();
- sample._k = _k;
- _k->_models[modelId](sample);
- _modelEvaluationCount++;
+ _profileInfo["Conduit 0"].startSegment(sample["Sample Id"]);
+ _k->_problem->runOperation(sample["Operation"], sample);
  _profileInfo["Conduit 0"].commitSegment();
+
+ _currentSample->_state = SampleState::finished;
+ co_switch(__conduit->_mainThread);
 }
 

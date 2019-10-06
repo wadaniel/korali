@@ -3,15 +3,10 @@
 #include "problem/problem.hpp"
 #include "solver/solver.hpp"
 
-
 #ifdef _KORALI_USE_MPI
 
-#define MPI_TAG_MODELID 1
-#define MPI_TAG_SAMPLEID 2
-#define MPI_TAG_SAMPLESIZE 2
-#define MPI_TAG_SAMPLEDATA 3
-#define MPI_TAG_RESULTSIZE 4
-#define MPI_TAG_RESULTDATA 5
+#define MPI_TAG_SAMPLE_JSON_SIZE 1
+#define MPI_TAG_SAMPLE_JSON_CONTENT 2
 
 MPI_Comm __KoraliTeamComm;
 MPI_Comm getKoraliMPIComm() { return __KoraliTeamComm; }
@@ -78,12 +73,13 @@ void korali::conduit::MPI::initialize()
 void korali::conduit::MPI::finalize()
 {
  #ifdef _KORALI_USE_MPI
+ size_t endSignal = 0;
+
  if (isRoot())
-  {
-  int stopFlag = -1;
+ {
   for (int i = 0; i < _teamCount; i++)
    for (int j = 0; j < _ranksPerTeam; j++)
-    MPI_Send(&stopFlag, 1, MPI_INT, _teamWorkers[i][j], MPI_TAG_MODELID, MPI_COMM_WORLD);
+    MPI_Send(&endSignal, 1, MPI_UNSIGNED_LONG, _teamWorkers[i][j], MPI_TAG_SAMPLE_JSON_SIZE, MPI_COMM_WORLD);
  }
  #endif
 
@@ -95,125 +91,89 @@ void korali::conduit::MPI::workerThread()
  #ifdef _KORALI_USE_MPI
  if (_teamId == -1) return;
 
- int modelId = 0;
- while (modelId != -1)
+ auto sample = korali::Sample();
+
+ while (true)
  {
-   MPI_Recv(&modelId, 1, MPI_LONG, getRootRank(), MPI_TAG_MODELID, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+   size_t jsonStringSize;
+   char jsonStringChar[jsonStringSize + 1];
 
-   if (modelId != -1)
+   MPI_Recv(&jsonStringSize, 1, MPI_LONG, getRootRank(), MPI_TAG_SAMPLE_JSON_SIZE, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+   if (jsonStringSize == 0) return;
+
+   MPI_Recv(jsonStringChar, jsonStringSize, MPI_CHAR, getRootRank(), MPI_TAG_SAMPLE_JSON_CONTENT, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+   jsonStringChar[jsonStringSize] = '\0';
+   sample._data = nlohmann::json::parse(jsonStringChar);
+
+   _k->_problem->runOperation(sample["Operation"], sample);
+
+   if (_localRankId == 0)
    {
-    size_t sampleId;
-    size_t sampleSize;
-
-    MPI_Recv(&sampleId, 1, MPI_UNSIGNED_LONG, getRootRank(), MPI_TAG_SAMPLEID, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    MPI_Recv(&sampleSize, 1, MPI_UNSIGNED_LONG, getRootRank(), MPI_TAG_SAMPLESIZE, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-    std::vector<double> sampleData(sampleSize);
-
-    MPI_Recv(sampleData.data(), sampleSize, MPI_DOUBLE, getRootRank(), MPI_TAG_SAMPLEDATA, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-    size_t elementCount;
-    MPI_Recv(&elementCount, 1, MPI_UNSIGNED_LONG, getRootRank(), MPI_TAG_SAMPLEDATA, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-    auto sample = korali::Sample(sampleData);
-    sample.setSampleId(sampleId);
-    sample._k = _k;
-
-    for (size_t i = 0; i < elementCount; i++)
-    {
-     size_t keySize;
-     MPI_Recv(&keySize, 1, MPI_UNSIGNED_LONG, getRootRank(), MPI_TAG_SAMPLEDATA, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-     char key[keySize + 1];
-     MPI_Recv(key, keySize, MPI_CHAR, getRootRank(), MPI_TAG_SAMPLEDATA, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-     key[keySize] = '\0';
-
-     size_t vectorSize;
-     MPI_Recv(&vectorSize, 1, MPI_UNSIGNED_LONG, getRootRank(), MPI_TAG_SAMPLEDATA, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-     std::vector<double> elementData(vectorSize);
-     MPI_Recv(elementData.data(), vectorSize, MPI_DOUBLE, getRootRank(), MPI_TAG_SAMPLEDATA, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-     sample._data[key] = elementData;
-    }
-
-    _k->_models[modelId](sample);
-
-    if (_localRankId == 0)
-    {
-     size_t resultSize = sample.getResult().size();
-     MPI_Send(&resultSize, 1, MPI_UNSIGNED_LONG, getRootRank(), MPI_TAG_RESULTSIZE, MPI_COMM_WORLD);
-     MPI_Send(sample.getResult().data(), resultSize, MPI_DOUBLE, getRootRank(), MPI_TAG_RESULTDATA, MPI_COMM_WORLD);
-    }
-
-    MPI_Barrier(__KoraliTeamComm);
+     std::string resultJsonString = sample._data.dump();
+     size_t resultJsonSize = resultJsonString.size();
+     MPI_Send(&resultJsonSize, 1, MPI_UNSIGNED_LONG, getRootRank(), MPI_TAG_SAMPLE_JSON_SIZE, MPI_COMM_WORLD);
+     MPI_Send(resultJsonString.c_str(), resultJsonSize, MPI_CHAR, getRootRank(), MPI_TAG_SAMPLE_JSON_CONTENT, MPI_COMM_WORLD);
    }
+
+   MPI_Barrier(__KoraliTeamComm);
  }
  #endif
 }
 
-void korali::conduit::MPI::runModel(size_t modelId, korali::Sample& sample)
+void korali::conduit::MPI::processSample(korali::Sample& sample)
 {
  _modelEvaluationCount++;
- sample._hasProgressed = false;
 
  #ifdef _KORALI_USE_MPI
- while (_teamQueue.empty()) sample.yield();
+ while (_teamQueue.empty())
+ {
+  sample._state = SampleState::waiting;
+  co_switch(__conduit->_mainThread);
+ }
 
  int teamId = _teamQueue.front(); _teamQueue.pop();
+ std::string sampleJsonString = sample._data.dump();
+ size_t sampleJsonSize = sampleJsonString.size();
 
  for (int i = 0; i < _ranksPerTeam; i++)
  {
-  size_t sampleSize = sample.getSampleData().size();
-  size_t sampleId = sample.getSampleId();
   int workerId = _teamWorkers[teamId][i];
-
-  MPI_Send(&modelId, 1, MPI_LONG, workerId, MPI_TAG_MODELID, MPI_COMM_WORLD);
-  MPI_Send(&sampleId, 1, MPI_UNSIGNED_LONG, workerId, MPI_TAG_SAMPLEID, MPI_COMM_WORLD);
-  MPI_Send(&sampleSize, 1, MPI_UNSIGNED_LONG, workerId, MPI_TAG_SAMPLESIZE, MPI_COMM_WORLD);
-  MPI_Send(sample.getSampleData().data(), sampleSize, MPI_DOUBLE, workerId, MPI_TAG_SAMPLEDATA, MPI_COMM_WORLD);
-
-  size_t elementCount = sample._data.size();
-  MPI_Send(&elementCount, 1, MPI_UNSIGNED_LONG, workerId, MPI_TAG_SAMPLEDATA, MPI_COMM_WORLD);
-  printf("Val Normal: %f, Val Reference: %f\n", sample.getSampleData()[0], sample._data["Parameters"][0]);
-
-  for (auto& x : sample._data)
-  {
-   size_t keySize = x.first.size();
-   MPI_Send(&keySize, 1, MPI_UNSIGNED_LONG, workerId, MPI_TAG_SAMPLEDATA, MPI_COMM_WORLD);
-   MPI_Send(x.first.c_str(), keySize, MPI_CHAR, workerId, MPI_TAG_SAMPLEDATA, MPI_COMM_WORLD);
-
-   size_t vectorSize = x.second.size();
-   MPI_Send(&vectorSize, 1, MPI_UNSIGNED_LONG, workerId, MPI_TAG_SAMPLEDATA, MPI_COMM_WORLD);
-   MPI_Send(x.second.data(), vectorSize, MPI_DOUBLE, workerId, MPI_TAG_SAMPLEDATA, MPI_COMM_WORLD);
-  }
-
+  MPI_Send(&sampleJsonSize, 1, MPI_UNSIGNED_LONG, workerId, MPI_TAG_SAMPLE_JSON_SIZE, MPI_COMM_WORLD);
+  MPI_Send(sampleJsonString.c_str(), sampleJsonSize, MPI_CHAR, workerId, MPI_TAG_SAMPLE_JSON_CONTENT, MPI_COMM_WORLD);
  }
 
- size_t resultSize;
- MPI_Request resultRequest;
- MPI_Irecv(&resultSize, 1, MPI_UNSIGNED_LONG, _teamWorkers[teamId][0], MPI_TAG_RESULTSIZE, MPI_COMM_WORLD, &resultRequest);
+ size_t resultJsonSize;
+ MPI_Request resultJsonRequest;
+ MPI_Irecv(&resultJsonSize, 1, MPI_UNSIGNED_LONG, _teamWorkers[teamId][0], MPI_TAG_SAMPLE_JSON_SIZE, MPI_COMM_WORLD, &resultJsonRequest);
 
- _profileInfo["Conduit " + std::to_string(teamId)].startSegment(sample.getSampleId());
+ _profileInfo["Conduit " + std::to_string(teamId)].startSegment(sample["Sample Id"]);
 
  int flag = 0;
  while(flag == 0)
  {
-  MPI_Test(&resultRequest, &flag, MPI_STATUS_IGNORE);
+  MPI_Test(&resultJsonRequest, &flag, MPI_STATUS_IGNORE);
   if (flag)
   {
-    std::vector<double> resultVector(resultSize);
-    MPI_Recv(resultVector.data(), resultSize, MPI_DOUBLE, _teamWorkers[teamId][0], MPI_TAG_RESULTDATA, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    sample.setResult(resultVector);
+    char resultStringChar[resultJsonSize + 1];
+    MPI_Recv(resultStringChar, resultJsonSize, MPI_CHAR, _teamWorkers[teamId][0], MPI_TAG_SAMPLE_JSON_CONTENT, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    resultStringChar[resultJsonSize] = '\0';
+    sample._data = nlohmann::json::parse(resultStringChar);
     _teamQueue.push(teamId);
   }
-  else sample.yield();
+  else
+  {
+   sample._state = SampleState::waiting;
+   co_switch(__conduit->_mainThread);
+  }
  }
 
  _profileInfo["Conduit " + std::to_string(teamId)].commitSegment();
- #endif
 
- sample._hasProgressed = true;
+ sample._state = SampleState::finished;
+ co_switch(__conduit->_mainThread);
+ #endif
 }
 
 int korali::conduit::MPI::getRootRank()

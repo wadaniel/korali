@@ -13,7 +13,7 @@
 
 pointsInfo __p;
 
-void heat2DSolver(std::vector<double>& pars, std::vector<double>& result)
+void heat2DSolver(korali::Sample& k)
 {
  double tolerance = 1e-8; // L2 Difference Tolerance before reaching convergence.
  size_t N0 = 7; // 2^N0 + 1 elements per side
@@ -23,7 +23,7 @@ void heat2DSolver(std::vector<double>& pars, std::vector<double>& result)
  int downRelaxations = 4; // Number of Relaxations before restriction
  int upRelaxations   = 1;   // Number of Relaxations after prolongation
 
- gridLevel* g = generateInitialConditions(N0, gridCount, pars);
+ gridLevel* g = generateInitialConditions(N0, gridCount, k["Parameters"]);
 
  while (g[0].L2NormDiff > tolerance)  // Multigrid solver start
  {
@@ -50,8 +50,8 @@ void heat2DSolver(std::vector<double>& pars, std::vector<double>& result)
  double h = 1.0/(g[0].N-1);
  for(size_t i = 0; i < __p.refTemp.size(); i++)
  {
-  int k = ceil(__p.xPos[i]/h); int l = ceil(__p.yPos[i]/h);
-  result.push_back(g[0].U[k][l]);
+  int m = ceil(__p.xPos[i]/h); int l = ceil(__p.yPos[i]/h);
+  k["Reference Evaluations"][i] = g[0].U[m][l];
  }
 
  freeGrids(g, gridCount);
@@ -126,7 +126,7 @@ void applyProlongation(gridLevel* g, int l)
    g[l-1].U[2*i-1][2*j-1] += ( g[l].U[i-1][j-1] + g[l].U[i-1][j] + g[l].U[i][j-1] + g[l].U[i][j] ) *0.25;
 }
 
-gridLevel* generateInitialConditions(size_t N0, int gridCount, std::vector<double>& pars)
+gridLevel* generateInitialConditions(size_t N0, int gridCount, std::vector<double> pars)
 {
  // Problem Parameters
  double intensity = pars[0];

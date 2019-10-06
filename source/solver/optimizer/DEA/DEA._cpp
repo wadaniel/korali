@@ -1,7 +1,7 @@
 #include "solver/optimizer/DEA/DEA.hpp"
 #include "problem/problem.hpp"
 #include "engine/engine.hpp"
-#include "sample/sample.hpp"
+#include "conduit/conduit.hpp"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -35,6 +35,12 @@ void korali::solver::optimizer::DEA::initialize()
  for(size_t d = 0; d < N; ++d)
   if(_k->_variables[d]->_upperBound < _k->_variables[d]->_lowerBound)
     korali::logError("Lower Bound (%.4f) of variable \'%s\'  exceeds Upper Bound (%.4f).\n", _k->_variables[d]->_lowerBound, _k->_variables[d]->_name.c_str(), _k->_variables[d]->_upperBound);
+
+ _evaluationProblem = dynamic_cast<korali::problem::Evaluation*>(_k->_problem);
+ bool isEvaluationProblem = _evaluationProblem != NULL;
+
+ if (isEvaluationProblem == false)
+  korali::logError("CMAES can only optimize problems of type 'Evaluation' or derived.\n");
 
  // Allocating Memory
 
@@ -83,17 +89,18 @@ void korali::solver::optimizer::DEA::runGeneration()
  std::vector<korali::Sample> samples(_populationSize);
  for (size_t i = 0; i < _populationSize; i++)
  {
-  samples[i] = _candidatePopulation[i];
-  samples[i].setSampleId(i);
-  samples[i].start([problem = _problem](korali::Sample& sample){ problem->evaluateSample(sample); });
+  samples[i]["Operation"] = "Basic Evaluation";
+  samples[i]["Parameters"] = _candidatePopulation[i];
+  samples[i]["Sample Id"] = i;
+  _k->_conduit->start(samples[i]);
  }
 
  // Waiting for samples to finish
- korali::Sample::waitAll(samples);
+ _k->_conduit->waitAll(samples);
 
  // Processing results
  for (size_t i = 0; i < _populationSize; i++)
-  _valueVector[i] = samples[i].getResult()[0];
+  _valueVector[i] = samples[i]["Evaluation"];
 
  updateSolver();
 }
@@ -119,13 +126,14 @@ void korali::solver::optimizer::DEA::prepareGeneration()
  {
   mutateSingle(i);
 
-  auto sample = korali::Sample(_candidatePopulation[i]);
-  while(_problem->isSampleFeasible(sample) == false)
+  korali::Sample sample;
+  sample["Parameters"] = _candidatePopulation[i];
+  while(_evaluationProblem->isSampleFeasible(sample) == false)
   {
    _infeasibleSampleCount++;
    if (_fixInfeasible) fixInfeasible(i);
    else  mutateSingle(i);
-   sample = _candidatePopulation[i];
+   sample["Parameters"] = _candidatePopulation[i];
   }
 
  }

@@ -14,7 +14,7 @@ class Bayesian : public korali::problem::Evaluation
  void initialize() override;
 
  bool isSampleFeasible(korali::Sample& sample) override;
- virtual void evaluateSample(korali::Sample& sample) override;
+ virtual void basicEvaluation(korali::Sample& sample) override;
  void evaluateLogPrior(korali::Sample& sample);
  virtual void evaluateLogLikelihood(korali::Sample& sample) = 0;
  void evaluateLogPosterior(korali::Sample& sample);

@@ -16,7 +16,7 @@ k = korali.initialize()
 # Configuring Problem.
 k["Problem"]["Type"] = "Evaluation/Direct"
 k["Problem"]["Objective"] = "Maximize"
-k["Problem"]["Objective Function"] = model
+
 
 # Defining the problem's variables.
 k["Variables"][0]["Name"] = "X"
@@ -29,5 +29,6 @@ k["Solver"]["Population Size"] = 32
 k["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-7
 k["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
+k["Problem"]["Objective Function"] = model
 # Running Korali
 k.run()

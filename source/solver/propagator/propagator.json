@@ -4,7 +4,7 @@
    {
     "Name": [ "Propagations Per Generation" ],
     "Type": "size_t",
-    "Default": "0",
+    "Default": "1",
     "Description": "Specifies the number of propagations per generation. By default this setting is 0, meaning that all propagations will be performed in the first generation. Otherwise, propagations will be split into the desired number of generations, allowing for storing temporary results and resuming at a later point."
    }
  ],
@@ -36,6 +36,12 @@
     "Name": [ "Current Sample" ],
     "Type": "size_t",
     "Description": "Current Sample to process."
+   },
+   {
+    "Name": [ "Propagation Count" ],
+    "Type": "size_t",
+    "Default": "0",
+    "Description": "Number of Propagations Performed."
    }
  ]
  

@@ -1,4 +1,5 @@
 #include "solver/propagator/propagator.hpp"
+#include "conduit/conduit.hpp"
 
 void korali::solver::Propagator::initialize()
 {
@@ -32,13 +33,14 @@ void korali::solver::Propagator::runGeneration()
     for(auto& x : sampleData) korali::logData("Detailed", " %le   ", x);
     korali::logData("Detailed", "\n");
 
-    samples[i] = sampleData;
-    samples[i].setSampleId(_currentSample);
-    samples[i].start([problem = _propagationProblem](korali::Sample& sample){ problem->propagateSample(sample); });
+    samples[i]["Parameters"] = sampleData;
+    samples[i]["Sample Id"] = _currentSample;
+    _k->_conduit->start(samples[i]);
     _currentSample++;
+    _propagationCount++;
   }
 
-  korali::Sample::waitAll(samples);
+  _k->_conduit->waitAll(samples);
 }
 
 void korali::solver::Propagator::printGenerationBefore()
@@ -47,5 +49,5 @@ void korali::solver::Propagator::printGenerationBefore()
 
 void korali::solver::Propagator::printGenerationAfter()
 {
- korali::logInfo("Minimal", "Total Propagations %lu.\n", _propagationProblem->_propagationCount);
+ korali::logInfo("Minimal", "Total Propagations %lu.\n", _propagationCount);
 }

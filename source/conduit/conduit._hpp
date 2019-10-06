@@ -12,11 +12,26 @@ class Conduit : public korali::Module {
 
  public:
 
- virtual void runModel(size_t modelId, korali::Sample& sample) = 0;
+ Conduit();
+ virtual void processSample(korali::Sample& sample) = 0;
  virtual bool isRoot() { return true; }
  virtual void abort() { exit(-1); }
- void finalize() override;
+
+ // Sample execution fields
+ cothread_t _mainThread;
+ korali::Sample* _currentSample;
+
+ // Waiting Functions
+ void start(korali::Sample& sample);
+ void wait(korali::Sample& sample);
+ static void waitAll(std::vector<korali::Sample>& samples);
+ static size_t waitAny(std::vector<korali::Sample>& samples);
+
+ // Coroutine execution functions.
+ static void coroutineWrapper();
 };
+
+extern korali::Conduit* __conduit;
 
 } // namespace korali
 

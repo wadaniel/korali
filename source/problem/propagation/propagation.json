@@ -8,6 +8,15 @@
    }
  ],
 
+ "Available Operations":
+ [
+  {
+   "Name": "Propagate" ,
+   "Function": "propagate",
+   "Description": "Executes the given model using the parameters from the given sample."
+  }
+ ],
+
  "Variables Configuration":
  [
    {
@@ -15,16 +24,6 @@
     "Type": "std::vector<double>",
     "Description": "Contains precomputed values for the variables."
    }
- ],
- 
-  "Internal Settings":
- [
-   {
-    "Name": [ "Propagation Count" ],
-    "Type": "size_t",
-    "Default": "0",
-    "Description": "Number of Propagations Performed."
-   }
  ]
-
+ 
 }

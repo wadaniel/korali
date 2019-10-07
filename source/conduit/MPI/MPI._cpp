@@ -170,9 +170,6 @@ void korali::conduit::MPI::processSample(korali::Sample& sample)
  }
 
  _profileInfo["Conduit " + std::to_string(teamId)].commitSegment();
-
- sample._state = SampleState::finished;
- co_switch(__conduit->_mainThread);
  #endif
 }
 

@@ -15,17 +15,8 @@ k = korali.initialize()
 
 # Configuring Problem.
 k["Problem"]["Type"] = "Evaluation/Direct"
-k["Problem"]["Objective"] = [ [ 0, 1 ], [2, 3] ]
-k["Problem"]["Objective Function"] = model
-
-p = k["Problem"]["Objective"]
-print(p)
-
-
 k["Problem"]["Objective"] = "Maximize"
-p = k["Problem"]["Objective"]
-print(p)
-
+k["Problem"]["Objective Function"] = model
 
 # Defining the problem's variables.
 k["Variables"][0]["Name"] = "X"

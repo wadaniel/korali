@@ -9,8 +9,5 @@ void korali::conduit::Simple::processSample(korali::Sample& sample)
  _profileInfo["Conduit 0"].startSegment(sample["Sample Id"]);
  _k->_problem->runOperation(sample["Operation"], sample);
  _profileInfo["Conduit 0"].commitSegment();
-
- _currentSample->_state = SampleState::finished;
- co_switch(__conduit->_mainThread);
 }
 

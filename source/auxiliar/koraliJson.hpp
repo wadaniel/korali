@@ -28,9 +28,11 @@ class KoraliJson {
  void setJson(nlohmann::json& js);
 
  pybind11::object getItem(pybind11::object key);
+ void setItem(pybind11::object key, pybind11::object val);
+
  nlohmann::json& operator[](const std::string& key);
  nlohmann::json& operator[](const unsigned long int& key);
- void setItem(pybind11::object key, pybind11::object val);
+
  void operator=(const std::function<void(korali::Sample&)> val);
  void operator=(const nlohmann::json& val);
 

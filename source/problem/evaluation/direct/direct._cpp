@@ -36,14 +36,9 @@ void korali::problem::evaluation::Direct::evaluateConstraints(korali::Sample& sa
 
 void korali::problem::evaluation::Direct::basicEvaluation(korali::Sample& sample)
 {
- korali::Sample x;
- std::uint64_t ptr = _objectiveFunction;
- printf("Ptr: %lu", ptr);
-
- (*reinterpret_cast<std::function<void(korali::Sample&)>*>(ptr))(x);
+ sample.run(_objectiveFunction);
 
  double evaluation = sample["Evaluation"];
-
  double evaluationSign = _objective == "Maximize" ? 1.0 : -1.0;
 
  // If result is not a finite number, objective function evaluates to -Infinity

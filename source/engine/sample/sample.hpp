@@ -33,10 +33,15 @@ class Sample {
  void start();
  void resume();
  void yield();
- bool contains(const std::string& key) { return _js.contains(key); }
- nlohmann::json& operator[](const std::string& key) { return _js[key]; }
- nlohmann::json& operator[](const unsigned long int& key) { return _js[key]; }
- pybind11::object getItem(pybind11::object key) { return _js.getItem(key); }
+ void run(std::uint64_t funcPtr) { (*reinterpret_cast<std::function<void(korali::Sample&)>*>(funcPtr))(*this); }
+
+ bool contains(const std::string& key) { return _self->_js.contains(key); }
+
+ nlohmann::json& operator[](const std::string& key) { return _self->_js[key]; }
+ nlohmann::json& operator[](const unsigned long int& key) { return _self->_js[key]; }
+
+ pybind11::object getItem(pybind11::object key) { return _self->_js.getItem(key); }
+ void setItem(pybind11::object key, pybind11::object val) { _self->_js.setItem(key, val); }
 
 };
 

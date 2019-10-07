@@ -36,6 +36,8 @@ class Engine : public korali::Module {
  korali::KoraliJson  _js;
 
  pybind11::object getItem(pybind11::object key);
+ void setItem(pybind11::object key, pybind11::object val);
+
  nlohmann::json& operator[](const std::string& key);
  nlohmann::json& operator[](const unsigned long int& key);
 

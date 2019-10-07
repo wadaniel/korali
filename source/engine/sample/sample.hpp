@@ -4,6 +4,7 @@
 #include "auxiliar/logger.hpp"
 #include "engine/sample/libco/libco.h"
 #include "auxiliar/json.hpp"
+#include "auxiliar/koraliJson.hpp"
 #include <string>
 
 namespace korali
@@ -19,7 +20,8 @@ class Sample {
  SampleState _state;
  cothread_t _sampleThread;
 
- nlohmann::json _data;
+ // JSON-based configuration
+ korali::KoraliJson _js;
 
  Sample()
  {
@@ -27,15 +29,15 @@ class Sample {
   _state = SampleState::uninitialized;
  }
 
- nlohmann::json& operator[](std::string key)
- {
-  return _self->_data[key];
- }
-
  // Execution Control Functions
  void start();
  void resume();
  void yield();
+ bool contains(const std::string& key) { return _js.contains(key); }
+ nlohmann::json& operator[](const std::string& key) { return _js[key]; }
+ nlohmann::json& operator[](const unsigned long int& key) { return _js[key]; }
+ pybind11::object getItem(pybind11::object key) { return _js.getItem(key); }
+
 };
 
 }

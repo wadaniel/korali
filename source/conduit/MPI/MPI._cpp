@@ -105,13 +105,13 @@ void korali::conduit::MPI::workerThread()
    MPI_Recv(jsonStringChar, jsonStringSize, MPI_CHAR, getRootRank(), MPI_TAG_SAMPLE_JSON_CONTENT, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
    jsonStringChar[jsonStringSize] = '\0';
-   sample._data = nlohmann::json::parse(jsonStringChar);
+   sample._js = nlohmann::json::parse(jsonStringChar);
 
    _k->_problem->runOperation(sample["Operation"], sample);
 
    if (_localRankId == 0)
    {
-     std::string resultJsonString = sample._data.dump();
+     std::string resultJsonString = sample._js.getJson().dump();
      size_t resultJsonSize = resultJsonString.size();
      MPI_Send(&resultJsonSize, 1, MPI_UNSIGNED_LONG, getRootRank(), MPI_TAG_SAMPLE_JSON_SIZE, MPI_COMM_WORLD);
      MPI_Send(resultJsonString.c_str(), resultJsonSize, MPI_CHAR, getRootRank(), MPI_TAG_SAMPLE_JSON_CONTENT, MPI_COMM_WORLD);
@@ -134,7 +134,7 @@ void korali::conduit::MPI::processSample(korali::Sample& sample)
  }
 
  int teamId = _teamQueue.front(); _teamQueue.pop();
- std::string sampleJsonString = sample._data.dump();
+ std::string sampleJsonString = sample._js.getJson().dump();
  size_t sampleJsonSize = sampleJsonString.size();
 
  for (int i = 0; i < _ranksPerTeam; i++)
@@ -159,7 +159,7 @@ void korali::conduit::MPI::processSample(korali::Sample& sample)
     char resultStringChar[resultJsonSize + 1];
     MPI_Recv(resultStringChar, resultJsonSize, MPI_CHAR, _teamWorkers[teamId][0], MPI_TAG_SAMPLE_JSON_CONTENT, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     resultStringChar[resultJsonSize] = '\0';
-    sample._data = nlohmann::json::parse(resultStringChar);
+    sample._js.getJson() = nlohmann::json::parse(resultStringChar);
     _teamQueue.push(teamId);
   }
   else

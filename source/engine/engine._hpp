@@ -5,7 +5,7 @@
 #include <functional>
 #include "engine/sample/sample.hpp"
 #include "engine/variable/variable.hpp"
-#include "auxiliar/py2json.hpp"
+#include "auxiliar/koraliJson.hpp"
 #include "module.hpp"
 
 #undef _POSIX_C_SOURCE
@@ -32,32 +32,12 @@ class Engine : public korali::Module {
  Engine();
  Engine(nlohmann::json js);
 
- // Model Collection
- std::vector<std::function<void(korali::Sample&)>> _models;
-
  // JSON-based configuration
- nlohmann::json  _js;
+ korali::KoraliJson  _js;
 
- // Python and Json Configuration Binding Methods
- nlohmann::json*  _opt;
-
- Engine& getItem(const std::string& key);
- Engine& getItem(const unsigned long int& key);
- Engine& operator[](const std::string& key);
- Engine& operator[](const unsigned long int& key);
- void setItem(const std::string& key, const pybind11::object& val);
- void setItem(const int& key, const pybind11::object& val);
-
- void operator=(const std::function<void(korali::Sample&)> val);
- void operator=(const std::string& val)         { (*_opt) = val; _opt = &_js; }
- void operator=(const double& val)              { (*_opt) = val; _opt = &_js; }
- void operator=(const int& val)                 { (*_opt) = val; _opt = &_js; }
- void operator=(const std::vector<double>& val) { (*_opt) = val; _opt = &_js; }
-
- double getValue();
- bool getBoolean();
- std::string getString();
- std::vector<double> getArray();
+ pybind11::object getItem(pybind11::object key);
+ nlohmann::json& operator[](const std::string& key);
+ nlohmann::json& operator[](const unsigned long int& key);
 
  // State save/load methods
  bool isExecutionFinished();

@@ -3,7 +3,7 @@
 # This is the negative square -(x^2)
 def model(x):
   print('hola')
-  #r = -0.5*x[0]*x[0]
-  #x["Evaluation"] = r
-  x["Evaluation"] = 1.0
+  v = x["Parameters"][0] 
+  r = -0.5*v*v
+  x["Evaluation"] = r
 

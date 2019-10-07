@@ -20768,37 +20768,60 @@ class JsonInterface
 
 public:
 
- static bool isEmpty(nlohmann::json& js)
+static bool isEmpty(nlohmann::json& js)
+{
+ bool empty = true;
+
+ if (js.is_null()) return true;
+ if (js.is_primitive()) return false;
+
+ if (js.is_array())
  {
-  bool empty = true;
-
-  if (js.is_null()) return true;
-  if (js.is_primitive()) return false;
-
-  if (js.is_array())
+  for (size_t i = 0; i < js.size(); i++)
   {
-   for (size_t i = 0; i < js.size(); i++)
-   {
-    bool elEmpty = isEmpty(js[i]);
-    if (elEmpty) js.erase(i--);
-    empty = empty && elEmpty;
-   }
+   bool elEmpty = isEmpty(js[i]);
+   if (elEmpty) js.erase(i--);
+   empty = empty && elEmpty;
   }
-
-  if (js.is_object())
-  {
-   std::vector<std::string> erasedKeys;
-   for (auto& el : js.items())
-   {
-    bool elEmpty = isEmpty(el.value());
-    if (elEmpty == true) erasedKeys.push_back(el.key());
-    empty = empty && elEmpty;
-   }
-   for (size_t i = 0; i < erasedKeys.size(); i++) js.erase(erasedKeys[i]);
-  }
-
-  return empty;
  }
+
+ if (js.is_object())
+ {
+  std::vector<std::string> erasedKeys;
+  for (auto& el : js.items())
+  {
+   bool elEmpty = isEmpty(el.value());
+   if (elEmpty == true) erasedKeys.push_back(el.key());
+   empty = empty && elEmpty;
+  }
+  for (size_t i = 0; i < erasedKeys.size(); i++) js.erase(erasedKeys[i]);
+ }
+
+ return empty;
+}
+
+static bool isElemental(nlohmann::json& js)
+{
+ if (js.is_number()) return true;
+ if (js.is_string()) return true;
+
+ bool isArray = true;
+
+ if (js.is_array())
+ {
+  for (size_t i = 0; i < js.size(); i++)
+  {
+   bool isElementArray = false;
+   if (js[i].is_array()) isElementArray = isElemental(js[i]);
+   if (js[i].is_number()) isElementArray = true;
+   if (js[i].is_string()) isElementArray = true;
+   isArray = isArray && isElementArray;
+  }
+ }
+ else isArray = false;
+
+ return isArray;
+}
 
 static std::vector<std::string> getJsonPath(std::string path)
 {

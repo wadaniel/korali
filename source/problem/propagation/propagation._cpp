@@ -14,6 +14,6 @@ void korali::problem::Propagation::initialize()
 
 void korali::problem::Propagation::propagate(korali::Sample& sample)
 {
- _k->_models[_propagationModel](sample);
+ //_k->_models[_propagationModel](sample);
 }
 

@@ -2,20 +2,20 @@
 
 # Constraints
 
-def g1(k) :
-  c = -127.0 + 2 * k[0] * k[0] + 3.0 * pow(k[1], 4) + k[2] + 4.0 * k[3] * k[3] + 5.0 * k[4]
-  k.setResult(c)
+def g1(k):
+  v = k["Parameters"]
+  k["Evaluation"] = -127.0 + 2 * v[0] * v[0] + 3.0 * pow(v[1], 4) + v[2] + 4.0 * v[3] * v[3] + 5.0 * v[4]
 
 
 def g2(k):
-  c = -282.0 + 7.0 * k[0] + 3.0 * k[1] + 10.0 * k[2] * k[2] + k[3] - k[4]
-  k.setResult(c)
+  v = k["Parameters"]
+  k["Evaluation"] = -282.0 + 7.0 * v[0] + 3.0 * v[1] + 10.0 * v[2] * v[2] + v[3] - v[4]
 
 
 def g3(k):
-  c = -196.0 + 23.0 * k[0] + k[1] * k[1] + 6.0 * k[5] * k[5] - 8.0 * k[6]
-  k.setResult(c)
+  v = k["Parameters"]
+  k["Evaluation"] = -196.0 + 23.0 * v[0] + v[1] * v[1] + 6.0 * v[5] * v[5] - 8.0 * v[6]
 
 def g4(k):
-  c = 4.0 * k[0] * k[0] + k[1] * k[1] - 3.0 * k[0] * k[1] + 2.0 * k[2] * k[2] + 5.0 * k[5] - 11.0 * k[6]
-  k.setResult(c)
+  v = k["Parameters"]
+  k["Evaluation"] = 4.0 * v[0] * v[0] + v[1] * v[1] - 3.0 * v[0] * v[1] + 2.0 * v[2] * v[2] + 5.0 * v[5] - 11.0 * v[6]

@@ -3,10 +3,14 @@
 # This is a linear regression model with two params (slope and intercept)
 
 def model( s, x ): 
-  result = []
+  v1 = s["Parameters"][0]
+  v2 = s["Parameters"][1]
+  
+  result = [ ]
   for i in range(len(x)):
-    result.append(s[0]*x[i] + s[1])
-  s.setResult(result)
+    result.append(v1*x[i] + v2)
+
+  s["Reference Evaluations"] = result
 
 def getReferenceData():
  y=[]

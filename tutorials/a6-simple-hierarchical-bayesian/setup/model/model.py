@@ -4,9 +4,9 @@ import os
 import numpy as np
 
 def normal_rnds( s, Ns ):
-  th1 = s[0]
-  th2 = s[1]
-  k = s.getSampleId()
+  th1 = s["Parameters"][0]
+  th2 = s["Parameters"][1]
+  k = s["Sample Id"]
   y = np.random.normal( th1, th2, Ns )
   dataFolder = "../setup/data/"
   if not os.path.exists(dataFolder): os.makedirs(dataFolder)

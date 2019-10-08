@@ -24,6 +24,7 @@ void korali::solver::sampler::MCMC::runGeneration()
   generateCandidate(i);
 
   auto sample = korali::Sample();
+  sample["Operation"] = "Basic Evaluation";
   sample["Sample Id"] = _databaseEntryCount;
   sample["Parameters"] = _chainCandidate[i];
 
@@ -33,7 +34,7 @@ void korali::solver::sampler::MCMC::runGeneration()
   {
    _k->_conduit->start(sample);
    _k->_conduit->wait(sample);
-   evaluation = sample["Evaluation"][0];
+   evaluation = sample["Evaluation"];
   }
 
   _chainCandidatesEvaluations[i] = evaluation;

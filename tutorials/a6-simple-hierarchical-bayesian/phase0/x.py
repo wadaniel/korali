@@ -18,8 +18,8 @@ k["Problem"]["Propagation Model"] = lambda modelData: normal_rnds(modelData, Ns)
 
 k["Variables"][0]["Name"] = "V1"
 k["Variables"][1]["Name"] = "V2"
-k["Variables"][0]["Loaded Values"] = np.random.normal( 10, 4, N )
-k["Variables"][1]["Loaded Values"] = np.random.lognormal( 0, 1, N )
+k["Variables"][0]["Loaded Values"] = np.random.normal( 10, 4, N ).tolist()
+k["Variables"][1]["Loaded Values"] = np.random.lognormal( 0, 1, N ).tolist()
 
 k["Solver"]["Type"] = "Propagator"
 k["Solver"]["Propagations Per Generation"] = 1

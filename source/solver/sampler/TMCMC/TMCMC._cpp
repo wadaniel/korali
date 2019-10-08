@@ -113,6 +113,7 @@ void korali::solver::sampler::TMCMC::runGeneration()
    if (_chainPendingEvaluation[c] == false)
    {
      _chainPendingEvaluation[c] = true;
+     samples[c]["Operation"] = "Basic Evaluation";
      samples[c]["Parameters"] = _chainCandidates[c];
      samples[c]["Sample Id"] = c;
      _k->_conduit->start(samples[c]);
@@ -123,8 +124,10 @@ void korali::solver::sampler::TMCMC::runGeneration()
 
   _chainPendingEvaluation[finishedId] = false;
   _currentChainStep[finishedId]++;
-  _chainCandidatesLogLikelihoods[finishedId] = samples[finishedId]["Log Likelihood"];
-  _chainCandidatesLogPriors[finishedId] = samples[finishedId]["Log Prior"];
+
+  _chainCandidatesLogLikelihoods[finishedId] = samples[finishedId]["logLikelihood"];
+  _chainCandidatesLogPriors[finishedId] = samples[finishedId]["logPrior"];
+
   processEvaluation(finishedId);
  }
 

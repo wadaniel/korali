@@ -88,6 +88,7 @@ void korali::problem::evaluation::bayesian::hierarchical::Psi::updateConditional
   for (size_t j = 0; j < _conditionalPriorInfos[i]._sampleKeys.size(); j++)
   {
    std::string key = _conditionalPriorInfos[i]._sampleKeys[j];
+   size_t position = _conditionalPriorInfos[i]._samplePositions[j];
    double value = sample["Parameters"][_conditionalPriorInfos[i]._samplePositions[j]];
    _conditionalPriorInfos[i]._conditionalJson[key] = value;
    hasChanged = true;

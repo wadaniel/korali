@@ -1,6 +1,7 @@
 #include "auxiliar/koraliJson.hpp"
 #include "auxiliar/logger.hpp"
 #include "auxiliar/py2json.hpp"
+#include "engine/sample/sample.hpp"
 
 korali::KoraliJson::KoraliJson()
 {
@@ -12,6 +13,7 @@ void korali::KoraliJson::traverseKey(pybind11::object key)
  if (pybind11::isinstance<pybind11::str>(key))
  {
   std::string keyStr = key.cast<std::string>();
+
   _opt = &((*_opt)[keyStr]);
   return;
  }
@@ -23,7 +25,7 @@ void korali::KoraliJson::traverseKey(pybind11::object key)
    return;
   }
 
- korali::logError("Could not recognize Python key.\n");
+ korali::logError("Could not recognize Python key format.\n");
 }
 
 pybind11::object korali::KoraliJson::getItem(pybind11::object key)

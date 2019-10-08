@@ -271,12 +271,12 @@ def createRunOperation(module):
   codeString = 'bool ' + module["Class"]  + '::runOperation(std::string operation, korali::Sample& sample)\n'
   codeString += '{\n'
   codeString += ' bool operationDetected = false;\n\n'
- 
+  
   for v in module["Available Operations"]: 
    codeString += ' if (operation == "' + v["Name"] + '")\n'
    codeString += ' {\n'
    codeString += '  ' + v["Function"] + '(sample);\n'
-   codeString += '  operationDetected = true;\n'
+   codeString += '  return true;\n'
    codeString += ' }\n\n'
  
   codeString += ' operationDetected = operationDetected || ' + module["Parent Class"] + '::runOperation(operation, sample);\n' 

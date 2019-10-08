@@ -9,9 +9,7 @@ import korali
 k = korali.initialize()
 
 k["Problem"]["Type"]  = "Evaluation/Bayesian/Hierarchical/Psi"
-resultsPath = "../setup/results_phase_1/"
-for i in range(5):
-  k["Problem"]["Sub Problems"][i] = resultsPath + str(i).zfill(3) + '/final.json'
+k["Problem"]["Sub Problems"] = ['../setup/results_phase_1/' + str(i).zfill(3) + '/final.json' for i in range(5)]
 
 # Add probability of theta given psi, one per subproblem variable.
 k["Problem"]["Conditional Priors"][0]["Type"] = "Univariate/Uniform"

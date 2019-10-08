@@ -27,6 +27,7 @@ class Sample {
  {
   _self = this;
   _state = SampleState::uninitialized;
+  _js["Sample Id"] = 0;
  }
 
  // Execution Control Functions

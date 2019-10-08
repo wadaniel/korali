@@ -19,16 +19,25 @@ void korali::problem::evaluation::Bayesian::evaluateLogPrior(korali::Sample& sam
 
 void korali::problem::evaluation::Bayesian::evaluateLogPosterior(korali::Sample& sample)
 {
+  int sampleId = sample["Sample Id"];
   evaluateLogPrior(sample);
-  evaluateLogLikelihood(sample);
 
-  double logPrior = sample["logPrior"];
-  double logLikelihood = sample["logLikelihood"];
-  double logPosterior = logPrior + logLikelihood;
+  if (sample["logPrior"] == -korali::Inf)
+  {
+   sample["logLikelihood"] = -korali::Inf;
+   sample["logPosterior"] = -korali::Inf;
+  }
+  else
+  {
+   evaluateLogLikelihood(sample);
+   double logPrior = sample["logPrior"];
+   double logLikelihood = sample["logLikelihood"];
+   double logPosterior = logPrior + logLikelihood;
 
-  if(std::isnan(logPosterior) == true) korali::logError("Sample %zu returned NaN logPosterior evaluation.\n", sample["Sample Id"]);
+   if(std::isnan(logPosterior) == true) korali::logError("Sample %d returned NaN logPosterior evaluation.\n", sampleId);
 
-  sample["logPosterior"] = logPrior + logLikelihood;
+   sample["logPosterior"] = logPrior + logLikelihood;
+  }
 }
 
 bool korali::problem::evaluation::Bayesian::isSampleFeasible(korali::Sample& sample)

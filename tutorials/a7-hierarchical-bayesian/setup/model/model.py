@@ -5,9 +5,9 @@ import numpy as np
 
 
 def logistic( X, s ):
-  th1 = s[0]
-  th2 = s[1]
-  th3 = s[2]
+  th1 = s["Parameters"][0]
+  th2 = s["Parameters"][1]
+  th3 = s["Parameters"][2]
 
   result = []
   
@@ -16,12 +16,12 @@ def logistic( X, s ):
     y = ( th1*th2*f )/( th1 + th2*(f-1) )
     result.append(y)
     
-  s.setResult(result)
+  s["Reference Evaluations"] = result
 
 def logistic_reference( s ):
   th = np.zeros(4)
   for i in range(4):
-    th[i] = s[i]
+    th[i] = s["Parameters"][i]
 
   X = np.linspace( 0.0, 10.0, num=21 )
   Y = np.zeros(X.size)
@@ -30,7 +30,8 @@ def logistic_reference( s ):
     Y[i] = ( th[0]*th[1]*f )/( th[0] + th[1]*(f-1) )
 
   Y = Y +  np.random.normal( 0, th[3], X.size )
-  k = s.getSampleId()
+  k = s["Sample Id"]
+
   dataFolder = "../setup/data/"
   if not os.path.exists(dataFolder): os.makedirs(dataFolder)
   dataFile = dataFolder + "/data_set_" + str(k).zfill(3) + ".dat"

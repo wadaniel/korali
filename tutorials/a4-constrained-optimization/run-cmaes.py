@@ -19,10 +19,7 @@ k = korali.initialize()
 k["Problem"]["Type"] = "Evaluation/Direct"
 k["Problem"]["Objective"] = "Maximize"
 k["Problem"]["Objective Function"] = model
-k["Problem"]["Constraints"][0] = g1
-k["Problem"]["Constraints"][1] = g2
-k["Problem"]["Constraints"][2] = g3
-k["Problem"]["Constraints"][3] = g4
+k["Problem"]["Constraints"] = [ g1, g2, g3, g4 ]
 
 # Creating 7 variables and setting their CCMA-ES bounds
 for i in range(7) :

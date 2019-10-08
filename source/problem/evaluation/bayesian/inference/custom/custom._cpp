@@ -12,8 +12,8 @@ void korali::problem::evaluation::bayesian::inference::Custom::initialize()
 
 void korali::problem::evaluation::bayesian::inference::Custom::evaluateLogLikelihood(korali::Sample& sample)
 {
- //_k->_models[_likelihoodModel](sample);
+ sample.run(_likelihoodModel);
 
- if (! sample.contains("Log Likelihood")) korali::logError("The specified likelihood model did not assign the value: 'logLikelihood' to the sample.\n");
+ if (! sample.contains("logLikelihood")) korali::logError("The specified likelihood model did not assign the value: 'logLikelihood' to the sample.\n");
 }
 

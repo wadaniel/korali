@@ -12,7 +12,7 @@ void korali::problem::evaluation::bayesian::inference::Reference::initialize()
 
 void korali::problem::evaluation::bayesian::inference::Reference::evaluateLogLikelihood(korali::Sample& sample)
 {
-  //_k->_models[_computationalModel](sample);
+  sample.run(_computationalModel);
 
   if (sample["Reference Evaluations"].size() != _referenceData.size())
     korali::logError("This Bayesian (%s) problem requires a %lu-sized result array. Provided: %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), sample["Reference Evaluations"].size());

@@ -2,7 +2,7 @@
 
 korali::Conduit* korali::__conduit;
 
-korali::Conduit::Conduit()
+void korali::Conduit::initialize()
 {
  __conduit = this;
  _mainThread = co_active();
@@ -61,13 +61,13 @@ size_t korali::Conduit::waitAny(std::vector<korali::Sample>& samples)
  {
   for (currentSample = 0; currentSample < samples.size(); currentSample++)
   {
-   if (samples[currentSample]._state == SampleState::waiting)
+   if (samples[currentSample]._state == SampleState::waiting || samples[currentSample]._state == SampleState::initialized)
    {
     samples[currentSample]._state = SampleState::running;
     co_switch(samples[currentSample]._sampleThread);
    }
 
-   if (samples[currentSample]._state == SampleState::finished || samples[currentSample]._state == SampleState::initialized)
+   if (samples[currentSample]._state == SampleState::finished)
    {
     free(samples[currentSample]._sampleThread);
     samples[currentSample]._state = SampleState::uninitialized;

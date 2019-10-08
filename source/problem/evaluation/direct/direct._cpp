@@ -29,7 +29,7 @@ void korali::problem::evaluation::Direct::evaluateConstraints(korali::Sample& sa
 {
  for (size_t i = 0; i < _constraints.size(); i++)
  {
-  //_k->_models[_constraints[i]](sample);
+  sample.run(_constraints[i]);
   sample["Constraint Evaluations"][i] = sample["Evaluation"];
  }
 }

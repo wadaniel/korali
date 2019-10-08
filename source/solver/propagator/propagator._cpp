@@ -33,6 +33,7 @@ void korali::solver::Propagator::runGeneration()
     for(auto& x : sampleData) korali::logData("Detailed", " %le   ", x);
     korali::logData("Detailed", "\n");
 
+    samples[i]["Operation"] = "Propagate";
     samples[i]["Parameters"] = sampleData;
     samples[i]["Sample Id"] = _currentSample;
     _k->_conduit->start(samples[i]);

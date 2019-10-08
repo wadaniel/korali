@@ -51,7 +51,6 @@ void korali::problem::evaluation::bayesian::inference::Approximate::likelihoodTr
 
   if(a>b) { sample["logLikelihood"] = -korali::Inf; return; };
 
-
   double logNormalization = 0.5 * M_SQRT2 * M_SQRTPI * sigma * ( gsl_sf_erf(bn*M_SQRT1_2) - gsl_sf_erf(an*M_SQRT1_2) ) ;
 
   if( logNormalization <= 0.) { sample["logLikelihood"] = -korali::Inf; return; }

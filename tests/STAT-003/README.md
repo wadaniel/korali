@@ -1,4 +1,4 @@
-# Test: REG-007
+# Test: STAT--003
 
 Check Sampling Statistics
 

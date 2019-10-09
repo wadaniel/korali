@@ -33,9 +33,6 @@ class KoraliJson {
  nlohmann::json& operator[](const std::string& key);
  nlohmann::json& operator[](const unsigned long int& key);
 
- void operator=(const std::function<void(korali::Sample&)> val);
- void operator=(const nlohmann::json& val);
-
  bool contains(const std::string& key);
  void traverseKey(pybind11::object key);
 };

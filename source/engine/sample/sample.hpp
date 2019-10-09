@@ -7,6 +7,9 @@
 #include "auxiliar/koraliJson.hpp"
 #include <string>
 
+#undef _POSIX_C_SOURCE
+#undef _XOPEN_SOURCE
+
 namespace korali
 {
 
@@ -27,7 +30,7 @@ class Sample {
  {
   _self = this;
   _state = SampleState::uninitialized;
-  _js["Sample Id"] = 0;
+  _js.getJson()["Sample Id"] = 0;
  }
 
  // Execution Control Functions

@@ -2,7 +2,11 @@
 
 # This is the negative square -(x^2)
 def model( s ):
-  x = s[0]
+  x = s["Parameters"][0]
   r = -0.5*x*x
-  s.setResult(r)
+  s["Evaluation"] = r
 
+def calculateLogLikelihood( s ):
+  x = s["Parameters"][0]
+  r = -0.5*x*x
+  s["logLikelihood"] = r

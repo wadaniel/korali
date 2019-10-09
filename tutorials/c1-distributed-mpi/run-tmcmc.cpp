@@ -5,13 +5,12 @@ int main(int argc, char* argv[])
 {
  MPI_Init(&argc, &argv);
  auto k = korali::Engine();
- auto referenceModel = [](korali::Sample& d) { jacobi(getPointData(), d.getSampleData(), d.getResult(), getKoraliMPIComm()); };
  if (argc != 2) { printf("Error: this example requires 'Ranks Per Team' passed as argument.\n"); exit(-1); }
 
  k["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Reference";
  k["Problem"]["Likelihood Model"] = "Additive Normal";
  k["Problem"]["Reference Data"] = getReferenceData();
- k["Problem"]["Computational Model"] = referenceModel;
+ k["Problem"]["Computational Model"] = &jacobi;
 
  k["Variables"][0]["Name"] = "X0";
  k["Variables"][0]["Bayesian Type"] = "Computational";

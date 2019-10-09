@@ -1,13 +1,10 @@
-CXXFLAGS = -O3 -g
-OBJECTS = jacobi.o
-
-.SECONDARY:
-.PHONY: all
-all: $(OBJECTS) 
+all: jacobi.o
+KORALICXX=$(shell python3 -m korali.cxx --compiler)
+KORALICFLAGS=`python3 -m korali.cxx --cflags`
 
 jacobi.o: jacobi.cpp
-	$(MPICXX) -c $(CXXFLAGS) $<	
+	$(KORALICXX) -c $< $(KORALICFLAGS)
 
-.PHONY: clean
-clean:
-	$(RM) *.o *.ti *.optrpt *.txt
+clean:; rm -rf $(TARGET) *.o
+
+.PHONY: clean all

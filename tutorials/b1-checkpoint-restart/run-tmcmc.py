@@ -17,7 +17,7 @@ k = korali.initialize()
 resultDir = '_result_run-tmcmc'
 
 k["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Custom"
-k["Problem"]["Likelihood Model"] = model
+k["Problem"]["Likelihood Model"] = calculateLogLikelihood
 
 k["Solver"]["Type"]  = "Sampler/TMCMC"
 k["Solver"]["Population Size"] = 5000

@@ -10,11 +10,14 @@
 
 #include <string>
 #include <vector>
+#include <functional>
 #include "auxiliar/json.hpp"
 #include "pybind11/pybind11.h"
-#include "pybind11/functional.h"
 #include "pybind11/stl.h"
 #include "engine/sample/sample.hpp"
+
+typedef void(*__fkfc)(korali::Sample&);
+typedef std::function<void(korali::Sample&)> __kfc;
 
 namespace nlohmann
 {
@@ -24,6 +27,30 @@ namespace nlohmann
         static pybind11::object from_json(const json& j);
         static void to_json(json& j, const pybind11::object& obj);
     };
+
+    template <>
+    struct adl_serializer<__kfc>
+    {
+        static void to_json(json& j, const __kfc& obj);
+    };
+
+    inline void adl_serializer<__kfc>::to_json(json& j, const __kfc& obj)
+    {
+        j = (std::uint64_t) &obj;
+    }
+
+    template <>
+    struct adl_serializer<__fkfc>
+    {
+        static void to_json(json& j, const __fkfc& obj);
+    };
+
+    inline void adl_serializer<__fkfc>::to_json(json& j, const __fkfc& obj)
+    {
+        korali::Sample kk;
+        auto x = new __kfc(*obj);
+        j = (std::uint64_t) x;
+    }
 
     namespace detail
     {
@@ -81,7 +108,7 @@ namespace nlohmann
             }
             if (pybind11::isinstance<pybind11::function>(obj))
             {
-               return (std::uint64_t) new std::function<void(korali::Sample&)>(obj.cast<std::function<void(korali::Sample&)>>());
+               return (std::uint64_t) new __kfc(obj.cast<__kfc>());
             }
             if (pybind11::isinstance<pybind11::bool_>(obj))
             {

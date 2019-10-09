@@ -107,7 +107,7 @@ void korali::conduit::MPI::workerThread()
    MPI_Recv(jsonStringChar, jsonStringSize, MPI_CHAR, getRootRank(), MPI_TAG_SAMPLE_JSON_CONTENT, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
    jsonStringChar[jsonStringSize] = '\0';
-   sample._js = nlohmann::json::parse(jsonStringChar);
+   sample._js.getJson() = nlohmann::json::parse(jsonStringChar);
 
    _k->_problem->runOperation(sample["Operation"], sample);
 

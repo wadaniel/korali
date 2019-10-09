@@ -17,9 +17,10 @@ struct Neighbor {
  double* sendBuffer;
 };
 
-void jacobi(std::vector<double> xdata, std::vector<double>& parameters, std::vector<double>& results, MPI_Comm comm)
+void jacobi(korali::Sample& k)
 {
  int myRank, rankCount;
+ MPI_Comm comm =  getKoraliMPIComm();
  MPI_Comm_rank(comm, &myRank);
  MPI_Comm_size(comm, &rankCount);
 
@@ -63,13 +64,13 @@ void jacobi(std::vector<double> xdata, std::vector<double>& parameters, std::vec
  for (int i = 0; i < fx; i++)
    U[k*fy*fx + j*fx + i] = 1;
 
- if (X0.rankId == MPI_PROC_NULL) for (int i = 0; i < fy; i++) for (int j = 0; j < fz; j++) U[j*fx*fy + i*fx  ] = parameters[0];
- if (Y0.rankId == MPI_PROC_NULL) for (int i = 0; i < fx; i++) for (int j = 0; j < fz; j++) U[j*fx*fy + fx + i] = parameters[2];
- if (Z0.rankId == MPI_PROC_NULL) for (int i = 0; i < fx; i++) for (int j = 0; j < fy; j++) U[fx*fy + j*fx + i] = parameters[4];
+ if (X0.rankId == MPI_PROC_NULL) for (int i = 0; i < fy; i++) for (int j = 0; j < fz; j++) U[j*fx*fy + i*fx  ] = k["Parameters"][0];
+ if (Y0.rankId == MPI_PROC_NULL) for (int i = 0; i < fx; i++) for (int j = 0; j < fz; j++) U[j*fx*fy + fx + i] = k["Parameters"][2];
+ if (Z0.rankId == MPI_PROC_NULL) for (int i = 0; i < fx; i++) for (int j = 0; j < fy; j++) U[fx*fy + j*fx + i] = k["Parameters"][4];
 
- if (X1.rankId == MPI_PROC_NULL) for (int i = 0; i < fy; i++) for (int j = 0; j < fz; j++) U[j*fx*fy + i*fx + (nx+1)] = parameters[1];
- if (Y1.rankId == MPI_PROC_NULL) for (int i = 0; i < fx; i++) for (int j = 0; j < fz; j++) U[j*fx*fy + (ny+1)*fx + i] = parameters[3];
- if (Z1.rankId == MPI_PROC_NULL) for (int i = 0; i < fx; i++) for (int j = 0; j < fy; j++) U[(nz+1)*fx*fy + j*fx + i] = parameters[5];
+ if (X1.rankId == MPI_PROC_NULL) for (int i = 0; i < fy; i++) for (int j = 0; j < fz; j++) U[j*fx*fy + i*fx + (nx+1)] = k["Parameters"][1];
+ if (Y1.rankId == MPI_PROC_NULL) for (int i = 0; i < fx; i++) for (int j = 0; j < fz; j++) U[j*fx*fy + (ny+1)*fx + i] = k["Parameters"][3];
+ if (Z1.rankId == MPI_PROC_NULL) for (int i = 0; i < fx; i++) for (int j = 0; j < fy; j++) U[(nz+1)*fx*fy + j*fx + i] = k["Parameters"][5];
 
  MPI_Datatype faceXType, faceYType, faceZType;
 
@@ -135,6 +136,8 @@ void jacobi(std::vector<double> xdata, std::vector<double>& parameters, std::vec
  double endY = startY + dy;
  double endZ = startZ + dz;
 
+ auto xdata = getPointData();
+
  for (size_t i = 0; i < xdata.size(); i += 3)
  {
   MPI_Barrier(comm);
@@ -165,7 +168,7 @@ void jacobi(std::vector<double> xdata, std::vector<double>& parameters, std::vec
   if (myRank == 0)
   {
    if (foundValue == false) MPI_Recv(&result, 1, MPI_DOUBLE, MPI_ANY_SOURCE, 0, comm, MPI_STATUS_IGNORE);
-   results.push_back(result);
+   k["Reference Evaluations"][i] = result;
   }
  }
 

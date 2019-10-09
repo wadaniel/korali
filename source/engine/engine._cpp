@@ -125,7 +125,7 @@ korali::Engine::Engine()
 
 korali::Engine::Engine(nlohmann::json js) : korali::Engine::Engine()
 {
- _js = js;
+ _js.getJson() = js;
  setConfiguration(_js.getJson());
 }
 
@@ -140,7 +140,7 @@ void korali::Engine::saveState(std::string fileName)
  _timestamp = korali::getTimestamp();
 
  // Getting configuration
- _js = nlohmann::json();
+ _js.getJson() = nlohmann::json();
  this->getConfiguration(_js.getJson());
 
  // Only the root rank saves files
@@ -162,7 +162,7 @@ void korali::Engine::saveState(int fileId)
 
 void korali::Engine::loadState(std::string fileName)
 {
- _js = korali::JsonInterface::loadJsonFromFile(fileName.c_str());
+ _js.getJson() = korali::JsonInterface::loadJsonFromFile(fileName.c_str());
 }
 
 nlohmann::json& korali::Engine::operator[](const std::string& key) { return _js[key]; }

@@ -28,6 +28,15 @@ void korali::KoraliJson::traverseKey(pybind11::object key)
  korali::logError("Could not recognize Python key format.\n");
 }
 
+
+void korali::KoraliJson::setItem(pybind11::object key, pybind11::object val)
+{
+ traverseKey(key);
+
+ *_opt = val;
+ _opt = &_js;
+}
+
 pybind11::object korali::KoraliJson::getItem(pybind11::object key)
 {
  traverseKey(key);
@@ -42,12 +51,6 @@ pybind11::object korali::KoraliJson::getItem(pybind11::object key)
  return pybind11::cast(this);
 }
 
-void korali::KoraliJson::operator=(const std::function<void(korali::Sample&)> val)
-{
- (*_opt) = (std::uint64_t)&val;
- _opt = &_js;
-}
-
 nlohmann::json& korali::KoraliJson::operator[](const std::string& key)
 {
  return _js[key];
@@ -56,20 +59,6 @@ nlohmann::json& korali::KoraliJson::operator[](const std::string& key)
 nlohmann::json& korali::KoraliJson::operator[](const unsigned long int& key)
 {
  return _js[key];
-}
-
-void korali::KoraliJson::setItem(pybind11::object key, pybind11::object val)
-{
- traverseKey(key);
-
- *_opt = val;
- _opt = &_js;
-}
-
-void korali::KoraliJson::operator=(const nlohmann::json& val)
-{
- (*_opt) = val;
- _opt = &_js;
 }
 
 nlohmann::json& korali::KoraliJson::getJson()

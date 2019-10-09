@@ -6,8 +6,9 @@
 /**********************************************************************/
 
 #include "mpi.h"
+#include "korali.hpp"
 #include <vector>
 
 std::vector<double> getPointData();
 std::vector<double> getReferenceData();
-void jacobi(std::vector<double> xdata, std::vector<double>& parameters, std::vector<double>& results, MPI_Comm comm);
+void jacobi(korali::Sample& k);

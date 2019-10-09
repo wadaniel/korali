@@ -9,7 +9,7 @@ int main(int argc, char* argv[])
  k["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Reference";
  k["Problem"]["Likelihood Model"] = "Additive Normal";
  k["Problem"]["Reference Data"] = p.refTemp;
- k["Problem"]["Computational Model"] = heat2DSolver;
+ k["Problem"]["Computational Model"] = &heat2DSolver;
 
  k["Solver"]["Type"] = "Sampler/TMCMC";
  k["Solver"]["Population Size"] = 200;

@@ -37,29 +37,29 @@ def run_cmaes_with_termination_criterion(criterion, value):
     k.run()
 
     if (criterion == "Max Generations"):
-        assert_value(k["Internal"]["Current Generation"].getValue(), value)
+        assert_value(k["Internal"]["Current Generation"], value)
         
     elif (criterion == "Max Infeasible Resamplings"):
-        assert_greatereq(k["Solver"]["Internal"]["Infeasible Sample Count"].getValue(), value)
+        assert_greatereq(k["Solver"]["Internal"]["Infeasible Sample Count"], value)
     
     elif (criterion == "Max Condition Covariance Matrix"):
-        minEw = k["Solver"]["Internal"]["Minimum Covariance Eigenvalue"].getValue()
-        maxEw = k["Solver"]["Internal"]["Maximum Covariance Eigenvalue"].getValue()
+        minEw = k["Solver"]["Internal"]["Minimum Covariance Eigenvalue"]
+        maxEw = k["Solver"]["Internal"]["Maximum Covariance Eigenvalue"]
         assert_greatereq(maxEw/minEw, value)
 
     elif (criterion == "Max Value"):
-        assert_greatereq(k["Solver"]["Internal"]["Best Ever Value"].getValue(), value)
+        assert_greatereq(k["Solver"]["Internal"]["Best Ever Value"], value)
   
     elif (criterion == "Min Value Difference Threshold"):
-        previous = k["Solver"]["Internal"]["Previous Best Ever Value"].getValue()
-        current  = k["Solver"]["Internal"]["Best Ever Value"].getValue()
+        previous = k["Solver"]["Internal"]["Previous Best Ever Value"]
+        current  = k["Solver"]["Internal"]["Best Ever Value"]
         assert_smallereq(previous-current, value)
  
     elif (criterion == "Min Standard Deviation"):
-        assert_smallereq(k["Solver"]["Internal"]["Current Min Standard Deviation"].getValue(), value)
+        assert_smallereq(k["Solver"]["Internal"]["Current Min Standard Deviation"], value)
  
     elif (criterion == "Max Standard Deviation"):
-        assert_greatereq(k["Solver"]["Internal"]["Current Max Standard Deviation"].getValue(), value)
+        assert_greatereq(k["Solver"]["Internal"]["Current Max Standard Deviation"], value)
  
     elif (criterion == "Min Value"):
         print("TODO: Min Val")

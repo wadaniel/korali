@@ -31,7 +31,7 @@ print("[Korali] Prepare TMCMC run")
 k = korali.initialize()
 
 k["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Custom"
-k["Problem"]["Likelihood Model"] = evaluateModel
+k["Problem"]["Likelihood Model"] = evaluateLogLikelihood
 
 k["Variables"][0]["Name"] = "X"
 k["Variables"][0]["Prior Distribution"]["Type"] = "Univariate/Uniform"
@@ -43,8 +43,7 @@ k["Solver"]["Population Size"] = 5000
 k["Solver"]["Covariance Scaling"] = 0.001
 
 k["Solver"]["Default Burn In"] = 5
-k["Solver"]["Per Generation Burn In"][0] = 10
-k["Solver"]["Per Generation Burn In"][1] = 7
+k["Solver"]["Per Generation Burn In"] = [ 10, 7 ]
 k["Solver"]["Max Chain Length"] = 1
 k["Solver"]["Target Coefficient Of Variation"] = 0.5
 k["Solver"]["Min Annealing Exponent Update"] = minRhoUpdate

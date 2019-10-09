@@ -2,80 +2,80 @@
 import math
 
 def evaluateModel( s ):
-   x1 = s[0]
-   x2 = s[1]
+   x1 = s["Parameters"][0]
+   x2 = s["Parameters"][1]
    r = -x1**2-x2**2-math.sin(x1)**2-math.sin(x2)**2
-   s.setResult(r)
+   s["Evaluation"] = r
 
 def inactive1( k ):
-  k.setResult(-1)
+  k["Evaluation"] = -1
 
 def inactive2( k ):
-  k.setResult(-2)
+  k["Evaluation"] = -2
 
 def activeMax1( k ):
-    c = -(k[0] - 1.0)
-    k.setResult(c)
+    c = -(k["Parameters"][0] - 1.0)
+    k["Evaluation"] = c
 
 def activeMax2( k ):
-    c = -(k[0] - 2.0)
-    k.setResult(c)
+    c = -(k["Parameters"][0] - 2.0)
+    k["Evaluation"] = c
 
 def activeMax3( k ):
-    c = -(k[1] - 1.0)
-    k.setResult(c)
+    c = -(k["Parameters"][1] - 1.0)
+    k["Evaluation"] = c
 
 def activeMax4( k ):
-    c = -(k[1] - 2.0)
-    k.setResult(c)
+    c = -(k["Parameters"][1] - 2.0)
+    k["Evaluation"] = c
 
 def inactiveMax1( k ):
-    c = -math.cos(k[0])
-    k.setResult(c)
+    c = -math.cos(k["Parameters"][0])
+    k["Evaluation"] = c
 
 def inactiveMax2( k ):
-    c = -math.sin(k[0])
-    k.setResult(c)
+    c = -math.sin(k["Parameters"][0])
+    k["Evaluation"] = c
 
 def inactiveMax3( k ):
-    c = -math.cos(k[1])
-    k.setResult(c)
+    c = -math.cos(k["Parameters"][1])
+    k["Evaluation"] = c
 
 def inactiveMax4( k ):
-    c = -math.sin(k[1])
-    k.setResult(c)
+    c = -math.sin(k["Parameters"][1])
+    k["Evaluation"] = c
 
 def stress1( k ):
-    c = -k[0] + 6.2
-    k.setResult(c)
+    c = -k["Parameters"][0] + 6.2
+    k["Evaluation"] = c
 
 def stress2( k ):
-    c = k[0] - k[1]
-    k.setResult(c)
+    c = k["Parameters"][0] - k["Parameters"][1]
+    k["Evaluation"] = c
 
 def stress3( k ):
-    c = k[0] + 2.0 - 2.0*k[1] 
-    k.setResult(c)
+    c = k["Parameters"][0] + 2.0 - 2.0*k["Parameters"][1] 
+    k["Evaluation"] = c
 
 def stress4( k ):
-    c = 2*k[0] - 3*k[1]
-    k.setResult(c)
+    c = 2*k["Parameters"][0] - 3*k["Parameters"][1]
+    k["Evaluation"] = c
 
 def stress5( k ):
-    c = -(k[0] - 6.28)*(k[1] - 6.28)
-    k.setResult(c)
+    c = -(k["Parameters"][0] - 6.28)*(k["Parameters"][1] - 6.28)
+    k["Evaluation"] = c
 
 def stress6( k ):
-    c = -math.cos(k[0])*math.cos(k[1])
-    k.setResult(c)
+    c = -math.cos(k["Parameters"][0])*math.cos(k["Parameters"][1])
+    k["Evaluation"] = c
 
 def stress7( k ):
-    c = -math.sin(k[0])*math.sin(k[1])
-    k.setResult(c)
+    c = -math.sin(k["Parameters"][0])*math.sin(k["Parameters"][1])
+    k["Evaluation"] = c
 
 def stress8( k ):
-    c = k[0] - k[1]**2
-    k.setResult(c)
+    c = k["Parameters"][0] - k["Parameters"][1]**2
+    k["Evaluation"] = c
 
 def assert_value( val, expected ):
     assert val  == expected, "Error: Value should be {0} but is {1}\n".format(expected, val)

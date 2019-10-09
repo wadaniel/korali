@@ -20,7 +20,7 @@ def run_tmcmc_with_termination_criterion(criterion, value):
     k = korali.initialize()
 
     k["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Custom"
-    k["Problem"]["Likelihood Model"] = evaluateModel
+    k["Problem"]["Likelihood Model"] = evaluateLogLikelihood
 
     k["Variables"][0]["Name"] = "X"
     k["Variables"][0]["Prior Distribution"]["Type"] = "Univariate/Uniform"
@@ -38,10 +38,10 @@ def run_tmcmc_with_termination_criterion(criterion, value):
     k.run()
 
     if (criterion == "Max Generations"):
-        assert_value(k["Internal"]["Current Generation"].getValue(), value)
+        assert_value(k["Internal"]["Current Generation"], value)
         
     elif (criterion == "Target Annealing Exponent"):
-        assert_greatereq(k["Solver"]["Internal"]["Annealing Exponent"].getValue(), value)
+        assert_greatereq(k["Solver"]["Internal"]["Annealing Exponent"], value)
     
     else:
         print("Termination Criterion not recognized!")

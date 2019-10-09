@@ -4,6 +4,7 @@
 #include "solver/solver.hpp"
 #include <sys/wait.h>
 #include <sys/types.h>
+#include <fcntl.h>
 
 void korali::conduit::External::initialize()
 {
@@ -15,7 +16,14 @@ void korali::conduit::External::initialize()
 
  // Opening Inter-process communicator pipes
  for (int i = 0; i < _concurrentJobs; i++)
+ {
   if (pipe(_pipeDescriptors[i].data()) == -1) korali::logError("Unable to create inter-process pipe. \n");
+  int retval;
+  retval = fcntl(_pipeDescriptors[i][0], F_SETFL, fcntl(_pipeDescriptors[i][0], F_GETFL) | O_NONBLOCK | O_RDONLY);
+  printf("Ret from 0 fcntl: %d\n", retval);
+  retval = fcntl(_pipeDescriptors[i][1], F_SETFL, fcntl(_pipeDescriptors[i][1], F_GETFL) | O_NONBLOCK | O_WRONLY);
+  printf("Ret from 1 fcntl: %d\n", retval);
+ }
 }
 
 void korali::conduit::External::finalize()
@@ -60,19 +68,18 @@ void korali::conduit::External::processSample(korali::Sample& sample)
 
  _profileInfo["Conduit " + std::to_string(launcherId)].startSegment(sample["Sample Id"]);
 
- int flag = 0;
- while(flag == 0)
+ int readBytes = -1;
+ while(readBytes < 0)
  {
-  flag = waitpid(processId, &flag, WNOHANG);
-  if (flag)
+  size_t resultJsonSize;
+  readBytes = read(_pipeDescriptors[launcherId][0], &resultJsonSize, sizeof(size_t));
+
+  if(readBytes > 0)
   {
-   size_t resultJsonSize;
-   read(_pipeDescriptors[launcherId][0], &resultJsonSize, sizeof(size_t));
-
    char resultStringChar[resultJsonSize + 1];
-   read(_pipeDescriptors[launcherId][0], resultStringChar, resultJsonSize * sizeof(char));
-   resultStringChar[resultJsonSize] = '\0';
+   while(read(_pipeDescriptors[launcherId][0], resultStringChar, resultJsonSize * sizeof(char)) < 0);
 
+   resultStringChar[resultJsonSize] = '\0';
    sample._js.getJson() = nlohmann::json::parse(resultStringChar);
 
    _launcherQueue.push(launcherId);

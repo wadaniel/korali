@@ -3,7 +3,10 @@
 # Importing computational model
 import sys
 sys.path.append('./model')
+sys.path.append('./helpers')
+
 from model import *
+from helpers import *
 
 # Starting Korali's Engine
 import korali
@@ -27,3 +30,6 @@ k["Solver"]["Termination Criteria"]["Max Chain Length"] = 5000
 
 # Running Korali
 k.run()
+
+compareMean(k)
+compareStd(k)

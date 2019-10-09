@@ -143,7 +143,7 @@ void jacobi(korali::Sample& k)
  {
   MPI_Barrier(comm);
 
-  double result;
+  double result = 0.0;
   double xPos = xdata[i + 0];
   double yPos = xdata[i + 1];
   double zPos = xdata[i + 2];
@@ -164,12 +164,9 @@ void jacobi(korali::Sample& k)
   }
 
   if (foundValue == true) if (myRank != 0) MPI_Send(&result, 1, MPI_DOUBLE, 0, 0, comm);
-
-  if (myRank == 0)
-  {
-   if (foundValue == false) MPI_Recv(&result, 1, MPI_DOUBLE, MPI_ANY_SOURCE, 0, comm, MPI_STATUS_IGNORE);
-    resultVector.push_back(result);
-  }
+  if (myRank == 0) if (foundValue == false) MPI_Recv(&result, 1, MPI_DOUBLE, MPI_ANY_SOURCE, 0, comm, MPI_STATUS_IGNORE);
+  MPI_Bcast(&result, 1, MPI_DOUBLE, 0, comm);
+  resultVector.push_back(result);
  }
 
  k["Reference Evaluations"] = resultVector;

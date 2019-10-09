@@ -3,7 +3,10 @@
 # Importing computational model
 import sys
 sys.path.append('./model')
+sys.path.append('./helpers')
+
 from model import *
+from helpers import *
 
 # Starting Korali's Engine
 import korali
@@ -28,3 +31,6 @@ k["Solver"]["Termination Criteria"]["Max Chain Length"] = 5000
 k["Random Seed"] = 0xC0FFEE
 k["Results Output"]["Path"] = "_result_run-dram"
 k.run()
+
+checkMean(k, 0.0, 0.05)
+checkStd(k, 1.303, 0.05)

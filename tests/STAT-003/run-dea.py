@@ -4,7 +4,10 @@ import sys
 import korali
 
 sys.path.append('./model')
+sys.path.append('./helpers')
+
 from model import *
+from helpers import *
 
 #################################################
 # DEA problem definition & run
@@ -33,3 +36,5 @@ k["Results Output"]["Path"] = "_results_dea"
 k["Random Seed"] = 1337
 
 k.run()
+
+checkMin(k, 0.22942553779431113, 1e-4)

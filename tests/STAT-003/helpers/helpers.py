@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
-import json
+import numpy as np
 
-def open_json(dirname, filename):
-    path = '{0}/{1}'.format(dirname, filename)
-    data = None
-    with open(path) as f:
-       data = json.load(f)
-    return data
+def checkMin(k, expectedMinimum, tol):
+    minimum = k["Solver"]["Internal"]["Best Ever Value"]
+    assert np.isclose(expectedMinimum, minimum, atol = tol), "Minimum {0} "\
+            "deviates from true min by more than {1}".format(minimum, tol)

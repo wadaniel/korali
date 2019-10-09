@@ -98,12 +98,11 @@ void korali::conduit::MPI::workerThread()
  while (true)
  {
    size_t jsonStringSize;
-   char jsonStringChar[jsonStringSize + 1];
-
-   MPI_Recv(&jsonStringSize, 1, MPI_LONG, getRootRank(), MPI_TAG_SAMPLE_JSON_SIZE, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+   MPI_Recv(&jsonStringSize, 1, MPI_UNSIGNED_LONG, getRootRank(), MPI_TAG_SAMPLE_JSON_SIZE, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
    if (jsonStringSize == 0) return;
 
+   char jsonStringChar[jsonStringSize + 1];
    MPI_Recv(jsonStringChar, jsonStringSize, MPI_CHAR, getRootRank(), MPI_TAG_SAMPLE_JSON_CONTENT, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
    jsonStringChar[jsonStringSize] = '\0';

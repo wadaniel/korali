@@ -138,12 +138,12 @@ void jacobi(korali::Sample& k)
 
  auto xdata = getPointData();
 
+ std::vector<double> resultVector;
  for (size_t i = 0; i < xdata.size(); i += 3)
  {
   MPI_Barrier(comm);
 
-  double result = 0.0;
-
+  double result;
   double xPos = xdata[i + 0];
   double yPos = xdata[i + 1];
   double zPos = xdata[i + 2];
@@ -168,9 +168,11 @@ void jacobi(korali::Sample& k)
   if (myRank == 0)
   {
    if (foundValue == false) MPI_Recv(&result, 1, MPI_DOUBLE, MPI_ANY_SOURCE, 0, comm, MPI_STATUS_IGNORE);
-   k["Reference Evaluations"][i] = result;
+    resultVector.push_back(result);
   }
  }
+
+ k["Reference Evaluations"] = resultVector;
 
  free(U);
  free(Un);

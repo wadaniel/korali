@@ -4,29 +4,83 @@
 #include "solver/solver.hpp"
 #include <sys/wait.h>
 #include <sys/types.h>
+#include <fcntl.h>
 
 void korali::conduit::External::initialize()
 {
  korali::Conduit::initialize();
 
  if (_concurrentJobs < 1) korali::logError("You need to define at least 1 concurrent job(s) for external models \n");
- for (int i = 0; i < _concurrentJobs; i++) _pipeDescriptors.push_back(std::vector<int>(2));
+ for (int i = 0; i < _concurrentJobs; i++) _resultPipe.push_back(std::vector<int>(2));
+ for (int i = 0; i < _concurrentJobs; i++) _inputsPipe.push_back(std::vector<int>(2));
  for (int i = 0; i < _concurrentJobs; i++) _launcherQueue.push(i);
 
  // Opening Inter-process communicator pipes
  for (int i = 0; i < _concurrentJobs; i++)
-  if (pipe(_pipeDescriptors[i].data()) == -1) korali::logError("Unable to create inter-process pipe. \n");
+ {
+  if (pipe(_inputsPipe[i].data()) == -1) korali::logError("Unable to create inter-process pipe. \n");
+  if (pipe(_resultPipe[i].data()) == -1) korali::logError("Unable to create inter-process pipe. \n");
+  fcntl(_resultPipe[i][0], F_SETFL, fcntl(_resultPipe[i][0], F_GETFL) | O_NONBLOCK);
+  fcntl(_resultPipe[i][1], F_SETFL, fcntl(_resultPipe[i][1], F_GETFL) | O_NONBLOCK);
+ }
+
+ for(int i = 0; i < _concurrentJobs; i++)
+ {
+  pid_t processId = fork();
+  if (processId == 0) worker(i);
+ }
 }
 
 void korali::conduit::External::finalize()
 {
+ for(int i = 0; i < _concurrentJobs; i++)
+ {
+  size_t terminationFlag = 0;
+  write(_inputsPipe[i][1], &terminationFlag, sizeof(size_t));
+ }
+
+ for(int i = 0; i < _concurrentJobs; i++)
+ {
+  int status;
+  pid_t processId;
+  processId = ::wait(&status);
+ }
+
  for (int i = 0; i < _concurrentJobs; i++)
  {
-  close(_pipeDescriptors[i][1]); // Closing pipes
-  close(_pipeDescriptors[i][0]); // Closing pipes
+  close(_resultPipe[i][1]); // Closing pipes
+  close(_resultPipe[i][0]); // Closing pipes
+  close(_inputsPipe[i][1]); // Closing pipes
+  close(_inputsPipe[i][0]); // Closing pipes
  }
 
  korali::Conduit::finalize();
+}
+
+void korali::conduit::External::worker(int workerId)
+{
+ while(true)
+ {
+  size_t inputStringSize;
+  read(_inputsPipe[workerId][0], &inputStringSize, sizeof(size_t));
+
+  if(inputStringSize == 0) exit(0);
+
+  char inputString[inputStringSize + 1];
+  read(_inputsPipe[workerId][0], inputString, inputStringSize * sizeof(char));
+  inputString[inputStringSize] = '\0';
+
+  korali::Sample sample;
+  sample._js.getJson() = nlohmann::json::parse(inputString);
+
+  _k->_problem->runOperation(sample["Operation"], sample);
+
+  std::string resultString = sample._js.getJson().dump();
+  size_t resultStringSize = resultString.size();
+
+  write(_resultPipe[workerId][1], &resultStringSize, sizeof(size_t));
+  write(_resultPipe[workerId][1], resultString.c_str(), resultStringSize * sizeof(char));
+ }
 }
 
 void korali::conduit::External::processSample(korali::Sample& sample)
@@ -41,39 +95,27 @@ void korali::conduit::External::processSample(korali::Sample& sample)
 
  int launcherId = _launcherQueue.front(); _launcherQueue.pop();
 
- pid_t processId = fork();
-
- _launcherIdToProcessIdMap[launcherId] = processId;
- _processIdMapToLauncherIdMap[processId] = launcherId;
-
- if (processId == 0)
- {
-  _k->_problem->runOperation(sample["Operation"], sample);
-
-  std::string resultJsonString = sample._js.getJson().dump();
-  size_t resultJsonSize = resultJsonString.size();
-
-  write(_pipeDescriptors[launcherId][1], &resultJsonSize, sizeof(size_t));
-  write(_pipeDescriptors[launcherId][1], resultJsonString.c_str(), resultJsonSize * sizeof(char));
-  exit(0);
- }
-
  _profileInfo["Conduit " + std::to_string(launcherId)].startSegment(sample["Sample Id"]);
 
- int flag = 0;
- while(flag == 0)
+ std::string inputString = sample._js.getJson().dump();
+ size_t inputStringSize = inputString.size();
+
+ write(_inputsPipe[launcherId][1], &inputStringSize, sizeof(size_t));
+ write(_inputsPipe[launcherId][1], inputString.c_str(), inputStringSize * sizeof(char));
+
+ int readBytes = -1;
+ while(readBytes < 0)
  {
-  flag = waitpid(processId, &flag, WNOHANG);
-  if (flag)
+  size_t resultStringSize;
+  readBytes = read(_resultPipe[launcherId][0], &resultStringSize, sizeof(size_t));
+
+  if(readBytes > 0)
   {
-   size_t resultJsonSize;
-   read(_pipeDescriptors[launcherId][0], &resultJsonSize, sizeof(size_t));
+   char resultString[resultStringSize + 1];
+   while(read(_resultPipe[launcherId][0], resultString, resultStringSize * sizeof(char)) < 0);
 
-   char resultStringChar[resultJsonSize + 1];
-   read(_pipeDescriptors[launcherId][0], resultStringChar, resultJsonSize * sizeof(char));
-   resultStringChar[resultJsonSize] = '\0';
-
-   sample._js.getJson() = nlohmann::json::parse(resultStringChar);
+   resultString[resultStringSize] = '\0';
+   sample._js.getJson() = nlohmann::json::parse(resultString);
 
    _launcherQueue.push(launcherId);
   }

@@ -16,14 +16,13 @@ class External : public korali::Conduit {
 
  private:
 
+ void worker(int workerId);
+
  public:
 
- std::vector<std::vector<int>> _pipeDescriptors;
+ std::vector<std::vector<int>> _resultPipe;
+ std::vector<std::vector<int>> _inputsPipe;
  std::queue<int> _launcherQueue;
-
- std::map<int, size_t> _launcherIdToSamplerIdMap;
- std::map<int, pid_t> _launcherIdToProcessIdMap;
- std::map<pid_t, int> _processIdMapToLauncherIdMap;
 
  void processSample(korali::Sample& sample) override;
  void initialize() override;

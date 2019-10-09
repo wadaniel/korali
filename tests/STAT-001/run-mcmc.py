@@ -3,7 +3,10 @@
 # Importing computational model
 import sys
 sys.path.append('./model')
+sys.path.append('./helpers')
+
 from model import *
+from helpers import *
 
 # Starting Korali's Engine
 import korali
@@ -27,3 +30,7 @@ k["Variables"][0]["Initial Standard Deviation"] = 1.0
 
 # Running Korali
 k.run()
+
+# Testing Results
+checkMean(k, 0.0, 0.05)
+checkStd(k, 1.0, 0.2)

@@ -3,7 +3,10 @@
 # Importing computational model
 import sys
 sys.path.append('./model')
+sys.path.append('./helpers')
+
 from model import *
+from helpers import *
 
 # Starting Korali's Engine
 import korali
@@ -28,3 +31,6 @@ k["Solver"]["Covariance Scaling"] = 0.04
 
 # Running Korali
 k.run()
+
+checkMean(k, 0.0, 0.05)
+checkStd(k, 1.0, 0.05)

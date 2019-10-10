@@ -1,0 +1,48 @@
+{
+ "Configuration Settings": 
+ [
+   {
+    "Name": [ "Executions Per Generation" ],
+    "Type": "size_t",
+    "Default": "1",
+    "Description": "Specifies the number of model executions per generation. By default this setting is 0, meaning that all executions will be performed in the first generation. Otherwise, executions will be split into batches and desired number of generations, allowing for storing temporary results and resuming at a later point."
+   }
+ ],
+ 
+ "Termination Criteria":
+ [
+   {
+    "Name": [ "Max Executions" ],
+    "Type": "size_t",
+    "Default": "0",
+    "Criteria": "_currentSample == _maxExecutions",
+    "Description": "Indicates the maximum number of executions to perform. By default this setting is 0, meaning that as many executions as samples will be performed."
+   }
+ ],
+ 
+  "Internal Settings": 
+ [
+   {
+    "Name": [ "Theta Count" ],
+    "Type": "size_t",
+    "Description": "Number of variables in the samples to execute."
+   },
+   {
+    "Name": [ "Sample Count" ],
+    "Type": "size_t",
+    "Description": "Number of samples to execute."
+   },
+   {
+    "Name": [ "Current Sample" ],
+    "Type": "size_t",
+    "Description": "Current sample to process."
+   },
+   {
+    "Name": [ "Execution Count" ],
+    "Type": "size_t",
+    "Default": "0",
+    "Description": "Number of executions performed."
+   }
+ ]
+ 
+}

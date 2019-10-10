@@ -1,9 +1,9 @@
-#include "problem/propagation/propagation.hpp"
+#include "problem/execution/execution.hpp"
 #include "conduit/conduit.hpp"
 
-void korali::problem::Propagation::initialize()
+void korali::problem::Execution::initialize()
 {
-  if (_k->_variables.size() == 0) korali::logError("Propagation problems require at least one variable.\n");
+  if (_k->_variables.size() == 0) korali::logError("Execution problems require at least one variable.\n");
 
   // Validate the _loadedValues dimensions
   size_t Ns = _k->_variables[0]->_loadedValues.size();
@@ -12,8 +12,8 @@ void korali::problem::Propagation::initialize()
   }
 }
 
-void korali::problem::Propagation::propagate(korali::Sample& sample)
+void korali::problem::Execution::execute(korali::Sample& sample)
 {
- sample.run(_propagationModel);
+ sample.run(_executionModel);
 }
 

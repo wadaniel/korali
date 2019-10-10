@@ -1,16 +1,16 @@
-#ifndef _KORALI_SOLVER_PROPAGATOR_HPP_
-#define _KORALI_SOLVER_PROPAGATOR_HPP_
+#ifndef _KORALI_SOLVER_EXECUTOR_HPP_
+#define _KORALI_SOLVER_EXECUTOR_HPP_
 
 #include "solver/solver.hpp"
-#include "problem/propagation/propagation.hpp"
+#include "problem/execution/execution.hpp"
 
 namespace korali { namespace solver {
 
-class Propagator : public korali::Solver
+class Executor : public korali::Solver
 {
   private:
 
-  korali::problem::Propagation* _propagationProblem;
+  korali::problem::Execution* _executionProblem;
 
   public:
     void initialize() override;
@@ -21,4 +21,4 @@ class Propagator : public korali::Solver
 
 } } // namespace korali::solver
 
-#endif // _KORALI_SOLVER_PROPAGATOR_HPP_
+#endif // _KORALI_SOLVER_EXECUTION_HPP_

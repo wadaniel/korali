@@ -33,7 +33,7 @@ def main():
    getcompiler(koraliDir, makeFlags)
    exit(0)
   
- print('[Korali] Syntax error on call to korali.cxx module.')
+ print('[Korali] Syntax error on call to korali.cxx module: Argument \'{0}\' not recognized (--cflags, --libs, or --compiler).'.format(sys.argv[1]))
  exit(-1) 
   
 if __name__ == '__main__':

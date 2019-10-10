@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 import sys
-import numpy as np
 sys.path.append('../setup/model')
-sys.path.append('/setup/model')
 from model import *
+
+import numpy as np
 import korali
 
 # N : number of datasets

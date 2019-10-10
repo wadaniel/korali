@@ -3,6 +3,11 @@ import os
 import sys
 import numpy as np
 
+def prepareFile( fileName ):
+    if os.path.isdir('_executor_output') == False:
+        os.mkdir('_executor_output')
+        os.system('touch {0}'.format(fileName) )
+
 def put_normal_rnds( theta, Ns, fileName ):
   mu  = theta["Parameters"][0]
   var = theta["Parameters"][1]

@@ -14,9 +14,7 @@ Ns = 100
 fileName = '_execution_output/samplesOut.dat'
 
 # Prepare file
-if os.path.isdir('_execution_output') == False:
-    os.mkdir('_execution_output')
-os.system('touch {0}'.format(fileName) )
+prepareFile( fileName )
 
 # Variables
 means = [-5, 5]

@@ -4,7 +4,8 @@ Testing Korali's Executor module
 
 ## Description
 
-Shell script will execute run-execute.py, script includes validation.
+Shell script will execute run-execute.py, script includes validation of final
+state of korali.
 
 ## Source
 

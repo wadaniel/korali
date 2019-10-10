@@ -4,8 +4,8 @@
    {
     "Name": [ "Executions Per Generation" ],
     "Type": "size_t",
-    "Default": "1",
-    "Description": "Specifies the number of model executions per generation. By default this setting is 0, meaning that all executions will be performed in the first generation. Otherwise, executions will be split into batches and desired number of generations, allowing for storing temporary results and resuming at a later point."
+    "Default": "0",
+    "Description": "Specifies the number of model executions per generation. By default this setting is 0, meaning that all executions will be performed in the first generation. For values greater 0, executions will be split into batches and split int generations for intermediate output."
    }
  ],
  
@@ -15,8 +15,8 @@
     "Name": [ "Max Executions" ],
     "Type": "size_t",
     "Default": "0",
-    "Criteria": "_currentSample == _maxExecutions",
-    "Description": "Indicates the maximum number of executions to perform. By default this setting is 0, meaning that as many executions as samples will be performed."
+    "Criteria": "_executionCount == _maxExecutions",
+    "Description": "Indicates the maximum number of executions to perform. By default this setting is 0, meaning that all samples will be executed."
    }
  ],
  
@@ -33,15 +33,10 @@
     "Description": "Number of samples to execute."
    },
    {
-    "Name": [ "Current Sample" ],
-    "Type": "size_t",
-    "Description": "Current sample to process."
-   },
-   {
     "Name": [ "Execution Count" ],
     "Type": "size_t",
     "Default": "0",
-    "Description": "Number of executions performed."
+    "Description": "Number of total executions performed, respectively index of next sample to evaluate."
    }
  ]
  

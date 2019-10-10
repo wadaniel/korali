@@ -1,9 +1,9 @@
-This solver acts as a propagator.
+This solver acts as executor.
 
 **Usage:**
 
 ```python
-  k["Solver"]["Type"] = "Propagator"
+  k["Solver"]["Type"] = "Executor"
 ```
 
 **Requirements:**

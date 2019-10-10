@@ -13,7 +13,7 @@ N = length(data.Variables);
 Ns = data.Solver.PopulationSize; 
 
 x = data.Solver.Internal.SampleDatabase;
-y = data.Solver.Internal.SampleLogLikelihoodDatabase;
+y = data.Solver.Internal.SampleLoglikelihoodDatabase;
 
 figure(1); clf
 [ h, ax, BigAx, hhist, pax ] = plotmatrix_hist( x , y );

@@ -59,7 +59,7 @@ k["Variables"][5]["Prior Distribution"]["Minimum"] = 0.0
 k["Variables"][5]["Prior Distribution"]["Maximum"] = 15.0
 
 k["Solver"]["Type"] = "Sampler/TMCMC"
-k["Solver"]["Population Size"] = 10000
+k["Solver"]["Population Size"] = 1000
 k["Solver"]["Default Burn In"] = 3;
 k["Solver"]["Target Coefficient Of Variation"] = 0.6
 k["Solver"]["Covariance Scaling"] = 0.01

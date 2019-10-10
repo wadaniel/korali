@@ -1,18 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import os
 import sys
 import numpy as np
-
-# This is the negative square -(x^2)
-def model( s ):
-  x = s["Parameters"][0]
-  r = -0.5*x*x
-  s["Evaluation"] = r
-
-def calculateLogLikelihood( s ):
-  x = s["Parameters"][0]
-  r = -0.5*x*x
-  s["logLikelihood"] = r
 
 def prepareFile( fileName ):
     if os.path.isdir('_executor_output') == False:

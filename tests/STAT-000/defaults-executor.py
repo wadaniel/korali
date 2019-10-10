@@ -20,7 +20,7 @@ k.dry()
 
 # Testing Configuration
 
-assert k["Solver"]["Executions Per Generation"] == 1
+assert k["Solver"]["Executions Per Generation"] == 0
 
 # Testing Internals
 

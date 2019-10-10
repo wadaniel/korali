@@ -8,12 +8,12 @@ file = 'results_phase_3b/final.json';
 
 data = jsondecode(fileread(file));
 
-N = length(data.Problem.Variables); 
+N = length(data.Variables); 
 
 Ns = data.Solver.PopulationSize; 
 
-x = reshape( data.Solver.Internal.SampleDatabase, N, Ns )';
-y = data.Solver.Internal.SampleFitnessDatabase;
+x = data.Solver.Internal.SampleDatabase;
+y = data.Solver.Internal.SampleLoglikelihoodDatabase;
 
 figure(1); clf
 [ h, ax, BigAx, hhist, pax ] = plotmatrix_hist( x , y );

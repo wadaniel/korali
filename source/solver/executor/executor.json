@@ -23,9 +23,9 @@
   "Internal Settings": 
  [
    {
-    "Name": [ "Theta Count" ],
+    "Name": [ "Variable Count" ],
     "Type": "size_t",
-    "Description": "Number of variables in the samples to execute."
+    "Description": "Number of variables in the executable function."
    },
    {
     "Name": [ "Sample Count" ],

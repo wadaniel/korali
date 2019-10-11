@@ -42,7 +42,7 @@ void korali::solver::optimizer::DEA::initialize()
  bool isEvaluationProblem = _evaluationProblem != NULL;
 
  if (isEvaluationProblem == false)
-  korali::logError("CMAES can only optimize problems of type 'Evaluation' or derived.\n");
+  korali::logError("DEA can only optimize problems of type 'Evaluation' or derived.\n");
 
  // Allocating Memory
 

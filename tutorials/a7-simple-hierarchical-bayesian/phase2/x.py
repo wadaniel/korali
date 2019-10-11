@@ -42,7 +42,7 @@ k["Distributions"][5]["Type"] = "Univariate/Uniform"
 k["Distributions"][5]["Minimum"] = 0.0
 k["Distributions"][5]["Maximum"] = 5.0
 
-# Add probability of theta given psi, one per subproblem variable.
+# Add probability of theta given psi, one per subproblem variable. 
 k["Problem"]["Conditional Priors"] = [ "Conditional 0", "Conditional 1" ]
 
 k["Variables"][0]["Name"] = "Psi 1"

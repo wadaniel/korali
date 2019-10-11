@@ -3,10 +3,9 @@ import os
 import sys
 import numpy as np
 
-def prepareFile( fileName ):
+def prepareOutputDir():
     if os.path.isdir('_executor_output') == False:
         os.mkdir('_executor_output')
-        os.system('touch {0}'.format(fileName) )
 
 def put_normal_rnds( theta, Ns, fileName ):
   mu  = theta["Parameters"][0]
@@ -14,10 +13,11 @@ def put_normal_rnds( theta, Ns, fileName ):
   
   y = np.random.normal( mu, var, Ns )
 
-  if os.path.isfile( fileName ):
-    f = open( fileName, 'a+' )
+
+  if os.path.isdir('_executor_output') == True:
+    f = open( '_executor_output/{0}'.format( fileName ), 'a+' )
     np.savetxt( f, np.transpose(y) )
     f.close()
 
   else:
-    sys.exit('put_normal_rnds: file \'{0}\' does not exist! exit..'.format(fileName))
+    sys.exit('put_normal_rnds: dir \'_executor_output\' does not exist! exit..')

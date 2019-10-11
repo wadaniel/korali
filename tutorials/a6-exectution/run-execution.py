@@ -11,10 +11,10 @@ import korali
 Ns = 100
 
 # fileName: output directory
-fileName = '_execution_output/samplesOut.dat'
+fileName = 'samplesOut.dat'
 
 # Prepare file
-prepareFile( fileName )
+prepareOutputDir()
 
 # Variables
 means = [-5, 5]

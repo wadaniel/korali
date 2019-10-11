@@ -2,7 +2,7 @@
  "Configuration Settings":
  [
    {
-    "Name": [ "Propagation Model" ],
+    "Name": [ "Execution Model" ],
     "Type": "std::function<void(korali::Sample&)>",
     "Description": "Stores the function to evaluate."
    }
@@ -11,8 +11,8 @@
  "Available Operations":
  [
   {
-   "Name": "Propagate" ,
-   "Function": "propagate",
+   "Name": "Execute" ,
+   "Function": "execute",
    "Description": "Executes the given model using the parameters from the given sample."
   }
  ],

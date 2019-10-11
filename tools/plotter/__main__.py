@@ -53,6 +53,11 @@ def main(path, allFiles, live, generation, mean, check, test):
   solverLib.plot(path, allFiles, live, generation, test, mean)
   exit(0)
 
+ if solverName == 'Executor':
+    # TODO
+    print("[Korali] No plotter for solver of type Executor available...")
+    exit(0)
+
  print("[Korali] Error: Did not recognize method for plotting...")
  exit(-1)
 

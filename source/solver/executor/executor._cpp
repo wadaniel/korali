@@ -1,0 +1,56 @@
+#include "solver/executor/executor.hpp"
+#include "conduit/conduit.hpp"
+
+void korali::solver::Executor::initialize()
+{
+ // Initializing variable defaults
+ _executionProblem = dynamic_cast<korali::problem::Execution*>(_k->_problem);
+
+ if (_executionProblem == NULL)
+   korali::logError("Executor solver can only solve problems of type 'Execution'.\n");
+
+ _variableCount = _k->_variables.size();
+ _sampleCount = _k->_variables[0]->_loadedValues.size();
+ //for (size_t i = 0; i < _variableCount; i++) if (_k->_variables[i]->_loadedValues.size() != _variableCount) 
+   //korali::logError("Variable Count not equal throughout variables.\n");
+
+ if ( _executionsPerGeneration == 0) _executionsPerGeneration = _sampleCount;
+ if (_maxExecutions == 0) _maxExecutions = _sampleCount;
+
+}
+
+void korali::solver::Executor::runGeneration()
+{
+  if ( (_executionCount + _executionsPerGeneration) > _maxExecutions) _executionsPerGeneration = _maxExecutions;
+
+  if ( (_executionCount + _executionsPerGeneration) > _sampleCount) _executionsPerGeneration = _sampleCount - _executionCount;
+
+  std::vector<korali::Sample> samples(_executionsPerGeneration);
+
+  for (size_t i = 0; i < _executionsPerGeneration; i++)
+  {
+    std::vector<double> sampleData;
+    for (size_t j = 0; j < _variableCount; j++) sampleData.push_back(_k->_variables[j]->_loadedValues[_executionCount]);
+
+    korali::logInfo("Detailed", "Running sample %zu with values:\n         ", _executionCount);
+    for(auto& x : sampleData) korali::logData("Detailed", " %le   ", x);
+    korali::logData("Detailed", "\n");
+
+    samples[i]["Operation"] = "Execute";
+    samples[i]["Parameters"] = sampleData;
+    samples[i]["Sample Id"] = _executionCount;
+    _k->_conduit->start(samples[i]);
+    _executionCount++;
+  }
+
+  _k->_conduit->waitAll(samples);
+}
+
+void korali::solver::Executor::printGenerationBefore()
+{
+}
+
+void korali::solver::Executor::printGenerationAfter()
+{
+ korali::logInfo("Minimal", "Total Executions %lu.\n", _executionCount);
+}

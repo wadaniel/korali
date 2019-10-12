@@ -22,6 +22,12 @@ double korali::logSumExp(const std::vector<double>& logValues )
   return maxLogValues + log(sumExpValues);
 }
 
+double korali::vectorNorm( std::vector<double> x )
+{
+  double norm=0.;
+  for( size_t i=0; i<x.size(); i++ ) norm += x[i]*x[i];
+  return sqrt(norm);
+}
 
 std::string korali::getTimestamp()
 {
@@ -35,4 +41,3 @@ size_t korali::getTimehash()
 {
  return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }
-

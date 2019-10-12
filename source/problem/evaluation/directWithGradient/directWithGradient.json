@@ -1,0 +1,44 @@
+{
+ "Configuration Settings":
+ [
+   {
+    "Name": [ "Objective" ],
+    "Type": "std::string",
+    "Options": [
+                { "Value": "Minimize", "Description": "Korali will find the point of minimum evaluation of the provided model." },
+                { "Value": "Maximize", "Description": "Korali will find the point of maximum evaluation of the provided model." }
+               ],
+    "Default": "Maximize",
+    "Description": "Indicates whether Korali will minimize or maximize the objective evaluation."
+   },
+   {
+    "Name": [ "Objective Function" ],
+    "Type": "std::function<void(korali::Sample&)>",
+    "Description": "Stores the function to evaluate."
+   }
+ ],
+
+ "Available Operations":
+ [
+ ],
+
+ "Variables Configuration":
+ [
+  {
+   "Name": [ "Lower Bound" ],
+   "Type": "double",
+   "Default": "-INFINITY",
+   "Description": "Specifies the lower bound for the variable's value."
+  },
+  {
+   "Name": [ "Upper Bound" ],
+   "Type": "double",
+   "Default": "+INFINITY",
+   "Description": "Specifies the upper bound for the variable's value."
+  }
+ ],
+
+ "Internal Settings":
+ [
+ ]
+}

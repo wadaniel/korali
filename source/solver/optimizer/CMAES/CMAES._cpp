@@ -144,11 +144,11 @@ void korali::solver::optimizer::CMAES::initialize()
  // CMAES variables
  if (_areConstraintsDefined)
  {
-  if( (_globalSuccessLearningRate <= 0.0) || (_globalSuccessLearningRate > 1.0) ) 
+  if( (_globalSuccessLearningRate <= 0.0) || (_globalSuccessLearningRate > 1.0) )
     korali::logError("Invalid Global Success Learning Rate (%f), must be greater than 0.0 and less than 1.0\n",  _globalSuccessLearningRate );
   if( (_targetSuccessRate <= 0.0) || (_targetSuccessRate > 1.0) )
     korali::logError("Invalid Target Success Rate (%f), must be greater than 0.0 and less than 1.0\n",  _targetSuccessRate );
-  if(_covarianceMatrixAdaptionStrength <= 0.0) 
+  if(_covarianceMatrixAdaptionStrength <= 0.0)
     korali::logError("Invalid Adaption Size (%f), must be greater than 0.0\n", _covarianceMatrixAdaptionStrength );
 
   _globalSuccessRate = 0.5;
@@ -177,7 +177,7 @@ void korali::solver::optimizer::CMAES::initialize()
   _covarianceMatrixAdaptionFactor = -1.0;
   _bestValidSample = 0;
  }
-  
+
  _covarianceMatrixAdaptationCount = 0;
  _maxConstraintViolationCount = 0;
 
@@ -197,7 +197,7 @@ void korali::solver::optimizer::CMAES::initialize()
 
  _currentMinStandardDeviation = +std::numeric_limits<double>::infinity();
  _currentMaxStandardDeviation = -std::numeric_limits<double>::infinity();
-   
+
 }
 
 void korali::solver::optimizer::CMAES::runGeneration()
@@ -247,14 +247,14 @@ void korali::solver::optimizer::CMAES::initMuWeights(size_t numsamplesmu)
  _effectiveMu = s1*s1/s2;
 
  for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] /= s1;
- 
+
  // Setting Cumulative Covariancea
  if( (_initialCumulativeCovariance <= 0) || (_initialCumulativeCovariance > 1) ) _cumulativeCovariance = (4.0 + _effectiveMu/(1.0*N)) / (N+4.0 + 2.0*_effectiveMu/(1.0*N));
  else _cumulativeCovariance = _initialCumulativeCovariance;
 
  // Setting Sigma Cumulation Factor
  _sigmaCumulationFactor = _initialSigmaCumulationFactor;
- if (_sigmaCumulationFactor <= 0 || _sigmaCumulationFactor >= 1) 
+ if (_sigmaCumulationFactor <= 0 || _sigmaCumulationFactor >= 1)
     if (_areConstraintsDefined) _sigmaCumulationFactor = sqrt(_effectiveMu) / ( sqrt(_effectiveMu) + sqrt(N) );
     else                     _sigmaCumulationFactor = (_effectiveMu + 2.0) / (N + _effectiveMu + 3.0);
 
@@ -284,7 +284,7 @@ void korali::solver::optimizer::CMAES::initCovariance()
 
  _minimumCovarianceEigenvalue = *std::min_element(std::begin(_axisLengths), std::end(_axisLengths));
  _maximumCovarianceEigenvalue = *std::max_element(std::begin(_axisLengths), std::end(_axisLengths));
- 
+
  _minimumCovarianceEigenvalue = _minimumCovarianceEigenvalue * _minimumCovarianceEigenvalue;
  _maximumCovarianceEigenvalue = _maximumCovarianceEigenvalue * _maximumCovarianceEigenvalue;
 
@@ -542,7 +542,7 @@ void korali::solver::optimizer::CMAES::updateDistribution()
 
  /* update masking matrix */
  if(_hasDiscreteVariables) updateDiscreteMutationMatrix();
- 
+
  /* update viability bounds */
  if( _areConstraintsDefined && (_isViabilityRegime == true) ) updateViabilityBoundaries();
 
@@ -561,7 +561,7 @@ void korali::solver::optimizer::CMAES::updateDistribution()
   _currentMinStandardDeviation = std::min(_currentMinStandardDeviation, _sigma * sqrt(_covarianceMatrix[i*N+i]));
   _currentMaxStandardDeviation = std::max(_currentMaxStandardDeviation, _sigma * sqrt(_covarianceMatrix[i*N+i]));
  }
- 
+
 }
 
 void korali::solver::optimizer::CMAES::adaptC(int hsig)
@@ -575,16 +575,16 @@ void korali::solver::optimizer::CMAES::adaptC(int hsig)
 
   /* update covariance matrix */
   for (size_t d = 0; d < N; ++d)
-   for (size_t e = _isDiagonal ? d : 0; e <= d; ++e) 
+   for (size_t e = _isDiagonal ? d : 0; e <= d; ++e)
    {
      _covarianceMatrix[d*N+e] = (1 - ccov1 - ccovmu) * _covarianceMatrix[d*N+e]
-                        + ccov1 * (_evolutionPath[d] * _evolutionPath[e] 
+                        + ccov1 * (_evolutionPath[d] * _evolutionPath[e]
                         + (1-hsig)*ccov1*_cumulativeCovariance*(2.-_cumulativeCovariance) * _covarianceMatrix[d*N+e]);
-     
+
      for (size_t k = 0; k < _currentMuValue; ++k)
          _covarianceMatrix[d*N+e] += ccovmu * _muWeights[k] * (_samplePopulation[_sortingIndex[k]][d]
                             - _previousMean[d]) * (_samplePopulation[_sortingIndex[k]][e] - _previousMean[e]) / sigmasquare;
-     
+
      if (e < d) _covarianceMatrix[e*N+d] = _covarianceMatrix[d*N+e];
    }
 
@@ -629,11 +629,11 @@ void korali::solver::optimizer::CMAES::updateSigma()
 
  /* upper bound check for _sigma */
  double _upperBound = sqrt(_trace/N);
- 
+
  if(_sigma > _upperBound)
  {
   korali::logInfo("Detailed", "Sigma exceeding inital value of _sigma (%f > %f), increase Initial Standard Deviation of variables.\n", _sigma, _upperBound);
-  if( _isSigmaBounded ) 
+  if( _isSigmaBounded )
   {
     _sigma = _upperBound;
     korali::logInfo("Detailed", "Sigma set to upper bound (%f) due to solver configuration 'Is Sigma Bounded' = 'true'.\n", _sigma);
@@ -735,16 +735,16 @@ void korali::solver::optimizer::CMAES::updateDiscreteMutationMatrix()
 {
   // implemented based on 'A CMA-ES for Mixed-Integer Nonlinear Optimization' by
   // Hansen2011
-  
+
   size_t entries = N + 1; // +1 to prevent 0-ness
   std::fill( std::begin(_maskingMatrixSigma), std::end(_maskingMatrixSigma), 1.0);
   for(size_t d = 0; d < N; ++d) if(_sigma*std::sqrt(_covarianceMatrix[d*N+d])/std::sqrt(_sigmaCumulationFactor) < 0.2*_k->_variables[d]->_granularity) { _maskingMatrixSigma[d] = 0.0; entries--; }
   _chiSquareNumberDiscreteMutations = sqrt((double) entries) * (1. - 1./(4.*entries) + 1./(21.*entries*entries));
-  
+
   _numberMaskingMatrixEntries = 0;
   std::fill( std::begin(_maskingMatrix), std::end(_maskingMatrix), 0.0);
   for(size_t d = 0; d < N; ++d) if(2.0*_sigma*std::sqrt(_covarianceMatrix[d*N+d]) < _k->_variables[d]->_granularity) { _maskingMatrix[d] = 1.0; _numberMaskingMatrixEntries++; }
- 
+
   _numberOfDiscreteMutations = std::min( std::round(_populationSize/10.0 + _numberMaskingMatrixEntries + 1) , std::floor(_populationSize/2.0) - 1);
   std::fill( std::begin(_discreteMutations), std::end(_discreteMutations), 0.0);
 
@@ -753,12 +753,12 @@ void korali::solver::optimizer::CMAES::updateDiscreteMutationMatrix()
 void korali::solver::optimizer::CMAES::updateEigensystem(std::vector<double>& M)
 {
  eigen(N, M, _auxiliarAxisLengths, _auxiliarCovarianceEigenvectorMatrix);
- 
+
  /* find largest and smallest eigenvalue, they are supposed to be sorted anyway */
  double minEWtmp = *std::min_element(std::begin(_auxiliarAxisLengths), std::end(_auxiliarAxisLengths));
  double maxEWtmp = *std::max_element(std::begin(_auxiliarAxisLengths), std::end(_auxiliarAxisLengths));
 
- if (minEWtmp <= 0.0) 
+ if (minEWtmp <= 0.0)
  { korali::logWarning("Detailed", "Min Eigenvalue smaller or equal 0.0 (%+6.3e) after Eigen decomp (no update possible).\n", minEWtmp ); return; }
 
  for (size_t d = 0; d < N; ++d)
@@ -767,7 +767,7 @@ void korali::solver::optimizer::CMAES::updateEigensystem(std::vector<double>& M)
      if (std::isfinite(_auxiliarAxisLengths[d]) == false)
      {
        korali::logWarning("Detailed", "Could not calculate root of Eigenvalue (%+6.3e) after Eigen decomp (no update possible).\n", _auxiliarAxisLengths[d] );
-       return; 
+       return;
      }
     for (size_t e = 0; e < N; ++e) if (std::isfinite(_covarianceEigenvectorMatrix[d*N+e]) == false)
     {
@@ -775,7 +775,7 @@ void korali::solver::optimizer::CMAES::updateEigensystem(std::vector<double>& M)
        return;
     }
  }
- 
+
  /* write back */
  for (size_t d = 0; d < N; ++d) _axisLengths[d] = _auxiliarAxisLengths[d];
  _covarianceEigenvectorMatrix.assign(std::begin(_auxiliarCovarianceEigenvectorMatrix), std::end(_auxiliarCovarianceEigenvectorMatrix));

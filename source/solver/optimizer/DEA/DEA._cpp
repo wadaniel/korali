@@ -38,11 +38,11 @@ void korali::solver::optimizer::DEA::initialize()
   if(_k->_variables[d]->_upperBound < _k->_variables[d]->_lowerBound)
     korali::logError("Lower Bound (%.4f) of variable \'%s\'  exceeds Upper Bound (%.4f).\n", _k->_variables[d]->_lowerBound, _k->_variables[d]->_name.c_str(), _k->_variables[d]->_upperBound);
 
- _evaluationProblem = dynamic_cast<korali::problem::Evaluation*>(_k->_problem);
- bool isEvaluationProblem = _evaluationProblem != NULL;
+     _evaluationProblem = dynamic_cast<korali::problem::Evaluation*>(_k->_problem);
+     bool isEvaluationProblem = _evaluationProblem != NULL;
 
- if (isEvaluationProblem == false)
-  korali::logError("CMAES can only optimize problems of type 'Evaluation' or derived.\n");
+     if (isEvaluationProblem == false)
+      korali::logError("DEA can only optimize problems of type 'Evaluation' or derived.\n");
 
  // Allocating Memory
 
@@ -159,12 +159,12 @@ void korali::solver::optimizer::DEA::mutateSingle(size_t sampleIdx)
 
         double rd2 = _uniformGenerator->getRandomNumber();
         double rd3 = _uniformGenerator->getRandomNumber();
-        
-        if(rd2 < tau1) 
+
+        if(rd2 < tau1)
         {
            double rd1 = _uniformGenerator->getRandomNumber();
             _mutationRate = Fl+rd1*Fu;
-        } 
+        }
         if(rd3 < tau2)
         {
            double rd4 = _uniformGenerator->getRandomNumber();
@@ -217,7 +217,7 @@ void korali::solver::optimizer::DEA::updateSolver()
     _currentBestValue      = _valueVector[_bestSampleIndex];
 
     for(size_t d = 0; d < N; ++d) _currentBestVariables[d] = _candidatePopulation[_bestSampleIndex][d];
-    
+
     _previousMean = _currentMean;
     std::fill(std::begin(_currentMean), std::end(_currentMean), 0.0);
 

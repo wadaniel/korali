@@ -11,6 +11,12 @@
 namespace korali
 {
 
+template <typename T>
+double sign( T val )
+{
+  return (T(0) < val) - (val < T(0));
+}
+
 const double NaN    = std::numeric_limits<double>::quiet_NaN();
 const double Inf    = std::numeric_limits<double>::infinity();
 const double Lowest = std::numeric_limits<double>::lowest();
@@ -19,6 +25,7 @@ const double Min    = std::numeric_limits<double>::min();
 const double Eps    = std::numeric_limits<double>::epsilon();
 
 double logSumExp(const std::vector<double>& logValues );
+double vectorNorm( std::vector<double> x );
 std::string getTimestamp();
 size_t getTimehash();
 

@@ -1,5 +1,5 @@
 {
- "Configuration Settings": 
+ "Configuration Settings":
  [
    {
     "Name": [ "Population Size" ],
@@ -96,7 +96,7 @@
     "Description": "Learning rate of success probability of objective function improvements."
    }
  ],
- 
+
  "Termination Criteria":
  [
    {
@@ -121,7 +121,7 @@
     "Description": "Specifies the maximum condition of the covariance matrix."
    },
    {
-    "Name": [ "Min Value" ], 
+    "Name": [ "Min Value" ],
     "Type": "double",
     "Default": "-INFINITY",
     "Criteria": "_bestEverValue < _minValue",
@@ -156,8 +156,8 @@
     "Description": "Specifies the maximal standard deviation for any variable in any proposed sample."
    }
  ],
- 
- "Variables Configuration": 
+
+ "Variables Configuration":
  [
    {
     "Name": [ "Initial Mean" ],
@@ -178,8 +178,8 @@
     "Description": "Defines a lower bound for the standard deviation updates of the proposal distribution for a variable. Korali increases the scaling factor $\\sigma$ if this value is undershot."
    }
  ],
- 
- "Internal Settings": 
+
+ "Internal Settings":
  [
    {
     "Name": [ "Is Viability Regime" ],

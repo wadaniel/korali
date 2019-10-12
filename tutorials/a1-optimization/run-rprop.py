@@ -19,11 +19,14 @@ k["Problem"]["Objective"] = "Minimize"
 k["Problem"]["Objective Function"] = model_with_gradient
 
 # Defining the problem's variables.
-k["Variables"][0]["Name"] = "X"
-k["Variables"][0]["Initial Value"] = -10.0
+for i in range(5):
+  k["Variables"][i]["Name"] = "X" + str(i)
+  k["Variables"][i]["Initial Value"] = -10.0+i
 
 # Configuring CMA-ES parameters
 k["Solver"]["Type"] = "Optimizer/Rprop"
+k["Solver"]["Termination Criteria"]["Max Generations"] = 100
+k["Solver"]["Termination Criteria"]["Parameter Relative Tolerance"] = 1e-8
 
 # Running Korali
 k.run()

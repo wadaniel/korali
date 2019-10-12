@@ -13,6 +13,8 @@ class Rprop : public korali::solver::Optimizer
   private:
     korali::problem::Evaluation* _evaluationProblem;
 
+    void evaluateFunctionAndGradient( void );
+
     void Update_plus( void ); // Rprop_plus
     void Update_minus( void ); // Rprop_minus
     void Update_iplus( void ); // iRprop_plus

@@ -60,7 +60,7 @@
     "Name": [ "Parameter Relative Tolerance" ],
     "Type": "double",
     "Default": "1e-4",
-    "Criteria": "_xDiff<_parameterRelativeTolerance",
+    "Criteria": "_xDiff<_parameterRelativeTolerance && _xDiff>0",
     "Description": "Relative tolerance in parameter difference between generations."
    }
  ],

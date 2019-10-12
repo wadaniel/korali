@@ -22,9 +22,12 @@ void korali::problem::evaluation::DirectWithGradient::initialize()
 void korali::problem::evaluation::DirectWithGradient::basicEvaluation(korali::Sample& sample)
 {
   sample.run(_objectiveFunction);
+  int N = sample["Parameters"].size();
 
   double evaluation = sample["Evaluation"];
-  std::vector<double> gradient = sample["Gradient"];
+  std::vector<double> gradient(N,0.);
+  for(size_t i=0; i<N; i++) gradient[i] = sample["Gradient"][i]["Value"];
+
   double evaluationSign = _objective == "Maximize" ? 1.0 : -1.0;
 
   // If result is not a finite number, objective function evaluates to -Infinity
@@ -32,7 +35,8 @@ void korali::problem::evaluation::DirectWithGradient::basicEvaluation(korali::Sa
   // TODO check also for derivatives
   else{
     sample["Evaluation"] = evaluationSign * evaluation;
-    for(size_t i=0; i<gradient.size(); i++)
-      sample["Gradient"][i] = evaluationSign * gradient[i];
+    for(size_t i=0; i<N; i++)
+      sample["Gradient"][i]["Value"] = evaluationSign * gradient[i];
   }
+
 }

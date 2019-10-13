@@ -61,6 +61,9 @@ k["Solver"]["Default Burn In"] = 1;
 k["Solver"]["Target Coefficient Of Variation"] = 0.6
 k["Solver"]["Covariance Scaling"] = 0.1
 
+k["Conduit"]["Type"] = "External"
+k["Conduit"]["Concurrent Jobs"] = 4
+
 k["Console Output"]["Verbosity"] = "Detailed"
 k["Results Output"]["Path"] = "../setup/results_phase_2/"
 

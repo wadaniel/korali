@@ -26,13 +26,13 @@ k["Variables"][0]["Prior Distribution"] = "Uniform 0"
 k["Variables"][1]["Prior Distribution"] = "Uniform 1"
 
 k["Solver"]["Type"] = "Sampler/TMCMC"
-k["Solver"]["Population Size"] = 10
+k["Solver"]["Population Size"] = 1000
 k["Solver"]["Target Coefficient Of Variation"] = 0.6
 k["Solver"]["Covariance Scaling"] = 0.02
 k["Solver"]["Default Burn In"] = 1;
 
 k["Conduit"]["Type"] = "External"
-k["Conduit"]["Concurrent Jobs"] = 8 
+k["Conduit"]["Concurrent Jobs"] = 4
 
 k["Console Output"]["Verbosity"] = "Detailed"
 k["Results Output"]["Path"] = "../setup/results_phase_3a/"

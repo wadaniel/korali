@@ -103,8 +103,11 @@ void korali::problem::evaluation::bayesian::hierarchical::Psi::initialize()
 void korali::problem::evaluation::bayesian::hierarchical::Psi::updateConditionalPriors(korali::Sample& sample)
 {
  for (size_t i = 0; i < _conditionalPriors.size(); i++)
+ {
   for (size_t j = 0; j < _conditionalPriorInfos[i]._samplePositions.size(); j++)
    *(_conditionalPriorInfos[i]._samplePointers[j]) = sample["Parameters"][_conditionalPriorInfos[i]._samplePositions[j]];;
+  _k->_distributions[_conditionalPriorIndexes[i]]->updateDistribution();
+ }
 }
 
 void korali::problem::evaluation::bayesian::hierarchical::Psi::evaluateLogLikelihood(korali::Sample& sample)

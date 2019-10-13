@@ -12,9 +12,8 @@ class Psi : public korali::problem::evaluation::bayesian::Hierarchical
 
  struct conditionalPriorInfo
  {
-  nlohmann::json _conditionalJson;
   std::vector<size_t> _samplePositions;
-  std::vector<std::string> _sampleKeys;
+  std::vector<double*> _samplePointers;
  };
 
  std::vector<nlohmann::json> _subProblemsJson;

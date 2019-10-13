@@ -19,8 +19,7 @@ k["Solver"]["Default Burn In"] = 2;
 k["Solver"]["Max Chain Length"] = 1;
 k["Solver"]["Target Coefficient Of Variation"] = 0.6
 
-k["Conduit"]["Type"] = "External"
-k["Conduit"]["Concurrent Jobs"] = 8
+k["Solver"]["Termination Criteria"]["Max Generations"] = 1
 
 k["Console Output"]["Verbosity"] = "Detailed"
 k["Results Output"]["Path"] = "../setup/results_phase_3b/"

@@ -286,6 +286,21 @@ def createRunOperation(module):
   codeString += '}\n\n'
  
   return codeString
+  
+####################################################################
+
+def createGetPropertyPointer(module):  
+  codeString = 'double* ' + module["Class"]  + '::getPropertyPointer(std::string property)\n'
+  codeString += '{\n'
+  
+  for v in module["Conditional Variables"]: 
+   codeString += ' if (property == "' + v["Name"][0] + '") return &' + getCXXVariableName(v["Name"]) + ';\n'
+ 
+  codeString += ' korali::logError("Property %s not recognized for distribution ' + module["Class"] + '.\\n", property.c_str());\n'
+  codeString += ' return NULL;\n'
+  codeString += '}\n\n'
+ 
+  return codeString
  
 ####################################################################
 
@@ -369,6 +384,9 @@ for moduleDir, relDir, fileNames in os.walk(koraliDir):
    if 'Available Operations' in moduleConfig:
      moduleCodeString += createRunOperation(moduleConfig)
  
+   if 'Conditional Variables' in moduleConfig:
+     moduleCodeString += createGetPropertyPointer(moduleConfig) 
+ 
    ####### Producing header file
    
    # Loading template header .hpp file
@@ -383,6 +401,9 @@ for moduleDir, relDir, fileNames in os.walk(koraliDir):
    
    if 'Available Operations' in moduleConfig:
      functionOverrideString += ' bool runOperation(std::string, korali::Sample& sample) override;\n'
+     
+   if 'Conditional Variables' in moduleConfig:
+     functionOverrideString += ' double* getPropertyPointer(std::string property) override;\n'
      
    newHeaderString = moduleTemplateHeaderString.replace('public:', 'public: \n' + functionOverrideString + '\n')
    

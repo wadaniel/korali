@@ -14,7 +14,7 @@ import korali
 k = korali.initialize()
 
 # Configuring Problem
-k["Problem"]["Type"] = "Evaluation/Direct"
+k["Problem"]["Type"] = "Evaluation/Direct/Basic"
 k["Problem"]["Objective"] = "Maximize"
 k["Problem"]["Objective Function"] = model
 

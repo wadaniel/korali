@@ -16,7 +16,7 @@ k = korali.initialize()
 
 resultDir = '_result_run-dea'
 
-k["Problem"]["Type"] = "Evaluation/Direct"
+k["Problem"]["Type"] = "Evaluation/Direct/Basic"
 k["Problem"]["Objective"] = "Maximize"
 k["Problem"]["Objective Function"] = model
 

@@ -10,8 +10,7 @@ namespace korali { namespace solver { namespace optimizer {
 class Rprop : public korali::solver::Optimizer
 {
 
-  private:
-    korali::problem::Evaluation* _evaluationProblem;
+  private:  
 
     void evaluateFunctionAndGradient( void );
 

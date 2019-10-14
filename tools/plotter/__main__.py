@@ -7,30 +7,30 @@ import argparse
 import matplotlib
 import importlib
 
-curdir = os.path.abspath(os.path.dirname(os.path.realpath(__file__))) 
+curdir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
 
 def main(path, allFiles, live, generation, mean, check, test):
 
  if (check == True):
   print("[Korali] Plotter correctly installed.")
   exit(0)
- 
+
  if (test == True):
      matplotlib.use('Agg')
 
  if ( (live == True) and (generation is not None)):
     print("korali.plotter: error: argument --live and argument --generation "\
             "GENERATION cannot be combined")
-  
+
  if ( (live == True) and (allFiles is not None)):
     print("korali.plotter: error: argument --live and argument --all "\
             "cannot be combined")
- 
+
     exit(-1)
 
  from korali.plotter.helpers import sig
  signal.signal(signal.SIGINT, sig)
- 
+
  firstResult = path + '/initial.json'
  if ( not os.path.isfile(firstResult) ):
   print("[Korali] Error: Did not find any results in the {0} folder...".format(path))
@@ -38,15 +38,15 @@ def main(path, allFiles, live, generation, mean, check, test):
 
  with open(firstResult) as f:
   data  = json.load(f)
- 
+
  requestedSolver = data['Solver']['Type']
  solverName = requestedSolver.rsplit('/')[-1]
- 
+
  solverDir = curdir + '/../solver/'
  for folder in requestedSolver.rsplit('/')[:-1]: solverDir += folder.lower()
- solverDir += '/' + solverName 
+ solverDir += '/' + solverName
  solverFile = solverDir + '/' + solverName + '.py'
- 
+
  if os.path.isfile(solverFile):
   sys.path.append(solverDir)
   solverLib = importlib.import_module(solverName, package=None)
@@ -57,6 +57,11 @@ def main(path, allFiles, live, generation, mean, check, test):
     # TODO
     print("[Korali] No plotter for solver of type Executor available...")
     exit(0)
+
+ if solverName == 'Rprop':
+   # TODO
+   print("[Korali] No plotter for solver of type Executor available...")
+   exit(0)
 
  print("[Korali] Error: Did not recognize method for plotting...")
  exit(-1)

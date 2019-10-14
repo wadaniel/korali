@@ -14,7 +14,7 @@ import korali
 k = korali.initialize()
 
 # Selecting problem and solver types.
-k["Problem"]["Type"] = "Evaluation/Direct"
+k["Problem"]["Type"] = "Evaluation/Direct/Basic"
 k["Problem"]["Objective Function"] = storeResults
 
 # Defining the problem's variables and their CMA-ES bounds.

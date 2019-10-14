@@ -9,6 +9,16 @@ def model( s ):
   r = -0.5*x*x
   s["Evaluation"] = r
 
+# Function and Gradient function evaluation
+def model_with_gradient(p):
+  X = p["Parameters"];
+  x = X[0]
+  gradient = [];
+  evaluation = -0.5*x*x
+  gradient.append( -x )
+  p["Evaluation"] = evaluation
+  p["Gradient"]   = gradient;
+
 def calculateLogLikelihood( s ):
   x = s["Parameters"][0]
   r = -0.5*x*x
@@ -22,7 +32,7 @@ def prepareFile( fileName ):
 def put_normal_rnds( theta, Ns, fileName ):
   mu  = theta["Parameters"][0]
   var = theta["Parameters"][1]
-  
+
   y = np.random.normal( mu, var, Ns )
 
   if os.path.isfile( fileName ):

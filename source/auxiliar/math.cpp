@@ -22,6 +22,14 @@ double korali::logSumExp(const std::vector<double>& logValues )
   return maxLogValues + log(sumExpValues);
 }
 
+bool korali::isanynan( std::vector<double> x )
+{
+  for( size_t j=0; j<x.size(); j++)
+    if( std::isnan( x[j] ) == true ) return true;
+
+  return false;
+}
+
 double korali::vectorNorm( std::vector<double> x )
 {
   double norm=0.;

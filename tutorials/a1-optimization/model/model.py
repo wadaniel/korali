@@ -1,14 +1,18 @@
 #!/usr/bin/env python
 
-# This is the negative square -(x^2)
+# Single function evaluation
 def model(p):
   x = p["Parameters"][0]
   p["Evaluation"] = -0.5*x*x
 
-# This is the negative square -(x^2)
+# Function and Gradient function evaluation
 def model_with_gradient(p):
-  x = p["Parameters"];
-  p["Evaluation"] = 0
-  for k in range( len(x) ):
-    p["Evaluation"]  += -0.5*x[k]*x[k]
-    p["Gradient"][k]["Value"] = -x[k]
+  X = p["Parameters"];
+  gradient = [];
+  evaluation = 0
+  for x in X:
+    evaluation  += -0.5*x*x
+    gradient.append( -x )
+
+  p["Evaluation"] = evaluation
+  p["Gradient"]   = gradient;

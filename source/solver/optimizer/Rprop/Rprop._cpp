@@ -57,7 +57,7 @@ void korali::solver::optimizer::Rprop::evaluateFunctionAndGradient( void )
   for (size_t i = 0; i < Ns; i++){
     _currentEvaluation = samples[i]["Evaluation"];
     for( size_t j=0; j<N; j++)
-      _currentGradient[j] = samples[i]["Gradient"][j]["Value"];
+      _currentGradient[j] = samples[i]["Gradient"][j];
   }
 }
 
@@ -66,19 +66,28 @@ void korali::solver::optimizer::Rprop::runGeneration( void )
 
   evaluateFunctionAndGradient( );
 
-  printf("X_best = [ "); for(size_t k=0; k<N; k++) printf(" %.5le  ",_bestX[k]); printf(" ]\n");
-  printf("X = [ "); for(size_t k=0; k<N; k++) printf(" %.5le  ",_currentX[k]); printf(" ]\n");
-  printf("F(X) = %le \n", _currentEvaluation );
-  printf("Df(X) = [ "); for(size_t k=0; k<N; k++) printf(" %.5le  ",_currentGradient[k]); printf(" ]\n");
+  korali::logInfo("Normal","X = [ ");
+  for(size_t k=0; k<N; k++) korali::logData("Normal"," %.5le  ",_currentX[k]);
+  korali::logData("Normal"," ]\n");
+
+  korali::logInfo("Normal","F(X) = %le \n", _currentEvaluation );
+
+  korali::logInfo("Normal","DF(X) = [ ");
+  for(size_t k=0; k<N; k++) korali::logData("Normal"," %.5le  ",_currentGradient[k]);
+  korali::logData("Normal"," ]\n");
+
+  korali::logInfo("Normal","X_best = [ ");
+  for(size_t k=0; k<N; k++) korali::logData("Normal"," %.5le  ",_bestX[k]);
+  korali::logData("Normal"," ]\n");
+
+  // printf("X = [ "); for(size_t k=0; k<N; k++) printf(" %.5le  ",_currentX[k]); printf(" ]\n");
+
 
   Update_iminus();
 
   _previousEvaluation   = _currentEvaluation;
   _previousGradient     = _currentGradient;
   _normPreviousGradient = vectorNorm(_previousGradient);
-
-  printf("X_new = [ "); for(size_t k=0; k<N; k++) printf(" %.5le  ",_currentX[k]); printf(" ]\n");
-  printf("Df_new = [ "); for(size_t k=0; k<N; k++) printf(" %.5le  ",_currentGradient[k]); printf(" ]\n");
 
   if( _currentEvaluation < _bestEvaluation ){
     _bestEvaluation = _currentEvaluation;
@@ -91,8 +100,6 @@ void korali::solver::optimizer::Rprop::runGeneration( void )
   else{
     _maxStallCounter++;
   }
-
-  printf("xDiff = %le \n", _xDiff );
 
 }
 

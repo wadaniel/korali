@@ -25,7 +25,7 @@ for i in range(5):
 
 # Configuring CMA-ES parameters
 k["Solver"]["Type"] = "Optimizer/Rprop"
-k["Solver"]["Termination Criteria"]["Max Generations"] = 100
+k["Solver"]["Termination Criteria"]["Max Generations"] = 200
 k["Solver"]["Termination Criteria"]["Parameter Relative Tolerance"] = 1e-8
 
 # Running Korali

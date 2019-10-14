@@ -30,10 +30,10 @@ void korali::problem::evaluation::Direct::evaluateConstraints(korali::Sample& sa
  for (size_t i = 0; i < _constraints.size(); i++)
  {
   sample.run(_constraints[i]);
-
+  double evaluation = sample["Evaluation"]);
   // If constraint is not a finite number, constraint is set to +Infinity
-  if(std::isnan(sample["Evaluation"])) sample["Constraint Evaluations"][i] = korali::Inf;
-  else sample["Constraint Evaluations"][i] = sample["Evaluation"];
+  if(std::isnan(evaluation) sample["Constraint Evaluations"][i] = korali::Inf;
+  else sample["Constraint Evaluations"][i] = evaluation;
  }
 }
 

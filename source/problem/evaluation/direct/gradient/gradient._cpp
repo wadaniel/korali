@@ -13,12 +13,13 @@ void korali::problem::evaluation::direct::Gradient::basicEvaluation(korali::Samp
   if( sample["Gradient"].size() != sample["Parameters"].size() )
     korali::logError("The size of the gradient (%zu) is not equal to the size of parameters (%zu).", sample["Gradient"].size(), sample["Parameters"].size() );
 
+  double evaluation = sample["Evaluation"];
   std::vector<double> gradient = sample["Gradient"];
 
   double evaluationSign = _objective == "Maximize" ? 1.0 : -1.0;
 
   // If result is not a finite number, gradient is set to zero
-  if( std::isnan(sample["Evaluation"]) || korali::isanynan(gradient) ){
+  if( std::isnan(evaluation) || korali::isanynan(gradient) ){
     for(size_t i=0; i<sample["Gradient"].size(); i++) sample["Gradient"][i] = 0.;
   }
   else{

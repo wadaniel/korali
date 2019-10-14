@@ -41,6 +41,11 @@ void korali::problem::evaluation::Direct::basicEvaluation(korali::Sample& sample
 {
  sample.run(_objectiveFunction);
 
+ std::string sampleString = "['Evaluation']";
+
+ if ( korali::JsonInterface::isDefined(sample._js.getJson(), sampleString) == false)
+   korali::logError("The %s problem needs a function evaluation. Be sure that you assign a value to the %s attribute in the model definition.\n", _k->_problem->getType().c_str(), sampleString.c_str());
+
  double evaluation = sample["Evaluation"];
  double evaluationSign = _objective == "Maximize" ? 1.0 : -1.0;
 

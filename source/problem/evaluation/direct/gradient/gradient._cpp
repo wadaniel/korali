@@ -7,8 +7,8 @@ void korali::problem::evaluation::direct::Gradient::basicEvaluation(korali::Samp
 
   korali::problem::evaluation::Direct::basicEvaluation( sample );
 
-  if ( korali::JsonInterface::isDefined(sample._js.getJson(), "['Gradient']") == false)
-    korali::logError("The Direct/Gradient problem needs a gradient vector. Be sure that you assign a value to the [\"Gradient\"] attribute in the model definition.\n");
+  if ( korali::JsonInterface::isDefined(sample._js.getJson(), "Gradient") == false)
+    korali::logError("The %s problem needs a function evaluation. Be sure that you assign a value to the ['Gradient'] attribute in the model definition.\n", _k->_problem->getType().c_str() );
 
   if( sample["Gradient"].size() != sample["Parameters"].size() )
     korali::logError("The size of the gradient (%zu) is not equal to the size of parameters (%zu).", sample["Gradient"].size(), sample["Parameters"].size() );

@@ -19,14 +19,14 @@ def run_ccmaes(constraint):
 
     k = korali.initialize()
 
-    k["Problem"]["Type"] = "Evaluation/Direct"
+    k["Problem"]["Type"] = "Evaluation/Direct/Basic"
     k["Problem"]["Objective"] = "Maximize"
     k["Problem"]["Objective Function"] = evaluateModel
 
     k["Variables"][0]["Name"] = "X"
     k["Variables"][0]["Lower Bound"] = -10.0
     k["Variables"][0]["Upper Bound"] = +10.0
- 
+
     k["Variables"][1]["Name"] = "Y"
     k["Variables"][1]["Lower Bound"] = -10.0
     k["Variables"][1]["Upper Bound"] = +10.0
@@ -65,17 +65,17 @@ def run_ccmaes(constraint):
         k["Problem"]["Constraints"] = [ inactiveMax1, inactiveMax2 ]
         k.run()
         assert_greatereq(k["Solver"]["Internal"]["Best Ever Value"],-2.19963e-19)
- 
+
     elif (constraint == "Inactive at Max 2"):
         k["Problem"]["Constraints"] = [ inactiveMax1, inactiveMax2, inactiveMax3, inactiveMax4 ]
         k.run()
         assert_greatereq(k["Solver"]["Internal"]["Best Ever Value"],-4.626392e-17)
- 
+
     elif (constraint == "Mixed"):
         k["Problem"]["Constraints"] = [ activeMax1, activeMax2, activeMax3, activeMax4, inactiveMax1, inactiveMax2, inactiveMax3, inactiveMax4 ]
         k.run()
         assert_greatereq(k["Solver"]["Internal"]["Best Ever Value"],-7.895685e+01)
-   
+
     elif (constraint == "Stress"):
         k["Problem"]["Constraints"] = [ activeMax1, activeMax2, activeMax3, activeMax4, inactiveMax1, inactiveMax2, inactiveMax3, inactiveMax4, stress1, stress2, stress3, stress4, stress5, stress6, stress7, stress8 ]
         k.run()

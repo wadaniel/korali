@@ -9,11 +9,11 @@ from math import isclose
 import korali
 k = korali.initialize()
 
-k["Problem"]["Type"] = "Evaluation/Direct"
+k["Problem"]["Type"] = "Evaluation/Direct/Basic"
 k["Problem"]["Objective"] = "Maximize"
 k["Problem"]["Objective Function"] = evaluateModel
 
-k["Solver"]["Type"]  = "Optimizer/CMAES" 
+k["Solver"]["Type"]  = "Optimizer/CMAES"
 k["Solver"]["Population Size"] = 32
 
 k["Variables"][0]["Name"] = "X";

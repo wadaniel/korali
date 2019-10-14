@@ -9,7 +9,7 @@ from math import isclose
 import korali
 k = korali.initialize()
 
-k["Problem"]["Type"] = "Evaluation/Direct"
+k["Problem"]["Type"] = "Evaluation/Direct/Basic"
 k["Problem"]["Objective"] = "Maximize"
 k["Problem"]["Objective Function"] = evaluateModel
 k["Problem"]["Constraints"][0] = g1
@@ -18,7 +18,7 @@ k["Variables"][0]["Name"] = "X";
 k["Variables"][0]["Lower Bound"] = -10.0;
 k["Variables"][0]["Upper Bound"] = +10.0;
 
-k["Solver"]["Type"]  = "Optimizer/CMAES" 
+k["Solver"]["Type"]  = "Optimizer/CMAES"
 k["Solver"]["Population Size"] = 32
 
 
@@ -46,7 +46,7 @@ assert_value( k["Solver"]["Target Success Rate"], 0.1818 )
 assert_value( k["Solver"]["Internal"]["Chi Square Number"], 0.7976190476190477 )
 assert_value( k["Solver"]["Internal"]["Chi Square Number Discrete Mutations"], 0.7976190476190477 )
 assert_value( k["Solver"]["Internal"]["Covariance Matrix Adaption Factor"],  0.03333333333333333 )
-assert_value( k["Solver"]["Internal"]["Cumulative Covariance"], 0.7142857142857143) 
+assert_value( k["Solver"]["Internal"]["Cumulative Covariance"], 0.7142857142857143)
 assert_value( k["Solver"]["Internal"]["Current Population Size"], 2 )
 assert_value( k["Solver"]["Internal"]["Current Mu Value"], 1)
 assert_value( k["Solver"]["Internal"]["Damp Factor"], 1.5 )

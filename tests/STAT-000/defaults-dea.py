@@ -7,7 +7,7 @@ from helpers import *
 import korali
 k = korali.initialize()
 
-k["Problem"]["Type"] = "Evaluation/Direct"
+k["Problem"]["Type"] = "Evaluation/Direct/Basic"
 k["Problem"]["Objective"] = "Maximize"
 k["Problem"]["Objective Function"] = evaluateModel
 
@@ -33,5 +33,4 @@ assert_string( k["Solver"]["Parent Selection Rule"] , "Random" )
 
 # Test Internal
 
-assert_value( k["Solver"]["Internal"]["Max Distances"][0] , 0.0 ) 
-
+assert_value( k["Solver"]["Internal"]["Max Distances"][0] , 0.0 )

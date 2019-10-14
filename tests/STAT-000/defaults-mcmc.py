@@ -7,7 +7,7 @@ from helpers import *
 import korali
 k = korali.initialize()
 
-k["Problem"]["Type"] = "Evaluation/Direct"
+k["Problem"]["Type"] = "Evaluation/Direct/Basic"
 k["Problem"]["Objective Function"] = evaluateModel
 
 k["Variables"][0]["Name"] = "X"
@@ -45,5 +45,3 @@ assert_value( k["Solver"]["Internal"]["Rejection Alphas"][0], 0.0 )
 
 assert_value( k["Variables"][0]["Initial Mean"], 0.0 )
 assert_value( k["Variables"][0]["Initial Standard Deviation"], 1.0 )
-
-

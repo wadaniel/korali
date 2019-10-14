@@ -9,8 +9,8 @@ k = korali.initialize()
 if (len(sys.argv) != 2):
  print('Error: this example requires the number of concurrent jobs passed as numerical argument.\n')
  exit(-1)
- 
-k["Problem"]["Type"] = "Evaluation/Direct";
+
+k["Problem"]["Type"] = "Evaluation/Direct/Basic";
 k["Problem"]["Objective"] = "Maximize"
 k["Problem"]["Objective Function"] = runModel
 
@@ -38,5 +38,5 @@ k["Conduit"]["Type"] = "External"
 k["Conduit"]["Concurrent Jobs"] = int(sys.argv[1])
 
 k["Random Seed"] = 0xC0FFEE
-  
+
 k.run()

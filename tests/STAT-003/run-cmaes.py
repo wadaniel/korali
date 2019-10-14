@@ -15,7 +15,7 @@ from helpers import *
 
 k = korali.initialize()
 
-k["Problem"]["Type"] = "Evaluation/Direct"
+k["Problem"]["Type"] = "Evaluation/Direct/Basic"
 k["Problem"]["Objective"] = "Minimize"
 k["Problem"]["Objective Function"] = evalmodel
 

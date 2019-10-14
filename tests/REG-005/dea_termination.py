@@ -19,7 +19,7 @@ def run_dea_with_termination_criterion(criterion, value):
 
     k = korali.initialize()
 
-    k["Problem"]["Type"] = "Evaluation/Direct"
+    k["Problem"]["Type"] = "Evaluation/Direct/Basic"
     k["Problem"]["Objective"] = "Maximize"
     k["Problem"]["Objective Function"] = evaluateModel
 
@@ -38,24 +38,24 @@ def run_dea_with_termination_criterion(criterion, value):
 
     if (criterion == "Max Generations"):
         assert_value(k["Internal"]["Current Generation"], value)
-        
+
     elif (criterion == "Max Infeasible Resamplings"):
         assert_greatereq(k["Solver"]["Internal"]["Infeasible Sample Count"], value)
-    
+
     elif (criterion == "Max Value"):
         assert_greatereq(k["Solver"]["Internal"]["Best Ever Value"], value)
-  
+
     elif (criterion == "Min Value Difference Threshold"):
         previous = k["Solver"]["Internal"]["Previous Best Ever Value"]
         current  = k["Solver"]["Internal"]["Best Ever Value"]
         assert_smallereq(previous-current, value)
- 
+
     elif (criterion == "Min Step Size"):
         print("TODO: Min Val")
- 
+
     elif (criterion == "Min Value"):
         print("TODO: Min Val")
- 
+
     else:
         print("Termination Criterion not recognized!")
         exit(-1)
@@ -70,9 +70,5 @@ if __name__ == '__main__':
     parser.add_argument('--criterion', help='Name of Termination Criterion', action='store', required = True)
     parser.add_argument('--value', help='Value of Termination Criterion', action='store', type = float, required = True)
     args = parser.parse_args()
-    
+
     run_dea_with_termination_criterion(args.criterion, args.value)
-
-
-
- 

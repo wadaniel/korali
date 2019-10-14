@@ -1,0 +1,28 @@
+#include "problem/evaluation/direct/gradient/gradient.hpp"
+#include "conduit/conduit.hpp"
+#include "auxiliar/math.hpp"
+
+void korali::problem::evaluation::direct::Gradient::basicEvaluation(korali::Sample& sample)
+{
+
+  korali::problem::evaluation::Direct::basicEvaluation( sample );
+
+  if ( korali::JsonInterface::isDefined(sample._js.getJson(), "['Gradient']") == false)
+    korali::logError("The Direct/Gradient problem needs a gradient vector. Be sure that you assign a value to the [\"Gradient\"] attribute in the model definition.\n");
+
+  if( sample["Gradient"].size() != sample["Parameters"].size() )
+    korali::logError("The size of the gradient (%zu) is not equal to the size of parameters (%zu).", sample["Gradient"].size(), sample["Parameters"].size() );
+
+  std::vector<double> gradient = sample["Gradient"];
+
+  double evaluationSign = _objective == "Maximize" ? 1.0 : -1.0;
+
+  // If result is not a finite number, gradient is set to zero
+  if( std::isnan(sample["Evaluation"]) || korali::isanynan(gradient) ){
+    for(size_t i=0; i<sample["Gradient"].size(); i++) sample["Gradient"][i] = 0.;
+  }
+  else{
+    for(size_t i=0; i<sample["Gradient"].size(); i++) sample["Gradient"][i] = evaluationSign * gradient[i];
+  }
+
+}

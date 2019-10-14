@@ -14,8 +14,8 @@ import korali
 k = korali.initialize()
 
 # Configuring Problem.
-k["Problem"]["Type"] = "Evaluation/DirectWithGradient"
-k["Problem"]["Objective"] = "Minimize"
+k["Problem"]["Type"] = "Evaluation/Direct/Gradient"
+k["Problem"]["Objective"] = "Maximize"
 k["Problem"]["Objective Function"] = model_with_gradient
 
 # Defining the problem's variables.

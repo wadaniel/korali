@@ -54,10 +54,14 @@ void korali::solver::optimizer::Rprop::evaluateFunctionAndGradient( void )
   _k->_conduit->waitAll(samples);
 
   // Processing results
+  // The 'minus' is there because we want Rprop to do Maximization be default.
   for (size_t i = 0; i < Ns; i++){
     _currentEvaluation = samples[i]["Evaluation"];
-    for( size_t j=0; j<N; j++)
+    _currentEvaluation = -_currentEvaluation;
+    for( size_t j=0; j<N; j++){
       _currentGradient[j] = samples[i]["Gradient"][j];
+      _currentGradient[j] = -_currentGradient[j];
+    }
   }
 }
 

@@ -1,10 +1,17 @@
 {
  "Configuration Settings":
- [   
+ [
  ],
 
  "Available Operations":
  [
+   {
+    "Name": "Basic Evaluation",
+    "Description": "Evaluates a sample, given the problem description.",
+    "Function": "basicEvaluation",
+    "Results": [ { "Name": "Evaluation", "Description": "Contains a single number with the sample evaluation." },
+                 { "Name": "Gradient",   "Description": "Contains a vector with the gradient evaluation." } ]
+   }
  ],
 
  "Variables Configuration":

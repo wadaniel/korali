@@ -15,7 +15,7 @@ LDFLAGS += $(PYBIND11LIBS)
 
 DEPFLAGS = -MT $@ -MD -MP -MF $(DEPDIR)/$*.Td
 
-COMPILE.cc = $(CXX) $(DEPFLAGS) $(CXXFLAGS) -c -o $@
+COMPILE.cc = $(CXX) $(DEPFLAGS) $(CXXFLAGS) -fPIC -c -o $@
 LINK.o = $(CXX) $(LDFLAGS) $(LDLIBS) -o $@
 PRECOMPILE =
 POSTCOMPILE = mv -f $(DEPDIR)/$*.Td $(DEPDIR)/$*.d

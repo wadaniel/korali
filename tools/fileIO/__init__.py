@@ -32,7 +32,7 @@ def getResultFiles(src, start=None, end=None, noisy=False):
         
         with open(path) as f:
             data = json.load(f)
-            gen  = data['Internal']['Current Generation']
+            gen  = data['Solver']['Current Generation']
             
             if verifyResultFile(data, path, runId, start, end, noisy):
                 resultfiles.append(filename)

@@ -5,18 +5,17 @@ korali::Conduit* korali::__conduit;
 void korali::Conduit::initialize()
 {
  __conduit = this;
- _mainThread = co_active();
 }
 
 void korali::Conduit::coroutineWrapper()
 {
  korali::Sample* currentSample = __conduit->_currentSample;
- co_switch(__conduit->_mainThread);
+ co_switch(__conduit->_thread);
 
  __conduit->processSample(*currentSample);
 
  currentSample->_state = SampleState::finished;
- co_switch(__conduit->_mainThread);
+ co_switch(__conduit->_thread);
 
  if (currentSample->_state != SampleState::uninitialized) korali::logError("Resuming a finished sample\n");
 }

@@ -100,12 +100,6 @@
     "Description": "Specifies the Korali run's unique identifier. Used to distinguish run results when two or more use the same output directory."
    },
    {
-    "Name": [ "Current Generation" ],
-    "Type": "size_t",
-    "Default": "1",
-    "Description": "Indicates the current generation in execution."
-   },
-   {
     "Name": [ "Is Finished" ],
     "Type": "bool",
     "Default": "false",

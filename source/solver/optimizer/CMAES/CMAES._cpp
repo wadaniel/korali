@@ -40,7 +40,7 @@ void korali::solver::optimizer::CMAES::initialize()
 
  N = _k->_variables.size();
 
- if (_k->_currentGeneration > 1) return;
+ if (_currentGeneration > 1) return;
 
  size_t s_max  = std::max(_populationSize,  _viabilityPopulationSize);
  size_t mu_max = std::max(_muValue, _viabilityMuValue);
@@ -344,7 +344,7 @@ void korali::solver::optimizer::CMAES::updateConstraints()
   for(size_t i = 0; i < _currentPopulationSize; ++i)
   {
     if ( _constraintEvaluations[c][i] > maxviolation ) maxviolation = _constraintEvaluations[c][i];
-    if ( _k->_currentGeneration == 1 && _isViabilityRegime ) _viabilityBoundaries[c] = maxviolation;
+    if ( _currentGeneration == 1 && _isViabilityRegime ) _viabilityBoundaries[c] = maxviolation;
 
     if ( _constraintEvaluations[c][i] > _viabilityBoundaries[c] + 1e-12 ) _sampleConstraintViolationCounts[i]++;
     if ( _sampleConstraintViolationCounts[i] > _maxConstraintViolationCount ) _maxConstraintViolationCount = _sampleConstraintViolationCounts[i];
@@ -531,7 +531,7 @@ void korali::solver::optimizer::CMAES::updateDistribution()
     _conjugateEvolutionPathL2Norm += _conjugateEvolutionPath[d] * _conjugateEvolutionPath[d];
  }
 
- int hsig = (1.4 + 2.0/(N+1) > sqrt(_conjugateEvolutionPathL2Norm) / sqrt(1. - pow(1.-_sigmaCumulationFactor, 2.0*(1.0+_k->_currentGeneration))) / _chiSquareNumber);
+ int hsig = (1.4 + 2.0/(N+1) > sqrt(_conjugateEvolutionPathL2Norm) / sqrt(1. - pow(1.-_sigmaCumulationFactor, 2.0*(1.0+_currentGeneration))) / _chiSquareNumber);
 
  /* cumulation for covariance matrix (pc) using B*D*z~N(0,C) */
  for (size_t d = 0; d < N; ++d)

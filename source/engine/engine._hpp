@@ -23,6 +23,7 @@ class Engine : public korali::Module {
  void initialize() override;
  void start(bool isDryRun);
  void run() { start(false); }
+ void runMultiple(size_t count);
  void dry() { start(true);  }
 
  // Constructors
@@ -31,6 +32,10 @@ class Engine : public korali::Module {
 
  // JSON-based configuration
  korali::KoraliJson  _js;
+
+ // Multiple Solver Variables/Functions
+ cothread_t _thread;
+ static void solverWrapper();
 
  pybind11::object getItem(pybind11::object key);
  void setItem(pybind11::object key, pybind11::object val);
@@ -41,8 +46,8 @@ class Engine : public korali::Module {
  // State save/load methods
  bool isExecutionFinished();
  void loadState(std::string fileName);
- void saveState(std::string fileName);
- void saveState(int fileId);
+ void saveState(std::string dirName, std::string fileName);
+ void saveState(std::string dirName, int fileId);
 
  // Communicator Methods
  long int getMPICommPointer();

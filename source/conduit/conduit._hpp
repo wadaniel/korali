@@ -18,7 +18,7 @@ class Conduit : public korali::Module {
  virtual void abort() { exit(-1); }
 
  // Sample execution fields
- cothread_t _mainThread;
+ cothread_t _thread;
  korali::Sample* _currentSample;
 
  // Waiting Functions

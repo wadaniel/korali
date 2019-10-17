@@ -2,8 +2,10 @@
 #define _KORALI_SOLVERHPP_
 
 #include <vector>
+#include <string>
 #include "module.hpp"
 #include "engine/engine.hpp"
+#include "engine/sample/libco/libco.h"
 
 namespace korali {
 
@@ -12,6 +14,10 @@ class Solver : public korali::Module
  public:
 
  size_t N; // Sample Size
+ cothread_t _thread;
+ size_t _solverId;
+ FILE* _logFile;
+ std::string _subDirPath;
 
  virtual void printGenerationBefore() { };
  virtual void printGenerationAfter() { };

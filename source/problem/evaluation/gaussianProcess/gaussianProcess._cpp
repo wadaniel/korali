@@ -5,6 +5,7 @@
 void korali::problem::evaluation::GaussianProcess::initialize()
 {
   int N = 1;
+  int k=0;
 
   std::vector<korali::Variable*> variables;
   for (size_t i= 0; i < N; i++)

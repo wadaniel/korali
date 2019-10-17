@@ -41,7 +41,7 @@ def run_tmcmc_with_termination_criterion(criterion, value):
     k.run()
 
     if (criterion == "Max Generations"):
-        assert_value(k["Internal"]["Current Generation"], value)
+        assert_value(k["Solver"]["Internal"]["Current Generation"], value)
         
     elif (criterion == "Target Annealing Exponent"):
         assert_greatereq(k["Solver"]["Internal"]["Annealing Exponent"], value)

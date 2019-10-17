@@ -37,7 +37,7 @@ def run_cmaes_with_termination_criterion(criterion, value):
     k.run()
 
     if (criterion == "Max Generations"):
-        assert_value(k["Internal"]["Current Generation"], value)
+        assert_value(k["Solver"]["Internal"]["Current Generation"], value)
 
     elif (criterion == "Max Infeasible Resamplings"):
         assert_greatereq(k["Solver"]["Internal"]["Infeasible Sample Count"], value)

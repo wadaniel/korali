@@ -25,7 +25,7 @@ def initDefaults(directory, filename, lists):
         data  = json.loads(dataString)
  
         solver = data['Solver']['Type']
-        gen    = data['Internal']['Current Generation']
+        gen    = data['Solver']['Internal']['Current Generation']
         numdim = len(data['Variables'])
         names  = [ data['Variables'][i]['Name'] for i in range(numdim) ]
 
@@ -38,7 +38,7 @@ def initDefaults(directory, filename, lists):
 # Extract state from data and return current ceneration
 def getStateAndGeneration(data): 
     state = data['Solver']['Internal']
-    gen   = data['Internal']['Current Generation']
+    gen   = data['Solver']['Internal']['Current Generation']
     return (state, gen)
 
 # Append data to lists read from states (stateNames)
@@ -91,7 +91,7 @@ def readFiles(src, start=None, end=None, noisy=True):
             dataString = f.read()
             dataString = dataString.replace('+INFINITY', '1.0e+300').replace('-INFINITY', '-1.0e+300').replace('NaN', '-1.0e+300')
             data  = json.loads(dataString)
-            gen  = data['Internal']['Current Generation']
+            gen  = data['Solver']['Internal']['Current Generation']
             
             if verifyFile(data, path, runId, start, end, noisy):
                 resultfiles.append(filename)
@@ -101,7 +101,7 @@ def readFiles(src, start=None, end=None, noisy=True):
 
 # Open file and verify runId and current generation in [start, end]
 def verifyFile(data, path, runId, start=None, end=None, noisy=True): 
-    currentGeneration = data['Internal']['Current Generation']
+    currentGeneration = data['Solver']['Internal']['Current Generation']
 
     if ( (start is not None) and (currentGeneration < start)):
         return False

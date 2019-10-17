@@ -1,0 +1,25 @@
+{
+ "Configuration Settings":
+ [
+   {
+    "Name": [ "Covariance Function" ],
+    "Type": "std::string",
+    "Description": "Covariance function for the libgp library."
+   }
+ ],
+
+ "Available Operations":
+ [
+
+ ],
+
+ "Variables Configuration":
+ [
+
+ ],
+
+ "Internal Settings":
+ [
+
+ ]
+}

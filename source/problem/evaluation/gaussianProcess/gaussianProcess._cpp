@@ -1,0 +1,32 @@
+#include "problem/evaluation/gaussianProcess/gaussianProcess.hpp"
+#include "conduit/conduit.hpp"
+
+
+void korali::problem::evaluation::GaussianProcess::initialize()
+{
+  int N = 1;
+
+  std::vector<korali::Variable*> variables;
+  for (size_t i= 0; i < N; i++)
+    _k->_variables.push_back(new korali::Variable);
+
+  for (size_t i= 0; i < N; i++){
+    _k->_variables[i]->_name = "MyVariable";
+    _k->_variables[i]->_initialValue = 0;
+  }
+
+  std::cout << _covarianceFunction << std::endl;
+}
+
+bool korali::problem::evaluation::GaussianProcess::isSampleFeasible(korali::Sample& sample)
+{
+  return true;
+}
+
+void korali::problem::evaluation::GaussianProcess::basicEvaluation(korali::Sample& sample)
+{
+  double p = sample["Parameters"][0];
+  sample["Evaluation"] = -p;
+  for(size_t i=0; i<1; i++)
+    sample["Gradient"][i] = -1;
+}

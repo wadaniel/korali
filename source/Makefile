@@ -41,7 +41,7 @@ all: libkorali.so
 clean:
 	@rm -f `find . -name "*._hpp" | sed 's/._hpp/.hpp/g'`
 	@rm -f `find . -name "*._cpp" | sed 's/._cpp/.cpp/g'`
-	@rm -f *.o ./*/*.o *.so *.a $(OBJECTS)
+	@rm -f  *.so *.a $(OBJECTS)
 	@rm -rf $(OBJDIR) $(DEPDIR)
 
 build:

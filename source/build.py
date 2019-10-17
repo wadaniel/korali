@@ -351,7 +351,6 @@ def save_if_different(filename, content):
 
     with open(filename, 'w') as f:
         print('[Korali] Creating: ' + filename + '...')
-        print("\n=====\n" + existing + "\n=====\n" + content + "\n=====\n" )
         f.write(content)
 
 ####################################################################

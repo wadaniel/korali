@@ -258,6 +258,10 @@ void korali::Engine::initialize()
  _problem->initialize();
  _solver->initialize();
  _conduit->initialize();
+
+ _conduit->_currentSolver = _solver;
+ _solver->_thread = co_active();
+ _thread = co_active();
 }
 
 korali::Engine::Engine()

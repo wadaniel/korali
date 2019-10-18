@@ -7,8 +7,9 @@ ifeq ($(CXX),$(MACOS_CXX))
 endif
 
 # ==============================================================================
-CXXFLAGS  = -g $(OPTFLAGS) -I. $(GSLCFLAGS) $(CXXARCH) $(WARNINGFLAGS)
-CXXFLAGS  += $(PYBIND11INCLUDES) $(MPIFLAGS)
+CXXFLAGS  = -g $(OPTFLAGS) $(GSLCFLAGS) $(CXXARCH) $(WARNINGFLAGS)
+CXXFLAGS += -I. -I../external
+CXXFLAGS += $(PYBIND11INCLUDES) $(MPIFLAGS)
 
 LDFLAGS = $(SHAREDLIB_FLAG) -L$(GSLPREFIX)/lib -Wl,-rpath -Wl,$(GSLPREFIX)/lib $(GSLLIBS)
 LDFLAGS += $(PYBIND11LIBS)

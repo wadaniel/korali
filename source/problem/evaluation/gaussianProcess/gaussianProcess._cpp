@@ -1,22 +1,36 @@
 #include "problem/evaluation/gaussianProcess/gaussianProcess.hpp"
 #include "conduit/conduit.hpp"
 
+#include "libgp/source/gp.hpp"
+#include <Eigen/Dense>
 
 void korali::problem::evaluation::GaussianProcess::initialize()
 {
-  int N = 1;
-  int k=0;
+  if( _xData.size() != _yData.size())
+    korali::logError("The number of rows of 'X Data' (%lu) must beq equal to the number of rows of 'Y Data' (%lu).\n",_xData.size(),_yData.size());
+
+  _dataSize = _xData.size();
+  _dataDimension = _xData[0].size();
+
+  _gp = new libgp::GaussianProcess( _dataDimension, _covarianceFunction );
+
+  _parameterDimension = _gp->covf().get_param_dim();
 
   std::vector<korali::Variable*> variables;
-  for (size_t i= 0; i < N; i++)
+  for (size_t i= 0; i < _parameterDimension; i++)
     _k->_variables.push_back(new korali::Variable);
 
-  for (size_t i= 0; i < N; i++){
-    _k->_variables[i]->_name = "MyVariable";
+  for (size_t i= 0; i < _parameterDimension; i++){
+    _k->_variables[i]->_name = "X" + std::to_string(i);
     _k->_variables[i]->_initialValue = 0;
   }
 
-  std::cout << _covarianceFunction << std::endl;
+  Eigen::VectorXd eParameters( _parameterDimension );
+  for( size_t i=0; i<_parameterDimension; i++) eParameters[i] = _k->_variables[i]->_initialValue;
+  _gp->covf().set_loghyper(eParameters);
+
+  for(size_t i=0; i<_dataSize; ++i) _gp->add_pattern(_xData[i].data(), _yData[i]);
+
 }
 
 bool korali::problem::evaluation::GaussianProcess::isSampleFeasible(korali::Sample& sample)
@@ -26,8 +40,15 @@ bool korali::problem::evaluation::GaussianProcess::isSampleFeasible(korali::Samp
 
 void korali::problem::evaluation::GaussianProcess::basicEvaluation(korali::Sample& sample)
 {
-  double p = sample["Parameters"][0];
-  sample["Evaluation"] = -p;
-  for(size_t i=0; i<1; i++)
-    sample["Gradient"][i] = -1;
+
+  Eigen::VectorXd p(_parameterDimension);
+  for(size_t i=0; i<_parameterDimension; i++) p[i] = sample["Parameters"][i];
+
+  _gp->covf().set_loghyper(p);
+
+  sample["Evaluation"] = _gp->log_likelihood();
+
+  Eigen::VectorXd eigenGrad = _gp->log_likelihood_gradient();
+  for(size_t i=0; i<_parameterDimension; i++)
+    sample["Gradient"][i] = eigenGrad[i];
 }

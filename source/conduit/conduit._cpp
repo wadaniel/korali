@@ -11,6 +11,7 @@ void korali::Conduit::coroutineWrapper()
 {
  korali::Sample* currentSample = __conduit->_currentSample;
  co_switch(__conduit->_currentSolver->_thread);
+ (*currentSample)["Job Id"] =__conduit->_currentSolver->_solverId;
 
  __conduit->processSample(*currentSample);
 

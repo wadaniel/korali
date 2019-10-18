@@ -116,10 +116,6 @@ void korali::Engine::solverWrapper()
   korali::Conduit* conduit = engine->_conduit;
   co_switch(engine->_thread);
 
-  conduit->_thread = co_active();
-
-  korali::setConsoleOutputFile(solver->_logFile);
-
   // Saving initial state
   engine->saveState(solver->_subDirPath, "initial.json");
 
@@ -166,13 +162,13 @@ void korali::Engine::solverWrapper()
   for (size_t i = 0; i < solver->_terminationCriteria.size(); i++) korali::logInfo("Normal", "Termination Criterion Met: %s\n", solver->_terminationCriteria[i].c_str());
 
   solver->finalize();
-
+  solver->_isFinished = true;
   korali::logInfo("Normal", "Total Generations: %lu\n", solver->_currentGeneration);
   korali::logInfo("Normal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(t1-t0).count());
   korali::logInfo("Normal", "Results saved to folder: '%s'\n", solver->_subDirPath.c_str());
 
-  korali::setConsoleOutputFile(stdout);
   co_switch(engine->_thread);
+  korali::logError("Trying to continue finished solver thread.\n");
 }
 
 void korali::Engine::runMultiple(size_t count)
@@ -217,14 +213,30 @@ void korali::Engine::runMultiple(size_t count)
   solvers[i]->_logFile = fopen(fileName.c_str(),"w");
 
   _currentSolver = solvers[i];
+
+  korali::setConsoleOutputFile(solvers[i]->_logFile);
+  _conduit->_currentSolver = solvers[i];
   co_switch(solvers[i]->_thread);
+  korali::setConsoleOutputFile(stdout);
  }
 
  auto startTime = std::chrono::system_clock::now();
 
- for (size_t i = 0; i < count; i++)
+ while(true)
  {
-  co_switch(solvers[i]->_thread);
+  bool executed = false;
+
+  for (size_t i = 0; i < count; i++) if (solvers[i]->_isFinished == false)
+  {
+   korali::setConsoleOutputFile(solvers[i]->_logFile);
+   _conduit->_currentSolver = solvers[i];
+   co_switch(solvers[i]->_thread);
+   korali::setConsoleOutputFile(stdout);
+   executed = true;
+   if (solvers[i]->_isFinished == true) korali::logInfo("Normal", "Job %lu has finished.\n", i);
+  }
+
+  if (executed == false) break;
  }
 
  auto endTime = std::chrono::system_clock::now();
@@ -246,9 +258,6 @@ void korali::Engine::initialize()
  _problem->initialize();
  _solver->initialize();
  _conduit->initialize();
-
- // Setting default conduit thread
- _conduit->_thread = co_active();
 }
 
 korali::Engine::Engine()

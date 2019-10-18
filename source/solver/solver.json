@@ -6,6 +6,12 @@
     "Type": "size_t",
     "Default": "1",
     "Description": "Indicates the current generation in execution."
+   },
+   {
+    "Name": [ "Is Finished" ],
+    "Type": "bool",
+    "Default": "false",
+    "Description": "Indicates whether execution has reached a termination criterion."
    }
  ]
 }

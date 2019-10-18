@@ -29,5 +29,8 @@ k["Solver"]["Population Size"] = 32
 k["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-7
 k["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
+k["Conduit"]["Type"] = "External"
+k["Conduit"]["Concurrent Jobs"] = 4
+
 # Running Multiple Korali Instances
 k.runMultiple(16)

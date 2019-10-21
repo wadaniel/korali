@@ -236,7 +236,7 @@ void korali::Engine::runMultiple(size_t count)
 
    co_switch(solvers[i]->_thread);
 
-   _profileInfo[Solver" + std::to_string(i)].commitSegment();
+   _profileInfo["Solver" + std::to_string(i)].commitSegment();
    _profileInfo["Engine"].startSegment();
 
    korali::setConsoleOutputFile(stdout);

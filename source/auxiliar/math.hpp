@@ -25,8 +25,9 @@ const double Min    = std::numeric_limits<double>::min();
 const double Eps    = std::numeric_limits<double>::epsilon();
 
 double logSumExp(const std::vector<double>& logValues );
-double vectorNorm( std::vector<double> x );
-bool isanynan( std::vector<double> x );
+double vectorNorm(const std::vector<double>& x );
+double vectorDistance(const std::vector<double>& x, const std::vector<double>& y );
+bool isanynan(const std::vector<double>& x );
 std::string getTimestamp();
 size_t getTimehash();
 

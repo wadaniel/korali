@@ -3,7 +3,7 @@ import korali
 
 k = korali.initialize()
 
-k["Problem"]["Type"] = "Execution"
+k["Problem"]["Type"] = "Execution/Model"
 k["Problem"]["Execution Model"] = lambda x : x
 
 k["Variables"][0]["Name"] = "X"

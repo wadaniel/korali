@@ -78,6 +78,11 @@ void korali::Engine::start(bool isDryRun)
 
  _currentGeneration--;
 
+
+  _solver->finalize();
+  _problem->finalize();
+  _conduit->finalize();
+
  // Saving last generation and final.json
  saveState(_currentGeneration);
  saveState("final.json");
@@ -90,9 +95,6 @@ void korali::Engine::start(bool isDryRun)
  for (size_t i = 0; i < _problem->_terminationCriteria.size(); i++) korali::logInfo("Normal", "Termination Criterion Met: %s\n", _problem->_terminationCriteria[i].c_str());
  for (size_t i = 0; i < _conduit->_terminationCriteria.size(); i++) korali::logInfo("Normal", "Termination Criterion Met: %s\n", _conduit->_terminationCriteria[i].c_str());
 
- _solver->finalize();
- _problem->finalize();
- _conduit->finalize();
 
  korali::logInfo("Normal", "Total Generations: %lu\n", _currentGeneration);
  korali::logInfo("Normal", "Total Computational Model Evaluations: %lu\n", _conduit->_modelEvaluationCount);
@@ -196,5 +198,3 @@ PYBIND11_MODULE(libkorali, m)
    .def("dry", &korali::Engine::dry)
    .def("loadState",     &korali::Engine::loadState, pybind11::return_value_policy::reference);
 }
-
-

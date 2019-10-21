@@ -13,7 +13,7 @@ Ns = 100
 
 k = korali.initialize()
 
-k["Problem"]["Type"] = "Execution"
+k["Problem"]["Type"] = "Execution/Model"
 k["Problem"]["Execution Model"] = lambda modelData: normal_rnds(modelData, Ns)
 
 k["Variables"][0]["Name"] = "V1"

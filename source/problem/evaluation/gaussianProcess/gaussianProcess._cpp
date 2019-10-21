@@ -1,7 +1,6 @@
-#include "problem/evaluation/gaussianProcess/gaussianProcess.hpp"
-#include "conduit/conduit.hpp"
+#include "problem/evaluation/GaussianProcess/GaussianProcess.hpp"
 
-#include "libgp/source/gp.hpp"
+#include "conduit/conduit.hpp"
 #include <Eigen/Dense>
 
 void korali::problem::evaluation::GaussianProcess::initialize()
@@ -40,7 +39,6 @@ bool korali::problem::evaluation::GaussianProcess::isSampleFeasible(korali::Samp
 
 void korali::problem::evaluation::GaussianProcess::basicEvaluation(korali::Sample& sample)
 {
-
   Eigen::VectorXd p(_parameterDimension);
   for(size_t i=0; i<_parameterDimension; i++) p[i] = sample["Parameters"][i];
 

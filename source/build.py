@@ -357,6 +357,8 @@ def save_if_different(filename, content):
 # Main Parser Routine
 ####################################################################
 
+print("\n[Korali] Start Parser")
+
 koraliDir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
 
 # modules List
@@ -371,7 +373,7 @@ for moduleDir, relDir, fileNames in os.walk(koraliDir):
  for fileName in fileNames:
   if '.json' in fileName:
    filePath = moduleDir + '/' + fileName;
-   print('[Korali] Opening: ' + filePath + '...')
+#   print('[Korali] Opening: ' + filePath + '...')
    with open(filePath, 'r') as file: moduleConfig = json.load(file)
    moduleFilename = fileName.replace('.json', '')
 
@@ -479,3 +481,5 @@ with open(variableBaseHeaderFileName, 'r') as file: variableBaseHeaderString = f
 newBaseString = variableBaseHeaderString
 newBaseString = newBaseString.replace(' // Variable Declaration List', variableDeclarationList)
 save_if_different(variableNewHeaderFile, newBaseString)
+
+print("[Korali] End Parser\n")

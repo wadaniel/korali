@@ -10,7 +10,7 @@ N = 5;
 
 k = korali.initialize()
 
-k["Problem"]["Type"] = "Execution"
+k["Problem"]["Type"] = "Execution/Model"
 k["Problem"]["Execution Model"] = lambda modelData: logistic_reference(modelData)
 
 k["Variables"][0]["Name"] = "V1"

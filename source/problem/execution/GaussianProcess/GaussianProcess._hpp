@@ -1,0 +1,26 @@
+#ifndef _KORALI_PROBLEM_EXECUTION_GP_HPP_
+#define _KORALI_PROBLEM_EXECUTION_GP_HPP_
+
+#include "problem/execution/execution.hpp"
+
+#include "external/libgp/gp.hpp"
+
+namespace korali { namespace problem { namespace execution {
+
+class GaussianProcess : public korali::problem::Execution
+{
+  private:
+
+    libgp::GaussianProcess* _gp;
+
+  public:
+
+    void initialize() override;
+    void finalize() override;
+    void execute(korali::Sample& sample) override;
+};
+
+} } } // namespace korali::problem::execution
+
+
+#endif // _KORALI_PROBLEM_EXECUTION_GP_HPP_

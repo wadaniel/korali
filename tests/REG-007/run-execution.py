@@ -6,7 +6,7 @@ def dummy(d):
 
 k = korali.initialize()
 
-k["Problem"]["Type"] = "Execution"
+k["Problem"]["Type"] = "Execution/Model"
 k["Problem"]["Execution Model"] = dummy
 
 k["Variables"][0]["Name"] = "X0"

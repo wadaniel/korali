@@ -19,7 +19,7 @@ prepareFile( fileName )
 
 k = korali.initialize()
 
-k["Problem"]["Type"] = "Execution"
+k["Problem"]["Type"] = "Execution/Model"
 k["Problem"]["Execution Model"] = lambda modelData: put_normal_rnds(modelData, Ns, fileName)
 
 k["Variables"][0]["Name"] = "Mean"

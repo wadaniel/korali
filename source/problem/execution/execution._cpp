@@ -1,19 +1,1 @@
 #include "problem/execution/execution.hpp"
-#include "conduit/conduit.hpp"
-
-void korali::problem::Execution::initialize()
-{
-  if (_k->_variables.size() == 0) korali::logError("Execution problems require at least one variable.\n");
-
-  // Validate the _loadedValues dimensions
-  size_t Ns = _k->_variables[0]->_loadedValues.size();
-  for (size_t i = 1; i < _k->_variables.size(); i++){
-    if (_k->_variables[i]->_loadedValues.size() != Ns)  korali::logError("All 'Loaded Values' must have the same length ");
-  }
-}
-
-void korali::problem::Execution::execute(korali::Sample& sample)
-{
- sample.run(_executionModel);
-}
-

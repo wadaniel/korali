@@ -14,12 +14,6 @@
     "Description": "Specifies the path of the results directory."
    },
    {
-    "Name": ["Results Output", "Frequency" ],
-    "Type": "size_t",
-    "Default": "1",
-    "Description": "Specifies how often (in generations) will partial result files be saved on the results directory. The default, 1, indicates that every generation's results will be saved."
-   },
-   {
     "Name": [ "Distributions" ],
     "Type": "std::vector<korali::distribution::Univariate*>",
     "Description": "Represents the distributions to use during execution."
@@ -64,13 +58,18 @@
     "Description": "Specifies how often (in generations) will partial results be printed on console. The default, 1, indicates that every generation's results will be printed."
    },
    {
+    "Name": ["Results Output", "Frequency" ],
+    "Type": "size_t",
+    "Default": "1",
+    "Description": "Specifies how often (in generations) will partial result files be saved on the results directory. The default, 1, indicates that every generation's results will be saved."
+   },
+   {
     "Name": ["Results Output", "Profiling" ],
     "Type": "std::string",
-    "Default": "Minimal",
+    "Default": "Disabled",
     "Options": [
                 { "Value": "Disabled", "Description": "Calculates and stores no profiling information." },
-                { "Value": "Minimal", "Description": "Calculates only aggregate profiling information." },
-                { "Value": "Full", "Description": "Stores all the raw data about the execution of Korali to produce a timeline or perform an in-depth analysis." }
+                { "Value": "Enabled", "Description": "Stores all the raw data about the execution of Korali to produce a timeline or perform an in-depth analysis.." }
                ],
     "Description": "Specifies the level of detail of profiling information to gather and store."
    }

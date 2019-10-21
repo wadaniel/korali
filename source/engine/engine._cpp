@@ -80,6 +80,7 @@ void korali::Engine::start(bool isDryRun)
  }
 
  _solver->_currentGeneration--;
+ _profileInfo["Engine"].commitSegment();
 
  // Saving last generation and final.json
  saveState(_resultsOutputPath, _solver->_currentGeneration);
@@ -101,7 +102,6 @@ void korali::Engine::start(bool isDryRun)
  korali::logInfo("Normal", "Total Computational Model Evaluations: %lu\n", _conduit->_modelEvaluationCount);
  korali::logInfo("Normal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(endTime-startTime).count());
 
- _profileInfo["Engine"].commitSegment();
  for (auto& x : korali::_profileInfo)
    korali::logInfo("Detailed", "   [%s] Segments: %lu,  Busy Time: %f\n", x.first.c_str(), x.second._segmentTimes.size(), x.second._workTime);
 
@@ -230,7 +230,15 @@ void korali::Engine::runMultiple(size_t count)
   {
    korali::setConsoleOutputFile(solvers[i]->_logFile);
    _conduit->_currentSolver = solvers[i];
+
+   _profileInfo["Engine"].commitSegment();
+   _profileInfo["Solver" + std::to_string(i)].startSegment();
+
    co_switch(solvers[i]->_thread);
+
+   _profileInfo[Solver" + std::to_string(i)].commitSegment();
+   _profileInfo["Engine"].startSegment();
+
    korali::setConsoleOutputFile(stdout);
    executed = true;
    if (solvers[i]->_isFinished == true) korali::logInfo("Normal", "Job %lu has finished.\n", i);
@@ -288,6 +296,10 @@ void korali::Engine::saveState(std::string dirName, std::string fileName)
  // Getting configuration
  _js.getJson() = nlohmann::json();
  this->getConfiguration(_js.getJson());
+
+ if (_js["Results Output"]["Profiling"] == "Enabled")
+  for (auto const& x : _profileInfo)
+   _js["Profiling"][x.first] = x.second.dumpJson();
 
  // Only the root rank saves files
  if (!_conduit->isRoot()) return;

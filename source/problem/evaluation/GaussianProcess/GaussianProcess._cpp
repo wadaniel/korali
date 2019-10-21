@@ -32,10 +32,12 @@ void korali::problem::evaluation::GaussianProcess::initialize()
 
 }
 
+
 bool korali::problem::evaluation::GaussianProcess::isSampleFeasible(korali::Sample& sample)
 {
   return true;
 }
+
 
 void korali::problem::evaluation::GaussianProcess::basicEvaluation(korali::Sample& sample)
 {

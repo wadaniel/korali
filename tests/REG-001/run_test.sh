@@ -29,7 +29,7 @@ do
   pushd $dir >> $logFile 2>&1
 
   log "[Korali] Removing any old result files..."
-  rm -rf *_result* >> $logFile 2>&1
+  sh .remove_results.sh >> $logFile 2>&1
   check_result
 
   for file in run-*.{py,sh}
@@ -52,5 +52,7 @@ do
   popd >> $logFile 2>&1
   logEcho "-------------------------------------"
 done
+
+sh .remove_all_results.sh
 
 popd

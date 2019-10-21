@@ -53,6 +53,4 @@ do
   logEcho "-------------------------------------"
 done
 
-sh .remove_all_results.sh
-
 popd

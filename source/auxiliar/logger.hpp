@@ -7,9 +7,11 @@ namespace korali
 {
 
 extern size_t __verbosityLevel;
+extern FILE* __outputFile;
 
 void setVerbosityLevel(const std::string verbosityLevle);
 size_t getVerbosityLevel(const std::string verbosityLevel);
+void setConsoleOutputFile(FILE* file);
 bool isEnoughVerbosity(const std::string verbosityLevel);
 
 void logData(const std::string verbosityLevel, const char* format, ... );

@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <auxiliar/json.hpp>
 
 namespace korali {
 
@@ -24,6 +25,8 @@ class ProfileInfo
   void startSegment(int segmentId = 0);
   void commitSegment();
   void discardSegment();
+
+  nlohmann::json dumpJson() const;
 };
 
 extern std::map<std::string, ProfileInfo> _profileInfo;

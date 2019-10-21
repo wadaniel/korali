@@ -5,18 +5,18 @@ korali::Conduit* korali::__conduit;
 void korali::Conduit::initialize()
 {
  __conduit = this;
- _mainThread = co_active();
 }
 
 void korali::Conduit::coroutineWrapper()
 {
  korali::Sample* currentSample = __conduit->_currentSample;
- co_switch(__conduit->_mainThread);
+ co_switch(__conduit->_currentSolver->_thread);
+ (*currentSample)["Job Id"] =__conduit->_currentSolver->_solverId;
 
  __conduit->processSample(*currentSample);
 
  currentSample->_state = SampleState::finished;
- co_switch(__conduit->_mainThread);
+ co_switch(__conduit->_currentSolver->_thread);
 
  if (currentSample->_state != SampleState::uninitialized) korali::logError("Resuming a finished sample\n");
 }
@@ -40,6 +40,8 @@ void korali::Conduit::wait(korali::Sample& sample)
  {
   sample._state = SampleState::running;
   co_switch(sample._sampleThread);
+
+  if (sample._state == SampleState::waiting || sample._state == SampleState::initialized) co_switch(__conduit->_k->_thread);
  }
 
  free(sample._sampleThread);
@@ -75,6 +77,8 @@ size_t korali::Conduit::waitAny(std::vector<korali::Sample>& samples)
     break;
    }
   }
+
+  if (isFinished == false) co_switch(__conduit->_k->_thread);
  }
 
  _profileInfo["Problem"].commitSegment();
@@ -92,6 +96,7 @@ void korali::Conduit::waitAll(std::vector<korali::Sample>& samples)
  while (isFinished == false)
  {
   isFinished = true;
+
   for (size_t i = 0; i < samples.size(); i++)
    if (samples[i]._state == SampleState::waiting || samples[i]._state == SampleState::initialized)
    {
@@ -99,6 +104,8 @@ void korali::Conduit::waitAll(std::vector<korali::Sample>& samples)
     samples[i]._state = SampleState::running;
     co_switch(samples[i]._sampleThread);
    }
+
+  if (isFinished == false) co_switch(__conduit->_k->_thread);
  }
 
  for (size_t i = 0; i < samples.size(); i++)

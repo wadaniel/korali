@@ -39,3 +39,26 @@ void korali::ProfileInfo::discardSegment()
  _segmentId.erase(_segmentId.begin() + currentSegment);
  _segmentTimes.erase(_segmentTimes.begin() + currentSegment);
 }
+
+nlohmann::json korali::ProfileInfo::dumpJson() const
+{
+ auto js = nlohmann::json();
+
+ size_t segmentCount = 0;
+ for (size_t i = 1; i < _segmentTimes.size(); i += 2)
+ {
+  js["Segments"][segmentCount]["Start Time"] =  std::chrono::duration<double>(_segmentTimes[i]-_segmentTimes[0]).count();
+
+  auto endTimestamp =  std::chrono::high_resolution_clock::now();
+  if (i+1 < _segmentTimes.size()) endTimestamp = _segmentTimes[i+1];
+
+  js["Segments"][segmentCount]["End Time"]   =  std::chrono::duration<double>(endTimestamp-_segmentTimes[0]).count();
+  js["Segments"][segmentCount]["Segment Id"] =  _segmentId[i];
+  segmentCount++;
+ }
+
+ js["Idle Time"] = _idleTime;
+ js["Work Time"] = _workTime;
+
+ return js;
+}

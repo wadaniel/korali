@@ -104,7 +104,7 @@ void korali::solver::sampler::MCMC::initialize()
  _problem = dynamic_cast<korali::problem::Evaluation*>(_k->_problem);
  if (_problem == NULL) korali::logError( "MCMC can only sample problems of type 'Evaluation' or derived problem types.\n");
 
- if (_k->_currentGeneration > 1) return;
+ if (_currentGeneration > 1) return;
 
  std::fill(std::begin(_choleskyDecompositionCovariance), std::end(_choleskyDecompositionCovariance), 0.0);
  std::fill(std::begin(_choleskyDecompositionChainCovariance), std::end(_choleskyDecompositionChainCovariance), 0.0);

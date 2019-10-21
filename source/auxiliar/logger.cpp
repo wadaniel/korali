@@ -4,10 +4,16 @@
 #include "logger.hpp"
 
 size_t korali::__verbosityLevel;
+FILE* korali::__outputFile;
 
 void korali::setVerbosityLevel(const  std::string verbosityLevel)
 {
  __verbosityLevel = getVerbosityLevel(verbosityLevel);
+}
+
+void korali::setConsoleOutputFile(FILE* file)
+{
+ __outputFile = file;
 }
 
 size_t korali::getVerbosityLevel(const  std::string verbosityLevel)
@@ -36,8 +42,8 @@ void korali::logData(const std::string verbosityLevel, const char* format, ... )
  va_start(ap, format);
  vasprintf(&outstr, format, ap);
 
- fprintf(stdout, "%s", outstr);
- fflush(stdout);
+ fprintf(__outputFile, "%s", outstr);
+ fflush(__outputFile);
  free(outstr);
 
 }
@@ -54,8 +60,8 @@ void korali::logInfo(const std::string verbosityLevel, const char* format, ... )
  va_start(ap, format);
  vasprintf(&outstr, newFormat.c_str(), ap);
 
- fprintf(stdout, "%s", outstr);
- fflush(stdout);
+ fprintf(__outputFile, "%s", outstr);
+ fflush(__outputFile);
  free(outstr);
 }
 
@@ -71,8 +77,17 @@ void korali::logWarning(const std::string verbosityLevel, const char* format, ..
  va_start(ap, format);
  vasprintf(&outstr, newFormat.c_str(), ap);
 
- fprintf(stderr, "%s", outstr);
- fflush(stderr);
+ if(__outputFile == stdout)
+ {
+  fprintf(stderr, "%s", outstr);
+  fflush(stderr);
+ }
+ else
+ {
+  fprintf(__outputFile, "%s", outstr);
+  fflush(__outputFile);
+ }
+
  free(outstr);
 }
 
@@ -87,7 +102,6 @@ void korali::logError(const char* format, ... )
  vasprintf(&outstr, newFormat.c_str(), ap);
 
  fprintf(stderr, "%s", outstr);
-
  fflush(stderr);
  free(outstr);
 

@@ -3,6 +3,7 @@
 
 #include "module.hpp"
 #include "engine/engine.hpp"
+#include "solver/solver.hpp"
 #include <vector>
 #include <chrono>
 
@@ -18,8 +19,8 @@ class Conduit : public korali::Module {
  virtual void abort() { exit(-1); }
 
  // Sample execution fields
- cothread_t _mainThread;
  korali::Sample* _currentSample;
+ korali::Solver* _currentSolver;
 
  // Waiting Functions
  void start(korali::Sample& sample);

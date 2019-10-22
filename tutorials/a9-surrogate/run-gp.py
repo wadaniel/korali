@@ -32,6 +32,8 @@ k["Solver"]["Termination Criteria"]["Max Generations"] = 200
 k["Solver"]["Termination Criteria"]["Parameter Relative Tolerance"] = 1e-8
 
 k["Console Output"]["Verbosity"] = "Normal"
+k["Console Output"]["Frequency"] = 10
+k["Results Output"]["Frequency"] = 100
 k["Results Output"]["Path"] = "_korali_result_train"
 k.run()
 
@@ -47,6 +49,8 @@ k["Solver"]["Type"] = "Executor"
 k["Solver"]["Executions Per Generation"] = 1
 
 k["Console Output"]["Verbosity"] = "Normal"
+k["Console Output"]["Frequency"] = 10
+k["Results Output"]["Frequency"] = 100
 k["Results Output"]["Path"] = "_korali_result_test"
 k.run()
 
@@ -62,5 +66,7 @@ k["Solver"]["Type"] = "Executor"
 k["Solver"]["Executions Per Generation"] = 1
 
 k["Console Output"]["Verbosity"] = "Normal"
+k["Console Output"]["Frequency"] = 100
+k["Results Output"]["Frequency"] = 1000
 k["Results Output"]["Path"] = "_korali_result_new"
 k.run()

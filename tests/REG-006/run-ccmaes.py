@@ -44,12 +44,12 @@ def run_ccmaes(constraint):
 
     if (constraint == "None"):
         k.run()
-        assert_greatereq(k["Solver"]["Internal"]["Best Ever Value"],-6*1e-17)
+        assert_greatereq(k["Solver"]["Internal"]["Best Ever Value"],-6*1e-10)
 
     elif (constraint == "Inactive"):
         k["Problem"]["Constraints"] = [ inactive1, inactive2 ]
         k.run()
-        assert_greatereq(k["Solver"]["Internal"]["Best Ever Value"],-1.8*1e-20)
+        assert_greatereq(k["Solver"]["Internal"]["Best Ever Value"],-1.8*1e-10)
 
     elif (constraint == "Active at Max 1"):
         k["Problem"]["Constraints"] = [ activeMax1, activeMax2 ]
@@ -64,12 +64,12 @@ def run_ccmaes(constraint):
     elif (constraint == "Inactive at Max 1"):
         k["Problem"]["Constraints"] = [ inactiveMax1, inactiveMax2 ]
         k.run()
-        assert_greatereq(k["Solver"]["Internal"]["Best Ever Value"],-2.19963e-19)
+        assert_greatereq(k["Solver"]["Internal"]["Best Ever Value"],-2.19963e-10)
 
     elif (constraint == "Inactive at Max 2"):
         k["Problem"]["Constraints"] = [ inactiveMax1, inactiveMax2, inactiveMax3, inactiveMax4 ]
         k.run()
-        assert_greatereq(k["Solver"]["Internal"]["Best Ever Value"],-4.626392e-17)
+        assert_greatereq(k["Solver"]["Internal"]["Best Ever Value"],-4.626392e-10)
 
     elif (constraint == "Mixed"):
         k["Problem"]["Constraints"] = [ activeMax1, activeMax2, activeMax3, activeMax4, inactiveMax1, inactiveMax2, inactiveMax3, inactiveMax4 ]

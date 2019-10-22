@@ -83,7 +83,7 @@ int main(int argc, char* argv[])
  k["Conduit"]["Type"] = "MPI";
  k["Conduit"]["Ranks Per Team"] = atoi(argv[1]);
 
- k.run();
+ k.runSingle();
 
  return 0;
 }

@@ -30,8 +30,8 @@ k["Variables"][3]["Name"] = "X3"
 k["Variables"][3]["Lower Bound"] = -32.0;
 k["Variables"][3]["Upper Bound"] = +32.0;
 
-k["Conduit"]["Type"] = "External"
-k["Conduit"]["Concurrent Jobs"] = 4
+#k["Conduit"]["Type"] = "External"
+#k["Conduit"]["Concurrent Jobs"] = 4
 
 k["Results Output"]["Profiling"] = "Enabled"
 k["Random Seed"] = 0xC0FFEE

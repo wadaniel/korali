@@ -14,7 +14,6 @@ class Solver : public korali::Module
  public:
 
  size_t N; // Sample Size
- cothread_t _thread;
  size_t _solverId;
  FILE* _logFile;
  std::string _subDirPath;
@@ -23,8 +22,11 @@ class Solver : public korali::Module
  virtual void printGenerationAfter() { };
  virtual void runGeneration() = 0;
 
- ProfileInfo _profileInfo;
+ cothread_t _thread;
+ static void solverWrapper();
 };
+
+extern korali::Solver* _currentSolver;
 
 } // namespace korali
 

@@ -1,5 +1,8 @@
 #include "module.hpp"
 
+nlohmann::json korali::__profiler;
+std::chrono::time_point<std::chrono::high_resolution_clock> korali::_startTime;
+
 // Module Include List
 
 korali::Module* korali::Module::getModule(nlohmann::json& js)

@@ -1,1 +1,71 @@
 #include "solver/solver.hpp"
+
+korali::Solver* korali::_currentSolver;
+
+void korali::Solver::solverWrapper()
+{
+  korali::Solver* solver = _currentSolver;
+  korali::Engine* engine = solver->_k;
+  korali::Conduit* conduit = engine->_conduit;
+  co_switch(engine->_thread);
+
+  __profiler["Main Thread"]["Timestamps"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
+  __profiler["Main Thread"]["Segment Id"] += _currentSolver->_solverId;
+
+  // Saving initial state
+  engine->saveState(solver, solver->_subDirPath, "initial.json");
+
+  auto t0 = std::chrono::system_clock::now();
+
+  while(solver->checkTermination() == false)
+  {
+   if (solver->_currentGeneration % engine->_consoleOutputFrequency == 0)
+   {
+    korali::logInfo("Minimal",  "--------------------------------------------------------------------\n");
+    korali::logInfo("Minimal",  "Starting Generation: #%zu\n", solver->_currentGeneration);
+    solver->printGenerationBefore();
+   }
+
+   // Timing and Profiling Start
+   auto t0 = std::chrono::system_clock::now();
+
+   solver->runGeneration();
+
+   // Timing and Profiling End
+   auto t1 = std::chrono::system_clock::now();
+
+   if (solver->_currentGeneration % engine->_consoleOutputFrequency == 0)
+   {
+    solver->printGenerationAfter();
+    korali::logInfo("Detailed", "Solver: %lu - Generation Time: %.3fs\n", solver->_solverId, std::chrono::duration<double>(t1-t0).count());
+   }
+
+   if (solver->_currentGeneration % engine->_resultsOutputFrequency == 0) engine->saveState(solver, solver->_subDirPath, solver->_currentGeneration);
+
+   solver->_currentGeneration++;
+  }
+
+  auto t1 = std::chrono::system_clock::now();
+
+  solver->_currentGeneration--;
+  solver->finalize();
+
+  // Saving last generation and final.json
+  engine->saveState(solver, solver->_subDirPath, solver->_currentGeneration);
+  engine->saveState(solver, solver->_subDirPath, "final.json");
+
+  korali::logInfo("Minimal", "--------------------------------------------------------------------\n");
+  korali::logInfo("Minimal", "%s finished correctly.\n", solver->getType().c_str(), solver->_currentGeneration);
+  for (size_t i = 0; i < solver->_terminationCriteria.size(); i++) korali::logInfo("Normal", "Termination Criterion Met: %s\n", solver->_terminationCriteria[i].c_str());
+
+  solver->_isFinished = true;
+  korali::logInfo("Normal", "Total Generations: %lu\n", solver->_currentGeneration);
+  korali::logInfo("Normal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(t1-t0).count());
+  korali::logInfo("Normal", "Results saved to folder: '%s'\n", solver->_subDirPath.c_str());
+
+  __profiler["Main Thread"]["Timestamps"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
+  __profiler["Main Thread"]["Segment Id"] += -1;
+
+  co_switch(engine->_thread);
+  korali::logError("Trying to continue finished solver thread.\n");
+}

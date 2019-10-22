@@ -4,7 +4,7 @@
 #include "auxiliar/koraliJson.hpp"
 #include "auxiliar/logger.hpp"
 #include "auxiliar/math.hpp"
-#include "auxiliar/profiling.hpp"
+#include <chrono>
 
 namespace korali {
 
@@ -28,6 +28,9 @@ class Module
   virtual void getConfiguration(nlohmann::json& js) {};
   virtual void setConfiguration(nlohmann::json& js) {};
 };
+
+extern nlohmann::json __profiler;
+extern std::chrono::time_point<std::chrono::high_resolution_clock> _startTime;
 
 } // namespace korali
 

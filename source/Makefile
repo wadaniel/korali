@@ -19,7 +19,7 @@ DEPFLAGS = -MT $@ -MD -MP -MF $(DEPDIR)/$*.Td
 COMPILE.cc = $(CXX) $(DEPFLAGS) $(CXXFLAGS) -fPIC -c -o $@
 LINK.o = $(CXX) $(LDFLAGS) $(LDLIBS) -o $@
 PRECOMPILE =
-POSTCOMPILE = mv -f $(DEPDIR)/$*.Td $(DEPDIR)/$*.d
+POSTCOMPILE = @mv -f $(DEPDIR)/$*.Td $(DEPDIR)/$*.d
 
 # ==============================================================================
 SOURCES = $(shell find . -name "*.cpp")

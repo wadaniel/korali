@@ -59,7 +59,7 @@ int main(int argc, char* argv[])
  k["Variables"][3]["Initial Mean"] = 10.0;
  k["Variables"][3]["Initial Standard Deviation"] = 1.0;
 
- k.run();
+ k.runSingle();
 
  return 0;
 }

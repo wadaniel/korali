@@ -11,175 +11,13 @@
 #include <cstdio>
 #include <map>
 
-void korali::Engine::start(bool isDryRun)
+void korali::Engine::run(size_t count, bool isDryRun)
 {
  // Setting output file to stdout, by default.
  korali::setConsoleOutputFile(stdout);
 
  // Initializing Profile Information
- _profileInfo["Engine"].startSegment();
-
- // Setting Run ID
- _runID = korali::getTimehash();
-
- // Setting Configuration
- setConfiguration(_js.getJson());
-
- // Initializing Korali and its modules
- initialize();
-
- // If this is a worker process (not root), there's nothing else to do
- if (_conduit->isRoot() == false) return;
-
- // If this is a dry run and configuration succeeded, print sucess and return
- if (isDryRun)
- {
-  saveState(_resultsOutputPath, "dry.json");
-  korali::logInfo("Minimal",  "--------------------------------------------------------------------\n");
-  korali::logInfo("Minimal",  "Dry Run Successful.\n");
-  korali::logInfo("Minimal",  "--------------------------------------------------------------------\n");
-  return;
- }
-
- // Saving initial state
- saveState(_resultsOutputPath, "initial.json");
-
- auto startTime = std::chrono::system_clock::now();
-
- // Running Solver by generations until at least one termination criterion is satisfied
- while(isExecutionFinished() == false)
- {
-  if (_solver->_currentGeneration % _consoleOutputFrequency == 0)
-  {
-   korali::logInfo("Minimal",  "--------------------------------------------------------------------\n");
-   korali::logInfo("Minimal",  "Starting Generation: #%zu\n", _solver->_currentGeneration);
-   _solver->printGenerationBefore();
-  }
-
-  // Timing and Profiling Start
-  auto t0 = std::chrono::system_clock::now();
-
-  _profileInfo["Engine"].commitSegment();
-  _profileInfo["Solver"].startSegment();
-  _solver->runGeneration();
-  _profileInfo["Solver"].commitSegment();
-  _profileInfo["Engine"].startSegment();
-
-  // Timing and Profiling End
-  auto t1 = std::chrono::system_clock::now();
-
-  if (_solver->_currentGeneration % _consoleOutputFrequency == 0)
-  {
-   _solver->printGenerationAfter();
-   korali::logInfo("Detailed", "Generation Time: %.3fs\n", std::chrono::duration<double>(t1-t0).count());
-  }
-
-  if (_solver->_currentGeneration % _resultsOutputFrequency == 0) saveState(_resultsOutputPath, _solver->_currentGeneration);
-
-  _solver->_currentGeneration++;
- }
-
- _solver->_currentGeneration--;
- _profileInfo["Engine"].commitSegment();
-
-
-  _solver->finalize();
-  _problem->finalize();
-  _conduit->finalize();
-
- // Saving last generation and final.json
- saveState(_resultsOutputPath, _solver->_currentGeneration);
- saveState(_resultsOutputPath, "final.json");
-
- auto endTime = std::chrono::system_clock::now();
-
- korali::logInfo("Minimal", "--------------------------------------------------------------------\n");
- korali::logInfo("Minimal", "%s finished correctly.\n", _solver->getType().c_str(), _solver->_currentGeneration);
- for (size_t i = 0; i < _solver->_terminationCriteria.size(); i++) korali::logInfo("Normal", "Termination Criterion Met: %s\n", _solver->_terminationCriteria[i].c_str());
- for (size_t i = 0; i < _problem->_terminationCriteria.size(); i++) korali::logInfo("Normal", "Termination Criterion Met: %s\n", _problem->_terminationCriteria[i].c_str());
- for (size_t i = 0; i < _conduit->_terminationCriteria.size(); i++) korali::logInfo("Normal", "Termination Criterion Met: %s\n", _conduit->_terminationCriteria[i].c_str());
-
-
- korali::logInfo("Normal", "Total Generations: %lu\n", _solver->_currentGeneration);
- korali::logInfo("Normal", "Total Computational Model Evaluations: %lu\n", _conduit->_modelEvaluationCount);
- korali::logInfo("Normal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(endTime-startTime).count());
-
- for (auto& x : korali::_profileInfo)
-   korali::logInfo("Detailed", "   [%s] Segments: %lu,  Busy Time: %f\n", x.first.c_str(), x.second._segmentTimes.size(), x.second._workTime);
-
- korali::logInfo("Normal", "Results saved to folder: '%s'\n", _resultsOutputPath.c_str());
-}
-
-korali::Solver* _currentSolver;
-void korali::Engine::solverWrapper()
-{
-  korali::Solver* solver = _currentSolver;
-  korali::Engine* engine = solver->_k;
-  korali::Conduit* conduit = engine->_conduit;
-  co_switch(engine->_thread);
-
-  // Saving initial state
-  engine->saveState(solver->_subDirPath, "initial.json");
-
-  auto t0 = std::chrono::system_clock::now();
-
-  while(solver->checkTermination() == false)
-  {
-   if (solver->_currentGeneration % engine->_consoleOutputFrequency == 0)
-   {
-    korali::logInfo("Minimal",  "--------------------------------------------------------------------\n");
-    korali::logInfo("Minimal",  "Starting Generation: #%zu\n", solver->_currentGeneration);
-    solver->printGenerationBefore();
-   }
-
-   // Timing and Profiling Start
-   auto t0 = std::chrono::system_clock::now();
-
-   solver->runGeneration();
-
-   // Timing and Profiling End
-   auto t1 = std::chrono::system_clock::now();
-
-   if (solver->_currentGeneration % engine->_consoleOutputFrequency == 0)
-   {
-    solver->printGenerationAfter();
-    korali::logInfo("Detailed", "Solver: %lu - Generation Time: %.3fs\n", solver->_solverId, std::chrono::duration<double>(t1-t0).count());
-   }
-
-   if (solver->_currentGeneration % engine->_resultsOutputFrequency == 0) engine->saveState(solver->_subDirPath, solver->_currentGeneration);
-
-   solver->_currentGeneration++;
-  }
-
-  auto t1 = std::chrono::system_clock::now();
-
-  solver->_currentGeneration--;
-
-  // Saving last generation and final.json
-  engine->saveState(solver->_subDirPath, solver->_currentGeneration);
-  engine->saveState(solver->_subDirPath, "final.json");
-
-  korali::logInfo("Minimal", "--------------------------------------------------------------------\n");
-  korali::logInfo("Minimal", "%s finished correctly.\n", solver->getType().c_str(), solver->_currentGeneration);
-  for (size_t i = 0; i < solver->_terminationCriteria.size(); i++) korali::logInfo("Normal", "Termination Criterion Met: %s\n", solver->_terminationCriteria[i].c_str());
-
-  solver->finalize();
-  solver->_isFinished = true;
-  korali::logInfo("Normal", "Total Generations: %lu\n", solver->_currentGeneration);
-  korali::logInfo("Normal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(t1-t0).count());
-  korali::logInfo("Normal", "Results saved to folder: '%s'\n", solver->_subDirPath.c_str());
-
-  co_switch(engine->_thread);
-  korali::logError("Trying to continue finished solver thread.\n");
-}
-
-void korali::Engine::runMultiple(size_t count)
-{
- // Setting output file to stdout, by default.
- korali::setConsoleOutputFile(stdout);
-
- // Initializing Profile Information
- _profileInfo["Engine"].startSegment();
+ _startTime = std::chrono::high_resolution_clock::now();
 
  // Setting Run ID
  _runID = korali::getTimehash();
@@ -203,26 +41,35 @@ void korali::Engine::runMultiple(size_t count)
 
   solvers[i] = dynamic_cast<korali::Solver*>(korali::Module::getModule(js["Solver"]));
   solvers[i]->initialize();
-  solvers[i]->_thread = co_create(10240*sizeof(void*), korali::Engine::solverWrapper);
+  solvers[i]->_thread = co_create(10240*sizeof(void*), korali::Solver::solverWrapper);
   solvers[i]->_solverId = i;
 
   // Creating Solver Results directory and logFile
   char dirName[256];
   sprintf(dirName, "solver%05d", i);
-  solvers[i]->_subDirPath = _resultsOutputPath + "/" + dirName;
+  if (count > 1)
+  {
+    solvers[i]->_subDirPath = _resultsOutputPath + "/" + dirName;
+    std::string fileName = "./" + solvers[i]->_subDirPath + "/log.txt";
+    solvers[i]->_logFile = fopen(fileName.c_str(),"w");
+  }
+  else solvers[i]->_subDirPath = _resultsOutputPath;
+
   mkdir(solvers[i]->_subDirPath.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-  std::string fileName = "./" + solvers[i]->_subDirPath + "/log.txt";
-  solvers[i]->_logFile = fopen(fileName.c_str(),"w");
 
   _currentSolver = solvers[i];
-
-  korali::setConsoleOutputFile(solvers[i]->_logFile);
-  _conduit->_currentSolver = solvers[i];
   co_switch(solvers[i]->_thread);
-  korali::setConsoleOutputFile(stdout);
  }
 
- auto startTime = std::chrono::system_clock::now();
+ // If this is a dry run and configuration succeeded, print sucess and return
+ if (isDryRun)
+ {
+  saveState(solvers[0], _resultsOutputPath, "dry.json");
+  korali::logInfo("Minimal",  "--------------------------------------------------------------------\n");
+  korali::logInfo("Minimal",  "Dry Run Successful.\n");
+  korali::logInfo("Minimal",  "--------------------------------------------------------------------\n");
+  return;
+ }
 
  while(true)
  {
@@ -230,47 +77,32 @@ void korali::Engine::runMultiple(size_t count)
 
   for (size_t i = 0; i < count; i++) if (solvers[i]->_isFinished == false)
   {
-   korali::setConsoleOutputFile(solvers[i]->_logFile);
-   _conduit->_currentSolver = solvers[i];
-
-   _profileInfo["Engine"].commitSegment();
-   _profileInfo["Solver" + std::to_string(i)].startSegment();
+   if (count > 1) korali::setConsoleOutputFile(solvers[i]->_logFile);
+   _currentSolver = solvers[i];
 
    co_switch(solvers[i]->_thread);
 
-   _profileInfo["Solver" + std::to_string(i)].commitSegment();
-   _profileInfo["Engine"].startSegment();
-
-   korali::setConsoleOutputFile(stdout);
+   if (count > 1) korali::setConsoleOutputFile(stdout);
    executed = true;
-   if (solvers[i]->_isFinished == true) korali::logInfo("Normal", "Job %lu has finished.\n", i);
+   if (count > 1) if (solvers[i]->_isFinished == true) korali::logInfo("Normal", "Job %lu has finished.\n", i);
   }
 
   if (executed == false) break;
  }
 
- auto endTime = std::chrono::system_clock::now();
-
- korali::logInfo("Minimal", "All %lu jobs have finished correctly.\n", count);
- korali::logInfo("Normal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(endTime-startTime).count());
- korali::logInfo("Normal", "Results saved to folder: '%s'\n", _resultsOutputPath.c_str());
+ if (count > 1) korali::logInfo("Minimal", "All %lu jobs have finished correctly.\n", count);
+ if (count > 1) korali::logInfo("Normal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count());
+ if (count > 1) korali::logInfo("Normal", "Results saved to folder: '%s'\n", _resultsOutputPath.c_str());
 }
 
 void korali::Engine::initialize()
 {
  korali::setVerbosityLevel(_consoleOutputVerbosity);
 
- // Creating Results directory
- mkdir(_resultsOutputPath.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-
  // Initializing Modules
  for (size_t i = 0; i < _k->_distributions.size(); i++) _k->_distributions[i]->initialize();
  _problem->initialize();
- _solver->initialize();
  _conduit->initialize();
-
- _conduit->_currentSolver = _solver;
- _solver->_thread = co_active();
  _thread = co_active();
 }
 
@@ -285,12 +117,7 @@ korali::Engine::Engine(nlohmann::json js) : korali::Engine::Engine()
  setConfiguration(_js.getJson());
 }
 
-bool korali::Engine::isExecutionFinished()
-{
-  return _solver->checkTermination() || _conduit->checkTermination() || _problem->checkTermination();
-}
-
-void korali::Engine::saveState(std::string dirName, std::string fileName)
+void korali::Engine::saveState(korali::Solver* solver, std::string dirName, std::string fileName)
 {
  // Updating run timestamp
  _timestamp = korali::getTimestamp();
@@ -299,9 +126,8 @@ void korali::Engine::saveState(std::string dirName, std::string fileName)
  _js.getJson() = nlohmann::json();
  this->getConfiguration(_js.getJson());
 
- if (_js["Results Output"]["Profiling"] == "Enabled")
-  for (auto const& x : _profileInfo)
-   _js["Profiling"][x.first] = x.second.dumpJson();
+ solver->getConfiguration(_js.getJson()["Solver"]);
+ if (_resultsOutputProfiling == "Enabled") _js["Profiler"] = __profiler;
 
  // Only the root rank saves files
  if (!_conduit->isRoot()) return;
@@ -309,7 +135,7 @@ void korali::Engine::saveState(std::string dirName, std::string fileName)
  korali::JsonInterface::saveJsonToFile(fileName.c_str(), _js.getJson());
 }
 
-void korali::Engine::saveState(std::string dirName, int fileId)
+void korali::Engine::saveState(korali::Solver* solver, std::string dirName, int fileId)
 {
  if (!_conduit->isRoot()) return;
 
@@ -317,7 +143,7 @@ void korali::Engine::saveState(std::string dirName, int fileId)
 
  sprintf(fileName, "gen%05d.json", fileId);
 
- saveState(dirName, fileName);
+ saveState(solver, dirName, fileName);
 }
 
 void korali::Engine::loadState(std::string fileName)
@@ -351,8 +177,8 @@ PYBIND11_MODULE(libkorali, m)
     #endif
    .def("__getitem__", pybind11::overload_cast<pybind11::object>(&korali::Engine::getItem), pybind11::return_value_policy::reference)
    .def("__setitem__", pybind11::overload_cast<pybind11::object, pybind11::object>(&korali::Engine::setItem), pybind11::return_value_policy::reference)
-   .def("run", &korali::Engine::run)
+   .def("run", &korali::Engine::runSingle)
    .def("runMultiple", &korali::Engine::runMultiple)
-   .def("dry", &korali::Engine::dry)
+   .def("runDry", &korali::Engine::runDry)
    .def("loadState",     &korali::Engine::loadState, pybind11::return_value_policy::reference);
 }

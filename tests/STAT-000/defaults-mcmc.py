@@ -19,7 +19,7 @@ k["Solver"]["Type"]  = "Sampler/MCMC"
 k["Console Output"]["Frequency"] = 500
 k["Results Output"]["Frequency"] = 500
 
-k.dry()
+k.runDry()
 
 ###############################################################################
 

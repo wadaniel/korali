@@ -21,7 +21,7 @@ k["Variables"][0]["Prior Distribution"] = "Uniform 0"
 k["Solver"]["Type"] = "Sampler/TMCMC"
 k["Solver"]["Population Size"] = 5000
 
-k.dry()
+k.runDry()
 
 ###############################################################################
 

@@ -90,12 +90,14 @@ void korali::conduit::External::processSample(korali::Sample& sample)
  while (_launcherQueue.empty())
  {
   sample._state = SampleState::waiting;
-  co_switch(__conduit->_currentSolver->_thread);
+  co_switch(_currentSolver->_thread);
  }
 
  int launcherId = _launcherQueue.front(); _launcherQueue.pop();
 
- _profileInfo["Conduit " + std::to_string(launcherId)].startSegment(sample["Sample Id"]);
+ __profiler["Conduit " + std::to_string(launcherId)]["Timestamp"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
+ __profiler["Conduit " + std::to_string(launcherId)]["Segment Id"] += sample["Sample Id"];
+
 
  std::string inputString = sample._js.getJson().dump();
  size_t inputStringSize = inputString.size();
@@ -122,9 +124,11 @@ void korali::conduit::External::processSample(korali::Sample& sample)
   else
   {
    sample._state = SampleState::waiting;
-   co_switch(__conduit->_currentSolver->_thread);
+   co_switch(_currentSolver->_thread);
   }
  }
 
- _profileInfo["Conduit " + std::to_string(launcherId)].commitSegment();
+ __profiler["Conduit " + std::to_string(launcherId)]["Timestamp"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
+ __profiler["Conduit " + std::to_string(launcherId)]["Segment Id"] += sample["Sample Id"];
+
 }

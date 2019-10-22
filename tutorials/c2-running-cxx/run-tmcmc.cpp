@@ -50,7 +50,7 @@ int main(int argc, char* argv[])
  k["Variables"][3]["Bayesian Type"] = "Statistical";
  k["Variables"][3]["Prior Distribution"] = "Uniform 3";
 
- k.run();
+ k.runSingle();
 
  return 0;
 }

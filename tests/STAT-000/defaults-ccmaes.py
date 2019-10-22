@@ -22,7 +22,7 @@ k["Solver"]["Type"]  = "Optimizer/CMAES"
 k["Solver"]["Population Size"] = 32
 
 
-k.dry()
+k.runDry()
 
 ###############################################################################
 

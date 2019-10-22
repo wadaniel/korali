@@ -20,7 +20,7 @@ k["Variables"][0]["Name"] = "X";
 k["Variables"][0]["Lower Bound"] = -10.0;
 k["Variables"][0]["Upper Bound"] = +10.0;
 
-k.dry()
+k.runDry()
 
 ###############################################################################
 

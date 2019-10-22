@@ -35,6 +35,7 @@ def buildTutorials(koraliDir):
    
    ####### Producing List Entry
    
+   print('[Korali] Processing ' + tutorialReadmeFile + '...')
    rowString  = '- **(' + tutorialCode + ')** - [' + tutorialTitle + '](' + tutorialLink + ')  \n'
    listRowsStringDict[tutorialCategory].append(rowString)
    

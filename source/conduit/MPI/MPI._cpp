@@ -131,7 +131,7 @@ void korali::conduit::MPI::processSample(korali::Sample& sample)
  while (_teamQueue.empty())
  {
   sample._state = SampleState::waiting;
-  co_switch(__conduit->_currentSolver->_thread);
+  co_switch(_currentSolver->_thread);
  }
 
  int teamId = _teamQueue.front(); _teamQueue.pop();
@@ -149,7 +149,8 @@ void korali::conduit::MPI::processSample(korali::Sample& sample)
  MPI_Request resultJsonRequest;
  MPI_Irecv(&resultJsonSize, 1, MPI_UNSIGNED_LONG, _teamWorkers[teamId][0], MPI_TAG_SAMPLE_JSON_SIZE, MPI_COMM_WORLD, &resultJsonRequest);
 
- _profileInfo["Conduit " + std::to_string(teamId)].startSegment(sample["Sample Id"]);
+ __profiler["Conduit " + std::to_string(teamId)]["Timestamp"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
+ __profiler["Conduit " + std::to_string(teamId)]["Segment Id"] += sample["Sample Id"];
 
  int flag = 0;
  while(flag == 0)
@@ -166,11 +167,12 @@ void korali::conduit::MPI::processSample(korali::Sample& sample)
   else
   {
    sample._state = SampleState::waiting;
-   co_switch(__conduit->_currentSolver->_thread);
+   co_switch(_currentSolver->_thread);
   }
  }
 
- _profileInfo["Conduit " + std::to_string(teamId)].commitSegment();
+ __profiler["Conduit " + std::to_string(teamId)]["Timestamp"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
+ __profiler["Conduit " + std::to_string(teamId)]["Segment Id"] += -1;
  #endif
 }
 

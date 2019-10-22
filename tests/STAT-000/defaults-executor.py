@@ -14,7 +14,7 @@ k["Solver"]["Type"] = "Executor"
 
 #k["Console Output"]["Verbosity"] = "Detailed"
 
-k.dry()
+k.runDry()
 
 ###############################################################################
 

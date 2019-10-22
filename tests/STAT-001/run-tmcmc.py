@@ -13,6 +13,7 @@ import korali
 k = korali.initialize()
 k["Random Seed"] = 0xC0FFEE
 k["Results Output"]["Path"] = "_result_run-tmcmc"
+k["Console Output"]["Verbosity"] = "Detailed"
 
 # Configuring problem
 k["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Custom"
@@ -31,7 +32,7 @@ k["Variables"][0]["Name"] = "X"
 k["Variables"][0]["Prior Distribution"] = "Uniform 0"
 # Configuring the TMCMC sampler parameters
 k["Solver"]["Type"] = "Sampler/TMCMC"
-k["Solver"]["Population Size"] = 5000
+k["Solver"]["Population Size"] = 1000
 k["Solver"]["Covariance Scaling"] = 0.04
 
 # Running Korali

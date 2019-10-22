@@ -18,7 +18,7 @@ k["Variables"][0]["Upper Bound"] = +10.0;
 k["Solver"]["Type"] = "Optimizer/DEA"
 k["Solver"]["Population Size"] = 32
 
-k.dry()
+k.runDry()
 
 ###############################################################################
 

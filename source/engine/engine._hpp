@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <functional>
+#include <chrono>
 #include "engine/sample/sample.hpp"
 #include "engine/variable/variable.hpp"
 #include "auxiliar/koraliJson.hpp"
@@ -21,10 +22,11 @@ class Engine : public korali::Module {
 
  // Start functions
  void initialize() override;
- void start(bool isDryRun);
- void run() { start(false); }
- void runMultiple(size_t count);
- void dry() { start(true);  }
+
+ void run(size_t count, bool isDryRun);
+ void runSingle() { run(1, false); }
+ void runMultiple(size_t count) { run(count, false); }
+ void runDry() { run(1, true); }
 
  // Constructors
  Engine();
@@ -35,7 +37,6 @@ class Engine : public korali::Module {
 
  // Multiple Solver Variables/Functions
  cothread_t _thread;
- static void solverWrapper();
 
  pybind11::object getItem(pybind11::object key);
  void setItem(pybind11::object key, pybind11::object val);
@@ -44,10 +45,9 @@ class Engine : public korali::Module {
  nlohmann::json& operator[](const unsigned long int& key);
 
  // State save/load methods
- bool isExecutionFinished();
  void loadState(std::string fileName);
- void saveState(std::string dirName, std::string fileName);
- void saveState(std::string dirName, int fileId);
+ void saveState(korali::Solver*, std::string dirName, std::string fileName);
+ void saveState(korali::Solver*, std::string dirName, int fileId);
 
  // Communicator Methods
  long int getMPICommPointer();

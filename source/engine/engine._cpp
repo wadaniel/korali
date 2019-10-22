@@ -34,6 +34,9 @@ void korali::Engine::run(size_t count, bool isDryRun)
  _thread = co_active();
  auto solvers = std::vector<korali::Solver*>(count);
 
+ // Creating results directory
+ mkdir(_resultsOutputPath.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+
  for (size_t i = 0; i < count; i++)
  {
   auto js = nlohmann::json();
@@ -50,12 +53,11 @@ void korali::Engine::run(size_t count, bool isDryRun)
   if (count > 1)
   {
     solvers[i]->_subDirPath = _resultsOutputPath + "/" + dirName;
+    mkdir(solvers[i]->_subDirPath.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
     std::string fileName = "./" + solvers[i]->_subDirPath + "/log.txt";
     solvers[i]->_logFile = fopen(fileName.c_str(),"w");
   }
-  else solvers[i]->_subDirPath = _resultsOutputPath;
-
-  mkdir(solvers[i]->_subDirPath.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+  else  solvers[i]->_subDirPath = _resultsOutputPath;
 
   _currentSolver = solvers[i];
   co_switch(solvers[i]->_thread);

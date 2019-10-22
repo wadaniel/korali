@@ -13,7 +13,7 @@ import korali
 k = korali.initialize()
 k["Random Seed"] = 0xC0FFEE
 k["Results Output"]["Path"] = "_result_run-mcmc"
-k["Console Output"]["Verbosity"] = "Detailed"
+#k["Console Output"]["Verbosity"] = "Detailed"
 
 # Selecting problem and solver types.
 k["Problem"]["Type"] = "Evaluation/Direct/Basic"

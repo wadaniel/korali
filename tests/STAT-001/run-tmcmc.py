@@ -13,7 +13,7 @@ import korali
 k = korali.initialize()
 k["Random Seed"] = 0xC0FFEE
 k["Results Output"]["Path"] = "_result_run-tmcmc"
-k["Console Output"]["Verbosity"] = "Detailed"
+#k["Console Output"]["Verbosity"] = "Detailed"
 
 # Configuring problem
 k["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Custom"

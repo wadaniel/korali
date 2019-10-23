@@ -2,7 +2,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-for k in range(9):
+for k in range(5):
   dataFile = "../setup/data/data_set_" + str(k).zfill(3) + ".dat"
   x = np.loadtxt(dataFile)
   count, bins, ignored = plt.hist(x, 'sturges', density=True, rwidth=0.9)

@@ -23,7 +23,8 @@ k = korali.initialize()
 
 k["Problem"]["Type"] = "Evaluation/GaussianProcess"
 k["Problem"]["Covariance Function"] = "CovSum ( CovSEiso, CovNoise)"
-x, y = read_matrix_for_gp('data/sincos3d_train.dat')
+# k["Problem"]["Covariance Function"] = "CovSum ( CovPeriodic, CovNoise)"
+x, y = read_matrix_for_gp('data/sincos1d_train.dat')
 k["Problem"]["X Data"] = x
 k["Problem"]["Y Data"] = y
 
@@ -41,7 +42,7 @@ k.run()
 k = korali.initialize()
 k["Problem"]["Type"] = "Execution/GaussianProcess"
 k["Problem"]["Gaussian Process Json File"] =  "_korali_result_train/final.json"
-x, y = read_matrix_for_gp('data/sincos3d_test.dat')
+x, y = read_matrix_for_gp('data/sincos1d_test.dat')
 k["Problem"]["X Data"] = x
 k["Problem"]["Y Data"] = y
 
@@ -58,7 +59,7 @@ k.run()
 k = korali.initialize()
 k["Problem"]["Type"] = "Execution/GaussianProcess"
 k["Problem"]["Gaussian Process Json File"] =  "_korali_result_train/final.json"
-x, y = read_matrix_for_gp('data/sincos3d_new.dat',lastColumnIsData=True)
+x, y = read_matrix_for_gp('data/sincos1d_new.dat',lastColumnIsData=True)
 k["Problem"]["X Data"] = x
 k["Problem"]["Y Data"] = y
 

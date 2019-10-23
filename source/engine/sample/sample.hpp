@@ -1,10 +1,9 @@
 #ifndef __KORALI_SAMPLE_HPP_
 #define __KORALI_SAMPLE_HPP_
 
-#include "auxiliar/logger.hpp"
-#include "engine/sample/libco/libco.h"
-#include "auxiliar/json.hpp"
 #include "auxiliar/koraliJson.hpp"
+#include "auxiliar/logger.hpp"
+#include "external/libco/libco.h"
 #include <string>
 
 #undef _POSIX_C_SOURCE

@@ -2,7 +2,6 @@
 #define _KORALI_CONDUIT_SIMPLE_HPP_
 
 #include "conduit/conduit.hpp"
-#include "auxiliar/json.hpp"
 #include <vector>
 
 namespace korali { namespace conduit {

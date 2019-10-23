@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 #include <functional>
-#include "auxiliar/json.hpp"
+#include "external/json/json.hpp"
 #include "pybind11/pybind11.h"
 #include "pybind11/stl.h"
 #include "engine/sample/sample.hpp"

@@ -2,7 +2,6 @@
 #define _KORALI_DISTRIBUTION_MULTIVARIATE_NORMAL_HPP_
 
 #include "distribution/multivariate/multivariate.hpp"
-#include <auxiliar/json.hpp>
 
 namespace korali { namespace distribution { namespace multivariate {
 

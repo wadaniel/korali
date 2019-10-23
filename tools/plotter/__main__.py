@@ -28,8 +28,7 @@ def main(path, allFiles, live, generation, mean, check, test):
 
     exit(-1)
 
- from korali.plotter.helpers import sig
- signal.signal(signal.SIGINT, sig)
+ signal.signal(signal.SIGINT, lambda x, y: exit(0))
 
  firstResult = path + '/initial.json'
  if ( not os.path.isfile(firstResult) ):

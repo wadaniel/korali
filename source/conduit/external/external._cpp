@@ -95,8 +95,7 @@ void korali::conduit::External::processSample(korali::Sample& sample)
 
  int launcherId = _launcherQueue.front(); _launcherQueue.pop();
 
- __profiler["Timelines"]["Worker " + std::to_string(launcherId)]["Timestamp"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
- __profiler["Timelines"]["Worker " + std::to_string(launcherId)]["Segment Id"] += sample["Sample Id"];
+ __profiler["Timelines"]["Worker " + std::to_string(launcherId)] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
 
 
  std::string inputString = sample._js.getJson().dump();
@@ -128,7 +127,6 @@ void korali::conduit::External::processSample(korali::Sample& sample)
   }
  }
 
- __profiler["Timelines"]["Worker " + std::to_string(launcherId)]["Timestamp"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
- __profiler["Timelines"]["Worker " + std::to_string(launcherId)]["Segment Id"] += sample["Sample Id"];
+ __profiler["Timelines"]["Worker " + std::to_string(launcherId)] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
 
 }

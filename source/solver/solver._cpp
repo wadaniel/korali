@@ -9,8 +9,7 @@ void korali::Solver::solverWrapper()
   korali::Conduit* conduit = engine->_conduit;
   co_switch(engine->_thread);
 
-  __profiler["Timelines"]["Engine"]["Timestamp"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
-  __profiler["Timelines"]["Engine"]["Segment Id"] += _currentSolver->_solverId;
+  __profiler["Timelines"]["Engine"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
 
   // Saving initial state
   engine->saveState(solver, solver->_subDirPath, "initial.json");
@@ -51,8 +50,7 @@ void korali::Solver::solverWrapper()
   solver->_currentGeneration--;
   solver->finalize();
 
-  __profiler["Timelines"]["Engine"]["Timestamp"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
-  __profiler["Timelines"]["Engine"]["Segment Id"] += -1;
+  __profiler["Timelines"]["Engine"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
 
   korali::logInfo("Minimal", "--------------------------------------------------------------------\n");
   korali::logInfo("Minimal", "%s finished correctly.\n", solver->getType().c_str(), solver->_currentGeneration);

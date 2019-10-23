@@ -8,13 +8,6 @@ from korali.fileIO import *
 from matplotlib.collections import LineCollection
 from matplotlib.colors import ListedColormap, BoundaryNorm
 
-
-# For simple exit after keyboard interrupt
-def sig(a, b):
-    print("[Korali] Keyboard Interrupt - Bye!")
-    exit(0)
-
-
 # Initialize list of lists and return solver & variable names, dimension, and
 # generation
 def initDefaults(directory, filename, lists):

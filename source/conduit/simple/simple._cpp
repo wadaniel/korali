@@ -8,12 +8,12 @@ void korali::conduit::Simple::processSample(korali::Sample& sample)
 {
  _modelEvaluationCount++;
 
- __profiler["Conduit 0"]["Timestamp"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
- __profiler["Conduit 0"]["Segment Id"] += sample["Sample Id"];
+ __profiler["Timelines"]["Worker 0"]["Timestamp"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
+ __profiler["Timelines"]["Worker 0"]["Segment Id"] += sample["Sample Id"];
 
  _k->_problem->runOperation(sample["Operation"], sample);
 
- __profiler["Conduit 0"]["Timestamp"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
- __profiler["Conduit 0"]["Segment Id"] += -1;
+ __profiler["Timelines"]["Worker 0"]["Timestamp"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
+ __profiler["Timelines"]["Worker 0"]["Segment Id"] += -1;
 }
 

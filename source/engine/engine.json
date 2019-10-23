@@ -66,7 +66,7 @@
    {
     "Name": ["Results Output", "Profiling" ],
     "Type": "std::string",
-    "Default": "Disabled",
+    "Default": "Enabled",
     "Options": [
                 { "Value": "Disabled", "Description": "Calculates and stores no profiling information." },
                 { "Value": "Enabled", "Description": "Stores all the raw data about the execution of Korali to produce a timeline or perform an in-depth analysis.." }

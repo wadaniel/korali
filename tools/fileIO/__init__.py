@@ -13,9 +13,11 @@ def getResultFiles(src, start=None, end=None, noisy=False):
         #print("[Korali] Error: Did not find file 'initial.json' in the result folder...")
         return []
     
-    resultfilesTmp.remove('initial.json')
-    if ('final.json' in resultfilesTmp): 
-        resultfilesTmp.remove('final.json')
+    auxList = resultfilesTmp
+    resultfilesTmp = []
+    for f in auxList: 
+     if (f.startswith('gen')): 
+      resultfilesTmp.append(f)
 
     if (resultfilesTmp == []):
         return []
@@ -32,7 +34,6 @@ def getResultFiles(src, start=None, end=None, noisy=False):
         
         with open(path) as f:
             data = json.load(f)
-            print(path)
             gen  = data['Solver']['Internal']['Current Generation']
             
             if verifyResultFile(data, path, runId, start, end, noisy):

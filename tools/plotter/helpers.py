@@ -67,10 +67,10 @@ def readFiles(src, start=None, end=None, noisy=True):
         print("[Korali] Error: Did not find file 'initial.json' in the result folder...")
         exit(-1)
     
-    resultfilesTmp.remove('initial.json')
-    if ('final.json' in resultfilesTmp): 
-        resultfilesTmp.remove('final.json')
-
+    for f in resultFilesTmp:
+     if (not f.startswith('gen')): resultFilesTmp.remove(f)
+     
+    print(resultFilesTmp)
     if (resultfilesTmp == []):
         print("[Korali] Error: Did not find file {0} in the result folder...".format(src))
         exit(-1)

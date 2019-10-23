@@ -92,9 +92,12 @@ void korali::Engine::run(size_t count, bool isDryRun)
   if (executed == false) break;
  }
 
- if (count > 1) korali::logInfo("Minimal", "All %lu jobs have finished correctly.\n", count);
- if (count > 1) korali::logInfo("Normal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count());
- if (count > 1) korali::logInfo("Normal", "Results saved to folder: '%s'\n", _resultsOutputPath.c_str());
+ if (count > 1)
+ {
+  korali::logInfo("Minimal", "All %lu jobs have finished correctly.\n", count);
+  korali::logInfo("Normal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count());
+  korali::logInfo("Normal", "Results saved to folder: '%s'\n", _resultsOutputPath.c_str());
+ }
 }
 
 void korali::Engine::initialize()
@@ -127,14 +130,16 @@ void korali::Engine::saveState(korali::Solver* solver, std::string dirName, std:
  // Getting configuration
  _js.getJson() = nlohmann::json();
  this->getConfiguration(_js.getJson());
-
  solver->getConfiguration(_js.getJson()["Solver"]);
- if (_resultsOutputProfiling == "Enabled") _js["Profiler"] = __profiler;
 
  // Only the root rank saves files
  if (!_conduit->isRoot()) return;
  fileName = "./" + dirName + "/" + fileName;
  korali::JsonInterface::saveJsonToFile(fileName.c_str(), _js.getJson());
+
+ __profiler["Elapsed Time"] = std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
+ fileName = "./" + _resultsOutputPath + "/profiling.json";
+ korali::JsonInterface::saveJsonToFile(fileName.c_str(), __profiler);
 }
 
 void korali::Engine::saveState(korali::Solver* solver, std::string dirName, int fileId)

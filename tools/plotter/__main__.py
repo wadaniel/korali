@@ -68,7 +68,7 @@ def main(path, allFiles, live, generation, mean, check, test):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(prog='korali.plotter', description='Process korali results in _korali_result (default) folder.')
+    parser = argparse.ArgumentParser(prog='korali.plotter', description='Plot the results of a Korali execution.')
     parser.add_argument('--dir', help='directory of result files', default='_korali_result', required = False)
     parser.add_argument('--all', help='plot all available results', action='store_true', required = False)
     parser.add_argument('--live', help='no auto close, keep polling for new result files', action='store_true', required = False)

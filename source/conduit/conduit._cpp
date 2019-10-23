@@ -33,8 +33,8 @@ void korali::Conduit::start(korali::Sample& sample)
 
 void korali::Conduit::wait(korali::Sample& sample)
 {
- __profiler["Main Thread"]["Timestamps"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
- __profiler["Main Thread"]["Segment Id"] += -1;
+ __profiler["Timelines"]["Engine"]["Timestamp"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
+ __profiler["Timelines"]["Engine"]["Segment Id"] += -1;
 
  while(sample._state == SampleState::waiting || sample._state == SampleState::initialized)
  {
@@ -47,8 +47,8 @@ void korali::Conduit::wait(korali::Sample& sample)
  free(sample._sampleThread);
  sample._state = SampleState::uninitialized;
 
- __profiler["Main Thread"]["Timestamps"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
- __profiler["Main Thread"]["Segment Id"] += _currentSolver->_solverId;
+ __profiler["Timelines"]["Engine"]["Timestamp"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
+ __profiler["Timelines"]["Engine"]["Segment Id"] += _currentSolver->_solverId;
 }
 
 size_t korali::Conduit::waitAny(std::vector<korali::Sample>& samples)
@@ -56,8 +56,8 @@ size_t korali::Conduit::waitAny(std::vector<korali::Sample>& samples)
  bool isFinished = false;
  size_t currentSample;
 
- __profiler["Main Thread"]["Timestamps"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
- __profiler["Main Thread"]["Segment Id"] += -1;
+ __profiler["Timelines"]["Engine"]["Timestamp"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
+ __profiler["Timelines"]["Engine"]["Segment Id"] += -1;
 
  while (isFinished == false)
  {
@@ -81,8 +81,8 @@ size_t korali::Conduit::waitAny(std::vector<korali::Sample>& samples)
   if (isFinished == false) co_switch(__conduit->_k->_thread);
  }
 
- __profiler["Main Thread"]["Timestamps"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
- __profiler["Main Thread"]["Segment Id"] += _currentSolver->_solverId;
+ __profiler["Timelines"]["Engine"]["Timestamp"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
+ __profiler["Timelines"]["Engine"]["Segment Id"] += _currentSolver->_solverId;
 
  return currentSample;
 }
@@ -91,8 +91,8 @@ void korali::Conduit::waitAll(std::vector<korali::Sample>& samples)
 {
  bool isFinished = false;
 
- __profiler["Main Thread"]["Timestamps"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
- __profiler["Main Thread"]["Segment Id"] += -1;
+ __profiler["Timelines"]["Engine"]["Timestamp"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
+ __profiler["Timelines"]["Engine"]["Segment Id"] += -1;
 
  while (isFinished == false)
  {
@@ -115,6 +115,6 @@ void korali::Conduit::waitAll(std::vector<korali::Sample>& samples)
   samples[i]._state = SampleState::uninitialized;
  }
 
- __profiler["Main Thread"]["Timestamps"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
- __profiler["Main Thread"]["Segment Id"] += _currentSolver->_solverId;
+ __profiler["Timelines"]["Engine"]["Timestamp"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
+ __profiler["Timelines"]["Engine"]["Segment Id"] += _currentSolver->_solverId;
 }

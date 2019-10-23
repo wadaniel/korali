@@ -20,9 +20,10 @@ def buildDistributions(koraliDir):
   distributionPath =  distributionsDir + '/' + distributionPath
   if (os.path.isdir(distributionPath)):
    distributionName = distributionPath.replace(distributionsDir + '/', '')
-  
+   
    # Loading JSON Configuration
    distributionJsonFile = distributionPath + '/' + distributionName + '.json'
+   print('[Korali] Opening ' + distributionJsonFile + '...')
    if (not os.path.isfile(distributionJsonFile)): continue 
    with open(distributionJsonFile, 'r') as file: distributionJsonString = file.read()
    distributionConfig = json.loads(distributionJsonString)
@@ -32,11 +33,11 @@ def buildDistributions(koraliDir):
    distributionDocFile = distributionPath + '/' + distributionName + '.md'
    with open(distributionDocFile, 'r') as file: distributionDocString = file.read()
    
-   distributionDocString = '# ' + distributionConfig["Name"] + '\n\n' + distributionDocString 
+   distributionDocString = '# ' + 'NameHere' + '\n\n' + distributionDocString 
    
    distributionSettingsString = '### Conditional Variables\n\n'
-   if (not distributionConfig["Distribution Configuration"]): distributionSettingsString += '*none*'
-   for v in distributionConfig["Distribution Configuration"]:
+   if (not distributionConfig["Configuration Settings"]): distributionSettingsString += '*none*'
+   for v in distributionConfig["Configuration Settings"]:
     distributionSettingsString += getVariableInfo(v, distributionName)
    distributionDocString = distributionDocString.replace('### Distribution Settings', distributionSettingsString + '\n\n')  
      

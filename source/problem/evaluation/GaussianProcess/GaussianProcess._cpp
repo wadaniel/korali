@@ -21,7 +21,7 @@ void korali::problem::evaluation::GaussianProcess::initialize()
 
   for (size_t i= 0; i < _parameterDimension; i++){
     _k->_variables[i]->_name = "X" + std::to_string(i);
-    _k->_variables[i]->_initialValue = 0;
+    _k->_variables[i]->_initialValue = 0.1;
   }
 
   Eigen::VectorXd eParameters( _parameterDimension );

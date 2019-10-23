@@ -11,6 +11,21 @@ k = korali.initialize()
 k["Problem"]["Type"]  = "Evaluation/Bayesian/Hierarchical/Psi"
 k["Problem"]["Sub Problems"] = ['../setup/results_phase_1/' + str(i).zfill(3) + '/final.json' for i in range(5)]
 
+
+# Add probability of theta given psi, one per subproblem variable.
+
+k["Variables"][0]["Name"] = "Psi 1"
+k["Variables"][1]["Name"] = "Psi 2"
+k["Variables"][2]["Name"] = "Psi 3"
+k["Variables"][3]["Name"] = "Psi 4"
+
+k["Variables"][0]["Prior Distribution"] = "Uniform 0"
+k["Variables"][1]["Prior Distribution"] = "Uniform 1"
+k["Variables"][2]["Prior Distribution"] = "Uniform 2"
+k["Variables"][3]["Prior Distribution"] = "Uniform 3"
+
+k["Problem"]["Conditional Priors"] = [ "Conditional 0", "Conditional 1" ]
+
 # Configuring the problem's random distributions
 k["Distributions"][0]["Name"] = "Conditional 0"
 k["Distributions"][0]["Type"] = "Univariate/Normal"
@@ -29,7 +44,7 @@ k["Distributions"][2]["Maximum"] = 20.0
 
 k["Distributions"][3]["Name"] = "Uniform 1"
 k["Distributions"][3]["Type"] = "Univariate/Uniform"
-k["Distributions"][3]["Minimum"] = 0.0 
+k["Distributions"][3]["Minimum"] = 0.0
 k["Distributions"][3]["Maximum"] = 20.0
 
 k["Distributions"][4]["Name"] = "Uniform 2"
@@ -42,18 +57,7 @@ k["Distributions"][5]["Type"] = "Univariate/Uniform"
 k["Distributions"][5]["Minimum"] = 0.0
 k["Distributions"][5]["Maximum"] = 5.0
 
-# Add probability of theta given psi, one per subproblem variable. 
-k["Problem"]["Conditional Priors"] = [ "Conditional 0", "Conditional 1" ]
 
-k["Variables"][0]["Name"] = "Psi 1"
-k["Variables"][1]["Name"] = "Psi 2"
-k["Variables"][2]["Name"] = "Psi 3"
-k["Variables"][3]["Name"] = "Psi 4"
-
-k["Variables"][0]["Prior Distribution"] = "Uniform 0"
-k["Variables"][1]["Prior Distribution"] = "Uniform 1"
-k["Variables"][2]["Prior Distribution"] = "Uniform 2"
-k["Variables"][3]["Prior Distribution"] = "Uniform 3"
 
 k["Solver"]["Type"] = "Sampler/TMCMC"
 k["Solver"]["Population Size"] = 2000

@@ -113,9 +113,12 @@ for j in range(len(xdim)):
 gntEff = pyplot.subplot(312)
 gntEff.set_ylim(0, 1.0)
 gntEff.set_xlim(0, elapsedTime)
-for y in ydims: gntEff.plot(xdim, y)
+effLabels = []
+if (len(ydims) < 10):
+ for y in ydims: gntEff.plot(xdim, y)
+ effLabels = labels
 gntEff.plot(xdim, averageEfficiency, '--')
-gntEff.legend(labels + [ 'Average' ])
+gntEff.legend(effLabels + [ 'Average' ])
 gntEff.set_ylabel('Worker Efficiency')  
  
 #### Creating Load Imbalance Plot

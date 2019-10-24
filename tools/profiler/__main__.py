@@ -68,9 +68,9 @@ yticks = []
 for i in range(len(timeLists)):
  yticks.append(10 + i*10)
  
-gntTime.set_yticks(yticks) 
-gntTime.set_yticklabels(labels) 
-gntTime.set_title('Worker Timelines')
+#gntTime.set_yticks(yticks) 
+#gntTime.set_yticklabels(labels) 
+gntTime.set_ylabel('Worker Timelines')
 
 # Setting graph attribute 
 gntTime.grid(False) 
@@ -111,7 +111,11 @@ for j in range(len(xdim)):
  averageEfficiency.append(totalEfficiency / len(startLists))
  
 gntEff = pyplot.subplot(312)
-gntEff.set_ylim(0, 1.0)
+minLimit = min(ydims[-1])*0.9
+maxLimit = max(ydims[-1])*1.1
+if (maxLimit > 1.0): maxLimit = 1.0
+if (minLimit < 0.0): minLimit = 0.0
+gntEff.set_ylim(minLimit, maxLimit)
 gntEff.set_xlim(0, elapsedTime)
 effLabels = []
 if (len(ydims) < 10):
@@ -146,10 +150,11 @@ for ct in xdim:
 
 # Declaring load imbalance plot
 gntLoad = pyplot.subplot(313)
-maxImbalance = max(loadImbalances) * 3
-if (maxImbalance > 100): maxImbalance = 100
-if (maxImbalance < 15): maxImbalance = 15
-gntLoad.set_ylim(0, maxImbalance)
+minLimit = min(loadImbalances)*0.9
+maxLimit = max(loadImbalances)*1.1
+if (maxLimit > 1.0): maxLimit = 1.0
+if (minLimit < 0.0): minLimit = 0.0
+gntLoad.set_ylim(minLimit, maxLimit)
 gntLoad.set_xlim(0, elapsedTime)
 gntLoad.plot(xdim, loadImbalances)
 

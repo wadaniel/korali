@@ -41,6 +41,11 @@ for x in js["Timelines"]:
   timeLists.append(js["Timelines"][x])
   labels.append(x)
 
+#### Creating Figure
+
+fig, axs = pyplot.subplots(3, 1, sharex=True, figsize=(25, 10))
+fig.subplots_adjust(hspace=0)
+
 #### Creating Timeline Plot
 
 # Calculating segment durations
@@ -53,31 +58,31 @@ for i in range(len(timeLists)):
   startLists[i].append(timeLists[i][j])
   durationLists[i].append(timeLists[i][j+1] - timeLists[i][j])
   
-# Declaring a figure "gntTime" 
+# Declaring a figure "axs[0]" 
 pyplot.figure(1, figsize=(25, 10))
-gntTime = pyplot.subplot(311) 
   
 # Setting Y-axis limits 
-gntTime.set_ylim(0, 10 + len(timeLists) * 10) 
+upperLimit = 10 + len(timeLists) * 10
+axs[0].set_ylim(0, upperLimit) 
   
 # Setting X-axis limits 
-gntTime.set_xlim(0, elapsedTime) 
+axs[0].set_xlim(0, elapsedTime) 
   
 # Setting ticks on y-axis 
-yticks = []
+yticks = [] 
 for i in range(len(timeLists)):
  yticks.append(10 + i*10)
  
-#gntTime.set_yticks(yticks) 
-#gntTime.set_yticklabels(labels) 
-gntTime.set_ylabel('Worker Timelines')
+axs[0].set_yticks([10, upperLimit-10]) 
+axs[0].set_yticklabels(['0', str(len(startLists))]) 
+axs[0].set_ylabel('Worker Timelines')
 
 # Setting graph attribute 
-gntTime.grid(False) 
+axs[0].grid(False) 
 
 for i in range(len(startLists)):
  segList = [ (startLists[i][j], durationLists[i][j]) for j in range(0, len(startLists[i])) ]
- gntTime.broken_barh(segList, (yticks[i] - 5, 9), facecolors = ('tab:blue', 'blue') )
+ axs[0].broken_barh(segList, (yticks[i] - 5, 9), facecolors = ('tab:blue', 'blue') )
 
 #### Creating Efficiency Plot 
 N = 1000
@@ -110,20 +115,19 @@ for j in range(len(xdim)):
   totalEfficiency += ydims[i][j]
  averageEfficiency.append(totalEfficiency / len(startLists))
  
-gntEff = pyplot.subplot(312)
 minLimit = min(ydims[-1])*0.9
 maxLimit = max(ydims[-1])*1.1
 if (maxLimit > 1.0): maxLimit = 1.0
 if (minLimit < 0.0): minLimit = 0.0
-gntEff.set_ylim(minLimit, maxLimit)
-gntEff.set_xlim(0, elapsedTime)
+axs[1].set_ylim(minLimit, maxLimit)
+axs[1].set_xlim(0, elapsedTime)
 effLabels = []
 if (len(ydims) < 10):
- for y in ydims: gntEff.plot(xdim, y)
+ for y in ydims: axs[1].plot(xdim, y)
  effLabels = labels
-gntEff.plot(xdim, averageEfficiency, '--')
-gntEff.legend(effLabels + [ 'Average' ])
-gntEff.set_ylabel('Worker Efficiency')  
+axs[1].plot(xdim, averageEfficiency, '--')
+axs[1].legend(effLabels + [ 'Average' ])
+axs[1].set_ylabel('Worker Efficiency')  
  
 #### Creating Load Imbalance Plot
 
@@ -149,17 +153,16 @@ for ct in xdim:
  loadImbalances.append(loadImbalance)
 
 # Declaring load imbalance plot
-gntLoad = pyplot.subplot(313)
 minLimit = min(loadImbalances)*0.9
 maxLimit = max(loadImbalances)*1.1
 if (maxLimit > 1.0): maxLimit = 1.0
 if (minLimit < 0.0): minLimit = 0.0
-gntLoad.set_ylim(minLimit, maxLimit)
-gntLoad.set_xlim(0, elapsedTime)
-gntLoad.plot(xdim, loadImbalances)
+axs[2].set_ylim(minLimit, maxLimit)
+axs[2].set_xlim(0, elapsedTime)
+axs[2].plot(xdim, loadImbalances)
 
 # Setting labels for x-axis and y-axis
-gntLoad.set_ylabel('Load Imbalance %')  
-gntLoad.set_xlabel('Time Elapsed (seconds)') 
+axs[2].set_ylabel('Load Imbalance %')  
+axs[2].set_xlabel('Time Elapsed (seconds)') 
 
 pyplot.show() 

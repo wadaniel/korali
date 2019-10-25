@@ -33,7 +33,7 @@ void korali::Conduit::start(korali::Sample& sample)
 
 void korali::Conduit::wait(korali::Sample& sample)
 {
- __profiler["Timelines"]["Engine"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
+ // __profiler["Timelines"]["Engine"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
 
  while(sample._state == SampleState::waiting || sample._state == SampleState::initialized)
  {
@@ -46,7 +46,7 @@ void korali::Conduit::wait(korali::Sample& sample)
  free(sample._sampleThread);
  sample._state = SampleState::uninitialized;
 
- __profiler["Timelines"]["Engine"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
+ // __profiler["Timelines"]["Engine"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
 }
 
 size_t korali::Conduit::waitAny(std::vector<korali::Sample>& samples)
@@ -54,7 +54,7 @@ size_t korali::Conduit::waitAny(std::vector<korali::Sample>& samples)
  bool isFinished = false;
  size_t currentSample;
 
- __profiler["Timelines"]["Engine"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
+ // __profiler["Timelines"]["Engine"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
 
  while (isFinished == false)
  {
@@ -78,7 +78,7 @@ size_t korali::Conduit::waitAny(std::vector<korali::Sample>& samples)
   if (isFinished == false) co_switch(__conduit->_k->_thread);
  }
 
- __profiler["Timelines"]["Engine"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
+ // __profiler["Timelines"]["Engine"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
 
  return currentSample;
 }
@@ -87,7 +87,7 @@ void korali::Conduit::waitAll(std::vector<korali::Sample>& samples)
 {
  bool isFinished = false;
 
- __profiler["Timelines"]["Engine"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
+ // __profiler["Timelines"]["Engine"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
 
  while (isFinished == false)
  {
@@ -110,5 +110,5 @@ void korali::Conduit::waitAll(std::vector<korali::Sample>& samples)
   samples[i]._state = SampleState::uninitialized;
  }
 
- __profiler["Timelines"]["Engine"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
+ // __profiler["Timelines"]["Engine"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
 }

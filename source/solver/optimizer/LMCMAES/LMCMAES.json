@@ -54,28 +54,10 @@
     "Description": "Covariance matrix updates will be optimized for diagonal matrices."
    },
    {
-    "Name": [ "Viability Population Size" ],
-    "Default": "2",
-    "Type": "size_t",
-    "Description": "Specifies the number of samples per generation during the viability regime, i.e. during the search for a parameter vector not violating the constraints."
-   },
-   {
-    "Name": [ "Viability Mu Value" ],
-    "Default": "_viabilityPopulationSize*0.5",
-    "Type": "size_t",
-    "Description": "Number of best samples used to update the covariance matrix and the mean during the viability regime (by default this variable is hald the Viability Sample Count)."
-   },
-   {
     "Name": [ "Max Covariance Matrix Corrections" ],
     "Default": "1e6",
     "Type": "size_t",
     "Description": "Max number of covairance matrix adaptions per generation during the constraint handling loop."
-   },
-   {
-    "Name": [ "Target Success Rate" ],
-    "Default": "0.1818",
-    "Type": "double",
-    "Description": "Controls the updates of the covariance matrix scaling factor during the viability regime."
    },
    {
     "Name": [ "Covariance Matrix Adaption Strength" ],
@@ -105,13 +87,6 @@
     "Default": "100",
     "Criteria": "_currentGeneration > _maxGenerations",
     "Description": "Determines how many solver generations to run before stopping execution. Execution can be resumed at a later moment."
-   },
-   {
-    "Name": [ "Max Infeasible Resamplings" ],
-    "Type": "size_t",
-    "Default": "10000000",
-    "Criteria": "_infeasibleSampleCount >= _maxInfeasibleResamplings",
-    "Description": "Maximum number of resamplings per candidate per generation if sample is outside of Lower and Upper Bound."
    },
    {
     "Name": [ "Max Condition Covariance Matrix" ],
@@ -182,11 +157,6 @@
  "Internal Settings":
  [
    {
-    "Name": [ "Is Viability Regime" ],
-    "Type": "bool",
-    "Description": "True if mean is outside feasible domain. During viability regime CMA-ES is working with relaxed constraint boundaries that contract towards the true constraint boundaries."
-   },
-   {
     "Name": [ "Value Vector" ],
     "Type": "std::vector<double>",
     "Description": "Objective function values."
@@ -195,16 +165,6 @@
     "Name": [ "Previous Value Vector" ],
     "Type": "std::vector<double>",
     "Description": "Objective function values from previous generation."
-   },
-   {
-    "Name": [ "Current Population Size" ],
-    "Type": "size_t",
-    "Description": "Actual number of samples used per generation (Population Size or Viability Population Size)."
-   },
-   {
-    "Name": [ "Current Mu Value" ],
-    "Type": "size_t",
-    "Description": "Actual value of mu (Mu Value or Viability Mu Value)."
    },
    {
     "Name": [ "Mu Weights" ],
@@ -370,7 +330,7 @@
     "Name": [ "Conjugate Evolution Path L2 Norm" ],
     "Type": "double",
     "Description": "L2 Norm of the conjugate evolution path."
-   },
+   }, 
    {
     "Name": [ "Infeasible Sample Count" ],
     "Type": "size_t",
@@ -402,16 +362,6 @@
     "Description": "Flag determining if the covariance eigensystem is up to date."
    },
    {
-    "Name": [ "Viability Indicator" ],
-    "Type": "std::vector<std::vector<bool>>",
-    "Description": "Evaluation of each constraint for each sample."
-   },
-   {
-    "Name": [ "Are Constraints Defined" ],
-    "Type": "bool",
-    "Description": "True if the number of constraints is higher than zero."
-   },
-   {
     "Name": [ "Covariance Matrix Adaption Factor" ],
     "Type": "double",
     "Default": "false",
@@ -428,90 +378,9 @@
     "Description": "Estimated Global Success Rate, required for calibration of covariance matrix scaling factor updates."
    },
    {
-    "Name": [ "Viability Function Value" ],
-    "Type": "double",
-    "Description": "Viability Function Value."
-   },
-   {
-    "Name": [ "Resampled Parameter Count" ],
-    "Type": "size_t",
-    "Description": "Number of resampled parameters due constraint violation."
-   },
-   {
     "Name": [ "Covariance Matrix Adaptation Count" ],
     "Type": "size_t",
     "Description": "Number of Covariance Matrix Adaptations."
-   },
-   {
-    "Name": [ "Viability Boundaries" ],
-    "Type": "std::vector<double>",
-    "Description": "Viability Boundaries."
-   },
-   {
-    "Name": [ "Viability Improvement" ],
-    "Type": "std::vector<bool>",
-    "Description": "Sample evaluations larger than fviability."
-   },
-   {
-    "Name": [ "Max Constraint Violation Count" ],
-    "Type": "size_t",
-    "Description": "Temporary counter of maximal amount of constraint violations attained by a sample (must be 0)."
-   },
-   {
-    "Name": [ "Sample Constraint Violation Counts" ],
-    "Type": "std::vector<size_t>",
-    "Description": "Maximal amount of constraint violations."
-   },
-   {
-    "Name": [ "Constraint Evaluations" ],
-    "Type": "std::vector<std::vector<double>>",
-    "Description": "Constraint Evaluations $$e$$."
-   },
-   {
-    "Name": [ "Normal Constraint Approximation" ],
-    "Type": "std::vector<std::vector<double>>",
-    "Description": "Normal approximation of constraints."
-   },
-   {
-    "Name": [ "Best Constraint Evaluations" ],
-    "Type": "std::vector<double>",
-    "Description": "Constraint evaluations for best ever."
-   },
-   {
-    "Name": [ "Has Discrete Variables" ],
-    "Type": "bool",
-    "Default": "false",
-    "Description": "Flag indicating if at least one of the variables is discrete."
-   },
-   {
-    "Name": [ "Discrete Mutations" ],
-    "Type": "std::vector<double>",
-    "Description": "Vector storing discrete mutations, required for covariance matrix update."
-   },
-   {
-    "Name": [ "Number Of Discrete Mutations" ],
-    "Type": "size_t",
-    "Description": "Number of discrete mutations in current generation."
-   },
-   {
-    "Name": [ "Number Masking Matrix Entries" ],
-    "Type": "size_t",
-    "Description": "Number of nonzero entries on diagonal in Masking Matrix."
-   },
-   {
-    "Name": [ "Masking Matrix" ],
-    "Type": "std::vector<double>",
-    "Description": "Diagonal Matrix signifying where an integer mutation may be conducted."
-   },
-   {
-    "Name": [ "Masking Matrix Sigma" ],
-    "Type": "std::vector<double>",
-    "Description": "Sigma of the Masking Matrix."
-   },
-   {
-    "Name": [ "Chi Square Number Discrete Mutations" ],
-    "Type": "double",
-    "Description": "Expectation of $||N(0,I^S)||^2$ for discrete mutations."
    },
    {
     "Name": [ "Current Min Standard Deviation" ],

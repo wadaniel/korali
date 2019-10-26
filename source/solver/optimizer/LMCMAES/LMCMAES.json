@@ -25,13 +25,13 @@
    },
    {
     "Name": [ "Initial Sigma Cumulation Factor" ],
-    "Default": "-1.0",
+    "Default": "0.3",
     "Type": "double",
     "Description": "Controls the learning rate of the conjugate evolution path (by default this variable is internally calibrated)."
    },
    {
     "Name": [ "Initial Damp Factor" ],
-    "Default": "-1.0",
+    "Default": "1.0",
     "Type": "double",
     "Description": "Controls the updates of the covariance matrix scaling factor (by default this variable is internally calibrated)."
    },
@@ -43,9 +43,21 @@
    },
    {
     "Name": [ "Initial Cumulative Covariance" ],
-    "Default": "-1.0",
+    "Default": "0.5/std::sqrt(N)",
     "Type": "double",
     "Description": "Controls the learning rate of the evolution path for the covariance update (must be in (0,1], by default this variable is internally calibrated)."
+   },
+   {
+    "Name": [ "Set Update Interval" ],
+    "Default": "std::floor(std::log(N))",
+    "Type": "size_t",
+    "Description": "TODO"   
+   },
+   {
+    "Name": [ "Subset Size" ],
+    "Default": "std::sqrt(N)",
+    "Type": "size_t",
+    "Description": "Number of vectors used to reconstruct the Cholesky factor (old version uses 4+3log(N)). Larger Subset Size increases internal cost."   
    },
    {
     "Name": [ "Is Diagonal" ],
@@ -58,24 +70,6 @@
     "Default": "1e6",
     "Type": "size_t",
     "Description": "Max number of covairance matrix adaptions per generation during the constraint handling loop."
-   },
-   {
-    "Name": [ "Covariance Matrix Adaption Strength" ],
-    "Default": "0.1",
-    "Type": "double",
-    "Description": "Controls the covariane matrix adaption strength if samples violate constraints."
-   },
-   {
-    "Name": [ "Normal Vector Learning Rate" ],
-    "Default": "-1.0",
-    "Type": "double",
-    "Description": "Learning rate of constraint normal vectors (must be in (0, 1], by default this variable is internally calibrated)."
-   },
-   {
-    "Name": [ "Global Success Learning Rate" ],
-    "Default": "0.2",
-    "Type": "double",
-    "Description": "Learning rate of success probability of objective function improvements."
    }
  ],
 
@@ -175,6 +169,11 @@
     "Name": [ "Effective Mu" ],
     "Type": "double",
     "Description": "Variance effective selection mass."
+   },
+   {
+    "Name": [ "Subset Start Index" ],
+    "Type": "size_t",
+    "Description": "Current first vector index to reconstruct the Cholesky factor."   
    },
    {
     "Name": [ "Sigma Cumulation Factor" ],

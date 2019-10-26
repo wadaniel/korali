@@ -95,11 +95,7 @@ void korali::solver::optimizer::LMCMAES::initialize()
              _k->_variables[i]->_upperBound);
   }
 
- _globalSuccessRate = -1.0;
- _covarianceMatrixAdaptionFactor = -1.0;
  _bestValidSample = 0;
-
- _covarianceMatrixAdaptationCount = 0;
 
  // Setting algorithm internal variables
  initMuWeights(_muValue);
@@ -164,18 +160,9 @@ void korali::solver::optimizer::LMCMAES::initMuWeights(size_t numsamplesmu)
 
  for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] /= s1;
 
- // Setting Cumulative Covariancea
- if( (_initialCumulativeCovariance <= 0) || (_initialCumulativeCovariance > 1) ) _cumulativeCovariance = (4.0 + _effectiveMu/(1.0*N)) / (N+4.0 + 2.0*_effectiveMu/(1.0*N));
- else _cumulativeCovariance = _initialCumulativeCovariance;
-
- // Setting Sigma Cumulation Factor
- _sigmaCumulationFactor = _initialSigmaCumulationFactor;
- if (_sigmaCumulationFactor <= 0 || _sigmaCumulationFactor >= 1) _sigmaCumulationFactor = (_effectiveMu + 2.0) / (N + _effectiveMu + 3.0);
-
- // Setting Damping Factor
- _dampFactor = _initialDampFactor;
- if (_dampFactor <= 0.0)
-     _dampFactor = (1.0 + 2*std::max(0.0, sqrt((_effectiveMu-1.0)/(N+1.0)) - 1)) + _sigmaCumulationFactor;
+ if (_initialCumulativeCovariance <= 0) korali::logError("Invalid Initial Cumulative Covariance (must be greater 0.0");
+ if (_initialSigmaCumulationFactor <= 0) korali::logError("Invalid Sigma Cumulative Covariance (must be greater 0.0");
+ if (_dampFactor <= 0) korali::logError("Invalid Damp Factor (must be greater 0.0");
 
 }
 
@@ -229,25 +216,27 @@ void korali::solver::optimizer::LMCMAES::prepareGeneration()
 
 void korali::solver::optimizer::LMCMAES::sampleSingle(size_t sampleIdx)
 {
-  for (size_t d = 0; d < N; ++d)
+  if (sampleIdx % 2 == 1)
   {
-   double randomNumber = _normalGenerator->getRandomNumber();
-
-   if (_isDiagonal)
-   {
-     _bDZMatrix[sampleIdx*N+d] = _axisLengths[d] * randomNumber;
-     _samplePopulation[sampleIdx][d] = _currentMean[d] + _sigma * _bDZMatrix[sampleIdx*N+d];
-   }
-   else _auxiliarBDZMatrix[d] = _axisLengths[d] * randomNumber;
+    int randomZ = (_uniformGenerator->getRandomNumber() > 0.5) ? 1 : -1.0;
+    selectSubset(sampleIdx);
+    calculateCholeskyFactor();
+    //TODO
+  }
+  else
+  {
+    for (size_t d = 0; d < N; ++d)
+     _samplePopulation[sampleIdx][d] = 2.0*_currentMean[d] - _samplePopulation[sampleIdx-1][d];
   }
 
-  if (!_isDiagonal) for (size_t d = 0; d < N; ++d)
-   {
-    _bDZMatrix[sampleIdx*N+d] = 0.0;
-    for (size_t e = 0; e < N; ++e) _bDZMatrix[sampleIdx*N+d] += _covarianceEigenvectorMatrix[d*N+e] * _auxiliarBDZMatrix[e];
-    _samplePopulation[sampleIdx][d] = _currentMean[d] + _sigma * _bDZMatrix[sampleIdx*N+d];
-  }
+}
 
+void korali::solver::optimizer::LMCMAES::selectSubset(size_t sampleIdx)
+{
+  double ms = 4.0;
+  if (sampleIdx = 1) ms *= 10;
+  
+  _subsetStartIndex = _subsetSize + 1 - std::min( (size_t) std::floor(ms*_normalGenerator->getRandomNumber()), _subsetSize);
 }
 
 
@@ -336,6 +325,12 @@ void korali::solver::optimizer::LMCMAES::updateDistribution()
  }
 
 }
+
+void korali::solver::optimizer::LMCMAES::calculateCholeskyFactor()
+{
+  //TODO
+}
+
 
 void korali::solver::optimizer::LMCMAES::adaptC(int hsig)
 {

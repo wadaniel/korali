@@ -25,9 +25,12 @@ class LMCMAES : public korali::solver::Optimizer
  void sampleSingle(size_t sampleIdx); /* sample individual */
  void adaptC(int hsig); /* LMCMAES covariance matrix adaption */
  void updateSigma(); /* update Sigma */
+ void selectSubset(size_t sampleIdx);
+ void calculateCholeskyFactor();
  void updateDistribution();
  void updateEigensystem(std::vector<double>& M);
  void numericalErrorTreatment();
+
  void eigen(size_t N, std::vector<double>& C, std::vector<double>& diag, std::vector<double>& Q) const;
  void sort_index(const std::vector<double>& vec, std::vector<size_t>& _sortingIndex, size_t n) const;
  // Private LMCMAES-Specific Methods

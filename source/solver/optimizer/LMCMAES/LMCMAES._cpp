@@ -277,7 +277,7 @@ void korali::solver::optimizer::LMCMAES::choleskyFactorUpdate()
     
     double v2L2 = 0.0;
     for(size_t d = 0; d < N; ++d) v2L2 += _inverseVectors[idx*N+d] * _inverseVectors[idx*N+d];
-    double bjt = fac/v2L2 * (std::sqrt(1.0+_choleskyMatrixLearningRate/(1.0-_choleskyMatrixLearningRate)*v2L2) - 1.0)
+    double bjt = fac/v2L2 * (std::sqrt(1.0+_choleskyMatrixLearningRate/(1.0-_choleskyMatrixLearningRate)*v2L2) - 1.0);
 
     for(size_t d = 0; d < N; ++d) vz += _inverseVectors[idx*N+d] * _randomVector[d];
     vz *= bjt;

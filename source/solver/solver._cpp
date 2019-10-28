@@ -39,6 +39,7 @@ void korali::Solver::solverWrapper()
     korali::logInfo("Detailed", "Solver: %lu - Generation Time: %.3fs\n", solver->_solverId, std::chrono::duration<double>(t1-t0).count());
    }
 
+   if (engine->_resultsOutputFrequency > 0)
    if (solver->_currentGeneration % engine->_resultsOutputFrequency == 0) engine->saveState(solver, solver->_subDirPath, solver->_currentGeneration);
 
    solver->_currentGeneration++;

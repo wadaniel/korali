@@ -50,25 +50,21 @@ void korali::solver::optimizer::LMCMAES::initialize()
 
  _evolutionPath.resize(N);
  _conjugateEvolutionPath.resize(N);
- _auxiliarBDZMatrix.resize(N);
  _meanUpdate.resize(N);
  _currentMean.resize(N);
  _previousMean.resize(N);
  _bestEverVariables.resize(N);
- _axisLengths.resize(N);
- _auxiliarAxisLengths.resize(N);
  _currentBestVariables.resize(N);
 
  _sortingIndex.resize(_populationSize);
  _valueVector.resize(_populationSize);
 
- _covarianceMatrix.resize(N*N);
- _auxiliarCovarianceMatrix.resize(N*N);
- _covarianceEigenvectorMatrix.resize(N*N);
- _auxiliarCovarianceEigenvectorMatrix.resize(N*N);
- _bDZMatrix.resize(_populationSize*N);
-
  _muWeights.resize(_muValue);
+
+ _subsetHistory.resize(_subsetSize);
+ _evolutionPathMatrix.resize(N*_subsetSize);
+ _inverseVectors.resize(N*_subsetSize);
+ _choleskyFactorVectorProduct.resize(N);
 
  // Initializing variable defaults
   for (size_t i = 0; i < N; i++)
@@ -95,12 +91,8 @@ void korali::solver::optimizer::LMCMAES::initialize()
              _k->_variables[i]->_upperBound);
   }
 
- _bestValidSample = 0;
-
  // Setting algorithm internal variables
  initMuWeights(_muValue);
-
- initCovariance();
 
  _infeasibleSampleCount = 0;
 
@@ -109,8 +101,6 @@ void korali::solver::optimizer::LMCMAES::initialize()
 
  for (size_t i = 0; i < N; i++) _currentMean[i] = _previousMean[i] = _k->_variables[i]->_initialMean;
 
- _currentMinStandardDeviation = +std::numeric_limits<double>::infinity();
- _currentMaxStandardDeviation = -std::numeric_limits<double>::infinity();
 
 }
 
@@ -167,37 +157,8 @@ void korali::solver::optimizer::LMCMAES::initMuWeights(size_t numsamplesmu)
 }
 
 
-void korali::solver::optimizer::LMCMAES::initCovariance()
-{
-
- // Setting Sigma
- _trace = 0.0;
- for (size_t i = 0; i < N; ++i) _trace += _k->_variables[i]->_initialStandardDeviation*_k->_variables[i]->_initialStandardDeviation;
- _sigma = sqrt(_trace/N);
-
- // Setting B, C and _axisD
- for (size_t i = 0; i < N; ++i)
- {
-  _covarianceEigenvectorMatrix[i*N+i] = 1.0;
-  _covarianceMatrix[i*N+i] = _axisLengths[i] = _k->_variables[i]->_initialStandardDeviation * sqrt(N / _trace);
-  _covarianceMatrix[i*N+i] *= _covarianceMatrix[i*N+i];
- }
-
- _minimumCovarianceEigenvalue = *std::min_element(std::begin(_axisLengths), std::end(_axisLengths));
- _maximumCovarianceEigenvalue = *std::max_element(std::begin(_axisLengths), std::end(_axisLengths));
-
- _minimumCovarianceEigenvalue = _minimumCovarianceEigenvalue * _minimumCovarianceEigenvalue;
- _maximumCovarianceEigenvalue = _maximumCovarianceEigenvalue * _maximumCovarianceEigenvalue;
-
- _maximumDiagonalCovarianceMatrixElement=_covarianceMatrix[0]; for(size_t i=1;i<N;++i) if(_maximumDiagonalCovarianceMatrixElement<_covarianceMatrix[i*N+i]) _maximumDiagonalCovarianceMatrixElement=_covarianceMatrix[i*N+i];
- _minimumDiagonalCovarianceMatrixElement=_covarianceMatrix[0]; for(size_t i=1;i<N;++i) if(_minimumDiagonalCovarianceMatrixElement>_covarianceMatrix[i*N+i]) _minimumDiagonalCovarianceMatrixElement=_covarianceMatrix[i*N+i];
-}
-
-
 void korali::solver::optimizer::LMCMAES::prepareGeneration()
 {
- for (size_t d = 0; d < N; ++d) _auxiliarCovarianceMatrix = _covarianceMatrix;
- updateEigensystem(_auxiliarCovarianceMatrix);
  for (size_t i = 0; i < _populationSize; ++i)
  {
    size_t initial_infeasible = _infeasibleSampleCount;
@@ -218,10 +179,11 @@ void korali::solver::optimizer::LMCMAES::sampleSingle(size_t sampleIdx)
 {
   if (sampleIdx % 2 == 1)
   {
-    int randomZ = (_uniformGenerator->getRandomNumber() > 0.5) ? 1 : -1.0;
+    for (size_t d = 0; d < N; ++d) _randomVector[d] = (_uniformGenerator->getRandomNumber() > 0.5) ? 1 : -1.0;
     selectSubset(sampleIdx);
-    calculateCholeskyFactor();
-    //TODO
+    choleskyFactorUpdate();
+    for (size_t d = 0; d < N; ++d)
+     _samplePopulation[sampleIdx][d] = _currentMean[d] + _sigma*_choleskyFactorVectorProduct[d];
   }
   else
   {
@@ -236,7 +198,7 @@ void korali::solver::optimizer::LMCMAES::selectSubset(size_t sampleIdx)
   double ms = 4.0;
   if (sampleIdx = 1) ms *= 10;
   
-  _subsetStartIndex = _subsetSize + 1 - std::min( (size_t) std::floor(ms*_normalGenerator->getRandomNumber()), _subsetSize);
+  _subsetStartIndex = _subsetSize + 1 - std::min( (size_t) std::floor(ms*std::abs(_normalGenerator->getRandomNumber())), _subsetSize);
 }
 
 
@@ -246,14 +208,12 @@ void korali::solver::optimizer::LMCMAES::updateDistribution()
  /* Generate _sortingIndex */
  sort_index(_valueVector, _sortingIndex, _populationSize);
 
- _bestValidSample = 0;
-
  /* update function value history */
  _previousBestValue = _currentBestValue;
 
  /* update current best */
- _currentBestValue = _valueVector[_bestValidSample];
- for (size_t d = 0; d < N; ++d) _currentBestVariables[d] = _samplePopulation[_bestValidSample][d];
+ _currentBestValue = _valueVector[0];
+ for (size_t d = 0; d < N; ++d) _currentBestVariables[d] = _samplePopulation[0][d];
 
  /* update xbestever */
  if ( _currentBestValue > _bestEverValue )
@@ -276,22 +236,11 @@ void korali::solver::optimizer::LMCMAES::updateDistribution()
    _meanUpdate[d] = (_currentMean[d] - _previousMean[d])/_sigma;
  }
 
- /* calculate z := D^(-1) * B^(T) * _meanUpdate into _auxiliarBDZMatrix */
- for (size_t d = 0; d < N; ++d) {
-  double sum = 0.0;
-  if (_isDiagonal) sum = _meanUpdate[d];
-  else for (size_t e = 0; e < N; ++e) sum += _covarianceEigenvectorMatrix[e*N+d] * _meanUpdate[e]; /* B^(T) * _meanUpdate ( iterating B[e][d] = B^(T) ) */
-
-  _auxiliarBDZMatrix[d] = sum / _axisLengths[d]; /* D^(-1) * B^(T) * _meanUpdate */
- }
-
  _conjugateEvolutionPathL2Norm = 0.0;
 
  /* cumulation for _sigma (ps) using B*z */
  for (size_t d = 0; d < N; ++d) {
-    double sum = 0.0;
-    if (_isDiagonal) sum = _auxiliarBDZMatrix[d];
-    else for (size_t e = 0; e < N; ++e) sum += _covarianceEigenvectorMatrix[d*N+e] * _auxiliarBDZMatrix[e];
+    double sum = 0.0; //TODO: cumulation
 
     _conjugateEvolutionPath[d] = (1. - _sigmaCumulationFactor) * _conjugateEvolutionPath[d] + sqrt(_sigmaCumulationFactor * (2. - _sigmaCumulationFactor) * _effectiveMu) * sum;
 
@@ -303,10 +252,7 @@ void korali::solver::optimizer::LMCMAES::updateDistribution()
 
  /* cumulation for covariance matrix (pc) using B*D*z~N(0,C) */
  for (size_t d = 0; d < N; ++d)
-    _evolutionPath[d] = (1. - _cumulativeCovariance) * _evolutionPath[d] + hsig * sqrt( _cumulativeCovariance * (2. - _cumulativeCovariance) * _effectiveMu ) * _meanUpdate[d];
-
- /* update covariance matrix  */
- adaptC(hsig);
+ //   _evolutionPath[d] = (1. - _cumulativeCovariance) * _evolutionPath[d] + hsig * sqrt( _cumulativeCovariance * (2. - _cumulativeCovariance) * _effectiveMu ) * _meanUpdate[d];
 
  /* update sigma */
  updateSigma();
@@ -314,53 +260,29 @@ void korali::solver::optimizer::LMCMAES::updateDistribution()
  /* numerical error management */
  numericalErrorTreatment();
 
- _currentMinStandardDeviation = std::numeric_limits<double>::infinity();
- _currentMaxStandardDeviation = -std::numeric_limits<double>::infinity();
-
- // Calculating current Minimum and Maximum STD Devs
- for(size_t i = 0; i <N; ++i )
- {
-  _currentMinStandardDeviation = std::min(_currentMinStandardDeviation, _sigma * sqrt(_covarianceMatrix[i*N+i]));
-  _currentMaxStandardDeviation = std::max(_currentMaxStandardDeviation, _sigma * sqrt(_covarianceMatrix[i*N+i]));
- }
-
 }
 
-void korali::solver::optimizer::LMCMAES::calculateCholeskyFactor()
+void korali::solver::optimizer::LMCMAES::choleskyFactorUpdate()
 {
   //TODO
-}
+  size_t i0 = 0;
+  size_t iterator_sz = 0;
+  
+  double fac = std::sqrt(1.0-_choleskyMatrixLearningRate);
+  
+  for(size_t i = i0; i < iterator_sz; ++i)
+  {
+    size_t idx = _subsetHistory[i];
+    double vz = 0.0;
+    
+    double v2L2 = 0.0;
+    for(size_t d = 0; d < N; ++d) v2L2 += _inverseVectors[idx*N+d] * _inverseVectors[idx*N+d];
+    double bjt = fac/v2L2 * (std::sqrt(1.0+_choleskyMatrixLearningRate/(1.0-_choleskyMatrixLearningRate)*v2L2) - 1.0)
 
-
-void korali::solver::optimizer::LMCMAES::adaptC(int hsig)
-{
-  /* definitions for speeding up inner-most loop */
-  //double ccov1  = std::min(_covarianceMatrixLearningRate * (1./_muCovariance) * (_isDiagonal ? (N+1.5) / 3. : 1.), 1.); (orig, alternative)
-  //double ccovmu = std::min(_covarianceMatrixLearningRate * (1-1./_muCovariance) * (_isDiagonal ? (N+1.5) / 3. : 1.), 1.-ccov1); (orig, alternative)
-  double ccov1  = 2.0 / (std::pow(N+1.3,2)+_effectiveMu);
-  double ccovmu = std::min(1.0-ccov1,  2.0 * (_effectiveMu-2+1/_effectiveMu) / (std::pow(N+2.0,2)+_effectiveMu));
-  double sigmasquare = _sigma * _sigma;
-
-  /* update covariance matrix */
-  for (size_t d = 0; d < N; ++d)
-   for (size_t e = _isDiagonal ? d : 0; e <= d; ++e)
-   {
-     _covarianceMatrix[d*N+e] = (1 - ccov1 - ccovmu) * _covarianceMatrix[d*N+e]
-                        + ccov1 * (_evolutionPath[d] * _evolutionPath[e]
-                        + (1-hsig)*ccov1*_cumulativeCovariance*(2.-_cumulativeCovariance) * _covarianceMatrix[d*N+e]);
-
-     for (size_t k = 0; k < _muValue; ++k)
-         _covarianceMatrix[d*N+e] += ccovmu * _muWeights[k] * (_samplePopulation[_sortingIndex[k]][d]
-                            - _previousMean[d]) * (_samplePopulation[_sortingIndex[k]][e] - _previousMean[e]) / sigmasquare;
-
-     if (e < d) _covarianceMatrix[e*N+d] = _covarianceMatrix[d*N+e];
-   }
-
-  /* update maximal and minimal diagonal value */
-  _maximumDiagonalCovarianceMatrixElement = _minimumDiagonalCovarianceMatrixElement = _covarianceMatrix[0];
-  for (size_t d = 1; d < N; ++d) {
-  if (_maximumDiagonalCovarianceMatrixElement < _covarianceMatrix[d*N+d]) _maximumDiagonalCovarianceMatrixElement = _covarianceMatrix[d*N+d];
-  else if (_minimumDiagonalCovarianceMatrixElement > _covarianceMatrix[d*N+d])  _minimumDiagonalCovarianceMatrixElement = _covarianceMatrix[d*N+d];
+    for(size_t d = 0; d < N; ++d) vz += _inverseVectors[idx*N+d] * _randomVector[d];
+    vz *= bjt;
+    
+    for(size_t d = 0; d < N; ++d) _choleskyFactorVectorProduct[d] = fac * _choleskyFactorVectorProduct[d] + vz * _subsetHistory[idx*d];
   }
 }
 
@@ -394,97 +316,14 @@ void korali::solver::optimizer::LMCMAES::updateSigma()
 
 void korali::solver::optimizer::LMCMAES::numericalErrorTreatment()
 {
- //treat maximal standard deviations
- //TODO
-
- //treat minimal standard deviations
- for (size_t d = 0; d < N; ++d) if (_sigma * sqrt(_covarianceMatrix[d*N+d]) < _k->_variables[d]->_minimumStandardDeviationUpdate)
- {
-   _sigma = (_k->_variables[d]->_minimumStandardDeviationUpdate)/sqrt(_covarianceMatrix[d*N+d]) * exp(0.05+_sigmaCumulationFactor/_dampFactor);
-   korali::logWarning("Detailed", "Sigma increased due to minimal standard deviation.\n");
- }
-
- //too low coordinate axis deviations
- //TODO
-
  //treat numerical precision provblems
  //TODO
-}
-
-
-void korali::solver::optimizer::LMCMAES::updateEigensystem(std::vector<double>& M)
-{
- eigen(N, M, _auxiliarAxisLengths, _auxiliarCovarianceEigenvectorMatrix);
-
- /* find largest and smallest eigenvalue, they are supposed to be sorted anyway */
- double minEWtmp = *std::min_element(std::begin(_auxiliarAxisLengths), std::end(_auxiliarAxisLengths));
- double maxEWtmp = *std::max_element(std::begin(_auxiliarAxisLengths), std::end(_auxiliarAxisLengths));
-
- if (minEWtmp <= 0.0)
- { korali::logWarning("Detailed", "Min Eigenvalue smaller or equal 0.0 (%+6.3e) after Eigen decomp (no update possible).\n", minEWtmp ); return; }
-
- for (size_t d = 0; d < N; ++d)
- {
-     _auxiliarAxisLengths[d] = sqrt(_auxiliarAxisLengths[d]);
-     if (std::isfinite(_auxiliarAxisLengths[d]) == false)
-     {
-       korali::logWarning("Detailed", "Could not calculate root of Eigenvalue (%+6.3e) after Eigen decomp (no update possible).\n", _auxiliarAxisLengths[d] );
-       return;
-     }
-    for (size_t e = 0; e < N; ++e) if (std::isfinite(_covarianceEigenvectorMatrix[d*N+e]) == false)
-    {
-      korali::logWarning("Detailed", "Non finite value detected in B (no update possible).\n");
-       return;
-    }
- }
-
- /* write back */
- for (size_t d = 0; d < N; ++d) _axisLengths[d] = _auxiliarAxisLengths[d];
- _covarianceEigenvectorMatrix.assign(std::begin(_auxiliarCovarianceEigenvectorMatrix), std::end(_auxiliarCovarianceEigenvectorMatrix));
-
- _minimumCovarianceEigenvalue = minEWtmp;
- _maximumCovarianceEigenvalue = maxEWtmp;
 }
 
 
 /************************************************************************/
 /*                    Additional Methods                                */
 /************************************************************************/
-
-
-void korali::solver::optimizer::LMCMAES::eigen(size_t size, std::vector<double>& M,  std::vector<double>& diag, std::vector<double>& Q) const
-{
- std::vector<double> data(size * size);
-
- for (size_t i = 0; i <  size; i++)
- for (size_t j = 0; j <= i; j++)
- {
-  data[i*size + j] = M[i*N+j];
-  data[j*size + i] = M[i*N+j];
- }
-
- // GSL Workspace
- gsl_vector* gsl_eval = gsl_vector_alloc(N);
- gsl_matrix* gsl_evec = gsl_matrix_alloc(N, N);
- gsl_eigen_symmv_workspace* gsl_work =  gsl_eigen_symmv_alloc(N);
-
- gsl_matrix_view m = gsl_matrix_view_array (data.data(), size, size);
-
- gsl_eigen_symmv (&m.matrix, gsl_eval, gsl_evec, gsl_work);
- gsl_eigen_symmv_sort (gsl_eval, gsl_evec, GSL_EIGEN_SORT_ABS_ASC);
-
- for (size_t i = 0; i < size; i++)
- {
-  gsl_vector_view gsl_evec_i = gsl_matrix_column (gsl_evec, i);
-  for (size_t j = 0; j < size; j++) Q[j*N+i] = gsl_vector_get (&gsl_evec_i.vector, j);
- }
-
- for (size_t i = 0; i < size; i++) diag[i] = gsl_vector_get (gsl_eval, i);
-
- gsl_vector_free(gsl_eval);
- gsl_matrix_free(gsl_evec);
- gsl_eigen_symmv_free(gsl_work);
-}
 
 
 void korali::solver::optimizer::LMCMAES::sort_index(const std::vector<double>& vec, std::vector<size_t>& _sortingIndex, size_t n) const
@@ -505,8 +344,6 @@ void korali::solver::optimizer::LMCMAES::printGenerationAfter()
 
  korali::logInfo("Normal", "Sigma:                        %+6.3e\n", _sigma);
  korali::logInfo("Normal", "Current Function Value: Max = %+6.3e - Best = %+6.3e\n", _currentBestValue, _bestEverValue);
- korali::logInfo("Normal", "Diagonal Covariance:    Min = %+6.3e -  Max = %+6.3e\n", _minimumDiagonalCovarianceMatrixElement, _maximumDiagonalCovarianceMatrixElement);
- korali::logInfo("Normal", "Covariance Eigenvalues: Min = %+6.3e -  Max = %+6.3e\n", _minimumCovarianceEigenvalue, _maximumCovarianceEigenvalue);
 
   korali::logInfo("Detailed", "Variable = (MeanX, BestX):\n");
   for (size_t d = 0; d < N; d++) korali::logData("Detailed", "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _currentMean[d], _bestEverVariables[d]);
@@ -514,7 +351,7 @@ void korali::solver::optimizer::LMCMAES::printGenerationAfter()
   korali::logInfo("Detailed", "Covariance Matrix:\n");
   for (size_t d = 0; d < N; d++)
   {
-   for (size_t e = 0; e <= d; e++) korali::logData("Detailed", "   %+6.3e  ",_covarianceMatrix[d*N+e]);
+   //for (size_t e = 0; e <= d; e++) korali::logData("Detailed", "   %+6.3e  ",_covarianceMatrix[d*N+e]);
    korali::logInfo("Detailed", "\n");
   }
 

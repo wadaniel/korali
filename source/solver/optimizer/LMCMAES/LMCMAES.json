@@ -46,7 +46,14 @@
     "Default": "0.5/std::sqrt(N)",
     "Type": "double",
     "Description": "Controls the learning rate of the evolution path for the covariance update (must be in (0,1], by default this variable is internally calibrated)."
+   }, 
+   {
+    "Name": [ "Cholesky Matrix Learning Rate" ],
+    "Default": "2.0/std::pow((N+std::sqrt(N)),2.0)",
+    "Type": "double",
+    "Description": "Controls the learning rate of the Cholesky factor."
    },
+
    {
     "Name": [ "Set Update Interval" ],
     "Default": "std::floor(std::log(N))",
@@ -64,12 +71,6 @@
     "Default": "false",
     "Type": "bool",
     "Description": "Covariance matrix updates will be optimized for diagonal matrices."
-   },
-   {
-    "Name": [ "Max Covariance Matrix Corrections" ],
-    "Default": "1e6",
-    "Type": "size_t",
-    "Description": "Max number of covairance matrix adaptions per generation during the constraint handling loop."
    }
  ],
 
@@ -81,13 +82,6 @@
     "Default": "100",
     "Criteria": "_currentGeneration > _maxGenerations",
     "Description": "Determines how many solver generations to run before stopping execution. Execution can be resumed at a later moment."
-   },
-   {
-    "Name": [ "Max Condition Covariance Matrix" ],
-    "Type": "double",
-    "Default": "+INFINITY",
-    "Criteria": "_maximumCovarianceEigenvalue >= _maxConditionCovarianceMatrix * _minimumCovarianceEigenvalue",
-    "Description": "Specifies the maximum condition of the covariance matrix."
    },
    {
     "Name": [ "Min Value" ],
@@ -109,20 +103,6 @@
     "Default": "-INFINITY",
     "Criteria": "_currentGeneration > 1 && (fabs(_currentBestValue - _previousBestValue) <= _minValueDifferenceThreshold)",
     "Description": "Specifies the minimum fitness differential between two consecutive generations before stopping execution."
-   },
-   {
-    "Name": [ "Min Standard Deviation" ],
-    "Type": "double",
-    "Default": "-INFINITY",
-    "Criteria": "_currentMinStandardDeviation < _minStandardDeviation",
-    "Description": "Specifies the minimal standard deviation for any variable in any proposed sample."
-   },
-   {
-    "Name": [ "Max Standard Deviation" ],
-    "Type": "double",
-    "Default": "+INFINITY",
-    "Criteria": "_currentMaxStandardDeviation > _maxStandardDeviation",
-    "Description": "Specifies the maximal standard deviation for any variable in any proposed sample."
    }
  ],
 
@@ -196,11 +176,6 @@
     "Description": "Expectation of $||N(0,I)||^2$."
    },
    {
-    "Name": [ "Covariance Eigenvalue Evaluation Frequency" ],
-    "Type": "size_t",
-    "Description": "Establishes how frequently the eigenvalues are updated."
-   },
-   {
     "Name": [ "Sigma" ],
     "Type": "double",
     "Description": "Determines the step size."
@@ -261,44 +236,34 @@
     "Description": "Sorted indeces of samples according to their model evaluation."
    },
    {
-    "Name": [ "Covariance Matrix" ],
+    "Name": [ "Random Vector" ],
     "Type": "std::vector<double>",
-    "Description": "(Unscaled) covariance Matrix of proposal distribution."
-   },
+    "Description": "Vector storing random numbers for sample generation."
+   }, 
    {
-    "Name": [ "Auxiliar Covariance Matrix" ],
-    "Type": "std::vector<double>",
-    "Description": "Temporary Storage for Covariance Matrix."
-   },
+    "Name": [ "Replacement Index" ],
+    "Type": "size_t",
+    "Description": "Current column to replace in Evolution Path Matrix and Inverse Vectors."
+   }, 
    {
-    "Name": [ "Covariance Eigenvector Matrix" ],
+    "Name": [ "Subset History" ],
     "Type": "std::vector<double>",
-    "Description": "Matrix with eigenvectors in columns."
-   },
+    "Description": "Historical column updates of Evolution Path Matrix."
+   },  
    {
-    "Name": [ "Auxiliar Covariance Eigenvector Matrix" ],
+    "Name": [ "Cholesky Factor Vector Product" ],
     "Type": "std::vector<double>",
-    "Description": "Temporary Storage for Matrix with eigenvectors in columns."
-   },
+    "Description": "Placeholder for Cholesky Factor product with Random Vector."
+   }, 
    {
-    "Name": [ "Axis Lengths" ],
+    "Name": [ "Evolution Path Matrix" ],
     "Type": "std::vector<double>",
-    "Description": "Axis lengths (sqrt(Evals))"
-   },
+    "Description": "Matrix storing evolution paths in columns."
+   }, 
    {
-    "Name": [ "Auxiliar Axis Lengths" ],
+    "Name": [ "Inverse Vectors" ],
     "Type": "std::vector<double>",
-    "Description": "Temporary storage for Axis lengths."
-   },
-   {
-    "Name": [ "BDZ Matrix" ],
-    "Type": "std::vector<double>",
-    "Description": "Temporary storage."
-   },
-   {
-    "Name": [ "Auxiliar BDZ Matrix" ] ,
-    "Type": "std::vector<double>",
-    "Description": "Temporary storage."
+    "Description": "Matrix storing the inverse vectors."
    },
    {
     "Name": [ "Current Mean" ],
@@ -334,68 +299,6 @@
     "Name": [ "Infeasible Sample Count" ],
     "Type": "size_t",
     "Description": "Keeps count of the number of infeasible samples."
-   },
-   {
-    "Name": [ "Maximum Diagonal Covariance Matrix Element" ],
-    "Type": "double",
-    "Description": "Maximum diagonal element of the Covariance Matrix."
-   },
-   {
-    "Name": [ "Minimum Diagonal Covariance Matrix Element" ],
-    "Type": "double",
-    "Description": "Minimum diagonal element of the Covariance Matrix."
-   },
-   {
-    "Name": [ "Maximum Covariance Eigenvalue" ],
-    "Type": "double",
-    "Description": "Maximum Covariance Matrix Eigenvalue."
-   },
-   {
-    "Name": [ "Minimum Covariance Eigenvalue" ],
-    "Type": "double",
-    "Description": "Minimum Covariance Matrix Eigenvalue."
-   },
-   {
-    "Name": [ "Is Eigensystem Updated" ],
-    "Type": "bool",
-    "Description": "Flag determining if the covariance eigensystem is up to date."
-   },
-   {
-    "Name": [ "Covariance Matrix Adaption Factor" ],
-    "Type": "double",
-    "Default": "false",
-    "Description": "This is the $\beta$ factor that indicates how fast the covariance matrix is adapted."
-   },
-   {
-    "Name": [ "Best Valid Sample" ],
-    "Type": "int",
-    "Description": "Index of best sample without constraint violations (otherwise -1)."
-   },
-   {
-    "Name": [ "Global Success Rate" ],
-    "Type": "double",
-    "Description": "Estimated Global Success Rate, required for calibration of covariance matrix scaling factor updates."
-   },
-   {
-    "Name": [ "Covariance Matrix Adaptation Count" ],
-    "Type": "size_t",
-    "Description": "Number of Covariance Matrix Adaptations."
-   },
-   {
-    "Name": [ "Current Min Standard Deviation" ],
-    "Type": "double",
-    "Description": "Current minimum standard deviation of any variable."
-   },
-   {
-    "Name": [ "Current Max Standard Deviation" ],
-    "Type": "double",
-    "Description": "Current maximum standard deviation of any variable."
-   },
-   {
-    "Name": [ "Constraint Evaluation Count" ],
-    "Type": "size_t",
-    "Default": "0",
-    "Description": "Number of Constraint Evaluations."
    }
  ]
 }

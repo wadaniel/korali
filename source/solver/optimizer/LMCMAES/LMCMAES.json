@@ -24,16 +24,16 @@
     "Description": "Weights given to the Mu best values to update the covariance matrix and the mean."
    },
    {
-    "Name": [ "Initial Sigma Cumulation Factor" ],
+    "Name": [ "Sigma Cumulation Factor" ],
     "Default": "0.3",
     "Type": "double",
-    "Description": "Controls the learning rate of the conjugate evolution path (by default this variable is internally calibrated)."
+    "Description": "Controls the learning rate of the conjugate evolution path (must be in (0,1])."
    },
    {
-    "Name": [ "Initial Damp Factor" ],
+    "Name": [ "Damp Factor" ],
     "Default": "1.0",
     "Type": "double",
-    "Description": "Controls the updates of the covariance matrix scaling factor (by default this variable is internally calibrated)."
+    "Description": "Controls the updates of the covariance matrix scaling factor (must be in (0,1])."
    },
    {
     "Name": [ "Is Sigma Bounded" ],
@@ -42,10 +42,10 @@
     "Description": "Sets an upper bound for the covariance matrix scaling factor. The upper bound is given by the average of the initial standard deviation of the variables."
    },
    {
-    "Name": [ "Initial Cumulative Covariance" ],
+    "Name": [ "Cumulative Covariance" ],
     "Default": "0.5/std::sqrt(N)",
     "Type": "double",
-    "Description": "Controls the learning rate of the evolution path for the covariance update (must be in (0,1], by default this variable is internally calibrated)."
+    "Description": "Controls the learning rate of the evolution path for the covariance update (must be in (0,1])."
    }, 
    {
     "Name": [ "Cholesky Matrix Learning Rate" ],
@@ -53,7 +53,12 @@
     "Type": "double",
     "Description": "Controls the learning rate of the Cholesky factor."
    },
-
+   {
+    "Name": [ "Target Success Rate" ],
+    "Default": "0.25",
+    "Type": "double",
+    "Description": "Target population success rate. Sigma increases if population success rate is larger than target."
+   },
    {
     "Name": [ "Set Update Interval" ],
     "Default": "std::floor(std::log(N))",
@@ -156,19 +161,9 @@
     "Description": "Current first vector index to reconstruct the Cholesky factor."   
    },
    {
-    "Name": [ "Sigma Cumulation Factor" ],
+    "Name": [ "Sigma Exponent Factor" ],
     "Type": "double",
-    "Description": "Increment for sigma, calculated from muEffective and dimension."
-   },
-   {
-    "Name": [ "Damp Factor" ],
-    "Type": "double",
-    "Description": "Dampening parameter controls step size adaption."
-   },
-   {
-    "Name": [ "Cumulative Covariance" ],
-    "Type": "double",
-    "Description": "Controls the step size adaption."
+    "Description": "Controls step size increment."
    },
    {
     "Name": [ "Chi Square Number" ],
@@ -229,6 +224,11 @@
     "Name": [ "Previous Best Ever Value" ],
     "Type": "double",
     "Description": "Best ever model evaluation as of previous generation."
+   }, 
+   {
+    "Name": [ "Previous Sorting Index" ],
+    "Type": "std::vector<size_t>",
+    "Description": "Sorted indeces of samples of previous generation according to their model evaluation."
    },
    {
     "Name": [ "Sorting Index" ],

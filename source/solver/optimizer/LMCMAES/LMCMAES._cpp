@@ -43,6 +43,7 @@ void korali::solver::optimizer::LMCMAES::initialize()
  if (_currentGeneration > 1) return;
 
  _chiSquareNumber = sqrt((double) N) * (1. - 1./(4.*N) + 1./(21.*N*N));
+ _sigmaExponentFactor = 0.0;
 
  // Allocating Memory
  _samplePopulation.resize(_populationSize);
@@ -57,7 +58,9 @@ void korali::solver::optimizer::LMCMAES::initialize()
  _currentBestVariables.resize(N);
 
  _sortingIndex.resize(_populationSize);
+ _previousSortingIndex.resize(_populationSize);
  _valueVector.resize(_populationSize);
+ _previousValueVector.resize(_populationSize);
 
  _muWeights.resize(_muValue);
 
@@ -100,7 +103,6 @@ void korali::solver::optimizer::LMCMAES::initialize()
  _conjugateEvolutionPathL2Norm = 0.0;
 
  for (size_t i = 0; i < N; i++) _currentMean[i] = _previousMean[i] = _k->_variables[i]->_initialMean;
-
 
 }
 
@@ -150,8 +152,8 @@ void korali::solver::optimizer::LMCMAES::initMuWeights(size_t numsamplesmu)
 
  for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] /= s1;
 
- if (_initialCumulativeCovariance <= 0) korali::logError("Invalid Initial Cumulative Covariance (must be greater 0.0");
- if (_initialSigmaCumulationFactor <= 0) korali::logError("Invalid Sigma Cumulative Covariance (must be greater 0.0");
+ if (_cumulativeCovariance <= 0) korali::logError("Invalid Initial Cumulative Covariance (must be greater 0.0");
+ if (_sigmaCumulationFactor <= 0) korali::logError("Invalid Sigma Cumulative Covariance (must be greater 0.0");
  if (_dampFactor <= 0) korali::logError("Invalid Damp Factor (must be greater 0.0");
 
 }
@@ -204,7 +206,10 @@ void korali::solver::optimizer::LMCMAES::selectSubset(size_t sampleIdx)
 
 void korali::solver::optimizer::LMCMAES::updateDistribution()
 {
-
+ /* Copy to previous */
+ std::copy(_sortingIndex.begin(), _sortingIndex.end(), _previousSortingIndex.begin());
+ std::copy(_valueVector.begin(), _valueVector.end(), _previousValueVector.begin());
+ 
  /* Generate _sortingIndex */
  sort_index(_valueVector, _sortingIndex, _populationSize);
 
@@ -289,8 +294,28 @@ void korali::solver::optimizer::LMCMAES::choleskyFactorUpdate()
 
 void korali::solver::optimizer::LMCMAES::updateSigma()
 {
- // _sigma *= exp(min(1.0, _sigmaCumulationFactor/_dampFactor*((sqrt(_conjugateEvolutionPathL2Norm)/_chiSquareNumber)-1.))); (alternative)
- _sigma *= exp(_sigmaCumulationFactor/_dampFactor*(sqrt(_conjugateEvolutionPathL2Norm)/_chiSquareNumber-1.));
+
+ double add;
+ double rank = 0;
+ for(size_t i = 0; i < _populationSize-1; ++i)
+ {
+  if(_valueVector[_sortingIndex[i]] > _previousValueVector[_previousSortingIndex[i]])
+  {
+   rank++;
+   for(size_t j = i; (j < _populationSize) && (_valueVector[_sortingIndex[j]] <= _previousValueVector[_previousSortingIndex[i]]); ++j) rank++;
+  }
+  else
+  {
+   rank--;
+   for(size_t j = i; (j < _populationSize) && (_previousValueVector[_previousSortingIndex[j]] <= _valueVector[_sortingIndex[i]]); ++j) rank--;
+  }
+ }
+
+ rank = rank/(_populationSize*_populationSize) - _targetSuccessRate;
+ _sigmaExponentFactor = (1.0 - _sigmaCumulationFactor) * _sigmaExponentFactor + _sigmaCumulationFactor * rank;
+ 
+ /* update sigma */
+ _sigma *= std::exp(_sigmaExponentFactor/_dampFactor); 
 
  /* escape flat evaluation */
  if (_currentBestValue == _valueVector[_sortingIndex[(int)_muValue]]) {

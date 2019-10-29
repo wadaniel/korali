@@ -52,6 +52,12 @@
     "Default": "2.0/std::pow((N+std::sqrt(N)),2.0)",
     "Type": "double",
     "Description": "Controls the learning rate of the Cholesky factor."
+   }, 
+   {
+    "Name": [ "Target Update Distance" ],
+    "Default": "N",
+    "Type": "size_t",
+    "Description": "Target distance between consecutive vectors in Evolution Path Matrix."
    },
    {
     "Name": [ "Target Success Rate" ],
@@ -63,7 +69,7 @@
     "Name": [ "Set Update Interval" ],
     "Default": "std::floor(std::log(N))",
     "Type": "size_t",
-    "Description": "TODO"   
+    "Description": "Intervals at which the Evolution Path Matrix and the Inverse Vectors are being updated."   
    },
    {
     "Name": [ "Subset Size" ],
@@ -166,11 +172,6 @@
     "Description": "Controls step size increment."
    },
    {
-    "Name": [ "Chi Square Number" ],
-    "Type": "double",
-    "Description": "Expectation of $||N(0,I)||^2$."
-   },
-   {
     "Name": [ "Sigma" ],
     "Type": "double",
     "Description": "Determines the step size."
@@ -247,8 +248,13 @@
    }, 
    {
     "Name": [ "Subset History" ],
-    "Type": "std::vector<double>",
+    "Type": "std::vector<size_t>",
     "Description": "Historical column updates of Evolution Path Matrix."
+   }, 
+   {
+    "Name": [ "Subset Update Times" ],
+    "Type": "std::vector<double>",
+    "Description": "Stores timestamps of updated columns in Evolution Path Matrix."
    },  
    {
     "Name": [ "Cholesky Factor Vector Product" ],
@@ -285,16 +291,6 @@
     "Type": "std::vector<double>",
     "Description": "Evolution path for Covariance Matrix update."
    },
-   {
-    "Name": [ "Conjugate Evolution Path" ],
-    "Type": "std::vector<double>",
-    "Description": "Conjugate evolution path for sigma update."
-   },
-   {
-    "Name": [ "Conjugate Evolution Path L2 Norm" ],
-    "Type": "double",
-    "Description": "L2 Norm of the conjugate evolution path."
-   }, 
    {
     "Name": [ "Infeasible Sample Count" ],
     "Type": "size_t",

@@ -42,7 +42,6 @@ void korali::solver::optimizer::LMCMAES::initialize()
 
  if (_currentGeneration > 1) return;
 
- _chiSquareNumber = sqrt((double) N) * (1. - 1./(4.*N) + 1./(21.*N*N));
  _sigmaExponentFactor = 0.0;
 
  // Allocating Memory
@@ -50,7 +49,6 @@ void korali::solver::optimizer::LMCMAES::initialize()
  for(size_t i = 0; i < _populationSize; i++) _samplePopulation[i].resize(N);
 
  _evolutionPath.resize(N);
- _conjugateEvolutionPath.resize(N);
  _meanUpdate.resize(N);
  _currentMean.resize(N);
  _previousMean.resize(N);
@@ -65,6 +63,7 @@ void korali::solver::optimizer::LMCMAES::initialize()
  _muWeights.resize(_muValue);
 
  _subsetHistory.resize(_subsetSize);
+ _subsetUpdateTimes.resize(_subsetSize);
  _evolutionPathMatrix.resize(N*_subsetSize);
  _inverseVectors.resize(N*_subsetSize);
  _choleskyFactorVectorProduct.resize(N);
@@ -100,7 +99,6 @@ void korali::solver::optimizer::LMCMAES::initialize()
  _infeasibleSampleCount = 0;
 
  _bestEverValue = -std::numeric_limits<double>::infinity();
- _conjugateEvolutionPathL2Norm = 0.0;
 
  for (size_t i = 0; i < N; i++) _currentMean[i] = _previousMean[i] = _k->_variables[i]->_initialMean;
 
@@ -195,12 +193,42 @@ void korali::solver::optimizer::LMCMAES::sampleSingle(size_t sampleIdx)
 
 }
 
+
 void korali::solver::optimizer::LMCMAES::selectSubset(size_t sampleIdx)
 {
   double ms = 4.0;
-  if (sampleIdx = 1) ms *= 10;
+  if (sampleIdx = 0) ms *= 10;
   
-  _subsetStartIndex = _subsetSize + 1 - std::min( (size_t) std::floor(ms*std::abs(_normalGenerator->getRandomNumber())), _subsetSize);
+  _subsetStartIndex = _subsetSize - std::min( (size_t) std::floor(ms*std::abs(_normalGenerator->getRandomNumber())), _subsetSize);
+}
+
+
+void korali::solver::optimizer::LMCMAES::updateSet()
+{
+  size_t t = std::floor(_currentGeneration/_setUpdateInterval);
+  if (t < _subsetSize)
+  {
+   _subsetHistory[t] = t;
+  }
+  else
+  {
+    int tmparg, imin;
+    int minarg = std::numeric_limits<int>::max();
+    for(size_t i = 0; i < _subsetSize-1; ++i) 
+    { 
+      tmparg = _subsetUpdateTimes[_subsetHistory[i+1]] - _subsetUpdateTimes[_subsetHistory[i]] - _targetUpdateDistance;
+      if(tmparg < minarg) { minarg = tmparg; imin = i; }
+    }
+    if (tmparg > 0) imin = 0;
+    size_t jtmp = _subsetHistory[imin];
+    for(size_t i = imin; i < _subsetSize-1; ++i) _subsetHistory[i] = _subsetHistory[i+1];
+    _subsetHistory[_subsetSize-1] = jtmp;
+  }
+  
+  size_t jcur = _subsetHistory[std::min(t,_subsetSize-1)];
+  _subsetUpdateTimes[jcur] = t * _setUpdateInterval;
+
+  std::copy(_evolutionPath.begin(), _evolutionPath.end(), _evolutionPathMatrix.begin()+jcur);
 }
 
 
@@ -241,23 +269,14 @@ void korali::solver::optimizer::LMCMAES::updateDistribution()
    _meanUpdate[d] = (_currentMean[d] - _previousMean[d])/_sigma;
  }
 
- _conjugateEvolutionPathL2Norm = 0.0;
-
- /* cumulation for _sigma (ps) using B*z */
- for (size_t d = 0; d < N; ++d) {
-    double sum = 0.0; //TODO: cumulation
-
-    _conjugateEvolutionPath[d] = (1. - _sigmaCumulationFactor) * _conjugateEvolutionPath[d] + sqrt(_sigmaCumulationFactor * (2. - _sigmaCumulationFactor) * _effectiveMu) * sum;
-
-    /* calculate norm(ps)^2 */
-    _conjugateEvolutionPathL2Norm += _conjugateEvolutionPath[d] * _conjugateEvolutionPath[d];
- }
-
- int hsig = (1.4 + 2.0/(N+1) > sqrt(_conjugateEvolutionPathL2Norm) / sqrt(1. - pow(1.-_sigmaCumulationFactor, 2.0*(1.0+_currentGeneration))) / _chiSquareNumber);
-
- /* cumulation for covariance matrix (pc) using B*D*z~N(0,C) */
  for (size_t d = 0; d < N; ++d)
- //   _evolutionPath[d] = (1. - _cumulativeCovariance) * _evolutionPath[d] + hsig * sqrt( _cumulativeCovariance * (2. - _cumulativeCovariance) * _effectiveMu ) * _meanUpdate[d];
+   _evolutionPath[d] = (1. - _cumulativeCovariance) * _evolutionPath[d] + sqrt( _cumulativeCovariance * (2. - _cumulativeCovariance) * _effectiveMu ) * _meanUpdate[d];
+
+ if (_currentGeneration % _setUpdateInterval == 0)
+ {
+    updateSet();
+    updateInverseVectors();
+ }
 
  /* update sigma */
  updateSigma();
@@ -269,25 +288,44 @@ void korali::solver::optimizer::LMCMAES::updateDistribution()
 
 void korali::solver::optimizer::LMCMAES::choleskyFactorUpdate()
 {
-  //TODO
-  size_t i0 = 0;
-  size_t iterator_sz = 0;
-  
   double fac = std::sqrt(1.0-_choleskyMatrixLearningRate);
   
-  for(size_t i = i0; i < iterator_sz; ++i)
+  for(size_t i = _subsetStartIndex; i < _subsetSize; ++i)
   {
     size_t idx = _subsetHistory[i];
-    double vz = 0.0;
     
     double v2L2 = 0.0;
     for(size_t d = 0; d < N; ++d) v2L2 += _inverseVectors[idx*N+d] * _inverseVectors[idx*N+d];
     double bjt = fac/v2L2 * (std::sqrt(1.0+_choleskyMatrixLearningRate/(1.0-_choleskyMatrixLearningRate)*v2L2) - 1.0);
 
-    for(size_t d = 0; d < N; ++d) vz += _inverseVectors[idx*N+d] * _randomVector[d];
-    vz *= bjt;
+    double k = 0.0;
+    for(size_t d = 0; d < N; ++d) k += _inverseVectors[idx*N+d] * _randomVector[d];
+    k *= bjt;
     
-    for(size_t d = 0; d < N; ++d) _choleskyFactorVectorProduct[d] = fac * _choleskyFactorVectorProduct[d] + vz * _subsetHistory[idx*d];
+    for(size_t d = 0; d < N; ++d) _choleskyFactorVectorProduct[d] = fac * _choleskyFactorVectorProduct[d] + k * _subsetHistory[idx*d];
+  }
+}
+
+
+void korali::solver::optimizer::LMCMAES::updateInverseVectors()
+{
+  double fac1 = 1.0/std::sqrt(1.0-_choleskyMatrixLearningRate);
+  double fac2 = std::sqrt(1.0+_choleskyMatrixLearningRate/(1.0-_choleskyMatrixLearningRate));
+  
+  for(size_t i = _subsetStartIndex; i < _subsetSize; ++i)
+  {
+    size_t idx = _subsetHistory[i];
+    
+    double v2L2 = 0.0;
+    for(size_t d = 0; d < N; ++d) v2L2 += _inverseVectors[idx*N+d] * _inverseVectors[idx*N+d];
+    
+    double djt = fac1/v2L2 * (1.0 - 1.0/(fac2*std::sqrt(v2L2)));
+    
+    double k = 0.0;
+    for(size_t d = 0; d < N; ++d) k += _inverseVectors[idx*N+d] * _evolutionPathMatrix[idx*N+d];
+    k *= djt;
+
+    for(size_t d = 0; d < N; ++d) _inverseVectors[idx*N+d] = fac1 * _evolutionPathMatrix[idx*N+d] - k * _inverseVectors[idx*d];
   }
 }
 
@@ -295,7 +333,6 @@ void korali::solver::optimizer::LMCMAES::choleskyFactorUpdate()
 void korali::solver::optimizer::LMCMAES::updateSigma()
 {
 
- double add;
  double rank = 0;
  for(size_t i = 0; i < _populationSize-1; ++i)
  {

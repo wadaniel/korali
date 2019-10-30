@@ -11,11 +11,9 @@ import korali
 k = korali.initialize()
 k["Results Output"]["Path"] = "_result_run-tmcmc"
 
-# Setting up the reference likelihood for the Bayesian Problem
+# Setting up custom likelihood for the Bayesian Problem
 k["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Custom"
-#k["Problem"]["Likelihood Model"] = "Additive Normal"
-#k["Problem"]["Reference Data"] = getReferenceData()
-k["Problem"]["Likelihood Model"] = lgaussian2dCustom #lambda sampleData: model(sampleData, getReferencePoints())
+k["Problem"]["Likelihood Model"] = lgaussian2dCustom
 
 # Configuring TMCMC parameters
 k["Solver"]["Type"] = "Sampler/TMCMC"

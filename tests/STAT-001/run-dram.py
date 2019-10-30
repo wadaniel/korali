@@ -33,4 +33,4 @@ k["Results Output"]["Path"] = "_result_run-dram"
 k.run()
 
 checkMean(k, 0.0, 0.05)
-checkStd(k, 1.303, 0.05)
+checkStd(k, 1.0, 0.05)

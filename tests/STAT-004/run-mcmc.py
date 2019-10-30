@@ -27,8 +27,8 @@ k["Variables"][1]["Initial Standard Deviation"] = 1.0
 # Configuring the MCMC sampler parameters
 k["Solver"]["Type"]  = "Sampler/MCMC"
 k["Solver"]["Burn In"] = 500
-k["Solver"]["Use Adaptive Sampling"] = True
-k["Solver"]["Termination Criteria"]["Max Chain Length"] = 5000
+k["Solver"]["Use Adaptive Sampling"] = False
+k["Solver"]["Termination Criteria"]["Max Chain Length"] = 50000
 
 # Running Korali
 k.run()

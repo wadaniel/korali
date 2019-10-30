@@ -41,8 +41,9 @@ void korali::solver::sampler::MCMC::runGeneration()
 
   // Processing Result
   double denom;
-  double _rejectionAlphas = recursiveAlpha(denom, _chainLeaderEvaluation, &_chainCandidatesEvaluations[0], i);
-  if ( _rejectionAlphas == 1.0 || _rejectionAlphas > _uniformGenerator->getRandomNumber() )
+  double _rejectionAlpha = recursiveAlpha(denom, _chainLeaderEvaluation, &_chainCandidatesEvaluations[0], i);
+
+  if ( _rejectionAlpha == 1.0 || _rejectionAlpha > _uniformGenerator->getRandomNumber() )
   {
     _acceptanceCount++;
     _chainLeaderEvaluation = _chainCandidatesEvaluations[i];
@@ -192,14 +193,12 @@ void korali::solver::sampler::MCMC::generateCandidate(size_t sampleIdx)
 {  
  _proposedSampleCount++;
 
- for (size_t d = 0; d < N; ++d) _chainCandidate[sampleIdx][d] = 0.0;
+ for (size_t d = 0; d < N; ++d) _chainCandidate[sampleIdx][d] = _chainLeader[d];
 
  if ( (_useAdaptiveSampling == false) || (_databaseEntryCount <= _nonAdaptionPeriod + _burnIn))
      for (size_t d = 0; d < N; ++d) for (size_t e = 0; e < N; ++e) _chainCandidate[sampleIdx][d] += _choleskyDecompositionCovariance[d*N+e] * _normalGenerator->getRandomNumber();
  else
      for (size_t d = 0; d < N; ++d) for (size_t e = 0; e < N; ++e) _chainCandidate[sampleIdx][d] += _choleskyDecompositionChainCovariance[d*N+e] * _normalGenerator->getRandomNumber();
-
- _chainLeader = _chainCandidate[sampleIdx];
 }
 
 void korali::solver::sampler::MCMC::updateState()

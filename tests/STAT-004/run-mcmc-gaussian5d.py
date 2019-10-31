@@ -8,30 +8,31 @@ sys.path.append('./helpers')
 from model import *
 from helpers import *
 
+lg5 = lambda x : lgaussianxd( x, 5 )
+
 # Starting Korali's Engine
 import korali
 k = korali.initialize()
 k["Results Output"]["Path"] = "_result_run-mcmc"
-k["Results Output"]["Frequency"] = 0
 
 # Selecting problem and solver types.
 k["Problem"]["Type"] = "Evaluation/Direct/Basic"
-k["Problem"]["Objective Function"] = lexponential
+k["Problem"]["Objective Function"] = lg5
 
 # Defining problem's variables and their MCMC settings
-k["Variables"][0]["Name"] = "X0"
-k["Variables"][0]["Initial Mean"] = 5.0
-k["Variables"][0]["Initial Standard Deviation"] = 1.0
+for i in range(5):
+  k["Variables"][i]["Name"] = "X" + str(i)
+  k["Variables"][i]["Initial Mean"] = 0.0
+  k["Variables"][i]["Initial Standard Deviation"] = 1.0
 
 # Configuring the MCMC sampler parameters
 k["Solver"]["Type"]  = "Sampler/MCMC"
-k["Solver"]["Burn In"] = 100
+k["Solver"]["Burn In"] = 500
 k["Solver"]["Use Adaptive Sampling"] = False
-k["Solver"]["Termination Criteria"]["Max Chain Length"] = 2000
+k["Solver"]["Termination Criteria"]["Max Chain Length"] = 5000
 
 # Running Korali
 k.run()
 
-#verifyMean(k, 4.0, 0.05)
-#verifyStd(k, 4.0, 0.05)
-
+#verifyMean(k, [0.0, 0.0, 0.0, 0.0, 0.0])
+#verifyMean(k, 3.0)

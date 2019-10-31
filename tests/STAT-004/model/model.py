@@ -2,15 +2,30 @@
 import math
 
 
-# log Gaussian with means -2.0 and var 3.0
+# log Gaussian with mean -2.0 and var 3.0
 def lgaussian( s ):
   x0 = s["Parameters"][0]
-  r = -0.5*( (x0 + 2.0)**2 / (9.0)  )
+  r = -0.5*( (x0 + 2.0)**2 / (9.0)  ) - 0.5*math.log(2*math.pi*9)
   s["Evaluation"] = r
 
 def lgaussianCustom( s ):
   x0 = s["Parameters"][0]
-  r = -0.5*( (x0 + 2.0)**2 / (9.0) )
+  r = -0.5*( (x0 + 2.0)**2 / (9.0)  ) - 0.5*math.log(2*math.pi*9)
+  s["logLikelihood"] = r
+
+# log Gaussian in d dimension with mean 0 and var 1
+def lgaussianxd( s, d ):
+  ss = 0.0
+  for i in range(d):
+        ss += s["Parameters"][i]**2
+  r = -0.5*ss
+  s["Evaluation"] = r
+
+def lgaussianxdCustom( s, d ):
+  ss = 0.0
+  for i in range(d):
+        ss += s["Parameters"][i]**2
+  r = -0.5*ss
   s["logLikelihood"] = r
 
 # log exponential with mean 4

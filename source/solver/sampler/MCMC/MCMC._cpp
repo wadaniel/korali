@@ -46,18 +46,19 @@ void korali::solver::sampler::MCMC::runGeneration()
   if ( _rejectionAlpha == 1.0 || _rejectionAlpha > _uniformGenerator->getRandomNumber() )
   {
     _acceptanceCount++;
+    _sampleAccepted = true;
     _chainLeaderEvaluation = _chainCandidatesEvaluations[i];
     _chainLeader = _chainCandidate[i];
-    _sampleAccepted = true;
   }
 
-  if ( _chainLength >= _burnIn ) if ( (_sampleAccepted == true) || (i == _rejectionLevels-1) )
+  if ( (_chainLength >= _burnIn) && (_currentGeneration % _leap == 0) ) if ( (_sampleAccepted == true) || (i == _rejectionLevels-1) )
    updateDatabase(_chainLeader, _chainLeaderEvaluation);
+ 
  }
 
  updateState();
-
  _chainLength++;
+
 }
 
 
@@ -86,6 +87,10 @@ void korali::solver::sampler::MCMC::initialize()
  _k->_resultsOutputFrequency = 500;
 
  if(_chainCovarianceScaling <= 0.0) korali::logError("Chain Covariance Scaling must be larger 0.0 (is %lf).\n", _chainCovarianceScaling);
+ if(_leap < 1) korali::logError( "Leap must be larger 0 (is %zu).\n", _leap);
+ if(_burnIn < 0) korali::logError( "Burn In must be larger equal 0 (is %zu).\n", _burnIn);
+ if(_rejectionLevels < 1) korali::logError( "Rejection Levels must be larger 0 (is %zu).\n", _rejectionLevels);
+ if(_nonAdaptionPeriod < 0) korali::logError( "Non Adaption Period must be larger equal 0 (is %zu).\n", _nonAdaptionPeriod);
 
  // Allocating MCMC memory
  _chainCandidate.resize(_rejectionLevels);

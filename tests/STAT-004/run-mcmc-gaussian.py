@@ -32,5 +32,5 @@ k["Solver"]["Termination Criteria"]["Max Chain Length"] = 5000
 # Running Korali
 k.run()
 
-#verifyMean(k, -2.0)
-#verifyMean(k, 3.0)
+#verifyMean(k, [-2.0])
+#verifyMean(k, [3.0])

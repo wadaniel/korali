@@ -1,18 +1,19 @@
 import numpy as np
 
-def verifyMean(k, expected):
+def verifyMean(k, expected, atol=0.01):
     samples = k["Solver"]["Internal"]["Sample Database"]
     
-    mu = np.mean(samples)
-    print(mu)
-    
-    assert np.isclose(expected, mu), "Sample mean deviates from analytical Mean"
+    d = len(expected)
+    samples = np.reshape(samples,(-1,d))
+    mu = np.mean(samples, axis=0)
 
-def verifyStd(k, expected):
+    for i in range(d):
+        assert np.isclose(expected[i], mu[i], atol = atol), "Sample mean deviates from analytical Mean ({0} vs {1})".format(expected, mu)
+
+def verifyStd(k, expected, atol = 0.1):
     samples = k["Solver"]["Internal"]["Sample Database"]
 
     std     = np.std(samples)
-    print(std)
-    assert np.isclose(expected, std), "Sample std deviates from analytical Std"
+    assert np.isclose(expected, std, atol = atol), "Sample std deviates from analytical Std ({0} vs {1})".format(expected, std)
 
  

@@ -20,7 +20,7 @@ k["Problem"]["Likelihood Model"] = lgaussianCustom
 
 # Configuring TMCMC parameters
 k["Solver"]["Type"] = "Sampler/TMCMC"
-k["Solver"]["Population Size"] = 5000
+k["Solver"]["Population Size"] = 20000
 
 # Configuring the problem's random distributions
 k["Distributions"][0]["Name"] = "Uniform 0"
@@ -35,6 +35,7 @@ k["Variables"][0]["Prior Distribution"] = "Uniform 0"
 
 # Running Korali
 k.run()
+k["Random Seed"] = 1337
 
-#verifyMean(k, -2.0)
-#verifyMean(k, 3.0)
+verifyMean(k, [-2.0], 0.05)
+verifyStd(k, [3.0], 0.05)

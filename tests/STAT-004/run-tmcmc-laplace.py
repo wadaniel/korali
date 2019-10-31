@@ -42,6 +42,7 @@ k["Variables"][1]["Bayesian Type"] = "Computational"
 k["Variables"][1]["Prior Distribution"] = "Uniform 1"
 
 # Running Korali
+k["Random Seed"] = 1337
 k.run()
 
 #verifyMean(k, 4.0)

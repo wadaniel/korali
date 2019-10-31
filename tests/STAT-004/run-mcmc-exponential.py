@@ -31,6 +31,7 @@ k["Solver"]["Use Adaptive Sampling"] = False
 k["Solver"]["Termination Criteria"]["Max Samples"] = 10000
 
 # Running Korali
+k["Random Seed"] = 1337
 k.run()
 
 #verifyMean(k, 4.0, 0.05)

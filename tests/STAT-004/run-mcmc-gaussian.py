@@ -25,11 +25,13 @@ k["Variables"][0]["Initial Standard Deviation"] = 1.0
 
 # Configuring the MCMC sampler parameters
 k["Solver"]["Type"]  = "Sampler/MCMC"
-k["Solver"]["Burn In"] = 500
-k["Solver"]["Use Adaptive Sampling"] = False
-k["Solver"]["Termination Criteria"]["Max Samples"] = 10000
+k["Solver"]["Burn In"] = 100
+k["Solver"]["Rejection Levels"] = 3
+k["Solver"]["Use Adaptive Sampling"] = True
+k["Solver"]["Termination Criteria"]["Max Samples"] = 5000
 
 # Running Korali
+k["Random Seed"] = 1227
 k.run()
 
 #verifyMean(k, [-2.0])

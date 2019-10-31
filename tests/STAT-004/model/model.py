@@ -53,13 +53,13 @@ def lexponentialCustom( s ):
 def llaplace( s ):
     x0 = s["Parameters"][0]
     mu = 4.0
-    scale = 0.5
+    scale = 1
     r = -math.log(2.0*scale)-abs(x0 - mu)/scale
     s["Evaluation"] = r
 
 def llaplaceCustom( s ):
     x0 = s["Parameters"][0]
     mu = 4.0
-    scale = 0.5
+    scale = 1
     r = -math.log(2.0*scale)-abs(x0 - mu)/scale
     s["logLikelihood"] = r

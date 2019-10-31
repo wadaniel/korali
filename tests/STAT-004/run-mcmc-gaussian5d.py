@@ -29,7 +29,8 @@ for i in range(5):
 k["Solver"]["Type"]  = "Sampler/MCMC"
 k["Solver"]["Burn In"] = 500
 k["Solver"]["Use Adaptive Sampling"] = False
-k["Solver"]["Termination Criteria"]["Max Chain Length"] = 5000
+
+k["Solver"]["Termination Criteria"]["Max Samples"] = 10000
 
 # Running Korali
 k.run()

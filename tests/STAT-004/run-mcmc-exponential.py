@@ -27,7 +27,8 @@ k["Variables"][0]["Initial Standard Deviation"] = 1.0
 k["Solver"]["Type"]  = "Sampler/MCMC"
 k["Solver"]["Burn In"] = 100
 k["Solver"]["Use Adaptive Sampling"] = False
-k["Solver"]["Termination Criteria"]["Max Chain Length"] = 2000
+
+k["Solver"]["Termination Criteria"]["Max Samples"] = 10000
 
 # Running Korali
 k.run()

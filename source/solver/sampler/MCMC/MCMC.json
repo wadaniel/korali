@@ -42,11 +42,11 @@
  "Termination Criteria":
  [
    {
-    "Name": [ "Max Chain Length" ],
+    "Name": [ "Max Samples" ],
     "Type": "size_t",
     "Default": "5000",
-    "Criteria": "_chainLength >= _maxChainLength",
-    "Description": "Maximum number of steps of the MCMC chain (including Burn In and Leaped samples)."
+    "Criteria": "_databaseEntryCount >= _maxSamples",
+    "Description": "Number of Samples to Generate."
    }   
  ]
  ,

@@ -1,4 +1,4 @@
-function [ h, ax, BigAx, hhist, pax ] = plotmatrix_hist( theta, thetaValues, varargin )
+function [ h, ax, BigAx, hhist, pax ] = plotmatrix_hist( theta, varargin )
 
 % Start parser
 p = inputParser;
@@ -8,7 +8,7 @@ addRequired(p,'theta', checkTheta);
 
 defaultThetaValues = [];
 checkThetaValues = @(x) isnumeric(x) && ismatrix(x);
-addOptional(p,'Y', defaultThetaValues, checkThetaValues);
+addOptional(p,'Evaluation', defaultThetaValues, checkThetaValues);
 
 defaultPlot = 'surf';
 validPlot   = {'surf','contour'};
@@ -30,6 +30,7 @@ parse(p,theta,varargin{:})
 plotFunction  = p.Results.PlotFunction;
 scatterSymbol = p.Results.ScatterSymbol;
 variableName  = p.Results.VariableName;
+Evaluation    = p.Results.Evaluation;
 
 N = size(theta,2);
 
@@ -101,9 +102,8 @@ for i = N:-1:1
     tmp2 = reshape(theta(:,i),[m k]);
 
     if(i<j) % Upper right
-      
-      if( ~isempty(thetaValues) )
-          hh(i,j) = scatter(tmp1,tmp2,[], thetaValues);
+      if( ~isempty( Evaluation ) )
+          hh(i,j) = scatter(tmp1,tmp2,[], Evaluation);
       else
           hh(i,j) = plot( tmp1, tmp2, scatterSymbol);
       end

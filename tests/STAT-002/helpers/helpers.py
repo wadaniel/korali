@@ -7,7 +7,7 @@ def compareMean(k):
     chainmean = k["Solver"]["Internal"]["Chain Mean"]
     
     assert np.isclose(mean, chainmean), "Chain Mean deviates from Mean of "\
-            "Samples"
+            "Samples ({0} vs {1})".format(mean, chainmean)
 
 def compareStd(k):
     samples = k["Solver"]["Internal"]["Sample Database"]
@@ -17,6 +17,6 @@ def compareStd(k):
     chainstd = k["Solver"]["Internal"]["Cholesky Decomposition Chain Covariance"]
     
     assert np.isclose(std, chainstd), "Cholesky Decomposition of Chain" \
-            "Covariance deviates from Standard Deviation of Samples"
+            "Covariance deviates from Standard Deviation of Samples ({0} vs {1})".format(std, chainstd)
 
 

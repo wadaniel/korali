@@ -11,26 +11,29 @@ from helpers import *
 # Starting Korali's Engine
 import korali
 k = korali.initialize()
+k["Results Output"]["Path"] = "_result_run-mcmc"
+k["Results Output"]["Frequency"] = 0
 
 # Selecting problem and solver types.
 k["Problem"]["Type"] = "Evaluation/Direct/Basic"
-k["Problem"]["Objective Function"] = model
+k["Problem"]["Objective Function"] = lexponential
 
 # Defining problem's variables and their MCMC settings
-k["Variables"][0]["Name"] = "X"
+k["Variables"][0]["Name"] = "X0"
 k["Variables"][0]["Initial Mean"] = 0.0
-k["Variables"][0]["Initial Standard Deviation"] = 2.0
+k["Variables"][0]["Initial Standard Deviation"] = 1.0
 
 # Configuring the MCMC sampler parameters
-k["Solver"]["Type"] = "Sampler/MCMC"
-k["Solver"]["Burn In"] = 500
-k["Solver"]["Rejection Levels"] = 2
-k["Solver"]["Termination Criteria"]["Max Samples"] = 10000
+k["Solver"]["Type"]  = "Sampler/MCMC"
+k["Solver"]["Burn In"] = 100
+k["Solver"]["Use Adaptive Sampling"] = False
+
+k["Solver"]["Termination Criteria"]["Max Samples"] = 100000
 
 # Running Korali
-k["Random Seed"] = 0xC0FFEE
-k["Results Output"]["Path"] = "_result_run-dram"
+k["Random Seed"] = 1337
 k.run()
 
-checkMean(k, 0.0, 0.05)
-checkStd(k, 1.0, 0.05)
+verifyMean(k, [4.0], 0.05)
+verifyStd(k, [4.0], 0.05)
+

@@ -214,9 +214,9 @@ void korali::solver::optimizer::LMCMAES::updateSet()
   {
     int tmparg, imin;
     int minarg = std::numeric_limits<int>::max();
-    for(size_t i = 0; i < _subsetSize-1; ++i) 
+    for(size_t i = 1; i < _subsetSize; ++i) 
     { 
-      tmparg = _subsetUpdateTimes[_subsetHistory[i+1]] - _subsetUpdateTimes[_subsetHistory[i]] - _targetUpdateDistance;
+      tmparg = _subsetUpdateTimes[_subsetHistory[i]] - _subsetUpdateTimes[_subsetHistory[i-1]] - _targetUpdateDistance;
       if(tmparg < minarg) { minarg = tmparg; imin = i; }
     }
     if (tmparg > 0) imin = 0;

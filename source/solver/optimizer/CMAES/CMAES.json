@@ -374,7 +374,7 @@
    {
     "Name": [ "Infeasible Sample Count" ],
     "Type": "size_t",
-    "Description": "Keeps count of the number of function evaluations so far."
+    "Description": "Keeps count of the number of infeasible samples."
    },
    {
     "Name": [ "Maximum Diagonal Covariance Matrix Element" ],

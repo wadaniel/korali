@@ -71,8 +71,12 @@ void korali::solver::optimizer::LMCMAES::initialize()
  _subsetHistory.resize(_subsetSize);
  _subsetUpdateTimes.resize(_subsetSize);
  
- _evolutionPathMatrix.resize(N*_subsetSize);
  _inverseVectors.resize(N*_subsetSize);
+ _evolutionPathMatrix.resize(N*_subsetSize);
+
+ std::fill(_inverseVectors.begin(), _inverseVectors.end(), 0.0);
+ std::fill(_evolutionPathMatrix.begin(), _evolutionPathMatrix.end(), 0.0);
+ std::fill(_evolutionPathWeights.begin(), _evolutionPathWeights.end(), 0.0);
 
  // Initializing variable defaults
   for (size_t i = 0; i < N; i++)
@@ -172,16 +176,6 @@ void korali::solver::optimizer::LMCMAES::runGeneration()
 
 void korali::solver::optimizer::LMCMAES::prepareGeneration()
 {
- for(size_t i = 0; i < _subsetSize; ++i)
- {
-   size_t idx = _subsetHistory[i];
-   
-   double v2L2 = 0.0;
-   for(size_t d = 0; d < N; ++d) v2L2 += _inverseVectors[idx*N+d] * _inverseVectors[idx*N+d];
-
-   _evolutionPathWeights[i] = _sqrtInverseCholeskyRate/v2L2 * (std::sqrt(1.0+_choleskyMatrixLearningRate/(1.0-_choleskyMatrixLearningRate)*v2L2) - 1.0);
- }
-
  for (size_t i = 0; i < _populationSize; ++i)
  {
    size_t initial_infeasible = _infeasibleSampleCount;
@@ -200,12 +194,14 @@ void korali::solver::optimizer::LMCMAES::prepareGeneration()
 
 void korali::solver::optimizer::LMCMAES::sampleSingle(size_t sampleIdx)
 {
-  if (sampleIdx % 2 == 0)
+  if ( (sampleIdx % 2) == 0)
   {
     selectSubset(sampleIdx);
     choleskyFactorUpdate();
-    for (size_t d = 0; d < N; ++d)
+    for (size_t d = 0; d < N; ++d) {
      _samplePopulation[sampleIdx][d] = _currentMean[d] + _sigma*_choleskyFactorVectorProduct[d];
+     printf("cfvp %lf (%zu, %zu)\n", _choleskyFactorVectorProduct[d], sampleIdx, d);
+    }
   }
   else
   {
@@ -255,6 +251,7 @@ void korali::solver::optimizer::LMCMAES::updateSet()
   _subsetUpdateTimes[jcur] = t * _setUpdateInterval;
 
   std::copy(_evolutionPath.begin(), _evolutionPath.end(), _evolutionPathMatrix.begin()+jcur); /* insert new evolution path */
+  for( auto& e : _evolutionPathMatrix ) printf("e: %lf\n", e);
 }
 
 
@@ -328,16 +325,18 @@ void korali::solver::optimizer::LMCMAES::choleskyFactorUpdate()
     size_t idx = _subsetHistory[i];
     
     double k = 0.0;
-    for(size_t d = 0; d < N; ++d) k += _inverseVectors[idx*N+d] * _randomVector[d];
-    k *= _evolutionPathWeights[i];
+    for(size_t d = 0; d < N; ++d) { k += _inverseVectors[idx*N+d] * _randomVector[d]; printf("iv %lf (%zu)\n", _inverseVectors[idx*N+d], d); }
+    k *= _evolutionPathWeights[idx];
     
-    for(size_t d = 0; d < N; ++d) _choleskyFactorVectorProduct[d] = _sqrtInverseCholeskyRate * _choleskyFactorVectorProduct[d] + k * _subsetHistory[idx*d];
+    printf("k1 %lf, iv %lf rv %lf epw %lf\n", k, _inverseVectors[idx*N], _randomVector[0], _evolutionPathWeights[idx]);
+    for(size_t d = 0; d < N; ++d) _choleskyFactorVectorProduct[d] = _sqrtInverseCholeskyRate * _choleskyFactorVectorProduct[d] + k * _evolutionPathMatrix[idx*N+d];
   }
 }
 
 
 void korali::solver::optimizer::LMCMAES::updateInverseVectors()
 {
+  double djt, k;
   double fac = std::sqrt(1.0+_choleskyMatrixLearningRate/(1.0-_choleskyMatrixLearningRate));
   
   for(size_t i = _subsetStartIndex; i < _subsetSize; ++i)
@@ -347,14 +346,26 @@ void korali::solver::optimizer::LMCMAES::updateInverseVectors()
     double v2L2 = 0.0;
     for(size_t d = 0; d < N; ++d) v2L2 += _inverseVectors[idx*N+d] * _inverseVectors[idx*N+d];
     
-    double djt = _sqrtInverseCholeskyRate/v2L2 * (1.0 - 1.0/(fac*std::sqrt(v2L2)));
+    k = 0.0;
+    if (v2L2 > 0.0)
+    {
+      djt = _sqrtInverseCholeskyRate/v2L2 * (1.0 - 1.0/(fac*std::sqrt(v2L2)));
     
-    double k = 0.0;
-    for(size_t d = 0; d < N; ++d) k += _inverseVectors[idx*N+d] * _evolutionPathMatrix[idx*N+d];
-    k *= djt;
+      k = 0.0;
+      for(size_t d = 0; d < N; ++d) k += _inverseVectors[idx*N+d] * _evolutionPathMatrix[idx*N+d];
+      k *= djt;
 
-    for(size_t d = 0; d < N; ++d) _inverseVectors[idx*N+d] = _sqrtInverseCholeskyRate * _evolutionPathMatrix[idx*N+d] - k * _inverseVectors[idx*d];
-  }
+      _evolutionPathWeights[idx] = _sqrtInverseCholeskyRate/v2L2 * (std::sqrt(1.0+_choleskyMatrixLearningRate/(1.0-_choleskyMatrixLearningRate)*v2L2) - 1.0);
+ 
+    }
+    
+    printf("k2 %lf\n", k);
+    for(size_t d = 0; d < N; ++d) 
+      _inverseVectors[idx*N+d] = _sqrtInverseCholeskyRate * _evolutionPathMatrix[idx*N+d] - k * _inverseVectors[idx*d];
+
+ }
+
+
 }
 
 

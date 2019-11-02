@@ -1,6 +1,6 @@
 run-cmaes
 run-cmaes-direct
-run-lmcmaes-direct
+run-lmcma-direct
 run-ccmaes
 run-tmcmc
 run-mcmc

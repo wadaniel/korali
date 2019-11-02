@@ -200,7 +200,6 @@ void korali::solver::optimizer::LMCMAES::sampleSingle(size_t sampleIdx)
     choleskyFactorUpdate();
     for (size_t d = 0; d < N; ++d) {
      _samplePopulation[sampleIdx][d] = _currentMean[d] + _sigma*_choleskyFactorVectorProduct[d];
-     printf("cfvp %lf (%zu, %zu)\n", _choleskyFactorVectorProduct[d], sampleIdx, d);
     }
   }
   else
@@ -251,7 +250,6 @@ void korali::solver::optimizer::LMCMAES::updateSet()
   _subsetUpdateTimes[jcur] = t * _setUpdateInterval;
 
   std::copy(_evolutionPath.begin(), _evolutionPath.end(), _evolutionPathMatrix.begin()+jcur); /* insert new evolution path */
-  for( auto& e : _evolutionPathMatrix ) printf("e: %lf\n", e);
 }
 
 
@@ -312,7 +310,7 @@ void korali::solver::optimizer::LMCMAES::updateDistribution()
 
 void korali::solver::optimizer::LMCMAES::choleskyFactorUpdate()
 {
-  //for (size_t d = 0; d < N; ++d) _randomVector[d] = (_uniformGenerator->getRandomNumber() > 0.5) ? 1 : -1.0;
+  //for (size_t d = 0; d < N; ++d) _randomVector[d] = (_uniformGenerator->getRandomNumber() > 0.5) ? 1 : -1.0; Rademacher
   
   // TODO: replace ifelse by ptr
   if ( _randomNumberDistribution == "Uniform") for (size_t d = 0; d < N; ++d) _randomVector[d] = _uniformGenerator->getRandomNumber();
@@ -325,10 +323,9 @@ void korali::solver::optimizer::LMCMAES::choleskyFactorUpdate()
     size_t idx = _subsetHistory[i];
     
     double k = 0.0;
-    for(size_t d = 0; d < N; ++d) { k += _inverseVectors[idx*N+d] * _randomVector[d]; printf("iv %lf (%zu)\n", _inverseVectors[idx*N+d], d); }
+    for(size_t d = 0; d < N; ++d) k += _inverseVectors[idx*N+d] * _randomVector[d]; 
     k *= _evolutionPathWeights[idx];
     
-    printf("k1 %lf, iv %lf rv %lf epw %lf\n", k, _inverseVectors[idx*N], _randomVector[0], _evolutionPathWeights[idx]);
     for(size_t d = 0; d < N; ++d) _choleskyFactorVectorProduct[d] = _sqrtInverseCholeskyRate * _choleskyFactorVectorProduct[d] + k * _evolutionPathMatrix[idx*N+d];
   }
 }
@@ -359,7 +356,6 @@ void korali::solver::optimizer::LMCMAES::updateInverseVectors()
  
     }
     
-    printf("k2 %lf\n", k);
     for(size_t d = 0; d < N; ++d) 
       _inverseVectors[idx*N+d] = _sqrtInverseCholeskyRate * _evolutionPathMatrix[idx*N+d] - k * _inverseVectors[idx*d];
 

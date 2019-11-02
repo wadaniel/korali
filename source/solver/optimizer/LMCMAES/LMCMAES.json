@@ -22,6 +22,18 @@
                 { "Value": "Logarithmic", "Description": "Distributes Mu values logarithmically." }
                ],
     "Description": "Weights given to the Mu best values to update the covariance matrix and the mean."
+   },  
+   {
+    "Name": [ "Initial Sigma" ],
+    "Default": "1.0",
+    "Type": "double",
+    "Description": "Initial scaling factor for sample distribution."
+   },
+   {
+    "Name": [ "Random Number Distribution" ],
+    "Default": "Normal",
+    "Type": "std::string",
+    "Description": "Random Number to mutate, 'Normal', 'Uniform'."
    },
    {
     "Name": [ "Sigma Cumulation Factor" ],
@@ -43,39 +55,39 @@
    },
    {
     "Name": [ "Cumulative Covariance" ],
-    "Default": "0.5/std::sqrt(N)",
+    "Default": "0.5/std::sqrt(_k->_variables.size())",
     "Type": "double",
     "Description": "Controls the learning rate of the evolution path for the covariance update (must be in (0,1])."
    }, 
    {
     "Name": [ "Cholesky Matrix Learning Rate" ],
-    "Default": "2.0/std::pow((N+std::sqrt(N)),2.0)",
+    "Default": "1.0/(10.0-std::log(_k->_variables.size()+1.0))",
     "Type": "double",
-    "Description": "Controls the learning rate of the Cholesky factor."
+    "Description": "Controls the learning rate of the Cholesky factor (must be in (0,1])."
    }, 
    {
-    "Name": [ "Target Update Distance" ],
-    "Default": "N",
-    "Type": "size_t",
-    "Description": "Target distance between consecutive vectors in Evolution Path Matrix."
+    "Name": [ "Target Distance Coefficients" ],
+    "Default": "{ double(_k->_variables.size()), 0.0, 0.0 }",
+    "Type": "std::vector<double>",
+    "Description": "Coefficients that define target distance between consecutive vectors in Evolution Path Matrix. Target distance calculated as a0 + a1 * ( (j+1)/Subset Size)^a2, where j corresponds to the jth oldest Evolution Path. By default target distance equals N."
    },
    {
     "Name": [ "Target Success Rate" ],
     "Default": "0.25",
     "Type": "double",
-    "Description": "Target population success rate. Sigma increases if population success rate is larger than target."
+    "Description": "Target population success rate. Sigma increases if population success rate is larger than target. Success rate estimated from comparison of previous and current function values."
    },
    {
     "Name": [ "Set Update Interval" ],
-    "Default": "std::floor(std::log(N))",
+    "Default": "std::max(std::floor(std::log(_k->_variables.size())), 1.0)",
     "Type": "size_t",
     "Description": "Intervals at which the Evolution Path Matrix and the Inverse Vectors are being updated."   
    },
    {
     "Name": [ "Subset Size" ],
-    "Default": "std::sqrt(N)",
+    "Default": "std::ceil(std::sqrt(double(_k->_variables.size())))",
     "Type": "size_t",
-    "Description": "Number of vectors used to reconstruct the Cholesky factor (old version uses 4+3log(N)). Larger Subset Size increases internal cost."   
+    "Description": "Number of vectors used to reconstruct the Cholesky factor (old version uses 4+3log(N)). Larger Subset Size increases internal cost but usually improves performance."
    },
    {
     "Name": [ "Is Diagonal" ],
@@ -175,11 +187,6 @@
     "Name": [ "Sigma" ],
     "Type": "double",
     "Description": "Determines the step size."
-   },
-   {
-    "Name": [ "Trace" ],
-    "Type": "double",
-    "Description": "The trace of the initial covariance matrix."
    },
    {
     "Name": [ "Sample Population" ],
@@ -290,11 +297,22 @@
     "Name": [ "Evolution Path" ],
     "Type": "std::vector<double>",
     "Description": "Evolution path for Covariance Matrix update."
+   }, 
+   {
+    "Name": [ "Evolution Path Weights" ],
+    "Type": "std::vector<double>",
+    "Description": "Weights for the calculation of the Cholesky Factor."
    },
    {
     "Name": [ "Infeasible Sample Count" ],
     "Type": "size_t",
     "Description": "Keeps count of the number of infeasible samples."
+   },
+   {
+    "Name": [ "Sqrt Inverse Cholesky Rate" ],
+    "Type": "double",
+    "Description": "Shared variable to speed up computation."
    }
+
  ]
 }

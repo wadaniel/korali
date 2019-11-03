@@ -88,12 +88,6 @@
     "Default": "std::ceil(std::sqrt(double(_k->_variables.size())))",
     "Type": "size_t",
     "Description": "Number of vectors used to reconstruct the Cholesky factor (old version uses 4+3log(N)). Larger Subset Size increases internal cost but usually improves performance."
-   },
-   {
-    "Name": [ "Is Diagonal" ],
-    "Default": "false",
-    "Type": "bool",
-    "Description": "Covariance matrix updates will be optimized for diagonal matrices."
    }
  ],
 
@@ -186,7 +180,7 @@
    {
     "Name": [ "Sigma" ],
     "Type": "double",
-    "Description": "Determines the step size."
+    "Description": "Determines the step size. Initialized by the larger value of either Initial Sigma or 30% of the domain size (averaged over all dimensions)."
    },
    {
     "Name": [ "Sample Population" ],
@@ -313,6 +307,5 @@
     "Type": "double",
     "Description": "Shared variable to speed up computation."
    }
-
  ]
 }

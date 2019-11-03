@@ -38,7 +38,7 @@ void korali::Engine::run(size_t count, bool isDryRun)
  auto solvers = std::vector<korali::Solver*>(_solverCount);
 
  // Creating results directory
- mkdir(_resultsOutputPath.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+ if (_resultsOutputActive == true) mkdir(_resultsOutputPath.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
  for (size_t i = 0; i < _solverCount; i++)
  {
@@ -127,6 +127,7 @@ korali::Engine::Engine(nlohmann::json js) : korali::Engine::Engine()
 
 void korali::Engine::saveState(korali::Solver* solver, std::string dirName, std::string fileName)
 {
+ if(_resultsOutputActive == false) return;
  // Updating run timestamp
  _timestamp = korali::getTimestamp();
 

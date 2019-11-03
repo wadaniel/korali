@@ -26,8 +26,8 @@ k["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
 # Defining the problem's variables and their bounds.
 k["Variables"][0]["Name"] = "X";
-k["Variables"][0]["Lower Bound"] = -10.0;
-k["Variables"][0]["Upper Bound"] = +10.0;
+k["Variables"][0]["Lower Bound"] = -10.0
+k["Variables"][0]["Upper Bound"] = +10.0
 
 # Running Korali
 k.run()

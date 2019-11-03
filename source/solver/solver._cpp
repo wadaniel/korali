@@ -62,7 +62,7 @@ void korali::Solver::solverWrapper()
   korali::logInfo("Normal", "Results saved to folder: '%s'\n", solver->_subDirPath.c_str());
 
   // Saving last generation and final.json
-  engine->saveState(solver, solver->_subDirPath, solver->_currentGeneration);
+  if (engine->_resultsOutputFrequency > 0) engine->saveState(solver, solver->_subDirPath, solver->_currentGeneration);
   engine->saveState(solver, solver->_subDirPath, "final.json");
 
   co_switch(engine->_thread);

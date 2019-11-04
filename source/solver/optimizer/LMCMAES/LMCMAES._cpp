@@ -60,6 +60,7 @@ void korali::solver::optimizer::LMCMAES::initialize()
  _currentBestVariables.resize(N);
  _randomVector.resize(N);
  _choleskyFactorVectorProduct.resize(N);
+ _standardDeviation.resize(N);
  
  _muWeights.resize(_muValue);
  
@@ -80,31 +81,49 @@ void korali::solver::optimizer::LMCMAES::initialize()
  std::fill(_evolutionPathWeights.begin(), _evolutionPathWeights.end(), 0.0);
 
 
- std::vector<double> stddev(N, 0.0);
- 
+ if (isDirectProblem == false)
+ {
+  for (size_t i = 0; i < N; i++)
+  {
+    if( std::isfinite(_k->_variables[i]->_initialMean) == false )
+      korali::logError("Initial Mean of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
+    if( std::isfinite(_k->_variables[i]->_initialStandardDeviation) == false)
+      korali::logError("Initial Standard Deviation of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
+  }
+ }
+
  // Initializing variable defaults
  for (size_t i = 0; i < N; i++)
  {
-    if(std::isfinite(_k->_variables[i]->_initialMean) == false)
-    {
-     if(std::isfinite(_k->_variables[i]->_lowerBound) == false) korali::logError("Initial Mean of variable \'%s\' not defined, and cannot be inferred because variable lower bound is not finite.\n", _k->_variables[i]->_name.c_str());
-     if(std::isfinite(_k->_variables[i]->_upperBound) == false) korali::logError("Initial Mean of variable \'%s\' not defined, and cannot be inferred because variable upper bound is not finite.\n", _k->_variables[i]->_name.c_str());
-     _k->_variables[i]->_initialMean = (_k->_variables[i]->_upperBound + _k->_variables[i]->_lowerBound)*0.5;
-    }
+   /* confirm lower & upper bound */
+   if( (std::isfinite(_k->_variables[i]->_lowerBound) && std::isfinite(_k->_variables[i]->_upperBound) ) == false ) 
+        korali::logError("Lower and/or upper bound of variable \'%s\' is not defined.\n", _k->_variables[i]->_name.c_str());
+    
+   /* init mean if not defined */
+   if(std::isfinite(_k->_variables[i]->_initialMean) == false)
+   {
+    if(std::isfinite(_k->_variables[i]->_lowerBound) == false) korali::logError("Initial Mean of variable \'%s\' not defined, and cannot be inferred because variable lower bound is not finite.\n", _k->_variables[i]->_name.c_str());
+    if(std::isfinite(_k->_variables[i]->_upperBound) == false) korali::logError("Initial Mean of variable \'%s\' not defined, and cannot be inferred because variable upper bound is not finite.\n", _k->_variables[i]->_name.c_str());
+    _k->_variables[i]->_initialMean = (_k->_variables[i]->_upperBound + _k->_variables[i]->_lowerBound)*0.5;
+   }
 
-
-    if(_k->_variables[i]->_initialMean < _k->_variables[i]->_lowerBound || _k->_variables[i]->_initialMean > _k->_variables[i]->_upperBound)
-    korali::logError("Initial Mean (%.4f) of variable \'%s\' is out of bounds (%.4f-%.4f).\n",
+   /* validate mean */
+   if(isDirectProblem == true)
+   if(_k->_variables[i]->_initialMean < _k->_variables[i]->_lowerBound || _k->_variables[i]->_initialMean > _k->_variables[i]->_upperBound)
+   korali::logError("Initial Mean (%.4f) of variable \'%s\' is out of bounds (%.4f-%.4f).\n",
              _k->_variables[i]->_initialMean,
              _k->_variables[i]->_name.c_str(),
              _k->_variables[i]->_lowerBound,
              _k->_variables[i]->_upperBound);
-    if(std::isfinite(_k->_variables[i]->_lowerBound) && std::isfinite(_k->_variables[i]->_upperBound)) stddev[i] = 0.3 * (_k->_variables[i]->_upperBound - _k->_variables[i]->_lowerBound);
+
+   /* calculate stddevs */
+   if( std::isfinite(_k->_variables[i]->_initialStandardDeviation) == false)
+    _standardDeviation[i] = 0.3 * (_k->_variables[i]->_upperBound - _k->_variables[i]->_lowerBound);
+   else
+    _standardDeviation[i] = _k->_variables[i]->_initialStandardDeviation;
+
  }
  
- double trace = 0.0;
- for(size_t i = 0; i < N; ++i) trace+=std::pow(stddev[i],2);
- if (std::sqrt(trace/N) > _initialSigma) _initialSigma = std::sqrt(trace/N);
  _sigma = _initialSigma;
 
  if      (_muType == "Linear")       for (size_t i = 0; i < _muValue; i++) _muWeights[i] = _muValue - i;
@@ -179,35 +198,37 @@ void korali::solver::optimizer::LMCMAES::prepareGeneration()
 {
  for (size_t i = 0; i < _populationSize; ++i)
  {
-   size_t initial_infeasible = _infeasibleSampleCount;
+   size_t initialInfeasible = _infeasibleSampleCount;
    sampleSingle(i);
 
    korali::Sample sample;
    sample["Parameters"] = _samplePopulation[i];
+   
    while(_evaluationProblem->isSampleFeasible(sample) == false )
    {
+     printf("here %zu: %zu\n", i, _infeasibleSampleCount);
      _infeasibleSampleCount++;
-     sampleSingle(i);
+     sampleSingle(i, std::exp( (double(initialInfeasible)-double(_infeasibleSampleCount))/double(N) ));
      sample["Parameters"] = _samplePopulation[i];
    }
  }
 }
 
-void korali::solver::optimizer::LMCMAES::sampleSingle(size_t sampleIdx)
+void korali::solver::optimizer::LMCMAES::sampleSingle(size_t sampleIdx, double scale)
 {
-  if ( (sampleIdx % 2) == 0)
+  if ( _symmetricSampling || (sampleIdx % 2) == 0)
   {
     selectSubset(sampleIdx);
     choleskyFactorUpdate();
     for (size_t d = 0; d < N; ++d) {
-     _samplePopulation[sampleIdx][d] = _currentMean[d] + _sigma*_choleskyFactorVectorProduct[d];
+     _samplePopulation[sampleIdx][d] = _currentMean[d] + _sigma*_standardDeviation[d]*scale*_choleskyFactorVectorProduct[d];
     }
   }
   else
   {
     for (size_t d = 0; d < N; ++d)
      //_samplePopulation[sampleIdx][d] = 2.0*_currentMean[d] - _samplePopulation[sampleIdx-1][d]; // version from [Loshchilov2015]
-     _samplePopulation[sampleIdx][d] = _currentMean[d] - _sigma*_choleskyFactorVectorProduct[d];  // version from Loshcholov's code
+     _samplePopulation[sampleIdx][d] = _currentMean[d] - _sigma*_standardDeviation[d]*scale*_choleskyFactorVectorProduct[d];  // version from Loshcholov's code
   }
 
 }

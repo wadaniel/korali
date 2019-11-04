@@ -34,6 +34,12 @@
     "Default": "Normal",
     "Type": "std::string",
     "Description": "Random Number to mutate, 'Normal', 'Uniform'."
+   }, 
+   {
+    "Name": [ "Symmetric Sampling" ],
+    "Default": "true",
+    "Type": "bool",
+    "Description": "Sample every odd sample reflected in current mean."
    },
    {
     "Name": [ "Sigma Cumulation Factor" ],
@@ -311,6 +317,11 @@
     "Name": [ "Sqrt Inverse Cholesky Rate" ],
     "Type": "double",
     "Description": "Shared variable to speed up computation."
+   },
+   {
+    "Name": [ "Standard Deviation" ],
+    "Type": "std::vector<double>",
+    "Description": "Scaling factors for samples (read from Initial Standard Deviation or calculated as 30% of the domain widths)."
    }
  ]
 }

@@ -296,6 +296,11 @@
     "Name": [ "Evolution Path Weights" ],
     "Type": "std::vector<double>",
     "Description": "Weights for the calculation of the Cholesky Factor."
+   }, 
+   {
+    "Name": [ "Conjugate Evolution Path L2 Norm" ],
+    "Type": "double",
+    "Description": "L2 Norm of the conjugate evolution path."
    },
    {
     "Name": [ "Infeasible Sample Count" ],

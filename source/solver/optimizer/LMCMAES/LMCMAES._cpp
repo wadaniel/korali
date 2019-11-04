@@ -46,6 +46,7 @@ void korali::solver::optimizer::LMCMAES::initialize()
  if (_currentGeneration > 1) return;
 
  _sigmaExponentFactor = 0.0;
+ _conjugateEvolutionPathL2Norm = 0.0;
 
  // Allocating Memory
  _samplePopulation.resize(_populationSize);
@@ -290,8 +291,13 @@ void korali::solver::optimizer::LMCMAES::updateDistribution()
  }
 
  /* update evolution path */
+ _conjugateEvolutionPathL2Norm = 0.0;
  for (size_t d = 0; d < N; ++d)
+ {
    _evolutionPath[d] = (1. - _cumulativeCovariance) * _evolutionPath[d] + sqrt( _cumulativeCovariance * (2. - _cumulativeCovariance) * _effectiveMu ) * _meanUpdate[d];
+   _conjugateEvolutionPathL2Norm += std::pow(_evolutionPath[d],2);
+ }
+ _conjugateEvolutionPathL2Norm = std::sqrt(_conjugateEvolutionPathL2Norm);
 
  /* update stored paths */
  if ( (_currentGeneration % _setUpdateInterval) == 0)

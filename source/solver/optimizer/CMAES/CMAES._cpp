@@ -528,10 +528,11 @@ void korali::solver::optimizer::CMAES::updateDistribution()
     _conjugateEvolutionPath[d] = (1. - _sigmaCumulationFactor) * _conjugateEvolutionPath[d] + sqrt(_sigmaCumulationFactor * (2. - _sigmaCumulationFactor) * _effectiveMu) * sum;
 
     /* calculate norm(ps)^2 */
-    _conjugateEvolutionPathL2Norm += _conjugateEvolutionPath[d] * _conjugateEvolutionPath[d];
+    _conjugateEvolutionPathL2Norm += std::pow(_conjugateEvolutionPath[d], 2.0);
  }
+ _conjugateEvolutionPathL2Norm = std::sqrt(_conjugateEvolutionPathL2Norm);
 
- int hsig = (1.4 + 2.0/(N+1) > sqrt(_conjugateEvolutionPathL2Norm) / sqrt(1. - pow(1.-_sigmaCumulationFactor, 2.0*(1.0+_currentGeneration))) / _chiSquareNumber);
+ int hsig = (1.4 + 2.0/(N+1) > _conjugateEvolutionPathL2Norm / sqrt(1. - pow(1.-_sigmaCumulationFactor, 2.0*(1.0+_currentGeneration))) / _chiSquareNumber);
 
  /* cumulation for covariance matrix (pc) using B*D*z~N(0,C) */
  for (size_t d = 0; d < N; ++d)
@@ -617,8 +618,8 @@ void korali::solver::optimizer::CMAES::updateSigma()
  /* standard update */
  else
  {
-   // _sigma *= exp(min(1.0, _sigmaCumulationFactor/_dampFactor*((sqrt(_conjugateEvolutionPathL2Norm)/_chiSquareNumber)-1.))); (alternative)
-   _sigma *= exp(_sigmaCumulationFactor/_dampFactor*(sqrt(_conjugateEvolutionPathL2Norm)/_chiSquareNumber-1.));
+   // _sigma *= exp(min(1.0, _sigmaCumulationFactor/_dampFactor*((_conjugateEvolutionPathL2Norm/_chiSquareNumber)-1.))); (alternative)
+   _sigma *= exp(_sigmaCumulationFactor/_dampFactor*(_conjugateEvolutionPathL2Norm/_chiSquareNumber-1.));
  }
 
  /* escape flat evaluation */

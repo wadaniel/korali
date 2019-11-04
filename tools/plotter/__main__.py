@@ -57,11 +57,6 @@ def main(path, allFiles, live, generation, mean, check, test):
     print("[Korali] No plotter for solver of type Executor available...")
     exit(0)
 
- if solverName == 'LMCMAES':
-    # TODO
-    print("[Korali] No plotter for solver of type LMCMAES available...")
-    exit(0)
-
  if solverName == 'Rprop':
    # TODO
    print("[Korali] No plotter for solver of type Rprop available...")

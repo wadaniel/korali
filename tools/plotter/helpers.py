@@ -42,8 +42,6 @@ def appendStates(state, lists, stateNames):
 # Append data (list) to lists read from states (stateNames)
 def appendStateVectors(state, lists, stateNames):
     for i, name in enumerate(stateNames):
-        print(state[name])
-        print(lists[i])
         for dim, data in enumerate(state[name]):
             lists[i][dim].append(data)
 

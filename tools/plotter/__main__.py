@@ -46,7 +46,8 @@ def main(path, solverId, allFiles, live, generation, mean, check, test):
  js["Solvers"] = [ ] 
  for file in resultFiles:
   with open(solverDir + '/' + file) as f:
-   js["Solvers"].append(json.load(f))
+   solverJs = json.load(f)
+   if (solverJs['Internal']['Run ID'] == js['Run ID']):  js["Solvers"].append(solverJs)
  
  requestedSolver = js['Solver']['Type']
  solverName = requestedSolver.rsplit('/')[-1]

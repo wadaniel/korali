@@ -28,6 +28,12 @@
     "Type": "bool",
     "Default": "false",
     "Description": "Indicates whether execution has reached a termination criterion."
+   },
+   {
+    "Name": [ "Run ID" ],
+    "Type": "size_t",
+    "Default": "_runID",
+    "Description": "Specifies the Korali run's unique identifier. Used to distinguish run results when two or more use the same output directory."
    }
  ]
 }

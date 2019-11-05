@@ -16,9 +16,6 @@ void korali::Engine::run()
  // Setting output file to stdout, by default.
  korali::setConsoleOutputFile(stdout);
 
- // Initializing Profile Information
- _startTime = std::chrono::high_resolution_clock::now();
-
  // Setting Run ID
  _runID = korali::getTimehash();
 
@@ -50,6 +47,7 @@ void korali::Engine::run()
   solvers[i]->initialize();
   solvers[i]->_thread = co_create(10240*sizeof(void*), korali::Solver::solverWrapper);
   solvers[i]->_solverId = i;
+  solvers[i]->_runID = _runID;
 
   // Creating Solver Results directory and logFile
   char dirName[256];
@@ -72,6 +70,9 @@ void korali::Engine::run()
   korali::logInfo("Minimal",  "--------------------------------------------------------------------\n");
   return;
  }
+
+ // Setting start time.
+ _startTime = std::chrono::high_resolution_clock::now();
 
  while(true)
  {
@@ -123,6 +124,8 @@ korali::Engine::Engine(nlohmann::json js) : korali::Engine::Engine()
 
 void korali::Engine::saveConfig(nlohmann::json& js)
 {
+ js["Run ID"] = _runID;
+ js["Start Time"] = korali::getTimestamp();
  std::string fileName = "./" + _resultPath + "/config.json";
  korali::JsonInterface::saveJsonToFile(fileName.c_str(), js);
 }

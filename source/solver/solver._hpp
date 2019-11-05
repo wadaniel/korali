@@ -21,9 +21,12 @@ class Solver : public korali::Module
  virtual void printGenerationBefore() { };
  virtual void printGenerationAfter() { };
  virtual void runGeneration() = 0;
+ void run();
+ void saveState();
 
  cothread_t _thread;
  static void solverWrapper();
+
 };
 
 extern korali::Solver* _currentSolver;

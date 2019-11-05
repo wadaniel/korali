@@ -22,11 +22,7 @@ class Engine : public korali::Module {
 
  // Start functions
  void initialize() override;
-
- void run(size_t count, bool isDryRun);
- void runSingle() { run(1, false); }
- void runMultiple(size_t count) { run(count, false); }
- void runDry() { run(1, true); }
+ void run();
 
  // Constructors
  Engine();
@@ -37,7 +33,6 @@ class Engine : public korali::Module {
 
  // Multiple Solver Variables/Functions
  cothread_t _thread;
- size_t _solverCount;
 
  pybind11::object getItem(pybind11::object key);
  void setItem(pybind11::object key, pybind11::object val);
@@ -46,9 +41,9 @@ class Engine : public korali::Module {
  nlohmann::json& operator[](const unsigned long int& key);
 
  // State save/load methods
- void loadState(std::string fileName);
- void saveState(korali::Solver*, std::string dirName, std::string fileName);
- void saveState(korali::Solver*, std::string dirName, int fileId);
+ void loadConfig(std::string fileName);
+ void saveConfig(nlohmann::json& js);
+ void saveProfilingInfo();
 
  // Communicator Methods
  long int getMPICommPointer();

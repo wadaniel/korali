@@ -1,4 +1,20 @@
 {
+ "Configuration Settings":
+ [
+  {
+   "Name": ["Save Frequency" ],
+   "Type": "size_t",
+   "Default": "1",
+   "Description": "Specifies how often (in generations) will partial result files be saved on the results directory. The default, 1, indicates that every generation's results will be saved."
+  },
+  {
+   "Name": ["Console Output", "Frequency" ],
+   "Type": "size_t",
+   "Default": "1",
+   "Description": "Specifies how often (in generations) will partial results be printed on console. The default, 1, indicates that every generation's results will be printed."
+  }
+ ],
+ 
  "Internal Settings": 
  [
    {

@@ -4,9 +4,71 @@ import colorsys
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-from korali.fileIO import *
 from matplotlib.collections import LineCollection
 from matplotlib.colors import ListedColormap, BoundaryNorm
+
+# Read result files
+def getResultFiles(src, start=None, end=None, noisy=False):
+    if not os.path.exists(src):
+     return []
+    
+    resultfilesTmp = [f for f in os.listdir(src) if os.path.isfile(os.path.join(src, f))]
+    resultfilesTmp = sorted(resultfilesTmp)
+
+    auxList = resultfilesTmp
+    resultfilesTmp = []
+    for f in auxList: 
+     if (f.startswith('gen')): 
+      resultfilesTmp.append(f)
+
+    if (resultfilesTmp == []):
+        return []
+
+    initialpath = '{0}/initial.json'.format(src)
+    runId = None
+    with open(initialpath) as f:
+        data  = json.load(f) 
+        runId = data['Internal']['Run ID']
+
+    resultfiles = [] # Init Return Value
+    for filename in resultfilesTmp:
+        path   = '{0}/{1}'.format(src, filename)
+        
+        with open(path) as f:
+            data = json.load(f)
+            gen  = data['Solver']['Internal']['Current Generation']
+            
+            if verifyResultFile(data, path, runId, start, end, noisy):
+                resultfiles.append(filename)
+    
+    return resultfiles
+
+
+# Open file and verify runId and current generation in [start, end]
+def verifyResultFile(data, path, runId, start=None, end=None, noisy=True): 
+    currentGeneration = data['Solver']['Internal']['Current Generation']
+
+    if ( (start is not None) and (currentGeneration < start)):
+        return False
+
+    if ( (end is not None) and (currentGeneration > end)):
+        return False
+
+    if (data['Internal']['Run ID'] != runId):
+       
+        if(noisy == True):
+            print("[Korali] Warning: Skipping file {0}, results origin from a different experiment (different runid)".format(path))
+        return False
+    return True
+
+
+# Check generation greater equal lowerBound
+def verifyResultGeneration(generation, lowerBound):
+    if (generation is not None and generation < lowerBound):
+        print("[Korali] GENERATION must be greater equal "\
+                "{0}.".format(str(lowerBound)))
+        exit(-1)
+
 
 # Initialize list of lists and return solver & variable names, dimension, and
 # generation

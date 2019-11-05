@@ -8,10 +8,34 @@
     "Description": "Specifies the initializing seed for the generation of random numbers. If 0 is specified, Korali will automatically derivate a new seed base on the current time."
    },
    {
-    "Name": ["Results Output", "Path"],
+    "Name": ["Result Path"],
     "Type": "std::string",
     "Default": "_korali_result",
     "Description": "Specifies the path of the results directory."
+   },
+   {
+    "Name": ["Dry Run"],
+    "Type": "bool",
+    "Default": "false",
+    "Description": "Specifies whether to perform a dry test run to check configuration is correct."
+   },
+   {
+    "Name": ["Solver Count"],
+    "Type": "size_t",
+    "Default": "1",
+    "Description": "Specifies the number of solvers to create."
+   },
+   {
+    "Name": ["Verbosity"],
+    "Type": "std::string",
+    "Default": "Normal",
+    "Options": [
+                { "Value": "Silent", "Description": "Prints no information to console, except in case of errors." },
+                { "Value": "Minimal", "Description": "Prints minimal information about the progress of the engine." },
+                { "Value": "Normal", "Description": "Prints information about the progress of the engine, plus information on the solver/problem." },
+                { "Value": "Detailed", "Description": "Prints detailed information about the progress of the engine, plus detailed information on the solver/problem." }
+               ],
+    "Description": "Specifies how much information will be displayed on console when running Korali."
    },
    {
     "Name": [ "Distributions" ],
@@ -38,46 +62,6 @@
     "Type": "korali::Conduit*",
     "Default": "Simple",
     "Description": "Represents the configuration of the execution conduit."
-   },
-   {
-    "Name": ["Console Output", "Verbosity"],
-    "Type": "std::string",
-    "Default": "Normal",
-    "Options": [
-                { "Value": "Silent", "Description": "Prints no information to console, except in case of errors." },
-                { "Value": "Minimal", "Description": "Prints minimal information about the progress of the engine." },
-                { "Value": "Normal", "Description": "Prints information about the progress of the engine, plus information on the solver/problem." },
-                { "Value": "Detailed", "Description": "Prints detailed information about the progress of the engine, plus detailed information on the solver/problem." }
-               ],
-    "Description": "Specifies how much information will be displayed on console when running Korali."
-   },
-   {
-    "Name": ["Console Output", "Frequency" ],
-    "Type": "size_t",
-    "Default": "1",
-    "Description": "Specifies how often (in generations) will partial results be printed on console. The default, 1, indicates that every generation's results will be printed."
-   },
-   {
-    "Name": ["Results Output", "Active" ],
-    "Type": "bool",
-    "Default": "true",
-    "Description": "Switch to turn on/off result output."
-   },
-   {
-    "Name": ["Results Output", "Frequency" ],
-    "Type": "size_t",
-    "Default": "1",
-    "Description": "Specifies how often (in generations) will partial result files be saved on the results directory. The default, 1, indicates that every generation's results will be saved."
-   },
-   {
-    "Name": ["Results Output", "Profiling" ],
-    "Type": "std::string",
-    "Default": "Enabled",
-    "Options": [
-                { "Value": "Disabled", "Description": "Calculates and stores no profiling information." },
-                { "Value": "Enabled", "Description": "Stores all the raw data about the execution of Korali to produce a timeline or perform an in-depth analysis.." }
-               ],
-    "Description": "Specifies the level of detail of profiling information to gather and store."
    }
  ],
  

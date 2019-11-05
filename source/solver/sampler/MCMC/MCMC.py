@@ -3,90 +3,21 @@
 import json
 import numpy as np
 import matplotlib.pyplot as plt
-
-from korali.fileIO import *
 from korali.plotter.helpers import hlsColors, pauseLight, drawMulticoloredLine, checkFigure
-from korali.plotter.helpers import verifyGeneration, initDefaults, getStateAndGeneration, appendStates, appendStateVectors
 
-print('Loading MCMC...')
-
-# Plot MCMC results (read from .json files)
-def plot(src, plotAll=False, live=False, generation=None, test=False, mean=''):
-    plt.style.use('seaborn-dark') 
+def plot(js):
+    numdim = len(js['Variables'])
+    numentries = js['Solvers'][-1]['Internal']['Database Entry Count']
+    samples = js['Solvers'][-1]['Internal']['Sample Database']
     
-    verifyGeneration(generation, 0)
-
-    stateNames = ['Chain Length', 'Database Entry Count']
-    vecStateNames = ['Sample Database']
-
-    chainlen, numdbentries, samples = ([] for i in range(3))
-   
-    resultfiles = getResultFiles(src, 0, generation)
-    if (resultfiles == []):
-     print("[Korali] Error: Did not find Korali results in the folder...".format(src))
-     exit(-1)
-         
-    if (plotAll == False):
-        resultfiles = [resultfiles[-1]]
-
-    solverName, names, numdim, gen = initDefaults(src, "initial.json", [samples])
-
-    updateLegend = live or plotAll
-         
     fig, ax = plt.subplots(numdim, numdim, figsize=(8,8))
-    if (updateLegend):
-        fig.show()
-    
-    while True:
- 
-        for filename in resultfiles:
-            path = '{0}/{1}'.format(src, filename)
-            
-            with open(path) as f:
-                data = json.load(f)
-                
-                state, gen = getStateAndGeneration(data)
- 
-                appendStates(state, (chainlen , numdbentries), stateNames)
-                burnin = data['Solver']['Burn In']
-
-                if updateLegend:
-                    checkFigure(fig.number)
- 
-                if(numdbentries[-1] > 0):
-                    samples  = np.reshape( data['Solver']['Internal']['Sample Database'][0:numdbentries[-1]*numdim], (numdbentries[-1],numdim) )
-                    plot_samples(fig, ax, gen, numdim, numdbentries[-1], samples)
-
-        if (live == False):
-            break
-        
-        resultfiles = getResultFiles(src, gen, generation, False)
-        if (resultfiles == []):
-         print("[Korali] Error: Did not find Korali results in the folder...".format(src))
-         exit(-1)
-    
-    if(numdbentries[-1] == 0):
-        print("[Korali] Error: No samples found in file {0}...".format(path))
-        exit(-1)
-
-    checkFigure(fig.number)
-    plot_samples(fig, ax, gen, numdim, numdbentries[-1], samples)
-    plt.show() 
-    print("[Korali] Figure closed - Bye!")
-
-
-# Plot MCMC result file
-def plot_samples(fig, ax, generation, numdim, numentries, samples):
     samplesTmp = np.reshape( samples, (numentries,numdim) )
-    
-    plt.suptitle( 'MCMC\nGeneration {0}\nNumber of Samples {1}\n'.format(str(generation), str(numentries)),
-                  fontweight='bold',
-                  fontsize  = 12)
-
+    plt.suptitle( 'MCMC Plotter - \nNumber of Samples {0}\n'.format(str(numentries)), fontweight='bold', fontsize  = 12)
     plot_histogram(ax, samplesTmp)
     plot_upper_triangle(ax, samplesTmp, False)
     plot_lower_triangle(ax, samplesTmp)
     pauseLight(0.5) 
+    plt.show()
 
 
 # Plot histogram of sampes in diagonal

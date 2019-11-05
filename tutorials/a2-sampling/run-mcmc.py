@@ -22,13 +22,15 @@ k["Problem"]["Objective Function"] = model
 k["Solver"]["Type"]  = "Sampler/MCMC"
 k["Solver"]["Burn In"] = 500
 k["Solver"]["Termination Criteria"]["Max Samples"] = 5000
+k["Solver"]["Save Frequency"] = 500
+k["Solver"]["Console Frequency"] = 500
 
 # Defining problem's variables
 k["Variables"][0]["Name"] = "X"
 k["Variables"][0]["Initial Mean"] = 0.0
 k["Variables"][0]["Initial Standard Deviation"] = 1.0
 
-k["Console Output"]["Verbosity"] = "Detailed"
+k["Verbosity"] = "Detailed"
 
 # Running Korali
 k.run()

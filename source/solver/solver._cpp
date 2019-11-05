@@ -12,7 +12,7 @@ void korali::Solver::run()
 
   while(checkTermination() == false)
   {
-   if (_currentGeneration % _consoleOutputFrequency == 0)
+   if (_currentGeneration % _consoleFrequency == 0)
    {
     korali::logInfo("Minimal",  "--------------------------------------------------------------------\n");
     korali::logInfo("Minimal",  "Starting Generation: #%zu\n", _currentGeneration);
@@ -27,7 +27,7 @@ void korali::Solver::run()
    // Timing and Profiling End
    auto t1 = std::chrono::system_clock::now();
 
-   if (_currentGeneration % _consoleOutputFrequency == 0)
+   if (_currentGeneration % _consoleFrequency == 0)
    {
     printGenerationAfter();
     korali::logInfo("Detailed", "Solver: %lu - Generation Time: %.3fs\n", _solverId, std::chrono::duration<double>(t1-t0).count());

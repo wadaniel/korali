@@ -73,13 +73,15 @@ void korali::solver::optimizer::LMCMAES::initialize()
  _subsetHistory.resize(_subsetSize);
  _subsetUpdateTimes.resize(_subsetSize);
  
- _inverseVectors.resize(N*_subsetSize);
- _evolutionPathMatrix.resize(N*_subsetSize);
-
- std::fill(_inverseVectors.begin(), _inverseVectors.end(), 0.0);
- std::fill(_evolutionPathMatrix.begin(), _evolutionPathMatrix.end(), 0.0);
- std::fill(_evolutionPathWeights.begin(), _evolutionPathWeights.end(), 0.0);
-
+ _inverseVectors.resize(_subsetSize);
+ _evolutionPathHistory.resize(_subsetSize);
+ for(size_t i = 0 ; i < _subsetSize; ++i)
+ {
+   _inverseVectors[i].resize(N);
+   _evolutionPathHistory[i].resize(N);
+   std::fill(_inverseVectors[i].begin(), _inverseVectors[i].end(), 0.0);
+   std::fill(_evolutionPathHistory[i].begin(), _evolutionPathHistory[i].end(), 0.0);
+ }
 
  if (isDirectProblem == false)
  {
@@ -240,6 +242,7 @@ void korali::solver::optimizer::LMCMAES::selectSubset(size_t sampleIdx)
   if (sampleIdx == 0) ms *= 10;
   
   _subsetStartIndex = _subsetSize - std::min( (size_t) std::floor(ms*std::abs(_normalGenerator->getRandomNumber())), _subsetSize);
+  printf("_subsetStartIndex: %zu\n", _subsetStartIndex);
 }
 
 
@@ -271,7 +274,7 @@ void korali::solver::optimizer::LMCMAES::updateSet()
   size_t jcur = _subsetHistory[std::min(t,_subsetSize-1)];
   _subsetUpdateTimes[jcur] = t * _setUpdateInterval;
 
-  std::copy(_evolutionPath.begin(), _evolutionPath.end(), _evolutionPathMatrix.begin()+jcur); /* insert new evolution path */
+  std::copy(_evolutionPath.begin(), _evolutionPath.end(), _evolutionPathHistory[jcur]); /* insert new evolution path */
 }
 
 
@@ -353,7 +356,7 @@ void korali::solver::optimizer::LMCMAES::choleskyFactorUpdate()
     for(size_t d = 0; d < N; ++d) k += _inverseVectors[idx*N+d] * _randomVector[d]; 
     k *= _evolutionPathWeights[idx];
     
-    for(size_t d = 0; d < N; ++d) _choleskyFactorVectorProduct[d] = _sqrtInverseCholeskyRate * _choleskyFactorVectorProduct[d] + k * _evolutionPathMatrix[idx*N+d];
+    for(size_t d = 0; d < N; ++d) _choleskyFactorVectorProduct[d] = _sqrtInverseCholeskyRate * _choleskyFactorVectorProduct[d] + k * _evolutionPathHistory[idx][d];
   }
 }
 
@@ -376,7 +379,7 @@ void korali::solver::optimizer::LMCMAES::updateInverseVectors()
       djt = _sqrtInverseCholeskyRate/v2L2 * (1.0 - 1.0/(fac*std::sqrt(v2L2)));
     
       k = 0.0;
-      for(size_t d = 0; d < N; ++d) k += _inverseVectors[idx*N+d] * _evolutionPathMatrix[idx*N+d];
+      for(size_t d = 0; d < N; ++d) k += _inverseVectors[idx*N+d] * _evolutionPathHistory[idx][d];
       k *= djt;
 
       _evolutionPathWeights[idx] = _sqrtInverseCholeskyRate/v2L2 * (std::sqrt(1.0+_choleskyMatrixLearningRate/(1.0-_choleskyMatrixLearningRate)*v2L2) - 1.0);
@@ -384,7 +387,7 @@ void korali::solver::optimizer::LMCMAES::updateInverseVectors()
     }
     
     for(size_t d = 0; d < N; ++d) 
-      _inverseVectors[idx*N+d] = _sqrtInverseCholeskyRate * _evolutionPathMatrix[idx*N+d] - k * _inverseVectors[idx*d];
+      _inverseVectors[idx*N+d] = _sqrtInverseCholeskyRate * _evolutionPathHistory[idx][d] - k * _inverseVectors[idx*d];
 
  }
 

@@ -251,17 +251,17 @@
    {
     "Name": [ "Replacement Index" ],
     "Type": "size_t",
-    "Description": "Current column to replace in Evolution Path Matrix and Inverse Vectors."
+    "Description": "Current column to replace in Evolution Path History and Inverse Vectors."
    }, 
    {
     "Name": [ "Subset History" ],
     "Type": "std::vector<size_t>",
-    "Description": "Historical column updates of Evolution Path Matrix."
+    "Description": "Historical column updates of Evolution Paths."
    }, 
    {
     "Name": [ "Subset Update Times" ],
     "Type": "std::vector<double>",
-    "Description": "Stores timestamps of updated columns in Evolution Path Matrix."
+    "Description": "Stores timestamps of updated Evolution Paths."
    },  
    {
     "Name": [ "Cholesky Factor Vector Product" ],
@@ -269,13 +269,13 @@
     "Description": "Placeholder for Cholesky Factor product with Random Vector."
    }, 
    {
-    "Name": [ "Evolution Path Matrix" ],
-    "Type": "std::vector<double>",
-    "Description": "Matrix storing evolution paths in columns."
+    "Name": [ "Evolution Path History" ],
+    "Type": "std::vector<std::vector<double>>",
+    "Description": "Vectors storing some of previous evolution paths."
    }, 
    {
     "Name": [ "Inverse Vectors" ],
-    "Type": "std::vector<double>",
+    "Type": "std::vector<std::vector<double>>",
     "Description": "Matrix storing the inverse vectors."
    },
    {

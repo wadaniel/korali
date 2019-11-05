@@ -13,7 +13,7 @@ int main(int argc, char* argv[])
 
  k["Solver"]["Type"] = "Optimizer/CMAES";
  k["Solver"]["Population Size"] = 32;
- k["Solver"]["Termination Criteria"]["Max Generations"] = 20;
+ k["Solver"]["Termination Criteria"]["Max Generations"] = 100;
 
  k["Distributions"][0]["Name"] = "Uniform 0";
  k["Distributions"][0]["Type"] = "Univariate/Uniform";

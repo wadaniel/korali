@@ -29,7 +29,7 @@ def plot(src, plotAll=False, live=False, generation=None, test=False, plot_mean=
 
     updateLegend = live or plotAll
     
-    fig, ax = plt.subplots(2,2,num='{0} live diagnostics'.format(solverName), figsize=(8,8))
+    fig, ax = plt.subplots(3,1,num='{0} live diagnostics'.format(solverName), figsize=(8,8))
     if (updateLegend):
         fig.show()
 
@@ -82,41 +82,40 @@ def draw_figure(fig, ax, src, idx, numeval, numdim, fval, dfval, sigma,
                       fontweight='bold',\
                       fontsize=12 )
 
-    # Upper Left Plot
-    ax[0,0].grid(True)
-    ax[0,0].set_yscale('log')
-    drawMulticoloredLine(ax[0,0], numeval, fval, 0.0, 'r', 'b', '$| F |$')
-    ax[0,0].plot(numeval, dfval, 'x', color = '#34495e', label = '$| F - F_{best} |$')
-    ax[0,0].plot(numeval, sigma, color='#F8D030', label = '$\sigma$')
-    ax[0,0].plot(numeval, psL2,  color='k', label = '$|| \mathbf{p}_{\sigma} ||$')
+    # Left Plot
+    ax[0].grid(True)
+    ax[0].set_yscale('log')
+    drawMulticoloredLine(ax[0], numeval, fval, 0.0, 'r', 'b', '$| F |$')
+    ax[0].plot(numeval, dfval, 'x', color = '#34495e', label = '$| F - F_{best} |$')
+    ax[0].plot(numeval, sigma, color='#F8D030', label = '$\sigma$')
+    ax[0].plot(numeval, psL2,  color='k', label = '$|| \mathbf{p}_{\sigma} ||$')
     if ( (idx == 2) or (updateLegend == False) ):
-        ax[0,0].legend(bbox_to_anchor=(0,1.00,1,0.2), loc="lower left", mode="expand", ncol = 3, handlelength=1, fontsize = 8)
+        ax[0].legend(bbox_to_anchor=(0,1.00,1,0.2), loc="lower left", mode="expand", ncol = 3, handlelength=1, fontsize = 8)
 
-    # Upper Right Plot
+    # Mid Plot
+    ax[1].set_title('Evolution Path Weights')
+    ax[1].grid(True)
+    ax[1].set_yscale('log')
+    evonames = [ "T"+str(i) for i in range(len(evoweights)) ]
+    for i in range(len(evoweights)):
+        if len(evoweights[i]) > 0: # ugly hack
+            ax[1].plot(numeval, evoweights[i], color = colors[i], label=evonames[i])
+    if ( (idx == 2) or (updateLegend == False) ):
+        ax[1].legend(bbox_to_anchor=(1.04,0.5), loc="center left", borderaxespad=0, handlelength=1)
+
+    # Right Plot
     objVec = []
     if (plot_mean):
-        ax[0,1].set_title('Mean of Objective Variables')
+        ax[2].set_title('Mean of Objective Variables')
         objVec = mu
     else:
-        ax[0,1].set_title('Objective Variables')
+        ax[2].set_title('Objective Variables')
         objVec = fvalXvec
 
-    ax[0,1].grid(True)
+    ax[2].grid(True)
     for i in range(numdim):
-        ax[0,1].plot(numeval, objVec[i], color = colors[i], label=names[i])
+        ax[2].plot(numeval, objVec[i], color = colors[i], label=names[i])
     if ( (idx == 2) or (updateLegend == False) ):
-        ax[0,1].legend(bbox_to_anchor=(1.04,0.5), loc="center left", borderaxespad=0, handlelength=1)
+        ax[2].legend(bbox_to_anchor=(1.04,0.5), loc="center left", borderaxespad=0, handlelength=1)
 
-    # Lower Right Plot
-    ax[1,0].set_title('Evolution Path Weights')
-    ax[1,0].grid(True)
-    ax[1,0].set_yscale('log')
-    for i in range(numdim):
-        ax[1,0].plot(numeval, evoweights[i], color = colors[i])
-
-    # Lower Left Plot
-    ax[1,1].set_title('$\sigma \sqrt{diag(\mathbf{C})}$')
-    ax[1,1].grid(True)
-    ax[1,1].set_yscale('log')
-        
     pauseLight(0.05)

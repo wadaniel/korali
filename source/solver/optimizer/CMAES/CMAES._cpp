@@ -187,7 +187,7 @@ void korali::solver::optimizer::CMAES::initialize()
 
  initCovariance();
 
- _infeasibleSampleCount = 0;
+ _infeasibleSampleCount   = 0;
  _resampledParameterCount = 0;
 
  _bestEverValue = -std::numeric_limits<double>::infinity();

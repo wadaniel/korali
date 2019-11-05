@@ -26,6 +26,12 @@
     "Description": "Specifies the number of solvers to create."
    },
    {
+    "Name": ["Resume Previous"],
+    "Type": "bool",
+    "Default": "true",
+    "Description": "Specifies whether Korali should continue executing from previous results, if any (true) or always start a new execution (false)."
+   },
+   {
     "Name": ["Verbosity"],
     "Type": "std::string",
     "Default": "Normal",

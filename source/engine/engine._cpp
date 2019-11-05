@@ -40,24 +40,21 @@ void korali::Engine::run()
 
  for (size_t i = 0; i < _solverCount; i++)
  {
-  auto js = nlohmann::json();
-  getConfiguration(js);
+  auto solverJs = js["Solver"];
+  solvers[i] = dynamic_cast<korali::Solver*>(korali::Module::getModule(solverJs));
 
-  solvers[i] = dynamic_cast<korali::Solver*>(korali::Module::getModule(js["Solver"]));
-  solvers[i]->initialize();
-  solvers[i]->_thread = co_create(10240*sizeof(void*), korali::Solver::solverWrapper);
-  solvers[i]->_solverId = i;
-  solvers[i]->_runID = _runID;
-
-  // Creating Solver Results directory and logFile
   char dirName[256];
   sprintf(dirName, "solver%05d", i);
   solvers[i]->_subDirPath = _resultPath + "/" + dirName;
-
+  std::string fileName = "./" + solvers[i]->_subDirPath + "/log.txt";
+  if (_solverCount > 1) solvers[i]->_logFile = fopen(fileName.c_str(),"a");
   mkdir(solvers[i]->_subDirPath.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
-  std::string fileName = "./" + solvers[i]->_subDirPath + "/log.txt";
-  if (_solverCount > 1) solvers[i]->_logFile = fopen(fileName.c_str(),"w");
+  solvers[i]->_solverId = i;
+  solvers[i]->_runID = _runID;
+  solvers[i]->initialize();
+  solvers[i]->_thread = co_create(10240*sizeof(void*), korali::Solver::solverWrapper);
+
   _currentSolver = solvers[i];
   co_switch(solvers[i]->_thread);
  }
@@ -141,7 +138,8 @@ void korali::Engine::saveProfilingInfo()
 
 void korali::Engine::loadConfig(std::string fileName)
 {
- _js.getJson() = korali::JsonInterface::loadJsonFromFile(fileName.c_str());
+ if (korali::JsonInterface::loadJsonFromFile(_js.getJson(), fileName.c_str()) == false)
+   korali::logError("Could not find or load configuration file.\n");
 }
 
 nlohmann::json& korali::Engine::operator[](const std::string& key) { return _js[key]; }

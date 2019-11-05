@@ -23,6 +23,7 @@ class Solver : public korali::Module
  virtual void runGeneration() = 0;
  void run();
  void saveState();
+ void getJson(nlohmann::json& defaultJs);
 
  cothread_t _thread;
  static void solverWrapper();

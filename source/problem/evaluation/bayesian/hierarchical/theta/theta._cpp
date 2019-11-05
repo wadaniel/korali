@@ -4,8 +4,13 @@
 void korali::problem::evaluation::bayesian::hierarchical::Theta::initialize()
 {
   // Creating problems JSON files
-  nlohmann::json thetaProblemJson = korali::JsonInterface::loadJsonFromFile(_thetaProblemPath.c_str());
-  nlohmann::json psiProblemJson = korali::JsonInterface::loadJsonFromFile(_psiProblemPath.c_str());
+  auto thetaProblemJson = nlohmann::json();
+  auto psiProblemJson = nlohmann::json();
+
+  if ( korali::JsonInterface::loadJsonFromFile(thetaProblemJson, _thetaProblemPath.c_str())  == false)
+    korali::logError("Could not load Theta Problem problem file.\n");
+  if ( korali::JsonInterface::loadJsonFromFile(psiProblemJson, _psiProblemPath.c_str()) == false)
+    korali::logError("Could not load Psi Problem problem file.\n");
 
   // Sub-problem correctness checks
   std::string problemName = thetaProblemJson["Problem"]["Type"];

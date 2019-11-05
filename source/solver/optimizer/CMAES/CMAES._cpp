@@ -468,7 +468,7 @@ void korali::solver::optimizer::CMAES::updateDistribution()
  sort_index(_valueVector, _sortingIndex, _currentPopulationSize);
 
  if( (_areConstraintsDefined == false) ||  _isViabilityRegime )
-  _bestValidSample = 0;
+  _bestValidSample = _sortingIndex[0];
  else
  {
   _bestValidSample = -1;

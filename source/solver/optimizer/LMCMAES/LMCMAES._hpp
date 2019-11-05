@@ -22,7 +22,7 @@ class LMCMAES : public korali::solver::Optimizer
  void prepareGeneration();
  void initMuWeights(size_t numsamplesmu);
  void initCovariance();
- void sampleSingle(size_t sampleIdx, double scale = 1.0);
+ void sampleSingle(size_t sampleIdx);
  void updateSigma();
  void selectSubset(size_t sampleIdx);
  void updateSet();

@@ -7,12 +7,6 @@ import matplotlib.pyplot as plt
 from matplotlib.collections import LineCollection
 from matplotlib.colors import ListedColormap, BoundaryNorm
 
-# Verify if figure exists and exit if not
-def checkFigure(num):
-    if ( plt.fignum_exists(num) == False ):
-        print("[Korali] Figure closed - Bye!")
-        exit(0)
-
 # Get a list of evenly spaced colors in HLS huse space.
 def hlsColors(num, h = 0.01, l=0.6, s=0.65):
     hues = np.linspace(0, 1, num + 1)[:-1]
@@ -21,19 +15,6 @@ def hlsColors(num, h = 0.01, l=0.6, s=0.65):
     hues -= hues.astype(int)
     palette = [ list(colorsys.hls_to_rgb(h_i, l, s)) for h_i in hues ]
     return palette
-
-
-# Plot pause without focus
-def pauseLight(interval):
-    backend = plt.rcParams['backend']
-    if backend in matplotlib.rcsetup.interactive_bk:
-        figManager = matplotlib._pylab_helpers.Gcf.get_active()
-        if figManager is not None:
-            canvas = figManager.canvas
-            if canvas.figure.stale:
-                canvas.draw()
-            canvas.start_event_loop(interval)
-            return
 
 
 # Finds the continuous segments of colors and returns those segment

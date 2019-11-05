@@ -3,7 +3,7 @@
 import json
 import numpy as np
 import matplotlib.pyplot as plt
-from korali.plotter.helpers import hlsColors, pauseLight, drawMulticoloredLine, checkFigure
+from korali.plotter.helpers import hlsColors, drawMulticoloredLine
 
 # Create Plot from Data
 def plot(js):
@@ -61,6 +61,5 @@ def plot(js):
     #if ( (idx == 2) or (updateLegend == False) ):
     ax[1,1].legend(bbox_to_anchor=(1.04,0.5), loc="center left", borderaxespad=0, handlelength=1)
 
-    pauseLight(0.05)
     plt.show()
 

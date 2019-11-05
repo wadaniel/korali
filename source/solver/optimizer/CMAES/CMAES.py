@@ -3,7 +3,7 @@
 import json
 import numpy as np
 import matplotlib.pyplot as plt
-from korali.plotter.helpers import hlsColors, pauseLight, drawMulticoloredLine, checkFigure
+from korali.plotter.helpers import hlsColors, drawMulticoloredLine
 
 # Plot CMAES results (read from .json files)
 def plot(js):
@@ -82,5 +82,4 @@ def plot(js):
     for i in range(numdim):
         ax[1,1].plot(gen, ssdev[i], color = colors[i], label=names[i])
         
-    pauseLight(0.05)
     plt.show()

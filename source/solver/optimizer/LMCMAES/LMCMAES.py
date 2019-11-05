@@ -3,7 +3,7 @@
 import json
 import numpy as np
 import matplotlib.pyplot as plt
-from korali.plotter.helpers import hlsColors, pauseLight, drawMulticoloredLine, checkFigure
+from korali.plotter.helpers import hlsColors, drawMulticoloredLine
 
 # Plot CMAES results (read from .json files)
 def plot(js):
@@ -69,5 +69,4 @@ def plot(js):
     ax[1,1].grid(True)
     ax[1,1].set_yscale('log')
         
-    pauseLight(0.05)
     plt.show()

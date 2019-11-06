@@ -10,6 +10,9 @@ void korali::Solver::run()
 
   auto t0 = std::chrono::system_clock::now();
 
+  _currentGeneration++;
+  _startingGeneration = _currentGeneration;
+
   while(checkTermination() == false)
   {
    if (_currentGeneration % _consoleFrequency == 0)
@@ -41,19 +44,17 @@ void korali::Solver::run()
 
   auto t1 = std::chrono::system_clock::now();
 
-  _isFinished = true;
+  // Saving last generation and final.json
   _currentGeneration--;
-  finalize();
+  _isFinished = true;
+  saveState();
 
   korali::logInfo("Minimal", "--------------------------------------------------------------------\n");
-  korali::logInfo("Minimal", "%s finished correctly.\n", getType().c_str(), _currentGeneration);
+  korali::logInfo("Minimal", "%s finished correctly.\n", getType().c_str());
   for (size_t i = 0; i < _terminationCriteria.size(); i++) korali::logInfo("Normal", "Termination Criterion Met: %s\n", _terminationCriteria[i].c_str());
-
-  korali::logInfo("Normal", "Total Generations: %lu\n", _currentGeneration);
+  finalize();
+  korali::logInfo("Normal", "Final Generation: %lu\n", _currentGeneration);
   korali::logInfo("Normal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(t1-t0).count());
-
-  // Saving last generation and final.json
-  if (_saveFrequency > 0) saveState();
 
   co_switch(_k->_thread);
   korali::logError("Trying to continue finished solver thread.\n");
@@ -68,7 +69,6 @@ void korali::Solver::saveState()
  // Getting configuration
  auto js = nlohmann::json();
  this->getConfiguration(js);
- js["Timestamp"] = korali::getTimestamp();
 
  std::string fileName = "./" + _subDirPath + "/" + genFileName;
  korali::JsonInterface::saveJsonToFile(fileName.c_str(), js);

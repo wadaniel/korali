@@ -36,13 +36,6 @@
  "Termination Criteria":
  [
    {
-    "Name": ["Max Generations" ],
-    "Type": "size_t",
-    "Default": "100",
-    "Criteria": "_currentGeneration > _maxGenerations",
-    "Description": "Determines how many solver generations to run before stopping execution. Execution can be resumed at a later moment."
-   },
-   {
     "Name": [ "Max Gradient Norm" ],
     "Type": "double",
     "Default": "0.0",

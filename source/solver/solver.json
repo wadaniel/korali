@@ -20,8 +20,13 @@
    {
     "Name": [ "Current Generation" ],
     "Type": "size_t",
-    "Default": "1",
+    "Default": "0",
     "Description": "Indicates the current generation in execution."
+   },
+   {
+    "Name": [ "Starting Generation" ],
+    "Type": "size_t",
+    "Description": "Indicates the starting generation to execute from."
    },
    {
     "Name": [ "Is Finished" ],
@@ -34,6 +39,24 @@
     "Type": "size_t",
     "Default": "_runID",
     "Description": "Specifies the Korali run's unique identifier. Used to distinguish run results when two or more use the same output directory."
+   }
+ ],
+ 
+  "Termination Criteria":
+ [
+   {
+    "Name": ["Generations Per Run" ],
+    "Type": "size_t",
+    "Default": "100000000",
+    "Criteria": "_currentGeneration > _startingGeneration + _generationsPerRun",
+    "Description": "Determines how many solver generations to run relative from the start of the current run before stopping execution. Execution can be resumed at a later moment."
+   },
+   {
+    "Name": ["Max Generations" ],
+    "Type": "size_t",
+    "Default": "100000000",
+    "Criteria": "_currentGeneration > _maxGenerations",
+    "Description": "Determines how many solver generations to run before stopping execution. Execution can be resumed at a later moment."
    }
  ]
 }

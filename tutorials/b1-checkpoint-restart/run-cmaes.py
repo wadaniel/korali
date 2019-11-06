@@ -14,30 +14,20 @@ from model import *
 import korali
 k = korali.initialize()
 
-resultDir = '_result_run-cmaes'
-
 k["Problem"]["Type"] = "Evaluation/Direct/Basic"
 k["Problem"]["Objective"] = "Maximize"
 k["Problem"]["Objective Function"] = model
 
 k["Solver"]["Type"] = "Optimizer/CMAES"
 k["Solver"]["Population Size"] = 5
-k["Solver"]["Termination Criteria"]["Max Generations"] = 50
+k["Solver"]["Termination Criteria"]["Max Generations"] = 100
+k["Solver"]["Termination Criteria"]["Generations Per Run"] = 50
 
 k["Variables"][0]["Name"] = "X"
 k["Variables"][0]["Lower Bound"] = -10.0
 k["Variables"][0]["Upper Bound"] = +10.0
 
-k["Console Output"]["Frequency"] = 10
-k["Results Output"]["Path"] = resultDir
+k["Result Path"] = '_result_run-cmaes'
 
 k.run()
-
-print("\n-------------------------------------------------------------")
-print("Now loading results from Gen 50 and running until Gen 100...")
-print("-------------------------------------------------------------\n")
-
-resultFile = korali.getLatestResult(resultDir)
-k.loadState(resultFile)
-k["Solver"]["Termination Criteria"]["Max Generations"] = 100
 k.run()

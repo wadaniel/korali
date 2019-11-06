@@ -44,6 +44,7 @@ class Engine : public korali::Module {
  void loadConfig(std::string fileName);
  void saveConfig(nlohmann::json& js);
  void saveProfilingInfo();
+ void loadPreviousResult(nlohmann::json& solverJs, std::string solverDir);
 
  // Communicator Methods
  long int getMPICommPointer();

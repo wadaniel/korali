@@ -63,7 +63,7 @@ void korali::solver::optimizer::DEA::initialize()
 
  _valueVector.resize(_populationSize);
 
- if (_currentGeneration > 1) return;
+ if (_k->_currentGeneration > 1) return;
 
  _infeasibleSampleCount = 0;
  _bestSampleIndex = 0;
@@ -94,11 +94,11 @@ void korali::solver::optimizer::DEA::runGeneration()
   samples[i]["Operation"] = "Basic Evaluation";
   samples[i]["Parameters"] = _candidatePopulation[i];
   samples[i]["Sample Id"] = i;
-  _k->_conduit->start(samples[i]);
+  korali::_conduit->start(samples[i]);
  }
 
  // Waiting for samples to finish
- _k->_conduit->waitAll(samples);
+ korali::_conduit->waitAll(samples);
 
  // Processing results
  for (size_t i = 0; i < _populationSize; i++)
@@ -123,7 +123,7 @@ void korali::solver::optimizer::DEA::initSamples()
 void korali::solver::optimizer::DEA::prepareGeneration()
 {
  /* at gen 1 candidates initialized in initialize() */
- if(_currentGeneration > 1)
+ if(_k->_currentGeneration > 1)
  for (size_t i = 0; i < _populationSize; ++i)
  {
   mutateSingle(i);

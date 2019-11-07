@@ -13,7 +13,7 @@ void korali::solver::optimizer::Rprop::initialize()
 
   N = _k->_variables.size();
 
-  if (_currentGeneration > 1) return;
+  if (_k->_currentGeneration > 1) return;
 
   for (size_t i = 0; i < N; i++)
     if( std::isfinite(_k->_variables[i]->_initialValue) == false )
@@ -44,11 +44,11 @@ void korali::solver::optimizer::Rprop::evaluateFunctionAndGradient( void )
     samples[i]["Operation"]  = "Basic Evaluation";
     samples[i]["Parameters"] = _currentX;
     samples[i]["Sample Id"]  = i;
-    _k->_conduit->start(samples[i]);
+    korali::_conduit->start(samples[i]);
   }
 
   // Waiting for samples to finish
-  _k->_conduit->waitAll(samples);
+  korali::_conduit->waitAll(samples);
 
   // Processing results
   // The 'minus' is there because we want Rprop to do Maximization be default.

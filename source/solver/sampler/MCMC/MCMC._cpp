@@ -32,8 +32,8 @@ void korali::solver::sampler::MCMC::runGeneration()
   double evaluation = -korali::Inf;
   if (_problem->isSampleFeasible(sample))
   {
-   _k->_conduit->start(sample);
-   _k->_conduit->wait(sample);
+   korali::_conduit->start(sample);
+   korali::_conduit->wait(sample);
    evaluation = sample["Evaluation"];
   }
 
@@ -53,7 +53,7 @@ void korali::solver::sampler::MCMC::runGeneration()
 
  }
 
- if ( (_chainLength >= _burnIn) && (_currentGeneration % _leap == 0) ) updateDatabase(_chainLeader, _chainLeaderEvaluation);
+ if ( (_chainLength >= _burnIn) && (_k->_currentGeneration % _leap == 0) ) updateDatabase(_chainLeader, _chainLeaderEvaluation);
  
 
  updateState();
@@ -110,7 +110,7 @@ void korali::solver::sampler::MCMC::initialize()
  _problem = dynamic_cast<korali::problem::Evaluation*>(_k->_problem);
  if (_problem == NULL) korali::logError( "MCMC can only sample problems of type 'Evaluation' or derived problem types.\n");
 
- if (_currentGeneration > 1) return;
+ if (_k->_currentGeneration > 1) return;
 
  std::fill(std::begin(_choleskyDecompositionCovariance), std::end(_choleskyDecompositionCovariance), 0.0);
  std::fill(std::begin(_choleskyDecompositionChainCovariance), std::end(_choleskyDecompositionChainCovariance), 0.0);

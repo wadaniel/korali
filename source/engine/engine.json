@@ -2,6 +2,18 @@
  "Configuration Settings": 
  [
    {
+    "Name": ["Save Frequency" ],
+    "Type": "size_t",
+    "Default": "1",
+    "Description": "Specifies how often (in generations) will partial result files be saved on the results directory. The default, 1, indicates that every generation's results will be saved."
+   },
+   {
+    "Name": ["Console Frequency" ],
+    "Type": "size_t",
+    "Default": "1",
+    "Description": "Specifies how often (in generations) will partial results be printed on console. The default, 1, indicates that every generation's results will be printed."
+   },
+   {
     "Name": ["Random Seed" ],
     "Type": "size_t",
     "Default": "_runID",
@@ -12,12 +24,6 @@
     "Type": "std::string",
     "Default": "_korali_result",
     "Description": "Specifies the path of the results directory."
-   },
-   {
-    "Name": ["Dry Run"],
-    "Type": "bool",
-    "Default": "false",
-    "Description": "Specifies whether to perform a dry test run to check configuration is correct."
    },
    {
     "Name": ["Solver Count"],
@@ -62,12 +68,6 @@
     "Name": [ "Solver" ],
     "Type": "korali::Solver*",
     "Description": "Represents the state and configuration of the solver algorithm."
-   },
-   {
-    "Name": [ "Conduit" ],
-    "Type": "korali::Conduit*",
-    "Default": "Simple",
-    "Description": "Represents the configuration of the execution conduit."
    }
  ],
  
@@ -83,10 +83,21 @@
  "Internal Settings": 
  [
    {
-    "Name": [ "Timestamp" ],
-    "Type": "std::string",
+    "Name": [ "Current Generation" ],
+    "Type": "size_t",
     "Default": "0",
-    "Description": "Indicates the current time when saving a result file."
+    "Description": "Indicates the current generation in execution."
+   },
+   {
+    "Name": [ "Starting Generation" ],
+    "Type": "size_t",
+    "Description": "Indicates the starting generation to execute from."
+   },
+   {
+    "Name": [ "Is Finished" ],
+    "Type": "bool",
+    "Default": "false",
+    "Description": "Indicates whether execution has reached a termination criterion."
    },
    {
     "Name": [ "Run ID" ],
@@ -95,10 +106,10 @@
     "Description": "Specifies the Korali run's unique identifier. Used to distinguish run results when two or more use the same output directory."
    },
    {
-    "Name": [ "Is Finished" ],
-    "Type": "bool",
-    "Default": "false",
-    "Description": "Indicates whether execution has reached a termination criterion."
+    "Name": [ "Timestamp" ],
+    "Type": "std::string",
+    "Default": "0",
+    "Description": "Indicates the current time when saving a result file."
    }
  ]
  

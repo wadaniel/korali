@@ -14,18 +14,12 @@ class Solver : public korali::Module
  public:
 
  size_t N; // Sample Size
- size_t _solverId;
- FILE* _logFile;
- std::string _subDirPath;
 
  virtual void printGenerationBefore() { };
  virtual void printGenerationAfter() { };
  virtual void runGeneration() = 0;
- void run();
- void saveState();
  void getJson(nlohmann::json& defaultJs);
 
- cothread_t _thread;
  static void solverWrapper();
 
 };

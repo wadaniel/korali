@@ -40,7 +40,7 @@ void korali::solver::optimizer::CMAES::initialize()
 
  N = _k->_variables.size();
 
- if (_currentGeneration > 1) return;
+ if (_k->_currentGeneration > 1) return;
 
  size_t s_max  = std::max(_populationSize,  _viabilityPopulationSize);
  size_t mu_max = std::max(_muValue, _viabilityMuValue);
@@ -214,11 +214,11 @@ void korali::solver::optimizer::CMAES::runGeneration()
   samples[i]["Operation"] = "Basic Evaluation";
   samples[i]["Parameters"] = _samplePopulation[i];
   samples[i]["Sample Id"] = i;
-  _k->_conduit->start(samples[i]);
+  korali::_conduit->start(samples[i]);
  }
 
  // Waiting for samples to finish
- _k->_conduit->waitAll(samples);
+ korali::_conduit->waitAll(samples);
 
  // Processing results
  for (size_t i = 0; i < _currentPopulationSize; i++)
@@ -300,8 +300,8 @@ void korali::solver::optimizer::CMAES::checkMeanAndSetRegime()
   korali::Sample sample;
   sample["Parameters"] = _currentMean;
   sample["Operation"] = "Evaluate Constraints";
-  _k->_conduit->start(sample);
-  _k->_conduit->wait(sample);
+  korali::_conduit->start(sample);
+  korali::_conduit->wait(sample);
   _constraintEvaluationCount++;
 
   for (size_t c = 0; c < _directProblem->_constraints.size(); c++)
@@ -329,8 +329,8 @@ void korali::solver::optimizer::CMAES::updateConstraints()
   korali::Sample sample;
   sample["Parameters"] = _samplePopulation[i];
   sample["Operation"] = "Evaluate Constraints";
-  _k->_conduit->start(sample);
-  _k->_conduit->wait(sample);
+  korali::_conduit->start(sample);
+  korali::_conduit->wait(sample);
   _constraintEvaluationCount++;
 
   for(size_t c = 0; c < _directProblem->_constraints.size(); c++) _constraintEvaluations[c][i] = sample["Constraint Evaluations"][c];
@@ -344,7 +344,7 @@ void korali::solver::optimizer::CMAES::updateConstraints()
   for(size_t i = 0; i < _currentPopulationSize; ++i)
   {
     if ( _constraintEvaluations[c][i] > maxviolation ) maxviolation = _constraintEvaluations[c][i];
-    if ( _currentGeneration == 1 && _isViabilityRegime ) _viabilityBoundaries[c] = maxviolation;
+    if ( _k->_currentGeneration == 1 && _isViabilityRegime ) _viabilityBoundaries[c] = maxviolation;
 
     if ( _constraintEvaluations[c][i] > _viabilityBoundaries[c] + 1e-12 ) _sampleConstraintViolationCounts[i]++;
     if ( _sampleConstraintViolationCounts[i] > _maxConstraintViolationCount ) _maxConstraintViolationCount = _sampleConstraintViolationCounts[i];
@@ -362,8 +362,8 @@ void korali::solver::optimizer::CMAES::reEvaluateConstraints()
    korali::Sample sample;
    sample["Parameters"] = _samplePopulation[i];
    sample["Operation"] = "Evaluate Constraints";
-   _k->_conduit->start(sample);
-   _k->_conduit->wait(sample);
+   korali::_conduit->start(sample);
+   korali::_conduit->wait(sample);
    _constraintEvaluationCount++;
 
     _sampleConstraintViolationCounts[i] = 0;
@@ -532,7 +532,7 @@ void korali::solver::optimizer::CMAES::updateDistribution()
  }
  _conjugateEvolutionPathL2Norm = std::sqrt(_conjugateEvolutionPathL2Norm);
 
- int hsig = (1.4 + 2.0/(N+1) > _conjugateEvolutionPathL2Norm / sqrt(1. - pow(1.-_sigmaCumulationFactor, 2.0*(1.0+_currentGeneration))) / _chiSquareNumber);
+ int hsig = (1.4 + 2.0/(N+1) > _conjugateEvolutionPathL2Norm / sqrt(1. - pow(1.-_sigmaCumulationFactor, 2.0*(1.0+_k->_currentGeneration))) / _chiSquareNumber);
 
  /* cumulation for covariance matrix (pc) using B*D*z~N(0,C) */
  for (size_t d = 0; d < N; ++d)

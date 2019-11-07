@@ -1,22 +1,17 @@
 #include "conduit/conduit.hpp"
 
-korali::Conduit* korali::__conduit;
-
-void korali::Conduit::initialize()
-{
- __conduit = this;
-}
+korali::Conduit* korali::_conduit;
 
 void korali::Conduit::coroutineWrapper()
 {
- korali::Sample* currentSample = __conduit->_currentSample;
- co_switch(_currentSolver->_thread);
- (*currentSample)["Job Id"] = _currentSolver->_solverId;
+ korali::Sample* currentSample = _conduit->_currentSample;
+ co_switch(_currentEngine->_thread);
+ (*currentSample)["Job Id"] = _currentEngine->_engineId;
 
- __conduit->processSample(*currentSample);
+ _conduit->processSample(*currentSample);
 
  currentSample->_state = SampleState::finished;
- co_switch(_currentSolver->_thread);
+ co_switch(_currentEngine->_thread);
 
  if (currentSample->_state != SampleState::uninitialized) korali::logError("Resuming a finished sample\n");
 }
@@ -27,7 +22,7 @@ void korali::Conduit::start(korali::Sample& sample)
 
  sample._sampleThread = co_create(8192*sizeof(void*), korali::Conduit::coroutineWrapper);
  sample._state = SampleState::initialized;
- __conduit->_currentSample = &sample;
+ _conduit->_currentSample = &sample;
  co_switch(sample._sampleThread);
 }
 
@@ -40,7 +35,7 @@ void korali::Conduit::wait(korali::Sample& sample)
   sample._state = SampleState::running;
   co_switch(sample._sampleThread);
 
-  if (sample._state == SampleState::waiting || sample._state == SampleState::initialized) co_switch(__conduit->_k->_thread);
+  if (sample._state == SampleState::waiting || sample._state == SampleState::initialized) co_switch(_currentEngine->_thread);
  }
 
  free(sample._sampleThread);
@@ -75,7 +70,7 @@ size_t korali::Conduit::waitAny(std::vector<korali::Sample>& samples)
    }
   }
 
-  if (isFinished == false) co_switch(__conduit->_k->_thread);
+  if (isFinished == false) co_switch(_currentEngine->_thread);
  }
 
  // __profiler["Timelines"]["Engine"] += std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
@@ -101,7 +96,7 @@ void korali::Conduit::waitAll(std::vector<korali::Sample>& samples)
     co_switch(samples[i]._sampleThread);
    }
 
-  if (isFinished == false) co_switch(__conduit->_k->_thread);
+  if (isFinished == false) co_switch(_currentEngine->_thread);
  }
 
  for (size_t i = 0; i < samples.size(); i++)

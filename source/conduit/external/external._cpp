@@ -73,7 +73,7 @@ void korali::conduit::External::worker(int workerId)
   korali::Sample sample;
   sample._js.getJson() = nlohmann::json::parse(inputString);
 
-  _k->_problem->runOperation(sample["Operation"], sample);
+  _currentEngine->_problem->runOperation(sample["Operation"], sample);
 
   std::string resultString = sample._js.getJson().dump();
   size_t resultStringSize = resultString.size();
@@ -88,7 +88,7 @@ void korali::conduit::External::processSample(korali::Sample& sample)
  while (_launcherQueue.empty())
  {
   sample._state = SampleState::waiting;
-  co_switch(_currentSolver->_thread);
+  co_switch(_currentEngine->_thread);
  }
 
  int launcherId = _launcherQueue.front(); _launcherQueue.pop();
@@ -121,13 +121,13 @@ void korali::conduit::External::processSample(korali::Sample& sample)
   else
   {
    sample._state = SampleState::waiting;
-   co_switch(_currentSolver->_thread);
+   co_switch(_currentEngine->_thread);
   }
  }
 
  js["End Time"] = std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
- js["Solver Id"] = _currentSolver->_solverId;
- js["Current Generation"] = _currentSolver->_currentGeneration;
+ js["Solver Id"] = _currentEngine->_engineId;
+ js["Current Generation"] = _currentEngine->_currentGeneration;
  __profiler["Timelines"]["Worker " + std::to_string(launcherId)] += js;
 
 }

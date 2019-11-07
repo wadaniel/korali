@@ -43,7 +43,7 @@ void korali::solver::optimizer::LMCMAES::initialize()
  if(_targetDistanceCoefficients.size() != 3)
   korali::logError("LMCMAES requires 3 parameters for 'Target Distance Coefficients' (%zu provided).\n", _targetDistanceCoefficients.size());
 
- if (_currentGeneration > 1) return;
+ if (_k->_currentGeneration > 1) return;
 
  _sigmaExponentFactor = 0.0;
  _conjugateEvolutionPathL2Norm = 0.0;
@@ -161,11 +161,11 @@ void korali::solver::optimizer::LMCMAES::runGeneration()
   samples[i]["Operation"]  = "Basic Evaluation";
   samples[i]["Parameters"] = _samplePopulation[i];
   samples[i]["Sample Id"]  = i;
-  _k->_conduit->start(samples[i]);
+  korali::_conduit->start(samples[i]);
  }
 
  // Waiting for samples to finish
- _k->_conduit->waitAll(samples);
+ korali::_conduit->waitAll(samples);
 
  // Processing results
  for (size_t i = 0; i < _populationSize; i++)
@@ -224,7 +224,7 @@ void korali::solver::optimizer::LMCMAES::selectSubset(size_t sampleIdx)
 
 void korali::solver::optimizer::LMCMAES::updateSet()
 {
-  size_t t = std::floor(_currentGeneration/_setUpdateInterval);
+  size_t t = std::floor(_k->_currentGeneration/_setUpdateInterval);
   if (t < _subsetSize)
   {
     _subsetHistory[t] = t;
@@ -300,7 +300,7 @@ void korali::solver::optimizer::LMCMAES::updateDistribution()
  _conjugateEvolutionPathL2Norm = std::sqrt(_conjugateEvolutionPathL2Norm);
 
  /* update stored paths */
- if ( (_currentGeneration % _setUpdateInterval) == 0)
+ if ( (_k->_currentGeneration % _setUpdateInterval) == 0)
  {
     updateSet();
     updateInverseVectors();

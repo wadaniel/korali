@@ -1,61 +1,18 @@
 {
- "Configuration Settings":
- [
-  {
-   "Name": ["Save Frequency" ],
-   "Type": "size_t",
-   "Default": "1",
-   "Description": "Specifies how often (in generations) will partial result files be saved on the results directory. The default, 1, indicates that every generation's results will be saved."
-  },
-  {
-   "Name": ["Console Frequency" ],
-   "Type": "size_t",
-   "Default": "1",
-   "Description": "Specifies how often (in generations) will partial results be printed on console. The default, 1, indicates that every generation's results will be printed."
-  }
- ],
- 
- "Internal Settings": 
- [
-   {
-    "Name": [ "Current Generation" ],
-    "Type": "size_t",
-    "Default": "0",
-    "Description": "Indicates the current generation in execution."
-   },
-   {
-    "Name": [ "Starting Generation" ],
-    "Type": "size_t",
-    "Description": "Indicates the starting generation to execute from."
-   },
-   {
-    "Name": [ "Is Finished" ],
-    "Type": "bool",
-    "Default": "false",
-    "Description": "Indicates whether execution has reached a termination criterion."
-   },
-   {
-    "Name": [ "Run ID" ],
-    "Type": "size_t",
-    "Default": "_runID",
-    "Description": "Specifies the Korali run's unique identifier. Used to distinguish run results when two or more use the same output directory."
-   }
- ],
- 
-  "Termination Criteria":
+ "Termination Criteria":
  [
    {
     "Name": ["Generations Per Run" ],
     "Type": "size_t",
     "Default": "100000000",
-    "Criteria": "_currentGeneration >= _startingGeneration + _generationsPerRun",
+    "Criteria": "_k->_currentGeneration >= _k->_startingGeneration + _generationsPerRun",
     "Description": "Determines how many solver generations to run relative from the start of the current run before stopping execution. Execution can be resumed at a later moment."
    },
    {
     "Name": ["Max Generations" ],
     "Type": "size_t",
     "Default": "100000000",
-    "Criteria": "_currentGeneration > _maxGenerations",
+    "Criteria": "_k->_currentGeneration > _maxGenerations",
     "Description": "Determines how many solver generations to run before stopping execution. Execution can be resumed at a later moment."
    }
  ]

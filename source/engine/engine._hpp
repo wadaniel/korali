@@ -11,10 +11,8 @@
 
 namespace korali
 {
-
 class Solver;
 class Problem;
-class Conduit;
 
 class Engine : public korali::Module {
 
@@ -22,7 +20,6 @@ class Engine : public korali::Module {
 
  // Start functions
  void initialize() override;
- void run();
 
  // Constructors
  Engine();
@@ -31,24 +28,28 @@ class Engine : public korali::Module {
  // JSON-based configuration
  korali::KoraliJson  _js;
 
+ // Logging and results
+ FILE* _logFile;
+ std::string _subDirPath;
+
  // Multiple Solver Variables/Functions
+ size_t _engineId;
  cothread_t _thread;
 
  pybind11::object getItem(pybind11::object key);
  void setItem(pybind11::object key, pybind11::object val);
+ void loadConfig(std::string fileName);
+ void saveConfig(nlohmann::json& js);
+ void loadPreviousResult(nlohmann::json& solverJs, std::string solverDir);
+ void run();
+ void saveState();
 
  nlohmann::json& operator[](const std::string& key);
  nlohmann::json& operator[](const unsigned long int& key);
-
- // State save/load methods
- void loadConfig(std::string fileName);
- void saveConfig(nlohmann::json& js);
- void saveProfilingInfo();
- void loadPreviousResult(nlohmann::json& solverJs, std::string solverDir);
-
- // Communicator Methods
- long int getMPICommPointer();
 };
+
+extern korali::Engine* _currentEngine;
+extern cothread_t _mainThread;
 
 } // namespace korali
 

@@ -13,7 +13,6 @@ class Conduit : public korali::Module {
 
  public:
 
- void initialize() override;
  virtual void processSample(korali::Sample& sample) = 0;
  virtual bool isRoot() { return true; }
  virtual void abort() { exit(-1); }
@@ -31,7 +30,7 @@ class Conduit : public korali::Module {
  static void coroutineWrapper();
 };
 
-extern korali::Conduit* __conduit;
+extern korali::Conduit* _conduit;
 
 } // namespace korali
 

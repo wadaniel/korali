@@ -39,11 +39,11 @@ void korali::solver::Executor::runGeneration()
     samples[i]["Operation"] = "Execute";
     samples[i]["Parameters"] = sampleData;
     samples[i]["Sample Id"] = _executionCount;
-    _k->_conduit->start(samples[i]);
+    korali::_conduit->start(samples[i]);
     _executionCount++;
   }
 
-  _k->_conduit->waitAll(samples);
+  korali::_conduit->waitAll(samples);
 }
 
 void korali::solver::Executor::printGenerationBefore()

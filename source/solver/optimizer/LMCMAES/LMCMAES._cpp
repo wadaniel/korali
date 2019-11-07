@@ -497,5 +497,5 @@ void korali::solver::optimizer::LMCMAES::finalize()
   korali::logInfo("Minimal", "Optimum found: %e\n", _bestEverValue);
   korali::logInfo("Minimal", "Optimum found at:\n");
   for (size_t d = 0; d < N; ++d) korali::logData("Minimal", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverVariables[d]);
-  korali::logInfo("Minimal", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
+  korali::logInfo("Detailed", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
 }

@@ -186,6 +186,7 @@ void korali::solver::optimizer::LMCMAES::runGeneration()
   samples[i]["Operation"]  = "Basic Evaluation";
   samples[i]["Parameters"] = _samplePopulation[i];
   samples[i]["Sample Id"]  = i;
+  _modelEvaluationCount++;
   _k->_conduit->start(samples[i]);
  }
 
@@ -212,7 +213,6 @@ void korali::solver::optimizer::LMCMAES::prepareGeneration()
    
    while(_evaluationProblem->isSampleFeasible(sample) == false )
    {
-     //printf("here %zu: %zu\n", i, _infeasibleSampleCount);
      _infeasibleSampleCount++;
      sampleSingle(i);
      sample["Parameters"] = _samplePopulation[i];

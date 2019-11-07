@@ -219,6 +219,7 @@ void korali::solver::optimizer::CMAES::runGeneration()
   samples[i]["Operation"] = "Basic Evaluation";
   samples[i]["Parameters"] = _samplePopulation[i];
   samples[i]["Sample Id"] = i;
+  _modelEvaluationCount++;
   _k->_conduit->start(samples[i]);
  }
 

@@ -120,6 +120,7 @@ void korali::solver::sampler::TMCMC::runGeneration()
      samples[c]["Parameters"] = _chainCandidates[c];
      samples[c]["Sample Id"] = c;
      _k->_conduit->start(samples[c]);
+     _modelEvaluationCount++;
    }
   }
 

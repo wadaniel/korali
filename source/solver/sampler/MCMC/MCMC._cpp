@@ -33,6 +33,7 @@ void korali::solver::sampler::MCMC::runGeneration()
   if (_problem->isSampleFeasible(sample))
   {
    _k->_conduit->start(sample);
+   _modelEvaluationCount++;
    _k->_conduit->wait(sample);
    evaluation = sample["Evaluation"];
   }

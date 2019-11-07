@@ -831,13 +831,13 @@ void korali::solver::optimizer::CMAES::eigen(size_t size, std::vector<double>& M
 }
 
 
-void korali::solver::optimizer::CMAES::sort_index(const std::vector<double>& vec, std::vector<size_t>& _sortingIndex, size_t n) const
+void korali::solver::optimizer::CMAES::sort_index(const std::vector<double>& vec, std::vector<size_t>& sortingIndex, size_t n) const
 {
-  // initialize original _sortingIndex locations
-  std::iota(std::begin(_sortingIndex), std::begin(_sortingIndex)+n, (size_t) 0);
+  // initialize original sortingIndex locations
+  std::iota(std::begin(sortingIndex), std::begin(sortingIndex)+n, (size_t) 0);
 
   // sort indexes based on comparing values in vec
-  std::sort(std::begin(_sortingIndex), std::begin(_sortingIndex)+n, [vec](size_t i1, size_t i2) { return vec[i1] > vec[i2]; } );
+  std::sort(std::begin(sortingIndex), std::begin(sortingIndex)+n, [vec](size_t i1, size_t i2) { return vec[i1] > vec[i2]; } );
 
 }
 

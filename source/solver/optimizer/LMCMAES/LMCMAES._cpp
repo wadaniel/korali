@@ -224,8 +224,7 @@ void korali::solver::optimizer::LMCMAES::sampleSingle(size_t sampleIdx)
 {
   if ( _symmetricSampling || (sampleIdx % 2) == 0)
   {
-    selectSubset(sampleIdx);
-    choleskyFactorUpdate();
+    choleskyFactorUpdate(sampleIdx);
     for (size_t d = 0; d < N; ++d) {
      _samplePopulation[sampleIdx][d] = _currentMean[d] + _sigma*_standardDeviation[d]*_choleskyFactorVectorProduct[d];
     }
@@ -238,16 +237,6 @@ void korali::solver::optimizer::LMCMAES::sampleSingle(size_t sampleIdx)
   }
 
 }
-
-
-void korali::solver::optimizer::LMCMAES::selectSubset(size_t sampleIdx)
-{
-  double ms = 4.0;
-  if (sampleIdx == 0) ms *= 10;
-  
-  _subsetStartIndex = _subsetSize - std::min( (size_t) std::floor(ms*std::abs(_normalGenerator->getRandomNumber()))+1, _subsetSize);
-}
-
 
 
 void korali::solver::optimizer::LMCMAES::updateDistribution()
@@ -311,10 +300,15 @@ void korali::solver::optimizer::LMCMAES::updateDistribution()
 }
 
 
-void korali::solver::optimizer::LMCMAES::choleskyFactorUpdate()
+void korali::solver::optimizer::LMCMAES::choleskyFactorUpdate(size_t sampleIdx)
 {
+ 
+  /* randomly select subsetStartIndex */
+  double ms = 4.0;
+  if (sampleIdx == 0) ms *= 10;
+  size_t subsetStartIndex = _subsetSize - std::min( (size_t) std::floor(ms*std::abs(_normalGenerator->getRandomNumber()))+1, _subsetSize);
+
   //for (size_t d = 0; d < N; ++d) _randomVector[d] = (_uniformGenerator->getRandomNumber() > 0.5) ? 1 : -1.0; Rademacher
-  
   if ( _randomNumberDistribution == "Normal") 
       for (size_t d = 0; d < N; ++d) _randomVector[d] = _normalGenerator->getRandomNumber();
   else if ( _randomNumberDistribution == "Uniform") 
@@ -322,7 +316,7 @@ void korali::solver::optimizer::LMCMAES::choleskyFactorUpdate()
 
   for (size_t d = 0; d < N; ++d) _choleskyFactorVectorProduct[d] = _randomVector[d];
   
-  for(size_t i = _subsetStartIndex; i < _subsetSize; ++i)
+  for(size_t i = subsetStartIndex; i < _subsetSize; ++i)
   {
     size_t idx = _subsetHistory[i];
     
@@ -460,13 +454,13 @@ void korali::solver::optimizer::LMCMAES::numericalErrorTreatment()
 /************************************************************************/
 
 
-void korali::solver::optimizer::LMCMAES::sort_index(const std::vector<double>& vec, std::vector<size_t>& _sortingIndex, size_t n) const
+void korali::solver::optimizer::LMCMAES::sort_index(const std::vector<double>& vec, std::vector<size_t>& sortingIndex, size_t n) const
 {
   // initialize original _sortingIndex locations
-  std::iota(std::begin(_sortingIndex), std::begin(_sortingIndex)+n, (size_t) 0);
+  std::iota(std::begin(sortingIndex), std::begin(sortingIndex)+n, (size_t) 0);
 
   // sort indexes based on comparing values in vec
-  std::sort(std::begin(_sortingIndex), std::begin(_sortingIndex)+n, [vec](size_t i1, size_t i2) { return vec[i1] > vec[i2]; } );
+  std::sort(std::begin(sortingIndex), std::begin(sortingIndex)+n, [vec](size_t i1, size_t i2) { return vec[i1] > vec[i2]; } );
 
 }
 

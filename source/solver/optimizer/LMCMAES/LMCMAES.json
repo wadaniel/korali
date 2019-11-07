@@ -174,11 +174,6 @@
     "Description": "Variance effective selection mass."
    },
    {
-    "Name": [ "Subset Start Index" ],
-    "Type": "size_t",
-    "Description": "Current first vector index to reconstruct the Cholesky factor."   
-   },
-   {
     "Name": [ "Sigma Exponent Factor" ],
     "Type": "double",
     "Description": "Controls step size increment."

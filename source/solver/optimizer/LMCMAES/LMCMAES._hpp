@@ -23,12 +23,11 @@ class LMCMAES : public korali::solver::Optimizer
  void initMuWeights(size_t numsamplesmu);
  void initCovariance();
  void sampleSingle(size_t sampleIdx);
- void updateSigma();
- void selectSubset(size_t sampleIdx);
+ void choleskyFactorUpdate(size_t sampleIdx);
  void updateSet();
  void updateInverseVectors();
- void choleskyFactorUpdate();
  void updateDistribution();
+ void updateSigma();
  void numericalErrorTreatment();
 
  void sort_index(const std::vector<double>& vec, std::vector<size_t>& _sortingIndex, size_t n) const;

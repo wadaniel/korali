@@ -14,30 +14,31 @@ from model import *
 import korali
 k = korali.initialize()
 
-resultDir = '_result_run-mcmc'
-
 k["Problem"]["Type"] = "Evaluation/Direct/Basic"
 k["Problem"]["Objective Function"] = model
 
 k["Solver"]["Type"]  = "Sampler/MCMC"
 k["Solver"]["Burn In"] = 500
-k["Solver"]["Termination Criteria"]["Max Samples"] = 1000
+k["Solver"]["Console Frequency"] = 500
+k["Solver"]["Save Frequency"] = 500
+
+k["Solver"]["Termination Criteria"]["Max Samples"] = 2000
+k["Solver"]["Termination Criteria"]["Generations Per Run"] = 1000
 
 k["Variables"][0]["Name"] = "X"
 k["Variables"][0]["Initial Mean"] = 0.0
 k["Variables"][0]["Initial Standard Deviation"] = 1.0
 
-k["Console Output"]["Frequency"] = 1000
-k["Results Output"]["Frequency"] = 1000
-k["Results Output"]["Path"] = resultDir
+k["Result Path"] = '_result_run-mcmc'
+
+print("\n-------------------------------------------------------------")
+print("Running first 1000 samples...")
+print("-------------------------------------------------------------\n")
 
 k.run()
 
 print("\n-------------------------------------------------------------")
-print("Now continuing from Sample #1000 until Sample #5000...")
+print("Running last 1000 samples...")
 print("-------------------------------------------------------------\n")
 
-resultFile = korali.getLatestResult(resultDir)
-k.loadState(resultFile)
-k["Solver"]["Termination Criteria"]["Max Samples"] = 5000
 k.run()

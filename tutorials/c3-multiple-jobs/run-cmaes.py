@@ -33,4 +33,6 @@ k["Conduit"]["Type"] = "External"
 k["Conduit"]["Concurrent Jobs"] = 8 
 
 # Running Multiple Korali Instances
-k.runMultiple(8)
+k["Solver Count"] = 8
+
+k.run()

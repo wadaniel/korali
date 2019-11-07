@@ -22,6 +22,7 @@ k["Solver"]["Type"] = "Optimizer/CMAES"
 k["Solver"]["Population Size"] = 5
 k["Solver"]["Termination Criteria"]["Max Generations"] = 100
 k["Solver"]["Termination Criteria"]["Generations Per Run"] = 50
+k["Solver"]["Console Frequency"] = 25
 
 k["Variables"][0]["Name"] = "X"
 k["Variables"][0]["Lower Bound"] = -10.0
@@ -29,5 +30,14 @@ k["Variables"][0]["Upper Bound"] = +10.0
 
 k["Result Path"] = '_result_run-cmaes'
 
+print('------------------------------------------------------')
+print('Now running first 50 generations...')
+print('------------------------------------------------------')
+
 k.run()
+
+print('------------------------------------------------------')
+print('Now running last 50 generations...')
+print('------------------------------------------------------')
+
 k.run()

@@ -18,7 +18,7 @@ void korali::Solver::run()
    if (_currentGeneration % _consoleFrequency == 0)
    {
     korali::logInfo("Minimal",  "--------------------------------------------------------------------\n");
-    korali::logInfo("Minimal",  "Starting Generation: #%zu\n", _currentGeneration);
+    korali::logInfo("Minimal",  "Current Generation: #%zu\n", _currentGeneration);
     printGenerationBefore();
    }
 

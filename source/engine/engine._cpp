@@ -50,8 +50,8 @@ void korali::Engine::run()
   solvers[i]->_subDirPath = solverDir;
 
   std::string fileName = "./" + solvers[i]->_subDirPath + "/log.txt";
-  if (_solverCount > 1) solvers[i]->_logFile = fopen(fileName.c_str(),"a");
   mkdir(solvers[i]->_subDirPath.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+  if (_solverCount > 1) solvers[i]->_logFile = fopen(fileName.c_str(), "a");
 
   solvers[i]->_isFinished = false;
   solvers[i]->_solverId = i;

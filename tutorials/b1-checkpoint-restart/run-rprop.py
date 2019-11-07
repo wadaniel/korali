@@ -14,30 +14,31 @@ from model import *
 import korali
 k = korali.initialize()
 
-resultDir = '_result_run-cmaes'
-
 k["Problem"]["Type"] = "Evaluation/Direct/Gradient"
 k["Problem"]["Objective"] = "Maximize"
 k["Problem"]["Objective Function"] = model_with_gradient
 
 k["Solver"]["Type"] = "Optimizer/Rprop"
+k["Solver"]["Console Frequency"] = 10
+
 k["Solver"]["Termination Criteria"]["Max Generations"] = 50
+k["Solver"]["Termination Criteria"]["Generations Per Run"] = 25
 k["Solver"]["Termination Criteria"]['Parameter Relative Tolerance'] = 1e-8;
 
 k["Variables"][0]["Name"] = "X"
 k["Variables"][0]["Initial Value"] = -10.
 
-k["Console Output"]["Frequency"] = 10
-k["Results Output"]["Path"] = resultDir
-
-k.run()
-
+k["Result Path"] = '_result_run-rprop'
 
 print("\n-------------------------------------------------------------")
-print("Now loading results from Gen 50 and running until Gen 100...")
+print("Running first 25 generations...")
 print("-------------------------------------------------------------\n")
 
-resultFile = korali.getLatestResult(resultDir)
-k.loadState(resultFile)
-k["Solver"]["Termination Criteria"]["Max Generations"] = 100
 k.run()
+
+print("\n-------------------------------------------------------------")
+print("Running last 25 generations...")
+print("-------------------------------------------------------------\n")
+
+k.run()
+

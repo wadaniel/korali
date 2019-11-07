@@ -14,8 +14,6 @@ from model import *
 import korali
 k = korali.initialize()
 
-resultDir = '_result_run-multiple'
-
 k["Problem"]["Type"] = "Evaluation/Direct/Basic"
 k["Problem"]["Objective"] = "Maximize"
 k["Problem"]["Objective Function"] = model
@@ -23,20 +21,24 @@ k["Problem"]["Objective Function"] = model
 k["Solver"]["Type"] = "Optimizer/CMAES"
 k["Solver"]["Population Size"] = 5
 k["Solver"]["Termination Criteria"]["Max Generations"] = 50
+k["Solver"]["Termination Criteria"]["Generations Per Run"] = 25
 k["Solver"]["Console Frequency"] = 10
 
 k["Variables"][0]["Name"] = "X"
 k["Variables"][0]["Lower Bound"] = -10.0
 k["Variables"][0]["Upper Bound"] = +10.0
 
-k["Result Path"] = resultDir
+k["Result Path"] = '_result_run-multiple'
 k["Solver Count"] = 8
+
+print('------------------------------------------------------')
+print('Now running first 25 generations...')
+print('------------------------------------------------------')
 
 k.run()
 
-#print("\n-------------------------------------------------------------")
-#print("Now running from Gen 50 until Gen 100...")
-#print("-------------------------------------------------------------\n")
+print('------------------------------------------------------')
+print('Now running last 25 generations...')
+print('------------------------------------------------------')
 
-k["Solver"]["Termination Criteria"]["Max Generations"] = 100
 k.run()

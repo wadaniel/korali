@@ -14,31 +14,31 @@ from model import *
 import korali
 k = korali.initialize()
 
-resultDir = '_result_run-dea'
-
 k["Problem"]["Type"] = "Evaluation/Direct/Basic"
 k["Problem"]["Objective"] = "Maximize"
 k["Problem"]["Objective Function"] = model
 
 k["Solver"]["Type"]  = "Optimizer/DEA"
 k["Solver"]["Population Size"] = 10
-k["Solver"]["Termination Criteria"]["Max Generations"] = 50
+k["Solver"]["Termination Criteria"]["Max Generations"] = 100
+k["Solver"]["Termination Criteria"]["Generations Per Run"] = 50
+k["Solver"]["Console Frequency"] = 5
+k["Solver"]["Save Frequency"] = 5
 
 k["Variables"][0]["Name"] = "X"
 k["Variables"][0]["Lower Bound"] = -10.0
 k["Variables"][0]["Upper Bound"] = +10.0
 
-k["Console Output"]["Frequency"] = 5
-k["Results Output"]["Frequency"] = 5
-k["Results Output"]["Path"] = resultDir
+k["Result Path"] = '_result_run-dea'
+
+print('------------------------------------------------------')
+print('Now running first 50 generations...')
+print('------------------------------------------------------')
 
 k.run()
 
-print("\n-------------------------------------------------------------")
-print("Now loading results from Gen 50 and running until Gen 100...")
-print("-------------------------------------------------------------\n")
+print('------------------------------------------------------')
+print('Now running last 50 generations...')
+print('------------------------------------------------------')
 
-resultFile = korali.getLatestResult(resultDir)
-k.loadState(resultFile)
-k["Solver"]["Termination Criteria"]["Max Generations"] = 100
 k.run()

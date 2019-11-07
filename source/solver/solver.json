@@ -48,7 +48,7 @@
     "Name": ["Generations Per Run" ],
     "Type": "size_t",
     "Default": "100000000",
-    "Criteria": "_currentGeneration > _startingGeneration + _generationsPerRun",
+    "Criteria": "_currentGeneration >= _startingGeneration + _generationsPerRun",
     "Description": "Determines how many solver generations to run relative from the start of the current run before stopping execution. Execution can be resumed at a later moment."
    },
    {

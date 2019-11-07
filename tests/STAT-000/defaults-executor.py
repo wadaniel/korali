@@ -24,6 +24,6 @@ assert k["Solver"]["Executions Per Generation"] == 0
 
 # Testing Internals
 
-assert k["Solver"]["Internal"]["Execution Count"] == 0
+assert k["Solver"]["Internal"]["Model Evaluation Count"] == 0
 assert k["Solver"]["Internal"]["Sample Count"] == 0
 assert k["Solver"]["Internal"]["Variable Count"] == 1

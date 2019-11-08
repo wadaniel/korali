@@ -9,17 +9,6 @@
    }
  ],
  
- "Termination Criteria":
- [
-   {
-    "Name": [ "Max Executions" ],
-    "Type": "size_t",
-    "Default": "+INFINITY",
-    "Criteria": "_modelEvaluationCount == _maxExecutions",
-    "Description": "Indicates the maximum number of executions to perform. By default this setting equals +INFINITY, meaning that all samples will be executed."
-   } 
- ],
- 
   "Internal Settings": 
  [
    {

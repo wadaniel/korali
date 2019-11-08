@@ -18,9 +18,9 @@ void korali::solver::Executor::initialize()
 
 void korali::solver::Executor::runGeneration()
 {
-  if (_maxExecutions >= _sampleCount) _maxExecutions = _sampleCount;
+  if (_maxModelEvaluations >= _sampleCount) _maxModelEvaluations = _sampleCount;
 
-  if ( (_modelEvaluationCount + _executionsPerGeneration) >= _maxExecutions) _executionsPerGeneration = _maxExecutions - _modelEvaluationCount;
+  if ( (_modelEvaluationCount + _executionsPerGeneration) >= _maxModelEvaluations) _executionsPerGeneration = _maxModelEvaluations - _modelEvaluationCount;
 
   std::vector<korali::Sample> samples(_executionsPerGeneration);
 

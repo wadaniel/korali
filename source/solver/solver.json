@@ -25,9 +25,9 @@
    {
     "Name": [ "Max Model Evaluations" ],
     "Type": "size_t",
-    "Default": "+INFINITY",
+    "Default": "std::numeric_limits<size_t>::max()",
     "Criteria": "_maxModelEvaluations <= _modelEvaluationCount",
-    "Description": "Specifies the minimum target fitness to stop minimization."
+    "Description": "Specifies the maximum allowed evaluations of the computational model."
    }
  ]
 }

@@ -45,6 +45,7 @@ void korali::solver::optimizer::LMCMAES::initialize()
 
  if (_currentGeneration > 1) return;
 
+ _chiSquareNumber = sqrt((double) N) * (1. - 1./(4.*N) + 1./(21.*N*N));
  _sigmaExponentFactor = 0.0;
  _conjugateEvolutionPathL2Norm = 0.0;
 
@@ -131,6 +132,9 @@ void korali::solver::optimizer::LMCMAES::initialize()
  }
  
  _sigma = _initialSigma;
+ 
+ if ( (_sigmaUpdateRule == "CMAES" || _sigmaUpdateRule == "LMCMA") == false)
+   korali::logError("Invalid setting of Sigma Update Rule (%s) (choose CMAES, or LMCMA).",  _sigmaUpdateRule.c_str());
 
  if      (_muType == "Linear")       for (size_t i = 0; i < _muValue; i++) _muWeights[i] = _muValue - i;
  else if (_muType == "Equal")        for (size_t i = 0; i < _muValue; i++) _muWeights[i] = 1.;
@@ -312,7 +316,7 @@ void korali::solver::optimizer::LMCMAES::choleskyFactorUpdate(size_t sampleIdx)
   if ( _randomNumberDistribution == "Normal") 
       for (size_t d = 0; d < N; ++d) _randomVector[d] = _normalGenerator->getRandomNumber();
   else if ( _randomNumberDistribution == "Uniform") 
-      for (size_t d = 0; d < N; ++d) _randomVector[d] = _uniformGenerator->getRandomNumber();
+      for (size_t d = 0; d < N; ++d) _randomVector[d] = 2*_uniformGenerator->getRandomNumber()-1.0;
 
   for (size_t d = 0; d < N; ++d) _choleskyFactorVectorProduct[d] = _randomVector[d];
   
@@ -401,6 +405,9 @@ void korali::solver::optimizer::LMCMAES::updateInverseVectors()
 void korali::solver::optimizer::LMCMAES::updateSigma()
 {
 
+ /* update sigma */
+ if(_sigmaUpdateRule == "LMCMA")
+ {
  double rank = 0;
  for(size_t i = 0; i < _populationSize; ++i)
  {
@@ -418,9 +425,13 @@ void korali::solver::optimizer::LMCMAES::updateSigma()
 
  rank = rank/(_populationSize*_populationSize) - _targetSuccessRate;
  _sigmaExponentFactor = (1.0 - _sigmaCumulationFactor) * _sigmaExponentFactor + _sigmaCumulationFactor * rank;
- 
- /* update sigma */
- _sigma *= std::exp(_sigmaExponentFactor/_dampFactor); 
+  
+   _sigma *= std::exp(_sigmaExponentFactor/_dampFactor); 
+ }
+ else /* CMA-ES update rule */
+ {
+   _sigma *= exp(_sigmaCumulationFactor/_dampFactor*(_conjugateEvolutionPathL2Norm/_chiSquareNumber-1.));
+ }
 
  /* escape flat evaluation */
  if (_currentBestValue == _valueVector[_sortingIndex[(int)_muValue]]) {

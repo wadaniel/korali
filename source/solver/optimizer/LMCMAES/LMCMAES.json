@@ -28,6 +28,12 @@
     "Default": "1.0",
     "Type": "double",
     "Description": "Initial scaling factor for sample distribution."
+   }, 
+   {
+    "Name": [ "Sigma Update Rule" ],
+    "Default": "CMAES",
+    "Type": "std::string",
+    "Description": "Rule applied to update Sigma (CMAES, or LMCMA)."
    },
    {
     "Name": [ "Random Number Distribution" ],
@@ -64,7 +70,7 @@
     "Default": "0.5/std::sqrt(_k->_variables.size())",
     "Type": "double",
     "Description": "Controls the learning rate of the evolution path for the covariance update (must be in (0,1])."
-   }, 
+   },  
    {
     "Name": [ "Cholesky Matrix Learning Rate" ],
     "Default": "1.0/(10.0-std::log(_k->_variables.size()+1.0))",
@@ -312,6 +318,11 @@
     "Name": [ "Sqrt Inverse Cholesky Rate" ],
     "Type": "double",
     "Description": "Shared variable to speed up computation."
+   }, 
+   {
+    "Name": [ "Chi Square Number" ],
+    "Type": "double",
+    "Description": "Expectation of $||N(0,I)||^2$."
    },
    {
     "Name": [ "Standard Deviation" ],

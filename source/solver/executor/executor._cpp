@@ -14,8 +14,8 @@ void korali::solver::Executor::initialize()
  //for (size_t i = 0; i < _variableCount; i++) if (_k->_variables[i]->_loadedValues.size() != _variableCount) 
    //korali::logError("Variable Count not equal throughout variables.\n");
 
- if ( _executionsPerGeneration == 0) _executionsPerGeneration = _sampleCount;
- if (_maxExecutions == 0) _maxExecutions = _sampleCount;
+ _executionsPerGeneration = _sampleCount;
+ _maxExecutions = _sampleCount;
 
 }
 

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import korali
+import math
 
 k = korali.initialize()
 
@@ -20,7 +21,7 @@ k.runDry()
 
 # Testing Configuration
 
-assert k["Solver"]["Executions Per Generation"] == 0
+assert k["Solver"]["Executions Per Generation"] == -1
 
 # Testing Internals
 

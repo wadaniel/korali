@@ -14,16 +14,13 @@ void korali::solver::Executor::initialize()
  //for (size_t i = 0; i < _variableCount; i++) if (_k->_variables[i]->_loadedValues.size() != _variableCount) 
    //korali::logError("Variable Count not equal throughout variables.\n");
 
- _executionsPerGeneration = _sampleCount;
- _maxExecutions = _sampleCount;
-
 }
 
 void korali::solver::Executor::runGeneration()
 {
-  if ( (_modelEvaluationCount + _executionsPerGeneration) > _maxExecutions) _executionsPerGeneration = _maxExecutions;
+  if (_maxExecutions >= _sampleCount) _maxExecutions = _sampleCount;
 
-  if ( (_modelEvaluationCount + _executionsPerGeneration) > _sampleCount) _executionsPerGeneration = _sampleCount - _modelEvaluationCount;
+  if ( (_modelEvaluationCount + _executionsPerGeneration) >= _maxExecutions) _executionsPerGeneration = _maxExecutions - _modelEvaluationCount;
 
   std::vector<korali::Sample> samples(_executionsPerGeneration);
 

@@ -27,7 +27,10 @@ def logistic_reference( s ):
   Y = np.zeros(X.size)
   for i in range(X.size):
     f = np.exp(th[2]*X[i])
-    Y[i] = ( th[0]*th[1]*f )/( th[0] + th[1]*(f-1) )
+    if (th[0]*th[1]*f == 0):
+        Y[i] = 0.0
+    else:
+        Y[i] = ( th[0]*th[1]*f )/( th[0] + th[1]*(f-1) )
 
   Y = Y +  np.random.normal( 0, th[3], X.size )
   k = s["Sample Id"]

@@ -22,6 +22,7 @@ k["Console Output"]["Verbosity"] = "Detailed"
 
 k.run()
 
+print(k["Solver"]["Internal"]["Model Evaluation Count"])
 assert k["Solver"]["Internal"]["Model Evaluation Count"] == 5
 assert k["Solver"]["Internal"]["Sample Count"] == 5
 assert k["Solver"]["Internal"]["Variable Count"] == 2

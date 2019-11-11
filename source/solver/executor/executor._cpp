@@ -30,9 +30,9 @@ void korali::solver::Executor::runGeneration()
     for(auto& x : sampleData) korali::logData("Detailed", " %le   ", x);
     korali::logData("Detailed", "\n");
 
-    samples[i]["Operation"] = "Execute";
+    samples[i]["Operation"]  = "Execute";
     samples[i]["Parameters"] = sampleData;
-    samples[i]["Sample Id"] = _modelEvaluationCount;
+    samples[i]["Sample Id"]  = _modelEvaluationCount;
     _k->_conduit->start(samples[i]);
     _modelEvaluationCount++;
   }

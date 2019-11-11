@@ -4,13 +4,11 @@
 void korali::problem::evaluation::bayesian::hierarchical::Theta::initialize()
 {
   // Creating problems JSON files
-  auto thetaProblemJson = nlohmann::json();
   auto psiProblemJson = nlohmann::json();
+  korali::Engine::loadPreviousRun(psiProblemJson, _psiProblemPath);
 
-  if ( korali::JsonInterface::loadJsonFromFile(thetaProblemJson, _thetaProblemPath.c_str())  == false)
-    korali::logError("Could not load Theta Problem problem file.\n");
-  if ( korali::JsonInterface::loadJsonFromFile(psiProblemJson, _psiProblemPath.c_str()) == false)
-    korali::logError("Could not load Psi Problem problem file.\n");
+  auto thetaProblemJson = nlohmann::json();
+  korali::Engine::loadPreviousRun(thetaProblemJson, _thetaProblemPath);
 
   // Sub-problem correctness checks
   std::string problemName = thetaProblemJson["Problem"]["Type"];
@@ -31,10 +29,7 @@ void korali::problem::evaluation::bayesian::hierarchical::Theta::initialize()
 
   // Setting Korali problem objects
   _psiProblemEngine = new korali::Engine(psiProblemJson);
-  _psiProblemEngine->initialize();
-
   _thetaProblemEngine = new korali::Engine(thetaProblemJson);
-  _thetaProblemEngine->initialize();
 
   // Now inheriting Sub problem's variables
   _k->_distributions = _thetaProblemEngine->_distributions;

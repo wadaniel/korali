@@ -13,20 +13,23 @@ from model import *
 import korali
 k = korali.initialize()
 
+# Creating new experiment
+e = korali.newExperiment()
+
 # Configuring Problem.
-k["Problem"]["Type"] = "Evaluation/Direct/Gradient"
-k["Problem"]["Objective"] = "Maximize"
-k["Problem"]["Objective Function"] = model_with_gradient
+e["Problem"]["Type"] = "Evaluation/Direct/Gradient"
+e["Problem"]["Objective"] = "Maximize"
+e["Problem"]["Objective Function"] = model_with_gradient
 
 # Defining the problem's variables.
 for i in range(5):
-  k["Variables"][i]["Name"] = "X" + str(i)
-  k["Variables"][i]["Initial Value"] = -10.0+i
+  e["Variables"][i]["Name"] = "X" + str(i)
+  e["Variables"][i]["Initial Value"] = -10.0+i
 
 # Configuring CMA-ES parameters
-k["Solver"]["Type"] = "Optimizer/Rprop"
-k["Solver"]["Termination Criteria"]["Max Generations"] = 200
-k["Solver"]["Termination Criteria"]["Parameter Relative Tolerance"] = 1e-8
+e["Solver"]["Type"] = "Optimizer/Rprop"
+e["Solver"]["Termination Criteria"]["Max Generations"] = 200
+e["Solver"]["Termination Criteria"]["Parameter Relative Tolerance"] = 1e-8
 
-# Running Korali
-k.run()
+# Running Experiment
+k.run(e)

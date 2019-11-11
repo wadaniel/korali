@@ -12,6 +12,7 @@
 #include <map>
 #include <filesystem>
 
+std::vector<korali::Engine>* korali::_engineVector;
 korali::Engine* korali::_currentEngine;
 cothread_t korali::_mainThread;
 
@@ -26,7 +27,7 @@ void korali::Engine::run()
   _currentGeneration++;
   _startingGeneration = _currentGeneration;
 
-  while(checkTermination() == false)
+  while(_solver->checkTermination() == false)
   {
    if (_currentGeneration % _consoleFrequency == 0)
    {
@@ -63,9 +64,9 @@ void korali::Engine::run()
   saveState();
 
   korali::logInfo("Minimal", "--------------------------------------------------------------------\n");
-  korali::logInfo("Minimal", "%s finished correctly.\n", getType().c_str());
-  for (size_t i = 0; i < _terminationCriteria.size(); i++) korali::logInfo("Normal", "Termination Criterion Met: %s\n", _terminationCriteria[i].c_str());
-  finalize();
+  korali::logInfo("Minimal", "%s finished correctly.\n", _solver->getType().c_str());
+  for (size_t i = 0; i < _solver->_terminationCriteria.size(); i++) korali::logInfo("Normal", "Termination Criterion Met: %s\n", _solver->_terminationCriteria[i].c_str());
+  _solver->finalize();
   korali::logInfo("Normal", "Final Generation: %lu\n", _currentGeneration);
   korali::logInfo("Normal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(t1-t0).count());
 
@@ -81,32 +82,51 @@ void korali::Engine::saveState()
 
  // Getting configuration
  auto js = nlohmann::json();
- this->getConfiguration(js);
+ _solver->getConfiguration(js["Solver"]);
+ js["Internal"]["Run ID"] = _runID;
+ js["Internal"]["Current Generation"] = _currentGeneration;
+ js["Current Time"] = korali::getTimestamp();
 
  std::string fileName = "./" + _resultPath + "/" + genFileName;
  korali::JsonInterface::saveJsonToFile(fileName.c_str(), js);
 }
 
-
-void korali::Engine::loadPreviousResult(nlohmann::json& solverJs, std::string engineDir)
+void korali::Engine::loadPreviousRun(nlohmann::json& js, std::string path)
 {
- size_t maxGeneration = 0;
+ js["Internal"]["Current Generation"] = 0;
 
- if (std::filesystem::exists(engineDir))
- for (const auto & entry : std::filesystem::directory_iterator(engineDir))
+ if (std::filesystem::exists(path))
  {
-  std::string filePath = entry.path();
-  std::string fileExt = ".json";
-  if (filePath.compare(filePath.size() - fileExt.size(), fileExt.size(), fileExt) == 0)
+  // Loading config file, if exists
+  for (const auto & entry : std::filesystem::directory_iterator(path))
   {
-   auto curJs = nlohmann::json();
-   if (korali::JsonInterface::loadJsonFromFile(curJs, filePath.c_str()))
+   std::string filePath = entry.path();
+   if (filePath.find("config.json", 0) != std::string::npos)
+    if (korali::JsonInterface::loadJsonFromFile(js, filePath.c_str()) == false) korali::logError("Error loading initial configuration file.\n");
+  }
+
+  // Loading latest solver generation
+  for (const auto & entry : std::filesystem::directory_iterator(path))
+  {
+   std::string filePath = entry.path();
+   std::string fileExt = ".json";
+   if (filePath.find("gen", 0) != std::string::npos)
+   if (filePath.compare(filePath.size() - fileExt.size(), fileExt.size(), fileExt) == 0)
    {
-    size_t curGen = curJs["Internal"]["Current Generation"];
-    if (curGen > maxGeneration)
+    auto curJs = nlohmann::json();
+    if (korali::JsonInterface::loadJsonFromFile(curJs, filePath.c_str()))
     {
-     solverJs = curJs;
-     maxGeneration = curGen;
+     size_t runId = js["Internal"]["Run ID"];
+     size_t currentGenRunId = curJs["Internal"]["Run ID"];
+     if (currentGenRunId == runId)
+     {
+      size_t curGen = curJs["Internal"]["Current Generation"];
+      if (curGen > js["Internal"]["Current Generation"])
+      {
+       js["Solver"] = curJs["Solver"];
+       js["Internal"]["Current Generation"] = curGen;
+      }
+     }
     }
    }
   }
@@ -119,21 +139,32 @@ void korali::Engine::initialize()
 
  // Setting Run ID
  _runID = korali::getTimehash();
+ _currentGeneration = 0;
 
  auto js = _js.getJson();
  setConfiguration(_js.getJson());
- if (_resumePrevious) loadPreviousResult(_js.getJson(), _resultPath);
+ _js.getJson() = js;
 
- // Creating results directory
- mkdir(_resultPath.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+ // Loading any previous results, if so configured
+ if (_resumePrevious)
+ {
+  loadPreviousRun(js, _resultPath);
+  _currentGeneration = js["Internal"]["Current Generation"];
+  _runID = js["Internal"]["Run ID"];
+ }
 
  // Saving initial configuration
- saveConfig(js);
+ if (_currentGeneration == 0)
+ {
+  // Creating results directory
+  std::filesystem::create_directories(_resultPath);
+  saveConfig(js);
+ }
+
+ if (_currentGeneration > 0) _solver->setConfiguration(js["Solver"]);
 
  _isFinished = false;
  _thread = co_create(10240*sizeof(void*), korali::threadWrapper);
-
- _currentEngine = this;
  co_switch(_thread);
 
  // Initializing Modules
@@ -145,14 +176,14 @@ void korali::Engine::initialize()
 korali::Engine::Engine(nlohmann::json js) : korali::Engine::Engine()
 {
  _js.getJson() = js;
- setConfiguration(_js.getJson());
+ _k = this;
+ _k->initialize();
 }
 
 void korali::Engine::saveConfig(nlohmann::json& js)
 {
  _js._js = js;
- js["Run ID"] = _runID;
- js["Start Time"] = korali::getTimestamp();
+ js["Internal"]["Run ID"] = _runID;
  std::string fileName = "./" + _resultPath + "/config.json";
  korali::JsonInterface::saveJsonToFile(fileName.c_str(), js);
 }

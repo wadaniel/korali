@@ -45,7 +45,7 @@ function exitWithError ()
 
 INSTALLREQS=1
 NJOBS=4
-OPTFLAGS="-O3"
+OPTFLAGS="-O3 -DJSON_NOEXCEPTION"
 
 for i in "$@"
 do

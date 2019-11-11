@@ -15,7 +15,7 @@
    },
    {
     "Name": ["Random Seed" ],
-    "Type": "size_t",
+    "Type": "size_t", 
     "Default": "_runID",
     "Description": "Specifies the initializing seed for the generation of random numbers. If 0 is specified, Korali will automatically derivate a new seed base on the current time."
    },
@@ -26,15 +26,9 @@
     "Description": "Specifies the path of the results directory."
    },
    {
-    "Name": ["Solver Count"],
-    "Type": "size_t",
-    "Default": "1",
-    "Description": "Specifies the number of solvers to create."
-   },
-   {
     "Name": ["Resume Previous"],
     "Type": "bool",
-    "Default": "true",
+    "Default": "false",
     "Description": "Specifies whether Korali should continue executing from previous results, if any (true) or always start a new execution (false)."
    },
    {

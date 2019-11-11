@@ -22,7 +22,7 @@ class Engine : public korali::Module {
  void initialize() override;
 
  // Constructors
- Engine();
+ Engine() { };
  Engine(nlohmann::json js);
 
  // JSON-based configuration
@@ -40,7 +40,7 @@ class Engine : public korali::Module {
  void setItem(pybind11::object key, pybind11::object val);
  void loadConfig(std::string fileName);
  void saveConfig(nlohmann::json& js);
- void loadPreviousResult(nlohmann::json& solverJs, std::string solverDir);
+ static void loadPreviousRun(nlohmann::json& js, std::string path);
  void run();
  void saveState();
 
@@ -48,6 +48,7 @@ class Engine : public korali::Module {
  nlohmann::json& operator[](const unsigned long int& key);
 };
 
+extern std::vector<korali::Engine>* _engineVector;
 extern korali::Engine* _currentEngine;
 extern cothread_t _mainThread;
 

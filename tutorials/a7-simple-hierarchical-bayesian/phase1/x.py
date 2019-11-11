@@ -4,7 +4,6 @@ import os
 import shutil
 sys.path.append('../setup/model')
 from model import *
-import korali
 
 i = int(sys.argv[1])
 dataPath    = "../setup/data/"
@@ -13,38 +12,41 @@ if os.path.exists(resultsPath):  shutil.rmtree(resultsPath)
 if not os.path.exists(resultsPath): os.makedirs(resultsPath)
 
 # Running first Bayesian problem
-k = korali.initialize()
+import korali
+e = korali.newExperiment()
 
-k["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Approximate"
-k["Problem"]["Likelihood Model"] = "Normal"
-k["Problem"]["Reference Data"] = getReferenceData(dataPath,i);
+e["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Approximate"
+e["Problem"]["Likelihood Model"] = "Normal"
+e["Problem"]["Reference Data"] = getReferenceData(dataPath,i);
 
 # Configuring the problem's random distributions
-k["Distributions"][0]["Name"] = "Uniform 0"
-k["Distributions"][0]["Type"] = "Univariate/Uniform"
-k["Distributions"][0]["Minimum"] = 0.0
-k["Distributions"][0]["Maximum"] = 20.0
+e["Distributions"][0]["Name"] = "Uniform 0"
+e["Distributions"][0]["Type"] = "Univariate/Uniform"
+e["Distributions"][0]["Minimum"] = 0.0
+e["Distributions"][0]["Maximum"] = 20.0
 
-k["Distributions"][1]["Name"] = "Uniform 1"
-k["Distributions"][1]["Type"] = "Univariate/Uniform"
-k["Distributions"][1]["Minimum"] = 0.0
-k["Distributions"][1]["Maximum"] = 10.0
+e["Distributions"][1]["Name"] = "Uniform 1"
+e["Distributions"][1]["Type"] = "Univariate/Uniform"
+e["Distributions"][1]["Minimum"] = 0.0
+e["Distributions"][1]["Maximum"] = 10.0
 
-k["Variables"][0]["Name"] = "mu"
-k["Variables"][0]["Bayesian Type"] = "Statistical"
-k["Variables"][0]["Prior Distribution"] = "Uniform 0"
+e["Variables"][0]["Name"] = "mu"
+e["Variables"][0]["Bayesian Type"] = "Statistical"
+e["Variables"][0]["Prior Distribution"] = "Uniform 0"
 
-k["Variables"][1]["Name"] = "sigma"
-k["Variables"][1]["Bayesian Type"] = "Statistical"
-k["Variables"][1]["Prior Distribution"] = "Uniform 1"
+e["Variables"][1]["Name"] = "sigma"
+e["Variables"][1]["Bayesian Type"] = "Statistical"
+e["Variables"][1]["Prior Distribution"] = "Uniform 1"
 
-k["Solver"]["Type"] = "Sampler/TMCMC"
-k["Solver"]["Population Size"] = 1000
-k["Solver"]["Target Coefficient Of Variation"] = 0.6
-k["Solver"]["Covariance Scaling"] = 0.02
-k["Solver"]["Default Burn In"] = 0;
+e["Solver"]["Type"] = "Sampler/TMCMC"
+e["Solver"]["Population Size"] = 1000
+e["Solver"]["Target Coefficient Of Variation"] = 0.6
+e["Solver"]["Covariance Scaling"] = 0.02
+e["Solver"]["Default Burn In"] = 0;
 
-k["Results Output"]["Path"] = resultsPath
-k["Console Output"]["Verbosity"] = "Detailed"
+e["Result Path"] = resultsPath
+e["Verbosity"] = "Detailed"
 
-k.run()
+# Starting Korali's Engine and running experiment
+k = korali.initialize()
+k.run(e)

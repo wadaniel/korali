@@ -9,7 +9,7 @@ import importlib
 
 curdir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
 
-def main(path, solverId, allFiles, live, generation, mean, check, test):
+def main(path, allFiles, live, generation, mean, check, test):
 
  if (check == True):
   print("[Korali] Plotter correctly installed.")
@@ -35,17 +35,12 @@ def main(path, solverId, allFiles, live, generation, mean, check, test):
 
  with open(configFile) as f: js = json.load(f)
 
- solverDir = path + '/solver' + str(solverId).zfill(5)
- if ( not os.path.isdir(solverDir) ):
-  print('[Korali] Error: Did not find any results in the folder ' + solverDir + '.')
-  exit(-1)
- 
- resultFiles = [f for f in os.listdir(solverDir) if os.path.isfile(os.path.join(solverDir, f))]
+ resultFiles = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f)) and f.startswith('gen')]
  resultFiles = sorted(resultFiles)
  
  js["Solvers"] = [ ] 
  for file in resultFiles:
-  with open(solverDir + '/' + file) as f:
+  with open(path + '/' + file) as f:
    solverJs = json.load(f)
    if (solverJs['Internal']['Run ID'] == js['Run ID']):  js["Solvers"].append(solverJs)
  
@@ -80,7 +75,6 @@ def main(path, solverId, allFiles, live, generation, mean, check, test):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='korali.plotter', description='Plot the results of a Korali execution.')
     parser.add_argument('--dir', help='directory of result files', default='_korali_result', required = False)
-    parser.add_argument('--solverId', help='Id of solver to plot within the results folder', default='0', required = False)
     parser.add_argument('--all', help='plot all available results', action='store_true', required = False)
     parser.add_argument('--live', help='no auto close, keep polling for new result files', action='store_true', required = False)
     parser.add_argument('--generation', help='plot results of generation GENERATION', action='store', type=int, required = False)
@@ -89,4 +83,4 @@ if __name__ == '__main__':
     parser.add_argument('--test', help='run without graphics (for testing purpose)', action='store_true', required = False)
     args = parser.parse_args()
 
-    main(args.dir, args.solverId, args.all, args.live, args.generation, args.mean, args.check, args.test)
+    main(args.dir, args.all, args.live, args.generation, args.mean, args.check, args.test)

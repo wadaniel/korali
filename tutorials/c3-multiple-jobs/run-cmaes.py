@@ -13,26 +13,33 @@ from model import *
 import korali
 k = korali.initialize()
 
-# Configuring Problem.
-k["Problem"]["Type"] = "Evaluation/Direct/Basic"
-k["Problem"]["Objective"] = "Maximize"
-k["Problem"]["Objective Function"] = model
+# Configuring Multiple Experiments.
+experiments = []
 
-# Defining the problem's variables.
-k["Variables"][0]["Name"] = "X"
-k["Variables"][0]["Lower Bound"] = -10.0
-k["Variables"][0]["Upper Bound"] = +10.0
+for i in range(8):
+ e = korali.newExperiment()
+ e["Problem"]["Type"] = "Evaluation/Direct/Basic"
+ e["Problem"]["Objective"] = "Maximize"
+ e["Problem"]["Objective Function"] = model
 
-# Configuring CMA-ES parameters
-k["Solver"]["Type"] = "Optimizer/CMAES"
-k["Solver"]["Population Size"] = 11
-k["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-7
-k["Solver"]["Termination Criteria"]["Max Generations"] = 100
+ # Defining the problem's variables.
+ e["Variables"][0]["Name"] = "X"
+ e["Variables"][0]["Lower Bound"] = -10.0
+ e["Variables"][0]["Upper Bound"] = +10.0
+
+ # Configuring CMA-ES parameters
+ e["Solver"]["Type"] = "Optimizer/CMAES"
+ e["Solver"]["Population Size"] = 11
+ e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-7
+ e["Solver"]["Termination Criteria"]["Max Generations"] = 100
+ 
+ # Setting distinct experiment paths
+ e["Result Path"] = '_korali_multiple/exp' + str(i)
+ 
+ # Adding Experiment to vector
+ experiments.append(e)
 
 k["Conduit"]["Type"] = "External"
 k["Conduit"]["Concurrent Jobs"] = 8 
 
-# Running Multiple Korali Instances
-k["Solver Count"] = 8
-
-k.run()
+k.run(experiments)

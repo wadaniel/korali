@@ -108,7 +108,8 @@ void korali::conduit::MPI::workerThread()
    jsonStringChar[jsonStringSize] = '\0';
    sample._js.getJson() = nlohmann::json::parse(jsonStringChar);
 
-   _currentEngine->_problem->runOperation(sample["Operation"], sample);
+   size_t experimentId = sample["Experiment Id"];
+   (*_engineVector)[experimentId]._problem->runOperation(sample["Operation"], sample);
 
    if (_localRankId == 0)
    {

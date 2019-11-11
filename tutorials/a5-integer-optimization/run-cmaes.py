@@ -10,35 +10,39 @@ import sys
 sys.path.append('model')
 from model import *
 
-# Starting Korali's Engine
+# Creating new experiment
 import korali
-k = korali.initialize()
+e = korali.newExperiment()
 
 # Selecting problem type
-k["Problem"]["Type"] = "Evaluation/Direct/Basic"
-k["Problem"]["Objective"] = "Maximize"
-k["Problem"]["Objective Function"] = model
+e["Problem"]["Type"] = "Evaluation/Direct/Basic"
+e["Problem"]["Objective"] = "Maximize"
+e["Problem"]["Objective Function"] = model
 
 # Creating 10 variables and setting their CMA-ES bounds
 for i in range(10) :
-  k["Variables"][i]["Name"] = "X" + str(i)
-  k["Variables"][i]["Initial Mean"] = 1.0
-  k["Variables"][i]["Lower Bound"]  = -19.0
-  k["Variables"][i]["Upper Bound"]  = +21.0
+  e["Variables"][i]["Name"] = "X" + str(i)
+  e["Variables"][i]["Initial Mean"] = 1.0
+  e["Variables"][i]["Lower Bound"]  = -19.0
+  e["Variables"][i]["Upper Bound"]  = +21.0
 
 # We set some of them as discrete.
-k["Variables"][0]["Granularity"] = 1.0
-k["Variables"][1]["Granularity"] = 1.0
-k["Variables"][3]["Granularity"] = 1.0
-k["Variables"][6]["Granularity"] = 1.0
+e["Variables"][0]["Granularity"] = 1.0
+e["Variables"][1]["Granularity"] = 1.0
+e["Variables"][3]["Granularity"] = 1.0
+e["Variables"][6]["Granularity"] = 1.0
 
 # Configuring CMA-ES parameters
-k["Solver"]["Type"] = "Optimizer/CMAES"
-k["Solver"]["Population Size"] = 8
-k["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-9
-k["Solver"]["Termination Criteria"]["Max Generations"] = 5000
+e["Solver"]["Type"] = "Optimizer/CMAES"
+e["Solver"]["Population Size"] = 8
+e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-9
+e["Solver"]["Termination Criteria"]["Max Generations"] = 5000
 
-k["Results Output"]["Frequency"] = 50
-k["Console Output"]["Frequency"] = 50
+# Configuring output settings
+e["Save Frequency"] = 50
+e["Console Frequency"] = 50
 
-k.run()
+# Starting Korali's Engine and running experiment
+k = korali.initialize()
+k.run(e)
+

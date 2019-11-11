@@ -157,8 +157,6 @@ static bool isDefined(nlohmann::json& js, std::string path)
 
 static bool loadJsonFromFile(nlohmann::json& dst, const char* fileName)
 {
- nlohmann::json js;
-
  FILE *fid = fopen(fileName, "r");
  if (fid != NULL)
  {
@@ -172,15 +170,14 @@ static bool loadJsonFromFile(nlohmann::json& dst, const char* fileName)
 
    string[fsize] = '\0';
 
-   js = nlohmann::json::parse(string);
+   dst = nlohmann::json::parse(string);
 
    free(string);
+
+   return true;
  }
- else return false;
 
- dst = js;
-
- return true;
+ return false;
 }
 
 static void saveJsonToFile(const char* fileName, nlohmann::json& js)

@@ -5,6 +5,10 @@ import sys
 sys.path.append(extdir)
  
 def initialize():
+ from libkorali import Korali
+ return Korali()
+
+def newExperiment():
  from libkorali import Engine
  return Engine()
  

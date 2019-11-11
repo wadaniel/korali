@@ -29,13 +29,11 @@ void korali::problem::evaluation::bayesian::hierarchical::Psi::initialize()
  _subProblemsVariablesCount = _conditionalPriors.size();
 
  // Creating JSON object from string
- for (size_t i = 0; i < _subProblemsCount; i++){
-   // std::cout << "---->" << _subProblems[i].c_str() << std::endl;
+ for (size_t i = 0; i < _subProblemsCount; i++)
+ {
   auto subProblemJson = nlohmann::json();
-  if ( korali::JsonInterface::loadJsonFromFile(subProblemJson, _subProblems[i].c_str()) == false)
-    korali::logError("Could not load Subproblem problem file.\n");
-
-   _subProblemsJson.push_back(subProblemJson);
+  korali::Engine::loadPreviousRun(subProblemJson, _subProblems[i]);
+  _subProblemsJson.push_back(subProblemJson);
  }
 
  // Sub-problem correctness checks

@@ -73,7 +73,8 @@ void korali::conduit::External::worker(int workerId)
   korali::Sample sample;
   sample._js.getJson() = nlohmann::json::parse(inputString);
 
-  _currentEngine->_problem->runOperation(sample["Operation"], sample);
+  size_t experimentId = sample["Experiment Id"];
+  (*_engineVector)[experimentId]._problem->runOperation(sample["Operation"], sample);
 
   std::string resultString = sample._js.getJson().dump();
   size_t resultStringSize = resultString.size();

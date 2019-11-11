@@ -2,11 +2,11 @@
 import sys
 sys.path.append('../setup/model')
 from model import *
-
 import numpy as np
 
 # N : number of datasets
 N = 5 
+
 # Ns: number os samples in each dataset
 Ns = 100
 

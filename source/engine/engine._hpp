@@ -48,7 +48,7 @@ class Engine : public korali::Module {
  nlohmann::json& operator[](const unsigned long int& key);
 };
 
-extern std::vector<korali::Engine>* _engineVector;
+extern std::vector<korali::Engine*> _engineVector;
 extern korali::Engine* _currentEngine;
 extern cothread_t _mainThread;
 

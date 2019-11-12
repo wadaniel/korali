@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env python3
 import os
 import sys
 import json
@@ -17,34 +17,34 @@ def run_tmcmc_with_termination_criterion(criterion, value):
     print("[Korali] Prepare DEA run with Termination Criteria "\
             "'{0}'".format(criterion))
 
-    k = korali.initialize()
+    e = korali.newExperiment()
+    e["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Custom"
+    e["Problem"]["Likelihood Model"] = evaluateLogLikelihood
 
-    k["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Custom"
-    k["Problem"]["Likelihood Model"] = evaluateLogLikelihood
+    e["Distributions"][0]["Name"] = "Uniform 0"
+    e["Distributions"][0]["Type"] = "Univariate/Uniform"
+    e["Distributions"][0]["Minimum"] = -10.0
+    e["Distributions"][0]["Maximum"] = +10.0
 
-    k["Distributions"][0]["Name"] = "Uniform 0"
-    k["Distributions"][0]["Type"] = "Univariate/Uniform"
-    k["Distributions"][0]["Minimum"] = -10.0
-    k["Distributions"][0]["Maximum"] = +10.0
-
-    k["Variables"][0]["Name"] = "X"
-    k["Variables"][0]["Prior Distribution"] = "Uniform 0"
+    e["Variables"][0]["Name"] = "X"
+    e["Variables"][0]["Prior Distribution"] = "Uniform 0"
   
-    k["Solver"]["Type"] = "Sampler/TMCMC"
-    k["Solver"]["Population Size"] = 5000
-    k["Solver"]["Covariance Scaling"] = 0.001
-    k["Solver"]["Termination Criteria"][criterion] = value
+    e["Solver"]["Type"] = "Sampler/TMCMC"
+    e["Solver"]["Population Size"] = 5000
+    e["Solver"]["Covariance Scaling"] = 0.001
+    e["Solver"]["Termination Criteria"][criterion] = value
 
-    k["Results Output"]["Frequency"] = 1000
-    k["Random Seed"] = 1337
+    e["Save Frequency"] = 1000
+    e["Random Seed"] = 1337
 
-    k.run()
+    k = korali.initialize()
+    k.run(e)
 
     if (criterion == "Max Generations"):
-        assert_value(k["Solver"]["Internal"]["Current Generation"], value)
+        assert_value(e["Internal"]["Current Generation"], value)
         
     elif (criterion == "Target Annealing Exponent"):
-        assert_greatereq(k["Solver"]["Internal"]["Annealing Exponent"], value)
+        assert_greatereq(e["Solver"]["Internal"]["Annealing Exponent"], value)
     
     else:
         print("Termination Criterion not recognized!")

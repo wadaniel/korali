@@ -8,7 +8,7 @@ python3 x.py
 cd ../
 
 cd phase1
-sh generateData.sh
+python3 x.py
 cd ../
 
 cd phase2

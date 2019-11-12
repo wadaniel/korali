@@ -11,29 +11,32 @@ from helpers import *
 # Starting Korali's Engine
 import korali
 k = korali.initialize()
-k["Results Output"]["Path"] = "_result_run-mcmc"
-k["Results Output"]["Frequency"] = 0
+e = korali.newExperiment()
+
+e["Result Path"] = "_result_run-mcmc"
+e["Console Frequency"] = 5000
+e["Save Frequency"] = 5000
 
 # Selecting problem and solver types.
-k["Problem"]["Type"] = "Evaluation/Direct/Basic"
-k["Problem"]["Objective Function"] = lexponential
+e["Problem"]["Type"] = "Evaluation/Direct/Basic"
+e["Problem"]["Objective Function"] = lexponential
 
 # Defining problem's variables and their MCMC settings
-k["Variables"][0]["Name"] = "X0"
-k["Variables"][0]["Initial Mean"] = 0.0
-k["Variables"][0]["Initial Standard Deviation"] = 1.0
+e["Variables"][0]["Name"] = "X0"
+e["Variables"][0]["Initial Mean"] = 0.0
+e["Variables"][0]["Initial Standard Deviation"] = 1.0
 
 # Configuring the MCMC sampler parameters
-k["Solver"]["Type"]  = "Sampler/MCMC"
-k["Solver"]["Burn In"] = 100
-k["Solver"]["Use Adaptive Sampling"] = False
+e["Solver"]["Type"]  = "Sampler/MCMC"
+e["Solver"]["Burn In"] = 100
+e["Solver"]["Use Adaptive Sampling"] = False
 
-k["Solver"]["Termination Criteria"]["Max Samples"] = 100000
+e["Solver"]["Termination Criteria"]["Max Samples"] = 100000
 
 # Running Korali
-k["Random Seed"] = 1337
-k.run()
+e["Random Seed"] = 1337
+k.run(e)
 
-verifyMean(k, [4.0], 0.05)
-verifyStd(k, [4.0], 0.05)
+verifyMean(e, [4.0], 0.05)
+verifyStd(e, [4.0], 0.05)
 

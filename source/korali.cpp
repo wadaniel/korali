@@ -7,30 +7,29 @@ korali::Korali::Korali()
  _mainThread = co_active();
 }
 
-void korali::Korali::run(std::vector<korali::Engine>& engines)
+void korali::Korali::run()
 {
- _engineVector = &engines;
-
  _startTime = std::chrono::high_resolution_clock::now();
 
  // Setting output file to stdout, by default.
  korali::setConsoleOutputFile(stdout);
  korali::setVerbosityLevel("Minimal");
 
- _engineCount = engines.size();
+ _engineCount = _engineVector.size();
 
  if (! korali::JsonInterface::isDefined(_js.getJson(), "['Conduit']['Type']")) _js["Conduit"]["Type"] = "Simple";
  if (! korali::JsonInterface::isDefined(_js.getJson(), "['Dry Run']")) _js["Dry Run"] = false;
 
  for (size_t i = 0; i < _engineCount; i++)
  {
-  engines[i]._engineId = i;
-  std::string fileName = "./" + engines[i]._resultPath + "/log.txt";
-  if (_engineCount > 1)  engines[i]._logFile = fopen(fileName.c_str(), "a");
-  if (_engineCount == 1) engines[i]._logFile = stdout;
+  _engineVector[i]->_engineId = i;
+  std::string fileName = "./" + _engineVector[i]->_resultPath + "/log.txt";
+  if (_engineCount > 1)  _engineVector[i]->_logFile = fopen(fileName.c_str(), "a");
+  if (_engineCount == 1) _engineVector[i]->_logFile = stdout;
 
-  _currentEngine = &engines[i];
-  engines[i].initialize();
+  _currentEngine = _engineVector[i];
+  if (_engineCount > 1) korali::logInfo("Minimal", "Starting Experiment %lu...\n", i);
+  _engineVector[i]->initialize();
  }
 
  if (_isConduitInitialized == false)
@@ -64,16 +63,16 @@ void korali::Korali::run(std::vector<korali::Engine>& engines)
  {
   bool executed = false;
 
-  for (size_t i = 0; i < _engineCount; i++) if (engines[i]._isFinished == false)
+  for (size_t i = 0; i < _engineCount; i++) if (_engineVector[i]->_isFinished == false)
   {
-   korali::setVerbosityLevel(engines[i]._verbosity);
-   korali::setConsoleOutputFile(engines[i]._logFile);
-   _currentEngine = &engines[i];
-   co_switch(engines[i]._thread);
+   korali::setVerbosityLevel(_engineVector[i]->_verbosity);
+   korali::setConsoleOutputFile(_engineVector[i]->_logFile);
+   _currentEngine = _engineVector[i];
+   co_switch(_engineVector[i]->_thread);
    executed = true;
 
    korali::setConsoleOutputFile(stdout);
-   if (_engineCount > 1) if (engines[i]._isFinished == true) korali::logInfo("Normal", "Experiment %lu has finished.\n", i);
+   if (_engineCount > 1) if (_engineVector[i]->_isFinished == true) korali::logInfo("Minimal", "Experiment %lu has finished.\n", i);
   }
 
   if (executed == false) break;
@@ -90,10 +89,18 @@ void korali::Korali::run(std::vector<korali::Engine>& engines)
 
 void korali::Korali::run(korali::Engine& engine)
 {
- auto engineVector = std::vector<korali::Engine>();
- engineVector.push_back(engine);
- run(engineVector);
+ _engineVector.clear();
+ _engineVector.push_back(&engine);
+ run();
 }
+
+void korali::Korali::run(std::vector<korali::Engine>& engines)
+{
+ _engineVector.clear();
+ for (size_t i = 0; i < engines.size(); i++) _engineVector.push_back(&engines[i]);
+ run();
+}
+
 
 #ifdef _KORALI_USE_MPI
 long int korali::Korali::getMPICommPointer() { return (long int)(&__KoraliTeamComm); }
@@ -110,7 +117,7 @@ PYBIND11_MODULE(libkorali, m)
   .def(pybind11::init<>())
   .def("run", pybind11::overload_cast<korali::Engine&>(&korali::Korali::run))
   .def("run", pybind11::overload_cast<std::vector<korali::Engine>&>(&korali::Korali::run))
-  .def("__getitem__", pybind11::overload_cast<pybind11::object>(&korali::Korali::getItem))
+  .def("__getitem__", pybind11::overload_cast<pybind11::object>(&korali::Korali::getItem), pybind11::return_value_policy::reference)
   .def("__setitem__", pybind11::overload_cast<pybind11::object, pybind11::object>(&korali::Korali::setItem), pybind11::return_value_policy::reference);
 
  pybind11::class_<korali::KoraliJson>(m, "koraliJson")

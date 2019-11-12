@@ -12,7 +12,7 @@
 #include <map>
 #include <filesystem>
 
-std::vector<korali::Engine>* korali::_engineVector;
+std::vector<korali::Engine*> korali::_engineVector;
 korali::Engine* korali::_currentEngine;
 cothread_t korali::_mainThread;
 
@@ -20,9 +20,10 @@ namespace korali { void threadWrapper() { _currentEngine->run(); } }
 
 void korali::Engine::run()
 {
-  co_switch(korali::_mainThread);
-
   auto t0 = std::chrono::system_clock::now();
+
+  _solver->getConfiguration(_js["Solver"]);
+  co_switch(korali::_mainThread);
 
   _currentGeneration++;
   _startingGeneration = _currentGeneration;
@@ -81,14 +82,12 @@ void korali::Engine::saveState()
  sprintf(genFileName, "gen%05d.json", _currentGeneration);
 
  // Getting configuration
- auto js = nlohmann::json();
- _solver->getConfiguration(js["Solver"]);
- js["Internal"]["Run ID"] = _runID;
- js["Internal"]["Current Generation"] = _currentGeneration;
- js["Current Time"] = korali::getTimestamp();
-
+ _solver->getConfiguration(_js["Solver"]);
+ _js["Internal"]["Run ID"] = _runID;
+ _js["Internal"]["Current Generation"] = _currentGeneration;
+ _js["Current Time"] = korali::getTimestamp();
  std::string fileName = "./" + _resultPath + "/" + genFileName;
- korali::JsonInterface::saveJsonToFile(fileName.c_str(), js);
+ korali::JsonInterface::saveJsonToFile(fileName.c_str(), _js.getJson());
 }
 
 void korali::Engine::loadPreviousRun(nlohmann::json& js, std::string path)

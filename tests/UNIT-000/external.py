@@ -10,33 +10,34 @@ if (len(sys.argv) != 2):
  print('Error: this example requires the number of concurrent jobs passed as numerical argument.\n')
  exit(-1)
 
-k["Problem"]["Type"] = "Evaluation/Direct/Basic";
-k["Problem"]["Objective"] = "Maximize"
-k["Problem"]["Objective Function"] = runModel
+e = korali.newExperiment()
 
-k["Solver"]["Type"] = "Optimizer/CMAES"
-k["Solver"]["Population Size"] = 12
-k["Solver"]["Termination Criteria"]["Max Generations"] = 10
+e["Problem"]["Type"] = "Evaluation/Direct/Basic";
+e["Problem"]["Objective"] = "Maximize"
+e["Problem"]["Objective Function"] = runModel
 
-k["Variables"][0]["Name"] = "X0"
-k["Variables"][0]["Lower Bound"] = -32.0;
-k["Variables"][0]["Upper Bound"] = +32.0;
+e["Solver"]["Type"] = "Optimizer/CMAES"
+e["Solver"]["Population Size"] = 12
+e["Solver"]["Termination Criteria"]["Max Generations"] = 10
 
-k["Variables"][1]["Name"] = "X1"
-k["Variables"][1]["Lower Bound"] = -32.0;
-k["Variables"][1]["Upper Bound"] = +32.0;
+e["Variables"][0]["Name"] = "X0"
+e["Variables"][0]["Lower Bound"] = -32.0;
+e["Variables"][0]["Upper Bound"] = +32.0;
 
-k["Variables"][2]["Name"] = "X2"
-k["Variables"][2]["Lower Bound"] = -32.0;
-k["Variables"][2]["Upper Bound"] = +32.0;
+e["Variables"][1]["Name"] = "X1"
+e["Variables"][1]["Lower Bound"] = -32.0;
+e["Variables"][1]["Upper Bound"] = +32.0;
 
-k["Variables"][3]["Name"] = "X3"
-k["Variables"][3]["Lower Bound"] = -32.0;
-k["Variables"][3]["Upper Bound"] = +32.0;
+e["Variables"][2]["Name"] = "X2"
+e["Variables"][2]["Lower Bound"] = -32.0;
+e["Variables"][2]["Upper Bound"] = +32.0;
+
+e["Variables"][3]["Name"] = "X3"
+e["Variables"][3]["Lower Bound"] = -32.0;
+e["Variables"][3]["Upper Bound"] = +32.0;
+e["Random Seed"] = 0xC0FFEE
 
 k["Conduit"]["Type"] = "External"
 k["Conduit"]["Concurrent Jobs"] = int(sys.argv[1])
 
-k["Random Seed"] = 0xC0FFEE
-
-k.run()
+k.run(e)

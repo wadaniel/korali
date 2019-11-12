@@ -23,8 +23,8 @@ e["Variables"][2]["Loaded Values"] = np.random.lognormal( 0, 0.5, N ).tolist()
 e["Variables"][3]["Loaded Values"] = (5*np.ones(N)).tolist()
 
 e["Solver"]["Type"] = "Executor"
+e["Verbosity"] = "Detailed"
 
 # Starting Korali's Engine and running experiment
 k = korali.initialize()
-k["Verbosity"] = "Detailed"
 k.run(e)

@@ -10,7 +10,7 @@ void korali::conduit::Simple::processSample(korali::Sample& sample)
  js["Start Time"] = std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
 
  size_t experimentId = sample["Experiment Id"];
- (*_engineVector)[experimentId]._problem->runOperation(sample["Operation"], sample);
+ _engineVector[experimentId]->_problem->runOperation(sample["Operation"], sample);
 
  js["End Time"] = std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
  js["Current Generation"] = _currentEngine->_currentGeneration;

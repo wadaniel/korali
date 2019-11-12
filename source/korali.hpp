@@ -22,7 +22,8 @@ namespace korali
   // State save/load methods
   void saveProfilingInfo();
   void run(std::vector<korali::Engine>& engines);
-  void run(korali::Engine&);
+  void run(korali::Engine& engine);
+  void run();
 
   nlohmann::json& operator[](const std::string& key);
   nlohmann::json& operator[](const unsigned long int& key);

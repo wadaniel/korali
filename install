@@ -165,6 +165,7 @@ then
   tar -xzvf gsl-2.5.tar.gz >> $logFile 2>&1
   echo "[Korali] Configuring GNU Scientific Library... "
   cd gsl-2.5 
+  logEcho "[Korali] Running ./configure --prefix=$gslprefix ..."
   ./configure --prefix=$gslprefix >> $logFile 2>&1 
   logEcho "[Korali] Compiling GNU Scientific Library... "
   make -j$NJOBS >> $logFile 2>&1
@@ -266,7 +267,7 @@ if [ $? -eq 0 ]; then
   CC -craype-verbose 2>&1 | grep "driver.CC" >> $logFile 2>&1
   if [ $? -eq 0 ]; then
    logEcho "[Korali] Detected Cray compiler."
-   CXXARCH="-hstd=c++14"
+   CXXARCH="-hstd=c++17"
    PYBIND11LIBS=`echo $PYBIND11LIBS | sed 's/-Xlinker//g' | sed 's/-export-dynamic//g'`
   fi
 fi

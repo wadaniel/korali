@@ -9,7 +9,7 @@ from korali.plotter.helpers import hlsColors, drawMulticoloredLine
 def plot(js):
 
     fig, ax = plt.subplots(2,2,num='Korali Results', figsize=(8,8))
-    solver = js['Solvers'][0]['Type']
+    solver = js['Generations'][0]['Solver']['Type']
     numdim = len(js['Variables'])
     names  = [ js['Variables'][i]['Name'] for i in range(numdim) ]
     
@@ -20,13 +20,13 @@ def plot(js):
     width = []
     means = []
 
-    for s in js['Solvers']:
-     objVec.append(s['Internal']['Current Best Variables'])
-     fval.append(s['Internal']['Current Best Value'])
-     dfval.append(abs(s['Internal']['Current Best Value'] - s['Internal']['Best Ever Value']))
+    for s in js['Generations']:
+     objVec.append(s['Solver']['Internal']['Current Best Variables'])
+     fval.append(s['Solver']['Internal']['Current Best Value'])
+     dfval.append(abs(s['Solver']['Internal']['Current Best Value'] - s['Solver']['Internal']['Best Ever Value']))
      gen.append(s['Internal']['Current Generation'])
-     width.append(s['Internal']['Max Distances'])
-     means.append(s['Internal']['Current Mean'])
+     width.append(s['Solver']['Internal']['Max Distances'])
+     means.append(s['Solver']['Internal']['Current Mean'])
 
     plt.suptitle('DEA Diagnostics', fontweight='bold', fontsize=12 )
     colors = hlsColors(numdim)

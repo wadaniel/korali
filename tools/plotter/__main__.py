@@ -38,11 +38,13 @@ def main(path, allFiles, live, generation, mean, check, test):
  resultFiles = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f)) and f.startswith('gen')]
  resultFiles = sorted(resultFiles)
  
- js["Solvers"] = [ ] 
+ js["Generations"] = [ ] 
  for file in resultFiles:
   with open(path + '/' + file) as f:
-   solverJs = json.load(f)
-   if (solverJs['Internal']['Run ID'] == js['Run ID']):  js["Solvers"].append(solverJs)
+   genJs = json.load(f)
+   configRunId = js['Internal']['Run ID']
+   solverRunId = genJs['Internal']['Run ID'] 
+   if (configRunId == solverRunId):  js["Generations"].append(genJs)
  
  requestedSolver = js['Solver']['Type']
  solverName = requestedSolver.rsplit('/')[-1]

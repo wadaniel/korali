@@ -8,7 +8,7 @@ from korali.plotter.helpers import hlsColors, drawMulticoloredLine
 # Plot CMAES results (read from .json files)
 def plot(js):
     fig, ax = plt.subplots(2,2,num='Korali Results', figsize=(8,8))
-    solver = js['Solvers'][0]['Type']
+    solver = js['Generations'][0]['Solver']['Type']
     numdim = len(js['Variables'])
     names  = [ js['Variables'][i]['Name'] for i in range(numdim) ]
     
@@ -20,14 +20,14 @@ def plot(js):
     objVec = []
     evoweights = []
 
-    for s in js['Solvers']:
-     fval.append(s['Internal']['Current Best Value'])
-     dfval.append(abs(s['Internal']['Current Best Value'] - s['Internal']['Best Ever Value']))
+    for s in js['Generations']:
+     fval.append(s['Solver']['Internal']['Current Best Value'])
+     dfval.append(abs(s['Solver']['Internal']['Current Best Value'] - s['Solver']['Internal']['Best Ever Value']))
      gen.append(s['Internal']['Current Generation'])
-     sigma.append(s['Internal']['Sigma'])
-     psL2.append(s['Internal']['Conjugate Evolution Path L2 Norm'])
-     objVec.append(s['Internal']['Current Best Variables'])
-     evoweights.append(s['Internal']['Evolution Path Weights'])
+     sigma.append(s['Solver']['Internal']['Sigma'])
+     psL2.append(s['Solver']['Internal']['Conjugate Evolution Path L2 Norm'])
+     objVec.append(s['Solver']['Internal']['Current Best Variables'])
+     evoweights.append(s['Solver']['Internal']['Evolution Path Weights'])
 
     plt.suptitle('CMAES Diagnostics', fontweight='bold', fontsize=12 )
 

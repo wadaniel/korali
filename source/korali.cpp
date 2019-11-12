@@ -4,8 +4,6 @@
 korali::Korali::Korali()
 {
  _isConduitInitialized = false;
- _js["Conduit"]["Type"] = "Simple";
- _js["Dry Run"] = false;
  _mainThread = co_active();
 }
 
@@ -20,6 +18,9 @@ void korali::Korali::run(std::vector<korali::Engine>& engines)
  korali::setVerbosityLevel("Minimal");
 
  _engineCount = engines.size();
+
+ if (! korali::JsonInterface::isDefined(_js.getJson(), "['Conduit']['Type']")) _js["Conduit"]["Type"] = "Simple";
+ if (! korali::JsonInterface::isDefined(_js.getJson(), "['Dry Run']")) _js["Dry Run"] = false;
 
  for (size_t i = 0; i < _engineCount; i++)
  {

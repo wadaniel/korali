@@ -8,7 +8,7 @@ from korali.plotter.helpers import hlsColors, drawMulticoloredLine
 # Plot CMAES results (read from .json files)
 def plot(js):
     fig, ax = plt.subplots(2,2,num='Korali Results', figsize=(8,8))
-    solver = js['Solvers'][0]['Type']
+    solver = js['Generations'][0]['Solver']['Type']
     numdim = len(js['Variables'])
     names  = [ js['Variables'][i]['Name'] for i in range(numdim) ]
     
@@ -22,21 +22,20 @@ def plot(js):
     psL2 = []
     objVec = []
 
-    for s in js['Solvers']:
-     cond.append(s['Internal']['Maximum Covariance Eigenvalue']/s['Internal']['Minimum Covariance Eigenvalue'])
-     fval.append(s['Internal']['Current Best Value'])
-     dfval.append(abs(s['Internal']['Current Best Value'] - s['Internal']['Best Ever Value']))
+    for s in js['Generations']:
+     cond.append(s['Solver']['Internal']['Maximum Covariance Eigenvalue']/s['Solver']['Internal']['Minimum Covariance Eigenvalue'])
+     fval.append(s['Solver']['Internal']['Current Best Value'])
+     dfval.append(abs(s['Solver']['Internal']['Current Best Value'] - s['Solver']['Internal']['Best Ever Value']))
      gen.append(s['Internal']['Current Generation'])
-     sigma.append(s['Internal']['Sigma'])
-     psL2.append(s['Internal']['Conjugate Evolution Path L2 Norm'])
-     axis.append(s['Internal']['Axis Lengths'])
-     objVec.append(s['Internal']['Current Best Variables'])
-
+     sigma.append(s['Solver']['Internal']['Sigma'])
+     psL2.append(s['Solver']['Internal']['Conjugate Evolution Path L2 Norm'])
+     axis.append(s['Solver']['Internal']['Axis Lengths'])
+     objVec.append(s['Solver']['Internal']['Current Best Variables'])
 
     ssdev = [ [ ] for i in range(numdim) ]
     for i in range(numdim):
-     for s in js['Solvers']:
-      ssdev[i].append(js['Solvers'][-1]["Internal"]["Sigma"]*np.sqrt(s["Internal"]['Covariance Matrix'][i*numdim+i]))
+     for s in js['Generations']:
+      ssdev[i].append(js['Generations'][-1]['Solver']["Internal"]["Sigma"]*np.sqrt(s['Solver']["Internal"]['Covariance Matrix'][i*numdim+i]))
      
          
     plt.suptitle('CMAES Diagnostics', fontweight='bold', fontsize=12 )

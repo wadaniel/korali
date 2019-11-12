@@ -10,7 +10,7 @@ from sampler import plot_histogram, plot_upper_triangle, plot_lower_triangle
 
 def plot(js):
     numdim = len(js['Variables'])
-    samples = js['Solvers'][-1]['Internal']['Sample Database']
+    samples = js['Generations'][-1]['Solver']['Internal']['Sample Database']
     numentries = len(samples)
     
     fig, ax = plt.subplots(numdim, numdim, figsize=(8,8))

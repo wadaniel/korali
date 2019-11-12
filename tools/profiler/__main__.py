@@ -15,7 +15,7 @@ import numpy as np
 signal.signal(signal.SIGINT, lambda x, y: exit(0))
 
 parser = argparse.ArgumentParser(prog='korali.plotter', description='Show profiling information of a Korali execution.')
-parser.add_argument('--dir', help='Directory of result files', default='_korali_result', required = False)
+parser.add_argument('--dir', help='Directory of result files', default='.', required = False)
 parser.add_argument('--test', help='Run without graphics (for testing purpose)', action='store_true', required = False)
 args = parser.parse_args()
 
@@ -36,7 +36,7 @@ js  = json.loads(jsString)
 
 timelines = []
 labels = []
-solverCount = js["Solver Count"]
+experimentCount = js["Experiment Count"]
 elapsedTime = js["Elapsed Time"]
 
 for x in js["Timelines"]:
@@ -87,13 +87,13 @@ axs[0].grid(False)
 
 # Creating Color list
 cMap = pyplot.get_cmap('inferno')
-cNorm  = colors.Normalize(vmin=0, vmax=solverCount-1)
+cNorm  = colors.Normalize(vmin=0, vmax=experimentCount-1)
 scalarMap = cm.ScalarMappable(norm=cNorm, cmap=cMap)
-colorMap = [ scalarMap.to_rgba(i) for i in range(solverCount) ]
+colorMap = [ scalarMap.to_rgba(i) for i in range(experimentCount) ]
 
 for i in range(len(startLists)):
  colorList = [ 'tab:blue', 'blue' ]
- if (solverCount > 1): colorList = [ colorMap[solverIdLists[i][j]] for j in range(0, len(solverIdLists[i])) ]
+ if (experimentCount > 1): colorList = [ colorMap[solverIdLists[i][j]] for j in range(0, len(solverIdLists[i])) ]
  segList = [ (startLists[i][j], durationLists[i][j]) for j in range(0, len(startLists[i])) ]
  axs[0].broken_barh(segList, (yticks[i] - 5, 9), facecolors = tuple(colorList) )
 
@@ -144,7 +144,7 @@ axs[1].set_ylabel('Worker Efficiency')
  
 ######################## Creating Generation-based figure
 
-if (solverCount == 1):
+if (experimentCount == 1):
  maxGeneration = 0
  for segment in timelines[0]:
   if (segment["Current Generation"] > maxGeneration): maxGeneration = segment["Current Generation"]

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env python3
 import os
 import sys
 import json
@@ -27,40 +27,40 @@ maxRhoUpdate = 0.2
 
 print("[Korali] Prepare TMCMC run")
 
-# Starting Korali's Engine
-k = korali.initialize()
+e = korali.newExperiment()
+e["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Custom"
+e["Problem"]["Likelihood Model"] = evaluateLogLikelihood
 
-k["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Custom"
-k["Problem"]["Likelihood Model"] = evaluateLogLikelihood
+e["Distributions"][0]["Name"] = "Uniform 0"
+e["Distributions"][0]["Type"] = "Univariate/Uniform"
+e["Distributions"][0]["Minimum"] = -10.0
+e["Distributions"][0]["Maximum"] = +10.0
 
-k["Distributions"][0]["Name"] = "Uniform 0"
-k["Distributions"][0]["Type"] = "Univariate/Uniform"
-k["Distributions"][0]["Minimum"] = -10.0
-k["Distributions"][0]["Maximum"] = +10.0
+e["Variables"][0]["Name"] = "X"
+e["Variables"][0]["Prior Distribution"] = "Uniform 0"
 
-k["Variables"][0]["Name"] = "X"
-k["Variables"][0]["Prior Distribution"] = "Uniform 0"
+e["Solver"]["Type"] = "Sampler/TMCMC"
+e["Solver"]["Population Size"] = 5000
+e["Solver"]["Covariance Scaling"] = 0.001
 
-k["Solver"]["Type"] = "Sampler/TMCMC"
-k["Solver"]["Population Size"] = 5000
-k["Solver"]["Covariance Scaling"] = 0.001
+e["Solver"]["Default Burn In"] = 5
+e["Solver"]["Per Generation Burn In"] = [ 10, 7 ]
+e["Solver"]["Max Chain Length"] = 1
+e["Solver"]["Target Coefficient Of Variation"] = 0.5
+e["Solver"]["Min Annealing Exponent Update"] = minRhoUpdate
+e["Solver"]["Max Annealing Exponent Update"] = maxRhoUpdate
 
-k["Solver"]["Default Burn In"] = 5
-k["Solver"]["Per Generation Burn In"] = [ 10, 7 ]
-k["Solver"]["Max Chain Length"] = 1
-k["Solver"]["Target Coefficient Of Variation"] = 0.5
-k["Solver"]["Min Annealing Exponent Update"] = minRhoUpdate
-k["Solver"]["Max Annealing Exponent Update"] = maxRhoUpdate
-
-k["Random Seed"] = 314
+e["Random Seed"] = 314
 
 
 #################################################
 #  Run TMCMC
 #################################################
 
+# Starting Korali's Engine
+k = korali.initialize()
 print("[Korali] Running TMCMC...")
-k.run()
+k.run(e)
 
 
 #################################################
@@ -101,12 +101,6 @@ for filename in resultfiles:
     assert_value( data['Solver']['Max Annealing Exponent Update'], maxRhoUpdate )
     rho =  data['Solver']['Internal']['Annealing Exponent']
     
-    finished = data['Internal']['Is Finished']
-    if finished == True:
-        assert_value(rho - prevRho >= maxRhoUpdate-eps, False)
-    if finished == False:
-        assert_value(rho - prevRho <= maxRhoUpdate+eps, True)
- 
     # Updates
     prevRho = rho
     gen = gen + 1

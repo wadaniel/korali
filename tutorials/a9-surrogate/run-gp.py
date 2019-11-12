@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+import os
+import sys
+import korali
+
 def read_matrix_for_gp( fileName, lastColumnIsData=True ):
   f = open( fileName, "r" )
   data = [ [ float(n) for n in line.split()]  for line in f]
@@ -14,60 +18,47 @@ def read_matrix_for_gp( fileName, lastColumnIsData=True ):
 
   return x,y
 
-
-import os
-import sys
-import korali
-
-k = korali.initialize()
-
-k["Problem"]["Type"] = "Evaluation/GaussianProcess"
-k["Problem"]["Covariance Function"] = "CovSum ( CovSEiso, CovNoise)"
-# k["Problem"]["Covariance Function"] = "CovSum ( CovPeriodic, CovNoise)"
 x, y = read_matrix_for_gp('data/sincos1d_train.dat')
-k["Problem"]["X Data"] = x
-k["Problem"]["Y Data"] = y
+e0 = korali.newExperiment()
+e0["Problem"]["Type"] = "Evaluation/GaussianProcess"
+e0["Problem"]["Covariance Function"] = "CovSum ( CovSEiso, CovNoise)"
+e0["Problem"]["X Data"] = x
+e0["Problem"]["Y Data"] = y
+e0["Solver"]["Type"] = "Optimizer/Rprop"
+e0["Solver"]["Termination Criteria"]["Max Generations"] = 200
+e0["Solver"]["Termination Criteria"]["Parameter Relative Tolerance"] = 1e-8
+e0["Verbosity"] = "Normal"
+e0["Console Frequency"] = 10
+e0["Results Frequency"] = 100
+e0["Result Path"] = "_korali_result_train"
 
-k["Solver"]["Type"] = "Optimizer/Rprop"
-k["Solver"]["Termination Criteria"]["Max Generations"] = 200
-k["Solver"]["Termination Criteria"]["Parameter Relative Tolerance"] = 1e-8
-
-k["Console Output"]["Verbosity"] = "Normal"
-k["Console Output"]["Frequency"] = 10
-k["Results Output"]["Frequency"] = 100
-k["Results Output"]["Path"] = "_korali_result_train"
-k.run()
-
-
-k = korali.initialize()
-k["Problem"]["Type"] = "Execution/GaussianProcess"
-k["Problem"]["Gaussian Process Json File"] =  "_korali_result_train/final.json"
 x, y = read_matrix_for_gp('data/sincos1d_test.dat')
-k["Problem"]["X Data"] = x
-k["Problem"]["Y Data"] = y
+e1 = korali.newExperiment()
+e1["Problem"]["Type"] = "Execution/GaussianProcess"
+e1["Problem"]["Gaussian Process Json File"] =  "_korali_result_train/final.json"
+e1["Problem"]["X Data"] = x
+e1["Problem"]["Y Data"] = y
+e1["Solver"]["Type"] = "Executor"
+e1["Solver"]["Executions Per Generation"] = 1
+e1["Verbosity"] = "Normal"
+e1["Console Frequency"] = 10
+e1["Results Frequency"] = 100
+e1["Result Path"] = "_korali_result_test"
 
-k["Solver"]["Type"] = "Executor"
-k["Solver"]["Executions Per Generation"] = 1
-
-k["Console Output"]["Verbosity"] = "Normal"
-k["Console Output"]["Frequency"] = 10
-k["Results Output"]["Frequency"] = 100
-k["Results Output"]["Path"] = "_korali_result_test"
-k.run()
-
+x, y = read_matrix_for_gp('data/sincos1d_new.dat',lastColumnIsData=True)
+e2 = korali.initialize()
+e2["Problem"]["Type"] = "Execution/GaussianProcess"
+e2["Problem"]["Gaussian Process Json File"] =  "_korali_result_train/final.json"
+e2["Problem"]["X Data"] = x
+e2["Problem"]["Y Data"] = y
+e2["Solver"]["Type"] = "Executor"
+e2["Solver"]["Executions Per Generation"] = 1
+e2["Verbosity"] = "Normal"
+e2["Console Frequency"] = 10
+e2["Results Frequency"] = 100
+e2["Result Path"] = "_korali_result_new"
 
 k = korali.initialize()
-k["Problem"]["Type"] = "Execution/GaussianProcess"
-k["Problem"]["Gaussian Process Json File"] =  "_korali_result_train/final.json"
-x, y = read_matrix_for_gp('data/sincos1d_new.dat',lastColumnIsData=True)
-k["Problem"]["X Data"] = x
-k["Problem"]["Y Data"] = y
-
-k["Solver"]["Type"] = "Executor"
-k["Solver"]["Executions Per Generation"] = 1
-
-k["Console Output"]["Verbosity"] = "Normal"
-k["Console Output"]["Frequency"] = 100
-k["Results Output"]["Frequency"] = 1000
-k["Results Output"]["Path"] = "_korali_result_new"
-k.run()
+k.run(e0)
+k.run(e1)
+k.run(e2)

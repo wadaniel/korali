@@ -155,10 +155,8 @@ static bool isDefined(nlohmann::json& js, std::string path)
  return isDefined(js, getJsonPath(path));
 }
 
-static nlohmann::json loadJsonFromFile(const char* fileName)
+static bool loadJsonFromFile(nlohmann::json& dst, const char* fileName)
 {
- nlohmann::json js;
-
  FILE *fid = fopen(fileName, "r");
  if (fid != NULL)
  {
@@ -172,14 +170,14 @@ static nlohmann::json loadJsonFromFile(const char* fileName)
 
    string[fsize] = '\0';
 
-   js = nlohmann::json::parse(string);
+   dst = nlohmann::json::parse(string);
 
    free(string);
- }
- else
-  korali::logError("Could not load file: %s.\n", fileName);
 
- return js;
+   return true;
+ }
+
+ return false;
 }
 
 static void saveJsonToFile(const char* fileName, nlohmann::json& js)

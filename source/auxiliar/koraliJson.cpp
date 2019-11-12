@@ -13,7 +13,6 @@ void korali::KoraliJson::traverseKey(pybind11::object key)
  if (pybind11::isinstance<pybind11::str>(key))
  {
   std::string keyStr = key.cast<std::string>();
-
   _opt = &((*_opt)[keyStr]);
   return;
  }

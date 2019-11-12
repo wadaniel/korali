@@ -10,34 +10,36 @@
 import sys
 sys.path.append('model')
 from model import *
-
 import korali
+
 k = korali.initialize()
+e = korali.newExperiment()
 
-resultDir = '_result_run-cmaes'
+e["Problem"]["Type"] = "Evaluation/Direct/Basic"
+e["Problem"]["Objective"] = "Maximize"
+e["Problem"]["Objective Function"] = model
 
-k["Problem"]["Type"] = "Evaluation/Direct/Basic"
-k["Problem"]["Objective"] = "Maximize"
-k["Problem"]["Objective Function"] = model
+e["Solver"]["Type"] = "Optimizer/CMAES"
+e["Solver"]["Population Size"] = 5
+e["Solver"]["Termination Criteria"]["Max Generations"] = 100
+e["Solver"]["Termination Criteria"]["Generations Per Run"] = 50
 
-k["Solver"]["Type"] = "Optimizer/CMAES"
-k["Solver"]["Population Size"] = 5
-k["Solver"]["Termination Criteria"]["Max Generations"] = 50
+e["Variables"][0]["Name"] = "X"
+e["Variables"][0]["Lower Bound"] = -10.0
+e["Variables"][0]["Upper Bound"] = +10.0
 
-k["Variables"][0]["Name"] = "X"
-k["Variables"][0]["Lower Bound"] = -10.0
-k["Variables"][0]["Upper Bound"] = +10.0
+e["Console Frequency"] = 25
+e["Result Path"] = '_result_run-cmaes'
+e["Resume Previous"] = True
 
-k["Console Output"]["Frequency"] = 10
-k["Results Output"]["Path"] = resultDir
+print('------------------------------------------------------')
+print('Now running first 50 generations...')
+print('------------------------------------------------------')
 
-k.run()
+k.run(e)
 
-print("\n-------------------------------------------------------------")
-print("Now loading results from Gen 50 and running until Gen 100...")
-print("-------------------------------------------------------------\n")
+print('------------------------------------------------------')
+print('Now running last 50 generations...')
+print('------------------------------------------------------')
 
-resultFile = korali.getLatestResult(resultDir)
-k.loadState(resultFile)
-k["Solver"]["Termination Criteria"]["Max Generations"] = 100
-k.run()
+k.run(e)

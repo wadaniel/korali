@@ -10,25 +10,29 @@ import sys
 sys.path.append('./model')
 from model import *
 
-# Starting Korali's Engine
+# Creating new experiment
 import korali
-k = korali.initialize()
+e = korali.newExperiment()
 
 # Selecting problem and solver types.
-k["Problem"]["Type"] = "Evaluation/Direct/Basic"
-k["Problem"]["Objective Function"] = model
+e["Problem"]["Type"] = "Evaluation/Direct/Basic"
+e["Problem"]["Objective Function"] = model
 
 # Configuring the MCMC sampler parameters
-k["Solver"]["Type"]  = "Sampler/MCMC"
-k["Solver"]["Burn In"] = 500
-k["Solver"]["Termination Criteria"]["Max Samples"] = 5000
+e["Solver"]["Type"]  = "Sampler/MCMC"
+e["Solver"]["Burn In"] = 500
+e["Solver"]["Termination Criteria"]["Max Samples"] = 5000
 
 # Defining problem's variables
-k["Variables"][0]["Name"] = "X"
-k["Variables"][0]["Initial Mean"] = 0.0
-k["Variables"][0]["Initial Standard Deviation"] = 1.0
+e["Variables"][0]["Name"] = "X"
+e["Variables"][0]["Initial Mean"] = 0.0
+e["Variables"][0]["Initial Standard Deviation"] = 1.0
 
-k["Console Output"]["Verbosity"] = "Detailed"
+# Configuring output settings
+e["Save Frequency"] = 500
+e["Console Frequency"] = 500
+e["Verbosity"] = "Detailed"
 
-# Running Korali
-k.run()
+# Starting Korali's Engine and running experiment
+k = korali.initialize()
+k.run(e)

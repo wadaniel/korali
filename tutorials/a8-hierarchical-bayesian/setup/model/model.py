@@ -35,7 +35,7 @@ def logistic_reference( s ):
   Y = Y +  np.random.normal( 0, th[3], X.size )
   k = s["Sample Id"]
 
-  dataFolder = "../setup/data/"
+  dataFolder = "setup/data/"
   if not os.path.exists(dataFolder): os.makedirs(dataFolder)
   dataFile = dataFolder + "/data_set_" + str(k).zfill(3) + ".dat"
   np.savetxt( dataFile,  np.transpose([ X, Y ]) )

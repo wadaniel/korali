@@ -1,4 +1,4 @@
-#!/bin/bash
+#!#!/usr/bin/env python3
 import os
 import sys
 import json
@@ -17,37 +17,37 @@ def run_dea_with_termination_criterion(criterion, value):
     print("[Korali] Prepare DEA run with Termination Criteria "\
             "'{0}'".format(criterion))
 
+    e = korali.newExperiment()
+    e["Problem"]["Type"] = "Evaluation/Direct/Basic"
+    e["Problem"]["Objective"] = "Maximize"
+    e["Problem"]["Objective Function"] = evaluateModel
+
+    e["Variables"][0]["Name"] = "X";
+    e["Variables"][0]["Lower Bound"] = +1.0;
+    e["Variables"][0]["Upper Bound"] = +10.0;
+
+    e["Solver"]["Type"] = "Optimizer/DEA"
+    e["Solver"]["Population Size"] = 10
+    e["Solver"]["Termination Criteria"][criterion] = value
+
+    e["Save Frequency"] = 1000
+    e["Random Seed"] = 1337
+
     k = korali.initialize()
-
-    k["Problem"]["Type"] = "Evaluation/Direct/Basic"
-    k["Problem"]["Objective"] = "Maximize"
-    k["Problem"]["Objective Function"] = evaluateModel
-
-    k["Variables"][0]["Name"] = "X";
-    k["Variables"][0]["Lower Bound"] = +1.0;
-    k["Variables"][0]["Upper Bound"] = +10.0;
-
-    k["Solver"]["Type"] = "Optimizer/DEA"
-    k["Solver"]["Population Size"] = 10
-    k["Solver"]["Termination Criteria"][criterion] = value
-
-    k["Results Output"]["Frequency"] = 1000
-    k["Random Seed"] = 1337
-
-    k.run()
+    k.run(e)
 
     if (criterion == "Max Generations"):
-        assert_value(k["Solver"]["Internal"]["Current Generation"], value)
+        assert_value(e["Internal"]["Current Generation"], value)
 
     elif (criterion == "Max Infeasible Resamplings"):
-        assert_greatereq(k["Solver"]["Internal"]["Infeasible Sample Count"], value)
+        assert_greatereq(e["Solver"]["Internal"]["Infeasible Sample Count"], value)
 
     elif (criterion == "Max Value"):
-        assert_greatereq(k["Solver"]["Internal"]["Best Ever Value"], value)
+        assert_greatereq(e["Solver"]["Internal"]["Best Ever Value"], value)
 
     elif (criterion == "Min Value Difference Threshold"):
-        previous = k["Solver"]["Internal"]["Previous Best Ever Value"]
-        current  = k["Solver"]["Internal"]["Best Ever Value"]
+        previous = e["Solver"]["Internal"]["Previous Best Ever Value"]
+        current  = e["Solver"]["Internal"]["Best Ever Value"]
         assert_smallereq(previous-current, value)
 
     elif (criterion == "Min Step Size"):

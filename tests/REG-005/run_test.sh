@@ -32,8 +32,6 @@ dea_criteria=(
 "Max Infeasible Resamplings" 
 "Max Value" 
 "Min Value Difference Threshold"
-"Min Step Size" 
-"Min Value"
 )
 
 dea_values=(

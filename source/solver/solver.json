@@ -1,18 +1,13 @@
 {
- "Internal Settings": 
+ "Configuration Settings":
  [
    {
-    "Name": [ "Current Generation" ],
+    "Name": ["Generations Per Run" ],
     "Type": "size_t",
-    "Default": "1",
-    "Description": "Indicates the current generation in execution."
+    "Default": "100000000",
+    "Criteria": "_k->_currentGeneration >= _k->_startingGeneration + _generationsPerRun",
+    "Description": "Determines how many solver generations to run relative from the start of the current run before stopping execution. Execution can be resumed at a later moment."
    },
-   {
-    "Name": [ "Is Finished" ],
-    "Type": "bool",
-    "Default": "false",
-    "Description": "Indicates whether execution has reached a termination criterion."
-   }, 
    {
     "Name": [ "Model Evaluation Count" ],
     "Type": "size_t",
@@ -20,6 +15,7 @@
     "Description": "Keeps track on the number of calls to the computational model."
    }
  ],
+ 
  "Termination Criteria":
  [ 
    {
@@ -28,6 +24,13 @@
     "Default": "std::numeric_limits<size_t>::max()",
     "Criteria": "_maxModelEvaluations <= _modelEvaluationCount",
     "Description": "Specifies the maximum allowed evaluations of the computational model."
+    },
+    {
+    "Name": ["Max Generations" ],
+    "Type": "size_t",
+    "Default": "std::numeric_limits<size_t>::max()",
+    "Criteria": "_k->_currentGeneration > _maxGenerations",
+    "Description": "Determines how many solver generations to run before stopping execution. Execution can be resumed at a later moment."
    }
  ]
 }

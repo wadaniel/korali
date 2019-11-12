@@ -2,36 +2,38 @@
 
 # Importing computational model
 import sys
+import korali
 sys.path.append('./model')
 sys.path.append('./helpers')
 
 from model import *
 from helpers import *
 
-# Starting Korali's Engine
-import korali
-k = korali.initialize()
-
 # Selecting problem and solver types.
-k["Problem"]["Type"] = "Evaluation/Direct/Basic"
-k["Problem"]["Objective Function"] = model
+e = korali.newExperiment()
+e["Problem"]["Type"] = "Evaluation/Direct/Basic"
+e["Problem"]["Objective Function"] = model
 
 # Configuring the MCMC sampler parameters
-k["Solver"]["Type"] = "Sampler/MCMC"
-k["Solver"]["Burn In"] = 500
-k["Solver"]["Termination Criteria"]["Max Samples"] = 5000
-k["Solver"]["Rejection Levels"] = 2
-k["Solver"]["Use Adaptive Sampling"] = True
+e["Solver"]["Type"] = "Sampler/MCMC"
+e["Solver"]["Burn In"] = 500
+e["Solver"]["Termination Criteria"]["Max Samples"] = 5000
+e["Solver"]["Rejection Levels"] = 2
+e["Solver"]["Use Adaptive Sampling"] = True
 
 # Defining problem's variables and their MCMC settings
-k["Variables"][0]["Name"] = "X"
-k["Variables"][0]["Initial Mean"] = 1.0
-k["Variables"][0]["Initial Standard Deviation"] = 2.0
+e["Variables"][0]["Name"] = "X"
+e["Variables"][0]["Initial Mean"] = 1.0
+e["Variables"][0]["Initial Standard Deviation"] = 2.0
 
 # Running Korali
-k["Random Seed"] = 0xC0FFEE
-k["Results Output"]["Path"] = "_result_run-dram"
-k.run()
+e["Random Seed"] = 0xC0FFEE
+e["Console Frequency"] = 500
+e["Save Frequency"] = 500
+e["Result Path"] = "_result_run-dram"
 
-checkMean(k, 0.0, 0.01)
-checkStd(k, 1.0, 0.025)
+k = korali.initialize()
+k.run(e)
+
+checkMean(e, 0.0, 0.01)
+checkStd(e, 1.0, 0.025)

@@ -61,13 +61,6 @@
  "Termination Criteria":
  [
    {
-    "Name": ["Max Generations" ],
-    "Type": "size_t",
-    "Default": "1000",
-    "Criteria": "_currentGeneration > _maxGenerations",
-    "Description": "Determines how many solver generations to run before stopping execution. Execution can be resumed at a later moment."
-   },
-   {
     "Name": [ "Max Infeasible Resamplings" ],
     "Type": "size_t",
     "Default": "10000000",
@@ -78,21 +71,21 @@
     "Name": [ "Min Value" ],
     "Type": "double",
     "Default": "-INFINITY",
-    "Criteria": "(_currentGeneration > 1) && (-_bestEverValue < _minValue)",
+    "Criteria": "(_k->_currentGeneration > 1) && (-_bestEverValue < _minValue)",
     "Description": "Specifies the target fitness to stop minimization."
    },
    {
     "Name": [ "Max Value" ],
     "Type": "double",
     "Default": "+INFINITY",
-    "Criteria": "(_currentGeneration > 1) && (+_bestEverValue > _maxValue)",
+    "Criteria": "(_k->_currentGeneration > 1) && (+_bestEverValue > _maxValue)",
     "Description": "Specifies the target fitness to stop maximization."
    },
    {
     "Name": [ "Min Value Difference Threshold" ],
     "Type": "double",
     "Default": "-INFINITY",
-    "Criteria": "(_currentGeneration > 1) && (fabs(_currentBestValue - _previousBestValue) < _minValueDifferenceThreshold)",
+    "Criteria": "(_k->_currentGeneration > 1) && (fabs(_currentBestValue - _previousBestValue) < _minValueDifferenceThreshold)",
     "Description": "Specifies the minimum fitness differential between two consecutive generations before stopping execution."
    },
    {

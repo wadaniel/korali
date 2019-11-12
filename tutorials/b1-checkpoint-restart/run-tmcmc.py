@@ -13,34 +13,36 @@ from model import *
 
 import korali
 k = korali.initialize()
+e = korali.newExperiment()
 
-resultDir = '_result_run-tmcmc'
+e["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Custom"
+e["Problem"]["Likelihood Model"] = calculateLogLikelihood
 
-k["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Custom"
-k["Problem"]["Likelihood Model"] = calculateLogLikelihood
+e["Solver"]["Type"]  = "Sampler/TMCMC"
+e["Solver"]["Population Size"] = 5000
+e["Solver"]["Termination Criteria"]["Generations Per Run"] = 2
 
-k["Solver"]["Type"]  = "Sampler/TMCMC"
-k["Solver"]["Population Size"] = 5000
-k["Solver"]["Termination Criteria"]["Max Generations"] = 1
+e["Distributions"][0]["Name"] = "Uniform 0"
+e["Distributions"][0]["Type"] = "Univariate/Uniform"
+e["Distributions"][0]["Minimum"] = -10.0
+e["Distributions"][0]["Maximum"] = +10.0
 
-k["Distributions"][0]["Name"] = "Uniform 0"
-k["Distributions"][0]["Type"] = "Univariate/Uniform"
-k["Distributions"][0]["Minimum"] = -10.0
-k["Distributions"][0]["Maximum"] = +10.0
+e["Variables"][0]["Name"] = "X"
+e["Variables"][0]["Prior Distribution"] = "Uniform 0"
 
-k["Variables"][0]["Name"] = "X"
-k["Variables"][0]["Prior Distribution"] = "Uniform 0"
-
-k["Results Output"]["Path"] = resultDir
-k["Random Seed"] = 0xC0FFEE
-
-k.run()
+e["Result Path"] = '_result_run-tmcmc'
+e["Random Seed"] = 0xC0FFEE
+e["Resume Previous"] = True
 
 print("\n-------------------------------------------------------------")
-print("Now continuing from Generation 2 to end...")
+print("Running first 2 generations...")
 print("-------------------------------------------------------------\n")
 
-resultFile = korali.getLatestResult(resultDir)
-k.loadState(resultFile)
-k["Solver"]["Termination Criteria"]["Max Generations"] = 50
-k.run()
+k.run(e)
+
+print("\n-------------------------------------------------------------")
+print("Running last 2 generations...")
+print("-------------------------------------------------------------\n")
+
+k.run(e)
+

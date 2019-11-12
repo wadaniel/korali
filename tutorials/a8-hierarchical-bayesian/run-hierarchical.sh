@@ -3,22 +3,8 @@
 # this will exit the script if a command fails
 set -e
 
-cd phase0
-python3 x.py
-cd ../
-
-cd phase1
-sh generateData.sh
-cd ../
-
-cd phase2
-python3 x.py
-cd ../
-
-cd phase3a
-python3 x.py
-cd ../
-
-cd phase3b
-python3 x.py
-cd ../
+python3 phase0.py
+python3 phase1.py
+python3 phase2.py
+python3 phase3a.py
+python3 phase3b.py

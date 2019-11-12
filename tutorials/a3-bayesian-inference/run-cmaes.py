@@ -8,59 +8,61 @@
 import sys
 sys.path.append('./model')
 from model import *
-import korali
 
-k = korali.initialize()
+# Creating new experiment
+import korali
+e = korali.newExperiment()
 
 # Setting up the reference likelihood for the Bayesian Problem
-k["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Reference"
-k["Problem"]["Likelihood Model"] = "Additive Normal"
-k["Problem"]["Reference Data"] = getReferenceData()
-k["Problem"]["Computational Model"] = lambda sampleData: model(sampleData, getReferencePoints())
+e["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Reference"
+e["Problem"]["Likelihood Model"] = "Additive Normal"
+e["Problem"]["Reference Data"] = getReferenceData()
+e["Problem"]["Computational Model"] = lambda sampleData: model(sampleData, getReferencePoints())
 
 # Configuring CMA-ES parameters
-k["Solver"]["Type"] = "Optimizer/CMAES"
-k["Solver"]["Population Size"] = 24 
-k["Solver"]["Termination Criteria"]["Max Generations"] = 100
+e["Solver"]["Type"] = "Optimizer/CMAES"
+e["Solver"]["Population Size"] = 24 
+e["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
 # Configuring the problem's random distributions
-k["Distributions"][0]["Name"] = "Uniform 0"
-k["Distributions"][0]["Type"] = "Univariate/Uniform"
-k["Distributions"][0]["Minimum"] = -5.0
-k["Distributions"][0]["Maximum"] = +5.0
+e["Distributions"][0]["Name"] = "Uniform 0"
+e["Distributions"][0]["Type"] = "Univariate/Uniform"
+e["Distributions"][0]["Minimum"] = -5.0
+e["Distributions"][0]["Maximum"] = +5.0
 
-k["Distributions"][1]["Name"] = "Uniform 1"
-k["Distributions"][1]["Type"] = "Univariate/Uniform"
-k["Distributions"][1]["Minimum"] = -5.0
-k["Distributions"][1]["Maximum"] = +5.0
+e["Distributions"][1]["Name"] = "Uniform 1"
+e["Distributions"][1]["Type"] = "Univariate/Uniform"
+e["Distributions"][1]["Minimum"] = -5.0
+e["Distributions"][1]["Maximum"] = +5.0
 
-k["Distributions"][2]["Name"] = "Uniform 2"
-k["Distributions"][2]["Type"] = "Univariate/Uniform"
-k["Distributions"][2]["Minimum"] = 0.0
-k["Distributions"][2]["Maximum"] = +5.0
+e["Distributions"][2]["Name"] = "Uniform 2"
+e["Distributions"][2]["Type"] = "Univariate/Uniform"
+e["Distributions"][2]["Minimum"] = 0.0
+e["Distributions"][2]["Maximum"] = +5.0
 
 # Configuring the problem's variables
-k["Variables"][0]["Name"] = "a"
-k["Variables"][0]["Bayesian Type"] = "Computational"
-k["Variables"][0]["Prior Distribution"] = "Uniform 0"
-k["Variables"][0]["Initial Mean"] = +0.0
-k["Variables"][0]["Initial Standard Deviation"] = +1.0
+e["Variables"][0]["Name"] = "a"
+e["Variables"][0]["Bayesian Type"] = "Computational"
+e["Variables"][0]["Prior Distribution"] = "Uniform 0"
+e["Variables"][0]["Initial Mean"] = +0.0
+e["Variables"][0]["Initial Standard Deviation"] = +1.0
 
-k["Variables"][1]["Name"] = "b"
-k["Variables"][1]["Bayesian Type"] = "Computational"
-k["Variables"][1]["Prior Distribution"] = "Uniform 1"
-k["Variables"][1]["Initial Mean"] = +0.0
-k["Variables"][1]["Initial Standard Deviation"] = +1.0
+e["Variables"][1]["Name"] = "b"
+e["Variables"][1]["Bayesian Type"] = "Computational"
+e["Variables"][1]["Prior Distribution"] = "Uniform 1"
+e["Variables"][1]["Initial Mean"] = +0.0
+e["Variables"][1]["Initial Standard Deviation"] = +1.0
 
-k["Variables"][2]["Name"] = "Sigma"
-k["Variables"][2]["Bayesian Type"] = "Statistical"
-k["Variables"][2]["Prior Distribution"] = "Uniform 2"
-k["Variables"][2]["Initial Mean"] = +2.5
-k["Variables"][2]["Initial Standard Deviation"] = +0.5
+e["Variables"][2]["Name"] = "Sigma"
+e["Variables"][2]["Bayesian Type"] = "Statistical"
+e["Variables"][2]["Prior Distribution"] = "Uniform 2"
+e["Variables"][2]["Initial Mean"] = +2.5
+e["Variables"][2]["Initial Standard Deviation"] = +0.5
 
-# General Settings
-k["Results Output"]["Frequency"] = 5
-k["Console Output"]["Frequency"] = 5
+# Configuring output settings
+e["Save Frequency"] = 5
+e["Console Frequency"] = 5
 
-# Running Korali
-k.run()
+# Starting Korali's Engine and running experiment
+k = korali.initialize()
+k.run(e)

@@ -6,7 +6,8 @@ void korali::problem::evaluation::bayesian::hierarchical::ThetaNew::initialize()
   korali::problem::evaluation::bayesian::Hierarchical::initialize();
 
   // Creating Psi-problem JSON object from string
-  nlohmann::json psiProblemJson = korali::JsonInterface::loadJsonFromFile(_psiProblemPath.c_str());
+  auto psiProblemJson = nlohmann::json();
+  korali::Engine::loadPreviousRun(psiProblemJson, _psiProblemPath);
 
   // Psi-problem correctness checks
   std::string psiProblemType = psiProblemJson["Problem"]["Type"];
@@ -35,7 +36,6 @@ void korali::problem::evaluation::bayesian::hierarchical::ThetaNew::initialize()
 
  // Setting Korali problem objects
   _psiEngine = new korali::Engine(psiProblemJson);
-  _psiEngine->initialize();
 }
 
 void korali::problem::evaluation::bayesian::hierarchical::ThetaNew::evaluateLogLikelihood(korali::Sample& sample)

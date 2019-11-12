@@ -373,7 +373,7 @@ for moduleDir, relDir, fileNames in os.walk(koraliDir):
  for fileName in fileNames:
   if '.json' in fileName:
    filePath = moduleDir + '/' + fileName;
-#   print('[Korali] Opening: ' + filePath + '...')
+   print('[Korali] Opening: ' + filePath + '...')
    with open(filePath, 'r') as file: moduleConfig = json.load(file)
    moduleFilename = fileName.replace('.json', '')
 

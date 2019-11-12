@@ -13,21 +13,24 @@ from model import *
 import korali
 k = korali.initialize()
 
+# Creating new experiment
+e = korali.newExperiment()
+
 # Configuring Problem
-k["Problem"]["Type"] = "Evaluation/Direct/Basic"
-k["Problem"]["Objective"] = "Maximize"
-k["Problem"]["Objective Function"] = model
+e["Problem"]["Type"] = "Evaluation/Direct/Basic"
+e["Problem"]["Objective"] = "Maximize"
+e["Problem"]["Objective Function"] = model
 
 # Configuring Solver
-k["Solver"]["Type"] = "Optimizer/DEA"
-k["Solver"]["Population Size"] = 32
-k["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-7
-k["Solver"]["Termination Criteria"]["Max Generations"] = 100
+e["Solver"]["Type"] = "Optimizer/DEA"
+e["Solver"]["Population Size"] = 32
+e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-7
+e["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
 # Defining the problem's variables and their bounds.
-k["Variables"][0]["Name"] = "X";
-k["Variables"][0]["Lower Bound"] = -10.0
-k["Variables"][0]["Upper Bound"] = +10.0
+e["Variables"][0]["Name"] = "X";
+e["Variables"][0]["Lower Bound"] = -10.0
+e["Variables"][0]["Upper Bound"] = +10.0
 
 # Running Korali
-k.run()
+k.run(e)

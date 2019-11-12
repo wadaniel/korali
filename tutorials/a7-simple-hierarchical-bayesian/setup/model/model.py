@@ -8,7 +8,7 @@ def normal_rnds( s, Ns ):
   th2 = s["Parameters"][1]
   k = s["Sample Id"]
   y = np.random.normal( th1, th2, Ns )
-  dataFolder = "../setup/data/"
+  dataFolder = "setup/data/"
   if not os.path.exists(dataFolder): os.makedirs(dataFolder)
   dataFile = dataFolder + "/data_set_" + str(k).zfill(3) + ".dat"
   np.savetxt( dataFile, np.transpose(y) )

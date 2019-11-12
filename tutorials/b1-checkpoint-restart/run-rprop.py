@@ -13,31 +13,33 @@ from model import *
 
 import korali
 k = korali.initialize()
+e = korali.newExperiment()
 
-resultDir = '_result_run-cmaes'
+e["Problem"]["Type"] = "Evaluation/Direct/Gradient"
+e["Problem"]["Objective"] = "Maximize"
+e["Problem"]["Objective Function"] = model_with_gradient
 
-k["Problem"]["Type"] = "Evaluation/Direct/Gradient"
-k["Problem"]["Objective"] = "Maximize"
-k["Problem"]["Objective Function"] = model_with_gradient
+e["Solver"]["Type"] = "Optimizer/Rprop"
+e["Solver"]["Termination Criteria"]["Max Generations"] = 50
+e["Solver"]["Termination Criteria"]["Generations Per Run"] = 25
+e["Solver"]["Termination Criteria"]['Parameter Relative Tolerance'] = 1e-8;
 
-k["Solver"]["Type"] = "Optimizer/Rprop"
-k["Solver"]["Termination Criteria"]["Max Generations"] = 50
-k["Solver"]["Termination Criteria"]['Parameter Relative Tolerance'] = 1e-8;
+e["Variables"][0]["Name"] = "X"
+e["Variables"][0]["Initial Value"] = -10.
 
-k["Variables"][0]["Name"] = "X"
-k["Variables"][0]["Initial Value"] = -10.
-
-k["Console Output"]["Frequency"] = 10
-k["Results Output"]["Path"] = resultDir
-
-k.run()
-
+e["Result Path"] = '_result_run-rprop'
+e["Console Frequency"] = 10
+e["Resume Previous"] = True
 
 print("\n-------------------------------------------------------------")
-print("Now loading results from Gen 50 and running until Gen 100...")
+print("Running first 25 generations...")
 print("-------------------------------------------------------------\n")
 
-resultFile = korali.getLatestResult(resultDir)
-k.loadState(resultFile)
-k["Solver"]["Termination Criteria"]["Max Generations"] = 100
-k.run()
+k.run(e)
+
+print("\n-------------------------------------------------------------")
+print("Running last 25 generations...")
+print("-------------------------------------------------------------\n")
+
+k.run(e)
+

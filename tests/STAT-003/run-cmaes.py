@@ -13,24 +13,24 @@ from helpers import *
 # CMAES problem definition & run
 #################################################
 
+e = korali.newExperiment()
+e["Problem"]["Type"] = "Evaluation/Direct/Basic"
+e["Problem"]["Objective"] = "Minimize"
+e["Problem"]["Objective Function"] = evalmodel
+
+e["Variables"][0]["Name"] = "X"
+e["Variables"][0]["Lower Bound"] = -10.0
+e["Variables"][0]["Upper Bound"] = +10.0
+
+e["Solver"]["Type"] = "Optimizer/CMAES"
+e["Solver"]["Population Size"] = 8
+e["Solver"]["Termination Criteria"]["Max Generations"] = 100
+
+e["Console Frequency"] = 1000
+e["Result Path"] = "_results_cmaes"
+e["Random Seed"] = 1337
+
 k = korali.initialize()
+k.run(e)
 
-k["Problem"]["Type"] = "Evaluation/Direct/Basic"
-k["Problem"]["Objective"] = "Minimize"
-k["Problem"]["Objective Function"] = evalmodel
-
-k["Variables"][0]["Name"] = "X"
-k["Variables"][0]["Lower Bound"] = -10.0
-k["Variables"][0]["Upper Bound"] = +10.0
-
-k["Solver"]["Type"] = "Optimizer/CMAES"
-k["Solver"]["Population Size"] = 8
-k["Solver"]["Termination Criteria"]["Max Generations"] = 100
-
-k["Results Output"]["Frequency"] = 1000
-k["Results Output"]["Path"] = "_results_cmaes"
-k["Random Seed"] = 1337
-
-k.run()
-
-checkMin(k, 0.22942553779431113, 1e-4)
+checkMin(e, 0.22942553779431113, 1e-4)

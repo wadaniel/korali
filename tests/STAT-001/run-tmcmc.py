@@ -10,30 +10,32 @@ from helpers import *
 
 # Starting Korali's Engine
 import korali
-k = korali.initialize()
-k["Random Seed"] = 0xC0FFEE
-k["Results Output"]["Path"] = "_result_run-tmcmc"
-#k["Console Output"]["Verbosity"] = "Detailed"
+
+e = korali.newExperiment()
+e["Random Seed"] = 0xC0FFEE
+e["Result Path"] = "_result_run-tmcmc"
 
 # Configuring problem
-k["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Custom"
-k["Problem"]["Likelihood Model"] = model
+e["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Custom"
+e["Problem"]["Likelihood Model"] = model
 
-k["Distributions"][0]["Name"] = "Uniform 0"
-k["Distributions"][0]["Type"] = "Univariate/Uniform"
-k["Distributions"][0]["Minimum"] = -20.0
-k["Distributions"][0]["Maximum"] = +20.0
+e["Distributions"][0]["Name"] = "Uniform 0"
+e["Distributions"][0]["Type"] = "Univariate/Uniform"
+e["Distributions"][0]["Minimum"] = -20.0
+e["Distributions"][0]["Maximum"] = +20.0
  
 # Defining problem's variables and prior distribution for TMCMC
-k["Variables"][0]["Name"] = "X"
-k["Variables"][0]["Prior Distribution"] = "Uniform 0"
+e["Variables"][0]["Name"] = "X"
+e["Variables"][0]["Prior Distribution"] = "Uniform 0"
 
 # Configuring the TMCMC sampler parameters
-k["Solver"]["Type"] = "Sampler/TMCMC"
-k["Solver"]["Population Size"] = 5000
-k["Solver"]["Covariance Scaling"] = 0.04
-# Running Korali
-k.run()
+e["Solver"]["Type"] = "Sampler/TMCMC"
+e["Solver"]["Population Size"] = 5000
+e["Solver"]["Covariance Scaling"] = 0.04
 
-checkMean(k, 0.0, 0.02)
-checkStd(k, 1.0, 0.025)
+# Running Korali
+k = korali.initialize()
+k.run(e)
+
+checkMean(e, 0.0, 0.02)
+checkStd(e, 1.0, 0.025)

@@ -106,13 +106,6 @@
  "Termination Criteria":
  [
    {
-    "Name": ["Max Generations" ],
-    "Type": "size_t",
-    "Default": "100",
-    "Criteria": "_currentGeneration > _maxGenerations",
-    "Description": "Determines how many solver generations to run before stopping execution. Execution can be resumed at a later moment."
-   },
-   {
     "Name": [ "Min Value" ],
     "Type": "double",
     "Default": "-INFINITY",
@@ -130,7 +123,7 @@
     "Name": [ "Min Value Difference Threshold" ],
     "Type": "double",
     "Default": "-INFINITY",
-    "Criteria": "_currentGeneration > 1 && (fabs(_currentBestValue - _previousBestValue) <= _minValueDifferenceThreshold)",
+    "Criteria": "_k->_currentGeneration > 1 && (fabs(_currentBestValue - _previousBestValue) <= _minValueDifferenceThreshold)",
     "Description": "Specifies the minimum fitness differential between two consecutive generations before stopping execution."
    }
  ],

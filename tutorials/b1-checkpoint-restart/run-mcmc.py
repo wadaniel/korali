@@ -13,31 +13,33 @@ from model import *
 
 import korali
 k = korali.initialize()
+e = korali.newExperiment()
 
-resultDir = '_result_run-mcmc'
+e["Problem"]["Type"] = "Evaluation/Direct/Basic"
+e["Problem"]["Objective Function"] = model
 
-k["Problem"]["Type"] = "Evaluation/Direct/Basic"
-k["Problem"]["Objective Function"] = model
+e["Solver"]["Type"]  = "Sampler/MCMC"
+e["Solver"]["Burn In"] = 500
+e["Solver"]["Termination Criteria"]["Max Samples"] = 2000
+e["Solver"]["Termination Criteria"]["Generations Per Run"] = 1000
 
-k["Solver"]["Type"]  = "Sampler/MCMC"
-k["Solver"]["Burn In"] = 500
-k["Solver"]["Termination Criteria"]["Max Samples"] = 1000
+e["Variables"][0]["Name"] = "X"
+e["Variables"][0]["Initial Mean"] = 0.0
+e["Variables"][0]["Initial Standard Deviation"] = 1.0
 
-k["Variables"][0]["Name"] = "X"
-k["Variables"][0]["Initial Mean"] = 0.0
-k["Variables"][0]["Initial Standard Deviation"] = 1.0
-
-k["Console Output"]["Frequency"] = 1000
-k["Results Output"]["Frequency"] = 1000
-k["Results Output"]["Path"] = resultDir
-
-k.run()
+e["Result Path"] = '_result_run-mcmc'
+e["Console Frequency"] = 500
+e["Save Frequency"] = 500
+e["Resume Previous"] = True
 
 print("\n-------------------------------------------------------------")
-print("Now continuing from Sample #1000 until Sample #5000...")
+print("Running first 1000 samples...")
 print("-------------------------------------------------------------\n")
 
-resultFile = korali.getLatestResult(resultDir)
-k.loadState(resultFile)
-k["Solver"]["Termination Criteria"]["Max Samples"] = 5000
-k.run()
+k.run(e)
+
+print("\n-------------------------------------------------------------")
+print("Running last 1000 samples...")
+print("-------------------------------------------------------------\n")
+
+k.run(e)

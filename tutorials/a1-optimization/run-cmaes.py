@@ -13,21 +13,24 @@ from model import *
 import korali
 k = korali.initialize()
 
-# Configuring Problem.
-k["Problem"]["Type"] = "Evaluation/Direct/Basic"
-k["Problem"]["Objective"] = "Maximize"
-k["Problem"]["Objective Function"] = model
+# Creating new experiment
+e = korali.newExperiment()
+
+# Configuring Problem
+e["Problem"]["Type"] = "Evaluation/Direct/Basic"
+e["Problem"]["Objective"] = "Maximize"
+e["Problem"]["Objective Function"] = model
 
 # Defining the problem's variables.
-k["Variables"][0]["Name"] = "X"
-k["Variables"][0]["Lower Bound"] = -10.0
-k["Variables"][0]["Upper Bound"] = +10.0
+e["Variables"][0]["Name"] = "X"
+e["Variables"][0]["Lower Bound"] = -10.0
+e["Variables"][0]["Upper Bound"] = +10.0
 
 # Configuring CMA-ES parameters
-k["Solver"]["Type"] = "Optimizer/CMAES"
-k["Solver"]["Population Size"] = 32
-k["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-7
-k["Solver"]["Termination Criteria"]["Max Generations"] = 100
+e["Solver"]["Type"] = "Optimizer/CMAES"
+e["Solver"]["Population Size"] = 32
+e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-7
+e["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
 # Running Korali
-k.run()
+k.run(e)

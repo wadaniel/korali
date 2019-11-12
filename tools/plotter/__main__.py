@@ -19,26 +19,34 @@ def main(path, allFiles, live, generation, mean, check, test):
      matplotlib.use('Agg')
 
  if ( (live == True) and (generation is not None)):
-    print("korali.plotter: error: argument --live and argument --generation "\
-            "GENERATION cannot be combined")
+    print("korali.plotter: error: argument --live and argument --generation GENERATION cannot be combined")
+    exit(-1)
 
  if ( (live == True) and (allFiles is not None)):
-    print("korali.plotter: error: argument --live and argument --all "\
-            "cannot be combined")
-
+    print("korali.plotter: error: argument --live and argument --all cannot be combined")
     exit(-1)
 
  signal.signal(signal.SIGINT, lambda x, y: exit(0))
 
- firstResult = path + '/initial.json'
- if ( not os.path.isfile(firstResult) ):
+ configFile = path + '/config.json'
+ if ( not os.path.isfile(configFile) ):
   print("[Korali] Error: Did not find any results in the {0} folder...".format(path))
   exit(-1)
 
- with open(firstResult) as f:
-  data  = json.load(f)
+ with open(configFile) as f: js = json.load(f)
 
- requestedSolver = data['Solver']['Type']
+ resultFiles = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f)) and f.startswith('gen')]
+ resultFiles = sorted(resultFiles)
+ 
+ js["Generations"] = [ ] 
+ for file in resultFiles:
+  with open(path + '/' + file) as f:
+   genJs = json.load(f)
+   configRunId = js['Internal']['Run ID']
+   solverRunId = genJs['Internal']['Run ID'] 
+   if (configRunId == solverRunId):  js["Generations"].append(genJs)
+ 
+ requestedSolver = js['Solver']['Type']
  solverName = requestedSolver.rsplit('/')[-1]
 
  solverDir = curdir + '/../solver/'
@@ -49,7 +57,7 @@ def main(path, allFiles, live, generation, mean, check, test):
  if os.path.isfile(solverFile):
   sys.path.append(solverDir)
   solverLib = importlib.import_module(solverName, package=None)
-  solverLib.plot(path, allFiles, live, generation, test, mean)
+  solverLib.plot(js)
   exit(0)
 
  if solverName == 'Executor':
@@ -77,4 +85,4 @@ if __name__ == '__main__':
     parser.add_argument('--test', help='run without graphics (for testing purpose)', action='store_true', required = False)
     args = parser.parse_args()
 
-    main( args.dir, args.all, args.live, args.generation, args.mean, args.check, args.test)
+    main(args.dir, args.all, args.live, args.generation, args.mean, args.check, args.test)

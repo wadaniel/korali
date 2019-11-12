@@ -15,6 +15,9 @@ e = korali.newExperiment()
 e["Console Frequency"] = 500
 e["Save Frequency"] = 500
 
+e["Problem"]["Type"] = "Evaluation/Direct/Basic"
+e["Problem"]["Objective Function"] = model
+
 # Configuring the MCMC sampler parameters
 e["Solver"]["Type"] = "Sampler/MCMC"
 e["Solver"]["Burn In"] = 500

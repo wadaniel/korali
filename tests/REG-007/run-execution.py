@@ -23,7 +23,7 @@ e["Verbosity"] = "Detailed"
 k = korali.initialize()
 k.run(e)
 
-assert e["Solver"]["Internal"]["Execution Count"] == 5
+assert e["Solver"]["Internal"]["Model Evaluation Count"] == 5
 assert e["Solver"]["Internal"]["Sample Count"] == 5
 assert e["Solver"]["Internal"]["Variable Count"] == 2
 assert e["Internal"]["Current Generation"] == 3

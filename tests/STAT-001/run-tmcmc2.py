@@ -11,6 +11,8 @@ from helpers import *
 # Starting Korali's Engine
 import korali
 k = korali.initialize()
+e = korali.newExperiment()
+
 e["Random Seed"] = 0xC0FFEE
 e["Result Path"] = "_result_run-tmcmc2"
 
@@ -38,7 +40,7 @@ e["Solver"]["Default Burn In"] = 5
 e["Solver"]["Target Coefficient Of Variation"] = 0.6
 
 # Running Korali
-k.run()
+k.run(e)
 
 checkMean(e, 0.0, 0.02)
 checkStd(e, 1.0, 0.025)

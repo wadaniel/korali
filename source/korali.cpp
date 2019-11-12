@@ -82,9 +82,9 @@ void korali::Korali::run(std::vector<korali::Engine>& engines)
  if (_engineCount > 1) korali::logInfo("Minimal", "All jobs have finished correctly.\n");
  if (_engineCount > 1) korali::logInfo("Normal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count());
 
- __profiler["Engine Count"] = _engineCount;
+ __profiler["Experiment Count"] = _engineCount;
  __profiler["Elapsed Time"] = std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
- std::string fileName = "./" + engines[0]._resultPath + "/profiling.json";
+ std::string fileName = "./profiling.json";
  korali::JsonInterface::saveJsonToFile(fileName.c_str(), __profiler);
 }
 

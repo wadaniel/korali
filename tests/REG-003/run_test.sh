@@ -33,7 +33,7 @@ logEcho "[Korali] Testing Korali+LAMMPS..."
 pushd korali-apps/LAMMPS
 
 logEcho "[Korali] Converting to dry run..."
-cat run-tmcmc.py | sed -e 's/run()/runDry()/g' > sample_dry.py
+cat run-tmcmc.py | sed -e 's/k.run(e)/k[\"Dry Run\"] = True; k.run(e)/g' > sample_dry.py
 check_result
 
 logEcho "[Korali] Setting permissions..."
@@ -56,10 +56,10 @@ logEcho "[Korali] Testing Korali+Mirheo..."
 pushd korali-apps/mirheo/rbc_stretching
 
 logEcho "[Korali] Converting to dry run..."
-cat run-cmaes.py | sed -e 's/run()/runDry()/g' > cmaes_dry.py
+cat run-cmaes.py | sed -e 's/k.run(e)/k[\"Dry Run\"] = True; k.run(e)/g' > cmaes_dry.py
 check_result
 
-cat run-tmcmc.py | sed -e 's/run()/runDry()/g' > tmcmc_dry.py
+cat run-tmcmc.py | sed -e 's/k.run(e)/k[\"Dry Run\"] = True; k.run(e)/g' > tmcmc_dry.py
 check_result
 
 logEcho "[Korali] Setting permissions..."
@@ -89,7 +89,7 @@ logEcho "[Korali] Testing Korali+MSolve (Heat EQ)..."
 pushd korali-apps/MSolve/heatEq
 
 logEcho "[Korali] Converting to dry run..."
-cat heatPosterior.py | sed -e 's/run()/runDry()/g' > run_dry.py
+cat heatPosterior.py |  sed -e 's/k.run(e)/k[\"Dry Run\"] = True; k.run(e)/g' > run_dry.py
 check_result
 
 logEcho "[Korali] Setting permissions..."

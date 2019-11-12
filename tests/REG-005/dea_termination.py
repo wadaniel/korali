@@ -50,12 +50,6 @@ def run_dea_with_termination_criterion(criterion, value):
         current  = e["Solver"]["Internal"]["Best Ever Value"]
         assert_smallereq(previous-current, value)
 
-    elif (criterion == "Min Step Size"):
-        print("TODO: Min Val")
-
-    elif (criterion == "Min Value"):
-        print("TODO: Min Val")
-
     else:
         print("Termination Criterion not recognized!")
         exit(-1)

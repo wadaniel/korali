@@ -62,9 +62,6 @@ def run_cmaes_with_termination_criterion(criterion, value):
     elif (criterion == "Max Standard Deviation"):
         assert_greatereq(e["Solver"]["Internal"]["Current Max Standard Deviation"], value)
 
-    elif (criterion == "Min Value"):
-        print("TODO: Min Val")
-
     else:
         print("Termination Criterion not recognized!")
         exit(-1)

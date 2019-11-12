@@ -10,8 +10,6 @@ cmaes_criteria=(
 "Min Standard Deviation" 
 "Max Standard Deviation"
 "Max Condition Covariance Matrix" 
-"Max Value" 
-"Min Value"
 )
 
 cmaes_values=(
@@ -22,15 +20,12 @@ cmaes_values=(
 0.1   # Min Standard Deviation
 0.9   # Max Standard Deviation
 1.0   # Max Condition Covariance
--1.2  # Max Value
--1.0  # Min Value
 )
 
 dea_criteria=(
 "Max Generations" 
 "Max Generations" 
 "Max Infeasible Resamplings" 
-"Max Value" 
 "Min Value Difference Threshold"
 )
 
@@ -38,10 +33,8 @@ dea_values=(
 1     # Max Generations
 3     # Max Generations
 0     # Max Infeasible Resamplings
--1.2  # Max Value
 0.1   # Min Value Difference Threshold
 0.3   # Min Step Size
--1.0  # Min Value
 )
 
 tmcmc_criteria=(

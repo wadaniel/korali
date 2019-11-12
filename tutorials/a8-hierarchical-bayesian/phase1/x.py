@@ -63,11 +63,12 @@ e["Solver"]["Target Coefficient Of Variation"] = 0.6
 e["Solver"]["Covariance Scaling"] = 0.02
 e["Solver"]["Default Burn In"] = 2;
 
+e["Result Path"] = resultsPath
 e["Verbosity"] = "Detailed"
 
 k = korali.initialize()
 k["Conduit"]["Type"] = "External"
 k["Conduit"]["Concurrent Jobs"] = 4
-k["Result Path"] = resultsPath
+
 k.run(e)
 

@@ -13,34 +13,36 @@ from model import *
 
 import korali
 k = korali.initialize()
+e = korali.newExperiment()
 
-k["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Custom"
-k["Problem"]["Likelihood Model"] = calculateLogLikelihood
+e["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Custom"
+e["Problem"]["Likelihood Model"] = calculateLogLikelihood
 
-k["Solver"]["Type"]  = "Sampler/TMCMC"
-k["Solver"]["Population Size"] = 5000
-k["Solver"]["Termination Criteria"]["Generations Per Run"] = 2
+e["Solver"]["Type"]  = "Sampler/TMCMC"
+e["Solver"]["Population Size"] = 5000
+e["Solver"]["Termination Criteria"]["Generations Per Run"] = 2
 
-k["Distributions"][0]["Name"] = "Uniform 0"
-k["Distributions"][0]["Type"] = "Univariate/Uniform"
-k["Distributions"][0]["Minimum"] = -10.0
-k["Distributions"][0]["Maximum"] = +10.0
+e["Distributions"][0]["Name"] = "Uniform 0"
+e["Distributions"][0]["Type"] = "Univariate/Uniform"
+e["Distributions"][0]["Minimum"] = -10.0
+e["Distributions"][0]["Maximum"] = +10.0
 
-k["Variables"][0]["Name"] = "X"
-k["Variables"][0]["Prior Distribution"] = "Uniform 0"
+e["Variables"][0]["Name"] = "X"
+e["Variables"][0]["Prior Distribution"] = "Uniform 0"
 
-k["Result Path"] = '_result_run-tmcmc'
-k["Random Seed"] = 0xC0FFEE
+e["Result Path"] = '_result_run-tmcmc'
+e["Random Seed"] = 0xC0FFEE
+e["Resume Previous"] = True
 
 print("\n-------------------------------------------------------------")
 print("Running first 2 generations...")
 print("-------------------------------------------------------------\n")
 
-k.run()
+k.run(e)
 
 print("\n-------------------------------------------------------------")
 print("Running last 2 generations...")
 print("-------------------------------------------------------------\n")
 
-k.run()
+k.run(e)
 

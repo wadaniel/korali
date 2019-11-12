@@ -13,32 +13,34 @@ from model import *
 
 import korali
 k = korali.initialize()
+e = korali.newExperiment()
 
-k["Problem"]["Type"] = "Evaluation/Direct/Basic"
-k["Problem"]["Objective"] = "Maximize"
-k["Problem"]["Objective Function"] = model
+e["Problem"]["Type"] = "Evaluation/Direct/Basic"
+e["Problem"]["Objective"] = "Maximize"
+e["Problem"]["Objective Function"] = model
 
-k["Solver"]["Type"]  = "Optimizer/DEA"
-k["Solver"]["Population Size"] = 10
-k["Solver"]["Termination Criteria"]["Max Generations"] = 100
-k["Solver"]["Termination Criteria"]["Generations Per Run"] = 50
-k["Solver"]["Console Frequency"] = 5
-k["Solver"]["Save Frequency"] = 5
+e["Solver"]["Type"]  = "Optimizer/DEA"
+e["Solver"]["Population Size"] = 10
+e["Solver"]["Termination Criteria"]["Max Generations"] = 100
+e["Solver"]["Termination Criteria"]["Generations Per Run"] = 50
 
-k["Variables"][0]["Name"] = "X"
-k["Variables"][0]["Lower Bound"] = -10.0
-k["Variables"][0]["Upper Bound"] = +10.0
+e["Variables"][0]["Name"] = "X"
+e["Variables"][0]["Lower Bound"] = -10.0
+e["Variables"][0]["Upper Bound"] = +10.0
 
-k["Result Path"] = '_result_run-dea'
+e["Result Path"] = '_result_run-dea'
+e["Console Frequency"] = 5
+e["Save Frequency"] = 5
+e["Resume Previous"] = True
 
 print('------------------------------------------------------')
 print('Now running first 50 generations...')
 print('------------------------------------------------------')
 
-k.run()
+k.run(e)
 
 print('------------------------------------------------------')
 print('Now running last 50 generations...')
 print('------------------------------------------------------')
 
-k.run()
+k.run(e)

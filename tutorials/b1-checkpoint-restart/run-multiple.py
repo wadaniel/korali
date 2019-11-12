@@ -14,31 +14,38 @@ from model import *
 import korali
 k = korali.initialize()
 
-k["Problem"]["Type"] = "Evaluation/Direct/Basic"
-k["Problem"]["Objective"] = "Maximize"
-k["Problem"]["Objective Function"] = model
+# Creating experiment list
+eList = []
 
-k["Solver"]["Type"] = "Optimizer/CMAES"
-k["Solver"]["Population Size"] = 5
-k["Solver"]["Termination Criteria"]["Max Generations"] = 50
-k["Solver"]["Termination Criteria"]["Generations Per Run"] = 25
-k["Solver"]["Console Frequency"] = 10
+for i in range(8):
+ e = korali.newExperiment()
 
-k["Variables"][0]["Name"] = "X"
-k["Variables"][0]["Lower Bound"] = -10.0
-k["Variables"][0]["Upper Bound"] = +10.0
+ e["Problem"]["Type"] = "Evaluation/Direct/Basic"
+ e["Problem"]["Objective"] = "Maximize"
+ e["Problem"]["Objective Function"] = model
 
-k["Result Path"] = '_result_run-multiple'
-k["Solver Count"] = 8
+ e["Solver"]["Type"] = "Optimizer/CMAES"
+ e["Solver"]["Population Size"] = 5
+ e["Solver"]["Termination Criteria"]["Max Generations"] = 50
+ e["Solver"]["Termination Criteria"]["Generations Per Run"] = 25
+
+ e["Variables"][0]["Name"] = "X"
+ e["Variables"][0]["Lower Bound"] = -10.0
+ e["Variables"][0]["Upper Bound"] = +10.0
+
+ e["Result Path"] = '_result_run-multiple/exp' + str(i)
+ e["Console Frequency"] = 10
+ e["Resume Previous"] = True
+ eList.append(e)
 
 print('------------------------------------------------------')
 print('Now running first 25 generations...')
 print('------------------------------------------------------')
 
-k.run()
+k.run(eList)
 
 print('------------------------------------------------------')
 print('Now running last 25 generations...')
 print('------------------------------------------------------')
 
-k.run()
+k.run(eList)

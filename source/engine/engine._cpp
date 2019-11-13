@@ -19,10 +19,11 @@ namespace korali { void threadWrapper() { _currentEngine->run(); } }
 
 void korali::Engine::run()
 {
+  co_switch(korali::_mainThread);
+
   auto t0 = std::chrono::system_clock::now();
 
   _solver->getConfiguration(_js["Solver"]);
-  co_switch(korali::_mainThread);
 
   _currentGeneration++;
   _startingGeneration = _currentGeneration;
@@ -79,13 +80,13 @@ void korali::Engine::saveState()
  char genFileName[256];
 
  sprintf(genFileName, "gen%05lu.json", _currentGeneration);
-
+ auto js = _js;
  // Getting configuration
- _solver->getConfiguration(_js["Solver"]);
- _js["Internal"]["Run ID"] = _runID;
- _js["Internal"]["Current Generation"] = _currentGeneration;
+ _solver->getConfiguration(js["Solver"]);
+ js["Internal"]["Run ID"] = _runID;
+ js["Internal"]["Current Generation"] = _currentGeneration;
  std::string fileName = "./" + _resultPath + "/" + genFileName;
- korali::JsonInterface::saveJsonToFile(fileName.c_str(), _js.getJson());
+ korali::JsonInterface::saveJsonToFile(fileName.c_str(), js.getJson());
 }
 
 void korali::Engine::loadPreviousRun(nlohmann::json& js, std::string path)
@@ -154,14 +155,7 @@ void korali::Engine::initialize()
  }
  // Establishing Run ID, if not set by previous run
  if (_runID == 0) _runID = korali::getTimehash();
-
- // Saving initial configuration
- if (_currentGeneration == 0)
- {
-  // Creating results directory
-  korali::mkdir(_resultPath);
-  saveConfig(js);
- }
+ _js["Internal"]["Run ID"] = _runID;
 
  if (_currentGeneration > 0) _solver->setConfiguration(js["Solver"]);
 
@@ -182,12 +176,11 @@ korali::Engine::Engine(nlohmann::json js) : korali::Engine::Engine()
  _k->initialize();
 }
 
-void korali::Engine::saveConfig(nlohmann::json& js)
+void korali::Engine::saveConfig()
 {
- _js._js = js;
- js["Internal"]["Run ID"] = _runID;
+ if (! korali::dirExists(_resultPath))  korali::mkdir(_resultPath);
  std::string fileName = "./" + _resultPath + "/config.json";
- korali::JsonInterface::saveJsonToFile(fileName.c_str(), js);
+ korali::JsonInterface::saveJsonToFile(fileName.c_str(), _js.getJson());
 }
 
 void korali::Engine::loadConfig(std::string fileName)

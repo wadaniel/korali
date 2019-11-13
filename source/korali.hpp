@@ -16,9 +16,6 @@ namespace korali
 
   bool _isFirstRun;
 
-  // Main Thread
-  size_t _engineCount;
-
   // State save/load methods
   void saveProfilingInfo();
   void run(std::vector<korali::Engine>& engines);

@@ -15,20 +15,18 @@ void korali::Korali::run()
  korali::setConsoleOutputFile(stdout);
  korali::setVerbosityLevel("Minimal");
 
- _engineCount = _engineVector.size();
-
  if (! korali::JsonInterface::isDefined(_js.getJson(), "['Conduit']['Type']")) _js["Conduit"]["Type"] = "Simple";
  if (! korali::JsonInterface::isDefined(_js.getJson(), "['Dry Run']")) _js["Dry Run"] = false;
 
- for (size_t i = 0; i < _engineCount; i++)
+ for (size_t i = 0; i < _engineVector.size(); i++)
  {
   _engineVector[i]->_engineId = i;
   std::string fileName = "./" + _engineVector[i]->_resultPath + "/log.txt";
-  if (_engineCount > 1)  _engineVector[i]->_logFile = fopen(fileName.c_str(), "a");
-  if (_engineCount == 1) _engineVector[i]->_logFile = stdout;
+  if (_engineVector.size() > 1)  _engineVector[i]->_logFile = fopen(fileName.c_str(), "a");
+  if (_engineVector.size() == 1) _engineVector[i]->_logFile = stdout;
 
   _currentEngine = _engineVector[i];
-  if (_engineCount > 1) korali::logInfo("Minimal", "Starting Experiment %lu...\n", i);
+  if (_engineVector.size() > 1) korali::logInfo("Minimal", "Starting Experiment %lu...\n", i);
   _engineVector[i]->initialize();
  }
 
@@ -43,6 +41,9 @@ void korali::Korali::run()
  // If this is a worker process (not root), there's nothing else to do
  if (_conduit->isRoot())
  {
+  // Saving initial configuration if first time to run
+  for (size_t i = 0; i < _engineVector.size(); i++) if(_engineVector[i]->_currentGeneration == 0) _engineVector[i]->saveConfig();
+
   // If this is a dry run and configuration succeeded, print sucess and return
   bool isDryRun = _js["Dry Run"];
   if (isDryRun)
@@ -64,7 +65,7 @@ void korali::Korali::run()
   {
    bool executed = false;
 
-   for (size_t i = 0; i < _engineCount; i++) if (_engineVector[i]->_isFinished == false)
+   for (size_t i = 0; i < _engineVector.size(); i++) if (_engineVector[i]->_isFinished == false)
    {
     korali::setVerbosityLevel(_engineVector[i]->_verbosity);
     korali::setConsoleOutputFile(_engineVector[i]->_logFile);
@@ -73,16 +74,16 @@ void korali::Korali::run()
     executed = true;
 
     korali::setConsoleOutputFile(stdout);
-    if (_engineCount > 1) if (_engineVector[i]->_isFinished == true) korali::logInfo("Minimal", "Experiment %lu has finished.\n", i);
+    if (_engineVector.size() > 1) if (_engineVector[i]->_isFinished == true) korali::logInfo("Minimal", "Experiment %lu has finished.\n", i);
    }
 
    if (executed == false) break;
   }
 
-  if (_engineCount > 1) korali::logInfo("Minimal", "All jobs have finished correctly.\n");
-  if (_engineCount > 1) korali::logInfo("Normal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count());
+  if (_engineVector.size() > 1) korali::logInfo("Minimal", "All jobs have finished correctly.\n");
+  if (_engineVector.size() > 1) korali::logInfo("Normal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count());
 
-  __profiler["Experiment Count"] = _engineCount;
+  __profiler["Experiment Count"] = _engineVector.size();
   __profiler["Elapsed Time"] = std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
   std::string fileName = "./profiling.json";
   korali::JsonInterface::saveJsonToFile(fileName.c_str(), __profiler);

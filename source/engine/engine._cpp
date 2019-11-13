@@ -80,13 +80,13 @@ void korali::Engine::saveState()
  char genFileName[256];
 
  sprintf(genFileName, "gen%05lu.json", _currentGeneration);
- auto js = _js;
+
  // Getting configuration
- _solver->getConfiguration(js["Solver"]);
- js["Internal"]["Run ID"] = _runID;
- js["Internal"]["Current Generation"] = _currentGeneration;
+ _solver->getConfiguration(_js["Solver"]);
+ _js["Internal"]["Run ID"] = _runID;
+ _js["Internal"]["Current Generation"] = _currentGeneration;
  std::string fileName = "./" + _resultPath + "/" + genFileName;
- korali::JsonInterface::saveJsonToFile(fileName.c_str(), js.getJson());
+ korali::JsonInterface::saveJsonToFile(fileName.c_str(), _js.getJson());
 }
 
 void korali::Engine::loadPreviousRun(nlohmann::json& js, std::string path)

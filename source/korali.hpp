@@ -14,7 +14,7 @@ namespace korali
 
   Korali();
 
-  bool _isConduitInitialized;
+  bool _isFirstRun;
 
   // Main Thread
   size_t _engineCount;

@@ -3,7 +3,7 @@
 
 korali::Korali::Korali()
 {
- _isConduitInitialized = false;
+ _isFirstRun = false;
  _mainThread = co_active();
 }
 
@@ -32,59 +32,63 @@ void korali::Korali::run()
   _engineVector[i]->initialize();
  }
 
- if (_isConduitInitialized == false)
+ if (_isFirstRun == false)
  {
   _conduit = dynamic_cast<korali::Conduit*>(korali::Module::getModule(_js["Conduit"]));
-  _conduit->initialize();
-  _isConduitInitialized = true;
+  _isFirstRun = true;
  }
+
+ _conduit->initialize();
 
  // If this is a worker process (not root), there's nothing else to do
- if (_conduit->isRoot() == false) return;
-
- // If this is a dry run and configuration succeeded, print sucess and return
- bool isDryRun = _js["Dry Run"];
- if (isDryRun)
+ if (_conduit->isRoot())
  {
-  korali::logInfo("Minimal",  "--------------------------------------------------------------------\n");
-  korali::logInfo("Minimal",  "Dry Run Successful.\n");
-  korali::logInfo("Minimal",  "--------------------------------------------------------------------\n");
-  return;
- }
-
- if (korali::JsonInterface::isDefined(_js.getJson(), "['Dry Run']")) korali::JsonInterface::eraseValue(_js.getJson(), "['Dry Run']");
- if (korali::JsonInterface::isDefined(_js.getJson(), "['Conduit']")) korali::JsonInterface::eraseValue(_js.getJson(), "['Conduit']");
- if (korali::JsonInterface::isEmpty(_js.getJson()) == false) korali::logError("Unrecognized settings for the Korali Engine: \n%s\n", _js.getJson().dump(2).c_str());
-
- // Setting start time.
- _startTime = std::chrono::high_resolution_clock::now();
-
- while(true)
- {
-  bool executed = false;
-
-  for (size_t i = 0; i < _engineCount; i++) if (_engineVector[i]->_isFinished == false)
+  // If this is a dry run and configuration succeeded, print sucess and return
+  bool isDryRun = _js["Dry Run"];
+  if (isDryRun)
   {
-   korali::setVerbosityLevel(_engineVector[i]->_verbosity);
-   korali::setConsoleOutputFile(_engineVector[i]->_logFile);
-   _currentEngine = _engineVector[i];
-   co_switch(_engineVector[i]->_thread);
-   executed = true;
-
-   korali::setConsoleOutputFile(stdout);
-   if (_engineCount > 1) if (_engineVector[i]->_isFinished == true) korali::logInfo("Minimal", "Experiment %lu has finished.\n", i);
+   korali::logInfo("Minimal",  "--------------------------------------------------------------------\n");
+   korali::logInfo("Minimal",  "Dry Run Successful.\n");
+   korali::logInfo("Minimal",  "--------------------------------------------------------------------\n");
+   return;
   }
 
-  if (executed == false) break;
+  if (korali::JsonInterface::isDefined(_js.getJson(), "['Dry Run']")) korali::JsonInterface::eraseValue(_js.getJson(), "['Dry Run']");
+  if (korali::JsonInterface::isDefined(_js.getJson(), "['Conduit']")) korali::JsonInterface::eraseValue(_js.getJson(), "['Conduit']");
+  if (korali::JsonInterface::isEmpty(_js.getJson()) == false) korali::logError("Unrecognized settings for the Korali Engine: \n%s\n", _js.getJson().dump(2).c_str());
+
+  // Setting start time.
+  _startTime = std::chrono::high_resolution_clock::now();
+
+  while(true)
+  {
+   bool executed = false;
+
+   for (size_t i = 0; i < _engineCount; i++) if (_engineVector[i]->_isFinished == false)
+   {
+    korali::setVerbosityLevel(_engineVector[i]->_verbosity);
+    korali::setConsoleOutputFile(_engineVector[i]->_logFile);
+    _currentEngine = _engineVector[i];
+    co_switch(_engineVector[i]->_thread);
+    executed = true;
+
+    korali::setConsoleOutputFile(stdout);
+    if (_engineCount > 1) if (_engineVector[i]->_isFinished == true) korali::logInfo("Minimal", "Experiment %lu has finished.\n", i);
+   }
+
+   if (executed == false) break;
+  }
+
+  if (_engineCount > 1) korali::logInfo("Minimal", "All jobs have finished correctly.\n");
+  if (_engineCount > 1) korali::logInfo("Normal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count());
+
+  __profiler["Experiment Count"] = _engineCount;
+  __profiler["Elapsed Time"] = std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
+  std::string fileName = "./profiling.json";
+  korali::JsonInterface::saveJsonToFile(fileName.c_str(), __profiler);
  }
 
- if (_engineCount > 1) korali::logInfo("Minimal", "All jobs have finished correctly.\n");
- if (_engineCount > 1) korali::logInfo("Normal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count());
-
- __profiler["Experiment Count"] = _engineCount;
- __profiler["Elapsed Time"] = std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
- std::string fileName = "./profiling.json";
- korali::JsonInterface::saveJsonToFile(fileName.c_str(), __profiler);
+ _conduit->finalize();
 }
 
 void korali::Korali::run(korali::Engine& engine)

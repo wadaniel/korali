@@ -259,7 +259,6 @@ GSLCFLAGS=`$gslcfgFile --cflags`
 GSLLIBS=`$gslcfgFile --libs`
 PYBIND11INCLUDES=`python3 -m pybind11 --includes` 
 PYBIND11LIBS=`python3-config --ldflags`
-CXXFSFLAGS=-lstdc++fs
 
 CXXARCH="-std=c++17 -lstdc++fs"
 which $USE_CXX | grep "cray" >> $logFile 2>&1
@@ -288,7 +287,6 @@ log "[Korali] Creating Compilation Config File..."
 
 echo CXX=$USE_CXX > source/Makefile.conf
 echo CXXARCH=$CXXARCH >> source/Makefile.conf
-echo CXXFSFLAGS=$CXXFSFLAGS >> source/Makefile.conf
 echo SHAREDLIB_FLAG=$SHAREDLIB_FLAG >> source/Makefile.conf
 echo MPIFLAGS=$MPIFLAGS >> source/Makefile.conf
 echo OPTFLAGS=$OPTFLAGS >> source/Makefile.conf

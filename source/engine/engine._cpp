@@ -4,7 +4,7 @@
 #include "problem/problem.hpp"
 #include "conduit/MPI/MPI.hpp"
 #include "auxiliar/py2json.hpp"
-#include "external/fs/fs.hpp"
+#include "auxiliar/fs.hpp"
 #include <chrono>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -93,20 +93,20 @@ void korali::Engine::loadPreviousRun(nlohmann::json& js, std::string path)
  js["Internal"]["Current Generation"] = 0;
  js["Internal"]["Run ID"] = 0;
 
- if (std::filesystem::exists(path))
+ if (korali::dirExists(path))
  {
   // Loading config file, if exists
-  for (const auto & entry : std::filesystem::directory_iterator(path))
+  for (const auto & entry : korali::listDirFiles(path))
   {
-   std::string filePath = entry.path();
+   std::string filePath = entry;
    if (filePath.find("config.json", 0) != std::string::npos)
     if (korali::JsonInterface::loadJsonFromFile(js, filePath.c_str()) == false) korali::logError("Error loading initial configuration file.\n");
   }
 
   // Loading latest solver generation
-  for (const auto & entry : std::filesystem::directory_iterator(path))
+  for (const auto & entry : korali::listDirFiles(path))
   {
-   std::string filePath = entry.path();
+   std::string filePath = entry;
    std::string fileExt = ".json";
    if (filePath.find("gen", 0) != std::string::npos)
    if (filePath.compare(filePath.size() - fileExt.size(), fileExt.size(), fileExt) == 0)
@@ -135,6 +135,8 @@ void korali::Engine::initialize()
 {
  _k = this;
 
+ korali::listDirFiles(".");
+
  // Setting Run ID
  _runID = 0;
  _currentGeneration = 0;
@@ -157,7 +159,7 @@ void korali::Engine::initialize()
  if (_currentGeneration == 0)
  {
   // Creating results directory
-  std::filesystem::create_directories(_resultPath);
+  korali::mkdir(_resultPath);
   saveConfig(js);
  }
 

@@ -78,7 +78,7 @@ void korali::Engine::saveState()
 {
  char genFileName[256];
 
- sprintf(genFileName, "gen%05d.json", _currentGeneration);
+ sprintf(genFileName, "gen%05lu.json", _currentGeneration);
 
  // Getting configuration
  _solver->getConfiguration(_js["Solver"]);

@@ -35,7 +35,7 @@ namespace korali
      DIR *dp = nullptr;
 
      dp = opendir(dirPath.c_str());
-     if (dp != nullptr)  while (entry = readdir(dp))
+     if (dp != nullptr)  while ((entry = readdir(dp)))
      {
       std::string filePath = dirPath;
       filePath += "/";

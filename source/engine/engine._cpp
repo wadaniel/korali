@@ -4,13 +4,12 @@
 #include "problem/problem.hpp"
 #include "conduit/MPI/MPI.hpp"
 #include "auxiliar/py2json.hpp"
-
+#include "external/fs/fs.hpp"
 #include <chrono>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <cstdio>
 #include <map>
-#include <filesystem>
 
 std::vector<korali::Engine*> korali::_engineVector;
 korali::Engine* korali::_currentEngine;

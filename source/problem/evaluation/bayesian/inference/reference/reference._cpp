@@ -1,6 +1,6 @@
 #include "problem/evaluation/bayesian/inference/reference/reference.hpp"
 #include "conduit/conduit.hpp"
-#include "engine/engine.hpp"
+#include "experiment/experiment.hpp"
 
 void korali::problem::evaluation::bayesian::inference::Reference::initialize()
 {

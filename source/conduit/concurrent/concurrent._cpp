@@ -1,5 +1,5 @@
 #include "conduit/concurrent/concurrent.hpp"
-#include "engine/engine.hpp"
+#include "experiment/experiment.hpp"
 #include "problem/problem.hpp"
 #include "solver/solver.hpp"
 #include <sys/wait.h>
@@ -74,7 +74,7 @@ void korali::conduit::Concurrent::worker(int workerId)
   sample._js.getJson() = nlohmann::json::parse(inputString);
 
   size_t experimentId = sample["Experiment Id"];
-  _engineVector[experimentId]->_problem->runOperation(sample["Operation"], sample);
+  _experimentVector[experimentId]->_problem->runOperation(sample["Operation"], sample);
 
   std::string resultString = sample._js.getJson().dump();
   size_t resultStringSize = resultString.size();
@@ -89,7 +89,7 @@ void korali::conduit::Concurrent::processSample(korali::Sample& sample)
  while (_launcherQueue.empty())
  {
   sample._state = SampleState::waiting;
-  co_switch(_currentEngine->_thread);
+  co_switch(_currentExperiment->_thread);
  }
 
  int launcherId = _launcherQueue.front(); _launcherQueue.pop();
@@ -122,13 +122,13 @@ void korali::conduit::Concurrent::processSample(korali::Sample& sample)
   else
   {
    sample._state = SampleState::waiting;
-   co_switch(_currentEngine->_thread);
+   co_switch(_currentExperiment->_thread);
   }
  }
 
  js["End Time"] = std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
- js["Solver Id"] = _currentEngine->_engineId;
- js["Current Generation"] = _currentEngine->_currentGeneration;
+ js["Solver Id"] = _currentExperiment->_experimentId;
+ js["Current Generation"] = _currentExperiment->_currentGeneration;
  __profiler["Timelines"]["Worker " + std::to_string(launcherId)] += js;
 
 }

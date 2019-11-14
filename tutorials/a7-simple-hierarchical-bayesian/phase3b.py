@@ -6,7 +6,7 @@ import os
 import korali
 
 # Creating hierarchical Bayesian problem from previous two problems
-e = korali.newExperiment()
+e = korali.Experiment()
 
 e["Problem"]["Type"]  = "Evaluation/Bayesian/Hierarchical/Theta"
 e["Problem"]["Theta Problem Path"] = 'setup/results_phase_1/000'
@@ -22,7 +22,7 @@ e["Verbosity"] = "Detailed"
 e["Result Path"] = "setup/results_phase_3b/"
 
 # Starting Korali's Engine and running experiment
-k = korali.initialize()
+k = korali.Engine()
 k["Conduit"]["Type"] = "Concurrent"
 k["Conduit"]["Concurrent Jobs"] = 4
 k.run(e)

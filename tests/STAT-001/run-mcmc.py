@@ -11,7 +11,7 @@ from helpers import *
 # Starting Korali's Engine
 import korali
 
-e = korali.newExperiment()
+e = korali.Experiment()
 e["Console Frequency"] = 500
 e["Save Frequency"] = 500
 
@@ -32,7 +32,7 @@ e["Variables"][0]["Initial Standard Deviation"] = 1.0
 e["Random Seed"] = 0xC0FFEE
 e["Result Path"] = "_result_run-mcmc"
 
-k = korali.initialize()
+k = korali.Engine()
 k.run(e)
 
 # Testing Results

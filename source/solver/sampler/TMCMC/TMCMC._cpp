@@ -1,6 +1,6 @@
 #include "solver/sampler/TMCMC/TMCMC.hpp"
 #include "conduit/conduit.hpp"
-#include <engine/engine.hpp>
+#include <experiment/experiment.hpp>
 #include <numeric>
 #include <limits>
 #include <chrono>

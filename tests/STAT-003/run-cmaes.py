@@ -13,7 +13,7 @@ from helpers import *
 # CMAES problem definition & run
 #################################################
 
-e = korali.newExperiment()
+e = korali.Experiment()
 e["Problem"]["Type"] = "Evaluation/Direct/Basic"
 e["Problem"]["Objective"] = "Minimize"
 e["Problem"]["Objective Function"] = evalmodel
@@ -30,7 +30,7 @@ e["Console Frequency"] = 1000
 e["Result Path"] = "_results_cmaes"
 e["Random Seed"] = 1337
 
-k = korali.initialize()
+k = korali.Engine()
 k.run(e)
 
 checkMin(e, 0.22942553779431113, 1e-4)

@@ -17,7 +17,7 @@ def run_ccmaes(constraint):
     print("[Korali] Prepare CMAES run with Termination Criteria "\
             "'{0}'".format(constraint))
 
-    e = korali.newExperiment()
+    e = korali.Experiment()
 
     e["Problem"]["Type"] = "Evaluation/Direct/Basic"
     e["Problem"]["Objective"] = "Maximize"
@@ -41,7 +41,7 @@ def run_ccmaes(constraint):
     e["Save Frequency"] = 1000
     e["Random Seed"] = 1337
 
-    k = korali.initialize()
+    k = korali.Engine()
     
     if (constraint == "None"):
         k.run(e)

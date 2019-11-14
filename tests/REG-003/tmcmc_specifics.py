@@ -27,7 +27,7 @@ maxRhoUpdate = 0.2
 
 print("[Korali] Prepare TMCMC run")
 
-e = korali.newExperiment()
+e = korali.Experiment()
 e["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Custom"
 e["Problem"]["Likelihood Model"] = evaluateLogLikelihood
 
@@ -58,7 +58,7 @@ e["Random Seed"] = 314
 #################################################
 
 # Starting Korali's Engine
-k = korali.initialize()
+k = korali.Engine()
 print("[Korali] Running TMCMC...")
 k.run(e)
 

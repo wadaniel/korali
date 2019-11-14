@@ -3,7 +3,7 @@
 
 int main(int argc, char* argv[])
 {
- auto e = korali::Engine();
+ auto e = korali::Experiment();
  auto p = heat2DInit(&argc, &argv);
 
  e["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Reference";
@@ -51,6 +51,6 @@ int main(int argc, char* argv[])
  e["Variables"][3]["Prior Distribution"] = "Uniform 3";
 
  // Running Korali
- auto k = korali::Korali();
+ auto k = korali::Engine();
  k.run(e);
 }

@@ -1,5 +1,5 @@
 #include "distribution/univariate/univariate.hpp"
-#include "engine/engine.hpp"
+#include "experiment/experiment.hpp"
 
 void korali::distribution::Univariate::initialize()
 {

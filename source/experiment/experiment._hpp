@@ -4,8 +4,8 @@
 #include <vector>
 #include <functional>
 #include <chrono>
-#include "engine/sample/sample.hpp"
-#include "engine/variable/variable.hpp"
+#include "experiment/sample/sample.hpp"
+#include "experiment/variable/variable.hpp"
 #include "auxiliar/koraliJson.hpp"
 #include "module.hpp"
 
@@ -14,7 +14,7 @@ namespace korali
 class Solver;
 class Problem;
 
-class Engine : public korali::Module {
+class Experiment : public korali::Module {
 
  public:
 
@@ -22,7 +22,7 @@ class Engine : public korali::Module {
  void initialize() override;
 
  // Constructors
- Engine();
+ Experiment();
 
  // JSON-based configuration
  korali::KoraliJson  _js;
@@ -35,7 +35,7 @@ class Engine : public korali::Module {
  std::string _subDirPath;
 
  // Multiple Solver Variables/Functions
- size_t _engineId;
+ size_t _experimentId;
  cothread_t _thread;
 
  pybind11::object getItem(pybind11::object key);
@@ -50,8 +50,8 @@ class Engine : public korali::Module {
  nlohmann::json& operator[](const unsigned long int& key);
 };
 
-extern std::vector<korali::Engine*> _engineVector;
-extern korali::Engine* _currentEngine;
+extern std::vector<korali::Experiment*> _experimentVector;
+extern korali::Experiment* _currentExperiment;
 extern cothread_t _mainThread;
 
 } // namespace korali

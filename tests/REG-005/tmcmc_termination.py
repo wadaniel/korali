@@ -17,7 +17,7 @@ def run_tmcmc_with_termination_criterion(criterion, value):
     print("[Korali] Prepare DEA run with Termination Criteria "\
             "'{0}'".format(criterion))
 
-    e = korali.newExperiment()
+    e = korali.Experiment()
     e["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Custom"
     e["Problem"]["Likelihood Model"] = evaluateLogLikelihood
 
@@ -37,7 +37,7 @@ def run_tmcmc_with_termination_criterion(criterion, value):
     e["Save Frequency"] = 1000
     e["Random Seed"] = 1337
 
-    k = korali.initialize()
+    k = korali.Engine()
     k.run(e)
 
     if (criterion == "Max Generations"):

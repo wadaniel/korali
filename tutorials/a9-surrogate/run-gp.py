@@ -19,7 +19,7 @@ def read_matrix_for_gp( fileName, lastColumnIsData=True ):
   return x,y
 
 x, y = read_matrix_for_gp('data/sincos1d_train.dat')
-e0 = korali.newExperiment()
+e0 = korali.Experiment()
 e0["Problem"]["Type"] = "Evaluation/GaussianProcess"
 e0["Problem"]["Covariance Function"] = "CovSum ( CovSEiso, CovNoise)"
 e0["Problem"]["X Data"] = x
@@ -33,7 +33,7 @@ e0["Results Frequency"] = 100
 e0["Result Path"] = "_korali_result_train"
 
 x, y = read_matrix_for_gp('data/sincos1d_test.dat')
-e1 = korali.newExperiment()
+e1 = korali.Experiment()
 e1["Problem"]["Type"] = "Execution/GaussianProcess"
 e1["Problem"]["Gaussian Process Json File"] =  "_korali_result_train/final.json"
 e1["Problem"]["X Data"] = x
@@ -46,7 +46,7 @@ e1["Results Frequency"] = 100
 e1["Result Path"] = "_korali_result_test"
 
 x, y = read_matrix_for_gp('data/sincos1d_new.dat',lastColumnIsData=True)
-e2 = korali.initialize()
+e2 = korali.Experiment()
 e2["Problem"]["Type"] = "Execution/GaussianProcess"
 e2["Problem"]["Gaussian Process Json File"] =  "_korali_result_train/final.json"
 e2["Problem"]["X Data"] = x
@@ -58,7 +58,7 @@ e2["Console Frequency"] = 10
 e2["Results Frequency"] = 100
 e2["Result Path"] = "_korali_result_new"
 
-k = korali.initialize()
+k = korali.Engine()
 k.run(e0)
 k.run(e1)
 k.run(e2)

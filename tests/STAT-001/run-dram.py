@@ -10,7 +10,7 @@ from model import *
 from helpers import *
 
 # Selecting problem and solver types.
-e = korali.newExperiment()
+e = korali.Experiment()
 e["Problem"]["Type"] = "Evaluation/Direct/Basic"
 e["Problem"]["Objective Function"] = model
 
@@ -32,7 +32,7 @@ e["Console Frequency"] = 500
 e["Save Frequency"] = 500
 e["Result Path"] = "_result_run-dram"
 
-k = korali.initialize()
+k = korali.Engine()
 k.run(e)
 
 checkMean(e, 0.0, 0.01)

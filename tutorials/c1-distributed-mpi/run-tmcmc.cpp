@@ -5,7 +5,7 @@ int main(int argc, char* argv[])
 {
  MPI_Init(&argc, &argv);
 
- auto e = korali::Engine();
+ auto e = korali::Experiment();
 
  e["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Reference";
  e["Problem"]["Likelihood Model"] = "Additive Normal";
@@ -80,7 +80,7 @@ int main(int argc, char* argv[])
  e["Solver"]["Population Size"] = 100;
  e["Solver"]["Termination Criteria"]["Max Generations"] = 3;
 
- auto k = korali::Korali();
+ auto k = korali::Engine();
  if (argc != 2) { printf("Error: this example requires 'Ranks Per Team' passed as argument.\n"); exit(-1); }
 
  k["Conduit"]["Type"] = "Distributed";

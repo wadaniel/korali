@@ -11,7 +11,7 @@ from helpers import *
 # Starting Korali's Engine
 import korali
 
-e = korali.newExperiment()
+e = korali.Experiment()
 e["Random Seed"] = 0xC0FFEE
 e["Result Path"] = "_result_run-tmcmc"
 
@@ -34,7 +34,7 @@ e["Solver"]["Population Size"] = 5000
 e["Solver"]["Covariance Scaling"] = 0.04
 
 # Running Korali
-k = korali.initialize()
+k = korali.Engine()
 k.run(e)
 
 checkMean(e, 0.0, 0.02)

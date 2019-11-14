@@ -1,6 +1,6 @@
 #include "problem/evaluation/bayesian/hierarchical/psi/psi.hpp"
 #include "distribution/univariate/normal/normal.hpp"
-#include "engine/engine.hpp"
+#include "experiment/experiment.hpp"
 #include "conduit/conduit.hpp"
 
 void korali::problem::evaluation::bayesian::hierarchical::Psi::initialize()
@@ -29,7 +29,7 @@ void korali::problem::evaluation::bayesian::hierarchical::Psi::initialize()
  _subProblemsVariablesCount = _conditionalPriors.size();
 
  // Creating JSON object from string
- _subProblemEngines = std::vector<korali::Engine>(_subProblemsCount);
+ _subProblemEngines = std::vector<korali::Experiment>(_subProblemsCount);
  for (size_t i = 0; i < _subProblemsCount; i++)
  {
   if (_subProblemEngines[i].loadState(_subProblems[i]) == false) korali::logError("Error loading sub problem results from: %s...\n", _subProblems[i].c_str());

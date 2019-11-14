@@ -4,11 +4,11 @@ extdir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
 import sys
 sys.path.append(extdir)
  
-def initialize():
- from libkorali import Korali
- return Korali()
-
-def newExperiment():
+def Engine():
  from libkorali import Engine
  return Engine()
+
+def Experiment():
+ from libkorali import Experiment
+ return Experiment()
  

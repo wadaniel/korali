@@ -5,7 +5,7 @@ void korali::problem::evaluation::bayesian::hierarchical::ThetaNew::initialize()
 {
   korali::problem::evaluation::bayesian::Hierarchical::initialize();
 
-  // Loading Psi-problem Engine from path
+  // Loading Psi-problem Experiment from path
   if (_psiProblemEngine.loadState(_psiProblemPath) == false) korali::logError("Error loading psi problem results from: %s...\n", _psiProblemPath.c_str());
   _psiProblemEngine.initialize();
 

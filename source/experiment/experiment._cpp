@@ -1,4 +1,4 @@
-#include "engine/engine.hpp"
+#include "experiment/experiment.hpp"
 #include "conduit/conduit.hpp"
 #include "solver/solver.hpp"
 #include "problem/problem.hpp"
@@ -11,13 +11,13 @@
 #include <cstdio>
 #include <map>
 
-std::vector<korali::Engine*> korali::_engineVector;
-korali::Engine* korali::_currentEngine;
+std::vector<korali::Experiment*> korali::_experimentVector;
+korali::Experiment* korali::_currentExperiment;
 cothread_t korali::_mainThread;
 
-namespace korali { void threadWrapper() { _currentEngine->run(); } }
+namespace korali { void threadWrapper() { _currentExperiment->run(); } }
 
-void korali::Engine::run()
+void korali::Experiment::run()
 {
   co_switch(korali::_mainThread);
 
@@ -48,7 +48,7 @@ void korali::Engine::run()
    if (_currentGeneration % _consoleFrequency == 0)
    {
     _solver->printGenerationAfter();
-    korali::logInfo("Detailed", "Engine: %lu - Generation Time: %.3fs\n", _engineId, std::chrono::duration<double>(t1-t0).count());
+    korali::logInfo("Detailed", "Experiment: %lu - Generation Time: %.3fs\n", _experimentId, std::chrono::duration<double>(t1-t0).count());
    }
 
    if (_saveFrequency > 0)
@@ -72,10 +72,10 @@ void korali::Engine::run()
   korali::logInfo("Normal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(t1-t0).count());
 
   co_switch(korali::_mainThread);
-  korali::logError("Trying to continue finished Engine thread.\n");
+  korali::logError("Trying to continue finished Experiment thread.\n");
 }
 
-void korali::Engine::saveState()
+void korali::Experiment::saveState()
 {
  char genFileName[256];
  sprintf(genFileName, "gen%08lu.json", _currentGeneration);
@@ -89,13 +89,13 @@ void korali::Engine::saveState()
  korali::JsonInterface::saveJsonToFile(fileName.c_str(), _js.getJson());
 }
 
-bool korali::Engine::loadState()
+bool korali::Experiment::loadState()
 {
   std::string path = _js["Result Path"];
   return loadState(path);
 }
 
-bool korali::Engine::loadState(std::string path)
+bool korali::Experiment::loadState(std::string path)
 {
  auto js = nlohmann::json();
 
@@ -142,7 +142,7 @@ bool korali::Engine::loadState(std::string path)
  return false;
 }
 
-korali::Engine::Engine()
+korali::Experiment::Experiment()
 {
  _js["Internal"]["Run ID"] = korali::getTimehash();
  _js["Internal"]["Current Generation"] = 0;
@@ -150,7 +150,7 @@ korali::Engine::Engine()
  _k = this;
 }
 
-void korali::Engine::initialize()
+void korali::Experiment::initialize()
 {
  // Setting Configuration
  setConfiguration(_js.getJson());
@@ -166,7 +166,7 @@ void korali::Engine::initialize()
  _solver->initialize();
 }
 
-nlohmann::json& korali::Engine::operator[](const std::string& key) { return _js[key]; }
-nlohmann::json& korali::Engine::operator[](const unsigned long int& key) { return _js[key]; }
-pybind11::object korali::Engine::getItem(pybind11::object key) { return _js.getItem(key); }
-void korali::Engine::setItem(pybind11::object key, pybind11::object val) { _js.setItem(key, val); }
+nlohmann::json& korali::Experiment::operator[](const std::string& key) { return _js[key]; }
+nlohmann::json& korali::Experiment::operator[](const unsigned long int& key) { return _js[key]; }
+pybind11::object korali::Experiment::getItem(pybind11::object key) { return _js.getItem(key); }
+void korali::Experiment::setItem(pybind11::object key, pybind11::object val) { _js.setItem(key, val); }

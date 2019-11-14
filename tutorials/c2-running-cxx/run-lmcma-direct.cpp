@@ -8,7 +8,7 @@ user-provided computational model. */
 int main(int argc, char* argv[])
 {
  // Configuring Problem.
- auto e = korali::Engine();
+ auto e = korali::Experiment();
  e["Problem"]["Type"] = "Evaluation/Direct/Basic";
  e["Problem"]["Objective"] = "Maximize";
  e["Problem"]["Objective Function"] = &direct;
@@ -25,6 +25,6 @@ int main(int argc, char* argv[])
  e["Solver"]["Termination Criteria"]["Max Generations"] = 100;
 
  // Running Korali
- auto k = korali::Korali();
+ auto k = korali::Engine();
  k.run(e);
 }

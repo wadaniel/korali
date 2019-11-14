@@ -1,25 +1,25 @@
 #ifndef _KORALI_HPP_
 #define _KORALI_HPP_
 
-#include "engine/engine.hpp"
+#include "experiment/experiment.hpp"
 #include "auxiliar/py2json.hpp"
 #include "conduit/distributed/distributed.hpp"
 #include "conduit/conduit.hpp"
 
 namespace korali
 {
- class Korali : public korali::Module
+ class Engine : public korali::Module
  {
   public:
 
-  Korali();
+  Engine();
 
   bool _isFirstRun;
 
   // State save/load methods
   void saveProfilingInfo();
-  void run(std::vector<korali::Engine>& engines);
-  void run(korali::Engine& engine);
+  void run(std::vector<korali::Experiment>& experiments);
+  void run(korali::Experiment& experiment);
   void run();
 
   nlohmann::json& operator[](const std::string& key);

@@ -12,7 +12,7 @@ from model import *
 
 # Creating new experiment
 import korali
-e = korali.newExperiment()
+e = korali.Experiment()
 
 # Selecting problem and solver types.
 e["Problem"]["Type"] = "Evaluation/Direct/Basic"
@@ -34,5 +34,5 @@ e["Console Frequency"] = 500
 e["Verbosity"] = "Detailed"
 
 # Starting Korali's Engine and running experiment
-k = korali.initialize()
+k = korali.Engine()
 k.run(e)

@@ -14,7 +14,7 @@
 #include "external/json/json.hpp"
 #include "pybind11/pybind11.h"
 #include "pybind11/stl.h"
-#include "engine/sample/sample.hpp"
+#include "experiment/sample/sample.hpp"
 
 typedef void(*__fkfc)(korali::Sample&);
 typedef std::function<void(korali::Sample&)> __kfc;

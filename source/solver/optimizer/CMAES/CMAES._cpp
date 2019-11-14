@@ -1,5 +1,5 @@
 #include "solver/optimizer/CMAES/CMAES.hpp"
-#include "engine/sample/sample.hpp"
+#include "experiment/sample/sample.hpp"
 #include "conduit/conduit.hpp"
 
 #include <stdio.h>

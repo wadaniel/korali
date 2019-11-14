@@ -12,8 +12,8 @@ sys.path.append('./model')
 from model import *
 
 import korali
-k = korali.initialize()
-e = korali.newExperiment()
+k = korali.Engine()
+e = korali.Experiment()
 
 e["Problem"]["Type"] = "Evaluation/Direct/Basic"
 e["Problem"]["Objective Function"] = model

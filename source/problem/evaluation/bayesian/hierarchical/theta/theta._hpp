@@ -10,7 +10,7 @@ class Theta : public korali::problem::evaluation::bayesian::Hierarchical
 {
  private:
 
- korali::Engine _psiProblemEngine;
+ korali::Experiment _psiProblemEngine;
  size_t _psiVariableCount;
  size_t _psiProblemSampleCount;
  std::vector<std::vector<double>> _psiProblemSampleCoordinates;
@@ -18,7 +18,7 @@ class Theta : public korali::problem::evaluation::bayesian::Hierarchical
  std::vector<double> _psiProblemSampleLogPriors;
  korali::problem::evaluation::bayesian::hierarchical::Psi* _psiProblem;
 
- korali::Engine _thetaProblemEngine;
+ korali::Experiment _thetaProblemEngine;
  size_t _thetaVariableCount;
  size_t _thetaProblemSampleCount;
  std::vector<std::vector<double>> _thetaProblemSampleCoordinates;

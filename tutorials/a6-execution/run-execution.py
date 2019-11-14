@@ -21,7 +21,7 @@ variances = [1, 3]
 
 # Creating new experiment
 import korali
-e = korali.newExperiment()
+e = korali.Experiment()
 
 e["Problem"]["Type"] = "Execution/Model"
 e["Problem"]["Execution Model"] = lambda modelData: put_normal_rnds(modelData, Ns, fileName)
@@ -34,6 +34,6 @@ e["Solver"]["Executions Per Generation"] = 1
 e["Verbosity"] = "Detailed"
 
 # Starting Korali's Engine and running experiment
-k = korali.initialize()
+k = korali.Engine()
 k.run(e)
 

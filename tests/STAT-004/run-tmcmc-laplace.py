@@ -10,8 +10,8 @@ from helpers import *
 
 # Starting Korali's Engine
 import korali
-k = korali.initialize()
-e = korali.newExperiment()
+k = korali.Engine()
+e = korali.Experiment()
 
 e["Result Path"] = "_result_run-tmcmc"
 

@@ -11,13 +11,13 @@ from model import *
 
 # Starting Korali's Engine
 import korali
-k = korali.initialize()
+k = korali.Engine()
 
 # Configuring Multiple Experiments.
 eList = []
 
 for i in range(8):
-  e = korali.newExperiment()
+  e = korali.Experiment()
   e["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Reference"
   e["Problem"]["Likelihood Model"] = "Additive Normal"
   e["Problem"]["Reference Data"] = getReferenceData()

@@ -3,8 +3,8 @@
 
 int main(int argc, char* argv[])
 {
- auto k = korali::Korali();
- auto e = korali::Engine();
+ auto k = korali::Engine();
+ auto e = korali::Experiment();
  auto p = heat2DInit(&argc, &argv);
 
  e["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Reference";

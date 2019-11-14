@@ -7,7 +7,7 @@ from model import *
 N = 5;
 
 import korali
-e = korali.newExperiment()
+e = korali.Experiment()
 
 e["Problem"]["Type"] = "Execution/Model"
 e["Problem"]["Execution Model"] = lambda modelData: logistic_reference(modelData)
@@ -27,5 +27,5 @@ e["Result Path"] = "setup/results_phase_0/"
 e["Verbosity"] = "Detailed"
 
 # Starting Korali's Engine and running experiment
-k = korali.initialize()
+k = korali.Engine()
 k.run(e)

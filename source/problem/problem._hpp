@@ -2,7 +2,7 @@
 #define _KORALI_PROBLEM_HPP_
 
 #include "module.hpp"
-#include "engine/engine.hpp"
+#include "experiment/experiment.hpp"
 
 namespace korali {
 

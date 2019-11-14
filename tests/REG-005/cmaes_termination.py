@@ -17,7 +17,7 @@ def run_cmaes_with_termination_criterion(criterion, value):
     print("[Korali] Prepare CMAES run with Termination Criteria "\
             "'{0}'".format(criterion))
 
-    e = korali.newExperiment()
+    e = korali.Experiment()
 
     e["Problem"]["Type"] = "Evaluation/Direct/Basic"
     e["Problem"]["Objective"] = "Maximize"
@@ -34,7 +34,7 @@ def run_cmaes_with_termination_criterion(criterion, value):
     e["Save Frequency"] = 1000
     e["Random Seed"] = 1337
 
-    k = korali.initialize()
+    k = korali.Engine()
     k.run(e)
 
     if (criterion == "Max Generations"):

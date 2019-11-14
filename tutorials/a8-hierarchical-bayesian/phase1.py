@@ -9,7 +9,7 @@ import korali
 # Creating Bayesian Problem List
 eList = []
 for i in range(5):
-  e = korali.newExperiment()
+  e = korali.Experiment()
   
   # Getting Reference Points
   x = getReferencePoints("setup/data/", i);
@@ -63,7 +63,7 @@ for i in range(5):
   e["Verbosity"] = "Detailed"
   eList.append(e)
 
-k = korali.initialize()
+k = korali.Engine()
 k["Conduit"]["Type"] = "Concurrent"
 k["Conduit"]["Concurrent Jobs"] = 4
 

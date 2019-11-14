@@ -4,13 +4,13 @@ import sys
 sys.path.append("model")
 from runModel import *
 
-k = korali.initialize()
+k = korali.Engine()
 
 if (len(sys.argv) != 2):
  print('Error: this example requires the number of concurrent jobs passed as numerical argument.\n')
  exit(-1)
 
-e = korali.newExperiment()
+e = korali.Experiment()
 
 e["Problem"]["Type"] = "Evaluation/Direct/Basic";
 e["Problem"]["Objective"] = "Maximize"

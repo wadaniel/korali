@@ -1,5 +1,4 @@
 #include "problem/evaluation/bayesian/inference/approximate/approximate.hpp"
-#include "engine/engine.hpp"
 
 void korali::problem::evaluation::bayesian::inference::Approximate::initialize()
 {

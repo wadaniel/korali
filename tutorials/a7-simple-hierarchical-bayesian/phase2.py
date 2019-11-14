@@ -6,7 +6,7 @@ import os
 import korali
 
 # Creating hierarchical Bayesian problem from previous two problems
-e = korali.newExperiment()
+e = korali.Experiment()
 
 e["Problem"]["Type"]  = "Evaluation/Bayesian/Hierarchical/Psi"
 e["Problem"]["Sub Problems"] = ['setup/results_phase_1/' + str(i).zfill(3) for i in range(5)]
@@ -66,7 +66,7 @@ e["Verbosity"] = "Detailed"
 e["Result Path"] = "setup/results_phase_2/"
 
 # Starting Korali's Engine and running experiment
-k = korali.initialize()
+k = korali.Engine()
 k["Conduit"]["Type"] = "Concurrent"
 k["Conduit"]["Concurrent Jobs"] = 4
 k.run(e)

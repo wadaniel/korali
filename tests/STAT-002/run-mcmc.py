@@ -10,7 +10,7 @@ from helpers import *
 
 # Starting Korali's Engine
 import korali
-e = korali.newExperiment()
+e = korali.Experiment()
 e["Result Path"] = "_result_run-mcmc"
 
 # Selecting problem and solver types.
@@ -31,7 +31,7 @@ e["Solver"]["Use Adaptive Sampling"] = True
 e["Solver"]["Termination Criteria"]["Max Samples"] = 10000
 
 # Running Korali
-k = korali.initialize()
+k = korali.Engine()
 k.run(e)
 
 compareMean(e)

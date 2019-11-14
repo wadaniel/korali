@@ -12,8 +12,8 @@ fileName = '_executor_output/samplesOut.dat'
 prepareFile(fileName)
 
 import korali
-k = korali.initialize()
-e = korali.newExperiment()
+k = korali.Engine()
+e = korali.Experiment()
 
 e["Problem"]["Type"] = "Execution/Model"
 e["Problem"]["Execution Model"] = lambda modelData: put_normal_rnds(modelData, Ns, fileName)

@@ -8,7 +8,7 @@
 
 namespace korali {
 
-class Engine;
+class Experiment;
 
 class Module
 {
@@ -16,7 +16,7 @@ class Module
 
   std::string _type;
   std::vector<std::string> _terminationCriteria;
-  korali::Engine* _k;
+  korali::Experiment* _k;
 
   Module* getModule(nlohmann::json& js);
 

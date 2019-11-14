@@ -12,13 +12,13 @@ sys.path.append('model')
 from model import *
 
 import korali
-k = korali.initialize()
+k = korali.Engine()
 
 # Creating experiment list
 eList = []
 
 for i in range(8):
- e = korali.newExperiment()
+ e = korali.Experiment()
 
  e["Problem"]["Type"] = "Evaluation/Direct/Basic"
  e["Problem"]["Objective"] = "Maximize"

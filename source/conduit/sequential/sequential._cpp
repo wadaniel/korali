@@ -1,5 +1,5 @@
 #include "conduit/sequential/sequential.hpp"
-#include "engine/engine.hpp"
+#include "experiment/experiment.hpp"
 #include "problem/problem.hpp"
 #include "solver/solver.hpp"
 
@@ -10,11 +10,11 @@ void korali::conduit::Sequential::processSample(korali::Sample& sample)
  js["Start Time"] = std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
 
  size_t experimentId = sample["Experiment Id"];
- _engineVector[experimentId]->_problem->runOperation(sample["Operation"], sample);
+ _experimentVector[experimentId]->_problem->runOperation(sample["Operation"], sample);
 
  js["End Time"] = std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
- js["Current Generation"] = _currentEngine->_currentGeneration;
- js["Solver Id"] = _currentEngine->_engineId;
+ js["Current Generation"] = _currentExperiment->_currentGeneration;
+ js["Solver Id"] = _currentExperiment->_experimentId;
  __profiler["Timelines"]["Worker 0"] += js;
 }
 

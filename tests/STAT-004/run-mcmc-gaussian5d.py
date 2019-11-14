@@ -12,8 +12,8 @@ lg5 = lambda x : lgaussianxd( x, 5 )
 
 # Starting Korali's Engine
 import korali
-k = korali.initialize()
-e = korali.newExperiment()
+k = korali.Engine()
+e = korali.Experiment()
 
 e["Result Path"] = "_result_run-mcmc"
 

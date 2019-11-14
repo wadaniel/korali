@@ -9,7 +9,7 @@ import korali
 # Creating Experiment List
 eList = []
 for i in range(5):
-  e = korali.newExperiment()
+  e = korali.Experiment()
   
   e["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Approximate"
   e["Problem"]["Likelihood Model"] = "Normal"
@@ -45,7 +45,7 @@ for i in range(5):
   eList.append(e)
 
 # Starting Korali's Engine and running experiment
-k = korali.initialize()
+k = korali.Engine()
 k["Conduit"]["Type"] = "Concurrent"
 k["Conduit"]["Concurrent Jobs"] = 4
 k.run(eList)

@@ -11,10 +11,10 @@ from model import *
 
 # Starting Korali's Engine
 import korali
-k = korali.initialize()
+k = korali.Engine()
 
 # Creating new experiment
-e = korali.newExperiment()
+e = korali.Experiment()
 
 # Configuring Problem
 e["Problem"]["Type"] = "Evaluation/Direct/Basic"

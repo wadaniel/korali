@@ -1,5 +1,5 @@
 #include "distribution/distribution.hpp"
-#include "engine/engine.hpp"
+#include "experiment/experiment.hpp"
 
 void korali::Distribution::initialize()
 {

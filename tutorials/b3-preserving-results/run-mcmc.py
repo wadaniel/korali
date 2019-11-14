@@ -11,8 +11,8 @@ from model import *
 
 # Starting Korali's Engine
 import korali
-k = korali.initialize()
-e = korali.newExperiment()
+k = korali.Engine()
+e = korali.Experiment()
 
 # Selecting problem and solver types.
 e["Problem"]["Type"] = "Evaluation/Direct/Basic"

@@ -2,7 +2,7 @@
 #define _KORALI_CONDUIT_HPP_
 
 #include "module.hpp"
-#include "engine/engine.hpp"
+#include "experiment/experiment.hpp"
 #include "solver/solver.hpp"
 #include <vector>
 #include <chrono>

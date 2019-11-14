@@ -11,7 +11,7 @@ from model import *
 
 # Creating new experiment
 import korali
-e = korali.newExperiment()
+e = korali.Experiment()
 
 # Setting up the reference likelihood for the Bayesian Problem
 e["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Reference"
@@ -64,5 +64,5 @@ e["Save Frequency"] = 5
 e["Console Frequency"] = 5
 
 # Starting Korali's Engine and running experiment
-k = korali.initialize()
+k = korali.Engine()
 k.run(e)

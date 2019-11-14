@@ -85,8 +85,8 @@ e["Solver"]["Default Burn In"] = 3;
 e["Solver"]["Target Coefficient Of Variation"] = 0.6
 e["Solver"]["Covariance Scaling"] = 0.01
 
-e["Verbosity"] = "Detailed"
-e["Result Path"] = "setup/results_phase_2/"
+e["Console"]["Verbosity"] = "Detailed"
+e["Results"]["Path"] = "setup/results_phase_2/"
 
 # Starting Korali's Engine and running experiment
 k = korali.Engine()

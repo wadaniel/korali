@@ -2,40 +2,10 @@
  "Configuration Settings": 
  [
    {
-    "Name": ["Save Frequency" ],
-    "Type": "size_t",
-    "Default": "1",
-    "Description": "Specifies how often (in generations) will partial result files be saved on the results directory. The default, 1, indicates that every generation's results will be saved."
-   },
-   {
-    "Name": ["Console Frequency" ],
-    "Type": "size_t",
-    "Default": "1",
-    "Description": "Specifies how often (in generations) will partial results be printed on console. The default, 1, indicates that every generation's results will be printed."
-   },
-   {
-    "Name": ["Random Seed" ],
+    "Name": [ "Random Seed" ],
     "Type": "size_t", 
     "Default": "_runID",
     "Description": "Specifies the initializing seed for the generation of random numbers. If 0 is specified, Korali will automatically derivate a new seed base on the current time."
-   },
-   {
-    "Name": ["Result Path"],
-    "Type": "std::string",
-    "Default": "_korali_result",
-    "Description": "Specifies the path of the results directory."
-   },
-   {
-    "Name": ["Verbosity"],
-    "Type": "std::string",
-    "Default": "Normal",
-    "Options": [
-                { "Value": "Silent", "Description": "Prints no information to console, except in case of errors." },
-                { "Value": "Minimal", "Description": "Prints minimal information about the progress of the engine." },
-                { "Value": "Normal", "Description": "Prints information about the progress of the engine, plus information on the solver/problem." },
-                { "Value": "Detailed", "Description": "Prints detailed information about the progress of the engine, plus detailed information on the solver/problem." }
-               ],
-    "Description": "Specifies how much information will be displayed on console when running Korali."
    },
    {
     "Name": [ "Distributions" ],
@@ -56,6 +26,36 @@
     "Name": [ "Solver" ],
     "Type": "korali::Solver*",
     "Description": "Represents the state and configuration of the solver algorithm."
+   },
+   {
+    "Name": [ "Results", "Frequency"],
+    "Type": "size_t",
+    "Default": "1",
+    "Description": "Specifies how often (in generations) will partial result files be saved on the results directory. The default, 1, indicates that every generation's results will be saved."
+   },
+   {
+    "Name": [ "Results", "Path" ],
+    "Type": "std::string",
+    "Default": "_korali_result",
+    "Description": "Specifies the path of the results directory."
+   },
+   {
+    "Name": [ "Console", "Verbosity" ],
+    "Type": "std::string",
+    "Default": "Normal",
+    "Options": [
+                { "Value": "Silent", "Description": "Prints no information to console, except in case of errors." },
+                { "Value": "Minimal", "Description": "Prints minimal information about the progress of the engine." },
+                { "Value": "Normal", "Description": "Prints information about the progress of the engine, plus information on the solver/problem." },
+                { "Value": "Detailed", "Description": "Prints detailed information about the progress of the engine, plus detailed information on the solver/problem." }
+               ],
+    "Description": "Specifies how much information will be displayed on console when running Korali."
+   },
+   {
+    "Name": [ "Console", "Frequency" ],
+    "Type": "size_t",
+    "Default": "1",
+    "Description": "Specifies how often (in generations) will partial results be printed on console. The default, 1, indicates that every generation's results will be printed."
    }
  ],
  

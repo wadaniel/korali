@@ -20,8 +20,8 @@ e["Solver"]["Termination Criteria"]["Max Generations"] = 30
 e["Solver"]["Default Burn In"] = 1;
 e["Solver"]["Target Coefficient Of Variation"] = 0.6
 
-e["Verbosity"] = "Detailed"
-e["Result Path"] = "setup/results_phase_3b/"
+e["Console"]["Verbosity"] = "Detailed"
+e["Results"]["Path"] = "setup/results_phase_3b/"
 
 # Starting Korali's Engine and running experiment
 k = korali.Engine()

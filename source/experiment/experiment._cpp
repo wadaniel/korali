@@ -51,8 +51,8 @@ void korali::Experiment::run()
     korali::logInfo("Detailed", "Experiment: %lu - Generation Time: %.3fs\n", _experimentId, std::chrono::duration<double>(t1-t0).count());
    }
 
-   if (_saveFrequency > 0)
-   if (_currentGeneration % _saveFrequency == 0) saveState();
+   if (_resultsFrequency > 0)
+   if (_currentGeneration % _resultsFrequency == 0) saveState();
 
    _currentGeneration++;
   }
@@ -80,18 +80,18 @@ void korali::Experiment::saveState()
  char genFileName[256];
  sprintf(genFileName, "gen%08lu.json", _currentGeneration);
 
- if (! korali::dirExists(_resultPath))  korali::mkdir(_resultPath);
+ if (! korali::dirExists(_resultsPath))  korali::mkdir(_resultsPath);
 
  // Getting configuration
  _timestamp = getTimestamp();
  getConfiguration(_js.getJson());
- std::string fileName = "./" + _resultPath + "/" + genFileName;
+ std::string fileName = "./" + _resultsPath + "/" + genFileName;
  korali::JsonInterface::saveJsonToFile(fileName.c_str(), _js.getJson());
 }
 
 bool korali::Experiment::loadState()
 {
-  std::string path = _js["Result Path"];
+  std::string path = _js["Results"]["Path"];
   return loadState(path);
 }
 
@@ -146,7 +146,7 @@ korali::Experiment::Experiment()
 {
  _js["Internal"]["Run ID"] = korali::getTimehash();
  _js["Internal"]["Current Generation"] = 0;
- _js["Result Path"] = "_korali_result";
+ _js["Results"]["Path"] = "_korali_result";
  _k = this;
 }
 

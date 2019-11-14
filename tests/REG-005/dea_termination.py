@@ -30,7 +30,6 @@ def run_dea_with_termination_criterion(criterion, value):
     e["Solver"]["Population Size"] = 10
     e["Solver"]["Termination Criteria"][criterion] = value
 
-    e["Save Frequency"] = 1000
     e["Random Seed"] = 1337
 
     k = korali.Engine()

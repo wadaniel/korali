@@ -14,7 +14,7 @@ import korali
 k = korali.Engine()
 e = korali.Experiment()
 
-e["Result Path"] = "_result_run-tmcmc"
+e["Results"]["Path"] = "_result_run-tmcmc"
 
 # Setting up custom likelihood for the Bayesian Problem
 e["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Custom"
@@ -23,7 +23,6 @@ e["Problem"]["Likelihood Model"] = lgaussianCustom
 # Configuring TMCMC parameters
 e["Solver"]["Type"] = "Sampler/TMCMC"
 e["Solver"]["Population Size"] = 20000
-
 
 # Configuring the problem's random distributions
 e["Distributions"][0]["Name"] = "Uniform 0"

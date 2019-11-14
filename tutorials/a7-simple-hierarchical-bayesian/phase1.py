@@ -40,8 +40,8 @@ for i in range(5):
   e["Solver"]["Covariance Scaling"] = 0.02
   e["Solver"]["Default Burn In"] = 0;
   
-  e["Result Path"] = "setup/results_phase_1/" + str(i).zfill(3)
-  e["Verbosity"] = "Detailed"
+  e["Results"]["Path"] = "setup/results_phase_1/" + str(i).zfill(3)
+  e["Console"]["Verbosity"] = "Detailed"
   eList.append(e)
 
 # Starting Korali's Engine and running experiment

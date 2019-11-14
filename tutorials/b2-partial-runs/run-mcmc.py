@@ -26,8 +26,8 @@ e["Variables"][0]["Name"] = "X"
 e["Variables"][0]["Initial Mean"] = 0.0
 e["Variables"][0]["Initial Standard Deviation"] = 1.0
 
-e["Console Frequency"] = 500
-e["Save Frequency"] = 500
+e["Console"]["Frequency"] = 500
+e["Results"]["Frequency"] = 500
 
 print("\n-------------------------------------------------------------")
 print("Running first 1000 samples...")

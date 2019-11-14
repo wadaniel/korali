@@ -14,7 +14,7 @@ k = korali.Engine()
 e = korali.Experiment()
 
 e["Random Seed"] = 0xC0FFEE
-e["Result Path"] = "_result_run-tmcmc2"
+e["Results"]["Path"] = "_result_run-tmcmc2"
 
 # Configuring problem
 e["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Custom"

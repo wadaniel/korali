@@ -13,9 +13,9 @@ import korali
 k = korali.Engine()
 e = korali.Experiment()
 
-e["Result Path"] = "_result_run-mcmc"
-e["Console Frequency"] = 5000
-e["Save Frequency"] = 5000
+e["Results"]["Path"] = "_result_run-mcmc"
+e["Results"]["Frequency"] = 5000
+e["Console"]["Frequency"] = 5000
 
 # Selecting problem and solver types.
 e["Problem"]["Type"] = "Evaluation/Direct/Basic"

@@ -64,7 +64,7 @@ for i in range(8):
   e["Variables"][2]["Initial Standard Deviation"] = +0.5
  
   # Setting distinct experiment paths
-  e["Result Path"] = '_korali_multiple/exp' + str(i)
+  e["Results"]["Path"] = '_korali_multiple/exp' + str(i)
  
   # Adding Experiment to vector
   eList.append(e)

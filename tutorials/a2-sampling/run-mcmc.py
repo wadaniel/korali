@@ -29,9 +29,9 @@ e["Variables"][0]["Initial Mean"] = 0.0
 e["Variables"][0]["Initial Standard Deviation"] = 1.0
 
 # Configuring output settings
-e["Save Frequency"] = 500
-e["Console Frequency"] = 500
-e["Verbosity"] = "Detailed"
+e["Results"]["Frequency"] = 500
+e["Console"]["Frequency"] = 500
+e["Console"]["Verbosity"] = "Detailed"
 
 # Starting Korali's Engine and running experiment
 k = korali.Engine()

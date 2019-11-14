@@ -46,8 +46,8 @@ e["Solver"]["Covariance Scaling"] = 0.02
 e["Solver"]["Default Burn In"] = 1;
 e["Solver"]["Max Chain Length"] = 1;
 
-e["Verbosity"] = "Detailed"
-e["Result Path"] = "setup/results_phase_3a/"
+e["Console"]["Verbosity"] = "Detailed"
+e["Results"]["Path"] = "setup/results_phase_3a/"
 
 # Starting Korali's Engine and running experiment
 k = korali.Engine()

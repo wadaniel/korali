@@ -31,7 +31,7 @@ e["Variables"][1]["Name"] = "Variance"
 e["Variables"][1]["Loaded Values"] = variances
 e["Solver"]["Type"] = "Executor"
 e["Solver"]["Executions Per Generation"] = 1
-e["Verbosity"] = "Detailed"
+e["Console"]["Verbosity"] = "Detailed"
 
 # Starting Korali's Engine and running experiment
 k = korali.Engine()

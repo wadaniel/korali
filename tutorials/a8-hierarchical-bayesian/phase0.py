@@ -23,8 +23,8 @@ e["Variables"][2]["Loaded Values"] = np.random.lognormal( 0, 0.5, N ).tolist()
 e["Variables"][3]["Loaded Values"] = (5*np.ones(N)).tolist()
 
 e["Solver"]["Type"] = "Executor"
-e["Result Path"] = "setup/results_phase_0/"
-e["Verbosity"] = "Detailed"
+e["Results"]["Path"] = "setup/results_phase_0/"
+e["Console"]["Verbosity"] = "Detailed"
 
 # Starting Korali's Engine and running experiment
 k = korali.Engine()

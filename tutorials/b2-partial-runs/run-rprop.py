@@ -26,7 +26,7 @@ e["Solver"]["Termination Criteria"]['Parameter Relative Tolerance'] = 1e-8;
 e["Variables"][0]["Name"] = "X"
 e["Variables"][0]["Initial Value"] = -10.
 
-e["Console Frequency"] = 10
+e["Console"]["Frequency"] = 10
 
 print("\n-------------------------------------------------------------")
 print("Running first 25 generations...")

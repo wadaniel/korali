@@ -33,8 +33,8 @@ e["Solver"]["Burn In"] = 500
 e["Solver"]["Termination Criteria"]["Max Samples"] = 5000
 
 # Configuring output frequency
-e["Console Frequency"] = 500
-e["Save Frequency"] = 500
+e["Console"]["Frequency"] = 500
+e["Results"]["Frequency"] = 500
 
 # Running Korali
 k.run(e)

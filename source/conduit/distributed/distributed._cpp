@@ -1,4 +1,4 @@
-#include "conduit/MPI/MPI.hpp"
+#include "conduit/distributed/distributed.hpp"
 #include "engine/engine.hpp"
 #include "problem/problem.hpp"
 #include "solver/solver.hpp"
@@ -13,7 +13,7 @@ MPI_Comm getKoraliMPIComm() { return __KoraliTeamComm; }
 long int getKoraliMPICommPointer() { return (long int)(&__KoraliTeamComm); }
 #endif
 
-void korali::conduit::MPI::initialize()
+void korali::conduit::Distributed::initialize()
 {
  korali::Conduit::initialize();
 
@@ -30,16 +30,16 @@ void korali::conduit::MPI::initialize()
  #endif
 
  #ifndef _KORALI_USE_MPI
-  korali::logError("Running an MPI-based Korali application, but Korali was installed without support for MPI.\n");
+  korali::logError("Running an Distributed-based Korali application, but Korali was installed without support for Distributed.\n");
  #endif
 
  #ifdef _KORALI_USE_MPI
  MPI_Barrier(MPI_COMM_WORLD);
  _continueEvaluations = true;
 
- if (_rankCount == 1) korali::logError("Korali MPI applications require at least 2 MPI ranks to run.\n");
+ if (_rankCount == 1) korali::logError("Korali Distributed applications require at least 2 Distributed ranks to run.\n");
 
- _teamCount = (_rankCount-1) / _ranksPerTeam;
+ _teamCount = (_rankCount-1) / _workersPerTeam;
  _teamId = -1;
  _localRankId = -1;
 
@@ -47,7 +47,7 @@ void korali::conduit::MPI::initialize()
  for (int i = 0; i < _teamCount; i++)
  {
   _teamQueue.push(i);
-  for (int j = 0; j < _ranksPerTeam; j++)
+  for (int j = 0; j < _workersPerTeam; j++)
   {
    if (currentRank == _rankId)
    {
@@ -63,8 +63,8 @@ void korali::conduit::MPI::initialize()
  int mpiSize = -1;
  MPI_Comm_size(MPI_COMM_WORLD, &mpiSize);
 
- if(isRoot()) if (_rankCount < _ranksPerTeam + 1)
- korali::logError("You are running Korali with %d ranks. However, you need at least %d ranks to have at least one worker team. \n", _rankCount, _ranksPerTeam + 1 );
+ if(isRoot()) if (_rankCount < _workersPerTeam + 1)
+ korali::logError("You are running Korali with %d ranks. However, you need at least %d ranks to have at least one worker team. \n", _rankCount, _workersPerTeam + 1 );
 
  MPI_Barrier(MPI_COMM_WORLD);
 
@@ -73,7 +73,7 @@ void korali::conduit::MPI::initialize()
 }
 
 
-void korali::conduit::MPI::finalize()
+void korali::conduit::Distributed::finalize()
 {
  #ifdef _KORALI_USE_MPI
  size_t endSignal = 0;
@@ -81,7 +81,7 @@ void korali::conduit::MPI::finalize()
  if (isRoot())
  {
   for (int i = 0; i < _teamCount; i++)
-   for (int j = 0; j < _ranksPerTeam; j++)
+   for (int j = 0; j < _workersPerTeam; j++)
     MPI_Send(&endSignal, 1, MPI_UNSIGNED_LONG, _teamWorkers[i][j], MPI_TAG_SAMPLE_JSON_SIZE, MPI_COMM_WORLD);
  }
 
@@ -91,7 +91,7 @@ void korali::conduit::MPI::finalize()
  korali::Conduit::finalize();
 }
 
-void korali::conduit::MPI::workerThread()
+void korali::conduit::Distributed::workerThread()
 {
  #ifdef _KORALI_USE_MPI
  if (_teamId == -1) return;
@@ -127,7 +127,7 @@ void korali::conduit::MPI::workerThread()
  #endif
 }
 
-void korali::conduit::MPI::processSample(korali::Sample& sample)
+void korali::conduit::Distributed::processSample(korali::Sample& sample)
 {
  #ifdef _KORALI_USE_MPI
  while (_teamQueue.empty())
@@ -140,7 +140,7 @@ void korali::conduit::MPI::processSample(korali::Sample& sample)
  std::string sampleJsonString = sample._js.getJson().dump();
  size_t sampleJsonSize = sampleJsonString.size();
 
- for (int i = 0; i < _ranksPerTeam; i++)
+ for (int i = 0; i < _workersPerTeam; i++)
  {
   int workerId = _teamWorkers[teamId][i];
   MPI_Send(&sampleJsonSize, 1, MPI_UNSIGNED_LONG, workerId, MPI_TAG_SAMPLE_JSON_SIZE, MPI_COMM_WORLD);
@@ -181,7 +181,7 @@ void korali::conduit::MPI::processSample(korali::Sample& sample)
  #endif
 }
 
-int korali::conduit::MPI::getRootRank()
+int korali::conduit::Distributed::getRootRank()
 {
  #ifdef _KORALI_USE_MPI
  return _rankCount-1;
@@ -190,7 +190,7 @@ int korali::conduit::MPI::getRootRank()
  return 0;
 }
 
-bool korali::conduit::MPI::isRoot()
+bool korali::conduit::Distributed::isRoot()
 {
  #ifdef _KORALI_USE_MPI
  return _rankId == getRootRank();
@@ -199,7 +199,7 @@ bool korali::conduit::MPI::isRoot()
  return true;
 }
 
-void korali::conduit::MPI::abort()
+void korali::conduit::Distributed::abort()
 {
  #ifdef _KORALI_USE_MPI
  MPI_Abort(MPI_COMM_WORLD, -1);

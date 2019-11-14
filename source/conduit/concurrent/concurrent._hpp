@@ -11,7 +11,7 @@
 
 namespace korali { namespace conduit {
 
-class External : public korali::Conduit {
+class Concurrent : public korali::Conduit {
 
  private:
 

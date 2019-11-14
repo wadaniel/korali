@@ -1,4 +1,4 @@
-#include "conduit/external/external.hpp"
+#include "conduit/concurrent/concurrent.hpp"
 #include "engine/engine.hpp"
 #include "problem/problem.hpp"
 #include "solver/solver.hpp"
@@ -6,7 +6,7 @@
 #include <sys/types.h>
 #include <fcntl.h>
 
-void korali::conduit::External::initialize()
+void korali::conduit::Concurrent::initialize()
 {
  korali::Conduit::initialize();
 
@@ -31,7 +31,7 @@ void korali::conduit::External::initialize()
  }
 }
 
-void korali::conduit::External::finalize()
+void korali::conduit::Concurrent::finalize()
 {
  for(int i = 0; i < _concurrentJobs; i++)
  {
@@ -57,7 +57,7 @@ void korali::conduit::External::finalize()
  korali::Conduit::finalize();
 }
 
-void korali::conduit::External::worker(int workerId)
+void korali::conduit::Concurrent::worker(int workerId)
 {
  while(true)
  {
@@ -84,7 +84,7 @@ void korali::conduit::External::worker(int workerId)
  }
 }
 
-void korali::conduit::External::processSample(korali::Sample& sample)
+void korali::conduit::Concurrent::processSample(korali::Sample& sample)
 {
  while (_launcherQueue.empty())
  {

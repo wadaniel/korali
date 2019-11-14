@@ -15,7 +15,7 @@ void korali::Korali::run()
  korali::setConsoleOutputFile(stdout);
  korali::setVerbosityLevel("Minimal");
 
- if (! korali::JsonInterface::isDefined(_js.getJson(), "['Conduit']['Type']")) _js["Conduit"]["Type"] = "Simple";
+ if (! korali::JsonInterface::isDefined(_js.getJson(), "['Conduit']['Type']")) _js["Conduit"]["Type"] = "Sequential";
  if (! korali::JsonInterface::isDefined(_js.getJson(), "['Dry Run']")) _js["Dry Run"] = false;
 
  for (size_t i = 0; i < _engineVector.size(); i++)

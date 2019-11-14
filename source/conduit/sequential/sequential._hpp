@@ -6,7 +6,7 @@
 
 namespace korali { namespace conduit {
 
-class Simple : public korali::Conduit
+class Sequential : public korali::Conduit
 {
  private:
 

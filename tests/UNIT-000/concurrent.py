@@ -37,7 +37,7 @@ e["Variables"][3]["Lower Bound"] = -32.0;
 e["Variables"][3]["Upper Bound"] = +32.0;
 e["Random Seed"] = 0xC0FFEE
 
-k["Conduit"]["Type"] = "External"
+k["Conduit"]["Type"] = "Concurrent"
 k["Conduit"]["Concurrent Jobs"] = int(sys.argv[1])
 
 k.run(e)

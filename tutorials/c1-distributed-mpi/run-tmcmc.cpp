@@ -83,8 +83,8 @@ int main(int argc, char* argv[])
  auto k = korali::Korali();
  if (argc != 2) { printf("Error: this example requires 'Ranks Per Team' passed as argument.\n"); exit(-1); }
 
- k["Conduit"]["Type"] = "MPI";
- k["Conduit"]["Ranks Per Team"] = atoi(argv[1]);
+ k["Conduit"]["Type"] = "Distributed";
+ k["Conduit"]["Workers Per Team"] = atoi(argv[1]);
 
  // Running First 3 generations
  k.run(e);

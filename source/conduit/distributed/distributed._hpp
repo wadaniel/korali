@@ -15,7 +15,7 @@
 
 namespace korali { namespace conduit {
 
-class MPI : public korali::Conduit
+class Distributed : public korali::Conduit
 {
 
  private:

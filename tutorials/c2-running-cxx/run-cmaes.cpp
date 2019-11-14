@@ -60,7 +60,6 @@ int main(int argc, char* argv[])
  e["Variables"][3]["Initial Mean"] = 10.0;
  e["Variables"][3]["Initial Standard Deviation"] = 1.0;
 
- k["Conduit"]["Type"] = "Simple";
  k.run(e);
 
  return 0;

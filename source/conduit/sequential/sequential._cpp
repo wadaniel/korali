@@ -1,10 +1,10 @@
-#include "conduit/simple/simple.hpp"
+#include "conduit/sequential/sequential.hpp"
 #include "engine/engine.hpp"
 #include "problem/problem.hpp"
 #include "solver/solver.hpp"
 
 
-void korali::conduit::Simple::processSample(korali::Sample& sample)
+void korali::conduit::Sequential::processSample(korali::Sample& sample)
 {
  auto js = nlohmann::json();
  js["Start Time"] = std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();

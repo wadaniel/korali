@@ -2,7 +2,7 @@
 #include "conduit/conduit.hpp"
 #include "solver/solver.hpp"
 #include "problem/problem.hpp"
-#include "conduit/MPI/MPI.hpp"
+#include "conduit/distributed/distributed.hpp"
 #include "auxiliar/py2json.hpp"
 #include "auxiliar/fs.hpp"
 #include <chrono>

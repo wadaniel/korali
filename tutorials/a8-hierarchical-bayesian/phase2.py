@@ -90,7 +90,7 @@ e["Result Path"] = "setup/results_phase_2/"
 
 # Starting Korali's Engine and running experiment
 k = korali.initialize()
-k["Conduit"]["Type"] = "External"
+k["Conduit"]["Type"] = "Concurrent"
 k["Conduit"]["Concurrent Jobs"] = 4
 k.run(e)
 

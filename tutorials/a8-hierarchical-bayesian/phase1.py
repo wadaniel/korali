@@ -64,7 +64,7 @@ for i in range(5):
   eList.append(e)
 
 k = korali.initialize()
-k["Conduit"]["Type"] = "External"
+k["Conduit"]["Type"] = "Concurrent"
 k["Conduit"]["Concurrent Jobs"] = 4
 
 k.run(eList)

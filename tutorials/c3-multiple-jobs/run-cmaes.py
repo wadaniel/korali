@@ -69,7 +69,7 @@ for i in range(8):
   # Adding Experiment to vector
   eList.append(e)
 
-k["Conduit"]["Type"] = "External"
+k["Conduit"]["Type"] = "Concurrent"
 k["Conduit"]["Concurrent Jobs"] = 8 
 
 # Running first 100 generations

@@ -78,10 +78,7 @@ int main(int argc, char* argv[])
  e["Solver"]["Type"] = "Sampler/TMCMC";
  e["Solver"]["Covariance Scaling"] = 0.02;
  e["Solver"]["Population Size"] = 100;
- e["Solver"]["Termination Criteria"]["Max Generations"] = 20;
- e["Solver"]["Termination Criteria"]["Generations Per Run"] = 3;
-
- e["Resume Previous"] = true;
+ e["Solver"]["Termination Criteria"]["Max Generations"] = 3;
 
  auto k = korali::Korali();
  if (argc != 2) { printf("Error: this example requires 'Ranks Per Team' passed as argument.\n"); exit(-1); }
@@ -93,6 +90,7 @@ int main(int argc, char* argv[])
  k.run(e);
 
  // Running Last 3 generations
+ e["Solver"]["Termination Criteria"]["Max Generations"] = 6;
  k.run(e);
 
  return 0;

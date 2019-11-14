@@ -26,12 +26,6 @@
     "Description": "Specifies the path of the results directory."
    },
    {
-    "Name": ["Resume Previous"],
-    "Type": "bool",
-    "Default": "false",
-    "Description": "Specifies whether Korali should continue executing from previous results, if any (true) or always start a new execution (false)."
-   },
-   {
     "Name": ["Verbosity"],
     "Type": "std::string",
     "Default": "Normal",
@@ -81,11 +75,6 @@
     "Type": "size_t",
     "Default": "0",
     "Description": "Indicates the current generation in execution."
-   },
-   {
-    "Name": [ "Starting Generation" ],
-    "Type": "size_t",
-    "Description": "Indicates the starting generation to execute from."
    },
    {
     "Name": [ "Is Finished" ],

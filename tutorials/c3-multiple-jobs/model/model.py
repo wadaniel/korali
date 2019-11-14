@@ -1,20 +1,31 @@
 #!/usr/bin/env python
 
-# Single function evaluation
-def model(p):
-  x = p["Parameters"][0]
-  modifier = p["Experiment Id"] + 5 
-  for x in range (100000):
-   p["Evaluation"] = -0.5*x*x*modifier
+# This is a linear regression model with two params (slope and intercept)
 
-# Function and Gradient function evaluation
-def model_with_gradient(p):
-  X = p["Parameters"];
-  gradient = [];
-  evaluation = 0
-  for x in X:
-    evaluation  += -0.5*x*x
-    gradient.append( -x )
+def model( s, x ): 
+  v1 = s["Parameters"][0]
+  v2 = s["Parameters"][1]
+  
+  result = [ ]
+  for i in range(len(x)):
+    result.append(v1*x[i] + v2)
 
-  p["Evaluation"] = evaluation
-  p["Gradient"]   = gradient;
+  s["Reference Evaluations"] = result
+
+def getReferenceData():
+ y=[]
+ y.append(3.2069);
+ y.append(4.1454);
+ y.append(4.9393);
+ y.append(6.0588);
+ y.append(6.8425);
+ return y
+
+def getReferencePoints():
+ x=[] 
+ x.append(1.0);
+ x.append(2.0);
+ x.append(3.0);
+ x.append(4.0);
+ x.append(5.0);
+ return x

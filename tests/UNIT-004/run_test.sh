@@ -18,9 +18,12 @@ for file in *.py
 do
   if [ ! -f $file ]; then continue; fi
 
-  logEcho "  + Running File: $file"
-  ./$file >> $logFile 2>&1
-  check_result
+  for i in $(seq 1 5)
+  do
+   logEcho "  + Running File: $file"
+   ./$file >> $logFile 2>&1
+   check_result
+  done
 done
 
 logEcho "-------------------------------------"

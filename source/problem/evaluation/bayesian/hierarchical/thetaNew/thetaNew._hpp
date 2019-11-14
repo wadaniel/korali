@@ -10,7 +10,7 @@ class ThetaNew : public korali::problem::evaluation::bayesian::Hierarchical
 {
  private:
 
- korali::Engine* _psiEngine;
+ korali::Engine _psiProblemEngine;
  size_t _psiProblemSampleCount;
 
  std::vector<std::vector<double>> _psiProblemSampleCoordinates;

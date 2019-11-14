@@ -41,9 +41,6 @@ void korali::Korali::run()
  // If this is a worker process (not root), there's nothing else to do
  if (_conduit->isRoot())
  {
-  // Saving initial configuration if first time to run
-  for (size_t i = 0; i < _engineVector.size(); i++) if(_engineVector[i]->_currentGeneration == 0) _engineVector[i]->saveConfig();
-
   // If this is a dry run and configuration succeeded, print sucess and return
   bool isDryRun = _js["Dry Run"];
   if (isDryRun)
@@ -102,7 +99,7 @@ void korali::Korali::run(korali::Engine& engine)
 void korali::Korali::run(std::vector<korali::Engine>& engines)
 {
  _engineVector.clear();
- for (size_t i = 0; i < engines.size(); i++) _engineVector.push_back(&engines[i]);
+ for (size_t i = 0; i < engines.size(); i++) _engineVector.push_back(engines[i]._k);
  run();
 }
 
@@ -140,6 +137,7 @@ PYBIND11_MODULE(libkorali, m)
     #endif
    .def("__getitem__", pybind11::overload_cast<pybind11::object>(&korali::Engine::getItem), pybind11::return_value_policy::reference)
    .def("__setitem__", pybind11::overload_cast<pybind11::object, pybind11::object>(&korali::Engine::setItem), pybind11::return_value_policy::reference)
-   .def("loadConfig",     &korali::Engine::loadConfig, pybind11::return_value_policy::reference);
+   .def("loadState",   pybind11::overload_cast<std::string>(&korali::Engine::loadState))
+   .def("loadState",   pybind11::overload_cast<>(&korali::Engine::loadState));
 }
 

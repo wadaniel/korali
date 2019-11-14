@@ -21,17 +21,14 @@ e["Problem"]["Objective Function"] = model
 
 e["Solver"]["Type"]  = "Optimizer/DEA"
 e["Solver"]["Population Size"] = 10
-e["Solver"]["Termination Criteria"]["Max Generations"] = 100
-e["Solver"]["Termination Criteria"]["Generations Per Run"] = 50
+e["Solver"]["Termination Criteria"]["Max Generations"] = 50
 
 e["Variables"][0]["Name"] = "X"
 e["Variables"][0]["Lower Bound"] = -10.0
 e["Variables"][0]["Upper Bound"] = +10.0
 
-e["Result Path"] = '_result_run-dea'
 e["Console Frequency"] = 5
 e["Save Frequency"] = 5
-e["Resume Previous"] = True
 
 print('------------------------------------------------------')
 print('Now running first 50 generations...')
@@ -43,4 +40,5 @@ print('------------------------------------------------------')
 print('Now running last 50 generations...')
 print('------------------------------------------------------')
 
+e["Solver"]["Termination Criteria"]["Max Generations"] = 100
 k.run(e)

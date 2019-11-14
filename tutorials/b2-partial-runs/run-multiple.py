@@ -26,8 +26,7 @@ for i in range(8):
 
  e["Solver"]["Type"] = "Optimizer/CMAES"
  e["Solver"]["Population Size"] = 5
- e["Solver"]["Termination Criteria"]["Max Generations"] = 50
- e["Solver"]["Termination Criteria"]["Generations Per Run"] = 25
+ e["Solver"]["Termination Criteria"]["Max Generations"] = 25
 
  e["Variables"][0]["Name"] = "X"
  e["Variables"][0]["Lower Bound"] = -10.0
@@ -35,7 +34,6 @@ for i in range(8):
 
  e["Result Path"] = '_result_run-multiple/exp' + str(i)
  e["Console Frequency"] = 10
- e["Resume Previous"] = True
  eList.append(e)
 
 print('------------------------------------------------------')
@@ -48,4 +46,5 @@ print('------------------------------------------------------')
 print('Now running last 25 generations...')
 print('------------------------------------------------------')
 
+for e in eList: e["Solver"]["Termination Criteria"]["Max Generations"] = 50 
 k.run(eList)

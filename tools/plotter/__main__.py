@@ -28,7 +28,7 @@ def main(path, allFiles, live, generation, mean, check, test):
 
  signal.signal(signal.SIGINT, lambda x, y: exit(0))
 
- configFile = path + '/config.json'
+ configFile = path + '/gen00000000.json'
  if ( not os.path.isfile(configFile) ):
   print("[Korali] Error: Did not find any results in the {0} folder...".format(path))
   exit(-1)

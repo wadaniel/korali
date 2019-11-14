@@ -20,17 +20,14 @@ e["Problem"]["Objective Function"] = model
 
 e["Solver"]["Type"]  = "Sampler/MCMC"
 e["Solver"]["Burn In"] = 500
-e["Solver"]["Termination Criteria"]["Max Samples"] = 2000
-e["Solver"]["Termination Criteria"]["Generations Per Run"] = 1000
+e["Solver"]["Termination Criteria"]["Max Samples"] = 1000
 
 e["Variables"][0]["Name"] = "X"
 e["Variables"][0]["Initial Mean"] = 0.0
 e["Variables"][0]["Initial Standard Deviation"] = 1.0
 
-e["Result Path"] = '_result_run-mcmc'
 e["Console Frequency"] = 500
 e["Save Frequency"] = 500
-e["Resume Previous"] = True
 
 print("\n-------------------------------------------------------------")
 print("Running first 1000 samples...")
@@ -42,4 +39,5 @@ print("\n-------------------------------------------------------------")
 print("Running last 1000 samples...")
 print("-------------------------------------------------------------\n")
 
+e["Solver"]["Termination Criteria"]["Max Samples"] = 2000
 k.run(e)

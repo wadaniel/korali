@@ -23,10 +23,10 @@ void korali::Engine::run()
 
   auto t0 = std::chrono::system_clock::now();
 
-  _solver->getConfiguration(_js["Solver"]);
+  if(_currentGeneration == 0) saveState();
 
+  _solver->getConfiguration(_js["Solver"]);
   _currentGeneration++;
-  _startingGeneration = _currentGeneration;
 
   while(_solver->checkTermination() == false)
   {
@@ -78,30 +78,35 @@ void korali::Engine::run()
 void korali::Engine::saveState()
 {
  char genFileName[256];
+ sprintf(genFileName, "gen%08lu.json", _currentGeneration);
 
- sprintf(genFileName, "gen%05lu.json", _currentGeneration);
+ if (! korali::dirExists(_resultPath))  korali::mkdir(_resultPath);
 
  // Getting configuration
- _solver->getConfiguration(_js["Solver"]);
- _js["Internal"]["Run ID"] = _runID;
- _js["Internal"]["Current Generation"] = _currentGeneration;
+ _timestamp = getTimestamp();
+ getConfiguration(_js.getJson());
  std::string fileName = "./" + _resultPath + "/" + genFileName;
  korali::JsonInterface::saveJsonToFile(fileName.c_str(), _js.getJson());
 }
 
-void korali::Engine::loadPreviousRun(nlohmann::json& js, std::string path)
+bool korali::Engine::loadState()
 {
- js["Internal"]["Current Generation"] = 0;
- js["Internal"]["Run ID"] = 0;
+  std::string path = _js["Result Path"];
+  return loadState(path);
+}
+
+bool korali::Engine::loadState(std::string path)
+{
+ auto js = nlohmann::json();
 
  if (korali::dirExists(path))
  {
-  // Loading config file, if exists
+  // Loading first generation file, if exists
   for (const auto & entry : korali::listDirFiles(path))
   {
    std::string filePath = entry;
-   if (filePath.find("config.json", 0) != std::string::npos)
-    if (korali::JsonInterface::loadJsonFromFile(js, filePath.c_str()) == false) korali::logError("Error loading initial configuration file.\n");
+   if (filePath.find("gen00000000.json", 0) != std::string::npos)
+    if (korali::JsonInterface::loadJsonFromFile(js, filePath.c_str()) == false) return false;
   }
 
   // Loading latest solver generation
@@ -129,35 +134,27 @@ void korali::Engine::loadPreviousRun(nlohmann::json& js, std::string path)
     }
    }
   }
+
+  _js.getJson() = js;
+  return true;
  }
+
+ return false;
+}
+
+korali::Engine::Engine()
+{
+ _js["Internal"]["Run ID"] = korali::getTimehash();
+ _js["Internal"]["Current Generation"] = 0;
+ _js["Result Path"] = "_korali_result";
+ _k = this;
 }
 
 void korali::Engine::initialize()
 {
- _k = this;
-
- korali::listDirFiles(".");
-
- // Setting Run ID
- _runID = 0;
- _currentGeneration = 0;
-
- auto js = _js.getJson();
+ // Setting Configuration
  setConfiguration(_js.getJson());
- _js.getJson() = js;
-
- // Loading any previous results, if so configured
- if (_resumePrevious)
- {
-  loadPreviousRun(js, _resultPath);
-  _currentGeneration = js["Internal"]["Current Generation"];
-  _runID = js["Internal"]["Run ID"];
- }
- // Establishing Run ID, if not set by previous run
- if (_runID == 0) _runID = korali::getTimehash();
- _js["Internal"]["Run ID"] = _runID;
-
- if (_currentGeneration > 0) _solver->setConfiguration(js["Solver"]);
+ getConfiguration(_js.getJson());
 
  _isFinished = false;
  _thread = co_create(10240*sizeof(void*), korali::threadWrapper);
@@ -167,26 +164,6 @@ void korali::Engine::initialize()
  for (size_t i = 0; i < _distributions.size(); i++) _distributions[i]->initialize();
  _problem->initialize();
  _solver->initialize();
-}
-
-korali::Engine::Engine(nlohmann::json js) : korali::Engine::Engine()
-{
- _js.getJson() = js;
- _k = this;
- _k->initialize();
-}
-
-void korali::Engine::saveConfig()
-{
- if (! korali::dirExists(_resultPath))  korali::mkdir(_resultPath);
- std::string fileName = "./" + _resultPath + "/config.json";
- korali::JsonInterface::saveJsonToFile(fileName.c_str(), _js.getJson());
-}
-
-void korali::Engine::loadConfig(std::string fileName)
-{
- if (korali::JsonInterface::loadJsonFromFile(_js.getJson(), fileName.c_str()) == false)
-   korali::logError("Could not find or load configuration file.\n");
 }
 
 nlohmann::json& korali::Engine::operator[](const std::string& key) { return _js[key]; }

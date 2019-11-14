@@ -14,32 +14,67 @@ import korali
 k = korali.initialize()
 
 # Configuring Multiple Experiments.
-experiments = []
+eList = []
 
 for i in range(8):
- e = korali.newExperiment()
- e["Problem"]["Type"] = "Evaluation/Direct/Basic"
- e["Problem"]["Objective"] = "Maximize"
- e["Problem"]["Objective Function"] = model
-
- # Defining the problem's variables.
- e["Variables"][0]["Name"] = "X"
- e["Variables"][0]["Lower Bound"] = -10.0
- e["Variables"][0]["Upper Bound"] = +10.0
-
- # Configuring CMA-ES parameters
- e["Solver"]["Type"] = "Optimizer/CMAES"
- e["Solver"]["Population Size"] = 11
- e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-7
- e["Solver"]["Termination Criteria"]["Max Generations"] = 100
+  e = korali.newExperiment()
+  e["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Reference"
+  e["Problem"]["Likelihood Model"] = "Additive Normal"
+  e["Problem"]["Reference Data"] = getReferenceData()
+  e["Problem"]["Computational Model"] = lambda sampleData: model(sampleData, getReferencePoints())
+  
+  # Configuring CMA-ES parameters
+  e["Solver"]["Type"] = "Optimizer/CMAES"
+  e["Solver"]["Population Size"] = 24 
+  e["Solver"]["Termination Criteria"]["Max Generations"] = 100
+  
+  # Configuring the problem's random distributions
+  e["Distributions"][0]["Name"] = "Uniform 0"
+  e["Distributions"][0]["Type"] = "Univariate/Uniform"
+  e["Distributions"][0]["Minimum"] = -5.0
+  e["Distributions"][0]["Maximum"] = +5.0
+  
+  e["Distributions"][1]["Name"] = "Uniform 1"
+  e["Distributions"][1]["Type"] = "Univariate/Uniform"
+  e["Distributions"][1]["Minimum"] = -5.0
+  e["Distributions"][1]["Maximum"] = +5.0
+  
+  e["Distributions"][2]["Name"] = "Uniform 2"
+  e["Distributions"][2]["Type"] = "Univariate/Uniform"
+  e["Distributions"][2]["Minimum"] = 0.0
+  e["Distributions"][2]["Maximum"] = +5.0
+  
+  # Configuring the problem's variables
+  e["Variables"][0]["Name"] = "a"
+  e["Variables"][0]["Bayesian Type"] = "Computational"
+  e["Variables"][0]["Prior Distribution"] = "Uniform 0"
+  e["Variables"][0]["Initial Mean"] = +0.0
+  e["Variables"][0]["Initial Standard Deviation"] = +1.0
+  
+  e["Variables"][1]["Name"] = "b"
+  e["Variables"][1]["Bayesian Type"] = "Computational"
+  e["Variables"][1]["Prior Distribution"] = "Uniform 1"
+  e["Variables"][1]["Initial Mean"] = +0.0
+  e["Variables"][1]["Initial Standard Deviation"] = +1.0
+  
+  e["Variables"][2]["Name"] = "Sigma"
+  e["Variables"][2]["Bayesian Type"] = "Statistical"
+  e["Variables"][2]["Prior Distribution"] = "Uniform 2"
+  e["Variables"][2]["Initial Mean"] = +2.5
+  e["Variables"][2]["Initial Standard Deviation"] = +0.5
  
- # Setting distinct experiment paths
- e["Result Path"] = '_korali_multiple/exp' + str(i)
+  # Setting distinct experiment paths
+  e["Result Path"] = '_korali_multiple/exp' + str(i)
  
- # Adding Experiment to vector
- experiments.append(e)
+  # Adding Experiment to vector
+  eList.append(e)
 
 k["Conduit"]["Type"] = "External"
 k["Conduit"]["Concurrent Jobs"] = 8 
 
-k.run(experiments)
+# Running first 100 generations
+k.run(eList)
+
+# Running next 100 generations
+for e in eList: e["Solver"]["Termination Criteria"]["Max Generations"] = 200
+k.run(eList)

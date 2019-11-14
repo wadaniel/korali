@@ -25,11 +25,7 @@ e["Variables"][1]["Loaded Values"] = variances
 
 e["Solver"]["Type"] = "Executor"
 e["Solver"]["Executions Per Generation"] = 1
-e["Solver"]["Termination Criteria"]["Generations Per Run"] = 2
-
-e["Result Path"] = '_result_run-executor'
-e["Verbosity"] = "Detailed"
-e["Resume Previous"] = True
+e["Solver"]["Termination Criteria"]["Max Generations"] = 2
 
 print("\n-------------------------------------------------------------")
 print("Now running first 2 samples.")
@@ -41,10 +37,12 @@ print('------------------------------------------------------')
 print("Now running another 2 samples.")
 print('------------------------------------------------------')
 
+e["Solver"]["Termination Criteria"]["Max Generations"] = 4
 k.run(e)
 
 print('------------------------------------------------------')
-print("Now running last sample.")
+print("Now running last sample(s).")
 print('------------------------------------------------------')
 
+e["Solver"]["Termination Criteria"]["Max Generations"] = 100
 k.run(e)

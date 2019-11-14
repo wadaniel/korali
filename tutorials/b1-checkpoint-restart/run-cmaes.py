@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # In this example, we demonstrate how a Korali experiment can
-# be resumed from any point (generation). This is a useful feature
+# be resumed from previous file-saved results. This is a useful feature
 # for continuing jobs after an error, or to fragment big jobs into
 # smaller ones that can better fit a supercomputer queue.
 
@@ -17,29 +17,33 @@ e = korali.newExperiment()
 
 e["Problem"]["Type"] = "Evaluation/Direct/Basic"
 e["Problem"]["Objective"] = "Maximize"
-e["Problem"]["Objective Function"] = model
 
 e["Solver"]["Type"] = "Optimizer/CMAES"
 e["Solver"]["Population Size"] = 5
-e["Solver"]["Termination Criteria"]["Max Generations"] = 100
-e["Solver"]["Termination Criteria"]["Generations Per Run"] = 50
+e["Solver"]["Termination Criteria"]["Max Generations"] = 5
 
 e["Variables"][0]["Name"] = "X"
 e["Variables"][0]["Lower Bound"] = -10.0
 e["Variables"][0]["Upper Bound"] = +10.0
 
-e["Console Frequency"] = 25
-e["Result Path"] = '_result_run-cmaes'
-e["Resume Previous"] = True
+# Loading previous results, if they exist.
+found = e.loadState()
 
-print('------------------------------------------------------')
-print('Now running first 50 generations...')
-print('------------------------------------------------------')
+# If not found, we run first 5 generations.
+if (found == False):
+ print('------------------------------------------------------')
+ print('Running first 5 generations anew...')
+ print('------------------------------------------------------')
 
-k.run(e)
+# If found, we continue with the next 5 generations. 
+if (found == True):
+ print('------------------------------------------------------')
+ print('Running 5 more generations from previous run...')
+ print('------------------------------------------------------')
+ e["Solver"]["Termination Criteria"]["Max Generations"] = e["Solver"]["Termination Criteria"]["Max Generations"] + 5
+ 
+# Setting computational model
+e["Problem"]["Objective Function"] = model
 
-print('------------------------------------------------------')
-print('Now running last 50 generations...')
-print('------------------------------------------------------')
-
+# Running 10 generations
 k.run(e)

@@ -16,7 +16,7 @@ class Psi : public korali::problem::evaluation::bayesian::Hierarchical
   std::vector<double*> _samplePointers;
  };
 
- std::vector<nlohmann::json> _subProblemsJson;
+ std::vector<korali::Engine> _subProblemEngines;
  size_t _subProblemsCount;
  size_t _subProblemsVariablesCount;
  std::vector<std::vector<std::vector<double>>> _subProblemsSampleCoordinates;

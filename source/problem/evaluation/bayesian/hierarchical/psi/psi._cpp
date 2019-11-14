@@ -29,24 +29,24 @@ void korali::problem::evaluation::bayesian::hierarchical::Psi::initialize()
  _subProblemsVariablesCount = _conditionalPriors.size();
 
  // Creating JSON object from string
+ _subProblemEngines = std::vector<korali::Engine>(_subProblemsCount);
  for (size_t i = 0; i < _subProblemsCount; i++)
  {
-  auto subProblemJson = nlohmann::json();
-  korali::Engine::loadPreviousRun(subProblemJson, _subProblems[i]);
-  _subProblemsJson.push_back(subProblemJson);
+  if (_subProblemEngines[i].loadState(_subProblems[i]) == false) korali::logError("Error loading sub problem results from: %s...\n", _subProblems[i].c_str());
+  _subProblemEngines[i].initialize();
  }
 
  // Sub-problem correctness checks
  for (size_t i = 0; i < _subProblemsCount; i++)
  {
-  std::string problemName = _subProblemsJson[i]["Problem"]["Type"];
+  std::string problemName = _subProblemEngines[i]["Problem"]["Type"];
   if (problemName.rfind("Evaluation/Bayesian/Inference", 0) != 0)
-   korali::logError("The Hierarchical Bayesian (Psi) can only accept sub-problems of type 'Evaluation/Bayesian/Inference' but sub-Problem %lu is of type: '%s'.\n", i, _subProblemsJson[i]["Problem"]["Type"].get<std::string>().c_str());
+   korali::logError("The Hierarchical Bayesian (Psi) can only accept sub-problems of type 'Evaluation/Bayesian/Inference' but sub-Problem %lu is of type: '%s'.\n", i, _subProblemEngines[i]["Problem"]["Type"].get<std::string>().c_str());
 
-  if (_conditionalPriors.size() != _subProblemsJson[i]["Variables"].size())
-   korali::logError("Sub-problem %lu contains a different number of variables (%lu) than conditional priors in the Hierarchical Bayesian (Psi) problem (%lu).\n", i, _subProblemsJson[i]["Problem"]["Variables"].size(), _conditionalPriors.size());
+  if (_conditionalPriors.size() != _subProblemEngines[i]["Variables"].size())
+   korali::logError("Sub-problem %lu contains a different number of variables (%lu) than conditional priors in the Hierarchical Bayesian (Psi) problem (%lu).\n", i, _subProblemEngines[i]["Problem"]["Variables"].size(), _conditionalPriors.size());
 
-  if (_subProblemsJson[i]["Internal"]["Is Finished"] == false)
+  if (_subProblemEngines[i]["Internal"]["Is Finished"] == false)
    korali::logError("The Hierarchical Bayesian (Psi) requires that all problems have run completely, but Problem %lu has not.\n", i);
  }
 
@@ -56,9 +56,9 @@ void korali::problem::evaluation::bayesian::hierarchical::Psi::initialize()
 
  for (size_t i = 0; i < _subProblemsCount; i++)
  {
-  _subProblemsSampleLogPriors[i]      = _subProblemsJson[i]["Solver"]["Internal"]["Sample LogPrior Database"].get<std::vector<double>>();
-  _subProblemsSampleLogLikelihoods[i] = _subProblemsJson[i]["Solver"]["Internal"]["Sample LogLikelihood Database"].get<std::vector<double>>();
-  _subProblemsSampleCoordinates[i] = _subProblemsJson[i]["Solver"]["Internal"]["Sample Database"].get<std::vector<std::vector<double>>>();
+  _subProblemsSampleLogPriors[i]      = _subProblemEngines[i]["Solver"]["Internal"]["Sample LogPrior Database"].get<std::vector<double>>();
+  _subProblemsSampleLogLikelihoods[i] = _subProblemEngines[i]["Solver"]["Internal"]["Sample LogLikelihood Database"].get<std::vector<double>>();
+  _subProblemsSampleCoordinates[i] = _subProblemEngines[i]["Solver"]["Internal"]["Sample Database"].get<std::vector<std::vector<double>>>();
 
   for (size_t j = 0; j < _subProblemsSampleLogPriors.size(); j++)
   {

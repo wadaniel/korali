@@ -1,6 +1,6 @@
 #include "korali.hpp"
 #include "model/jacobi.h"
-
+#include <unistd.h>
 int main(int argc, char* argv[])
 {
  MPI_Init(&argc, &argv);
@@ -89,7 +89,7 @@ int main(int argc, char* argv[])
 
  // Running First 3 generations
  k.run(e);
-
+ sleep(2);
  // Running Last 3 generations
  e["Solver"]["Termination Criteria"]["Max Generations"] = 6;
  k.run(e);

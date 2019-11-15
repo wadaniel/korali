@@ -3,7 +3,7 @@
 
 korali::Engine::Engine()
 {
- _isFirstRun = false;
+ _isFirstRun = true;
  _mainThread = co_active();
 }
 
@@ -15,8 +15,13 @@ void korali::Engine::run()
  korali::setConsoleOutputFile(stdout);
  korali::setVerbosityLevel("Minimal");
 
+ if (! korali::JsonInterface::isDefined(_js.getJson(), "['Profiling']['Detail']")) _js["Profiling"]["Detail"] = "None";
+ if (! korali::JsonInterface::isDefined(_js.getJson(), "['Profiling']['Path']")) _js["Profiling"]["Path"] = "./profiling.json";
  if (! korali::JsonInterface::isDefined(_js.getJson(), "['Conduit']['Type']")) _js["Conduit"]["Type"] = "Sequential";
  if (! korali::JsonInterface::isDefined(_js.getJson(), "['Dry Run']")) _js["Dry Run"] = false;
+
+ std::string profilingPath = _js["Profiling"]["Path"];
+ std::string profilingDetail = _js["Profiling"]["Detail"];
 
  for (size_t i = 0; i < _experimentVector.size(); i++)
  {
@@ -30,10 +35,10 @@ void korali::Engine::run()
   _experimentVector[i]->initialize();
  }
 
- if (_isFirstRun == false)
+ if (_isFirstRun == true)
  {
   _conduit = dynamic_cast<korali::Conduit*>(korali::Module::getModule(_js["Conduit"]));
-  _isFirstRun = true;
+  _isFirstRun = false;
  }
 
  _conduit->initialize();
@@ -52,8 +57,10 @@ void korali::Engine::run()
   }
 
   if (korali::JsonInterface::isDefined(_js.getJson(), "['Dry Run']")) korali::JsonInterface::eraseValue(_js.getJson(), "['Dry Run']");
-  if (korali::JsonInterface::isDefined(_js.getJson(), "['Conduit']")) korali::JsonInterface::eraseValue(_js.getJson(), "['Conduit']");
-  if (korali::JsonInterface::isEmpty(_js.getJson()) == false) korali::logError("Unrecognized settings for the Engine Engine: \n%s\n", _js.getJson().dump(2).c_str());
+  if (korali::JsonInterface::isDefined(_js.getJson(), "['Conduit']['Type']")) korali::JsonInterface::eraseValue(_js.getJson(), "['Conduit']['Type']");
+  if (korali::JsonInterface::isDefined(_js.getJson(), "['Profiling']['Detail']")) korali::JsonInterface::eraseValue(_js.getJson(), "['Profiling']['Detail']");
+  if (korali::JsonInterface::isDefined(_js.getJson(), "['Profiling']['Path']")) korali::JsonInterface::eraseValue(_js.getJson(), "['Profiling']['Path']");
+  if (korali::JsonInterface::isEmpty(_js.getJson()) == false) korali::logError("Unrecognized settings for Korali's Engine: \n%s\n", _js.getJson().dump(2).c_str());
 
   // Setting start time.
   _startTime = std::chrono::high_resolution_clock::now();
@@ -80,10 +87,12 @@ void korali::Engine::run()
   if (_experimentVector.size() > 1) korali::logInfo("Minimal", "All jobs have finished correctly.\n");
   if (_experimentVector.size() > 1) korali::logInfo("Normal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count());
 
-  __profiler["Experiment Count"] = _experimentVector.size();
-  __profiler["Elapsed Time"] = std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
-  std::string fileName = "./profiling.json";
-  korali::JsonInterface::saveJsonToFile(fileName.c_str(), __profiler);
+  if (profilingDetail == "Full")
+  {
+   __profiler["Experiment Count"] = _experimentVector.size();
+   __profiler["Elapsed Time"] = std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count();
+   korali::JsonInterface::saveJsonToFile(profilingPath.c_str(), __profiler);
+  }
  }
 
  _conduit->finalize();

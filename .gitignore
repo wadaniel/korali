@@ -12,6 +12,7 @@ __pycache__
 *.so
 *.pyc
 *.a
+*.vim
 *.swp
 *.swo
 *.out
@@ -24,3 +25,4 @@ __pycache__
 .tags1
 .korali.config
 .DS_Store/
+.DS_Store

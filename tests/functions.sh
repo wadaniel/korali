@@ -26,7 +26,3 @@ function log ()
 {
  echo "$1" >> $logFile
 }
-
-
-
-

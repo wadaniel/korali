@@ -1,0 +1,25 @@
+#ifndef _KORALI_DISTRIBUTION_UNIVARIATE_INVERSE_GAMMA_HPP_
+#define _KORALI_DISTRIBUTION_UNIVARIATE_INVERSE_GAMMA_HPP_
+
+#include "distribution/univariate/univariate.hpp"
+
+namespace korali { namespace distribution { namespace univariate {
+
+class Igamma : public korali::distribution::Univariate {
+
+ private:
+
+ double _auxLog;
+
+ public:
+
+ void updateDistribution() override;
+ double getDensity(double x) override;
+ double getLogDensity(double x) override;
+ double getRandomNumber() override;
+
+};
+
+} } } // namespace korali::distribution::univariate
+
+#endif // _KORALI_DISTRIBUTION_UNIVARIATE_INVERSE_GAMMA_HPP_

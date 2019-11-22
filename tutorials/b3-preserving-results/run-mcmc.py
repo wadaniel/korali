@@ -36,6 +36,9 @@ e["Solver"]["Termination Criteria"]["Max Samples"] = 5000
 e["Console"]["Frequency"] = 500
 e["Results"]["Frequency"] = 500
 
+# Storing sample information
+e["Results"]["Store Samples"] = True
+
 # Running Korali
 k.run(e)
 

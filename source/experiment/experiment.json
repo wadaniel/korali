@@ -28,16 +28,22 @@
     "Description": "Represents the state and configuration of the solver algorithm."
    },
    {
+    "Name": [ "Results", "Path" ],
+    "Type": "std::string",
+    "Default": "_korali_result",
+    "Description": "Specifies the path of the results directory."
+   },
+   {
     "Name": [ "Results", "Frequency"],
     "Type": "size_t",
     "Default": "1",
     "Description": "Specifies how often (in generations) will partial result files be saved on the results directory. The default, 1, indicates that every generation's results will be saved."
    },
    {
-    "Name": [ "Results", "Path" ],
-    "Type": "std::string",
-    "Default": "_korali_result",
-    "Description": "Specifies the path of the results directory."
+    "Name": [ "Results", "Store Samples" ],
+    "Type": "bool",
+    "Default": "false",
+    "Description": "Specifies whether the sample information should be saved to samples.json in the results path."
    },
    {
     "Name": [ "Console", "Verbosity" ],

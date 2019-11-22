@@ -65,6 +65,7 @@ for i in range(8):
  
   # Setting distinct experiment paths
   e["Results"]["Path"] = '_korali_multiple/exp' + str(i)
+  e["Results"]["Store Samples"] = True
  
   # Adding Experiment to vector
   eList.append(e)

@@ -26,6 +26,7 @@ class Experiment : public korali::Module {
 
  // JSON-based configuration
  korali::KoraliJson  _js;
+ korali::KoraliJson  _sampleInfo;
 
  // Storing initial launch
  nlohmann::json  _initialConfig;

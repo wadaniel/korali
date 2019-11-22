@@ -10,7 +10,7 @@ then
  exit 0
 fi
 
-pushd ../../tutorials/c1-distributed-mpi/
+pushd ../../tutorials/c2-distributed-mpi/
 dir=$PWD
 
 logEcho "-------------------------------------"

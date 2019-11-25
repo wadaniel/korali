@@ -1,8 +1,16 @@
 #include "korali.hpp"
 #include "model/jacobi.h"
 #include <unistd.h>
+
 int main(int argc, char* argv[])
 {
+ int workersPerTeam = atoi(argv[1]);
+ if (64 % workersPerTeam != 0){
+  printf("Command Line Argument (Workers Per Team) must be divisor of 64! exit..)\n");
+  return -1;
+ }
+ 
+ 
  MPI_Init(&argc, &argv);
 
  auto e = korali::Experiment();
@@ -84,7 +92,7 @@ int main(int argc, char* argv[])
  if (argc != 2) { printf("Error: this example requires 'Workers Per Team' passed as argument.\n"); exit(-1); }
 
  k["Conduit"]["Type"] = "Distributed";
- k["Conduit"]["Workers Per Team"] = atoi(argv[1]);
+ k["Conduit"]["Workers Per Team"] = workersPerTeam;
  k["Profiling"]["Detail"] = "Full";
  k["Profiling"]["Frequency"] = 0.5;
 

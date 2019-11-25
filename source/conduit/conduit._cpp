@@ -7,6 +7,7 @@ void korali::Conduit::coroutineWrapper()
  korali::Sample* currentSample = _conduit->_currentSample;
  co_switch(_currentExperiment->_thread);
  (*currentSample)["Experiment Id"] = _currentExperiment->_experimentId;
+ (*currentSample)["Current Generation"] = _currentExperiment->_currentGeneration;
 
  _conduit->processSample(*currentSample);
 

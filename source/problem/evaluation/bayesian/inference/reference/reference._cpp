@@ -15,7 +15,7 @@ void korali::problem::evaluation::bayesian::inference::Reference::evaluateLogLik
   sample.run(_computationalModel);
 
   if (sample["Reference Evaluations"].size() != _referenceData.size())
-    korali::logError("This Bayesian (%s) problem requires a %lu-sized result array (assigned to 'Reference Evaluations'). Provided: %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), sample["Reference Evaluations"].size());
+    korali::logError("This Bayesian (%s) problem requires a %lu-sized result array. Provided: %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), sample["Reference Evaluations"].size());
 
   if (_likelihoodModel == "Additive Normal")            loglikelihoodNormalAdditive(sample);
   if (_likelihoodModel == "Multiplicative Normal")      loglikelihoodNormalMultiplicative(sample);
@@ -26,8 +26,7 @@ void korali::problem::evaluation::bayesian::inference::Reference::loglikelihoodN
 {
   double sigma   = sample["Parameters"][_statisticalVariableIndices[0]];
   double sigma2  = sigma*sigma;
-  double ssn     = 0.0;
-  double likelihood = 0.0;
+  double sse     = 0.0;
 
   for(size_t i = 0; i < _referenceData.size(); i++)
   {
@@ -39,17 +38,16 @@ void korali::problem::evaluation::bayesian::inference::Reference::loglikelihoodN
       return;
     }
     double diff = _referenceData[i] - eval;
-    ssn += diff*diff;
+    sse += diff*diff;
   }
 
-  sample["logLikelihood"] = -0.5*( _referenceData.size()*log(2*M_PI) + ssn/sigma2) - _referenceData.size()*log(sigma);
+  sample["logLikelihood"] = -0.5*( _referenceData.size()*log(2*M_PI*sigma2) + sse/sigma2);
 }
 
 void korali::problem::evaluation::bayesian::inference::Reference::loglikelihoodNormalMultiplicative(korali::Sample& sample)
 {
   double sigma    = sample["Parameters"][_statisticalVariableIndices[0]];
   double ssn      = 0.0;
-  double likelihood  = 0.0;
   double logSigma = 0.0;
   for(size_t i = 0; i < _referenceData.size(); i++)
   {
@@ -75,7 +73,6 @@ void korali::problem::evaluation::bayesian::inference::Reference::loglikelihoodN
 {
   double sigma    = sample["Parameters"][_statisticalVariableIndices[0]];
   double ssn      = 0.0;
-  double likelihood  = 0.0;
   double logSigma = 0.0;
   for(size_t i = 0; i < _referenceData.size(); i++)
   {

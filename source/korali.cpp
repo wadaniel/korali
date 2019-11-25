@@ -128,11 +128,12 @@ void korali::Engine::setItem(pybind11::object key, pybind11::object val) { _js.s
 
 PYBIND11_MODULE(libkorali, m)
 {
+ #ifdef _KORALI_USE_MPI
+ m.def("getMPICommPointer", &korali::Engine::getMPICommPointer, pybind11::return_value_policy::reference);
+ #endif
+
  pybind11::class_<korali::Engine>(m, "Engine")
   .def(pybind11::init<>())
-   #ifdef _KORALI_USE_MPI
-   .def("getMPIComm", &korali::Engine::getMPICommPointer)
-   #endif
   .def("run", pybind11::overload_cast<korali::Experiment&>(&korali::Engine::run))
   .def("run", pybind11::overload_cast<std::vector<korali::Experiment>&>(&korali::Engine::run))
   .def("__getitem__", pybind11::overload_cast<pybind11::object>(&korali::Engine::getItem), pybind11::return_value_policy::reference)

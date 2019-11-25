@@ -12,3 +12,8 @@ def Experiment():
  from libkorali import Experiment
  return Experiment()
  
+def getMPIComm():
+ from libkorali import getMPICommPointer
+ return getMPICommPointer()
+ 
+ 

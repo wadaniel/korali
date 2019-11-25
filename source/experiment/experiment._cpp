@@ -86,7 +86,10 @@ void korali::Experiment::saveState()
  _timestamp = getTimestamp();
  getConfiguration(_js.getJson());
  std::string fileName = "./" + _resultsPath + "/" + genFileName;
- korali::JsonInterface::saveJsonToFile(fileName.c_str(), _js.getJson());
+
+ auto js = _js.getJson();
+ if (_resultsStoreSamples == true) js["Samples"] = _sampleInfo["Samples"];
+ korali::JsonInterface::saveJsonToFile(fileName.c_str(), js);
 }
 
 bool korali::Experiment::loadState()

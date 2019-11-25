@@ -15,7 +15,7 @@ void korali::problem::evaluation::bayesian::inference::Reference::evaluateLogLik
   sample.run(_computationalModel);
 
   if (sample["Reference Evaluations"].size() != _referenceData.size())
-    korali::logError("This Bayesian (%s) problem requires a %lu-sized result array. Provided: %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), sample["Reference Evaluations"].size());
+    korali::logError("This Bayesian (%s) problem requires a %lu-sized result array (assigned to 'Reference Evaluations'). Provided: %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), sample["Reference Evaluations"].size());
 
   if (_likelihoodModel == "Additive Normal")            loglikelihoodNormalAdditive(sample);
   if (_likelihoodModel == "Multiplicative Normal")      loglikelihoodNormalMultiplicative(sample);

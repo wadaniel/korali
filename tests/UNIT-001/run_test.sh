@@ -10,7 +10,7 @@ fi
 
 logEcho "[Korali] Running C++ Test..."
 
-pushd ../../tutorials/c2-running-cxx/
+pushd ../../tutorials/c1-running-cxx/
 dir=$PWD
 
 logEcho "-------------------------------------"

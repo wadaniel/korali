@@ -15,22 +15,21 @@ import numpy as np
 signal.signal(signal.SIGINT, lambda x, y: exit(0))
 
 parser = argparse.ArgumentParser(prog='korali.plotter', description='Show profiling information of a Korali execution.')
-parser.add_argument('--dir', help='Directory of result files', default='.', required = False)
+parser.add_argument('--file', help='Json file with profiling information to read.', default='./profiling.json', required = False)
 parser.add_argument('--test', help='Run without graphics (for testing purpose)', action='store_true', required = False)
 args = parser.parse_args()
 
-filePath = args.dir + '/profiling.json'
-if (not path.exists(filePath) ):
- print('[Korali] Error: Could not find result file "profiling.json" in folder: ' + args.dir + '.')
+if (not path.exists(args.file) ):
+ print('[Korali] Error: Could not find profiling information file: ' + args.file + '.')
  exit(-1)
  
 if (args.test == True):
- print('[Korali] Testing profiler plotter for file: ' + filePath + '...') 
+ print('[Korali] Testing profiler plotter for file: ' + args.file + '...') 
  matplotlib.use('Agg')
 
 from matplotlib import pyplot
 
-with open(filePath) as f:
+with open(args.file) as f:
  jsString = f.read()
 js  = json.loads(jsString)
 

@@ -94,6 +94,7 @@ int main(int argc, char* argv[])
  k["Conduit"]["Type"] = "Distributed";
  k["Conduit"]["Workers Per Team"] = workersPerTeam;
  k["Profiling"]["Detail"] = "Full";
+ k["Profiling"]["Frequency"] = 0.5;
 
  // Running First 3 generations
  k.run(e);

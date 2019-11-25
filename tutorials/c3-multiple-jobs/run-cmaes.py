@@ -73,6 +73,7 @@ for i in range(8):
 k["Conduit"]["Type"] = "Concurrent"
 k["Conduit"]["Concurrent Jobs"] = 8 
 k["Profiling"]["Detail"] = "Full"
+k["Profiling"]["Frequency"] = 0.5
 
 # Running first 100 generations
 k.run(eList)

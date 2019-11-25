@@ -5,6 +5,7 @@
 #include "auxiliar/py2json.hpp"
 #include "conduit/distributed/distributed.hpp"
 #include "conduit/conduit.hpp"
+#include <chrono>
 
 namespace korali
 {
@@ -16,8 +17,13 @@ namespace korali
 
   bool _isFirstRun;
 
+  std::string _profilingPath;
+  std::string _profilingDetail;
+  double _profilingFrequency;
+  std::chrono::time_point<std::chrono::high_resolution_clock> _profilingLastSave;
+
   // State save/load methods
-  void saveProfilingInfo();
+  void saveProfilingInfo(bool forceSave = false);
   void run(std::vector<korali::Experiment>& experiments);
   void run(korali::Experiment& experiment);
   void run();

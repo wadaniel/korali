@@ -17,12 +17,12 @@ void korali::problem::evaluation::bayesian::inference::Reference::evaluateLogLik
   if (sample["Reference Evaluations"].size() != _referenceData.size())
     korali::logError("This Bayesian (%s) problem requires a %lu-sized result array. Provided: %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), sample["Reference Evaluations"].size());
 
-  if (_likelihoodModel == "Additive Normal")            likelihoodNormalAdditive(sample);
-  if (_likelihoodModel == "Multiplicative Normal")      likelihoodNormalMultiplicative(sample);
-  if (_likelihoodModel == "Multiplicative Normal Data") likelihoodNormalMultiplicativeData(sample);
+  if (_likelihoodModel == "Additive Normal")            loglikelihoodNormalAdditive(sample);
+  if (_likelihoodModel == "Multiplicative Normal")      loglikelihoodNormalMultiplicative(sample);
+  if (_likelihoodModel == "Multiplicative Normal Data") loglikelihoodNormalMultiplicativeData(sample);
 }
 
-void korali::problem::evaluation::bayesian::inference::Reference::likelihoodNormalAdditive(korali::Sample& sample)
+void korali::problem::evaluation::bayesian::inference::Reference::loglikelihoodNormalAdditive(korali::Sample& sample)
 {
   double sigma   = sample["Parameters"][_statisticalVariableIndices[0]];
   double sigma2  = sigma*sigma;
@@ -45,7 +45,7 @@ void korali::problem::evaluation::bayesian::inference::Reference::likelihoodNorm
   sample["logLikelihood"] = -0.5*( _referenceData.size()*log(2*M_PI) + ssn/sigma2) - _referenceData.size()*log(sigma);
 }
 
-void korali::problem::evaluation::bayesian::inference::Reference::likelihoodNormalMultiplicative(korali::Sample& sample)
+void korali::problem::evaluation::bayesian::inference::Reference::loglikelihoodNormalMultiplicative(korali::Sample& sample)
 {
   double sigma    = sample["Parameters"][_statisticalVariableIndices[0]];
   double ssn      = 0.0;
@@ -71,7 +71,7 @@ void korali::problem::evaluation::bayesian::inference::Reference::likelihoodNorm
   sample["logLikelihood"] = -0.5*( _referenceData.size()*log(2*M_PI) + ssn) - _referenceData.size()*logSigma;
 }
 
-void korali::problem::evaluation::bayesian::inference::Reference::likelihoodNormalMultiplicativeData(korali::Sample& sample)
+void korali::problem::evaluation::bayesian::inference::Reference::loglikelihoodNormalMultiplicativeData(korali::Sample& sample)
 {
   double sigma    = sample["Parameters"][_statisticalVariableIndices[0]];
   double ssn      = 0.0;

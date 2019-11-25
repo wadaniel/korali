@@ -9,9 +9,9 @@ class Reference : public korali::problem::evaluation::bayesian::Inference
 {
  private:
 
- void likelihoodNormalAdditive(korali::Sample& sample);
- void likelihoodNormalMultiplicative(korali::Sample& sample);
- void likelihoodNormalMultiplicativeData(korali::Sample& sample);
+ void loglikelihoodNormalAdditive(korali::Sample& sample);
+ void loglikelihoodNormalMultiplicative(korali::Sample& sample);
+ void loglikelihoodNormalMultiplicativeData(korali::Sample& sample);
 
  public:
 

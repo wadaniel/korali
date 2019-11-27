@@ -30,6 +30,7 @@ void korali::Experiment::run()
 
   while(_solver->checkTermination() == false)
   {
+   if (_consoleFrequency > 0)
    if (_currentGeneration % _consoleFrequency == 0)
    {
     korali::logInfo("Minimal",  "--------------------------------------------------------------------\n");
@@ -45,6 +46,7 @@ void korali::Experiment::run()
    // Timing and Profiling End
    auto t1 = std::chrono::system_clock::now();
 
+   if (_consoleFrequency > 0)
    if (_currentGeneration % _consoleFrequency == 0)
    {
     _solver->printGenerationAfter();

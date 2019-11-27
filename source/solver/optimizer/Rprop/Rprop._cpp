@@ -13,7 +13,7 @@ void korali::solver::optimizer::Rprop::initialize()
 
   N = _k->_variables.size();
 
-  if (_k->_currentGeneration > 1) return;
+  if (_k->_currentGeneration > 0) return;
 
   for (size_t i = 0; i < N; i++)
     if( std::isfinite(_k->_variables[i]->_initialValue) == false )

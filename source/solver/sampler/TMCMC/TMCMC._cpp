@@ -52,7 +52,7 @@ void korali::solver::sampler::TMCMC::initialize()
   if (_perGenerationBurnIn.size() > 1 && _perGenerationBurnIn[1] != 0)
   korali::logWarning("Normal", "The 1st entry of the Burn In vector is being ignored (corresponding to Generation 1)\n");
 
-  if (_k->_currentGeneration > 1) return;
+  if (_k->_currentGeneration > 0) return;
 
   // Allocating TMCMC memory
   _chainLeaders.resize(_populationSize);

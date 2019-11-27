@@ -63,7 +63,7 @@ void korali::solver::optimizer::DEA::initialize()
 
  _valueVector.resize(_populationSize);
 
- if (_k->_currentGeneration > 1) return;
+ if (_k->_currentGeneration > 0) return;
 
  _infeasibleSampleCount = 0;
  _bestSampleIndex = 0;

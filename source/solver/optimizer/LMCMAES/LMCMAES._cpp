@@ -43,7 +43,7 @@ void korali::solver::optimizer::LMCMAES::initialize()
  if(_targetDistanceCoefficients.size() != 3)
   korali::logError("LMCMAES requires 3 parameters for 'Target Distance Coefficients' (%zu provided).\n", _targetDistanceCoefficients.size());
 
- if (_k->_currentGeneration > 1) return;
+ if (_k->_currentGeneration > 0) return;
 
  _chiSquareNumber = sqrt((double) N) * (1. - 1./(4.*N) + 1./(21.*N*N));
  _sigmaExponentFactor = 0.0;

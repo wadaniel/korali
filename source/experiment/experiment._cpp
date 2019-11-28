@@ -79,6 +79,8 @@ void korali::Experiment::run()
 
 void korali::Experiment::saveState()
 {
+ if (_resultsEnabled == false) return;
+
  char genFileName[256];
  sprintf(genFileName, "gen%08lu.json", _currentGeneration);
 

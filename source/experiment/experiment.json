@@ -34,6 +34,12 @@
     "Description": "Specifies the path of the results directory."
    },
    {
+    "Name": [ "Results", "Enabled"],
+    "Type": "bool",
+    "Default": "true",
+    "Description": "Specifies whether the partial results should be saved to the results directory."
+   },
+   {
     "Name": [ "Results", "Frequency"],
     "Type": "size_t",
     "Default": "1",

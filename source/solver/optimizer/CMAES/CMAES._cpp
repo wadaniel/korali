@@ -38,9 +38,10 @@ void korali::solver::optimizer::CMAES::initialize()
  if (isEvaluationProblem == false)
   korali::logError("CMAES can only optimize problems of type 'Evaluation' or derived.\n");
 
- if(isDirectProblem == true)
- if (_directProblem->_objective == "Maximize") _bestEverValue = -std::numeric_limits<double>::infinity();
- else /* Minimize */                           _bestEverValue = +std::numeric_limits<double>::infinity();
+ if (isDirectProblem == false || _directProblem->_objective == "Maximize") 
+   _bestEverValue = -std::numeric_limits<double>::infinity();
+ else /* Minimize */                           
+   _bestEverValue = +std::numeric_limits<double>::infinity();
  
  _previousBestEverValue = _bestEverValue;
  _previousBestValue     = _bestEverValue;
@@ -490,7 +491,7 @@ void korali::solver::optimizer::CMAES::updateDistribution()
  _previousBestValue = _currentBestValue;
 
  /* update current best */
- if ( _directProblem->_objective == "Maximize" )
+ if ( _directProblem == NULL || _directProblem->_objective == "Maximize" )
     _currentBestValue = _valueVector[_bestValidSample];
  else /* Minimize*/
     _currentBestValue = -1.0*_valueVector[_bestValidSample];
@@ -498,7 +499,8 @@ void korali::solver::optimizer::CMAES::updateDistribution()
  for (size_t d = 0; d < N; ++d) _currentBestVariables[d] = _samplePopulation[_bestValidSample][d];
 
  /* update xbestever */
- if ( _directProblem->_objective == "Maximize" )
+ if ( _directProblem == NULL || _directProblem->_objective == "Maximize" )
+ {
  if ( _currentBestValue > _bestEverValue || _k->_currentGeneration == 1 )
  {
   _previousBestEverValue = _bestEverValue;
@@ -511,8 +513,9 @@ void korali::solver::optimizer::CMAES::updateDistribution()
    for (size_t c = 0; c < _directProblem->_constraints.size(); c++)
     _bestConstraintEvaluations[c] = _constraintEvaluations[c][_bestValidSample];
  }
- 
- if ( _directProblem->_objective == "Minimize" )
+ }
+ else /* Minimize */
+ {
  if ( _currentBestValue < _bestEverValue || _k->_currentGeneration == 1 )
  {
   _previousBestEverValue = _bestEverValue;
@@ -524,6 +527,7 @@ void korali::solver::optimizer::CMAES::updateDistribution()
   if ( _areConstraintsDefined )
    for (size_t c = 0; c < _directProblem->_constraints.size(); c++)
     _bestConstraintEvaluations[c] = _constraintEvaluations[c][_bestValidSample];
+ }
  }
 
  /* set weights */

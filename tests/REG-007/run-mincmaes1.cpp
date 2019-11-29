@@ -1,3 +1,4 @@
+#include "assert.h"
 #include "korali.hpp"
 
 void minmodel1(korali::Sample& s)
@@ -29,8 +30,9 @@ int main(int argc, char** argv)
  std::vector<double> xopt = e["Solver"]["Internal"]["Best Ever Variables"];
  double fopt = e["Solver"]["Internal"]["Best Ever Value"];
 
- for(auto &x : xopt) printf("x: %lf\n",x);
- printf("fopt %lf\n", fopt);
+ assert( std::abs((fopt - 10.0)/fopt)   <= 1e-6 );
+ assert( std::abs((xopt[0] - 2.0)/fopt) <= 1e-3 );
+ 
  return 0;
 
 }

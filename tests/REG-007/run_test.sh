@@ -61,3 +61,17 @@ check_result
 
 logEcho "-------------------------------------"
 
+logEcho "-------------------------------------"
+logEcho "Testing Minimizing C++"
+logEcho "Build & Running File: run-mincmaes1.cpp"
+
+make
+python3 ./run-mincmaes2.py >> $logFile 2>&1
+check_result
+
+log "[Korali] Removing results..."
+rm -rf "_korali_result" >> $logFile 2>&1
+check_result
+
+make clean
+logEcho "-------------------------------------"

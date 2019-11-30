@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import math
 
-# Minimum expected at +- 0.5
+# Minimum expected at - 0.5
 def evalmodel( s ):
   x = s["Parameters"][0]
   if(abs(x) > 3.0): 

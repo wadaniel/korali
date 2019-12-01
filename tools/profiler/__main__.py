@@ -86,9 +86,10 @@ if (args.plot == 'timeline'):
  yticks = [] 
  for i in range(len(timelines)):
   yticks.append(10 + i*10)
- xticks = np.arange(0, 21, 2)
+ xticks = np.arange(0, tend+1, tend/20)
  ax.set_xticks(xticks)
-
+ ax.set_yticks([])
+ 
  xticklabels = []
  for tick in xticks: xticklabels.append("{:.1f}".format(tick))
  ax.set_xticklabels(xticklabels)
@@ -163,7 +164,6 @@ if (args.plot == 'efficiency'):
  ax.set_yticklabels(ytickLabels)
 
  ax.set_ylabel('Core Usage', fontsize=20)
- ax.set_yticks([])
  ax.plot(xdim, averageEfficiency, '-', linewidth=4)
  ax.set_ylabel('Average Efficiency', fontsize=16)  
  ax.set_xlabel('Time', fontsize=16)  

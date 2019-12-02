@@ -74,7 +74,6 @@ for list in timelines:
 
 if (args.plot == 'timeline'):
 
-
  # Setting Y-axis limits 
  upperLimit = 10 + len(timelines) * 10
  ax.set_ylim(0, upperLimit) 
@@ -86,7 +85,7 @@ if (args.plot == 'timeline'):
  yticks = [] 
  for i in range(len(timelines)):
   yticks.append(10 + i*10)
- xticks = np.arange(0, tend+1, tend/20)
+ xticks = np.arange(0, tend+1, tend/10)
  ax.set_xticks(xticks)
  ax.set_yticks([])
  
@@ -110,7 +109,7 @@ if (args.plot == 'timeline'):
   #colorList = [ colorMap[solverList[j]] for j in range(0, len(solverIdLists[i])) ]
   colorList = [ colorMap[solverIdLists[i][j]*3] for j in range(0, len(solverIdLists[i])) ]
   segList = [ (startLists[i][j], durationLists[i][j]) for j in range(0, len(startLists[i])) ]
-  ax.broken_barh(segList, (yticks[i] - 5, 9), facecolors = tuple(colorList), edgecolor = 'black' )
+  ax.broken_barh(segList, (yticks[i] - 5, 9), facecolors = tuple(colorList) )
 
 #### Creating Efficiency Plot
 

@@ -15,38 +15,42 @@ import numpy as np
 signal.signal(signal.SIGINT, lambda x, y: exit(0))
 
 parser = argparse.ArgumentParser(prog='korali.plotter', description='Show profiling information of a Korali execution.')
-parser.add_argument('--file', help='Json file with profiling information to read.', default='./profiling.json', required = False)
+parser.add_argument('--input', help='Json files with profiling information to read.', default='./profiling.json', nargs='+', required = False)
 parser.add_argument('--test', help='Run without graphics (for testing purpose)', action='store_true', required = False)
 parser.add_argument('--tend', help='Indicates the maximum time to report in the timeline', required = False, default = 'undefined')
 parser.add_argument('--plot', help='Indicates the type of plot to generate', choices=['timeline', 'efficiency'], required = True)
 parser.add_argument('--output', help='Indicates the output file path. If not specified, it prints to screen.', required = False)
-parser.add_argument('--disableLabels', help='Prints only the plot without labels or ticks.', action='store_true', required = False)
+
 args = parser.parse_args()
 
-if (not path.exists(args.file) ):
- print('[Korali] Error: Could not find profiling information file: ' + args.file + '.')
- exit(-1)
- 
 if (args.test == True):
- print('[Korali] Testing profiler plotter for file: ' + args.file + '...') 
+ print('[Korali] Testing profiler plotter for file: ' + args.input + '...') 
  matplotlib.use('Agg')
 
 from matplotlib import pyplot
 
-with open(args.file) as f:
- jsString = f.read()
-js  = json.loads(jsString)
+elapsedTime = 0
+fullJs = { 'Timelines': {} }
 
+for file in args.input:
+ if (not path.exists(file) ):
+  print('[Korali] Error: Could not find profiling information file: ' + file + ' ...')
+  exit(-1)
+  
+ with open(file) as f:
+  jsString = f.read()
+  js  = json.loads(jsString)
+
+ fullJs["Timelines"].update(js["Timelines"])
+ if (float(js["Elapsed Time"]) > elapsedTime): elapsedTime = float(js["Elapsed Time"])  
 timelines = []
 labels = []
-experimentCount = js["Experiment Count"]
-elapsedTime = js["Elapsed Time"]
 
 if (args.tend == 'undefined'): tend = elapsedTime
 else: tend = float(args.tend) 
 
-for x in js["Timelines"]:
-  timelines.append(js["Timelines"][x])
+for x in fullJs["Timelines"]:
+  timelines.append(fullJs["Timelines"][x])
   labels.append(x)
 
 ######################## Preprocessing information
@@ -83,7 +87,7 @@ if (args.plot == 'timeline'):
  # Setting X-axis limits 
  ax.set_xlim(0, tend) 
   
- # Setting ticks and labels
+ # Setting ticks on y-axis 
  yticks = [] 
  for i in range(len(timelines)):
   yticks.append(10 + i*10)
@@ -95,10 +99,6 @@ if (args.plot == 'timeline'):
  for tick in xticks: xticklabels.append("{:.1f}".format(tick/3600))
  ax.set_xticklabels(xticklabels)
 
- if (args.disableLabels == True):
-  ax.set_yticks([])
-  ax.set_xticks([])
-  
  # Setting graph attribute 
  ax.grid(False) 
 

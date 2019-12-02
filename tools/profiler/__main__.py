@@ -19,7 +19,8 @@ parser.add_argument('--file', help='Json file with profiling information to read
 parser.add_argument('--test', help='Run without graphics (for testing purpose)', action='store_true', required = False)
 parser.add_argument('--tend', help='Indicates the maximum time to report in the timeline', required = False, default = 'undefined')
 parser.add_argument('--plot', help='Indicates the type of plot to generate', choices=['timeline', 'efficiency'], required = True)
-
+parser.add_argument('--output', help='Indicates the output file path. If not specified, it prints to screen.', required = False)
+parser.add_argument('--disableLabels', help='Prints only the plot without labels or ticks.', action='store_true', required = False)
 args = parser.parse_args()
 
 if (not path.exists(args.file) ):
@@ -48,8 +49,6 @@ for x in js["Timelines"]:
   timelines.append(js["Timelines"][x])
   labels.append(x)
 
-fig, ax = pyplot.subplots(1, 1, sharex=True, figsize=(25, 10))
-
 ######################## Preprocessing information
 
 # Calculating segment durations
@@ -67,13 +66,16 @@ for list in timelines:
  startLists.append(currentStartList)
  durationLists.append(currentDurationList)
  solverIdLists.append(currentSolverIdList)
-  
+ 
 ######################## Creating Time-based figure
 
 #### Creating Timeline Plot
 
 if (args.plot == 'timeline'):
 
+ height = (5 * len(durationLists) / 512)  
+ fig, ax = pyplot.subplots(1, 1, sharex=True, figsize=(25, height))
+ 
  # Setting Y-axis limits 
  upperLimit = 10 + len(timelines) * 10
  ax.set_ylim(0, upperLimit) 
@@ -81,7 +83,7 @@ if (args.plot == 'timeline'):
  # Setting X-axis limits 
  ax.set_xlim(0, tend) 
   
- # Setting ticks on y-axis 
+ # Setting ticks and labels
  yticks = [] 
  for i in range(len(timelines)):
   yticks.append(10 + i*10)
@@ -90,9 +92,13 @@ if (args.plot == 'timeline'):
  ax.set_yticks([])
  
  xticklabels = []
- for tick in xticks: xticklabels.append("{:.1f}".format(tick))
+ for tick in xticks: xticklabels.append("{:.1f}".format(tick/3600))
  ax.set_xticklabels(xticklabels)
 
+ if (args.disableLabels == True):
+  ax.set_yticks([])
+  ax.set_xticks([])
+  
  # Setting graph attribute 
  ax.grid(False) 
 
@@ -101,19 +107,18 @@ if (args.plot == 'timeline'):
  cNorm  = colors.Normalize(vmin=0, vmax=16)
  scalarMap = cm.ScalarMappable(norm=cNorm, cmap=cMap)
  colorMap = [ scalarMap.to_rgba(i) for i in range(16) ]
- colorMap.reverse()
 
  for i in range(len(startLists)):
-  #colorList = [ 'tab:blue', 'blue' ]
-  #solverList = [0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 6, 6, 6, 6, 6, 9, 9, 9, 9, 9, 12, 12, 12, 12, 12]
-  #colorList = [ colorMap[solverList[j]] for j in range(0, len(solverIdLists[i])) ]
   colorList = [ colorMap[solverIdLists[i][j]*3] for j in range(0, len(solverIdLists[i])) ]
   segList = [ (startLists[i][j], durationLists[i][j]) for j in range(0, len(startLists[i])) ]
   ax.broken_barh(segList, (yticks[i] - 5, 9), facecolors = tuple(colorList) )
-
+ 
 #### Creating Efficiency Plot
 
-if (args.plot == 'efficiency'): 
+if (args.plot == 'efficiency'):
+ 
+ fig, ax = pyplot.subplots(1, 1, sharex=True, figsize=(25, 10)) 
+ 
  N = 1000
  dt =  elapsedTime / N
 
@@ -171,4 +176,8 @@ if (args.plot == 'efficiency'):
 
 pyplot.xticks(fontsize=14)
 pyplot.yticks(fontsize=14)
-pyplot.show() 
+
+if (args.output is None):
+ pyplot.show()
+else: 
+ pyplot.savefig(args.output, bbox_inches='tight')

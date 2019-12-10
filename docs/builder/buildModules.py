@@ -58,7 +58,9 @@ def buildModules(koraliDir):
     
    moduleSiblings = ''
    for root, dirs, files in os.walk(inputDirs[i], topdown=True):
-    for dir in dirs: moduleSiblings += '        + [' + dir.capitalize() + ']' + '(' + dir + ')\n\n'
+    for dir in dirs:
+     if os.path.isfile(os.path.join(root, dir) + '/README.md'):
+      moduleSiblings += ' + [' + dir.capitalize() + ']' + '(' + dir + ')\n\n'
     break
    
    if (moduleSiblings != ''):

@@ -6,26 +6,12 @@ import sys
 
 koraliDir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)) + '/../..') 
 
-from buildDistributions import *
-from buildProblems import *
-from buildSolvers import *
+from buildModules import *
 from buildTests import *
-from buildConduits import *
 from buildTutorials import *
 
-with open(koraliDir + '/docs/docs/manual._md', 'r') as file: manualString = file.read()
-
-# Processing Distributions
-buildDistributions(koraliDir)
-
-# Processing Problems
-problemListString = buildProblems(koraliDir)
-   
-# Processing Solvers
-solverListString = buildSolvers(koraliDir)
-
-# Processing Conduits
-conduitsListString = buildConduits(koraliDir)
+# Processing Modules
+buildModules(koraliDir)
 
 # Processing Tutorials
 buildTutorials(koraliDir)
@@ -33,9 +19,7 @@ buildTutorials(koraliDir)
 # Processing Tests
 buildTests(koraliDir)
 
-newManualFileName = koraliDir + '/docs/docs/manual.md'
-manualString = manualString.replace('<!--- Problems go here --->', problemListString)
-manualString = manualString.replace('<!--- Solvers go here --->', solverListString)
-manualString = manualString.replace('<!--- Conduits go here --->', conduitsListString)
+with open(koraliDir + '/docs/docs/manual/manual._md', 'r') as file: manualString = file.read()
+newManualFileName = koraliDir + '/docs/docs/manual/manual.md'
 print('[Korali] Creating ' + newManualFileName + '...')  
 with open(newManualFileName, 'w+') as file: file.write(manualString)

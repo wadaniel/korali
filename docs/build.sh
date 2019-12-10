@@ -12,8 +12,8 @@ function check()
 # Build pages from source code
 pushd builder
 python3 ./buildWeb.py
-popd
 check
+popd
 
 # Installing mkdocs and materials theme
 pip install mkdocs --user

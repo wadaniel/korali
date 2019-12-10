@@ -7,7 +7,7 @@ Korali provides a simple interface that allows users to easily describe statisti
 
 ### **Download Korali**
 
-Latest Release: 28/06/2019 - **[Korali v1.0.0](install.md)** ([Release Notes](https://github.com/cselab/korali/blob/master/docs/RELEASE-NOTES))
+Latest Release: 13/12/2019 - **[Korali v1.0.0](install.md)** ([Release Notes](https://github.com/cselab/korali/blob/master/docs/RELEASE-NOTES))
 
 ### **What Korali Does**
 

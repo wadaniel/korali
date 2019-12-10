@@ -46,7 +46,7 @@ def buildModules(koraliDir):
  
    with open(inputFiles[i], 'r') as file: moduleDocString = file.read()
    
-   moduleDocString = '# ' + moduleName + '\n\n' + moduleDocString 
+   moduleDocString = '# ' + moduleName.capitalize() + '\n\n' + moduleDocString 
    
    moduleSettingsString = '### Module Configuration\n\n'
    if ('Configuration Settings' in moduleConfig):
@@ -58,11 +58,11 @@ def buildModules(koraliDir):
     
    moduleSiblings = ''
    for root, dirs, files in os.walk(inputDirs[i], topdown=True):
-    for dir in dirs: moduleSiblings += '[' + dir + ']' + '(' + dir + ')\n'
+    for dir in dirs: moduleSiblings += '        + [' + dir.capitalize() + ']' + '(' + dir + ')\n\n'
     break
    
    if (moduleSiblings != ''):
-    moduleDocString += '### Sibling Modules\n\n'
+    moduleDocString += '### Sub-Modules\n\n'
     moduleDocString += moduleSiblings
     moduleDocString +='\n\n'  
      

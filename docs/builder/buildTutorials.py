@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import sys
 import os
 import json
@@ -35,6 +37,7 @@ def buildTutorials(koraliDir):
    
    ####### Producing List Entry
    
+   print('[Korali] Processing ' + tutorialReadmeFile + '...')
    rowString  = '- **(' + tutorialCode + ')** - [' + tutorialTitle + '](' + tutorialLink + ')  \n'
    listRowsStringDict[tutorialCategory].append(rowString)
    

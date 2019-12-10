@@ -2,7 +2,6 @@
 
 In this tutorial we show how to solve a **constrained optimization** problem ([CEC 2006](http://web.mysites.ntu.edu.sg/epnsugan/PublicSite/Shared%20Documents/CEC-2006/technical_report.pdf) Test Problem g09), defined as: Find $x^\star = \mathop{\arg\min}\limits_{x}  \,\,\, f(x) \,,$ under the constraints $g_i(x) \leq 0.$
 
-## Source Code
 
 ## Problem Setup
 
@@ -154,13 +153,13 @@ k.run()
 We are now ready to run our example:
 
 ```bash
-./b2-constrained-optimization
+./a4-constrained-optimization
 ```
 
 Or, alternatively:
 
 ```bash
-python3 ./b2-constrained-optimization
+python3 ./a4-constrained-optimization
 ```
 
 The results are saved in the folder `_korali_result/`.

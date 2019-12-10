@@ -1,33 +1,64 @@
 include Makefile.conf
+# ==============================================================================
+WARNINGFLAGS = -Wno-deprecated-declarations -Wfatal-errors
+MACOS_CXX = clang++
+ifeq ($(CXX),$(MACOS_CXX))
+   WARNINGFLAGS += -Wno-self-assign-field -Wno-dangling-else
+endif
 
-CFLAGS  = -g $(OPTFLAGS) -I. $(GSLCFLAGS) $(CXXARCH) -Wno-deprecated-declarations -Wfatal-errors
-LDFLAGS = $(SHAREDLIB_FLAG) -L$(GSLPREFIX)/lib -Wl,-rpath -Wl,$(GSLPREFIX)/lib $(GSLLIBS) 
+# ==============================================================================
+CXXFLAGS  = -g $(OPTFLAGS) $(GSLCFLAGS) $(CXXARCH) $(WARNINGFLAGS)
+CXXFLAGS += -I. -I./external
+CXXFLAGS += $(PYBIND11INCLUDES) $(MPIFLAGS)
 
-CFLAGS  += $(PYBIND11INCLUDES) $(MPIFLAGS)
+LDFLAGS = $(SHAREDLIB_FLAG) -L$(GSLPREFIX)/lib -Wl,-rpath -Wl,$(GSLPREFIX)/lib $(GSLLIBS)
 LDFLAGS += $(PYBIND11LIBS)
+
+DEPFLAGS = -MT $@ -MD -MP -MF $(DEPDIR)/$*.Td
+
+COMPILE.cc = $(CXX) $(DEPFLAGS) $(CXXFLAGS) -fPIC -c -o $@
+LINK.o = $(CXX) $(LDFLAGS) $(LDLIBS) -o $@
+PRECOMPILE =
+POSTCOMPILE = @mv -f $(DEPDIR)/$*.Td $(DEPDIR)/$*.d
+
+# ==============================================================================
+SOURCES = $(shell find . -name "*.cpp")
+BUILDFILES = $(shell find . -name "build.py")
+
+OBJDIR := .o
+DEPDIR := .d
+
+OBJS := $(patsubst %,$(OBJDIR)/%.o,$(basename $(SOURCES)))
+DEPS := $(patsubst %,$(DEPDIR)/%.d,$(basename $(SOURCES)))
+
+$(shell mkdir -p $(dir $(OBJS)) >/dev/null)
+$(shell mkdir -p $(dir $(DEPS)) >/dev/null)
+# ==============================================================================
 
 .PHONY: clean all
 
 all: libkorali.so
 
-build:
-	python3 python/builder/buildKorali.py
-
-SOURCES = $(shell find . -name "*.cpp") 
-OBJECTS = $(SOURCES:.cpp=.o)
-
-%.o: %.cpp
-	$(CXX) $(CFLAGS) -fPIC -c $< -o $@
-
-libkorali.so: $(OBJECTS)
-	$(CXX) $^ -o $@ $(LDFLAGS)
-
 clean:
-	@rm -f solvers/*/*.hpp solvers/*/*.cpp 
-	@rm -f problems/*/*.hpp problems/*/*.cpp 
-	@rm -f models/*/*.hpp
-	@rm -f distributions/*/*.hpp distributions/*/*.cpp distributions/*.cpp distributions/*.hpp 
-	@rm -f variable/*.cpp variable/*.hpp setup.py
-	@rm -f setup.py
-	@rm -f *.o ./*/*.o *.so *.a $(OBJECTS) 
+	@rm -f `find . -name "*._hpp" | sed 's/._hpp/.hpp/g'`
+	@rm -f `find . -name "*._cpp" | sed 's/._cpp/.cpp/g'`
+	@rm -f `find . -name "*.o" -not -type d` 
+	@rm -f  *.so *.a $(OBJECTS)
+	@rm -rf $(OBJDIR) $(DEPDIR)
 
+build:
+	@for buildfile in $(BUILDFILES); do python3 $$buildfile; done
+
+libkorali.so: $(OBJS)
+	$(LINK.o) $^
+
+$(OBJDIR)/%.o: %.cpp
+$(OBJDIR)/%.o: %.cpp $(DEPDIR)/%.d
+	$(PRECOMPILE)
+	$(COMPILE.cc) $<
+	$(POSTCOMPILE)
+
+.PRECIOUS = $(DEPDIR)/%.d
+$(DEPDIR)/%.d: ;
+
+-include $(DEPS)

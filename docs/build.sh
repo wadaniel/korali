@@ -10,7 +10,9 @@ function check()
 }
 
 # Build pages from source code
-python3 ./builder/buildWeb.py
+pushd builder
+python3 ./buildWeb.py
+popd
 check
 
 # Installing mkdocs and materials theme

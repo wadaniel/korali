@@ -1,0 +1,16 @@
+#ifndef _KORALI_DISTRIBUTION_SPECIFICHPP_
+#define _KORALI_DISTRIBUTION_SPECIFICHPP_
+
+#include "distribution/distribution.hpp"
+
+namespace korali { namespace distribution {
+
+class Specific : public korali::Distribution
+{
+ public:
+
+};
+
+} } // namespace korali::distribution
+
+#endif // _KORALI_DISTRIBUTION_SPECIFICHPP_

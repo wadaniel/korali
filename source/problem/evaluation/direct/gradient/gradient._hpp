@@ -1,0 +1,21 @@
+#ifndef _KORALI_PROBLEM_GRADIENT_HPP_
+#define _KORALI_PROBLEM_GRADIENT_HPP_
+
+#include "problem/evaluation/direct/direct.hpp"
+
+namespace korali { namespace problem { namespace evaluation { namespace direct {
+
+class Gradient : public korali::problem::evaluation::Direct
+{
+ private:
+
+ public:
+
+   void basicEvaluation(korali::Sample&) override;
+
+};
+
+} } } } // namespace korali::problem::evaluation::direct
+
+
+#endif // _KORALI_PROBLEM_GRADIENT_HPP_

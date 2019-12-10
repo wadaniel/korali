@@ -1,0 +1,179 @@
+#include "solver/optimizer/Rprop/Rprop.hpp"
+#include "problem/problem.hpp"
+#include "experiment/experiment.hpp"
+#include "conduit/conduit.hpp"
+
+#include <stdio.h>
+
+void korali::solver::optimizer::Rprop::initialize()
+{
+  if( _k->_problem->getType() != "Evaluation/Direct/Gradient" &&
+      _k->_problem->getType() !="Evaluation/GaussianProcess" )
+    korali::logError("Rprop can only optimize problems of type 'Evaluation/Direct/Gradient' or 'Evaluation/GaussianProcess'.\n");
+
+  N = _k->_variables.size();
+
+  if (_k->_currentGeneration > 0) return;
+
+  for (size_t i = 0; i < N; i++)
+    if( std::isfinite(_k->_variables[i]->_initialValue) == false )
+      korali::logError("Initial Value of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
+
+  _currentX.resize( N, 0.0 );
+  for (size_t i = 0; i < N; i++)
+    _currentX[i] = _k->_variables[i]->_initialValue;
+
+  _bestX = _currentX;
+  _delta.resize( N, _delta0 );
+  _currentGradient.resize( N, 0);
+  _previousGradient.resize( N, 0.0 );
+
+  _bestEvaluation = korali::Inf;
+  _xDiff = korali::Inf;
+  _maxStallCounter = 0;
+  _normPreviousGradient = korali::Inf;
+  _previousEvaluation   = korali::Inf;
+}
+
+void korali::solver::optimizer::Rprop::evaluateFunctionAndGradient( void )
+{
+  int Ns = 1;
+  // Initializing Sample Evaluation
+  std::vector<korali::Sample> samples(Ns);
+  for (size_t i = 0; i < Ns; i++){
+    samples[i]["Operation"]  = "Basic Evaluation";
+    samples[i]["Parameters"] = _currentX;
+    samples[i]["Sample Id"]  = i;
+    _modelEvaluationCount++;
+    korali::_conduit->start(samples[i]);
+  }
+
+  // Waiting for samples to finish
+  korali::_conduit->waitAll(samples);
+
+  // Processing results
+  // The 'minus' is there because we want Rprop to do Maximization be default.
+  for (size_t i = 0; i < Ns; i++){
+    _currentEvaluation = samples[i]["Evaluation"];
+    _currentEvaluation = -_currentEvaluation;
+    for( size_t j=0; j<N; j++){
+      _currentGradient[j] = samples[i]["Gradient"][j];
+      _currentGradient[j] = -_currentGradient[j];
+    }
+  }
+}
+
+void korali::solver::optimizer::Rprop::runGeneration( void )
+{
+  evaluateFunctionAndGradient( );
+
+  korali::logInfo("Normal","X = [ ");
+  for(size_t k=0; k<N; k++) korali::logData("Normal"," %.5le  ",_currentX[k]);
+  korali::logData("Normal"," ]\n");
+
+  korali::logInfo("Normal","F(X) = %le \n", _currentEvaluation );
+
+  korali::logInfo("Normal","DF(X) = [ ");
+  for(size_t k=0; k<N; k++) korali::logData("Normal"," %.5le  ",_currentGradient[k]);
+  korali::logData("Normal"," ]\n");
+
+  korali::logInfo("Normal","X_best = [ ");
+  for(size_t k=0; k<N; k++) korali::logData("Normal"," %.5le  ",_bestX[k]);
+  korali::logData("Normal"," ]\n");
+
+  Update_iminus();
+
+  _previousEvaluation   = _currentEvaluation;
+  _previousGradient     = _currentGradient;
+  _normPreviousGradient = vectorNorm(_previousGradient);
+
+  if( _currentEvaluation < _bestEvaluation ){
+    _bestEvaluation = _currentEvaluation;
+    std::vector<double> tmp(N);
+    for(size_t j=0; j<N; j++) tmp[j] = _bestX[j]-_currentX[j];
+    _xDiff = vectorNorm( tmp );
+    _bestX = _currentX;
+    _maxStallCounter = 0;
+  }
+  else{
+    _maxStallCounter++;
+  }
+
+}
+
+
+
+// Rprop_plus
+void korali::solver::optimizer::Rprop::Update_plus( void ){
+  for(size_t i=0; i<N; i++){
+    double productGradient = _previousGradient[i] * _currentGradient[i];
+    if( productGradient > 0 ){
+      _delta[i] = std::min( _delta[i]*_etaPlus, _deltaMax );
+      _currentGradient[i] = -sign(_currentGradient[i]) * _delta[i];
+      _currentX[i] += _currentGradient[i];
+    }
+    else if( productGradient < 0 ){
+      _delta[i] = std::max( _delta[i]*_etaMinus, _deltaMin );
+      _currentX[i] -= _currentGradient[i];
+      _currentGradient[i] = 0;
+    }
+    else{
+      _currentGradient[i] = -sign(_currentGradient[i]) * _delta[i];
+      _currentX[i] += _currentGradient[i];
+    }
+  }
+}
+
+// Rprop_minus
+void korali::solver::optimizer::Rprop::Update_minus( void ){
+  for(size_t i=0; i<N; i++){
+    double productGradient = _previousGradient[i] * _currentGradient[i];
+    if( productGradient > 0 )
+      _delta[i] = std::min( _delta[i]*_etaPlus, _deltaMax );
+    else if( productGradient < 0 )
+      _delta[i] = std::max( _delta[i]*_etaMinus, _deltaMin );
+    _currentX[i] += -sign(_currentGradient[i]) * _delta[i];
+  }
+}
+
+// iRprop_plus
+void korali::solver::optimizer::Rprop::Update_iplus( void ){
+  for(size_t i=0; i<N; i++){
+    double productGradient = _previousGradient[i] * _currentGradient[i];
+    if( productGradient > 0 ){
+      _delta[i] = std::min( _delta[i]*_etaPlus, _deltaMax );
+      _currentGradient[i] = -sign(_currentGradient[i]) * _delta[i];
+      _currentX[i] += _currentGradient[i];
+    }
+    else if( productGradient < 0 ){
+      _delta[i] = std::max( _delta[i]*_etaMinus, _deltaMin );
+      if( _currentEvaluation > _previousEvaluation ) _currentX[i] -= _currentGradient[i];
+      _currentGradient[i] = 0;
+    }
+    else{
+      _currentGradient[i] = -sign(_currentGradient[i]) * _delta[i];
+      _currentX[i] += _currentGradient[i];
+    }
+  }
+}
+
+// iRprop_minus
+void korali::solver::optimizer::Rprop::Update_iminus( void ){
+  for(size_t i=0; i<N; i++){
+    double productGradient = _previousGradient[i] * _currentGradient[i];
+    if( productGradient > 0 ){
+      _delta[i] = std::min( _delta[i]*_etaPlus, _deltaMax );
+    }
+    else if( productGradient < 0 ){
+      _delta[i] = std::max( _delta[i]*_etaMinus, _deltaMin );
+      _currentGradient[i] = 0;
+    }
+    _currentX[i] += -sign(_currentGradient[i]) * _delta[i];
+  }
+}
+
+void korali::solver::optimizer::Rprop::printGenerationBefore(){ return; }
+
+void korali::solver::optimizer::Rprop::printGenerationAfter() { return; }
+
+void korali::solver::optimizer::Rprop::finalize()  { return; }

@@ -1,0 +1,19 @@
+#ifndef _KORALI_PROBLEM_DIRECT_BASIS_HPP_
+#define _KORALI_PROBLEM_DIRECT_BASIS_HPP_
+
+#include "problem/evaluation/direct/direct.hpp"
+
+namespace korali { namespace problem { namespace evaluation { namespace direct {
+
+class Basic : public korali::problem::evaluation::Direct
+{
+ private:
+
+ public:
+
+};
+
+} } } } // namespace korali::problem::evaluation::direct
+
+
+#endif // _KORALI_PROBLEM_DIRECT_BASIS_HPP_

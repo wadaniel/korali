@@ -1,0 +1,18 @@
+#include "distribution/distribution.hpp"
+#include "experiment/experiment.hpp"
+
+void korali::Distribution::initialize()
+{
+ _seed = _k->_randomSeed++;
+ _range = gsl_rng_alloc (gsl_rng_default);
+ gsl_rng_set(_range, _seed);
+
+ if (_hasConditionalVariables == false) updateDistribution();
+}
+
+void korali::Distribution::finalize()
+{
+ gsl_rng_free(_range);
+}
+
+

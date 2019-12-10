@@ -1,8 +1,8 @@
-# A.2 - Model Sampling: Finding the Underlying Distribution
+# A.2 - Model Sampling: Draw Samples from a Function
 
-In this tutorial we show how to **sample** directly from a given function.
+In this tutorial we show how to **sample** directly from a given function 
+using Metropolis Hastings (MCMC) and Transition Markov Chain Monte Carlo (TMCMC).
 
-## Source Code
 
 ## Problem Setup
 We are given the function $g(\vartheta)=\exp(-\vartheta^2)$ for $\vartheta\in[-10,10]$.

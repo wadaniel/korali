@@ -29,20 +29,23 @@ do
   pushd $dir >> $logFile 2>&1
 
   log "[Korali] Removing any old result files..."
-  rm -rf _korali_results >> $logFile 2>&1
+  sh .remove_results.sh >> $logFile 2>&1
   check_result
 
-  for file in run-*.py
+  for file in run-*.{py,sh}
   do
     # In case there are no files matching the pattern 'run-*.py', break
     if [ ! -f "$file" ]; then
-      echo "  + No run-*.py file found!"
       continue
     fi
 
     logEcho "  + Running File: $file"
-
-    python3 $file >> $logFile 2>&1
+    if [ ${file: -3} == ".py" ]; then
+      python3 $file >> $logFile 2>&1
+    fi
+    if [ ${file: -3} == ".sh" ]; then
+      sh $file >> $logFile 2>&1
+    fi
     check_result
   done
 

@@ -1,0 +1,67 @@
+{
+ "Configuration Settings":
+ [
+   {
+    "Name": [ "Objective" ],
+    "Type": "std::string",
+    "Options": [
+                { "Value": "Minimize", "Description": "Korali will find the point of minimum evaluation of the provided model." },
+                { "Value": "Maximize", "Description": "Korali will find the point of maximum evaluation of the provided model." }
+               ],
+    "Default": "Maximize",
+    "Description": "Indicates whether Korali will minimize or maximize the objective evaluation."
+   },
+   {
+    "Name": [ "Objective Function" ],
+    "Type": "std::function<void(korali::Sample&)>",
+    "Description": "Stores the function to evaluate."
+   },
+   {
+    "Name": [ "Constraints" ],
+    "Type": "std::vector<std::function<void(korali::Sample&)>>",
+    "Default": "std::vector<std::uint64_t>(0)",
+    "Description": "Stores constraints to the objective function."
+   }
+ ],
+
+ "Available Operations":
+ [
+  {
+   "Name": "Evaluate Constraints",
+   "Function": "evaluateConstraints", 
+   "Description": "Evaluates the feasibility of a sample, given the described constraints.",
+   "Results": [ { "Name": "Constraint Evaluation", "Description": "Contains the evaluation of all constraints given a sample." } ]
+  }
+ ],
+
+ "Variables Configuration":
+ [
+  {
+   "Name": [ "Lower Bound" ],
+   "Type": "double",
+   "Default": "-INFINITY",
+   "Description": "Specifies the lower bound for the variable's value."
+  },
+  {
+   "Name": [ "Upper Bound" ],
+   "Type": "double",
+   "Default": "+INFINITY",
+   "Description": "Specifies the upper bound for the variable's value."
+  },
+  {
+   "Name": [ "Granularity" ],
+   "Type": "double",
+   "Default": "0.0",
+   "Description": "Specifies the granularity of a discrete variable, a granularity of 1.0 means that the variable can only take values in (.., -1.0, 0.0, +1.0, +2.0, ..) where the levels are set symmetric around the initial mean (here 0.0)."
+  }
+ ],
+
+ "Internal Settings":
+ [
+   {
+    "Name": [ "Has Discrete Variables" ],
+    "Type": "bool",
+    "Description": "Flag indicating if at least one of the variables is discrete."
+   }
+ ]
+}

@@ -1,0 +1,52 @@
+#include "solver/executor/executor.hpp"
+#include "conduit/conduit.hpp"
+
+void korali::solver::Executor::initialize()
+{
+ // Initializing variable defaults
+ _executionProblem = dynamic_cast<korali::problem::Execution*>(_k->_problem);
+
+ if (_executionProblem == NULL)
+   korali::logError("Executor solver can only solve problems of type 'Execution'.\n");
+
+ _sampleCount   = _k->_variables[0]->_loadedValues.size();
+ _variableCount = _k->_variables.size();
+
+}
+
+void korali::solver::Executor::runGeneration()
+{
+  _maxModelEvaluations     = std::min(_maxModelEvaluations, _sampleCount);
+  _executionsPerGeneration = std::min(_executionsPerGeneration, _maxModelEvaluations - _modelEvaluationCount);
+  
+  std::vector<double> sampleData(_variableCount);
+  std::vector<korali::Sample> samples(_executionsPerGeneration);
+  for (size_t j = 0; j < _variableCount; j++) sampleData[j] = _k->_variables[j]->_loadedValues[_modelEvaluationCount];
+
+  for (size_t i = 0; i < _executionsPerGeneration; i++)
+  {
+    std::vector<double> sampleData(_variableCount);
+    for (size_t j = 0; j < _variableCount; j++) sampleData[j] = _k->_variables[j]->_loadedValues[_modelEvaluationCount];
+
+    korali::logInfo("Detailed", "Running sample %zu with values:\n         ", _modelEvaluationCount);
+    for(auto& x : sampleData) korali::logData("Detailed", " %le   ", x);
+    korali::logData("Detailed", "\n");
+
+    samples[i]["Operation"]  = "Execute";
+    samples[i]["Parameters"] = sampleData;
+    samples[i]["Sample Id"]  = _modelEvaluationCount;
+    korali::_conduit->start(samples[i]);
+    _modelEvaluationCount++;
+  }
+
+  korali::_conduit->waitAll(samples);
+}
+
+void korali::solver::Executor::printGenerationBefore()
+{
+}
+
+void korali::solver::Executor::printGenerationAfter()
+{
+ korali::logInfo("Minimal", "Total Executions %lu.\n", _modelEvaluationCount);
+}

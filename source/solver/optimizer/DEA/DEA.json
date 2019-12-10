@@ -1,0 +1,183 @@
+{
+ "Configuration Settings": 
+ [
+   {
+    "Name": [ "Population Size" ],
+    "Type": "size_t",
+    "Description": "Specifies the number of samples to evaluate per generation (preferably 5-10x number of variables)."
+   },
+   {
+    "Name": [ "Crossover Rate" ],
+    "Default": "0.9",
+    "Type": "double",
+    "Description": "Controls the rate at which dimensions of the samples are mixed (must be in [0,1])."
+   },
+   {
+    "Name": [ "Mutation Rate" ],
+    "Default": "0.5",
+    "Type": "double",
+    "Description": "Controls the scaling of the vector differentials (must be in [0,2], preferably < 1)."
+   },
+   {
+    "Name": [ "Mutation Rule" ],
+    "Default": "Fixed",
+    "Type": "std::string",
+    "Options": [
+                { "Value": "Fixed", "Description": "What does this mean?." },
+                { "Value": "Self Adaptive", "Description": "What does this mean?." }
+               ],
+    "Description": "Controls the Mutation Rate:  (varying Crossover Rate and Mutation Rate, according to [Brest2006])."
+   },
+   {
+    "Name": [ "Parent Selection Rule" ],
+    "Default": "Random",
+    "Type": "std::string",
+    "Options": [
+                { "Value": "Random", "Description": "Select parent randomly." },
+                { "Value": "Best", "Description": "Mutate only best variables." }
+               ],
+    "Description": "Defines the selection rule of the parent vector."
+   },
+   {
+    "Name": [ "Accept Rule" ],
+    "Default": "Greedy",
+    "Type": "std::string",
+    "Options": [
+                { "Value": "Best", "Description": "Update best sample if better than Best Ever Sample." },
+                { "Value": "Greedy", "Description": "Accept all candiates better than parent." },
+                { "Value": "Iterative", "Description": "Iterate through candidates and accept if Best Ever Value improved." },
+                { "Value": "Improved", "Description": "Accept all candidates better than Best Ever Sample." }
+               ],
+    "Description": "Sets the accept rule after sample mutation and evaluation."
+   },
+   {
+    "Name": [ "Fix Infeasible" ],
+    "Default": "true",
+    "Type": "bool",
+    "Description": "If set true, Korali samples a random sample between Parent and the voiolated boundary. If set false, infeasible samples are mutated again until feasible."
+   }
+ ],
+ 
+ "Termination Criteria":
+ [
+   {
+    "Name": [ "Max Infeasible Resamplings" ],
+    "Type": "size_t",
+    "Default": "10000000",
+    "Criteria": "_infeasibleSampleCount > _maxInfeasibleResamplings",
+    "Description": "Max number of mutations per sample per generation if infeasible (only relevant if Fix Infeasible is set False)."
+   },
+   {
+    "Name": [ "Min Value" ],
+    "Type": "double",
+    "Default": "-INFINITY",
+    "Criteria": "(_k->_currentGeneration > 1) && (-_bestEverValue < _minValue)",
+    "Description": "Specifies the target fitness to stop minimization."
+   },
+   {
+    "Name": [ "Max Value" ],
+    "Type": "double",
+    "Default": "+INFINITY",
+    "Criteria": "(_k->_currentGeneration > 1) && (+_bestEverValue > _maxValue)",
+    "Description": "Specifies the target fitness to stop maximization."
+   },
+   {
+    "Name": [ "Min Value Difference Threshold" ],
+    "Type": "double",
+    "Default": "-INFINITY",
+    "Criteria": "(_k->_currentGeneration > 1) && (fabs(_currentBestValue - _previousBestValue) < _minValueDifferenceThreshold)",
+    "Description": "Specifies the minimum fitness differential between two consecutive generations before stopping execution."
+   },
+   {
+    "Name": [ "Min Step Size" ],
+    "Type": "double",
+    "Default": "-INFINITY",
+    "Criteria": "_currentMinimumStepSize < _minStepSize",
+    "Description": "Specifies the minimal step size of the population mean from one gneration to another."
+   }
+ ],
+ 
+ "Internal Settings": 
+ [
+   {
+    "Name": [ "Value Vector" ],
+    "Type": "std::vector<double>",
+    "Description": "Objective Function Values."
+   },
+   {
+    "Name": [ "Previous Value Vector" ],
+    "Type": "std::vector<double>",
+    "Description": "Objective Function Values from previous evaluations."
+   },
+   {
+    "Name": [ "Sample Population" ],
+    "Type": "std::vector<std::vector<double>>",
+    "Description": "Sample variable information."
+   },
+   {
+    "Name": [ "Candidate Population" ],
+    "Type": "std::vector<std::vector<double>>",
+    "Description": "Sample candidates variable information."
+   },
+   {
+    "Name": [ "Current Best Value" ],
+    "Type": "double",
+    "Description": "Best model evaluation from current generation."
+   },
+   {
+    "Name": [ "Previous Best Value" ],
+    "Type": "double",
+    "Description": "Best model evaluation from previous generation."
+   },
+   {
+    "Name": [ "Best Sample Index" ],
+    "Type": "size_t",
+    "Description": "Index of the best sample in current generation."
+   },
+   {
+    "Name": [ "Best Ever Value" ],
+    "Type": "double",
+    "Description": "Best ever model evaluation."
+   },
+   {
+    "Name": [ "Previous Best Ever Value" ],
+    "Type": "double",
+    "Description": "Best ever model evaluation as of previous generation."
+   },
+   {
+    "Name": [ "Current Mean" ],
+    "Type": "std::vector<double>",
+    "Description": "Current mean of population."
+   },
+   {
+    "Name": [ "Previous Mean" ],
+    "Type": "std::vector<double>",
+    "Description": "Previous mean of population."
+   },
+   {
+    "Name": [ "Best Ever Variables" ],
+    "Type": "std::vector<double>",
+    "Description": "Best ever found variables."
+   },
+   {
+    "Name": [ "Current Best Variables" ],
+    "Type": "std::vector<double>",
+    "Description": "Best variables of current generation."
+   },
+   {
+    "Name": [ "Max Distances" ],
+    "Type": "std::vector<double>",
+    "Description": "Max distance between samples per dimension."
+   },
+   {
+    "Name": [ "Infeasible Sample Count" ],
+    "Type": "size_t",
+    "Description": "Keeps count of infeasible samples so far."
+   },
+   {
+    "Name": [ "Current Minimum Step Size" ],
+    "Type": "double",
+    "Description": "Minimum step size of any variable in the current generation."
+   }
+ ]
+}

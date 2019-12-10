@@ -1,4 +1,0 @@
-
-## Multivariate
-          
-The multivariate

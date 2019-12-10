@@ -1,0 +1,55 @@
+#include "problem/evaluation/direct/direct.hpp"
+#include "conduit/conduit.hpp"
+
+bool korali::problem::evaluation::Direct::isSampleFeasible(korali::Sample& sample)
+{
+  for (size_t i = 0; i < sample["Parameters"].size(); i++)
+  {
+    double par = sample["Parameters"][i];
+    if (std::isfinite(par) == false) return false;
+    if (par < _k->_variables[i]->_lowerBound) return false;
+    if (par > _k->_variables[i]->_upperBound) return false;
+  }
+  return true;
+}
+
+void korali::problem::evaluation::Direct::initialize()
+{
+ if (_k->_variables.size() == 0) korali::logError("Direct Evaluation problems require at least one variable.\n");
+
+/* check _granularity for discrete variables */
+ for (size_t i = 0; i < _k->_variables.size(); i++)
+ {
+   if(_k->_variables[i]->_granularity < 0.0)   korali::logError("Negative granularity for variable \'%s\'.\n", _k->_variables[i]->_name.c_str());
+   if(_k->_variables[i]->_granularity > 0.0)  _hasDiscreteVariables = true;
+ }
+}
+
+void korali::problem::evaluation::Direct::evaluateConstraints(korali::Sample& sample)
+{
+ for (size_t i = 0; i < _constraints.size(); i++)
+ {
+  sample.run(_constraints[i]);
+  double evaluation = sample["Evaluation"];
+  // If constraint is not a finite number, constraint is set to +Infinity
+  if( std::isnan(evaluation) ) sample["Constraint Evaluations"][i] = korali::Inf;
+  else sample["Constraint Evaluations"][i] = evaluation;
+ }
+}
+
+void korali::problem::evaluation::Direct::basicEvaluation(korali::Sample& sample)
+{
+ sample.run(_objectiveFunction);
+
+ std::string sampleString = "['Evaluation']";
+
+ if ( korali::JsonInterface::isDefined(sample._js.getJson(), sampleString) == false)
+   korali::logError("The %s problem needs a function evaluation. Be sure that you assign a value to the %s attribute in the model definition.\n", _k->_problem->getType().c_str(), sampleString.c_str());
+
+ double evaluation = sample["Evaluation"];
+ double evaluationSign = _objective == "Maximize" ? 1.0 : -1.0;
+
+ // If result is not a finite number, objective function evaluates to -Infinity
+ if(std::isnan(evaluation)) sample["Evaluation"] = -korali::Inf;
+ else sample["Evaluation"] = evaluationSign * evaluation;
+}

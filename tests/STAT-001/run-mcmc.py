@@ -3,29 +3,38 @@
 # Importing computational model
 import sys
 sys.path.append('./model')
+sys.path.append('./helpers')
+
 from model import *
+from helpers import *
 
 # Starting Korali's Engine
 import korali
-k = korali.initialize()
 
-# Selecting problem and solver types.
-k["Problem"]["Type"] = "Sampling"
+e = korali.Experiment()
+e["Console"]["Frequency"] = 500
+e["Results"]["Frequency"] = 500
 
-# Defining problem's variables and their MCMC settings
-k["Variables"][0]["Name"] = "X"
-k["Variables"][0]["Initial Mean"] = 0.0
-k["Variables"][0]["Initial Standard Deviation"] = 1.0
+e["Problem"]["Type"] = "Evaluation/Direct/Basic"
+e["Problem"]["Objective Function"] = model
 
 # Configuring the MCMC sampler parameters
-k["Solver"]["Type"]  = "MCMC" 
-k["Solver"]["Burn In"] = 500
-k["Solver"]["Termination Criteria"]["Max Chain Length"] = 5000
+e["Solver"]["Type"] = "Sampler/MCMC"
+e["Solver"]["Burn In"] = 500
+e["Solver"]["Termination Criteria"]["Max Samples"] = 5000
 
-# Setting Model
-k.setDirectModel(model)
+# Defining problem's variables and their MCMC settings
+e["Variables"][0]["Name"] = "X"
+e["Variables"][0]["Initial Mean"] = 1.0
+e["Variables"][0]["Initial Standard Deviation"] = 1.0
 
 # Running Korali
-k["General"]["Random Seed"] = 0xC0FFEE
-k["General"]["Results Output"]["Path"] = "_result_run-mcmc"
-k.run()
+e["Random Seed"] = 0xC0FFEE
+e["Results"]["Path"] = "_result_run-mcmc"
+
+k = korali.Engine()
+k.run(e)
+
+# Testing Results
+checkMean(e, 0.0, 0.01)
+checkStd(e, 1.0, 0.025)

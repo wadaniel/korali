@@ -2,24 +2,20 @@
 
 # Constraints
 
-def g1(k) :
-  x = k.getVariables();
-  c = -127.0 + 2 * x[0] * x[0] + 3.0 * pow(x[1], 4) + x[2] + 4.0 * x[3] * x[3] + 5.0 * x[4];
-  k.setConstraintEvaluation(c);
+def g1(k):
+  v = k["Parameters"]
+  k["Evaluation"] = -127.0 + 2 * v[0] * v[0] + 3.0 * pow(v[1], 4) + v[2] + 4.0 * v[3] * v[3] + 5.0 * v[4]
 
 
 def g2(k):
-  x = k.getVariables();
-  c = -282.0 + 7.0 * x[0] + 3.0 * x[1] + 10.0 * x[2] * x[2] + x[3] - x[4];
-  k.setConstraintEvaluation(c);
+  v = k["Parameters"]
+  k["Evaluation"] = -282.0 + 7.0 * v[0] + 3.0 * v[1] + 10.0 * v[2] * v[2] + v[3] - v[4]
 
 
 def g3(k):
-  x = k.getVariables();
-  c = -196.0 + 23.0 * x[0] + x[1] * x[1] + 6.0 * x[5] * x[5] - 8.0 * x[6];
-  k.setConstraintEvaluation(c);
+  v = k["Parameters"]
+  k["Evaluation"] = -196.0 + 23.0 * v[0] + v[1] * v[1] + 6.0 * v[5] * v[5] - 8.0 * v[6]
 
 def g4(k):
-  x = k.getVariables();
-  c = 4.0 * x[0] * x[0] + x[1] * x[1] - 3.0 * x[0] * x[1] + 2.0 * x[2] * x[2] + 5.0 * x[5] - 11.0 * x[6];
-  k.setConstraintEvaluation(c);
+  v = k["Parameters"]
+  k["Evaluation"] = 4.0 * v[0] * v[0] + v[1] * v[1] - 3.0 * v[0] * v[1] + 2.0 * v[2] * v[2] + 5.0 * v[5] - 11.0 * v[6]

@@ -1,0 +1,21 @@
+#ifndef _KORALI_PROBLEM_HIERARCHICAL_HPP_
+#define _KORALI_PROBLEM_HIERARCHICAL_HPP_
+
+#include "problem/evaluation/bayesian/bayesian.hpp"
+
+namespace korali { namespace problem { namespace evaluation { namespace bayesian {
+
+class Hierarchical : public korali::problem::evaluation::Bayesian
+{
+ private:
+
+ public:
+
+  void initialize() override;
+
+};
+
+} } } } // namespace korali::problem::evaluation::bayesian
+
+
+#endif // _KORALI_PROBLEM_HIERARCHICAL_HPP_

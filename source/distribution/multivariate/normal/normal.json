@@ -1,0 +1,27 @@
+{
+ "Configuration Settings": 
+ [
+   {
+    "Name": [ "Mean Vector" ],
+    "Type": "std::vector<double>",
+    "Default": "std::vector<double>(0)",
+    "Description": "Means of the variables."
+   },
+   {
+    "Name": [ "Covariance Matrix" ],
+    "Type": "std::vector<double>",
+    "Default": "std::vector<double>(0)",
+    "Description": "Covariance Matrix of the multivariate normal."
+   }
+ ],
+ 
+ "Internal Settings":
+ [
+   {
+    "Name": [ "Work Vector" ],
+    "Type": "std::vector<double>",
+    "Description": "Auxiliary work vector."
+   }
+ ]
+}
+ 

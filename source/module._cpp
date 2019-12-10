@@ -1,0 +1,29 @@
+#include "module.hpp"
+
+nlohmann::json korali::__profiler;
+std::chrono::time_point<std::chrono::high_resolution_clock> korali::_startTime;
+std::chrono::time_point<std::chrono::high_resolution_clock> korali::_endTime;
+double korali::_cumulativeTime;
+
+// Module Include List
+
+korali::Module* korali::Module::getModule(nlohmann::json& js)
+{
+ std::string moduleType = "Undefined";
+
+ if (! korali::JsonInterface::isDefined(js, "['Type']")) korali::logError("No module type provided.\n");
+
+ moduleType = js["Type"].get<std::string>();
+ korali::JsonInterface::eraseValue(js, "['Type']");
+
+ korali::Module* module = nullptr;
+
+ // Module Selection List
+
+ if (module == nullptr) korali::logError("Unrecognized module: %s.\n", moduleType.c_str());
+
+ module->_k = _k;
+ module->setConfiguration(js);
+
+ return module;
+}

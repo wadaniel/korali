@@ -13,12 +13,3 @@ Here you will find guides and tutorials to help you kickstart your own applicati
 ### High-Performance Tutorials
 
 <!--- Tutorials C List --->
-
-### Advanced Tutorials
-
-<!--- Tutorials D List --->
-
-### Guides
-
-<!--- Tutorials G List --->
-

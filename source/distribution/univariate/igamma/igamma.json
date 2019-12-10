@@ -1,0 +1,14 @@
+{
+ "Conditional Variables":
+ [
+   {
+    "Name": [ "Shape" ],
+    "Description": ""
+   },
+   {
+    "Name": [ "Scale" ],
+    "Description": ""
+   }
+ ]
+
+}

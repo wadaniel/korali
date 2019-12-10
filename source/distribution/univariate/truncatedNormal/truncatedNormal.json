@@ -1,0 +1,21 @@
+{
+ "Conditional Variables": 
+ [
+   {
+    "Name": [ "Mu" ],
+    "Description": ""
+   },
+   {
+    "Name": [ "Sigma" ],
+    "Description": ""
+  },
+  {
+   "Name": [ "Minimum" ],
+   "Description": ""
+  },
+  {
+   "Name": [ "Maximum" ],
+   "Description": ""
+  }
+ ]
+}

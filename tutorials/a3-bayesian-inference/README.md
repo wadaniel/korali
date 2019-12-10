@@ -3,7 +3,6 @@
 In this tutorial we show how to **optimize** and **sample** the posterior
 distribution of a Bayesian inference problem.
 
-## Source Code
 
 ## Problem Setup
 In this example we will solve the inverse problem of estimating the Variables

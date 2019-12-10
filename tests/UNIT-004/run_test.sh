@@ -2,9 +2,9 @@
 
 source ../functions.sh
 
-logEcho "[Korali] Running Checkpoint/Restart Test..."
+logEcho "[Korali] Running Multiple Jobs test..."
 
-pushd ../../tutorials/b2-preserving-results/
+pushd ../../tutorials/c3-multiple-jobs/
 dir=$PWD
 
 logEcho "-------------------------------------"
@@ -18,9 +18,12 @@ for file in *.py
 do
   if [ ! -f $file ]; then continue; fi
 
-  logEcho "  + Running File: $file"
-  ./$file >> $logFile 2>&1
-  check_result
+  for i in $(seq 1 5)
+  do
+   logEcho "  + Running File: $file"
+   ./$file >> $logFile 2>&1
+   check_result
+  done
 done
 
 logEcho "-------------------------------------"

@@ -14,5 +14,5 @@ Description
 
 ### Step 1
 
-+ Operation: Run the korali.plotter for all results found in Tutorials (A) generated furing REG-001.
++ Operation: Run the korali.plotter for all results found in Tutorials (A) generated during REG-001.
 + Expected: No errors (rc = 0).

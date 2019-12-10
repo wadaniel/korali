@@ -1,0 +1,21 @@
+{
+  
+ "Available Operations":
+ [
+  {
+   "Name": "Execute" ,
+   "Function": "execute",
+   "Description": "Executes the given model using the parameters from the given sample."
+  }
+ ],
+
+ "Variables Configuration":
+ [
+   {
+    "Name": [ "Loaded Values" ],
+    "Type": "std::vector<double>",
+    "Description": "Contains precomputed values for the variables."
+   }
+ ]
+
+}

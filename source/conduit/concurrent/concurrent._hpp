@@ -1,0 +1,34 @@
+#ifndef _KORALI_CONDUIT_EXTERNAL_HPP_
+#define _KORALI_CONDUIT_EXTERNAL_HPP_
+
+#include "conduit/conduit.hpp"
+#include <sys/types.h>
+#include <unistd.h>
+#include <queue>
+#include <chrono>
+#include <vector>
+#include <map>
+
+namespace korali { namespace conduit {
+
+class Concurrent : public korali::Conduit {
+
+ private:
+
+ void worker(int workerId);
+
+ public:
+
+ std::vector<std::vector<int>> _resultPipe;
+ std::vector<std::vector<int>> _inputsPipe;
+ std::queue<int> _launcherQueue;
+
+ void processSample(korali::Sample& sample) override;
+ void initialize() override;
+ void finalize() override;
+
+};
+
+} } // namespace korali::conduit
+
+#endif // _KORALI_CONDUIT_EXTERNAL_HPP_

@@ -1,8 +1,6 @@
 # A.1 - Model Optimization: Finding the Global Maximum
 
-In this tutorial we show how to **optimize** directly from a given function.
-
-## Source Code
+In this tutorial we show how to **optimize** a given function.
 
 ## Problem Setup
 

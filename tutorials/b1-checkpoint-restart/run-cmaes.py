@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # In this example, we demonstrate how a Korali experiment can
-# be resumed from any point (generation). This is a useful feature
+# be resumed from previous file-saved results. This is a useful feature
 # for continuing jobs after an error, or to fragment big jobs into
 # smaller ones that can better fit a supercomputer queue.
 
@@ -10,31 +10,40 @@
 import sys
 sys.path.append('model')
 from model import *
-
 import korali
-k = korali.initialize()
 
-k["Problem"]["Type"] = "Optimization"
-k["Problem"]["Objective"] = "Maximize"
+k = korali.Engine()
+e = korali.Experiment()
 
-k["Variables"][0]["Name"] = "X"
-k["Variables"][0]["Lower Bound"] = -10.0
-k["Variables"][0]["Upper Bound"] = +10.0
+e["Problem"]["Type"] = "Evaluation/Direct/Basic"
+e["Problem"]["Objective"] = "Maximize"
 
-k["Solver"]["Type"] = "CMAES"
-k["Solver"]["Sample Count"] = 5
-k["Solver"]["Termination Criteria"]["Max Generations"] = 100
+e["Solver"]["Type"] = "Optimizer/CMAES"
+e["Solver"]["Population Size"] = 5
+e["Solver"]["Termination Criteria"]["Max Generations"] = 5
 
-k["General"]["Console Output"]["Frequency"] = 10
-k["General"]["Results Output"]["Path"] = "_result_run-cmaes"
+e["Variables"][0]["Name"] = "X"
+e["Variables"][0]["Lower Bound"] = -10.0
+e["Variables"][0]["Upper Bound"] = +10.0
 
-k.setDirectModel(model)
+# Loading previous results, if they exist.
+found = e.loadState()
 
-k.run()
+# If not found, we run first 5 generations.
+if (found == False):
+ print('------------------------------------------------------')
+ print('Running first 5 generations anew...')
+ print('------------------------------------------------------')
 
-print("\n\nRestarting Now...\n\n")
+# If found, we continue with the next 5 generations. 
+if (found == True):
+ print('------------------------------------------------------')
+ print('Running 5 more generations from previous run...')
+ print('------------------------------------------------------')
+ e["Solver"]["Termination Criteria"]["Max Generations"] = e["Solver"]["Termination Criteria"]["Max Generations"] + 5
+ 
+# Setting computational model
+e["Problem"]["Objective Function"] = model
 
-# Now we loadState() to resume the same experiment from generation 10
-k.loadState("_result_run-cmaes/s00010.json")
-
-k.run()
+# Running 10 generations
+k.run(e)

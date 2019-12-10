@@ -8,40 +8,50 @@
 import sys
 sys.path.append('./model')
 from model import *
-import korali
 
-k = korali.initialize()
+# Creating new experiment
+import korali
+e = korali.Experiment()
 
 # Setting up the reference likelihood for the Bayesian Problem
-k["Problem"]["Type"] = "Bayesian Inference"
-k["Problem"]["Likelihood"]["Model"] = "Additive Gaussian"
-k["Problem"]["Likelihood"]["Reference Data"] = getReferenceData()
-
-# Configuring the problem's variables and their prior distributions
-k["Variables"][0]["Name"] = "a"
-k["Variables"][0]["Type"] = "Computational"
-k["Variables"][0]["Prior Distribution"]["Type"] = "Uniform"
-k["Variables"][0]["Prior Distribution"]["Minimum"] = -5.0
-k["Variables"][0]["Prior Distribution"]["Maximum"] = +5.0
-
-k["Variables"][1]["Name"] = "b"
-k["Variables"][1]["Type"] = "Computational"
-k["Variables"][1]["Prior Distribution"]["Type"] = "Uniform"
-k["Variables"][1]["Prior Distribution"]["Minimum"] = -5.0
-k["Variables"][1]["Prior Distribution"]["Maximum"] = +5.0
-
-k["Variables"][2]["Name"] = "Sigma"
-k["Variables"][2]["Type"] = "Statistical"
-k["Variables"][2]["Prior Distribution"]["Type"] = "Uniform"
-k["Variables"][2]["Prior Distribution"]["Minimum"] = 0.0
-k["Variables"][2]["Prior Distribution"]["Maximum"] = +5.0
+e["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Reference"
+e["Problem"]["Likelihood Model"] = "Additive Normal"
+e["Problem"]["Reference Data"] = getReferenceData()
+e["Problem"]["Computational Model"] = lambda sampleData: model(sampleData, getReferencePoints())
 
 # Configuring TMCMC parameters
-k["Solver"]["Type"] = "TMCMC"
-k["Solver"]["Population Size"] = 5000
+e["Solver"]["Type"] = "Sampler/TMCMC"
+e["Solver"]["Population Size"] = 5000
 
-# Setting the model
-k.setReferenceModel(lambda modelData: model(modelData, getReferencePoints()))
+# Configuring the problem's random distributions
+e["Distributions"][0]["Name"] = "Uniform 0"
+e["Distributions"][0]["Type"] = "Univariate/Uniform"
+e["Distributions"][0]["Minimum"] = -5.0
+e["Distributions"][0]["Maximum"] = +5.0
 
-# Running Korali
-k.run()
+e["Distributions"][1]["Name"] = "Uniform 1"
+e["Distributions"][1]["Type"] = "Univariate/Uniform"
+e["Distributions"][1]["Minimum"] = -5.0
+e["Distributions"][1]["Maximum"] = +5.0
+
+e["Distributions"][2]["Name"] = "Uniform 2"
+e["Distributions"][2]["Type"] = "Univariate/Uniform"
+e["Distributions"][2]["Minimum"] = 0.0
+e["Distributions"][2]["Maximum"] = +5.0
+
+# Configuring the problem's variables and their prior distributions
+e["Variables"][0]["Name"] = "a"
+e["Variables"][0]["Bayesian Type"] = "Computational"
+e["Variables"][0]["Prior Distribution"] = "Uniform 0"
+
+e["Variables"][1]["Name"] = "b"
+e["Variables"][1]["Bayesian Type"] = "Computational"
+e["Variables"][1]["Prior Distribution"] = "Uniform 1"
+
+e["Variables"][2]["Name"] = "Sigma"
+e["Variables"][2]["Bayesian Type"] = "Statistical"
+e["Variables"][2]["Prior Distribution"] = "Uniform 2"
+
+# Starting Korali's Engine and running experiment
+k = korali.Engine()
+k.run(e)

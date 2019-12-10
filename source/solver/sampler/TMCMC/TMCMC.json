@@ -1,0 +1,192 @@
+{
+ "Configuration Settings":
+ [
+   {
+    "Name": [ "Population Size" ],
+    "Type": "size_t",
+    "Description": "Specifies the number of samples drawn from the posterior distribution at each generation."
+   },
+   {
+    "Name": [ "Max Chain Length" ],
+    "Type": "size_t",
+    "Default": "1",
+    "Description": "Chains longer than Max Chain Length will be broken and samples will be duplicated (replacing samples associated with a chain length of 0). Max Chain Length of 1 corresponds to the BASIS algorithm [Wu2018]."
+   },
+   {
+    "Name": [ "Default Burn In" ],
+    "Type": "size_t",
+    "Default": "0",
+    "Description": "Specifies the number of additional TMCMC steps per chain per generation."
+   },
+   {
+    "Name": [ "Per Generation Burn In" ],
+    "Type": "std::vector<size_t>",
+    "Default": "{ }",
+    "Description": "Specifies the number of additional TMCMC steps per chain at specified generations (this property will overwrite Default Burn In at specified generations)."
+   },
+   {
+    "Name": [ "Target Coefficient Of Variation" ],
+    "Type": "double",
+    "Default": "1.0",
+    "Description": "Target coefficient of variation of the plausibility weights to update the annealing exponent $\rho$ (by default, this value is 1.00 as suggested in [Ching2007])."
+   },
+   {
+    "Name": [ "Covariance Scaling" ],
+    "Type": "double",
+    "Default": "0.04",
+    "Description": "Scaling factor $\beta^2$ of Covariance Matrix (by default, this value is 0.04 as suggested in [Ching2007])."
+   },
+   {
+    "Name": [ "Min Annealing Exponent Update" ],
+    "Type": "double",
+    "Default": "0.00001",
+    "Description": "Minimum increment of the exponent $\rho$. This parameter prevents TMCMC from stalling."
+   },
+   {
+    "Name": [ "Max Annealing Exponent Update" ],
+    "Type": "double",
+    "Default": "1.0",
+    "Description": "Maximum increment of the exponent $\rho$ (by default, this value is 1.0 (inactive))."
+   }
+ ],
+
+ "Termination Criteria":
+ [
+   {
+    "Name": [ "Target Annealing Exponent" ],
+    "Type": "double",
+    "Criteria": "_previousAnnealingExponent >= _targetAnnealingExponent",
+    "Default": "1.0",
+    "Description": "Determines the annealing exponent $rho$ to achieve before termination. TMCMC converges if $rho$ equals 1.0."
+   }
+ ],
+
+ "Internal Settings":
+ [
+   {
+    "Name": [ "Current Burn In" ],
+    "Type": "size_t",
+    "Description": "Actual placeholder for burn in steps per generation, calculated from Burn In Default, Burn In and Current Generation."
+   },
+   {
+    "Name": [ "Chain Pending Evaluation" ],
+    "Type": "std::vector<bool>",
+    "Description": "Indicates that the model evaluation for the chain is pending."
+   },
+   {
+    "Name": [ "Chain Candidates" ],
+    "Type": "std::vector<std::vector<double>>",
+    "Description": "Candidates of all chains to evaluate in order to advance the markov chains."
+   },
+   {
+    "Name": [ "Chain Candidates LogLikelihoods" ],
+    "Type": "std::vector<double>",
+    "Description": "The loglikelihoods of the chain candidates."
+   },
+   {
+    "Name": [ "Chain Candidates LogPriors" ],
+    "Type": "std::vector<double>",
+    "Description": "The logpriors of the chain candidates."
+   },
+   {
+    "Name": [ "Chain Leaders" ],
+    "Type": "std::vector<std::vector<double>>",
+    "Description": "Leading parameters of all chains to be accepted."
+   },
+   {
+    "Name": [ "Chain Leaders LogLikelihoods" ],
+    "Type": "std::vector<double>",
+    "Description": "The loglikelihoods of the chain leaders."
+   },
+   {
+    "Name": [ "Chain Leaders LogPriors" ],
+    "Type": "std::vector<double>",
+    "Description": "The logpriors of the chain leaders."
+   },
+   {
+    "Name": [ "Finished Chains Count" ],
+    "Type": "size_t",
+    "Description": "Number of finished chains."
+   },
+   {
+    "Name": [ "Current Chain Step" ],
+    "Type": "std::vector<size_t>",
+    "Description": "The current execution step for every chain."
+   },
+   {
+    "Name": [ "Chain Lengths" ],
+    "Type": "std::vector<size_t>",
+    "Description": "Lengths for each of the chains."
+   },
+   {
+    "Name": [ "Coefficient Of Variation" ],
+    "Type": "double",
+    "Description": "Actual coefficient of variation after $rho$ has beed updated."
+   },
+   {
+    "Name": [ "Chain Count" ],
+    "Type": "size_t",
+    "Description": "Unique selections after resampling stage."
+   },
+   {
+    "Name": [ "Annealing Exponent" ],
+    "Type": "double",
+    "Description": "Exponent of the likelihood. If $rho$ equals 1.0, TMCMC converged."
+   },
+   {
+    "Name": [ "Previous Annealing Exponent" ],
+    "Type": "double",
+    "Description": "Previous Exponent of the likelihood. If $rho$ equals 1.0, TMCMC converged."
+   },
+   {
+    "Name": [ "Accepted Samples Count" ],
+    "Type": "size_t",
+    "Description": "Accepted candidates after proposal."
+   },
+   {
+    "Name": [ "LogEvidence" ],
+    "Type": "double",
+    "Description": "Calculated logEvidence of the model."
+   },
+   {
+    "Name": [ "Proposals Acceptance Rate" ],
+    "Type": "double",
+    "Description": "Acceptance rate calculated from accepted samples."
+   },
+   {
+    "Name": [ "Selection Acceptance Rate" ],
+    "Type": "double",
+    "Description": "Acceptance rate calculated from unique samples (chain count) after recombination."
+   },
+   {
+    "Name": [ "Covariance Matrix" ],
+    "Type": "std::vector<double>",
+    "Description": "Sample covariance of the current leaders updated at every generation."
+   },
+   {
+    "Name": [ "Mean Theta" ],
+    "Type": "std::vector<double>",
+    "Description": "Mean of the current leaders updated at every generation."
+   },
+   {
+    "Name": [ "Sample Database" ],
+    "Type": "std::vector<std::vector<double>>",
+    "Description": "Parameters stored in the database (taken from the chain leaders)."
+   },
+   {
+    "Name": [ "Sample LogLikelihood Database" ],
+    "Type": "std::vector<double>",
+    "Description": "LogLikelihood Evaluation of the parameters stored in the database."
+   },
+   {
+    "Name": [ "Sample LogPrior Database" ],
+    "Type": "std::vector<double>",
+    "Description": "Log priors of the samples stored in the database."
+   },
+   {
+    "Name": [ "Local Covariance Matrices" ],
+    "Type": "std::vector<std::vector<double>>",
+    "Description": "Local covariance matrices of chain leaders."
+   }
+ ]
+}

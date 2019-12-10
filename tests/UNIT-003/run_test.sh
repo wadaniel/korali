@@ -2,9 +2,9 @@
 
 source ../functions.sh
 
-logEcho "[Korali] Running Checkpoint/Restart Test..."
+logEcho "[Korali] Running Partial Run Tests..."
 
-pushd ../../tutorials/b1-checkpoint-restart/
+pushd ../../tutorials/b2-partial-runs/
 dir=$PWD
 
 logEcho "-------------------------------------"

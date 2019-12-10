@@ -1,0 +1,36 @@
+#ifndef _KORALI_DISTRIBUTIONHPP_
+#define _KORALI_DISTRIBUTIONHPP_
+
+#include <map>
+#include <gsl/gsl_rng.h>
+#include <gsl/gsl_randist.h>
+#include <gsl/gsl_math.h>
+#include <gsl/gsl_sf.h>
+#include "module.hpp"
+
+namespace korali {
+
+class Distribution : public korali::Module
+{
+ protected:
+
+ std::map<std::string, double*> _conditionalsMap;
+ size_t _seed;
+ gsl_rng* _range;
+ double _aux;
+
+ public:
+
+ bool _hasConditionalVariables;
+
+ void initialize() override;
+ void finalize() override;
+ virtual void updateDistribution() { };
+ virtual void updateProperty(std::string property, double value) { };
+ virtual double* getPropertyPointer(std::string property) { return NULL; };
+
+};
+
+} // namespace korali
+
+#endif // _KORALI_DISTRIBUTIONHPP_

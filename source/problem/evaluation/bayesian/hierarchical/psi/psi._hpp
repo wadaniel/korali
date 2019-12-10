@@ -1,0 +1,40 @@
+#ifndef _KORALI_PROBLEM_PSI_HPP_
+#define _KORALI_PROBLEM_PSI_HPP_
+
+#include "problem/evaluation/bayesian/hierarchical/hierarchical.hpp"
+#include "distribution/distribution.hpp"
+
+namespace korali { namespace problem { namespace evaluation { namespace bayesian { namespace hierarchical {
+
+class Psi : public korali::problem::evaluation::bayesian::Hierarchical
+{
+ private:
+
+ struct conditionalPriorInfo
+ {
+  std::vector<size_t> _samplePositions;
+  std::vector<double*> _samplePointers;
+ };
+
+ std::vector<korali::Experiment> _subProblemEngines;
+ size_t _subProblemsCount;
+ size_t _subProblemsVariablesCount;
+ std::vector<std::vector<std::vector<double>>> _subProblemsSampleCoordinates;
+ std::vector<std::vector<double>> _subProblemsSampleLogLikelihoods;
+ std::vector<std::vector<double>> _subProblemsSampleLogPriors;
+
+ std::vector<conditionalPriorInfo> _conditionalPriorInfos;
+
+ public:
+
+ std::vector<size_t> _conditionalPriorIndexes;
+
+ void updateConditionalPriors(korali::Sample& sample);
+ void evaluateLogLikelihood(korali::Sample& sample) override;
+ void initialize() override;
+};
+
+} } } } } // namespace korali::problem::evaluation::bayesian::hierarchical
+
+
+#endif // _KORALI_PROBLEM_PSI_HPP_

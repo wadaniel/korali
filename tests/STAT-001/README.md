@@ -4,7 +4,7 @@ Check Sampling Statistics
 
 ## Description
 
-This test checks the sampling statistics of MCMC and TMCMC of the results taken from the tutorial folder.
+This test checks the sampling statistic of the results taken from the tutorial folder.
 
 ## Source
 
@@ -14,10 +14,6 @@ This test checks the sampling statistics of MCMC and TMCMC of the results taken 
 
 ### Step 1
 
-+ Operation: Check correct statistical results for MCMC sampling
++ Operation: Check correct statistical sampling results for MCMC, DRAM and TMCMC
 + Expected: The defaults are correct, and rc = 0.
 
-### Step 2
-
-+ Operation: Check correct statistical results for TMCMC sampling
-+ Expected: The defaults are correct, and rc = 0.

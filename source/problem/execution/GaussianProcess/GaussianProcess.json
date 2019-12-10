@@ -1,0 +1,38 @@
+{
+  "Configuration Settings":
+  [
+    {
+      "Name": [ "Gaussian Process Json File" ],
+      "Type": "std::string",
+      "Description": "Json File from training a GP."
+    },
+    {
+      "Name": [ "X Data" ],
+      "Type": "std::vector< std::vector< double >>",
+      "Description": "New data to evaluate a Gaussian Process."
+    },
+    {
+      "Name": [ "Y Data" ],
+      "Type": "std::vector< double >",
+      "Default": "std::vector< double >(0)",
+      "Description": "New data to evaluate a Gaussian Process."
+    }
+ ],
+
+ "Internal Settings":
+ [
+   {
+     "Name": [ "Gaussian Process Evaluation" ],
+     "Type": "std::vector<double>",
+     "Description": "Evaluation of GP at 'X Data'."
+   },
+   {
+     "Name": [ "Gaussian Process Variance" ],
+     "Type": "std::vector<double>",
+     "Description": "Variance of GP at 'X Data'."
+   }
+]
+
+
+
+}

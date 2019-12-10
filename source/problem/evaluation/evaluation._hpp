@@ -1,0 +1,22 @@
+#ifndef _KORALI_PROBLEM_EVALUATION_HPP_
+#define _KORALI_PROBLEM_EVALUATION_HPP_
+
+#include "problem/problem.hpp"
+
+namespace korali { namespace problem {
+
+class Evaluation : public korali::Problem
+{
+ private:
+
+ public:
+
+  virtual bool isSampleFeasible(korali::Sample&) = 0;
+  virtual void basicEvaluation(korali::Sample&) = 0;
+
+};
+
+} } // namespace korali::problem
+
+
+#endif // _KORALI_PROBLEM_EVALUATION_HPP_

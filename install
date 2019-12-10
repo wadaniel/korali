@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source VERSION
+version=1.0.0
 logFile=$PWD/install.log
 echo "" > $logFile
 
@@ -85,7 +85,7 @@ done
 
 ######## Start Configuration ######
 
-logEcho "[Korali] Installing Korali v$VERSION..." 
+logEcho "[Korali] Installing Korali v$version..." 
 logEcho "[Korali] Determining Configuration..." 
 log "[Korali] Using $NJOBS jobs."
 log "[Korali] Checking for architecture..."

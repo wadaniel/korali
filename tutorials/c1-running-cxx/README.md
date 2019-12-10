@@ -2,5 +2,3 @@
 
 Short description goes here
 
-## Source Code
-

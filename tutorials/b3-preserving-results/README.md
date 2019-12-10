@@ -1,6 +1,3 @@
-# B.2 - Preserving Quantities of Interest
+# B.3 - Preserving Quantities of Interest
 
 Short description goes here
-
-## Source Code
-

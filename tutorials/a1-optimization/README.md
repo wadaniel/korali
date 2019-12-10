@@ -2,8 +2,6 @@
 
 In this tutorial we show how to **optimize** a given function.
 
-## Source Code
-
 ## Problem Setup
 
 We are given the function $f(\vartheta)=-\vartheta^2$ for $\vartheta\in[-10,10]$.

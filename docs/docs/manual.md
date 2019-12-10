@@ -35,7 +35,7 @@ korali.run(eList)
 
 Each experiment can be configured with different general settings, as shown in the link below:
 
-[**Experiment Configuration**](../experiment) 
+[**Experiment Configuration**](manual/experiment) 
 
 After configuring the experiment, the user chooses and configures its modules as shown below.
 
@@ -61,7 +61,7 @@ For example, the following type will sample the probability distribution of the 
 
 Below is a complete list of Korali-supported problem types:
 
-[**Problem Type List**](../problem)
+[**Problem Type List**](manual/problem)
 
 ### Solver Method
 
@@ -75,7 +75,7 @@ For example, the following solver will obtain the probability distribution using
 
 Below is a complete list of solvers currently implemented in Korali:
 
-[**Solver Method List**](../solver)
+[**Solver Method List**](manual/solver)
 
 ### Execution Conduit
 
@@ -83,10 +83,10 @@ The evaluation conduit module executes the computational model(s) for each sampl
 
 The choice of conduit depends on the design and requirements of the computational model. The simple (default) conduit is one that evaluates samples sequentially:
 
-	```python
-	 k["Conduit"]["Type"] = "Simple";
-	```
+ ```python
+  k["Conduit"]["Type"] = "Simple";
+ ```
 Below is a complete list of conduits currently implemented in Korali:
 
-[**Execution Conduit List**](../conduit)
+[**Execution Conduit List**](manual/conduit)
 

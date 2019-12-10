@@ -11,15 +11,10 @@ from buildTests import *
 from buildTutorials import *
 
 # Processing Modules
-buildModules(koraliDir)
+buildModules(koraliDir + '/source')
 
 # Processing Tutorials
 buildTutorials(koraliDir)
 
 # Processing Tests
 buildTests(koraliDir)
-
-with open(koraliDir + '/docs/docs/manual/manual._md', 'r') as file: manualString = file.read()
-newManualFileName = koraliDir + '/docs/docs/manual/manual.md'
-print('[Korali] Creating ' + newManualFileName + '...')  
-with open(newManualFileName, 'w+') as file: file.write(manualString)

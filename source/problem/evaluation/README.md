@@ -43,9 +43,4 @@ With a *Custom Likelihood*, the function $p(d|\vartheta)$ is given directly by a
 + A [Simple](/usage/models/simple) computational model should be defined for the likelihood.
 + At least one variable should be defined.
 + A prior distribution should be defined for every variable.
-	
-## Configuration
 
-### Problem Settings
- 
-### Variable-Specific Settings

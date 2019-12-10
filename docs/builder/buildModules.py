@@ -13,7 +13,7 @@ def buildModules(koraliDir):
  outputDirs = []
  outputFiles = []
  
- for root, dirs, files in os.walk(koraliDir + '/source/', topdown=False):
+ for root, dirs, files in os.walk(koraliDir, topdown=False):
    for name in files:
     if 'README.md' in name:
       inputDir = root
@@ -46,14 +46,25 @@ def buildModules(koraliDir):
  
    with open(inputFiles[i], 'r') as file: moduleDocString = file.read()
    
-   moduleDocString = '# ' + 'NameHere' + '\n\n' + moduleDocString 
+   moduleDocString = '# ' + moduleName + '\n\n' + moduleDocString 
    
-   moduleSettingsString = '### Conditional Variables\n\n'
-   if (not "Configuration Settings" in moduleConfig): moduleSettingsString += '*none*'
-   else:
+   moduleSettingsString = '### Module Configuration\n\n'
+   if ('Configuration Settings' in moduleConfig):
     for v in moduleConfig["Configuration Settings"]:
      moduleSettingsString += getVariableInfo(v, moduleName)
-    moduleDocString = moduleDocString.replace('### module Settings', moduleSettingsString + '\n\n')  
+    moduleDocString += '### Configuration Settings\n\n'
+    moduleDocString += moduleSettingsString
+    moduleDocString +='\n\n'  
+    
+   moduleSiblings = ''
+   for root, dirs, files in os.walk(inputDirs[i], topdown=True):
+    for dir in dirs: moduleSiblings += '[' + dir + ']' + '(' + dir + ')\n'
+    break
+   
+   if (moduleSiblings != ''):
+    moduleDocString += '### Sibling Modules\n\n'
+    moduleDocString += moduleSiblings
+    moduleDocString +='\n\n'  
      
    print('[Korali] Creating ' + outputFiles[i] + '...')    
    with open(outputFiles[i], 'w+') as file: file.write(moduleDocString)

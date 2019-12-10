@@ -8,12 +8,3 @@ This solver acts as executor.
 
 **Requirements:**
 
-## Configuration
-
-### Solver Settings
-
-### Variable-Specific Settings
-
-### Termination Criteria
-
-## Plotting

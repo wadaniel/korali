@@ -1,5 +1,3 @@
-# Conduits / External
-
 ## Description
 
 Many computational models are comprised of legacy codes that can be too complex or poorly-documented for non-expert users to modify. Korali's External conduit allows running any pre-compiled or legacy computational model. It requires that the user specifies the way in which variable values are passed to the model and how to parse the results from file or standard output. 

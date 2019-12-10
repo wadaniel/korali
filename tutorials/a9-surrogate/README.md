@@ -1,4 +1,4 @@
-# A.9 Surrogate Modelling with Gaussian Processes
+# A.9 - Surrogate Modelling with Gaussian Processes
 
 In this tutorial we show how to do hierarchical Bayesian inference.
 

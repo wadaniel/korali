@@ -1,4 +1,4 @@
-# A.8 Hierarchical Bayesian Inference
+# A.8 - Hierarchical Bayesian Inference
 
 In this tutorial we show how to do hierarchical Bayesian inference.
 

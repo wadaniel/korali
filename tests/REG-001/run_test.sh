@@ -28,10 +28,6 @@ do
   logEcho " Entering Folder: $dir"
   pushd $dir >> $logFile 2>&1
 
-  log "[Korali] Removing any old result files..."
-  sh .remove_results.sh >> $logFile 2>&1
-  check_result
-
   for file in run-*.{py,sh}
   do
     # In case there are no files matching the pattern 'run-*.py', break

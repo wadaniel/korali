@@ -4,6 +4,7 @@ repo_url: 'https://github.com/cselab/korali'
 edit_uri: ''
 nav:
   - Home: index.md
+  - Features: features.md
   - Installation: install.md
   - Tutorials: tutorials.md
   - User Manual: manual.md

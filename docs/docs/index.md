@@ -3,7 +3,7 @@
 
 ### **Download**
 
-Latest Release: 13/12/2019 - [Korali v1.0.0](https://github.com/cselab/korali.git) - Build Status: [![CircleCI](https://circleci.com/gh/cselab/korali.svg?style=svg&circle-token=d73f56a4d14073880f8fe1140964afb58f2b1c35)](install/build)
+Latest Release: 12/12/2019 - [Korali v1.0.0](https://github.com/cselab/korali.git) - Build Status: [![CircleCI](https://circleci.com/gh/cselab/korali.svg?style=svg&circle-token=d73f56a4d14073880f8fe1140964afb58f2b1c35)](install/build)
 
  + [Installation Guide](install/install.md)
  + [Release Notes](https://github.com/cselab/korali/blob/master/docs/RELEASE-NOTES)

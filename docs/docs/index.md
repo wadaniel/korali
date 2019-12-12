@@ -7,50 +7,7 @@ Latest Release: 13/12/2019 - [Korali v1.0.0](https://github.com/cselab/korali.gi
 
  + [Installation Guide](install/install.md)
  + [Release Notes](https://github.com/cselab/korali/blob/master/docs/RELEASE-NOTES)
- + [System Requirements](install/requirements.md)
-
-### **Latest News**
-
-<a class="twitter-timeline" data-height="200" data-dnt="true" data-theme="light" href="https://twitter.com/EthKorali?ref_src=twsrc%5Etfw">Tweets by EthKorali</a> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-
-
-### **What Korali Does**
-
-??? abstract "Optimization"
-  Given any objective function $f:\mathbb{R}^N\rightarrow\mathbb{R}$ Korali can find its minima or maxima:
-
-  Given constraints...
-
-??? abstract "Sampling"
-  Given any probability distribution of type $f:\mathbb{R}^N\rightarrow\mathbb{R}$, Korali can draw samples to determine its distribution: 
-  
-  $$\vartheta^{(k)} \sim f.$$
-
-??? abstract "Bayesian Inference"
-  Given a set of data $d$, the output of a computational model $f(x;\vartheta)$, a likelihood function $p(d|\vartheta)$, and a prior probability density $p(\vartheta)$ Korali will build the posterior distribution:
-
-  $$ p(\vartheta | d)  =  \frac{p(d | \vartheta) p(\vartheta)}{p(d)} $$
-
-  Allowing users to compute the maximum a posteriori estimate:
-
-  $$\vartheta^\star = \mathop{\arg\min}\limits_{\vartheta}  p(\vartheta | d) $$
-
-  Or sample its posterior distribution:
-
-  $$\vartheta^{(k)} \sim p(\vartheta | d).$$
-  
-??? abstract "Hierarchical Bayesian Modeling"
-  Given a set of data $d$, the output of a computational model $f(x;\vartheta)$, a likelihood function $p(d|\vartheta)$, and a prior probability density $p(\vartheta)$ Korali will build the posterior distribution:
-
-  $$ p(\vartheta | d)  =  \frac{p(d | \vartheta) p(\vartheta)}{p(d)} $$
-
-  Allowing users to compute the maximum a posteriori estimate:
-
-  $$\vartheta^\star = \mathop{\arg\min}\limits_{\vartheta}  p(\vartheta | d) $$
-  
-  Or sample its posterior distribution:
-
-  $$\vartheta^{(k)} \sim p(\vartheta | d).$$
+ + [System Requirements](install/#system-requirements)
 
 ### **Design Principles**
 
@@ -70,3 +27,7 @@ Latest Release: 13/12/2019 - [Korali v1.0.0](https://github.com/cselab/korali.gi
 ??? success "Multi-Language"
 
   Korali applications can be programmed in either C++ or Python. Additionally, Korali can sample from C++/Fortran/Python and pre-compiled computational models.
+
+### **Latest News**
+
+<a class="twitter-timeline" data-height="600" data-dnt="true" data-theme="light" href="https://twitter.com/EthKorali?ref_src=twsrc%5Etfw">Tweets by EthKorali</a> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>

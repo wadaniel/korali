@@ -31,5 +31,11 @@ extra_css:
     - style.css
 extra_javascript:
   - 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML'
-  
+extra:
+  social:
+    - type: 'github'
+      link: 'https://github.com/korali'
+    - type: 'twitter'
+      link: 'https://twitter.com/EthKorali'
+      
 google_analytics: ['UA-43580832-2', 'https://www.cse-lab.ethz.ch/korali/']

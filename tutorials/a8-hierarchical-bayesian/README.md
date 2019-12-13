@@ -1,43 +1,25 @@
-# A.8 - Hierarchical Bayesian Inference
+# A.8 - Simple Hierarchical Bayesian Inference
 
 In this tutorial we show how to do hierarchical Bayesian inference.
 
 
 ## Problem Setup
 
-##  The Objective Function
+Hierarchical Bayesian Inference is set up in 3 phases:
+ - sample the posterior distributions conditioned on each data set
+ - sample the hyper parameter
+ - sample the posterior given hyperparameter and one (a) data set or  (b) data sets combined.
 
-## Optimization / Sampling  with TODO
+For each phase we provided an individual `python` file.
 
-###  The Korali Object
-
-###  The Problem Type
-
-###  The Variables
-
-###  The Solver
-We choose the solver ..
+In phase 0 we generate synthetic data.
 
 ###  Running
 
-We are now ready to run our example:
+All 3 phases can be run with the shell script
 
 ```bash
-./
+./run-hierarchical.sh
 ```
 
-Or, alternatively:
-
-```bash
-python3 ./
-```
-
-The results are saved in the folder `_korali_result/`.
-
-###  Plotting
-
-You can see the results by running the command
-```bash
-python3 -m korali.plotter
-```
- A.8 Hierarchical Bayesian Inference
+The results are saved in sub dirs of the folder `/setup`.

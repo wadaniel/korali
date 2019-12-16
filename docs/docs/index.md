@@ -11,4 +11,4 @@ Latest Release: 12/12/2019 - [Korali v1.0.0](https://github.com/cselab/korali.gi
 
 ### **Latest News**
  
-<span align="center" ><a class="twitter-timeline" data-height="600" data-width="70%" data-dnt="true" data-theme="light" href="https://twitter.com/EthKorali?ref_src=twsrc%5Etfw">Tweets by EthKorali</a> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script></span>
+<div align="center"><a class="twitter-timeline" data-height="600" data-width="70%" data-dnt="true" data-theme="light" href="https://twitter.com/EthKorali?ref_src=twsrc%5Etfw">Tweets by the Korali Team</a> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script></div>

@@ -1,9 +1,13 @@
 # Publications
 
-+ [(μ,λ)-CCMA-ES for Constrained Optimization with an Application in Pharmacodynamics](https://doi.org/10.1145/3324989.3325725), by
-*G. Arampatzis*, *D. Wälchli*, P. Weber, H. Rästas, *P. Koumoutsakos*
++ D. Wälchli, S. Martin, A. Economides, L. Amoudruz, G. Arampatzis, X. Bian, and P. Koumoutsakos, **Load Balancing in Large Scale Bayesian Inference**, [Submitted, in Review], 2019.
+
++ G. Arampatzis, D. Wälchli, P. Weber, H. Rästas, and P. Koumoutsakos, [**(μ,λ)-CCMA-ES for Constrained Optimization with an Application in Pharmacodynamics**](https://doi.org/10.1145/3324989.3325725), Proceedings of the Platform for Advanced Scientific Computing Conference (PASC2019). Zürich, Switzerland, June 2019.
 
 ## Lectures & Presentations
+
++ Sergio M. Martin, [**Korali, High-performance framework for Bayesian uncertainty quantification and optimization**](https://www.cse-lab.ethz.ch/wp-content/uploads/2019/12/Korali-Talk-CSCS-Lugano-13-12-2019.pdf) <br>
+CSCS Lugano, December 2019
 
 + Sergio M. Martin, [**Lecture: The Korali Framework**](https://www.cse-lab.ethz.ch/wp-content/uploads/2019/03/hpcse2-19_Lecture_Korali.pdf.pdf) <br>
 ETH Zürich, Spring 2019

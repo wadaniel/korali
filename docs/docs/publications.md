@@ -1,7 +1,5 @@
 # Publications
 
-+ D. Wälchli, S. Martin, A. Economides, L. Amoudruz, G. Arampatzis, X. Bian, and P. Koumoutsakos, **Load Balancing in Large Scale Bayesian Inference**, [Submitted, in Review], 2019.
-
 + G. Arampatzis, D. Wälchli, P. Weber, H. Rästas, and P. Koumoutsakos, [**(μ,λ)-CCMA-ES for Constrained Optimization with an Application in Pharmacodynamics**](https://doi.org/10.1145/3324989.3325725), Proceedings of the Platform for Advanced Scientific Computing Conference (PASC2019). Zürich, Switzerland, June 2019.
 
 ## Lectures & Presentations

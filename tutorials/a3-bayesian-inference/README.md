@@ -1,10 +1,8 @@
 # A.3 - Inferring Parameter Values with Bayes' Theorem
 
 In this tutorial we show how to **optimize** and **sample** the posterior
-distribution of a Bayesian inference problem. We will go through the code sample [here](run-cmaes.py) first, and then modify it to get [this code sample](run-tmcmc.py).
-
-!   
-    Warning: Some of the information on this page might be outdated.
+distribution of a Bayesian inference problem. We will go through the code sample
+ [here](run-cmaes.py) first, and then modify it to get [this code sample](run-tmcmc.py).
 
 
 ## Problem Setup
@@ -82,7 +80,7 @@ def model( s, x ):
 
     s["Reference Evaluations"] = result
 ```
-This function corresponds implements the computational model that corresponds to $f(x\vartheta) = \vartheta_0 + \vartheta_1 x$. The object `s` must be of type `Korali::modelData` This class provides the methods `getParameter` and `addResult`. For a detailed presentation see [here]
+This function corresponds implements the computational model that corresponds to $f(x\vartheta) = \vartheta_0 + \vartheta_1 x$. Note: The following might be outdated: The object `s` must be of type `Korali::modelData` This class provides the methods `getParameter` and `addResult`. For a detailed presentation see [here]
 
 In the same file add the following functions that return the data presented in the table above,
 ```python
@@ -138,11 +136,6 @@ lambda function that will hide `x` from korali.
 lambda sampleData: model(sampleData, getReferencePoints())
 ```
 
-
-
-```python
-
-```
 
 ### The Problem Type
 

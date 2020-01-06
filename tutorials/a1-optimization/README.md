@@ -1,6 +1,6 @@
 # A.1 - Model Optimization: Finding the Global Maximum
 
-In this tutorial we show how to **optimize** a given function. The complete code sample can be found [here](tutorials/a1-optimization/run-cmaes.py).
+In this tutorial we show how to **optimize** a given function. The complete code sample can be found [here](run-cmaes.py).
 
 ## Problem Setup
 
@@ -16,7 +16,7 @@ Create a folder named `model`. Inside, create a file with name `directModel.py` 
 
 def evaluateModel(p):
   x = p["Parameters"][0]
-  p["Evaluation"] = -0.5*x*x
+  p["Evaluation"] = -x*x
 ```
 
 This is the computational model that represents our objective function.

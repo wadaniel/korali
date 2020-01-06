@@ -1,6 +1,6 @@
 # A.1 - Model Optimization: Finding the Global Maximum
 
-In this tutorial we show how to **optimize** a given function.
+In this tutorial we show how to **optimize** a given function. The complete code sample can be found [here](tutorials/a1-optimization/run-cmaes.py).
 
 ## Problem Setup
 
@@ -25,7 +25,7 @@ This is the computational model that represents our objective function.
 
 ## Optimization with CMAES
 
-First, open a file and import the korali module
+First, open a file (you could name it 'a1-optimization') and import the korali module
 ```python
 #!/usr/bin/env python3
 import korali
@@ -37,45 +37,47 @@ sys.path.append('./model')
 from directModel import *
 ```
 
-###  The Korali Object
+###  The Korali Engine and Experiment Objects
 
-Next we construct a `Korali` object and set the computational model,
+Next we construct a `korali.Engine` and a `korali.Experiment` object and set the computational model,
 ```python
-k = korali.initialize()
-k.setModel(evaluateModel)
+k = korali.Engine()
+e = korali.Experiment()
+
+e["Problem"]["Objective Function"] = evaluateModel
 ```
 
+
 ###  The Problem Type
-Then, we set the type of the problem to `Direct Evaluation`
+Then, we set the type of the problem to `Direct Evaluation`, and the objective to maximization,
 ```python
-k["Problem"] = "Direct Evaluation"
+e["Problem"]["Type"] = "Evaluation/Direct/Basic"
+e["Problem"]["Objective"] = "Maximize"
 ```
 
 ###  The Variables
-In this problem there is only one variable,
+In this problem there is only one variable, `X`, whose domain we set to [-10,10],
 ```python
-k["Variables"][0]["Name"] = "X";
+e["Variables"][0]["Name"] = "X"
+e["Variables"][0]["Lower Bound"] = -10.0
+e["Variables"][0]["Upper Bound"] = +10.0
 ```
-
 ###  The Solver
-We choose the solver `CMAES`, set the domain of the parameter `X`, the population size to be `5` and two termination criteria,
+We choose the solver `CMAES`, set the population size to be `32` and two termination criteria,
 
 ```python
-k["Solver"]  = "CMAES"
+e["Solver"]["Type"] = "Optimizer/CMAES"
+e["Solver"]["Population Size"] = 32
+e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-7
+e["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
-k["Variables"][0]["CMA-ES"]["Lower Bound"] = -10.0;
-k["Variables"][0]["CMA-ES"]["Upper Bound"] = +10.0;
-
-k["CMA-ES"]["Objective"] = "Maximize"
-k["CMA-ES"]["Termination Criteria"]["Max Generations"]["Value"] = 500
-k["CMA-ES"]["Sample Count"] = 5
 ```
 For a detailed description of CMAES settings see [here](../../usage/solvers/cmaes.md).
 
 Finally, we need to add a call to the run() routine to start the Korali engine.
 
 ```python
-k.run()
+k.run(e)
 ```
 
 ###  Running

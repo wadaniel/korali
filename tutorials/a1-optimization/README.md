@@ -14,10 +14,9 @@ Create a folder named `model`. Inside, create a file with name `directModel.py` 
 ```python
 #!/usr/bin/env python
 
-def evaluateModel( s ):
-  x = s.getVariable(0)
-  r = -x*x
-  s.addResult(r)
+def evaluateModel(p):
+  x = p["Parameters"][0]
+  p["Evaluation"] = -0.5*x*x
 ```
 
 This is the computational model that represents our objective function.

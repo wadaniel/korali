@@ -1,7 +1,10 @@
 # A.3 - Inferring Parameter Values with Bayes' Theorem
 
 In this tutorial we show how to **optimize** and **sample** the posterior
-distribution of a Bayesian inference problem.
+distribution of a Bayesian inference problem. We will go through the code sample [here](run-cmaes.py) first, and then modify it to get [this code sample](run-tmcmc.py).
+
+!   
+    Warning: Some of the information on this page might be outdated.
 
 
 ## Problem Setup
@@ -22,18 +25,18 @@ with $\varepsilon$ a random variable that follows normal distribution with zero
 mean and $\sigma$ standard deviation. This assumption leads to the likelihood
 function,
 
-```math
+$$
 p(y|\varphi,x) = \mathcal{N} ( \,y \,| \, f(x;\vartheta), \sigma^2 \,) \,.
-```
+$$
 
-where $`\varphi=(\vartheta,\sigma)`$ is the parameter vector that contains the
+where $\varphi=(\vartheta,\sigma)$ is the parameter vector that contains the
 computational variables and the variables of the statistical model.
 
 We assume that we are given the following data set:
 
 <center>
 
-| $`x_i`$  | $`y_i`$  |
+| $x_i$  | $y_i$  |
 |:-:|:-:|
 | 1  | 3.2069  |
 | 2  | 4.1454  |
@@ -43,7 +46,7 @@ We assume that we are given the following data set:
 
 </center>
 
-We call this data set $`d=\{x_i,y_i\}_{i=1}^5`$. Assuming that each datum is
+We call this data set $d=\{x_i,y_i\}_{i=1}^5$. Assuming that each datum is
 independent, the likelihood of $d$ under the linear model is given by
 
 $$
@@ -58,7 +61,7 @@ p(\varphi | y,x) = \frac{ p(y|\varphi,x) \, p(\varphi) }{ p(y) } \, .
 $$
 
 
-As a prior information we choose the uniform distribution in $[-10,10]$ for $\vartheta$
+As a prior information we choose the uniform distribution in $[-5,5]$ for $\vartheta$
 and the uniform distribution in $[0,10]$ for $\sigma$.
 
 
@@ -68,25 +71,38 @@ Create a folder named `model`. Inside, create a file with name `posteriorModel.p
 ```python
 #!/usr/bin/env python
 
-def evaluateModel( s, x ):
- for i in range(len(x)):
-  th0 = s.getVariable(0)
-  th1 = s.getVariable(1)
-  r  =  th0*x[i] + th1
-  s.addResult(r)
-```
-This function corresponds implements the computational model that corresponds to $f(x\vartheta) = \vartheta_0 + \vartheta_1 x$. The object `s` must be of type `Korali::modelData`. This class provides the methods `getParameter` and `addResult`. For a detailed presentation see [here]
+def model( s, x ):
 
-In the same file add the following function that return the data presented in the table above,
+    v1 = s["Parameters"][0]
+    v2 = s["Parameters"][1]
+
+    result = [ ]
+    for i in range(len(x)):
+      result.append(v1*x[i] + v2)
+
+    s["Reference Evaluations"] = result
+```
+This function corresponds implements the computational model that corresponds to $f(x\vartheta) = \vartheta_0 + \vartheta_1 x$. The object `s` must be of type `Korali::modelData` This class provides the methods `getParameter` and `addResult`. For a detailed presentation see [here]
+
+In the same file add the following functions that return the data presented in the table above,
 ```python
 def getReferenceData():
- x=[] y=[]
- x.append(1.0) y.append(3.2069)
- x.append(2.0) y.append(4.1454)
- x.append(3.0) y.append(4.9393)
- x.append(4.0) y.append(6.0588)
- x.append(5.0) y.append(6.8425)
- return x, y
+ y=[]
+ y.append(3.2069);
+ y.append(4.1454);
+ y.append(4.9393);
+ y.append(6.0588);
+ y.append(6.8425);
+ return y
+
+def getReferencePoints():
+ x=[]
+ x.append(1.0);
+ x.append(2.0);
+ x.append(3.0);
+ x.append(4.0);
+ x.append(5.0);
+ return x
 ```
 
 ## Optimization with CMA-ES
@@ -104,45 +120,42 @@ sys.path.append('./model')
 from posteriorModel import *
 ```
 
-### The Korali Object
+### The Korali Experiment Object
 
-Next we construct a `Korali` object and set the computational model,
+Next we construct a `Korali.Experiment` object and set the computational model, where we already pass the data,
+
 ```python
-k = korali.initialize()
-k.setModel(evaluateModel)
+e = korali.Experiment()
+e["Problem"]["Computational Model"] = lambda sampleData: model(sampleData, getReferencePoints())
+
 ```
 
-We add the data
-```python
-x, y = getReferenceData()
-```
-
-The `x` list corresponds to the *input* variables of the model. The function that
+The reference points `x` returned by `getReferencePoints()` correspond to the *input* variables of the model. The function that
 is passed to Korali should not have an argument for `x`. We have to create an intermediate
-lambda function `Fx` that will hide `x` from korali.
+lambda function that will hide `x` from korali.
 
 ```python
-Fx = lambda koraliData: evaluateModel(koraliData, x)
+lambda sampleData: model(sampleData, getReferencePoints())
 ```
 
-Then, we set the model to Korali,
+
 
 ```python
-k.setModel( Fx )
+
 ```
 
 ### The Problem Type
 
 The `Type` of the `Problem` is characterized as `Bayesian`
 ```python
-k["Problem"] = "Bayesian"
+e["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Reference"
 ```
 
 When the Type is `Bayesian` we must set the type of likelihood and provide a vector with the `Reference Data` to Korali,
 
 ```python
-k["Bayesian"]["Likelihood"]["Type"] = "Reference"
-k["Bayesian"]["Likelihood"]["Reference Data"] = y
+e["Problem"]["Likelihood Model"] = "Additive Normal"
+e["Problem"]["Reference Data"] = getReferenceData()
 ```
 
 ### The Variables
@@ -150,71 +163,84 @@ k["Bayesian"]["Likelihood"]["Reference Data"] = y
 We define two `Variables` of type `Computational` that correspond to $\vartheta_0$ and $\vartheta_1$. The prior distribution of both is set to `Uniform`.
 
 ```python
-k["Variables"][0]["Name"] = "a"
-k["Variables"][0]["Bayesian"]["Type"] = "Computational"
-k["Variables"][0]["Bayesian"]["Prior Distribution"]["Type"] = "Uniform"
-k["Variables"][0]["Bayesian"]["Prior Distribution"]["Minimum"] = -5.0
-k["Variables"][0]["Bayesian"]["Prior Distribution"]["Maximum"] = +5.0
+e["Variables"][0]["Name"] = "a"
+e["Variables"][0]["Bayesian Type"] = "Computational"
+e["Variables"][0]["Prior Distribution"] = "Uniform 0"
+e["Variables"][0]["Initial Mean"] = +0.0
+e["Variables"][0]["Initial Standard Deviation"] = +1.0
 
-k["Variables"][1]["Name"] = "b"
-k["Variables"][1]["Bayesian"]["Type"] = "Computational"
-k["Variables"][1]["Bayesian"]["Prior Distribution"]["Type"] = "Uniform"
-k["Variables"][1]["Bayesian"]["Prior Distribution"]["Minimum"] = -5.0
-k["Variables"][1]["Bayesian"]["Prior Distribution"]["Maximum"] = +5.0
+e["Variables"][1]["Name"] = "b"
+e["Variables"][1]["Bayesian Type"] = "Computational"
+e["Variables"][1]["Prior Distribution"] = "Uniform 1"
+e["Variables"][1]["Initial Mean"] = +0.0
+e["Variables"][1]["Initial Standard Deviation"] = +1.0
+
 ```
 
 The last parameter we add is of `Type` `Statistical` and corresponds to the variable
 $\sigma$ in the likelihood function,
 
 ```python
-k["Variables"][2]["Name"] = "Sigma"
-k["Variables"][2]["Bayesian"]["Type"] = "Statistical"
-k["Variables"][2]["Bayesian"]["Prior Distribution"]["Type"] = "Uniform"
-k["Variables"][2]["Bayesian"]["Prior Distribution"]["Minimum"] =   0.0
-k["Variables"][2]["Bayesian"]["Prior Distribution"]["Maximum"] = +5.0
+e["Variables"][2]["Name"] = "Sigma"
+e["Variables"][2]["Bayesian Type"] = "Statistical"
+e["Variables"][2]["Prior Distribution"] = "Uniform 2"
+e["Variables"][2]["Initial Mean"] = +2.5
+e["Variables"][2]["Initial Standard Deviation"] = +0.5
+```
+
+
+
+```python
+
 ```
 
 ### The Solver
 
-Next, we choose the solver `CMA-ES`, the population size to be `12`.
+Next, we choose the solver `CMA-ES`, the population size to be `24`.
 
 ```python
-k["Solver"] = "CMA-ES"
-k["CMA-ES"]["Objective"] = "Maximize"
-k["CMA-ES"]["Sample Count"] = 12
+
+e["Solver"]["Type"] = "Optimizer/CMAES"
+e["Solver"]["Population Size"] = 24
 ```
 
-And activating 3 of its available termination criteria.
+And activating one of its available termination criteria.
 
 ```python
 
-k["CMA-ES"]["Termination Criteria"]["Min Fitness"]["Active"] = True
-k["CMA-ES"]["Termination Criteria"]["Min Fitness"]["Value"] = 1e-12
+e["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
-k["CMA-ES"]["Termination Criteria"]["Max Generations"]["Active"] = True
-k["CMA-ES"]["Termination Criteria"]["Max Generations"]["Value"] = 100
-
-k["CMA-ES"]["Termination Criteria"]["Max Model Evaluations"]["Active"] = True
-k["CMA-ES"]["Termination Criteria"]["Max Model Evaluations"]["Value"] = 1e4
 ```
 
-The CMA-ES algorithm needs the lower and upper exploration bound for each variable.
+We also need to configure the problem's random distributions, which we referred to when defining our variables,
 
 ```python
-k["Variables"][0]["CMA-ES"]["Lower Bound"] = -5.0
-k["Variables"][0]["CMA-ES"]["Upper Bound"] = +5.0
-k["Variables"][1]["CMA-ES"]["Lower Bound"] = -5.0
-k["Variables"][1]["CMA-ES"]["Upper Bound"] = +5.0
-k["Variables"][2]["CMA-ES"]["Lower Bound"] = 0.0
-k["Variables"][2]["CMA-ES"]["Upper Bound"] = +5.0
+e["Distributions"][0]["Name"] = "Uniform 0"
+e["Distributions"][0]["Type"] = "Univariate/Uniform"
+e["Distributions"][0]["Minimum"] = -5.0
+e["Distributions"][0]["Maximum"] = +5.0
+
+e["Distributions"][1]["Name"] = "Uniform 1"
+e["Distributions"][1]["Type"] = "Univariate/Uniform"
+e["Distributions"][1]["Minimum"] = -5.0
+e["Distributions"][1]["Maximum"] = +5.0
+
+e["Distributions"][2]["Name"] = "Uniform 2"
+e["Distributions"][2]["Type"] = "Univariate/Uniform"
+e["Distributions"][2]["Minimum"] = 0.0
+e["Distributions"][2]["Maximum"] = +5.0
 ```
 
 For a detailed description of CMA-ES settings see [here](../../usage/solvers/cmaes.md).
 
-Finally, we need to add a call to the run() routine to start the Korali engine.
+Finally, we configure the output, and then need to add a call to the run() routine to start the Korali engine.
 
 ```python
-k.run()
+e["Results"]["Frequency"] = 5
+e["Console"]["Frequency"] = 5
+
+k = korali.Engine()
+k.run(e)
 ```
 
 ###  Running
@@ -235,7 +261,7 @@ The results are saved in the folder `_korali_result/`.
 
 
 
-### Plottting
+### Plotting
 
 You can see the results of CMA-ES by running the command,
 ```sh
@@ -253,12 +279,8 @@ python3 -m korali.plotter
 To sample the posterior distribution, we set the solver to `TMCMC` sampler and set a few settings,
 
 ```python
-k["Solver"] = "TMCMC"
-k["TMCMC"]["Covariance Scaling"] = 0.02
-k["TMCMC"]["Population Size"] = 5000
-k["TMCMC"]["Min Rho Update"] = 0.0
-k["TMCMC"]["Coefficient of Variation"] = 0.5
-k["TMCMC"]["Burn In"] = 5
+e["Solver"]["Type"] = "Sampler/TMCMC"
+e["Solver"]["Population Size"] = 5000
 ```
 
 For a detailed description of the TMCMC settings see [here](../../usage/solvers/tmcmc.md)
@@ -266,7 +288,7 @@ For a detailed description of the TMCMC settings see [here](../../usage/solvers/
 Finally, we need to add a call to the run() routine to start the Korali engine.
 
 ```python
-k.run()
+k.run(e)
 ```
 
 ###  Running

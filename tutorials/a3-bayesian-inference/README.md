@@ -1,4 +1,4 @@
-# A.3 - Inferring Parameter Values with Bayes' Theorem 
+# A.3 - Inferring Parameter Values with Bayes' Theorem
 
 In this tutorial we show how to **optimize** and **sample** the posterior
 distribution of a Bayesian inference problem.
@@ -22,18 +22,18 @@ with $\varepsilon$ a random variable that follows normal distribution with zero
 mean and $\sigma$ standard deviation. This assumption leads to the likelihood
 function,
 
-$$
+```math
 p(y|\varphi,x) = \mathcal{N} ( \,y \,| \, f(x;\vartheta), \sigma^2 \,) \,.
-$$
+```
 
-where $\varphi=(\vartheta,\sigma)$ is the parameter vector that contains the
-computational Variables and the Variables of the statistical model.
+where $`\varphi=(\vartheta,\sigma)`$ is the parameter vector that contains the
+computational variables and the variables of the statistical model.
 
 We assume that we are given the following data set:
 
 <center>
 
-| $x_i$  | $y_i$  |
+| $`x_i`$  | $`y_i`$  |
 |:-:|:-:|
 | 1  | 3.2069  |
 | 2  | 4.1454  |
@@ -43,7 +43,7 @@ We assume that we are given the following data set:
 
 </center>
 
-We call this data set $d=\{x_i,y_i\}_{i=1}^5$. Assuming that each datum is
+We call this data set $`d=\{x_i,y_i\}_{i=1}^5`$. Assuming that each datum is
 independent, the likelihood of $d$ under the linear model is given by
 
 $$

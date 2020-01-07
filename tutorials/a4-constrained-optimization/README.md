@@ -1,6 +1,6 @@
 # A.4 - Model Optimization with Constrained Variables
 
-In this tutorial we show how to solve a **constrained optimization** problem ([CEC 2006](http://web.mysites.ntu.edu.sg/epnsugan/PublicSite/Shared%20Documents/CEC-2006/technical_report.pdf) Test Problem g09), defined as: Find $x^\star = \mathop{\arg\min}\limits_{x}  \,\,\, f(x) \,,$ under the constraints $g_i(x) \leq 0.$
+In this tutorial we show how to solve a **constrained optimization** problem ([CEC 2006](http://web.mysites.ntu.edu.sg/epnsugan/PublicSite/Shared%20Documents/CEC-2006/technical_report.pdf) Test Problem g09), defined as: Find $x^\star = \mathop{\arg\min}\limits_{x}  \,\,\, f(x) \,,$ under the constraints $g_i(x) \leq 0.$ The complete sample code is in [run-cmaes.py](run-cmaes.py), [constraints.py](model/constraints.py) and [model.py](model/model.py).
 
 
 ## Problem Setup
@@ -31,48 +31,44 @@ $$
 
 ##  The Objective Function
 
-Create a folder named `model`. Inside, create a file with name `g09.py` and paste the following code,
+Create a folder named `model`. Inside, create a file with name `model.py` and paste the following code,
 ```python
 #!/usr/bin/env python
 
-def g09( s ):
+def g09( k ):
 
-  nPars = s.getVariableCount();
-  if( nPars != 7 ) :
-    print("Error in g09: Number of variables must be 7.\n");
-    exit();
+  d = k["Parameters"]
+  res = (d[0] - 10.0)**2 + 5.0 * (d[1] - 12.0)**2           \
+        + d[2]**4  + 3.0 * (d[3] - 11.0)**2                 \
+        + 10.0 * d[4]**6 + 7.0 * d[5]**2 + d[6]**4.      \
+        - 4.0 * d[5] * d[6] - 10.0 * d[5] - 8.0 * d[6];
 
+  k["Evaluation"] = -res;
 
-  pars = s.getVariables();
-
-  res = (pars[0] - 10.0)**2 + 5.0 * (pars[1] - 12.0)**2           \
-        + pars[2]**4  + 3.0 * (pars[3] - 11.0)**2                 \
-        + 10.0 * pars[4]**6 + 7.0 * pars[5]**2 + pars[6]**4.      \
-        - 4.0 * pars[5] * pars[6] - 10.0 * pars[5] - 8.0 * pars[6];
-
-  s.addResult(-res);
 ```
 This computational model represents our objective function.
 
 For the constraints, add the following code in the same file,
 ```python
-def g1( x ):
-  return  -127.0 + 2 * x[0] * x[0] + 3.0 * pow(x[1], 4) + x[2] \
-          + 4.0 * x[3] * x[3] + 5.0 * x[4];
+
+def g1(k):
+  v = k["Parameters"]
+  k["Evaluation"] = -127.0 + 2 * v[0] * v[0] + 3.0 * pow(v[1], 4) + v[2] + 4.0 * v[3] * v[3] + 5.0 * v[4]
 
 
-def g2( x ):
-  return -282.0 + 7.0 * x[0] + 3.0 * x[1] + 10.0 * x[2] * x[2] \
-          + x[3] - x[4];
+def g2(k):
+  v = k["Parameters"]
+  k["Evaluation"] = -282.0 + 7.0 * v[0] + 3.0 * v[1] + 10.0 * v[2] * v[2] + v[3] - v[4]
 
 
-def g3( x ):
-  return -196.0 + 23.0 * x[0] + x[1] * x[1] + 6.0 * x[5] * x[5] \
-          - 8.0 * x[6];
+def g3(k):
+  v = k["Parameters"]
+  k["Evaluation"] = -196.0 + 23.0 * v[0] + v[1] * v[1] + 6.0 * v[5] * v[5] - 8.0 * v[6]
 
-def g4( x ):
-  return  4.0 * x[0] * x[0] + x[1] * x[1] - 3.0 * x[0] * x[1] \
-          + 2.0 * x[2] * x[2] + 5.0 * x[5] - 11.0 * x[6];
+def g4(k):
+  v = k["Parameters"]
+  k["Evaluation"] = 4.0 * v[0] * v[0] + v[1] * v[1] - 3.0 * v[0] * v[1] + 2.0 * v[2] * v[2] + 5.0 * v[5] - 11.0 * v[6]
+
 ```
 
 ## Optimization with CCMA-ES
@@ -86,66 +82,74 @@ Import the computational model,
 ```python
 import sys
 sys.path.append('./model')
-from g09 import *
+from model import *
+from constraints import *
 ```
 
 ###  The Korali Object
 
-Next we construct a `Korali` object and set the computational model,
+Next we construct a `korali.Experiment` object,
 ```python
-k = korali.initialize()
+e = korali.Experiment()
 ```
 
 Add the objective function and the constraints in the Korali object,
 ```python
-k.setModel( g09 );
-k.addConstraint( g1 );
-k.addConstraint( g2 );
-k.addConstraint( g3 );
-k.addConstraint( g4 );
+e["Problem"]["Objective Function"] = g09
+e["Problem"]["Constraints"] = [ g1, g2, g3, g4 ]
 ```
 
 
 ###  The Problem Type
 Then, we set the type of the problem to `Direct Evaluation`
 ```python
-k["Problem"] = "Direct Evaluation"
+e["Problem"]["Type"] = "Evaluation/Direct/Basic"
+e["Problem"]["Objective"] = "Maximize"
 ```
 
 
 ###  The Variables
-We add 7 variables to Korali,
+We add 7 variables to the experiment and set their domain,
 ```python
-nParams = 7;
-for i in range(nParams) :
-  k["Variables"][i]["Name"] = "X" + str(i);
+for i in range(7) :
+  e["Variables"][i]["Name"] = "X" + str(i)
+  e["Variables"][i]["Lower Bound"] = -10.0
+  e["Variables"][i]["Upper Bound"] = +10.0
 ```
 
 
 ###  The Solver
-We choose the solver `CMA-ES` and the domain of the parameter `X`,
+We choose the solver `CMA-ES`,
 
 ```python
-k["Solver"]  = "CCMA-ES";
+e["Solver"]["Type"] = "Optimizer/CMAES"
 
-for i in range(nParams) :
-  k["Variables"][i]["CCMA-ES"]["Lower Bound"] = -10.0;
-  k["Variables"][i]["CCMA-ES"]["Upper Bound"] = +10.0;
 ```
 
 Then we set a few parameters for CCMA-ES,
 ```python
-k["CCMA-ES"]["Adaption Size"] = 0.1;
-k["CCMA-ES"]["Sample Count"] = 8;
-k["CCMA-ES"]["Viability Sample Count"] = 2;
-k["CCMA-ES"]["Termination Criteria"]["Min Fitness"]["Value"] = -680.630057374402 - 1e-4;
+e["Solver"]["Is Sigma Bounded"] = True
+e["Solver"]["Population Size"] = 32
+e["Solver"]["Viability Population Size"] = 4
+e["Solver"]["Termination Criteria"]["Max Value"] = -680.630057374402 - 1e-4
+e["Solver"]["Termination Criteria"]["Max Generations"] = 500
 ```
 For a detailed description of CCMA-ES settings see [here](../../usage/solvers/cmaes.md).
 
-Finally, we need to add a call to the run() routine to start the Korali engine.
+
+We configure output settings,
 
 ```python
-k.run()
+e["Results"]["Frequency"] = 50
+e["Console"]["Frequency"] = 50
+
+```
+
+Finally, we need to create a Korali `Engine` object add a call to its run() routine, to start the engine.
+
+```python
+k = korali.Engine()
+k.run(e)
 ```
 
 ###  Running

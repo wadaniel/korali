@@ -1,8 +1,8 @@
-# A.3 - Inferring Parameter Values with Bayes' Theorem
+# A.3 - Inferring Parameter Values with Bayes' Theorem  <a name="tutorial-a3"></a>
 
 In this tutorial we show how to **optimize** and **sample** the posterior
 distribution of a Bayesian inference problem. We will go through the code sample
- [here](run-cmaes.py) first, and then modify it to get [this code sample](run-tmcmc.py).
+ [run-cmaes.py](run-cmaes.py) first, and then modify it to get [this code sample](run-tmcmc.py).
 
 
 ## Problem Setup

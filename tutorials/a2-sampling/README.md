@@ -76,6 +76,9 @@ e["Variables"][0]["Initial Standard Deviation"] = 1.0
 e["Solver"]["Burn In"] = 500
 e["Solver"]["Termination Criteria"]["Max Samples"] = 5000
 ```
+A list of all implemented solver types, although not optimally
+reader friendly, can be found in [module.cpp](../../source/module.cpp). 
+
 We also set some settings for MCMC. For a detailed description of the MCMC settings, see
 [here](../../usage/solvers/mcmc.md).
 

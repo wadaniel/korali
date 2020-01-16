@@ -71,7 +71,7 @@ def g4(k):
 
 ```
 
-## Optimization with CCMA-ES
+## Optimization with (C)CMA-ES
 
 First, open a file and import the korali module
 ```python
@@ -136,6 +136,8 @@ e["Solver"]["Termination Criteria"]["Max Generations"] = 500
 ```
 For a detailed description of CCMA-ES settings see [here](../../usage/solvers/cmaes.md).
 
+A list of implemented solvers and problem types, although not optimally
+reader friendly, can be found in [module.cpp](../../source/module.cpp).   
 
 We configure output settings,
 

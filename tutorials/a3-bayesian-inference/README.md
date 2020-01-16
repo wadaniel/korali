@@ -151,6 +151,9 @@ e["Problem"]["Likelihood Model"] = "Additive Normal"
 e["Problem"]["Reference Data"] = getReferenceData()
 ```
 
+A list of implemented solvers and problem types, although not optimally
+reader friendly, can be found in [module.cpp](../../source/module.cpp).  
+
 ### The Variables
 
 We define two `Variables` of type `Computational` that correspond to $\vartheta_0$ and $\vartheta_1$. The prior distribution of both is set to `Uniform`.

@@ -54,6 +54,9 @@ e["Problem"]["Type"] = "Evaluation/Direct/Basic"
 e["Problem"]["Objective"] = "Maximize"
 ```
 
+A list of implemented solver- and problem types, although not optimally
+reader friendly, can be found in [module.cpp](../../source/module.cpp).  
+
 ###  The Variables
 In this problem there is only one variable, `X`, whose domain we set to [-10,10],
 ```python

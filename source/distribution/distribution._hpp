@@ -15,8 +15,6 @@ class Distribution : public korali::Module
  protected:
 
  std::map<std::string, double*> _conditionalsMap;
- size_t _seed;
- gsl_rng* _range;
  double _aux;
 
  public:

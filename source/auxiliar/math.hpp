@@ -7,6 +7,7 @@
 #include <limits>
 #include <string>
 #include <vector>
+#include <gsl/gsl_rng.h>
 
 namespace korali
 {
@@ -30,6 +31,8 @@ double vectorDistance(const std::vector<double>& x, const std::vector<double>& y
 bool isanynan(const std::vector<double>& x );
 std::string getTimestamp();
 size_t getTimehash();
+gsl_rng* getRange(std::string rangeString);
+std::string setRange(gsl_rng* range);
 
 }
 

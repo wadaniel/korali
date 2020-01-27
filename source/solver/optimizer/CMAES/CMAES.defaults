@@ -1,0 +1,47 @@
+{
+ "Population Size": 32,
+ "Mu Value": 16,
+ "Mu Type": "Logarithmic",
+ "Initial Sigma Cumulation Factor": -1.0,
+ "Initial Damp Factor": -1.0,
+ "Is Sigma Bounded": false,
+ "Initial Cumulative Covariance": -1.0, 
+ "Is Diagonal": false,
+ "Viability Population Size": 2,
+ "Viability Mu Value": 1,
+ "Max Covariance Matrix Corrections": 1000000,
+ "Target Success Rate": 0.1818,
+ "Covariance Matrix Adaption Strength": 0.1,
+ "Normal Vector Learning Rate": -1.0,
+ "Global Success Learning Rate": 0.2,
+ "Termination Criteria":
+  {
+   "Max Infeasible Resamplings": 10000000,
+   "Max Condition Covariance Matrix": Infinity,
+   "Min Value": -Infinity,
+   "Max Value": Infinity,
+   "Min Value Difference Threshold": -Infinity,
+   "Min Standard Deviation": -Infinity,
+   "Max Standard Deviation": Infinity
+  },
+ "Internal Settings":
+  {
+   "Uniform Generator":
+   {
+    "Name": "Uniform Generator",
+    "Type": "Univariate/Uniform",
+    "Mean": 0.0,
+    "Standard Deviation": 1.0
+   },
+   "Normal Generator":
+   {
+    "Name": "Normal Generator",
+    "Type": "Univariate/Normal",
+    "Minimum": 0.0,
+    "Maximum": 1.0
+   },
+   "Covariance Matrix Adaption Factor": 0,
+	 "Has Discrete Variables": false,
+	 "Constraint Evaluation Count": 0
+  }
+}

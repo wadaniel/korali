@@ -2,6 +2,7 @@
 #include <cmath>
 #include <algorithm>
 #include <chrono>
+#include "auxiliar/logger.hpp"
 
 // Computes: log sum_{i=1}^N x_i
 // using the log-sum-exp trick:
@@ -63,4 +64,21 @@ std::string korali::getTimestamp()
 size_t korali::getTimehash()
 {
   return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+}
+
+gsl_rng* korali::getRange(std::string rangeString)
+{
+ gsl_rng* rng = NULL;
+
+ if (rangeString == "Undefined")
+  rng = gsl_rng_alloc (gsl_rng_default);
+
+ if (rng == NULL) korali::logError("Could not create GSL range.");
+
+ return rng;
+}
+
+std::string korali::setRange(gsl_rng* range)
+{
+ return "";
 }

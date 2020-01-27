@@ -26,7 +26,7 @@ python3 -m mkdocs build
 check
 
 # Some re-styling changes
-sed -i -e 's/76\./36\./g' -e 's/12\.1/10\.5/g' ./site/assets/stylesheets/application.*.css
+sed -i -e 's/76\./36\./g;s/12\.1/10\.5/g' ./site/assets/stylesheets/application.*.css
 check
 
 echo "[Korali] Building complete."

@@ -16,10 +16,10 @@ check
 popd
 
 # Installing mkdocs and materials theme
-pip install mkdocs --user
+python3 -m pip install mkdocs --user
 check
 
-pip install mkdocs-material --user
+python3 -m pip install mkdocs-material --user
 check
 
 python3 -m mkdocs build

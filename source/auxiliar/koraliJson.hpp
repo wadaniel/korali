@@ -138,6 +138,29 @@ static void eraseValue(nlohmann::json& js, std::string path)
  aux->erase(settings[i]);
 }
 
+static void mergeJson(nlohmann::json& a, const nlohmann::json& b)
+{
+ if (a.is_object() == false) korali::logError("Passed JSON A argument is not an object.\n");
+ if (b.is_object() == false) korali::logError("Passed JSON B argument is not an object.\n");
+
+ //printf("Source:   \n%s\n\n", b.dump(2).c_str());
+ //printf("Defaults: \n%s\n\n", a.dump(2).c_str());
+
+ for (auto& x : b.items())
+ {
+  auto k = x.key();
+  if (a.find(k) == a.end()) // Key not found, copy now.
+   a[k] = b[k];
+  else                            // Key found, check type.
+  {
+   if (a[k].is_object() && b[k].is_object()) mergeJson(a[k], b[k]); // Both are objects. Recurse within.
+   else a[k] = b[k]; // One of them is not object, copy now.
+  }
+ }
+
+ //printf("Result:    \n%s\n\n", a.dump(2).c_str());
+}
+
 static bool isDefined(nlohmann::json& js, std::vector<std::string> settings)
 {
  auto tmp = js;

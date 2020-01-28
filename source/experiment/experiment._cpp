@@ -127,15 +127,15 @@ bool korali::Experiment::loadState(std::string path)
     auto curJs = nlohmann::json();
     if (korali::JsonInterface::loadJsonFromFile(curJs, filePath.c_str()))
     {
-     size_t runId = js["Internal"]["Run ID"];
-     size_t currentGenRunId = curJs["Internal"]["Run ID"];
+     size_t runId = js["Run ID"];
+     size_t currentGenRunId = curJs["Run ID"];
      if (currentGenRunId == runId)
      {
-      size_t curGen = curJs["Internal"]["Current Generation"];
-      if (curGen > js["Internal"]["Current Generation"])
+      size_t curGen = curJs["Current Generation"];
+      if (curGen > js["Current Generation"])
       {
        js["Solver"] = curJs["Solver"];
-       js["Internal"]["Current Generation"] = curGen;
+       js["Current Generation"] = curGen;
       }
      }
     }
@@ -151,8 +151,8 @@ bool korali::Experiment::loadState(std::string path)
 
 korali::Experiment::Experiment()
 {
- _js["Internal"]["Run ID"] = korali::getTimehash();
- _js["Internal"]["Current Generation"] = 0;
+ _js["Run ID"] = korali::getTimehash();
+ _js["Current Generation"] = 0;
  _js["Results"]["Path"] = "_korali_result";
  _k = this;
 }

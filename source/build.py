@@ -112,6 +112,7 @@ def consumeValue(base, moduleName, path, varName, varType, varDefault, options):
 
  if ('korali::' in varType):
   if (varDefault): cString = ' if (! korali::JsonInterface::isDefined(' + base + ', "' + path.replace('"', "'") + '[\'Type\']")) ' + base + path + '["Type"] = "' + varDefault + '"; \n'
+  cString += ' printf("%s\\n", ' +  base + path + '.dump(2).c_str());\n'
   cString += ' ' + varName + ' = dynamic_cast<' + varType + '>(korali::Module::getModule(' + base + path + '));\n'
   return cString
 
@@ -186,7 +187,7 @@ def createSetConfiguration(module):
  if 'Internal Settings' in module:
   for v in module["Internal Settings"]:
    varDefault = getVariableDefault(v)
-   codeString += consumeValue('js', module["Name"], '["Internal"]' + getVariablePath(v),  getCXXVariableName(v["Name"]), getVariableType(v), varDefault, getVariableOptions(v))
+   codeString += consumeValue('js', module["Name"], getVariablePath(v),  getCXXVariableName(v["Name"]), getVariableType(v), varDefault, getVariableOptions(v))
 
  if 'Termination Criteria' in module:
   for v in module["Termination Criteria"]:
@@ -232,7 +233,7 @@ def createGetConfiguration(module):
 
  if 'Internal Settings' in module:
   for v in module["Internal Settings"]:
-   codeString += saveValue('js', '["Internal"]' + getVariablePath(v), getCXXVariableName(v["Name"]), getVariableType(v))
+   codeString += saveValue('js', getVariablePath(v), getCXXVariableName(v["Name"]), getVariableType(v))
 
  if 'Variables Configuration' in module:
   codeString += ' for (size_t i = 0; i <  _k->_variables.size(); i++) { \n'
@@ -253,14 +254,17 @@ def createGetConfiguration(module):
  
 ####################################################################
 
-def createSetDefaults(module):
- codeString = 'void ' + module["Class"]  + '::setDefaults() \n{\n\n'
+def createApplyDefaults(module):
+ codeString = 'void ' + module["Class"]  + '::applyDefaults(nlohmann::json& js) \n{\n\n'
 
  if 'Defaults' in module:
-   codeString += '  std::string defaultString = "' + json.dumps(module["Defaults"]).replace('"','\\"') + '";\n'
-   codeString += '  nlohmann::json defaultJs = nlohmann::json::parse(defaultString);\n'
-   codeString += '  setConfiguration(defaultJs); \n\n'
-   
+   codeString += ' std::string defaultString = "' + json.dumps(module["Defaults"]).replace('"','\\"') + '";\n'
+   codeString += ' nlohmann::json defaultJs = nlohmann::json::parse(defaultString);\n'
+   codeString += ' JsonInterface::mergeJson(defaultJs, js); \n'
+   codeString += ' js = defaultJs; \n\n' 
+
+ codeString += ' '  + module["Parent Class"] + '::applyDefaults(js);\n'
+    
  codeString += '} \n\n'
 
  return codeString
@@ -423,7 +427,7 @@ for moduleDir, relDir, fileNames in os.walk(koraliDir):
 
    moduleCodeString = createSetConfiguration(moduleConfig)
    moduleCodeString += createGetConfiguration(moduleConfig)
-   moduleCodeString += createSetDefaults(moduleConfig)
+   moduleCodeString += createApplyDefaults(moduleConfig)
    moduleCodeString += createCheckTermination(moduleConfig)
 
    if 'Available Operations' in moduleConfig:
@@ -443,7 +447,7 @@ for moduleDir, relDir, fileNames in os.walk(koraliDir):
    functionOverrideString += ' bool checkTermination() override;\n'
    functionOverrideString += ' void getConfiguration(nlohmann::json& js) override;\n'
    functionOverrideString += ' void setConfiguration(nlohmann::json& js) override;\n'
-   functionOverrideString += ' void setDefaults() override;\n'
+   functionOverrideString += ' void applyDefaults(nlohmann::json& js) override;\n'
 
    if 'Available Operations' in moduleConfig:
      functionOverrideString += ' bool runOperation(std::string, korali::Sample& sample) override;\n'

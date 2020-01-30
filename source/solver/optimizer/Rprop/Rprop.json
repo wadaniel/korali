@@ -3,31 +3,26 @@
  [
    {
     "Name": [ "Delta0" ],
-    "Default": "0.1",
     "Type": "double",
     "Description": "Initial Delta"
    },
    {
     "Name": [ "Delta Min" ],
-    "Default": "1e-6",
     "Type": "double",
     "Description": "Minimum Delta"
    },
    {
     "Name": [ "Delta Max" ],
-    "Default": "50",
     "Type": "double",
     "Description": "Maximum Delta"
    },
    {
     "Name": [ "Eta Minus" ],
-    "Default": "0.5",
     "Type": "double",
     "Description": "Eta Minus"
    },
    {
     "Name": [ "Eta Plus" ],
-    "Default": "1.2",
     "Type": "double",
     "Description": "Eta Plus"
    }
@@ -38,21 +33,18 @@
    {
     "Name": [ "Max Gradient Norm" ],
     "Type": "double",
-    "Default": "0.0",
     "Criteria": "_normPreviousGradient < _maxGradientNorm",
     "Description": "Maximum value of the norm of the gradient."
    },
    {
     "Name": [ "Max Stall Generations" ],
     "Type": "size_t",
-    "Default": "20",
     "Criteria": " _maxStallCounter >= _maxStallGenerations",
     "Description": "Maximum times stalled with function evaluation bigger than the best one."
   },
    {
     "Name": [ "Parameter Relative Tolerance" ],
     "Type": "double",
-    "Default": "1e-4",
     "Criteria": "_xDiff<_parameterRelativeTolerance && _xDiff>0",
     "Description": "Relative tolerance in parameter difference between generations."
    }

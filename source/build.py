@@ -112,13 +112,13 @@ def consumeValue(base, moduleName, path, varName, varType, varDefault, options):
 
  if ('korali::' in varType):
   if (varDefault): cString = ' if (! korali::JsonInterface::isDefined(' + base + ', "' + path.replace('"', "'") + '[\'Type\']")) ' + base + path + '["Type"] = "' + varDefault + '"; \n'
-  cString += ' printf("%s\\n", ' +  base + path + '.dump(2).c_str());\n'
+  # cString += ' printf("%s\\n", ' +  base + path + '.dump(2).c_str());\n'
   cString += ' ' + varName + ' = dynamic_cast<' + varType + '>(korali::Module::getModule(' + base + path + '));\n'
   return cString
 
  rhs = base + path + '.get<' + varType + '>();\n'
  if ('gsl_rng*' in varType):
-  rhs = 'korali::getRange(' + base + path + '.get<std::string>());\n'
+  rhs = 'setRange(' + base + path + '.get<std::string>());\n'
  
  cString += ' if (korali::JsonInterface::isDefined(' + base + ', "' + path.replace('"', "'") + '"))  \n  { \n'
  cString += '   ' + varName + ' = ' + rhs
@@ -155,7 +155,7 @@ def saveValue(base, path, varName, varType):
   return sString
   
  if ('gsl_rng*' in varType):
-  sString = '   ' + base + path + ' = korali::setRange(' + varName + ');\n'
+  sString = '   ' + base + path + ' = getRange(' + varName + ');\n'
   return sString
 
  if ('korali::Variable' in varType):

@@ -21,8 +21,11 @@ class Distribution : public korali::Module
 
  bool _hasConditionalVariables;
 
+ gsl_rng* setRange(std::string rangeString);
+ std::string getRange(gsl_rng* range);
+
  void initialize() override;
- void finalize() override;
+
  virtual void updateDistribution() { };
  virtual void updateProperty(std::string property, double value) { };
  virtual double* getPropertyPointer(std::string property) { return NULL; };

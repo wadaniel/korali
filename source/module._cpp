@@ -25,6 +25,7 @@ korali::Module* korali::Module::getModule(nlohmann::json& js)
  module->_k = _k;
  module->applyDefaults(js);
  module->setConfiguration(js);
+ module->initialize();
 
  return module;
 }

@@ -166,11 +166,6 @@ void korali::Experiment::initialize()
  _isFinished = false;
  _thread = co_create(10240*sizeof(void*), korali::threadWrapper);
  co_switch(_thread);
-
- // Initializing Modules
- for (size_t i = 0; i < _distributions.size(); i++) _distributions[i]->initialize();
- _problem->initialize();
- _solver->initialize();
 }
 
 nlohmann::json& korali::Experiment::operator[](const std::string& key) { return _js[key]; }

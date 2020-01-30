@@ -41,8 +41,6 @@ void korali::Engine::run()
   _isFirstRun = false;
  }
 
- _conduit->initialize();
-
  // If this is a worker process (not root), there's nothing else to do
  if (_conduit->isRoot())
  {

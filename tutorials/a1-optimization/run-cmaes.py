@@ -35,7 +35,7 @@ e["Random Seed"] = 0xC0FFEE
 
 # Loading previous results, if they exist.
 found = False
-found = e.loadState()
+#found = e.loadState()
 
 # If not found, we run first 5 generations.
 if (found == False):

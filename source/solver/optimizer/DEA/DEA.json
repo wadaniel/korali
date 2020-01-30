@@ -8,19 +8,16 @@
    },
    {
     "Name": [ "Crossover Rate" ],
-    "Default": "0.9",
     "Type": "double",
     "Description": "Controls the rate at which dimensions of the samples are mixed (must be in [0,1])."
    },
    {
     "Name": [ "Mutation Rate" ],
-    "Default": "0.5",
     "Type": "double",
     "Description": "Controls the scaling of the vector differentials (must be in [0,2], preferably < 1)."
    },
    {
     "Name": [ "Mutation Rule" ],
-    "Default": "Fixed",
     "Type": "std::string",
     "Options": [
                 { "Value": "Fixed", "Description": "What does this mean?." },
@@ -30,7 +27,6 @@
    },
    {
     "Name": [ "Parent Selection Rule" ],
-    "Default": "Random",
     "Type": "std::string",
     "Options": [
                 { "Value": "Random", "Description": "Select parent randomly." },
@@ -40,7 +36,6 @@
    },
    {
     "Name": [ "Accept Rule" ],
-    "Default": "Greedy",
     "Type": "std::string",
     "Options": [
                 { "Value": "Best", "Description": "Update best sample if better than Best Ever Sample." },
@@ -52,7 +47,6 @@
    },
    {
     "Name": [ "Fix Infeasible" ],
-    "Default": "true",
     "Type": "bool",
     "Description": "If set true, Korali samples a random sample between Parent and the voiolated boundary. If set false, infeasible samples are mutated again until feasible."
    }
@@ -63,35 +57,30 @@
    {
     "Name": [ "Max Infeasible Resamplings" ],
     "Type": "size_t",
-    "Default": "10000000",
     "Criteria": "_infeasibleSampleCount > _maxInfeasibleResamplings",
     "Description": "Max number of mutations per sample per generation if infeasible (only relevant if Fix Infeasible is set False)."
    },
    {
     "Name": [ "Min Value" ],
     "Type": "double",
-    "Default": "-INFINITY",
     "Criteria": "(_k->_currentGeneration > 1) && (-_bestEverValue < _minValue)",
     "Description": "Specifies the target fitness to stop minimization."
    },
    {
     "Name": [ "Max Value" ],
     "Type": "double",
-    "Default": "+INFINITY",
     "Criteria": "(_k->_currentGeneration > 1) && (+_bestEverValue > _maxValue)",
     "Description": "Specifies the target fitness to stop maximization."
    },
    {
     "Name": [ "Min Value Difference Threshold" ],
     "Type": "double",
-    "Default": "-INFINITY",
     "Criteria": "(_k->_currentGeneration > 1) && (fabs(_currentBestValue - _previousBestValue) < _minValueDifferenceThreshold)",
     "Description": "Specifies the minimum fitness differential between two consecutive generations before stopping execution."
    },
    {
     "Name": [ "Min Step Size" ],
     "Type": "double",
-    "Default": "-INFINITY",
     "Criteria": "_currentMinimumStepSize < _minStepSize",
     "Description": "Specifies the minimal step size of the population mean from one gneration to another."
    }
@@ -99,6 +88,16 @@
  
  "Internal Settings": 
  [
+   {
+    "Name": [ "Normal Generator" ],
+    "Type": "korali::distribution::univariate::Normal*",
+    "Description": "Normal random number generator."
+   },
+   {
+    "Name": [ "Uniform Generator" ],
+    "Type": "korali::distribution::univariate::Uniform*",
+    "Description": "Uniform random number generator."
+   },
    {
     "Name": [ "Value Vector" ],
     "Type": "std::vector<double>",

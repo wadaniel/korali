@@ -13,9 +13,6 @@ class DEA : public korali::solver::Optimizer
 {
  private:
 
- korali::distribution::univariate::Normal* _normalGenerator; /* Normal random number generator */
- korali::distribution::univariate::Uniform* _uniformGenerator; /* Uniform random number generator */
-
  korali::problem::Evaluation* _evaluationProblem;
 
  void mutateSingle(size_t sampleIdx); /* sample individual */

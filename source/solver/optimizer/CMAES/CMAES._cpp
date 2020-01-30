@@ -34,6 +34,9 @@ void korali::solver::optimizer::CMAES::initialize()
 
  if (_k->_currentGeneration > 0) return;
 
+ if (_muValue == 0)  _muValue = _populationSize / 2;
+ if (_viabilityMuValue == 0) _viabilityMuValue = _viabilityPopulationSize / 2;
+
  size_t s_max  = std::max(_populationSize,  _viabilityPopulationSize);
  size_t mu_max = std::max(_muValue, _viabilityMuValue);
 
@@ -408,7 +411,7 @@ void korali::solver::optimizer::CMAES::sampleSingle(size_t sampleIdx)
   for (size_t d = 0; d < N; ++d)
   {
    double randomNumber = _normalGenerator->getRandomNumber();
-   printf("Random Number: %f\n", randomNumber);
+   //printf("Random Number: %f\n", randomNumber);
 
    if (_isDiagonal)
    {

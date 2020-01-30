@@ -12,23 +12,6 @@ void korali::solver::optimizer::LMCMAES::initialize()
 {
  korali::solver::Optimizer::initialize();
 
- // Initializing RNGs
- auto jsNormal = nlohmann::json();
- jsNormal["Name"] = "Normal Generator";
- jsNormal["Type"] = "Univariate/Normal";
- jsNormal["Mean"] = 0.0;
- jsNormal["Standard Deviation"] = 1.0;
- _normalGenerator = dynamic_cast<korali::distribution::univariate::Normal*>(korali::Module::getModule(jsNormal));
- _normalGenerator->initialize();
-
- auto jsUniform = nlohmann::json();
- jsUniform["Name"] = "Uniform Generator";
- jsUniform["Type"] = "Univariate/Uniform";
- jsUniform["Minimum"] = 0.0;
- jsUniform["Maximum"] = 1.0;
- _uniformGenerator = dynamic_cast<korali::distribution::univariate::Uniform*>(korali::Module::getModule(jsUniform));
- _uniformGenerator->initialize();
-
  _directProblem       = dynamic_cast<korali::problem::evaluation::Direct*>(_k->_problem);
  bool isDirectProblem = _directProblem != NULL;
 
@@ -44,6 +27,13 @@ void korali::solver::optimizer::LMCMAES::initialize()
   korali::logError("LMCMAES requires 3 parameters for 'Target Distance Coefficients' (%zu provided).\n", _targetDistanceCoefficients.size());
 
  if (_k->_currentGeneration > 0) return;
+
+ if (_muValue == 0)  _muValue = _populationSize / 2;
+ if (std::isnan(_cumulativeCovariance)) _cumulativeCovariance = 0.5/std::sqrt((double)N);
+ if (std::isnan(_choleskyMatrixLearningRate)) _choleskyMatrixLearningRate = 1.0/(10.0-std::log((double)N+1.0));
+ if (_targetDistanceCoefficients.empty()) _targetDistanceCoefficients = { N, 0.0, 0.0 };
+ if (_setUpdateInterval == 0) _setUpdateInterval = std::max(std::floor(std::log(_k->_variables.size())), 1.0);
+ if (_subsetSize == 0) _subsetSize = std::ceil(std::sqrt(double(_k->_variables.size())));
 
  _chiSquareNumber = sqrt((double) N) * (1. - 1./(4.*N) + 1./(21.*N*N));
  _sigmaExponentFactor = 0.0;

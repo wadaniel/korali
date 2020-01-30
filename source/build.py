@@ -406,6 +406,7 @@ for moduleDir, relDir, fileNames in os.walk(koraliDir):
    # Loading Json defaults file
    defaultFilePath = filePath.replace('.json', '.defaults')
    if os.path.isfile(defaultFilePath):
+    print('[Korali] Opening: ' + defaultFilePath + '...')
     with open(defaultFilePath, 'r') as file: moduleConfig["Defaults"] = json.load(file)
 
    # Processing Module information

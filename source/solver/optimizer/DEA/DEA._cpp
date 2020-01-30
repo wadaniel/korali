@@ -9,28 +9,9 @@
 #include <numeric>   // std::iota
 #include <algorithm> // std::sort
 
-constexpr size_t __korali__str2int(const char* str, int h = 0) { return !str[h] ? 5381 : (__korali__str2int(str, h+1) * 33) ^ str[h]; }
-
 void korali::solver::optimizer::DEA::initialize()
 {
  korali::solver::Optimizer::initialize();
-
- // Initializing RNGs
- auto jsNormal = nlohmann::json();
- jsNormal["Name"] = "Normal Generator";
- jsNormal["Type"] = "Univariate/Normal";
- jsNormal["Mean"] = 0.0;
- jsNormal["Standard Deviation"] = 1.0;
- _normalGenerator = dynamic_cast<korali::distribution::univariate::Normal*>(korali::Module::getModule(jsNormal));
- _normalGenerator->initialize();
-
- auto jsUniform = nlohmann::json();
- jsUniform["Name"] = "Uniform Generator";
- jsUniform["Type"] = "Univariate/Uniform";
- jsUniform["Minimum"] = 0.0;
- jsUniform["Maximum"] = 1.0;
- _uniformGenerator = dynamic_cast<korali::distribution::univariate::Uniform*>(korali::Module::getModule(jsUniform));
- _uniformGenerator->initialize();
 
  N = _k->_variables.size();
 
@@ -224,36 +205,43 @@ void korali::solver::optimizer::DEA::updateSolver()
 
     if(_currentBestValue > _bestEverValue) _bestEverVariables = _currentBestVariables;
 
-    switch (__korali__str2int(_acceptRule.c_str()))
+    bool acceptRuleRecognized = false;
+
+    if (_acceptRule == "Best") // only update best sample
     {
-        case __korali__str2int("Best") : // only update best sample
-            if(_currentBestValue > _bestEverValue)
-            {
-              for(size_t d = 0; d < N; ++d) _samplePopulation[_bestSampleIndex][d] = _candidatePopulation[_bestSampleIndex][d];
-              _bestEverValue = _currentBestValue;
-            }
-            break;
-
-        case __korali__str2int("Greedy") : // accept all mutations better than parent
-            for(size_t i = 0; i < _populationSize; ++i) if(_valueVector[i] > _previousValueVector[i])
-                _samplePopulation[i] = _candidatePopulation[i];
-            if(_currentBestValue > _bestEverValue) _bestEverValue = _currentBestValue;
-            break;
-
-        case __korali__str2int("Improved") : // update all samples better than _bestEverValue
-            for(size_t i = 0; i < _populationSize; ++i) if(_valueVector[i] > _bestEverValue)
-                for(size_t d = 0; d < N; ++d) _samplePopulation[i][d] = _candidatePopulation[i][d];
-            if(_currentBestValue > _bestEverValue) _bestEverValue = _currentBestValue;
-            break;
-
-        case __korali__str2int("Iterative") : // iteratively update _bestEverValue and accept samples
-            for(size_t i = 0; i < _populationSize; ++i) if(_valueVector[i] > _bestEverValue)
-             { for(size_t d = 0; d < N; ++d) _samplePopulation[i][d] = _candidatePopulation[i][d]; _bestEverValue = _valueVector[i]; }
-            break;
-
-        default :
-            korali::logError("Accept Rule (%s) not recognized.\n",  _acceptRule.c_str());
+      if(_currentBestValue > _bestEverValue)
+      {
+        for(size_t d = 0; d < N; ++d) _samplePopulation[_bestSampleIndex][d] = _candidatePopulation[_bestSampleIndex][d];
+        _bestEverValue = _currentBestValue;
+      }
+      acceptRuleRecognized = true;
     }
+
+    if (_acceptRule == "Greedy") // accept all mutations better than parent
+    {
+      for(size_t i = 0; i < _populationSize; ++i) if(_valueVector[i] > _previousValueVector[i])
+        _samplePopulation[i] = _candidatePopulation[i];
+      if(_currentBestValue > _bestEverValue) _bestEverValue = _currentBestValue;
+      acceptRuleRecognized = true;
+    }
+
+    if (_acceptRule == "Improved") // update all samples better than _bestEverValue
+    {
+      for(size_t i = 0; i < _populationSize; ++i) if(_valueVector[i] > _bestEverValue)
+        for(size_t d = 0; d < N; ++d) _samplePopulation[i][d] = _candidatePopulation[i][d];
+      if(_currentBestValue > _bestEverValue) _bestEverValue = _currentBestValue;
+      acceptRuleRecognized = true;
+    }
+
+    if (_acceptRule == "Iterative") // iteratively update _bestEverValue and accept samples
+    {
+     for(size_t i = 0; i < _populationSize; ++i) if(_valueVector[i] > _bestEverValue)
+      for(size_t d = 0; d < N; ++d)
+       { _samplePopulation[i][d] = _candidatePopulation[i][d]; _bestEverValue = _valueVector[i]; }
+     acceptRuleRecognized = true;
+    }
+
+    if (acceptRuleRecognized == false)  korali::logError("Accept Rule (%s) not recognized.\n",  _acceptRule.c_str());
 
     for(size_t i = 0; i < _populationSize; ++i) for(size_t d = 0; d < N; ++d)
         _currentMean[d] += _samplePopulation[i][d]/((double)_populationSize);

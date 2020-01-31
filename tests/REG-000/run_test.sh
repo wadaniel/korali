@@ -7,7 +7,7 @@ source ../functions.sh
 ############# STEP 1 ##############
 
 logEcho "[Korali] Checking Pip Installation"
-pip check korali
+python3 -m pip check korali
 check_result
 
 ############# STEP 2 ##############

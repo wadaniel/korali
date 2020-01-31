@@ -65,26 +65,6 @@ void korali::solver::sampler::MCMC::runGeneration()
 
 void korali::solver::sampler::MCMC::initialize()
 {
- // Initializing RNGs
- auto jsNormal = nlohmann::json();
- jsNormal["Name"] = "Normal Generator";
- jsNormal["Type"] = "Univariate/Normal";
- jsNormal["Mean"] = 0.0;
- jsNormal["Standard Deviation"] = 1.0;
- _normalGenerator = dynamic_cast<korali::distribution::univariate::Normal*>(korali::Module::getModule(jsNormal));
- _normalGenerator->initialize();
-
- auto jsUniform = nlohmann::json();
- jsUniform["Name"] = "Uniform Generator";
- jsUniform["Type"] = "Univariate/Uniform";
- jsUniform["Minimum"] = 0.0;
- jsUniform["Maximum"] = 1.0;
- _uniformGenerator = dynamic_cast<korali::distribution::univariate::Uniform*>(korali::Module::getModule(jsUniform));
- _uniformGenerator->initialize();
-
- // Turn Off GSL Error Handler
- gsl_set_error_handler_off();
-
  N = _k->_variables.size();
 
  if(_chainCovarianceScaling <= 0.0) korali::logError("Chain Covariance Scaling must be larger 0.0 (is %lf).\n", _chainCovarianceScaling);

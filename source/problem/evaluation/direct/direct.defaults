@@ -1,0 +1,6 @@
+{
+ "Objective": "Maximize",
+ "Constraints": [ ],
+ "Has Discrete Variables": false
+}
+

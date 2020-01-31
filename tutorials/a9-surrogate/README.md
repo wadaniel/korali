@@ -1,6 +1,6 @@
 # A.9 - Surrogate Modelling with Gaussian Processes
 
-In this tutorial we show how to train, test and preeict with a GP.
+In this tutorial we show how to create a surrogate with Gaussian Processes.
 
 
 ## Init

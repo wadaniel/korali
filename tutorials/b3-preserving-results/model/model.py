@@ -32,14 +32,14 @@ harvestQualities = {}
  
 def storeResults(d):
  # Gathering sample variable values
- ph = d["Parameters"][0]
- temp = d["Parameters"][1]
+ ph       = d["Parameters"][0]
+ temp     = d["Parameters"][1]
  sampleId = d["Sample Id"]
  
  # Gathering QOIs
+ a = getAppleCount(ph, temp)
  b = getBananaCount(ph, temp)
  o = getOrangeCount(ph, temp)
- a = getAppleCount(ph, temp)
  
  # Calculating objective function
  x = getHarvestQuality(b, o, a)
@@ -51,6 +51,10 @@ def storeResults(d):
  orangeCounts[sampleId] = o
  appleCounts[sampleId] = a
  harvestQualities[sampleId] = x
+ 
+ # Store QoI
+ d["Apples"]  = a
+ d["Bananas"] = b
  
  # Returning evaluation to Korali
  d["Evaluation"] = x
@@ -78,11 +82,3 @@ def getAppleCount(ph, temp):
  c = 2
  t = a * math.exp(-b / c)
  return math.floor(t)
- 
-def saveResults():
- print('Saving quantities of interest in myResults.txt...')
- configFile = open("myResults.txt","w")
-
- for i in range(len(samplePHs)):
-  configFile.write(str(samplePHs[i]) + ', ' + str(sampleTemps[i]) + ', ' + str(orangeCounts[i]) + ', ' + str(bananaCounts[i]) + ', ' + str(appleCounts[i]) + ', ' + str(harvestQualities[i]) + '\n') 
- 

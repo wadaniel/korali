@@ -19,7 +19,6 @@ e = korali.Experiment()
 # Configuring Problem
 e["Problem"]["Type"] = "Evaluation/Direct/Basic"
 e["Problem"]["Objective"] = "Maximize"
-e["Problem"]["Objective Function"] = model
 
 # Defining the problem's variables.
 e["Variables"][0]["Name"] = "X"
@@ -30,7 +29,28 @@ e["Variables"][0]["Upper Bound"] = +10.0
 e["Solver"]["Type"] = "Optimizer/CMAES"
 e["Solver"]["Population Size"] = 32
 e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-7
-e["Solver"]["Termination Criteria"]["Max Generations"] = 100
+e["Solver"]["Termination Criteria"]["Max Generations"] = 10
 
-# Running Korali
+e["Random Seed"] = 0xC0FFEE
+
+# Loading previous results, if they exist.
+found = False
+found = e.loadState()
+
+# If not found, we run first 5 generations.
+if (found == False):
+ print('------------------------------------------------------')
+ print('Running first 5 generations anew...')
+ print('------------------------------------------------------')
+
+# If found, we continue with the next 5 generations.
+if (found == True):
+ print('------------------------------------------------------')
+ print('Running 5 more generations from previous run...')
+ print('------------------------------------------------------')
+ e["Solver"]["Termination Criteria"]["Max Generations"] = e["Solver"]["Termination Criteria"]["Max Generations"] + 5
+
+# Running 10 generations
+e["Problem"]["Objective Function"] = model
 k.run(e)
+

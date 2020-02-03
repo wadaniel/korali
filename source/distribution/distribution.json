@@ -9,13 +9,11 @@
   {
    "Name": [ "Seed" ],
    "Type": "size_t",
-   "Default": "_k->_randomSeed++",
    "Description": "Defines the random seed of the distribution."
   },
   {
    "Name": [ "Range" ],
    "Type": "gsl_rng*", 
-   "Default": "gsl_rng_alloc (gsl_rng_default)",
    "Description": "Stores the current state of the distribution in hexadecimal notation."
   }
  ]

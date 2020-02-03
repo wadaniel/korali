@@ -151,19 +151,12 @@ bool korali::Experiment::loadState(std::string path)
 
 korali::Experiment::Experiment()
 {
- _js["Run ID"] = korali::getTimehash();
- _js["Current Generation"] = 0;
- _js["Results"]["Path"] = "_korali_result";
  _k = this;
 }
 
 void korali::Experiment::initialize()
 {
- // Setting Configuration
- setConfiguration(_js.getJson());
- getConfiguration(_js.getJson());
-
- _isFinished = false;
+ _currentExperiment = this;
  _thread = co_create(10240*sizeof(void*), korali::threadWrapper);
  co_switch(_thread);
 }

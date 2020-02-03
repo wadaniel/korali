@@ -18,11 +18,10 @@ class Experiment : public korali::Module {
 
  public:
 
+ Experiment();
+
  // Start functions
  void initialize() override;
-
- // Constructors
- Experiment();
 
  // JSON-based configuration
  korali::KoraliJson  _js;

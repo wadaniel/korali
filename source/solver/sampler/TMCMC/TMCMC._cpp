@@ -32,6 +32,7 @@ void korali::solver::sampler::TMCMC::initialize()
   auto jsMultivariate = nlohmann::json();
   jsMultivariate["Name"] = "TMCMC Multivariate Generator";
   jsMultivariate["Type"] = "Multivariate/Normal";
+  jsMultivariate["Work Vector"] = { };
   _multivariateGenerator = dynamic_cast<korali::distribution::multivariate::Normal*>(korali::Module::getModule(jsMultivariate));
   _multivariateGenerator->initialize();
 

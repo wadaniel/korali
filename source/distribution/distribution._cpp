@@ -30,7 +30,7 @@ std::string korali::Distribution::getRange(gsl_rng* range)
 gsl_rng* korali::Distribution::setRange(std::string rangeString)
 {
  gsl_rng* rng = gsl_rng_alloc (gsl_rng_default);
- _seed = _k->_randomSeed++;
+ if (_seed == 0) _seed = _k->_randomSeed++;
  gsl_rng_set(rng, _seed);
 
  void* state = gsl_rng_state(rng);

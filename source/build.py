@@ -28,19 +28,12 @@ def getVariablePath(v):
  for name in v["Name"]: cVarPath += '["' + name + '"]'
  return cVarPath
 
-def getVariableDefault(v):
- return v.get('Default', '')
-
 def getVariableOptions(v):
  options = []
  if ( v.get('Options', '') ):
   for item in v["Options"]:
    options.append(item["Value"])
  return options
-
-def getVariableEnabledDefault(v):
- if ( v.get('Default', '') ): return 'true'
- return 'false'
 
 def getOptionName(path):
  nameList = path.rsplit('/')
@@ -80,7 +73,7 @@ def isLeafModule(path):
 
 #####################################################################
 
-def consumeValue(base, moduleName, path, varName, varType, varDefault, options):
+def consumeValue(base, moduleName, path, varName, varType, isMandatory, options):
  cString = '\n'
 
  if ('std::function' in varType):
@@ -111,8 +104,6 @@ def consumeValue(base, moduleName, path, varName, varType, varDefault, options):
   return cString
 
  if ('korali::' in varType):
-  if (varDefault): cString = ' if (! korali::JsonInterface::isDefined(' + base + ', "' + path.replace('"', "'") + '[\'Type\']")) ' + base + path + '["Type"] = "' + varDefault + '"; \n'
-  # cString += ' printf("%s\\n", ' +  base + path + '.dump(2).c_str());\n'
   cString += ' ' + varName + ' = dynamic_cast<' + varType + '>(korali::Module::getModule(' + base + path + '));\n'
   return cString
 
@@ -121,16 +112,14 @@ def consumeValue(base, moduleName, path, varName, varType, varDefault, options):
   rhs = 'setRange(' + base + path + '.get<std::string>());\n'
  
  cString += ' if (korali::JsonInterface::isDefined(' + base + ', "' + path.replace('"', "'") + '"))  \n  { \n'
+ if ('std::string' in varType): cString += ' printf("%s\\n", ' + base + path + '.dump(2).c_str());\n'
  cString += '   ' + varName + ' = ' + rhs
  cString += '   korali::JsonInterface::eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n'
  cString += '  }\n'
 
- cString += '  else '
- if (varDefault == ''):
+ if (isMandatory):
+  cString += '  else '
   cString += '  korali::logError("No value provided for mandatory setting: ' + path.replace('"', "'") + ' required by ' + moduleName + '.\\n"); \n'
- else:
-  if ("std::string" in varType): varDefault = '"' + varDefault + '"'
-  cString += varName + ' = ' + varDefault + ';'
 
  cString += '\n'
 
@@ -182,21 +171,20 @@ def createSetConfiguration(module):
  # Consume Configuration Settings
  if 'Configuration Settings' in module:
   for v in module["Configuration Settings"]:
-   codeString += consumeValue('js', module["Name"], getVariablePath(v), getCXXVariableName(v["Name"]), getVariableType(v), getVariableDefault(v), getVariableOptions(v))
+   codeString += consumeValue('js', module["Name"], getVariablePath(v), getCXXVariableName(v["Name"]), getVariableType(v), True, getVariableOptions(v))
 
  if 'Internal Settings' in module:
   for v in module["Internal Settings"]:
-   varDefault = getVariableDefault(v)
-   codeString += consumeValue('js', module["Name"], getVariablePath(v),  getCXXVariableName(v["Name"]), getVariableType(v), varDefault, getVariableOptions(v))
+   codeString += consumeValue('js', module["Name"], getVariablePath(v),  getCXXVariableName(v["Name"]), getVariableType(v), False, getVariableOptions(v))
 
  if 'Termination Criteria' in module:
   for v in module["Termination Criteria"]:
-   codeString += consumeValue('js', module["Name"], '["Termination Criteria"]' + getVariablePath(v), getCXXVariableName(v["Name"]), getVariableType(v), getVariableDefault(v), getVariableOptions(v))
+   codeString += consumeValue('js', module["Name"], '["Termination Criteria"]' + getVariablePath(v), getCXXVariableName(v["Name"]), getVariableType(v), True, getVariableOptions(v))
 
  if 'Variables Configuration' in module:
   codeString += ' for (size_t i = 0; i < _k->_js["Variables"].size(); i++) { \n'
   for v in module["Variables Configuration"]:
-   codeString += consumeValue('_k->_js["Variables"][i]', module["Name"], getVariablePath(v), '_k->_variables[i]->' + getCXXVariableName(v["Name"]), getVariableType(v), getVariableDefault(v), getVariableOptions(v))
+   codeString += consumeValue('_k->_js["Variables"][i]', module["Name"], getVariablePath(v), '_k->_variables[i]->' + getCXXVariableName(v["Name"]), getVariableType(v), False, getVariableOptions(v))
   codeString += ' } \n'
 
  if 'Conditional Variables' in module:

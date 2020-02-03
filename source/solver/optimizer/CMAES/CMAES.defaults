@@ -27,7 +27,6 @@
    
   "Uniform Generator":
   {
-   "Name": "Uniform Generator",
    "Type": "Univariate/Uniform",
    "Minimum": 0.0,
    "Maximum": 1.0,
@@ -36,7 +35,6 @@
   
   "Normal Generator":
   {
-   "Name": "Normal Generator",
    "Type": "Univariate/Normal",
    "Mean": 0.0,
    "Standard Deviation": 1.0,

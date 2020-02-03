@@ -26,12 +26,16 @@ void korali::Engine::run()
  for (size_t i = 0; i < _experimentVector.size(); i++)
  {
   _experimentVector[i]->_experimentId = i;
-  std::string fileName = "./" + _experimentVector[i]->_resultsPath + "/log.txt";
+  auto js = _experimentVector[i]->_js.getJson();
+  _experimentVector[i]->applyDefaults(js);
+  printf("%s\n", _experimentVector[i]->_js.getJson().dump(2).c_str());
+  _experimentVector[i]->setConfiguration(js);
+  _experimentVector[i]->initialize();
+
+  std::string fileName = "./log.txt";
+  //std::string fileName = "./" + _experimentVector[i]->_resultsPath + "/log.txt";
   if (_experimentVector.size() > 1)  _experimentVector[i]->_logFile = fopen(fileName.c_str(), "a");
   if (_experimentVector.size() == 1) _experimentVector[i]->_logFile = stdout;
-
-  _currentExperiment = _experimentVector[i];
-  _experimentVector[i]->initialize();
  }
 
  if (_isFirstRun == true)

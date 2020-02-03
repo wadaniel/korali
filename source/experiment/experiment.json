@@ -2,6 +2,11 @@
  "Configuration Settings": 
  [
    {
+    "Name": [ "Results", "Path" ],
+    "Type": "std::string",
+    "Description": "Specifies the path of the results directory."
+   },
+   {
     "Name": [ "Random Seed" ],
     "Type": "size_t", 
     "Description": "Specifies the initializing seed for the generation of random numbers. If 0 is specified, Korali will automatically derivate a new seed base on the current time."
@@ -30,11 +35,6 @@
     "Name": [ "Results", "Enabled"],
     "Type": "bool",
     "Description": "Specifies whether the partial results should be saved to the results directory."
-   },
-   {
-    "Name": [ "Results", "Path" ],
-    "Type": "std::string",
-    "Description": "Specifies the path of the results directory."
    },
    {
     "Name": [ "Results", "Frequency"],

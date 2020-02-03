@@ -103,16 +103,15 @@ def consumeValue(base, moduleName, path, varName, varType, isMandatory, options)
   cString += ' korali::JsonInterface::eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n\n'
   return cString
 
- if ('korali::' in varType):
-  cString += ' ' + varName + ' = dynamic_cast<' + varType + '>(korali::Module::getModule(' + base + path + '));\n'
-  return cString
-
  rhs = base + path + '.get<' + varType + '>();\n'
+ 
+ if ('korali::' in varType):
+  rhs = 'dynamic_cast<' + varType + '>(korali::Module::getModule(' + base + path + '));\n'
+
  if ('gsl_rng*' in varType):
   rhs = 'setRange(' + base + path + '.get<std::string>());\n'
  
  cString += ' if (korali::JsonInterface::isDefined(' + base + ', "' + path.replace('"', "'") + '"))  \n  { \n'
- if ('std::string' in varType): cString += ' printf("%s\\n", ' + base + path + '.dump(2).c_str());\n'
  cString += '   ' + varName + ' = ' + rhs
  cString += '   korali::JsonInterface::eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n'
  cString += '  }\n'
@@ -248,8 +247,7 @@ def createApplyDefaults(module):
  if 'Defaults' in module:
    codeString += ' std::string defaultString = "' + json.dumps(module["Defaults"]).replace('"','\\"') + '";\n'
    codeString += ' nlohmann::json defaultJs = nlohmann::json::parse(defaultString);\n'
-   codeString += ' JsonInterface::mergeJson(defaultJs, js); \n'
-   codeString += ' js = defaultJs; \n\n' 
+   codeString += ' JsonInterface::mergeJson(js, defaultJs); \n'
 
  codeString += ' '  + module["Parent Class"] + '::applyDefaults(js);\n'
     

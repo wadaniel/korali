@@ -143,8 +143,8 @@ static void mergeJson(nlohmann::json& a, const nlohmann::json& b)
  if (a.is_object() == false) korali::logError("Passed JSON A argument is not an object.\n");
  if (b.is_object() == false) korali::logError("Passed JSON B argument is not an object.\n");
 
- //printf("Source:   \n%s\n\n", b.dump(2).c_str());
- //printf("Defaults: \n%s\n\n", a.dump(2).c_str());
+ //printf("Defaults:   \n%s\n\n", b.dump(2).c_str());
+ //printf("Source: \n%s\n\n", a.dump(2).c_str());
 
  for (auto& x : b.items())
  {

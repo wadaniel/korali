@@ -319,5 +319,22 @@
     "Type": "std::vector<double>",
     "Description": "Scaling factors for samples (read from Initial Standard Deviation or calculated as 30% of the domain widths)."
    }
- ]
+ ],
+ 
+ "Module Defaults":
+ {
+     "Uniform Generator":
+    {
+     "Type": "Univariate/Uniform",
+     "Minimum": 0.0,
+     "Maximum": 1.0
+    },
+    
+    "Normal Generator":
+    {
+     "Type": "Univariate/Normal",
+     "Mean": 0.0,
+     "Standard Deviation": 1.0
+    }
+ }
 }

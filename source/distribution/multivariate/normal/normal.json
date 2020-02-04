@@ -4,13 +4,11 @@
    {
     "Name": [ "Mean Vector" ],
     "Type": "std::vector<double>",
-    "Default": "std::vector<double>(0)",
     "Description": "Means of the variables."
    },
    {
     "Name": [ "Covariance Matrix" ],
     "Type": "std::vector<double>",
-    "Default": "std::vector<double>(0)",
     "Description": "Covariance Matrix of the multivariate normal."
    }
  ],
@@ -22,6 +20,12 @@
     "Type": "std::vector<double>",
     "Description": "Auxiliary work vector."
    }
- ]
+ ],
+ 
+ "Module Defaults":
+ {
+  "Mean Vector": [ ],
+  "Covariance Matrix": [ ]
+ }
 }
  

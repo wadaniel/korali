@@ -24,10 +24,6 @@ class TMCMC : public korali::solver::Sampler
  static double tmcmc_objlogp(double x, const double *fj, size_t fn, double pj, double zero);
  static double objLog(const gsl_vector *v, void *param);
 
- korali::distribution::specific::Multinomial* _multinomialGenerator; /* Multivariate Normal random number generator */
- korali::distribution::multivariate::Normal* _multivariateGenerator; /* Multivariate Normal random number generator */
- korali::distribution::univariate::Uniform* _uniformGenerator; /* Uniform random number generator */
-
  size_t N; // Number of variables
 
  public:

@@ -7,7 +7,7 @@
    "Description": "Defines the name of the distribution."
   },
   {
-   "Name": [ "Seed" ],
+   "Name": [ "Random Seed" ],
    "Type": "size_t",
    "Description": "Defines the random seed of the distribution."
   },
@@ -21,7 +21,7 @@
  "Module Defaults":
  {
   "Name": "",
-  "Seed": 0,
+  "Random Seed": 0,
   "Range": ""
  }
 }

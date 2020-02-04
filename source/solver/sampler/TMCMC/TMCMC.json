@@ -56,6 +56,21 @@
  "Internal Settings":
  [
    {
+    "Name": [ "Multinomial Generator" ],
+    "Type": "korali::distribution::specific::Multinomial*",
+    "Description": "Random number generator with a multinomial distribution."
+   },
+   {
+    "Name": [ "Multivariate Generator" ],
+    "Type": "korali::distribution::multivariate::Normal*",
+    "Description": "Random number generator with a multivariate normal distribution."
+   },
+   {
+    "Name": [ "Uniform Generator" ],
+    "Type": "korali::distribution::univariate::Uniform*",
+    "Description": "Random number generator with a uniform distribution."
+   },
+   {
     "Name": [ "Current Burn In" ],
     "Type": "size_t",
     "Description": "Actual placeholder for burn in steps per generation, calculated from Burn In Default, Burn In and Current Generation."
@@ -184,6 +199,23 @@
  
  "Module Defaults":
  {
+  "Multinomial Generator":
+  {
+   "Type": "Specific/Multinomial"
+  },
+ 
+  "Multivariate Generator":
+  {
+  "Type": "Multivariate/Normal"
+  },
+  
+ "Uniform Generator":
+  {
+   "Type": "Univariate/Uniform",
+   "Minimum": 0.0,
+   "Maximum": 1.0
+  },
+   
   "Max Chain Length": 1,
   "Default Burn In": 0,
   "Per Generation Burn In": [ ],

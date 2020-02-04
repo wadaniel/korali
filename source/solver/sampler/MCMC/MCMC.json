@@ -154,5 +154,36 @@
     "Type": "size_t",
     "Description": "Current Chain Length (including Burn In and Leaped Samples)."
    }
- ]
+ ],
+ 
+  "Module Defaults":
+  {
+   "Burn In":  0,
+   "Leap": 1,
+   "Rejection Levels": 1,
+   "Use Adaptive Sampling": false, 
+   "Non Adaption Period": 0, 
+   "Chain Covariance Scaling": 1.0, 
+   
+   "Termination Criteria":
+   {
+      "Max Samples": 5000
+   },
+   
+   "Uniform Generator":
+    {
+     "Type": "Univariate/Uniform",
+     "Minimum": 0.0,
+     "Maximum": 1.0,
+     "Range": ""
+    },
+    
+   "Normal Generator":
+    {
+     "Type": "Univariate/Normal",
+     "Mean": 0.0,
+     "Standard Deviation": 1.0,
+     "Range": ""
+    }
+  }
 }

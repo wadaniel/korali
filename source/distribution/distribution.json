@@ -16,5 +16,12 @@
    "Type": "gsl_rng*", 
    "Description": "Stores the current state of the distribution in hexadecimal notation."
   }
- ]
+ ],
+ 
+ "Module Defaults":
+ {
+  "Name": "",
+  "Seed": 0,
+  "Range": ""
+ }
 }

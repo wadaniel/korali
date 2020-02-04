@@ -405,14 +405,6 @@ for moduleDir, relDir, fileNames in os.walk(koraliDir):
    # Loading Json configuration file
    with open(filePath, 'r') as file: moduleConfig = json.load(file)
    
-   # Loading Json defaults file
-   defaultFilePath = filePath.replace('.json', '.defaults')
-   if os.path.isfile(defaultFilePath):
-    print('[Korali] Opening: ' + defaultFilePath + '...')
-    with open(defaultFilePath, 'r') as file: defaultsJs = json.load(file)
-    if 'Module Defaults' in defaultsJs: moduleConfig["Module Defaults"] = defaultsJs["Module Defaults"]
-    if 'Variable Defaults' in defaultsJs: moduleConfig["Variable Defaults"] = defaultsJs["Variable Defaults"]
-
    # Processing Module information
    modulePath = os.path.relpath(moduleDir, koraliDir)
    moduleConfig["Name"] =  getModuleName(modulePath)

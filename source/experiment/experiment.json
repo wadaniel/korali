@@ -95,7 +95,33 @@
     "Type": "std::string",
     "Description": "Indicates the current time when saving a result file."
    }
- ]
+ ],
+ 
+  "Module Defaults":
+ {
+   "Random Seed": 0,
+   "Distributions": [ ],
+   "Variables": [ ],
+   
+   "Results":
+   {
+     "Enabled": true,
+     "Store Samples": false,
+     "Path": "_korali_results",
+     "Frequency": 1
+   },
+   
+   "Console":
+   {
+    "Verbosity": "Normal",
+    "Frequency": 1
+   },
+    
+   "Current Generation": 0,
+   "Is Finished": false,
+   "Run ID": 0,
+   "Timestamp": "0"
+ }
  
 }
  

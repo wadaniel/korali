@@ -14,7 +14,6 @@
     {
       "Name": [ "Y Data" ],
       "Type": "std::vector< double >",
-      "Default": "std::vector< double >(0)",
       "Description": "New data to evaluate a Gaussian Process."
     }
  ],

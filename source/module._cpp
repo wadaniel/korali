@@ -25,6 +25,7 @@ korali::Module* korali::Module::getModule(nlohmann::json& js)
  module->_k = _k;
 
  auto newJs = js;
+ module->applyVariableDefaults();
  module->applyModuleDefaults(newJs);
  module->setConfiguration(newJs);
  module->initialize();

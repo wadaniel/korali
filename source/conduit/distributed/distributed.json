@@ -7,6 +7,11 @@
     "Default": "1",
     "Description": "Specifies the number of workers per model evaluation to use."
    }
- ]
+ ],
+ 
+ "Module Defaults":
+ {
+   "Workers Per Team": 1
+ }
  
 }

@@ -28,7 +28,7 @@ class Module
   virtual void getConfiguration(nlohmann::json& js) {};
   virtual void setConfiguration(nlohmann::json& js) {};
   virtual void applyModuleDefaults(nlohmann::json& js) {};
-  virtual void applyVariableDefaults(nlohmann::json& js) {};
+  virtual void applyVariableDefaults() {};
 };
 
 extern nlohmann::json __profiler;

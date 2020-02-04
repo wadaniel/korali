@@ -31,8 +31,12 @@
    {
     "Name": [ "Distribution Index" ],
     "Type": "size_t",
-    "Default": "0",
     "Description": "Determines the index number of the selected prior distribution"
    }
- ]
+ ],
+ 
+ "Variable Defaults":
+ {
+  "Distribution Index" : 0
+ }
 }

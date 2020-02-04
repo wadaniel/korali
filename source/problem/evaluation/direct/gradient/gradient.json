@@ -1,8 +1,4 @@
 {
- "Configuration Settings":
- [
- ],
-
  "Available Operations":
  [
    {
@@ -12,13 +8,5 @@
     "Results": [ { "Name": "Evaluation", "Description": "Contains a single number with the sample evaluation." },
                  { "Name": "Gradient",   "Description": "Contains a vector with the gradient evaluation." } ]
    }
- ],
-
- "Variables Configuration":
- [
- ],
-
- "Internal Settings":
- [
  ]
 }

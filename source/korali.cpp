@@ -26,7 +26,7 @@ void korali::Engine::run()
  for (size_t i = 0; i < _experimentVector.size(); i++)
  {
   _experimentVector[i]->_experimentId = i;
-  _experimentVector[i]->applyDefaults(_experimentVector[i]->_js.getJson());
+  _experimentVector[i]->applyModuleDefaults(_experimentVector[i]->_js.getJson());
   _experimentVector[i]->setConfiguration(_experimentVector[i]->_js.getJson());
   _experimentVector[i]->initialize();
 

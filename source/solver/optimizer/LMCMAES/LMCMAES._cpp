@@ -23,6 +23,8 @@ void korali::solver::optimizer::LMCMAES::initialize()
 
  N = _k->_variables.size();
 
+ if (_targetDistanceCoefficients.size() == 0) _targetDistanceCoefficients = { double(N), 0.0, 0.0 };
+
  if(_targetDistanceCoefficients.size() != 3)
   korali::logError("LMCMAES requires 3 parameters for 'Target Distance Coefficients' (%zu provided).\n", _targetDistanceCoefficients.size());
 
@@ -107,7 +109,7 @@ void korali::solver::optimizer::LMCMAES::initialize()
    /* validate mean */
    if(isDirectProblem == true)
    if(_k->_variables[i]->_initialMean < _k->_variables[i]->_lowerBound || _k->_variables[i]->_initialMean > _k->_variables[i]->_upperBound)
-   korali::logError("Initial Mean (%.4f) of variable \'%s\' is out of bounds (%.4f-%.4f).\n",
+   korali::logError("Initial Mean (%.4f) of variable \'%s\' is out of bounds (%.4f : %.4f).\n",
              _k->_variables[i]->_initialMean,
              _k->_variables[i]->_name.c_str(),
              _k->_variables[i]->_lowerBound,

@@ -9,43 +9,36 @@
    {
     "Name": [ "Max Chain Length" ],
     "Type": "size_t",
-    "Default": "1",
     "Description": "Chains longer than Max Chain Length will be broken and samples will be duplicated (replacing samples associated with a chain length of 0). Max Chain Length of 1 corresponds to the BASIS algorithm [Wu2018]."
    },
    {
     "Name": [ "Default Burn In" ],
     "Type": "size_t",
-    "Default": "0",
     "Description": "Specifies the number of additional TMCMC steps per chain per generation."
    },
    {
     "Name": [ "Per Generation Burn In" ],
     "Type": "std::vector<size_t>",
-    "Default": "{ }",
     "Description": "Specifies the number of additional TMCMC steps per chain at specified generations (this property will overwrite Default Burn In at specified generations)."
    },
    {
     "Name": [ "Target Coefficient Of Variation" ],
     "Type": "double",
-    "Default": "1.0",
     "Description": "Target coefficient of variation of the plausibility weights to update the annealing exponent $\rho$ (by default, this value is 1.00 as suggested in [Ching2007])."
    },
    {
     "Name": [ "Covariance Scaling" ],
     "Type": "double",
-    "Default": "0.04",
     "Description": "Scaling factor $\beta^2$ of Covariance Matrix (by default, this value is 0.04 as suggested in [Ching2007])."
    },
    {
     "Name": [ "Min Annealing Exponent Update" ],
     "Type": "double",
-    "Default": "0.00001",
     "Description": "Minimum increment of the exponent $\rho$. This parameter prevents TMCMC from stalling."
    },
    {
     "Name": [ "Max Annealing Exponent Update" ],
     "Type": "double",
-    "Default": "1.0",
     "Description": "Maximum increment of the exponent $\rho$ (by default, this value is 1.0 (inactive))."
    }
  ],
@@ -56,7 +49,6 @@
     "Name": [ "Target Annealing Exponent" ],
     "Type": "double",
     "Criteria": "_previousAnnealingExponent >= _targetAnnealingExponent",
-    "Default": "1.0",
     "Description": "Determines the annealing exponent $rho$ to achieve before termination. TMCMC converges if $rho$ equals 1.0."
    }
  ],

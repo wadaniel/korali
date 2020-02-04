@@ -1,47 +1,50 @@
 {
- "Burn In":  0,
- "Leap": 1,
- "Rejection Levels": 1,
- "Use Adaptive Sampling": false, 
- "Non Adaption Period": 0, 
- "Chain Covariance Scaling": 1.0, 
- 
- "Termination Criteria":
- {
-    "Max Samples": 5000
- },
- 
- "Uniform Generator":
+ "Module Defaults":
   {
-   "Type": "Univariate/Uniform",
-   "Minimum": 0.0,
-   "Maximum": 1.0,
-   "Range": ""
-  },
-  
- "Normal Generator":
-  {
-   "Type": "Univariate/Normal",
-   "Mean": 0.0,
-   "Standard Deviation": 1.0,
-   "Range": ""
-  },
- 
- "Cholesky Decomposition Covariance": [ ],
- "Cholesky Decomposition Chain Covariance": [ ], 
- "Chain Leader": [ ], 
- "Chain Leader Evaluation": 0.0, 
- "Chain Candidate": [ [ ] ], 
- "Chain Candidates Evaluations": [ ], 
- "Rejection Alphas": [ ], 
- "Acceptance Rate": 0.0, 
- "Acceptance Count": 0, 
- "Proposed Sample Count": 0, 
- "Database Entry Count": 0, 
- "Sample Database": [ ], 
- "Sample Evaluation Database": [ ], 
- "Chain Mean": [ ], 
- "Chain Covariance Placeholder": [ ], 
- "Chain Covariance": [ ], 
- "Chain Length": 0 
+   "Burn In":  0,
+   "Leap": 1,
+   "Rejection Levels": 1,
+   "Use Adaptive Sampling": false, 
+   "Non Adaption Period": 0, 
+   "Chain Covariance Scaling": 1.0, 
+   
+   "Termination Criteria":
+   {
+      "Max Samples": 5000
+   },
+   
+   "Uniform Generator":
+    {
+     "Type": "Univariate/Uniform",
+     "Minimum": 0.0,
+     "Maximum": 1.0,
+     "Range": ""
+    },
+    
+   "Normal Generator":
+    {
+     "Type": "Univariate/Normal",
+     "Mean": 0.0,
+     "Standard Deviation": 1.0,
+     "Range": ""
+    },
+   
+   "Cholesky Decomposition Covariance": [ ],
+   "Cholesky Decomposition Chain Covariance": [ ], 
+   "Chain Leader": [ ], 
+   "Chain Leader Evaluation": 0.0, 
+   "Chain Candidate": [ [ ] ], 
+   "Chain Candidates Evaluations": [ ], 
+   "Rejection Alphas": [ ], 
+   "Acceptance Rate": 0.0, 
+   "Acceptance Count": 0, 
+   "Proposed Sample Count": 0, 
+   "Database Entry Count": 0, 
+   "Sample Database": [ ], 
+   "Sample Evaluation Database": [ ], 
+   "Chain Mean": [ ], 
+   "Chain Covariance Placeholder": [ ], 
+   "Chain Covariance": [ ], 
+   "Chain Length": 0 
+  }
 }

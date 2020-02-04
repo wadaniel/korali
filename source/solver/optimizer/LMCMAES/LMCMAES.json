@@ -140,6 +140,16 @@
  "Internal Settings":
  [
    {
+    "Name": [ "Normal Generator" ],
+    "Type": "korali::distribution::univariate::Normal*",
+    "Description": "Normal random number generator."
+   },
+   {
+    "Name": [ "Uniform Generator" ],
+    "Type": "korali::distribution::univariate::Uniform*",
+    "Description": "Uniform random number generator."
+   },
+   {
     "Name": [ "Value Vector" ],
     "Type": "std::vector<double>",
     "Description": "Objective function values."

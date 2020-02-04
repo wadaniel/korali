@@ -1,4 +1,6 @@
 {
+ "Module Defaults":
+ {
   "Population Size": 200,
   "Crossover Rate": 0.9,
   "Mutation Rate": 0.5,
@@ -48,4 +50,9 @@
   "Max Distances":  [ ],
   "Infeasible Sample Count": 0,
   "Current Minimum Step Size": 0.0
+ },
+   
+ "Variable Defaults":
+ {
+ }
 }

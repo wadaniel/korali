@@ -1,5 +1,8 @@
 {
- "Name": "",
- "Seed": 0,
- "Range": ""
+ "Module Defaults":
+ {
+  "Name": "",
+  "Seed": 0,
+  "Range": ""
+ }
 }

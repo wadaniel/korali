@@ -1,6 +1,17 @@
 {
- "Objective": "Maximize",
- "Constraints": [ ],
- "Has Discrete Variables": false
+ "Module Defaults":
+ {
+  "Objective": "Maximize",
+  "Constraints": [ ],
+  "Has Discrete Variables": false
+ },
+ 
+ "Variable Defaults":
+ {
+  "Lower Bound": -Infinity,
+  "Upper Bound": Infinity,
+  "Granularity": 0.0
+ }
+ 
 }
 

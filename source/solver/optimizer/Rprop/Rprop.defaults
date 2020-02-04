@@ -1,4 +1,6 @@
 {
+ "Module Defaults":
+ {
   "Delta0": 0.1,
   "Delta Min": 1e-6,
   "Delta Max": 50,
@@ -10,17 +12,6 @@
     "Max Gradient Norm": 0.0, 
     "Max Stall Generations": 20, 
     "Parameter Relative Tolerance": 1e-4 
-   },
-
-  "Current X": [ ], 
-  "Best X": [ ], 
-  "Delta": [ ], 
-  "Current Evaluation": 0.0, 
-  "Previous Evaluation": 0.0, 
-  "Best Evaluation": 0.0, 
-  "Current Gradient": [ ], 
-  "Previous Gradient": [ ], 
-  "Norm Previous Gradient": 0.0, 
-  "Max Stall Counter": 0.0, 
-  "X Diff": 0.0 
+   }
+ }   
 }

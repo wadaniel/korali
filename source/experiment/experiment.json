@@ -2,11 +2,6 @@
  "Configuration Settings": 
  [
    {
-    "Name": [ "Results", "Path" ],
-    "Type": "std::string",
-    "Description": "Specifies the path of the results directory."
-   },
-   {
     "Name": [ "Random Seed" ],
     "Type": "size_t", 
     "Description": "Specifies the initializing seed for the generation of random numbers. If 0 is specified, Korali will automatically derivate a new seed base on the current time."
@@ -30,6 +25,11 @@
     "Name": [ "Solver" ],
     "Type": "korali::Solver*",
     "Description": "Represents the state and configuration of the solver algorithm."
+   },
+   {
+    "Name": [ "Results", "Path" ],
+    "Type": "std::string",
+    "Description": "Specifies the path of the results directory."
    },
    {
     "Name": [ "Results", "Enabled"],

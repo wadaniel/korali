@@ -182,8 +182,9 @@ def createSetConfiguration(module):
 
  if 'Variables Configuration' in module:
   codeString += ' for (size_t i = 0; i < _k->_js["Variables"].size(); i++) { \n'
+  codeString += '  applyVariableDefaults(_k->_js["Variables"][i]);\n'
   for v in module["Variables Configuration"]:
-   codeString += consumeValue('_k->_js["Variables"][i]', module["Name"], getVariablePath(v), '_k->_variables[i]->' + getCXXVariableName(v["Name"]), getVariableType(v), False, getVariableOptions(v))
+   codeString += consumeValue('_k->_js["Variables"][i]', module["Name"], getVariablePath(v), '_k->_variables[i]->' + getCXXVariableName(v["Name"]), getVariableType(v), True, getVariableOptions(v))
   codeString += ' } \n'
 
  if 'Conditional Variables' in module:
@@ -240,15 +241,31 @@ def createGetConfiguration(module):
  
 ####################################################################
 
-def createApplyDefaults(module):
- codeString = 'void ' + module["Class"]  + '::applyDefaults(nlohmann::json& js) \n{\n\n'
+def createApplyModuleDefaults(module):
+ codeString = 'void ' + module["Class"]  + '::applyModuleDefaults(nlohmann::json& js) \n{\n\n'
 
- if 'Defaults' in module:
-   codeString += ' std::string defaultString = "' + json.dumps(module["Defaults"]).replace('"','\\"') + '";\n'
+ if 'Module Defaults' in module:
+   codeString += ' std::string defaultString = "' + json.dumps(module["Module Defaults"]).replace('"','\\"') + '";\n'
    codeString += ' nlohmann::json defaultJs = nlohmann::json::parse(defaultString);\n'
    codeString += ' JsonInterface::mergeJson(js, defaultJs); \n'
 
- codeString += ' '  + module["Parent Class"] + '::applyDefaults(js);\n'
+ codeString += ' '  + module["Parent Class"] + '::applyModuleDefaults(js);\n'
+    
+ codeString += '} \n\n'
+
+ return codeString
+ 
+####################################################################
+
+def createApplyVariableDefaults(module):
+ codeString = 'void ' + module["Class"]  + '::applyVariableDefaults(nlohmann::json& js) \n{\n\n'
+
+ if 'Variable Defaults' in module:
+   codeString += ' std::string defaultString = "' + json.dumps(module["Variable Defaults"]).replace('"','\\"') + '";\n'
+   codeString += ' nlohmann::json defaultJs = nlohmann::json::parse(defaultString);\n'
+   codeString += ' JsonInterface::mergeJson(js, defaultJs); \n'
+
+ codeString += ' '  + module["Parent Class"] + '::applyVariableDefaults(js);\n'
     
  codeString += '} \n\n'
 
@@ -392,7 +409,9 @@ for moduleDir, relDir, fileNames in os.walk(koraliDir):
    defaultFilePath = filePath.replace('.json', '.defaults')
    if os.path.isfile(defaultFilePath):
     print('[Korali] Opening: ' + defaultFilePath + '...')
-    with open(defaultFilePath, 'r') as file: moduleConfig["Defaults"] = json.load(file)
+    with open(defaultFilePath, 'r') as file: defaultsJs = json.load(file)
+    if 'Module Defaults' in defaultsJs: moduleConfig["Module Defaults"] = defaultsJs["Module Defaults"]
+    if 'Variable Defaults' in defaultsJs: moduleConfig["Variable Defaults"] = defaultsJs["Variable Defaults"]
 
    # Processing Module information
    modulePath = os.path.relpath(moduleDir, koraliDir)
@@ -413,7 +432,8 @@ for moduleDir, relDir, fileNames in os.walk(koraliDir):
 
    moduleCodeString = createSetConfiguration(moduleConfig)
    moduleCodeString += createGetConfiguration(moduleConfig)
-   moduleCodeString += createApplyDefaults(moduleConfig)
+   moduleCodeString += createApplyModuleDefaults(moduleConfig)
+   moduleCodeString += createApplyVariableDefaults(moduleConfig)
    moduleCodeString += createCheckTermination(moduleConfig)
 
    if 'Available Operations' in moduleConfig:
@@ -433,7 +453,8 @@ for moduleDir, relDir, fileNames in os.walk(koraliDir):
    functionOverrideString += ' bool checkTermination() override;\n'
    functionOverrideString += ' void getConfiguration(nlohmann::json& js) override;\n'
    functionOverrideString += ' void setConfiguration(nlohmann::json& js) override;\n'
-   functionOverrideString += ' void applyDefaults(nlohmann::json& js) override;\n'
+   functionOverrideString += ' void applyModuleDefaults(nlohmann::json& js) override;\n'
+   functionOverrideString += ' void applyVariableDefaults(nlohmann::json& js) override;\n'
 
    if 'Available Operations' in moduleConfig:
      functionOverrideString += ' bool runOperation(std::string, korali::Sample& sample) override;\n'

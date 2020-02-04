@@ -1,4 +1,6 @@
 {
+ "Module Defaults":
+ {
   "Mu Value": 0, 
   "Mu Type": "Logarithmic",
   "Initial Sigma": 1.0,
@@ -36,41 +38,13 @@
    "Mean": 0.0,
    "Standard Deviation": 1.0,
    "Range": ""
-  },
+  }
+ },
    
-  "Value Vector": [ ],
-  "Previous Value Vector": 0.0,
-  "Mu Weights": [ ], 
-  "Effective Mu": 0.0, 
-  "Sigma Exponent Factor": 0.0, 
-  "Sigma": 0.0, 
-  "Sample Population": [ [ ] ], 
-  "Finished Sample Count": 0, 
-  "Current Best Value": 0.0, 
-  "Current Best Variables": [ ], 
-  "Best Ever Variables": [ ], 
-  "Previous Best Value": 0.0, 
-  "Best Sample Index": 0,  
-  "Best Ever Value": 0.0, 
-  "Previous Best Ever Value": 0.0, 
-  "Previous Sorting Index": [ ], 
-  "Sorting Index": [ ], 
-  "Random Vector": [ ], 
-  "Replacement Index": 0, 
-  "Subset History": [ ], 
-  "Subset Update Times": [ ], 
-  "Cholesky Factor Vector Product": [ ], 
-  "Evolution Path History": [ [ ] ], 
-  "Inverse Vectors": [ [ ] ], 
-  "Current Mean": [ ], 
-  "Previous Mean": [ ], 
-  "Mean Update": [ ], 
-  "Evolution Path": [ ], 
-  "Evolution Path Weights": [ ], 
-  "Conjugate Evolution Path L2 Norm": 0.0, 
-  "Infeasible Sample Count": 0, 
-  "Sqrt Inverse Cholesky Rate": 0.0, 
-  "Chi Square Number": 0.0, 
-  "Standard Deviation": [ ]
+ "Variable Defaults":
+ {
+  "Initial Mean": -Infinity,
+  "Initial Standard Deviation": -Infinity,
+  "Minimum Standard Deviation Update": 0.0
+ }
 }
-

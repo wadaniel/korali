@@ -3,6 +3,7 @@
 #include "solver/solver.hpp"
 #include "problem/problem.hpp"
 #include "conduit/distributed/distributed.hpp"
+#include "auxiliar/koraliJson.hpp"
 #include "auxiliar/py2json.hpp"
 #include "auxiliar/fs.hpp"
 #include <chrono>
@@ -98,7 +99,9 @@ void korali::Experiment::saveState()
 
 bool korali::Experiment::loadState()
 {
-  std::string path = _js["Results"]["Path"];
+  std::string path = "_korali_results";
+  if (korali::JsonInterface::isDefined(_js.getJson(), "['Results']['Path'"))
+   std::string path = _js["Results"]["Path"];
   return loadState(path);
 }
 
@@ -157,6 +160,7 @@ korali::Experiment::Experiment()
 void korali::Experiment::initialize()
 {
  _currentExperiment = this;
+ getConfiguration(_js.getJson());
  _thread = co_create(10240*sizeof(void*), korali::threadWrapper);
  co_switch(_thread);
 }

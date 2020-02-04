@@ -26,9 +26,8 @@ void korali::Engine::run()
  for (size_t i = 0; i < _experimentVector.size(); i++)
  {
   _experimentVector[i]->_experimentId = i;
-  auto js = _experimentVector[i]->_js.getJson();
-  _experimentVector[i]->applyDefaults(js);
-  _experimentVector[i]->setConfiguration(js);
+  _experimentVector[i]->applyDefaults(_experimentVector[i]->_js.getJson());
+  _experimentVector[i]->setConfiguration(_experimentVector[i]->_js.getJson());
   _experimentVector[i]->initialize();
 
   std::string fileName = "./log.txt";

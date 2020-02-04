@@ -138,27 +138,24 @@ static void eraseValue(nlohmann::json& js, std::string path)
  aux->erase(settings[i]);
 }
 
-static void mergeJson(nlohmann::json& a, const nlohmann::json& b)
+static void mergeJson(nlohmann::json& dest, const nlohmann::json& defaults)
 {
- if (a.is_object() == false) korali::logError("Passed JSON A argument is not an object.\n");
- if (b.is_object() == false) korali::logError("Passed JSON B argument is not an object.\n");
+ if (dest.is_object() == false) korali::logError("Passed JSON A argument is not an object.\n");
+ if (defaults.is_object() == false) korali::logError("Passed JSON B argument is not an object.\n");
 
- printf("Defaults:   \n%s\n\n", b.dump(2).c_str());
- printf("Source: \n%s\n\n", a.dump(2).c_str());
+ printf("Defaults:   \n%s\n\n", defaults.dump(2).c_str());
+ printf("Source: \n%s\n\n", dest.dump(2).c_str());
 
- for (auto& x : b.items())
+ for (auto& x : defaults.items())
  {
   auto k = x.key();
-  if (a.find(k) == a.end()) // Key not found, copy now.
-   a[k] = b[k];
+  if (dest.find(k) == dest.end()) // Key not found, copy now.
+   dest[k] = defaults[k];
   else                            // Key found, check type.
-  {
-   if (a[k].is_object() && b[k].is_object()) mergeJson(a[k], b[k]); // Both are objects. Recurse within.
-   else a[k] = b[k]; // One of them is not object, copy now.
-  }
+   if (dest[k].is_object() && defaults[k].is_object()) mergeJson(dest[k], defaults[k]); // Both are objects. Recurse within.
  }
 
- printf("Result:    \n%s\n\n", a.dump(2).c_str());
+ printf("Result:    \n%s\n\n", dest.dump(2).c_str());
 }
 
 static bool isDefined(nlohmann::json& js, std::vector<std::string> settings)

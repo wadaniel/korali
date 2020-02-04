@@ -197,7 +197,6 @@ def createSetConfiguration(module):
 
  codeString += ' _type = "' + module["Option Name"] + '";\n'
  codeString += ' if(korali::JsonInterface::isDefined(js, "[\'Type\']")) korali::JsonInterface::eraseValue(js, "[\'Type\']");\n'
-
  codeString += ' if(korali::JsonInterface::isEmpty(js) == false) korali::logError("Unrecognized settings for Korali module: ' + module["Name"] + ': \\n%s\\n", js.dump(2).c_str());\n'
  codeString += '} \n\n'
 

@@ -28,7 +28,6 @@ void korali::Engine::run()
   _experimentVector[i]->_experimentId = i;
   auto js = _experimentVector[i]->_js.getJson();
   _experimentVector[i]->applyDefaults(js);
-  printf("%s\n", _experimentVector[i]->_js.getJson().dump(2).c_str());
   _experimentVector[i]->setConfiguration(js);
   _experimentVector[i]->initialize();
 

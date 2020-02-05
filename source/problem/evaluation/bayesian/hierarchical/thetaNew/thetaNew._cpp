@@ -22,10 +22,10 @@ void korali::problem::evaluation::bayesian::hierarchical::ThetaNew::initialize()
     korali::logError("The problem contains a different number of variables (%lu) than conditional priors in the Evaluation/Bayesian/Hierarchical/Psi problem (%lu).\n", _k->_variables.size(), _psiProblemEngine["Problem"]["Conditional Priors"].size());
 
   // Loading Psi problem results
-  _psiProblemSampleCount = _psiProblemEngine["Solver"]["Internal"]["Chain Leaders LogLikelihoods"].size();
-  _psiProblemSampleLogLikelihoods = _psiProblemEngine["Solver"]["Internal"]["Sample LogLikelihood Database"].get<std::vector<double>>();
-  _psiProblemSampleLogPriors = _psiProblemEngine["Solver"]["Internal"]["Sample LogPrior Database"].get<std::vector<double>>();
-  _psiProblemSampleCoordinates = _psiProblemEngine["Solver"]["Internal"]["Sample Database"].get<std::vector<std::vector<double>>>();
+  _psiProblemSampleCount = _psiProblemEngine["Solver"]["Chain Leaders LogLikelihoods"].size();
+  _psiProblemSampleLogLikelihoods = _psiProblemEngine["Solver"]["Sample LogLikelihood Database"].get<std::vector<double>>();
+  _psiProblemSampleLogPriors = _psiProblemEngine["Solver"]["Sample LogPrior Database"].get<std::vector<double>>();
+  _psiProblemSampleCoordinates = _psiProblemEngine["Solver"]["Sample Database"].get<std::vector<std::vector<double>>>();
 
   for (size_t i = 0; i < _psiProblemSampleLogPriors.size(); i++)
   {

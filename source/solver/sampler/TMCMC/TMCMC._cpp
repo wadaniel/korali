@@ -65,6 +65,7 @@ void korali::solver::sampler::TMCMC::initialize()
 void korali::solver::sampler::TMCMC::runGeneration()
 {
   prepareGeneration();
+
   std::vector<korali::Sample> samples(_chainCount);
 
   while (_finishedChainsCount < _chainCount)
@@ -108,7 +109,6 @@ void korali::solver::sampler::TMCMC::prepareGeneration()
   for (size_t c = 0; c < _chainCount; c++)  _currentChainStep[c] = 0;
   for (size_t c = 0; c < _chainCount; c++)  _chainPendingEvaluation[c] = false;
 }
-
 
 void korali::solver::sampler::TMCMC::generateCandidate(size_t c)
 {

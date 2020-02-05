@@ -17,6 +17,7 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Reference"
 e["Problem"]["Likelihood Model"] = "Additive Normal"
 e["Problem"]["Reference Data"] = getReferenceData()
+e["Problem"]["Computational Model"] = lambda sampleData: model(sampleData, getReferencePoints())
 
 # Configuring TMCMC parameters
 e["Solver"]["Type"] = "Sampler/TMCMC"
@@ -50,9 +51,6 @@ e["Variables"][1]["Prior Distribution"] = "Uniform 1"
 e["Variables"][2]["Name"] = "Sigma"
 e["Variables"][2]["Bayesian Type"] = "Statistical"
 e["Variables"][2]["Prior Distribution"] = "Uniform 2"
-
-e.loadState()
-e["Problem"]["Computational Model"] = lambda sampleData: model(sampleData, getReferencePoints())
 
 # Starting Korali's Engine and running experiment
 k = korali.Engine()

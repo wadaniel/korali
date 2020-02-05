@@ -26,8 +26,7 @@ void korali::Engine::run()
  for (size_t i = 0; i < _experimentVector.size(); i++)
  {
   _experimentVector[i]->_experimentId = i;
-  _experimentVector[i]->applyModuleDefaults(_experimentVector[i]->_js.getJson());
-  _experimentVector[i]->setConfiguration(_experimentVector[i]->_js.getJson());
+  _currentExperiment = _experimentVector[i];
   _experimentVector[i]->initialize();
 
   std::string fileName = "./log.txt";
@@ -121,7 +120,7 @@ void korali::Engine::saveProfilingInfo(bool forceSave)
 void korali::Engine::run(korali::Experiment& experiment)
 {
  _experimentVector.clear();
- _experimentVector.push_back(&experiment);
+ _experimentVector.push_back(experiment._k);
  run();
 }
 

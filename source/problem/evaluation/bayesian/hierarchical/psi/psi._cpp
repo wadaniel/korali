@@ -40,13 +40,14 @@ void korali::problem::evaluation::bayesian::hierarchical::Psi::initialize()
  for (size_t i = 0; i < _subProblemsCount; i++)
  {
   std::string problemName = _subProblemEngines[i]["Problem"]["Type"];
+
   if (problemName.rfind("Evaluation/Bayesian/Inference", 0) != 0)
    korali::logError("The Hierarchical Bayesian (Psi) can only accept sub-problems of type 'Evaluation/Bayesian/Inference' but sub-Problem %lu is of type: '%s'.\n", i, _subProblemEngines[i]["Problem"]["Type"].get<std::string>().c_str());
 
   if (_conditionalPriors.size() != _subProblemEngines[i]["Variables"].size())
    korali::logError("Sub-problem %lu contains a different number of variables (%lu) than conditional priors in the Hierarchical Bayesian (Psi) problem (%lu).\n", i, _subProblemEngines[i]["Problem"]["Variables"].size(), _conditionalPriors.size());
 
-  if (_subProblemEngines[i]["Internal"]["Is Finished"] == false)
+  if (_subProblemEngines[i]["Is Finished"] == false)
    korali::logError("The Hierarchical Bayesian (Psi) requires that all problems have run completely, but Problem %lu has not.\n", i);
  }
 
@@ -56,9 +57,9 @@ void korali::problem::evaluation::bayesian::hierarchical::Psi::initialize()
 
  for (size_t i = 0; i < _subProblemsCount; i++)
  {
-  _subProblemsSampleLogPriors[i]      = _subProblemEngines[i]["Solver"]["Internal"]["Sample LogPrior Database"].get<std::vector<double>>();
-  _subProblemsSampleLogLikelihoods[i] = _subProblemEngines[i]["Solver"]["Internal"]["Sample LogLikelihood Database"].get<std::vector<double>>();
-  _subProblemsSampleCoordinates[i] = _subProblemEngines[i]["Solver"]["Internal"]["Sample Database"].get<std::vector<std::vector<double>>>();
+  _subProblemsSampleLogPriors[i]      = _subProblemEngines[i]["Solver"]["Sample LogPrior Database"].get<std::vector<double>>();
+  _subProblemsSampleLogLikelihoods[i] = _subProblemEngines[i]["Solver"]["Sample LogLikelihood Database"].get<std::vector<double>>();
+  _subProblemsSampleCoordinates[i] = _subProblemEngines[i]["Solver"]["Sample Database"].get<std::vector<std::vector<double>>>();
 
   for (size_t j = 0; j < _subProblemsSampleLogPriors.size(); j++)
   {
@@ -85,16 +86,18 @@ void korali::problem::evaluation::bayesian::hierarchical::Psi::initialize()
 
    if (key == "Name") continue;
    if (key == "Type") continue;
+   if (key == "Range") continue;
+   if (key == "Random Seed") continue;
 
    bool foundValue = false;
-   for (size_t k = 0; k < _k->_variables.size(); k++) if (_k->_variables[k]->_name == value)
-   {
-    position = k;
-    pointer = _k->_distributions[_conditionalPriorIndexes[i]]->getPropertyPointer(key);
-    foundValue = true;
-   }
-
-   if(foundValue == false) korali::logError("No variable name specified that satisfies conditional prior property %s with key: %s.\n", key.c_str(), value.c_str());
+   for (size_t k = 0; k < _k->_variables.size(); k++)
+    if (_k->_variables[k]->_name == value)
+    {
+     position = k;
+     pointer = _k->_distributions[_conditionalPriorIndexes[i]]->getPropertyPointer(key);
+     foundValue = true;
+    }
+   if(foundValue == false) korali::logError("No variable name specified that satisfies conditional prior property \"%s\" with key: \"%s\".\n", key.c_str(), value.c_str());
 
    _conditionalPriorInfos[i]._samplePointers.push_back(pointer);
    _conditionalPriorInfos[i]._samplePositions.push_back(position);

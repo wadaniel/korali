@@ -35,10 +35,10 @@ void korali::problem::evaluation::bayesian::hierarchical::Theta::initialize()
   _psiVariableCount   = _psiProblemEngine._variables.size();
 
   // Loading Psi problem results
-  _psiProblemSampleCount = _psiProblemEngine["Solver"]["Internal"]["Chain Leaders LogLikelihoods"].size();
-  _psiProblemSampleLogLikelihoods = _psiProblemEngine["Solver"]["Internal"]["Sample LogLikelihood Database"].get<std::vector<double>>();
-  _psiProblemSampleLogPriors = _psiProblemEngine["Solver"]["Internal"]["Sample LogPrior Database"].get<std::vector<double>>();
-  _psiProblemSampleCoordinates = _psiProblemEngine["Solver"]["Internal"]["Sample Database"].get<std::vector<std::vector<double>>>();
+  _psiProblemSampleCount = _psiProblemEngine["Solver"]["Chain Leaders LogLikelihoods"].size();
+  _psiProblemSampleLogLikelihoods = _psiProblemEngine["Solver"]["Sample LogLikelihood Database"].get<std::vector<double>>();
+  _psiProblemSampleLogPriors = _psiProblemEngine["Solver"]["Sample LogPrior Database"].get<std::vector<double>>();
+  _psiProblemSampleCoordinates = _psiProblemEngine["Solver"]["Sample Database"].get<std::vector<std::vector<double>>>();
 
   for (size_t i = 0; i < _psiProblemSampleLogPriors.size(); i++)
   {
@@ -48,10 +48,10 @@ void korali::problem::evaluation::bayesian::hierarchical::Theta::initialize()
   }
 
   // Loading Theta problem results
-  _thetaProblemSampleCount = _thetaProblemEngine["Solver"]["Internal"]["Chain Leaders LogLikelihoods"].size();
-  _thetaProblemSampleLogLikelihoods = _thetaProblemEngine["Solver"]["Internal"]["Sample LogLikelihood Database"].get<std::vector<double>>();
-  _thetaProblemSampleLogPriors = _thetaProblemEngine["Solver"]["Internal"]["Sample LogPrior Database"].get<std::vector<double>>();
-  _thetaProblemSampleCoordinates = _thetaProblemEngine["Solver"]["Internal"]["Sample Database"].get<std::vector<std::vector<double>>>();
+  _thetaProblemSampleCount = _thetaProblemEngine["Solver"]["Chain Leaders LogLikelihoods"].size();
+  _thetaProblemSampleLogLikelihoods = _thetaProblemEngine["Solver"]["Sample LogLikelihood Database"].get<std::vector<double>>();
+  _thetaProblemSampleLogPriors = _thetaProblemEngine["Solver"]["Sample LogPrior Database"].get<std::vector<double>>();
+  _thetaProblemSampleCoordinates = _thetaProblemEngine["Solver"]["Sample Database"].get<std::vector<std::vector<double>>>();
 
   for (size_t i = 0; i < _thetaProblemSampleLogPriors.size(); i++)
   {

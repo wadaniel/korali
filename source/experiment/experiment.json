@@ -64,15 +64,6 @@
    }
  ],
  
- "Variables Configuration":
- [
-  {
-   "Name": [ "Name" ],
-   "Type": "std::string",
-   "Description": "Defines the name of the variable."
-  }
- ],
-  
  "Internal Settings": 
  [
    {
@@ -101,7 +92,6 @@
  {
    "Random Seed": 0,
    "Distributions": [ ],
-   "Variables": [ ],
    
    "Results":
    {
@@ -117,10 +107,7 @@
     "Frequency": 1
    },
     
-   "Current Generation": 0,
-   "Is Finished": false,
-   "Run ID": 0,
-   "Timestamp": "0"
+   "Is Finished": false
  }
  
 }

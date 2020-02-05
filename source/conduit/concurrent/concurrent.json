@@ -4,7 +4,6 @@
    {
     "Name": [ "Concurrent Jobs" ],
     "Type": "size_t",
-    "Default": "1",
     "Description": "Specifies the number of Korali jobs running concurrently evaluating the external model."
    }
  ],

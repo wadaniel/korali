@@ -41,6 +41,3 @@ e["Results"]["Store Samples"] = True
 
 # Running Korali
 k.run(e)
-
-# Saving quantities of interest
-saveResults()

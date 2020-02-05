@@ -30,7 +30,6 @@ e["Variables"][0]["Upper Bound"] = +10.0
 e["Problem"]["Objective Function"] = model
 
 k.run(e)
-exit(0)
 
 # Loading previous results, if they exist.
 found = e.loadState()

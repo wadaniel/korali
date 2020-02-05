@@ -31,8 +31,8 @@ void korali::solver::optimizer::LMCMAES::initialize()
  if (_k->_currentGeneration > 0) return;
 
  if (_muValue == 0)  _muValue = _populationSize / 2;
- if (std::isnan(_cumulativeCovariance)) _cumulativeCovariance = 0.5/std::sqrt((double)N);
- if (std::isnan(_choleskyMatrixLearningRate)) _choleskyMatrixLearningRate = 1.0/(10.0-std::log((double)N+1.0));
+ if (_cumulativeCovariance == 0.0) _cumulativeCovariance = 0.5/std::sqrt((double)N);
+ if (_choleskyMatrixLearningRate == 0.0) _choleskyMatrixLearningRate = 1.0/(10.0-std::log((double)N+1.0));
  if (_targetDistanceCoefficients.empty()) _targetDistanceCoefficients = { N, 0.0, 0.0 };
  if (_setUpdateInterval == 0) _setUpdateInterval = std::max(std::floor(std::log(_k->_variables.size())), 1.0);
  if (_subsetSize == 0) _subsetSize = std::ceil(std::sqrt(double(_k->_variables.size())));
@@ -148,17 +148,17 @@ void korali::solver::optimizer::LMCMAES::initialize()
 
  for (size_t i = 0; i < _muValue; i++) _muWeights[i] /= s1;
 
- if (_initialSigma <= 0) 
+ if (_initialSigma <= 0.0)
      korali::logError("Invalid Initial Sigma (must be greater 0.0, is %lf).", _initialSigma);
- if (_cumulativeCovariance <= 0) 
+ if (_cumulativeCovariance <= 0.0)
      korali::logError("Invalid Initial Cumulative Covariance (must be greater 0.0).");
- if (_sigmaCumulationFactor <= 0) 
+ if (_sigmaCumulationFactor <= 0.0)
      korali::logError("Invalid Sigma Cumulative Covariance (must be greater 0.0).");
- if (_dampFactor <= 0) 
+ if (_dampFactor <= 0.0)
      korali::logError("Invalid Damp Factor (must be greater 0.0).");
- if (_choleskyMatrixLearningRate <= 0 || _choleskyMatrixLearningRate > 1) 
+ if (_choleskyMatrixLearningRate <= 0.0 || _choleskyMatrixLearningRate > 1.0)
      korali::logError("Invalid Cholesky Matrix Learning Rate (must be in (0, 1], is %lf).", _choleskyMatrixLearningRate);
- if (_setUpdateInterval <= 0 ) 
+ if (_setUpdateInterval <= 0.0 )
      korali::logError("Invalid Set Update Interval(must be greater 0, is %zu).", _setUpdateInterval);
 
 

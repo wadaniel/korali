@@ -23,12 +23,13 @@ void korali::Engine::run()
  _profilingDetail = _js["Profiling"]["Detail"];
  _profilingFrequency = _js["Profiling"]["Frequency"];
 
+
  for (size_t i = 0; i < _experimentVector.size(); i++)
  {
   _experimentVector[i]->_experimentId = i;
   _currentExperiment = _experimentVector[i];
   _experimentVector[i]->initialize();
-
+  _experimentVector[i]->_isFinished = false;
   std::string fileName = "./log.txt";
   //std::string fileName = "./" + _experimentVector[i]->_resultsPath + "/log.txt";
   if (_experimentVector.size() > 1)  _experimentVector[i]->_logFile = fopen(fileName.c_str(), "a");
@@ -72,8 +73,8 @@ void korali::Engine::run()
   while(true)
   {
    bool executed = false;
-
-   for (size_t i = 0; i < _experimentVector.size(); i++) if (_experimentVector[i]->_isFinished == false)
+   for (size_t i = 0; i < _experimentVector.size(); i++)
+   if (_experimentVector[i]->_isFinished == false)
    {
     korali::setVerbosityLevel(_experimentVector[i]->_consoleVerbosity);
     korali::setConsoleOutputFile(_experimentVector[i]->_logFile);
@@ -84,7 +85,6 @@ void korali::Engine::run()
     korali::setConsoleOutputFile(stdout);
     if (_experimentVector.size() > 1) if (_experimentVector[i]->_isFinished == true) korali::logInfo("Minimal", "Experiment %lu has finished.\n", i);
    }
-
    if (executed == false) break;
   }
 

@@ -323,18 +323,48 @@
  
  "Module Defaults":
  {
-     "Uniform Generator":
-    {
-     "Type": "Univariate/Uniform",
-     "Minimum": 0.0,
-     "Maximum": 1.0
-    },
-    
-    "Normal Generator":
-    {
-     "Type": "Univariate/Normal",
-     "Mean": 0.0,
-     "Standard Deviation": 1.0
-    }
+  "Mu Value": 0,
+  "Mu Type": "Logarithmic",
+  "Initial Sigma": 1.0,
+  "Sigma Update Rule": "CMAES",
+  "Random Number Distribution": "Normal",
+  "Symmetric Sampling": true,
+  "Sigma Cumulation Factor": 0.3,
+  "Damp Factor": 1.0,
+  "Is Sigma Bounded": false,
+  "Cumulative Covariance": 0.0,
+  "Cholesky Matrix Learning Rate": 0.0,
+  "Target Distance Coefficients": [ ],
+  "Target Success Rate": 0.25,
+  "Set Update Interval": 0,
+  "Subset Size": 0,
+  
+  "Termination Criteria":
+  {
+    "Min Value": -Infinity,
+    "Max Value": Infinity,
+    "Min Value Difference Threshold": -Infinity
+  },
+
+  "Uniform Generator":
+  {
+   "Type": "Univariate/Uniform",
+   "Minimum": 0.0,
+   "Maximum": 1.0
+  },
+  
+  "Normal Generator":
+  {
+   "Type": "Univariate/Normal",
+   "Mean": 0.0,
+   "Standard Deviation": 1.0
+  }
+ },
+ 
+ "Variable Defaults":
+ {
+   "Initial Mean": -Infinity,
+   "Initial Standard Deviation": -Infinity,
+   "Minimum Standard Deviation Update": 0.0
  }
 }

@@ -14,6 +14,7 @@ namespace korali
   public:
 
   Engine();
+  ~Engine();
 
   bool _isFirstRun;
 

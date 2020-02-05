@@ -3,15 +3,17 @@
 
 void korali::solver::Executor::initialize()
 {
+ korali::Solver::initialize();
+
  // Initializing variable defaults
  _executionProblem = dynamic_cast<korali::problem::Execution*>(_k->_problem);
 
  if (_executionProblem == NULL)
    korali::logError("Executor solver can only solve problems of type 'Execution'.\n");
 
- _sampleCount   = _k->_variables[0]->_loadedValues.size();
- _variableCount = _k->_variables.size();
+ if (_k->_currentGeneration > 0) return;
 
+ _sampleCount   = _k->_variables[0]->_loadedValues.size();
 }
 
 void korali::solver::Executor::runGeneration()

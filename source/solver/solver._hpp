@@ -13,8 +13,7 @@ class Solver : public korali::Module
 {
  public:
 
- size_t N; // Sample Size
-
+ void initialize() override;
  virtual void printGenerationBefore() { };
  virtual void printGenerationAfter() { };
  virtual void runGeneration() = 0;

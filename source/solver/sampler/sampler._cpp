@@ -2,6 +2,8 @@
 
 void korali::solver::Sampler::initialize()
 {
+ korali::Solver::initialize();
+
  _problem = dynamic_cast<korali::problem::Evaluation*>(_k->_problem);
  if (_problem == NULL) korali::logError( "Samplers can work with problems of type 'Evaluation' or derived problem types.\n");
 }

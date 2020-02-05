@@ -21,47 +21,43 @@ typedef struct fparam_s {
 
 void korali::solver::sampler::TMCMC::initialize()
 {
- // Turn Off GSL Error Handler
- gsl_set_error_handler_off();
-
  korali::solver::Sampler::initialize();
 
-  N = _k->_variables.size();
-  if(_maxChainLength == 0) korali::logError("Max Chain Length must be greater 0.");
+ if (_k->_currentGeneration > 0) return;
 
-  if (_perGenerationBurnIn.size() > 0 && _perGenerationBurnIn[0] != 0)
-  korali::logWarning("Normal", "The 0th entry of the Burn In vector is being ignored (corresponding to Generation 0)\n");
+ if(_maxChainLength == 0) korali::logError("Max Chain Length must be greater 0.");
 
-  if (_perGenerationBurnIn.size() > 1 && _perGenerationBurnIn[1] != 0)
-  korali::logWarning("Normal", "The 1st entry of the Burn In vector is being ignored (corresponding to Generation 1)\n");
+ if (_perGenerationBurnIn.size() > 0 && _perGenerationBurnIn[0] != 0)
+ korali::logWarning("Normal", "The 0th entry of the Burn In vector is being ignored (corresponding to Generation 0)\n");
 
-  if (_k->_currentGeneration > 0) return;
+ if (_perGenerationBurnIn.size() > 1 && _perGenerationBurnIn[1] != 0)
+ korali::logWarning("Normal", "The 1st entry of the Burn In vector is being ignored (corresponding to Generation 1)\n");
 
-  // Allocating TMCMC memory
-  _chainLeaders.resize(_populationSize);
-  for(size_t i = 0; i < _populationSize; i++) _chainLeaders[i].resize(N);
+ // Allocating TMCMC memory
+ _chainLeaders.resize(_populationSize);
+ for(size_t i = 0; i < _populationSize; i++) _chainLeaders[i].resize(_variableCount);
 
-  _chainCandidates.resize(_populationSize);
-  for(size_t i = 0; i < _populationSize; i++) _chainCandidates[i].resize(N);
+ _chainCandidates.resize(_populationSize);
+ for(size_t i = 0; i < _populationSize; i++) _chainCandidates[i].resize(_variableCount);
 
-  _covarianceMatrix.resize(N*N);
-  _meanTheta.resize(N);
-  _chainCandidatesLogLikelihoods.resize(_populationSize);
-  _chainCandidatesLogPriors.resize(_populationSize);
-  _chainLeadersLogLikelihoods.resize(_populationSize);
-  _chainLeadersLogPriors.resize(_populationSize);
-  _chainPendingEvaluation.resize(_populationSize);
-  _currentChainStep.resize(_populationSize);
-  _chainLengths.resize(_populationSize);
+ _covarianceMatrix.resize(_variableCount*_variableCount);
+ _meanTheta.resize(_variableCount);
+ _chainCandidatesLogLikelihoods.resize(_populationSize);
+ _chainCandidatesLogPriors.resize(_populationSize);
+ _chainLeadersLogLikelihoods.resize(_populationSize);
+ _chainLeadersLogPriors.resize(_populationSize);
+ _chainPendingEvaluation.resize(_populationSize);
+ _currentChainStep.resize(_populationSize);
+ _chainLengths.resize(_populationSize);
 
-  // Init Generation
-  _annealingExponent       = 0.0;
-  _logEvidence             = 0.0;
-  _coefficientOfVariation  = 0.0;
-  _chainCount              = _populationSize;
+ // Init Generation
+ _annealingExponent       = 0.0;
+ _logEvidence             = 0.0;
+ _coefficientOfVariation  = 0.0;
+ _chainCount              = _populationSize;
 
-  // Initializing Chain Length first Generation
-  for (size_t c = 0; c < _populationSize; c++) _chainLengths[c] = 1;
+ // Initializing Chain Length first Generation
+ for (size_t c = 0; c < _populationSize; c++) _chainLengths[c] = 1;
 }
 
 
@@ -117,17 +113,17 @@ void korali::solver::sampler::TMCMC::generateCandidate(size_t c)
 {
   /* in generation one (zero in [Chen2007]), we take initialized samples from prior */
   if( _k->_currentGeneration == 1 ){
-    for (size_t d = 0; d < N; d++) _chainCandidates[c][d] = _k->_distributions[_k->_variables[d]->_distributionIndex]->getRandomNumber();
+    for (size_t d = 0; d < _variableCount; d++) _chainCandidates[c][d] = _k->_distributions[_k->_variables[d]->_distributionIndex]->getRandomNumber();
     return;
   }
 
   std::vector<double> _currentMean;
-  for (size_t i = 0; i < N; i++) _currentMean.push_back(_chainLeaders[c][i]);
+  for (size_t i = 0; i < _variableCount; i++) _currentMean.push_back(_chainLeaders[c][i]);
 
   _multivariateGenerator->_covarianceMatrix = _covarianceMatrix;
   _multivariateGenerator->_meanVector = _currentMean;
   _multivariateGenerator->updateDistribution();
-  _multivariateGenerator->getRandomVector(&_chainCandidates[c][0],  N);
+  _multivariateGenerator->getRandomVector(&_chainCandidates[c][0],  _variableCount);
 }
 
 
@@ -201,21 +197,21 @@ void korali::solver::sampler::TMCMC::processGeneration()
   _multinomialGenerator->getSelections( weight, numselections, _populationSize);
 
   /* Update mean and covariance */
-  for (size_t i = 0; i < N; i++){
+  for (size_t i = 0; i < _variableCount; i++){
     _meanTheta[i] = 0;
     for (size_t j = 0; j < _populationSize; j++) _meanTheta[i] += _sampleDatabase[j][i]*weight[j];
   }
 
-  for (size_t i = 0; i < N; i++){
-    for (size_t j = i; j < N; ++j){
+  for (size_t i = 0; i < _variableCount; i++){
+    for (size_t j = i; j < _variableCount; ++j){
       double s = 0.0;
       for (size_t k = 0; k < _populationSize; ++k)
         s += weight[k]*( _sampleDatabase[k][i] - _meanTheta[i])*( _sampleDatabase[k][j]-_meanTheta[j] );
-      _covarianceMatrix[i*N + j] = _covarianceMatrix[j*N + i] = _covarianceScaling * s;
+      _covarianceMatrix[i*_variableCount + j] = _covarianceMatrix[j*_variableCount + i] = _covarianceScaling * s;
     }
   }
 
-  gsl_matrix_view sigma = gsl_matrix_view_array( &_covarianceMatrix[0], N, N );
+  gsl_matrix_view sigma = gsl_matrix_view_array( &_covarianceMatrix[0], _variableCount, _variableCount );
   gsl_linalg_cholesky_decomp( &sigma.matrix );
 
   /* Init new chains */
@@ -227,7 +223,7 @@ void korali::solver::sampler::TMCMC::processGeneration()
   for (size_t i = 0; i < _populationSize; i++){
     if (numselections[i] == 0) zeroCount++;
     while (numselections[i] != 0){
-      for (size_t j = 0; j < N ; j++) _chainLeaders[leaderId][j] = _sampleDatabase[i][j];
+      for (size_t j = 0; j < _variableCount ; j++) _chainLeaders[leaderId][j] = _sampleDatabase[i][j];
       _chainLeadersLogPriors[leaderId]      = _sampleLogPriorDatabase[i];
       _chainLeadersLogLikelihoods[leaderId] = _sampleLogLikelihoodDatabase[i];
 
@@ -382,13 +378,13 @@ void korali::solver::sampler::TMCMC::printGenerationAfter()
   korali::logInfo("Normal", "logEvidence: %.3f\n", _logEvidence);
 
   korali::logInfo("Detailed", "Sample Mean:\n");
-  for (size_t i = 0; i < N; i++) korali::logData("Detailed", " %s = %+6.3e\n", _k->_variables[i]->_name.c_str(), _meanTheta[i]);
+  for (size_t i = 0; i < _variableCount; i++) korali::logData("Detailed", " %s = %+6.3e\n", _k->_variables[i]->_name.c_str(), _meanTheta[i]);
   korali::logInfo("Detailed", "Sample Covariance:\n");
 
-  for (size_t i = 0; i < N; i++){
+  for (size_t i = 0; i < _variableCount; i++){
     korali::logData("Detailed", "   | ");
-    for (size_t j = 0; j < N; j++)
-      if(j <= i)  korali::logData("Detailed", "%+6.3e  ",_covarianceMatrix[i*N+j]);
+    for (size_t j = 0; j < _variableCount; j++)
+      if(j <= i)  korali::logData("Detailed", "%+6.3e  ",_covarianceMatrix[i*_variableCount+j]);
     else
       korali::logData("Detailed", "     -      ");
     korali::logData("Detailed", " |\n");

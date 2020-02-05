@@ -13,38 +13,35 @@ void korali::solver::optimizer::DEA::initialize()
 {
  korali::solver::Optimizer::initialize();
 
- N = _k->_variables.size();
+ _evaluationProblem = dynamic_cast<korali::problem::Evaluation*>(_k->_problem);
+ bool isEvaluationProblem = _evaluationProblem != NULL;
 
- for(size_t d = 0; d < N; ++d)
+ if (isEvaluationProblem == false)
+  korali::logError("DEA can only optimize problems of type 'Evaluation' or derived.\n");
+
+ if (_k->_currentGeneration > 0) return;
+
+ for(size_t d = 0; d < _variableCount; ++d)
   if(_k->_variables[d]->_upperBound < _k->_variables[d]->_lowerBound)
     korali::logError("Lower Bound (%.4f) of variable \'%s\'  exceeds Upper Bound (%.4f).\n", _k->_variables[d]->_lowerBound, _k->_variables[d]->_name.c_str(), _k->_variables[d]->_upperBound);
 
-     _evaluationProblem = dynamic_cast<korali::problem::Evaluation*>(_k->_problem);
-     bool isEvaluationProblem = _evaluationProblem != NULL;
-
-     if (isEvaluationProblem == false)
-      korali::logError("DEA can only optimize problems of type 'Evaluation' or derived.\n");
-
  // Allocating Memory
-
  _samplePopulation.resize(_populationSize);
- for(size_t i = 0; i < _populationSize; i++) _samplePopulation[i].resize(N);
+ for(size_t i = 0; i < _populationSize; i++) _samplePopulation[i].resize(_variableCount);
 
  _candidatePopulation.resize(_populationSize);
- for(size_t i = 0; i < _populationSize; i++) _candidatePopulation[i].resize(N);
+ for(size_t i = 0; i < _populationSize; i++) _candidatePopulation[i].resize(_variableCount);
 
- _previousMean.resize(N);
- _currentMean.resize(N);
- _bestEverVariables.resize(N);
- _currentBestVariables.resize(N);
- _maxDistances.resize(N);
+ _previousMean.resize(_variableCount);
+ _currentMean.resize(_variableCount);
+ _bestEverVariables.resize(_variableCount);
+ _currentBestVariables.resize(_variableCount);
+ _maxDistances.resize(_variableCount);
 
  _valueVector.resize(_populationSize);
  for(size_t i = 0; i < _populationSize; i++) _valueVector[i] = -korali::Inf;
 
  _valueVector.resize(_populationSize);
-
- if (_k->_currentGeneration > 0) return;
 
  _infeasibleSampleCount = 0;
  _bestSampleIndex = 0;
@@ -57,9 +54,9 @@ void korali::solver::optimizer::DEA::initialize()
 
  initSamples();
 
- for(size_t d = 0; d < N; ++d) { _previousMean[d] = 0.0; _currentMean[d] = 0.0; }
+ for(size_t d = 0; d < _variableCount; ++d) { _previousMean[d] = 0.0; _currentMean[d] = 0.0; }
 
- for(size_t i = 0; i < _populationSize; ++i) for(size_t d = 0; d < N; ++d)
+ for(size_t i = 0; i < _populationSize; ++i) for(size_t d = 0; d < _variableCount; ++d)
    _currentMean[d] += _samplePopulation[i][d]/((double)_populationSize);
 }
 
@@ -93,7 +90,7 @@ void korali::solver::optimizer::DEA::runGeneration()
 void korali::solver::optimizer::DEA::initSamples()
 {
   /* skip sampling in gen 1 */
-  for(size_t i = 0; i < _populationSize; ++i) for(size_t d = 0; d < N; ++d)
+  for(size_t i = 0; i < _populationSize; ++i) for(size_t d = 0; d < _variableCount; ++d)
   {
     double width = _k->_variables[d]->_upperBound - _k->_variables[d]->_lowerBound;
     _candidatePopulation[i][d] = _k->_variables[d]->_lowerBound + width * _uniformGenerator->getRandomNumber();
@@ -166,8 +163,8 @@ void korali::solver::optimizer::DEA::mutateSingle(size_t sampleIdx)
         parent = &_samplePopulation[_bestSampleIndex][0];
     }
 
-    size_t rn = _uniformGenerator->getRandomNumber()*N;
-    for(size_t d = 0; d < N; ++d)
+    size_t rn = _uniformGenerator->getRandomNumber()*_variableCount;
+    for(size_t d = 0; d < _variableCount; ++d)
     {
       if( (_uniformGenerator->getRandomNumber() < _crossoverRate) || (d == rn) )
           _candidatePopulation[sampleIdx][d] = parent[d]+_mutationRate*(_samplePopulation[a][d]-_samplePopulation[b][d]);
@@ -178,7 +175,7 @@ void korali::solver::optimizer::DEA::mutateSingle(size_t sampleIdx)
 
 void korali::solver::optimizer::DEA::fixInfeasible(size_t sampleIdx)
 {
-  for(size_t d = 0; d < N; ++d)
+  for(size_t d = 0; d < _variableCount; ++d)
   {
     double len = 0.0;
     if ( _candidatePopulation[sampleIdx][d] < _k->_variables[d]->_lowerBound )
@@ -198,7 +195,7 @@ void korali::solver::optimizer::DEA::updateSolver()
     _previousBestValue     = _currentBestValue;
     _currentBestValue      = _valueVector[_bestSampleIndex];
 
-    for(size_t d = 0; d < N; ++d) _currentBestVariables[d] = _candidatePopulation[_bestSampleIndex][d];
+    for(size_t d = 0; d < _variableCount; ++d) _currentBestVariables[d] = _candidatePopulation[_bestSampleIndex][d];
 
     _previousMean = _currentMean;
     std::fill(std::begin(_currentMean), std::end(_currentMean), 0.0);
@@ -211,7 +208,7 @@ void korali::solver::optimizer::DEA::updateSolver()
     {
       if(_currentBestValue > _bestEverValue)
       {
-        for(size_t d = 0; d < N; ++d) _samplePopulation[_bestSampleIndex][d] = _candidatePopulation[_bestSampleIndex][d];
+        for(size_t d = 0; d < _variableCount; ++d) _samplePopulation[_bestSampleIndex][d] = _candidatePopulation[_bestSampleIndex][d];
         _bestEverValue = _currentBestValue;
       }
       acceptRuleRecognized = true;
@@ -228,7 +225,7 @@ void korali::solver::optimizer::DEA::updateSolver()
     if (_acceptRule == "Improved") // update all samples better than _bestEverValue
     {
       for(size_t i = 0; i < _populationSize; ++i) if(_valueVector[i] > _bestEverValue)
-        for(size_t d = 0; d < N; ++d) _samplePopulation[i][d] = _candidatePopulation[i][d];
+        for(size_t d = 0; d < _variableCount; ++d) _samplePopulation[i][d] = _candidatePopulation[i][d];
       if(_currentBestValue > _bestEverValue) _bestEverValue = _currentBestValue;
       acceptRuleRecognized = true;
     }
@@ -236,17 +233,17 @@ void korali::solver::optimizer::DEA::updateSolver()
     if (_acceptRule == "Iterative") // iteratively update _bestEverValue and accept samples
     {
      for(size_t i = 0; i < _populationSize; ++i) if(_valueVector[i] > _bestEverValue)
-      for(size_t d = 0; d < N; ++d)
+      for(size_t d = 0; d < _variableCount; ++d)
        { _samplePopulation[i][d] = _candidatePopulation[i][d]; _bestEverValue = _valueVector[i]; }
      acceptRuleRecognized = true;
     }
 
     if (acceptRuleRecognized == false)  korali::logError("Accept Rule (%s) not recognized.\n",  _acceptRule.c_str());
 
-    for(size_t i = 0; i < _populationSize; ++i) for(size_t d = 0; d < N; ++d)
+    for(size_t i = 0; i < _populationSize; ++i) for(size_t d = 0; d < _variableCount; ++d)
         _currentMean[d] += _samplePopulation[i][d]/((double)_populationSize);
 
-    for(size_t d = 0; d < N; ++d)
+    for(size_t d = 0; d < _variableCount; ++d)
     {
         double max = -korali::Inf;
         double min = +korali::Inf;
@@ -259,7 +256,7 @@ void korali::solver::optimizer::DEA::updateSolver()
     }
 
     _currentMinimumStepSize = +korali::Inf;
-    for(size_t d = 0; d < N; ++d)  std::min(_currentMinimumStepSize, fabs(_currentMean[d] - _previousMean[d]));
+    for(size_t d = 0; d < _variableCount; ++d)  std::min(_currentMinimumStepSize, fabs(_currentMean[d] - _previousMean[d]));
 }
 
 
@@ -274,9 +271,9 @@ void korali::solver::optimizer::DEA::printGenerationAfter()
 {
  korali::logInfo("Normal", "Current Function Value: Max = %+6.3e - Best = %+6.3e\n", _currentBestValue, _bestEverValue);
  korali::logInfo("Detailed", "Variable = (MeanX, BestX):\n");
- for (size_t d = 0; d < N; d++) korali::logData("Detailed", "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _currentMean[d], _bestEverVariables[d]);
+ for (size_t d = 0; d < _variableCount; d++) korali::logData("Detailed", "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _currentMean[d], _bestEverVariables[d]);
  korali::logInfo("Detailed", "Max Width:\n");
- for (size_t d = 0; d < N; d++) korali::logData("Detailed", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _maxDistances[d]);
+ for (size_t d = 0; d < _variableCount; d++) korali::logData("Detailed", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _maxDistances[d]);
  korali::logInfo("Detailed", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
 }
 
@@ -284,6 +281,6 @@ void korali::solver::optimizer::DEA::finalize()
 {
  korali::logInfo("Minimal", "Optimum found: %e\n", _bestEverValue);
  korali::logInfo("Minimal", "Optimum found at:\n");
- for (size_t d = 0; d < N; ++d) korali::logData("Minimal", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverVariables[d]);
+ for (size_t d = 0; d < _variableCount; ++d) korali::logData("Minimal", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverVariables[d]);
  korali::logInfo("Minimal", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
 }

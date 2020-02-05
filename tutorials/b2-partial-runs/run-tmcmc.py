@@ -20,26 +20,26 @@ e["Problem"]["Likelihood Model"] = calculateLogLikelihood
 
 e["Solver"]["Type"]  = "Sampler/TMCMC"
 e["Solver"]["Population Size"] = 5000
-e["Solver"]["Termination Criteria"]["Max Generations"] = 2
+e["Solver"]["Termination Criteria"]["Max Generations"] = 4
 
 e["Distributions"][0]["Name"] = "Uniform 0"
 e["Distributions"][0]["Type"] = "Univariate/Uniform"
-e["Distributions"][0]["Minimum"] = -10.0
-e["Distributions"][0]["Maximum"] = +10.0
+e["Distributions"][0]["Minimum"] = -100.0
+e["Distributions"][0]["Maximum"] = +100.0
 
 e["Variables"][0]["Name"] = "X"
 e["Variables"][0]["Prior Distribution"] = "Uniform 0"
 
 print("\n-------------------------------------------------------------")
-print("Running first 2 generations...")
+print("Running first generations...")
 print("-------------------------------------------------------------\n")
 
 k.run(e)
 
 print("\n-------------------------------------------------------------")
-print("Running last 2 generations...")
+print("Running last generations...")
 print("-------------------------------------------------------------\n")
 
-e["Solver"]["Termination Criteria"]["Max Generations"] = 4
+e["Solver"]["Termination Criteria"]["Max Generations"] = 10
 k.run(e)
 

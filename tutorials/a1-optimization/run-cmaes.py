@@ -17,8 +17,10 @@ k = korali.Engine()
 e = korali.Experiment()
 
 # Configuring Problem
+e["Random Seed"] = 0xC0FEE
 e["Problem"]["Type"] = "Evaluation/Direct/Basic"
 e["Problem"]["Objective"] = "Maximize"
+e["Problem"]["Objective Function"] = model
 
 # Defining the problem's variables.
 e["Variables"][0]["Name"] = "X"
@@ -27,11 +29,9 @@ e["Variables"][0]["Upper Bound"] = +10.0
 
 # Configuring CMA-ES parameters
 e["Solver"]["Type"] = "Optimizer/CMAES"
-e["Solver"]["Population Size"] = 32
-e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-7
+e["Solver"]["Population Size"] = 4 
+e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-15
 e["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
-# Running 10 generations
-e["Problem"]["Objective Function"] = model
+# Running Korali
 k.run(e)
-

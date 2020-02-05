@@ -9,6 +9,9 @@ korali::Engine::Engine()
 
 void korali::Engine::run()
 {
+ // Turn Off GSL Error Handler
+ gsl_set_error_handler_off();
+
  // Setting output file to stdout, by default.
  korali::setConsoleOutputFile(stdout);
  korali::setVerbosityLevel("Minimal");

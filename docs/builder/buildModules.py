@@ -36,7 +36,7 @@ def buildModules(koraliDir):
    moduleName = os.path.basename(os.path.normpath(inputDirs[i]))
    
    # Loading JSON Configuration
-   moduleJsonFile = inputFiles[i].replace('README.md', moduleName + '.json')
+   moduleJsonFile = inputFiles[i].replace('README.md', moduleName + '.config')
    print('[Korali] Opening ' + moduleJsonFile + ' ...')
    
    with open(moduleJsonFile, 'r') as file: moduleJsonString = file.read()

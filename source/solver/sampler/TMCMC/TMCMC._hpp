@@ -18,7 +18,6 @@ class TMCMC : public korali::solver::Sampler
  void setBurnIn();
  void prepareGeneration();
  void processGeneration();
- void generateCandidate(size_t candidate);
  void minSearch(double const *fj, size_t fn, double pj, double objTol, double& xmin, double& fmin);
  void processEvaluation(const size_t sampleId);
  static double tmcmc_objlogp(double x, const double *fj, size_t fn, double pj, double zero);

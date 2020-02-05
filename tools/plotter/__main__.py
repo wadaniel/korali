@@ -36,11 +36,11 @@ def main(path, gen, mean, check, test):
  for file in resultFiles:
   with open(path + '/' + file) as f:
    genJs = json.load(f)
-   configRunId = js['Internal']['Run ID']
-   solverRunId = genJs['Internal']['Run ID']
+   configRunId = js['Run ID']
+   solverRunId = genJs['Run ID']
    
    if (configRunId == solverRunId):
-    if (gen is None or gen >= genJs['Internal']['Current Generation']):
+    if (gen is None or gen >= genJs['Current Generation']):
      js["Generations"].append(genJs)
      genFound = True
      

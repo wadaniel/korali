@@ -24,11 +24,11 @@ e["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
 k.run(e)
 
-xopt = e["Solver"]["Internal"]["Best Ever Variables"]
-fopt = e["Solver"]["Internal"]["Best Ever Value"]
+xopt = e["Solver"]["Best Ever Variables"]
+fopt = e["Solver"]["Best Ever Value"]
 
-x = e["Solver"]["Internal"]["Current Best Variables"]
-f = e["Solver"]["Internal"]["Current Best Value"]
+x = e["Solver"]["Current Best Variables"]
+f = e["Solver"]["Current Best Value"]
 
 assertclose(2.0, xopt, 1e-3)
 assertclose(2.0, x, 1e-3)

@@ -116,5 +116,21 @@
      "Type": "double",
      "Description": "Difference in parameters..."
    }
- ]
+ ],
+ 
+ "Module Defaults":
+ {
+  "Delta0": 0.1,
+  "Delta Min": 1e-6,
+  "Delta Max": 50,
+  "Eta Minus": 0.5,
+  "Eta Plus": 1.2,
+  
+  "Termination Criteria":
+  {
+   "Max Gradient Norm": 0.0,
+   "Max Stall Generations": 20,
+   "Parameter Relative Tolerance": 1e-4
+  }
+ }
 }

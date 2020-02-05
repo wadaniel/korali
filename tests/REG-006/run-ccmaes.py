@@ -44,42 +44,42 @@ def run_ccmaes(constraint):
     
     if (constraint == "None"):
         k.run(e)
-        assert_greatereq(e["Solver"]["Internal"]["Best Ever Value"],-6*1e-10)
+        assert_greatereq(e["Solver"]["Best Ever Value"],-6*1e-10)
 
     elif (constraint == "Inactive"):
         e["Problem"]["Constraints"] = [ inactive1, inactive2 ]
         k.run(e)
-        assert_greatereq(e["Solver"]["Internal"]["Best Ever Value"],-1.8*1e-10)
+        assert_greatereq(e["Solver"]["Best Ever Value"],-1.8*1e-10)
 
     elif (constraint == "Active at Max 1"):
         e["Problem"]["Constraints"] = [ activeMax1, activeMax2 ]
         k.run(e)
-        assert_greatereq(e["Solver"]["Internal"]["Best Ever Value"],-4.826824e+00)
+        assert_greatereq(e["Solver"]["Best Ever Value"],-4.826824e+00)
 
     elif (constraint == "Active at Max 2"):
         e["Problem"]["Constraints"] = [ activeMax1, activeMax2, activeMax3, activeMax4 ]
         k.run(e)
-        assert_greatereq(e["Solver"]["Internal"]["Best Ever Value"],-9.653645e+00)
+        assert_greatereq(e["Solver"]["Best Ever Value"],-9.653645e+00)
 
     elif (constraint == "Inactive at Max 1"):
         e["Problem"]["Constraints"] = [ inactiveMax1, inactiveMax2 ]
         k.run(e)
-        assert_greatereq(e["Solver"]["Internal"]["Best Ever Value"],-2.19963e-10)
+        assert_greatereq(e["Solver"]["Best Ever Value"],-2.19963e-10)
 
     elif (constraint == "Inactive at Max 2"):
         e["Problem"]["Constraints"] = [ inactiveMax1, inactiveMax2, inactiveMax3, inactiveMax4 ]
         k.run(e)
-        assert_greatereq(e["Solver"]["Internal"]["Best Ever Value"],-4.626392e-10)
+        assert_greatereq(e["Solver"]["Best Ever Value"],-4.626392e-10)
 
     elif (constraint == "Mixed"):
         e["Problem"]["Constraints"] = [ activeMax1, activeMax2, activeMax3, activeMax4, inactiveMax1, inactiveMax2, inactiveMax3, inactiveMax4 ]
         k.run(e)
-        assert_greatereq(e["Solver"]["Internal"]["Best Ever Value"],-7.895685e+01)
+        assert_greatereq(e["Solver"]["Best Ever Value"],-7.895685e+01)
 
     elif (constraint == "Stress"):
         e["Problem"]["Constraints"] = [ activeMax1, activeMax2, activeMax3, activeMax4, inactiveMax1, inactiveMax2, inactiveMax3, inactiveMax4, stress1, stress2, stress3, stress4, stress5, stress6, stress7, stress8 ]
         k.run(e)
-        assert_greatereq(e["Solver"]["Internal"]["Best Ever Value"],-7.895685e+01)
+        assert_greatereq(e["Solver"]["Best Ever Value"],-7.895685e+01)
 
     else:
         print("Constraint not recognized!")

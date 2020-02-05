@@ -27,8 +27,8 @@ int main(int argc, char** argv)
 
  k.run(e);
 
- std::vector<double> xopt = e["Solver"]["Internal"]["Best Ever Variables"];
- double fopt = e["Solver"]["Internal"]["Best Ever Value"];
+ std::vector<double> xopt = e["Solver"]["Best Ever Variables"];
+ double fopt = e["Solver"]["Best Ever Value"];
 
  assert( std::abs((fopt - 10.0)/fopt)   <= 1e-6 );
  assert( std::abs((xopt[0] - 2.0)/fopt) <= 1e-3 );
@@ -40,8 +40,8 @@ int main(int argc, char** argv)
 
 /*
 
-x = e["Solver"]["Internal"]["Current Best Variables"]
-f = e["Solver"]["Internal"]["Current Best Value"]
+x = e["Solver"]["Current Best Variables"]
+f = e["Solver"]["Current Best Value"]
 
 assertclose(2.0, xopt, 1e-3)
 assertclose(2.0, x, 1e-3)

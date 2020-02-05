@@ -36,17 +36,17 @@ def run_dea_with_termination_criterion(criterion, value):
     k.run(e)
 
     if (criterion == "Max Generations"):
-        assert_value(e["Internal"]["Current Generation"], value)
+        assert_value(e["Current Generation"], value)
 
     elif (criterion == "Max Infeasible Resamplings"):
-        assert_greatereq(e["Solver"]["Internal"]["Infeasible Sample Count"], value)
+        assert_greatereq(e["Solver"]["Infeasible Sample Count"], value)
 
     elif (criterion == "Max Value"):
-        assert_greatereq(e["Solver"]["Internal"]["Best Ever Value"], value)
+        assert_greatereq(e["Solver"]["Best Ever Value"], value)
 
     elif (criterion == "Min Value Difference Threshold"):
-        previous = e["Solver"]["Internal"]["Previous Best Ever Value"]
-        current  = e["Solver"]["Internal"]["Best Ever Value"]
+        previous = e["Solver"]["Previous Best Ever Value"]
+        current  = e["Solver"]["Best Ever Value"]
         assert_smallereq(previous-current, value)
 
     else:

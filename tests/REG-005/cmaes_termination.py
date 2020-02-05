@@ -37,29 +37,29 @@ def run_cmaes_with_termination_criterion(criterion, value):
     k.run(e)
 
     if (criterion == "Max Generations"):
-        assert_value(e["Internal"]["Current Generation"], value)
+        assert_value(e["Current Generation"], value)
 
     elif (criterion == "Max Infeasible Resamplings"):
-        assert_greatereq(e["Solver"]["Internal"]["Infeasible Sample Count"], value)
+        assert_greatereq(e["Solver"]["Infeasible Sample Count"], value)
 
     elif (criterion == "Max Condition Covariance Matrix"):
-        minEw = e["Solver"]["Internal"]["Minimum Covariance Eigenvalue"]
-        maxEw = e["Solver"]["Internal"]["Maximum Covariance Eigenvalue"]
+        minEw = e["Solver"]["Minimum Covariance Eigenvalue"]
+        maxEw = e["Solver"]["Maximum Covariance Eigenvalue"]
         assert_greatereq(maxEw/minEw, value)
 
     elif (criterion == "Max Value"):
-        assert_greatereq(e["Solver"]["Internal"]["Best Ever Value"], value)
+        assert_greatereq(e["Solver"]["Best Ever Value"], value)
 
     elif (criterion == "Min Value Difference Threshold"):
-        previous = e["Solver"]["Internal"]["Previous Best Ever Value"]
-        current  = e["Solver"]["Internal"]["Best Ever Value"]
+        previous = e["Solver"]["Previous Best Ever Value"]
+        current  = e["Solver"]["Best Ever Value"]
         assert_smallereq(previous-current, value)
 
     elif (criterion == "Min Standard Deviation"):
-        assert_smallereq(e["Solver"]["Internal"]["Current Min Standard Deviation"], value)
+        assert_smallereq(e["Solver"]["Current Min Standard Deviation"], value)
 
     elif (criterion == "Max Standard Deviation"):
-        assert_greatereq(e["Solver"]["Internal"]["Current Max Standard Deviation"], value)
+        assert_greatereq(e["Solver"]["Current Max Standard Deviation"], value)
 
     else:
         print("Termination Criterion not recognized!")

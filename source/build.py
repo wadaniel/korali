@@ -67,7 +67,7 @@ def isLeafModule(path):
  for curDir, relDir, fileNames in os.walk(path):
   if (curDir != path):
    for fileName in fileNames:
-    if '.json' in fileName:
+    if '.config' in fileName:
      return False
  return True
 
@@ -396,10 +396,10 @@ varDeclarationSet = set()
 # Detecting modules' json file
 for moduleDir, relDir, fileNames in os.walk(koraliDir):
  for fileName in fileNames:
-  if '.json' in fileName:
+  if '.config' in fileName:
    filePath = moduleDir + '/' + fileName;
    print('[Korali] Opening: ' + filePath + '...')
-   moduleFilename = fileName.replace('.json', '')
+   moduleFilename = fileName.replace('.config', '')
    
    # Loading Json configuration file
    with open(filePath, 'r') as file: moduleConfig = json.load(file)

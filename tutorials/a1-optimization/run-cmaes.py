@@ -29,7 +29,7 @@ e["Variables"][0]["Upper Bound"] = +10.0
 e["Solver"]["Type"] = "Optimizer/CMAES"
 e["Solver"]["Population Size"] = 32
 e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-7
-e["Solver"]["Termination Criteria"]["Max Generations"] = 10
+e["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
 # Running 10 generations
 e["Problem"]["Objective Function"] = model

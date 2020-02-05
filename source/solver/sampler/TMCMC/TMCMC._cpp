@@ -21,7 +21,10 @@ typedef struct fparam_s {
 
 void korali::solver::sampler::TMCMC::initialize()
 {
-  korali::solver::Sampler::initialize();
+ // Turn Off GSL Error Handler
+ gsl_set_error_handler_off();
+
+ korali::solver::Sampler::initialize();
 
   N = _k->_variables.size();
   if(_maxChainLength == 0) korali::logError("Max Chain Length must be greater 0.");

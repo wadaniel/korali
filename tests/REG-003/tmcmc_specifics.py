@@ -94,12 +94,12 @@ for filename in resultfiles:
     
     # Testing Burn In Assignments
     assert_value( data['Solver']['Default Burn In'], 5 )
-    #assert_value( data['Solver']['Internal']['Current Burn In'], currentBurnIn[gen] )
+    #assert_value( data['Solver']['Current Burn In'], currentBurnIn[gen] )
     
     # Testing Correctness of (min/max) Rho Update
     assert_value( data['Solver']['Min Annealing Exponent Update'], minRhoUpdate )
     assert_value( data['Solver']['Max Annealing Exponent Update'], maxRhoUpdate )
-    rho =  data['Solver']['Internal']['Annealing Exponent']
+    rho =  data['Solver']['Annealing Exponent']
     
     # Updates
     prevRho = rho

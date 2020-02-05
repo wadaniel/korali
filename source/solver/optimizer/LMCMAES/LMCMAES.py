@@ -21,13 +21,13 @@ def plot(js):
     evoweights = []
 
     for s in js['Generations']:
-     fval.append(s['Solver']['Internal']['Current Best Value'])
-     dfval.append(abs(s['Solver']['Internal']['Current Best Value'] - s['Solver']['Internal']['Best Ever Value']))
-     gen.append(s['Internal']['Current Generation'])
-     sigma.append(s['Solver']['Internal']['Sigma'])
-     psL2.append(s['Solver']['Internal']['Conjugate Evolution Path L2 Norm'])
-     objVec.append(s['Solver']['Internal']['Current Best Variables'])
-     evoweights.append(s['Solver']['Internal']['Evolution Path Weights'])
+     fval.append(s['Solver']['Current Best Value'])
+     dfval.append(abs(s['Solver']['Current Best Value'] - s['Solver']['Best Ever Value']))
+     gen.append(s['Current Generation'])
+     sigma.append(s['Solver']['Sigma'])
+     psL2.append(s['Solver']['Conjugate Evolution Path L2 Norm'])
+     objVec.append(s['Solver']['Current Best Variables'])
+     evoweights.append(s['Solver']['Evolution Path Weights'])
 
     plt.suptitle('CMAES Diagnostics', fontweight='bold', fontsize=12 )
 

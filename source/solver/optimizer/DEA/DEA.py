@@ -21,12 +21,12 @@ def plot(js):
     means = []
 
     for s in js['Generations']:
-     objVec.append(s['Solver']['Internal']['Current Best Variables'])
-     fval.append(s['Solver']['Internal']['Current Best Value'])
-     dfval.append(abs(s['Solver']['Internal']['Current Best Value'] - s['Solver']['Internal']['Best Ever Value']))
-     gen.append(s['Internal']['Current Generation'])
-     width.append(s['Solver']['Internal']['Max Distances'])
-     means.append(s['Solver']['Internal']['Current Mean'])
+     objVec.append(s['Solver']['Current Best Variables'])
+     fval.append(s['Solver']['Current Best Value'])
+     dfval.append(abs(s['Solver']['Current Best Value'] - s['Solver']['Best Ever Value']))
+     gen.append(s['Current Generation'])
+     width.append(s['Solver']['Max Distances'])
+     means.append(s['Solver']['Current Mean'])
 
     plt.suptitle('DEA Diagnostics', fontweight='bold', fontsize=12 )
     colors = hlsColors(numdim)

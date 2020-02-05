@@ -23,19 +23,19 @@ def plot(js):
     objVec = []
 
     for s in js['Generations']:
-     cond.append(s['Solver']['Internal']['Maximum Covariance Eigenvalue']/s['Solver']['Internal']['Minimum Covariance Eigenvalue'])
-     fval.append(s['Solver']['Internal']['Current Best Value'])
-     dfval.append(abs(s['Solver']['Internal']['Current Best Value'] - s['Solver']['Internal']['Best Ever Value']))
-     gen.append(s['Internal']['Current Generation'])
-     sigma.append(s['Solver']['Internal']['Sigma'])
-     psL2.append(s['Solver']['Internal']['Conjugate Evolution Path L2 Norm'])
-     axis.append(s['Solver']['Internal']['Axis Lengths'])
-     objVec.append(s['Solver']['Internal']['Current Best Variables'])
+     cond.append(s['Solver']['Maximum Covariance Eigenvalue']/s['Solver']['Minimum Covariance Eigenvalue'])
+     fval.append(s['Solver']['Current Best Value'])
+     dfval.append(abs(s['Solver']['Current Best Value'] - s['Solver']['Best Ever Value']))
+     gen.append(s['Current Generation'])
+     sigma.append(s['Solver']['Sigma'])
+     psL2.append(s['Solver']['Conjugate Evolution Path L2 Norm'])
+     axis.append(s['Solver']['Axis Lengths'])
+     objVec.append(s['Solver']['Current Best Variables'])
 
     ssdev = [ [ ] for i in range(numdim) ]
     for i in range(numdim):
      for s in js['Generations']:
-      ssdev[i].append(js['Generations'][-1]['Solver']["Internal"]["Sigma"]*np.sqrt(s['Solver']["Internal"]['Covariance Matrix'][i*numdim+i]))
+      ssdev[i].append(js['Generations'][-1]['Solver']["Sigma"]*np.sqrt(s['Solver']['Covariance Matrix'][i*numdim+i]))
      
          
     plt.suptitle('CMAES Diagnostics', fontweight='bold', fontsize=12 )

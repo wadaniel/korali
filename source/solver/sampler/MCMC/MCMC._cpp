@@ -65,6 +65,9 @@ void korali::solver::sampler::MCMC::runGeneration()
 
 void korali::solver::sampler::MCMC::initialize()
 {
+ // Turn Off GSL Error Handler
+ gsl_set_error_handler_off();
+
  N = _k->_variables.size();
 
  if(_chainCovarianceScaling <= 0.0) korali::logError("Chain Covariance Scaling must be larger 0.0 (is %lf).\n", _chainCovarianceScaling);

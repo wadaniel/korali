@@ -97,7 +97,7 @@
    {
      "Enabled": true,
      "Store Samples": false,
-     "Path": "_korali_results",
+     "Path": "_korali_result",
      "Frequency": 1
    },
    

@@ -16,17 +16,17 @@ check
 popd
 
 # Installing mkdocs and materials theme
-pip install mkdocs --user
+python3 -m pip install mkdocs --user
 check
 
-pip install mkdocs-material --user
+python3 -m pip install mkdocs-material --user
 check
 
 python3 -m mkdocs build
 check
 
 # Some re-styling changes
-sed -i -e 's/76\./36\./g' -e 's/12\.1/10\.5/g' ./site/assets/stylesheets/application.*.css
+sed -i -e 's/76\./36\./g;s/12\.1/10\.5/g' ./site/assets/stylesheets/application.*.css
 check
 
 echo "[Korali] Building complete."

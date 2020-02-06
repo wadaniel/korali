@@ -1,7 +1,8 @@
 # A.2 - Model Sampling: Draw Samples from a Function
 
-In this tutorial we show how to **sample** directly from a given function 
+In this tutorial we show how to **sample** directly from a given function
 using Metropolis Hastings (MCMC) and Transition Markov Chain Monte Carlo (TMCMC).
+The complete code samples are in [run-mcmc.py](run-mcmc.py).
 
 
 ## Problem Setup
@@ -21,10 +22,10 @@ Create a folder named `model`. Inside, create a file with name `directModel.py` 
 ```python
 #!/usr/bin/env python
 
-def evaluateModel( s ):
-  x = s.getVariable(0)
-  r = -x*x
-  s.addResult(r)
+def evaluateModel( x ):
+  v = x["Parameters"][0]
+  x["Evaluation"] = -v*v
+
 ```
 
 This is the computational model that represents our objective function.
@@ -44,60 +45,72 @@ from directModel import *
 ```
 
 
-###  The Korali Object
+###  The Korali Experiment Object
 
-Next we construct a `Korali` object and set the computational model,
+Next we construct a `korali.Experiment` object and set the computational model,
 ```python
-k = korali.initialize()
-k.setModel(evaluateModel)
+e = korali.Experiment()
+e["Problem"]["Objective Function"] = model
 ```
 
 ###  The Problem Type
 Then, we set the type of the problem to `Direct Evaluation`
 ```python
-k["Problem"] = "Direct Evaluation"
+e["Problem"]["Type"] = "Evaluation/Direct/Basic"
 ```
 
 ###  The Variables
 In this problem there is only one variable,
 ```python
-k["Variables"][0]["Name"] = "X";
+e["Variables"][0]["Name"] = "X"
 ```
 
 ###  The Solver
-We choose the solver `MCMC` and set the initial mean and standard deviation  of the parameter `X`.
+We choose the solver `MCMC` and set the initial mean and standard deviation of the parameter `X`.
 ```python
-k["Solver"] = "MCMC";
+e["Solver"]["Type"]  = "Sampler/MCMC"
+e["Variables"][0]["Initial Mean"] = 0.0
+e["Variables"][0]["Initial Standard Deviation"] = 1.0
 
-k["Variables"][0]["MCMC"]["Initial Mean"] = 0.0;
-k["Variables"][0]["MCMC"]["Initial Standard Deviation"] = 1.000;
 
-k["MCMC"]["Population Size"] = 5000;
-k["MCMC"]["Burn In"] = 500;
-k["MCMC"]["Adaptive Sampling"]  = True;
-k["MCMC"]["Result Output Frequency"]  = 5000;
+e["Solver"]["Burn In"] = 500
+e["Solver"]["Termination Criteria"]["Max Samples"] = 5000
 ```
+A list of all implemented solver types, although not optimally
+reader friendly, can be found in [module.cpp](../../source/module.cpp). 
+
 We also set some settings for MCMC. For a detailed description of the MCMC settings, see
 [here](../../usage/solvers/mcmc.md).
+
+### Configuring the output
+
+```python
+e["Results"]["Frequency"] = 500
+e["Console"]["Frequency"] = 500
+e["Console"]["Verbosity"] = "Detailed"
+```
 
 ###  Running
 
 Finally, we are ready to run the simulation,
 
 ```python
-k.run()
+k = korali.Engine()
+k.run(e)
 ```
 
 The results are saved in the folder `_korali_result/`.
 
 
-###  Plottting
+###  Plotting
 You can see a histogram of the results by running the command
 ```sh
 python3 -m korali.plotter
 ```
 
 ## Sampling with TMCMC
+!!  
+    Note: The code for this example is outdated.
 
 
 First, open a file and import the korali module
@@ -112,13 +125,12 @@ sys.path.append('./model')
 from directModel import *
 ```
 
+###  The Korali Experiment Object
 
-###  The Korali Object
-
-Next we construct a `Korali` object and set the computational model,
+We construct a `korali.Experiment` object and set the computational model,
 ```python
-k = korali.initialize()
-k.setModel(evaluateModel)
+e = korali.Experiment()
+e["Problem"]["Objective Function"] = model
 ```
 
 ###  The Problem Type

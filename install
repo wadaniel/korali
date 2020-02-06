@@ -64,7 +64,7 @@ case $i in
     ;;
     --rebuild)
     logEcho "[Korali] Cleaning Korali for new build..."
-    pip uninstall -y korali >> $logFile 2>&1
+    python3 -m pip uninstall -y korali >> $logFile 2>&1
     make -C source clean >> $logFile 2>&1
     shift 
     ;;
@@ -220,13 +220,13 @@ else
 fi
 log "[Korali] Python3 version $pyver found."
 
-######## Checking support for pip3 ########
+######## Checking support for pip ########
 
-log "[Korali] Checking for pip3 support using \"pip3 --version\"..."
-pip3 --version >> $logFile 2>&1
+log "[Korali] Checking for pip support using \"python3 -m pip --version\"..."
+python3 -m pip --version >> $logFile 2>&1
 if [ $? -ne 0 ]; then
-  logEcho "[Korali] Error: pip3 not found."
-  logEcho "[Korali] Solution: Make sure python and pip3 are correctly installed in your system."
+  logEcho "[Korali] Error: pip not found among python3 packages."
+  logEcho "[Korali] Solution: Make sure python3 and pip are correctly installed in your system."
   exitWithError
 fi
 
@@ -243,7 +243,7 @@ if [ $? -ne 0 ]; then
   fi
   
   logEcho "[Korali] pybind11 not found, trying to install it automatically."
-  pip3 install --user pybind11 >> $logFile 2>&1
+  python3 -m pip install --user pybind11 >> $logFile 2>&1
   if [ $? -ne 0 ]; then
     logEcho "[Korali] Error trying to install pybind11."
     exitWithError
@@ -314,7 +314,7 @@ if [ $? -ne 0 ]; then
   exitWithError
 fi
 
-######## Installing Korali using pip3 ########
+######## Installing Korali using pip ########
 logEcho "[Korali] Installing Korali..."
 
 cp source/libkorali.so . >> $logFile 2>&1
@@ -323,7 +323,7 @@ if [ $? -ne 0 ]; then
   exitWithError
 fi
 
-pip3 install . --user --upgrade >> $logFile 2>&1
+python3 -m pip install . --user --upgrade >> $logFile 2>&1
 if [ $? -ne 0 ]; then
   logEcho "[Korali] Error installing Korali's Python module."
   exitWithError

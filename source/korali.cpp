@@ -3,7 +3,7 @@
 
 korali::Engine::Engine()
 {
- _isFirstRun = true;
+ _cumulativeTime = 0.0;
  _mainThread = co_active();
 }
 
@@ -26,7 +26,6 @@ void korali::Engine::run()
  _profilingDetail = _js["Profiling"]["Detail"];
  _profilingFrequency = _js["Profiling"]["Frequency"];
 
-
  for (size_t i = 0; i < _experimentVector.size(); i++)
  {
   _experimentVector[i]->_experimentId = i;
@@ -39,12 +38,20 @@ void korali::Engine::run()
   if (_experimentVector.size() == 1) _experimentVector[i]->_logFile = stdout;
  }
 
- if (_isFirstRun == true)
- {
-  _cumulativeTime = 0.0;
-  _conduit = dynamic_cast<korali::Conduit*>(korali::Module::getModule(_js["Conduit"]));
-  _isFirstRun = false;
- }
+ // Configurint and initializing Conduit
+ _conduit = dynamic_cast<korali::Conduit*>(korali::Module::getModule(_js["Conduit"]));
+
+ // Check configuration correctness
+ auto js = _js.getJson();
+ if (korali::JsonInterface::isDefined(js, "['Dry Run']")) korali::JsonInterface::eraseValue(js, "['Dry Run']");
+ if (korali::JsonInterface::isDefined(js, "['Conduit']['Type']")) korali::JsonInterface::eraseValue(js, "['Conduit']['Type']");
+ if (korali::JsonInterface::isDefined(js, "['Profiling']['Detail']")) korali::JsonInterface::eraseValue(js, "['Profiling']['Detail']");
+ if (korali::JsonInterface::isDefined(js, "['Profiling']['Path']")) korali::JsonInterface::eraseValue(js, "['Profiling']['Path']");
+ if (korali::JsonInterface::isDefined(js, "['Profiling']['Frequency']")) korali::JsonInterface::eraseValue(js, "['Profiling']['Frequency']");
+ if (korali::JsonInterface::isEmpty(js) == false) if (_conduit->isRoot()) korali::logError("Unrecognized settings for Korali's Engine: \n%s\n", js.dump(2).c_str());
+
+ // Recovering Conduit configuration
+ _conduit->getConfiguration(_js.getJson()["Conduit"]);
 
  // If this is a worker process (not root), there's nothing else to do
  if (_conduit->isRoot())
@@ -58,14 +65,6 @@ void korali::Engine::run()
    korali::logInfo("Minimal",  "--------------------------------------------------------------------\n");
    return;
   }
-
-  auto js = _js.getJson();
-  if (korali::JsonInterface::isDefined(js, "['Dry Run']")) korali::JsonInterface::eraseValue(js, "['Dry Run']");
-  if (korali::JsonInterface::isDefined(js, "['Conduit']['Type']")) korali::JsonInterface::eraseValue(js, "['Conduit']['Type']");
-  if (korali::JsonInterface::isDefined(js, "['Profiling']['Detail']")) korali::JsonInterface::eraseValue(js, "['Profiling']['Detail']");
-  if (korali::JsonInterface::isDefined(js, "['Profiling']['Path']")) korali::JsonInterface::eraseValue(js, "['Profiling']['Path']");
-  if (korali::JsonInterface::isDefined(js, "['Profiling']['Frequency']")) korali::JsonInterface::eraseValue(js, "['Profiling']['Frequency']");
-  if (korali::JsonInterface::isEmpty(js) == false) korali::logError("Unrecognized settings for Korali's Engine: \n%s\n", js.dump(2).c_str());
 
   // Setting base time for profiling.
   _startTime = std::chrono::high_resolution_clock::now();
@@ -100,6 +99,7 @@ void korali::Engine::run()
   _cumulativeTime += std::chrono::duration<double>(_endTime-_startTime).count();
  }
 
+ // Finalizing Conduit
  _conduit->finalize();
 }
 

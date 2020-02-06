@@ -15,8 +15,6 @@ namespace korali
 
   Engine();
 
-  bool _isFirstRun;
-
   std::string _profilingPath;
   std::string _profilingDetail;
   double _profilingFrequency;

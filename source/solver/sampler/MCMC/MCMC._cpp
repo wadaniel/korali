@@ -17,10 +17,10 @@ void korali::solver::sampler::MCMC::initialize()
 {
  korali::solver::Sampler::initialize();
 
+ if (_k->_currentGeneration > 0) return;
+
  _problem = dynamic_cast<korali::problem::Evaluation*>(_k->_problem);
  if (_problem == NULL) korali::logError( "MCMC can only sample problems of type 'Evaluation' or derived problem types.\n");
-
- if (_k->_currentGeneration > 0) return;
 
  if(_chainCovarianceScaling <= 0.0) korali::logError("Chain Covariance Scaling must be larger 0.0 (is %lf).\n", _chainCovarianceScaling);
  if(_leap < 1) korali::logError( "Leap must be larger 0 (is %zu).\n", _leap);
@@ -36,8 +36,6 @@ void korali::solver::sampler::MCMC::initialize()
  _chainLeader.resize(_variableCount);
  _chainCandidatesEvaluations.resize(_rejectionLevels);
  _rejectionAlphas.resize(_rejectionLevels);
- _sampleDatabase.resize(_variableCount*_maxSamples);
- _sampleEvaluationDatabase.resize(_maxSamples);
  _chainMean.resize(_variableCount);
  _chainCovariancePlaceholder.resize(_variableCount*_variableCount);
  _chainCovariance.resize(_variableCount*_variableCount);
@@ -53,15 +51,12 @@ void korali::solver::sampler::MCMC::initialize()
  _acceptanceCount = 0;
  _proposedSampleCount = 0;
  _chainLength = 0;
- _databaseEntryCount = 0;
  _chainLeaderEvaluation = -std::numeric_limits<double>::infinity();
  _acceptanceRate  = 1.0;
 }
 
 void korali::solver::sampler::MCMC::runGeneration()
 {
- korali::solver::Sampler::initialize();
-
  bool _sampleAccepted = false;
 
  for(size_t i = 0; i < _rejectionLevels && _sampleAccepted == false; i++)
@@ -70,7 +65,7 @@ void korali::solver::sampler::MCMC::runGeneration()
 
   auto sample = korali::Sample();
   sample["Operation"] = "Basic Evaluation";
-  sample["Sample Id"] = _databaseEntryCount;
+  sample["Sample Id"] = _sampleDatabase.size();
   sample["Parameters"] = _chainCandidate[i];
 
   // Obtaining Result
@@ -98,7 +93,11 @@ void korali::solver::sampler::MCMC::runGeneration()
   }
  }
 
- if ( (_chainLength >= _burnIn) && (_k->_currentGeneration % _leap == 0) ) updateDatabase(_chainLeader, _chainLeaderEvaluation);
+ if ( (_chainLength >= _burnIn) && (_k->_currentGeneration % _leap == 0) )
+ {
+  _sampleDatabase.push_back(_chainLeader);
+  _sampleEvaluationDatabase.push_back(_chainLeaderEvaluation);
+ }
  
  updateState();
  _chainLength++;
@@ -172,14 +171,6 @@ double korali::solver::sampler::MCMC::recursiveAlpha(double& deonominator, const
 }
 
 
-void korali::solver::sampler::MCMC::updateDatabase(std::vector<double>& point, double loglik)
-{
- for (size_t d = 0; d < _variableCount; d++) _sampleDatabase[_databaseEntryCount*_variableCount + d] = point[d];
- _sampleEvaluationDatabase[_databaseEntryCount] = loglik;
- _databaseEntryCount++;
-}
-
-
 void korali::solver::sampler::MCMC::generateCandidate(size_t sampleIdx)
 {  
  _proposedSampleCount++;
@@ -187,7 +178,7 @@ void korali::solver::sampler::MCMC::generateCandidate(size_t sampleIdx)
  if(sampleIdx == 0) for (size_t d = 0; d < _variableCount; ++d) _chainCandidate[sampleIdx][d] = _chainLeader[d];
  else for (size_t d = 0; d < _variableCount; ++d) _chainCandidate[sampleIdx][d] = _chainCandidate[sampleIdx-1][d];
 
- if ( (_useAdaptiveSampling == false) || (_databaseEntryCount <= _nonAdaptionPeriod + _burnIn))
+ if ( (_useAdaptiveSampling == false) || (_sampleDatabase.size() <= _nonAdaptionPeriod + _burnIn))
      for (size_t d = 0; d < _variableCount; ++d) for (size_t e = 0; e < _variableCount; ++e) _chainCandidate[sampleIdx][d] += _choleskyDecompositionCovariance[d*_variableCount+e] * _normalGenerator->getRandomNumber();
  else
      for (size_t d = 0; d < _variableCount; ++d) for (size_t e = 0; e < _variableCount; ++e) _chainCandidate[sampleIdx][d] += _choleskyDecompositionChainCovariance[d*_variableCount+e] * _normalGenerator->getRandomNumber();
@@ -198,8 +189,8 @@ void korali::solver::sampler::MCMC::updateState()
 
  _acceptanceRate = ( (double)_acceptanceCount/ (double)_chainLength );
 
- if(_databaseEntryCount == 0) return;
- if(_databaseEntryCount == 1) { for (size_t d = 0; d < _variableCount; d++) _chainMean[d] = _chainLeader[d]; return; }
+ if(_sampleDatabase.size() == 0) return;
+ if(_sampleDatabase.size() == 1) { for (size_t d = 0; d < _variableCount; d++) _chainMean[d] = _chainLeader[d]; return; }
 
  for (size_t d = 0; d < _variableCount; d++) for (size_t e = 0; e < d; e++)
  {
@@ -209,17 +200,17 @@ void korali::solver::sampler::MCMC::updateState()
  for (size_t d = 0; d < _variableCount; d++) _chainCovariancePlaceholder[d*_variableCount+d] = (_chainMean[d] - _chainLeader[d]) * (_chainMean[d] - _chainLeader[d]);
 
  // Chain Mean
- for (size_t d = 0; d < _variableCount; d++) _chainMean[d] = (_chainMean[d] * (_databaseEntryCount-1) + _chainLeader[d]) / _databaseEntryCount;
- 
+ for (size_t d = 0; d < _variableCount; d++) _chainMean[d] = (_chainMean[d] * (_sampleDatabase.size()-1) + _chainLeader[d]) / _sampleDatabase.size();
+
  for (size_t d = 0; d < _variableCount; d++) for (size_t e = 0; e < d; e++)
  {
-   _chainCovariance[d*_variableCount+e] = (_databaseEntryCount-2.0)/(_databaseEntryCount-1.0) * _chainCovariance[d*_variableCount+e] + (_chainCovarianceScaling/_databaseEntryCount)*_chainCovariancePlaceholder[d*_variableCount+e];
-   _chainCovariance[e*_variableCount+d] = (_databaseEntryCount-2.0)/(_databaseEntryCount-1.0) * _chainCovariance[d*_variableCount+e] + (_chainCovarianceScaling/_databaseEntryCount)*_chainCovariancePlaceholder[d*_variableCount+e];
+   _chainCovariance[d*_variableCount+e] = (_sampleDatabase.size()-2.0)/(_sampleDatabase.size()-1.0) * _chainCovariance[d*_variableCount+e] + (_chainCovarianceScaling/_sampleDatabase.size())*_chainCovariancePlaceholder[d*_variableCount+e];
+   _chainCovariance[e*_variableCount+d] = (_sampleDatabase.size()-2.0)/(_sampleDatabase.size()-1.0) * _chainCovariance[d*_variableCount+e] + (_chainCovarianceScaling/_sampleDatabase.size())*_chainCovariancePlaceholder[d*_variableCount+e];
  }
  for (size_t d = 0; d < _variableCount; d++)
- _chainCovariance[d*_variableCount+d] = (_databaseEntryCount-2.0)/(_databaseEntryCount-1.0) * _chainCovariance[d*_variableCount+d] + (_chainCovarianceScaling/_databaseEntryCount)*_chainCovariancePlaceholder[d*_variableCount+d];
+ _chainCovariance[d*_variableCount+d] = (_sampleDatabase.size()-2.0)/(_sampleDatabase.size()-1.0) * _chainCovariance[d*_variableCount+d] + (_chainCovarianceScaling/_sampleDatabase.size())*_chainCovariancePlaceholder[d*_variableCount+d];
 
- if (( _useAdaptiveSampling == true) && (_databaseEntryCount > _nonAdaptionPeriod)) choleskyDecomp(_chainCovariance, _choleskyDecompositionChainCovariance);
+ if (( _useAdaptiveSampling == true) && (_sampleDatabase.size() > _nonAdaptionPeriod)) choleskyDecomp(_chainCovariance, _choleskyDecompositionChainCovariance);
 }
 
 
@@ -227,7 +218,7 @@ void korali::solver::sampler::MCMC::printGenerationBefore() { return; }
 
 void korali::solver::sampler::MCMC::printGenerationAfter()
 {
- korali::logInfo("Minimal", "Database Entries %ld\n", _databaseEntryCount);
+ korali::logInfo("Minimal", "Database Entries %ld\n", _sampleDatabase.size());
 
  korali::logInfo("Normal", "Accepted Samples: %zu\n", _acceptanceCount);
  korali::logInfo("Normal", "Acceptance Rate Proposals: %.2f%%\n", 100*_acceptanceRate);
@@ -249,5 +240,5 @@ void korali::solver::sampler::MCMC::finalize()
 {
  korali::logInfo("Minimal", "Number of Generated Samples: %zu\n", _proposedSampleCount);
  korali::logInfo("Minimal", "Acceptance Rate: %.2f%%\n", 100*_acceptanceRate);
- if (_databaseEntryCount == _maxSamples) korali::logInfo("Minimal", "Max Samples Reached.\n");
+ if (_sampleDatabase.size() == _maxSamples) korali::logInfo("Minimal", "Max Samples Reached.\n");
 }

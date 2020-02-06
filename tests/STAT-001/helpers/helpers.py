@@ -13,12 +13,10 @@ def checkMean(k, expectedMean, tol):
     samples = k["Solver"]["Sample Database"]
     
     mean = np.mean(samples)
-    assert np.isclose(expectedMean, mean, atol = tol), "Mean of Samples {0} "\
-            "deviate from true mean by {1}".format(mean, tol)
+    assert np.isclose(expectedMean, mean, atol = tol), "Sample mean ({0}) deviates from expected ({1}) by more than {2}".format(mean, expectedMean, tol)
 
 def checkStd(k, expectedStd, tol):
     samples = k["Solver"]["Sample Database"]
     
     std = np.std(samples)
-    assert np.isclose(expectedStd, std, atol = tol), "Standard Deviation of "\
-        "Samples {0} deviate from true Std by {1}".format(std, tol)
+    assert np.isclose(expectedStd, std, atol = tol), "Sample standard deviation ({0}) deviates from expected ({1}) by more than {2}".format(std, expectedStd, tol)

@@ -45,6 +45,7 @@ void korali::conduit::Distributed::initialize()
 
  int currentRank = 0;
  _teamWorkers.clear();
+ _teamQueue = std::queue<int>();
  while(!_teamQueue.empty()) _teamQueue.pop();
  for (int i = 0; i < _teamCount; i++)
  {
@@ -97,7 +98,6 @@ void korali::conduit::Distributed::workerThread()
 {
  #ifdef _KORALI_USE_MPI
  if (_teamId == -1) return;
-
  auto sample = korali::Sample();
 
  while (true)

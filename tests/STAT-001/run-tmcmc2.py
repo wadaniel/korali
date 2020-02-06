@@ -13,7 +13,7 @@ import korali
 k = korali.Engine()
 e = korali.Experiment()
 
-e["Random Seed"] = 0xC0FFEE
+e["Random Seed"] = 0xC0FFEE2
 e["Results"]["Path"] = "_result_run-tmcmc2"
 
 # Configuring problem
@@ -39,5 +39,5 @@ e["Solver"]["Target Coefficient Of Variation"] = 0.6
 # Running Korali
 k.run(e)
 
-checkMean(e, 0.0, 0.02)
-checkStd(e, 1.0, 0.025)
+checkMean(e, 0.0, 0.035)
+checkStd(e, 1.0, 0.035)

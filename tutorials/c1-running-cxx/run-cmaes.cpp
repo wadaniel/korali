@@ -13,8 +13,8 @@ int main(int argc, char* argv[])
  e["Problem"]["Computational Model"] = &heat2DSolver;
 
  e["Solver"]["Type"] = "Optimizer/CMAES";
- e["Solver"]["Population Size"] = 32;
- e["Solver"]["Termination Criteria"]["Max Generations"] = 100;
+ e["Solver"]["Population Size"] = 12;
+ e["Solver"]["Termination Criteria"]["Max Generations"] = 30;
 
  e["Distributions"][0]["Name"] = "Uniform 0";
  e["Distributions"][0]["Type"] = "Univariate/Uniform";

@@ -30,7 +30,7 @@ e["Variables"][1]["Initial Standard Deviation"] = +5.0
 # Configuring the TMCMC sampler parameters
 e["Solver"]["Type"] = "Sampler/MCMC"
 e["Solver"]["Burn In"] = 500
-e["Solver"]["Termination Criteria"]["Max Samples"] = 5000
+e["Solver"]["Termination Criteria"]["Max Samples"] = 2000
 
 # Configuring output frequency
 e["Console"]["Frequency"] = 500
@@ -38,6 +38,11 @@ e["Results"]["Frequency"] = 500
 
 # Storing sample information
 e["Results"]["Store Samples"] = True
+
+# Running Korali
+k.run(e)
+
+e["Solver"]["Termination Criteria"]["Max Samples"] = 5000
 
 # Running Korali
 k.run(e)

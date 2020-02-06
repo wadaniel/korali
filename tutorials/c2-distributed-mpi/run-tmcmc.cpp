@@ -101,6 +101,7 @@ int main(int argc, char* argv[])
  e.loadState();
 
  // And continue with the final generations.
+ e["Problem"]["Computational Model"] = &jacobi;
  e["Solver"]["Termination Criteria"]["Max Generations"] = 10;
 
  k.run(e);

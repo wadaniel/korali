@@ -1,6 +1,6 @@
 # Korali
 
-High-performance framework for uncertainty quantification of large-scale models.
+High-performance framework for uncertainty quantification and optimization.
 
 ## Description
 
@@ -25,7 +25,8 @@ The Korali Project is developed and maintained by
 * [**Sergio Miguel Martin**](https://www.cse-lab.ethz.ch/member/sergio-martin/), martiser at ethz.ch
 * [**Daniel Waelchli**](https://www.cse-lab.ethz.ch/member/daniel-walchli/), wadaniel at ethz.ch
 
-Director:
+PI:
 
 * [**Petros Koumoutsakos**](https://www.cse-lab.ethz.ch/member/petros-koumoutsakos/), petros at ethz.ch 
 
+Additional contributors: Lucas Amoudrouz, Ivica Kicic, Susanne Keller, Mark Martori.

@@ -1,5 +1,19 @@
+February 6, 2020 - Korali 1.0.1
+
+New Features / Enhancements
+
+ + Korali stores now the internal state of its random number generators, such that restarting experiments will yield the same result as the same experiment ran in a single segment.
+
+Breaking Changes
+None.
+
+Bug Fixes
+
++ General improvements to stability and precision.
+
+------------------------------------------------
+
 December 12, 2019 - Korali 1.0.0
-Initial public release of Korali.
 
 New Features / Enhancements
 None.

@@ -4,13 +4,9 @@
 
 int main(int argc, char* argv[])
 {
+ if (argc != 2) { printf("[Error] This app needs one parameter: workers per MPI team.\n"); exit(-1); }
+
  int workersPerTeam = atoi(argv[1]);
- if (64 % workersPerTeam != 0){
-  printf("Command Line Argument (Workers Per Team) must be divisor of 64! exit..)\n");
-  return -1;
- }
- 
- 
  MPI_Init(&argc, &argv);
 
  auto e = korali::Experiment();
@@ -87,8 +83,8 @@ int main(int argc, char* argv[])
 
  e["Solver"]["Type"] = "Sampler/TMCMC";
  e["Solver"]["Covariance Scaling"] = 0.02;
- e["Solver"]["Population Size"] = 100;
- e["Solver"]["Termination Criteria"]["Max Generations"] = 3;
+ e["Solver"]["Population Size"] = 200;
+ e["Solver"]["Termination Criteria"]["Max Generations"] = 4;
 
  auto k = korali::Engine();
  if (argc != 2) { printf("Error: this example requires 'Workers Per Team' passed as argument.\n"); exit(-1); }
@@ -98,12 +94,15 @@ int main(int argc, char* argv[])
  k["Profiling"]["Detail"] = "Full";
  k["Profiling"]["Frequency"] = 0.5;
 
- // Running First 3 generations
+ // We run a few generations first
  k.run(e);
- sleep(2);
 
- // Running Last 3 generations
- e["Solver"]["Termination Criteria"]["Max Generations"] = 6;
+ // Re-load results from checkpoint file
+ e.loadState();
+
+ // And continue with the final generations.
+ e["Solver"]["Termination Criteria"]["Max Generations"] = 10;
+
  k.run(e);
 
  return 0;

@@ -25,17 +25,14 @@ e["Distributions"][0]["Type"] = "Univariate/Uniform"
 e["Distributions"][0]["Minimum"] = -20.0
 e["Distributions"][0]["Maximum"] = +20.0
  
-e["Variables"][0]["Name"] = "X"
-e["Variables"][0]["Prior Distribution"] = "Uniform 0"
-
 # Defining problem's variables and prior distribution for TMCMC
 e["Variables"][0]["Name"] = "X"
 e["Variables"][0]["Prior Distribution"] = "Uniform 0"
 
 # Configuring the TMCMC sampler parameters
 e["Solver"]["Type"] = "Sampler/TMCMC"
-e["Solver"]["Population Size"] = 5000
-e["Solver"]["Covariance Scaling"] = 0.04
+e["Solver"]["Population Size"] = 3000
+e["Solver"]["Covariance Scaling"] = 0.05
 e["Solver"]["Default Burn In"] = 5
 e["Solver"]["Target Coefficient Of Variation"] = 0.6
 

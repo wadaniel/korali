@@ -139,13 +139,14 @@ bool korali::Experiment::loadState(std::string path)
       {
        js["Solver"] = curJs["Solver"];
        js["Current Generation"] = curGen;
+       _k->_currentGeneration = curGen;
       }
      }
     }
    }
   }
 
-  _js.getJson() = js;
+  _k->_js.getJson() = js;
   return true;
  }
 

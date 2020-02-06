@@ -39,6 +39,10 @@ void korali::solver::sampler::TMCMC::initialize()
 
  _covarianceMatrix.resize(_variableCount*_variableCount);
  _meanTheta.resize(_variableCount);
+
+ _chainSpecificSampleDatabase.resize(_populationSize);
+ _chainSpecificSampleLogLikelihoods.resize(_populationSize);
+ _chainSpecificSampleLogPriors.resize(_populationSize);
  _chainCandidatesLogLikelihoods.resize(_populationSize);
  _chainCandidatesLogPriors.resize(_populationSize);
  _chainLeadersLogLikelihoods.resize(_populationSize);
@@ -56,7 +60,6 @@ void korali::solver::sampler::TMCMC::initialize()
  // Initializing Chain Length first Generation
  for (size_t c = 0; c < _populationSize; c++) _chainLengths[c] = 1;
 }
-
 
 void korali::solver::sampler::TMCMC::runGeneration()
 {
@@ -96,21 +99,33 @@ void korali::solver::sampler::TMCMC::runGeneration()
 void korali::solver::sampler::TMCMC::prepareGeneration()
 {
   setBurnIn();
-  _sampleLogLikelihoodDatabase.clear();
-  _sampleLogPriorDatabase.clear();
-  _sampleDatabase.clear();
+
   _acceptedSamplesCount = 0;
   _finishedChainsCount  = 0;
   for (size_t c = 0; c < _chainCount; c++)  _currentChainStep[c] = 0;
   for (size_t c = 0; c < _chainCount; c++)  _chainPendingEvaluation[c] = false;
 
-  // Resizing Chain Candidates
+  // Resizing Chain Candidates and acceptance parameters
   _chainCandidates.resize(_populationSize);
+  _chainCandidatesAcceptanceParameter.resize(_populationSize);
+
+  double covMatChecksum = 0.0;
+  for (size_t i = 0; i < _variableCount; i++)
+    for (size_t j = 0; j < _variableCount; j++)
+     covMatChecksum += _covarianceMatrix[i*_variableCount + j];
+
   for(size_t i = 0; i < _populationSize; i++)
   {
+   _chainSpecificSampleDatabase[i].clear();
+   _chainSpecificSampleLogLikelihoods[i].clear();
+   _chainSpecificSampleLogPriors[i].clear();
+
    size_t fullChainLength = _chainLengths[i] + _currentBurnIn;
    _chainCandidates[i].resize(fullChainLength);
+   _chainCandidatesAcceptanceParameter[i].resize(fullChainLength);
+
    for(size_t j = 0; j < fullChainLength; j++) _chainCandidates[i][j].resize(_variableCount);
+   for(size_t j = 0; j < fullChainLength; j++) _chainCandidatesAcceptanceParameter[i][j] = _uniformGenerator->getRandomNumber();
 
    if( _k->_currentGeneration == 1)
    {
@@ -123,12 +138,17 @@ void korali::solver::sampler::TMCMC::prepareGeneration()
     std::vector<double> _currentMean(_variableCount);
     for (size_t d = 0; d < _variableCount; d++) _currentMean[d] = _chainLeaders[i][d];
 
+    double currentMeanChecksum = 0.0;
+      for (size_t d = 0; d < _variableCount; d++)
+       currentMeanChecksum += _currentMean[d];
+
     _multivariateGenerator->_covarianceMatrix = _covarianceMatrix;
     _multivariateGenerator->_meanVector = _currentMean;
     _multivariateGenerator->updateDistribution();
 
     for(size_t j = 0; j < fullChainLength; j++) _multivariateGenerator->getRandomVector(&_chainCandidates[i][j][0],  _variableCount);
    }
+
   }
 }
 
@@ -139,7 +159,9 @@ void korali::solver::sampler::TMCMC::processEvaluation(const size_t sampleId)
     L = exp(  (_chainCandidatesLogLikelihoods[sampleId]-_chainLeadersLogLikelihoods[sampleId])*_annealingExponent
             + (_chainCandidatesLogPriors[sampleId]-_chainLeadersLogPriors[sampleId]) );
 
-  if( L > _uniformGenerator->getRandomNumber() || _k->_currentGeneration == 1 ){
+  double B = _chainCandidatesAcceptanceParameter[sampleId][_currentChainStep[sampleId]-1];
+
+  if( L > B || _k->_currentGeneration == 1 ){
     if( _currentChainStep[sampleId] > _currentBurnIn ) _acceptedSamplesCount++;
     _chainLeaders[sampleId]               = _chainCandidates[sampleId][_currentChainStep[sampleId]-1];
     _chainLeadersLogPriors[sampleId]      = _chainCandidatesLogPriors[sampleId];
@@ -147,9 +169,9 @@ void korali::solver::sampler::TMCMC::processEvaluation(const size_t sampleId)
   }
 
   if( _currentChainStep[sampleId] > _currentBurnIn ){
-    _sampleDatabase.push_back( _chainLeaders[sampleId] );
-    _sampleLogLikelihoodDatabase.push_back( _chainLeadersLogLikelihoods[sampleId] );
-    _sampleLogPriorDatabase.push_back(_chainLeadersLogPriors[sampleId]);
+    _chainSpecificSampleDatabase[sampleId].push_back(_chainLeaders[sampleId]);
+    _chainSpecificSampleLogLikelihoods[sampleId].push_back(_chainLeadersLogLikelihoods[sampleId]);
+    _chainSpecificSampleLogPriors[sampleId].push_back(_chainLeadersLogPriors[sampleId]);
   }
 
   if( _currentChainStep[sampleId] == _chainLengths[sampleId] + _currentBurnIn ) _finishedChainsCount++;
@@ -158,6 +180,25 @@ void korali::solver::sampler::TMCMC::processEvaluation(const size_t sampleId)
 
 void korali::solver::sampler::TMCMC::processGeneration()
 {
+  // Coalescing Chain Databases
+ _sampleLogLikelihoodDatabase.clear();
+ _sampleLogPriorDatabase.clear();
+ _sampleDatabase.clear();
+
+  size_t sampleDatabaseSize = 0;
+  for (size_t i = 0; i < _populationSize; i++) sampleDatabaseSize += _chainSpecificSampleDatabase[i].size();
+
+  _sampleLogLikelihoodDatabase.reserve(sampleDatabaseSize);
+  _sampleLogPriorDatabase.reserve(sampleDatabaseSize);
+  _sampleDatabase.reserve(sampleDatabaseSize);
+
+  for (size_t i = 0; i < _populationSize; i++)
+  {
+   _sampleDatabase.insert(_sampleDatabase.end(), _chainSpecificSampleDatabase[i].begin(), _chainSpecificSampleDatabase[i].end());
+   _sampleLogLikelihoodDatabase.insert(_sampleLogLikelihoodDatabase.end(), _chainSpecificSampleLogLikelihoods[i].begin(), _chainSpecificSampleLogLikelihoods[i].end());
+   _sampleLogPriorDatabase.insert(_sampleLogPriorDatabase.end(), _chainSpecificSampleLogPriors[i].begin(), _chainSpecificSampleLogPriors[i].end());
+  }
+
   std::vector<unsigned int> numselections(_populationSize);
 
   // Compute annealing exponent for next generation

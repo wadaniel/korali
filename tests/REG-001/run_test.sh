@@ -38,11 +38,14 @@ do
     logEcho "  + Running File: $file"
     if [ ${file: -3} == ".py" ]; then
       python3 $file >> $logFile 2>&1
+      check_result
     fi
+    
     if [ ${file: -3} == ".sh" ]; then
       sh $file >> $logFile 2>&1
+      check_result
     fi
-    check_result
+    
   done
 
   popd >> $logFile 2>&1

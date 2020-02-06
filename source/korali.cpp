@@ -99,11 +99,8 @@ void korali::Engine::run()
   saveProfilingInfo(true);
   _cumulativeTime += std::chrono::duration<double>(_endTime-_startTime).count();
  }
-}
 
-korali::Engine::~Engine()
-{
- if (_isFirstRun == false) _conduit->finalize();
+ _conduit->finalize();
 }
 
 void korali::Engine::saveProfilingInfo(bool forceSave)

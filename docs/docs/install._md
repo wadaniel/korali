@@ -76,7 +76,7 @@
 | Status         |     Branch             |    URL         | 
 | :----------------:|:----------------:|: ----------------- :|
 | [![CircleCI](https://circleci.com/gh/cselab/korali/tree/master.svg?style=svg&circle-token=d73f56a4d14073880f8fe1140964afb58f2b1c35)](https://circleci.com/gh/cselab/korali/tree/master) | master | [https://github.com/cselab/korali/tree/master](https://github.com/cselab/korali/tree/master) | 
-| [![CircleCI](https://circleci.com/gh/cselab/korali/tree/development.svg?style=svg&circle-token=d73f56a4d14073880f8fe1140964afb58f2b1c35)](https://circleci.com/gh/cselab/korali/tree/development) | development | [https://github.com/cselab/korali/tree/development](https://github.com/cselab/korali/tree/development) | 
+| [![CircleCI](https://circleci.com/gh/cselab/korali/tree/latest.svg?style=svg&circle-token=d73f56a4d14073880f8fe1140964afb58f2b1c35)](https://circleci.com/gh/cselab/korali/tree/latest) | latest | [https://github.com/cselab/korali/tree/latest](https://github.com/cselab/korali/tree/latest) | 
 
 ### Test Architectures
 

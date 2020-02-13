@@ -3,6 +3,7 @@ import os
 from setuptools import *
 
 print('[Korali] Building installation setup...')
+with open('docs/VERSION') as f: koraliVer = f.read()
 
 sourceDir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)) + '/source/') 
 installFiles = ['libkorali.so', 'Makefile.conf']
@@ -15,7 +16,7 @@ for dirpath, subdirs, files in os.walk(sourceDir):
 
 setup(
     name='Korali',
-    version='1.0.1',
+    version=koraliVer,
     author='G. Arampatzis, S. Martin, D. Waelchli',
     author_email='martiser@ethz.ch',
     description='High Performance Framework for Uncertainty Quantification and Optimization',

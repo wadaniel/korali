@@ -15,6 +15,9 @@ function check()
 python3 -m pip install sphinx --user
 check
 
+python3 -m pip install sphinx_rtd_theme --user
+check
+
 python3 -m pip install mkdocs --user
 check
 

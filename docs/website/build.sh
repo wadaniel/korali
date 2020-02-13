@@ -9,6 +9,8 @@ function check()
  fi 
 }
 
+pushd website
+
 # Build pages from source code
 pushd builder
 python3 ./buildWeb.py
@@ -29,4 +31,6 @@ check
 sed -i -e 's/76\./36\./g;s/12\.1/10\.5/g' ./site/assets/stylesheets/application.*.css
 check
 
-echo "[Korali] Building complete."
+popd 
+
+echo "[Korali] Webpage Build complete."

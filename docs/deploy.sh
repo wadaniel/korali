@@ -9,6 +9,8 @@ function check()
  fi 
 }
 
+pushd website
+
 currentBranch=`git rev-parse --abbrev-ref HEAD`
 if [[ $currentBranch !=  "master" ]]; then
  echo "This is not Korali's master branch so webpage deployment is not performed."
@@ -26,5 +28,7 @@ check
 echo "[Korali] Deploying to webpage."
 ssh circleci@falcon.ethz.ch './update.sh'
 check
+
+popd
 
 echo "[Korali] Deploying complete."

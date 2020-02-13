@@ -9,13 +9,16 @@ function check()
  fi 
 }
 
-pushd website
+pushd manual
 
 # Build pages from source code
-pushd builder
-python3 ./buildWeb.py
-check
+#pushd builder
+#python3 ./buildWeb.py
+#check
+
 popd
+
+pushd website
 
 # Installing mkdocs and materials theme
 python3 -m pip install mkdocs --user

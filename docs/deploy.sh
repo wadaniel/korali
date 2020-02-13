@@ -9,13 +9,13 @@ function check()
  fi 
 }
 
-pushd website
-
 currentBranch=`git rev-parse --abbrev-ref HEAD`
 if [[ $currentBranch !=  "master" ]]; then
  echo "This is not Korali's master branch so webpage deployment is not performed."
  exit 0
 fi
+
+pushd website
 
 # Copying website to falcon (gateway)
 echo $FALCON_FINGERPRINT >> ~/.ssh/known_hosts

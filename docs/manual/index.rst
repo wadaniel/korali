@@ -1,19 +1,37 @@
-.. Korali documentation master file, created by
-   sphinx-quickstart on Thu Feb 13 11:19:39 2020.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
-Welcome to Korali's documentation!
-==================================
-
-.. toctree::
-   :maxdepth: 2
    :caption: Contents:
 
+.. toctree::
+   :caption: Getting Started
+   :maxdepth: 2
 
+   installing
+   configuring
+   changelog
+   contributing
 
-Indices and tables
-==================
+.. toctree::
+    :maxdepth: 2
+    :numbered:
+    :caption: User Manual
+
+    demo/structure
+    demo/demo
+    demo/lists_tables
+    demo/api
+
+.. toctree::
+    :maxdepth: 3
+    :numbered:
+    :caption: Module Development
+
+    demo/long
+
+.. toctree::
+    :maxdepth: 3
+    :numbered:
+    :caption: Engine Development
+
+    demo/long
 
 * :ref:`genindex`
 * :ref:`modindex`

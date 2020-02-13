@@ -6,22 +6,9 @@ Phasellus tincidunt enim id gravida pulvinar. Morbi sollicitudin turpis quis mag
 
 Donec pulvinar enim id ligula molestie, at ultrices est tempor. Ut ornare, quam ut ultricies sollicitudin, enim risus elementum est, eget cursus nisl ipsum vitae mauris. Morbi vestibulum augue risus. Morbi orci orci, dictum interdum ligula ut, vehicula feugiat velit. Morbi tincidunt, tellus vitae vehicula luctus, metus turpis finibus metus, pulvinar pharetra leo tortor interdum mi. Vestibulum pretium ante dolor, at bibendum mi volutpat at. Pellentesque massa magna, rhoncus non urna vel, porttitor posuere erat. Cras sit amet lobortis erat, eu tristique lorem. Phasellus posuere magna non varius porta. Nunc consequat ultrices massa, sit amet pellentesque augue pharetra ac. Ut posuere tincidunt magna. Donec ornare elit ante, quis malesuada risus pulvinar et. Quisque viverra gravida ex, sed efficitur enim fermentum id. Phasellus ut augue et dolor iaculis molestie.
 
-.. include:: about/features.rst
-.. include:: about/aboutus.rst
-.. include:: about/publications.rst
-
-.. toctree::
-   :caption: About Korali
-   :maxdepth: 1
- 
-   about/features
-   about/release
-   about/aboutus
-   about/publications
-
 .. toctree::
    :caption: Using Korali
-   :maxdepth: 2
+   :maxdepth: 1
    
    using/install
    using/basics 
@@ -33,7 +20,9 @@ Donec pulvinar enim id ligula molestie, at ultrices est tempor. Ut ornare, quam 
    :numbered:
    :caption: Tutorials
     
-   tutorials/tutorial1
+   tutorials/examples
+   tutorials/basic
+   tutorials/advanced
 
 .. toctree::
    :maxdepth: 2
@@ -47,7 +36,7 @@ Donec pulvinar enim id ligula molestie, at ultrices est tempor. Ut ornare, quam 
 
 .. toctree::
    :maxdepth: 3
-   :caption: Korali Development
+   :caption: Development
 
    devs/source
    devs/testing

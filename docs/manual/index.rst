@@ -3,35 +3,40 @@
 .. toctree::
    :caption: Getting Started
    :maxdepth: 2
-
-   installing
-   configuring
-   changelog
-   contributing
+  
+   start/install
+   start/config
+   start/changelog
+   start/contributing
+   
+.. toctree::
+   :maxdepth: 2
+   :numbered:
+   :caption: Tutorials
+    
+   tutorials/tutorial1
 
 .. toctree::
-    :maxdepth: 2
-    :numbered:
-    :caption: User Manual
-
-    demo/structure
-    demo/demo
-    demo/lists_tables
-    demo/api
-
-.. toctree::
-    :maxdepth: 3
-    :numbered:
-    :caption: Module Development
-
-    demo/long
+   :maxdepth: 2
+   :numbered:
+   :caption: Module Configuration
+  
+   modules/engine
+   modules/experiment
+   modules/problem
+   modules/solver
+   modules/conduit   
 
 .. toctree::
-    :maxdepth: 3
-    :numbered:
-    :caption: Engine Development
+   :maxdepth: 3
+   :numbered:
+   :caption: Module Development
 
-    demo/long
+.. toctree::
+   :maxdepth: 3
+   :numbered:
+   :caption: Engine Development
+
 
 * :ref:`genindex`
 * :ref:`modindex`

@@ -1,5 +1,3 @@
 ***************************
-Configuration
+Introduction to Korali
 ***************************
-
-

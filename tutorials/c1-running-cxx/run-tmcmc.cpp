@@ -51,9 +51,6 @@ int main(int argc, char* argv[])
  e["Variables"][3]["Prior Distribution"] = "Uniform 3";
 
  // Running Korali
- 
- auto db = e["Solver"]["Sample Database"];
-
  auto k = korali::Engine();
  k.run(e);
 }

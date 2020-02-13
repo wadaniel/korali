@@ -7,7 +7,7 @@ nav:
   - Features: features.md
   - Installation: install.md
   - Tutorials: tutorials.md
-  - User Manual: manual.md
+  - Documentation: docs
   - Publications: publications.md
   - About Us: aboutus.md
 theme:

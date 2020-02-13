@@ -1,3 +1,3 @@
 ****************************
-Running a Korali Experiment
+Running Korali
 ****************************

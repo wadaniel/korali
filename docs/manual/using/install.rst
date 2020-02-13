@@ -12,6 +12,4 @@ System Requirements
 ====================
 
 
-Version History
-====================
 

@@ -1,3 +1,3 @@
 ***************************
-Korali Examples
+Example Applications
 ***************************

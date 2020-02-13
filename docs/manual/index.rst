@@ -13,16 +13,23 @@ Donec pulvinar enim id ligula molestie, at ultrices est tempor. Ut ornare, quam 
    using/install
    using/basics 
    using/running
-   using/tools
    
 .. toctree::
    :maxdepth: 2
    :numbered:
    :caption: Tutorials
     
-   tutorials/examples
    tutorials/basic
    tutorials/advanced
+   tutorials/examples
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Tools
+
+   tools/plotter
+   tools/profiler
+   tools/gui
 
 .. toctree::
    :maxdepth: 2

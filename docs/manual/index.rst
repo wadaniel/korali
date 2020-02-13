@@ -12,7 +12,7 @@ Donec pulvinar enim id ligula molestie, at ultrices est tempor. Ut ornare, quam 
 
 .. toctree::
    :caption: About Korali
-   :maxdepth: 2
+   :maxdepth: 1
  
    about/features
    about/release

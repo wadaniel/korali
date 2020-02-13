@@ -3,30 +3,21 @@ Korali
 ************************
 
 .. toctree::
-   :caption: Korali
+   :caption: About Korali
    :maxdepth: 2
  
-   about/introduction
-   about/features
-   about/publications
-   about/release-notes
-   about/contributors  
-
-.. toctree::
-   :caption: Get Korali
-   :maxdepth: 2
-  
-   get/install
-   get/requirements
-   get/history
+   intro/introduction
+   intro/aboutus
+   intro/publications
 
 .. toctree::
    :caption: Using Korali
    :maxdepth: 2
    
+   using/install
    using/basics 
    using/running
-   using/example
+   using/tools
    
 .. toctree::
    :maxdepth: 2
@@ -34,14 +25,6 @@ Korali
    :caption: Tutorials
     
    tutorials/tutorial1
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Tools
-    
-   tools/plotter
-   tools/profiler
-   tools/gui
 
 .. toctree::
    :maxdepth: 2

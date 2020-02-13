@@ -1,13 +1,20 @@
    :caption: Contents:
 
 .. toctree::
+   :caption: About Korali
+   :maxdepth: 2
+ 
+   about/introduction.md
+   about/publications.md
+   about/changelog.md
+   about/contributors.md  
+
+.. toctree::
    :caption: Getting Started
    :maxdepth: 2
   
    start/install
-   start/config
-   start/changelog
-   start/contributing
+   start/first-steps
    
 .. toctree::
    :maxdepth: 2
@@ -15,6 +22,15 @@
    :caption: Tutorials
     
    tutorials/tutorial1
+
+.. toctree::
+   :maxdepth: 2
+   :numbered:
+   :caption: Tools
+    
+   tools/plotter
+   tools/profiler
+   tools/gui
 
 .. toctree::
    :maxdepth: 2
@@ -30,13 +46,14 @@
 .. toctree::
    :maxdepth: 3
    :numbered:
-   :caption: Module Development
+   :caption: Korali Development
 
-.. toctree::
-   :maxdepth: 3
-   :numbered:
-   :caption: Engine Development
-
+   devs/source
+   devs/testing
+   devs/building
+   devs/internals
+   devs/moduledev
+   devs/classes
 
 * :ref:`genindex`
 * :ref:`modindex`

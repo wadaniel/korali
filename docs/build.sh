@@ -37,7 +37,15 @@ check
 popd 
 
 # Building User Manual
-pushd manual
+pushd usr-manual
+
+make html
+check
+
+popd
+
+# Building User Manual
+pushd dev-manual
 
 make html
 check
@@ -46,7 +54,13 @@ popd
 
 # Inserting user manual into website
 
-cp -r manual/.build/html website/site/docs
+mkdir -p website/site/docs
+check 
+
+cp -r usr-manual/.build/html website/site/docs/usr
+check
+
+cp -r dev-manual/.build/html website/site/docs/dev
 check
 
 echo "[Korali] Webpage Build complete."

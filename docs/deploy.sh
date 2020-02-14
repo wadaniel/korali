@@ -15,12 +15,14 @@ if [[ $currentBranch !=  "master" ]]; then
  exit 0
 fi
 
-pushd website
-
 # Copying website to falcon (gateway)
 echo $FALCON_FINGERPRINT >> ~/.ssh/known_hosts
-tar -zcvf site.tar.gz site
-scp -r site.tar.gz circleci@falcon.ethz.ch:websites/korali
+check
+
+tar -zcvf web.tar.gz web
+check
+
+scp -r web.tar.gz circleci@falcon.ethz.ch:websites/korali
 check
 
 # Copying from falcon to vladimirovich (host)
@@ -28,7 +30,5 @@ check
 echo "[Korali] Deploying to webpage."
 ssh circleci@falcon.ethz.ch './update.sh'
 check
-
-popd
 
 echo "[Korali] Deploying complete."

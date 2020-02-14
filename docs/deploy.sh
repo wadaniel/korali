@@ -22,7 +22,7 @@ check
 tar -zcvf web.tar.gz web
 check
 
-scp -r web.tar.gz circleci@falcon.ethz.ch:websites/korali
+scp -r web.tar.gz circleci@falcon.ethz.ch
 check
 
 # Copying from falcon to vladimirovich (host)

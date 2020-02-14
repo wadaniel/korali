@@ -30,7 +30,7 @@ popd
 mkdir -p web/docs
 check 
 
-cp -r manual/.build/html web/docs
+cp -r manual/.build/html/* web/docs
 check
 
 echo "[Korali] Webpage Build complete."

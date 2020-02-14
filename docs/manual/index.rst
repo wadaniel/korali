@@ -45,11 +45,12 @@ Donec pulvinar enim id ligula molestie, at ultrices est tempor. Ut ornare, quam 
    :maxdepth: 2
    :caption: Development
 
-    dev/build
-    dev/moduledev
-    dev/operation
-    dev/source
-    dev/testing
+   dev/build
+   dev/moduledev
+   dev/operation
+   dev/source
+   dev/testing
+   dev/classes
 
 * :ref:`genindex`
 * :ref:`modindex`

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+    
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Korali - High-performance framework for uncertainty quantification and optimization</title>
+        <meta name="description" content="An interactive getting started guide for Brackets.">
+        <link rel="stylesheet" href="main.css">
+        <script src="js/jquery.js"></script> 
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+        <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">  </script>
+      <script> 
+        $(function(){
+        $("#leftbar").load("leftbar.html"); 
+        $("#rightbar").load("rightbar.html"); 
+        });
+     </script> 
+        <script>
+            
+function toggleBIBTex(input) {
+  var x = document.getElementById(input);
+  if (x.style.display === "none") {
+    x.style.display = "block";
+  } else {
+    x.style.display = "none";
+  }
+}
+</script>
+        <script>
+  window.ga = window.ga || function() {
+    (ga.q = ga.q || []).push(arguments)
+  }
+  ga.l = +new Date
+  /* Setup integration and send page view */
+  ga("create", "UA-43580832-2", "https://www.cse-lab.ethz.ch/korali/")
+  ga("set", "anonymizeIp", true)
+  ga("send", "pageview")
+  /* Register handler to log search on blur */
+  document.addEventListener("DOMContentLoaded", () => {
+    if (document.forms.search) {
+      var query = document.forms.search.query
+      query.addEventListener("blur", function() {
+        if (this.value) {
+          var path = document.location.pathname;
+          ga("send", "pageview", path + "?q=" + this.value)
+        }
+      })
+    }
+  })
+</script>
+<script async src="https://www.google-analytics.com/analytics.js"></script>
+    </head>
+    
+    <body>
+        <div id="leftbar"></div>
+        <div id="rightbar"></div>
+        <div style="text-align:center">
+            <img src="images/koraliLogo.png" style="width: 120px" ></img>
+            <h1>Korali</h1>
+            <h3>High-performance framework for uncertainty quantification and optimization</h3>
+        </div>
+
+        <p>
+            <em>Korali is a high-performance framework for uncertainty quantification of large-scale models.</em> Korali's multi-language interface allows the execution of any type of computational model, either sequential or distributed (MPI), C++ or Python, and even pre-compiled/legacy applications. Korali's execution engine enables scalable sampling on large-scale HPC systems.
+        </p>
+        <p>
+           Korali provides a simple interface that allows users to easily describe statistical problems and choose the algorithms to solve them, allowing users to apply a wide range of operations on the same problem with minimal re-configuration efforts. Users can easily extend Korali to describe new problems and test new experimental algorithms
+        </p>
+    
+        <br /><hr />
+    
+        <h2 id="download">Download</h2> 
+    
+        <h3>Latest Release <span style="font-weight: 300">(Build Status: &nbsp;<a href="https://github.com/cselab/korali/tree/latest"><img style="vertical-align: middle" alt="CircleCI" src="https://circleci.com/gh/cselab/korali/tree/latest.svg?style=svg&amp;circle-token=d73f56a4d14073880f8fe1140964afb58f2b1c35" /></a>) </span></h3>
+        <ul>
+           <li> (14/02/2020) <b>Korali v1.0.2</b> - <a href="docs/usr/using/install.html">Download</a> / <a href="https://github.com/cselab/korali/blob/latest/docs/RELEASE-NOTES">Release Notes</a> / <a href="docs/usr/">Documentation</a> / <a href="docs/usr/">Tutorials</a></li>
+        </ul>    
+        
+        <br /> <hr />
+    
+        <h2 id="features">What Korali Does</h2>
+        
+        <h3>Derivative-Free Optimization</h3>
+    
+          Given any objective continous or non-continuous function \( f:\mathbb{R}^N\rightarrow\mathbb{R} \), Korali can find its minima or maxima.
+     
+        <br /><br />
+        <h3>Bayesian Uncertainty Quantification</h3>
+       
+        Given a set of data $d$, the output of a computational model \( f(x;\vartheta) \), a likelihood function \(p (d|\vartheta) \), and a prior probability density \( p(\vartheta) \) Korali will build the posterior distribution:
+
+        \[ p(\vartheta | d)  =  \frac{p(d | \vartheta) p(\vartheta)}{p(d)} \] 
+
+        Allowing users to compute the maximum a posteriori estimate:
+
+        \[ \vartheta^\star = \mathop{\arg\min}\limits_{\vartheta}  p(\vartheta | d) \]
+
+        Or sample its posterior distribution:
+
+        \[ \vartheta^{(k)} \sim p(\vartheta | d). \]
+    
+         <br />
+        <h3>Gaussian Processes</h3>
+         Donec pulvinar enim id ligula molestie, at ultrices est tempor. Ut ornare, quam ut ultricies sollicitudin, enim risus elementum est, eget cursus nisl ipsum vitae mauris. Morbi vestibulum augue risus.  Morbi orci orci, dictum interdum ligula ut, vehicula feugiat velit.
+        
+        <br /><br /><hr />
+    
+        <h2 id="principles">Design Principles</h2>
+    
+        <h3>High-Performance</h3>
+         The Korali work distribution engine has been optimized to fully harness computational resources of large-scale supercomputers, maximizing throughput and minimizing workload imbalance. Furthermore, Korali supports the execution of parallel (OpenMP, Pthreads), distributed (MPI, UPC++), and GPU-based (CUDA) models.
+    
+        <h3>Fault Tolerance</h3>
+         Korali offers a checkpoint/resume fault-tolerance mechanism in which the entire state of an experiment is stored regularly and can be resumed later in case of error, guaranteeing that the result of a resumed experiment will be exactly the same as if the original launch would had ran to completion.
+         
+        <h3>Extensible Engine</h3>
+         Korali is designed as a completely modular and extensible software. Researchers can easily integrate and test new statistical methods for optimization and sampling into Korali. Likewise, new problems types can be easily added into Korali. All new user-developed modules automatically can benefit from Korali's scalability and fault-tolerance benefits without additional efforts.
+    
+        <h3>Multi-Language Support</h3>
+         Korali applications can be programmed in either C++ or Python. Additionally, Korali can sample from C++/Fortran/Python and pre-compiled computational models.
+    
+        <br /><br /><hr />
+    
+
+        <h2 id="publications">Publications</h2>
+    
+        <h3>Scientific Articles</h3>
+    
+        Please use the following article to cite Korali:
+        <ul>
+            <li> D. Wälchli, S. Martin, A. Economides, L. Amoudruz, G. Arampatzis, X. Bian, P. Koumoutsakos, <b>"Load Balancing in Large Scale Bayesian Inference".</b> [To be published at] Proceedings of the Platform for Advanced Scientific Computing Conference (PASC2020). Geneva, Switzerland, June 2020.<b><br /><button onclick="toggleBIBTex('paper1')">[BibTeX]</button> </b>  <div id="paper1" style="display: none"><textarea style=" font-size: 12px; overflow-x: hidden; overflow-y: hidden; resize: none; background-color: rgb(240, 245, 255" wrap="hard" readonly cols="110" rows="14" >
+@inproceedings{walchli2020,
+author = {W\"{a}lchli, D. and Martin, S. and Economides, A. and Amoudruz, L. and Arampatzis, G. and Bian, X. and Koumoutsakos, P.},
+booktitle = {[To be published at] Proceedings of the Platform for Advanced Scientific Computing Conference on - {PASC} {\textquotesingle}20},
+title = {Load Balancing in large Scale Bayesian Inference},
+year = {2020}
+}
+              </textarea>
+           </div>
+        </li>
+        </ul>    
+        <ul>
+           <li> G. Arampatzis, D. Wälchli, P. Weber, H. Rästas, and P. Koumoutsakos, <b>"(μ,λ)-CCMA-ES for Constrained Optimization with an Application in Pharmacodynamics"</b>, Proceedings of the Platform for Advanced Scientific Computing Conference (PASC2019). Zürich, Switzerland, June 2019.<b><br /><button onclick="toggleBIBTex('paper2')">[BibTeX]</button> <a href="http://www.cse-lab.ethz.ch/wp-content/papercite-data/pdf/arampatzis2019a.pdf">[PDF]</a> <a href="http://dx.doi.org/10.1145/3324989.3325727">[DOI]</a></b>  <div id="paper2" style="display: none"><textarea style=" font-size: 12px; overflow-x: hidden; overflow-y: hidden; resize: none; background-color: rgb(240, 245, 255" wrap="hard" readonly cols="110" rows="14" >
+@inproceedings{arampatzis2019,
+author = {Arampatzis, Georgios and W\"{a}lchli, Daniel and Weber, Pascal and R\"{a}stas, Henri and Koumoutsakos, Petros},
+booktitle = {Proceedings of the Platform for Advanced Scientific Computing Conference on - {PASC} {\textquotesingle}19},
+doi = {10.1145/3324989.3325725},
+keywords = {Stochastic optimization, constraint handling, covariance matrix adaptation, evolution strategy, pharmacodynamics, viability evolution},
+publisher = {{ACM} Press},
+title = {(\Μ,{\Lambda})-CCMA-ES for Constrained Optimization with an Application in Pharmacodynamics},
+url = {http://www.cse-lab.ethz.ch/wp-content/papercite-data/pdf/arampatzis2019a.pdf},
+year = {2019}
+}
+              </textarea>
+           </div>
+        </li>
+    </ul>    
+       <h3>Talks, Posters and Lectures</h3>
+         <ul>
+            <li>
+                S. Martin, <b>Korali, High-performance Framework for Bayesian Uncertainty Quantification and Optimization.</b>, (Technical Talk) CSCS Lugano, December 2019. <a href="https://www.cse-lab.ethz.ch/wp-content/uploads/2019/12/Korali-Talk-CSCS-Lugano-13-12-2019.pdf">[PDF]</a>
+             </li><br />
+            <li>
+                G. Arampatzis, <b>Korali, High-performance Multi-Intrusive Bayesian Inference Software For Large-Scale Scientific Models.</b> (Poster), DAEDALUS Winter School, Berlin, December 2019. <a href="https://www.cse-lab.ethz.ch/wp-content/uploads/2019/12/Korali-Daedalus-Berlin-Poster.pdf">[PDF]</a>
+            </li><br />
+            <li>
+                S. Martin, <b>The Korali Framework</b>, (Lecture) ETH Zürich, Spring 2019. <a href="https://www.cse-lab.ethz.ch/wp-content/uploads/2019/03/hpcse2-19_Lecture_Korali.pdf.pdf">[PDF]</a>
+            </li><br />
+            <li>
+             S. Martin, <b>High-Throughput Sampling</b>, (Lecture) ETH Zürich, Spring 2019. <a href="https://www.cse-lab.ethz.ch/wp-content/uploads/2019/04/hpcse2-19_Lecture_UPC.pdf">[PDF]</a>
+            </li><br />
+             <li>
+             G. Arampatzis, <b>Optimization using Covariance Matrix Adaptation (CMA)</b>, (Lecture) ETH Zürich, Spring 2019. <a href="https://www.cse-lab.ethz.ch/wp-content/uploads/2019/03/hpcse2-19_cmaes.pdf">[PDF]</a>
+            </li><br />
+             <li>
+             G. Arampatzis, <b>Transitional Markov Chain Monte Carlo (TMCMC)</b>, (Lecture) ETH Zürich, Spring 2019. <a href="https://www.cse-lab.ethz.ch/wp-content/uploads/2019/03/hpcse2-19_tmcmc.pdf">[PDF]</a>
+            </li><br />
+        </ul>    
+    
+       <br /><br /><hr />
+       <h2 id="contact">Contact us</h2>
+    
+        <h3>Principal Investigator</h3>
+        <ul>
+           <li> Prof. Petros Koumoutsakos - Contact: <a href="cse-lab.ethz.ch/member/petros-koumoutsakos/">cse-lab.ethz.ch/member/petros-koumoutsakos/</a> </li>
+        </ul>   
+    
+       <h3>Development Team</h3>
+        <ul>
+            <li> George Arampatzis - Contact: <a href="cse-lab.ethz.ch/member/georgios-arampatzis/">cse-lab.ethz.ch/member/georgios-arampatzis/</a> </li>
+            <li> Sergio Martin - Contact: <a href="cse-lab.ethz.ch/member/sergio-martin/">cse-lab.ethz.ch/member/sergio-martin/</a></li>
+            <li> Daniel Wälchli - Contact: <a href="cse-lab.ethz.ch/member/daniel-walchli/">cse-lab.ethz.ch/member/daniel-walchli/</a></li>
+        </ul>   
+    
+        <h3>Collaborators</h3>
+        <ul>
+            <li> Lucas Amoudruz (ETH Zürich) </li>
+            <li> Susanne Keller (ETH Zürich)</li>
+            <li> Mark Martori (ETH Zürich)</li>
+        </ul> 
+    
+       <h3>Affiliations</h3>
+       <table style="width: 100%; text-align: center"><tr><td><a href="https://www.cse-lab.ethz.ch/"><img src="images/cselablogo.png" height="70"></a></td><td><a href="https://ethz.ch/"><img src="images/ethzlogo.jpg" height="70"></a></td></tr></table>
+       
+    </body>
+</html>

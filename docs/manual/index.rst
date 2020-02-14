@@ -41,6 +41,16 @@ Donec pulvinar enim id ligula molestie, at ultrices est tempor. Ut ornare, quam 
    modules/solver
    modules/conduit   
 
+.. toctree::
+   :maxdepth: 2
+   :caption: Development
+
+    dev/build
+    dev/moduledev
+    dev/operation
+    dev/source
+    dev/testing
+
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`

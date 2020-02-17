@@ -62,7 +62,7 @@ def plot(js):
     ax[0,1].set_title('Objective Variables')
     ax[0,1].grid(True)
     for i in range(numdim):
-        ax[0,1].plot(gen, objVec, color = colors[i], label=names[i])
+        ax[0,1].plot(gen, [ objVec[j][i] for j in range(len(objVec)) ], color = colors[i], label=names[i])
    
     #if ( (idx == 2) or (updateLegend == False) ):
     ax[0,1].legend(bbox_to_anchor=(1.04,0.5), loc="center left", borderaxespad=0, handlelength=1)

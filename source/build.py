@@ -87,6 +87,12 @@ def consumeValue(base, moduleName, path, varName, varType, isMandatory, options)
   cString += ' for(size_t i = 0; i < ' + base + path + '.size(); i++) ' + varName + '.push_back(new korali::Variable);\n'
   return cString
 
+ if ('korali::Sample*' in varType):
+  cString += ' ' + varName + ' = new korali::Sample();\n'
+  cString += ' ' + varName + '->_js.getJson() = ' + base + path + ';\n'
+  cString += '   korali::JsonInterface::eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n'
+  return cString
+  
  if ('std::vector<korali::Variable*>' in varType):
   baseType = varType.replace('std::vector<', '').replace('>','')
   cString += ' for(size_t i = 0; i < ' + base + path + '.size(); i++) ' + varName + '.push_back(new korali::Variable());\n'

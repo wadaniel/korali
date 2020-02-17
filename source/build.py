@@ -81,10 +81,6 @@ def consumeValue(base, moduleName, path, varName, varType, isMandatory, options)
   cString += '   korali::JsonInterface::eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n'
   return cString
   
- if ('korali::Sample' in varType):
-  cString = ''
-  return cString
-
  if ('std::vector<korali::Variable' in varType):
   baseType = varType.replace('std::vector<', '').replace('>','')
   cString += ' ' + varName + '.clear();\n'
@@ -138,8 +134,8 @@ def consumeValue(base, moduleName, path, varName, varType, isMandatory, options)
 
 def saveValue(base, path, varName, varType):
 
- if ('korali::Sample' in varType):
-  sString = ''
+ if ('korali::Sample*' in varType):
+  sString = '   ' + base + path + ' = ' + varName + '->_js.getJson();\n'
   return sString
   
  if ('gsl_rng*' in varType):

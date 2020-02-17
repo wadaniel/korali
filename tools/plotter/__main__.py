@@ -40,7 +40,6 @@ def main(path, mean, check, test):
    
    if (configRunId == solverRunId):
      curGen = genJs['Current Generation']
-     print('Cur Gen: ' + str(curGen))
      genList[curGen] = genJs
      
  requestedSolver = js['Solver']['Type']

@@ -17,6 +17,9 @@ check
 python3 -m pip install sphinx_rtd_theme --user
 check
 
+python3 -m pip install Pygments --user
+check
+
 # Building User Manual
 pushd manual
 

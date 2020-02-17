@@ -8,32 +8,32 @@ Installation Steps
 **1. Download Korali**
 
   Download the latest stable release of Korali with the following command:
+   
+.. code-block:: bash
+   
+     git clone https://github.com/cselab/korali.git 
 
-  ```shell
-  git clone https://github.com/cselab/korali.git
-  ```
-
-- **2. Install Korali**
+**2. Install Korali**
 
   To build and install Korali, simply run:
 
-  ```shell
-  cd korali
-  ./install
-  ```
+  .. code-block:: bash
+
+     cd korali
+     ./install
 
 Troubleshooting
 ====================
 
   If you are experiencing problems installing or running Korali, please check the following hints:
 
-  - Check Korali's `system requirements <https://www.cse-lab.ethz.ch/korali/docs/using/install.html#system-requirements>`_ to verify that your system has all the required software components.
+  - Check Korali's `system requirements <#system-requirements>`_ to verify that your system has all the required software components.
 
-  - Check the `build status <https://www.cse-lab.ethz.ch/korali/docs/dev/testing.html>`_  to see if Korali is currently building correctly.
+  - Check the `build status </korali/docs/dev/testing.html>`_  to see if Korali is currently building correctly.
 
   - If the problem persists, please submit a new `issue report <https://github.com/cselab/korali/issues>`_ on our Github repository detailing the problem, your system information, and the steps to replicate it and we will promptly address it.
 
-  - For further questions, feel free to `contact us <https://www.cse-lab.ethz.ch/korali/#contact>`_.
+  - For further questions, feel free to `contact us </korali/#contact>`_.
 
 System Requirements
 ====================

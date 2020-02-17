@@ -213,11 +213,7 @@ void korali::solver::optimizer::CMAES::runGeneration()
  // Waiting for samples to finish
  korali::_conduit->waitAll(samples);
 
- // Processing results
- for (size_t i = 0; i < _currentPopulationSize; i++)
-  _valueVector[i] = samples[i]["Evaluation"];
-
- updateDistribution();
+ updateDistribution(samples);
 }
 
 void korali::solver::optimizer::CMAES::initMuWeights(size_t numsamplesmu)
@@ -457,8 +453,11 @@ void korali::solver::optimizer::CMAES::sampleSingle(size_t sampleIdx)
 }
 
 
-void korali::solver::optimizer::CMAES::updateDistribution()
+void korali::solver::optimizer::CMAES::updateDistribution(std::vector<korali::Sample>& samples)
 {
+
+ for (size_t i = 0; i < _currentPopulationSize; i++)
+  _valueVector[i] = samples[i]["Evaluation"];
 
  /* Generate _sortingIndex */
  sort_index(_valueVector, _sortingIndex, _currentPopulationSize);
@@ -486,33 +485,35 @@ void korali::solver::optimizer::CMAES::updateDistribution()
  /* update xbestever */
  if ( _directProblem == NULL || _directProblem->_objective == "Maximize" )
  {
- if ( _currentBestValue > _bestEverValue || _k->_currentGeneration == 1 )
- {
-  _previousBestEverValue = _bestEverValue;
-  _bestEverValue = _currentBestValue;
+  if ( _currentBestValue > _bestEverValue || _k->_currentGeneration == 1 )
+  {
+   _previousBestEverValue = _bestEverValue;
+   _bestEverValue = _currentBestValue;
+   _bestSampleEver = samples[_bestValidSample];
 
-  for (size_t d = 0; d < _variableCount; ++d)
-   _bestEverVariables[d] = _currentBestVariables[d];
+   for (size_t d = 0; d < _variableCount; ++d)
+    _bestEverVariables[d] = _currentBestVariables[d];
 
-  if ( _areConstraintsDefined )
-   for (size_t c = 0; c < _directProblem->_constraints.size(); c++)
-    _bestConstraintEvaluations[c] = _constraintEvaluations[c][_bestValidSample];
- }
+   if ( _areConstraintsDefined )
+    for (size_t c = 0; c < _directProblem->_constraints.size(); c++)
+     _bestConstraintEvaluations[c] = _constraintEvaluations[c][_bestValidSample];
+  }
  }
  else /* Minimize */
  {
- if ( _currentBestValue < _bestEverValue || _k->_currentGeneration == 1 )
- {
-  _previousBestEverValue = _bestEverValue;
-  _bestEverValue = _currentBestValue;
+  if ( _currentBestValue < _bestEverValue || _k->_currentGeneration == 1 )
+  {
+   _previousBestEverValue = _bestEverValue;
+   _bestEverValue = _currentBestValue;
+   _bestSampleEver = samples[_bestValidSample];
 
-  for (size_t d = 0; d < _variableCount; ++d)
-   _bestEverVariables[d] = _currentBestVariables[d];
+   for (size_t d = 0; d < _variableCount; ++d)
+    _bestEverVariables[d] = _currentBestVariables[d];
 
-  if ( _areConstraintsDefined )
-   for (size_t c = 0; c < _directProblem->_constraints.size(); c++)
-    _bestConstraintEvaluations[c] = _constraintEvaluations[c][_bestValidSample];
- }
+   if ( _areConstraintsDefined )
+    for (size_t c = 0; c < _directProblem->_constraints.size(); c++)
+     _bestConstraintEvaluations[c] = _constraintEvaluations[c][_bestValidSample];
+  }
  }
 
  /* set weights */

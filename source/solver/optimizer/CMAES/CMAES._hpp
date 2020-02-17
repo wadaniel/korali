@@ -34,7 +34,7 @@ class CMAES : public korali::solver::Optimizer
  void reEvaluateConstraints(); /* re evaluate constraints, in handleConstraints,  count violations etc.. */
  // Integer Optimization
  void updateDiscreteMutationMatrix();
- void updateDistribution();
+ void updateDistribution(std::vector<korali::Sample>& samples);
 
  public:
 

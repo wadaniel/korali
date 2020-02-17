@@ -9,9 +9,9 @@ Installation Steps
 
   Download the latest stable release of Korali with the following command:
    
-.. code-block:: bash
+  .. code-block:: bash
    
-     git clone https://github.com/cselab/korali.git 
+     git clone https://github.com/cselab/korali.git --branch latest
 
 **2. Install Korali**
 

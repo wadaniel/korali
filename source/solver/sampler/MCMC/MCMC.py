@@ -8,9 +8,16 @@ import sys, os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from sampler import plot_histogram, plot_upper_triangle, plot_lower_triangle
 
-def plot(js):
-    numdim = len(js['Variables'])
-    samples = js['Generations'][-1]['Solver']['Sample Database']
+def plot(genList):
+    numgens = len(genList)
+
+    lastGen = 0
+    for i in genList: 
+     if genList[i]['Current Generation'] > lastGen:
+      lastGen = genList[i]['Current Generation']
+    
+    numdim = len(genList[lastGen]['Variables'])
+    samples = genList[lastGen]['Solver']['Sample Database']
     numentries = len(samples)
     
     fig, ax = plt.subplots(numdim, numdim, figsize=(8,8))

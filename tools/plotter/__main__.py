@@ -9,7 +9,7 @@ import importlib
 
 curdir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
 
-def main(path, gen, mean, check, test):
+def main(path, mean, check, test):
 
  if (check == True):
   print("[Korali] Plotter correctly installed.")
@@ -26,28 +26,23 @@ def main(path, gen, mean, check, test):
   exit(-1)
 
  with open(configFile) as f: js = json.load(f)
-
+ configRunId = js['Run ID']
+ 
  resultFiles = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f)) and f.startswith('gen')]
  resultFiles = sorted(resultFiles)
  
- js["Generations"] = [ ]
- genFound = False 
+ genList = { } 
  
  for file in resultFiles:
   with open(path + '/' + file) as f:
    genJs = json.load(f)
-   configRunId = js['Run ID']
    solverRunId = genJs['Run ID']
    
    if (configRunId == solverRunId):
-    if (gen is None or gen >= genJs['Current Generation']):
-     js["Generations"].append(genJs)
-     genFound = True
+     curGen = genJs['Current Generation']
+     print('Cur Gen: ' + str(curGen))
+     genList[curGen] = genJs
      
- if (gen is not None and genFound == False):
-  print('[Korali] Error: Could not find requested generation (' + str(gen) + ') on the given path.')
-  exit(-1)
- 
  requestedSolver = js['Solver']['Type']
  solverName = requestedSolver.rsplit('/')[-1]
 
@@ -59,7 +54,7 @@ def main(path, gen, mean, check, test):
  if os.path.isfile(solverFile):
   sys.path.append(solverDir)
   solverLib = importlib.import_module(solverName, package=None)
-  solverLib.plot(js)
+  solverLib.plot(genList)
   exit(0)
 
  if solverName == 'Executor':
@@ -79,10 +74,9 @@ def main(path, gen, mean, check, test):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='korali.plotter', description='Plot the results of a Korali execution.')
     parser.add_argument('--dir', help='directory of result files', default='_korali_result', required = False)
-    parser.add_argument('--gen', help='plot results of the given generation', action='store', type=int, required = False)
     parser.add_argument('--mean', help='plot mean of objective variables', action='store_true', required = False)
     parser.add_argument('--check', help='verifies that korali.plotter is available', action='store_true', required = False)
     parser.add_argument('--test', help='run without graphics (for testing purpose)', action='store_true', required = False)
     args = parser.parse_args()
 
-    main(args.dir, args.gen, args.mean, args.check, args.test)
+    main(args.dir, args.mean, args.check, args.test)

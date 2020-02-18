@@ -12,7 +12,6 @@ Korali's Documentation
    
 .. toctree::
    :maxdepth: 2
-   :numbered:
    :caption: Tutorials
     
    tutorials/basic

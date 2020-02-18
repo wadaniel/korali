@@ -22,11 +22,12 @@ pushd ../../tutorials
 
 logEcho "[Korali] Beginning tutorial tests..."
 
-for dir in ./a*/
+for dir in ./basic/*/
 do
   logEcho "-------------------------------------"
   logEcho " Entering Folder: $dir"
   pushd $dir >> $logFile 2>&1
+  check_result
 
   for file in run-*.{py,sh}
   do
@@ -49,6 +50,7 @@ do
   done
 
   popd >> $logFile 2>&1
+  check_result
   logEcho "-------------------------------------"
 done
 

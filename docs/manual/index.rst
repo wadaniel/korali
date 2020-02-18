@@ -4,11 +4,12 @@ Korali's Documentation
 
 .. toctree::
    :caption: Using Korali
-   :maxdepth: 1
+   :maxdepth: 2
    
    using/install
    using/basics 
    using/running
+   using/tools
    
 .. toctree::
    :maxdepth: 2
@@ -17,14 +18,6 @@ Korali's Documentation
    tutorials/basic
    tutorials/advanced
    tutorials/examples
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Tools
-
-   tools/plotter
-   tools/profiler
-   tools/gui
 
 .. toctree::
    :maxdepth: 2

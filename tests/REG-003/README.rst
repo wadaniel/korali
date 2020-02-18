@@ -1,6 +1,5 @@
-# Test: REG-004
-
 Test correct execution of solvers with non 0815 parametrization.
+#################################################################
 
 ## Description
 

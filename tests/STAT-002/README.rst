@@ -1,6 +1,6 @@
-# Test: STAT-002
-
 Check Chain Mean and Chain Covariance in MCMC
+#################################################################
+
 
 ## Description
 

@@ -1,6 +1,5 @@
-# Test: UNIT-000
-
-Test for the External Conduit 
+Test for the Concurrent Conduit 
+#################################################################
 
 ## Description
 

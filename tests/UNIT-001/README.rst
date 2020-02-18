@@ -1,6 +1,5 @@
-# Test: UNIT-001
-
 Test for Korali C++ Applications
+#################################################################
 
 ## Description
 

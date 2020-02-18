@@ -1,6 +1,6 @@
-# Test: STAT-002
+Checking distribution reproducibility of Samplers
+#################################################################
 
-Check Chain Mean and Chain Covariance in MCMC
 
 ## Description
 

@@ -1,6 +1,5 @@
-# Test: STAT-001
-
-Check Sampling Statistics
+Check Samplers Statistics
+#################################################################
 
 ## Description
 

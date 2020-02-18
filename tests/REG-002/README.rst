@@ -1,6 +1,5 @@
-# Test: REG-002
-
-Run the korali.plotter for all example application results.
+Run the korali.plotter for all basic tutorial results.
+################################################################ 
 
 ## Description
 

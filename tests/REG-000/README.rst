@@ -1,6 +1,5 @@
-# Test: REG-000
-
-Check for a correct installation of Korali and its modules.
+Check for a correct installation of Korali and its modules
+################################################################
 
 ## Description
 

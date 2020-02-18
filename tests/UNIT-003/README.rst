@@ -1,6 +1,5 @@
-# Test: UNIT-003
-
-Testing Checkpoint/Restart
+Testing Partial Runs
+#################################################################
 
 ## Description
 

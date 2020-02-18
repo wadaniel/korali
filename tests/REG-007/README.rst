@@ -1,6 +1,5 @@
-# Test: REG-006
-
-More extensive tests for CCMA-ES
+Extensive tests for CMA-ES
+#################################################################
 
 ## Description
 

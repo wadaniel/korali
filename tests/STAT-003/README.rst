@@ -1,6 +1,5 @@
-# Test: STAT--003
-
-Check Sampling Statistics
+Check Optimizer Statistics
+#################################################################
 
 ## Description
 

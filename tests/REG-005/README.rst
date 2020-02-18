@@ -1,5 +1,5 @@
-# Test: REG-005
 Test correctness of Termination Criteria
+#################################################################
 
 ## Description
 

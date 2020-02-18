@@ -1,6 +1,5 @@
-# Test: REG-001
-
-Re-run all example applications for basic sanity check. 
+Re-run all basic tutorials for a basic sanity check
+################################################################ 
 
 ## Description
 

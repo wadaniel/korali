@@ -29,6 +29,7 @@ check
 
 python3 ./buildTutorials.py 
 python3 ./buildTests.py 
+python3 ./buildModules.py 
 check
 
 popd

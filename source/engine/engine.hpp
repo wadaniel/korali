@@ -1,5 +1,5 @@
-#ifndef _KORALI_HPP_
-#define _KORALI_HPP_
+#ifndef _ENGINE_HPP_
+#define _ENGINE_HPP_
 
 #include "experiment/experiment.hpp"
 #include "auxiliar/py2json.hpp"

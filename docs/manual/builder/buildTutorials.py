@@ -4,7 +4,6 @@ import sys
 import os
 import json
 import shutil
-from buildAux import *
 
 def processTutorialSubFolder(folder):
  os.makedirs('../tutorials/' + folder)

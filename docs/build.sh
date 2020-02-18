@@ -28,6 +28,7 @@ pushd builder
 check
 
 python3 ./buildTutorials.py 
+python3 ./buildTests.py 
 check
 
 popd

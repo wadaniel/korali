@@ -1,4 +1,5 @@
-# A.9 - Surrogate Modelling with Gaussian Processes
+Surrogate Modelling with Gaussian Processes
+=====================================================
 
 In this tutorial we show how to create a surrogate with Gaussian Processes.
 

@@ -1,4 +1,5 @@
-# B.2 - Partial Runs
+Partial Runs
+=====================================================
 
 In this tutorial we show how to stop and restart a previous Korali run.
 All scripts in this tutorial follow this structure:

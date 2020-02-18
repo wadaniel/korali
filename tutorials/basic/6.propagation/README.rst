@@ -1,4 +1,5 @@
-# A.6 - Execution
+Model Propagation (Execution)
+=====================================================
 
 In this tutorial we show how to pass multiple inputs through a model.
 

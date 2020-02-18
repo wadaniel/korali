@@ -1,4 +1,5 @@
-# A.1 - Model Optimization: Finding the Global Maximum
+Model Optimization: Finding the Global Maximum
+===============================================
 
 In this tutorial we show how to **optimize** a given function. The complete code sample can be found [here](run-cmaes.py).
 

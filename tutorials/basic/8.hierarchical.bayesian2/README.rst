@@ -1,4 +1,5 @@
-# A.8 - Simple Hierarchical Bayesian Inference
+Hierarchical Bayesian Inference (Complex)
+=====================================================
 
 In this tutorial we show how to do hierarchical Bayesian inference.
 

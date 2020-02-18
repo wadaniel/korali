@@ -1,4 +1,5 @@
-# B.3 - Preserving Quantities of Interest
+Preserving Quantities of Interest
+=====================================================
 
 In this tutorial we show how important outputs from the computational model can be stored,
 that otherwise would be lost.

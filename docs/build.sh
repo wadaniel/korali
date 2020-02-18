@@ -22,6 +22,16 @@ check
 
 # Building User Manual
 pushd manual
+check
+
+pushd builder
+check
+
+python3 ./buildTutorials.py 
+check
+
+popd
+check
 
 make html
 check

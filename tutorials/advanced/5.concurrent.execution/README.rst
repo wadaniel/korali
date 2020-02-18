@@ -1,4 +1,5 @@
-# C.2 - Distributed MPI
+Parallel Execution with Concurrent Processes
+=====================================================
 
 In this tutorial we show how an MPI model can be executed with Korali.
 

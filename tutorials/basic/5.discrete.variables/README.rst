@@ -1,4 +1,5 @@
-# A.5 - Model Optimization with Discrete (Integer) Variables
+Model Optimization with Discrete (Integer) Variables
+=====================================================
 
 In this tutorial we show how to optimize a function with discrete input parameters,
  along with continuous ones.

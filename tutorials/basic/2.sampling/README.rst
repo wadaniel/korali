@@ -1,4 +1,5 @@
-# A.2 - Model Sampling: Draw Samples from a Function
+Model Sampling: Draw Samples from a Function
+=====================================================
 
 In this tutorial we show how to **sample** directly from a given function
 using Metropolis Hastings (MCMC) and Transition Markov Chain Monte Carlo (TMCMC).

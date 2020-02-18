@@ -1,15 +1,6 @@
-# Tutorials
+Example Applications
+=====================
 
-Here you will find guides and tutorials to help you kickstart your own application.
+.. toctree::
+   :maxdepth: 1
 
-### Example Applications
-
-<!--- Tutorials A List --->
-
-### Useful Features Tutorials
-
-<!--- Tutorials B List --->
-
-### High-Performance Tutorials
-
-<!--- Tutorials C List --->

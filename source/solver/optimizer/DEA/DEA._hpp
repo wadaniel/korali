@@ -17,7 +17,7 @@ class DEA : public korali::solver::Optimizer
 
  void mutateSingle(size_t sampleIdx); /* sample individual */
  void fixInfeasible(size_t sampleIdx); /* force sample inside lower & upper bounds */
- void updateSolver(); /* update states of DEA */
+ void updateSolver(std::vector<korali::Sample>& samples); /* update states of DEA */
  void initSamples();
  void prepareGeneration();
 

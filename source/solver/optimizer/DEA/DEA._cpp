@@ -79,11 +79,7 @@ void korali::solver::optimizer::DEA::runGeneration()
  // Waiting for samples to finish
  korali::_conduit->waitAll(samples);
 
- // Processing results
- for (size_t i = 0; i < _populationSize; i++)
-  _valueVector[i] = samples[i]["Evaluation"];
-
- updateSolver();
+ updateSolver(samples);
 }
 
 
@@ -188,8 +184,12 @@ void korali::solver::optimizer::DEA::fixInfeasible(size_t sampleIdx)
 }
 
 
-void korali::solver::optimizer::DEA::updateSolver()
+void korali::solver::optimizer::DEA::updateSolver(std::vector<korali::Sample>& samples)
 {
+    // Processing results
+    for (size_t i = 0; i < _populationSize; i++)
+     _valueVector[i] = samples[i]["Evaluation"];
+
     _bestSampleIndex = std::distance( std::begin(_valueVector), std::max_element(std::begin(_valueVector), std::end(_valueVector)) );
     _previousBestEverValue = _bestEverValue;
     _previousBestValue     = _currentBestValue;
@@ -210,6 +210,7 @@ void korali::solver::optimizer::DEA::updateSolver()
       {
         for(size_t d = 0; d < _variableCount; ++d) _samplePopulation[_bestSampleIndex][d] = _candidatePopulation[_bestSampleIndex][d];
         _bestEverValue = _currentBestValue;
+        _bestSampleEver._js = samples[_bestSampleIndex]._js;
       }
       acceptRuleRecognized = true;
     }
@@ -218,7 +219,11 @@ void korali::solver::optimizer::DEA::updateSolver()
     {
       for(size_t i = 0; i < _populationSize; ++i) if(_valueVector[i] > _previousValueVector[i])
         _samplePopulation[i] = _candidatePopulation[i];
-      if(_currentBestValue > _bestEverValue) _bestEverValue = _currentBestValue;
+      if(_currentBestValue > _bestEverValue)
+       {
+         _bestEverValue = _currentBestValue;
+         _bestSampleEver._js = samples[_bestSampleIndex]._js;
+       }
       acceptRuleRecognized = true;
     }
 
@@ -226,7 +231,11 @@ void korali::solver::optimizer::DEA::updateSolver()
     {
       for(size_t i = 0; i < _populationSize; ++i) if(_valueVector[i] > _bestEverValue)
         for(size_t d = 0; d < _variableCount; ++d) _samplePopulation[i][d] = _candidatePopulation[i][d];
-      if(_currentBestValue > _bestEverValue) _bestEverValue = _currentBestValue;
+      if(_currentBestValue > _bestEverValue)
+       {
+        _bestEverValue = _currentBestValue;
+        _bestSampleEver._js = samples[_bestSampleIndex]._js;
+       }
       acceptRuleRecognized = true;
     }
 
@@ -234,7 +243,11 @@ void korali::solver::optimizer::DEA::updateSolver()
     {
      for(size_t i = 0; i < _populationSize; ++i) if(_valueVector[i] > _bestEverValue)
       for(size_t d = 0; d < _variableCount; ++d)
-       { _samplePopulation[i][d] = _candidatePopulation[i][d]; _bestEverValue = _valueVector[i]; }
+       {
+        _samplePopulation[i][d] = _candidatePopulation[i][d];
+        _bestEverValue = _valueVector[i];
+        _bestSampleEver._js = samples[_bestSampleIndex]._js;
+       }
      acceptRuleRecognized = true;
     }
 

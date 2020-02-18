@@ -23,8 +23,6 @@ void korali::solver::optimizer::CMAES::initialize()
 
  if (_k->_currentGeneration > 0) return;
 
- _bestSampleEver = new korali::Sample();
-
  if (isDirectProblem == false || _directProblem->_objective == "Maximize") 
    _bestEverValue = -std::numeric_limits<double>::infinity();
  else /* Minimize */
@@ -491,7 +489,7 @@ void korali::solver::optimizer::CMAES::updateDistribution(std::vector<korali::Sa
   {
    _previousBestEverValue = _bestEverValue;
    _bestEverValue = _currentBestValue;
-   _bestSampleEver->_js = samples[_bestValidSample]._js;
+   _bestSampleEver._js = samples[_bestValidSample]._js;
 
    for (size_t d = 0; d < _variableCount; ++d)
     _bestEverVariables[d] = _currentBestVariables[d];
@@ -507,7 +505,7 @@ void korali::solver::optimizer::CMAES::updateDistribution(std::vector<korali::Sa
   {
    _previousBestEverValue = _bestEverValue;
    _bestEverValue = _currentBestValue;
-   _bestSampleEver->_js = samples[_bestValidSample]._js;
+   _bestSampleEver._js = samples[_bestValidSample]._js;
 
    for (size_t d = 0; d < _variableCount; ++d)
     _bestEverVariables[d] = _currentBestVariables[d];

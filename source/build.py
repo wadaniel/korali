@@ -87,9 +87,8 @@ def consumeValue(base, moduleName, path, varName, varType, isMandatory, options)
   cString += ' for(size_t i = 0; i < ' + base + path + '.size(); i++) ' + varName + '.push_back(new korali::Variable);\n'
   return cString
 
- if ('korali::Sample*' in varType):
-  cString += ' ' + varName + ' = new korali::Sample();\n'
-  cString += ' ' + varName + '->_js.getJson() = ' + base + path + ';\n'
+ if ('korali::Sample' in varType):
+  cString += ' ' + varName + '._js.getJson() = ' + base + path + ';\n'
   cString += '   korali::JsonInterface::eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n'
   return cString
   
@@ -140,8 +139,8 @@ def consumeValue(base, moduleName, path, varName, varType, isMandatory, options)
 
 def saveValue(base, path, varName, varType):
 
- if ('korali::Sample*' in varType):
-  sString = '   ' + base + path + ' = ' + varName + '->_js.getJson();\n'
+ if ('korali::Sample' in varType):
+  sString = '   ' + base + path + ' = ' + varName + '._js.getJson();\n'
   return sString
   
  if ('gsl_rng*' in varType):

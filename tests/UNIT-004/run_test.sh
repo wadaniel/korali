@@ -4,7 +4,8 @@ source ../functions.sh
 
 logEcho "[Korali] Running Multiple Jobs test..."
 
-pushd ../../tutorials/c3-multiple-jobs/
+pushd ../../tutorials/advanced/7.multiple.experiments
+check_result
 dir=$PWD
 
 logEcho "-------------------------------------"

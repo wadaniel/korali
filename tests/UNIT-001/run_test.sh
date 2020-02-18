@@ -10,7 +10,8 @@ fi
 
 logEcho "[Korali] Running C++ Test..."
 
-pushd ../../tutorials/c1-running-cxx/
+pushd ../../tutorials/advanced/4.running.cxx/
+check_result
 dir=$PWD
 
 logEcho "-------------------------------------"

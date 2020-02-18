@@ -4,7 +4,9 @@ source ../functions.sh
 
 logEcho "[Korali] Running Partial Run Tests..."
 
-pushd ../../tutorials/b2-partial-runs/
+pushd ../../tutorials/advanced/2.partial.runs
+check_results
+
 dir=$PWD
 
 logEcho "-------------------------------------"

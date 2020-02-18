@@ -10,7 +10,8 @@ then
  exit 0
 fi
 
-pushd ../../tutorials/c2-distributed-mpi/
+pushd ../../tutorials/advanced/6.running.mpi/
+check_result
 dir=$PWD
 
 logEcho "-------------------------------------"

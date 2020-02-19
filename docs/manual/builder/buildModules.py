@@ -20,9 +20,8 @@ def getJsonPath(path):
   nameString += '\\["' + item + '"\\]'
  return nameString
  
-def processLeafModuleSubFolder(modulePath):
- moduleName = os.path.basename(os.path.normpath(modulePath))
- 
+def processLeafModuleSubFolder(root, moduleName):
+ modulePath = os.path.join(root, moduleName)
  moduleConfigFile = modulePath + '/' + moduleName + '.config'
  moduleReadmeFile = modulePath + '/README.rst'
  
@@ -42,11 +41,11 @@ def processLeafModuleSubFolder(modulePath):
    moduleReadmeString += ' - **Description**: ' + v["Description"] + '\n'
    moduleReadmeString +='\n'  
     
- moduleOutputDir = '../modules/'
+ moduleOutputDir = '../modules/' + root
  with open(moduleOutputDir + '/' + moduleName + '.rst', 'w') as file: file.write(moduleReadmeString)
  
-def processParentModuleSubFolder(modulePath):
- moduleName = os.path.basename(os.path.normpath(modulePath))
+def processParentModuleSubFolder(root, moduleName):
+ modulePath = os.path.join(root, moduleName)
  
  moduleReadmeFile = modulePath + '/README.rst'
  with open(moduleReadmeFile, 'r') as file: moduleReadmeString = file.read()
@@ -55,7 +54,7 @@ def processParentModuleSubFolder(modulePath):
  #moduleReadmeString += '     :maxdepth: 1\n'
  #moduleReadmeString += '     :caption: Sub-Categories\n'
 
- moduleOutputDir = '../modules/' + modulePath
+ moduleOutputDir = '../modules/' + root
  if not os.path.exists(moduleOutputDir):
   os.mkdir(moduleOutputDir) 
  with open(moduleOutputDir + '/' + moduleName + '.rst', 'w') as file: file.write(moduleReadmeString)
@@ -88,9 +87,9 @@ for root, dirs, files in os.walk("../../../source/modules", topdown=True):
    print(name)
    if (hasSubFolders):
      print('Has Subfolders')
-     processParentModuleSubFolder(fullPath)
+     processParentModuleSubFolder(root, name)
    else:
      print('Has No Subfolders')
-     processLeafModuleSubFolder(fullPath)
+     processLeafModuleSubFolder(root, name)
      
      

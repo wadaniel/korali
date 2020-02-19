@@ -1,5 +1,5 @@
 #include "modules/distribution/univariate/truncatedNormal/truncatedNormal.hpp"
-#include "rtnormCpp/src/rtnorm.hpp"
+#include "external/rtnormCpp/src/rtnorm.hpp"
 
 double korali::distribution::univariate::TruncatedNormal::getDensity(double x)
 {

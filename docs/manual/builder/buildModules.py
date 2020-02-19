@@ -56,7 +56,12 @@ def processParentModuleSubFolder(modulePath):
  #moduleReadmeString += '  .. toctree::\n'
  #moduleReadmeString += '     :maxdepth: 1\n'
  #moduleReadmeString += '     :caption: Sub-Categories\n'
-    
+
+ moduleOutputDir = '../modules/' + modulePath
+ if not os.path.exists(moduleOutputDir):
+  os.mkdir(moduleOutputDir) 
+ with open(moduleOutputDir + '/' + moduleName + '.rst', 'w') as file: file.write(moduleReadmeString)
+     
  list_dir = os.listdir(moduleDir)
  for f in list_dir:
   subModuleFullPath = os.path.join(moduleDir, f)
@@ -64,10 +69,11 @@ def processParentModuleSubFolder(modulePath):
    subModuleConfigFile = subModuleFullPath + '/' + f + '.config'
    with open(subModuleConfigFile, 'r') as file: subModuleConfigString = file.read()
    subModuleConfig = json.loads(subModuleConfigString)
-   moduleReadmeString += ' ' + f + ' \n' 
- 
- moduleOutputDir = '../modules/'
- with open(moduleOutputDir + '/' + moduleName + '.rst', 'w') as file: file.write(moduleReadmeString)
+   moduleReadmeString += ' ' + f + ' \n'
+
+   subModuleDstPath = moduleOutputDir + '/' + f
+   if not os.path.exists(subModuleDstPath):
+     os.mkdir(subModuleDstPath) 
   
 shutil.rmtree('../modules', ignore_errors=True, onerror=None)
 os.makedirs('../modules')

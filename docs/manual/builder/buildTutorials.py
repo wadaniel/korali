@@ -9,7 +9,8 @@ def processTutorialSubFolder(folder):
  os.makedirs('../tutorials/' + folder)
  tutorialsDir = '../../../tutorials/' + folder
  with open(tutorialsDir + '/README.rst', 'r') as file: tutorialsString = file.read()
-
+ currentTutorial = 0
+ 
  # Detecting Tutorials
  tutorialNames  = os.listdir(tutorialsDir)
  for tutorialName in sorted(tutorialNames):
@@ -19,8 +20,19 @@ def processTutorialSubFolder(folder):
    with open(tutorialReadmeFile, 'r') as file: tutorialReadmeString = file.read()
    tutorialTitle = tutorialReadmeString.partition('\n')[0]
    tutorialDstPath = folder + '/' + tutorialName + '.rst'
-   tutorialsString += '   ' + folder + '/' + tutorialName + '\n'
-   shutil.copyfile(tutorialReadmeFile, '../tutorials/' + tutorialDstPath)
+   
+   tutorialsString += '\n\n'
+   tutorialTitleLabel   =  '|tutorial' + str(currentTutorial).zfill(3) + '|'
+   tutorialsString += ' .. ' + tutorialTitleLabel + ' replace::  `' + tutorialTitle + ' <https://github.com/cselab/korali/tree/master/tutorials/' + folder + '/' + tutorialName + '/>`__\n'
+   tutorialsString += ' .. table:: \n'
+   tutorialsString += '     :widths: 8 92\n\n'
+   tutorialsString += '     +----------------------+--------------------------------------------------------+\n'
+   tutorialsString += '     | **Title:**           | ' + tutorialTitleLabel + '                                          |\n'
+   tutorialsString += '     +----------------------+--------------------------------------------------------+\n'
+   tutorialsString += '     | **Description:**     |                                                        |\n'
+   tutorialsString += '     +----------------------+--------------------------------------------------------+\n'
+   
+   currentTutorial = currentTutorial + 1
 
  basicTutorialsFile = open('../tutorials/' + folder + '.rst', 'w')
  basicTutorialsFile.write(tutorialsString)

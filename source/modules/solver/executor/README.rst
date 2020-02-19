@@ -1,10 +1,13 @@
+****************************
+Executor Solver
+****************************
+
 This solver acts as executor.
 
 **Usage:**
 
-```python
-  k["Solver"]["Type"] = "Executor"
-```
+.. code-block:: python
 
-**Requirements:**
+  k["Solver"]["Type"] = "Executor"
+
 

@@ -1,3 +1,6 @@
+*******************************
+Multinomial Distribution
+*******************************
 
 ## Configuration
 

@@ -1,3 +1,6 @@
+*********************************
+Multivariate Normal Distribution
+*********************************
 
 ## Configuration
 

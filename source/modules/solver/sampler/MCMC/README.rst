@@ -1,28 +1,18 @@
+*****************************************************
+Delayed Rejection Adaptive Metropolis Algorithm
+*****************************************************
+
 This is an implementation of the *Delayed Rejection Adaptive Metropolis* algorithm,
 as published in [Haario2006](https://link.springer.com/article/10.1007%2Fs11222-006-9438-0).
 This solver can also be configured to run the standard *Metropolis Hastings* method.
 
 **Usage:**
 
-```python
-  k["Solver"]["Type"] = "MCMC"
-```
+.. code-block:: python
+
+   k["Solver"]["Type"] = "MCMC"
   
-**Requirements:**
-
-+ The *Chain Length*, i.e. the number of generated samples.
-+ The *Initial Mean* of the proposal distribution for each variable.
-+ The *Standard Deviation* of the proposal distribution for each variable.
-
-## Configuration
-
-### Solver Settings
- 
-### Variable-Specific Settings
-
-### Termination Criteria
-
-## Plotting
+**Plotting**
 
 Here we explain technical details of the **MCMC** result plot.
 

@@ -21,13 +21,15 @@ Korali's Documentation
 
 .. toctree::
    :maxdepth: 2
+   :glob:
    :caption: Module Configuration
   
-   modules/engine
-   modules/experiment
-   modules/problem
-   modules/solver
-   modules/conduit   
+   modules/engine/*
+   modules/experiment/*
+   modules/problem/*
+   modules/solver/*
+   modules/conduit/*
+   modules/distribution/*      
 
 .. toctree::
    :maxdepth: 2

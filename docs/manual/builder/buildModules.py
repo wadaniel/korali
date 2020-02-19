@@ -32,8 +32,7 @@ def processLeafModuleSubFolder(moduleRelPath, moduleName):
 
  moduleConfig = json.loads(moduleConfigString)
  
- moduleReadmeString += '\nConfiguration\n'
- moduleReadmeString += '#####################\n\n'
+ moduleReadmeString += '\n**Configuration**\n'
  
  if ('Configuration Settings' in moduleConfig):
   for v in moduleConfig["Configuration Settings"]:
@@ -54,9 +53,10 @@ def processParentModuleSubFolder(moduleRelPath, moduleName):
  moduleReadmeFile = modulePath + '/README.rst'
  with open(moduleReadmeFile, 'r') as file: moduleReadmeString = file.read()
 
+ moduleReadmeString += '**Sub-Categories**\n\n'
+
  moduleReadmeString += '  .. toctree::\n'
  moduleReadmeString += '     :maxdepth: 1\n'
- moduleReadmeString += '     :caption: Sub-Categories\n' 
 
  moduleOutputDir = '../modules/' + moduleRelPath
  print('Creating: ' + moduleOutputDir)
@@ -70,7 +70,7 @@ def processParentModuleSubFolder(moduleRelPath, moduleName):
    subModuleConfigFile = subModuleFullPath + '/' + f + '.config'
    with open(subModuleConfigFile, 'r') as file: subModuleConfigString = file.read()
    subModuleConfig = json.loads(subModuleConfigString)
-   moduleReadmeString += '    ' + subModuleFullPath + '/' + f + ' \n'
+   moduleReadmeString += '    ' + f + '/' + f + '\n'
  
    subModuleDstPath = moduleOutputDir + '/' + f
    if not os.path.exists(subModuleDstPath):

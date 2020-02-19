@@ -1,3 +1,6 @@
+*******************************
+Truncated Normal Distribution
+*******************************
 
 ## Truncated Normal
 

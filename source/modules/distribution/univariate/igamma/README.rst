@@ -1,3 +1,6 @@
+*******************************
+Inverse Gamma Distribution
+*******************************
 
 ## Inverse Gamma
 

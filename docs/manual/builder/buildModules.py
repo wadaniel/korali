@@ -21,11 +21,10 @@ def getJsonPath(path):
  return nameString
  
 def processLeafModuleSubFolder(modulePath):
- moduleDir = '../../../source/' + modulePath
  moduleName = os.path.basename(os.path.normpath(modulePath))
  
- moduleConfigFile = moduleDir + '/' + moduleName + '.config'
- moduleReadmeFile = moduleDir + '/README.rst'
+ moduleConfigFile = modulePath + '/' + moduleName + '.config'
+ moduleReadmeFile = modulePath + '/README.rst'
  
  with open(moduleReadmeFile, 'r') as file: moduleReadmeString = file.read()
  with open(moduleConfigFile, 'r') as file: moduleConfigString = file.read()
@@ -47,10 +46,9 @@ def processLeafModuleSubFolder(modulePath):
  with open(moduleOutputDir + '/' + moduleName + '.rst', 'w') as file: file.write(moduleReadmeString)
  
 def processParentModuleSubFolder(modulePath):
- moduleDir = '../../../source/' + modulePath
  moduleName = os.path.basename(os.path.normpath(modulePath))
  
- moduleReadmeFile = moduleDir + '/README.rst'
+ moduleReadmeFile = modulePath + '/README.rst'
  with open(moduleReadmeFile, 'r') as file: moduleReadmeString = file.read()
 
  #moduleReadmeString += '  .. toctree::\n'
@@ -62,9 +60,9 @@ def processParentModuleSubFolder(modulePath):
   os.mkdir(moduleOutputDir) 
  with open(moduleOutputDir + '/' + moduleName + '.rst', 'w') as file: file.write(moduleReadmeString)
      
- list_dir = os.listdir(moduleDir)
+ list_dir = os.listdir(modulePath)
  for f in list_dir:
-  subModuleFullPath = os.path.join(moduleDir, f)
+  subModuleFullPath = os.path.join(modulePath, f)
   if not os.path.isfile(subModuleFullPath):
    subModuleConfigFile = subModuleFullPath + '/' + f + '.config'
    with open(subModuleConfigFile, 'r') as file: subModuleConfigString = file.read()
@@ -78,13 +76,7 @@ def processParentModuleSubFolder(modulePath):
 shutil.rmtree('../modules', ignore_errors=True, onerror=None)
 os.makedirs('../modules')
 
-processLeafModuleSubFolder('engine')
-processLeafModuleSubFolder('experiment')
-processParentModuleSubFolder('solver')
-processParentModuleSubFolder('problem')
-processParentModuleSubFolder('conduit')
-
-for root, dirs, files in os.walk("../../../source/solver", topdown=True):
+for root, dirs, files in os.walk("../../../source/modules", topdown=True):
  for name in dirs:
   fullPath = os.path.join(root, name)
   if (not '.o/' in fullPath and not '.d/' in fullPath):
@@ -93,8 +85,12 @@ for root, dirs, files in os.walk("../../../source/solver", topdown=True):
    for f in list_dir:
     if not os.path.isfile(os.path.join(fullPath, f)):
      hasSubFolders = True
-   print(fullPath)
-   #if (hasSubFolders):
-   #  print('Has Subfolders')
-   #else:
-   #  print('Has No Subfolders')
+   print(name)
+   if (hasSubFolders):
+     print('Has Subfolders')
+     processParentModuleSubFolder(fullPath)
+   else:
+     print('Has No Subfolders')
+     processLeafModuleSubFolder(fullPath)
+     
+     

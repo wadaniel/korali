@@ -1,5 +1,5 @@
 #include "modules/solver/optimizer/LMCMAES/LMCMAES.hpp"
-#include "modules/experiment/sample/sample.hpp"
+#include "sample/sample.hpp"
 #include "modules/conduit/conduit.hpp"
 
 #include <stdio.h>

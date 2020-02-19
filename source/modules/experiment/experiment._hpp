@@ -4,8 +4,8 @@
 #include <vector>
 #include <functional>
 #include <chrono>
-#include "modules/experiment/sample/sample.hpp"
-#include "modules/experiment/variable/variable.hpp"
+#include "sample/sample.hpp"
+#include "variable/variable.hpp"
 #include "modules/module.hpp"
 #include "auxiliar/koraliJson.hpp"
 

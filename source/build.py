@@ -507,8 +507,8 @@ save_if_different(moduleNewHeaderFile, newBaseString)
 
 variableDeclarationList = '\n'.join(sorted(varDeclarationSet))
 
-variableBaseHeaderFileName = modulesDir + '/experiment/variable/variable._hpp'
-variableNewHeaderFile = modulesDir + '/experiment/variable/variable.hpp'
+variableBaseHeaderFileName = koraliDir + '/variable/variable._hpp'
+variableNewHeaderFile = koraliDir + '/variable/variable.hpp'
 with open(variableBaseHeaderFileName, 'r') as file: variableBaseHeaderString = file.read()
 newBaseString = variableBaseHeaderString
 newBaseString = newBaseString.replace(' // Variable Declaration List', variableDeclarationList)

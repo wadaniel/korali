@@ -1,0 +1,27 @@
+#ifndef _KORALI_DISTRIBUTION_MULTIVARIATE_NORMAL_HPP_
+#define _KORALI_DISTRIBUTION_MULTIVARIATE_NORMAL_HPP_
+
+#include "modules/distribution/multivariate/multivariate.hpp"
+
+namespace korali { namespace distribution { namespace multivariate {
+
+class Normal : public korali::distribution::Multivariate {
+
+ private:
+
+ gsl_matrix_view _sigma_view;
+ gsl_vector_view _mean_view;
+ gsl_vector_view _work_view;
+
+ public:
+
+ void updateDistribution() override;
+ void setProperty(std::string propertyName, std::vector<double> values) override;
+ void getDensity(double *x, double* result, size_t n) override;
+ void getLogDensity(double *x, double* result, size_t n) override;
+ void getRandomVector(double *x, size_t n) override;
+};
+
+} } } // namespace korali::distribution::multivariate
+
+#endif // _KORALI_DISTRIBUTION_MULTIVARIATE_NORMAL_HPP_

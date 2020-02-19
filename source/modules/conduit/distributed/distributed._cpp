@@ -1,0 +1,209 @@
+#include "modules/conduit/distributed/distributed.hpp"
+#include "modules/experiment/experiment.hpp"
+#include "modules/problem/problem.hpp"
+#include "modules/solver/solver.hpp"
+
+#ifdef _KORALI_USE_MPI
+
+#define MPI_TAG_SAMPLE_JSON_SIZE 1
+#define MPI_TAG_SAMPLE_JSON_CONTENT 2
+
+MPI_Comm __KoraliTeamComm;
+MPI_Comm getKoraliMPIComm() { return __KoraliTeamComm; }
+long int getKoraliMPICommPointer() { return (long int)(&__KoraliTeamComm); }
+#endif
+
+void korali::conduit::Distributed::initialize()
+{
+ korali::Conduit::initialize();
+
+ #ifdef _KORALI_USE_MPI
+ _rankCount = 1;
+ _rankId = 0;
+
+ int isInitialized;
+ MPI_Initialized(&isInitialized);
+ if (isInitialized == false)  MPI_Init(nullptr, nullptr);
+
+ MPI_Comm_size(MPI_COMM_WORLD, &_rankCount);
+ MPI_Comm_rank(MPI_COMM_WORLD, &_rankId);
+ #endif
+
+ #ifndef _KORALI_USE_MPI
+  korali::logError("Running an Distributed-based Korali application, but Korali was installed without support for Distributed.\n");
+ #endif
+
+ #ifdef _KORALI_USE_MPI
+ MPI_Barrier(MPI_COMM_WORLD);
+ _continueEvaluations = true;
+
+ if (_rankCount == 1) korali::logError("Korali Distributed applications require at least 2 Distributed ranks to run.\n");
+
+ _teamCount = (_rankCount-1) / _workersPerTeam;
+ _teamId = -1;
+ _localRankId = -1;
+
+ int currentRank = 0;
+ _teamWorkers.clear();
+ _teamQueue = std::queue<int>();
+ while(!_teamQueue.empty()) _teamQueue.pop();
+ for (int i = 0; i < _teamCount; i++)
+ {
+  _teamQueue.push(i);
+  for (int j = 0; j < _workersPerTeam; j++)
+  {
+   if (currentRank == _rankId)
+   {
+    _teamId = i;
+    _localRankId = j;
+   }
+   _teamWorkers[i].push_back(currentRank++);
+  }
+ }
+
+ MPI_Comm_split(MPI_COMM_WORLD, _teamId, _rankId, &__KoraliTeamComm);
+
+ int mpiSize = -1;
+ MPI_Comm_size(MPI_COMM_WORLD, &mpiSize);
+
+ if(isRoot()) if (_rankCount < _workersPerTeam + 1)
+ korali::logError("You are running Korali with %d ranks. However, you need at least %d ranks to have at least one worker team. \n", _rankCount, _workersPerTeam + 1 );
+
+ MPI_Barrier(MPI_COMM_WORLD);
+
+ if (!isRoot()) workerThread();
+ #endif
+}
+
+
+void korali::conduit::Distributed::finalize()
+{
+ #ifdef _KORALI_USE_MPI
+ size_t endSignal = 0;
+
+ if (isRoot())
+ {
+  for (int i = 0; i < _teamCount; i++)
+   for (int j = 0; j < _workersPerTeam; j++)
+    MPI_Send(&endSignal, 1, MPI_UNSIGNED_LONG, _teamWorkers[i][j], MPI_TAG_SAMPLE_JSON_SIZE, MPI_COMM_WORLD);
+ }
+
+ MPI_Barrier(MPI_COMM_WORLD);
+ #endif
+
+ korali::Conduit::finalize();
+}
+
+void korali::conduit::Distributed::workerThread()
+{
+ #ifdef _KORALI_USE_MPI
+ if (_teamId == -1) return;
+ auto sample = korali::Sample();
+
+ while (true)
+ {
+   size_t jsonStringSize;
+   MPI_Recv(&jsonStringSize, 1, MPI_UNSIGNED_LONG, getRootRank(), MPI_TAG_SAMPLE_JSON_SIZE, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+   if (jsonStringSize == 0) return;
+
+   char jsonStringChar[jsonStringSize + 1];
+   MPI_Recv(jsonStringChar, jsonStringSize, MPI_CHAR, getRootRank(), MPI_TAG_SAMPLE_JSON_CONTENT, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+   jsonStringChar[jsonStringSize] = '\0';
+   sample._js.getJson() = nlohmann::json::parse(jsonStringChar);
+
+   size_t experimentId = sample["Experiment Id"];
+   _experimentVector[experimentId]->_problem->runOperation(sample["Operation"], sample);
+
+   if (_localRankId == 0)
+   {
+     std::string resultJsonString = sample._js.getJson().dump();
+     size_t resultJsonSize = resultJsonString.size();
+     MPI_Send(&resultJsonSize, 1, MPI_UNSIGNED_LONG, getRootRank(), MPI_TAG_SAMPLE_JSON_SIZE, MPI_COMM_WORLD);
+     MPI_Send(resultJsonString.c_str(), resultJsonSize, MPI_CHAR, getRootRank(), MPI_TAG_SAMPLE_JSON_CONTENT, MPI_COMM_WORLD);
+   }
+
+   MPI_Barrier(__KoraliTeamComm);
+ }
+ #endif
+}
+
+void korali::conduit::Distributed::processSample(korali::Sample& sample)
+{
+ #ifdef _KORALI_USE_MPI
+ while (_teamQueue.empty())
+ {
+  sample._state = SampleState::waiting;
+  co_switch(_currentExperiment->_thread);
+ }
+
+ int teamId = _teamQueue.front(); _teamQueue.pop();
+ std::string sampleJsonString = sample._js.getJson().dump();
+ size_t sampleJsonSize = sampleJsonString.size();
+
+ for (int i = 0; i < _workersPerTeam; i++)
+ {
+  int workerId = _teamWorkers[teamId][i];
+  MPI_Send(&sampleJsonSize, 1, MPI_UNSIGNED_LONG, workerId, MPI_TAG_SAMPLE_JSON_SIZE, MPI_COMM_WORLD);
+  MPI_Send(sampleJsonString.c_str(), sampleJsonSize, MPI_CHAR, workerId, MPI_TAG_SAMPLE_JSON_CONTENT, MPI_COMM_WORLD);
+ }
+
+ size_t resultJsonSize;
+ MPI_Request resultJsonRequest;
+ MPI_Irecv(&resultJsonSize, 1, MPI_UNSIGNED_LONG, _teamWorkers[teamId][0], MPI_TAG_SAMPLE_JSON_SIZE, MPI_COMM_WORLD, &resultJsonRequest);
+
+ auto js = nlohmann::json();
+ js["Start Time"] = std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count() + _cumulativeTime;
+
+ int flag = 0;
+ while(flag == 0)
+ {
+  MPI_Test(&resultJsonRequest, &flag, MPI_STATUS_IGNORE);
+  if (flag)
+  {
+    char resultStringChar[resultJsonSize + 1];
+    MPI_Recv(resultStringChar, resultJsonSize, MPI_CHAR, _teamWorkers[teamId][0], MPI_TAG_SAMPLE_JSON_CONTENT, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    resultStringChar[resultJsonSize] = '\0';
+    sample._js.getJson() = nlohmann::json::parse(resultStringChar);
+    _teamQueue.push(teamId);
+  }
+  else
+  {
+   sample._state = SampleState::waiting;
+   co_switch(_currentExperiment->_thread);
+  }
+ }
+
+ js["End Time"] = std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count() + _cumulativeTime;
+ js["Solver Id"] = _currentExperiment->_experimentId;
+ js["Current Generation"] = _currentExperiment->_currentGeneration;
+ __profiler["Timelines"]["Worker " + std::to_string(teamId)] += js;
+
+ #endif
+}
+
+int korali::conduit::Distributed::getRootRank()
+{
+ #ifdef _KORALI_USE_MPI
+ return _rankCount-1;
+ #endif
+
+ return 0;
+}
+
+bool korali::conduit::Distributed::isRoot()
+{
+ #ifdef _KORALI_USE_MPI
+ return _rankId == getRootRank();
+ #endif
+
+ return true;
+}
+
+void korali::conduit::Distributed::abort()
+{
+ #ifdef _KORALI_USE_MPI
+ MPI_Abort(MPI_COMM_WORLD, -1);
+ #endif
+}

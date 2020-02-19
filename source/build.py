@@ -64,11 +64,10 @@ def getParentClassName(className):
  return parentClass
 
 def isLeafModule(path):
- for curDir, relDir, fileNames in os.walk(path):
-  if (curDir != path):
-   for fileName in fileNames:
-    if '.config' in fileName:
-     return False
+ list_dir = os.listdir(path)
+ for f in list_dir:
+  subPath = os.path.join(path, f)
+  if not os.path.isfile(subPath):  return False
  return True
 
 #####################################################################
@@ -386,6 +385,7 @@ def save_if_different(filename, content):
 print("\n[Korali] Start Parser")
 
 koraliDir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
+modulesDir = koraliDir + '/modules/'
 
 # modules List
 moduleDetectionList = ''
@@ -395,7 +395,7 @@ moduleIncludeList = ''
 varDeclarationSet = set()
 
 # Detecting modules' json file
-for moduleDir, relDir, fileNames in os.walk(koraliDir):
+for moduleDir, relDir, fileNames in os.walk(modulesDir):
  for fileName in fileNames:
   if '.config' in fileName:
    filePath = moduleDir + '/' + fileName;
@@ -406,16 +406,16 @@ for moduleDir, relDir, fileNames in os.walk(koraliDir):
    with open(filePath, 'r') as file: moduleConfig = json.load(file)
    
    # Processing Module information
-   modulePath = os.path.relpath(moduleDir, koraliDir)
+   modulePath = os.path.relpath(moduleDir, modulesDir)
    moduleConfig["Name"] =  getModuleName(modulePath)
    moduleConfig["Class"] =  getClassName(modulePath)
    moduleConfig["Parent Class"] =  getParentClassName(moduleConfig["Class"])
    moduleConfig["Option Name"] = getOptionName(modulePath)
-   moduleConfig["Is Leaf"] = isLeafModule(modulePath)
+   moduleConfig["Is Leaf"] = isLeafModule(moduleDir)
 
    ####### Adding module to list
    if (moduleConfig["Is Leaf"]):
-    relpath = os.path.relpath(moduleDir, koraliDir)
+    relpath = os.path.relpath(moduleDir, modulesDir)
     filepath = os.path.join(relpath, moduleFilename + '.hpp')
     moduleIncludeList += '#include "' + filepath + '" \n'
     moduleDetectionList += '  if(moduleType == "' + moduleConfig["Option Name"] + '") module = new ' + moduleConfig["Class"] + '();\n'
@@ -483,8 +483,8 @@ for moduleDir, relDir, fileNames in os.walk(koraliDir):
 
 ###### Updating module source file
 
-moduleBaseCodeFileName = koraliDir + '/module._cpp'
-moduleNewCodeFile = koraliDir + '/module.cpp'
+moduleBaseCodeFileName = modulesDir + '/module._cpp'
+moduleNewCodeFile = modulesDir + '/module.cpp'
 baseFileTime = os.path.getmtime(moduleBaseCodeFileName)
 newFileTime = baseFileTime
 if (os.path.exists(moduleNewCodeFile)): newFileTime = os.path.getmtime(moduleNewCodeFile)
@@ -497,8 +497,8 @@ if (baseFileTime >= newFileTime):
 
 ###### Updating module header file
 
-moduleBaseHeaderFileName = koraliDir + '/module._hpp'
-moduleNewHeaderFile = koraliDir + '/module.hpp'
+moduleBaseHeaderFileName = modulesDir + '/module._hpp'
+moduleNewHeaderFile = modulesDir + '/module.hpp'
 with open(moduleBaseHeaderFileName, 'r') as file: moduleBaseHeaderString = file.read()
 newBaseString = moduleBaseHeaderString
 save_if_different(moduleNewHeaderFile, newBaseString)
@@ -507,8 +507,8 @@ save_if_different(moduleNewHeaderFile, newBaseString)
 
 variableDeclarationList = '\n'.join(sorted(varDeclarationSet))
 
-variableBaseHeaderFileName = koraliDir + '/experiment/variable/variable._hpp'
-variableNewHeaderFile = koraliDir + '/experiment/variable/variable.hpp'
+variableBaseHeaderFileName = modulesDir + '/experiment/variable/variable._hpp'
+variableNewHeaderFile = modulesDir + '/experiment/variable/variable.hpp'
 with open(variableBaseHeaderFileName, 'r') as file: variableBaseHeaderString = file.read()
 newBaseString = variableBaseHeaderString
 newBaseString = newBaseString.replace(' // Variable Declaration List', variableDeclarationList)

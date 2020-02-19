@@ -1,0 +1,22 @@
+#ifndef _KORALI_DISTRIBUTION_UNIVARIATE_CAUCHY_HPP_
+#define _KORALI_DISTRIBUTION_UNIVARIATE_CAUCHY_HPP_
+
+#include "modules/distribution/univariate/univariate.hpp"
+
+namespace korali { namespace distribution { namespace univariate {
+
+class Cauchy : public korali::distribution::Univariate {
+
+ private:
+
+ public:
+
+ void updateDistribution() override;
+ double getDensity(double x) override;
+ double getLogDensity(double x) override;
+ double getRandomNumber() override;
+};
+
+} } } // namespace korali::distribution::univariate
+
+#endif // _KORALI_DISTRIBUTION_UNIVARIATE_CAUCHY_HPP_

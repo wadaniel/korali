@@ -1,0 +1,39 @@
+#ifndef _KORALI_SOLVER_TMCMC_HPP_
+#define _KORALI_SOLVER_TMCMC_HPP_
+
+#include "modules/solver/sampler/sampler.hpp"
+#include "modules/distribution/distribution.hpp"
+#include "modules/distribution/univariate/uniform/uniform.hpp"
+#include "modules/distribution/multivariate/normal/normal.hpp"
+#include "modules/distribution/specific/multinomial/multinomial.hpp"
+#include "modules/problem/evaluation/bayesian/bayesian.hpp"
+#include <gsl/gsl_vector.h>
+
+namespace korali { namespace solver { namespace sampler {
+
+class TMCMC : public korali::solver::Sampler
+{
+ private:
+
+ void setBurnIn();
+ void prepareGeneration();
+ void processGeneration();
+ void minSearch(double const *fj, size_t fn, double pj, double objTol, double& xmin, double& fmin);
+ void processEvaluation(const size_t sampleId);
+ static double tmcmc_objlogp(double x, const double *fj, size_t fn, double pj, double zero);
+ static double objLog(const gsl_vector *v, void *param);
+
+ size_t N; // Number of variables
+
+ public:
+
+ void initialize() override;
+ void finalize() override;
+ void runGeneration() override;
+ void printGenerationBefore() override;
+ void printGenerationAfter() override;
+};
+
+} } } // namespace korali::solver::sampler
+
+#endif // _KORALI_SOLVER_TMCMC_HPP_

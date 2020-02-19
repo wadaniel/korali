@@ -1,0 +1,35 @@
+#ifndef _KORALI_SOLVER_DEA_HPP_
+#define _KORALI_SOLVER_DEA_HPP_
+
+#include "modules/solver/optimizer/optimizer.hpp"
+#include "modules/distribution/univariate/normal/normal.hpp"
+#include "modules/distribution/univariate/uniform/uniform.hpp"
+#include "modules/problem/evaluation/evaluation.hpp"
+#include <vector>
+
+namespace korali { namespace solver { namespace optimizer {
+
+class DEA : public korali::solver::Optimizer
+{
+ private:
+
+ korali::problem::Evaluation* _evaluationProblem;
+
+ void mutateSingle(size_t sampleIdx); /* sample individual */
+ void fixInfeasible(size_t sampleIdx); /* force sample inside lower & upper bounds */
+ void updateSolver(std::vector<korali::Sample>& samples); /* update states of DEA */
+ void initSamples();
+ void prepareGeneration();
+
+ public:
+
+ void initialize() override;
+ void finalize() override;
+ void runGeneration() override;
+ void printGenerationBefore() override;
+ void printGenerationAfter() override;
+};
+
+} } } // namespace korali::solver::optimizer
+
+#endif // _KORALI_SOLVER_DEA_HPP_

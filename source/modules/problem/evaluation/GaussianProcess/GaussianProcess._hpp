@@ -1,0 +1,26 @@
+#ifndef _KORALI_PROBLEM_GAUSSIAN_PROCESS_HPP_
+#define _KORALI_PROBLEM_GAUSSIAN_PROCESS_HPP_
+
+#include "modules/problem/evaluation/evaluation.hpp"
+#include "external/libgp/gp.hpp"
+
+namespace korali { namespace problem { namespace evaluation {
+
+class GaussianProcess : public korali::problem::Evaluation
+{
+ private:
+
+   libgp::GaussianProcess* _gp;
+
+ public:
+
+   void initialize() override;
+   void basicEvaluation(korali::Sample&) override;
+   bool isSampleFeasible(korali::Sample& sample) override;
+
+};
+
+} } } // namespace korali::problem::evaluation
+
+
+#endif // _KORALI_PROBLEM_GAUSSIAN_PROCESS_HPP_

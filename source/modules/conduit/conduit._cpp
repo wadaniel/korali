@@ -1,0 +1,106 @@
+#include "modules/conduit/conduit.hpp"
+
+korali::Conduit* korali::_conduit;
+
+void korali::Conduit::coroutineWrapper()
+{
+ korali::Sample* currentSample = _conduit->_currentSample;
+ co_switch(_currentExperiment->_thread);
+ (*currentSample)["Experiment Id"] = _currentExperiment->_experimentId;
+ (*currentSample)["Current Generation"] = _currentExperiment->_currentGeneration;
+
+ _conduit->processSample(*currentSample);
+
+ currentSample->_state = SampleState::finished;
+ co_switch(_currentExperiment->_thread);
+
+ if (currentSample->_state != SampleState::uninitialized) korali::logError("Resuming a finished sample\n");
+}
+
+void korali::Conduit::start(korali::Sample& sample)
+{
+ if (sample._state != SampleState::uninitialized) korali::logError("Sample has already been initialized.\n");
+
+ sample._sampleThread = co_create(8192*sizeof(void*), korali::Conduit::coroutineWrapper);
+ sample._state = SampleState::initialized;
+ _conduit->_currentSample = &sample;
+ co_switch(sample._sampleThread);
+}
+
+void korali::Conduit::wait(korali::Sample& sample)
+{
+ while(sample._state == SampleState::waiting || sample._state == SampleState::initialized)
+ {
+  sample._state = SampleState::running;
+  co_switch(sample._sampleThread);
+
+  if (sample._state == SampleState::waiting || sample._state == SampleState::initialized) co_switch(_mainThread);
+ }
+
+ size_t sampleId = sample["Sample Id"];
+ _currentExperiment->_sampleInfo["Samples"][sampleId] = sample._js.getJson();
+ free(sample._sampleThread);
+ sample._state = SampleState::uninitialized;
+
+}
+
+size_t korali::Conduit::waitAny(std::vector<korali::Sample>& samples)
+{
+ bool isFinished = false;
+ size_t currentSample;
+
+ while (isFinished == false)
+ {
+  for (currentSample = 0; currentSample < samples.size(); currentSample++)
+  {
+   if (samples[currentSample]._state == SampleState::waiting || samples[currentSample]._state == SampleState::initialized)
+   {
+    samples[currentSample]._state = SampleState::running;
+    co_switch(samples[currentSample]._sampleThread);
+   }
+
+   if (samples[currentSample]._state == SampleState::finished)
+   {
+    size_t sampleId = samples[currentSample]["Sample Id"];
+    _currentExperiment->_sampleInfo["Samples"][sampleId] = samples[currentSample]._js.getJson();
+    free(samples[currentSample]._sampleThread);
+    samples[currentSample]._state = SampleState::uninitialized;
+    isFinished = true;
+    break;
+   }
+  }
+
+  if (isFinished == false) co_switch(_mainThread);
+ }
+
+ return currentSample;
+}
+
+void korali::Conduit::waitAll(std::vector<korali::Sample>& samples)
+{
+ bool isFinished = false;
+
+ while (isFinished == false)
+ {
+  isFinished = true;
+
+  for (size_t i = 0; i < samples.size(); i++)
+   if (samples[i]._state == SampleState::waiting || samples[i]._state == SampleState::initialized)
+   {
+    isFinished = false;
+    samples[i]._state = SampleState::running;
+    co_switch(samples[i]._sampleThread);
+   }
+
+  if (isFinished == false) co_switch(_mainThread);
+ }
+
+ for (size_t i = 0; i < samples.size(); i++)
+ {
+  size_t sampleId = samples[i]["Sample Id"];
+  _currentExperiment->_sampleInfo["Samples"][sampleId] = samples[i]._js.getJson();
+  free(samples[i]._sampleThread);
+  samples[i]._state = SampleState::uninitialized;
+ }
+
+}

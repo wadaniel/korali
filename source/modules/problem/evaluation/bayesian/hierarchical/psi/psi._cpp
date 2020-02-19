@@ -1,0 +1,143 @@
+#include "modules/problem/evaluation/bayesian/hierarchical/psi/psi.hpp"
+#include "modules/distribution/univariate/normal/normal.hpp"
+#include "modules/experiment/experiment.hpp"
+#include "modules/conduit/conduit.hpp"
+
+void korali::problem::evaluation::bayesian::hierarchical::Psi::initialize()
+{
+ korali::problem::evaluation::bayesian::Hierarchical::initialize();
+
+ _conditionalPriorIndexes.resize(_conditionalPriors.size());
+
+ if (_conditionalPriors.size() == 0) korali::logError("Hierarchical Bayesian (Psi) problems require at least one conditional prior\n");
+
+ for (size_t i = 0; i < _conditionalPriors.size(); i++)
+ {
+  bool foundDistribution = false;
+
+  for (size_t j = 0; j < _k->_distributions.size(); j++)
+   if (_conditionalPriors[i] == _k->_distributions[j]->_name) { foundDistribution = true; _conditionalPriorIndexes[i] = j; }
+
+  if (foundDistribution == false)
+   korali::logError("Did not find conditional prior distribution %s\n", _conditionalPriors[i].c_str());
+ }
+
+ if (_subProblems.size() < 2) korali::logError("Hierarchical Bayesian (Psi) problem requires defining at least two executed sub-problems.\n");
+
+ // Obtaining sub problem count and variable counts
+ _subProblemsCount = _subProblems.size();
+ _subProblemsVariablesCount = _conditionalPriors.size();
+
+ // Creating JSON object from string
+ _subProblemEngines = std::vector<korali::Experiment>(_subProblemsCount);
+ for (size_t i = 0; i < _subProblemsCount; i++)
+ {
+  if (_subProblemEngines[i].loadState(_subProblems[i]) == false) korali::logError("Error loading sub problem results from: %s...\n", _subProblems[i].c_str());
+  _subProblemEngines[i].initialize();
+ }
+
+ // Sub-problem correctness checks
+ for (size_t i = 0; i < _subProblemsCount; i++)
+ {
+  std::string problemName = _subProblemEngines[i]["Problem"]["Type"];
+
+  if (problemName.rfind("Evaluation/Bayesian/Inference", 0) != 0)
+   korali::logError("The Hierarchical Bayesian (Psi) can only accept sub-problems of type 'Evaluation/Bayesian/Inference' but sub-Problem %lu is of type: '%s'.\n", i, _subProblemEngines[i]["Problem"]["Type"].get<std::string>().c_str());
+
+  if (_conditionalPriors.size() != _subProblemEngines[i]["Variables"].size())
+   korali::logError("Sub-problem %lu contains a different number of variables (%lu) than conditional priors in the Hierarchical Bayesian (Psi) problem (%lu).\n", i, _subProblemEngines[i]["Problem"]["Variables"].size(), _conditionalPriors.size());
+
+  if (_subProblemEngines[i]["Is Finished"] == false)
+   korali::logError("The Hierarchical Bayesian (Psi) requires that all problems have run completely, but Problem %lu has not.\n", i);
+ }
+
+ _subProblemsSampleCoordinates.resize(_subProblemsCount);
+ _subProblemsSampleLogLikelihoods.resize(_subProblemsCount);
+ _subProblemsSampleLogPriors.resize(_subProblemsCount);
+
+ for (size_t i = 0; i < _subProblemsCount; i++)
+ {
+  _subProblemsSampleLogPriors[i]      = _subProblemEngines[i]["Solver"]["Sample LogPrior Database"].get<std::vector<double>>();
+  _subProblemsSampleLogLikelihoods[i] = _subProblemEngines[i]["Solver"]["Sample LogLikelihood Database"].get<std::vector<double>>();
+  _subProblemsSampleCoordinates[i] = _subProblemEngines[i]["Solver"]["Sample Database"].get<std::vector<std::vector<double>>>();
+
+  for (size_t j = 0; j < _subProblemsSampleLogPriors.size(); j++)
+  {
+   double expPrior = exp(_subProblemsSampleLogPriors[i][j]);
+   if( std::isfinite(expPrior) == false )
+     korali::logError("Non finite (%lf) prior has been detected at sample %zu in subproblem %zu.\n", expPrior, j, i );
+  }
+ }
+
+ // Configuring conditional priors given hyperparameters
+ _conditionalPriorInfos.resize(_conditionalPriors.size());
+
+ for (size_t i = 0; i < _conditionalPriors.size(); i++)
+ {
+  auto distributionJs = nlohmann::json();
+  _k->_distributions[_conditionalPriorIndexes[i]]->getConfiguration(distributionJs);
+
+  for (auto it = distributionJs.begin(); it != distributionJs.end(); ++it) if (it.value().is_string())
+  {
+   std::string key(it.key());
+   std::string value(it.value().get<std::string>());
+   size_t position = 0;
+   double* pointer;
+
+   if (key == "Name") continue;
+   if (key == "Type") continue;
+   if (key == "Range") continue;
+   if (key == "Random Seed") continue;
+
+   bool foundValue = false;
+   for (size_t k = 0; k < _k->_variables.size(); k++)
+    if (_k->_variables[k]->_name == value)
+    {
+     position = k;
+     pointer = _k->_distributions[_conditionalPriorIndexes[i]]->getPropertyPointer(key);
+     foundValue = true;
+    }
+   if(foundValue == false) korali::logError("No variable name specified that satisfies conditional prior property \"%s\" with key: \"%s\".\n", key.c_str(), value.c_str());
+
+   _conditionalPriorInfos[i]._samplePointers.push_back(pointer);
+   _conditionalPriorInfos[i]._samplePositions.push_back(position);
+  }
+ }
+}
+
+void korali::problem::evaluation::bayesian::hierarchical::Psi::updateConditionalPriors(korali::Sample& sample)
+{
+ for (size_t i = 0; i < _conditionalPriors.size(); i++)
+ {
+  for (size_t j = 0; j < _conditionalPriorInfos[i]._samplePositions.size(); j++)
+   *(_conditionalPriorInfos[i]._samplePointers[j]) = sample["Parameters"][_conditionalPriorInfos[i]._samplePositions[j]];;
+  _k->_distributions[_conditionalPriorIndexes[i]]->updateDistribution();
+ }
+}
+
+void korali::problem::evaluation::bayesian::hierarchical::Psi::evaluateLogLikelihood(korali::Sample& sample)
+{
+ if (isSampleFeasible(sample) == false) { sample["logLikelihood"] = -korali::Inf; return; };
+
+ updateConditionalPriors(sample);
+
+ double logLikelihood = 0.0;
+
+ for (size_t i = 0; i < _subProblemsCount; i++ )
+ {
+   std::vector<double> logValues(_subProblemsSampleLogPriors[i].size());
+
+   for (size_t j = 0; j < _subProblemsSampleLogPriors[i].size(); j++)
+   {
+    logValues[j] = -_subProblemsSampleLogPriors[i][j];
+    for( size_t k = 0; k < _conditionalPriors.size(); k++ )
+     logValues[j] += _k->_distributions[_conditionalPriorIndexes[k]]->getLogDensity(_subProblemsSampleCoordinates[i][j][k]);
+   }
+
+   logLikelihood += logSumExp(logValues);
+
+   if( std::isnan(logLikelihood)) { sample["logLikelihood"] = -korali::Inf; return; };
+ }
+
+ sample["logLikelihood"] = logLikelihood;
+}

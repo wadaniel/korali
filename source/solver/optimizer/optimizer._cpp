@@ -1,9 +1,0 @@
-#include "solver/optimizer/optimizer.hpp"
-
-void korali::solver::Optimizer::initialize()
-{
- korali::Solver::initialize();
-
- auto problem = dynamic_cast<korali::problem::Evaluation*>(_k->_problem);
- if (problem == NULL) korali::logError( "Optimizers can work with problems of type 'Evaluation' or derived problem types.\n");
-}

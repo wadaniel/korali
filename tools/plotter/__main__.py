@@ -45,7 +45,7 @@ def main(path, mean, check, test):
  requestedSolver = js['Solver']['Type']
  solverName = requestedSolver.rsplit('/')[-1]
 
- solverDir = curdir + '/../solver/'
+ solverDir = curdir + '/../modules/solver/'
  for folder in requestedSolver.rsplit('/')[:-1]: solverDir += folder.lower()
  solverDir += '/' + solverName
  solverFile = solverDir + '/' + solverName + '.py'

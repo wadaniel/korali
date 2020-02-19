@@ -1,7 +1,7 @@
 #include "auxiliar/koraliJson.hpp"
 #include "auxiliar/logger.hpp"
 #include "auxiliar/py2json.hpp"
-#include "experiment/sample/sample.hpp"
+#include "modules/experiment/sample/sample.hpp"
 
 korali::KoraliJson::KoraliJson()
 {

@@ -1,0 +1,54 @@
+#ifndef _KORALI_CONDUIT_MPI_HPP_
+#define _KORALI_CONDUIT_MPI_HPP_
+
+#ifdef _KORALI_USE_MPI
+ #include "mpi.h"
+ extern MPI_Comm __KoraliTeamComm;
+ extern MPI_Comm getKoraliMPIComm();
+ extern long int getKoraliMPICommPointer();
+#endif
+
+#include "modules/conduit/conduit.hpp"
+#include <queue>
+#include <vector>
+#include <map>
+
+namespace korali { namespace conduit {
+
+class Distributed : public korali::Conduit
+{
+
+ private:
+
+ void workerThread();
+
+ public:
+
+ #ifdef _KORALI_USE_MPI
+ int _rankId;
+ int _rankCount;
+
+ // Team Management
+ int _teamCount;
+
+ int _teamId;
+ int _localRankId;
+
+ std::queue<int> _teamQueue;
+ std::map< int, std::vector<int> > _teamWorkers;
+
+ bool _continueEvaluations;
+ #endif
+
+ void initialize() override;
+ void finalize() override;
+
+ void processSample(korali::Sample& sample) override;
+ int getRootRank();
+ bool isRoot() override;
+ void abort() override;
+};
+
+} } // namespace korali::Conduit
+
+#endif // _KORALI_CONDUIT_MPI_HPP_

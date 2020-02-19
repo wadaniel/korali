@@ -1,0 +1,19 @@
+#ifndef _KORALI_PROBLEM_EXECUTION_HPP_
+#define _KORALI_PROBLEM_EXECUTION_HPP_
+
+#include "modules/problem/problem.hpp"
+
+namespace korali { namespace problem {
+
+class Execution : public korali::Problem
+{
+ public:
+
+   virtual void execute(korali::Sample& sample){ }
+
+};
+
+} } // namespace korali::problem
+
+
+#endif // _KORALI_PROBLEM_EXECUTION_HPP_

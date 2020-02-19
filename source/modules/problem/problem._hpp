@@ -1,0 +1,19 @@
+#ifndef _KORALI_PROBLEM_HPP_
+#define _KORALI_PROBLEM_HPP_
+
+#include "modules/module.hpp"
+#include "modules/experiment/experiment.hpp"
+
+namespace korali {
+
+class Problem : public korali::Module
+{
+ public:
+
+ virtual bool runOperation(std::string operation, korali::Sample& sample) { return false; };
+};
+
+} // namespace korali
+
+
+#endif // _KORALI_PROBLEM_HPP_

@@ -15,7 +15,7 @@
 #include "pybind11/pybind11.h"
 #include "pybind11/stl.h"
 #include <gsl/gsl_rng.h>
-#include "experiment/sample/sample.hpp"
+#include "modules/experiment/sample/sample.hpp"
 
 typedef void(*__fkfc)(korali::Sample&);
 typedef std::function<void(korali::Sample&)> __kfc;

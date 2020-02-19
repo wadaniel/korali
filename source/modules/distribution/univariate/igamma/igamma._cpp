@@ -1,0 +1,27 @@
+#include "modules/distribution/univariate/igamma/igamma.hpp"
+
+double korali::distribution::univariate::Igamma::getDensity(double x)
+{
+ return _aux * std::pow(x,-_shape-1.) * std::exp(-_scale/x);
+}
+
+double korali::distribution::univariate::Igamma::getLogDensity(double x)
+{
+ if(x < 0) return -INFINITY;
+ return _aux - (_shape+1)*log(x) - (_scale/x);
+}
+
+double korali::distribution::univariate::Igamma::getRandomNumber()
+{
+ return 1./gsl_ran_gamma(_range, _shape, 1./_scale);
+}
+
+void korali::distribution::univariate::Igamma::updateDistribution()
+{
+ if (_shape <= 0.0)  korali::logError("Incorrect Shape parameter of Inverse Gamma distribution: %f.\n", _shape);
+ if (_scale <= 0.0)  korali::logError("Incorrect Scale parameter of Inverse Gamma distribution: %f.\n", _scale);
+
+ _auxLog = _shape*log(_scale) - gsl_sf_lngamma(_shape);
+ _aux = std::exp(_auxLog);
+
+}

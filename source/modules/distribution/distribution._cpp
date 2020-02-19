@@ -1,0 +1,57 @@
+#include "modules/distribution/distribution.hpp"
+#include "modules/experiment/experiment.hpp"
+
+void korali::Distribution::initialize()
+{
+ if (_hasConditionalVariables == false) updateDistribution();
+}
+
+std::string korali::Distribution::getRange(gsl_rng* range)
+{
+ unsigned char* state = (unsigned char*) gsl_rng_state (range);
+ size_t n = gsl_rng_size (range);
+ char* hexString = (char*) calloc(sizeof(char), n*2 + 1);
+
+ for (size_t i = 0; i < n; i++)
+  korali::byteToHexPair(&hexString[i*2], state[i]);
+
+ hexString[n*2] = '\0';
+
+ // korali::crcInit();
+ // uint8_t crc8 = crcFast((uint8_t*)state, n);
+ // size_t crc32 = crc8;
+ // printf("Saving CRC: 0x%X\n", crc32);
+
+ std::string output = std::string(hexString);
+ free(hexString);
+ return output;
+}
+
+gsl_rng* korali::Distribution::setRange(std::string rangeString)
+{
+ gsl_rng* rng = gsl_rng_alloc (gsl_rng_default);
+ if (_randomSeed == 0) _randomSeed = _k->_randomSeed++;
+ gsl_rng_set(rng, _randomSeed);
+
+ void* state = gsl_rng_state(rng);
+
+ size_t n = rangeString.size() >> 1;
+ size_t m = gsl_rng_size (rng);
+
+ if (rangeString != "")
+ {
+  if (m != n) korali::logError("Invalid GSL state size: %lu != %lu\n", m, n);
+
+  const char* rngHexString = rangeString.c_str();
+
+  for (size_t i = 0; i < n; i++)
+   ((char*)state)[i] = (char)korali::hexPairToByte(&rngHexString[i*2]);
+ }
+
+ // korali::crcInit();
+ // uint8_t crc8 = korali::crcFast((uint8_t*)state, n);
+ // size_t crc32 = crc8;
+ // printf("Loading CRC: 0x%X\n", crc32);
+
+ return rng;
+}

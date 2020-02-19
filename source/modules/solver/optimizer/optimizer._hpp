@@ -1,0 +1,20 @@
+#ifndef _KORALI_OPTIMIZER_HPP_
+#define _KORALI_OPTIMIZER_HPP_
+
+#include <vector>
+#include "modules/solver/solver.hpp"
+#include "modules/problem/evaluation/evaluation.hpp"
+
+namespace korali { namespace solver {
+
+class Optimizer : public korali::Solver
+{
+ public:
+
+ void initialize() override;
+
+};
+
+} } // namespace korali:solver
+
+#endif // _KORALI_OPTIMIZER_HPP_

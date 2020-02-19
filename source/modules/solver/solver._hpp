@@ -1,0 +1,30 @@
+#ifndef _KORALI_SOLVERHPP_
+#define _KORALI_SOLVERHPP_
+
+#include <vector>
+#include <string>
+#include "modules/module.hpp"
+#include "modules/experiment/experiment.hpp"
+#include "external/libco/libco.h"
+
+namespace korali {
+
+class Solver : public korali::Module
+{
+ public:
+
+ void initialize() override;
+ virtual void printGenerationBefore() { };
+ virtual void printGenerationAfter() { };
+ virtual void runGeneration() = 0;
+ void getJson(nlohmann::json& defaultJs);
+
+ static void solverWrapper();
+
+};
+
+extern korali::Solver* _currentSolver;
+
+} // namespace korali
+
+#endif // _KORALI_SOLVERHPP_

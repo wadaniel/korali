@@ -1,0 +1,39 @@
+#ifndef _KORALI_CONDUIT_HPP_
+#define _KORALI_CONDUIT_HPP_
+
+#include "modules/module.hpp"
+#include "modules/experiment/experiment.hpp"
+#include "modules/solver/solver.hpp"
+#include <vector>
+#include <chrono>
+
+namespace korali {
+
+class Conduit : public korali::Module {
+
+ public:
+
+ virtual void processSample(korali::Sample& sample) = 0;
+ virtual bool isRoot() { return true; }
+ virtual void abort() { exit(-1); }
+
+ // Sample execution fields
+ korali::Sample* _currentSample;
+
+ // Waiting Functions
+ void start(korali::Sample& sample);
+ void wait(korali::Sample& sample);
+ static void waitAll(std::vector<korali::Sample>& samples);
+ static size_t waitAny(std::vector<korali::Sample>& samples);
+
+ // Coroutine execution functions.
+ static void coroutineWrapper();
+};
+
+extern korali::Conduit* _conduit;
+
+} // namespace korali
+
+
+#endif // _KORALI_CONDUIT_HPP_
+

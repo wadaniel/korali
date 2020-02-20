@@ -15,7 +15,7 @@ k = korali.Engine()
 e = korali.Experiment()
 
 # Selecting problem and solver types.
-e["Problem"]["Type"] = "Evaluation/Direct/Basic"
+e["Problem"]["Type"] = "Direct/Basic"
 e["Problem"]["Objective Function"] = storeResults
 
 # Defining the problem's variables and their CMA-ES bounds.

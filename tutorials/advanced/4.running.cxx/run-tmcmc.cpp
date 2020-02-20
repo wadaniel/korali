@@ -6,7 +6,7 @@ int main(int argc, char* argv[])
  auto e = korali::Experiment();
  auto p = heat2DInit(&argc, &argv);
 
- e["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Reference";
+ e["Problem"]["Type"] = "Bayesian/Inference/Reference";
  e["Problem"]["Likelihood Model"] = "Additive Normal";
  e["Problem"]["Reference Data"] = p.refTemp;
  e["Problem"]["Computational Model"] = &heat2DSolver;

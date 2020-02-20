@@ -11,7 +11,7 @@ eList = []
 for i in range(5):
   e = korali.Experiment()
   
-  e["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Approximate"
+  e["Problem"]["Type"] = "Bayesian/Inference/Approximate"
   e["Problem"]["Likelihood Model"] = "Normal"
   e["Problem"]["Reference Data"] = getReferenceData("setup/data/",i);
   

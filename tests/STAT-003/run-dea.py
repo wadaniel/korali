@@ -15,7 +15,7 @@ from helpers import *
 
 e = korali.Experiment()
 
-e["Problem"]["Type"] = "Evaluation/Direct/Basic"
+e["Problem"]["Type"] = "Direct/Basic"
 e["Problem"]["Objective Function"] = evalmodel
 
 e["Variables"][0]["Name"] = "X";

@@ -11,7 +11,7 @@ from helpers import *
 
 # Selecting problem and solver types.
 e = korali.Experiment()
-e["Problem"]["Type"] = "Evaluation/Direct/Basic"
+e["Problem"]["Type"] = "Direct/Basic"
 e["Problem"]["Objective Function"] = model
 
 # Configuring the MCMC sampler parameters

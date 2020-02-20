@@ -16,7 +16,7 @@ e = korali.Experiment()
 e["Results"]["Path"] = "_result_run-tmcmc"
 
 # Setting up custom likelihood for the Bayesian Problem
-e["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Custom"
+e["Problem"]["Type"] = "Bayesian/Inference/Custom"
 e["Problem"]["Likelihood Model"] = llaplaceCustom
 
 # Configuring TMCMC parameters

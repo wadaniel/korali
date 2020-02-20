@@ -15,7 +15,7 @@ import korali
 k = korali.Engine()
 e = korali.Experiment()
 
-e["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Custom"
+e["Problem"]["Type"] = "Bayesian/Inference/Custom"
 e["Problem"]["Likelihood Model"] = calculateLogLikelihood
 
 e["Solver"]["Type"]  = "Sampler/TMCMC"

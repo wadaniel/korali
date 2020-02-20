@@ -17,7 +17,7 @@ k = korali.Engine()
 e = korali.Experiment()
 
 # Configuring Problem.
-e["Problem"]["Type"] = "Evaluation/Direct/Basic"
+e["Problem"]["Type"] = "Direct/Basic"
 e["Problem"]["Objective Function"] = model
 
 # Defining the problem's variables.

@@ -15,7 +15,7 @@ e = korali.Experiment()
 e["Console"]["Frequency"] = 500
 e["Results"]["Frequency"] = 500
 
-e["Problem"]["Type"] = "Evaluation/Direct/Basic"
+e["Problem"]["Type"] = "Direct/Basic"
 e["Problem"]["Objective Function"] = model
 
 # Configuring the MCMC sampler parameters

@@ -15,7 +15,7 @@ import korali
 k = korali.Engine()
 e = korali.Experiment()
 
-e["Problem"]["Type"] = "Evaluation/Direct/Basic"
+e["Problem"]["Type"] = "Direct/Basic"
 
 e["Solver"]["Type"] = "Optimizer/CMAES"
 e["Solver"]["Population Size"] = 5

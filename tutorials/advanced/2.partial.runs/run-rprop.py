@@ -15,7 +15,7 @@ import korali
 k = korali.Engine()
 e = korali.Experiment()
 
-e["Problem"]["Type"] = "Evaluation/Direct/Gradient"
+e["Problem"]["Type"] = "Direct/Gradient"
 e["Problem"]["Objective Function"] = model_with_gradient
 
 e["Solver"]["Type"] = "Optimizer/Rprop"

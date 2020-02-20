@@ -8,7 +8,7 @@ import korali
 k = korali.Engine()
 e = korali.Experiment()
 
-e["Problem"]["Type"] = "Evaluation/Direct/Basic"
+e["Problem"]["Type"] = "Direct/Basic"
 e["Problem"]["Objective Function"] = maxmodel1
 
 e["Variables"][0]["Name"] = "X"

@@ -6,10 +6,12 @@ bool korali::problem::evaluation::Direct::isSampleFeasible(korali::Sample& sampl
   for (size_t i = 0; i < sample["Parameters"].size(); i++)
   {
     double par = sample["Parameters"][i];
-    if (std::isfinite(par) == false) return false;
-    if (par < _k->_variables[i]->_lowerBound) return false;
-    if (par > _k->_variables[i]->_upperBound) return false;
+    if (std::isfinite(par) == false) { sample["Is Feasible"] = false; return false; }
+    if (par < _k->_variables[i]->_lowerBound) { sample["Is Feasible"] = false; return false; }
+    if (par > _k->_variables[i]->_upperBound) { sample["Is Feasible"] = false; return false; }
   }
+
+  sample["Is Feasible"] = true;
   return true;
 }
 
@@ -17,7 +19,7 @@ void korali::problem::evaluation::Direct::initialize()
 {
  if (_k->_variables.size() == 0) korali::logError("Direct Evaluation problems require at least one variable.\n");
 
-/* check _granularity for discrete variables */
+ /* check _granularity for discrete variables */
  for (size_t i = 0; i < _k->_variables.size(); i++)
  {
    if(_k->_variables[i]->_granularity < 0.0)   korali::logError("Negative granularity for variable \'%s\'.\n", _k->_variables[i]->_name.c_str());

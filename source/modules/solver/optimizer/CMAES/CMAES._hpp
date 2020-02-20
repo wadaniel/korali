@@ -4,7 +4,6 @@
 #include "modules/solver/optimizer/optimizer.hpp"
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
-#include "modules/problem/evaluation/direct/direct.hpp"
 #include <vector>
 
 namespace korali { namespace solver { namespace optimizer {
@@ -13,9 +12,7 @@ class CMAES : public korali::solver::Optimizer
 {
  private:
 
- korali::problem::evaluation::Direct* _directProblem;
- korali::problem::Evaluation* _evaluationProblem;
-
+ void setInitialConfiguration();
  void prepareGeneration();
  void sampleSingle(size_t sampleIdx); /* sample individual */
  void adaptC(int hsig); /* CMAES covariance matrix adaption */
@@ -38,7 +35,6 @@ class CMAES : public korali::solver::Optimizer
 
  public:
 
- void initialize() override;
  void finalize() override;
  void runGeneration() override;
  void printGenerationBefore() override;

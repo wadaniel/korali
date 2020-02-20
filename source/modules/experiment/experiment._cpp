@@ -100,7 +100,7 @@ void korali::Experiment::saveState()
 bool korali::Experiment::loadState()
 {
   std::string path = "_korali_result";
-  if (korali::JsonInterface::isDefined(_js.getJson(), "['Results']['Path'"))
+  if (korali::JsonInterface::isDefined(_js.getJson(), "['Results']['Path']"))
    std::string path = _js["Results"]["Path"];
   return loadState(path);
 }

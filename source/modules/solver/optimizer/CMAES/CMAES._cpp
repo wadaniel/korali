@@ -8,24 +8,14 @@
 #include <numeric>   // std::iota
 #include <algorithm> // std::sort
 
-void korali::solver::optimizer::CMAES::initialize()
+void korali::solver::optimizer::CMAES::setInitialConfiguration()
 {
- korali::solver::Optimizer::initialize();
+ nlohmann::json problemConfig = (*_k)["Problem"];
 
- _directProblem = dynamic_cast<korali::problem::evaluation::Direct*>(_k->_problem);
- bool isDirectProblem = _directProblem != NULL;
-
- _evaluationProblem = dynamic_cast<korali::problem::Evaluation*>(_k->_problem);
- bool isEvaluationProblem = _evaluationProblem != NULL;
-
- if (isEvaluationProblem == false)
-  korali::logError("CMAES can only optimize problems of type 'Evaluation' or derived.\n");
-
- if (_k->_currentGeneration > 0) return;
-
- if (isDirectProblem == false || _directProblem->_objective == "Maximize") 
-   _bestEverValue = -std::numeric_limits<double>::infinity();
- else /* Minimize */
+ // Establishing optimization goal
+ _bestEverValue = -std::numeric_limits<double>::infinity();
+ if (korali::JsonInterface::isDefined(problemConfig, "['Objective']"))
+  if (problemConfig["Objective"] == "Minimize")
    _bestEverValue = +std::numeric_limits<double>::infinity();
  
  _previousBestEverValue = _bestEverValue;
@@ -41,16 +31,17 @@ void korali::solver::optimizer::CMAES::initialize()
  _chiSquareNumber = sqrt((double) _variableCount) * (1. - 1./(4.*_variableCount) + 1./(21.*_variableCount*_variableCount));
  _chiSquareNumberDiscreteMutations = sqrt((double) _variableCount) * (1. - 1./(4.*_variableCount) + 1./(21.*_variableCount*_variableCount));
 
- if (isDirectProblem == false)
+ _areConstraintsDefined = false;
+ if (korali::JsonInterface::isDefined(problemConfig, "['Constraints']"))
  {
-  _areConstraintsDefined = false;
-  _hasDiscreteVariables = false;
+  std::vector<size_t> problemConstraints = problemConfig["Constraints"];
+  if (problemConstraints.size() > 0) _areConstraintsDefined = true;
+  _constraintEvaluations.resize(problemConstraints.size());
  }
- else
- {
-  _areConstraintsDefined = (_directProblem->_constraints.size() > 0);
-  _hasDiscreteVariables = _directProblem->_hasDiscreteVariables;
- }
+
+ _hasDiscreteVariables = false;
+ if (korali::JsonInterface::isDefined(problemConfig, "['Has Discrete Variables']"))
+  _hasDiscreteVariables = problemConfig["Has Discrete Variables"];
 
  _isViabilityRegime = _areConstraintsDefined;
 
@@ -97,41 +88,28 @@ void korali::solver::optimizer::CMAES::initialize()
 
  // Initializing variable defaults
 
- if (isDirectProblem == false)
+ for (size_t i = 0; i < _variableCount; i++)
  {
-  for (size_t i = 0; i < _variableCount; i++)
-  {
-    if( std::isfinite(_k->_variables[i]->_initialMean) == false )
-      korali::logError("Initial Mean of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
-    if( std::isfinite(_k->_variables[i]->_initialStandardDeviation) == false)
-      korali::logError("Initial Standard Deviation of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
-  }
- }
- else
- {
-  for (size_t i = 0; i < _variableCount; i++)
-  {
-    if(std::isfinite(_k->_variables[i]->_initialMean) == false)
-    {
-     if(std::isfinite(_k->_variables[i]->_lowerBound) == false) korali::logError("Initial Mean of variable \'%s\' not defined, and cannot be inferred because variable lower bound is not finite.\n", _k->_variables[i]->_name.c_str());
-     if(std::isfinite(_k->_variables[i]->_upperBound) == false) korali::logError("Initial Mean of variable \'%s\' not defined, and cannot be inferred because variable upper bound is not finite.\n", _k->_variables[i]->_name.c_str());
-     _k->_variables[i]->_initialMean = (_k->_variables[i]->_upperBound + _k->_variables[i]->_lowerBound)*0.5;
-    }
+   if(std::isfinite(_k->_variables[i]->_initialMean) == false)
+   {
+    if(std::isfinite(_k->_variables[i]->_lowerBound) == false) korali::logError("Initial Mean of variable \'%s\' not defined, and cannot be inferred because variable lower bound is not finite.\n", _k->_variables[i]->_name.c_str());
+    if(std::isfinite(_k->_variables[i]->_upperBound) == false) korali::logError("Initial Mean of variable \'%s\' not defined, and cannot be inferred because variable upper bound is not finite.\n", _k->_variables[i]->_name.c_str());
+    _k->_variables[i]->_initialMean = (_k->_variables[i]->_upperBound + _k->_variables[i]->_lowerBound)*0.5;
+   }
 
-    if(std::isfinite(_k->_variables[i]->_initialStandardDeviation) == false)
-    {
-     if(std::isfinite(_k->_variables[i]->_lowerBound) == false) korali::logError("Initial Mean of variable \'%s\' not defined, and cannot be inferred because variable lower bound is not finite.\n", _k->_variables[i]->_name.c_str());
-     if(std::isfinite(_k->_variables[i]->_upperBound) == false) korali::logError("Initial Standard Deviation \'%s\' not defined, and cannot be inferred because variable upper bound is not finite.\n", _k->_variables[i]->_name.c_str());
-     _k->_variables[i]->_initialStandardDeviation = (_k->_variables[i]->_upperBound - _k->_variables[i]->_lowerBound)*0.3;
-    }
+   if(std::isfinite(_k->_variables[i]->_initialStandardDeviation) == false)
+   {
+    if(std::isfinite(_k->_variables[i]->_lowerBound) == false) korali::logError("Initial Mean of variable \'%s\' not defined, and cannot be inferred because variable lower bound is not finite.\n", _k->_variables[i]->_name.c_str());
+    if(std::isfinite(_k->_variables[i]->_upperBound) == false) korali::logError("Initial Standard Deviation \'%s\' not defined, and cannot be inferred because variable upper bound is not finite.\n", _k->_variables[i]->_name.c_str());
+    _k->_variables[i]->_initialStandardDeviation = (_k->_variables[i]->_upperBound - _k->_variables[i]->_lowerBound)*0.3;
+   }
 
-    if(_k->_variables[i]->_initialMean < _k->_variables[i]->_lowerBound || _k->_variables[i]->_initialMean > _k->_variables[i]->_upperBound)
-    korali::logError("Initial Mean (%.4f) of variable \'%s\' is out of bounds (%.4f : %.4f).\n",
-             _k->_variables[i]->_initialMean,
-             _k->_variables[i]->_name.c_str(),
-             _k->_variables[i]->_lowerBound,
-             _k->_variables[i]->_upperBound);
-  }
+   if(_k->_variables[i]->_initialMean < _k->_variables[i]->_lowerBound || _k->_variables[i]->_initialMean > _k->_variables[i]->_upperBound)
+   korali::logError("Initial Mean (%.4f) of variable \'%s\' is out of bounds (%.4f : %.4f).\n",
+            _k->_variables[i]->_initialMean,
+            _k->_variables[i]->_name.c_str(),
+            _k->_variables[i]->_lowerBound,
+            _k->_variables[i]->_upperBound);
  }
 
  // CMAES variables
@@ -147,19 +125,18 @@ void korali::solver::optimizer::CMAES::initialize()
   _globalSuccessRate = 0.5;
   _bestValidSample   = -1;
   _sampleConstraintViolationCounts.resize(s_max);
-  _viabilityBoundaries.resize(_directProblem->_constraints.size());
+  _viabilityBoundaries.resize(_constraintEvaluations.size());
 
   _viabilityImprovement.resize(s_max);
-  _viabilityIndicator.resize(_directProblem->_constraints.size());
-  _constraintEvaluations.resize(_directProblem->_constraints.size());
+  _viabilityIndicator.resize(_constraintEvaluations.size());
 
-  for (size_t c = 0; c < _directProblem->_constraints.size(); c++) _viabilityIndicator[c].resize(s_max);
-  for (size_t c = 0; c < _directProblem->_constraints.size(); c++) _constraintEvaluations[c].resize(s_max);
+  for (size_t c = 0; c < _constraintEvaluations.size(); c++) _viabilityIndicator[c].resize(s_max);
+  for (size_t c = 0; c < _constraintEvaluations.size(); c++) _constraintEvaluations[c].resize(s_max);
 
-  _normalConstraintApproximation.resize(_directProblem->_constraints.size());
-  for (size_t i = 0; i < _directProblem->_constraints.size(); i++) _normalConstraintApproximation[i].resize(_variableCount);
+  _normalConstraintApproximation.resize(_constraintEvaluations.size());
+  for (size_t i = 0; i < _constraintEvaluations.size(); i++) _normalConstraintApproximation[i].resize(_variableCount);
 
-  _bestConstraintEvaluations.resize(_directProblem->_constraints.size());
+  _bestConstraintEvaluations.resize(_constraintEvaluations.size());
 
   _normalVectorLearningRate = 1.0/(2.0+_variableCount);
   _covarianceMatrixAdaptionFactor = _covarianceMatrixAdaptionStrength/(_variableCount+2.);
@@ -194,6 +171,7 @@ void korali::solver::optimizer::CMAES::initialize()
 
 void korali::solver::optimizer::CMAES::runGeneration()
 {
+ if (_k->_currentGeneration == 1) setInitialConfiguration();
 
  if ( _areConstraintsDefined ) checkMeanAndSetRegime();
  prepareGeneration();
@@ -212,12 +190,12 @@ void korali::solver::optimizer::CMAES::runGeneration()
 
  // Waiting for samples to finish
  korali::_conduit->waitAll(samples);
-
  updateDistribution(samples);
 }
 
 void korali::solver::optimizer::CMAES::initMuWeights(size_t numsamplesmu)
 {
+
  // Initializing Mu Weights
  if      (_muType == "Linear")       for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = numsamplesmu - i;
  else if (_muType == "Equal")        for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = 1.;
@@ -293,18 +271,15 @@ void korali::solver::optimizer::CMAES::checkMeanAndSetRegime()
   korali::_conduit->wait(sample);
   _constraintEvaluationCount++;
 
-  for (size_t c = 0; c < _directProblem->_constraints.size(); c++)
+  for (size_t c = 0; c < _constraintEvaluations.size(); c++)
     if (sample["Constraint Evaluations"][c] > 0.0) return; /* mean violates constraint, do nothing */
 
   /* mean inside domain, switch regime and update internal variables */
   _isViabilityRegime = false;
 
-  for (size_t c = 0; c < _directProblem->_constraints.size(); c++) { _viabilityBoundaries[c] = 0; }
+  for (size_t c = 0; c < _constraintEvaluations.size(); c++) { _viabilityBoundaries[c] = 0; }
   _currentPopulationSize = _populationSize;
   _currentMuValue = _muValue;
- 
-  if (_directProblem->_objective == "Maximize") _bestEverValue = -std::numeric_limits<double>::infinity();
-  else /* Minimize */                           _bestEverValue = +std::numeric_limits<double>::infinity();
  
   initMuWeights(_currentMuValue);
   initCovariance();
@@ -324,12 +299,12 @@ void korali::solver::optimizer::CMAES::updateConstraints()
   korali::_conduit->wait(sample);
   _constraintEvaluationCount++;
 
-  for(size_t c = 0; c < _directProblem->_constraints.size(); c++) _constraintEvaluations[c][i] = sample["Constraint Evaluations"][c];
+  for(size_t c = 0; c < _constraintEvaluations.size(); c++) _constraintEvaluations[c][i] = sample["Constraint Evaluations"][c];
  }
 
  _maxConstraintViolationCount = 0;
 
- for(size_t c = 0; c < _directProblem->_constraints.size(); c++)
+ for(size_t c = 0; c < _constraintEvaluations.size(); c++)
  {
   double maxviolation = 0.0;
   for(size_t i = 0; i < _currentPopulationSize; ++i)
@@ -358,7 +333,7 @@ void korali::solver::optimizer::CMAES::reEvaluateConstraints()
    _constraintEvaluationCount++;
 
     _sampleConstraintViolationCounts[i] = 0;
-    for(size_t c = 0; c < _directProblem->_constraints.size(); c++)
+    for(size_t c = 0; c < _constraintEvaluations.size(); c++)
     {
       _constraintEvaluations[c][i] = sample["Constraint Evaluations"][c];
       if( _constraintEvaluations[c][i] > _viabilityBoundaries[c] + 1e-12 ) { _viabilityIndicator[c][i] = true; _sampleConstraintViolationCounts[i]++; }
@@ -371,7 +346,7 @@ void korali::solver::optimizer::CMAES::reEvaluateConstraints()
 
 void korali::solver::optimizer::CMAES::updateViabilityBoundaries()
 {
- for(size_t c = 0; c < _directProblem->_constraints.size(); c++)
+ for(size_t c = 0; c < _constraintEvaluations.size(); c++)
  {
   double maxviolation = 0.0;
   for(size_t i = 0; i < _currentMuValue /* _currentPopulationSize alternative */ ; ++i) if (_constraintEvaluations[c][_sortingIndex[i]] > maxviolation)
@@ -385,18 +360,24 @@ void korali::solver::optimizer::CMAES::prepareGeneration()
 {
  for (size_t d = 0; d < _variableCount; ++d) _auxiliarCovarianceMatrix = _covarianceMatrix;
  updateEigensystem(_auxiliarCovarianceMatrix);
+
  for (size_t i = 0; i < _currentPopulationSize; ++i)
  {
-   sampleSingle(i);
-
-   korali::Sample sample;
-   sample["Parameters"] = _samplePopulation[i];
-   while(_evaluationProblem->isSampleFeasible(sample) == false )
+   bool isSampleFeasible;
+   do
    {
-     _infeasibleSampleCount++;
-     sampleSingle(i);
-     sample["Parameters"] = _samplePopulation[i];
+    _infeasibleSampleCount++;
+    sampleSingle(i);
+    korali::Sample sample;
+    sample["Parameters"] = _samplePopulation[i];
+    sample["Operation"] = "Check Feasibility";
+    korali::_conduit->start(sample);
+    korali::_conduit->wait(sample);
+    isSampleFeasible = sample["Is Feasible"];
    }
+   while(isSampleFeasible == false);
+
+   _infeasibleSampleCount--;
  }
 }
 
@@ -475,45 +456,23 @@ void korali::solver::optimizer::CMAES::updateDistribution(std::vector<korali::Sa
  _previousBestValue = _currentBestValue;
 
  /* update current best */
- if ( _directProblem == NULL || _directProblem->_objective == "Maximize" )
-    _currentBestValue = _valueVector[_bestValidSample];
- else /* Minimize*/
-    _currentBestValue = -1.0*_valueVector[_bestValidSample];
+ _currentBestValue = _valueVector[_bestValidSample];
 
  for (size_t d = 0; d < _variableCount; ++d) _currentBestVariables[d] = _samplePopulation[_bestValidSample][d];
 
  /* update xbestever */
- if ( _directProblem == NULL || _directProblem->_objective == "Maximize" )
+ if ( _currentBestValue > _bestEverValue || _k->_currentGeneration == 1 )
  {
-  if ( _currentBestValue > _bestEverValue || _k->_currentGeneration == 1 )
-  {
-   _previousBestEverValue = _bestEverValue;
-   _bestEverValue = _currentBestValue;
-   _bestSampleEver._js = samples[_bestValidSample]._js;
+  _previousBestEverValue = _bestEverValue;
+  _bestEverValue = _currentBestValue;
+  _bestSampleEver._js = samples[_bestValidSample]._js;
 
-   for (size_t d = 0; d < _variableCount; ++d)
-    _bestEverVariables[d] = _currentBestVariables[d];
+  for (size_t d = 0; d < _variableCount; ++d)
+   _bestEverVariables[d] = _currentBestVariables[d];
 
-   if ( _areConstraintsDefined )
-    for (size_t c = 0; c < _directProblem->_constraints.size(); c++)
-     _bestConstraintEvaluations[c] = _constraintEvaluations[c][_bestValidSample];
-  }
- }
- else /* Minimize */
- {
-  if ( _currentBestValue < _bestEverValue || _k->_currentGeneration == 1 )
-  {
-   _previousBestEverValue = _bestEverValue;
-   _bestEverValue = _currentBestValue;
-   _bestSampleEver._js = samples[_bestValidSample]._js;
-
-   for (size_t d = 0; d < _variableCount; ++d)
-    _bestEverVariables[d] = _currentBestVariables[d];
-
-   if ( _areConstraintsDefined )
-    for (size_t c = 0; c < _directProblem->_constraints.size(); c++)
-     _bestConstraintEvaluations[c] = _constraintEvaluations[c][_bestValidSample];
-  }
+  if ( _areConstraintsDefined )
+   for (size_t c = 0; c < _constraintEvaluations.size(); c++)
+    _bestConstraintEvaluations[c] = _constraintEvaluations[c][_bestValidSample];
  }
 
  /* set weights */
@@ -693,7 +652,7 @@ void korali::solver::optimizer::CMAES::handleConstraints()
   for(size_t i = 0; i < _currentPopulationSize; ++i) if (_sampleConstraintViolationCounts[i] > 0)
   {
     //update constraint normal
-    for( size_t c = 0; c < _directProblem->_constraints.size(); c++ ) if ( _viabilityIndicator[c][i] == true )
+    for( size_t c = 0; c < _constraintEvaluations.size(); c++ ) if ( _viabilityIndicator[c][i] == true )
     {
         _covarianceMatrixAdaptationCount++;
 
@@ -718,6 +677,7 @@ void korali::solver::optimizer::CMAES::handleConstraints()
   for(size_t i = 0; i < _currentPopulationSize; ++i) if(_sampleConstraintViolationCounts[i] > 0)
   {
     korali::Sample sample;
+    bool isSampleFeasible;
 
     do
     {
@@ -732,8 +692,14 @@ void korali::solver::optimizer::CMAES::handleConstraints()
      }
 
      sample["Parameters"] = _samplePopulation[i];
+     korali::Sample sample;
+     sample["Parameters"] = _samplePopulation[i];
+     sample["Operation"] = "Check Feasibility";
+     korali::_conduit->start(sample);
+     korali::_conduit->wait(sample);
+     isSampleFeasible = sample["Is Feasible"];
     }
-    while( _evaluationProblem->isSampleFeasible(sample) == false );
+    while(isSampleFeasible == false);
   }
 
   reEvaluateConstraints();
@@ -863,7 +829,7 @@ void korali::solver::optimizer::CMAES::printGenerationAfter()
  {
    korali::logInfo("Normal", "Searching start (MeanX violates constraints) .. \n");
    korali::logInfo("Normal", "Viability Bounds:\n");
-   for (size_t c = 0; c < _directProblem->_constraints.size(); c++) korali::logData("Normal", "         (%+6.3e)\n", _viabilityBoundaries[c]);
+   for (size_t c = 0; c < _constraintEvaluations.size(); c++) korali::logData("Normal", "         (%+6.3e)\n", _viabilityBoundaries[c]);
    korali::logInfo("Normal", "\n");
  }
 
@@ -879,9 +845,9 @@ void korali::solver::optimizer::CMAES::printGenerationAfter()
   if ( _areConstraintsDefined )
   {
    if ( _bestValidSample >= 0 )
-      for (size_t c = 0; c < _directProblem->_constraints.size(); c++) korali::logData("Detailed", "         ( %+6.3e )\n", _constraintEvaluations[c][_bestValidSample]);
+      for (size_t c = 0; c < _constraintEvaluations.size(); c++) korali::logData("Detailed", "         ( %+6.3e )\n", _constraintEvaluations[c][_bestValidSample]);
    else
-      for (size_t c = 0; c < _directProblem->_constraints.size(); c++) korali::logData("Detailed", "         ( %+6.3e )\n", _constraintEvaluations[c][0]);
+      for (size_t c = 0; c < _constraintEvaluations.size(); c++) korali::logData("Detailed", "         ( %+6.3e )\n", _constraintEvaluations[c][0]);
   }
 
   korali::logInfo("Detailed", "Covariance Matrix:\n");
@@ -907,7 +873,7 @@ void korali::solver::optimizer::CMAES::finalize()
   if ( _areConstraintsDefined )
   {
     korali::logInfo("Minimal", "Constraint Evaluation at Optimum:\n");
-    for (size_t c = 0; c < _directProblem->_constraints.size(); c++)
+    for (size_t c = 0; c < _constraintEvaluations.size(); c++)
       korali::logData("Minimal", "         ( %+6.3e )\n", _bestConstraintEvaluations[c]);
   }
   korali::logInfo("Minimal", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);

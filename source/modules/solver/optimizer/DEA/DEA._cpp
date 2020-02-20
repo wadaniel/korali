@@ -6,21 +6,11 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <chrono>
-#include <numeric>   // std::iota
-#include <algorithm> // std::sort
+#include <numeric>
+#include <algorithm>
 
-void korali::solver::optimizer::DEA::initialize()
+void korali::solver::optimizer::DEA::setInitialConfiguration()
 {
- korali::solver::Optimizer::initialize();
-
- _evaluationProblem = dynamic_cast<korali::problem::Evaluation*>(_k->_problem);
- bool isEvaluationProblem = _evaluationProblem != NULL;
-
- if (isEvaluationProblem == false)
-  korali::logError("DEA can only optimize problems of type 'Evaluation' or derived.\n");
-
- if (_k->_currentGeneration > 0) return;
-
  for(size_t d = 0; d < _variableCount; ++d)
   if(_k->_variables[d]->_upperBound < _k->_variables[d]->_lowerBound)
     korali::logError("Lower Bound (%.4f) of variable \'%s\'  exceeds Upper Bound (%.4f).\n", _k->_variables[d]->_lowerBound, _k->_variables[d]->_name.c_str(), _k->_variables[d]->_upperBound);
@@ -63,6 +53,8 @@ void korali::solver::optimizer::DEA::initialize()
 
 void korali::solver::optimizer::DEA::runGeneration()
 {
+ if (_k->_currentGeneration == 1) setInitialConfiguration();
+
  prepareGeneration();
 
  // Initializing Sample Evaluation
@@ -101,18 +93,22 @@ void korali::solver::optimizer::DEA::prepareGeneration()
  if(_k->_currentGeneration > 1)
  for (size_t i = 0; i < _populationSize; ++i)
  {
-  mutateSingle(i);
-
-  korali::Sample sample;
-  sample["Parameters"] = _candidatePopulation[i];
-  while(_evaluationProblem->isSampleFeasible(sample) == false)
+  bool isSampleFeasible = true;
+  do
   {
    _infeasibleSampleCount++;
-   if (_fixInfeasible) fixInfeasible(i);
-   else  mutateSingle(i);
+   mutateSingle(i);
+   if (_fixInfeasible && isSampleFeasible == false) fixInfeasible(i);
+   korali::Sample sample;
    sample["Parameters"] = _candidatePopulation[i];
+   sample["Operation"] = "Check Feasibility";
+   korali::_conduit->start(sample);
+   korali::_conduit->wait(sample);
+   isSampleFeasible = sample["Is Feasible"];
   }
+  while(isSampleFeasible == false);
 
+  _infeasibleSampleCount--;
  }
  _previousValueVector = _valueVector;
 }

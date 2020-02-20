@@ -12,13 +12,13 @@ class Direct : public korali::Problem
  public:
 
  void initialize() override;
- bool isSampleFeasible(korali::Sample& sample) override;
- void basicEvaluation(korali::Sample&) override;
+ bool isSampleFeasible(korali::Sample& sample);
+ void basicEvaluation(korali::Sample&);
  void evaluateConstraints(korali::Sample&);
 
 };
 
-} } } // namespace korali::problem
+} } // namespace korali::problem
 
 
 #endif // _KORALI_PROBLEM_DIRECT_HPP_

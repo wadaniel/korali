@@ -1,7 +1,7 @@
-#include "modules/problem/evaluation/bayesian/hierarchical/theta/theta.hpp"
+#include "modules/problem/bayesian/hierarchical/theta/theta.hpp"
 #include "modules/conduit/conduit.hpp"
 
-void korali::problem::evaluation::bayesian::hierarchical::Theta::initialize()
+void korali::problem::bayesian::hierarchical::Theta::initialize()
 {
  // Loading Psi-problem Experiment from path
  if (_psiProblemEngine.loadState(_psiProblemPath) == false) korali::logError("Error loading psi problem results from: %s...\n", _psiProblemPath.c_str());
@@ -63,7 +63,7 @@ void korali::problem::evaluation::bayesian::hierarchical::Theta::initialize()
   std::vector<double> logValues;
   logValues.resize(_thetaProblemSampleCount);
 
-  _psiProblem = dynamic_cast<korali::problem::evaluation::bayesian::hierarchical::Psi*>(_psiProblemEngine._problem);
+  _psiProblem = dynamic_cast<korali::problem::bayesian::hierarchical::Psi*>(_psiProblemEngine._problem);
 
   for (size_t i = 0; i < _psiProblemSampleCount; i++)
   {
@@ -86,11 +86,11 @@ void korali::problem::evaluation::bayesian::hierarchical::Theta::initialize()
     _precomputedLogDenominator.push_back(localSum);
   }
 
- korali::problem::evaluation::bayesian::Hierarchical::initialize();
+ korali::problem::bayesian::Hierarchical::initialize();
 }
 
 
-void korali::problem::evaluation::bayesian::hierarchical::Theta::evaluateLogLikelihood(korali::Sample& sample)
+void korali::problem::bayesian::hierarchical::Theta::evaluateLogLikelihood(korali::Sample& sample)
 {
  double logLikelihood = 0.0;
 

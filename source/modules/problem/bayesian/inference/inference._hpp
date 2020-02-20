@@ -14,7 +14,7 @@ class Inference : public korali::problem::Bayesian
   void initialize() override;
 };
 
-} } } } // namespace korali::problem::bayesian
+} } } // namespace korali::problem::bayesian
 
 
 #endif // _KORALI_PROBLEM_BAYESIAN_INFERENCE_HPP_

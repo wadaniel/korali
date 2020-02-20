@@ -15,12 +15,12 @@ class GaussianProcess : public korali::Problem
  public:
 
    void initialize() override;
-   void basicEvaluation(korali::Sample&) override;
-   bool isSampleFeasible(korali::Sample& sample) override;
+   void basicEvaluation(korali::Sample&);
+   bool isSampleFeasible(korali::Sample& sample);
 
 };
 
-} } } // namespace korali::problem
+} } // namespace korali::problem
 
 
 #endif // _KORALI_PROBLEM_GAUSSIAN_PROCESS_HPP_

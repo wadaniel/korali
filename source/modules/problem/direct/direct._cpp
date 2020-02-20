@@ -1,7 +1,7 @@
-#include "modules/problem/evaluation/direct/direct.hpp"
+#include "modules/problem/direct/direct.hpp"
 #include "modules/conduit/conduit.hpp"
 
-bool korali::problem::evaluation::Direct::isSampleFeasible(korali::Sample& sample)
+bool korali::problem::Direct::isSampleFeasible(korali::Sample& sample)
 {
   for (size_t i = 0; i < sample["Parameters"].size(); i++)
   {
@@ -15,7 +15,7 @@ bool korali::problem::evaluation::Direct::isSampleFeasible(korali::Sample& sampl
   return true;
 }
 
-void korali::problem::evaluation::Direct::initialize()
+void korali::problem::Direct::initialize()
 {
  if (_k->_variables.size() == 0) korali::logError("Direct Evaluation problems require at least one variable.\n");
 
@@ -27,7 +27,7 @@ void korali::problem::evaluation::Direct::initialize()
  }
 }
 
-void korali::problem::evaluation::Direct::evaluateConstraints(korali::Sample& sample)
+void korali::problem::Direct::evaluateConstraints(korali::Sample& sample)
 {
  for (size_t i = 0; i < _constraints.size(); i++)
  {
@@ -39,7 +39,7 @@ void korali::problem::evaluation::Direct::evaluateConstraints(korali::Sample& sa
  }
 }
 
-void korali::problem::evaluation::Direct::basicEvaluation(korali::Sample& sample)
+void korali::problem::Direct::basicEvaluation(korali::Sample& sample)
 {
  sample.run(_objectiveFunction);
 

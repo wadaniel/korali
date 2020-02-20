@@ -1,8 +1,8 @@
-#include "modules/problem/evaluation/bayesian/bayesian.hpp"
+#include "modules/problem/bayesian/bayesian.hpp"
 #include "modules/conduit/conduit.hpp"
 #include "modules/experiment/experiment.hpp"
 
-void korali::problem::evaluation::Bayesian::initialize()
+void korali::problem::Bayesian::initialize()
 {
   if (_k->_variables.size() == 0) korali::logError("Bayesian problems require at least one variable.\n");
   for (size_t i = 0; i < _k->_variables.size(); i++)
@@ -17,7 +17,7 @@ void korali::problem::evaluation::Bayesian::initialize()
   }
 }
 
-void korali::problem::evaluation::Bayesian::evaluateLogPrior(korali::Sample& sample)
+void korali::problem::Bayesian::evaluateLogPrior(korali::Sample& sample)
 {
   double logPrior = 0.0;
 
@@ -27,7 +27,7 @@ void korali::problem::evaluation::Bayesian::evaluateLogPrior(korali::Sample& sam
   sample["logPrior"] = logPrior;
 }
 
-void korali::problem::evaluation::Bayesian::evaluateLogPosterior(korali::Sample& sample)
+void korali::problem::Bayesian::evaluateLogPosterior(korali::Sample& sample)
 {
   int sampleId = sample["Sample Id"];
   evaluateLogPrior(sample);
@@ -50,7 +50,7 @@ void korali::problem::evaluation::Bayesian::evaluateLogPosterior(korali::Sample&
   }
 }
 
-bool korali::problem::evaluation::Bayesian::isSampleFeasible(korali::Sample& sample)
+bool korali::problem::Bayesian::isSampleFeasible(korali::Sample& sample)
 {
   for (size_t i = 0; i < sample["Parameters"].size(); i++)
     if (isfinite(_k->_distributions[_k->_variables[i]->_distributionIndex]->getLogDensity(sample["Parameters"][i])) == false) { sample["Is Feasible"] = false; return false; }
@@ -58,7 +58,7 @@ bool korali::problem::evaluation::Bayesian::isSampleFeasible(korali::Sample& sam
   return true;
 }
 
-void korali::problem::evaluation::Bayesian::basicEvaluation(korali::Sample& sample)
+void korali::problem::Bayesian::basicEvaluation(korali::Sample& sample)
 {
  evaluateLogPosterior(sample);
  sample["Evaluation"] = sample["logPosterior"];

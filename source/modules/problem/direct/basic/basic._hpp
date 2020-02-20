@@ -13,7 +13,7 @@ class Basic : public korali::problem::Direct
 
 };
 
-} } } } // namespace korali::problem::direct
+} } } // namespace korali::problem::direct
 
 
 #endif // _KORALI_PROBLEM_DIRECT_BASIS_HPP_

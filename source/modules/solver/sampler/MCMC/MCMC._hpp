@@ -4,7 +4,6 @@
 #include "modules/solver/sampler/sampler.hpp"
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
-#include "modules/problem/evaluation/evaluation.hpp"
 #include <vector>
 
 namespace korali { namespace solver { namespace sampler {

@@ -1,11 +1,11 @@
-#include "modules/problem/evaluation/direct/gradient/gradient.hpp"
+#include "modules/problem/direct/gradient/gradient.hpp"
 #include "modules/conduit/conduit.hpp"
 #include "auxiliar/math.hpp"
 
-void korali::problem::evaluation::direct::Gradient::basicEvaluation(korali::Sample& sample)
+void korali::problem::direct::Gradient::basicEvaluation(korali::Sample& sample)
 {
 
-  korali::problem::evaluation::Direct::basicEvaluation( sample );
+  korali::problem::Direct::basicEvaluation( sample );
 
   if ( korali::JsonInterface::isDefined(sample._js.getJson(), "Gradient") == false)
     korali::logError("The %s problem needs a function evaluation. Be sure that you assign a value to the ['Gradient'] attribute in the model definition.\n", _k->_problem->getType().c_str() );

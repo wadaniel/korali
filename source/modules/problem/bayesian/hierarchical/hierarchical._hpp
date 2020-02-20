@@ -15,7 +15,7 @@ class Hierarchical : public korali::problem::Bayesian
 
 };
 
-} } } } // namespace korali::problem::bayesian
+} } } // namespace korali::problem::bayesian
 
 
 #endif // _KORALI_PROBLEM_HIERARCHICAL_HPP_

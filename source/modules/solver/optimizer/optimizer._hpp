@@ -3,15 +3,12 @@
 
 #include <vector>
 #include "modules/solver/solver.hpp"
-#include "modules/problem/evaluation/evaluation.hpp"
 
 namespace korali { namespace solver {
 
 class Optimizer : public korali::Solver
 {
  public:
-
- void initialize() override;
 
 };
 

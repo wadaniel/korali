@@ -23,7 +23,7 @@ class Reference : public korali::problem::bayesian::Inference
  void initialize() override;
 };
 
-} } } } } // namespace korali::problem::bayesian::inference
+} } } } // namespace korali::problem::bayesian::inference
 
 
 #endif // _KORALI_PROBLEM_BAYESIAN_REFERENCE_HPP_

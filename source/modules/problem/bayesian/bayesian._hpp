@@ -13,14 +13,14 @@ class Bayesian : public korali::Problem
 
  void initialize() override;
 
- bool isSampleFeasible(korali::Sample& sample) override;
- virtual void basicEvaluation(korali::Sample& sample) override;
+ bool isSampleFeasible(korali::Sample& sample);
+ virtual void basicEvaluation(korali::Sample& sample);
  void evaluateLogPrior(korali::Sample& sample);
  virtual void evaluateLogLikelihood(korali::Sample& sample) = 0;
  void evaluateLogPosterior(korali::Sample& sample);
 };
 
-} } } // namespace korali::problem
+} } // namespace korali::problem
 
 
 #endif // _KORALI_PROBLEM_BAYESIAN_HPP_

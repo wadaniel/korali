@@ -1,8 +1,8 @@
-#include "modules/problem/evaluation/bayesian/inference/inference.hpp"
+#include "modules/problem/bayesian/inference/inference.hpp"
 
-void korali::problem::evaluation::bayesian::Inference::initialize()
+void korali::problem::bayesian::Inference::initialize()
 {
- korali::problem::evaluation::Bayesian::initialize();
+ korali::problem::Bayesian::initialize();
 
  _computationalVariableIndices.clear();
  _statisticalVariableIndices.clear();

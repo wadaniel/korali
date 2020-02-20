@@ -1,6 +1,6 @@
-#include "modules/problem/evaluation/bayesian/hierarchical/hierarchical.hpp"
+#include "modules/problem/bayesian/hierarchical/hierarchical.hpp"
 
-void korali::problem::evaluation::bayesian::Hierarchical::initialize()
+void korali::problem::bayesian::Hierarchical::initialize()
 {
- korali::problem::evaluation::Bayesian::initialize();
+ korali::problem::Bayesian::initialize();
 }

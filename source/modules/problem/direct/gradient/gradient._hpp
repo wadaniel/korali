@@ -11,11 +11,11 @@ class Gradient : public korali::problem::Direct
 
  public:
 
-   void basicEvaluation(korali::Sample&) override;
+   void basicEvaluation(korali::Sample&);
 
 };
 
-} } } } // namespace korali::problem::direct
+} } } // namespace korali::problem::direct
 
 
 #endif // _KORALI_PROBLEM_GRADIENT_HPP_

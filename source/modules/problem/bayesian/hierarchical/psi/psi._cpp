@@ -1,11 +1,11 @@
-#include "modules/problem/evaluation/bayesian/hierarchical/psi/psi.hpp"
+#include "modules/problem/bayesian/hierarchical/psi/psi.hpp"
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/conduit/conduit.hpp"
 
-void korali::problem::evaluation::bayesian::hierarchical::Psi::initialize()
+void korali::problem::bayesian::hierarchical::Psi::initialize()
 {
- korali::problem::evaluation::bayesian::Hierarchical::initialize();
+ korali::problem::bayesian::Hierarchical::initialize();
 
  _conditionalPriorIndexes.resize(_conditionalPriors.size());
 
@@ -105,7 +105,7 @@ void korali::problem::evaluation::bayesian::hierarchical::Psi::initialize()
  }
 }
 
-void korali::problem::evaluation::bayesian::hierarchical::Psi::updateConditionalPriors(korali::Sample& sample)
+void korali::problem::bayesian::hierarchical::Psi::updateConditionalPriors(korali::Sample& sample)
 {
  for (size_t i = 0; i < _conditionalPriors.size(); i++)
  {
@@ -115,7 +115,7 @@ void korali::problem::evaluation::bayesian::hierarchical::Psi::updateConditional
  }
 }
 
-void korali::problem::evaluation::bayesian::hierarchical::Psi::evaluateLogLikelihood(korali::Sample& sample)
+void korali::problem::bayesian::hierarchical::Psi::evaluateLogLikelihood(korali::Sample& sample)
 {
  if (isSampleFeasible(sample) == false) { sample["logLikelihood"] = -korali::Inf; return; };
 

@@ -28,7 +28,7 @@ maxRhoUpdate = 0.2
 print("[Korali] Prepare TMCMC run")
 
 e = korali.Experiment()
-e["Problem"]["Type"] = "Bayesian/Inference/Custom"
+e["Problem"]["Type"] = "Bayesian/Custom"
 e["Problem"]["Likelihood Model"] = evaluateLogLikelihood
 
 e["Distributions"][0]["Name"] = "Uniform 0"

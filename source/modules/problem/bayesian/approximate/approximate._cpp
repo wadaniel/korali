@@ -25,7 +25,7 @@ void korali::problem::bayesian::Approximate::initialize()
     if (foundUpperBound == false) korali::logError("Bayesian (%s) problems require defining a variable named: '[Upper Bound]'.\n", _likelihoodModel.c_str());
     if (foundMean == false)       korali::logError("Bayesian (%s) problems require defining a variable named: '[Mean]'.\n", _likelihoodModel.c_str());
     if (foundSigma == false)      korali::logError("Bayesian (%s) problems require defining a variable named: '[Sigma]'.\n", _likelihoodModel.c_str());
-    if (_k->_variables.size() < 5) korali::logError("Bayesian (%s) problems require at least one model variable.\n", _likelihoodModel.c_str());
+    if (_k->_variables.size() != 4) korali::logError("Bayesian (%s) problems requires exactly 4 variables.\n", _likelihoodModel.c_str());
   }
 
   if (_likelihoodModel == "Normal")
@@ -40,7 +40,7 @@ void korali::problem::bayesian::Approximate::initialize()
     }
     if (foundMean == false)       korali::logError("Bayesian (%s) problems require defining a variable named: '[Mean]'.\n", _likelihoodModel.c_str());
     if (foundSigma == false)      korali::logError("Bayesian (%s) problems require defining a variable named: '[Sigma]'.\n", _likelihoodModel.c_str());
-    if (_k->_variables.size() < 3) korali::logError("Bayesian (%s) problems require at least 3 model variables.\n", _likelihoodModel.c_str());
+    if (_k->_variables.size() != 2) korali::logError("Bayesian (%s) problems requires exactly 2 variables.\n", _likelihoodModel.c_str());
   }
 }
 

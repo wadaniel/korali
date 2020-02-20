@@ -17,7 +17,7 @@ e["Random Seed"] = 0xC0FFEE2
 e["Results"]["Path"] = "_result_run-tmcmc2"
 
 # Configuring problem
-e["Problem"]["Type"] = "Bayesian/Inference/Custom"
+e["Problem"]["Type"] = "Bayesian/Custom"
 e["Problem"]["Likelihood Model"] = model
 
 e["Distributions"][0]["Name"] = "Uniform 0"

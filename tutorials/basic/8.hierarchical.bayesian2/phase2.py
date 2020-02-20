@@ -8,7 +8,7 @@ import korali
 # Creating hierarchical Bayesian problem from previous two problems
 e = korali.Experiment()
 
-e["Problem"]["Type"]  = "Bayesian/Hierarchical/Psi"
+e["Problem"]["Type"]  = "Hierarchical/Psi"
 e["Problem"]["Sub Problems"] = ['setup/results_phase_1/' + str(i).zfill(3) for i in range(5)]
 
 # Add probability of theta given psi, one per subproblem variable.

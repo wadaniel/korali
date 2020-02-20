@@ -11,7 +11,7 @@ eList = []
 for i in range(5):
   e = korali.Experiment()
   
-  e["Problem"]["Type"] = "Bayesian/Inference/Approximate"
+  e["Problem"]["Type"] = "Bayesian/Approximate"
   e["Problem"]["Likelihood Model"] = "Normal"
   e["Problem"]["Reference Data"] = getReferenceData("setup/data/",i);
   
@@ -26,12 +26,10 @@ for i in range(5):
   e["Distributions"][1]["Minimum"] = 0.0
   e["Distributions"][1]["Maximum"] = 10.0
   
-  e["Variables"][0]["Name"] = "mu"
-  e["Variables"][0]["Bayesian Type"] = "Statistical"
+  e["Variables"][0]["Name"] = "[Mean]"
   e["Variables"][0]["Prior Distribution"] = "Uniform 0"
   
-  e["Variables"][1]["Name"] = "sigma"
-  e["Variables"][1]["Bayesian Type"] = "Statistical"
+  e["Variables"][1]["Name"] = "[Sigma]"
   e["Variables"][1]["Prior Distribution"] = "Uniform 1"
   
   e["Solver"]["Type"] = "Sampler/TMCMC"

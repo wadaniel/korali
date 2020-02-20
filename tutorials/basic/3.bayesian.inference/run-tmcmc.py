@@ -14,7 +14,7 @@ import korali
 e = korali.Experiment()
 
 # Setting up the reference likelihood for the Bayesian Problem
-e["Problem"]["Type"] = "Bayesian/Inference/Reference"
+e["Problem"]["Type"] = "Bayesian/Reference"
 e["Problem"]["Likelihood Model"] = "Additive Normal"
 e["Problem"]["Reference Data"] = getReferenceData()
 e["Problem"]["Computational Model"] = lambda sampleData: model(sampleData, getReferencePoints())
@@ -41,15 +41,12 @@ e["Distributions"][2]["Maximum"] = +5.0
 
 # Configuring the problem's variables and their prior distributions
 e["Variables"][0]["Name"] = "a"
-e["Variables"][0]["Bayesian Type"] = "Computational"
 e["Variables"][0]["Prior Distribution"] = "Uniform 0"
 
 e["Variables"][1]["Name"] = "b"
-e["Variables"][1]["Bayesian Type"] = "Computational"
 e["Variables"][1]["Prior Distribution"] = "Uniform 1"
 
-e["Variables"][2]["Name"] = "Sigma"
-e["Variables"][2]["Bayesian Type"] = "Statistical"
+e["Variables"][2]["Name"] = "[Sigma]"
 e["Variables"][2]["Prior Distribution"] = "Uniform 2"
 
 # Starting Korali's Engine and running experiment

@@ -18,7 +18,7 @@ eList = []
 
 for i in range(8):
   e = korali.Experiment()
-  e["Problem"]["Type"] = "Bayesian/Inference/Reference"
+  e["Problem"]["Type"] = "Bayesian/Reference"
   e["Problem"]["Likelihood Model"] = "Additive Normal"
   e["Problem"]["Reference Data"] = getReferenceData()
   e["Problem"]["Computational Model"] = lambda sampleData: model(sampleData, getReferencePoints())

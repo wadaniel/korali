@@ -18,7 +18,7 @@ def run_tmcmc_with_termination_criterion(criterion, value):
             "'{0}'".format(criterion))
 
     e = korali.Experiment()
-    e["Problem"]["Type"] = "Bayesian/Inference/Custom"
+    e["Problem"]["Type"] = "Bayesian/Custom"
     e["Problem"]["Likelihood Model"] = evaluateLogLikelihood
 
     e["Distributions"][0]["Name"] = "Uniform 0"

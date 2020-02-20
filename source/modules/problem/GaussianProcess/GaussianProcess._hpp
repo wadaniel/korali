@@ -1,12 +1,12 @@
 #ifndef _KORALI_PROBLEM_GAUSSIAN_PROCESS_HPP_
 #define _KORALI_PROBLEM_GAUSSIAN_PROCESS_HPP_
 
-#include "modules/problem/evaluation/evaluation.hpp"
+#include "modules/problem/problem.hpp"
 #include "external/libgp/gp.hpp"
 
-namespace korali { namespace problem { namespace evaluation {
+namespace korali { namespace problem {
 
-class GaussianProcess : public korali::problem::Evaluation
+class GaussianProcess : public korali::Problem
 {
  private:
 
@@ -20,7 +20,7 @@ class GaussianProcess : public korali::problem::Evaluation
 
 };
 
-} } } // namespace korali::problem::evaluation
+} } } // namespace korali::problem
 
 
 #endif // _KORALI_PROBLEM_GAUSSIAN_PROCESS_HPP_

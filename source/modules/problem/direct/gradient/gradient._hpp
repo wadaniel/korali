@@ -1,11 +1,11 @@
 #ifndef _KORALI_PROBLEM_GRADIENT_HPP_
 #define _KORALI_PROBLEM_GRADIENT_HPP_
 
-#include "modules/problem/evaluation/direct/direct.hpp"
+#include "modules/problem/direct/direct.hpp"
 
-namespace korali { namespace problem { namespace evaluation { namespace direct {
+namespace korali { namespace problem { namespace direct {
 
-class Gradient : public korali::problem::evaluation::Direct
+class Gradient : public korali::problem::Direct
 {
  private:
 
@@ -15,7 +15,7 @@ class Gradient : public korali::problem::evaluation::Direct
 
 };
 
-} } } } // namespace korali::problem::evaluation::direct
+} } } } // namespace korali::problem::direct
 
 
 #endif // _KORALI_PROBLEM_GRADIENT_HPP_

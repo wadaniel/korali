@@ -1,12 +1,12 @@
 #ifndef _KORALI_PROBLEM_BAYESIAN_REFERENCE_HPP_
 #define _KORALI_PROBLEM_BAYESIAN_REFERENCE_HPP_
 
-#include "modules/problem/evaluation/bayesian/inference/inference.hpp"
+#include "modules/problem/bayesian/inference/inference.hpp"
 #include <vector>
 
-namespace korali { namespace problem { namespace evaluation { namespace bayesian { namespace inference {
+namespace korali { namespace problem { namespace bayesian { namespace inference {
 
-class Reference : public korali::problem::evaluation::bayesian::Inference
+class Reference : public korali::problem::bayesian::Inference
 {
  private:
 
@@ -23,7 +23,7 @@ class Reference : public korali::problem::evaluation::bayesian::Inference
  void initialize() override;
 };
 
-} } } } } // namespace korali::problem::evaluation::bayesian::inference
+} } } } } // namespace korali::problem::bayesian::inference
 
 
 #endif // _KORALI_PROBLEM_BAYESIAN_REFERENCE_HPP_

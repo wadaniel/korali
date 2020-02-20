@@ -1,12 +1,12 @@
 #ifndef _KORALI_PROBLEM_THETA_HPP_
 #define _KORALI_PROBLEM_THETA_HPP_
 
-#include "modules/problem/evaluation/bayesian/bayesian.hpp"
-#include "modules/problem/evaluation/bayesian/hierarchical/psi/psi.hpp"
+#include "modules/problem/bayesian/bayesian.hpp"
+#include "modules/problem/bayesian/hierarchical/psi/psi.hpp"
 
-namespace korali { namespace problem { namespace evaluation { namespace bayesian { namespace hierarchical {
+namespace korali { namespace problem { namespace bayesian { namespace hierarchical {
 
-class Theta : public korali::problem::evaluation::bayesian::Hierarchical
+class Theta : public korali::problem::bayesian::Hierarchical
 {
  private:
 
@@ -33,7 +33,7 @@ class Theta : public korali::problem::evaluation::bayesian::Hierarchical
  void initialize() override;
 };
 
-} } } } } // namespace korali::problem::evaluation::bayesian::hierarchical
+} } } } } // namespace korali::problem::bayesian::hierarchical
 
 
 #endif // _KORALI_PROBLEM_THETA_HPP_

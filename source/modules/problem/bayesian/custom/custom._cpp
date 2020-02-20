@@ -1,0 +1,18 @@
+#include "modules/problem/bayesian/custom/custom.hpp"
+#include "modules/conduit/conduit.hpp"
+#include "modules/experiment/experiment.hpp"
+
+void korali::problem::bayesian::Custom::initialize()
+{
+  korali::problem::Bayesian::initialize();
+
+  if (_k->_variables.size() == 0) korali::logError("Bayesian inference problems require at least one variable.\n");
+}
+
+void korali::problem::bayesian::Custom::evaluateLogLikelihood(korali::Sample& sample)
+{
+ sample.run(_likelihoodModel);
+
+ if (! sample.contains("logLikelihood")) korali::logError("The specified likelihood model did not assign the value: 'logLikelihood' to the sample.\n");
+}
+

@@ -2,11 +2,11 @@
 #define _KORALI_PROBLEM_THETA_HPP_
 
 #include "modules/problem/bayesian/bayesian.hpp"
-#include "modules/problem/bayesian/hierarchical/psi/psi.hpp"
+#include "modules/problem/hierarchical/psi/psi.hpp"
 
-namespace korali { namespace problem { namespace bayesian { namespace hierarchical {
+namespace korali { namespace problem { namespace hierarchical {
 
-class Theta : public korali::problem::bayesian::Hierarchical
+class Theta : public korali::problem::Hierarchical
 {
  private:
 
@@ -16,7 +16,7 @@ class Theta : public korali::problem::bayesian::Hierarchical
  std::vector<std::vector<double>> _psiProblemSampleCoordinates;
  std::vector<double> _psiProblemSampleLogLikelihoods;
  std::vector<double> _psiProblemSampleLogPriors;
- korali::problem::bayesian::hierarchical::Psi* _psiProblem;
+ korali::problem::hierarchical::Psi* _psiProblem;
 
  korali::Experiment _thetaProblemEngine;
  size_t _thetaVariableCount;
@@ -33,7 +33,7 @@ class Theta : public korali::problem::bayesian::Hierarchical
  void initialize() override;
 };
 
-} } } } // namespace korali::problem::bayesian::hierarchical
+} } } // namespace korali::problem::hierarchical
 
 
 #endif // _KORALI_PROBLEM_THETA_HPP_

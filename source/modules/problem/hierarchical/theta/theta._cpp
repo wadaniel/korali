@@ -1,7 +1,7 @@
-#include "modules/problem/bayesian/hierarchical/theta/theta.hpp"
+#include "modules/problem/hierarchical/theta/theta.hpp"
 #include "modules/conduit/conduit.hpp"
 
-void korali::problem::bayesian::hierarchical::Theta::initialize()
+void korali::problem::hierarchical::Theta::initialize()
 {
  // Loading Psi-problem Experiment from path
  if (_psiProblemEngine.loadState(_psiProblemPath) == false) korali::logError("Error loading psi problem results from: %s...\n", _psiProblemPath.c_str());
@@ -20,7 +20,7 @@ void korali::problem::bayesian::hierarchical::Theta::initialize()
 
   // Psi-problem correctness checks
   std::string psiProblemType = _psiProblemEngine["Problem"]["Type"];
-  if (psiProblemType != "Bayesian/Hierarchical/Psi")
+  if (psiProblemType != "Hierarchical/Psi")
     korali::logError("The Hierarchical Bayesian (Theta) can only accept a psi-problem of type 'Bayesian/Hierarchical/Psi' but psi-Problem is of type: '%s'.\n", psiProblemType.c_str());
 
   // Cross-checks
@@ -63,7 +63,7 @@ void korali::problem::bayesian::hierarchical::Theta::initialize()
   std::vector<double> logValues;
   logValues.resize(_thetaProblemSampleCount);
 
-  _psiProblem = dynamic_cast<korali::problem::bayesian::hierarchical::Psi*>(_psiProblemEngine._problem);
+  _psiProblem = dynamic_cast<korali::problem::hierarchical::Psi*>(_psiProblemEngine._problem);
 
   for (size_t i = 0; i < _psiProblemSampleCount; i++)
   {
@@ -86,11 +86,11 @@ void korali::problem::bayesian::hierarchical::Theta::initialize()
     _precomputedLogDenominator.push_back(localSum);
   }
 
- korali::problem::bayesian::Hierarchical::initialize();
+ korali::problem::Hierarchical::initialize();
 }
 
 
-void korali::problem::bayesian::hierarchical::Theta::evaluateLogLikelihood(korali::Sample& sample)
+void korali::problem::hierarchical::Theta::evaluateLogLikelihood(korali::Sample& sample)
 {
  double logLikelihood = 0.0;
 

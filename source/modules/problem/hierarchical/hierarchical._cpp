@@ -1,6 +1,6 @@
-#include "modules/problem/bayesian/bayesian.hpp"
+#include "modules/problem/hierarchical/hierarchical.hpp"
 
-void korali::problem::Bayesian::initialize()
+void korali::problem::Hierarchical::initialize()
 {
   for (size_t i = 0; i < _k->_variables.size(); i++)
   {
@@ -14,7 +14,7 @@ void korali::problem::Bayesian::initialize()
   }
 }
 
-void korali::problem::Bayesian::evaluateLogPrior(korali::Sample& sample)
+void korali::problem::Hierarchical::evaluateLogPrior(korali::Sample& sample)
 {
   double logPrior = 0.0;
 
@@ -24,7 +24,7 @@ void korali::problem::Bayesian::evaluateLogPrior(korali::Sample& sample)
   sample["logPrior"] = logPrior;
 }
 
-void korali::problem::Bayesian::evaluateLogPosterior(korali::Sample& sample)
+void korali::problem::Hierarchical::evaluateLogPosterior(korali::Sample& sample)
 {
   int sampleId = sample["Sample Id"];
   evaluateLogPrior(sample);
@@ -47,7 +47,7 @@ void korali::problem::Bayesian::evaluateLogPosterior(korali::Sample& sample)
   }
 }
 
-bool korali::problem::Bayesian::isSampleFeasible(korali::Sample& sample)
+bool korali::problem::Hierarchical::isSampleFeasible(korali::Sample& sample)
 {
   for (size_t i = 0; i < sample["Parameters"].size(); i++)
     if (isfinite(_k->_distributions[_k->_variables[i]->_distributionIndex]->getLogDensity(sample["Parameters"][i])) == false) { sample["Is Feasible"] = false; return false; }
@@ -55,7 +55,7 @@ bool korali::problem::Bayesian::isSampleFeasible(korali::Sample& sample)
   return true;
 }
 
-void korali::problem::Bayesian::basicEvaluation(korali::Sample& sample)
+void korali::problem::Hierarchical::basicEvaluation(korali::Sample& sample)
 {
  evaluateLogPosterior(sample);
  sample["Evaluation"] = sample["logPosterior"];

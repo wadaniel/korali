@@ -1,13 +1,18 @@
 #ifndef _KORALI_PROBLEM_BAYESIAN_APPROXIMATE_HPP_
 #define _KORALI_PROBLEM_BAYESIAN_APPROXIMATE_HPP_
 
-#include "modules/problem/bayesian/inference/inference.hpp"
+#include "modules/problem/bayesian/bayesian.hpp"
 
-namespace korali { namespace problem { namespace bayesian { namespace inference {
+namespace korali { namespace problem { namespace bayesian {
 
-class Approximate : public korali::problem::bayesian::Inference
+class Approximate : public korali::problem::Bayesian
 {
  private:
+
+ size_t lowerBoundVariableIndex;
+ size_t upperBoundVariableIndex;
+ size_t meanVariableIndex;
+ size_t sigmaVariableIndex;
 
  void likelihoodTruncatedNormal(korali::Sample& sample);
  void likelihoodNormal(korali::Sample& sample);
@@ -18,7 +23,7 @@ class Approximate : public korali::problem::bayesian::Inference
  void initialize() override;
 };
 
-} } } } // namespace korali::problem::bayesian::inference
+} } } // namespace korali::problem::bayesian
 
 
 #endif // _KORALI_PROBLEM_BAYESIAN_APPROXIMATE_HPP_

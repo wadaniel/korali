@@ -11,15 +11,15 @@ void korali::problem::bayesian::hierarchical::ThetaNew::initialize()
 
   // Psi-problem correctness checks
   std::string psiProblemType = _psiProblemEngine["Problem"]["Type"];
-  if (psiProblemType != "Evaluation/Bayesian/Hierarchical/Psi")
-    korali::logError("The Hierarchical Bayesian (Theta) can only accept a psi-problem of type 'Evaluation/Bayesian/Hierarchical/Psi' but psi-Problem is of type: '%s'.\n", psiProblemType.c_str());
+  if (psiProblemType != "Bayesian/Hierarchical/Psi")
+    korali::logError("The Hierarchical Bayesian (Theta) can only accept a psi-problem of type 'Bayesian/Hierarchical/Psi' but psi-Problem is of type: '%s'.\n", psiProblemType.c_str());
 
   if (_psiProblemEngine["Is Finished"] == false)
     korali::logError("The Hierarchical Bayesian (Theta New) requires that the psi-problem has run completely, but it has not.\n");
 
   // Cross-checks
   if (_psiProblemEngine["Problem"]["Conditional Priors"].size() != _k->_variables.size() )
-    korali::logError("The problem contains a different number of variables (%lu) than conditional priors in the Evaluation/Bayesian/Hierarchical/Psi problem (%lu).\n", _k->_variables.size(), _psiProblemEngine["Problem"]["Conditional Priors"].size());
+    korali::logError("The problem contains a different number of variables (%lu) than conditional priors in the Bayesian/Hierarchical/Psi problem (%lu).\n", _k->_variables.size(), _psiProblemEngine["Problem"]["Conditional Priors"].size());
 
   // Loading Psi problem results
   _psiProblemSampleCount = _psiProblemEngine["Solver"]["Chain Leaders LogLikelihoods"].size();

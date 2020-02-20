@@ -7,7 +7,7 @@ int main(int argc, char* argv[])
  auto e = korali::Experiment();
  auto p = heat2DInit(&argc, &argv);
 
- e["Problem"]["Type"] = "Bayesian/Inference/Reference";
+ e["Problem"]["Type"] = "Bayesian/Reference";
  e["Problem"]["Likelihood Model"] = "Additive Normal";
  e["Problem"]["Reference Data"] = p.refTemp;
  e["Problem"]["Computational Model"] = &heat2DSolver;
@@ -37,25 +37,21 @@ int main(int argc, char* argv[])
  e["Distributions"][3]["Maximum"] = 20.0;
 
  e["Variables"][0]["Name"] = "Intensity";
- e["Variables"][0]["Bayesian Type"] = "Computational";
  e["Variables"][0]["Prior Distribution"] = "Uniform 0";
  e["Variables"][0]["Initial Mean"] = 30.0;
  e["Variables"][0]["Initial Standard Deviation"] = 5.0;
 
  e["Variables"][1]["Name"] = "PosX";
- e["Variables"][1]["Bayesian Type"] = "Computational";
  e["Variables"][1]["Prior Distribution"] = "Uniform 1";
  e["Variables"][1]["Initial Mean"] = 0.25;
  e["Variables"][1]["Initial Standard Deviation"] = 0.01;
 
  e["Variables"][2]["Name"] = "PosY";
- e["Variables"][2]["Bayesian Type"] = "Computational";
  e["Variables"][2]["Prior Distribution"] = "Uniform 2";
  e["Variables"][2]["Initial Mean"] = 0.8;
  e["Variables"][2]["Initial Standard Deviation"] = 0.1;
 
- e["Variables"][3]["Name"] = "Sigma";
- e["Variables"][3]["Bayesian Type"] = "Statistical";
+ e["Variables"][3]["Name"] = "[Sigma]";
  e["Variables"][3]["Prior Distribution"] = "Uniform 3";
  e["Variables"][3]["Initial Mean"] = 10.0;
  e["Variables"][3]["Initial Standard Deviation"] = 1.0;

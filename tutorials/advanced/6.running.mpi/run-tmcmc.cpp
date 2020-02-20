@@ -13,7 +13,7 @@ int main(int argc, char* argv[])
 
  e["Random Seed"] = 0xC0FFEE;
 
- e["Problem"]["Type"] = "Bayesian/Inference/Reference";
+ e["Problem"]["Type"] = "Bayesian/Reference";
  e["Problem"]["Likelihood Model"] = "Additive Normal";
  e["Problem"]["Reference Data"] = getReferenceData();
  e["Problem"]["Computational Model"] = &jacobi;
@@ -54,31 +54,24 @@ int main(int argc, char* argv[])
  e["Distributions"][6]["Maximum"] = +20.0;
 
  e["Variables"][0]["Name"] = "X0";
- e["Variables"][0]["Bayesian Type"] = "Computational";
  e["Variables"][0]["Prior Distribution"] = "Uniform 0";
 
  e["Variables"][1]["Name"] = "X1";
- e["Variables"][1]["Bayesian Type"] = "Computational";
  e["Variables"][1]["Prior Distribution"] = "Uniform 1";
 
  e["Variables"][2]["Name"] = "Y0";
- e["Variables"][2]["Bayesian Type"] = "Computational";
  e["Variables"][2]["Prior Distribution"] = "Uniform 2";
 
  e["Variables"][3]["Name"] = "Y1";
- e["Variables"][3]["Bayesian Type"] = "Computational";
  e["Variables"][3]["Prior Distribution"] = "Uniform 3";
 
  e["Variables"][4]["Name"] = "Z0";
- e["Variables"][4]["Bayesian Type"] = "Computational";
  e["Variables"][4]["Prior Distribution"] = "Uniform 4";
 
  e["Variables"][5]["Name"] = "Z1";
- e["Variables"][5]["Bayesian Type"] = "Computational";
  e["Variables"][5]["Prior Distribution"] = "Uniform 5";
 
- e["Variables"][6]["Name"] = "Sigma";
- e["Variables"][6]["Bayesian Type"] = "Statistical";
+ e["Variables"][6]["Name"] = "[Sigma]";
  e["Variables"][6]["Prior Distribution"] = "Uniform 6";
 
  e["Solver"]["Type"] = "Sampler/TMCMC";

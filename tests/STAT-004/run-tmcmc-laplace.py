@@ -36,11 +36,9 @@ e["Distributions"][1]["Maximum"] = +10.0
 
 # Configuring the problem's variables and their prior distributions
 e["Variables"][0]["Name"] = "a"
-e["Variables"][0]["Bayesian Type"] = "Computational"
 e["Variables"][0]["Prior Distribution"] = "Uniform 0"
 
 e["Variables"][1]["Name"] = "b"
-e["Variables"][1]["Bayesian Type"] = "Computational"
 e["Variables"][1]["Prior Distribution"] = "Uniform 1"
 
 # Running Korali

@@ -36,7 +36,6 @@ for i in range(5):
 
   # Configuring the problem's variables and their prior distributions
   e["Variables"][i]["Name"] = "a"
-  e["Variables"][i]["Bayesian Type"] = "Computational"
   e["Variables"][i]["Prior Distribution"] = "Uniform 0"
 
 e["Random Seed"] = 1337

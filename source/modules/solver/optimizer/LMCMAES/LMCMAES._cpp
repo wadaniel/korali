@@ -8,21 +8,8 @@
 #include <numeric>   // std::iota
 #include <algorithm> // std::sort
 
-void korali::solver::optimizer::LMCMAES::initialize()
+void korali::solver::optimizer::LMCMAES::setInitialConfiguration()
 {
- korali::solver::Optimizer::initialize();
-
- _directProblem       = dynamic_cast<korali::problem::evaluation::Direct*>(_k->_problem);
- bool isDirectProblem = _directProblem != NULL;
-
- _evaluationProblem       = dynamic_cast<korali::problem::Evaluation*>(_k->_problem);
- bool isEvaluationProblem = _evaluationProblem != NULL;
-
- if (isEvaluationProblem == false)
-  korali::logError("LMCMAES can only optimize problems of type 'Evaluation' or derived.\n");
-
- if (_k->_currentGeneration > 0) return;
-
  if (_targetDistanceCoefficients.size() == 0) _targetDistanceCoefficients = { double(_variableCount), 0.0, 0.0 };
 
  if(_targetDistanceCoefficients.size() != 3)
@@ -78,24 +65,13 @@ void korali::solver::optimizer::LMCMAES::initialize()
    std::fill(_evolutionPathHistory[i].begin(), _evolutionPathHistory[i].end(), 0.0);
  }
 
- if (isDirectProblem == false)
- {
-  for (size_t i = 0; i < _variableCount; i++)
-  {
-    if( std::isfinite(_k->_variables[i]->_initialMean) == false )
-      korali::logError("Initial Mean of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
-    if( std::isfinite(_k->_variables[i]->_initialStandardDeviation) == false)
-      korali::logError("Initial Standard Deviation of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
-  }
- }
-
  // Initializing variable defaults
  for (size_t i = 0; i < _variableCount; i++)
  {
    /* confirm lower & upper bound */
-   if( (std::isfinite(_k->_variables[i]->_lowerBound) && std::isfinite(_k->_variables[i]->_upperBound) ) == false ) 
+   if( (std::isfinite(_k->_variables[i]->_lowerBound) && std::isfinite(_k->_variables[i]->_upperBound) ) == false )
         korali::logError("Lower and/or upper bound of variable \'%s\' is not defined.\n", _k->_variables[i]->_name.c_str());
-    
+
    /* init mean if not defined */
    if(std::isfinite(_k->_variables[i]->_initialMean) == false)
    {
@@ -104,21 +80,11 @@ void korali::solver::optimizer::LMCMAES::initialize()
     _k->_variables[i]->_initialMean = (_k->_variables[i]->_upperBound + _k->_variables[i]->_lowerBound)*0.5;
    }
 
-   /* validate mean */
-   if(isDirectProblem == true)
-   if(_k->_variables[i]->_initialMean < _k->_variables[i]->_lowerBound || _k->_variables[i]->_initialMean > _k->_variables[i]->_upperBound)
-   korali::logError("Initial Mean (%.4f) of variable \'%s\' is out of bounds (%.4f : %.4f).\n",
-             _k->_variables[i]->_initialMean,
-             _k->_variables[i]->_name.c_str(),
-             _k->_variables[i]->_lowerBound,
-             _k->_variables[i]->_upperBound);
-
    /* calculate stddevs */
    if( std::isfinite(_k->_variables[i]->_initialStandardDeviation) == false)
     _standardDeviation[i] = 0.3 * (_k->_variables[i]->_upperBound - _k->_variables[i]->_lowerBound);
    else
     _standardDeviation[i] = _k->_variables[i]->_initialStandardDeviation;
-
  }
  
  _sigma = _initialSigma;
@@ -170,6 +136,7 @@ void korali::solver::optimizer::LMCMAES::initialize()
 
 void korali::solver::optimizer::LMCMAES::runGeneration()
 {
+ if (_k->_currentGeneration == 1) setInitialConfiguration();
 
  prepareGeneration();
 
@@ -199,18 +166,21 @@ void korali::solver::optimizer::LMCMAES::prepareGeneration()
 {
  for (size_t i = 0; i < _populationSize; ++i)
  {
-   size_t initialInfeasible = _infeasibleSampleCount;
-   sampleSingle(i);
-
-   korali::Sample sample;
-   sample["Parameters"] = _samplePopulation[i];
-   
-   while(_evaluationProblem->isSampleFeasible(sample) == false )
+   bool isSampleFeasible;
+   do
    {
-     _infeasibleSampleCount++;
-     sampleSingle(i);
-     sample["Parameters"] = _samplePopulation[i];
+    _infeasibleSampleCount++;
+    sampleSingle(i);
+    korali::Sample sample;
+    sample["Parameters"] = _samplePopulation[i];
+    sample["Operation"] = "Check Feasibility";
+    korali::_conduit->start(sample);
+    korali::_conduit->wait(sample);
+    isSampleFeasible = sample["Is Feasible"];
    }
+   while(isSampleFeasible == false);
+
+   _infeasibleSampleCount--;
  }
 }
 

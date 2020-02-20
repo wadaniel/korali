@@ -8,8 +8,8 @@ from korali.plotter.helpers import hlsColors, drawMulticoloredLine
 # Plot CMAES results (read from .json files)
 def plot(genList):
     fig, ax = plt.subplots(2,2,num='Korali Results', figsize=(8,8))
-
-    numdim = len(genList[0]['Variables'])
+    firstKey = next(iter(genList))
+    numdim = len(genList[firstKey]['Variables'])
     numgens = len(genList)
     
     lastGen = 0
@@ -48,7 +48,7 @@ def plot(genList):
          
     plt.suptitle('CMAES Diagnostics', fontweight='bold', fontsize=12 )
 
-    names  = [ genList[0]['Variables'][i]['Name'] for i in range(numdim) ]
+    names  = [ genList[firstKey]['Variables'][i]['Name'] for i in range(numdim) ]
     
     # Upper Left Plot
     ax[0,0].grid(True)

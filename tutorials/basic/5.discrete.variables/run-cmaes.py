@@ -16,7 +16,6 @@ e = korali.Experiment()
 
 # Selecting problem type
 e["Problem"]["Type"] = "Evaluation/Direct/Basic"
-e["Problem"]["Objective"] = "Maximize"
 e["Problem"]["Objective Function"] = model
 
 # Creating 10 variables and setting their CMA-ES bounds

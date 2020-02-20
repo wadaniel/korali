@@ -41,7 +41,9 @@ def main(path, mean, check, test):
    if (configRunId == solverRunId):
      curGen = genJs['Current Generation']
      genList[curGen] = genJs
-     
+
+ del genList[0]
+      
  requestedSolver = js['Solver']['Type']
  solverName = requestedSolver.rsplit('/')[-1]
 

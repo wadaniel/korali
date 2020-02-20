@@ -9,12 +9,12 @@ def assertclose(expected, value, atol):
 # Function to minimize
 def minmodel1(p):
   x = p["Parameters"][0]
-  p["Evaluation"] = (x-2.0)*(x-2.0)+10 # fopt = 10.0
+  p["Evaluation"] = -((x-2.0)*(x-2.0)+10) # fopt = 10.0
 
 # Function to minimize
 def minmodel2(p):
   x = p["Parameters"][0]
-  p["Evaluation"] = (x-2.0)*(x-2.0)-1e9 # fopt = -1e9
+  p["Evaluation"] = -((x-2.0)*(x-2.0)-1e9) # fopt = -1e9
 
 # Function to maximize
 def maxmodel1(p):

@@ -20,7 +20,6 @@ def run_ccmaes(constraint):
     e = korali.Experiment()
 
     e["Problem"]["Type"] = "Evaluation/Direct/Basic"
-    e["Problem"]["Objective"] = "Maximize"
     e["Problem"]["Objective Function"] = evaluateModel
 
     e["Variables"][0]["Name"] = "X"

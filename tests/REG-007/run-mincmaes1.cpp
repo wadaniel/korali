@@ -4,7 +4,8 @@
 void minmodel1(korali::Sample& s)
 {
   double x = s["Parameters"][0];
-  s["Evaluation"] = (x-2.0)*(x-2.0)+10;
+  double eval = (x-2.0)*(x-2.0)+10;  
+  s["Evaluation"] = -eval;
 }
 
 int main(int argc, char** argv)
@@ -13,7 +14,6 @@ int main(int argc, char** argv)
  auto e = korali::Experiment();
 
  e["Problem"]["Type"] = "Evaluation/Direct/Basic";
- e["Problem"]["Objective"] = "Minimize";
  e["Problem"]["Objective Function"] = &minmodel1;
 
  e["Variables"][0]["Name"] = "X";
@@ -30,7 +30,7 @@ int main(int argc, char** argv)
  std::vector<double> xopt = e["Solver"]["Best Ever Variables"];
  double fopt = e["Solver"]["Best Ever Value"];
 
- assert( std::abs((fopt - 10.0)/fopt)   <= 1e-6 );
+ assert( std::abs((fopt - -10.0)/fopt)   <= 1e-6 );
  assert( std::abs((xopt[0] - 2.0)/fopt) <= 1e-3 );
  
  return 0;

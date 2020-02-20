@@ -1,23 +1,10 @@
 #include "modules/solver/executor/executor.hpp"
 #include "modules/conduit/conduit.hpp"
 
-void korali::solver::Executor::initialize()
-{
- korali::Solver::initialize();
-
- // Initializing variable defaults
- _executionProblem = dynamic_cast<korali::problem::Execution*>(_k->_problem);
-
- if (_executionProblem == NULL)
-   korali::logError("Executor solver can only solve problems of type 'Execution'.\n");
-
- if (_k->_currentGeneration > 0) return;
-
- _sampleCount   = _k->_variables[0]->_loadedValues.size();
-}
-
 void korali::solver::Executor::runGeneration()
 {
+  _sampleCount   = _k->_variables[0]->_loadedValues.size();
+
   _maxModelEvaluations     = std::min(_maxModelEvaluations, _sampleCount);
   _executionsPerGeneration = std::min(_executionsPerGeneration, _maxModelEvaluations - _modelEvaluationCount);
   

@@ -3,7 +3,6 @@
 
 #include <vector>
 #include "modules/solver/optimizer/optimizer.hpp"
-#include "modules/problem/evaluation/evaluation.hpp"
 
 namespace korali { namespace solver { namespace optimizer {
 
@@ -12,6 +11,7 @@ class Rprop : public korali::solver::Optimizer
 
   private:  
 
+    void setInitialConfiguration();
     void evaluateFunctionAndGradient( void );
 
     void Update_plus( void ); // Rprop_plus
@@ -21,7 +21,6 @@ class Rprop : public korali::solver::Optimizer
 
   public:
 
-    void initialize() override;
     void finalize() override;
     void runGeneration() override;
     void printGenerationBefore() override;

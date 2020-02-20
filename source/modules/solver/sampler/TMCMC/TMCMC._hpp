@@ -6,7 +6,6 @@
 #include "modules/distribution/univariate/uniform/uniform.hpp"
 #include "modules/distribution/multivariate/normal/normal.hpp"
 #include "modules/distribution/specific/multinomial/multinomial.hpp"
-#include "modules/problem/evaluation/bayesian/bayesian.hpp"
 #include <gsl/gsl_vector.h>
 
 namespace korali { namespace solver { namespace sampler {
@@ -15,6 +14,7 @@ class TMCMC : public korali::solver::Sampler
 {
  private:
 
+ void setInitialConfiguration();
  void setBurnIn();
  void prepareGeneration();
  void processGeneration();
@@ -27,7 +27,6 @@ class TMCMC : public korali::solver::Sampler
 
  public:
 
- void initialize() override;
  void finalize() override;
  void runGeneration() override;
  void printGenerationBefore() override;

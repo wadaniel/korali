@@ -16,14 +16,12 @@ void korali::problem::evaluation::direct::Gradient::basicEvaluation(korali::Samp
   double evaluation = sample["Evaluation"];
   std::vector<double> gradient = sample["Gradient"];
 
-  double evaluationSign = _objective == "Maximize" ? 1.0 : -1.0;
-
   // If result is not a finite number, gradient is set to zero
   if( std::isnan(evaluation) || korali::isanynan(gradient) ){
     for(size_t i=0; i<sample["Gradient"].size(); i++) sample["Gradient"][i] = 0.;
   }
   else{
-    for(size_t i=0; i<sample["Gradient"].size(); i++) sample["Gradient"][i] = evaluationSign * gradient[i];
+    for(size_t i=0; i<sample["Gradient"].size(); i++) sample["Gradient"][i] = gradient[i];
   }
 
 }

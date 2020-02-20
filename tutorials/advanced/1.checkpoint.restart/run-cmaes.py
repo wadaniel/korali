@@ -16,7 +16,6 @@ k = korali.Engine()
 e = korali.Experiment()
 
 e["Problem"]["Type"] = "Evaluation/Direct/Basic"
-e["Problem"]["Objective"] = "Maximize"
 
 e["Solver"]["Type"] = "Optimizer/CMAES"
 e["Solver"]["Population Size"] = 5

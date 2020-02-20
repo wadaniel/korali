@@ -53,7 +53,8 @@ void korali::problem::evaluation::Bayesian::evaluateLogPosterior(korali::Sample&
 bool korali::problem::evaluation::Bayesian::isSampleFeasible(korali::Sample& sample)
 {
   for (size_t i = 0; i < sample["Parameters"].size(); i++)
-    if (isfinite(_k->_distributions[_k->_variables[i]->_distributionIndex]->getLogDensity(sample["Parameters"][i])) == false) return false;
+    if (isfinite(_k->_distributions[_k->_variables[i]->_distributionIndex]->getLogDensity(sample["Parameters"][i])) == false) { sample["Is Feasible"] = false; return false; }
+  sample["Is Feasible"] = true;
   return true;
 }
 

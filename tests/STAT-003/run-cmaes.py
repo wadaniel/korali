@@ -15,7 +15,6 @@ from helpers import *
 
 e = korali.Experiment()
 e["Problem"]["Type"] = "Evaluation/Direct/Basic"
-e["Problem"]["Objective"] = "Minimize"
 e["Problem"]["Objective Function"] = evalmodel
 
 e["Variables"][0]["Name"] = "X"
@@ -33,4 +32,4 @@ e["Random Seed"] = 1337
 k = korali.Engine()
 k.run(e)
 
-checkMin(e, -0.22942553779431113, 1e-4)
+checkMin(e, 0.22942553779431113, 1e-4)

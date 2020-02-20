@@ -2,7 +2,6 @@
 #define _KORALI_SOLVER_EXECUTOR_HPP_
 
 #include "modules/solver/solver.hpp"
-#include "modules/problem/execution/execution.hpp"
 
 namespace korali { namespace solver {
 
@@ -10,10 +9,7 @@ class Executor : public korali::Solver
 {
   private:
 
-  korali::problem::Execution* _executionProblem;
-
   public:
-    void initialize() override;
     void runGeneration() override;
     void printGenerationBefore() override;
     void printGenerationAfter() override;

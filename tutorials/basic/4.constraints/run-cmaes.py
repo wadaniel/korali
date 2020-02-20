@@ -17,7 +17,6 @@ e = korali.Experiment()
 
 # Selecting problem type
 e["Problem"]["Type"] = "Evaluation/Direct/Basic"
-e["Problem"]["Objective"] = "Maximize"
 e["Problem"]["Objective Function"] = model
 e["Problem"]["Constraints"] = [ g1, g2, g3, g4 ]
 
@@ -36,8 +35,8 @@ e["Solver"]["Termination Criteria"]["Max Value"] = -680.630057374402 - 1e-4
 e["Solver"]["Termination Criteria"]["Max Generations"] = 500
 
 # Configuring output settings
-e["Results"]["Frequency"] = 50
-e["Console"]["Frequency"] = 50
+#e["Results"]["Frequency"] = 50
+#e["Console"]["Frequency"] = 50
 
 # Starting Korali's Engine and running experiment
 k = korali.Engine()

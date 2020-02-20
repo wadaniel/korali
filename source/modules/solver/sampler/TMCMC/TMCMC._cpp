@@ -19,12 +19,8 @@ typedef struct fparam_s {
 } fparam_t;
 
 
-void korali::solver::sampler::TMCMC::initialize()
+void korali::solver::sampler::TMCMC::setInitialConfiguration()
 {
- korali::solver::Sampler::initialize();
-
- if (_k->_currentGeneration > 0) return;
-
  if(_maxChainLength == 0) korali::logError("Max Chain Length must be greater 0.");
 
  if (_perGenerationBurnIn.size() > 0 && _perGenerationBurnIn[0] != 0)
@@ -63,6 +59,8 @@ void korali::solver::sampler::TMCMC::initialize()
 
 void korali::solver::sampler::TMCMC::runGeneration()
 {
+  if (_k->_currentGeneration == 1) setInitialConfiguration();
+
   prepareGeneration();
 
   std::vector<korali::Sample> samples(_chainCount);

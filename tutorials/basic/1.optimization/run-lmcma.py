@@ -18,13 +18,14 @@ e = korali.Experiment()
 
 # Configuring Problem.
 e["Problem"]["Type"] = "Evaluation/Direct/Basic"
-e["Problem"]["Objective"] = "Maximize"
 e["Problem"]["Objective Function"] = model
 
 # Defining the problem's variables.
 e["Variables"][0]["Name"] = "X"
 e["Variables"][0]["Lower Bound"] = -10.0
 e["Variables"][0]["Upper Bound"] = +10.0
+e["Variables"][0]["Initial Mean"] = +0.0
+e["Variables"][0]["Initial Standard Deviation"] = +2.0
 
 # Configuring CMA-ES parameters
 e["Solver"]["Type"] = "Optimizer/LMCMAES"

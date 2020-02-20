@@ -5,16 +5,8 @@
 
 #include <stdio.h>
 
-void korali::solver::optimizer::Rprop::initialize()
+void korali::solver::optimizer::Rprop::setInitialConfiguration()
 {
- korali::solver::Optimizer::initialize();
-
-  if( _k->_problem->getType() != "Evaluation/Direct/Gradient" &&
-      _k->_problem->getType() !="Evaluation/GaussianProcess" )
-    korali::logError("Rprop can only optimize problems of type 'Evaluation/Direct/Gradient' or 'Evaluation/GaussianProcess'.\n");
-
-  if (_k->_currentGeneration > 0) return;
-
   for (size_t i = 0; i < _variableCount; i++)
     if( std::isfinite(_k->_variables[i]->_initialValue) == false )
       korali::logError("Initial Value of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
@@ -65,7 +57,9 @@ void korali::solver::optimizer::Rprop::evaluateFunctionAndGradient( void )
 
 void korali::solver::optimizer::Rprop::runGeneration( void )
 {
-  evaluateFunctionAndGradient( );
+  if (_k->_currentGeneration == 1) setInitialConfiguration();
+
+  evaluateFunctionAndGradient();
 
   korali::logInfo("Normal","X = [ ");
   for(size_t k=0; k<_variableCount; k++) korali::logData("Normal"," %.5le  ",_currentX[k]);

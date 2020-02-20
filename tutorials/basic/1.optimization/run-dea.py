@@ -18,7 +18,6 @@ e = korali.Experiment()
 
 # Configuring Problem
 e["Problem"]["Type"] = "Evaluation/Direct/Basic"
-e["Problem"]["Objective"] = "Maximize"
 e["Problem"]["Objective Function"] = model
 
 # Configuring Solver

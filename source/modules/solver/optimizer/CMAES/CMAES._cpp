@@ -14,9 +14,6 @@ void korali::solver::optimizer::CMAES::setInitialConfiguration()
 
  // Establishing optimization goal
  _bestEverValue = -std::numeric_limits<double>::infinity();
- if (korali::JsonInterface::isDefined(problemConfig, "['Objective']"))
-  if (problemConfig["Objective"] == "Minimize")
-   _bestEverValue = +std::numeric_limits<double>::infinity();
  
  _previousBestEverValue = _bestEverValue;
  _previousBestValue     = _bestEverValue;
@@ -87,7 +84,6 @@ void korali::solver::optimizer::CMAES::setInitialConfiguration()
  _muWeights.resize(mu_max);
 
  // Initializing variable defaults
-
  for (size_t i = 0; i < _variableCount; i++)
  {
    if(std::isfinite(_k->_variables[i]->_initialMean) == false)
@@ -103,13 +99,6 @@ void korali::solver::optimizer::CMAES::setInitialConfiguration()
     if(std::isfinite(_k->_variables[i]->_upperBound) == false) korali::logError("Initial Standard Deviation \'%s\' not defined, and cannot be inferred because variable upper bound is not finite.\n", _k->_variables[i]->_name.c_str());
     _k->_variables[i]->_initialStandardDeviation = (_k->_variables[i]->_upperBound - _k->_variables[i]->_lowerBound)*0.3;
    }
-
-   if(_k->_variables[i]->_initialMean < _k->_variables[i]->_lowerBound || _k->_variables[i]->_initialMean > _k->_variables[i]->_upperBound)
-   korali::logError("Initial Mean (%.4f) of variable \'%s\' is out of bounds (%.4f : %.4f).\n",
-            _k->_variables[i]->_initialMean,
-            _k->_variables[i]->_name.c_str(),
-            _k->_variables[i]->_lowerBound,
-            _k->_variables[i]->_upperBound);
  }
 
  // CMAES variables
@@ -691,8 +680,6 @@ void korali::solver::optimizer::CMAES::handleConstraints()
         return;
      }
 
-     sample["Parameters"] = _samplePopulation[i];
-     korali::Sample sample;
      sample["Parameters"] = _samplePopulation[i];
      sample["Operation"] = "Check Feasibility";
      korali::_conduit->start(sample);

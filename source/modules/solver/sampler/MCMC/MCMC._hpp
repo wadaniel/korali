@@ -13,6 +13,7 @@ class MCMC : public korali::solver::Sampler
 {
  private: 
 
+ void setInitialConfiguration();
  double recursiveAlpha(double& deonominator, const double leaderLoglikelihood, const double* loglikelihoods, size_t N) const;
  void updateState();
  void generateCandidate(size_t sampleIdx);
@@ -21,7 +22,6 @@ class MCMC : public korali::solver::Sampler
 
  public:
 
- void initialize() override;
  void finalize() override;
  void runGeneration() override;
  void printGenerationBefore() override;

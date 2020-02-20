@@ -19,7 +19,6 @@ def run_dea_with_termination_criterion(criterion, value):
 
     e = korali.Experiment()
     e["Problem"]["Type"] = "Evaluation/Direct/Basic"
-    e["Problem"]["Objective"] = "Maximize"
     e["Problem"]["Objective Function"] = evaluateModel
 
     e["Variables"][0]["Name"] = "X";

@@ -10,7 +10,6 @@ k = korali.Engine()
 e = korali.Experiment()
 
 e["Problem"]["Type"] = "Evaluation/Direct/Basic"
-e["Problem"]["Objective"] = "Minimize"
 e["Problem"]["Objective Function"] = minmodel1
 
 e["Variables"][0]["Name"] = "X"
@@ -32,5 +31,5 @@ f = e["Solver"]["Current Best Value"]
 
 assertclose(2.0, xopt, 1e-3)
 assertclose(2.0, x, 1e-3)
-assertclose(10.0, fopt, 1e-6)
-assertclose(10.0, f, 1e-4)
+assertclose(-10.0, fopt, 1e-6)
+assertclose(-10.0, f, 1e-4)

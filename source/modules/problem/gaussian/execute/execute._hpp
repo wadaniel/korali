@@ -1,0 +1,20 @@
+#ifndef _KORALI_PROBLEM_GAUSSIAN_PROCESS_EXECUTE_HPP_
+#define _KORALI_PROBLEM_GAUSSIAN_PROCESS_EXECUTE_HPP_
+
+#include "modules/problem/gaussian/gaussian.hpp"
+
+namespace korali { namespace problem { namespace gaussian {
+
+class Execute : public korali::problem::Gaussian
+{
+  public:
+
+    void initialize() override;
+    void finalize() override;
+    void execute(korali::Sample& sample);
+};
+
+} } } // namespace korali::problem::gaussian
+
+
+#endif // _KORALI_PROBLEM_GAUSSIAN_PROCESS_EXECUTE_HPP__

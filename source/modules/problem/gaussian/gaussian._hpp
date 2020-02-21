@@ -6,18 +6,10 @@
 
 namespace korali { namespace problem {
 
-class GaussianProcess : public korali::Problem
+class Gaussian : public korali::Problem
 {
- private:
-
-   libgp::GaussianProcess* _gp;
-
  public:
-
-   void initialize() override;
-   void basicEvaluation(korali::Sample&);
-   bool isSampleFeasible(korali::Sample& sample);
-
+   libgp::GaussianProcess* _gp;
 };
 
 } } // namespace korali::problem

@@ -1,0 +1,21 @@
+#ifndef _KORALI_PROBLEM_GAUSSIAN_PROCESS_EVALUATE_HPP_
+#define _KORALI_PROBLEM_GAUSSIAN_PROCESS_EVALUATE_HPP_
+
+#include "modules/problem/gaussian/gaussian.hpp"
+
+namespace korali { namespace problem { namespace gaussian {
+
+class Evaluate : public korali::problem::Gaussian
+{
+ public:
+
+   void initialize() override;
+   void basicEvaluation(korali::Sample&);
+   bool isSampleFeasible(korali::Sample& sample);
+
+};
+
+} } } // namespace korali::problem::gaussian
+
+
+#endif // _KORALI_PROBLEM_GAUSSIAN_PROCESS_EVALUATE_HPP_

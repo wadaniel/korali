@@ -1,7 +1,6 @@
-#include "modules/problem/execution/GaussianProcess/GaussianProcess.hpp"
-#include "modules/conduit/conduit.hpp"
+#include "modules/problem/gaussian/execute/execute.hpp"
 
-void korali::problem::execution::GaussianProcess::initialize()
+void korali::problem::gaussian::Execute::initialize()
 {
   auto _gpJson = nlohmann::json();
   if (korali::JsonInterface::loadJsonFromFile(_gpJson, _gaussianProcessJsonFile.c_str() ) == false)
@@ -33,17 +32,17 @@ void korali::problem::execution::GaussianProcess::initialize()
   for (size_t i=0; i<_xData[0].size(); i++){
     _k->_variables[i]->_name = "X" + std::to_string(i);
     for (size_t j=0; j<_xData.size(); j++){
-      _k->_variables[i]->_loadedValues.push_back(_xData[j][i]);
+      _k->_variables[i]->_parameterList.push_back(_xData[j][i]);
     }
   }
 
-  size_t loadedValuesSize = _k->_variables[0]->_loadedValues.size();
-  _gaussianProcessEvaluation.resize( loadedValuesSize );
-  _gaussianProcessVariance.resize( loadedValuesSize );
+  size_t parameterListSize = _k->_variables[0]->_parameterList.size();
+  _gaussianProcessEvaluation.resize( parameterListSize );
+  _gaussianProcessVariance.resize( parameterListSize );
 }
 
 
-void korali::problem::execution::GaussianProcess::execute(korali::Sample& sample)
+void korali::problem::gaussian::Execute::execute(korali::Sample& sample)
 {
   std::vector<double> p=sample["Parameters"];
   size_t index = sample["Sample Id"];
@@ -52,7 +51,7 @@ void korali::problem::execution::GaussianProcess::execute(korali::Sample& sample
 }
 
 
-void korali::problem::execution::GaussianProcess::finalize()
+void korali::problem::gaussian::Execute::finalize()
 {
   if( _yData.size() == _gaussianProcessEvaluation.size() ){
     double error = korali::vectorDistance(_yData,_gaussianProcessEvaluation);

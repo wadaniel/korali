@@ -1,8 +1,7 @@
-#include "modules/problem/GaussianProcess/GaussianProcess.hpp"
-#include "modules/conduit/conduit.hpp"
+#include "modules/problem/gaussian/evaluate/evaluate.hpp"
 #include <Eigen/Dense>
 
-void korali::problem::GaussianProcess::initialize()
+void korali::problem::gaussian::Evaluate::initialize()
 {
   if( _xData.size() != _yData.size())
     korali::logError("The number of rows of 'X Data' (%lu) must beq equal to the number of rows of 'Y Data' (%lu).\n",_xData.size(),_yData.size());
@@ -32,14 +31,14 @@ void korali::problem::GaussianProcess::initialize()
 }
 
 
-bool korali::problem::GaussianProcess::isSampleFeasible(korali::Sample& sample)
+bool korali::problem::gaussian::Evaluate::isSampleFeasible(korali::Sample& sample)
 {
   sample["Is Feasible"] = true;
   return true;
 }
 
 
-void korali::problem::GaussianProcess::basicEvaluation(korali::Sample& sample)
+void korali::problem::gaussian::Evaluate::basicEvaluation(korali::Sample& sample)
 {
   Eigen::VectorXd p(_parameterDimension);
   for(size_t i=0; i<_parameterDimension; i++) p[i] = sample["Parameters"][i];

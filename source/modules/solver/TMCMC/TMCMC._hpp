@@ -1,16 +1,16 @@
 #ifndef _KORALI_SOLVER_TMCMC_HPP_
 #define _KORALI_SOLVER_TMCMC_HPP_
 
-#include "modules/solver/sampler/sampler.hpp"
+#include "modules/solver/solver.hpp"
 #include "modules/distribution/distribution.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
 #include "modules/distribution/multivariate/normal/normal.hpp"
 #include "modules/distribution/specific/multinomial/multinomial.hpp"
 #include <gsl/gsl_vector.h>
 
-namespace korali { namespace solver { namespace sampler {
+namespace korali { namespace solver {
 
-class TMCMC : public korali::solver::Sampler
+class TMCMC : public korali::Solver
 {
  private:
 
@@ -33,6 +33,6 @@ class TMCMC : public korali::solver::Sampler
  void printGenerationAfter() override;
 };
 
-} } } // namespace korali::solver::sampler
+} } // namespace korali::solver
 
 #endif // _KORALI_SOLVER_TMCMC_HPP_

@@ -1,14 +1,14 @@
 #ifndef _KORALI_SOLVER_MCMC_HPP_
 #define _KORALI_SOLVER_MCMC_HPP_
 
-#include "modules/solver/sampler/sampler.hpp"
+#include "modules/solver/solver.hpp"
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
 #include <vector>
 
-namespace korali { namespace solver { namespace sampler {
+namespace korali { namespace solver {
 
-class MCMC : public korali::solver::Sampler
+class MCMC : public korali::Solver
 {
  private: 
 
@@ -27,6 +27,6 @@ class MCMC : public korali::solver::Sampler
  void printGenerationAfter() override;
 };
 
-} } } // namespace korali::solver::sampler
+} } // namespace korali::solver
 
 #endif // _KORALI_SOLVER_MCMC_HPP_

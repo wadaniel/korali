@@ -2,11 +2,11 @@
 #define _KORALI_SOLVERS_RPROP_H_
 
 #include <vector>
-#include "modules/solver/optimizer/optimizer.hpp"
+#include "modules/solver/solver.hpp"
 
-namespace korali { namespace solver { namespace optimizer {
+namespace korali { namespace solver {
 
-class Rprop : public korali::solver::Optimizer
+class Rprop : public korali::Solver
 {
 
   private:  
@@ -28,6 +28,6 @@ class Rprop : public korali::solver::Optimizer
 
 };
 
-} } } // namespace korali::solver::optimizer
+} } // namespace korali::solver
 
 #endif // _KORALI_SOLVERS_RPROP_H_

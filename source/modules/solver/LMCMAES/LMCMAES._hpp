@@ -1,14 +1,14 @@
 #ifndef _KORALI_SOLVER_LMCMAES_HPP_
 #define _KORALI_SOLVER_LMCMAES_HPP_
 
-#include "modules/solver/optimizer/optimizer.hpp"
+#include "modules/solver/solver.hpp"
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
 #include <vector>
 
-namespace korali { namespace solver { namespace optimizer {
+namespace korali { namespace solver {
 
-class LMCMAES : public korali::solver::Optimizer
+class LMCMAES : public korali::Solver
 {
  private:
 
@@ -34,6 +34,6 @@ class LMCMAES : public korali::solver::Optimizer
  void printGenerationAfter() override;
 };
 
-} } } // namespace korali::solver::optimizer
+} } // namespace korali::solver
 
 #endif // _KORALI_SOLVER_LMCMAES_HPP_

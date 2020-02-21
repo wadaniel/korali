@@ -1,8 +1,4 @@
 #include "modules/solver/solver.hpp"
 
-void korali::Solver::initialize()
-{
- _variableCount = _k->_variables.size();
-}
 
 

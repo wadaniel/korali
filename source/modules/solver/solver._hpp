@@ -13,14 +13,9 @@ class Solver : public korali::Module
 {
  public:
 
- void initialize() override;
  virtual void printGenerationBefore() { };
  virtual void printGenerationAfter() { };
  virtual void runGeneration() = 0;
- void getJson(nlohmann::json& defaultJs);
-
- static void solverWrapper();
-
 };
 
 extern korali::Solver* _currentSolver;

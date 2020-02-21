@@ -1,24 +1,24 @@
-#include "modules/solver/optimizer/Rprop/Rprop.hpp"
+#include "modules/solver/Rprop/Rprop.hpp"
 #include "modules/problem/problem.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/conduit/conduit.hpp"
 
 #include <stdio.h>
 
-void korali::solver::optimizer::Rprop::setInitialConfiguration()
+void korali::solver::Rprop::setInitialConfiguration()
 {
-  for (size_t i = 0; i < _variableCount; i++)
+  for (size_t i = 0; i < _k->_variables.size(); i++)
     if( std::isfinite(_k->_variables[i]->_initialValue) == false )
       korali::logError("Initial Value of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
 
-  _currentX.resize( _variableCount, 0.0 );
-  for (size_t i = 0; i < _variableCount; i++)
+  _currentX.resize( _k->_variables.size(), 0.0 );
+  for (size_t i = 0; i < _k->_variables.size(); i++)
     _currentX[i] = _k->_variables[i]->_initialValue;
 
   _bestX = _currentX;
-  _delta.resize( _variableCount, _delta0 );
-  _currentGradient.resize( _variableCount, 0);
-  _previousGradient.resize( _variableCount, 0.0 );
+  _delta.resize( _k->_variables.size(), _delta0 );
+  _currentGradient.resize( _k->_variables.size(), 0);
+  _previousGradient.resize( _k->_variables.size(), 0.0 );
 
   _bestEvaluation = korali::Inf;
   _xDiff = korali::Inf;
@@ -27,7 +27,7 @@ void korali::solver::optimizer::Rprop::setInitialConfiguration()
   _previousEvaluation   = korali::Inf;
 }
 
-void korali::solver::optimizer::Rprop::evaluateFunctionAndGradient( void )
+void korali::solver::Rprop::evaluateFunctionAndGradient( void )
 {
   int Ns = 1;
   // Initializing Sample Evaluation
@@ -48,31 +48,31 @@ void korali::solver::optimizer::Rprop::evaluateFunctionAndGradient( void )
   for (size_t i = 0; i < Ns; i++){
     _currentEvaluation = samples[i]["F(x)"];
     _currentEvaluation = -_currentEvaluation;
-    for( size_t j=0; j<_variableCount; j++){
+    for( size_t j=0; j<_k->_variables.size(); j++){
       _currentGradient[j] = samples[i]["Gradient"][j];
       _currentGradient[j] = -_currentGradient[j];
     }
   }
 }
 
-void korali::solver::optimizer::Rprop::runGeneration( void )
+void korali::solver::Rprop::runGeneration( void )
 {
   if (_k->_currentGeneration == 1) setInitialConfiguration();
 
   evaluateFunctionAndGradient();
 
   korali::logInfo("Normal","X = [ ");
-  for(size_t k=0; k<_variableCount; k++) korali::logData("Normal"," %.5le  ",_currentX[k]);
+  for(size_t k=0; k<_k->_variables.size(); k++) korali::logData("Normal"," %.5le  ",_currentX[k]);
   korali::logData("Normal"," ]\n");
 
   korali::logInfo("Normal","F(X) = %le \n", _currentEvaluation );
 
   korali::logInfo("Normal","DF(X) = [ ");
-  for(size_t k=0; k<_variableCount; k++) korali::logData("Normal"," %.5le  ",_currentGradient[k]);
+  for(size_t k=0; k<_k->_variables.size(); k++) korali::logData("Normal"," %.5le  ",_currentGradient[k]);
   korali::logData("Normal"," ]\n");
 
   korali::logInfo("Normal","X_best = [ ");
-  for(size_t k=0; k<_variableCount; k++) korali::logData("Normal"," %.5le  ",_bestX[k]);
+  for(size_t k=0; k<_k->_variables.size(); k++) korali::logData("Normal"," %.5le  ",_bestX[k]);
   korali::logData("Normal"," ]\n");
 
   Update_iminus();
@@ -83,8 +83,8 @@ void korali::solver::optimizer::Rprop::runGeneration( void )
 
   if( _currentEvaluation < _bestEvaluation ){
     _bestEvaluation = _currentEvaluation;
-    std::vector<double> tmp(_variableCount);
-    for(size_t j=0; j<_variableCount; j++) tmp[j] = _bestX[j]-_currentX[j];
+    std::vector<double> tmp(_k->_variables.size());
+    for(size_t j=0; j<_k->_variables.size(); j++) tmp[j] = _bestX[j]-_currentX[j];
     _xDiff = vectorNorm( tmp );
     _bestX = _currentX;
     _maxStallCounter = 0;
@@ -95,8 +95,8 @@ void korali::solver::optimizer::Rprop::runGeneration( void )
 }
 
 // Rprop_plus
-void korali::solver::optimizer::Rprop::Update_plus( void ){
-  for(size_t i=0; i<_variableCount; i++){
+void korali::solver::Rprop::Update_plus( void ){
+  for(size_t i=0; i<_k->_variables.size(); i++){
     double productGradient = _previousGradient[i] * _currentGradient[i];
     if( productGradient > 0 ){
       _delta[i] = std::min( _delta[i]*_etaPlus, _deltaMax );
@@ -116,8 +116,8 @@ void korali::solver::optimizer::Rprop::Update_plus( void ){
 }
 
 // Rprop_minus
-void korali::solver::optimizer::Rprop::Update_minus( void ){
-  for(size_t i=0; i<_variableCount; i++){
+void korali::solver::Rprop::Update_minus( void ){
+  for(size_t i=0; i<_k->_variables.size(); i++){
     double productGradient = _previousGradient[i] * _currentGradient[i];
     if( productGradient > 0 )
       _delta[i] = std::min( _delta[i]*_etaPlus, _deltaMax );
@@ -128,8 +128,8 @@ void korali::solver::optimizer::Rprop::Update_minus( void ){
 }
 
 // iRprop_plus
-void korali::solver::optimizer::Rprop::Update_iplus( void ){
-  for(size_t i=0; i<_variableCount; i++){
+void korali::solver::Rprop::Update_iplus( void ){
+  for(size_t i=0; i<_k->_variables.size(); i++){
     double productGradient = _previousGradient[i] * _currentGradient[i];
     if( productGradient > 0 ){
       _delta[i] = std::min( _delta[i]*_etaPlus, _deltaMax );
@@ -149,8 +149,8 @@ void korali::solver::optimizer::Rprop::Update_iplus( void ){
 }
 
 // iRprop_minus
-void korali::solver::optimizer::Rprop::Update_iminus( void ){
-  for(size_t i=0; i<_variableCount; i++){
+void korali::solver::Rprop::Update_iminus( void ){
+  for(size_t i=0; i<_k->_variables.size(); i++){
     double productGradient = _previousGradient[i] * _currentGradient[i];
     if( productGradient > 0 ){
       _delta[i] = std::min( _delta[i]*_etaPlus, _deltaMax );
@@ -163,8 +163,8 @@ void korali::solver::optimizer::Rprop::Update_iminus( void ){
   }
 }
 
-void korali::solver::optimizer::Rprop::printGenerationBefore(){ return; }
+void korali::solver::Rprop::printGenerationBefore(){ return; }
 
-void korali::solver::optimizer::Rprop::printGenerationAfter() { return; }
+void korali::solver::Rprop::printGenerationAfter() { return; }
 
-void korali::solver::optimizer::Rprop::finalize()  { return; }
+void korali::solver::Rprop::finalize()  { return; }

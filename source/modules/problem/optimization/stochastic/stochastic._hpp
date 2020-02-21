@@ -1,0 +1,20 @@
+#ifndef _KORALI_PROBLEM_OPTIMIZATION_STOCHASTIC_HPP_
+#define _KORALI_PROBLEM_OPTIMIZATION_STOCHASTIC_HPP_
+
+#include "modules/problem/optimization/optimization.hpp"
+
+namespace korali { namespace problem { namespace optimization {
+
+class Stochastic : public korali::problem::Optimization
+{
+ private:
+
+ public:
+  void evaluate(korali::Sample&);
+
+};
+
+} } } // namespace korali::problem::Optimization
+
+
+#endif // _KORALI_PROBLEM_OPTIMIZATION_STOCHASTIC_HPP_

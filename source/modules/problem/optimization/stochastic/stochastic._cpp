@@ -1,0 +1,17 @@
+#include "modules/problem/optimization/stochastic/stochastic.hpp"
+
+void korali::problem::Optimization::evaluate(korali::Sample& sample)
+{
+ sample.run(_objectiveFunction);
+
+ std::string sampleString = "['Evaluation']";
+
+ if ( korali::JsonInterface::isDefined(sample._js.getJson(), sampleString) == false)
+   korali::logError("The %s problem needs a function evaluation. Be sure that you assign a value to the %s attribute in the model definition.\n", _k->_problem->getType().c_str(), sampleString.c_str());
+
+ double evaluation = sample["Evaluation"];
+
+ // If result is not a finite number, objective function evaluates to -Infinity
+ if(std::isnan(evaluation)) sample["Evaluation"] = -korali::Inf;
+ else sample["Evaluation"] = evaluation;
+}

@@ -1,11 +1,11 @@
-#ifndef _KORALI_PROBLEM_DIRECT_HPP_
-#define _KORALI_PROBLEM_DIRECT_HPP_
+#ifndef _KORALI_PROBLEM_OPTIMIZATION_HPP_
+#define _KORALI_PROBLEM_OPTIMIZATION_HPP_
 
 #include "modules/problem/problem.hpp"
 
 namespace korali { namespace problem {
 
-class Direct : public korali::Problem
+class Optimization : public korali::Problem
 {
  private:
 
@@ -13,12 +13,12 @@ class Direct : public korali::Problem
 
  void initialize() override;
  bool isSampleFeasible(korali::Sample& sample);
- void basicEvaluation(korali::Sample&);
  void evaluateConstraints(korali::Sample&);
+ virtual void evaluate(korali::Sample&) = 0;
 
 };
 
 } } // namespace korali::problem
 
 
-#endif // _KORALI_PROBLEM_DIRECT_HPP_
+#endif // _KORALI_PROBLEM_OPTIMIZATION_HPP_

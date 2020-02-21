@@ -1,7 +1,6 @@
-#include "modules/problem/direct/direct.hpp"
-#include "modules/conduit/conduit.hpp"
+#include "modules/problem/optimization/optimization.hpp"
 
-bool korali::problem::Direct::isSampleFeasible(korali::Sample& sample)
+bool korali::problem::Optimization::isSampleFeasible(korali::Sample& sample)
 {
   for (size_t i = 0; i < sample["Parameters"].size(); i++)
   {
@@ -15,9 +14,9 @@ bool korali::problem::Direct::isSampleFeasible(korali::Sample& sample)
   return true;
 }
 
-void korali::problem::Direct::initialize()
+void korali::problem::Optimization::initialize()
 {
- if (_k->_variables.size() == 0) korali::logError("Direct Evaluation problems require at least one variable.\n");
+ if (_k->_variables.size() == 0) korali::logError("Optimization Evaluation problems require at least one variable.\n");
 
  /* check _granularity for discrete variables */
  for (size_t i = 0; i < _k->_variables.size(); i++)
@@ -27,7 +26,7 @@ void korali::problem::Direct::initialize()
  }
 }
 
-void korali::problem::Direct::evaluateConstraints(korali::Sample& sample)
+void korali::problem::Optimization::evaluateConstraints(korali::Sample& sample)
 {
  for (size_t i = 0; i < _constraints.size(); i++)
  {
@@ -39,18 +38,4 @@ void korali::problem::Direct::evaluateConstraints(korali::Sample& sample)
  }
 }
 
-void korali::problem::Direct::basicEvaluation(korali::Sample& sample)
-{
- sample.run(_objectiveFunction);
 
- std::string sampleString = "['Evaluation']";
-
- if ( korali::JsonInterface::isDefined(sample._js.getJson(), sampleString) == false)
-   korali::logError("The %s problem needs a function evaluation. Be sure that you assign a value to the %s attribute in the model definition.\n", _k->_problem->getType().c_str(), sampleString.c_str());
-
- double evaluation = sample["Evaluation"];
-
- // If result is not a finite number, objective function evaluates to -Infinity
- if(std::isnan(evaluation)) sample["Evaluation"] = -korali::Inf;
- else sample["Evaluation"] = evaluation;
-}

@@ -1,0 +1,21 @@
+#ifndef _KORALI_PROBLEM_OPTIMIZATION_GRADIENT_HPP_
+#define _KORALI_PROBLEM_OPTIMIZATION_GRADIENT_HPP_
+
+#include "modules/problem/optimization/optimization.hpp"
+
+namespace korali { namespace problem { namespace optimization {
+
+class Gradient : public korali::problem::Optimization
+{
+ private:
+
+ public:
+
+   void evaluate(korali::Sample&);
+
+};
+
+} } } // namespace korali::problem::direct
+
+
+#endif // _KORALI_PROBLEM_OPTIMIZATION_GRADIENT_HPP_

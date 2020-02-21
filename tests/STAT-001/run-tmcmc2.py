@@ -30,7 +30,7 @@ e["Variables"][0]["Name"] = "X"
 e["Variables"][0]["Prior Distribution"] = "Uniform 0"
 
 # Configuring the TMCMC sampler parameters
-e["Solver"]["Type"] = "Sampler/TMCMC"
+e["Solver"]["Type"] = "TMCMC"
 e["Solver"]["Population Size"] = 3000
 e["Solver"]["Covariance Scaling"] = 0.05
 e["Solver"]["Default Burn In"] = 5

@@ -20,7 +20,7 @@ int main(int argc, char** argv)
  e["Variables"][0]["Lower Bound"] = -10.0;
  e["Variables"][0]["Upper Bound"] = +10.0;
 
- e["Solver"]["Type"] = "Optimizer/CMAES";
+ e["Solver"]["Type"] = "CMAES";
  e["Solver"]["Population Size"] = 32;
  e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-8;
  e["Solver"]["Termination Criteria"]["Max Generations"] = 100;

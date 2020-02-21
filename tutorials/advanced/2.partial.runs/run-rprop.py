@@ -18,7 +18,7 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Optimization/Gradient"
 e["Problem"]["Objective Function"] = model_with_gradient
 
-e["Solver"]["Type"] = "Optimizer/Rprop"
+e["Solver"]["Type"] = "Rprop"
 e["Solver"]["Termination Criteria"]["Max Generations"] = 25
 e["Solver"]["Termination Criteria"]['Parameter Relative Tolerance'] = 1e-8;
 

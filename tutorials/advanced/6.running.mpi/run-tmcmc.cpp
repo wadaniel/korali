@@ -74,7 +74,7 @@ int main(int argc, char* argv[])
  e["Variables"][6]["Name"] = "[Sigma]";
  e["Variables"][6]["Prior Distribution"] = "Uniform 6";
 
- e["Solver"]["Type"] = "Sampler/TMCMC";
+ e["Solver"]["Type"] = "TMCMC";
  e["Solver"]["Covariance Scaling"] = 0.02;
  e["Solver"]["Population Size"] = 200;
  e["Solver"]["Termination Criteria"]["Max Generations"] = 4;

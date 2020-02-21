@@ -39,7 +39,7 @@ e["Variables"][1]["Prior Distribution"] = "Uniform 1"
 e["Variables"][2]["Prior Distribution"] = "Uniform 2"
 e["Variables"][3]["Prior Distribution"] = "Uniform 3"
 
-e["Solver"]["Type"] = "Sampler/TMCMC"
+e["Solver"]["Type"] = "TMCMC"
 e["Solver"]["Population Size"] = 1000
 e["Solver"]["Target Coefficient Of Variation"] = 0.6
 e["Solver"]["Covariance Scaling"] = 0.02

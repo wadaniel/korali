@@ -26,7 +26,7 @@ for i in range(5):
   e["Variables"][i]["Initial Value"] = -10.0+i
 
 # Configuring CMA-ES parameters
-e["Solver"]["Type"] = "Optimizer/Rprop"
+e["Solver"]["Type"] = "Rprop"
 e["Solver"]["Termination Criteria"]["Max Generations"] = 200
 e["Solver"]["Termination Criteria"]["Parameter Relative Tolerance"] = 1e-8
 

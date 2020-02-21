@@ -15,7 +15,7 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Optimization/Stochastic";
 e["Problem"]["Objective Function"] = runModel
 
-e["Solver"]["Type"] = "Optimizer/CMAES"
+e["Solver"]["Type"] = "CMAES"
 e["Solver"]["Population Size"] = 12
 e["Solver"]["Termination Criteria"]["Max Generations"] = 10
 

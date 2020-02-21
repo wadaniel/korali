@@ -17,7 +17,7 @@ for i in range(8):
   e["Problem"]["Computational Model"] = lambda sampleData: model(sampleData, getReferencePoints())
   
   # Configuring CMA-ES parameters
-  e["Solver"]["Type"] = "Optimizer/CMAES"
+  e["Solver"]["Type"] = "CMAES"
   ...
 
 ```

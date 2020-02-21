@@ -69,7 +69,7 @@ e["Variables"][0]["Name"] = "X"
 ###  The Solver
 We choose the solver `MCMC` and set the initial mean and standard deviation of the parameter `X`.
 ```python
-e["Solver"]["Type"]  = "Sampler/MCMC"
+e["Solver"]["Type"]  = "MCMC"
 e["Variables"][0]["Initial Mean"] = 0.0
 e["Variables"][0]["Initial Standard Deviation"] = 1.0
 

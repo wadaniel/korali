@@ -28,7 +28,7 @@ e["Variables"][0]["Initial Mean"] = +0.0
 e["Variables"][0]["Initial Standard Deviation"] = +2.0
 
 # Configuring CMA-ES parameters
-e["Solver"]["Type"] = "Optimizer/LMCMAES"
+e["Solver"]["Type"] = "LMCMAES"
 e["Solver"]["Population Size"] = 32
 e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-7
 e["Solver"]["Termination Criteria"]["Max Generations"] = 100

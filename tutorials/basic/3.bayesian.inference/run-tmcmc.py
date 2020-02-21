@@ -20,7 +20,7 @@ e["Problem"]["Reference Data"] = getReferenceData()
 e["Problem"]["Computational Model"] = lambda sampleData: model(sampleData, getReferencePoints())
 
 # Configuring TMCMC parameters
-e["Solver"]["Type"] = "Sampler/TMCMC"
+e["Solver"]["Type"] = "TMCMC"
 e["Solver"]["Population Size"] = 5000
 
 # Configuring the problem's random distributions

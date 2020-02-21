@@ -12,7 +12,7 @@ int main(int argc, char* argv[])
  e["Problem"]["Reference Data"] = p.refTemp;
  e["Problem"]["Computational Model"] = &heat2DSolver;
 
- e["Solver"]["Type"] = "Optimizer/CMAES";
+ e["Solver"]["Type"] = "CMAES";
  e["Solver"]["Population Size"] = 12;
  e["Solver"]["Termination Criteria"]["Max Generations"] = 30;
 

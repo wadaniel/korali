@@ -21,7 +21,7 @@ e["Problem"]["Type"] = "Optimization/Stochastic"
 e["Problem"]["Objective Function"] = model
 
 # Configuring Solver
-e["Solver"]["Type"] = "Optimizer/DEA"
+e["Solver"]["Type"] = "DEA"
 e["Solver"]["Population Size"] = 32
 e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-12
 e["Solver"]["Termination Criteria"]["Max Generations"] = 100

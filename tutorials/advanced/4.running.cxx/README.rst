@@ -61,7 +61,7 @@ Function [`heat2DSolver`](model/heat2d.cpp) internally already has access to the
 Then, we decide on `CMAES` as solver and configure its parameters,
 
 ```c++
-e["Solver"]["Type"] = "Optimizer/CMAES";
+e["Solver"]["Type"] = "CMAES";
 e["Solver"]["Population Size"] = 32;
 e["Solver"]["Termination Criteria"]["Max Generations"] = 100;
 ```
@@ -134,7 +134,7 @@ We can then compile and run the code.
 To use `LM-CMAES` as solver instead, we can change the solver configuration,
 
 ```c++
-e["Solver"]["Type"] = "Optimizer/LMCMAES";
+e["Solver"]["Type"] = "LMCMAES";
 e["Solver"]["Population Size"] = 32;
 e["Solver"]["Termination Criteria"]["Max Generations"] = 30;
 ```

@@ -78,7 +78,7 @@ e["Variables"][6]["Granularity"] = 1.0
 ###  The Solver
 We choose the solver `CMA-ES` and set two termination criteria,
 ```python
-e["Solver"]["Type"] = "Optimizer/CMAES"
+e["Solver"]["Type"] = "CMAES"
 e["Solver"]["Population Size"] = 8
 e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-9
 e["Solver"]["Termination Criteria"]["Max Generations"] = 5000
@@ -128,5 +128,5 @@ python3 -m korali.plotter
 
 Explain [CCMA-ES](https://dl.acm.org/doi/10.1145/3324989.3325725)?   
 This might not be implemented yet. To see whether it is implemented by now, you
-can check for "Optimizer/CCMAES" or similar in the source file
+can check for "CCMAES" or similar in the source file
 [module.cpp](../../source/module.cpp).

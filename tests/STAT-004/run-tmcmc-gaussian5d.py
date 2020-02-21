@@ -22,7 +22,7 @@ e["Problem"]["Type"] = "Bayesian/Custom"
 e["Problem"]["Likelihood Model"] = lg5
 
 # Configuring TMCMC parameters
-e["Solver"]["Type"] = "Sampler/TMCMC"
+e["Solver"]["Type"] = "TMCMC"
 e["Solver"]["Population Size"] = 5000
 
 e["Solver"]["Target Coefficient Of Variation"] = 0.4

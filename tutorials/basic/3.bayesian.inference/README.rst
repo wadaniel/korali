@@ -197,7 +197,7 @@ Next, we choose the solver `CMA-ES`, the population size to be `24`.
 
 ```python
 
-e["Solver"]["Type"] = "Optimizer/CMAES"
+e["Solver"]["Type"] = "CMAES"
 e["Solver"]["Population Size"] = 24
 ```
 
@@ -276,7 +276,7 @@ python3 -m korali.plotter
 To sample the posterior distribution, we set the solver to `TMCMC` sampler and set a few settings,
 
 ```python
-e["Solver"]["Type"] = "Sampler/TMCMC"
+e["Solver"]["Type"] = "TMCMC"
 e["Solver"]["Population Size"] = 5000
 ```
 

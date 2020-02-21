@@ -15,7 +15,7 @@ e["Problem"]["Type"] = "Optimization/Stochastic"
 e["Problem"]["Objective Function"] = model
 
 # Configuring the MCMC sampler parameters
-e["Solver"]["Type"] = "Sampler/MCMC"
+e["Solver"]["Type"] = "MCMC"
 e["Solver"]["Burn In"] = 500
 e["Solver"]["Termination Criteria"]["Max Samples"] = 5000
 e["Solver"]["Rejection Levels"] = 2

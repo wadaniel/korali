@@ -29,7 +29,7 @@ def run_tmcmc_with_termination_criterion(criterion, value):
     e["Variables"][0]["Name"] = "X"
     e["Variables"][0]["Prior Distribution"] = "Uniform 0"
   
-    e["Solver"]["Type"] = "Sampler/TMCMC"
+    e["Solver"]["Type"] = "TMCMC"
     e["Solver"]["Population Size"] = 5000
     e["Solver"]["Covariance Scaling"] = 0.001
     e["Solver"]["Termination Criteria"][criterion] = value

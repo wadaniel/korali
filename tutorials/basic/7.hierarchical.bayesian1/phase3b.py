@@ -12,7 +12,7 @@ e["Problem"]["Type"]  = "Hierarchical/Theta"
 e["Problem"]["Theta Problem Path"] = 'setup/results_phase_1/000'
 e["Problem"]["Psi Problem Path"] = 'setup/results_phase_2'
 
-e["Solver"]["Type"] = "Sampler/TMCMC"
+e["Solver"]["Type"] = "TMCMC"
 e["Solver"]["Population Size"] = 1000
 e["Solver"]["Default Burn In"] = 2;
 e["Solver"]["Max Chain Length"] = 1;

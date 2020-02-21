@@ -123,7 +123,7 @@ for i in range(7) :
 We choose the solver `CMA-ES`,
 
 ```python
-e["Solver"]["Type"] = "Optimizer/CMAES"
+e["Solver"]["Type"] = "CMAES"
 
 ```
 

@@ -69,7 +69,7 @@ e["Variables"][0]["Upper Bound"] = +10.0
 We choose the solver `CMAES`, set the population size to be `32` and two termination criteria,
 
 ```python
-e["Solver"]["Type"] = "Optimizer/CMAES"
+e["Solver"]["Type"] = "CMAES"
 e["Solver"]["Population Size"] = 32
 e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-7
 e["Solver"]["Termination Criteria"]["Max Generations"] = 100

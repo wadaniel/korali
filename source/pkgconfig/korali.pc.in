@@ -1,6 +1,0 @@
-Name: korali
-Version: 0.1
-#Requires: gsl
-Description: korali library
-Libs: @LIBS@
-Cflags: @CFLAGS@

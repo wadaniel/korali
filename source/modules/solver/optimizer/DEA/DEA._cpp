@@ -61,7 +61,7 @@ void korali::solver::optimizer::DEA::runGeneration()
  std::vector<korali::Sample> samples(_populationSize);
  for (size_t i = 0; i < _populationSize; i++)
  {
-  samples[i]["Operation"] = "Basic Evaluation";
+  samples[i]["Operation"] = "Evaluate";
   samples[i]["Parameters"] = _candidatePopulation[i];
   samples[i]["Sample Id"] = i;
   _modelEvaluationCount++;
@@ -184,7 +184,7 @@ void korali::solver::optimizer::DEA::updateSolver(std::vector<korali::Sample>& s
 {
     // Processing results
     for (size_t i = 0; i < _populationSize; i++)
-     _valueVector[i] = samples[i]["Evaluation"];
+     _valueVector[i] = samples[i]["F(x)"];
 
     _bestSampleIndex = std::distance( std::begin(_valueVector), std::max_element(std::begin(_valueVector), std::end(_valueVector)) );
     _previousBestEverValue = _bestEverValue;

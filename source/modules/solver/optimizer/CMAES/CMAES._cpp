@@ -170,7 +170,7 @@ void korali::solver::optimizer::CMAES::runGeneration()
  std::vector<korali::Sample> samples(_currentPopulationSize);
  for (size_t i = 0; i < _currentPopulationSize; i++)
  {
-  samples[i]["Operation"] = "Basic Evaluation";
+  samples[i]["Operation"] = "Evaluate";
   samples[i]["Parameters"] = _samplePopulation[i];
   samples[i]["Sample Id"] = i;
   _modelEvaluationCount++;
@@ -427,7 +427,7 @@ void korali::solver::optimizer::CMAES::updateDistribution(std::vector<korali::Sa
 {
 
  for (size_t i = 0; i < _currentPopulationSize; i++)
-  _valueVector[i] = samples[i]["Evaluation"];
+  _valueVector[i] = samples[i]["F(x)"];
 
  /* Generate _sortingIndex */
  sort_index(_valueVector, _sortingIndex, _currentPopulationSize);

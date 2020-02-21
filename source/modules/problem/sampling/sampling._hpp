@@ -1,0 +1,22 @@
+#ifndef _KORALI_PROBLEM_SAMPLING_HPP_
+#define _KORALI_PROBLEM_SAMPLING_HPP_
+
+#include "modules/problem/problem.hpp"
+
+namespace korali { namespace problem {
+
+class Sampling : public korali::Problem
+{
+ private:
+
+ public:
+
+ void initialize() override;
+ virtual void evaluate(korali::Sample&);
+
+};
+
+} } // namespace korali::problem
+
+
+#endif // _KORALI_PROBLEM_SAMPLING_HPP_

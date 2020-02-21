@@ -38,7 +38,7 @@ bool korali::problem::gaussian::Evaluate::isSampleFeasible(korali::Sample& sampl
 }
 
 
-void korali::problem::gaussian::Evaluate::basicEvaluation(korali::Sample& sample)
+void korali::problem::gaussian::Evaluate::evaluate(korali::Sample& sample)
 {
   Eigen::VectorXd p(_parameterDimension);
   for(size_t i=0; i<_parameterDimension; i++) p[i] = sample["Parameters"][i];

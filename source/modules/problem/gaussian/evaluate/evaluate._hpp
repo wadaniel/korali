@@ -10,7 +10,7 @@ class Evaluate : public korali::problem::Gaussian
  public:
 
    void initialize() override;
-   void basicEvaluation(korali::Sample&);
+   void evaluate(korali::Sample&);
    bool isSampleFeasible(korali::Sample& sample);
 
 };

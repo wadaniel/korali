@@ -4,6 +4,7 @@ import sys
 import os
 import json
 import shutil
+import copy
 
 moduleSrcDir = '../../../source/modules'
 
@@ -23,11 +24,23 @@ def getJsonPath(path):
  for item in path:
   nameString += '\\["' + item + '"\\]'
  return nameString
+
+def recursiveUpdate(dest, defaults):
+ if (isinstance(defaults, dict)):
+  for k, x in defaults.items():
+   if (not k in dest): dest[k] = copy.deepcopy(defaults[k])
+   else: 
+     recursiveUpdate(dest[k], defaults[k])
+ if (isinstance(defaults, list)):
+  for k in range(len(defaults)):
+   if (not k in dest): dest.append(copy.deepcopy(defaults[k]))
+   else: 
+     recursiveUpdate(dest[k], defaults[k])
  
 ################################################
 # Process Module Function
 
-def processModule(moduleRelPath, moduleName):
+def processModule(parentModuleConfig, moduleRelPath, moduleName):
  modulePath = os.path.join(moduleSrcDir, moduleRelPath)
  moduleReadmeFile = modulePath + '/README.rst'
  moduleConfigFile = modulePath + '/' + moduleName + '.config'
@@ -39,6 +52,7 @@ def processModule(moduleRelPath, moduleName):
 
  # Loading Module's Configuration
  moduleConfig = json.loads(moduleConfigString)
+ recursiveUpdate(moduleConfig, parentModuleConfig)
  
  # Creating module's folder, if not exists
  if not os.path.exists(moduleOutputDir):
@@ -46,10 +60,12 @@ def processModule(moduleRelPath, moduleName):
   
  # Creating subfolder list
  subFolderList = []
- list_dir = os.listdir(fullPath)
+ list_dir = os.listdir(modulePath)
  for f in list_dir:
-  if not os.path.isfile(os.path.join(fullPath, f)):
-   subFolderList.append(f)
+  fullPath = os.path.join(modulePath, f)
+  if not os.path.isfile(fullPath):
+   if (not '.o/' in fullPath and not '.d/' in fullPath):
+    subFolderList.append(f)
    
  # Determining if its a parent or leaf module
  isParentModule = True
@@ -63,26 +79,32 @@ def processModule(moduleRelPath, moduleName):
   
   for f in subFolderList:
    subModuleFullPath = os.path.join(modulePath, f)
-   subModuleConfigFile = subModuleFullPath + '/' + f + '.config'
-   with open(subModuleConfigFile, 'r') as file: subModuleConfigString = file.read()
-   subModuleConfig = json.loads(subModuleConfigString)
    moduleReadmeString += '    ' + f + '/' + f + '\n'
- 
-   subModuleDstPath = moduleOutputDir + '/' + f
-   if not os.path.exists(subModuleDstPath):
-    os.mkdir(subModuleDstPath) 
-     
+   subPath = os.path.join(moduleRelPath, f)
+   processModule(moduleConfig, subPath, f)
+   
  # If its leaf, build configuration
  if (isParentModule == False): 
+  if ('Termination Criteria' in moduleConfig):
+   moduleReadmeString += '\n**Termination Criteria**\n'
+   for v in moduleConfig["Termination Criteria"]:
+    moduleReadmeString += '\n'
+    moduleReadmeString += getJsonPath(v["Name"]) + '\n'
+    moduleReadmeString += ' - **Type**: ' + getDataType(v) + '\n'
+    moduleReadmeString += ' - **Criterion**: ' + v["Criteria"] + '\n'
+    moduleReadmeString += ' - **Description**: ' + v["Description"] + '\n'
+    moduleReadmeString +='\n'
+    
   moduleReadmeString += '\n**Configuration**\n'
- 
   if ('Configuration Settings' in moduleConfig):
    for v in moduleConfig["Configuration Settings"]:
     moduleReadmeString += '\n'
     moduleReadmeString += getJsonPath(v["Name"]) + '\n'
     moduleReadmeString += ' - **Type**: ' + getDataType(v) + '\n'
     moduleReadmeString += ' - **Description**: ' + v["Description"] + '\n'
-    moduleReadmeString +='\n'  
+    moduleReadmeString +='\n'
+  else:
+    moduleReadmeString += '\n*None*\n'  
 
  # Saving Module's readme file
  moduleReadmeString += '\n\n'
@@ -94,11 +116,9 @@ def processModule(moduleRelPath, moduleName):
 shutil.rmtree('../modules', ignore_errors=True, onerror=None)
 os.makedirs('../modules')
 
-for root, dirs, files in os.walk(moduleSrcDir, topdown=True):
- for name in dirs:
-  fullPath = os.path.join(root, name)
+list_dir = os.listdir(moduleSrcDir)
+for f in list_dir:
+ fullPath = os.path.join(moduleSrcDir, f)
+ if not os.path.isfile(fullPath):
   if (not '.o/' in fullPath and not '.d/' in fullPath):
-   relPath = os.path.relpath(fullPath, moduleSrcDir)
-   processModule(relPath, name)
-     
-     
+   processModule({}, f, f)

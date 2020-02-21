@@ -8,5 +8,5 @@ def runModel(x):
   for i in v: argString.append(str(i))
   retValue = subprocess.check_output(argString)
   result = float(retValue.decode())
-  x["Evaluation"] = result
+  x["F(x)"] = result
 

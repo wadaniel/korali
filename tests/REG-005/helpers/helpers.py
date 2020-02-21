@@ -3,7 +3,7 @@
 def evaluateModel( s ):
    v = s["Parameters"][0]
    r = -v*v     
-   s["Evaluation"] = r
+   s["F(x)"] = r
    
 def evaluateLogLikelihood( s ):
    v = s["Parameters"][0]

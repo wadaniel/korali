@@ -15,8 +15,8 @@ import korali
 k = korali.Engine()
 e = korali.Experiment()
 
-e["Problem"]["Type"] = "Direct/Basic"
-e["Problem"]["Objective Function"] = model
+e["Problem"]["Type"] = "Sampling"
+e["Problem"]["Probability Function"] = model
 
 e["Solver"]["Type"]  = "Sampler/MCMC"
 e["Solver"]["Burn In"] = 500

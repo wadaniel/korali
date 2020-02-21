@@ -15,7 +15,7 @@ import korali
 k = korali.Engine()
 e = korali.Experiment()
 
-e["Problem"]["Type"] = "Direct/Basic"
+e["Problem"]["Type"] = "Optimization/Stochastic"
 e["Problem"]["Objective Function"] = model
 
 e["Solver"]["Type"]  = "Optimizer/DEA"

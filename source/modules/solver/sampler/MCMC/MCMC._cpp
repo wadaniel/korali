@@ -60,23 +60,13 @@ void korali::solver::sampler::MCMC::runGeneration()
 
   auto sample = korali::Sample();
 
+  _modelEvaluationCount++;
   sample["Parameters"] = _chainCandidate[i];
-  sample["Operation"] = "Check Feasibility";
   sample["Sample Id"] = _sampleDatabase.size();
+  sample["Operation"] = "Evaluate";
   korali::_conduit->start(sample);
   korali::_conduit->wait(sample);
-  bool isSampleFeasible = sample["Is Feasible"];
-
-  // Obtaining Result
-  double evaluation = -korali::Inf;
-  if (isSampleFeasible)
-  {
-   _modelEvaluationCount++;
-   sample["Operation"] = "Evaluate";
-   korali::_conduit->start(sample);
-   korali::_conduit->wait(sample);
-   evaluation = sample["P(x)"];
-  }
+  double evaluation = sample["P(x)"];
 
   _chainCandidatesEvaluations[i] = evaluation;
 

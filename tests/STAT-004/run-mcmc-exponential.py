@@ -18,8 +18,8 @@ e["Results"]["Frequency"] = 5000
 e["Console"]["Frequency"] = 5000
 
 # Selecting problem and solver types.
-e["Problem"]["Type"] = "Direct/Basic"
-e["Problem"]["Objective Function"] = lexponential
+e["Problem"]["Type"] = "Sampling"
+e["Problem"]["Probability Function"] = lexponential
 
 # Defining problem's variables and their MCMC settings
 e["Variables"][0]["Name"] = "X0"

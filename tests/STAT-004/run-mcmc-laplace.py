@@ -14,8 +14,8 @@ k = korali.Engine()
 e = korali.Experiment()
 
 # Selecting problem and solver types.
-e["Problem"]["Type"] = "Direct/Basic"
-e["Problem"]["Objective Function"] = llaplace
+e["Problem"]["Type"] = "Sampling"
+e["Problem"]["Probability Function"] = llaplace
 
 # Defining problem's variables and their MCMC settings
 e["Variables"][0]["Name"] = "X0"

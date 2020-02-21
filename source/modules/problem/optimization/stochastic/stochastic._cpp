@@ -1,6 +1,6 @@
 #include "modules/problem/optimization/stochastic/stochastic.hpp"
 
-void korali::problem::Optimization::evaluate(korali::Sample& sample)
+void korali::problem::optimization::Stochastic::evaluate(korali::Sample& sample)
 {
  sample.run(_objectiveFunction);
 

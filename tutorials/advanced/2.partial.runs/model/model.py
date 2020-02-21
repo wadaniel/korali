@@ -7,7 +7,8 @@ import numpy as np
 def model( s ):
   x = s["Parameters"][0]
   r = -0.5*x*x
-  s["Evaluation"] = r
+  s["F(x)"] = r
+  s["P(x)"] = r
 
 # Function and Gradient function evaluation
 def model_with_gradient(p):
@@ -16,7 +17,7 @@ def model_with_gradient(p):
   gradient = [];
   evaluation = -0.5*x*x
   gradient.append( -x )
-  p["Evaluation"] = evaluation
+  p["F(x)"] = evaluation
   p["Gradient"]   = gradient;
 
 def calculateLogLikelihood( s ):

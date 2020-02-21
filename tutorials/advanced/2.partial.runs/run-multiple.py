@@ -20,7 +20,7 @@ eList = []
 for i in range(8):
  e = korali.Experiment()
 
- e["Problem"]["Type"] = "Direct/Basic"
+ e["Problem"]["Type"] = "Optimization/Stochastic"
  e["Problem"]["Objective Function"] = model
 
  e["Solver"]["Type"] = "Optimizer/CMAES"

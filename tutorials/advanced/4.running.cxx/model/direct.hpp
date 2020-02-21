@@ -6,7 +6,7 @@
 void direct(korali::Sample& k)
 {
   float x = k["Parameters"][0];
-  k["Evaluation"] = -0.5*x*x;
+  k["F(x)"] = -0.5*x*x;
 }
 
 

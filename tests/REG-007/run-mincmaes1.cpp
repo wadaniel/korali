@@ -13,7 +13,7 @@ int main(int argc, char** argv)
  auto k = korali::Engine();
  auto e = korali::Experiment();
 
- e["Problem"]["Type"] = "Direct/Basic";
+ e["Problem"]["Type"] = "Optimization/Stochastic";
  e["Problem"]["Objective Function"] = &minmodel1;
 
  e["Variables"][0]["Name"] = "X";

@@ -5,4 +5,4 @@
 def model( s ):
   v = s["Parameters"][0]
   r = -0.5*v*v
-  s["Evaluation"] = r
+  s["P(x)"] = r

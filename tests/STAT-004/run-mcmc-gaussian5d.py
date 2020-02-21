@@ -18,8 +18,8 @@ e = korali.Experiment()
 e["Results"]["Path"] = "_result_run-mcmc"
 
 # Selecting problem and solver types.
-e["Problem"]["Type"] = "Direct/Basic"
-e["Problem"]["Objective Function"] = lg5
+e["Problem"]["Type"] = "Sampling"
+e["Problem"]["Probability Function"] = lg5
 e["Console"]["Frequency"] = 5000
 e["Results"]["Frequency"] = 5000
 

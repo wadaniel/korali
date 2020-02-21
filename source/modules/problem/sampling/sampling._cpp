@@ -7,7 +7,7 @@ void korali::problem::Sampling::initialize()
 
 void korali::problem::Sampling::evaluate(korali::Sample& sample)
 {
- sample.run(_probabilityDistribution);
+ sample.run(_probabilityFunction);
 
  std::string sampleString = "['P(x)']";
 

@@ -55,8 +55,9 @@ bool korali::problem::Bayesian::isSampleFeasible(korali::Sample& sample)
   return true;
 }
 
-void korali::problem::Bayesian::basicEvaluation(korali::Sample& sample)
+void korali::problem::Bayesian::evaluate(korali::Sample& sample)
 {
  evaluateLogPosterior(sample);
- sample["Evaluation"] = sample["logPosterior"];
+ sample["F(x)"] = sample["logPosterior"];
+ sample["P(x)"] = sample["logPosterior"];
 }

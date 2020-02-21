@@ -2,10 +2,10 @@
 
 # Minus g09
 
-def model(d):
+def model(s):
   npar = 10
   res = 0.0
-  v = d["Parameters"]
+  v = s["Parameters"]
   
   for i in range(npar):
     if( i == 0 or i == 1 or i == 3 or i == 6):
@@ -13,4 +13,4 @@ def model(d):
     else:
         res += pow( 10, 6.0*i/npar) * v[i] * v[i]
 
-  d["Evaluation"] = -res;
+  s["F(x)"] = -res;

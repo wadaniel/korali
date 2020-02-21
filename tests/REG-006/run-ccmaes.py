@@ -19,7 +19,7 @@ def run_ccmaes(constraint):
 
     e = korali.Experiment()
 
-    e["Problem"]["Type"] = "Direct/Basic"
+    e["Problem"]["Type"] = "Optimization/Stochastic"
     e["Problem"]["Objective Function"] = evaluateModel
 
     e["Variables"][0]["Name"] = "X"

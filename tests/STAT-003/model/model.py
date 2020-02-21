@@ -11,5 +11,5 @@ def evalmodel( s ):
   else:
     r = x*x+math.sin(x)
  
-  s["Evaluation"] = -r
+  s["F(x)"] = -r
 

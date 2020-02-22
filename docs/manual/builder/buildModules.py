@@ -36,7 +36,16 @@ def recursiveUpdate(dest, defaults):
    if (not k in dest): dest.append(copy.deepcopy(defaults[k]))
    else: 
      recursiveUpdate(dest[k], defaults[k])
- 
+
+def createVariableDescription(v):
+ desc = '\n'
+ desc += getJsonPath(v["Name"]) + '\n'
+ desc += ' - **Type**: ' + getDataType(v) + '\n'
+ desc += ' - **Description**: ' + v["Description"] + '\n'
+ if ('Criteria' in v): desc += ' - **Criteria**: ' + v["Criteria"] + '\n'
+ desc += '\n'
+ return desc
+    
 ################################################
 # Process Module Function
 
@@ -85,27 +94,24 @@ def processModule(parentModuleConfig, moduleRelPath, moduleName):
    
  # If its leaf, build configuration
  if (isParentModule == False): 
-  if ('Termination Criteria' in moduleConfig):
-   moduleReadmeString += '\n**Termination Criteria**\n'
-   for v in moduleConfig["Termination Criteria"]:
-    moduleReadmeString += '\n'
-    moduleReadmeString += getJsonPath(v["Name"]) + '\n'
-    moduleReadmeString += ' - **Type**: ' + getDataType(v) + '\n'
-    moduleReadmeString += ' - **Criterion**: ' + v["Criteria"] + '\n'
-    moduleReadmeString += ' - **Description**: ' + v["Description"] + '\n'
-    moduleReadmeString +='\n'
     
   moduleReadmeString += '\n**Configuration**\n'
   if ('Configuration Settings' in moduleConfig):
    for v in moduleConfig["Configuration Settings"]:
-    moduleReadmeString += '\n'
-    moduleReadmeString += getJsonPath(v["Name"]) + '\n'
-    moduleReadmeString += ' - **Type**: ' + getDataType(v) + '\n'
-    moduleReadmeString += ' - **Description**: ' + v["Description"] + '\n'
-    moduleReadmeString +='\n'
+    moduleReadmeString += createVariableDescription(v)
   else:
     moduleReadmeString += '\n*None*\n'  
 
+  if ('Termination Criteria' in moduleConfig):
+   moduleReadmeString += '\n**Termination Criteria**\n'
+   for v in moduleConfig["Termination Criteria"]:
+    moduleReadmeString += createVariableDescription(v)
+
+  if ('Internal Settings' in moduleConfig):
+   moduleReadmeString += '\n*[For Developers]* **Internal Settings**\n'
+   for v in moduleConfig["Internal Settings"]:
+    moduleReadmeString += createVariableDescription(v)
+    
  # Saving Module's readme file
  moduleReadmeString += '\n\n'
  with open(moduleOutputDir + '/' + moduleName + '.rst', 'w') as file: file.write(moduleReadmeString)

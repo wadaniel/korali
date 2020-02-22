@@ -26,16 +26,5 @@ void korali::problem::Optimization::initialize()
  }
 }
 
-void korali::problem::Optimization::evaluateConstraints(korali::Sample& sample)
-{
- for (size_t i = 0; i < _constraints.size(); i++)
- {
-  sample.run(_constraints[i]);
-  double evaluation = sample["F(x)"];
-  // If constraint is not a finite number, constraint is set to +Infinity
-  if( std::isnan(evaluation) ) sample["Constraint Evaluations"][i] = korali::Inf;
-  else sample["Constraint Evaluations"][i] = evaluation;
- }
-}
 
 

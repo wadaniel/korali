@@ -1,0 +1,21 @@
+#ifndef _KORALI_PROBLEM_OPTIMIZATION_CONSTRAINED_HPP_
+#define _KORALI_PROBLEM_OPTIMIZATION_CONSTRAINED_HPP_
+
+#include "modules/problem/optimization/optimization.hpp"
+
+namespace korali { namespace problem { namespace optimization {
+
+class Constrained : public korali::problem::Optimization
+{
+ private:
+
+ public:
+  void evaluate(korali::Sample&);
+  void evaluateConstraints(korali::Sample&);
+
+};
+
+} } } // namespace korali::problem::Optimization
+
+
+#endif // _KORALI_PROBLEM_OPTIMIZATION_CONSTRAINED_HPP_

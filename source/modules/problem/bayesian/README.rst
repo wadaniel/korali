@@ -1,5 +1,5 @@
 *****************************
-Likelihood By Reference
+Bayesian Inference
 *****************************
 
 

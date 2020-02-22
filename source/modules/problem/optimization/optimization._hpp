@@ -13,7 +13,6 @@ class Optimization : public korali::Problem
 
  void initialize() override;
  bool isSampleFeasible(korali::Sample& sample);
- void evaluateConstraints(korali::Sample&);
  virtual void evaluate(korali::Sample&) = 0;
 
 };

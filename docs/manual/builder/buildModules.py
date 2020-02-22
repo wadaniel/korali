@@ -83,12 +83,12 @@ def processModule(parentModuleConfig, moduleRelPath, moduleName):
  # If its parent, construct children modules
  if (isParentModule == True):
   moduleReadmeString += '**Sub-Categories**\n\n'
-  moduleReadmeString += '  .. toctree::\n'
-  moduleReadmeString += '     :maxdepth: 1\n'
+  moduleReadmeString += '.. toctree::\n'
+  moduleReadmeString += '   :titlesonly:\n\n'
   
   for f in subFolderList:
    subModuleFullPath = os.path.join(modulePath, f)
-   moduleReadmeString += '    ' + f + '/' + f + '\n'
+   moduleReadmeString += '   ' + f + '/' + f + '\n'
    subPath = os.path.join(moduleRelPath, f)
    processModule(moduleConfig, subPath, f)
    
@@ -96,6 +96,7 @@ def processModule(parentModuleConfig, moduleRelPath, moduleName):
  if (isParentModule == False): 
     
   moduleReadmeString += '\n**Configuration**\n'
+  moduleReadmeString += '-----------------------------\n'
   if ('Configuration Settings' in moduleConfig):
    for v in moduleConfig["Configuration Settings"]:
     moduleReadmeString += createVariableDescription(v)
@@ -104,11 +105,13 @@ def processModule(parentModuleConfig, moduleRelPath, moduleName):
 
   if ('Termination Criteria' in moduleConfig):
    moduleReadmeString += '\n**Termination Criteria**\n'
+   moduleReadmeString += '-----------------------------\n'
    for v in moduleConfig["Termination Criteria"]:
     moduleReadmeString += createVariableDescription(v)
 
   if ('Internal Settings' in moduleConfig):
    moduleReadmeString += '\n*[For Developers]* **Internal Settings**\n'
+   moduleReadmeString += '----------------------------------------------------\n'
    for v in moduleConfig["Internal Settings"]:
     moduleReadmeString += createVariableDescription(v)
     

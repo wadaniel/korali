@@ -16,7 +16,16 @@ def getVariableName(v):
  return cVarName
 
 def getDataType(v):
- cVarType = v["Type"].replace('size_t', 'Unsigned Integer').replace('int', 'Integer').replace('double', 'Real Number').replace('std::string', 'String').replace('std::vector<std::vector<', 'List of Lists of ').replace('std::vector<', 'List of ').replace('>','').replace('bool', 'True/False')
+ cVarType = v["Type"]
+ cVarType = cVarType.replace('size_t', 'Unsigned Integer')
+ cVarType = cVarType.replace('int', 'Integer')
+ cVarType = cVarType.replace('double', 'Real Number')
+ cVarType = cVarType.replace('std::string', 'String')
+ cVarType = cVarType.replace('>','')
+ cVarType = cVarType.replace('std::function<void(korali::Sample&)', 'Function(:ref:`Korali::Sample& <korali-sample>`)')
+ cVarType = cVarType.replace('std::vector<std::vector<', 'List of Lists of ')
+ cVarType = cVarType.replace('std::vector<', 'List of ')
+ cVarType = cVarType.replace('bool', 'True/False')
  return cVarType 
  
 def getJsonPath(path):
@@ -37,10 +46,15 @@ def recursiveUpdate(dest, defaults):
    else: 
      recursiveUpdate(dest[k], defaults[k])
 
-def createVariableDescription(v):
+def createVariableDescription(relPath, v): 
+ moduleTypePath = ''
+ if ("problem" in relPath): moduleTypePath = '["Problem"]'
+ if ("solver" in relPath): moduleTypePath = '["Solver"]'
+ if ("conduit" in relPath): moduleTypePath = '["Conduit"]'
+ 
  desc = '\n'
- desc += getJsonPath(v["Name"]) + '\n'
- desc += ' - **Type**: ' + getDataType(v) + '\n'
+ desc += getJsonPath(v["Name"]).replace('"','').replace('[','').replace(']','') + '\n'
+ desc += ' - **Usage**: e' + moduleTypePath + getJsonPath(v["Name"]).replace('\\','') + ' = ' + getDataType(v) + '\n'
  desc += ' - **Description**: ' + v["Description"] + '\n'
  if ('Criteria' in v): desc += ' - **Criteria**: ' + v["Criteria"] + '\n'
  if ('Options' in v):
@@ -111,7 +125,7 @@ def processModule(parentModuleConfig, moduleRelPath, moduleName):
   moduleReadmeString += '-----------------------------\n'
   if ('Configuration Settings' in moduleConfig):
    for v in moduleConfig["Configuration Settings"]:
-    moduleReadmeString += createVariableDescription(v)
+    moduleReadmeString += createVariableDescription(moduleRelPath, v)
   else:
     moduleReadmeString += '\n*None*\n'  
 
@@ -119,13 +133,13 @@ def processModule(parentModuleConfig, moduleRelPath, moduleName):
    moduleReadmeString += '\n**Termination Criteria**\n'
    moduleReadmeString += '-----------------------------\n'
    for v in moduleConfig["Termination Criteria"]:
-    moduleReadmeString += createVariableDescription(v)
+    moduleReadmeString += createVariableDescription(moduleRelPath, v)
 
   if ('Internal Settings' in moduleConfig):
    moduleReadmeString += '\n*[For Developers]* **Internal Settings**\n'
    moduleReadmeString += '----------------------------------------------------\n'
    for v in moduleConfig["Internal Settings"]:
-    moduleReadmeString += createVariableDescription(v)
+    moduleReadmeString += createVariableDescription(moduleRelPath, v)
     
  # Saving Module's readme file
  moduleReadmeString += '\n\n'

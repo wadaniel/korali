@@ -2,14 +2,11 @@
 Korali Basics
 ***********************
 
-Korali provides a range of optimization and uncertainty quantification tools. To use these tools, a user needs to create a *Korali Application*. This application serves as a nexus between the computational models (user-provided C++ objects, Python modules, or pre-compiled applications), and the Korali's main solver engine.
-
-## Korali Application
-
-A Korali application is a Python or C++ script that contains one or more evaluation of Korali experiments, which represent a set of problem/solver/conduit to be evaluated. 
+Korali provides a range of optimization and uncertainty quantification tools. To use these tools, a user needs to create a *Korali Application*. This application serves as a nexus between the computational models (user-provided C++ objects, Python modules, or pre-compiled applications), and the Korali's main solver engine. A Korali application is a Python or C++ script that contains one or more evaluation of Korali experiments, which represent a set of problem/solver/conduit to be evaluated. 
 
 
-### Creating a new Experiment
+Defining a Korali Experiment
+========================================
 
 A user creates an experiment by instantiating an object of type Experiment(). To run, the user simply calls korali.run().
 
@@ -33,14 +30,16 @@ korali.run(eList)
 ```
 
 Each experiment can be configured with different general settings, as shown in the link below:
-
-[**Experiment Configuration**](experiment) 
-
 After configuring the experiment, the user chooses and configures its modules as shown below.
 
-### Problem Type
+Problem Type
+------------------------------
 
 A Korali Problem describes the sampling space of the physical or real-world phenomenon to analyze. The number of variables defined by the user represents a dimension of the problem. Variables are created by simply adding their name to the problem configuration:
+
+
+Variables
+------------------------------
 
 ```python
 # Example: Defining two variables
@@ -62,7 +61,8 @@ Below is a complete list of Korali-supported problem types:
 
 [**Problem Type List**](problem)
 
-### Solver Method
+Solver Method
+--------------------------
 
 The next step is to choose which solver algorithm should be used to obtain the results required by the problem. We call this 'Solver Type'. 
 
@@ -76,7 +76,8 @@ Below is a complete list of solvers currently implemented in Korali:
 
 [**Solver Method List**](solver)
 
-### Execution Conduit
+Execution Conduit
+-------------------------
 
 The evaluation conduit module executes the computational model(s) for each sample and returns their raw results back to the solver. 
 
@@ -88,4 +89,15 @@ The choice of conduit depends on the design and requirements of the computationa
 Below is a complete list of conduits currently implemented in Korali:
 
 [**Execution Conduit List**](conduit)
+
+.. _korali-sample:
+
+Korali Samples
+-----------------------
+
+Function(Sample)
+
+Interface to the user's computational model(s)
+====================================================
+
 

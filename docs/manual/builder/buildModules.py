@@ -43,6 +43,10 @@ def createVariableDescription(v):
  desc += ' - **Type**: ' + getDataType(v) + '\n'
  desc += ' - **Description**: ' + v["Description"] + '\n'
  if ('Criteria' in v): desc += ' - **Criteria**: ' + v["Criteria"] + '\n'
+ if ('Options' in v):
+   desc += ' - **Options**: \n\n'  
+   for o in v["Options"]:
+    desc += '      - "*' + o["Value"] + '*": ' + o["Description"] + '\n'
  desc += '\n'
  return desc
     
@@ -54,10 +58,12 @@ def processModule(parentModuleConfig, moduleRelPath, moduleName):
  moduleReadmeFile = modulePath + '/README.rst'
  moduleConfigFile = modulePath + '/' + moduleName + '.config'
  moduleOutputDir = '../modules/' + moduleRelPath
- 
+
+ moduleReadmeString = '.. _module-' + moduleName + ':\n\n'
+  
  # Loading configuration and readme files 
- with open(moduleConfigFile, 'r') as file: moduleConfigString = file.read()
- with open(moduleReadmeFile, 'r') as file: moduleReadmeString = file.read()
+ with open(moduleConfigFile, 'r') as file: moduleConfigString  = file.read()
+ with open(moduleReadmeFile, 'r') as file: moduleReadmeString += file.read()
 
  # Loading Module's Configuration
  moduleConfig = json.loads(moduleConfigString)
@@ -94,7 +100,13 @@ def processModule(parentModuleConfig, moduleRelPath, moduleName):
    
  # If its leaf, build configuration
  if (isParentModule == False): 
-    
+
+  if ('Compatible Solvers' in moduleConfig):
+   moduleReadmeString += '\n**Compatible Solvers**\n'
+   moduleReadmeString += '-----------------------------\n\n'
+   for v in moduleConfig["Compatible Solvers"]:
+    moduleReadmeString += '   - :ref:`' + v + ' <module-' + v + '>`\n'
+        
   moduleReadmeString += '\n**Configuration**\n'
   moduleReadmeString += '-----------------------------\n'
   if ('Configuration Settings' in moduleConfig):

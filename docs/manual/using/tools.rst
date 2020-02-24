@@ -2,13 +2,11 @@
 Tools
 **********************
 
-Plotter
-######################
+.. toctree::
+   :titlesonly:
 
-Profiler
-######################
+   tools/plotter 
 
-Graphical User Interface (GUI)
-###############################
+
 
 

@@ -1,12 +1,7 @@
-****************************
-Resilient Back Propagation
-****************************
+************************************
+RProp (Resilient Back Propagation)
+************************************
 
 This is an implementation of the *Resilient Backpropagation* algorithm. See the
-[wikipedia article](https://en.wikipedia.org/wiki/Rprop) for references.
+`wikipedia article <https://en.wikipedia.org/wiki/Rprop>`_ for reference.
 
-**Usage:**
-
-.. code-block:: python
-
-  k["Solver"]["Type"] = "Rprop"

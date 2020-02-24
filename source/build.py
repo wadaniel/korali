@@ -195,6 +195,12 @@ def createSetConfiguration(module):
    codeString += ' if(js' + getVariablePath(v) + '.is_string()) { _hasConditionalVariables = true; ' + getCXXVariableName(v["Name"]) + 'Conditional = js' + getVariablePath(v) + '; } \n'
    codeString += ' korali::JsonInterface::eraseValue(js, "' + getVariablePath(v).replace('"', "'") + '");\n\n'
 
+ if 'Compatible Solvers' in module:
+  codeString += '  bool detectedCompatibleSolver = false; \n'
+  for v in module["Compatible Solvers"]:
+   codeString += '   if (_k->_js["Solver"]["Type"] == "' + v + '") detectedCompatibleSolver = true;\n'
+  codeString += '  if (detectedCompatibleSolver == false) korali::logError("Specified solver (%s) is not compatible with problem of type: ' + module["Name"] + '\\n",  _k->_js["Solver"]["Type"].dump(1).c_str()); \n\n'
+  
  codeString += ' ' + module["Parent Class"] + '::setConfiguration(js);\n'
 
  codeString += ' _type = "' + module["Option Name"] + '";\n'

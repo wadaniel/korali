@@ -30,12 +30,8 @@ e["Variables"][0]["Upper Bound"] = +10.0
 e["Solver"]["Type"] = "CMAES"
 e["Solver"]["Population Size"] = 4 
 e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-15
-e["Solver"]["Termination Criteria"]["Max Generations"] = 10
-
-# Running Korali
-k.run(e)
-
 e["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
 # Running Korali
 k.run(e)
+

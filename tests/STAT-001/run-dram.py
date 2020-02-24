@@ -11,8 +11,8 @@ from helpers import *
 
 # Selecting problem and solver types.
 e = korali.Experiment()
-e["Problem"]["Type"] = "Optimization/Stochastic"
-e["Problem"]["Objective Function"] = model
+e["Problem"]["Type"] = "Sampling"
+e["Problem"]["Probability Function"] = model
 
 # Configuring the MCMC sampler parameters
 e["Solver"]["Type"] = "MCMC"

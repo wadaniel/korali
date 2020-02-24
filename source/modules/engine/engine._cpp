@@ -38,7 +38,7 @@ void korali::Engine::run()
   _experimentVector[i]->initialize();
   _experimentVector[i]->_isFinished = false;
   std::string fileName = "./log.txt";
-  //std::string fileName = "./" + _experimentVector[i]->_resultsPath + "/log.txt";
+  //std::string fileName = "./" + _experimentVector[i]->_resultsOutputPath + "/log.txt";
   if (_experimentVector.size() > 1)  _experimentVector[i]->_logFile = fopen(fileName.c_str(), "a");
   if (_experimentVector.size() == 1) _experimentVector[i]->_logFile = stdout;
  }
@@ -83,7 +83,7 @@ void korali::Engine::run()
    for (size_t i = 0; i < _experimentVector.size(); i++)
    if (_experimentVector[i]->_isFinished == false)
    {
-    korali::setVerbosityLevel(_experimentVector[i]->_consoleVerbosity);
+    korali::setVerbosityLevel(_experimentVector[i]->_consoleOutputVerbosity);
     korali::setConsoleOutputFile(_experimentVector[i]->_logFile);
     _currentExperiment = _experimentVector[i];
     co_switch(_experimentVector[i]->_thread);

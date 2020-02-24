@@ -13,9 +13,9 @@ import korali
 k = korali.Engine()
 e = korali.Experiment()
 
-e["Results"]["Path"] = "_result_run-mcmc"
-e["Results"]["Frequency"] = 5000
-e["Console"]["Frequency"] = 5000
+e["File Output"]["Path"] = "_result_run-mcmc"
+e["File Output"]["Frequency"] = 5000
+e["Console Output"]["Frequency"] = 5000
 
 # Selecting problem and solver types.
 e["Problem"]["Type"] = "Sampling"

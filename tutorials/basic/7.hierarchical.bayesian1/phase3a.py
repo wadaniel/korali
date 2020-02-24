@@ -31,8 +31,8 @@ e["Solver"]["Target Coefficient Of Variation"] = 0.6
 e["Solver"]["Covariance Scaling"] = 0.02
 e["Solver"]["Default Burn In"] = 1;
 
-e["Console"]["Verbosity"] = "Detailed"
-e["Results"]["Path"] = "setup/results_phase_3a/"
+e["Console Output"]["Verbosity"] = "Detailed"
+e["File Output"]["Path"] = "setup/results_phase_3a/"
 
 # Starting Korali's Engine and running experiment
 k = korali.Engine()

@@ -57,8 +57,8 @@ e["Variables"][2]["Initial Mean"] = +2.5
 e["Variables"][2]["Initial Standard Deviation"] = +0.5
 
 # Configuring output settings
-e["Results"]["Frequency"] = 5
-e["Console"]["Frequency"] = 5
+e["File Output"]["Frequency"] = 5
+e["Console Output"]["Frequency"] = 5
 
 # Starting Korali's Engine and running experiment
 k = korali.Engine()

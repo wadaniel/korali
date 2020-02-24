@@ -11,13 +11,13 @@ from helpers import *
 # Starting Korali's Engine
 import korali
 e = korali.Experiment()
-e["Results"]["Path"] = "_result_run-mcmc"
+e["File Output"]["Path"] = "_result_run-mcmc"
 
 # Selecting problem and solver types.
 e["Problem"]["Type"] = "Sampling"
 e["Problem"]["Probability Function"] = model
-e["Console"]["Frequency"] = 500
-e["Results"]["Frequency"] = 500
+e["Console Output"]["Frequency"] = 500
+e["File Output"]["Frequency"] = 500
 
 # Defining problem's variables and their MCMC settings
 e["Variables"][0]["Name"] = "X"

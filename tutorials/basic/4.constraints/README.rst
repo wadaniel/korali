@@ -143,8 +143,8 @@ reader friendly, can be found in [module.cpp](../../source/module.cpp).
 We configure output settings,
 
 ```python
-e["Results"]["Frequency"] = 50
-e["Console"]["Frequency"] = 50
+e["File Output"]["Frequency"] = 50
+e["Console Output"]["Frequency"] = 50
 
 ```
 

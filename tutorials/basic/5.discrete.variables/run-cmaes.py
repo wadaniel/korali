@@ -38,8 +38,8 @@ e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-9
 e["Solver"]["Termination Criteria"]["Max Generations"] = 5000
 
 # Configuring output settings
-e["Results"]["Frequency"] = 50
-e["Console"]["Frequency"] = 50
+e["File Output"]["Frequency"] = 50
+e["Console Output"]["Frequency"] = 50
 
 # Starting Korali's Engine and running experiment
 k = korali.Engine()

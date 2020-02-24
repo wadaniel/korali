@@ -36,7 +36,7 @@ def run_ccmaes(constraint):
     e["Solver"]["Termination Criteria"]["Max Generations"] = 100
     e["Solver"]["Is Sigma Bounded"] = 1
 
-    e["Console"]["Verbosity"] = "Detailed"
+    e["Console Output"]["Verbosity"] = "Detailed"
     e["Random Seed"] = 1337
 
     k = korali.Engine()

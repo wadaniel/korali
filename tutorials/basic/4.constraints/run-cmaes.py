@@ -35,8 +35,8 @@ e["Solver"]["Termination Criteria"]["Max Value"] = -680.630057374402 - 1e-4
 e["Solver"]["Termination Criteria"]["Max Generations"] = 500
 
 # Configuring output settings
-#e["Results"]["Frequency"] = 50
-#e["Console"]["Frequency"] = 50
+#e["File Output"]["Frequency"] = 50
+#e["Console Output"]["Frequency"] = 50
 
 # Starting Korali's Engine and running experiment
 k = korali.Engine()

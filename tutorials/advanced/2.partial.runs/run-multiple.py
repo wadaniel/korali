@@ -31,8 +31,8 @@ for i in range(8):
  e["Variables"][0]["Lower Bound"] = -10.0
  e["Variables"][0]["Upper Bound"] = +10.0
 
- e["Results"]["Path"] = '_result_run-multiple/exp' + str(i)
- e["Console"]["Frequency"] = 10
+ e["File Output"]["Path"] = '_result_run-multiple/exp' + str(i)
+ e["Console Output"]["Frequency"] = 10
  eList.append(e)
 
 print('------------------------------------------------------')

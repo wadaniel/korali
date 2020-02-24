@@ -86,9 +86,9 @@ We also set some settings for MCMC. For a detailed description of the MCMC setti
 ### Configuring the output
 
 ```python
-e["Results"]["Frequency"] = 500
-e["Console"]["Frequency"] = 500
-e["Console"]["Verbosity"] = "Detailed"
+e["File Output"]["Frequency"] = 500
+e["Console Output"]["Frequency"] = 500
+e["Console Output"]["Verbosity"] = "Detailed"
 ```
 
 ###  Running

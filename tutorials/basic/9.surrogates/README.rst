@@ -24,10 +24,10 @@ e0["Problem"]["Y Data"] = y
 e0["Solver"]["Type"] = "Rprop"
 e0["Solver"]["Termination Criteria"]["Max Generations"] = 200
 e0["Solver"]["Termination Criteria"]["Parameter Relative Tolerance"] = 1e-8
-e0["Console"]["Verbosity"] = "Normal"
-e0["Console"]["Frequency"] = 10
-e0["Results"]["Frequency"] = 100
-e0["Results"]["Path"] = "_korali_result_train"
+e0["Console Output"]["Verbosity"] = "Normal"
+e0["Console Output"]["Frequency"] = 10
+e0["File Output"]["Frequency"] = 100
+e0["File Output"]["Path"] = "_korali_result_train"
 ```
 
 ## Test
@@ -44,10 +44,10 @@ e1["Problem"]["X Data"] = x
 e1["Problem"]["Y Data"] = y
 e1["Solver"]["Type"] = "Executor"
 e1["Solver"]["Executions Per Generation"] = 1
-e1["Console"]["Verbosity"] = "Normal"
-e1["Console"]["Frequency"] = 10
-e1["Results"]["Frequency"] = 100
-e1["Results"]["Path"] = "_korali_result_test"
+e1["Console Output"]["Verbosity"] = "Normal"
+e1["Console Output"]["Frequency"] = 10
+e1["File Output"]["Frequency"] = 100
+e1["File Output"]["Path"] = "_korali_result_test"
 ```
 
 ## Predict
@@ -64,10 +64,10 @@ e2["Problem"]["X Data"] = x
 e2["Problem"]["Y Data"] = y
 e2["Solver"]["Type"] = "Executor"
 e2["Solver"]["Executions Per Generation"] = 1
-e2["Console"]["Verbosity"] = "Normal"
-e2["Console"]["Frequency"] = 10
-e2["Results"]["Frequency"] = 100
-e2["Results"]["Path"] = "_korali_result_new"
+e2["Console Output"]["Verbosity"] = "Normal"
+e2["Console Output"]["Frequency"] = 10
+e2["File Output"]["Frequency"] = 100
+e2["File Output"]["Path"] = "_korali_result_new"
 ```
 
 ## Run

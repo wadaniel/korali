@@ -15,13 +15,13 @@ import korali
 k = korali.Engine()
 e = korali.Experiment()
 
-e["Results"]["Path"] = "_result_run-mcmc"
+e["File Output"]["Path"] = "_result_run-mcmc"
 
 # Selecting problem and solver types.
 e["Problem"]["Type"] = "Sampling"
 e["Problem"]["Probability Function"] = lg5
-e["Console"]["Frequency"] = 5000
-e["Results"]["Frequency"] = 5000
+e["Console Output"]["Frequency"] = 5000
+e["File Output"]["Frequency"] = 5000
 
 # Defining problem's variables and their MCMC settings
 for i in range(5):

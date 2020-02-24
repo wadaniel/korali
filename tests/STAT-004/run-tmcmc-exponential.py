@@ -13,7 +13,7 @@ import korali
 k = korali.Engine()
 e = korali.Experiment()
 
-e["Results"]["Path"] = "_result_run-tmcmc"
+e["File Output"]["Path"] = "_result_run-tmcmc"
 
 # Setting up custom likelihood for the Bayesian Problem
 e["Problem"]["Type"] = "Bayesian/Custom"

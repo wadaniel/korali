@@ -26,8 +26,8 @@ e["Variables"][0]["Name"] = "X"
 e["Variables"][0]["Lower Bound"] = -10.0
 e["Variables"][0]["Upper Bound"] = +10.0
 
-e["Console"]["Frequency"] = 5
-e["Results"]["Frequency"] = 5
+e["Console Output"]["Frequency"] = 5
+e["File Output"]["Frequency"] = 5
 
 print('------------------------------------------------------')
 print('Now running first 50 generations...')

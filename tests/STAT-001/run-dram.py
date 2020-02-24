@@ -28,9 +28,9 @@ e["Variables"][0]["Initial Standard Deviation"] = 2.0
 
 # Running Korali
 e["Random Seed"] = 0xC0FFEE
-e["Console"]["Frequency"] = 500
-e["Results"]["Frequency"] = 500
-e["Results"]["Path"] = "_result_run-dram"
+e["Console Output"]["Frequency"] = 500
+e["File Output"]["Frequency"] = 500
+e["File Output"]["Path"] = "_result_run-dram"
 
 k = korali.Engine()
 k.run(e)

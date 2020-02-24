@@ -12,8 +12,8 @@ from helpers import *
 import korali
 
 e = korali.Experiment()
-e["Console"]["Frequency"] = 500
-e["Results"]["Frequency"] = 500
+e["Console Output"]["Frequency"] = 500
+e["File Output"]["Frequency"] = 500
 
 e["Problem"]["Type"] = "Sampling"
 e["Problem"]["Probability Function"] = model
@@ -30,7 +30,7 @@ e["Variables"][0]["Initial Standard Deviation"] = 1.0
 
 # Running Korali
 e["Random Seed"] = 0xC0FFEE
-e["Results"]["Path"] = "_result_run-mcmc"
+e["File Output"]["Path"] = "_result_run-mcmc"
 
 k = korali.Engine()
 k.run(e)

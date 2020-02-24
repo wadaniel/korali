@@ -87,8 +87,8 @@ e["Solver"]["Termination Criteria"]["Max Generations"] = 5000
 ### Output configuration
 
 ```python
-e["Results"]["Frequency"] = 50
-e["Console"]["Frequency"] = 50
+e["File Output"]["Frequency"] = 50
+e["Console Output"]["Frequency"] = 50
 ```
 
 ###  The Korali Engine Object

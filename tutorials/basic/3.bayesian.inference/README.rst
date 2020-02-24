@@ -233,8 +233,8 @@ For a detailed description of CMA-ES settings see [here](../../usage/solvers/cma
 Finally, we configure the output, and then need to add a call to the run() routine to start the Korali engine.
 
 ```python
-e["Results"]["Frequency"] = 5
-e["Console"]["Frequency"] = 5
+e["File Output"]["Frequency"] = 5
+e["Console Output"]["Frequency"] = 5
 
 k = korali.Engine()
 k.run(e)

@@ -20,7 +20,7 @@ d["Bananas"] = b
 In Korali we have to set this flag to store the values of `Apples` and `Bananas`:
 
 ```python
-e["Results"]["Store Samples"] = True
+e["File Output"]["Store Samples"] = True
 ```
 
 All evaluations can be found in the files in `_korali_results`.

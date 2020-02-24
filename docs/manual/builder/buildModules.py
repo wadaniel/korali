@@ -26,6 +26,8 @@ def getDataType(v):
  cVarType = cVarType.replace('std::vector<std::vector<', 'List of Lists of ')
  cVarType = cVarType.replace('std::vector<', 'List of ')
  cVarType = cVarType.replace('bool', 'True/False')
+ if ('korali::' in cVarType):
+   print(cVarType.split())
  return cVarType 
  
 def getJsonPath(path):
@@ -117,12 +119,21 @@ def processModule(parentModuleConfig, moduleRelPath, moduleName):
 
   if ('Compatible Solvers' in moduleConfig):
    moduleReadmeString += '\n**Compatible Solvers**\n'
-   moduleReadmeString += '-----------------------------\n\n'
+   moduleReadmeString += '----------------------------------\n\n'
+   moduleReadmeString += 'This problem can be solved using the following modules: \n\n'
    for v in moduleConfig["Compatible Solvers"]:
     moduleReadmeString += '   - :ref:`' + v + ' <module-' + v + '>`\n'
-        
+
+  if ('Variables Configuration' in moduleConfig):
+   moduleReadmeString += '\n**Variable-Specific Settings**\n'
+   moduleReadmeString += '----------------------------------\n\n'
+   moduleReadmeString += 'These are settings required by this module that are added to each of the experiment\'s variables when this module is selected.\n\n'
+   for v in moduleConfig["Variables Configuration"]:
+    moduleReadmeString += createVariableDescription(moduleRelPath, v)
+            
   moduleReadmeString += '\n**Configuration**\n'
   moduleReadmeString += '-----------------------------\n'
+  moduleReadmeString += 'These are settings required by this module.\n\n'
   if ('Configuration Settings' in moduleConfig):
    for v in moduleConfig["Configuration Settings"]:
     moduleReadmeString += createVariableDescription(moduleRelPath, v)
@@ -131,16 +142,25 @@ def processModule(parentModuleConfig, moduleRelPath, moduleName):
 
   if ('Termination Criteria' in moduleConfig):
    moduleReadmeString += '\n**Termination Criteria**\n'
-   moduleReadmeString += '-----------------------------\n'
+   moduleReadmeString += '----------------------------------\n\n'
+   moduleReadmeString += 'These are the customizable criteria that indicates whether the solver should continue or finish execution. Korali will stop when at least one of these conditions are met. \n\n'
    for v in moduleConfig["Termination Criteria"]:
     moduleReadmeString += createVariableDescription(moduleRelPath, v)
 
   if ('Internal Settings' in moduleConfig):
-   moduleReadmeString += '\n*[For Developers]* **Internal Settings**\n'
-   moduleReadmeString += '----------------------------------------------------\n'
+   moduleReadmeString += '\n**Internal Settings** *[For Developers]*\n'
+   moduleReadmeString += '--------------------------------------------------\n\n'
+   moduleReadmeString += 'The following are settings that store the internal state of the module. The information below is only interesting for developers and the user does not need to set them up. \n\n'
    for v in moduleConfig["Internal Settings"]:
     moduleReadmeString += createVariableDescription(moduleRelPath, v)
     
+  if ('Module Defaults' in moduleConfig):
+   moduleReadmeString += '\n**Default Configuration**\n'
+   moduleReadmeString += '----------------------------------\n\n'
+   moduleReadmeString += 'These following configuration will be assigned by default. Any settings defined by the user will override the given settings specified in these defaults.\n\n'
+   moduleReadmeString += '  .. code-block:: python\n\n'
+   moduleReadmeString += '    ' + json.dumps(moduleConfig['Module Defaults'], sort_keys=True, indent=4).replace('}','    }')
+   
  # Saving Module's readme file
  moduleReadmeString += '\n\n'
  with open(moduleOutputDir + '/' + moduleName + '.rst', 'w') as file: file.write(moduleReadmeString)

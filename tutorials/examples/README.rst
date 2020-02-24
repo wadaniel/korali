@@ -1,3 +1,3 @@
-Example Applications
-=====================
+Case-Study Applications
+=======================
 

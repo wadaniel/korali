@@ -1,3 +1,3 @@
-Basic Features
-===============
+Basic Examples
+================
 

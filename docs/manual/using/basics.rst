@@ -37,6 +37,7 @@ Problem Type
 
 A Korali Problem describes the sampling space of the physical or real-world phenomenon to analyze. The number of variables defined by the user represents a dimension of the problem. Variables are created by simply adding their name to the problem configuration:
 
+.. _korali-variable:
 
 Variables
 ------------------------------
@@ -95,9 +96,11 @@ Below is a complete list of conduits currently implemented in Korali:
 Korali Samples
 -----------------------
 
-Function(Sample)
 
-Interface to the user's computational model(s)
-====================================================
+.. _korali-model:
+
+Computational Models
+-----------------------
+
 
 

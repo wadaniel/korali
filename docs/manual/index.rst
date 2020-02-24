@@ -20,12 +20,18 @@ Korali's Documentation
    tutorials/examples
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :glob:
-   :caption: Module Configuration
+   :caption: General Configuration
   
    modules/engine/*
    modules/experiment/*
+
+.. toctree::
+   :maxdepth: 2
+   :glob:
+   :caption: Korali Modules
+      
    modules/problem/*
    modules/solver/*
    modules/conduit/*

@@ -17,17 +17,25 @@ def getVariableName(v):
 
 def getDataType(v):
  cVarType = v["Type"]
- cVarType = cVarType.replace('size_t', 'Unsigned Integer')
- cVarType = cVarType.replace('int', 'Integer')
- cVarType = cVarType.replace('double', 'Real Number')
- cVarType = cVarType.replace('std::string', 'String')
+ cVarType = cVarType.replace('*','')
  cVarType = cVarType.replace('>','')
- cVarType = cVarType.replace('std::function<void(korali::Sample&)', 'Function(:ref:`Korali::Sample& <korali-sample>`)')
+ cVarType = cVarType.replace('int', '*integer*')
+ cVarType = cVarType.replace('size_t', '*unsigned integer*')
+ cVarType = cVarType.replace('double', '*real number*')
+ cVarType = cVarType.replace('std::string', '*string*')
+ cVarType = cVarType.replace('std::function<void(korali::Sample&)', ':ref:`Computational Model <korali-model>`')
  cVarType = cVarType.replace('std::vector<std::vector<', 'List of Lists of ')
  cVarType = cVarType.replace('std::vector<', 'List of ')
- cVarType = cVarType.replace('bool', 'True/False')
+ cVarType = cVarType.replace('bool', '*True/False*')
+ cVarType = cVarType.replace('korali::Variable', ':ref:`Variable <korali-variable>`')
  if ('korali::' in cVarType):
-   print(cVarType.split())
+   classList = cVarType.replace('*','').split('::')
+   moduleLink = 'module-' + classList[1].lower()
+   cVarType = classList[1].capitalize()
+   for c in classList[2:]:
+    cVarType += '/' + c.capitalize()
+    moduleLink += '-' + c.lower()
+   cVarType = classList[0].replace('korali','') + ':ref:`' + cVarType + ' <' + moduleLink + '>`'
  return cVarType 
  
 def getJsonPath(path):
@@ -48,15 +56,15 @@ def recursiveUpdate(dest, defaults):
    else: 
      recursiveUpdate(dest[k], defaults[k])
 
-def createVariableDescription(relPath, v): 
+def createVariableDescription(rootPath, relPath, v): 
  moduleTypePath = ''
  if ("problem" in relPath): moduleTypePath = '["Problem"]'
  if ("solver" in relPath): moduleTypePath = '["Solver"]'
  if ("conduit" in relPath): moduleTypePath = '["Conduit"]'
  
  desc = '\n'
- desc += getJsonPath(v["Name"]).replace('"','').replace('[','').replace(']','') + '\n'
- desc += ' - **Usage**: e' + moduleTypePath + getJsonPath(v["Name"]).replace('\\','') + ' = ' + getDataType(v) + '\n'
+ desc += getJsonPath(v["Name"]).replace('"','').replace('[','').replace(']','').replace('\\\\',' / ') + '\n'
+ desc += ' - **Usage**: ' + rootPath + moduleTypePath + getJsonPath(v["Name"]).replace('\\','') + ' = ' + getDataType(v) + '\n'
  desc += ' - **Description**: ' + v["Description"] + '\n'
  if ('Criteria' in v): desc += ' - **Criteria**: :code:`' + v["Criteria"] + '`\n'
  if ('Options' in v):
@@ -75,7 +83,7 @@ def processModule(parentModuleConfig, moduleRelPath, moduleName):
  moduleConfigFile = modulePath + '/' + moduleName + '.config'
  moduleOutputDir = '../modules/' + moduleRelPath
 
- moduleReadmeString = '.. _module-' + moduleName + ':\n\n'
+ moduleReadmeString = '.. _module-' + moduleRelPath.lower().replace('/','-') + ':\n\n'
   
  # Loading configuration and readme files 
  with open(moduleConfigFile, 'r') as file: moduleConfigString  = file.read()
@@ -104,7 +112,7 @@ def processModule(parentModuleConfig, moduleRelPath, moduleName):
   
  # If its parent, construct children modules
  if (isParentModule == True):
-  moduleReadmeString += '**Sub-Categories**\n\n'
+  moduleReadmeString += 'Sub-Categories\n\n'
   moduleReadmeString += '.. toctree::\n'
   moduleReadmeString += '   :titlesonly:\n\n'
   
@@ -122,21 +130,21 @@ def processModule(parentModuleConfig, moduleRelPath, moduleName):
    moduleReadmeString += '----------------------------------\n\n'
    moduleReadmeString += 'This problem can be solved using the following modules: \n\n'
    for v in moduleConfig["Compatible Solvers"]:
-    moduleReadmeString += '   - :ref:`' + v + ' <module-' + v + '>`\n'
+    moduleReadmeString += '   - :ref:`' + v + ' <module-solver-' + v.lower().replace('/','-') + '>`\n'
 
   if ('Variables Configuration' in moduleConfig):
    moduleReadmeString += '\nVariable-Specific Settings\n'
    moduleReadmeString += '----------------------------------\n\n'
    moduleReadmeString += 'These are settings required by this module that are added to each of the experiment\'s variables when this module is selected.\n\n'
    for v in moduleConfig["Variables Configuration"]:
-    moduleReadmeString += createVariableDescription(moduleRelPath, v)
+    moduleReadmeString += createVariableDescription('e["Variables"][*index*]', moduleRelPath, v)
             
   moduleReadmeString += '\nConfiguration\n'
   moduleReadmeString += '-----------------------------\n'
   moduleReadmeString += 'These are settings required by this module.\n\n'
   if ('Configuration Settings' in moduleConfig):
    for v in moduleConfig["Configuration Settings"]:
-    moduleReadmeString += createVariableDescription(moduleRelPath, v)
+    moduleReadmeString += createVariableDescription('e', moduleRelPath, v)
   else:
     moduleReadmeString += '\n*None*\n'  
 
@@ -145,14 +153,14 @@ def processModule(parentModuleConfig, moduleRelPath, moduleName):
    moduleReadmeString += '----------------------------------\n\n'
    moduleReadmeString += 'These are the customizable criteria that indicates whether the solver should continue or finish execution. Korali will stop when at least one of these conditions are met. The criteria is expressed in C++ since it is compiled and evaluated as seen here in the engine. \n\n'
    for v in moduleConfig["Termination Criteria"]:
-    moduleReadmeString += createVariableDescription(moduleRelPath, v)
+    moduleReadmeString += createVariableDescription('e', moduleRelPath, v)
 
   if ('Internal Settings' in moduleConfig):
    moduleReadmeString += '\nInternal Settings *[For Developers]*\n'
    moduleReadmeString += '--------------------------------------------------\n\n'
    moduleReadmeString += 'The following are settings that store the internal state of the module. The information below is only interesting for developers and the user does not need to set them up. \n\n'
    for v in moduleConfig["Internal Settings"]:
-    moduleReadmeString += createVariableDescription(moduleRelPath, v)
+    moduleReadmeString += createVariableDescription('e', moduleRelPath, v)
     
   if ('Module Defaults' in moduleConfig):
    moduleReadmeString += '\nDefault Configuration\n'

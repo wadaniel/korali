@@ -13,3 +13,5 @@ shutil.rmtree(toolsDstDir, ignore_errors=True, onerror=None)
 os.makedirs(toolsDstDir)
 
 shutil.copyfile(toolsSrcDir + '/plotter/README.rst', toolsDstDir + '/plotter.rst')
+shutil.copyfile(toolsSrcDir + '/profiler/README.rst', toolsDstDir + '/profiler.rst')
+shutil.copyfile(toolsSrcDir + '/gui/README.rst', toolsDstDir + '/gui.rst')

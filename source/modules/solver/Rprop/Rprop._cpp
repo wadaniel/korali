@@ -27,31 +27,26 @@ void korali::solver::Rprop::setInitialConfiguration()
   _previousEvaluation   = korali::Inf;
 }
 
-void korali::solver::Rprop::evaluateFunctionAndGradient( void )
+void korali::solver::Rprop::evaluateFunctionAndGradient( korali::Sample& sample )
 {
-  int Ns = 1;
   // Initializing Sample Evaluation
-  std::vector<korali::Sample> samples(Ns);
-  for (size_t i = 0; i < Ns; i++){
-    samples[i]["Operation"]  = "Evaluate";
-    samples[i]["Parameters"] = _currentX;
-    samples[i]["Sample Id"]  = i;
-    _modelEvaluationCount++;
-    korali::_conduit->start(samples[i]);
-  }
+  sample["Operation"]  = "Evaluate";
+  sample["Parameters"] = _currentX;
+  sample["Sample Id"]  = 0;
+  _modelEvaluationCount++;
+  korali::_conduit->start(sample);
 
   // Waiting for samples to finish
-  korali::_conduit->waitAll(samples);
+  korali::_conduit->wait(sample);
 
   // Processing results
   // The 'minus' is there because we want Rprop to do Maximization be default.
-  for (size_t i = 0; i < Ns; i++){
-    _currentEvaluation = samples[i]["F(x)"];
-    _currentEvaluation = -_currentEvaluation;
-    for( size_t j=0; j<_k->_variables.size(); j++){
-      _currentGradient[j] = samples[i]["Gradient"][j];
-      _currentGradient[j] = -_currentGradient[j];
-    }
+  _currentEvaluation = sample["F(x)"];
+  _currentEvaluation = -_currentEvaluation;
+  for( size_t i=0; i<_k->_variables.size(); i++)
+  {
+    _currentGradient[i] = sample["Gradient"][i];
+    _currentGradient[i] = -_currentGradient[i];
   }
 }
 
@@ -59,7 +54,9 @@ void korali::solver::Rprop::runGeneration( void )
 {
   if (_k->_currentGeneration == 1) setInitialConfiguration();
 
-  evaluateFunctionAndGradient();
+  korali::Sample sample;
+
+  evaluateFunctionAndGradient(sample);
 
   korali::logInfo("Normal","X = [ ");
   for(size_t k=0; k<_k->_variables.size(); k++) korali::logData("Normal"," %.5le  ",_currentX[k]);
@@ -83,6 +80,8 @@ void korali::solver::Rprop::runGeneration( void )
 
   if( _currentEvaluation < _bestEvaluation ){
     _bestEvaluation = _currentEvaluation;
+    (*_k)["Results"]["Best Sample"] = sample._js.getJson();
+
     std::vector<double> tmp(_k->_variables.size());
     for(size_t j=0; j<_k->_variables.size(); j++) tmp[j] = _bestX[j]-_currentX[j];
     _xDiff = vectorNorm( tmp );

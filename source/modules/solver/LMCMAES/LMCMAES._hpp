@@ -20,7 +20,7 @@ class LMCMAES : public korali::Solver
  void choleskyFactorUpdate(size_t sampleIdx);
  void updateSet();
  void updateInverseVectors();
- void updateDistribution();
+ void updateDistribution(std::vector<korali::Sample> & samples);
  void updateSigma();
  void numericalErrorTreatment();
 

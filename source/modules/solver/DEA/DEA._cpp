@@ -206,7 +206,7 @@ void korali::solver::DEA::updateSolver(std::vector<korali::Sample>& samples)
       {
         for(size_t d = 0; d < _k->_variables.size(); ++d) _samplePopulation[_bestSampleIndex][d] = _candidatePopulation[_bestSampleIndex][d];
         _bestEverValue = _currentBestValue;
-        _bestSampleEver._js = samples[_bestSampleIndex]._js;
+         (*_k)["Results"]["Best Sample"] = samples[_bestSampleIndex]._js.getJson();
       }
       acceptRuleRecognized = true;
     }
@@ -218,7 +218,7 @@ void korali::solver::DEA::updateSolver(std::vector<korali::Sample>& samples)
       if(_currentBestValue > _bestEverValue)
        {
          _bestEverValue = _currentBestValue;
-         _bestSampleEver._js = samples[_bestSampleIndex]._js;
+         (*_k)["Results"]["Best Sample"] = samples[_bestSampleIndex]._js.getJson();
        }
       acceptRuleRecognized = true;
     }
@@ -230,7 +230,7 @@ void korali::solver::DEA::updateSolver(std::vector<korali::Sample>& samples)
       if(_currentBestValue > _bestEverValue)
        {
         _bestEverValue = _currentBestValue;
-        _bestSampleEver._js = samples[_bestSampleIndex]._js;
+        (*_k)["Results"]["Best Sample"] = samples[_bestSampleIndex]._js.getJson();
        }
       acceptRuleRecognized = true;
     }
@@ -242,7 +242,7 @@ void korali::solver::DEA::updateSolver(std::vector<korali::Sample>& samples)
        {
         _samplePopulation[i][d] = _candidatePopulation[i][d];
         _bestEverValue = _valueVector[i];
-        _bestSampleEver._js = samples[_bestSampleIndex]._js;
+        (*_k)["Results"]["Best Sample"] = samples[_bestSampleIndex]._js.getJson();
        }
      acceptRuleRecognized = true;
     }

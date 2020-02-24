@@ -167,6 +167,8 @@ def saveValue(base, path, varName, varType):
 def createSetConfiguration(module):
  codeString = 'void ' + module["Class"] + '::setConfiguration(nlohmann::json& js) \n{\n'
 
+ codeString += ' if (korali::JsonInterface::isDefined(js, "[\'Results\']"))  korali::JsonInterface::eraseValue(js, "[\'Results\']");\n\n'
+
  # Consume Configuration Settings
  if 'Configuration Settings' in module:
   for v in module["Configuration Settings"]:

@@ -153,12 +153,7 @@ void korali::solver::LMCMAES::runGeneration()
 
  // Waiting for samples to finish
  korali::_conduit->waitAll(samples);
-
- // Processing results
- for (size_t i = 0; i < _populationSize; i++)
-  _valueVector[i] = samples[i]["F(x)"];
-
- updateDistribution();
+ updateDistribution(samples);
 }
 
 
@@ -202,8 +197,12 @@ void korali::solver::LMCMAES::sampleSingle(size_t sampleIdx)
 
 }
 
-void korali::solver::LMCMAES::updateDistribution()
+void korali::solver::LMCMAES::updateDistribution(std::vector<korali::Sample> & samples)
 {
+ // Processing results
+ for (size_t i = 0; i < _populationSize; i++)
+  _valueVector[i] = samples[i]["F(x)"];
+
  /* Copy to previous */
  std::copy(_sortingIndex.begin(), _sortingIndex.end(), _previousSortingIndex.begin());
  std::copy(_valueVector.begin(), _valueVector.end(), _previousValueVector.begin());
@@ -223,9 +222,9 @@ void korali::solver::LMCMAES::updateDistribution()
  {
   _previousBestEverValue = _bestEverValue;
   _bestEverValue         = _currentBestValue;
+  (*_k)["Results"]["Best Sample"] = samples[_sortingIndex[0]]._js.getJson();
 
   for (size_t d = 0; d < _k->_variables.size(); ++d) _bestEverVariables[d] = _currentBestVariables[d];
-
  }
 
  /* set weights */

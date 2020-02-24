@@ -12,7 +12,7 @@ class Rprop : public korali::Solver
   private:  
 
     void setInitialConfiguration();
-    void evaluateFunctionAndGradient( void );
+    void evaluateFunctionAndGradient( korali::Sample& sample );
 
     void Update_plus( void ); // Rprop_plus
     void Update_minus( void ); // Rprop_minus

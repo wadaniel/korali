@@ -118,20 +118,20 @@ def processModule(parentModuleConfig, moduleRelPath, moduleName):
  if (isParentModule == False): 
 
   if ('Compatible Solvers' in moduleConfig):
-   moduleReadmeString += '\n**Compatible Solvers**\n'
+   moduleReadmeString += '\nCompatible Solvers\n'
    moduleReadmeString += '----------------------------------\n\n'
    moduleReadmeString += 'This problem can be solved using the following modules: \n\n'
    for v in moduleConfig["Compatible Solvers"]:
     moduleReadmeString += '   - :ref:`' + v + ' <module-' + v + '>`\n'
 
   if ('Variables Configuration' in moduleConfig):
-   moduleReadmeString += '\n**Variable-Specific Settings**\n'
+   moduleReadmeString += '\nVariable-Specific Settings\n'
    moduleReadmeString += '----------------------------------\n\n'
    moduleReadmeString += 'These are settings required by this module that are added to each of the experiment\'s variables when this module is selected.\n\n'
    for v in moduleConfig["Variables Configuration"]:
     moduleReadmeString += createVariableDescription(moduleRelPath, v)
             
-  moduleReadmeString += '\n**Configuration**\n'
+  moduleReadmeString += '\nConfiguration\n'
   moduleReadmeString += '-----------------------------\n'
   moduleReadmeString += 'These are settings required by this module.\n\n'
   if ('Configuration Settings' in moduleConfig):
@@ -141,21 +141,21 @@ def processModule(parentModuleConfig, moduleRelPath, moduleName):
     moduleReadmeString += '\n*None*\n'  
 
   if ('Termination Criteria' in moduleConfig):
-   moduleReadmeString += '\n**Termination Criteria**\n'
+   moduleReadmeString += '\nTermination Criteria\n'
    moduleReadmeString += '----------------------------------\n\n'
    moduleReadmeString += 'These are the customizable criteria that indicates whether the solver should continue or finish execution. Korali will stop when at least one of these conditions are met. The criteria is expressed in C++ since it is compiled and evaluated as seen here in the engine. \n\n'
    for v in moduleConfig["Termination Criteria"]:
     moduleReadmeString += createVariableDescription(moduleRelPath, v)
 
   if ('Internal Settings' in moduleConfig):
-   moduleReadmeString += '\n**Internal Settings** *[For Developers]*\n'
+   moduleReadmeString += '\nInternal Settings *[For Developers]*\n'
    moduleReadmeString += '--------------------------------------------------\n\n'
    moduleReadmeString += 'The following are settings that store the internal state of the module. The information below is only interesting for developers and the user does not need to set them up. \n\n'
    for v in moduleConfig["Internal Settings"]:
     moduleReadmeString += createVariableDescription(moduleRelPath, v)
     
   if ('Module Defaults' in moduleConfig):
-   moduleReadmeString += '\n**Default Configuration**\n'
+   moduleReadmeString += '\nDefault Configuration\n'
    moduleReadmeString += '----------------------------------\n\n'
    moduleReadmeString += 'These following configuration will be assigned by default. Any settings defined by the user will override the given settings specified in these defaults.\n\n'
    moduleReadmeString += '  .. code-block:: python\n\n'

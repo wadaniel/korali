@@ -61,6 +61,7 @@ def createVariableDescription(rootPath, relPath, v):
  if ("problem" in relPath): moduleTypePath = '["Problem"]'
  if ("solver" in relPath): moduleTypePath = '["Solver"]'
  if ("conduit" in relPath): moduleTypePath = '["Conduit"]'
+ if ("Variable" in rootPath): moduleTypePath = ''
  
  desc = '\n'
  desc += getJsonPath(v["Name"]).replace('"','').replace('[','').replace(']','').replace('\\\\',' / ') + '\n'

@@ -58,7 +58,7 @@ def createVariableDescription(relPath, v):
  desc += getJsonPath(v["Name"]).replace('"','').replace('[','').replace(']','') + '\n'
  desc += ' - **Usage**: e' + moduleTypePath + getJsonPath(v["Name"]).replace('\\','') + ' = ' + getDataType(v) + '\n'
  desc += ' - **Description**: ' + v["Description"] + '\n'
- if ('Criteria' in v): desc += ' - **Criteria**: ' + v["Criteria"] + '\n'
+ if ('Criteria' in v): desc += ' - **Criteria**: :code:`' + v["Criteria"] + '`\n'
  if ('Options' in v):
    desc += ' - **Options**: \n\n'  
    for o in v["Options"]:
@@ -143,7 +143,7 @@ def processModule(parentModuleConfig, moduleRelPath, moduleName):
   if ('Termination Criteria' in moduleConfig):
    moduleReadmeString += '\n**Termination Criteria**\n'
    moduleReadmeString += '----------------------------------\n\n'
-   moduleReadmeString += 'These are the customizable criteria that indicates whether the solver should continue or finish execution. Korali will stop when at least one of these conditions are met. \n\n'
+   moduleReadmeString += 'These are the customizable criteria that indicates whether the solver should continue or finish execution. Korali will stop when at least one of these conditions are met. The criteria is expressed in C++ since it is compiled and evaluated as seen here in the engine. \n\n'
    for v in moduleConfig["Termination Criteria"]:
     moduleReadmeString += createVariableDescription(moduleRelPath, v)
 

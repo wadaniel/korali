@@ -92,6 +92,8 @@ void korali::solver::TMCMC::runGeneration()
   }
 
   processGeneration();
+
+  (*_k)["Results"]["Sample Database"] = _sampleDatabase;
 }
 
 void korali::solver::TMCMC::prepareGeneration()

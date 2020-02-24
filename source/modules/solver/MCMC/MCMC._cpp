@@ -46,6 +46,8 @@ void korali::solver::MCMC::setInitialConfiguration()
  _chainLength = 0;
  _chainLeaderEvaluation = -std::numeric_limits<double>::infinity();
  _acceptanceRate  = 1.0;
+
+ (*_k)["Results"]["Sample Database"]  = {};
 }
 
 void korali::solver::MCMC::runGeneration()
@@ -87,6 +89,7 @@ void korali::solver::MCMC::runGeneration()
  {
   _sampleDatabase.push_back(_chainLeader);
   _sampleEvaluationDatabase.push_back(_chainLeaderEvaluation);
+  (*_k)["Results"]["Sample Database"] += _chainLeader;
  }
  
  updateState();
@@ -231,4 +234,5 @@ void korali::solver::MCMC::finalize()
  korali::logInfo("Minimal", "Number of Generated Samples: %zu\n", _proposedSampleCount);
  korali::logInfo("Minimal", "Acceptance Rate: %.2f%%\n", 100*_acceptanceRate);
  if (_sampleDatabase.size() == _maxSamples) korali::logInfo("Minimal", "Max Samples Reached.\n");
+ (*_k)["Results"]["Sample Database"] = _sampleDatabase;
 }

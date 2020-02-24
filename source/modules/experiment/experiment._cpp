@@ -89,11 +89,13 @@ void korali::Experiment::saveState()
 
  // Getting configuration
  _timestamp = getTimestamp();
+ nlohmann::json results = _js.getJson()["Results"];
  getConfiguration(_js.getJson());
  std::string fileName = "./" + _fileOutputPath + "/" + genFileName;
 
  auto js = _js.getJson();
  if (_fileOutputStoreSamples == true) js["Samples"] = _sampleInfo["Samples"];
+ js["Results"] = results;
  korali::JsonInterface::saveJsonToFile(fileName.c_str(), js);
 }
 

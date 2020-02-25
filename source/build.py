@@ -165,7 +165,7 @@ def saveValue(base, path, varName, varType):
 ####################################################################
 
 def createSetConfiguration(module):
- codeString = 'void ' + module["Class"] + '::setConfiguration(nlohmann::json& js) \n{\n'
+ codeString = 'void ' + module["Class"] + '::setConfiguration(knlohmann::json& js) \n{\n'
 
  codeString += ' if (korali::JsonInterface::isDefined(js, "[\'Results\']"))  korali::JsonInterface::eraseValue(js, "[\'Results\']");\n\n'
 
@@ -213,7 +213,7 @@ def createSetConfiguration(module):
 ####################################################################
 
 def createGetConfiguration(module):
- codeString = 'void ' + module["Class"]  + '::getConfiguration(nlohmann::json& js) \n{\n\n'
+ codeString = 'void ' + module["Class"]  + '::getConfiguration(knlohmann::json& js) \n{\n\n'
 
  codeString += ' js["Type"] = _type;\n'
 
@@ -249,11 +249,11 @@ def createGetConfiguration(module):
 ####################################################################
 
 def createApplyModuleDefaults(module):
- codeString = 'void ' + module["Class"]  + '::applyModuleDefaults(nlohmann::json& js) \n{\n\n'
+ codeString = 'void ' + module["Class"]  + '::applyModuleDefaults(knlohmann::json& js) \n{\n\n'
 
  if 'Module Defaults' in module:
    codeString += ' std::string defaultString = "' + json.dumps(module["Module Defaults"]).replace('"','\\"') + '";\n'
-   codeString += ' nlohmann::json defaultJs = nlohmann::json::parse(defaultString);\n'
+   codeString += ' knlohmann::json defaultJs = knlohmann::json::parse(defaultString);\n'
    codeString += ' JsonInterface::mergeJson(js, defaultJs); \n'
 
  codeString += ' '  + module["Parent Class"] + '::applyModuleDefaults(js);\n'
@@ -269,7 +269,7 @@ def createApplyVariableDefaults(module):
 
  if 'Variable Defaults' in module:
   codeString += ' std::string defaultString = "' + json.dumps(module["Variable Defaults"]).replace('"','\\"') + '";\n'
-  codeString += ' nlohmann::json defaultJs = nlohmann::json::parse(defaultString);\n'
+  codeString += ' knlohmann::json defaultJs = knlohmann::json::parse(defaultString);\n'
   codeString += ' for (size_t i = 0; i < _k->_js["Variables"].size(); i++) \n'
   codeString += '  JsonInterface::mergeJson(_k->_js["Variables"][i], defaultJs); \n'
 
@@ -451,9 +451,9 @@ for moduleDir, relDir, fileNames in os.walk(modulesDir):
    # Adding overridden function declarations
    functionOverrideString = ''
    functionOverrideString += ' bool checkTermination() override;\n'
-   functionOverrideString += ' void getConfiguration(nlohmann::json& js) override;\n'
-   functionOverrideString += ' void setConfiguration(nlohmann::json& js) override;\n'
-   functionOverrideString += ' void applyModuleDefaults(nlohmann::json& js) override;\n'
+   functionOverrideString += ' void getConfiguration(knlohmann::json& js) override;\n'
+   functionOverrideString += ' void setConfiguration(knlohmann::json& js) override;\n'
+   functionOverrideString += ' void applyModuleDefaults(knlohmann::json& js) override;\n'
    functionOverrideString += ' void applyVariableDefaults() override;\n'
 
    if 'Available Operations' in moduleConfig:

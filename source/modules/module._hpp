@@ -18,20 +18,20 @@ class Module
   std::vector<std::string> _terminationCriteria;
   korali::Experiment* _k;
 
-  Module* getModule(nlohmann::json& js);
+  Module* getModule(knlohmann::json& js);
 
   virtual void initialize() { }
   virtual void finalize() { }
 
   virtual std::string getType() { return _type; };
   virtual bool checkTermination() { return false; };
-  virtual void getConfiguration(nlohmann::json& js) {};
-  virtual void setConfiguration(nlohmann::json& js) {};
-  virtual void applyModuleDefaults(nlohmann::json& js) {};
+  virtual void getConfiguration(knlohmann::json& js) {};
+  virtual void setConfiguration(knlohmann::json& js) {};
+  virtual void applyModuleDefaults(knlohmann::json& js) {};
   virtual void applyVariableDefaults() {};
 };
 
-extern nlohmann::json __profiler;
+extern knlohmann::json __profiler;
 extern std::chrono::time_point<std::chrono::high_resolution_clock> _startTime;
 extern std::chrono::time_point<std::chrono::high_resolution_clock> _endTime;
 extern double _cumulativeTime;

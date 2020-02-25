@@ -20,7 +20,7 @@
 typedef void(*__fkfc)(korali::Sample&);
 typedef std::function<void(korali::Sample&)> __kfc;
 
-namespace nlohmann
+namespace knlohmann
 {
     template <>
     struct adl_serializer<pybind11::object>

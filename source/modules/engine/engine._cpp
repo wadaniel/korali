@@ -144,8 +144,8 @@ void korali::Engine::run(std::vector<korali::Experiment>& experiments)
 long int korali::Engine::getMPICommPointer() { return (long int)(&__KoraliTeamComm); }
 #endif
 
-nlohmann::json& korali::Engine::operator[](const std::string& key) { return _js[key]; }
-nlohmann::json& korali::Engine::operator[](const unsigned long int& key) { return _js[key]; }
+knlohmann::json& korali::Engine::operator[](const std::string& key) { return _js[key]; }
+knlohmann::json& korali::Engine::operator[](const unsigned long int& key) { return _js[key]; }
 pybind11::object korali::Engine::getItem(pybind11::object key) { return _js.getItem(key); }
 void korali::Engine::setItem(pybind11::object key, pybind11::object val) { _js.setItem(key, val); }
 

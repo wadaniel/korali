@@ -89,7 +89,7 @@ void korali::Experiment::saveState()
 
  // Getting configuration
  _timestamp = getTimestamp();
- nlohmann::json results = _js.getJson()["Results"];
+ knlohmann::json results = _js.getJson()["Results"];
  getConfiguration(_js.getJson());
  std::string fileName = "./" + _fileOutputPath + "/" + genFileName;
 
@@ -109,7 +109,7 @@ bool korali::Experiment::loadState()
 
 bool korali::Experiment::loadState(std::string path)
 {
- auto js = nlohmann::json();
+ auto js = knlohmann::json();
 
  if (korali::dirExists(path))
  {
@@ -129,7 +129,7 @@ bool korali::Experiment::loadState(std::string path)
    if (filePath.find("gen", 0) != std::string::npos)
    if (filePath.compare(filePath.size() - fileExt.size(), fileExt.size(), fileExt) == 0)
    {
-    auto curJs = nlohmann::json();
+    auto curJs = knlohmann::json();
     if (korali::JsonInterface::loadJsonFromFile(curJs, filePath.c_str()))
     {
      size_t runId = js["Run ID"];
@@ -171,7 +171,7 @@ void korali::Experiment::initialize()
  co_switch(_thread);
 }
 
-nlohmann::json& korali::Experiment::operator[](const std::string& key) { return _js[key]; }
-nlohmann::json& korali::Experiment::operator[](const unsigned long int& key) { return _js[key]; }
+knlohmann::json& korali::Experiment::operator[](const std::string& key) { return _js[key]; }
+knlohmann::json& korali::Experiment::operator[](const unsigned long int& key) { return _js[key]; }
 pybind11::object korali::Experiment::getItem(pybind11::object key) { return _js.getItem(key); }
 void korali::Experiment::setItem(pybind11::object key, pybind11::object val) { _js.setItem(key, val); }

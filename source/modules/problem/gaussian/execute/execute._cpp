@@ -2,7 +2,7 @@
 
 void korali::problem::gaussian::Execute::initialize()
 {
-  auto _gpJson = nlohmann::json();
+  auto _gpJson = knlohmann::json();
   if (korali::JsonInterface::loadJsonFromFile(_gpJson, _gaussianProcessJsonFile.c_str() ) == false)
    korali::logError("Could not load Gaussian Process Json file.\n");
 

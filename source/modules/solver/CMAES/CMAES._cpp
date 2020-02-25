@@ -10,7 +10,7 @@
 
 void korali::solver::CMAES::setInitialConfiguration()
 {
- nlohmann::json problemConfig = (*_k)["Problem"];
+ knlohmann::json problemConfig = (*_k)["Problem"];
 
  // Establishing optimization goal
  _bestEverValue = -std::numeric_limits<double>::infinity();

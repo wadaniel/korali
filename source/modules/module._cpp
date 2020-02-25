@@ -1,13 +1,13 @@
 #include "module.hpp"
 
-nlohmann::json korali::__profiler;
+knlohmann::json korali::__profiler;
 std::chrono::time_point<std::chrono::high_resolution_clock> korali::_startTime;
 std::chrono::time_point<std::chrono::high_resolution_clock> korali::_endTime;
 double korali::_cumulativeTime;
 
 // Module Include List
 
-korali::Module* korali::Module::getModule(nlohmann::json& js)
+korali::Module* korali::Module::getModule(knlohmann::json& js)
 {
  std::string moduleType = "Undefined";
 

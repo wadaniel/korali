@@ -50,22 +50,22 @@ pybind11::object korali::KoraliJson::getItem(pybind11::object key)
  return pybind11::cast(this);
 }
 
-nlohmann::json& korali::KoraliJson::operator[](const std::string& key)
+knlohmann::json& korali::KoraliJson::operator[](const std::string& key)
 {
  return _js[key];
 }
 
-nlohmann::json& korali::KoraliJson::operator[](const unsigned long int& key)
+knlohmann::json& korali::KoraliJson::operator[](const unsigned long int& key)
 {
  return _js[key];
 }
 
-nlohmann::json& korali::KoraliJson::getJson()
+knlohmann::json& korali::KoraliJson::getJson()
 {
  return _js;
 }
 
-void korali::KoraliJson::setJson(nlohmann::json& js)
+void korali::KoraliJson::setJson(knlohmann::json& js)
 {
  _js = js;
 }

@@ -74,7 +74,7 @@ void korali::problem::hierarchical::Psi::initialize()
 
  for (size_t i = 0; i < _conditionalPriors.size(); i++)
  {
-  auto distributionJs = nlohmann::json();
+  auto distributionJs = knlohmann::json();
   _k->_distributions[_conditionalPriorIndexes[i]]->getConfiguration(distributionJs);
 
   for (auto it = distributionJs.begin(); it != distributionJs.end(); ++it) if (it.value().is_string())

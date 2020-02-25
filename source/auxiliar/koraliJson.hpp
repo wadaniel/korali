@@ -19,19 +19,19 @@ class KoraliJson {
  KoraliJson();
 
  // JSON-based configuration
- nlohmann::json  _js;
+ knlohmann::json  _js;
 
  // Python and Json Configuration Binding Methods
- nlohmann::json*  _opt;
+ knlohmann::json*  _opt;
 
- nlohmann::json& getJson();
- void setJson(nlohmann::json& js);
+ knlohmann::json& getJson();
+ void setJson(knlohmann::json& js);
 
  pybind11::object getItem(pybind11::object key);
  void setItem(pybind11::object key, pybind11::object val);
 
- nlohmann::json& operator[](const std::string& key);
- nlohmann::json& operator[](const unsigned long int& key);
+ knlohmann::json& operator[](const std::string& key);
+ knlohmann::json& operator[](const unsigned long int& key);
 
  bool contains(const std::string& key);
  void traverseKey(pybind11::object key);
@@ -47,7 +47,7 @@ class JsonInterface
 
 public:
 
-static bool isEmpty(nlohmann::json& js)
+static bool isEmpty(knlohmann::json& js)
 {
  bool empty = true;
 
@@ -79,7 +79,7 @@ static bool isEmpty(nlohmann::json& js)
  return empty;
 }
 
-static bool isElemental(nlohmann::json& js)
+static bool isElemental(knlohmann::json& js)
 {
  if (js.is_number()) return true;
  if (js.is_string()) return true;
@@ -127,18 +127,18 @@ static std::vector<std::string> getJsonPath(std::string path)
  return settings;
 }
 
-static void eraseValue(nlohmann::json& js, std::string path)
+static void eraseValue(knlohmann::json& js, std::string path)
 {
  std::vector<std::string> settings = getJsonPath(path);
 
- nlohmann::json* aux = &js;
+ knlohmann::json* aux = &js;
  size_t i = 0;
  for (; i < settings.size()-1; i++)
   aux = &aux->at(settings[i]);
  aux->erase(settings[i]);
 }
 
-static void mergeJson(nlohmann::json& dest, const nlohmann::json& defaults)
+static void mergeJson(knlohmann::json& dest, const knlohmann::json& defaults)
 {
  if (dest.is_object() == false) korali::logError("Passed JSON A argument is not an object.\n");
  if (defaults.is_object() == false) korali::logError("Passed JSON B argument is not an object.\n");
@@ -158,7 +158,7 @@ static void mergeJson(nlohmann::json& dest, const nlohmann::json& defaults)
  //printf("Result:    \n%s\n\n", dest.dump(2).c_str());
 }
 
-static bool isDefined(nlohmann::json& js, std::vector<std::string> settings)
+static bool isDefined(knlohmann::json& js, std::vector<std::string> settings)
 {
  auto tmp = js;
 
@@ -170,12 +170,12 @@ static bool isDefined(nlohmann::json& js, std::vector<std::string> settings)
  return true;
 }
 
-static bool isDefined(nlohmann::json& js, std::string path)
+static bool isDefined(knlohmann::json& js, std::string path)
 {
  return isDefined(js, getJsonPath(path));
 }
 
-static bool loadJsonFromFile(nlohmann::json& dst, const char* fileName)
+static bool loadJsonFromFile(knlohmann::json& dst, const char* fileName)
 {
  FILE *fid = fopen(fileName, "r");
  if (fid != NULL)
@@ -190,7 +190,7 @@ static bool loadJsonFromFile(nlohmann::json& dst, const char* fileName)
 
    string[fsize] = '\0';
 
-   dst = nlohmann::json::parse(string);
+   dst = knlohmann::json::parse(string);
 
    free(string);
 
@@ -200,7 +200,7 @@ static bool loadJsonFromFile(nlohmann::json& dst, const char* fileName)
  return false;
 }
 
-static void saveJsonToFile(const char* fileName, nlohmann::json& js)
+static void saveJsonToFile(const char* fileName, knlohmann::json& js)
 {
  FILE *fid = fopen(fileName, "w");
  if (fid != NULL)

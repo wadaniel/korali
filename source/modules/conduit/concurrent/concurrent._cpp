@@ -75,7 +75,7 @@ void korali::conduit::Concurrent::worker(int workerId)
   inputString[inputStringSize] = '\0';
 
   korali::Sample sample;
-  sample._js.getJson() = nlohmann::json::parse(inputString);
+  sample._js.getJson() = knlohmann::json::parse(inputString);
 
   size_t experimentId = sample["Experiment Id"];
   _experimentVector[experimentId]->_problem->runOperation(sample["Operation"], sample);
@@ -98,7 +98,7 @@ void korali::conduit::Concurrent::processSample(korali::Sample& sample)
 
  int launcherId = _launcherQueue.front(); _launcherQueue.pop();
 
- auto js = nlohmann::json();
+ auto js = knlohmann::json();
  js["Start Time"] = std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count() + _cumulativeTime;
 
  std::string inputString = sample._js.getJson().dump();
@@ -119,7 +119,7 @@ void korali::conduit::Concurrent::processSample(korali::Sample& sample)
    while(read(_resultPipe[launcherId][0], resultString, resultStringSize * sizeof(char)) < 0);
 
    resultString[resultStringSize] = '\0';
-   sample._js.getJson() = nlohmann::json::parse(resultString);
+   sample._js.getJson() = knlohmann::json::parse(resultString);
 
    _launcherQueue.push(launcherId);
   }

@@ -40,8 +40,8 @@ class Sample {
 
  bool contains(const std::string& key) { return _self->_js.contains(key); }
 
- nlohmann::json& operator[](const std::string& key) { return _self->_js[key]; }
- nlohmann::json& operator[](const unsigned long int& key) { return _self->_js[key]; }
+ knlohmann::json& operator[](const std::string& key) { return _self->_js[key]; }
+ knlohmann::json& operator[](const unsigned long int& key) { return _self->_js[key]; }
 
  pybind11::object getItem(pybind11::object key) { return _self->_js.getItem(key); }
  void setItem(pybind11::object key, pybind11::object val) { _self->_js.setItem(key, val); }

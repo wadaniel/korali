@@ -28,7 +28,7 @@ class Experiment : public korali::Module {
  korali::KoraliJson  _sampleInfo;
 
  // Storing initial launch
- nlohmann::json  _initialConfig;
+ knlohmann::json  _initialConfig;
 
  // Logging and results
  FILE* _logFile;
@@ -46,8 +46,8 @@ class Experiment : public korali::Module {
  void run();
 
 
- nlohmann::json& operator[](const std::string& key);
- nlohmann::json& operator[](const unsigned long int& key);
+ knlohmann::json& operator[](const std::string& key);
+ knlohmann::json& operator[](const unsigned long int& key);
 };
 
 extern std::vector<korali::Experiment*> _experimentVector;

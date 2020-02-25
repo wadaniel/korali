@@ -20,6 +20,11 @@ check
 python3 -m pip install Pygments --user
 check
 
+# Getting korali-apps submodule
+pushd ..
+git submodule update --init --recursive
+popd
+
 # Building User Manual
 pushd manual
 check

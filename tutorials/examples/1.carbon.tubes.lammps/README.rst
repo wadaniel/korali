@@ -1,4 +1,0 @@
-Carbon Nanotubes with LAMMPS
-=============================
-
-

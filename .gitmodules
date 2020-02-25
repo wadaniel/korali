@@ -1,3 +1,3 @@
-[submodule "korali-apps"]
+[submodule "examples"]
 	path = tutorials/examples
 	url = https://github.com/cselab/korali-apps.git

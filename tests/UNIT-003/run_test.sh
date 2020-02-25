@@ -5,7 +5,7 @@ source ../functions.sh
 logEcho "[Korali] Running Partial Run Tests..."
 
 pushd ../../tutorials/advanced/2.partial.runs
-check_results
+check_result
 
 dir=$PWD
 

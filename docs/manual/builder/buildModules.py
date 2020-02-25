@@ -32,9 +32,9 @@ def getDataType(v):
  if ('korali::' in cVarType):
    classList = cVarType.replace('*','').split('::')
    moduleLink = 'module-' + classList[1].lower()
-   cVarType = classList[1].capitalize()
+   cVarType = upcase_first_letter(classList[1])
    for c in classList[2:]:
-    cVarType += '/' + c.capitalize()
+    cVarType += '/' + upcase_first_letter(c)
     moduleLink += '-' + c.lower()
    cVarType = classList[0].replace('korali','') + ':ref:`' + cVarType + ' <' + moduleLink + '>`'
  return cVarType 
@@ -81,6 +81,9 @@ def createVariableDescription(rootPath, relPath, v):
   desc += '\n'
  desc += '\n'
  return desc
+ 
+def upcase_first_letter(s):
+    return s[0].upper() + s[1:] 
     
 ################################################
 # Process Module Function
@@ -133,6 +136,25 @@ def processModule(parentModuleConfig, moduleRelPath, moduleName):
  # If its leaf, build configuration
  if (isParentModule == False): 
 
+  moduleReadmeString += '\n\nUsage\n'
+  moduleReadmeString += '----------------------------------\n\n'
+  moduleUsageBase = 'e'
+  if ("problem" in moduleRelPath): moduleUsageBase = 'e["Problem"]["Type"] = '
+  if ("solver" in moduleRelPath):  moduleUsageBase = 'e["Solver"]["Type"] = '
+  if ("conduit" in moduleRelPath): moduleUsageBase = 'k["Conduit"]["Type"] = '
+  if ("distribution" in moduleRelPath): moduleUsageBase = 'e["Distribution"][*index*]["Type"] ='
+  if ("engine" in moduleRelPath): moduleUsageBase = 'k = korali.Engine()'
+  if ("experiment" in moduleRelPath): moduleUsageBase = 'k = korali.Experiment()'
+  moduleReadmeString += ':code:`' + moduleUsageBase
+
+  classList = moduleRelPath.split('/')
+  if(len(classList) > 1):   
+   moduleReadmeString += upcase_first_letter(classList[1])
+   for c in moduleRelPath.split('/')[2:]:
+     moduleReadmeString += '/' + upcase_first_letter(c)
+  
+  moduleReadmeString += '`\n\n'
+    
   if ('Compatible Solvers' in moduleConfig):
    moduleReadmeString += '\nCompatible Solvers\n'
    moduleReadmeString += '----------------------------------\n\n'

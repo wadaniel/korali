@@ -1,3 +1,6 @@
+.. attention::
+   This documentation is currently under construction.
+
 *******************************
 Truncated Normal Distribution
 *******************************
@@ -17,11 +20,3 @@ $\mu$  is the mean or expectation of the distribution (and also its median and m
 $\sigma$  is the standard deviation, and
 $\sigma ^{2}$ is the variance.
 
-Example:
-
-```python
-# Setting a Normal prior distribution for variable 3
-k["Variables"][3]["Bayesian"]["Prior Distribution"]["Type"] = "Normal"
-k["Variables"][3]["Bayesian"]["Prior Distribution"]["Mean"] = -3.5
-k["Variables"][3]["Bayesian"]["Prior Distribution"]["Sigma"] = +1.0
-```

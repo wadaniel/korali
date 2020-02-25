@@ -1,3 +1,6 @@
+.. attention::
+   This documentation is currently under construction.
+
 *******************************
 Laplace Distribution
 *******************************
@@ -13,16 +16,5 @@ $$={\frac  {1}{2b}}\left\{{\begin{matrix}\exp \left(-{\frac  {\mu -x}{b}}\right)
 Where:
 
 $\mu$ is a the mean parameter and $b > 0$ is a width parameter. If $\mu=0$ and $b=1$, the positive half-line is exactly an exponential distribution scaled by 1/2.
-
-Example:
-
-```python
-# Setting a Laplace prior distribution for variable 4
-k["Variables"][4]["Bayesian"]["Prior Distribution"]["Type"] = "Laplace"
-k["Variables"][4]["Bayesian"]["Prior Distribution"]["Mean"] = +1.5
-k["Variables"][4]["Bayesian"]["Prior Distribution"]["Width"] = +2.0
-```
-
-
 
 

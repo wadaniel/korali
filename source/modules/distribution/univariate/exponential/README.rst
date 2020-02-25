@@ -1,3 +1,6 @@
+.. attention::
+   This documentation is currently under construction.
+
 *******************************
 Exponential Distribution
 *******************************
@@ -13,14 +16,6 @@ $$f(x;\beta) = \begin{cases}
 
 Where $\beta > 0$ is mean, standard deviation, and scale parameter of the distribution, the reciprocal of the rate parameter, $\lambda$, defined above. In this specification, $\beta$ is a survival parameter in the sense that if a random variable X is the duration of time that a given biological or mechanical system manages to survive and $X ~ Exp(\beta)$ then $E[X] = \beta$.
 
-Example:
-
-```python
-# Setting an Exponential prior distribution for variable 1
-k["Variables"][1]["Bayesian"]["Prior Distribution"]["Type"] = "Exponential"
-k["Variables"][1]["Bayesian"]["Prior Distribution"]["Mean"] = +3.0
-k["Variables"][1]["Bayesian"]["Prior Distribution"]["Location"] = -1.8
-```
 
 
 

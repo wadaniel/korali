@@ -1,7 +1,6 @@
+.. attention::
+   This documentation is currently under construction.
+
 *******************************
 Geometric Distribution
 *******************************
-
-## Geometric
-          
-The probability density of the Geometric distribution is

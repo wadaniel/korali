@@ -12,6 +12,8 @@ korali::Engine::Engine()
  _mainThread = co_active();
 }
 
+bool korali::_isDryRun;
+
 void korali::Engine::run()
 {
  // Turn Off GSL Error Handler
@@ -43,7 +45,10 @@ void korali::Engine::run()
   if (_experimentVector.size() == 1) _experimentVector[i]->_logFile = stdout;
  }
 
- // Configurint and initializing Conduit
+ // Checking if its a dry run
+ korali::_isDryRun = _js["Dry Run"];
+
+ // Configuring and initializing Conduit
  _conduit = dynamic_cast<korali::Conduit*>(korali::Module::getModule(_js["Conduit"]));
 
  // Check configuration correctness
@@ -62,8 +67,7 @@ void korali::Engine::run()
  if (_conduit->isRoot())
  {
   // If this is a dry run and configuration succeeded, print sucess and return
-  bool isDryRun = _js["Dry Run"];
-  if (isDryRun)
+  if (_isDryRun)
   {
    korali::logInfo("Minimal",  "--------------------------------------------------------------------\n");
    korali::logInfo("Minimal",  "Dry Run Successful.\n");

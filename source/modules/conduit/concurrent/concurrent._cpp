@@ -1,4 +1,5 @@
 #include "modules/conduit/concurrent/concurrent.hpp"
+#include "modules/engine/engine.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/problem.hpp"
 #include "modules/solver/solver.hpp"
@@ -8,7 +9,7 @@
 
 void korali::conduit::Concurrent::initialize()
 {
- korali::Conduit::initialize();
+ if (korali::_isDryRun == true) return;
 
  if (_concurrentJobs < 1) korali::logError("You need to define at least 1 concurrent job(s) for external models \n");
  _resultPipe.clear();
@@ -37,6 +38,8 @@ void korali::conduit::Concurrent::initialize()
 
 void korali::conduit::Concurrent::finalize()
 {
+ if (korali::_isDryRun == true) return;
+
  for(int i = 0; i < _concurrentJobs; i++)
  {
   size_t terminationFlag = 0;

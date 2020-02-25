@@ -24,6 +24,7 @@ def getDataType(v):
  cVarType = cVarType.replace('double', '*real number*')
  cVarType = cVarType.replace('std::string', '*string*')
  cVarType = cVarType.replace('std::function<void(korali::Sample&)', ':ref:`Computational Model <korali-model>`')
+ cVarType = cVarType.replace('korali::Sample', ':ref:`Sample <korali-sample>`')
  cVarType = cVarType.replace('std::vector<std::vector<', 'List of Lists of ')
  cVarType = cVarType.replace('std::vector<', 'List of ')
  cVarType = cVarType.replace('bool', '*True/False*')
@@ -62,6 +63,7 @@ def createVariableDescription(rootPath, relPath, v):
  if ("solver" in relPath): moduleTypePath = '["Solver"]'
  if ("conduit" in relPath): moduleTypePath = '["Conduit"]'
  if ("Variable" in rootPath): moduleTypePath = ''
+ if ("Results" in rootPath): moduleTypePath = ''
  
  desc = '\n'
  desc += getJsonPath(v["Name"]).replace('"','').replace('[','').replace(']','').replace('\\\\',' / ') + '\n'
@@ -72,6 +74,11 @@ def createVariableDescription(rootPath, relPath, v):
    desc += ' - **Options**: \n\n'  
    for o in v["Options"]:
     desc += '      - "*' + o["Value"] + '*": ' + o["Description"] + '\n'
+ if ('Produced By' in v):
+  desc += ' - **Produced By**: \n\n'
+  for s in v['Produced By']:
+   desc += '    - :ref:`' + s + ' <module-solver-' + s.replace('/', '-') + '>`\n'
+  desc += '\n'
  desc += '\n'
  return desc
     
@@ -133,6 +140,13 @@ def processModule(parentModuleConfig, moduleRelPath, moduleName):
    for v in moduleConfig["Compatible Solvers"]:
     moduleReadmeString += '   - :ref:`' + v + ' <module-solver-' + v.lower().replace('/','-') + '>`\n'
 
+  if ('Results' in moduleConfig):
+   moduleReadmeString += '\nResults\n'
+   moduleReadmeString += '----------------------------------\n\n'
+   moduleReadmeString += 'These are the results to be expected from solving this problem with the indicated solver(s): \n\n'
+   for v in moduleConfig["Results"]:
+    moduleReadmeString += createVariableDescription('e["Results"]', moduleRelPath, v)
+    
   if ('Variables Configuration' in moduleConfig):
    moduleReadmeString += '\nVariable-Specific Settings\n'
    moduleReadmeString += '----------------------------------\n\n'

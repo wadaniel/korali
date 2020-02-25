@@ -1,4 +1,5 @@
 #include "modules/conduit/distributed/distributed.hpp"
+#include "modules/engine/engine.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/problem.hpp"
 #include "modules/solver/solver.hpp"
@@ -15,7 +16,7 @@ long int getKoraliMPICommPointer() { return (long int)(&__KoraliTeamComm); }
 
 void korali::conduit::Distributed::initialize()
 {
- korali::Conduit::initialize();
+ if (korali::_isDryRun == true) return;
 
  #ifdef _KORALI_USE_MPI
  _rankCount = 1;
@@ -78,6 +79,8 @@ void korali::conduit::Distributed::initialize()
 
 void korali::conduit::Distributed::finalize()
 {
+ if (korali::_isDryRun == true) return;
+
  #ifdef _KORALI_USE_MPI
  size_t endSignal = 0;
 

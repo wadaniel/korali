@@ -3,7 +3,6 @@
 #include "modules/problem/problem.hpp"
 #include "modules/solver/solver.hpp"
 
-
 void korali::conduit::Sequential::processSample(korali::Sample& sample)
 {
  auto js = knlohmann::json();

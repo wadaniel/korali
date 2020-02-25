@@ -37,6 +37,9 @@ namespace korali
   // Communicator Methods
   static long int getMPICommPointer();
  };
+
+ // Determines whether this is a dry run (no conduit initialization nor execution)
+ extern bool _isDryRun;
 }
 
 #endif

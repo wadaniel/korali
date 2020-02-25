@@ -20,6 +20,9 @@ Running Multiple Experiments simultaneously
 Accessing Results
 ================================================
 
+Configuring Results Output
+-----------------------------------------------
+
 Reading results directly on runtime
 -----------------------------------------------
 
@@ -55,7 +58,7 @@ Resuming Jobs
 Running an experiment partially
 ------------------------------------------------
 
-Resuming an experiment from a saved state
+Resuming an experiment from a save-state file
 ------------------------------------------------
 
 Resuming multiple experiments simultaneously

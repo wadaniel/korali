@@ -1,10 +1,10 @@
 Running Multiple Simultaneous Experiments
 =====================================================
 
-In this tutorial we show how you can execute a series of experiments, in order to
-benefit from Korali's oversubscription capabilities.
+In this tutorial we show how you can execute a series of experiments, in order to benefit from Korali's oversubscription capabilities.
 
-## Problem Setup
+Example Scripts
+---------------------------
 
 Create a series of experiments:
 

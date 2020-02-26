@@ -3,8 +3,8 @@ Hierarchical Bayesian Inference (Complex)
 
 In this tutorial we show how to do hierarchical Bayesian inference.
 
-
-## Problem Setup
+Example Scripts
+---------------------------
 
 Hierarchical Bayesian Inference is set up in 3 phases:
  - sample the posterior distributions conditioned on each data set

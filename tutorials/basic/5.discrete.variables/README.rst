@@ -1,11 +1,10 @@
 Model Optimization with Discrete (Integer) Variables
 =====================================================
 
-In this tutorial we show how to optimize a function with discrete input parameters,
- along with continuous ones.
+In this tutorial we show how to optimize a function with discrete input parameters, along with continuous ones.
 
-
-## Problem Setup
+Example Scripts
+---------------------------
 
 We want to minimize the following function:
 

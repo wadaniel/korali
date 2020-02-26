@@ -1,12 +1,11 @@
-.. attention::
-   This documentation is currently under construction.
-
 Model Optimization: Finding the Global Maximum
 ===============================================
 
 In this tutorial we show how to **optimize** a given function. The complete code sample can be found [here](run-cmaes.py).
 
-## Problem Setup
+Example Scripts
+---------------------------
+
 
 We are given the function $f(\vartheta)=-\vartheta^2$ for $\vartheta\in[-10,10]$.
 We want to find the maximum of the function in the given interval.

@@ -5,8 +5,9 @@ In this tutorial we show how to **optimize** and **sample** the posterior
 distribution of a Bayesian inference problem. We will go through the code sample
  [run-cmaes.py](run-cmaes.py) first, and then modify it to get [this code sample](run-tmcmc.py).
 
+Example Scripts
+---------------------------
 
-## Problem Setup
 In this example we will solve the inverse problem of estimating the Variables
 of a linear model using noisy data. We consider the computational model,
 

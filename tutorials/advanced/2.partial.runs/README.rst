@@ -4,6 +4,9 @@ Partial Runs
 In this tutorial we show how to stop and restart a previous Korali run.
 All scripts in this tutorial follow this structure:
 
+Example Scripts
+---------------------------
+
 ## Run
 
 Set a `Termination Criteria` and run:

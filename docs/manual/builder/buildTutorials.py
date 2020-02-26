@@ -23,21 +23,10 @@ def processTutorialSubFolder(folder):
    
    tutorialsString += tutorialTitle + '\n'
    tutorialsString += '-' * len(tutorialTitle) + '\n\n'
-   tutorialsString += '   + **Description:** Lorem ipsum dolor sit amet, consectetur adipiscing elit. In semper consequat purus eget sagittis. Aliquam erat volutpat. Morbi pulvinar nibh ante, ut laoreet lacus venenatis elementum. Aenean aliquet vitae massa vitae convallis. Nulla et velit tempor, facilisis massa nec, dapibus lorem. Aenean mauris justo, dignissim nec eros sit amet, ornare consectetur velit. Nullam suscipit nisi justo, vitae euismod orci dictum non.\n'
    if ('examples' in tutorialsDir): tutorialsString += '   + **Source:** `https://github.com/cselab/korali-apps/tree/master/' + tutorialName + '/ <https://github.com/cselab/korali-apps/tree/master/' + tutorialName + '/>`_\n'
    else: tutorialsString += '   + **Source:** `https://github.com/cselab/korali/tree/master/tutorials/' + folder + '/' + tutorialName + '/ <https://github.com/cselab/korali/tree/master/tutorials/' + folder + '/' + tutorialName + '/>`_\n'
+   tutorialsString += '   + **Description:** Lorem ipsum dolor sit amet, consectetur adipiscing elit. In semper consequat purus eget sagittis. Aliquam erat volutpat. Morbi pulvinar nibh ante, ut laoreet lacus venenatis elementum. Aenean aliquet vitae massa vitae convallis. Nulla et velit tempor, facilisis massa nec, dapibus lorem. Aenean mauris justo, dignissim nec eros sit amet, ornare consectetur velit. Nullam suscipit nisi justo, vitae euismod orci dictum non.\n'
    tutorialsString += '\n\n'
-   
-   #tutorialsString += '\n\n'
-   #tutorialTitleLabel   =  '|tutorial' + str(currentTutorial).zfill(3) + '|'
-   #tutorialsString += ' .. ' + tutorialTitleLabel + ' replace::  `' + tutorialTitle + ' <https://github.com/cselab/korali/tree/master/tutorials/' + folder + '/' + tutorialName + '/>`__\n'
-   #tutorialsString += ' .. table:: \n'
-   #tutorialsString += '     :widths: 8 92\n\n'
-   #tutorialsString += '     +----------------------+--------------------------------------------------------+\n'
-   #tutorialsString += '     | **Title:**           | ' + tutorialTitleLabel + '                                          |\n'
-   #tutorialsString += '     +----------------------+--------------------------------------------------------+\n'
-   #tutorialsString += '     | **Description:**     |                                                        |\n'
-   #tutorialsString += '     +----------------------+--------------------------------------------------------+\n'
    
    currentTutorial = currentTutorial + 1
 

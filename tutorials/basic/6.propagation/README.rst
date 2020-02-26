@@ -3,8 +3,8 @@ Model Propagation (Execution)
 
 In this tutorial we show how to pass multiple inputs through a model.
 
-
-## Problem Setup
+Example Scripts
+---------------------------
 
 We are given a set of parameters to evaluate in a file 'samplesOut.dat'.
 We want to execute a model function $f(\theta)$ on given parameters.

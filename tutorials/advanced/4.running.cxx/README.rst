@@ -4,6 +4,9 @@ Running Korali with Compiled C++ Code
 In this tutorial we show how Korali can be used with c++.
 For this we optimize a model with the solver `CMA-ES` and `LM-CMA`. The problem type is the same as for [example A.3](#tutorial-a3): We want to find the parameters v = (`Intensity` , `PosX`, `PosY`, `Sigma`) that maximize the posterior in a Bayesian problem.  
 
+Example Scripts
+---------------------------
+
 ## How to run the example
 
 Run the `Makefile` to compile the executables: In the command line, in the

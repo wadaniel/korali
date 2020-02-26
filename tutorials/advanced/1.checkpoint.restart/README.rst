@@ -3,6 +3,9 @@ Checkpoint / Resuming a Previous Korali Run
 
 In this tutorial we show how to restart a previous Korali run.
 
+Example Scripts
+---------------------------
+
 ## Steps to Restart Execution
 
 Assume that we want to resume a previous Korali run, restarting from the one of the last generations. All we need to do is to run the following script:

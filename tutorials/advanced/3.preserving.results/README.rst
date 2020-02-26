@@ -4,6 +4,9 @@ Preserving Quantities of Interest
 In this tutorial we show how important outputs from the computational model can be stored,
 that otherwise would be lost.
 
+Example Scripts
+---------------------------
+
 ## Computational Model
 
 In the model we assign QoI to the Korali `Sample`:

@@ -5,8 +5,9 @@ In this tutorial we show how to **sample** directly from a given function
 using Metropolis Hastings (MCMC) and Transition Markov Chain Monte Carlo (TMCMC).
 The complete code samples are in [run-mcmc.py](run-mcmc.py).
 
+Example Scripts
+---------------------------
 
-## Problem Setup
 We are given the function $g(\vartheta)=\exp(-\vartheta^2)$ for $\vartheta\in[-10,10]$.
 
 We assume that $f$ represents the *unnormalized* density of a distribution.

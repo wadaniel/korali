@@ -3,6 +3,9 @@ Running Korali with an MPI-based Model
 
 In this tutorial we show how an MPI model can be executed with Korali.
 
+Example Scripts
+---------------------------
+
 ## MPI Init
 
 Do not forget to init MPI inside the Korali application:

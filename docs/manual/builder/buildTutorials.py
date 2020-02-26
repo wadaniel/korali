@@ -18,15 +18,23 @@ def processTutorialSubFolder(folder):
   if (os.path.isdir(tutorialPath)):
    tutorialReadmeFile = tutorialsDir + '/' + tutorialName + '/README.rst'
    with open(tutorialReadmeFile, 'r') as file: tutorialReadmeString = file.read()
-   tutorialTitle = tutorialReadmeString.partition('\n')[0]
+   
+   with open(tutorialReadmeFile, 'r') as file:
+    tutorialTitle = file.readline().replace('\n','')
+    tutorialDescription = ''
+    currentLineText = file.readline()
+    while (not 'Example Scripts' in currentLineText):  
+     currentLineText = file.readline()
+     tutorialDescription += '     ' + currentLineText
+    tutorialDescription = tutorialDescription.replace('Example Scripts', '')
+      
    tutorialDstPath = folder + '/' + tutorialName + '.rst'
    
    tutorialsString += tutorialTitle + '\n'
    tutorialsString += '-' * len(tutorialTitle) + '\n\n'
    if ('examples' in tutorialsDir): tutorialsString += '   + **Source:** `https://github.com/cselab/korali-apps/tree/master/' + tutorialName + '/ <https://github.com/cselab/korali-apps/tree/master/' + tutorialName + '/>`_\n'
    else: tutorialsString += '   + **Source:** `https://github.com/cselab/korali/tree/master/tutorials/' + folder + '/' + tutorialName + '/ <https://github.com/cselab/korali/tree/master/tutorials/' + folder + '/' + tutorialName + '/>`_\n'
-   tutorialsString += '   + **Description:** Lorem ipsum dolor sit amet, consectetur adipiscing elit. In semper consequat purus eget sagittis. Aliquam erat volutpat. Morbi pulvinar nibh ante, ut laoreet lacus venenatis elementum. Aenean aliquet vitae massa vitae convallis. Nulla et velit tempor, facilisis massa nec, dapibus lorem. Aenean mauris justo, dignissim nec eros sit amet, ornare consectetur velit. Nullam suscipit nisi justo, vitae euismod orci dictum non.\n'
-   tutorialsString += '\n\n'
+   tutorialsString += '   + **Description:** ' + tutorialDescription
    
    currentTutorial = currentTutorial + 1
 

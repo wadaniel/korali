@@ -65,7 +65,7 @@ Then, we set the type of the problem to `Direct Evaluation`, and the objective t
     e["Problem"]["Objective"] = "Maximize"
 
 A list of implemented solver- and problem types, although not optimally
-reader friendly, can be found in :doc:`../../source/module.cpp`.  
+reader friendly, can be found in `../../source/module.cpp`.  
 
 The Variables
 -------------
@@ -85,7 +85,7 @@ We choose the solver `CMAES`, set the population size to be `32` and two termina
     e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-7
     e["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
-For a detailed description of CMAES settings see :doc:`../../usage/solvers/cmaes.md`.
+For a detailed description of CMAES settings see `../../usage/solvers/cmaes.md`.
 
 Finally, we need to add a call to the run() routine to start the Korali engine.
 ::

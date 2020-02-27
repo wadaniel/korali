@@ -14,7 +14,7 @@ Example Scripts
 Problem Description
 --------------------------- 
 
-We are given the function $f(\vartheta)=-\vartheta^2$ for $\vartheta\in[-10,10]$.
+We are given the function :math:`f(\vartheta)=-\vartheta^2` for :math:`\vartheta\in[-10,10]`.
 We want to find the maximum of the function in the given interval.
 
 ##  The Objective Function

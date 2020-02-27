@@ -4,7 +4,7 @@ Model Optimization: Finding the Global Maximum
 In this tutorial we show how to **optimize** a given function. 
 
 Example Scripts
----------------------------
+---------------
 
     + *run-cmaes.py*: Runs this tutorial using the CMAES solver.
     + *run-dea.py*: Runs this tutorial using the DEA solver.
@@ -12,13 +12,13 @@ Example Scripts
     + *run-rprop.py*: Runs this tutorial using the Rprop solver.
     
 Problem Description
---------------------------- 
+------------------- 
 
 We are given the function $f(\vartheta)=-\vartheta^2$ for $\vartheta\in[-10,10]$.
 We want to find the maximum of the function in the given interval.
 
 The Objective Function
-==============================================================
+----------------------
 
 Create a folder named `model`. Inside, create a file with name `directModel.py` and paste the following code,
 

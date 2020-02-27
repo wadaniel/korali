@@ -1,6 +1,5 @@
 Hierarchical Bayesian Inference (Simple)
 =====================================================
-
 In this tutorial we show how to do hierarchical Bayesian inference.
 
 Example Scripts

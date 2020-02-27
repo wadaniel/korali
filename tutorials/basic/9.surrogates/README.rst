@@ -5,7 +5,7 @@ In this tutorial we show how to create a surrogate with Gaussian Processes.
 
 Example Scripts
 ---------------------------
-    + *run-gp.py*
+    + *example-gp.py*
 
 Init
 ---------------------------
@@ -72,4 +72,4 @@ And finally we predict values for data  `data/sincos1d_new.dat`.
 
 Run
 ---------------------------
-All three steps can be run with `.run-gp.py`
+All three steps can be run with `./example-gp.py`

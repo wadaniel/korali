@@ -35,91 +35,77 @@ Optimization with CMAES
 -----------------------
 
 First, open a file (you could name it 'a1-optimization') and import the korali module
-`python
-#!/usr/bin/env python3
-import korali
-``
+::
+    #!/usr/bin/env python3
+    import korali
 
 Import the computational model,
-`python
-import sys
-sys.path.append('./model')
-from directModel import *
-``
+::
+    import sys
+    sys.path.append('./model')
+    from directModel import *
 
 The Korali Engine and Experiment Objects
 ----------------------------------------
 
 Next we construct a `korali.Engine` and a `korali.Experiment` object and set the computational model,
+::
+    k = korali.Engine()
+    e = korali.Experiment()
 
-`python
-k = korali.Engine()
-e = korali.Experiment()
-
-e["Problem"]["Objective Function"] = evaluateModel
-``
+    e["Problem"]["Objective Function"] = evaluateModel
 
 
 The Problem Type
 ----------------
 
 Then, we set the type of the problem to `Direct Evaluation`, and the objective to maximization,
-`python
-e["Problem"]["Type"] = "Evaluation/Direct/Basic"
-e["Problem"]["Objective"] = "Maximize"
-``
+::
+    e["Problem"]["Type"] = "Evaluation/Direct/Basic"
+    e["Problem"]["Objective"] = "Maximize"
 
 A list of implemented solver- and problem types, although not optimally
 reader friendly, can be found in [module.cpp](../../source/module.cpp).  
 
-###  The Variables
+The Variables
+-------------
+
 In this problem there is only one variable, `X`, whose domain we set to [-10,10],
-`python
-e["Variables"][0]["Name"] = "X"
-e["Variables"][0]["Lower Bound"] = -10.0
-e["Variables"][0]["Upper Bound"] = +10.0
-``
+::
+    e["Variables"][0]["Name"] = "X"
+    e["Variables"][0]["Lower Bound"] = -10.0
+    e["Variables"][0]["Upper Bound"] = +10.0
 
 The Solver
 ----------
 We choose the solver `CMAES`, set the population size to be `32` and two termination criteria,
+::
+    e["Solver"]["Type"] = "CMAES"
+    e["Solver"]["Population Size"] = 32
+    e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-7
+    e["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
-```python
-e["Solver"]["Type"] = "CMAES"
-e["Solver"]["Population Size"] = 32
-e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-7
-e["Solver"]["Termination Criteria"]["Max Generations"] = 100
-
-```
 For a detailed description of CMAES settings see [here](../../usage/solvers/cmaes.md).
 
 Finally, we need to add a call to the run() routine to start the Korali engine.
 
-```python
-k.run(e)
-```
+::
+    k.run(e)
 
-###  Running
+Running
+-------
 
 We are now ready to run our example:
-
-```bash
-./a1-optimization
-```
+`./a1-optimization`
 
 Or, alternatively:
+`python3 ./a1-optimization`
 
-```bash
-python3 ./a1-optimization
-```
 The results are saved in the folder `_korali_result/`.
 
 Plotting
 --------
-
 You can see the results of CMA-ES by running the command,
-```sh
-python3 -m korali.plotter
-```
+`python3 -m korali.plotter`
 
 ![figure](direct-cma.png)

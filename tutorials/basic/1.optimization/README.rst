@@ -14,7 +14,7 @@ Example Scripts
 Problem Description
 --------------------------- 
 
-We are given the function :math:`f(\vartheta)=-\theta^2` for :math:`\rtheta\in[-10,10]`.
+We are given the function :math:`f(\\theta)=-\\theta^2` for :math:`\\theta\\in[-10,10]`.
 We want to find the maximum of the function in the given interval.
 
 ##  The Objective Function

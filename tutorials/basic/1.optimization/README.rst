@@ -22,13 +22,13 @@ The Objective Function
 
 Create a folder named `model`. Inside, create a file with name `directModel.py` and paste the following code,
 
-```python
+`python
 #!/usr/bin/env python
 
 def evaluateModel(p):
   x = p["Parameters"][0]
   p["Evaluation"] = -x*x
-```
+``
 
 This is the computational model that represents our objective function.
 
@@ -37,48 +37,50 @@ Optimization with CMAES
 -----------------------
 
 First, open a file (you could name it 'a1-optimization') and import the korali module
-```python
+`python
 #!/usr/bin/env python3
 import korali
-```
+``
+
 Import the computational model,
-```python
+`python
 import sys
 sys.path.append('./model')
 from directModel import *
-```
+``
 
 The Korali Engine and Experiment Objects
 ----------------------------------------
 
 Next we construct a `korali.Engine` and a `korali.Experiment` object and set the computational model,
-```python
+
+`python
 k = korali.Engine()
 e = korali.Experiment()
 
 e["Problem"]["Objective Function"] = evaluateModel
-```
+``
 
 
 The Problem Type
 ----------------
 
 Then, we set the type of the problem to `Direct Evaluation`, and the objective to maximization,
-```python
+`python
 e["Problem"]["Type"] = "Evaluation/Direct/Basic"
 e["Problem"]["Objective"] = "Maximize"
-```
+``
 
 A list of implemented solver- and problem types, although not optimally
 reader friendly, can be found in [module.cpp](../../source/module.cpp).  
 
 ###  The Variables
 In this problem there is only one variable, `X`, whose domain we set to [-10,10],
-```python
+`python
 e["Variables"][0]["Name"] = "X"
 e["Variables"][0]["Lower Bound"] = -10.0
 e["Variables"][0]["Upper Bound"] = +10.0
-```
+``
 
 The Solver
 ----------

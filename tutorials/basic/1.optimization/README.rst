@@ -33,7 +33,8 @@ def evaluateModel(p):
 This is the computational model that represents our objective function.
 
 
-## Optimization with CMAES
+Optimization with CMAES
+-----------------------
 
 First, open a file (you could name it 'a1-optimization') and import the korali module
 ```python
@@ -47,7 +48,8 @@ sys.path.append('./model')
 from directModel import *
 ```
 
-###  The Korali Engine and Experiment Objects
+The Korali Engine and Experiment Objects
+----------------------------------------
 
 Next we construct a `korali.Engine` and a `korali.Experiment` object and set the computational model,
 ```python
@@ -58,7 +60,9 @@ e["Problem"]["Objective Function"] = evaluateModel
 ```
 
 
-###  The Problem Type
+The Problem Type
+----------------
+
 Then, we set the type of the problem to `Direct Evaluation`, and the objective to maximization,
 ```python
 e["Problem"]["Type"] = "Evaluation/Direct/Basic"
@@ -75,7 +79,9 @@ e["Variables"][0]["Name"] = "X"
 e["Variables"][0]["Lower Bound"] = -10.0
 e["Variables"][0]["Upper Bound"] = +10.0
 ```
-###  The Solver
+
+The Solver
+----------
 We choose the solver `CMAES`, set the population size to be `32` and two termination criteria,
 
 ```python
@@ -108,7 +114,8 @@ python3 ./a1-optimization
 ```
 The results are saved in the folder `_korali_result/`.
 
-###  Plotting
+Plotting
+--------
 
 You can see the results of CMA-ES by running the command,
 ```sh

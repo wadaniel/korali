@@ -1,6 +1,3 @@
-.. role:: raw-math(raw)
-    :format: latex html
-
 Model Optimization: Finding the Global Maximum
 ===============================================
 
@@ -17,10 +14,11 @@ Example Scripts
 Problem Description
 --------------------------- 
 
-We are given the function :raw-math:`$f(\theta)=-\theta^2$` for :raw-math:`$\theta\in[-10,10]$`.
+We are given the function $f(\vartheta)=-\vartheta^2$ for $\vartheta\in[-10,10]$.
 We want to find the maximum of the function in the given interval.
 
-##  The Objective Function
+The Objective Function
+==============================================================
 
 Create a folder named `model`. Inside, create a file with name `directModel.py` and paste the following code,
 

@@ -101,3 +101,4 @@ Plotting
 ---------------------------
 
 You can see the results of CMA-ES by running the command, `python3 -m korali.plotter`
+which visualizes the results found in folder `_korali_result`.

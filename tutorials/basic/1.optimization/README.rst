@@ -88,7 +88,6 @@ We choose the solver `CMAES`, set the population size to be `32` and two termina
 For a detailed description of CMAES settings see [here](../../usage/solvers/cmaes.md).
 
 Finally, we need to add a call to the run() routine to start the Korali engine.
-
 ::
     k.run(e)
 
@@ -107,5 +106,3 @@ Plotting
 --------
 You can see the results of CMA-ES by running the command,
 `python3 -m korali.plotter`
-
-![figure](direct-cma.png)

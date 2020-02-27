@@ -5,6 +5,7 @@ In this tutorial we show how to solve a **constrained optimization** problem ([C
 
 Example Scripts
 ---------------------------
+    + *run-ccmaes.py*: Runs this tutorial using the MCMC solver.
 
 We want to solve the problem:
 
@@ -30,152 +31,127 @@ g_4(x) = 4x_1^2 + x_2^2 - 3x_1x_2 + 2x_3^2 + 5x_6 - 11x_7
 $$
 
 
-##  The Objective Function
-
+The Objective Function
+---------------------------
 Create a folder named `model`. Inside, create a file with name `model.py` and paste the following code,
-```python
-#!/usr/bin/env python
+::
+    #!/usr/bin/env python
 
-def g09( k ):
+    def g09( k ):
 
-  d = k["Parameters"]
-  res = (d[0] - 10.0)**2 + 5.0 * (d[1] - 12.0)**2           \
-        + d[2]**4  + 3.0 * (d[3] - 11.0)**2                 \
-        + 10.0 * d[4]**6 + 7.0 * d[5]**2 + d[6]**4.      \
-        - 4.0 * d[5] * d[6] - 10.0 * d[5] - 8.0 * d[6];
+      d = k["Parameters"]
+      res = (d[0] - 10.0)**2 + 5.0 * (d[1] - 12.0)**2           \
+            + d[2]**4  + 3.0 * (d[3] - 11.0)**2                 \
+            + 10.0 * d[4]**6 + 7.0 * d[5]**2 + d[6]**4.      \
+            - 4.0 * d[5] * d[6] - 10.0 * d[5] - 8.0 * d[6];
 
-  k["Evaluation"] = -res;
+      k["Evaluation"] = -res;
 
-```
 This computational model represents our objective function.
 
 For the constraints, add the following code in the same file,
-```python
-
-def g1(k):
-  v = k["Parameters"]
-  k["Evaluation"] = -127.0 + 2 * v[0] * v[0] + 3.0 * pow(v[1], 4) + v[2] + 4.0 * v[3] * v[3] + 5.0 * v[4]
-
-
-def g2(k):
-  v = k["Parameters"]
-  k["Evaluation"] = -282.0 + 7.0 * v[0] + 3.0 * v[1] + 10.0 * v[2] * v[2] + v[3] - v[4]
+::
+    def g1(k):
+      v = k["Parameters"]
+      k["Evaluation"] = -127.0 + 2 * v[0] * v[0] + 3.0 * pow(v[1], 4) + v[2] + 4.0 * v[3] * v[3] + 5.0 * v[4]
 
 
-def g3(k):
-  v = k["Parameters"]
-  k["Evaluation"] = -196.0 + 23.0 * v[0] + v[1] * v[1] + 6.0 * v[5] * v[5] - 8.0 * v[6]
+    def g2(k):
+      v = k["Parameters"]
+      k["Evaluation"] = -282.0 + 7.0 * v[0] + 3.0 * v[1] + 10.0 * v[2] * v[2] + v[3] - v[4]
 
-def g4(k):
-  v = k["Parameters"]
-  k["Evaluation"] = 4.0 * v[0] * v[0] + v[1] * v[1] - 3.0 * v[0] * v[1] + 2.0 * v[2] * v[2] + 5.0 * v[5] - 11.0 * v[6]
 
-```
+    def g3(k):
+      v = k["Parameters"]
+      k["Evaluation"] = -196.0 + 23.0 * v[0] + v[1] * v[1] + 6.0 * v[5] * v[5] - 8.0 * v[6]
 
-## Optimization with (C)CMA-ES
+    def g4(k):
+      v = k["Parameters"]
+      k["Evaluation"] = 4.0 * v[0] * v[0] + v[1] * v[1] - 3.0 * v[0] * v[1] + 2.0 * v[2] * v[2] + 5.0 * v[5] - 11.0 * v[6]
 
+Optimization with (C)CMA-ES
+---------------------------
 First, open a file and import the korali module
-```python
-#!/usr/bin/env python3
-import korali
-```
+::
+    #!/usr/bin/env python3
+    import korali
+
 Import the computational model,
-```python
-import sys
-sys.path.append('./model')
-from model import *
-from constraints import *
-```
+::
+    import sys
+    sys.path.append('./model')
+    from model import *
+    from constraints import *
 
-###  The Korali Object
-
+The Korali Object
+---------------------------
 Next we construct a `korali.Experiment` object,
-```python
-e = korali.Experiment()
-```
+::
+    e = korali.Experiment()
 
 Add the objective function and the constraints in the Korali object,
-```python
-e["Problem"]["Objective Function"] = g09
-e["Problem"]["Constraints"] = [ g1, g2, g3, g4 ]
-```
+::
+    e["Problem"]["Objective Function"] = g09
+    e["Problem"]["Constraints"] = [ g1, g2, g3, g4 ]
 
 
-###  The Problem Type
+The Problem Type
+---------------------------
 Then, we set the type of the problem to `Direct Evaluation`
-```python
-e["Problem"]["Type"] = "Evaluation/Direct/Basic"
-e["Problem"]["Objective"] = "Maximize"
-```
+::
+    e["Problem"]["Type"] = "Evaluation/Direct/Basic"
+    e["Problem"]["Objective"] = "Maximize"
 
 
-###  The Variables
+The Variables
+---------------------------
 We add 7 variables to the experiment and set their domain,
-```python
-for i in range(7) :
-  e["Variables"][i]["Name"] = "X" + str(i)
-  e["Variables"][i]["Lower Bound"] = -10.0
-  e["Variables"][i]["Upper Bound"] = +10.0
-```
+::
+    for i in range(7) :
+      e["Variables"][i]["Name"] = "X" + str(i)
+      e["Variables"][i]["Lower Bound"] = -10.0
+      e["Variables"][i]["Upper Bound"] = +10.0
 
 
-###  The Solver
+The Solver
+---------------------------
 We choose the solver `CMA-ES`,
-
-```python
-e["Solver"]["Type"] = "CMAES"
-
-```
+::
+    e["Solver"]["Type"] = "CMAES"
 
 Then we set a few parameters for CCMA-ES,
-```python
-e["Solver"]["Is Sigma Bounded"] = True
-e["Solver"]["Population Size"] = 32
-e["Solver"]["Viability Population Size"] = 4
-e["Solver"]["Termination Criteria"]["Max Value"] = -680.630057374402 - 1e-4
-e["Solver"]["Termination Criteria"]["Max Generations"] = 500
-```
-For a detailed description of CCMA-ES settings see [here](../../usage/solvers/cmaes.md).
+::
+    e["Solver"]["Is Sigma Bounded"] = True
+    e["Solver"]["Population Size"] = 32
+    e["Solver"]["Viability Population Size"] = 4
+    e["Solver"]["Termination Criteria"]["Max Value"] = -680.630057374402 - 1e-4
+    e["Solver"]["Termination Criteria"]["Max Generations"] = 500
+
+For a detailed description of CCMA-ES settings see :doc:`../../usage/solvers/cmaes.md`.
 
 A list of implemented solvers and problem types, although not optimally
-reader friendly, can be found in [module.cpp](../../source/module.cpp).   
+reader friendly, can be found in :doc:`../../source/module.cpp`
 
 We configure output settings,
-
-```python
-e["File Output"]["Frequency"] = 50
-e["Console Output"]["Frequency"] = 50
-
-```
+::
+    e["File Output"]["Frequency"] = 50
+    e["Console Output"]["Frequency"] = 50
 
 Finally, we need to create a Korali `Engine` object add a call to its run() routine, to start the engine.
+::
+    k = korali.Engine()
+    k.run(e)
 
-```python
-k = korali.Engine()
-k.run(e)
-```
+Running
+---------------------------
 
-###  Running
+We are now ready to run our example:`./a4-constrained-optimization`
 
-We are now ready to run our example:
-
-```bash
-./a4-constrained-optimization
-```
-
-Or, alternatively:
-
-```bash
-python3 ./a4-constrained-optimization
-```
 
 The results are saved in the folder `_korali_result/`.
 
-###  Plotting
+Plotting
+---------------------------
 
 You can see the results of CMA-ES by running the command,
-```sh
-python3 -m korali.plotter
-```
-
-![figure](ccmaes.png)
+`python3 -m korali.plotter`

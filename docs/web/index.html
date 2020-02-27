@@ -84,29 +84,23 @@ function toggleBIBTex(input) {
         
         <h3>Model Optimization</h3>
     
-        Given any objective continous or non-continuous function \( f:\mathbb{R}^N\rightarrow\mathbb{R} \), Korali can find its minima or maxima using derivate-free or derivative/Hessian-guided methods.
+        Given any objective function, Korali can search its optimum using derivate-free or gradient-based methods.
      
         <br />
         
-        <h3>Probability Distribution Sampling</h3>
-        
-        Korali can sample the probability distribution of any computational model that returns the probability density P(x), given a set of user-defined parameters x.
-        
-        <br />
-        
-        <h3>Bayesian Uncertainty Quantification</h3>
+        <h3> (Hierarchical) Bayesian Uncertainty Quantification</h3>
        
-        Given a set of data $d$, the output of a computational model \( f(x;\vartheta) \), a likelihood function \(p (d|\vartheta) \), and a prior probability density \( p(\vartheta) \) Korali will build its posterior distribution.         <br />
+        Given some date, and the input-output relation of a computational model, Korali can sample the posterior distribution of the model parameter. <br />
 
-        <h3>Hierarchical Bayesian Analysis</h3>
-        
-        <br />
-       
         <h3>Propagation</h3>
+
+        Korali can evaluate a computational model on a set of inputs (e.g. samples from the posterior distribution) and it will distribute the workload at scale.
        
         <br />
         
         <h3>Gaussian Processes</h3>
+
+        Korali can fit end evaluate Gaussian Processes at scale.
          
         <br /><hr />
     
@@ -116,10 +110,10 @@ function toggleBIBTex(input) {
          The Korali work distribution engine has been optimized to fully harness computational resources of large-scale supercomputers, maximizing throughput and minimizing workload imbalance. Furthermore, Korali supports the execution of parallel (OpenMP, Pthreads), distributed (MPI, UPC++), and GPU-based (CUDA) models.
     
         <h3>Fault Tolerance</h3>
-         Korali offers a checkpoint/resume fault-tolerance mechanism in which the entire state of an experiment is stored regularly and can be resumed later in case of error, guaranteeing that the result of a resumed experiment will be exactly the same as if the original launch would had ran to completion.
+         Korali offers a checkpoint/resume fault-tolerance mechanism in which the entire state of an experiment is stored regularly and can be resumed later in case of work-load split or errors, guaranteeing that the result of a resumed experiment will be exactly the same as if the original launch would had ran to completion.
          
         <h3>Extensible Engine</h3>
-         Korali is designed as a completely modular and extensible software. Researchers can easily integrate and test new statistical methods for optimization and sampling into Korali. Likewise, new problems types can be easily added into Korali. All new user-developed modules automatically can benefit from Korali's scalability and fault-tolerance benefits without additional efforts.
+         Korali is designed as a completely modular and extensible software. Researchers can easily integrate and test their algorithms for optimization and sampling into Korali. Likewise, new problems types can be easily added into Korali. All newly developed modules automatically benefit from Korali's scalability and fault-tolerance features without additional efforts.
     
         <h3>Multi-Language Support</h3>
          Korali applications can be programmed in either C++ or Python. Additionally, Korali can sample from C++/Fortran/Python and pre-compiled computational models.

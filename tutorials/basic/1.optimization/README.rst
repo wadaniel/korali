@@ -1,3 +1,6 @@
+.. role:: raw-math(raw)
+    :format: latex html
+
 Model Optimization: Finding the Global Maximum
 ===============================================
 
@@ -14,7 +17,7 @@ Example Scripts
 Problem Description
 --------------------------- 
 
-We are given the function :math:`f(\\theta)=-\\theta^2` for :math:`\\theta\\in[-10,10]`.
+We are given the function :raw-math:`$f(\theta)=-\theta^2$` for :raw-math:`$\theta\in[-10,10]$`.
 We want to find the maximum of the function in the given interval.
 
 ##  The Objective Function

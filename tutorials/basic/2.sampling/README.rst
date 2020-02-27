@@ -3,7 +3,6 @@ Model Sampling: Draw Samples from a Function
 
 In this tutorial we show how to **sample** directly from a given function
 using Metropolis Hastings (MCMC) and Transition Markov Chain Monte Carlo (TMCMC).
-The complete code samples are in [run-mcmc.py](run-mcmc.py).
 
 Example Scripts
 ---------------------------

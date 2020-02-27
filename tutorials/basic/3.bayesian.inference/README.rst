@@ -2,13 +2,12 @@ Inferring Parameter Values with Bayes' Theorem
 =====================================================
 
 In this tutorial we show how to **optimize** and **sample** the posterior
-distribution of a Bayesian inference problem. We will go through the code sample
- [run-cmaes.py](run-cmaes.py) first, and then modify it to get [this code sample](run-tmcmc.py).
+distribution of a Bayesian inference problem. 
 
 Example Scripts
 ---------------------------
-    + run-cmaes.py
-    + run-tmcmc.py
+    + *run-cmaes.py*: Runs this tutorial using the MCMC solver.
+    + *run-tmcmc.py*: Runs this tutorial using the TMCMC solver.
 
 In this example we will solve the inverse problem of estimating the Variables
 of a linear model using noisy data. We consider the computational model,

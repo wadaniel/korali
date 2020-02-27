@@ -10,11 +10,12 @@ Example Scripts
 We are given a set of parameters to evaluate in a file 'samplesOut.dat'.
 We want to execute a model function $f(\theta)$ on given parameters.
 
-Optimization / Sampling  with TODO
+Propagate Model Evaluations
 ---------------------------
 
 The Korali Object
 ---------------------------
+Initialize a korali object
 ::
     e = korali.Experiment()
  

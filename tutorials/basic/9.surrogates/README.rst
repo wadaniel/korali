@@ -72,4 +72,4 @@ And finally we predict values for data  `data/sincos1d_new.dat`.
 
 Run
 ---------------------------
-All three steps can be run with `./a9-run-gp`
+All three steps can be run with `.run-gp.py`

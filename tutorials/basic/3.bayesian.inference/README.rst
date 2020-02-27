@@ -206,7 +206,7 @@ Finally, we configure the output, and then need to add a call to the run() routi
 
 Running
 ---------------------------
-We are now ready to run our example: `./a3-bayesian-cmaes`
+We are now ready to run our example: `./run-cmaes.py`
 The results are saved in the folder `_korali_result/`.
 
 
@@ -233,7 +233,7 @@ Finally, we need to add a call to the run() routine to start the Korali engine.
 Running
 ---------------------------
 
-We are now ready to run our example: `./a3-bayesian-tmcmc`
+We are now ready to run our example: `./run-tmcmc.py`
 
 The results are saved in the folder `_korali_result/`.
 

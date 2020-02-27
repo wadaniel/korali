@@ -5,6 +5,7 @@ In this tutorial we show how to optimize a function with discrete input paramete
 
 Example Scripts
 ---------------------------
+    + *run-cmaes.py*
 
 We want to minimize the following function:
 
@@ -92,7 +93,7 @@ We create a Korali engine, and tell it to run the experiment we defined,
 
 Running
 ---------------------------
-We are now ready to run our example: `./a5-constrained-optimization`
+We are now ready to run our example: `./run-cmaes.py`
 
 
 The results are saved in the folder `_korali_result/`.

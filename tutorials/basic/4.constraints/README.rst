@@ -145,7 +145,7 @@ Finally, we need to create a Korali `Engine` object add a call to its run() rout
 Running
 ---------------------------
 
-We are now ready to run our example:`./a4-constrained-optimization`
+We are now ready to run our example:`./run-ccmaes.py`
 
 
 The results are saved in the folder `_korali_result/`.

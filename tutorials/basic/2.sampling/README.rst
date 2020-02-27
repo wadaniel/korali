@@ -85,8 +85,9 @@ We also set some settings for MCMC. For a detailed description of the MCMC setti
 
 Configuring the output
 ---------------------------
+To reduce the output frequency we write
 ::
-    e["File Output"]["Frequency"] = 500
+    e["File Output"]["Frequency"]    = 500
     e["Console Output"]["Frequency"] = 500
     e["Console Output"]["Verbosity"] = "Detailed"
 

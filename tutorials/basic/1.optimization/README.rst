@@ -21,14 +21,12 @@ The Objective Function
 ----------------------
 
 Create a folder named `model`. Inside, create a file with name `directModel.py` and paste the following code,
+::
+    #!/usr/bin/env python
 
-`python
-#!/usr/bin/env python
-
-def evaluateModel(p):
-  x = p["Parameters"][0]
-  p["Evaluation"] = -x*x
-``
+    def evaluateModel(p):
+        x = p["Parameters"][0]
+        p["Evaluation"] = -x*x
 
 This is the computational model that represents our objective function.
 

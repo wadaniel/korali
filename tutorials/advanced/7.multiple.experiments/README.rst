@@ -5,47 +5,40 @@ In this tutorial we show how you can execute a series of experiments, in order t
 
 Example Scripts
 ---------------------------
+    + *run-cmaes.py*
 
 Create a series of experiments:
+::
+    for i in range(8):
+      e = korali.Experiment()
+      e["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Reference"
+      e["Problem"]["Likelihood Model"] = "Additive Normal"
+      e["Problem"]["Reference Data"] = getReferenceData()
+      e["Problem"]["Computational Model"] = lambda sampleData: model(sampleData, getReferencePoints())
+      
+      # Configuring CMA-ES parameters
+      e["Solver"]["Type"] = "CMAES"
+      ...
 
-```python
-for i in range(8):
-  e = korali.Experiment()
-  e["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Reference"
-  e["Problem"]["Likelihood Model"] = "Additive Normal"
-  e["Problem"]["Reference Data"] = getReferenceData()
-  e["Problem"]["Computational Model"] = lambda sampleData: model(sampleData, getReferencePoints())
-  
-  # Configuring CMA-ES parameters
-  e["Solver"]["Type"] = "CMAES"
-  ...
-
-```
-
-## Set Experiment Vector
+Set Experiment Vector
+---------------------------
  
 We can store experiments in a list `eList`:
+::
+    # Adding Experiment to vector
+    eList.append(e)
 
-```python
-   # Adding Experiment to vector
-  eList.append(e)
-```
-
-## Run Experiment Vector
+Run Experiment Vector
+---------------------------
 
 We can runn all experiments in one Korali application
+::
+    # Running first 100 generations
+    k.run(eList)
 
-```python
-# Running first 100 generations
-k.run(eList)
-```
+Running
+---------------------------
 
-## Running
-
-We are now ready to run our example:
-
-```bash
-./c3-multiple-jobs
-```
+We are now ready to run our example: `./c3-multiple-jobs`
 
 

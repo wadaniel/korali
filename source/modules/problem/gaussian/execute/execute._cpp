@@ -19,7 +19,7 @@ void korali::problem::gaussian::Execute::initialize()
 
   size_t parameterDimension = _gp->covf().get_param_dim();
   Eigen::VectorXd eParameters( parameterDimension );
-  for( size_t i=0; i<parameterDimension; i++) eParameters[i] = _gpJson["Solver"]["Internal"]["Best X"][i];
+  for( size_t i=0; i<parameterDimension; i++) eParameters[i] = _gpJson["Solver"]["Best X"][i];
   _gp->covf().set_loghyper(eParameters);
 
   for(size_t i=0; i<dataSize; ++i) _gp->add_pattern( xTrainData[i].data(), yTrainData[i]);
@@ -32,11 +32,11 @@ void korali::problem::gaussian::Execute::initialize()
   for (size_t i=0; i<_xData[0].size(); i++){
     _k->_variables[i]->_name = "X" + std::to_string(i);
     for (size_t j=0; j<_xData.size(); j++){
-      _k->_variables[i]->_parameterList.push_back(_xData[j][i]);
+      _k->_variables[i]->_precomputedValues.push_back(_xData[j][i]);
     }
   }
 
-  size_t parameterListSize = _k->_variables[0]->_parameterList.size();
+  size_t parameterListSize = _k->_variables[0]->_precomputedValues.size();
   _gaussianProcessEvaluation.resize( parameterListSize );
   _gaussianProcessVariance.resize( parameterListSize );
 }

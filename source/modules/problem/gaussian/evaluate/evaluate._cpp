@@ -45,7 +45,8 @@ void korali::problem::gaussian::Evaluate::evaluate(korali::Sample& sample)
 
   _gp->covf().set_loghyper(p);
 
-  sample["Evaluation"] = _gp->log_likelihood();
+  sample["F(x)"] = _gp->log_likelihood();
+  sample["P(x)"] = sample["F(x)"];
 
   Eigen::VectorXd eigenGrad = _gp->log_likelihood_gradient();
   for(size_t i=0; i<_parameterDimension; i++)

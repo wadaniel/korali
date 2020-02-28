@@ -14,13 +14,13 @@ Ns = 100
 import korali
 e = korali.Experiment()
 
-e["Problem"]["Type"] = "Execution/Model"
+e["Problem"]["Type"] = "Propagation"
 e["Problem"]["Execution Model"] = lambda modelData: normal_rnds(modelData, Ns)
 
 e["Variables"][0]["Name"] = "V1"
 e["Variables"][1]["Name"] = "V2"
-e["Variables"][0]["Loaded Values"] = np.random.normal( 10, 4, N ).tolist()
-e["Variables"][1]["Loaded Values"] = np.random.lognormal( 0, 1, N ).tolist()
+e["Variables"][0]["Precomputed Values"] = np.random.normal( 10, 4, N ).tolist()
+e["Variables"][1]["Precomputed Values"] = np.random.lognormal( 0, 1, N ).tolist()
 
 e["Solver"]["Type"] = "Executor"
 e["Solver"]["Executions Per Generation"] = 1

@@ -3,19 +3,19 @@
 
 void korali::solver::Executor::runGeneration()
 {
-  _sampleCount   = _k->_variables[0]->_loadedValues.size();
+  _sampleCount   = _k->_variables[0]->_precomputedValues.size();
 
   _maxModelEvaluations     = std::min(_maxModelEvaluations, _sampleCount);
   _executionsPerGeneration = std::min(_executionsPerGeneration, _maxModelEvaluations - _modelEvaluationCount);
   
   std::vector<double> sampleData(_k->_variables.size());
   std::vector<korali::Sample> samples(_executionsPerGeneration);
-  for (size_t j = 0; j < _k->_variables.size(); j++) sampleData[j] = _k->_variables[j]->_loadedValues[_modelEvaluationCount];
+  for (size_t j = 0; j < _k->_variables.size(); j++) sampleData[j] = _k->_variables[j]->_precomputedValues[_modelEvaluationCount];
 
   for (size_t i = 0; i < _executionsPerGeneration; i++)
   {
     std::vector<double> sampleData(_k->_variables.size());
-    for (size_t j = 0; j < _k->_variables.size(); j++) sampleData[j] = _k->_variables[j]->_loadedValues[_modelEvaluationCount];
+    for (size_t j = 0; j < _k->_variables.size(); j++) sampleData[j] = _k->_variables[j]->_precomputedValues[_modelEvaluationCount];
 
     korali::logInfo("Detailed", "Running sample %zu with values:\n         ", _modelEvaluationCount);
     for(auto& x : sampleData) korali::logData("Detailed", " %le   ", x);

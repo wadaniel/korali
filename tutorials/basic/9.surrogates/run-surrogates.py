@@ -3,6 +3,8 @@
 import os
 import sys
 import korali
+from os import listdir
+from os.path import isfile, join
 
 def read_matrix_for_gp( fileName, lastColumnIsData=True ):
   f = open( fileName, "r" )
@@ -20,6 +22,9 @@ def read_matrix_for_gp( fileName, lastColumnIsData=True ):
 
 x, y = read_matrix_for_gp('data/sincos1d_train.dat')
 
+k = korali.Engine()
+resultPath = "_korali_result_train"
+
 e0 = korali.Experiment()
 e0["Problem"]["Type"] = "Gaussian/Evaluate"
 e0["Problem"]["Covariance Function"] = "CovSum ( CovSEiso, CovNoise)"
@@ -33,10 +38,17 @@ e0["Console Output"]["Frequency"] = 10
 e0["File Output"]["Frequency"] = 100
 e0["File Output"]["Path"] = "_korali_result_train"
 
+# Getting result file
+k.run(e0)
+resultFileList = [f for f in listdir(resultPath) if isfile(join(resultPath, f))]
+resultFileList.sort()
+resultFile = join(resultPath, resultFileList[-1])
+print(resultFile)
+
 x, y = read_matrix_for_gp('data/sincos1d_test.dat')
 e1 = korali.Experiment()
-e1["Problem"]["Type"] = "Gaussian/Execution"
-e1["Problem"]["Gaussian Process Json File"] =  "_korali_result_train/final.json"
+e1["Problem"]["Type"] = "Gaussian/Execute"
+e1["Problem"]["Gaussian Process Json File"] = resultFile
 e1["Problem"]["X Data"] = x
 e1["Problem"]["Y Data"] = y
 e1["Solver"]["Type"] = "Executor"
@@ -48,8 +60,8 @@ e1["File Output"]["Path"] = "_korali_result_test"
 
 x, y = read_matrix_for_gp('data/sincos1d_new.dat',lastColumnIsData=True)
 e2 = korali.Experiment()
-e2["Problem"]["Type"] = "Gaussian/Execution"
-e2["Problem"]["Gaussian Process Json File"] =  "_korali_result_train/final.json"
+e2["Problem"]["Type"] = "Gaussian/Execute"
+e2["Problem"]["Gaussian Process Json File"] = resultFile
 e2["Problem"]["X Data"] = x
 e2["Problem"]["Y Data"] = y
 e2["Solver"]["Type"] = "Executor"
@@ -59,7 +71,5 @@ e2["Console Output"]["Frequency"] = 10
 e2["File Output"]["Frequency"] = 100
 e2["File Output"]["Path"] = "_korali_result_new"
 
-k = korali.Engine()
-k.run(e0)
 k.run(e1)
 k.run(e2)

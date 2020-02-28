@@ -26,8 +26,8 @@ def calculateLogLikelihood( s ):
   s["logLikelihood"] = r
 
 def prepareFile( fileName ):
-    if os.path.isdir('_executor_output') == False:
-        os.mkdir('_executor_output')
+    if os.path.isdir('_propagation_output') == False:
+        os.mkdir('_propagation_output')
         os.system('touch {0}'.format(fileName) )
 
 def put_normal_rnds( theta, Ns, fileName ):

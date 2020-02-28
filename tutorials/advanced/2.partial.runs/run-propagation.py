@@ -8,20 +8,20 @@ import numpy as np
 Ns        = 100
 means     = [-5, 5, 10, 15, 20]
 variances = [1, 1, 1, 1, 1]
-fileName = '_executor_output/samplesOut.dat'
+fileName = '_propagation_output/samplesOut.dat'
 prepareFile(fileName)
 
 import korali
 k = korali.Engine()
 e = korali.Experiment()
 
-e["Problem"]["Type"] = "Execution/Model"
+e["Problem"]["Type"] = "Propagation"
 e["Problem"]["Execution Model"] = lambda modelData: put_normal_rnds(modelData, Ns, fileName)
 
 e["Variables"][0]["Name"] = "Mean"
-e["Variables"][0]["Loaded Values"] = means
+e["Variables"][0]["Precomputed Values"] = means
 e["Variables"][1]["Name"] = "Variance"
-e["Variables"][1]["Loaded Values"] = variances
+e["Variables"][1]["Precomputed Values"] = variances
 
 e["Solver"]["Type"] = "Executor"
 e["Solver"]["Executions Per Generation"] = 1

@@ -23,12 +23,12 @@ variances = [1, 3]
 import korali
 e = korali.Experiment()
 
-e["Problem"]["Type"] = "Execution/Model"
+e["Problem"]["Type"] = "Propagation"
 e["Problem"]["Execution Model"] = lambda modelData: put_normal_rnds(modelData, Ns, fileName)
 e["Variables"][0]["Name"] = "Mean"
-e["Variables"][0]["Loaded Values"] = means
+e["Variables"][0]["Precomputed Values"] = means
 e["Variables"][1]["Name"] = "Variance"
-e["Variables"][1]["Loaded Values"] = variances
+e["Variables"][1]["Precomputed Values"] = variances
 e["Solver"]["Type"] = "Executor"
 e["Solver"]["Executions Per Generation"] = 1
 e["Console Output"]["Verbosity"] = "Detailed"

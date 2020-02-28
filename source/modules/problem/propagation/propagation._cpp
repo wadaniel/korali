@@ -1,0 +1,17 @@
+#include "modules/problem/propagation/propagation.hpp"
+
+void korali::problem::Propagation::initialize()
+{
+  if (_k->_variables.size() == 0) korali::logError("Execution problems require at least one variable.\n");
+
+  // Validate the _loadedValues dimensions
+  size_t Ns = _k->_variables[0]->_precomputedValues.size();
+  for (size_t i = 1; i < _k->_variables.size(); i++){
+    if (_k->_variables[i]->_precomputedValues.size() != Ns)  korali::logError("All 'Loaded Values' must have the same length ");
+  }
+}
+
+void korali::problem::Propagation::execute(korali::Sample& sample)
+{
+ sample.run(_executionModel);
+}

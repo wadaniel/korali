@@ -1,0 +1,20 @@
+#ifndef _KORALI_PROBLEM_PROPAGATION_HPP_
+#define _KORALI_PROBLEM_PROPAGATION_HPP_
+
+#include "modules/problem/problem.hpp"
+
+namespace korali { namespace problem {
+
+class Propagation : public korali::Problem
+{
+ public:
+
+   void initialize() override;
+   void execute(korali::Sample& sample);
+
+};
+
+} } // namespace korali::problem
+
+
+#endif // _KORALI_PROBLEM_PROPAGATION_HPP_

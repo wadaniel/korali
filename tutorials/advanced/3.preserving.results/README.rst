@@ -6,28 +6,23 @@ that otherwise would be lost.
 
 Example Scripts
 ---------------------------
+    + *run-mcmc.py*
 
-## Computational Model
+Computational Model
+---------------------------
 
 In the model we assign QoI to the Korali `Sample`:
-
-```python
-# Store QoI
-d["Apples"]  = a
-d["Bananas"] = b
-```
+::
+    # Store QoI
+    d["Apples"]  = a
+    d["Bananas"] = b
 
 
-## Execute
+Execute
+---------------------------
 
 In Korali we have to set this flag to store the values of `Apples` and `Bananas`:
-
-```python
-e["File Output"]["Store Samples"] = True
-```
+::
+    e["File Output"]["Store Samples"] = True
 
 All evaluations can be found in the files in `_korali_results`.
-
-
- 
- 

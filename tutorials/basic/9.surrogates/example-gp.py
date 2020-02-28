@@ -20,7 +20,7 @@ def read_matrix_for_gp( fileName, lastColumnIsData=True ):
 
 x, y = read_matrix_for_gp('data/sincos1d_train.dat')
 e0 = korali.Experiment()
-e0["Problem"]["Type"] = "GaussianProcess/Evaluation"
+e0["Problem"]["Type"] = "GaussianProcess"
 e0["Problem"]["Covariance Function"] = "CovSum ( CovSEiso, CovNoise)"
 e0["Problem"]["X Data"] = x
 e0["Problem"]["Y Data"] = y

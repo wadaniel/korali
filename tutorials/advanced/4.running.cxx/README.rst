@@ -2,7 +2,7 @@ Running Korali with Compiled C++ Code
 =====================================================
 
 In this tutorial we show how Korali can be used with c++.
-For this we optimize a model with the solver `CMA-ES` and `LM-CMA`. The problem type is the same as for [example A.3](#tutorial-a3): We want to find the parameters v = (`Intensity` , `PosX`, `PosY`, `Sigma`) that maximize the posterior in a Bayesian problem.  
+For this we optimize a model with the solver `CMA-ES` and `LM-CMA`. Here we want to find the parameters v = (`Intensity` , `PosX`, `PosY`, `Sigma`) that maximize the posterior in a Bayesian problem.  
 
 Example Scripts
 ---------------------------
@@ -15,30 +15,16 @@ Example Scripts
 How to run the example
 ---------------------------
 
-Run the `Makefile` to compile the executables: In the command line, in the
-c1-... sub-folder, type
-```
-make
-```
-*Make* finds our `Makefile` and reads the instructions inside how to make the first target listed there. This will will create an executable out of each of our .cpp files. To run one of them, type their name prepended with `./`, for example,
-```
-./run-cmaes
-```
+Run the `Makefile` to compile the executables. Then you can run am example, e.g. `./run-cmaes`
 This should output information about the process and result of the optimization.
 
 
-Code explanation
+Short explanation
 ---------------------------
 
-This explanation steps through the example in [run-cmaes.cpp](run-cmaes.cpp) and
-also explains part of the functions in [heat2d.cpp](model/heat2d.cpp).
 The problem to be solved is a static heat conduction problem, with
-a candle as static heat source. <!-- For a more extensive description, the problem
-described [here](https://web.calpoly.edu/~kshollen/ME554/Labs/ME554_Lab_2.pdf) looks similar; it might help to have a look there.  -->
-The variables `Intensity` , `PosX`, `PosY` are position and intensity
- of the candle. `Sigma` is the standard deviation of the noise in the
- `Additive Normal` noise model - the noise $\epsilon$ that is added to the function
- `f` (`heat2Dsolver`, see below) to obtain the measured temperature at each data point.
+a candle as static heat source. The variables `Intensity` , `PosX`, `PosY` are position and intensity of the candle. `Sigma` is the standard deviation of the noise in the
+`Additive Normal` noise model - the noise $\epsilon$ that is added to the function `f` (`heat2Dsolver`, see below) to obtain the measured temperature at each data point.
 
 
 Computational Model and Data Points

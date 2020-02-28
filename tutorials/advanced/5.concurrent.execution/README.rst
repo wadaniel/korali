@@ -23,7 +23,7 @@ Note that we set `Workers Per Team` to assign a team of MPI processes to the mod
     k["Profiling"]["Detail"] = "Full";
     k["Profiling"]["Frequency"] = 0.5;
 
-## Run
+Run
 ---------------------------
 
 Compile the script with the `Makefile`.

@@ -6,30 +6,35 @@ All scripts in this tutorial follow this structure:
 
 Example Scripts
 ---------------------------
+    + *run-cmaes.py*
+    + *run-dea.py*
+    + *run-executor.py*
+    + *run-mcmc.py*
+    + *run-multiple.py*
+    + *run-rprop.py*
+    + *run-tmcmc.py*
 
-## Run
+Run
+---------------------------
 
 Set a `Termination Criteria` and run:
+::
+    print('------------------------------------------------------')
+    print('Now running first 50 generations...')
+    print('------------------------------------------------------')
 
-```python
-print('------------------------------------------------------')
-print('Now running first 50 generations...')
-print('------------------------------------------------------')
+    e["Solver"]["Termination Criteria"]["Max Generations"] = 50
+    k.run(e)
 
-e["Solver"]["Termination Criteria"]["Max Generations"] = 50
-k.run(e)
-```
-
-## Restart
+Restart
+---------------------------
 
 Update `Termination Criteria` and restart with `run`:
+::
+    print('------------------------------------------------------')
+    print('Now running last 50 generations...')
+    print('------------------------------------------------------')
 
-```python
-print('------------------------------------------------------')
-print('Now running last 50 generations...')
-print('------------------------------------------------------')
-
-e["Solver"]["Termination Criteria"]["Max Generations"] = 100
-k.run(e)
-```
+    e["Solver"]["Termination Criteria"]["Max Generations"] = 100
+    k.run(e)
 

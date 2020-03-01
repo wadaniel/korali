@@ -8,7 +8,7 @@ Example Scripts
     + *run-execution.py*
 
 We are given a set of parameters to evaluate in a file 'samplesOut.dat'.
-We want to execute a model function $f(\theta)$ on given parameters.
+We want to execute a model function :math:`f(\theta)` on given parameters.
 
 Propagate Model Evaluations
 ---------------------------
@@ -16,20 +16,26 @@ Propagate Model Evaluations
 The Korali Object
 ---------------------------
 Initialize a korali object
-::
+
+.. code-block:: python
+
     e = korali.Experiment()
  
 The Problem Type
 ---------------------------
 The type of problem is `Execution/Model`.
-::
+
+.. code-block:: python
+
     e["Problem"]["Type"] = "Execution/Model"
 
 The Variables
 ---------------------------
 
 In the file we have means and variances to evaluate:
-::
+
+.. code-block:: python
+
     e["Variables"][0]["Name"] = "Mean"
     e["Variables"][0]["Loaded Values"] = means
     e["Variables"][1]["Name"] = "Variance"
@@ -38,7 +44,9 @@ In the file we have means and variances to evaluate:
 The Solver
 ---------------------------
 We set the solver and choose how many samples are evaluated per generation.
-::
+
+.. code-block:: python
+
     e["Solver"]["Type"] = "Executor"
     e["Solver"]["Executions Per Generation"] = 1
 

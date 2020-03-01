@@ -18,7 +18,9 @@ Run
 ---------------------------
 
 Set a `Termination Criteria` and run:
-::
+
+.. code-block:: python
+
     print('------------------------------------------------------')
     print('Now running first 50 generations...')
     print('------------------------------------------------------')
@@ -30,7 +32,9 @@ Restart
 ---------------------------
 
 Update `Termination Criteria` and restart with `run`:
-::
+
+.. code-block:: python
+
     print('------------------------------------------------------')
     print('Now running last 50 generations...')
     print('------------------------------------------------------')

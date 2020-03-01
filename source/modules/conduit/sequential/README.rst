@@ -26,6 +26,7 @@ The distributed conduit provides support for MPI distributed computational model
 The Linked is the default option for a conduit in Korali. It executes a single instance of the computational model at a time, also returning its result to the solver one-by-one.
 
 .. code-block:: python
+
    #!/usr/bin/env python3
    import korali
    k = korali.Engine()
@@ -42,6 +43,7 @@ The Linked is the default option for a conduit in Korali. It executes a single i
 Then, we run our application normally:
 
 .. code-block:: bash
+
    > ./myKoraliApp
 
 ### Parallel Korali / Simple Model
@@ -49,6 +51,7 @@ Then, we run our application normally:
 In this case, we want to execute *N* parallel instances of a sequential model, with only 1 rank per computational model evaluation. We define a simple Korali application:
 
 .. code-block:: python
+
    #!/usr/bin/env python3
    import korali
    k = korali.Engine()
@@ -65,6 +68,7 @@ In this case, we want to execute *N* parallel instances of a sequential model, w
 And then run the application in shell, using the corresponding job launcher. We need N+1 ranks since the Korali engine requires a rank to serve as master:
 
 .. code-block:: bash
+
    > mpirun -n N+1 ./myKoraliApp
 
 ### Sequential Korali / Parallel Model
@@ -72,6 +76,7 @@ And then run the application in shell, using the corresponding job launcher. We 
 In this case, we want to execute a single instance of a sequential model at a time, with *M* ranks per computational model evaluation. We define another Korali application:
 
 .. code-block:: python
+
    #!/usr/bin/env python3
    import korali
    k = korali.Engine()
@@ -98,6 +103,7 @@ In this case, we want to execute a single instance of a sequential model at a ti
 And then run the application in shell, using the corresponding job launcher:
 
 .. code-block:: bash
+
    > mpirun -n M+1 ./myKoraliApp
 
 ### Parallel Korali / Paralell Model
@@ -105,6 +111,7 @@ And then run the application in shell, using the corresponding job launcher:
 In this case, we want to execute N instance of a sequential model at a time, with *M* ranks per computational model evaluation. We define another Korali application:
 
 .. code-block:: python
+
    #!/usr/bin/env python3
    import korali
    k = korali.Engine()
@@ -123,4 +130,5 @@ In this case, we want to execute N instance of a sequential model at a time, wit
 And then run the application in shell, using the corresponding job launcher:
 
 .. code-block:: bash
+
    > mpirun -n N*M+1 ./myKoraliApp

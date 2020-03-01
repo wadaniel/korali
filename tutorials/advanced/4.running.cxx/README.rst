@@ -28,10 +28,12 @@ a candle as static heat source. The variables `Intensity` , `PosX`, `PosY` are p
 
 
 Computational Model and Data Points
----------------------------
+---------------------------------------
 
 First, we create the Korali engine and an experiment that we will configure,
-::
+
+.. code-block:: python
+
     auto k = korali::Engine();
     auto e = korali::Experiment();
     auto p = heat2DInit(&argc, &argv);
@@ -40,7 +42,9 @@ First, we create the Korali engine and an experiment that we will configure,
 Here, `heat2DInit`, defined in [heat2d.cpp](model/heat2d.cpp), returns the data points (triples (xPos, yPos, refTemp)) as `p`. We model refTemp as a function of xPos and yPos (a function whose parameters v1 we want to determine), in addition to some noise: $refTemp(xPos, yPos) = f_{v1}(xPos, yPos) + \epsilon$. The distribution of the noise $\epsilon$ depends on parameters v2. We want to estimate v = (v1, v2).  
 
 We next set the problem type to Bayesian inference, assign the objective values (refTemp values) of our data as `Reference Data` and set the computational model to the function `heat2DSolver` (our `f` above), defined in [heat2d.cpp](model/heat2d.cpp),
-::
+
+.. code-block:: python
+
     e["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Reference";
     e["Problem"]["Likelihood Model"] = "Additive Normal";
     e["Problem"]["Reference Data"] = p.refTemp;
@@ -52,16 +56,21 @@ Solver
 ---------------------------
 
 Then, we decide on `CMAES` as solver and configure its parameters,
-::
+
+.. code-block:: python
+
     e["Solver"]["Type"] = "CMAES";
     e["Solver"]["Population Size"] = 32;
     e["Solver"]["Termination Criteria"]["Max Generations"] = 100;
 
 Variables and Prior Distributions
----------------------------
+------------------------------------
+
 We then need to define four variables, as well as a prior distribution for each
 of them,
-::
+
+.. code-block:: python
+
     e["Distributions"][0]["Name"] = "Uniform 0";
     e["Distributions"][0]["Type"] = "Univariate/Uniform";
     e["Distributions"][0]["Minimum"] = 10.0;
@@ -112,7 +121,9 @@ Finally, we call the `run()` routine to run the optimization, to find those
 parameters v that are most likely, using Bayes rule: We want to find v that
 maximize $P(v|X) = P(X|v)*prior(v)$, i.e, the likelihood of
 the data times their prior.
-::
+
+.. code-block:: python
+
     k.run(e);
 
 We can then compile and run the code.   
@@ -120,7 +131,9 @@ We can then compile and run the code.
 Optimization with LM-CMAES
 ---------------------------
 To use `LM-CMAES` as solver instead, we can change the solver configuration,
-::
+
+.. code-block:: python
+
     e["Solver"]["Type"] = "LMCMAES";
     e["Solver"]["Population Size"] = 32;
     e["Solver"]["Termination Criteria"]["Max Generations"] = 30;

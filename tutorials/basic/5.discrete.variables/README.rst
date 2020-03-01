@@ -9,14 +9,18 @@ Example Scripts
 
 We want to minimize the following function:
 
-$$ f(x_1, ... x_{10}) = \sum_{i=1}^{10} 10^{6*i/10} * x_i^2 $$ ,
-where $x_1, x_2, x_4, x_7 \in \mathbb{Z}$, $x_3, x_5, x_6, x_9, x_{10} \in \mathbb{R}$.
+.. math:
+
+   f(x_1, ... x_{10}) = \sum_{i=1}^{10} 10^{6*i/10} * x_i^2 $$ ,
+   where $x_1, x_2, x_4, x_7 \in \mathbb{Z}$, $x_3, x_5, x_6, x_9, x_{10} \in \mathbb{R}$.
 
 The Objective Function
 ---------------------------
 We create a folder `model`, and inside a file `model.py`, where we define the
 function that we want to optimize:
-::
+
+.. code-block:: python
+
     def model(d):
       npar = 10
       res = 0.0
@@ -33,7 +37,9 @@ function that we want to optimize:
 Then, in another file, for example `run-cmaes.py`, we start by importing the
 function we just defined (assuming `model.py` is in subfolder `model` relative
 to the current file), and creating an `Experiment` which we will configure,
-::
+
+.. code-block:: python
+
     import sys
     sys.path.append('model')
     from model import *
@@ -45,16 +51,20 @@ The Problem Type
 ---------------------------
 We choose *direct evaluation* as problem type, set the objective function to
 our previously defined `model()`, and choose maximization as objective,
-::
+
+.. code-block:: python
+
     e["Problem"]["Type"] = "Evaluation/Direct/Basic"
     e["Problem"]["Objective"] = "Maximize"
     e["Problem"]["Objective Function"] = model
 
 The Variables
 ---------------------------
-We define 10 variables, of which four ($x_1, x_2, x_4, x_7$) are discrete. Also,
+We define 10 variables, of which four (:math:`x_1, x_2, x_4, x_7`) are discrete. Also,
 we limit their domain to [-19, 21] each.
-::
+
+.. code-block:: python
+
     for i in range(10) :
       e["Variables"][i]["Name"] = "X" + str(i)
       e["Variables"][i]["Initial Mean"] = 1.0
@@ -70,7 +80,9 @@ we limit their domain to [-19, 21] each.
 The Solver
 ---------------------------
 We choose the solver `CMA-ES` and set two termination criteria,
-::
+
+.. code-block:: python
+
     e["Solver"]["Type"] = "CMAES"
     e["Solver"]["Population Size"] = 8
     e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-9
@@ -79,14 +91,18 @@ We choose the solver `CMA-ES` and set two termination criteria,
 Output configuration
 ---------------------------
 To redcue output frequency of result files and on the console we set
-::
+
+.. code-block:: python
+
     e["File Output"]["Frequency"] = 50
     e["Console Output"]["Frequency"] = 50
 
 The Korali Engine Object
 ---------------------------
 We create a Korali engine, and tell it to run the experiment we defined,
-::
+
+.. code-block:: python
+
     k = korali.Engine()
     k.run(e)
 

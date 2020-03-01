@@ -8,18 +8,20 @@ Example Scripts
 ---------------------------
     + *run-mcmc.py*: Runs this tutorial using the MCMC solver.
 
-We are given the function $g(\vartheta)=\exp(-\vartheta^2)$ for $\vartheta\in[-10,10]$.
+We are given the function :math:`g(\vartheta)=\exp(-\vartheta^2)` for :math:`\vartheta\in[-10,10]`.
 
-We assume that $f$ represents the *unnormalized* density of a distribution.
+We assume that :math:`f` represents the *unnormalized* density of a distribution.
 We want to draw samples from this distribution.
 
-For the rest of the tutorial we will work with the function $f(\vartheta)=\log g(\vartheta) = -\vartheta^2$.
+For the rest of the tutorial we will work with the function :math:`f(\vartheta)=\log g(\vartheta) = -\vartheta^2`.
 
 The Objective Function
 ---------------------------
 
 Create a folder named `model`. Inside, create a file with name `directModel.py` and paste the following code,
-::
+
+.. math::
+
     #!/usr/bin/env python
 
     def evaluateModel( x ):
@@ -33,41 +35,53 @@ Sampling with MCMC
 ---------------------------
 
 First, open a file and import the korali module
-::
+
+.. code-block:: python
+
     #!/usr/bin/env python3
     import korali
 
 Import the computational model,
-::
+
+.. code-block:: python
+
     import sys
     sys.path.append('./model')
     from directModel import *
 
 
 The Korali Experiment Object
----------------------------
+----------------------------------
 
 Next we construct a `korali.Experiment` object and set the computational model,
-::
+
+.. code-block:: python
+
     e = korali.Experiment()
     e["Problem"]["Objective Function"] = model
 
 The Problem Type
 ---------------------------
 Then, we set the type of the problem to `Direct Evaluation`
-::
+
+.. code-block:: python
+
     e["Problem"]["Type"] = "Evaluation/Direct/Basic"
 
 The Variables
 ---------------------------
 In this problem there is only one variable,
-::
+
+.. code-block:: python
+
     e["Variables"][0]["Name"] = "X"
 
 The Solver
 ---------------------------
 We choose the solver `MCMC` and set the initial mean and standard deviation of the parameter `X`.
-::
+
+.. code-block:: python
+
     e["Solver"]["Type"]  = "MCMC"
     e["Variables"][0]["Initial Mean"] = 0.0
     e["Variables"][0]["Initial Standard Deviation"] = 1.0
@@ -76,16 +90,15 @@ We choose the solver `MCMC` and set the initial mean and standard deviation of t
     e["Solver"]["Burn In"] = 500
     e["Solver"]["Termination Criteria"]["Max Samples"] = 5000
 
-A list of all implemented solver types, although not optimally
-reader friendly, can be found in :doc:`../../source/module.cpp`. 
-
 We also set some settings for MCMC. For a detailed description of the MCMC settings, see
-:doc:`../../usage/solvers/mcmc.md`.
+:ref:`MCMC <module-solver-mcmc>`
 
 Configuring the output
 ---------------------------
 To reduce the output frequency we write
-::
+
+.. code-block:: python
+
     e["File Output"]["Frequency"]    = 500
     e["Console Output"]["Frequency"] = 500
     e["Console Output"]["Verbosity"] = "Detailed"
@@ -94,7 +107,9 @@ Running
 ---------------------------
 
 Finally, we are ready to run the simulation,
-::
+
+.. code-block:: python
+
     k = korali.Engine()
     k.run(e)
 

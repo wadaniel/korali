@@ -8,7 +8,9 @@ Example Scripts
     + *run-cmaes.py*
 
 Create a series of experiments:
-::
+
+.. code-block:: python
+
     for i in range(8):
       e = korali.Experiment()
       e["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Reference"
@@ -24,7 +26,9 @@ Set Experiment Vector
 ---------------------------
  
 We can store experiments in a list `eList`:
-::
+
+.. code-block:: python
+
     # Adding Experiment to vector
     eList.append(e)
 
@@ -32,7 +36,9 @@ Run Experiment Vector
 ---------------------------
 
 We can runn all experiments in one Korali application
-::
+
+.. code-block:: python
+
     # Running first 100 generations
     k.run(eList)
 

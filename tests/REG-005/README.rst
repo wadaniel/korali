@@ -1,4 +1,4 @@
-Re-run all basic tutorials for a basic sanity check
+Dry-run all real-case examples
 ################################################################ 
 
 ## Description
@@ -7,7 +7,7 @@ Description
 
 ## Source
 
-[https://github.com/cselab/korali/tree/master/tests/REG-001](https://github.com/cselab/korali/tree/master/tests/REG-001)
+[https://github.com/cselab/korali/tree/master/tests/REG-005](https://github.com/cselab/korali/tree/master/tests/REG-005)
 
 ## Steps
 

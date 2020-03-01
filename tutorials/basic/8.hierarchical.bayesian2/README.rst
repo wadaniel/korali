@@ -23,8 +23,9 @@ In phase 0 we generate synthetic data.
 
 All 3 phases can be run with the shell script
 
-```bash
-./run-hierarchical.sh
-```
+
+.. code-block:: bash
+
+    ./run-hierarchical.sh
 
 The results are saved in sub dirs of the folder `/setup`.

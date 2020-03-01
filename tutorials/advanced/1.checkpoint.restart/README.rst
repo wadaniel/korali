@@ -11,7 +11,9 @@ Steps to Restart Execution
 ---------------------------
 
 Assume that we want to resume a previous Korali run, restarting from the one of the last generations. All we need to do is to run the following script:
-::
+
+.. code-block:: python
+
     #!/usr/bin/env python3
     import sys
     sys.path.append('./model')

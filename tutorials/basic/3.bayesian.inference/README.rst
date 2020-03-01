@@ -12,53 +12,56 @@ Example Scripts
 In this example we will solve the inverse problem of estimating the Variables
 of a linear model using noisy data. We consider the computational model,
 
-$$
-f(x;\vartheta) = \vartheta_0 + \vartheta_1 x \,,
-$$
+.. math::
 
-for $x\in\mathbb{R}$. We assume the following error model,
+  f(x;\vartheta) = \vartheta_0 + \vartheta_1 x \,,
 
-$$
-y = f(x;\vartheta) + \varepsilon \,,
-$$
+for :math:`x\in\mathbb{R}`. We assume the following error model,
 
-with $\varepsilon$ a random variable that follows normal distribution with zero
-mean and $\sigma$ standard deviation. This assumption leads to the likelihood
+.. math::
+
+  y = f(x;\vartheta) + \varepsilon \,,
+
+
+with :math:`\varepsilon` a random variable that follows normal distribution with zero
+mean and :math:`\sigma` standard deviation. This assumption leads to the likelihood
 function,
 
-$$
-p(y|\varphi,x) = \mathcal{N} ( \,y \,| \, f(x;\vartheta), \sigma^2 \,) \,.
-$$
+.. math::
 
-where $\varphi=(\vartheta,\sigma)$ is the parameter vector that contains the
+   p(y|\varphi,x) = \mathcal{N} ( \,y \,| \, f(x;\vartheta), \sigma^2 \,) \,.
+
+where :math:`\varphi=(\vartheta,\sigma)` is the parameter vector that contains the
 computational variables and the variables of the statistical model.
 
-The data on which we condition our posterior distribution is hard-coded in :doc:`./model/model.py`
+The data on which we condition our posterior distribution is defined in the model (see source code).
 
-We call this data set $d=\{x_i,y_i\}_{i=1}^5$. Assuming that each datum is
+We call this data set :math:`d=\{x_i,y_i\}_{i=1}^5`. Assuming that each datum is
 independent, the likelihood of $d$ under the linear model is given by
 
-$$
-p(y|\vartheta,x) = \prod_{i=1}^6 \mathcal{N} ( \,y_i \,| \, f(x_i,\vartheta), \sigma^2 \,) \,.
-$$
+.. math::
 
-In order to identify the distribution of $\varphi$ conditioned on the observations $d$
+   p(y|\vartheta,x) = \prod_{i=1}^6 \mathcal{N} ( \,y_i \,| \, f(x_i,\vartheta), \sigma^2 \,) \,.
+
+In order to identify the distribution of :math:`\varphi` conditioned on the observations :math:`d`
 we use Bayes' theorem
 
-$$
-p(\varphi | y,x) = \frac{ p(y|\varphi,x) \, p(\varphi) }{ p(y) } \, .
-$$
+.. math::
+
+   p(\varphi | y,x) = \frac{ p(y|\varphi,x) \, p(\varphi) }{ p(y) } \, .
 
 
-As a prior information we choose the uniform distribution in $[-5,5]$ for $\vartheta$
-and the uniform distribution in $[0,10]$ for $\sigma$.
+As a prior information we choose the uniform distribution in  :math:`[-5,5]` for :math:`\vartheta`
+and the uniform distribution in :math:`[0,10]` for :math:`\sigma`.
 
 
 The Objective Function
 ---------------------------
 
 Create a folder named `model`. Inside, create a file with name `posteriorModel.py` and paste the following code,
-::
+
+.. code-block:: python
+
     #!/usr/bin/env python
 
     def model( s, x ):
@@ -72,10 +75,12 @@ Create a folder named `model`. Inside, create a file with name `posteriorModel.p
 
         s["Reference Evaluations"] = result
 
-This function corresponds implements the computational model that corresponds to $f(x\vartheta) = \vartheta_0 + \vartheta_1 x$. Note: The following might be outdated: The object `s` must be of type `Korali::modelData` This class provides the methods `getParameter` and `addResult`. For a detailed presentation see [here]
+This function corresponds implements the computational model that corresponds to :math:`f(x\vartheta) = \vartheta_0 + \vartheta_1 x`. Note: The following might be outdated: The object `s` must be of type `Korali::modelData` This class provides the methods `getParameter` and `addResult`. For a detailed presentation see [here]
 
 In the same file add the following functions that return the data presented in the table above,
-::
+
+.. code-block:: python
+
     def getReferenceData():
       y=[]
       y.append(3.2069);
@@ -99,50 +104,61 @@ Optimization with CMA-ES
 
 
 First, open a file and import the korali module
-::
+
+.. code-block:: python
+
     #!/usr/bin/env python3
     import korali
 
 Import the computational model,
-::
+
+.. code-block:: python
+
     import sys
     sys.path.append('./model')
     from posteriorModel import *
 
 The Korali Experiment Object
----------------------------
+-----------------------------------
 
 Next we construct a `Korali.Experiment` object and set the computational model, where we already pass the data,
-::
+
+.. code-block:: python
+
     e = korali.Experiment()
     e["Problem"]["Computational Model"] = lambda sampleData: model(sampleData, getReferencePoints())
 
 The reference points `x` returned by `getReferencePoints()` correspond to the *input* variables of the model. The function that
 is passed to Korali should not have an argument for `x`. We have to create an intermediate
 lambda function that will hide `x` from korali.
-::
+
+.. code-block:: python
+
     lambda sampleData: model(sampleData, getReferencePoints())
 
 The Problem Type
 ---------------------------
 
 The `Type` of the `Problem` is characterized as `Bayesian`
-::
+
+.. code-block:: python
+
     e["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Reference"
 
 When the Type is `Bayesian` we must set the type of likelihood and provide a vector with the `Reference Data` to Korali,
-::
+
+.. code-block:: python
+
     e["Problem"]["Likelihood Model"] = "Additive Normal"
     e["Problem"]["Reference Data"] = getReferenceData()
-
-A list of implemented solvers and problem types, although not optimally
-reader friendly, can be found in :doc:`../../source/module.cpp`
 
 The Variables
 ---------------------------
 
-We define two `Variables` of type `Computational` that correspond to $\vartheta_0$ and $\vartheta_1$. The prior distribution of both is set to `Uniform`.
-::
+We define two `Variables` of type `Computational` that correspond to :math:`\vartheta_0` and :math:`\vartheta_1`. The prior distribution of both is set to `Uniform`.
+
+.. code-block:: python
+
     e["Variables"][0]["Name"] = "a"
     e["Variables"][0]["Bayesian Type"] = "Computational"
     e["Variables"][0]["Prior Distribution"] = "Uniform 0"
@@ -157,8 +173,10 @@ We define two `Variables` of type `Computational` that correspond to $\vartheta_
 
 
 The last parameter we add is of `Type` `Statistical` and corresponds to the variable
-$\sigma$ in the likelihood function,
-::
+:math:`\sigma` in the likelihood function,
+
+.. code-block:: python
+
     e["Variables"][2]["Name"] = "Sigma"
     e["Variables"][2]["Bayesian Type"] = "Statistical"
     e["Variables"][2]["Prior Distribution"] = "Uniform 2"
@@ -169,16 +187,22 @@ $\sigma$ in the likelihood function,
 The Solver
 ---------------------------
 Next, we choose the solver `CMA-ES`, the population size to be `24`.
-::
+
+.. code-block:: python
+
     e["Solver"]["Type"] = "CMAES"
     e["Solver"]["Population Size"] = 24
 
 And activating one of its available termination criteria.
-::
+
+.. code-block:: python
+
     e["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
 We also need to configure the problem's random distributions, which we referred to when defining our variables,
-::
+
+.. code-block:: python
+
     e["Distributions"][0]["Name"] = "Uniform 0"
     e["Distributions"][0]["Type"] = "Univariate/Uniform"
     e["Distributions"][0]["Minimum"] = -5.0
@@ -194,10 +218,12 @@ We also need to configure the problem's random distributions, which we referred 
     e["Distributions"][2]["Minimum"] = 0.0
     e["Distributions"][2]["Maximum"] = +5.0
 
-For a detailed description of CMA-ES settings see :doc:`../../usage/solvers/cmaes.md`
+For a detailed description of CMA-ES settings see :ref:`CMAES <module-solver-cmaes>`
 
 Finally, we configure the output, and then need to add a call to the run() routine to start the Korali engine.
-::
+
+.. code-block:: python
+
     e["File Output"]["Frequency"] = 5
     e["Console Output"]["Frequency"] = 5
 
@@ -220,14 +246,18 @@ Sampling with TMCMC
 ---------------------------
 
 To sample the posterior distribution, we set the solver to `TMCMC` sampler and set a few settings,
-::
+
+.. code-block:: python
+
     e["Solver"]["Type"] = "TMCMC"
     e["Solver"]["Population Size"] = 5000
 
-For a detailed description of the TMCMC settings see :doc:`../../usage/solvers/tmcmc.md`
+For a detailed description of the TMCMC settings see :ref:`TMCMC <module-solver-tmcmc>`
 
 Finally, we need to add a call to the run() routine to start the Korali engine.
-::
+
+.. code-block:: python
+
     k.run(e)
 
 Running

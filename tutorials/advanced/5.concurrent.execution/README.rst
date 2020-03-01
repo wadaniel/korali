@@ -10,14 +10,18 @@ Example Scripts
 MPI Init
 ---------------------------
 Do not forget to init MPI inside the Korali application:
-:: 
+
+.. code-block:: python
+
     MPI_Init(&argc, &argv);
 
 Distributed Conduit
 ---------------------------
 Run with the `Distributed` conduit to benefit from parallelized model evaluations.
 Note that we set `Workers Per Team` to assign a team of MPI processes to the model.
-:: 
+
+.. code-block:: python
+
     k["Conduit"]["Type"] = "Distributed";
     k["Conduit"]["Workers Per Team"] = workersPerTeam;
     k["Profiling"]["Detail"] = "Full";

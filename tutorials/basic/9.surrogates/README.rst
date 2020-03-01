@@ -18,7 +18,9 @@ Train
 
 Data is read from a file `data/sincos1d_train.dat` and we fit a GP with 
 isotropic Gaussian kernel with a constant additive noise term.
-::
+
+.. code-block:: python
+
     x, y = read_matrix_for_gp('data/sincos1d_train.dat')
     e0 = korali.Experiment()
     e0["Problem"]["Type"] = "Evaluation/GaussianProcess"
@@ -38,7 +40,9 @@ Test
 
 We evaluate the fitted GP on the data set `data/sincos1d_test.dat`. For this
 we use the Korali `Executor` solver.
-::
+
+.. code-block:: python
+
     x, y = read_matrix_for_gp('data/sincos1d_test.dat')
     e1 = korali.Experiment()
     e1["Problem"]["Type"] = "Execution/GaussianProcess"
@@ -56,7 +60,9 @@ Predict
 ---------------------------
 
 And finally we predict values for data  `data/sincos1d_new.dat`.
-::
+
+.. code-block:: python
+
     x, y = read_matrix_for_gp('data/sincos1d_new.dat',lastColumnIsData=True)
     e2 = korali.Experiment()
     e2["Problem"]["Type"] = "Execution/GaussianProcess"

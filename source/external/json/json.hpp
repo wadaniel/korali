@@ -821,6 +821,10 @@ using is_detected_convertible =
 #include <memory> // allocator
 #include <string> // string
 #include <vector> // vector
+#include <functional>
+
+namespace korali { class Sample; }
+typedef std::function<void(korali::Sample&)> __kfc;
 
 /*!
 @brief namespace for Niels Lohmann
@@ -874,6 +878,19 @@ uses the standard template types.
 @since version 1.0.0
 */
 using json = basic_json<>;
+
+
+template <>
+struct adl_serializer<__kfc>
+{
+    static void to_json(json& j, const __kfc& obj);
+};
+
+template <typename T>
+struct adl_serializer<T, std::enable_if_t<std::is_convertible<T, __kfc>::value>> : adl_serializer<__kfc>
+{
+};
+
 }  // namespace knlohmann
 
 #endif  // INCLUDE_KNLOHMANN_JSON_FWD_HPP_

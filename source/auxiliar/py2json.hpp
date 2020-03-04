@@ -29,12 +29,6 @@ namespace knlohmann
         static void to_json(json& j, const pybind11::object& obj);
     };
 
-    template <>
-    struct adl_serializer<__kfc>
-    {
-        static void to_json(json& j, const __kfc& obj);
-    };
-
     inline void adl_serializer<__kfc>::to_json(json& j, const __kfc& obj)
     {
         j = (std::uint64_t) &obj;

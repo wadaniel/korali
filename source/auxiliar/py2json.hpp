@@ -31,7 +31,8 @@ namespace knlohmann
 
     inline void adl_serializer<__kfc>::to_json(json& j, const __kfc& obj)
     {
-        j = (std::uint64_t) &obj;
+       auto x = new __kfc(obj);
+       j = (std::uint64_t) x;
     }
 
     template <>
@@ -42,7 +43,6 @@ namespace knlohmann
 
     inline void adl_serializer<__fkfc>::to_json(json& j, const __fkfc& obj)
     {
-        korali::Sample kk;
         auto x = new __kfc(*obj);
         j = (std::uint64_t) x;
     }

@@ -1,0 +1,142 @@
+{
+ "Configuration Settings":
+ [
+   {
+    "Name": [ "Number Markov Chain Samples" ],
+    "Default": "10",
+    "Type": "int",
+    "Description": "The number of latent-variable samples to generate in each E-M iteration. More result in a more precise estimate of Q in each iteration - although Q is a Robbins–Monro 'running average', so there should not be a need for a very large number of samples."
+   },
+   {
+    "Name": [ "Latent Variable Sampler" ],
+     "Default": 0,
+    "Type": "std::function<void(korali::Sample&)>",
+    "Description": "Stores a user-defined sampler. It should store samples of the latent variables in the 'sample' object, as sample['Samples'] = ..., given a value for the parameters of the distribution (any datapoints need to be stored/processed internally). (Input: a korali::Sample object, with a list of hyperparameters that can be accessed as sample['Hyperparameters'][0], etc. and number of samples sample['Number Samples']; can also access sample['Number Of Latent Variables']. Sets: vector<vector<double>> (one vector per sample). )"
+   },
+
+
+   {
+    "Name": [ "Eta Minus" ],
+    "Default": "0.5",
+    "Type": "double",
+    "Description": "Eta Minus"
+   },
+   {
+    "Name": [ "Eta Plus" ],
+    "Default": "1.2",
+    "Type": "double",
+    "Description": "Eta Plus"
+   }
+ ],
+
+ "Termination Criteria":
+ [
+   {
+    "Name": [ "Max Gradient Norm" ],
+    "Type": "double",
+    "Default": "0.0",
+    "Criteria": "_normPreviousGradient < _maxGradientNorm",
+    "Description": "Maximum value of the norm of the gradient."
+   },
+   {
+    "Name": [ "Max Stall Generations" ],
+    "Type": "size_t",
+    "Default": "20",
+    "Criteria": " _maxStallCounter >= _maxStallGenerations",
+    "Description": "Maximum times stalled with function evaluation bigger than the best one."
+  },
+   {
+    "Name": [ "Parameter Relative Tolerance" ],
+    "Type": "double",
+    "Default": "1e-4",
+    "Criteria": "_xDiff<_parameterRelativeTolerance && _xDiff>0",
+    "Description": "Relative tolerance in parameter difference between generations."
+   }
+ ],
+
+ "Variables Configuration":
+ [
+   {
+    "Name": [ "Initial Value" ],
+    "Type": "double",
+    "Description": "Defines the initial value at which the algorithm will start looking for an optimum."
+   }
+ ],
+
+ "Internal Settings":
+ [
+   {
+    "Name": [ "Current Hyperparameters" ],
+    "Type": "std::vector<double>",
+    "Default": "std::vector<double>(0)",
+    "Description": "Current values of the hyperparameters"
+   },
+   {
+    "Name": [ "Previous Latent Sample Means" ],
+    "Type": "std::vector<double>",
+    "Default": "std::vector<double>(0)",
+    "Description": "For each latent variable, contains the mean of all sampled values from the previous generation / E-M step. Used to initialize sampling in the next iteration."
+   },
+
+   {
+     "Name": [ "Has User Defined Sampler" ],
+     "Type": "std::vector<double>",
+     "Description": "Current value of parameters."
+   },
+   {
+     "Name": [ "Current Samples" ],
+     "Type": "std::vector<std::vector<double>>",
+     "Description": "Sampled values of the latent variables in the current iteration."
+   },
+   {
+     "Name": [ "Previous Samples" ],
+     "Type": "std::vector<std::vector<double>>",
+     "Description": "Sampled values of the latent variables from the last iteration"
+   },
+   {
+     "Name": [ "Delta" ],
+     "Type": "std::vector<double>",
+     "Description": "Delta..."
+   },
+   {
+     "Name": [ "Current Evaluation" ],
+     "Type": "double",
+     "Description": "Function evaluation in the current step."
+   },
+   {
+     "Name": [ "Previous Evaluation" ],
+     "Type": "double",
+     "Description": "Function evaluation in the previous step."
+   },
+   {
+     "Name": [ "Best Evaluation" ],
+     "Type": "double",
+     "Description": "Smaller function evaluation"
+   },
+   {
+     "Name": [ "Current Gradient" ],
+     "Type": "std::vector<double>",
+     "Description": "Gradient of parameters."
+   },
+   {
+     "Name": [ "Previous Gradient" ],
+     "Type": "std::vector<double>",
+     "Description": "Old gradient of parameters."
+   },
+   {
+     "Name": [ "Norm Previous Gradient" ],
+     "Type": "double",
+     "Description": "Norm of old gradient."
+   },
+   {
+     "Name": [ "Max Stall Counter" ],
+     "Type": "double",
+     "Description": "Counts the number the algorithm has been stalled in function evaluation bigger than the best one."
+   },
+   {
+     "Name": [ "X Diff" ],
+     "Type": "double",
+     "Description": "Difference in parameters..."
+   }
+ ]
+}

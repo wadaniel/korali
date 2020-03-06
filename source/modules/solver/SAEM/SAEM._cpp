@@ -1,0 +1,239 @@
+#include "solver/optimizer/SAEM/SAEM.hpp"
+#include "problem/problem.hpp"
+#include "experiment/experiment.hpp"
+#include "conduit/conduit.hpp"
+
+#include <string>
+#include <stdio.h>
+#include <vector>
+
+void korali::solver::optimizer::SAEM::initialize()
+{
+
+  if( _k->_problem->getType() != "Evaluation/Bayesian/Inference/Latent")
+    korali::logError("SAEM can only optimize problems of type 'Evaluation/Bayesian/Inference/Latent' .\n");
+
+  N = _k->_variables.size();
+  NLatent = _k->_latentVariableIndices.size();
+
+  if (_k->_currentGeneration > 0) return;
+
+  for (size_t i = 0; i < N; i++)
+    if( std::isfinite(_k->_variables[i]->_initialValue) == false )
+      korali::logError("Initial Value of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
+
+
+  _hasUserDefinedSampler = (_latentVariableSampler != 0); // Todo: not sure if this is the right way to check for not-passed sampler
+
+
+
+  /* */
+
+
+  _currentX.resize( N, 0.0 );
+  for (size_t i = 0; i < N; i++)
+    _currentX[i] = _k->_variables[i]->_initialValue;
+
+  _bestX = _currentX;
+  //_delta.resize( N, _delta0 );
+  //_currentGradient.resize( N, 0);
+  //_previousGradient.resize( N, 0.0 );
+
+  _bestEvaluation = korali::Inf;
+  //_xDiff = korali::Inf;
+  //_maxStallCounter = 0;
+  //_normPreviousGradient = korali::Inf;
+  //_previousEvaluation   = korali::Inf;
+}
+
+
+void korali::solver::optimizer::SAEM::sampleLatent(void){
+    // If no sampling function is given, create a sampling experiment, run it and get the results.
+
+    if (_hasUserDefinedSampler) {
+      //for(size_t i=0; i< _numberMarkovChainSamples; i++){
+          korali::Sample sample;
+          sample["Hyperparameters"] = _currentHyperparameters;
+          sample["Number Samples"] = _numberMarkovChainSamples;
+          _sampler(sample);
+          vector<vector<double>> v =  sample["Samples"];
+          if (v.lenght() != _numberMarkovChainSamples) korali::logError("User defined sampler did not return the correct number of samples ('Number Samples').");
+          _currentSamples = v; //.push_back(v);
+          //}
+    }
+    else {
+      runBuiltinSampler();
+    }
+
+
+}
+
+
+
+void korali::solver::optimizer::SAEM::runBuiltinSampler( void)
+{
+
+    /*
+     * probability to sample from:
+     * p(d, z | theta) * p(theta) -- that's the (log-)posterior
+     * - use a "Custom" bayesian problem, with our log-posterior as "Likelihood Model" , but with the current values for theta inserted.
+    */
+
+    /* Create one sampling experiment to sample all latent variables. After all the latent vars are correlated / have a joint distrib.
+        Todo: does it make sense to re-create these experiments at every E-M step? Otherwise, how
+            to automatically update the initial mean and the distribution function of the sampling experiments?*/
+
+         auto k = korali::Engine();
+         auto e = korali::Experiment();
+         //auto p = heat2DInit(&argc, &argv);
+
+         // Based on tutorial a2-sampling
+         e["Problem"]["Type"] = "Evaluation/Direct/Basic"
+         e["Problem"]["Objective Function"] = [_currentHyperparameters](korali::sample s) -> void {
+                        if (! sample.contains("Latent Variables")){
+                            korali::logError("You try to evaluate the likelihood without passing values for the latent variables to the sample.\n");
+                        }
+                        s["Hyperparameters"] = _currentHyperparameters;
+                        // Ugly? & Probably doesnt work
+                        s->_problem->_evaluateLogLikelihood();
+                    }
+
+        for (size_t i=0; i <NLatent; i++){
+
+             size_t idx = _latentVariableIndices[i];
+             std::string varName = _k->_variables[idx]->_name;
+
+             if (_k->_currentGeneration == 0){
+                std::double previousSampleMean =  _previousLatentSampleMeans[i]; // TODO: Check, do I need a vector of vectors instead?
+             } else {
+                std::double previousSampleMean = _k->variables[idx]->_initialValue;
+             }
+            // Defining problem's variables
+            e["Variables"][i]["Name"] = varName;
+            e["Variables"][i]["Initial Mean"] = previousSampleMean;
+            e["Variables"][i]["Initial Standard Deviation"] = 1.0;
+        }
+
+        // Configuring the MCMC sampler parameters
+        e["Solver"]["Type"]  = "Sampler/MCMC";
+        e["Solver"]["Burn In"] = 500;
+        e["Solver"]["Termination Criteria"]["Max Samples"] = 5000;
+
+        // Configuring output settings
+        e["Results"]["Frequency"] = 500;
+        e["Console"]["Frequency"] = 500;
+        e["Console"]["Verbosity"] = "Detailed";
+
+        // Todo: I don't think a result path is needed (and it'd need a step id in the pathname as well)
+        //e["Results"]["Path"] = "setup/results_phase_1/" + "0"*(3 - str(i).length()) +  std:to_string(i);
+        k.run(e);
+
+        std::vector<std::vector<double>> db = e["Solver"]["Sample Database"].get<std::vector<std::vector<double>>>();
+        printf("Database size: %lu\n", db.size());
+        /*for (size_t i = 0; i < db.size(); i++)
+        {
+        printf("[ ");
+        for (size_t j = 0; j < db[i].size(); j++)
+        printf("%f, ", db[i][j]);
+        printf("]\n");
+        }*/
+        // TODO: modify this
+        vector<vector<double>>::const_iterator first = db.end() - _numberMarkovChainSamples;
+        vector<vector<double>>::const_iterator last = db.end();
+        vector<vector<double>> samples(first, last);
+
+        _currentSamples = samples;
+}
+
+/*void korali::solver::optimizer::Rprop::evaluateFunctionAndGradient( void )
+{
+  int Ns = 1;
+  // Initializing Sample Evaluation
+  std::vector<korali::Sample> samples(Ns);
+  for (size_t i = 0; i < Ns; i++){
+    samples[i]["Operation"]  = "Basic Evaluation";
+    samples[i]["Parameters"] = _currentX;
+    samples[i]["Sample Id"]  = i;
+    _modelEvaluationCount++;
+    korali::_conduit->start(samples[i]);
+  }
+
+  // Waiting for samples to finish
+  korali::_conduit->waitAll(samples);
+
+  // Processing results
+  // The 'minus' is there because we want Rprop to do Maximization be default.
+  for (size_t i = 0; i < Ns; i++){
+    _currentEvaluation = samples[i]["Evaluation"];
+    _currentEvaluation = -_currentEvaluation;
+    for( size_t j=0; j<N; j++){
+      _currentGradient[j] = samples[i]["Gradient"][j];
+      _currentGradient[j] = -_currentGradient[j];
+    }
+  }
+}*/
+
+void korali::solver::optimizer::SAEM::runGeneration( void )
+{
+
+  if (_k->_currentGeneration > 0) initialize();
+
+  /* E1: Sample latent variable values */
+  sampleLatent(); 
+  std::cout << "Sampled; generation: " << std::str(_k->_currentGeneration) << std::endl;
+  /* E2: Update posterior probability function Q */
+
+
+  /* M:  Find argmax Q(theta) */
+
+
+
+  /* * * * * * */
+
+
+
+/*   evaluateFunctionAndGradient( );
+
+  korali::logInfo("Normal","X = [ ");
+  for(size_t k=0; k<N; k++) korali::logData("Normal"," %.5le  ",_currentX[k]);
+  korali::logData("Normal"," ]\n");
+
+  korali::logInfo("Normal","F(X) = %le \n", _currentEvaluation );
+
+  korali::logInfo("Normal","DF(X) = [ ");
+  for(size_t k=0; k<N; k++) korali::logData("Normal"," %.5le  ",_currentGradient[k]);
+  korali::logData("Normal"," ]\n");
+
+  korali::logInfo("Normal","X_best = [ ");
+  for(size_t k=0; k<N; k++) korali::logData("Normal"," %.5le  ",_bestX[k]);
+  korali::logData("Normal"," ]\n");
+
+  Update_iminus();
+
+  _previousEvaluation   = _currentEvaluation;
+  _previousGradient     = _currentGradient;
+  _normPreviousGradient = vectorNorm(_previousGradient);
+
+  if( _currentEvaluation < _bestEvaluation ){
+    _bestEvaluation = _currentEvaluation;
+    std::vector<double> tmp(N);
+    for(size_t j=0; j<N; j++) tmp[j] = _bestX[j]-_currentX[j];
+    _xDiff = vectorNorm( tmp );
+    _bestX = _currentX;
+    _maxStallCounter = 0;
+  }
+  else{
+    _maxStallCounter++;
+  } */
+
+}
+
+
+
+
+void korali::solver::optimizer::SAEM::printGenerationBefore(){ return; }
+
+void korali::solver::optimizer::SAEM::printGenerationAfter() { return; }
+
+void korali::solver::optimizer::SAEM::finalize()  { return; }
+

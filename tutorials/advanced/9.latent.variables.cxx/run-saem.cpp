@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
 
  //auto p = heat2DInit(&argc, &argv);
 
- e["Problem"]["Type"] = "Evaluation/Bayesian/Latent";
+ e["Problem"]["Type"] = "Bayesian/Latent";
  e["Problem"]["Latent Variable Sampler"] = &dummySampler;
  e["Problem"]["S Of Likelihood Model"] = &distrib1_S;
  e["Problem"]["Zeta Of Likelihood Model"] = &distrib1_zeta;

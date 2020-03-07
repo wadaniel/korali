@@ -1,40 +1,49 @@
-#include "solver/optimizer/SAEM/SAEM.hpp"
-#include "problem/problem.hpp"
-#include "experiment/experiment.hpp"
-#include "conduit/conduit.hpp"
+#include "modules/solver/SAEM/SAEM.hpp"
+#include "modules/problem/problem.hpp"
+#include "modules/engine/engine.hpp"
+#include "sample/sample.hpp"
+#include "modules/experiment/experiment.hpp"
+#include "modules/conduit/conduit.hpp"
 
 #include <string>
 #include <stdio.h>
 #include <vector>
 
-void korali::solver::optimizer::SAEM::initialize()
+void korali::solver::SAEM::initialize()
 {
 
-  if( _k->_problem->getType() != "Evaluation/Bayesian/Inference/Latent")
-    korali::logError("SAEM can only optimize problems of type 'Evaluation/Bayesian/Inference/Latent' .\n");
+  if( _k->_problem->getType() != "Bayesian/Latent")
+    korali::logError("SAEM can only optimize problems of type 'Bayesian/Latent' .\n");
 
-  N = _k->_variables.size();
-  NLatent = _k->_latentVariableIndices.size();
+   _latentProblem = dynamic_cast<korali::problem::bayesian::Latent*>(_k->_problem); // .get<korali::problem::bayesian::Latent>()
+
+  _numberVariables = _k->_variables.size();
+  _numberLatent = _latentProblem->_latentVariableIndices.size();
 
   if (_k->_currentGeneration > 0) return;
 
-  for (size_t i = 0; i < N; i++)
+  for (size_t i = 0; i < _numberVariables; i++)
     if( std::isfinite(_k->_variables[i]->_initialValue) == false )
       korali::logError("Initial Value of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
 
-
-  _hasUserDefinedSampler = (_latentVariableSampler != 0); // Todo: not sure if this is the right way to check for not-passed sampler
+  if (_latentVariableSampler){
+    _hasUserDefinedSampler = true;}
+  else _hasUserDefinedSampler = false;
+    //  _hasUserDefinedSampler = (_latentVariableSampler != 0); // Todo: not sure if this is the right way to check for not-passed sampler
 
 
 
   /* */
 
 
-  _currentX.resize( N, 0.0 );
-  for (size_t i = 0; i < N; i++)
-    _currentX[i] = _k->_variables[i]->_initialValue;
-
-  _bestX = _currentX;
+  _currentSamples.resize( _numberLatent);
+  for (size_t j = 0; j < _numberMarkovChainSamples; j++){
+      for (size_t i = 0; i < _numberLatent; i++){
+          size_t idx = _latentProblem->_latentVariableIndices[i];
+          _currentSamples[j][i] = _k->_variables[idx]->_initialValue;    // _k->_variables: vector of korali-variables* (std::vector<korali::Variable*>).
+      }
+  }
+  // _bestSamples = _currentSamples;
   //_delta.resize( N, _delta0 );
   //_currentGradient.resize( N, 0);
   //_previousGradient.resize( N, 0.0 );
@@ -47,7 +56,7 @@ void korali::solver::optimizer::SAEM::initialize()
 }
 
 
-void korali::solver::optimizer::SAEM::sampleLatent(void){
+void korali::solver::SAEM::sampleLatent(){
     // If no sampling function is given, create a sampling experiment, run it and get the results.
 
     if (_hasUserDefinedSampler) {
@@ -55,9 +64,9 @@ void korali::solver::optimizer::SAEM::sampleLatent(void){
           korali::Sample sample;
           sample["Hyperparameters"] = _currentHyperparameters;
           sample["Number Samples"] = _numberMarkovChainSamples;
-          _sampler(sample);
-          vector<vector<double>> v =  sample["Samples"];
-          if (v.lenght() != _numberMarkovChainSamples) korali::logError("User defined sampler did not return the correct number of samples ('Number Samples').");
+          sample.run(_latentVariableSampler); // Like in: problem/reference.cpp, def of evaluateLogLikelihood()
+          std::vector<std::vector<double>> v =  sample["Samples"].get<std::vector<std::vector<double>>>();
+          if (v.size() != _numberMarkovChainSamples) korali::logError("User defined sampler did not return the correct number of samples ('Number Samples').");
           _currentSamples = v; //.push_back(v);
           //}
     }
@@ -70,7 +79,7 @@ void korali::solver::optimizer::SAEM::sampleLatent(void){
 
 
 
-void korali::solver::optimizer::SAEM::runBuiltinSampler( void)
+void korali::solver::SAEM::runBuiltinSampler()
 {
 
     /*
@@ -88,25 +97,26 @@ void korali::solver::optimizer::SAEM::runBuiltinSampler( void)
          //auto p = heat2DInit(&argc, &argv);
 
          // Based on tutorial a2-sampling
-         e["Problem"]["Type"] = "Evaluation/Direct/Basic"
-         e["Problem"]["Objective Function"] = [_currentHyperparameters](korali::sample s) -> void {
-                        if (! sample.contains("Latent Variables")){
+         e["Problem"]["Type"] = "Direct/Basic";
+         e["Problem"]["Objective Function"] = [params=_currentHyperparameters, this](korali::Sample& s) -> void {
+                        if (! s.contains("Latent Variables")){
                             korali::logError("You try to evaluate the likelihood without passing values for the latent variables to the sample.\n");
                         }
-                        s["Hyperparameters"] = _currentHyperparameters;
+                        s["Hyperparameters"] = params; // _currentHyperparameters;
                         // Ugly? & Probably doesnt work
-                        s->_problem->_evaluateLogLikelihood();
-                    }
+                        _latentProblem->evaluateLogLikelihood(s);
+                        
+                    };
 
-        for (size_t i=0; i <NLatent; i++){
+        for (size_t i=0; i < _numberLatent; i++){
 
-             size_t idx = _latentVariableIndices[i];
+             size_t idx = _latentProblem->_latentVariableIndices[i];
              std::string varName = _k->_variables[idx]->_name;
 
              if (_k->_currentGeneration == 0){
-                std::double previousSampleMean =  _previousLatentSampleMeans[i]; // TODO: Check, do I need a vector of vectors instead?
+                previousSampleMean =  _previousLatentSampleMeans[i]; // TODO: Check, do I need a vector of vectors instead? Edit: No.
              } else {
-                std::double previousSampleMean = _k->variables[idx]->_initialValue;
+                previousSampleMean = _k->_variables[idx]->_initialValue;
              }
             // Defining problem's variables
             e["Variables"][i]["Name"] = varName;
@@ -138,9 +148,9 @@ void korali::solver::optimizer::SAEM::runBuiltinSampler( void)
         printf("]\n");
         }*/
         // TODO: modify this
-        vector<vector<double>>::const_iterator first = db.end() - _numberMarkovChainSamples;
-        vector<vector<double>>::const_iterator last = db.end();
-        vector<vector<double>> samples(first, last);
+        std::vector<std::vector<double>>::const_iterator first = db.end() - _numberMarkovChainSamples;
+        std::vector<std::vector<double>>::const_iterator last = db.end();
+        std::vector<std::vector<double>> samples(first, last);
 
         _currentSamples = samples;
 }
@@ -173,14 +183,14 @@ void korali::solver::optimizer::SAEM::runBuiltinSampler( void)
   }
 }*/
 
-void korali::solver::optimizer::SAEM::runGeneration( void )
+void korali::solver::SAEM::runGeneration( void )
 {
 
   if (_k->_currentGeneration > 0) initialize();
 
   /* E1: Sample latent variable values */
   sampleLatent(); 
-  std::cout << "Sampled; generation: " << std::str(_k->_currentGeneration) << std::endl;
+  std::cout << "Sampled; generation: " << _k->_currentGeneration << std::endl;
   /* E2: Update posterior probability function Q */
 
 
@@ -231,9 +241,9 @@ void korali::solver::optimizer::SAEM::runGeneration( void )
 
 
 
-void korali::solver::optimizer::SAEM::printGenerationBefore(){ return; }
+void korali::solver::SAEM::printGenerationBefore(){ return; }
 
-void korali::solver::optimizer::SAEM::printGenerationAfter() { return; }
+void korali::solver::SAEM::printGenerationAfter() { return; }
 
-void korali::solver::optimizer::SAEM::finalize()  { return; }
+void korali::solver::SAEM::finalize()  { return; }
 

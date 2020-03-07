@@ -1,7 +1,7 @@
 model.o: model.cpp \
  /home/noobuntu/.local/lib/python3.6/site-packages/korali/korali.hpp \
- /home/noobuntu/.local/lib/python3.6/site-packages/korali/experiment/experiment.hpp \
- /home/noobuntu/.local/lib/python3.6/site-packages/korali/experiment/sample/sample.hpp \
+ /home/noobuntu/.local/lib/python3.6/site-packages/korali/modules/experiment/experiment.hpp \
+ /home/noobuntu/.local/lib/python3.6/site-packages/korali/sample/sample.hpp \
  /home/noobuntu/.local/lib/python3.6/site-packages/korali/auxiliar/koraliJson.hpp \
  /home/noobuntu/.local/lib/python3.6/site-packages/korali/external/json/json.hpp \
  /home/noobuntu/.local/lib/python3.6/site-packages/korali/auxiliar/logger.hpp \
@@ -69,120 +69,118 @@ model.o: model.cpp \
  /home/noobuntu/.local/include/python3.6m/pybind11/functional.h \
  /home/noobuntu/.local/include/python3.6m/pybind11/stl.h \
  /home/noobuntu/.local/lib/python3.6/site-packages/korali/external/libco/libco.h \
- /home/noobuntu/.local/lib/python3.6/site-packages/korali/experiment/variable/variable.hpp \
- /home/noobuntu/.local/lib/python3.6/site-packages/korali/distribution/univariate/univariate.hpp \
- /home/noobuntu/.local/lib/python3.6/site-packages/korali/distribution/distribution.hpp \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_rng.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_types.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_errno.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_inline.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_randist.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_vector.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_vector_complex_long_double.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_complex.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_check_range.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_vector_long_double.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_block_long_double.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_vector_complex.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_block_complex_long_double.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_vector_complex_double.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_vector_double.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_block_double.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_block_complex_double.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_vector_complex_float.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_vector_float.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_block_float.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_block_complex_float.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_vector_ulong.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_block_ulong.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_vector_long.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_block_long.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_vector_uint.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_block_uint.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_vector_int.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_block_int.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_vector_ushort.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_block_ushort.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_vector_short.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_block_short.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_vector_uchar.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_block_uchar.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_vector_char.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_block_char.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_matrix.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_matrix_complex_long_double.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_matrix_complex_double.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_matrix_complex_float.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_matrix_long_double.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_matrix_double.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_matrix_float.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_matrix_ulong.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_matrix_long.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_matrix_uint.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_matrix_int.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_matrix_ushort.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_matrix_short.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_matrix_uchar.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_matrix_char.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_math.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sys.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_machine.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_precision.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_nan.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_pow_int.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_minmax.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_result.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_airy.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_mode.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_bessel.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_clausen.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_coupling.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_coulomb.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_dawson.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_debye.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_dilog.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_elementary.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_ellint.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_elljac.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_erf.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_exp.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_expint.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_fermi_dirac.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_gamma.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_gegenbauer.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_hermite.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_hyperg.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_laguerre.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_lambert.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_legendre.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_log.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_mathieu.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_eigen.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_pow_int.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_psi.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_sincos_pi.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_synchrotron.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_transport.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_trig.h \
- /mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_zeta.h \
- /home/noobuntu/.local/lib/python3.6/site-packages/korali/module.hpp \
- /home/noobuntu/.local/lib/python3.6/site-packages/korali/auxiliar/koraliJson.hpp \
- /home/noobuntu/.local/lib/python3.6/site-packages/korali/auxiliar/logger.hpp \
+ /home/noobuntu/.local/lib/python3.6/site-packages/korali/variable/variable.hpp \
+ /home/noobuntu/.local/lib/python3.6/site-packages/korali/modules/distribution/univariate/univariate.hpp \
+ /home/noobuntu/.local/lib/python3.6/site-packages/korali/modules/distribution/distribution.hpp \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_rng.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_types.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_errno.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_inline.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_randist.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_vector.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_vector_complex_long_double.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_complex.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_check_range.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_vector_long_double.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_block_long_double.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_vector_complex.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_block_complex_long_double.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_vector_complex_double.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_vector_double.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_block_double.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_block_complex_double.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_vector_complex_float.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_vector_float.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_block_float.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_block_complex_float.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_vector_ulong.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_block_ulong.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_vector_long.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_block_long.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_vector_uint.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_block_uint.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_vector_int.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_block_int.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_vector_ushort.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_block_ushort.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_vector_short.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_block_short.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_vector_uchar.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_block_uchar.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_vector_char.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_block_char.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_matrix.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_matrix_complex_long_double.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_matrix_complex_double.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_matrix_complex_float.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_matrix_long_double.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_matrix_double.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_matrix_float.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_matrix_ulong.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_matrix_long.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_matrix_uint.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_matrix_int.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_matrix_ushort.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_matrix_short.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_matrix_uchar.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_matrix_char.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_math.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_sys.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_machine.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_precision.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_nan.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_pow_int.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_minmax.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_sf.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_result.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_airy.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_mode.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_bessel.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_clausen.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_coupling.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_coulomb.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_dawson.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_debye.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_dilog.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_elementary.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_ellint.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_elljac.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_erf.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_exp.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_expint.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_fermi_dirac.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_gamma.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_gegenbauer.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_hermite.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_hyperg.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_laguerre.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_lambert.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_legendre.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_log.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_mathieu.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_eigen.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_pow_int.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_psi.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_sincos_pi.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_synchrotron.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_transport.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_trig.h \
+ /home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_zeta.h \
+ /home/noobuntu/.local/lib/python3.6/site-packages/korali/modules/module.hpp \
  /home/noobuntu/.local/lib/python3.6/site-packages/korali/auxiliar/math.hpp \
+ /home/noobuntu/.local/lib/python3.6/site-packages/korali/modules/engine/engine.hpp \
+ /home/noobuntu/.local/lib/python3.6/site-packages/korali/modules/experiment/experiment.hpp \
+ /home/noobuntu/.local/lib/python3.6/site-packages/korali/modules/conduit/distributed/distributed.hpp \
+ /home/noobuntu/.local/lib/python3.6/site-packages/korali/modules/conduit/conduit.hpp \
+ /home/noobuntu/.local/lib/python3.6/site-packages/korali/modules/solver/solver.hpp \
  /home/noobuntu/.local/lib/python3.6/site-packages/korali/auxiliar/py2json.hpp \
- /home/noobuntu/.local/lib/python3.6/site-packages/korali/conduit/distributed/distributed.hpp \
- /home/noobuntu/.local/lib/python3.6/site-packages/korali/conduit/conduit.hpp \
- /home/noobuntu/.local/lib/python3.6/site-packages/korali/experiment/experiment.hpp \
- /home/noobuntu/.local/lib/python3.6/site-packages/korali/solver/solver.hpp \
- /home/noobuntu/.local/lib/python3.6/site-packages/korali/conduit/conduit.hpp \
  load_data.hpp model.hpp
 
 /home/noobuntu/.local/lib/python3.6/site-packages/korali/korali.hpp:
 
-/home/noobuntu/.local/lib/python3.6/site-packages/korali/experiment/experiment.hpp:
+/home/noobuntu/.local/lib/python3.6/site-packages/korali/modules/experiment/experiment.hpp:
 
-/home/noobuntu/.local/lib/python3.6/site-packages/korali/experiment/sample/sample.hpp:
+/home/noobuntu/.local/lib/python3.6/site-packages/korali/sample/sample.hpp:
 
 /home/noobuntu/.local/lib/python3.6/site-packages/korali/auxiliar/koraliJson.hpp:
 
@@ -364,219 +362,215 @@ model.o: model.cpp \
 
 /home/noobuntu/.local/lib/python3.6/site-packages/korali/external/libco/libco.h:
 
-/home/noobuntu/.local/lib/python3.6/site-packages/korali/experiment/variable/variable.hpp:
+/home/noobuntu/.local/lib/python3.6/site-packages/korali/variable/variable.hpp:
 
-/home/noobuntu/.local/lib/python3.6/site-packages/korali/distribution/univariate/univariate.hpp:
+/home/noobuntu/.local/lib/python3.6/site-packages/korali/modules/distribution/univariate/univariate.hpp:
 
-/home/noobuntu/.local/lib/python3.6/site-packages/korali/distribution/distribution.hpp:
+/home/noobuntu/.local/lib/python3.6/site-packages/korali/modules/distribution/distribution.hpp:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_rng.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_rng.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_types.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_types.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_errno.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_errno.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_inline.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_inline.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_randist.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_randist.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_vector.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_vector.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_vector_complex_long_double.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_vector_complex_long_double.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_complex.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_complex.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_check_range.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_check_range.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_vector_long_double.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_vector_long_double.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_block_long_double.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_block_long_double.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_vector_complex.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_vector_complex.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_block_complex_long_double.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_block_complex_long_double.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_vector_complex_double.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_vector_complex_double.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_vector_double.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_vector_double.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_block_double.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_block_double.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_block_complex_double.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_block_complex_double.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_vector_complex_float.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_vector_complex_float.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_vector_float.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_vector_float.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_block_float.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_block_float.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_block_complex_float.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_block_complex_float.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_vector_ulong.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_vector_ulong.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_block_ulong.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_block_ulong.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_vector_long.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_vector_long.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_block_long.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_block_long.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_vector_uint.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_vector_uint.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_block_uint.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_block_uint.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_vector_int.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_vector_int.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_block_int.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_block_int.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_vector_ushort.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_vector_ushort.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_block_ushort.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_block_ushort.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_vector_short.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_vector_short.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_block_short.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_block_short.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_vector_uchar.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_vector_uchar.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_block_uchar.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_block_uchar.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_vector_char.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_vector_char.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_block_char.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_block_char.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_matrix.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_matrix.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_matrix_complex_long_double.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_matrix_complex_long_double.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_matrix_complex_double.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_matrix_complex_double.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_matrix_complex_float.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_matrix_complex_float.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_matrix_long_double.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_matrix_long_double.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_matrix_double.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_matrix_double.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_matrix_float.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_matrix_float.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_matrix_ulong.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_matrix_ulong.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_matrix_long.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_matrix_long.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_matrix_uint.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_matrix_uint.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_matrix_int.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_matrix_int.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_matrix_ushort.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_matrix_ushort.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_matrix_short.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_matrix_short.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_matrix_uchar.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_matrix_uchar.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_matrix_char.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_matrix_char.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_math.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_math.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sys.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_sys.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_machine.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_machine.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_precision.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_precision.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_nan.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_nan.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_pow_int.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_pow_int.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_minmax.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_minmax.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_sf.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_result.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_result.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_airy.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_airy.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_mode.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_mode.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_bessel.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_bessel.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_clausen.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_clausen.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_coupling.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_coupling.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_coulomb.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_coulomb.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_dawson.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_dawson.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_debye.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_debye.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_dilog.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_dilog.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_elementary.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_elementary.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_ellint.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_ellint.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_elljac.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_elljac.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_erf.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_erf.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_exp.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_exp.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_expint.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_expint.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_fermi_dirac.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_fermi_dirac.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_gamma.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_gamma.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_gegenbauer.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_gegenbauer.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_hermite.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_hermite.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_hyperg.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_hyperg.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_laguerre.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_laguerre.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_lambert.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_lambert.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_legendre.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_legendre.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_log.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_log.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_mathieu.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_mathieu.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_eigen.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_eigen.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_pow_int.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_pow_int.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_psi.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_psi.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_sincos_pi.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_sincos_pi.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_synchrotron.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_synchrotron.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_transport.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_transport.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_trig.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_trig.h:
 
-/mnt/noobuntu-old/home/noobuntu/Repos/korali/build/include/gsl/gsl_sf_zeta.h:
+/home/noobuntu/experiments/korali/build/include/gsl/gsl_sf_zeta.h:
 
-/home/noobuntu/.local/lib/python3.6/site-packages/korali/module.hpp:
-
-/home/noobuntu/.local/lib/python3.6/site-packages/korali/auxiliar/koraliJson.hpp:
-
-/home/noobuntu/.local/lib/python3.6/site-packages/korali/auxiliar/logger.hpp:
+/home/noobuntu/.local/lib/python3.6/site-packages/korali/modules/module.hpp:
 
 /home/noobuntu/.local/lib/python3.6/site-packages/korali/auxiliar/math.hpp:
 
+/home/noobuntu/.local/lib/python3.6/site-packages/korali/modules/engine/engine.hpp:
+
+/home/noobuntu/.local/lib/python3.6/site-packages/korali/modules/experiment/experiment.hpp:
+
+/home/noobuntu/.local/lib/python3.6/site-packages/korali/modules/conduit/distributed/distributed.hpp:
+
+/home/noobuntu/.local/lib/python3.6/site-packages/korali/modules/conduit/conduit.hpp:
+
+/home/noobuntu/.local/lib/python3.6/site-packages/korali/modules/solver/solver.hpp:
+
 /home/noobuntu/.local/lib/python3.6/site-packages/korali/auxiliar/py2json.hpp:
-
-/home/noobuntu/.local/lib/python3.6/site-packages/korali/conduit/distributed/distributed.hpp:
-
-/home/noobuntu/.local/lib/python3.6/site-packages/korali/conduit/conduit.hpp:
-
-/home/noobuntu/.local/lib/python3.6/site-packages/korali/experiment/experiment.hpp:
-
-/home/noobuntu/.local/lib/python3.6/site-packages/korali/solver/solver.hpp:
-
-/home/noobuntu/.local/lib/python3.6/site-packages/korali/conduit/conduit.hpp:
 
 load_data.hpp:
 

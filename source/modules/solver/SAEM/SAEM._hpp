@@ -2,22 +2,22 @@
 #define _KORALI_SOLVERS_SAEM_H_
 
 #include <vector>
-#include "solver/optimizer/optimizer.hpp"
-#include "problem/evaluation/evaluation.hpp"
+#include "modules/solver/solver.hpp"
+#include "modules/problem/bayesian/latent/latent.hpp"
 
-namespace korali { namespace solver { namespace optimizer {
+namespace korali { namespace solver {
 
-class Rprop : public korali::solver::Optimizer
+class SAEM : public korali::Solver
 {
 
   private:  
 
-    void evaluateFunctionAndGradient( void );
 
-    void Update_plus( void ); // Rprop_plus
-    void Update_minus( void ); // Rprop_minus
-    void Update_iplus( void ); // iRprop_plus
-    void Update_iminus( void ); // iRprop_minus
+    korali::problem::bayesian::Latent* _latentProblem;
+    void sampleLatent();
+    void runBuiltinSampler( );
+
+    double previousSampleMean;
 
   public:
 
@@ -27,8 +27,9 @@ class Rprop : public korali::solver::Optimizer
     void printGenerationBefore() override;
     void printGenerationAfter() override;
 
+
 };
 
-} } } // namespace korali::solver::optimizer
+} } // namespace korali::solver
 
-#endif // _KORALI_SOLVERS_RPROP_H_
+#endif // _KORALI_SOLVERS_SAEM_H_

@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
  e["Problem"]["Zeta Of Likelihood Model"] = &distrib1_zeta;
  e["Problem"]["Phi Of Likelihood Model"] = &distrib1_phi;
 
- e["Solver"]["Type"] = "Optimizer/SAEM";
+ e["Solver"]["Type"] = "SAEM";
  e["Solver"]["Number Markov Chain Samples"] = 10;
  e["Solver"]["Termination Criteria"]["Max Generations"] = 100;
 

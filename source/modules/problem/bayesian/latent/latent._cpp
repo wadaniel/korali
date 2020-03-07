@@ -1,11 +1,11 @@
-#include "problem/evaluation/bayesian/latent.hpp"
+#include "modules/problem/bayesian/latent/latent.hpp"
 
 #include <vector>
 
-void korali::problem::evaluation::bayesian::Latent::initialize()
+void korali::problem::bayesian::Latent::initialize()
 {
 
-  korali::problem::evaluation::bayesian::initialize();
+  korali::problem::Bayesian::initialize();
 
  _latentVariableIndices.clear();
  _hyperparameterVariableIndices.clear();
@@ -22,7 +22,7 @@ void korali::problem::evaluation::bayesian::Latent::initialize()
 
 }
 
-void korali::problem::evaluation::bayesian::Latent::evaluateLogLikelihood(korali::Sample& sample){
+void korali::problem::bayesian::Latent::evaluateLogLikelihood(korali::Sample& sample){
     //TODO does it work?
     // Evaluate the user-given probability distribution for latent- and hyperparameter values given in the sample
   sample.run(_sOfLikelihoodModel);
@@ -34,17 +34,23 @@ void korali::problem::evaluation::bayesian::Latent::evaluateLogLikelihood(korali
   if (! sample.contains("zeta")) korali::logError("The specified likelihood model did not assign the value: 'zeta' to the sample.\n");
   if (! sample.contains("phi")) korali::logError("The specified likelihood model did not assign the value: 'phi' to the sample.\n");
 
-  sample["logLikelihood"] = -sample["zeta"] + std::inner_product(std::begin(sample["S"]), std::end(sample["S"]),
-                                                                                    std::begin(sample["phi"]), 0.0);
+  double _zetaValue = sample["zeta"].get<double>();
+  std::vector<double> _sValues = sample["S"].get<std::vector<double>>();
+  std::vector<double> _phiValues = sample["phi"].get<std::vector<double>>();
+
+
+
+  sample["logLikelihood"] = - _zetaValue + std::inner_product(std::begin(_sValues), std::end(_sValues),
+                                                                                    std::begin(_phiValues), 0.0);
 
 }
 
-//void korali::problem::evaluation::bayesian::Latent::evaluateLogPrior(korali::Sample& sample){
+//void korali::problem::bayesian::Latent::evaluateLogPrior(korali::Sample& sample){
 //   //Already covered in parent classes
 //
 //}
 
-//void korali::problem::evaluation::bayesian::Latent::evaluateLogPosterior(korali::Sample& sample){
+//void korali::problem::bayesian::Latent::evaluateLogPosterior(korali::Sample& sample){
 //    //Already covered in parent classes
 //
 //}

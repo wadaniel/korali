@@ -17,7 +17,6 @@ class SAEM : public korali::Solver
     void sampleLatent();
     void runBuiltinSampler( );
 
-    double previousSampleMean;
 
   public:
 

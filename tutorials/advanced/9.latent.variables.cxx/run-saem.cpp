@@ -1,4 +1,4 @@
-#include "model/dummy-sampler.hpp"
+#include "model/some_samplers.hpp"
 #include "model/model.hpp"
 #include "korali.hpp"
 

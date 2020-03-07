@@ -36,8 +36,9 @@ void korali::solver::SAEM::initialize()
   /* */
 
 
-  _currentSamples.resize( _numberLatent);
+  _currentSamples.resize( _numberMarkovChainSamples);
   for (size_t j = 0; j < _numberMarkovChainSamples; j++){
+    _currentSamples[j].resize( _numberLatent);
       for (size_t i = 0; i < _numberLatent; i++){
           size_t idx = _latentProblem->_latentVariableIndices[i];
           _currentSamples[j][i] = _k->_variables[idx]->_initialValue;    // _k->_variables: vector of korali-variables* (std::vector<korali::Variable*>).
@@ -105,7 +106,7 @@ void korali::solver::SAEM::runBuiltinSampler()
                         s["Hyperparameters"] = params; // _currentHyperparameters;
                         // Ugly? & Probably doesnt work
                         _latentProblem->evaluateLogLikelihood(s);
-                        
+                         s["F(x)"] = s["logLikelihood"];
                     };
 
         for (size_t i=0; i < _numberLatent; i++){
@@ -114,13 +115,13 @@ void korali::solver::SAEM::runBuiltinSampler()
              std::string varName = _k->_variables[idx]->_name;
 
              if (_k->_currentGeneration == 0){
-                previousSampleMean =  _previousLatentSampleMeans[i]; // TODO: Check, do I need a vector of vectors instead? Edit: No.
+                _previousSampleMean =  _previousLatentSampleMeans[i]; // TODO: Check, do I need a vector of vectors instead? Edit: No.
              } else {
-                previousSampleMean = _k->_variables[idx]->_initialValue;
+                _previousSampleMean = _k->_variables[idx]->_initialValue;
              }
             // Defining problem's variables
             e["Variables"][i]["Name"] = varName;
-            e["Variables"][i]["Initial Mean"] = previousSampleMean;
+            e["Variables"][i]["Initial Mean"] = _previousSampleMean;
             e["Variables"][i]["Initial Standard Deviation"] = 1.0;
         }
 
@@ -153,6 +154,18 @@ void korali::solver::SAEM::runBuiltinSampler()
         std::vector<std::vector<double>> samples(first, last);
 
         _currentSamples = samples;
+
+        k["Samples"] = samples;
+
+        // set new "previous sample means"
+        for(size_t i= 0; i< _numberLatent; i++){
+            double sum = 0;
+            for(size_t j = 0; j < _numberMarkovChainSamples; j++) {
+                sum += samples[j][i];
+                }
+            _previousLatentSampleMeans[i] = sum / static_cast<double>(_numberLatent);
+        }
+
 }
 
 /*void korali::solver::optimizer::Rprop::evaluateFunctionAndGradient( void )

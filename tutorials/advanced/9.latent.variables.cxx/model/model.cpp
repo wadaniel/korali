@@ -42,7 +42,7 @@ Latent variables:
 
     void ExampleDistribution1::S(korali::Sample& k)
     {
-      std::vector<double> hyperparams = k["Hyperparameters"];
+      //std::vector<double> hyperparams = k["Hyperparameters"];
       //auto latentVariables = k["Latent Variables"];
       std::vector<double> latentVariables = k["Latent Variables"];
       
@@ -57,7 +57,7 @@ Latent variables:
           mse_per_point[i] = std::pow( _p.points[i] - mu , 2);
           sum += std::pow( _p.points[i] - mu , 2);
       }
-      k["S"] = -0.5 * sum;  //or k["Evaluation"]["S"] ?
+      k["S"] = std::vector<double>({-0.5 * sum});  //or k["Evaluation"]["S"] ?
 
 
       // Later, if mu is a vector, can use the following :
@@ -96,6 +96,8 @@ Latent variables:
       //log(sigma*sqrt(pi*2))
       k["zeta"] = std::log(sigma*std::sqrt(2*M_PI)) ;
     };
+
+
     void ExampleDistribution1::phi(korali::Sample& k)
     {
       std::vector<double> hyperparams = k["Hyperparameters"];
@@ -103,7 +105,7 @@ Latent variables:
 
       double sigma = hyperparams[0];
       // * 1/sigma^2
-      k["phi"] = 1/std::pow(sigma, 2);
+      k["phi"] = std::vector<double>({1/std::pow(sigma, 2)});
     };
 
 

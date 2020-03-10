@@ -30,3 +30,10 @@ __pycache__
 .idea/
 # VisualStudio Code:
 .vscode/
+.metadata/
+*.cproject
+*.externalToolBuilders/ 
+*.project/ 
+.project/
+*.settings/ 
+

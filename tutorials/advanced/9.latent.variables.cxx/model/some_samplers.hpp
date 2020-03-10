@@ -17,23 +17,23 @@ class MCMCLatentSampler {
     //  define any parameters
     std::vector<double> previousSampleMeans;
     std::vector<double> currentHyperparameters;
-    std::vector<double> previousLatentSampleMeans;
+    //std::vector<double> previousLatentSampleMeans;
     std::vector<std::vector<double>> currentSamples;
     std::vector<std::vector<double>> previousSamples;
     int numberLatent;
     int numberHyperparameters;
 
-/*
-    std::function<void(korali::Sample&)>* zeta_func;
-    std::function<void(korali::Sample&)>* S_func;
-    std::function<void(korali::Sample&)>* phi_func;
-*/
 
+    std::function<void(korali::Sample&)> zeta_func;
+    std::function<void(korali::Sample&)> S_func;
+    std::function<void(korali::Sample&)> phi_func;
+
+/*
     uint64_t zeta_func;
     uint64_t S_func;
     uint64_t phi_func;
 
-
+*/
     // ... todo
 
     // any set up to be done?

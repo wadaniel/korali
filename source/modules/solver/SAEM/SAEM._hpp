@@ -16,7 +16,7 @@ class SAEM : public korali::Solver
     korali::problem::bayesian::Latent* _latentProblem;
     void sampleLatent();
     void runBuiltinSampler( );
-
+    void calculateSampleSVectors();
 
   public:
 

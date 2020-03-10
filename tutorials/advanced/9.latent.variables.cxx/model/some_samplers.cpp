@@ -5,6 +5,7 @@
 
 #include <stdexcept>
 #include <vector>
+#include <iostream>
 /*
 void direct(korali::Sample& k)
 {
@@ -25,10 +26,10 @@ void dummySampler(korali::Sample& k) //, int numberLatentVars)
   size_t numberLatentVars = k["Number Of Latent Variables"];
 
   std::vector<std::vector<double>> samples;
-  for(size_t i; i < numberSamples; i++){
+  for(size_t i = 0; i < numberSamples; i++){
        std::vector<double> v;
-       for(size_t j; j < numberLatentVars; j++){
-          v.push_back(0);
+       for(size_t j=0; j < numberLatentVars; j++){
+          v.push_back(0); // @suppress("Method cannot be resolved")
     }
     samples.push_back(v);
   }
@@ -41,13 +42,16 @@ void dummySampler(korali::Sample& k) //, int numberLatentVars)
 MCMCLatentSampler::MCMCLatentSampler(int numberLatentVars, int numberHyperparams,
                     std::vector<double> initialLatentValues, std::vector<double> initialHyperparams,
                     std::function<void(korali::Sample&)> zeta_, std::function<void(korali::Sample&)> S_,
-                            std::function<void(korali::Sample&)> phi_
-                    )
+                            std::function<void(korali::Sample&)> phi_ )
        {
 
-    zeta_func = reinterpret_cast<uint64_t>(&zeta_);
+  /*  zeta_func = reinterpret_cast<uint64_t>(&zeta_);
     S_func = reinterpret_cast<uint64_t>(&S_);
     phi_func = reinterpret_cast<uint64_t>(&phi_);
+*/
+    zeta_func = zeta_;
+    S_func = S_;
+    phi_func = phi_;
 
     if (initialLatentValues.size() != numberLatentVars ) throw std::invalid_argument("number of latent variables should match the dimension of their initial values");
     if (initialHyperparams.size() != numberHyperparams ) throw std::invalid_argument("number of hyperparameters should match the dimension of their initial values");
@@ -97,19 +101,23 @@ MCMCLatentSampler::MCMCLatentSampler(int numberLatentVars, int numberHyperparams
          auto e = korali::Experiment();
 
          // Based on tutorial a2-sampling
-         e["Problem"]["Type"] = "Direct/Basic";
-         e["Problem"]["Objective Function"] = [params=hyperparameters, this](korali::Sample& s) -> void {
-                        if (! s.contains("Latent Variables")){
-                            korali::logError("You try to evaluate the likelihood without passing values for the latent variables to the sample.\n");
+         e["Problem"]["Type"] = "Sampling";
+         e["Problem"]["Probability Function"] = [hparams=hyperparameters, this](korali::Sample& s) -> void {
+                        if (! s.contains("Parameters")){
+                            korali::logError("Something is trying to evaluate the likelihood without passing values for the latent variables (= parameters, here) to the sample.\n");
                         }
-                        s["Hyperparameters"] = params; // _currentHyperparameters;
+                        s["Latent Variables"] = s["Parameters"];
+                        s["Hyperparameters"] = hparams; // _currentHyperparameters;
                         // Ugly? & Probably doesnt work
 
-                         s.run(S_func);
-                         s.run(zeta_func);
-                         s.run(phi_func);
+                        S_func(s);
+                        zeta_func(s);
+                        phi_func(s);
+                        //s.run(S_func);
+                        // s.run(zeta_func);
+                        // s.run(phi_func); // @suppress("Invalid arguments")
                           // -> Assume these set: sample["S"], sample["zeta"] and sample["phi"]
-                          if (! s.contains("S")) korali::logError("The specified likelihood model did not assign the value: 'S' to the sample.\n");
+                          if (! s.contains("S")) korali::logError("The specified likelihood model did not assign the value: 'S' to the sample.\n"); // @suppress("Invalid arguments")
                           if (! s.contains("zeta")) korali::logError("The specified likelihood model did not assign the value: 'zeta' to the sample.\n");
                           if (! s.contains("phi")) korali::logError("The specified likelihood model did not assign the value: 'phi' to the sample.\n");
 
@@ -117,7 +125,7 @@ MCMCLatentSampler::MCMCLatentSampler(int numberLatentVars, int numberHyperparams
                           std::vector<double> _sValues = s["S"].get<std::vector<double>>();
                           std::vector<double> _phiValues = s["phi"].get<std::vector<double>>();
 
-                          s["F(x)"] = - _zetaValue + std::inner_product(std::begin(_sValues), std::end(_sValues),
+                          s["P(x)"] = - _zetaValue + std::inner_product(std::begin(_sValues), std::end(_sValues), // @suppress("Function cannot be resolved")
                                                                                                             std::begin(_phiValues), 0.0);
 
                     };
@@ -133,14 +141,14 @@ MCMCLatentSampler::MCMCLatentSampler(int numberLatentVars, int numberHyperparams
         }
 
         // Configuring the MCMC sampler parameters
-        e["Solver"]["Type"]  = "Sampler/MCMC";
+        e["Solver"]["Type"]  = "MCMC";
         e["Solver"]["Burn In"] = 500;
         e["Solver"]["Termination Criteria"]["Max Samples"] = 5000;
 
         // Configuring output settings
-        e["Results"]["Frequency"] = 500;
-        e["Console"]["Frequency"] = 500;
-        e["Console"]["Verbosity"] = "Detailed";
+        e["File Output"]["Frequency"] = 500;
+        e["Console Output"]["Frequency"] = 500;
+        e["Console Output"]["Verbosity"] = "Detailed";
 
         // Todo: I don't think a result path is needed (and it'd need a step id in the pathname as well)
         //e["Results"]["Path"] = "setup/results_phase_1/" + "0"*(3 - str(i).length()) +  std:to_string(i);
@@ -163,12 +171,12 @@ MCMCLatentSampler::MCMCLatentSampler(int numberLatentVars, int numberHyperparams
         kSample["Samples"] = samples;
 
         // set new "previous sample means"
-        for(size_t i= 0; i< numberLatent; i++){
+        for(size_t i= 0; i< numberLatent; i++){ // @suppress("Type cannot be resolved")
             double sum = 0;
-            for(size_t j = 0; j < numberSamples; j++) {
+            for(size_t j = 0; j < numberSamples; j++) { // @suppress("Type cannot be resolved")
                 sum += samples[j][i];
                 }
-            previousSampleMeans[i] = sum / static_cast<double>(numberLatent);
+            previousSampleMeans[i] = sum / static_cast<double>(numberSamples);
         }
 
       //

@@ -8,6 +8,8 @@
 #include <string>
 #include <stdio.h>
 #include <vector>
+#include <cmath>
+#include <numeric>
 
 void korali::solver::SAEM::initialize()
 {
@@ -19,6 +21,7 @@ void korali::solver::SAEM::initialize()
 
   _numberVariables = _k->_variables.size();
   _numberLatent = _latentProblem->_latentVariableIndices.size();
+  _numberHyperparameters = _numberVariables - _numberLatent;
 
   if (_k->_currentGeneration > 0) return;
 
@@ -31,19 +34,40 @@ void korali::solver::SAEM::initialize()
   else _hasUserDefinedSampler = false;
     //  _hasUserDefinedSampler = (_latentVariableSampler != 0); // Todo: not sure if this is the right way to check for not-passed sampler
 
-
+    _currentS = 0;
+    _previousS = -100; // something that is not 0, in case we ever introduce termination criteria depending on updates in S
 
   /* */
 
-
-  _currentSamples.resize( _numberMarkovChainSamples);
+  // set starting values initial samples (Probably don't need this)
+ /* _currentSamples.resize( _numberMarkovChainSamples);
   for (size_t j = 0; j < _numberMarkovChainSamples; j++){
     _currentSamples[j].resize( _numberLatent);
       for (size_t i = 0; i < _numberLatent; i++){
           size_t idx = _latentProblem->_latentVariableIndices[i];
           _currentSamples[j][i] = _k->_variables[idx]->_initialValue;    // _k->_variables: vector of korali-variables* (std::vector<korali::Variable*>).
       }
+  }*/
+
+  // set initial "sample means"
+   _previousLatentSampleMeans.resize(_numberLatent);
+  for (size_t i = 0; i < _numberLatent; i++){
+          size_t idx = _latentProblem->_latentVariableIndices[i];
+          _previousLatentSampleMeans[i] = _k->_variables[idx]->_initialValue;
+      }
+    
+   // Set starting values for hyperparameters
+   _currentHyperparameters.resize(_numberHyperparameters);
+  for (size_t i = 0; i < _numberVariables; i++){
+ 	 // check whether i is a latent variable index; if yes, continue
+  	  if(std::find( _latentProblem->_latentVariableIndices.begin(),  
+  	  		_latentProblem->_latentVariableIndices.end(), i) != _latentProblem->_latentVariableIndices.end())
+			continue;      
+      _currentHyperparameters[i] = _k->_variables[i]->_initialValue;
   }
+  _currentSamplesSVectors.resize(_numberMarkovChainSamples);
+  
+  
   // _bestSamples = _currentSamples;
   //_delta.resize( N, _delta0 );
   //_currentGradient.resize( N, 0);
@@ -64,7 +88,9 @@ void korali::solver::SAEM::sampleLatent(){
       //for(size_t i=0; i< _numberMarkovChainSamples; i++){
           korali::Sample sample;
           sample["Hyperparameters"] = _currentHyperparameters;
+          sample["Latent Variables"] = _curre ... wait
           sample["Number Samples"] = _numberMarkovChainSamples;
+          sample["Number Of Latent Variables"] = _numberLatent;
           sample.run(_latentVariableSampler); // Like in: problem/reference.cpp, def of evaluateLogLikelihood()
           std::vector<std::vector<double>> v =  sample["Samples"].get<std::vector<std::vector<double>>>();
           if (v.size() != _numberMarkovChainSamples) korali::logError("User defined sampler did not return the correct number of samples ('Number Samples').");
@@ -204,8 +230,10 @@ void korali::solver::SAEM::runGeneration( void )
   /* E1: Sample latent variable values */
   sampleLatent(); 
   std::cout << "Sampled; generation: " << _k->_currentGeneration << std::endl;
-  /* E2: Update posterior probability function Q */
 
+  /* E2: Update posterior probability function Q */
+  calculateSampleSVectors();
+  updateS();
 
   /* M:  Find argmax Q(theta) */
 
@@ -251,6 +279,79 @@ void korali::solver::SAEM::runGeneration( void )
 
 }
 
+
+void korali::solver::SAEM::calculateSampleSVectors(){
+    /* Call this after sampling; sets _currentSamplesSVectors using each current sample of latent variables
+     and the current hyperparameter values
+
+     Uses:
+            _currentSamples,
+            _currentHyperparameters,
+            the S function of _latentProblem
+     Sets:
+            _currentSamplesSVectors
+     */
+      for(size_t i=0; i<_numberMarkovChainSamples; i++){
+
+    korali::Sample k;
+    k["Latent Variables"] = _currentSamples[i];
+    k["Hyperparameters"] = _currentHyperparameters;
+    _latentProblem->_sOfLikelihoodFunction(k);
+
+    std::vector<double> v = k["S"];
+    _currentSamplesSVectors[i] = v;
+    return;
+  }
+}
+
+
+void korali::solver::SAEM::updateS(){
+    /*  Robbins-Monro-update our estimate of S.
+
+     Uses:
+            _currentSamplesSValues
+            _currentS
+            _k->_currentGeneration
+     Sets:
+           _previousS <-- _currentS
+           _currentS
+     */
+     _previousS = currentS;
+
+     // Determine alpha
+     double alpha;
+     if(_k->_currentGeneration > _numberInitialSteps)
+        alpha = alpha2;
+     else
+        alpha = alpha1
+
+     // --> decay factor gamma
+     int curGen = static_cast<double>(_k->_currentGeneration);
+     double gamma = std::pow( curGen, - alpha);
+
+     // Calculate mean S of our current samples
+     std::vector<double> sumVec(_numberLatent) = 0;
+     std::vector<double> meanSampleS(_numberLatent) = 0;
+
+     for(size_t j = 0; j < _numberMarkovChainSamples; j++)
+        for(size_t i = 0; i < _numberLatent; i++) {
+            sumVec[i] += _currentSamplesSVectors[j][i];
+        }
+     }
+     for(size_t i = 0; i < _numberLatent; i++) {
+        meanSampleS[i] += sumVec[i] / _numberMarkovChainSamples;
+      }
+
+      // Now do the Robbins-Monro update
+     if (_k->_currentGeneration == 0)
+        _currentS = meanSampleS;
+     else {
+         for(size_t i = 0; i < _numberLatent; i++) {
+             _currentS[i] =   _previousS[i]  + gamma * (meanSampleS[i] - _previousS[i]);
+         }
+     }
+     return;
+}
 
 
 

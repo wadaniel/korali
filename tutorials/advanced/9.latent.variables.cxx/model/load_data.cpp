@@ -4,6 +4,7 @@
 #include <limits>
 #include "load_data.hpp"
 #include "string.h"
+#include <unistd.h>
 
 pointsInfo __p;
 
@@ -11,13 +12,20 @@ pointsInfoStruct& univariateData()
 {
 
  FILE *problemFile;
- size_t nPoints = 0;
- size_t nDimensions = 0;
+ FILE *problemFile2;
+ uint32_t nPoints = 0;
+ int nDimensions = 0;
 
- printf("Loading data from data_single.in ... \n");
- problemFile = fopen("model/data_single.in", "r");
- fscanf(problemFile, "%lu", &nPoints);
- fscanf(problemFile, "%lu", &nDimensions);
+ printf("Loading data from data_single.in ... \n");// @suppress("Function cannot be resolved")
+ problemFile = fopen("model/data_single.in", "r");// @suppress("Function cannot be resolved")
+ if (!problemFile){
+	 	 char cwd[PATH_MAX];
+	 	 getcwd(cwd, sizeof(cwd));
+	 	 std::cout << "Current workdir: " << cwd << std::endl;
+		 korali::logError("File not found: model/data_single.in. Make sure you run this script from the 'tutorials/advanced/9....' directory. ");}
+ problemFile2 = fopen("data_single.in", "r");// @suppress("Function cannot be resolved")
+ fscanf(problemFile, "%lu", &nPoints); // @suppress("Function cannot be resolved")
+ fscanf(problemFile, "%lu", &nDimensions); // @suppress("Function cannot be resolved")
 
  __p.points.resize(nPoints * nDimensions );
  __p.assignments.resize(0);
@@ -29,6 +37,7 @@ pointsInfoStruct& univariateData()
       fscanf(problemFile, "%le ", &val); __p.points[i*nDimensions + j] = val;
   }
  }
+ fclose(problemFile);
  __p.nDimensions = nDimensions;
  __p.nPoints = nPoints;
 

@@ -1,0 +1,124 @@
+#include "modules/solver/interpolator/interpolator.hpp"
+#include "modules/conduit/conduit.hpp"
+
+void korali::solver::Interpolator::setInitialConfiguration()
+{
+ // Initialize by populating the initial possibility space
+ size_t combinationCount = 1;
+ size_t policyDepth = _k->_currentGeneration;
+ size_t varCount = _k->_variables.size();
+
+ _policyCollection.resize(policyDepth);
+
+ for (size_t i = 0; i < _k->_variables.size(); i++) combinationCount *= (_k->_variables[i]->_intervalCount+1);
+
+ _policyCollection[0].resize(combinationCount * varCount);
+
+ printf("Combination Count: %lu, Var Count: %lu\n", combinationCount, varCount);
+ size_t currentStride = 1;
+
+ for (int i = _k->_variables.size()-1; i >= 0; i--)
+ {
+  double intervalLength = (_k->_variables[i]->_upperBound + _k->_variables[i]->_lowerBound) / (double)_k->_variables[i]->_intervalCount;
+
+  size_t currentPolicy = 0;
+  while (currentPolicy < combinationCount)
+  for (size_t j = 0; j < _k->_variables[i]->_intervalCount+1; j++)
+  {
+   double point = (double)j * intervalLength;
+   for (size_t k = 0; k < currentStride; k++)
+   {
+    _policyCollection[0][currentPolicy*varCount + i] = point;
+    currentPolicy++;
+   }
+  }
+
+  currentStride *= (_k->_variables[i]->_intervalCount+1);
+ }
+
+ // Evaluating Constraints
+ std::vector<korali::Sample> cSamples(combinationCount);
+ std::vector<double> sampleData(_k->_variables.size());
+ for (size_t i = 0; i < combinationCount; i++)
+ {
+  for(size_t j = 0; j < varCount; j++) sampleData[j] = _policyCollection[0][i*varCount + j];
+  cSamples[i]["Operation"]  = "Evaluate Constraints";
+  cSamples[i]["Policy"][0] = sampleData;
+  korali::_conduit->start(cSamples[i]);
+ }
+
+ korali::_conduit->waitAll(cSamples);
+
+ // Pruning policies based on constraints
+ for (int i = combinationCount-1; i >= 0; i--)
+ {
+  double constraintEval = cSamples[i]["Constraint Evaluation"];
+  if (constraintEval < 0)
+   {
+     printf("i: %lu, Constraint Eval: %f\n", i, constraintEval);
+     _policyCollection[0].erase(_policyCollection[0].begin() + i);
+     combinationCount--;
+   }
+ }
+
+ std::vector<korali::Sample> eSamples(combinationCount);
+ for (size_t i = 0; i < combinationCount; i++)
+ {
+  for(size_t j = 0; j < varCount; j++) sampleData[j] = _policyCollection[0][i*varCount + j];
+  eSamples[i]["Operation"]  = "Evaluate Cost Function";
+  eSamples[i]["Variables"] = sampleData;
+  korali::_conduit->start(eSamples[i]);
+ }
+
+ korali::_conduit->waitAll(eSamples);
+
+ for (size_t i = 0; i < combinationCount; i++)
+ {
+  double eval = eSamples[i]["Cost Evaluation"];
+  printf("Combo %lu: ( ", i);
+  for(size_t j = 0; j < varCount; j++) printf("%f ", _policyCollection[0][i*varCount + j] );
+  printf(") = %f\n", eval);
+ }
+
+}
+
+void korali::solver::Interpolator::runGeneration()
+{
+
+ if (_k->_currentGeneration == 1) setInitialConfiguration();
+
+//  _sampleCount   = _k->_variables[0]->_precomputedValues.size();
+//
+//  _maxModelEvaluations     = std::min(_maxModelEvaluations, _sampleCount);
+//  _executionsPerGeneration = std::min(_executionsPerGeneration, _maxModelEvaluations - _modelEvaluationCount);
+//
+//  std::vector<double> sampleData(_k->_variables.size());
+//  std::vector<korali::Sample> samples(_executionsPerGeneration);
+//  for (size_t j = 0; j < _k->_variables.size(); j++) sampleData[j] = _k->_variables[j]->_precomputedValues[_modelEvaluationCount];
+//
+//  for (size_t i = 0; i < _executionsPerGeneration; i++)
+//  {
+//    std::vector<double> sampleData(_k->_variables.size());
+//    for (size_t j = 0; j < _k->_variables.size(); j++) sampleData[j] = _k->_variables[j]->_precomputedValues[_modelEvaluationCount];
+//
+//    korali::logInfo("Detailed", "Running sample %zu with values:\n         ", _modelEvaluationCount);
+//    for(auto& x : sampleData) korali::logData("Detailed", " %le   ", x);
+//    korali::logData("Detailed", "\n");
+//
+//    samples[i]["Operation"]  = "Execute";
+//    samples[i]["Parameters"] = sampleData;
+//    samples[i]["Sample Id"]  = _modelEvaluationCount;
+//    korali::_conduit->start(samples[i]);
+//    _modelEvaluationCount++;
+//  }
+//
+//  korali::_conduit->waitAll(samples);
+}
+
+void korali::solver::Interpolator::printGenerationBefore()
+{
+}
+
+void korali::solver::Interpolator::printGenerationAfter()
+{
+}

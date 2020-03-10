@@ -1,0 +1,27 @@
+#include "modules/problem/DP/DP.hpp"
+
+void korali::problem::DP::initialize()
+{
+//  if (_k->_variables.size() == 0) korali::logError("Execution problems require at least one variable.\n");
+//
+//  // Validate the _loadedValues dimensions
+//  size_t Ns = _k->_variables[0]->_precomputedValues.size();
+//  for (size_t i = 1; i < _k->_variables.size(); i++){
+//    if (_k->_variables[i]->_precomputedValues.size() != Ns)  korali::logError("All 'Loaded Values' must have the same length ");
+//  }
+}
+
+void korali::problem::DP::evaluateCostFunction(korali::Sample& sample)
+{
+ sample.run(_costFunction);
+}
+
+void korali::problem::DP::evaluateConstraints(korali::Sample& sample)
+{
+ for (size_t i = 0; i < _policyConstraints.size(); i++)
+ {
+  sample.run(_policyConstraints[i]);
+  double evaluation = sample["Constraint Evaluation"];
+  if (evaluation < 0) return;
+ }
+}

@@ -34,8 +34,13 @@ void korali::solver::SAEM::initialize()
   else _hasUserDefinedSampler = false;
     //  _hasUserDefinedSampler = (_latentVariableSampler != 0); // Todo: not sure if this is the right way to check for not-passed sampler
 
-    _currentS = 0;
-    _previousS = -100; // something that is not 0, in case we ever introduce termination criteria depending on updates in S
+
+
+  _currentSamplesSVectors.resize(_numberMarkovChainSamples);
+  _currentS.resize(_numberLatent);
+  _previousS.resize(_numberLatent);
+  std::fill(_currentS.begin(), _currentS.end(), 0);
+  std::fill(_previousS.begin(), _previousS.end(), -1); // something that is not 0, just in case / to detect if that is used anywhere
 
   /* */
 
@@ -65,7 +70,6 @@ void korali::solver::SAEM::initialize()
 			continue;      
       _currentHyperparameters[i] = _k->_variables[i]->_initialValue;
   }
-  _currentSamplesSVectors.resize(_numberMarkovChainSamples);
   
   
   // _bestSamples = _currentSamples;
@@ -88,7 +92,6 @@ void korali::solver::SAEM::sampleLatent(){
       //for(size_t i=0; i< _numberMarkovChainSamples; i++){
           korali::Sample sample;
           sample["Hyperparameters"] = _currentHyperparameters;
-          sample["Latent Variables"] = _curre ... wait
           sample["Number Samples"] = _numberMarkovChainSamples;
           sample["Number Of Latent Variables"] = _numberLatent;
           sample.run(_latentVariableSampler); // Like in: problem/reference.cpp, def of evaluateLogLikelihood()
@@ -296,7 +299,8 @@ void korali::solver::SAEM::calculateSampleSVectors(){
     korali::Sample k;
     k["Latent Variables"] = _currentSamples[i];
     k["Hyperparameters"] = _currentHyperparameters;
-    _latentProblem->_sOfLikelihoodFunction(k);
+    k.run(_latentProblem->_sOfLikelihoodModel);
+    //_latentProblem->_sOfLikelihoodModel(k);
 
     std::vector<double> v = k["S"];
     _currentSamplesSVectors[i] = v;
@@ -316,24 +320,24 @@ void korali::solver::SAEM::updateS(){
            _previousS <-- _currentS
            _currentS
      */
-     _previousS = currentS;
+     _previousS = _currentS;
 
      // Determine alpha
      double alpha;
      if(_k->_currentGeneration > _numberInitialSteps)
-        alpha = alpha2;
+        alpha = _alpha2;
      else
-        alpha = alpha1
+        alpha = _alpha1;
 
      // --> decay factor gamma
-     int curGen = static_cast<double>(_k->_currentGeneration);
+     double curGen = static_cast<double>(_k->_currentGeneration);
      double gamma = std::pow( curGen, - alpha);
 
      // Calculate mean S of our current samples
-     std::vector<double> sumVec(_numberLatent) = 0;
-     std::vector<double> meanSampleS(_numberLatent) = 0;
+     std::vector<double> sumVec(_numberLatent, 0);
+     std::vector<double> meanSampleS(_numberLatent, 0);
 
-     for(size_t j = 0; j < _numberMarkovChainSamples; j++)
+     for(size_t j = 0; j < _numberMarkovChainSamples; j++){
         for(size_t i = 0; i < _numberLatent; i++) {
             sumVec[i] += _currentSamplesSVectors[j][i];
         }

@@ -17,6 +17,7 @@ class SAEM : public korali::Solver
     void sampleLatent();
     void runBuiltinSampler( );
     void calculateSampleSVectors();
+    void updateS();
 
   public:
 

@@ -39,13 +39,15 @@ e["Problem"]["Policy Constraints"] = [ constraint ]
 e["Variables"][0]["Name"] = "Y"
 e["Variables"][0]["Lower Bound"] = 0.0
 e["Variables"][0]["Upper Bound"] = 1.0
-e["Variables"][0]["Interval Count"] = 5
+e["Variables"][0]["Interval Count"] = 100
 
 # Configuring CMA-ES parameters
 e["Solver"]["Type"] = "Interpolator"
 e["Solver"]["Interpolation Strategy"] = "Nearest Neighbor" 
-e["Solver"]["Termination Criteria"]["Recursion Depth"] = 2
+e["Solver"]["Termination Criteria"]["Recursion Depth"] = 5
 
 # Running Korali
 k.run(e)
 
+bestPolicyIdx = e["Results"]["Best Policy Index"] 
+print(e["Results"]["Optimal Policies"][bestPolicyIdx])

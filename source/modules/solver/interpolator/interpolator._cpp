@@ -12,9 +12,10 @@ void korali::solver::Interpolator::setInitialConfiguration()
 
  for (size_t i = 0; i < _k->_variables.size(); i++) policyCount *= (_k->_variables[i]->_intervalCount+1);
 
- _policyCollection[0].resize(policyCount * varCount);
+ _policyCollection[0].resize(policyCount);
+ for (size_t i = 0; i < policyCount; i++) _policyCollection[0][i].resize(varCount);
 
- printf("Combination Count: %lu, Var Count: %lu\n", policyCount, varCount);
+// printf("Combination Count: %lu, Var Count: %lu\n", policyCount, varCount);
  size_t currentStride = 1;
 
  for (int i = _k->_variables.size()-1; i >= 0; i--)
@@ -28,7 +29,7 @@ void korali::solver::Interpolator::setInitialConfiguration()
    double point = (double)j * intervalLength;
    for (size_t k = 0; k < currentStride; k++)
    {
-    _policyCollection[0][currentPolicy*varCount + i] = point;
+    _policyCollection[0][currentPolicy][i] = point;
     currentPolicy++;
    }
   }
@@ -41,7 +42,7 @@ void korali::solver::Interpolator::setInitialConfiguration()
  std::vector<double> sampleData(_k->_variables.size());
  for (size_t i = 0; i < policyCount; i++)
  {
-  for(size_t j = 0; j < varCount; j++) sampleData[j] = _policyCollection[0][i*varCount + j];
+  for(size_t j = 0; j < varCount; j++) sampleData[j] = _policyCollection[0][i][j];
   cSamples[i]["Operation"]  = "Evaluate Constraints";
   cSamples[i]["Policy"][0] = sampleData;
   korali::_conduit->start(cSamples[i]);
@@ -55,7 +56,7 @@ void korali::solver::Interpolator::setInitialConfiguration()
   double constraintEval = cSamples[i]["Constraint Evaluation"];
   if (constraintEval < 0)
    {
-     printf("i: %lu, Constraint Eval: %f\n", i, constraintEval);
+     // printf("i: %lu, Constraint Eval: %f\n", i, constraintEval);
      _policyCollection[0].erase(_policyCollection[0].begin() + i);
      policyCount--;
    }
@@ -64,7 +65,7 @@ void korali::solver::Interpolator::setInitialConfiguration()
  std::vector<korali::Sample> eSamples(policyCount);
  for (size_t i = 0; i < policyCount; i++)
  {
-  for(size_t j = 0; j < varCount; j++) sampleData[j] = _policyCollection[0][i*varCount + j];
+  for(size_t j = 0; j < varCount; j++) sampleData[j] = _policyCollection[0][i][j];
   eSamples[i]["Operation"]  = "Evaluate Cost Function";
   eSamples[i]["Variables"] = sampleData;
   korali::_conduit->start(eSamples[i]);
@@ -90,7 +91,8 @@ void korali::solver::Interpolator::runGeneration()
  size_t policyCount = _policyCollection[currentDepth-1].size();
  size_t varCount = _k->_variables.size();
 
- _policyCollection[currentDepth].resize(policyCount * varCount);
+ _policyCollection[currentDepth].resize(policyCount);
+ for (size_t i = 0; i < policyCount; i++) _policyCollection[currentDepth][i].resize(varCount);
 
  size_t candidateCount = 1;
  for (size_t i = 0; i < _k->_variables.size(); i++) candidateCount *= (_k->_variables[i]->_intervalCount+1);
@@ -116,7 +118,10 @@ void korali::solver::Interpolator::runGeneration()
   currentStride *= (_k->_variables[i]->_intervalCount+1);
  }
 
- printf("Candidate List Size: %lu\n", candidateList.size());
+ //printf("Candidate List Size: %lu\n", candidateList.size());
+
+ std::vector<std::vector<std::vector<double>>> _newPolicyCollection(_recursionDepth);
+ std::vector<double> _newPolicyEvaluations;
 
  for (size_t i = 0; i < policyCount; i++)
  {
@@ -125,12 +130,12 @@ void korali::solver::Interpolator::runGeneration()
 
   for (size_t j = 0; j < candidateList.size(); j++)
   {
-   for (size_t k = 0; k < varCount; k++) _policyCollection[currentDepth][i*varCount + k] = candidateList[j*varCount + k];
+   for (size_t k = 0; k < varCount; k++) _policyCollection[currentDepth][i][k] = candidateList[j*varCount + k];
 
    for (size_t p = 0; p <= currentDepth; p++)
    {
     std::vector<double> coordinate(varCount);
-    for (size_t k = 0; k < varCount; k++)  coordinate[k] = _policyCollection[p][i*varCount + k];
+    for (size_t k = 0; k < varCount; k++)  coordinate[k] = _policyCollection[p][i][k];
     cSamples[currentSample]["Policy"][p] = coordinate;
    }
 
@@ -162,71 +167,79 @@ void korali::solver::Interpolator::runGeneration()
    if (constraintEval < 0) cSamples.erase(cSamples.begin() + j);
   }
 
-  printf("Size: %lu\n", cSamples.size());
   std::vector<korali::Sample> eSamples(cSamples.size());
   for (int i = 0; i < eSamples.size(); i++)
   {
    eSamples[i]["Operation"]  = "Evaluate Cost Function";
    eSamples[i]["Variables"] = cSamples[i]["Policy"][currentDepth];
+   eSamples[i]["Policy"] = cSamples[i]["Policy"];
+   eSamples[i]["Previous Evaluation"]  = cSamples[i]["Previous Evaluation"];
    korali::_conduit->start(eSamples[i]);
   }
   korali::_conduit->waitAll(eSamples);
 
   double minCostEvaluation = korali::Inf;
+  auto bestPolicy = cSamples[0]["Policy"];
 
-  for (int j = eSamples.size()-1; j >= 0 ; j--)
+  for (int j = eSamples.size()-1; j >= 0; j--)
   {
-   printf("Tried: ");
    for (size_t p = 0; p <= currentDepth; p++)
-   {
-    printf("( ");
     for (size_t k = 0; k < varCount; k++)
-    {
      double val = cSamples[j]["Policy"][p][k];
-     printf("%f ", val);
-    }
-    printf(")  ");
-   }
 
    double currEval = eSamples[j]["Cost Evaluation"];
-   double prevEval = cSamples[j]["Previous Evaluation"];
+   double prevEval = eSamples[j]["Previous Evaluation"];
    double sumEval = currEval + prevEval;
 
-   if (sumEval < minCostEvaluation) minCostEvaluation = sumEval;
-   printf("Eval: %f\n", sumEval);
+   if (sumEval < minCostEvaluation)
+   {
+    bestPolicy = eSamples[j]["Policy"];
+    minCostEvaluation = sumEval;
+   }
   }
 
-  printf("Best Policy Val: %f\n", minCostEvaluation);
-  printf("Feasible Count: %d\n", cSamples.size());
+
+//  printf("Best: ");
+//  for (size_t p = 0; p <= currentDepth; p++)
+//  {
+//   printf("( ");
+//   for (size_t k = 0; k < varCount; k++)
+//   {
+//    double val = bestPolicy[p][k];
+//    printf("%f ", val);
+//   }
+//   printf(") " );
+//  }
+//
+//  printf("Best Policy Val: %f\n", minCostEvaluation);
+
+  if (minCostEvaluation < korali::Inf)
+  {
+   for (size_t p = 0; p <= currentDepth; p++)
+   {
+     auto newEntry = bestPolicy[p];
+    _newPolicyCollection[p].push_back(newEntry);
+   }
+
+   _newPolicyEvaluations.push_back(minCostEvaluation);
+  }
  }
 
 
-//  _sampleCount   = _k->_variables[0]->_precomputedValues.size();
-//
-//  _maxModelEvaluations     = std::min(_maxModelEvaluations, _sampleCount);
-//  _executionsPerGeneration = std::min(_executionsPerGeneration, _maxModelEvaluations - _modelEvaluationCount);
-//
-//  std::vector<double> sampleData(_k->_variables.size());
-//  std::vector<korali::Sample> samples(_executionsPerGeneration);
-//  for (size_t j = 0; j < _k->_variables.size(); j++) sampleData[j] = _k->_variables[j]->_precomputedValues[_modelEvaluationCount];
-//
-//  for (size_t i = 0; i < _executionsPerGeneration; i++)
-//  {
-//    std::vector<double> sampleData(_k->_variables.size());
-//    for (size_t j = 0; j < _k->_variables.size(); j++) sampleData[j] = _k->_variables[j]->_precomputedValues[_modelEvaluationCount];
-//
-//    korali::logInfo("Detailed", "Running sample %zu with values:\n         ", _modelEvaluationCount);
-//    for(auto& x : sampleData) korali::logData("Detailed", " %le   ", x);
-//    korali::logData("Detailed", "\n");
-//
-//    samples[i]["Operation"]  = "Execute";
-//    samples[i]["Parameters"] = sampleData;
-//    samples[i]["Sample Id"]  = _modelEvaluationCount;
-//    korali::_conduit->start(samples[i]);
-//    _modelEvaluationCount++;
-//  }
-//
-//  korali::_conduit->waitAll(samples);
+ _policyCollection = _newPolicyCollection;
+ _policyEvaluation = _newPolicyEvaluations;
+
+ for (size_t i = 0; i < _policyCollection[0].size(); i++)
+  for (size_t p = 0; p <= currentDepth; p++)
+   for (size_t k = 0; k < varCount; k++)
+    _k->_js["Results"]["Optimal Policies"][i][p][k] = _policyCollection[p][i][k];
+
+ _k->_js["Results"]["Policy Evaluations"] = _policyEvaluation;
+
+ double bestEval = korali::Inf;
+ size_t bestEvalIdx = -1;
+ for (size_t i = 0; i < _policyEvaluation.size(); i++) if (_policyEvaluation[i] < bestEval) { bestEval = _policyEvaluation[i]; bestEvalIdx = i; }
+ _k->_js["Results"]["Best Policy Index"] = bestEvalIdx;
 }
 
 void korali::solver::Interpolator::printGenerationBefore()

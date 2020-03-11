@@ -20,11 +20,12 @@ def model(k):
   k["Cost Evaluation"] = g(y) + h(x-y);
   
 def constraint(k):
- x = k["Policy"][0][0]
- if (x > 0.8):
-  k["Constraint Evaluation"] = -1
- else: 
-  k["Constraint Evaluation"] = 1
+ k["Constraint Evaluation"] = 0
+ for decision in k["Policy"]:
+  x = decision[0]
+  if (x > 0.8):
+   k["Constraint Evaluation"] = -1
+   return
   
 # Creating new experiment
 e = korali.Experiment()
@@ -38,12 +39,12 @@ e["Problem"]["Policy Constraints"] = [ constraint ]
 e["Variables"][0]["Name"] = "Y"
 e["Variables"][0]["Lower Bound"] = 0.0
 e["Variables"][0]["Upper Bound"] = 1.0
-e["Variables"][0]["Interval Count"] = 100
+e["Variables"][0]["Interval Count"] = 5
 
 # Configuring CMA-ES parameters
 e["Solver"]["Type"] = "Interpolator"
 e["Solver"]["Interpolation Strategy"] = "Nearest Neighbor" 
-e["Solver"]["Termination Criteria"]["Max Stages"] = 1
+e["Solver"]["Termination Criteria"]["Recursion Depth"] = 2
 
 # Running Korali
 k.run(e)

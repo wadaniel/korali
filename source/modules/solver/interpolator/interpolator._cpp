@@ -4,17 +4,17 @@
 void korali::solver::Interpolator::setInitialConfiguration()
 {
  // Initialize by populating the initial possibility space
- size_t combinationCount = 1;
+ size_t policyCount = 1;
  size_t policyDepth = _k->_currentGeneration;
  size_t varCount = _k->_variables.size();
 
- _policyCollection.resize(policyDepth);
+ _policyCollection.resize(_recursionDepth);
 
- for (size_t i = 0; i < _k->_variables.size(); i++) combinationCount *= (_k->_variables[i]->_intervalCount+1);
+ for (size_t i = 0; i < _k->_variables.size(); i++) policyCount *= (_k->_variables[i]->_intervalCount+1);
 
- _policyCollection[0].resize(combinationCount * varCount);
+ _policyCollection[0].resize(policyCount * varCount);
 
- printf("Combination Count: %lu, Var Count: %lu\n", combinationCount, varCount);
+ printf("Combination Count: %lu, Var Count: %lu\n", policyCount, varCount);
  size_t currentStride = 1;
 
  for (int i = _k->_variables.size()-1; i >= 0; i--)
@@ -22,7 +22,7 @@ void korali::solver::Interpolator::setInitialConfiguration()
   double intervalLength = (_k->_variables[i]->_upperBound + _k->_variables[i]->_lowerBound) / (double)_k->_variables[i]->_intervalCount;
 
   size_t currentPolicy = 0;
-  while (currentPolicy < combinationCount)
+  while (currentPolicy < policyCount)
   for (size_t j = 0; j < _k->_variables[i]->_intervalCount+1; j++)
   {
    double point = (double)j * intervalLength;
@@ -37,9 +37,9 @@ void korali::solver::Interpolator::setInitialConfiguration()
  }
 
  // Evaluating Constraints
- std::vector<korali::Sample> cSamples(combinationCount);
+ std::vector<korali::Sample> cSamples(policyCount);
  std::vector<double> sampleData(_k->_variables.size());
- for (size_t i = 0; i < combinationCount; i++)
+ for (size_t i = 0; i < policyCount; i++)
  {
   for(size_t j = 0; j < varCount; j++) sampleData[j] = _policyCollection[0][i*varCount + j];
   cSamples[i]["Operation"]  = "Evaluate Constraints";
@@ -50,19 +50,19 @@ void korali::solver::Interpolator::setInitialConfiguration()
  korali::_conduit->waitAll(cSamples);
 
  // Pruning policies based on constraints
- for (int i = combinationCount-1; i >= 0; i--)
+ for (int i = policyCount-1; i >= 0; i--)
  {
   double constraintEval = cSamples[i]["Constraint Evaluation"];
   if (constraintEval < 0)
    {
      printf("i: %lu, Constraint Eval: %f\n", i, constraintEval);
      _policyCollection[0].erase(_policyCollection[0].begin() + i);
-     combinationCount--;
+     policyCount--;
    }
  }
 
- std::vector<korali::Sample> eSamples(combinationCount);
- for (size_t i = 0; i < combinationCount; i++)
+ std::vector<korali::Sample> eSamples(policyCount);
+ for (size_t i = 0; i < policyCount; i++)
  {
   for(size_t j = 0; j < varCount; j++) sampleData[j] = _policyCollection[0][i*varCount + j];
   eSamples[i]["Operation"]  = "Evaluate Cost Function";
@@ -72,12 +72,11 @@ void korali::solver::Interpolator::setInitialConfiguration()
 
  korali::_conduit->waitAll(eSamples);
 
- for (size_t i = 0; i < combinationCount; i++)
+ _policyEvaluation.resize(policyCount);
+ for (size_t i = 0; i < policyCount; i++)
  {
   double eval = eSamples[i]["Cost Evaluation"];
-  printf("Combo %lu: ( ", i);
-  for(size_t j = 0; j < varCount; j++) printf("%f ", _policyCollection[0][i*varCount + j] );
-  printf(") = %f\n", eval);
+  _policyEvaluation[i] = eval;
  }
 
 }
@@ -85,7 +84,122 @@ void korali::solver::Interpolator::setInitialConfiguration()
 void korali::solver::Interpolator::runGeneration()
 {
 
- if (_k->_currentGeneration == 1) setInitialConfiguration();
+ if (_k->_currentGeneration == 1) { setInitialConfiguration(); return; }
+
+ size_t currentDepth = _k->_currentGeneration-1;
+ size_t policyCount = _policyCollection[currentDepth-1].size();
+ size_t varCount = _k->_variables.size();
+
+ _policyCollection[currentDepth].resize(policyCount * varCount);
+
+ size_t candidateCount = 1;
+ for (size_t i = 0; i < _k->_variables.size(); i++) candidateCount *= (_k->_variables[i]->_intervalCount+1);
+ std::vector<double> candidateList(candidateCount * varCount);
+
+ size_t currentStride = 1;
+ for (int i = _k->_variables.size()-1; i >= 0; i--)
+ {
+  double intervalLength = (_k->_variables[i]->_upperBound + _k->_variables[i]->_lowerBound) / (double)_k->_variables[i]->_intervalCount;
+
+  size_t currentCandidate = 0;
+  while (currentCandidate < candidateCount)
+  for (size_t j = 0; j < _k->_variables[i]->_intervalCount+1; j++)
+  {
+   double point = (double)j * intervalLength;
+   for (size_t k = 0; k < currentStride; k++)
+   {
+    candidateList[currentCandidate*varCount + i] = point;
+    currentCandidate++;
+   }
+  }
+
+  currentStride *= (_k->_variables[i]->_intervalCount+1);
+ }
+
+ printf("Candidate List Size: %lu\n", candidateList.size());
+
+ for (size_t i = 0; i < policyCount; i++)
+ {
+  std::vector<korali::Sample> cSamples(candidateList.size());
+  size_t currentSample = 0;
+
+  for (size_t j = 0; j < candidateList.size(); j++)
+  {
+   for (size_t k = 0; k < varCount; k++) _policyCollection[currentDepth][i*varCount + k] = candidateList[j*varCount + k];
+
+   for (size_t p = 0; p <= currentDepth; p++)
+   {
+    std::vector<double> coordinate(varCount);
+    for (size_t k = 0; k < varCount; k++)  coordinate[k] = _policyCollection[p][i*varCount + k];
+    cSamples[currentSample]["Policy"][p] = coordinate;
+   }
+
+   cSamples[currentSample]["Previous Evaluation"] = _policyEvaluation[i];
+   cSamples[currentSample]["Operation"]  = "Evaluate Constraints";
+   korali::_conduit->start(cSamples[currentSample]);
+   currentSample++;
+  }
+
+  korali::_conduit->waitAll(cSamples);
+
+  for (int j = candidateList.size()-1; j >= 0 ; j--)
+  {
+//   printf("Tried: ");
+   for (size_t p = 0; p <= currentDepth; p++)
+   {
+//    printf("( ");
+    for (size_t k = 0; k < varCount; k++)
+    {
+     double val = cSamples[j]["Policy"][p][k];
+//     printf("%f ", val);
+    }
+//    printf(")  ");
+   }
+
+   double constraintEval = cSamples[j]["Constraint Evaluation"];
+//   if (constraintEval <  0) printf("Not Pass\n");
+//   if (constraintEval >= 0) printf("Pass: ");
+   if (constraintEval < 0) cSamples.erase(cSamples.begin() + j);
+  }
+
+  printf("Size: %lu\n", cSamples.size());
+  std::vector<korali::Sample> eSamples(cSamples.size());
+  for (int i = 0; i < eSamples.size(); i++)
+  {
+   eSamples[i]["Operation"]  = "Evaluate Cost Function";
+   eSamples[i]["Variables"] = cSamples[i]["Policy"][currentDepth];
+   korali::_conduit->start(eSamples[i]);
+  }
+  korali::_conduit->waitAll(eSamples);
+
+  double minCostEvaluation = korali::Inf;
+
+  for (int j = eSamples.size()-1; j >= 0 ; j--)
+  {
+   printf("Tried: ");
+   for (size_t p = 0; p <= currentDepth; p++)
+   {
+    printf("( ");
+    for (size_t k = 0; k < varCount; k++)
+    {
+     double val = cSamples[j]["Policy"][p][k];
+     printf("%f ", val);
+    }
+    printf(")  ");
+   }
+
+   double currEval = eSamples[j]["Cost Evaluation"];
+   double prevEval = cSamples[j]["Previous Evaluation"];
+   double sumEval = currEval + prevEval;
+
+   if (sumEval < minCostEvaluation) minCostEvaluation = sumEval;
+   printf("Eval: %f\n", sumEval);
+  }
+
+  printf("Best Policy Val: %f\n", minCostEvaluation);
+  printf("Feasible Count: %d\n", cSamples.size());
+ }
+
 
 //  _sampleCount   = _k->_variables[0]->_precomputedValues.size();
 //

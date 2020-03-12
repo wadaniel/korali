@@ -42,7 +42,7 @@ e["Problem"]["Policy Constraints"] = [ constraint ]
 e["Variables"][0]["Name"] = "X"
 e["Variables"][0]["Lower Bound"] = 0.0
 e["Variables"][0]["Upper Bound"] = 1.0
-e["Variables"][0]["Interval Count"] = 100
+e["Variables"][0]["Interval Count"] = 500
 
 # Configuring CMA-ES parameters
 e["Solver"]["Type"] = "RecursiveDiscretizer"
@@ -51,6 +51,5 @@ e["Solver"]["Termination Criteria"]["Recursion Depth"] = len(evalFunctions)
 # Running Korali
 k.run(e)
 
-bestPolicyIdx = e["Results"]["Best Policy Index"] 
-print('Qmax: ' + str(e["Results"]["Optimal Policies"][bestPolicyIdx]))
-print('F(Qmax) = ' + str(-e["Results"]["Policy Evaluations"][bestPolicyIdx]))
+print('Qmax: ' + str(e["Results"]["Optimal Policy"]))
+print('F(Qmax) = ' + str(-e["Results"]["Policy Evaluation"]))

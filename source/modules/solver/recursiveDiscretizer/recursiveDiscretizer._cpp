@@ -117,17 +117,17 @@ void korali::solver::RecursiveDiscretizer::updateResults()
  size_t currentDepth = _k->_currentGeneration;
  size_t varCount = _k->_variables.size();
 
- for (size_t i = 0; i < _policyCollection[0].size(); i++)
-  for (size_t p = 0; p < currentDepth; p++)
-   for (size_t k = 0; k < varCount; k++)
-    _k->_js["Results"]["Optimal Policies"][i][p][k] = _policyCollection[p][i][k];
-
- _k->_js["Results"]["Policy Evaluations"] = _policyEvaluation;
-
  double bestEval = korali::Inf;
  size_t bestEvalIdx = -1;
  for (size_t i = 0; i < _policyEvaluation.size(); i++) if (_policyEvaluation[i] < bestEval) { bestEval = _policyEvaluation[i]; bestEvalIdx = i; }
- _k->_js["Results"]["Best Policy Index"] = bestEvalIdx;
+
+ if (bestEvalIdx == -1) korali::logError("No feasible policy found due to overly tight constraints.\n");
+
+  for (size_t p = 0; p < currentDepth; p++)
+   for (size_t k = 0; k < varCount; k++)
+    _k->_js["Results"]["Optimal Policy"][p][k] = _policyCollection[p][bestEvalIdx][k];
+
+ _k->_js["Results"]["Policy Evaluation"] = _policyEvaluation[bestEvalIdx];
 }
 
 void korali::solver::RecursiveDiscretizer::printGenerationBefore()

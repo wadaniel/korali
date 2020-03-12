@@ -1,43 +1,35 @@
 #!/usr/bin/env python3
-import math
 
-# Starting Korali's Engine
-import korali
-k = korali.Engine()
+# Problem taken from https://ethz.ch/content/dam/ethz/special-interest/mavt/dynamic-systems-n-control/idsc-dam/Lectures/Optimal-Control/Recitations/recitation_day_3.pdf
 
-# Number of Ovens
-N = 2
+######## Defining Problem's Constants
 
-# Oven Temperature Thresholds
-minTemp = 0.0
-maxTemp = 300.0
+N = 2 # Number of Ovens
+minTemp = 0.0   # Min Oven T
+maxTemp = 300.0 # Max Oven T
+t0 = 0 # Initial Temperature
+T = 200 # Target Temperature
+r = 5.0 # Tdiff Penalization Multiplier
+alpha = 0.6 # Heat Conductivity
+intervals = 500 # How fine will we discretize the variable space
 
-# Target Temperature
-T = 200
-
-# Initial Temperature
-t0 = 0
-
-# Temperature Difference Penalization Multiplier
-r = 5.0
+######## Defining Problem's Formulae
 
 # Oven Temperature Penalization Formula
-def penalization(u):
+def penalization(u):  
  return u*u
 
 # Heating Formula
-alpha = 0.6
 def heating(x, u):
  return (1.0-alpha)*x + alpha*u
 
-def rewardFunction(k):
-  # Determining current recursion depth
-  i = k["Current Depth"]
-  
-  # Determining final temperature based on policy
-  penalizationSum = 0
-  t = t0
-  
+# Cost function to optimize
+def costFunction(k):
+
+  penalizationSum = 0 # Variable to store the cummulative oven costs
+  t = t0 # Variable to store the current temperature
+
+  # Iterating the policy choices to determine final temperature and costs  
   for p in k["Policy"]:
     # Obtaining oven temperature from policy
     u = p[0]
@@ -48,31 +40,37 @@ def rewardFunction(k):
     # Calculate new temperature
     t = heating(t,u)
      
-  # The constraints are satisfied, evaluate reward model
+  # Evaluating cost model
   k["Cost Evaluation"] = r*(t-T)*(t-T) + penalizationSum
-  
+
+######## Configuring Korali Experiment
+
+import korali
+
 # Creating new experiment
 e = korali.Experiment()
 
 # Configuring Problem
 e["Problem"]["Type"] = "DynamicProgramming"
-e["Problem"]["Cost Function"] = rewardFunction
+e["Problem"]["Cost Function"] = costFunction
 
-# Defining the problem's variables.
+# Defining the problem's variables to discretize.
 e["Variables"][0]["Name"] = "U"
 e["Variables"][0]["Lower Bound"] = minTemp
 e["Variables"][0]["Upper Bound"] = maxTemp
-e["Variables"][0]["Interval Count"] = 300
+e["Variables"][0]["Interval Count"] = intervals
 
 # Configuring the discretizer solver's parameters
 e["Solver"]["Type"] = "RecursiveDiscretizer"
 e["Solver"]["Termination Criteria"]["Recursion Depth"] = N
 
-# Running Korali
+######## Running Korali and printing results
+
+k = korali.Engine()
 k.run(e)
 
-print('Qmax: ' + str(e["Results"]["Optimal Policy"]))
-print('F(Qmax) = ' + str(-e["Results"]["Policy Evaluation"]))
+print('Best Policy:  ' + str(e["Results"]["Optimal Policy"]))
+print('Optimal Cost: ' + str(e["Results"]["Policy Evaluation"]))
 
 t = t0
 for p in e["Results"]["Optimal Policy"]:

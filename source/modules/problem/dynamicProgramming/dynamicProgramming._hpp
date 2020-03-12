@@ -11,7 +11,6 @@ class DynamicProgramming : public korali::Problem
 
    void initialize() override;
    void evaluateCostFunction(korali::Sample& sample);
-   void evaluateConstraints(korali::Sample& sample);
 
 };
 

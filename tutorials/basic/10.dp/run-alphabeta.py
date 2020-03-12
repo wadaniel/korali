@@ -4,36 +4,44 @@ import math
 # Starting Korali's Engine
 import korali
 k = korali.Engine()
-budget = 1
 
-evalFunctions = [
-  lambda x : 2*x,
-  lambda x : -30*x*x + 17.63*x
-  ]
+N = 5
+initialX = 1.0
+alpha = 0.6
+beta = 0.3
 
-N = len(evalFunctions)
+def g(x):
+ return x*x
+
+def h(x):
+ return x*x*x
 
 def rewardFunction(k):
   # Determining current recursion depth
   i = k["Current Depth"]
   
-  # Checking if policy passes constraints
-  sum = 0
-  for decision in k["Policy"]: sum = sum + decision[0]
-
-  if (i < N-1):
-   if (sum >  budget): 
-    k["Cost Evaluation"] = math.inf
-    return
+  # Recovering the value of x, based on constraints
+  currentX = initialX
+  
+  for p in k["Policy"]:
+    y = p[0]
     
-  else: 
-   if (sum != budget): 
-    k["Cost Evaluation"] = math.inf
-    return 
+    # Check if the value of y is valid
+    if (y < 0):
+     k["Cost Evaluation"] = math.inf
+     return
     
+    # Check if the value of y is valid 
+    if (y > currentX):
+     k["Cost Evaluation"] = math.inf
+     return 
+     
+    # Updating the value of x, based on the selection
+    x = currentX
+    currentX = alpha*y + beta*(x-y)
+     
   # The constraints are satisfied, evaluate reward model
-  x = k["Policy"][i][0]
-  k["Cost Evaluation"] = -evalFunctions[i](x)
+  k["Cost Evaluation"] = - ( g(y) + h(x-y) )
   
 # Creating new experiment
 e = korali.Experiment()
@@ -43,9 +51,9 @@ e["Problem"]["Type"] = "DynamicProgramming"
 e["Problem"]["Cost Function"] = rewardFunction
 
 # Defining the problem's variables.
-e["Variables"][0]["Name"] = "X"
+e["Variables"][0]["Name"] = "Y"
 e["Variables"][0]["Lower Bound"] = 0.0
-e["Variables"][0]["Upper Bound"] = 1.0
+e["Variables"][0]["Upper Bound"] = initialX
 e["Variables"][0]["Interval Count"] = 100
 
 # Configuring the discretizer solver's parameters

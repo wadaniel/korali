@@ -62,22 +62,12 @@ void korali::solver::RecursiveDiscretizer::runGeneration()
      cSamples[currentSample]["Policy"][p] = _policyCollection[p][j];
    cSamples[currentSample]["Policy"][currentDepth] = _candidateList[i];
 
-   cSamples[currentSample]["Variables"] = cSamples[currentSample]["Policy"][currentDepth];
    cSamples[currentSample]["Previous Evaluation"] = _policyEvaluation[j];
-   cSamples[currentSample]["Current Depth"] = _recursionDepth - currentDepth - 1;
-   cSamples[currentSample]["Operation"]  = "Evaluate Constraints";
+   cSamples[currentSample]["Current Depth"] = currentDepth;
+   cSamples[currentSample]["Operation"]  = "Evaluate Cost Function";
    korali::_conduit->start(cSamples[currentSample]);
    currentSample++;
   }
-
-  korali::_conduit->waitAll(cSamples);
-
-  for (int i = 0; i < cSamples.size(); i++)
-   if (cSamples[i]["Constraint Evaluation"] >= 0)
-   {
-    cSamples[i]["Operation"]  = "Evaluate Cost Function";
-    korali::_conduit->start(cSamples[i]);
-   }
 
   korali::_conduit->waitAll(cSamples);
 
@@ -85,25 +75,21 @@ void korali::solver::RecursiveDiscretizer::runGeneration()
   auto bestPolicy = cSamples[0]["Policy"];
 
   for (int i = 0; i < cSamples.size(); i++)
-   if (cSamples[i]["Constraint Evaluation"] >= 0)
-   {
-    double currEval = cSamples[i]["Cost Evaluation"];
-    double prevEval = cSamples[i]["Previous Evaluation"];
-    double sumEval = currEval + prevEval;
-
-    if (sumEval < minCostEvaluation)
-    {
-     bestPolicy = cSamples[i]["Policy"];
-     minCostEvaluation = sumEval;
-    }
-   }
-
-  if (minCostEvaluation < korali::Inf)
   {
-   for (size_t p = 0; p <= currentDepth; p++)
-    _newPolicyCollection[p].push_back(bestPolicy[p]);
-   _newPolicyEvaluations.push_back(minCostEvaluation);
+   double currEval = cSamples[i]["Cost Evaluation"];
+   double prevEval = cSamples[i]["Previous Evaluation"];
+   double sumEval = currEval + prevEval;
+
+   if (sumEval < minCostEvaluation)
+   {
+    bestPolicy = cSamples[i]["Policy"];
+    minCostEvaluation = sumEval;
+   }
   }
+
+  for (size_t p = 0; p <= currentDepth; p++)
+    _newPolicyCollection[p].push_back(bestPolicy[p]);
+  _newPolicyEvaluations.push_back(minCostEvaluation);
  }
 
  _policyCollection = _newPolicyCollection;
@@ -121,8 +107,6 @@ void korali::solver::RecursiveDiscretizer::updateResults()
  size_t bestEvalIdx = -1;
  for (size_t i = 0; i < _policyEvaluation.size(); i++) if (_policyEvaluation[i] < bestEval) { bestEval = _policyEvaluation[i]; bestEvalIdx = i; }
 
- if (bestEvalIdx == -1) korali::logError("No feasible policy found due to overly tight constraints.\n");
-
   for (size_t p = 0; p < currentDepth; p++)
    for (size_t k = 0; k < varCount; k++)
     _k->_js["Results"]["Optimal Policy"][p][k] = _policyCollection[p][bestEvalIdx][k];
@@ -136,4 +120,7 @@ void korali::solver::RecursiveDiscretizer::printGenerationBefore()
 
 void korali::solver::RecursiveDiscretizer::printGenerationAfter()
 {
+ double bestVal = _k->_js["Results"]["Policy Evaluation"];
+ korali::logInfo("Normal", "Minimal Cost Policy:     %s\n", _k->_js["Results"]["Optimal Policy"].dump().c_str());
+ korali::logInfo("Normal", "Minimal Cost Evaluation: %f\n", bestVal);
 }

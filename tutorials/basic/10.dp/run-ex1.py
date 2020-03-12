@@ -54,6 +54,3 @@ k.run(e)
 bestPolicyIdx = e["Results"]["Best Policy Index"] 
 print('Qmax: ' + str(e["Results"]["Optimal Policies"][bestPolicyIdx]))
 print('F(Qmax) = ' + str(-e["Results"]["Policy Evaluations"][bestPolicyIdx]))
-
-res = evalFunctions[0](0.74) + evalFunctions[1](0.26) 
-print(res)

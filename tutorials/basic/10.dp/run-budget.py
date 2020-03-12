@@ -18,15 +18,10 @@ def model(k):
   k["Cost Evaluation"] = -evalFunctions[i](x)
   
 def constraint(k):
- k["Constraint Evaluation"] = 1
- sum = 0
- for decision in k["Policy"]:
-  sum = sum + decision[0]
- 
- if (sum > budget):
-   k["Constraint Evaluation"] = -1
- 
  if (k["Current Depth"] == 0):
+  sum = 0
+  for p in k["Policy"]:
+   sum = sum + p[0]
   if (sum != budget):  
    k["Constraint Evaluation"] = -1 
   

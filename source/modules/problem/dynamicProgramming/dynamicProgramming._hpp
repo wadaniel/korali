@@ -5,7 +5,7 @@
 
 namespace korali { namespace problem {
 
-class DP : public korali::Problem
+class DynamicProgramming : public korali::Problem
 {
  public:
 

@@ -1,11 +1,11 @@
-#ifndef _KORALI_SOLVER_INTERPOLATOR_HPP_
-#define _KORALI_SOLVER_INTERPOLATOR_HPP_
+#ifndef _KORALI_SOLVER_RECURSIVE_DISCRETIZER_HPP_
+#define _KORALI_SOLVER_RECURSIVE_DISCRETIZER_HPP_
 
 #include "modules/solver/solver.hpp"
 
 namespace korali { namespace solver {
 
-class Interpolator : public korali::Solver
+class RecursiveDiscretizer : public korali::Solver
 {
   private:
 
@@ -19,4 +19,4 @@ class Interpolator : public korali::Solver
 
 } } // namespace korali::solver
 
-#endif // _KORALI_SOLVER_INTERPOLATOR_HPP_
+#endif // _KORALI_SOLVER_RECURSIVE_DISCRETIZER_HPP_

@@ -1,6 +1,6 @@
-#include "modules/problem/DP/DP.hpp"
+#include "modules/problem/dynamicProgramming/dynamicProgramming.hpp"
 
-void korali::problem::DP::initialize()
+void korali::problem::DynamicProgramming::initialize()
 {
 //  if (_k->_variables.size() == 0) korali::logError("Execution problems require at least one variable.\n");
 //
@@ -11,12 +11,12 @@ void korali::problem::DP::initialize()
 //  }
 }
 
-void korali::problem::DP::evaluateCostFunction(korali::Sample& sample)
+void korali::problem::DynamicProgramming::evaluateCostFunction(korali::Sample& sample)
 {
  sample.run(_costFunction);
 }
 
-void korali::problem::DP::evaluateConstraints(korali::Sample& sample)
+void korali::problem::DynamicProgramming::evaluateConstraints(korali::Sample& sample)
 {
  sample["Constraint Evaluation"] = 1;
 

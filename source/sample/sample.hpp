@@ -21,6 +21,7 @@ class Sample {
  Sample* _self;
  SampleState _state;
  cothread_t _sampleThread;
+ bool _isAllocated;
 
  // JSON-based configuration
  korali::KoraliJson _js;
@@ -30,6 +31,7 @@ class Sample {
   _self = this;
   _state = SampleState::uninitialized;
   _js["Sample Id"] = 0;
+  _isAllocated = false;
  }
 
  // Execution Control Functions

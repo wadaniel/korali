@@ -2,7 +2,7 @@
    This documentation is currently under construction.
 
 ****************************
-Interpolator
+Recursive Discretizer
 ****************************
 
 This solver acts as executor.

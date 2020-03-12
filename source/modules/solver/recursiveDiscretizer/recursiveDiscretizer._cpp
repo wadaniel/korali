@@ -1,7 +1,7 @@
-#include "modules/solver/interpolator/interpolator.hpp"
+#include "modules/solver/recursiveDiscretizer/recursiveDiscretizer.hpp"
 #include "modules/conduit/conduit.hpp"
 
-void korali::solver::Interpolator::setInitialConfiguration()
+void korali::solver::RecursiveDiscretizer::setInitialConfiguration()
 {
  // Initialize by populating the initial possibility space
  size_t policyCount = 1;
@@ -15,7 +15,6 @@ void korali::solver::Interpolator::setInitialConfiguration()
  _policyCollection[0].resize(policyCount);
  for (size_t i = 0; i < policyCount; i++) _policyCollection[0][i].resize(varCount);
 
-// printf("Combination Count: %lu, Var Count: %lu\n", policyCount, varCount);
  size_t currentStride = 1;
 
  for (int i = _k->_variables.size()-1; i >= 0; i--)
@@ -40,49 +39,39 @@ void korali::solver::Interpolator::setInitialConfiguration()
  // Evaluating Constraints
  std::vector<korali::Sample> cSamples(policyCount);
  std::vector<double> sampleData(_k->_variables.size());
- for (size_t i = 0; i < policyCount; i++)
+ for (size_t i = 0; i < cSamples.size(); i++)
  {
   for(size_t j = 0; j < varCount; j++) sampleData[j] = _policyCollection[0][i][j];
   cSamples[i]["Operation"]  = "Evaluate Constraints";
+  cSamples[i]["Current Depth"] = _recursionDepth - 1;
   cSamples[i]["Policy"][0] = sampleData;
+  cSamples[i]["Variables"] = cSamples[i]["Policy"][0];
   korali::_conduit->start(cSamples[i]);
  }
 
  korali::_conduit->waitAll(cSamples);
 
- // Pruning policies based on constraints
- for (int i = policyCount-1; i >= 0; i--)
- {
-  double constraintEval = cSamples[i]["Constraint Evaluation"];
-  if (constraintEval < 0)
-   {
-     // printf("i: %lu, Constraint Eval: %f\n", i, constraintEval);
-     _policyCollection[0].erase(_policyCollection[0].begin() + i);
-     policyCount--;
-   }
- }
+ for (size_t i = 0; i < cSamples.size(); i++)
+  if (cSamples[i]["Constraint Evaluation"] >= 0)
+  {
+   cSamples[i]["Operation"]  = "Evaluate Cost Function";
+   korali::_conduit->start(cSamples[i]);
+  }
 
- std::vector<korali::Sample> eSamples(policyCount);
- for (size_t i = 0; i < policyCount; i++)
- {
-  for(size_t j = 0; j < varCount; j++) sampleData[j] = _policyCollection[0][i][j];
-  eSamples[i]["Operation"]  = "Evaluate Cost Function";
-  eSamples[i]["Variables"] = sampleData;
-  korali::_conduit->start(eSamples[i]);
- }
+ korali::_conduit->waitAll(cSamples);
 
- korali::_conduit->waitAll(eSamples);
+ _policyCollection[0].clear();
+ _policyEvaluation.clear();
 
- _policyEvaluation.resize(policyCount);
- for (size_t i = 0; i < policyCount; i++)
- {
-  double eval = eSamples[i]["Cost Evaluation"];
-  _policyEvaluation[i] = eval;
- }
-
+ for (size_t i = 0; i < cSamples.size(); i++)
+  if (cSamples[i]["Constraint Evaluation"] >= 0)
+  {
+   _policyCollection[0].push_back(cSamples[i]["Policy"][0]);
+   _policyEvaluation.push_back(cSamples[i]["Cost Evaluation"]);
+  }
 }
 
-void korali::solver::Interpolator::runGeneration()
+void korali::solver::RecursiveDiscretizer::runGeneration()
 {
 
  if (_k->_currentGeneration == 1) { setInitialConfiguration(); return; }
@@ -96,7 +85,9 @@ void korali::solver::Interpolator::runGeneration()
 
  size_t candidateCount = 1;
  for (size_t i = 0; i < _k->_variables.size(); i++) candidateCount *= (_k->_variables[i]->_intervalCount+1);
- std::vector<double> candidateList(candidateCount * varCount);
+
+ std::vector<std::vector<double>> candidateList(candidateCount);
+ for (size_t i = 0; i < candidateCount; i++) candidateList[i].resize(varCount);
 
  size_t currentStride = 1;
  for (int i = _k->_variables.size()-1; i >= 0; i--)
@@ -110,15 +101,13 @@ void korali::solver::Interpolator::runGeneration()
    double point = (double)j * intervalLength;
    for (size_t k = 0; k < currentStride; k++)
    {
-    candidateList[currentCandidate*varCount + i] = point;
+    candidateList[currentCandidate][i] = point;
     currentCandidate++;
    }
   }
 
   currentStride *= (_k->_variables[i]->_intervalCount+1);
  }
-
- //printf("Candidate List Size: %lu\n", candidateList.size());
 
  std::vector<std::vector<std::vector<double>>> _newPolicyCollection(_recursionDepth);
  std::vector<double> _newPolicyEvaluations;
@@ -130,7 +119,7 @@ void korali::solver::Interpolator::runGeneration()
 
   for (size_t j = 0; j < candidateList.size(); j++)
   {
-   for (size_t k = 0; k < varCount; k++) _policyCollection[currentDepth][i][k] = candidateList[j*varCount + k];
+   for (size_t k = 0; k < varCount; k++) _policyCollection[currentDepth][i][k] = candidateList[j][k];
 
    for (size_t p = 0; p <= currentDepth; p++)
    {
@@ -139,7 +128,9 @@ void korali::solver::Interpolator::runGeneration()
     cSamples[currentSample]["Policy"][p] = coordinate;
    }
 
+   cSamples[currentSample]["Variables"] = cSamples[currentSample]["Policy"][currentDepth];
    cSamples[currentSample]["Previous Evaluation"] = _policyEvaluation[i];
+   cSamples[currentSample]["Current Depth"] = _recursionDepth - _k->_currentGeneration;
    cSamples[currentSample]["Operation"]  = "Evaluate Constraints";
    korali::_conduit->start(cSamples[currentSample]);
    currentSample++;
@@ -147,71 +138,31 @@ void korali::solver::Interpolator::runGeneration()
 
   korali::_conduit->waitAll(cSamples);
 
-  for (int j = candidateList.size()-1; j >= 0 ; j--)
-  {
-//   printf("Tried: ");
-   for (size_t p = 0; p <= currentDepth; p++)
+  for (int i = 0; i < cSamples.size(); i++)
+   if (cSamples[i]["Constraint Evaluation"] >= 0)
    {
-//    printf("( ");
-    for (size_t k = 0; k < varCount; k++)
-    {
-     double val = cSamples[j]["Policy"][p][k];
-//     printf("%f ", val);
-    }
-//    printf(")  ");
+    cSamples[i]["Operation"]  = "Evaluate Cost Function";
+    korali::_conduit->start(cSamples[i]);
    }
 
-   double constraintEval = cSamples[j]["Constraint Evaluation"];
-//   if (constraintEval <  0) printf("Not Pass\n");
-//   if (constraintEval >= 0) printf("Pass: ");
-   if (constraintEval < 0) cSamples.erase(cSamples.begin() + j);
-  }
-
-  std::vector<korali::Sample> eSamples(cSamples.size());
-  for (int i = 0; i < eSamples.size(); i++)
-  {
-   eSamples[i]["Operation"]  = "Evaluate Cost Function";
-   eSamples[i]["Variables"] = cSamples[i]["Policy"][currentDepth];
-   eSamples[i]["Policy"] = cSamples[i]["Policy"];
-   eSamples[i]["Previous Evaluation"]  = cSamples[i]["Previous Evaluation"];
-   korali::_conduit->start(eSamples[i]);
-  }
-  korali::_conduit->waitAll(eSamples);
+  korali::_conduit->waitAll(cSamples);
 
   double minCostEvaluation = korali::Inf;
   auto bestPolicy = cSamples[0]["Policy"];
 
-  for (int j = eSamples.size()-1; j >= 0; j--)
-  {
-   for (size_t p = 0; p <= currentDepth; p++)
-    for (size_t k = 0; k < varCount; k++)
-     double val = cSamples[j]["Policy"][p][k];
-
-   double currEval = eSamples[j]["Cost Evaluation"];
-   double prevEval = eSamples[j]["Previous Evaluation"];
-   double sumEval = currEval + prevEval;
-
-   if (sumEval < minCostEvaluation)
+  for (int i = 0; i < cSamples.size(); i++)
+   if (cSamples[i]["Constraint Evaluation"] >= 0)
    {
-    bestPolicy = eSamples[j]["Policy"];
-    minCostEvaluation = sumEval;
+    double currEval = cSamples[i]["Cost Evaluation"];
+    double prevEval = cSamples[i]["Previous Evaluation"];
+    double sumEval = currEval + prevEval;
+
+    if (sumEval < minCostEvaluation)
+    {
+     bestPolicy = cSamples[i]["Policy"];
+     minCostEvaluation = sumEval;
+    }
    }
-  }
-
-
-//  printf("Best: ");
-//  for (size_t p = 0; p <= currentDepth; p++)
-//  {
-//   printf("( ");
-//   for (size_t k = 0; k < varCount; k++)
-//   {
-//    double val = bestPolicy[p][k];
-//    printf("%f ", val);
-//   }
-//   printf(") " );
-//  }
-//
-//  printf("Best Policy Val: %f\n", minCostEvaluation);
 
   if (minCostEvaluation < korali::Inf)
   {
@@ -224,7 +175,6 @@ void korali::solver::Interpolator::runGeneration()
    _newPolicyEvaluations.push_back(minCostEvaluation);
   }
  }
-
 
  _policyCollection = _newPolicyCollection;
  _policyEvaluation = _newPolicyEvaluations;
@@ -242,10 +192,10 @@ void korali::solver::Interpolator::runGeneration()
  _k->_js["Results"]["Best Policy Index"] = bestEvalIdx;
 }
 
-void korali::solver::Interpolator::printGenerationBefore()
+void korali::solver::RecursiveDiscretizer::printGenerationBefore()
 {
 }
 
-void korali::solver::Interpolator::printGenerationAfter()
+void korali::solver::RecursiveDiscretizer::printGenerationAfter()
 {
 }

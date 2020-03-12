@@ -80,9 +80,6 @@ void korali::solver::RecursiveDiscretizer::runGeneration()
  size_t policyCount = _policyCollection[currentDepth-1].size();
  size_t varCount = _k->_variables.size();
 
- _policyCollection[currentDepth].resize(policyCount);
- for (size_t i = 0; i < policyCount; i++) _policyCollection[currentDepth][i].resize(varCount);
-
  std::vector<std::vector<std::vector<double>>> _newPolicyCollection(_recursionDepth);
  std::vector<double> _newPolicyEvaluations;
 

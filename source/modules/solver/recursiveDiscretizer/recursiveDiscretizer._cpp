@@ -4,47 +4,46 @@
 void korali::solver::RecursiveDiscretizer::setInitialConfiguration()
 {
  // Initialize by populating the initial possibility space
- size_t policyCount = 1;
  size_t policyDepth = _k->_currentGeneration;
  size_t varCount = _k->_variables.size();
 
  _policyCollection.resize(_recursionDepth);
 
- for (size_t i = 0; i < _k->_variables.size(); i++) policyCount *= (_k->_variables[i]->_intervalCount+1);
+ // Generating Candidate List
+ size_t candidateCount = 1;
+ for (size_t i = 0; i < _k->_variables.size(); i++) candidateCount *= (_k->_variables[i]->_intervalCount+1);
 
- _policyCollection[0].resize(policyCount);
- for (size_t i = 0; i < policyCount; i++) _policyCollection[0][i].resize(varCount);
+ _candidateList.resize(candidateCount);
+ for (size_t i = 0; i < candidateCount; i++) _candidateList[i].resize(varCount);
 
  size_t currentStride = 1;
-
  for (int i = _k->_variables.size()-1; i >= 0; i--)
  {
   double intervalLength = (_k->_variables[i]->_upperBound + _k->_variables[i]->_lowerBound) / (double)_k->_variables[i]->_intervalCount;
 
-  size_t currentPolicy = 0;
-  while (currentPolicy < policyCount)
+  size_t currentCandidate = 0;
+  while (currentCandidate < candidateCount)
   for (size_t j = 0; j < _k->_variables[i]->_intervalCount+1; j++)
   {
    double point = (double)j * intervalLength;
    for (size_t k = 0; k < currentStride; k++)
    {
-    _policyCollection[0][currentPolicy][i] = point;
-    currentPolicy++;
+    _candidateList[currentCandidate][i] = point;
+    currentCandidate++;
    }
   }
 
   currentStride *= (_k->_variables[i]->_intervalCount+1);
  }
 
+
  // Evaluating Constraints
- std::vector<korali::Sample> cSamples(policyCount);
- std::vector<double> sampleData(_k->_variables.size());
+ std::vector<korali::Sample> cSamples(_candidateList.size());
  for (size_t i = 0; i < cSamples.size(); i++)
  {
-  for(size_t j = 0; j < varCount; j++) sampleData[j] = _policyCollection[0][i][j];
   cSamples[i]["Operation"]  = "Evaluate Constraints";
   cSamples[i]["Current Depth"] = _recursionDepth - 1;
-  cSamples[i]["Policy"][0] = sampleData;
+  cSamples[i]["Policy"][0] = _candidateList[i];
   cSamples[i]["Variables"] = cSamples[i]["Policy"][0];
   korali::_conduit->start(cSamples[i]);
  }
@@ -69,11 +68,12 @@ void korali::solver::RecursiveDiscretizer::setInitialConfiguration()
    _policyCollection[0].push_back(cSamples[i]["Policy"][0]);
    _policyEvaluation.push_back(cSamples[i]["Cost Evaluation"]);
   }
+
+ updateResults();
 }
 
 void korali::solver::RecursiveDiscretizer::runGeneration()
 {
-
  if (_k->_currentGeneration == 1) { setInitialConfiguration(); return; }
 
  size_t currentDepth = _k->_currentGeneration-1;
@@ -83,50 +83,19 @@ void korali::solver::RecursiveDiscretizer::runGeneration()
  _policyCollection[currentDepth].resize(policyCount);
  for (size_t i = 0; i < policyCount; i++) _policyCollection[currentDepth][i].resize(varCount);
 
- size_t candidateCount = 1;
- for (size_t i = 0; i < _k->_variables.size(); i++) candidateCount *= (_k->_variables[i]->_intervalCount+1);
-
- std::vector<std::vector<double>> candidateList(candidateCount);
- for (size_t i = 0; i < candidateCount; i++) candidateList[i].resize(varCount);
-
- size_t currentStride = 1;
- for (int i = _k->_variables.size()-1; i >= 0; i--)
- {
-  double intervalLength = (_k->_variables[i]->_upperBound + _k->_variables[i]->_lowerBound) / (double)_k->_variables[i]->_intervalCount;
-
-  size_t currentCandidate = 0;
-  while (currentCandidate < candidateCount)
-  for (size_t j = 0; j < _k->_variables[i]->_intervalCount+1; j++)
-  {
-   double point = (double)j * intervalLength;
-   for (size_t k = 0; k < currentStride; k++)
-   {
-    candidateList[currentCandidate][i] = point;
-    currentCandidate++;
-   }
-  }
-
-  currentStride *= (_k->_variables[i]->_intervalCount+1);
- }
-
  std::vector<std::vector<std::vector<double>>> _newPolicyCollection(_recursionDepth);
  std::vector<double> _newPolicyEvaluations;
 
  for (size_t i = 0; i < policyCount; i++)
  {
-  std::vector<korali::Sample> cSamples(candidateList.size());
+  std::vector<korali::Sample> cSamples(_candidateList.size());
   size_t currentSample = 0;
 
-  for (size_t j = 0; j < candidateList.size(); j++)
+  for (size_t j = 0; j < _candidateList.size(); j++)
   {
-   for (size_t k = 0; k < varCount; k++) _policyCollection[currentDepth][i][k] = candidateList[j][k];
-
-   for (size_t p = 0; p <= currentDepth; p++)
-   {
-    std::vector<double> coordinate(varCount);
-    for (size_t k = 0; k < varCount; k++)  coordinate[k] = _policyCollection[p][i][k];
-    cSamples[currentSample]["Policy"][p] = coordinate;
-   }
+   for (size_t p = 0; p < currentDepth; p++)
+    cSamples[currentSample]["Policy"][p] = _policyCollection[p][i];
+   cSamples[currentSample]["Policy"][currentDepth] = _candidateList[j];
 
    cSamples[currentSample]["Variables"] = cSamples[currentSample]["Policy"][currentDepth];
    cSamples[currentSample]["Previous Evaluation"] = _policyEvaluation[i];
@@ -178,6 +147,14 @@ void korali::solver::RecursiveDiscretizer::runGeneration()
 
  _policyCollection = _newPolicyCollection;
  _policyEvaluation = _newPolicyEvaluations;
+
+ updateResults();
+}
+
+void korali::solver::RecursiveDiscretizer::updateResults()
+{
+ size_t currentDepth = _k->_currentGeneration-1;
+ size_t varCount = _k->_variables.size();
 
  for (size_t i = 0; i < _policyCollection[0].size(); i++)
   for (size_t p = 0; p <= currentDepth; p++)

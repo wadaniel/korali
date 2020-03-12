@@ -9,6 +9,7 @@ class RecursiveDiscretizer : public korali::Solver
 {
   private:
 
+  void updateResults();
 
   public:
     void setInitialConfiguration();

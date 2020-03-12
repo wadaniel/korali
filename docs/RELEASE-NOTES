@@ -12,6 +12,7 @@ Breaking Changes
 
 Bug Fixes
 
++ Fixed a problem when installing Korali under a custom python environment using the --user flag.
 
 ------------------------------------------------
 

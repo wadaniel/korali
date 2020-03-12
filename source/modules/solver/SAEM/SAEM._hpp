@@ -18,6 +18,11 @@ class SAEM : public korali::Solver
     void runBuiltinSampler( );
     void calculateSampleSVectors();
     void updateS();
+    void updateQFunction();
+    void updateHyperparameters();
+    std::function<void(korali::Sample&)> _currentQ;
+
+    bool isLatent(int idx);
 
   public:
 

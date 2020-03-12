@@ -63,10 +63,11 @@ void korali::solver::SAEM::initialize()
     
    // Set starting values for hyperparameters
    _currentHyperparameters.resize(_numberHyperparameters);
-  for (size_t i = 0; i < _numberVariables; i++){
- 	 // check whether i is a latent variable index; if yes, continue
-  	  if(std::find( _latentProblem->_latentVariableIndices.begin(),  
-  	  		_latentProblem->_latentVariableIndices.end(), i) != _latentProblem->_latentVariableIndices.end())
+   for (size_t i = 0; i < _numberVariables; i++){
+   /*	 // check whether i is a latent variable index; if yes, continue
+  	  if(std::find( _latentProblem->_latentVariableIndices.begin(),
+  	  		_latentProblem->_latentVariableIndices.end(), i) != _latentProblem->_latentVariableIndices.end())*/
+  	  if (isLatent(i))
 			continue;      
       _currentHyperparameters[i] = _k->_variables[i]->_initialValue;
   }
@@ -83,6 +84,72 @@ void korali::solver::SAEM::initialize()
   //_normPreviousGradient = korali::Inf;
   //_previousEvaluation   = korali::Inf;
 }
+
+
+
+void korali::solver::SAEM::runGeneration( void )
+{
+
+  if (_k->_currentGeneration > 0) initialize();
+
+  /* E1: Sample latent variable values */
+  sampleLatent();
+  std::cout << "Sampled; generation: " << _k->_currentGeneration << std::endl;
+
+  /* E2: Update posterior probability function Q */
+  calculateSampleSVectors();
+  updateS();
+
+  /* M:  Find argmax Q(theta) */
+
+  // Define the function to be optimized
+  //  (needs to set: "F(x)", uses "Parameters")
+  updateQFunction();
+
+  // Set up a korali experiment and optimize the function
+  updateHyperparameters();
+
+  /* * * * * * */
+
+
+
+/*   evaluateFunctionAndGradient( );
+
+  korali::logInfo("Normal","X = [ ");
+  for(size_t k=0; k<N; k++) korali::logData("Normal"," %.5le  ",_currentX[k]);
+  korali::logData("Normal"," ]\n");
+
+  korali::logInfo("Normal","F(X) = %le \n", _currentEvaluation );
+
+  korali::logInfo("Normal","DF(X) = [ ");
+  for(size_t k=0; k<N; k++) korali::logData("Normal"," %.5le  ",_currentGradient[k]);
+  korali::logData("Normal"," ]\n");
+
+  korali::logInfo("Normal","X_best = [ ");
+  for(size_t k=0; k<N; k++) korali::logData("Normal"," %.5le  ",_bestX[k]);
+  korali::logData("Normal"," ]\n");
+
+  Update_iminus();
+
+  _previousEvaluation   = _currentEvaluation;
+  _previousGradient     = _currentGradient;
+  _normPreviousGradient = vectorNorm(_previousGradient);
+
+  if( _currentEvaluation < _bestEvaluation ){
+    _bestEvaluation = _currentEvaluation;
+    std::vector<double> tmp(N);
+    for(size_t j=0; j<N; j++) tmp[j] = _bestX[j]-_currentX[j];
+    _xDiff = vectorNorm( tmp );
+    _bestX = _currentX;
+    _maxStallCounter = 0;
+  }
+  else{
+    _maxStallCounter++;
+  } */
+
+}
+
+
 
 
 void korali::solver::SAEM::sampleLatent(){
@@ -225,62 +292,6 @@ void korali::solver::SAEM::runBuiltinSampler()
   }
 }*/
 
-void korali::solver::SAEM::runGeneration( void )
-{
-
-  if (_k->_currentGeneration > 0) initialize();
-
-  /* E1: Sample latent variable values */
-  sampleLatent(); 
-  std::cout << "Sampled; generation: " << _k->_currentGeneration << std::endl;
-
-  /* E2: Update posterior probability function Q */
-  calculateSampleSVectors();
-  updateS();
-
-  /* M:  Find argmax Q(theta) */
-
-
-
-  /* * * * * * */
-
-
-
-/*   evaluateFunctionAndGradient( );
-
-  korali::logInfo("Normal","X = [ ");
-  for(size_t k=0; k<N; k++) korali::logData("Normal"," %.5le  ",_currentX[k]);
-  korali::logData("Normal"," ]\n");
-
-  korali::logInfo("Normal","F(X) = %le \n", _currentEvaluation );
-
-  korali::logInfo("Normal","DF(X) = [ ");
-  for(size_t k=0; k<N; k++) korali::logData("Normal"," %.5le  ",_currentGradient[k]);
-  korali::logData("Normal"," ]\n");
-
-  korali::logInfo("Normal","X_best = [ ");
-  for(size_t k=0; k<N; k++) korali::logData("Normal"," %.5le  ",_bestX[k]);
-  korali::logData("Normal"," ]\n");
-
-  Update_iminus();
-
-  _previousEvaluation   = _currentEvaluation;
-  _previousGradient     = _currentGradient;
-  _normPreviousGradient = vectorNorm(_previousGradient);
-
-  if( _currentEvaluation < _bestEvaluation ){
-    _bestEvaluation = _currentEvaluation;
-    std::vector<double> tmp(N);
-    for(size_t j=0; j<N; j++) tmp[j] = _bestX[j]-_currentX[j];
-    _xDiff = vectorNorm( tmp );
-    _bestX = _currentX;
-    _maxStallCounter = 0;
-  }
-  else{
-    _maxStallCounter++;
-  } */
-
-}
 
 
 void korali::solver::SAEM::calculateSampleSVectors(){
@@ -357,6 +368,78 @@ void korali::solver::SAEM::updateS(){
      return;
 }
 
+void korali::solver::SAEM::updateQFunction(){
+         /* Re-defines the function to be optimized in the M-step.
+            Uses:
+                _currentS
+                zeta and phi functions of _latentProblem
+            Sets:
+                _currentQ
+         */
+         _currentQ = [S=_currentS, _latentProblem=_latentProblem](korali::Sample& s) -> void {
+                        if (! s.contains("Parameters")){
+                            korali::logError("Implementation error.\n");
+                        }
+                        s["Hyperparameters"] = s["Parameters"];
+                        s.run(_latentProblem->_zetaOfLikelihoodModel);
+                        s.run(_latentProblem->_phiOfLikelihoodModel);
+                        double zeta = s["zeta"];
+                        std::vector<double> phi = s["phi"];
+                        if (phi.size() != S.size()){
+                            korali::logError("Implementation error. Current Robbins-Monro-averaged vector S did not have the same length as vector phi from the problem definition (from the model). \n");
+                        }
+                         s["F(x)"] = -zeta + std::inner_product(std::begin(S), std::end(S),
+                                                                                    std::begin(phi), 0.0);
+                    };
+
+}
+
+void korali::solver::SAEM::updateHyperparameters(){
+    /* Set up a korali experiment and optimize the current Q function to get a new vector of hyperparameters. */
+    auto k = korali::Engine();
+    auto e = korali::Experiment();
+
+    e["Random Seed"] = 0x2A;
+    e["Problem"]["Type"] = "Optimization/Stochastic";
+    e["Problem"]["Objective Function"] = _currentQ; //&_currentQ;
+
+    // The variables are our hyperparameters
+    int hyperparamIdx = 0;
+    for(size_t i = 0; i < _numberVariables; i++){
+        if(isLatent(i))
+            continue;
+        auto var =  _k->_variables[i];
+        if (var->_lowerBound >= var->_upperBound)
+            korali::logError("Lower bound was equal to or higher than upper bound for a hyperparameter. Did you perhaps forget to set upper and lower bounds for this hyperparamter?");
+        e["Variables"][hyperparamIdx]["Name"] = var->_name;
+        e["Variables"][hyperparamIdx]["Lower Bound"] = var->_lowerBound;
+        e["Variables"][hyperparamIdx]["Upper Bound"] = var->_upperBound;
+        hyperparamIdx++;
+    }
+
+   // configure the solver
+   if (_mStepSolverType != "CMAES")
+        korali::logError("Currently, only using a CMAES solver is implemented");
+   e["Solver"]["Type"] = "CMAES";
+   e["Solver"]["Population Size"] = 4;
+   e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-15;
+   e["Solver"]["Termination Criteria"]["Max Generations"] = 100;
+   k.run(e);
+
+   // Now access the results! How?
+    std::cout << "line to set a breakpoint, nothing else" << "\n";
+
+
+}
+
+
+bool korali::solver::SAEM::isLatent(int idx){
+    /* checks whether the variable at index idx, i.e., k->_variables[idx], is latent or not*/
+    return _k->_variables[idx]->_bayesianType == "Latent";
+    // Alternative:
+    //return std::find( _latentProblem->_latentVariableIndices.begin(),
+  	//  		_latentProblem->_latentVariableIndices.end(), i) != _latentProblem->_latentVariableIndices.end())
+    }
 
 
 void korali::solver::SAEM::printGenerationBefore(){ return; }

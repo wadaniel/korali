@@ -26,17 +26,15 @@ Latent variables:
 
 class ExponentialFamilyDistribution 
 {
- protected:
-    pointsInfoStruct _p;
-
  public:
+        pointsInfoStruct _p;
         virtual void S(korali::Sample& k) = 0;
         virtual void zeta(korali::Sample& k) = 0;
         virtual void phi(korali::Sample& k) = 0;
        // virtual void init();
 };
 
-class ExampleDistribution1 : ExponentialFamilyDistribution
+class ExampleDistribution1 : public ExponentialFamilyDistribution
 {
     // This might be too simple / not a good problem for E-M:
     // Take the hyperparameter as sigma of a normal distribution, and the mean mu as latent variable
@@ -58,5 +56,23 @@ class ExampleDistribution1 : ExponentialFamilyDistribution
 
     // Todo: Second test case with multiple gaussian distributions; latent variables are cluster assignments.
     // (Clustering problem)
+
+class ExampleDistribution2 : public ExponentialFamilyDistribution
+{
+    // This might be too simple / not a good problem for E-M:
+    // Take the hyperparameter as sigma of a normal distribution, and the mean mu as latent variable
+
+
+    public:
+
+         ExampleDistribution2();
+        void S(korali::Sample& k) override;
+        void zeta(korali::Sample& k) override;
+        void phi(korali::Sample& k) override;
+
+};
+
+
+double l2_norm(std::vector<double> const& u);
 
 #endif

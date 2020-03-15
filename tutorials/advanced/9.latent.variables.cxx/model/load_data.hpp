@@ -6,10 +6,11 @@
 #include <vector>
 
 typedef struct pointsInfoStruct {
-  std::vector<double> points;
+  std::vector<std::vector<double>> points;
   std::vector<double> assignments;
   size_t nPoints;
   size_t nDimensions;
+  size_t nClusters;
  // std::vector<double> refTemp;
 } pointsInfo;
 

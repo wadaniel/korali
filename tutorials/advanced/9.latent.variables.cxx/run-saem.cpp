@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
  e["Problem"]["Phi Of Likelihood Model"] = &distrib1_phi;
 
  e["Solver"]["Type"] = "SAEM";
- e["Solver"]["Number Markov Chain Samples"] = 10;
+ e["Solver"]["Number Markov Chain Samples"] = 100;
  e["Solver"]["Termination Criteria"]["Max Generations"] = 100;
  e["Solver"]["Latent Variable Sampler"] = &distrib1_sampler;
  // e["Solver"]["Latent Variable Sampler"] = &dummySampler;
@@ -67,8 +67,8 @@ int main(int argc, char* argv[])
  //e["Variables"][0]["Initial Mean"] = 5;
  //e["Variables"][0]["Initial Standard Deviation"] = 5.0;
  e["Variables"][0]["Initial Value"] = 5.0; // Initial hyperparameter value
- e["Variables"][0]["Upper Bound"] = -15;
- e["Variables"][0]["Lower Bound"] = 15;
+ e["Variables"][0]["Upper Bound"] = 15;
+ e["Variables"][0]["Lower Bound"] = -15;
 
 
  e["Variables"][1]["Name"] = "mu";

@@ -27,14 +27,16 @@ pointsInfoStruct& univariateData()
  fscanf(problemFile, "%lu", &nPoints); // @suppress("Function cannot be resolved")
  fscanf(problemFile, "%lu", &nDimensions); // @suppress("Function cannot be resolved")
 
- __p.points.resize(nPoints * nDimensions );
+ __p.points.resize(nPoints);
  __p.assignments.resize(0);
 
  for (size_t i = 0; i < nPoints; i++)
  {
+  __p.points[i].resize(nDimensions);
   double val;
   for (size_t j = 0; j < nDimensions; j++){
-      fscanf(problemFile, "%le ", &val); __p.points[i*nDimensions + j] = val;
+      fscanf(problemFile, "%le ", &val);
+       __p.points[i][j] = val;
   }
  }
  fclose(problemFile);
@@ -53,20 +55,25 @@ pointsInfoStruct& multivariateData()
 
  size_t nPoints = 0;
  size_t nDimensions = 0;
+ size_t nClusters = 0;
 
  printf("Loading data from data_multiple.in ... \n");
  problemFile = fopen("model/data_multiple.in", "r");
  fscanf(problemFile, "%lu", &nPoints);
  fscanf(problemFile, "%lu", &nDimensions);
+ fscanf(problemFile, "%lu", &nClusters);
 
- __p.points.resize(nPoints * nDimensions );
+ __p.points.resize(nPoints );
  __p.assignments.resize(nPoints);
+ for (std::vector<double> p : __p.points){
+     p.resize(nDimensions);
+ }
 
  for (size_t i = 0; i < nPoints; i++)
  {
   double val;
   for (size_t j = 0; j < nDimensions; j++){
-      fscanf(problemFile, "%le ", &val); __p.points[i*nDimensions + j] = val;
+      fscanf(problemFile, "%le ", &val); __p.points[i][j] = val;
   }
   fscanf(problemFile, "%lu ", &val); __p.assignments[i] = val;
  }

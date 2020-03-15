@@ -108,7 +108,11 @@ void korali::solver::SAEM::runGeneration( void )
 
   // Set up a korali experiment and optimize the function
   updateHyperparameters();
-
+  for (double var : _currentHyperparameters){
+   // std::string logstr(" -- Update hyperparameters to: " + std::to_string(var) + "\n");
+  	//korali::logInfo("Minimal", "this is a dummy string\n");
+  	korali::logInfo("Minimal", " -- Update hyperparameters to: %f \n", var);
+}
   /* * * * * * */
 
 
@@ -307,15 +311,14 @@ void korali::solver::SAEM::calculateSampleSVectors(){
      */
       for(size_t i=0; i<_numberMarkovChainSamples; i++){
 
-    korali::Sample k;
-    k["Latent Variables"] = _currentSamples[i];
-    k["Hyperparameters"] = _currentHyperparameters;
-    k.run(_latentProblem->_sOfLikelihoodModel);
-    //_latentProblem->_sOfLikelihoodModel(k);
+        korali::Sample k;
+        k["Latent Variables"] = _currentSamples[i];
+        k["Hyperparameters"] = _currentHyperparameters;
+        k.run(_latentProblem->_sOfLikelihoodModel);
+        //_latentProblem->_sOfLikelihoodModel(k);
 
-    std::vector<double> v = k["S"];
-    _currentSamplesSVectors[i] = v;
-    return;
+        std::vector<double> v = k["S"];
+        _currentSamplesSVectors[i] = v;
   }
 }
 
@@ -429,6 +432,9 @@ void korali::solver::SAEM::updateHyperparameters(){
    // Now access the results! How?
     std::cout << "line to set a breakpoint, nothing else" << "\n";
 
+    auto bestVars = e["Solver"]["Best Ever Variables"];
+    auto solver = e["Solver"];
+    _currentHyperparameters = e["Solver"]["Best Ever Variables"].get<std::vector<double>>();
 
 }
 
@@ -440,6 +446,8 @@ bool korali::solver::SAEM::isLatent(int idx){
     //return std::find( _latentProblem->_latentVariableIndices.begin(),
   	//  		_latentProblem->_latentVariableIndices.end(), i) != _latentProblem->_latentVariableIndices.end())
     }
+
+
 
 
 void korali::solver::SAEM::printGenerationBefore(){ return; }

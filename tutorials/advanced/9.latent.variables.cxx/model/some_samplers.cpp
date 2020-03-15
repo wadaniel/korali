@@ -133,7 +133,7 @@ MCMCLatentSampler::MCMCLatentSampler(int numberLatentVars, int numberHyperparams
         for (size_t i=0; i < numberLatent; i++){
 
             // Defining problem's variables
-            std::string varName = "X_" + std::to_string(i);
+            std::string varName = "latent_" + std::to_string(i);
 
             e["Variables"][i]["Name"] = varName;
             e["Variables"][i]["Initial Mean"] = previousSampleMeans[i];

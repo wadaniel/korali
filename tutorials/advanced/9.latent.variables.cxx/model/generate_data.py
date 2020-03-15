@@ -1,12 +1,12 @@
 import numpy as np
 
 
-def draw_from_single_gaussian(nr_points=10, dimensions=2, mu=0, sigma=1 ):
+def draw_from_single_gaussian(nr_points=10, dimensions=2, mu=[0,0], sigma=1 ):
     ''' '''
     results, _ = draw_from_multiple_gaussian(nr_points, dimensions=dimensions, mus=[mu], sigma=sigma)
     return results
 
-def draw_from_multiple_gaussian(nr_points=10, dimensions=2, mus=[0,2], sigma=1):
+def draw_from_multiple_gaussian(nr_points=10, dimensions=2, mus=[[0, 0],[2,2]], sigma=1):
     results = np.zeros((nr_points, dimensions))
     cluster_assignment = np.zeros((nr_points,))
     nr_clusters = len(mus)
@@ -20,13 +20,17 @@ def draw_from_multiple_gaussian(nr_points=10, dimensions=2, mus=[0,2], sigma=1):
 
 
 def generate_data():
-    nr_points = 10
+    nr_points = 100
     dimensions = 2
     single_output_file = "data_single.in"
     multiple_output_file = "data_multiple.in"
 
+    #multidimensional case only:
+    mus = [[0, 0],[2,2]]
+    nr_clusters = len(mus)
+
     single_data = draw_from_single_gaussian(nr_points, dimensions)
-    multiple_data, ass = draw_from_multiple_gaussian(nr_points, dimensions)
+    multiple_data, ass = draw_from_multiple_gaussian(nr_points, dimensions, mus=mus)
 
     # store to files:
     with open(single_output_file, "w") as fd:
@@ -39,7 +43,7 @@ def generate_data():
     # store to files:
     with open(multiple_output_file, "w") as fd:
         d = multiple_data
-        fd.write(str(nr_points) +" " + str(dimensions)  +"\n")
+        fd.write(str(nr_points) +" " + str(dimensions)  + " " +str(nr_clusters) +"\n")
         lines = [" ".join([str(d[i, j])  for j in range(dimensions) ])  + " " + str(ass[i]) + "\n"   for i in range(nr_points)]
         fd.writelines(lines)
         fd.write("points (dim=" + str(dimensions) +") | last column: cluster assignment")

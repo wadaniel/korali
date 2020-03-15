@@ -1,4 +1,4 @@
-Model Optimization: Finding the Global Maximum
+Dynamic-Programming
 ===============================================
 
 In this tutorial we show how to **optimize** a given function. 

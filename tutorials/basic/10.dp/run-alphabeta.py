@@ -1,23 +1,24 @@
 #!/usr/bin/env python3
 import math
+import numpy as np
 
 ######## Defining Problem's Constants
 
-N = 5 # Number of stages
+N = 3 # Number of stages
 initialX = 1.0 # Initial value of X
-alpha = 0.6 # Alpha
-beta = 0.3 # Beta
-intervals = 100 # How fine will we discretize the variable space
+alpha = 0.75 # Alpha
+beta = 0.50 # Beta
+intervals = 700 # How fine will we discretize the variable space
 
 ######## Defining Problem's Formulae
 
 # Reward Function g(y)
 def g(y):
- return y*y
+ return np.cos(1 + 23 * y)
 
 # Reward Function h(x-y)
 def h(v):
- return v*v*v
+ return np.sin(10 * v)
  
 # Reward function to optimize
 def rewardFunction(k):

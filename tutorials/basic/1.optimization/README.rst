@@ -1,5 +1,5 @@
-Model Optimization: Finding the Global Maximum
-===============================================
+Stochastic Optimization: Finding the Global Maximum
+====================================================
 
 In this tutorial we show how to **optimize** a given function. 
 

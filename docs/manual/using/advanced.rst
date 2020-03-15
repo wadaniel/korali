@@ -1,9 +1,7 @@
-.. attention:
-
-   This documentation is currently under construction.
+.. _advanced-features:
 
 ****************************
-Running Korali
+Advanced Features
 ****************************
 
 Running a Korali Application
@@ -27,9 +25,6 @@ Accessing Results
 Configuring Results Output
 -----------------------------------------------
 
-Reading results directly on runtime
------------------------------------------------
-
 Accessing results from a save-state file
 -----------------------------------------------
 
@@ -39,6 +34,22 @@ Plotting Results
 
 Parallel / Distributed Execution
 ================================================
+
+Execution Conduit
+-------------------------
+
+The evaluation conduit module executes the computational model(s) for each sample and returns their raw results back to the solver. 
+
+The choice of conduit depends on the design and requirements of the computational model. The simple (default) conduit is one that evaluates samples sequentially:
+
+.. code-block:: python
+
+  k["Conduit"]["Type"] = "Simple";
+
+Below is a complete list of conduits currently implemented in Korali:
+
+[**Execution Conduit List**](conduit)
+
 
 Using the Concurrent Conduit
 --------------------------------------------

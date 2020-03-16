@@ -1,5 +1,5 @@
-Model Optimization with Constrained Variables
-=====================================================
+Constrained Optimization: Searching the Global Maximum
+======================================================
 
 In this tutorial we show how to solve a **constrained optimization** problem `CEC 2006 <http://web.mysites.ntu.edu.sg/epnsugan/PublicSite/Shared%20Documents/CEC-2006/technical_report.pdf>`_ Test Problem g09), defined as: Find :math:`x^\star = \mathop{\arg\min}\limits_{x}  \,\,\, f(x) \,,` under the constraints :math:`g_i(x) \leq 0.`
 

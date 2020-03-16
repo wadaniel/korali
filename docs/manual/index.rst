@@ -30,7 +30,6 @@ Korali's Documentation
    modules/solver/*
    modules/conduit/*
    modules/distribution/*      
-   modules/engine/*
    
 .. toctree::
    :maxdepth: 2

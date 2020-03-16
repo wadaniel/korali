@@ -8,7 +8,7 @@ N = 3 # Number of stages
 initialX = 1.0 # Initial value of X
 alpha = 0.75 # Alpha
 beta = 0.50 # Beta
-intervals = 700 # How fine will we discretize the variable space
+intervals = 200 # How fine will we discretize the variable space
 
 ######## Defining Problem's Formulae
 

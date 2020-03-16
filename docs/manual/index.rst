@@ -8,7 +8,8 @@ Korali's Documentation
    
    using/install
    using/basics 
-   using/advanced
+   using/parallel
+   using/checkpoints
    using/tools
    
 .. toctree::

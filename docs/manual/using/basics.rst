@@ -2,7 +2,8 @@
 Korali Basics
 ***********************
 
-This document describes the basic concepts that make a Korali experiment. For a quick example of a Korali application, visit the :ref:`basic tutorials <basic-tutorials>` section.
+This document describes the basic concepts that make a Korali application. For a quick kickstart example, visit the :ref:`basic tutorials <basic-tutorials>` section.
+
 
 Creating a Korali Experiment
 ========================================
@@ -16,7 +17,14 @@ The following python code snippet shows how to load Korali's library and instant
    e = korali.Experiment()
 
 
-This creates a new experiment object which can be then configured by specifying a Korali *problem* and *solver* combination, as explained below. In addition, experiments contain :ref:`general settings <module-experiment>` which affect the way in which Korali runs the experiment and outputs its results.    
+This creates a new experiment object which can be then configured by specifying a Korali *problem* and *solver* module combination, as shown below.
+
+.. image:: images/korali_engine.png
+   :width: 600
+
+The solver method work by stochastically producing a set of samples that can be evaluated independently. The problem module pre-processes these samples based on their on their configuration and passes them to a *model* function for execution. The problem module produces post-processed results based on the results of their evaluation, which the solver module uses to produce a better estimation of the solution. We call this process a \textit{generation}, which is repeated until the solver has converged to a solution.
+
+Experiments contain :ref:`general settings <module-experiment>` which affect the way in which Korali runs the experiment and outputs its results.    
 
 
 Korali Problems
@@ -281,6 +289,9 @@ After the experiment has been fully configured, the user needs to instantiate a 
    
 The engine contains all necessary execution logic to run the experiment and produce the results.
 
+Running Experiments
+-----------------------------------------
+
 To run a given experiment, simply use the engine's *run()* function, passing the experiment as argument.
 
 .. code-block:: python
@@ -294,11 +305,26 @@ It is not necessary to instantiate multiple Korali engines if the application ne
    k.run(e0)
    k.run(e1)
    k.run(e2) 
+
+Similarly, it is possible to launch multiple experiments simultaneously:
  
-The Engine exposes additional :ref:`general settings <module-engine>` that are shared across all experiment executions. These settings refer to advanced execution options and the production of profiling information. 
+.. code-block:: python
+
+   k.run( [e0, e1, e2] )
+
+In this case, Korali will not return until all three experiments have finished.
+
+Running your Korali Application
+-----------------------------------------
+
+To run an python application containing a Korali experiment, simply run:
+
+.. code-block:: bash
+
+   python3 ./myKoraliApp arguments
 
 Accessing Results
------------------------------------------------
+================================================
 
 When called, the *run* will not return until one of the experiment's termination criteria has been met. After return, the experiment will contain a *Results* section, from which the user can retrieve the desired results.
 
@@ -312,5 +338,68 @@ To access the results, use the following syntax:
    print('Found best sample at:')
    print('Thermal Conductivity = ' + str(bestSample["Parameters"][0])
    print('Heat Source Position = ' + str(bestSample["Parameters"][1])
-   print('Evaluation: ' + bestSample["F(x)"])   
+   print('Evaluation: ' + bestSample["F(x)"]) 
+   
+Result Files
+-----------------------------------------------
+
+After every generation, Korali stores the entire state of the framework (including results) to a results directory. The default path is given in :ref:`experiment defaults <module-experiment-defaults>`.
+
+To set a different results folder for a given experiment (recommended when you run multiple experiments), use the following syntax:
+
+.. code-block:: python
+
+   # Setting a different results folder for my experiment
+   e["File Output"]["Path"] = "./myResultsFolder"
+
+If you would like to reduce the frequency of state files output or outright disable it, use the follwing syntax:
+
+.. code-block:: python
+
+   # Saving results to a file every 5 generations, instead of 1
+   e0["File Output"]["Frequency"] = 5
+  
+   # Disable the output for this other experiment
+   e1["File Output"]["Enabled"] = False
+
+To preserve the all input/output parameters for every sample generated in Korali, you need to enable it by:
+
+.. code-block:: python
+
+   # Saving results to a file every 5 generations, instead of 1
+   e["File Output"]["Store Samples"] = True
+  
+This option is by default disabled, since storing all samples may require large file sizes.
+
+Console Verbosity
+-----------------------------------------------
+
+If you'd like to reduce or increase the amount of information that Korali outputs to console when running, you can use the following syntax:
+
+To set a different results folder for a given experiment (recommended when you run multiple experiments), use the following syntax:
+
+.. code-block:: python
+
+   # Do not print anything to console.
+   e["Console Output"]["Verbosity"] = "Silent"
+   
+   # Only print important progress notifications to console
+   e["Console Output"]["Verbosity"] = "Minimal"
+
+   # Print all possible information available.
+   e["Console Output"]["Verbosity"] = "Detailed"
+   
+To reduce the output frequency, use the following:
+
+.. code-block:: python
+
+   # Print partial results only every 5 generations
+   e["Console Output"]["Frequency"] = 5
+   
+
+Plotting Results
+-----------------------------------------------
+
+To generate a plot with the results of your experiment, check the documentation for our :ref:`Korali Plotter <korali-plotter>` tool. 
+
    

@@ -248,5 +248,5 @@ list_dir = os.listdir(moduleSrcDir)
 for f in list_dir:
  fullPath = os.path.join(moduleSrcDir, f)
  if not os.path.isfile(fullPath):
-  if (not '.o/' in fullPath and not '.d/' in fullPath and not 'Engine' in fullPath):
+  if (not '.o/' in fullPath and not '.d/' in fullPath and not 'engine' in fullPath):
    processModule({}, f, f)

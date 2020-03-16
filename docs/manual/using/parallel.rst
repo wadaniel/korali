@@ -12,8 +12,8 @@ The conduit is a property of the Korali engine, which means that all experiments
 
 In this document, we discuss different parallelism/distributed execution scenarios and show which conduit fits better for the case.    
 
-No parallelism
-=================================
+Sequential Execution (No parallelism)
+======================================
 
 The default behavior for Korali is to use the :ref:`Sequential Conduit <module-conduit-sequential>` conduit, which runs a single sample evaluation at any given moment using a single CPU core.
 

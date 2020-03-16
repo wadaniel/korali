@@ -5,27 +5,27 @@ Installation
 Installation Steps
 ====================
 
-  1. Download Korali
+1. Download Korali
 
-    Download the latest stable release of Korali with the following command:
-   
-     .. code-block:: bash
+  Download the latest stable release of Korali with the following command:
+  
+  .. code-block:: bash
     
-         git clone https://github.com/cselab/korali.git --branch latest
+     git clone https://github.com/cselab/korali.git --branch latest
 
-  2. Install Korali
+2. Install Korali
 
-    To build and install Korali, simply run:
+  To build and install Korali, simply run:
 
-      .. code-block:: bash
-
-        cd korali
-        ./install
+  .. code-block:: bash
+ 
+     cd korali
+     ./install
 
 Troubleshooting
 ====================
 
-  If you are experiencing problems installing or running Korali, please check the following hints:
+If you are experiencing problems installing or running Korali, please check the following hints:
 
   - Check Korali's `system requirements <#system-requirements>`_ to verify that your system has all the required software components.
 

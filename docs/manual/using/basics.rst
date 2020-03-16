@@ -340,14 +340,66 @@ To access the results, use the following syntax:
    print('Heat Source Position = ' + str(bestSample["Parameters"][1])
    print('Evaluation: ' + bestSample["F(x)"]) 
    
-Configuring Results Output
+Result Files
 -----------------------------------------------
+
+After every generation, Korali stores the entire state of the framework (including results) to a results directory. The default path is given in :ref:`experiment defaults <module-experiment-defaults>`.
+
+To set a different results folder for a given experiment (recommended when you run multiple experiments), use the following syntax:
+
+.. code-block:: python
+
+   # Setting a different results folder for my experiment
+   e["File Output"]["Path"] = "./myResultsFolder"
+
+If you would like to reduce the frequency of state files output or outright disable it, use the follwing syntax:
+
+.. code-block:: python
+
+   # Saving results to a file every 5 generations, instead of 1
+   e0["File Output"]["Frequency"] = 5
+  
+   # Disable the output for this other experiment
+   e1["File Output"]["Enabled"] = False
+
+To preserve the all input/output parameters for every sample generated in Korali, you need to enable it by:
+
+.. code-block:: python
+
+   # Saving results to a file every 5 generations, instead of 1
+   e["File Output"]["Store Samples"] = True
+  
+This option is by default disabled, since storing all samples may require large file sizes.
+
+Console Verbosity
+-----------------------------------------------
+
+If you'd like to reduce or increase the amount of information that Korali outputs to console when running, you can use the following syntax:
+
+To set a different results folder for a given experiment (recommended when you run multiple experiments), use the following syntax:
+
+.. code-block:: python
+
+   # Do not print anything to console.
+   e["Console Output"]["Verbosity"] = "Silent"
+   
+   # Only print important progress notifications to console
+   e["Console Output"]["Verbosity"] = "Minimal"
+
+   # Print all possible information available.
+   e["Console Output"]["Verbosity"] = "Detailed"
+   
+To reduce the output frequency, use the following:
+
+.. code-block:: python
+
+   # Print partial results only every 5 generations
+   e["Console Output"]["Frequency"] = 5
+   
 
 Plotting Results
 -----------------------------------------------
 
-Accessing results from a save-state file
------------------------------------------------
+To generate a plot with the results of your experiment, check the documentation for our :ref:`Korali Plotter <korali-plotter>` tool. 
 
-  
    

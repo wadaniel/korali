@@ -2,7 +2,8 @@
 Korali Basics
 ***********************
 
-This document describes the basic concepts that make a Korali experiment. For a quick example of a Korali application, visit the :ref:`basic tutorials <basic-tutorials>` section.
+This document describes the basic concepts that make a Korali application. For a quick kickstart example, visit the :ref:`basic tutorials <basic-tutorials>` section.
+
 
 Creating a Korali Experiment
 ========================================
@@ -16,7 +17,14 @@ The following python code snippet shows how to load Korali's library and instant
    e = korali.Experiment()
 
 
-This creates a new experiment object which can be then configured by specifying a Korali *problem* and *solver* combination, as explained below. In addition, experiments contain :ref:`general settings <module-experiment>` which affect the way in which Korali runs the experiment and outputs its results.    
+This creates a new experiment object which can be then configured by specifying a Korali *problem* and *solver* module combination, as shown below.
+
+.. image:: images/korali_engine.png
+   :width: 600
+
+The solver method work by stochastically producing a set of samples that can be evaluated independently. The problem module pre-processes these samples based on their on their configuration and passes them to a *model* function for execution. The problem module produces post-processed results based on the results of their evaluation, which the solver module uses to produce a better estimation of the solution. We call this process a \textit{generation}, which is repeated until the solver has converged to a solution.
+
+Experiments contain :ref:`general settings <module-experiment>` which affect the way in which Korali runs the experiment and outputs its results.    
 
 
 Korali Problems
@@ -281,6 +289,9 @@ After the experiment has been fully configured, the user needs to instantiate a 
    
 The engine contains all necessary execution logic to run the experiment and produce the results.
 
+Running Experiments
+-----------------------------------------
+
 To run a given experiment, simply use the engine's *run()* function, passing the experiment as argument.
 
 .. code-block:: python
@@ -294,11 +305,31 @@ It is not necessary to instantiate multiple Korali engines if the application ne
    k.run(e0)
    k.run(e1)
    k.run(e2) 
+
+Similarly, it is possible to launch multiple experiments simultaneously:
  
+.. code-block:: python
+
+   k.run( [e0, e1, e2] )
+
+In this case, Korali will not return until all three experiments have finished.
+
+Engine Configuration
+-----------------------------------------
+   
 The Engine exposes additional :ref:`general settings <module-engine>` that are shared across all experiment executions. These settings refer to advanced execution options and the production of profiling information. 
 
+Using Command-line Python
+-----------------------------------------
+
+Running a C++ Python-based Korali Application
+----------------------------------------------
+
+Running Multiple Experiments simultaneously
+---------------------------------------------
+
 Accessing Results
------------------------------------------------
+================================================
 
 When called, the *run* will not return until one of the experiment's termination criteria has been met. After return, the experiment will contain a *Results* section, from which the user can retrieve the desired results.
 
@@ -312,5 +343,16 @@ To access the results, use the following syntax:
    print('Found best sample at:')
    print('Thermal Conductivity = ' + str(bestSample["Parameters"][0])
    print('Heat Source Position = ' + str(bestSample["Parameters"][1])
-   print('Evaluation: ' + bestSample["F(x)"])   
+   print('Evaluation: ' + bestSample["F(x)"]) 
+   
+Configuring Results Output
+-----------------------------------------------
+
+Plotting Results
+-----------------------------------------------
+
+Accessing results from a save-state file
+-----------------------------------------------
+
+  
    

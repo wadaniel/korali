@@ -314,11 +314,6 @@ Similarly, it is possible to launch multiple experiments simultaneously:
 
 In this case, Korali will not return until all three experiments have finished.
 
-Engine Configuration
------------------------------------------
-   
-The Engine exposes additional :ref:`general settings <module-engine>` that are shared across all experiment executions. These settings refer to advanced execution options and the production of profiling information. 
-
 Using Command-line Python
 -----------------------------------------
 

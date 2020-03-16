@@ -18,7 +18,7 @@ No parallelism
 The default behavior for Korali is to use the :ref:`Sequential Conduit <module-conduit-sequential>` conduit, which runs a single sample evaluation at any given moment using a single CPU core.
 
 .. image:: images/conduit_sequential.png
-   :width: 600
+   :width: 450
 
 It is not necessary to specify any additional configuration for the sequential conduit to run.
 
@@ -35,7 +35,7 @@ Sequential Sampling - Parallel Model
 This scenario is similar to the one above, except that the model function uses parallelism to compute.
 
 .. image:: images/conduit_concurrent_seq_threads.png
-   :width: 600
+   :width: 450
 
 In this case, the model function may be using threads (e.g., OpenMP, Pthreads), or multi-processing (Fork/Join). This setup is perfectly compatible with Korali.
 
@@ -45,7 +45,7 @@ Parallel Sampling - Sequential Model
 In this scenario, we use local parallelism (single computer) to run many simultaneous instances of a sequential model.
 
 .. image:: images/conduit_concurrent_seq.png
-   :width: 600
+   :width: 450
 
 To enable this, we use the :ref:`Concurrent Conduit <module-conduit-concurrent>`, which uses multi-processing (Fork-Join model) to create many instances of the Korali process: one for the main engine, and the others for workers whose only task is to evaluate samples and return their results.
 
@@ -64,7 +64,7 @@ Parallel Sampling - Parallel Model
 In this scenario, we use local parallelism (single computer) to run many simultaneous instances of a parallel model.
 
 .. image:: images/conduit_concurrent_par.png
-   :width: 600
+   :width: 450
    
 This scenario is similar to the one above, except that the model function uses parallelism to compute. In this case, the user needs to be careful not to oversubscribe the CPU with too many threads/processes.
 
@@ -76,7 +76,7 @@ Parallel Sampling - Pre-Compiled Model
 The :ref:`Concurrent Conduit <module-conduit-concurrent>` allows for the parallel execution of pre-compiled/binary files/legacy codes.
 
 .. image:: images/conduit_concurrent_ext.png
-   :width: 600
+   :width: 450
 
 **Example**: See the following concurrent execution :ref:`tutorial <concurrentexecution>`, where an external application is used. 
 
@@ -91,7 +91,7 @@ Distributed Sampling - Sequential Model
 In this scenario, we use distributed parallelism (many computers) to run many simultaneous instances of a sequential model.
 
 .. image:: images/conduit_distributed_seq.png
-   :width: 600
+   :width: 450
 
 To enable this, we use the :ref:`Distributed Conduit <module-conduit-distributed>`, which uses MPI as communication backend to create many instances of Korali workers distributed among the system.
 
@@ -116,7 +116,7 @@ Distributed Sampling - Parallel Model
 This scenario is similar to the one above, except that the model function uses thread-parallelism (e.g., OpenMP) or GPUs (e.g, via CUDA) to compute.
 
 .. image:: images/conduit_distributed_omp.png
-   :width: 600   
+   :width: 450   
 
 In this case, it is recommended that the user runs one Korali worker per node/NUMA domain, and then the model function uses threading to employ all the cores/GPU therein.
    
@@ -139,7 +139,7 @@ Distributed Sampling - Distributed (MPI) Model
 This scenario is similar to the one above, except that the model function uses MPI as distributed parallelism library. 
 
 .. image:: images/conduit_distributed_par.png
-   :width: 600   
+   :width: 450   
    
 This is the general case for the :ref:`Distributed Conduit <module-conduit-distributed>`, in which worker teams can contains more than one rank. For example,
    
@@ -179,7 +179,7 @@ Distributed Sampling - External Application
 This is the case in which we run an external application in a distributed system.
 
 .. image:: images/conduit_distributed_ext.png
-   :width: 600   
+   :width: 450   
 
 **Example**: See the following :ref:`example <LAMMPS>`, which runs an external application (LAMMPS) via command line and obtains the result from a file.
 
@@ -190,7 +190,7 @@ Distributed Multi-Experiment Runs
 Korali conduits are capable of running multiple, independent experiments simultaneously. Furthermore, these experiments neet not be similar in their configuration, as they can specify diverse problem types and solver methods. The purpose for enabling multi-experiment runs is to increase the pool of pending samples, maximizing the occupation of Korali workers.
 
 .. image:: images/korali_multiple.png
-   :width: 600   
+   :width: 450   
    
 **Example**: See the following :ref:`example <RBCRelax>`, which runs multiple experiments, each employing a GPU-based model (Mirheo) to perform computations.
  

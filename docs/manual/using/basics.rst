@@ -314,14 +314,14 @@ Similarly, it is possible to launch multiple experiments simultaneously:
 
 In this case, Korali will not return until all three experiments have finished.
 
-Using Command-line Python
+Running your Korali Application
 -----------------------------------------
 
-Running a C++ Python-based Korali Application
-----------------------------------------------
+To run an python application containing a Korali experiment, simply run:
 
-Running Multiple Experiments simultaneously
----------------------------------------------
+.. code-block:: bash
+
+   python3 ./myKoraliApp arguments
 
 Accessing Results
 ================================================

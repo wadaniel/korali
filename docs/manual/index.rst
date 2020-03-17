@@ -8,7 +8,8 @@ Korali's Documentation
    
    using/install
    using/basics 
-   using/advanced
+   using/parallel
+   using/checkpoints
    using/tools
    
 .. toctree::
@@ -29,7 +30,6 @@ Korali's Documentation
    modules/solver/*
    modules/conduit/*
    modules/distribution/*      
-   modules/engine/*
    
 .. toctree::
    :maxdepth: 2

@@ -1,7 +1,7 @@
-Model Propagation (Execution)
-=====================================================
+Execution (Propagation)
+==========================================
 
-In this tutorial we show how to pass multiple inputs through a model.
+In this tutorial we show how to pass multiple inputs through a model (this setup may be used to do uncertainty propagation and distribute the workload).
 
 Example Scripts
 ---------------------------

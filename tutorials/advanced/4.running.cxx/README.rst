@@ -2,7 +2,7 @@ Running Korali with Compiled C++ Code
 =====================================================
 
 In this tutorial we show how Korali can be used with c++.
-For this we optimize a model with the solver `CMA-ES` and `LM-CMA`. Here we want to find the parameters v = (`Intensity` , `PosX`, `PosY`, `Sigma`) that maximize the posterior in a Bayesian problem.  
+For this we optimize a model with the solver `CMA-ES` and `LM-CMA`. Here we want to find the parameters :math:`v = (Intensity , PosX, PosY, Sigma)` that maximize the posterior in a Bayesian problem.  
 
 Example Scripts
 ---------------------------
@@ -24,7 +24,7 @@ Short explanation
 
 The problem to be solved is a static heat conduction problem, with
 a candle as static heat source. The variables `Intensity` , `PosX`, `PosY` are position and intensity of the candle. `Sigma` is the standard deviation of the noise in the
-`Additive Normal` noise model - the noise $\epsilon$ that is added to the function `f` (`heat2Dsolver`, see below) to obtain the measured temperature at each data point.
+`Additive Normal` noise model - the noise :math:`\epsilon` that is added to the function :math:`f` (heat2Dsolver, see below) to obtain the measured temperature at each data point.
 
 
 Computational Model and Data Points
@@ -39,7 +39,7 @@ First, we create the Korali engine and an experiment that we will configure,
     auto p = heat2DInit(&argc, &argv);
 
 
-Here, `heat2DInit`, defined in [heat2d.cpp](model/heat2d.cpp), returns the data points (triples (xPos, yPos, refTemp)) as `p`. We model refTemp as a function of xPos and yPos (a function whose parameters v1 we want to determine), in addition to some noise: $refTemp(xPos, yPos) = f_{v1}(xPos, yPos) + \epsilon$. The distribution of the noise $\epsilon$ depends on parameters v2. We want to estimate v = (v1, v2).  
+Here, `heat2DInit`, defined in [heat2d.cpp](model/heat2d.cpp), returns the data points (triples (xPos, yPos, refTemp)) as `p`. We model refTemp as a function of xPos and yPos (a function whose parameters :math:`v1` we want to determine), in addition to some noise: :math:`refTemp(xPos, yPos) = f_{v1}(xPos, yPos) + \epsilon`. The distribution of the noise :math:`\epsilon` depends on parameters :math:`v2`. We want to estimate :math:`v = (v1, v2)`.  
 
 We next set the problem type to Bayesian inference, assign the objective values (refTemp values) of our data as `Reference Data` and set the computational model to the function `heat2DSolver` (our `f` above), defined in [heat2d.cpp](model/heat2d.cpp),
 
@@ -119,7 +119,7 @@ Running the Optimization
 ---------------------------
 Finally, we call the `run()` routine to run the optimization, to find those
 parameters v that are most likely, using Bayes rule: We want to find v that
-maximize $P(v|X) = P(X|v)*prior(v)$, i.e, the likelihood of
+maximize :math:`P(v|X) = P(X|v)*prior(v)`, i.e, the likelihood of
 the data times their prior.
 
 .. code-block:: python

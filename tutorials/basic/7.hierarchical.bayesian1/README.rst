@@ -1,4 +1,4 @@
-Hierarchical Bayesian Inference (Simple)
+Hierarchical Bayesian Inference (Basic)
 =====================================================
 In this tutorial we show how to do hierarchical Bayesian inference.
 

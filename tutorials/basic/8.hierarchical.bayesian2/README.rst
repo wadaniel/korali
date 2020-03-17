@@ -1,4 +1,4 @@
-Hierarchical Bayesian Inference (Complex)
+Hierarchical Bayesian Inference (Extended)
 =====================================================
 In this tutorial we show how to do hierarchical Bayesian inference.
 

@@ -117,15 +117,3 @@ the data times their prior.
 .. code-block:: python
 
     k.run(e);
-
-We can then compile and run the code.   
-
-Optimization with LM-CMAES
----------------------------
-To use `LM-CMAES` as solver instead, we can change the solver configuration,
-
-.. code-block:: python
-
-    e["Solver"]["Type"] = "LMCMAES";
-    e["Solver"]["Population Size"] = 32;
-    e["Solver"]["Termination Criteria"]["Max Generations"] = 30;

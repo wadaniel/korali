@@ -11,7 +11,8 @@ For each phase we provided an individual `python` file.
 
 In phase 0 we generate synthetic data.
 
-###  Running
+Running
+_______
 
 All 3 phases can be run with the shell script
 

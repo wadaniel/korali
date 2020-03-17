@@ -16,7 +16,7 @@ Running an experiment partially
 In this scenario, we have a Korali application which runs a stochastic optimization problem (using CMAES) for a few generations, checks partial results, and then continues with the rest of the generations.   
 
 .. image:: images/checkpoint_rerun.png
-   :height: 150
+   :height: 200
    :align: center
    
 To do this, we simply define an initial set of termination criteria, and run the experiment:
@@ -61,7 +61,7 @@ Resuming an experiment from a save-state file
 In this scenario, we continue the execution of an unfinished experiment which had started prior to the execution of the current application and saved checkpoints of its progress.
    
 .. image:: images/checkpoint_resume.png
-   :height: 150
+   :height: 200
    :align: center
 
 This use case is common in large-scale executions when a model evaluation error may occur, or simply a an allocation job has run out of allocated time.
@@ -102,10 +102,10 @@ Resuming multiple experiments simultaneously
 In this scenario, we continue the execution of multiple unfinished experiments which had started prior to the execution of the current application and saved checkpoints of their progress.
  
 .. image:: images/checkpoint_multiple.png
-   :height: 150
+   :height: 200
    :align: center
    
-   This use case is common in large-scale executions when a model evaluation error may occur, or simply a an allocation job has run out of allocated time.
+This use case is common in large-scale executions when a model evaluation error may occur, or simply a an allocation job has run out of allocated time.
 
 In this case, we use the :code:`e.loadState()` function for all experiments.
 

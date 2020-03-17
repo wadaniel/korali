@@ -3,9 +3,8 @@ Discrete Optimization: Searching the Global Maximum
 
 In this tutorial we show how to optimize a function with discrete input parameters along with continuous ones.
 
-Example Scripts
+Problem Description
 ---------------------------
-    + *run-cmaes.py*
 
 We want to minimize the following function:
 

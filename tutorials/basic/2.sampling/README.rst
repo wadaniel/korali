@@ -4,9 +4,8 @@ Sampling: Draw Samples from a Function
 In this tutorial we show how to directly **sample** from a function
 using Metropolis Hastings (MCMC).
 
-Example Scripts
+Problem Description
 ---------------------------
-    + *run-mcmc.py*: Runs this tutorial using the MCMC solver.
 
 We are given the function :math:`g(\vartheta)=\exp(-\vartheta^2)` for :math:`\vartheta\in[-10,10]`.
 

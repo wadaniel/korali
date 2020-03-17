@@ -3,9 +3,8 @@ Execution (Propagation)
 
 In this tutorial we show how to pass multiple inputs through a model (this setup may be used to do uncertainty propagation and distribute the workload).
 
-Example Scripts
+Problem Description
 ---------------------------
-    + *run-execution.py*
 
 We are given a set of parameters to evaluate in a file 'samplesOut.dat'.
 We want to execute a model function :math:`f(\theta)` on given parameters.

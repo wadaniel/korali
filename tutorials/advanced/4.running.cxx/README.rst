@@ -4,14 +4,6 @@ Running Korali with Compiled C++ Code
 In this tutorial we show how Korali can be used with c++.
 For this we optimize a model with the solver `CMA-ES` and `LM-CMA`. Here we want to find the parameters :math:`v = (Intensity , PosX, PosY, Sigma)` that maximize the posterior in a Bayesian problem.  
 
-Example Scripts
----------------------------
-    + *run-cmaes.cpp*
-    + *run-lmcmaes.cpp*
-    + *run-tmcmc.cpp*
-    + *run-cmaes-direct.cpp*
-    + *run-lmcmaes-direct.cpp*
-
 How to run the example
 ---------------------------
 

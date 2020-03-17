@@ -3,14 +3,6 @@ Optimization: Searching the Global Maximum
 
 In this tutorial we show how to **optimize** a given function. 
 
-Example Scripts
----------------
-
-    + *run-cmaes.py*: Runs this tutorial using the CMAES solver.
-    + *run-dea.py*: Runs this tutorial using the DEA solver.
-    + *run-lmcma.py*: Runs this tutorial using the LMCMA solver.
-    + *run-rprop.py*: Runs this tutorial using the Rprop solver.
-    
 Problem Description
 ------------------- 
 

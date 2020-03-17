@@ -4,10 +4,6 @@ Preserving Quantities of Interest
 In this tutorial we show how Korali can be used to store important outputs from the computational model
 that otherwise would be lost.
 
-Example Scripts
----------------------------
-    + *run-mcmc.py*
-
 Computational Model
 ---------------------------
 

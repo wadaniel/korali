@@ -3,10 +3,6 @@ Parallel Execution with Concurrent Processes
 
 In this tutorial we show how an MPI model can be executed with Korali.
 
-Example Scripts
----------------------------
-    + *run.py*
-
 MPI Init
 ---------------------------
 Do not forget to init MPI inside the Korali application:

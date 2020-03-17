@@ -1,6 +1,3 @@
-.. attention::
-   This documentation is currently under construction.
-
 *****************************************************
 TMCMC (Transitional Markov Chain Monte Carlo)
 *****************************************************

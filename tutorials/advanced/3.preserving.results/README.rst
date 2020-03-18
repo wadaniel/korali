@@ -30,3 +30,15 @@ In Korali we have to set this flag to store the values of `Apples` and `Bananas`
     e["File Output"]["Store Samples"] = True
 
 All evaluations can be found in the files in `_korali_results`.
+
+
+To access the saved result of the first sample at the 8th generation, execute
+
+.. code-block:: python
+  
+  import json
+  with open('gen00000008.json') as f:
+    data = json.load(f)
+
+  data["Samples"][0]["Apples"]
+  data["Samples"][0]["Bananas"]

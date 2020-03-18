@@ -28,7 +28,7 @@ In Korali we have to set this flag to store the values of `Apples` and `Bananas`
 All evaluations can be found in the files in `_korali_results`.
 
 
-To access the saved result of the first sample at the 8th generation, execute
+To access the saved result of the first sample of the 8th generation, execute
 
 .. code-block:: python
   

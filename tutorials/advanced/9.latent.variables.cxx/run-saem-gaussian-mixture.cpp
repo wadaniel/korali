@@ -132,6 +132,7 @@ int main(int argc, char* argv[])
  for(size_t cluster_idx = 0; cluster_idx < distrib2._p.nPoints; cluster_idx++){
      e["Variables"][variable_counter]["Name"] = "cluster_assignment_"+std::to_string(latent_counter);
      e["Variables"][variable_counter]["Bayesian Type"] = "Latent";
+     //e["Variables"][variable_counter]["Granularity"] = 1.0; // <- does not work
      e["Variables"][variable_counter]["Prior Distribution"] = "Multinomial 2"; // not used but required
      e["Variables"][variable_counter]["Initial Value"] = d2_initialLatentValues[latent_counter]; // Initial hyperparameter value
 

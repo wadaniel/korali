@@ -58,7 +58,7 @@ pointsInfoStruct& multivariateData()
  size_t nClusters = 0;
 
  printf("Loading data from data_multiple.in ... \n");
- problemFile = fopen("model/data_single.in", "r");
+ problemFile = fopen("model/data_multiple.in", "r");
  fscanf(problemFile, "%lu", &nPoints); // @suppress("Function cannot be resolved")
  fscanf(problemFile, "%lu", &nDimensions);
  fscanf(problemFile, "%lu", &nClusters);
@@ -67,6 +67,9 @@ pointsInfoStruct& multivariateData()
  __p.assignments.resize(nPoints);
  for (std::vector<double> &p : __p.points){
      p.resize(nDimensions);
+ }
+ for (size_t i = 0; i < nPoints; i++){
+	 __p.points[i].resize(nDimensions);
  }
 
  for (size_t i = 0; i < nPoints; i++)
@@ -80,6 +83,7 @@ pointsInfoStruct& multivariateData()
  }
  __p.nDimensions = nDimensions;
  __p.nPoints = nPoints;
+ __p.nClusters = nClusters;
 
  return __p;
 }

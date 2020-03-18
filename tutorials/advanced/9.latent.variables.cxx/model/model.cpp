@@ -155,7 +155,8 @@ Latent variables:
         double lvar =latentVariables[i];
         assignments[i] = std::lround(lvar);
         if (std::abs(lvar - assignments[i]) > 0.01 )
-            korali::logError("Assigned latent variable was not an integer");
+           // korali::logError("Assigned latent variable was not an integer");
+        	 std::cout << "Ignoring error: Assigned latent variable was not an integer" << std::endl; // @suppress("Symbol is not resolved")
         if (lvar < -0.01 )
             korali::logError("Assigned latent variable was negative, should be a cluster assignment index");
       }
@@ -234,6 +235,20 @@ Latent variables:
     };
 
 
+ /*   distrib2 = ExampleDistribution2();
+
+     void distrib2_S(korali::Sample& s)
+     {
+       distrib2.S(s);
+     };
+      void distrib2_zeta(korali::Sample& s)
+     {
+       distrib2.zeta(s);
+     };
+      void distrib2_phi(korali::Sample& s)
+     {
+       distrib2.phi(s);
+     };*/
 
 
 // ****************** other ********************

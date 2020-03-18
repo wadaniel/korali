@@ -73,6 +73,7 @@ class ExampleDistribution2 : public ExponentialFamilyDistribution
 };
 
 
+
 double l2_norm(std::vector<double> const& u);
 
 #endif

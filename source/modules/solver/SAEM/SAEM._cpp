@@ -90,7 +90,7 @@ void korali::solver::SAEM::initialize()
 void korali::solver::SAEM::runGeneration( void )
 {
 
-  if (_k->_currentGeneration > 0) initialize();
+  if (_k->_currentGeneration == 0) initialize();
 
   /* E1: Sample latent variable values */
   sampleLatent();

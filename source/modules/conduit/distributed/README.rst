@@ -1,7 +1,5 @@
-.. attention::
-   This documentation is currently under construction.
-
 *******************************
 Distributed Conduit
 *******************************
 
+This conduit uses MPI to distribute samples to *n* workers, each with *k* MPI ranks.

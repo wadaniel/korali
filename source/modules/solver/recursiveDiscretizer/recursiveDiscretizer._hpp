@@ -1,0 +1,23 @@
+#ifndef _KORALI_SOLVER_RECURSIVE_DISCRETIZER_HPP_
+#define _KORALI_SOLVER_RECURSIVE_DISCRETIZER_HPP_
+
+#include "modules/solver/solver.hpp"
+
+namespace korali { namespace solver {
+
+class RecursiveDiscretizer : public korali::Solver
+{
+  private:
+
+  void updateResults();
+
+  public:
+    void setInitialConfiguration();
+    void runGeneration() override;
+    void printGenerationBefore() override;
+    void printGenerationAfter() override;
+};
+
+} } // namespace korali::solver
+
+#endif // _KORALI_SOLVER_RECURSIVE_DISCRETIZER_HPP_

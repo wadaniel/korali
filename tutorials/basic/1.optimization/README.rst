@@ -1,16 +1,8 @@
-Model Optimization: Finding the Global Maximum
-===============================================
+Optimization: Searching the Global Maximum
+==========================================
 
 In this tutorial we show how to **optimize** a given function. 
 
-Example Scripts
----------------
-
-    + *run-cmaes.py*: Runs this tutorial using the CMAES solver.
-    + *run-dea.py*: Runs this tutorial using the DEA solver.
-    + *run-lmcma.py*: Runs this tutorial using the LMCMA solver.
-    + *run-rprop.py*: Runs this tutorial using the Rprop solver.
-    
 Problem Description
 ------------------- 
 
@@ -36,7 +28,7 @@ This is the computational model that represents our objective function.
 Optimization with CMAES
 -----------------------
 
-First, open a file (you could name it 'a1-optimization') and import the korali module
+First, open a file (you could name it 'run-cmaes.py') and import the korali module
 
 .. code-block:: python
 
@@ -108,10 +100,10 @@ Running
 -------
 
 We are now ready to run our example:
-`./a1-optimization`
+`./run-cmaes`
 
 Or, alternatively:
-`python3 ./a1-optimization`
+`python3 ./run-cmaes`
 
 The results are saved in the folder `_korali_result/`.
 

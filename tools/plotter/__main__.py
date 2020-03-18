@@ -68,6 +68,11 @@ def main(path, mean, check, test):
    print("[Korali] No plotter for solver of type Rprop available...")
    exit(0)
 
+ if solverName == 'RecursiveDiscretizer':
+   # TODO
+   print("[Korali] No plotter for solver of type RecursiveDiscretizer available...")
+   exit(0)
+   
  print("[Korali] Error: Did not recognize solver '{0}' for plotting...".format(solverName))
  exit(-1)
 

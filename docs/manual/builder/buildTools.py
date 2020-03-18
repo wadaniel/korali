@@ -14,8 +14,14 @@ shutil.rmtree(toolsDstDir, ignore_errors=True, onerror=None)
 os.makedirs(toolsDstDir)
 
 shutil.copyfile(toolsSrcDir + '/plotter/README.rst', toolsDstDir + '/plotter.rst')
+
 for file in glob.glob(r'' + toolsSrcDir + '/plotter/*.png'):
     shutil.copy(file, toolsDstDir)
     
 shutil.copyfile(toolsSrcDir + '/profiler/README.rst', toolsDstDir + '/profiler.rst')
-shutil.copyfile(toolsSrcDir + '/gui/README.rst', toolsDstDir + '/gui.rst')
+
+for file in glob.glob(r'' + toolsSrcDir + '/profiler/examples/*.png'):
+    shutil.copy(file, toolsDstDir)
+
+
+#shutil.copyfile(toolsSrcDir + '/gui/README.rst', toolsDstDir + '/gui.rst')

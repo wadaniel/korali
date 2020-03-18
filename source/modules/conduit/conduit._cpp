@@ -21,7 +21,11 @@ void korali::Conduit::start(korali::Sample& sample)
 {
  if (sample._state != SampleState::uninitialized) korali::logError("Sample has already been initialized.\n");
 
- sample._sampleThread = co_create(8192*sizeof(void*), korali::Conduit::coroutineWrapper);
+ if (sample._isAllocated == false)
+  sample._sampleThread = co_create(8192*sizeof(void*), korali::Conduit::coroutineWrapper);
+ else
+  korali::logError("Sample thread is already allocated; has it executed before being re-started?\n");
+
  sample._state = SampleState::initialized;
  _conduit->_currentSample = &sample;
  co_switch(sample._sampleThread);
@@ -39,7 +43,7 @@ void korali::Conduit::wait(korali::Sample& sample)
 
  size_t sampleId = sample["Sample Id"];
  _currentExperiment->_sampleInfo["Samples"][sampleId] = sample._js.getJson();
- free(sample._sampleThread);
+ if (sample._isAllocated == true) { free(sample._sampleThread); sample._isAllocated = false; }
  sample._state = SampleState::uninitialized;
 
 }
@@ -63,7 +67,7 @@ size_t korali::Conduit::waitAny(std::vector<korali::Sample>& samples)
    {
     size_t sampleId = samples[currentSample]["Sample Id"];
     _currentExperiment->_sampleInfo["Samples"][sampleId] = samples[currentSample]._js.getJson();
-    free(samples[currentSample]._sampleThread);
+    if (samples[currentSample]._isAllocated == true) { free(samples[currentSample]._sampleThread); samples[currentSample]._isAllocated = false; }
     samples[currentSample]._state = SampleState::uninitialized;
     isFinished = true;
     break;
@@ -99,7 +103,7 @@ void korali::Conduit::waitAll(std::vector<korali::Sample>& samples)
  {
   size_t sampleId = samples[i]["Sample Id"];
   _currentExperiment->_sampleInfo["Samples"][sampleId] = samples[i]._js.getJson();
-  free(samples[i]._sampleThread);
+  if (samples[i]._isAllocated == true) { free(samples[i]._sampleThread); samples[i]._isAllocated = false; }
   samples[i]._state = SampleState::uninitialized;
  }
 

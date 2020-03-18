@@ -229,6 +229,8 @@ if [ $? -ne 0 ]; then
   logEcho "[Korali] Solution: Make sure python3 and pip are correctly installed in your system."
   exitWithError
 fi
+# The --user flag should be set only if we are not inside a virtualenv.
+PIP_USER=$(python3 -c "import sys; hasattr(sys, 'real_prefix') or print('--user')")
 
 ######## Checking support for Pybind11 ########
 
@@ -243,7 +245,7 @@ if [ $? -ne 0 ]; then
   fi
   
   logEcho "[Korali] pybind11 not found, trying to install it automatically."
-  python3 -m pip install --user pybind11 >> $logFile 2>&1
+  python3 -m pip install $PIP_USER pybind11 >> $logFile 2>&1
   if [ $? -ne 0 ]; then
     logEcho "[Korali] Error trying to install pybind11."
     exitWithError
@@ -323,7 +325,7 @@ if [ $? -ne 0 ]; then
   exitWithError
 fi
 
-python3 -m pip install . --user --upgrade >> $logFile 2>&1
+python3 -m pip install . $PIP_USER --upgrade >> $logFile 2>&1
 if [ $? -ne 0 ]; then
   logEcho "[Korali] Error installing Korali's Python module."
   exitWithError

@@ -10,7 +10,6 @@ Tools
 
    tools/plotter 
    tools/profiler
-   tools/gui
 
 
 

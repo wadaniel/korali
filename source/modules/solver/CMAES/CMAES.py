@@ -7,25 +7,25 @@ from korali.plotter.helpers import hlsColors, drawMulticoloredLine
 
 # Plot CMAES results (read from .json files)
 def plot(genList):
-    fig, ax = plt.subplots(2,2,num='Korali Results', figsize=(8,8))
+    fig, ax  = plt.subplots(2,2,num='Korali Results', figsize=(8,8))
     firstKey = next(iter(genList))
-    numdim = len(genList[firstKey]['Variables'])
-    numgens = len(genList)
+    numdim   = len(genList[firstKey]['Variables'])
+    numgens  = len(genList)
     
     lastGen = 0
     for i in genList: 
      if genList[i]['Current Generation'] > lastGen:
       lastGen = genList[i]['Current Generation']
         
-    cond = [ 0.0 ] * numgens
-    fval = [ 0.0 ] * numgens
-    dfval = [ 0.0 ] * numgens
-    genIds = [ 0.0 ] * numgens
-    sigma = [ 0.0 ] * numgens
-    psL2 = [ 0.0 ] * numgens
-    axis = [ None ] * numdim
-    objVec = [ None ] * numdim
-    ssdev = [ None ] * numdim
+    cond    = [ 0.0 ] * numgens
+    absfval = [ 0.0 ] * numgens
+    dfval   = [ 0.0 ] * numgens
+    genIds  = [ 0.0 ] * numgens
+    sigma   = [ 0.0 ] * numgens
+    psL2    = [ 0.0 ] * numgens
+    axis    = [ None ] * numdim
+    objVec  = [ None ] * numdim
+    ssdev   = [ None ] * numdim
     
     for i in range(numdim):
       axis[i] = [ None ] * numgens
@@ -34,27 +34,29 @@ def plot(genList):
 
     curPos = 0
     for gen in genList:
-     genIds[curPos] = genList[gen]['Current Generation']
+     genIds[curPos]  = genList[gen]['Current Generation']
      cond[curPos]    = genList[gen]['Solver']['Maximum Covariance Eigenvalue'] / genList[gen]['Solver']['Minimum Covariance Eigenvalue']
-     fval[curPos]    = genList[gen]['Solver']['Current Best Value']
+     absfval[curPos] = abs(genList[gen]['Solver']['Current Best Value'])
      dfval[curPos]   = abs(genList[gen]['Solver']['Current Best Value'] - genList[gen]['Solver']['Best Ever Value'])
      sigma[curPos]   = genList[gen]['Solver']['Sigma']
      psL2[curPos]    = genList[gen]['Solver']['Conjugate Evolution Path L2 Norm']
+     
      for i in range(numdim):
       axis[i][curPos]    = genList[gen]['Solver']['Axis Lengths'][i]
       objVec[i][curPos]  = genList[gen]['Solver']['Current Best Variables'][i]
       ssdev[i][curPos]   = genList[gen]['Solver']["Sigma"] * np.sqrt(genList[gen]['Solver']['Covariance Matrix'][i*numdim+i])
+     
      curPos = curPos + 1
          
     plt.suptitle('CMAES Diagnostics', fontweight='bold', fontsize=12 )
 
-    names  = [ genList[firstKey]['Variables'][i]['Name'] for i in range(numdim) ]
+    names = [ genList[firstKey]['Variables'][i]['Name'] for i in range(numdim) ]
     
     # Upper Left Plot
     ax[0,0].grid(True)
     ax[0,0].set_yscale('log')
-    #drawMulticoloredLine(ax[0,0], genIds, fval, 0.0, 'r', 'b', '$| F |$')
-    ax[0,0].plot(genIds, fval, color = 'r', label = '$| F |$')
+    #drawMulticoloredLine(ax[0,0], genIds, absfval, 0.0, 'r', 'b', '$| F |$')
+    ax[0,0].plot(genIds, absfval, color = 'r', label = '$| F |$')
     ax[0,0].plot(genIds, dfval, 'x', color = '#34495e', label = '$| F - F_{best} |$')
     ax[0,0].plot(genIds, cond, color='#98D8D8', label = '$\kappa(\mathbf{C})$')
     ax[0,0].plot(genIds, sigma, color='#F8D030', label = '$\sigma$')

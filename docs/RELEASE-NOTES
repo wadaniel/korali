@@ -1,15 +1,19 @@
-Month Day, Year - Korali 1.X.X (On Development)
+Month Day, Year - Korali 1.0.2
 
 New Features / Enhancements
 
-+
++ Added Dynamic Programming problem and solver.
++ Simplified interface and module names.
++ Larger parts of the documentation pages are now auto-generated
++ Support for C++ lambda functions
 
 Breaking Changes
 
-+
++ Many solver and problem types have changed names or been simplified. Your Korali app would need to adapt to the new interface.
 
 Bug Fixes
 
++ Fixed a problem when installing Korali under a custom python environment using the --user flag.
 
 ------------------------------------------------
 

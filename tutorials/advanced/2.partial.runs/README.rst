@@ -2,17 +2,8 @@ Partial Runs
 =====================================================
 
 In this tutorial we show how to stop and restart a previous Korali run.
+During the first and the second phase you may adjust a solvers settings.
 All scripts in this tutorial follow this structure:
-
-Example Scripts
----------------------------
-    + *run-cmaes.py*
-    + *run-dea.py*
-    + *run-executor.py*
-    + *run-mcmc.py*
-    + *run-multiple.py*
-    + *run-rprop.py*
-    + *run-tmcmc.py*
 
 Run
 ---------------------------

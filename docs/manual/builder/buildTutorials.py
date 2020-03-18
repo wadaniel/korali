@@ -27,9 +27,8 @@ def processTutorialSubFolder(folder):
    tutorialDstPath = folder + '/' + tutorialName + '.rst'
    tutorialsString += '    ' + folder + '/' + tutorialName + '\n'
    tutorialOutputString = '.. _' + ''.join(i for i in tutorialName.replace('.','') if not i.isdigit()) + ':\n\n'
-   repoString = 'korali'
-   if ('examples' in folder): repoString = 'korali-apps'
-   tutorialOutputString += '**Tutorial Source Code:** `https://github.com/cselab/' + repoString + '/tree/master/tutorials/' + folder + '/' + tutorialName + '/ <https://github.com/cselab/' + repoString + '/tree/master/tutorials/' + folder + '/' + tutorialName + '/>`_\n\n'
+   if ('examples' in folder): tutorialOutputString += '**Tutorial Source Code:** `https://github.com/cselab/korali-apps/tree/master/' + tutorialName + '/ <https://github.com/cselab/korali-apps/tree/master/' + tutorialName + '/>`_\n\n'
+   else: tutorialOutputString += '**Tutorial Source Code:** `https://github.com/cselab/korali/tree/master/tutorials/' + folder + '/' + tutorialName + '/ <https://github.com/cselab/korali/tree/master/tutorials/' + folder + '/' + tutorialName + '/>`_\n\n'
    tutorialOutputString += tutorialReadmeString
    with open('../tutorials/' + tutorialDstPath, 'w') as file: tutorialReadmeString = file.write(tutorialOutputString)
    

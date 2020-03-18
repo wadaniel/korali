@@ -1,4 +1,5 @@
 site
+doxygen
 docs/tutorials.md
 docs/install.md
 docs/tutorials/

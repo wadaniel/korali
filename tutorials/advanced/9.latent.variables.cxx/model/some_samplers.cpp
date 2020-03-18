@@ -42,7 +42,7 @@ void dummySampler(korali::Sample& k) //, int numberLatentVars)
 MCMCLatentSampler::MCMCLatentSampler(int numberLatentVars, int numberHyperparams,
                     std::vector<double> initialLatentValues, std::vector<double> initialHyperparams,
                     std::function<void(korali::Sample&)> zeta_, std::function<void(korali::Sample&)> S_,
-                            std::function<void(korali::Sample&)> phi_ )
+                            std::function<void(korali::Sample&)> phi_, bool sample_discrete )
        {
 
   /*  zeta_func = reinterpret_cast<uint64_t>(&zeta_);
@@ -52,6 +52,8 @@ MCMCLatentSampler::MCMCLatentSampler(int numberLatentVars, int numberHyperparams
     zeta_func = zeta_;
     S_func = S_;
     phi_func = phi_;
+
+    sample_discrete = sample_discrete;
 
     if (initialLatentValues.size() != numberLatentVars ) throw std::invalid_argument("number of latent variables should match the dimension of their initial values");
     if (initialHyperparams.size() != numberHyperparams ) throw std::invalid_argument("number of hyperparameters should match the dimension of their initial values");
@@ -137,7 +139,9 @@ MCMCLatentSampler::MCMCLatentSampler(int numberLatentVars, int numberHyperparams
 
             e["Variables"][i]["Name"] = varName;
             e["Variables"][i]["Initial Mean"] = previousSampleMeans[i];
-            e["Variables"][i]["Initial Standard Deviation"] = 1.0;
+            e["Variables"][i]["Initial Standard Deviation"] = 2.0;
+            if (sample_discrete)
+                e["Variables"][i]["Granularity"] = 1.0; // todo: This might simply be ignored; check in the results
         }
 
         // Configuring the MCMC sampler parameters

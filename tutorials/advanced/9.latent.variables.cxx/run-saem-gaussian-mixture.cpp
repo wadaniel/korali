@@ -28,7 +28,7 @@ void distrib2_phi(korali::Sample& s);
   // Initialize random number generation
   // (https://stackoverflow.com/questions/38244877/how-to-use-stdnormal-distribution)
   std::random_device rd;
-  std::mt19937 gen(rd()); // unused - todo: write loops instead of std::generate to be able to use "gen"
+  std::mt19937 gen(rd());
   std::uniform_int_distribution<> random_int(0, distrib2._p.nClusters - 1);
   std::normal_distribution<float> random_normal(0, 1); // could use gen as 'sample = random_normal(gen)'
 
@@ -36,27 +36,42 @@ void distrib2_phi(korali::Sample& s);
   int d2_numberLatentVars = distrib2._p.nPoints; // one for each datapoint
   int d2_numberHyperparams = distrib2._p.nDimensions * distrib2._p.nClusters + 1;
 
+
+
+
 int main(int argc, char* argv[])
 {
  auto k = korali::Engine();
  auto e = korali::Experiment();
 
-    // TODO: Need to move these out of main, and create some sort of creator function that runs the generate calls. It seems.
+    // TODO: Need to move these out of main, and create some sort of creator function that runs the generate calls.
+    //          It seems. Or transform it into a lambda?
 
   std::vector<double> d2_initialLatentValues(d2_numberLatentVars, 0.0);
-  std::generate(d2_initialLatentValues.begin(), d2_initialLatentValues.end(), random_int);
+  for (size_t i = 0; i < d2_numberLatentVars; i++){
+      d2_initialLatentValues[i] = random_int(gen);
+  }
+//  std::generate(d2_initialLatentValues.begin(), d2_initialLatentValues.end(), random_int);
 
   std::vector<double> d2_initialHyperparams(d2_numberHyperparams, 0.0);
-  std::generate(d2_initialHyperparams.begin(), d2_initialHyperparams.end(), random_normal);
+  for (size_t i = 0; i < d2_numberHyperparams; i++){
+      d2_initialHyperparams[i] = random_normal(gen);
+  }
+//  std::generate(d2_initialHyperparams.begin(), d2_initialHyperparams.end(), random_normal);
 
   MCMCLatentSampler distrib2_sampler_obj = MCMCLatentSampler(d2_numberLatentVars, d2_numberHyperparams,
-         d2_initialLatentValues, d2_initialHyperparams, &distrib2_zeta, &distrib2_S,
- 		&distrib2_phi );
+         d2_initialLatentValues, d2_initialHyperparams, &distrib2_zeta, &distrib2_S, &distrib2_phi, true );
 
-  void distrib2_sampler(korali::Sample& s)
+  /*void distrib2_sampler(korali::Sample& s)
   {
 	  distrib2_sampler_obj.sampleLatent(s);
-  }
+  }*/
+
+
+  std::function<void(korali::Sample&)> distrib2_sampler = [&distrib2_sampler_obj](korali::Sample& s) -> void {
+     distrib2_sampler_obj.sampleLatent(s);
+  };
+
 
  //auto p = heat2DInit(&argc, &argv);
 
@@ -68,7 +83,7 @@ int main(int argc, char* argv[])
  e["Solver"]["Type"] = "SAEM";
  e["Solver"]["Number Markov Chain Samples"] = 100;
  e["Solver"]["Termination Criteria"]["Max Generations"] = 100;
- e["Solver"]["Latent Variable Sampler"] = &distrib2_sampler;
+ e["Solver"]["Latent Variable Sampler"] = distrib2_sampler;
  // e["Solver"]["Latent Variable Sampler"] = &dummySampler;
 
  // * Define which hyperparameters we use (all mu, and sigma)

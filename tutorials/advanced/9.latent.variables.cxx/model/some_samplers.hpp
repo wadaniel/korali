@@ -23,6 +23,7 @@ class MCMCLatentSampler {
     int numberLatent;
     int numberHyperparameters;
 
+    bool sample_discrete;
 
     std::function<void(korali::Sample&)> zeta_func;
     std::function<void(korali::Sample&)> S_func;
@@ -43,7 +44,7 @@ class MCMCLatentSampler {
     MCMCLatentSampler(int numberLatentVars, int numberHyperparams,
                     std::vector<double> initialLatentValues, std::vector<double> initialHyperparams,
                     std::function<void(korali::Sample&)> zeta_, std::function<void(korali::Sample&)> S_,
-                            std::function<void(korali::Sample&)> phi_);
+                            std::function<void(korali::Sample&)> phi_, bool sample_discrete = false);
     void initialize();
     void sampleLatent(korali::Sample& k);
 };

@@ -1,17 +1,13 @@
 Preserving Quantities of Interest
 =====================================================
 
-In this tutorial we show how important outputs from the computational model can be stored,
+In this tutorial we show how Korali can be used to store important outputs from the computational model
 that otherwise would be lost.
-
-Example Scripts
----------------------------
-    + *run-mcmc.py*
 
 Computational Model
 ---------------------------
 
-In the model we assign QoI to the Korali `Sample`:
+In the model we assign quantity of interest (QoI) to the Korali `Sample`:
 
 .. code-block:: python
 

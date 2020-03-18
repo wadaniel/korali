@@ -1,19 +1,19 @@
-Model Sampling: Draw Samples from a Function
-=====================================================
+Sampling: Draw Samples from a Function
+======================================
 
-In this tutorial we show how to **sample** directly from a given function
-using Metropolis Hastings (MCMC) and Transition Markov Chain Monte Carlo (TMCMC).
+In this tutorial we show how to directly **sample** from a function
+using Metropolis Hastings (MCMC).
 
-Example Scripts
+Problem Description
 ---------------------------
-    + *run-mcmc.py*: Runs this tutorial using the MCMC solver.
 
 We are given the function :math:`g(\vartheta)=\exp(-\vartheta^2)` for :math:`\vartheta\in[-10,10]`.
 
 We assume that :math:`f` represents the *unnormalized* density of a distribution.
 We want to draw samples from this distribution.
 
-For the rest of the tutorial we will work with the function :math:`f(\vartheta)=\log g(\vartheta) = -\vartheta^2`.
+For the rest of the tutorial we will work with the function :math:`f(\vartheta)=\log g(\vartheta) = -\vartheta^2` for numerical reasons.
+In general we advise users of Korali to work in log space.
 
 The Objective Function
 ---------------------------

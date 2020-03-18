@@ -1,9 +1,6 @@
-.. attention::
-   This documentation is currently under construction.
-
 ****************************
 Recursive Discretizer
 ****************************
 
-This solver acts as executor.
+This solver discretizes the parameter space of a continuous dynamic programming problem, converting it to a graph and finding the best policy by applying Dijkstra's (shortest path) algorithm. 
 

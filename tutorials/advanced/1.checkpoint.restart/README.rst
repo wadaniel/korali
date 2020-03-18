@@ -3,26 +3,10 @@ Checkpoint / Resuming a Previous Korali Run
 
 In this tutorial we show how to restart a previous Korali run.
 
-Example Scripts
----------------------------
-    + *run-cmaes.py*
-
 Steps to Restart Execution
 ---------------------------
 
-Assume that we want to resume a previous Korali run, restarting from the one of the last generations. All we need to do is to run the following script:
-
-.. code-block:: python
-
-    #!/usr/bin/env python3
-    import sys
-    sys.path.append('./model')
-    from directModel import *
-    import korali
-
-    k = korali.initialize()
-    k.loadState("_korali_result/s00498.json")
-    k.setModel(evaluateModel)
-    k.run();
+Assume that we want to resume a previous Korali run, restarting from the one of the last generations. 
 
 Korali will automatically load all the configuration and solver state from the provided file, and run from that point until completion.
+You may use this feature to resume an expired job, or create an inital test run to validate your setup.

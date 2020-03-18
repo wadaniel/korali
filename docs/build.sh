@@ -9,6 +9,23 @@ function check()
  fi 
 }
 
+# Installing Doxygen
+if ! test -f "doxygen"; then
+  wget http://doxygen.nl/files/doxygen-1.8.17.linux.bin.tar.gz
+  check
+
+  tar -xzvf doxygen-1.8.17.linux.bin.tar.gz
+  check
+
+  mv doxygen-1.8.17/bin/doxygen .
+  check
+
+  rm -r doxygen-1.8.17/
+  check
+
+  rm doxygen-1.8.17.linux.bin.tar.gz
+  check
+fi
 
 # Installing shpinx, mkdocs, and materials theme
 python3 -m pip install sphinx --user

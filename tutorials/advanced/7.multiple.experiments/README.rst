@@ -3,10 +3,6 @@ Running Multiple Simultaneous Experiments
 
 In this tutorial we show how you can execute a series of experiments, in order to benefit from Korali's oversubscription capabilities.
 
-Example Scripts
----------------------------
-    + *run-cmaes.py*
-
 Create a series of experiments:
 
 .. code-block:: python

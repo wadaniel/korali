@@ -1,6 +1,3 @@
-.. attention::
-   This documentation is currently under construction.
-
 *************************
 Likelihood by Reference
 *************************

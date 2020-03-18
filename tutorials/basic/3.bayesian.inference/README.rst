@@ -1,13 +1,11 @@
-Inferring Parameter Values with Bayes' Theorem
-=====================================================
+Baesian Inference and Optimization
+==================================
 
 In this tutorial we show how to **optimize** and **sample** the posterior
 distribution of a Bayesian inference problem. 
 
-Example Scripts
+Problem Description
 ---------------------------
-    + *run-cmaes.py*: Runs this tutorial using the MCMC solver.
-    + *run-tmcmc.py*: Runs this tutorial using the TMCMC solver.
 
 In this example we will solve the inverse problem of estimating the Variables
 of a linear model using noisy data. We consider the computational model,

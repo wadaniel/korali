@@ -1,6 +1,21 @@
+.. _korali-plotter:
+
 *************************************
 Korali Plotter
 *************************************
+
+Usage
+========================
+
+Syntax: :code:`python3 -m korali.plotter [--dir=RESULTS_DIR] [--test]`
+
+Where:
+
+  - :code:`--dir` specifies the source path of Korali results to plot. By default: :code:`_korali_result/`
+  - :code:`--test` verifies that the plotter works, without plotting to screen.
+
+Examples
+========================
 
 Plotting TMCMC
 -----------------
@@ -46,12 +61,12 @@ A good indicator of convergance of CMA-ES to the global maximum is given by a st
 **Example: Shekel function**
 
 The following figure shows the results of an unsuccessful maximization of the
-negative of the [Shekel](https://en.wikipedia.org/wiki/Shekel_function) function in 4
-dimensions and with 10 local maxima.
+negative of the `Shekel <https://en.wikipedia.org/wiki/Shekel_function>`_ function in 4 dimensions and with 10 local maxima.
+
+.. image:: optimizing_shekel.png
 
 `We know <http://www-optima.amp.i.kyoto-u.ac.jp/member/student/hedar/Hedar_files/TestGO_files/Page2354.htm>`_ that the Shekel function has a global minimum at (4, 4, 4, 4),
-respectivel maximum in the negative case.
-In quadrant 2 we see that CMA-ES converged to a different result.
+respectivel maximum in the negative case. In quadrant 2 we see that CMA-ES converged to a different result.
 
 In general the global optimum is not known, following observations indicate
 ill convergence. Restarting CMA-ES from different starting points as well as

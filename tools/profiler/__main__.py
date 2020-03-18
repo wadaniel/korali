@@ -122,7 +122,7 @@ ytickLabels = []
 for tick in yticks: ytickLabels.append(str(int(tick/10)))
 ax.set_yticklabels(ytickLabels)
 
-ax.set_ylabel('Node Usage (GPU #)', fontsize=18)  
+ax.set_ylabel('Worker History', fontsize=18)  
 ax.set_xlabel('Time (Hours)', fontsize=18)  
 
 if (args.output is None):

@@ -1,6 +1,3 @@
-.. attention::
-   This documentation is currently under construction.
-
 ************************
 Korali's Documentation
 ************************
@@ -11,7 +8,8 @@ Korali's Documentation
    
    using/install
    using/basics 
-   using/running
+   using/parallel
+   using/checkpoints
    using/tools
    
 .. toctree::
@@ -23,23 +21,16 @@ Korali's Documentation
    tutorials/examples
 
 .. toctree::
-   :maxdepth: 1
-   :glob:
-   :caption: General Configuration
-  
-   modules/engine/*
-   modules/experiment/*
-
-.. toctree::
    :maxdepth: 2
    :glob:
-   :caption: Korali Modules
-      
+   :caption: Module Configuration
+  
+   modules/experiment/*   
    modules/problem/*
    modules/solver/*
    modules/conduit/*
    modules/distribution/*      
-
+   
 .. toctree::
    :maxdepth: 2
    :caption: Development

@@ -9,6 +9,19 @@ function check()
  fi 
 }
 
+# Building Korali source
+pushd ../source
+check
+
+python3 ./build.py
+check
+
+popd
+check
+
+# Doxygen only if Linux system
+if [[ "$OSTYPE" == "linux-gnu" ]]; then
+
 # Installing Doxygen
 if ! test -f "doxygen"; then
   wget http://doxygen.nl/files/doxygen-1.8.17.linux.bin.tar.gz
@@ -25,6 +38,12 @@ if ! test -f "doxygen"; then
 
   rm doxygen-1.8.17.linux.bin.tar.gz
   check
+fi
+
+# Running Doxygen
+./doxygen doxygen.config
+check
+
 fi
 
 # Installing shpinx, mkdocs, and materials theme

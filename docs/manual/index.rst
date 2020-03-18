@@ -38,9 +38,8 @@ Korali's Documentation
    dev/build
    dev/moduledev
    dev/operation
-   dev/source
+   Doxygen <https://www.cse-lab.ethz.ch/korali/docs/doxygen/html/annotated.html>
    dev/testing
-   dev/classes
 
 * :ref:`genindex`
 * :ref:`modindex`

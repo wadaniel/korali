@@ -36,4 +36,5 @@ __pycache__
 *.project/ 
 .project/
 *.settings/ 
+*.d
 

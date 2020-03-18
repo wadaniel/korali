@@ -1,3 +1,7 @@
+/** \file
+* @brief Contains auxiliar functions for JSON object manipulation and their interface with Korali
+******************************************************************************/
+
 #ifndef _KORALI_AUXILIARS_KORALIJSON_HPP_
 #define _KORALI_AUXILIARS_KORALIJSON_HPP_
 
@@ -7,13 +11,18 @@
 #include "pybind11/functional.h"
 #include "pybind11/stl.h"
 
+/**
+* \namespace korali
+* @brief The Korali namespace includes all Korali-specific functions, variables, and modules.
+*/
 namespace korali
 {
 
 class Sample;
 
-/*! \class KoraliJson
-    \brief Contains auxiliar functions for the interface between Korali and JSON objects.
+/**
+* \class KoraliJson
+* @brief This class encapsulates a JSON object, making it compatible with Korali C++ objects and Pybind11
 */
 class KoraliJson {
 
@@ -21,38 +30,85 @@ class KoraliJson {
 
  KoraliJson();
 
- // JSON-based configuration
+ /**
+ * @brief Container for the JSON object
+ */
  knlohmann::json  _js;
 
- // Python and Json Configuration Binding Methods
+ /**
+ * @brief Pointer that stores the current access position of the JSON object.
+ *  It advances with getItem, and resets upon setJson or finding a native data type (not a path).
+ */
  knlohmann::json*  _opt;
 
+ /**
+  * @brief Function to obtain the JSON object.
+  * @return A reference to the JSON object.
+  */
  knlohmann::json& getJson();
+
+ /**
+  * @brief Function to set the JSON object.
+  * @param js The input JSON object.
+ */
  void setJson(knlohmann::json& js);
 
+ /**
+  * @brief Gets an item from the JSON object at the current pointer position.
+  * @param key A pybind11 object acting as JSON key (number or string).
+  * @return A pybind11 object
+ */
  pybind11::object getItem(pybind11::object key);
+
+ /**
+  * @brief Sets an item on the JSON object at the current pointer position.
+  * @param key A pybind11 object acting as JSON key (number or string).
+  * @param val The value of the item to set.
+ */
  void setItem(pybind11::object key, pybind11::object val);
 
+ /**
+  * @brief C++ wrapper for the getItem operator.
+  * @param key A C++ string acting as JSON key.
+  * @return The referenced JSON object content.
+ */
  knlohmann::json& operator[](const std::string& key);
+
+ /**
+  * @brief C++ wrapper for the getItem operator.
+  * @param key A C++ integer acting as JSON key.
+  * @return The referenced JSON object content.
+ */
  knlohmann::json& operator[](const unsigned long int& key);
 
+ /**
+  * @brief Indicates whether the JSON object contains the given path.
+  * @param key key A C++ string acting as JSON key.
+  * @return true, if path is found; false, otherwise.
+ */
  bool contains(const std::string& key);
+
+ /**
+   * @brief Advances the JSON object pointer, given the key
+   * @param key A C++ string acting as JSON key.
+  */
  void traverseKey(pybind11::object key);
 };
 
-
-/*********************************************************************
- * The following class was introduced for support to Korali:
- *********************************************************************/
-
-/*! \class JsonInterface
-    \brief Provides auxiliar functions for the manipulation of Korali objects
+/**
+* \class JsonInterface
+* @brief Provides auxiliar functions for the manipulation of JSON objects
 */
 class JsonInterface
 {
 
 public:
 
+/**
+  * @brief Checks whether the JSON object is empty.
+  * @param js The JSON object to check.
+  * @return true, if it's empty; false, otherwise.
+ */
 static bool isEmpty(knlohmann::json& js)
 {
  bool empty = true;
@@ -85,6 +141,11 @@ static bool isEmpty(knlohmann::json& js)
  return empty;
 }
 
+/**
+  * @brief Checks whether the JSON object is of elemental type (number or string).
+  * @param js The JSON object to check.
+  * @return true, if it's elemental; false, otherwise.
+ */
 static bool isElemental(knlohmann::json& js)
 {
  if (js.is_number()) return true;
@@ -108,6 +169,11 @@ static bool isElemental(knlohmann::json& js)
  return isArray;
 }
 
+/**
+  * @brief Decomposes a string of a JSON path (multiple keys) into a set of single keys
+  * @param path The string containing multiple keys, e.g., path = "['ABC']['BCD']['EFG']"
+  * @return A vector of single strings:  [ 'ABC', 'BCD', 'EFG' ]
+ */
 static std::vector<std::string> getJsonPath(std::string path)
 {
  std::vector<size_t> positions;
@@ -133,6 +199,11 @@ static std::vector<std::string> getJsonPath(std::string path)
  return settings;
 }
 
+/**
+  * @brief Deletes a value on a given JS given a string containing the full path
+  * @param js The JSON object to modify.
+  * @param path The string containing the full path, e.g., path = "['ABC']['BCD']['EFG']"
+ */
 static void eraseValue(knlohmann::json& js, std::string path)
 {
  std::vector<std::string> settings = getJsonPath(path);
@@ -144,13 +215,15 @@ static void eraseValue(knlohmann::json& js, std::string path)
  aux->erase(settings[i]);
 }
 
+/**
+  * @brief Merges the values of two JSON objects recursively and applying priority.
+  * @param dest the JSON object onto which the changes will be made. Values here have priority (are not replaced).
+  * @param defaults the JSON object that applies onto the other. Values here have no priority (they will not replace)
+*/
 static void mergeJson(knlohmann::json& dest, const knlohmann::json& defaults)
 {
  if (dest.is_object() == false) korali::logError("Passed JSON A argument is not an object.\n");
  if (defaults.is_object() == false) korali::logError("Passed JSON B argument is not an object.\n");
-
- //printf("Defaults:   \n%s\n\n", defaults.dump(2).c_str());
- //printf("Source: \n%s\n\n", dest.dump(2).c_str());
 
  for (auto& x : defaults.items())
  {
@@ -160,10 +233,14 @@ static void mergeJson(knlohmann::json& dest, const knlohmann::json& defaults)
   else                            // Key found, check type.
    if (dest[k].is_object() && defaults[k].is_object()) mergeJson(dest[k], defaults[k]); // Both are objects. Recurse within.
  }
-
- //printf("Result:    \n%s\n\n", dest.dump(2).c_str());
 }
 
+/**
+  * @brief Checks whether a given key is present in the JSON object.
+  * @param js The JSON object to check.
+  * @param settings a list of strings containing each a single key.
+  * @return true, if the path defined by settings is found; false, otherwise.
+*/
 static bool isDefined(knlohmann::json& js, std::vector<std::string> settings)
 {
  auto tmp = js;
@@ -176,11 +253,24 @@ static bool isDefined(knlohmann::json& js, std::vector<std::string> settings)
  return true;
 }
 
+
+/**
+  * @brief Checks whether a given key is present in the JSON object.
+  * @param js The JSON object to check.
+  * @param path The string containing the full path, e.g., path = "['ABC']['BCD']['EFG']"
+  * @return true, if the path defined by settings is found; false, otherwise.
+*/
 static bool isDefined(knlohmann::json& js, std::string path)
 {
  return isDefined(js, getJsonPath(path));
 }
 
+/**
+  * @brief Loads a JSON object from a file.
+  * @param dst The JSON object to overwrite.
+  * @param fileName The path to the json file to load and parse.
+  * @return true, if file was found; false, otherwise.
+*/
 static bool loadJsonFromFile(knlohmann::json& dst, const char* fileName)
 {
  FILE *fid = fopen(fileName, "r");
@@ -206,6 +296,11 @@ static bool loadJsonFromFile(knlohmann::json& dst, const char* fileName)
  return false;
 }
 
+/**
+  * @brief Saves a JSON object to a file.
+  * @param fileName The path to the file onto which to save the JSON object.
+  * @param dst The input JSON object.
+*/
 static void saveJsonToFile(const char* fileName, knlohmann::json& js)
 {
  FILE *fid = fopen(fileName, "w");
@@ -218,10 +313,6 @@ static void saveJsonToFile(const char* fileName, knlohmann::json& js)
   korali::logError("Could not write to file: %s.\n", fileName);
 }
 
-
-/********************************************************
- * End of additional class by the Korali team:
- *******************************************************/
 };
 
 }

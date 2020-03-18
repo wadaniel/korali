@@ -12,6 +12,9 @@ namespace korali
 
 class Sample;
 
+/*! \class KoraliJson
+    \brief Contains auxiliar functions for the interface between Korali and JSON objects.
+*/
 class KoraliJson {
 
  public:
@@ -42,6 +45,9 @@ class KoraliJson {
  * The following class was introduced for support to Korali:
  *********************************************************************/
 
+/*! \class JsonInterface
+    \brief Provides auxiliar functions for the manipulation of Korali objects
+*/
 class JsonInterface
 {
 

@@ -1,3 +1,7 @@
+/** \file fs.hpp
+* @brief Contains auxiliar code for file system (files and folders) manipulation.
+******************************************************************************/
+
 #ifndef _AUXILIAR_FS_HPP_
 #define _AUXILIAR_FS_HPP_
 
@@ -5,9 +9,17 @@
 #include <dirent.h>
 #include <vector>
 
+/** \namespace Korali
+* @brief The Korali namespace includes all Korali-specific functions, variables, and modules.
+******************************************************************************/
 namespace korali
 {
 
+ /**
+ * @brief Creates a new folder and builds the entire path, if necessary.
+ *
+ * @param dirPath relative path to the new folder.
+ */
  static void mkdir(const std::string dirPath)
  {
          char tmp[256];
@@ -27,6 +39,11 @@ namespace korali
          ::mkdir(tmp, S_IRWXU);
  }
 
+ /******************************************************************************
+  * @brief Lists all files within within a given folder path
+  * @param dirPath relative path to the folder to list.
+  * @return A list with all files.
+  ******************************************************************************/
  static std::vector<std::string> listDirFiles(const std::string dirPath)
  {
      struct dirent *entry = nullptr;
@@ -47,6 +64,11 @@ namespace korali
      return dirList;
  }
 
+  /******************************************************************************
+  * @brief Checks if directory exists
+  * @param dirPath relative path to the directory.
+  * @return A boolean flag indicating (true) the directory exists, or (false) if it does not.
+  ******************************************************************************/
  static bool dirExists(const std::string dirPath)
  {
    DIR* dir = opendir(dirPath.c_str());

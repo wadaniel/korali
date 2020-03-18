@@ -6,10 +6,16 @@
 #include "auxiliar/math.hpp"
 #include <chrono>
 
+/*! \namespace Korali
+    \brief The Korali namespace includes all Korali-specific functions, variables, and modules.
+*/
 namespace korali {
 
 class Experiment;
 
+/*! \class Module
+    \brief Represents the basic building block of all Korali modules.
+*/
 class Module
 {
  public:
@@ -17,6 +23,7 @@ class Module
   std::string _type;
   std::vector<std::string> _terminationCriteria;
   korali::Experiment* _k;
+
 
   Module* getModule(knlohmann::json& js);
 

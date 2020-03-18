@@ -17,9 +17,9 @@
 #include <gsl/gsl_rng.h>
 #include "sample/sample.hpp"
 
-typedef void(*__fkfc)(korali::Sample&);
-typedef std::function<void(korali::Sample&)> __kfc;
-
+/*! \namespace knlohmann
+    \brief The knlohmann namespace includes all Korali-Json auxiliar functions and class methods.
+*/
 namespace knlohmann
 {
     template <>
@@ -29,22 +29,10 @@ namespace knlohmann
         static void to_json(json& j, const pybind11::object& obj);
     };
 
-    inline void adl_serializer<__kfc>::to_json(json& j, const __kfc& obj)
+    inline void adl_serializer<std::function<void(korali::Sample&)>>::to_json(json& j, const std::function<void(korali::Sample&)>& obj)
     {
-       auto x = new __kfc(obj);
+       auto x = new std::function<void(korali::Sample&)>(obj);
        j = (std::uint64_t) x;
-    }
-
-    template <>
-    struct adl_serializer<__fkfc>
-    {
-        static void to_json(json& j, const __fkfc& obj);
-    };
-
-    inline void adl_serializer<__fkfc>::to_json(json& j, const __fkfc& obj)
-    {
-        auto x = new __kfc(*obj);
-        j = (std::uint64_t) x;
     }
 
     namespace detail
@@ -103,7 +91,7 @@ namespace knlohmann
             }
             if (pybind11::isinstance<pybind11::function>(obj))
             {
-               return (std::uint64_t) new __kfc(obj.cast<__kfc>());
+               return (std::uint64_t) new std::function<void(korali::Sample&)>(obj.cast<std::function<void(korali::Sample&)>>());
             }
             if (pybind11::isinstance<pybind11::bool_>(obj))
             {

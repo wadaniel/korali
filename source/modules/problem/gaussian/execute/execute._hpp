@@ -11,6 +11,11 @@ class Execute : public korali::problem::Gaussian
 
     void initialize() override;
     void finalize() override;
+
+    /**
+     * @brief Runs the model on a given sample.
+     * @param sample A Korali Sample
+     */
     void execute(korali::Sample& sample);
 };
 

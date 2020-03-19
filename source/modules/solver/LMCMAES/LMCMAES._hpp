@@ -12,7 +12,6 @@ class LMCMAES : public korali::Solver
 {
  private:
 
- void setInitialConfiguration();
  void prepareGeneration();
  void initMuWeights(size_t numsamplesmu);
  void initCovariance();
@@ -28,6 +27,7 @@ class LMCMAES : public korali::Solver
 
  public:
 
+ void setInitialConfiguration() override;
  void finalize() override;
  void runGeneration() override;
  void printGenerationBefore() override;

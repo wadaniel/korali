@@ -11,6 +11,11 @@ class Constrained : public korali::problem::Optimization
 
  public:
   void evaluate(korali::Sample&);
+
+  /**
+    * @brief Evaluates whether at least one of constraints have been met.
+    * @param sample A Korali Sample
+   */
   void evaluateConstraints(korali::Sample&);
 
 };

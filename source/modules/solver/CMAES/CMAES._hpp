@@ -12,12 +12,35 @@ class CMAES : public korali::Solver
 {
  private:
 
- void setInitialConfiguration();
+ /**
+  * @brief Prepares generation for the next set of evaluations
+ */
  void prepareGeneration();
- void sampleSingle(size_t sampleIdx); /* sample individual */
- void adaptC(int hsig); /* CMAES covariance matrix adaption */
+
+ /**
+  * @brief Evaluates a single sample
+  * @param sampleIdx Index of the sample to evaluate
+ */
+ void sampleSingle(size_t sampleIdx);
+
+ /**
+   * @brief Adapts the covariance matrix.
+   * @param hsig Sign
+  */
+ void adaptC(int hsig);
+
+ /**
+    * @brief Updates means of covariance matrix
+ */
  void updateSigma(); /* update Sigma */
+
+
+ /**
+    * @brief Updates the system of eigenvalues and eigenvectors
+    * @param M Input matrix
+ */
  void updateEigensystem(std::vector<double>& M);
+
  void numericalErrorTreatment();
  void eigen(size_t N, std::vector<double>& C, std::vector<double>& diag, std::vector<double>& Q) const;
  void sort_index(const std::vector<double>& vec, std::vector<size_t>& _sortingIndex, size_t n) const;
@@ -35,6 +58,7 @@ class CMAES : public korali::Solver
 
  public:
 
+ void setInitialConfiguration() override;
  void finalize() override;
  void runGeneration() override;
  void printGenerationBefore() override;

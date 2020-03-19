@@ -11,7 +11,7 @@
 #include <cmath>
 #include <numeric>
 
-void korali::solver::SAEM::initialize()
+void korali::solver::SAEM::setInitialConfiguration()
 {
 
   if( _k->_problem->getType() != "Bayesian/Latent")
@@ -23,7 +23,8 @@ void korali::solver::SAEM::initialize()
   _numberLatent = _latentProblem->_latentVariableIndices.size();
   _numberHyperparameters = _numberVariables - _numberLatent;
 
-  if (_k->_currentGeneration > 0) return;
+  if (_k->_currentGeneration != 1)
+	  korali::logError("Called initialization in wrong generation; should be called at the start (when generation==1)");
 
   for (size_t i = 0; i < _numberVariables; i++)
     if( std::isfinite(_k->_variables[i]->_initialValue) == false )
@@ -37,10 +38,10 @@ void korali::solver::SAEM::initialize()
 
 
   _currentSamplesSVectors.resize(_numberMarkovChainSamples);
-  _currentS.resize(_numberLatent);
-  _previousS.resize(_numberLatent);
+  _currentS.resize(_latentProblem->_sDimension);
+  _previousS.resize(_latentProblem->_sDimension);
   std::fill(_currentS.begin(), _currentS.end(), 0);
-  std::fill(_previousS.begin(), _previousS.end(), -1); // something that is not 0, just in case / to detect if that is used anywhere
+  std::fill(_previousS.begin(), _previousS.end(), -1); // something that is not 0, just in case / to detect it if it is used anywhere
 
   /* */
 
@@ -63,15 +64,17 @@ void korali::solver::SAEM::initialize()
     
    // Set starting values for hyperparameters
    _currentHyperparameters.resize(_numberHyperparameters);
+   size_t hyperparam_index = 0;
    for (size_t i = 0; i < _numberVariables; i++){
    /*	 // check whether i is a latent variable index; if yes, continue
   	  if(std::find( _latentProblem->_latentVariableIndices.begin(),
   	  		_latentProblem->_latentVariableIndices.end(), i) != _latentProblem->_latentVariableIndices.end())*/
   	  if (isLatent(i))
 			continue;      
-      _currentHyperparameters[i] = _k->_variables[i]->_initialValue;
+      _currentHyperparameters[hyperparam_index] = _k->_variables[i]->_initialValue;
+      hyperparam_index++;
   }
-  
+
   
   // _bestSamples = _currentSamples;
   //_delta.resize( N, _delta0 );
@@ -90,7 +93,7 @@ void korali::solver::SAEM::initialize()
 void korali::solver::SAEM::runGeneration( void )
 {
 
-  if (_k->_currentGeneration == 0) initialize();
+  if (_k->_currentGeneration == 1) setInitialConfiguration();
 
   /* E1: Sample latent variable values */
   sampleLatent();
@@ -172,6 +175,7 @@ void korali::solver::SAEM::sampleLatent(){
           //}
     }
     else {
+      korali::logError("Builtin sampler is not allowed to be used any more");
       runBuiltinSampler();
     }
 
@@ -198,15 +202,24 @@ void korali::solver::SAEM::runBuiltinSampler()
          //auto p = heat2DInit(&argc, &argv);
 
          // Based on tutorial a2-sampling
-         e["Problem"]["Type"] = "Direct/Basic";
-         e["Problem"]["Objective Function"] = [params=_currentHyperparameters, this](korali::Sample& s) -> void {
-                        if (! s.contains("Latent Variables")){
+         e["Problem"]["Type"] = "Sampling";
+         e["Problem"]["Probability Function"] = [params=_currentHyperparameters, this](korali::Sample& s) -> void {
+                        if (! s.contains("Parameters")){
                             korali::logError("You try to evaluate the likelihood without passing values for the latent variables to the sample.\n");
                         }
+                        if (params.size() != _numberHyperparameters){
+                            //korali::logError("Wrong size of hyperparameters: "+std::to_string(params.size())+".\n");
+                            korali::logError("Wrong size of hyperparameters.\n");
+                        }
+                        if (s["Parameters"].size() != _numberLatent){
+                           // korali::logError("Wrong size of latent variables: "+std::to_string(s["Parameters"].size())+".\n");
+                            korali::logError("Wrong size of latent variables.\n");
+                        }
+                        s["Latent Variables"] = s["Parameters"];
                         s["Hyperparameters"] = params; // _currentHyperparameters;
                         // Ugly? & Probably doesnt work
                         _latentProblem->evaluateLogLikelihood(s);
-                         s["F(x)"] = s["logLikelihood"];
+                         s["P(x)"] = s["logLikelihood"];
                     };
 
         for (size_t i=0; i < _numberLatent; i++){
@@ -226,14 +239,15 @@ void korali::solver::SAEM::runBuiltinSampler()
         }
 
         // Configuring the MCMC sampler parameters
-        e["Solver"]["Type"]  = "Sampler/MCMC";
+        e["Solver"]["Type"]  = "MCMC";
         e["Solver"]["Burn In"] = 500;
         e["Solver"]["Termination Criteria"]["Max Samples"] = 5000;
 
         // Configuring output settings
-        e["Results"]["Frequency"] = 500;
-        e["Console"]["Frequency"] = 500;
-        e["Console"]["Verbosity"] = "Detailed";
+
+        e["File Output"]["Frequency"] = 500;
+        e["Console Output"]["Frequency"] = 500;
+        e["Console Output"]["Verbosity"] = "Detailed";
 
         // Todo: I don't think a result path is needed (and it'd need a step id in the pathname as well)
         //e["Results"]["Path"] = "setup/results_phase_1/" + "0"*(3 - str(i).length()) +  std:to_string(i);
@@ -248,7 +262,6 @@ void korali::solver::SAEM::runBuiltinSampler()
         printf("%f, ", db[i][j]);
         printf("]\n");
         }*/
-        // TODO: modify this
         std::vector<std::vector<double>>::const_iterator first = db.end() - _numberMarkovChainSamples;
         std::vector<std::vector<double>>::const_iterator last = db.end();
         std::vector<std::vector<double>> samples(first, last);
@@ -319,6 +332,8 @@ void korali::solver::SAEM::calculateSampleSVectors(){
 
         std::vector<double> v = k["S"];
         _currentSamplesSVectors[i] = v;
+        if (v.size() != _latentProblem->_sDimension)
+            korali::logError("S vector had incorrect size, or incorrect size was given as 'S Dimension' when defining the problem");
   }
 }
 
@@ -346,25 +361,26 @@ void korali::solver::SAEM::updateS(){
      // --> decay factor gamma
      double curGen = static_cast<double>(_k->_currentGeneration);
      double gamma = std::pow( curGen, - alpha);
+     int S_dim = _latentProblem->_sDimension;
 
      // Calculate mean S of our current samples
-     std::vector<double> sumVec(_numberLatent, 0);
-     std::vector<double> meanSampleS(_numberLatent, 0);
+     std::vector<double> sumVec(S_dim, 0);
+     std::vector<double> meanSampleS(S_dim, 0);
 
      for(size_t j = 0; j < _numberMarkovChainSamples; j++){
-        for(size_t i = 0; i < _numberLatent; i++) {
+        for(size_t i = 0; i < S_dim; i++) {
             sumVec[i] += _currentSamplesSVectors[j][i];
         }
      }
-     for(size_t i = 0; i < _numberLatent; i++) {
-        meanSampleS[i] += sumVec[i] / _numberMarkovChainSamples;
+     for(size_t i = 0; i < S_dim; i++) {
+        meanSampleS[i] = sumVec[i] / _numberMarkovChainSamples;
       }
 
       // Now do the Robbins-Monro update
      if (_k->_currentGeneration == 0)
         _currentS = meanSampleS;
      else {
-         for(size_t i = 0; i < _numberLatent; i++) {
+         for(size_t i = 0; i < S_dim; i++) {
              _currentS[i] =   _previousS[i]  + gamma * (meanSampleS[i] - _previousS[i]);
          }
      }

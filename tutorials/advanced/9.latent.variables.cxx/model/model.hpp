@@ -5,7 +5,8 @@
 #include "load_data.hpp"
 
 #include <vector>
-#include<cmath>
+#include <cmath>
+#include <random>
 
 /*
 Model 1:
@@ -32,6 +33,8 @@ class ExponentialFamilyDistribution
         virtual void zeta(korali::Sample& k) = 0;
         virtual void phi(korali::Sample& k) = 0;
        // virtual void init();
+
+       int sufficientStatisticsDimension; // Dimensionality of vectors returned by S and phi
 };
 
 class ExampleDistribution1 : public ExponentialFamilyDistribution
@@ -69,6 +72,7 @@ class ExampleDistribution2 : public ExponentialFamilyDistribution
         void S(korali::Sample& k) override;
         void zeta(korali::Sample& k) override;
         void phi(korali::Sample& k) override;
+
 
 };
 

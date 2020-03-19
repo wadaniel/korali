@@ -11,6 +11,7 @@
 #include <cmath>
 #include <algorithm>
 #include <typeinfo>
+#include <random>
 
 /*
 Model 1:
@@ -38,6 +39,7 @@ Latent variables:
 
     ExampleDistribution1::ExampleDistribution1(){
         _p = univariateData();
+        sufficientStatisticsDimension = 1;
     };
 
     void ExampleDistribution1::S(korali::Sample& k)
@@ -138,33 +140,51 @@ Latent variables:
 
     ExampleDistribution2::ExampleDistribution2(){
         _p = multivariateData();
+        sufficientStatisticsDimension = 1 + _p.nClusters + _p.nClusters * _p.nDimensions;  // see below
     };
 
     void ExampleDistribution2::S(korali::Sample& k)
     {
         /* For two clusters:
             S(x1, c(1), ... xN, c(N))
-                            = sum_i [vec(|x_i|^2, -x_i * delta(ci=1), -x_i * delta(ci=2), delta(ci=1), delta(ci=2) ) ]*/
+                            = sum_i [- vec(|x_i|^2, delta(ci=1), delta(ci=2), x_i * delta(ci=1), x_i * delta(ci=2) ) ]*/
 
-      std::vector<double> latentVariables = k["Latent Variables"];
-      if (latentVariables.size() != _p.nPoints)
+      std::vector<int> assignments = k["Latent Variables"];
+      if (assignments.size() != _p.nPoints)
           korali::logError("Latent variables should be exactly the cluster assignments, so there is one for each point in the sample.");
 
-      std::vector<int> assignments(latentVariables.size(), 0);
-      for (size_t i = 0; i < latentVariables.size(); i++){
-        double lvar =latentVariables[i];
-        assignments[i] = std::lround(lvar);
-        if (std::abs(lvar - assignments[i]) > 0.01 )
+     // std::vector<int> assignments(latentVariables.size(), 0);
+      for (size_t i = 0; i < assignments.size(); i++){
+        double lvar =assignments[i];
+        //assignments[i] = std::lround(lvar);
+        //if (std::abs(lvar - assignments[i]) > 0.01 )
            // korali::logError("Assigned latent variable was not an integer");
-        	 std::cout << "Ignoring error: Assigned latent variable was not an integer" << std::endl; // @suppress("Symbol is not resolved")
-        if (lvar < -0.01 )
-            korali::logError("Assigned latent variable was negative, should be a cluster assignment index");
+        //	 std::cout << "Ignoring problem: Cluster-assignment latent variable was not an integer" << std::endl; // @suppress("Symbol is not resolved")
+        if (lvar < -0.49 )
+            std::cout << "Ignoring unresolvable problem: Latent variable was negative, should be a cluster assignment index"<< std::endl;
+            //korali::logError("Latent variable was negative, should be a cluster assignment index");
+        if (lvar > _p.nClusters - 0.51 )
+            std::cout << "Ignoring unresolvable problem: Latent variable was larger than highest cluster index, should be a cluster assignment index"<< std::endl;
+            //korali::logError("Latent variable was larger than highest cluster index, should be a cluster assignment index");
       }
       int S_dim = 1 + _p.nDimensions * _p.nClusters + _p.nClusters;
       std::vector<double> S_vec(S_dim, 0.0);
 
-      for(size_t i = 0; i<_p.nPoints; i++){
-          S_vec[0] -= l2_norm(_p.points[i]);
+      bool in_valid_range = true;
+      for (double var : assignments){
+        if (var <= -0.5 || var >= _p.nClusters - 0.51){
+            in_valid_range = false;
+            break;
+        }
+      }
+      if (!in_valid_range){
+        S_vec[0] = -korali::Inf;
+        k["S"] = S_vec;
+        return;
+      }
+
+      for(size_t i = 0; i<_p.nPoints; i++){ // @suppress("Field cannot be resolved")
+          S_vec[0] -= l2_norm(_p.points[i]); // @suppress("Field cannot be resolved")
           int cluster = assignments[i]; // should be zero or one
           S_vec[cluster + 1] += 1;
           // to get <mu_c(i) , x_i>, set the part that will be summed with mu_c(i) to x_i, all others to 0:
@@ -222,7 +242,7 @@ Latent variables:
       }
       double sigma = hyperparams[_p.nClusters];
       /* For two variables:
-            phi(sigma, mu1, mu2) = vec(1, mu1^T, mu2^T, |mu1|^2, |mu2|^2) * 1/(2*sigma)  */
+            phi(sigma, mu1, mu2) = vec(1, -|mu1|^2, -|mu2|^2, mu1^T, mu2^T) * 1/(2*sigma)  */
       int phi_dim = 1 + _p.nDimensions * _p.nClusters + _p.nClusters;
       std::vector<double> phi(phi_dim);
       phi[0] = 1.0;

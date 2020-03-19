@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <vector>
 #include <iostream>
+#include <random>
 /*
 void direct(korali::Sample& k)
 {
@@ -42,7 +43,8 @@ void dummySampler(korali::Sample& k) //, int numberLatentVars)
 MCMCLatentSampler::MCMCLatentSampler(int numberLatentVars, int numberHyperparams,
                     std::vector<double> initialLatentValues, std::vector<double> initialHyperparams,
                     std::function<void(korali::Sample&)> zeta_, std::function<void(korali::Sample&)> S_,
-                            std::function<void(korali::Sample&)> phi_, bool sample_discrete )
+                            std::function<void(korali::Sample&)> phi_, bool sample_discrete_ , int min_if_discrete_,
+                             int max_if_discrete_)
        {
 
   /*  zeta_func = reinterpret_cast<uint64_t>(&zeta_);
@@ -53,7 +55,10 @@ MCMCLatentSampler::MCMCLatentSampler(int numberLatentVars, int numberHyperparams
     S_func = S_;
     phi_func = phi_;
 
-    sample_discrete = sample_discrete;
+
+    sample_discrete = sample_discrete_;
+    min_if_discrete = min_if_discrete_;
+    max_if_discrete = max_if_discrete_;
 
     if (initialLatentValues.size() != numberLatentVars ) throw std::invalid_argument("number of latent variables should match the dimension of their initial values");
     if (initialHyperparams.size() != numberHyperparams ) throw std::invalid_argument("number of hyperparameters should match the dimension of their initial values");
@@ -64,9 +69,12 @@ MCMCLatentSampler::MCMCLatentSampler(int numberLatentVars, int numberHyperparams
     numberLatent = numberLatentVars;
     numberHyperparameters = numberHyperparams;
 
+    // need to always initialize those, otherwise the compiler complains
+    std::random_device rd;
+	gen = std::mt19937(rd());
+	random_int = std::uniform_int_distribution<int>(min_if_discrete, max_if_discrete);
 
-
-    }
+}
 
 
   /*  void MCMCLatentSampler::initialize(int numberSamples){
@@ -91,7 +99,8 @@ MCMCLatentSampler::MCMCLatentSampler(int numberLatentVars, int numberHyperparams
 
       std::vector<double> hyperparameters = kSample["Hyperparameters"];
       size_t numberSamples = kSample["Number Samples"];
-      size_t numberLatentVars = kSample["Number Of Latent Variables"];
+      if (kSample["Number Of Latent Variables"] != numberLatent)
+         korali::logError("Implementation error, number of latent variables at initialization does not fit to what was passed as variable");
 
 
     /* Create one sampling experiment to sample all latent variables. After all, the latent vars are correlated /
@@ -108,9 +117,37 @@ MCMCLatentSampler::MCMCLatentSampler(int numberLatentVars, int numberHyperparams
                         if (! s.contains("Parameters")){
                             korali::logError("Something is trying to evaluate the likelihood without passing values for the latent variables (= parameters, here) to the sample.\n");
                         }
-                        s["Latent Variables"] = s["Parameters"];
+
+                        auto latent_vars = s["Parameters"].get<std::vector<double>>();
+
+                        if (latent_vars.size() != numberLatent)
+                        	korali::logError("Implementation error, latent variable vector had wrong size");
+
+                        if (hparams.size() != numberHyperparameters)
+                        	korali::logError("Implementation error, hyperparameter vector had wrong size");
+
+
+                        // first, discretize the latent variables if needed
+                        if (sample_discrete){
+                            std::vector<int> latent_int_vars(numberLatent);
+							for (size_t i = 0; i < numberLatent; i++){
+								double var = latent_vars[i];
+							  // assign a random cluster if out of bounds
+//								if (var < min_if_discrete - 0.49 || var > max_if_discrete + 0.49){
+//									  latent_int_vars[i] = random_int(gen);
+								if (var < min_if_discrete - 0.49 )
+									latent_int_vars[i] = min_if_discrete;
+								else {if ( var > max_if_discrete + 0.49)
+									 	 latent_int_vars[i] = max_if_discrete;
+									 else
+										latent_int_vars[i] = std::lround(var);
+								}
+							}
+							s["Latent Variables"] = latent_int_vars;
+                        } else
+                        	{s["Latent Variables"] = latent_vars;}
+
                         s["Hyperparameters"] = hparams; // _currentHyperparameters;
-                        // Ugly? & Probably doesnt work
 
                         S_func(s);
                         zeta_func(s);
@@ -139,10 +176,28 @@ MCMCLatentSampler::MCMCLatentSampler(int numberLatentVars, int numberHyperparams
 
             e["Variables"][i]["Name"] = varName;
             e["Variables"][i]["Initial Mean"] = previousSampleMeans[i];
+
             e["Variables"][i]["Initial Standard Deviation"] = 2.0;
-            if (sample_discrete)
-                e["Variables"][i]["Granularity"] = 1.0; // todo: This might simply be ignored; check in the results
+            if (sample_discrete){
+            	  e["Variables"][i]["Initial Standard Deviation"] = static_cast<float>(max_if_discrete - min_if_discrete)/2.0;
+            e["Variables"][i]["Initial Mean"] = previousSampleMeans[i];
+
+ //               e["Variables"][i]["Granularity"] = 1.0; // todo: This might simply be ignored; check in the results
+
+//                e["Distributions"][i]["Name"] = "Uniform "+std::to_string(i);
+//                e["Distributions"][i]["Type"] = "Univariate/Uniform";
+//                e["Distributions"][i]["Minimum"] = min_if_discrete-0.49;
+//                e["Distributions"][i]["Maximum"] = max_if_discrete+0.49;
+//
+//                e["Variables"][i]["Prior Distribution"] = "Uniform "+std::to_string(i);
+
+                //e["Distributions"][i]["Name"] = "Multinomial "+std::to_string(i);
+                //e["Distributions"][i]["Type"] = "Specific/Multinomial";
+
+               // e["Variables"][i]["Prior Distribution"] = "Multinomial "+std::to_string(i);
+            }
         }
+
 
         // Configuring the MCMC sampler parameters
         e["Solver"]["Type"]  = "MCMC";
@@ -171,6 +226,22 @@ MCMCLatentSampler::MCMCLatentSampler(int numberLatentVars, int numberHyperparams
         std::vector<std::vector<double>>::const_iterator first = db.end() - numberSamples;
         std::vector<std::vector<double>>::const_iterator last = db.end();
         std::vector<std::vector<double>> samples(first, last);
+
+        // modify the samples to lie in valid range, and be a discrete integer value
+		if (sample_discrete) {
+			for (std::vector<double> &sample : samples){ // @suppress("Type cannot be resolved") // @suppress("Symbol is not resolved")
+				for (double &var : sample) {
+					if (var < min_if_discrete - 0.49 || var > max_if_discrete + 0.49) {
+						if (var < min_if_discrete - 0.49)
+						    var = min_if_discrete;
+						else
+						    var = max_if_discrete;
+					} else {
+						var = std::round(var); // @suppress("Function cannot be resolved")
+					}
+				}
+			}
+		}
 
         kSample["Samples"] = samples;
 

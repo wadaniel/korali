@@ -58,7 +58,8 @@ int main(int argc, char* argv[])
 //  std::generate(d2_initialHyperparams.begin(), d2_initialHyperparams.end(), random_normal);
 
   MCMCLatentSampler distrib2_sampler_obj = MCMCLatentSampler(d2_numberLatentVars, d2_numberHyperparams,
-         d2_initialLatentValues, d2_initialHyperparams, distrib2_zeta, distrib2_S, distrib2_phi, true );
+         d2_initialLatentValues, d2_initialHyperparams, distrib2_zeta, distrib2_S, distrib2_phi,
+		 true, 0, distrib2._p.nClusters - 1 );
 
   /*void distrib2_sampler(korali::Sample& s)
   {
@@ -81,6 +82,7 @@ int main(int argc, char* argv[])
  e["Problem"]["S Of Likelihood Model"] = distrib2_S;
  e["Problem"]["Zeta Of Likelihood Model"] = distrib2_zeta;
  e["Problem"]["Phi Of Likelihood Model"] = distrib2_phi;
+ e["Problem"]["S Dimension"] = distrib2.sufficientStatisticsDimension;
 
  e["Solver"]["Type"] = "SAEM";
  e["Solver"]["Number Markov Chain Samples"] = 100;
@@ -114,6 +116,8 @@ int main(int argc, char* argv[])
 //         e["Variables"][variable_counter]["Initial Mean"] = 0;
 //         e["Variables"][variable_counter]["Initial Standard Deviation"] = 3.0;
          e["Variables"][variable_counter]["Initial Value"] = d2_initialHyperparams[variable_counter]; // Initial hyperparameter value
+         e["Variables"][variable_counter]["Upper Bound"] = e["Distributions"][1]["Maximum"]; // Initial hyperparameter value
+         e["Variables"][variable_counter]["Lower Bound"] = e["Distributions"][1]["Minimum"]; // Initial hyperparameter value
 
          variable_counter++;
      }

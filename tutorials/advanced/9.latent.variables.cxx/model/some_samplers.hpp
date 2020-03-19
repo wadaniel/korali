@@ -3,6 +3,7 @@
 #include "korali.hpp"
 
 #include <vector>
+#include <random>
 /*
 void direct(korali::Sample& k)
 {
@@ -23,11 +24,18 @@ class MCMCLatentSampler {
     int numberLatent;
     int numberHyperparameters;
 
-    bool sample_discrete;
+    bool sample_discrete = false;
+    int min_if_discrete = 0;
+    int max_if_discrete = 0;
 
     std::function<void(korali::Sample&)> zeta_func;
     std::function<void(korali::Sample&)> S_func;
     std::function<void(korali::Sample&)> phi_func;
+
+
+
+    std::mt19937 gen;
+    std::uniform_int_distribution<int> random_int;
 
 /*
     uint64_t zeta_func;
@@ -44,7 +52,8 @@ class MCMCLatentSampler {
     MCMCLatentSampler(int numberLatentVars, int numberHyperparams,
                     std::vector<double> initialLatentValues, std::vector<double> initialHyperparams,
                     std::function<void(korali::Sample&)> zeta_, std::function<void(korali::Sample&)> S_,
-                            std::function<void(korali::Sample&)> phi_, bool sample_discrete = false);
+                            std::function<void(korali::Sample&)> phi_, bool sample_discrete_ = false,
+                            int min_if_discrete_ = 0, int max_if_discrete_ = 0);
     void initialize();
     void sampleLatent(korali::Sample& k);
 };

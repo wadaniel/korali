@@ -53,6 +53,7 @@ int main(int argc, char* argv[])
  e["Problem"]["S Of Likelihood Model"] = &distrib1_S;
  e["Problem"]["Zeta Of Likelihood Model"] = &distrib1_zeta;
  e["Problem"]["Phi Of Likelihood Model"] = &distrib1_phi;
+ e["Problem"]["S Dimension"] = 1;
 
  e["Solver"]["Type"] = "SAEM";
  e["Solver"]["Number Markov Chain Samples"] = 100;

@@ -13,6 +13,8 @@ class SAEM : public korali::Solver
   private:  
 
 
+    void setInitialConfiguration();
+
     korali::problem::bayesian::Latent* _latentProblem;
     void sampleLatent();
     void runBuiltinSampler( );
@@ -26,7 +28,6 @@ class SAEM : public korali::Solver
 
   public:
 
-    void initialize() override;
     void finalize() override;
     void runGeneration() override;
     void printGenerationBefore() override;

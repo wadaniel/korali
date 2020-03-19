@@ -57,6 +57,14 @@ def getClassName(path):
  className += getModuleName(path)
  return className
 
+def getNamespaceName(path):
+ nameList = path.rsplit('/')
+ namespaceName = 'korali::'
+ for name in nameList[:-1]:
+  namespaceName += name + '::'
+ namespaceName += getModuleName(path)[0].lower() + getModuleName(path)[1:]  
+ return namespaceName
+
 def getParentClassName(className):
  nameString = className.rsplit('::', 2)
  if (len(nameString) == 2): return 'korali::Module'
@@ -338,23 +346,39 @@ def createGetPropertyPointer(module):
 ####################################################################
 
 def createHeaderDeclarations(module):
- headerString = ''
+ headerString =  ''
 
  if 'Configuration Settings' in module:
   for v in module["Configuration Settings"]:
+   headerString += '/**\n'
+   headerString += '* @brief ' +  v["Description"] + '\n'
+   headerString += '*/\n'
    headerString += ' ' + getVariableType(v) + ' ' + getCXXVariableName(v["Name"]) + ';\n'
 
  if 'Internal Settings' in module:
   for v in module["Internal Settings"]:
+   headerString += '/**\n'
+   headerString += '* @brief [Internal Use] ' +  v["Description"] + '\n'
+   headerString += '*/\n'
    headerString += ' ' + getVariableType(v) + ' ' + getCXXVariableName(v["Name"]) + ';\n'
 
  if 'Termination Criteria' in module:
   for v in module["Termination Criteria"]:
+   headerString += '/**\n'
+   headerString += '* @brief [Termination Criteria] ' +  v["Description"] + '\n'
+   headerString += '*/\n'
    headerString += ' ' + getVariableType(v) + ' ' + getCXXVariableName(v["Name"]) + ';\n'
 
  if 'Conditional Variables' in module:
   for v in module["Conditional Variables"]:
+   headerString += '/**\n'
+   headerString += '* @brief [Conditional Variable Value] ' +  v["Description"] + '\n'
+   headerString += '*/\n'
    headerString += ' double ' + getCXXVariableName(v["Name"]) + ';\n'
+   
+   headerString += '/**\n'
+   headerString += '* @brief [Conditional Variable Reference] ' +  v["Description"] + '\n'
+   headerString += '*/\n'
    headerString += ' std::string ' + getCXXVariableName(v["Name"]) + 'Conditional;\n'
 
  return headerString
@@ -367,7 +391,13 @@ def createVariableDeclarations(module):
 
  if 'Variables Configuration' in module:
   for v in module["Variables Configuration"]:
-   variableDeclarationString += '  ' + getVariableType(v) + ' ' + getCXXVariableName(v["Name"]) + ';\n'
+   varName = getCXXVariableName(v["Name"])
+   if (not varName in variableDeclarationSet):
+    variableDeclarationString += '/**\n'
+    variableDeclarationString += '* @brief [Module: ' + module["Class"] + '] ' + v["Description"] + '\n'
+    variableDeclarationString += '*/\n'
+    variableDeclarationString += '  ' + getVariableType(v) + ' ' + varName + ';\n'
+    variableDeclarationSet.add(varName)
 
  return variableDeclarationString
 
@@ -398,9 +428,8 @@ modulesDir = koraliDir + '/modules/'
 # modules List
 moduleDetectionList = ''
 moduleIncludeList = ''
-
-# Variable Declaration List
-varDeclarationSet = set()
+variableDeclarationList = ''
+variableDeclarationSet = set()
 
 # Detecting modules' json file
 for moduleDir, relDir, fileNames in os.walk(modulesDir):
@@ -417,13 +446,14 @@ for moduleDir, relDir, fileNames in os.walk(modulesDir):
    modulePath = os.path.relpath(moduleDir, modulesDir)
    moduleConfig["Name"] =  getModuleName(modulePath)
    moduleConfig["Class"] =  getClassName(modulePath)
+   moduleConfig["Namespace"] = getNamespaceName(modulePath)
    moduleConfig["Parent Class"] =  getParentClassName(moduleConfig["Class"])
    moduleConfig["Option Name"] = getOptionName(modulePath)
    moduleConfig["Is Leaf"] = isLeafModule(moduleDir)
 
    ####### Adding module to list
+   relpath = os.path.relpath(moduleDir, modulesDir)
    if (moduleConfig["Is Leaf"]):
-    relpath = os.path.relpath(moduleDir, modulesDir)
     filepath = os.path.join(relpath, moduleFilename + '.hpp')
     moduleIncludeList += '#include "' + filepath + '" \n'
     moduleDetectionList += '  if(moduleType == "' + moduleConfig["Option Name"] + '") module = new ' + moduleConfig["Class"] + '();\n'
@@ -444,33 +474,88 @@ for moduleDir, relDir, fileNames in os.walk(modulesDir):
 
    ####### Producing header file
 
+   # Adding doxygen header
+   moduleTemplateHeaderString =  '/** \\file\n'
+   moduleTemplateHeaderString += '* @brief Header file for module: ' + moduleConfig["Class"] +'.\n'
+   moduleTemplateHeaderString += '*/\n\n'
+   
+   moduleTemplateHeaderString +=  '/** \\dir ' + relpath + '\n'
+   moduleTemplateHeaderString += '* @brief Contains code, documentation, and scripts for module: ' + moduleConfig["Class"] +'.\n'
+   moduleTemplateHeaderString += '*/\n\n'
+   
    # Loading template header .hpp file
    moduleTemplateHeaderFile = moduleDir + '/' + moduleFilename + '._hpp'
-   with open(moduleTemplateHeaderFile, 'r') as file: moduleTemplateHeaderString = file.read()
-
+   with open(moduleTemplateHeaderFile, 'r') as file: moduleTemplateHeaderString += file.read()
+ 
    # Adding overridden function declarations
    functionOverrideString = ''
+   
+   functionOverrideString += '/**\n'
+   functionOverrideString += '* @brief Determines whether the module can trigger termination of an experiment run.\n'
+   functionOverrideString += '* @return True, if it should trigger termination; false, otherwise.\n'
+   functionOverrideString += '*/\n'
    functionOverrideString += ' bool checkTermination() override;\n'
+   
+   functionOverrideString += '/**\n'
+   functionOverrideString += '* @brief Obtains the entire current state and configuration of the module.\n'
+   functionOverrideString += '* @param js JSON object onto which to save the serialized state of the module.\n'
+   functionOverrideString += '*/\n'
    functionOverrideString += ' void getConfiguration(knlohmann::json& js) override;\n'
+   
+   functionOverrideString += '/**\n'
+   functionOverrideString += '* @brief Sets the entire state and configuration of the module, given a JSON object.\n'
+   functionOverrideString += '* @param js JSON object from which to deserialize the state of the module.\n'
+   functionOverrideString += '*/\n'
    functionOverrideString += ' void setConfiguration(knlohmann::json& js) override;\n'
+   
+   functionOverrideString += '/**\n'
+   functionOverrideString += '* @brief Applies the module\'s default configuration upon its creation.\n'
+   functionOverrideString += '* @param js JSON object containing user configuration. The defaults will not override any currently defined settings.\n'
+   functionOverrideString += '*/\n'
    functionOverrideString += ' void applyModuleDefaults(knlohmann::json& js) override;\n'
+   
+   functionOverrideString += '/**\n'
+   functionOverrideString += '* @brief Applies the module\'s default variable configuration to each variable in the Experiment upon creation.\n'
+   functionOverrideString += '*/\n'
    functionOverrideString += ' void applyVariableDefaults() override;\n'
 
    if 'Available Operations' in moduleConfig:
-     functionOverrideString += ' bool runOperation(std::string, korali::Sample& sample) override;\n'
+     functionOverrideString += '/**\n'
+     functionOverrideString += '* @brief Runs the operation specified on the given sample. It checks recursively whether the function was found by the current module or its parents.\n'
+     functionOverrideString += '* @param sample Sample to operate on. Should contain in the "Operation" field an operation accepted by this module or its parents.\n'
+     functionOverrideString += '* @param operation Should specify an operation type accepted by this module or its parents.\n'
+     functionOverrideString += '* @return True, if operation found and executed; false, otherwise.\n'
+     functionOverrideString += '*/\n'
+     functionOverrideString += ' bool runOperation(std::string operation, korali::Sample& sample) override;\n'
 
    if 'Conditional Variables' in moduleConfig:
+     functionOverrideString += '/**\n'
+     functionOverrideString += '* @brief Retrieves the pointer of a conditional value of a distribution property.\n'
+     functionOverrideString += '* @param property Name of the property to find.\n'
+     functionOverrideString += '* @return The pointer to the property..\n'
+     functionOverrideString += '*/\n'
      functionOverrideString += ' double* getPropertyPointer(std::string property) override;\n'
 
    newHeaderString = moduleTemplateHeaderString.replace('public:', 'public: \n' + functionOverrideString + '\n')
 
+   # Adding Doxygen Information
+   doxyClassHeader = '/**\n'
+   doxyClassHeader += '* @brief Class declaration for module: ' + moduleConfig["Class"] + '.\n'
+   doxyClassHeader += '*/\n'
+   newHeaderString = newHeaderString.replace('class ', doxyClassHeader + 'class ')
+   
+   if (not moduleConfig["Is Leaf"]):
+    doxyNamespaceHeader = '/** \\namespace ' +  moduleConfig["Namespace"] + '\n'
+    doxyNamespaceHeader += '* @brief Namespace declaration for modules of type: ' + moduleConfig["Namespace"] + '.\n'
+    doxyNamespaceHeader += '*/\n\n'
+    newHeaderString = doxyNamespaceHeader + newHeaderString 
+   
    # Adding declarations
    declarationsString = createHeaderDeclarations(moduleConfig)
    newHeaderString = newHeaderString.replace('public:', 'public: \n' + declarationsString + '\n')
 
    # Retrieving variable declarations
-   for varDecl in createVariableDeclarations(moduleConfig).splitlines():
-    varDeclarationSet.add(varDecl)
+   variableDeclarationList += createVariableDeclarations(moduleConfig)
 
    # Saving new header .hpp file
    moduleNewHeaderFile = moduleDir + '/' + moduleFilename + '.hpp'
@@ -512,8 +597,6 @@ newBaseString = moduleBaseHeaderString
 save_if_different(moduleNewHeaderFile, newBaseString)
 
 ###### Updating variable header file
-
-variableDeclarationList = '\n'.join(sorted(varDeclarationSet))
 
 variableBaseHeaderFileName = koraliDir + '/variable/variable._hpp'
 variableNewHeaderFile = koraliDir + '/variable/variable.hpp'

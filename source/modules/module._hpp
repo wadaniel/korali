@@ -1,5 +1,5 @@
 /** \file
-* @brief Describes the properties and methods for the base Korali Module class.
+* @brief Header file for the base Korali Module class.
 *********************************************************************************************/
 
 #ifndef _KORALI_MODULE_HPP_
@@ -70,19 +70,19 @@ class Module
 
   /**
    * @brief Obtains the entire current state and configuration of the module.
-   * @param JSON object onto which to save the serialized state of the module.
+   * @param js JSON object onto which to save the serialized state of the module.
    */
   virtual void getConfiguration(knlohmann::json& js) {};
 
   /**
    * @brief Sets the entire state and configuration of the module, given a JSON object.
-   * @param JSON object from which to deserialize the state of the module.
+   * @param js JSON object from which to deserialize the state of the module.
    */
   virtual void setConfiguration(knlohmann::json& js) {};
 
   /**
    * @brief Applies the module's default configuration upon its creation.
-   * @param JSON object containing user configuration. The defaults will not override any currently defined settings.
+   * @param js JSON object containing user configuration. The defaults will not override any currently defined settings.
   */
   virtual void applyModuleDefaults(knlohmann::json& js) {};
 

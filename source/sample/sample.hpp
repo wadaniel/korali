@@ -1,5 +1,5 @@
 /** \file
-* @brief Class declaration for a Korali Sample, containing input/output data to computational models
+* @brief Contains the definition of a Korali Sample
 *****************************************************************************************************/
 
 #ifndef __KORALI_SAMPLE_HPP_

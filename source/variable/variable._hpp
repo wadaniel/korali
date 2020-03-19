@@ -1,5 +1,5 @@
 /** \file
-* @brief Class declaration for a Korali variable.
+* @brief Contains the definition of a Korali Variable
 *****************************************************************************************************/
 
 #ifndef __KORALI_VARIABLE_HPP_

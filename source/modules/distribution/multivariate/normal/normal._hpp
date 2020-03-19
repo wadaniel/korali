@@ -9,8 +9,19 @@ class Normal : public korali::distribution::Multivariate {
 
  private:
 
+ /**
+  * @brief Temporal storage for covariance matrix
+  */
  gsl_matrix_view _sigma_view;
+
+ /**
+ * @brief Temporal storage for variable means
+  */
  gsl_vector_view _mean_view;
+
+ /**
+ * @brief Temporal storage for work
+ */
  gsl_vector_view _work_view;
 
  public:

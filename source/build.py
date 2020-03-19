@@ -539,6 +539,7 @@ for moduleDir, relDir, fileNames in os.walk(modulesDir):
    newHeaderString = moduleTemplateHeaderString.replace('public:', 'public: \n' + functionOverrideString + '\n')
 
    # Adding Doxygen Information
+   
    doxyClassHeader = '/**\n'
    doxyClassHeader += '* @brief Class declaration for module: ' + moduleConfig["Class"] + '.\n'
    doxyClassHeader += '*/\n'

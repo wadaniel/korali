@@ -35,11 +35,11 @@ Korali's Documentation
    :maxdepth: 2
    :caption: Development
 
+   C++ Class List <https://www.cse-lab.ethz.ch/korali/docs/doxygen/html/annotated.html>
+   Source Files <https://www.cse-lab.ethz.ch/korali/docs/doxygen/html/files.html>
+   dev/testing
    dev/build
    dev/moduledev
-   dev/operation
-   Doxygen <https://www.cse-lab.ethz.ch/korali/docs/doxygen/html/annotated.html>
-   dev/testing
 
 * :ref:`genindex`
 * :ref:`modindex`

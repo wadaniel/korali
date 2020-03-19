@@ -11,11 +11,37 @@ class Reference : public korali::problem::Bayesian
  private:
 
  size_t sigmaVariableIndex;
+
+ /**
+  * @brief Precomputes the square distance between two vectors of the same size
+  * @param x Vector x
+  * @param y Vector y
+  * @return Square distance of the vectors
+  */
  double compute_sse( std::vector<double> x, std::vector<double> y );
 
+ /**
+ * @brief Additive normal approach to calculate the logLikelihood of the sample
+ * @param sample A Korali Sample
+ */
  void loglikelihoodNormalAdditive(korali::Sample& sample);
+
+ /**
+  * @brief Additive normal approach (for variance) to calculate the logLikelihood of the sample
+  * @param sample A Korali Sample
+  */
  void loglikelihoodNormalAdditiveVariance(korali::Sample& sample);
+
+ /**
+ * @brief Additive multiplicative approach to calculate the logLikelihood of the sample
+ * @param sample A Korali Sample
+ */
  void loglikelihoodNormalMultiplicative(korali::Sample& sample);
+
+ /**
+  * @brief Additive multiplicative approach (based on data) to calculate the logLikelihood of the sample
+  * @param sample A Korali Sample
+  */
  void loglikelihoodNormalMultiplicativeData(korali::Sample& sample);
 
  public:

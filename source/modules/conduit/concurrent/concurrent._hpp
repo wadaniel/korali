@@ -19,8 +19,19 @@ class Concurrent : public korali::Conduit {
 
  public:
 
+ /**
+   * @brief OS Pipe to handle result communication coming from worker processes
+   */
  std::vector<std::vector<int>> _resultPipe;
+
+ /**
+  * @brief OS Pipe to handle sample parameter communication to worker processes
+  */
  std::vector<std::vector<int>> _inputsPipe;
+
+ /**
+  * @brief Queue with free worker threads
+  */
  std::queue<int> _launcherQueue;
 
  void processSample(korali::Sample& sample) override;

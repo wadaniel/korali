@@ -12,7 +12,6 @@ class DEA : public korali::Solver
 {
  private:
 
- void setInitialConfiguration();
  void mutateSingle(size_t sampleIdx); /* sample individual */
  void fixInfeasible(size_t sampleIdx); /* force sample inside lower & upper bounds */
  void updateSolver(std::vector<korali::Sample>& samples); /* update states of DEA */
@@ -21,6 +20,7 @@ class DEA : public korali::Solver
 
  public:
 
+ void setInitialConfiguration() override;
  void finalize() override;
  void runGeneration() override;
  void printGenerationBefore() override;

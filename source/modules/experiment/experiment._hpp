@@ -20,38 +20,100 @@ class Experiment : public korali::Module {
 
  Experiment();
 
- // Start functions
  void initialize() override;
 
- // JSON-based configuration
+ /**
+  * @brief JSON object to store the experiment's configuration
+  */
  korali::KoraliJson  _js;
+
+ /**
+  * @brief JSON object to details of all the samples that have been executed, if requested by the user.
+  */
  korali::KoraliJson  _sampleInfo;
 
- // Storing initial launch
- knlohmann::json  _initialConfig;
-
- // Logging and results
+ /**
+  * @brief Log file onto which to output log information. (Default = stdout)
+  */
  FILE* _logFile;
- std::string _subDirPath;
 
- // Multiple Solver Variables/Functions
+ /**
+  * @brief Experiment Identifier
+  */
  size_t _experimentId;
+
+ /**
+  * @brief Experiment's coroutine (thread). It is swapped among other experiments, and sample threads.
+  */
  cothread_t _thread;
 
+ /**
+  * @brief Gets an item from the JSON object at the current pointer position.
+  * @param key A pybind11 object acting as JSON key (number or string).
+  * @return A pybind11 object
+ */
  pybind11::object getItem(pybind11::object key);
+
+ /**
+  * @brief Sets an item on the JSON object at the current pointer position.
+  * @param key A pybind11 object acting as JSON key (number or string).
+  * @param val The value of the item to set.
+ */
  void setItem(pybind11::object key, pybind11::object val);
+
+
+ /**
+  * @brief Load the state of a previous experiment's execution.
+  * @param path Path from which to load the experiment state.
+  * @return True, if successful; false, otherwise.
+ */
  bool loadState(std::string path);
+
+ /**
+  * @brief Load the state of a previous experiment's execution from the experiment's result path.
+  * @return True, if successful; false, otherwise.
+ */
  bool loadState();
+
+ /**
+   * @brief Saves the state into the experiment's result path.
+  */
  void saveState();
+
+ /**
+   * @brief Start the execution of the current experiment.
+   */
  void run();
 
 
+ /**
+  * @brief C++ wrapper for the getItem operator.
+  * @param key A C++ string acting as JSON key.
+  * @return The referenced JSON object content.
+ */
  knlohmann::json& operator[](const std::string& key);
+
+ /**
+  * @brief C++ wrapper for the getItem operator.
+  * @param key A C++ integer acting as JSON key.
+  * @return The referenced JSON object content.
+ */
  knlohmann::json& operator[](const unsigned long int& key);
 };
 
+/**
+  * @brief Stores the list of experiments to run.
+  */
 extern std::vector<korali::Experiment*> _experimentVector;
+
+/**
+  * @brief Stores a pointer to the current experiment.
+  */
 extern korali::Experiment* _currentExperiment;
+
+/**
+  * @brief Stores the main execution thread (coroutine).
+  */
 extern cothread_t _mainThread;
 
 } // namespace korali

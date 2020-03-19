@@ -16,9 +16,25 @@ class Solver : public korali::Module
 {
  public:
 
+ /**
+  * @brief Prints solver information before the execution of the current generation.
+  */
  virtual void printGenerationBefore() { };
+
+ /**
+ * @brief Prints solver information after the execution of the current generation.
+ */
  virtual void printGenerationAfter() { };
+
+ /**
+ * @brief Runs the current generation.
+ */
  virtual void runGeneration() = 0;
+
+ /**
+  * @brief Initializes the solver with starting values for the first generation.
+ */
+ virtual void setInitialConfiguration() { };
 };
 
 extern korali::Solver* _currentSolver;

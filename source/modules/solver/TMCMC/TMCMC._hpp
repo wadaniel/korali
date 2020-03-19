@@ -14,7 +14,6 @@ class TMCMC : public korali::Solver
 {
  private:
 
- void setInitialConfiguration();
  void setBurnIn();
  void prepareGeneration();
  void processGeneration();
@@ -27,6 +26,7 @@ class TMCMC : public korali::Solver
 
  public:
 
+ void setInitialConfiguration() override;
  void finalize() override;
  void runGeneration() override;
  void printGenerationBefore() override;

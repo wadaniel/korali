@@ -29,7 +29,7 @@ In this example, we create a new problem module:
   
 This command has created a new module in the folder - :code:`source/modules/problem/myNewProblem`:
 
- .. code-block:: bash
+.. code-block:: bash
   
   > ls source/modules/problem/myNewProblem
   myNewProblem.config  myNewProblem._cpp  myNewProblem._hpp  README.rst
@@ -46,7 +46,7 @@ In this example, we create a new problem module:
   
 This command has created a new module in the folder - :code:`source/modules/solver/myNewSolver`:
 
- .. code-block:: bash
+.. code-block:: bash
   
   > ls source/modules/solver/myNewSolver
   myNewSolver.config  myNewSolver._cpp  myNewSolver._hpp  README.rst

@@ -22,14 +22,14 @@ Creating a new Problem
 
 In this example, we create a new problem module:
 
-.. code-block: bash
+.. code-block:: bash
   
   > cd korali/
   > python3 -m korali.mdev --name myNewProblem --type problem
   
 This command has created a new module in the folder - :code:`source/modules/problem/myNewProblem`:
 
- .. code-block: bash
+ .. code-block:: bash
   
   > ls source/modules/problem/myNewProblem
   myNewProblem.config  myNewProblem._cpp  myNewProblem._hpp  README.rst
@@ -39,14 +39,14 @@ Creating a new Solver
 
 In this example, we create a new problem module:
 
-.. code-block: bash
+.. code-block:: bash
   
   > cd korali/
   > python3 -m korali.mdev --name myNewSolver --type solver
   
 This command has created a new module in the folder - :code:`source/modules/solver/myNewSolver`:
 
- .. code-block: bash
+ .. code-block:: bash
   
   > ls source/modules/solver/myNewSolver
   myNewSolver.config  myNewSolver._cpp  myNewSolver._hpp  README.rst

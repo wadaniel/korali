@@ -430,7 +430,7 @@ void korali::solver::CMAES::updateDistribution(std::vector<korali::Sample>& samp
   _valueVector[i] = samples[i]["F(x)"];
 
  /* Generate _sortingIndex */
- sort_index(_valueVector, _sortingIndex, _currentPopulationSize);
+ sort_index(_valueVector, _sortingIndex);
 
  if( (_areConstraintsDefined == false) ||  _isViabilityRegime )
   _bestValidSample = _sortingIndex[0];
@@ -796,13 +796,13 @@ void korali::solver::CMAES::eigen(size_t size, std::vector<double>& M,  std::vec
 }
 
 
-void korali::solver::CMAES::sort_index(const std::vector<double>& vec, std::vector<size_t>& sortingIndex, size_t n) const
+void korali::solver::CMAES::sort_index(const std::vector<double>& vec, std::vector<size_t>& sortingIndex) const
 {
   // initialize original sortingIndex locations
-  std::iota(std::begin(sortingIndex), std::begin(sortingIndex)+n, (size_t) 0);
+  std::iota(std::begin(sortingIndex), std::end(sortingIndex), (size_t) 0);
 
   // sort indexes based on comparing values in vec
-  std::sort(std::begin(sortingIndex), std::begin(sortingIndex)+n, [vec](size_t i1, size_t i2) { return vec[i1] > vec[i2]; } );
+  std::sort(std::begin(sortingIndex), std::end(sortingIndex), [vec](size_t i1, size_t i2) { return vec[i1] > vec[i2]; } );
 
 }
 

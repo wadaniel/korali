@@ -208,7 +208,7 @@ void korali::solver::LMCMAES::updateDistribution(std::vector<korali::Sample> & s
  std::copy(_valueVector.begin(), _valueVector.end(), _previousValueVector.begin());
  
  /* Generate _sortingIndex */
- sort_index(_valueVector, _sortingIndex, _populationSize);
+ sort_index(_valueVector, _sortingIndex);
 
  /* update function value history */
  _previousBestValue = _currentBestValue;

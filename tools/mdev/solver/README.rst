@@ -2,7 +2,7 @@
 [MODULENAME]
 **************************
 
-Here goes the description of the new module: [MODULENAME]
+Here goes the description of the new solver module: [MODULENAME]
 
 You can add code:
 

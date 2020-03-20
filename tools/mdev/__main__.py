@@ -3,6 +3,9 @@ import os
 import sys
 import re
 
+def upcase_first_letter(s):
+    return s[0].upper() + s[1:] 
+    
 def main():
 
  checkModuleFile = './source/modules/module._hpp'
@@ -33,8 +36,26 @@ while (selectedName == False):
    print('Error: the module\'s name can only contain letters, numbers, underscores, and dashes')
  else: selectedName = True
 
-print('./source/modules/' + moduleType + '/' + moduleName)
 
+modulePath = './source/modules/' + moduleType + '/' + moduleName
+hppIncludeLine = '#include "modules/' + moduleType + '/' + moduleType + '.hpp"'
+cppIncludeLine = '#include "modules/' + moduleType + '/' + moduleName + '/' + moduleName + '.hpp"'
+namespaceLine = 'namespace korali { namespace ' + moduleType + ' {'
+ifdefTag = moduleName.upper()
+parentClassName = 'korali::' + upcase_first_letter(moduleType)
+moduleClassName = 'korali::' + upcase_first_letter(moduleName)
+
+print(modulePath)
+print(hppIncludeLine)
+print(cppIncludeLine)
+print(namespaceLine)
+print(ifdefTag)
+print(parentClassName)
+print(moduleClassName)
+
+mdevDir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
+
+print(mdevDir)
 
 if __name__ == '__main__':
     main()

@@ -1,13 +1,13 @@
 #include "modules/problem/[MODULENAME]/[MODULENAME].hpp"
 
-void korali::solver::[CLASSNAME]::void initialize()
+void korali::problem::[CLASSNAME]::initialize()
 {
  // Initializing Problem Configuration
 }
 
-void korali::solver::[CLASSNAME]::void evaluate(korali::Sample& sample)
+void korali::problem::[CLASSNAME]::evaluate(korali::Sample& sample)
 {
  // Evaluating Sample
- sample["Evaluation"] = 1.0
+ sample["Evaluation"] = 1.0;
 }
 

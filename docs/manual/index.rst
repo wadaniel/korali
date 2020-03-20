@@ -37,9 +37,10 @@ Korali's Documentation
 
    dev/build
    dev/testing
+   dev/moduledev
    C++ Class List <https://www.cse-lab.ethz.ch/korali/docs/doxygen/html/annotated.html>
    Source Files <https://www.cse-lab.ethz.ch/korali/docs/doxygen/html/files.html>
-   dev/moduledev
+   Github Repository <https://github.com/cselab/korali>
 
 * :ref:`genindex`
 * :ref:`modindex`

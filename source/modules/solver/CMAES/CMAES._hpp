@@ -46,7 +46,7 @@ class CMAES : public korali::Solver
  void updateEigensystem(std::vector<double>& M);
  
  /**
-    * @brief Method that checks potential numerical issues and does correction. Not yet implemented.
+  * @brief Method that checks potential numerical issues and does correction. Not yet implemented.
  */
  void numericalErrorTreatment();
 
@@ -58,8 +58,9 @@ class CMAES : public korali::Solver
  /**
   * @brief Descending sort of vector elements, stores ordering in _sortingIndex.
   * @param vec Vector to sort, _sortingIndex Ordering of elements in vector
+  * @param N Number of current samples.
  */
- void sort_index(const std::vector<double>& vec, std::vector<size_t>& _sortingIndex) const;
+ void sort_index(const std::vector<double>& vec, std::vector<size_t>& _sortingIndex, size_t N) const;
  
  /**
   * @brief Initializes the weights of the mu vector

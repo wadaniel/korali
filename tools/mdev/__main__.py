@@ -36,26 +36,20 @@ while (selectedName == False):
    print('Error: the module\'s name can only contain letters, numbers, underscores, and dashes')
  else: selectedName = True
 
-
 modulePath = './source/modules/' + moduleType + '/' + moduleName
-hppIncludeLine = '#include "modules/' + moduleType + '/' + moduleType + '.hpp"'
-cppIncludeLine = '#include "modules/' + moduleType + '/' + moduleName + '/' + moduleName + '.hpp"'
-namespaceLine = 'namespace korali { namespace ' + moduleType + ' {'
-ifdefTag = moduleName.upper()
-parentClassName = 'korali::' + upcase_first_letter(moduleType)
-moduleClassName = 'korali::' + upcase_first_letter(moduleName)
+moduleClassName = upcase_first_letter(moduleName)
+baseExampleDir = os.path.abspath(os.path.dirname(os.path.realpath(__file__))) + '/' + moduleType
+
+with open(baseExampleDir + '/base.cpp', 'r') as file: cppBaseString = file.read()
+with open(baseExampleDir + '/base.hpp', 'r') as file: hppBaseString = file.read()
+with open(baseExampleDir + '/base.config', 'r') as file: configBaseString = file.read()
+with open(baseExampleDir + '/README.rst', 'r') as file: readmeBaseString = file.read()
 
 print(modulePath)
-print(hppIncludeLine)
-print(cppIncludeLine)
-print(namespaceLine)
-print(ifdefTag)
-print(parentClassName)
 print(moduleClassName)
+print(baseExampleDir)
 
-mdevDir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
-
-print(mdevDir)
+#os.mkdir(modulePath)
 
 if __name__ == '__main__':
     main()

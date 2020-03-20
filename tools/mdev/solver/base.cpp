@@ -10,6 +10,16 @@ void korali::solver::[CLASSNAME]::runGeneration()
  if (_k->_currentGeneration == 1) setInitialConfiguration();
 
  korali::logInfo("Normal", "Running generation %lu...\n", _k->_currentGeneration);
+
+ // Example: Evaluating a sample
+ korali::Sample sample;
+ sample["Operation"] = "Evaluate";
+ korali::_conduit->start(sample);
+ korali::_conduit->wait(sample);
+
+ double evaluation = sample["Evaluation"];
+ print("Sample Evaluation: %f\n", evaluation);
+
 }
 
 void korali::solver::[CLASSNAME]::printGenerationBefore()

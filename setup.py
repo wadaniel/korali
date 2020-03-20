@@ -6,13 +6,15 @@ print('[Korali] Building installation setup...')
 with open('docs/VERSION') as f: koraliVer = f.read()
 
 sourceDir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)) + '/source/') 
-installFiles = ['libkorali.so', 'Makefile.conf']
+koraliFiles = ['libkorali.so', 'Makefile.conf']
 for dirpath, subdirs, files in os.walk(sourceDir):
  for x in files:
   if (x.endswith(".hpp") or (x.endswith(".h")) or (x.endswith(".config")) or x.endswith(".py")):
    relDir = os.path.relpath(dirpath, sourceDir)
    relFile = os.path.join(relDir, x)
-   installFiles.append(relFile)
+   koraliFiles.append(relFile)
+
+mdevFiles =  [ 'solver/base.cpp', 'solver/base.hpp', 'solver/base.config', 'solver/README.rst', 'problem/base.cpp', 'problem/base.hpp', 'problem/base.config', 'problem/README.rst' ]
 
 setup(
     name='Korali',
@@ -29,7 +31,7 @@ setup(
                    'korali.mdev' : './tools/mdev'
                   }, 
     include_package_data=True,
-    package_data={'korali': installFiles },
+    package_data={'korali': koraliFiles, 'korali.mdev': mdevFiles },
     install_requires=['pybind11', 'numpy', 'matplotlib'],
     license='GNU General Public License v3.0'
 )

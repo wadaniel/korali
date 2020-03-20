@@ -1,0 +1,17 @@
+#ifndef _KORALI_[IFDEF]_HPP_
+#define _KORALI_[IFDEF]_HPP_
+
+[INCLUDE]
+
+[NAMESPACE OPEN]
+
+class [MODULE NAME] : public [PARENT CLASS]
+{
+ public:
+
+
+};
+
+[NAMESPACE CLOSE]
+
+#endif // _KORALI_[IFDEF]HPP_

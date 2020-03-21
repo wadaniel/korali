@@ -95,6 +95,8 @@ def processModule(parentModuleConfig, moduleRelPath, moduleName):
  moduleConfigFile = modulePath + '/' + moduleName + '.config'
  moduleOutputDir = '../modules/' + moduleRelPath
 
+ print('Processing file: ' + moduleConfigFile)
+
  moduleReadmeString = '.. _module-' + moduleRelPath.lower().replace('/','-') + ':\n\n'
   
  # Loading configuration and readme files 

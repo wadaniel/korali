@@ -2,7 +2,7 @@
 Recursive Discretizer
 ****************************
 
-This solver approximates a continuous process by discretizing the parameter space, leading to a recurrence relation analog to the Hamilton–Jacobi–Bellman equation:
+This solver approximates a continuous process by discretizing the parameter space, leading to a recurrence relation analog to the Hamilton-Jacobi-Bellman equation:
 
  .. math::
 

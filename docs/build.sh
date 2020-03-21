@@ -42,8 +42,14 @@ pushd builder
 check
 
 python3 ./buildTutorials.py 
+check
+
 python3 ./buildTests.py 
+check
+
 python3 ./buildModules.py 
+check
+
 python3 ./buildTools.py
 check
 

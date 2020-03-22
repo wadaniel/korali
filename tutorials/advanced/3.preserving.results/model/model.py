@@ -57,7 +57,7 @@ def storeResults(d):
  d["Bananas"] = b
  
  # Returning evaluation to Korali
- d["F(x)"] = x
+ d["P(x)"] = x
 
 def getHarvestQuality(b, o, a):
  return b*1.2 + o*0.9 + a*1.1

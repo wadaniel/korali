@@ -546,7 +546,7 @@ void korali::solver::CMAES::adaptC(int hsig)
    {
      _covarianceMatrix[d*_k->_variables.size()+e] = (1 - ccov1 - ccovmu) * _covarianceMatrix[d*_k->_variables.size()+e]
                         + ccov1 * (_evolutionPath[d] * _evolutionPath[e]
-                        + (1-hsig)*ccov1*_cumulativeCovariance*(2.-_cumulativeCovariance) * _covarianceMatrix[d*_k->_variables.size()+e]);
+                        + (1-hsig)*_cumulativeCovariance*(2.-_cumulativeCovariance) * _covarianceMatrix[d*_k->_variables.size()+e]);
 
      for (size_t k = 0; k < _currentMuValue; ++k)
          _covarianceMatrix[d*_k->_variables.size()+e] += ccovmu * _muWeights[k] * (_samplePopulation[_sortingIndex[k]][d]

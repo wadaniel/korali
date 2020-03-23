@@ -2,18 +2,13 @@
 Normal Distribution
 *******************************
 
-## Normal
+Normal
+-------
           
-The probability density of the Normal distribution is
+The Normal distribution has the probability density function (PDF):
 
-$${\displaystyle f(x\mid \mu ,\sigma ^{2})={\frac {1}{\sqrt {2\pi \sigma ^{2}}}}e^{-{\frac {(x-\mu )^{2}}{2\sigma ^{2}}}}}$$
+.. math::
 
-Where:
+    f(x\mid \mu ,\sigma ^{2})={\frac {1}{\sqrt {2\pi \sigma ^{2}}}}e^{-{\frac {(x-\mu )^{2}}{2\sigma ^{2}}}},
 
-$\mu$  is the mean or expectation of the distribution (and also its median and mode),
-$\sigma$  is the standard deviation, and
-$\sigma ^{2}$ is the variance.
-
-
-
-
+where :math:`\mu`  is the **mean** and :math:`\sigma` is the **standard deviation** of the PDF.

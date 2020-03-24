@@ -3,7 +3,7 @@ Multinomial Distribution
 *******************************
 
 Multinomial
-----------
+-----------
 
 The Multinomial distribution has the probability density function (PDF):
 

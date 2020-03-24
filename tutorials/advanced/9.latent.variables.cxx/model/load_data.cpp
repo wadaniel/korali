@@ -44,7 +44,7 @@ pointsInfoStruct& univariateData()
  __p.nPoints = nPoints;
 
  return __p;
-}
+};
 
 
 
@@ -79,12 +79,24 @@ pointsInfoStruct& multivariateData()
       fscanf(problemFile, "%le ", &val);
       __p.points[i][j] = val;
   }
-  fscanf(problemFile, "%le ", &val); __p.assignments[i] = val;
+  fscanf(problemFile, "%lu ", &val); __p.assignments[i] = val;
  }
  __p.nDimensions = nDimensions;
  __p.nPoints = nPoints;
  __p.nClusters = nClusters;
 
  return __p;
+};
+
+void reset_points(pointsInfoStruct& __p, std::vector<std::vector<double>> new_points, std::vector<int> new_assignments, int new_nClusters ){
+ assert (new_points.size() == new_assignments.size());
+ __p.nPoints = new_points.size();
+ __p.points = new_points;
+ __p.assignments = new_assignments;
+ for (std::vector<double> pt : new_points)
+    assert (pt.size() == __p.nDimensions && "Cannot change dimensionality (could implement it though)");
+ __p.nClusters = new_nClusters;
+
+
 }
 

@@ -7,6 +7,7 @@
 #include <vector>
 #include <iostream>
 #include <random>
+#include <cmath>
 /*
 void direct(korali::Sample& k)
 {
@@ -163,9 +164,9 @@ MCMCLatentSampler::MCMCLatentSampler(int numberLatentVars, int numberHyperparams
                           double _zetaValue = s["zeta"].get<double>();
                           std::vector<double> _sValues = s["S"].get<std::vector<double>>();
                           std::vector<double> _phiValues = s["phi"].get<std::vector<double>>();
-
-                          s["P(x)"] = - _zetaValue + std::inner_product(std::begin(_sValues), std::end(_sValues), // @suppress("Function cannot be resolved")
-                                                                                                            std::begin(_phiValues), 0.0);
+                          double logP_of_x = - _zetaValue + std::inner_product(std::begin(_sValues), std::end(_sValues) , // @suppress("Function cannot be resolved")
+                                  std::begin(_phiValues), 0.0); // @suppress("Function cannot be resolved")
+                          s["P(x)"] = logP_of_x;
 
                     };
 
@@ -206,15 +207,15 @@ MCMCLatentSampler::MCMCLatentSampler(int numberLatentVars, int numberHyperparams
 
         // Configuring output settings
         e["File Output"]["Frequency"] = 500;
-        e["Console Output"]["Frequency"] = 500;
-        e["Console Output"]["Verbosity"] = "Detailed";
+        e["Console Output"]["Frequency"] = 1000;
+        e["Console Output"]["Verbosity"] = "Normal";
 
         // Todo: I don't think a result path is needed (and it'd need a step id in the pathname as well)
         //e["Results"]["Path"] = "setup/results_phase_1/" + "0"*(3 - str(i).length()) +  std:to_string(i);
         k.run(e);
 
-        std::vector<std::vector<double>> db = e["Solver"]["Sample Database"].get<std::vector<std::vector<double>>>();
-        printf("Database size: %lu\n", db.size());
+        std::vector<std::vector<double>> db = e["Solver"]["Sample Database"].get<std::vector<std::vector<double>>>(); // @suppress("Type cannot be resolved") // @suppress("Symbol is not resolved") // @suppress("Method cannot be resolved")
+        printf("Database size: %lu\n", db.size()); // @suppress("Method cannot be resolved")
         /*for (size_t i = 0; i < db.size(); i++)
         {
         printf("[ ");
@@ -222,10 +223,13 @@ MCMCLatentSampler::MCMCLatentSampler(int numberLatentVars, int numberHyperparams
         printf("%f, ", db[i][j]);
         printf("]\n");
         }*/
-        // TODO: modify this
+
         std::vector<std::vector<double>>::const_iterator first = db.end() - numberSamples;
         std::vector<std::vector<double>>::const_iterator last = db.end();
         std::vector<std::vector<double>> samples(first, last);
+        first = db.begin();
+        last = db.begin() + numberSamples;
+        std::vector<std::vector<double>> initial_samples(first, last);
 
         // modify the samples to lie in valid range, and be a discrete integer value
 		if (sample_discrete) {
@@ -241,9 +245,23 @@ MCMCLatentSampler::MCMCLatentSampler(int numberLatentVars, int numberHyperparams
 					}
 				}
 			}
+			// For debugging only; check with what samples the sampling algorithm started
+			for (std::vector<double> &sample : initial_samples){ // @suppress("Type cannot be resolved") // @suppress("Symbol is not resolved")
+				for (double &var : sample) {
+					if (var < min_if_discrete - 0.49 || var > max_if_discrete + 0.49) {
+						if (var < min_if_discrete - 0.49)
+						    var = min_if_discrete;
+						else
+						    var = max_if_discrete;
+					} else {
+						var = std::round(var); // @suppress("Function cannot be resolved")
+					}
+				}
+			}
 		}
 
         kSample["Samples"] = samples;
+        kSample["Initial Samples For Debugging"] = initial_samples;
 
         // set new "previous sample means"
         for(size_t i= 0; i< numberLatent; i++){ // @suppress("Type cannot be resolved")

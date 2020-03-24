@@ -8,7 +8,7 @@ def draw_from_single_gaussian(nr_points=10, dimensions=2, mu=[0,0], sigma=1 ):
 
 def draw_from_multiple_gaussian(nr_points=10, dimensions=2, mus=[[0, 0],[2,2]], sigma=1):
     results = np.zeros((nr_points, dimensions))
-    cluster_assignment = np.zeros((nr_points,))
+    cluster_assignment = np.zeros((nr_points,), dtype=int)
     nr_clusters = len(mus)
     for i in range(nr_points):
         c = np.random.choice(list(range(nr_clusters)))
@@ -20,17 +20,18 @@ def draw_from_multiple_gaussian(nr_points=10, dimensions=2, mus=[[0, 0],[2,2]], 
 
 
 def generate_data():
-    nr_points = 100
+    nr_points = 10
     dimensions = 2
     single_output_file = "data_single.in"
     multiple_output_file = "data_multiple.in"
 
     #multidimensional case only:
-    mus = [[0, 0],[2,2]]
+    mus = [[0, 0], [2, 2]]
+    sdev = 0.5
     nr_clusters = len(mus)
 
-    single_data = draw_from_single_gaussian(nr_points, dimensions)
-    multiple_data, ass = draw_from_multiple_gaussian(nr_points, dimensions, mus=mus)
+    single_data = draw_from_single_gaussian(nr_points, dimensions, mu=[0,0], sigma=sdev)
+    multiple_data, ass = draw_from_multiple_gaussian(nr_points, dimensions, mus=mus, sigma=sdev)
 
     # store to files:
     with open(single_output_file, "w") as fd:

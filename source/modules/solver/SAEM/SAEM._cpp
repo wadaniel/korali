@@ -99,6 +99,26 @@ void korali::solver::SAEM::runGeneration( void )
   sampleLatent();
   std::cout << "Sampled; generation: " << _k->_currentGeneration << std::endl;
 
+  // Debugging output
+  std::cout << "-- Current sample means: " << std::endl;
+  auto transposed = transpose(_currentSamples);
+  std::vector<double> meanSample(transposed.size(), 0.0);
+  for (size_t i = 0; i < transposed.size(); i++){
+    std::vector<double> mean_and_sdev = meanAndSDev(transposed[i]);
+    meanSample[i] = mean_and_sdev[0];
+    std::cout << " -- " << mean_and_sdev[0] << " +- " <<  mean_and_sdev[1] << std::endl;
+  };
+  std::cout << std::endl;
+  std::cout << "-- Means of the samples that the sampling step started with: " << std::endl;
+  transposed = transpose(_currentInitialSamplesForDebug);
+  meanSample.resize(transposed.size());
+  for (size_t i = 0; i < transposed.size(); i++){
+    std::vector<double> mean_and_sdev = meanAndSDev(transposed[i]);
+    meanSample[i] = mean_and_sdev[0];
+    std::cout << " -- " << mean_and_sdev[0] << " +- " <<  mean_and_sdev[1] << std::endl;
+  };
+  // Debugging output end
+
   /* E2: Update posterior probability function Q */
   calculateSampleSVectors();
   updateS();
@@ -172,6 +192,7 @@ void korali::solver::SAEM::sampleLatent(){
           std::vector<std::vector<double>> v =  sample["Samples"].get<std::vector<std::vector<double>>>();
           if (v.size() != _numberMarkovChainSamples) korali::logError("User defined sampler did not return the correct number of samples ('Number Samples').");
           _currentSamples = v; //.push_back(v);
+          _currentInitialSamplesForDebug = sample["Initial Samples For Debugging"].get<std::vector<std::vector<double>>>();
           //}
     }
     else {
@@ -464,6 +485,31 @@ bool korali::solver::SAEM::isLatent(int idx){
     }
 
 
+std::vector<double> korali::solver::SAEM::meanAndSDev(std::vector<double> v){
+    // https://stackoverflow.com/questions/7616511/calculate-mean-and-standard-deviation-from-a-vector-of-samples-in-c-using-boos
+    double sum = std::accumulate(v.begin(), v.end(), 0.0);
+    double mean = sum / v.size();
+
+    std::vector<double> diff(v.size());
+    std::transform(v.begin(), v.end(), diff.begin(), [mean](double x) { return x - mean; });
+    double sq_sum = std::inner_product(diff.begin(), diff.end(), diff.begin(), 0.0);
+    double stdev = std::sqrt(sq_sum / v.size());
+    std::vector<double> result = {mean, stdev};
+    return result;
+}
+
+std::vector<std::vector<double> > korali::solver::SAEM::transpose(const std::vector<std::vector<double> > data) {
+    /* From: https://stackoverflow.com/questions/6009782/how-to-pivot-a-vector-of-vectors */
+    // this assumes that all inner vectors have the same size and
+    // allocates space for the complete result in advance
+    std::vector<std::vector<double> > result(data[0].size(),
+                                          std::vector<double>(data.size()));
+    for (std::vector<double>::size_type i = 0; i < data[0].size(); i++)
+        for (std::vector<double>::size_type j = 0; j < data.size(); j++) {
+            result[i][j] = data[j][i];
+        }
+    return result;
+}
 
 
 void korali::solver::SAEM::printGenerationBefore(){ return; }

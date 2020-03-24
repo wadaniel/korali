@@ -26,6 +26,9 @@ class SAEM : public korali::Solver
 
     bool isLatent(int idx);
 
+    std::vector<double> meanAndSDev(std::vector<double> v);
+    std::vector<std::vector<double> > transpose(const std::vector<std::vector<double> > data);
+
   public:
 
     void finalize() override;

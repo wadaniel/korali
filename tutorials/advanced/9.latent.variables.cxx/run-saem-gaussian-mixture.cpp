@@ -57,9 +57,9 @@ int main(int argc, char* argv[])
   }
 //  std::generate(d2_initialHyperparams.begin(), d2_initialHyperparams.end(), random_normal);
 
-  MCMCLatentSampler distrib2_sampler_obj = MCMCLatentSampler(d2_numberLatentVars, d2_numberHyperparams,
+  MCMCLatentSampler distrib2_sampler_obj = MCMCLatentSampler(d2_numberLatentVars, d2_numberHyperparams, // @suppress("Type cannot be resolved") // @suppress("Function cannot be resolved")
          d2_initialLatentValues, d2_initialHyperparams, distrib2_zeta, distrib2_S, distrib2_phi,
-		 true, 0, distrib2._p.nClusters - 1 );
+		 true, 0, distrib2._p.nClusters - 1 ); // @suppress("Field cannot be resolved")
 
   /*void distrib2_sampler(korali::Sample& s)
   {
@@ -108,9 +108,9 @@ int main(int argc, char* argv[])
 
  // * Define which hyperparameters we use (all mu, and sigma)
  int variable_counter = 0;
- for(size_t cluster_idx = 0; cluster_idx < distrib2._p.nClusters; cluster_idx++){
-     for(size_t dim = 0; dim < distrib2._p.nDimensions; dim++){
-         e["Variables"][variable_counter]["Name"] = "mu_"+std::to_string(cluster_idx)+"_"+std::to_string(dim);
+ for(size_t cluster_idx = 0; cluster_idx < distrib2._p.nClusters; cluster_idx++){ // @suppress("Type cannot be resolved") // @suppress("Field cannot be resolved")
+     for(size_t dim = 0; dim < distrib2._p.nDimensions; dim++){ // @suppress("Type cannot be resolved") // @suppress("Field cannot be resolved")
+         e["Variables"][variable_counter]["Name"] = "mu_"+std::to_string(cluster_idx)+"_"+std::to_string(dim); // @suppress("Function cannot be resolved")
          e["Variables"][variable_counter]["Bayesian Type"] = "Hyperparameter";
          e["Variables"][variable_counter]["Prior Distribution"] = "Uniform 1"; // Edit: I probably dont need a prior distribution for any variable
 //         e["Variables"][variable_counter]["Initial Mean"] = 0;
@@ -125,16 +125,16 @@ int main(int argc, char* argv[])
 
  e["Variables"][variable_counter]["Name"] = "sigma";
  e["Variables"][variable_counter]["Bayesian Type"] = "Hyperparameter";
- e["Variables"][variable_counter]["Prior Distribution"] = "Uniform 0"; // Edit: I probably dont need a prior distribution for any variable
- e["Variables"][variable_counter]["Initial Value"] = 5.0; // Initial hyperparameter value
- e["Variables"][variable_counter]["Upper Bound"] = 15;
- e["Variables"][variable_counter]["Lower Bound"] = -15;
+ e["Variables"][variable_counter]["Prior Distribution"] = "Uniform 0"; // I probably dont need a prior distribution for any variable -- Edit: yes, seems korali demands one
+ e["Variables"][variable_counter]["Initial Value"] = 2.0; // Initial hyperparameter value
+ e["Variables"][variable_counter]["Upper Bound"] = 5;
+ e["Variables"][variable_counter]["Lower Bound"] = 0;
  variable_counter++;
 
 // * Latent variables
  int latent_counter = 0;
- for(size_t cluster_idx = 0; cluster_idx < distrib2._p.nPoints; cluster_idx++){
-     e["Variables"][variable_counter]["Name"] = "cluster_assignment_"+std::to_string(latent_counter);
+ for(size_t cluster_idx = 0; cluster_idx < distrib2._p.nPoints; cluster_idx++){ // @suppress("Type cannot be resolved") // @suppress("Field cannot be resolved")
+     e["Variables"][variable_counter]["Name"] = "cluster_assignment_"+std::to_string(latent_counter); // @suppress("Function cannot be resolved")
      e["Variables"][variable_counter]["Bayesian Type"] = "Latent";
      //e["Variables"][variable_counter]["Granularity"] = 1.0; // <- does not work
      e["Variables"][variable_counter]["Prior Distribution"] = "Multinomial 2"; // not used but required

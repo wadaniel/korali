@@ -37,6 +37,7 @@ int main(int argc, char* argv[])
  std::mt19937 gen(rd());
  std::uniform_int_distribution<int> random_int(0, distrib2._p.nClusters - 1);
  std::normal_distribution<float> random_normal(0, 1); // could use gen as 'sample = random_normal(gen)'
+ std::normal_distribution<float> random_normal_2(0.5, 0.05);
 
  int numberMCMCSamples = 10;
  int d2_numberLatentVars = distrib2._p.nPoints; // one for each datapoint
@@ -47,7 +48,7 @@ int main(int argc, char* argv[])
 
   std::vector<double> d2_initialLatentValues(d2_numberLatentVars, 0.0);
   for (size_t i = 0; i < d2_numberLatentVars; i++){
-      d2_initialLatentValues[i] = random_int(gen);
+      d2_initialLatentValues[i] = random_normal_2(gen);
   }
 //  std::generate(d2_initialLatentValues.begin(), d2_initialLatentValues.end(), random_int);
 
@@ -57,9 +58,10 @@ int main(int argc, char* argv[])
   }
 //  std::generate(d2_initialHyperparams.begin(), d2_initialHyperparams.end(), random_normal);
 
-  MCMCLatentSampler distrib2_sampler_obj = MCMCLatentSampler(d2_numberLatentVars, d2_numberHyperparams, // @suppress("Type cannot be resolved") // @suppress("Function cannot be resolved")
-         d2_initialLatentValues, d2_initialHyperparams, distrib2_zeta, distrib2_S, distrib2_phi,
-		 true, 0, distrib2._p.nClusters - 1 ); // @suppress("Field cannot be resolved")
+//  MCMCLatentSampler distrib2_sampler_obj = MCMCLatentSampler(d2_numberLatentVars, d2_numberHyperparams, // @suppress("Type cannot be resolved") // @suppress("Function cannot be resolved")
+//         d2_initialLatentValues, d2_initialHyperparams, distrib2_zeta, distrib2_S, distrib2_phi,
+//		 true, 0, distrib2._p.nClusters - 1 ); // @suppress("Field cannot be resolved")
+  MultimodalGaussianSampler gaussian_sampler_obj = MultimodalGaussianSampler(distrib2._p.points, distrib2._p.nDimensions, distrib2._p.nClusters);
 
   /*void distrib2_sampler(korali::Sample& s)
   {
@@ -67,8 +69,11 @@ int main(int argc, char* argv[])
   }*/
 
 
-  std::function<void(korali::Sample&)> distrib2_sampler = [&distrib2_sampler_obj](korali::Sample& s) -> void {
-     distrib2_sampler_obj.sampleLatent(s);
+//  std::function<void(korali::Sample&)> distrib2_sampler = [&distrib2_sampler_obj](korali::Sample& s) -> void {
+//     distrib2_sampler_obj.sampleLatent(s);
+//  };
+  std::function<void(korali::Sample&)> multimodal_gaussian_sampler = [&gaussian_sampler_obj](korali::Sample& s) -> void {
+	  gaussian_sampler_obj.sampleLatent(s);
   };
 
 
@@ -87,7 +92,7 @@ int main(int argc, char* argv[])
  e["Solver"]["Type"] = "SAEM";
  e["Solver"]["Number Markov Chain Samples"] = 100;
  e["Solver"]["Termination Criteria"]["Max Generations"] = 100;
- e["Solver"]["Latent Variable Sampler"] = distrib2_sampler;
+ e["Solver"]["Latent Variable Sampler"] = multimodal_gaussian_sampler;
  // e["Solver"]["Latent Variable Sampler"] = &dummySampler;
 
 
@@ -112,7 +117,7 @@ int main(int argc, char* argv[])
      for(size_t dim = 0; dim < distrib2._p.nDimensions; dim++){ // @suppress("Type cannot be resolved") // @suppress("Field cannot be resolved")
          e["Variables"][variable_counter]["Name"] = "mu_"+std::to_string(cluster_idx)+"_"+std::to_string(dim); // @suppress("Function cannot be resolved")
          e["Variables"][variable_counter]["Bayesian Type"] = "Hyperparameter";
-         e["Variables"][variable_counter]["Prior Distribution"] = "Uniform 1"; // Edit: I probably dont need a prior distribution for any variable
+         e["Variables"][variable_counter]["Prior Distribution"] = "Uniform 1"; // not used (?) but required
 //         e["Variables"][variable_counter]["Initial Mean"] = 0;
 //         e["Variables"][variable_counter]["Initial Standard Deviation"] = 3.0;
          e["Variables"][variable_counter]["Initial Value"] = d2_initialHyperparams[variable_counter]; // Initial hyperparameter value

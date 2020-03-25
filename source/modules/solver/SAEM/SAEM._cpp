@@ -488,12 +488,12 @@ bool korali::solver::SAEM::isLatent(int idx){
 std::vector<double> korali::solver::SAEM::meanAndSDev(std::vector<double> v){
     // https://stackoverflow.com/questions/7616511/calculate-mean-and-standard-deviation-from-a-vector-of-samples-in-c-using-boos
     double sum = std::accumulate(v.begin(), v.end(), 0.0);
-    double mean = sum / v.size();
+    double mean = sum / static_cast<double>(v.size());
 
     std::vector<double> diff(v.size());
     std::transform(v.begin(), v.end(), diff.begin(), [mean](double x) { return x - mean; });
     double sq_sum = std::inner_product(diff.begin(), diff.end(), diff.begin(), 0.0);
-    double stdev = std::sqrt(sq_sum / v.size());
+    double stdev = std::sqrt(sq_sum / static_cast<double>(v.size()));
     std::vector<double> result = {mean, stdev};
     return result;
 }

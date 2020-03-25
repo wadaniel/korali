@@ -42,12 +42,6 @@ int main(int argc, char* argv[])
     std::vector<std::vector<double> > hyperparams;
     std::vector<std::vector<std::vector<double> > > points;
     /* The test inputs*/
-    assignments.push_back({0,0,0, 1,1,2});
-    hyperparams.push_back({-1.5, 0, 20., 5., 3.0, 3.5, 7.5}); // (mu1, mu2, sigma)
-    points.push_back( {
-        {1.5, -1.5}, {-0.5, 2}, {-5., 7.,},
-		{22.0, 10.3}, {17.5, 30.},     {0.0, 7.2}
-        });
     assignments.push_back({0});
     hyperparams.push_back({0, 0, 2, 2, sigma}); // (mu1, mu2, sigma)
     points.push_back( {
@@ -67,6 +61,12 @@ int main(int argc, char* argv[])
     hyperparams.push_back({0, 0, 2, 2, 0.5}); // (mu1, mu2, sigma)
     points.push_back( {
         {1.5, 2.25}, {-0.5, 2}
+        });
+    assignments.push_back({0,0,0, 1,1,2});
+    hyperparams.push_back({-1.5, 0, 20., 5., 3.0, 3.5, 7.5}); // (mu1, mu2, sigma)
+    points.push_back( {
+        {1.5, -1.5}, {-0.5, 2}, {-5., 7.,},
+		{22.0, 10.3}, {17.5, 30.},     {0.0, 7.2}
         });
 
 
@@ -181,37 +181,4 @@ int main(int argc, char* argv[])
 
 }
 
-double multivariate_gaussian_probability(std::vector<std::vector<double> > mus, int nDimensions, std::vector<int> assignments,
-                                         int nClusters, double sigma, std::vector<std::vector<double> > points) {
-    /* Normalized, no log, clean pretty probability for N points. */
-    assert (sigma > 0.0);
-    assert (nDimensions > 0);
-    for (int a : assignments)
-        assert ((0 <= a) && ( a < nClusters));
-    for (std::vector<double> v : points)
-        assert (v.size() == nDimensions);
 
-    int N = points.size();
-
-    double p = 1.0;
-    for (int i = 0; i < N; i++){
-        // get the cluster mean
-        int c = assignments[i];
-        std::vector<double> mu = mus[c]; // @suppress("Symbol is not resolved") // @suppress("Type cannot be resolved")
-        // update p
-        p = p * univariate_gaussian_probability(mu, sigma, points[i]); // @suppress("Function cannot be resolved")
-    }
-    return p;
-}
-
-double univariate_gaussian_probability(std::vector<double> mu, double sigma, std::vector<double> point){ // @suppress("Type cannot be resolved") // @suppress("Method cannot be resolved") // @suppress("Function cannot be resolved") // @suppress("Symbol is not resolved")
-    assert (mu.size() == point.size());							// @suppress("Symbol is not resolved") // @suppress("Type cannot be resolved") // @suppress("Method cannot be resolved") // @suppress("Function cannot be resolved")
-    std::vector<double> distance(mu.size());					// @suppress("Symbol is not resolved") // @suppress("Type cannot be resolved") // @suppress("Method cannot be resolved") // @suppress("Function cannot be resolved")
-    std::transform(mu.begin(), mu.end(), point.begin(),			// @suppress("Symbol is not resolved") // @suppress("Type cannot be resolved") // @suppress("Method cannot be resolved") // @suppress("Function cannot be resolved")
-               distance.begin(), std::minus<double>());			// @suppress("Symbol is not resolved") // @suppress("Type cannot be resolved") // @suppress("Method cannot be resolved") // @suppress("Function cannot be resolved")
-    double squared_distance = std::inner_product(std::begin(distance), std::end(distance) , std::begin(distance), 0.0);    // @suppress("Type cannot be resolved") // @suppress("Method cannot be resolved") // @suppress("Function cannot be resolved") // @suppress("Symbol is not resolved")
-    double exponent = - squared_distance / (2.0 * std::pow(sigma, 2.0)); // @suppress("Function cannot be resolved")
-    double denominator = (std::sqrt(2.0 * M_PI) * sigma) ; // @suppress("Symbol is not resolved") // @suppress("Function cannot be resolved")
-    double probability =  std::exp(exponent) / denominator;  // @suppress("Type cannot be resolved") // @suppress("Method cannot be resolved") // @suppress("Function cannot be resolved") // @suppress("Symbol is not resolved")
-    return probability;
-}

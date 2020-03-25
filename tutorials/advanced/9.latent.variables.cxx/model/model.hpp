@@ -3,6 +3,7 @@
 
 #include "korali.hpp"
 #include "load_data.hpp"
+#include "utils.hpp"
 
 #include <vector>
 #include <cmath>
@@ -76,9 +77,5 @@ class ExampleDistribution2 : public ExponentialFamilyDistribution
 
 };
 
-
-
-double l2_norm(std::vector<double> const& u);
-double l2_norm_squared(std::vector<double> const& u);
 
 #endif

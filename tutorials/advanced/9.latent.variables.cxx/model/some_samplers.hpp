@@ -1,6 +1,9 @@
 #ifndef _SAMPLER_HPP_
 #define _SAMPLER_HPP_
+
 #include "korali.hpp"
+#include "model.hpp"
+#include "utils.hpp"
 
 #include <vector>
 #include <random>
@@ -56,6 +59,30 @@ class MCMCLatentSampler {
                             int min_if_discrete_ = 0, int max_if_discrete_ = 0);
     void initialize();
     void sampleLatent(korali::Sample& k);
+};
+
+class MultimodalGaussianSampler {
+
+private:
+	int nDimensions;
+	int nClusters;
+	int nPoints;
+	std::vector<std::vector<double>> points;
+
+
+	 // Initialize random number generation
+	 // (https://stackoverflow.com/questions/38244877/how-to-use-stdnormal-distribution)
+	// Not sure if it's possible to put part of this into .cpp
+	 //std::random_device rd;
+	 std::mt19937 gen;
+	 std::uniform_real_distribution<> uniform_distrib;
+
+public:
+	//MultimodalGaussianSampler  : gen{std::random_device{}()}, uniform_distrib(0.0, 1.0) (std::vector<std::vector<double>> points_, int nDimensions_, int nClusters_);
+	MultimodalGaussianSampler  (std::vector<std::vector<double>> points_, int nDimensions_, int nClusters_);
+	void sampleLatent(korali::Sample& k);
+
+
 };
 
 #endif

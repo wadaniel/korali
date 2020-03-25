@@ -129,24 +129,24 @@ MCMCLatentSampler::MCMCLatentSampler(int numberLatentVars, int numberHyperparams
 
 
                         // first, discretize the latent variables if needed
-                        if (sample_discrete){
-                            std::vector<int> latent_int_vars(numberLatent);
-							for (size_t i = 0; i < numberLatent; i++){
-								double var = latent_vars[i];
-							  // assign a random cluster if out of bounds
-//								if (var < min_if_discrete - 0.49 || var > max_if_discrete + 0.49){
-//									  latent_int_vars[i] = random_int(gen);
-								if (var < min_if_discrete - 0.49 )
-									latent_int_vars[i] = min_if_discrete;
-								else {if ( var > max_if_discrete + 0.49)
-									 	 latent_int_vars[i] = max_if_discrete;
-									 else
-										latent_int_vars[i] = std::lround(var);
-								}
-							}
-							s["Latent Variables"] = latent_int_vars;
-                        } else
-                        	{s["Latent Variables"] = latent_vars;}
+//                        if (sample_discrete){
+//                            std::vector<int> latent_int_vars(numberLatent);
+//							for (size_t i = 0; i < numberLatent; i++){
+//								double var = latent_vars[i];
+//							  // assign a random cluster if out of bounds
+////								if (var < min_if_discrete - 0.49 || var > max_if_discrete + 0.49){
+////									  latent_int_vars[i] = random_int(gen);
+//								if (var < min_if_discrete - 0.49 )
+//									latent_int_vars[i] = min_if_discrete;
+//								else {if ( var > max_if_discrete + 0.49)
+//									 	 latent_int_vars[i] = max_if_discrete;
+//									 else
+//										latent_int_vars[i] = std::lround(var);
+//								}
+//							}
+//							s["Latent Variables"] = latent_int_vars;
+//                        } else
+                        	s["Latent Variables"] = latent_vars;
 
                         s["Hyperparameters"] = hparams; // _currentHyperparameters;
 
@@ -180,7 +180,7 @@ MCMCLatentSampler::MCMCLatentSampler(int numberLatentVars, int numberHyperparams
 
             e["Variables"][i]["Initial Standard Deviation"] = 2.0;
             if (sample_discrete){
-            	  e["Variables"][i]["Initial Standard Deviation"] = static_cast<float>(max_if_discrete - min_if_discrete)/2.0;
+            	  e["Variables"][i]["Initial Standard Deviation"] = static_cast<float>(max_if_discrete - min_if_discrete)/10.0;
             e["Variables"][i]["Initial Mean"] = previousSampleMeans[i];
 
  //               e["Variables"][i]["Granularity"] = 1.0; // todo: This might simply be ignored; check in the results
@@ -231,34 +231,34 @@ MCMCLatentSampler::MCMCLatentSampler(int numberLatentVars, int numberHyperparams
         last = db.begin() + numberSamples;
         std::vector<std::vector<double>> initial_samples(first, last);
 
-        // modify the samples to lie in valid range, and be a discrete integer value
-		if (sample_discrete) {
-			for (std::vector<double> &sample : samples){ // @suppress("Type cannot be resolved") // @suppress("Symbol is not resolved")
-				for (double &var : sample) {
-					if (var < min_if_discrete - 0.49 || var > max_if_discrete + 0.49) {
-						if (var < min_if_discrete - 0.49)
-						    var = min_if_discrete;
-						else
-						    var = max_if_discrete;
-					} else {
-						var = std::round(var); // @suppress("Function cannot be resolved")
-					}
-				}
-			}
-			// For debugging only; check with what samples the sampling algorithm started
-			for (std::vector<double> &sample : initial_samples){ // @suppress("Type cannot be resolved") // @suppress("Symbol is not resolved")
-				for (double &var : sample) {
-					if (var < min_if_discrete - 0.49 || var > max_if_discrete + 0.49) {
-						if (var < min_if_discrete - 0.49)
-						    var = min_if_discrete;
-						else
-						    var = max_if_discrete;
-					} else {
-						var = std::round(var); // @suppress("Function cannot be resolved")
-					}
-				}
-			}
-		}
+//        // modify the samples to lie in valid range, and be a discrete integer value
+//		if (sample_discrete) {
+//			for (std::vector<double> &sample : samples){ // @suppress("Type cannot be resolved") // @suppress("Symbol is not resolved")
+//				for (double &var : sample) {
+//					if (var < min_if_discrete - 0.49 || var > max_if_discrete + 0.49) {
+//						if (var < min_if_discrete - 0.49)
+//						    var = min_if_discrete;
+//						else
+//						    var = max_if_discrete;
+//					} else {
+//						var = std::round(var); // @suppress("Function cannot be resolved")
+//					}
+//				}
+//			}
+//			// For debugging only; check with what samples the sampling algorithm started
+//			for (std::vector<double> &sample : initial_samples){ // @suppress("Type cannot be resolved") // @suppress("Symbol is not resolved")
+//				for (double &var : sample) {
+//					if (var < min_if_discrete - 0.49 || var > max_if_discrete + 0.49) {
+//						if (var < min_if_discrete - 0.49)
+//						    var = min_if_discrete;
+//						else
+//						    var = max_if_discrete;
+//					} else {
+//						var = std::round(var); // @suppress("Function cannot be resolved")
+//					}
+//				}
+//			}
+//		}
 
         kSample["Samples"] = samples;
         kSample["Initial Samples For Debugging"] = initial_samples;
@@ -274,7 +274,80 @@ MCMCLatentSampler::MCMCLatentSampler(int numberLatentVars, int numberHyperparams
 
       //
 
+    };
+
+//MultimodalGaussianSampler::MultimodalGaussianSampler : gen{std::random_device{}()}, uniform_distrib(0.0, 1.0) (std::vector<std::vector<double>> points_, int nDimensions_, int nClusters_){
+MultimodalGaussianSampler::MultimodalGaussianSampler (std::vector<std::vector<double>> points_, int nDimensions_, int nClusters_){
+	nDimensions = nDimensions_;
+	nClusters = nClusters_;
+	points = points_;
+	nPoints = points.size();
+
+	std::random_device rd;
+	gen = std::mt19937(rd());
+	uniform_distrib = std::uniform_real_distribution<>(0.0, 1.0);
+
+};
+
+void MultimodalGaussianSampler::sampleLatent(korali::Sample& k){
+	/* Sample assignments for each point separately, proportional to the resulting data likelihood, p(point, assignment | hyperparams) */
+
+    std::vector<double> hyperparameters = k["Hyperparameters"];
+    int nSamples = k["Number Samples"];
+    if (k["Number Of Latent Variables"] != nPoints)
+       korali::logError("Implementation error, number of latent variables at initialization does not fit to what was passed as variable");
+
+    // get sigma
+    double sigma = hyperparameters[nClusters * nDimensions];
+
+    // get vector of means
+    std::vector<std::vector<double>> mus(nClusters);
+    for (size_t i = 0; i < nClusters; i++){
+      std::vector<double>::const_iterator first = hyperparameters.begin() + i * nDimensions;
+      std::vector<double>::const_iterator last = hyperparameters.begin() + (i + 1) * nDimensions ;
+      std::vector<double> mu(first, last);
+      if(mu.size() != nDimensions)
+          korali::logError("Implementation error, dimensions did not match");
+      mus[i] = mu;
     }
+
+    // we sample in another order, will later transpose
+    std::vector<std::vector<int>> samples_transpose(nPoints);
+    for (size_t i = 0; i < nPoints; i++){
+
+    	// First, get probabilities for each cluster
+    	std::vector<double> probabilities(nClusters);
+    	for (size_t j = 0; j < nClusters; j++){
+    		std::vector<double> mu = mus[j];
+    		double p = univariate_gaussian_probability(mu, sigma, points[i]);
+    		probabilities[j] = p;
+    	}
+
+    	// normalize probabilities to one
+    	probabilities = normalize(probabilities);
+
+    	std::vector<int> pointwise_samples(nSamples);
+    	for (size_t j = 0; j< nSamples; j++){
+    		// sample
+    		double u = uniform_distrib(gen);
+    		double sum = 0.0;
+    		for (size_t k = 0; k < nClusters; k++){
+    			sum = sum + probabilities[k];
+    			if (u < sum){
+    				// cluster k has been chosen!
+    				pointwise_samples[j] = k;
+    				break;
+    			}
+    		}
+
+    	}
+    	samples_transpose[i] = pointwise_samples;
+    }
+    std::vector<std::vector<int>> samples = transpose(samples_transpose);
+
+    k["Samples"] = samples;
+
+};
 
 
 #endif

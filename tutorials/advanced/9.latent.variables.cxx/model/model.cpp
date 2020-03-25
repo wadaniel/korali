@@ -149,24 +149,24 @@ void ExampleDistribution2::S(korali::Sample& k)
             S(x1, c(1), ... xN, c(N))
                             = sum_i [- vec(|x_i|^2, delta(ci=1), delta(ci=2), x_i * delta(ci=1), x_i * delta(ci=2) ) ]*/
 
-      std::vector<int> assignments = k["Latent Variables"];
+      std::vector<double> assignments = k["Latent Variables"];
       if (assignments.size() != _p.nPoints)
           korali::logError("Latent variables should be exactly the cluster assignments, so there is one for each point in the sample.");
 
      // std::vector<int> assignments(latentVariables.size(), 0);
-      for (size_t i = 0; i < assignments.size(); i++){
-        double lvar =assignments[i];
-        //assignments[i] = std::lround(lvar);
-        //if (std::abs(lvar - assignments[i]) > 0.01 )
-           // korali::logError("Assigned latent variable was not an integer");
-        //	 std::cout << "Ignoring problem: Cluster-assignment latent variable was not an integer" << std::endl; // @suppress("Symbol is not resolved")
-        if (lvar < -0.49 )
-            std::cout << "Ignoring unresolvable problem: Latent variable was negative, should be a cluster assignment index"<< std::endl;
-            //korali::logError("Latent variable was negative, should be a cluster assignment index");
-        if (lvar > _p.nClusters - 0.51 )
-            std::cout << "Ignoring unresolvable problem: Latent variable was larger than highest cluster index, should be a cluster assignment index"<< std::endl;
-            //korali::logError("Latent variable was larger than highest cluster index, should be a cluster assignment index");
-      }
+//      for (size_t i = 0; i < assignments.size(); i++){
+//        double lvar =assignments[i];
+//        //assignments[i] = std::lround(lvar);
+//        //if (std::abs(lvar - assignments[i]) > 0.01 )
+//           // korali::logError("Assigned latent variable was not an integer");
+//        //	 std::cout << "Ignoring problem: Cluster-assignment latent variable was not an integer" << std::endl; // @suppress("Symbol is not resolved")
+//        if (lvar < -0.49 )
+//            std::cout << "Ignoring unresolvable problem: Latent variable was negative, should be a cluster assignment index"<< std::endl;
+//            //korali::logError("Latent variable was negative, should be a cluster assignment index");
+//        if (lvar > _p.nClusters - 0.51 )
+//            std::cout << "Ignoring unresolvable problem: Latent variable was larger than highest cluster index, should be a cluster assignment index"<< std::endl;
+//            //korali::logError("Latent variable was larger than highest cluster index, should be a cluster assignment index");
+//      }
       int S_dim = 1 + _p.nDimensions * _p.nClusters + _p.nClusters;
       std::vector<double> S_vec(S_dim, 0.0);
 
@@ -185,7 +185,7 @@ void ExampleDistribution2::S(korali::Sample& k)
 
       for(size_t i = 0; i<_p.nPoints; i++){ // @suppress("Field cannot be resolved")
           S_vec[0] -= l2_norm_squared(_p.points[i]); // @suppress("Field cannot be resolved")
-          int cluster = assignments[i]; // should be zero or one
+          int cluster = std::lround(assignments[i]); // should be zero or one
           S_vec[cluster + 1] += 1;
           // to get <mu_c(i) , x_i>, add x_i to the part that will be summed with mu_c(i):
           auto mu_ci_location = &S_vec[_p.nClusters + 1 + cluster * _p.nDimensions];
@@ -277,26 +277,6 @@ void ExampleDistribution2::phi(korali::Sample& k)
      {
        distrib2.phi(s);
      };*/
-
-
-// ****************** other ********************
-
-double l2_norm(std::vector<double> const& u) {
-    // copy-paste from http://polaris.s.kanazawa-u.ac.jp
-    double accum = 0.;
-    for (double x : u) {
-        accum += x * x;
-    }
-    return sqrt(accum);
-}
-double l2_norm_squared(std::vector<double> const& u) {
-    // copy-paste from http://polaris.s.kanazawa-u.ac.jp
-    double accum = 0.;
-    for (double x : u) {
-        accum += x * x;
-    }
-    return accum;
-}
 
 
 #endif

@@ -28,23 +28,45 @@ int main(int argc, char* argv[])
 
    // int number_tests = 13;
     // int number_points = 10;
-    int nClusters = distrib2._p.nClusters; // 2
-    int nDimensions = distrib2._p.nDimensions; // 2
-    int d2_numberLatentVars = distrib2._p.nPoints; // one for each datapoint
-    int d2_numberHyperparams = distrib2._p.nDimensions * distrib2._p.nClusters + 1;
+    int nClusters = distrib2._p.nClusters; // 2 // @suppress("Field cannot be resolved")
+    int nDimensions = distrib2._p.nDimensions; // 2 // @suppress("Field cannot be resolved")
+    int d2_numberLatentVars = distrib2._p.nPoints; // one for each datapoint // @suppress("Field cannot be resolved")
+    int d2_numberHyperparams = distrib2._p.nDimensions * distrib2._p.nClusters + 1; // @suppress("Field cannot be resolved")
 
      // Some value pairs:
-    std::vector<double> mu0 = {0, 0};
-    std::vector<double> mu1 = {2, 2};
-    std::vector<double> mu2 = {-0.5, 10};
+    std::vector<double> mu0 = {0, 0};				// @suppress("Type cannot be resolved") // @suppress("Method cannot be resolved") // @suppress("Symbol is not resolved") // @suppress("Function cannot be resolved")
+    std::vector<double> mu1 = {2, 2};				// @suppress("Type cannot be resolved") // @suppress("Method cannot be resolved") // @suppress("Symbol is not resolved") // @suppress("Function cannot be resolved")
+    std::vector<double> mu2 = {-0.5, 10};			// @suppress("Type cannot be resolved") // @suppress("Method cannot be resolved") // @suppress("Symbol is not resolved") // @suppress("Function cannot be resolved")
     double sigma = 1.0;
     std::vector<std::vector<int> > assignments;
     std::vector<std::vector<double> > hyperparams;
     std::vector<std::vector<std::vector<double> > > points;
+    /* The test inputs*/
+    assignments.push_back({0,0,0, 1,1,2});
+    hyperparams.push_back({-1.5, 0, 20., 5., 3.0, 3.5, 7.5}); // (mu1, mu2, sigma)
+    points.push_back( {
+        {1.5, -1.5}, {-0.5, 2}, {-5., 7.,},
+		{22.0, 10.3}, {17.5, 30.},     {0.0, 7.2}
+        });
     assignments.push_back({0});
     hyperparams.push_back({0, 0, 2, 2, sigma}); // (mu1, mu2, sigma)
     points.push_back( {
         {0, 0}
+        });
+    assignments.push_back({0, 1});
+    hyperparams.push_back({0, 0, 2, 2, sigma}); // (mu1, mu2, sigma)
+    points.push_back( {
+        {2,2}, {0,0}
+        });
+    assignments.push_back({0});
+    hyperparams.push_back({0, 0, 2, 2, 0.5}); // (mu1, mu2, sigma)
+    points.push_back( {
+        {0,0}
+        });
+    assignments.push_back({1,1});
+    hyperparams.push_back({0, 0, 2, 2, 0.5}); // (mu1, mu2, sigma)
+    points.push_back( {
+        {1.5, 2.25}, {-0.5, 2}
         });
 
 
@@ -53,8 +75,8 @@ int main(int argc, char* argv[])
     double p_from_model_direct;
     double p_from_model_via_korali;
     double _zetaValue;
-    std::vector<double> _sValues;
-    std::vector<double> _phiValues;
+    std::vector<double> _sValues;		// @suppress("Type cannot be resolved") // @suppress("Method cannot be resolved") // @suppress("Symbol is not resolved") // @suppress("Function cannot be resolved")
+    std::vector<double> _phiValues;		// @suppress("Type cannot be resolved") // @suppress("Method cannot be resolved") // @suppress("Symbol is not resolved") // @suppress("Function cannot be resolved")
     //korali::problem::bayesian::Latent problem;
     //korali::Experiment *e;
     auto e_ptr = new korali::Experiment();
@@ -63,28 +85,39 @@ int main(int argc, char* argv[])
     auto eng = korali::Engine();
     korali::Sample* k_ptr;
     korali::Sample k;
-    std::vector<std::vector<double> > current_points;
+    std::vector<std::vector<double> > current_points;		// @suppress("Type cannot be resolved") // @suppress("Method cannot be resolved") // @suppress("Symbol is not resolved") // @suppress("Function cannot be resolved")
+    std::vector<std::vector<double> > mu_vectors; // @suppress("Symbol is not resolved")
+    std::vector< double> mu_vectors_concat; // @suppress("Symbol is not resolved")
 
-    for (int i = 0; i < assignments.size(); i++){
+    for (int i = 0; i < assignments.size(); i++){	// @suppress("Type cannot be resolved") // @suppress("Method cannot be resolved") // @suppress("Symbol is not resolved") // @suppress("Function cannot be resolved")
         /* reference probability */
-        current_points = points[i];
-        p = multivariate_gaussian_probability({mu0, mu1}, nDimensions, assignments[i], nClusters, sigma, current_points);
+        current_points = points[i]; // @suppress("Symbol is not resolved")
+        sigma = hyperparams[i][hyperparams[i].size() - 1]; // @suppress("Symbol is not resolved")
+        // * extract mu vectors from hyperparameters
+        nClusters = (hyperparams[i].size() - 1) / nDimensions; // @suppress("Method cannot be resolved") // @suppress("Symbol is not resolved")
+        mu_vectors_concat = std::vector<double>(hyperparams[i].begin(), hyperparams[i].begin() + hyperparams[i].size() - 1); // @suppress("Symbol is not resolved") // @suppress("Method cannot be resolved") // @suppress("Function cannot be resolved")
+        mu_vectors.resize(nClusters); // @suppress("Symbol is not resolved") // @suppress("Method cannot be resolved")
+        for (size_t j = 0; j < mu_vectors.size(); j++) // @suppress("Type cannot be resolved") // @suppress("Symbol is not resolved") // @suppress("Method cannot be resolved")
+        	mu_vectors[j] = std::vector<double>(hyperparams[i].begin() + nDimensions * j, hyperparams[i].begin() + nDimensions * (j+1)); // @suppress("Symbol is not resolved") // @suppress("Function cannot be resolved") // @suppress("Method cannot be resolved")
 
-        reset_points(distrib2._p, current_points, assignments[i], nClusters );
+        p = multivariate_gaussian_probability(mu_vectors, nDimensions, assignments[i], nClusters, sigma, current_points); // @suppress("Function cannot be resolved") // @suppress("Symbol is not resolved")
+
+
+        reset_points(distrib2._p, current_points, assignments[i], nClusters ); // @suppress("Function cannot be resolved") // @suppress("Field cannot be resolved") // @suppress("Symbol is not resolved")
         //distrib2._p.points =current_points;
         /* Update S, zeta, phi to the new set of points (needed?)*/
         distrib2_S = [&distrib2](korali::Sample& s) -> void {
-    	    distrib2.S(s); } ;
+    	    distrib2.S(s); } ;			 // @suppress("Method cannot be resolved")
         distrib2_zeta = [&distrib2](korali::Sample& s) -> void {
-    	    distrib2.zeta(s); } ;
+    	    distrib2.zeta(s); } ;		 // @suppress("Method cannot be resolved")
         distrib2_phi = [&distrib2](korali::Sample& s) -> void {
-    	    distrib2.phi(s); } ;
+    	    distrib2.phi(s); } ;		  // @suppress("Method cannot be resolved")
 
         /* Use the distributions S, zeta and phi functions to calculate the probability */
         k_ptr = new korali::Sample();
         k = *k_ptr;
-        k["Latent Variables"] = assignments[i];
-        k["Hyperparameters"] = hyperparams[i];
+        k["Latent Variables"] = assignments[i];  // @suppress("Symbol is not resolved")
+        k["Hyperparameters"] = hyperparams[i]; // @suppress("Symbol is not resolved")
 
         //std::function<void(korali::Sample&)> *func_ptr_S = &distrib2_S;
 
@@ -92,15 +125,15 @@ int main(int argc, char* argv[])
         distrib2_zeta(k);
         distrib2_phi(k);
 
-        double _zetaValue = k["zeta"].get<double>();
-        _sValues = k["S"].get<std::vector<double> >();
-        _phiValues = k["phi"].get<std::vector<double> >();
+        double _zetaValue = k["zeta"].get<double>(); // @suppress("Method cannot be resolved") // @suppress("Symbol is not resolved")
+        _sValues = k["S"].get<std::vector<double> >(); // @suppress("Type cannot be resolved") // @suppress("Method cannot be resolved") // @suppress("Symbol is not resolved")
+        _phiValues = k["phi"].get<std::vector<double> >(); // @suppress("Type cannot be resolved") // @suppress("Method cannot be resolved") // @suppress("Symbol is not resolved")
 
-        p_from_model_direct =  std::exp( - _zetaValue
-                                         + std::inner_product(std::begin(_sValues), std::end(_sValues),
-                                                                                        std::begin(_phiValues), 0.0) );
+        p_from_model_direct =  std::exp( - _zetaValue    													// @suppress("Type cannot be resolved") // @suppress("Method cannot be resolved") // @suppress("Symbol is not resolved") // @suppress("Function cannot be resolved")
+                                         + std::inner_product(std::begin(_sValues), std::end(_sValues),		// @suppress("Type cannot be resolved") // @suppress("Method cannot be resolved") // @suppress("Symbol is not resolved") // @suppress("Function cannot be resolved")
+                                                                                        std::begin(_phiValues), 0.0) );		// @suppress("Type cannot be resolved") // @suppress("Method cannot be resolved") // @suppress("Symbol is not resolved") // @suppress("Function cannot be resolved")
 
-        assert (std::abs(p - p_from_model_direct) < 0.001);
+        assert (std::abs(p - p_from_model_direct) < 0.1*p); // @suppress("Function cannot be resolved")
         delete k_ptr;
 
 
@@ -164,18 +197,21 @@ double multivariate_gaussian_probability(std::vector<std::vector<double> > mus, 
     for (int i = 0; i < N; i++){
         // get the cluster mean
         int c = assignments[i];
-        std::vector<double> mu = mus[c];
+        std::vector<double> mu = mus[c]; // @suppress("Symbol is not resolved") // @suppress("Type cannot be resolved")
         // update p
-        p = p * univariate_gaussian_probability(mu, sigma, points[i]);
+        p = p * univariate_gaussian_probability(mu, sigma, points[i]); // @suppress("Function cannot be resolved")
     }
     return p;
 }
 
-double univariate_gaussian_probability(std::vector<double> mu, double sigma, std::vector<double> point){
-    assert (mu.size() == point.size());
-    std::vector<double> distance(mu.size());
-    std::transform(mu.begin(), mu.end(), point.begin(),
-               distance.begin(), std::minus<double>());
-    double squared_distance = std::inner_product(std::begin(distance), std::end(distance) , std::begin(distance), 0.0);
-    return 1. / std::sqrt(2.0 * M_PI) * std::exp(- squared_distance / (2 * std::pow(sigma, 2)));
+double univariate_gaussian_probability(std::vector<double> mu, double sigma, std::vector<double> point){ // @suppress("Type cannot be resolved") // @suppress("Method cannot be resolved") // @suppress("Function cannot be resolved") // @suppress("Symbol is not resolved")
+    assert (mu.size() == point.size());							// @suppress("Symbol is not resolved") // @suppress("Type cannot be resolved") // @suppress("Method cannot be resolved") // @suppress("Function cannot be resolved")
+    std::vector<double> distance(mu.size());					// @suppress("Symbol is not resolved") // @suppress("Type cannot be resolved") // @suppress("Method cannot be resolved") // @suppress("Function cannot be resolved")
+    std::transform(mu.begin(), mu.end(), point.begin(),			// @suppress("Symbol is not resolved") // @suppress("Type cannot be resolved") // @suppress("Method cannot be resolved") // @suppress("Function cannot be resolved")
+               distance.begin(), std::minus<double>());			// @suppress("Symbol is not resolved") // @suppress("Type cannot be resolved") // @suppress("Method cannot be resolved") // @suppress("Function cannot be resolved")
+    double squared_distance = std::inner_product(std::begin(distance), std::end(distance) , std::begin(distance), 0.0);    // @suppress("Type cannot be resolved") // @suppress("Method cannot be resolved") // @suppress("Function cannot be resolved") // @suppress("Symbol is not resolved")
+    double exponent = - squared_distance / (2.0 * std::pow(sigma, 2.0)); // @suppress("Function cannot be resolved")
+    double denominator = (std::sqrt(2.0 * M_PI) * sigma) ; // @suppress("Symbol is not resolved") // @suppress("Function cannot be resolved")
+    double probability =  std::exp(exponent) / denominator;  // @suppress("Type cannot be resolved") // @suppress("Method cannot be resolved") // @suppress("Function cannot be resolved") // @suppress("Symbol is not resolved")
+    return probability;
 }

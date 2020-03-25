@@ -83,7 +83,9 @@ pointsInfoStruct& multivariateData()
  }
  __p.nDimensions = nDimensions;
  __p.nPoints = nPoints;
- __p.nClusters = nClusters;
+ __p.nClusters = nClusters; // @suppress("Field cannot be resolved")
+
+ fclose(problemFile); // @suppress("Function cannot be resolved") // Todo: remove some day. Added this when looking for a very mysterious bug
 
  return __p;
 };
@@ -96,7 +98,7 @@ void reset_points(pointsInfoStruct& __p, std::vector<std::vector<double>> new_po
  for (std::vector<double> pt : new_points)
     assert (pt.size() == __p.nDimensions && "Cannot change dimensionality (could implement it though)");
  __p.nClusters = new_nClusters;
-
+ return;
 
 }
 

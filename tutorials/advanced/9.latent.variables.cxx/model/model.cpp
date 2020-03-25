@@ -37,13 +37,13 @@ Latent variables:
     // Take the hyperparameter as sigma of a normal distribution, and the mean mu as latent variable
 
 
-    ExampleDistribution1::ExampleDistribution1(){
+ExampleDistribution1::ExampleDistribution1(){
         _p = univariateData();
         sufficientStatisticsDimension = 1;
-    };
+};
 
-    void ExampleDistribution1::S(korali::Sample& k)
-    {
+void ExampleDistribution1::S(korali::Sample& k)
+{
       //std::vector<double> hyperparams = k["Hyperparameters"];
       //auto latentVariables = k["Latent Variables"];
       std::vector<double> latentVariables = k["Latent Variables"];
@@ -86,10 +86,10 @@ Latent variables:
       */
 
 
-    };
+};
 
-    void ExampleDistribution1::zeta(korali::Sample& k)
-    {
+void ExampleDistribution1::zeta(korali::Sample& k)
+{
       std::vector<double> hyperparams = k["Hyperparameters"];
       // std::vector<double> latentVars = k["Latent Variables"];
 
@@ -97,18 +97,18 @@ Latent variables:
 
       //log(sigma*sqrt(pi*2))
       k["zeta"] = std::log(sigma*std::sqrt(2*M_PI)) ;
-    };
+};
 
 
-    void ExampleDistribution1::phi(korali::Sample& k)
-    {
+void ExampleDistribution1::phi(korali::Sample& k)
+{
       std::vector<double> hyperparams = k["Hyperparameters"];
       // std::vector<double> latentVars = k["Latent Variables"];
 
       double sigma = hyperparams[0];
       // * 1/sigma^2
       k["phi"] = std::vector<double>({1/std::pow(sigma, 2)});
-    };
+};
 
 
 
@@ -131,20 +131,20 @@ Latent variables:
               ->
                  zeta(sigma, mu1, mu2) = N*log(2*pi*sigma)*1/2
                  S(x1, c(1), ... xN, c(N))
-                            = -sum_i [vec(|x_i|^2, -x_i * delta(ci=1), -x_i * delta(ci=2), delta(ci=1), delta(ci=2) ) ]
+                            = sum_i [vec(-|x_i|^2, delta(ci=1), delta(ci=2), x_i * delta(ci=1), x_i * delta(ci=2) ) ]
                  phi(sigma, mu1, mu2)
-                            = vec(1, mu1^T, mu2^T, |mu1|^2, |mu2|^2) * 1/(2*sigma)
+                            = vec(1, -|mu1|^2, -|mu2|^2, 2 * mu1^T, 2 * mu2^T) * 1/(2*sigma)
 
         */
 
 
-    ExampleDistribution2::ExampleDistribution2(){
+ExampleDistribution2::ExampleDistribution2(){
         _p = multivariateData();
         sufficientStatisticsDimension = 1 + _p.nClusters + _p.nClusters * _p.nDimensions;  // see below
-    };
+};
 
-    void ExampleDistribution2::S(korali::Sample& k)
-    {
+void ExampleDistribution2::S(korali::Sample& k)
+{
         /* For two clusters:
             S(x1, c(1), ... xN, c(N))
                             = sum_i [- vec(|x_i|^2, delta(ci=1), delta(ci=2), x_i * delta(ci=1), x_i * delta(ci=2) ) ]*/
@@ -177,18 +177,21 @@ Latent variables:
             break;
         }
       }
-      if (!in_valid_range){
+      if (!in_valid_range){ // If it's invalid, return probability 0 -- circumvent this by casting input values to valid values before calling this function
         S_vec[0] = -korali::Inf;
         k["S"] = S_vec;
         return;
       }
 
       for(size_t i = 0; i<_p.nPoints; i++){ // @suppress("Field cannot be resolved")
-          S_vec[0] -= l2_norm(_p.points[i]); // @suppress("Field cannot be resolved")
+          S_vec[0] -= l2_norm_squared(_p.points[i]); // @suppress("Field cannot be resolved")
           int cluster = assignments[i]; // should be zero or one
           S_vec[cluster + 1] += 1;
-          // to get <mu_c(i) , x_i>, set the part that will be summed with mu_c(i) to x_i, all others to 0:
-          std::copy_n(_p.points[i].begin(), _p.points[i].size(), &S_vec[_p.nClusters + 1 + cluster * _p.nDimensions]);
+          // to get <mu_c(i) , x_i>, add x_i to the part that will be summed with mu_c(i):
+          auto mu_ci_location = &S_vec[_p.nClusters + 1 + cluster * _p.nDimensions];
+          std::transform(mu_ci_location, mu_ci_location + _p.nDimensions, _p.points[i].begin(),
+        		  	  	 mu_ci_location, std::plus<double>());
+          //std::copy_n(_p.points[i].begin(), _p.points[i].size(), &S_vec[_p.nClusters + 1 + cluster * _p.nDimensions]);
           //S_vec[_p.nClusters + 1 + cluster * _p.nDimensions] = _p.points[i]; // c++ does not work like this
       }
 
@@ -206,10 +209,10 @@ Latent variables:
       */
 
 
-    };
+};
 
-    void ExampleDistribution2::zeta(korali::Sample& k)
-    {
+void ExampleDistribution2::zeta(korali::Sample& k)
+{
       std::vector<double> hyperparams = k["Hyperparameters"];
       // std::vector<double> latentVars = k["Latent Variables"];
 
@@ -220,12 +223,13 @@ Latent variables:
 
       //log(sigma*sqrt(pi*2))
       k["zeta"] = _p.nPoints * std::log(sigma*std::sqrt(2*M_PI)) ; // Not sure whether std::sqrt is slower or std::pow. Todo: move sqrt out of the log?
-    };
+};
 
 
-    void ExampleDistribution2::phi(korali::Sample& k)
-    {
+void ExampleDistribution2::phi(korali::Sample& k)
+{
       std::vector<double> hyperparams = k["Hyperparameters"];
+      double sigma = hyperparams[_p.nClusters * _p.nDimensions];
       // std::vector<double> latentVars = k["Latent Variables"];
 
       if (hyperparams.size() != _p.nDimensions * _p.nClusters + 1)
@@ -240,19 +244,23 @@ Latent variables:
             korali::logError("Implementation error, dimensions did not match");
         mus.push_back(mu);
       }
-      double sigma = hyperparams[_p.nClusters];
       /* For two variables:
             phi(sigma, mu1, mu2) = vec(1, -|mu1|^2, -|mu2|^2, mu1^T, mu2^T) * 1/(2*sigma)  */
       int phi_dim = 1 + _p.nDimensions * _p.nClusters + _p.nClusters;
       std::vector<double> phi(phi_dim);
       phi[0] = 1.0;
+      std::vector<double> mu_x_two(mus[0].size());
       for (size_t i = 0; i < _p.nClusters; i++){
-        phi[i + 1] = - l2_norm(mus[i]);
-        std::copy_n(mus[i].begin(), mus[i].size(), &phi[1 + _p.nClusters + i * _p.nDimensions]);
+        phi[i + 1] = - l2_norm_squared(mus[i]);
+        // mu * 2:
+        std::transform(mus[i].begin(), mus[i].end(), mu_x_two.begin(), [](auto& c){return c * 2.0;}); // @suppress("Method cannot be resolved") // @suppress("Function cannot be resolved")
+        std::copy_n(mu_x_two.begin(), mu_x_two.size(), &phi[1 + _p.nClusters + i * _p.nDimensions]);
         //phi[1 + _p.nClusters + i * _p.nDimensions] = mus[i]; // does this work, setting a subset of a vector with a vector? --no
       }
+      // *1/(2*sigma):
+      std::transform(phi.begin(), phi.end(), phi.begin(), [&sigma](auto& c){return c/(2*sigma*sigma);}); // @suppress("Method cannot be resolved") // @suppress("Function cannot be resolved")
       k["phi"] = phi;
-    };
+};
 
 
  /*   distrib2 = ExampleDistribution2();
@@ -281,5 +289,14 @@ double l2_norm(std::vector<double> const& u) {
     }
     return sqrt(accum);
 }
+double l2_norm_squared(std::vector<double> const& u) {
+    // copy-paste from http://polaris.s.kanazawa-u.ac.jp
+    double accum = 0.;
+    for (double x : u) {
+        accum += x * x;
+    }
+    return accum;
+}
+
 
 #endif

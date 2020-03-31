@@ -525,23 +525,26 @@ void korali::solver::SAEM::printGenerationAfter() { return; }
 
 void korali::solver::SAEM::finalize()
 {
+/*
+    TODO: String formatting here doesn't work yet, for %s, and something is wrong with the likelihood (its 0)
+*/
  korali::logInfo("Minimal", "Final hyperparameters:\n");
  size_t j = 0;
  for (size_t i = 0; i < _k->_variables.size(); i++){
     auto var = _k->_variables[i];
     if (! isLatent(i)){
-        korali::logInfo("Minimal", "%s : %.2f", var->_name , _currentHyperparameters[j]);
+        korali::logInfo("Minimal", "%s : %.2f \n", var->_name , _currentHyperparameters[j]);
         j++;
     }
  }
- korali::logInfo("Minimal", "-- Final latent variable sample values : ");
+ korali::logInfo("Minimal", "-- Final latent variable sample values : \n");
  auto transposed = transpose(_currentSamples);
  std::vector<double> meanSample(transposed.size(), 0.0);
  for (size_t i = 0; i < transposed.size(); i++){
     std::vector<double> mean_and_sdev = meanAndSDev(transposed[i]);
     meanSample[i] = mean_and_sdev[0];
     int idx = _latentProblem->_latentVariableIndices[i];
-    korali::logInfo("Minimal", " %s : %.2f +- %.2f  ", _k->_variables[idx]->_name , mean_and_sdev[0] , mean_and_sdev[1] );
+    korali::logInfo("Minimal", " %s : %.2f +- %.2f  \n", _k->_variables[idx]->_name , mean_and_sdev[0] , mean_and_sdev[1] );
  }
  // Evaluate final likelihood
  auto s = korali::Sample();

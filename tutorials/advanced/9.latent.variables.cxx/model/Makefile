@@ -1,4 +1,4 @@
-all: model.o load_data.o some_samplers.o test_model test_model.o
+all: model.o load_data.o some_samplers.o test_model utils.o
 KORALICXX=$(shell python3 -m korali.cxx --compiler)
 KORALICFLAGS=`python3 -m korali.cxx --cflags`
 KORALILIBS=`python3 -m korali.cxx --libs`
@@ -8,7 +8,7 @@ KORALILIBS=`python3 -m korali.cxx --libs`
 test_model: test_model.o model.o load_data.o utils.o
 	$(KORALICXX) -o $@ $^ $(KORALILIBS)
 
-test_model.o: test_model.cpp test_model.hpp utils.hpp model.hpp
+test_model.o: test_model.cpp test_model.hpp utils.hpp model.hpp load_data.hpp
 	@echo "Compiling: $< -> $@"
 	$(KORALICXX) $(CXXFLAGS) $(INCLUDES) $(KORALICFLAGS) -MP -MMD -c $< -o $@
 	

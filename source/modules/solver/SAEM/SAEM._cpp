@@ -107,16 +107,18 @@ void korali::solver::SAEM::runGeneration( void )
     std::vector<double> mean_and_sdev = meanAndSDev(transposed[i]);
     meanSample[i] = mean_and_sdev[0];
     std::cout << " -- " << mean_and_sdev[0] << " +- " <<  mean_and_sdev[1] << std::endl;
-  };
+  }
   std::cout << std::endl;
-  std::cout << "-- Means of the samples that the sampling step started with: " << std::endl;
-  transposed = transpose(_currentInitialSamplesForDebug);
-  meanSample.resize(transposed.size());
-  for (size_t i = 0; i < transposed.size(); i++){
-    std::vector<double> mean_and_sdev = meanAndSDev(transposed[i]);
-    meanSample[i] = mean_and_sdev[0];
-    std::cout << " -- " << mean_and_sdev[0] << " +- " <<  mean_and_sdev[1] << std::endl;
-  };
+//  if(_currentInitialSamplesForDebug.size() > 0){
+//      std::cout << "-- Means of the samples that the sampling step started with: " << std::endl;
+//      transposed = transpose(_currentInitialSamplesForDebug);
+//      meanSample.resize(transposed.size());
+//      for (size_t i = 0; i < transposed.size(); i++){
+//        std::vector<double> mean_and_sdev = meanAndSDev(transposed[i]);
+//        meanSample[i] = mean_and_sdev[0];
+//        std::cout << " -- " << mean_and_sdev[0] << " +- " <<  mean_and_sdev[1] << std::endl;
+//      }
+//   }
   // Debugging output end
 
   /* E2: Update posterior probability function Q */
@@ -192,8 +194,9 @@ void korali::solver::SAEM::sampleLatent(){
           std::vector<std::vector<double>> v =  sample["Samples"].get<std::vector<std::vector<double>>>();
           if (v.size() != _numberMarkovChainSamples) korali::logError("User defined sampler did not return the correct number of samples ('Number Samples').");
           _currentSamples = v; //.push_back(v);
-          _currentInitialSamplesForDebug = sample["Initial Samples For Debugging"].get<std::vector<std::vector<double>>>();
-          //}
+//          if (sample["Initial Samples For Debugging"]){
+//        	  _currentInitialSamplesForDebug = sample["Initial Samples For Debugging"].get<std::vector<std::vector<double>>>();}
+//          //}
     }
     else {
       korali::logError("Builtin sampler is not allowed to be used any more");
@@ -516,5 +519,44 @@ void korali::solver::SAEM::printGenerationBefore(){ return; }
 
 void korali::solver::SAEM::printGenerationAfter() { return; }
 
-void korali::solver::SAEM::finalize()  { return; }
+//void korali::solver::SAEM::finalize()  { return; }
 
+
+
+void korali::solver::SAEM::finalize()
+{
+ korali::logInfo("Minimal", "Final hyperparameters:\n");
+ size_t j = 0;
+ for (size_t i = 0; i < _k->_variables.size(); i++){
+    auto var = _k->_variables[i];
+    if (! isLatent(i)){
+        korali::logInfo("Minimal", "%s : %.2f", var->_name , _currentHyperparameters[j]);
+        j++;
+    }
+ }
+ korali::logInfo("Minimal", "-- Final latent variable sample values : ");
+ auto transposed = transpose(_currentSamples);
+ std::vector<double> meanSample(transposed.size(), 0.0);
+ for (size_t i = 0; i < transposed.size(); i++){
+    std::vector<double> mean_and_sdev = meanAndSDev(transposed[i]);
+    meanSample[i] = mean_and_sdev[0];
+    int idx = _latentProblem->_latentVariableIndices[i];
+    korali::logInfo("Minimal", " %s : %.2f +- %.2f  ", _k->_variables[idx]->_name , mean_and_sdev[0] , mean_and_sdev[1] );
+ }
+ // Evaluate final likelihood
+ auto s = korali::Sample();
+ double averageFinalLikelihood = 0;
+ for (auto lvar : _currentSamples) {
+    s["Latent Variables"] = lvar;
+    s["Hyperparameters"] = _currentHyperparameters; // _currentHyperparameters;
+                        // Ugly? & Probably doesnt work
+    _latentProblem->evaluateLogLikelihood(s);
+    averageFinalLikelihood += std::exp(s["logLikelihood"].get<double>());
+}
+ averageFinalLikelihood = averageFinalLikelihood / static_cast<double>(_currentSamples.size());
+ korali::logInfo("Minimal", "Final average sample likelihood: %.2f%%\n", averageFinalLikelihood);
+
+ //if (_k->_currentGeneration == ... something...) korali::logInfo("Minimal", "Max Generations Reached.\n");
+ (*_k)["Results"]["Hyperparameters"] = _currentHyperparameters;
+ (*_k)["Results"]["Final Latent Variable Samples"] = _currentSamples;
+}

@@ -7,7 +7,7 @@ KORALILIBS=`python3 -m korali.cxx --libs`
 .PHONY: all
 all: $(BINARIES)
 
-$(BINARIES) : % : %.o model/model.o  model/load_data.o  model/some_samplers.o
+$(BINARIES) : % : %.o model/model.o  model/load_data.o  model/some_samplers.o model/utils.o
 	$(KORALICXX) -o $@ $^ $(KORALILIBS)
 
 model/%.o:

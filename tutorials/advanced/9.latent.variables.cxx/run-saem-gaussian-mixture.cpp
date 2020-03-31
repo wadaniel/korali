@@ -151,6 +151,7 @@ int main(int argc, char* argv[])
 
 
 
+ k["Conduit"]["Type"] = "Sequential";
  k.run(e);
 
  return 0;

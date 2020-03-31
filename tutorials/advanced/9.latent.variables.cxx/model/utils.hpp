@@ -21,7 +21,7 @@ double univariate_gaussian_probability(std::vector<double> mu, double sigma, std
 double l2_norm(std::vector<double> const& u);
 double l2_norm_squared(std::vector<double> const& u);
 
-std::vector<double> normalize(std::vector<double> u);
+std::vector<double> normalize(std::vector<double> const& u);
 
 
 template<typename T>

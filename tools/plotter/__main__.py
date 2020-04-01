@@ -5,7 +5,6 @@ import signal
 import json
 import argparse
 import matplotlib
-import matplotlib.pyplot as plt
 import importlib
 
 curdir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
@@ -22,8 +21,10 @@ def main(path, mean, check, test, output):
   print("[Korali] Plotter correctly installed.")
   exit(0)
 
- if (test == True):
+ if test or output:
      matplotlib.use('Agg')
+ # This import has to be after matplotlib.use('Agg').
+ import matplotlib.pyplot as plt
 
  signal.signal(signal.SIGINT, lambda x, y: exit(0))
 

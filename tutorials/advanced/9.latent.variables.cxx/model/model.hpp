@@ -51,6 +51,10 @@ class ExampleDistribution1 : public ExponentialFamilyDistribution
         void zeta(korali::Sample& k) override;
         void phi(korali::Sample& k) override;
 
+        double mu_lower_bound;
+        double mu_upper_bound;
+        double mu_range;
+
 };
 
 //  void distrib1_S(korali::Sample& s);

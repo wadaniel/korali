@@ -80,8 +80,8 @@ MCMCLatentSampler::MCMCLatentSampler(int numberLatentVars, int numberHyperparams
 
   /*  void MCMCLatentSampler::initialize(int numberSamples){
 
-      _currentSamples.resize( _numberMarkovChainSamples);
-      for (size_t j = 0; j < _numberMarkovChainSamples; j++){
+      _currentSamples.resize( numberSamplesPerStep);
+      for (size_t j = 0; j < numberSamplesPerStep; j++){
           _currentSamples[j].resize( numberSamples);
           for (size_t i = 0; i < _numberLatent; i++){
               size_t idx = _latentProblem->_latentVariableIndices[i];

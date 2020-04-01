@@ -18,6 +18,8 @@ Model 1:
 A single Gaussian distribution, with
 Hyperparameter = sigma, the standard deviation, and
 Latent variable = mu, the mean. Assume a uniform prior distribution of the mean in [0,1].
+Assume the probability of mu is supported in [-20, 20]^nDimensions.
+
 
 
 Model 2:
@@ -40,6 +42,10 @@ Latent variables:
 ExampleDistribution1::ExampleDistribution1(){
         _p = univariateData();
         sufficientStatisticsDimension = 1;
+        mu_lower_bound = -20.;
+        mu_upper_bound = 20.;
+        assert(mu_upper_bound > mu_lower_bound);
+        mu_range = mu_upper_bound - mu_lower_bound;
 };
 
 void ExampleDistribution1::S(korali::Sample& k)
@@ -49,17 +55,27 @@ void ExampleDistribution1::S(korali::Sample& k)
       std::vector<double> latentVariables = k["Latent Variables"];
       
       //double sigma = hyperparams[0];
-      double mu = latentVariables[0];
+      auto mu_vector = latentVariables;
+      bool in_valid_range = true;
+      for (double mu_coord : mu_vector){
+    	  if ((mu_coord < mu_lower_bound) || (mu_coord > mu_upper_bound) ){
+    		  in_valid_range = false;
+    		  k["S"] = std::vector<double>({-korali::Inf}); // -> probability is zero
+    		  return;
+    	  }
+      }
 
       // log(p) = -log(sigma*sqrt(pi*2)) - 0.5(x - mu)^2 * 1/sigma^2
       double sum = 0;
-      double mse_per_point[_p.nPoints] = {0};
+      double mse;
+      std::vector<double> vector_diff(_p.nDimensions, 0.0);
       for(size_t i = 0; i<_p.nPoints; i++){
        // double[_p.nDimensions] point = _p.points[]   // todo: = points[i*nDimensions : (i+1)*nDimensions]
-          mse_per_point[i] = std::pow( _p.points[i][0] - mu , 2);
-          sum += std::pow( _p.points[i][0] - mu , 2);
+          std::transform(_p.points[i].begin(), _p.points[i].end(), mu_vector.begin(), vector_diff.begin(), std::minus<double>());
+    	  mse = l2_norm_squared(vector_diff);
+          sum += mse;
       }
-      k["S"] = std::vector<double>({-0.5 * sum});  //or k["Evaluation"]["S"] ?
+      k["S"] = std::vector<double>({-sum});  //or k["Evaluation"]["S"] ?
 
 
       // Later, if mu is a vector, can use the following :
@@ -94,9 +110,11 @@ void ExampleDistribution1::zeta(korali::Sample& k)
       // std::vector<double> latentVars = k["Latent Variables"];
 
       double sigma = hyperparams[0];
+      double log_hypercube_volume = _p.nPoints * std::log(mu_range);
+      // \__ to get a normalized distribution in both x and mu, need to multiply P by a uniform distribution in mu
 
       //log(sigma*sqrt(pi*2))
-      k["zeta"] = std::log(sigma*std::sqrt(2*M_PI)) ;
+      k["zeta"] = std::log(sigma*std::sqrt(2*M_PI)) * _p.nPoints  +  log_hypercube_volume;
 };
 
 
@@ -106,8 +124,8 @@ void ExampleDistribution1::phi(korali::Sample& k)
       // std::vector<double> latentVars = k["Latent Variables"];
 
       double sigma = hyperparams[0];
-      // * 1/sigma^2
-      k["phi"] = std::vector<double>({1/std::pow(sigma, 2)});
+      // * 1/(2 * sigma^2)
+      k["phi"] = std::vector<double>({0.5 / std::pow(sigma, 2)});
 };
 
 

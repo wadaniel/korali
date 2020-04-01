@@ -66,10 +66,11 @@ def main(path, mean, check, test, output):
 
  if not output:
   plt.show()
+  exit(0)
  else:
   validateOutput(output)
   plt.savefig(output)
-  exit(0)
+  exit(-1)
 
  if solverName == 'Executor':
     # TODO

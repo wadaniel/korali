@@ -7,6 +7,7 @@
 
 #include <string>
 #include <stdio.h>
+#include <stdarg.h>
 #include <vector>
 #include <cmath>
 #include <numeric>
@@ -533,7 +534,7 @@ void korali::solver::SAEM::finalize()
  for (size_t i = 0; i < _k->_variables.size(); i++){
     auto var = _k->_variables[i];
     if (! isLatent(i)){
-        korali::logInfo("Minimal", "%s : %.2f \n", var->_name , _currentHyperparameters[j]);
+        korali::logInfo("Minimal", "%s : %.2f \n", var->_name.c_str() , _currentHyperparameters[j]);
         j++;
     }
  }
@@ -544,7 +545,7 @@ void korali::solver::SAEM::finalize()
     std::vector<double> mean_and_sdev = meanAndSDev(transposed[i]);
     meanSample[i] = mean_and_sdev[0];
     int idx = _latentProblem->_latentVariableIndices[i];
-    korali::logInfo("Minimal", " %s : %.2f +- %.2f  \n", _k->_variables[idx]->_name , mean_and_sdev[0] , mean_and_sdev[1] );
+    korali::logInfo("Minimal", " %s : %.2f +- %.2f  \n", _k->_variables[idx]->_name.c_str() , mean_and_sdev[0] , mean_and_sdev[1] );
  }
  // Evaluate final likelihood
  auto s = korali::Sample();

@@ -90,7 +90,7 @@ int main(int argc, char* argv[])
  e["Problem"]["S Dimension"] = distrib2.sufficientStatisticsDimension;
 
  e["Solver"]["Type"] = "SAEM";
- e["Solver"]["Number Markov Chain Samples"] = 100;
+ e["Solver"]["Number Samples Per Step"] = 100;
  e["Solver"]["Termination Criteria"]["Max Generations"] = 100;
  e["Solver"]["Latent Variable Sampler"] = multimodal_gaussian_sampler;
  // e["Solver"]["Latent Variable Sampler"] = &dummySampler;
@@ -150,8 +150,9 @@ int main(int argc, char* argv[])
  }
 
 
-
- k["Conduit"]["Type"] = "Sequential";
+ e["File Output"]["Frequency"] = 50;
+ e["Console Output"]["Frequency"] = 10;
+ e["Console Output"]["Verbosity"] = "Detailed";
  k.run(e);
 
  return 0;

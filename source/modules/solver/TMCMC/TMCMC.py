@@ -105,4 +105,5 @@ def plot(genList):
     plot_histogram(ax, samplesTmp)
     plot_upper_triangle(ax, samplesTmp, False)
     plot_lower_triangle(ax, samplesTmp)
-    plt.show()
+
+    return fig, ax

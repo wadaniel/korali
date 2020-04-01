@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from matplotlib.collections import LineCollection
 from matplotlib.colors import ListedColormap, BoundaryNorm
 
+
 # Get a list of evenly spaced colors in HLS huse space.
 def hlsColors(num, h = 0.01, l=0.6, s=0.65):
     hues = np.linspace(0, 1, num + 1)[:-1]

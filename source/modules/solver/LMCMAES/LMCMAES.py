@@ -85,5 +85,5 @@ def plot(genList):
     ax[1,1].set_yscale('log')
     for i in range(numdim):
       ax[1,1].plot(genIds, ssdev[i], color = colors[i], label = names[i])
-        
-    plt.show()
+ 
+    return fig, ax

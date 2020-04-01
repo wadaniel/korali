@@ -3,8 +3,21 @@
 
 #ifdef _KORALI_USE_MPI
  #include "mpi.h"
+/**
+ * @brief Communicator storage for the current Korali Team
+ */
  extern MPI_Comm __KoraliTeamComm;
+
+ /**
+  * @brief Returns Communicator for the current Korali Team
+  * @return An MPI Communicator
+  */
  extern MPI_Comm getKoraliMPIComm();
+
+ /**
+  * @brief Returns Communicator for the current Korali Team
+  * @return An MPI Communicator (in the form of a long integer, for Python compatibility)
+  */
  extern long int getKoraliMPICommPointer();
 #endif
 
@@ -20,23 +33,53 @@ class Distributed : public korali::Conduit
 
  private:
 
+ /**
+ * @brief Lifetime function for worker ranks.
+ */
  void workerThread();
 
  public:
 
  #ifdef _KORALI_USE_MPI
+
+ /**
+  * @brief ID of the current rank.
+  */
  int _rankId;
+
+ /**
+   * @brief Total number of ranks in execution
+   */
  int _rankCount;
 
- // Team Management
+ /**
+  * @brief Number of Korali Teams in execution
+  */
  int _teamCount;
 
+ /**
+   * @brief ID the Korali Team for the current rank
+   */
  int _teamId;
+
+ /**
+ * @brief Local ID the rank within its Korali Team
+ */
  int _localRankId;
 
+ /**
+  * @brief Queue to store idle teams to be used
+  */
  std::queue<int> _teamQueue;
+
+ /**
+  * @brief Map between Team ID and its workers
+  */
  std::map< int, std::vector<int> > _teamWorkers;
 
+ /**
+  * @brief Flag to mark termination for Korali teams.
+  */
  bool _continueEvaluations;
  #endif
 
@@ -44,6 +87,10 @@ class Distributed : public korali::Conduit
  void finalize() override;
 
  void processSample(korali::Sample& sample) override;
+
+ /**
+  * @brief Determines which rank is the root.
+  */
  int getRootRank();
  bool isRoot() override;
  void abort() override;

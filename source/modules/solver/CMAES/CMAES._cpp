@@ -546,7 +546,7 @@ void korali::solver::CMAES::adaptC(int hsig)
    {
      _covarianceMatrix[d*_k->_variables.size()+e] = (1 - ccov1 - ccovmu) * _covarianceMatrix[d*_k->_variables.size()+e]
                         + ccov1 * (_evolutionPath[d] * _evolutionPath[e]
-                        + (1-hsig)*ccov1*_cumulativeCovariance*(2.-_cumulativeCovariance) * _covarianceMatrix[d*_k->_variables.size()+e]);
+                        + (1-hsig)*_cumulativeCovariance*(2.-_cumulativeCovariance) * _covarianceMatrix[d*_k->_variables.size()+e]);
 
      for (size_t k = 0; k < _currentMuValue; ++k)
          _covarianceMatrix[d*_k->_variables.size()+e] += ccovmu * _muWeights[k] * (_samplePopulation[_sortingIndex[k]][d]
@@ -796,13 +796,13 @@ void korali::solver::CMAES::eigen(size_t size, std::vector<double>& M,  std::vec
 }
 
 
-void korali::solver::CMAES::sort_index(const std::vector<double>& vec, std::vector<size_t>& sortingIndex, size_t n) const
+void korali::solver::CMAES::sort_index(const std::vector<double>& vec, std::vector<size_t>& sortingIndex, size_t N) const
 {
   // initialize original sortingIndex locations
-  std::iota(std::begin(sortingIndex), std::begin(sortingIndex)+n, (size_t) 0);
+  std::iota(std::begin(sortingIndex), std::begin(sortingIndex)+N, (size_t) 0);
 
   // sort indexes based on comparing values in vec
-  std::sort(std::begin(sortingIndex), std::begin(sortingIndex)+n, [vec](size_t i1, size_t i2) { return vec[i1] > vec[i2]; } );
+  std::sort(std::begin(sortingIndex), std::begin(sortingIndex)+N, [vec](size_t i1, size_t i2) { return vec[i1] > vec[i2]; } );
 
 }
 

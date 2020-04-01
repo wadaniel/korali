@@ -24,4 +24,4 @@ for file in glob.glob(r'' + toolsSrcDir + '/profiler/examples/*.png'):
     shutil.copy(file, toolsDstDir)
 
 
-#shutil.copyfile(toolsSrcDir + '/gui/README.rst', toolsDstDir + '/gui.rst')
+shutil.copyfile(toolsSrcDir + '/mdev/README.rst', toolsDstDir + '/mdev.rst')

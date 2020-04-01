@@ -9,6 +9,10 @@ namespace korali { namespace problem {
 class Gaussian : public korali::Problem
 {
  public:
+
+ /**
+  * @brief Pointer to the gaussian processes library
+  */
    libgp::GaussianProcess* _gp;
 };
 

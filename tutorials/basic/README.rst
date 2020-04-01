@@ -1,5 +1,5 @@
 .. _basic-tutorials:
 
-Basic Tutorials
-===================
+Example Experiments
+====================
 

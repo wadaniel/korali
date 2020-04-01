@@ -39,6 +39,9 @@ void korali::Experiment::run()
     _solver->printGenerationBefore();
    }
 
+   // Cleaning sample information from previous generation
+   _js["Samples"] = knlohmann::json();
+
    // Timing and Profiling Start
    auto t0 = std::chrono::system_clock::now();
 
@@ -93,8 +96,8 @@ void korali::Experiment::saveState()
  getConfiguration(_js.getJson());
  std::string fileName = "./" + _fileOutputPath + "/" + genFileName;
 
+ if (_storeSampleInformation == true) _js["Samples"] = _sampleInfo["Samples"];
  auto js = _js.getJson();
- if (_fileOutputStoreSamples == true) js["Samples"] = _sampleInfo["Samples"];
  js["Results"] = results;
  korali::JsonInterface::saveJsonToFile(fileName.c_str(), js);
 }
@@ -164,6 +167,7 @@ korali::Experiment::Experiment()
 
 void korali::Experiment::initialize()
 {
+ _js["Samples"] = knlohmann::json();
  applyModuleDefaults(_js.getJson());
  setConfiguration(_js.getJson());
  getConfiguration(_js.getJson());

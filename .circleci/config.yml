@@ -37,6 +37,7 @@ jobs:
           key: web-dependencies-linux 
           paths:
             - "~/.local/lib/python3.7/site-packages"
+            - "~/korali/docs/doxygen"
 
       - run:
           name: deploy webpage

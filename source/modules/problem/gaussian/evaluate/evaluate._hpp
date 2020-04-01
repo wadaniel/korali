@@ -11,6 +11,12 @@ class Evaluate : public korali::problem::Gaussian
 
    void initialize() override;
    void evaluate(korali::Sample&);
+
+   /**
+    * @brief Checks whether the proposed sample fits within the range of the prior distribution.
+    * @param sample A Korali Sample
+    * @return True, if feasible; false, otherwise.
+   */
    bool isSampleFeasible(korali::Sample& sample);
 
 };

@@ -14,23 +14,79 @@ class TMCMC : public korali::Solver
 {
  private:
 
- void setInitialConfiguration();
+ /*
+  * @brief Sets the burn in steps per generation
+  */
  void setBurnIn();
+
+ /*
+  * @brief Prepare Generation before evaluation.
+  */
  void prepareGeneration();
+
+ /*
+  * @brief Process evaluation, main TMCMC loop
+  */
  void processGeneration();
+
+ /*
+  * @brief Helper function for annealing exponent update/
+  * @param fj Pointer to exponentiated probability values.
+  * @param fn Current exponent.
+  * @param pj Number of values in fj array.
+  * @paran objTol
+  * @param xmin Location of minimum, the new exponent.
+  * @param fmin Found minimum in search.
+  */
  void minSearch(double const *fj, size_t fn, double pj, double objTol, double& xmin, double& fmin);
+
+ /*
+  * @brief Does sample evaluation.
+  */
  void processEvaluation(const size_t sampleId);
+
+ /*
+  * @brief Helper function to calculate objective (CVaR) for min search.
+  */
  static double tmcmc_objlogp(double x, const double *fj, size_t fn, double pj, double zero);
+
+ /* 
+  * @brief Helper function to calculate objective (CVaR) for min search.
+  */
  static double objLog(const gsl_vector *v, void *param);
 
- size_t N; // Number of variables
+ /* 
+  * @brief Number of variables to sample.
+  */
+ size_t N;
 
  public:
 
- void finalize() override;
+ /**
+ * @brief Configures TMCMC.
+ */
+ void setInitialConfiguration() override;
+
+ /**
+ * @brief Executes sampling & evaluation generation.
+ */
  void runGeneration() override;
+ 
+ /**
+ * @brief Console Output before generation runs.
+ */
  void printGenerationBefore() override;
+ 
+ /**
+ * @brief Console output after generation.
+ */
  void printGenerationAfter() override;
+
+/**
+ * @brief Final console output at termination.
+ */
+ void finalize() override;
+
 };
 
 } } // namespace korali::solver

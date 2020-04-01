@@ -15,30 +15,91 @@ namespace korali
 
   Engine();
 
+  /**
+   * @brief Saves the output path for the profiling information file
+   */
   std::string _profilingPath;
+
+  /**
+  * @brief Specifies how much detail will be saved in the profiling file (None, Full)
+  */
   std::string _profilingDetail;
+
+  /**
+  * @brief Specifies every how many generation will the profiling file be updated
+  */
   double _profilingFrequency;
+
+  /**
+  * @brief Stores the timepoint of the last time the profiling information was saved.
+  */
   std::chrono::time_point<std::chrono::high_resolution_clock> _profilingLastSave;
 
-  // State save/load methods
+  /**
+  * @brief Saves the profiling information to the specified path
+  * @param forceSave Saves even if the current generation does not divide _profilingFrequency. Reserved for last generation.
+  */
   void saveProfilingInfo(bool forceSave = false);
+
+  /**
+   * @brief Stores a set experiments into the experiment list and runs them to completion.
+   * @param experiments Set of experiments.
+   */
   void run(std::vector<korali::Experiment>& experiments);
+
+  /**
+   * @brief Stores a single experiment into the experiment list and runs it to completion.
+   * @param experiments The experiment to run.
+   */
   void run(korali::Experiment& experiment);
+
+  /**
+   * @brief Runs the stored list of experiments.
+   */
   void run();
 
+  /**
+   * @brief C++ wrapper for the getItem operator.
+   * @param key A C++ string acting as JSON key.
+   * @return The referenced JSON object content.
+  */
   knlohmann::json& operator[](const std::string& key);
+
+  /**
+   * @brief C++ wrapper for the getItem operator.
+   * @param key A C++ integer acting as JSON key.
+   * @return The referenced JSON object content.
+  */
   knlohmann::json& operator[](const unsigned long int& key);
+
+  /**
+   * @brief Gets an item from the JSON object at the current pointer position.
+   * @param key A pybind11 object acting as JSON key (number or string).
+   * @return A pybind11 object
+  */
   pybind11::object getItem(pybind11::object key);
+
+  /**
+   * @brief Sets an item on the JSON object at the current pointer position.
+   * @param key A pybind11 object acting as JSON key (number or string).
+   * @param val The value of the item to set.
+  */
   void setItem(pybind11::object key, pybind11::object val);
 
-  // JSON-based configuration
+  /**
+   * @brief Stores the JSON based configuration for the engine.
+  */
   korali::KoraliJson  _js;
 
-  // Communicator Methods
+  /**
+   * @brief Returns the worker teams MPI communication pointer (Distributed Conduit only).
+   */
   static long int getMPICommPointer();
  };
 
- // Determines whether this is a dry run (no conduit initialization nor execution)
+ /**
+  * @brief Determines whether this is a dry run (no conduit initialization nor execution)
+ */
  extern bool _isDryRun;
 }
 

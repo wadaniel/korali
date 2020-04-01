@@ -12,10 +12,30 @@ class Igamma : public korali::distribution::Univariate {
  double _auxLog;
 
  public:
-
+ 
+ /*
+  * @brief Updates distribution with new parameter (here shape and scale).
+  */
  void updateDistribution() override;
+ 
+ /**
+ * @brief Gets the probability density of the distribution at point x.
+ * @param x point to evaluate P(x)
+ * @return Value of the probability density.
+ */
  double getDensity(double x) override;
+ 
+ /**
+ * @brief Gets the Log probability density of the distribution at point x.
+ * @param x point to evaluate log(P(x))
+ * @return Log of probability density.
+ */
  double getLogDensity(double x) override;
+ 
+ /**
+  * @brief Draws and returns a random number from the distribution.
+  * @return Random real number.
+  */
  double getRandomNumber() override;
 
 };

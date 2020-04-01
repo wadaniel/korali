@@ -36,10 +36,11 @@ Korali's Documentation
    :caption: Development
 
    dev/build
-   dev/moduledev
-   dev/operation
-   Doxygen <https://www.cse-lab.ethz.ch/korali/docs/doxygen/html/annotated.html>
    dev/testing
+   dev/moduledev
+   C++ Class List <https://www.cse-lab.ethz.ch/korali/docs/doxygen/html/annotated.html>
+   Source Files <https://www.cse-lab.ethz.ch/korali/docs/doxygen/html/files.html>
+   Github Repository <https://github.com/cselab/korali>
 
 * :ref:`genindex`
 * :ref:`modindex`

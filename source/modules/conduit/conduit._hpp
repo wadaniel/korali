@@ -13,23 +13,61 @@ class Conduit : public korali::Module {
 
  public:
 
+ /**
+ * @brief Accepts a sample for processing.
+ * @param A Korali sample
+ */
  virtual void processSample(korali::Sample& sample) = 0;
+
+ /**
+ * @brief Determines whether the caller rank/thread/process is root.
+ * @return True, if it is root; false, otherwise.
+ */
  virtual bool isRoot() { return true; }
+
+ /**
+ * @brief Aborts execution for all ranks/threads/processes.
+ */
  virtual void abort() { exit(-1); }
 
- // Sample execution fields
+ /**
+ * @brief Stores a pointer to the current sample to process
+ */
  korali::Sample* _currentSample;
 
- // Waiting Functions
+ /**
+ * @brief Starts the execution of the sample.
+ * @param A Korali sample
+ */
  void start(korali::Sample& sample);
+
+ /**
+  * @brief Waits for a given sample to finish. The experiment will not continue until the sample has been evaluated.
+  * @param A Korali sample
+  */
  void wait(korali::Sample& sample);
+
+ /**
+   * @brief Waits for a set of sample to finish. The experiment will not continue until all samples have been evaluated.
+   * @param A list of Korali samples
+   */
  static void waitAll(std::vector<korali::Sample>& samples);
+
+ /**
+  * @brief Waits for a set of sample to finish. The experiment will not continue until at least one of the samples have been evaluated.
+  * @param A list of Korali samples
+  */
  static size_t waitAny(std::vector<korali::Sample>& samples);
 
- // Coroutine execution functions.
+ /**
+   * @brief Wrapper function for the sample coroutine
+   */
  static void coroutineWrapper();
 };
 
+/**
+  * @brief A singleton pointer to the execution conduit. Shared among all experiments.
+  */
 extern korali::Conduit* _conduit;
 
 } // namespace korali

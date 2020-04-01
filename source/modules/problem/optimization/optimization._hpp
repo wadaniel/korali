@@ -12,6 +12,12 @@ class Optimization : public korali::Problem
  public:
 
  void initialize() override;
+
+ /**
+  * @brief Checks whether the proposed sample can be optimized
+  * @param sample A Korali Sample
+  * @return True, if feasible; false, otherwise.
+ */
  bool isSampleFeasible(korali::Sample& sample);
  virtual void evaluate(korali::Sample&) = 0;
 

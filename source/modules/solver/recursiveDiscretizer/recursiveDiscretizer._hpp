@@ -12,7 +12,8 @@ class RecursiveDiscretizer : public korali::Solver
   void updateResults();
 
   public:
-    void setInitialConfiguration();
+
+    void setInitialConfiguration() override;
     void runGeneration() override;
     void printGenerationBefore() override;
     void printGenerationAfter() override;

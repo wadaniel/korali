@@ -10,6 +10,11 @@ class DynamicProgramming : public korali::Problem
  public:
 
    void initialize() override;
+
+   /**
+   * @brief Evaluates the cost function value of a sample.
+   * @param sample A Korali Sample
+   */
    void evaluateCostFunction(korali::Sample& sample);
 
 };

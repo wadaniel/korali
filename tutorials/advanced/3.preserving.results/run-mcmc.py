@@ -16,7 +16,7 @@ e = korali.Experiment()
 
 # Selecting problem and solver types.
 e["Problem"]["Type"] = "Sampling"
-e["Problem"]["Objective Function"] = storeResults
+e["Problem"]["Probability Function"] = storeResults
 
 # Defining the problem's variables and their CMA-ES bounds.
 e["Variables"][0]["Name"] = "Soil pH"
@@ -37,7 +37,7 @@ e["Console Output"]["Frequency"] = 500
 e["File Output"]["Frequency"] = 500
 
 # Storing sample information
-e["File Output"]["Store Samples"] = True
+e["Store Sample Information"] = True
 
 # Running Korali
 k.run(e)

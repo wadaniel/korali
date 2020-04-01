@@ -95,6 +95,8 @@ def processModule(parentModuleConfig, moduleRelPath, moduleName):
  moduleConfigFile = modulePath + '/' + moduleName + '.config'
  moduleOutputDir = '../modules/' + moduleRelPath
 
+ print('Processing file: ' + moduleConfigFile)
+
  moduleReadmeString = '.. _module-' + moduleRelPath.lower().replace('/','-') + ':\n\n'
   
  # Loading configuration and readme files 
@@ -210,13 +212,13 @@ def processModule(parentModuleConfig, moduleRelPath, moduleName):
    for v in moduleConfig["Termination Criteria"]:
     moduleReadmeString += createVariableDescription('e', moduleRelPath, v)
 
-  if ('Internal Settings' in moduleConfig):
-   moduleReadmeString += '\n.. _module-' + moduleRelPath.lower().replace('/','-') + '-internals:\n\n'
-   moduleReadmeString += '\nInternal Settings *[For Developers]*\n'
-   moduleReadmeString += '--------------------------------------------------\n\n'
-   moduleReadmeString += 'The following are settings that store the internal state of the module. The information below is only interesting for developers and the user does not need to set them up. \n\n'
-   for v in moduleConfig["Internal Settings"]:
-    moduleReadmeString += createVariableDescription('e', moduleRelPath, v)
+  #if ('Internal Settings' in moduleConfig):
+  # moduleReadmeString += '\n.. _module-' + moduleRelPath.lower().replace('/','-') + '-internals:\n\n'
+  # moduleReadmeString += '\nInternal Settings *[For Developers]*\n'
+  # moduleReadmeString += '--------------------------------------------------\n\n'
+  # moduleReadmeString += 'The following are settings that store the internal state of the module. The information below is only interesting for developers and the user does not need to set them up. \n\n'
+  # for v in moduleConfig["Internal Settings"]:
+  #  moduleReadmeString += createVariableDescription('e', moduleRelPath, v)
     
   if ('Module Defaults' in moduleConfig):
    moduleReadmeString += '\n.. _module-' + moduleRelPath.lower().replace('/','-') + '-defaults:\n\n'

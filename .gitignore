@@ -26,6 +26,9 @@ __pycache__
 .korali.config
 .DS_Store/
 .DS_Store
+*.odg#
+
+## -- added by susanne:
 # PyCharm:
 .idea/
 # VisualStudio Code:

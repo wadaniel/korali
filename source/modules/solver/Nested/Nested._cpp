@@ -1,0 +1,79 @@
+#include "modules/solver/Nested/Nested.hpp"
+#include "modules/problem/problem.hpp"
+#include "modules/experiment/experiment.hpp"
+#include "modules/conduit/conduit.hpp"
+
+#include <numeric>
+#include <limits>
+#include <chrono>
+
+#include <gsl/gsl_sort_vector.h>
+#include <gsl/gsl_matrix.h>
+#include <gsl/gsl_linalg.h>
+#include <gsl/gsl_statistics.h>
+#include <gsl/gsl_multimin.h>
+
+void korali::solver::Nested::setInitialConfiguration()
+{
+ if(_covarianceScaling <= 0.0) korali::logError("Covariance Scaling must be larger 0.0 (is %lf).\n", _covarianceScaling);
+ if(_maxGainFactor < 0.0) korali::logError("Max Gain Factor must be larger equal 0.0 (is %lf).\n", _maxGainFactor);
+ 
+ _candidatesLogLikelihoods.resize(_batchSize);
+ _candidatesLogPriors.resize(_batchSize);
+ _candidates.resize(_batchSize);
+ for(size_t i = 0; i < _batchSize; i++) _candidates[i].resize(_k->_variables.size());
+ 
+ _liveLogLikelihoods.resize(_populationSize);
+ _liveLogPriors.resize(_populationSize);
+ _liveSamples.resize(_populationSize);
+ for(size_t i = 0; i < _populationSize; i++) _liveSamples.resize(_k->_variables.size());
+  
+ _sampleLogLikelihoodDatabase.resize(_populationSize);
+ _sampleLogPriorDatabase.resize(_populationSize);
+ _sampleLogWidthDatabase.resize(_populationSize);
+ _sampleDatabase.resize(_populationSize);
+ for(size_t i = 0; i < _populationSize; i++) _sampleDatabase.resize(_k->_variables.size());
+ 
+ _domainMean.resize(_k->_variables.size());
+
+ // Init Generation
+ _logWidth               = 0.0;
+ _evaluationConstraint   = -std::numeric_limits<double>::infinity();
+ _maxEvaluation          = std::numeric_limits<double>::infinity();
+ _information            = -std::numeric_limits<double>::infinity();
+ _accumulatedLogEvidence = -std::numeric_limits<double>::infinity();
+
+ (*_k)["Results"]["Sample Database"]  = {};
+}
+
+void korali::solver::Nested::runGeneration()
+{
+ if (_k->_currentGeneration == 1) setInitialConfiguration();
+
+}
+
+void korali::solver::Nested::updateState()
+{
+    return;
+}
+
+void korali::solver::Nested::prepareGeneration()
+{
+    return;
+}
+
+void korali::solver::Nested::processGeneration()
+{
+    return;
+}
+
+void korali::solver::Nested::processEvaluation(const size_t sampleId)
+{
+    return;
+}
+
+void korali::solver::Nested::printGenerationBefore() { return; }
+
+void korali::solver::Nested::printGenerationAfter() { return; }
+
+void korali::solver::Nested::finalize() { return; }

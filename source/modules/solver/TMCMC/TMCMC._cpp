@@ -22,6 +22,7 @@ typedef struct fparam_s {
 void korali::solver::TMCMC::setInitialConfiguration()
 {
  if(_maxChainLength == 0) korali::logError("Max Chain Length must be greater 0.");
+ if(_covarianceScaling <= 0.0) korali::logError("Covariance Scaling must be larger 0.0 (is %lf).\n", _covarianceScaling);
 
  if (_perGenerationBurnIn.size() > 0 && _perGenerationBurnIn[0] != 0)
  korali::logWarning("Normal", "The 0th entry of the Burn In vector is being ignored (corresponding to Generation 0)\n");

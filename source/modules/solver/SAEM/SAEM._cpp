@@ -452,6 +452,10 @@ void korali::solver::SAEM::printGenerationBefore(){ return; }
 
 void korali::solver::SAEM::printGenerationAfter() {
 
+    if (_maxGenerations <= _k->_currentGeneration  )
+        return;
+    //["Solver"]["Termination Criteria"]["Max Generations"]
+
      korali::logInfo("Normal", "Generation %d : \n", _k->_currentGeneration);
      korali::logInfo("Normal", "    Current LogLikelihood:          %.2e\n", _currentLogLikelihood);
      korali::logInfo("Normal", "    Best LogLikelihood:             %.2e\n", _bestLogLikelihood);
@@ -503,17 +507,18 @@ void korali::solver::SAEM::finalize()
     korali::logInfo("Minimal", " %s : %.2f +- %.2f  \n", _k->_variables[idx]->_name.c_str() , mean_and_sdev[0] , mean_and_sdev[1] );
  }
  // Evaluate final likelihood
- auto s = korali::Sample();
- double averageFinalLikelihood = 0;
- for (auto lvar : _currentSamples) {
-    s["Latent Variables"] = lvar;
-    s["Hyperparameters"] = _currentHyperparameters; // _currentHyperparameters;
-                        // Ugly? & Probably doesnt work
-    _latentProblem->evaluateLogLikelihood(s);
-    averageFinalLikelihood += std::exp(s["logLikelihood"].get<double>());
-}
- averageFinalLikelihood = averageFinalLikelihood / static_cast<double>(_currentSamples.size());
- korali::logInfo("Minimal", "Final average sample likelihood: %.1e%%\n", averageFinalLikelihood);
+// auto s = korali::Sample();
+// double averageFinalLikelihood = 0;
+// for (auto lvar : _currentSamples) {
+//    s["Latent Variables"] = lvar;
+//    s["Hyperparameters"] = _currentHyperparameters; // _currentHyperparameters;
+//                        // Ugly? & Probably doesnt work
+//    _latentProblem->evaluateLogLikelihood(s);
+//    averageFinalLikelihood += std::exp(s["logLikelihood"].get<double>());
+//}
+// averageFinalLikelihood = averageFinalLikelihood / static_cast<double>(_currentSamples.size());
+ korali::logInfo("Minimal", "Final loglikelihood: %.1e%%\n", _currentLogLikelihood);
+ korali::logInfo("Minimal", "Final best loglikelihood: %.1e%%\n", _bestLogLikelihood);
 
  //if (_k->_currentGeneration == ... something...) korali::logInfo("Minimal", "Max Generations Reached.\n");
  (*_k)["Results"]["Hyperparameters"] = _currentHyperparameters;

@@ -523,4 +523,5 @@ void korali::solver::SAEM::finalize()
  //if (_k->_currentGeneration == ... something...) korali::logInfo("Minimal", "Max Generations Reached.\n");
  (*_k)["Results"]["Hyperparameters"] = _currentHyperparameters;
  (*_k)["Results"]["Final Latent Variable Samples"] = _currentSamples;
+ return;
 }

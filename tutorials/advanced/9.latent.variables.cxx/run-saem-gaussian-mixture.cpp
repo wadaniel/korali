@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
  // (https://stackoverflow.com/questions/38244877/how-to-use-stdnormal-distribution)
  std::random_device rd;
  std::mt19937 gen(rd());
- std::uniform_int_distribution<int> random_int(0, distrib2._p.nClusters - 1);
+ //std::uniform_int_distribution<int> random_int(0, distrib2._p.nClusters - 1);
  std::normal_distribution<float> random_normal(0, 1); // could use gen as 'sample = random_normal(gen)'
  std::normal_distribution<float> random_normal_2(0.5, 0.05);
 

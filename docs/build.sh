@@ -31,7 +31,7 @@ check
 
 # Getting korali-apps submodule
 pushd ..
-git submodule update --init --recursive
+git submodule update --init --recursive --remote
 popd
 
 # Building User Manual

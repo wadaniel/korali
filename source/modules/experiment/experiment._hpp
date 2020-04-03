@@ -13,7 +13,6 @@ namespace korali
 {
 class Solver;
 class Problem;
-class Engine;
 
 class Experiment : public korali::Module {
 
@@ -22,11 +21,6 @@ class Experiment : public korali::Module {
  Experiment();
 
  void initialize() override;
-
- /**
-   * @brief Stores a pointer to the engine running this experiment.
-   */
- Engine* _engine;
 
  /**
   * @brief JSON object to store the experiment's configuration
@@ -117,6 +111,10 @@ extern std::vector<korali::Experiment*> _experimentVector;
   */
 extern korali::Experiment* _currentExperiment;
 
+/**
+  * @brief Stores the main execution thread (coroutine).
+  */
+extern cothread_t _mainThread;
 
 } // namespace korali
 

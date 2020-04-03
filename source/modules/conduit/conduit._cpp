@@ -1,5 +1,4 @@
 #include "modules/conduit/conduit.hpp"
-#include "modules/engine/engine.hpp"
 
 korali::Conduit* korali::_conduit;
 
@@ -39,7 +38,7 @@ void korali::Conduit::wait(korali::Sample& sample)
   sample._state = SampleState::running;
   co_switch(sample._sampleThread);
 
-  if (sample._state == SampleState::waiting || sample._state == SampleState::initialized) co_switch(_currentExperiment->_engine->_engineThread);
+  if (sample._state == SampleState::waiting || sample._state == SampleState::initialized) co_switch(_mainThread);
  }
 
  size_t sampleId = sample["Sample Id"];
@@ -75,7 +74,7 @@ size_t korali::Conduit::waitAny(std::vector<korali::Sample>& samples)
    }
   }
 
-  if (isFinished == false) co_switch(_currentExperiment->_engine->_engineThread);
+  if (isFinished == false) co_switch(_mainThread);
  }
 
  return currentSample;
@@ -97,7 +96,7 @@ void korali::Conduit::waitAll(std::vector<korali::Sample>& samples)
     co_switch(samples[i]._sampleThread);
    }
 
-  if (isFinished == false) co_switch(_currentExperiment->_engine->_engineThread);
+  if (isFinished == false) co_switch(_mainThread);
  }
 
  for (size_t i = 0; i < samples.size(); i++)

@@ -77,5 +77,5 @@ def plot(genList):
         ax[1,1].plot(genIds, means[i], color = colors[i], label=names[i])
     #if ( (idx == 2) or (updateLegend == False) ):
     ax[1,1].legend(bbox_to_anchor=(1.04,0.5), loc="center left", borderaxespad=0, handlelength=1)
-    
-    plt.show()
+  
+    return fig, ax

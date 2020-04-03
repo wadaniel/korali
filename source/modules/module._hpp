@@ -16,6 +16,8 @@
 namespace korali {
 
 class Experiment;
+class Engine;
+class Conduit;
 
 /*! \class Module
     \brief Represents the basic building block of all Korali modules.
@@ -35,7 +37,12 @@ class Module
   std::vector<std::string> _terminationCriteria;
 
   /**
-  * @brief Stores a pointer (singleton) to its containing experiment.
+  * @brief Stores a pointer to the parent Engine
+  */
+  korali::Engine* _engine;
+
+  /**
+  * @brief Stores a pointer to its containing experiment.
   */
   korali::Experiment* _k;
 

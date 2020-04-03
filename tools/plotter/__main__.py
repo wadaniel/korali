@@ -9,14 +9,41 @@ import importlib
 
 curdir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
 
-def main(path, mean, check, test):
+
+# Check if env variable set
+def validateEnv(test, output):
+    print(os.environ.get('DISPLAY',""))
+    if (os.environ.get('DISPLAY',"") == ""):
+        if (test == True) or output:
+            return 
+        else:
+            print("[Korali] Error: Environment variable '$DISPLAY' not set, try running with --output OUTPUT")
+            sys.exit(0)
+
+
+# Check if name has .png ending
+def validateOutput(output):
+    if not output.endswith(".png"):
+        print("[Korali] Error: Outputfile '{0}' must end with '.png' suffix.".format(output))
+        sys.exit(-1)
+
+
+def main(path, mean, check, test, output):
 
  if (check == True):
   print("[Korali] Plotter correctly installed.")
   exit(0)
 
- if (test == True):
+ validateEnv(test, output)
+
+ if test or output:
      matplotlib.use('Agg')
+ 
+ if output:
+     validateOutput(output)
+
+ # This import has to be after matplotlib.use('Agg').
+ import matplotlib.pyplot as plt
 
  signal.signal(signal.SIGINT, lambda x, y: exit(0))
 
@@ -55,8 +82,14 @@ def main(path, mean, check, test):
  if os.path.isfile(solverFile):
   sys.path.append(solverDir)
   solverLib = importlib.import_module(solverName, package=None)
-  solverLib.plot(genList)
+  fig, ax = solverLib.plot(genList)
+
+ if not output:
+  plt.show()
   exit(0)
+ else:
+  plt.savefig(output)
+  exit(-1)
 
  if solverName == 'Executor':
     # TODO
@@ -83,6 +116,7 @@ if __name__ == '__main__':
     parser.add_argument('--mean', help='plot mean of objective variables', action='store_true', required = False)
     parser.add_argument('--check', help='verifies that korali.plotter is available', action='store_true', required = False)
     parser.add_argument('--test', help='run without graphics (for testing purpose)', action='store_true', required = False)
+    parser.add_argument('--output', help='save figure to file', type=str, default="")
     args = parser.parse_args()
 
-    main(args.dir, args.mean, args.check, args.test)
+    main(args.dir, args.mean, args.check, args.test, args.output)

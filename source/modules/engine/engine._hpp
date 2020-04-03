@@ -16,6 +16,12 @@ namespace korali
   Engine();
 
   /**
+    * @brief Stores the list of experiments to run.
+    */
+  std::vector<korali::Experiment*> _experimentVector;
+
+
+  /**
     * @brief Stores the engine's thread (coroutine).
     */
   cothread_t _engineThread;

@@ -9,7 +9,7 @@
 korali::Engine::Engine()
 {
  _cumulativeTime = 0.0;
- _mainThread = co_active();
+ _thread = co_active();
 }
 
 bool korali::_isDryRun;
@@ -36,6 +36,7 @@ void korali::Engine::run()
  for (size_t i = 0; i < _experimentVector.size(); i++)
  {
   _experimentVector[i]->_experimentId = i;
+  _experimentVector[i]->_engine = this;
   _currentExperiment = _experimentVector[i];
   _experimentVector[i]->initialize();
   _experimentVector[i]->_isFinished = false;
@@ -50,6 +51,7 @@ void korali::Engine::run()
 
  // Configuring and initializing Conduit
  _conduit = dynamic_cast<korali::Conduit*>(korali::Module::getModule(_js["Conduit"]));
+ _conduit->_engine = this;
 
  // Check configuration correctness
  auto js = _js.getJson();

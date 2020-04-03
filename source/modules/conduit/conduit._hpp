@@ -9,6 +9,8 @@
 
 namespace korali {
 
+class Engine;
+
 class Conduit : public korali::Module {
 
  public:
@@ -29,6 +31,11 @@ class Conduit : public korali::Module {
  * @brief Aborts execution for all ranks/threads/processes.
  */
  virtual void abort() { exit(-1); }
+
+ /**
+ * @brief Stores a pointer to the parent Engine
+ */
+ korali::Engine* _engine;
 
  /**
  * @brief Stores a pointer to the current sample to process

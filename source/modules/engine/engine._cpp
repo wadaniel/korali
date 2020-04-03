@@ -63,7 +63,6 @@ void korali::Engine::run()
 
  // Recovering Conduit configuration
  _conduit->getConfiguration(_js.getJson()["Conduit"]);
- _conduit->_engine = this;
 
  // If this is a worker process (not root), there's nothing else to do
  if (_conduit->isRoot())
@@ -112,7 +111,7 @@ void korali::Engine::run()
 
  // Freeing up experiment thread memory
  for (size_t i = 0; i < _experimentVector.size(); i++)
- co_delete(_experimentVector[i]->_thread);
+  co_delete(_experimentVector[i]->_thread);
 
  // Finalizing Conduit
  _conduit->finalize();

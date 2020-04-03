@@ -108,6 +108,11 @@ class Experiment : public korali::Module {
 };
 
 /**
+  * @brief Stores the list of experiments to run.
+  */
+extern std::vector<korali::Experiment*> _experimentVector;
+
+/**
   * @brief Stores a pointer to the current experiment.
   */
 extern korali::Experiment* _currentExperiment;

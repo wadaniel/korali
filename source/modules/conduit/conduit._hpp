@@ -9,16 +9,9 @@
 
 namespace korali {
 
-class Engine;
-
 class Conduit : public korali::Module {
 
  public:
-
- /**
-   * @brief Stores a pointer to the engine running this experiment.
-   */
- Engine* _engine;
 
  /**
  * @brief Accepts a sample for processing.

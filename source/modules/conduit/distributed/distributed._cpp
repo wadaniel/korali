@@ -117,7 +117,7 @@ void korali::conduit::Distributed::workerThread()
    sample._js.getJson() = knlohmann::json::parse(jsonStringChar);
 
    size_t experimentId = sample["Experiment Id"];
-   _engine->_experimentVector[experimentId]->_problem->runOperation(sample["Operation"], sample);
+   _experimentVector[experimentId]->_problem->runOperation(sample["Operation"], sample);
 
    if (_localRankId == 0)
    {

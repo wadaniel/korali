@@ -16,7 +16,7 @@ namespace korali
   Engine();
 
   /**
-    * @brief A pointer to the execution conduit. Shared among all experiments.
+    * @brief A singleton pointer to the execution conduit. Shared among all experiments.
     */
   korali::Conduit* _conduit;
 

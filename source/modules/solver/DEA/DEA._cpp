@@ -2,6 +2,7 @@
 #include "modules/problem/problem.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/conduit/conduit.hpp"
+#include "modules/engine/engine.hpp"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -65,11 +66,11 @@ void korali::solver::DEA::runGeneration()
   samples[i]["Parameters"] = _candidatePopulation[i];
   samples[i]["Sample Id"] = i;
   _modelEvaluationCount++;
-  korali::_conduit->start(samples[i]);
+  _engine->_conduit->start(samples[i]);
  }
 
  // Waiting for samples to finish
- korali::_conduit->waitAll(samples);
+ _engine->_conduit->waitAll(samples);
 
  updateSolver(samples);
 }
@@ -102,8 +103,8 @@ void korali::solver::DEA::prepareGeneration()
    korali::Sample sample;
    sample["Parameters"] = _candidatePopulation[i];
    sample["Operation"] = "Check Feasibility";
-   korali::_conduit->start(sample);
-   korali::_conduit->wait(sample);
+   _engine->_conduit->start(sample);
+   _engine->_conduit->wait(sample);
    isSampleFeasible = sample["Is Feasible"];
   }
   while(isSampleFeasible == false);

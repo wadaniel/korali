@@ -9,7 +9,7 @@
 korali::Engine::Engine()
 {
  _cumulativeTime = 0.0;
- _mainThread = co_active();
+ _engineThread = co_active();
 }
 
 bool korali::_isDryRun;
@@ -36,6 +36,7 @@ void korali::Engine::run()
  for (size_t i = 0; i < _experimentVector.size(); i++)
  {
   _experimentVector[i]->_experimentId = i;
+  _experimentVector[i]->_engine = this;
   _currentExperiment = _experimentVector[i];
   _experimentVector[i]->initialize();
   _experimentVector[i]->_isFinished = false;
@@ -107,6 +108,10 @@ void korali::Engine::run()
   saveProfilingInfo(true);
   _cumulativeTime += std::chrono::duration<double>(_endTime-_startTime).count();
  }
+
+ // Freeing up experiment thread memory
+ for (size_t i = 0; i < _experimentVector.size(); i++)
+  co_delete(_experimentVector[i]->_thread);
 
  // Finalizing Conduit
  _conduit->finalize();

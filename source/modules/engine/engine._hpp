@@ -16,6 +16,11 @@ namespace korali
   Engine();
 
   /**
+    * @brief Stores the engine's thread (coroutine).
+    */
+  cothread_t _engineThread;
+
+  /**
    * @brief Saves the output path for the profiling information file
    */
   std::string _profilingPath;

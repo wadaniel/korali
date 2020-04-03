@@ -108,6 +108,10 @@ void korali::Engine::run()
   _cumulativeTime += std::chrono::duration<double>(_endTime-_startTime).count();
  }
 
+ // Freeing up experiment thread memory
+ for (size_t i = 0; i < _experimentVector.size(); i++)
+  co_delete(_experimentVector[i]->_thread);
+
  // Finalizing Conduit
  _conduit->finalize();
 }

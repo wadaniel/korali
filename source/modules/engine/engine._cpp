@@ -16,6 +16,9 @@ bool korali::_isDryRun;
 
 void korali::Engine::run()
 {
+ // Save own pointer
+ _engine = this;
+
  // Turn Off GSL Error Handler
  gsl_set_error_handler_off();
 
@@ -37,7 +40,6 @@ void korali::Engine::run()
  {
   _experimentVector[i]->_experimentId = i;
   _experimentVector[i]->_engine = this;
-  _currentExperiment = _experimentVector[i];
   _experimentVector[i]->initialize();
   _experimentVector[i]->_isFinished = false;
   std::string fileName = "./log.txt";
@@ -50,8 +52,7 @@ void korali::Engine::run()
  korali::_isDryRun = _js["Dry Run"];
 
  // Configuring and initializing Conduit
- _conduit = dynamic_cast<korali::Conduit*>(korali::Module::getModule(_js["Conduit"]));
- _conduit->_engine = this;
+ _conduit = dynamic_cast<korali::Conduit*>(getModule(_js["Conduit"]));
 
  // Check configuration correctness
  auto js = _js.getJson();

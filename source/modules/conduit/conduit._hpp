@@ -33,11 +33,6 @@ class Conduit : public korali::Module {
  virtual void abort() { exit(-1); }
 
  /**
- * @brief Stores a pointer to the parent Engine
- */
- korali::Engine* _engine;
-
- /**
  * @brief Stores a pointer to the current sample to process
  */
  korali::Sample* _currentSample;
@@ -71,11 +66,6 @@ class Conduit : public korali::Module {
    */
  static void coroutineWrapper();
 };
-
-/**
-  * @brief A singleton pointer to the execution conduit. Shared among all experiments.
-  */
-extern korali::Conduit* _conduit;
 
 } // namespace korali
 

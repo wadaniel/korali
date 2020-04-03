@@ -1,5 +1,5 @@
-#ifndef _ENGINE_HPP_
-#define _ENGINE_HPP_
+#ifndef _KORALI_ENGINE_HPP_
+#define _KORALI_ENGINE_HPP_
 
 #include "modules/experiment/experiment.hpp"
 #include "modules/conduit/distributed/distributed.hpp"
@@ -14,6 +14,16 @@ namespace korali
   public:
 
   Engine();
+
+  /**
+    * @brief A pointer to the execution conduit. Shared among all experiments.
+    */
+  korali::Conduit* _conduit;
+
+  /**
+    * @brief Stores the list of experiments to run.
+    */
+  std::vector<korali::Experiment*> _experimentVector;
 
   /**
     * @brief Stores a pointer to the current experiment.

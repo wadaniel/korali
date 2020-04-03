@@ -1,5 +1,5 @@
-#ifndef _KORALI_ENGINE_HPP_
-#define _KORALI_ENGINE_HPP_
+#ifndef _KORALI_EXPERIMENT_HPP_
+#define _KORALI_EXPERIMENT_HPP_
 
 #include <vector>
 #include <functional>
@@ -22,11 +22,6 @@ class Experiment : public korali::Module {
  Experiment();
 
  void initialize() override;
-
- /**
- * @brief Stores a pointer to the parent Engine
- */
- korali::Engine* _engine;
 
  /**
   * @brief JSON object to store the experiment's configuration
@@ -107,11 +102,6 @@ class Experiment : public korali::Module {
  knlohmann::json& operator[](const unsigned long int& key);
 };
 
-/**
-  * @brief Stores the list of experiments to run.
-  */
-extern std::vector<korali::Experiment*> _experimentVector;
-
 } // namespace korali
 
-#endif // _KORALI_ENGINE_HPP_
+#endif // _KORALI_EXPERIMENT_HPP_

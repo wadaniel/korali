@@ -180,7 +180,8 @@ void korali::solver::Nested::processGeneration()
 
 void korali::solver::Nested::generateCandidatesFromMutation() 
 { 
-  // TODO: check if 0-vector required
+  std::vector<double> zeroMean(_k->_variables.size(), 0.0);
+  _multivariateGenerator->_meanVector       = zeroMean;
   _multivariateGenerator->_covarianceMatrix = _covarianceMatrix;
   _multivariateGenerator->updateDistribution();
 

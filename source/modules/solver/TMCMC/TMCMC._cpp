@@ -110,8 +110,9 @@ void korali::solver::TMCMC::prepareGeneration()
   _chainCandidates.resize(_populationSize);
   _chainCandidatesAcceptanceParameter.resize(_populationSize);
  
+  std::vector<double> zeroMean(_k->_variables.size(), 0.0);
+  _multivariateGenerator->_meanVector       = zeroMean;
   _multivariateGenerator->_covarianceMatrix = _covarianceMatrix;
-  // TODO: check if 0-vector required
   _multivariateGenerator->updateDistribution();
 
 

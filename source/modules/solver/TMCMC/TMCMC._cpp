@@ -109,11 +109,11 @@ void korali::solver::TMCMC::prepareGeneration()
   // Resizing Chain Candidates and acceptance parameters
   _chainCandidates.resize(_populationSize);
   _chainCandidatesAcceptanceParameter.resize(_populationSize);
+ 
+  _multivariateGenerator->_covarianceMatrix = _covarianceMatrix;
+  // TODO: check if 0-vector required
+  _multivariateGenerator->updateDistribution();
 
-  double covMatChecksum = 0.0;
-  for (size_t i = 0; i < _k->_variables.size(); i++)
-    for (size_t j = 0; j < _k->_variables.size(); j++)
-     covMatChecksum += _covarianceMatrix[i*_k->_variables.size() + j];
 
   for(size_t i = 0; i < _populationSize; i++)
   {
@@ -136,18 +136,13 @@ void korali::solver::TMCMC::prepareGeneration()
    }
    else
    {
-    std::vector<double> _currentMean(_k->_variables.size());
-    for (size_t d = 0; d < _k->_variables.size(); d++) _currentMean[d] = _chainLeaders[i][d];
 
-    double currentMeanChecksum = 0.0;
-      for (size_t d = 0; d < _k->_variables.size(); d++)
-       currentMeanChecksum += _currentMean[d];
+    for(size_t j = 0; j < fullChainLength; j++) 
+    {
+      _multivariateGenerator->getRandomVector(&_chainCandidates[i][j][0],  _k->_variables.size());
+      for (size_t d = 0; d < _k->_variables.size(); d++) _chainCandidates[i][j][d] += _chainLeaders[i][d];
+    }
 
-    _multivariateGenerator->_covarianceMatrix = _covarianceMatrix;
-    _multivariateGenerator->_meanVector = _currentMean;
-    _multivariateGenerator->updateDistribution();
-
-    for(size_t j = 0; j < fullChainLength; j++) _multivariateGenerator->getRandomVector(&_chainCandidates[i][j][0],  _k->_variables.size());
    }
 
   }

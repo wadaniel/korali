@@ -2,7 +2,7 @@
 #define _KORALI_SOLVER_NESTED_HPP_
 
 #include "modules/solver/solver.hpp"
-#include "modules/distribution/univariate/normal/normal.hpp"
+#include "modules/distribution/multivariate/normal/normal.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
 #include <vector>
 
@@ -11,36 +11,56 @@ namespace korali { namespace solver {
 class Nested : public korali::Solver
 {
  private: 
-
- /**
-  * @brief Updates internal states.
+ 
+ /*
+  * @brief Init and run first Generation.
   */
- void updateState();
+ void runFirstGeneration();
 
  /*
   * @brief Prepare Generation before evaluation.
   */
  void prepareGeneration();
-
- /*
-  * @brief Process evaluation, main Nested Sampling loop
+ 
+ /** 
+  * @brief Generates new samples by copying and mutating randomly selected samples
   */
- void processGeneration();
+ void generateCandidatesFromMutation();
+
+ /** 
+  * @brief Generate new samples uniformly in Box
+  */
+ void generateCandidatesFromBox();
+ 
+ /** 
+  * @brief Generate new samples uniformly in Ellipse
+  */
+ void generateCandidatesFromEllipse();
  
  /*
-  * @brief Does sample evaluation.
+  * @brief Process Generation after receiving all results.
   */
- void processEvaluation(const size_t sampleId);
-
+ void processGeneration();
+  
+ /*
+  * @brief Descending sort of live sample indices based on evaluation.
+ */
+ void sortLiveSamplesDescending();
+ 
+ /*
+  * @brief Add sample to discard to sample database.
+ */
+ void updateSampleDatabase(size_t sampleIdx);
+ 
  public:
 
  /**
- * @brief Configures MCMC.
+ * @brief Configures Sampler.
  */
  void setInitialConfiguration() override;
 
  /**
-  * @brief Generate a sample and evaluate it.
+  * @brief Main solver loop.
   */
  void runGeneration() override;
 

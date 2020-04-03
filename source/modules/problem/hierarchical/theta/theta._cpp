@@ -5,9 +5,11 @@ void korali::problem::hierarchical::Theta::initialize()
 {
  // Loading Psi-problem Experiment from path
  if (_psiProblemEngine.loadState(_psiProblemPath) == false) korali::logError("Error loading psi problem results from: %s...\n", _psiProblemPath.c_str());
+ _psiProblemEngine._engine = _k->_engine;
  _psiProblemEngine.initialize();
 
  if (_thetaProblemEngine.loadState(_thetaProblemPath) == false) korali::logError("Error loading theta problem results from: %s...\n", _thetaProblemPath.c_str());
+ _thetaProblemEngine._engine = _k->_engine;
  _thetaProblemEngine.initialize();
 
   // Sub-problem correctness checks

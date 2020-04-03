@@ -33,6 +33,7 @@ void korali::problem::hierarchical::Psi::initialize()
  for (size_t i = 0; i < _subProblemsCount; i++)
  {
   if (_subProblemEngines[i].loadState(_subProblems[i]) == false) korali::logError("Error loading sub problem results from: %s...\n", _subProblems[i].c_str());
+  _subProblemEngines[i]._engine = _k->_engine;
   _subProblemEngines[i].initialize();
  }
 

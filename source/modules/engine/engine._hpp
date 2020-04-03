@@ -16,6 +16,11 @@ namespace korali
   Engine();
 
   /**
+    * @brief Stores a pointer to the current experiment.
+    */
+  korali::Experiment* _currentExperiment;
+
+  /**
     * @brief Stores the main execution thread (coroutine).
     */
   cothread_t _thread;

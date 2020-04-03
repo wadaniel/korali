@@ -14,9 +14,9 @@
 #include <map>
 
 std::vector<korali::Experiment*> korali::_experimentVector;
-korali::Experiment* korali::_currentExperiment;
 
-namespace korali { void threadWrapper() { _currentExperiment->run(); } }
+korali::Experiment* __expPointer;
+namespace korali { void threadWrapper() { __expPointer->run(); } }
 
 void korali::Experiment::run()
 {
@@ -171,6 +171,7 @@ void korali::Experiment::initialize()
  applyModuleDefaults(_js.getJson());
  setConfiguration(_js.getJson());
  getConfiguration(_js.getJson());
+ __expPointer = this;
  _thread = co_create(10240*sizeof(void*), korali::threadWrapper);
  co_switch(_thread);
 }

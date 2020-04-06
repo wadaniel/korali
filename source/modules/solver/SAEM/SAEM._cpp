@@ -31,10 +31,10 @@ void korali::solver::SAEM::setInitialConfiguration()
     if( std::isfinite(_k->_variables[i]->_initialValue) == false )
       korali::logError("Initial Value of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
 
-  if (_latentVariableSampler){
-    _hasUserDefinedSampler = true;}
-  else _hasUserDefinedSampler = false;
-    //  _hasUserDefinedSampler = (_latentVariableSampler != 0); // Todo: not sure if this is the right way to check for not-passed sampler
+  _hasUserDefinedSampler = true;
+//  if (_latentVariableSampler){
+//    _hasUserDefinedSampler = true;}
+//  else _hasUserDefinedSampler = false;
 
 
 
@@ -77,17 +77,9 @@ void korali::solver::SAEM::setInitialConfiguration()
       hyperparam_index++;
   }
 
-  
-  // _bestSamples = _currentSamples;
-  //_delta.resize( N, _delta0 );
-  //_currentGradient.resize( N, 0);
-  //_previousGradient.resize( N, 0.0 );
 
   _bestLogLikelihood = -korali::Inf;
-  //_xDiff = korali::Inf;
-  //_maxStallCounter = 0;
-  //_normPreviousGradient = korali::Inf;
-  //_previousEvaluation   = korali::Inf;
+
 }
 
 
@@ -113,12 +105,6 @@ void korali::solver::SAEM::runGeneration( void )
 
   // Set up a korali experiment and optimize the function
   updateHyperparameters();
-//  for (double var : _currentHyperparameters){
-//   // std::string logstr(" -- Update hyperparameters to: " + std::to_string(var) + "\n");
-//  	//korali::logInfo("Minimal", "this is a dummy string\n");
-//  	korali::logInfo("Normal", " -- Update hyperparameters to: %f \n", var);
-//    }
-  /* * * * * * */
 
 }
 
@@ -164,8 +150,7 @@ void korali::solver::SAEM::runBuiltinSampler()
     */
 
     /* Create one sampling experiment to sample all latent variables. After all the latent vars are correlated / have a joint distrib.
-        Todo: does it make sense to re-create these experiments at every E-M step? Otherwise, how
-            to automatically update the initial mean and the distribution function of the sampling experiments?*/
+     */
 
          auto k = korali::Engine();
          auto e = korali::Experiment();
@@ -186,8 +171,7 @@ void korali::solver::SAEM::runBuiltinSampler()
                             korali::logError("Wrong size of latent variables.\n");
                         }
                         s["Latent Variables"] = s["Parameters"];
-                        s["Hyperparameters"] = params; // _currentHyperparameters;
-                        // Ugly? & Probably doesnt work
+                        s["Hyperparameters"] = params;
                         _latentProblem->evaluateLogLikelihood(s);
                          s["P(x)"] = s["logLikelihood"];
                     };
@@ -199,7 +183,7 @@ void korali::solver::SAEM::runBuiltinSampler()
 
              double _previousSampleMean;
              if (_k->_currentGeneration == 0){
-                _previousSampleMean =  _previousLatentSampleMeans[i]; // TODO: Check, do I need a vector of vectors instead? Edit: No.
+                _previousSampleMean =  _previousLatentSampleMeans[i];
              } else {
                 _previousSampleMean = _k->_variables[idx]->_initialValue;
              }
@@ -215,17 +199,16 @@ void korali::solver::SAEM::runBuiltinSampler()
         e["Solver"]["Termination Criteria"]["Max Samples"] = 5000;
 
         // Configuring output settings
-
         e["File Output"]["Frequency"] = 500;
         e["Console Output"]["Frequency"] = 500;
         e["Console Output"]["Verbosity"] = "Detailed";
 
-        // Todo: I don't think a result path is needed (and it'd need a step id in the pathname as well)
+        // Todo: I don't think a result path is needed (and it'd need a step id in the pathname as well) -- edit: maybe it would be useful, to not overwrite other results
         //e["Results"]["Path"] = "setup/results_phase_1/" + "0"*(3 - str(i).length()) +  std:to_string(i);
         k.run(e);
 
         std::vector<std::vector<double>> db = e["Solver"]["Sample Database"].get<std::vector<std::vector<double>>>();
-        printf("Database size: %lu\n", db.size());
+        //printf("Database size: %lu\n", db.size());
         /*for (size_t i = 0; i < db.size(); i++)
         {
         printf("[ ");
@@ -371,7 +354,7 @@ void korali::solver::SAEM::updateHyperparameters(){
             continue;
         auto var =  _k->_variables[i];
         if (var->_lowerBound >= var->_upperBound)
-            korali::logError("Lower bound was equal to or higher than upper bound for a hyperparameter. Did you perhaps forget to set upper and lower bounds for this hyperparamter?");
+            korali::logError("Lower bound was equal to or higher than upper bound for hyperparameter %s. Did you perhaps forget to set upper and lower bounds for this hyperparamter?", var->_name.c_str());
         e["Variables"][hyperparamIdx]["Name"] = var->_name;
         e["Variables"][hyperparamIdx]["Lower Bound"] = var->_lowerBound;
         e["Variables"][hyperparamIdx]["Upper Bound"] = var->_upperBound;
@@ -387,20 +370,21 @@ void korali::solver::SAEM::updateHyperparameters(){
    e["Solver"]["Termination Criteria"]["Max Generations"] = _mStepSolverMaxGenerations;
 
     e["File Output"]["Frequency"] = 0;
-    e["Console Output"]["Frequency"] = 10;
+    e["Console Output"]["Frequency"] = 100;
     e["Console Output"]["Verbosity"] = "Detailed";
+
+    std::string gen = std::to_string(_k->_currentGeneration);
+    e["Results"]["Path"] = "_korali_results/hyperparam_optimization/" +  gen; // Should not write anything to a file though, with frequency==0
 
    k.run(e);
 
    // Now access the results! How?
-    //std::cout << "line to set a breakpoint, nothing else" << "\n";
-
-    auto bestVars = e["Solver"]["Best Ever Variables"];
-    auto solver = e["Solver"];
+   // auto bestVars = e["Solver"]["Best Ever Variables"];
+   // auto solver = e["Solver"];
     _currentHyperparameters = e["Solver"]["Best Ever Variables"].get<std::vector<double>>();
     double llh = e["Solver"]["Best Ever Value"].get<double>();
     _currentLogLikelihood = llh;
-    // We approximate the quotient of change in likelihood vs. current likelihood by the different of the logarithms.
+    // Approximate the quotient of change in likelihood vs. current likelihood by the difference of the logarithms.
     //  Should work well for small changes in llh.
     if (  (llh - _bestLogLikelihood > _relativeChangeThresholdForMonitoring)) {
         _numberGenerationsSmallLikelihoodChange = 0;
@@ -453,8 +437,7 @@ void korali::solver::SAEM::printGenerationBefore(){ return; }
 void korali::solver::SAEM::printGenerationAfter() {
 
     if (_maxGenerations <= _k->_currentGeneration  )
-        return;
-    //["Solver"]["Termination Criteria"]["Max Generations"]
+        return; //Don't print in last generation, this is done in finalize()
 
      korali::logInfo("Normal", "Generation %d : \n", _k->_currentGeneration);
      korali::logInfo("Normal", "    Current LogLikelihood:          %.2e\n", _currentLogLikelihood);
@@ -506,22 +489,12 @@ void korali::solver::SAEM::finalize()
     int idx = _latentProblem->_latentVariableIndices[i];
     korali::logInfo("Minimal", " %s : %.2f +- %.2f  \n", _k->_variables[idx]->_name.c_str() , mean_and_sdev[0] , mean_and_sdev[1] );
  }
- // Evaluate final likelihood
-// auto s = korali::Sample();
-// double averageFinalLikelihood = 0;
-// for (auto lvar : _currentSamples) {
-//    s["Latent Variables"] = lvar;
-//    s["Hyperparameters"] = _currentHyperparameters; // _currentHyperparameters;
-//                        // Ugly? & Probably doesnt work
-//    _latentProblem->evaluateLogLikelihood(s);
-//    averageFinalLikelihood += std::exp(s["logLikelihood"].get<double>());
-//}
-// averageFinalLikelihood = averageFinalLikelihood / static_cast<double>(_currentSamples.size());
+
  korali::logInfo("Minimal", "Final loglikelihood: %.1e%%\n", _currentLogLikelihood);
  korali::logInfo("Minimal", "Final best loglikelihood: %.1e%%\n", _bestLogLikelihood);
 
  //if (_k->_currentGeneration == ... something...) korali::logInfo("Minimal", "Max Generations Reached.\n");
- (*_k)["Results"]["Hyperparameters"] = _currentHyperparameters;
+ (*_k)["Results"]["Hyperparameters"] = _currentHyperparameters;  // TODO: Need to define the results of SAEM somwehere in the config. Where/how?
  (*_k)["Results"]["Final Latent Variable Samples"] = _currentSamples;
  return;
 }

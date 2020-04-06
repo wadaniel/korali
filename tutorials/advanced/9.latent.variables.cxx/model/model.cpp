@@ -33,13 +33,11 @@ Latent variables:
 
 
 
-//class ExampleDistribution1 : ExponentialFamilyDistribution
-//{
-    // This might be too simple / not a good problem for E-M:
-    // Take the hyperparameter as sigma of a normal distribution, and the mean mu as latent variable
-
 
 ExampleDistribution1::ExampleDistribution1(){
+
+    // * Take as hyperparameter the sigma of a normal distribution, and the mean mu as latent variable
+
         _p = univariateData();
         sufficientStatisticsDimension = 1;
         mu_lower_bound = -20.;
@@ -50,17 +48,14 @@ ExampleDistribution1::ExampleDistribution1(){
 
 void ExampleDistribution1::S(korali::Sample& k)
 {
-      //std::vector<double> hyperparams = k["Hyperparameters"];
-      //auto latentVariables = k["Latent Variables"];
       std::vector<double> latentVariables = k["Latent Variables"];
-      
-      //double sigma = hyperparams[0];
+
       auto mu_vector = latentVariables;
       bool in_valid_range = true;
       for (double mu_coord : mu_vector){
     	  if ((mu_coord < mu_lower_bound) || (mu_coord > mu_upper_bound) ){
     		  in_valid_range = false;
-    		  k["S"] = std::vector<double>({-korali::Inf}); // -> probability is zero
+    		  k["S"] = std::vector<double>({-korali::Inf}); // => probability is zero
     		  return;
     	  }
       }
@@ -70,7 +65,6 @@ void ExampleDistribution1::S(korali::Sample& k)
       double mse;
       std::vector<double> vector_diff(_p.nDimensions, 0.0);
       for(size_t i = 0; i<_p.nPoints; i++){
-       // double[_p.nDimensions] point = _p.points[]   // todo: = points[i*nDimensions : (i+1)*nDimensions]
           std::transform(_p.points[i].begin(), _p.points[i].end(), mu_vector.begin(), vector_diff.begin(), std::minus<double>());
     	  mse = l2_norm_squared(vector_diff);
           sum += mse;
@@ -78,28 +72,6 @@ void ExampleDistribution1::S(korali::Sample& k)
       k["S"] = std::vector<double>({-sum});  //or k["Evaluation"]["S"] ?
 
 
-      // Later, if mu is a vector, can use the following :
-      /* std::string typenm = typeid(mu).name();
-      std::vector<std::string> primitive_types = {"char", "int", "float", "double"};
-      std::cout << "Type: "<< typenm << std::endl;
-      bool found = (std::find(primitive_types.begin(), primitive_types.end(), typenm) != primitive_types.end());
-      if (!found){
-        if (mu.length() != _p.nDimensions)
-        korali::logError("Mean with wrong number of dimensions.\n");
-      }
-
-      // log(p) = -log(sigma*sqrt(pi*2)) - 0.5(x - mu)^2 * 1/sigma^2
-      double sum = 0;
-      double[_p.nPoints] mse_per_point = {0};
-      for(size_t i = 0; i<_p.nPoints; i++){
-       // double[_p.nDimensions] point = _p.points[]   // todo: = points[i*nDimensions : (i+1)*nDimensions]
-         for (size_t j = 0; j<_p.nDimensions; i++)
-            mse_per_point[i] += std::pow( _p.points[i*nDimensions + j] - mu[j] , 2);
-            sum += std::pow( _p.points[i*nDimensions + j] - mu[j] , 2);
-      }
-      k["S"] = -0.5 * sum;  //or k["Evaluation"]["S"] ?
-
-      */
 
 
 };
@@ -215,18 +187,6 @@ void ExampleDistribution2::S(korali::Sample& k)
 
       k["S"] = S_vec;
 
-      // Later, if mu is a vector, can use the following :
-      /* std::string typenm = typeid(mu).name();
-      std::vector<std::string> primitive_types = {"char", "int", "float", "double"};
-      std::cout << "Type: "<< typenm << std::endl;
-      bool found = (std::find(primitive_types.begin(), primitive_types.end(), typenm) != primitive_types.end());
-      if (!found){
-        if (mu.length() != _p.nDimensions)
-        korali::logError("Mean with wrong number of dimensions.\n");
-      }
-      */
-
-
 };
 
 void ExampleDistribution2::zeta(korali::Sample& k)
@@ -280,21 +240,6 @@ void ExampleDistribution2::phi(korali::Sample& k)
       k["phi"] = phi;
 };
 
-
- /*   distrib2 = ExampleDistribution2();
-
-     void distrib2_S(korali::Sample& s)
-     {
-       distrib2.S(s);
-     };
-      void distrib2_zeta(korali::Sample& s)
-     {
-       distrib2.zeta(s);
-     };
-      void distrib2_phi(korali::Sample& s)
-     {
-       distrib2.phi(s);
-     };*/
 
 
 #endif

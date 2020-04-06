@@ -49,7 +49,7 @@ def generate_data():
         fd.writelines(lines)
         fd.write("points (dim=" + str(dimensions) +") | last column: cluster assignment")
 
-    print("Done")
+    print("--- Created new single- and multi-cluster data.")
 
 
 if __name__ == '__main__':

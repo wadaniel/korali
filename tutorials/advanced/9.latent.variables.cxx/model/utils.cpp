@@ -20,22 +20,22 @@ double multivariate_gaussian_probability(std::vector<std::vector<double> > mus, 
     for (int i = 0; i < N; i++){
         // get the cluster mean
         int c = assignments[i];
-        std::vector<double> mu = mus[c]; // @suppress("Symbol is not resolved") // @suppress("Type cannot be resolved")
+        std::vector<double> mu = mus[c];
         // update p
-        p = p * univariate_gaussian_probability(mu, sigma, points[i]); // @suppress("Function cannot be resolved")
+        p = p * univariate_gaussian_probability(mu, sigma, points[i]);
     }
     return p;
 }
 
-double univariate_gaussian_probability(std::vector<double> mu, double sigma, std::vector<double> point){ // @suppress("Type cannot be resolved") // @suppress("Method cannot be resolved") // @suppress("Function cannot be resolved") // @suppress("Symbol is not resolved")
-    assert (mu.size() == point.size());							// @suppress("Symbol is not resolved") // @suppress("Type cannot be resolved") // @suppress("Method cannot be resolved") // @suppress("Function cannot be resolved")
-    std::vector<double> distance(mu.size());					// @suppress("Symbol is not resolved") // @suppress("Type cannot be resolved") // @suppress("Method cannot be resolved") // @suppress("Function cannot be resolved")
-    std::transform(mu.begin(), mu.end(), point.begin(),			// @suppress("Symbol is not resolved") // @suppress("Type cannot be resolved") // @suppress("Method cannot be resolved") // @suppress("Function cannot be resolved")
-               distance.begin(), std::minus<double>());			// @suppress("Symbol is not resolved") // @suppress("Type cannot be resolved") // @suppress("Method cannot be resolved") // @suppress("Function cannot be resolved")
-    double squared_distance = std::inner_product(std::begin(distance), std::end(distance) , std::begin(distance), 0.0);    // @suppress("Type cannot be resolved") // @suppress("Method cannot be resolved") // @suppress("Function cannot be resolved") // @suppress("Symbol is not resolved")
-    double exponent = - squared_distance / (2.0 * std::pow(sigma, 2.0)); // @suppress("Function cannot be resolved")
-    double denominator = (std::sqrt(2.0 * M_PI) * sigma) ; // @suppress("Symbol is not resolved") // @suppress("Function cannot be resolved")
-    double probability =  std::exp(exponent) / denominator;  // @suppress("Type cannot be resolved") // @suppress("Method cannot be resolved") // @suppress("Function cannot be resolved") // @suppress("Symbol is not resolved")
+double univariate_gaussian_probability(std::vector<double> mu, double sigma, std::vector<double> point){
+    assert (mu.size() == point.size());
+    std::vector<double> distance(mu.size());
+    std::transform(mu.begin(), mu.end(), point.begin(),
+               distance.begin(), std::minus<double>());
+    double squared_distance = std::inner_product(std::begin(distance), std::end(distance) , std::begin(distance), 0.0);
+    double exponent = - squared_distance / (2.0 * std::pow(sigma, 2.0));
+    double denominator = (std::sqrt(2.0 * M_PI) * sigma) ;
+    double probability =  std::exp(exponent) / denominator;
     return probability;
 }
 
@@ -45,7 +45,7 @@ double univariate_gaussian_probability(std::vector<double> mu, double sigma, std
 // ****************** vector operations ********************
 
 double l2_norm(std::vector<double> const& u) {
-    // copy-paste from http://polaris.s.kanazawa-u.ac.jp
+    // copy-paste from http://polaris.s.kanazawa-u.ac.jp/~npozar/basic-cpp-for-numerics-vectors.html
     double accum = 0.;
     for (double x : u) {
         accum += x * x;
@@ -53,7 +53,7 @@ double l2_norm(std::vector<double> const& u) {
     return sqrt(accum);
 }
 double l2_norm_squared(std::vector<double> const& u) {
-    // copy-paste from http://polaris.s.kanazawa-u.ac.jp
+    // ~ copy-paste from http://polaris.s.kanazawa-u.ac.jp/~npozar/basic-cpp-for-numerics-vectors.html
     double accum = 0.;
     for (double x : u) {
         accum += x * x;

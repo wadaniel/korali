@@ -13,19 +13,19 @@ pointsInfoStruct& univariateData()
 
  FILE *problemFile;
  FILE *problemFile2;
- uint32_t nPoints = 0;
- int nDimensions = 0;
+ size_t nPoints = 0;
+ size_t nDimensions = 0;
 
- printf("Loading data from data_single.in ... \n");// @suppress("Function cannot be resolved")
- problemFile = fopen("model/data_single.in", "r");// @suppress("Function cannot be resolved")
+ printf("Loading data from data_single.in ... \n");
+ problemFile = fopen("model/data_single.in", "r");
  if (!problemFile){
 	 	 char cwd[PATH_MAX];
 	 	 getcwd(cwd, sizeof(cwd));
 	 	 std::cout << "Current workdir: " << cwd << std::endl;
-		 korali::logError("File not found: model/data_single.in. Make sure you run this script from the 'tutorials/advanced/9....' directory. ");}
- problemFile2 = fopen("data_single.in", "r");// @suppress("Function cannot be resolved")
- fscanf(problemFile, "%lu", &nPoints); // @suppress("Function cannot be resolved")
- fscanf(problemFile, "%lu", &nDimensions); // @suppress("Function cannot be resolved")
+		 korali::logError("File not found: model/data_single.in. Make sure you run this script from the 'tutorials/advanced/9.latent.variables' directory. ");}
+ problemFile2 = fopen("data_single.in", "r");
+ fscanf(problemFile, "%lu", &nPoints);
+ fscanf(problemFile, "%lu", &nDimensions);
 
  __p.points.resize(nPoints);
  __p.assignments.resize(0);
@@ -59,7 +59,7 @@ pointsInfoStruct& multivariateData()
 
  printf("Loading data from data_multiple.in ... \n");
  problemFile = fopen("model/data_multiple.in", "r");
- fscanf(problemFile, "%lu", &nPoints); // @suppress("Function cannot be resolved")
+ fscanf(problemFile, "%lu", &nPoints);
  fscanf(problemFile, "%lu", &nDimensions);
  fscanf(problemFile, "%lu", &nClusters);
 
@@ -74,18 +74,19 @@ pointsInfoStruct& multivariateData()
 
  for (size_t i = 0; i < nPoints; i++)
  {
-  double val;
+  double val_d;
   for (size_t j = 0; j < nDimensions; j++){
-      fscanf(problemFile, "%le ", &val);
-      __p.points[i][j] = val;
+      fscanf(problemFile, "%le ", &val_d);
+      __p.points[i][j] = val_d;
   }
+  unsigned int val;
   fscanf(problemFile, "%lu ", &val); __p.assignments[i] = val;
  }
  __p.nDimensions = nDimensions;
  __p.nPoints = nPoints;
- __p.nClusters = nClusters; // @suppress("Field cannot be resolved")
+ __p.nClusters = nClusters;
 
- fclose(problemFile); // @suppress("Function cannot be resolved") // Todo: remove some day. Added this when looking for a very mysterious bug
+ fclose(problemFile);  // Todo: remove some day. Added this when looking for a very mysterious bug
 
  return __p;
 };

@@ -153,6 +153,7 @@ int main(int argc, char* argv[])
  e["File Output"]["Frequency"] = 50;
  e["Console Output"]["Frequency"] = 10;
  e["Console Output"]["Verbosity"] = "Detailed";
+
  k.run(e);
 
  return 0;

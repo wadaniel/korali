@@ -9,6 +9,8 @@
 
 namespace korali {
 
+class Engine;
+
 class Conduit : public korali::Module {
 
  public:
@@ -51,13 +53,13 @@ class Conduit : public korali::Module {
    * @brief Waits for a set of sample to finish. The experiment will not continue until all samples have been evaluated.
    * @param A list of Korali samples
    */
- static void waitAll(std::vector<korali::Sample>& samples);
+ void waitAll(std::vector<korali::Sample>& samples);
 
  /**
   * @brief Waits for a set of sample to finish. The experiment will not continue until at least one of the samples have been evaluated.
   * @param A list of Korali samples
   */
- static size_t waitAny(std::vector<korali::Sample>& samples);
+ size_t waitAny(std::vector<korali::Sample>& samples);
 
  /**
    * @brief Wrapper function for the sample coroutine
@@ -65,10 +67,6 @@ class Conduit : public korali::Module {
  static void coroutineWrapper();
 };
 
-/**
-  * @brief A singleton pointer to the execution conduit. Shared among all experiments.
-  */
-extern korali::Conduit* _conduit;
 
 } // namespace korali
 

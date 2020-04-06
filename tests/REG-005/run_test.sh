@@ -20,7 +20,7 @@ source ../functions.sh
 
 logEcho "[Korali] Pulling korali-apps repository"
 pushd ../../
-git submodule update --init --recursive
+git submodule update --init --recursive --remote
 check_result
 popd
 

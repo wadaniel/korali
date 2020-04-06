@@ -1,5 +1,5 @@
-#ifndef _KORALI_ENGINE_HPP_
-#define _KORALI_ENGINE_HPP_
+#ifndef _KORALI_EXPERIMENT_HPP_
+#define _KORALI_EXPERIMENT_HPP_
 
 #include <vector>
 #include <functional>
@@ -13,6 +13,7 @@ namespace korali
 {
 class Solver;
 class Problem;
+class Engine;
 
 class Experiment : public korali::Module {
 
@@ -101,21 +102,6 @@ class Experiment : public korali::Module {
  knlohmann::json& operator[](const unsigned long int& key);
 };
 
-/**
-  * @brief Stores the list of experiments to run.
-  */
-extern std::vector<korali::Experiment*> _experimentVector;
-
-/**
-  * @brief Stores a pointer to the current experiment.
-  */
-extern korali::Experiment* _currentExperiment;
-
-/**
-  * @brief Stores the main execution thread (coroutine).
-  */
-extern cothread_t _mainThread;
-
 } // namespace korali
 
-#endif // _KORALI_ENGINE_HPP_
+#endif // _KORALI_EXPERIMENT_HPP_

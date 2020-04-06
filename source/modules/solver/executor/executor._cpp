@@ -1,5 +1,6 @@
 #include "modules/solver/executor/executor.hpp"
 #include "modules/conduit/conduit.hpp"
+#include "modules/engine/engine.hpp"
 
 void korali::solver::Executor::runGeneration()
 {
@@ -24,11 +25,11 @@ void korali::solver::Executor::runGeneration()
     samples[i]["Operation"]  = "Execute";
     samples[i]["Parameters"] = sampleData;
     samples[i]["Sample Id"]  = _modelEvaluationCount;
-    korali::_conduit->start(samples[i]);
+    _engine->_conduit->start(samples[i]);
     _modelEvaluationCount++;
   }
 
-  korali::_conduit->waitAll(samples);
+  _engine->_conduit->waitAll(samples);
 }
 
 void korali::solver::Executor::printGenerationBefore()

@@ -9,13 +9,16 @@
 korali::Engine::Engine()
 {
  _cumulativeTime = 0.0;
- _mainThread = co_active();
+ _thread = co_active();
 }
 
 bool korali::_isDryRun;
 
 void korali::Engine::run()
 {
+ // Save own pointer
+ _engine = this;
+
  // Turn Off GSL Error Handler
  gsl_set_error_handler_off();
 
@@ -36,7 +39,7 @@ void korali::Engine::run()
  for (size_t i = 0; i < _experimentVector.size(); i++)
  {
   _experimentVector[i]->_experimentId = i;
-  _currentExperiment = _experimentVector[i];
+  _experimentVector[i]->_engine = this;
   _experimentVector[i]->initialize();
   _experimentVector[i]->_isFinished = false;
   std::string fileName = "./log.txt";
@@ -49,7 +52,7 @@ void korali::Engine::run()
  korali::_isDryRun = _js["Dry Run"];
 
  // Configuring and initializing Conduit
- _conduit = dynamic_cast<korali::Conduit*>(korali::Module::getModule(_js["Conduit"]));
+ _conduit = dynamic_cast<korali::Conduit*>(getModule(_js["Conduit"]));
 
  // Check configuration correctness
  auto js = _js.getJson();
@@ -107,6 +110,10 @@ void korali::Engine::run()
   saveProfilingInfo(true);
   _cumulativeTime += std::chrono::duration<double>(_endTime-_startTime).count();
  }
+
+ // Freeing up experiment thread memory
+ for (size_t i = 0; i < _experimentVector.size(); i++)
+  co_delete(_experimentVector[i]->_thread);
 
  // Finalizing Conduit
  _conduit->finalize();

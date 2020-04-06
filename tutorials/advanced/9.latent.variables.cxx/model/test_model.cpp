@@ -132,8 +132,8 @@ int test_distribution_1(){
 
 
 int test_distribution_2(){
-    // Initialize the distribution
 
+    // Initialize the distribution
 	ExampleDistribution2  distrib2 = ExampleDistribution2();   
 
     std::function<void(korali::Sample& s)> distrib2_S = [&distrib2](korali::Sample& s) -> void {    
@@ -144,8 +144,6 @@ int test_distribution_2(){
     	distrib2.phi(s); } ;  
 
 
-   // int number_tests = 13;
-    // int number_points = 10;
     int nClusters = distrib2._p.nClusters; // 2  
     int nDimensions = distrib2._p.nDimensions; // 2  
     int d2_numberLatentVars = distrib2._p.nPoints; // one for each datapoint  
@@ -181,7 +179,7 @@ int test_distribution_2(){
         {1.5, 2.25}, {-0.5, 2}
         });
     assignments.push_back({0,0,0, 1,1,2});
-    hyperparams.push_back({-1.5, 0, 20., 5., 3.0, 3.5, 7.5}); // (mu1, mu2, sigma)
+    hyperparams.push_back({-1.5, 0, 20., 5., 3.0, 3.5, 7.5}); // (mu1, mu2, mu3, sigma)
     points.push_back( {
         {1.5, -1.5}, {-0.5, 2}, {-5., 7.,},
 		{22.0, 10.3}, {17.5, 30.},     {0.0, 7.2}
@@ -194,9 +192,7 @@ int test_distribution_2(){
     double p_from_model_via_korali;
     double _zetaValue;
     std::vector<double> _sValues;		     
-    std::vector<double> _phiValues;		     
-    //korali::problem::bayesian::Latent problem;
-    //korali::Experiment *e;
+    std::vector<double> _phiValues;
     auto e_ptr = new korali::Experiment();
     auto e = *e_ptr;
     delete e_ptr;
@@ -221,8 +217,7 @@ int test_distribution_2(){
         p = multivariate_gaussian_probability(mu_vectors, nDimensions, assignments[i], nClusters, sigma, current_points);   
 
 
-        reset_points(distrib2._p, current_points, assignments[i], nClusters );     
-        //distrib2._p.points =current_points;
+        reset_points(distrib2._p, current_points, assignments[i], nClusters );
         /* Update S, zeta, phi to the new set of points (needed?)*/
         distrib2_S = [&distrib2](korali::Sample& s) -> void {
     	    distrib2.S(s); } ;			  
@@ -235,9 +230,7 @@ int test_distribution_2(){
         k_ptr = new korali::Sample();
         k = *k_ptr;
         k["Latent Variables"] = assignments[i];   
-        k["Hyperparameters"] = hyperparams[i];  
-
-        //std::function<void(korali::Sample&)> *func_ptr_S = &distrib2_S;
+        k["Hyperparameters"] = hyperparams[i];
 
         distrib2_S(k);
         distrib2_zeta(k);
@@ -253,45 +246,6 @@ int test_distribution_2(){
 
         assert (std::abs(p - p_from_model_direct) < 0.1*p); 
         delete k_ptr;
-
-
-
-    /*
-     *  Create a "Latent" korali problem and use it to calculate the loglikelihood
-     */
-
-//         e_ptr  = new korali::Experiment();
-//         e = *e_ptr;
-//
-//
-////        problem._type = "Bayesian/Latent";
-////        problem._sOfLikelihoodModel = distrib2_S;
-////        problem._zetaOfLikelihoodModel = distrib2_zeta;
-////        problem._phiOfLikelihoodModel = distrib2_phi;
-////        problem._sDimension = distrib2.sufficientStatisticsDimension;
-//
-//        e["Problem"]["Type"] = "Bayesian/Latent";
-//        e["Problem"]["S Of Likelihood Model"] = distrib2_S;
-//        e["Problem"]["Zeta Of Likelihood Model"] = distrib2_zeta;
-//        e["Problem"]["Phi Of Likelihood Model"] = distrib2_phi;
-//        e["Problem"]["S Dimension"] = distrib2.sufficientStatisticsDimension;
-//
-//        eng.run(e);
-//
-//        k_ptr = new korali::Sample();
-//        k = *k_ptr;
-//        k["Latent Variables"] = assignments[i];
-//        k["Hyperparameters"] = hyperparams[i];
-//
-//
-//        e._problem->runEvaluation("Evaluate logLikelihood", k);
-//       // problem.runEvaluation("Evaluate logLikelihood", k);
-//
-//        p_from_model_via_korali = std::exp(k["logLikelihood"].get<double>());
-//
-//        assert (std::abs(p - p_from_model_via_korali) < 0.001);
-//        delete &e;
-//        delete k_ptr;
     }
 
 

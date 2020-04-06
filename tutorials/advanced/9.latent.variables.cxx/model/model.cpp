@@ -69,7 +69,7 @@ void ExampleDistribution1::S(korali::Sample& k)
     	  mse = l2_norm_squared(vector_diff);
           sum += mse;
       }
-      k["S"] = std::vector<double>({-sum});  //or k["Evaluation"]["S"] ?
+      k["S"] = std::vector<double>({-sum});
 
 
 
@@ -79,7 +79,6 @@ void ExampleDistribution1::S(korali::Sample& k)
 void ExampleDistribution1::zeta(korali::Sample& k)
 {
       std::vector<double> hyperparams = k["Hyperparameters"];
-      // std::vector<double> latentVars = k["Latent Variables"];
 
       double sigma = hyperparams[0];
       double log_hypercube_volume = _p.nPoints * std::log(mu_range);
@@ -104,9 +103,6 @@ void ExampleDistribution1::phi(korali::Sample& k)
 
 
 
-
-    // Todo: Second test case with multiple gaussian distributions; latent variables are cluster assignments.
-    // (Clustering problem)
         /*Model 2:
             Assume we have two gaussian distributions with peaks around two means, and identical
             covariance = sigma.
@@ -167,22 +163,20 @@ void ExampleDistribution2::S(korali::Sample& k)
             break;
         }
       }
-      if (!in_valid_range){ // If it's invalid, return probability 0 -- circumvent this by casting input values to valid values before calling this function
+      if (!in_valid_range){ // If it's invalid, return probability 0
         S_vec[0] = -korali::Inf;
         k["S"] = S_vec;
         return;
       }
 
-      for(size_t i = 0; i<_p.nPoints; i++){ // @suppress("Field cannot be resolved")
-          S_vec[0] -= l2_norm_squared(_p.points[i]); // @suppress("Field cannot be resolved")
+      for(size_t i = 0; i<_p.nPoints; i++){
+          S_vec[0] -= l2_norm_squared(_p.points[i]);
           int cluster = std::lround(assignments[i]); // should be zero or one
           S_vec[cluster + 1] += 1;
           // to get <mu_c(i) , x_i>, add x_i to the part that will be summed with mu_c(i):
           auto mu_ci_location = &S_vec[_p.nClusters + 1 + cluster * _p.nDimensions];
           std::transform(mu_ci_location, mu_ci_location + _p.nDimensions, _p.points[i].begin(),
         		  	  	 mu_ci_location, std::plus<double>());
-          //std::copy_n(_p.points[i].begin(), _p.points[i].size(), &S_vec[_p.nClusters + 1 + cluster * _p.nDimensions]);
-          //S_vec[_p.nClusters + 1 + cluster * _p.nDimensions] = _p.points[i]; // c++ does not work like this
       }
 
       k["S"] = S_vec;
@@ -192,7 +186,6 @@ void ExampleDistribution2::S(korali::Sample& k)
 void ExampleDistribution2::zeta(korali::Sample& k)
 {
       std::vector<double> hyperparams = k["Hyperparameters"];
-      // std::vector<double> latentVars = k["Latent Variables"];
 
       if (hyperparams.size() != _p.nDimensions * _p.nClusters + 1)
           korali::logError("Hyperparameters should be one mean vector per cluster, plus a 1D variable sigma. The dimension of the hyperparameter vector did not match this.");
@@ -208,7 +201,6 @@ void ExampleDistribution2::phi(korali::Sample& k)
 {
       std::vector<double> hyperparams = k["Hyperparameters"];
       double sigma = hyperparams[_p.nClusters * _p.nDimensions];
-      // std::vector<double> latentVars = k["Latent Variables"];
 
       if (hyperparams.size() != _p.nDimensions * _p.nClusters + 1)
           korali::logError("Hyperparameters should be one mean vector per cluster, plus a 1D variable sigma. The dimension of the hyperparameter vector did not match this.");
@@ -231,12 +223,11 @@ void ExampleDistribution2::phi(korali::Sample& k)
       for (size_t i = 0; i < _p.nClusters; i++){
         phi[i + 1] = - l2_norm_squared(mus[i]);
         // mu * 2:
-        std::transform(mus[i].begin(), mus[i].end(), mu_x_two.begin(), [](auto& c){return c * 2.0;}); // @suppress("Method cannot be resolved") // @suppress("Function cannot be resolved")
+        std::transform(mus[i].begin(), mus[i].end(), mu_x_two.begin(), [](auto& c){return c * 2.0;});
         std::copy_n(mu_x_two.begin(), mu_x_two.size(), &phi[1 + _p.nClusters + i * _p.nDimensions]);
-        //phi[1 + _p.nClusters + i * _p.nDimensions] = mus[i]; // does this work, setting a subset of a vector with a vector? --no
       }
       // *1/(2*sigma):
-      std::transform(phi.begin(), phi.end(), phi.begin(), [&sigma](auto& c){return c/(2*sigma*sigma);}); // @suppress("Method cannot be resolved") // @suppress("Function cannot be resolved")
+      std::transform(phi.begin(), phi.end(), phi.begin(), [&sigma](auto& c){return c/(2*sigma*sigma);});
       k["phi"] = phi;
 };
 

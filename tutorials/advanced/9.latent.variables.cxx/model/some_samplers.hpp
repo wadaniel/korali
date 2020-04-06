@@ -7,12 +7,6 @@
 
 #include <vector>
 #include <random>
-/*
-void direct(korali::Sample& k)
-{
-  float x = k["Parameters"][0];
-  k["Evaluation"] = -0.5*x*x;
-}*/
 
 void dummySampler(korali::Sample& k);
 
@@ -21,7 +15,6 @@ class MCMCLatentSampler {
     //  define any parameters
     std::vector<double> previousSampleMeans;
     std::vector<double> currentHyperparameters;
-    //std::vector<double> previousLatentSampleMeans;
     std::vector<std::vector<double>> currentSamples;
     std::vector<std::vector<double>> previousSamples;
     int numberLatent;
@@ -40,15 +33,6 @@ class MCMCLatentSampler {
     std::mt19937 gen;
     std::uniform_int_distribution<int> random_int;
 
-/*
-    uint64_t zeta_func;
-    uint64_t S_func;
-    uint64_t phi_func;
-
-*/
-    // ... todo
-
-    // any set up to be done?
 
     public:
 

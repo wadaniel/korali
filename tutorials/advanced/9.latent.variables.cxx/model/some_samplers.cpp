@@ -8,20 +8,11 @@
 #include <iostream>
 #include <random>
 #include <cmath>
-/*
-void direct(korali::Sample& k)
-{
-  float x = k["Parameters"][0];
-  k["Evaluation"] = -0.5*x*x;
-}*/
 
-void dummySampler(korali::Sample& k) //, int numberLatentVars)
+void dummySampler(korali::Sample& k)
 {
 
-// Always samples 0
-
-    // Test that all input parameters are set:
-  // Edit: We can't have access to those: std::vector<double> latentVars = k["Latent Variables"];
+// Always samples 0  - unused
 
   std::vector<double> hyperparams = k["Hyperparameters"];
   size_t numberSamples = k["Number Samples"];
@@ -31,7 +22,7 @@ void dummySampler(korali::Sample& k) //, int numberLatentVars)
   for(size_t i = 0; i < numberSamples; i++){
        std::vector<double> v;
        for(size_t j=0; j < numberLatentVars; j++){
-          v.push_back(0); // @suppress("Method cannot be resolved")
+          v.push_back(0);
     }
     samples.push_back(v);
   }
@@ -48,10 +39,6 @@ MCMCLatentSampler::MCMCLatentSampler(int numberLatentVars, int numberHyperparams
                              int max_if_discrete_)
        {
 
-  /*  zeta_func = reinterpret_cast<uint64_t>(&zeta_);
-    S_func = reinterpret_cast<uint64_t>(&S_);
-    phi_func = reinterpret_cast<uint64_t>(&phi_);
-*/
     zeta_func = zeta_;
     S_func = S_;
     phi_func = phi_;
@@ -77,19 +64,6 @@ MCMCLatentSampler::MCMCLatentSampler(int numberLatentVars, int numberHyperparams
 
 }
 
-
-  /*  void MCMCLatentSampler::initialize(int numberSamples){
-
-      _currentSamples.resize( numberSamplesPerStep);
-      for (size_t j = 0; j < numberSamplesPerStep; j++){
-          _currentSamples[j].resize( numberSamples);
-          for (size_t i = 0; i < _numberLatent; i++){
-              size_t idx = _latentProblem->_latentVariableIndices[i];
-              _currentSamples[j][i] = _k->_variables[idx]->_initialValue;    // _k->_variables: vector of korali-variables* (std::vector<korali::Variable*>).
-          }
-      }
-    }
-*/
     void MCMCLatentSampler::sampleLatent(korali::Sample& kSample)
     {
         /*
@@ -104,10 +78,8 @@ MCMCLatentSampler::MCMCLatentSampler(int numberLatentVars, int numberHyperparams
          korali::logError("Implementation error, number of latent variables at initialization does not fit to what was passed as variable");
 
 
-    /* Create one sampling experiment to sample all latent variables. After all, the latent vars are correlated /
-        have a joint distrib.
-        Todo: does it make sense to re-create these experiments at every E-M step? Otherwise, how
-            to automatically update the initial mean and the distribution function of the sampling experiments?*/
+    /* Create one sampling experiment to sample all latent variables. Why one experiment: After all, the latent vars
+        are correlated / have a joint distrib. */
 
          auto k = korali::Engine();
          auto e = korali::Experiment();
@@ -127,35 +99,13 @@ MCMCLatentSampler::MCMCLatentSampler(int numberLatentVars, int numberHyperparams
                         if (hparams.size() != numberHyperparameters)
                         	korali::logError("Implementation error, hyperparameter vector had wrong size");
 
+                        s["Latent Variables"] = latent_vars;
 
-                        // first, discretize the latent variables if needed
-//                        if (sample_discrete){
-//                            std::vector<int> latent_int_vars(numberLatent);
-//							for (size_t i = 0; i < numberLatent; i++){
-//								double var = latent_vars[i];
-//							  // assign a random cluster if out of bounds
-////								if (var < min_if_discrete - 0.49 || var > max_if_discrete + 0.49){
-////									  latent_int_vars[i] = random_int(gen);
-//								if (var < min_if_discrete - 0.49 )
-//									latent_int_vars[i] = min_if_discrete;
-//								else {if ( var > max_if_discrete + 0.49)
-//									 	 latent_int_vars[i] = max_if_discrete;
-//									 else
-//										latent_int_vars[i] = std::lround(var);
-//								}
-//							}
-//							s["Latent Variables"] = latent_int_vars;
-//                        } else
-                        	s["Latent Variables"] = latent_vars;
-
-                        s["Hyperparameters"] = hparams; // _currentHyperparameters;
+                        s["Hyperparameters"] = hparams;
 
                         S_func(s);
                         zeta_func(s);
                         phi_func(s);
-                        //s.run(S_func);
-                        // s.run(zeta_func);
-                        // s.run(phi_func); // @suppress("Invalid arguments")
                           // -> Assume these set: sample["S"], sample["zeta"] and sample["phi"]
                           if (! s.contains("S")) korali::logError("The specified likelihood model did not assign the value: 'S' to the sample.\n"); // @suppress("Invalid arguments")
                           if (! s.contains("zeta")) korali::logError("The specified likelihood model did not assign the value: 'zeta' to the sample.\n");
@@ -164,8 +114,8 @@ MCMCLatentSampler::MCMCLatentSampler(int numberLatentVars, int numberHyperparams
                           double _zetaValue = s["zeta"].get<double>();
                           std::vector<double> _sValues = s["S"].get<std::vector<double>>();
                           std::vector<double> _phiValues = s["phi"].get<std::vector<double>>();
-                          double logP_of_x = - _zetaValue + std::inner_product(std::begin(_sValues), std::end(_sValues) , // @suppress("Function cannot be resolved")
-                                  std::begin(_phiValues), 0.0); // @suppress("Function cannot be resolved")
+                          double logP_of_x = - _zetaValue + std::inner_product(std::begin(_sValues), std::end(_sValues) ,
+                                  std::begin(_phiValues), 0.0);
                           s["P(x)"] = logP_of_x;
 
                     };
@@ -183,19 +133,6 @@ MCMCLatentSampler::MCMCLatentSampler(int numberLatentVars, int numberHyperparams
             	  e["Variables"][i]["Initial Standard Deviation"] = static_cast<float>(max_if_discrete - min_if_discrete)/10.0;
             e["Variables"][i]["Initial Mean"] = previousSampleMeans[i];
 
- //               e["Variables"][i]["Granularity"] = 1.0; // todo: This might simply be ignored; check in the results
-
-//                e["Distributions"][i]["Name"] = "Uniform "+std::to_string(i);
-//                e["Distributions"][i]["Type"] = "Univariate/Uniform";
-//                e["Distributions"][i]["Minimum"] = min_if_discrete-0.49;
-//                e["Distributions"][i]["Maximum"] = max_if_discrete+0.49;
-//
-//                e["Variables"][i]["Prior Distribution"] = "Uniform "+std::to_string(i);
-
-                //e["Distributions"][i]["Name"] = "Multinomial "+std::to_string(i);
-                //e["Distributions"][i]["Type"] = "Specific/Multinomial";
-
-               // e["Variables"][i]["Prior Distribution"] = "Multinomial "+std::to_string(i);
             }
         }
 
@@ -214,15 +151,9 @@ MCMCLatentSampler::MCMCLatentSampler(int numberLatentVars, int numberHyperparams
         //e["Results"]["Path"] = "setup/results_phase_1/" + "0"*(3 - str(i).length()) +  std:to_string(i);
         k.run(e);
 
-        std::vector<std::vector<double>> db = e["Solver"]["Sample Database"].get<std::vector<std::vector<double>>>(); // @suppress("Type cannot be resolved") // @suppress("Symbol is not resolved") // @suppress("Method cannot be resolved")
-        printf("Database size: %lu\n", db.size()); // @suppress("Method cannot be resolved")
-        /*for (size_t i = 0; i < db.size(); i++)
-        {
-        printf("[ ");
-        for (size_t j = 0; j < db[i].size(); j++)
-        printf("%f, ", db[i][j]);
-        printf("]\n");
-        }*/
+        std::vector<std::vector<double>> db = e["Solver"]["Sample Database"].get<std::vector<std::vector<double>>>();
+        //printf("Database size: %lu\n", db.size());
+
 
         std::vector<std::vector<double>>::const_iterator first = db.end() - numberSamples;
         std::vector<std::vector<double>>::const_iterator last = db.end();
@@ -231,48 +162,17 @@ MCMCLatentSampler::MCMCLatentSampler(int numberLatentVars, int numberHyperparams
         last = db.begin() + numberSamples;
         std::vector<std::vector<double>> initial_samples(first, last);
 
-//        // modify the samples to lie in valid range, and be a discrete integer value
-//		if (sample_discrete) {
-//			for (std::vector<double> &sample : samples){ // @suppress("Type cannot be resolved") // @suppress("Symbol is not resolved")
-//				for (double &var : sample) {
-//					if (var < min_if_discrete - 0.49 || var > max_if_discrete + 0.49) {
-//						if (var < min_if_discrete - 0.49)
-//						    var = min_if_discrete;
-//						else
-//						    var = max_if_discrete;
-//					} else {
-//						var = std::round(var); // @suppress("Function cannot be resolved")
-//					}
-//				}
-//			}
-//			// For debugging only; check with what samples the sampling algorithm started
-//			for (std::vector<double> &sample : initial_samples){ // @suppress("Type cannot be resolved") // @suppress("Symbol is not resolved")
-//				for (double &var : sample) {
-//					if (var < min_if_discrete - 0.49 || var > max_if_discrete + 0.49) {
-//						if (var < min_if_discrete - 0.49)
-//						    var = min_if_discrete;
-//						else
-//						    var = max_if_discrete;
-//					} else {
-//						var = std::round(var); // @suppress("Function cannot be resolved")
-//					}
-//				}
-//			}
-//		}
-
         kSample["Samples"] = samples;
         kSample["Initial Samples For Debugging"] = initial_samples;
 
         // set new "previous sample means"
-        for(size_t i= 0; i< numberLatent; i++){ // @suppress("Type cannot be resolved")
+        for(size_t i= 0; i< numberLatent; i++){
             double sum = 0;
-            for(size_t j = 0; j < numberSamples; j++) { // @suppress("Type cannot be resolved")
+            for(size_t j = 0; j < numberSamples; j++) {
                 sum += samples[j][i];
                 }
             previousSampleMeans[i] = sum / static_cast<double>(numberSamples);
         }
-
-      //
 
     };
 

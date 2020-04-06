@@ -33,16 +33,13 @@ class ExponentialFamilyDistribution
         virtual void S(korali::Sample& k) = 0;
         virtual void zeta(korali::Sample& k) = 0;
         virtual void phi(korali::Sample& k) = 0;
-       // virtual void init();
 
        int sufficientStatisticsDimension; // Dimensionality of vectors returned by S and phi
 };
 
 class ExampleDistribution1 : public ExponentialFamilyDistribution
 {
-    // This might be too simple / not a good problem for E-M:
     // Take the hyperparameter as sigma of a normal distribution, and the mean mu as latent variable
-
 
     public:
 
@@ -57,19 +54,10 @@ class ExampleDistribution1 : public ExponentialFamilyDistribution
 
 };
 
-//  void distrib1_S(korali::Sample& s);
-//   void distrib1_zeta(korali::Sample& s);
-//   void distrib1_phi(korali::Sample& s);
-
-
-    // Todo: Second test case with multiple gaussian distributions; latent variables are cluster assignments.
-    // (Clustering problem)
 
 class ExampleDistribution2 : public ExponentialFamilyDistribution
 {
-    // This might be too simple / not a good problem for E-M:
-    // Take the hyperparameter as sigma of a normal distribution, and the mean mu as latent variable
-
+    //  Second test case with multiple gaussian distributions; latent variables are cluster assignments.
 
     public:
 

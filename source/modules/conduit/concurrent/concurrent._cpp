@@ -33,6 +33,7 @@ void korali::conduit::Concurrent::initialize()
  {
   pid_t processId = fork();
   if (processId == 0) worker(i);
+  _workerPids.push_back(processId);
  }
 }
 
@@ -114,6 +115,14 @@ void korali::conduit::Concurrent::processSample(korali::Sample& sample)
  int readBytes = -1;
  while(readBytes < 0)
  {
+  // Check for child defunction
+  for (int i = 0; i < _workerPids.size(); i++)
+  {
+   int status;
+   pid_t result = waitpid(_workerPids[i], &status, WNOHANG);
+   if (result != 0) korali::logError("Worker %d (Pid: %d) exited unexpectedly.\n");
+  }
+
   size_t resultStringSize;
   readBytes = read(_resultPipe[launcherId][0], &resultStringSize, sizeof(size_t));
 

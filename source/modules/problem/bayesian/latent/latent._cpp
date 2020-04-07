@@ -44,6 +44,30 @@ void korali::problem::bayesian::Latent::evaluateLogLikelihood(korali::Sample& sa
                                                                                     std::begin(_phiValues), 0.0);
 
 }
+ /* @brief run the user defined sampler.
+    Input sample needs to contain:
+      - sample["Hyperparameters"]
+      - sample["Number Samples"]
+
+    Values that will be set:
+      - sample["Samples"]
+ */
+void korali::problem::bayesian::Latent::sampleLatent(korali::Sample& sample){
+  sample["Number Of Latent Variables"] = _latentVariableIndices.size();
+  sample.run(_latentVariableSampler);
+}
+
+
+void korali::problem::bayesian::Latent::evaluateS(korali::Sample& sample){
+  sample.run(_sOfLikelihoodModel);
+}
+void korali::problem::bayesian::Latent::evaluatePhi(korali::Sample& sample){
+  sample.run(_phiOfLikelihoodModel);
+}
+void korali::problem::bayesian::Latent::evaluateZeta(korali::Sample& sample){
+  sample.run(_zetaOfLikelihoodModel);
+}
+
 
 //void korali::problem::bayesian::Latent::evaluateLogPrior(korali::Sample& sample){
 //   //Already covered in parent classes

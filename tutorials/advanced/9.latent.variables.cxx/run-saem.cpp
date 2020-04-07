@@ -54,11 +54,11 @@ int main(int argc, char* argv[])
  e["Problem"]["Zeta Of Likelihood Model"] = &distrib1_zeta;
  e["Problem"]["Phi Of Likelihood Model"] = &distrib1_phi;
  e["Problem"]["S Dimension"] = 1;
+ e["Problem"]["Latent Variable Sampler"] = &distrib1_sampler;
 
  e["Solver"]["Type"] = "SAEM";
  e["Solver"]["Number Samples Per Step"] = 100;
  e["Solver"]["Termination Criteria"]["Max Generations"] = 100;
- e["Solver"]["Latent Variable Sampler"] = &distrib1_sampler;
  // e["Solver"]["Latent Variable Sampler"] = &dummySampler;
 
 

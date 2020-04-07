@@ -117,7 +117,7 @@ void korali::conduit::Distributed::workerThread()
    sample._js.getJson() = knlohmann::json::parse(jsonStringChar);
 
    size_t experimentId = sample["Experiment Id"];
-   _experimentVector[experimentId]->_problem->runOperation(sample["Operation"], sample);
+   _engine->_experimentVector[experimentId]->_problem->runOperation(sample["Operation"], sample);
 
    if (_localRankId == 0)
    {
@@ -138,7 +138,7 @@ void korali::conduit::Distributed::processSample(korali::Sample& sample)
  while (_teamQueue.empty())
  {
   sample._state = SampleState::waiting;
-  co_switch(_currentExperiment->_thread);
+  co_switch(_engine->_currentExperiment->_thread);
  }
 
  int teamId = _teamQueue.front(); _teamQueue.pop();
@@ -174,13 +174,13 @@ void korali::conduit::Distributed::processSample(korali::Sample& sample)
   else
   {
    sample._state = SampleState::waiting;
-   co_switch(_currentExperiment->_thread);
+   co_switch(_engine->_currentExperiment->_thread);
   }
  }
 
  js["End Time"] = std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count() + _cumulativeTime;
- js["Solver Id"] = _currentExperiment->_experimentId;
- js["Current Generation"] = _currentExperiment->_currentGeneration;
+ js["Solver Id"] = _engine->_currentExperiment->_experimentId;
+ js["Current Generation"] = _engine->_currentExperiment->_currentGeneration;
  __profiler["Timelines"]["Worker " + std::to_string(teamId)] += js;
 
  #endif

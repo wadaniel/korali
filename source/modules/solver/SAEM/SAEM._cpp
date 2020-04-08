@@ -199,22 +199,11 @@ void korali::solver::SAEM::updateQFunction()
  _currentQ = [S=_currentS, _latentProblem=_latentProblem, this](korali::Sample& s) -> void
  {
   if (! s.contains("Parameters")) korali::logError("Implementation error.\n");
-  korali::Sample sForZeta;
-  korali::Sample sForPhi;
-
-  sForZeta["Hyperparameters"] = s["Parameters"];
-  sForPhi["Hyperparameters"] = s["Parameters"];
-  sForZeta["Operation"] = s["Evaluate Zeta"];
-  sForPhi["Operation"] = s["Evaluate Phi"];
-  _engine->_conduit->start(sForZeta);
-  _engine->_conduit->start(sForPhi);
-
- // std::vector<korali::Sample> zetaAndPhi = {sForPhi, sForZeta};
-  //_engine->_conduit->waitAll(zetaAndPhi);
-  _engine->_conduit->wait(sForPhi);
-  _engine->_conduit->wait(sForZeta);
-  double zeta = sForZeta["zeta"];
-  std::vector<double> phi = sForPhi["phi"];
+  s["Hyperparameters"] = s["Parameters"];
+  s.run(_latentProblem->_zetaOfLikelihoodModel);
+  s.run(_latentProblem->_phiOfLikelihoodModel);
+  double zeta = s["zeta"];
+  std::vector<double> phi = s["phi"];
   if (phi.size() != S.size())
     korali::logError("Implementation error. Current Robbins-Monro-averaged vector S did not have the same length as vector phi from the problem definition (from the model). \n");
 

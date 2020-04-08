@@ -1,0 +1,13 @@
+#include "modules/problem/integration/integration.hpp"
+
+void korali::problem::Integration::initialize()
+{
+ // Initializing Problem Configuration
+}
+
+void korali::problem::Integration::integrate(korali::Sample& sample)
+{
+ // Evaluating Sample
+ sample.run(_integrand);
+}
+

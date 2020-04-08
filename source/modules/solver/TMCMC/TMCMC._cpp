@@ -1,6 +1,7 @@
 #include "modules/solver/TMCMC/TMCMC.hpp"
 #include "modules/conduit/conduit.hpp"
 #include "modules/experiment/experiment.hpp"
+#include "modules/engine/engine.hpp"
 #include <numeric>
 #include <limits>
 #include <chrono>
@@ -78,10 +79,10 @@ void korali::solver::TMCMC::runGeneration()
        samples[c]["Sample Id"]    = c;
        _currentChainStep[c]++;
        _modelEvaluationCount++;
-       korali::_conduit->start(samples[c]);
+       _engine->_conduit->start(samples[c]);
       }
     }
-    size_t finishedId = korali::_conduit->waitAny(samples);
+    size_t finishedId = _engine->_conduit->waitAny(samples);
 
     _chainPendingEvaluation[finishedId] = false;
 

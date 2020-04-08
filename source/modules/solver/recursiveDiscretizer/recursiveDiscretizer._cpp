@@ -1,5 +1,6 @@
 #include "modules/solver/recursiveDiscretizer/recursiveDiscretizer.hpp"
 #include "modules/conduit/conduit.hpp"
+#include "modules/engine/engine.hpp"
 
 void korali::solver::RecursiveDiscretizer::setInitialConfiguration()
 {
@@ -65,11 +66,11 @@ void korali::solver::RecursiveDiscretizer::runGeneration()
    cSamples[currentSample]["Previous Evaluation"] = _policyEvaluation[j];
    cSamples[currentSample]["Current Depth"] = currentDepth;
    cSamples[currentSample]["Operation"]  = "Evaluate Cost Function";
-   korali::_conduit->start(cSamples[currentSample]);
+   _engine->_conduit->start(cSamples[currentSample]);
    currentSample++;
   }
 
-  korali::_conduit->waitAll(cSamples);
+  _engine->_conduit->waitAll(cSamples);
 
   double minCostEvaluation = korali::Inf;
   auto bestPolicy = cSamples[0]["Policy"];

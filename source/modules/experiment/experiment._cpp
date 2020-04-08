@@ -13,8 +13,6 @@
 #include <cstdio>
 #include <map>
 
-std::vector<korali::Experiment*> korali::_experimentVector;
-
 korali::Experiment* __expPointer;
 namespace korali { void threadWrapper() { __expPointer->run(); } }
 

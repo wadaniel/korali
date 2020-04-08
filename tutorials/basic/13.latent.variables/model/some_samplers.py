@@ -94,7 +94,7 @@ class MCMCLatentSampler:
 
             e["Variables"][i]["Initial Standard Deviation"] = 2.0
             if (self.sample_discrete):
-            	e["Variables"][i]["Initial Standard Deviation"] = float(self.max_if_discrete - self.min_if_discrete)/10.0
+                e["Variables"][i]["Initial Standard Deviation"] = float(self.max_if_discrete - self.min_if_discrete)/10.0
                 e["Variables"][i]["Initial Mean"] = self.previousSampleMeans[i]
 
         # Configuring the MCMC sampler parameters

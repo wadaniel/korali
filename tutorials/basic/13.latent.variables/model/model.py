@@ -147,7 +147,7 @@ class ExampleDistribution2(ExponentialFamilyDistribution):
 
     def zeta(self, sample):
         hyperparams = sample["Hyperparameters"]
-        if (hyperparams.size() != self._p.nDimensions * self._p.nClusters + 1)
+        if (hyperparams.size() != self._p.nDimensions * self._p.nClusters + 1):
             raise ValueError("Hyperparameters should be one mean vector per cluster, plus a 1D variable sigma. The dimension of the hyperparameter vector did not match this.")
 
         sigma = hyperparams[self._p.nClusters * self._p.nDimensions]

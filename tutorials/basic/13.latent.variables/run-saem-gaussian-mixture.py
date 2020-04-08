@@ -4,8 +4,8 @@
 
 import sys
 sys.path.append('./model')
-from model import *
-from some_samplers import *
+from model.model import *
+from model.some_samplers import *
 
 import numpy as np
 import korali

@@ -21,8 +21,13 @@ class PointsInfoStruct:
 
 
 
-def extr(line):
-    return line.strip("\n ").split(" ")
+def extr(line, toint=True, tofloat=False):
+    result =  line.strip("\n ").split(" ")
+    if tofloat:
+        result = [float(r) for r in result]
+    elif toint:
+        result = [int(r) for r in result]
+    return result
 
 class UnivariateData(PointsInfoStruct):
    def __init__(self):
@@ -35,7 +40,7 @@ class UnivariateData(PointsInfoStruct):
        with open("model/data_single.in", "r") as fd:
            self.nPoints, self.nDimensions = extr(fd.readline())
            for i in range(self.nPoints):
-               point = extr(fd.readline())
+               point = extr(fd.readline(), tofloat=True)
                self.points.append(point)
 
        self.points = np.array(self.points)
@@ -50,10 +55,10 @@ class MultivariateData(PointsInfoStruct):
         with open("model/data_multiple.in", "r") as fd:
             self.nPoints, self.nDimensions, self.nClusters = extr(fd.readline())
             for i in range(self.nPoints):
-                linecontents = extr(fd.readline())
+                linecontents = extr(fd.readline(), toint=False)
                 assert len(linecontents) == self.nDimensions + 1
-                self.points.append(linecontents[:-1])
-                self.assignments.append(linecontents[-1])
+                self.points.append(list(map(float, linecontents[:-1])))
+                self.assignments.append(int(linecontents[-1]))
 
         self.points = np.array(self.points)
         self.assignments = np.array(self.assignments)

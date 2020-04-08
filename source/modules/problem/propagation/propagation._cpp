@@ -11,8 +11,9 @@ void korali::problem::Propagation::initialize()
 
   for (size_t i = 0; i < _k->_variables.size(); i++)
   {
-   if( Ns == 0 ){
    bool foundDistribution = false;
+   _k->_variables[i]->_sampledValues.resize(_numberOfSamples);
+   if( Ns == 0 ){
    // Validate the _priorDistribution names
    for (size_t j = 0; j < _k->_distributions.size(); j++)
 	if (_k->_variables[i]->_priorDistribution == _k->_distributions[j]->_name) { foundDistribution = true; _k->_variables[i]->_distributionIndex = j; }

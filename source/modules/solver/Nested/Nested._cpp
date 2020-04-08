@@ -1,7 +1,7 @@
 #include "modules/solver/Nested/Nested.hpp"
-#include "modules/problem/problem.hpp"
-#include "modules/experiment/experiment.hpp"
+#include "modules/engine/engine.hpp"
 #include "modules/conduit/conduit.hpp"
+#include "modules/experiment/experiment.hpp"
 
 #include <algorithm> //sort
 #include <numeric>
@@ -15,6 +15,15 @@ void korali::solver::Nested::setInitialConfiguration()
  
  if(_resamplingMethod.compare("Mutation") == false) korali::logError("Only accepted Resampling Method is 'Mutation'");
 
+
+ _logDomainSize = 0.0;
+ for(size_t d = 0; d < _k->_variables.size(); ++d)
+ {
+    if (_k->_distributions[_k->_variables[d]->_distributionIndex]->_name != "Uniform") korali::logError("Only Uniform priors allowed.");
+    double tmp = _k->_distributions[_k->_variables[d]->_distributionIndex]->getRandomNumber();
+    _logDomainSize -= _k->_distributions[_k->_variables[d]->_distributionIndex]->getLogDensity(tmp);
+ }
+ 
  _candidateLogLikelihoods.resize(_batchSize);
  _candidateLogPriors.resize(_batchSize);
  _candidateEvaluations.resize(_batchSize);
@@ -68,7 +77,7 @@ void korali::solver::Nested::runGeneration()
    samples[c]["Operation"]    = "Evaluate";
    samples[c]["Parameters"]   = _candidates[c];
    samples[c]["Sample Id"]    = c;
-   korali::_conduit->start(samples[c]);
+   _engine->_conduit->start(samples[c]);
    _modelEvaluationCount++;
    _generatedSamples++;
   }
@@ -77,7 +86,7 @@ void korali::solver::Nested::runGeneration()
   size_t finishedCandidatesCount = 0;
   while (finishedCandidatesCount < _batchSize)
   {
-   size_t finishedId = korali::_conduit->waitAny(samples);
+   size_t finishedId = _engine->_conduit->waitAny(samples);
 
    _candidateLogLikelihoods[finishedId] = samples[finishedId]["logLikelihood"];
    _candidateLogPriors[finishedId]      = samples[finishedId]["logPrior"];
@@ -107,14 +116,14 @@ void korali::solver::Nested::runFirstGeneration()
     samples[c]["Operation"]    = "Evaluate";
     samples[c]["Parameters"]   = _liveSamples[c];
     samples[c]["Sample Id"]    = c;
-    korali::_conduit->start(samples[c]);
+    _engine->_conduit->start(samples[c]);
     _modelEvaluationCount++;
   }
 
   size_t finishedCandidatesCount = 0;
   while (finishedCandidatesCount < _populationSize)
   {
-   size_t finishedId = korali::_conduit->waitAny(samples);
+   size_t finishedId = _engine->_conduit->waitAny(samples);
 
    _liveLogLikelihoods[finishedId] = samples[finishedId]["logLikelihood"];
    _liveLogPriors[finishedId]      = samples[finishedId]["logPrior"];
@@ -142,19 +151,18 @@ void korali::solver::Nested::prepareGeneration()
 
 void korali::solver::Nested::processGeneration()
 {
-  size_t rankIdx;;
+  size_t sampleIdx;
 
-  //TODO: fix slow approach
   for (size_t c = 0; c < _batchSize ; ++c)
   {
     if(_candidateEvaluations[c] < _evaluationConstraint) continue;
     
-    rankIdx = _liveSamplesRank[_populationSize-1];
-    updateSampleDatabase(rankIdx);
+    sampleIdx = _liveSamplesRank[_populationSize-1];
+    updateSampleDatabase(sampleIdx);
 
-    _liveEvaluations[rankIdx]    = _candidateEvaluations[c];
-    _liveLogPriors[rankIdx]      = _candidateLogPriors[c];
-    _liveLogLikelihoods[rankIdx] = _candidateLogLikelihoods[c];
+    _liveEvaluations[sampleIdx]    = _candidateEvaluations[c];
+    _liveLogPriors[sampleIdx]      = _candidateLogPriors[c];
+    _liveLogLikelihoods[sampleIdx] = _candidateLogLikelihoods[c];
 
     sortLiveSamplesDescending();
     _evaluationConstraint = _liveEvaluations[_populationSize-1];
@@ -209,9 +217,8 @@ void korali::solver::Nested::updateSampleDatabase(size_t sampleIdx)
   _sampleLogPriorDatabase.push_back(_liveLogPriors[sampleIdx]);
   _sampleLogLikelihoodDatabase.push_back(_liveLogLikelihoods[sampleIdx]);
   
-  double domainsize = 1.0; //TODO: correct
   if(_sampleLogWidthDatabase.size() > 1) _sampleLogWidthDatabase.push_back(_sampleLogWidthDatabase.back() + log(_populationSize/(_populationSize+1.0)));
-  else                                   _sampleLogWidthDatabase.push_back(log(domainsize/(_populationSize+1.0))); // init
+  else                                   _sampleLogWidthDatabase.push_back(_logDomainSize - log(_populationSize+1.0)); // init
 }
 
 void korali::solver::Nested::printGenerationBefore() { return; }

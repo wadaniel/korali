@@ -1,5 +1,6 @@
 #include "modules/solver/[MODULENAME]/[MODULENAME].hpp"
 #include "modules/conduit/conduit.hpp"
+#include "modules/engine/engine.hpp"
 
 void korali::solver::[CLASSNAME]::setInitialConfiguration()
 {

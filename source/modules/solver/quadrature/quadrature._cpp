@@ -1,5 +1,6 @@
 #include "modules/solver/quadrature/quadrature.hpp"
 #include "modules/conduit/conduit.hpp"
+#include "modules/engine/engine.hpp"
 
 void korali::solver::Quadrature::setInitialConfiguration()
 {

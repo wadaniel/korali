@@ -21,8 +21,8 @@ e["Problem"]["Computational Model"] = lambda sampleData: model(sampleData, getRe
 
 # Configuring Nested Sampling parameters
 e["Solver"]["Type"] = "Nested"
-e["Solver"]["Population Size"] = 5000
-e["Solver"]["Batch Size"]      = 50
+e["Solver"]["Population Size"] = 500
+e["Solver"]["Batch Size"]      = 1
 
 # Configuring the problem's random distributions
 e["Distributions"][0]["Name"] = "Uniform 0"
@@ -50,7 +50,7 @@ e["Variables"][1]["Prior Distribution"] = "Uniform 1"
 e["Variables"][2]["Name"] = "[Sigma]"
 e["Variables"][2]["Prior Distribution"] = "Uniform 2"
 
-e["Solver"]["Termination Criteria"]["Max Generations"] = 50
+e["Solver"]["Termination Criteria"]["Max Generations"] = 5000
 
 # Starting Korali's Engine and running experiment
 k = korali.Engine()

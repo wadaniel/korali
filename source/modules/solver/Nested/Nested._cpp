@@ -37,6 +37,7 @@ void korali::solver::Nested::setInitialConfiguration()
  _liveSamples.resize(_populationSize);
  for(size_t i = 0; i < _populationSize; i++) _liveSamples[i].resize(_k->_variables.size());
   
+ _databaseEntries = 0;
  _sampleLogLikelihoodDatabase.resize(0);
  _sampleLogPriorDatabase.resize(0);
  _sampleLogWidthDatabase.resize(0);
@@ -45,17 +46,18 @@ void korali::solver::Nested::setInitialConfiguration()
  _covarianceMatrix.resize(_k->_variables.size()*_k->_variables.size());
  _domainMean.resize(_k->_variables.size());
 
- // Init Generation
+ // Init Generationa
+ _logEvidence            = 0.0;
  _logWidth               = _logDomainSize - log(_populationSize+1);
  _logDomain              = _logDomainSize + log( (double)_populationSize/( (double)_populationSize+1.));
  _information            = 0.0;
  _acceptedSamples        = 0;
  _generatedSamples       = 0;
  _evaluationConstraint   = std::numeric_limits<double>::infinity();
- _maxEvaluation          = -std::numeric_limits<double>::infinity();
- _accumulatedLogEvidence = -std::numeric_limits<double>::infinity();
+ _maxEvaluation          = std::numeric_limits<double>::infinity();
 
- (*_k)["Results"]["Sample Database"]  = {};
+ (*_k)["Results"]["Sample Database"]   = {};
+ (*_k)["Results"]["Posterior Samples"] = {};
 }
 
 void korali::solver::Nested::runGeneration()
@@ -68,12 +70,10 @@ void korali::solver::Nested::runGeneration()
   };
 
   // Generation > 1
-  korali::logInfo("Minimal", "Prepare Generation\n");
   prepareGeneration();
 
   std::vector<korali::Sample> samples(_batchSize);
 
-  korali::logInfo("Minimal", "Loop Batch\n");
   for (size_t c = 0; c < _batchSize; c++)
   {
    samples[c]["Operation"]    = "Evaluate";
@@ -86,7 +86,6 @@ void korali::solver::Nested::runGeneration()
 
 
   size_t finishedCandidatesCount = 0;
-  korali::logInfo("Minimal", "While finished..\n");
   while (finishedCandidatesCount < _batchSize)
   {
    size_t finishedId = _engine->_conduit->waitAny(samples);
@@ -98,10 +97,18 @@ void korali::solver::Nested::runGeneration()
 
   }
 
-  korali::logInfo("Minimal", "Process Generation\n");
   processGeneration();
 
   (*_k)["Results"]["Sample Database"] = _sampleDatabase;
+
+  bool willTerminate = checkTermination() || korali::Module::checkTermination() || korali::Solver::checkTermination();
+
+  if(willTerminate) 
+  {
+      consumeLiveSamples();
+      generatePosterior();
+      (*_k)["Results"]["Posterior Samples"] = _posteriorSamples;
+  }
 
   return;
 }
@@ -139,18 +146,20 @@ void korali::solver::Nested::runFirstGeneration()
   updateMeanAndCovariance();
   
   sortLiveSamplesDescending();
-  _maxEvaluation        = _liveEvaluations[_liveSamplesRank[0]];
-  _evaluationConstraint = _liveEvaluations[_liveSamplesRank[_populationSize-1]];
   return;
 }
 
 
 void korali::solver::Nested::prepareGeneration()
 {
+  
+  _maxEvaluation        = _liveEvaluations[_liveSamplesRank[0]];
+  _evaluationConstraint = _liveEvaluations[_liveSamplesRank[_populationSize-1]];
 
   if      (_resamplingMethod == "Mutation")  generateCandidatesFromMutation();
   else if (_resamplingMethod == "Box")       generateCandidatesFromBox();
   else  /*(_resamplingMethod == "Ellipse")*/ generateCandidatesFromEllipse();
+  
   return;
 }
 
@@ -170,14 +179,15 @@ void korali::solver::Nested::processGeneration()
     // add it to db
     updateSampleDatabase(sampleIdx);
 
+    // update evidence & domain
+    _logEvidence  = log(exp(_logEvidence) + exp(_logWidth + _liveEvaluations[sampleIdx]));//TODO save log plus
+    _logWidth     = _logDomain - log(_populationSize+1.);
+    _logDomain    = _logDomain + log( (double)_populationSize/( (double)_populationSize+1.));
+ 
     // replace worst sample
     _liveEvaluations[sampleIdx]    = _candidateEvaluations[c];
     _liveLogPriors[sampleIdx]      = _candidateLogPriors[c];
     _liveLogLikelihoods[sampleIdx] = _candidateLogLikelihoods[c];
-
-    // update domain
-    _logWidth  = _logDomain - log(_populationSize+1.);
-    _logDomain = _logDomain + log( (double)_populationSize/( (double)_populationSize+1.));
 
     // sort rank vector and update constraint
     sortLiveSamplesDescending();
@@ -213,7 +223,6 @@ void korali::solver::Nested::generateCandidatesFromEllipse() { return; }
 void korali::solver::Nested::updateMeanAndCovariance() 
 {
 
-  korali::logInfo("Minimal", "Calc Mean\n");
   for (size_t d = 0; d < _k->_variables.size(); d++) _domainMean[d] = 0.0;
   
 
@@ -223,7 +232,6 @@ void korali::solver::Nested::updateMeanAndCovariance()
     for (size_t d = 0; d < _k->_variables.size(); d++)
       _domainMean[d] += weight*_liveSamples[i][d];
 
-  korali::logInfo("Minimal", "Calc Cov\n");
   for (size_t i = 0; i < _k->_variables.size(); i++){
     for (size_t j = i; j < _k->_variables.size(); ++j){
       double s = 0.0;
@@ -231,34 +239,78 @@ void korali::solver::Nested::updateMeanAndCovariance()
       _covarianceMatrix[i*_k->_variables.size() + j] = _covarianceMatrix[j*_k->_variables.size() + i] = _covarianceScaling * weight * s;
     }
   }
-  korali::logInfo("Minimal", "Calc Done!\n");
 
 }
 
 void korali::solver::Nested::sortLiveSamplesDescending() 
 {
-    //TODO: speed up
-    korali::logInfo("Minimal", "Sort..\n");
-    std::iota (std::begin(_liveSamplesRank), std::end(_liveSamplesRank), 0);
-    sort(_liveSamplesRank.begin(), _liveSamplesRank.end(), [this](const size_t & idx1, const size_t & idx2) -> bool { return this->_liveEvaluations[idx1] > this->_liveEvaluations[idx2]; });
+  //TODO: speed up
+  std::iota (std::begin(_liveSamplesRank), std::end(_liveSamplesRank), 0);
+  sort(_liveSamplesRank.begin(), _liveSamplesRank.end(), [this](const size_t & idx1, const size_t & idx2) -> bool { return this->_liveEvaluations[idx1] > this->_liveEvaluations[idx2]; });
 
-  korali::logInfo("Minimal", "Sorted!\n");
 }
 
-void korali::solver::Nested::consumeLiveSamples() { return; }
+void korali::solver::Nested::consumeLiveSamples()
+{
+  _logWidth = _logDomain - log(_populationSize+1.);
+
+  for(size_t i = 0; i < _populationSize; ++i)
+  {
+    // add it to db
+    updateSampleDatabase(i);
+
+    // update evidence & domain
+    _logEvidence  = log(exp(_logEvidence) + exp(_logWidth + _liveEvaluations[i]));
+    _logDomain    = log(exp(_logDomain) - _logWidth);
+
+  }
+  return;
+
+}
 
 void korali::solver::Nested::updateSampleDatabase(size_t sampleIdx) 
 {
+  _databaseEntries++;
   _sampleDatabase.push_back(_liveSamples[sampleIdx]);
   _sampleLogPriorDatabase.push_back(_liveLogPriors[sampleIdx]);
   _sampleLogLikelihoodDatabase.push_back(_liveLogLikelihoods[sampleIdx]);
-  _sampleLogWidthDatabase.push_back(_logWidth);
+  _sampleLogWidthDatabase.push_back(_logWidth+_liveEvaluations[sampleIdx]);
 }
 
-void korali::solver::Nested::generatePosterior() { return; }
+void korali::solver::Nested::generatePosterior() 
+{
+    double maxLogWt = *max_element(std::begin(_sampleLogWidthDatabase), std::end(_sampleLogWidthDatabase));
+
+    std::vector<size_t> permutation(_databaseEntries);
+    std::iota(std::begin(permutation), std::end(permutation), 0);
+    std::random_shuffle(permutation.begin(), permutation.end());
+
+    size_t rndIdx;
+    _posteriorSamples.clear();
+    
+    double k = 0.0;
+    double sum = _uniformGenerator->getRandomNumber();
+    for(size_t i = 0; i < _databaseEntries; ++i)
+    {
+        rndIdx = permutation[i];
+        sum += exp(_sampleLogWidthDatabase[rndIdx]-maxLogWt);
+        if(sum > k)
+        {
+            _posteriorSamples.push_back(_sampleDatabase[rndIdx]);
+            k++;
+        }
+    }
+    return; 
+}
 
 void korali::solver::Nested::printGenerationBefore() { return; }
 
-void korali::solver::Nested::printGenerationAfter() { return; }
+void korali::solver::Nested::printGenerationAfter() 
+{ 
+  korali::logInfo("Minimal", "Log Evidence: %.4f\n", _logEvidence);
+  korali::logInfo("Minimal", "Acceptance Rate (proposals): %.2f%%\n", 100.0*_acceptedSamples/((double)_generatedSamples));
+  korali::logInfo("Minimal", "Accepted Samples: %zu\n", _acceptedSamples);
+    return; 
+}
 
 void korali::solver::Nested::finalize() { return; }

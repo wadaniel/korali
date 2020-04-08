@@ -93,8 +93,8 @@ void korali::solver::MCMC::runGeneration()
   (*_k)["Results"]["Sample Database"] += _chainLeader;
  }
  
- updateState();
  _chainLength++;
+ updateState();
 
 }
 

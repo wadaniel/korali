@@ -43,6 +43,16 @@ class Nested : public korali::Solver
  void processGeneration();
   
  /*
+  * @brief Add all live samples to sample data base.
+  */
+ void consumeLiveSamples();
+  
+ /*
+  * @brief Calculates Mean and Covariance from Live Samples.
+ */
+ void updateMeanAndCovariance();
+  
+ /*
   * @brief Descending sort of live sample indices based on evaluation.
  */
  void sortLiveSamplesDescending();
@@ -51,6 +61,11 @@ class Nested : public korali::Solver
   * @brief Add sample to discard to sample database.
  */
  void updateSampleDatabase(size_t sampleIdx);
+  
+ /*
+  * @brief Generate posterior distribution from sample data base.
+  */
+ void generatePosterior();
  
  public:
 

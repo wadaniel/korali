@@ -1,6 +1,7 @@
 
 
 import load_data
+import pdb
 
 import numpy as np
 
@@ -56,13 +57,13 @@ class ExampleDistribution1(ExponentialFamilyDistribution):
         for mu_coord in mu_vector:
             if ((mu_coord < self.mu_lower_bound) or (mu_coord > self.mu_upper_bound) ):
                 in_valid_range = False
-                sample["S"] = np.array([-np.inf])
+                sample["S"] = [-np.inf]
                 return
 
         # log(p) = -log(sigma*sqrt(pi*2)) - 0.5(x - mu)^2 * 1/sigma^2
         vector_distances = [pt - mu_vector for pt in self._p.points]
         squared_distance_per_point = [np.inner(dist, dist) for dist in vector_distances]
-        sample["S"] = - np.sum(squared_distance_per_point)
+        sample["S"] = [- np.sum(squared_distance_per_point)]
 
 
     def zeta(self, sample):
@@ -79,7 +80,7 @@ class ExampleDistribution1(ExponentialFamilyDistribution):
         hyperparams = sample["Hyperparameters"]
         sigma = hyperparams[0]
         # * 1/(2 * sigma^2)
-        sample["phi"] = np.array([0.5 / sigma ** 2])
+        sample["phi"] = [0.5 / sigma ** 2]
 
 
         # /*Model 2:
@@ -116,12 +117,12 @@ class ExampleDistribution2(ExponentialFamilyDistribution):
         assignments = sample["Latent Variables"]
         if (len(assignments) != self._p.nPoints):
             raise ValueError("Latent variables should be exactly the cluster assignments, so there is one for each point in the sample.")
-        for i in range(len(assignments)):
-            lvar = assignments[i]
-            if (lvar < -0.49):
-                print("Ignoring unresolvable problem: Latent variable was negative, should be a cluster assignment index")
-            if lvar > self._p.nClusters - 0.51:
-                print("Ignoring unresolvable problem: Latent variable was larger than highest cluster index, should be a cluster assignment index")
+        # for i in range(len(assignments)):
+        #     lvar = assignments[i]
+        #     if (lvar < -0.49):
+        #         print("Ignoring unresolvable problem: Latent variable was negative, should be a cluster assignment index")
+        #     if lvar > self._p.nClusters - 0.51:
+        #         print("Ignoring unresolvable problem: Latent variable was larger than highest cluster index, should be a cluster assignment index")
 
 
         S_dim = 1 + self._p.nDimensions * self._p.nClusters + self._p.nClusters
@@ -131,7 +132,7 @@ class ExampleDistribution2(ExponentialFamilyDistribution):
             if (a <= 0.5 or a >= self._p.nClusters - 0.51):
                 in_valid_range = False
                 S_vec[0] = np.array([-np.inf])
-                sample["S"] = S_vec
+                sample["S"] = S_vec.tolist()
                 return
 
         for i in range(self._p.nPoints):
@@ -143,11 +144,13 @@ class ExampleDistribution2(ExponentialFamilyDistribution):
 
             mu_ci_location = self._p.nClusters + 1 + cluster * self._p.nDimensions
             S_vec[mu_ci_location : mu_ci_location + self._p.nDimensions] += pt
-        sample["S"] = S_vec
+        sample["S"] = S_vec.tolist()
+
 
     def zeta(self, sample):
+        #pdb.Pdb(nosigint=True).set_trace()
         hyperparams = sample["Hyperparameters"]
-        if (hyperparams.size() != self._p.nDimensions * self._p.nClusters + 1):
+        if (len(hyperparams) != self._p.nDimensions * self._p.nClusters + 1):
             raise ValueError("Hyperparameters should be one mean vector per cluster, plus a 1D variable sigma. The dimension of the hyperparameter vector did not match this.")
 
         sigma = hyperparams[self._p.nClusters * self._p.nDimensions]
@@ -155,11 +158,12 @@ class ExampleDistribution2(ExponentialFamilyDistribution):
        # log(sigma*sqrt(pi*2))
         sample["zeta"] = self._p.nPoints * np.log(sigma*np.sqrt(2*np.pi))
 
+
     def phi(self, sample):
         hyperparams = sample["Hyperparameters"]
         sigma = hyperparams[self._p.nClusters * self._p.nDimensions]
 
-        if (hyperparams.size() != self._p.nDimensions * self._p.nClusters + 1):
+        if (len(hyperparams) != self._p.nDimensions * self._p.nClusters + 1):
             raise ValueError("Hyperparameters should be one mean vector per cluster, plus a 1D variable sigma. The dimension of the hyperparameter vector did not match this.")
 
         mus = []
@@ -175,8 +179,8 @@ class ExampleDistribution2(ExponentialFamilyDistribution):
         for i in range(self._p.nClusters):
             phi[i + 1] = - np.inner(mus[i], mus[i])
             start_idx = 1 + self._p.nClusters + i * self._p.nDimensions
-            phi[start_idx : start_idx + len(mus[0]) ] = mus[i]
+            phi[start_idx : start_idx + len(mus[0]) ] = np.array(mus[i]) * 2
 
         phi *= 1. / (2 * sigma ** 2)
 
-        sample["phi"] = phi
+        sample["phi"] = phi.tolist()

@@ -2,6 +2,8 @@
 #include "model/model.hpp"
 #include "korali.hpp"
 
+import pdb
+
 import sys
 sys.path.append('./model')
 from model.model import *
@@ -96,12 +98,14 @@ def main():
     e["File Output"]["Frequency"] = 50
     e["Console Output"]["Frequency"] = 10
     e["Console Output"]["Verbosity"] = "Detailed"
+    
+   # pdb.set_trace()
     k.run(e)
 
 
 
 
-
+    print("Ran successfully. Jupie.")
 
 
 
@@ -111,4 +115,8 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    import sys, trace
+    sys.stdout = sys.stderr
+    tracer = trace.Trace(trace=1, count=0, ignoredirs=["/usr", sys.prefix])
+    tracer.runfunc(main)
+ #   main()

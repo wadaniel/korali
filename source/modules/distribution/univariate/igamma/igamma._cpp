@@ -1,4 +1,5 @@
 #include "modules/distribution/univariate/igamma/igamma.hpp"
+#include "modules/experiment/experiment.hpp"
 
 double korali::distribution::univariate::Igamma::getDensity(double x)
 {
@@ -18,8 +19,8 @@ double korali::distribution::univariate::Igamma::getRandomNumber()
 
 void korali::distribution::univariate::Igamma::updateDistribution()
 {
- if (_shape <= 0.0)  korali::logError("Incorrect Shape parameter of Inverse Gamma distribution: %f.\n", _shape);
- if (_scale <= 0.0)  korali::logError("Incorrect Scale parameter of Inverse Gamma distribution: %f.\n", _scale);
+ if (_shape <= 0.0)  _k->_logger->logError("Incorrect Shape parameter of Inverse Gamma distribution: %f.\n", _shape);
+ if (_scale <= 0.0)  _k->_logger->logError("Incorrect Scale parameter of Inverse Gamma distribution: %f.\n", _scale);
 
  _auxLog = _shape*log(_scale) - gsl_sf_lngamma(_shape);
  _aux = std::exp(_auxLog);

@@ -11,7 +11,7 @@ void korali::conduit::Concurrent::initialize()
 {
  if (korali::_isDryRun == true) return;
 
- if (_concurrentJobs < 1) korali::logError("You need to define at least 1 concurrent job(s) for external models \n");
+ if (_concurrentJobs < 1) _engine->_logger->logError("You need to define at least 1 concurrent job(s) for external models \n");
  _resultPipe.clear();
  _inputsPipe.clear();
  while(!_launcherQueue.empty()) _launcherQueue.pop();
@@ -23,8 +23,8 @@ void korali::conduit::Concurrent::initialize()
  // Opening Inter-process communicator pipes
  for (int i = 0; i < _concurrentJobs; i++)
  {
-  if (pipe(_inputsPipe[i].data()) == -1) korali::logError("Unable to create inter-process pipe. \n");
-  if (pipe(_resultPipe[i].data()) == -1) korali::logError("Unable to create inter-process pipe. \n");
+  if (pipe(_inputsPipe[i].data()) == -1) _engine->_logger->logError("Unable to create inter-process pipe. \n");
+  if (pipe(_resultPipe[i].data()) == -1) _engine->_logger->logError("Unable to create inter-process pipe. \n");
   fcntl(_resultPipe[i][0], F_SETFL, fcntl(_resultPipe[i][0], F_GETFL) | O_NONBLOCK);
   fcntl(_resultPipe[i][1], F_SETFL, fcntl(_resultPipe[i][1], F_GETFL) | O_NONBLOCK);
  }

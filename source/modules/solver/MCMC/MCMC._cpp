@@ -16,11 +16,11 @@
 
 void korali::solver::MCMC::setInitialConfiguration()
 {
- if(_chainCovarianceScaling <= 0.0) korali::logError("Chain Covariance Scaling must be larger 0.0 (is %lf).\n", _chainCovarianceScaling);
- if(_leap < 1) korali::logError( "Leap must be larger 0 (is %zu).\n", _leap);
- if(_burnIn < 0) korali::logError( "Burn In must be larger equal 0 (is %zu).\n", _burnIn);
- if(_rejectionLevels < 1) korali::logError( "Rejection Levels must be larger 0 (is %zu).\n", _rejectionLevels);
- if(_nonAdaptionPeriod < 0) korali::logError( "Non Adaption Period must be larger equal 0 (is %zu).\n", _nonAdaptionPeriod);
+ if(_chainCovarianceScaling <= 0.0) _k->_logger->logError("Chain Covariance Scaling must be larger 0.0 (is %lf).\n", _chainCovarianceScaling);
+ if(_leap < 1) _k->_logger->logError( "Leap must be larger 0 (is %zu).\n", _leap);
+ if(_burnIn < 0) _k->_logger->logError( "Burn In must be larger equal 0 (is %zu).\n", _burnIn);
+ if(_rejectionLevels < 1) _k->_logger->logError( "Rejection Levels must be larger 0 (is %zu).\n", _rejectionLevels);
+ if(_nonAdaptionPeriod < 0) _k->_logger->logError( "Non Adaption Period must be larger equal 0 (is %zu).\n", _nonAdaptionPeriod);
 
  // Allocating MCMC memory
  _chainCandidate.resize(_rejectionLevels);
@@ -114,7 +114,7 @@ void korali::solver::MCMC::choleskyDecomp(const std::vector<double>& inC, std::v
 
   if (err == GSL_EDOM)
   {
-    korali::logWarning("Normal", "Chain Covariance negative definite (not updating Cholesky Decomposition of Chain Covariance).\n");
+    _k->_logger->logWarning("Normal", "Chain Covariance negative definite (not updating Cholesky Decomposition of Chain Covariance).\n");
   }
   else
   {
@@ -212,28 +212,28 @@ void korali::solver::MCMC::printGenerationBefore() { return; }
 
 void korali::solver::MCMC::printGenerationAfter()
 {
- korali::logInfo("Minimal", "Database Entries %ld\n", _sampleDatabase.size());
+ _k->_logger->logInfo("Minimal", "Database Entries %ld\n", _sampleDatabase.size());
 
- korali::logInfo("Normal", "Accepted Samples: %zu\n", _acceptanceCount);
- korali::logInfo("Normal", "Acceptance Rate Proposals: %.2f%%\n", 100*_acceptanceRate);
+ _k->_logger->logInfo("Normal", "Accepted Samples: %zu\n", _acceptanceCount);
+ _k->_logger->logInfo("Normal", "Acceptance Rate Proposals: %.2f%%\n", 100*_acceptanceRate);
 
- korali::logInfo("Detailed", "Current Sample:\n");
- for (size_t d = 0; d < _k->_variables.size(); d++)  korali::logData("Detailed", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _chainLeader[d]);
+ _k->_logger->logInfo("Detailed", "Current Sample:\n");
+ for (size_t d = 0; d < _k->_variables.size(); d++)  _k->_logger->logData("Detailed", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _chainLeader[d]);
 
- korali::logInfo("Detailed", "Current Chain Mean:\n");
- for (size_t d = 0; d < _k->_variables.size(); d++) korali::logData("Detailed", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _chainMean[d]);
- korali::logInfo("Detailed", "Current Chain Covariance:\n");
+ _k->_logger->logInfo("Detailed", "Current Chain Mean:\n");
+ for (size_t d = 0; d < _k->_variables.size(); d++) _k->_logger->logData("Detailed", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _chainMean[d]);
+ _k->_logger->logInfo("Detailed", "Current Chain Covariance:\n");
  for (size_t d = 0; d < _k->_variables.size(); d++)
  {
-  for (size_t e = 0; e <= d; e++) korali::logData("Detailed", "         %+6.3e  ", _chainCovariance[d*_k->_variables.size()+e]);
-  korali::logInfo("Detailed", "\n");
+  for (size_t e = 0; e <= d; e++) _k->_logger->logData("Detailed", "         %+6.3e  ", _chainCovariance[d*_k->_variables.size()+e]);
+  _k->_logger->logInfo("Detailed", "\n");
  }
 }
 
 void korali::solver::MCMC::finalize()
 {
- korali::logInfo("Minimal", "Number of Generated Samples: %zu\n", _proposedSampleCount);
- korali::logInfo("Minimal", "Acceptance Rate: %.2f%%\n", 100*_acceptanceRate);
- if (_sampleDatabase.size() == _maxSamples) korali::logInfo("Minimal", "Max Samples Reached.\n");
+ _k->_logger->logInfo("Minimal", "Number of Generated Samples: %zu\n", _proposedSampleCount);
+ _k->_logger->logInfo("Minimal", "Acceptance Rate: %.2f%%\n", 100*_acceptanceRate);
+ if (_sampleDatabase.size() == _maxSamples) _k->_logger->logInfo("Minimal", "Max Samples Reached.\n");
  (*_k)["Results"]["Sample Database"] = _sampleDatabase;
 }

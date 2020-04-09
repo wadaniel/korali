@@ -16,17 +16,17 @@ void korali::Conduit::coroutineWrapper()
  currentSample->_state = SampleState::finished;
  co_switch(conduit->_engine->_currentExperiment->_thread);
 
- if (currentSample->_state != SampleState::uninitialized) korali::logError("Resuming a finished sample\n");
+ if (currentSample->_state != SampleState::uninitialized) _engine->_logger->logError("Resuming a finished sample\n");
 }
 
 void korali::Conduit::start(korali::Sample& sample)
 {
- if (sample._state != SampleState::uninitialized) korali::logError("Sample has already been initialized.\n");
+ if (sample._state != SampleState::uninitialized) _engine->_logger->logError("Sample has already been initialized.\n");
 
  if (sample._isAllocated == false)
   sample._sampleThread = co_create(8192*sizeof(void*), korali::Conduit::coroutineWrapper);
  else
-  korali::logError("Sample thread is already allocated; has it executed before being re-started?\n");
+  _engine->_logger->logError("Sample thread is already allocated; has it executed before being re-started?\n");
 
  sample._state = SampleState::initialized;
  _currentSample = &sample;

@@ -19,6 +19,9 @@ void korali::Engine::run()
  // Save own pointer
  _engine = this;
 
+ // Instantiating Engine logger.
+ _logger = new _logger->logger();
+
  // Turn Off GSL Error Handler
  gsl_set_error_handler_off();
 
@@ -61,7 +64,7 @@ void korali::Engine::run()
  if (korali::JsonInterface::isDefined(js, "['Profiling']['Detail']")) korali::JsonInterface::eraseValue(js, "['Profiling']['Detail']");
  if (korali::JsonInterface::isDefined(js, "['Profiling']['Path']")) korali::JsonInterface::eraseValue(js, "['Profiling']['Path']");
  if (korali::JsonInterface::isDefined(js, "['Profiling']['Frequency']")) korali::JsonInterface::eraseValue(js, "['Profiling']['Frequency']");
- if (korali::JsonInterface::isEmpty(js) == false) if (_conduit->isRoot()) korali::logError("Unrecognized settings for Korali's Engine: \n%s\n", js.dump(2).c_str());
+ if (korali::JsonInterface::isEmpty(js) == false) if (_conduit->isRoot()) _logger->logError("Unrecognized settings for Korali's Engine: \n%s\n", js.dump(2).c_str());
 
  // Recovering Conduit configuration
  _conduit->getConfiguration(_js.getJson()["Conduit"]);
@@ -72,9 +75,9 @@ void korali::Engine::run()
   // If this is a dry run and configuration succeeded, print sucess and return
   if (_isDryRun)
   {
-   korali::logInfo("Minimal",  "--------------------------------------------------------------------\n");
-   korali::logInfo("Minimal",  "Dry Run Successful.\n");
-   korali::logInfo("Minimal",  "--------------------------------------------------------------------\n");
+   _logger->logInfo("Minimal",  "--------------------------------------------------------------------\n");
+   _logger->logInfo("Minimal",  "Dry Run Successful.\n");
+   _logger->logInfo("Minimal",  "--------------------------------------------------------------------\n");
    return;
   }
 
@@ -82,7 +85,7 @@ void korali::Engine::run()
   _startTime = std::chrono::high_resolution_clock::now();
   _profilingLastSave = std::chrono::high_resolution_clock::now();
 
-  if (_experimentVector.size() > 1) for (size_t i = 0; i < _experimentVector.size(); i++) korali::logInfo("Minimal", "Starting Experiment %lu...\n", i);
+  if (_experimentVector.size() > 1) for (size_t i = 0; i < _experimentVector.size(); i++) _logger->logInfo("Minimal", "Starting Experiment %lu...\n", i);
 
   while(true)
   {
@@ -97,15 +100,15 @@ void korali::Engine::run()
     executed = true;
     saveProfilingInfo(false);
     korali::setConsoleOutputFile(stdout);
-    if (_experimentVector.size() > 1) if (_experimentVector[i]->_isFinished == true) korali::logInfo("Minimal", "Experiment %lu has finished.\n", i);
+    if (_experimentVector.size() > 1) if (_experimentVector[i]->_isFinished == true) _logger->logInfo("Minimal", "Experiment %lu has finished.\n", i);
    }
    if (executed == false) break;
   }
 
   _endTime = std::chrono::high_resolution_clock::now();
 
-  if (_experimentVector.size() > 1) korali::logInfo("Minimal", "All jobs have finished correctly.\n");
-  if (_experimentVector.size() > 1) korali::logInfo("Normal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count());
+  if (_experimentVector.size() > 1) _logger->logInfo("Minimal", "All jobs have finished correctly.\n");
+  if (_experimentVector.size() > 1) _logger->logInfo("Normal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count());
 
   saveProfilingInfo(true);
   _cumulativeTime += std::chrono::duration<double>(_endTime-_startTime).count();

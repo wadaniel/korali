@@ -10,7 +10,7 @@ void korali::problem::optimization::Hessian::evaluate(korali::Sample& sample)
  std::string sampleString = "['F(x)']";
 
  if ( korali::JsonInterface::isDefined(sample._js.getJson(), sampleString) == false)
-   korali::logError("The %s problem needs a function evaluation. Be sure that you assign a value to the %s attribute in the model definition.\n", _k->_problem->getType().c_str(), sampleString.c_str());
+   _k->_logger->logError("The %s problem needs a function evaluation. Be sure that you assign a value to the %s attribute in the model definition.\n", _k->_problem->getType().c_str(), sampleString.c_str());
 
  double evaluation = sample["F(x)"];
 
@@ -19,10 +19,10 @@ void korali::problem::optimization::Hessian::evaluate(korali::Sample& sample)
  else sample["F(x)"] = evaluation;
 
   if ( korali::JsonInterface::isDefined(sample._js.getJson(), "Gradient") == false)
-    korali::logError("The %s problem needs a gradient evaluation. Be sure that you assign a value to the ['Gradient'] attribute in the model definition.\n", _k->_problem->getType().c_str() );
+    _k->_logger->logError("The %s problem needs a gradient evaluation. Be sure that you assign a value to the ['Gradient'] attribute in the model definition.\n", _k->_problem->getType().c_str() );
 
   if( sample["Gradient"].size() != sample["Parameters"].size() )
-    korali::logError("The size of the gradient (%zu) is not equal to the size of parameters (%zu).", sample["Gradient"].size(), sample["Parameters"].size() );
+    _k->_logger->logError("The size of the gradient (%zu) is not equal to the size of parameters (%zu).", sample["Gradient"].size(), sample["Parameters"].size() );
 
   std::vector<double> gradient = sample["Gradient"];
 
@@ -35,17 +35,17 @@ void korali::problem::optimization::Hessian::evaluate(korali::Sample& sample)
   }
 
   if ( korali::JsonInterface::isDefined(sample._js.getJson(), "Hessian") == false)
-    korali::logError("The %s problem needs a Hessian evaluation. Be sure that you assign a value to the ['Hessian'] attribute in the model definition.\n", _k->_problem->getType().c_str() );
+    _k->_logger->logError("The %s problem needs a Hessian evaluation. Be sure that you assign a value to the ['Hessian'] attribute in the model definition.\n", _k->_problem->getType().c_str() );
 
   size_t hessianRowCount = sample["Gradient"].size();
   if( hessianRowCount != sample["Parameters"].size() )
-    korali::logError("The row count of the Hessian (%zu) is not equal to the size of parameters (%zu).", sample["Hessian"].size(), sample["Parameters"].size() );
+    _k->_logger->logError("The row count of the Hessian (%zu) is not equal to the size of parameters (%zu).", sample["Hessian"].size(), sample["Parameters"].size() );
 
   for (size_t i = 0; i < hessianRowCount; i++)
   {
    size_t hessianColCount = sample["Hessian"][i].size();
    if( hessianColCount != sample["Parameters"].size() )
-     korali::logError("The column count of the Hessian (%zu) is not equal to the size of parameters (%zu).", sample["Hessian"][i].size(), sample["Parameters"].size() );
+     _k->_logger->logError("The column count of the Hessian (%zu) is not equal to the size of parameters (%zu).", sample["Hessian"][i].size(), sample["Parameters"].size() );
   }
 
   std::vector<std::vector<double>> hessian = sample["Hessian"];

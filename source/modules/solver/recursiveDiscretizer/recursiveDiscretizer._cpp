@@ -122,6 +122,6 @@ void korali::solver::RecursiveDiscretizer::printGenerationBefore()
 void korali::solver::RecursiveDiscretizer::printGenerationAfter()
 {
  double bestVal = _k->_js["Results"]["Policy Evaluation"];
- korali::logInfo("Normal", "Minimal Cost Policy:     %s\n", _k->_js["Results"]["Optimal Policy"].dump().c_str());
- korali::logInfo("Normal", "Minimal Cost Evaluation: %f\n", bestVal);
+ _k->_logger->logInfo("Normal", "Minimal Cost Policy:     %s\n", _k->_js["Results"]["Optimal Policy"].dump().c_str());
+ _k->_logger->logInfo("Normal", "Minimal Cost Evaluation: %f\n", bestVal);
 }

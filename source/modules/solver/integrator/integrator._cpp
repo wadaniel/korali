@@ -37,7 +37,7 @@ void korali::solver::Integrator::runGeneration()
     	}
     }
 
-    korali::logInfo("Detailed", "Running sample %zu/%zu with values:\n         ", _modelEvaluationCount,_sampleCount);
+    korali::logInfo("Detailed", "Running sample %zu/%zu with values:\n         ", _modelEvaluationCount+1,_sampleCount);
     for(auto& x : sampleData) korali::logData("Detailed", " %le   ", x);
     korali::logData("Detailed", "\n");
 
@@ -59,7 +59,6 @@ void korali::solver::Integrator::runGeneration()
     _integral += weight*f;
   }
   (*_k)["Results"]["Integral"] = _integral;
-  korali::logInfo("Minimal", "After summing and setting integral\n");
 }
 
 void korali::solver::Integrator::printGenerationBefore()

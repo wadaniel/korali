@@ -1,6 +1,5 @@
-#include "model/some_samplers.hpp"
-#include "model/model.hpp"
-#include "korali.hpp"
+
+import pdb
 
 import sys
 sys.path.append('./model')
@@ -49,19 +48,19 @@ def main():
     e["Distributions"][0]["Minimum"] = 0
     e["Distributions"][0]["Maximum"] = 5
 
-    e["Distributions"][1]["Name"] = "Uniform 1";
-    e["Distributions"][1]["Type"] = "Univariate/Uniform";
-    e["Distributions"][1]["Minimum"] = -5;
-    e["Distributions"][1]["Maximum"] = 5;
+    e["Distributions"][1]["Name"] = "Uniform 1"
+    e["Distributions"][1]["Type"] = "Univariate/Uniform"
+    e["Distributions"][1]["Minimum"] = -5
+    e["Distributions"][1]["Maximum"] = 5
 
-    e["Distributions"][2]["Name"] = "Multinomial 2";
-    e["Distributions"][2]["Type"] = "Specific/Multinomial";
+    e["Distributions"][2]["Name"] = "Multinomial 2"
+    e["Distributions"][2]["Type"] = "Specific/Multinomial"
 
 
     # * Define which hyperparameters we use (all mu, and sigma)
 
 
-    variable_counter = 0;
+    variable_counter = 0
     for cluster_idx in range(distrib2._p.nClusters):
         for dim in range(distrib2._p.nDimensions):
             e["Variables"][variable_counter]["Name"] = "mu_" + str(cluster_idx) + "_" + str(dim)
@@ -83,7 +82,7 @@ def main():
     variable_counter += 1
 
     # * Latent variables
-    latent_counter = 0;
+    latent_counter = 0
     for cluster_idx in range(distrib2._p.nPoints):
         e["Variables"][variable_counter]["Name"] = "cluster_assignment_" + str(latent_counter)
         e["Variables"][variable_counter]["Bayesian Type"] = "Latent"
@@ -96,19 +95,17 @@ def main():
     e["File Output"]["Frequency"] = 50
     e["Console Output"]["Frequency"] = 10
     e["Console Output"]["Verbosity"] = "Detailed"
+
     k.run(e)
 
 
 
 
-
-
-
-
-
-
-
-
-
 if __name__ == '__main__':
+    # ** For debugging, try this: **
+    # import sys, trace
+    # sys.stdout = sys.stderr
+    # tracer = trace.Trace(trace=1, count=0, ignoredirs=["/usr", sys.prefix])
+    # tracer.runfunc(main)
+    # ** Else: **
     main()

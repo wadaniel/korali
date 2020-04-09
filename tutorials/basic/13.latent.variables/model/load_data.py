@@ -11,7 +11,8 @@ class PointsInfoStruct:
 
 
     def reset_points(self, new_points, new_assignments=None, new_nClusters=1):
-        assert len(new_points) == self.nPoints
+        assert len(new_points) == len(new_assignments)
+        self.nPoints = len(new_points)
         self.points = np.array(new_points)
         self.assignments = [] if new_assignments is None else new_assignments
         self.assignments = np.array(self.assignments)

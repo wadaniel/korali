@@ -1,6 +1,8 @@
 
 import numpy as np
 from scipy.stats import multivariate_normal
+import pdb
+
 import korali
 
 class MCMCLatentSampler:
@@ -155,7 +157,7 @@ class MultimodalGaussianSampler():
 
 
         # we sample in another order, will later transpose
-        samples_transpose = np.zeros((self.nPoints, self.nClusters))
+        samples_transpose = np.zeros((self.nPoints, nSamples))
         for i in range(self.nPoints):
 
             # First, get probabilities for each cluster
@@ -164,7 +166,7 @@ class MultimodalGaussianSampler():
                 mu = mus[j]
                 cov = sigma ** 2 * np.eye(len(mu))
                 mv = multivariate_normal(mean=mu, cov=cov)
-                p = mv(self.points[i])
+                p = mv.pdf(self.points[i])
                 probabilities[j] = p
 
             # normalize probabilities to one
@@ -175,17 +177,15 @@ class MultimodalGaussianSampler():
                 # sample
                 u = np.random.uniform(0,1,1)
                 sum = 0
-                for k in range(self.nClusters):
-                    sum = sum + probabilities[k]
+                for c_idx in range(self.nClusters):
+                    sum = sum + probabilities[c_idx]
                     if (u < sum):
-                        # cluster k has been chosen!
-                        pointwise_samples[j] = k
+                        # cluster c_idx has been chosen!
+                        pointwise_samples[j] = c_idx
                         break
-
             samples_transpose[i] = pointwise_samples
 
         samples = np.transpose(samples_transpose)
-
-        k["Samples"] = samples
+        k["Samples"] = samples.tolist()
 
 

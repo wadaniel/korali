@@ -18,18 +18,18 @@ void korali::solver::Executor::runGeneration()
     std::vector<double> sampleData(_k->_variables.size());
     for (size_t j = 0; j < _k->_variables.size(); j++) sampleData[j] = _k->_variables[j]->_precomputedValues[_modelEvaluationCount];
 
-    korali::logInfo("Detailed", "Running sample %zu with values:\n         ", _modelEvaluationCount);
-    for(auto& x : sampleData) korali::logData("Detailed", " %le   ", x);
-    korali::logData("Detailed", "\n");
+    _k->_logger->logInfo("Detailed", "Running sample %zu with values:\n         ", _modelEvaluationCount);
+    for(auto& x : sampleData) _k->_logger->logData("Detailed", " %le   ", x);
+    _k->_logger->logData("Detailed", "\n");
 
     samples[i]["Operation"]  = "Execute";
     samples[i]["Parameters"] = sampleData;
     samples[i]["Sample Id"]  = _modelEvaluationCount;
-    _engine->_conduit->start(samples[i]);
+    _conduit->start(samples[i]);
     _modelEvaluationCount++;
   }
 
-  _engine->_conduit->waitAll(samples);
+  _conduit->waitAll(samples);
 }
 
 void korali::solver::Executor::printGenerationBefore()
@@ -38,5 +38,5 @@ void korali::solver::Executor::printGenerationBefore()
 
 void korali::solver::Executor::printGenerationAfter()
 {
- korali::logInfo("Minimal", "Total Executions %lu.\n", _modelEvaluationCount);
+ _k->_logger->logInfo("Minimal", "Total Executions %lu.\n", _modelEvaluationCount);
 }

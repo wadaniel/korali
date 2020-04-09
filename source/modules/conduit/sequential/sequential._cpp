@@ -6,16 +6,21 @@
 
 void korali::conduit::Sequential::processSample(korali::Sample& sample)
 {
+ // Instantiating Engine logger.
+ _logger = new korali::Logger();
+
+ korali::Engine* engine = _engineStack.top();
+
  auto js = knlohmann::json();
  js["Start Time"] = std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count() + _cumulativeTime;
 
  size_t experimentId = sample["Experiment Id"];
 
- _engine->_experimentVector[experimentId]->_problem->runOperation(sample["Operation"], sample);
+ engine->_experimentVector[experimentId]->_problem->runOperation(sample["Operation"], sample);
 
  js["End Time"] = std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count() + _cumulativeTime;
- js["Current Generation"] = _engine->_currentExperiment->_currentGeneration;
- js["Solver Id"] = _engine->_currentExperiment->_experimentId;
+ js["Current Generation"] = engine->_currentExperiment->_currentGeneration;
+ js["Solver Id"] = engine->_currentExperiment->_experimentId;
  __profiler["Timelines"]["Worker 0"] += js;
 }
 

@@ -14,7 +14,7 @@ void korali::solver::DEA::setInitialConfiguration()
 {
  for(size_t d = 0; d < _k->_variables.size(); ++d)
   if(_k->_variables[d]->_upperBound < _k->_variables[d]->_lowerBound)
-    korali::logError("Lower Bound (%.4f) of variable \'%s\'  exceeds Upper Bound (%.4f).\n", _k->_variables[d]->_lowerBound, _k->_variables[d]->_name.c_str(), _k->_variables[d]->_upperBound);
+    _k->_logger->logError("Lower Bound (%.4f) of variable \'%s\'  exceeds Upper Bound (%.4f).\n", _k->_variables[d]->_lowerBound, _k->_variables[d]->_name.c_str(), _k->_variables[d]->_upperBound);
 
  // Allocating Memory
  _samplePopulation.resize(_populationSize);
@@ -66,11 +66,11 @@ void korali::solver::DEA::runGeneration()
   samples[i]["Parameters"] = _candidatePopulation[i];
   samples[i]["Sample Id"] = i;
   _modelEvaluationCount++;
-  _engine->_conduit->start(samples[i]);
+  _conduit->start(samples[i]);
  }
 
  // Waiting for samples to finish
- _engine->_conduit->waitAll(samples);
+ _conduit->waitAll(samples);
 
  updateSolver(samples);
 }
@@ -103,8 +103,8 @@ void korali::solver::DEA::prepareGeneration()
    korali::Sample sample;
    sample["Parameters"] = _candidatePopulation[i];
    sample["Operation"] = "Check Feasibility";
-   _engine->_conduit->start(sample);
-   _engine->_conduit->wait(sample);
+   _conduit->start(sample);
+   _conduit->wait(sample);
    isSampleFeasible = sample["Is Feasible"];
   }
   while(isSampleFeasible == false);
@@ -248,7 +248,7 @@ void korali::solver::DEA::updateSolver(std::vector<korali::Sample>& samples)
      acceptRuleRecognized = true;
     }
 
-    if (acceptRuleRecognized == false)  korali::logError("Accept Rule (%s) not recognized.\n",  _acceptRule.c_str());
+    if (acceptRuleRecognized == false)  _k->_logger->logError("Accept Rule (%s) not recognized.\n",  _acceptRule.c_str());
 
     for(size_t i = 0; i < _populationSize; ++i) for(size_t d = 0; d < _k->_variables.size(); ++d)
         _currentMean[d] += _samplePopulation[i][d]/((double)_populationSize);
@@ -279,18 +279,18 @@ void korali::solver::DEA::printGenerationBefore() { return; }
 
 void korali::solver::DEA::printGenerationAfter()
 {
- korali::logInfo("Normal", "Current Function Value: Max = %+6.3e - Best = %+6.3e\n", _currentBestValue, _bestEverValue);
- korali::logInfo("Detailed", "Variable = (MeanX, BestX):\n");
- for (size_t d = 0; d < _k->_variables.size(); d++) korali::logData("Detailed", "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _currentMean[d], _bestEverVariables[d]);
- korali::logInfo("Detailed", "Max Width:\n");
- for (size_t d = 0; d < _k->_variables.size(); d++) korali::logData("Detailed", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _maxDistances[d]);
- korali::logInfo("Detailed", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
+ _k->_logger->logInfo("Normal", "Current Function Value: Max = %+6.3e - Best = %+6.3e\n", _currentBestValue, _bestEverValue);
+ _k->_logger->logInfo("Detailed", "Variable = (MeanX, BestX):\n");
+ for (size_t d = 0; d < _k->_variables.size(); d++) _k->_logger->logData("Detailed", "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _currentMean[d], _bestEverVariables[d]);
+ _k->_logger->logInfo("Detailed", "Max Width:\n");
+ for (size_t d = 0; d < _k->_variables.size(); d++) _k->_logger->logData("Detailed", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _maxDistances[d]);
+ _k->_logger->logInfo("Detailed", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
 }
 
 void korali::solver::DEA::finalize()
 {
- korali::logInfo("Minimal", "Optimum found: %e\n", _bestEverValue);
- korali::logInfo("Minimal", "Optimum found at:\n");
- for (size_t d = 0; d < _k->_variables.size(); ++d) korali::logData("Minimal", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverVariables[d]);
- korali::logInfo("Minimal", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
+ _k->_logger->logInfo("Minimal", "Optimum found: %e\n", _bestEverValue);
+ _k->_logger->logInfo("Minimal", "Optimum found at:\n");
+ for (size_t d = 0; d < _k->_variables.size(); ++d) _k->_logger->logData("Minimal", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverVariables[d]);
+ _k->_logger->logInfo("Minimal", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
 }

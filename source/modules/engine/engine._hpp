@@ -16,9 +16,9 @@ namespace korali
   Engine();
 
   /**
-    * @brief A singleton pointer to the execution conduit. Shared among all experiments.
-    */
-  korali::Conduit* _conduit;
+   * @brief A pointer to the Engine's logger object.
+  */
+  korali::Logger* _logger;
 
   /**
     * @brief Stores the list of experiments to run.
@@ -75,6 +75,12 @@ namespace korali
 
   /**
    * @brief Runs the stored list of experiments.
+   * @param initializeConduit Indicates whether the conduit should be initialized or inherited (Korali in Korali Executions)
+   */
+  void run(bool initializeConduit);
+
+  /**
+   * @brief Runs the stored list of experiments.
    */
   void run();
 
@@ -112,15 +118,22 @@ namespace korali
   korali::KoraliJson  _js;
 
   /**
+   * @brief Determines whether this is a dry run (no conduit initialization nor execution)
+  */
+  bool _isDryRun;
+
+  /**
    * @brief Returns the worker teams MPI communication pointer (Distributed Conduit only).
    */
   static long int getMPICommPointer();
  };
 
- /**
-  * @brief Determines whether this is a dry run (no conduit initialization nor execution)
- */
- extern bool _isDryRun;
+/**
+* @brief Stack storing pointers to different Engine execution levels
+*/
+extern std::stack<Engine*> _engineStack;
+
+
 }
 
 #endif

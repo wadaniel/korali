@@ -16,8 +16,8 @@ void korali::solver::Executor::runGeneration()
   {
     for (size_t d = 0; d < _k->_variables.size(); d++) 
     {   
-        if(_sampleCount > 0) sampleData[d] = _k->_variables[d]->_precomputedValues[_modelEvaluationCount];
-        else                 sampleData[d] = _k->_distributions[_k->_variables[d]->_distributionIndex]->getRandomNumber();
+        if(_k->_variables[0]->_precomputedValues.size() > 0) sampleData[d] = _k->_variables[d]->_precomputedValues[_modelEvaluationCount];
+        else sampleData[d] = _k->_distributions[_k->_variables[d]->_distributionIndex]->getRandomNumber();
     }
     korali::logInfo("Detailed", "Running sample %zu with values:\n         ", _modelEvaluationCount);
     for(auto& x : sampleData) korali::logData("Detailed", " %le   ", x);

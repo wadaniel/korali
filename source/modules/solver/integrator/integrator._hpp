@@ -1,11 +1,11 @@
-#ifndef _KORALI_SOLVER_QUADRATURE_HPP_
-#define _KORALI_SOLVER_QUADRATURE_HPP_
+#ifndef _KORALI_SOLVER_INTEGRATOR_HPP_
+#define _KORALI_SOLVER_INTEGRATOR_HPP_
 
 #include "modules/solver/solver.hpp"
 
 namespace korali { namespace solver {
 
-class Quadrature : public korali::Solver
+class Integrator : public korali::Solver
 {
  public:
 
@@ -13,10 +13,10 @@ class Quadrature : public korali::Solver
  void runGeneration() override;
  void printGenerationBefore() override;
  void printGenerationAfter() override;
-
+ void finalize() override;
 };
 
 } } // namespace korali::solver
 
 
-#endif // _KORALI_SOLVER_QUADRATURE_HPP_
+#endif // _KORALI_SOLVER_INTEGRATOR_HPP_

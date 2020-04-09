@@ -1,8 +1,8 @@
 **************************
-quadrature
+integrator
 **************************
 
-Here goes the description of the new solver module: quadrature
+Here goes the description of the new solver module: integrator
 
 You can add code:
 

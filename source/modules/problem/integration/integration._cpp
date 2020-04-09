@@ -2,12 +2,55 @@
 
 void korali::problem::Integration::initialize()
 {
- // Initializing Problem Configuration
+  if(_k->_variables.size() == 0) korali::logError("Integration problems require at least one variable.\n");
+  for( size_t i = 0; i<_k->_variables.size(); i++ )
+  {
+    if( _k->_variables[i]->_integrationMethod.c_str() == "Monte Carlo" ){
+      if( _k->_variables[i]->_upperBound <= _k->_variables[i]->_lowerBound ) korali::logError("'Upper Bound' is not strictly bigger then 'Lower Bound' for variable %s.\n",_k->_variables[i]->_name.c_str());
+      double intervalSize = _k->_variables[i]->_upperBound-_k->_variables[i]->_lowerBound;
+      _k->_variables[i]->_quadratureWeights.resize(_k->_variables[i]->_samplePoints.size());
+      for( size_t j = 0; j<_k->_variables[i]->_quadratureWeights.size(); j++ )
+        _k->_variables[i]->_quadratureWeights[j] = intervalSize/_k->_variables[i]->_samplePoints.size();
+    }
+    else{
+      double deltaX0 = _k->_variables[i]->_samplePoints[1] - _k->_variables[i]->_samplePoints[0];
+      for( size_t j = 2; j<_k->_variables[i]->_samplePoints.size(); j++ )
+        if( deltaX0 - (_k->_variables[i]->_samplePoints[j]-_k->_variables[i]->_samplePoints[j-1]) >  2*std::numeric_limits<double>::epsilon() ) korali::logError("'Sample Points' are not equally spaced for variable %s, interval . %f vs %f, diff=%f\n",_k->_variables[i]->_name.c_str(), deltaX0, _k->_variables[i]->_samplePoints[j]-_k->_variables[i]->_samplePoints[j-1], deltaX0 - (_k->_variables[i]->_samplePoints[j]-_k->_variables[i]->_samplePoints[j-1]));
+
+      if( _k->_variables[i]->_integrationMethod.c_str() == "Rectangle" ){
+        _k->_variables[i]->_quadratureWeights.resize(_k->_variables[i]->_samplePoints.size());
+        for( size_t j = 0; j<_k->_variables[i]->_quadratureWeights.size(); j++ ) 
+          _k->_variables[i]->_quadratureWeights[j] = deltaX0;
+      }
+      else if( _k->_variables[i]->_integrationMethod.c_str() ==  "Trapezoidal" ){
+        _k->_variables[i]->_quadratureWeights.resize(_k->_variables[i]->_samplePoints.size());
+        for( size_t j = 0; j<_k->_variables[i]->_quadratureWeights.size(); j++ )
+          if( j>0 && j<_k->_variables[i]->_quadratureWeights.size()-1 )
+            _k->_variables[i]->_quadratureWeights[j] = deltaX0;
+          else
+            _k->_variables[i]->_quadratureWeights[j] = deltaX0/2.;
+      }
+      else if( _k->_variables[i]->_integrationMethod.c_str() ==  "Simpson" ){
+        _k->_variables[i]->_quadratureWeights.resize(_k->_variables[i]->_samplePoints.size());
+        for( size_t j = 0; j<_k->_variables[i]->_quadratureWeights.size(); j++ )
+          if( j>0 && j<_k->_variables[i]->_quadratureWeights.size()-1 ){
+            if( j%2 == 0 ) 
+              _k->_variables[i]->_quadratureWeights[j] = 2.*deltaX0/3.;
+            else
+              _k->_variables[i]->_quadratureWeights[j] = 4.*deltaX0/3.;
+          }
+          else
+            _k->_variables[i]->_quadratureWeights[j] = deltaX0/3.;
+      }
+      else if( _k->_variables[i]->_integrationMethod.c_str() == "Custom" )
+        if(_k->_variables[i]->_samplePoints.size() != _k->_variables[i]->_quadratureWeights.size() ) korali::logError("Number of 'Sample Points' is not equal to number of 'Quadrature Points' for variable %s\n",_k->_variables[i]->_name.c_str());
+    }
+  }
 }
 
-void korali::problem::Integration::integrate(korali::Sample& sample)
+void korali::problem::Integration::execute(korali::Sample& sample)
 {
- // Evaluating Sample
- sample.run(_integrand);
+  // Evaluating Sample
+  sample.run(_integrand);
 }
 

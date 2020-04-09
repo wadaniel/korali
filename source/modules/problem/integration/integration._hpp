@@ -10,7 +10,7 @@ class Integration : public korali::Problem
  public:
 
  void initialize() override;
- void integrate(korali::Sample& sample);
+ void execute(korali::Sample& sample);
 
 };
 

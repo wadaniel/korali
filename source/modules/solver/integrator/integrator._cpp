@@ -1,0 +1,78 @@
+#include "modules/solver/integrator/integrator.hpp"
+#include "modules/conduit/conduit.hpp"
+#include "modules/engine/engine.hpp"
+
+void korali::solver::Integrator::setInitialConfiguration()
+{
+  _integral = 0;
+  _sampleCount = 1;
+  for( size_t i = 0; i<_k->_variables.size(); i++ )
+    _sampleCount *= _k->_variables[i]->_samplePoints.size();
+  _maxModelEvaluations     = std::min(_maxModelEvaluations, _sampleCount);
+  _indices.assign(_k->_variables.size(),0);
+}
+
+void korali::solver::Integrator::runGeneration()
+{
+  if (_k->_currentGeneration == 1) setInitialConfiguration();
+
+  _executionsPerGeneration = std::min(_executionsPerGeneration, _maxModelEvaluations - _modelEvaluationCount);
+  
+  std::vector<korali::Sample> samples(_executionsPerGeneration);
+  std::vector<double> sampleData(_k->_variables.size());
+  std::vector<std::vector<size_t>> usedIndices(_executionsPerGeneration,std::vector<size_t>(_k->_variables.size()));
+
+  for (size_t i = 0; i < _executionsPerGeneration; i++)
+  {
+    for (size_t d = 0; d < _k->_variables.size(); d++) 
+    {   
+        sampleData[d] = _k->_variables[d]->_samplePoints[_indices[d]];
+        usedIndices[i][d] = _indices[d];
+        for(size_t j = 0; j < _k->_variables.size(); j++)
+    	{
+    		if( _indices[j] < _k->_variables[d]->_samplePoints.size() ){
+    			_indices[j]++;
+    			break;
+    		}
+    	}
+    }
+
+    korali::logInfo("Detailed", "Running sample %zu/%zu with values:\n         ", _modelEvaluationCount,_sampleCount);
+    for(auto& x : sampleData) korali::logData("Detailed", " %le   ", x);
+    korali::logData("Detailed", "\n");
+
+    samples[i]["Operation"]  = "Execute";
+    samples[i]["Parameters"] = sampleData;
+    samples[i]["Sample Id"]  = _modelEvaluationCount;
+    _engine->_conduit->start(samples[i]);
+    _modelEvaluationCount++;
+  }
+  _engine->_conduit->waitAll(samples);
+
+  double weight, f;
+  for (size_t i = 0; i < _executionsPerGeneration; i++)
+  {
+    weight = 1;
+    for(size_t d = 0; _k->_variables.size(); d++)
+      weight *= _k->_variables[d]->_quadratureWeights[usedIndices[i][d]];
+    f = samples[i]["Evaluation"];
+    _integral += weight*f;
+  }
+  (*_k)["Results"]["Integral"] = _integral;
+  korali::logInfo("Minimal", "After summing and setting integral\n");
+}
+
+void korali::solver::Integrator::printGenerationBefore()
+{
+}
+
+void korali::solver::Integrator::printGenerationAfter()
+{
+ korali::logInfo("Minimal", "Total Terms summed %lu/%lu.\n", _modelEvaluationCount, _sampleCount);
+}
+
+void korali::solver::Integrator::finalize()
+{
+	korali::logInfo("Minimal", "Integral Calculated: %e\n", _integral);
+}
+

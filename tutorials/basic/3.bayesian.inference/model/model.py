@@ -2,6 +2,9 @@
 
 # This is a linear regression model with two params (slope and intercept)
 
+import numpy as np
+
+
 def model( s, x ): 
   v1 = s["Parameters"][0]
   v2 = s["Parameters"][1]
@@ -29,3 +32,9 @@ def getReferencePoints():
  x.append(4.0);
  x.append(5.0);
  return x
+
+# Gaussian loglikelihood with mean 0 and var 1
+def customModel( s ):
+    v1 = s["Parameters"][0]
+    s["logLikelihood"] = -0.5*v1*v1 - 0.5*np.log(2*np.pi)
+

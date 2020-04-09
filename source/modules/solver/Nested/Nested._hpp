@@ -67,6 +67,17 @@ class Nested : public korali::Solver
   */
  void generatePosterior();
  
+ /*
+  * @brief Safely adding two values that are in log space. Returns in log space.
+  */
+ double safeLogPlus(double logx, double logy) const;
+ 
+ /*
+  * @brief Safely subtracting logy from logx. Returns in log space.
+  */
+ double safeLogMinus(double logx, double logy) const;
+ 
+
  public:
 
  /**
@@ -93,7 +104,6 @@ class Nested : public korali::Solver
   * @brief Final console output at termination.
   */
  void finalize() override;
-
 
 };
 

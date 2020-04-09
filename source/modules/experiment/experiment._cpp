@@ -25,10 +25,10 @@ void korali::Experiment::run()
   if(_currentGeneration == 0) saveState();
 
   _solver->getConfiguration(_js["Solver"]);
+  _currentGeneration++;
 
   while(_solver->checkTermination() == false)
   {
-   _currentGeneration++;
    if (_consoleOutputFrequency > 0)
    if (_currentGeneration % _consoleOutputFrequency == 0)
    {
@@ -58,18 +58,20 @@ void korali::Experiment::run()
    if (_fileOutputFrequency > 0)
    if (_currentGeneration % _fileOutputFrequency == 0) saveState();
 
+   _currentGeneration++;
   }
 
   auto t1 = std::chrono::system_clock::now();
 
   // Saving last generation and final.json
+  _currentGeneration--;
   _isFinished = true;
+  _solver->finalize();
   saveState();
 
   korali::logInfo("Minimal", "--------------------------------------------------------------------\n");
   korali::logInfo("Minimal", "%s finished correctly.\n", _solver->getType().c_str());
   for (size_t i = 0; i < _solver->_terminationCriteria.size(); i++) korali::logInfo("Normal", "Termination Criterion Met: %s\n", _solver->_terminationCriteria[i].c_str());
-  _solver->finalize();
   korali::logInfo("Normal", "Final Generation: %lu\n", _currentGeneration);
   korali::logInfo("Normal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(t1-t0).count());
 

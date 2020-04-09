@@ -75,7 +75,7 @@ MCMCLatentSampler::MCMCLatentSampler(int numberLatentVars, int numberHyperparams
       std::vector<double> hyperparameters = kSample["Hyperparameters"];
       size_t numberSamples = kSample["Number Samples"];
       if (kSample["Number Of Latent Variables"] != numberLatent)
-         korali::logError("Implementation error, number of latent variables at initialization does not fit to what was passed as variable");
+         { fprintf(stderr, "[Error] Implementation error, number of latent variables at initialization does not fit to what was passed as variable"); exit(-1); }
 
 
     /* Create one sampling experiment to sample all latent variables. Why one experiment: After all, the latent vars
@@ -88,16 +88,16 @@ MCMCLatentSampler::MCMCLatentSampler(int numberLatentVars, int numberHyperparams
          e["Problem"]["Type"] = "Sampling";
          e["Problem"]["Probability Function"] = [hparams=hyperparameters, this](korali::Sample& s) -> void {
                         if (! s.contains("Parameters")){
-                            korali::logError("Something is trying to evaluate the likelihood without passing values for the latent variables (= parameters, here) to the sample.\n");
+                         { fprintf(stderr, "[Error] Something is trying to evaluate the likelihood without passing values for the latent variables (= parameters, here) to the sample.\n"); exit(-1); }
                         }
 
                         auto latent_vars = s["Parameters"].get<std::vector<double>>();
 
                         if (latent_vars.size() != numberLatent)
-                        	korali::logError("Implementation error, latent variable vector had wrong size");
+                        { fprintf(stderr, "[Error] Implementation error, latent variable vector had wrong size"); exit(-1); }
 
                         if (hparams.size() != numberHyperparameters)
-                        	korali::logError("Implementation error, hyperparameter vector had wrong size");
+                        { fprintf(stderr, "[Error] Implementation error, hyperparameter vector had wrong size"); exit(-1); }
 
                         s["Latent Variables"] = latent_vars;
 
@@ -107,9 +107,9 @@ MCMCLatentSampler::MCMCLatentSampler(int numberLatentVars, int numberHyperparams
                         zeta_func(s);
                         phi_func(s);
                           // -> Assume these set: sample["S"], sample["zeta"] and sample["phi"]
-                          if (! s.contains("S")) korali::logError("The specified likelihood model did not assign the value: 'S' to the sample.\n"); // @suppress("Invalid arguments")
-                          if (! s.contains("zeta")) korali::logError("The specified likelihood model did not assign the value: 'zeta' to the sample.\n");
-                          if (! s.contains("phi")) korali::logError("The specified likelihood model did not assign the value: 'phi' to the sample.\n");
+                          if (! s.contains("S")) { fprintf(stderr, "[Error] The specified likelihood model did not assign the value: 'S' to the sample.\n");  exit(-1); }// @suppress("Invalid arguments")
+                          if (! s.contains("zeta")) { fprintf(stderr, "[Error] The specified likelihood model did not assign the value: 'zeta' to the sample.\n"); exit(-1); }
+                          if (! s.contains("phi")) { fprintf(stderr, "[Error] The specified likelihood model did not assign the value: 'phi' to the sample.\n"); exit(-1); }
 
                           double _zetaValue = s["zeta"].get<double>();
                           std::vector<double> _sValues = s["S"].get<std::vector<double>>();
@@ -143,9 +143,9 @@ MCMCLatentSampler::MCMCLatentSampler(int numberLatentVars, int numberHyperparams
         e["Solver"]["Termination Criteria"]["Max Samples"] = 5000;
 
         // Configuring output settings
-        e["File Output"]["Frequency"] = 500;
-        e["Console Output"]["Frequency"] = 1000;
-        e["Console Output"]["Verbosity"] = "Normal";
+        e["File Output"]["Frequency"] = 0;
+        e["Console Output"]["Frequency"] = 0;
+        e["Console Output"]["Verbosity"] = "Silent";
 
         // Todo: I don't think a result path is needed (and it'd need a step id in the pathname as well)
         //e["Results"]["Path"] = "setup/results_phase_1/" + "0"*(3 - str(i).length()) +  std:to_string(i);
@@ -195,7 +195,7 @@ void MultimodalGaussianSampler::sampleLatent(korali::Sample& k){
     std::vector<double> hyperparameters = k["Hyperparameters"];
     int nSamples = k["Number Samples"];
     if (k["Number Of Latent Variables"] != nPoints)
-       korali::logError("Implementation error, number of latent variables at initialization does not fit to what was passed as variable");
+       { fprintf(stderr, "[Error] Number of latent variables at initialization does not fit to what was passed as variable.\n"); exit(-1); }
 
     // get sigma
     double sigma = hyperparameters[nClusters * nDimensions];
@@ -207,7 +207,7 @@ void MultimodalGaussianSampler::sampleLatent(korali::Sample& k){
       std::vector<double>::const_iterator last = hyperparameters.begin() + (i + 1) * nDimensions ;
       std::vector<double> mu(first, last);
       if(mu.size() != nDimensions)
-          korali::logError("Implementation error, dimensions did not match");
+      { fprintf(stderr, "[Error] Dimensions do not match.\n"); exit(-1); }
       mus[i] = mu;
     }
 

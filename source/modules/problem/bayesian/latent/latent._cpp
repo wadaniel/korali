@@ -17,7 +17,7 @@ void korali::problem::bayesian::Latent::initialize()
   bool recognizedType = false;
   if (typeString == "Hyperparameter")   { _hyperparameterVariableIndices.push_back(i);   recognizedType = true; }
   if (typeString == "Latent")   { _latentVariableIndices.push_back(i);   recognizedType = true; }
-  if (recognizedType == false) korali::logError("Incorrect Bayesian variable type selected: %s.\n", typeString.c_str());
+  if (recognizedType == false) _k->_logger->logError("Incorrect Bayesian variable type selected: %s.\n", typeString.c_str());
  }
 
 }
@@ -30,9 +30,9 @@ void korali::problem::bayesian::Latent::evaluateLogLikelihood(korali::Sample& sa
   sample.run(_phiOfLikelihoodModel);
   // -> Assume these set: sample["S"], sample["zeta"] and sample["phi"]
 
-  if (! sample.contains("S")) korali::logError("The specified likelihood model did not assign the value: 'S' to the sample.\n");
-  if (! sample.contains("zeta")) korali::logError("The specified likelihood model did not assign the value: 'zeta' to the sample.\n");
-  if (! sample.contains("phi")) korali::logError("The specified likelihood model did not assign the value: 'phi' to the sample.\n");
+  if (! sample.contains("S")) _k->_logger->logError("The specified likelihood model did not assign the value: 'S' to the sample.\n");
+  if (! sample.contains("zeta")) _k->_logger->logError("The specified likelihood model did not assign the value: 'zeta' to the sample.\n");
+  if (! sample.contains("phi")) _k->_logger->logError("The specified likelihood model did not assign the value: 'phi' to the sample.\n");
 
   double _zetaValue = sample["zeta"].get<double>();
   std::vector<double> _sValues = sample["S"].get<std::vector<double>>();

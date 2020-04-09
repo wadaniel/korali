@@ -21,7 +21,7 @@ void korali::solver::SAEM::runGeneration( void )
 
  /* E1: Sample latent variable values */
  sampleLatent();
- korali::logInfo("Detailed", "Sampled generation: %d \n", _k->_currentGeneration);
+ _k->_logger->logInfo("Detailed", "Sampled generation: %d \n", _k->_currentGeneration);
 
  /* E2: Update posterior probability function Q */
  calculateSampleSVectors();
@@ -41,7 +41,7 @@ void korali::solver::SAEM::runGeneration( void )
 void korali::solver::SAEM::setInitialConfiguration()
 {
   if( _k->_problem->getType() != "Bayesian/Latent")
-    korali::logError("SAEM can only optimize problems of type 'Bayesian/Latent' .\n");
+    _k->_logger->logError("SAEM can only optimize problems of type 'Bayesian/Latent' .\n");
 
    _latentProblem = dynamic_cast<korali::problem::bayesian::Latent*>(_k->_problem); // .get<korali::problem::bayesian::Latent>()
 
@@ -50,11 +50,11 @@ void korali::solver::SAEM::setInitialConfiguration()
   _numberHyperparameters = _numberVariables - _numberLatent;
 
   if (_k->_currentGeneration != 1)
-	  korali::logError("Called initialization in wrong generation; should be called at the start (when generation==1)");
+	  _k->_logger->logError("Called initialization in wrong generation; should be called at the start (when generation==1)");
 
   for (size_t i = 0; i < _numberVariables; i++)
     if( std::isfinite(_k->_variables[i]->_initialValue) == false )
-      korali::logError("Initial Value of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
+      _k->_logger->logError("Initial Value of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
 
   _currentSamplesSVectors.resize(_numberSamplesPerStep);
   _currentS.resize(_latentProblem->_sDimension);
@@ -93,11 +93,11 @@ void korali::solver::SAEM::sampleLatent(){
   sample["Number Samples"] = _numberSamplesPerStep;
   sample["Number Of Latent Variables"] = _numberLatent;
   sample["Operation"]    = "Sample Latent Variables";
-  _engine->_conduit->start(sample);
-  _engine->_conduit->wait(sample);
+  _conduit->start(sample);
+  _conduit->wait(sample);
  // sample.run(_latentProblem->_latentVariableSampler); // Like in: problem/reference.cpp, def of evaluateLogLikelihood()
   _currentSamples = sample["Samples"].get<std::vector<std::vector<double>>>();
-  if (_currentSamples.size() != _numberSamplesPerStep) korali::logError("User defined sampler did not return the correct number of samples ('Number Samples').");
+  if (_currentSamples.size() != _numberSamplesPerStep) _k->_logger->logError("User defined sampler did not return the correct number of samples ('Number Samples').");
 
   // mean and variance:
   auto transposed = transpose(_currentSamples);
@@ -130,15 +130,15 @@ void korali::solver::SAEM::calculateSampleSVectors()
    k["Latent Variables"] = _currentSamples[i];
    k["Hyperparameters"] = _currentHyperparameters;
    k["Operation"]    = "Evaluate S";
-   _engine->_conduit->start(k);
-   _engine->_conduit->wait(k);
+   _conduit->start(k);
+   _conduit->wait(k);
    //k.run(_latentProblem->_sOfLikelihoodModel);
    //_latentProblem->_sOfLikelihoodModel(k);
 
    std::vector<double> v = k["S"];
    _currentSamplesSVectors[i] = v;
    if (v.size() != _latentProblem->_sDimension)
-       korali::logError("S vector had incorrect size, or incorrect size was given as 'S Dimension' when defining the problem");
+       _k->_logger->logError("S vector had incorrect size, or incorrect size was given as 'S Dimension' when defining the problem");
   }
 }
 
@@ -198,14 +198,14 @@ void korali::solver::SAEM::updateQFunction()
 {
  _currentQ = [S=_currentS, _latentProblem=_latentProblem, this](korali::Sample& s) -> void
  {
-  if (! s.contains("Parameters")) korali::logError("Implementation error.\n");
+  if (! s.contains("Parameters")) _k->_logger->logError("Implementation error.\n");
   s["Hyperparameters"] = s["Parameters"];
   s.run(_latentProblem->_zetaOfLikelihoodModel);
   s.run(_latentProblem->_phiOfLikelihoodModel);
   double zeta = s["zeta"];
   std::vector<double> phi = s["phi"];
   if (phi.size() != S.size())
-    korali::logError("Implementation error. Current Robbins-Monro-averaged vector S did not have the same length as vector phi from the problem definition (from the model). \n");
+    _k->_logger->logError("Implementation error. Current Robbins-Monro-averaged vector S did not have the same length as vector phi from the problem definition (from the model). \n");
 
   s["F(x)"] = -zeta + std::inner_product(std::begin(S), std::end(S), std::begin(phi), 0.0);
  };
@@ -230,7 +230,7 @@ void korali::solver::SAEM::updateHyperparameters()
        continue;
    auto var =  _k->_variables[i];
    if (var->_lowerBound >= var->_upperBound)
-       korali::logError("Lower bound was equal to or higher than upper bound for hyperparameter %s. Did you perhaps forget to set upper and lower bounds for this hyperparamter?", var->_name.c_str());
+       _k->_logger->logError("Lower bound was equal to or higher than upper bound for hyperparameter %s. Did you perhaps forget to set upper and lower bounds for this hyperparamter?", var->_name.c_str());
    e["Variables"][hyperparamIdx]["Name"] = var->_name;
    e["Variables"][hyperparamIdx]["Lower Bound"] = var->_lowerBound;
    e["Variables"][hyperparamIdx]["Upper Bound"] = var->_upperBound;
@@ -238,7 +238,7 @@ void korali::solver::SAEM::updateHyperparameters()
   }
 
  // configure the solver
- if (_mStepSolverType != "CMAES") korali::logError("Currently, only using a CMAES solver is supported");
+ if (_mStepSolverType != "CMAES") _k->_logger->logError("Currently, only using a CMAES solver is supported");
 
  e["Solver"]["Type"] = "CMAES";
  e["Solver"]["Population Size"] = 4;
@@ -247,12 +247,11 @@ void korali::solver::SAEM::updateHyperparameters()
 
  e["File Output"]["Frequency"] = 0;
  e["Console Output"]["Frequency"] = 0; // try to suppress output
- e["Console Output"]["Verbosity"] = "Detailed";
+ e["Console Output"]["Verbosity"] = "Silent";
 
  std::string gen = std::to_string(_k->_currentGeneration);
  e["Results"]["Path"] = "_korali_results/hyperparam_optimization/" +  gen; // Should not write anything to a file though, with frequency==0
 
- k._conduit = _engine->_conduit;
  k.run(e);
 
  _currentHyperparameters = e["Solver"]["Best Ever Variables"].get<std::vector<double>>();
@@ -312,23 +311,23 @@ void korali::solver::SAEM::printGenerationAfter()
 {
  if (_maxGenerations <= _k->_currentGeneration) return; //Don't print in last generation, this is done in finalize()
 
-  korali::logInfo("Normal", "Generation %d : \n", _k->_currentGeneration);
-  korali::logInfo("Normal", "    Current LogLikelihood:          %.2e\n", _currentLogLikelihood);
-  korali::logInfo("Normal", "    Best LogLikelihood:             %.2e\n", _bestLogLikelihood);
-  korali::logInfo("Detailed", "    - Current latent variable sample values : \n");
+  _k->_logger->logInfo("Normal", "Generation %d : \n", _k->_currentGeneration);
+  _k->_logger->logInfo("Normal", "    Current LogLikelihood:          %.2e\n", _currentLogLikelihood);
+  _k->_logger->logInfo("Normal", "    Best LogLikelihood:             %.2e\n", _bestLogLikelihood);
+  _k->_logger->logInfo("Detailed", "    - Current latent variable sample values : \n");
   for (size_t i = 0; i < _numberLatent; i++){
      int idx = _latentProblem->_latentVariableIndices[i];
-     korali::logInfo("Detailed", "      %s : %.2f +- %.2f  \n", _k->_variables[idx]->_name.c_str() ,
+     _k->_logger->logInfo("Detailed", "      %s : %.2f +- %.2f  \n", _k->_variables[idx]->_name.c_str() ,
                                                     _currentSampleMeans[i] , _currentSampleStandardDeviations[i] );
   }
-  korali::logInfo("Detailed", "    - Updated hyperparameters:\n");
+  _k->_logger->logInfo("Detailed", "    - Updated hyperparameters:\n");
   size_t j = 0;
   for (size_t i = 0; i < _k->_variables.size(); i++)
   {
    auto var = _k->_variables[i];
    if (! isLatent(i))
    {
-    korali::logInfo("Detailed", "      %s : %.2f \n", var->_name.c_str() , _currentHyperparameters[j]);
+    _k->_logger->logInfo("Detailed", "      %s : %.2f \n", var->_name.c_str() , _currentHyperparameters[j]);
     j++;
    }
   }
@@ -338,30 +337,30 @@ void korali::solver::SAEM::printGenerationAfter()
 
 void korali::solver::SAEM::finalize()
 {
- korali::logInfo("Minimal", "Final hyperparameters:\n");
+ _k->_logger->logInfo("Minimal", "Final hyperparameters:\n");
  size_t j = 0;
  for (size_t i = 0; i < _k->_variables.size(); i++)
  {
   auto var = _k->_variables[i];
   if (! isLatent(i)){
-      korali::logInfo("Minimal", "%s : %.2f \n", var->_name.c_str() , _currentHyperparameters[j]);
+      _k->_logger->logInfo("Minimal", "%s : %.2f \n", var->_name.c_str() , _currentHyperparameters[j]);
       j++;
   }
  }
 
- korali::logInfo("Minimal", "-- Final latent variable sample values : \n");
+ _k->_logger->logInfo("Minimal", "-- Final latent variable sample values : \n");
 
  for (size_t i = 0; i < _numberLatent; i++)
  {
   int idx = _latentProblem->_latentVariableIndices[i];
-  korali::logInfo("Minimal", " %s : %.2f +- %.2f  \n", _k->_variables[idx]->_name.c_str() ,
+  _k->_logger->logInfo("Minimal", " %s : %.2f +- %.2f  \n", _k->_variables[idx]->_name.c_str() ,
                                                         _currentSampleMeans[i] , _currentSampleStandardDeviations[i] );
  }
 
- korali::logInfo("Minimal", "Final loglikelihood: %.1e%%\n", _currentLogLikelihood);
- korali::logInfo("Minimal", "Final best loglikelihood: %.1e%%\n", _bestLogLikelihood);
+ _k->_logger->logInfo("Minimal", "Final loglikelihood: %.1e%%\n", _currentLogLikelihood);
+ _k->_logger->logInfo("Minimal", "Final best loglikelihood: %.1e%%\n", _bestLogLikelihood);
 
- //if (_k->_currentGeneration == ... something...) korali::logInfo("Minimal", "Max Generations Reached.\n");
+ //if (_k->_currentGeneration == ... something...) _k->_logger->logInfo("Minimal", "Max Generations Reached.\n");
  (*_k)["Results"]["Hyperparameters"] = _currentHyperparameters;
  (*_k)["Results"]["Final Latent Variable Samples"] = _currentSamples;
 

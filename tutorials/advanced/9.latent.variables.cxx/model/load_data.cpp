@@ -22,7 +22,9 @@ pointsInfoStruct& univariateData()
 	 	 char cwd[PATH_MAX];
 	 	 getcwd(cwd, sizeof(cwd));
 	 	 std::cout << "Current workdir: " << cwd << std::endl;
-		 korali::logError("File not found: model/data_single.in. Make sure you run this script from the 'tutorials/advanced/9.latent.variables' directory. ");}
+		  fprintf(stderr, "[Error] File not found: model/data_single.in. Make sure you run this script from the 'tutorials/advanced/9.latent.variables' directory. ");
+		  exit(-1);
+ }
  problemFile2 = fopen("data_single.in", "r");
  fscanf(problemFile, "%lu", &nPoints);
  fscanf(problemFile, "%lu", &nDimensions);

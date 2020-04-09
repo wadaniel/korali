@@ -135,7 +135,7 @@ void ExampleDistribution2::S(korali::Sample& k)
 {
   std::vector<double> assignments = k["Latent Variables"];
   if (assignments.size() != _p.nPoints)
-    korali::logError("Latent variables should be exactly the cluster assignments, so there is one for each point in the sample.");
+    { fprintf(stderr, "[Error] Latent variables should be exactly the cluster assignments, so there is one for each point in the sample."); exit(-1); }
 
   int S_dim = 1 + _p.nDimensions * _p.nClusters + _p.nClusters;
   std::vector<double> S_vec(S_dim, 0.0);
@@ -171,7 +171,7 @@ void ExampleDistribution2::zeta(korali::Sample& k)
   std::vector<double> hyperparams = k["Hyperparameters"];
 
   if (hyperparams.size() != _p.nDimensions * _p.nClusters + 1)
-    korali::logError("Hyperparameters should be one mean vector per cluster, plus a 1D variable sigma. The dimension of the hyperparameter vector did not match this.");
+    { fprintf(stderr, "[Error] Hyperparameters should be one mean vector per cluster, plus a 1D variable sigma. The dimension of the hyperparameter vector did not match this."); exit(-1); }
 
   double sigma = hyperparams[_p.nClusters * _p.nDimensions];
 
@@ -186,7 +186,7 @@ void ExampleDistribution2::phi(korali::Sample& k)
   double sigma = hyperparams[_p.nClusters * _p.nDimensions];
 
   if (hyperparams.size() != _p.nDimensions * _p.nClusters + 1)
-      korali::logError("Hyperparameters should be one mean vector per cluster, plus a 1D variable sigma. The dimension of the hyperparameter vector did not match this.");
+      { fprintf(stderr, "[Error] Hyperparameters should be one mean vector per cluster, plus a 1D variable sigma. The dimension of the hyperparameter vector did not match this."); exit(-1); }
 
   std::vector<std::vector<double>> mus(0);
   for (size_t i = 0; i < _p.nClusters; i++){
@@ -194,7 +194,7 @@ void ExampleDistribution2::phi(korali::Sample& k)
     std::vector<double>::const_iterator last = hyperparams.begin() + (i + 1) * _p.nDimensions ;
     std::vector<double> mu(first, last);
     if(mu.size() != _p.nDimensions)
-        korali::logError("Implementation error, dimensions did not match");
+        { fprintf(stderr, "[Error] Implementation error, dimensions did not match"); exit(-1); }
     mus.push_back(mu);
   }
   /* For two variables:

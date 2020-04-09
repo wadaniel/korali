@@ -1,11 +1,11 @@
 #include "modules/conduit/conduit.hpp"
 #include "modules/engine/engine.hpp"
 
-korali::Conduit* __tempConduit;
+korali::Conduit* __tmpPtr;
 
 void korali::Conduit::coroutineWrapper()
 {
- korali::Conduit* conduit = __tempConduit;
+ korali::Conduit* conduit = __tmpPtr;
  korali::Sample* currentSample = conduit->_currentSample;
  co_switch(conduit->_engine->_currentExperiment->_thread);
  (*currentSample)["Experiment Id"] = conduit->_engine->_currentExperiment->_experimentId;
@@ -16,7 +16,7 @@ void korali::Conduit::coroutineWrapper()
  currentSample->_state = SampleState::finished;
  co_switch(conduit->_engine->_currentExperiment->_thread);
 
- if (currentSample->_state != SampleState::uninitialized) _engine->_logger->logError("Resuming a finished sample\n");
+ if (currentSample->_state != SampleState::uninitialized) conduit->_engine->_logger->logError("Resuming a finished sample\n");
 }
 
 void korali::Conduit::start(korali::Sample& sample)
@@ -31,7 +31,7 @@ void korali::Conduit::start(korali::Sample& sample)
  sample._state = SampleState::initialized;
  _currentSample = &sample;
 
- __tempConduit = this;
+ __tmpPtr = this;
  co_switch(sample._sampleThread);
 }
 

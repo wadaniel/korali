@@ -20,14 +20,10 @@ void korali::Engine::run()
  _engine = this;
 
  // Instantiating Engine logger.
- _logger = new _logger->logger();
+ _logger = new korali::Logger();
 
  // Turn Off GSL Error Handler
  gsl_set_error_handler_off();
-
- // Setting output file to stdout, by default.
- korali::setConsoleOutputFile(stdout);
- korali::setVerbosityLevel("Minimal");
 
  if (! korali::JsonInterface::isDefined(_js.getJson(), "['Profiling']['Detail']")) _js["Profiling"]["Detail"] = "None";
  if (! korali::JsonInterface::isDefined(_js.getJson(), "['Profiling']['Path']")) _js["Profiling"]["Path"] = "./profiling.json";
@@ -93,13 +89,10 @@ void korali::Engine::run()
    for (size_t i = 0; i < _experimentVector.size(); i++)
    if (_experimentVector[i]->_isFinished == false)
    {
-    korali::setVerbosityLevel(_experimentVector[i]->_consoleOutputVerbosity);
-    korali::setConsoleOutputFile(_experimentVector[i]->_logFile);
     _currentExperiment = _experimentVector[i];
     co_switch(_experimentVector[i]->_thread);
     executed = true;
     saveProfilingInfo(false);
-    korali::setConsoleOutputFile(stdout);
     if (_experimentVector.size() > 1) if (_experimentVector[i]->_isFinished == true) _logger->logInfo("Minimal", "Experiment %lu has finished.\n", i);
    }
    if (executed == false) break;

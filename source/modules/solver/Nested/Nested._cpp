@@ -216,7 +216,10 @@ void korali::solver::Nested::generateCandidatesFromMutation()
 
 void korali::solver::Nested::generateCandidatesFromBox() { return; }
  
-void korali::solver::Nested::generateCandidatesFromEllipse() { return; }
+void korali::solver::Nested::generateCandidatesFromEllipse() 
+{ 
+    return; 
+}
 
 void korali::solver::Nested::updateMeanAndCovariance() 
 {

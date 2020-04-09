@@ -25,11 +25,11 @@ void korali::solver::Executor::runGeneration()
     samples[i]["Operation"]  = "Execute";
     samples[i]["Parameters"] = sampleData;
     samples[i]["Sample Id"]  = _modelEvaluationCount;
-    _engine->_conduit->start(samples[i]);
+    _conduit->start(samples[i]);
     _modelEvaluationCount++;
   }
 
-  _engine->_conduit->waitAll(samples);
+  _conduit->waitAll(samples);
 }
 
 void korali::solver::Executor::printGenerationBefore()

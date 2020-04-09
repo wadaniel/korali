@@ -35,10 +35,10 @@ void korali::solver::Rprop::evaluateFunctionAndGradient( korali::Sample& sample 
   sample["Parameters"] = _currentX;
   sample["Sample Id"]  = 0;
   _modelEvaluationCount++;
-  _engine->_conduit->start(sample);
+  _conduit->start(sample);
 
   // Waiting for samples to finish
-  _engine->_conduit->wait(sample);
+  _conduit->wait(sample);
 
   // Processing results
   // The 'minus' is there because we want Rprop to do Maximization be default.

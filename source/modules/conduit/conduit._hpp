@@ -6,6 +6,7 @@
 #include "modules/solver/solver.hpp"
 #include <vector>
 #include <chrono>
+#include <stack>
 
 namespace korali {
 
@@ -14,6 +15,11 @@ class Engine;
 class Conduit : public korali::Module {
 
  public:
+
+ /**
+  * @brief A pointer to the Conduit's logger object.
+ */
+ korali::Logger* _logger;
 
  /**
  * @brief Accepts a sample for processing.
@@ -67,6 +73,10 @@ class Conduit : public korali::Module {
  static void coroutineWrapper();
 };
 
+/**
+  * @brief A singleton pointer to the execution conduit. Shared among all experiments.
+  */
+extern Conduit* _conduit;
 
 } // namespace korali
 

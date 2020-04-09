@@ -149,11 +149,11 @@ void korali::solver::LMCMAES::runGeneration()
   samples[i]["Parameters"] = _samplePopulation[i];
   samples[i]["Sample Id"]  = i;
   _modelEvaluationCount++;
-  _engine->_conduit->start(samples[i]);
+  _conduit->start(samples[i]);
  }
 
  // Waiting for samples to finish
- _engine->_conduit->waitAll(samples);
+ _conduit->waitAll(samples);
  updateDistribution(samples);
 }
 
@@ -170,8 +170,8 @@ void korali::solver::LMCMAES::prepareGeneration()
     korali::Sample sample;
     sample["Parameters"] = _samplePopulation[i];
     sample["Operation"] = "Check Feasibility";
-    _engine->_conduit->start(sample);
-    _engine->_conduit->wait(sample);
+    _conduit->start(sample);
+    _conduit->wait(sample);
     isSampleFeasible = sample["Is Feasible"];
    }
    while(isSampleFeasible == false);

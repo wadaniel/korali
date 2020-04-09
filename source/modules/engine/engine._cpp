@@ -6,19 +6,16 @@
 #include "modules/conduit/distributed/distributed.hpp"
 #include "auxiliar/koraliJson.hpp"
 
+std::stack<korali::Engine*> korali::_engineStack;
+
 korali::Engine::Engine()
 {
  _cumulativeTime = 0.0;
  _thread = co_active();
 }
 
-bool korali::_isDryRun;
-
 void korali::Engine::run()
 {
- // Save own pointer
- _engine = this;
-
  // Instantiating Engine logger.
  _logger = new korali::Logger();
 
@@ -48,10 +45,13 @@ void korali::Engine::run()
  }
 
  // Checking if its a dry run
- korali::_isDryRun = _js["Dry Run"];
+ _isDryRun = _js["Dry Run"];
+
+ // Adding the current engine to the conduit's engine stack
+ _engineStack.push(this);
 
  // Configuring and initializing Conduit
- _conduit = dynamic_cast<korali::Conduit*>(getModule(_js["Conduit"]));
+ if (_engineStack.size() == 1) _conduit = dynamic_cast<korali::Conduit*>(getModule(_js["Conduit"]));
 
  // Check configuration correctness
  auto js = _js.getJson();
@@ -63,7 +63,7 @@ void korali::Engine::run()
  if (korali::JsonInterface::isEmpty(js) == false) if (_conduit->isRoot()) _logger->logError("Unrecognized settings for Korali's Engine: \n%s\n", js.dump(2).c_str());
 
  // Recovering Conduit configuration
- _conduit->getConfiguration(_js.getJson()["Conduit"]);
+ if (_engineStack.size() == 1) _conduit->getConfiguration(_js.getJson()["Conduit"]);
 
  // If this is a worker process (not root), there's nothing else to do
  if (_conduit->isRoot())
@@ -111,8 +111,14 @@ void korali::Engine::run()
  for (size_t i = 0; i < _experimentVector.size(); i++)
   co_delete(_experimentVector[i]->_thread);
 
- // Finalizing Conduit
- _conduit->finalize();
+ if (_engineStack.size() == 1)
+ {
+  // Finalizing Conduit
+  _conduit->finalize();
+ }
+
+ // Removing the current engine to the conduit's engine stack
+ _engineStack.pop();
 }
 
 void korali::Engine::saveProfilingInfo(bool forceSave)
@@ -145,7 +151,6 @@ void korali::Engine::run(std::vector<korali::Experiment>& experiments)
  for (size_t i = 0; i < experiments.size(); i++) _experimentVector.push_back(experiments[i]._k);
  run();
 }
-
 
 #ifdef _KORALI_USE_MPI
 long int korali::Engine::getMPICommPointer() { return (long int)(&__KoraliTeamComm); }

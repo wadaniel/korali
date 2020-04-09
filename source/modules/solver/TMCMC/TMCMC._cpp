@@ -79,10 +79,10 @@ void korali::solver::TMCMC::runGeneration()
        samples[c]["Sample Id"]    = c;
        _currentChainStep[c]++;
        _modelEvaluationCount++;
-       _engine->_conduit->start(samples[c]);
+       _conduit->start(samples[c]);
       }
     }
-    size_t finishedId = _engine->_conduit->waitAny(samples);
+    size_t finishedId = _conduit->waitAny(samples);
 
     _chainPendingEvaluation[finishedId] = false;
 

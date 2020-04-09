@@ -16,7 +16,12 @@ long int getKoraliMPICommPointer() { return (long int)(&__KoraliTeamComm); }
 
 void korali::conduit::Distributed::initialize()
 {
- if (korali::_isDryRun == true) return;
+ // Instantiating Engine logger.
+ _logger = new korali::Logger();
+
+ korali::Engine* engine = _engineStack.top();
+
+ if (engine->_isDryRun == true) return;
 
  #ifdef _KORALI_USE_MPI
  _rankCount = 1;
@@ -31,14 +36,14 @@ void korali::conduit::Distributed::initialize()
  #endif
 
  #ifndef _KORALI_USE_MPI
-  _engine->_logger->logError("Running an Distributed-based Korali application, but Korali was installed without support for Distributed.\n");
+  _logger->logError("Running an Distributed-based Korali application, but Korali was installed without support for Distributed.\n");
  #endif
 
  #ifdef _KORALI_USE_MPI
  MPI_Barrier(MPI_COMM_WORLD);
  _continueEvaluations = true;
 
- if (_rankCount == 1) _engine->_logger->logError("Korali Distributed applications require at least 2 Distributed ranks to run.\n");
+ if (_rankCount == 1) _logger->logError("Korali Distributed applications require at least 2 Distributed ranks to run.\n");
 
  _teamCount = (_rankCount-1) / _workersPerTeam;
  _teamId = -1;
@@ -68,7 +73,7 @@ void korali::conduit::Distributed::initialize()
  MPI_Comm_size(MPI_COMM_WORLD, &mpiSize);
 
  if(isRoot()) if (_rankCount < _workersPerTeam + 1)
- _engine->_logger->logError("You are running Korali with %d ranks. However, you need at least %d ranks to have at least one worker team. \n", _rankCount, _workersPerTeam + 1 );
+ _logger->logError("You are running Korali with %d ranks. However, you need at least %d ranks to have at least one worker team. \n", _rankCount, _workersPerTeam + 1 );
 
  MPI_Barrier(MPI_COMM_WORLD);
 
@@ -79,7 +84,9 @@ void korali::conduit::Distributed::initialize()
 
 void korali::conduit::Distributed::finalize()
 {
- if (korali::_isDryRun == true) return;
+ korali::Engine* engine = _engineStack.top();
+
+ if (engine->_isDryRun == true) return;
 
  #ifdef _KORALI_USE_MPI
  size_t endSignal = 0;
@@ -99,6 +106,8 @@ void korali::conduit::Distributed::finalize()
 
 void korali::conduit::Distributed::workerThread()
 {
+ korali::Engine* engine = _engineStack.top();
+
  #ifdef _KORALI_USE_MPI
  if (_teamId == -1) return;
  auto sample = korali::Sample();
@@ -117,7 +126,7 @@ void korali::conduit::Distributed::workerThread()
    sample._js.getJson() = knlohmann::json::parse(jsonStringChar);
 
    size_t experimentId = sample["Experiment Id"];
-   _engine->_experimentVector[experimentId]->_problem->runOperation(sample["Operation"], sample);
+   engine->_experimentVector[experimentId]->_problem->runOperation(sample["Operation"], sample);
 
    if (_localRankId == 0)
    {
@@ -134,11 +143,13 @@ void korali::conduit::Distributed::workerThread()
 
 void korali::conduit::Distributed::processSample(korali::Sample& sample)
 {
+ korali::Engine* engine = _engineStack.top();
+
  #ifdef _KORALI_USE_MPI
  while (_teamQueue.empty())
  {
   sample._state = SampleState::waiting;
-  co_switch(_engine->_currentExperiment->_thread);
+  co_switch(engine->_currentExperiment->_thread);
  }
 
  int teamId = _teamQueue.front(); _teamQueue.pop();
@@ -174,13 +185,13 @@ void korali::conduit::Distributed::processSample(korali::Sample& sample)
   else
   {
    sample._state = SampleState::waiting;
-   co_switch(_engine->_currentExperiment->_thread);
+   co_switch(engine->_currentExperiment->_thread);
   }
  }
 
  js["End Time"] = std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count() + _cumulativeTime;
- js["Solver Id"] = _engine->_currentExperiment->_experimentId;
- js["Current Generation"] = _engine->_currentExperiment->_currentGeneration;
+ js["Solver Id"] = engine->_currentExperiment->_experimentId;
+ js["Current Generation"] = engine->_currentExperiment->_currentGeneration;
  __profiler["Timelines"]["Worker " + std::to_string(teamId)] += js;
 
  #endif

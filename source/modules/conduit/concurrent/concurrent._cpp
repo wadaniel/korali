@@ -9,9 +9,10 @@
 
 void korali::conduit::Concurrent::initialize()
 {
- if (korali::_isDryRun == true) return;
+ // Instantiating Engine logger.
+ _logger = new korali::Logger();
 
- if (_concurrentJobs < 1) _engine->_logger->logError("You need to define at least 1 concurrent job(s) for external models \n");
+ if (_concurrentJobs < 1) _logger->logError("You need to define at least 1 concurrent job(s) for external models \n");
  _resultPipe.clear();
  _inputsPipe.clear();
  while(!_launcherQueue.empty()) _launcherQueue.pop();
@@ -23,8 +24,8 @@ void korali::conduit::Concurrent::initialize()
  // Opening Inter-process communicator pipes
  for (int i = 0; i < _concurrentJobs; i++)
  {
-  if (pipe(_inputsPipe[i].data()) == -1) _engine->_logger->logError("Unable to create inter-process pipe. \n");
-  if (pipe(_resultPipe[i].data()) == -1) _engine->_logger->logError("Unable to create inter-process pipe. \n");
+  if (pipe(_inputsPipe[i].data()) == -1) _logger->logError("Unable to create inter-process pipe. \n");
+  if (pipe(_resultPipe[i].data()) == -1) _logger->logError("Unable to create inter-process pipe. \n");
   fcntl(_resultPipe[i][0], F_SETFL, fcntl(_resultPipe[i][0], F_GETFL) | O_NONBLOCK);
   fcntl(_resultPipe[i][1], F_SETFL, fcntl(_resultPipe[i][1], F_GETFL) | O_NONBLOCK);
  }
@@ -33,12 +34,15 @@ void korali::conduit::Concurrent::initialize()
  {
   pid_t processId = fork();
   if (processId == 0) worker(i);
+  _workerPids.push_back(processId);
  }
 }
 
 void korali::conduit::Concurrent::finalize()
 {
- if (korali::_isDryRun == true) return;
+ korali::Engine* engine = _engineStack.top();
+
+ if (engine->_isDryRun == true) return;
 
  for(int i = 0; i < _concurrentJobs; i++)
  {
@@ -66,6 +70,8 @@ void korali::conduit::Concurrent::finalize()
 
 void korali::conduit::Concurrent::worker(int workerId)
 {
+ korali::Engine* engine = _engineStack.top();
+
  while(true)
  {
   size_t inputStringSize;
@@ -83,7 +89,7 @@ void korali::conduit::Concurrent::worker(int workerId)
   size_t experimentId = sample["Experiment Id"];
   std::string operation = sample["Operation"];
 
-  _engine->_experimentVector[experimentId]->_problem->runOperation(operation, sample);
+  engine->_experimentVector[experimentId]->_problem->runOperation(operation, sample);
   std::string resultString = sample._js.getJson().dump();
   size_t resultStringSize = resultString.size();
 
@@ -94,10 +100,12 @@ void korali::conduit::Concurrent::worker(int workerId)
 
 void korali::conduit::Concurrent::processSample(korali::Sample& sample)
 {
+ korali::Engine* engine = _engineStack.top();
+
  while (_launcherQueue.empty())
  {
   sample._state = SampleState::waiting;
-  co_switch(_engine->_currentExperiment->_thread);
+  co_switch(engine->_currentExperiment->_thread);
  }
 
  int launcherId = _launcherQueue.front(); _launcherQueue.pop();
@@ -114,6 +122,14 @@ void korali::conduit::Concurrent::processSample(korali::Sample& sample)
  int readBytes = -1;
  while(readBytes < 0)
  {
+  // Check for child defunction
+  for (int i = 0; i < _workerPids.size(); i++)
+  {
+   int status;
+   pid_t result = waitpid(_workerPids[i], &status, WNOHANG);
+   if (result != 0) _logger->logError("Worker %d (Pid: %d) exited unexpectedly.\n");
+  }
+
   size_t resultStringSize;
   readBytes = read(_resultPipe[launcherId][0], &resultStringSize, sizeof(size_t));
 
@@ -130,13 +146,13 @@ void korali::conduit::Concurrent::processSample(korali::Sample& sample)
   else
   {
    sample._state = SampleState::waiting;
-   co_switch(_engine->_currentExperiment->_thread);
+   co_switch(engine->_currentExperiment->_thread);
   }
  }
 
  js["End Time"] = std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count() + _cumulativeTime;
- js["Solver Id"] = _engine->_currentExperiment->_experimentId;
- js["Current Generation"] = _engine->_currentExperiment->_currentGeneration;
+ js["Solver Id"] = engine->_currentExperiment->_experimentId;
+ js["Current Generation"] = engine->_currentExperiment->_currentGeneration;
  __profiler["Timelines"]["Worker " + std::to_string(launcherId)] += js;
 
 }

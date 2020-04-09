@@ -16,7 +16,6 @@
 namespace korali {
 
 class Experiment;
-class Engine;
 class Conduit;
 
 /*! \class Module
@@ -35,11 +34,6 @@ class Module
   * @brief Stores termination criteria for the module.
   */
   std::vector<std::string> _terminationCriteria;
-
-  /**
-  * @brief Stores a pointer to the parent Engine
-  */
-  korali::Engine* _engine;
 
   /**
   * @brief Stores a pointer to its containing experiment.

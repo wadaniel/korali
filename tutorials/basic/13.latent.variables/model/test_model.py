@@ -1,7 +1,7 @@
 # # /*
 #  * Test whether the distribution parameterized by S, zeta and phi in model.cpp is correct or not
 # */
-import korali
+# import korali # No: circumvent using korali here, use dicts instead of samples
 import numpy as np
 
 from load_data import *
@@ -135,14 +135,6 @@ def test_distribution_2():
     # Initialize the distribution
     distrib2 = ExampleDistribution2()
 
-    #
-    # std.function<void(korali.Sample& s)> distrib2_S = [&distrib2](korali.Sample& s) -> void [
-    # 	distrib2.S(s); ] ;
-    # std.function<void(korali.Sample& s)> distrib2_zeta = [&distrib2](korali.Sample& s) -> void [
-    # 	distrib2.zeta(s); ] ;
-    # std.function<void(korali.Sample& s)> distrib2_phi = [&distrib2](korali.Sample& s) -> void [
-    # 	distrib2.phi(s); ] ;
-    print("hello")
 
     nClusters = distrib2._p.nClusters # 2
     nDimensions = distrib2._p.nDimensions # 2
@@ -150,42 +142,35 @@ def test_distribution_2():
     d2_numberHyperparams = distrib2._p.nDimensions * distrib2._p.nClusters + 1
 
      # Some value pairs:
-    mu0 = [0, 0]
-    mu1 = [2, 2]
-    mu2 = [-0.5, 10]
     sigma = 1.0
     assignments = []
     hyperparams = []
     points = []
     # # /* The test inputs*/
-    assignments.append([0]);
-    hyperparams.append([0, 0, 2, 2, sigma]); # (mu1, mu2, sigma)
-    points.append( [ [0, 0] ]);
-    assignments.append([0, 1]);
-    hyperparams.append([0, 0, 2, 2, sigma]); # (mu1, mu2, sigma)
+    assignments.append([0])
+    hyperparams.append([0, 0, 2, 2, sigma]) # (mu1, mu2, sigma)
+    points.append( [ [0, 0] ])
+    assignments.append([0, 1])
+    hyperparams.append([0, 0, 2, 2, sigma]) # (mu1, mu2, sigma)
     points.append( [
         [2,2], [0,0]
-        ]);
-    assignments.append([0]);
-    hyperparams.append([0, 0, 2, 2, 0.5]); # (mu1, mu2, sigma)
+        ])
+    assignments.append([0])
+    hyperparams.append([0, 0, 2, 2, 0.5]) # (mu1, mu2, sigma)
     points.append( [
         [0,0]
-        ]);
-    assignments.append([1,1]);
-    hyperparams.append([0, 0, 2, 2, 0.5]); # (mu1, mu2, sigma)
+        ])
+    assignments.append([1,1])
+    hyperparams.append([0, 0, 2, 2, 0.5]) # (mu1, mu2, sigma)
     points.append( [
         [1.5, 2.25], [-0.5, 2]
-        ]);
-    assignments.append([0,0,0, 1,1,2]);
-    hyperparams.append([-1.5, 0, 20., 5., 3.0, 3.5, 7.5]); # (mu1, mu2, sigma)
+        ])
+    assignments.append([0,0,0, 1,1,2])
+    hyperparams.append([-1.5, 0, 20., 5., 3.0, 3.5, 7.5]) # (mu1, mu2, sigma)
     points.append( [
         [1.5, -1.5], [-0.5, 2], [-5., 7.,],
 		[22.0, 10.3], [17.5, 30.],     [0.0, 7.2]
-        ]);
-
-
-  #  e = korali.Experiment()
-  #  eng = korali.Engine()
+        ])
 
     for i in range(len(assignments)):
         current_points = points[i]
@@ -195,42 +180,27 @@ def test_distribution_2():
         mu_vectors_concat = hyperparams[i][:-1]
         mu_vectors = np.array(mu_vectors_concat).reshape((nClusters, -1))
         assert mu_vectors.shape[1] == nDimensions
-        # for j in range(nClusters): #(size_t j = 0; j < mu_vectors.size(); j++)
-        #     mu_vectors[j] =
-        # 	mu_vectors[j] = std.vector<double>(hyperparams[i].begin() + nDimensions * j, hyperparams[i].begin() + nDimensions * (j+1));
 
         p = multivariate_gaussian_probability(mu_vectors, nDimensions, assignments[i], nClusters, sigma, current_points)
 
-
         distrib2._p.reset_points(current_points, assignments[i], nClusters )
-        # /* Update S, zeta, phi to the set of points (needed?)*/
-        # distrib2_S = [&distrib2](korali.Sample& s) -> void [
-    	#     distrib2.S(s); ] ;
-        # distrib2_zeta = [&distrib2](korali.Sample& s) -> void [
-    	#     distrib2.zeta(s); ] ;
-        # distrib2_phi = [&distrib2](korali.Sample& s) -> void [
-    	#     distrib2.phi(s); ] ;
 
         # /* Use the distributions S, zeta and phi functions to calculate the probability */
-        # import pdb
-        # pdb.set_trace()
         k = {}
         k["Latent Variables"] = assignments[i]
         k["Hyperparameters"] = hyperparams[i]
-
-        #std.function<void(korali.Sample&)> *func_ptr_S = &distrib2_S;
 
         distrib2.S(k)
         distrib2.zeta(k)
         distrib2.phi(k)
 
-        _zetaValue = k["zeta"]#.get<double>();
-        _sValues = k["S"]#.get<std.vector<double> >();
-        _phiValues = k["phi"]#.get<std.vector<double> >();
+        _zetaValue = k["zeta"]
+        _sValues = k["S"]
+        _phiValues = k["phi"]
 
         p_from_model_direct =  np.exp( - _zetaValue + np.inner(_sValues,_phiValues) )
 
-        assert (np.abs(p - p_from_model_direct) < 0.1*p);
+        assert (np.abs(p - p_from_model_direct) < 0.1*p)
 
 
     return True
@@ -240,3 +210,4 @@ def test_distribution_2():
 if __name__ == '__main__':
     success = test_distribution_2()
     assert success
+    print("OK")

@@ -4,12 +4,17 @@
 
 int main(int argc, char* argv[])
 {
- int workersPerTeam = atoi(argv[1]);
- if (64 % workersPerTeam != 0){
-  printf("Command Line Argument (Workers Per Team) must be divisor of 64! exit..)\n");
-  return -1;
+ int workersPerTeam = 1;
+
+ if (argc == 2)
+ { 
+  workersPerTeam = atoi(argv[1]);
+  if (64 % workersPerTeam != 0)
+  {
+   fprintf(stderr, "Command Line Argument (Workers Per Team) must be divisor of 64! exit..)\n");
+   exit(-1);
+  }
  }
- 
  
  MPI_Init(&argc, &argv);
 
@@ -96,7 +101,6 @@ int main(int argc, char* argv[])
  e["Solver"]["Termination Criteria"]["Max Generations"] = 10;
 
  auto k = korali::Engine();
- if (argc != 2) { printf("Error: this example requires 'Workers Per Team' passed as argument.\n"); exit(-1); }
 
  k["Conduit"]["Type"] = "Distributed";
  k["Conduit"]["Workers Per Team"] = workersPerTeam;

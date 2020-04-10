@@ -44,10 +44,16 @@ void korali::conduit::Concurrent::finalize()
 
  if (engine->_isDryRun == true) return;
 
+ auto terminationJs = knlohmann::json();
+ terminationJs["Conduit Action"] = "Terminate";
+
+ std::string terminationString = terminationJs.dump();
+ size_t terminationStringSize = terminationString.size();
+
  for(int i = 0; i < _concurrentJobs; i++)
  {
-  size_t terminationFlag = 0;
-  write(_inputsPipe[i][1], &terminationFlag, sizeof(size_t));
+  write(_inputsPipe[i][1], &terminationStringSize, sizeof(size_t));
+  write(_inputsPipe[i][1], terminationString.c_str(), terminationStringSize * sizeof(char));
  }
 
  for(int i = 0; i < _concurrentJobs; i++)
@@ -77,24 +83,29 @@ void korali::conduit::Concurrent::worker(int workerId)
   size_t inputStringSize;
   read(_inputsPipe[workerId][0], &inputStringSize, sizeof(size_t));
 
-  if(inputStringSize == 0) exit(0);
-
   char inputString[inputStringSize + 1];
   read(_inputsPipe[workerId][0], inputString, inputStringSize * sizeof(char));
   inputString[inputStringSize] = '\0';
 
-  korali::Sample sample;
-  sample._js.getJson() = knlohmann::json::parse(inputString);
+  auto actionJs = knlohmann::json::parse(inputString);
 
-  size_t experimentId = sample["Experiment Id"];
-  std::string operation = sample["Operation"];
+  if (actionJs["Conduit Action"] == "Terminate") exit(0);
 
-  engine->_experimentVector[experimentId]->_problem->runOperation(operation, sample);
-  std::string resultString = sample._js.getJson().dump();
-  size_t resultStringSize = resultString.size();
+  if (actionJs["Conduit Action"] == "Process Sample");
+  {
+   korali::Sample sample;
+   sample._js.getJson() = actionJs;
 
-  write(_resultPipe[workerId][1], &resultStringSize, sizeof(size_t));
-  write(_resultPipe[workerId][1], resultString.c_str(), resultStringSize * sizeof(char));
+   size_t experimentId = sample["Experiment Id"];
+   std::string operation = sample["Operation"];
+
+   engine->_experimentVector[experimentId]->_problem->runOperation(operation, sample);
+   std::string resultString = sample._js.getJson().dump();
+   size_t resultStringSize = resultString.size();
+
+   write(_resultPipe[workerId][1], &resultStringSize, sizeof(size_t));
+   write(_resultPipe[workerId][1], resultString.c_str(), resultStringSize * sizeof(char));
+  }
  }
 }
 

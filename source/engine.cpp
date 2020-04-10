@@ -50,7 +50,7 @@ void korali::Engine::initialize()
  if (_conduit == NULL) _conduit = dynamic_cast<korali::Conduit*>(getModule(_js["Conduit"]));
 
  // Stacking current Engine
- _conduit->stackEngine(this);
+ _conduit->_engineStack.push(this);
 
  // Initializing conduit server
  _conduit->initServer();
@@ -106,7 +106,7 @@ void korali::Engine::run()
   co_delete(_experimentVector[i]->_thread);
 
  // Removing the current engine to the conduit's engine stack
- _conduit->popEngine();
+ _conduit->_engineStack.pop();
 
  // Finalizing Conduit if last engine in the stack
  if (_conduit->_engineStack.size() == 0) _conduit->finalize();

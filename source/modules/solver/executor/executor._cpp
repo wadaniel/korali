@@ -1,6 +1,5 @@
 #include "modules/solver/executor/executor.hpp"
 #include "modules/conduit/conduit.hpp"
-#include "modules/engine/engine.hpp"
 
 void korali::solver::Executor::runGeneration()
 {

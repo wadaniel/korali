@@ -1,6 +1,5 @@
 #include "modules/solver/CMAES/CMAES.hpp"
 #include "sample/sample.hpp"
-#include "modules/engine/engine.hpp"
 #include "modules/conduit/conduit.hpp"
 
 #include <stdio.h>

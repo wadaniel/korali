@@ -1,5 +1,5 @@
+#include "engine.hpp"
 #include "modules/conduit/concurrent/concurrent.hpp"
-#include "modules/engine/engine.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/problem.hpp"
 #include "modules/solver/solver.hpp"
@@ -124,7 +124,10 @@ void korali::conduit::Concurrent::processSample(korali::Sample& sample)
  auto js = knlohmann::json();
  js["Start Time"] = std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count() + _cumulativeTime;
 
- std::string inputString = sample._js.getJson().dump();
+ auto sampleJs = sample._js.getJson();
+ sampleJs["Conduit Action"] = "Process Sample";
+
+ std::string inputString = sampleJs.dump();
  size_t inputStringSize = inputString.size();
 
  write(_inputsPipe[launcherId][1], &inputStringSize, sizeof(size_t));
@@ -167,3 +170,37 @@ void korali::conduit::Concurrent::processSample(korali::Sample& sample)
  __profiler["Timelines"]["Worker " + std::to_string(launcherId)] += js;
 
 }
+//
+//void korali::conduit::Concurrent::stackEngine(korali::Engine* engine)
+//{
+// if (engine->_isDryRun == true) return;
+//
+//  auto terminationJs = knlohmann::json();
+//  terminationJs["Conduit Action"] = "Terminate";
+//
+//  std::string terminationString = terminationJs.dump();
+//  size_t terminationStringSize = terminationString.size();
+//
+//  for(int i = 0; i < _concurrentJobs; i++)
+//  {
+//   write(_inputsPipe[i][1], &terminationStringSize, sizeof(size_t));
+//   write(_inputsPipe[i][1], terminationString.c_str(), terminationStringSize * sizeof(char));
+//  }
+//
+//  for(int i = 0; i < _concurrentJobs; i++)
+//  {
+//   int status;
+//   pid_t processId;
+//   processId = ::wait(&status);
+//  }
+//
+//  for (int i = 0; i < _concurrentJobs; i++)
+//  {
+//   close(_resultPipe[i][1]); // Closing pipes
+//   close(_resultPipe[i][0]); // Closing pipes
+//   close(_inputsPipe[i][1]); // Closing pipes
+//   close(_inputsPipe[i][0]); // Closing pipes
+//  }
+//
+//
+//}

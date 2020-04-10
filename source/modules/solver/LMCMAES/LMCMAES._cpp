@@ -1,7 +1,6 @@
 #include "modules/solver/LMCMAES/LMCMAES.hpp"
 #include "sample/sample.hpp"
 #include "modules/conduit/conduit.hpp"
-#include "modules/engine/engine.hpp"
 
 #include <stdio.h>
 #include <unistd.h>

@@ -1,7 +1,6 @@
 #include "modules/solver/TMCMC/TMCMC.hpp"
 #include "modules/conduit/conduit.hpp"
 #include "modules/experiment/experiment.hpp"
-#include "modules/engine/engine.hpp"
 #include <numeric>
 #include <limits>
 #include <chrono>

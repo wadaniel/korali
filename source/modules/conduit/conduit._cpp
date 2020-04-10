@@ -1,5 +1,5 @@
+#include "engine.hpp"
 #include "modules/conduit/conduit.hpp"
-#include "modules/engine/engine.hpp"
 
 korali::Conduit* korali::_conduit;
 

@@ -1,8 +1,8 @@
+#include "engine.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/conduit/conduit.hpp"
 #include "modules/solver/solver.hpp"
 #include "modules/problem/problem.hpp"
-#include "modules/engine/engine.hpp"
 #include "modules/conduit/distributed/distributed.hpp"
 #include "auxiliar/koraliJson.hpp"
 

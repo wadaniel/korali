@@ -1,6 +1,10 @@
 #ifndef _KORALI_ENGINE_HPP_
 #define _KORALI_ENGINE_HPP_
 
+/** \file
+* @brief Include header for the Korali Engine
+*/
+
 #include "modules/experiment/experiment.hpp"
 #include "modules/conduit/distributed/distributed.hpp"
 #include "modules/conduit/conduit.hpp"

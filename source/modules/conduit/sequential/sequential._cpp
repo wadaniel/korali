@@ -1,8 +1,9 @@
+#include "engine.hpp"
 #include "modules/conduit/sequential/sequential.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/problem.hpp"
 #include "modules/solver/solver.hpp"
-#include "modules/engine/engine.hpp"
+
 
 void korali::conduit::Sequential::processSample(korali::Sample& sample)
 {

@@ -19,7 +19,7 @@ e["Problem"]["Likelihood Model"] = lambda sampleData: customModel(sampleData)
 
 # Configuring Nested Sampling parameters
 e["Solver"]["Type"] = "Nested"
-e["Solver"]["Population Size"] = 10000
+e["Solver"]["Number Live Points"] = 1000
 e["Solver"]["Batch Size"]      = 1
 e["Solver"]["Covariance Scaling"] = 0.04
 
@@ -33,9 +33,9 @@ e["Distributions"][0]["Maximum"] = +5.0
 e["Variables"][0]["Name"] = "a"
 e["Variables"][0]["Prior Distribution"] = "Uniform 0"
 
-e["File Output"]["Frequency"] = 0
-e["Console Output"]["Frequency"] = 500
-e["Solver"]["Termination Criteria"]["Max Generations"] = 100000
+e["File Output"]["Frequency"] = 100
+e["Console Output"]["Frequency"] = 5
+e["Solver"]["Termination Criteria"]["Max Generations"] = 10000
 e["Solver"]["Termination Criteria"]["Max Gain Factor"] = 1e-9
 
 # Starting Korali's Engine and running experiment

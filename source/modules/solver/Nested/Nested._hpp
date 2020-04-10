@@ -66,6 +66,11 @@ class Nested : public korali::Solver
   * @brief Generate posterior distribution from sample data base.
   */
  void generatePosterior();
+  
+ /*
+  * @brief Calculate effective number of samples.
+  */
+ double calcEffectiveSamples() const;
  
  /*
   * @brief Safely adding two values that are in log space. Returns in log space.

@@ -35,7 +35,7 @@ e["Variables"][0]["Prior Distribution"] = "Uniform 0"
 
 e["File Output"]["Frequency"] = 1
 e["Console Output"]["Frequency"] = 1
-e["Solver"]["Termination Criteria"]["Max Generations"] = 10000
+e["Solver"]["Termination Criteria"]["Max Generations"] = 2000
 e["Solver"]["Termination Criteria"]["Max Gain Factor"] = 1e-9
 
 # Starting Korali's Engine and running experiment

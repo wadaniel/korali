@@ -66,6 +66,11 @@ namespace korali
   void saveProfilingInfo(bool forceSave = false);
 
   /**
+   * @brief Initialization stage of the Korali Engine
+   */
+  void initialize() override;
+
+  /**
    * @brief Stores a set experiments into the experiment list and runs them to completion.
    * @param experiments Set of experiments.
    */
@@ -130,13 +135,20 @@ namespace korali
    * @brief Returns the worker teams MPI communication pointer (Distributed Conduit only).
    */
   static long int getMPICommPointer();
+
+  /**
+   * @brief Serializes Engine's data into a JSON object.
+   * @param js Json object onto which to store the Engine data.
+   */
+  void serialize(knlohmann::json& js);
+
+  /**
+   * @brief Deserializes JSON object and returns a Korali Engine
+   * @param js Json object onto which to store the Engine data.
+   * @return The Korali Engine
+   */
+  static Engine* deserialize(knlohmann::json& js);
  };
-
-/**
-* @brief Stack storing pointers to different Engine execution levels
-*/
-extern std::stack<Engine*> _engineStack;
-
 
 }
 

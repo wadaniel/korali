@@ -19,10 +19,6 @@ void korali::conduit::Distributed::initialize()
  // Instantiating Engine logger.
  _logger = new korali::Logger();
 
- korali::Engine* engine = _engineStack.top();
-
- if (engine->_isDryRun == true) return;
-
  #ifdef _KORALI_USE_MPI
  _rankCount = 1;
  _rankId = 0;
@@ -84,10 +80,6 @@ void korali::conduit::Distributed::initialize()
 
 void korali::conduit::Distributed::finalize()
 {
- korali::Engine* engine = _engineStack.top();
-
- if (engine->_isDryRun == true) return;
-
  #ifdef _KORALI_USE_MPI
  auto terminationJs = knlohmann::json();
  terminationJs["Conduit Action"] = "Terminate";
@@ -113,40 +105,73 @@ void korali::conduit::Distributed::finalize()
 
 void korali::conduit::Distributed::workerThread()
 {
- korali::Engine* engine = _engineStack.top();
-
  #ifdef _KORALI_USE_MPI
  if (_teamId == -1) return;
- auto sample = korali::Sample();
 
  while (true)
  {
-   size_t jsonStringSize;
-   MPI_Recv(&jsonStringSize, 1, MPI_UNSIGNED_LONG, getRootRank(), MPI_TAG_ACTION_JSON_SIZE, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+  printf("In Worker A -----------------------\n");
 
-   char jsonStringChar[jsonStringSize + 1];
-   MPI_Recv(jsonStringChar, jsonStringSize, MPI_CHAR, getRootRank(), MPI_TAG_ACTION_JSON_CONTENT, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+  size_t jsonStringSize;
+  MPI_Recv(&jsonStringSize, 1, MPI_UNSIGNED_LONG, getRootRank(), MPI_TAG_ACTION_JSON_SIZE, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-   jsonStringChar[jsonStringSize] = '\0';
-   sample._js.getJson() = knlohmann::json::parse(jsonStringChar);
+  printf("In Worker B -----------------------\n");
 
-   if (sample["Conduit Action"] == "Terminate") return;
+  char jsonStringChar[jsonStringSize + 1];
+  MPI_Recv(jsonStringChar, jsonStringSize, MPI_CHAR, getRootRank(), MPI_TAG_ACTION_JSON_CONTENT, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-   if (sample["Conduit Action"] == "Process Sample")
+  printf("In Worker C -----------------------\n");
+
+  jsonStringChar[jsonStringSize] = '\0';
+  auto actionJs = knlohmann::json::parse(jsonStringChar);
+
+  printf("In Worker D -----------------------\n");
+
+  if (actionJs["Conduit Action"] == "Terminate") return;
+
+  printf("In Worker E -----------------------\n");
+
+  if (actionJs["Conduit Action"] == "Process Sample")
+  {
+   korali::Engine* engine = _engineStack.top();
+
+   printf("In Worker 0 -----------------------\n");
+
+   korali::Sample sample;
+   sample._js.getJson() = actionJs;
+
+   printf("In Worker 1 -----------------------\n");
+
+   size_t experimentId = sample["Experiment Id"];
+   printf("In Worker 1A -----------------------\n");
+
+   printf("Sample: %s\n", actionJs.dump(2).c_str());
+   engine->_experimentVector[experimentId]->_problem->runOperation(sample["Operation"], sample);
+
+   printf("In Worker 2 -----------------------\n");
+
+   if (_localRankId == 0)
    {
-    size_t experimentId = sample["Experiment Id"];
-    engine->_experimentVector[experimentId]->_problem->runOperation(sample["Operation"], sample);
-
-    if (_localRankId == 0)
-    {
-      std::string resultJsonString = sample._js.getJson().dump();
-      size_t resultJsonSize = resultJsonString.size();
-      MPI_Send(&resultJsonSize, 1, MPI_UNSIGNED_LONG, getRootRank(), MPI_TAG_ACTION_JSON_SIZE, MPI_COMM_WORLD);
-      MPI_Send(resultJsonString.c_str(), resultJsonSize, MPI_CHAR, getRootRank(), MPI_TAG_ACTION_JSON_CONTENT, MPI_COMM_WORLD);
-    }
+     std::string resultJsonString = sample._js.getJson().dump();
+     size_t resultJsonSize = resultJsonString.size();
+     MPI_Send(&resultJsonSize, 1, MPI_UNSIGNED_LONG, getRootRank(), MPI_TAG_ACTION_JSON_SIZE, MPI_COMM_WORLD);
+     MPI_Send(resultJsonString.c_str(), resultJsonSize, MPI_CHAR, getRootRank(), MPI_TAG_ACTION_JSON_CONTENT, MPI_COMM_WORLD);
    }
 
-   MPI_Barrier(__KoraliTeamComm);
+   printf("In Worker 3 -----------------------\n");
+  }
+
+  printf("In Worker F -----------------------\n");
+
+  if (actionJs["Conduit Action"] == "Stack Engine") _engineStack.push(korali::Engine::deserialize(actionJs));
+
+  printf("In Worker G -----------------------\n");
+
+  if (actionJs["Conduit Action"] == "Pop Engine")  _engineStack.pop();
+
+  printf("In Worker H -----------------------\n");
+
+  MPI_Barrier(__KoraliTeamComm);
  }
  #endif
 }
@@ -209,6 +234,50 @@ void korali::conduit::Distributed::processSample(korali::Sample& sample)
 
  #endif
 }
+
+void korali::conduit::Distributed::stackEngine(korali::Engine* engine)
+{
+ _engineStack.push(engine);
+
+ auto engineJs = knlohmann::json();
+ engine->serialize(engineJs);
+ engineJs["Conduit Action"] = "Stack Engine";
+
+ std::string engineString = engineJs.dump();
+ size_t engineStringSize = engineString.size();
+
+ if (isRoot())
+ {
+  for (int i = 0; i < _teamCount; i++)
+   for (int j = 0; j < _workersPerTeam; j++)
+   {
+    MPI_Send(&engineStringSize, 1, MPI_UNSIGNED_LONG, _teamWorkers[i][j], MPI_TAG_ACTION_JSON_SIZE, MPI_COMM_WORLD);
+    MPI_Send(engineString.c_str(), engineStringSize, MPI_CHAR, _teamWorkers[i][j], MPI_TAG_ACTION_JSON_CONTENT, MPI_COMM_WORLD);
+   }
+ }
+}
+
+void korali::conduit::Distributed::popEngine()
+{
+ _engineStack.pop();
+
+ auto engineJs = knlohmann::json();
+ engineJs["Conduit Action"] = "Pop Engine";
+
+ std::string engineString = engineJs.dump();
+ size_t engineStringSize = engineString.size();
+
+ if (isRoot())
+ {
+  for (int i = 0; i < _teamCount; i++)
+   for (int j = 0; j < _workersPerTeam; j++)
+   {
+    MPI_Send(&engineStringSize, 1, MPI_UNSIGNED_LONG, _teamWorkers[i][j], MPI_TAG_ACTION_JSON_SIZE, MPI_COMM_WORLD);
+    MPI_Send(engineString.c_str(), engineStringSize, MPI_CHAR, _teamWorkers[i][j], MPI_TAG_ACTION_JSON_CONTENT, MPI_COMM_WORLD);
+   }
+ }
+}
+
 
 int korali::conduit::Distributed::getRootRank()
 {

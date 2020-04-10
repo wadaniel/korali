@@ -6,15 +6,13 @@
 #include "modules/conduit/distributed/distributed.hpp"
 #include "auxiliar/koraliJson.hpp"
 
-std::stack<korali::Engine*> korali::_engineStack;
-
 korali::Engine::Engine()
 {
  _cumulativeTime = 0.0;
  _thread = co_active();
 }
 
-void korali::Engine::run()
+void korali::Engine::initialize()
 {
  // Instantiating Engine logger.
  _logger = new korali::Logger();
@@ -44,14 +42,16 @@ void korali::Engine::run()
   if (_experimentVector.size() == 1) _experimentVector[i]->_logFile = stdout;
  }
 
- // Checking if its a dry run
+ // Checking if its a dry run and return if it is
  _isDryRun = _js["Dry Run"];
-
- // Adding the current engine to the conduit's engine stack
- _engineStack.push(this);
+ if (_isDryRun) return;
 
  // Configuring and initializing Conduit
- if (_engineStack.size() == 1) _conduit = dynamic_cast<korali::Conduit*>(getModule(_js["Conduit"]));
+ if (_conduit == NULL)
+ {
+   _conduit = (korali::Conduit*) 1;
+   _conduit = dynamic_cast<korali::Conduit*>(getModule(_js["Conduit"]));
+ }
 
  // Check configuration correctness
  auto js = _js.getJson();
@@ -60,23 +60,18 @@ void korali::Engine::run()
  if (korali::JsonInterface::isDefined(js, "['Profiling']['Detail']")) korali::JsonInterface::eraseValue(js, "['Profiling']['Detail']");
  if (korali::JsonInterface::isDefined(js, "['Profiling']['Path']")) korali::JsonInterface::eraseValue(js, "['Profiling']['Path']");
  if (korali::JsonInterface::isDefined(js, "['Profiling']['Frequency']")) korali::JsonInterface::eraseValue(js, "['Profiling']['Frequency']");
- if (korali::JsonInterface::isEmpty(js) == false) if (_conduit->isRoot()) _logger->logError("Unrecognized settings for Korali's Engine: \n%s\n", js.dump(2).c_str());
+ if (korali::JsonInterface::isEmpty(js) == false) _logger->logError("Unrecognized settings for Korali's Engine: \n%s\n", js.dump(2).c_str());
 
- // Recovering Conduit configuration
- if (_engineStack.size() == 1) _conduit->getConfiguration(_js.getJson()["Conduit"]);
+}
+
+void korali::Engine::run()
+{
+ // Stacking current Engine
+ _conduit->stackEngine(this);
 
  // If this is a worker process (not root), there's nothing else to do
  if (_conduit->isRoot())
  {
-  // If this is a dry run and configuration succeeded, print sucess and return
-  if (_isDryRun)
-  {
-   _logger->logInfo("Minimal",  "--------------------------------------------------------------------\n");
-   _logger->logInfo("Minimal",  "Dry Run Successful.\n");
-   _logger->logInfo("Minimal",  "--------------------------------------------------------------------\n");
-   return;
-  }
-
   // Setting base time for profiling.
   _startTime = std::chrono::high_resolution_clock::now();
   _profilingLastSave = std::chrono::high_resolution_clock::now();
@@ -111,14 +106,11 @@ void korali::Engine::run()
  for (size_t i = 0; i < _experimentVector.size(); i++)
   co_delete(_experimentVector[i]->_thread);
 
- if (_engineStack.size() == 1)
- {
-  // Finalizing Conduit
-  _conduit->finalize();
- }
-
  // Removing the current engine to the conduit's engine stack
- _engineStack.pop();
+ _conduit->popEngine();
+
+ // Finalizing Conduit if last engine in the stack
+ if (_conduit->_engineStack.size() == 0) _conduit->finalize();
 }
 
 void korali::Engine::saveProfilingInfo(bool forceSave)
@@ -142,6 +134,7 @@ void korali::Engine::run(korali::Experiment& experiment)
 {
  _experimentVector.clear();
  _experimentVector.push_back(experiment._k);
+ initialize();
  run();
 }
 
@@ -149,6 +142,7 @@ void korali::Engine::run(std::vector<korali::Experiment>& experiments)
 {
  _experimentVector.clear();
  for (size_t i = 0; i < experiments.size(); i++) _experimentVector.push_back(experiments[i]._k);
+ initialize();
  run();
 }
 
@@ -160,6 +154,31 @@ knlohmann::json& korali::Engine::operator[](const std::string& key) { return _js
 knlohmann::json& korali::Engine::operator[](const unsigned long int& key) { return _js[key]; }
 pybind11::object korali::Engine::getItem(pybind11::object key) { return _js.getItem(key); }
 void korali::Engine::setItem(pybind11::object key, pybind11::object val) { _js.setItem(key, val); }
+
+void korali::Engine::serialize(knlohmann::json& js)
+{
+  for (size_t i; i < _experimentVector.size(); i++)
+  {
+   _experimentVector[i]->getConfiguration(_experimentVector[i]->_js.getJson());
+   js["Experiment Vector"][i] = _experimentVector[i]->_js.getJson();
+  }
+}
+
+korali::Engine* korali::Engine::deserialize(knlohmann::json& js)
+{
+ auto k = new korali::Engine;
+
+ for (size_t i = 0; i < js["Experiment Vector"].size(); i++)
+ {
+  auto e = new korali::Experiment;
+  e->_js.getJson() = js["Experiment Vector"][i];
+  k->_experimentVector.push_back(e);
+ }
+
+ k->initialize();
+
+ return k;
+}
 
 PYBIND11_MODULE(libkorali, m)
 {

@@ -47,7 +47,7 @@ void korali::solver::Nested::setInitialConfiguration()
  _domainMean.resize(_k->_variables.size());
 
  // Init Generationa
- _logEvidence            = std::numeric_limits<double>::min();
+ _logEvidence            = std::numeric_limits<double>::lowest();
  _expectedLogShrinkage   = log((_numberLivePoints+1.)/_numberLivePoints);
  _logVolume              = 0.;
  _logEvidenceVar         = 0.;
@@ -55,8 +55,8 @@ void korali::solver::Nested::setInitialConfiguration()
  _lastAccepted           = 0;
  _acceptedSamples        = 0;
  _generatedSamples       = 0;
- _lStarOld               = std::numeric_limits<double>::min();
- _lStar                  = std::numeric_limits<double>::min();
+ _lStarOld               = std::numeric_limits<double>::lowest();
+ _lStar                  = std::numeric_limits<double>::lowest();
 
  (*_k)["Results"]["Posterior Samples"] = {};
 }
@@ -118,6 +118,7 @@ void korali::solver::Nested::runFirstGeneration()
     samples[c]["Sample Id"]    = c;
     _engine->_conduit->start(samples[c]);
     _modelEvaluationCount++;
+    _generatedSamples++;
   }
 
   size_t finishedCandidatesCount = 0;
@@ -172,10 +173,8 @@ void korali::solver::Nested::processGeneration()
     _logVolume -= _expectedLogShrinkage;
 
     double dLogVol = log(0.5*exp(logVolumeOld)-0.5*exp(_logVolume));
-    _logWeight = safeLogPlus(_lStar, _lStarOld) + dLogVol;
-    printf("lw : %f  %f  %f  %f\n", _logWeight, _lStar, _lStarOld, dLogVol);
-
-    _logEvidence  = safeLogPlus(_logEvidence, _logWeight);
+    _logWeight   = safeLogPlus(_lStar, _lStarOld) + dLogVol;
+    _logEvidence = safeLogPlus(_logEvidence, _logWeight);
 
     double logEvidenceTerm = exp(_lStarOld-_logEvidence) * _lStarOld 
         + exp(_lStar-_logEvidence) * _lStar;
@@ -338,16 +337,19 @@ void korali::solver::Nested::generatePosterior()
 double korali::solver::Nested::calcEffectiveSamples() const 
 {
     double logwtsum = 0.0;
-    double log2wtsum = 0.0;
+    double logwt2sum = 0.0;
 
     //TODO: summation not safe
     for(size_t i = 0; i < _databaseEntries; ++i)
     {
         logwtsum  += exp(_sampleLogWeightDatabase[i]);
-        log2wtsum += exp(2.0*_sampleLogWeightDatabase[i]);
+        logwt2sum += exp(2.0*_sampleLogWeightDatabase[i]);
     }
 
-    return exp(2.0*logwtsum - log2wtsum); 
+    logwtsum  = log(logwtsum);
+    logwt2sum = log(logwt2sum);
+
+    return exp(2.0*logwtsum - logwt2sum); 
 }
 
 double korali::solver::Nested::safeLogPlus(double logx, double logy) const
@@ -365,7 +367,7 @@ void korali::solver::Nested::printGenerationBefore() { return; }
 
 void korali::solver::Nested::printGenerationAfter() 
 { 
-  korali::logInfo("Minimal", "Log Evidence: %.4f (+- %.4f)\n", _logEvidence, _logEvidenceVar);
+  korali::logInfo("Minimal", "Log Evidence: %.4f (+- %.4f)\n", _logEvidence, sqrt(_logEvidenceVar));
   korali::logInfo("Minimal", "Accepted Samples: %zu (+%zu) \n", _acceptedSamples, _numberLivePoints);
   korali::logInfo("Minimal", "Effective Samples: %.2f\n", _numberEffectiveSamples);
   korali::logInfo("Minimal", "Sampling Efficiency: %.2f%%\n", 100.0*(_acceptedSamples+_numberLivePoints)/((double)_generatedSamples));

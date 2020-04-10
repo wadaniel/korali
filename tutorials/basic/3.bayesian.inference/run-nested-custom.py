@@ -19,7 +19,7 @@ e["Problem"]["Likelihood Model"] = lambda sampleData: customModel(sampleData)
 
 # Configuring Nested Sampling parameters
 e["Solver"]["Type"] = "Nested"
-e["Solver"]["Number Live Points"] = 1000
+e["Solver"]["Number Live Points"] = 1500
 e["Solver"]["Batch Size"]      = 1
 e["Solver"]["Covariance Scaling"] = 0.04
 
@@ -33,8 +33,8 @@ e["Distributions"][0]["Maximum"] = +5.0
 e["Variables"][0]["Name"] = "a"
 e["Variables"][0]["Prior Distribution"] = "Uniform 0"
 
-e["File Output"]["Frequency"] = 100
-e["Console Output"]["Frequency"] = 5
+e["File Output"]["Frequency"] = 1
+e["Console Output"]["Frequency"] = 1
 e["Solver"]["Termination Criteria"]["Max Generations"] = 10000
 e["Solver"]["Termination Criteria"]["Max Gain Factor"] = 1e-9
 

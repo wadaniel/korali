@@ -68,6 +68,8 @@ void korali::Engine::initialize()
 
 void korali::Engine::run()
 {
+ if (_isDryRun) return;
+
  // If this is a worker process (not root), there's nothing else to do
  if (_conduit->isRoot())
  {
@@ -109,7 +111,11 @@ void korali::Engine::run()
  _conduit->_engineStack.pop();
 
  // Finalizing Conduit if last engine in the stack
- if (_conduit->_engineStack.size() == 0) _conduit->finalize();
+ if (_conduit->_engineStack.size() == 0)
+ {
+  _conduit->finalize();
+  _conduit = NULL;
+ }
 }
 
 void korali::Engine::saveProfilingInfo(bool forceSave)

@@ -114,45 +114,27 @@ void korali::conduit::Distributed::workerThread()
 
  while (true)
  {
-  printf("In Worker A -----------------------\n");
-
   size_t jsonStringSize;
   MPI_Recv(&jsonStringSize, 1, MPI_UNSIGNED_LONG, getRootRank(), MPI_TAG_ACTION_JSON_SIZE, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-  printf("In Worker B -----------------------\n");
 
   char jsonStringChar[jsonStringSize + 1];
   MPI_Recv(jsonStringChar, jsonStringSize, MPI_CHAR, getRootRank(), MPI_TAG_ACTION_JSON_CONTENT, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-  printf("In Worker C -----------------------\n");
-
   jsonStringChar[jsonStringSize] = '\0';
   auto actionJs = knlohmann::json::parse(jsonStringChar);
 
-  printf("In Worker D -----------------------\n");
-
   if (actionJs["Conduit Action"] == "Terminate") return;
-
-  printf("In Worker E -----------------------\n");
 
   if (actionJs["Conduit Action"] == "Process Sample")
   {
    korali::Engine* engine = _engineStack.top();
 
-   printf("In Worker 0 -----------------------\n");
-
    korali::Sample sample;
    sample._js.getJson() = actionJs;
 
-   printf("In Worker 1 -----------------------\n");
-
    size_t experimentId = sample["Experiment Id"];
-   printf("In Worker 1A -----------------------\n");
 
-   printf("Sample: %s\n", actionJs.dump(2).c_str());
    engine->_experimentVector[experimentId]->_problem->runOperation(sample["Operation"], sample);
-
-   printf("In Worker 2 -----------------------\n");
 
    if (_localRankId == 0)
    {
@@ -161,19 +143,11 @@ void korali::conduit::Distributed::workerThread()
      MPI_Send(&resultJsonSize, 1, MPI_UNSIGNED_LONG, getRootRank(), MPI_TAG_ACTION_JSON_SIZE, MPI_COMM_WORLD);
      MPI_Send(resultJsonString.c_str(), resultJsonSize, MPI_CHAR, getRootRank(), MPI_TAG_ACTION_JSON_CONTENT, MPI_COMM_WORLD);
    }
-
-   printf("In Worker 3 -----------------------\n");
   }
-
-  printf("In Worker F -----------------------\n");
 
   if (actionJs["Conduit Action"] == "Stack Engine") _engineStack.push(korali::Engine::deserialize(actionJs));
 
-  printf("In Worker G -----------------------\n");
-
   if (actionJs["Conduit Action"] == "Pop Engine")  _engineStack.pop();
-
-  printf("In Worker H -----------------------\n");
 
   MPI_Barrier(__KoraliTeamComm);
  }

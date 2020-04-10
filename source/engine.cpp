@@ -52,9 +52,6 @@ void korali::Engine::initialize()
  // Stacking current Engine
  _conduit->_engineStack.push(this);
 
- // Initializing conduit server
- _conduit->initServer();
-
  // Check configuration correctness
  auto js = _js.getJson();
  if (korali::JsonInterface::isDefined(js, "['Dry Run']")) korali::JsonInterface::eraseValue(js, "['Dry Run']");
@@ -63,6 +60,12 @@ void korali::Engine::initialize()
  if (korali::JsonInterface::isDefined(js, "['Profiling']['Path']")) korali::JsonInterface::eraseValue(js, "['Profiling']['Path']");
  if (korali::JsonInterface::isDefined(js, "['Profiling']['Frequency']")) korali::JsonInterface::eraseValue(js, "['Profiling']['Frequency']");
  if (korali::JsonInterface::isEmpty(js) == false) _logger->logError("Unrecognized settings for Korali's Engine: \n%s\n", js.dump(2).c_str());
+
+ // Recovering Conduit configuration in case of restart
+  _conduit->getConfiguration(_js.getJson()["Conduit"]);
+
+ // Initializing conduit server
+  _conduit->initServer();
 
 }
 

@@ -9,7 +9,14 @@ void korali::solver::Integrator::setInitialConfiguration()
   for( size_t i = 0; i<_k->_variables.size(); i++ )
     _sampleCount *= _k->_variables[i]->_samplePoints.size();
   _maxModelEvaluations     = std::min(_maxModelEvaluations, _sampleCount);
-  _indices.assign(_k->_variables.size(),0);
+  _indicesHelper.resize(_k->_variables.size());
+  double helper;
+  _indicesHelper[0] = _k->_variables[0]->_samplePoints.size();
+  _indicesHelper[1] = _k->_variables[0]->_samplePoints.size();
+  for( size_t i = 2; i<_indicesHelper.size(); i++ )
+  {
+  	_indicesHelper[i] = _indicesHelper[i-1]*_k->_variables[i-1]->_samplePoints.size();
+  }
 }
 
 void korali::solver::Integrator::runGeneration()
@@ -22,19 +29,19 @@ void korali::solver::Integrator::runGeneration()
   std::vector<double> sampleData(_k->_variables.size());
   std::vector<std::vector<size_t>> usedIndices(_executionsPerGeneration,std::vector<size_t>(_k->_variables.size()));
 
-  for (size_t i = 0; i < _executionsPerGeneration; i++)
+  size_t rest, index;
+  for(size_t i = 0; i < _executionsPerGeneration; i++)
   {
-    for (size_t d = 0; d < _k->_variables.size(); d++) 
+  	rest = _modelEvaluationCount;
+    for( int d = _k->_variables.size()-1; d >= 0; d-- ) 
     {   
-        sampleData[d] = _k->_variables[d]->_samplePoints[_indices[d]];
-        usedIndices[i][d] = _indices[d];
-        for(size_t j = 0; j < _k->_variables.size(); j++)
-    	{
-    		if( _indices[j] < _k->_variables[d]->_samplePoints.size() ){
-    			_indices[j]++;
-    			break;
-    		}
-    	}
+    	// We assume i = _index[0] + _index[1]*_sample[1].size() + _index[1]*_index[2]*_sample[2].size() + .....
+    	if( d == 0 ) index = rest % _indicesHelper[d];
+    	else index = rest / _indicesHelper[d];
+    	rest -= index * _indicesHelper[d];
+
+        sampleData[d] = _k->_variables[d]->_samplePoints[index];
+        usedIndices[i][d] = index;
     }
 
     korali::logInfo("Detailed", "Running sample %zu/%zu with values:\n         ", _modelEvaluationCount+1,_sampleCount);
@@ -53,8 +60,9 @@ void korali::solver::Integrator::runGeneration()
   for (size_t i = 0; i < _executionsPerGeneration; i++)
   {
     weight = 1;
-    for(size_t d = 0; _k->_variables.size(); d++)
+    for(size_t d = 0; d<_k->_variables.size(); d++){
       weight *= _k->_variables[d]->_quadratureWeights[usedIndices[i][d]];
+    }
     f = samples[i]["Evaluation"];
     _integral += weight*f;
   }

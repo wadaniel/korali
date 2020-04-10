@@ -46,12 +46,11 @@ void korali::Engine::initialize()
  _isDryRun = _js["Dry Run"];
  if (_isDryRun) return;
 
- // Configuring and initializing Conduit
- if (_conduit == NULL)
- {
-   _conduit = (korali::Conduit*) 1;
-   _conduit = dynamic_cast<korali::Conduit*>(getModule(_js["Conduit"]));
- }
+ // Stacking current Engine
+ _conduit->stackEngine(this);
+
+ // If this is the first Engine in execution, configure and initialize Conduit
+ if (_conduit == NULL) _conduit = dynamic_cast<korali::Conduit*>(getModule(_js["Conduit"]));
 
  // Check configuration correctness
  auto js = _js.getJson();
@@ -66,9 +65,6 @@ void korali::Engine::initialize()
 
 void korali::Engine::run()
 {
- // Stacking current Engine
- _conduit->stackEngine(this);
-
  // If this is a worker process (not root), there's nothing else to do
  if (_conduit->isRoot())
  {

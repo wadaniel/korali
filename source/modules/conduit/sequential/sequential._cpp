@@ -34,3 +34,8 @@ void korali::conduit::Sequential::popEngine()
 {
  _engineStack.pop();
 }
+
+void korali::conduit::Sequential::initServer()
+{
+
+}

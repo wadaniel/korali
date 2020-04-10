@@ -73,10 +73,13 @@ void korali::conduit::Distributed::initialize()
 
  MPI_Barrier(MPI_COMM_WORLD);
 
- if (!isRoot()) workerThread();
  #endif
 }
 
+void korali::conduit::Distributed::initServer()
+{
+ if (!isRoot()) workerThread();
+}
 
 void korali::conduit::Distributed::finalize()
 {
@@ -102,6 +105,7 @@ void korali::conduit::Distributed::finalize()
 
  korali::Conduit::finalize();
 }
+
 
 void korali::conduit::Distributed::workerThread()
 {

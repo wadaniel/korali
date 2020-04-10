@@ -29,13 +29,6 @@ void korali::conduit::Concurrent::initialize()
   fcntl(_resultPipe[i][0], F_SETFL, fcntl(_resultPipe[i][0], F_GETFL) | O_NONBLOCK);
   fcntl(_resultPipe[i][1], F_SETFL, fcntl(_resultPipe[i][1], F_GETFL) | O_NONBLOCK);
  }
-
- for(int i = 0; i < _concurrentJobs; i++)
- {
-  pid_t processId = fork();
-  if (processId == 0) worker(i);
-  _workerPids.push_back(processId);
- }
 }
 
 void korali::conduit::Concurrent::finalize()
@@ -68,6 +61,16 @@ void korali::conduit::Concurrent::finalize()
  }
 
  korali::Conduit::finalize();
+}
+
+void korali::conduit::Concurrent::initServer()
+{
+ for(int i = 0; i < _concurrentJobs; i++)
+ {
+  pid_t processId = fork();
+  if (processId == 0) worker(i);
+  _workerPids.push_back(processId);
+ }
 }
 
 void korali::conduit::Concurrent::worker(int workerId)

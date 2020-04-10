@@ -83,6 +83,7 @@ class Distributed : public korali::Conduit
  bool _continueEvaluations;
  #endif
 
+ void initServer() override;
  void initialize() override;
  void finalize() override;
 

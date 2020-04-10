@@ -104,6 +104,7 @@ int main(int argc, char* argv[])
 
  k["Conduit"]["Type"] = "Distributed";
  k["Conduit"]["Workers Per Team"] = workersPerTeam;
+ k["Conduit"]["Communicator"] = MPI_COMM_WORLD;
  k["Profiling"]["Detail"] = "Full";
  k["Profiling"]["Frequency"] = 0.5;
 

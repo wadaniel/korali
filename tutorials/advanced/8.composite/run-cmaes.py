@@ -30,10 +30,10 @@ e["Variables"][0]["Upper Bound"] = +10.0
 e["Solver"]["Type"] = "CMAES"
 e["Solver"]["Population Size"] = 4 
 e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-15
-e["Solver"]["Termination Criteria"]["Max Generations"] = 100
+e["Solver"]["Termination Criteria"]["Max Generations"] = 20
 
 k["Conduit"]["Type"] = "Concurrent"
-k["Conduit"]["Concurrent Jobs"] = 4
+k["Conduit"]["Concurrent Jobs"] = 2
 
 # Running Korali
 k.run(e)

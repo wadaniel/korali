@@ -49,10 +49,10 @@ void korali::Engine::initialize()
  if (_isDryRun) return;
 
  // If this is the first Engine in execution, configure and initialize Conduit
- if (_conduit == NULL) _conduit = dynamic_cast<korali::Conduit*>(getModule(_js["Conduit"]));
+ auto conduit = dynamic_cast<korali::Conduit*>(getModule(_js["Conduit"]));
 
  // Stacking current Engine
- _conduit->_engineStack.push(this);
+ conduit->_engineStack.push(this);
 
  // Check configuration correctness
  auto js = _js.getJson();
@@ -64,11 +64,13 @@ void korali::Engine::initialize()
  if (korali::JsonInterface::isEmpty(js) == false) _logger->logError("Unrecognized settings for Korali's Engine: \n%s\n", js.dump(2).c_str());
 
  // Recovering Conduit configuration in case of restart
-  _conduit->getConfiguration(_js.getJson()["Conduit"]);
+ conduit->getConfiguration(_js.getJson()["Conduit"]);
 
  // Initializing conduit server
-  _conduit->initServer();
+ conduit->initServer();
 
+ // Setting Conduit Pointer. Remote workers will still see it NULL to support in-model Korali execution
+ _conduit = conduit;
 }
 
 void korali::Engine::run()

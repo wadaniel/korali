@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 
 # In this example, we demonstrate how Korali samples the posterior distribution
-# in a bayesian problem where the likelihood is calculated by providing
-# reference data points and their objective values.
+# from the gaussian likelihood function with uniform prior.
 
 # Importing the computational model
 import sys

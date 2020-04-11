@@ -35,6 +35,7 @@ class Solver : public korali::Module
   * @brief Initializes the solver with starting values for the first generation.
  */
  virtual void setInitialConfiguration() { };
+
 };
 
 extern korali::Solver* _currentSolver;

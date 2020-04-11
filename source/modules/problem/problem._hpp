@@ -15,14 +15,6 @@ class Problem : public korali::Module
      * @param operation Name of the operation
      * @param sample A Korali Sample
   */
-
- /**
- * @brief Runs the operation specified in the operation field. It checks recursively whether the function was found by the current module or its parents
- * @param sample Sample to operate on
- * @param operation An operation accepted by this module or its parents
- * @return True, if operation found and executed; false, otherwise.
- */
- virtual bool runOperation(std::string operation, korali::Sample& sample) { return false; };
 };
 
 } // namespace korali

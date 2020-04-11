@@ -354,18 +354,21 @@ void korali::solver::Nested::generatePosterior()
 
 double korali::solver::Nested::calcEffectiveSamples() const 
 {
+    if(_databaseEntries < 1) return 0.0;
+    
     double logwtsum = 0.0;
     double logwt2sum = 0.0;
 
-    //TODO: summation not safe
+    double minWeight = *min_element(std::begin(_sampleLogWeightDatabase), std::end(_sampleLogWeightDatabase));
+
     for(size_t i = 0; i < _databaseEntries; ++i)
     {
-        logwtsum  += exp(_sampleLogWeightDatabase[i]);
-        logwt2sum += exp(2.0*_sampleLogWeightDatabase[i]);
+        logwtsum  += exp(_sampleLogWeightDatabase[i]-minWeight);
+        logwt2sum += exp(2.0*(_sampleLogWeightDatabase[i]-minWeight));
     }
 
-    logwtsum  = log(logwtsum);
-    logwt2sum = log(logwt2sum);
+    logwtsum  = log(logwtsum + minWeight);
+    logwt2sum = log(logwt2sum + 2.0*minWeight);
 
     return exp(2.0*logwtsum - logwt2sum); 
 }

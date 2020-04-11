@@ -129,9 +129,9 @@ void korali::solver::Nested::runFirstGeneration()
 
   updateMeanAndCovariance();
   
-  sortLiveSamplesDescending();
+  sortLiveSamplesAscending();
  
-  _lStar         = _liveLogLikelihoods[_liveSamplesRank[_numberLivePoints-1]];
+  _lStar         = _liveLogLikelihoods[_liveSamplesRank[0]];
 
   return;
 }
@@ -140,7 +140,7 @@ void korali::solver::Nested::runFirstGeneration()
 void korali::solver::Nested::prepareGeneration()
 {
   
-  _maxEvaluation = _liveLogLikelihoods[_liveSamplesRank[0]];
+  _maxEvaluation = _liveLogLikelihoods[_liveSamplesRank[_numberLivePoints-1]];
   _numberEffectiveSamples = calcEffectiveSamples();
   
   if      (_resamplingMethod == "Mutation")  generateCandidatesFromMutation();
@@ -153,7 +153,7 @@ void korali::solver::Nested::prepareGeneration()
 
 void korali::solver::Nested::processGeneration()
 {
-  size_t sampleIdx = _liveSamplesRank[_numberLivePoints-1];
+  size_t sampleIdx = _liveSamplesRank[0];
   size_t acceptedBefore = _acceptedSamples;
   for (size_t c = 0; c < _batchSize ; ++c)
   {
@@ -189,10 +189,10 @@ void korali::solver::Nested::processGeneration()
     _liveLogLikelihoods[sampleIdx] = _candidateLogLikelihoods[c];
 
     // sort rank vector and update constraint
-    sortLiveSamplesDescending();
+    sortLiveSamplesAscending();
 
     // select new worst sample
-    sampleIdx = _liveSamplesRank[_numberLivePoints-1];
+    sampleIdx = _liveSamplesRank[0];
 
     _lStarOld = _lStar;
     _lStar    = _liveLogLikelihoods[sampleIdx];
@@ -252,11 +252,11 @@ void korali::solver::Nested::updateMeanAndCovariance()
 
 }
 
-void korali::solver::Nested::sortLiveSamplesDescending() 
+void korali::solver::Nested::sortLiveSamplesAscending() 
 {
   //TODO: speed up
   std::iota (std::begin(_liveSamplesRank), std::end(_liveSamplesRank), 0);
-  sort(_liveSamplesRank.begin(), _liveSamplesRank.end(), [this](const size_t & idx1, const size_t & idx2) -> bool { return this->_liveLogLikelihoods[idx1] > this->_liveLogLikelihoods[idx2]; });
+  sort(_liveSamplesRank.begin(), _liveSamplesRank.end(), [this](const size_t & idx1, const size_t & idx2) -> bool { return this->_liveLogLikelihoods[idx1] < this->_liveLogLikelihoods[idx2]; });
 
 }
 
@@ -288,9 +288,8 @@ void korali::solver::Nested::consumeLiveSamples()
   for(size_t i = 0; i < _numberLivePoints+1; ++i) logdvols[i] += log(0.5);
 
   for(size_t i = 0; i < _numberLivePoints; ++i)
-  //for(size_t i = 0; i < 10; ++i)
   {
-    sampleIdx = _liveSamplesRank[_numberLivePoints-i-1];
+    sampleIdx = _liveSamplesRank[i];
     
     logEvidenceOld = _logEvidence;
     informationOld = _information;

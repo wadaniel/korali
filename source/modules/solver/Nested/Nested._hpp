@@ -53,9 +53,9 @@ class Nested : public korali::Solver
  void updateMeanAndCovariance();
   
  /*
-  * @brief Descending sort of live sample indices based on evaluation.
+  * @brief Ascending sort of live sample ranks based on evaluation.
  */
- void sortLiveSamplesDescending();
+ void sortLiveSamplesAscending();
  
  /*
   * @brief Add sample to discard to sample database.

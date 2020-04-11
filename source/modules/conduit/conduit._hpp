@@ -4,6 +4,7 @@
 #include "modules/module.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/solver/solver.hpp"
+#include "modules/conduit/conduit.hpp"
 #include <vector>
 #include <chrono>
 #include <stack>

@@ -6,6 +6,8 @@
 #include "modules/conduit/distributed/distributed.hpp"
 #include "auxiliar/koraliJson.hpp"
 
+std::vector<std::function<void(korali::Sample&)>*> korali::_functionVector;
+
 korali::Engine::Engine()
 {
  _cumulativeTime = 0.0;

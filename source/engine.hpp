@@ -10,6 +10,7 @@
 #include "modules/conduit/conduit.hpp"
 #include "auxiliar/py2json.hpp"
 #include <chrono>
+#include <vector>
 
 namespace korali
 {

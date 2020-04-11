@@ -5,24 +5,22 @@ korali::Conduit* korali::_conduit = NULL;
 
 void korali::Conduit::coroutineWrapper()
 {
- korali::Engine* engine = _conduit->_engineStack.top();
+ korali::Engine* _engine = _conduit->_engine;
  korali::Sample* currentSample = _conduit->_currentSample;
- co_switch(engine->_currentExperiment->_thread);
- (*currentSample)["Experiment Id"] = engine->_currentExperiment->_experimentId;
- (*currentSample)["Current Generation"] = engine->_currentExperiment->_currentGeneration;
+ co_switch(_engine->_currentExperiment->_thread);
+ (*currentSample)["Experiment Id"] = _engine->_currentExperiment->_experimentId;
+ (*currentSample)["Current Generation"] = _engine->_currentExperiment->_currentGeneration;
 
  _conduit->processSample(*currentSample);
 
  currentSample->_state = SampleState::finished;
- co_switch(engine->_currentExperiment->_thread);
+ co_switch(_engine->_currentExperiment->_thread);
 
  if (currentSample->_state != SampleState::uninitialized) _conduit->_logger->logError("Resuming a finished sample\n");
 }
 
 void korali::Conduit::start(korali::Sample& sample)
 {
- korali::Engine* engine = _engineStack.top();
-
  if (sample._state != SampleState::uninitialized) _logger->logError("Sample has already been initialized.\n");
 
  if (sample._isAllocated == false)
@@ -38,18 +36,16 @@ void korali::Conduit::start(korali::Sample& sample)
 
 void korali::Conduit::wait(korali::Sample& sample)
 {
- korali::Engine* engine = _engineStack.top();
-
  while(sample._state == SampleState::waiting || sample._state == SampleState::initialized)
  {
   sample._state = SampleState::running;
   co_switch(sample._sampleThread);
 
-  if (sample._state == SampleState::waiting || sample._state == SampleState::initialized) co_switch(engine->_thread);
+  if (sample._state == SampleState::waiting || sample._state == SampleState::initialized) co_switch(_engine->_thread);
  }
 
  size_t sampleId = sample["Sample Id"];
- engine->_currentExperiment->_sampleInfo["Samples"][sampleId] = sample._js.getJson();
+ _engine->_currentExperiment->_sampleInfo["Samples"][sampleId] = sample._js.getJson();
  if (sample._isAllocated == true) { free(sample._sampleThread); sample._isAllocated = false; }
  sample._state = SampleState::uninitialized;
 
@@ -57,7 +53,6 @@ void korali::Conduit::wait(korali::Sample& sample)
 
 size_t korali::Conduit::waitAny(std::vector<korali::Sample>& samples)
 {
- korali::Engine* engine = _engineStack.top();
  bool isFinished = false;
  size_t currentSample;
 
@@ -74,7 +69,7 @@ size_t korali::Conduit::waitAny(std::vector<korali::Sample>& samples)
    if (samples[currentSample]._state == SampleState::finished)
    {
     size_t sampleId = samples[currentSample]["Sample Id"];
-    engine->_currentExperiment->_sampleInfo["Samples"][sampleId] = samples[currentSample]._js.getJson();
+    _engine->_currentExperiment->_sampleInfo["Samples"][sampleId] = samples[currentSample]._js.getJson();
     if (samples[currentSample]._isAllocated == true) { free(samples[currentSample]._sampleThread); samples[currentSample]._isAllocated = false; }
     samples[currentSample]._state = SampleState::uninitialized;
     isFinished = true;
@@ -82,7 +77,7 @@ size_t korali::Conduit::waitAny(std::vector<korali::Sample>& samples)
    }
   }
 
-  if (isFinished == false) co_switch(engine->_thread);
+  if (isFinished == false) co_switch(_engine->_thread);
  }
 
  return currentSample;
@@ -90,7 +85,6 @@ size_t korali::Conduit::waitAny(std::vector<korali::Sample>& samples)
 
 void korali::Conduit::waitAll(std::vector<korali::Sample>& samples)
 {
- korali::Engine* engine = _engineStack.top();
  bool isFinished = false;
 
  while (isFinished == false)
@@ -105,13 +99,13 @@ void korali::Conduit::waitAll(std::vector<korali::Sample>& samples)
     co_switch(samples[i]._sampleThread);
    }
 
-  if (isFinished == false) co_switch(engine->_thread);
+  if (isFinished == false) co_switch(_engine->_thread);
  }
 
  for (size_t i = 0; i < samples.size(); i++)
  {
   size_t sampleId = samples[i]["Sample Id"];
-  engine->_currentExperiment->_sampleInfo["Samples"][sampleId] = samples[i]._js.getJson();
+  _engine->_currentExperiment->_sampleInfo["Samples"][sampleId] = samples[i]._js.getJson();
   if (samples[i]._isAllocated == true) { free(samples[i]._sampleThread); samples[i]._isAllocated = false; }
   samples[i]._state = SampleState::uninitialized;
  }

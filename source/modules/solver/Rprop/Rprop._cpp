@@ -30,6 +30,7 @@ void korali::solver::Rprop::setInitialConfiguration()
 void korali::solver::Rprop::evaluateFunctionAndGradient( korali::Sample& sample )
 {
   // Initializing Sample Evaluation
+  sample["Module"] = "Problem";
   sample["Operation"]  = "Evaluate";
   sample["Parameters"] = _currentX;
   sample["Sample Id"]  = 0;

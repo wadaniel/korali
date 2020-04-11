@@ -21,6 +21,7 @@ void korali::solver::Executor::runGeneration()
     for(auto& x : sampleData) _k->_logger->logData("Detailed", " %le   ", x);
     _k->_logger->logData("Detailed", "\n");
 
+    samples[i]["Module"] = "Problem";
     samples[i]["Operation"]  = "Execute";
     samples[i]["Parameters"] = sampleData;
     samples[i]["Sample Id"]  = _modelEvaluationCount;

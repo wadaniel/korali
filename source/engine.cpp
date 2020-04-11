@@ -52,7 +52,7 @@ void korali::Engine::initialize()
  auto conduit = dynamic_cast<korali::Conduit*>(getModule(_js["Conduit"]));
 
  // Stacking current Engine
- conduit->_engineStack.push(this);
+ conduit->_engine = this;
 
  // Check configuration correctness
  auto js = _js.getJson();
@@ -114,15 +114,9 @@ void korali::Engine::run()
  for (size_t i = 0; i < _experimentVector.size(); i++)
   co_delete(_experimentVector[i]->_thread);
 
- // Removing the current engine to the conduit's engine stack
- _conduit->_engineStack.pop();
-
- // Finalizing Conduit if last engine in the stack
- if (_conduit->_engineStack.size() == 0)
- {
+ // Finalizing Conduit
   _conduit->finalize();
   _conduit = NULL;
- }
 }
 
 void korali::Engine::saveProfilingInfo(bool forceSave)

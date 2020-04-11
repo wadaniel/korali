@@ -144,6 +144,7 @@ void korali::solver::LMCMAES::runGeneration()
  std::vector<korali::Sample> samples(_populationSize);
  for (size_t i = 0; i < _populationSize; i++)
  {
+  samples[i]["Module"] = "Problem";
   samples[i]["Operation"]  = "Evaluate";
   samples[i]["Parameters"] = _samplePopulation[i];
   samples[i]["Sample Id"]  = i;
@@ -167,6 +168,7 @@ void korali::solver::LMCMAES::prepareGeneration()
     _infeasibleSampleCount++;
     sampleSingle(i);
     korali::Sample sample;
+    sample["Module"] = "Problem";
     sample["Parameters"] = _samplePopulation[i];
     sample["Operation"] = "Check Feasibility";
     _conduit->start(sample);

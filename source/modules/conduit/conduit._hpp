@@ -4,6 +4,7 @@
 #include "modules/module.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/solver/solver.hpp"
+#include "modules/conduit/conduit.hpp"
 #include <vector>
 #include <chrono>
 #include <stack>
@@ -22,10 +23,31 @@ class Conduit : public korali::Module {
  korali::Logger* _logger;
 
  /**
+ * @brief Stack storing pointers to different Engine execution levels
+ */
+ std::stack<Engine*> _engineStack;
+
+ /**
  * @brief Accepts a sample for processing.
  * @param A Korali sample
  */
  virtual void processSample(korali::Sample& sample) = 0;
+
+ /**
+  * @brief Stacks a new Engine into the engine stack
+  * @param A Korali Engine
+  */
+ virtual void stackEngine(korali::Engine* engine) = 0;
+
+ /**
+  * @brief Pops the current Engine from the engine stack
+  */
+ virtual void popEngine() = 0;
+
+ /**
+  * @brief Initializes the worker/server bifurcation in the conduit
+  */
+ virtual void initServer() = 0;
 
  /**
  * @brief Determines whether the caller rank/thread/process is root.

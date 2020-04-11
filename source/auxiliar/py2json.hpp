@@ -44,7 +44,8 @@ namespace knlohmann
     inline void adl_serializer<std::function<void(korali::Sample&)>>::to_json(json& j, const std::function<void(korali::Sample&)>& obj)
     {
        auto x = new std::function<void(korali::Sample&)>(obj);
-       j = (std::uint64_t) x;
+       j = korali::_functionVector.size();
+       korali::_functionVector.push_back(x);
     }
 
     /*! \namespace detail
@@ -116,7 +117,10 @@ namespace knlohmann
             }
             if (pybind11::isinstance<pybind11::function>(obj))
             {
-               return (std::uint64_t) new std::function<void(korali::Sample&)>(obj.cast<std::function<void(korali::Sample&)>>());
+              auto x = new std::function<void(korali::Sample&)>(obj.cast<std::function<void(korali::Sample&)>>());
+              auto j = korali::_functionVector.size();
+              korali::_functionVector.push_back(x);
+              return j;
             }
             if (pybind11::isinstance<pybind11::bool_>(obj))
             {

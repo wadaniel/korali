@@ -29,21 +29,10 @@ void korali::conduit::Concurrent::initialize()
   fcntl(_resultPipe[i][0], F_SETFL, fcntl(_resultPipe[i][0], F_GETFL) | O_NONBLOCK);
   fcntl(_resultPipe[i][1], F_SETFL, fcntl(_resultPipe[i][1], F_GETFL) | O_NONBLOCK);
  }
-
- for(int i = 0; i < _concurrentJobs; i++)
- {
-  pid_t processId = fork();
-  if (processId == 0) worker(i);
-  _workerPids.push_back(processId);
- }
 }
 
 void korali::conduit::Concurrent::finalize()
 {
- korali::Engine* engine = _engineStack.top();
-
- if (engine->_isDryRun == true) return;
-
  auto terminationJs = knlohmann::json();
  terminationJs["Conduit Action"] = "Terminate";
 
@@ -74,10 +63,18 @@ void korali::conduit::Concurrent::finalize()
  korali::Conduit::finalize();
 }
 
+void korali::conduit::Concurrent::initServer()
+{
+ for(int i = 0; i < _concurrentJobs; i++)
+ {
+  pid_t processId = fork();
+  if (processId == 0) worker(i);
+  _workerPids.push_back(processId);
+ }
+}
+
 void korali::conduit::Concurrent::worker(int workerId)
 {
- korali::Engine* engine = _engineStack.top();
-
  while(true)
  {
   size_t inputStringSize;
@@ -91,7 +88,7 @@ void korali::conduit::Concurrent::worker(int workerId)
 
   if (actionJs["Conduit Action"] == "Terminate") exit(0);
 
-  if (actionJs["Conduit Action"] == "Process Sample");
+  if (actionJs["Conduit Action"] == "Process Sample")
   {
    korali::Sample sample;
    sample._js.getJson() = actionJs;
@@ -99,13 +96,19 @@ void korali::conduit::Concurrent::worker(int workerId)
    size_t experimentId = sample["Experiment Id"];
    std::string operation = sample["Operation"];
 
+   korali::Engine* engine = _engineStack.top();
    engine->_experimentVector[experimentId]->_problem->runOperation(operation, sample);
+
    std::string resultString = sample._js.getJson().dump();
    size_t resultStringSize = resultString.size();
 
    write(_resultPipe[workerId][1], &resultStringSize, sizeof(size_t));
    write(_resultPipe[workerId][1], resultString.c_str(), resultStringSize * sizeof(char));
   }
+
+  if (actionJs["Conduit Action"] == "Stack Engine") _engineStack.push(korali::Engine::deserialize(actionJs));
+
+  if (actionJs["Conduit Action"] == "Pop Engine")  _engineStack.pop();
  }
 }
 
@@ -170,37 +173,38 @@ void korali::conduit::Concurrent::processSample(korali::Sample& sample)
  __profiler["Timelines"]["Worker " + std::to_string(launcherId)] += js;
 
 }
-//
-//void korali::conduit::Concurrent::stackEngine(korali::Engine* engine)
-//{
-// if (engine->_isDryRun == true) return;
-//
-//  auto terminationJs = knlohmann::json();
-//  terminationJs["Conduit Action"] = "Terminate";
-//
-//  std::string terminationString = terminationJs.dump();
-//  size_t terminationStringSize = terminationString.size();
-//
-//  for(int i = 0; i < _concurrentJobs; i++)
-//  {
-//   write(_inputsPipe[i][1], &terminationStringSize, sizeof(size_t));
-//   write(_inputsPipe[i][1], terminationString.c_str(), terminationStringSize * sizeof(char));
-//  }
-//
-//  for(int i = 0; i < _concurrentJobs; i++)
-//  {
-//   int status;
-//   pid_t processId;
-//   processId = ::wait(&status);
-//  }
-//
-//  for (int i = 0; i < _concurrentJobs; i++)
-//  {
-//   close(_resultPipe[i][1]); // Closing pipes
-//   close(_resultPipe[i][0]); // Closing pipes
-//   close(_inputsPipe[i][1]); // Closing pipes
-//   close(_inputsPipe[i][0]); // Closing pipes
-//  }
-//
-//
-//}
+
+void korali::conduit::Concurrent::stackEngine(korali::Engine* engine)
+{
+  _engineStack.push(engine);
+
+  auto engineJs = knlohmann::json();
+  engine->serialize(engineJs);
+  engineJs["Conduit Action"] = "Stack Engine";
+
+  std::string engineString = engineJs.dump();
+  size_t engineStringSize = engineString.size();
+
+  for(int i = 0; i < _concurrentJobs; i++)
+  {
+   write(_inputsPipe[i][1], &engineStringSize, sizeof(size_t));
+   write(_inputsPipe[i][1], engineString.c_str(), engineStringSize * sizeof(char));
+  }
+}
+
+void korali::conduit::Concurrent::popEngine()
+{
+ _engineStack.pop();
+
+  auto engineJs = knlohmann::json();
+  engineJs["Conduit Action"] = "Pop Engine";
+
+  std::string engineString = engineJs.dump();
+  size_t engineStringSize = engineString.size();
+
+  for(int i = 0; i < _concurrentJobs; i++)
+  {
+   write(_inputsPipe[i][1], &engineStringSize, sizeof(size_t));
+   write(_inputsPipe[i][1], engineString.c_str(), engineStringSize * sizeof(char));
+  }
+}

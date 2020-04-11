@@ -1,11 +1,11 @@
 #include "engine.hpp"
 #include "modules/conduit/conduit.hpp"
 
-korali::Conduit* korali::_conduit;
+korali::Conduit* korali::_conduit = NULL;
 
 void korali::Conduit::coroutineWrapper()
 {
- korali::Engine* engine = _engineStack.top();
+ korali::Engine* engine = _conduit->_engineStack.top();
  korali::Sample* currentSample = _conduit->_currentSample;
  co_switch(engine->_currentExperiment->_thread);
  (*currentSample)["Experiment Id"] = engine->_currentExperiment->_experimentId;

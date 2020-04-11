@@ -1,6 +1,7 @@
 #include "korali.hpp"
 #include "model/jacobi.h"
 #include <unistd.h>
+#include <stdlib.h>
 
 int main(int argc, char* argv[])
 {
@@ -86,25 +87,16 @@ int main(int argc, char* argv[])
  e["Solver"]["Type"] = "TMCMC";
  e["Solver"]["Covariance Scaling"] = 0.02;
  e["Solver"]["Population Size"] = 200;
- e["Solver"]["Termination Criteria"]["Max Generations"] = 4;
 
  auto k = korali::Engine();
 
  k["Conduit"]["Type"] = "Distributed";
  k["Conduit"]["Workers Per Team"] = workersPerTeam;
+ k["Conduit"]["Communicator"] = MPI_COMM_WORLD;
  k["Profiling"]["Detail"] = "Full";
  k["Profiling"]["Frequency"] = 0.5;
 
  // We run a few generations first
- k.run(e);
-
- // Re-load results from checkpoint file
- e.loadState();
-
- // And continue with the final generations.
- e["Problem"]["Computational Model"] = &jacobi;
- e["Solver"]["Termination Criteria"]["Max Generations"] = 10;
-
  k.run(e);
 
  return 0;

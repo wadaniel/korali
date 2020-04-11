@@ -25,7 +25,7 @@ class Nested : public korali::Solver
  /** 
   * @brief Generates new samples by copying and mutating randomly selected samples
   */
- void generateCandidatesFromMutation();
+ void generateCandidatesFromMCMC();
 
  /** 
   * @brief Generate new samples uniformly in Box

@@ -1,8 +1,9 @@
+#include "engine.hpp"
 #include "modules/conduit/sequential/sequential.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/problem.hpp"
 #include "modules/solver/solver.hpp"
-#include "modules/engine/engine.hpp"
+
 
 void korali::conduit::Sequential::processSample(korali::Sample& sample)
 {
@@ -24,3 +25,17 @@ void korali::conduit::Sequential::processSample(korali::Sample& sample)
  __profiler["Timelines"]["Worker 0"] += js;
 }
 
+void korali::conduit::Sequential::stackEngine(korali::Engine* engine)
+{
+ _engineStack.push(engine);
+}
+
+void korali::conduit::Sequential::popEngine()
+{
+ _engineStack.pop();
+}
+
+void korali::conduit::Sequential::initServer()
+{
+
+}

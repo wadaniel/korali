@@ -1,6 +1,5 @@
 #include "modules/solver/recursiveDiscretizer/recursiveDiscretizer.hpp"
 #include "modules/conduit/conduit.hpp"
-#include "modules/engine/engine.hpp"
 
 void korali::solver::RecursiveDiscretizer::setInitialConfiguration()
 {

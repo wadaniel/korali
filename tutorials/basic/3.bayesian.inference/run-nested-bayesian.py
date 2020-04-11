@@ -23,7 +23,7 @@ e["Problem"]["Computational Model"] = lambda sampleData: model(sampleData, getRe
 e["Solver"]["Type"] = "Nested"
 e["Solver"]["Number Live Points"] = 1500
 e["Solver"]["Batch Size"] = 1
-e["Solver"]["Covariance Scaling"] = 1.0
+e["Solver"]["Covariance Scaling"] = 0.1
 e["Solver"]["Add Live Points"] = True
 
 
@@ -56,7 +56,7 @@ e["Variables"][2]["Prior Distribution"] = "Uniform 2"
 
 e["File Output"]["Frequency"] = 0
 e["Console Output"]["Frequency"] = 500
-e["Solver"]["Termination Criteria"]["Max Generations"] = 6500
+e["Solver"]["Termination Criteria"]["Max Generations"] = 100000
 e["Solver"]["Termination Criteria"]["Max Gain Factor"] = 1e-9
 
 # Starting Korali's Engine and running experiment

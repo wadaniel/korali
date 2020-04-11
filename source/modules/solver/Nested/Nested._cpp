@@ -332,7 +332,7 @@ void korali::solver::Nested::generatePosterior()
     std::iota(std::begin(permutation), std::end(permutation), 0);
     std::random_shuffle(permutation.begin(), permutation.end());
 
-    size_t rndIdx, localRndIdx;
+    size_t rndIdx;
     _posteriorSamples.clear();
     
     double k = 1.0;
@@ -340,9 +340,7 @@ void korali::solver::Nested::generatePosterior()
     for(size_t i = 0; i < _databaseEntries; ++i)
     {
         rndIdx = permutation[i];
-
-        sum += exp(_sampleLogWeightDatabase[localRndIdx]-maxLogWtDb);
-        
+        sum += exp(_sampleLogWeightDatabase[rndIdx]-maxLogWtDb);
         if(sum > k)
         {
             _posteriorSamples.push_back(_sampleDatabase[rndIdx]);

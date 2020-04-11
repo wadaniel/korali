@@ -211,6 +211,8 @@ void korali::conduit::Distributed::processSample(korali::Sample& sample)
 
 void korali::conduit::Distributed::stackEngine(korali::Engine* engine)
 {
+ #ifdef _KORALI_USE_MPI
+
  _engineStack.push(engine);
 
  auto engineJs = knlohmann::json();
@@ -229,10 +231,14 @@ void korali::conduit::Distributed::stackEngine(korali::Engine* engine)
     MPI_Send(engineString.c_str(), engineStringSize, MPI_CHAR, _teamWorkers[i][j], MPI_TAG_ACTION_JSON_CONTENT, _communicator);
    }
  }
+
+ #endif
 }
 
 void korali::conduit::Distributed::popEngine()
 {
+ #ifdef _KORALI_USE_MPI
+
  _engineStack.pop();
 
  auto engineJs = knlohmann::json();
@@ -250,6 +256,8 @@ void korali::conduit::Distributed::popEngine()
     MPI_Send(engineString.c_str(), engineStringSize, MPI_CHAR, _teamWorkers[i][j], MPI_TAG_ACTION_JSON_CONTENT, _communicator);
    }
  }
+
+ #endif
 }
 
 

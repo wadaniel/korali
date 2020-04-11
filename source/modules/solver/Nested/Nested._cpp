@@ -10,6 +10,7 @@
 
 void korali::solver::Nested::setInitialConfiguration()
 {
+ printf("DASDAS\n");
  if(_covarianceScaling <= 0.0) korali::logError("Covariance Scaling must be larger 0.0 (is %lf).\n", _covarianceScaling);
  if(_maxGainFactor < 0.0) korali::logError("Max Gain Factor must be larger equal 0.0 (is %lf).\n", _maxGainFactor);
  
@@ -45,26 +46,30 @@ void korali::solver::Nested::setInitialConfiguration()
  _boxUpperBound.resize(_k->_variables.size());
 
  // Init Generationa
- _logEvidence            = std::numeric_limits<double>::lowest();
- _expectedLogShrinkage   = log((_numberLivePoints+1.)/_numberLivePoints);
- _logVolume              = 0.;
- _logEvidenceVar         = 0.;
- _information            = 0.;
- _lastAccepted           = 0;
- _acceptedSamples        = 0;
- _generatedSamples       = 0;
- _lStarOld               = std::numeric_limits<double>::lowest();
- _lStar                  = std::numeric_limits<double>::lowest();
+ _logEvidence          = std::numeric_limits<double>::lowest();
+ _expectedLogShrinkage = log((_numberLivePoints+1.)/_numberLivePoints);
+ _logVolume            = 0.;
+ _logEvidenceVar       = 0.;
+ _information          = 0.;
+ _lastAccepted         = 0;
+ _acceptedSamples      = 0;
+ _generatedSamples     = 0;
+ _lStarOld             = std::numeric_limits<double>::lowest();
+ _lStar                = std::numeric_limits<double>::lowest();
 
+ printf("DASDAS\n");
  (*_k)["Results"]["Posterior Samples"] = {};
 }
 
 void korali::solver::Nested::runGeneration()
 {
+  printf("start\n");
   if (_k->_currentGeneration == 1) 
   { 
     setInitialConfiguration(); 
     runFirstGeneration(); 
+
+    printf("DASDAS\n");
     return; 
   };
 
@@ -132,6 +137,7 @@ void korali::solver::Nested::runFirstGeneration()
    finishedCandidatesCount++;
   }
 
+  printf("xXXXS\n");
   updateMeanAndCovariance();
   
   sortLiveSamplesAscending();
@@ -244,7 +250,7 @@ void korali::solver::Nested::generateCandidatesFromEllipse()
 
 void korali::solver::Nested::updateMeanAndCovariance() 
 {
-  if (_k->_currentGeneration % _proposalUpdateFrequency != 0) return;
+  //if (_k->_currentGeneration % _proposalUpdateFrequency != 0) return;
 
   for (size_t d = 0; d < _k->_variables.size(); d++) _domainMean[d] = 0.0;
   

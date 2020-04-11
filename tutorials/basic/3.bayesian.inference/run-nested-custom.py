@@ -21,7 +21,7 @@ e["Problem"]["Likelihood Model"] = lambda sampleData: customModel(sampleData)
 e["Solver"]["Type"] = "Nested"
 e["Solver"]["Number Live Points"] = 1500
 e["Solver"]["Batch Size"] = 1
-e["Solver"]["Covariance Scaling"] = 1.0
+e["Solver"]["Covariance Scaling"] = 2.0
 e["Solver"]["Add Live Points"] = True
 
 # Configuring the problem's random distributions

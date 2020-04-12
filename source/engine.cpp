@@ -12,15 +12,15 @@ korali::Engine::Engine()
 {
  _cumulativeTime = 0.0;
  _thread = co_active();
+
+ // Turn Off GSL Error Handler
+ gsl_set_error_handler_off();
 }
 
 void korali::Engine::initialize()
 {
  // Instantiating Engine logger.
  _logger = new korali::Logger();
-
- // Turn Off GSL Error Handler
- gsl_set_error_handler_off();
 
  if (! korali::JsonInterface::isDefined(_js.getJson(), "['Profiling']['Detail']")) _js["Profiling"]["Detail"] = "None";
  if (! korali::JsonInterface::isDefined(_js.getJson(), "['Profiling']['Path']")) _js["Profiling"]["Path"] = "./profiling.json";
@@ -44,15 +44,9 @@ void korali::Engine::initialize()
   if (_experimentVector.size() == 1) _experimentVector[i]->_logFile = stdout;
  }
 
- // Checking if its a dry run and return if it is
- _isDryRun = _js["Dry Run"];
- if (_isDryRun) return;
-
- // If this is the first Engine in execution, configure and initialize Conduit
- auto conduit = dynamic_cast<korali::Conduit*>(getModule(_js["Conduit"]));
-
  // Check configuration correctness
  auto js = _js.getJson();
+ if (korali::JsonInterface::isDefined(js, "['Conduit']")) korali::JsonInterface::eraseValue(js, "['Conduit']");
  if (korali::JsonInterface::isDefined(js, "['Dry Run']")) korali::JsonInterface::eraseValue(js, "['Dry Run']");
  if (korali::JsonInterface::isDefined(js, "['Conduit']['Type']")) korali::JsonInterface::eraseValue(js, "['Conduit']['Type']");
  if (korali::JsonInterface::isDefined(js, "['Profiling']['Detail']")) korali::JsonInterface::eraseValue(js, "['Profiling']['Detail']");
@@ -60,22 +54,31 @@ void korali::Engine::initialize()
  if (korali::JsonInterface::isDefined(js, "['Profiling']['Frequency']")) korali::JsonInterface::eraseValue(js, "['Profiling']['Frequency']");
  if (korali::JsonInterface::isEmpty(js) == false) _logger->logError("Unrecognized settings for Korali's Engine: \n%s\n", js.dump(2).c_str());
 
- if (_conduit == NULL)
- {
-  // Recovering Conduit configuration in case of restart
-  conduit->getConfiguration(_js.getJson()["Conduit"]);
-
-  // Initializing conduit server
-  conduit->initServer();
-
-  // Setting Conduit Pointer. Remote workers will still see it NULL to support in-model Korali execution
-  _conduit = conduit;
- }
+ // Checking if its a dry run and return if it is
+ _isDryRun = _js["Dry Run"];
+ if (_isDryRun) return;
 }
 
 void korali::Engine::run()
 {
+ // Checking if its a dry run and return if it is
  if (_isDryRun) return;
+
+ // Only initialize conduit if the Engine being ran is the first one in the process
+ if (_conduit == NULL)
+ {
+  // Configuring conduit
+  auto conduit = dynamic_cast<korali::Conduit*>(getModule(_js["Conduit"]));
+
+  // Initializing conduit server
+  conduit->initServer();
+
+  // Assigning pointer after starting workers, so they can initialize their own conduit
+  _conduit = conduit;
+
+  // Recovering Conduit configuration in case of restart
+  _conduit->getConfiguration(_js.getJson()["Conduit"]);
+ }
 
  // Stacking current Engine
  _conduit->stackEngine(this);

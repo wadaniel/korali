@@ -1,6 +1,5 @@
 #include "modules/solver/integrator/integrator.hpp"
 #include "modules/conduit/conduit.hpp"
-#include "modules/engine/engine.hpp"
 
 void korali::solver::Integrator::setInitialConfiguration()
 {
@@ -40,17 +39,17 @@ void korali::solver::Integrator::runGeneration()
     	else index = rest / _indicesHelper[d];
     	rest -= index * _indicesHelper[d];
 
-        sampleData[d] = _k->_variables[d]->_samplePoints[index];
-        usedIndices[i][d] = index;
+      sampleData[d] = _k->_variables[d]->_samplePoints[index];
+      usedIndices[i][d] = index;
     }
 
     _k->_logger->logInfo("Detailed", "Running sample %zu/%zu with values:\n         ", _modelEvaluationCount+1,_sampleCount);
     for(auto& x : sampleData) _k->_logger->logData("Detailed", " %le   ", x);
     _k->_logger->logData("Detailed", "\n");
 
+    samples[i]["Module"] = "Problem";
     samples[i]["Operation"]  = "Execute";
     samples[i]["Parameters"] = sampleData;
-    samples[i]["Sample Id"]  = _modelEvaluationCount;
     _conduit->start(samples[i]);
     _modelEvaluationCount++;
   }

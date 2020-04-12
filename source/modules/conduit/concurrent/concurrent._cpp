@@ -3,6 +3,7 @@
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/problem.hpp"
 #include "modules/solver/solver.hpp"
+#include <sched.h>
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <fcntl.h>
@@ -91,6 +92,7 @@ void korali::conduit::Concurrent::worker(int workerId)
     if (curPos + bufSize > inputStringSize) bufSize = inputStringSize - curPos;
     read(_inputsPipe[workerId][0], inputString + curPos, bufSize * sizeof(char));
     curPos += bufSize;
+    sched_yield(); // Guarantees MacOs finishes the pipe reading
   }
   inputString[inputStringSize] = '\0';
 

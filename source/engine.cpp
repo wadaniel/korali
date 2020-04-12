@@ -51,9 +51,6 @@ void korali::Engine::initialize()
  // If this is the first Engine in execution, configure and initialize Conduit
  auto conduit = dynamic_cast<korali::Conduit*>(getModule(_js["Conduit"]));
 
- // Stacking current Engine
- conduit->_engineStack.push(this);
-
  // Check configuration correctness
  auto js = _js.getJson();
  if (korali::JsonInterface::isDefined(js, "['Dry Run']")) korali::JsonInterface::eraseValue(js, "['Dry Run']");
@@ -63,19 +60,25 @@ void korali::Engine::initialize()
  if (korali::JsonInterface::isDefined(js, "['Profiling']['Frequency']")) korali::JsonInterface::eraseValue(js, "['Profiling']['Frequency']");
  if (korali::JsonInterface::isEmpty(js) == false) _logger->logError("Unrecognized settings for Korali's Engine: \n%s\n", js.dump(2).c_str());
 
- // Recovering Conduit configuration in case of restart
- conduit->getConfiguration(_js.getJson()["Conduit"]);
+ if (_conduit == NULL)
+ {
+  // Recovering Conduit configuration in case of restart
+  conduit->getConfiguration(_js.getJson()["Conduit"]);
 
- // Initializing conduit server
- conduit->initServer();
+  // Initializing conduit server
+  conduit->initServer();
 
- // Setting Conduit Pointer. Remote workers will still see it NULL to support in-model Korali execution
- _conduit = conduit;
+  // Setting Conduit Pointer. Remote workers will still see it NULL to support in-model Korali execution
+  _conduit = conduit;
+ }
 }
 
 void korali::Engine::run()
 {
  if (_isDryRun) return;
+
+ // Stacking current Engine
+ _conduit->stackEngine(this);
 
  // If this is a worker process (not root), there's nothing else to do
  if (_conduit->isRoot())
@@ -115,7 +118,7 @@ void korali::Engine::run()
   co_delete(_experimentVector[i]->_thread);
 
  // Removing the current engine to the conduit's engine stack
- _conduit->_engineStack.pop();
+ _conduit->popEngine();
 
  // Finalizing Conduit if last engine in the stack
  if (_conduit->_engineStack.size() == 0)

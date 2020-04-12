@@ -7,7 +7,7 @@ void korali::problem::optimization::Stochastic::evaluate(korali::Sample& sample)
  std::string sampleString = "['F(x)']";
 
  if ( korali::JsonInterface::isDefined(sample._js.getJson(), sampleString) == false)
-   korali::logError("The %s problem needs a function evaluation. Be sure that you assign a value to the %s attribute in the model definition.\n", _k->_problem->getType().c_str(), sampleString.c_str());
+   _k->_logger->logError("The %s problem needs a function evaluation. Be sure that you assign a value to the %s attribute in the model definition.\n", _k->_problem->getType().c_str(), sampleString.c_str());
 
  double evaluation = sample["F(x)"];
 

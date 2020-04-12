@@ -6,7 +6,7 @@ void korali::problem::bayesian::Reference::initialize()
 {
   korali::problem::Bayesian::initialize();
 
-  if (_referenceData.size() == 0) korali::logError("Bayesian (%s) problems require defining reference data.\n", _likelihoodModel.c_str());
+  if (_referenceData.size() == 0) _k->_logger->logError("Bayesian (%s) problems require defining reference data.\n", _likelihoodModel.c_str());
 
   if( _likelihoodModel != "Additive Normal General"){
     bool foundSigma = false;
@@ -14,10 +14,10 @@ void korali::problem::bayesian::Reference::initialize()
       std::string varName = _k->_variables[i]->_name;
       if (varName == "[Sigma]") { sigmaVariableIndex = i; foundSigma = true; }
     }
-    if (foundSigma == false) korali::logError("Bayesian (%s) problems require defining a variable named: '[Sigma]'.\n", _likelihoodModel.c_str());
+    if (foundSigma == false) _k->_logger->logError("Bayesian (%s) problems require defining a variable named: '[Sigma]'.\n", _likelihoodModel.c_str());
   }
 
-  if (_k->_variables.size() < 2) korali::logError("Bayesian (%s) inference problems require at least one model variable.\n", _likelihoodModel.c_str());
+  if (_k->_variables.size() < 2) _k->_logger->logError("Bayesian (%s) inference problems require at least one model variable.\n", _likelihoodModel.c_str());
 }
 
 
@@ -26,7 +26,7 @@ void korali::problem::bayesian::Reference::evaluateLogLikelihood(korali::Sample&
   sample.run(_computationalModel);
 
   if (sample["Reference Evaluations"].size() != _referenceData.size())
-    korali::logError("This Bayesian (%s) problem requires a %lu-sized result array. Provided: %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), sample["Reference Evaluations"].size());
+    _k->_logger->logError("This Bayesian (%s) problem requires a %lu-sized result array. Provided: %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), sample["Reference Evaluations"].size());
 
   if (_likelihoodModel == "Additive Normal")            loglikelihoodNormalAdditive(sample);
   if (_likelihoodModel == "Additive Normal Variance")   loglikelihoodNormalAdditiveVariance(sample);
@@ -35,7 +35,7 @@ void korali::problem::bayesian::Reference::evaluateLogLikelihood(korali::Sample&
 
   if (_likelihoodModel == "Additive Normal General"){
     if( sample["Reference Evaluations"].size() != sample["Standard Deviation Model"].size() )
-      korali::logError("This Bayesian (%s) problem requires two %lu-sized result arrays. Provided: %lu and %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), sample["Reference Evaluations"].size(), sample["Standard Deviation Model"].size() );
+      _k->_logger->logError("This Bayesian (%s) problem requires two %lu-sized result arrays. Provided: %lu and %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), sample["Reference Evaluations"].size(), sample["Standard Deviation Model"].size() );
     loglikelihoodNormalGeneral(sample);
   }
 
@@ -48,7 +48,7 @@ double korali::problem::bayesian::Reference::compute_sse( std::vector<double> x,
   {
     if( !isfinite(x[i]) )
     {
-      korali::logWarning("Normal","Non-finite value detected in the results passed in the log-likelihood function.\n");
+      _k->_logger->logWarning("Normal","Non-finite value detected in the results passed in the log-likelihood function.\n");
       return korali::Inf;
     }
     double diff = y[i] - x[i];
@@ -64,11 +64,11 @@ double korali::problem::bayesian::Reference::compute_normalized_sse( std::vector
   {
 
     if( !isfinite(f[i]) || !isfinite(g[i]) ){
-      korali::logWarning("Normal","Non-finite value detected in the results passed in the log-likelihood function.\n");
+      _k->_logger->logWarning("Normal","Non-finite value detected in the results passed in the log-likelihood function.\n");
       return korali::Inf;
     }
     if( g[i]<=0 ){
-      korali::logError("Negative or zero value detected in the standard deviation results passed in the log-likelihood function.\n");
+      _k->_logger->logError("Negative or zero value detected in the standard deviation results passed in the log-likelihood function.\n");
       return korali::Inf;
     }
     double diff = ( y[i] - f[i] ) / g[i];
@@ -117,7 +117,7 @@ void korali::problem::bayesian::Reference::loglikelihoodNormalMultiplicative(kor
 
     if( !isfinite(eval) )
     {
-      korali::logWarning("Normal","Non-finite value detected in the results passed in the log-likelihood function.\n");
+      _k->_logger->logWarning("Normal","Non-finite value detected in the results passed in the log-likelihood function.\n");
       sample["logLikelihood"] = -korali::Inf;
       return;
     }
@@ -143,7 +143,7 @@ void korali::problem::bayesian::Reference::loglikelihoodNormalMultiplicativeData
 
     if( !isfinite(eval) )
     {
-      korali::logWarning("Normal","Non-finite value detected in the results passed in the log-likelihood function.\n");
+      _k->_logger->logWarning("Normal","Non-finite value detected in the results passed in the log-likelihood function.\n");
       sample["logLikelihood"] = -korali::Inf;
       return;
     }

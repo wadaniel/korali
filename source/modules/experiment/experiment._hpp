@@ -22,11 +22,22 @@ class Experiment : public korali::Module {
  Experiment();
 
  void initialize() override;
+ void finalize() override;
 
  /**
   * @brief JSON object to store the experiment's configuration
   */
  korali::KoraliJson  _js;
+
+ /**
+  * @brief A pointer to the Experiment's logger object.
+ */
+ korali::Logger* _logger;
+
+ /**
+ * @brief A pointer to the parent engine
+ */
+ korali::Engine* _engine;
 
  /**
   * @brief JSON object to details of all the samples that have been executed, if requested by the user.

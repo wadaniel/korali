@@ -16,7 +16,6 @@
 namespace korali {
 
 class Experiment;
-class Engine;
 class Conduit;
 
 /*! \class Module
@@ -35,11 +34,6 @@ class Module
   * @brief Stores termination criteria for the module.
   */
   std::vector<std::string> _terminationCriteria;
-
-  /**
-  * @brief Stores a pointer to the parent Engine
-  */
-  korali::Engine* _engine;
 
   /**
   * @brief Stores a pointer to its containing experiment.
@@ -97,6 +91,14 @@ class Module
    * @brief Applies the module's default variable configuration to each variable in the Experiment upon creation.
   */
   virtual void applyVariableDefaults() {};
+
+  /**
+  * @brief Runs the operation specified in the operation field. It checks recursively whether the function was found by the current module or its parents
+  * @param sample Sample to operate on
+  * @param operation An operation accepted by this module or its parents
+  * @return True, if operation found and executed; false, otherwise.
+  */
+  virtual bool runOperation(std::string operation, korali::Sample& sample) { return false; };
 };
 
 /**

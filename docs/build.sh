@@ -91,8 +91,8 @@ check
 #fi
 
 # Running Doxygen
-#./doxygen doxygen.config
-#check
+doxygen doxygen.config
+check
 
 #fi
 

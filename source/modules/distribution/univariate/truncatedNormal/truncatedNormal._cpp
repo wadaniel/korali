@@ -1,5 +1,6 @@
 #include "modules/distribution/univariate/truncatedNormal/truncatedNormal.hpp"
 #include "external/rtnormCpp/src/rtnorm.hpp"
+#include "modules/experiment/experiment.hpp"
 
 double korali::distribution::univariate::TruncatedNormal::getDensity(double x)
 {
@@ -21,7 +22,7 @@ double korali::distribution::univariate::TruncatedNormal::getRandomNumber()
 
 void korali::distribution::univariate::TruncatedNormal::updateDistribution()
 {
-  if (_sigma <= 0.0)  korali::logError("Incorrect Standard Deviation parameter of Truncated Normal distribution: %f.\n", _sigma);
+  if (_sigma <= 0.0)  _k->_logger->logError("Incorrect Standard Deviation parameter of Truncated Normal distribution: %f.\n", _sigma);
 
   if (_maximum-_minimum <= 0.0)
     _aux = korali::NaN;

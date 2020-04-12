@@ -5,6 +5,7 @@ from tkinter.messagebox import showerror, showwarning, showinfo
 import os, sys
 import json
 import copy                     # recursiveUpdate
+from functools import partial # Callback to retrieve values from entries
 
 
 
@@ -45,7 +46,51 @@ variables = {}
 
 #############################################################
 ## ******************* FUNCTIONS ****************************
-       
+
+
+# ******************* TUTORIAL ******************
+def tutorial():
+    
+    def page2():
+        tut.destroy()
+        tut2 = tk.Tk()
+
+        def page3():
+            tut2.destroy() # Destroys page 2 and opens page 3:
+            tut3 = tk.Tk()
+
+            tut3.wm_title('Part 3!')
+
+            label = ttk.Label(tut3, text = 'Part 3', font = NORM_FONT)
+            label.pack(side='top', fill='x', pady=10)
+            B1 = ttk.Button(tut3, text='Done!', command=tut3.destroy)
+            B1.pack()
+            tut3.mainloop()
+
+        tut2.wm_title('Part 2!')
+        label = ttk.Label(tut2, text = 'Part 2', font = NORM_FONT)
+        label.pack(side='top', fill='x', pady=10)
+        B1 = ttk.Button(tut2, text='Done!', command= page3)
+        B1.pack()
+        tut2.mainloop()
+
+    tut = tk.Tk()
+    tut.wm_title('Tutorial')
+    label = ttk.Label(tut, text='What do you need help with?', font = NORM_FONT)
+    label.pack(side='top', fill='x', pady=10)
+
+    B1 = ttk.Button(tut, text = 'Overview of the application', command = page2)
+    B1.pack()
+    B2 = ttk.Button(tut, text = 'How do I get Days-timed data?', command = lambda:popupmsgwarning('Not yet complited')) # How do I trade???
+    B2.pack()
+    B3 = ttk.Button(tut, text = 'Graph Question/Help', command = lambda: popupmsgwarning('Not yet complited'))
+    B3.pack()
+
+    tut.mainloop()
+## -------------------------END OF TUTORIAL FUNCTION ----------------
+     
+
+############################### QUICK FUNCTIONS:
 def popupmsgwarning(text):
     Tk().withdraw()
     showwarning(title = 'Error',message=text)
@@ -88,28 +133,70 @@ def getNextTabId():
 
     for item in totalTabs.widget:
         pass
-    
-
 
 def explainDescription(description):
     tut = tk.Tk()
     half = len(description)/2
     tut.wm_title('Description')
-    label = ttk.Label(tut, text= description[0:int(half)]+'\n'+description[int(half+1)::], font = NORM_FONT)
+    label = ttk.Label(tut, text= description[0:int(half)]+'\n'+description[int(half)::], font = NORM_FONT)
     label.pack(side='top', fill='x', pady=10)
     tut.maxsize('900','300')
+
+def getValues(entry, f):
+    global selectedtab # To know at which experiment we are.
+    global experiments
+    name = {}
+    entries = experiments[selectedtab]['entry']
+    for entry_label in  entries.keys():
+        entry = entries[entry_label]
+        print(entry_label +'=' + entry.get())
+        
+
+def callback(var, *args):
+    print(var.get())
     
-def printVariables(DB,directorio,self,cont):
+################
+################ DELETE FUNCTIONS:
+
+
+def deleteTab(self,totalTabs):
+    global contador
+    if contador >2:
+        for item in totalTabs.winfo_children():
+            if str(item)==totalTabs.select():
+                item.destroy()
+                return
+    else:
+        popupmsgwarning('At least 2 experiments to delete 1')
+
+def deleteVariable(self):
+    global contadorVariables
+    global experiments
+    global selectedtab
+    
+    totalTabs2 = experiments[selectedtab]['totalTabs2']
+    ## Delete Tab and frame inside:
+    if len(totalTabs2.tabs()) > 1:
+        totalTabs2.forget(totalTabs2.select())
+    else:
+        popupmsgwarning('At least 2 variables to delete 1')
+
+#################
+################# PRINTING FUNCTIONS:
+
+def printVariables(self,directorio,DB,cont):
+    '''
+    linktoVariables refers to the .config path of each element of the cascade. This path also works
+    as a key in 'variables' dictionary, and as a value, we can find their variables configuration.
+    '''
     global on
+    global experiments
     global variables
     global linktoVariables0
     global linktoVariables1
-    '''        
-    if cont == 1 and cont == on:
-        return
-    elif cont == 0 and on == -1:
-        return
-    '''
+    
+    
+    # IF AND ONLY IF WE HAVE A PROBLEM AND A SOLVER SET...
     if (cont == 0 and on == 1) or (cont == 0 and on == 0):
         linktoVariables0 = DB[directorio]['config']
         on += -1
@@ -125,7 +212,9 @@ def printVariables(DB,directorio,self,cont):
         linktoVariables = []
         linktoVariables.append(linktoVariables0)    # Añadimos las variables que vienen del Problem.
         linktoVariables.append(linktoVariables1)    # Añadimos las variables que vienen del Solver.
-
+        #cont = 2
+        #printConfig(directorio,DB, cont)
+    
         ro = 0
         co = 0
 
@@ -147,11 +236,11 @@ def printVariables(DB,directorio,self,cont):
                         fakedescription = str(description[0:42])+'...'
                     else:
                         fakedescription = description
-                                    
+                    #print(variables[part])
                     if 'vector' not in variables[part][llave]:
                                         
                         if 'string' in variables[part][llave] or 'korali' in variables[part][llave]: # == 'std::string
-                            self.label=tk.Label(self, text=texto, width = 17,justify='left', bg='azure', anchor="w", font="Arial 16")
+                            self.label=tk.Label(self, text=texto, width = 17,justify='left', bg='floralwhite', anchor="w", font="Arial 16")
                             self.label.grid(row=ro, column=co,pady = 20,padx=20, sticky='w')
                             self.entryVar[texto] = tk.Entry(self,width=10,textvariable = string_Var)
                             self.entryVar[texto].grid(row=ro, column=co+1, pady= 20, padx=20, sticky = 'w')
@@ -162,23 +251,26 @@ def printVariables(DB,directorio,self,cont):
                             self.buttonLabel.grid(row=ro, column=co+3,sticky='w')
                             #self.label2=tk.Label(self, text = descripcion,bg='azure',relief = 'raised', font = font, width = 60)
                             #self.label2.grid(row=r, column=c+3,sticky='w')
+                            #self.entryVar[texto].trace('w', partial(callback, key,self.entryVar[texto] ))
                                             
                         elif variables[part][llave] == 'double':
-                            self.label=tk.Label(self, text=texto, width = 17,justify='left', bg='azure', anchor="w", font="Arial 16")
+                            self.label=tk.Label(self, text=texto, width = 17,justify='left', bg='floralwhite', anchor="w", font="Arial 16")
                             self.label.grid(row=ro, column=co,pady = 20,padx=20, sticky='w')
                             self.spinbox = Spinbox(self, width=10, from_=0, to=9999, wrap=True, textvariable=num, state='normal')
                             self.spinbox.grid(row=ro, column=co+1, pady= 20, padx=20)
                             self.corrector = self.register(validardigit)
                             self.spinbox.config(validate = 'key',validatecommand = (self.corrector,'%P')) # %P represents the parameter we want to pass to validate.
-                            #spinbox_value = spinbox.get()
+                            self.buttonLabel = tk.Button(self, text = fakedescription, width = 45, activeforeground = 'darkcyan', bg = 'azure',activebackground = 'white',
+                                                command = lambda:explainDescription(description))
+                            self.buttonLabel.grid(row=ro, column=co+3,sticky='w')#spinbox_value = spinbox.get()
                                         
                         elif variables[part][llave] == 'bool':
-                            self.label=tk.Label(self, text=texto, width = 17,justify='left',bg='azure', anchor="w", font="Arial 16")
+                            self.label=tk.Label(self, text=texto, width = 17,justify='left',bg='floralwhite', anchor="w", font="Arial 16")
                             self.label.grid(row=ro, column=co,pady = 20,padx=20, sticky='w')
-                            self.true = tk.Radiobutton(self, width=10,text='Yes',highlightbackground = 'azure',activeforeground ='white', bg='azure',
+                            self.true = tk.Radiobutton(self, width=10,text='Yes',highlightbackground = 'azure',activeforeground ='white', bg='floralwhite',
                                                         activebackground='darkcyan',borderwidth = 0,variable=boolean, value='t')
                                             
-                            self.false = tk.Radiobutton(self,width=10, text='No',activeforeground = 'white',bg='azure',
+                            self.false = tk.Radiobutton(self,width=10, text='No',activeforeground = 'white',bg='floralwhite',
                                                         activebackground='lightcoral',highlightbackground = 'azure',borderwidth = 0,variable=boolean, value='f')
                                             
                             self.true.grid(row=ro, column=co+1, columnspan = 1,pady= 20, padx=20, sticky = 'w')
@@ -186,14 +278,13 @@ def printVariables(DB,directorio,self,cont):
                                             
                     else:
                         if variables[part][llave] == 'double':
-                            self.label=tk.Label(self, text=texto, width = 17,justify='left', bg='azure', anchor="w", font="Arial 16")
+                            self.label=tk.Label(self, text=texto, width = 17,justify='left', bg='floralwhite', anchor="w", font="Arial 16")
                             self.label.grid(row=ro, column=co,pady = 20,padx=20, sticky='w')
                             self.entry_vector_double = Entry(self, width=10,textvariable = string_Var)
                             self.entry_vector_double.grid(row=ro, column=1, pady= 20, padx=20)
                             self.corrector = self.register(validardigit)
                                             
                     ro +=1
-            
         
     else:
         for widget in self.winfo_children():
@@ -201,24 +292,41 @@ def printVariables(DB,directorio,self,cont):
     #print(on)
     
     
-
-def printConfig(directorio, self,DB,where):
+    
+#printConfig(directorio,DB, cont)
+def printConfig(directorio,DB, cont):
+    
     global printVariable
+    global selectedtab
+
+    # From which cascade do we come from? Problem, Solver or Variable?
+    if cont == 0:
+        self = experiments[selectedtab]['rightFrame']
+    elif cont == 1:
+        self = experiments[selectedtab]['bottomleftFrame']
+    elif cont == 2:
+        self = experiments[selectedtab]['bottomrightFrame']
+    #####
+
+    ## DELETE ANY WIDGET THAT WAS THERE BEFORE:
     for widget in self.winfo_children():
         widget.destroy()
+    
     # Set variables:
     r = 0
     c = 0
-    double_Var = tk.DoubleVar()
-    string_Var = tk.StringVar()
-    num = tk.IntVar()
-    boolean = tk.BooleanVar()
 
-    self.titulo=tk.Label(self, text=list(DB.keys())[0] ,justify='left', anchor="w", font="Arial 18")
+    # Start reading and printing on screen:
+    self.titulo=tk.Label(self, text=list(DB.keys())[0] ,justify='left', anchor="w", font="Arial 18", bg = 'darkcyan', fg='white')
     self.titulo.grid(row=r, column=c,pady = 10 ,padx=20, sticky='w', columnspan = 4)
     config = DB[directorio]['herencia']
     conf_sett = 'Configuration Settings'
     self.entry = {}
+    experiments[selectedtab]['entry'] = self.entry
+    self.stringVar = {}
+    double_Var = tk.DoubleVar()
+    num = tk.IntVar()
+    boolean = tk.BooleanVar()
     
     if conf_sett in config.keys():
     # Loop through herencia.
@@ -229,7 +337,7 @@ def printConfig(directorio, self,DB,where):
                     if type(dicc) == dict:
                         if 'Type' not in dicc.keys():
                             popupmsgwarning("No 'Type' field found")
-                            break 
+                            break
                         else:  
                             for key2 in dicc.keys():
                                 if key2 == 'Type':
@@ -243,11 +351,14 @@ def printConfig(directorio, self,DB,where):
                                         fakedescription = description
                                     
                                     if 'vector' not in dicc[key2]:
+                                        #print(dicc[key2])
                                         
                                         if 'string' in dicc[key2] or 'korali' in dicc[key2]: # == 'std::string
                                             self.label=tk.Label(self, text=texto, width = 17,justify='left', bg='azure', anchor="w", font="Arial 16")
                                             self.label.grid(row=r, column=c,pady = 20,padx=20, sticky='w')
-                                            self.entry[texto] = tk.Entry(self,width=10,textvariable = string_Var)
+                                            self.stringVar[texto] = tk.StringVar()
+                                            #self.stringVar[texto].trace('w', partial(callback,self.stringVar[texto]))
+                                            self.entry[texto] = tk.Entry(self,width=10,textvariable = self.stringVar[texto])
                                             self.entry[texto].grid(row=r, column=c+1, pady= 20, padx=20, sticky = 'w')
                                             self.corrector = self.register(validarstring)
                                             self.entry[texto].config(validate = 'focus',validatecommand = (self.corrector,'%P')) # %P represents the parameter we want to pass to validate.
@@ -278,12 +389,27 @@ def printConfig(directorio, self,DB,where):
                                             self.true.grid(row=r, column=c+1, columnspan = 1,pady= 20, padx=20, sticky = 'w')
                                             self.false.grid(row=r, column=c+2, pady= 20, columnspan= 1, padx=20, sticky = 'w')
                                             
+                                        elif dicc[key2] == 'size_t':
+                                            self.label=tk.Label(self, text=texto, width = 17,justify='left', bg='azure', anchor="w", font="Arial 16")
+                                            self.label.grid(row=r, column=c,pady = 20,padx=20, sticky='w')
+                                            self.stringVar[texto] = tk.StringVar()
+                                            self.entry[texto] = tk.Entry(self,width=10,textvariable = self.stringVar[texto])
+                                            self.entry[texto].grid(row=r, column=c+1, pady= 20, padx=20, sticky = 'w')
+                                            self.corrector = self.register(validarstring)
+                                            self.entry[texto].config(validate = 'focus',validatecommand = (self.corrector,'%P')) # %P represents the parameter we want to pass to validate.
+                                            self.buttonLabel = tk.Button(self, text = fakedescription, width = 45, activeforeground = 'darkcyan', bg = 'azure',activebackground = 'white',
+                                                                         command = lambda:explainDescription(description))
+                                            self.buttonLabel.grid(row=r, column=c+3,sticky='w')
+                                            
+                                            
                                     else:
                                         if dicc[key2] == 'double':
                                             self.label=tk.Label(self, text=texto, width = 17,justify='left', bg='azure', anchor="w", font="Arial 16")
                                             self.label.grid(row=r, column=c,pady = 20,padx=20, sticky='w')
-                                            self.entry_vector_double = Entry(self, width=10,textvariable = string_Var)
-                                            self.entry_vector_double.grid(row=r, column=1, pady= 20, padx=20)
+                                            self.stringVar[texto] = tk.StringVar()
+                                            self.entry[texto] = tk.Entry(self,width=10,textvariable = self.stringVar[texto])
+                                            #self.entry_vector_double = Entry(self, width=10,textvariable = string_Var)
+                                            self.entry[texto].grid(row=r, column=1, pady= 20, padx=20)
                                             self.corrector = self.register(validardigit)
                                             
                                 r+=1
@@ -295,13 +421,13 @@ def printConfig(directorio, self,DB,where):
         popupmsgwarning('No Configuration Settings found')
     
         
-    #self.button_done = tk.Button(self, text = 'Done!',bd = 3,command = lambda: getValues(self))
-    #self.button_done.grid(row=0, column=1, pady= 20, padx=20, sticky = 'W')
+    self.button_done = tk.Button(self, text = 'Done!',bd = 3,command = lambda: getValues(self.entry,self))
+    self.button_done.grid(row=0, column=1, pady= 20, padx=20, sticky = 'W')
+    self.update_idletasks
                         
-def getValues(rightFrame):
-    name = rightFrame.entry.get()
-    print(name)
-
+##########################
+########################## MAIN FUNCTIONS:
+    
 def recursiveUpdate(dest, defaults):
  if (isinstance(defaults, dict)):               # Si default es un diccionario...
   for k, x in defaults.items():                 # Para cada key y valor.
@@ -387,53 +513,12 @@ def crearVariables(diccionario):
             if diccionario[key]['herencia']['Variables Configuration']:
                 for key2 in diccionario[key]['herencia']['Variables Configuration']:
                     variables[diccionario[key]['config']] = key2
-
-
-# ******************* TUTORIAL ******************
-def tutorial():
-    
-    def page2():
-        tut.destroy()
-        tut2 = tk.Tk()
-
-        def page3():
-            tut2.destroy() # Destroys page 2 and opens page 3:
-            tut3 = tk.Tk()
-
-            tut3.wm_title('Part 3!')
-
-            label = ttk.Label(tut3, text = 'Part 3', font = NORM_FONT)
-            label.pack(side='top', fill='x', pady=10)
-            B1 = ttk.Button(tut3, text='Done!', command=tut3.destroy)
-            B1.pack()
-            tut3.mainloop()
-
-        tut2.wm_title('Part 2!')
-        label = ttk.Label(tut2, text = 'Part 2', font = NORM_FONT)
-        label.pack(side='top', fill='x', pady=10)
-        B1 = ttk.Button(tut2, text='Done!', command= page3)
-        B1.pack()
-        tut2.mainloop()
-
-    tut = tk.Tk()
-    tut.wm_title('Tutorial')
-    label = ttk.Label(tut, text='What do you need help with?', font = NORM_FONT)
-    label.pack(side='top', fill='x', pady=10)
-
-    B1 = ttk.Button(tut, text = 'Overview of the application', command = page2)
-    B1.pack()
-    B2 = ttk.Button(tut, text = 'How do I get Days-timed data?', command = lambda:popupmsgwarning('Not yet complited')) # How do I trade???
-    B2.pack()
-    B3 = ttk.Button(tut, text = 'Graph Question/Help', command = lambda: popupmsgwarning('Not yet complited'))
-    B3.pack()
-
-    tut.mainloop()
-## -------------------------END OF TUTORIAL FUNCTION ----------------
-     
-
-def crearMenu(padre,directorio,bottomleftFrame,leftFrame,bottomrightFrame,rightFrame,DB,cont):
+                    
+def crearMenu(padre,directorio,DB,cont):
     global menus
-    frame = rightFrame
+    global experiments
+    
+    bottomrightFrame = experiments[selectedtab]['bottomrightFrame']
     nombre = DB[directorio]['names']
     if directorio not in menus: # Checkeamos si el directorio está en la lista de menus.
         subMenu = Menu(padre,activeforeground = 'teal')
@@ -442,23 +527,22 @@ def crearMenu(padre,directorio,bottomleftFrame,leftFrame,bottomrightFrame,rightF
         configPath=dirInfo['config']
         if configPath != "NULL" and len(dirInfo['children']) == 0: # SI ES UN LEAF:
             dirs=splitPath(configPath)
-            if cont == 1:
-                frame = bottomleftFrame
-            where = printVariable
-            subMenu.add_command(label = dirs[len(dirs)-1], command = lambda : [printConfig(directorio,frame,DB,printVariable),printVariables(DB,directorio,bottomrightFrame.tab2,cont)])
+            subMenu.add_command(label = dirs[len(dirs)-1], command = lambda : [printConfig(directorio,DB, cont),printVariables(bottomrightFrame.tab2,directorio,DB,cont)])
         children=dirInfo['children']
         for child in children:
-            crearMenu(subMenu,child,bottomleftFrame,leftFrame,bottomrightFrame, rightFrame,DB,cont)
+            crearMenu(subMenu,child,DB,cont)
     menus.append(directorio)
 
 
 
-def cascade(bottomleftFrame,leftFrame,bottomrightFrame,rightFrame,mainPath,DB,cont):
+def cascade(mainPath,DB,cont):
+    global experiments
     dirs = splitPath(mainPath)
     for directorio in DB.keys():
         if directorio in dirs:
             titulo = directorio
             break
+    leftFrame = experiments[selectedtab]['leftFrame']
                 
     menuButton = tk.Menubutton(leftFrame, text = DB[titulo]['names'], indicatoron=True, borderwidth = 1, relief='raised', width=20, border=3)
     menuPadre = tk.Menu(menuButton, tearoff=False,activeforeground = 'teal')
@@ -469,7 +553,7 @@ def cascade(bottomleftFrame,leftFrame,bottomrightFrame,rightFrame,mainPath,DB,co
       
     # Empezar los menus recursivamente llamando a la funcion crearMenu:
     for directorio in DB.keys():
-        crearMenu(menuPadre,directorio,bottomleftFrame,leftFrame,bottomrightFrame,rightFrame,DB,cont)
+        crearMenu(menuPadre,directorio,DB,cont)
             
     menus.clear() # Allows creating different experiments by emptying the menus list.
 
@@ -485,7 +569,7 @@ def crearFrameVariables():
     #for item in self.totalTabs
     if contadorVariables < 15:
         ## Create Tab and frames inside:
-        bottomrightFrame.tab2 = tk.Frame(bottomrightFrame, height = 450, width = 300, background = 'azure')#florawhite
+        bottomrightFrame.tab2 = tk.Frame(bottomrightFrame, height = 450, width = 300, background = 'floralwhite')#florawhite
         totalTabs2.add(bottomrightFrame.tab2, text = 'Variable '+str(contadorVariables))
         contadorVariables += 1
         bottomrightFrame.tab2.grid_propagate(0)
@@ -509,38 +593,68 @@ def crearTab(self,totalTabs):
 
                 self.leftFrame = tk.Frame(self.tab, width = 950, height = 80, background ='azure', borderwidth = 3, relief = 'solid')
                 self.leftFrame.grid(column = 0, row = 0, sticky = 'nsew',rowspan = 1)
-                #self.leftFrame.grid_rowconfigure(0, weight=1)
-                #self.leftFrame.grid_columnconfigure(0, weight=1)
+
 
                 self.rightFrame = tk.Frame(self.tab, width = 900, height = 450,background ='azure', borderwidth = 1,relief = 'groove')
                 self.rightFrame.grid(column = 1, row = 0, stick = 'nsew',rowspan = 2) #, sticky = 'ne', rowspan = 1, columnspan = 1)
-                #self.rightFrame.grid_rowconfigure(0, weight=1)
-                #self.rightFrame.grid_columnconfigure(0, weight=2)
 
-                self.bottomleftFrame1 = tk.Frame(self.tab, width = 950, height = 850, background = 'azure', borderwidth = 1,relief = 'groove')
+
+                self.bottomleftFrame1 = tk.Frame(self.tab, background = 'azure', width = 950, height = 850, borderwidth = 3,relief = 'groove')#width = 950, height = 850
                 self.bottomleftFrame1.grid(column = 0, row = 1, sticky = 'nsew',rowspan = 2) #, sticky = 'sw', rowspan = 3, columnspan = 1)
-                #self.bottomleftFrame.grid_rowconfigure(0, weight=1)
-                #self.bottomleftFrame.grid_columnconfigure(0, weight=1)
-                yscrollbar = tk.Scrollbar(self.bottomleftFrame1)
-                yscrollbar.grid(row=0, column=10, sticky=N+S)  
-                #canvas = tk.Canvas(self.bottomleftFrame, bd=0, bg = 'red',scrollregion=(0, 0, 1000, 1000),
-                #yscrollcommand=yscrollbar.set)
+                self.bottomleftFrame1.grid_propagate(0)
+                ## CANVAS + SCROLLBAR
 
-                self.bottomleftFrame = tk.Canvas(self.bottomleftFrame1,bg='azure', width=930, height=840)
-                self.bottomleftFrame.grid(sticky=N+S+E+W)
+                ## Good One:
+                '''
+                yscrollbar = tk.Scrollbar(self.bottomleftFrame1, bg = 'darkcyan',orient = 'vertical', width = 10)
+                self.canvas = tk.Canvas(self.bottomleftFrame1, bg = 'azure',
+                yscrollcommand=yscrollbar.set, width = 930, height = 840)
+                self.canvas.grid(sticky='nsew')
+                yscrollbar.config(command = self.canvas.yview)
+                yscrollbar.grid(row=0, column=10, sticky=N+S)
+
+                self.canvas.configure(scrollregion=(0,0,2000,2000))
+                #self.bottomleftFrame1.config(scrollregion=self.canvas.bbox("all"))
+                '''
+                self.canvas=Canvas(self.bottomleftFrame1,width = 950, height = 850,bg = 'azure', scrollregion= (0,0,1500,1500)) #yscrollcommand = vbar.set
+                #self.canvas.pack(side=LEFT,expand=True,fill=BOTH)
+                hbar=Scrollbar(self.bottomleftFrame1,orient=HORIZONTAL)
+                hbar.pack(side=BOTTOM,fill=X)
+                hbar.config(command=self.canvas.xview)
+                vbar=Scrollbar(self.bottomleftFrame1,orient=VERTICAL)
+                vbar.pack(side=RIGHT,fill=Y)
+                vbar.config(command=self.canvas.yview)
+                self.canvas.pack(side=LEFT,expand=True,fill=BOTH)
+                self.canvas.config(width=950,height=850)
+                self.canvas.config(xscrollcommand=hbar.set, yscrollcommand=vbar.set)
                 
-                yscrollbar.config(command=self.bottomleftFrame)
-                self.bottomleftFrame.grid(row=0, column=0,rowspan=2, columnspan = 2, sticky='nsew')
+                
+                self.canvas.grid_propagate(0)
+
+                '''
+                vbar=Scrollbar(self.bottomleftFrame1,orient=VERTICAL,bg = 'darkcyan', width = 10)
+                vbar.pack(side=RIGHT,fill=Y)
+                self.canvas=Canvas(self.bottomleftFrame1, yscrollcommand = vbar.set,width = 950, height = 850, bg = 'azure', scrollregion= (0,0,2000,2000))
+                self.canvas.pack(side=LEFT,expand=True,fill=BOTH)
+                #self.canvas.config(width=300,height=300)
+                vbar.config(command=self.canvas.yview)
+                self.canvas.config(yscrollcommand=vbar.set, scrollregion = self.canvas.bbox("all"))
+                '''
+                ## END CANVAS + SCROLLBAR
+                
 
                 self.bottomrightFrame = tk.Frame(self.tab, width = 900, height = 450, background ='azure', borderwidth = 1,relief = 'ridge')
                 self.bottomrightFrame.grid(column = 1, row = 2,sticky = 'nsew', rowspan = 1)#, sticky = 'se', rowspan = 2, columnspan = 1)
-                #self.bottomrightFrame.grid_rowconfigure(0, weight=1)
-                #self.bottomrightFrame.grid_columnconfigure(0, weight=1)
 
+                
+                # STORE A DICTIONARY WITH ALL THE FRAMES ON IT TO BE CALLED ON ANY FUNCTION AND AVOID PASSING FRAMES.
                 expElements = {}
 
                 experiments[selectedtab] = expElements
+                expElements['leftFrame'] = self.leftFrame
+                expElements['rightFrame'] = self.rightFrame
                 expElements['bottomrightFrame'] = self.bottomrightFrame
+                expElements['bottomleftFrame'] = self.canvas
 
                 self.totalTabs2 = ttk.Notebook(self.bottomrightFrame)
                 self.totalTabs2.pack(expand = 1, fill = "both")
@@ -552,45 +666,25 @@ def crearTab(self,totalTabs):
 
                 self.leftFrame.grid_propagate(0)
                 self.rightFrame.grid_propagate(0)
-                self.bottomleftFrame.grid_propagate(0)
+                #self.bottomleftFrame.grid_propagate(0)
                 self.bottomrightFrame.grid_propagate(0)
+                #self.bottomleftFrame1.grid_propagate(0)
+                
 
                # LEFT SIDE OF TAB1:
                 
                 ## CASCADE:
                 # Elegir el título de los Menús:
                 cont= 0
-                
-                cascade(self.bottomleftFrame,self.leftFrame,self.bottomrightFrame,self.rightFrame,mainPath,configTreeDB,cont)
+                cascade(mainPath,configTreeDB,cont)
                 cont+=1
-                cascade(self.bottomleftFrame,self.leftFrame,self.bottomrightFrame,self.rightFrame,mainPath2,solverDB,cont)
+                cascade(mainPath2,solverDB,cont)
                 #numofexperiments.append(index)
                 contador += 1 # Controlar el número de experimentos que hay. Máximo 6 -> crearTab()
                 
     else:
                 popupmsgwarning('Number of experiments exceeded!')
 
-def deleteTab(self,totalTabs):
-    global contador
-    if contador >2:
-        for item in totalTabs.winfo_children():
-            if str(item)==totalTabs.select():
-                item.destroy()
-                return
-    else:
-        popupmsgwarning('At least 2 experiments to delete 1')
-
-def deleteVariable(self):
-    global contadorVariables
-    global experiments
-    global selectedtab
-    
-    totalTabs2 = experiments[selectedtab]['totalTabs2']
-    ## Delete Tab and frame inside:
-    if len(totalTabs2.tabs()) > 1:
-        totalTabs2.forget(totalTabs2.select())
-    else:
-        popupmsgwarning('At least 2 variables to delete 1')
         
 ## ****************** END OF FUNCTIONS **********************
         

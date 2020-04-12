@@ -28,7 +28,7 @@ void korali::problem::Propagation::initialize()
 	   
     if (foundDistribution == true)
 	 korali::logError("Found distribution %s in variable %s\n, although using precomputed Values", _k->_variables[i]->_priorDistribution.c_str(), _k->_variables[i]->_name.c_str());
-	if( _numberOfSamples > 0 ) korali::logError("Numer of Samples set although using precomputed Values");
+	if( _numberOfSamples > 0 ) korali::logError("Number of Samples set although using precomputed Values");
    }
   }
 }

@@ -126,7 +126,7 @@ def consumeValue(base, moduleName, path, varName, varType, isMandatory, options)
 
  if (isMandatory):
   cString += '  else '
-  cString += '  korali::logError("No value provided for mandatory setting: ' + path.replace('"', "'") + ' required by ' + moduleName + '.\\n"); \n'
+  cString += '  _k->_logger->logError("No value provided for mandatory setting: ' + path.replace('"', "'") + ' required by ' + moduleName + '.\\n"); \n'
 
  cString += '\n'
 
@@ -136,7 +136,7 @@ def consumeValue(base, moduleName, path, varName, varType, isMandatory, options)
   cString += ' bool ' + validVarName + ' = false; \n'
   for v in options:
    cString += ' if (' + varName + ' == "' + v + '") ' + validVarName + ' = true; \n'
-  cString += ' if (' + validVarName + ' == false) korali::logError("Unrecognized value provided for mandatory setting: ' + path.replace('"', "'") + ' required by ' + moduleName + '.\\n"); \n'
+  cString += ' if (' + validVarName + ' == false) _k->_logger->logError("Unrecognized value provided for mandatory setting: ' + path.replace('"', "'") + ' required by ' + moduleName + '.\\n"); \n'
   cString += '}\n'
 
  cString += '\n'
@@ -207,13 +207,13 @@ def createSetConfiguration(module):
   codeString += '  bool detectedCompatibleSolver = false; \n'
   for v in module["Compatible Solvers"]:
    codeString += '   if (_k->_js["Solver"]["Type"] == "' + v + '") detectedCompatibleSolver = true;\n'
-  codeString += '  if (detectedCompatibleSolver == false) korali::logError("Specified solver (%s) is not compatible with problem of type: ' + module["Name"] + '\\n",  _k->_js["Solver"]["Type"].dump(1).c_str()); \n\n'
+  codeString += '  if (detectedCompatibleSolver == false) _k->_logger->logError("Specified solver (%s) is not compatible with problem of type: ' + module["Name"] + '\\n",  _k->_js["Solver"]["Type"].dump(1).c_str()); \n\n'
   
  codeString += ' ' + module["Parent Class"] + '::setConfiguration(js);\n'
 
  codeString += ' _type = "' + module["Option Name"] + '";\n'
  codeString += ' if(korali::JsonInterface::isDefined(js, "[\'Type\']")) korali::JsonInterface::eraseValue(js, "[\'Type\']");\n'
- codeString += ' if(korali::JsonInterface::isEmpty(js) == false) korali::logError("Unrecognized settings for Korali module: ' + module["Name"] + ': \\n%s\\n", js.dump(2).c_str());\n'
+ codeString += ' if(korali::JsonInterface::isEmpty(js) == false) _k->_logger->logError("Unrecognized settings for Korali module: ' + module["Name"] + ': \\n%s\\n", js.dump(2).c_str());\n'
  codeString += '} \n\n'
 
  return codeString
@@ -322,7 +322,7 @@ def createRunOperation(module):
    codeString += ' }\n\n'
 
   codeString += ' operationDetected = operationDetected || ' + module["Parent Class"] + '::runOperation(operation, sample);\n'
-  codeString += ' if (operationDetected == false) korali::logError("Operation %s not recognized for problem ' + module["Class"] + '.\\n", operation.c_str());\n'
+  codeString += ' if (operationDetected == false) _k->_logger->logError("Operation %s not recognized for problem ' + module["Class"] + '.\\n", operation.c_str());\n'
   codeString += ' return operationDetected;\n'
   codeString += '}\n\n'
 
@@ -337,7 +337,7 @@ def createGetPropertyPointer(module):
   for v in module["Conditional Variables"]:
    codeString += ' if (property == "' + v["Name"][0] + '") return &' + getCXXVariableName(v["Name"]) + ';\n'
 
-  codeString += ' korali::logError("Property %s not recognized for distribution ' + module["Class"] + '.\\n", property.c_str());\n'
+  codeString += ' _k->_logger->logError("Property %s not recognized for distribution ' + module["Class"] + '.\\n", property.c_str());\n'
   codeString += ' return NULL;\n'
   codeString += '}\n\n'
 

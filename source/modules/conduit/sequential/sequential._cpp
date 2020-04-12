@@ -17,7 +17,11 @@ void korali::conduit::Sequential::processSample(korali::Sample& sample)
 
  size_t experimentId = sample["Experiment Id"];
 
- engine->_experimentVector[experimentId]->_problem->runOperation(sample["Operation"], sample);
+ if (sample["Module"] == "Problem")
+  engine->_experimentVector[experimentId]->_problem->runOperation(sample["Operation"], sample);
+
+ if (sample["Module"] == "Solver")
+  engine->_experimentVector[experimentId]->_solver->runOperation(sample["Operation"], sample);
 
  js["End Time"] = std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count() + _cumulativeTime;
  js["Current Generation"] = engine->_currentExperiment->_currentGeneration;

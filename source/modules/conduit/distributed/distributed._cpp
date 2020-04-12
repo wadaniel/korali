@@ -130,7 +130,11 @@ void korali::conduit::Distributed::workerThread()
 
    size_t experimentId = sample["Experiment Id"];
 
-   engine->_experimentVector[experimentId]->_problem->runOperation(sample["Operation"], sample);
+   if (sample["Module"] == "Problem")
+    engine->_experimentVector[experimentId]->_problem->runOperation(sample["Operation"], sample);
+
+   if (sample["Module"] == "Solver")
+    engine->_experimentVector[experimentId]->_solver->runOperation(sample["Operation"], sample);
 
    if (_localRankId == 0)
    {

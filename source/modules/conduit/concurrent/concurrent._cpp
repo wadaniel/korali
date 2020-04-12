@@ -97,7 +97,12 @@ void korali::conduit::Concurrent::worker(int workerId)
    std::string operation = sample["Operation"];
 
    korali::Engine* engine = _engineStack.top();
-   engine->_experimentVector[experimentId]->_problem->runOperation(operation, sample);
+
+   if (sample["Module"] == "Problem")
+    engine->_experimentVector[experimentId]->_problem->runOperation(operation, sample);
+
+   if (sample["Module"] == "Solver")
+    engine->_experimentVector[experimentId]->_solver->runOperation(operation, sample);
 
    std::string resultString = sample._js.getJson().dump();
    size_t resultStringSize = resultString.size();

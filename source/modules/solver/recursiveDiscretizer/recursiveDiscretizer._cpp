@@ -64,6 +64,7 @@ void korali::solver::RecursiveDiscretizer::runGeneration()
 
    cSamples[currentSample]["Previous Evaluation"] = _policyEvaluation[j];
    cSamples[currentSample]["Current Depth"] = currentDepth;
+   cSamples[currentSample]["Module"] = "Problem";
    cSamples[currentSample]["Operation"]  = "Evaluate Cost Function";
    _conduit->start(cSamples[currentSample]);
    currentSample++;

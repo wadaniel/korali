@@ -63,9 +63,9 @@ void korali::solver::MCMC::runGeneration()
   auto sample = korali::Sample();
 
   _modelEvaluationCount++;
-  sample["Module"] = "Problem";
   sample["Parameters"] = _chainCandidate[i];
   sample["Sample Id"] = _sampleDatabase.size();
+  sample["Module"] = "Problem";
   sample["Operation"] = "Evaluate";
   _conduit->start(sample);
   _conduit->wait(sample);

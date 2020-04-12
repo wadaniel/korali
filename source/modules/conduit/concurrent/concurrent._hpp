@@ -42,6 +42,8 @@ class Concurrent : public korali::Conduit {
  void initServer() override;
  void processSample(korali::Sample& sample) override;
  void initialize() override;
+ void stackEngine(korali::Engine*) override;
+ void popEngine() override;
  void finalize() override;
 
 };

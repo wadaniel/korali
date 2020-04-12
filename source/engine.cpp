@@ -170,7 +170,7 @@ void korali::Engine::setItem(pybind11::object key, pybind11::object val) { _js.s
 
 void korali::Engine::serialize(knlohmann::json& js)
 {
-  for (size_t i; i < _experimentVector.size(); i++)
+  for (size_t i = 0; i < _experimentVector.size(); i++)
   {
    _experimentVector[i]->getConfiguration(_experimentVector[i]->_js.getJson());
    js["Experiment Vector"][i] = _experimentVector[i]->_js.getJson();

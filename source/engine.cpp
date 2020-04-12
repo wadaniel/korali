@@ -68,9 +68,6 @@ void korali::Engine::run()
   // Configuring conduit
   auto conduit = dynamic_cast<korali::Conduit*>(getModule(_js["Conduit"]));
 
-  // Adding initial engine
-  _engineStack.push(this);
-
   // Initializing conduit server
   conduit->initServer();
 
@@ -80,10 +77,12 @@ void korali::Engine::run()
   // Recovering Conduit configuration in case of restart
   _conduit->getConfiguration(_js.getJson()["Conduit"]);
  }
- else if (_conduit->isRoot()) _conduit->stackEngine(this);
 
  if (_conduit->isRoot())
  {
+  // Adding engine to the stack
+  _conduit->stackEngine(this);
+
   // Setting base time for profiling.
   _startTime = std::chrono::high_resolution_clock::now();
   _profilingLastSave = std::chrono::high_resolution_clock::now();

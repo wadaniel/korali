@@ -7,7 +7,7 @@
 #include <sys/types.h>
 #include <fcntl.h>
 
-#define PIPESIZE 1048576
+#define BUFFERSIZE 4096
 
 void korali::conduit::Concurrent::initialize()
 {
@@ -83,7 +83,15 @@ void korali::conduit::Concurrent::worker(int workerId)
   read(_inputsPipe[workerId][0], &inputStringSize, sizeof(size_t));
 
   char inputString[inputStringSize + 1];
-  read(_inputsPipe[workerId][0], inputString, inputStringSize * sizeof(char));
+
+  size_t curPos = 0;
+  while (curPos < inputStringSize)
+  {
+    size_t bufSize = BUFFERSIZE;
+    if (curPos + bufSize > inputStringSize) bufSize = inputStringSize - curPos;
+    read(_inputsPipe[workerId][0], inputString + curPos, bufSize * sizeof(char));
+    curPos += bufSize;
+  }
   inputString[inputStringSize] = '\0';
 
   auto actionJs = knlohmann::json::parse(inputString);
@@ -208,7 +216,15 @@ void korali::conduit::Concurrent::stackEngine(korali::Engine* engine)
  for(int i = 0; i < _concurrentJobs; i++)
  {
   write(_inputsPipe[i][1], &stackStringSize, sizeof(size_t));
-  write(_inputsPipe[i][1], stackString.c_str(), stackStringSize * sizeof(char));
+
+  size_t curPos = 0;
+  while (curPos < stackStringSize)
+  {
+    size_t bufSize = BUFFERSIZE;
+    if (curPos + bufSize > stackStringSize) bufSize = stackStringSize - curPos;
+    write(_inputsPipe[i][1], stackString.c_str() + curPos, bufSize * sizeof(char));
+    curPos += bufSize;
+  }
  }
 }
 

@@ -2,49 +2,63 @@
 
 void korali::problem::Integration::initialize()
 {
-  if(_k->_variables.size() == 0) korali::logError("Integration problems require at least one variable.\n");
+  if(_k->_variables.size() == 0) _k->_logger->logError("Integration problems require at least one variable.\n");
 
   for( size_t i = 0; i<_k->_variables.size(); i++ )
   {
-    if( _integrationMethod.c_str() == "Monte Carlo" ){
-      if( _k->_variables[i]->_upperBound <= _k->_variables[i]->_lowerBound ) korali::logError("'Upper Bound' is not strictly bigger then 'Lower Bound' for variable %s.\n",_k->_variables[i]->_name.c_str());
-      double intervalSize = _k->_variables[i]->_upperBound-_k->_variables[i]->_lowerBound;
-      _k->_variables[i]->_quadratureWeights.resize(_k->_variables[i]->_samplePoints.size());
-      for( size_t j = 0; j<_k->_variables[i]->_quadratureWeights.size(); j++ )
-        _k->_variables[i]->_quadratureWeights[j] = intervalSize/_k->_variables[i]->_samplePoints.size();
+    if( _k->_variables[i]->_numberOfGridpoints <= 0 ) _k->_logger->logError("'Number Of Gridpoints' for variable %s must be a strictly positive integer",_k->_variables[i]->_name.c_str());
+
+    if( _k->_variables[i]->_upperBound <= _k->_variables[i]->_lowerBound ) _k->_logger->logError("'Upper Bound' is not strictly bigger then 'Lower Bound' for variable %s.\n",_k->_variables[i]->_name.c_str());
+    double intervalSize = _k->_variables[i]->_upperBound-_k->_variables[i]->_lowerBound;
+    double deltaX = intervalSize / ( _k->_variables[i]->_numberOfGridpoints-1 );
+
+    if( _integrationMethod == "Monte Carlo" ){
+      bool foundDistribution = false;
+      // Validate the _priorDistribution names
+      for (size_t j = 0; j < _k->_distributions.size(); j++)
+        if (_k->_variables[i]->_priorDistribution == _k->_distributions[j]->_name){ foundDistribution = true; _k->_variables[i]->_distributionIndex = j; }
+       
+      if (foundDistribution == false) _k->_logger->logError("Did not find distribution %s, specified by variable %s\n", _k->_variables[i]->_priorDistribution.c_str(), _k->_variables[i]->_name.c_str());
+      _k->_variables[i]->_quadratureWeights.resize(_k->_variables[i]->_numberOfGridpoints);
+      for( size_t j = 0; j<_k->_variables[i]->_numberOfGridpoints; j++ ){
+        _k->_variables[i]->_quadratureWeights[j] = intervalSize/_k->_variables[i]->_numberOfGridpoints;
+        _k->_variables[i]->_samplePoints[j] = _k->_distributions[_k->_variables[i]->_distributionIndex]->getRandomNumber();
+      }
     }
     else{
-      double deltaX0 = _k->_variables[i]->_samplePoints[1] - _k->_variables[i]->_samplePoints[0];
-      for( size_t j = 2; j<_k->_variables[i]->_samplePoints.size(); j++ )
-        if( deltaX0 - (_k->_variables[i]->_samplePoints[j]-_k->_variables[i]->_samplePoints[j-1]) >  10*std::numeric_limits<double>::epsilon() ) korali::logError("'Sample Points' are not equally spaced for variable %s, interval . %f vs %f, diff=%f\n",_k->_variables[i]->_name.c_str(), deltaX0, _k->_variables[i]->_samplePoints[j]-_k->_variables[i]->_samplePoints[j-1], deltaX0 - (_k->_variables[i]->_samplePoints[j]-_k->_variables[i]->_samplePoints[j-1]));
+      _k->_variables[i]->_samplePoints.resize(_k->_variables[i]->_numberOfGridpoints);
+      for( size_t j = 0; j<_k->_variables[i]->_numberOfGridpoints; j++ )
+        _k->_variables[i]->_samplePoints[j] = _k->_variables[i]->_lowerBound+j*deltaX;
 
-      if( _integrationMethod == "Rectangle" ){
-        _k->_variables[i]->_quadratureWeights.resize(_k->_variables[i]->_samplePoints.size());
-        for( size_t j = 0; j<_k->_variables[i]->_quadratureWeights.size(); j++ ) 
-          _k->_variables[i]->_quadratureWeights[j] = deltaX0;
+      if( _integrationMethod == "Custom" ){
+        if(_k->_variables[i]->_numberOfGridpoints != _k->_variables[i]->_quadratureWeights.size() ) _k->_logger->logError("Number of 'Sample Points' is not equal to number of 'Quadrature Points' provided for variable %s\n",_k->_variables[i]->_name.c_str());
       }
-      else if( _integrationMethod ==  "Trapezoidal" ){
-        _k->_variables[i]->_quadratureWeights.resize(_k->_variables[i]->_samplePoints.size());
-        for( size_t j = 0; j<_k->_variables[i]->_quadratureWeights.size(); j++ )
-          if( j>0 && j<_k->_variables[i]->_quadratureWeights.size()-1 )
-            _k->_variables[i]->_quadratureWeights[j] = deltaX0;
-          else
-            _k->_variables[i]->_quadratureWeights[j] = deltaX0/2.;
-      }
-      else if( _integrationMethod ==  "Simpson" ){
-        _k->_variables[i]->_quadratureWeights.resize(_k->_variables[i]->_samplePoints.size());
-        for( size_t j = 0; j<_k->_variables[i]->_quadratureWeights.size(); j++ )
-          if( j>0 && j<_k->_variables[i]->_quadratureWeights.size()-1 ){
-            if( j%2 == 0 ) 
-              _k->_variables[i]->_quadratureWeights[j] = 2.*deltaX0/3.;
+      else{
+        _k->_variables[i]->_quadratureWeights.resize(_k->_variables[i]->_numberOfGridpoints);
+      
+        if( _integrationMethod == "Rectangle" ){
+          for( size_t j = 0; j<_k->_variables[i]->_numberOfGridpoints; j++ ) 
+            _k->_variables[i]->_quadratureWeights[j] = deltaX;
+        }
+        else if( _integrationMethod ==  "Trapezoidal" ){
+          for( size_t j = 0; j<_k->_variables[i]->_numberOfGridpoints; j++ )
+            if( j>0 && j<_k->_variables[i]->_numberOfGridpoints-1 )
+              _k->_variables[i]->_quadratureWeights[j] = deltaX;
             else
-              _k->_variables[i]->_quadratureWeights[j] = 4.*deltaX0/3.;
-          }
-          else
-            _k->_variables[i]->_quadratureWeights[j] = deltaX0/3.;
+              _k->_variables[i]->_quadratureWeights[j] = deltaX/2.;
+        }
+        else if( _integrationMethod ==  "Simpson" ){
+          for( size_t j = 0; j<_k->_variables[i]->_numberOfGridpoints; j++ )
+            if( j>0 && j<_k->_variables[i]->_numberOfGridpoints-1 ){
+              if( j%2 == 0 ) 
+                _k->_variables[i]->_quadratureWeights[j] = 2.*deltaX/3.;
+              else
+                _k->_variables[i]->_quadratureWeights[j] = 4.*deltaX/3.;
+            }
+            else
+              _k->_variables[i]->_quadratureWeights[j] = deltaX/3.;
+        }
       }
-      else if( _integrationMethod == "Custom" )
-        if(_k->_variables[i]->_samplePoints.size() != _k->_variables[i]->_quadratureWeights.size() ) korali::logError("Number of 'Sample Points' is not equal to number of 'Quadrature Points' for variable %s\n",_k->_variables[i]->_name.c_str());
     }
   }
 }

@@ -44,17 +44,17 @@ void korali::solver::Integrator::runGeneration()
         usedIndices[i][d] = index;
     }
 
-    korali::logInfo("Detailed", "Running sample %zu/%zu with values:\n         ", _modelEvaluationCount+1,_sampleCount);
-    for(auto& x : sampleData) korali::logData("Detailed", " %le   ", x);
-    korali::logData("Detailed", "\n");
+    _k->_logger->logInfo("Detailed", "Running sample %zu/%zu with values:\n         ", _modelEvaluationCount+1,_sampleCount);
+    for(auto& x : sampleData) _k->_logger->logData("Detailed", " %le   ", x);
+    _k->_logger->logData("Detailed", "\n");
 
     samples[i]["Operation"]  = "Execute";
     samples[i]["Parameters"] = sampleData;
     samples[i]["Sample Id"]  = _modelEvaluationCount;
-    _engine->_conduit->start(samples[i]);
+    _conduit->start(samples[i]);
     _modelEvaluationCount++;
   }
-  _engine->_conduit->waitAll(samples);
+  _conduit->waitAll(samples);
 
   double weight, f;
   for (size_t i = 0; i < _executionsPerGeneration; i++)
@@ -75,11 +75,11 @@ void korali::solver::Integrator::printGenerationBefore()
 
 void korali::solver::Integrator::printGenerationAfter()
 {
- korali::logInfo("Minimal", "Total Terms summed %lu/%lu.\n", _modelEvaluationCount, _sampleCount);
+ _k->_logger->logInfo("Minimal", "Total Terms summed %lu/%lu.\n", _modelEvaluationCount, _sampleCount);
 }
 
 void korali::solver::Integrator::finalize()
 {
-	korali::logInfo("Minimal", "Integral Calculated: %e\n", _integral);
+	_k->_logger->logInfo("Minimal", "Integral Calculated: %e\n", _integral);
 }
 

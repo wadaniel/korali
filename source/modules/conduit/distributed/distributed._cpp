@@ -217,17 +217,26 @@ void korali::conduit::Distributed::stackEngine(korali::Engine* engine)
 {
  #ifdef _KORALI_USE_MPI
 
- _engineStack.push(engine);
+ auto newStack = _engineStack;
+ newStack.push(engine);
 
- auto engineJs = knlohmann::json();
- engine->serialize(engineJs);
- engineJs["Conduit Action"] = "Stack Engine";
+ for (size_t i = 0; i < newStack.size() - 1; i++) popEngine();
 
- std::string engineString = engineJs.dump();
- size_t engineStringSize = engineString.size();
+ _engineStack = newStack;
 
- if (isRoot())
+ size_t stackSize = newStack.size();
+ std::vector<korali::Engine*> engineList;
+ for (size_t i = 0; i < stackSize; i++) { engineList.push_back(newStack.top()); newStack.pop(); }
+
+ for (int e = stackSize-1; e >= 0; e--)
  {
+  auto engineJs = knlohmann::json();
+  engineList[e]->serialize(engineJs);
+  engineJs["Conduit Action"] = "Stack Engine";
+
+  std::string engineString = engineJs.dump();
+  size_t engineStringSize = engineString.size();
+
   for (int i = 0; i < _teamCount; i++)
    for (int j = 0; j < _workersPerTeam; j++)
    {

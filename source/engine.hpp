@@ -151,6 +151,11 @@ namespace korali
   static Engine* deserialize(knlohmann::json& js);
  };
 
+/**
+* @brief Stack storing pointers to different Engine execution levels
+*/
+extern std::stack<korali::Engine*> _engineStack;
+
 }
 
 #endif

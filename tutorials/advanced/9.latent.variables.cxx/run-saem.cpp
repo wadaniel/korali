@@ -43,6 +43,8 @@ void distrib1_phi(korali::Sample& s);
 
 int main(int argc, char* argv[])
 {
+ //MPI_Init(&argc, &argv);
+
  auto k = korali::Engine();
  auto e = korali::Experiment();
 
@@ -129,7 +131,10 @@ int main(int argc, char* argv[])
  */
 
  //k["Conduit"]["Type"] = "Concurrent";
- //k["Conduit"]["Concurrent Jobs"] = 12;
+ //k["Conduit"]["Concurrent Jobs"] = 4;
+ //k["Conduit"]["Type"] = "Distributed";
+ //k["Conduit"]["Workers Per Team"] = 1;
+ //k["Conduit"]["Communicator"] = MPI_COMM_WORLD;
  k.run(e);
 
  return 0;

@@ -229,12 +229,12 @@ void korali::solver::SAEM::updateS()
 */
 void korali::solver::SAEM::QFunction(korali::Sample& sample)
 {
- auto currentEngine = _conduit->_engineStack.top();
- _conduit->_engineStack.pop();
- auto saemEngine = _conduit->_engineStack.top();
+ auto currentEngine = _engineStack.top();
+ _engineStack.pop();
+ auto saemEngine = _engineStack.top();
  size_t experimentId = sample["Experiment Id"];
  auto experiment = saemEngine->_experimentVector[experimentId];
- _conduit->_engineStack.push(currentEngine);
+ _engineStack.push(currentEngine);
 
  auto solver = dynamic_cast<korali::solver::SAEM*>(experiment->_solver);
  auto problem = dynamic_cast<korali::problem::bayesian::Latent*>(experiment->_problem);
@@ -253,8 +253,6 @@ void korali::solver::SAEM::QFunction(korali::Sample& sample)
 /* @brief Set up a korali experiment and optimize the current Q function to get a new vector of hyperparameters. */
 void korali::solver::SAEM::updateHyperparameters()
 {
- printf("Running Hyperparameters\n");
-
  _experiment["Random Seed"] = _k->_randomSeed++;
  _experiment["Current Generation"] = 0;
  _engine.run(_experiment);

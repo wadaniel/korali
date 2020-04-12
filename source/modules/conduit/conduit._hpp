@@ -23,11 +23,6 @@ class Conduit : public korali::Module {
  korali::Logger* _logger;
 
  /**
- * @brief Stack storing pointers to different Engine execution levels
- */
- std::stack<Engine*> _engineStack;
-
- /**
  * @brief Accepts a sample for processing.
  * @param A Korali sample
  */

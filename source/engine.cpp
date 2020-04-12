@@ -7,6 +7,7 @@
 #include "auxiliar/koraliJson.hpp"
 
 std::vector<std::function<void(korali::Sample&)>*> korali::_functionVector;
+std::stack<korali::Engine*> korali::_engineStack;
 
 korali::Engine::Engine()
 {
@@ -119,7 +120,7 @@ void korali::Engine::run()
  }
 
  // Finalizing Conduit if last engine in the stack
- if (_conduit->_engineStack.size() == 0)
+ if (_engineStack.size() == 0)
  {
   _conduit->finalize();
   _conduit = NULL;

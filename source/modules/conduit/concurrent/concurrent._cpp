@@ -111,7 +111,9 @@ void korali::conduit::Concurrent::worker(int workerId)
    write(_resultPipe[workerId][1], resultString.c_str(), resultStringSize * sizeof(char));
   }
 
-  if (actionJs["Conduit Action"] == "Stack Engine")  _engineStack.push(korali::Engine::deserialize(actionJs));
+  if (actionJs["Conduit Action"] == "Stack Engines")
+   for (size_t i = 0; i < actionJs["Engines"].size(); i++)
+   _engineStack.push(korali::Engine::deserialize(actionJs["Engines"][i]));
 
   if (actionJs["Conduit Action"] == "Pop Engine")  _engineStack.pop();
  }
@@ -181,32 +183,31 @@ void korali::conduit::Concurrent::processSample(korali::Sample& sample)
 
 void korali::conduit::Concurrent::stackEngine(korali::Engine* engine)
 {
-  auto newStack = _engineStack;
-  newStack.push(engine);
+ auto newStack = _engineStack;
+ newStack.push(engine);
 
-  for (size_t i = 0; i < newStack.size() - 1; i++) popEngine();
+ for (size_t i = 0; i < newStack.size() - 1; i++) popEngine();
 
-  _engineStack = newStack;
+ _engineStack = newStack;
 
-  size_t stackSize = newStack.size();
-  std::vector<korali::Engine*> engineList;
-  for (size_t i = 0; i < stackSize; i++) { engineList.push_back(newStack.top()); newStack.pop(); }
+ size_t stackSize = newStack.size();
+ std::vector<korali::Engine*> engineList;
+ for (size_t i = 0; i < stackSize; i++) { engineList.push_back(newStack.top()); newStack.pop(); }
 
-  for (int i = stackSize-1; i >= 0; i--)
-  {
-   auto engineJs = knlohmann::json();
-   engineList[i]->serialize(engineJs);
-   engineJs["Conduit Action"] = "Stack Engine";
+ auto stackJs = knlohmann::json();
+ stackJs["Conduit Action"] = "Stack Engines";
 
-   std::string engineString = engineJs.dump();
-   size_t engineStringSize = engineString.size();
+ for (int i = 0; i < stackSize; i++)
+  engineList[stackSize-i-1]->serialize(stackJs["Engines"][i]);
 
-   for(int j = 0; j < _concurrentJobs; j++)
-   {
-    write(_inputsPipe[j][1], &engineStringSize, sizeof(size_t));
-    write(_inputsPipe[j][1], engineString.c_str(), engineStringSize * sizeof(char));
-   }
-  }
+ std::string stackString = stackJs.dump();
+ size_t stackStringSize = stackString.size();
+
+ for(int i = 0; i < _concurrentJobs; i++)
+ {
+  write(_inputsPipe[i][1], &stackStringSize, sizeof(size_t));
+  write(_inputsPipe[i][1], stackString.c_str(), stackStringSize * sizeof(char));
+ }
 }
 
 void korali::conduit::Concurrent::popEngine()

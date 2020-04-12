@@ -145,7 +145,9 @@ void korali::conduit::Distributed::workerThread()
    }
   }
 
-  if (actionJs["Conduit Action"] == "Stack Engine") _engineStack.push(korali::Engine::deserialize(actionJs));
+  if (actionJs["Conduit Action"] == "Stack Engines")
+   for (size_t i = 0; i < actionJs["Engines"].size(); i++)
+   _engineStack.push(korali::Engine::deserialize(actionJs["Engines"][i]));
 
   if (actionJs["Conduit Action"] == "Pop Engine")  _engineStack.pop();
 
@@ -228,22 +230,21 @@ void korali::conduit::Distributed::stackEngine(korali::Engine* engine)
  std::vector<korali::Engine*> engineList;
  for (size_t i = 0; i < stackSize; i++) { engineList.push_back(newStack.top()); newStack.pop(); }
 
- for (int e = stackSize-1; e >= 0; e--)
- {
-  auto engineJs = knlohmann::json();
-  engineList[e]->serialize(engineJs);
-  engineJs["Conduit Action"] = "Stack Engine";
+ auto stackJs = knlohmann::json();
+ stackJs["Conduit Action"] = "Stack Engines";
 
-  std::string engineString = engineJs.dump();
-  size_t engineStringSize = engineString.size();
+ for (int i = 0; i < stackSize; i++)
+  engineList[stackSize-i-1]->serialize(stackJs["Engines"][i]);
 
-  for (int i = 0; i < _teamCount; i++)
-   for (int j = 0; j < _workersPerTeam; j++)
-   {
-    MPI_Send(&engineStringSize, 1, MPI_UNSIGNED_LONG, _teamWorkers[i][j], MPI_TAG_ACTION_JSON_SIZE, _communicator);
-    MPI_Send(engineString.c_str(), engineStringSize, MPI_CHAR, _teamWorkers[i][j], MPI_TAG_ACTION_JSON_CONTENT, _communicator);
-   }
- }
+ std::string stackString = stackJs.dump();
+ size_t stackStringSize = stackString.size();
+
+ for (int i = 0; i < _teamCount; i++)
+  for (int j = 0; j < _workersPerTeam; j++)
+  {
+   MPI_Send(&stackStringSize, 1, MPI_UNSIGNED_LONG, _teamWorkers[i][j], MPI_TAG_ACTION_JSON_SIZE, _communicator);
+   MPI_Send(stackString.c_str(), stackStringSize, MPI_CHAR, _teamWorkers[i][j], MPI_TAG_ACTION_JSON_CONTENT, _communicator);
+  }
 
  #endif
 }

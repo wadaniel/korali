@@ -30,10 +30,6 @@ void korali::conduit::Concurrent::initialize()
   if (pipe(_resultPipe[i].data()) == -1) _logger->logError("Unable to create inter-process pipe. \n");
   fcntl(_resultPipe[i][0], F_SETFL, fcntl(_resultPipe[i][0], F_GETFL) | O_NONBLOCK);
   fcntl(_resultPipe[i][1], F_SETFL, fcntl(_resultPipe[i][1], F_GETFL) | O_NONBLOCK);
-
-  printf("Size: %lu\n", fcntl(_resultPipe[i][0], F_GETPIPE_SZ));
-  int result = fcntl(_resultPipe[i][0], F_SETPIPE_SZ, PIPESIZE);
-  printf("Size: %lu\n", fcntl(_resultPipe[i][0], F_GETPIPE_SZ));
  }
 }
 

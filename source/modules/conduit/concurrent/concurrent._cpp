@@ -149,7 +149,7 @@ void korali::conduit::Concurrent::processSample(korali::Sample& sample)
   {
    int status;
    pid_t result = waitpid(_workerPids[i], &status, WNOHANG);
-   if (result != 0) _logger->logError("Worker %d (Pid: %d) exited unexpectedly.\n");
+   if (result != 0) _logger->logError("Worker %i (Pid: %d) exited unexpectedly.\n", i, _workerPids[i]);
   }
 
   size_t resultStringSize;

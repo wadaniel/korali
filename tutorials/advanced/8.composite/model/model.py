@@ -33,9 +33,6 @@ def model(p):
   e["Console Output"]["Verbosity"] = "Silent"
   e["File Output"]["Enabled"] = False
   
-  k["Conduit"]["Type"] = "Concurrent"
-  k["Conduit"]["Concurrent Jobs"] = 2
-
   # Running Korali
   k.run(e)
   

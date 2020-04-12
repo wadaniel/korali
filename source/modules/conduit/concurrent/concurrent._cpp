@@ -82,7 +82,7 @@ void korali::conduit::Concurrent::worker(int workerId)
   size_t inputStringSize;
   read(_inputsPipe[workerId][0], &inputStringSize, sizeof(size_t));
 
-  char inputString[inputStringSize + 1];
+  char inputString[inputStringSize + BUFFERSIZE];
 
   size_t curPos = 0;
   while (curPos < inputStringSize)

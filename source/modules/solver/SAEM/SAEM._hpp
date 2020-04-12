@@ -9,33 +9,30 @@ namespace korali { namespace solver {
 
 class SAEM : public korali::Solver
 {
+ private:
 
-  private:  
+ void setInitialConfiguration();
 
+ korali::problem::bayesian::Latent* _latentProblem;
+ void sampleLatent();
+ void calculateSampleSVectors();
+ void updateS();
+ void updateQFunction();
+ void updateHyperparameters();
+ std::function<void(korali::Sample&)> _currentQ;
 
-    void setInitialConfiguration();
+ bool isLatent(int idx);
 
-    korali::problem::bayesian::Latent* _latentProblem;
-    void sampleLatent();
-    void calculateSampleSVectors();
-    void updateS();
-    void updateQFunction();
-    void updateHyperparameters();
-    std::function<void(korali::Sample&)> _currentQ;
+ std::vector<double> meanAndSDev(std::vector<double> v);
+ std::vector<std::vector<double> > transpose(const std::vector<std::vector<double> > data);
 
-    bool isLatent(int idx);
+ public:
 
-    std::vector<double> meanAndSDev(std::vector<double> v);
-    std::vector<std::vector<double> > transpose(const std::vector<std::vector<double> > data);
-
-  public:
-
-    void finalize() override;
-    void runGeneration() override;
-    void printGenerationBefore() override;
-    void printGenerationAfter() override;
-
-
+ void initialize() override;
+ void finalize() override;
+ void runGeneration() override;
+ void printGenerationBefore() override;
+ void printGenerationAfter() override;
 };
 
 } } // namespace korali::solver

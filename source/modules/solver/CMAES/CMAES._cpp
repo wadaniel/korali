@@ -170,7 +170,6 @@ void korali::solver::CMAES::runGeneration()
  std::vector<korali::Sample> samples(_currentPopulationSize);
  for (size_t i = 0; i < _currentPopulationSize; i++)
  {
-  samples[i]["Module"] = "Problem";
   samples[i]["Operation"] = "Evaluate";
   samples[i]["Parameters"] = _samplePopulation[i];
   samples[i]["Sample Id"] = i;
@@ -256,7 +255,6 @@ void korali::solver::CMAES::checkMeanAndSetRegime()
 
   korali::Sample sample;
   sample["Parameters"] = _currentMean;
-  sample["Module"] = "Problem";
   sample["Operation"] = "Evaluate Constraints";
   _conduit->start(sample);
   _conduit->wait(sample);
@@ -284,7 +282,6 @@ void korali::solver::CMAES::updateConstraints()
   _sampleConstraintViolationCounts[i] = 0;
 
   korali::Sample sample;
-  sample["Module"] = "Problem";
   sample["Parameters"] = _samplePopulation[i];
   sample["Operation"] = "Evaluate Constraints";
   _conduit->start(sample);
@@ -318,7 +315,6 @@ void korali::solver::CMAES::reEvaluateConstraints()
   for(size_t i = 0; i < _currentPopulationSize; ++i) if(_sampleConstraintViolationCounts[i] > 0)
   {
    korali::Sample sample;
-   sample["Module"] = "Problem";
    sample["Parameters"] = _samplePopulation[i];
    sample["Operation"] = "Evaluate Constraints";
    _conduit->start(sample);
@@ -362,7 +358,6 @@ void korali::solver::CMAES::prepareGeneration()
     _infeasibleSampleCount++;
     sampleSingle(i);
     korali::Sample sample;
-    sample["Module"] = "Problem";
     sample["Parameters"] = _samplePopulation[i];
     sample["Operation"] = "Check Feasibility";
     _conduit->start(sample);
@@ -686,7 +681,6 @@ void korali::solver::CMAES::handleConstraints()
      }
 
      sample["Parameters"] = _samplePopulation[i];
-     sample["Module"] = "Problem";
      sample["Operation"] = "Check Feasibility";
      _conduit->start(sample);
      _conduit->wait(sample);

@@ -73,7 +73,6 @@ void korali::solver::TMCMC::runGeneration()
      if (_chainPendingEvaluation[c] == false)
      {
        _chainPendingEvaluation[c] = true;
-       samples[c]["Module"] = "Problem";
        samples[c]["Operation"]    = "Evaluate";
        samples[c]["Parameters"]   = _chainCandidates[c][_currentChainStep[c]];
        samples[c]["Sample Id"]    = c;

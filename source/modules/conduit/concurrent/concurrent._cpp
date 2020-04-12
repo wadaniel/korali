@@ -96,11 +96,8 @@ void korali::conduit::Concurrent::worker(int workerId)
    size_t experimentId = sample["Experiment Id"];
    std::string operation = sample["Operation"];
 
-   if (sample["Module"] == "Problem")
-    _engine->_experimentVector[experimentId]->_problem->runOperation(operation, sample);
-
-   if (sample["Module"] == "Solver")
-    _engine->_experimentVector[experimentId]->_solver->runOperation(operation, sample);
+   korali::Engine* engine = _engineStack.top();
+   engine->_experimentVector[experimentId]->_problem->runOperation(operation, sample);
 
    std::string resultString = sample._js.getJson().dump();
    size_t resultStringSize = resultString.size();
@@ -108,15 +105,21 @@ void korali::conduit::Concurrent::worker(int workerId)
    write(_resultPipe[workerId][1], &resultStringSize, sizeof(size_t));
    write(_resultPipe[workerId][1], resultString.c_str(), resultStringSize * sizeof(char));
   }
+
+  if (actionJs["Conduit Action"] == "Stack Engine") _engineStack.push(korali::Engine::deserialize(actionJs));
+
+  if (actionJs["Conduit Action"] == "Pop Engine")  _engineStack.pop();
  }
 }
 
 void korali::conduit::Concurrent::processSample(korali::Sample& sample)
 {
+ korali::Engine* engine = _engineStack.top();
+
  while (_launcherQueue.empty())
  {
   sample._state = SampleState::waiting;
-  co_switch(_engine->_currentExperiment->_thread);
+  co_switch(engine->_currentExperiment->_thread);
  }
 
  int launcherId = _launcherQueue.front(); _launcherQueue.pop();
@@ -160,13 +163,48 @@ void korali::conduit::Concurrent::processSample(korali::Sample& sample)
   else
   {
    sample._state = SampleState::waiting;
-   co_switch(_engine->_currentExperiment->_thread);
+   co_switch(engine->_currentExperiment->_thread);
   }
  }
 
  js["End Time"] = std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count() + _cumulativeTime;
- js["Solver Id"] = _engine->_currentExperiment->_experimentId;
- js["Current Generation"] = _engine->_currentExperiment->_currentGeneration;
+ js["Solver Id"] = engine->_currentExperiment->_experimentId;
+ js["Current Generation"] = engine->_currentExperiment->_currentGeneration;
  __profiler["Timelines"]["Worker " + std::to_string(launcherId)] += js;
 
+}
+
+void korali::conduit::Concurrent::stackEngine(korali::Engine* engine)
+{
+  _engineStack.push(engine);
+
+  auto engineJs = knlohmann::json();
+  engine->serialize(engineJs);
+  engineJs["Conduit Action"] = "Stack Engine";
+
+  std::string engineString = engineJs.dump();
+  size_t engineStringSize = engineString.size();
+
+  for(int i = 0; i < _concurrentJobs; i++)
+  {
+   write(_inputsPipe[i][1], &engineStringSize, sizeof(size_t));
+   write(_inputsPipe[i][1], engineString.c_str(), engineStringSize * sizeof(char));
+  }
+}
+
+void korali::conduit::Concurrent::popEngine()
+{
+ _engineStack.pop();
+
+  auto engineJs = knlohmann::json();
+  engineJs["Conduit Action"] = "Pop Engine";
+
+  std::string engineString = engineJs.dump();
+  size_t engineStringSize = engineString.size();
+
+  for(int i = 0; i < _concurrentJobs; i++)
+  {
+   write(_inputsPipe[i][1], &engineStringSize, sizeof(size_t));
+   write(_inputsPipe[i][1], engineString.c_str(), engineStringSize * sizeof(char));
+  }
 }

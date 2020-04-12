@@ -176,6 +176,11 @@ void korali::Experiment::initialize()
  co_switch(_thread);
 }
 
+void korali::Experiment::finalize()
+{
+ co_delete(_thread);
+}
+
 knlohmann::json& korali::Experiment::operator[](const std::string& key) { return _js[key]; }
 knlohmann::json& korali::Experiment::operator[](const unsigned long int& key) { return _js[key]; }
 pybind11::object korali::Experiment::getItem(pybind11::object key) { return _js.getItem(key); }

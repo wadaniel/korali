@@ -22,6 +22,7 @@ class Experiment : public korali::Module {
  Experiment();
 
  void initialize() override;
+ void finalize() override;
 
  /**
   * @brief JSON object to store the experiment's configuration

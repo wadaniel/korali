@@ -28,6 +28,7 @@ void korali::Engine::initialize()
  if (! korali::JsonInterface::isDefined(_js.getJson(), "['Conduit']['Type']")) _js["Conduit"]["Type"] = "Sequential";
  if (! korali::JsonInterface::isDefined(_js.getJson(), "['Dry Run']")) _js["Dry Run"] = false;
 
+ _isDryRun = _js["Dry Run"];
  _profilingPath = _js["Profiling"]["Path"];
  _profilingDetail = _js["Profiling"]["Detail"];
  _profilingFrequency = _js["Profiling"]["Frequency"];
@@ -53,10 +54,6 @@ void korali::Engine::initialize()
  if (korali::JsonInterface::isDefined(js, "['Profiling']['Path']")) korali::JsonInterface::eraseValue(js, "['Profiling']['Path']");
  if (korali::JsonInterface::isDefined(js, "['Profiling']['Frequency']")) korali::JsonInterface::eraseValue(js, "['Profiling']['Frequency']");
  if (korali::JsonInterface::isEmpty(js) == false) _logger->logError("Unrecognized settings for Korali's Engine: \n%s\n", js.dump(2).c_str());
-
- // Checking if its a dry run and return if it is
- _isDryRun = _js["Dry Run"];
- if (_isDryRun) return;
 }
 
 void korali::Engine::run()
@@ -80,12 +77,11 @@ void korali::Engine::run()
   _conduit->getConfiguration(_js.getJson()["Conduit"]);
  }
 
- // Stacking current Engine
- _conduit->stackEngine(this);
-
- // If this is a worker process (not root), there's nothing else to do
  if (_conduit->isRoot())
  {
+  // Stacking current Engine
+  _conduit->stackEngine(this);
+
   // Setting base time for profiling.
   _startTime = std::chrono::high_resolution_clock::now();
   _profilingLastSave = std::chrono::high_resolution_clock::now();
@@ -114,14 +110,13 @@ void korali::Engine::run()
 
   saveProfilingInfo(true);
   _cumulativeTime += std::chrono::duration<double>(_endTime-_startTime).count();
+
+  // Finalizing experiments
+  for (size_t i = 0; i < _experimentVector.size(); i++) _experimentVector[i]->finalize();
+
+  // Removing the current engine to the conduit's engine stack
+  _conduit->popEngine();
  }
-
- // Freeing up experiment thread memory
- for (size_t i = 0; i < _experimentVector.size(); i++)
-  co_delete(_experimentVector[i]->_thread);
-
- // Removing the current engine to the conduit's engine stack
- _conduit->popEngine();
 
  // Finalizing Conduit if last engine in the stack
  if (_conduit->_engineStack.size() == 0)

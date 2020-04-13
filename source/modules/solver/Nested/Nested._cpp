@@ -1,5 +1,4 @@
 #include "modules/solver/Nested/Nested.hpp"
-#include "modules/engine/engine.hpp"
 #include "modules/conduit/conduit.hpp"
 #include "modules/experiment/experiment.hpp"
 
@@ -11,16 +10,16 @@
 void korali::solver::Nested::setInitialConfiguration()
 {
  printf("DASDAS\n"); fflush(0);
- if(_covarianceScaling <= 0.0) korali::logError("Covariance Scaling must be larger 0.0 (is %lf).\n", _covarianceScaling);
- if(_maxGainFactor < 0.0) korali::logError("Max Gain Factor must be larger equal 0.0 (is %lf).\n", _maxGainFactor);
+ if(_covarianceScaling <= 0.0) _k->_logger->logError("Covariance Scaling must be larger 0.0 (is %lf).\n", _covarianceScaling);
+ if(_maxGainFactor < 0.0) _k->_logger->logError("Max Gain Factor must be larger equal 0.0 (is %lf).\n", _maxGainFactor);
  
- if(_resamplingMethod != "MCMC" && _resamplingMethod != "Box") korali::logError("Only accepted Resampling Method are 'MCMC' and 'Box' (is %s).\n", _resamplingMethod.c_str());
+ if(_resamplingMethod != "MCMC" && _resamplingMethod != "Box") _k->_logger->logError("Only accepted Resampling Method are 'MCMC' and 'Box' (is %s).\n", _resamplingMethod.c_str());
 
- if(_proposalUpdateFrequency == 0) korali::logError("Proposal Update Frequency must be larger 0");
+ if(_proposalUpdateFrequency == 0) _k->_logger->logError("Proposal Update Frequency must be larger 0");
 
  for(size_t d = 0; d < _k->_variables.size(); ++d)
  {
-    if (_k->_distributions[_k->_variables[d]->_distributionIndex]->_type != "Univariate/Uniform") korali::logError("Only 'Univariate/Uniform' priors allowed (is %s).\n", _k->_distributions[_k->_variables[d]->_distributionIndex]->_type.c_str());
+    if (_k->_distributions[_k->_variables[d]->_distributionIndex]->_type != "Univariate/Uniform") _k->_logger->logError("Only 'Univariate/Uniform' priors allowed (is %s).\n", _k->_distributions[_k->_variables[d]->_distributionIndex]->_type.c_str());
  }
  
  _candidateLogLikelihoods.resize(_batchSize);
@@ -83,7 +82,7 @@ void korali::solver::Nested::runGeneration()
    samples[c]["Operation"]    = "Evaluate";
    samples[c]["Parameters"]   = _candidates[c];
    samples[c]["Sample Id"]    = c;
-   _engine->_conduit->start(samples[c]);
+   _conduit->start(samples[c]);
    _modelEvaluationCount++;
    _generatedSamples++;
   }
@@ -92,7 +91,7 @@ void korali::solver::Nested::runGeneration()
   size_t finishedCandidatesCount = 0;
   while (finishedCandidatesCount < _batchSize)
   {
-   size_t finishedId = _engine->_conduit->waitAny(samples);
+   size_t finishedId = _conduit->waitAny(samples);
 
    _candidateLogLikelihoods[finishedId] = samples[finishedId]["logLikelihood"];
    _candidateLogPriors[finishedId]      = samples[finishedId]["logPrior"];
@@ -122,7 +121,7 @@ void korali::solver::Nested::runFirstGeneration()
     samples[c]["Operation"]    = "Evaluate";
     samples[c]["Parameters"]   = _liveSamples[c];
     samples[c]["Sample Id"]    = c;
-    _engine->_conduit->start(samples[c]);
+    _conduit->start(samples[c]);
     _modelEvaluationCount++;
     _generatedSamples++;
   }
@@ -130,7 +129,7 @@ void korali::solver::Nested::runFirstGeneration()
   size_t finishedCandidatesCount = 0;
   while (finishedCandidatesCount < _numberLivePoints)
   {
-   size_t finishedId = _engine->_conduit->waitAny(samples);
+   size_t finishedId = _conduit->waitAny(samples);
 
    _liveLogLikelihoods[finishedId] = samples[finishedId]["logLikelihood"];
    _liveLogPriors[finishedId]      = samples[finishedId]["logPrior"];
@@ -423,14 +422,14 @@ void korali::solver::Nested::printGenerationBefore() { return; }
 
 void korali::solver::Nested::printGenerationAfter() 
 { 
-  korali::logInfo("Minimal", "Log Evidence: %.4f (+- %.4f)\n", _logEvidence, sqrt(_logEvidenceVar));
-  korali::logInfo("Minimal", "Accepted Samples: %zu (+%zu) \n", _acceptedSamples, _numberLivePoints);
-  korali::logInfo("Minimal", "Effective Samples: %.2f\n", _numberEffectiveSamples);
-  korali::logInfo("Minimal", "Sampling Efficiency: %.2f%%\n", 100.0*(_acceptedSamples+_numberLivePoints)/((double)_generatedSamples));
-  korali::logInfo("Minimal", "lStar: %.2f\n", _lStar);
-  korali::logInfo("Minimal", "Last Accepted: %zu\n", _lastAccepted);
-  korali::logInfo("Minimal", "Information: %.4f\n", _information);
-  korali::logInfo("Minimal", "Log Volume (shrinkage): %.4f (%.2f%%)\n", _logVolume, 100.*(1.-exp(_logVolume)));
+  _k->_logger->logInfo("Minimal", "Log Evidence: %.4f (+- %.4f)\n", _logEvidence, sqrt(_logEvidenceVar));
+  _k->_logger->logInfo("Minimal", "Accepted Samples: %zu (+%zu) \n", _acceptedSamples, _numberLivePoints);
+  _k->_logger->logInfo("Minimal", "Effective Samples: %.2f\n", _numberEffectiveSamples);
+  _k->_logger->logInfo("Minimal", "Sampling Efficiency: %.2f%%\n", 100.0*(_acceptedSamples+_numberLivePoints)/((double)_generatedSamples));
+  _k->_logger->logInfo("Minimal", "lStar: %.2f\n", _lStar);
+  _k->_logger->logInfo("Minimal", "Last Accepted: %zu\n", _lastAccepted);
+  _k->_logger->logInfo("Minimal", "Information: %.4f\n", _information);
+  _k->_logger->logInfo("Minimal", "Log Volume (shrinkage): %.4f (%.2f%%)\n", _logVolume, 100.*(1.-exp(_logVolume)));
   return; 
 }
 
@@ -441,8 +440,8 @@ void korali::solver::Nested::finalize()
   generatePosterior();
   (*_k)["Results"]["Posterior Samples"] = _posteriorSamples;
 
-  korali::logInfo("Minimal", "Final Log Evidence: %.4f (+- %.4F)\n", _logEvidence, sqrt(_logEvidenceVar));
-  korali::logInfo("Minimal", "Information: %.4f\n", _information);
-  korali::logInfo("Minimal", "Posterior Samples: %zu\n", _posteriorSamples.size());
+  _k->_logger->logInfo("Minimal", "Final Log Evidence: %.4f (+- %.4F)\n", _logEvidence, sqrt(_logEvidenceVar));
+  _k->_logger->logInfo("Minimal", "Information: %.4f\n", _information);
+  _k->_logger->logInfo("Minimal", "Posterior Samples: %zu\n", _posteriorSamples.size());
   return; 
 }

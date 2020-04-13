@@ -83,10 +83,13 @@ class Distributed : public korali::Conduit
  bool _continueEvaluations;
  #endif
 
+ void initServer() override;
  void initialize() override;
  void finalize() override;
 
  void processSample(korali::Sample& sample) override;
+ void stackEngine(korali::Engine*) override;
+ void popEngine() override;
 
  /**
   * @brief Determines which rank is the root.

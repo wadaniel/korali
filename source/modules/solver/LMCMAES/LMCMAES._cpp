@@ -1,7 +1,6 @@
 #include "modules/solver/LMCMAES/LMCMAES.hpp"
 #include "sample/sample.hpp"
 #include "modules/conduit/conduit.hpp"
-#include "modules/engine/engine.hpp"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -14,7 +13,7 @@ void korali::solver::LMCMAES::setInitialConfiguration()
  if (_targetDistanceCoefficients.size() == 0) _targetDistanceCoefficients = { double(_k->_variables.size()), 0.0, 0.0 };
 
  if(_targetDistanceCoefficients.size() != 3)
-  korali::logError("LMCMAES requires 3 parameters for 'Target Distance Coefficients' (%zu provided).\n", _targetDistanceCoefficients.size());
+  _k->_logger->logError("LMCMAES requires 3 parameters for 'Target Distance Coefficients' (%zu provided).\n", _targetDistanceCoefficients.size());
 
  if (_muValue == 0)  _muValue = _populationSize / 2;
  if (_cumulativeCovariance == 0.0) _cumulativeCovariance = 0.5/std::sqrt((double)_k->_variables.size());
@@ -71,13 +70,13 @@ void korali::solver::LMCMAES::setInitialConfiguration()
  {
    /* confirm lower & upper bound */
    if( (std::isfinite(_k->_variables[i]->_lowerBound) && std::isfinite(_k->_variables[i]->_upperBound) ) == false )
-        korali::logError("Lower and/or upper bound of variable \'%s\' is not defined.\n", _k->_variables[i]->_name.c_str());
+        _k->_logger->logError("Lower and/or upper bound of variable \'%s\' is not defined.\n", _k->_variables[i]->_name.c_str());
 
    /* init mean if not defined */
    if(std::isfinite(_k->_variables[i]->_initialMean) == false)
    {
-    if(std::isfinite(_k->_variables[i]->_lowerBound) == false) korali::logError("Initial Mean of variable \'%s\' not defined, and cannot be inferred because variable lower bound is not finite.\n", _k->_variables[i]->_name.c_str());
-    if(std::isfinite(_k->_variables[i]->_upperBound) == false) korali::logError("Initial Mean of variable \'%s\' not defined, and cannot be inferred because variable upper bound is not finite.\n", _k->_variables[i]->_name.c_str());
+    if(std::isfinite(_k->_variables[i]->_lowerBound) == false) _k->_logger->logError("Initial Mean of variable \'%s\' not defined, and cannot be inferred because variable lower bound is not finite.\n", _k->_variables[i]->_name.c_str());
+    if(std::isfinite(_k->_variables[i]->_upperBound) == false) _k->_logger->logError("Initial Mean of variable \'%s\' not defined, and cannot be inferred because variable upper bound is not finite.\n", _k->_variables[i]->_name.c_str());
     _k->_variables[i]->_initialMean = (_k->_variables[i]->_upperBound + _k->_variables[i]->_lowerBound)*0.5;
    }
 
@@ -91,14 +90,14 @@ void korali::solver::LMCMAES::setInitialConfiguration()
  _sigma = _initialSigma;
  
  if ( (_sigmaUpdateRule == "CMAES" || _sigmaUpdateRule == "LMCMA") == false)
-   korali::logError("Invalid setting of Sigma Update Rule (%s) (choose CMAES, or LMCMA).",  _sigmaUpdateRule.c_str());
+   _k->_logger->logError("Invalid setting of Sigma Update Rule (%s) (choose CMAES, or LMCMA).",  _sigmaUpdateRule.c_str());
 
  if      (_muType == "Linear")       for (size_t i = 0; i < _muValue; i++) _muWeights[i] = _muValue - i;
  else if (_muType == "Equal")        for (size_t i = 0; i < _muValue; i++) _muWeights[i] = 1.;
  else if (_muType == "Logarithmic")  for (size_t i = 0; i < _muValue; i++) _muWeights[i] = log(std::max( (double)_muValue, 0.5*_populationSize)+0.5)-log(i+1.);
- else  korali::logError("Invalid setting of Mu Type (%s) (Linear, Equal, and Logarithmic accepted).",  _muType.c_str());
+ else  _k->_logger->logError("Invalid setting of Mu Type (%s) (Linear, Equal, and Logarithmic accepted).",  _muType.c_str());
 
- if ((_randomNumberDistribution != "Normal") && (_randomNumberDistribution != "Uniform")) korali::logError("Invalid setting of Random Number Distribution (%s) (Normal and Uniform accepted).",  _randomNumberDistribution.c_str());
+ if ((_randomNumberDistribution != "Normal") && (_randomNumberDistribution != "Uniform")) _k->_logger->logError("Invalid setting of Random Number Distribution (%s) (Normal and Uniform accepted).",  _randomNumberDistribution.c_str());
 
  // Normalize weights vector and set mueff
  double s1 = 0.0;
@@ -114,17 +113,17 @@ void korali::solver::LMCMAES::setInitialConfiguration()
  for (size_t i = 0; i < _muValue; i++) _muWeights[i] /= s1;
 
  if (_initialSigma <= 0.0)
-     korali::logError("Invalid Initial Sigma (must be greater 0.0, is %lf).", _initialSigma);
+     _k->_logger->logError("Invalid Initial Sigma (must be greater 0.0, is %lf).", _initialSigma);
  if (_cumulativeCovariance <= 0.0)
-     korali::logError("Invalid Initial Cumulative Covariance (must be greater 0.0).");
+     _k->_logger->logError("Invalid Initial Cumulative Covariance (must be greater 0.0).");
  if (_sigmaCumulationFactor <= 0.0)
-     korali::logError("Invalid Sigma Cumulative Covariance (must be greater 0.0).");
+     _k->_logger->logError("Invalid Sigma Cumulative Covariance (must be greater 0.0).");
  if (_dampFactor <= 0.0)
-     korali::logError("Invalid Damp Factor (must be greater 0.0).");
+     _k->_logger->logError("Invalid Damp Factor (must be greater 0.0).");
  if (_choleskyMatrixLearningRate <= 0.0 || _choleskyMatrixLearningRate > 1.0)
-     korali::logError("Invalid Cholesky Matrix Learning Rate (must be in (0, 1], is %lf).", _choleskyMatrixLearningRate);
+     _k->_logger->logError("Invalid Cholesky Matrix Learning Rate (must be in (0, 1], is %lf).", _choleskyMatrixLearningRate);
  if (_setUpdateInterval <= 0.0 )
-     korali::logError("Invalid Set Update Interval(must be greater 0, is %zu).", _setUpdateInterval);
+     _k->_logger->logError("Invalid Set Update Interval(must be greater 0, is %zu).", _setUpdateInterval);
 
 
  _infeasibleSampleCount   = 0;
@@ -145,15 +144,16 @@ void korali::solver::LMCMAES::runGeneration()
  std::vector<korali::Sample> samples(_populationSize);
  for (size_t i = 0; i < _populationSize; i++)
  {
+  samples[i]["Module"] = "Problem";
   samples[i]["Operation"]  = "Evaluate";
   samples[i]["Parameters"] = _samplePopulation[i];
   samples[i]["Sample Id"]  = i;
   _modelEvaluationCount++;
-  _engine->_conduit->start(samples[i]);
+  _conduit->start(samples[i]);
  }
 
  // Waiting for samples to finish
- _engine->_conduit->waitAll(samples);
+ _conduit->waitAll(samples);
  updateDistribution(samples);
 }
 
@@ -168,10 +168,11 @@ void korali::solver::LMCMAES::prepareGeneration()
     _infeasibleSampleCount++;
     sampleSingle(i);
     korali::Sample sample;
+    sample["Module"] = "Problem";
     sample["Parameters"] = _samplePopulation[i];
     sample["Operation"] = "Check Feasibility";
-    _engine->_conduit->start(sample);
-    _engine->_conduit->wait(sample);
+    _conduit->start(sample);
+    _conduit->wait(sample);
     isSampleFeasible = sample["Is Feasible"];
    }
    while(isSampleFeasible == false);
@@ -395,17 +396,17 @@ void korali::solver::LMCMAES::updateSigma()
  /* escape flat evaluation */
  if (_currentBestValue == _valueVector[_sortingIndex[(int)_muValue]]) {
    _sigma *= exp(0.2+_sigmaCumulationFactor/_dampFactor);
-   korali::logWarning("Detailed", "Sigma increased due to equal function values.\n");
+   _k->_logger->logWarning("Detailed", "Sigma increased due to equal function values.\n");
  }
 
  /* upper bound check for _sigma */
  if(_sigma > 2.0*_initialSigma)
  {
-  korali::logInfo("Detailed", "Sigma exceeding initial sigma by a factor of two (%f > %f), increase value of Initial Sigma.\n", _sigma, 2.0*_initialSigma);
+  _k->_logger->logInfo("Detailed", "Sigma exceeding initial sigma by a factor of two (%f > %f), increase value of Initial Sigma.\n", _sigma, 2.0*_initialSigma);
   if( _isSigmaBounded )
   {
     _sigma = 2.0*_initialSigma;
-    korali::logInfo("Detailed", "Sigma set to upper bound (%f) due to solver configuration 'Is Sigma Bounded' = 'true'.\n", _sigma);
+    _k->_logger->logInfo("Detailed", "Sigma set to upper bound (%f) due to solver configuration 'Is Sigma Bounded' = 'true'.\n", _sigma);
   }
  }
 
@@ -440,26 +441,26 @@ void korali::solver::LMCMAES::printGenerationBefore() { return; }
 void korali::solver::LMCMAES::printGenerationAfter()
 {
 
- korali::logInfo("Normal", "Sigma:                        %+6.3e\n", _sigma);
- korali::logInfo("Normal", "Current Function Value: Max = %+6.3e - Best = %+6.3e\n", _currentBestValue, _bestEverValue);
+ _k->_logger->logInfo("Normal", "Sigma:                        %+6.3e\n", _sigma);
+ _k->_logger->logInfo("Normal", "Current Function Value: Max = %+6.3e - Best = %+6.3e\n", _currentBestValue, _bestEverValue);
 
-  korali::logInfo("Detailed", "Variable = (MeanX, BestX):\n");
-  for (size_t d = 0; d < _k->_variables.size(); d++) korali::logData("Detailed", "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _currentMean[d], _bestEverVariables[d]);
+  _k->_logger->logInfo("Detailed", "Variable = (MeanX, BestX):\n");
+  for (size_t d = 0; d < _k->_variables.size(); d++) _k->_logger->logData("Detailed", "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _currentMean[d], _bestEverVariables[d]);
 
-  korali::logInfo("Detailed", "Covariance Matrix:\n");
+  _k->_logger->logInfo("Detailed", "Covariance Matrix:\n");
   for (size_t d = 0; d < _k->_variables.size(); d++)
   {
-   //for (size_t e = 0; e <= d; e++) korali::logData("Detailed", "   %+6.3e  ",_covarianceMatrix[d*_k->_variables.size()+e]);
-   korali::logInfo("Detailed", "\n");
+   //for (size_t e = 0; e <= d; e++) _k->_logger->logData("Detailed", "   %+6.3e  ",_covarianceMatrix[d*_k->_variables.size()+e]);
+   _k->_logger->logInfo("Detailed", "\n");
   }
 
-  korali::logInfo("Detailed", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
+  _k->_logger->logInfo("Detailed", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
 }
 
 void korali::solver::LMCMAES::finalize()
 {
-  korali::logInfo("Minimal", "Optimum found: %e\n", _bestEverValue);
-  korali::logInfo("Minimal", "Optimum found at:\n");
-  for (size_t d = 0; d < _k->_variables.size(); ++d) korali::logData("Minimal", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverVariables[d]);
-  korali::logInfo("Detailed", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
+  _k->_logger->logInfo("Minimal", "Optimum found: %e\n", _bestEverValue);
+  _k->_logger->logInfo("Minimal", "Optimum found at:\n");
+  for (size_t d = 0; d < _k->_variables.size(); ++d) _k->_logger->logData("Minimal", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverVariables[d]);
+  _k->_logger->logInfo("Detailed", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
 }

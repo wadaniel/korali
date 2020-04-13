@@ -1,4 +1,4 @@
-#include "modules/engine/engine.hpp"
+#include "engine.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/conduit/conduit.hpp"
 #include "modules/solver/solver.hpp"
@@ -20,6 +20,8 @@ void korali::Experiment::run()
 {
   co_switch(_engine->_thread);
 
+  _logger = new Logger(_consoleOutputVerbosity, _logFile);
+
   auto t0 = std::chrono::system_clock::now();
 
   if(_currentGeneration == 0) saveState();
@@ -32,8 +34,8 @@ void korali::Experiment::run()
    if (_consoleOutputFrequency > 0)
    if (_currentGeneration % _consoleOutputFrequency == 0)
    {
-    korali::logInfo("Minimal",  "--------------------------------------------------------------------\n");
-    korali::logInfo("Minimal",  "Current Generation: #%zu\n", _currentGeneration);
+    _logger->logInfo("Minimal",  "--------------------------------------------------------------------\n");
+    _logger->logInfo("Minimal",  "Current Generation: #%zu\n", _currentGeneration);
     _solver->printGenerationBefore();
    }
 
@@ -52,7 +54,7 @@ void korali::Experiment::run()
    if (_currentGeneration % _consoleOutputFrequency == 0)
    {
     _solver->printGenerationAfter();
-    korali::logInfo("Detailed", "Experiment: %lu - Generation Time: %.3fs\n", _experimentId, std::chrono::duration<double>(t1-t0).count());
+    _logger->logInfo("Detailed", "Experiment: %lu - Generation Time: %.3fs\n", _experimentId, std::chrono::duration<double>(t1-t0).count());
    }
 
    if (_fileOutputFrequency > 0)
@@ -69,14 +71,15 @@ void korali::Experiment::run()
   _solver->finalize();
   saveState();
 
-  korali::logInfo("Minimal", "--------------------------------------------------------------------\n");
-  korali::logInfo("Minimal", "%s finished correctly.\n", _solver->getType().c_str());
-  for (size_t i = 0; i < _solver->_terminationCriteria.size(); i++) korali::logInfo("Normal", "Termination Criterion Met: %s\n", _solver->_terminationCriteria[i].c_str());
-  korali::logInfo("Normal", "Final Generation: %lu\n", _currentGeneration);
-  korali::logInfo("Normal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(t1-t0).count());
+  _logger->logInfo("Minimal", "--------------------------------------------------------------------\n");
+  _logger->logInfo("Minimal", "%s finished correctly.\n", _solver->getType().c_str());
+  for (size_t i = 0; i < _solver->_terminationCriteria.size(); i++) _logger->logInfo("Normal", "Termination Criterion Met: %s\n", _solver->_terminationCriteria[i].c_str());
+  _solver->finalize();
+  _logger->logInfo("Normal", "Final Generation: %lu\n", _currentGeneration);
+  _logger->logInfo("Normal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(t1-t0).count());
 
   co_switch(_engine->_thread);
-  korali::logError("Trying to continue finished Experiment thread.\n");
+  _logger->logError("Trying to continue finished Experiment thread.\n");
 }
 
 void korali::Experiment::saveState()
@@ -172,6 +175,11 @@ void korali::Experiment::initialize()
  __expPointer = this;
  _thread = co_create(10240*sizeof(void*), korali::threadWrapper);
  co_switch(_thread);
+}
+
+void korali::Experiment::finalize()
+{
+ co_delete(_thread);
 }
 
 knlohmann::json& korali::Experiment::operator[](const std::string& key) { return _js[key]; }

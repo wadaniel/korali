@@ -137,7 +137,7 @@ char korali::decimalToHexChar(const uint8_t byte)
  if (byte == 13) return 'D';
  if (byte == 14) return 'E';
  if (byte == 15) return 'F';
- korali::logError("Number out of Hex limits: %hhu", byte);
+ fprintf(stderr, "Number out of Hex limits: %hhu\n", byte); exit(-1);
  return '0';
 }
 
@@ -160,7 +160,7 @@ uint8_t korali::hexCharToDecimal(const char x)
  if (x == 'D') return 13;
  if (x == 'E') return 14;
  if (x == 'F') return 15;
- korali::logError("Char out of Hex limits: %c", x);
+ fprintf(stderr, "Char out of Hex limits: %c", x); exit(-1);
  return 0;
 }
 

@@ -4,8 +4,10 @@
 #include "modules/module.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/solver/solver.hpp"
+#include "modules/conduit/conduit.hpp"
 #include <vector>
 #include <chrono>
+#include <stack>
 
 namespace korali {
 
@@ -16,10 +18,31 @@ class Conduit : public korali::Module {
  public:
 
  /**
+  * @brief A pointer to the Conduit's logger object.
+ */
+ korali::Logger* _logger;
+
+ /**
  * @brief Accepts a sample for processing.
  * @param A Korali sample
  */
  virtual void processSample(korali::Sample& sample) = 0;
+
+ /**
+  * @brief Stacks a new Engine into the engine stack
+  * @param A Korali Engine
+  */
+ virtual void stackEngine(korali::Engine* engine) = 0;
+
+ /**
+  * @brief Pops the current Engine from the engine stack
+  */
+ virtual void popEngine() = 0;
+
+ /**
+  * @brief Initializes the worker/server bifurcation in the conduit
+  */
+ virtual void initServer() = 0;
 
  /**
  * @brief Determines whether the caller rank/thread/process is root.
@@ -67,6 +90,10 @@ class Conduit : public korali::Module {
  static void coroutineWrapper();
 };
 
+/**
+  * @brief A singleton pointer to the execution conduit. Shared among all experiments.
+  */
+extern Conduit* _conduit;
 
 } // namespace korali
 

@@ -24,7 +24,7 @@ void korali::KoraliJson::traverseKey(pybind11::object key)
    return;
   }
 
- korali::logError("Could not recognize Python key format.\n");
+ fprintf(stderr, "Could not recognize Python key format.\n"); exit(-1);
 }
 
 

@@ -1,30 +1,27 @@
+#include "engine.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/conduit/conduit.hpp"
 #include "modules/solver/solver.hpp"
 #include "modules/problem/problem.hpp"
-#include "modules/engine/engine.hpp"
 #include "modules/conduit/distributed/distributed.hpp"
 #include "auxiliar/koraliJson.hpp"
+
+std::vector<std::function<void(korali::Sample&)>*> korali::_functionVector;
+std::stack<korali::Engine*> korali::_engineStack;
 
 korali::Engine::Engine()
 {
  _cumulativeTime = 0.0;
  _thread = co_active();
-}
-
-bool korali::_isDryRun;
-
-void korali::Engine::run()
-{
- // Save own pointer
- _engine = this;
 
  // Turn Off GSL Error Handler
  gsl_set_error_handler_off();
+}
 
- // Setting output file to stdout, by default.
- korali::setConsoleOutputFile(stdout);
- korali::setVerbosityLevel("Minimal");
+void korali::Engine::initialize()
+{
+ // Instantiating Engine logger.
+ _logger = new korali::Logger();
 
  if (! korali::JsonInterface::isDefined(_js.getJson(), "['Profiling']['Detail']")) _js["Profiling"]["Detail"] = "None";
  if (! korali::JsonInterface::isDefined(_js.getJson(), "['Profiling']['Path']")) _js["Profiling"]["Path"] = "./profiling.json";
@@ -32,6 +29,7 @@ void korali::Engine::run()
  if (! korali::JsonInterface::isDefined(_js.getJson(), "['Conduit']['Type']")) _js["Conduit"]["Type"] = "Sequential";
  if (! korali::JsonInterface::isDefined(_js.getJson(), "['Dry Run']")) _js["Dry Run"] = false;
 
+ _isDryRun = _js["Dry Run"];
  _profilingPath = _js["Profiling"]["Path"];
  _profilingDetail = _js["Profiling"]["Detail"];
  _profilingFrequency = _js["Profiling"]["Frequency"];
@@ -48,41 +46,48 @@ void korali::Engine::run()
   if (_experimentVector.size() == 1) _experimentVector[i]->_logFile = stdout;
  }
 
- // Checking if its a dry run
- korali::_isDryRun = _js["Dry Run"];
-
- // Configuring and initializing Conduit
- _conduit = dynamic_cast<korali::Conduit*>(getModule(_js["Conduit"]));
-
  // Check configuration correctness
  auto js = _js.getJson();
+ if (korali::JsonInterface::isDefined(js, "['Conduit']")) korali::JsonInterface::eraseValue(js, "['Conduit']");
  if (korali::JsonInterface::isDefined(js, "['Dry Run']")) korali::JsonInterface::eraseValue(js, "['Dry Run']");
  if (korali::JsonInterface::isDefined(js, "['Conduit']['Type']")) korali::JsonInterface::eraseValue(js, "['Conduit']['Type']");
  if (korali::JsonInterface::isDefined(js, "['Profiling']['Detail']")) korali::JsonInterface::eraseValue(js, "['Profiling']['Detail']");
  if (korali::JsonInterface::isDefined(js, "['Profiling']['Path']")) korali::JsonInterface::eraseValue(js, "['Profiling']['Path']");
  if (korali::JsonInterface::isDefined(js, "['Profiling']['Frequency']")) korali::JsonInterface::eraseValue(js, "['Profiling']['Frequency']");
- if (korali::JsonInterface::isEmpty(js) == false) if (_conduit->isRoot()) korali::logError("Unrecognized settings for Korali's Engine: \n%s\n", js.dump(2).c_str());
+ if (korali::JsonInterface::isEmpty(js) == false) _logger->logError("Unrecognized settings for Korali's Engine: \n%s\n", js.dump(2).c_str());
+}
 
- // Recovering Conduit configuration
- _conduit->getConfiguration(_js.getJson()["Conduit"]);
+void korali::Engine::run()
+{
+ // Checking if its a dry run and return if it is
+ if (_isDryRun) return;
 
- // If this is a worker process (not root), there's nothing else to do
+ // Only initialize conduit if the Engine being ran is the first one in the process
+ if (_conduit == NULL)
+ {
+  // Configuring conduit
+  auto conduit = dynamic_cast<korali::Conduit*>(getModule(_js["Conduit"]));
+
+  // Initializing conduit server
+  conduit->initServer();
+
+  // Assigning pointer after starting workers, so they can initialize their own conduit
+  _conduit = conduit;
+
+  // Recovering Conduit configuration in case of restart
+  _conduit->getConfiguration(_js.getJson()["Conduit"]);
+ }
+
  if (_conduit->isRoot())
  {
-  // If this is a dry run and configuration succeeded, print sucess and return
-  if (_isDryRun)
-  {
-   korali::logInfo("Minimal",  "--------------------------------------------------------------------\n");
-   korali::logInfo("Minimal",  "Dry Run Successful.\n");
-   korali::logInfo("Minimal",  "--------------------------------------------------------------------\n");
-   return;
-  }
+  // Adding engine to the stack
+  _conduit->stackEngine(this);
 
   // Setting base time for profiling.
   _startTime = std::chrono::high_resolution_clock::now();
   _profilingLastSave = std::chrono::high_resolution_clock::now();
 
-  if (_experimentVector.size() > 1) for (size_t i = 0; i < _experimentVector.size(); i++) korali::logInfo("Minimal", "Starting Experiment %lu...\n", i);
+  if (_experimentVector.size() > 1) for (size_t i = 0; i < _experimentVector.size(); i++) _logger->logInfo(_experimentVector[0]->_consoleOutputVerbosity, "Starting Experiment %lu...\n", i);
 
   while(true)
   {
@@ -90,33 +95,36 @@ void korali::Engine::run()
    for (size_t i = 0; i < _experimentVector.size(); i++)
    if (_experimentVector[i]->_isFinished == false)
    {
-    korali::setVerbosityLevel(_experimentVector[i]->_consoleOutputVerbosity);
-    korali::setConsoleOutputFile(_experimentVector[i]->_logFile);
     _currentExperiment = _experimentVector[i];
     co_switch(_experimentVector[i]->_thread);
     executed = true;
     saveProfilingInfo(false);
-    korali::setConsoleOutputFile(stdout);
-    if (_experimentVector.size() > 1) if (_experimentVector[i]->_isFinished == true) korali::logInfo("Minimal", "Experiment %lu has finished.\n", i);
+    if (_experimentVector.size() > 1) if (_experimentVector[i]->_isFinished == true) _logger->logInfo(_experimentVector[0]->_consoleOutputVerbosity, "Experiment %lu has finished.\n", i);
    }
    if (executed == false) break;
   }
 
   _endTime = std::chrono::high_resolution_clock::now();
 
-  if (_experimentVector.size() > 1) korali::logInfo("Minimal", "All jobs have finished correctly.\n");
-  if (_experimentVector.size() > 1) korali::logInfo("Normal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count());
+  if (_experimentVector.size() > 1) _logger->logInfo(_experimentVector[0]->_consoleOutputVerbosity, "All jobs have finished correctly.\n");
+  if (_experimentVector.size() > 1) _logger->logInfo(_experimentVector[0]->_consoleOutputVerbosity, "Elapsed Time: %.3fs\n", std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count());
 
   saveProfilingInfo(true);
   _cumulativeTime += std::chrono::duration<double>(_endTime-_startTime).count();
+
+  // Finalizing experiments
+  for (size_t i = 0; i < _experimentVector.size(); i++) _experimentVector[i]->finalize();
+
+  // Removing the current engine to the conduit's engine stack
+  _conduit->popEngine();
  }
 
- // Freeing up experiment thread memory
- for (size_t i = 0; i < _experimentVector.size(); i++)
-  co_delete(_experimentVector[i]->_thread);
-
- // Finalizing Conduit
- _conduit->finalize();
+ // Finalizing Conduit if last engine in the stack
+ if (_engineStack.size() == 0)
+ {
+  _conduit->finalize();
+  _conduit = NULL;
+ }
 }
 
 void korali::Engine::saveProfilingInfo(bool forceSave)
@@ -140,6 +148,7 @@ void korali::Engine::run(korali::Experiment& experiment)
 {
  _experimentVector.clear();
  _experimentVector.push_back(experiment._k);
+ initialize();
  run();
 }
 
@@ -147,9 +156,9 @@ void korali::Engine::run(std::vector<korali::Experiment>& experiments)
 {
  _experimentVector.clear();
  for (size_t i = 0; i < experiments.size(); i++) _experimentVector.push_back(experiments[i]._k);
+ initialize();
  run();
 }
-
 
 #ifdef _KORALI_USE_MPI
 long int korali::Engine::getMPICommPointer() { return (long int)(&__KoraliTeamComm); }
@@ -159,6 +168,31 @@ knlohmann::json& korali::Engine::operator[](const std::string& key) { return _js
 knlohmann::json& korali::Engine::operator[](const unsigned long int& key) { return _js[key]; }
 pybind11::object korali::Engine::getItem(pybind11::object key) { return _js.getItem(key); }
 void korali::Engine::setItem(pybind11::object key, pybind11::object val) { _js.setItem(key, val); }
+
+void korali::Engine::serialize(knlohmann::json& js)
+{
+  for (size_t i = 0; i < _experimentVector.size(); i++)
+  {
+   _experimentVector[i]->getConfiguration(_experimentVector[i]->_js.getJson());
+   js["Experiment Vector"][i] = _experimentVector[i]->_js.getJson();
+  }
+}
+
+korali::Engine* korali::Engine::deserialize(knlohmann::json& js)
+{
+ auto k = new korali::Engine;
+
+ for (size_t i = 0; i < js["Experiment Vector"].size(); i++)
+ {
+  auto e = new korali::Experiment;
+  e->_js.getJson() = js["Experiment Vector"][i];
+  k->_experimentVector.push_back(e);
+ }
+
+ k->initialize();
+
+ return k;
+}
 
 PYBIND11_MODULE(libkorali, m)
 {

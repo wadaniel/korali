@@ -185,7 +185,7 @@ static std::vector<std::string> getJsonPath(std::string path)
   curpos = path.find("'", curpos + 1);
  }
 
- if (positions.size() % 2 != 0) korali::logError("Incorrect path description: %s\n", path.c_str());
+ if (positions.size() % 2 != 0) { fprintf(stderr, "Incorrect path description: %s\n", path.c_str()); exit(-1); }
 
  std::vector<std::string> settings;
 
@@ -222,8 +222,8 @@ static void eraseValue(knlohmann::json& js, std::string path)
 */
 static void mergeJson(knlohmann::json& dest, const knlohmann::json& defaults)
 {
- if (dest.is_object() == false) korali::logError("Passed JSON A argument is not an object.\n");
- if (defaults.is_object() == false) korali::logError("Passed JSON B argument is not an object.\n");
+ if (dest.is_object() == false) { fprintf(stderr, "Passed JSON A argument is not an object.\n"); exit(-1); }
+ if (defaults.is_object() == false) { fprintf(stderr, "Passed JSON B argument is not an object.\n"); exit(-1); }
 
  for (auto& x : defaults.items())
  {
@@ -310,7 +310,7 @@ static void saveJsonToFile(const char* fileName, knlohmann::json& js)
    fclose(fid);
  }
  else
-  korali::logError("Could not write to file: %s.\n", fileName);
+ { fprintf(stderr, "Could not write to file: %s.\n", fileName); exit(-1); }
 }
 
 };

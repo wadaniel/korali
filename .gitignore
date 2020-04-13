@@ -27,3 +27,17 @@ __pycache__
 .DS_Store/
 .DS_Store
 *.odg#
+
+## -- added by susanne:
+# PyCharm:
+.idea/
+# VisualStudio Code:
+.vscode/
+.metadata/
+*.cproject
+*.externalToolBuilders/ 
+*.project/ 
+.project/
+*.settings/ 
+*.d
+

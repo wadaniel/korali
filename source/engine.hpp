@@ -1,11 +1,16 @@
 #ifndef _KORALI_ENGINE_HPP_
 #define _KORALI_ENGINE_HPP_
 
+/** \file
+* @brief Include header for the Korali Engine
+*/
+
 #include "modules/experiment/experiment.hpp"
 #include "modules/conduit/distributed/distributed.hpp"
 #include "modules/conduit/conduit.hpp"
 #include "auxiliar/py2json.hpp"
 #include <chrono>
+#include <vector>
 
 namespace korali
 {
@@ -16,9 +21,9 @@ namespace korali
   Engine();
 
   /**
-    * @brief A singleton pointer to the execution conduit. Shared among all experiments.
-    */
-  korali::Conduit* _conduit;
+   * @brief A pointer to the Engine's logger object.
+  */
+  korali::Logger* _logger;
 
   /**
     * @brief Stores the list of experiments to run.
@@ -62,6 +67,11 @@ namespace korali
   void saveProfilingInfo(bool forceSave = false);
 
   /**
+   * @brief Initialization stage of the Korali Engine
+   */
+  void initialize() override;
+
+  /**
    * @brief Stores a set experiments into the experiment list and runs them to completion.
    * @param experiments Set of experiments.
    */
@@ -72,6 +82,12 @@ namespace korali
    * @param experiments The experiment to run.
    */
   void run(korali::Experiment& experiment);
+
+  /**
+   * @brief Runs the stored list of experiments.
+   * @param initializeConduit Indicates whether the conduit should be initialized or inherited (Korali in Korali Executions)
+   */
+  void run(bool initializeConduit);
 
   /**
    * @brief Runs the stored list of experiments.
@@ -112,15 +128,34 @@ namespace korali
   korali::KoraliJson  _js;
 
   /**
+   * @brief Determines whether this is a dry run (no conduit initialization nor execution)
+  */
+  bool _isDryRun;
+
+  /**
    * @brief Returns the worker teams MPI communication pointer (Distributed Conduit only).
    */
   static long int getMPICommPointer();
+
+  /**
+   * @brief Serializes Engine's data into a JSON object.
+   * @param js Json object onto which to store the Engine data.
+   */
+  void serialize(knlohmann::json& js);
+
+  /**
+   * @brief Deserializes JSON object and returns a Korali Engine
+   * @param js Json object onto which to store the Engine data.
+   * @return The Korali Engine
+   */
+  static Engine* deserialize(knlohmann::json& js);
  };
 
- /**
-  * @brief Determines whether this is a dry run (no conduit initialization nor execution)
- */
- extern bool _isDryRun;
+/**
+* @brief Stack storing pointers to different Engine execution levels
+*/
+extern std::stack<korali::Engine*> _engineStack;
+
 }
 
 #endif

@@ -20,6 +20,12 @@ namespace korali
 {
 
 /**
+ * @brief Stores all functions inserted as parameters to experiment's configuration
+ */
+extern std::vector<std::function<void(korali::Sample&)>*> _functionVector;
+
+
+/**
 * @brief Execution states of a given sample.
 */
 enum class SampleState { uninitialized, initialized, running, waiting, finished };
@@ -75,7 +81,15 @@ class Sample {
   * @brief Runs a computational model by reinterpreting a numerical pointer to a function(sample) object to an actual function pointer and calls it.
   * @param funcPtr Number containing a pointer to a function.
   */
- void run(std::uint64_t funcPtr) { (*reinterpret_cast<std::function<void(korali::Sample&)>*>(funcPtr))(*this); }
+ void run(size_t functionPosition)
+ {
+  if (functionPosition >= _functionVector.size())
+  {
+   fprintf(stderr, "Function ID: %lu not contained in function vector (size: %lu). If you are resuming a previous experiment, you need to re-specify model functions.\n", functionPosition, _functionVector.size());
+   exit(-1);
+  }
+  (*_functionVector[functionPosition])(*this);
+ }
 
  /**
   * @brief Checks whether the sample contains the given key.

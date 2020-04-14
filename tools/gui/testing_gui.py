@@ -23,8 +23,12 @@ extraColor = '#183A54'
 datcounter = 0
 
 contador = 1
+cont = 0
 numofexperiments = [] # Empty list to keep the count of tabs.
 contadorVariables = 1
+
+#stringVar = {}
+entry = {}
 
 font = "Helvetica 10"
 
@@ -142,16 +146,6 @@ def explainDescription(description):
     label.pack(side='top', fill='x', pady=10)
     tut.maxsize('900','300')
 
-def getValues(entry, f):
-    global selectedtab # To know at which experiment we are.
-    global experiments
-    name = {}
-    entries = experiments[selectedtab]['entry']
-    for entry_label in  entries.keys():
-        entry = entries[entry_label]
-        print(entry_label +'=' + entry.get())
-        
-
 def callback(var, *args):
     print(var.get())
     
@@ -184,17 +178,100 @@ def deleteVariable(self):
 #################
 ################# PRINTING FUNCTIONS:
 
+def printdata(self,line, texto, description, fakedescription, r, c,cont):
+    
+    global entry
+    global experiments
+    global selectedtab
+
+    if cont == 2:
+        color = 'floralwhite'
+    else:
+        color = 'azure'
+        
+    double_Var = tk.DoubleVar()
+    num = tk.IntVar()
+    boolean = tk.BooleanVar()
+    experiments[selectedtab]['entry'] = entry
+    stringVar = {}
+    
+    if 'vector' not in line:
+        
+        if 'string' in line or 'korali' in line: # == 'std::string
+            self.label=tk.Label(self, text=texto, width = 17,justify='left', bg=color, anchor="w", font="Arial 16")
+            self.label.grid(row=r, column=c,pady = 20,padx=20, sticky='w')
+            stringVar[texto] = tk.StringVar()
+            #self.stringVar[texto].trace('w', partial(callback,self.stringVar[texto]))
+            entry[texto] = tk.Entry(self,width=10,textvariable = stringVar[texto])
+            entry[texto].grid(row=r, column=c+1, pady= 20, padx=20, sticky = 'w')
+            self.corrector = self.register(validarstring)
+            entry[texto].config(validate = 'focus',validatecommand = (self.corrector,'%P')) # %P represents the parameter we want to pass to validate.
+            self.buttonLabel = tk.Button(self, text = fakedescription, width = 45, activeforeground = 'darkcyan', bg = color ,activebackground = 'white',
+                                            command = lambda:explainDescription(description))
+            self.buttonLabel.grid(row=r, column=c+3,sticky='w')
+            #self.label2=tk.Label(self, text = descripcion,bg='azure',relief = 'raised', font = font, width = 60)
+            #self.label2.grid(row=r, column=c+3,sticky='w')
+            
+        elif line == 'double':
+            self.label=tk.Label(self, text=texto, width = 17,justify='left', bg=color, anchor="w", font="Arial 16")
+            self.label.grid(row=r, column=c,pady = 20,padx=20, sticky='w')
+            self.spinbox = Spinbox(self, width=10, from_=0, to=9999, wrap=True, textvariable=num, state='normal')
+            self.spinbox.grid(row=r, column=c+1, pady= 20, padx=20)
+            self.corrector = self.register(validardigit)
+            self.spinbox.config(validate = 'key',validatecommand = (self.corrector,'%P')) # %P represents the parameter we want to pass to validate.
+            #spinbox_value = spinbox.get()
+        
+        elif line == 'bool':
+            self.label=tk.Label(self, text=texto, width = 17,justify='left',bg=color, anchor="w", font="Arial 16")
+            self.label.grid(row=r, column=c,pady = 20,padx=20, sticky='w')
+            self.true = tk.Radiobutton(self, width=10,text='Yes',highlightbackground = color,activeforeground ='white', bg=color,
+                                        activebackground='darkcyan',borderwidth = 0,variable=boolean, value='t')
+            
+            self.false = tk.Radiobutton(self,width=10, text='No',activeforeground = 'white',bg=color,
+                                        activebackground='lightcoral',highlightbackground = color,borderwidth = 0,variable=boolean, value='f')
+            
+            self.true.grid(row=r, column=c+1, columnspan = 1,pady= 20, padx=20, sticky = 'w')
+            self.false.grid(row=r, column=c+2, pady= 20, columnspan= 1, padx=20, sticky = 'w')
+            
+        elif line == 'size_t':
+            self.label=tk.Label(self, text=texto, width = 17,justify='left', bg=color, anchor="w", font="Arial 16")
+            self.label.grid(row=r, column=c,pady = 20,padx=20, sticky='w')
+            stringVar[texto] = tk.StringVar()
+            entry[texto] = tk.Entry(self,width=10,textvariable = stringVar[texto])
+            entry[texto].grid(row=r, column=c+1, pady= 20, padx=20, sticky = 'w')
+            self.corrector = self.register(validarstring)
+            entry[texto].config(validate = 'focus',validatecommand = (self.corrector,'%P')) # %P represents the parameter we want to pass to validate.
+            self.buttonLabel = tk.Button(self, text = fakedescription, width = 45, activeforeground = 'darkcyan', bg = color,activebackground = 'white',
+                                            command = lambda:explainDescription(description))
+            self.buttonLabel.grid(row=r, column=c+3,sticky='w')
+            
+            
+    else:
+        if line == 'double':
+            self.label=tk.Label(self, text=texto, width = 17,justify='left', bg=color, anchor="w", font="Arial 16")
+            self.label.grid(row=r, column=c,pady = 20,padx=20, sticky='w')
+            stringVar[texto] = tk.StringVar()
+            entry[texto] = tk.Entry(self,width=10,textvariable = stringVar[texto])
+            #self.entry_vector_double = Entry(self, width=10,textvariable = string_Var)
+            entry[texto].grid(row=r, column=1, pady= 20, padx=20)
+            self.corrector = self.register(validardigit)
+
 def printVariables(self,directorio,DB,cont):
     '''
     linktoVariables refers to the .config path of each element of the cascade. This path also works
     as a key in 'variables' dictionary, and as a value, we can find their variables configuration.
     '''
     global on
-    global experiments
     global variables
     global linktoVariables0
     global linktoVariables1
-    
+    global entry
+    global stringVar
+    global experiments
+
+    self = experiments[selectedtab]['bottomrightFrame']
+    self = self.tab2
+
     
     # IF AND ONLY IF WE HAVE A PROBLEM AND A SOLVER SET...
     if (cont == 0 and on == 1) or (cont == 0 and on == 0):
@@ -212,9 +289,8 @@ def printVariables(self,directorio,DB,cont):
         linktoVariables = []
         linktoVariables.append(linktoVariables0)    # Añadimos las variables que vienen del Problem.
         linktoVariables.append(linktoVariables1)    # Añadimos las variables que vienen del Solver.
-        #cont = 2
-        #printConfig(directorio,DB, cont)
-    
+        cont = 2
+   
         ro = 0
         co = 0
 
@@ -222,8 +298,7 @@ def printVariables(self,directorio,DB,cont):
         string_Var = tk.StringVar()
         num = tk.IntVar()
         boolean = tk.BooleanVar()
-        self.entryVar = {}
-        
+
         for part in linktoVariables:
             for llave in variables[part].keys():
                 #print(llave)
@@ -236,68 +311,15 @@ def printVariables(self,directorio,DB,cont):
                         fakedescription = str(description[0:42])+'...'
                     else:
                         fakedescription = description
-                    #print(variables[part])
-                    if 'vector' not in variables[part][llave]:
-                                        
-                        if 'string' in variables[part][llave] or 'korali' in variables[part][llave]: # == 'std::string
-                            self.label=tk.Label(self, text=texto, width = 17,justify='left', bg='floralwhite', anchor="w", font="Arial 16")
-                            self.label.grid(row=ro, column=co,pady = 20,padx=20, sticky='w')
-                            self.entryVar[texto] = tk.Entry(self,width=10,textvariable = string_Var)
-                            self.entryVar[texto].grid(row=ro, column=co+1, pady= 20, padx=20, sticky = 'w')
-                            self.corrector = self.register(validarstring)
-                            self.entryVar[texto].config(validate = 'focus',validatecommand = (self.corrector,'%P')) # %P represents the parameter we want to pass to validate.
-                            self.buttonLabel = tk.Button(self, text = fakedescription, width = 45, activeforeground = 'darkcyan', bg = 'azure',activebackground = 'white',
-                                                command = lambda:explainDescription(description))
-                            self.buttonLabel.grid(row=ro, column=co+3,sticky='w')
-                            #self.label2=tk.Label(self, text = descripcion,bg='azure',relief = 'raised', font = font, width = 60)
-                            #self.label2.grid(row=r, column=c+3,sticky='w')
-                            #self.entryVar[texto].trace('w', partial(callback, key,self.entryVar[texto] ))
-                                            
-                        elif variables[part][llave] == 'double':
-                            self.label=tk.Label(self, text=texto, width = 17,justify='left', bg='floralwhite', anchor="w", font="Arial 16")
-                            self.label.grid(row=ro, column=co,pady = 20,padx=20, sticky='w')
-                            self.spinbox = Spinbox(self, width=10, from_=0, to=9999, wrap=True, textvariable=num, state='normal')
-                            self.spinbox.grid(row=ro, column=co+1, pady= 20, padx=20)
-                            self.corrector = self.register(validardigit)
-                            self.spinbox.config(validate = 'key',validatecommand = (self.corrector,'%P')) # %P represents the parameter we want to pass to validate.
-                            self.buttonLabel = tk.Button(self, text = fakedescription, width = 45, activeforeground = 'darkcyan', bg = 'azure',activebackground = 'white',
-                                                command = lambda:explainDescription(description))
-                            self.buttonLabel.grid(row=ro, column=co+3,sticky='w')#spinbox_value = spinbox.get()
-                                        
-                        elif variables[part][llave] == 'bool':
-                            self.label=tk.Label(self, text=texto, width = 17,justify='left',bg='floralwhite', anchor="w", font="Arial 16")
-                            self.label.grid(row=ro, column=co,pady = 20,padx=20, sticky='w')
-                            self.true = tk.Radiobutton(self, width=10,text='Yes',highlightbackground = 'azure',activeforeground ='white', bg='floralwhite',
-                                                        activebackground='darkcyan',borderwidth = 0,variable=boolean, value='t')
-                                            
-                            self.false = tk.Radiobutton(self,width=10, text='No',activeforeground = 'white',bg='floralwhite',
-                                                        activebackground='lightcoral',highlightbackground = 'azure',borderwidth = 0,variable=boolean, value='f')
-                                            
-                            self.true.grid(row=ro, column=co+1, columnspan = 1,pady= 20, padx=20, sticky = 'w')
-                            self.false.grid(row=ro, column=co+2, pady= 20, columnspan= 1, padx=20, sticky = 'w')
-                                            
-                    else:
-                        if variables[part][llave] == 'double':
-                            self.label=tk.Label(self, text=texto, width = 17,justify='left', bg='floralwhite', anchor="w", font="Arial 16")
-                            self.label.grid(row=ro, column=co,pady = 20,padx=20, sticky='w')
-                            self.entry_vector_double = Entry(self, width=10,textvariable = string_Var)
-                            self.entry_vector_double.grid(row=ro, column=1, pady= 20, padx=20)
-                            self.corrector = self.register(validardigit)
-                                            
-                    ro +=1
-        
-    else:
-        for widget in self.winfo_children():
-            widget.destroy()
-    #print(on)
-    
-    
-    
-#printConfig(directorio,DB, cont)
+
+                    printdata(self,variables[part][llave], texto, description,fakedescription, ro, co, cont)
+                ro+=1
+
 def printConfig(directorio,DB, cont):
     
-    global printVariable
     global selectedtab
+    global experiments
+
 
     # From which cascade do we come from? Problem, Solver or Variable?
     if cont == 0:
@@ -316,17 +338,11 @@ def printConfig(directorio,DB, cont):
     r = 0
     c = 0
 
-    # Start reading and printing on screen:
-    self.titulo=tk.Label(self, text=list(DB.keys())[0] ,justify='left', anchor="w", font="Arial 18", bg = 'darkcyan', fg='white')
-    self.titulo.grid(row=r, column=c,pady = 10 ,padx=20, sticky='w', columnspan = 4)
+    # Start reading and printing on screen: # DON'T DELETE THIS COMMENT -> TITULO FRAMES : list(DB.keys())[0]
+    self.titulo=tk.Label(self, text=directorio,justify='left', anchor="w", font="Arial 18", bg = 'darkcyan', fg='white')
+    self.titulo.grid(row=r, column=c,pady = 10 ,padx=20, sticky='w', columnspan = 2)
     config = DB[directorio]['herencia']
     conf_sett = 'Configuration Settings'
-    self.entry = {}
-    experiments[selectedtab]['entry'] = self.entry
-    self.stringVar = {}
-    double_Var = tk.DoubleVar()
-    num = tk.IntVar()
-    boolean = tk.BooleanVar()
     
     if conf_sett in config.keys():
     # Loop through herencia.
@@ -345,88 +361,38 @@ def printConfig(directorio,DB, cont):
                                     texto = dicc['Name']
                                     texto = texto[0] # Remove the {} from the label name.
                                     description = dicc['Description']
-                                    if len(description)>45:
-                                        fakedescription = str(description[0:42])+'...'
-                                    else:
-                                        fakedescription = description
-                                    
-                                    if 'vector' not in dicc[key2]:
-                                        #print(dicc[key2])
-                                        
-                                        if 'string' in dicc[key2] or 'korali' in dicc[key2]: # == 'std::string
-                                            self.label=tk.Label(self, text=texto, width = 17,justify='left', bg='azure', anchor="w", font="Arial 16")
-                                            self.label.grid(row=r, column=c,pady = 20,padx=20, sticky='w')
-                                            self.stringVar[texto] = tk.StringVar()
-                                            #self.stringVar[texto].trace('w', partial(callback,self.stringVar[texto]))
-                                            self.entry[texto] = tk.Entry(self,width=10,textvariable = self.stringVar[texto])
-                                            self.entry[texto].grid(row=r, column=c+1, pady= 20, padx=20, sticky = 'w')
-                                            self.corrector = self.register(validarstring)
-                                            self.entry[texto].config(validate = 'focus',validatecommand = (self.corrector,'%P')) # %P represents the parameter we want to pass to validate.
-                                            self.buttonLabel = tk.Button(self, text = fakedescription, width = 45, activeforeground = 'darkcyan', bg = 'azure',activebackground = 'white',
-                                                                         command = lambda:explainDescription(description))
-                                            self.buttonLabel.grid(row=r, column=c+3,sticky='w')
-                                            #self.label2=tk.Label(self, text = descripcion,bg='azure',relief = 'raised', font = font, width = 60)
-                                            #self.label2.grid(row=r, column=c+3,sticky='w')
-                                            
-                                        elif dicc[key2] == 'double':
-                                            self.label=tk.Label(self, text=texto, width = 17,justify='left', bg='azure', anchor="w", font="Arial 16")
-                                            self.label.grid(row=r, column=c,pady = 20,padx=20, sticky='w')
-                                            self.spinbox = Spinbox(self, width=10, from_=0, to=9999, wrap=True, textvariable=num, state='normal')
-                                            self.spinbox.grid(row=r, column=c+1, pady= 20, padx=20)
-                                            self.corrector = self.register(validardigit)
-                                            self.spinbox.config(validate = 'key',validatecommand = (self.corrector,'%P')) # %P represents the parameter we want to pass to validate.
-                                            #spinbox_value = spinbox.get()
-                                        
-                                        elif dicc[key2] == 'bool':
-                                            self.label=tk.Label(self, text=texto, width = 17,justify='left',bg='azure', anchor="w", font="Arial 16")
-                                            self.label.grid(row=r, column=c,pady = 20,padx=20, sticky='w')
-                                            self.true = tk.Radiobutton(self, width=10,text='Yes',highlightbackground = 'azure',activeforeground ='white', bg='azure',
-                                                                       activebackground='darkcyan',borderwidth = 0,variable=boolean, value='t')
-                                            
-                                            self.false = tk.Radiobutton(self,width=10, text='No',activeforeground = 'white',bg='azure',
-                                                                        activebackground='lightcoral',highlightbackground = 'azure',borderwidth = 0,variable=boolean, value='f')
-                                            
-                                            self.true.grid(row=r, column=c+1, columnspan = 1,pady= 20, padx=20, sticky = 'w')
-                                            self.false.grid(row=r, column=c+2, pady= 20, columnspan= 1, padx=20, sticky = 'w')
-                                            
-                                        elif dicc[key2] == 'size_t':
-                                            self.label=tk.Label(self, text=texto, width = 17,justify='left', bg='azure', anchor="w", font="Arial 16")
-                                            self.label.grid(row=r, column=c,pady = 20,padx=20, sticky='w')
-                                            self.stringVar[texto] = tk.StringVar()
-                                            self.entry[texto] = tk.Entry(self,width=10,textvariable = self.stringVar[texto])
-                                            self.entry[texto].grid(row=r, column=c+1, pady= 20, padx=20, sticky = 'w')
-                                            self.corrector = self.register(validarstring)
-                                            self.entry[texto].config(validate = 'focus',validatecommand = (self.corrector,'%P')) # %P represents the parameter we want to pass to validate.
-                                            self.buttonLabel = tk.Button(self, text = fakedescription, width = 45, activeforeground = 'darkcyan', bg = 'azure',activebackground = 'white',
-                                                                         command = lambda:explainDescription(description))
-                                            self.buttonLabel.grid(row=r, column=c+3,sticky='w')
-                                            
-                                            
-                                    else:
-                                        if dicc[key2] == 'double':
-                                            self.label=tk.Label(self, text=texto, width = 17,justify='left', bg='azure', anchor="w", font="Arial 16")
-                                            self.label.grid(row=r, column=c,pady = 20,padx=20, sticky='w')
-                                            self.stringVar[texto] = tk.StringVar()
-                                            self.entry[texto] = tk.Entry(self,width=10,textvariable = self.stringVar[texto])
-                                            #self.entry_vector_double = Entry(self, width=10,textvariable = string_Var)
-                                            self.entry[texto].grid(row=r, column=1, pady= 20, padx=20)
-                                            self.corrector = self.register(validardigit)
-                                            
+
+                                    fakedescription = description
+                                    printdata(self,dicc[key2], texto, description,fakedescription, r, c,cont)
                                 r+=1
-                                
-        #https://stackoverflow.com/questions/4140437/interactively-validating-entry-widget-content-in-tkinter
-                    elif type(dicc) == list:
-                        print(dicc)
     else:
         popupmsgwarning('No Configuration Settings found')
     
-        
-    self.button_done = tk.Button(self, text = 'Done!',bd = 3,command = lambda: getValues(self.entry,self))
-    self.button_done.grid(row=0, column=1, pady= 20, padx=20, sticky = 'W')
-    self.update_idletasks
-                        
+                                    
 ##########################
 ########################## MAIN FUNCTIONS:
+def createConfig():
+    global selectedtab # To know at which experiment we are.
+    global experiments
+
+    values ={}
+    entries = experiments[selectedtab]['entry']
+    bottomleftFr = experiments[selectedtab]['bottomleftFrame']
+    rightFr = experiments[selectedtab]['rightFrame']
+    #problemChosen = bottomleftFr.cget('text')
+    #solverChosen = rightFr.cget('text')
+    for entry_label in  entries.keys():
+        entry = entries[entry_label]
+        entryval = entry.get()
+        values[entry_label] = entryval
+
+    cwd = os.getcwd()
+    file = open(cwd+"/filename.config", "w")
+    file.write('{Problem: '+bottomleftFr.titulo.cget('text')+'}'+'\n')
+    file.write('{Solver: '+rightFr.titulo.cget('text')+'}'+'\n')
+    for keys in values.keys():
+        file.write(keys+': '+values[keys]+'\n')
+    file.close()
     
 def recursiveUpdate(dest, defaults):
  if (isinstance(defaults, dict)):               # Si default es un diccionario...
@@ -557,13 +523,12 @@ def cascade(mainPath,DB,cont):
             
     menus.clear() # Allows creating different experiments by emptying the menus list.
 
-
-
-
-def crearFrameVariables():
+def crearFrameVariables(self):
+    
     global contadorVariables
     global experiments
     global selectedtab
+    
     bottomrightFrame = experiments[selectedtab]['bottomrightFrame']
     totalTabs2 = experiments[selectedtab]['totalTabs2']
     #for item in self.totalTabs
@@ -593,13 +558,19 @@ def crearTab(self,totalTabs):
 
                 self.leftFrame = tk.Frame(self.tab, width = 950, height = 80, background ='azure', borderwidth = 3, relief = 'solid')
                 self.leftFrame.grid(column = 0, row = 0, sticky = 'nsew',rowspan = 1)
+                self.button_done = tk.Button(self.leftFrame, text = 'Create .config file',command = lambda: createConfig(),
+                                             activebackground = 'darkcyan',activeforeground='azure', bd = 3, bg = 'teal',fg = 'azure', font = 'Arial 12',
+                                             width = 20)
+
+                self.button_done.grid(row=0, column=6, pady= 20, padx=20, sticky = 'E')
+                self.update_idletasks
 
 
                 self.rightFrame = tk.Frame(self.tab, width = 900, height = 450,background ='azure', borderwidth = 1,relief = 'groove')
                 self.rightFrame.grid(column = 1, row = 0, stick = 'nsew',rowspan = 2) #, sticky = 'ne', rowspan = 1, columnspan = 1)
 
 
-                self.bottomleftFrame1 = tk.Frame(self.tab, background = 'azure', width = 950, height = 850, borderwidth = 3,relief = 'groove')#width = 950, height = 850
+                self.bottomleftFrame1 = tk.Frame(self.tab, background = 'azure', width = 950, height = 80, borderwidth = 3,relief = 'groove')#width = 950, height = 850
                 self.bottomleftFrame1.grid(column = 0, row = 1, sticky = 'nsew',rowspan = 2) #, sticky = 'sw', rowspan = 3, columnspan = 1)
                 self.bottomleftFrame1.grid_propagate(0)
                 ## CANVAS + SCROLLBAR
@@ -616,7 +587,7 @@ def crearTab(self,totalTabs):
                 self.canvas.configure(scrollregion=(0,0,2000,2000))
                 #self.bottomleftFrame1.config(scrollregion=self.canvas.bbox("all"))
                 '''
-                self.canvas=Canvas(self.bottomleftFrame1,width = 950, height = 850,bg = 'azure', scrollregion= (0,0,1500,1500)) #yscrollcommand = vbar.set
+                self.canvas=Canvas(self.bottomleftFrame1,width = 950, height = 840,bg = 'azure', scrollregion= (0,0,1500,1500)) #yscrollcommand = vbar.set
                 #self.canvas.pack(side=LEFT,expand=True,fill=BOTH)
                 hbar=Scrollbar(self.bottomleftFrame1,orient=HORIZONTAL)
                 hbar.pack(side=BOTTOM,fill=X)
@@ -661,7 +632,7 @@ def crearTab(self,totalTabs):
                
                 expElements['totalTabs2'] = self.totalTabs2
 
-                crearFrameVariables()
+                crearFrameVariables(self)
                 
 
                 self.leftFrame.grid_propagate(0)
@@ -719,7 +690,7 @@ class KORALI(tk.Tk): #Inherited tk.tk
         # EXPERIMENT MENU:
         self.experimentmenu = tk.Menu(self.menubar, tearoff = 1)
         self.experimentmenu.add_command(label = 'New Experiment...', command = lambda:crearTab(self,self.totalTabs))
-        self.experimentmenu.add_command(label = 'New Variable...', command = lambda: crearFrameVariables())#,self.totalTabs2))
+        self.experimentmenu.add_command(label = 'New Variable...', command = lambda: crearFrameVariables(self))#,self.totalTabs2))
         self.experimentmenu.add_separator() # Separator baselr.
         self.experimentmenu.add_command(label = 'Delete Experiment...', command = lambda: deleteTab(self,self.totalTabs))#self.totalTabs.forget(self.tab))#lambda:deletetab(self,self.totalTabs,contador))
         self.experimentmenu.add_command(label = 'Delete Variable...', command = lambda:deleteVariable(self))
@@ -746,12 +717,15 @@ class KORALI(tk.Tk): #Inherited tk.tk
         
         # DOWN-TOOLBAR
         self.toolbar = tk.Frame(self, background='darkcyan')
+        
         self.insertButt = tk.Button(self.toolbar, text='Close KORALI', command=quit)
         self.insertButt.config(bd = 2)
         self.insertButt.pack(side='right',padx=2,pady=2) # Padding options.
         self.insertButt.pack_propagate(0)
         
         self.toolbar.pack(side='bottom', fill='x')
+        #self.toolbar.pack_propagate(0)
+
 
 ## --------------- END OF CLASSES ------------------------    
 ########################################################    
@@ -763,8 +737,6 @@ variables = {}
 readDirs(mainPath, configTreeDB,default)
 readDirs(mainPath2,solverDB, default)
        
-#print(variables)
-
 app = KORALI()
 app.geometry("1500x1000") # Size of our application.
 app.minsize("1500","1000")

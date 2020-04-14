@@ -17,13 +17,12 @@ void korali::problem::Integration::initialize()
       // Validate the _priorDistribution names
       for (size_t j = 0; j < _k->_distributions.size(); j++)
         if (_k->_variables[i]->_priorDistribution == _k->_distributions[j]->_name){ foundDistribution = true; _k->_variables[i]->_distributionIndex = j; }
-       
-      if (foundDistribution == false) _k->_logger->logError("Did not find distribution %s, specified by variable %s\n", _k->_variables[i]->_priorDistribution.c_str(), _k->_variables[i]->_name.c_str());
-      _k->_variables[i]->_quadratureWeights.resize(_k->_variables[i]->_numberOfGridpoints);
-      for( size_t j = 0; j<_k->_variables[i]->_numberOfGridpoints; j++ ){
-        _k->_variables[i]->_quadratureWeights[j] = intervalSize/_k->_variables[i]->_numberOfGridpoints;
-        _k->_variables[i]->_samplePoints[j] = _k->_distributions[_k->_variables[i]->_distributionIndex]->getRandomNumber();
-      }
+      
+      if(_k->_variables[i]->_priorDistribution == " ") _k->_logger->logError("Please specify distribution to sample for variable %s\n", _k->_variables[i]->_name.c_str());
+      else if (foundDistribution == false) _k->_logger->logError("Did not find distribution %s, specified by variable %s\n", _k->_variables[i]->_priorDistribution.c_str(), _k->_variables[i]->_name.c_str());
+      
+      _k->_variables[i]->_quadratureWeights.resize(1);
+      _k->_variables[i]->_quadratureWeights[0] = intervalSize/_k->_variables[i]->_numberOfGridpoints;
     }
     else{
       _k->_variables[i]->_samplePoints.resize(_k->_variables[i]->_numberOfGridpoints);

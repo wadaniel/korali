@@ -22,6 +22,7 @@ e["Solver"]["Number Live Points"] = 1500
 e["Solver"]["Batch Size"] = 1
 e["Solver"]["Covariance Scaling"] = 2.0
 e["Solver"]["Add Live Points"] = True
+e["Solver"]["Resampling Method"] = "Box"
 
 # Configuring the problem's random distributions
 e["Distributions"][0]["Name"] = "Uniform 0"

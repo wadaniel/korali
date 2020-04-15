@@ -51,6 +51,16 @@ class Nested : public korali::Solver
   * @brief Calculates Mean and Covariance from Live Samples.
  */
  void updateMeanAndCovariance();
+ 
+ /*
+  * @brief Updates bounding Box.
+ */
+ void updateBox();
+  
+ /*
+  * @brief Updates bounding Ellipse.
+ */
+ void updateEllipse();
   
  /*
   * @brief Ascending sort of live sample ranks based on evaluation.

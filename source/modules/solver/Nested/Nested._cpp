@@ -2,6 +2,10 @@
 #include "modules/conduit/conduit.hpp"
 #include "modules/experiment/experiment.hpp"
 
+#include <gsl/gsl_vector.h>
+#include <gsl/gsl_matrix.h>
+#include <gsl/gsl_linalg.h>
+
 #include <algorithm> //sort
 #include <numeric>
 #include <limits>
@@ -12,7 +16,7 @@ void korali::solver::Nested::setInitialConfiguration()
  if(_covarianceScaling <= 0.0) _k->_logger->logError("Covariance Scaling must be larger 0.0 (is %lf).\n", _covarianceScaling);
  if(_maxGainFactor < 0.0) _k->_logger->logError("Max Gain Factor must be larger equal 0.0 (is %lf).\n", _maxGainFactor);
  
- if((_resamplingMethod != "MCMC") && (_resamplingMethod != "Box")) _k->_logger->logError("Only accepted Resampling Method are 'MCMC' and 'Box' (is %s).\n", _resamplingMethod.c_str());
+ if((_resamplingMethod != "MCMC") && (_resamplingMethod != "Box") && (_resamplingMethod != "Ellipse")) _k->_logger->logError("Only accepted Resampling Method are 'MCMC', 'Box' and 'Ellipse' (is %s).\n", _resamplingMethod.c_str());
 
  if(_proposalUpdateFrequency == 0) _k->_logger->logError("Proposal Update Frequency must be larger 0");
 
@@ -21,6 +25,8 @@ void korali::solver::Nested::setInitialConfiguration()
     if (_k->_distributions[_k->_variables[d]->_distributionIndex]->_type != "Univariate/Uniform") _k->_logger->logError("Only 'Univariate/Uniform' priors allowed (is %s).\n", _k->_distributions[_k->_variables[d]->_distributionIndex]->_type.c_str());
  }
  
+ if((_resamplingMethod == "Ellipse") && (_k->_variables.size() == 2)) _k->_logger->logError("Resampling Method Ellipse only suitable for problems of dim larger 2.");
+
  _candidateLogLikelihoods.resize(_batchSize);
  _candidateLogPriors.resize(_batchSize);
  _candidates.resize(_batchSize);
@@ -42,6 +48,8 @@ void korali::solver::Nested::setInitialConfiguration()
  _domainMean.resize(_k->_variables.size());
  _boxLowerBound.resize(_k->_variables.size());
  _boxUpperBound.resize(_k->_variables.size());
+ _ellipseAxes.resize(_k->_variables.size());
+ for(size_t i = 0; i < _k->_variables.size(); i++) _ellipseAxes[i].resize(_k->_variables.size());
 
  // Init Generation
  _logEvidence          = std::numeric_limits<double>::lowest();
@@ -98,7 +106,6 @@ void korali::solver::Nested::runGeneration()
 
   processGeneration();
   
-  updateMeanAndCovariance();
 
   return;
 }
@@ -134,8 +141,6 @@ void korali::solver::Nested::runFirstGeneration()
    finishedCandidatesCount++;
   }
 
-  updateMeanAndCovariance();
-  
   sortLiveSamplesAscending();
  
   _lStar = _liveLogLikelihoods[_liveSamplesRank[0]];
@@ -150,9 +155,21 @@ void korali::solver::Nested::prepareGeneration()
   _maxEvaluation = _liveLogLikelihoods[_liveSamplesRank[_numberLivePoints-1]];
   _numberEffectiveSamples = calcEffectiveSamples();
   
-  if      (_resamplingMethod == "MCMC")      generateCandidatesFromMCMC();
-  else if (_resamplingMethod == "Box")       generateCandidatesFromBox();
-  else  /*(_resamplingMethod == "Ellipse")*/ generateCandidatesFromEllipse();
+  if (_resamplingMethod == "MCMC") 
+  { 
+    updateMeanAndCovariance(); 
+    generateCandidatesFromMCMC(); 
+  }
+  else if (_resamplingMethod == "Box")
+  {
+    updateBox();
+    generateCandidatesFromBox();
+  }
+  else /* (_resamplingMethod == "Ellipse") */ 
+  {
+    updateEllipse();   
+    generateCandidatesFromEllipse();
+  }
   
   return;
 }
@@ -233,56 +250,137 @@ void korali::solver::Nested::generateCandidatesFromBox()
   for(size_t i = 0; i < _batchSize; i++)
   {
    for(size_t d = 0; d < _k->_variables.size(); ++d) 
-       _candidates[i][d] = _boxLowerBound[d]+_uniformGenerator->getRandomNumber()*(_boxUpperBound[d]-_boxLowerBound[d]);
+     _candidates[i][d] = _boxLowerBound[d]+_uniformGenerator->getRandomNumber()*(_boxUpperBound[d]-_boxLowerBound[d]);
   }
 
    return; 
 }
  
 void korali::solver::Nested::generateCandidatesFromEllipse() 
-{ 
+{
+  std::vector<double> vec(_k->_variables.size());
+  for(size_t i = 0; i < _batchSize; i++)
+  {
+   double len = 0;
+   for(size_t d = 0; d < _k->_variables.size(); ++d) 
+   {
+     vec[d] = _uniformGenerator->getRandomNumber();
+     len += vec[d]*vec[d];
+   }
+   for(size_t d = 0; d < _k->_variables.size(); ++d) 
+     vec[d] *= _uniformGenerator->getRandomNumber()/sqrt(len);
+
+   for(size_t k = 0; k < _k->_variables.size(); ++k) 
+   {
+     _candidates[i][k] = _domainMean[k];
+     for(size_t l = k; l < _k->_variables.size(); ++l) 
+     _candidates[i][k] += vec[l]*_ellipseAxes[k][l];
+   }
+  }
+
+
     return; 
 }
 
 void korali::solver::Nested::updateMeanAndCovariance() 
 {
-  if (_k->_currentGeneration % _proposalUpdateFrequency != 0) return;
-
   for (size_t d = 0; d < _k->_variables.size(); d++) _domainMean[d] = 0.0;
-  
+    
+  double weight1 = 1./((double)_numberLivePoints);
+  for (size_t i = 0; i < _numberLivePoints; i++) 
+  for (size_t d = 0; d < _k->_variables.size(); d++)
+      _domainMean[d] += weight1*_liveSamples[i][d];
 
-  // update Box
-  if(_resamplingMethod == "Box")
-  {
-    for (size_t d = 0; d < _k->_variables.size(); d++) _boxLowerBound[d] = std::numeric_limits<double>::max();
-    for (size_t d = 0; d < _k->_variables.size(); d++) _boxUpperBound[d] = std::numeric_limits<double>::lowest();
-
-    for (size_t i = 0; i < _numberLivePoints; i++) 
-    for (size_t d = 0; d < _k->_variables.size(); d++)
-    {
-      _boxLowerBound[d] = std::min(_boxLowerBound[d], _liveSamples[i][d]);
-      _boxUpperBound[d] = std::max(_boxUpperBound[d], _liveSamples[i][d]);
+  double weight2 = 1./((double)_numberLivePoints-1.);
+  for (size_t i = 0; i < _k->_variables.size(); i++){
+    for (size_t j = i; j < _k->_variables.size(); ++j){
+      double s = 0.;
+      for (size_t k = 0; k < _numberLivePoints; ++k) s += (_liveSamples[k][i] - _domainMean[i])*( _liveSamples[k][j]-_domainMean[j] );
+          _covarianceMatrix[i*_k->_variables.size() + j] = _covarianceMatrix[j*_k->_variables.size() + i] = _covarianceScaling * weight2 * s;
     }
   }
+}
 
-  // update covariance matrix
-  if(_resamplingMethod == "MCMC")
+
+void korali::solver::Nested::updateBox()
+{
+  for (size_t d = 0; d < _k->_variables.size(); d++) _boxLowerBound[d] = std::numeric_limits<double>::max();
+  for (size_t d = 0; d < _k->_variables.size(); d++) _boxUpperBound[d] = std::numeric_limits<double>::lowest();
+
+  for (size_t i = 0; i < _numberLivePoints; i++) 
+  for (size_t d = 0; d < _k->_variables.size(); d++)
   {
-    double weight = 1.0/((double)_numberLivePoints);
+    _boxLowerBound[d] = std::min(_boxLowerBound[d], _liveSamples[i][d]);
+    _boxUpperBound[d] = std::max(_boxUpperBound[d], _liveSamples[i][d]);
+  }
+}
 
+
+void korali::solver::Nested::updateEllipse()
+{
+    for (size_t d = 0; d < _k->_variables.size(); d++) _domainMean[d] = 0.0;
+    
+    gsl_matrix * cvlup = gsl_matrix_calloc(_k->_variables.size(), _k->_variables.size());
+    gsl_matrix * covar = gsl_matrix_calloc(_k->_variables.size(), _k->_variables.size());
+ 
+    double weight1 = 1./((double)_numberLivePoints);
     for (size_t i = 0; i < _numberLivePoints; i++) 
     for (size_t d = 0; d < _k->_variables.size(); d++)
-        _domainMean[d] += weight*_liveSamples[i][d];
+        _domainMean[d] += weight1*_liveSamples[i][d];
 
+    double weight2 = 1./((double)_numberLivePoints-1.);
     for (size_t i = 0; i < _k->_variables.size(); i++){
       for (size_t j = i; j < _k->_variables.size(); ++j){
         double s = 0.0;
         for (size_t k = 0; k < _numberLivePoints; ++k) s += (_liveSamples[k][i] - _domainMean[i])*( _liveSamples[k][j]-_domainMean[j] );
-          _covarianceMatrix[i*_k->_variables.size() + j] = _covarianceMatrix[j*_k->_variables.size() + i] = _covarianceScaling * weight * s;
+        gsl_matrix_set(cvlup,i,j, weight2*s);
+        gsl_matrix_set(cvlup,j,i, weight2*s);
+        gsl_matrix_set(covar,j,i, weight2*s);
+        gsl_matrix_set(covar,i,j, weight2*s);
       }
     }
-  }
 
+    gsl_permutation *p = gsl_permutation_alloc(_k->_variables.size());
+    int s;
+    int status1 = gsl_linalg_LU_decomp(cvlup, p, &s);
+
+    gsl_matrix *inv = gsl_matrix_alloc(_k->_variables.size(), _k->_variables.size());
+    int status2 = gsl_linalg_LU_invert(cvlup, p, inv);
+
+    if((status1 != 0) or (status2 != 0)) gsl_matrix_set_identity(inv);
+
+    gsl_vector * vec  = gsl_vector_calloc(_k->_variables.size());
+    gsl_vector * vout = gsl_vector_calloc(_k->_variables.size());
+    double res, max = std::numeric_limits<double>::lowest();
+    for(size_t i = 0; i < _numberLivePoints; ++i)
+    {
+        for(size_t d = 0; d < _k->_variables.size(); ++d)
+          gsl_vector_set(vec, i, _liveSamples[i][d] - _domainMean[d]);
+        
+        gsl_blas_dgemv(CblasNoTrans, 1., inv, vec, 0., vout);
+        res = 0.;
+        gsl_blas_ddot(vec, vout, &res);
+        
+        if (res > max) max = res;
+    }
+
+    gsl_matrix_scale(covar, max);
+    int status3 = gsl_linalg_cholesky_decomp1(covar); // LL^T = A
+    if (status3 == 1) _k->_logger->logError("Cholesky Decomposition failed during Ellipse update.");
+    /* On output the diagonal and lower triangular part of the 
+     * input matrix A contain the matrix L, while the upper triangular part 
+     * contains the original matrix. */
+ 
+    for(size_t k = 0; k < _k->_variables.size(); k++)
+      for(size_t l = 0; l < k+1; l++)
+        _ellipseAxes[k][l] = gsl_matrix_get(covar, k, l);
+
+    gsl_permutation_free(p);
+    gsl_matrix_free(inv);
+    gsl_vector_free(vec);
+    gsl_vector_free(vout);
+    gsl_matrix_free(cvlup);
+    gsl_matrix_free(covar);
 }
 
 void korali::solver::Nested::sortLiveSamplesAscending() 

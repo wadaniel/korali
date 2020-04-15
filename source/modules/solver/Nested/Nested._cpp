@@ -273,7 +273,7 @@ void korali::solver::Nested::generateCandidatesFromEllipse()
    for(size_t k = 0; k < _k->_variables.size(); ++k) 
    {
      _candidates[i][k] = _domainMean[k];
-     for(size_t l = k; l < _k->_variables.size(); ++l) 
+     for(size_t l = 0; l < k+1; ++l) 
      _candidates[i][k] += vec[l]*_ellipseAxes[k][l];
    }
   }

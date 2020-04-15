@@ -6,7 +6,7 @@ import os, sys
 import json
 import copy                     # recursiveUpdate
 from functools import partial # Callback to retrieve values from entries
-
+from tkinter.filedialog import asksaveasfile
 
 
 # ************ VARIABLES *****************
@@ -28,7 +28,9 @@ numofexperiments = [] # Empty list to keep the count of tabs.
 contadorVariables = 1
 
 #stringVar = {}
-entry = {}
+results = {}
+
+first = True
 
 font = "Helvetica 10"
 
@@ -45,8 +47,6 @@ mainPath = '../../source/modules/problem'
 mainPath2 = '../../source/modules/solver'
 
 printVariable = 'Configuration Settings'
-
-variables = {}
 
 #############################################################
 ## ******************* FUNCTIONS ****************************
@@ -180,21 +180,32 @@ def deleteVariable(self):
 
 def printdata(self,line, texto, description, fakedescription, r, c,cont):
     
-    global entry
     global experiments
     global selectedtab
+    global results
+    global first
 
     if cont == 2:
         color = 'floralwhite'
     else:
         color = 'azure'
-        
+    
     double_Var = tk.DoubleVar()
     num = tk.IntVar()
     boolean = tk.BooleanVar()
-    experiments[selectedtab]['entry'] = entry
+    experiments[selectedtab]['results'] = results
     stringVar = {}
     
+    
+    '''
+        mycanvas = ResizingCanvas(self,width=950, height=840, bg="red", highlightthickness=0)
+        mycanvas.pack(fill=BOTH, expand=YES)
+    
+        self = mycanvas
+        first = False
+    '''
+    
+    #print('Añado en :'+str(cont)+' esto :'+texto)
     if 'vector' not in line:
         
         if 'string' in line or 'korali' in line: # == 'std::string
@@ -202,10 +213,11 @@ def printdata(self,line, texto, description, fakedescription, r, c,cont):
             self.label.grid(row=r, column=c,pady = 20,padx=20, sticky='w')
             stringVar[texto] = tk.StringVar()
             #self.stringVar[texto].trace('w', partial(callback,self.stringVar[texto]))
-            entry[texto] = tk.Entry(self,width=10,textvariable = stringVar[texto])
-            entry[texto].grid(row=r, column=c+1, pady= 20, padx=20, sticky = 'w')
+            results[cont][texto] = tk.Entry(self,width=10,textvariable = stringVar[texto])
+            results[cont][texto].grid(row=r, column=c+1, pady= 20, padx=20, sticky = 'w')
+            #print('Añado en :'+str(cont)+' esto :'+texto)
             self.corrector = self.register(validarstring)
-            entry[texto].config(validate = 'focus',validatecommand = (self.corrector,'%P')) # %P represents the parameter we want to pass to validate.
+            results[cont][texto].config(validate = 'focus',validatecommand = (self.corrector,'%P')) # %P represents the parameter we want to pass to validate.
             self.buttonLabel = tk.Button(self, text = fakedescription, width = 45, activeforeground = 'darkcyan', bg = color ,activebackground = 'white',
                                             command = lambda:explainDescription(description))
             self.buttonLabel.grid(row=r, column=c+3,sticky='w')
@@ -215,45 +227,58 @@ def printdata(self,line, texto, description, fakedescription, r, c,cont):
         elif line == 'double':
             self.label=tk.Label(self, text=texto, width = 17,justify='left', bg=color, anchor="w", font="Arial 16")
             self.label.grid(row=r, column=c,pady = 20,padx=20, sticky='w')
-            self.spinbox = Spinbox(self, width=10, from_=0, to=9999, wrap=True, textvariable=num, state='normal')
-            self.spinbox.grid(row=r, column=c+1, pady= 20, padx=20)
+            results[cont][texto] = Spinbox(self, width=10, from_=0, to=9999, wrap=True, textvariable=num, state='normal')
+            results[cont][texto].grid(row=r, column=c+1, pady= 20, padx=20)
             self.corrector = self.register(validardigit)
-            self.spinbox.config(validate = 'key',validatecommand = (self.corrector,'%P')) # %P represents the parameter we want to pass to validate.
+            results[cont][texto].config(validate = 'key',validatecommand = (self.corrector,'%P')) # %P represents the parameter we want to pass to validate.
             #spinbox_value = spinbox.get()
         
         elif line == 'bool':
             self.label=tk.Label(self, text=texto, width = 17,justify='left',bg=color, anchor="w", font="Arial 16")
             self.label.grid(row=r, column=c,pady = 20,padx=20, sticky='w')
-            self.true = tk.Radiobutton(self, width=10,text='Yes',highlightbackground = color,activeforeground ='white', bg=color,
-                                        activebackground='darkcyan',borderwidth = 0,variable=boolean, value='t')
+            radiobutton = tk.Radiobutton(self, width=10,text='Yes' ,highlightbackground = color,activeforeground ='white', bg=color,
+                                        activebackground='darkcyan',borderwidth = 0,variable = boolean, value='t')
+            radiobutton.grid(row=r, column=c+1, columnspan = 1,pady= 20, padx=20, sticky = 'w')
             
-            self.false = tk.Radiobutton(self,width=10, text='No',activeforeground = 'white',bg=color,
-                                        activebackground='lightcoral',highlightbackground = color,borderwidth = 0,variable=boolean, value='f')
-            
-            self.true.grid(row=r, column=c+1, columnspan = 1,pady= 20, padx=20, sticky = 'w')
-            self.false.grid(row=r, column=c+2, pady= 20, columnspan= 1, padx=20, sticky = 'w')
+            radiobutton = tk.Radiobutton(self, width=10,text='False' ,highlightbackground = color,activeforeground ='white', bg=color,
+                                        activebackground='darkcyan',borderwidth = 0,variable = boolean, value='f')
+            radiobutton.grid(row=r, column=c+2, columnspan = 1,pady= 20, padx=20, sticky = 'w')
+            results[cont][texto] = boolean
+
             
         elif line == 'size_t':
             self.label=tk.Label(self, text=texto, width = 17,justify='left', bg=color, anchor="w", font="Arial 16")
             self.label.grid(row=r, column=c,pady = 20,padx=20, sticky='w')
             stringVar[texto] = tk.StringVar()
-            entry[texto] = tk.Entry(self,width=10,textvariable = stringVar[texto])
-            entry[texto].grid(row=r, column=c+1, pady= 20, padx=20, sticky = 'w')
+            results[cont][texto] = tk.Entry(self,width=10,textvariable = stringVar[texto])
+            results[cont][texto].grid(row=r, column=c+1, pady= 20, padx=20, sticky = 'w')
             self.corrector = self.register(validarstring)
-            entry[texto].config(validate = 'focus',validatecommand = (self.corrector,'%P')) # %P represents the parameter we want to pass to validate.
+            results[cont][texto].config(validate = 'focus',validatecommand = (self.corrector,'%P')) # %P represents the parameter we want to pass to validate.
             self.buttonLabel = tk.Button(self, text = fakedescription, width = 45, activeforeground = 'darkcyan', bg = color,activebackground = 'white',
                                             command = lambda:explainDescription(description))
             self.buttonLabel.grid(row=r, column=c+3,sticky='w')
             
             
     else:
+        if line =="std::vector<size_t>":
+            
+            self.label=tk.Label(self, text=texto, width = 17,justify='left', bg=color, anchor="w", font="Arial 16")
+            self.label.grid(row=r, column=c,pady = 20,padx=20, sticky='w')
+            stringVar[texto] = tk.StringVar()
+            results[cont][texto] = tk.Entry(self,width=10,textvariable = stringVar[texto])
+            results[cont][texto].grid(row=r, column=c+1, pady= 20, padx=20, sticky = 'w')
+            self.corrector = self.register(validarstring)
+            results[cont][texto].config(validate = 'focus',validatecommand = (self.corrector,'%P')) # %P represents the parameter we want to pass to validate.
+            self.buttonLabel = tk.Button(self, text = fakedescription, width = 45, activeforeground = 'darkcyan', bg = color,activebackground = 'white',
+                                            command = lambda:explainDescription(description))
+            self.buttonLabel.grid(row=r, column=c+3,sticky='w')
+        
         if line == 'double':
             self.label=tk.Label(self, text=texto, width = 17,justify='left', bg=color, anchor="w", font="Arial 16")
             self.label.grid(row=r, column=c,pady = 20,padx=20, sticky='w')
             stringVar[texto] = tk.StringVar()
-            entry[texto] = tk.Entry(self,width=10,textvariable = stringVar[texto])
-            #self.entry_vector_double = Entry(self, width=10,textvariable = string_Var)
-            entry[texto].grid(row=r, column=1, pady= 20, padx=20)
+            results[cont][texto] = tk.Entry(self,width=10,textvariable = stringVar[texto])
+            results[cont][texto].grid(row=r, column=1, pady= 20, padx=20)
             self.corrector = self.register(validardigit)
 
 def printVariables(self,directorio,DB,cont):
@@ -271,7 +296,6 @@ def printVariables(self,directorio,DB,cont):
 
     self = experiments[selectedtab]['bottomrightFrame']
     self = self.tab2
-
     
     # IF AND ONLY IF WE HAVE A PROBLEM AND A SOLVER SET...
     if (cont == 0 and on == 1) or (cont == 0 and on == 0):
@@ -290,6 +314,8 @@ def printVariables(self,directorio,DB,cont):
         linktoVariables.append(linktoVariables0)    # Añadimos las variables que vienen del Problem.
         linktoVariables.append(linktoVariables1)    # Añadimos las variables que vienen del Solver.
         cont = 2
+        results[cont] = {}
+        
    
         ro = 0
         co = 0
@@ -298,6 +324,7 @@ def printVariables(self,directorio,DB,cont):
         string_Var = tk.StringVar()
         num = tk.IntVar()
         boolean = tk.BooleanVar()
+    
 
         for part in linktoVariables:
             for llave in variables[part].keys():
@@ -314,6 +341,7 @@ def printVariables(self,directorio,DB,cont):
 
                     printdata(self,variables[part][llave], texto, description,fakedescription, ro, co, cont)
                 ro+=1
+    
 
 def printConfig(directorio,DB, cont):
     
@@ -325,7 +353,7 @@ def printConfig(directorio,DB, cont):
     if cont == 0:
         self = experiments[selectedtab]['rightFrame']
     elif cont == 1:
-        self = experiments[selectedtab]['bottomleftFrame']
+        self = experiments[selectedtab]['canvas']
     elif cont == 2:
         self = experiments[selectedtab]['bottomrightFrame']
     #####
@@ -337,6 +365,8 @@ def printConfig(directorio,DB, cont):
     # Set variables:
     r = 0
     c = 0
+
+    results[cont]={}
 
     # Start reading and printing on screen: # DON'T DELETE THIS COMMENT -> TITULO FRAMES : list(DB.keys())[0]
     self.titulo=tk.Label(self, text=directorio,justify='left', anchor="w", font="Arial 18", bg = 'darkcyan', fg='white')
@@ -367,31 +397,71 @@ def printConfig(directorio,DB, cont):
                                 r+=1
     else:
         popupmsgwarning('No Configuration Settings found')
-    
+    '''
+    if cont == 1:
+                bottomleftFrame = experiments[selectedtab]['bottomleftFrame']
+                canvas = experiments[selectedtab]['canvas']
+                
+                hbar=Scrollbar(bottomleftFrame,orient=HORIZONTAL)
+                hbar.pack(side=BOTTOM,fill=X)
+                hbar.config(command=canvas.xview)
+                vbar=Scrollbar(bottomleftFrame,orient=VERTICAL)
+                vbar.pack(side=RIGHT,fill=Y)
+                vbar.config(command=canvas.yview)
+                canvas.config(width=950,height=850)
+                canvas.config(xscrollcommand=hbar.set, yscrollcommand=vbar.set)
+                canvas.pack(side=LEFT,expand=True,fill=BOTH)
+                canvas.pack_propagate(0)
+    '''
                                     
 ##########################
 ########################## MAIN FUNCTIONS:
 def createConfig():
     global selectedtab # To know at which experiment we are.
     global experiments
+    global results
 
-    values ={}
-    entries = experiments[selectedtab]['entry']
-    bottomleftFr = experiments[selectedtab]['bottomleftFrame']
+    
+    #results = experiments[selectedtab]['results']
+    bottomleftFr = experiments[selectedtab]['canvas']
     rightFr = experiments[selectedtab]['rightFrame']
-    #problemChosen = bottomleftFr.cget('text')
-    #solverChosen = rightFr.cget('text')
-    for entry_label in  entries.keys():
-        entry = entries[entry_label]
-        entryval = entry.get()
-        values[entry_label] = entryval
+    variableFr = experiments[selectedtab]['totalTabs2']
 
     cwd = os.getcwd()
     file = open(cwd+"/filename.config", "w")
-    file.write('{Problem: '+bottomleftFr.titulo.cget('text')+'}'+'\n')
-    file.write('{Solver: '+rightFr.titulo.cget('text')+'}'+'\n')
-    for keys in values.keys():
-        file.write(keys+': '+values[keys]+'\n')
+    file.write('### .config File obtained from Korali### \n \n'+selectedtab+' {\n')
+    for frame in results.keys():
+        
+        if frame == 0:
+            file.write('{Problem: {'+rightFr.titulo.cget('text')+': [')
+            
+        elif frame == 1:
+            file.write('{Solver: {'+bottomleftFr.titulo.cget('text')+': [')
+            
+        elif frame == 2:
+            file.write('{Variables: '+'['+variableFr.tab(variableFr.select(), "text")+': ')
+            
+        else:
+            popupmsgwarning('Error 404')
+
+        for widget in results[frame]:
+                w = results[frame][widget]                    
+                val = w.get()
+                to_write = '{'+widget+': '+str(val)+'}'
+                
+                if widget == list(results[frame])[-1]:
+                    file.write(to_write+']}},\n')
+                else:
+                    file.write(to_write+',')
+    file.write('}')
+    
+                
+
+    #### ASK TO DOWNLOAD AND SAVE THE FILE:
+    files = [('All Files', '*.*'),  
+             ('Python Files', '*.py'), 
+             ('Text Document', '*.txt')] 
+    filesaved = asksaveasfile(filetypes = files, defaultextension = files)
     file.close()
     
 def recursiveUpdate(dest, defaults):
@@ -421,7 +491,7 @@ def splitPath(s):
         dirs += [dirName]
     return dirs
 
-def readDirs(filePath,configTreeDB,default):
+def readDirs(filePath,DB,default):
     dirs = splitPath(filePath)
     levels=len(dirs)
     sublevel = levels + 1
@@ -433,7 +503,7 @@ def readDirs(filePath,configTreeDB,default):
             for fileName in fileNames:
                 if fileName.endswith('.config'):
                     dirName = dirs[levels-1]
-                    configTreeDB[dirName] = dirInfoDic
+                    DB[dirName] = dirInfoDic
                     dirInfoDic['config'] = filePath + os.path.sep + fileName
                     dirInfoDic['children'] = childrenList
                     try:
@@ -467,18 +537,22 @@ def readDirs(filePath,configTreeDB,default):
         if levels > sublevel:
             del dirNames[:]
             continue
-        readDirs(dirPath, configTreeDB, dest)
+        readDirs(dirPath, DB, dest)
         dirName = dirs[levels - 1]
         childrenList += [dirName]
-    crearVariables(configTreeDB)
+    crearVariables(DB)
     
 ### CREAR EL DICCIONARIO DE VARIABLES COMBINANDO LOS DOS DICCIONARIOS ANTERIORES
-def crearVariables(diccionario):
-    for key in diccionario.keys():
-        if 'Variables Configuration' in diccionario[key]['herencia'].keys():
-            if diccionario[key]['herencia']['Variables Configuration']:
-                for key2 in diccionario[key]['herencia']['Variables Configuration']:
-                    variables[diccionario[key]['config']] = key2
+def crearVariables(DB):
+    
+    for key in DB.keys():
+        if 'Variables Configuration' in DB[key]['herencia'].keys():
+            if DB[key]['herencia']['Variables Configuration']:
+                for key2 in DB[key]['herencia']['Variables Configuration']:
+                    variables[DB[key]['config']] = key2
+        else:
+            pass ###################### DEA AND .... HAVE NO VARIABLES CONFIGURATION.
+    
                     
 def crearMenu(padre,directorio,DB,cont):
     global menus
@@ -587,6 +661,7 @@ def crearTab(self,totalTabs):
                 self.canvas.configure(scrollregion=(0,0,2000,2000))
                 #self.bottomleftFrame1.config(scrollregion=self.canvas.bbox("all"))
                 '''
+                
                 self.canvas=Canvas(self.bottomleftFrame1,width = 950, height = 840,bg = 'azure', scrollregion= (0,0,1500,1500)) #yscrollcommand = vbar.set
                 #self.canvas.pack(side=LEFT,expand=True,fill=BOTH)
                 hbar=Scrollbar(self.bottomleftFrame1,orient=HORIZONTAL)
@@ -601,7 +676,9 @@ def crearTab(self,totalTabs):
                 
                 
                 self.canvas.grid_propagate(0)
-
+                
+                #self.canvas.pack_propagate(0)
+                
                 '''
                 vbar=Scrollbar(self.bottomleftFrame1,orient=VERTICAL,bg = 'darkcyan', width = 10)
                 vbar.pack(side=RIGHT,fill=Y)
@@ -612,7 +689,8 @@ def crearTab(self,totalTabs):
                 self.canvas.config(yscrollcommand=vbar.set, scrollregion = self.canvas.bbox("all"))
                 '''
                 ## END CANVAS + SCROLLBAR
-                
+
+
 
                 self.bottomrightFrame = tk.Frame(self.tab, width = 900, height = 450, background ='azure', borderwidth = 1,relief = 'ridge')
                 self.bottomrightFrame.grid(column = 1, row = 2,sticky = 'nsew', rowspan = 1)#, sticky = 'se', rowspan = 2, columnspan = 1)
@@ -625,7 +703,8 @@ def crearTab(self,totalTabs):
                 expElements['leftFrame'] = self.leftFrame
                 expElements['rightFrame'] = self.rightFrame
                 expElements['bottomrightFrame'] = self.bottomrightFrame
-                expElements['bottomleftFrame'] = self.canvas
+                expElements['bottomleftFrame'] = self.bottomleftFrame1
+                expElements['canvas'] = self.canvas
 
                 self.totalTabs2 = ttk.Notebook(self.bottomrightFrame)
                 self.totalTabs2.pack(expand = 1, fill = "both")
@@ -725,8 +804,28 @@ class KORALI(tk.Tk): #Inherited tk.tk
         
         self.toolbar.pack(side='bottom', fill='x')
         #self.toolbar.pack_propagate(0)
+    
 
+'''
+class ResizingCanvas(Canvas):
+    def __init__(self,parent,**kwargs):
+        Canvas.__init__(self,parent,**kwargs)
+        self.bind("<Configure>", self.on_resize)
+        self.height = self.winfo_reqheight()
+        self.width = self.winfo_reqwidth()
 
+    def on_resize(self,event):
+        # determine the ratio of old width/height to new width/height
+        wscale = float(event.width)/self.width
+        hscale = float(event.height)/self.height
+        self.width = event.width
+        self.height = event.height
+        # resize the canvas 
+        self.config(width=self.width, height=self.height)
+        # rescale all the objects tagged with the "all" tag
+        self.scale("all",0,0,wscale,hscale)
+      
+'''
 ## --------------- END OF CLASSES ------------------------    
 ########################################################    
 
@@ -736,6 +835,8 @@ variables = {}
 
 readDirs(mainPath, configTreeDB,default)
 readDirs(mainPath2,solverDB, default)
+
+#print(configTreeDB)
        
 app = KORALI()
 app.geometry("1500x1000") # Size of our application.

@@ -1,5 +1,41 @@
 Mark Martori Lopez
 
+
+Wednesday 15 April 2020
+
+Tasks:
+
+1- [Solved] Current GOAL: Create a .config out of the options selected in an experiment.
+The config should look like this:
+{{solver},{problem},[{var1},{var2},{var3}]}
+
+	Step 1: [Solved] Create a dictionary to store as keys the names of the entries and as values their inputs typed by the user.
+
+	Step 2: [Solved] Create a function that is able to retrieve all the values from the entries.
+
+	Step 3: [Solved] The function must retrieve the values from all the different frames when clicking the button.
+
+	Step 4: [Solved] Get values from entries, spinboxes and radiobuttons.
+	
+	Step 5: [Solved] Retrieve also the type of Problem and Solver selected and indicate which variable is which.
+
+	Step 6: [Solved] Open the file and write on it in an organized/.config file way.
+
+2- [Solved] Launch a dialogue to download the file in different extensions in any folder you want.
+
+
+OUTPUT OF THE FILE:
+Start
+### .config File obtained from Korali### 
+ 
+Experiment 1 {
+{Problem: {sampling: [{Probability Function: Gaussian}]}},
+{Solver: {CMAES: [{Population Size: 10000},{Mu Value: 1},{Mu Type: Constant},{Initial Sigma Cumulation Factor: 10},{Initial Damp Factor: 0},{Is Sigma Bounded: True},{Initial Cumulative Covariance: 20},{Is Diagonal: False},{Viability Population Size: 4},{Viability Mu Value: 10},{Max Covariance Matrix Corrections: 30},{Target Success Rate: 90},{Covariance Matrix Adaption Strength: 0},{Normal Vector Learning Rate: 0},{Global Success Learning Rate: 0}]}},
+{Variables: [Variable 1: {Name: StDev},{Minimum Standard Deviation Update: 5}]}}
+}
+
+End
+---------------------------------------------------
 Tuesday 14 April 2020
 
 Tasks:

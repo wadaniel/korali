@@ -252,8 +252,6 @@ void korali::solver::Nested::generateCandidatesFromBox()
    for(size_t d = 0; d < _k->_variables.size(); ++d) 
      _candidates[i][d] = _boxLowerBound[d]+_uniformGenerator->getRandomNumber()*(_boxUpperBound[d]-_boxLowerBound[d]);
   }
-
-   return; 
 }
  
 void korali::solver::Nested::generateCandidatesFromEllipse() 
@@ -264,22 +262,21 @@ void korali::solver::Nested::generateCandidatesFromEllipse()
    double len = 0;
    for(size_t d = 0; d < _k->_variables.size(); ++d) 
    {
-     vec[d] = _uniformGenerator->getRandomNumber();
+     vec[d] = _normalGenerator->getRandomNumber();
      len += vec[d]*vec[d];
    }
+   double dim = _k->_variables.size();
    for(size_t d = 0; d < _k->_variables.size(); ++d) 
-     vec[d] *= _uniformGenerator->getRandomNumber()/sqrt(len);
+     vec[d] *= pow(_uniformGenerator->getRandomNumber(),1./dim)/sqrt(len);
 
    for(size_t k = 0; k < _k->_variables.size(); ++k) 
    {
      _candidates[i][k] = _domainMean[k];
-     for(size_t l = 0; l < k+1; ++l) 
-     _candidates[i][k] += vec[l]*_ellipseAxes[k][l];
+     for(size_t l = k; l < _k->_variables.size(); ++l){
+     _candidates[i][k] += _ellipseAxes[k][l]*vec[l];
+     }
    }
   }
-
-
-    return; 
 }
 
 void korali::solver::Nested::updateMeanAndCovariance() 
@@ -375,10 +372,10 @@ void korali::solver::Nested::updateEllipse()
       for(size_t l = 0; l < k+1; l++)
         _ellipseAxes[k][l] = gsl_matrix_get(covar, k, l);
 
-    gsl_permutation_free(p);
-    gsl_matrix_free(inv);
     gsl_vector_free(vec);
     gsl_vector_free(vout);
+    gsl_matrix_free(inv);
+    gsl_permutation_free(p);
     gsl_matrix_free(cvlup);
     gsl_matrix_free(covar);
 }

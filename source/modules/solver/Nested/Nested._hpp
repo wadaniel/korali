@@ -2,8 +2,9 @@
 #define _KORALI_SOLVER_NESTED_HPP_
 
 #include "modules/solver/solver.hpp"
-#include "modules/distribution/multivariate/normal/normal.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
+#include "modules/distribution/univariate/normal/normal.hpp"
+#include "modules/distribution/multivariate/normal/normal.hpp"
 #include <vector>
 
 namespace korali { namespace solver {

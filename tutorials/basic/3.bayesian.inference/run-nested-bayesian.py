@@ -25,7 +25,7 @@ e["Solver"]["Number Live Points"] = 1500
 e["Solver"]["Batch Size"] = 1
 e["Solver"]["Covariance Scaling"] = 1.0
 e["Solver"]["Add Live Points"] = True
-e["Solver"]["Resampling Method"] = "Box"
+e["Solver"]["Resampling Method"] = "Ellipse"
 
 
 # Configuring the problem's random distributions

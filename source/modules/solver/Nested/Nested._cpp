@@ -481,16 +481,16 @@ double korali::solver::Nested::calcEffectiveSamples() const
 {
     if(_databaseEntries < 1) return 0.0;
     
-    double wtsum  = 0.0;
-    double wt2sum = 0.0;
+    double wtsum  = std::numeric_limits<double>::lowest();
+    double wt2sum = std::numeric_limits<double>::lowest();
 
     for(size_t i = 0; i < _databaseEntries; ++i)
     {
-        wtsum  += exp(_sampleLogWeightDatabase[i]);
-        wt2sum += exp(2.0*_sampleLogWeightDatabase[i]);
+        wtsum  = safeLogPlus(wtsum, _sampleLogWeightDatabase[i]);
+        wt2sum = safeLogPlus(wt2sum, 2.0*_sampleLogWeightDatabase[i]);
     }
 
-    return wtsum*wtsum/wt2sum; 
+    return exp(2.0*wtsum-wt2sum); 
 }
 
 double korali::solver::Nested::safeLogPlus(double logx, double logy) const

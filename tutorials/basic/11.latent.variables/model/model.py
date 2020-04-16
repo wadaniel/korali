@@ -1,8 +1,6 @@
 
 
 import load_data
-import pdb
-
 import numpy as np
 
 
@@ -117,13 +115,6 @@ class ExampleDistribution2(ExponentialFamilyDistribution):
         assignments = sample["Latent Variables"]
         if (len(assignments) != self._p.nPoints):
             raise ValueError("Latent variables should be exactly the cluster assignments, so there is one for each point in the sample.")
-        # for i in range(len(assignments)):
-        #     lvar = assignments[i]
-        #     if (lvar < -0.49):
-        #         print("Ignoring unresolvable problem: Latent variable was negative, should be a cluster assignment index")
-        #     if lvar > self._p.nClusters - 0.51:
-        #         print("Ignoring unresolvable problem: Latent variable was larger than highest cluster index, should be a cluster assignment index")
-
 
         S_dim = 1 + self._p.nDimensions * self._p.nClusters + self._p.nClusters
         S_vec = np.zeros((S_dim,), float)
@@ -140,7 +131,6 @@ class ExampleDistribution2(ExponentialFamilyDistribution):
             S_vec[0] -= np.inner(pt, pt)
             cluster = int(np.round(assignments[i]))
             S_vec[cluster + 1] += 1
-              # to get <mu_c(i) , x_i>, add x_i to the part that will be summed with mu_c(i):
 
             mu_ci_location = self._p.nClusters + 1 + cluster * self._p.nDimensions
             S_vec[mu_ci_location : mu_ci_location + self._p.nDimensions] += pt
@@ -148,7 +138,6 @@ class ExampleDistribution2(ExponentialFamilyDistribution):
 
 
     def zeta(self, sample):
-        #pdb.Pdb(nosigint=True).set_trace()
         hyperparams = sample["Hyperparameters"]
         if (len(hyperparams) != self._p.nDimensions * self._p.nClusters + 1):
             raise ValueError("Hyperparameters should be one mean vector per cluster, plus a 1D variable sigma. The dimension of the hyperparameter vector did not match this.")

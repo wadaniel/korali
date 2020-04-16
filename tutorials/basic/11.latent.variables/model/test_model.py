@@ -3,6 +3,7 @@
 # */
 # import korali # No: circumvent using korali here, use dicts instead of samples
 import numpy as np
+import pdb
 
 from load_data import *
 from model import *
@@ -181,6 +182,7 @@ def test_distribution_2():
         mu_vectors = np.array(mu_vectors_concat).reshape((nClusters, -1))
         assert mu_vectors.shape[1] == nDimensions
 
+        #pdb.set_trace()
         p = multivariate_gaussian_probability(mu_vectors, nDimensions, assignments[i], nClusters, sigma, current_points)
 
         distrib2._p.reset_points(current_points, assignments[i], nClusters )

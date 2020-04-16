@@ -58,7 +58,7 @@ class ExampleDistribution1(ExponentialFamilyDistribution):
                 sample["S"] = [-np.inf]
                 return
 
-        # log(p) = -log(sigma*sqrt(pi*2)) - 0.5(x - mu)^2 * 1/sigma^2
+        # log(p) = -n*log(sigma*sqrt(pi*2)) - 0.5(x - mu)^2 * 1/sigma^2
         vector_distances = [pt - mu_vector for pt in self._p.points]
         squared_distance_per_point = [np.inner(dist, dist) for dist in vector_distances]
         sample["S"] = [- np.sum(squared_distance_per_point)]
@@ -69,8 +69,9 @@ class ExampleDistribution1(ExponentialFamilyDistribution):
         sigma = hyperparams[0]
         log_hypercube_volume = self._p.nPoints * np.log(self.mu_range)
         #  \__ to get a normalized distribution in both x and mu, need to multiply P by a uniform distribution in mu
-        # log(sigma * sqrt(pi * 2))
-        sample["zeta"] = np.log(sigma * np.sqrt(2 * np.pi)) *self._p.nPoints + log_hypercube_volume
+        # n*log(sigma * sqrt(pi * 2))
+        n = self._p.nDimensions
+        sample["zeta"] = n * np.log(sigma * np.sqrt(2 * np.pi)) * self._p.nPoints + log_hypercube_volume
 
 
 
@@ -90,10 +91,10 @@ class ExampleDistribution1(ExponentialFamilyDistribution):
         #         Assignment of each data point to the modes
         #
         #     So,
-        #       log(p) = sum_i [log(2*pi*sigma)*1/2] - sum_i [  |x_i|^2  - <2*mu_c(i), x_i>  +  |mu_c(i)|^2  ]/(2*sigma^2)
+        #       log(p) = sum_i [log(2*pi*sigma)*dim/2] - sum_i [  |x_i|^2  - <2*mu_c(i), x_i>  +  |mu_c(i)|^2  ]/(2*sigma^2)
         #
         #       ->
-        #          zeta(sigma, mu1, mu2) = N*log(2*pi*sigma)*1/2
+        #          zeta(sigma, mu1, mu2) = N * dim * log(2*pi*sigma)*1/2
         #          S(x1, c(1), ... xN, c(N))
         #                     = sum_i [vec(-|x_i|^2, delta(ci=1), delta(ci=2), x_i * delta(ci=1), x_i * delta(ci=2) ) ]
         #          phi(sigma, mu1, mu2)
@@ -145,7 +146,7 @@ class ExampleDistribution2(ExponentialFamilyDistribution):
         sigma = hyperparams[self._p.nClusters * self._p.nDimensions]
 
        # log(sigma*sqrt(pi*2))
-        sample["zeta"] = self._p.nPoints * np.log(sigma*np.sqrt(2*np.pi))
+        sample["zeta"] = self._p.nDimensions * self._p.nPoints * np.log(sigma*np.sqrt(2*np.pi))
 
 
     def phi(self, sample):

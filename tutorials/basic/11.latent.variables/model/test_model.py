@@ -182,7 +182,6 @@ def test_distribution_2():
         mu_vectors = np.array(mu_vectors_concat).reshape((nClusters, -1))
         assert mu_vectors.shape[1] == nDimensions
 
-        #pdb.set_trace()
         p = multivariate_gaussian_probability(mu_vectors, nDimensions, assignments[i], nClusters, sigma, current_points)
 
         distrib2._p.reset_points(current_points, assignments[i], nClusters )
@@ -202,7 +201,6 @@ def test_distribution_2():
 
         p_from_model_direct =  np.exp( - _zetaValue + np.inner(_sValues,_phiValues) )
 
-        pdb.set_trace()
         assert (np.abs(p - p_from_model_direct) < 0.1*p)
 
 

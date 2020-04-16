@@ -201,6 +201,12 @@ void korali::problem::bayesian::Reference::loglikelihoodNegativeBinomialGeneral(
 
   for( size_t i=0; i<N; i++ ){
     double m = sample["Reference Evaluations"][i];
+
+    if(m<0){
+      sample["logLikelihood"] =  -korali::Inf;
+      return;
+    }
+
     double r = sample["Dispersion"][i];
     double p = m/(m+r);
     double y = _referenceData[i];

@@ -18,7 +18,6 @@ void korali::problem::bayesian::Reference::initialize()
     if (foundSigma == false) _k->_logger->logError("Bayesian (%s) problems require defining a variable named: '[Sigma]'.\n", _likelihoodModel.c_str());
   }
 
-
   std::string str ("Negative Binomial");
   _negativeBinomialConstant = korali::NaN;
   if( _likelihoodModel.find(str) != std::string::npos ){
@@ -53,7 +52,7 @@ void korali::problem::bayesian::Reference::evaluateLogLikelihood(korali::Sample&
 
   if (_likelihoodModel == "Negative Binomial General" ){
     if( sample["Reference Evaluations"].size() != sample["Dispersion"].size() )
-      _k->_logger->logError("This Bayesian (%s) problem requires two %lu-sized result arrays. Provided: %lu and %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), sample["Reference Evaluations"].size(), sample["Standard Deviation Model"].size() );
+      _k->_logger->logError("This Bayesian (%s) problem requires two %lu-sized result arrays. Provided: %lu and %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), sample["Reference Evaluations"].size(), sample["Dispersion"].size() );
     loglikelihoodNegativeBinomialGeneral(sample);
   }
 

@@ -115,7 +115,8 @@ Then, we initialize the sampler which is managed by our class :code:`MCMCLatentS
 
 
 
-#### Defining the Experiment
+Defining the Experiment
+~~~~~~~~~~~~~~~~~~~~~~~
 
 We create a Korali engine and an experiment, and then configure the :code:`Problem` of our experiment:
 

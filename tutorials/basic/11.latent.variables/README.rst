@@ -1,48 +1,50 @@
-# Under Construction! 
+==================================================================
+11 - Optimizing parameters in a latent variable model, using SA-EM
+==================================================================
 
-
-
-# 11 - Optimizing parameters in a latent variable model, using SA-EM
-
-Here we optimize a model with the solver `SA-EM`  to solve two different problems. Both aim to find the parameters for a probability distribution, that maximize the likelihood of a set of observed points $X = \{x_i\}_i$,  $x_i \in \mathbb{R}^n$.
+Here we optimize a model with the solver `SA-EM`  to solve two different problems. Both aim to find the parameters for a probability distribution, that maximize the likelihood of a set of observed points :math:`X = \{x_i\}_i`,  :math:`x_i \in \mathbb{R}^n`.
 
 1. **Simple problem:** 
-   The probability distribution is a simple Gaussian in $\mathbb{R}^n$ , with mean $\mu$ and covariance $\sigma^2\mathbb{I}_n$:   
-   $p(X | \mu, \sigma) = \prod_i \frac{1}{\sigma\sqrt{2\pi}} e^{-\frac{(x_i-\mu)^2}{2\sigma^2}}$     
-   We use $\mu \in \mathbb{R}^n$ as "latent variable" $\theta$ and $\sigma \in \mathbb{R}$ as hyperparameter $\psi$.  This shows that SA-EM works also for two arbitrary sets of hyperparameters, without latent variables in the typical sense.
+   The probability distribution is a simple Gaussian in :math:`\mathbb{R}^n` , with mean :math:`\mu` and covariance :math:`\sigma^2\mathbb{I}_n`:
+   :math:`p(X | \mu, \sigma) = \prod_i \frac{1}{\sigma\sqrt{2\pi}} e^{-\frac{(x_i-\mu)^2}{2\sigma^2}}`
+   We use :math:`\mu \in \mathbb{R}^n` as "latent variable" :math:`\theta` and :math:`\sigma \in \mathbb{R}` as hyperparameter :math:`\psi`.  This shows that SA-EM works also for two arbitrary sets of hyperparameters, without latent variables in the typical sense.
 2. **Clustering problem:** 
-   We have a mixture of Gaussians, with $C$ clusters with different means $\mu_c \in \mathbb{R}^n$ and equal covariance  $\sigma^2\mathbb{I}_n$,  $\sigma \in \mathbb{R}$ . That is, given cluster assignments $c_i$ ( $x_i$ belongs to cluster $c_i \in \{1, ... C\}$), the the joint probability is:   
-   $$ p(X | c_1, ... c_N, \mu_1, ... \mu_C, \sigma) = \prod_i  \frac{1}{\sigma\sqrt{2\pi}} e^{-\frac{(x_i-\mu_{c_i})^2}{2\sigma^2}}$$ .  
-   Here, latent variables are the assignments $c_i \in \{1, ... C\}, i \in {1, ..., N}$ where $N$ is the number of data points. As hyperparameters we have $C$ means $\mu_c$, and a single $\sigma \in \mathbb{R}$ defining the covariance. 
+   We have a mixture of Gaussians, with :math:`C` clusters with different means :math:`\mu_c \in \mathbb{R}^n` and equal covariance  :math:`\sigma^2\mathbb{I}_n`,  :math:`\sigma \in \mathbb{R}` . That is, given cluster assignments :math:`c_i` ( :math:`x_i` belongs to cluster :math:`c_i \in \{1, ... C\}`), the the joint probability is:
+   :math:`p(X | c_1, ... c_N, \mu_1, ... \mu_C, \sigma) = \prod_i  \frac{1}{\sigma\sqrt{2\pi}} e^{-\frac{(x_i-\mu_{c_i})^2}{2\sigma^2}}`.
+   Here, latent variables are the assignments :math:`c_i \in \{1, ... C\}, i \in {1, ..., N}` where :math:`N` is the number of data points. As hyperparameters we have :math:`C` means :math:`\mu_c`, and a single :math:`\sigma \in \mathbb{R}` defining the covariance.
 
 
 
-## Code files
+Code files
+----------
 
-- `run-saem.py` and `run-saem-gaussian-mixture.py`: Contain the main code, defining the experiment to run.
-- `model/model.py` :  Defines the probability distributions, in exponential form
-- `model/tutorial_samplers.py` :  Implements sampling of latent variables from the distributions defined in `model/model.py`.
-- `model/load_data.py` :  Functionality to read the data points from `data_single.in` and `data_multiple.in` . Data points need to be considered in both sampling and when defining the probability distributions.
+- :code:`run-saem.py` and :code:`run-saem-gaussian-mixture.py`: Contain the main code, defining the experiment to run.
+- :code:`model/model.py` :  Defines the probability distributions, in exponential form
+- :code:`model/tutorial_samplers.py` :  Implements sampling of latent variables from the distributions defined in :code:`model/model.py`.
+- :code:`model/load_data.py` :  Functionality to read the data points from :code:`data_single.in` and :code:`data_multiple.in` . Data points need to be considered in both sampling and when defining the probability distributions.
 
 -----------------------------------
 
-- `model/generate_data.py` :  Run this to re-generate data points. Writes points sampled from a single Gaussian into `data_single.in` and points sampled from a multi-modal Gaussian into `data_multiple.in`. You can change the dimension, number of clusters, number of points, mean vectors and standard deviation.  
-- `model/test_model.py` :  For completeness: Tests that ensure correctness of the distributions defined in `model/model.py`. 
+- :code:`model/generate_data.py` :  Run this to re-generate data points. Writes points sampled from a single Gaussian into :code:`data_single.in` and points sampled from a multi-modal Gaussian into :code:`data_multiple.in`. You can change the dimension, number of clusters, number of points, mean vectors and standard deviation.
+- :code:`model/test_model.py` :  For completeness: Tests that ensure correctness of the distributions defined in :code:`model/model.py`.
 
 
 
 
-## How to run the example
+How to run the example
+----------------------
 
-In a shell from this directory (inside `11.latent.variables`), type
-```
-$ python3 run-saem.py
-```
+In a shell from this directory (inside :code:`11.latent.variables`), type
+.. code-block::
+
+    $ python3 run-saem.py
+
 to run the simple example. Or:
 
-```
-$ python3 run-saem-gaussian-mixture.py
-```
+.. code-block::
+
+    $ python3 run-saem-gaussian-mixture.py
+
 
 for the clustering example.
 
@@ -50,42 +52,49 @@ This should output information about the process and result of the optimization.
 
 
 
-## Code explanation
+Code explanation
+----------------
 
-This section explains what happens in `run-saem.py`.
+This section explains what happens in :code:`run-saem.py`.
 
 First, we import our model definition (the parameterized probability distribution) as well as the sampler we want to use. We also need to import Korali and Numpy:
 
-```python
-import sys
-sys.path.append('./model')
-from model.model import *
-from model.tutorial_samplers import *
+.. code-block:: python
 
-import numpy as np # we use numpy for random initializations
-import korali
-```
+    import sys
+    sys.path.append('./model')
+    from model.model import *
+    from model.tutorial_samplers import *
 
- #### Computational Model 
-
-In the main function, we then initialize the distribution, by creating an object of our class `ExampleDistribution1`. It defines S, zeta and phi which already include data points read from `data_single.in`: 
-
-```python
-def main():    
-    # Initialize the distribution
-    distrib1 = ExampleDistribution1()
-
-    distrib1_S = lambda s: distrib1.S(s)
-    distrib1_zeta = lambda s: distrib1.zeta(s)
-    distrib1_phi = lambda s: distrib1.phi(s)
-```
+    import numpy as np # we use numpy for random initializations
+    import korali
 
 
+Computational Model
+~~~~~~~~~~~~~~~~~~~
 
- #### Sampler
-Then, we initialize the sampler which is managed by our class `MCMCLatentSampler`:
+In the main function, we then initialize the distribution, by creating an object of our class :code:`ExampleDistribution1`. It defines S, zeta and phi which already include data points read from :code:`data_single.in`:
 
-```python
+.. code-block:: python
+
+    def main():
+        # Initialize the distribution
+        distrib1 = ExampleDistribution1()
+
+        distrib1_S = lambda s: distrib1.S(s)
+        distrib1_zeta = lambda s: distrib1.zeta(s)
+        distrib1_phi = lambda s: distrib1.phi(s)
+
+
+
+
+The Sampler
+~~~~~~~~~~~~
+
+Then, we initialize the sampler which is managed by our class :code:`MCMCLatentSampler`:
+
+.. code-block:: python
+
     # distrib1._p is a wrapper for the data points stored in data_single.in :
     d1_numberLatentVars = distrib1._p.nDimensions 
     d1_numberHyperparams = 1
@@ -102,14 +111,17 @@ Then, we initialize the sampler which is managed by our class `MCMCLatentSampler
 
     # This will be passed as sampler to Korali:
     sampling_function =  lambda sample:  gaussian_sampler_obj.sampleLatent(sample)
-```
 
 
 
-#### Defining the Experiment
 
-We create a Korali engine and an experiment, and then configure the `Problem` of our experiment:
-```python
+Defining the Experiment
+~~~~~~~~~~~~~~~~~~~~~~~
+
+We create a Korali engine and an experiment, and then configure the :code:`Problem` of our experiment:
+
+.. code-block:: python
+
     k = korali.Engine()
     e = korali.Experiment()
 
@@ -122,52 +134,52 @@ We create a Korali engine and an experiment, and then configure the `Problem` of
     #   dimension 1. See comments in `model.py` for details about the 
     #   distribution.
     e["Problem"]["Latent Variable Sampler"] = sampling_function
-```
 
 
-
- #### The Solver
+The Solver
+~~~~~~~~~~
 
 We select SA-EM as solver, set the number of samples that the E-step should use in each generation, and decide to only optimize for 100 generations:   
- ```python
+
+.. code-block:: python
+
     e["Solver"]["Type"] = "SAEM"
     e["Solver"]["Number Samples Per Step"] = 100
     e["Solver"]["Termination Criteria"]["Max Generations"] = 100
- ```
 
 
+Variables and Prior Distributions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#### Variables and Prior Distributions
+As first variable, we define the standard deviatino :math:`\sigma`. We tell Korali that this is a "Hyperparameter" (as opposed to a latent variable).
+We limit :math:`\sigma` to lie within [0, 15].
+We also need to select a prior distribution (defined further below), because :code:`Latent` is a Bayesian problem; however, SAEM does not use a prior (so we could select an arbitrary prior).
 
-As first variable, we define the standard deviatino $\sigma$. We tell Korali that this is a "Hyperparameter" (as opposed to a latent variable).
-We limit $\sigma$ to lie within [0, 15].  
-We also need to select a prior distribution (defined further below), because `Latent` is a Bayesian problem; however, SAEM does not use a prior (so we could select an arbitrary prior). 
+.. code-block:: python
 
-```python
     e["Variables"][0]["Name"] = "sigma"
     e["Variables"][0]["Bayesian Type"] = "Hyperparameter"
     e["Variables"][0]["Prior Distribution"] = "Uniform 0"
     e["Variables"][0]["Initial Value"] = 5.0  # Initial hyperparameter value
     e["Variables"][0]["Upper Bound"] = 15
     e["Variables"][0]["Lower Bound"] = 0
-```
 
-We then define one variable for each coordinate of $\mu$, the "latent variable". Variables in Korali are scalar variables, that is, to represent a vector-valued quantity, we define a separate variable for each dimension.
 
-```python
+We then define one variable for each coordinate of :math:`\mu`, the "latent variable". Variables in Korali are scalar variables, that is, to represent a vector-valued quantity, we define a separate variable for each dimension.
+
+.. code-block:: python
+
     for i in range(distrib1._p.nDimensions):
         e["Variables"][1 + i]["Name"] = "mu" + str(i)
         # This tells Korali that we want to treat mu_i as latent variable:
         e["Variables"][1 + i]["Bayesian Type"] = "Latent"
         e["Variables"][1 + i]["Prior Distribution"] = "Uniform 1"
-        e["Variables"][1 + i]["Initial Value"] = 0  
-```
-
+        e["Variables"][1 + i]["Initial Value"] = 0
 
 
 Finally, we also need to define (unused) prior distributions: 
 
-```python
+.. code-block:: python
 
     e["Distributions"][0]["Name"] = "Uniform 0"
     e["Distributions"][0]["Type"] = "Univariate/Uniform"
@@ -179,33 +191,34 @@ Finally, we also need to define (unused) prior distributions:
     e["Distributions"][1]["Minimum"] = -5
     e["Distributions"][1]["Maximum"] = 5
 
-```
 
+Running the Optimization
+~~~~~~~~~~~~~~~~~~~~~~~~
 
+Finally, we call the :code:`run()` routine to run the optimization, to find the best value for :math:`\sigma` (and an approximation-by-sampling of :math:`\mu`):
 
-#### Running the Optimization
+.. code-block:: python
 
-Finally, we call the `run()` routine to run the optimization, to find the best value for $\sigma$ (and an approximation-by-sampling of $\mu$):
-
-```python
     k.run(e)
-```
+
 
 And then we wait for the result. This experiment can take a while, because of the MCMC sampling that is run every generation. The final output should look similar to this:   
 
-```[Korali] SAEM finished correctly.
-[Korali] Termination Criterion Met: Solver['Max Generations'] = 100.
-[Korali] Final hyperparameters:
-[Korali] sigma : 0.60 
-[Korali] -- Final latent variable sample values : 
-[Korali]  mu0 : 2.20 +- 0.02  
-[Korali]  mu1 : 2.06 +- 0.03  
-[Korali] Final loglikelihood: -4.6e+01%
-[Korali] Final best loglikelihood: -4.6e+01%
-[Korali] Final Generation: 100
-[Korali] Elapsed Time: 169.675s```
-```
+.. code-block::
+
+    [Korali] SAEM finished correctly.
+    [Korali] Termination Criterion Met: Solver['Max Generations'] = 100.
+    [Korali] Final hyperparameters:
+    [Korali] sigma : 0.60
+    [Korali] -- Final latent variable sample values :
+    [Korali]  mu0 : 2.20 +- 0.02
+    [Korali]  mu1 : 2.06 +- 0.03
+    [Korali] Final loglikelihood: -4.6e+01%
+    [Korali] Final best loglikelihood: -4.6e+01%
+    [Korali] Final Generation: 100
+    [Korali] Elapsed Time: 169.675s
 
 
-The second experiment, `run-saem-gaussian-mixture`, runs faster since it uses a much simpler sampler.  
+
+The second experiment, :code:`run-saem-gaussian-mixture`, runs faster since it uses a much simpler sampler.
 

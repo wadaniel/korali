@@ -2,9 +2,11 @@
 import pdb
 
 import numpy as np
-from scipy.stats import multivariate_normal
+#from scipy.stats import multivariate_normal
 
 import korali
+
+from utils import univariate_gaussian_probability
 
 class MCMCLatentSampler:
     def __init__(self, numberLatentVars, numberHyperparams, initialLatentValues, initialHyperparams, zeta_,  S_, phi_):
@@ -83,8 +85,8 @@ class MCMCLatentSampler:
 
         # Configuring the MCMC sampler parameters
         e["Solver"]["Type"]  = "MCMC"
-        e["Solver"]["Burn In"] = 500
-        e["Solver"]["Termination Criteria"]["Max Samples"] = 5000
+        e["Solver"]["Burn In"] = 400
+        e["Solver"]["Termination Criteria"]["Max Samples"] = 1000
 
         # Configuring output settings
         e["File Output"]["Frequency"] = 0
@@ -139,9 +141,10 @@ class MultimodalGaussianSampler():
             probabilities = np.zeros((self.nClusters,))
             for j in range(self.nClusters):
                 mu = mus[j]
-                cov = sigma ** 2 * np.eye(len(mu))
-                mv = multivariate_normal(mean=mu, cov=cov)
-                p = mv.pdf(self.points[i])
+                # cov = sigma ** 2 * np.eye(len(mu))
+                # mv = multivariate_normal(mean=mu, cov=cov)
+                # p = mv.pdf(self.points[i])
+                p = univariate_gaussian_probability(mu, sigma, self.points[i])
                 probabilities[j] = p
 
             # normalize probabilities to one

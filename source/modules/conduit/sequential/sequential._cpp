@@ -4,12 +4,14 @@
 #include "modules/problem/problem.hpp"
 #include "modules/solver/solver.hpp"
 
-
-void korali::conduit::Sequential::processSample(korali::Sample& sample)
+void korali::conduit::Sequential::initialize()
 {
  // Instantiating Engine logger.
  _logger = new korali::Logger();
+}
 
+void korali::conduit::Sequential::processSample(korali::Sample& sample)
+{
  korali::Engine* engine = _engineStack.top();
 
  auto js = knlohmann::json();

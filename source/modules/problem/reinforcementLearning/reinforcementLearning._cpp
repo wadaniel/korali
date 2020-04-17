@@ -1,0 +1,17 @@
+#include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
+
+void korali::problem::ReinforcementLearning::initialize()
+{
+ // Initializing Problem Configuration
+}
+
+void korali::problem::ReinforcementLearning::initializeEnvironment(korali::Sample& sample)
+{
+ sample.run(_environmentInitializer);
+}
+
+void korali::problem::ReinforcementLearning::performAction(korali::Sample& sample)
+{
+ sample.run(_actionHandler);
+}
+

@@ -1,0 +1,21 @@
+#ifndef _KORALI_PROBLEM_REINFORCEMENTLEARNING_HPP_
+#define _KORALI_PROBLEM_REINFORCEMENTLEARNING_HPP_
+
+#include "modules/problem/problem.hpp"
+
+namespace korali { namespace problem {
+
+class ReinforcementLearning : public korali::Problem
+{
+ public:
+
+ void initialize() override;
+ void initializeEnvironment(korali::Sample& sample);
+ void performAction(korali::Sample& sample);
+
+};
+
+} } // namespace korali::problem
+
+
+#endif // _KORALI_PROBLEM_REINFORCEMENTLEARNING_HPP_

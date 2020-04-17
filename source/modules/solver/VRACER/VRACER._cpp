@@ -1,0 +1,34 @@
+#include "modules/solver/VRACER/VRACER.hpp"
+#include "modules/conduit/conduit.hpp"
+
+void korali::solver::VRACER::setInitialConfiguration()
+{
+ // Initialize solver's configuration here
+}
+
+void korali::solver::VRACER::runGeneration()
+{
+ if (_k->_currentGeneration == 1) setInitialConfiguration();
+
+ _k->_logger->logInfo("Normal", "Running generation %lu...\n", _k->_currentGeneration);
+
+ // Example: Evaluating a sample
+ korali::Sample sample;
+ sample["Module"] = "Problem";
+ sample["Operation"] = "Initialize Environment";
+ _conduit->start(sample);
+ _conduit->wait(sample);
+
+
+}
+
+void korali::solver::VRACER::printGenerationBefore()
+{
+ _k->_logger->logInfo("Normal", "Preparing to start generation...\n");
+}
+
+void korali::solver::VRACER::printGenerationAfter()
+{
+ _k->_logger->logInfo("Normal", "Finished to generation %lu...\n", _k->_currentGeneration);
+}
+

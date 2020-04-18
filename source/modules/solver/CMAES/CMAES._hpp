@@ -102,6 +102,12 @@ class CMAES : public korali::Solver
  * @brief Update mutation matrix for discrete variables. Method for discrete/integer optimization.
  */
  void updateDiscreteMutationMatrix();
+ 
+ /**
+ * @brief Discretize variables to given granularity using arithmetic rounding.
+ */
+ void discretize(korali::Sample& sample);
+
 
  public:
  

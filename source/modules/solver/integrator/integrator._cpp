@@ -37,7 +37,7 @@ void korali::solver::Integrator::runGeneration()
     for( int d = _k->_variables.size()-1; d >= 0; d-- ) 
     {   
       if( _k->_variables[0]->_samplePoints.size() > 0 ){ //quadrature
-      	// We assume i = _index[0] + _index[1]*_sample[1].size() + _index[1]*_index[2]*_sample[2].size() + .....
+      	// We assume i = _index[0] + _index[1]*_sample[0].size() + _index[1]*_index[2]*_sample[1].size() + .....
       	if( d == 0 ) index = rest % _indicesHelper[d];
       	else index = rest / _indicesHelper[d];
       	rest -= index * _indicesHelper[d];

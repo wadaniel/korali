@@ -7,11 +7,11 @@ void korali::problem::ReinforcementLearning::initialize()
 
 void korali::problem::ReinforcementLearning::initializeEnvironment(korali::Sample& sample)
 {
- sample.run(_environmentInitializer);
+ sample.run(_environmentFunction);
 }
 
 void korali::problem::ReinforcementLearning::performAction(korali::Sample& sample)
 {
- sample.run(_actionHandler);
+ sample.run(_environmentFunction);
 }
 

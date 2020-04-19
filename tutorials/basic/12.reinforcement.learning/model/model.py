@@ -1,7 +1,4 @@
 #!/usr/bin/env python
 
-def initialize(p):
+def runEnvironment(p):
   print('Environment Initialized')
-
-def action(p):
-  print('Action Performed')

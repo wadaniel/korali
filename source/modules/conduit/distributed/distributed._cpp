@@ -274,6 +274,10 @@ void korali::conduit::Distributed::popEngine()
  #endif
 }
 
+size_t korali::conduit::Distributed::maxConcurrency()
+{
+ return _teamCount;
+}
 
 int korali::conduit::Distributed::getRootRank()
 {

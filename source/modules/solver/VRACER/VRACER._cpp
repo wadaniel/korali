@@ -12,14 +12,75 @@ void korali::solver::VRACER::runGeneration()
 
  _k->_logger->logInfo("Normal", "Running generation %lu...\n", _k->_currentGeneration);
 
- // Example: Evaluating a sample
- korali::Sample sample;
- sample["Module"] = "Problem";
- sample["Operation"] = "Initialize Environment";
- _conduit->start(sample);
- _conduit->wait(sample);
+ auto maxConcurrency = _conduit->maxConcurrency();
+ printf("Max Concurrency: %lu\n", maxConcurrency);
 
+ std::vector<korali::Sample> envs(_environmentCount);
 
+ size_t curEnv = 0;
+ while (curEnv < _environmentCount)
+ {
+  for (size_t i = 0; i < maxConcurrency && curEnv < _environmentCount; i++)
+  {
+   envs[curEnv]["Worker"] = i;
+   curEnv++;
+  }
+ }
+
+ for (size_t i = 0; i < _environmentCount; i++)
+ {
+  printf("Env: %lu, Worker: %lu\n", i, (size_t)envs[i]["Worker"]);
+  envs[i]["Module"] = "Problem";
+  envs[i]["Operation"] = "Initialize Environment";
+  _conduit->start(envs[i]);
+ }
+
+ _conduit->waitAll(envs);
+
+ // Running action-state loop
+// size_t startEnvId = 0;
+// while(startEnvId < _environmentCount)
+// {
+//  size_t envRoundCount = maxConcurrency + startEnvId >= _environmentCount ? _environmentCount - startEnvId : maxConcurrency;
+//
+//  std::vector<korali::Sample> environments(envRoundCount);
+//  std::vector<bool> pendingEnv(envRoundCount, false);
+//  //printf("From: %lu To: %lu\n", startEnvId, endEnvId);
+//
+//  // Initializing Environments
+//  for (size_t i = 0; i < envRoundCount; i++)
+//  {
+//   environments[i]["Module"] = "Problem";
+//   environments[i]["Operation"] = "Initialize Environment";
+//   _conduit->start(environments[i]);
+//  }
+//
+//  _conduit->waitAll(environments);
+//
+//  size_t finishedEnvs = 0;
+//  while(finishedEnvs < envRoundCount)
+//  {
+//   finishedEnvs = 0;
+//   for (size_t i = 0; i < envRoundCount; i++)
+//    if (environments[i]["Finished"] == false && pendingEnv[i] == false)
+//    {
+//     environments[i]["Module"] = "Problem";
+//     environments[i]["Operation"] = "Perform Action";
+//     _conduit->start(environments[i]);
+//     pendingEnv[i] = true;
+//    }
+//    else
+//    {
+//     finishedEnvs++;
+//     //printf("Finished Env: %lu - Total: %lu\n", envId, finishedEnvs);
+//    }
+//
+//   size_t curEnvId = _conduit->waitAny(environments);
+//   pendingEnv[curEnvId] = false;
+//  }
+//
+//  startEnvId += envRoundCount;
+// }
 }
 
 void korali::solver::VRACER::printGenerationBefore()

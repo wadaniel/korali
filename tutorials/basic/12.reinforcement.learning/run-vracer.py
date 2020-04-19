@@ -19,8 +19,7 @@ e = korali.Experiment()
 # Configuring Problem
 e["Random Seed"] = 0xC0FEE
 e["Problem"]["Type"] = "Reinforcement Learning"
-e["Problem"]["Environment Initializer"] = initialize
-e["Problem"]["Action Handler"] = action
+e["Problem"]["Environment Function"] = runEnvironment
 
 # Defining the problem's variables.
 e["Variables"][0]["Name"] = "X"
@@ -35,9 +34,11 @@ e["Variables"][0]["Upper Bound"] = +1.0
 
 # Configuring CMA-ES parameters
 e["Solver"]["Type"] = "VRACER"
-e["Solver"]["Environment Count"] = 1
-e["Solver"]["Termination Criteria"]["Max Generations"] = 10
+e["Solver"]["Environment Count"] = 10
+e["Solver"]["Termination Criteria"]["Max Generations"] = 1
 
 # Running Korali
+k["Conduit"]["Type"] = "Concurrent"
+k["Conduit"]["Concurrent Jobs"] = 3
 k.run(e)
 

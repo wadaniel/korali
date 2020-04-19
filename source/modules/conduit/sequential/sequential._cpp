@@ -45,3 +45,8 @@ void korali::conduit::Sequential::initServer()
 {
 
 }
+
+size_t korali::conduit::Sequential::maxConcurrency()
+{
+ return 1;
+}

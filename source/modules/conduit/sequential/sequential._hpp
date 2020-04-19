@@ -14,6 +14,7 @@ class Sequential : public korali::Conduit
 
  void initialize() override;
  void initServer() override;
+ size_t maxConcurrency() override;
  void processSample(korali::Sample& sample) override;
  void stackEngine(korali::Engine* engine) override;
  void popEngine() override;

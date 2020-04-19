@@ -84,6 +84,7 @@ class Distributed : public korali::Conduit
  #endif
 
  void initServer() override;
+ size_t maxConcurrency() override;
  void initialize() override;
  void finalize() override;
 

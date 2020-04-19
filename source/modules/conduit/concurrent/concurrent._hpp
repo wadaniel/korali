@@ -39,7 +39,13 @@ class Concurrent : public korali::Conduit {
   */
  std::queue<int> _launcherQueue;
 
+ /**
+  * @brief Handles the execution thread of individual samples;
+  */
+ static void _sampleLauncher();
+
  void initServer() override;
+ size_t maxConcurrency() override;
  void processSample(korali::Sample& sample) override;
  void initialize() override;
  void stackEngine(korali::Engine*) override;

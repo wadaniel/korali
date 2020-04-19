@@ -63,5 +63,13 @@ void korali::problem::Integration::execute(korali::Sample& sample)
 {
   // Evaluating Sample
   sample.run(_integrand);
+
+  std::string sampleString = "['Evaluation']";
+
+ if ( korali::JsonInterface::isDefined(sample._js.getJson(), sampleString) == false)
+   _k->_logger->logError("The %s problem needs a function evaluation. Be sure that you assign a value to the %s attribute in the model definition.\n", _k->_problem->getType().c_str(), sampleString.c_str());
+
+ double evaluation = sample["Evaluation"];
+ if(std::isnan(evaluation)) _k->_logger->logError("The function evaluation returned NaN.\n");
 }
 

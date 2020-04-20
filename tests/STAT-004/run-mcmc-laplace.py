@@ -30,13 +30,12 @@ e["Solver"]["Use Adaptive Sampling"] = True
 e["Solver"]["Termination Criteria"]["Max Samples"] = 100000
 
 e["Console Output"]["Frequency"] = 5000
-e["File Output"]["Frequency"] = 5000
-e["File Output"]["Path"] = "_result_run-mcmc"
+e["File Output"]["Frequency"] = 0
 
 # Running Korali
 e["Random Seed"] = 1227
 k.run(e)
 
-verifyMean(e, [4.0], 0.05)
-verifyStd(e, [math.sqrt(2)], 0.05)
+verifyMean(e["Solver"]["Sample Database"], [4.0], 0.05)
+verifyStd(e["Solver"]["Sample Database"], [math.sqrt(2)], 0.05)
 

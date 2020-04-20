@@ -68,6 +68,7 @@ void korali::Experiment::run()
   // Saving last generation and final.json
   _currentGeneration--;
   _isFinished = true;
+  _solver->finalize();
   saveState();
 
   _logger->logInfo("Minimal", "--------------------------------------------------------------------\n");

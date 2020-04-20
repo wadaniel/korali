@@ -34,7 +34,6 @@ dea_values=(
 3     # Max Generations
 0     # Max Infeasible Resamplings
 0.1   # Min Value Difference Threshold
-0.3   # Min Step Size
 )
 
 tmcmc_criteria=(
@@ -48,6 +47,17 @@ tmcmc_values=(
 3     # Max Generations
 0.6   # Target Annealing Exponent
 )
+
+nested_criteria=(
+"Max Generations"
+"Max Effective Sample Size"
+)
+
+nested_values=(
+10    # Max Generations
+100   # Max Effective Sample Size
+)
+
 
 #################################################
 # CMA-ES Termination Criterion Tests
@@ -110,6 +120,29 @@ for ((i=0;i<${#tmcmc_criteria[@]};++i)); do
   logEcho "Running File: tmcmc_termination.py"
 
   python3 ./tmcmc_termination.py --criterion "${tmcmc_criteria[$i]}" --value ${tmcmc_values[$i]} >> $logFile 2>&1
+  check_result
+
+  log "[Korali] Removing results..."
+  rm -rf "_korali_result" >> $logFile 2>&1
+  check_result
+
+  logEcho "-------------------------------------"
+
+done
+
+#################################################
+# Nested Termination Criterion Tests
+#################################################
+
+logEcho "[Korali] Beginning Nested termination criterion tests"
+
+for ((i=0;i<${#nested_criteria[@]};++i)); do
+
+  logEcho "-------------------------------------"
+  logEcho "Testing Termination Criterion: ${nested_criteria[$i]}"
+  logEcho "Running File: nested_termination.py"
+
+  python3 ./nested_termination.py --criterion "${nested_criteria[$i]}" --value ${nested_values[$i]} >> $logFile 2>&1
   check_result
 
   log "[Korali] Removing results..."

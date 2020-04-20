@@ -25,7 +25,7 @@ class TMCMC : public korali::Solver
  void prepareGeneration();
 
  /*
-  * @brief Process evaluation, main TMCMC loop
+  * @brief Process Generation after receiving all results.
   */
  void processGeneration();
 
@@ -41,7 +41,7 @@ class TMCMC : public korali::Solver
  void minSearch(double const *fj, size_t fn, double pj, double objTol, double& xmin, double& fmin);
 
  /*
-  * @brief Does sample evaluation.
+  * @brief Collects results after sampleevaluation.
   */
  void processEvaluation(const size_t sampleId);
 
@@ -68,7 +68,7 @@ class TMCMC : public korali::Solver
  void setInitialConfiguration() override;
 
  /**
- * @brief Executes sampling & evaluation generation.
+ * @brief Main solver loop.
  */
  void runGeneration() override;
  

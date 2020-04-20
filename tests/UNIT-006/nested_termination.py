@@ -9,12 +9,12 @@ sys.path.append('./helpers')
 from helpers import *
 
 #################################################
-# TMCMC run method
+# Nested run method
 #################################################
 
-def run_tmcmc_with_termination_criterion(criterion, value):
+def run_nested_with_termination_criterion(criterion, value):
 
-    print("[Korali] Prepare TMCMC run with Termination Criteria "\
+    print("[Korali] Prepare Nested run with Termination Criteria "\
             "'{0}'".format(criterion))
 
     e = korali.Experiment()
@@ -28,10 +28,12 @@ def run_tmcmc_with_termination_criterion(criterion, value):
 
     e["Variables"][0]["Name"] = "X"
     e["Variables"][0]["Prior Distribution"] = "Uniform 0"
-  
-    e["Solver"]["Type"] = "TMCMC"
-    e["Solver"]["Population Size"] = 5000
-    e["Solver"]["Covariance Scaling"] = 0.001
+ 
+    e["Solver"]["Type"] = "Nested"
+    e["Solver"]["Number Live Points"] = 1500
+    e["Solver"]["Batch Size"] = 1
+    e["Solver"]["Add Live Points"] = True
+    e["Solver"]["Resampling Method"] = "Box"
     e["Solver"]["Termination Criteria"][criterion] = value
 
     e["Random Seed"] = 1337
@@ -44,6 +46,9 @@ def run_tmcmc_with_termination_criterion(criterion, value):
         
     elif (criterion == "Target Annealing Exponent"):
         assert_greatereq(e["Solver"]["Annealing Exponent"], value)
+  
+    elif (criterion == "Max Effective Sample Size"):
+        assert_greatereq(e["Solver"]["Effective Sample Size"], value)
     
     else:
         print("Termination Criterion not recognized!")
@@ -60,7 +65,7 @@ if __name__ == '__main__':
     parser.add_argument('--value', help='Value of Termination Criterion', action='store', type = float, required = True)
     args = parser.parse_args()
     
-    run_tmcmc_with_termination_criterion(args.criterion, args.value)
+    run_nested_with_termination_criterion(args.criterion, args.value)
 
 
 

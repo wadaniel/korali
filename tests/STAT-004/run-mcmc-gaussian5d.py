@@ -15,13 +15,11 @@ import korali
 k = korali.Engine()
 e = korali.Experiment()
 
-e["File Output"]["Path"] = "_result_run-mcmc"
-
 # Selecting problem and solver types.
 e["Problem"]["Type"] = "Sampling"
 e["Problem"]["Probability Function"] = lg5
 e["Console Output"]["Frequency"] = 5000
-e["File Output"]["Frequency"] = 5000
+e["File Output"]["Frequency"] = 0
 
 # Defining problem's variables and their MCMC settings
 for i in range(5):
@@ -39,5 +37,5 @@ e["Solver"]["Termination Criteria"]["Max Samples"] = 50000
 e["Random Seed"] = 1337
 k.run(e)
 
-verifyMean(e, [0.0, 0.0, 0.0, 0.0, 0.0], 0.05)
-verifyStd(e, [1.0, 1.0, 1.0, 1.0, 1.0], 0.05)
+verifyMean(e["Solver"]["Sample Database"], [0.0, 0.0, 0.0, 0.0, 0.0], 0.05)
+verifyStd(e["Solver"]["Sample Database"], [1.0, 1.0, 1.0, 1.0, 1.0], 0.05)

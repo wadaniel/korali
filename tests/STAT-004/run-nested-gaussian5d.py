@@ -19,24 +19,28 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Bayesian/Custom"
 e["Problem"]["Likelihood Model"] = lg5
 
-# Configuring TMCMC parameters
-e["Solver"]["Type"] = "TMCMC"
-e["Solver"]["Population Size"] = 5000
-
-e["Solver"]["Target Coefficient Of Variation"] = 0.4
+# Configuring Nested Sampling parameters
+e["Solver"]["Type"] = "Nested"
+e["Solver"]["Number Live Points"] = 1500
+e["Solver"]["Batch Size"] = 1
+e["Solver"]["Add Live Points"] = True
+e["Solver"]["Resampling Method"] = "Ellipse"
 
 # Configuring the problem's random distributions
 for i in range(5):
   e["Distributions"][i]["Name"] = "Uniform " + str(i)
   e["Distributions"][i]["Type"] = "Univariate/Uniform"
-  e["Distributions"][i]["Minimum"] = -15.0
-  e["Distributions"][i]["Maximum"] = +15.0
+  e["Distributions"][i]["Minimum"] = -5.0
+  e["Distributions"][i]["Maximum"] = +5.0
 
   # Configuring the problem's variables and their prior distributions
-  e["Variables"][i]["Name"] = "a"
+  e["Variables"][i]["Name"] = "a" + str(i)
   e["Variables"][i]["Prior Distribution"] = "Uniform 0"
 
 e["File Output"]["Frequency"] = 0
+e["Console Output"]["Frequency"] = 100
+e["Solver"]["Termination Criteria"]["Max Generations"] = 50000
+e["Solver"]["Termination Criteria"]["Max Gain Factor"] = 1e-9
 
 e["Random Seed"] = 1337
 

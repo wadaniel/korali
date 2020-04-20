@@ -1,44 +1,46 @@
 #!/usr/bin/env python3
 
-# In this example, we demonstrate how Korali samples the posterior distribution
-# from the gaussian likelihood function with uniform prior.
-
-# Importing the computational model
+# Importing computational model
 import sys
 sys.path.append('./model')
-from model import *
+sys.path.append('./helpers')
 
-# Creating new experiment
+from model import *
+from helpers import *
+
+# Starting Korali's Engine
 import korali
+k = korali.Engine()
 e = korali.Experiment()
 
-# Setting up the reference likelihood for the Bayesian Problem
+# Setting up custom likelihood for the Bayesian Problem
 e["Problem"]["Type"] = "Bayesian/Custom"
-e["Problem"]["Likelihood Model"] = lambda sampleData: customModel(sampleData)
+e["Problem"]["Likelihood Model"] = llaplaceCustom
 
 # Configuring Nested Sampling parameters
 e["Solver"]["Type"] = "Nested"
 e["Solver"]["Number Live Points"] = 1500
 e["Solver"]["Batch Size"] = 1
-e["Solver"]["Covariance Scaling"] = 2.0
 e["Solver"]["Add Live Points"] = True
 e["Solver"]["Resampling Method"] = "Box"
 
 # Configuring the problem's random distributions
 e["Distributions"][0]["Name"] = "Uniform 0"
 e["Distributions"][0]["Type"] = "Univariate/Uniform"
-e["Distributions"][0]["Minimum"] = -5.0
-e["Distributions"][0]["Maximum"] = +5.0
+e["Distributions"][0]["Minimum"] = -20.0
+e["Distributions"][0]["Maximum"] = +20.0
 
 # Configuring the problem's variables and their prior distributions
 e["Variables"][0]["Name"] = "a"
 e["Variables"][0]["Prior Distribution"] = "Uniform 0"
 
 e["File Output"]["Frequency"] = 0
-e["Console Output"]["Frequency"] = 10
-e["Solver"]["Termination Criteria"]["Max Generations"] = 5000
-e["Solver"]["Termination Criteria"]["Max Gain Factor"] = 1e-9
+e["Console Output"]["Frequency"] = 5000
 
-# Starting Korali's Engine and running experiment
-k = korali.Engine()
+
+# Running Korali
+e["Random Seed"] = 1337
 k.run(e)
+
+verifyMean(e["Results"]["Posterior Samples"], [4.0], 0.05)
+verifyStd(e["Results"]["Posterior Samples"], [math.sqrt(2)], 0.05)

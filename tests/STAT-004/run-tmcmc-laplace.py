@@ -13,8 +13,6 @@ import korali
 k = korali.Engine()
 e = korali.Experiment()
 
-e["File Output"]["Path"] = "_result_run-tmcmc"
-
 # Setting up custom likelihood for the Bayesian Problem
 e["Problem"]["Type"] = "Bayesian/Custom"
 e["Problem"]["Likelihood Model"] = llaplaceCustom
@@ -26,25 +24,18 @@ e["Solver"]["Population Size"] = 5000
 # Configuring the problem's random distributions
 e["Distributions"][0]["Name"] = "Uniform 0"
 e["Distributions"][0]["Type"] = "Univariate/Uniform"
-e["Distributions"][0]["Minimum"] = -10.0
-e["Distributions"][0]["Maximum"] = +10.0
-
-e["Distributions"][1]["Name"] = "Uniform 1"
-e["Distributions"][1]["Type"] = "Univariate/Uniform"
-e["Distributions"][1]["Minimum"] = -10.0
-e["Distributions"][1]["Maximum"] = +10.0
+e["Distributions"][0]["Minimum"] = -20.0
+e["Distributions"][0]["Maximum"] = +20.0
 
 # Configuring the problem's variables and their prior distributions
 e["Variables"][0]["Name"] = "a"
 e["Variables"][0]["Prior Distribution"] = "Uniform 0"
 
-e["Variables"][1]["Name"] = "b"
-e["Variables"][1]["Prior Distribution"] = "Uniform 1"
+e["File Output"]["Frequency"] = 0
 
 # Running Korali
 e["Random Seed"] = 1337
 k.run(e)
 
-#verifyMean(e, 4.0)
-#verifyStd(e, 1.0)
-
+verifyMean(e["Solver"]["Sample Database"], [4.0], 0.05)
+verifyStd(e["Solver"]["Sample Database"], [1.0], 0.05)

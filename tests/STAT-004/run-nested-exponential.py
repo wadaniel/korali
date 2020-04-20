@@ -18,7 +18,7 @@ e["Problem"]["Likelihood Model"] = lexponentialCustom
 
 # Configuring Nested Sampling parameters
 e["Solver"]["Type"] = "Nested"
-e["Solver"]["Number Live Points"] = 1000
+e["Solver"]["Number Live Points"] = 1500
 e["Solver"]["Batch Size"] = 1
 e["Solver"]["Add Live Points"] = True
 e["Solver"]["Resampling Method"] = "Box"
@@ -34,8 +34,8 @@ e["Variables"][0]["Name"] = "a"
 e["Variables"][0]["Prior Distribution"] = "Uniform 0"
 
 e["File Output"]["Frequency"] = 0
-e["Console Output"]["Frequency"] = 100
-e["Solver"]["Termination Criteria"]["Max Generations"] = 10000
+e["Console Output"]["Frequency"] = 1000
+e["Solver"]["Termination Criteria"]["Max Generations"] = 20000
 e["Solver"]["Termination Criteria"]["Max Gain Factor"] = 1e-9
 e["Random Seed"] = 1227
 

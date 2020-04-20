@@ -37,6 +37,10 @@ e["Variables"][0]["Prior Distribution"] = "Uniform 0"
 e["File Output"]["Frequency"] = 0
 e["Console Output"]["Frequency"] = 5000
 
+e["Solver"]["Termination Criteria"]["Max Generations"] = 50000
+e["Solver"]["Termination Criteria"]["Max Gain Factor"] = 1e-9
+e["Solver"]["Termination Criteria"]["Max Effective Sample Size"] = 50000
+
 
 # Running Korali
 e["Random Seed"] = 1337

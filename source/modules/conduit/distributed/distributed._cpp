@@ -281,7 +281,9 @@ void korali::conduit::Distributed::popEngine()
 
 size_t korali::conduit::Distributed::maxConcurrency()
 {
+#ifdef _KORALI_USE_MPI
  return _teamCount;
+#endif
 }
 
 int korali::conduit::Distributed::getRootRank()

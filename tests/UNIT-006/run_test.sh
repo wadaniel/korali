@@ -55,7 +55,7 @@ nested_criteria=(
 
 nested_values=(
 10    # Max Generations
-500   # Max Effective Sample Size
+100   # Max Effective Sample Size
 )
 
 
@@ -136,7 +136,7 @@ done
 
 logEcho "[Korali] Beginning Nested termination criterion tests"
 
-for ((i=0;i<${#tmcmc_criteria[@]};++i)); do
+for ((i=0;i<${#nested_criteria[@]};++i)); do
 
   logEcho "-------------------------------------"
   logEcho "Testing Termination Criterion: ${nested_criteria[$i]}"

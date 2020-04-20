@@ -47,8 +47,8 @@ void korali::Conduit::initiateSample(knlohmann::json& sampleJs)
 
  if ((*experiment->sampleIdMap[sampleId])["Finished"] == true)
  {
-  delete(experiment->sampleIdMap[sampleId]);
   co_delete(experiment->sampleIdMap[sampleId]->_sampleThread);
+  delete(experiment->sampleIdMap[sampleId]);
   experiment->sampleIdMap.erase(sampleId);
  }
 }

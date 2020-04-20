@@ -21,9 +21,9 @@ e["Problem"]["Likelihood Model"] = lg5
 
 # Configuring TMCMC parameters
 e["Solver"]["Type"] = "TMCMC"
-e["Solver"]["Population Size"] = 20000
+e["Solver"]["Population Size"] = 5000
 
-e["Solver"]["Target Coefficient Of Variation"] = 0.1
+e["Solver"]["Target Coefficient Of Variation"] = 0.2
 
 # Configuring the problem's random distributions
 for i in range(5):
@@ -43,5 +43,5 @@ e["Random Seed"] = 1234
 # Running Korali
 k.run(e)
 
-verifyMean(e["Solver"]["Sample Database"], [0.0, 0.0, 0.0, 0.0, 0.0], 0.05)
-verifyStd(e["Solver"]["Sample Database"], [1.0, 1.0, 1.0, 1.0, 1.0], 0.05)
+verifyMean(e["Solver"]["Sample Database"], [0.0, 0.0, 0.0, 0.0, 0.0], 0.1)
+verifyStd(e["Solver"]["Sample Database"], [1.0, 1.0, 1.0, 1.0, 1.0], 0.1)

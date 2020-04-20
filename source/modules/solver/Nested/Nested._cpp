@@ -153,7 +153,7 @@ void korali::solver::Nested::prepareGeneration()
 {
   
   _maxEvaluation = _liveLogLikelihoods[_liveSamplesRank[_numberLivePoints-1]];
-  _numberEffectiveSamples = calcEffectiveSamples();
+  _effectiveSampleSize = calcEffectiveSamples();
   
   if (_resamplingMethod == "MCMC") 
   { 
@@ -447,7 +447,7 @@ void korali::solver::Nested::consumeLiveSamples()
   }
   return;
 
-  _numberEffectiveSamples = calcEffectiveSamples();
+  _effectiveSampleSize = calcEffectiveSamples();
 
 }
 
@@ -510,12 +510,12 @@ void korali::solver::Nested::printGenerationAfter()
 { 
   _k->_logger->logInfo("Minimal", "Log Evidence: %.4f (+- %.4f)\n", _logEvidence, sqrt(_logEvidenceVar));
   _k->_logger->logInfo("Minimal", "Accepted Samples: %zu (+%zu) \n", _acceptedSamples, _numberLivePoints);
-  _k->_logger->logInfo("Minimal", "Effective Samples: %.2f\n", _numberEffectiveSamples);
+  _k->_logger->logInfo("Minimal", "Effective Sample Size: %.2f\n", _effectiveSampleSize);
   _k->_logger->logInfo("Minimal", "Sampling Efficiency: %.2f%%\n", 100.0*(_acceptedSamples+_numberLivePoints)/((double)_generatedSamples));
-  _k->_logger->logInfo("Minimal", "lStar: %.2f\n", _lStar);
-  _k->_logger->logInfo("Minimal", "Last Accepted: %zu\n", _lastAccepted);
-  _k->_logger->logInfo("Minimal", "Information: %.4f\n", _information);
   _k->_logger->logInfo("Minimal", "Log Volume (shrinkage): %.4f (%.2f%%)\n", _logVolume, 100.*(1.-exp(_logVolume)));
+  _k->_logger->logInfo("Detailed", "lStar: %.2f\n", _lStar);
+  _k->_logger->logInfo("Detailed", "Last Accepted: %zu\n", _lastAccepted);
+  _k->_logger->logInfo("Detailed", "Information: %.4f\n", _information);
   return; 
 }
 

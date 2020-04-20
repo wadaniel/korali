@@ -23,7 +23,7 @@ e["Problem"]["Likelihood Model"] = lg5
 e["Solver"]["Type"] = "TMCMC"
 e["Solver"]["Population Size"] = 20000
 
-e["Solver"]["Target Coefficient Of Variation"] = 0.08
+e["Solver"]["Target Coefficient Of Variation"] = 0.1
 
 # Configuring the problem's random distributions
 for i in range(5):
@@ -38,7 +38,7 @@ for i in range(5):
 
 e["File Output"]["Frequency"] = 0
 
-e["Random Seed"] = 1227
+e["Random Seed"] = 1234
 
 # Running Korali
 k.run(e)

@@ -18,7 +18,7 @@ e["Problem"]["Likelihood Model"] = lexponentialCustom
 
 # Configuring Nested Sampling parameters
 e["Solver"]["Type"] = "Nested"
-e["Solver"]["Number Live Points"] = 1500
+e["Solver"]["Number Live Points"] = 1000
 e["Solver"]["Batch Size"] = 1
 e["Solver"]["Add Live Points"] = True
 e["Solver"]["Resampling Method"] = "Box"
@@ -35,13 +35,14 @@ e["Variables"][0]["Prior Distribution"] = "Uniform 0"
 
 e["File Output"]["Frequency"] = 0
 e["Console Output"]["Frequency"] = 1000
-e["Solver"]["Termination Criteria"]["Max Generations"] = 20000
+e["Solver"]["Termination Criteria"]["Max Generations"] = 50000
 e["Solver"]["Termination Criteria"]["Max Gain Factor"] = 1e-9
+e["Solver"]["Termination Criteria"]["Max Effective Sample Size"] = 50000
 e["Random Seed"] = 1227
 
 # Starting Korali's Engine and running experiment
 k = korali.Engine()
 k.run(e)
 
-verifyMean(e["Results"]["Posterior Samples"], [4.0], 0.05)
-verifyStd(e["Results"]["Posterior Samples"], [4.0], 0.05)
+verifyMean(e["Results"]["Posterior Samples"], [4.0], 0.1)
+verifyStd(e["Results"]["Posterior Samples"], [4.0], 0.1)

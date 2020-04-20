@@ -2,6 +2,9 @@
 
 # This is a linear regression model with two params (slope and intercept)
 
+import numpy as np
+
+
 def model( s, x ): 
   v1 = s["Parameters"][0]
   v2 = s["Parameters"][1]

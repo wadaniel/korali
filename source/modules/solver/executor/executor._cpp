@@ -10,11 +10,9 @@ void korali::solver::Executor::runGeneration()
   
   std::vector<double> sampleData(_k->_variables.size());
   std::vector<korali::Sample> samples(_executionsPerGeneration);
-  for (size_t j = 0; j < _k->_variables.size(); j++) sampleData[j] = _k->_variables[j]->_precomputedValues[_modelEvaluationCount];
 
   for (size_t i = 0; i < _executionsPerGeneration; i++)
   {
-    std::vector<double> sampleData(_k->_variables.size());
     for (size_t j = 0; j < _k->_variables.size(); j++) sampleData[j] = _k->_variables[j]->_precomputedValues[_modelEvaluationCount];
 
     _k->_logger->logInfo("Detailed", "Running sample %zu with values:\n         ", _modelEvaluationCount);

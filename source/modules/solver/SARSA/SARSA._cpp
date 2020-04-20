@@ -1,12 +1,12 @@
-#include "modules/solver/VRACER/VRACER.hpp"
+#include "modules/solver/SARSA/SARSA.hpp"
 #include "modules/conduit/conduit.hpp"
 
-void korali::solver::VRACER::setInitialConfiguration()
+void korali::solver::SARSA::setInitialConfiguration()
 {
  // Initialize solver's configuration here
 }
 
-void korali::solver::VRACER::runGeneration()
+void korali::solver::SARSA::runGeneration()
 {
  if (_k->_currentGeneration == 1) setInitialConfiguration();
 
@@ -88,12 +88,12 @@ void korali::solver::VRACER::runGeneration()
 // }
 }
 
-void korali::solver::VRACER::printGenerationBefore()
+void korali::solver::SARSA::printGenerationBefore()
 {
  _k->_logger->logInfo("Normal", "Preparing to start generation...\n");
 }
 
-void korali::solver::VRACER::printGenerationAfter()
+void korali::solver::SARSA::printGenerationAfter()
 {
  _k->_logger->logInfo("Normal", "Finished to generation %lu...\n", _k->_currentGeneration);
 }

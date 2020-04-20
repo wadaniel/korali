@@ -1,11 +1,11 @@
-#ifndef _KORALI_SOLVER_VRACER_HPP_
-#define _KORALI_SOLVER_VRACER_HPP_
+#ifndef _KORALI_SOLVER_SARSA_HPP_
+#define _KORALI_SOLVER_SARSA_HPP_
 
 #include "modules/solver/solver.hpp"
 
 namespace korali { namespace solver {
 
-class VRACER : public korali::Solver
+class SARSA : public korali::Solver
 {
  public:
 
@@ -19,4 +19,4 @@ class VRACER : public korali::Solver
 } } // namespace korali::solver
 
 
-#endif // _KORALI_SOLVER_VRACER_HPP_
+#endif // _KORALI_SOLVER_SARSA_HPP_

@@ -34,7 +34,7 @@ e["Variables"][0]["Lower Bound"] = -1.0
 e["Variables"][0]["Upper Bound"] = +1.0
 
 # Configuring CMA-ES parameters
-e["Solver"]["Type"] = "VRACER"
+e["Solver"]["Type"] = "SARSA"
 e["Solver"]["Environment Count"] = 10
 e["Solver"]["Termination Criteria"]["Max Generations"] = 1
 

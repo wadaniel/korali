@@ -1,8 +1,8 @@
 **************************
-reinforcementLearning
+Reinforcement Learning
 **************************
 
-Here goes the description of the new problem type: reinforcementLearning
+Here goes the description of the new problem type: Reinforcement Learning
 
 You can add code:
 

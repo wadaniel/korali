@@ -17,9 +17,12 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Bayesian/Custom"
 e["Problem"]["Likelihood Model"] = llaplaceCustom
 
-# Configuring TMCMC parameters
-e["Solver"]["Type"] = "TMCMC"
-e["Solver"]["Population Size"] = 50000
+# Configuring Nested Sampling parameters
+e["Solver"]["Type"] = "Nested"
+e["Solver"]["Number Live Points"] = 1500
+e["Solver"]["Batch Size"] = 1
+e["Solver"]["Add Live Points"] = True
+e["Solver"]["Resampling Method"] = "Box"
 
 # Configuring the problem's random distributions
 e["Distributions"][0]["Name"] = "Uniform 0"
@@ -32,10 +35,16 @@ e["Variables"][0]["Name"] = "a"
 e["Variables"][0]["Prior Distribution"] = "Uniform 0"
 
 e["File Output"]["Frequency"] = 0
+e["Console Output"]["Frequency"] = 5000
+
+e["Solver"]["Termination Criteria"]["Max Generations"] = 50000
+e["Solver"]["Termination Criteria"]["Max Gain Factor"] = 1e-9
+e["Solver"]["Termination Criteria"]["Max Effective Sample Size"] = 50000
+
 
 # Running Korali
 e["Random Seed"] = 1337
 k.run(e)
 
-verifyMean(e["Solver"]["Sample Database"], [4.0], 0.05)
-verifyStd(e["Solver"]["Sample Database"], [math.sqrt(2)], 0.05)
+verifyMean(e["Results"]["Posterior Samples"], [4.0], 0.05)
+verifyStd(e["Results"]["Posterior Samples"], [math.sqrt(2)], 0.05)

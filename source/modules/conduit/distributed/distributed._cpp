@@ -76,11 +76,14 @@ void korali::conduit::Distributed::initialize()
 
 void korali::conduit::Distributed::initServer()
 {
+#ifdef _KORALI_USE_MPI
  if (!isRoot()) workerThread();
+#endif
 }
 
 void korali::conduit::Distributed::update(korali::Sample& sample)
 {
+#ifdef _KORALI_USE_MPI
  if (_localRankId == 0)
  {
    std::string resultJsonString = sample._js.getJson().dump();
@@ -88,6 +91,7 @@ void korali::conduit::Distributed::update(korali::Sample& sample)
    MPI_Send(&resultJsonSize, 1, MPI_UNSIGNED_LONG, getRootRank(), MPI_TAG_ACTION_JSON_SIZE, _communicator);
    MPI_Send(resultJsonString.c_str(), resultJsonSize, MPI_CHAR, getRootRank(), MPI_TAG_ACTION_JSON_CONTENT, _communicator);
  }
+#endif
 }
 
 void korali::conduit::Distributed::finalize()

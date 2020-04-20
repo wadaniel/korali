@@ -44,6 +44,21 @@ class TMCMC : public korali::Solver
   * @brief Collects results after sampleevaluation.
   */
  void processEvaluation(const size_t sampleId);
+ 
+ /* 
+  * @brief Calculate sample wise proposal distributions (only relevant for mTMCMC).
+  */
+ void updateProposalDistributions();
+ 
+ /* 
+  * @brief Proposal distribution for sample.
+  */
+ void proposeSample(const size_t sampleId);
+
+ /* 
+  * @brief Calculate acceptance probability.
+  */
+ double calculateAlpha(const size_t sampleId);
 
  /*
   * @brief Helper function to calculate objective (CVaR) for min search.

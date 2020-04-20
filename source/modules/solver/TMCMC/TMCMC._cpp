@@ -291,7 +291,12 @@ void korali::solver::TMCMC::processGeneration()
 
   _chainCount = leaderId;
 }
+ 
+void korali::solver::TMCMC::updateProposalDistributions() { return; }
+ 
+void korali::solver::TMCMC::proposeSample(const size_t sampleId) { return; }
 
+double korali::solver::TMCMC::calculateAlpha(const size_t sampleId) { return 0.0; }
 
 double korali::solver::TMCMC::tmcmc_objlogp(double x, const double *loglike, size_t Ns, double exponent, double targetCOV )
 {

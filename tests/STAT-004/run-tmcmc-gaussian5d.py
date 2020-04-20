@@ -21,16 +21,16 @@ e["Problem"]["Likelihood Model"] = lg5
 
 # Configuring TMCMC parameters
 e["Solver"]["Type"] = "TMCMC"
-e["Solver"]["Population Size"] = 5000
+e["Solver"]["Population Size"] = 20000
 
-e["Solver"]["Target Coefficient Of Variation"] = 0.4
+e["Solver"]["Target Coefficient Of Variation"] = 0.08
 
 # Configuring the problem's random distributions
 for i in range(5):
   e["Distributions"][i]["Name"] = "Uniform " + str(i)
   e["Distributions"][i]["Type"] = "Univariate/Uniform"
-  e["Distributions"][i]["Minimum"] = -15.0
-  e["Distributions"][i]["Maximum"] = +15.0
+  e["Distributions"][i]["Minimum"] = -5.0
+  e["Distributions"][i]["Maximum"] = +5.0
 
   # Configuring the problem's variables and their prior distributions
   e["Variables"][i]["Name"] = "a"
@@ -38,7 +38,7 @@ for i in range(5):
 
 e["File Output"]["Frequency"] = 0
 
-e["Random Seed"] = 1337
+e["Random Seed"] = 1227
 
 # Running Korali
 k.run(e)

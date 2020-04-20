@@ -19,7 +19,7 @@ e["Problem"]["Likelihood Model"] = llaplaceCustom
 
 # Configuring TMCMC parameters
 e["Solver"]["Type"] = "TMCMC"
-e["Solver"]["Population Size"] = 5000
+e["Solver"]["Population Size"] = 50000
 
 # Configuring the problem's random distributions
 e["Distributions"][0]["Name"] = "Uniform 0"
@@ -38,4 +38,4 @@ e["Random Seed"] = 1337
 k.run(e)
 
 verifyMean(e["Solver"]["Sample Database"], [4.0], 0.05)
-verifyStd(e["Solver"]["Sample Database"], [1.0], 0.05)
+verifyStd(e["Solver"]["Sample Database"], [math.sqrt(2)], 0.05)

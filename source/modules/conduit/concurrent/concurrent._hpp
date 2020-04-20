@@ -25,6 +25,11 @@ class Concurrent : public korali::Conduit {
  std::vector<pid_t> _workerPids;
 
  /**
+   * @brief Worker Id for current workers
+   */
+ int _workerId;
+
+ /**
    * @brief OS Pipe to handle result communication coming from worker processes
    */
  std::vector<std::vector<int>> _resultPipe;
@@ -39,11 +44,7 @@ class Concurrent : public korali::Conduit {
   */
  std::queue<int> _launcherQueue;
 
- /**
-  * @brief Handles the execution thread of individual samples;
-  */
- static void _sampleLauncher();
-
+ void update(korali::Sample& sample) override;
  void initServer() override;
  size_t maxConcurrency() override;
  void processSample(korali::Sample& sample) override;

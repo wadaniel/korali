@@ -64,6 +64,8 @@ def main():
     e["Distributions"][1]["Minimum"] = -5
     e["Distributions"][1]["Maximum"] = 5
 
+    #k["Conduit"]["Type"] = "Concurrent"
+    #k["Conduit"]["Concurrent Jobs"] = 4
     k.run(e)
 
 if __name__ == '__main__':

@@ -80,6 +80,7 @@ void korali::Engine::run()
 
  if (_conduit->isRoot())
  {
+
   // Adding engine to the stack
   _conduit->stackEngine(this);
 
@@ -213,7 +214,8 @@ PYBIND11_MODULE(libkorali, m)
 
  pybind11::class_<korali::Sample>(m, "Sample")
   .def("__getitem__", pybind11::overload_cast<pybind11::object>(&korali::Sample::getItem), pybind11::return_value_policy::reference)
-  .def("__setitem__", pybind11::overload_cast<pybind11::object, pybind11::object>(&korali::Sample::setItem), pybind11::return_value_policy::reference);
+  .def("__setitem__", pybind11::overload_cast<pybind11::object, pybind11::object>(&korali::Sample::setItem), pybind11::return_value_policy::reference)
+  .def("update", &korali::Sample::update);
 
  pybind11::class_<korali::Experiment>(m, "Experiment")
    .def(pybind11::init<>())

@@ -29,11 +29,16 @@ void korali::solver::VRACER::runGeneration()
 
  for (size_t i = 0; i < _environmentCount; i++)
  {
-  printf("Env: %lu, Worker: %lu\n", i, (size_t)envs[i]["Worker"]);
+  envs[i]["Sample Id"] = i;
   envs[i]["Module"] = "Problem";
   envs[i]["Operation"] = "Initialize Environment";
   _conduit->start(envs[i]);
  }
+
+ _conduit->waitAll(envs);
+
+ for (size_t i = 0; i < _environmentCount; i++)
+  _conduit->start(envs[i]);
 
  _conduit->waitAll(envs);
 

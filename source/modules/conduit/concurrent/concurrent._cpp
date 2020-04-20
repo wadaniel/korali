@@ -76,42 +76,18 @@ void korali::conduit::Concurrent::initServer()
  }
 }
 
-std::map<size_t, korali::Sample*> sampleIdMap;
-cothread_t __workerThread;
-korali::Sample* __currentSample;
-korali::conduit::Concurrent* __currentConduit;
-int __currentWorkerId;
-
-void korali::conduit::Concurrent::_sampleLauncher()
+void korali::conduit::Concurrent::update(korali::Sample& sample)
 {
- korali::Sample* sample = __currentSample;
- (*sample)["Finished"] = false;
- korali::Engine* engine = _engineStack.top();
- std::string operation = (*sample)["Operation"];
- size_t experimentId = (*sample)["Experiment Id"];
- size_t sampleId = (*sample)["Sample Id"];
-
- if ((*sample)["Module"] == "Problem")
-  engine->_experimentVector[experimentId]->_problem->runOperation(operation, *sample);
-
- if ((*sample)["Module"] == "Solver")
-  engine->_experimentVector[experimentId]->_solver->runOperation(operation, *sample);
-
- std::string resultString = sample->_js.getJson().dump();
+ std::string resultString = sample._js.getJson().dump();
  size_t resultStringSize = resultString.size();
 
- write(__currentConduit->_resultPipe[__currentWorkerId][1], &resultStringSize, sizeof(size_t));
- write(__currentConduit->_resultPipe[__currentWorkerId][1], resultString.c_str(), resultStringSize * sizeof(char));
-
- (*sample)["Finished"] = true;
- co_switch(__workerThread);
+ write(_resultPipe[_workerId][1], &resultStringSize, sizeof(size_t));
+ write(_resultPipe[_workerId][1], resultString.c_str(), resultStringSize * sizeof(char));
 }
 
 void korali::conduit::Concurrent::worker(int workerId)
 {
- __workerThread = co_active();
- __currentConduit = this;
- __currentWorkerId = workerId;
+ _workerId = workerId;
 
  while(true)
  {
@@ -135,32 +111,7 @@ void korali::conduit::Concurrent::worker(int workerId)
 
   if (actionJs["Conduit Action"] == "Terminate") exit(0);
 
-  if (actionJs["Conduit Action"] == "Process Sample")
-  {
-   size_t experimentId = actionJs["Experiment Id"];
-   size_t sampleId = actionJs["Sample Id"];
-
-   // Finding associated coroutine
-   auto it = sampleIdMap.find(sampleId);
-
-   if(it == sampleIdMap.end())
-   {
-    auto sample = new korali::Sample;
-    sample->_js.getJson() = actionJs;
-    sample->_sampleThread = co_create(10240*sizeof(void*), korali::conduit::Concurrent::_sampleLauncher);
-    sampleIdMap[sampleId] = sample;
-   }
-
-   __currentSample = sampleIdMap[sampleId];
-   co_switch(__currentSample->_sampleThread);
-
-   if ((*sampleIdMap[sampleId])["Finished"] == true)
-   {
-    delete(sampleIdMap[sampleId]);
-    co_delete(sampleIdMap[sampleId]->_sampleThread);
-    sampleIdMap.erase(sampleId);
-   }
-  }
+  if (actionJs["Conduit Action"] == "Process Sample") initiateSample(actionJs);
 
   if (actionJs["Conduit Action"] == "Stack Engines")
    for (size_t i = 0; i < actionJs["Engines"].size(); i++)
@@ -174,7 +125,7 @@ void korali::conduit::Concurrent::processSample(korali::Sample& sample)
 {
  korali::Engine* engine = _engineStack.top();
 
- int launcherId;
+ int launcherId = -1;
  if (JsonInterface::isDefined(sample._js.getJson(), "['Worker']"))
  {
   launcherId = sample["Worker"];

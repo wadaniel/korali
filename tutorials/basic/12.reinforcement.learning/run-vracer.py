@@ -6,6 +6,7 @@
 
 # Importing computational model
 import sys
+#from mpi4py import MPI
 sys.path.append('./model')
 from model import *
 
@@ -40,5 +41,9 @@ e["Solver"]["Termination Criteria"]["Max Generations"] = 1
 # Running Korali
 k["Conduit"]["Type"] = "Concurrent"
 k["Conduit"]["Concurrent Jobs"] = 3
+
+#k["Conduit"]["Type"] = "Distributed"
+#k["Conduit"]["Workers Per Team"] = 1
+ 
 k.run(e)
 

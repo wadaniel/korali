@@ -93,8 +93,10 @@ class MCMCLatentSampler:
         e["Console Output"]["Frequency"] = 0
         e["Console Output"]["Verbosity"] = "Silent"
 
+        #k["Conduit"]["Type"] = "Concurrent"
+        #k["Conduit"]["Concurrent Jobs"] = 2
         k.run(e)
-
+        
         db = e["Solver"]["Sample Database"]
         samples = db[-numberSamples : ] # take samples from the end
 

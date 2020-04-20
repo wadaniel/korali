@@ -19,7 +19,7 @@ e["Problem"]["Likelihood Model"] = lexponentialCustom
 
 # Configuring TMCMC parameters
 e["Solver"]["Type"] = "TMCMC"
-e["Solver"]["Target Coefficient Of Variation"] = 0.08
+e["Solver"]["Target Coefficient Of Variation"] = 0.1
 e["Solver"]["Population Size"] = 20000
 
 # Configuring the problem's random distributions
@@ -35,7 +35,7 @@ e["Variables"][0]["Prior Distribution"] = "Uniform 0"
 e["File Output"]["Frequency"] = 0
 
 # Running Korali
-e["Random Seed"] = 1337
+e["Random Seed"] = 1227
 k.run(e)
 
 verifyMean(e["Solver"]["Sample Database"], [4.0], 0.05)

@@ -61,6 +61,13 @@ class Reference : public korali::problem::Bayesian
   */
  void loglikelihoodNormalGeneral(korali::Sample& sample);
 
+ /**
+  * @brief A general implementation of the negative Binomial. 
+  * @param sample A Korali Sample
+  */
+ void loglikelihoodNegativeBinomialGeneral(korali::Sample& sample);
+
+
  public:
 
  void evaluateLogLikelihood(korali::Sample& sample) override;

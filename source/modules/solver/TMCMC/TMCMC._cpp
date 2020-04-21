@@ -48,6 +48,15 @@ void korali::solver::TMCMC::setInitialConfiguration()
  _currentChainStep.resize(_populationSize);
  _chainLengths.resize(_populationSize);
 
+
+ if (_version == "mTMCMC")
+ {
+    _chainCandidatesGradients.resize(_populationSize);
+    for(size_t i = 0; i < _populationSize; i++) _chainCandidatesGradients.resize(_k->_variables.size());
+    _chainLeadersGradients.resize(_populationSize);
+    for(size_t i = 0; i < _populationSize; i++) _chainLeadersGradients.resize(_k->_variables.size());
+ }
+
  // Init Generation
  _annealingExponent       = 0.0;
  _logEvidence             = 0.0;
@@ -89,6 +98,12 @@ void korali::solver::TMCMC::runGeneration()
 
     _chainCandidatesLogLikelihoods[finishedId] = samples[finishedId]["logLikelihood"];
     _chainCandidatesLogPriors[finishedId]      = samples[finishedId]["logPrior"];
+ 
+    if(_version == "mTMCMC")
+    for( size_t i=0; i<_k->_variables.size(); i++)
+    {
+      _chainCandidatesGradients[finishedId][i] = samples[finishedId]["Gradient"][i];
+    }
 
     processEvaluation(finishedId);
   }
@@ -164,6 +179,12 @@ void korali::solver::TMCMC::processEvaluation(const size_t sampleId)
     _chainLeaders[sampleId]               = _chainCandidates[sampleId][_currentChainStep[sampleId]-1];
     _chainLeadersLogPriors[sampleId]      = _chainCandidatesLogPriors[sampleId];
     _chainLeadersLogLikelihoods[sampleId] = _chainCandidatesLogLikelihoods[sampleId];
+ 
+    if(_version == "mTMCMC")
+    for( size_t i=0; i<_k->_variables.size(); i++)
+    {
+      _chainLeadersGradients[sampleId] = _chainCandidatesGradients[i];
+    }
   }
 
   if( _currentChainStep[sampleId] > _currentBurnIn ){

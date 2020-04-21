@@ -7,6 +7,7 @@
 #include <gsl/gsl_linalg.h>
 
 #include <algorithm> //sort
+#include <math.h> //isfinite
 #include <numeric>
 #include <limits>
 #include <chrono>
@@ -77,8 +78,6 @@ void korali::solver::Nested::runGeneration()
   };
 
   // Generation > 1
-  prepareGeneration();
-
   std::vector<korali::Sample> samples(_batchSize);
 
   for (size_t c = 0; c < _batchSize; c++)
@@ -91,7 +90,6 @@ void korali::solver::Nested::runGeneration()
    _modelEvaluationCount++;
    _generatedSamples++;
   }
-
 
   size_t finishedCandidatesCount = 0;
   while (finishedCandidatesCount < _batchSize)
@@ -106,7 +104,6 @@ void korali::solver::Nested::runGeneration()
 
   processGeneration();
   
-
   return;
 }
 
@@ -143,17 +140,16 @@ void korali::solver::Nested::runFirstGeneration()
 
   sortLiveSamplesAscending();
  
-  _lStar = _liveLogLikelihoods[_liveSamplesRank[0]];
-
+  if(isfinite(_liveLogLikelihoods[0])) _lStar = _liveLogLikelihoods[0];
+  _maxEvaluation = _liveLogLikelihoods[_liveSamplesRank[_numberLivePoints-1]];
+  
   return;
 }
 
 
 void korali::solver::Nested::prepareGeneration()
 {
-  
-  _maxEvaluation = _liveLogLikelihoods[_liveSamplesRank[_numberLivePoints-1]];
-  _effectiveSampleSize = calcEffectiveSamples();
+  if (_k->_currentGeneration > 2 && _k->_currentGeneration%_proposalUpdateFrequency==0) return;
   
   if (_resamplingMethod == "MCMC") 
   { 
@@ -170,14 +166,14 @@ void korali::solver::Nested::prepareGeneration()
     updateEllipse();   
     generateCandidatesFromEllipse();
   }
-  
+
   return;
 }
 
 
 void korali::solver::Nested::processGeneration()
 {
-  size_t sampleIdx = _liveSamplesRank[0];
+  size_t sampleIdx      = _liveSamplesRank[0];
   size_t acceptedBefore = _acceptedSamples;
   for (size_t c = 0; c < _batchSize ; ++c)
   {
@@ -219,12 +215,15 @@ void korali::solver::Nested::processGeneration()
     sampleIdx = _liveSamplesRank[0];
 
     _lStarOld = _lStar;
-    _lStar    = _liveLogLikelihoods[sampleIdx];
+    if(isfinite(_liveLogLikelihoods[sampleIdx])) _lStar = _liveLogLikelihoods[sampleIdx];
 
   }
   
+  _maxEvaluation = _liveLogLikelihoods[_liveSamplesRank[_numberLivePoints-1]];
+  calcEffectiveSamples();
+
   if (acceptedBefore == _acceptedSamples) _lastAccepted++;
-  else                                    _lastAccepted = 0;
+  else                                    _lastAccepted = 1;
   
   return;
 }
@@ -423,8 +422,7 @@ void korali::solver::Nested::consumeLiveSamples()
     informationOld = _information;
     
     _lStarOld = _lStar;
-    _lStar    = _liveLogLikelihoods[sampleIdx];
-
+    if(isfinite(_liveLogLikelihoods[sampleIdx])) _lStar = _liveLogLikelihoods[sampleIdx];
     dLogVol = logdvols[i];
 
     _logVolume   = safeLogMinus(_logVolume, dLogVol);
@@ -439,8 +437,6 @@ void korali::solver::Nested::consumeLiveSamples()
        - _logEvidence;
     
     _logEvidenceVar += 2.* (_information - informationOld) * dlvs[i];
-    //printf("%f | %f | %f | %f\n", _lStar, dLogVol, _logVolume, _logWeight);
-    //printf("%f | %f | %f | %f\n", _logEvidence, evidenceTerm, _information, _logEvidenceVar);
  
     updateSampleDatabase(sampleIdx);
  
@@ -495,8 +491,8 @@ double korali::solver::Nested::calcEffectiveSamples() const
 
 double korali::solver::Nested::safeLogPlus(double logx, double logy) const
 {
-    if(logx>logy) return logx+log(1.0+exp(logy-logx));
-    else          return logy+log(1.0+exp(logx-logy));
+    if(logx>logy) return logx+log1p(exp(logy-logx));
+    else          return logy+log1p(exp(logx-logy));
 }
 
 double korali::solver::Nested::safeLogMinus(double logx, double logy) const
@@ -512,8 +508,9 @@ void korali::solver::Nested::printGenerationAfter()
   _k->_logger->logInfo("Minimal", "Accepted Samples: %zu (+%zu) \n", _acceptedSamples, _numberLivePoints);
   _k->_logger->logInfo("Minimal", "Effective Sample Size: %.2f\n", _effectiveSampleSize);
   _k->_logger->logInfo("Minimal", "Sampling Efficiency: %.2f%%\n", 100.0*(_acceptedSamples+_numberLivePoints)/((double)_generatedSamples));
-  _k->_logger->logInfo("Minimal", "Log Volume (shrinkage): %.4f (%.2f%%)\n", _logVolume, 100.*(1.-exp(_logVolume)));
+  _k->_logger->logInfo("Detailed", "Log Volume (shrinkage): %.4f (%.2f%%)\n", _logVolume, 100.*(1.-exp(_logVolume)));
   _k->_logger->logInfo("Detailed", "lStar: %.2f\n", _lStar);
+  _k->_logger->logInfo("Detailed", "Estimated maximal remaining log evidence: %.2f (max evaluation: %.2f)\n", _maxEvaluation + _logVolume, _maxEvaluation);
   _k->_logger->logInfo("Detailed", "Last Accepted: %zu\n", _lastAccepted);
   _k->_logger->logInfo("Detailed", "Information: %.4f\n", _information);
   return; 
@@ -521,8 +518,9 @@ void korali::solver::Nested::printGenerationAfter()
 
 void korali::solver::Nested::finalize()
 {
-  if (_k->_currentGeneration <= 1 || (_addLivePoints == false) ) return;
-  consumeLiveSamples();
+  if (_k->_currentGeneration <= 1) return;
+  if (_addLivePoints == true) consumeLiveSamples();
+  
   generatePosterior();
   (*_k)["Results"]["Posterior Samples"] = _posteriorSamples;
 

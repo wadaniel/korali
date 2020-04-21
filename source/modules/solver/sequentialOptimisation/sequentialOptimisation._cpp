@@ -16,7 +16,12 @@ void korali::solver::SequentialOptimisation::setInitialConfiguration()
   for( size_t i = 0; i<_numberOfSensors; i++ ){
   	_optimalSensorLocations.resize(_locationsPerVariable.size());
   }
-  _optimaOfUtility.resize(_numberOfSensors);
+
+  _utility.resize(_numberOfSensors);
+  for( size_t i = 0; i<_numberOfSensors; i++ ){
+    _utility.resize(_numberOfLocations);
+  }
+  _maximumUtility.resize(_numberOfSensors);
 
   if( _locationsPerVariable.size() > 0 ){
     _indicesHelper.resize(_locationsPerVariable.size());
@@ -65,16 +70,17 @@ void korali::solver::SequentialOptimisation::runGeneration()
     _modelEvaluationCount++;
   }
   _conduit->waitAll(samples);
-  std::vector<double> utility( _numberOfLocations );
   for( size_t i = 0; i<_numberOfLocations; i++){
-    utility[i] = samples[i]["F(x)"];
+    _utility[_k->_currentGeneration-1][i] = samples[i]["F(x)"];
   }
-  std::vector<double>::iterator maximum = std::max_element(utility.begin(), utility.end());
-  size_t maxIndex = std::distance( utility.begin(), maximum );
-  _k->_logger->logInfo("Normal", "Found maximum at %lu \n", maxIndex);
+
+  std::vector<double>::iterator maximum = std::max_element(_utility[_k->_currentGeneration-1].begin(), _utility[_k->_currentGeneration-1].end());
+  size_t maxIndex = std::distance( _utility[_k->_currentGeneration-1].begin(), maximum );
+
   std::vector<size_t> bestLocation = samples[maxIndex]["Parameters"];
   _optimalSensorLocations[_k->_currentGeneration-1] = bestLocation;
-  _optimaOfUtility[_k->_currentGeneration-1] = samples[maxIndex]["F(x)"];
+
+  _maximumUtility[_k->_currentGeneration-1] = samples[maxIndex]["F(x)"];
 }
 
 void korali::solver::SequentialOptimisation::printGenerationBefore()
@@ -83,7 +89,7 @@ void korali::solver::SequentialOptimisation::printGenerationBefore()
 
 void korali::solver::SequentialOptimisation::printGenerationAfter()
 {
- _k->_logger->logInfo("Normal", "Placed sensor %lu with utility %+6.3e at location:\n", _k->_currentGeneration, _optimaOfUtility[_k->_currentGeneration-1]);
+ _k->_logger->logInfo("Normal", "Placed sensor %lu with utility %+6.3e at location:\n", _k->_currentGeneration, _maximumUtility[_k->_currentGeneration-1]);
  for( size_t i = 0; i<_locationsPerVariable.size(); i++ )
    _k->_logger->logData("Normal", " %lu", _optimalSensorLocations[_k->_currentGeneration-1][i]);
   _k->_logger->logData("Normal", "\n");

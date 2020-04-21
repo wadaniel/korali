@@ -5,7 +5,6 @@ void korali::solver::SequentialOptimisation::setInitialConfiguration()
 {
   if( _numberOfSensors < 1 ) _k->_logger->logError("Number of Sensors %lu must be larger then 0.", _numberOfSensors);
   _numberOfLocations = 1;
-  _k->_logger->logInfo("Minimal", "numVariables=%lu\n",_locationsPerVariable.size());
   for( size_t i = 0; i<_locationsPerVariable.size(); i++ )
     _numberOfLocations *= _locationsPerVariable[i];
   if( _numberOfLocations > _maxModelEvaluations )
@@ -92,8 +91,12 @@ void korali::solver::SequentialOptimisation::printGenerationAfter()
 
 void korali::solver::SequentialOptimisation::finalize()
 {
-	_k->_logger->logInfo("Minimal", "Optimal Sequence of Sensor Locations Calculated:\n");
-	for( size_t i = 0; i<_numberOfSensors; i++ ) 
-		_k->_logger->logInfo("Minimal", " %lu", _optimalSensorLocations[i]);
+  _k->_logger->logInfo("Minimal", "Optimal Sequence of Sensor Locations Calculated:\n");
+  for( size_t i = 0; i<_numberOfSensors; i++ ){ 
+    _k->_logger->logData("Normal", "sensor %lu: ",i);  
+    for( size_t j = 0; j<_locationsPerVariable.size(); j++ )
+      _k->_logger->logData("Minimal", " %lu", _optimalSensorLocations[i][j]);
+    _k->_logger->logData("Normal", "\n");  
+  }
 }
 

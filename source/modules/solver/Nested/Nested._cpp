@@ -383,8 +383,8 @@ void korali::solver::Nested::updateEllipse()
 void korali::solver::Nested::sortLiveSamplesAscending() 
 {
   //TODO: speed up
-  std::iota (std::begin(_liveSamplesRank), std::end(_liveSamplesRank), 0);
-  sort(_liveSamplesRank.begin(), _liveSamplesRank.end(), [this](const size_t & idx1, const size_t & idx2) -> bool { return this->_liveLogLikelihoods[idx1] < this->_liveLogLikelihoods[idx2]; });
+  std::iota (_liveSamplesRank.begin(), _liveSamplesRank.end(), 0);
+  stable_sort(_liveSamplesRank.begin(), _liveSamplesRank.end(), [this](const size_t & idx1, const size_t & idx2) -> bool { return this->_liveLogLikelihoods[idx1] < this->_liveLogLikelihoods[idx2]; });
 
 }
 

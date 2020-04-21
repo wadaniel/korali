@@ -1,6 +1,25 @@
 Mark Martori Lopez
 
 
+Tuesday 21 April 2020
+
+Tasks:
+
+1- [Solved] Allow the user to copy the variable Frame into a new Variable.
+
+2- [Solved] Update the dictionary 'results' every time you add a new variable.
+
+3- [Solved] Delete the variable from the dictionary 'results' if the user decides to delete the variable Frame.
+
+4- [Solved] Dump the values written by the user into the .config file.
+
+5- [Solved] Collect the values from different Variables Frames in different dictionaries inside the list 'Variables' of the .config.
+
+6- [Solved] Clean some 'global' variables to make the app more coherent.
+
+7- [Not-Solved] NEXT GOAL : Add the option to import a file, read it and write its content on the screen.
+
+---------------------------------------------------
 Wednesday 15 April 2020
 
 Tasks:

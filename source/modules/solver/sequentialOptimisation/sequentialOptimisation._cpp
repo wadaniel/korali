@@ -14,12 +14,12 @@ void korali::solver::SequentialOptimisation::setInitialConfiguration()
 
   _optimalSensorLocations.resize(_numberOfSensors);
   for( size_t i = 0; i<_numberOfSensors; i++ ){
-  	_optimalSensorLocations.resize(_locationsPerVariable.size());
+  	_optimalSensorLocations[i].resize(_locationsPerVariable.size());
   }
 
   _utility.resize(_numberOfSensors);
   for( size_t i = 0; i<_numberOfSensors; i++ ){
-    _utility.resize(_numberOfLocations);
+    _utility[i].resize(_numberOfLocations);
   }
   _maximumUtility.resize(_numberOfSensors);
 

@@ -10,9 +10,7 @@ class ReinforcementLearning : public korali::Problem
  public:
 
  void initialize() override;
- void initializeEnvironment(korali::Sample& sample);
- void performAction(korali::Sample& sample);
-
+ void runEnvironment(korali::Sample& sample);
 };
 
 } } // namespace korali::problem

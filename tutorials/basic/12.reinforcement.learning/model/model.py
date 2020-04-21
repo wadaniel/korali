@@ -2,5 +2,8 @@
 
 def runEnvironment(p):
   print('Environment Initialized')
-  p.update()
-  print('Performing Action')
+  
+  for i in range(10):
+   p['State'] = [ 0.0 ]
+   p.update()
+   print('Performing Action: ' + str(i))

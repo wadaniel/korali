@@ -3,7 +3,12 @@
 
 void korali::solver::SARSA::setInitialConfiguration()
 {
- // Initialize solver's configuration here
+ knlohmann::json problemConfig = (*_k)["Problem"];
+
+ size_t actionSize = problemConfig["Action Vector Size"];
+ size_t stateSize = problemConfig["State Vector Size"];
+
+ printf("actionSize: %lu, stateSize: %lu\n", actionSize, stateSize);
 }
 
 void korali::solver::SARSA::runGeneration()
@@ -15,77 +20,60 @@ void korali::solver::SARSA::runGeneration()
  auto maxConcurrency = _conduit->maxConcurrency();
  printf("Max Concurrency: %lu\n", maxConcurrency);
 
- std::vector<korali::Sample> envs(_environmentCount);
+ std::vector<Sample> samples(_environmentCount);
+ std::vector<Environment> envs(_environmentCount);
 
+ // Initializing Environments
  size_t curEnv = 0;
  while (curEnv < _environmentCount)
  {
   for (size_t i = 0; i < maxConcurrency && curEnv < _environmentCount; i++)
   {
-   envs[curEnv]["Worker"] = i;
+   samples[curEnv]["Worker"] = i;
+   samples[curEnv]["Sample Id"] = curEnv;
+   samples[curEnv]["Module"] = "Problem";
+   samples[curEnv]["Operation"] = "Run Environment";
+   _conduit->start(samples[curEnv]);
    curEnv++;
   }
  }
 
- for (size_t i = 0; i < _environmentCount; i++)
+ // Running action-state loop
+ size_t finishedEnvs = 0;
+ while (finishedEnvs < _environmentCount)
  {
-  envs[i]["Sample Id"] = i;
-  envs[i]["Module"] = "Problem";
-  envs[i]["Operation"] = "Initialize Environment";
-  _conduit->start(envs[i]);
+   auto envId = _conduit->waitAny(samples);
+
+   if (samples[envId]["Finished"] == true)
+   {
+    printf("Env Finished: %lu\n", envId);
+    finishedEnvs++;
+   }
+   else
+   {
+    processEpisode(samples[envId], envs[envId]);
+    _conduit->start(samples[envId]);
+   }
  }
 
- _conduit->waitAll(envs);
+}
 
- for (size_t i = 0; i < _environmentCount; i++)
-  _conduit->start(envs[i]);
+void korali::solver::SARSA::processEpisode(korali::Sample& sample, korali::solver::Environment& env)
+{
+ knlohmann::json problemConfig = (*_k)["Problem"];
 
- _conduit->waitAll(envs);
+ size_t actionSize = problemConfig["Action Vector Size"];
+ size_t stateSize = problemConfig["State Vector Size"];
 
- // Running action-state loop
-// size_t startEnvId = 0;
-// while(startEnvId < _environmentCount)
-// {
-//  size_t envRoundCount = maxConcurrency + startEnvId >= _environmentCount ? _environmentCount - startEnvId : maxConcurrency;
-//
-//  std::vector<korali::Sample> environments(envRoundCount);
-//  std::vector<bool> pendingEnv(envRoundCount, false);
-//  //printf("From: %lu To: %lu\n", startEnvId, endEnvId);
-//
-//  // Initializing Environments
-//  for (size_t i = 0; i < envRoundCount; i++)
-//  {
-//   environments[i]["Module"] = "Problem";
-//   environments[i]["Operation"] = "Initialize Environment";
-//   _conduit->start(environments[i]);
-//  }
-//
-//  _conduit->waitAll(environments);
-//
-//  size_t finishedEnvs = 0;
-//  while(finishedEnvs < envRoundCount)
-//  {
-//   finishedEnvs = 0;
-//   for (size_t i = 0; i < envRoundCount; i++)
-//    if (environments[i]["Finished"] == false && pendingEnv[i] == false)
-//    {
-//     environments[i]["Module"] = "Problem";
-//     environments[i]["Operation"] = "Perform Action";
-//     _conduit->start(environments[i]);
-//     pendingEnv[i] = true;
-//    }
-//    else
-//    {
-//     finishedEnvs++;
-//     //printf("Finished Env: %lu - Total: %lu\n", envId, finishedEnvs);
-//    }
-//
-//   size_t curEnvId = _conduit->waitAny(environments);
-//   pendingEnv[curEnvId] = false;
-//  }
-//
-//  startEnvId += envRoundCount;
-// }
+ std::string sampleString = "['State']";
+
+ if ( korali::JsonInterface::isDefined(sample._js.getJson(), sampleString) == false)
+   _k->_logger->logError("The RL problem requires that the environment function returns ['State'] values.\n");
+
+ size_t resultStateVectorSize = sample["State"].size();
+
+ if (resultStateVectorSize != stateSize)
+  _k->_logger->logError("The returned state vector size (%lu) is different from the number of state variables (%lu)\n.", resultStateVectorSize, stateSize);
 }
 
 void korali::solver::SARSA::printGenerationBefore()

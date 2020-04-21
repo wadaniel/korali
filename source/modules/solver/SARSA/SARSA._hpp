@@ -5,10 +5,19 @@
 
 namespace korali { namespace solver {
 
+struct Environment
+{
+ std::vector<std::vector<double>> states;
+ std::vector<std::vector<double>> actions;
+ std::vector<double> rewards;
+ std::vector<double> Qvalues;
+};
+
 class SARSA : public korali::Solver
 {
  public:
 
+ void processEpisode(korali::Sample& sample, korali::solver::Environment& env);
  void setInitialConfiguration() override;
  void runGeneration() override;
  void printGenerationBefore() override;

@@ -28,10 +28,10 @@ e["Variables"][0]["Type"] = "State"
 e["Variables"][0]["Lower Bound"] = -1.0
 e["Variables"][0]["Upper Bound"] = +1.0
 
-e["Variables"][0]["Name"] = "A"
-e["Variables"][0]["Type"] = "Action"
-e["Variables"][0]["Lower Bound"] = -1.0
-e["Variables"][0]["Upper Bound"] = +1.0
+e["Variables"][1]["Name"] = "A"
+e["Variables"][1]["Type"] = "Action"
+e["Variables"][1]["Lower Bound"] = -1.0
+e["Variables"][1]["Upper Bound"] = +1.0
 
 # Configuring CMA-ES parameters
 e["Solver"]["Type"] = "SARSA"

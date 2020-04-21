@@ -1,5 +1,6 @@
 #include "modules/solver/SARSA/SARSA.hpp"
 #include "modules/conduit/conduit.hpp"
+#include "external/smarties/source/Network/Builder.h"
 
 void korali::solver::SARSA::setInitialConfiguration()
 {
@@ -7,6 +8,8 @@ void korali::solver::SARSA::setInitialConfiguration()
 
  size_t actionSize = problemConfig["Action Vector Size"];
  size_t stateSize = problemConfig["State Vector Size"];
+
+ smarties::Builder builder;
 
  printf("actionSize: %lu, stateSize: %lu\n", actionSize, stateSize);
 }

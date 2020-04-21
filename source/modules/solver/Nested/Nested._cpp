@@ -78,6 +78,7 @@ void korali::solver::Nested::runGeneration()
   };
 
   // Generation > 1
+  prepareGeneration();
   std::vector<korali::Sample> samples(_batchSize);
 
   for (size_t c = 0; c < _batchSize; c++)
@@ -140,7 +141,7 @@ void korali::solver::Nested::runFirstGeneration()
 
   sortLiveSamplesAscending();
  
-  if(isfinite(_liveLogLikelihoods[0])) _lStar = _liveLogLikelihoods[0];
+  if(isfinite(_liveLogLikelihoods[_liveSamplesRank[0]])) _lStar = _liveLogLikelihoods[_liveSamplesRank[0]];
   _maxEvaluation = _liveLogLikelihoods[_liveSamplesRank[_numberLivePoints-1]];
   
   return;

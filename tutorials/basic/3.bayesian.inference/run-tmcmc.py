@@ -21,7 +21,6 @@ e["Problem"]["Computational Model"] = lambda sampleData: model(sampleData, getRe
 # Configuring TMCMC parameters
 e["Solver"]["Type"] = "TMCMC"
 e["Solver"]["Population Size"] = 5000
-e["Solver"]["Target Coefficient Of Variation"] = 0.05
 
 # Configuring the problem's random distributions
 e["Distributions"][0]["Name"] = "Uniform 0"

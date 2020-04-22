@@ -120,6 +120,7 @@ void korali::solver::SAEM::sampleLatent()
   sample["Number Of Latent Variables"] = _numberLatent;
   sample["Module"] = "Problem";
   sample["Operation"]    = "Sample Latent Variables";
+
   _conduit->start(sample);
   _conduit->wait(sample);
 

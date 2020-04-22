@@ -83,7 +83,9 @@ class Distributed : public korali::Conduit
  bool _continueEvaluations;
  #endif
 
+ void update(korali::Sample& sample) override;
  void initServer() override;
+ size_t maxConcurrency() override;
  void initialize() override;
  void finalize() override;
 

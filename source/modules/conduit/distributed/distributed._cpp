@@ -23,6 +23,8 @@ void korali::conduit::Distributed::initialize()
  _rankCount = 1;
  _rankId = 0;
 
+ if (_communicator == 0) _communicator = MPI_COMM_WORLD;
+
  MPI_Comm_size(_communicator, &_rankCount);
  MPI_Comm_rank(_communicator, &_rankId);
  #endif
@@ -74,7 +76,22 @@ void korali::conduit::Distributed::initialize()
 
 void korali::conduit::Distributed::initServer()
 {
+#ifdef _KORALI_USE_MPI
  if (!isRoot()) workerThread();
+#endif
+}
+
+void korali::conduit::Distributed::update(korali::Sample& sample)
+{
+#ifdef _KORALI_USE_MPI
+ if (_localRankId == 0)
+ {
+   std::string resultJsonString = sample._js.getJson().dump();
+   size_t resultJsonSize = resultJsonString.size();
+   MPI_Send(&resultJsonSize, 1, MPI_UNSIGNED_LONG, getRootRank(), MPI_TAG_ACTION_JSON_SIZE, _communicator);
+   MPI_Send(resultJsonString.c_str(), resultJsonSize, MPI_CHAR, getRootRank(), MPI_TAG_ACTION_JSON_CONTENT, _communicator);
+ }
+#endif
 }
 
 void korali::conduit::Distributed::finalize()
@@ -121,29 +138,7 @@ void korali::conduit::Distributed::workerThread()
 
   if (actionJs["Conduit Action"] == "Terminate") return;
 
-  if (actionJs["Conduit Action"] == "Process Sample")
-  {
-   korali::Engine* engine = _engineStack.top();
-
-   korali::Sample sample;
-   sample._js.getJson() = actionJs;
-
-   size_t experimentId = sample["Experiment Id"];
-
-   if (sample["Module"] == "Problem")
-    engine->_experimentVector[experimentId]->_problem->runOperation(sample["Operation"], sample);
-
-   if (sample["Module"] == "Solver")
-    engine->_experimentVector[experimentId]->_solver->runOperation(sample["Operation"], sample);
-
-   if (_localRankId == 0)
-   {
-     std::string resultJsonString = sample._js.getJson().dump();
-     size_t resultJsonSize = resultJsonString.size();
-     MPI_Send(&resultJsonSize, 1, MPI_UNSIGNED_LONG, getRootRank(), MPI_TAG_ACTION_JSON_SIZE, _communicator);
-     MPI_Send(resultJsonString.c_str(), resultJsonSize, MPI_CHAR, getRootRank(), MPI_TAG_ACTION_JSON_CONTENT, _communicator);
-   }
-  }
+  if (actionJs["Conduit Action"] == "Process Sample") initiateSample(actionJs);
 
   if (actionJs["Conduit Action"] == "Stack Engines")
    for (size_t i = 0; i < actionJs["Engines"].size(); i++)
@@ -161,13 +156,23 @@ void korali::conduit::Distributed::processSample(korali::Sample& sample)
  korali::Engine* engine = _engineStack.top();
 
  #ifdef _KORALI_USE_MPI
- while (_teamQueue.empty())
+
+ int teamId = -1;
+
+ if (JsonInterface::isDefined(sample._js.getJson(), "['Worker']"))
  {
-  sample._state = SampleState::waiting;
-  co_switch(engine->_currentExperiment->_thread);
+  teamId = sample["Worker"];
+ }
+ else
+ {
+  while (_teamQueue.empty())
+  {
+   sample._state = SampleState::waiting;
+   co_switch(engine->_currentExperiment->_thread);
+  }
+  teamId = _teamQueue.front(); _teamQueue.pop();
  }
 
- int teamId = _teamQueue.front(); _teamQueue.pop();
  auto sampleJs = sample._js.getJson();
  sampleJs["Conduit Action"] = "Process Sample";
 
@@ -274,6 +279,12 @@ void korali::conduit::Distributed::popEngine()
  #endif
 }
 
+size_t korali::conduit::Distributed::maxConcurrency()
+{
+#ifdef _KORALI_USE_MPI
+ return _teamCount;
+#endif
+}
 
 int korali::conduit::Distributed::getRootRank()
 {

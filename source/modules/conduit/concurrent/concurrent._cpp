@@ -76,8 +76,19 @@ void korali::conduit::Concurrent::initServer()
  }
 }
 
+void korali::conduit::Concurrent::update(korali::Sample& sample)
+{
+ std::string resultString = sample._js.getJson().dump();
+ size_t resultStringSize = resultString.size();
+
+ write(_resultPipe[_workerId][1], &resultStringSize, sizeof(size_t));
+ write(_resultPipe[_workerId][1], resultString.c_str(), resultStringSize * sizeof(char));
+}
+
 void korali::conduit::Concurrent::worker(int workerId)
 {
+ _workerId = workerId;
+
  while(true)
  {
   size_t inputStringSize;
@@ -100,28 +111,7 @@ void korali::conduit::Concurrent::worker(int workerId)
 
   if (actionJs["Conduit Action"] == "Terminate") exit(0);
 
-  if (actionJs["Conduit Action"] == "Process Sample")
-  {
-   korali::Sample sample;
-   sample._js.getJson() = actionJs;
-
-   size_t experimentId = sample["Experiment Id"];
-   std::string operation = sample["Operation"];
-
-   korali::Engine* engine = _engineStack.top();
-
-   if (sample["Module"] == "Problem")
-    engine->_experimentVector[experimentId]->_problem->runOperation(operation, sample);
-
-   if (sample["Module"] == "Solver")
-    engine->_experimentVector[experimentId]->_solver->runOperation(operation, sample);
-
-   std::string resultString = sample._js.getJson().dump();
-   size_t resultStringSize = resultString.size();
-
-   write(_resultPipe[workerId][1], &resultStringSize, sizeof(size_t));
-   write(_resultPipe[workerId][1], resultString.c_str(), resultStringSize * sizeof(char));
-  }
+  if (actionJs["Conduit Action"] == "Process Sample") initiateSample(actionJs);
 
   if (actionJs["Conduit Action"] == "Stack Engines")
    for (size_t i = 0; i < actionJs["Engines"].size(); i++)
@@ -135,13 +125,20 @@ void korali::conduit::Concurrent::processSample(korali::Sample& sample)
 {
  korali::Engine* engine = _engineStack.top();
 
- while (_launcherQueue.empty())
+ int launcherId = -1;
+ if (JsonInterface::isDefined(sample._js.getJson(), "['Worker']"))
  {
-  sample._state = SampleState::waiting;
-  co_switch(engine->_currentExperiment->_thread);
+  launcherId = sample["Worker"];
  }
-
- int launcherId = _launcherQueue.front(); _launcherQueue.pop();
+ else
+ {
+  while (_launcherQueue.empty())
+  {
+   sample._state = SampleState::waiting;
+   co_switch(engine->_currentExperiment->_thread);
+  }
+  launcherId = _launcherQueue.front(); _launcherQueue.pop();
+ }
 
  auto js = knlohmann::json();
  js["Start Time"] = std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count() + _cumulativeTime;
@@ -245,4 +242,9 @@ void korali::conduit::Concurrent::popEngine()
    write(_inputsPipe[i][1], &engineStringSize, sizeof(size_t));
    write(_inputsPipe[i][1], engineString.c_str(), engineStringSize * sizeof(char));
   }
+}
+
+size_t korali::conduit::Concurrent::maxConcurrency()
+{
+ return _concurrentJobs;
 }

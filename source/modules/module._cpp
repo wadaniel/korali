@@ -14,6 +14,8 @@ korali::Module* korali::Module::getModule(knlohmann::json& js)
  if (! korali::JsonInterface::isDefined(js, "['Type']")) _k->_logger->logError("No module type provided.\n");
 
  moduleType = js["Type"].get<std::string>();
+ moduleType.erase(remove_if(moduleType.begin(), moduleType.end(), isspace), moduleType.end());
+
  korali::JsonInterface::eraseValue(js, "['Type']");
 
  korali::Module* module = nullptr;

@@ -44,6 +44,7 @@ k["Conduit"]["Concurrent Jobs"] = 3
 
 #k["Conduit"]["Type"] = "Distributed"
 #k["Conduit"]["Workers Per Team"] = 1
- 
+
+exit(0)
 k.run(e)
 

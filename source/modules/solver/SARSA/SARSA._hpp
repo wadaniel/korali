@@ -2,6 +2,7 @@
 #define _KORALI_SOLVER_SARSA_HPP_
 
 #include "modules/solver/solver.hpp"
+#include "external/smarties/source/Network/Builder.h"
 
 namespace korali { namespace solver {
 
@@ -16,6 +17,8 @@ struct Environment
 class SARSA : public korali::Solver
 {
  public:
+
+ smarties::Builder builder;
 
  void processEpisode(korali::Sample& sample, korali::solver::Environment& env);
  void setInitialConfiguration() override;

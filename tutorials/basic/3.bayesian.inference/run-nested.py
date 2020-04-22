@@ -23,7 +23,7 @@ e["Problem"]["Computational Model"] = lambda sampleData: model(sampleData, getRe
 e["Solver"]["Type"] = "Nested"
 e["Solver"]["Number Live Points"] = 1500
 e["Solver"]["Batch Size"] = 1
-e["Solver"]["Resampling Method"] = "Ellipse"
+e["Solver"]["Resampling Method"] = "Box"
 
 
 # Configuring the problem's random distributions
@@ -53,13 +53,12 @@ e["Variables"][2]["Name"] = "[Sigma]"
 e["Variables"][2]["Prior Distribution"] = "Uniform 2"
 
 
-e["File Output"]["Frequency"] = 2500
-e["Console Output"]["Frequency"] = 10
+e["File Output"]["Frequency"] = 5000
+e["Console Output"]["Frequency"] = 500
 e["Console Output"]["Verbosity"] = 'Detailed'
 e["Solver"]["Termination Criteria"]["Max Generations"] = 100000
 e["Solver"]["Termination Criteria"]["Max Effective Sample Size"] = 10000
-e["Solver"]["Termination Criteria"]["Max Log Likelihood"] = 999999
-e["Solver"]["Termination Criteria"]["Max Gain Factor"] = 1e-6
+e["Solver"]["Termination Criteria"]["Max Gain Factor"] = 1e-4
 
 
 # Starting Korali's Engine and running experiment

@@ -26,7 +26,6 @@ void korali::problem::bayesian::Reference::initialize()
   if( _likelihoodModel.find(str) != std::string::npos ){
     _negativeBinomialConstant = 0.;
     for( size_t i=0; i<_referenceData.size(); i++ ){
-      if( _referenceData[i]<0 ) _k->_logger->logError("Reference data must be greater or equal to zero for likelihood model: %s\n",_likelihoodModel.c_str());
       _negativeBinomialConstant -= gsl_sf_lngamma( _referenceData[i]+1. );
     }
   }
@@ -34,7 +33,6 @@ void korali::problem::bayesian::Reference::initialize()
   str = "Positive Normal";
   if( _likelihoodModel.find(str) != std::string::npos ){
     for( size_t i=0; i<_referenceData.size(); i++ ){
-      if( _referenceData[i]<0 ) _k->_logger->logError("Reference data must be greater or equal to zero for likelihood model: %s\n",_likelihoodModel.c_str());
     }
   }
 

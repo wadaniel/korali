@@ -245,7 +245,7 @@ void korali::solver::Nested::generateCandidatesFromMCMC()
    _multivariateGenerator->getRandomVector(&_candidates[i][0], _k->_variables.size());
    
    size_t cpyIdx = (size_t) (_uniformGenerator->getRandomNumber()*_numberLivePoints);
-   for(size_t d = 0; d < _k->_variables.size(); ++d) _candidates[i][d] += _liveSamples[cpyIdx][d];
+   for(size_t d = 0; d < _k->_variables.size(); ++d) _candidates[i][d] = _candidates[i][d]*_priorWidth[d] + _liveSamples[cpyIdx][d];
   }
 }
 
@@ -299,8 +299,8 @@ void korali::solver::Nested::updateMeanAndCovariance()
   for (size_t i = 0; i < _k->_variables.size(); i++){
     for (size_t j = i; j < _k->_variables.size(); ++j){
       double s = 0.;
-      for (size_t k = 0; k < _numberLivePoints; ++k) s += (_liveSamples[k][i] - _domainMean[i])*( _liveSamples[k][j]-_domainMean[j] );
-          _covarianceMatrix[i*_k->_variables.size() + j] = _covarianceMatrix[j*_k->_variables.size() + i] = _covarianceScaling * weight2 * s;
+      for (size_t k = 0; k < _numberLivePoints; ++k) s += ( _liveSamples[k][i] - _domainMean[i])*( _liveSamples[k][j] - _domainMean[j] );
+          _covarianceMatrix[i*_k->_variables.size() + j] = _covarianceMatrix[j*_k->_variables.size() + i] = _covarianceScaling * weight2 * s /(_priorWidth[i]*_priorWidth[j]);
     }
   }
 }

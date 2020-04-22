@@ -535,7 +535,9 @@ void korali::solver::Nested::finalize()
   (*_k)["Results"]["Posterior Samples"] = _posteriorSamples;
 
   _k->_logger->logInfo("Minimal", "Final Log Evidence: %.4f (+- %.4F)\n", _logEvidence, sqrt(_logEvidenceVar));
+  _k->_logger->logInfo("Minimal", "Max evaluation: %.2f\n", _maxEvaluation);
   _k->_logger->logInfo("Minimal", "Information: %.4f\n", _information);
   _k->_logger->logInfo("Minimal", "Posterior Samples: %zu\n", _posteriorSamples.size());
+  _k->_logger->logInfo("Minimal", "Sampling Efficiency: %.2f%%\n", 100.0*(_acceptedSamples+_numberLivePoints)/((double)_generatedSamples));
   return; 
 }

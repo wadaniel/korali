@@ -109,5 +109,7 @@ int main(int argc, char* argv[])
  k["Profiling"]["Frequency"] = 0.5;
 
  k.run(e);
+ 
+ MPI_Finalize();
  return 0;
 }

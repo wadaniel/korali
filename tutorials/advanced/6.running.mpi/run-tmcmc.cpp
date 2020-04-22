@@ -99,5 +99,6 @@ int main(int argc, char* argv[])
  // We run a few generations first
  k.run(e);
 
+ MPI_Finalize();
  return 0;
 }

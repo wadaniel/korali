@@ -225,7 +225,7 @@ void korali::solver::Nested::processGeneration()
   }
   
   _maxEvaluation = _liveLogLikelihoods[_liveSamplesRank[_numberLivePoints-1]];
-  calcEffectiveSamples();
+  _effectiveSampleSize = calcEffectiveSamples();
 
   if (acceptedBefore == _acceptedSamples) _lastAccepted++;
   else                                    _lastAccepted = 1;

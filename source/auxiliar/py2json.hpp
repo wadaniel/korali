@@ -53,7 +53,7 @@ namespace knlohmann
        korali::_functionVector.push_back(x);
     }
 
-    #ifdef _KORALI_USE_MPI
+    #ifdef OMPI_MPI_H
 
     /**
     * @brief Struct containing serializer/deserializer object for MPI Communicator and JSON objects.

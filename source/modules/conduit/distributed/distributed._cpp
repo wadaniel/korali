@@ -23,14 +23,18 @@ void korali::conduit::Distributed::initialize()
  _rankCount = 1;
  _rankId = 0;
 
-// int isInitialized = 0;
-// MPI_Initialized(&isInitialized);
-// if (isInitialized == 0) MPI_Init(NULL, NULL);
+ int isInitialized = 0;
+ MPI_Initialized(&isInitialized);
+ if (isInitialized == 0) _logger->logError("Running an Distributed-based Korali application, but MPI was not properly initialized.\n");
 
  if (_communicator == 0)
   _mpiCommunicator = MPI_COMM_WORLD;
  else
+  #ifdef OMPI_MPI_H
   _mpiCommunicator = *((MPI_Comm*)_communicator);
+  #else
+  _mpiCommunicator = (MPI_Comm)_communicator;
+  #endif
 
  MPI_Comm_size(_mpiCommunicator, &_rankCount);
  MPI_Comm_rank(_mpiCommunicator, &_rankId);

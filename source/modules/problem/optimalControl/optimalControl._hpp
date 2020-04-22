@@ -1,11 +1,11 @@
-#ifndef _KORALI_PROBLEM_DP_HPP_
-#define _KORALI_PROBLEM_DP_HPP_
+#ifndef _KORALI_PROBLEM_OPTIMAL_CONTROL_HPP_
+#define _KORALI_PROBLEM_OPTIMAL_CONTROL_HPP_
 
 #include "modules/problem/problem.hpp"
 
 namespace korali { namespace problem {
 
-class DynamicProgramming : public korali::Problem
+class OptimalControl : public korali::Problem
 {
  public:
 
@@ -22,4 +22,4 @@ class DynamicProgramming : public korali::Problem
 } } // namespace korali::problem
 
 
-#endif // _KORALI_PROBLEM_DP_HPP_
+#endif // _KORALI_PROBLEM_OPTIMAL_CONTROL_HPP_

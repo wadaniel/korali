@@ -1,6 +1,6 @@
-#include "modules/problem/dynamicProgramming/dynamicProgramming.hpp"
+#include "modules/problem/optimalControl/optimalControl.hpp"
 
-void korali::problem::DynamicProgramming::initialize()
+void korali::problem::OptimalControl::initialize()
 {
 //  if (_k->_variables.size() == 0) _k->_logger->logError("Execution problems require at least one variable.\n");
 //
@@ -11,7 +11,7 @@ void korali::problem::DynamicProgramming::initialize()
 //  }
 }
 
-void korali::problem::DynamicProgramming::evaluateCostFunction(korali::Sample& sample)
+void korali::problem::OptimalControl::evaluateCostFunction(korali::Sample& sample)
 {
  sample.run(_costFunction);
 }

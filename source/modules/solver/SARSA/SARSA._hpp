@@ -18,7 +18,8 @@ class SARSA : public korali::Solver
 {
  public:
 
- smarties::Builder builder;
+ smarties::Builder _builder;
+ smarties::Activation* _activation;
 
  void processEpisode(korali::Sample& sample, korali::solver::Environment& env);
  void setInitialConfiguration() override;

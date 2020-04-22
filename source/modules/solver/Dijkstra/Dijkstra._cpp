@@ -1,7 +1,7 @@
-#include "modules/solver/recursiveDiscretizer/recursiveDiscretizer.hpp"
+#include "modules/solver/Dijkstra/Dijkstra.hpp"
 #include "modules/conduit/conduit.hpp"
 
-void korali::solver::RecursiveDiscretizer::setInitialConfiguration()
+void korali::solver::Dijkstra::setInitialConfiguration()
 {
  // Initialize by populating the initial possibility space
  size_t policyDepth = _k->_currentGeneration;
@@ -40,7 +40,7 @@ void korali::solver::RecursiveDiscretizer::setInitialConfiguration()
  _policyEvaluation.push_back(0);
 }
 
-void korali::solver::RecursiveDiscretizer::runGeneration()
+void korali::solver::Dijkstra::runGeneration()
 {
  if (_k->_currentGeneration == 1) setInitialConfiguration();
 
@@ -99,7 +99,7 @@ void korali::solver::RecursiveDiscretizer::runGeneration()
  updateResults();
 }
 
-void korali::solver::RecursiveDiscretizer::updateResults()
+void korali::solver::Dijkstra::updateResults()
 {
  size_t currentDepth = _k->_currentGeneration;
  size_t varCount = _k->_variables.size();
@@ -115,11 +115,11 @@ void korali::solver::RecursiveDiscretizer::updateResults()
  _k->_js["Results"]["Policy Evaluation"] = _policyEvaluation[bestEvalIdx];
 }
 
-void korali::solver::RecursiveDiscretizer::printGenerationBefore()
+void korali::solver::Dijkstra::printGenerationBefore()
 {
 }
 
-void korali::solver::RecursiveDiscretizer::printGenerationAfter()
+void korali::solver::Dijkstra::printGenerationAfter()
 {
  double bestVal = _k->_js["Results"]["Policy Evaluation"];
  _k->_logger->logInfo("Normal", "Minimal Cost Policy:     %s\n", _k->_js["Results"]["Optimal Policy"].dump().c_str());

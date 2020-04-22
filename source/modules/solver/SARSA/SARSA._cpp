@@ -4,11 +4,24 @@
 void korali::solver::SARSA::setInitialConfiguration()
 {
  knlohmann::json problemConfig = (*_k)["Problem"];
-
  size_t actionSize = problemConfig["Action Vector Size"];
  size_t stateSize = problemConfig["State Vector Size"];
 
+ std::vector<size_t> hiddenLayers = { 32, 32 };
+ std::vector<size_t> hiddenLayersShape = { stateSize, hiddenLayers[0], hiddenLayers[1], hiddenLayers[1], actionSize };
+ std::vector<size_t> inputLayerVector = { 1, 0, 0, 0, 0 };
+ std::vector<size_t> outputLayerVector = { 0, 0, 0, 0, 1 };
+
+ _builder.addInput(stateSize);
+ _builder.addLayer(hiddenLayers[0], "Sigm");
+ _builder.addLayer(hiddenLayers[1], "Sigm");
+ _builder.addLayer(actionSize,  "Linear", true);
+
+ _builder.build();
+
  printf("actionSize: %lu, stateSize: %lu\n", actionSize, stateSize);
+
+ _activation = new smarties::Activation(hiddenLayersShape, outputLayerVector, inputLayerVector);
 }
 
 void korali::solver::SARSA::runGeneration()
@@ -78,24 +91,7 @@ void korali::solver::SARSA::processEpisode(korali::Sample& sample, korali::solve
  if (resultStateVectorSize != stateSize)
   _k->_logger->logError("The returned state vector size (%lu) is different from the number of state variables (%lu)\n.", resultStateVectorSize, stateSize);
 
- std::vector<size_t> hiddenLayers = { 32, 32 };
-
- builder.addInput(stateSize);
- builder.addLayer(hiddenLayers[0], "Sigm");
- builder.addLayer(hiddenLayers[1], "Sigm");
- builder.addLayer(actionSize,  "Linear", true);
-
- builder.build();
-
- auto NN = builder.net;
-
- std::vector<size_t> hiddenLayersShape = { stateSize, hiddenLayers[0], hiddenLayers[1], hiddenLayers[1], actionSize };
- std::vector<size_t> inputLayerVector = { 1, 0, 0, 0, 0 };
- std::vector<size_t> outputLayerVector = { 0, 0, 0, 0, 1 };
-
- auto NNState = smarties::Activation(hiddenLayersShape, outputLayerVector, inputLayerVector);
-
- auto action = NN->forward(state, &NNState);
+ auto action = _builder.net->forward(state, _activation);
 
  for (size_t i = 0; i < action.size(); i++)
   printf("Action: %f\n", action[i]);

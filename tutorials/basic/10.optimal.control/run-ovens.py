@@ -51,7 +51,7 @@ import korali
 e = korali.Experiment()
 
 # Configuring Problem
-e["Problem"]["Type"] = "Dynamic Programming"
+e["Problem"]["Type"] = "Optimal Control"
 e["Problem"]["Cost Function"] = costFunction
 
 # Defining the problem's variables to discretize.
@@ -61,7 +61,7 @@ e["Variables"][0]["Upper Bound"] = maxTemp
 e["Variables"][0]["Interval Count"] = intervals
 
 # Configuring the discretizer solver's parameters
-e["Solver"]["Type"] = "RecursiveDiscretizer"
+e["Solver"]["Type"] = "Dijkstra"
 e["Solver"]["Termination Criteria"]["Recursion Depth"] = N
 
 ######## Running Korali and printing results

@@ -1,11 +1,11 @@
-#ifndef _KORALI_SOLVER_RECURSIVE_DISCRETIZER_HPP_
-#define _KORALI_SOLVER_RECURSIVE_DISCRETIZER_HPP_
+#ifndef _KORALI_SOLVER_DIJKSTRA_HPP_
+#define _KORALI_SOLVER_DIJKSTRA_HPP_
 
 #include "modules/solver/solver.hpp"
 
 namespace korali { namespace solver {
 
-class RecursiveDiscretizer : public korali::Solver
+class Dijkstra : public korali::Solver
 {
   private:
 
@@ -21,4 +21,4 @@ class RecursiveDiscretizer : public korali::Solver
 
 } } // namespace korali::solver
 
-#endif // _KORALI_SOLVER_RECURSIVE_DISCRETIZER_HPP_
+#endif // _KORALI_SOLVER_DIJKSTRA_HPP_

@@ -7,6 +7,7 @@
 #include "auxiliar/koraliJson.hpp"
 
 std::vector<std::function<void(korali::Sample&)>*> korali::_functionVector;
+std::stack<korali::Engine*> korali::_engineStack;
 
 korali::Engine::Engine()
 {
@@ -79,7 +80,8 @@ void korali::Engine::run()
 
  if (_conduit->isRoot())
  {
-  // Stacking current Engine
+
+  // Adding engine to the stack
   _conduit->stackEngine(this);
 
   // Setting base time for profiling.
@@ -119,7 +121,7 @@ void korali::Engine::run()
  }
 
  // Finalizing Conduit if last engine in the stack
- if (_conduit->_engineStack.size() == 0)
+ if (_engineStack.size() == 0)
  {
   _conduit->finalize();
   _conduit = NULL;
@@ -212,7 +214,8 @@ PYBIND11_MODULE(libkorali, m)
 
  pybind11::class_<korali::Sample>(m, "Sample")
   .def("__getitem__", pybind11::overload_cast<pybind11::object>(&korali::Sample::getItem), pybind11::return_value_policy::reference)
-  .def("__setitem__", pybind11::overload_cast<pybind11::object, pybind11::object>(&korali::Sample::setItem), pybind11::return_value_policy::reference);
+  .def("__setitem__", pybind11::overload_cast<pybind11::object, pybind11::object>(&korali::Sample::setItem), pybind11::return_value_policy::reference)
+  .def("update", &korali::Sample::update);
 
  pybind11::class_<korali::Experiment>(m, "Experiment")
    .def(pybind11::init<>())

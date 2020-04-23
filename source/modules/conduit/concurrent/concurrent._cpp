@@ -3,9 +3,12 @@
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/problem.hpp"
 #include "modules/solver/solver.hpp"
+#include <sched.h>
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <fcntl.h>
+
+#define BUFFERSIZE 4096
 
 void korali::conduit::Concurrent::initialize()
 {
@@ -73,45 +76,46 @@ void korali::conduit::Concurrent::initServer()
  }
 }
 
+void korali::conduit::Concurrent::update(korali::Sample& sample)
+{
+ std::string resultString = sample._js.getJson().dump();
+ size_t resultStringSize = resultString.size();
+
+ write(_resultPipe[_workerId][1], &resultStringSize, sizeof(size_t));
+ write(_resultPipe[_workerId][1], resultString.c_str(), resultStringSize * sizeof(char));
+}
+
 void korali::conduit::Concurrent::worker(int workerId)
 {
+ _workerId = workerId;
+
  while(true)
  {
   size_t inputStringSize;
   read(_inputsPipe[workerId][0], &inputStringSize, sizeof(size_t));
 
-  char inputString[inputStringSize + 1];
-  read(_inputsPipe[workerId][0], inputString, inputStringSize * sizeof(char));
+  char inputString[inputStringSize + BUFFERSIZE];
+
+  size_t curPos = 0;
+  while (curPos < inputStringSize)
+  {
+    size_t bufSize = BUFFERSIZE;
+    if (curPos + bufSize > inputStringSize) bufSize = inputStringSize - curPos;
+    read(_inputsPipe[workerId][0], inputString + curPos, bufSize * sizeof(char));
+    curPos += bufSize;
+    sched_yield(); // Guarantees MacOs finishes the pipe reading
+  }
   inputString[inputStringSize] = '\0';
 
   auto actionJs = knlohmann::json::parse(inputString);
 
   if (actionJs["Conduit Action"] == "Terminate") exit(0);
 
-  if (actionJs["Conduit Action"] == "Process Sample")
-  {
-   korali::Sample sample;
-   sample._js.getJson() = actionJs;
+  if (actionJs["Conduit Action"] == "Process Sample") initiateSample(actionJs);
 
-   size_t experimentId = sample["Experiment Id"];
-   std::string operation = sample["Operation"];
-
-   korali::Engine* engine = _engineStack.top();
-
-   if (sample["Module"] == "Problem")
-    engine->_experimentVector[experimentId]->_problem->runOperation(operation, sample);
-
-   if (sample["Module"] == "Solver")
-    engine->_experimentVector[experimentId]->_solver->runOperation(operation, sample);
-
-   std::string resultString = sample._js.getJson().dump();
-   size_t resultStringSize = resultString.size();
-
-   write(_resultPipe[workerId][1], &resultStringSize, sizeof(size_t));
-   write(_resultPipe[workerId][1], resultString.c_str(), resultStringSize * sizeof(char));
-  }
-
-  if (actionJs["Conduit Action"] == "Stack Engine") _engineStack.push(korali::Engine::deserialize(actionJs));
+  if (actionJs["Conduit Action"] == "Stack Engines")
+   for (size_t i = 0; i < actionJs["Engines"].size(); i++)
+   _engineStack.push(korali::Engine::deserialize(actionJs["Engines"][i]));
 
   if (actionJs["Conduit Action"] == "Pop Engine")  _engineStack.pop();
  }
@@ -121,13 +125,20 @@ void korali::conduit::Concurrent::processSample(korali::Sample& sample)
 {
  korali::Engine* engine = _engineStack.top();
 
- while (_launcherQueue.empty())
+ int launcherId = -1;
+ if (JsonInterface::isDefined(sample._js.getJson(), "['Worker']"))
  {
-  sample._state = SampleState::waiting;
-  co_switch(engine->_currentExperiment->_thread);
+  launcherId = sample["Worker"];
  }
-
- int launcherId = _launcherQueue.front(); _launcherQueue.pop();
+ else
+ {
+  while (_launcherQueue.empty())
+  {
+   sample._state = SampleState::waiting;
+   co_switch(engine->_currentExperiment->_thread);
+  }
+  launcherId = _launcherQueue.front(); _launcherQueue.pop();
+ }
 
  auto js = knlohmann::json();
  js["Start Time"] = std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count() + _cumulativeTime;
@@ -149,7 +160,7 @@ void korali::conduit::Concurrent::processSample(korali::Sample& sample)
   {
    int status;
    pid_t result = waitpid(_workerPids[i], &status, WNOHANG);
-   if (result != 0) _logger->logError("Worker %d (Pid: %d) exited unexpectedly.\n");
+   if (result != 0) _logger->logError("Worker %i (Pid: %d) exited unexpectedly.\n", i, _workerPids[i]);
   }
 
   size_t resultStringSize;
@@ -181,20 +192,39 @@ void korali::conduit::Concurrent::processSample(korali::Sample& sample)
 
 void korali::conduit::Concurrent::stackEngine(korali::Engine* engine)
 {
-  _engineStack.push(engine);
+ auto newStack = _engineStack;
+ newStack.push(engine);
 
-  auto engineJs = knlohmann::json();
-  engine->serialize(engineJs);
-  engineJs["Conduit Action"] = "Stack Engine";
+ for (size_t i = 0; i < newStack.size() - 1; i++) popEngine();
 
-  std::string engineString = engineJs.dump();
-  size_t engineStringSize = engineString.size();
+ _engineStack = newStack;
 
-  for(int i = 0; i < _concurrentJobs; i++)
+ size_t stackSize = newStack.size();
+ std::vector<korali::Engine*> engineList;
+ for (size_t i = 0; i < stackSize; i++) { engineList.push_back(newStack.top()); newStack.pop(); }
+
+ auto stackJs = knlohmann::json();
+ stackJs["Conduit Action"] = "Stack Engines";
+
+ for (int i = 0; i < stackSize; i++)
+  engineList[stackSize-i-1]->serialize(stackJs["Engines"][i]);
+
+ std::string stackString = stackJs.dump();
+ size_t stackStringSize = stackString.size();
+
+ for(int i = 0; i < _concurrentJobs; i++)
+ {
+  write(_inputsPipe[i][1], &stackStringSize, sizeof(size_t));
+
+  size_t curPos = 0;
+  while (curPos < stackStringSize)
   {
-   write(_inputsPipe[i][1], &engineStringSize, sizeof(size_t));
-   write(_inputsPipe[i][1], engineString.c_str(), engineStringSize * sizeof(char));
+    size_t bufSize = BUFFERSIZE;
+    if (curPos + bufSize > stackStringSize) bufSize = stackStringSize - curPos;
+    write(_inputsPipe[i][1], stackString.c_str() + curPos, bufSize * sizeof(char));
+    curPos += bufSize;
   }
+ }
 }
 
 void korali::conduit::Concurrent::popEngine()
@@ -212,4 +242,9 @@ void korali::conduit::Concurrent::popEngine()
    write(_inputsPipe[i][1], &engineStringSize, sizeof(size_t));
    write(_inputsPipe[i][1], engineString.c_str(), engineStringSize * sizeof(char));
   }
+}
+
+size_t korali::conduit::Concurrent::maxConcurrency()
+{
+ return _concurrentJobs;
 }

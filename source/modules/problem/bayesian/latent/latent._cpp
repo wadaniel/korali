@@ -1,0 +1,66 @@
+#include "modules/problem/bayesian/latent/latent.hpp"
+#include <vector>
+
+void korali::problem::bayesian::Latent::initialize()
+{
+  korali::problem::Bayesian::initialize();
+
+ _latentVariableIndices.clear();
+ _hyperparameterVariableIndices.clear();
+
+ for (size_t i = 0; i < _k->_variables.size(); i++)
+ {
+  std::string typeString = _k->_variables[i]->_bayesianType;
+  bool recognizedType = false;
+  if (typeString == "Hyperparameter")   { _hyperparameterVariableIndices.push_back(i);   recognizedType = true; }
+  if (typeString == "Latent")   { _latentVariableIndices.push_back(i);   recognizedType = true; }
+  if (recognizedType == false) _k->_logger->logError("Incorrect Bayesian variable type selected: %s.\n", typeString.c_str());
+ }
+}
+
+void korali::problem::bayesian::Latent::evaluateLogLikelihood(korali::Sample& sample){
+    //TODO does it work?
+    // Evaluate the user-given probability distribution for latent- and hyperparameter values given in the sample
+  sample.run(_sOfLikelihoodModel);
+  sample.run(_zetaOfLikelihoodModel);
+  sample.run(_phiOfLikelihoodModel);
+  // -> Assume these set: sample["S"], sample["zeta"] and sample["phi"]
+
+  if (! sample.contains("S")) _k->_logger->logError("The specified likelihood model did not assign the value: 'S' to the sample.\n");
+  if (! sample.contains("zeta")) _k->_logger->logError("The specified likelihood model did not assign the value: 'zeta' to the sample.\n");
+  if (! sample.contains("phi")) _k->_logger->logError("The specified likelihood model did not assign the value: 'phi' to the sample.\n");
+
+  double _zetaValue = sample["zeta"].get<double>();
+  std::vector<double> _sValues = sample["S"].get<std::vector<double>>();
+  std::vector<double> _phiValues = sample["phi"].get<std::vector<double>>();
+
+  sample["logLikelihood"] = - _zetaValue + std::inner_product(std::begin(_sValues), std::end(_sValues), std::begin(_phiValues), 0.0);
+}
+
+/* @brief run the user defined sampler.
+    Input sample needs to contain:
+      - sample["Hyperparameters"]
+      - sample["Number Samples"]
+
+    Values that will be set:
+      - sample["Samples"]
+ */
+void korali::problem::bayesian::Latent::sampleLatent(korali::Sample& sample)
+{
+  sample["Number Of Latent Variables"] = _latentVariableIndices.size();
+  sample.run(_latentVariableSampler);
+}
+
+void korali::problem::bayesian::Latent::evaluateS(korali::Sample& sample){
+  sample.run(_sOfLikelihoodModel);
+}
+
+void korali::problem::bayesian::Latent::evaluatePhi(korali::Sample& sample)
+{
+  sample.run(_phiOfLikelihoodModel);
+}
+
+void korali::problem::bayesian::Latent::evaluateZeta(korali::Sample& sample)
+{
+  sample.run(_zetaOfLikelihoodModel);
+}

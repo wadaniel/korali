@@ -56,10 +56,23 @@ class Reference : public korali::problem::Bayesian
  void loglikelihoodNormalMultiplicativeData(korali::Sample& sample);
 
  /**
-  * @brief A general implementation of additive likelihood of the for y = f + g \epsilon, where f ang g are provided by the user.
+  * @brief An implementation of the normal likelihood y~N(f,g), where f ang g are provided by the user.
   * @param sample A Korali Sample
   */
- void loglikelihoodNormalGeneral(korali::Sample& sample);
+ void loglikelihoodNormal(korali::Sample& sample);
+
+ /**
+  * @brief An implementation of the normal likelihood y~N(f,g) truncated at zero, where f ang g are provided by the user.
+  * @param sample A Korali Sample
+  */
+ void loglikelihoodPositiveNormal(korali::Sample& sample);
+
+ /**
+  * @brief Negative Binomial likelihood parametrized by mean and dispersion.
+  * @param sample A Korali Sample
+  */
+ void loglikelihoodNegativeBinomial(korali::Sample& sample);
+
 
  public:
 

@@ -1,5 +1,110 @@
 Mark Martori Lopez
 
+Wednesday 22 April 2020
+
+Tasks:
+
+1- [Solved] Add an option to clear the experiments if needed. ( Deleting the widgets previously set ).
+
+2- [Semi-Solved] CURRENT GOAL : Add the option to import a file, read it and print its content organized on the screen.
+	Step 1: [Solved] Create the button for importing the file.
+
+	Step 2: [Solved] Create the function to open a dialogue asking for an input file.
+
+	Step 3: [Solved] Display all the entries belonging to the problem and solver used in the config file.
+
+	Step 4: [Solved] Display each entry in its corresponding frame.
+
+	Step 5: [Semi-Solved] Insert all the values from the imported file into the corresponding entries.
+		-> So far only with the problem chosen.
+
+3- [Not-Solved] NEXT GOAL: Finish filling the entries from Solver and Variables when importing a file.
+	
+
+-----------------------------------------------------
+Tuesday 21 April 2020
+
+Tasks:
+
+1- [Solved] Allow the user to copy the variable Frame into a new Variable.
+
+2- [Solved] Update the dictionary 'results' every time you add a new variable.
+
+3- [Solved] Delete the variable from the dictionary 'results' if the user decides to delete the variable Frame.
+
+4- [Solved] Dump the values written by the user into the .config file.
+
+5- [Solved] Collect the values from different Variables Frames in different dictionaries inside the list 'Variables' of the .config.
+
+6- [Solved] Clean some 'global' variables to make the app more coherent.
+
+7- [Not-Solved] NEXT GOAL : Add the option to import a file, read it and write its content on the screen.
+
+---------------------------------------------------
+Wednesday 15 April 2020
+
+Tasks:
+
+1- [Solved] Current GOAL: Create a .config out of the options selected in an experiment.
+The config should look like this:
+{{solver},{problem},[{var1},{var2},{var3}]}
+
+	Step 1: [Solved] Create a dictionary to store as keys the names of the entries and as values their inputs typed by the user.
+
+	Step 2: [Solved] Create a function that is able to retrieve all the values from the entries.
+
+	Step 3: [Solved] The function must retrieve the values from all the different frames when clicking the button.
+
+	Step 4: [Solved] Get values from entries, spinboxes and radiobuttons.
+	
+	Step 5: [Solved] Retrieve also the type of Problem and Solver selected and indicate which variable is which.
+
+	Step 6: [Solved] Open the file and write on it in an organized/.config file way.
+
+2- [Solved] Launch a dialogue to download the file in different extensions in any folder you want.
+
+
+OUTPUT OF THE FILE:
+Start
+### .config File obtained from Korali### 
+ 
+Experiment 1 {
+{Problem: {sampling: [{Probability Function: Gaussian}]}},
+{Solver: {CMAES: [{Population Size: 10000},{Mu Value: 1},{Mu Type: Constant},{Initial Sigma Cumulation Factor: 10},{Initial Damp Factor: 0},{Is Sigma Bounded: True},{Initial Cumulative Covariance: 20},{Is Diagonal: False},{Viability Population Size: 4},{Viability Mu Value: 10},{Max Covariance Matrix Corrections: 30},{Target Success Rate: 90},{Covariance Matrix Adaption Strength: 0},{Normal Vector Learning Rate: 0},{Global Success Learning Rate: 0}]}},
+{Variables: [Variable 1: {Name: StDev},{Minimum Standard Deviation Update: 5}]}}
+}
+
+End
+---------------------------------------------------
+Tuesday 14 April 2020
+
+Tasks:
+
+1- [Solved] Improved efficiency by merging functions printConfig and printVariables into printData.
+
+2- [Semi-Solved] To Fix: Scrollbar doesnt adjust when inserting more rows than frame-height.
+
+3- [Not Solved] "TO FINISH: Pass from one tab-variable1 to the next tab-variable2 the same information so we can have several variables with same content for same experiment."
+
+4- [Solved] Add bottom to create the Config File.
+
+5- [Solved] Current GOAL: Create a .config out of the options selected in an experiment.
+The config should look like this:
+{{solver},{problem},[{var1},{var2},{var3}]}
+
+	Step 1: [Solved] Create a dictionary to store as keys the names of the entries and as values their inputs typed by the user.
+
+	Step 2: [Solved] Create a function that is able to retrieve all the values from the entries.
+
+	Step 3: [Solved] The function must retrieve the values from all the different frames when clicking the button 'Done!'.
+	
+	Step 4: [Solved] Retrieve also the type of Problem and Solver.
+
+	Step 5: [Solved] Create the file and store it in the proper folder.
+
+
+Step 6: [Semi-Solved] Structure the .config file.
+
 
 
 -----------------------------------

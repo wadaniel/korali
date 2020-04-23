@@ -1,3 +1,5 @@
+#include <gsl/gsl_sf_gamma.h>
+#include <gsl/gsl_cdf.h>
 #include "modules/problem/bayesian/reference/reference.hpp"
 #include "modules/conduit/conduit.hpp"
 #include "modules/experiment/experiment.hpp"
@@ -8,7 +10,7 @@ void korali::problem::bayesian::Reference::initialize()
 
   if (_referenceData.size() == 0) _k->_logger->logError("Bayesian (%s) problems require defining reference data.\n", _likelihoodModel.c_str());
 
-  if( _likelihoodModel != "Additive Normal General"){
+  if( _likelihoodModel=="Additive Normal" || _likelihoodModel=="Additive Normal Variance" || _likelihoodModel=="Multiplicative Normal" || _likelihoodModel=="Multiplicative Normal Data"){
     bool foundSigma = false;
     for (size_t i = 0; i < _k->_variables.size(); i++){
       std::string varName = _k->_variables[i]->_name;
@@ -17,7 +19,26 @@ void korali::problem::bayesian::Reference::initialize()
     if (foundSigma == false) _k->_logger->logError("Bayesian (%s) problems require defining a variable named: '[Sigma]'.\n", _likelihoodModel.c_str());
   }
 
-  if (_k->_variables.size() < 2) _k->_logger->logError("Bayesian (%s) inference problems require at least one model variable.\n", _likelihoodModel.c_str());
+  std::string str;
+
+  str = "Negative Binomial";
+  _negativeBinomialConstant = korali::NaN;
+  if( _likelihoodModel.find(str) != std::string::npos ){
+    _negativeBinomialConstant = 0.;
+    for( size_t i=0; i<_referenceData.size(); i++ ){
+      if( _referenceData[i]<0 ) _k->_logger->logError("Reference data must be greater or equal to zero for likelihood model: %s\n",_likelihoodModel.c_str());
+      _negativeBinomialConstant -= gsl_sf_lngamma( _referenceData[i]+1. );
+    }
+  }
+
+  str = "Positive Normal";
+  if( _likelihoodModel.find(str) != std::string::npos ){
+    for( size_t i=0; i<_referenceData.size(); i++ ){
+      if( _referenceData[i]<0 ) _k->_logger->logError("Reference data must be greater or equal to zero for likelihood model: %s\n",_likelihoodModel.c_str());
+    }
+  }
+
+  if (_k->_variables.size() < 1) _k->_logger->logError("Bayesian (%s) inference problems require at least one variable.\n", _likelihoodModel.c_str());
 }
 
 
@@ -33,10 +54,22 @@ void korali::problem::bayesian::Reference::evaluateLogLikelihood(korali::Sample&
   if (_likelihoodModel == "Multiplicative Normal")      loglikelihoodNormalMultiplicative(sample);
   if (_likelihoodModel == "Multiplicative Normal Data") loglikelihoodNormalMultiplicativeData(sample);
 
-  if (_likelihoodModel == "Additive Normal General"){
-    if( sample["Reference Evaluations"].size() != sample["Standard Deviation Model"].size() )
-      _k->_logger->logError("This Bayesian (%s) problem requires two %lu-sized result arrays. Provided: %lu and %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), sample["Reference Evaluations"].size(), sample["Standard Deviation Model"].size() );
-    loglikelihoodNormalGeneral(sample);
+  if (_likelihoodModel == "Normal" ){
+    if( sample["Reference Evaluations"].size() != sample["Standard Deviation"].size() )
+      _k->_logger->logError("This Bayesian (%s) problem requires two %lu-sized result arrays. Provided: %lu and %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), sample["Reference Evaluations"].size(), sample["Standard Deviation"].size() );
+    loglikelihoodNormal(sample);
+  }
+
+  if (_likelihoodModel == "Negative Binomial" ){
+    if( sample["Reference Evaluations"].size() != sample["Dispersion"].size() )
+      _k->_logger->logError("This Bayesian (%s) problem requires two %lu-sized result arrays. Provided: %lu and %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), sample["Reference Evaluations"].size(), sample["Dispersion"].size() );
+    loglikelihoodNegativeBinomial(sample);
+  }
+
+  if (_likelihoodModel == "Positive Normal" ){
+    if( sample["Reference Evaluations"].size() != sample["Standard Deviation"].size() )
+      _k->_logger->logError("This Bayesian (%s) problem requires two %lu-sized result arrays. Provided: %lu and %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), sample["Reference Evaluations"].size(), sample["Standard Deviation"].size() );
+    loglikelihoodPositiveNormal(sample);
   }
 
 }
@@ -75,6 +108,72 @@ double korali::problem::bayesian::Reference::compute_normalized_sse( std::vector
     sse += diff*diff;
   }
   return sse;
+}
+
+
+void korali::problem::bayesian::Reference::loglikelihoodNormal(korali::Sample& sample)
+{
+  double sse = compute_normalized_sse( sample["Reference Evaluations"], sample["Standard Deviation"], _referenceData );
+
+  if( isinf(sse) )
+    sample["logLikelihood"] = -korali::Inf;
+  else{
+    double loglike = 0.;
+    for(size_t i=0; i<sample["Standard Deviation"].size(); i++)
+      loglike -= log( (double) sample["Standard Deviation"][i] );
+    loglike -=   0.5*( _referenceData.size()*_log2pi + sse );
+
+    sample["logLikelihood"] = loglike;
+  }
+}
+
+
+void korali::problem::bayesian::Reference::loglikelihoodPositiveNormal(korali::Sample& sample)
+{
+  double sse = compute_normalized_sse( sample["Reference Evaluations"], sample["Standard Deviation"], _referenceData );
+
+  if( isinf(sse) )
+    sample["logLikelihood"] = -korali::Inf;
+  else{
+    double loglike = 0.;
+    for(size_t i=0; i<sample["Standard Deviation"].size(); i++){
+      double m = sample["Reference Evaluations"][i];
+      double s = sample["Standard Deviation"][i];
+      loglike -= log( s );
+      loglike -= log( 1. - gsl_cdf_ugaussian_P(-m/s) );
+    }
+    loglike +=  -0.5*( _referenceData.size()*_log2pi + sse );
+    sample["logLikelihood"] = loglike;
+  }
+}
+
+
+void korali::problem::bayesian::Reference::loglikelihoodNegativeBinomial(korali::Sample& sample)
+{
+
+  size_t N = _referenceData.size();
+
+  double loglike = _negativeBinomialConstant;
+
+  for( size_t i=0; i<N; i++ ){
+    double m = sample["Reference Evaluations"][i];
+
+    if(m<0){
+      sample["logLikelihood"] =  -korali::Inf;
+      return;
+    }
+
+    double r = sample["Dispersion"][i];
+    double p = m/(m+r);
+    double y = _referenceData[i];
+
+    loglike += gsl_sf_lngamma( y+r );
+    loglike -= gsl_sf_lngamma( r );
+    loglike += r*log( 1-p );
+    loglike += y*log( p );
+  }
+
+  sample["logLikelihood"] = loglike;
 }
 
 
@@ -128,7 +227,7 @@ void korali::problem::bayesian::Reference::loglikelihoodNormalMultiplicative(kor
     logSigma += log(denom);
   }
 
-  sample["logLikelihood"] = -0.5*( _referenceData.size()*log(2*M_PI) + ssn) - _referenceData.size()*logSigma;
+  sample["logLikelihood"] = -0.5*( _referenceData.size()*_log2pi + ssn) - _referenceData.size()*logSigma;
 }
 
 
@@ -154,22 +253,5 @@ void korali::problem::bayesian::Reference::loglikelihoodNormalMultiplicativeData
     logSigma += log(denom);
   }
 
-  sample["logLikelihood"] = -0.5*( _referenceData.size()*log(2*M_PI) + ssn) - _referenceData.size()*logSigma;
-}
-
-
-void korali::problem::bayesian::Reference::loglikelihoodNormalGeneral(korali::Sample& sample)
-{
-  double sse = compute_normalized_sse( sample["Reference Evaluations"], sample["Standard Deviation Model"], _referenceData );
-
-  if( isinf(sse) )
-    sample["logLikelihood"] = -korali::Inf;
-  else{
-     double loglike = 0.;
-    for(size_t i=0; i<sample["Standard Deviation Model"].size(); i++)
-      loglike -= log( (double) sample["Standard Deviation Model"][i] );
-    loglike +=  -0.5*( _referenceData.size() + sse );
-
-    sample["logLikelihood"] = loglike;
-  }
+  sample["logLikelihood"] = -0.5*( _referenceData.size()*_log2pi + ssn) - _referenceData.size()*logSigma;
 }

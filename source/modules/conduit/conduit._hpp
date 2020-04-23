@@ -23,11 +23,6 @@ class Conduit : public korali::Module {
  korali::Logger* _logger;
 
  /**
- * @brief Stack storing pointers to different Engine execution levels
- */
- std::stack<Engine*> _engineStack;
-
- /**
  * @brief Accepts a sample for processing.
  * @param A Korali sample
  */
@@ -50,20 +45,26 @@ class Conduit : public korali::Module {
  virtual void initServer() = 0;
 
  /**
+  * @brief Indicates how many samples can be evaluated concurrently.
+  */
+ virtual size_t maxConcurrency() = 0;
+
+ /**
  * @brief Determines whether the caller rank/thread/process is root.
  * @return True, if it is root; false, otherwise.
  */
  virtual bool isRoot() { return true; }
 
  /**
+ * @brief Starts the execution of a sample on the worker side with its own coroutine.
+ * @param sampleJs JSON object with the sample information
+ */
+ void initiateSample(knlohmann::json& sampleJs);
+
+ /**
  * @brief Aborts execution for all ranks/threads/processes.
  */
  virtual void abort() { exit(-1); }
-
- /**
- * @brief Stores a pointer to the current sample to process
- */
- korali::Sample* _currentSample;
 
  /**
  * @brief Starts the execution of the sample.
@@ -88,6 +89,12 @@ class Conduit : public korali::Module {
   * @param A list of Korali samples
   */
  size_t waitAny(std::vector<korali::Sample>& samples);
+
+ /**
+ * @brief Sends sample information back to engine
+ * @param sample Sample to send back
+ */
+ virtual void update(korali::Sample& sample) = 0;
 
  /**
    * @brief Wrapper function for the sample coroutine

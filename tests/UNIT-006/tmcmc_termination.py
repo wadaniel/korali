@@ -14,7 +14,7 @@ from helpers import *
 
 def run_tmcmc_with_termination_criterion(criterion, value):
 
-    print("[Korali] Prepare DEA run with Termination Criteria "\
+    print("[Korali] Prepare TMCMC run with Termination Criteria "\
             "'{0}'".format(criterion))
 
     e = korali.Experiment()

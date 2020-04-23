@@ -69,62 +69,58 @@ class Sample {
  /**
   * @brief Constructs Sample. Stores its own pointer, sets ID to zero, state as uninitialized, and isAllocated to false.
   */
- Sample()
- {
-  _self = this;
-  _state = SampleState::uninitialized;
-  _js["Sample Id"] = 0;
-  _isAllocated = false;
- }
+ Sample();
 
  /**
   * @brief Runs a computational model by reinterpreting a numerical pointer to a function(sample) object to an actual function pointer and calls it.
   * @param funcPtr Number containing a pointer to a function.
   */
- void run(size_t functionPosition)
- {
-  if (functionPosition >= _functionVector.size())
-  {
-   fprintf(stderr, "Function ID: %lu not declared. If you are resuming a previous experiment, you need to re-specify model functions.\n", functionPosition);
-   exit(-1);
-  }
-  (*_functionVector[functionPosition])(*this);
- }
+ void run(size_t functionPosition);
+
+ /**
+  * @brief Handles the execution thread of individual samples on the worker's side
+  */
+ static void sampleLauncher();
+
+ /**
+  * @brief Rreturns results to engine without finishing the sample.
+  */
+ void update();
 
  /**
   * @brief Checks whether the sample contains the given key.
   * @param key Key (String) to look for.
   * @return True, if it is contained; false, otherwise.
   */
- bool contains(const std::string& key) { return _self->_js.contains(key); }
+ bool contains(const std::string& key);
 
  /**
   * @brief Accesses the value of a given key in the sample.
   * @param key Key (String) to look for.
   * @return JSON object for the given key.
   */
- knlohmann::json& operator[](const std::string& key) { return _self->_js[key]; }
+ knlohmann::json& operator[](const std::string& key);
 
  /**
    * @brief Accesses the value of a given key in the sample.
    * @param key Key (number) to look for.
    * @return JSON object for the given key.
    */
- knlohmann::json& operator[](const unsigned long int& key) { return _self->_js[key]; }
+ knlohmann::json& operator[](const unsigned long int& key);
 
  /**
   * @brief Gets the value of a given key in the sample.
   * @param key Key (pybind11 object) to look for.
   * @return Pybind11 object for the given key.
   */
- pybind11::object getItem(pybind11::object key) { return _self->_js.getItem(key); }
+ pybind11::object getItem(pybind11::object key);
 
  /**
   * @brief Sets the value of a given key in the sample.
   * @param val Value to assign.
   * @param key Key (pybind11 object) to look for.
   */
- void setItem(pybind11::object key, pybind11::object val) { _self->_js.setItem(key, val); }
+ void setItem(pybind11::object key, pybind11::object val);
 
 };
 

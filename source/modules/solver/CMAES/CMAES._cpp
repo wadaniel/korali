@@ -175,6 +175,8 @@ void korali::solver::CMAES::runGeneration()
   samples[i]["Parameters"] = _samplePopulation[i];
   samples[i]["Sample Id"] = i;
   _modelEvaluationCount++;
+
+  if(_hasDiscreteVariables) discretize(samples[i]);
   _conduit->start(samples[i]);
  }
 
@@ -258,6 +260,8 @@ void korali::solver::CMAES::checkMeanAndSetRegime()
   sample["Parameters"] = _currentMean;
   sample["Module"] = "Problem";
   sample["Operation"] = "Evaluate Constraints";
+  
+  if(_hasDiscreteVariables) discretize(sample);
   _conduit->start(sample);
   _conduit->wait(sample);
   _constraintEvaluationCount++;
@@ -287,6 +291,8 @@ void korali::solver::CMAES::updateConstraints()
   sample["Parameters"] = _samplePopulation[i];
   sample["Module"] = "Problem";
   sample["Operation"] = "Evaluate Constraints";
+  
+  if(_hasDiscreteVariables) discretize(sample);
   _conduit->start(sample);
   _conduit->wait(sample);
   _constraintEvaluationCount++;
@@ -321,6 +327,8 @@ void korali::solver::CMAES::reEvaluateConstraints()
    sample["Parameters"] = _samplePopulation[i];
    sample["Module"] = "Problem";
    sample["Operation"] = "Evaluate Constraints";
+  
+   if(_hasDiscreteVariables) discretize(sample);
    _conduit->start(sample);
    _conduit->wait(sample);
    _constraintEvaluationCount++;
@@ -365,6 +373,8 @@ void korali::solver::CMAES::prepareGeneration()
     sample["Parameters"] = _samplePopulation[i];
     sample["Module"] = "Problem";
     sample["Operation"] = "Check Feasibility";
+
+    if(_hasDiscreteVariables) discretize(sample);
     _conduit->start(sample);
     _conduit->wait(sample);
     isSampleFeasible = sample["Is Feasible"];
@@ -426,7 +436,6 @@ void korali::solver::CMAES::sampleSingle(size_t sampleIdx)
     }
   }
 }
-
 
 void korali::solver::CMAES::updateDistribution(std::vector<korali::Sample>& samples)
 {
@@ -688,6 +697,8 @@ void korali::solver::CMAES::handleConstraints()
      sample["Parameters"] = _samplePopulation[i];
      sample["Module"] = "Problem";
      sample["Operation"] = "Check Feasibility";
+  
+     if(_hasDiscreteVariables) discretize(sample);
      _conduit->start(sample);
      _conduit->wait(sample);
      isSampleFeasible = sample["Is Feasible"];
@@ -707,7 +718,6 @@ void korali::solver::CMAES::handleConstraints()
 
 }
 
-
 void korali::solver::CMAES::updateDiscreteMutationMatrix()
 {
   // implemented based on 'A CMA-ES for Mixed-Integer Nonlinear Optimization' by
@@ -725,6 +735,15 @@ void korali::solver::CMAES::updateDiscreteMutationMatrix()
   _numberOfDiscreteMutations = std::min( std::round(_populationSize/10.0 + _numberMaskingMatrixEntries + 1) , std::floor(_populationSize/2.0) - 1);
   std::fill( std::begin(_discreteMutations), std::end(_discreteMutations), 0.0);
 
+}
+
+void korali::solver::CMAES::discretize(korali::Sample& sample)
+{
+  for(size_t d = 0; d < _k->_variables.size(); ++d) if( _k->_variables[d]->_granularity != 0.0 )
+  {
+    double par = sample["Parameters"][d];
+    sample["Parameters"][d] = std::round(par/_k->_variables[d]->_granularity)*_k->_variables[d]->_granularity;
+  }
 }
 
 void korali::solver::CMAES::updateEigensystem(std::vector<double>& M)

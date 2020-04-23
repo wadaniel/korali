@@ -15,8 +15,6 @@ import korali
 k = korali.Engine()
 e = korali.Experiment()
 
-e["File Output"]["Path"] = "_result_run-tmcmc"
-
 # Setting up custom likelihood for the Bayesian Problem
 e["Problem"]["Type"] = "Bayesian/Custom"
 e["Problem"]["Likelihood Model"] = lg5
@@ -25,23 +23,25 @@ e["Problem"]["Likelihood Model"] = lg5
 e["Solver"]["Type"] = "TMCMC"
 e["Solver"]["Population Size"] = 5000
 
-e["Solver"]["Target Coefficient Of Variation"] = 0.4
+e["Solver"]["Target Coefficient Of Variation"] = 0.2
 
 # Configuring the problem's random distributions
 for i in range(5):
   e["Distributions"][i]["Name"] = "Uniform " + str(i)
   e["Distributions"][i]["Type"] = "Univariate/Uniform"
-  e["Distributions"][i]["Minimum"] = -15.0
-  e["Distributions"][i]["Maximum"] = +15.0
+  e["Distributions"][i]["Minimum"] = -5.0
+  e["Distributions"][i]["Maximum"] = +5.0
 
   # Configuring the problem's variables and their prior distributions
   e["Variables"][i]["Name"] = "a"
   e["Variables"][i]["Prior Distribution"] = "Uniform 0"
 
-e["Random Seed"] = 1337
+e["File Output"]["Frequency"] = 0
+
+e["Random Seed"] = 1234
 
 # Running Korali
 k.run(e)
 
-#verifyMean(e, [0.0, 0.0, 0.0, 0.0, 0.0], 0.05)
-#verifyStd(e, [1.0, 1.0, 1.0, 1.0, 1.0], 0.05)
+verifyMean(e["Solver"]["Sample Database"], [0.0, 0.0, 0.0, 0.0, 0.0], 0.1)
+verifyStd(e["Solver"]["Sample Database"], [1.0, 1.0, 1.0, 1.0, 1.0], 0.1)

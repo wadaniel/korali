@@ -14,8 +14,7 @@ import korali
 k = korali.Engine()
 e = korali.Experiment()
 
-e["File Output"]["Path"] = "_result_run-mcmc"
-e["File Output"]["Frequency"] = 5000
+e["File Output"]["Frequency"] = 0
 e["Console Output"]["Frequency"] = 5000
 
 # Selecting problem and solver types.
@@ -38,5 +37,5 @@ e["Solver"]["Termination Criteria"]["Max Samples"] = 100000
 e["Random Seed"] = 1227
 k.run(e)
 
-verifyMean(e, [-2.0], 0.5)
-verifyStd(e, [3.0], 0.5)
+verifyMean(e["Solver"]["Sample Database"], [-2.0], 0.5)
+verifyStd(e["Solver"]["Sample Database"], [3.0], 0.5)

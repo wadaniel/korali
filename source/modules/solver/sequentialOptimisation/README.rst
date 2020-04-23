@@ -2,19 +2,21 @@
 sequentialOptimisation
 **************************
 
-Here goes the description of the new solver module: sequentialOptimisation
-
-You can add code:
-
-.. code-block:: python
-  
-  print('Hello World')
-  
-or formulae:
+Sequential Optimisation performs optimisation
 
 .. math::
 
-  y = x^2
+  s^*=\arg\max U(s)
 
-And other rST devices.
+where the variable s can be written as a collection of values
+
+.. math::
+
+  s=(s_1,\dots,s_n)
+
+and the objective function is defined for all n. The optimisation is performed sequentially
+
+.. math::
+
+  s^*_n=\arg\max_s U(s_1,\dots,s_{n-1},s)
 

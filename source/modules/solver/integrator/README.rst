@@ -2,19 +2,8 @@
 integrator
 **************************
 
-Here goes the description of the new solver module: integrator
-
-You can add code:
-
-.. code-block:: python
-  
-  print('Hello World')
-  
-or formulae:
+This is the solver for the "Integration" problem, it performs the computation 
 
 .. math::
 
-  y = x^2
-
-And other rST devices.
-
+  I \approx \sum w_i f(x_i)

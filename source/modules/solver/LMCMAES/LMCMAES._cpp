@@ -69,8 +69,8 @@ void korali::solver::LMCMAES::setInitialConfiguration()
  for (size_t i = 0; i < _k->_variables.size(); i++)
  {
    /* confirm lower & upper bound */
-   if( (std::isfinite(_k->_variables[i]->_lowerBound) && std::isfinite(_k->_variables[i]->_upperBound) ) == false )
-        _k->_logger->logError("Lower and/or upper bound of variable \'%s\' is not defined.\n", _k->_variables[i]->_name.c_str());
+//   if( (std::isfinite(_k->_variables[i]->_lowerBound) && std::isfinite(_k->_variables[i]->_upperBound) ) == false )
+//        _k->_logger->logError("Lower and/or upper bound of variable \'%s\' is not defined.\n", _k->_variables[i]->_name.c_str());
 
    /* init mean if not defined */
    if(std::isfinite(_k->_variables[i]->_initialMean) == false)

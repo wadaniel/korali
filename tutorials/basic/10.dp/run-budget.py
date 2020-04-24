@@ -54,7 +54,7 @@ import korali
 e = korali.Experiment()
 
 # Configuring Problem
-e["Problem"]["Type"] = "DynamicProgramming"
+e["Problem"]["Type"] = "Dynamic Programming"
 e["Problem"]["Cost Function"] = rewardFunction
 
 # Defining problem variables to discretize.

@@ -31,11 +31,6 @@ namespace korali
   std::vector<korali::Experiment*> _experimentVector;
 
   /**
-    * @brief Stores a pointer to the current experiment.
-    */
-  korali::Experiment* _currentExperiment;
-
-  /**
     * @brief Stores the main execution thread (coroutine).
     */
   cothread_t _thread;
@@ -131,6 +126,31 @@ namespace korali
    * @brief Determines whether this is a dry run (no conduit initialization nor execution)
   */
   bool _isDryRun;
+
+  /**
+    * @brief A pointer to the worker, on the worker side.
+    */
+  Conduit* _currentWorker;
+
+  /**
+  * @brief (Worker) Stores a pointer to the current Experiment being processed
+  */
+  korali::Experiment* _currentExperiment;
+
+  /**
+  * @brief Stores a pointer to the current sample being processed
+  */
+  korali::Sample* _currentSample;
+
+  /**
+  * @brief (Engine) Stores a pointer to the current sample to process
+  */
+  korali::Sample* _engineSample;
+
+  /**
+   * @brief Stores the state of a worker thread
+   */
+  cothread_t _workerThread;
 
   /**
    * @brief Returns the worker teams MPI communication pointer (Distributed Conduit only).

@@ -6,7 +6,7 @@ import os, sys
 import json
 import copy                     # recursiveUpdate
 from functools import partial # Callback to retrieve values from entries
-from tkinter.filedialog import asksaveasfile
+from tkinter.filedialog import asksaveasfile, askopenfilename
 
 
 # ************ VARIABLES *****************
@@ -16,8 +16,6 @@ NORM_FONT = ("Verdana",10) #Font and size.
 SMALL_FONT = ("Verdana",8) #Font and size.
 RES_FONT = ('Courier',12)
 font = "Helvetica 10"
-
-
 
 darkColor ='lightseagreen'
 lightColor = '#00A3E0'
@@ -30,6 +28,8 @@ contadorVariables = 1 # Counts the number of variables.
 linktoVariables = []  # Stores the information coming from Problem and Solver to update the Variable Frame.
 
 menus = [] # Store which directories have already been read.
+listofproblems = []
+listofsolvers = []
 
 #totalTabs = ''
 experiments = {}
@@ -145,6 +145,24 @@ def callback(var, *args):
 ################
 ################ DELETE FUNCTIONS:
 
+def clearFrame():
+    global experiments
+    global selectedtab
+    global selectedtab2
+
+    frame = experiments[selectedtab]['canvas']
+    frame2 = experiments[selectedtab]['rightFrame']
+    frame3 = experiments[selectedtab]['bottomrightFrame']
+    frame3 = frame3.tab2
+    for widget in frame.winfo_children():
+        widget.destroy()
+    for widget in frame2.winfo_children():
+        widget.destroy()
+    ############################# THIS MUST BE CHANGED TO DELETE ALL VARIABLES NOT JUST THE LAST ONE:
+##    for widget in frame3.winfo_children():
+##            widget.destroy()        
+##
+    deleteVariable(frame3)
 
 def deleteTab(self,totalTabs):
     global contador
@@ -169,7 +187,6 @@ def deleteVariable(self):
         a = totalTabs2.select()
         selectedtab2Deleted = totalTabs2.tab(a, "text")
         del results[2][selectedtab2Deleted]
-        print(results)
         totalTabs2.forget(a)
         
     else:
@@ -200,14 +217,6 @@ def printdata(self,line, texto, description, fakedescription, r, c,cont):
     experiments[selectedtab]['results'] = results
     stringVar = {}
     
-    
-    '''
-        mycanvas = ResizingCanvas(self,width=950, height=840, bg="red", highlightthickness=0)
-        mycanvas.pack(fill=BOTH, expand=YES)
-    
-        self = mycanvas
-        first = False
-    '''
     if 'vector' not in line:
         
         if 'string' in line or 'korali' in line: # == 'std::string
@@ -292,10 +301,9 @@ def printVariables(self,directorio,DB,cont):
     global linktoVariables
     global linktoVariables0
     global linktoVariables1
-    global entry
-    global stringVar
     global experiments
     global selectedtab2
+    global selectedtab
 
     self = experiments[selectedtab]['bottomrightFrame']
     self = self.tab2
@@ -414,42 +422,86 @@ def printConfig(directorio,DB, cont):
                                     
 ##########################
 ########################## MAIN FUNCTIONS:
+def importFile():
+    global experiments
+    global configTreeDB
+    global solverDB
+
+    filename = askopenfilename()
+    file = open(filename,'r')
+    parsedFile = json.load(file)
+    file.close()
+    bottomrightFrame = experiments[selectedtab]['bottomrightFrame']
+
+    valuesProblem = []
+    valuesSolver = []
+    valuesVariables = []
+    rightFrame = experiments[selectedtab]['rightFrame']
+    results = experiments[selectedtab]['results']
+    
+    for directorio in parsedFile.keys(): # Loop through the keys of the config file.
+        if directorio in listofproblems:
+            print('ES UN PROBLEM :', directorio)
+            cont = 0
+            printConfig(directorio,configTreeDB,cont)
+            printVariables(bottomrightFrame.tab2,directorio,configTreeDB,cont)
+            for key2 in parsedFile[directorio]:
+                valuesProblem.append(parsedFile[directorio][key2])
+            numofentry = 0
+            for key in results[cont].keys():
+                e = results[cont][key]
+                e.insert(0,valuesProblem[numofentry])
+                numofentry+=1
+            
+        elif directorio in listofsolvers:
+            print('ES UN SOLVER :',directorio)
+            cont = 1
+            printConfig(directorio,solverDB,cont)
+            printVariables(bottomrightFrame.tab2,directorio,solverDB,cont)
+            for key2 in parsedFile[directorio]:
+                valuesSolver.append(parsedFile[directorio][key2])
+            for key in results[cont].keys():
+                e = results[cont][key]
+                e.insert(0,valuesSolver[numofentry])
+                numofentry+=1
+
+                          
+    '''
+    for frame in parsedFile.keys():
+        for texto in parsedFile[frame]:
+            w = parsedFile[frame][texto]
+            val = w.get()
+            results2[frame][texto] = valprint(valuesProblem, valuesSolver)
+    '''
+           
 def createConfig():
     global selectedtab # To know at which experiment we are.
     global experiments
-
     #results = experiments[selectedtab]['results']
     bottomleftFr = experiments[selectedtab]['canvas']
     rightFr = experiments[selectedtab]['rightFrame']
     variableFr = experiments[selectedtab]['totalTabs2']
 
-    
     results = experiments[selectedtab]['results']
     results2 = results.copy()
     results2[rightFr.titulo.cget('text')] = results2.pop(0)
     results2[bottomleftFr.titulo.cget('text')] = results2.pop(1)
     results2['Variables'] = results2.pop(2)
-    # variableFr.tab(variableFr.select())]
     for frame in results2.keys():
         for texto in results2[frame]:
             w = results2[frame][texto]
-            print('THIS IS THE WIDGET :',w)
             if isinstance(w,dict):
                 results2[frame][texto] = []
                 for key in w:
                     val = w[key].get()
-                    print('THE VALUE IS :',val)
                     d = {key:val}
                     results2[frame][texto].append(d)
-                
             else:
                 val = w.get()
-                print('THE VALUE IS :',val)
                 results2[frame][texto] = val
-    print('THIS IS THE COPY OF DICTIONARY :',results2)
     cwd = os.getcwd()
     file = open(cwd+"/filename.config", "w")
-    file.write('### .config File obtained from Korali### \n \n'+selectedtab+' {\n')
+    #file.write('### .config File obtained from Korali### \n \n'+selectedtab+' {\n')
     json.dump(results2, file, indent = 6)
 
     #### ASK TO DOWNLOAD AND SAVE THE FILE:
@@ -511,19 +563,19 @@ def readDirs(filePath,DB,default):
                         #print(dirInfoDic['config'])
                         #print(dirInfoDic['herencia'],'\n')
                     finally:
-                        archivo.close()                                        
+                        archivo.close()
                 elif fileName.endswith('.rst'): # Dame el nombre dentro del README:
                     try:
                         file = open(filePath+'/'+fileName,"r")
                         lines = file.readlines()
                         for i in range(0,len(lines)):
                             line = lines[i]
-                            if '******' not in line:
-                                continue
-                            else:
+                            if '****\n' in line or '===\n' in line:
                                 name = lines[i+1]
                                 dirInfoDic['names'] = name.replace('\n','') # Quitar '\n'
                                 break
+                            else:
+                                pass
                     finally:
                         file.close() ## Cierra el archivo README.
             continue
@@ -552,6 +604,8 @@ def crearVariables(DB):
 def crearMenu(padre,directorio,DB,cont):
     global menus
     global experiments
+    global listofproblems
+    global listofsolvers
     
     bottomrightFrame = experiments[selectedtab]['bottomrightFrame']
     nombre = DB[directorio]['names']
@@ -567,6 +621,12 @@ def crearMenu(padre,directorio,DB,cont):
         for child in children:
             crearMenu(subMenu,child,DB,cont)
     menus.append(directorio)
+    if cont == 0:
+        if directorio not in listofproblems:
+            listofproblems.append(directorio)
+    elif cont == 1:
+        if directorio not in listofsolvers:
+            listofsolvers.append(directorio)
 
 
 
@@ -585,11 +645,11 @@ def cascade(mainPath,DB,cont):
     menuButton.grid(row=0, column = cont, pady=10, padx=10, rowspan = 3)
         
     menus.append(titulo) # Añadimos el título del boton, para no repetirlo en los desplegables.
+    
       
     # Empezar los menus recursivamente llamando a la funcion crearMenu:
     for directorio in DB.keys():
         crearMenu(menuPadre,directorio,DB,cont)
-            
     menus.clear() # Allows creating different experiments by emptying the menus list.
 
 def crearFrameVariables(self):
@@ -673,7 +733,13 @@ def crearTab(self,totalTabs):
                                              activebackground = 'darkcyan',activeforeground='azure', bd = 3, bg = 'teal',fg = 'azure', font = 'Arial 12',
                                              width = 20)
 
-                self.button_done.grid(row=0, column=6, pady= 20, padx=20, sticky = 'E')
+                self.button_done.grid(row=0, column=3, pady= 20, padx=20, sticky = 'E')
+                
+                self.button_Import = tk.Button(self.leftFrame, text = 'Import .config file',command = lambda: importFile(),
+                                             activebackground = 'darkcyan',activeforeground='azure', bd = 3, bg = 'teal',fg = 'azure', font = 'Arial 12',
+                                             width = 20)
+
+                self.button_Import.grid(row=0, column=4, pady= 20, padx=20, sticky = 'E')
                 self.update_idletasks
 
 
@@ -807,7 +873,7 @@ class KORALI(tk.Tk): #Inherited tk.tk
         self.experimentmenu.add_command(label = 'Delete Experiment...', command = lambda: deleteTab(self,self.totalTabs))#self.totalTabs.forget(self.tab))#lambda:deletetab(self,self.totalTabs,contador))
         self.experimentmenu.add_command(label = 'Delete Variable...', command = lambda:deleteVariable(self))
         self.experimentmenu.add_separator() # Separator baselr.
-        self.experimentmenu.add_command(label = 'Done!', command = lambda:popupmsgwarning('Not done yet'))
+        self.experimentmenu.add_command(label = 'Clear Experiment...', command = lambda:clearFrame())
         self.menubar.add_cascade(label = 'Experiments Configuration', menu = self.experimentmenu)
 
         ##### HELP MENU:
@@ -848,7 +914,6 @@ variables = {}
 
 readDirs(mainPath, configTreeDB,default)
 readDirs(mainPath2,solverDB, default)
-
 #print(configTreeDB)
        
 app = KORALI()

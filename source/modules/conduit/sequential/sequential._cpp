@@ -4,24 +4,21 @@
 #include "modules/problem/problem.hpp"
 #include "modules/solver/solver.hpp"
 
-
-void korali::conduit::Sequential::processSample(korali::Sample& sample)
+void korali::conduit::Sequential::initialize()
 {
  // Instantiating Engine logger.
  _logger = new korali::Logger();
+}
 
+void korali::conduit::Sequential::processSample(korali::Sample& sample)
+{
  korali::Engine* engine = _engineStack.top();
 
  auto js = knlohmann::json();
  js["Start Time"] = std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count() + _cumulativeTime;
 
- size_t experimentId = sample["Experiment Id"];
-
- if (sample["Module"] == "Problem")
-  engine->_experimentVector[experimentId]->_problem->runOperation(sample["Operation"], sample);
-
- if (sample["Module"] == "Solver")
-  engine->_experimentVector[experimentId]->_solver->runOperation(sample["Operation"], sample);
+ engine->_engineSample = &sample;
+ initiateSample(sample._js.getJson());
 
  js["End Time"] = std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count() + _cumulativeTime;
  js["Current Generation"] = engine->_currentExperiment->_currentGeneration;
@@ -39,7 +36,18 @@ void korali::conduit::Sequential::popEngine()
  _engineStack.pop();
 }
 
+void korali::conduit::Sequential::update(korali::Sample& sample)
+{
+ korali::Engine* engine = _engineStack.top();
+ engine->_engineSample->_js.getJson() = sample._js.getJson();
+}
+
 void korali::conduit::Sequential::initServer()
 {
 
+}
+
+size_t korali::conduit::Sequential::maxConcurrency()
+{
+ return 1;
 }

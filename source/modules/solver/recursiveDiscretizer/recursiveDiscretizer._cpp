@@ -60,14 +60,14 @@ void korali::solver::RecursiveDiscretizer::runGeneration()
   {
    for (size_t p = 0; p < currentDepth; p++)
      cSamples[currentSample]["Policy"][p] = _policyCollection[p][j];
-   cSamples[currentSample]["Policy"][currentDepth] = _candidateList[i];
+     cSamples[currentSample]["Policy"][currentDepth] = _candidateList[i];
 
-   cSamples[currentSample]["Previous Evaluation"] = _policyEvaluation[j];
-   cSamples[currentSample]["Current Depth"] = currentDepth;
-   cSamples[currentSample]["Module"] = "Problem";
-   cSamples[currentSample]["Operation"]  = "Evaluate Cost Function";
-   _conduit->start(cSamples[currentSample]);
-   currentSample++;
+     cSamples[currentSample]["Previous Evaluation"] = _policyEvaluation[j];
+     cSamples[currentSample]["Current Depth"] = currentDepth;
+     cSamples[currentSample]["Module"] = "Problem";
+     cSamples[currentSample]["Operation"]  = "Evaluate Cost Function";
+     _conduit->start(cSamples[currentSample]);
+     currentSample++;
   }
 
   _conduit->waitAll(cSamples);
@@ -77,15 +77,15 @@ void korali::solver::RecursiveDiscretizer::runGeneration()
 
   for (int i = 0; i < cSamples.size(); i++)
   {
-   double currEval = cSamples[i]["Cost Evaluation"];
-   double prevEval = cSamples[i]["Previous Evaluation"];
-   double sumEval = currEval + prevEval;
-
-   if (sumEval < minCostEvaluation)
-   {
-    bestPolicy = cSamples[i]["Policy"];
-    minCostEvaluation = sumEval;
-   }
+    double currEval = cSamples[i]["Cost Evaluation"];
+    double prevEval = cSamples[i]["Previous Evaluation"];
+    double sumEval = currEval + prevEval; 
+    
+    if (sumEval < minCostEvaluation)
+    {
+     bestPolicy = cSamples[i]["Policy"];
+     minCostEvaluation = sumEval;
+    }
   }
 
   for (size_t p = 0; p <= currentDepth; p++)

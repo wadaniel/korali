@@ -45,6 +45,11 @@ class Experiment : public korali::Module {
  korali::KoraliJson  _sampleInfo;
 
  /**
+ * @brief Maps sample Ids to their pointers
+ */
+ std::map<size_t, korali::Sample*> sampleIdMap;
+
+ /**
   * @brief Log file onto which to output log information. (Default = stdout)
   */
  FILE* _logFile;
@@ -72,7 +77,6 @@ class Experiment : public korali::Module {
   * @param val The value of the item to set.
  */
  void setItem(pybind11::object key, pybind11::object val);
-
 
  /**
   * @brief Load the state of a previous experiment's execution.

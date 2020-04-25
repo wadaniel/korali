@@ -1,0 +1,24 @@
+#ifndef _KORALI_SOLVER_QLEARNING_HPP_
+#define _KORALI_SOLVER_QLEARNING_HPP_
+
+#include "modules/solver/solver.hpp"
+
+namespace korali { namespace solver {
+
+class QLearning : public korali::Solver
+{
+ public:
+
+ size_t selectBestAction(size_t stateId, std::vector<size_t>& actionIdxVector, size_t& actionIdx);
+ size_t interpolateStateIndex(const std::vector<double>& state);
+ void setInitialConfiguration() override;
+ void runGeneration() override;
+ void printGenerationBefore() override;
+ void printGenerationAfter() override;
+
+};
+
+} } // namespace korali::solver
+
+
+#endif // _KORALI_SOLVER_QLEARNING_HPP_

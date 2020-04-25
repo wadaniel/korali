@@ -1,0 +1,11 @@
+#include "modules/problem/learning/learning.hpp"
+
+void korali::problem::Learning::initialize()
+{
+
+}
+
+void korali::problem::Learning::runEnvironment(korali::Sample& sample)
+{
+ sample.run(_environmentFunction);
+}

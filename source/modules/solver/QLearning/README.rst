@@ -1,8 +1,8 @@
 ******************************************************
-State-action-reward-state-action (SARSA) algorithm 
+Q-Learning Algoritum
 ******************************************************
 
-Here goes the description of the new solver module: SARSA
+Here goes the description of the new solver module: Q-learning
 
 You can add code:
 

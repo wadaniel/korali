@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 import math
+import numpy as np
 
 ######## Defining Problem's Configuration
 
-budget = 1 # Initial Budget (x)
-intervals = 100 # How fine will we discretize the variable space
+initialBudget = 1.0 # Initial Budget (x)
+intervals = 300 # How fine will we discretize the variable space
 
 # Defining list of cost functions, one per stage 
 evalFunctions = [
@@ -12,39 +13,37 @@ evalFunctions = [
   lambda x : -30*x*x + 17.63*x
   ]
 
-# The number of stages equals the number of functions defined above
-N = len(evalFunctions)
+# Environment that provides the state/action loop
+def environment(k):
 
-# Reward function to optimize
-
-def rewardFunction(k):
+  # Setting initial budget
+  budget = initialBudget
   
-  # Adding up all the policy decisions to see if it exceeds budget
-  sum = 0
-  for decision in k["Policy"]:
-   x = decision[0]
-   sum = sum + x
-
-  # Obtaining current recursion depth to check constraints
-  i = k["Current Depth"]
+  # Initializing reward
+  k["Reward"] = 0
   
-  # If this is not the last stage, we check if we have not exceeded the budget so far
-  if (i < N-1):
-   if (sum >  budget): 
-    # If we exceeded the budget, then this policy is non-viable. We set cost evaluation to infinity, 
-    # so that Korali will not select this policy.
-    k["Cost Evaluation"] = math.inf
-    return
-    
-  # If this is the last stage, we check whether this last choice fulfills the budget (no more, no less).
-  else: 
-   if (sum != budget): 
-    # If there is money left in the budget, this is not a viable policy. Returning infinity cost
-    k["Cost Evaluation"] = math.inf
+  # For each of the cost functions (stages)
+  for Fc in evalFunctions:
+
+   # Updating state with the value of the current (remaining) budget
+   k["State"] = [ budget ]  
+  
+   # Get back to Korali to obtain the next action to perform
+   k.update()
+
+   # Getting Action (how much to spend in this step)
+   spenditure = k["Action"][0] 
+  
+   # If spending decision is higher than remaining budget, then this is an inviable decision.
+   if (spenditure > budget):
+    k["Reward"] = -math.inf
     return 
     
-  # Since Korali minimizes cost, we maximize the reward by negating it
-  k["Cost Evaluation"] = -evalFunctions[i](x)
+   # Else, we substract the spenditure from the budget
+   budget = budget - spenditure
+   
+   # Then add the function calculation to the reward.
+   k["Reward"] = k["Reward"] + Fc(spenditure)
 
 ######## Configuring Korali Experiment
 
@@ -54,23 +53,33 @@ import korali
 e = korali.Experiment()
 
 # Configuring Problem
-e["Problem"]["Type"] = "Optimal Control"
-e["Problem"]["Cost Function"] = rewardFunction
+e["Problem"]["Type"] = "Learning"
+e["Problem"]["Environment Function"] = environment
 
-# Defining problem variables to discretize.
-e["Variables"][0]["Name"] = "X"
-e["Variables"][0]["Lower Bound"] = 0.0
-e["Variables"][0]["Upper Bound"] = budget 
-e["Variables"][0]["Interval Count"] = intervals
+# Defining problem's state.
+e["Variables"][0]["Name"] = "Budget"
+e["Variables"][0]["Type"] = "State"
+e["Variables"][0]["Parameter Vector"] = np.linspace(0, initialBudget, intervals, True).tolist()
 
-# Configuring the discretizer solver's parameters
-e["Solver"]["Type"] = "Dijkstra"
-e["Solver"]["Termination Criteria"]["Recursion Depth"] = N
+# Defining problem's actions.
+e["Variables"][1]["Name"] = "Spenditure"
+e["Variables"][1]["Type"] = "Action"
+e["Variables"][1]["Parameter Vector"] = np.linspace(0, initialBudget, intervals, True).tolist()
+
+# Configuring the solver
+e["Solver"]["Type"] = "QLearning"
+e["Solver"]["Learning Rate"] = 0.1
+e["Solver"]["Discount Factor"] = 0.1
+e["Solver"]["Initial Q Value"] = 10
+
+# Configuring Output
+e["Console Output"]["Frequency"] = 5000
+e["File Output"]["Enabled"] = False
 
 ######## Running Korali and printing results
 
 k = korali.Engine()
 k.run(e)
 
-print('Qmax: ' + str(e["Results"]["Optimal Policy"]))
-print('F(Qmax) = ' + str(-e["Results"]["Policy Evaluation"]))
+print('Best Policy:     ' + str(e["Results"]["Optimal Policy"]))
+print('Optimal Reward:  ' + str(e["Results"]["Optimal Reward"]))

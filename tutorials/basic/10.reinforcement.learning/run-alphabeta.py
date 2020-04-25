@@ -8,7 +8,7 @@ N = 3 # Number of stages
 initialX = 1.0 # Initial value of X
 alpha = 0.75 # Alpha
 beta = 0.50 # Beta
-NPoints = 100 # Discretization factor: how fine will we discretize the variable space
+intervals = 100 # Discretization factor: how fine will we discretize the variable space
 
 ######## Defining Problem's Formulae
 
@@ -20,8 +20,8 @@ def g(y):
 def h(v):
  return np.sin(10 * v)
  
-# Function to optimize
-def model(k):
+# Environment that provides the state/action loop
+def environment(k):
 
   # Initialize X as per problem's specifications
   x = initialX 
@@ -38,7 +38,7 @@ def model(k):
    # Get back to Korali to obtain the next action to perform
    k.update()
   
-   # Getting Action
+   # Getting Action (the value of Y)
    y = k["Action"][0] 
   
    # If Y greater than current X, then this is not a feasible policy, returning -infinite reward
@@ -61,17 +61,17 @@ e = korali.Experiment()
 
 # Configuring Problem
 e["Problem"]["Type"] = "Learning"
-e["Problem"]["Environment Function"] = model
+e["Problem"]["Environment Function"] = environment
 
 # Defining problem's state.
 e["Variables"][0]["Name"] = "X"
 e["Variables"][0]["Type"] = "State"
-e["Variables"][0]["Parameter Vector"] = np.linspace(0, initialX, NPoints, True).tolist()
+e["Variables"][0]["Parameter Vector"] = np.linspace(0, initialX, intervals, True).tolist()
 
 # Defining problem's actions.
 e["Variables"][1]["Name"] = "Y"
 e["Variables"][1]["Type"] = "Action"
-e["Variables"][1]["Parameter Vector"] = np.linspace(0, initialX, NPoints, True).tolist()
+e["Variables"][1]["Parameter Vector"] = np.linspace(0, initialX, intervals, True).tolist()
 
 # Configuring the solver
 e["Solver"]["Type"] = "QLearning"

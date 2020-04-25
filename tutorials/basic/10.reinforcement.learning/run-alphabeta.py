@@ -77,6 +77,7 @@ e["Variables"][1]["Parameter Vector"] = np.linspace(0, initialX, NPoints, True).
 e["Solver"]["Type"] = "QLearning"
 e["Solver"]["Learning Rate"] = 0.1
 e["Solver"]["Discount Factor"] = 0.1
+e["Solver"]["Initial Q Value"] = 50
 e["Solver"]["Termination Criteria"]["Convergence Tolerance"] = 0.0001
 
 # Configuring Output

@@ -36,7 +36,7 @@ void korali::solver::QLearning::setInitialConfiguration()
  _q.resize(_actionCount * _stateCount);
 
  for (size_t i = 0; i < _q.size(); i++)
-  _q[i] = 50;
+  _q[i] = _initialQValue;
 }
 
 void korali::solver::QLearning::runGeneration()

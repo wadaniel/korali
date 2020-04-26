@@ -12,7 +12,7 @@ t0 = 0 # Initial Object Temperature
 T = 200 # Target Object Temperature
 r = 5.0 # Tdiff Penalization Multiplier
 alpha = 0.6 # Heat Conductivity
-intervals = 300 # How fine will we discretize the variable space
+intervals = 100 # How fine will we discretize the variable space
 
 ######## Defining Problem's Formulae
 

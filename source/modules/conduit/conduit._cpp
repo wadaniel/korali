@@ -86,6 +86,7 @@ void korali::Conduit::wait(korali::Sample& sample)
  engine->_currentExperiment->_sampleInfo["Samples"][sampleId] = sample._js.getJson();
  if (sample._isAllocated == true) { free(sample._sampleThread); sample._isAllocated = false; }
  sample._state = SampleState::uninitialized;
+ co_delete(sample._sampleThread);
 
 }
 
@@ -111,6 +112,7 @@ size_t korali::Conduit::waitAny(std::vector<korali::Sample>& samples)
     engine->_currentExperiment->_sampleInfo["Samples"][sampleId] = samples[currentSample]._js.getJson();
     if (samples[currentSample]._isAllocated == true) { free(samples[currentSample]._sampleThread); samples[currentSample]._isAllocated = false; }
     samples[currentSample]._state = SampleState::uninitialized;
+    co_delete(samples[currentSample]._sampleThread);
     isFinished = true;
     break;
    }
@@ -148,6 +150,7 @@ void korali::Conduit::waitAll(std::vector<korali::Sample>& samples)
   engine->_currentExperiment->_sampleInfo["Samples"][sampleId] = samples[i]._js.getJson();
   if (samples[i]._isAllocated == true) { free(samples[i]._sampleThread); samples[i]._isAllocated = false; }
   samples[i]._state = SampleState::uninitialized;
+  co_delete(samples[i]._sampleThread);
  }
 
 }

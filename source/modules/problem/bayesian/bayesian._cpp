@@ -61,3 +61,10 @@ void korali::problem::Bayesian::evaluate(korali::Sample& sample)
  sample["F(x)"] = sample["logPosterior"];
  sample["P(x)"] = sample["logPosterior"];
 }
+
+
+void korali::problem::Bayesian::evaluateGradient(korali::Sample& sample)
+{
+ printf("YYYYY\n");
+ evaluateLogLikelihoodGradient(sample);
+}

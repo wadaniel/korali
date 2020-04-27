@@ -36,13 +36,19 @@ class Reference : public korali::problem::Bayesian
  * @param sample A Korali Sample
  */
  void loglikelihoodNormalAdditive(korali::Sample& sample);
+ 
+ /**
+  * @brief Gradient of Additive normal logLikelihood model w.r.t variable.
+  * @param sample A Korali Sample
+  */
+ void gradientLoglikelihoodNormalAdditive(korali::Sample& sample);
 
  /**
   * @brief Additive normal approach (for variance) to calculate the logLikelihood of the sample
   * @param sample A Korali Sample
   */
  void loglikelihoodNormalAdditiveVariance(korali::Sample& sample);
-
+ 
  /**
  * @brief Additive multiplicative approach to calculate the logLikelihood of the sample
  * @param sample A Korali Sample
@@ -77,6 +83,7 @@ class Reference : public korali::problem::Bayesian
  public:
 
  void evaluateLogLikelihood(korali::Sample& sample) override;
+ void evaluateLogLikelihoodGradient(korali::Sample& sample) override;
  void initialize() override;
 };
 

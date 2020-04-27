@@ -54,7 +54,12 @@ void korali::solver::TMCMC::setInitialConfiguration()
     _chainCandidatesGradients.resize(_populationSize);
     for(size_t i = 0; i < _populationSize; i++) _chainCandidatesGradients.resize(_k->_variables.size());
     _chainLeadersGradients.resize(_populationSize);
-    for(size_t i = 0; i < _populationSize; i++) _chainLeadersGradients.resize(_k->_variables.size());
+    for(size_t i = 0; i < _populationSize; i++) _chainLeadersGradients[i].resize(_k->_variables.size());
+    _chainSpecificGradients.resize(_populationSize);
+    for(size_t i = 0; i < _populationSize; i++) _chainSpecificGradients[i].resize(_k->_variables.size());
+
+    _upperExtendedBoundaries.resize(_k->_variables.size());
+    _lowerExtendedBoundaries.resize(_k->_variables.size());
  }
 
  // Init Generation
@@ -83,10 +88,10 @@ void korali::solver::TMCMC::runGeneration()
      if (_chainPendingEvaluation[c] == false)
      {
        _chainPendingEvaluation[c] = true;
-       samples[c]["Module"] = "Problem";
-       samples[c]["Operation"]    = "Evaluate";
-       samples[c]["Parameters"]   = _chainCandidates[c][_currentChainStep[c]];
-       samples[c]["Sample Id"]    = c;
+       samples[c]["Module"]     = "Problem";
+       samples[c]["Operation"]  = "Evaluate";
+       samples[c]["Parameters"] =  _chainCandidates[c][_currentChainStep[c]];
+       samples[c]["Sample Id"]  = c;
        _currentChainStep[c]++;
        _modelEvaluationCount++;
        _conduit->start(samples[c]);
@@ -98,14 +103,34 @@ void korali::solver::TMCMC::runGeneration()
 
     _chainCandidatesLogLikelihoods[finishedId] = samples[finishedId]["logLikelihood"];
     _chainCandidatesLogPriors[finishedId]      = samples[finishedId]["logPrior"];
- 
-    if(_version == "mTMCMC")
-    for( size_t i=0; i<_k->_variables.size(); i++)
+    processEvaluation(finishedId);
+
+  }
+    
+  if(_version == "mTMCMC")
+  {
+
+    printf("HERE\n");
+    for (size_t c = 0; c < _chainCount; c++)
     {
-      _chainCandidatesGradients[finishedId][i] = samples[finishedId]["Gradient"][i];
+      printf("PRE\n");
+      printf("START\n");
+      samples[c]["Module"]     = "Problem";
+      samples[c]["Operation"]  = "Evaluate Gradient";
+      samples[c]["Sample Id"]  = c;
+      _conduit->start(samples[c]);
     }
 
-    processEvaluation(finishedId);
+    for(size_t c = 0; c < _chainCount; c++)
+    {
+       size_t finishedId = _conduit->waitAny(samples);
+        
+       printf("POST\n");
+       for( size_t d=0; d<_k->_variables.size(); ++d)
+       _chainLeadersGradients[finishedId][d] = samples[finishedId]["logLikelihood Gradient"][d];
+       printf("SOME\n");
+    }
+    printf("DONE\n");
   }
 
   processGeneration();
@@ -179,12 +204,6 @@ void korali::solver::TMCMC::processEvaluation(const size_t sampleId)
     _chainLeaders[sampleId]               = _chainCandidates[sampleId][_currentChainStep[sampleId]-1];
     _chainLeadersLogPriors[sampleId]      = _chainCandidatesLogPriors[sampleId];
     _chainLeadersLogLikelihoods[sampleId] = _chainCandidatesLogLikelihoods[sampleId];
- 
-    if(_version == "mTMCMC")
-    for( size_t i=0; i<_k->_variables.size(); i++)
-    {
-      _chainLeadersGradients[sampleId] = _chainCandidatesGradients[i];
-    }
   }
 
   if( _currentChainStep[sampleId] > _currentBurnIn ){

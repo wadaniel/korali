@@ -44,6 +44,7 @@ class Approximate : public korali::problem::Bayesian
  public:
 
  void evaluateLogLikelihood(korali::Sample& sample) override;
+ void evaluateLogLikelihoodGradient(korali::Sample& sample) override;
  void initialize() override;
 };
 

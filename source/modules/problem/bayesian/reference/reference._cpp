@@ -253,3 +253,39 @@ void korali::problem::bayesian::Reference::loglikelihoodNormalMultiplicativeData
 
   sample["logLikelihood"] = -0.5*( _referenceData.size()*_log2pi + ssn) - _referenceData.size()*logSigma;
 }
+
+
+void korali::problem::bayesian::Reference::evaluateLogLikelihoodGradient(korali::Sample& sample)
+{
+  std::vector<std::vector<double>> gradient = sample["Gradient"];
+  if (gradient.size() != _referenceData.size())
+    _k->_logger->logError("This Bayesian (%s) problem requires a %lu-sized gradient array (a gradient for each reference evaluation). Provided: %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), sample["Gradient"].size());
+
+  if (_likelihoodModel == "Additive Normal") gradientLoglikelihoodNormalAdditive(sample);
+  else  _k->_logger->logError("Gradient not yet implemented for selected bayesian problem and log likelihood model.");
+}
+
+void korali::problem::bayesian::Reference::gradientLoglikelihoodNormalAdditive(korali::Sample& sample)
+{
+    double sigma = sample["Parameters"][sigmaVariableIndex];
+    double var   = sigma*sigma;
+    
+    std::vector<std::vector<double>> gradient = sample["Gradient"];
+    std::vector<double> refEvaluations = sample["Reference Evaluations"];
+
+    std::vector<double> llkgradient(_k->_variables.size(), 0.0);
+    for(size_t i = 0; i < _referenceData.size(); ++i)
+    {
+        if (gradient[i].size() != _k->_variables.size()-1) _k->_logger->logError("Bayesian Reference gradient calculation requires gradients of size %zu (provided size %zu)\n", _k->_variables.size(), gradient[i].size()-1);
+
+        for(size_t d = 0; d < _k->_variables.size()-1; ++d)
+        {
+            if( !isfinite(gradient[i][d]) ) _k->_logger->logWarning("Normal","Non-finite value detected in a provided gradient.\n");
+            llkgradient[d] -= gradient[i][d]*(refEvaluations[i]-_referenceData[i]);
+        }
+    }
+    for(size_t d = 0; d < _k->_variables.size()-1; ++d) llkgradient[d] /= var;
+    llkgradient[_k->_variables.size()-1] = 1.0/sigma;
+
+    sample["logLikelihood Gradient"] = llkgradient;
+}

@@ -15,6 +15,21 @@ def model( s, x ):
 
   s["Reference Evaluations"] = result
 
+def modelWithDerivatives( s, x ): 
+  v1 = s["Parameters"][0]
+  v2 = s["Parameters"][1]
+  
+  grad = [ ]
+  fval = [ ]
+  for i in range(len(x)):
+    fval.append(v1*x[i] + v2)
+    grad.append([x[i], 1.0])
+
+  s["Reference Evaluations"] = fval
+  s["Gradient"] = grad
+
+
+
 def getReferenceData():
  y=[]
  y.append(3.2069);

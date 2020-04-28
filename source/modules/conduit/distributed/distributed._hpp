@@ -43,6 +43,11 @@ class Distributed : public korali::Conduit
  #ifdef _KORALI_USE_MPI
 
  /**
+  * @brief Actual MPI communicator for internal use.
+  */
+ MPI_Comm _mpiCommunicator;
+
+ /**
   * @brief ID of the current rank.
   */
  int _rankId;

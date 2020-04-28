@@ -2,7 +2,34 @@
 
 void korali::problem::Learning::initialize()
 {
+ for (size_t i = 0; i < _k->_variables.size(); i++)
+ {
+//  printf("Var: %lu - type: %s\n", i, _k->_variables[i]->_type.c_str());
+  if (_k->_variables[i]->_type == "State") _stateVectorIndexes.push_back(i);
+  if (_k->_variables[i]->_type == "Action") _actionVectorIndexes.push_back(i);
+ }
 
+ _actionVectorSize = _actionVectorIndexes.size();
+ _stateVectorSize = _stateVectorIndexes.size();
+
+ if (_actionVectorSize == 0) _k->_logger->logError("No action variables have been defined.\n");
+ if (_stateVectorSize == 0) _k->_logger->logError("No state variables have been defined.\n");
+
+// printf("actionSize: %lu, stateSize: %lu\n", _actionVectorSize, _stateVectorSize);
+
+ _stateCount = 1;
+ for (size_t i = 0; i < _stateVectorSize; i++)
+ {
+  size_t index = _stateVectorIndexes[i];
+  _stateCount *= _k->_variables[index]->_parameterVector.size();
+ }
+
+ _actionCount = 1;
+  for (size_t i = 0; i < _actionVectorSize; i++)
+  {
+   size_t index = _actionVectorIndexes[i];
+   _actionCount *= _k->_variables[index]->_parameterVector.size();
+  }
 }
 
 void korali::problem::Learning::runEnvironment(korali::Sample& sample)

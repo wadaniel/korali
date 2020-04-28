@@ -1,6 +1,46 @@
 Mark Martori Lopez
 
+Wednesday 22 April 2020
 
+Tasks:
+
+1- [Solved] Add an option to clear the experiments if needed. ( Deleting the widgets previously set ).
+
+2- [Semi-Solved] CURRENT GOAL : Add the option to import a file, read it and print its content organized on the screen.
+	Step 1: [Solved] Create the button for importing the file.
+
+	Step 2: [Solved] Create the function to open a dialogue asking for an input file.
+
+	Step 3: [Solved] Display all the entries belonging to the problem and solver used in the config file.
+
+	Step 4: [Solved] Display each entry in its corresponding frame.
+
+	Step 5: [Semi-Solved] Insert all the values from the imported file into the corresponding entries.
+		-> So far only with the problem chosen.
+
+3- [Not-Solved] NEXT GOAL: Finish filling the entries from Solver and Variables when importing a file.
+	
+
+-----------------------------------------------------
+Tuesday 21 April 2020
+
+Tasks:
+
+1- [Solved] Allow the user to copy the variable Frame into a new Variable.
+
+2- [Solved] Update the dictionary 'results' every time you add a new variable.
+
+3- [Solved] Delete the variable from the dictionary 'results' if the user decides to delete the variable Frame.
+
+4- [Solved] Dump the values written by the user into the .config file.
+
+5- [Solved] Collect the values from different Variables Frames in different dictionaries inside the list 'Variables' of the .config.
+
+6- [Solved] Clean some 'global' variables to make the app more coherent.
+
+7- [Not-Solved] NEXT GOAL : Add the option to import a file, read it and write its content on the screen.
+
+---------------------------------------------------
 Wednesday 15 April 2020
 
 Tasks:

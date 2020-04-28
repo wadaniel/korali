@@ -1,0 +1,129 @@
+#include "modules/solver/learner/learner.hpp"
+
+void korali::solver::Learner::runGeneration()
+{
+ if (_k->_currentGeneration == 1)
+ {
+   _problem = dynamic_cast<korali::problem::Learning*>(_k->_problem);
+   setInitialConfiguration();
+ }
+
+ // Instructing Learner to initialize generation configuration
+ initializeGeneration();
+
+ // Initializing the agents and their environments
+ korali::Sample agent;
+
+ agent["Worker"] = 0;
+ agent["Sample Id"] = 0;
+ agent["Module"] = "Problem";
+ agent["Operation"] = "Run Environment";
+
+ _conduit->start(agent);
+ _conduit->wait(agent);
+
+ std::vector<double> state(_stateVectorIndexes.size());
+ std::vector<double> action(_problem->_actionVectorIndexes.size());
+ std::vector<double> newState(_stateVectorIndexes.size());
+
+ // Variable to store the reward
+ double reward;
+
+ // Storage for the entire history of the current policy
+ std::vector<std::vector<double>> currentPolicyActions;
+ std::vector<std::vector<double>> currentPolicyStates;
+
+ // Storing agent's initial state
+ state = agent["State"];
+
+ while (agent["Finished"] == false)
+ {
+  // Getting new action to perform
+  agent["Action"] = getAction(state);
+
+  // Add state/action to current policy history
+  currentPolicy.push_back(action);
+  currentPolicyStates.push_back(state);
+
+  // Running a new episode
+  _conduit->start(agent);
+  _conduit->wait(agent);
+
+  // Storing agent's new state
+  newState = agent["State"];
+
+  // Storing agent's reward for the given (s,a)
+  reward = agent["Reward"];
+
+  // Storing the agent's experience into the learner
+  storeExperience(state, action, reward, newState);
+
+  // The new state becomes the current state
+  state = newState;
+ }
+
+ if (reward > _bestReward)
+ {
+  _bestReward = reward;
+  _bestPolicy = currentPolicy;
+
+  _k->_js["Results"]["Optimal Policy Actions"] = _bestPolicy;
+  _k->_js["Results"]["Optimal Policy States"] = _bestPolicy;
+  _k->_js["Results"]["Optimal Reward"] = _bestReward;
+ }
+
+ // Instructing Learner to process finsihed generation
+ processGeneration();
+}
+
+size_t korali::solver::learner::interpolateStateIndex(const std::vector<double>& state)
+{
+ size_t pos = 0;
+ size_t multiplier = 1;
+
+ for (size_t i = 0; i < state.size(); i++)
+ {
+  double value = state[i];
+  size_t index = _problem->_stateVectorIndexes[i];
+
+  double minDiff = korali::Inf;
+  size_t valPos = 0;
+  for (size_t j = 0; j < _k->_variables[index]->_parameterVector.size(); j++)
+  {
+   double diff = abs(value - _k->_variables[index]->_parameterVector[j]);
+   if (diff < minDiff) { minDiff = diff; valPos = j; }
+  }
+
+  pos += valPos * multiplier;
+  multiplier *= _k->_variables[index]->_parameterVector.size();
+ }
+
+ return pos;
+}
+
+size_t korali::solver::learner::interpolateActionIndex(const std::vector<double>& action)
+{
+ size_t pos = 0;
+ size_t multiplier = 1;
+
+ for (size_t i = 0; i < action.size(); i++)
+ {
+  double value = action[i];
+  size_t index = _problem->_actionVectorIndexes[i];
+
+  double minDiff = korali::Inf;
+  size_t valPos = 0;
+  for (size_t j = 0; j < _k->_variables[index]->_parameterVector.size(); j++)
+  {
+   double diff = abs(value - _k->_variables[index]->_parameterVector[j]);
+   if (diff < minDiff) { minDiff = diff; valPos = j; }
+  }
+
+  pos += valPos * multiplier;
+  multiplier *= _k->_variables[index]->_parameterVector.size();
+ }
+
+ return pos;
+}
+
+

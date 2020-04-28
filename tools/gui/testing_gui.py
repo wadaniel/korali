@@ -6,7 +6,7 @@ import os, sys
 import json
 import copy                     # recursiveUpdate
 from functools import partial # Callback to retrieve values from entries
-from tkinter.filedialog import asksaveasfile
+from tkinter.filedialog import asksaveasfile, askopenfilename
 
 
 # ************ VARIABLES *****************
@@ -15,30 +15,26 @@ LARGE_FONT = ("Verdana",12) #Font and size.
 NORM_FONT = ("Verdana",10) #Font and size.
 SMALL_FONT = ("Verdana",8) #Font and size.
 RES_FONT = ('Courier',12)
+font = "Helvetica 10"
 
 darkColor ='lightseagreen'
 lightColor = '#00A3E0'
 extraColor = '#183A54'
 
-datcounter = 0
+contador = 1 # Counts the number of experiments.
+cont = 0     # Which frame are we in. Problem, Solver or Variables.
 
-contador = 1
-cont = 0
-numofexperiments = [] # Empty list to keep the count of tabs.
-contadorVariables = 1
+contadorVariables = 1 # Counts the number of variables.
+linktoVariables = []  # Stores the information coming from Problem and Solver to update the Variable Frame.
 
-#stringVar = {}
-results = {}
+menus = [] # Store which directories have already been read.
+listofproblems = []
+listofsolvers = []
 
-first = True
-
-font = "Helvetica 10"
-
-menus = []
-
-totalTabs = ''
+#totalTabs = ''
 experiments = {}
 selectedtab = ''
+selectedtab2 = ''
 
 default = False
 on = 0
@@ -98,9 +94,6 @@ def tutorial():
 def popupmsgwarning(text):
     Tk().withdraw()
     showwarning(title = 'Error',message=text)
-    
-def openFile(fileName):
-	print("Open File "+fileName+"!")
 
 def validardigit(num):
     # Función para validar POSITIVOS Y NEGATIVOS.
@@ -152,6 +145,24 @@ def callback(var, *args):
 ################
 ################ DELETE FUNCTIONS:
 
+def clearFrame():
+    global experiments
+    global selectedtab
+    global selectedtab2
+
+    frame = experiments[selectedtab]['canvas']
+    frame2 = experiments[selectedtab]['rightFrame']
+    frame3 = experiments[selectedtab]['bottomrightFrame']
+    frame3 = frame3.tab2
+    for widget in frame.winfo_children():
+        widget.destroy()
+    for widget in frame2.winfo_children():
+        widget.destroy()
+    ############################# THIS MUST BE CHANGED TO DELETE ALL VARIABLES NOT JUST THE LAST ONE:
+##    for widget in frame3.winfo_children():
+##            widget.destroy()        
+##
+    deleteVariable(frame3)
 
 def deleteTab(self,totalTabs):
     global contador
@@ -159,19 +170,25 @@ def deleteTab(self,totalTabs):
         for item in totalTabs.winfo_children():
             if str(item)==totalTabs.select():
                 item.destroy()
+                contador -=1
                 return
     else:
         popupmsgwarning('At least 2 experiments to delete 1')
 
 def deleteVariable(self):
-    global contadorVariables
     global experiments
     global selectedtab
     
     totalTabs2 = experiments[selectedtab]['totalTabs2']
+    #frame = experiments[selectedtab]['bottomrightFrame']
+    results =  experiments[selectedtab]['results']
     ## Delete Tab and frame inside:
     if len(totalTabs2.tabs()) > 1:
-        totalTabs2.forget(totalTabs2.select())
+        a = totalTabs2.select()
+        selectedtab2Deleted = totalTabs2.tab(a, "text")
+        del results[2][selectedtab2Deleted]
+        totalTabs2.forget(a)
+        
     else:
         popupmsgwarning('At least 2 variables to delete 1')
 
@@ -182,13 +199,17 @@ def printdata(self,line, texto, description, fakedescription, r, c,cont):
     
     global experiments
     global selectedtab
-    global results
-    global first
+    global selectedtab2
 
+    results = experiments[selectedtab]['results']
     if cont == 2:
         color = 'floralwhite'
+        res = results[cont][selectedtab2]
+        print('Creando variable en el selectedtab2 :',selectedtab2, texto)
     else:
         color = 'azure'
+        
+        res = results[cont]
     
     double_Var = tk.DoubleVar()
     num = tk.IntVar()
@@ -196,16 +217,6 @@ def printdata(self,line, texto, description, fakedescription, r, c,cont):
     experiments[selectedtab]['results'] = results
     stringVar = {}
     
-    
-    '''
-        mycanvas = ResizingCanvas(self,width=950, height=840, bg="red", highlightthickness=0)
-        mycanvas.pack(fill=BOTH, expand=YES)
-    
-        self = mycanvas
-        first = False
-    '''
-    
-    #print('Añado en :'+str(cont)+' esto :'+texto)
     if 'vector' not in line:
         
         if 'string' in line or 'korali' in line: # == 'std::string
@@ -213,11 +224,11 @@ def printdata(self,line, texto, description, fakedescription, r, c,cont):
             self.label.grid(row=r, column=c,pady = 20,padx=20, sticky='w')
             stringVar[texto] = tk.StringVar()
             #self.stringVar[texto].trace('w', partial(callback,self.stringVar[texto]))
-            results[cont][texto] = tk.Entry(self,width=10,textvariable = stringVar[texto])
-            results[cont][texto].grid(row=r, column=c+1, pady= 20, padx=20, sticky = 'w')
+            res[texto] = tk.Entry(self,width=10,textvariable = stringVar[texto])
+            res[texto].grid(row=r, column=c+1, pady= 20, padx=20, sticky = 'w')
             #print('Añado en :'+str(cont)+' esto :'+texto)
             self.corrector = self.register(validarstring)
-            results[cont][texto].config(validate = 'focus',validatecommand = (self.corrector,'%P')) # %P represents the parameter we want to pass to validate.
+            res[texto].config(validate = 'focus',validatecommand = (self.corrector,'%P')) # %P represents the parameter we want to pass to validate.
             self.buttonLabel = tk.Button(self, text = fakedescription, width = 45, activeforeground = 'darkcyan', bg = color ,activebackground = 'white',
                                             command = lambda:explainDescription(description))
             self.buttonLabel.grid(row=r, column=c+3,sticky='w')
@@ -227,12 +238,12 @@ def printdata(self,line, texto, description, fakedescription, r, c,cont):
         elif line == 'double':
             self.label=tk.Label(self, text=texto, width = 17,justify='left', bg=color, anchor="w", font="Arial 16")
             self.label.grid(row=r, column=c,pady = 20,padx=20, sticky='w')
-            results[cont][texto] = Spinbox(self, width=10, from_=0, to=9999, wrap=True, textvariable=num, state='normal')
-            results[cont][texto].grid(row=r, column=c+1, pady= 20, padx=20)
+            res[texto] = Spinbox(self, width=10, from_=0, to=9999, wrap=True, textvariable=num, state='normal')
+            res[texto].grid(row=r, column=c+1, pady= 20, padx=20)
             self.corrector = self.register(validardigit)
-            results[cont][texto].config(validate = 'key',validatecommand = (self.corrector,'%P')) # %P represents the parameter we want to pass to validate.
+            res[texto].config(validate = 'key',validatecommand = (self.corrector,'%P')) # %P represents the parameter we want to pass to validate.
             #spinbox_value = spinbox.get()
-        
+            
         elif line == 'bool':
             self.label=tk.Label(self, text=texto, width = 17,justify='left',bg=color, anchor="w", font="Arial 16")
             self.label.grid(row=r, column=c,pady = 20,padx=20, sticky='w')
@@ -243,17 +254,16 @@ def printdata(self,line, texto, description, fakedescription, r, c,cont):
             radiobutton = tk.Radiobutton(self, width=10,text='False' ,highlightbackground = color,activeforeground ='white', bg=color,
                                         activebackground='darkcyan',borderwidth = 0,variable = boolean, value='f')
             radiobutton.grid(row=r, column=c+2, columnspan = 1,pady= 20, padx=20, sticky = 'w')
-            results[cont][texto] = boolean
-
-            
+            res[texto] = boolean
+             
         elif line == 'size_t':
             self.label=tk.Label(self, text=texto, width = 17,justify='left', bg=color, anchor="w", font="Arial 16")
             self.label.grid(row=r, column=c,pady = 20,padx=20, sticky='w')
             stringVar[texto] = tk.StringVar()
-            results[cont][texto] = tk.Entry(self,width=10,textvariable = stringVar[texto])
-            results[cont][texto].grid(row=r, column=c+1, pady= 20, padx=20, sticky = 'w')
+            res[texto] = tk.Entry(self,width=10,textvariable = stringVar[texto])
+            res[texto].grid(row=r, column=c+1, pady= 20, padx=20, sticky = 'w')
             self.corrector = self.register(validarstring)
-            results[cont][texto].config(validate = 'focus',validatecommand = (self.corrector,'%P')) # %P represents the parameter we want to pass to validate.
+            res[texto].config(validate = 'focus',validatecommand = (self.corrector,'%P')) # %P represents the parameter we want to pass to validate.
             self.buttonLabel = tk.Button(self, text = fakedescription, width = 45, activeforeground = 'darkcyan', bg = color,activebackground = 'white',
                                             command = lambda:explainDescription(description))
             self.buttonLabel.grid(row=r, column=c+3,sticky='w')
@@ -265,10 +275,10 @@ def printdata(self,line, texto, description, fakedescription, r, c,cont):
             self.label=tk.Label(self, text=texto, width = 17,justify='left', bg=color, anchor="w", font="Arial 16")
             self.label.grid(row=r, column=c,pady = 20,padx=20, sticky='w')
             stringVar[texto] = tk.StringVar()
-            results[cont][texto] = tk.Entry(self,width=10,textvariable = stringVar[texto])
-            results[cont][texto].grid(row=r, column=c+1, pady= 20, padx=20, sticky = 'w')
+            res[texto] = tk.Entry(self,width=10,textvariable = stringVar[texto])
+            res[texto].grid(row=r, column=c+1, pady= 20, padx=20, sticky = 'w')
             self.corrector = self.register(validarstring)
-            results[cont][texto].config(validate = 'focus',validatecommand = (self.corrector,'%P')) # %P represents the parameter we want to pass to validate.
+            res[texto].config(validate = 'focus',validatecommand = (self.corrector,'%P')) # %P represents the parameter we want to pass to validate.
             self.buttonLabel = tk.Button(self, text = fakedescription, width = 45, activeforeground = 'darkcyan', bg = color,activebackground = 'white',
                                             command = lambda:explainDescription(description))
             self.buttonLabel.grid(row=r, column=c+3,sticky='w')
@@ -277,8 +287,8 @@ def printdata(self,line, texto, description, fakedescription, r, c,cont):
             self.label=tk.Label(self, text=texto, width = 17,justify='left', bg=color, anchor="w", font="Arial 16")
             self.label.grid(row=r, column=c,pady = 20,padx=20, sticky='w')
             stringVar[texto] = tk.StringVar()
-            results[cont][texto] = tk.Entry(self,width=10,textvariable = stringVar[texto])
-            results[cont][texto].grid(row=r, column=1, pady= 20, padx=20)
+            res[texto] = tk.Entry(self,width=10,textvariable = stringVar[texto])
+            res[texto].grid(row=r, column=1, pady= 20, padx=20)
             self.corrector = self.register(validardigit)
 
 def printVariables(self,directorio,DB,cont):
@@ -288,11 +298,12 @@ def printVariables(self,directorio,DB,cont):
     '''
     global on
     global variables
+    global linktoVariables
     global linktoVariables0
     global linktoVariables1
-    global entry
-    global stringVar
     global experiments
+    global selectedtab2
+    global selectedtab
 
     self = experiments[selectedtab]['bottomrightFrame']
     self = self.tab2
@@ -310,21 +321,17 @@ def printVariables(self,directorio,DB,cont):
         linktoVariables1 = DB[directorio]['config']
         
     if on == 0:
-        linktoVariables = []
         linktoVariables.append(linktoVariables0)    # Añadimos las variables que vienen del Problem.
         linktoVariables.append(linktoVariables1)    # Añadimos las variables que vienen del Solver.
         cont = 2
-        results[cont] = {}
         
+        results = experiments[selectedtab]['results']
+        # Coger nombre variable:
+        results[cont] = {}
+        results[cont][selectedtab2] = {}        
    
         ro = 0
         co = 0
-
-        double_Var = tk.DoubleVar()
-        string_Var = tk.StringVar()
-        num = tk.IntVar()
-        boolean = tk.BooleanVar()
-    
 
         for part in linktoVariables:
             for llave in variables[part].keys():
@@ -348,14 +355,13 @@ def printConfig(directorio,DB, cont):
     global selectedtab
     global experiments
 
-
     # From which cascade do we come from? Problem, Solver or Variable?
     if cont == 0:
         self = experiments[selectedtab]['rightFrame']
     elif cont == 1:
         self = experiments[selectedtab]['canvas']
-    elif cont == 2:
-        self = experiments[selectedtab]['bottomrightFrame']
+    #elif cont == 2:
+    #    self = experiments[selectedtab]['bottomrightFrame']
     #####
 
     ## DELETE ANY WIDGET THAT WAS THERE BEFORE:
@@ -365,7 +371,7 @@ def printConfig(directorio,DB, cont):
     # Set variables:
     r = 0
     c = 0
-
+    results = experiments[selectedtab]['results']
     results[cont]={}
 
     # Start reading and printing on screen: # DON'T DELETE THIS COMMENT -> TITULO FRAMES : list(DB.keys())[0]
@@ -416,46 +422,87 @@ def printConfig(directorio,DB, cont):
                                     
 ##########################
 ########################## MAIN FUNCTIONS:
+def importFile():
+    global experiments
+    global configTreeDB
+    global solverDB
+
+    filename = askopenfilename()
+    file = open(filename,'r')
+    parsedFile = json.load(file)
+    file.close()
+    bottomrightFrame = experiments[selectedtab]['bottomrightFrame']
+
+    valuesProblem = []
+    valuesSolver = []
+    valuesVariables = []
+    rightFrame = experiments[selectedtab]['rightFrame']
+    results = experiments[selectedtab]['results']
+    
+    for directorio in parsedFile.keys(): # Loop through the keys of the config file.
+        if directorio in listofproblems:
+            print('ES UN PROBLEM :', directorio)
+            cont = 0
+            printConfig(directorio,configTreeDB,cont)
+            printVariables(bottomrightFrame.tab2,directorio,configTreeDB,cont)
+            for key2 in parsedFile[directorio]:
+                valuesProblem.append(parsedFile[directorio][key2])
+            numofentry = 0
+            for key in results[cont].keys():
+                e = results[cont][key]
+                e.insert(0,valuesProblem[numofentry])
+                numofentry+=1
+            
+        elif directorio in listofsolvers:
+            print('ES UN SOLVER :',directorio)
+            cont = 1
+            printConfig(directorio,solverDB,cont)
+            printVariables(bottomrightFrame.tab2,directorio,solverDB,cont)
+            for key2 in parsedFile[directorio]:
+                valuesSolver.append(parsedFile[directorio][key2])
+            for key in results[cont].keys():
+                e = results[cont][key]
+                e.insert(0,valuesSolver[numofentry])
+                numofentry+=1
+
+                          
+    '''
+    for frame in parsedFile.keys():
+        for texto in parsedFile[frame]:
+            w = parsedFile[frame][texto]
+            val = w.get()
+            results2[frame][texto] = valprint(valuesProblem, valuesSolver)
+    '''
+           
 def createConfig():
     global selectedtab # To know at which experiment we are.
     global experiments
-    global results
-
-    
     #results = experiments[selectedtab]['results']
     bottomleftFr = experiments[selectedtab]['canvas']
     rightFr = experiments[selectedtab]['rightFrame']
     variableFr = experiments[selectedtab]['totalTabs2']
 
+    results = experiments[selectedtab]['results']
+    results2 = results.copy()
+    results2[rightFr.titulo.cget('text')] = results2.pop(0)
+    results2[bottomleftFr.titulo.cget('text')] = results2.pop(1)
+    results2['Variables'] = results2.pop(2)
+    for frame in results2.keys():
+        for texto in results2[frame]:
+            w = results2[frame][texto]
+            if isinstance(w,dict):
+                results2[frame][texto] = []
+                for key in w:
+                    val = w[key].get()
+                    d = {key:val}
+                    results2[frame][texto].append(d)
+            else:
+                val = w.get()
+                results2[frame][texto] = val
     cwd = os.getcwd()
     file = open(cwd+"/filename.config", "w")
-    file.write('### .config File obtained from Korali### \n \n'+selectedtab+' {\n')
-    for frame in results.keys():
-        
-        if frame == 0:
-            file.write('{Problem: {'+rightFr.titulo.cget('text')+': [')
-            
-        elif frame == 1:
-            file.write('{Solver: {'+bottomleftFr.titulo.cget('text')+': [')
-            
-        elif frame == 2:
-            file.write('{Variables: '+'['+variableFr.tab(variableFr.select(), "text")+': ')
-            
-        else:
-            popupmsgwarning('Error 404')
-
-        for widget in results[frame]:
-                w = results[frame][widget]                    
-                val = w.get()
-                to_write = '{'+widget+': '+str(val)+'}'
-                
-                if widget == list(results[frame])[-1]:
-                    file.write(to_write+']}},\n')
-                else:
-                    file.write(to_write+',')
-    file.write('}')
-    
-                
+    #file.write('### .config File obtained from Korali### \n \n'+selectedtab+' {\n')
+    json.dump(results2, file, indent = 6)
 
     #### ASK TO DOWNLOAD AND SAVE THE FILE:
     files = [('All Files', '*.*'),  
@@ -463,7 +510,7 @@ def createConfig():
              ('Text Document', '*.txt')] 
     filesaved = asksaveasfile(filetypes = files, defaultextension = files)
     file.close()
-    
+
 def recursiveUpdate(dest, defaults):
  if (isinstance(defaults, dict)):               # Si default es un diccionario...
   for k, x in defaults.items():                 # Para cada key y valor.
@@ -516,19 +563,19 @@ def readDirs(filePath,DB,default):
                         #print(dirInfoDic['config'])
                         #print(dirInfoDic['herencia'],'\n')
                     finally:
-                        archivo.close()                                        
+                        archivo.close()
                 elif fileName.endswith('.rst'): # Dame el nombre dentro del README:
                     try:
                         file = open(filePath+'/'+fileName,"r")
                         lines = file.readlines()
                         for i in range(0,len(lines)):
                             line = lines[i]
-                            if '******' not in line:
-                                continue
-                            else:
+                            if '****\n' in line or '===\n' in line:
                                 name = lines[i+1]
                                 dirInfoDic['names'] = name.replace('\n','') # Quitar '\n'
                                 break
+                            else:
+                                pass
                     finally:
                         file.close() ## Cierra el archivo README.
             continue
@@ -557,6 +604,8 @@ def crearVariables(DB):
 def crearMenu(padre,directorio,DB,cont):
     global menus
     global experiments
+    global listofproblems
+    global listofsolvers
     
     bottomrightFrame = experiments[selectedtab]['bottomrightFrame']
     nombre = DB[directorio]['names']
@@ -572,6 +621,12 @@ def crearMenu(padre,directorio,DB,cont):
         for child in children:
             crearMenu(subMenu,child,DB,cont)
     menus.append(directorio)
+    if cont == 0:
+        if directorio not in listofproblems:
+            listofproblems.append(directorio)
+    elif cont == 1:
+        if directorio not in listofsolvers:
+            listofsolvers.append(directorio)
 
 
 
@@ -590,11 +645,11 @@ def cascade(mainPath,DB,cont):
     menuButton.grid(row=0, column = cont, pady=10, padx=10, rowspan = 3)
         
     menus.append(titulo) # Añadimos el título del boton, para no repetirlo en los desplegables.
+    
       
     # Empezar los menus recursivamente llamando a la funcion crearMenu:
     for directorio in DB.keys():
         crearMenu(menuPadre,directorio,DB,cont)
-            
     menus.clear() # Allows creating different experiments by emptying the menus list.
 
 def crearFrameVariables(self):
@@ -602,24 +657,66 @@ def crearFrameVariables(self):
     global contadorVariables
     global experiments
     global selectedtab
+    global linktoVariables
+    global variables
+    global selectedtab2
+
     
     bottomrightFrame = experiments[selectedtab]['bottomrightFrame']
     totalTabs2 = experiments[selectedtab]['totalTabs2']
-    #for item in self.totalTabs
-    if contadorVariables < 15:
-        ## Create Tab and frames inside:
+    if len(totalTabs2.tabs()) == 0:
         bottomrightFrame.tab2 = tk.Frame(bottomrightFrame, height = 450, width = 300, background = 'floralwhite')#florawhite
-        totalTabs2.add(bottomrightFrame.tab2, text = 'Variable '+str(contadorVariables))
-        contadorVariables += 1
-        bottomrightFrame.tab2.grid_propagate(0)
+        selectedtab2 = 'Variable '+str(contadorVariables)
+        totalTabs2.add(bottomrightFrame.tab2, text = selectedtab2)
+        contadorVariables  += 1
+    #for item in self.totalTabs
     else:
-        popupmsgwarning('Number of Variables exceeded!')
-    
+        if linktoVariables == []:
+            popupmsgwarning('First choose a Problem and a Solver')
+        else:
+            if contadorVariables < 15 :
+                    ## Create Tab and frames inside:
+                    bottomrightFrame.tab2 = tk.Frame(bottomrightFrame, height = 450, width = 300, background = 'floralwhite')#florawhite
+                    selectedtab2 = 'Variable '+str(contadorVariables)
+                    totalTabs2.add(bottomrightFrame.tab2, text = selectedtab2)
+                
+                    print('Creando frame en tab :', selectedtab2)
+                
+                    self = bottomrightFrame.tab2
+                    cont = 2
+                    results = experiments[selectedtab]['results']
+                    # Coger nombre variable:
+                    #variableFr = experiments[selectedtab]['totalTabs2']
+                    results[cont][selectedtab2] = {}
+                    ro = 0
+                    co = 0
+                    for part in linktoVariables:
+                        for llave in variables[part].keys():
+                            #print(llave)
+                            if llave == 'Type':
+                            # llave son las llaves del diccionario, por ejemplo: Type, Function, Description, Produced By...
+                                texto = variables[part]['Name']
+                                texto = texto[0] # Remove the '{}' from the label name.
+                                description = variables[part]['Description']
+                                if len(description)>45:
+                                    fakedescription = str(description[0:42])+'...'
+                                else:
+                                    fakedescription = description
+                                
+                                printdata(self,variables[part][llave], texto, description,fakedescription, ro, co, cont)
+                            ro+=1
+                    ## ADD THE NEW VARIABLE TO THE DICTIONARY OF RESULTS:
+            else:
+                popupmsgwarning('Number of Variables exceeded!')
+            
 ## Crea los tabs de uno en uno
 def crearTab(self,totalTabs):
     global contador
-    global experiments
     global selectedtab
+    global experiments
+    global linktoVariables
+        
+    linktoVariables = []
 
     if contador < 7:
                 ## Create Tab and frames inside:
@@ -636,7 +733,13 @@ def crearTab(self,totalTabs):
                                              activebackground = 'darkcyan',activeforeground='azure', bd = 3, bg = 'teal',fg = 'azure', font = 'Arial 12',
                                              width = 20)
 
-                self.button_done.grid(row=0, column=6, pady= 20, padx=20, sticky = 'E')
+                self.button_done.grid(row=0, column=3, pady= 20, padx=20, sticky = 'E')
+                
+                self.button_Import = tk.Button(self.leftFrame, text = 'Import .config file',command = lambda: importFile(),
+                                             activebackground = 'darkcyan',activeforeground='azure', bd = 3, bg = 'teal',fg = 'azure', font = 'Arial 12',
+                                             width = 20)
+
+                self.button_Import.grid(row=0, column=4, pady= 20, padx=20, sticky = 'E')
                 self.update_idletasks
 
 
@@ -647,6 +750,7 @@ def crearTab(self,totalTabs):
                 self.bottomleftFrame1 = tk.Frame(self.tab, background = 'azure', width = 950, height = 80, borderwidth = 3,relief = 'groove')#width = 950, height = 850
                 self.bottomleftFrame1.grid(column = 0, row = 1, sticky = 'nsew',rowspan = 2) #, sticky = 'sw', rowspan = 3, columnspan = 1)
                 self.bottomleftFrame1.grid_propagate(0)
+
                 ## CANVAS + SCROLLBAR
 
                 ## Good One:
@@ -690,16 +794,15 @@ def crearTab(self,totalTabs):
                 '''
                 ## END CANVAS + SCROLLBAR
 
-
-
                 self.bottomrightFrame = tk.Frame(self.tab, width = 900, height = 450, background ='azure', borderwidth = 1,relief = 'ridge')
                 self.bottomrightFrame.grid(column = 1, row = 2,sticky = 'nsew', rowspan = 1)#, sticky = 'se', rowspan = 2, columnspan = 1)
 
                 
                 # STORE A DICTIONARY WITH ALL THE FRAMES ON IT TO BE CALLED ON ANY FUNCTION AND AVOID PASSING FRAMES.
                 expElements = {}
-
                 experiments[selectedtab] = expElements
+                experiments[selectedtab]['results'] = {}
+                
                 expElements['leftFrame'] = self.leftFrame
                 expElements['rightFrame'] = self.rightFrame
                 expElements['bottomrightFrame'] = self.bottomrightFrame
@@ -712,7 +815,6 @@ def crearTab(self,totalTabs):
                 expElements['totalTabs2'] = self.totalTabs2
 
                 crearFrameVariables(self)
-                
 
                 self.leftFrame.grid_propagate(0)
                 self.rightFrame.grid_propagate(0)
@@ -729,7 +831,6 @@ def crearTab(self,totalTabs):
                 cascade(mainPath,configTreeDB,cont)
                 cont+=1
                 cascade(mainPath2,solverDB,cont)
-                #numofexperiments.append(index)
                 contador += 1 # Controlar el número de experimentos que hay. Máximo 6 -> crearTab()
                 
     else:
@@ -750,8 +851,6 @@ class KORALI(tk.Tk): #Inherited tk.tk
  
         tk.Tk.wm_title(self,'KORALI')
 
-        global contador
-        global contadorVariables
         global selectedtab
 
         # Barra de arriba:
@@ -774,7 +873,7 @@ class KORALI(tk.Tk): #Inherited tk.tk
         self.experimentmenu.add_command(label = 'Delete Experiment...', command = lambda: deleteTab(self,self.totalTabs))#self.totalTabs.forget(self.tab))#lambda:deletetab(self,self.totalTabs,contador))
         self.experimentmenu.add_command(label = 'Delete Variable...', command = lambda:deleteVariable(self))
         self.experimentmenu.add_separator() # Separator baselr.
-        self.experimentmenu.add_command(label = 'Done!', command = lambda:popupmsgwarning('Not done yet'))
+        self.experimentmenu.add_command(label = 'Clear Experiment...', command = lambda:clearFrame())
         self.menubar.add_cascade(label = 'Experiments Configuration', menu = self.experimentmenu)
 
         ##### HELP MENU:
@@ -806,26 +905,6 @@ class KORALI(tk.Tk): #Inherited tk.tk
         #self.toolbar.pack_propagate(0)
     
 
-'''
-class ResizingCanvas(Canvas):
-    def __init__(self,parent,**kwargs):
-        Canvas.__init__(self,parent,**kwargs)
-        self.bind("<Configure>", self.on_resize)
-        self.height = self.winfo_reqheight()
-        self.width = self.winfo_reqwidth()
-
-    def on_resize(self,event):
-        # determine the ratio of old width/height to new width/height
-        wscale = float(event.width)/self.width
-        hscale = float(event.height)/self.height
-        self.width = event.width
-        self.height = event.height
-        # resize the canvas 
-        self.config(width=self.width, height=self.height)
-        # rescale all the objects tagged with the "all" tag
-        self.scale("all",0,0,wscale,hscale)
-      
-'''
 ## --------------- END OF CLASSES ------------------------    
 ########################################################    
 
@@ -835,7 +914,6 @@ variables = {}
 
 readDirs(mainPath, configTreeDB,default)
 readDirs(mainPath2,solverDB, default)
-
 #print(configTreeDB)
        
 app = KORALI()

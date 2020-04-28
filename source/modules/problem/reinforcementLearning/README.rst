@@ -1,5 +1,5 @@
 ****************************
-Learning
+Reinforcement Learning
 ****************************
 
 This module describes  `Control Theory <https://en.wikipedia.org/wiki/Control_theory>`_, problems:

@@ -1,15 +1,15 @@
 #include "modules/solver/learner/QLearning/QLearning.hpp"
 #include "math.h"
 
-void korali::solver::learning::QLearning::setInitialConfiguration()
+void korali::solver::learner::QLearning::setInitialConfiguration()
 {
- _q.resize(_problem->_actionCount * _stateCount);
+ _q.resize(_problem->_actionCount * _problem->_stateCount);
 
   for (size_t i = 0; i < _q.size(); i++)
    _q[i] = _initialQValue;
 }
 
-std::vector<double> getAction(const std::vector<double>& state)
+std::vector<double> korali::solver::learner::QLearning::getAction(const std::vector<double>& state)
 {
  // Calculating state's index
  size_t stateIdx = interpolateStateIndex(state);
@@ -33,19 +33,20 @@ std::vector<double> getAction(const std::vector<double>& state)
  auto tempIdx = qIdx - startPos;
  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
  {
-  size_t varIdx = _actionVectorIndexes[i];
-  size_t actionIdx = tempIdx % _problem->_actionVectorSize;
+  size_t varIdx = _problem->_actionVectorIndexes[i];
+  size_t varParVectorSize = _k->_variables[varIdx]->_parameterVector.size();
+  size_t actionIdx = tempIdx % varParVectorSize;
   action[i] = _k->_variables[varIdx]->_parameterVector[actionIdx];
-  tempIdx = tempIdx / _problem->_actionVectorSize;
+  tempIdx = tempIdx / varParVectorSize;
  }
 
  return action;
 }
 
-void storeExperience(const std::vector<double>& state, const std::vector<double>& action, const double reward, const std::vector<double>& newState)
+void korali::solver::learner::QLearning::storeExperience(const std::vector<double>& state, const std::vector<double>& action, const double reward, const std::vector<double>& newState)
 {
  // Q-Learning: Calculating new action based with argmax(a): q(s',a)
- std::vector<double> newAction = selectBestAction(newState);
+ std::vector<double> newAction = getAction(newState);
 
  // Obtaining state and action indexes
  size_t stateIdx = interpolateStateIndex(state);
@@ -59,12 +60,11 @@ void storeExperience(const std::vector<double>& state, const std::vector<double>
 
  // Updating Q Table
  double curQValue = _q[curQIdx];
- double newQValue = (1 - _learningRate) * curQValue + _learningRate * (reward + _discountFactor * _q[newQIdx])
+ double newQValue = (1 - _learningRate) * curQValue + _learningRate * (reward + _discountFactor * _q[newQIdx]);
  _q[curQIdx] = newQValue;
 
- // Calculating convergence rate
- auto QValueDiff = abs(newQValue - curQValue);
- _convergenceRate += QValDiff;
+ // Adding difference to convergence rate
+ _convergenceRate += abs(newQValue - curQValue);
 }
 
 void korali::solver::learner::QLearning::initializeGeneration()

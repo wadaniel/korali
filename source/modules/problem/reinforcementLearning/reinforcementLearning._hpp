@@ -1,11 +1,11 @@
-#ifndef _KORALI_PROBLEM_LEARNING_HPP_
-#define _KORALI_PROBLEM_LEARNING_HPP_
+#ifndef _KORALI_PROBLEM_REINFORCEMENT_LEARNING_HPP_
+#define _KORALI_PROBLEM_REINFORCEMENT_LEARNING_HPP_
 
 #include "modules/problem/problem.hpp"
 
 namespace korali { namespace problem {
 
-class Learning : public korali::Problem
+class ReinforcementLearning : public korali::Problem
 {
  public:
 
@@ -16,4 +16,4 @@ class Learning : public korali::Problem
 } } // namespace korali::problem
 
 
-#endif // _KORALI_PROBLEM_LEARNING_HPP_
+#endif // _KORALI_PROBLEM_REINFORCEMENT_LEARNING_HPP_

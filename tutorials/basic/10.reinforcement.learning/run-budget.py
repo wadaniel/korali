@@ -53,7 +53,7 @@ import korali
 e = korali.Experiment()
 
 # Configuring Problem
-e["Problem"]["Type"] = "Learning"
+e["Problem"]["Type"] = "Reinforcement Learning"
 e["Problem"]["Environment Function"] = environment
 
 # Defining problem's state.
@@ -67,7 +67,7 @@ e["Variables"][1]["Type"] = "Action"
 e["Variables"][1]["Parameter Vector"] = np.linspace(0, initialBudget, intervals, True).tolist()
 
 # Configuring the solver
-e["Solver"]["Type"] = "QLearning"
+e["Solver"]["Type"] = "Learner/QLearning"
 e["Solver"]["Learning Rate"] = 0.1
 e["Solver"]["Discount Factor"] = 0.1
 e["Solver"]["Initial Q Value"] = 10
@@ -81,5 +81,5 @@ e["File Output"]["Enabled"] = False
 k = korali.Engine()
 k.run(e)
 
-print('Best Policy:     ' + str(e["Results"]["Optimal Policy"]))
+print('Best Policy:     ' + str(e["Results"]["Optimal Policy Actions"]))
 print('Optimal Reward:  ' + str(e["Results"]["Optimal Reward"]))

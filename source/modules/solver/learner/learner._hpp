@@ -2,7 +2,7 @@
 #define _KORALI_SOLVER_LEARNER_HPP_
 
 #include "modules/solver/solver.hpp"
-#include "modules/problem/learning/learning.hpp"
+#include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
 
 namespace korali { namespace solver {
 
@@ -13,7 +13,7 @@ class Learner : public korali::Solver
   /**
    * @brief Storage for the pointer to the learning problem
    */
-  korali::problem::Learning* _problem;
+  korali::problem::ReinforcementLearning* _problem;
 
   /**
   * @brief Runs a generation of the environment(s), running an action on each episode, and updating the policy.
@@ -45,6 +45,16 @@ class Learner : public korali::Solver
   * @param newState The new agent state
   */
   virtual void storeExperience(const std::vector<double>& state, const std::vector<double>& action, const double reward, const std::vector<double>& newState) = 0;
+
+  /**
+    * @brief Interpolates a continuous state value to any of the available discrete states
+   */
+  size_t interpolateStateIndex(const std::vector<double>& state);
+
+  /**
+    * @brief Interpolates a continuous action value to any of the available discrete actions
+  */
+  size_t interpolateActionIndex(const std::vector<double>& state);
 };
 
 } } // namespace korali::solver

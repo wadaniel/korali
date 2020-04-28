@@ -1,10 +1,11 @@
 #include "modules/solver/learner/learner.hpp"
+#include "modules/conduit/conduit.hpp"
 
 void korali::solver::Learner::runGeneration()
 {
  if (_k->_currentGeneration == 1)
  {
-   _problem = dynamic_cast<korali::problem::Learning*>(_k->_problem);
+   _problem = dynamic_cast<korali::problem::ReinforcementLearning*>(_k->_problem);
    setInitialConfiguration();
  }
 
@@ -22,9 +23,7 @@ void korali::solver::Learner::runGeneration()
  _conduit->start(agent);
  _conduit->wait(agent);
 
- std::vector<double> state(_stateVectorIndexes.size());
- std::vector<double> action(_problem->_actionVectorIndexes.size());
- std::vector<double> newState(_stateVectorIndexes.size());
+ std::vector<double> action(_problem->_actionVectorSize);
 
  // Variable to store the reward
  double reward;
@@ -34,15 +33,16 @@ void korali::solver::Learner::runGeneration()
  std::vector<std::vector<double>> currentPolicyStates;
 
  // Storing agent's initial state
- state = agent["State"];
+ std::vector<double> state = agent["State"];
 
  while (agent["Finished"] == false)
  {
   // Getting new action to perform
-  agent["Action"] = getAction(state);
+  action = getAction(state);
+  agent["Action"] = action;
 
   // Add state/action to current policy history
-  currentPolicy.push_back(action);
+  currentPolicyActions.push_back(action);
   currentPolicyStates.push_back(state);
 
   // Running a new episode
@@ -50,7 +50,7 @@ void korali::solver::Learner::runGeneration()
   _conduit->wait(agent);
 
   // Storing agent's new state
-  newState = agent["State"];
+  std::vector<double> newState = agent["State"];
 
   // Storing agent's reward for the given (s,a)
   reward = agent["Reward"];
@@ -65,10 +65,14 @@ void korali::solver::Learner::runGeneration()
  if (reward > _bestReward)
  {
   _bestReward = reward;
-  _bestPolicy = currentPolicy;
 
-  _k->_js["Results"]["Optimal Policy Actions"] = _bestPolicy;
-  _k->_js["Results"]["Optimal Policy States"] = _bestPolicy;
+  currentPolicyStates.push_back(state);
+
+  _bestPolicyStates = currentPolicyStates;
+  _bestPolicyActions = currentPolicyActions;
+
+  _k->_js["Results"]["Optimal Policy Actions"] = _bestPolicyActions;
+  _k->_js["Results"]["Optimal Policy States"] = _bestPolicyStates;
   _k->_js["Results"]["Optimal Reward"] = _bestReward;
  }
 
@@ -76,7 +80,7 @@ void korali::solver::Learner::runGeneration()
  processGeneration();
 }
 
-size_t korali::solver::learner::interpolateStateIndex(const std::vector<double>& state)
+size_t korali::solver::Learner::interpolateStateIndex(const std::vector<double>& state)
 {
  size_t pos = 0;
  size_t multiplier = 1;
@@ -101,7 +105,7 @@ size_t korali::solver::learner::interpolateStateIndex(const std::vector<double>&
  return pos;
 }
 
-size_t korali::solver::learner::interpolateActionIndex(const std::vector<double>& action)
+size_t korali::solver::Learner::interpolateActionIndex(const std::vector<double>& action)
 {
  size_t pos = 0;
  size_t multiplier = 1;

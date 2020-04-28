@@ -5,31 +5,20 @@
 
 namespace korali { namespace solver { namespace learner {
 
-class QLearning : public korali::Learner
+class QLearning : public korali::solver::Learner
 {
  public:
 
  /**
- * @brief Perform initialization of the Qtable and other checks.
+ * @brief Perform initialization of the Qtable.
  */
  void setInitialConfiguration() override;
-
- /**
-   * @brief Interpolates a continuous state value to any of the available discrete states
-  */
- size_t interpolateStateIndex(const std::vector<double>& state);
-
- /**
-   * @brief Interpolates a continuous action value to any of the available discrete actions
- */
- size_t interpolateActionIndex(const std::vector<double>& state);
 
  void initializeGeneration() override;
  void processGeneration() override;
  std::vector<double> getAction(const std::vector<double>& state) override;
  void storeExperience(const std::vector<double>& state, const std::vector<double>& action, const double reward, const std::vector<double>& newState) override;
 
- void setInitialConfiguration() override;
  void printGenerationBefore() override;
  void printGenerationAfter() override;
 

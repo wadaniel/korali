@@ -8,7 +8,7 @@ import numpy as np
 N = 2 # Number of Ovens
 minTemp = 0.0   # Min Oven T
 maxTemp = 300.0 # Max Oven T
-t0 = 0 # Initial Object Temperature
+t0 = 50 # Initial Object Temperature
 T = 200 # Target Object Temperature
 r = 5.0 # Tdiff Penalization Multiplier
 alpha = 0.6 # Heat Conductivity
@@ -33,12 +33,12 @@ def environment(k):
   # Variable to store the cummulative costs of using the ovens
   penalizationSum = 0 
 
+  # Setting initial state (object temperature)
+  k["State"] = [ t ]
+   
   # Run the policy for N stages
   for i in range(N):
 
-   # Setting current State (object temperature)
-   k["State"] = [ t ]
-   
    # Get back to Korali to obtain the next action to perform
    k.update()
    
@@ -54,6 +54,9 @@ def environment(k):
    # Evaluating reward model
    k["Reward"] = - r*(t-T)*(t-T) - penalizationSum
 
+   # Setting new State (object temperature)
+   k["State"] = [ t ]
+   
 ######## Configuring Korali Experiment
 
 import korali
@@ -62,7 +65,7 @@ import korali
 e = korali.Experiment()
 
 # Configuring Problem
-e["Problem"]["Type"] = "Learning"
+e["Problem"]["Type"] = "Reinforcement Learning"
 e["Problem"]["Environment Function"] = environment
 
 # Defining problem's state.
@@ -76,7 +79,7 @@ e["Variables"][1]["Type"] = "Action"
 e["Variables"][1]["Parameter Vector"] = np.linspace(minTemp, maxTemp, intervals, True).tolist()
 
 # Configuring the solver
-e["Solver"]["Type"] = "QLearning"
+e["Solver"]["Type"] = "Learner/QLearning"
 e["Solver"]["Learning Rate"] = 0.1
 e["Solver"]["Discount Factor"] = 0.1
 e["Solver"]["Initial Q Value"] = 0
@@ -91,11 +94,6 @@ e["File Output"]["Enabled"] = False
 k = korali.Engine()
 k.run(e)
 
-print('Best Policy:     ' + str(e["Results"]["Optimal Policy"]))
-print('Optimal Reward:  ' + str(e["Results"]["Optimal Reward"]))
-
-t = t0
-for p in e["Results"]["Optimal Policy"]:
- u = p[0]
- t = heatingFormula(t,u)
-print('Final Temperature: ' + str(t))
+print('Optimal Oven Temps:   ' + str(e["Results"]["Optimal Policy Actions"]))
+print('Optimal Object Temps: ' + str(e["Results"]["Optimal Policy States"]))
+print('Optimal Final Cost:   ' + str(-e["Results"]["Optimal Reward"]))

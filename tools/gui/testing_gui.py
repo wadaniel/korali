@@ -181,7 +181,7 @@ def deleteVariable(self):
     
     totalTabs2 = experiments[selectedtab]['totalTabs2']
     #frame = experiments[selectedtab]['bottomrightFrame']
-    results =  experiments[selectedtab]['results']
+##    results =  experiments[selectedtab]['results']
     ## Delete Tab and frame inside:
     if len(totalTabs2.tabs()) > 1:
         a = totalTabs2.select()
@@ -205,7 +205,6 @@ def printdata(self,line, texto, description, fakedescription, r, c,cont):
     if cont == 2:
         color = 'floralwhite'
         res = results[cont][selectedtab2]
-        print('Creando variable en el selectedtab2 :',selectedtab2, texto)
     else:
         color = 'azure'
         
@@ -248,11 +247,11 @@ def printdata(self,line, texto, description, fakedescription, r, c,cont):
             self.label=tk.Label(self, text=texto, width = 17,justify='left',bg=color, anchor="w", font="Arial 16")
             self.label.grid(row=r, column=c,pady = 20,padx=20, sticky='w')
             radiobutton = tk.Radiobutton(self, width=10,text='Yes' ,highlightbackground = color,activeforeground ='white', bg=color,
-                                        activebackground='darkcyan',borderwidth = 0,variable = boolean, value='t')
+                                        activebackground='darkcyan',borderwidth = 0,variable = boolean, value=True)
             radiobutton.grid(row=r, column=c+1, columnspan = 1,pady= 20, padx=20, sticky = 'w')
             
-            radiobutton = tk.Radiobutton(self, width=10,text='False' ,highlightbackground = color,activeforeground ='white', bg=color,
-                                        activebackground='darkcyan',borderwidth = 0,variable = boolean, value='f')
+            radiobutton = tk.Radiobutton(self, width=10,text='No' ,highlightbackground = color,activeforeground ='white', bg=color,
+                                        activebackground='darkcyan',borderwidth = 0,variable = boolean, value=False)
             radiobutton.grid(row=r, column=c+2, columnspan = 1,pady= 20, padx=20, sticky = 'w')
             res[texto] = boolean
              
@@ -283,13 +282,16 @@ def printdata(self,line, texto, description, fakedescription, r, c,cont):
                                             command = lambda:explainDescription(description))
             self.buttonLabel.grid(row=r, column=c+3,sticky='w')
         
-        if line == 'double':
+        if 'double' in line:
             self.label=tk.Label(self, text=texto, width = 17,justify='left', bg=color, anchor="w", font="Arial 16")
             self.label.grid(row=r, column=c,pady = 20,padx=20, sticky='w')
             stringVar[texto] = tk.StringVar()
             res[texto] = tk.Entry(self,width=10,textvariable = stringVar[texto])
             res[texto].grid(row=r, column=1, pady= 20, padx=20)
             self.corrector = self.register(validardigit)
+            self.buttonLabel = tk.Button(self, text = fakedescription, width = 45, activeforeground = 'darkcyan', bg = color,activebackground = 'white',
+                                            command = lambda:explainDescription(description))
+            self.buttonLabel.grid(row=r, column=c+3,sticky='w')
 
 def printVariables(self,directorio,DB,cont):
     '''
@@ -316,23 +318,44 @@ def printVariables(self,directorio,DB,cont):
         linktoVariables0 = DB[directorio]['config']
     elif (cont == 1 and on == -1) or (cont == 1 and on == 0):
         linktoVariables1 = DB[directorio]['config']
-        on += 1
+        on += 1 
     elif cont == 1 and on == 1:
         linktoVariables1 = DB[directorio]['config']
-        
+
+    linktoVariables = []
     if on == 0:
         linktoVariables.append(linktoVariables0)    # Añadimos las variables que vienen del Problem.
         linktoVariables.append(linktoVariables1)    # Añadimos las variables que vienen del Solver.
         cont = 2
-        
+        # Clean the frame:
+        for widget in self.winfo_children():
+            widget.destroy()
         results = experiments[selectedtab]['results']
         # Coger nombre variable:
         results[cont] = {}
-        results[cont][selectedtab2] = {}        
-   
+        results[cont][selectedtab2] = {}          
         ro = 0
         co = 0
-
+        for part in linktoVariables:
+##            print('This is the part:',part,'\n')
+            for llave in variables[part]:
+##                print('This is the llave:',llave,'\n')
+                for var in llave.keys():
+##                    print('This is the var:',var,'\n')
+                    if var == 'Type':
+                        line = llave['Type']
+                        # llave son las llaves del diccionario, por ejemplo: Type, Function, Description, Produced By...
+                        texto = llave['Name']
+                        #print(part,texto)
+                        texto = texto[0] # Remove the '{}' from the label name.
+                        description = llave['Description']
+                        if len(description)>45:
+                            fakedescription = str(description[0:42])+'...'
+                        else:
+                            fakedescription = description
+                        printdata(self,line, texto, description,fakedescription, ro, co, cont)
+                        ro+=1
+    '''
         for part in linktoVariables:
             for llave in variables[part].keys():
                 #print(llave)
@@ -346,8 +369,12 @@ def printVariables(self,directorio,DB,cont):
                     else:
                         fakedescription = description
 
+                    for widget in self.winfo_children():
+                        print(widget)
+                        widget.destroy()
                     printdata(self,variables[part][llave], texto, description,fakedescription, ro, co, cont)
                 ro+=1
+        '''
     
 
 def printConfig(directorio,DB, cont):
@@ -441,9 +468,9 @@ def importFile():
     
     for directorio in parsedFile.keys(): # Loop through the keys of the config file.
         if directorio in listofproblems:
-            print('ES UN PROBLEM :', directorio)
             cont = 0
             printConfig(directorio,configTreeDB,cont)
+##            if bottomrightFrame.tab2.winfo_children() == False:
             printVariables(bottomrightFrame.tab2,directorio,configTreeDB,cont)
             for key2 in parsedFile[directorio]:
                 valuesProblem.append(parsedFile[directorio][key2])
@@ -452,20 +479,44 @@ def importFile():
                 e = results[cont][key]
                 e.insert(0,valuesProblem[numofentry])
                 numofentry+=1
-            
         elif directorio in listofsolvers:
-            print('ES UN SOLVER :',directorio)
             cont = 1
             printConfig(directorio,solverDB,cont)
+##            if bottomrightFrame.tab2.winfo_children() == False:
             printVariables(bottomrightFrame.tab2,directorio,solverDB,cont)
             for key2 in parsedFile[directorio]:
                 valuesSolver.append(parsedFile[directorio][key2])
+            numofentry = 0
             for key in results[cont].keys():
                 e = results[cont][key]
-                e.insert(0,valuesSolver[numofentry])
+                if isinstance(e,BooleanVar):
+                    value = valuesSolver[numofentry]
+                    e.set(value)
+                else:
+                    default = e.get()
+                    if default == '0':
+                        e.delete(0,tk.END)
+                        e.insert(END,valuesSolver[numofentry])
+                    else:
+                        e.insert(END,valuesSolver[numofentry])
                 numofentry+=1
-
-                          
+        elif 'variabl' in directorio or 'Variabl' in directorio:
+            cont = 2
+            numofentry = 0
+            for variableTab in parsedFile[directorio].keys():
+                line = parsedFile[directorio][variableTab]
+                print(line)
+                for dictionary in line:
+                    for key in dictionary:
+                        valuesVariables.append(dictionary[key])
+                    
+                    
+                for key in results[cont].keys():
+                    for key2 in results[cont][key]:
+                        e = results[cont][key][key2]
+                        e.insert(0,valuesVariables[numofentry])
+                        numofentry+=1
+    
     '''
     for frame in parsedFile.keys():
         for texto in parsedFile[frame]:
@@ -477,16 +528,24 @@ def importFile():
 def createConfig():
     global selectedtab # To know at which experiment we are.
     global experiments
+
+
+    results = experiments[selectedtab]['results']
+    ### Avoiding that the user clicks create.config without choosing a problem/solver
+    if 2 not in results.keys():
+        popupmsgwarning('First choose a problem and a solver')
+        return
+    
     #results = experiments[selectedtab]['results']
     bottomleftFr = experiments[selectedtab]['canvas']
     rightFr = experiments[selectedtab]['rightFrame']
     variableFr = experiments[selectedtab]['totalTabs2']
 
-    results = experiments[selectedtab]['results']
     results2 = results.copy()
     results2[rightFr.titulo.cget('text')] = results2.pop(0)
     results2[bottomleftFr.titulo.cget('text')] = results2.pop(1)
     results2['Variables'] = results2.pop(2)
+    
     for frame in results2.keys():
         for texto in results2[frame]:
             w = results2[frame][texto]
@@ -496,13 +555,14 @@ def createConfig():
                     val = w[key].get()
                     d = {key:val}
                     results2[frame][texto].append(d)
+##                    print(results2[frame][texto])
             else:
                 val = w.get()
                 results2[frame][texto] = val
     cwd = os.getcwd()
     file = open(cwd+"/filename.config", "w")
     #file.write('### .config File obtained from Korali### \n \n'+selectedtab+' {\n')
-    json.dump(results2, file, indent = 6)
+    json.dump(results2, file, indent = 3)
 
     #### ASK TO DOWNLOAD AND SAVE THE FILE:
     files = [('All Files', '*.*'),  
@@ -591,15 +651,13 @@ def readDirs(filePath,DB,default):
     
 ### CREAR EL DICCIONARIO DE VARIABLES COMBINANDO LOS DOS DICCIONARIOS ANTERIORES
 def crearVariables(DB):
-    
     for key in DB.keys():
         if 'Variables Configuration' in DB[key]['herencia'].keys():
             if DB[key]['herencia']['Variables Configuration']:
-                for key2 in DB[key]['herencia']['Variables Configuration']:
-                    variables[DB[key]['config']] = key2
+                variables[DB[key]['config']] = DB[key]['herencia']['Variables Configuration']
         else:
-            pass ###################### DEA AND .... HAVE NO VARIABLES CONFIGURATION.
-    
+            variables[DB[key]['config']] = {}
+             ######################   
                     
 def crearMenu(padre,directorio,DB,cont):
     global menus
@@ -661,6 +719,7 @@ def crearFrameVariables(self):
     global variables
     global selectedtab2
 
+    print('first:',selectedtab2)
     
     bottomrightFrame = experiments[selectedtab]['bottomrightFrame']
     totalTabs2 = experiments[selectedtab]['totalTabs2']
@@ -679,9 +738,6 @@ def crearFrameVariables(self):
                     bottomrightFrame.tab2 = tk.Frame(bottomrightFrame, height = 450, width = 300, background = 'floralwhite')#florawhite
                     selectedtab2 = 'Variable '+str(contadorVariables)
                     totalTabs2.add(bottomrightFrame.tab2, text = selectedtab2)
-                
-                    print('Creando frame en tab :', selectedtab2)
-                
                     self = bottomrightFrame.tab2
                     cont = 2
                     results = experiments[selectedtab]['results']
@@ -690,21 +746,29 @@ def crearFrameVariables(self):
                     results[cont][selectedtab2] = {}
                     ro = 0
                     co = 0
+                    for widget in self.winfo_children():
+                        widget.destroy()
                     for part in linktoVariables:
-                        for llave in variables[part].keys():
-                            #print(llave)
-                            if llave == 'Type':
-                            # llave son las llaves del diccionario, por ejemplo: Type, Function, Description, Produced By...
-                                texto = variables[part]['Name']
-                                texto = texto[0] # Remove the '{}' from the label name.
-                                description = variables[part]['Description']
-                                if len(description)>45:
-                                    fakedescription = str(description[0:42])+'...'
-                                else:
-                                    fakedescription = description
-                                
-                                printdata(self,variables[part][llave], texto, description,fakedescription, ro, co, cont)
+##                        print('This is the part:',part,'\n')
+                        for llave in variables[part]:
+##                            print('This is the llave:',llave,'\n')
+                            for var in llave.keys():
+##                                print('This is the var:',var,'\n')
+                                if var == 'Type':
+                                    getname=llave['Name']
+                                    getdesc=llave['Description']
+                                    line = llave['Type']
+                                    # llave son las llaves del diccionario, por ejemplo: Type, Function, Description, Produced By...
+                                    texto = getname
+                                    texto = texto[0] # Remove the '{}' from the label name.
+                                    description = getdesc
+                                    if len(description)>45:
+                                        fakedescription = str(description[0:42])+'...'
+                                    else:
+                                        fakedescription = description
+                                    printdata(self,line, texto, description,fakedescription, ro, co, cont)
                             ro+=1
+
                     ## ADD THE NEW VARIABLE TO THE DICTIONARY OF RESULTS:
             else:
                 popupmsgwarning('Number of Variables exceeded!')
@@ -820,7 +884,7 @@ def crearTab(self,totalTabs):
                 self.rightFrame.grid_propagate(0)
                 #self.bottomleftFrame.grid_propagate(0)
                 self.bottomrightFrame.grid_propagate(0)
-                #self.bottomleftFrame1.grid_propagate(0)
+                self.bottomleftFrame1.grid_propagate(0)
                 
 
                # LEFT SIDE OF TAB1:

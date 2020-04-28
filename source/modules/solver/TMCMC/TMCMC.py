@@ -95,7 +95,7 @@ def plot(genList):
     samples = genList[lastGen]['Solver']['Sample Database']
     numentries = len(samples)
     
-    fig, ax = plt.subplots(numdim, numdim, figsize=(10,16))
+    fig, ax = plt.subplots(numdim, numdim, figsize=(8,8))
     samplesTmp = np.reshape( samples, (numentries,numdim) )
     plt.suptitle( 'TMCMC Plotter - \nNumber of Samples {0}\n'.format(str(numentries)), fontweight='bold', fontsize  = 12)
     

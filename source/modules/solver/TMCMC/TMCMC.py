@@ -10,7 +10,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 # Plot histogram of sampes in diagonal
 def plot_histogram(ax, theta):
     dim = theta.shape[1]
-    num_bins = 50
+    num_bins = 30
     
     for i in range(dim):
 
@@ -19,26 +19,22 @@ def plot_histogram(ax, theta):
         else: 
             ax_loc = ax[i,i]
  
-        hist, bins, _ = ax_loc.hist(theta[:, i], num_bins, density=True,
-                                    color='lightgreen', ec='black')
+        hist, bins, _ = ax_loc.hist(theta[:, i], num_bins, density=True, color='lightgreen', ec='black')
         
         if i == 0:
            
             # Rescale hist to scale of theta -> get correct axis titles
             widths = np.diff(bins)
             if (dim > 1) :  
-                hist = hist / np.max(hist) * (ax_loc.get_xlim()[1] -
-                                                ax_loc.get_xlim()[0])
+                hist = hist / np.max(hist) * (ax_loc.get_xlim()[1] - ax_loc.get_xlim()[0])
                 bottom = ax_loc.get_xlim()[0]
                 ax_loc.cla()
-                ax_loc.bar(bins[:-1], hist, widths,
-                    color='lightgreen', ec='black', bottom=bottom)
+                ax_loc.bar(bins[:-1], hist, widths, color='lightgreen', ec='black', bottom=bottom)
                 ax_loc.set_ylim(ax_loc.get_xlim())
                 ax_loc.set_xticklabels([])
             else:
                 ax_loc.cla()
-                ax_loc.bar(bins[:-1], hist, widths,
-                     color='lightgreen', ec='black')
+                ax_loc.bar(bins[:-1], hist, widths, color='lightgreen', ec='black')
 
         elif i == theta.shape[1] - 1:
             ax_loc.set_yticklabels([])
@@ -99,11 +95,17 @@ def plot(genList):
     samples = genList[lastGen]['Solver']['Sample Database']
     numentries = len(samples)
     
-    fig, ax = plt.subplots(numdim, numdim, figsize=(8,8))
+    fig, ax = plt.subplots(numdim, numdim, figsize=(10,16))
     samplesTmp = np.reshape( samples, (numentries,numdim) )
     plt.suptitle( 'TMCMC Plotter - \nNumber of Samples {0}\n'.format(str(numentries)), fontweight='bold', fontsize  = 12)
+    
+
     plot_histogram(ax, samplesTmp)
     plot_upper_triangle(ax, samplesTmp, False)
     plot_lower_triangle(ax, samplesTmp)
+
+    for i in range(numdim):
+      ax[i,0].set_ylabel(genList[lastGen]['Variables'][i]['Name'])
+      ax[-1,i].set_xlabel(genList[lastGen]['Variables'][i]['Name'])
 
     return fig, ax

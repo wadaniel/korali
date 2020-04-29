@@ -46,9 +46,14 @@ class TMCMC : public korali::Solver
  void processEvaluation(const size_t sampleId);
  
  /* 
+  * @brief Calculate gradients of loglikelihood (only relevant for mTMCMC).
+  */
+ void calculateGradients(std::vector<korali::Sample>& samples);
+ 
+ /* 
   * @brief Calculate sample wise proposal distributions (only relevant for mTMCMC).
   */
- void updateProposalDistributions();
+ void calculateProposals(std::vector<korali::Sample>& samples);
  
  /* 
   * @brief Proposal distribution for sample.

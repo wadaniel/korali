@@ -57,7 +57,11 @@ class Bayesian : public korali::Problem
  */
  virtual void evaluateLogLikelihoodGradient(korali::Sample& sample) = 0;
 
-
+ /**
+ * @brief Evaluates the empirical Fisher information.
+ * @param sample A Korali Sample
+ */
+ virtual void evaluateFisherInformation(korali::Sample& sample) = 0;
 };
 
 } } // namespace korali::problem

@@ -13,6 +13,7 @@ class Latent : public korali::problem::Bayesian
 
 
  void evaluateLogLikelihood(korali::Sample& sample) override;
+ void evaluateFisherInformation(korali::Sample& sample) override;
  void sampleLatent(korali::Sample& sample);
  void evaluateS(korali::Sample& sample);
  void evaluatePhi(korali::Sample& sample);

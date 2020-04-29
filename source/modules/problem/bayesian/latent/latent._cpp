@@ -69,3 +69,8 @@ void korali::problem::bayesian::Latent::evaluateLogLikelihoodGradient(korali::Sa
 {
   _k->_logger->logError("Gradient not yet implemented for selected bayesian problem and log likelihood model.");
 }
+
+void korali::problem::bayesian::Latent::evaluateFisherInformation(korali::Sample& sample)
+{
+  _k->_logger->logError("Fisher information not yet implemented for selected bayesian problem and log likelihood model.");
+}

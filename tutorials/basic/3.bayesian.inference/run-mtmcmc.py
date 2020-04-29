@@ -21,7 +21,7 @@ e["Problem"]["Computational Model"] = lambda sampleData: modelWithDerivatives(sa
 # Configuring TMCMC parameters
 e["Solver"]["Type"] = "TMCMC"
 e["Solver"]["Version"] = "mTMCMC"
-e["Solver"]["Population Size"] = 10
+e["Solver"]["Population Size"] = 5000
 
 # Configuring the problem's random distributions
 e["Distributions"][0]["Name"] = "Uniform 0"

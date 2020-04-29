@@ -65,6 +65,5 @@ void korali::problem::Bayesian::evaluate(korali::Sample& sample)
 
 void korali::problem::Bayesian::evaluateGradient(korali::Sample& sample)
 {
- printf("YYYYY\n");
  evaluateLogLikelihoodGradient(sample);
 }

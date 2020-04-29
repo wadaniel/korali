@@ -67,7 +67,8 @@ e["Variables"][1]["Type"] = "Action"
 e["Variables"][1]["Parameter Vector"] = np.linspace(0, initialBudget, intervals, True).tolist()
 
 # Configuring the solver
-e["Solver"]["Type"] = "Learner/QLearning"
+e["Solver"]["Type"] = "Learner/QTable"
+e["Solver"]["Q Update Algorithm"] = "Q-Learning"
 e["Solver"]["Learning Rate"] = 0.1
 e["Solver"]["Discount Factor"] = 0.1
 e["Solver"]["Initial Q Value"] = 10

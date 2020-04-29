@@ -45,16 +45,6 @@ class Learner : public korali::Solver
   * @param newState The new agent state
   */
   virtual void storeExperience(const std::vector<double>& state, const std::vector<double>& action, const double reward, const std::vector<double>& newState) = 0;
-
-  /**
-    * @brief Interpolates a continuous state value to any of the available discrete states
-   */
-  size_t interpolateStateIndex(const std::vector<double>& state);
-
-  /**
-    * @brief Interpolates a continuous action value to any of the available discrete actions
-  */
-  size_t interpolateActionIndex(const std::vector<double>& state);
 };
 
 } } // namespace korali::solver

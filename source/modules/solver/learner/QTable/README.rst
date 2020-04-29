@@ -1,8 +1,8 @@
 ******************************************************
-Q-Learning Algoritum
+Q-Table
 ******************************************************
 
-Here goes the description of the new solver module: Q-learning
+Here goes the description of the new solver module: Q-Table
 
 You can add code:
 

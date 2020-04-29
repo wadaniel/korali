@@ -80,54 +80,5 @@ void korali::solver::Learner::runGeneration()
  processGeneration();
 }
 
-size_t korali::solver::Learner::interpolateStateIndex(const std::vector<double>& state)
-{
- size_t pos = 0;
- size_t multiplier = 1;
-
- for (size_t i = 0; i < state.size(); i++)
- {
-  double value = state[i];
-  size_t index = _problem->_stateVectorIndexes[i];
-
-  double minDiff = korali::Inf;
-  size_t valPos = 0;
-  for (size_t j = 0; j < _k->_variables[index]->_parameterVector.size(); j++)
-  {
-   double diff = abs(value - _k->_variables[index]->_parameterVector[j]);
-   if (diff < minDiff) { minDiff = diff; valPos = j; }
-  }
-
-  pos += valPos * multiplier;
-  multiplier *= _k->_variables[index]->_parameterVector.size();
- }
-
- return pos;
-}
-
-size_t korali::solver::Learner::interpolateActionIndex(const std::vector<double>& action)
-{
- size_t pos = 0;
- size_t multiplier = 1;
-
- for (size_t i = 0; i < action.size(); i++)
- {
-  double value = action[i];
-  size_t index = _problem->_actionVectorIndexes[i];
-
-  double minDiff = korali::Inf;
-  size_t valPos = 0;
-  for (size_t j = 0; j < _k->_variables[index]->_parameterVector.size(); j++)
-  {
-   double diff = abs(value - _k->_variables[index]->_parameterVector[j]);
-   if (diff < minDiff) { minDiff = diff; valPos = j; }
-  }
-
-  pos += valPos * multiplier;
-  multiplier *= _k->_variables[index]->_parameterVector.size();
- }
-
- return pos;
-}
 
 

@@ -76,12 +76,7 @@ e["Variables"][1]["Parameter Vector"] = np.linspace(0, initialX, intervals, True
 # Configuring the solver
 e["Solver"]["Type"] = "Learner/QTable"
 e["Solver"]["Q Update Algorithm"] = "Q-Learning"
-e["Solver"]["Learning Rate"] = 0.1
-e["Solver"]["Discount Factor"] = 0.1
 e["Solver"]["Initial Q Value"] = 50
-e["Solver"]["Epsilon"] = 0.5
-e["Solver"]["Epsilon Decrease Rate"] = 0.00001
-e["Solver"]["Termination Criteria"]["Convergence Tolerance"] = 0.0001
 
 # Configuring Output
 e["Console Output"]["Frequency"] = 5000

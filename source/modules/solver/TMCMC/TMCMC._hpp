@@ -56,9 +56,14 @@ class TMCMC : public korali::Solver
  void calculateProposals(std::vector<korali::Sample>& samples);
  
  /* 
-  * @brief Proposal distribution for sample.
+  * @brief Generate candidate from leader.
   */
- void proposeSample(const size_t sampleId);
+ void generateCandidate(const size_t sampleId);
+
+ /* 
+  * @brief Add leader into sample database.
+  */
+ void updateDatabase(const size_t sampleId);
 
  /* 
   * @brief Calculate acceptance probability.

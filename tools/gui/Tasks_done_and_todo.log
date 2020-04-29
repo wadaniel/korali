@@ -1,5 +1,27 @@
 Mark Martori Lopez
 
+
+Wednesday 29 April 2020
+
+Tasks:
+
+1- [Solved] Current GOAL: Add a Variable Tab with its content if Imported file has more variables.
+
+		Step 1: [Solved] Modify the way to read the imported file so it can be split into different tab Variables.
+
+		Step 2: [Solved] Modify the way we create VariableTabs.
+
+		Step 3:[Solved] Interconnect several functions to finish it.
+
+2- [Solved] Modify createFile function in order to allow creating several files while modifying the variables.
+
+3- [Solved] Edit File's type so only the .txt, .log and .config are readable.
+
+4- [Solved] Provide functionality to the main menu of the app. Save as..., Export as..., Import File...
+
+5- [Solved] Add a multiple-frame option to jump from one to another one to divide the app in 2. Setting the variables in one frame and visualizating its results ( graph ) in the other one.
+
+-----------------------------------------------------
 Tuesday 28 April 2020
 
 Tasks:

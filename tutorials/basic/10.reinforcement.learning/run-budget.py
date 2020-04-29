@@ -5,7 +5,7 @@ import numpy as np
 ######## Defining Problem's Configuration
 
 initialBudget = 1.0 # Initial Budget (x)
-intervals = 300 # How fine will we discretize the variable space
+granularity = 0.005 # Discretization factor: how fine will we discretize the variable space
 
 # Defining list of cost functions, one per stage 
 evalFunctions = [
@@ -59,12 +59,18 @@ e["Problem"]["Environment Function"] = environment
 # Defining problem's state.
 e["Variables"][0]["Name"] = "Budget"
 e["Variables"][0]["Type"] = "State"
-e["Variables"][0]["Parameter Vector"] = np.linspace(0, initialBudget, intervals, True).tolist()
+e["Variables"][0]["Parameter Space"] = "Discrete"
+e["Variables"][0]["Lower Bound"] = 0.0
+e["Variables"][0]["Upper Bound"] = initialBudget
+e["Variables"][0]["Granularity"] = granularity
 
 # Defining problem's actions.
 e["Variables"][1]["Name"] = "Spenditure"
 e["Variables"][1]["Type"] = "Action"
-e["Variables"][1]["Parameter Vector"] = np.linspace(0, initialBudget, intervals, True).tolist()
+e["Variables"][1]["Parameter Space"] = "Discrete"
+e["Variables"][1]["Lower Bound"] = 0.0
+e["Variables"][1]["Upper Bound"] = initialBudget
+e["Variables"][1]["Granularity"] = granularity
 
 # Configuring the solver
 e["Solver"]["Type"] = "Learner/QTable"

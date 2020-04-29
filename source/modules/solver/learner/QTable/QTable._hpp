@@ -50,6 +50,7 @@ class QTable : public korali::solver::Learner
   */
  std::vector<double> getActionFromIndex(const size_t& actionIdx);
 
+ void initialize() override;
  void initializeGeneration() override;
  void processGeneration() override;
  std::vector<double> getAction(const std::vector<double>& state) override;

@@ -3,6 +3,13 @@
 
 /////// Mandatory Functions for Learner Interface
 
+void korali::solver::learner::QTable::initialize()
+{
+ for (size_t i = 0; i < _k->_variables.size(); i++)
+  if (_k->_variables[i]->_parameterSpace == "Continuous")
+   _k->_logger->logError("Variable %lu (%s) is continuous, but Q-Table based algorithms can only process discrete or custom defined parameter spaces.\n", i, _k->_variables[i]->_name.c_str());
+}
+
 void korali::solver::learner::QTable::setInitialConfiguration()
 {
  _q.resize(_problem->_actionCount * _problem->_stateCount);

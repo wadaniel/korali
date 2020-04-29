@@ -2,9 +2,52 @@
 
 void korali::problem::ReinforcementLearning::initialize()
 {
+ // Processing variable parameter space
  for (size_t i = 0; i < _k->_variables.size(); i++)
  {
-//  printf("Var: %lu - type: %s\n", i, _k->_variables[i]->_type.c_str());
+  if (_k->_variables[i]->_parameterSpace == "Continuous" || _k->_variables[i]->_parameterSpace == "Discrete")
+  {
+   if (_k->_variables[i]->_parameterVector.size() > 0) _k->_logger->logError("Variable %lu (%s): Parameter Vector is defined, but variable's parameter space is not marked as user-defined.\n", i, _k->_variables[i]->_name.c_str());
+   if (_k->_variables[i]->_lowerBound == korali::Inf) _k->_logger->logError("Variable %lu (%s): Lower bound for continuous/discrete variable is not defined.\n", i, _k->_variables[i]->_name.c_str());
+   if (_k->_variables[i]->_upperBound == -korali::Inf) _k->_logger->logError("Variable %lu (%s): Upper bound for continuous/discrete variable is not defined.\n", i, _k->_variables[i]->_name.c_str());
+   if (_k->_variables[i]->_upperBound <= _k->_variables[i]->_lowerBound) _k->_logger->logError("Variable %lu (%s): Upper bound is lower than lower bound.\n", i, _k->_variables[i]->_name.c_str());
+  }
+
+  if (_k->_variables[i]->_parameterSpace == "Discrete")
+  {
+   if (_k->_variables[i]->_granularity <= 0.0) _k->_logger->logError("Variable %lu (%s): Granularity for discrete variable is invalid/not defined.\n", i, _k->_variables[i]->_name.c_str());
+   if (_k->_variables[i]->_granularity > _k->_variables[i]->_upperBound - _k->_variables[i]->_lowerBound) _k->_logger->logError("Variable %lu (%s): Granularity for discrete variable is larger than the [lower,upper] bound space.\n", i, _k->_variables[i]->_name.c_str());
+  }
+
+  if (_k->_variables[i]->_parameterSpace == "Custom")
+  {
+    if (_k->_variables[i]->_granularity > 0.0) _k->_logger->logError("Variable %lu (%s): Granularity is defined, but variable's parameter space is marked as user-defined.\n", i, _k->_variables[i]->_name.c_str());
+    if (_k->_variables[i]->_parameterVector.size() == 0) _k->_logger->logError("Variable %lu (%s): Parameter Vector is not defined for user-defined variable.\n", i, _k->_variables[i]->_name.c_str());
+    if (_k->_variables[i]->_lowerBound != korali::Inf) _k->_logger->logError("Variable %lu (%s): Lower bound for variable is defined, but variable's parameter space is marked as user-defined.\n", i, _k->_variables[i]->_name.c_str());
+    if (_k->_variables[i]->_upperBound != -korali::Inf) _k->_logger->logError("Variable %lu (%s): Upper bound for variable is defined, but variable's parameter space is marked as user-defined.\n", i, _k->_variables[i]->_name.c_str());
+   }
+ }
+
+ // Creating parameter vector space for discrete variables
+ for (size_t i = 0; i < _k->_variables.size(); i++) if (_k->_variables[i]->_parameterSpace == "Discrete")
+ {
+  double currentVal = _k->_variables[i]->_lowerBound;
+
+  // Creating intermediate points
+  while(currentVal < _k->_variables[i]->_upperBound)
+  {
+   _k->_variables[i]->_parameterVector.push_back(currentVal);
+   currentVal += _k->_variables[i]->_granularity;
+  }
+
+  // Including upper bound point
+  _k->_variables[i]->_parameterVector.push_back(_k->_variables[i]->_upperBound);
+ }
+
+ // Processing state/action variable configuration
+
+ for (size_t i = 0; i < _k->_variables.size(); i++)
+ {
   if (_k->_variables[i]->_type == "State") _stateVectorIndexes.push_back(i);
   if (_k->_variables[i]->_type == "Action") _actionVectorIndexes.push_back(i);
  }
@@ -15,8 +58,6 @@ void korali::problem::ReinforcementLearning::initialize()
  if (_actionVectorSize == 0) _k->_logger->logError("No action variables have been defined.\n");
  if (_stateVectorSize == 0) _k->_logger->logError("No state variables have been defined.\n");
 
-// printf("actionSize: %lu, stateSize: %lu\n", _actionVectorSize, _stateVectorSize);
-
  _stateCount = 1;
  for (size_t i = 0; i < _stateVectorSize; i++)
  {
@@ -25,11 +66,11 @@ void korali::problem::ReinforcementLearning::initialize()
  }
 
  _actionCount = 1;
-  for (size_t i = 0; i < _actionVectorSize; i++)
-  {
-   size_t index = _actionVectorIndexes[i];
-   _actionCount *= _k->_variables[index]->_parameterVector.size();
-  }
+ for (size_t i = 0; i < _actionVectorSize; i++)
+ {
+  size_t index = _actionVectorIndexes[i];
+  _actionCount *= _k->_variables[index]->_parameterVector.size();
+ }
 }
 
 void korali::problem::ReinforcementLearning::runEnvironment(korali::Sample& sample)

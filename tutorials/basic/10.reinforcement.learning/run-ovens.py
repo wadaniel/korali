@@ -7,12 +7,12 @@ import numpy as np
 
 N = 2 # Number of Ovens
 minTemp = 0.0   # Min Oven T
-maxTemp = 300.0 # Max Oven T
+maxTemp = 500.0 # Max Oven T
 t0 = 50 # Initial Object Temperature
 T = 200 # Target Object Temperature
-r = 5.0 # Tdiff Penalization Multiplier
-alpha = 0.6 # Heat Conductivity
-intervals = 100 # How fine will we discretize the variable space
+r = 70.0 # Tdiff Penalization Multiplier
+alpha = 0.2 # Heat Conductivity
+granularity = 1.0 # Discretization factor: how fine will we discretize the variable space
 
 ######## Defining Problem's Formulae
 
@@ -71,12 +71,18 @@ e["Problem"]["Environment Function"] = environment
 # Defining problem's state.
 e["Variables"][0]["Name"] = "Object Temperature"
 e["Variables"][0]["Type"] = "State"
-e["Variables"][0]["Parameter Vector"] = np.linspace(minTemp, maxTemp, intervals, True).tolist()
+e["Variables"][0]["Parameter Space"] = "Discrete"
+e["Variables"][0]["Lower Bound"] = minTemp
+e["Variables"][0]["Upper Bound"] = maxTemp
+e["Variables"][0]["Granularity"] = granularity
 
 # Defining problem's actions.
 e["Variables"][1]["Name"] = "Oven Temperatures"
 e["Variables"][1]["Type"] = "Action"
-e["Variables"][1]["Parameter Vector"] = np.linspace(minTemp, maxTemp, intervals, True).tolist()
+e["Variables"][1]["Parameter Space"] = "Discrete"
+e["Variables"][1]["Lower Bound"] = minTemp
+e["Variables"][1]["Upper Bound"] = maxTemp
+e["Variables"][1]["Granularity"] = granularity
 
 # Configuring the solver
 e["Solver"]["Type"] = "Learner/QTable"

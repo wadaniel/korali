@@ -8,7 +8,7 @@ N = 3 # Number of stages
 initialX = 1.0 # Initial value of X
 alpha = 0.75 # Alpha
 beta = 0.50 # Beta
-intervals = 100 # Discretization factor: how fine will we discretize the variable space
+granularity = 0.005 # Discretization factor: how fine will we discretize the variable space
 
 ######## Defining Problem's Formulae
 
@@ -66,12 +66,18 @@ e["Problem"]["Environment Function"] = environment
 # Defining problem's state.
 e["Variables"][0]["Name"] = "X"
 e["Variables"][0]["Type"] = "State"
-e["Variables"][0]["Parameter Vector"] = np.linspace(0, initialX, intervals, True).tolist()
+e["Variables"][0]["Parameter Space"] = "Discrete"
+e["Variables"][0]["Lower Bound"] = 0.0
+e["Variables"][0]["Upper Bound"] = initialX
+e["Variables"][0]["Granularity"] = granularity
 
 # Defining problem's actions.
 e["Variables"][1]["Name"] = "Y"
 e["Variables"][1]["Type"] = "Action"
-e["Variables"][1]["Parameter Vector"] = np.linspace(0, initialX, intervals, True).tolist()
+e["Variables"][1]["Parameter Space"] = "Discrete"
+e["Variables"][1]["Lower Bound"] = 0.0
+e["Variables"][1]["Upper Bound"] = initialX
+e["Variables"][1]["Granularity"] = granularity
 
 # Configuring the solver
 e["Solver"]["Type"] = "Learner/QTable"

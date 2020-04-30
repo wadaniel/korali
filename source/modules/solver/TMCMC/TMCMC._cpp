@@ -198,7 +198,6 @@ void korali::solver::TMCMC::processEvaluation(const size_t sampleId)
     L = exp(  (_chainCandidatesLogLikelihoods[sampleId]-_chainLeadersLogLikelihoods[sampleId])*_annealingExponent
             + (_chainCandidatesLogPriors[sampleId]-_chainLeadersLogPriors[sampleId]) );
 
-  //printf("L %lf\n",L);
   double B = _uniformGenerator->getRandomNumber();
 
   if( L > B || _k->_currentGeneration == 1 )
@@ -206,7 +205,6 @@ void korali::solver::TMCMC::processEvaluation(const size_t sampleId)
     _chainLeaders[sampleId]               = _chainCandidates[sampleId];
     _chainLeadersLogPriors[sampleId]      = _chainCandidatesLogPriors[sampleId];
     _chainLeadersLogLikelihoods[sampleId] = _chainCandidatesLogLikelihoods[sampleId];
-    printf("prior leader %lf\n", _chainLeadersLogPriors[sampleId]);
     if(_version == "mTMCMC")
     {
       _chainLeadersErrors[sampleId]     = _chainCandidatesErrors[sampleId];
@@ -295,13 +293,11 @@ void korali::solver::TMCMC::processGeneration()
   size_t leaderId = 0;
   for (size_t i = 0; i < _populationSize; i++)
   {
-    printf("numsel %zu\n", numselections[i]);
     if (numselections[i] == 0) zeroCount++;
     while (numselections[i] > 0)
     {
       _chainLeaders[leaderId]               = _sampleDatabase[i];
       _chainLeadersLogPriors[leaderId]      = _sampleLogPriorDatabase[i];
-      printf("prior db leader %lf\n", _chainLeadersLogPriors[leaderId]);
       _chainLeadersLogLikelihoods[leaderId] = _sampleLogLikelihoodDatabase[i];
       if(_version == "mTMCMC")
       {
@@ -330,7 +326,6 @@ void korali::solver::TMCMC::processGeneration()
   _selectionAcceptanceRate = (1.0*uniqueSelections)/_populationSize;
 
   _chainCount = leaderId;
-  printf("chaincount %zu\n", leaderId);
 }
  
 void korali::solver::TMCMC::calculateGradients(std::vector<korali::Sample>& samples)
@@ -475,7 +470,6 @@ void korali::solver::TMCMC::generateCandidate(const size_t sampleId)
 void korali::solver::TMCMC::updateDatabase(const size_t sampleId)
 {
   
-  //printf("update %zu\n", _sampleDatabase.size());
   _sampleDatabase.push_back(_chainLeaders[sampleId]);
   _sampleLogPriorDatabase.push_back(_chainLeadersLogPriors[sampleId]);
   _sampleLogLikelihoodDatabase.push_back(_chainLeadersLogLikelihoods[sampleId]);
@@ -495,7 +489,7 @@ double korali::solver::TMCMC::calculateAlpha(const size_t sampleId) { return 0.0
 
 double korali::solver::TMCMC::tmcmc_objlogp(double x, const double *loglike, size_t Ns, double exponent, double targetCOV )
 {
-// x: proposed exponent
+  // x: proposed exponent
   std::vector<double> weight(Ns);
   const double loglike_max = gsl_stats_max(loglike, 1, Ns);
 

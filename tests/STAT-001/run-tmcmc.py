@@ -37,5 +37,5 @@ e["Solver"]["Covariance Scaling"] = 0.04
 # Running Korali
 k.run(e)
 
-checkMean(e, 0.0, 0.02)
+checkMean(e, 0.0, 0.05)
 checkStd(e, 1.0, 0.025)

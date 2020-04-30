@@ -233,20 +233,20 @@ void korali::solver::TMCMC::processGeneration()
 
   if( xmin > _previousAnnealingExponent + _maxAnnealingExponentUpdate )
   {
-    _k->_logger->logWarning("Detailed", "Annealing Step larger than Max Rho Update, updating Annealing Exponent by %f (Max Rho Update). \n", _maxAnnealingExponentUpdate);
+    _k->_logger->logWarning("Normal", "Annealing Step larger than Max Rho Update, updating Annealing Exponent by %f (Max Rho Update). \n", _maxAnnealingExponentUpdate);
     _annealingExponent      = _previousAnnealingExponent + _maxAnnealingExponentUpdate;
     _coefficientOfVariation = sqrt(tmcmc_objlogp(_annealingExponent, _sampleLogLikelihoodDatabase.data(), _populationSize, _previousAnnealingExponent, _targetCoefficientOfVariation)) + _targetCoefficientOfVariation;
   }
-  else if( xmin > _previousAnnealingExponent )
+  else if( xmin < 1.0 && xmin < _previousAnnealingExponent + _minAnnealingExponentUpdate )
   {
-    _annealingExponent      = xmin;
-    _coefficientOfVariation = sqrt(fmin) + _targetCoefficientOfVariation;
-  }
-  else
-  {
-    _k->_logger->logWarning("Detailed", "Annealing Step smaller than Min Rho Update, updating Annealing Exponent by %f (Min Rho Update). \n", _minAnnealingExponentUpdate);
+    _k->_logger->logWarning("Normal", "Annealing Step smaller than Min Rho Update, updating Annealing Exponent by %f (Min Rho Update). \n", _minAnnealingExponentUpdate);
     _annealingExponent      = _previousAnnealingExponent + _minAnnealingExponentUpdate;
     _coefficientOfVariation = sqrt(tmcmc_objlogp(_annealingExponent, &_sampleLogLikelihoodDatabase[0], _populationSize, _previousAnnealingExponent, _targetCoefficientOfVariation)) + _targetCoefficientOfVariation;
+  }
+  else
+  { 
+    _annealingExponent      = xmin;
+    _coefficientOfVariation = sqrt(fmin) + _targetCoefficientOfVariation;
   }
 
   /* Compute weights and normalize*/
@@ -650,7 +650,7 @@ void korali::solver::TMCMC::minSearch(double const *loglike, size_t Ns, double e
 
   T = gsl_multimin_fminimizer_nmsimplex;
   s = gsl_multimin_fminimizer_alloc (T, 1);
-  gsl_multimin_fminimizer_set (s, &minex_func, x, ss);
+  gsl_multimin_fminimizer_set(s, &minex_func, x, ss);
 
   fmin = 0;
   xmin = 0.0;
@@ -662,10 +662,10 @@ void korali::solver::TMCMC::minSearch(double const *loglike, size_t Ns, double e
     status = gsl_multimin_test_size(size, Tol);
   } while( status == GSL_CONTINUE && iter < MaxIter );
 
-  if(status == GSL_SUCCESS && s->fval >  Tol) _k->_logger->logInfo("Detailed", "Min Search converged but did not find minimum. \n");
-  if(status != GSL_SUCCESS && s->fval <= Tol) _k->_logger->logInfo("Detailed", "Min Search did not converge but minimum found\n");
-  if(status != GSL_SUCCESS && s->fval >  Tol) _k->_logger->logInfo("Detailed", "Min Search did not converge and did not find minimum\n");
-  if(iter >= MaxIter) _k->_logger->logInfo("Detailed", "[Korali] Min Search MaxIter (%zu) reached\n", MaxIter);
+  if(status == GSL_SUCCESS && s->fval >  Tol) _k->_logger->logWarning("Normal", "Min Search converged but did not find minimum. \n");
+  if(status != GSL_SUCCESS && s->fval <= Tol) _k->_logger->logWarning("Normal", "Min Search did not converge but minimum found\n");
+  if(status != GSL_SUCCESS && s->fval >  Tol) _k->_logger->logWarning("Normal", "Min Search did not converge and did not find minimum\n");
+  if(iter >= MaxIter) _k->_logger->logWarning("Normal", "Min Search MaxIter (%zu) reached\n", MaxIter);
 
   if( s->fval <= Tol ){
     fmin = s->fval;

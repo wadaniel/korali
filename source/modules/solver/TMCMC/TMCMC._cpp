@@ -160,7 +160,7 @@ void korali::solver::TMCMC::prepareGeneration()
   _sampleLogLikelihoodDatabase.clear();
   _sampleLogPriorDatabase.clear();
   _sampleDatabase.clear();
- 
+
   if(_version =="mTMCMC")
   {
     _sampleErrorDatabase.clear();
@@ -181,8 +181,8 @@ void korali::solver::TMCMC::prepareGeneration()
   {
     if( _k->_currentGeneration == 1)
     {
-       for (size_t d = 0; d < _k->_variables.size(); d++)
-        _chainCandidates[i][d] = _k->_distributions[_k->_variables[d]->_distributionIndex]->getRandomNumber();
+     for (size_t d = 0; d < _k->_variables.size(); d++)
+       _chainCandidates[i][d] = _k->_distributions[_k->_variables[d]->_distributionIndex]->getRandomNumber();
     }
     else
     {
@@ -198,13 +198,15 @@ void korali::solver::TMCMC::processEvaluation(const size_t sampleId)
     L = exp(  (_chainCandidatesLogLikelihoods[sampleId]-_chainLeadersLogLikelihoods[sampleId])*_annealingExponent
             + (_chainCandidatesLogPriors[sampleId]-_chainLeadersLogPriors[sampleId]) );
 
+  //printf("L %lf\n",L);
   double B = _uniformGenerator->getRandomNumber();
 
-  if( L > B || _k->_currentGeneration == 1 ){
-    if( _currentChainStep[sampleId] > _currentBurnIn ) _acceptedSamplesCount++;
+  if( L > B || _k->_currentGeneration == 1 )
+  {
     _chainLeaders[sampleId]               = _chainCandidates[sampleId];
     _chainLeadersLogPriors[sampleId]      = _chainCandidatesLogPriors[sampleId];
     _chainLeadersLogLikelihoods[sampleId] = _chainCandidatesLogLikelihoods[sampleId];
+    printf("prior leader %lf\n", _chainLeadersLogPriors[sampleId]);
     if(_version == "mTMCMC")
     {
       _chainLeadersErrors[sampleId]     = _chainCandidatesErrors[sampleId];
@@ -212,6 +214,7 @@ void korali::solver::TMCMC::processEvaluation(const size_t sampleId)
       _chainLeadersCovariance[sampleId] = _chainCandidatesCovariance[sampleId];
     }
     
+    if( _currentChainStep[sampleId] > _currentBurnIn ) _acceptedSamplesCount++;
     generateCandidate(sampleId);
   }
     
@@ -262,10 +265,6 @@ void korali::solver::TMCMC::processGeneration()
 
   for (size_t i = 0; i < _populationSize; i++)  weight[i] = weight[i] / sum_weight;
 
-  /* Sample candidate selections based on database entries */
-  std::vector<unsigned int> numselections(_populationSize);
-  _multinomialGenerator->getSelections( weight, numselections, _populationSize);
-
   /* Update mean and covariance */
   for (size_t i = 0; i < _k->_variables.size(); i++){
     _meanTheta[i] = 0;
@@ -284,17 +283,25 @@ void korali::solver::TMCMC::processGeneration()
   gsl_matrix_view sigma = gsl_matrix_view_array( &_covarianceMatrix[0], _k->_variables.size(), _k->_variables.size() );
   gsl_linalg_cholesky_decomp( &sigma.matrix );
 
+  /* Sample candidate selections based on database entries */
+  std::vector<unsigned int> numselections(_populationSize);
+  _multinomialGenerator->getSelections( weight, numselections, _populationSize);
+
   /* Resampling - Init new chains */
   std::fill( std::begin(_chainLengths), std::end(_chainLengths), 0);
 
   size_t leaderChainLen;
   size_t zeroCount = 0;
   size_t leaderId = 0;
-  for (size_t i = 0; i < _populationSize; i++){
+  for (size_t i = 0; i < _populationSize; i++)
+  {
+    printf("numsel %zu\n", numselections[i]);
     if (numselections[i] == 0) zeroCount++;
-    while (numselections[i] != 0){
+    while (numselections[i] > 0)
+    {
       _chainLeaders[leaderId]               = _sampleDatabase[i];
       _chainLeadersLogPriors[leaderId]      = _sampleLogPriorDatabase[i];
+      printf("prior db leader %lf\n", _chainLeadersLogPriors[leaderId]);
       _chainLeadersLogLikelihoods[leaderId] = _sampleLogLikelihoodDatabase[i];
       if(_version == "mTMCMC")
       {
@@ -308,7 +315,8 @@ void korali::solver::TMCMC::processGeneration()
        size_t rest = (numselections[i] % _maxChainLength != 0);
        leaderChainLen = _maxChainLength - rest;
       }
-      else{
+      else
+      {
         leaderChainLen = numselections[i];
       }
       _chainLengths[leaderId] = leaderChainLen;
@@ -322,6 +330,7 @@ void korali::solver::TMCMC::processGeneration()
   _selectionAcceptanceRate = (1.0*uniqueSelections)/_populationSize;
 
   _chainCount = leaderId;
+  printf("chaincount %zu\n", leaderId);
 }
  
 void korali::solver::TMCMC::calculateGradients(std::vector<korali::Sample>& samples)
@@ -448,7 +457,7 @@ void korali::solver::TMCMC::generateCandidate(const size_t sampleId)
     else /* "mTMCMC" */
     {
       if(_chainLeadersErrors[sampleId] == 0) _multivariateGenerator->_covarianceMatrix = _chainLeadersCovariance[sampleId]; // needs scaling
-      else /* error */             _multivariateGenerator->_covarianceMatrix = _covarianceMatrix;
+      else /* error */                       _multivariateGenerator->_covarianceMatrix = _covarianceMatrix;
       _multivariateGenerator->getRandomVector(&_chainCandidates[sampleId][0], _k->_variables.size());
 
       for (size_t d = 0; d < _k->_variables.size(); d++) _chainCandidates[sampleId][d] += _chainLeaders[sampleId][d];
@@ -466,8 +475,9 @@ void korali::solver::TMCMC::generateCandidate(const size_t sampleId)
 void korali::solver::TMCMC::updateDatabase(const size_t sampleId)
 {
   
+  //printf("update %zu\n", _sampleDatabase.size());
   _sampleDatabase.push_back(_chainLeaders[sampleId]);
-  _sampleLogPriorDatabase.push_back(_chainLeadersLogLikelihoods[sampleId]);
+  _sampleLogPriorDatabase.push_back(_chainLeadersLogPriors[sampleId]);
   _sampleLogLikelihoodDatabase.push_back(_chainLeadersLogLikelihoods[sampleId]);
 
   if(_version =="mTMCMC")

@@ -77,7 +77,6 @@ void korali::solver::Nested::runGeneration()
   { 
     setInitialConfiguration(); 
     runFirstGeneration(); 
-
     return; 
   };
 
@@ -451,7 +450,6 @@ void korali::solver::Nested::consumeLiveSamples()
     updateSampleDatabase(sampleIdx);
  
   }
-  return;
 
   _effectiveSampleSize = calcEffectiveSamples();
 

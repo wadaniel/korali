@@ -62,10 +62,11 @@ void korali::solver::TMCMC::setInitialConfiguration()
        std::string problemType = problemConfig["Type"];
        if (problemType == "Bayesian/Reference") valid = true;
    }
+   if (valid == false) _k->_logger->logError("mTMCMC works only for problems of type 'Bayesian/Reference'\n");
 
+   if (_maxChainLength != 1) _k->_logger->logError("Current version of 'mTMCMC' supports only 'Max Chain Length' of 1 (BASIS).");
    if (_stepSize < 0.0) _k->_logger->logError("Step Size lower than 0.0 (is %lf)\n", _stepSize);
    if (_domainExtensionFactor < 0.0) _k->_logger->logError("Domain Extension Factor lower than 0.0 (is %lf)\n", _domainExtensionFactor);
-   if (valid == false) _k->_logger->logError("mTMCMC works only for problems of type 'Bayesian/Reference'\n");
 
    _chainCandidatesErrors.resize(_populationSize, -1);
    _chainLeadersErrors.resize(_populationSize, -1);
@@ -142,7 +143,6 @@ void korali::solver::TMCMC::runGeneration()
     if(_currentChainStep[finishedId] == _chainLengths[finishedId] + _currentBurnIn) _finishedChainsCount++;
   }
 
-  // not correct for maxChainLEngth > 1 (non BASIS)
   if(_version == "mTMCMC")
   {
     if(_k->_currentGeneration > 1) { calculateGradients(samples); calculateProposals(samples); }
@@ -483,8 +483,7 @@ void korali::solver::TMCMC::generateCandidate(const size_t sampleId)
     }
     else /* "mTMCMC" */
     {
-      // TODO: error treatment granularity
-      
+      // TODO: refine error treatment granularity
       if( _chainLeadersErrors[sampleId] == 0 )
       {
         std::vector<double> zeroMean(_k->_variables.size(), 0.0);
@@ -517,7 +516,7 @@ void korali::solver::TMCMC::updateDatabase(const size_t sampleId)
   _sampleLogPriorDatabase.push_back(_chainLeadersLogPriors[sampleId]);
   _sampleLogLikelihoodDatabase.push_back(_chainLeadersLogLikelihoods[sampleId]);
 
-  if(_version =="mTMCMC")
+  if(_version == "mTMCMC")
   {
     _sampleErrorDatabase.push_back(_chainLeadersErrors[sampleId]);
     //printf("sErr db %d %d\n", _sampleErrorDatabase.back(), _chainLeadersErrors[sampleId]);
@@ -541,6 +540,7 @@ double korali::solver::TMCMC::calculateAcceptanceProbability(const size_t sample
     }
     else /* mTMCMC */
     {
+      // TODO: refine error treatment granularity
       if((_chainLeadersErrors[sampleId] == 0) && (_chainCandidatesErrors[sampleId] == 0))
       {
         gsl_vector* meanLeader    = gsl_vector_alloc(_k->_variables.size());
@@ -573,7 +573,6 @@ double korali::solver::TMCMC::calculateAcceptanceProbability(const size_t sample
         gsl_vector_free(meanCandidate);
 
         P = exp( (_chainCandidatesLogLikelihoods[sampleId]-_chainLeadersLogLikelihoods[sampleId])*_annealingExponent + (logpLeader - logpCandidate) + (_chainCandidatesLogPriors[sampleId]-_chainLeadersLogPriors[sampleId]) );
-    
      }
      else /* error */
      {

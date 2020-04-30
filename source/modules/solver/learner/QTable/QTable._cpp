@@ -21,7 +21,7 @@ void korali::solver::learner::QTable::setInitialConfiguration()
 std::vector<double> korali::solver::learner::QTable::getAction(const std::vector<double>& state)
 {
  // Calculating state's index
- size_t stateIdx = getInterpolatedIndex(state, _problem->_stateVectorIndexes);
+ size_t stateIdx = _problem->getIndexFromState(state);
 
  return getPolicyAction(stateIdx);
 }
@@ -29,7 +29,7 @@ std::vector<double> korali::solver::learner::QTable::getAction(const std::vector
 void korali::solver::learner::QTable::storeExperience(const std::vector<double>& state, const std::vector<double>& action, const double reward, const std::vector<double>& newState)
 {
  // Calculating state's index
- size_t stateIdx = getInterpolatedIndex(state, _problem->_stateVectorIndexes);
+ size_t stateIdx = _problem->getIndexFromState(state);
 
  // Creating storage for new action
  std::vector<double> newAction;
@@ -43,9 +43,9 @@ void korali::solver::learner::QTable::storeExperience(const std::vector<double>&
   newAction = getPolicyAction(stateIdx);
 
  // Obtaining new state and action indexes
- size_t actionIdx    = getInterpolatedIndex(action,    _problem->_actionVectorIndexes);
- size_t newStateIdx  = getInterpolatedIndex(newState,  _problem->_stateVectorIndexes);
- size_t newActionIdx = getInterpolatedIndex(newAction, _problem->_actionVectorIndexes);
+ size_t actionIdx    = _problem->getIndexFromAction(action);
+ size_t newStateIdx  = _problem->getIndexFromState(newState);
+ size_t newActionIdx = _problem->getIndexFromAction(newAction);
 
  // Calculating Q indexes
  size_t curQIdx = stateIdx * _problem->_actionCount + actionIdx;
@@ -73,7 +73,6 @@ void korali::solver::learner::QTable::processGeneration()
  _epsilon = _epsilon - _epsilonDecreaseRate;
  if (_epsilon < 0) _epsilon = 0;
 }
-
 
 /////// Auxiliary functions for QTable
 
@@ -112,7 +111,7 @@ std::vector<double> korali::solver::learner::QTable::getBestAction(const size_t&
  size_t actionIdx = qIdx - startPos;
 
  // Returning action
- return getActionFromIndex(actionIdx);
+ return _problem->getActionFromIndex(actionIdx);
 }
 
 std::vector<double> korali::solver::learner::QTable::getRandomAction()
@@ -126,52 +125,8 @@ std::vector<double> korali::solver::learner::QTable::getRandomAction()
  // We use the floor function to get the integer index of the selected action
  size_t actionIdx = floor(p * idxSpace);
 
- return getActionFromIndex(actionIdx);
+ return _problem->getActionFromIndex(actionIdx);
 }
-
-std::vector<double> korali::solver::learner::QTable::getActionFromIndex(const size_t& actionIdx)
-{
- // Creating storage for new action
- std::vector<double> action(_problem->_actionVectorSize);
-
- size_t tempIdx = actionIdx;
- for (size_t i = 0; i < _problem->_actionVectorSize; i++)
- {
-  size_t varIdx = _problem->_actionVectorIndexes[i];
-  size_t varParVectorSize = _k->_variables[varIdx]->_parameterVector.size();
-  size_t parameterIdx = tempIdx % varParVectorSize;
-  action[i] = _k->_variables[varIdx]->_parameterVector[parameterIdx];
-  tempIdx = tempIdx / varParVectorSize;
- }
-
- return action;
-}
-
-size_t korali::solver::learner::QTable::getInterpolatedIndex(const std::vector<double>& values, const std::vector<size_t>& indexes)
-{
- size_t pos = 0;
- size_t multiplier = 1;
-
- for (size_t i = 0; i < values.size(); i++)
- {
-  double value = values[i];
-  size_t index = indexes[i];
-
-  double minDiff = korali::Inf;
-  size_t valPos = 0;
-  for (size_t j = 0; j < _k->_variables[index]->_parameterVector.size(); j++)
-  {
-   double diff = abs(value - _k->_variables[index]->_parameterVector[j]);
-   if (diff < minDiff) { minDiff = diff; valPos = j; }
-  }
-
-  pos += valPos * multiplier;
-  multiplier *= _k->_variables[index]->_parameterVector.size();
- }
-
- return pos;
-}
-
 
 /////// Output functions for QTable
 

@@ -1,0 +1,101 @@
+#include "modules/solver/dynamicProgramming/dynamicProgramming.hpp"
+#include "modules/conduit/conduit.hpp"
+
+void korali::solver::DynamicProgramming::initialize()
+{
+ for (size_t i = 0; i < _k->_variables.size(); i++)
+  if (_k->_variables[i]->_parameterSpace == "Continuous")
+   _k->_logger->logError("Variable %lu (%s) is continuous, but dynamic programming can only process discrete or custom defined parameter spaces.\n", i, _k->_variables[i]->_name.c_str());
+}
+
+void korali::solver::DynamicProgramming::setInitialConfiguration()
+{
+ // Reserving storage and initializing state-action -> reward, state tables
+ _rewardTable.resize(_problem->_actionCount * _problem->_stateCount);
+ _stateTable.resize(_problem->_actionCount * _problem->_stateCount);
+
+  for (size_t i = 0; i < _rewardTable.size(); i++) _rewardTable[i] = -korali::Inf;
+  for (size_t i = 0; i < _stateTable.size(); i++) _stateTable[i] = 0;
+}
+
+void korali::solver::DynamicProgramming::runGeneration()
+{
+ // If initial generation, get problem pointer, and set initial DynamicProgramming configuration
+ if (_k->_currentGeneration == 1)
+ {
+   _problem = dynamic_cast<korali::problem::ReinforcementLearning*>(_k->_problem);
+   setInitialConfiguration();
+ }
+
+ printf("Running Generation: %lu\n", _k->_currentGeneration);
+
+ // Creating korali sample to run agent
+ korali::Sample agent;
+ agent["Module"] = "Problem";
+ agent["Operation"] = "Run Environment";
+
+ std::vector<double> state(_problem->_stateVectorSize);
+ std::vector<double> action(_problem->_actionVectorSize);
+
+ // Computing State/Action Table
+ size_t currentIndex = 0;
+ for (size_t i = 0; i < _problem->_stateCount; i++)
+ for (size_t j = 0; j < _problem->_actionCount; j++)
+ {
+  agent["Sample Id"] = currentIndex;
+  agent["State"]  = _problem->getStateFromIndex(i);
+  agent["Action"] = _problem->getActionFromIndex(j);
+
+  _conduit->start(agent);
+  _conduit->wait(agent);
+
+  double reward = agent["Reward"];
+  std::vector<double> newState = agent["State"];
+  size_t newStateIdx = _problem->getIndexFromState(newState);
+
+  _rewardTable[currentIndex] = reward;
+  _stateTable[currentIndex] = newStateIdx;
+  currentIndex++;
+ }
+
+ auto recursiveRewardTable = _rewardTable;
+
+ for (size_t depth = 1; depth < _recursionDepth; depth++)
+ {
+  auto tmpRewardTable = recursiveRewardTable;
+
+  for (size_t i = 0; i < _problem->_stateCount; i++)
+  for (size_t j = 0; j < _problem->_actionCount; j++)
+  {
+   size_t currentTableIdx = i*_problem->_actionCount + j;
+   size_t newState = _stateTable[currentTableIdx];
+
+   double bestReward = -korali::Inf;
+   for (size_t k = 0; k < _problem->_actionCount; k++)
+   {
+    size_t candidateTableIdx = newState*_problem->_actionCount + k;
+    double candidateReward = recursiveRewardTable[candidateTableIdx];
+    if (candidateReward > bestReward) bestReward = candidateReward;
+   }
+
+   tmpRewardTable[currentTableIdx] = _rewardTable[currentTableIdx] + bestReward;
+  }
+
+  recursiveRewardTable = tmpRewardTable;
+ }
+
+}
+
+
+void korali::solver::DynamicProgramming::printGenerationBefore()
+{
+
+}
+
+void korali::solver::DynamicProgramming::printGenerationAfter()
+{
+
+}
+
+
+

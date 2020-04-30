@@ -73,6 +73,70 @@ void korali::problem::ReinforcementLearning::initialize()
  }
 }
 
+std::vector<double> korali::problem::ReinforcementLearning::getActionFromIndex(const size_t& index)
+{
+ return extrapolateValuesFromIndex(index, _actionVectorIndexes);
+}
+
+std::vector<double> korali::problem::ReinforcementLearning::getStateFromIndex(const size_t& index)
+{
+ return extrapolateValuesFromIndex(index, _stateVectorIndexes);
+}
+
+size_t korali::problem::ReinforcementLearning::getIndexFromAction(const std::vector<double>& values)
+{
+ return interpolateIndexFromValues(values, _actionVectorIndexes);
+}
+
+size_t korali::problem::ReinforcementLearning::getIndexFromState(const std::vector<double>& values)
+{
+ return interpolateIndexFromValues(values, _stateVectorIndexes);
+}
+
+std::vector<double> korali::problem::ReinforcementLearning::extrapolateValuesFromIndex(const size_t& index, const std::vector<size_t>& variableIndexVector)
+{
+ // Creating storage for new action
+ std::vector<double> values(variableIndexVector.size());
+
+ size_t tempIdx = index;
+ for (size_t i = 0; i < variableIndexVector.size(); i++)
+ {
+  size_t varIdx = variableIndexVector[i];
+  size_t varParVectorSize = _k->_variables[varIdx]->_parameterVector.size();
+  size_t parameterIdx = tempIdx % varParVectorSize;
+  values[i] = _k->_variables[varIdx]->_parameterVector[parameterIdx];
+  tempIdx = tempIdx / varParVectorSize;
+ }
+
+ return values;
+}
+
+size_t korali::problem::ReinforcementLearning::interpolateIndexFromValues(const std::vector<double>& values, const std::vector<size_t>& variableIndexVector)
+{
+ size_t pos = 0;
+ size_t multiplier = 1;
+
+ for (size_t i = 0; i < values.size(); i++)
+ {
+  double value = values[i];
+  size_t index = variableIndexVector[i];
+
+  double minDiff = korali::Inf;
+  size_t valPos = 0;
+  for (size_t j = 0; j < _k->_variables[index]->_parameterVector.size(); j++)
+  {
+   double diff = abs(value - _k->_variables[index]->_parameterVector[j]);
+   if (diff < minDiff) { minDiff = diff; valPos = j; }
+  }
+
+  pos += valPos * multiplier;
+  multiplier *= _k->_variables[index]->_parameterVector.size();
+ }
+
+ return pos;
+}
+
+
 void korali::problem::ReinforcementLearning::runEnvironment(korali::Sample& sample)
 {
  sample.run(_environmentFunction);

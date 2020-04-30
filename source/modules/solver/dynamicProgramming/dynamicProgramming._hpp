@@ -1,0 +1,28 @@
+#ifndef _KORALI_SOLVER_DYNAMIC_PROGRAMMING_HPP_
+#define _KORALI_SOLVER_DYNAMIC_PROGRAMMING_HPP_
+
+#include "modules/solver/solver.hpp"
+#include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
+
+namespace korali { namespace solver {
+
+class DynamicProgramming : public korali::Solver
+{
+ public:
+
+  /**
+   * @brief Storage for the pointer to the learning problem
+   */
+  korali::problem::ReinforcementLearning* _problem;
+
+  void initialize() override;
+  void runGeneration() override;
+  void setInitialConfiguration() override;
+  void printGenerationBefore() override;
+  void printGenerationAfter() override;
+};
+
+} } // namespace korali::solver
+
+
+#endif // _KORALI_SOLVER_DYNAMIC_PROGRAMMING_HPP_

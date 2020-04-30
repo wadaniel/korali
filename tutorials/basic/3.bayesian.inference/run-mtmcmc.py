@@ -18,10 +18,13 @@ e["Problem"]["Type"] = "Bayesian/Reference"
 e["Problem"]["Likelihood Model"] = "Additive Normal"
 e["Problem"]["Reference Data"] = getReferenceData()
 e["Problem"]["Computational Model"] = lambda sampleData: modelWithDerivatives(sampleData, getReferencePoints())
+
 # Configuring TMCMC parameters
 e["Solver"]["Type"] = "TMCMC"
 e["Solver"]["Version"] = "mTMCMC"
 e["Solver"]["Population Size"] = 5000
+#e["Solver"]["Termination Criteria"]["Max Generations"] = 2
+e["Console Output"]["Verbosity"] = 'Detailed'
 
 # Configuring the problem's random distributions
 e["Distributions"][0]["Name"] = "Uniform 0"

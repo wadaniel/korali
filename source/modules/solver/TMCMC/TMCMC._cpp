@@ -7,6 +7,7 @@
 
 #include <math.h>
 #include <gsl/gsl_cdf.h>
+#include <gsl/gsl_randist.h>
 #include <gsl/gsl_sort_vector.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_linalg.h>
@@ -133,7 +134,7 @@ void korali::solver::TMCMC::runGeneration()
 
     _chainCandidatesLogLikelihoods[finishedId] = samples[finishedId]["logLikelihood"];
     _chainCandidatesLogPriors[finishedId]      = samples[finishedId]["logPrior"];
-    processEvaluation(finishedId);
+    processCandidate(finishedId);
     
     _chainPendingEvaluation[finishedId] = false;
 
@@ -191,16 +192,12 @@ void korali::solver::TMCMC::prepareGeneration()
   }
 }
 
-void korali::solver::TMCMC::processEvaluation(const size_t sampleId)
+void korali::solver::TMCMC::processCandidate(const size_t sampleId)
 {
-  double L = 0.0;
-  if( std::isfinite(_chainCandidatesLogLikelihoods[sampleId]) && std::isfinite(_chainCandidatesLogPriors[sampleId]))
-    L = exp(  (_chainCandidatesLogLikelihoods[sampleId]-_chainLeadersLogLikelihoods[sampleId])*_annealingExponent
-            + (_chainCandidatesLogPriors[sampleId]-_chainLeadersLogPriors[sampleId]) );
+  double P = calculateAcceptanceProbability(sampleId);
+  double U = _uniformGenerator->getRandomNumber();
 
-  double B = _uniformGenerator->getRandomNumber();
-
-  if( L > B || _k->_currentGeneration == 1 )
+  if( P > U || _k->_currentGeneration == 1 )
   {
     _chainLeaders[sampleId]               = _chainCandidates[sampleId];
     _chainLeadersLogPriors[sampleId]      = _chainCandidatesLogPriors[sampleId];
@@ -320,6 +317,19 @@ void korali::solver::TMCMC::processGeneration()
       leaderId++;
     }
   }
+
+  /* Anneal gradients and proposal */
+  if(_version == "mTMCMC")
+  for(size_t i = 0; i < _populationSize; ++i)
+  {
+    if(_chainLeadersErrors[i] > 0) continue;
+    gsl_vector_view gradLeader = gsl_vector_view_array(&_chainLeadersGradients[i][0], _k->_variables.size());
+    gsl_vector_scale(&gradLeader.vector, _annealingExponent/_previousAnnealingExponent);
+ 
+    gsl_matrix_view covLeader = gsl_matrix_view_array(&_chainLeadersCovariance[i][0], _k->_variables.size(), _k->_variables.size());
+    gsl_matrix_scale(&covLeader.matrix, _annealingExponent/_previousAnnealingExponent);
+  }
+
   /* Update acceptance statistics */
   size_t uniqueSelections  = _populationSize - zeroCount;
   _proposalsAcceptanceRate = (1.0*_acceptedSamplesCount)/_populationSize;
@@ -341,6 +351,9 @@ void korali::solver::TMCMC::calculateGradients(std::vector<korali::Sample>& samp
  {
    size_t finishedId = _conduit->waitAny(samples);
    for(size_t d = 0; d < _k->_variables.size(); ++d) _chainCandidatesGradients[finishedId][d] = samples[finishedId]["logLikelihood Gradient"][d];
+   
+   // anneal
+   for(size_t d = 0; d < _k->_variables.size(); ++d) _chainCandidatesGradients[finishedId][d] *= _annealingExponent;
  }
 }
 
@@ -362,11 +375,14 @@ void korali::solver::TMCMC::calculateProposals(std::vector<korali::Sample>& samp
   {
     size_t finishedId = _conduit->waitAny(samples);
     std::vector<double> FIM = samples[finishedId]["Fisher Information"];
-    
-    // invert FIM
     gsl_matrix_view FIMview = gsl_matrix_view_array(&FIM[0], Nth, Nth);
+    
+    // scale FIM
+    gsl_matrix_scale(&FIMview.matrix, _stepSize);
+ 
+    // invert FIM
     gsl_permutation *perm = gsl_permutation_alloc(Nth);
-
+   
     int s;
     status = gsl_linalg_LU_decomp(&FIMview.matrix, perm, &s);
     if (status != GSL_SUCCESS) { _chainCandidatesErrors[finishedId] = 1; gsl_permutation_free(perm); continue; }
@@ -375,15 +391,19 @@ void korali::solver::TMCMC::calculateProposals(std::vector<korali::Sample>& samp
     status = gsl_linalg_LU_invert(&FIMview.matrix, perm, FIMinv);
     gsl_permutation_free(perm);
     if (status != GSL_SUCCESS) { _chainCandidatesErrors[finishedId] = 2; gsl_matrix_free(FIMinv); continue; }
-    
-
+  
     // eigenvalue decomposition
     gsl_vector* Evals = gsl_vector_alloc(Nth);
     gsl_matrix* Evecs = gsl_matrix_alloc(Nth,Nth);
     gsl_eigen_symmv_workspace* work = gsl_eigen_symmv_alloc(Nth);
     status = gsl_eigen_symmv(FIMinv, Evals, Evecs, work);
     gsl_eigen_symmv_free(work);
+    
+    double minEval = gsl_vector_min(Evals);
     if (status != GSL_SUCCESS) { _chainCandidatesErrors[finishedId] = 3; gsl_matrix_free(FIMinv); gsl_vector_free(Evals); gsl_matrix_free(Evecs); continue; }
+ 
+    if (minEval <= 0.0) { _chainCandidatesErrors[finishedId] = 4; gsl_matrix_free(FIMinv); gsl_vector_free(Evals); gsl_matrix_free(Evecs); continue; }
+
 
     // correction
     double len, chi2 = gsl_cdf_chisq_Pinv( 0.95, Nth);
@@ -423,7 +443,6 @@ void korali::solver::TMCMC::calculateProposals(std::vector<korali::Sample>& samp
     // scale evals
     for(size_t d = 0; d < Nth; ++d)
     {
-
         gsl_vector_view evec = gsl_matrix_column(Evecs,d);
         gsl_vector_scale(&evec.vector, sqrt(gsl_vector_get(Evals,d)));
     }
@@ -462,7 +481,7 @@ void korali::solver::TMCMC::generateCandidate(const size_t sampleId)
         gsl_vector_view       candidate  = gsl_vector_view_array(&_chainCandidates[sampleId][0], _k->_variables.size());
         gsl_vector_const_view leaderGrad = gsl_vector_const_view_array(&_chainLeadersGradients[sampleId][0], _k->_variables.size());
         gsl_matrix_const_view leaderCov  = gsl_matrix_const_view_array(&_chainLeadersCovariance[sampleId][0], _k->_variables.size(),_k->_variables.size());
-        gsl_blas_dgemv(CblasNoTrans, 0.5*_stepSize, &leaderCov.matrix, &leaderGrad.vector, 1.0, &candidate.vector);
+        gsl_blas_dgemv(CblasNoTrans, 0.5, &leaderCov.matrix, &leaderGrad.vector, 1.0, &candidate.vector);
       }
     }
 }
@@ -485,7 +504,59 @@ void korali::solver::TMCMC::updateDatabase(const size_t sampleId)
 }
 
 
-double korali::solver::TMCMC::calculateAlpha(const size_t sampleId) { return 0.0; }
+double korali::solver::TMCMC::calculateAcceptanceProbability(const size_t sampleId) 
+{ 
+    double P = 0.0;
+    if( std::isfinite(_chainCandidatesLogLikelihoods[sampleId]) && std::isfinite(_chainCandidatesLogPriors[sampleId]) )
+    if(_version == "TMCMC")
+    {
+        P = exp(  (_chainCandidatesLogLikelihoods[sampleId]-_chainLeadersLogLikelihoods[sampleId])*_annealingExponent
+            + (_chainCandidatesLogPriors[sampleId]-_chainLeadersLogPriors[sampleId]) );
+    }
+    else /* mTMCMC */
+    {
+      if((_chainLeadersErrors[sampleId] == 0) && (_chainCandidatesErrors[sampleId] == 0))
+      {
+        gsl_vector* meanLeader    = gsl_vector_alloc(_k->_variables.size());
+        gsl_vector* meanCandidate = gsl_vector_alloc(_k->_variables.size());
+            
+        gsl_vector_const_view gradLeader    = gsl_vector_const_view_array(&_chainLeadersGradients[sampleId][0], _k->_variables.size());
+        gsl_vector_const_view gradCandidate = gsl_vector_const_view_array(&_chainCandidatesGradients[sampleId][0], _k->_variables.size());
+            
+        gsl_matrix_const_view covLeader = gsl_matrix_const_view_array(&_chainLeadersCovariance[sampleId][0], _k->_variables.size(), _k->_variables.size());
+            
+        gsl_blas_dgemv(CblasNoTrans, 0.5, &covLeader.matrix, &gradLeader.vector, 1.0, meanLeader);
+        gsl_blas_dgemv(CblasNoTrans, 0.5, &covLeader.matrix, &gradCandidate.vector, 1.0, meanCandidate);
+  
+        gsl_vector_const_view leader    = gsl_vector_const_view_array(&_chainLeaders[sampleId][0], _k->_variables.size());
+        gsl_vector_const_view candidate = gsl_vector_const_view_array(&_chainCandidates[sampleId][0], _k->_variables.size());
+    
+        gsl_matrix* cholCovLeader = gsl_matrix_alloc(_k->_variables.size(), _k->_variables.size());
+        gsl_matrix_memcpy(cholCovLeader, &covLeader.matrix);
+        int status = gsl_linalg_cholesky_decomp1(cholCovLeader);
+    
+        gsl_vector* work = gsl_vector_alloc(_k->_variables.size());
+        
+        double logpCandidate, logpLeader;
+        gsl_ran_multivariate_gaussian_log_pdf(&candidate.vector, meanLeader, cholCovLeader, &logpCandidate, work);
+        gsl_ran_multivariate_gaussian_log_pdf(&leader.vector, meanCandidate, cholCovLeader, &logpLeader, work);
+
+        gsl_vector_free(work);
+        gsl_matrix_free(cholCovLeader);
+        gsl_vector_free(meanLeader);
+        gsl_vector_free(meanCandidate);
+
+        P = exp( (_chainCandidatesLogLikelihoods[sampleId]-_chainLeadersLogLikelihoods[sampleId])*_annealingExponent + (logpLeader - logpCandidate) + (_chainCandidatesLogPriors[sampleId]-_chainLeadersLogPriors[sampleId]) );
+    
+     }
+     else /* error */
+     {
+       P = exp(  (_chainCandidatesLogLikelihoods[sampleId]-_chainLeadersLogLikelihoods[sampleId])*_annealingExponent
+         + (_chainCandidatesLogPriors[sampleId]-_chainLeadersLogPriors[sampleId]) );
+     }
+   }
+   return P; 
+}
 
 double korali::solver::TMCMC::tmcmc_objlogp(double x, const double *loglike, size_t Ns, double exponent, double targetCOV )
 {

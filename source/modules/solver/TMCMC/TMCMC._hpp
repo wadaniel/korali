@@ -43,7 +43,7 @@ class TMCMC : public korali::Solver
  /*
   * @brief Collects results after sampleevaluation.
   */
- void processEvaluation(const size_t sampleId);
+ void processCandidate(const size_t sampleId);
  
  /* 
   * @brief Calculate gradients of loglikelihood (only relevant for mTMCMC).
@@ -68,7 +68,7 @@ class TMCMC : public korali::Solver
  /* 
   * @brief Calculate acceptance probability.
   */
- double calculateAlpha(const size_t sampleId);
+ double calculateAcceptanceProbability(const size_t sampleId);
 
  /*
   * @brief Helper function to calculate objective (CVaR) for min search.

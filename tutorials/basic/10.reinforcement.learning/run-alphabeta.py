@@ -39,6 +39,9 @@ def environment(k):
 ######## Configuring Korali Experiment
 
 import korali
+
+# Instantiating Engine
+k = korali.Engine()
   
 # Creating new experiment
 e = korali.Experiment()
@@ -66,12 +69,22 @@ e["Variables"][1]["Granularity"] = granularity
 # Configuring the solver
 e["Solver"]["Type"] = "Dynamic Programming"
 e["Solver"]["Recursion Depth"] = N
-e["Solver"]["Termination Criteria"]["Max Generations"] = 1
 
-######## Running Korali and printing results
+# Silencing Korali's Output
+e["Console Output"]["Verbosity"] = "Silent"
+e["File Output"]["Enabled"] = False
 
-k = korali.Engine()
+######## Performing Training Stage
+
+e["Problem"]["Operation"] = "Training"
 k.run(e)
 
-#print('Best Policy:     ' + str(e["Results"]["Optimal Policy Actions"]))
-#print('Optimal Reward:  ' + str(e["Results"]["Optimal Reward"]))
+######## Performing Running Stage
+
+e["Problem"]["Operation"] = "Running"
+e["Problem"]["Initial State"] = [ initialX ]
+k.run(e)
+
+print('Best Policy States:     ' + str(e["Results"]["Optimal Policy States"]))
+print('Best Policy Actions:    ' + str(e["Results"]["Optimal Policy Actions"]))
+print('Optimal Reward:  ' + str(e["Results"]["Optimal Policy Reward"]))

@@ -15,9 +15,18 @@ class DynamicProgramming : public korali::Solver
    */
   korali::problem::ReinforcementLearning* _problem;
 
+  /**
+   * @brief Performs Training Operations
+   */
+  void doTraining();
+
+  /**
+   * @brief Runs the optimal policy for as many stages as specified
+  */
+  void doRunning();
+
   void initialize() override;
   void runGeneration() override;
-  void setInitialConfiguration() override;
   void printGenerationBefore() override;
   void printGenerationAfter() override;
 };

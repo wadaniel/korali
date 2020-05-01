@@ -2,6 +2,9 @@
 
 void korali::problem::ReinforcementLearning::initialize()
 {
+ // If it has already been initialized, reset generation and skip initialization.
+ if (_isInitialized == true) return;
+
  // Processing variable parameter space
  for (size_t i = 0; i < _k->_variables.size(); i++)
  {
@@ -71,6 +74,9 @@ void korali::problem::ReinforcementLearning::initialize()
   size_t index = _actionVectorIndexes[i];
   _actionCount *= _k->_variables[index]->_parameterVector.size();
  }
+
+ // Now mark as initalized
+ _isInitialized = true;
 }
 
 std::vector<double> korali::problem::ReinforcementLearning::getActionFromIndex(const size_t& index)

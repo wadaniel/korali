@@ -79,6 +79,18 @@ namespace korali
   void run(korali::Experiment& experiment);
 
   /**
+   * @brief Resumes a set experiments from the point they have previously finished.
+   * @param experiments Set of experiments.
+   */
+  void resume(std::vector<korali::Experiment>& experiments);
+
+  /**
+   * @brief Resumes a single experiment from the point it has previously finished.
+   * @param experiments The experiment to run.
+   */
+  void resume(korali::Experiment& experiment);
+
+  /**
    * @brief Runs the stored list of experiments.
    * @param initializeConduit Indicates whether the conduit should be initialized or inherited (Korali in Korali Executions)
    */

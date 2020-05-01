@@ -84,12 +84,10 @@ void korali::Experiment::run()
 
 void korali::Experiment::saveState()
 {
- if (_fileOutputEnabled == false) return;
-
  char genFileName[256];
  sprintf(genFileName, "gen%08lu.json", _currentGeneration);
 
- if (! korali::dirExists(_fileOutputPath))  korali::mkdir(_fileOutputPath);
+ if (_fileOutputEnabled) if (! korali::dirExists(_fileOutputPath))  korali::mkdir(_fileOutputPath);
 
  // Getting configuration
  _timestamp = getTimestamp();
@@ -100,7 +98,8 @@ void korali::Experiment::saveState()
  if (_storeSampleInformation == true) _js["Samples"] = _sampleInfo["Samples"];
  auto js = _js.getJson();
  js["Results"] = results;
- korali::JsonInterface::saveJsonToFile(fileName.c_str(), js);
+
+ if (_fileOutputEnabled) korali::JsonInterface::saveJsonToFile(fileName.c_str(), js);
 }
 
 bool korali::Experiment::loadState()
@@ -173,7 +172,7 @@ void korali::Experiment::initialize()
  setConfiguration(_js.getJson());
  getConfiguration(_js.getJson());
  __expPointer = this;
- _thread = co_create(10240*sizeof(void*), korali::threadWrapper);
+ _thread = co_create(2048*sizeof(void*), korali::threadWrapper);
  co_switch(_thread);
 }
 

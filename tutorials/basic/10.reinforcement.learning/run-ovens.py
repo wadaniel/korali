@@ -73,7 +73,7 @@ e["Variables"][0]["Granularity"] = granularity
 e["Variables"][1]["Name"] = "Step"
 e["Variables"][1]["Type"] = "State"
 e["Variables"][1]["Parameter Space"] = "Custom"
-e["Variables"][1]["Parameter Vector"] = [ 0, 1, 2 ]
+e["Variables"][1]["Parameter Vector"] = list(range(N))
 
 # Defining problem's actions.
 e["Variables"][2]["Name"] = "Oven Temperatures"

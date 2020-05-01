@@ -77,7 +77,7 @@ void korali::solver::DynamicProgramming::doRunning()
  {
 
   _bestStateRewardTable.resize(_problem->_stateCount);
-  _bestStateActionChainIndexTable.resize(_problem->_stateCount * _recursionDepth);
+  _bestStateActionIndexTable.resize(_problem->_stateCount);
 
   // Setting initial values
   for (size_t stateIdx = 0; stateIdx < _problem->_stateCount; stateIdx++)
@@ -96,14 +96,13 @@ void korali::solver::DynamicProgramming::doRunning()
    }
 
    _bestStateRewardTable[stateIdx] = bestReward;
-   _bestStateActionChainIndexTable[stateIdx * _recursionDepth + 0] = bestActionIdx;
+   _bestStateActionIndexTable[stateIdx] = bestActionIdx;
   }
 
   // Iterating phases
   for (size_t i = 1; i < _recursionDepth; i++)
   {
    auto tmpStateRewardTable =  _bestStateRewardTable;
-   auto tmpStateActionChainIndexTable = _bestStateActionChainIndexTable;
 
    for (size_t stateIdx = 0; stateIdx < _problem->_stateCount; stateIdx++)
    {
@@ -126,12 +125,9 @@ void korali::solver::DynamicProgramming::doRunning()
     }
 
     tmpStateRewardTable[stateIdx] = bestReward;
-    tmpStateActionChainIndexTable[stateIdx * _recursionDepth + 0] = bestActionIdx;
-    for (size_t j = 0; j < i; j++)
-     tmpStateActionChainIndexTable[stateIdx * _recursionDepth + j + 1] = _bestStateActionChainIndexTable[bestStateIdx * _recursionDepth + j];
+    _bestStateActionIndexTable[stateIdx] = bestActionIdx;
    }
 
-   _bestStateActionChainIndexTable = tmpStateActionChainIndexTable;
    _bestStateRewardTable = tmpStateRewardTable;
   }
 
@@ -151,8 +147,8 @@ void korali::solver::DynamicProgramming::doRunning()
  agent["State"]  = _currentState;
 
  // Looking for ideal action given the current state
- size_t stateIdx = _problem->getIndexFromState(_problem->_initialState);
- size_t actionIdx = _bestStateActionChainIndexTable[stateIdx * _recursionDepth + currentStage];
+ size_t stateIdx = _problem->getIndexFromState(_currentState);
+ size_t actionIdx = _bestStateActionIndexTable[stateIdx];
 
  auto action = _problem->getActionFromIndex(actionIdx);
  agent["Action"] = action;

@@ -27,9 +27,15 @@ def environment(k):
     
  # We use the given function to calculate reward
  k["Reward"] = evalFunctions[step](spenditure)
-  
+ 
+ # If this is the last step, then we assume no remaining money 
+ if (step == N - 1): newBudget = 0
+ 
+ # Else, we substract the spenditure from the budget for the next step
+ else: newBudget = budget - spenditure
+ 
+ # Advancing Step
  newStep = float(step + 1)
- newBudget = budget - spenditure
  
  # Calculating new state (remaining budget)
  k["State"] = [ newBudget, newStep ]
@@ -59,7 +65,7 @@ e["Variables"][0]["Granularity"] = granularity
 e["Variables"][1]["Name"] = "Step"
 e["Variables"][1]["Type"] = "State"
 e["Variables"][1]["Parameter Space"] = "Custom"
-e["Variables"][1]["Parameter Vector"] = [ 0.0, 1.0 ]
+e["Variables"][1]["Parameter Vector"] = list(range(N))
 
 # Defining problem's actions.
 e["Variables"][2]["Name"] = "Spenditure"

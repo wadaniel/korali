@@ -23,7 +23,7 @@ def h(v):
 # Environment that provides the state/action loop
 def environment(k):
 
- # Getting Budget (x) and amount to spend (y).
+ # Getting the values for x and y
  x = k["State"][0]
  y = k["Action"][0]
   

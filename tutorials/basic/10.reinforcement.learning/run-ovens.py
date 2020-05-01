@@ -27,39 +27,32 @@ def heatingFormula(x, u):
 # Environment that provides the state/action loop
 def environment(k):
 
-  # Setting initial object temperature
-  t = t0 
-
-  # Variable to store the cummulative costs of using the ovens
-  penalizationSum = 0 
-
-  # Setting initial state (object temperature)
-  k["State"] = [ t ]
-   
-  # Run the policy for N stages
-  for i in range(N):
-
-   # Get back to Korali to obtain the next action to perform
-   k.update()
-   
-   # Obtaining oven temperature from action
-   u = k["Action"][0]
-    
-   # Adding penalization for using the oven at the specified temperature
-   penalizationSum = penalizationSum + penalizationFormula(u)
-    
-   # Calculate new object temperature
-   t = heatingFormula(t,u)
+ # Getting object and oven temperature
+ t = k["State"][0]
+ u = k["Action"][0]
+ step = int(k["State"][1])
      
-   # Evaluating reward model
-   k["Reward"] = - r*(t-T)*(t-T) - penalizationSum
-
-   # Setting new State (object temperature)
-   k["State"] = [ t ]
+ # Calculating new temperature
+ newTemp = heatingFormula(t,u)
+      
+ # If this is an intermediate step, the penalization is just the use of the oven
+ if (step < N - 1): k["Reward"] = -penalizationFormula(u)
+ 
+ # Else, if this is the last step, then penalization is the use of the oven and the difference in temperature between the goal
+ else: k["Reward"] = - r*(newTemp-T)*(newTemp-T) - penalizationFormula(u)  
+ 
+ # Calculating new step
+ newStep = float(step + 1)
+ 
+ # Setting state
+ k["State"] = [ newTemp, newStep ]
    
 ######## Configuring Korali Experiment
 
 import korali
+
+# Instantiating Engine
+k = korali.Engine()
 
 # Creating new experiment
 e = korali.Experiment()
@@ -76,28 +69,39 @@ e["Variables"][0]["Lower Bound"] = minTemp
 e["Variables"][0]["Upper Bound"] = maxTemp
 e["Variables"][0]["Granularity"] = granularity
 
+# Defining problem's state.
+e["Variables"][1]["Name"] = "Step"
+e["Variables"][1]["Type"] = "State"
+e["Variables"][1]["Parameter Space"] = "Custom"
+e["Variables"][1]["Parameter Vector"] = [ 0, 1, 2 ]
+
 # Defining problem's actions.
-e["Variables"][1]["Name"] = "Oven Temperatures"
-e["Variables"][1]["Type"] = "Action"
-e["Variables"][1]["Parameter Space"] = "Discrete"
-e["Variables"][1]["Lower Bound"] = minTemp
-e["Variables"][1]["Upper Bound"] = maxTemp
-e["Variables"][1]["Granularity"] = granularity
+e["Variables"][2]["Name"] = "Oven Temperatures"
+e["Variables"][2]["Type"] = "Action"
+e["Variables"][2]["Parameter Space"] = "Discrete"
+e["Variables"][2]["Lower Bound"] = minTemp
+e["Variables"][2]["Upper Bound"] = maxTemp
+e["Variables"][2]["Granularity"] = granularity
 
 # Configuring the solver
-e["Solver"]["Type"] = "Learner/QTable"
-e["Solver"]["Q Update Algorithm"] = "Q-Learning"
-e["Solver"]["Initial Q Value"] = 0
+e["Solver"]["Type"] = "Dynamic Programming"
+e["Solver"]["Recursion Depth"] = N
 
-# Configuring Output
-e["Console Output"]["Frequency"] = 5000
+# Silencing Korali's Output
+e["Console Output"]["Verbosity"] = "Silent"
 e["File Output"]["Enabled"] = False
 
-######## Running Korali and printing results
+######## Performing Training Stage
 
-k = korali.Engine()
+e["Problem"]["Operation"] = "Training"
 k.run(e)
 
-print('Optimal Oven Temps:   ' + str(e["Results"]["Optimal Policy Actions"]))
-print('Optimal Object Temps: ' + str(e["Results"]["Optimal Policy States"]))
-print('Optimal Final Cost:   ' + str(-e["Results"]["Optimal Reward"]))
+######## Performing Running Stage
+
+e["Problem"]["Operation"] = "Running"
+e["Problem"]["Initial State"] = [ t0, 0 ]
+k.run(e)
+
+print('Best Policy States:     ' + str(e["Results"]["Optimal Policy States"]))
+print('Best Policy Actions:    ' + str(e["Results"]["Optimal Policy Actions"]))
+print('Optimal Reward:  ' + str(e["Results"]["Optimal Policy Reward"]))

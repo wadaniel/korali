@@ -75,37 +75,71 @@ void korali::solver::DynamicProgramming::doRunning()
 {
  if (_k->_currentGeneration == 1)
  {
-  // If first generation, then update the reward table
-  _recursiveRewardTable = _rewardTable;
 
-  for (size_t depth = 1; depth < _recursionDepth; depth++)
+  _bestStateRewardTable.resize(_problem->_stateCount);
+  _bestStateActionChainIndexTable.resize(_problem->_stateCount * _recursionDepth);
+
+  // Setting initial values
+  for (size_t stateIdx = 0; stateIdx < _problem->_stateCount; stateIdx++)
   {
-   auto tmpRewardTable = _recursiveRewardTable;
+   double bestReward = -korali::Inf;
+   size_t bestActionIdx = 0;
 
-   for (size_t i = 0; i < _problem->_stateCount; i++)
-   for (size_t j = 0; j < _problem->_actionCount; j++)
+   for (size_t actionIdx = 0; actionIdx < _problem->_actionCount; actionIdx++)
    {
-    size_t currentTableIdx = i*_problem->_actionCount + j;
-    size_t newState = _stateTable[currentTableIdx];
-
-    double bestReward = -korali::Inf;
-    for (size_t k = 0; k < _problem->_actionCount; k++)
+    size_t tableIdx = stateIdx * _problem->_actionCount + actionIdx;
+    if (_rewardTable[tableIdx] > bestReward)
     {
-     size_t candidateTableIdx = newState*_problem->_actionCount + k;
-     double candidateReward = _recursiveRewardTable[candidateTableIdx];
-     if (candidateReward > bestReward) bestReward = candidateReward;
+      bestReward = _rewardTable[tableIdx];
+      bestActionIdx = actionIdx;
     }
-
-    tmpRewardTable[currentTableIdx] = _rewardTable[currentTableIdx] + bestReward;
    }
 
-   _recursiveRewardTable = tmpRewardTable;
+   _bestStateRewardTable[stateIdx] = bestReward;
+   _bestStateActionChainIndexTable[stateIdx * _recursionDepth + 0] = bestActionIdx;
   }
 
-  // Setting Initial State
-  _currentState = _problem->_initialState;
-  _bestPolicyStates.push_back(_currentState);
-  _bestPolicyReward = 0;
+  // Iterating phases
+  for (size_t i = 1; i < _recursionDepth; i++)
+  {
+   auto tmpStateRewardTable =  _bestStateRewardTable;
+   auto tmpStateActionChainIndexTable = _bestStateActionChainIndexTable;
+
+   for (size_t stateIdx = 0; stateIdx < _problem->_stateCount; stateIdx++)
+   {
+    double bestReward = -korali::Inf;
+    size_t bestActionIdx = 0;
+    size_t bestStateIdx = 0;
+
+    for (size_t actionIdx = 0; actionIdx < _problem->_actionCount; actionIdx++)
+    {
+     size_t tableIdx = stateIdx * _problem->_actionCount + actionIdx;
+     size_t newStateIdx = _stateTable[tableIdx];
+     double cumulativeReward = _rewardTable[tableIdx] + _bestStateRewardTable[newStateIdx];
+
+     if (cumulativeReward > bestReward)
+     {
+       bestReward = cumulativeReward;
+       bestActionIdx = actionIdx;
+       bestStateIdx = newStateIdx;
+     }
+    }
+
+    tmpStateRewardTable[stateIdx] = bestReward;
+    tmpStateActionChainIndexTable[stateIdx * _recursionDepth + 0] = bestActionIdx;
+    for (size_t j = 0; j < i; j++)
+     tmpStateActionChainIndexTable[stateIdx * _recursionDepth + j + 1] = _bestStateActionChainIndexTable[bestStateIdx * _recursionDepth + j];
+   }
+
+   _bestStateActionChainIndexTable = tmpStateActionChainIndexTable;
+   _bestStateRewardTable = tmpStateRewardTable;
+  }
+
+   // Setting Initial State
+   _currentState = _problem->_initialState;
+   _bestPolicyStates.push_back(_currentState);
+   _bestPolicyReward = 0;
+
  }
 
  size_t currentStage = _k->_currentGeneration -1;
@@ -117,22 +151,10 @@ void korali::solver::DynamicProgramming::doRunning()
  agent["State"]  = _currentState;
 
  // Looking for ideal action given the current state
- size_t stateIdx = _problem->getIndexFromState(_currentState);
- size_t actionIdx = 0;
- double bestReward = -korali::Inf;
-
- for (size_t i = 0; i < _problem->_actionCount; i++)
- {
-  size_t tableIdx = stateIdx * _problem->_actionCount + i;
-  if (_recursiveRewardTable[tableIdx] > bestReward)
-  {
-    bestReward = _recursiveRewardTable[tableIdx];
-    actionIdx = i;
-  }
- }
+ size_t stateIdx = _problem->getIndexFromState(_problem->_initialState);
+ size_t actionIdx = _bestStateActionChainIndexTable[stateIdx * _recursionDepth + currentStage];
 
  auto action = _problem->getActionFromIndex(actionIdx);
-
  agent["Action"] = action;
 
  _conduit->start(agent);

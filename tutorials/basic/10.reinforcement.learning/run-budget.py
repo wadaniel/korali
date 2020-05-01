@@ -6,6 +6,7 @@ import numpy as np
 
 initialBudget = 1.0 # Initial Budget (x)
 granularity = 0.005 # Discretization factor: how fine will we discretize the variable space
+N = 2 # Number of stages
 
 # Defining list of cost functions, one per stage 
 evalFunctions = [
@@ -16,38 +17,29 @@ evalFunctions = [
 # Environment that provides the state/action loop
 def environment(k):
 
-  # Setting initial budget
-  budget = initialBudget
+ # Getting budget, current step, and amount to spend.
+ budget     = k["State"][0]
+ step       = int(k["State"][1])
+ spenditure = k["Action"][0]
   
-  # Initializing reward
-  k["Reward"] = 0
-  
-  # For each of the cost functions (stages)
-  for Fc in evalFunctions:
-
-   # Updating state with the value of the current (remaining) budget
-   k["State"] = [ budget ]  
-  
-   # Get back to Korali to obtain the next action to perform
-   k.update()
-
-   # Getting Action (how much to spend in this step)
-   spenditure = k["Action"][0] 
-  
-   # If spending decision is higher than remaining budget, then this is an inviable decision.
-   if (spenditure > budget):
-    k["Reward"] = -math.inf
-    return 
+ # If Y greater than current X, then this is not a feasible policy, returning -infinite reward
+ if (spenditure > budget): spenditure = budget
     
-   # Else, we substract the spenditure from the budget
-   budget = budget - spenditure
-   
-   # Then add the function calculation to the reward.
-   k["Reward"] = k["Reward"] + Fc(spenditure)
+ # We use the given function to calculate reward
+ k["Reward"] = evalFunctions[step](spenditure)
+  
+ newStep = float(step + 1)
+ newBudget = budget - spenditure
+ 
+ # Calculating new state (remaining budget)
+ k["State"] = [ newBudget, newStep ]
 
 ######## Configuring Korali Experiment
 
 import korali
+
+# Instantiating Engine
+k = korali.Engine()
 
 # Creating new experiment
 e = korali.Experiment()
@@ -64,27 +56,38 @@ e["Variables"][0]["Lower Bound"] = 0.0
 e["Variables"][0]["Upper Bound"] = initialBudget
 e["Variables"][0]["Granularity"] = granularity
 
+e["Variables"][1]["Name"] = "Step"
+e["Variables"][1]["Type"] = "State"
+e["Variables"][1]["Parameter Space"] = "Custom"
+e["Variables"][1]["Parameter Vector"] = [ 0.0, 1.0 ]
+
 # Defining problem's actions.
-e["Variables"][1]["Name"] = "Spenditure"
-e["Variables"][1]["Type"] = "Action"
-e["Variables"][1]["Parameter Space"] = "Discrete"
-e["Variables"][1]["Lower Bound"] = 0.0
-e["Variables"][1]["Upper Bound"] = initialBudget
-e["Variables"][1]["Granularity"] = granularity
+e["Variables"][2]["Name"] = "Spenditure"
+e["Variables"][2]["Type"] = "Action"
+e["Variables"][2]["Parameter Space"] = "Discrete"
+e["Variables"][2]["Lower Bound"] = 0.0
+e["Variables"][2]["Upper Bound"] = initialBudget
+e["Variables"][2]["Granularity"] = granularity
 
 # Configuring the solver
-e["Solver"]["Type"] = "Learner/QTable"
-e["Solver"]["Q Update Algorithm"] = "Q-Learning"
-e["Solver"]["Initial Q Value"] = 10
+e["Solver"]["Type"] = "Dynamic Programming"
+e["Solver"]["Recursion Depth"] = N
 
-# Configuring Output
-e["Console Output"]["Frequency"] = 5000
+# Silencing Korali's Output
+e["Console Output"]["Verbosity"] = "Silent"
 e["File Output"]["Enabled"] = False
 
-######## Running Korali and printing results
+######## Performing Training Stage
 
-k = korali.Engine()
+e["Problem"]["Operation"] = "Training"
 k.run(e)
 
-print('Best Policy:     ' + str(e["Results"]["Optimal Policy Actions"]))
-print('Optimal Reward:  ' + str(e["Results"]["Optimal Reward"]))
+######## Performing Running Stage
+
+e["Problem"]["Operation"] = "Running"
+e["Problem"]["Initial State"] = [ initialBudget, 0 ]
+k.run(e)
+
+print('Best Policy States:     ' + str(e["Results"]["Optimal Policy States"]))
+print('Best Policy Actions:    ' + str(e["Results"]["Optimal Policy Actions"]))
+print('Optimal Reward:  ' + str(e["Results"]["Optimal Policy Reward"]))

@@ -40,4 +40,4 @@ print("Running last 1000 samples...")
 print("-------------------------------------------------------------\n")
 
 e["Solver"]["Termination Criteria"]["Max Samples"] = 2000
-k.run(e)
+k.resume(e)

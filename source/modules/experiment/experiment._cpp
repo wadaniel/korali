@@ -172,7 +172,7 @@ void korali::Experiment::initialize()
  setConfiguration(_js.getJson());
  getConfiguration(_js.getJson());
  __expPointer = this;
- _thread = co_create(2048*sizeof(void*), korali::threadWrapper);
+ _thread = co_create(8192*sizeof(void*), korali::threadWrapper);
  co_switch(_thread);
 }
 

@@ -46,4 +46,4 @@ print('Now running last 25 generations...')
 print('------------------------------------------------------')
 
 for e in eList: e["Solver"]["Termination Criteria"]["Max Generations"] = 50 
-k.run(eList)
+k.resume(eList)

@@ -37,7 +37,7 @@ void korali::Conduit::initiateSample(knlohmann::json& sampleJs)
  {
    sampleJs["Finished"] = false;
    experiment->sampleIdMap[sampleId] = new korali::Sample;
-   experiment->sampleIdMap[sampleId]->_sampleThread = co_create(4096*sizeof(void*), korali::Sample::sampleLauncher);
+   experiment->sampleIdMap[sampleId]->_sampleThread = co_create(8192*sizeof(void*), korali::Sample::sampleLauncher);
  }
 
  experiment->sampleIdMap[sampleId]->_js.getJson() = sampleJs;
@@ -60,7 +60,7 @@ void korali::Conduit::start(korali::Sample& sample)
  if (sample._state != SampleState::uninitialized) _logger->logError("Sample has already been initialized.\n");
 
  if (sample._isAllocated == false)
-  sample._sampleThread = co_create(512*sizeof(void*), korali::Conduit::coroutineWrapper);
+  sample._sampleThread = co_create(8192*sizeof(void*), korali::Conduit::coroutineWrapper);
  else
   _logger->logError("Sample thread is already allocated; has it executed before being re-started?\n");
 

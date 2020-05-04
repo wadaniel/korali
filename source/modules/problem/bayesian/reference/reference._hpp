@@ -12,7 +12,7 @@ class Reference : public korali::problem::Bayesian
 
  const double _log2pi = 1.83787706640934533908193770912476;
 
- size_t sigmaVariableIndex;
+ size_t statisticalVariableIndex;
 
  /**
   * @brief Precomputes the square distance between two vectors of the same size

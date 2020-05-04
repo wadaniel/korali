@@ -13,27 +13,23 @@ void korali::problem::bayesian::Reference::initialize()
   if (_referenceData.size() == 0) _k->_logger->logError("Bayesian (%s) problems require defining reference data.\n", _likelihoodModel.c_str());
 
   if( _likelihoodModel=="Additive Normal" || _likelihoodModel=="Additive Normal Variance" || _likelihoodModel=="Multiplicative Normal" || _likelihoodModel=="Multiplicative Normal Data"){
-    bool foundSigma = false;
+    bool foundStatistcalParam = false;
     for (size_t i = 0; i < _k->_variables.size(); i++){
       std::string varName = _k->_variables[i]->_name;
-      if (varName == "[Sigma]") { sigmaVariableIndex = i; foundSigma = true; }
+      if (varName == "[Sigma]") { statisticalVariableIndex = i; foundStatistcalParam = true; }
     }
-    if (foundSigma == false) _k->_logger->logError("Bayesian (%s) problems require defining a variable named: '[Sigma]'.\n", _likelihoodModel.c_str());
+    if (foundStatistcalParam == false) _k->_logger->logError("Bayesian (%s) problems require defining a variable named: '[Sigma]'.\n", _likelihoodModel.c_str());
   }
 
-  std::string str;
-
-  str = "Negative Binomial";
   _negativeBinomialConstant = korali::NaN;
-  if( _likelihoodModel.find(str) != std::string::npos ){
+  if( _likelihoodModel == "Negative Binomial" ){
     _negativeBinomialConstant = 0.;
     for( size_t i=0; i<_referenceData.size(); i++ ){
       _negativeBinomialConstant -= gsl_sf_lngamma( _referenceData[i]+1. );
     }
   }
 
-  str = "Positive Normal";
-  if( _likelihoodModel.find(str) != std::string::npos ){
+  if( _likelihoodModel == "Positive Normal" ){
     for( size_t i=0; i<_referenceData.size(); i++ ){
     }
   }
@@ -179,7 +175,7 @@ void korali::problem::bayesian::Reference::loglikelihoodNegativeBinomial(korali:
 
 void korali::problem::bayesian::Reference::loglikelihoodNormalAdditive(korali::Sample& sample)
 {
-  double sigma   = sample["Parameters"][sigmaVariableIndex];
+  double sigma   = sample["Parameters"][statisticalVariableIndex];
   double sigma2  = sigma*sigma;
 
   double sse = compute_sse( sample["Reference Evaluations"], _referenceData );
@@ -193,7 +189,7 @@ void korali::problem::bayesian::Reference::loglikelihoodNormalAdditive(korali::S
 
 void korali::problem::bayesian::Reference::loglikelihoodNormalAdditiveVariance(korali::Sample& sample)
 {
-  double sigma2 = sample["Parameters"][sigmaVariableIndex];
+  double sigma2 = sample["Parameters"][statisticalVariableIndex];
 
   double sse = compute_sse( sample["Reference Evaluations"], _referenceData );
 
@@ -206,7 +202,7 @@ void korali::problem::bayesian::Reference::loglikelihoodNormalAdditiveVariance(k
 
 void korali::problem::bayesian::Reference::loglikelihoodNormalMultiplicative(korali::Sample& sample)
 {
-  double sigma    = sample["Parameters"][sigmaVariableIndex];
+  double sigma    = sample["Parameters"][statisticalVariableIndex];
   double ssn      = 0.0;
   double logSigma = 0.0;
 
@@ -233,7 +229,7 @@ void korali::problem::bayesian::Reference::loglikelihoodNormalMultiplicative(kor
 
 void korali::problem::bayesian::Reference::loglikelihoodNormalMultiplicativeData(korali::Sample& sample)
 {
-  double sigma    = sample["Parameters"][sigmaVariableIndex];
+  double sigma    = sample["Parameters"][statisticalVariableIndex];
   double ssn      = 0.0;
   double logSigma = 0.0;
   for(size_t i = 0; i < _referenceData.size(); i++)
@@ -272,12 +268,11 @@ void korali::problem::bayesian::Reference::evaluateLogLikelihoodGradient(korali:
   {
    sample["logLikelihood Gradient"] = std::vector<double>(_k->_variables.size(), 0.0);
   }
-
 }
 
 void korali::problem::bayesian::Reference::gradientLogLikelihoodNormalAdditive(korali::Sample& sample)
 {
-    double sigma = sample["Parameters"][sigmaVariableIndex];
+    double sigma = sample["Parameters"][statisticalVariableIndex];
     double var   = sigma*sigma;
     double sse   = 0.0;
     std::vector<std::vector<double>> gradient = sample["Gradient"];
@@ -303,9 +298,27 @@ void korali::problem::bayesian::Reference::gradientLogLikelihoodNormalAdditive(k
 }
 
 
+void korali::problem::bayesian::Reference::evaluateFisherInformation(korali::Sample& sample)
+{
+  double eval = sample["F(x)"];
+  if (isfinite(eval))
+  {
+    if (sample["Gradient"].size() != _referenceData.size())
+    _k->_logger->logError("This Bayesian (%s) problem requires a %lu-sized gradient array (a gradient for each reference evaluation). Provided: %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), sample["Gradient"].size());
+
+    if (_likelihoodModel == "Additive Normal") fisherInformationLogLikelihoodNormalAdditive(sample);
+    else  _k->_logger->logError("Fisher Information not yet implemented for selected bayesian problem and log likelihood model.");
+  }
+  else
+  {
+   sample["Fisher Information"] = std::vector<double>(_k->_variables.size()*_k->_variables.size(), 0.0);
+  }
+}
+
+
 void korali::problem::bayesian::Reference::fisherInformationLogLikelihoodNormalAdditive(korali::Sample& sample)
 {
-  double sigma = sample["Parameters"][sigmaVariableIndex];
+  double sigma = sample["Parameters"][statisticalVariableIndex];
   double var   = sigma*sigma;
 
   size_t Nd  = _referenceData.size();
@@ -335,24 +348,6 @@ void korali::problem::bayesian::Reference::fisherInformationLogLikelihoodNormalA
   gsl_matrix_free(S2);
 
   sample["Fisher Information"] = FIM;
-  return;
 }
 
-void korali::problem::bayesian::Reference::evaluateFisherInformation(korali::Sample& sample)
-{
-  double eval = sample["F(x)"];
-  if (isfinite(eval))
-  {
-    if (sample["Gradient"].size() != _referenceData.size())
-    _k->_logger->logError("This Bayesian (%s) problem requires a %lu-sized gradient array (a gradient for each reference evaluation). Provided: %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), sample["Gradient"].size());
 
-    if (_likelihoodModel == "Additive Normal") fisherInformationLogLikelihoodNormalAdditive(sample);
-    else  _k->_logger->logError("Fisher Information not yet implemented for selected bayesian problem and log likelihood model.");
-  }
-  else
-  {
-   sample["Fisher Information"] = std::vector<double>(_k->_variables.size()*_k->_variables.size(), 0.0);
-  }
-
-  return;
-}

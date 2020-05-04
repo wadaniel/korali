@@ -17,16 +17,14 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Bayesian/Reference"
 e["Problem"]["Likelihood Model"] = "Additive Normal"
 e["Problem"]["Reference Data"] = getReferenceData()
-e["Problem"]["Computational Model"] = lambda sampleData: model(sampleData, getReferencePoints())
+e["Problem"]["Computational Model"] = lambda sampleData: modelWithDerivatives(sampleData, getReferencePoints())
 
-# Configuring Nested Sampling parameters
-e["Solver"]["Type"] = "Nested"
-e["Solver"]["Number Live Points"] = 1500
-e["Solver"]["Batch Size"] = 1
-e["Solver"]["Covariance Scaling"] = 1.0
-e["Solver"]["Add Live Points"] = True
-e["Solver"]["Resampling Method"] = "Ellipse"
-
+# Configuring TMCMC parameters
+e["Solver"]["Type"] = "TMCMC"
+e["Solver"]["Version"] = "mTMCMC"
+e["Solver"]["Population Size"] = 5000
+#e["Solver"]["Termination Criteria"]["Max Generations"] = 2
+e["Console Output"]["Verbosity"] = 'Detailed'
 
 # Configuring the problem's random distributions
 e["Distributions"][0]["Name"] = "Uniform 0"
@@ -53,13 +51,6 @@ e["Variables"][1]["Prior Distribution"] = "Uniform 1"
 
 e["Variables"][2]["Name"] = "[Sigma]"
 e["Variables"][2]["Prior Distribution"] = "Uniform 2"
-
-
-e["File Output"]["Frequency"] = 0
-e["Console Output"]["Frequency"] = 500
-e["Solver"]["Termination Criteria"]["Max Generations"] = 100000
-e["Solver"]["Termination Criteria"]["Max Effective Sample Size"] = 10000
-e["Solver"]["Termination Criteria"]["Max Gain Factor"] = 1e-9
 
 # Starting Korali's Engine and running experiment
 k = korali.Engine()

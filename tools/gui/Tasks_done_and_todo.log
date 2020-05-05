@@ -1,6 +1,32 @@
 Mark Martori Lopez
 
 
+Tuesday 5 May 2020
+
+Tasks:
+
+1- [Solved] Exploit the space of each frame. Smaller font, better justifications, pady and padx.
+
+
+2- [Solved] Cascade instead of boolean button. + Adjust 'createConfig' function to read the final value of the cascade.
+
+
+3- [Solved] Remove .config from problem and solver selection cascade.
+
+
+4- [Solved] Add menuOption when 'Options' in .config file; one example:
+
+"Options": [
+                { "Value": "Linear", "Description": "Distributes Mu values linearly." },
+                { "Value": "Equal", "Description": "Distributes Mu values equally." },
+                { "Value": "Logarithmic", "Description": "Distributes Mu values logarithmically." }
+
+
+4- [Solved] Experiment Configuration added.
+
+5- [Semi-Solved] Distribution Configuration added.
+
+-----------------------------------------------------
 Wednesday 29 April 2020
 
 Tasks:

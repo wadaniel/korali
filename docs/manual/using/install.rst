@@ -26,7 +26,7 @@ Installation Steps
 
   .. code-block:: bash
    
-     ./install --build-jobs=8
+     ./install --jobs=8
 
 Troubleshooting
 ====================

@@ -36,7 +36,7 @@ void korali::problem::Bayesian::evaluateLogPosterior(korali::Sample& sample)
   }
   else
   {
-   evaluateLogLikelihood(sample);
+   evaluateLoglikelihood(sample);
    double logPrior = sample["logPrior"];
    double logLikelihood = sample["logLikelihood"];
    double logPosterior = logPrior + logLikelihood;
@@ -65,5 +65,5 @@ void korali::problem::Bayesian::evaluate(korali::Sample& sample)
 
 void korali::problem::Bayesian::evaluateGradient(korali::Sample& sample)
 {
- evaluateLogLikelihoodGradient(sample);
+ evaluateLoglikelihoodGradient(sample);
 }

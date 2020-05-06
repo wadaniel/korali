@@ -12,13 +12,13 @@ class Latent : public korali::problem::Bayesian
 //  std::vector<size_t> _hyperparameterVariableIndices;
 
 
- void evaluateLogLikelihood(korali::Sample& sample) override;
+ void evaluateLoglikelihood(korali::Sample& sample) override;
  void evaluateFisherInformation(korali::Sample& sample) override;
  void sampleLatent(korali::Sample& sample);
  void evaluateS(korali::Sample& sample);
  void evaluatePhi(korali::Sample& sample);
  void evaluateZeta(korali::Sample& sample);
- void evaluateLogLikelihoodGradient(korali::Sample& sample) override;
+ void evaluateLoglikelihoodGradient(korali::Sample& sample) override;
  // void evaluateLogPrior(korali::Sample& sample) override;
  // void evaluateLogPosterior(korali::Sample& sample) override;
  void initialize() override;

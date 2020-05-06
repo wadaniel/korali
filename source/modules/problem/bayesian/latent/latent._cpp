@@ -18,7 +18,7 @@ void korali::problem::bayesian::Latent::initialize()
  }
 }
 
-void korali::problem::bayesian::Latent::evaluateLogLikelihood(korali::Sample& sample){
+void korali::problem::bayesian::Latent::evaluateLoglikelihood(korali::Sample& sample){
     //TODO does it work?
     // Evaluate the user-given probability distribution for latent- and hyperparameter values given in the sample
   sample.run(_sOfLikelihoodModel);
@@ -65,7 +65,7 @@ void korali::problem::bayesian::Latent::evaluateZeta(korali::Sample& sample)
   sample.run(_zetaOfLikelihoodModel);
 }
 
-void korali::problem::bayesian::Latent::evaluateLogLikelihoodGradient(korali::Sample& sample)
+void korali::problem::bayesian::Latent::evaluateLoglikelihoodGradient(korali::Sample& sample)
 {
   _k->_logger->logError("Gradient not yet implemented for selected bayesian problem and log likelihood model.");
 }

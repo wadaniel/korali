@@ -4,14 +4,14 @@
 Collaborating
 ********************
 
-To allow the growing number of interal and external Korali developers to seamlessly integrate their modules into Korali, while reducing the number of conflicts and potential bugs, we have established a set of collaboration rules:
+To allow the growing number of internal and external Korali developers to seamlessly integrate their modules into Korali, while reducing the number of conflicts and potential bugs, we have established a set of collaboration rules:
 
 General Design Rules
 ---------------------------
    
 1. All contributions to the Korali repository should be done by means of pull requests, where at least one member of the developer's group approval.
 
-2. All code should be properly indented (see `clang-format <http://clang.llvm.org/docs/ClangFormat.html>`_ for a good tool to help you with formatting) and variables should have proper human undestandable names. Cryptic, badly formatted, and inefficient code can be rejected on those grounds alone.
+2. All code should follow a consistent format and variables should have proper human understandable names. Cryptic, badly formatted, and inefficient code can be rejected on those grounds alone.
 
 3. Korali is a high-performance framework, and all new methods should allow for the parallel execution of samples. 
 
@@ -31,6 +31,8 @@ Collaboration Steps Checklist
 * If you developed a new module, add a new tutorial in the :code:`tutorials` folder with a simple example of how to use it and the expected results.
 
 * Create a detailed description of both your module and its tutorial in their respective README.rst file. You are allowed to cite papers and links. 
+
+* Run the *tools/reformat* tool to adjust the format of your code. To run this tool, you should have `clang-format <http://clang.llvm.org/docs/ClangFormat.html>`_ installed in your system. After running, your new code will be re-formatted, guided by Korali-wide standards.
 
 * Merge the latest changes from the Korali master repository onto your forked/cloned code, so to have the latest updates already in your code.
 

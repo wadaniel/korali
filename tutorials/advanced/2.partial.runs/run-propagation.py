@@ -45,4 +45,4 @@ print("Now running last sample(s).")
 print('------------------------------------------------------')
 
 e["Solver"]["Termination Criteria"]["Max Generations"] = 100
-k.run(e)
+k.resume(e)

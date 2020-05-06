@@ -36,4 +36,3 @@ e["Console Output"]["Verbosity"] = "Detailed"
 # Starting Korali's Engine and running experiment
 k = korali.Engine()
 k.run(e)
-

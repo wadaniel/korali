@@ -28,4 +28,4 @@ PI:
 
 * [**Petros Koumoutsakos**](https://www.cse-lab.ethz.ch/member/petros-koumoutsakos/), petros at ethz.ch 
 
-Additional contributors: Lucas Amoudrouz, Ivica Kicic, Susanne Keller, Mark Martori.
+Additional contributors: Lucas Amoudrouz, Ivica Kicic, Pascal Weber, Susanne Keller, Mark Martori.

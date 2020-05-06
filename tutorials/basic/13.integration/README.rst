@@ -71,6 +71,7 @@ The Variables
 In this problem there is three variables, `X`, `Y` and `Z`, whose domain we set to [0,1] and in case of Monte Carlo Integration assume an uniform distribution. Furthermore we assume 10 samples per dimension
 
 .. code-block:: python
+
         e["Variables"][0]["Name"] = "x"
         e["Variables"][0]["Number Of Gridpoints"] = 10
         e["Variables"][0]["Lower Bound"] = 0.0

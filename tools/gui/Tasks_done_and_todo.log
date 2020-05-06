@@ -1,5 +1,75 @@
 Mark Martori Lopez
 
+
+Tuesday 5 May 2020
+
+Tasks:
+
+1- [Solved] Exploit the space of each frame. Smaller font, better justifications, pady and padx.
+
+
+2- [Solved] Cascade instead of boolean button. + Adjust 'createConfig' function to read the final value of the cascade.
+
+
+3- [Solved] Remove .config from problem and solver selection cascade.
+
+
+4- [Solved] Add menuOption when 'Options' in .config file; one example:
+
+"Options": [
+                { "Value": "Linear", "Description": "Distributes Mu values linearly." },
+                { "Value": "Equal", "Description": "Distributes Mu values equally." },
+                { "Value": "Logarithmic", "Description": "Distributes Mu values logarithmically." }
+
+
+4- [Solved] Experiment Configuration added.
+
+5- [Semi-Solved] Distribution Configuration added.
+
+-----------------------------------------------------
+Wednesday 29 April 2020
+
+Tasks:
+
+1- [Solved] Current GOAL: Add a Variable Tab with its content if Imported file has more variables.
+
+		Step 1: [Solved] Modify the way to read the imported file so it can be split into different tab Variables.
+
+		Step 2: [Solved] Modify the way we create VariableTabs.
+
+		Step 3:[Solved] Interconnect several functions to finish it.
+
+2- [Solved] Modify createFile function in order to allow creating several files while modifying the variables.
+
+3- [Solved] Edit File's type so only the .txt, .log and .config are readable.
+
+4- [Solved] Provide functionality to the main menu of the app. Save as..., Export as..., Import File...
+
+5- [Solved] Add a multiple-frame option to jump from one to another one to divide the app in 2. Setting the variables in one frame and visualizating its results ( graph ) in the other one.
+
+-----------------------------------------------------
+Tuesday 28 April 2020
+
+Tasks:
+
+1- [Solved] Current GOAL: Finish filling the entries from Solver and Variables when importing a file.
+	Step 5: [Solved] Insert all the values from the imported file into the corresponding entries. Radiobuttons,Entries and Spinboxes.
+
+2- [Solved] Fix crearVariables function as some files do not have 'Variables Configuration'. This will create an issue in further functions.
+
+3- [Solved] Fix 'crearframeVariables' and 'printVariables' functions as the variables were getting overwritten by the last one.
+
+4- [Solved] Pop warning message if after importing a file, the user wants to create a file.
+
+	NEXT GOAL: [Semi-Solved] Add a Variable Tab with its content if Imported file has more variables.
+
+		Step 1: [Solved] Modify the way to read the imported file so it can be split into different tab Variables.
+
+		Step 2: [Solved] Modify the way we create VariableTabs.
+
+		Step 3:[Not Solved] Interconnect several functions to finish it.
+
+-----------------------------------------------------
 Wednesday 22 April 2020
 
 Tasks:

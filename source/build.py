@@ -205,8 +205,13 @@ def createSetConfiguration(module):
 
  if 'Compatible Solvers' in module:
   codeString += '  bool detectedCompatibleSolver = false; \n'
+  codeString += '  std::string solverName = _k->_js["Solver"]["Type"]; \n'
+  codeString += '  std::string candidateSolverName; \n'
+  codeString += '  solverName.erase(remove_if(solverName.begin(), solverName.end(), isspace), solverName.end()); \n'
   for v in module["Compatible Solvers"]:
-   codeString += '   if (_k->_js["Solver"]["Type"] == "' + v + '") detectedCompatibleSolver = true;\n'
+   codeString += '   candidateSolverName = "' + v + '"; \n'
+   codeString += '   candidateSolverName.erase(remove_if(candidateSolverName.begin(), candidateSolverName.end(), isspace), candidateSolverName.end()); \n'
+   codeString += '   if (solverName == candidateSolverName) detectedCompatibleSolver = true;\n'
   codeString += '  if (detectedCompatibleSolver == false) _k->_logger->logError("Specified solver (%s) is not compatible with problem of type: ' + module["Name"] + '\\n",  _k->_js["Solver"]["Type"].dump(1).c_str()); \n\n'
   
  codeString += ' ' + module["Parent Class"] + '::setConfiguration(js);\n'

@@ -38,6 +38,7 @@ if (found == False):
  print('------------------------------------------------------')
  print('Running first 5 generations anew...')
  print('------------------------------------------------------')
+ k.run(e)
 
 # If found, we continue with the next 5 generations. 
 if (found == True):
@@ -45,6 +46,4 @@ if (found == True):
  print('Running 5 more generations from previous run...')
  print('------------------------------------------------------')
  e["Solver"]["Termination Criteria"]["Max Generations"] = e["Solver"]["Termination Criteria"]["Max Generations"] + 5
- 
-# Running 10 generations
-k.run(e)
+ k.resume(e)

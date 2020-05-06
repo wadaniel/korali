@@ -22,6 +22,12 @@ Installation Steps
      cd korali
      ./install
 
+  For a faster installation, you can build Korali with parallel jobs. E.g.,
+
+  .. code-block:: bash
+   
+     ./install --jobs=8
+
 Troubleshooting
 ====================
 

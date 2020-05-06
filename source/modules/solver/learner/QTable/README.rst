@@ -1,8 +1,8 @@
 ******************************************************
-State-action-reward-state-action (SARSA) algorithm 
+Q-Table
 ******************************************************
 
-Here goes the description of the new solver module: SARSA
+Here goes the description of the new solver module: Q-Table
 
 You can add code:
 

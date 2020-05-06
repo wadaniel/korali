@@ -39,4 +39,4 @@ print('Now running last 50 generations...')
 print('------------------------------------------------------')
 
 e["Solver"]["Termination Criteria"]["Max Generations"] = 100
-k.run(e)
+k.resume(e)

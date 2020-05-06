@@ -4,11 +4,22 @@
 Collaborating
 ********************
 
-To allow the growing number of internal and external Korali developers to seamlessly integrate their modules into Korali, while reducing the number of conflicts and potential bugs, we have established a set of collaboration rules:
+Additional Software
+---------------------------
+
+To collaborate in the development of Korali you need the following additional tools:
+
+*  `Doxygen <http://www.doxygen.nl/>`_ - For automatic generation of C++ documentation.
+
+* `clang-format <http://clang.llvm.org/docs/ClangFormat.html>`_ - For automatic formatting of C++ code.
+
+* `Sphinx <https://www.sphinx-doc.org/en/master/>`_ - (automatically installed by Korali) For generating module documentation.
 
 General Design Rules
 ---------------------------
-   
+
+To allow the growing number of internal and external Korali developers to seamlessly integrate their modules into Korali, while reducing the number of conflicts and potential bugs, we have established a set of collaboration rules:
+
 1. All contributions to the Korali repository should be done by means of pull requests, where at least one member of the developer's group approval.
 
 2. All code should follow a consistent format and variables should have proper human understandable names. Cryptic, badly formatted, and inefficient code can be rejected on those grounds alone.
@@ -22,6 +33,8 @@ General Design Rules
 Collaboration Steps Checklist
 -------------------------------
 
+We require collaborators, both internal and external, to follow these set of steps right before issuing a git pull request. 
+
 * Get the latest commit from the master branch :code:`git checkout master; git pull` or fork it to create your own project based on the latest Korali master commit.
 
 * Branch out to a new local branch: :code:`git checkout -b myBranch`
@@ -32,13 +45,13 @@ Collaboration Steps Checklist
 
 * Create a detailed description of both your module and its tutorial in their respective README.rst file. You are allowed to cite papers and links. 
 
-* Run the *tools/reformat* tool to adjust the format of your code. To run this tool, you should have `clang-format <http://clang.llvm.org/docs/ClangFormat.html>`_ installed in your system. After running, your new code will be re-formatted, guided by Korali-wide standards.
+* Run the *tools/reformat* tool to adjust the format of your code. This tool will automatically re-format your code to meet Korali-wide standards.
 
 * Merge the latest changes from the Korali master repository onto your forked/cloned code, so to have the latest updates already in your code.
 
 * Make sure Korali installs correctly from scratch by running :code:`install --rebuild`
 
-* Run the documentation generation, making sure no errors occur: :code:`docs/build.sh`. Any warnings in the generation of the documentation page or README.rst files may trigger an error. Note: you need to have `Doxygen <http://www.doxygen.nl/>`_ installed in your system for this step to work correctly.
+* Run the documentation generation, making sure no errors occur: :code:`docs/build.sh`. Any warnings in the generation of the documentation page or README.rst files may trigger an error. 
 
 * Run all tests again, by running :code:`tests/run_all_tests.sh`. This step is crucial to make sure that you did not disrupt other modules and that your documentation is correct.
 

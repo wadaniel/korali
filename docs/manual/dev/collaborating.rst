@@ -30,6 +30,8 @@ To allow the growing number of internal and external Korali developers to seamle
 
 5. All modules and their configuration should be properly documented.
 
+6. You are not allowed to copy third-party code that is not GPL-licensed source and without proper credit.
+
 Collaboration Steps Checklist
 -------------------------------
 
@@ -39,9 +41,9 @@ We require collaborators, both internal and external, to follow these set of ste
 
 * Branch out to a new local branch: :code:`git checkout -b myBranch`
 
-* (Optional) Follow :ref:`these instructions <module-dev>` to create your new module. You are not allowed to copy third-party code that is not GPL-licensed source and without proper credit.
+* (Optional) Follow :ref:`these instructions <module-dev>` to create your new module. 
 
-* If you developed a new module, add a new tutorial in the :code:`tutorials` folder with a simple example of how to use it and the expected results.
+* If you developed a new module, add a new tutorial in the :code:`tutorials` folder with a simple example of how to use it and the expected results, as well as a unit test in the :code:`tests` folder, for in-depth check corner case and correctness testing.
 
 * Create a detailed description of both your module and its tutorial in their respective README.rst file. You are allowed to cite papers and links. 
 

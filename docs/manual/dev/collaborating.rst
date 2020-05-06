@@ -11,11 +11,11 @@ General Design Rules
    
 1. All contributions to the Korali repository should be done by means of pull requests, where at least one member of the developer's group approval.
 
-2. All code should be properly indented and variables should have proper human undestandable names. Cryptic, badly formatted, and inefficient code can be rejected on those grounds alone.
+2. All code should be properly indented (see `clang-format <http://clang.llvm.org/docs/ClangFormat.html>`_ for a good tool to help you with formatting) and variables should have proper human undestandable names. Cryptic, badly formatted, and inefficient code can be rejected on those grounds alone.
 
 3. Korali is a high-performance framework, and all new methods should allow for the parallel execution of samples. 
 
-4. All modules should be accompanied by at least one tutorial, showcasing its use and, optionally, a unit test to validate its statistical/computational correctness.
+4. All modules should be accompanied by at least one tutorial, showcasing its use and a unit test to validate its statistical/computational correctness.
 
 5. All modules and their configuration should be properly documented.
 
@@ -26,7 +26,7 @@ Collaboration Steps Checklist
 
 * Branch out to a new local branch: :code:`git checkout -b myBranch`
 
-* (Optional) Follow :ref:`these instructions <module-dev>` to create your new module. You are not allowed to copy third-party code that is not open source and without proper credit.
+* (Optional) Follow :ref:`these instructions <module-dev>` to create your new module. You are not allowed to copy third-party code that is not GPL-licensed source and without proper credit.
 
 * If you developed a new module, add a new tutorial in the :code:`tutorials` folder with a simple example of how to use it and the expected results.
 

@@ -1,0 +1,46 @@
+.. _collaborating:
+
+********************
+Collaborating
+********************
+
+To allow the growing number of interal and external Korali developers to seamlessly integrate their modules into Korali, while reducing the number of conflicts and potential bugs, we have established a set of collaboration rules:
+
+General Design Rules
+---------------------------
+   
+1. All contributions to the Korali repository should be done by means of pull requests, where at least one member of the developer's group approval.
+
+2. All code should be properly indented and variables should have proper human undestandable names. Cryptic, badly formatted, and inefficient code can be rejected on those grounds alone.
+
+3. Korali is a high-performance framework, and all new methods should allow for the parallel execution of samples. 
+
+4. All modules should be accompanied by at least one tutorial, showcasing its use and, optionally, a unit test to validate its statistical/computational correctness.
+
+5. All modules and their configuration should be properly documented.
+
+Collaboration Steps Checklist
+-------------------------------
+
+* Get the latest commit from the master branch :code:`git checkout master; git pull` or fork it to create your own project based on the latest Korali master commit.
+
+* Branch out to a new local branch: :code:`git checkout -b myBranch`
+
+* (Optional) Follow :ref:`these instructions <module-dev>` to create your new module. You are not allowed to copy third-party code that is not open source and without proper credit.
+
+* If you developed a new module, add a new tutorial in the :code:`tutorials` folder with a simple example of how to use it and the expected results.
+
+* Create a detailed description of both your module and its tutorial in their respective README.rst file. You are allowed to cite papers and links. 
+
+* Merge the latest changes from the Korali master repository onto your forked/cloned code, so to have the latest updates already in your code.
+
+* Make sure Korali installs correctly from scratch by running :code:`install --rebuild`
+
+* Run the documentation generation, making sure no errors occur: :code:`docs/build.sh`. Any warnings in the generation of the documentation page or README.rst files may trigger an error. Note: you need to have `Doxygen <http://www.doxygen.nl/>`_ installed in your system for this step to work correctly.
+
+* Run all tests again, by running :code:`tests/run_all_tests.sh`. This step is crucial to make sure that you did not disrupt other modules and that your documentation is correct.
+
+* Create a new pull request (either from your forked repository, or from your own branch if you are part of the developer team).
+
+* Your pull request will be integrated once it was been reviewed and accepted by at least one Korali developer.
+ 

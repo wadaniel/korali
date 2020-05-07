@@ -72,4 +72,4 @@ If you report a bug, please provide following information:
 
 * What input arguments have been used
 
-* What results where expected but not delivered
+* What results were expected but not delivered

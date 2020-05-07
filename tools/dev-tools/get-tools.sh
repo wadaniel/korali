@@ -30,7 +30,7 @@ else
   wget https://github.com/Kitware/CMake/releases/download/v3.17.2/cmake-3.17.2-Darwin-x86_64.tar.gz
   check
   
-  cmake-3.17.2-Darwin-x86_64/bin/cmake
+  tar -xzvf cmake-3.17.2-Darwin-x86_64
   check
   
   mv cmake-3.17.2-Darwin-x86_64 cmake

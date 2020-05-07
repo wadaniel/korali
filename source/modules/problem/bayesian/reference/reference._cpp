@@ -220,16 +220,18 @@ void korali::problem::bayesian::Reference::fisherInformationLoglikelihoodNormal(
   std::vector<double> FIM(Nth*Nth, 0.0);
   for(size_t i = 0; i < Nd; ++i)
   {
+      double tmp;
       double tmpvar = standardDev[i]*standardDev[i];
       double tmpvarinv = 1./tmpvar;
       for(size_t k = 0; k < Nth; ++k)
       {
-        double tmp;
         for(size_t l = 0; l < k; ++l)
         {
-            tmp = tmpvar*gradientF[i][k]*gradientG[i][l] + 2.*tmpvarinv*gradientF[i][k]*gradientG[i][k];
+            tmp = tmpvar*gradientF[i][k]*gradientF[i][l] + 2.*tmpvarinv*gradientG[i][k]*gradientG[i][l];
             FIM[k*Nth+l] += tmp;
+            FIM[l*Nth+k] += tmp;
         }
+        tmp = tmpvar*gradientF[i][k]*gradientF[i][k] + 2.*tmpvarinv*gradientG[i][k]*gradientG[i][k];
         FIM[k*Nth+k] += tmp;
       }
   }

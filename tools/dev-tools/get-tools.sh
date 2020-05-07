@@ -128,6 +128,6 @@ fi
 rm -rf *.xz
 rm -rf *.tar.gz
 rm -rf doxygen-*
-*.dmg
+rm -rf *.dmg
 
 check

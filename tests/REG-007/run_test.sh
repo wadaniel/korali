@@ -18,11 +18,16 @@ source ../functions.sh
 
 ############# STEP 1 ##############
 
+logEcho "[Korali] Pulling korali-apps repository"
+pushd ../../
+git submodule update --init --recursive --remote
+check_result
+popd
+
+logEcho "[Korali] Beginning case study dry run tests..."
 pushd ../../tutorials
 
-logEcho "[Korali] Beginning tutorial tests..."
-
-for dir in ./basic/*/
+for dir in ./examples/*/
 do
   logEcho "-------------------------------------"
   logEcho " Entering Folder: $dir"
@@ -35,18 +40,23 @@ do
     if [ ! -f "$file" ]; then
       continue
     fi
-
+    
+    sed 's/k.run(/k["Dry Run"] = True; k.run(/g' $file > _$file
+ 
     logEcho "  + Running File: $file"
     if [ ${file: -3} == ".py" ]; then
-      python3 $file >> $logFile 2>&1
+      python3 _$file >> $logFile 2>&1
       check_result
     fi
     
     if [ ${file: -3} == ".sh" ]; then
-      sh $file >> $logFile 2>&1
+      sh _$file >> $logFile 2>&1
       check_result
     fi
     
+  rm -f _*.py _*.sh
+  check_result
+
   done
 
   popd >> $logFile 2>&1

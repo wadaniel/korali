@@ -1,25 +1,57 @@
 #!/bin/bash
 
+##############################################################################
+# Brief: Re-run all Python example applications for basic sanity check.
+# Type: Regression Test
+# Description:
+# This test finds and runs A Tutorials /tutorials folder to make sure
+# the typical use cases still work.
+# Steps:
+# 1 - Operation: List and run all .py scripts in the tutorials/python folder.
+#     Expected result: all of the .py scripts will run for less than 20 secs
+#     and rc = 0.
+###############################################################################
+
+###### Auxiliar Functions and Variables #########
+
 source ../functions.sh
 
-#################################################
-# Execute Solver Scripts
-#################################################
+############# STEP 1 ##############
 
-logEcho "[Korali] Beginning solver tests"
+pushd ../../tutorials
 
-for file in *.py
+logEcho "[Korali] Beginning tutorial tests..."
+
+for dir in ./basic/*/
 do
   logEcho "-------------------------------------"
-  logEcho "Running File: ${file%.*}"
-  
-  python3 ./$file >> $logFile 2>&1
+  logEcho " Entering Folder: $dir"
+  pushd $dir >> $logFile 2>&1
   check_result
 
-  log "[Korali] Removing results..."
-  rm -rf "_korali_result" >> $logFile 2>&1
-  check_result
+  for file in run-*.{py,sh}
+  do
+    # In case there are no files matching the pattern 'run-*.py', break
+    if [ ! -f "$file" ]; then
+      continue
+    fi
 
+    logEcho "  + Running File: $file"
+    if [ ${file: -3} == ".py" ]; then
+      python3 $file >> $logFile 2>&1
+      check_result
+    fi
+    
+    if [ ${file: -3} == ".sh" ]; then
+      sh $file >> $logFile 2>&1
+      check_result
+    fi
+    
+  done
+
+  popd >> $logFile 2>&1
+  check_result
   logEcho "-------------------------------------"
 done
 
+popd

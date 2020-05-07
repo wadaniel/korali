@@ -8,6 +8,7 @@
 
 namespace korali { namespace solver {
 
+/*! @brief Class for the (general) Stochastic Approximation Expectation Maximization solver. */
 class SAEM : public korali::Solver
 {
  public:

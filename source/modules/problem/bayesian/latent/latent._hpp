@@ -5,6 +5,7 @@
 
 namespace korali { namespace problem { namespace bayesian {
 
+/*! @brief (Will become abstract) class for problems of type 'latent', which come with observed and latent variables, and hyperparameters. */
 class Latent : public korali::problem::Bayesian
 {
  public:

@@ -1,6 +1,7 @@
 #include "modules/problem/bayesian/latent/latent.hpp"
 #include <vector>
 
+/*! @brief The problem initialization; here, remember indices of latent vs. hyperparameters for easy access later on */
 void korali::problem::bayesian::Latent::initialize()
 {
   korali::problem::Bayesian::initialize();
@@ -18,6 +19,9 @@ void korali::problem::bayesian::Latent::initialize()
  }
 }
 
+/*! @brief Given 'Hyperparameters' and 'Latent Variables' (parameters the sample is expected to have), calculate
+          the total log likelihood.
+*/
 void korali::problem::bayesian::Latent::evaluateLogLikelihood(korali::Sample& sample){
     //TODO does it work?
     // Evaluate the user-given probability distribution for latent- and hyperparameter values given in the sample
@@ -37,7 +41,7 @@ void korali::problem::bayesian::Latent::evaluateLogLikelihood(korali::Sample& sa
   sample["logLikelihood"] = - _zetaValue + std::inner_product(std::begin(_sValues), std::end(_sValues), std::begin(_phiValues), 0.0);
 }
 
-/* @brief run the user defined sampler.
+/*! @brief run the user defined sampler.
     Input sample needs to contain:
       - sample["Hyperparameters"]
       - sample["Number Samples"]
@@ -51,25 +55,33 @@ void korali::problem::bayesian::Latent::sampleLatent(korali::Sample& sample)
   sample.run(_latentVariableSampler);
 }
 
+/*! @brief Evaluate the user-defined 'S' function (the sufficient statistics of the distribution).
+          sample is expected to contain parameter 'Latent Variables' */
 void korali::problem::bayesian::Latent::evaluateS(korali::Sample& sample){
   sample.run(_sOfLikelihoodModel);
 }
 
+/*! @brief Evaluate the user-defined 'phi' function (log-llh = -zeta + <S, phi>).
+          sample is expected to contain parameter 'Hyperparameters' */
 void korali::problem::bayesian::Latent::evaluatePhi(korali::Sample& sample)
 {
   sample.run(_phiOfLikelihoodModel);
 }
 
+/*! @brief Evaluate the user-defined 'zeta' function (~ the log-normalization constant of the distribution).
+          sample is expected to contain parameter 'Hyperparameters' */
 void korali::problem::bayesian::Latent::evaluateZeta(korali::Sample& sample)
 {
   sample.run(_zetaOfLikelihoodModel);
 }
 
+/*! @brief Not implemented for this problem. */
 void korali::problem::bayesian::Latent::evaluateLogLikelihoodGradient(korali::Sample& sample)
 {
   _k->_logger->logError("Gradient not yet implemented for selected bayesian problem and log likelihood model.");
 }
 
+/*! @brief Not implemented for this problem. */
 void korali::problem::bayesian::Latent::evaluateFisherInformation(korali::Sample& sample)
 {
   _k->_logger->logError("Fisher information not yet implemented for selected bayesian problem and log likelihood model.");

@@ -43,11 +43,11 @@ else
   
   tar -xzvf cmake-3.17.2-Linux-x86_64.tar.gz
   check
-  
+
+  mv cmake-3.17.2-Linux-x86_64 cmake
+  check
+   
  fi
- 
- mv cmake-3.17.2-Linux-x86_64 cmake
- check
  
 fi
 

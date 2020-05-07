@@ -15,14 +15,13 @@ class SAEM : public korali::Solver
 
  void setInitialConfiguration();
 
- korali::Engine _engine;
- korali::Experiment _experiment;
+ korali::Engine _engine; //!< Korali engine for running the optimization in the M step
+ korali::Experiment _experiment; //!< Korali experiment for the optimization in the M step
 
- korali::problem::bayesian::Latent* _latentProblem;
+ korali::problem::bayesian::Latent* _latentProblem; //!< The problem instance that this SAEM is supposed to solve
  void sampleLatent();
  void calculateSampleSVectors();
  void updateS();
- void updateQFunction();
  void updateHyperparameters();
 
  bool isLatent(int idx);

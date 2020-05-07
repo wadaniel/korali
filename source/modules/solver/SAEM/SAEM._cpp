@@ -303,7 +303,7 @@ std::vector<double> korali::solver::SAEM::meanAndSDev(std::vector<double> v)
   return result;
 }
 
-/** @brief Utility function, "transposes" a vector of vectors @param data.
+/** @brief Utility function, "transposes" a vector of vectors @param data 
 
     That is, data[i][j] will be moved to result[j][i].
     */

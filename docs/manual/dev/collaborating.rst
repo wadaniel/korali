@@ -61,3 +61,15 @@ We require collaborators, both internal and external, to follow these set of ste
 
 * Your pull request will be integrated once it was been reviewed and accepted by at least one Korali developer.
  
+Bug Reporting
+---------------------------
+
+If you report a bug, please provide following information:
+
+* What command did you run
+
+* On which system did you execute the command
+
+* What input arguments have been used
+
+* What results where expected but not delivered

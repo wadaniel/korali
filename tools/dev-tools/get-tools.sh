@@ -54,7 +54,7 @@ fi
 # Step 2: Doxygen
 
 which doxygen > /dev/null 2>&1
-if [ $? -eq 0 ] || [ -f doxygen ]; then
+if [ $? -eq 0 ] || [ -f doxygen/bin/doxygen ]; then
  echo "[Korali] Seems like you already have doxygen installed. Skipping..."
 else
 

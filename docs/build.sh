@@ -19,6 +19,16 @@ check
 popd
 check
 
+# Installing shpinx, mkdocs, and materials theme
+python3 -m pip install sphinx --user
+check
+
+python3 -m pip install sphinx_rtd_theme --user
+check
+
+python3 -m pip install Pygments --user
+check
+
 # Getting korali-apps submodule
 pushd ..
 git submodule update --init --recursive --remote
@@ -60,6 +70,12 @@ cp -r manual/.build/html/* web/docs
 check
 
 # Running Doxygen
+doxCommand=doxygen
+if [ -f ../tools/dev-tools/doxygen ]; then
+ doxCommand=../tools/dev-tools/doxygen
+fi
+
+echo "Using $doxCommand for C++ documentation..."
 doxygen doxygen.config
 check
 

@@ -24,6 +24,11 @@ jobs:
       - restore_cache:
           keys:
             - korali-dependencies-linux
+            
+      - run:
+          name: Get developer tools
+          command: pushd tools/dev-tools; ./get-tools.sh; popd                  
+                   
       - run:
           name: build Korali
           command: timeout 10m ./install
@@ -32,9 +37,11 @@ jobs:
           key: korali-dependencies-linux
           paths:
             - "~/korali/build"
+            - "~/korali/tools/dev-tools"
+            
       - run:
           name: run tests
-          command: cd tests; ./run_all_tests.sh
+          command: pushd tests; ./run_all_tests.sh; popd
       
       - store_artifacts:
           path: ~/korali/install.log
@@ -58,6 +65,10 @@ jobs:
             - korali-dependencies-macos
 
       - run:
+          name: Get developer tools
+          command: pushd tools/dev-tools; ./get-tools.sh; popd       
+          
+      - run:
           name: Install wget dependency
           command: HOMEBREW_NO_AUTO_UPDATE=1 brew install wget;
                    HOMEBREW_NO_AUTO_UPDATE=1 brew install coreutils
@@ -69,10 +80,11 @@ jobs:
           key: korali-dependencies-macos
           paths:
             - "~/korali/build"
+            - "~/korali/tools/dev-tools"
 
       - run:
           name: run tests
-          command: cd tests; ./run_all_tests.sh
+          command: pushd tests; ./run_all_tests.sh; popd
 
       - store_artifacts:
            path: ~/korali/install.log

@@ -19,16 +19,6 @@ check
 popd
 check
 
-# Installing shpinx, mkdocs, and materials theme
-python3 -m pip install sphinx --user
-check
-
-python3 -m pip install sphinx_rtd_theme --user
-check
-
-python3 -m pip install Pygments --user
-check
-
 # Getting korali-apps submodule
 pushd ..
 git submodule update --init --recursive --remote

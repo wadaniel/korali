@@ -9,11 +9,13 @@ Additional Software
 
 To collaborate in the development of Korali you need the following additional tools:
 
-*  `Doxygen <http://www.doxygen.nl/>`_ - For automatic generation of C++ documentation.
+* `Doxygen <http://www.doxygen.nl/>`_ - For automatic generation of C++ documentation.
 
 * `clang-format <http://clang.llvm.org/docs/ClangFormat.html>`_ - For automatic formatting of C++ code.
 
 * `Sphinx <https://www.sphinx-doc.org/en/master/>`_ - (automatically installed by Korali) For generating module documentation.
+
+If you wish Korali to install these tools automatically, use the :code:`tools/dev-tools/dev-tools.sh` script.
 
 General Design Rules
 ---------------------------

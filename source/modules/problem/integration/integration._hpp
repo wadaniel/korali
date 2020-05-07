@@ -10,6 +10,10 @@ class Integration : public korali::Problem
  public:
 
  void initialize() override;
+ /**
+   * @brief Produces an evaluation of the model, storing it in and stores it in sample["Evaluation"].
+   * @param sample A Korali Sample
+  */
  void execute(korali::Sample& sample);
 
 };

@@ -184,8 +184,8 @@ void korali::problem::bayesian::Reference::gradientLoglikelihoodNormal(korali::S
         {
             if( !isfinite(gradientF[i][d]) ) _k->_logger->logWarning("Normal","Non-finite value detected in Gradient Mean.\n");
             if( !isfinite(gradientG[i][d]) ) _k->_logger->logWarning("Normal","Non-finite value detected in Gradient Standard Deviation.\n");
-            double tmpGrad = invStdDev*gradientG[i][d] - invStdDev2*dif*gradientF[i][d]+invStdDev3*dif*dif*gradientG[i][d];
-            llkgradient[d] -= tmpGrad;
+            double tmpGrad = -invStdDev*gradientG[i][d] - invStdDev2*dif*gradientF[i][d] + invStdDev3*dif*dif*gradientG[i][d];
+            llkgradient[d] += tmpGrad;
         }
     }
 

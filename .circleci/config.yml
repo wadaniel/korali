@@ -65,13 +65,14 @@ jobs:
             - korali-dependencies-macos
 
       - run:
-          name: Get developer tools
-          command: pushd tools/dev-tools; ./get-tools.sh; popd       
-          
-      - run:
           name: Install wget dependency
           command: HOMEBREW_NO_AUTO_UPDATE=1 brew install wget;
                    HOMEBREW_NO_AUTO_UPDATE=1 brew install coreutils
+                   
+      - run:
+          name: Get developer tools
+          command: pushd tools/dev-tools; ./get-tools.sh; popd       
+          
       - run:
           name: build Korali
           command: gtimeout 10m ./install

@@ -84,7 +84,7 @@ else
  popd
  check
  
- cp doxygen-src/build/bin/doxygen .
+ cp doxygen-src/build/bin/doxygen . 
  check 
 
  rm -rf doxygen-src

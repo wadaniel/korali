@@ -30,10 +30,10 @@ else
   wget https://github.com/Kitware/CMake/releases/download/v3.17.2/cmake-3.17.2-Darwin-x86_64.tar.gz
   check
   
-  tar -xzvf cmake-3.17.2-Darwin-x86_64.tar.gz
+  tar -xzf cmake-3.17.2-Darwin-x86_64.tar.gz
   check
   
-  mv cmake-3.17.2-Darwin-x86_64 cmake
+  mv cmake-3.17.2-Darwin-x86_64/CMake.app/Contents cmake
   check
   
  else  # Else default to Linux64
@@ -41,7 +41,7 @@ else
   wget https://github.com/Kitware/CMake/releases/download/v3.17.2/cmake-3.17.2-Linux-x86_64.tar.gz
   check
   
-  tar -xzvf cmake-3.17.2-Linux-x86_64.tar.gz
+  tar -xzf cmake-3.17.2-Linux-x86_64.tar.gz
   check
 
   mv cmake-3.17.2-Linux-x86_64 cmake

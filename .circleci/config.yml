@@ -23,7 +23,7 @@ jobs:
 
       - restore_cache:
           keys:
-            - korali-dependencies-linux
+            - cache-linux
             
       - run:
           name: Get developer tools
@@ -34,7 +34,7 @@ jobs:
           command: timeout 10m ./install
 
       - save_cache:
-          key: korali-dependencies-linux
+          key: cache-linux
           paths:
             - "~/korali/build"
             - "~/korali/tools/dev-tools"
@@ -62,7 +62,7 @@ jobs:
 
       - restore_cache:
           keys:
-            - korali-dependencies-macos
+            - cache-macos
 
       - run:
           name: Install wget dependency
@@ -78,7 +78,7 @@ jobs:
           command: gtimeout 10m ./install
 
       - save_cache:
-          key: korali-dependencies-macos
+          key: cache-macos
           paths:
             - "~/korali/build"
             - "~/korali/tools/dev-tools"

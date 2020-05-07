@@ -42,7 +42,8 @@ e["Variables"][2]["Sampling Distribution"] = "Uniform"
 
 
 e["Solver"]["Type"] = "Integrator"
-#e["Solver"]["Executions Per Generation"] = 0
+e["Solver"]["Executions Per Generation"] = 10
+e["Solver"]["Termination Criteria"]["Max Generations"] = 1000
 e["Console Output"]["Verbosity"] = "Detailed"
 
 # Starting Korali's Engine and running experiment

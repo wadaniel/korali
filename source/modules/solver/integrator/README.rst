@@ -1,5 +1,5 @@
 **************************
-integrator
+Integrator
 **************************
 
 This is the solver for the "Integration" problem, it performs the computation 

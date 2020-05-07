@@ -67,7 +67,13 @@ else
   hdiutil attach Doxygen-1.8.13.dmg
   check
   
-  cp /Volumes/Doxygen/Doxygen.app/Contents/Resources/doxygen .
+  mkdir doxygen
+  check
+  
+  cp -r /Volumes/Doxygen/Doxygen.app/Contents/* doxygen
+  check
+  
+  mv doxygen/Resources doxygen/bin
   check
   
  else  # Else default to Linux64
@@ -78,7 +84,7 @@ else
   tar -xzvf doxygen-1.8.13.linux.bin.tar.gz
   check
   
-  cp doxygen-1.8.13/bin/doxygen .
+  mv doxygen-1.8.13 doxygen
   check
   
  fi
@@ -122,4 +128,6 @@ fi
 rm -rf *.xz
 rm -rf *.tar.gz
 rm -rf doxygen-*
+*.dmg
+
 check

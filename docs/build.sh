@@ -71,8 +71,8 @@ check
 
 # Running Doxygen
 doxCommand=doxygen
-if [ -f ../tools/dev-tools/doxygen ]; then
- doxCommand=../tools/dev-tools/doxygen
+if [ -f ../tools/dev-tools/doxygen/bin/doxygen ]; then
+ doxCommand=../tools/dev-tools/doxygen/bin/doxygen
 fi
 
 echo "Using $doxCommand for C++ documentation..."

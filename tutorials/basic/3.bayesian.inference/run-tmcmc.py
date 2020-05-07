@@ -15,7 +15,7 @@ e = korali.Experiment()
 
 # Setting up the reference likelihood for the Bayesian Problem
 e["Problem"]["Type"] = "Bayesian/Reference"
-e["Problem"]["Likelihood Model"] = "Additive Normal"
+e["Problem"]["Likelihood Model"] = "Normal"
 e["Problem"]["Reference Data"] = getReferenceData()
 e["Problem"]["Computational Model"] = lambda sampleData: model(sampleData, getReferencePoints())
 # Configuring TMCMC parameters

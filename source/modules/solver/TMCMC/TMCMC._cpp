@@ -377,7 +377,6 @@ void korali::solver::TMCMC::calculateProposals(std::vector<korali::Sample>& samp
   for(size_t c = 0; c < _chainCount; c++)
   {
     size_t finishedId = _conduit->waitAny(samples);
-    //printf("%s\n", samples[finishedId]._js.getJson().dump(2).c_str());
     std::vector<double> FIM = samples[finishedId]["Fisher Information"];
     gsl_matrix_view FIMview = gsl_matrix_view_array(&FIM[0], Nth, Nth);
     
@@ -519,9 +518,7 @@ void korali::solver::TMCMC::updateDatabase(const size_t sampleId)
   if(_version == "mTMCMC")
   {
     _sampleErrorDatabase.push_back(_chainLeadersErrors[sampleId]);
-    //printf("sErr db %d %d\n", _sampleErrorDatabase.back(), _chainLeadersErrors[sampleId]);
     _sampleGradientDatabase.push_back(_chainLeadersGradients[sampleId]);
-    //printf("sErr grad %lf\n", _chainLeadersGradients.back().at(0));
     _sampleCovariancesDatabase.push_back(_chainLeadersCovariance[sampleId]);
   }
  

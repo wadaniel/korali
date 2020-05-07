@@ -165,7 +165,7 @@ void korali::problem::bayesian::Reference::gradientLoglikelihoodNormal(korali::S
     std::vector<std::vector<double>> gradientF = sample["Gradient Mean"];
     std::vector<std::vector<double>> gradientG = sample["Gradient Standard Deviation"];
   
-    if (gradientF.size() != refEvaluations.size()) _k->_logger->logError("Bayesian problem requires a gradient of the Mean for each reference evaluation (provided %zu required %zu).", gradientF.size(), refEvaluations.size());
+    if (sample["Gradient Mean"].size() != refEvaluations.size()) _k->_logger->logError("Bayesian problem requires a gradient of the Mean for each reference evaluation (provided %zu required %zu).", gradientF.size(), refEvaluations.size());
     if (gradientG.size() != refEvaluations.size()) _k->_logger->logError("Bayesian problem requires a gradient of the Standard Deviation for each reference evaluation (provided %zu required %zu).", gradientF.size(), refEvaluations.size());
 
     std::vector<double> llkgradient(_k->_variables.size(), 0.0);
@@ -199,7 +199,7 @@ void korali::problem::bayesian::Reference::evaluateFisherInformation(korali::Sam
   if (isfinite(eval))
   {
     if (_likelihoodModel == "Normal") fisherInformationLoglikelihoodNormal(sample);
-    else  _k->_logger->logError("Fisher Information not yet implemented for selected bayesian problem and log likelihood model.");
+    else  _k->_logger->logError("Fisher Information not yet implemented for selected Bayesian problem and log likelihood model.");
   }
   else
   {

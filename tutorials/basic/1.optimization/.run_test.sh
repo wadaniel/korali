@@ -10,38 +10,39 @@ getTestMode $1
 
 ##### Deleting Previous Results
 
-logEcho "  + Deleting previous results..."
-rm -rf _korali_result*
-check_result
+echo "  + Deleting previous results..."
+rm -rf _korali_result*; check_result
+
+##### Creating test files
+
+echo "  + Creating test files..."
+
+cp run-cmaes.py  __test-cmaes.py; check_result
+cp run-dea.py    __test-dea.py; check_result 
+cp run-lmcma.py  __test-lmcma.py; check_result 
+cp run-rprop.py  __test-rprop.py; check_result  
+
+##### If fast mode, then creating faster variations
+
+if [[ $testMode == "fast" ]]; then
+
+ echo "  + Creating fast mode test files..."
+ 
+ sed -e 's%\["Max Generations"\]%\["Max Generations"\] = 5 #%g' run-cmaes.py  > __test-cmaes.py; check_result
+ sed -e 's%\["Max Generations"\]%\["Max Generations"\] = 5 #%g' run-dea.py    > __test-dea.py; check_result
+ sed -e 's%\["Max Generations"\]%\["Max Generations"\] = 5 #%g' run-lmcma.py  > __test-lmcma.py; check_result
+ sed -e 's%\["Max Generations"\]%\["Max Generations"\] = 5 #%g' run-rprop.py  > __test-rprop.py; check_result
+
+fi
 
 ##### Running Tests
 
-for file in run-*.py
-do
+python3 ./__test-cmaes.py; check_result
+python3 ./__test-dea.py; check_result
+python3 ./__test-lmcma.py; check_result
+python3 ./__test-rprop.py; check_result
 
- if [ ${file: -3} == ".py" ]; then
- 
-   logEcho "  + Processing File: $file"
- 
-   testFile=__test${file}
-   logEcho "  + Creating Test File: $testFile"
- 
-   cp $file $testFile
-   check_result
-   
-   if [[ $testMode == "fast" ]]; then
-     logEcho "  + Modifying test file for fast execution: $testFile"
-     sed  -e 's%\["Max Generations"\] =%["Max Generations"] = 5 #%g' $file > $testFile 
-     check_result
-   fi
- 
-   logEcho "  + Running Test File: $testFile"
-   python3 $testFile >> $logFile 2>&1
-   check_result
- 
-   logEcho "  + Deleting Test File"
-   rm $testFile
-   check_result
- fi
+##### Deleting Tests
+
+rm __test-*; check_result
   
-done

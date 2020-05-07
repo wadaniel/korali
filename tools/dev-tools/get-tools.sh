@@ -9,7 +9,13 @@ function check()
  fi 
 }
 
+##### Detecting architecture
+
+arch="$(uname -s)"
+check
+
 ##### Automatically downloads all prerequisites for Korali developers
+
 
 # Step 1: CMake
 

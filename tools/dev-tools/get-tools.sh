@@ -97,7 +97,13 @@ else
   wget https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.0/clang+llvm-10.0.0-x86_64-apple-darwin.tar.xz
   check
   
-  tar --extract --file=clang+llvm-10.0.0-x86_64-apple-darwin.tar.xz clang+llvm-10.0.0-x86_64-apple-darwin/bin/clang-format --strip=2
+  tar --extract --file=clang+llvm-10.0.0-x86_64-apple-darwin.tar.xz clang+llvm-10.0.0-x86_64-apple-darwin/bin/clang-format
+  check
+  
+  cp clang+llvm-10.0.0-x86_64-apple-darwin/bin/clang-format clang-format
+  check
+  
+  rm -rf clang+llvm-10.0.0-x86_64-apple-darwin
   check
   
  else  # Else default to Linux64
@@ -105,13 +111,7 @@ else
   wget https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.0/clang+llvm-10.0.0-x86_64-linux-sles11.3.tar.xz
   check
   
-  tar --extract --file=clang+llvm-10.0.0-x86_64-linux-sles11.3.tar.xz clang+llvm-10.0.0-x86_64-linux-sles11.3/bin/clang-format 
-  check
-  
-  cp clang+llvm-10.0.0-x86_64-linux-sles11.3/bin/clang-format clang-format
-  check
-  
-  rm -rf clang+llvm-10.0.0-x86_64-linux-sles11.3
+  tar --extract --file=clang+llvm-10.0.0-x86_64-linux-sles11.3.tar.xz clang+llvm-10.0.0-x86_64-linux-sles11.3/bin/clang-format --strip=2
   check
   
  fi

@@ -40,12 +40,22 @@ class Reference : public korali::problem::Bayesian
   * @param sample A Korali Sample
   */
  void loglikelihoodNegativeBinomial(korali::Sample& sample);
-
- void gradientLoglikelihoodNegativeBinomial(korali::Sample& sample);
+  
+ /**
+  * @brief Calculates the gradient of the Normal loglikelihood model.
+  * @param sample A Korali Sample
+  */
  void gradientLoglikelihoodNormal(korali::Sample& sample);
+ 
+ /**
+  * @brief Calculates the gradient of the Negative Binomial loglikelihood model.
+  * @param sample A Korali Sample
+  */
+ void gradientLoglikelihoodNegativeBinomial(korali::Sample& sample);
 
  /**
-  *
+  * @brief Calculates the Fisher information of the Normal likelihood model.
+  * @param sample A Korali Sample
   */
  void fisherInformationLoglikelihoodNormal(korali::Sample& sample);
 

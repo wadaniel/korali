@@ -1,4 +1,4 @@
-Re-run all basic tutorials for a basic sanity check
+Quick run of all basic tutorials for a quick sanity check
 ################################################################ 
 
-Run all basic tutorials to make sure none of them fail after any commit.
+Quickly run all basic tutorials to check syntax and basic functioning of Korali's engine.

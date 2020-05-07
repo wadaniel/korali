@@ -58,30 +58,37 @@ if [ $? -eq 0 ] || [ -f doxygen ]; then
  echo "[Korali] Seems like you already have doxygen installed. Skipping..."
 else
 
- # If using MacOs, use the Darwin package 
- if [ "$arch" == "Darwin" ]; then
-  
-  wget http://doxygen.nl/files/Doxygen-1.8.18.dmg
-  check
-  
-  hdiutil attach Doxygen-1.8.18.dmg
-  check
-  
-  cp /Volumes/Doxygen/Doxygen.app/Contents/Resources/doxygen .
-  check
-  
- else  # Else default to Linux64
+ rm -rf doxygen-src
+ check
  
-  wget http://doxygen.nl/files/doxygen-1.8.18.linux.bin.tar.gz
-  check
-  
-  tar -xzvf doxygen-1.8.18.linux.bin.tar.gz
-  check
-  
-  cp doxygen-1.8.18/bin/doxygen .
-  check
-  
+ git clone https://github.com/doxygen/doxygen.git doxygen-src
+ check
+ 
+ mkdir doxygen-src/build
+ check
+ 
+ pushd doxygen-src/build
+ check 
+
+ cmakeCommand=cmake
+ if [ -f ../../cmake/bin/cmake ]; then
+  cmakeCommand=../../cmake/bin/cmake
  fi
+ 
+ $cmakeCommand -G "Unix Makefiles" ..
+ check
+ 
+ make -j4 
+ check
+ 
+ popd
+ check
+ 
+ cp doxygen-src/build/bin/doxygen .
+ check 
+
+ rm -rf doxygen-src
+ check
 fi
 
 # Step 3: Clang Tools

@@ -10,6 +10,11 @@ class ReinforcementLearning : public korali::Problem
  public:
 
  void initialize() override;
+
+ /**
+   * @brief Runs an episode of the agent within the environment
+   * @param sample Sample containing current agent/state information.
+   */
  void runEnvironment(korali::Sample& sample);
 
  /**

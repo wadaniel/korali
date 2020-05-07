@@ -10,6 +10,11 @@ class Evaluate : public korali::problem::Gaussian
  public:
 
    void initialize() override;
+
+
+   /**
+    * @brief Runs the sample to obtain evaluate data points given the parameters.
+    */
    void evaluate(korali::Sample&);
 
    /**

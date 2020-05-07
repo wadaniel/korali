@@ -10,6 +10,11 @@ class Integration : public korali::Problem
  public:
 
  void initialize() override;
+
+ /**
+ * @brief Runs the model to integrate.
+ * @param sample Sample containing input parameters.
+ */
  void execute(korali::Sample& sample);
 
 };

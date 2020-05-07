@@ -20,7 +20,7 @@ do
   pushd $dir >> $logFile 2>&1
   check_result
 
-  logEcho " Runnning test script..."
+  logEcho " Runnning fast test script..."
   ./.run_test.sh --fast >> $logFile 2>&1
   check_result
 

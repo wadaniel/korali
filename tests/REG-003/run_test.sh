@@ -20,7 +20,7 @@ do
   pushd $dir >> $logFile 2>&1
   check_result
 
-  logEcho " Runnning test script..."
+  logEcho " Runnning full test script..."
   ./.run_test.sh --full >> $logFile 2>&1
   check_result
 

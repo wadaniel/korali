@@ -76,9 +76,7 @@ if [ -f ../tools/dev-tools/doxygen ]; then
 fi
 
 echo "Using $doxCommand for C++ documentation..."
-doxygen doxygen.config
+$doxCommand doxygen.config
 check
-
-#fi
 
 echo "[Korali] Webpage Build complete."

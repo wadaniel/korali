@@ -1,3 +1,5 @@
 doxygen
 clang*
 *.xz
+cmake
+*.tar.gz

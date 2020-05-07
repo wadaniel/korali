@@ -11,12 +11,44 @@ function check()
 
 ##### Automatically downloads all prerequisites for Korali developers
 
-# Getting common tools
-source ../../tests/functions.sh
+# Step 3: CMake
 
-# Step 1: Doxygen
+which cmake > /dev/null 2>&1
+if [ $? -eq 0 ] || [ -f cmake/bin/cmake ]; then
+ echo "[Korali] Seems like you already have CMake installed. Skipping..."
+else
 
-if [ -f doxygen ]; then
+ # If using MacOs, use the Darwin package 
+ if [ "$arch" == "Darwin" ]; then
+  
+  wget https://github.com/Kitware/CMake/releases/download/v3.17.2/cmake-3.17.2-Darwin-x86_64.tar.gz
+  check
+  
+  cmake-3.17.2-Darwin-x86_64/bin/cmake
+  check
+  
+  mv cmake-3.17.2-Darwin-x86_64 cmake
+  check
+  
+ else  # Else default to Linux64
+ 
+  wget https://github.com/Kitware/CMake/releases/download/v3.17.2/cmake-3.17.2-Linux-x86_64.tar.gz
+  check
+  
+  tar -xzvf cmake-3.17.2-Linux-x86_64.tar.gz
+  check
+  
+ fi
+ 
+ mv cmake-3.17.2-Linux-x86_64 cmake
+ check
+ 
+fi
+
+# Step 2: Doxygen
+
+which doxygen > /dev/null 2>&1
+if [ $? -eq 0 ] || [ -f doxygen ]; then
  echo "[Korali] Seems like you already have doxygen installed. Skipping..."
 else
 
@@ -32,7 +64,12 @@ else
  pushd doxygen-src/build
  check 
 
- cmake -G "Unix Makefiles" ..
+ cmakeCommand=cmake
+ if [ -f ../../cmake/bin/cmake ]; then
+  cmakeCommand=../../cmake/bin/cmake
+ fi
+ 
+ $cmakeCommand -G "Unix Makefiles" ..
  check
  
  make -j4 
@@ -48,9 +85,10 @@ else
  check
 fi
 
-# Step 2: Clang Tools
+# Step 3: Clang Tools
 
-if [ -f clang-format ]; then
+which clang-format > /dev/null 2>&1
+if [ $? -eq 0 ] || [ -f clang-format ]; then
  echo "[Korali] Seems like you already have clang-format installed. Skipping..."
 else
 
@@ -76,6 +114,7 @@ else
 fi
 
 # Delete any remaining files
-rm *.xz
+rm -rf *.xz
+rm -rf *.tar.gz
+rm -rf doxygen-src
 check
-

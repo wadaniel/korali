@@ -169,6 +169,9 @@ void jacobi(korali::Sample& k)
   resultVector.push_back(result);
  }
 
+ double sig = k["Parameters"][6];
+ std::vector<double> sdev(xdata.size(), sig);
+ k["Standard Deviation"]    = sdev;
  k["Reference Evaluations"] = resultVector;
 
  free(U);

@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
  e["Random Seed"] = 0xC0FFEE;
 
  e["Problem"]["Type"] = "Bayesian/Reference";
- e["Problem"]["Likelihood Model"] = "Additive Normal";
+ e["Problem"]["Likelihood Model"] = "Normal";
  e["Problem"]["Reference Data"] = getReferenceData();
  e["Problem"]["Computational Model"] = &jacobi;
 

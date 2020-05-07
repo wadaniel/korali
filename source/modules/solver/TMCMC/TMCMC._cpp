@@ -377,9 +377,11 @@ void korali::solver::TMCMC::calculateProposals(std::vector<korali::Sample>& samp
   for(size_t c = 0; c < _chainCount; c++)
   {
     size_t finishedId = _conduit->waitAny(samples);
+    std::fill( _chainCandidatesCovariance[finishedId].begin(), _chainCandidatesCovariance[finishedId].end(), 0.0);
+    
     std::vector<double> FIM = samples[finishedId]["Fisher Information"];
     gsl_matrix_view FIMview = gsl_matrix_view_array(&FIM[0], Nth, Nth);
-    
+
     // scale FIM
     gsl_matrix_scale(&FIMview.matrix, _annealingExponent/_stepSize);
  

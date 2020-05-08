@@ -70,10 +70,7 @@ cp -r manual/.build/html/* web/docs
 check
 
 # Running Doxygen
-doxCommand=doxygen
-if [ -f ../tools/dev-tools/doxygen/bin/doxygen ]; then
- doxCommand=../tools/dev-tools/doxygen/bin/doxygen
-fi
+doxCommand=../tools/dev-tools/doxygen/bin/doxygen
 
 echo "Using $doxCommand for C++ documentation..."
 $doxCommand doxygen.config 2>&1 | grep -E 'warning|error'

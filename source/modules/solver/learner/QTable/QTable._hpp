@@ -25,14 +25,14 @@ class QTable : public korali::solver::Learner
 
  /**
   * @brief Finds the action given the current policy (e.g., argmax, epsilon-greedy, etc)
-  * @param state Current state index
+  * @param stateIdx Current state index
   * @return Policy-based action for the current state
   */
  std::vector<double> getPolicyAction(const size_t& stateIdx);
 
  /**
   * @brief Finds the action with higher Q value for the given state
-  * @param state Current state index
+  * @param stateIdx Current state index
   * @return Best action for the current state
   */
  std::vector<double> getBestAction(const size_t& stateIdx);

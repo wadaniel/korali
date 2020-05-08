@@ -37,8 +37,6 @@ class Solver : public korali::Module
  virtual void setInitialConfiguration() { };
 };
 
-extern korali::Solver* _currentSolver;
-
 } // namespace korali
 
 #endif // _KORALI_SOLVERHPP_

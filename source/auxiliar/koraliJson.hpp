@@ -299,7 +299,7 @@ static bool loadJsonFromFile(knlohmann::json& dst, const char* fileName)
 /**
   * @brief Saves a JSON object to a file.
   * @param fileName The path to the file onto which to save the JSON object.
-  * @param dst The input JSON object.
+  * @param js The input JSON object.
 */
 static void saveJsonToFile(const char* fileName, knlohmann::json& js)
 {

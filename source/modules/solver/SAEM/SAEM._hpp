@@ -14,21 +14,67 @@ class SAEM : public korali::Solver
 
  void setInitialConfiguration();
 
+ /**
+  * @brief [Missing Description]
+  */
  korali::Engine _engine;
+
+ /**
+  * @brief [Missing Description]
+  */
  korali::Experiment _experiment;
 
+ /**
+ * @brief [Missing Description]
+ */
  korali::problem::bayesian::Latent* _latentProblem;
+
+ /**
+  * @brief [Missing Description]
+  */
  void sampleLatent();
+
+ /**
+  * @brief [Missing Description]
+  */
  void calculateSampleSVectors();
+
+ /**
+  * @brief [Missing Description]
+  */
  void updateS();
+
+ /**
+  * @brief [Missing Description]
+  */
  void updateQFunction();
+
+ /**
+  * @brief [Missing Description]
+  */
  void updateHyperparameters();
 
+ /**
+  * @brief [Missing Description]
+  * @param idx [Missing Description]
+  * @return [Missing Description]
+  */
  bool isLatent(int idx);
 
+ /**
+  * @brief [Missing Description]
+  */
  std::vector<double> meanAndSDev(std::vector<double> v);
+
+ /**
+  * @brief [Missing Description]
+  */
  std::vector<std::vector<double> > transpose(const std::vector<std::vector<double> > data);
 
+ /**
+  * @brief [Missing Description]
+  * @param sample [Missing Description]
+  */
  static void QFunction(korali::Sample& sample);
 
  void initialize() override;

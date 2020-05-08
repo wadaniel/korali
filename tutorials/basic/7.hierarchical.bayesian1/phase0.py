@@ -25,6 +25,7 @@ e["Variables"][1]["Precomputed Values"] = np.random.lognormal( 0, 1, N ).tolist(
 e["Solver"]["Type"] = "Executor"
 e["Solver"]["Executions Per Generation"] = 1
 
+e["Random Seed"] = 0xC0FFEE
 e["File Output"]["Path"] = "setup/results_phase_0/"
 e["Console Output"]["Verbosity"] = "Detailed"
 

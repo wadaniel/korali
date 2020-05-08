@@ -99,6 +99,7 @@ class Distributed : public korali::Conduit
 
   /**
   * @brief Determines which rank is the root.
+  * @return The rank id of the root rank.
   */
   int getRootRank();
   bool isRoot() override;

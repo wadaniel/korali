@@ -64,11 +64,15 @@ class SAEM : public korali::Solver
 
   /**
   * @brief [Missing Description]
+  * @param v [Missing Parameter]
+  * @return [Missing Return]
   */
   std::vector<double> meanAndSDev(std::vector<double> v);
 
   /**
   * @brief [Missing Description]
+  * @param data [Missing Param]
+  * @return [Missing Return]
   */
   std::vector<std::vector<double>> transpose(const std::vector<std::vector<double>> data);
 

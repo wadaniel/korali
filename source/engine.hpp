@@ -169,6 +169,7 @@ namespace korali
 
   /**
    * @brief Returns the worker teams MPI communication pointer (Distributed Conduit only).
+   * @return Numerical pointer to the MPI communicator
    */
   static long int getMPICommPointer();
 

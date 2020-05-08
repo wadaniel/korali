@@ -18,6 +18,7 @@ e["Solver"]["Default Burn In"] = 2;
 e["Solver"]["Max Chain Length"] = 1;
 e["Solver"]["Target Coefficient Of Variation"] = 0.6
 
+e["Random Seed"] = 0xC0FFEE
 e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Path"] = "setup/results_phase_3b/"
 

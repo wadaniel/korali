@@ -30,10 +30,10 @@ if [[ $testMode == "fast" ]]; then
  echo "  + Creating fast mode test files..."
  
  sed -e 's%300*np%50*np%g' phase0.py  > __test-phase0.py; check_result
- sed -e 's%\["Population Size"\]%\["Population Size"\] = 100 #%g' phase1.py  > __test-phase1.py; check_result
- sed -e 's%\["Population Size"\]%\["Population Size"\] = 100 #%g' phase2.py  > __test-phase2.py; check_result
- sed -e 's%\["Population Size"\]%\["Population Size"\] = 100 #%g' phase3a.py  > __test-phase3a.py; check_result
- sed -e 's%\["Population Size"\]%\["Population Size"\] = 100 #%g' phase3b.py  > __test-phase3b.py; check_result
+ sed -e 's%\["Population Size"\]%\["Population Size"\] = 300 #%g' phase1.py  > __test-phase1.py; check_result
+ sed -e 's%\["Population Size"\]%\["Population Size"\] = 300 #%g' phase2.py  > __test-phase2.py; check_result
+ sed -e 's%\["Population Size"\]%\["Population Size"\] = 300 #%g' phase3a.py  > __test-phase3a.py; check_result
+ sed -e 's%\["Population Size"\]%\["Population Size"\] = 300 #%g' phase3b.py  > __test-phase3b.py; check_result
 
 fi
 

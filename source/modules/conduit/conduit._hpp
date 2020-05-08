@@ -45,6 +45,7 @@ class Conduit : public korali::Module
 
   /**
   * @brief Indicates how many samples can be evaluated concurrently.
+  * @return Maximum number of workers.
   */
   virtual size_t maxConcurrency() = 0;
 

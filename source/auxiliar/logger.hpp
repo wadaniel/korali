@@ -37,6 +37,8 @@ class Logger {
 
  /**
  * @brief parametrized constructor for Korali Logger
+ * @param verbosityLevel The verbosity level above which nothing is printed.
+ * @param file Output file (default: stdout)
  */
  Logger(const  std::string verbosityLevel, FILE* file = stdout);
 

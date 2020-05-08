@@ -49,7 +49,7 @@ class Latent : public korali::problem::Bayesian
    * @brief [Missing Description]
    * @param sample [Missing Description]
    */
- void evaluateLogLikelihoodGradient(korali::Sample& sample) override;
+ void evaluateLoglikelihoodGradient(korali::Sample& sample) override;
 
  void initialize() override;
 

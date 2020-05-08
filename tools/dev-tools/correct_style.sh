@@ -8,10 +8,15 @@
 SRC_H='.*\._hpp'
 SRC_S='.*\._cpp'
 
+clangFormat=llvm/bin/clang-format
+if [ ! -f $clangFormat ]; then
+ clangFormat=clang-format
+fi
+
+
 # format in-place
 find ../../source \
     -regextype 'egrep' \
     -regex "${SRC_H}" -or \
     -regex "${SRC_S}" | \
-    xargs -n6 -P2 echo "$@"   
-#xargs -n6 -P2 clang-format -style=file -i "$@"
+    xargs -n6 -P2 $clangFormat -style=file -i "$@"

@@ -3,3 +3,4 @@ clang*
 *.xz
 cmake
 *.tar.gz
+llvm

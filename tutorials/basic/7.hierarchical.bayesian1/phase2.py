@@ -64,6 +64,7 @@ e["Solver"]["Covariance Scaling"] = 0.1
 
 e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Path"] = "setup/results_phase_2/"
+e["Random Seed"] = 0xC0FFEE
 
 # Starting Korali's Engine and running experiment
 k = korali.Engine()

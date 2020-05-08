@@ -15,9 +15,10 @@ e = korali.Experiment()
 
 # Setting up the reference likelihood for the Bayesian Problem
 e["Problem"]["Type"] = "Bayesian/Reference"
-e["Problem"]["Likelihood Model"] = "Additive Normal"
+e["Problem"]["Likelihood Model"] = "Normal"
 e["Problem"]["Reference Data"] = getReferenceData()
 e["Problem"]["Computational Model"] = lambda sampleData: model(sampleData, getReferencePoints())
+
 # Configuring TMCMC parameters
 e["Solver"]["Type"] = "TMCMC"
 e["Solver"]["Population Size"] = 5000
@@ -47,6 +48,8 @@ e["Variables"][1]["Prior Distribution"] = "Uniform 1"
 
 e["Variables"][2]["Name"] = "[Sigma]"
 e["Variables"][2]["Prior Distribution"] = "Uniform 2"
+
+e["Store Sample Information"] = True
 
 # Starting Korali's Engine and running experiment
 k = korali.Engine()

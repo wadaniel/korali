@@ -15,57 +15,13 @@ class Reference : public korali::problem::Bayesian
  size_t statisticalVariableIndex;
 
  /**
-  * @brief Precomputes the square distance between two vectors of the same size
-  * @param x Vector x
-  * @param y Vector y
-  * @return Square distance of the vectors
-  */
- double compute_sse( std::vector<double> x, std::vector<double> y );
-
- /**
-  * @brief Precomputes the square distance between two vectors of the same size normalized by a third vector
+  * @brief Precomputes the square distance between two vectors (f and y) of the same size normalized by a third vector (g)
   * @param f Vector f
   * @param g Vector g, the normalization vector
   * @param y Vector y
   * @return Normalized square distance of the vectors
   */
  double compute_normalized_sse( std::vector<double> f, std::vector<double> g, std::vector<double> y );
-
- /**
- * @brief Additive normal approach to calculate the logLikelihood of the sample
- * @param sample A Korali Sample
- */
- void loglikelihoodNormalAdditive(korali::Sample& sample);
- 
- /**
-  * @brief Gradient of Additive normal logLikelihood model w.r.t variable.
-  * @param sample A Korali Sample
-  */
- void gradientLogLikelihoodNormalAdditive(korali::Sample& sample);
-
- /**
-  * @brief Empirical FIM of Additive normal logLikelihood model.
-  * @param sample A Korali Sample
-  */
- void fisherInformationLogLikelihoodNormalAdditive(korali::Sample& sample);
-
- /**
-  * @brief Additive normal approach (for variance) to calculate the logLikelihood of the sample
-  * @param sample A Korali Sample
-  */
- void loglikelihoodNormalAdditiveVariance(korali::Sample& sample);
- 
- /**
- * @brief Additive multiplicative approach to calculate the logLikelihood of the sample
- * @param sample A Korali Sample
- */
- void loglikelihoodNormalMultiplicative(korali::Sample& sample);
-
- /**
-  * @brief Additive multiplicative approach (based on data) to calculate the logLikelihood of the sample
-  * @param sample A Korali Sample
-  */
- void loglikelihoodNormalMultiplicativeData(korali::Sample& sample);
 
  /**
   * @brief An implementation of the normal likelihood y~N(f,g), where f ang g are provided by the user.
@@ -84,14 +40,32 @@ class Reference : public korali::problem::Bayesian
   * @param sample A Korali Sample
   */
  void loglikelihoodNegativeBinomial(korali::Sample& sample);
+  
+ /**
+  * @brief Calculates the gradient of the Normal loglikelihood model.
+  * @param sample A Korali Sample
+  */
+ void gradientLoglikelihoodNormal(korali::Sample& sample);
+ 
+ /**
+  * @brief Calculates the gradient of the Negative Binomial loglikelihood model.
+  * @param sample A Korali Sample
+  */
+ void gradientLoglikelihoodNegativeBinomial(korali::Sample& sample);
 
+ /**
+  * @brief Calculates the Fisher information of the Normal likelihood model.
+  * @param sample A Korali Sample
+  */
+ void fisherInformationLoglikelihoodNormal(korali::Sample& sample);
 
  public:
 
- void evaluateLogLikelihood(korali::Sample& sample) override;
- void evaluateLogLikelihoodGradient(korali::Sample& sample) override;
+ void evaluateLoglikelihood(korali::Sample& sample) override;
+ void evaluateLoglikelihoodGradient(korali::Sample& sample) override;
  void evaluateFisherInformation(korali::Sample& sample) override;
  void initialize() override;
+
 };
 
 } } } // namespace korali::problem::bayesian

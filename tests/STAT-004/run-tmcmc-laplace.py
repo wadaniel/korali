@@ -19,7 +19,7 @@ e["Problem"]["Likelihood Model"] = llaplaceCustom
 
 # Configuring TMCMC parameters
 e["Solver"]["Type"] = "TMCMC"
-e["Solver"]["Population Size"] = 50000
+e["Solver"]["Population Size"] = 5000
 
 # Configuring the problem's random distributions
 e["Distributions"][0]["Name"] = "Uniform 0"

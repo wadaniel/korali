@@ -7,7 +7,7 @@ int main(int argc, char* argv[])
  auto p = heat2DInit(&argc, &argv);
 
  e["Problem"]["Type"] = "Bayesian/Reference";
- e["Problem"]["Likelihood Model"] = "Additive Normal";
+ e["Problem"]["Likelihood Model"] = "Normal";
  e["Problem"]["Reference Data"] = p.refTemp;
  e["Problem"]["Computational Model"] = &heat2DSolver;
 

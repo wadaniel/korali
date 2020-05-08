@@ -67,10 +67,12 @@ Bug Reporting
 
 If you report a bug, please provide following information:
 
-* What command did you run
+* What version of Korali you are using (including full git commit hash).
 
-* On which system did you execute the command
+* What command(s) / code did you run and its arguments.
 
-* What input arguments have been used
+* On which system architecture did you execute the command.
 
-* What results were expected but not delivered
+* What versions of Python / C++ compiler did you use.
+
+* What results were expected but not delivered.

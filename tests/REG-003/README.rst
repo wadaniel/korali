@@ -1,4 +1,4 @@
-Full re-run of all basic tutorials for a comprehensive sanity check
-##################################################################### 
+Testing Documentation Building 
+################################################################
 
-Full re-run all basic tutorials to make sure none of them fail after any commit.
+Testing whether the documentation can be build and no warnings/errors occur.

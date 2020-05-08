@@ -1,4 +1,4 @@
-Testing Documentation Building 
-################################################################
+Check C++ Code Formattinr
+################################################################ 
 
-Testing whether the documentation can be build and no warnings/errors occur.
+This test makes sure all code has been formatted to satisfy Korali's standard

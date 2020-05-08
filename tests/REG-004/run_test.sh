@@ -1,19 +1,32 @@
 #!/bin/bash
 
+# Brief: Quickly Re-run all Python example applications for basic sanity check.
+
+###### Auxiliar Functions and Variables #########
+
 source ../functions.sh
 
-pushd ../../tutorials/
+############# STEP 1 ##############
 
-logEcho "[Korali] Beginning plotting tests"
+pushd ../../tutorials
 
-for dir in ./basic/*/*_result*/
+logEcho "[Korali] Beginning tutorial tests..."
+
+for dir in ./basic/*/
 do
   logEcho "-------------------------------------"
-  logEcho " Plotting results from $dir ..."
-  logEcho "-------------------------------------"
-  python3 -m korali.plotter --test --dir "${dir}" >> $logFile 2>&1
+  logEcho " Entering Folder: $dir"
+
+  pushd $dir >> $logFile 2>&1
   check_result
 
+  logEcho " Runnning full test script..."
+  ./.run_test.sh --full >> $logFile 2>&1
+  check_result
+
+  popd >> $logFile 2>&1
+  check_result
+  logEcho "-------------------------------------"
 done
 
 popd

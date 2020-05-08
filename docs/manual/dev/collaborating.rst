@@ -48,7 +48,7 @@ We require collaborators, both internal and external, to follow these set of ste
 
 * Create a detailed description of both your module and its tutorial in their respective README.rst file. You are allowed to cite papers and links. 
 
-* Run the *tools/reformat* tool to adjust the format of your code. This tool will automatically re-format your code to meet Korali-wide standards.
+* Run the *tools/dev-tools/correct-style* tool to adjust the format of your code. This tool will automatically re-format your code to meet Korali-wide standards.
 
 * Merge the latest changes from the Korali master repository onto your forked/cloned code, so to have the latest updates already in your code.
 

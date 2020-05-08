@@ -76,7 +76,10 @@ if [ -f ../tools/dev-tools/doxygen/bin/doxygen ]; then
 fi
 
 echo "Using $doxCommand for C++ documentation..."
-$doxCommand doxygen.config
-check
+$doxCommand doxygen.config 2>&1 | grep -E 'warning|error'
+if [ $? -eq 0 ]; then
+ echo "[Korali] Error running doxygen. Check log for more information."
+ exit -1
+fi 
 
 echo "[Korali] Webpage Build complete."

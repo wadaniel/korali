@@ -1,89 +1,91 @@
 #ifndef _KORALI_SOLVERS_SAEM_H_
 #define _KORALI_SOLVERS_SAEM_H_
 
-#include <vector>
 #include "engine.hpp"
-#include "modules/solver/solver.hpp"
 #include "modules/problem/bayesian/latent/latent.hpp"
+#include "modules/solver/solver.hpp"
+#include <vector>
 
-namespace korali { namespace solver {
-
+namespace korali
+{
+namespace solver
+{
 class SAEM : public korali::Solver
 {
- public:
+  public:
+  void setInitialConfiguration();
 
- void setInitialConfiguration();
-
- /**
+  /**
   * @brief [Missing Description]
   */
- korali::Engine _engine;
+  korali::Engine _engine;
 
- /**
+  /**
   * @brief [Missing Description]
   */
- korali::Experiment _experiment;
+  korali::Experiment _experiment;
 
- /**
+  /**
  * @brief [Missing Description]
  */
- korali::problem::bayesian::Latent* _latentProblem;
+  korali::problem::bayesian::Latent *_latentProblem;
 
- /**
+  /**
   * @brief [Missing Description]
   */
- void sampleLatent();
+  void sampleLatent();
 
- /**
+  /**
   * @brief [Missing Description]
   */
- void calculateSampleSVectors();
+  void calculateSampleSVectors();
 
- /**
+  /**
   * @brief [Missing Description]
   */
- void updateS();
+  void updateS();
 
- /**
+  /**
   * @brief [Missing Description]
   */
- void updateQFunction();
+  void updateQFunction();
 
- /**
+  /**
   * @brief [Missing Description]
   */
- void updateHyperparameters();
+  void updateHyperparameters();
 
- /**
+  /**
   * @brief [Missing Description]
   * @param idx [Missing Description]
   * @return [Missing Description]
   */
- bool isLatent(int idx);
+  bool isLatent(int idx);
 
- /**
+  /**
   * @brief [Missing Description]
   */
- std::vector<double> meanAndSDev(std::vector<double> v);
+  std::vector<double> meanAndSDev(std::vector<double> v);
 
- /**
+  /**
   * @brief [Missing Description]
   */
- std::vector<std::vector<double> > transpose(const std::vector<std::vector<double> > data);
+  std::vector<std::vector<double>> transpose(const std::vector<std::vector<double>> data);
 
- /**
+  /**
   * @brief [Missing Description]
   * @param sample [Missing Description]
   */
- static void QFunction(korali::Sample& sample);
+  static void QFunction(korali::Sample &sample);
 
- void initialize() override;
- void finalize() override;
- void runGeneration() override;
- void printGenerationBefore() override;
- void printGenerationAfter() override;
+  void initialize() override;
+  void finalize() override;
+  void runGeneration() override;
+  void printGenerationBefore() override;
+  void printGenerationAfter() override;
 };
 
-} } // namespace korali::solver
+} // namespace solver
+} // namespace korali
 
 #endif // _KORALI_SOLVERS_SAEM_H_

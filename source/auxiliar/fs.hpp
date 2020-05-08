@@ -8,6 +8,8 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include <vector>
+#include <string>
+#include "string.h"
 
 namespace korali
 {

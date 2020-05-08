@@ -3,5 +3,5 @@
 
 void korali::distribution::Univariate::initialize()
 {
- korali::Distribution::initialize();
+  korali::Distribution::initialize();
 }

@@ -3,59 +3,62 @@
 
 #include "modules/problem/bayesian/bayesian.hpp"
 
-namespace korali { namespace problem { namespace bayesian {
-
+namespace korali
+{
+namespace problem
+{
+namespace bayesian
+{
 class Latent : public korali::problem::Bayesian
 {
- public:
- 
- /**
+  public:
+  /**
   * @brief [Missing Description]
   * @param sample [Missing Description]
   */
- void evaluateLoglikelihood(korali::Sample& sample) override;
- 
- /**
+  void evaluateLoglikelihood(korali::Sample &sample) override;
+
+  /**
   * @brief [Missing Description]
   * @param sample [Missing Description]
   */
- void evaluateFisherInformation(korali::Sample& sample) override;
+  void evaluateFisherInformation(korali::Sample &sample) override;
 
- /**
+  /**
    * @brief [Missing Description]
    * @param sample [Missing Description]
    */
- void sampleLatent(korali::Sample& sample);
+  void sampleLatent(korali::Sample &sample);
 
- /**
+  /**
    * @brief [Missing Description]
    * @param sample [Missing Description]
    */
- void evaluateS(korali::Sample& sample);
+  void evaluateS(korali::Sample &sample);
 
- /**
+  /**
    * @brief [Missing Description]
    * @param sample [Missing Description]
    */
- void evaluatePhi(korali::Sample& sample);
+  void evaluatePhi(korali::Sample &sample);
 
- /**
+  /**
    * @brief [Missing Description]
    * @param sample [Missing Description]
    */
- void evaluateZeta(korali::Sample& sample);
- 
- /**
+  void evaluateZeta(korali::Sample &sample);
+
+  /**
    * @brief [Missing Description]
    * @param sample [Missing Description]
    */
- void evaluateLoglikelihoodGradient(korali::Sample& sample) override;
+  void evaluateLoglikelihoodGradient(korali::Sample &sample) override;
 
- void initialize() override;
-
+  void initialize() override;
 };
 
-} } } // namespace korali::problem::evaluation::bayesian::Inference
-
+} // namespace bayesian
+} // namespace problem
+} // namespace korali
 
 #endif // _KORALI_PROBLEM_BAYESIAN_LATENT_HPP_

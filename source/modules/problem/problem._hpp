@@ -1,16 +1,15 @@
 #ifndef _KORALI_PROBLEM_HPP_
 #define _KORALI_PROBLEM_HPP_
 
-#include "modules/module.hpp"
 #include "modules/experiment/experiment.hpp"
+#include "modules/module.hpp"
 
-namespace korali {
-
+namespace korali
+{
 class Problem : public korali::Module
 {
- public:
-
- /**
+  public:
+  /**
      * @brief Evaluates whether at least one of constraints have been met.
      * @param operation Name of the operation
      * @param sample A Korali Sample
@@ -18,6 +17,5 @@ class Problem : public korali::Module
 };
 
 } // namespace korali
-
 
 #endif // _KORALI_PROBLEM_HPP_

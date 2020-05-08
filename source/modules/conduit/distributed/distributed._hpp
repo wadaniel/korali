@@ -2,110 +2,110 @@
 #define _KORALI_CONDUIT_MPI_HPP_
 
 #ifdef _KORALI_USE_MPI
- #include "mpi.h"
+#include "mpi.h"
 /**
  * @brief Communicator storage for the current Korali Team
  */
- extern MPI_Comm __KoraliTeamComm;
+extern MPI_Comm __KoraliTeamComm;
 
- /**
+/**
   * @brief Returns Communicator for the current Korali Team
   * @return An MPI Communicator
   */
- extern MPI_Comm getKoraliMPIComm();
+extern MPI_Comm getKoraliMPIComm();
 
- /**
+/**
   * @brief Returns Communicator for the current Korali Team
   * @return An MPI Communicator (in the form of a long integer, for Python compatibility)
   */
- extern long int getKoraliMPICommPointer();
+extern long int getKoraliMPICommPointer();
 #endif
 
 #include "modules/conduit/conduit.hpp"
+#include <map>
 #include <queue>
 #include <vector>
-#include <map>
 
-namespace korali { namespace conduit {
-
+namespace korali
+{
+namespace conduit
+{
 class Distributed : public korali::Conduit
 {
-
- private:
-
- /**
+  private:
+  /**
  * @brief Lifetime function for worker ranks.
  */
- void workerThread();
+  void workerThread();
 
- public:
+  public:
+#ifdef _KORALI_USE_MPI
 
- #ifdef _KORALI_USE_MPI
-
- /**
+  /**
   * @brief Actual MPI communicator for internal use.
   */
- MPI_Comm _mpiCommunicator;
+  MPI_Comm _mpiCommunicator;
 
- /**
+  /**
   * @brief ID of the current rank.
   */
- int _rankId;
+  int _rankId;
 
- /**
+  /**
    * @brief Total number of ranks in execution
    */
- int _rankCount;
+  int _rankCount;
 
- /**
+  /**
   * @brief Number of Korali Teams in execution
   */
- int _teamCount;
+  int _teamCount;
 
- /**
+  /**
    * @brief ID the Korali Team for the current rank
    */
- int _teamId;
+  int _teamId;
 
- /**
+  /**
  * @brief Local ID the rank within its Korali Team
  */
- int _localRankId;
+  int _localRankId;
 
- /**
+  /**
   * @brief Queue to store idle teams to be used
   */
- std::queue<int> _teamQueue;
+  std::queue<int> _teamQueue;
 
- /**
+  /**
   * @brief Map between Team ID and its workers
   */
- std::map< int, std::vector<int> > _teamWorkers;
+  std::map<int, std::vector<int>> _teamWorkers;
 
- /**
+  /**
   * @brief Flag to mark termination for Korali teams.
   */
- bool _continueEvaluations;
- #endif
+  bool _continueEvaluations;
+#endif
 
- void update(korali::Sample& sample) override;
- void initServer() override;
- size_t maxConcurrency() override;
- void initialize() override;
- void finalize() override;
+  void update(korali::Sample &sample) override;
+  void initServer() override;
+  size_t maxConcurrency() override;
+  void initialize() override;
+  void finalize() override;
 
- void processSample(korali::Sample& sample) override;
- void stackEngine(korali::Engine*) override;
- void popEngine() override;
+  void processSample(korali::Sample &sample) override;
+  void stackEngine(korali::Engine *) override;
+  void popEngine() override;
 
- /**
+  /**
   * @brief Determines which rank is the root.
   */
- int getRootRank();
- bool isRoot() override;
- void abort() override;
+  int getRootRank();
+  bool isRoot() override;
+  void abort() override;
 };
 
-} } // namespace korali::Conduit
+} // namespace conduit
+} // namespace korali
 
 #endif // _KORALI_CONDUIT_MPI_HPP_

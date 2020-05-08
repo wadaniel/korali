@@ -3,23 +3,27 @@
 
 #include "modules/problem/gaussian/gaussian.hpp"
 
-namespace korali { namespace problem { namespace gaussian {
-
+namespace korali
+{
+namespace problem
+{
+namespace gaussian
+{
 class Execute : public korali::problem::Gaussian
 {
   public:
+  void initialize() override;
+  void finalize() override;
 
-    void initialize() override;
-    void finalize() override;
-
-    /**
+  /**
      * @brief Runs the model on a given sample.
      * @param sample A Korali Sample
      */
-    void execute(korali::Sample& sample);
+  void execute(korali::Sample &sample);
 };
 
-} } } // namespace korali::problem::gaussian
-
+} // namespace gaussian
+} // namespace problem
+} // namespace korali
 
 #endif // _KORALI_PROBLEM_GAUSSIAN_PROCESS_EXECUTE_HPP__

@@ -3,21 +3,24 @@
 
 #include "modules/problem/bayesian/bayesian.hpp"
 
-namespace korali { namespace problem { namespace bayesian {
-
+namespace korali
+{
+namespace problem
+{
+namespace bayesian
+{
 class Custom : public korali::problem::Bayesian
 {
- private:
-
- public:
-
- void evaluateLoglikelihood(korali::Sample& sample) override;
- void evaluateLoglikelihoodGradient(korali::Sample& sample) override;
- void evaluateFisherInformation(korali::Sample& sample) override;
- void initialize() override;
+  private:
+  public:
+  void evaluateLoglikelihood(korali::Sample &sample) override;
+  void evaluateLoglikelihoodGradient(korali::Sample &sample) override;
+  void evaluateFisherInformation(korali::Sample &sample) override;
+  void initialize() override;
 };
 
-} } } // namespace korali::problem::bayesian
-
+} // namespace bayesian
+} // namespace problem
+} // namespace korali
 
 #endif // _KORALI_PROBLEM_BAYESIAN_CUSTOM_HPP_

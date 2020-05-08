@@ -93,7 +93,7 @@ fi
 # Step 3: Clang Tools
 
 which clang-format > /dev/null 2>&1
-if [ $? -eq 0 ] || [ -f clang-format ]; then
+if [ $? -eq 0 ] || [ -f llvm/bin/clang-format ]; then
  echo "[Korali] Seems like you already have clang-format installed. Skipping..."
 else
 
@@ -103,13 +103,10 @@ else
   wget https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.0/clang+llvm-10.0.0-x86_64-apple-darwin.tar.xz
   check
   
-  tar --extract --file=clang+llvm-10.0.0-x86_64-apple-darwin.tar.xz clang+llvm-10.0.0-x86_64-apple-darwin/bin/clang-format
+  tar -xf clang+llvm-10.0.0-x86_64-apple-darwin.tar.xz
   check
   
-  cp clang+llvm-10.0.0-x86_64-apple-darwin/bin/clang-format clang-format
-  check
-  
-  rm -rf clang+llvm-10.0.0-x86_64-apple-darwin
+  mv clang+llvm-10.0.0-x86_64-apple-darwin llvm
   check
   
  else  # Else default to Linux64
@@ -117,10 +114,27 @@ else
   wget https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.0/clang+llvm-10.0.0-x86_64-linux-sles11.3.tar.xz
   check
   
-  tar --extract --file=clang+llvm-10.0.0-x86_64-linux-sles11.3.tar.xz clang+llvm-10.0.0-x86_64-linux-sles11.3/bin/clang-format --strip=2
+  tar -xf clang+llvm-10.0.0-x86_64-linux-sles11.3.tar.xz 
   check
   
+  mv clang+llvm-10.0.0-x86_64-linux-sles11.3 llvm
+  check
+  
+  # Fix for systems that have no libcurses lib
+  ln -s libunwind.so.1.0 llvm/lib/libncurses.so.5
+  
  fi
+ 
+fi 
+
+# Step 4: Run Clang-Format Tools
+
+if [ -f  run-clang-format/run-clang-format.py ]; then
+ echo "[Korali] Seems like you already have run-clang-format installed. Skipping..."
+else
+
+ git clone https://github.com/Sarcasm/run-clang-format.git
+ check
  
 fi
 

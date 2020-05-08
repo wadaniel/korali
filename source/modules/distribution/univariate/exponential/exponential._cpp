@@ -3,22 +3,21 @@
 
 double korali::distribution::univariate::Exponential::getDensity(double x)
 {
- return gsl_ran_exponential_pdf(x-_location, _mean);
+  return gsl_ran_exponential_pdf(x - _location, _mean);
 }
 
 double korali::distribution::univariate::Exponential::getLogDensity(double x)
 {
- if (x-_location < 0) return -INFINITY; return - log(_mean) - (x-_location)/_mean;
+  if (x - _location < 0) return -INFINITY;
+  return -log(_mean) - (x - _location) / _mean;
 }
 
 double korali::distribution::univariate::Exponential::getRandomNumber()
 {
- return _location + gsl_ran_exponential(_range, _mean);
+  return _location + gsl_ran_exponential(_range, _mean);
 }
 
 void korali::distribution::univariate::Exponential::updateDistribution()
 {
- _aux = 0.0;
+  _aux = 0.0;
 }
-
-

@@ -3,14 +3,16 @@
 
 #include "modules/distribution/distribution.hpp"
 
-namespace korali { namespace distribution {
-
+namespace korali
+{
+namespace distribution
+{
 class Specific : public korali::Distribution
 {
- public:
-
+  public:
 };
 
-} } // namespace korali::distribution
+} // namespace distribution
+} // namespace korali
 
 #endif // _KORALI_DISTRIBUTION_SPECIFICHPP_

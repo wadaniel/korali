@@ -1,6 +1,6 @@
-#include "modules/problem/bayesian/custom/custom.hpp"
 #include "modules/conduit/conduit.hpp"
 #include "modules/experiment/experiment.hpp"
+#include "modules/problem/bayesian/custom/custom.hpp"
 
 void korali::problem::bayesian::Custom::initialize()
 {
@@ -9,19 +9,19 @@ void korali::problem::bayesian::Custom::initialize()
   if (_k->_variables.size() == 0) _k->_logger->logError("Bayesian inference problems require at least one variable.\n");
 }
 
-void korali::problem::bayesian::Custom::evaluateLoglikelihood(korali::Sample& sample)
+void korali::problem::bayesian::Custom::evaluateLoglikelihood(korali::Sample &sample)
 {
- sample.run(_likelihoodModel);
+  sample.run(_likelihoodModel);
 
- if (! sample.contains("logLikelihood")) _k->_logger->logError("The specified likelihood model did not assign the value: 'logLikelihood' to the sample.\n");
+  if (!sample.contains("logLikelihood")) _k->_logger->logError("The specified likelihood model did not assign the value: 'logLikelihood' to the sample.\n");
 }
 
-void korali::problem::bayesian::Custom::evaluateLoglikelihoodGradient(korali::Sample& sample)
+void korali::problem::bayesian::Custom::evaluateLoglikelihoodGradient(korali::Sample &sample)
 {
-    _k->_logger->logError("Gradient not yet implemented for selected bayesian problem and log likelihood model.");
+  _k->_logger->logError("Gradient not yet implemented for selected bayesian problem and log likelihood model.");
 }
 
-void korali::problem::bayesian::Custom::evaluateFisherInformation(korali::Sample& sample)
+void korali::problem::bayesian::Custom::evaluateFisherInformation(korali::Sample &sample)
 {
-    _k->_logger->logError("Fisher information not yet implemented for selected bayesian problem and log likelihood model.");
+  _k->_logger->logError("Fisher information not yet implemented for selected bayesian problem and log likelihood model.");
 }

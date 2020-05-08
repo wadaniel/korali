@@ -12,9 +12,9 @@ class Propagation : public korali::Problem
    void initialize() override;
 
    /**
-     * @brief Runs the model, given the provided sample parameters.
-     * @param sample Sample containing the parameters with which to execute the model
-     */
+   * @brief Produces an evaluation of the model, storing it in a file.
+   * @param sample A Korali Sample
+  */
    void execute(korali::Sample& sample);
 
 };

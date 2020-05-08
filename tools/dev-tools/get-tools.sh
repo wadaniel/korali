@@ -119,7 +119,7 @@ else
   
   mv clang+llvm-10.0.0-x86_64-linux-sles11.3 llvm
   check
-  
+   
  fi
  
 fi

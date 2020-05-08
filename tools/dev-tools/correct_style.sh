@@ -1,22 +1,13 @@
 #!/usr/bin/env bash
-# File       : correct_style
-# Created    : Mon Jan 20 2020 11:29:59 AM (+0100)
-# Author     : Fabian Wermelinger (adjusted to Korali by Sergio Martin)
-# Description: Utility to adjust source code according to style conventions
-# Copyright 2020 ETH Zurich. All Rights Reserved.
 
-SRC_H='.*\._hpp'
-SRC_S='.*\._cpp'
-
-clangFormat=llvm/bin/clang-format
-if [ ! -f $clangFormat ]; then
- clangFormat=clang-format
+clangFormatCmd=llvm/bin/clang-format
+if [ ! -f $clangFormatCmd ]; then
+ clangFormatCmd=clang-format
 fi
 
+runClangCmd=run-clang-format/run-clang-format.py
 
-# format in-place
-find ../../source \
-    -regextype 'egrep' \
-    -regex "${SRC_H}" -or \
-    -regex "${SRC_S}" | \
-    xargs -n6 -P2 $clangFormat -style=file -i "$@"
+command="python3 $runClangCmd --clang-format-executable $clangFormatCmd -r ../../source"
+
+echo $command
+$command

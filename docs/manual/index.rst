@@ -35,6 +35,7 @@ Korali's Documentation
    :maxdepth: 2
    :caption: Development
 
+   dev/collaborating
    dev/build
    dev/testing
    dev/moduledev

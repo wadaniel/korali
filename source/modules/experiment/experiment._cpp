@@ -13,8 +13,17 @@
 #include <cstdio>
 #include <map>
 
+ /**
+  * @brief Pointer to the current experiment in execution
+ */
 korali::Experiment* __expPointer;
-namespace korali { void threadWrapper() { __expPointer->run(); } }
+
+namespace korali {
+/**
+  * @brief Function for the initialization of new coroutine threads.
+ */
+void threadWrapper() { __expPointer->run(); }
+}
 
 void korali::Experiment::run()
 {

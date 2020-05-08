@@ -15,10 +15,6 @@ fileName = 'samplesOut.dat'
 # Prepare file
 prepareOutputDir()
 
-# Variables
-means = [-5, 5]
-variances = [1, 3]
-
 # Creating new experiment
 import korali
 e = korali.Experiment()
@@ -26,12 +22,12 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Propagation"
 e["Problem"]["Execution Model"] = lambda modelData: put_normal_rnds(modelData, Ns, fileName)
 e["Variables"][0]["Name"] = "Mean"
-e["Variables"][0]["Precomputed Values"] = means
+e["Variables"][0]["Precomputed Values"] = list(range(-500, 500))
 e["Variables"][1]["Name"] = "Variance"
-e["Variables"][1]["Precomputed Values"] = variances
+e["Variables"][1]["Precomputed Values"] = list(range(0, 1000))
 e["Solver"]["Type"] = "Executor"
-e["Solver"]["Executions Per Generation"] = 1
-e["Console Output"]["Verbosity"] = "Detailed"
+e["Solver"]["Executions Per Generation"] = 100
+e["Console Output"]["Verbosity"] = "Minimal"
 
 # Starting Korali's Engine and running experiment
 k = korali.Engine()

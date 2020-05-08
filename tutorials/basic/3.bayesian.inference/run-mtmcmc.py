@@ -23,7 +23,6 @@ e["Problem"]["Computational Model"] = lambda sampleData: modelWithDerivatives(sa
 e["Solver"]["Type"] = "TMCMC"
 e["Solver"]["Version"] = "mTMCMC"
 e["Solver"]["Population Size"] = 5000
-e["Solver"]["Termination Criteria"]["Max Generations"] = 20
 e["Console Output"]["Verbosity"] = 'Detailed'
 
 # Configuring the problem's random distributions

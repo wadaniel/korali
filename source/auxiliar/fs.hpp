@@ -9,9 +9,6 @@
 #include <dirent.h>
 #include <vector>
 
-/** \namespace
-* @brief The Korali namespace includes all Korali-specific functions, variables, and modules.
-******************************************************************************/
 namespace korali
 {
 

@@ -12,7 +12,12 @@ class Sampling : public korali::Problem
  public:
 
  void initialize() override;
- virtual void evaluate(korali::Sample&);
+
+ /**
+   * @brief Evaluates the probability density (P(x)) of the function at the given parameters.
+   * @param sample Sample to evaluate
+   */
+ virtual void evaluate(korali::Sample& sample);
 
 };
 

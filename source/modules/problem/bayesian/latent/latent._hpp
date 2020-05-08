@@ -11,10 +11,17 @@ namespace bayesian
 {
 class Latent : public korali::problem::Bayesian
 {
-  public:
-  void evaluateLogLikelihood(korali::Sample &sample) override;
 
-  /**
+ public:
+ 
+ /**
+  * @brief [Missing Description]
+  * @param sample [Missing Description]
+  */
+ void evaluateLoglikelihood(korali::Sample& sample) override;
+ 
+ /**
+
   * @brief [Missing Description]
   * @param sample [Missing Description]
   */
@@ -42,13 +49,17 @@ class Latent : public korali::problem::Bayesian
    * @brief [Missing Description]
    * @param sample [Missing Description]
    */
-  void evaluateZeta(korali::Sample &sample);
 
-  /**
+ void evaluateZeta(korali::Sample& sample);
+ 
+ /**
    * @brief [Missing Description]
    * @param sample [Missing Description]
    */
-  void evaluateLogLikelihoodGradient(korali::Sample &sample) override;
+ void evaluateLoglikelihoodGradient(korali::Sample& sample) override;
+
+ void initialize() override;
+
 
   void initialize() override;
 };

@@ -68,7 +68,7 @@ void korali::problem::bayesian::Approximate::initialize()
   }
 }
 
-void korali::problem::bayesian::Approximate::evaluateLogLikelihood(korali::Sample &sample)
+void korali::problem::bayesian::Approximate::evaluateLoglikelihood(korali::Sample& sample)
 {
   if (_likelihoodModel == "Truncated Normal") likelihoodTruncatedNormal(sample);
   if (_likelihoodModel == "Normal") likelihoodNormal(sample);
@@ -141,7 +141,7 @@ void korali::problem::bayesian::Approximate::likelihoodTruncatedNormal(korali::S
   sample["logLikelihood"] = -logNormalization - 0.5 * ssn / sigma2;
 }
 
-void korali::problem::bayesian::Approximate::evaluateLogLikelihoodGradient(korali::Sample &sample)
+void korali::problem::bayesian::Approximate::evaluateLoglikelihoodGradient(korali::Sample& sample)
 {
   _k->_logger->logError("Gradient not yet implemented for selected bayesian problem and log likelihood model.");
 }

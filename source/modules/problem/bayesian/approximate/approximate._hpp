@@ -43,12 +43,12 @@ class Approximate : public korali::problem::Bayesian
   * @param sample A Korali Sample
   */
   void likelihoodNormal(korali::Sample &sample);
-
-  public:
-  void evaluateLogLikelihood(korali::Sample &sample) override;
-  void evaluateLogLikelihoodGradient(korali::Sample &sample) override;
-  void evaluateFisherInformation(korali::Sample &sample) override;
+  
+  void evaluateLoglikelihood(korali::Sample& sample) override;
+  void evaluateLoglikelihoodGradient(korali::Sample& sample) override;
+  void evaluateFisherInformation(korali::Sample& sample) override;
   void initialize() override;
+
 };
 
 } // namespace bayesian

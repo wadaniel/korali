@@ -36,7 +36,9 @@ class Bayesian : public korali::Problem
  * @brief Evaluates the log likelihood of the given sample, and stores it in sample["Log Likelihood"]
  * @param sample A Korali Sample
  */
-  virtual void evaluateLogLikelihood(korali::Sample &sample) = 0;
+
+ virtual void evaluateLoglikelihood(korali::Sample& sample) = 0;
+
 
   /**
  * @brief Evaluates the log posterior of the given sample, and stores it in sample["Log Posterior"]
@@ -54,7 +56,9 @@ class Bayesian : public korali::Problem
  * @brief Evaluates the gradient of the logLikelikood w.r.t. to the variables, and stores it in sample["Log Likelihood Gradient"]
  * @param sample A Korali Sample
  */
-  virtual void evaluateLogLikelihoodGradient(korali::Sample &sample) = 0;
+
+ virtual void evaluateLogLikelihoodGradient(korali::Sample &sample) = 0;
+
 
   /**
  * @brief Evaluates the empirical Fisher information.

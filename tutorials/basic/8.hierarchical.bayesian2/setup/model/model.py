@@ -8,15 +8,19 @@ def logistic( X, s ):
   th1 = s["Parameters"][0]
   th2 = s["Parameters"][1]
   th3 = s["Parameters"][2]
+  sig = s["Parameters"][3]
 
   result = []
+  sdev   = []
   
   for x in X:
     f = np.exp(th3*x)
     y = ( th1*th2*f )/( th1 + th2*(f-1) )
     result.append(y)
+    sdev.append(sig)
     
   s["Reference Evaluations"] = result
+  s["Standard Deviation"] = sdev
 
 def logistic_reference( s ):
   th = np.zeros(4)

@@ -40,12 +40,14 @@ void korali::problem::Bayesian::evaluateLogPosterior(korali::Sample &sample)
   }
   else
   {
-    evaluateLogLikelihood(sample);
-    double logPrior = sample["logPrior"];
-    double logLikelihood = sample["logLikelihood"];
-    double logPosterior = logPrior + logLikelihood;
 
-    if (std::isnan(logPosterior) == true) _k->_logger->logError("Sample %d returned NaN logPosterior evaluation.\n", sampleId);
+   evaluateLoglikelihood(sample);
+   double logPrior = sample["logPrior"];
+   double logLikelihood = sample["logLikelihood"];
+   double logPosterior = logPrior + logLikelihood;
+
+   if(std::isnan(logLikelihood) == true) _k->_logger->logError("Sample %d returned NaN logLikelihood evaluation.\n", sampleId);
+
 
     sample["logPosterior"] = logPrior + logLikelihood;
   }
@@ -72,5 +74,7 @@ void korali::problem::Bayesian::evaluate(korali::Sample &sample)
 
 void korali::problem::Bayesian::evaluateGradient(korali::Sample &sample)
 {
-  evaluateLogLikelihoodGradient(sample);
+
+ evaluateLoglikelihoodGradient(sample);
+
 }

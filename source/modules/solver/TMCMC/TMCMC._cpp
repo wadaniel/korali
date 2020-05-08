@@ -72,14 +72,11 @@ void korali::solver::TMCMC::setInitialConfiguration()
    _chainLeadersErrors.resize(_populationSize, -1);
    _sampleErrorDatabase.resize(_populationSize, -1);
    _chainCandidatesGradients.resize(_populationSize);
-   _chainCandidatesGradientsLikelihood.resize(_populationSize);
-   for(size_t i = 0; i < _populationSize; i++) { _chainCandidatesGradients[i].resize(_k->_variables.size()); _chainCandidatesGradientsLikelihood[i].resize(_k->_variables.size()); }
+   for(size_t i = 0; i < _populationSize; i++) _chainCandidatesGradients[i].resize(_k->_variables.size());
    _chainLeadersGradients.resize(_populationSize);
-   _chainLeadersGradientsLikelihood.resize(_populationSize);
-   for(size_t i = 0; i < _populationSize; i++) { _chainLeadersGradients[i].resize(_k->_variables.size()); _chainLeadersGradientsLikelihood[i].resize(_k->_variables.size()); }
+   for(size_t i = 0; i < _populationSize; i++) _chainLeadersGradients[i].resize(_k->_variables.size());
    _sampleGradientDatabase.resize(_populationSize);
-   _sampleGradientLikelihoodDatabase.resize(_populationSize);
-   for(size_t i = 0; i < _populationSize; i++) { _sampleGradientDatabase[i].resize(_k->_variables.size()); _sampleGradientLikelihoodDatabase[i].resize(_k->_variables.size()); }
+   for(size_t i = 0; i < _populationSize; i++) _sampleGradientDatabase[i].resize(_k->_variables.size());
    _chainCandidatesCovariance.resize(_populationSize);
    for(size_t i = 0; i < _populationSize; i++) _chainCandidatesCovariance[i].resize(_k->_variables.size()*_k->_variables.size());
    _chainLeadersCovariance.resize(_populationSize);
@@ -174,7 +171,6 @@ void korali::solver::TMCMC::prepareGeneration()
     _numCovarianceCorrections = 0;
     _sampleErrorDatabase.clear();
     _sampleGradientDatabase.clear();
-    _sampleGradientLikelihoodDatabase.clear();
     _sampleCovariancesDatabase.clear();
     if(_k->_currentGeneration > 1) std::fill(_chainCandidatesErrors.begin(), _chainCandidatesErrors.end(), 0);
     else                           std::fill(_chainCandidatesErrors.begin(), _chainCandidatesErrors.end(), -1);
@@ -185,9 +181,8 @@ void korali::solver::TMCMC::prepareGeneration()
         gsl_matrix_view covLeader = gsl_matrix_view_array(&_chainLeadersCovariance[i][0], _k->_variables.size(), _k->_variables.size());
         gsl_matrix_scale(&covLeader.matrix, _previousAnnealingExponent/_annealingExponent);
          
-        _chainLeadersGradients[i] = _chainLeadersGradientsLikelihood[i];
         gsl_vector_view gradLeader = gsl_vector_view_array(&_chainLeadersGradients[i][0], _k->_variables.size());
-        gsl_vector_scale(&gradLeader.vector, _annealingExponent);
+        gsl_vector_scale(&gradLeader.vector, _annealingExponent/_previousAnnealingExponent);
     }
 
   }
@@ -228,7 +223,6 @@ void korali::solver::TMCMC::processCandidate(const size_t sampleId)
     {
       _chainLeadersErrors[sampleId]     = _chainCandidatesErrors[sampleId];
       _chainLeadersGradients[sampleId]  = _chainCandidatesGradients[sampleId];
-      _chainLeadersGradientsLikelihood[sampleId]  = _chainCandidatesGradientsLikelihood[sampleId];
       _chainLeadersCovariance[sampleId] = _chainCandidatesCovariance[sampleId];
     }
     
@@ -373,10 +367,7 @@ void korali::solver::TMCMC::calculateGradients(std::vector<korali::Sample>& samp
  for(size_t c = 0; c < _chainCount; c++)
  {
    size_t finishedId = _conduit->waitAny(samples);
-   for(size_t d = 0; d < _k->_variables.size(); ++d) _chainCandidatesGradientsLikelihood[finishedId][d] = samples[finishedId]["logLikelihood Gradient"][d];
-   
-   // anneal
-   for(size_t d = 0; d < _k->_variables.size(); ++d) _chainCandidatesGradients[finishedId][d] = _chainCandidatesGradientsLikelihood[finishedId][d] * _annealingExponent;
+   for(size_t d = 0; d < _k->_variables.size(); ++d) _chainCandidatesGradients[finishedId][d] = ((double) samples[finishedId]["logLikelihood Gradient"][d]) * _annealingExponent ;
  }
 }
 
@@ -545,7 +536,6 @@ void korali::solver::TMCMC::updateDatabase(const size_t sampleId)
   {
     _sampleErrorDatabase.push_back(_chainLeadersErrors[sampleId]);
     _sampleGradientDatabase.push_back(_chainLeadersGradients[sampleId]);
-    _sampleGradientLikelihoodDatabase.push_back(_chainLeadersGradientsLikelihood[sampleId]);
     _sampleCovariancesDatabase.push_back(_chainLeadersCovariance[sampleId]);
   }
  

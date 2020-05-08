@@ -61,7 +61,7 @@ void korali::problem::bayesian::Reference::loglikelihoodNormal(korali::Sample& s
       loglike -= log( sdev );
   }
 
-  loglike -=   0.5*( _referenceData.size()*_log2pi + sse );
+  loglike -= 0.5*( _referenceData.size()*_log2pi + sse );
   sample["logLikelihood"] = loglike;
 }
 
@@ -227,7 +227,7 @@ void korali::problem::bayesian::Reference::fisherInformationLoglikelihoodNormal(
       {
         for(size_t l = 0; l < k; ++l)
         {
-            tmp = tmpvar*gradientF[i][k]*gradientF[i][l] + 2.*tmpvarinv*gradientG[i][k]*gradientG[i][l];
+            tmp = tmpvarinv*gradientF[i][k]*gradientF[i][l] + 2.*tmpvarinv*gradientG[i][k]*gradientG[i][l];
             FIM[k*Nth+l] += tmp;
             FIM[l*Nth+k] += tmp;
         }

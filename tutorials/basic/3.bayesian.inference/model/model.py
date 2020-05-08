@@ -45,11 +45,11 @@ def modelWithDerivatives( s, x ):
 
 def getReferenceData():
  y=[]
- y.append(3.2069);
- y.append(4.1454);
- y.append(4.9393);
- y.append(6.0588);
- y.append(6.8425);
+ y.append(3.21);
+ y.append(4.14);
+ y.append(4.94);
+ y.append(6.06);
+ y.append(6.84);
  return y
 
 def getReferencePoints():

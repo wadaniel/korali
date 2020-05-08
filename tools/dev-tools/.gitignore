@@ -4,3 +4,4 @@ clang*
 cmake
 *.tar.gz
 llvm
+run-clang-format/

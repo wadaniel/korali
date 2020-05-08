@@ -124,6 +124,17 @@ else
  
 fi
 
+# Step 4: Run Clang-Format Tools
+
+if [ -f  run-clang-format/run-clang-format.py ]; then
+ echo "[Korali] Seems like you already have run-clang-format installed. Skipping..."
+else
+
+ git clone https://github.com/Sarcasm/run-clang-format.git
+ check
+ 
+fi
+
 # Delete any remaining files
 rm -rf *.xz
 rm -rf *.tar.gz

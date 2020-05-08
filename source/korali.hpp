@@ -6,10 +6,6 @@
 * @brief Contains auxiliar libraries and tools to run Korali.
 */
 
-/** \dir external
-* @brief Contains external (third-party) libraries and tools to run Korali.
-*/
-
 /** \dir modules
  * @brief Contains all the modules upon which a Korali application is created.
  */

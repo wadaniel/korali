@@ -4,17 +4,16 @@ source ../functions.sh
 
 pushd ../../tutorials/
 
-logEcho "[Korali] Beginning profiling tests..."
+logEcho "[Korali] Beginning plotting tests"
 
-for dir in ./a*/
+for dir in ./basic/*/*_result*/
 do
-  if [ -f "${dir}/profiling.json" ]; then
-   logEcho "----------------------------------------------"
-   logEcho " Processing profiler information from $dir ..."
-   logEcho "----------------------------------------------"
-   python3 -m korali.profiler --test --dir "${dir}" >> $logFile 2>&1
-   check_result
-  fi
+  logEcho "-------------------------------------"
+  logEcho " Plotting results from $dir ..."
+  logEcho "-------------------------------------"
+  python3 -m korali.plotter --test --dir "${dir}" >> $logFile 2>&1
+  check_result
+
 done
 
 popd

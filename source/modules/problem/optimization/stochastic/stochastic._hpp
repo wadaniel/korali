@@ -10,7 +10,12 @@ class Stochastic : public korali::problem::Optimization
  private:
 
  public:
-  void evaluate(korali::Sample&);
+
+ /**
+  * @brief Evaluates the F(x) of a sample, given a set of parameters.
+  * @param sample A sample to process
+  */
+  void evaluate(korali::Sample& sample);
 
 };
 

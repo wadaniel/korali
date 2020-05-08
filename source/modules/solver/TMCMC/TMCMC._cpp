@@ -14,11 +14,30 @@
 #include <gsl/gsl_statistics.h>
 #include <gsl/gsl_multimin.h>
 
+ /**
+  * @brief Struct for TMCMC optimization operations
+ */
 typedef struct fparam_s {
-  const double *loglike;  // likelihood values in current generation
-  size_t        Ns;       // population size of current generation
-  double        exponent; // annealing exponent of current generation
-  double        cov;      // target coefficient of variation
+
+ /**
+  * @brief Likelihood values in current generation
+ */
+  const double *loglike;
+
+  /**
+    * @brief Population size of current generation
+   */
+  size_t        Ns;
+
+  /**
+    * @brief Annealing exponent of current generation
+   */
+  double        exponent;
+
+  /**
+    * @brief Target coefficient of variation
+   */
+  double        cov;
 } fparam_t;
 
 void korali::solver::TMCMC::setInitialConfiguration()

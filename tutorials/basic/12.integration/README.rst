@@ -1,5 +1,5 @@
 Integration
-===========
+==================
 
 In this tutorial we show how to **integrate** a given function. 
 

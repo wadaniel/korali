@@ -1,18 +1,4 @@
-Test correct execution of solvers with non 0815 parametrization.
-#################################################################
+Full re-run of all basic tutorials for a comprehensive sanity check
+##################################################################### 
 
-## Description
-
-This test runs python scripts that set up a Korali problem and run Korali solvers. Solvers will be extensively configured to check for corner cases.
-
-## Source
-
-[https://github.com/cselab/korali/tree/master/tests/REG-004](https://github.com/cselab/korali/tree/master/tests/REG-004)
-
-## Steps
-
-### Step 1
-
-+ Operation: Test corner cases for TMCMC
-+ Expected: No errors (rc = 0).
-
+Full re-run all basic tutorials to make sure none of them fail after any commit.

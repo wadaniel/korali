@@ -24,13 +24,13 @@ class Conduit : public korali::Module {
 
  /**
  * @brief Accepts a sample for processing.
- * @param A Korali sample
+ * @param sample A Korali sample
  */
  virtual void processSample(korali::Sample& sample) = 0;
 
  /**
   * @brief Stacks a new Engine into the engine stack
-  * @param A Korali Engine
+  * @param engine A Korali Engine
   */
  virtual void stackEngine(korali::Engine* engine) = 0;
 
@@ -68,25 +68,26 @@ class Conduit : public korali::Module {
 
  /**
  * @brief Starts the execution of the sample.
- * @param A Korali sample
+ * @param sample A Korali sample
  */
  void start(korali::Sample& sample);
 
  /**
   * @brief Waits for a given sample to finish. The experiment will not continue until the sample has been evaluated.
-  * @param A Korali sample
+  * @param sample A Korali sample
   */
  void wait(korali::Sample& sample);
 
  /**
    * @brief Waits for a set of sample to finish. The experiment will not continue until all samples have been evaluated.
-   * @param A list of Korali samples
+   * @param samples A list of Korali samples
    */
  void waitAll(std::vector<korali::Sample>& samples);
 
  /**
   * @brief Waits for a set of sample to finish. The experiment will not continue until at least one of the samples have been evaluated.
-  * @param A list of Korali samples
+  * @param samples A list of Korali samples
+  * @return Position in the vector of the sample that has finished.
   */
  size_t waitAny(std::vector<korali::Sample>& samples);
 

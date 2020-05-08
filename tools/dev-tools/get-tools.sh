@@ -119,7 +119,10 @@ else
   
   mv clang+llvm-10.0.0-x86_64-linux-sles11.3 llvm
   check
-   
+  
+  # Fix for systems that have no libcurses lib
+  ln -s llvm/lib/libunwind.so.1.0 llvm/lib/libncurses.so.5
+  
  fi
  
 fi

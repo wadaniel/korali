@@ -163,8 +163,8 @@ void korali::solver::TMCMC::runGeneration()
   if (_version == "mTMCMC")
   {
     calculateGradients(samples);
-    if(_k->_currentGeneration > 1) { calculateProposals(samples); }
-    for(size_t sampleId = 0; sampleId < _populationSize; ++sampleId) processCandidate(sampleId);
+    if (_k->_currentGeneration > 1) { calculateProposals(samples); }
+    for (size_t sampleId = 0; sampleId < _populationSize; ++sampleId) processCandidate(sampleId);
   }
 
   processGeneration();
@@ -189,20 +189,20 @@ void korali::solver::TMCMC::prepareGeneration()
     _sampleErrorDatabase.clear();
     _sampleGradientDatabase.clear();
     _sampleCovariancesDatabase.clear();
-
-    if(_k->_currentGeneration > 1) std::fill(_chainCandidatesErrors.begin(), _chainCandidatesErrors.end(), 0);
-    else                           std::fill(_chainCandidatesErrors.begin(), _chainCandidatesErrors.end(), -1);
+    if (_k->_currentGeneration > 1)
+      std::fill(_chainCandidatesErrors.begin(), _chainCandidatesErrors.end(), 0);
+    else
+      std::fill(_chainCandidatesErrors.begin(), _chainCandidatesErrors.end(), -1);
 
     // annealing
-    for(size_t i = 0; i < _populationSize; ++i)
+    for (size_t i = 0; i < _populationSize; ++i)
     {
-        gsl_matrix_view covLeader = gsl_matrix_view_array(&_chainLeadersCovariance[i][0], _k->_variables.size(), _k->_variables.size());
-        gsl_matrix_scale(&covLeader.matrix, _previousAnnealingExponent/_annealingExponent);
-         
-        gsl_vector_view gradLeader = gsl_vector_view_array(&_chainLeadersGradients[i][0], _k->_variables.size());
-        gsl_vector_scale(&gradLeader.vector, _annealingExponent/_previousAnnealingExponent);
-    }
+      gsl_matrix_view covLeader = gsl_matrix_view_array(&_chainLeadersCovariance[i][0], _k->_variables.size(), _k->_variables.size());
+      gsl_matrix_scale(&covLeader.matrix, _previousAnnealingExponent / _annealingExponent);
 
+      gsl_vector_view gradLeader = gsl_vector_view_array(&_chainLeadersGradients[i][0], _k->_variables.size());
+      gsl_vector_scale(&gradLeader.vector, _annealingExponent / _previousAnnealingExponent);
+    }
   }
 
   std::fill(_currentChainStep.begin(), _currentChainStep.end(), 0);
@@ -285,20 +285,19 @@ void korali::solver::TMCMC::processGeneration()
   const double loglikemax = gsl_stats_max(log_weight.data(), 1, _populationSize);
   for (size_t i = 0; i < _populationSize; i++) weight[i] = exp(log_weight[i] - loglikemax);
 
-  double sum_weight = std::accumulate( weight.begin(), weight.end(), 0.0 );
+  double sum_weight = std::accumulate(weight.begin(), weight.end(), 0.0);
   for (size_t i = 0; i < _populationSize; i++) weight[i] = weight[i] / sum_weight;
 
   _logEvidence += log(sum_weight) + loglikemax - log(_populationSize);
 
   /* Sample candidate selections based on database entries */
   std::vector<unsigned int> numselections(_populationSize);
-  _multinomialGenerator->getSelections( weight, numselections, _populationSize);
- 
-  /* scale weights with number repeated samples */ 
-  for( size_t i = 0; i < _populationSize; i++ ) weight[i] = weight[i]*numselections[i];
-  sum_weight = std::accumulate( weight.begin(), weight.end(), 0.0 );
-  for (size_t i = 0; i < _populationSize; i++)  weight[i] = weight[i] / sum_weight;
-  
+  _multinomialGenerator->getSelections(weight, numselections, _populationSize);
+
+  /* scale weights with number repeated samples */
+  for (size_t i = 0; i < _populationSize; i++) weight[i] = weight[i] * numselections[i];
+  sum_weight = std::accumulate(weight.begin(), weight.end(), 0.0);
+  for (size_t i = 0; i < _populationSize; i++) weight[i] = weight[i] / sum_weight;
 
   /* Update mean and covariance */
   for (size_t i = 0; i < _k->_variables.size(); i++)
@@ -354,7 +353,7 @@ void korali::solver::TMCMC::processGeneration()
       leaderId++;
     }
   }
- 
+
   /* Anneal gradients and proposal */
   if (_version == "mTMCMC" && _previousAnnealingExponent > 0.0)
     for (size_t i = 0; i < _populationSize; ++i)
@@ -374,22 +373,21 @@ void korali::solver::TMCMC::processGeneration()
 
   _chainCount = leaderId;
 }
- 
-void korali::solver::TMCMC::calculateGradients(std::vector<korali::Sample>& samples)
-{ 
- for (size_t c = 0; c < _chainCount; ++c)
- {
-      samples[c]["Module"]     = "Problem";
-      samples[c]["Operation"]  = "Evaluate Gradient";
-      _conduit->start(samples[c]);
- }
 
- for(size_t c = 0; c < _chainCount; c++)
- {
-   size_t finishedId = _conduit->waitAny(samples);
-   for(size_t d = 0; d < _k->_variables.size(); ++d) _chainCandidatesGradients[finishedId][d] = ((double) samples[finishedId]["logLikelihood Gradient"][d]) * _annealingExponent ;
- }
+void korali::solver::TMCMC::calculateGradients(std::vector<korali::Sample> &samples)
+{
+  for (size_t c = 0; c < _chainCount; ++c)
+  {
+    samples[c]["Module"] = "Problem";
+    samples[c]["Operation"] = "Evaluate Gradient";
+    _conduit->start(samples[c]);
+  }
 
+  for (size_t c = 0; c < _chainCount; c++)
+  {
+    size_t finishedId = _conduit->waitAny(samples);
+    for (size_t d = 0; d < _k->_variables.size(); ++d) _chainCandidatesGradients[finishedId][d] = ((double)samples[finishedId]["logLikelihood Gradient"][d]) * _annealingExponent;
+  }
 }
 
 void korali::solver::TMCMC::calculateProposals(std::vector<korali::Sample> &samples)
@@ -412,8 +410,8 @@ void korali::solver::TMCMC::calculateProposals(std::vector<korali::Sample> &samp
     //printf("%s\n", samples[finishedId]._js.getJson().dump(2).c_str());
 
     // reset
-    std::fill( _chainCandidatesCovariance[finishedId].begin(), _chainCandidatesCovariance[finishedId].end(), 0.0);
-    
+    std::fill(_chainCandidatesCovariance[finishedId].begin(), _chainCandidatesCovariance[finishedId].end(), 0.0);
+
     std::vector<double> FIM = samples[finishedId]["Fisher Information"];
     gsl_matrix_view FIMview = gsl_matrix_view_array(&FIM[0], Nth, Nth);
 
@@ -471,47 +469,44 @@ void korali::solver::TMCMC::calculateProposals(std::vector<korali::Sample> &samp
     // correction
     double correction = false;
     double distToUpper, distToLower;
-
-    double len, chi2inv = gsl_cdf_chisq_Pinv( 0.68, Nth);
+    double len, chi2inv = gsl_cdf_chisq_Pinv(0.68, Nth);
 
     gsl_vector_const_view candidate = gsl_vector_const_view_array(&_chainCandidates[finishedId][0], Nth);
 
     for (size_t d = 0; d < Nth; ++d)
     {
+      gsl_vector_memcpy(ccpy0, &candidate.vector);
+      gsl_vector_memcpy(ccpy1, &candidate.vector);
 
-        gsl_vector_memcpy(ccpy0, &candidate.vector);
-        gsl_vector_memcpy(ccpy1, &candidate.vector);
-        
-        double scale = sqrt(gsl_vector_get(Evals,d)*chi2inv);
-        double scaleBefore = scale;
-        
-        gsl_vector_const_view evec = gsl_matrix_const_column(Evecs,d);
-        gsl_blas_daxpy(+1.0*scale, &evec.vector, ccpy0);
-        gsl_blas_daxpy(-1.0*scale, &evec.vector, ccpy1);
+      double scale = sqrt(gsl_vector_get(Evals, d) * chi2inv);
+      double scaleBefore = scale;
 
-        // measure overshoot & undershoot in all dims
-        for(size_t e = 0; e < Nth; ++e)
-        {
-            distToUpper = _upperExtendedBoundaries[e] - _chainCandidates[finishedId][e];
-            distToLower = _chainCandidates[finishedId][e] - _lowerExtendedBoundaries[e];
-           
-            len = gsl_vector_get(ccpy0,e) - _upperExtendedBoundaries[e];
-            if(len > 0.) scale = std::min(scale, std::abs(1.0/gsl_vector_get(&evec.vector, e)*distToUpper));
-           
-            len = _lowerExtendedBoundaries[e]-gsl_vector_get(ccpy0,e);
-            if(len > 0.) scale = std::min(scale, std::abs(1.0/gsl_vector_get(&evec.vector, e)*distToLower));
-  
-            len = gsl_vector_get(ccpy1,e) - _upperExtendedBoundaries[e];
-            if(len > 0.) scale = std::min(scale, std::abs(1.0/gsl_vector_get(&evec.vector, e)*distToUpper));
-            
-            len = _lowerExtendedBoundaries[e]-gsl_vector_get(ccpy1,e);
-            if(len > 0.) scale = std::min(scale, std::abs(1.0/gsl_vector_get(&evec.vector, e)*distToLower));
-        }
-        
-        // scale evals
-        gsl_vector_set(Evals, d,  scale*scale/chi2inv);
-        if(scaleBefore != scale) correction = true;
+      gsl_vector_const_view evec = gsl_matrix_const_column(Evecs, d);
+      gsl_blas_daxpy(+1.0 * scale, &evec.vector, ccpy0);
+      gsl_blas_daxpy(-1.0 * scale, &evec.vector, ccpy1);
 
+      // measure overshoot & undershoot in all dims
+      for (size_t e = 0; e < Nth; ++e)
+      {
+        distToUpper = _upperExtendedBoundaries[e] - _chainCandidates[finishedId][e];
+        distToLower = _chainCandidates[finishedId][e] - _lowerExtendedBoundaries[e];
+
+        len = gsl_vector_get(ccpy0, e) - _upperExtendedBoundaries[e];
+        if (len > 0.) scale = std::min(scale, std::abs(1.0 / gsl_vector_get(&evec.vector, e) * distToUpper));
+
+        len = _lowerExtendedBoundaries[e] - gsl_vector_get(ccpy0, e);
+        if (len > 0.) scale = std::min(scale, std::abs(1.0 / gsl_vector_get(&evec.vector, e) * distToLower));
+
+        len = gsl_vector_get(ccpy1, e) - _upperExtendedBoundaries[e];
+        if (len > 0.) scale = std::min(scale, std::abs(1.0 / gsl_vector_get(&evec.vector, e) * distToUpper));
+
+        len = _lowerExtendedBoundaries[e] - gsl_vector_get(ccpy1, e);
+        if (len > 0.) scale = std::min(scale, std::abs(1.0 / gsl_vector_get(&evec.vector, e) * distToLower));
+      }
+
+      // scale evals
+      gsl_vector_set(Evals, d, scale * scale / chi2inv);
+      if (scaleBefore != scale) correction = true;
     }
 
     if (correction) _numCovarianceCorrections++;
@@ -549,41 +544,21 @@ void korali::solver::TMCMC::generateCandidate(const size_t sampleId)
     {
       std::vector<double> zeroMean(_k->_variables.size(), 0.0);
       _multivariateGenerator->_meanVector = _chainLeaders[sampleId];
-      _multivariateGenerator->_covarianceMatrix = _chainLeadersCovariance[sampleId]; // check scaling
+      for (size_t i = 0; i < _k->_variables.size() * _k->_variables.size(); ++i) _multivariateGenerator->_covarianceMatrix[i] = _chainLeadersCovariance[sampleId][i] * _stepSize;
       _multivariateGenerator->updateDistribution();
       _multivariateGenerator->getRandomVector(&_chainCandidates[sampleId][0], _k->_variables.size());
 
       gsl_vector_view candidate = gsl_vector_view_array(&_chainCandidates[sampleId][0], _k->_variables.size());
       gsl_vector_const_view leaderGrad = gsl_vector_const_view_array(&_chainLeadersGradients[sampleId][0], _k->_variables.size());
       gsl_matrix_const_view leaderCov = gsl_matrix_const_view_array(&_chainLeadersCovariance[sampleId][0], _k->_variables.size(), _k->_variables.size());
-      gsl_blas_dgemv(CblasNoTrans, 0.5, &leaderCov.matrix, &leaderGrad.vector, 1.0, &candidate.vector);
+      gsl_blas_dgemv(CblasNoTrans, 0.5 * _stepSize, &leaderCov.matrix, &leaderGrad.vector, 1.0, &candidate.vector);
     }
     else /* error */
     {
-
-      // TODO: refine error treatment granularity
-      if( _chainLeadersErrors[sampleId] == 0 )
-      {
-        std::vector<double> zeroMean(_k->_variables.size(), 0.0);
-        _multivariateGenerator->_meanVector       = _chainLeaders[sampleId];
-        for(size_t i = 0; i < _k->_variables.size()*_k->_variables.size(); ++i) _multivariateGenerator->_covarianceMatrix[i] = _chainLeadersCovariance[sampleId][i]*_stepSize;
-        _multivariateGenerator->updateDistribution();
-        _multivariateGenerator->getRandomVector(&_chainCandidates[sampleId][0], _k->_variables.size());
-
-        gsl_vector_view candidate  = gsl_vector_view_array(&_chainCandidates[sampleId][0], _k->_variables.size());
-        gsl_vector_const_view leaderGrad = gsl_vector_const_view_array(&_chainLeadersGradients[sampleId][0], _k->_variables.size());
-        gsl_matrix_const_view leaderCov  = gsl_matrix_const_view_array(&_chainLeadersCovariance[sampleId][0], _k->_variables.size(),_k->_variables.size());
-        gsl_blas_dgemv(CblasNoTrans, 0.5*_stepSize, &leaderCov.matrix, &leaderGrad.vector, 1.0, &candidate.vector);
-
-      }
-      else /* error */                       
-      {
-        _multivariateGenerator->_meanVector       = _chainLeaders[sampleId];
-        _multivariateGenerator->_covarianceMatrix = _covarianceMatrix;
-        _multivariateGenerator->updateDistribution();
-        _multivariateGenerator->getRandomVector(&_chainCandidates[sampleId][0], _k->_variables.size());
-      }
-
+      _multivariateGenerator->_meanVector = _chainLeaders[sampleId];
+      _multivariateGenerator->_covarianceMatrix = _covarianceMatrix;
+      _multivariateGenerator->updateDistribution();
+      _multivariateGenerator->getRandomVector(&_chainCandidates[sampleId][0], _k->_variables.size());
     }
   }
 }
@@ -615,27 +590,24 @@ double korali::solver::TMCMC::calculateAcceptanceProbability(const size_t sample
       // TODO: refine error treatment granularity
       if ((_chainLeadersErrors[sampleId] == 0) && (_chainCandidatesErrors[sampleId] == 0))
       {
-
-        gsl_vector_const_view leader    = gsl_vector_const_view_array(&_chainLeaders[sampleId][0], _k->_variables.size());
+        gsl_vector_const_view leader = gsl_vector_const_view_array(&_chainLeaders[sampleId][0], _k->_variables.size());
         gsl_vector_const_view candidate = gsl_vector_const_view_array(&_chainCandidates[sampleId][0], _k->_variables.size());
- 
-        gsl_vector* meanLeader    = gsl_vector_alloc(_k->_variables.size());
-        gsl_vector_memcpy(meanLeader, &leader.vector);
-        
-        gsl_vector* meanCandidate = gsl_vector_alloc(_k->_variables.size());
-        gsl_vector_memcpy(meanCandidate, &candidate.vector);
-            
-        gsl_vector_const_view gradLeader    = gsl_vector_const_view_array(&_chainLeadersGradients[sampleId][0], _k->_variables.size());
 
+        gsl_vector *meanLeader = gsl_vector_alloc(_k->_variables.size());
+        gsl_vector_memcpy(meanLeader, &leader.vector);
+
+        gsl_vector *meanCandidate = gsl_vector_alloc(_k->_variables.size());
+        gsl_vector_memcpy(meanCandidate, &candidate.vector);
+
+        gsl_vector_const_view gradLeader = gsl_vector_const_view_array(&_chainLeadersGradients[sampleId][0], _k->_variables.size());
         gsl_vector_const_view gradCandidate = gsl_vector_const_view_array(&_chainCandidatesGradients[sampleId][0], _k->_variables.size());
 
         gsl_matrix_const_view covLeader = gsl_matrix_const_view_array(&_chainLeadersCovariance[sampleId][0], _k->_variables.size(), _k->_variables.size());
-            
-        gsl_blas_dgemv(CblasNoTrans, 0.5*_stepSize, &covLeader.matrix, &gradLeader.vector, 1.0, meanLeader);
-        gsl_blas_dgemv(CblasNoTrans, 0.5*_stepSize, &covLeader.matrix, &gradCandidate.vector, 1.0, meanCandidate);
-   
-        gsl_matrix* cholCovLeader = gsl_matrix_alloc(_k->_variables.size(), _k->_variables.size());
 
+        gsl_blas_dgemv(CblasNoTrans, 0.5 * _stepSize, &covLeader.matrix, &gradLeader.vector, 1.0, meanLeader);
+        gsl_blas_dgemv(CblasNoTrans, 0.5 * _stepSize, &covLeader.matrix, &gradCandidate.vector, 1.0, meanCandidate);
+
+        gsl_matrix *cholCovLeader = gsl_matrix_alloc(_k->_variables.size(), _k->_variables.size());
         gsl_matrix_memcpy(cholCovLeader, &covLeader.matrix);
         gsl_matrix_scale(cholCovLeader, _stepSize);
         int status = gsl_linalg_cholesky_decomp1(cholCovLeader);
@@ -783,14 +755,14 @@ void korali::solver::TMCMC::printGenerationAfter()
   _k->_logger->logInfo("Minimal", "Acceptance Rate (proposals / selections): (%.2f%% / %.2f%%)\n", 100 * _proposalsAcceptanceRate, 100 * _selectionAcceptanceRate);
   _k->_logger->logInfo("Normal", "Coefficient of Variation: %.2f%%\n", 100.0 * _coefficientOfVariation);
   _k->_logger->logInfo("Normal", "logEvidence: %.3f\n", _logEvidence);
-  if(_version == "mTMCMC") _k->_logger->logInfo("Normal", "Number Of Covariance Corrections: %zu\n", _numCovarianceCorrections);
+  if (_version == "mTMCMC") _k->_logger->logInfo("Normal", "Number Of Covariance Corrections: %zu\n", _numCovarianceCorrections);
 
   _k->_logger->logInfo("Detailed", "Sample Mean:\n");
   for (size_t i = 0; i < _k->_variables.size(); i++) _k->_logger->logData("Detailed", " %s = %+6.3e\n", _k->_variables[i]->_name.c_str(), _meanTheta[i]);
   _k->_logger->logInfo("Detailed", "Sample Covariance:\n");
 
-  for (size_t i = 0; i < _k->_variables.size(); i++){
-
+  for (size_t i = 0; i < _k->_variables.size(); i++)
+  {
     _k->_logger->logData("Detailed", "   | ");
     for (size_t j = 0; j < _k->_variables.size(); j++)
       if (j <= i)

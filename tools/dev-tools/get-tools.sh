@@ -121,11 +121,11 @@ else
   check
   
   # Fix for systems that have no libcurses lib
-  ln -s llvm/lib/libunwind.so.1.0 llvm/lib/libncurses.so.5
+  ln -s libunwind.so.1.0 llvm/lib/libncurses.so.5
   
  fi
  
-fi
+fi 
 
 # Step 4: Run Clang-Format Tools
 

@@ -1,32 +1,34 @@
-#include "modules/solver/executor/executor.hpp"
 #include "modules/conduit/conduit.hpp"
+#include "modules/solver/executor/executor.hpp"
 
 void korali::solver::Executor::runGeneration()
 {
-  _sampleCount   = std::max(_k->_variables[0]->_precomputedValues.size(), _k->_variables[0]->_sampledValues.size());
+  _sampleCount = std::max(_k->_variables[0]->_precomputedValues.size(), _k->_variables[0]->_sampledValues.size());
 
-  _maxModelEvaluations     = std::min(_maxModelEvaluations, _sampleCount);
+  _maxModelEvaluations = std::min(_maxModelEvaluations, _sampleCount);
   _executionsPerGeneration = std::min(_executionsPerGeneration, _maxModelEvaluations - _modelEvaluationCount);
-  
+
   std::vector<korali::Sample> samples(_executionsPerGeneration);
   std::vector<double> sampleData(_k->_variables.size());
-  
+
   for (size_t i = 0; i < _executionsPerGeneration; i++)
   {
-    for (size_t d = 0; d < _k->_variables.size(); d++) 
-    {   
-        if(_k->_variables[0]->_precomputedValues.size() > 0) sampleData[d] = _k->_variables[d]->_precomputedValues[_modelEvaluationCount];
-        else sampleData[d] = _k->_distributions[_k->_variables[d]->_distributionIndex]->getRandomNumber();
+    for (size_t d = 0; d < _k->_variables.size(); d++)
+    {
+      if (_k->_variables[0]->_precomputedValues.size() > 0)
+        sampleData[d] = _k->_variables[d]->_precomputedValues[_modelEvaluationCount];
+      else
+        sampleData[d] = _k->_distributions[_k->_variables[d]->_distributionIndex]->getRandomNumber();
     }
-    
+
     _k->_logger->logInfo("Detailed", "Running sample %zu with values:\n         ", _modelEvaluationCount);
-    for(auto& x : sampleData) _k->_logger->logData("Detailed", " %le   ", x);
+    for (auto &x : sampleData) _k->_logger->logData("Detailed", " %le   ", x);
     _k->_logger->logData("Detailed", "\n");
 
     samples[i]["Module"] = "Problem";
-    samples[i]["Operation"]  = "Execute";
+    samples[i]["Operation"] = "Execute";
     samples[i]["Parameters"] = sampleData;
-    samples[i]["Sample Id"]  = _modelEvaluationCount;
+    samples[i]["Sample Id"] = _modelEvaluationCount;
     _conduit->start(samples[i]);
     _modelEvaluationCount++;
   }
@@ -40,5 +42,5 @@ void korali::solver::Executor::printGenerationBefore()
 
 void korali::solver::Executor::printGenerationAfter()
 {
- _k->_logger->logInfo("Minimal", "Total Executions %lu.\n", _modelEvaluationCount);
+  _k->_logger->logInfo("Minimal", "Total Executions %lu.\n", _modelEvaluationCount);
 }

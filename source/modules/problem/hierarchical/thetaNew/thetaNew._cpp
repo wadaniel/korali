@@ -1,5 +1,5 @@
-#include "modules/problem/hierarchical/thetaNew/thetaNew.hpp"
 #include "modules/conduit/conduit.hpp"
+#include "modules/problem/hierarchical/thetaNew/thetaNew.hpp"
 
 void korali::problem::hierarchical::ThetaNew::initialize()
 {
@@ -19,7 +19,7 @@ void korali::problem::hierarchical::ThetaNew::initialize()
     _k->_logger->logError("The Hierarchical Bayesian (Theta New) requires that the psi-problem has run completely, but it has not.\n");
 
   // Cross-checks
-  if (_psiProblemEngine["Problem"]["Conditional Priors"].size() != _k->_variables.size() )
+  if (_psiProblemEngine["Problem"]["Conditional Priors"].size() != _k->_variables.size())
     _k->_logger->logError("The problem contains a different number of variables (%lu) than conditional priors in the Hierarchical/Psi problem (%lu).\n", _k->_variables.size(), _psiProblemEngine["Problem"]["Conditional Priors"].size());
 
   // Loading Psi problem results
@@ -31,28 +31,28 @@ void korali::problem::hierarchical::ThetaNew::initialize()
   for (size_t i = 0; i < _psiProblemSampleLogPriors.size(); i++)
   {
     double expPrior = exp(_psiProblemSampleLogPriors[i]);
-    if( std::isfinite(expPrior) == false )
-      _k->_logger->logError("Non finite (%lf) prior has been detected at sample %zu in subproblem.\n", expPrior, i );
+    if (std::isfinite(expPrior) == false)
+      _k->_logger->logError("Non finite (%lf) prior has been detected at sample %zu in subproblem.\n", expPrior, i);
   }
 }
 
-void korali::problem::hierarchical::ThetaNew::evaluateLogLikelihood(korali::Sample& sample)
+void korali::problem::hierarchical::ThetaNew::evaluateLogLikelihood(korali::Sample &sample)
 {
- auto  _psiProblem = dynamic_cast<korali::problem::hierarchical::Psi*>(_psiProblemEngine._problem);
+  auto _psiProblem = dynamic_cast<korali::problem::hierarchical::Psi *>(_psiProblemEngine._problem);
 
- size_t Ntheta = _k->_variables.size();
- std::vector<double> logValues( _psiProblemSampleCount, 0.0);
+  size_t Ntheta = _k->_variables.size();
+  std::vector<double> logValues(_psiProblemSampleCount, 0.0);
 
- for (size_t i = 0; i < _psiProblemSampleCount; i++)
- {
-   korali::Sample psiSample;
-   psiSample["Parameters"] = _psiProblemSampleCoordinates[i];
-   _psiProblem->updateConditionalPriors(psiSample);
+  for (size_t i = 0; i < _psiProblemSampleCount; i++)
+  {
+    korali::Sample psiSample;
+    psiSample["Parameters"] = _psiProblemSampleCoordinates[i];
+    _psiProblem->updateConditionalPriors(psiSample);
 
-   logValues[i] = 0.;
-   for (size_t k = 0; k < Ntheta; k++)
-     logValues[i] += _psiProblemEngine._distributions[_psiProblem->_conditionalPriorIndexes[k]]->getLogDensity(sample["Parameters"][k]);
- }
+    logValues[i] = 0.;
+    for (size_t k = 0; k < Ntheta; k++)
+      logValues[i] += _psiProblemEngine._distributions[_psiProblem->_conditionalPriorIndexes[k]]->getLogDensity(sample["Parameters"][k]);
+  }
 
- sample["logLikelihood"] = -log(_psiProblemSampleCount) + logSumExp(logValues);
+  sample["logLikelihood"] = -log(_psiProblemSampleCount) + logSumExp(logValues);
 }

@@ -1,40 +1,39 @@
 #ifndef _KORALI_SOLVERHPP_
 #define _KORALI_SOLVERHPP_
 
-#include <vector>
-#include <string>
-#include "modules/module.hpp"
-#include "modules/experiment/experiment.hpp"
 #include "external/libco/libco.h"
+#include "modules/experiment/experiment.hpp"
+#include "modules/module.hpp"
+#include <string>
+#include <vector>
 
 /*! \namespace Korali
     \brief The Korali namespace includes all Korali-specific functions, variables, and modules.
 */
-namespace korali {
-
+namespace korali
+{
 class Solver : public korali::Module
 {
- public:
-
- /**
+  public:
+  /**
   * @brief Prints solver information before the execution of the current generation.
   */
- virtual void printGenerationBefore() { };
+  virtual void printGenerationBefore(){};
 
- /**
+  /**
  * @brief Prints solver information after the execution of the current generation.
  */
- virtual void printGenerationAfter() { };
+  virtual void printGenerationAfter(){};
 
- /**
+  /**
  * @brief Runs the current generation.
  */
- virtual void runGeneration() = 0;
+  virtual void runGeneration() = 0;
 
- /**
+  /**
   * @brief Initializes the solver with starting values for the first generation.
  */
- virtual void setInitialConfiguration() { };
+  virtual void setInitialConfiguration(){};
 };
 
 } // namespace korali

@@ -3,23 +3,25 @@
 
 #include "modules/problem/optimization/optimization.hpp"
 
-namespace korali { namespace problem { namespace optimization {
-
+namespace korali
+{
+namespace problem
+{
+namespace optimization
+{
 class Stochastic : public korali::problem::Optimization
 {
- private:
-
- public:
-
- /**
+  private:
+  public:
+  /**
   * @brief Evaluates the F(x) of a sample, given a set of parameters.
   * @param sample A sample to process
   */
-  void evaluate(korali::Sample& sample);
-
+  void evaluate(korali::Sample &sample);
 };
 
-} } } // namespace korali::problem::Optimization
-
+} // namespace optimization
+} // namespace problem
+} // namespace korali
 
 #endif // _KORALI_PROBLEM_OPTIMIZATION_STOCHASTIC_HPP_

@@ -1,22 +1,23 @@
 #ifndef _KORALI_PROBLEM_GAUSSIAN_PROCESS_HPP_
 #define _KORALI_PROBLEM_GAUSSIAN_PROCESS_HPP_
 
-#include "modules/problem/problem.hpp"
 #include "external/libgp/gp.hpp"
+#include "modules/problem/problem.hpp"
 
-namespace korali { namespace problem {
-
+namespace korali
+{
+namespace problem
+{
 class Gaussian : public korali::Problem
 {
- public:
-
- /**
+  public:
+  /**
   * @brief Pointer to the gaussian processes library
   */
-   libgp::GaussianProcess* _gp;
+  libgp::GaussianProcess *_gp;
 };
 
-} } // namespace korali::problem
-
+} // namespace problem
+} // namespace korali
 
 #endif // _KORALI_PROBLEM_GAUSSIAN_PROCESS_HPP_

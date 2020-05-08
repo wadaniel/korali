@@ -4,89 +4,92 @@
 #include "modules/problem/bayesian/bayesian.hpp"
 #include "modules/problem/hierarchical/psi/psi.hpp"
 
-namespace korali { namespace problem { namespace hierarchical {
-
+namespace korali
+{
+namespace problem
+{
+namespace hierarchical
+{
 class Theta : public korali::problem::Hierarchical
 {
- private:
-
- /**
+  private:
+  /**
   * @brief Stores the Psi problem experiment to use as input
   */
- korali::Experiment _psiProblemEngine;
+  korali::Experiment _psiProblemEngine;
 
- /**
+  /**
   * @brief Stores the number of variables defined in the Psi problem
   */
- size_t _psiVariableCount;
+  size_t _psiVariableCount;
 
- /**
+  /**
   * @brief Stores the number of samples in the Psi problem experiment to use as input
   */
- size_t _psiProblemSampleCount;
+  size_t _psiProblemSampleCount;
 
- /**
+  /**
   * @brief Stores the sample coordinates of the Psi Problem
   */
- std::vector<std::vector<double>> _psiProblemSampleCoordinates;
+  std::vector<std::vector<double>> _psiProblemSampleCoordinates;
 
- /**
+  /**
  * @brief Stores the sample logLikelihoods of the Psi Problem
  */
- std::vector<double> _psiProblemSampleLogLikelihoods;
+  std::vector<double> _psiProblemSampleLogLikelihoods;
 
- /**
+  /**
   * @brief Stores the sample logPriors of the Psi Problem
   */
- std::vector<double> _psiProblemSampleLogPriors;
+  std::vector<double> _psiProblemSampleLogPriors;
 
- /**
+  /**
   * @brief Stores the Problem module of the Psi problem experiment to use as input
   */
- korali::problem::hierarchical::Psi* _psiProblem;
+  korali::problem::hierarchical::Psi *_psiProblem;
 
- /**
+  /**
   * @brief Stores the Psi problem experiment to use as input
   */
- korali::Experiment _thetaProblemEngine;
+  korali::Experiment _thetaProblemEngine;
 
- /**
+  /**
   * @brief Stores the number of variables defined in the Psi problem
   */
- size_t _thetaVariableCount;
+  size_t _thetaVariableCount;
 
- /**
+  /**
   * @brief Stores the number of samples in the Psi problem experiment to use as input
   */
- size_t _thetaProblemSampleCount;
+  size_t _thetaProblemSampleCount;
 
- /**
+  /**
   * @brief Stores the sample coordinates of the Psi Problem
   */
- std::vector<std::vector<double>> _thetaProblemSampleCoordinates;
+  std::vector<std::vector<double>> _thetaProblemSampleCoordinates;
 
- /**
+  /**
  * @brief Stores the sample logLikelihoods of the Psi Problem
  */
- std::vector<double> _thetaProblemSampleLogLikelihoods;
+  std::vector<double> _thetaProblemSampleLogLikelihoods;
 
- /**
+  /**
   * @brief Stores the sample logPriors of the Psi Problem
   */
- std::vector<double> _thetaProblemSampleLogPriors;
+  std::vector<double> _thetaProblemSampleLogPriors;
 
- /**
+  /**
   * @brief Stores the precomputed log denomitator to speed up calculations
   */
- std::vector<double> _precomputedLogDenominator;
+  std::vector<double> _precomputedLogDenominator;
 
- public:
-
- void evaluateLogLikelihood(korali::Sample& sample) override;
- void initialize() override;
+  public:
+  void evaluateLogLikelihood(korali::Sample &sample) override;
+  void initialize() override;
 };
 
-} } } // namespace korali::problem::hierarchical
-
+} // namespace hierarchical
+} // namespace problem
+} // namespace korali
 
 #endif // _KORALI_PROBLEM_THETA_HPP_

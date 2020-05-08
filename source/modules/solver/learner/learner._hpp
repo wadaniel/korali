@@ -1,19 +1,20 @@
 #ifndef _KORALI_SOLVER_LEARNER_HPP_
 #define _KORALI_SOLVER_LEARNER_HPP_
 
-#include "modules/solver/solver.hpp"
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
+#include "modules/solver/solver.hpp"
 
-namespace korali { namespace solver {
-
+namespace korali
+{
+namespace solver
+{
 class Learner : public korali::Solver
 {
- public:
-
+  public:
   /**
    * @brief Storage for the pointer to the learning problem
    */
-  korali::problem::ReinforcementLearning* _problem;
+  korali::problem::ReinforcementLearning *_problem;
 
   /**
   * @brief Runs a generation of the environment(s), running an action on each episode, and updating the policy.
@@ -35,7 +36,7 @@ class Learner : public korali::Solver
   * @param state The current agent state
   * @return A vector containing the new action to perform
   */
-  virtual std::vector<double> getAction(const std::vector<double>& state) = 0;
+  virtual std::vector<double> getAction(const std::vector<double> &state) = 0;
 
   /**
   * @brief Stores the (state, action, reward, new state) agent experience and and uses it to update the policy.
@@ -44,10 +45,10 @@ class Learner : public korali::Solver
   * @param reward The perceived reward
   * @param newState The new agent state
   */
-  virtual void storeExperience(const std::vector<double>& state, const std::vector<double>& action, const double reward, const std::vector<double>& newState) = 0;
+  virtual void storeExperience(const std::vector<double> &state, const std::vector<double> &action, const double reward, const std::vector<double> &newState) = 0;
 };
 
-} } // namespace korali::solver
-
+} // namespace solver
+} // namespace korali
 
 #endif // _KORALI_SOLVER_LEARNER_HPP_

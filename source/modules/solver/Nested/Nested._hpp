@@ -1,128 +1,127 @@
 #ifndef _KORALI_SOLVER_NESTED_HPP_
 #define _KORALI_SOLVER_NESTED_HPP_
 
-#include "modules/solver/solver.hpp"
-#include "modules/distribution/univariate/uniform/uniform.hpp"
-#include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/distribution/multivariate/normal/normal.hpp"
+#include "modules/distribution/univariate/normal/normal.hpp"
+#include "modules/distribution/univariate/uniform/uniform.hpp"
+#include "modules/solver/solver.hpp"
 #include <vector>
 
-namespace korali { namespace solver {
-
+namespace korali
+{
+namespace solver
+{
 class Nested : public korali::Solver
 {
- private: 
- 
- /*
+  private:
+  /*
   * @brief Init and run first Generation.
   */
- void runFirstGeneration();
+  void runFirstGeneration();
 
- /*
+  /*
   * @brief Prepare Generation before evaluation.
   */
- void prepareGeneration();
- 
- /** 
+  void prepareGeneration();
+
+  /** 
   * @brief Generates new samples by copying and mutating randomly selected samples
   */
- void generateCandidatesFromMCMC();
+  void generateCandidatesFromMCMC();
 
- /** 
+  /** 
   * @brief Generate new samples uniformly in Box
   */
- void generateCandidatesFromBox();
- 
- /** 
+  void generateCandidatesFromBox();
+
+  /** 
   * @brief Generate new samples uniformly in Ellipse
   */
- void generateCandidatesFromEllipse();
- 
- /*
+  void generateCandidatesFromEllipse();
+
+  /*
   * @brief Process Generation after receiving all results.
   */
- void processGeneration();
-  
- /*
+  void processGeneration();
+
+  /*
   * @brief Add all live samples to sample data base.
   */
- void consumeLiveSamples();
-  
- /*
+  void consumeLiveSamples();
+
+  /*
   * @brief Calculates Mean and Covariance from Live Samples.
  */
- void updateMeanAndCovariance();
- 
- /*
+  void updateMeanAndCovariance();
+
+  /*
   * @brief Updates bounding Box.
  */
- void updateBox();
-  
- /*
+  void updateBox();
+
+  /*
   * @brief Updates bounding Ellipse.
  */
- void updateEllipse();
-  
- /*
+  void updateEllipse();
+
+  /*
   * @brief Ascending sort of live sample ranks based on evaluation.
  */
- void sortLiveSamplesAscending();
- 
- /*
+  void sortLiveSamplesAscending();
+
+  /*
   * @brief Add sample to discard to sample database.
  */
- void updateSampleDatabase(size_t sampleIdx);
-  
- /*
+  void updateSampleDatabase(size_t sampleIdx);
+
+  /*
   * @brief Generate posterior distribution from sample data base.
   */
- void generatePosterior();
-  
- /*
+  void generatePosterior();
+
+  /*
   * @brief Calculate effective number of samples.
   */
- double calcEffectiveSamples() const;
- 
- /*
+  double calcEffectiveSamples() const;
+
+  /*
   * @brief Safely adding two values that are in log space. Returns in log space.
   */
- double safeLogPlus(double logx, double logy) const;
- 
- /*
+  double safeLogPlus(double logx, double logy) const;
+
+  /*
   * @brief Safely subtracting logy from logx. Returns in log space.
   */
- double safeLogMinus(double logx, double logy) const;
- 
+  double safeLogMinus(double logx, double logy) const;
 
- public:
-
- /**
+  public:
+  /**
  * @brief Configures Sampler.
  */
- void setInitialConfiguration() override;
+  void setInitialConfiguration() override;
 
- /**
+  /**
   * @brief Main solver loop.
   */
- void runGeneration() override;
+  void runGeneration() override;
 
- /**
+  /**
  * @brief Console Output before generation runs.
  */
- void printGenerationBefore() override;
- 
- /**
+  void printGenerationBefore() override;
+
+  /**
  * @brief Console output after generation.
  */
- void printGenerationAfter() override;
- 
- /**
+  void printGenerationAfter() override;
+
+  /**
   * @brief Final console output at termination.
   */
- void finalize() override;
-
+  void finalize() override;
 };
 
-} } // namespace korali::solver
+} // namespace solver
+} // namespace korali
 
 #endif // _KORALI_SOLVER_NESTED_HPP_

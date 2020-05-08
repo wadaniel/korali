@@ -4,97 +4,99 @@
 #include "modules/problem/bayesian/bayesian.hpp"
 #include <vector>
 
-namespace korali { namespace problem { namespace bayesian {
-
+namespace korali
+{
+namespace problem
+{
+namespace bayesian
+{
 class Reference : public korali::problem::Bayesian
 {
- private:
+  private:
+  const double _log2pi = 1.83787706640934533908193770912476;
 
- const double _log2pi = 1.83787706640934533908193770912476;
+  size_t statisticalVariableIndex;
 
- size_t statisticalVariableIndex;
-
- /**
+  /**
   * @brief Precomputes the square distance between two vectors of the same size
   * @param x Vector x
   * @param y Vector y
   * @return Square distance of the vectors
   */
- double compute_sse( std::vector<double> x, std::vector<double> y );
+  double compute_sse(std::vector<double> x, std::vector<double> y);
 
- /**
+  /**
   * @brief Precomputes the square distance between two vectors of the same size normalized by a third vector
   * @param f Vector f
   * @param g Vector g, the normalization vector
   * @param y Vector y
   * @return Normalized square distance of the vectors
   */
- double compute_normalized_sse( std::vector<double> f, std::vector<double> g, std::vector<double> y );
+  double compute_normalized_sse(std::vector<double> f, std::vector<double> g, std::vector<double> y);
 
- /**
+  /**
  * @brief Additive normal approach to calculate the logLikelihood of the sample
  * @param sample A Korali Sample
  */
- void loglikelihoodNormalAdditive(korali::Sample& sample);
- 
- /**
+  void loglikelihoodNormalAdditive(korali::Sample &sample);
+
+  /**
   * @brief Gradient of Additive normal logLikelihood model w.r.t variable.
   * @param sample A Korali Sample
   */
- void gradientLogLikelihoodNormalAdditive(korali::Sample& sample);
+  void gradientLogLikelihoodNormalAdditive(korali::Sample &sample);
 
- /**
+  /**
   * @brief Empirical FIM of Additive normal logLikelihood model.
   * @param sample A Korali Sample
   */
- void fisherInformationLogLikelihoodNormalAdditive(korali::Sample& sample);
+  void fisherInformationLogLikelihoodNormalAdditive(korali::Sample &sample);
 
- /**
+  /**
   * @brief Additive normal approach (for variance) to calculate the logLikelihood of the sample
   * @param sample A Korali Sample
   */
- void loglikelihoodNormalAdditiveVariance(korali::Sample& sample);
- 
- /**
+  void loglikelihoodNormalAdditiveVariance(korali::Sample &sample);
+
+  /**
  * @brief Additive multiplicative approach to calculate the logLikelihood of the sample
  * @param sample A Korali Sample
  */
- void loglikelihoodNormalMultiplicative(korali::Sample& sample);
+  void loglikelihoodNormalMultiplicative(korali::Sample &sample);
 
- /**
+  /**
   * @brief Additive multiplicative approach (based on data) to calculate the logLikelihood of the sample
   * @param sample A Korali Sample
   */
- void loglikelihoodNormalMultiplicativeData(korali::Sample& sample);
+  void loglikelihoodNormalMultiplicativeData(korali::Sample &sample);
 
- /**
+  /**
   * @brief An implementation of the normal likelihood y~N(f,g), where f ang g are provided by the user.
   * @param sample A Korali Sample
   */
- void loglikelihoodNormal(korali::Sample& sample);
+  void loglikelihoodNormal(korali::Sample &sample);
 
- /**
+  /**
   * @brief An implementation of the normal likelihood y~N(f,g) truncated at zero, where f ang g are provided by the user.
   * @param sample A Korali Sample
   */
- void loglikelihoodPositiveNormal(korali::Sample& sample);
+  void loglikelihoodPositiveNormal(korali::Sample &sample);
 
- /**
+  /**
   * @brief Negative Binomial likelihood parametrized by mean and dispersion.
   * @param sample A Korali Sample
   */
- void loglikelihoodNegativeBinomial(korali::Sample& sample);
+  void loglikelihoodNegativeBinomial(korali::Sample &sample);
 
-
- public:
-
- void evaluateLogLikelihood(korali::Sample& sample) override;
- void evaluateLogLikelihoodGradient(korali::Sample& sample) override;
- void evaluateFisherInformation(korali::Sample& sample) override;
- void initialize() override;
+  public:
+  void evaluateLogLikelihood(korali::Sample &sample) override;
+  void evaluateLogLikelihoodGradient(korali::Sample &sample) override;
+  void evaluateFisherInformation(korali::Sample &sample) override;
+  void initialize() override;
 };
 
-} } } // namespace korali::problem::bayesian
-
+} // namespace bayesian
+} // namespace problem
+} // namespace korali
 
 #endif // _KORALI_PROBLEM_BAYESIAN_REFERENCE_HPP_

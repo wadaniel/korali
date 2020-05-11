@@ -14,8 +14,6 @@ class Custom : public korali::problem::Bayesian
   private:
   public:
   void evaluateLoglikelihood(korali::Sample &sample) override;
-  void evaluateLoglikelihoodGradient(korali::Sample &sample) override;
-  void evaluateFisherInformation(korali::Sample &sample) override;
   void initialize() override;
 };
 

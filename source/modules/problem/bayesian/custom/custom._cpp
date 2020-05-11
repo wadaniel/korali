@@ -15,13 +15,3 @@ void korali::problem::bayesian::Custom::evaluateLoglikelihood(korali::Sample &sa
 
   if (!sample.contains("logLikelihood")) _k->_logger->logError("The specified likelihood model did not assign the value: 'logLikelihood' to the sample.\n");
 }
-
-void korali::problem::bayesian::Custom::evaluateLoglikelihoodGradient(korali::Sample &sample)
-{
-  _k->_logger->logError("Gradient not yet implemented for selected bayesian problem and log likelihood model.");
-}
-
-void korali::problem::bayesian::Custom::evaluateFisherInformation(korali::Sample &sample)
-{
-  _k->_logger->logError("Fisher information not yet implemented for selected bayesian problem and log likelihood model.");
-}

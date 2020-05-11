@@ -49,7 +49,7 @@ class Reference : public korali::problem::Bayesian
   * @param sample A Korali Sample
   */
   void gradientLoglikelihoodNormal(korali::Sample &sample);
- 
+
   /**
   * @brief Calculates the gradient of the Positive Normal (truncated at 0) loglikelihood model.
   * @param sample A Korali Sample
@@ -67,19 +67,19 @@ class Reference : public korali::problem::Bayesian
   * @param sample A Korali Sample
   */
   void fisherInformationLoglikelihoodNormal(korali::Sample &sample);
- 
+
   /**
   * @brief Calculates the Fisher information matrix of the Positive Normal (truncated at 0) likelihood model.
   * @param sample A Korali Sample
   */
   void fisherInformationLoglikelihoodPositiveNormal(korali::Sample &sample);
-  
+
   /**
   * @brief Calculates the Fisher information matrix of the Negative Binomial likelihood model.
   * @param sample A Korali Sample
   */
   void fisherInformationLoglikelihoodNegativeBinomial(korali::Sample &sample);
-  
+
   public:
   void evaluateLoglikelihood(korali::Sample &sample) override;
   void evaluateLoglikelihoodGradient(korali::Sample &sample) override;

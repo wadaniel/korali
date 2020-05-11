@@ -116,7 +116,7 @@ void korali::problem::bayesian::Reference::evaluateLoglikelihoodGradient(korali:
   if (isfinite(eval))
   {
     if (_likelihoodModel == "Normal")                 gradientLoglikelihoodNormal(sample);
-    if (_likelihoodModel == "Positive Normal")        gradientLoglikelihoodPositiveNormal(sample);
+    else if (_likelihoodModel == "Positive Normal")   gradientLoglikelihoodPositiveNormal(sample);
     else if (_likelihoodModel == "Negative Binomial") gradientLoglikelihoodNegativeBinomial(sample);
     else
       _k->_logger->logError("Gradient not yet implemented for selected bayesian problem and log likelihood model.");

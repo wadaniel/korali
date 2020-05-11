@@ -1,0 +1,13 @@
+#include "modules/problem/supervisedLearning/supervisedLearning.hpp"
+
+void korali::problem::SupervisedLearning::initialize()
+{
+ // Initializing Problem Configuration
+}
+
+void korali::problem::SupervisedLearning::evaluate(korali::Sample& sample)
+{
+ // Evaluating Sample
+ sample["Evaluation"] = 1.0;
+}
+

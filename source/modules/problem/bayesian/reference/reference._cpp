@@ -73,7 +73,7 @@ void korali::problem::bayesian::Reference::loglikelihoodPositiveNormal(korali::S
     double m = sample["Reference Evaluations"][i];
     double s = sample["Standard Deviation"][i];
     loglike -= log(s);
-    loglike -= log(1. - gsl_cdf_ugaussian_P(-m / s));
+    loglike -= log(1. - gsl_cdf_gaussian_P(-m, s));
   }
   loglike += -0.5 * (_referenceData.size() * _log2pi + sse);
   sample["logLikelihood"] = loglike;

@@ -19,25 +19,31 @@ class Latent : public korali::problem::Bayesian
   void evaluateLoglikelihood(korali::Sample &sample) override;
 
   /*! @brief run the user defined sampler.
-   *  @param sample contains [Hyperparameters] and [Number Samples]
+      @param sample contains [Hyperparameters] and [Number Samples].
+      @param sample needs to contain:
+      - sample["Hyperparameters"]
+      - sample["Number Samples"]
+
+    Values that will be set:
+      - sample["Samples"]
    */
   void sampleLatent(korali::Sample &sample);
 
   /**
    * @brief Evaluate the user-defined 'S' function (the sufficient statistics of the distribution).
-   * @param sample sample is expected to contain parameter 'Latent Variables'.
+   * @param sample sample is expected to contain parameter ['Latent Variables'].
    */
   void evaluateS(korali::Sample &sample);
 
   /**
    * @brief Evaluate the user-defined 'phi' function (log-llh = -zeta + <S, phi>).
-   * @param sample input sample, is expected to contain parameter 'Hyperparameters'.
+   * @param sample input sample, is expected to contain parameter ['Hyperparameters'].
    */
   void evaluatePhi(korali::Sample &sample);
 
   /**
    * @brief Evaluate the user-defined 'zeta' function (~ the log-normalization constant of the distribution).
-   * @param sample is expected to contain parameter 'Hyperparameters'.
+   * @param sample is expected to contain parameter ['Hyperparameters'].
    */
   void evaluateZeta(korali::Sample &sample);
 

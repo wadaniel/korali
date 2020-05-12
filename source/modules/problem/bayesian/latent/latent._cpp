@@ -79,15 +79,3 @@ void korali::problem::bayesian::Latent::evaluateZeta(korali::Sample &sample)
 {
   sample.run(_zetaOfLikelihoodModel);
 }
-
-/*  Not implemented for this problem. */
-void korali::problem::bayesian::Latent::evaluateLoglikelihoodGradient(korali::Sample &sample)
-{
-  _k->_logger->logError("Gradient not yet implemented for selected bayesian problem and log likelihood model.");
-}
-
-/*  Not implemented for this problem. */
-void korali::problem::bayesian::Latent::evaluateFisherInformation(korali::Sample &sample)
-{
-  _k->_logger->logError("Fisher information not yet implemented for selected bayesian problem and log likelihood model.");
-}

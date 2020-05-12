@@ -18,8 +18,6 @@ class Latent : public korali::problem::Bayesian
   */
   void evaluateLoglikelihood(korali::Sample &sample) override;
 
-  void evaluateFisherInformation(korali::Sample &sample) override;
-
   /*! @brief run the user defined sampler.
       @param sample contains [Hyperparameters] and [Number Samples].
       @param sample needs to contain:
@@ -48,8 +46,6 @@ class Latent : public korali::problem::Bayesian
    * @param sample is expected to contain parameter ['Hyperparameters'].
    */
   void evaluateZeta(korali::Sample &sample);
-
-  void evaluateLoglikelihoodGradient(korali::Sample &sample) override;
 
   /**
    *  @brief The problem initialization; here, remember indices of latent vs. hyperparameters for easy access later on

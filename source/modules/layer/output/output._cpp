@@ -1,0 +1,11 @@
+#include "modules/layer/output/output.hpp"
+#include "modules/experiment/experiment.hpp"
+
+void korali::layer::Output::initialize()
+{
+}
+
+void korali::layer::Output::forward(const std::vector<double>& inputs)
+{
+
+}

@@ -1,0 +1,17 @@
+#ifndef _KORALI_LAYER_HPP_
+#define _KORALI_LAYER_HPP_
+
+#include "modules/module.hpp"
+
+namespace korali
+{
+class Layer : public korali::Module
+{
+  public:
+
+ virtual void forward(const std::vector<double>& inputs) = 0;
+};
+
+} // namespace korali
+
+#endif // _KORALI_LAYER_HPP_

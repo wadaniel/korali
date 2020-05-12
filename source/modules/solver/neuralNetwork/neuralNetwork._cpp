@@ -1,0 +1,24 @@
+#include "modules/solver/neuralNetwork/neuralNetwork.hpp"
+#include "modules/conduit/conduit.hpp"
+
+void korali::solver::NeuralNetwork::setInitialConfiguration()
+{
+ // Initialize solver's configuration here
+}
+
+void korali::solver::NeuralNetwork::runGeneration()
+{
+ if (_k->_currentGeneration == 1) setInitialConfiguration();
+
+}
+
+void korali::solver::NeuralNetwork::printGenerationBefore()
+{
+ _k->_logger->logInfo("Normal", "Preparing to start generation...\n");
+}
+
+void korali::solver::NeuralNetwork::printGenerationAfter()
+{
+ _k->_logger->logInfo("Normal", "Finished to generation %lu...\n", _k->_currentGeneration);
+}
+

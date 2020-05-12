@@ -1,6 +1,6 @@
 #include "modules/solver/[MODULENAME]/[MODULENAME].hpp"
 #include "modules/conduit/conduit.hpp"
-#include "modules/engine/engine.hpp"
+#include "modules/experiment/experiment.hpp"
 
 void korali::solver::[CLASSNAME]::setInitialConfiguration()
 {
@@ -17,8 +17,8 @@ void korali::solver::[CLASSNAME]::runGeneration()
  korali::Sample sample;
  sample["Module"] = "Problem";
  sample["Operation"] = "Evaluate";
- _engine->_conduit->start(sample);
- _engine->_conduit->wait(sample);
+ _conduit->start(sample);
+ _conduit->wait(sample);
 
  double evaluation = sample["Evaluation"];
  _k->_logger->logInfo("Normal", "Sample Evaluation: %f\n", evaluation);

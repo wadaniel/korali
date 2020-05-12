@@ -13,8 +13,8 @@
 /*! \namespace Korali
     \brief The Korali namespace includes all Korali-specific functions, variables, and modules.
 */
-namespace korali {
-
+namespace korali
+{
 class Experiment;
 class Conduit;
 
@@ -23,8 +23,7 @@ class Conduit;
 */
 class Module
 {
- public:
-
+  public:
   /**
   * @brief Stores the name of the module type selected. Determines which C++ class is constructed upon initialization.
   */
@@ -38,24 +37,24 @@ class Module
   /**
   * @brief Stores a pointer to its containing experiment.
   */
-  korali::Experiment* _k;
+  korali::Experiment *_k;
 
   /**
   * @brief Instantiates the requested module class given its type and returns its pointer.
   * @param js JSON file containing the module's configuration and type.
   * @return Pointer with the newly created module.
   */
-  Module* getModule(knlohmann::json& js);
+  Module *getModule(knlohmann::json &js);
 
   /**
    * @brief Initializes Module upon creation. May allocate memory, set initial states, and initialize external code.
    */
-  virtual void initialize() { }
+  virtual void initialize() {}
 
   /**
    * @brief Finalizes Module. Deallocates memory and produces outputs.
    */
-  virtual void finalize() { }
+  virtual void finalize() {}
 
   /**
    * @brief Returns the module type.
@@ -73,24 +72,24 @@ class Module
    * @brief Obtains the entire current state and configuration of the module.
    * @param js JSON object onto which to save the serialized state of the module.
    */
-  virtual void getConfiguration(knlohmann::json& js) {};
+  virtual void getConfiguration(knlohmann::json &js){};
 
   /**
    * @brief Sets the entire state and configuration of the module, given a JSON object.
    * @param js JSON object from which to deserialize the state of the module.
    */
-  virtual void setConfiguration(knlohmann::json& js) {};
+  virtual void setConfiguration(knlohmann::json &js){};
 
   /**
    * @brief Applies the module's default configuration upon its creation.
    * @param js JSON object containing user configuration. The defaults will not override any currently defined settings.
   */
-  virtual void applyModuleDefaults(knlohmann::json& js) {};
+  virtual void applyModuleDefaults(knlohmann::json &js){};
 
   /**
    * @brief Applies the module's default variable configuration to each variable in the Experiment upon creation.
   */
-  virtual void applyVariableDefaults() {};
+  virtual void applyVariableDefaults(){};
 
   /**
   * @brief Runs the operation specified in the operation field. It checks recursively whether the function was found by the current module or its parents
@@ -98,7 +97,7 @@ class Module
   * @param operation An operation accepted by this module or its parents
   * @return True, if operation found and executed; false, otherwise.
   */
-  virtual bool runOperation(std::string operation, korali::Sample& sample) { return false; };
+  virtual bool runOperation(std::string operation, korali::Sample &sample) { return false; };
 };
 
 /**
@@ -124,4 +123,3 @@ extern double _cumulativeTime;
 } // namespace korali
 
 #endif // _KORALI_MODULE_HPP_
-

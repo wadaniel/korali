@@ -3,18 +3,23 @@
 
 #include "modules/problem/problem.hpp"
 
-namespace korali { namespace problem {
-
+namespace korali
+{
+namespace problem
+{
 class Propagation : public korali::Problem
 {
- public:
+  public:
+  void initialize() override;
 
-   void initialize() override;
-   void execute(korali::Sample& sample);
-
+  /**
+   * @brief Produces an evaluation of the model, storing it in a file.
+   * @param sample A Korali Sample
+  */
+  void execute(korali::Sample &sample);
 };
 
-} } // namespace korali::problem
-
+} // namespace problem
+} // namespace korali
 
 #endif // _KORALI_PROBLEM_PROPAGATION_HPP_

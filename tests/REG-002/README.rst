@@ -1,17 +1,4 @@
-Run the korali.plotter for all basic tutorial results.
+Check C++ Code Formattinr
 ################################################################ 
 
-## Description
-
-Description
-
-## Source
-
-[https://github.com/cselab/korali/tree/master/tests/REG-002](https://github.com/cselab/korali/tree/master/tests/REG-002)
-
-## Steps
-
-### Step 1
-
-+ Operation: Run the korali.plotter for all results found in Tutorials (A) generated during REG-001.
-+ Expected: No errors (rc = 0).
+This test makes sure all code has been formatted to satisfy Korali's standard

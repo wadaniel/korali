@@ -3,29 +3,56 @@
 
 #include "modules/problem/bayesian/bayesian.hpp"
 
-namespace korali { namespace problem { namespace bayesian {
-
+namespace korali
+{
+namespace problem
+{
+namespace bayesian
+{
 class Latent : public korali::problem::Bayesian
 {
- public:
-//  std::vector<size_t> _latentVariableIndices;
-//  std::vector<size_t> _hyperparameterVariableIndices;
+  public:
+  /**
+  * @brief Given 'Hyperparameters' and 'Latent Variables' (parameters the sample is expected to have), calculate the total log likelihood.
+  * @param sample inputSample
+  */
+  void evaluateLoglikelihood(korali::Sample &sample) override;
 
+  void evaluateFisherInformation(korali::Sample &sample) override;
 
- void evaluateLogLikelihood(korali::Sample& sample) override;
- void evaluateFisherInformation(korali::Sample& sample) override;
- void sampleLatent(korali::Sample& sample);
- void evaluateS(korali::Sample& sample);
- void evaluatePhi(korali::Sample& sample);
- void evaluateZeta(korali::Sample& sample);
- void evaluateLogLikelihoodGradient(korali::Sample& sample) override;
- // void evaluateLogPrior(korali::Sample& sample) override;
- // void evaluateLogPosterior(korali::Sample& sample) override;
- void initialize() override;
+  /*! @brief run the user defined sampler.
+   *  @param sample contains [Hyperparameters] and [Number Samples]
+   */
+  void sampleLatent(korali::Sample &sample);
 
+  /**
+   * @brief Evaluate the user-defined 'S' function (the sufficient statistics of the distribution).
+   * @param sample sample is expected to contain parameter 'Latent Variables'.
+   */
+  void evaluateS(korali::Sample &sample);
+
+  /**
+   * @brief Evaluate the user-defined 'phi' function (log-llh = -zeta + <S, phi>).
+   * @param sample input sample, is expected to contain parameter 'Hyperparameters'.
+   */
+  void evaluatePhi(korali::Sample &sample);
+
+  /**
+   * @brief Evaluate the user-defined 'zeta' function (~ the log-normalization constant of the distribution).
+   * @param sample is expected to contain parameter 'Hyperparameters'.
+   */
+  void evaluateZeta(korali::Sample &sample);
+
+  void evaluateLoglikelihoodGradient(korali::Sample &sample) override;
+
+  /**
+   *  @brief The problem initialization; here, remember indices of latent vs. hyperparameters for easy access later on
+   */
+  void initialize() override;
 };
 
-} } } // namespace korali::problem::evaluation::bayesian::Inference
-
+} // namespace bayesian
+} // namespace problem
+} // namespace korali
 
 #endif // _KORALI_PROBLEM_BAYESIAN_LATENT_HPP_

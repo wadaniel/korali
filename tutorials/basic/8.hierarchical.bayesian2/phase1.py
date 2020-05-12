@@ -15,7 +15,7 @@ for i in range(5):
   x = getReferencePoints("setup/data/", i);
   
   e["Problem"]["Type"] = "Bayesian/Reference"
-  e["Problem"]["Likelihood Model"] = "Additive Normal"
+  e["Problem"]["Likelihood Model"] = "Normal"
   e["Problem"]["Reference Data"] = getReferenceData("setup/data/", i);
   e["Problem"]["Computational Model"] = lambda d: logistic( x, d);
   
@@ -58,6 +58,7 @@ for i in range(5):
   e["Solver"]["Covariance Scaling"] = 0.02
   e["Solver"]["Default Burn In"] = 2;
   
+  e["Random Seed"] = 0xC0FFEE
   e["File Output"]["Path"] = "setup/results_phase_1/" + str(i).zfill(3)
   e["Console Output"]["Verbosity"] = "Detailed"
   eList.append(e)

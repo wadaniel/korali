@@ -3,25 +3,32 @@
 
 #include "modules/problem/gaussian/gaussian.hpp"
 
-namespace korali { namespace problem { namespace gaussian {
-
+namespace korali
+{
+namespace problem
+{
+namespace gaussian
+{
 class Evaluate : public korali::problem::Gaussian
 {
- public:
+  public:
+  void initialize() override;
 
-   void initialize() override;
-   void evaluate(korali::Sample&);
+  /**
+    * @brief Runs the sample to obtain evaluate data points given the parameters.
+    */
+  void evaluate(korali::Sample &);
 
-   /**
+  /**
     * @brief Checks whether the proposed sample fits within the range of the prior distribution.
     * @param sample A Korali Sample
     * @return True, if feasible; false, otherwise.
    */
-   bool isSampleFeasible(korali::Sample& sample);
-
+  bool isSampleFeasible(korali::Sample &sample);
 };
 
-} } } // namespace korali::problem::gaussian
-
+} // namespace gaussian
+} // namespace problem
+} // namespace korali
 
 #endif // _KORALI_PROBLEM_GAUSSIAN_PROCESS_EVALUATE_HPP_

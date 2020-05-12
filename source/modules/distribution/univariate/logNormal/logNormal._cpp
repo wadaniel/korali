@@ -10,19 +10,18 @@ double korali::distribution::univariate::LogNormal::getLogDensity(double x)
 {
   if (x < 0) return -INFINITY;
   double logx = gsl_sf_log(x);
-  double d = (logx-_mu)/_sigma;
-  return _aux - logx - 0.5*d*d;
+  double d = (logx - _mu) / _sigma;
+  return _aux - logx - 0.5 * d * d;
 }
 
 double korali::distribution::univariate::LogNormal::getRandomNumber()
 {
-  return  gsl_ran_lognormal(_range, _mu, _sigma);
+  return gsl_ran_lognormal(_range, _mu, _sigma);
 }
 
 void korali::distribution::univariate::LogNormal::updateDistribution()
 {
-  if (_sigma <= 0.0)  _k->_logger->logError("Incorrect Sigma parameter of LogNormal distribution: %f.\n", _sigma);
+  if (_sigma <= 0.0) _k->_logger->logError("Incorrect Sigma parameter of LogNormal distribution: %f.\n", _sigma);
 
-  _aux = -0.5*gsl_sf_log(2*M_PI) - gsl_sf_log(_sigma);
+  _aux = -0.5 * gsl_sf_log(2 * M_PI) - gsl_sf_log(_sigma);
 }
-

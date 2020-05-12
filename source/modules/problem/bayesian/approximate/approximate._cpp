@@ -4,7 +4,7 @@ void korali::problem::bayesian::Approximate::initialize()
 {
   korali::problem::Bayesian::initialize();
 
-  if (_referenceData.size() == 0)  _k->_logger->logError("Bayesian (%s) problems require defining reference data.\n", _likelihoodModel.c_str());
+  if (_referenceData.size() == 0) _k->_logger->logError("Bayesian (%s) problems require defining reference data.\n", _likelihoodModel.c_str());
 
   if (_likelihoodModel == "Truncated Normal")
   {
@@ -14,17 +14,33 @@ void korali::problem::bayesian::Approximate::initialize()
     bool foundSigma = false;
     for (size_t i = 0; i < _k->_variables.size(); i++)
     {
-     std::string varName = _k->_variables[i]->_name;
-     if (varName == "[Lower Bound]") { lowerBoundVariableIndex = i; foundLowerBound = true; }
-     if (varName == "[Upper Bound]") { upperBoundVariableIndex = i; foundUpperBound = true; }
-     if (varName == "[Mean]")        { meanVariableIndex = i; foundMean = true; }
-     if (varName == "[Sigma]")       { sigmaVariableIndex = i; foundSigma = true; }
+      std::string varName = _k->_variables[i]->_name;
+      if (varName == "[Lower Bound]")
+      {
+        lowerBoundVariableIndex = i;
+        foundLowerBound = true;
+      }
+      if (varName == "[Upper Bound]")
+      {
+        upperBoundVariableIndex = i;
+        foundUpperBound = true;
+      }
+      if (varName == "[Mean]")
+      {
+        meanVariableIndex = i;
+        foundMean = true;
+      }
+      if (varName == "[Sigma]")
+      {
+        sigmaVariableIndex = i;
+        foundSigma = true;
+      }
     }
 
     if (foundLowerBound == false) _k->_logger->logError("Bayesian (%s) problems require defining a variable named: '[Lower Bound]'.\n", _likelihoodModel.c_str());
     if (foundUpperBound == false) _k->_logger->logError("Bayesian (%s) problems require defining a variable named: '[Upper Bound]'.\n", _likelihoodModel.c_str());
-    if (foundMean == false)       _k->_logger->logError("Bayesian (%s) problems require defining a variable named: '[Mean]'.\n", _likelihoodModel.c_str());
-    if (foundSigma == false)      _k->_logger->logError("Bayesian (%s) problems require defining a variable named: '[Sigma]'.\n", _likelihoodModel.c_str());
+    if (foundMean == false) _k->_logger->logError("Bayesian (%s) problems require defining a variable named: '[Mean]'.\n", _likelihoodModel.c_str());
+    if (foundSigma == false) _k->_logger->logError("Bayesian (%s) problems require defining a variable named: '[Sigma]'.\n", _likelihoodModel.c_str());
     if (_k->_variables.size() != 4) _k->_logger->logError("Bayesian (%s) problems requires exactly 4 variables.\n", _likelihoodModel.c_str());
   }
 
@@ -34,77 +50,103 @@ void korali::problem::bayesian::Approximate::initialize()
     bool foundSigma = false;
     for (size_t i = 0; i < _k->_variables.size(); i++)
     {
-     std::string varName = _k->_variables[i]->_name;
-     if (varName == "[Mean]")        { meanVariableIndex = i; foundMean = true; }
-     if (varName == "[Sigma]")       { sigmaVariableIndex = i; foundSigma = true; }
+      std::string varName = _k->_variables[i]->_name;
+      if (varName == "[Mean]")
+      {
+        meanVariableIndex = i;
+        foundMean = true;
+      }
+      if (varName == "[Sigma]")
+      {
+        sigmaVariableIndex = i;
+        foundSigma = true;
+      }
     }
-    if (foundMean == false)       _k->_logger->logError("Bayesian (%s) problems require defining a variable named: '[Mean]'.\n", _likelihoodModel.c_str());
-    if (foundSigma == false)      _k->_logger->logError("Bayesian (%s) problems require defining a variable named: '[Sigma]'.\n", _likelihoodModel.c_str());
+    if (foundMean == false) _k->_logger->logError("Bayesian (%s) problems require defining a variable named: '[Mean]'.\n", _likelihoodModel.c_str());
+    if (foundSigma == false) _k->_logger->logError("Bayesian (%s) problems require defining a variable named: '[Sigma]'.\n", _likelihoodModel.c_str());
     if (_k->_variables.size() != 2) _k->_logger->logError("Bayesian (%s) problems requires exactly 2 variables.\n", _likelihoodModel.c_str());
   }
 }
 
-void korali::problem::bayesian::Approximate::evaluateLogLikelihood(korali::Sample& sample)
+void korali::problem::bayesian::Approximate::evaluateLoglikelihood(korali::Sample &sample)
 {
   if (_likelihoodModel == "Truncated Normal") likelihoodTruncatedNormal(sample);
-  if (_likelihoodModel == "Normal")           likelihoodNormal(sample);
+  if (_likelihoodModel == "Normal") likelihoodNormal(sample);
 }
 
-void korali::problem::bayesian::Approximate::likelihoodNormal(korali::Sample& sample)
+void korali::problem::bayesian::Approximate::likelihoodNormal(korali::Sample &sample)
 {
-  double mu     = sample["Parameters"][meanVariableIndex];
-  double sigma  = sample["Parameters"][sigmaVariableIndex];
-  double sigma2 = sigma*sigma;
+  double mu = sample["Parameters"][meanVariableIndex];
+  double sigma = sample["Parameters"][sigmaVariableIndex];
+  double sigma2 = sigma * sigma;
 
   double logNormalization = 0.5 * M_SQRT2 * M_SQRTPI * sigma;
 
-  if( logNormalization <= 0.) { sample["logLikelihood"] = -korali::Inf; return; }
+  if (logNormalization <= 0.)
+  {
+    sample["logLikelihood"] = -korali::Inf;
+    return;
+  }
 
   logNormalization = _referenceData.size() * gsl_sf_log(logNormalization);
 
   double ssn = 0.;
-  for (auto& d : _referenceData){
+  for (auto &d : _referenceData)
+  {
     double diff = d - mu;
-    ssn += diff*diff;
+    ssn += diff * diff;
   }
 
-  sample["logLikelihood"] = -logNormalization - 0.5*ssn/sigma2;
+  sample["logLikelihood"] = -logNormalization - 0.5 * ssn / sigma2;
 }
 
-void korali::problem::bayesian::Approximate::likelihoodTruncatedNormal(korali::Sample& sample)
+void korali::problem::bayesian::Approximate::likelihoodTruncatedNormal(korali::Sample &sample)
 {
-  double a      = sample["Parameters"][lowerBoundVariableIndex];
-  double b      = sample["Parameters"][upperBoundVariableIndex];
-  double mu     = sample["Parameters"][meanVariableIndex];
-  double sigma  = sample["Parameters"][sigmaVariableIndex];
-  double sigma2 = sigma*sigma;
-  double an = (a-mu)/sigma;
-  double bn = (b-mu)/sigma;
+  double a = sample["Parameters"][lowerBoundVariableIndex];
+  double b = sample["Parameters"][upperBoundVariableIndex];
+  double mu = sample["Parameters"][meanVariableIndex];
+  double sigma = sample["Parameters"][sigmaVariableIndex];
+  double sigma2 = sigma * sigma;
+  double an = (a - mu) / sigma;
+  double bn = (b - mu) / sigma;
 
-  if(a>b) { sample["logLikelihood"] = -korali::Inf; return; };
+  if (a > b)
+  {
+    sample["logLikelihood"] = -korali::Inf;
+    return;
+  };
 
-  double logNormalization = 0.5 * M_SQRT2 * M_SQRTPI * sigma * ( gsl_sf_erf(bn*M_SQRT1_2) - gsl_sf_erf(an*M_SQRT1_2) ) ;
+  double logNormalization = 0.5 * M_SQRT2 * M_SQRTPI * sigma * (gsl_sf_erf(bn * M_SQRT1_2) - gsl_sf_erf(an * M_SQRT1_2));
 
-  if( logNormalization <= 0.) { sample["logLikelihood"] = -korali::Inf; return; }
+  if (logNormalization <= 0.)
+  {
+    sample["logLikelihood"] = -korali::Inf;
+    return;
+  }
 
   logNormalization = _referenceData.size() * gsl_sf_log(logNormalization);
 
   double ssn = 0.;
-  for (auto& d : _referenceData){
-    if( d>b || d<a) { sample["logLikelihood"] = -korali::Inf; return; };
+  for (auto &d : _referenceData)
+  {
+    if (d > b || d < a)
+    {
+      sample["logLikelihood"] = -korali::Inf;
+      return;
+    };
     double diff = d - mu;
-    ssn += diff*diff;
+    ssn += diff * diff;
   }
 
-  sample["logLikelihood"] = -logNormalization - 0.5*ssn/sigma2;
+  sample["logLikelihood"] = -logNormalization - 0.5 * ssn / sigma2;
 }
 
-void korali::problem::bayesian::Approximate::evaluateLogLikelihoodGradient(korali::Sample& sample)
+void korali::problem::bayesian::Approximate::evaluateLoglikelihoodGradient(korali::Sample &sample)
 {
-    _k->_logger->logError("Gradient not yet implemented for selected bayesian problem and log likelihood model.");
+  _k->_logger->logError("Gradient not yet implemented for selected bayesian problem and log likelihood model.");
 }
 
-void korali::problem::bayesian::Approximate::evaluateFisherInformation(korali::Sample& sample)
+void korali::problem::bayesian::Approximate::evaluateFisherInformation(korali::Sample &sample)
 {
-    _k->_logger->logError("Fisher information not yet implemented for selected bayesian problem and log likelihood model.");
+  _k->_logger->logError("Fisher information not yet implemented for selected bayesian problem and log likelihood model.");
 }

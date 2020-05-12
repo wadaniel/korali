@@ -1,67 +1,70 @@
 #ifndef _KORALI_SOLVER_QTABLE_HPP_
 #define _KORALI_SOLVER_QTABLE_HPP_
 
-#include "modules/solver/learner/learner.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
+#include "modules/solver/learner/learner.hpp"
 
-namespace korali { namespace solver { namespace learner {
-
+namespace korali
+{
+namespace solver
+{
+namespace learner
+{
 class QTable : public korali::solver::Learner
 {
- public:
-
- /**
+  public:
+  /**
  * @brief Perform initialization of the QTable.
  */
- void setInitialConfiguration() override;
+  void setInitialConfiguration() override;
 
- /**
+  /**
   * @brief Interpolates a vector of continuous value to its corresponding discrete indexes, as given by the discrete parameter space
   * @param values Vector of continuous values
   * @param indexes Index numbers for the variable type
   * @return Q Table index corresponding to the nearest neighbor values.
   */
- size_t getInterpolatedIndex(const std::vector<double>& values, const std::vector<size_t>& indexes);
+  size_t getInterpolatedIndex(const std::vector<double> &values, const std::vector<size_t> &indexes);
 
- /**
+  /**
   * @brief Finds the action given the current policy (e.g., argmax, epsilon-greedy, etc)
-  * @param state Current state index
+  * @param stateIdx Current state index
   * @return Policy-based action for the current state
   */
- std::vector<double> getPolicyAction(const size_t& stateIdx);
+  std::vector<double> getPolicyAction(const size_t &stateIdx);
 
- /**
+  /**
   * @brief Finds the action with higher Q value for the given state
-  * @param state Current state index
+  * @param stateIdx Current state index
   * @return Best action for the current state
   */
- std::vector<double> getBestAction(const size_t& stateIdx);
+  std::vector<double> getBestAction(const size_t &stateIdx);
 
- /**
+  /**
   * @brief Finds a random action, given the state
   * @return Random action for the current state
   */
- std::vector<double> getRandomAction();
+  std::vector<double> getRandomAction();
 
- /**
+  /**
   * @brief Creates an action vector from a given action index
   * @param actionIdx The index for the requested action
   * @return A vector with the requested action
   */
- std::vector<double> getActionFromIndex(const size_t& actionIdx);
+  std::vector<double> getActionFromIndex(const size_t &actionIdx);
 
- void initialize() override;
- void initializeGeneration() override;
- void processGeneration() override;
- std::vector<double> getAction(const std::vector<double>& state) override;
- void storeExperience(const std::vector<double>& state, const std::vector<double>& action, const double reward, const std::vector<double>& newState) override;
+  void initialize() override;
+  void initializeGeneration() override;
+  void processGeneration() override;
+  std::vector<double> getAction(const std::vector<double> &state) override;
+  void storeExperience(const std::vector<double> &state, const std::vector<double> &action, const double reward, const std::vector<double> &newState) override;
 
- void printGenerationBefore() override;
- void printGenerationAfter() override;
-
+  void printGenerationBefore() override;
+  void printGenerationAfter() override;
 };
 
-} } } // namespace korali::solver::learner
-
+} // namespace learner
+} // namespace solver
+} // namespace korali
 
 #endif // _KORALI_SOLVER_QTABLE_HPP_

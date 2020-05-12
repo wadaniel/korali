@@ -33,6 +33,7 @@ e["Solver"]["Default Burn In"] = 1;
 
 e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Path"] = "setup/results_phase_3a/"
+e["Random Seed"] = 0xC0FFEE
 
 # Starting Korali's Engine and running experiment
 k = korali.Engine()

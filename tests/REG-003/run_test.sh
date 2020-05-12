@@ -1,25 +1,17 @@
 #!/bin/bash
 
+###### Auxiliar Functions and Variables #########
+
 source ../functions.sh
 
-#################################################
-# Execute Solver Scripts
-#################################################
+############# STEP 1 ##############
 
-logEcho "[Korali] Beginning solver tests"
+pushd ../../docs
+check_result
 
-for file in *.py
-do
-  logEcho "-------------------------------------"
-  logEcho "Running File: ${file%.*}"
-  
-  python3 ./$file >> $logFile 2>&1
-  check_result
+# Run documentation builder
+./build.sh
+check_result
 
-  log "[Korali] Removing results..."
-  rm -rf "_korali_result" >> $logFile 2>&1
-  check_result
-
-  logEcho "-------------------------------------"
-done
-
+popd
+check_result

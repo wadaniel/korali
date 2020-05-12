@@ -3,21 +3,26 @@
 
 #include "modules/distribution/specific/specific.hpp"
 
-namespace korali { namespace distribution { namespace specific {
-
-class Multinomial : public korali::distribution::Specific {
-
- public:
-
- /**
+namespace korali
+{
+namespace distribution
+{
+namespace specific
+{
+class Multinomial : public korali::distribution::Specific
+{
+  public:
+  /**
   * @brief This function computes a random sample from the multinomial distribution.
   * @param p Underlying probability distributions
   * @param n Random sample to draw
   * @param N Number of trials
   */
- void getSelections(std::vector<double>& p, std::vector<unsigned int>& n, int N);
+  void getSelections(std::vector<double> &p, std::vector<unsigned int> &n, int N);
 };
 
-} } } // namespace korali::distribution::specific
+} // namespace specific
+} // namespace distribution
+} // namespace korali
 
 #endif // _KORALI_DISTRIBUTION_MULTINOMIAL_HPP_

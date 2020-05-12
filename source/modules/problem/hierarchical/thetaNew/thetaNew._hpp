@@ -4,50 +4,53 @@
 #include "modules/problem/hierarchical/hierarchical.hpp"
 #include "modules/problem/hierarchical/psi/psi.hpp"
 
-namespace korali { namespace problem {  namespace hierarchical {
-
+namespace korali
+{
+namespace problem
+{
+namespace hierarchical
+{
 class ThetaNew : public korali::problem::Hierarchical
 {
- private:
-
- /**
+  private:
+  /**
   * @brief Stores the Psi problem experiment to use as input
   */
- korali::Experiment _psiProblemEngine;
+  korali::Experiment _psiProblemEngine;
 
- /**
+  /**
   * @brief Stores the number of samples in the Psi problem experiment to use as input
   */
- size_t _psiProblemSampleCount;
+  size_t _psiProblemSampleCount;
 
- /**
+  /**
    * @brief Stores the sample coordinates of the Psi Problem
    */
- std::vector<std::vector<double>> _psiProblemSampleCoordinates;
+  std::vector<std::vector<double>> _psiProblemSampleCoordinates;
 
- /**
+  /**
  * @brief Stores the sample logLikelihoods of the Psi Problem
  */
- std::vector<double> _psiProblemSampleLogLikelihoods;
+  std::vector<double> _psiProblemSampleLogLikelihoods;
 
- /**
+  /**
   * @brief Stores the sample logPriors of the Psi Problem
   */
- std::vector<double> _psiProblemSampleLogPriors;
+  std::vector<double> _psiProblemSampleLogPriors;
 
- public:
+  public:
+  void evaluateLogLikelihood(korali::Sample &sample) override;
 
- void evaluateLogLikelihood(korali::Sample& sample) override;
-
- /**
+  /**
  * @brief Evaluates the theta log likelihood of the given sample.
  * @param sample A Korali Sample
  */
- void evaluateThetaLikelihood(korali::Sample& sample);
- void initialize() override;
+  void evaluateThetaLikelihood(korali::Sample &sample);
+  void initialize() override;
 };
 
-} } } // namespace korali::problem::bayesian
-
+} // namespace hierarchical
+} // namespace problem
+} // namespace korali
 
 #endif // _KORALI_PROBLEM_THETANEW_HPP_

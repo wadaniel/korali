@@ -46,6 +46,7 @@ e["Solver"]["Covariance Scaling"] = 0.02
 e["Solver"]["Default Burn In"] = 1;
 e["Solver"]["Max Chain Length"] = 1;
 
+e["Random Seed"] = 0xC0FFEE
 e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Path"] = "setup/results_phase_3a/"
 

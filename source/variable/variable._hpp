@@ -5,15 +5,11 @@
 #ifndef __KORALI_VARIABLE_HPP_
 #define __KORALI_VARIABLE_HPP_
 
-#include <vector>
 #include "modules/distribution/univariate/univariate.hpp"
+#include <vector>
 
-/** \namespace
-* @brief The Korali namespace includes all Korali-specific functions, variables, and modules.
-******************************************************************************/
 namespace korali
 {
-
 /**
 * \class Variable
 * @brief Contains information for Korali Experiment's variables.
@@ -21,12 +17,10 @@ namespace korali
 */
 class Variable
 {
-
- public:
-   // Variable Declaration List
-
+  public:
+  // Variable Declaration List
 };
 
-}
+} // namespace korali
 
 #endif // __KORALI_VARIABLE_HPP_

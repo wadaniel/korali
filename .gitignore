@@ -1,4 +1,5 @@
 _korali_result
+__test*
 _result_*
 build
 .exrc

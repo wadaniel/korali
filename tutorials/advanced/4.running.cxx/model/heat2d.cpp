@@ -48,10 +48,12 @@ void heat2DSolver(korali::Sample& k)
 
  // Saving the value of temperatures at specified points
  double h = 1.0/(g[0].N-1);
+ double sig = k["Parameters"][3];
  for(size_t i = 0; i < __p.refTemp.size(); i++)
  {
   int m = ceil(__p.xPos[i]/h); int l = ceil(__p.yPos[i]/h);
   k["Reference Evaluations"][i] = g[0].U[m][l];
+  k["Standard Deviation"][i]    = sig;
  }
 
  freeGrids(g, gridCount);

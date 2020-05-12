@@ -14,6 +14,9 @@
 
 namespace korali
 {
+ /**
+  * @brief A Korali Engine initializes the conduit and experiments, and guides their execution.
+ */
  class Engine : public korali::Module
  {
   public:
@@ -74,7 +77,7 @@ namespace korali
 
   /**
    * @brief Stores a single experiment into the experiment list and runs it to completion.
-   * @param experiments The experiment to run.
+   * @param experiment The experiment to run.
    */
   void run(korali::Experiment& experiment);
 
@@ -86,7 +89,7 @@ namespace korali
 
   /**
    * @brief Resumes a single experiment from the point it has previously finished.
-   * @param experiments The experiment to run.
+   * @param experiment The experiment to run.
    */
   void resume(korali::Experiment& experiment);
 
@@ -166,6 +169,7 @@ namespace korali
 
   /**
    * @brief Returns the worker teams MPI communication pointer (Distributed Conduit only).
+   * @return Numerical pointer to the MPI communicator
    */
   static long int getMPICommPointer();
 

@@ -4,24 +4,56 @@
 #include "modules/conduit/conduit.hpp"
 #include <vector>
 
-namespace korali { namespace conduit {
-
+namespace korali
+{
+namespace conduit
+{
 class Sequential : public korali::Conduit
 {
- private:
+  private:
+  public:
+  /**
+ * @brief Gets back to Korali's engine from the model without finalizing the sample.
+ * The purpose is to update its state with new information without finalizing the function's environment.
+ * @param sample Sample to update.
+ */
+  void update(korali::Sample &sample) override;
 
- public:
+  /**
+  * @brief Initializes the conduit's configuration, only once per process.
+  */
+  void initialize() override;
 
- void update(korali::Sample& sample) override;
- void initialize() override;
- void initServer() override;
- size_t maxConcurrency() override;
- void processSample(korali::Sample& sample) override;
- void stackEngine(korali::Engine* engine) override;
- void popEngine() override;
+  /**
+  * @brief Initializes the server/worker aspect of the conduit. This should be postponed until Korali can determined whether the conduit's engine has been already initialized.
+  */
+  void initServer() override;
 
+  /**
+   * @brief Indicates how many workers are available in the current run of Korali.
+   * @return The number of workers.
+   */
+  size_t maxConcurrency() override;
+
+  /**
+  * @brief Starts/Resumes the processing of a new sample.
+  * @param sample Sample to start/resume.
+  */
+  void processSample(korali::Sample &sample) override;
+
+  /**
+  * @brief Stacks current engine away to support Korali-in-Korali execution
+  * @param engine The current Engine.
+  */
+  void stackEngine(korali::Engine *engine) override;
+
+  /**
+   * @brief Pops back the previous engine after the current one has finished. If this is the last engine, then it does nothing.
+      */
+  void popEngine() override;
 };
 
-} } // namespace korali
+} // namespace conduit
+} // namespace korali
 
 #endif // _KORALI_CONDUIT_SIMPLE_HPP_

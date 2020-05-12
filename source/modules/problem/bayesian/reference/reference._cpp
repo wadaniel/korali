@@ -1,10 +1,10 @@
-#include <gsl/gsl_matrix.h>
-#include <gsl/gsl_blas.h>
-#include <gsl/gsl_sf_gamma.h>
-#include <gsl/gsl_cdf.h>
-#include "modules/problem/bayesian/reference/reference.hpp"
 #include "modules/conduit/conduit.hpp"
 #include "modules/experiment/experiment.hpp"
+#include "modules/problem/bayesian/reference/reference.hpp"
+#include <gsl/gsl_blas.h>
+#include <gsl/gsl_cdf.h>
+#include <gsl/gsl_matrix.h>
+#include <gsl/gsl_sf_gamma.h>
 
 void korali::problem::bayesian::Reference::initialize()
 {
@@ -12,342 +12,226 @@ void korali::problem::bayesian::Reference::initialize()
 
   if (_referenceData.size() == 0) _k->_logger->logError("Bayesian (%s) problems require defining reference data.\n", _likelihoodModel.c_str());
 
-  if( _likelihoodModel=="Additive Normal" || _likelihoodModel=="Additive Normal Variance" || _likelihoodModel=="Multiplicative Normal" || _likelihoodModel=="Multiplicative Normal Data"){
-    bool foundStatistcalParam = false;
-    for (size_t i = 0; i < _k->_variables.size(); i++){
-      std::string varName = _k->_variables[i]->_name;
-      if (varName == "[Sigma]") { statisticalVariableIndex = i; foundStatistcalParam = true; }
-    }
-    if (foundStatistcalParam == false) _k->_logger->logError("Bayesian (%s) problems require defining a variable named: '[Sigma]'.\n", _likelihoodModel.c_str());
-  }
-
-  _negativeBinomialConstant = korali::NaN;
-  if( _likelihoodModel == "Negative Binomial" ){
-    _negativeBinomialConstant = 0.;
-    for( size_t i=0; i<_referenceData.size(); i++ ){
-      _negativeBinomialConstant -= gsl_sf_lngamma( _referenceData[i]+1. );
-    }
-  }
-
-  if( _likelihoodModel == "Positive Normal" ){
-    for( size_t i=0; i<_referenceData.size(); i++ ){
-    }
-  }
-
   if (_k->_variables.size() < 1) _k->_logger->logError("Bayesian (%s) inference problems require at least one variable.\n", _likelihoodModel.c_str());
 }
 
-
-void korali::problem::bayesian::Reference::evaluateLogLikelihood(korali::Sample& sample)
+void korali::problem::bayesian::Reference::evaluateLoglikelihood(korali::Sample &sample)
 {
   sample.run(_computationalModel);
 
   if (sample["Reference Evaluations"].size() != _referenceData.size())
     _k->_logger->logError("This Bayesian (%s) problem requires a %lu-sized result array. Provided: %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), sample["Reference Evaluations"].size());
 
-  if (_likelihoodModel == "Additive Normal")            loglikelihoodNormalAdditive(sample);
-  if (_likelihoodModel == "Additive Normal Variance")   loglikelihoodNormalAdditiveVariance(sample);
-  if (_likelihoodModel == "Multiplicative Normal")      loglikelihoodNormalMultiplicative(sample);
-  if (_likelihoodModel == "Multiplicative Normal Data") loglikelihoodNormalMultiplicativeData(sample);
-
-  if (_likelihoodModel == "Normal" ){
-    if( sample["Reference Evaluations"].size() != sample["Standard Deviation"].size() )
-      _k->_logger->logError("This Bayesian (%s) problem requires two %lu-sized result arrays. Provided: %lu and %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), sample["Reference Evaluations"].size(), sample["Standard Deviation"].size() );
+  if (_likelihoodModel == "Normal")
     loglikelihoodNormal(sample);
-  }
-
-  if (_likelihoodModel == "Negative Binomial" ){
-    if( sample["Reference Evaluations"].size() != sample["Dispersion"].size() )
-      _k->_logger->logError("This Bayesian (%s) problem requires two %lu-sized result arrays. Provided: %lu and %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), sample["Reference Evaluations"].size(), sample["Dispersion"].size() );
+  else if (_likelihoodModel == "Negative Binomial")
     loglikelihoodNegativeBinomial(sample);
-  }
-
-  if (_likelihoodModel == "Positive Normal" ){
-    if( sample["Reference Evaluations"].size() != sample["Standard Deviation"].size() )
-      _k->_logger->logError("This Bayesian (%s) problem requires two %lu-sized result arrays. Provided: %lu and %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), sample["Reference Evaluations"].size(), sample["Standard Deviation"].size() );
+  else if (_likelihoodModel == "Positive Normal")
     loglikelihoodPositiveNormal(sample);
-  }
-
+  else
+    _k->_logger->logError("Bayesian problem (%s) not recognized.\n", _likelihoodModel.c_str());
 }
 
-
-double korali::problem::bayesian::Reference::compute_sse( std::vector<double> x, std::vector<double> y ){
+double korali::problem::bayesian::Reference::compute_normalized_sse(std::vector<double> f, std::vector<double> g, std::vector<double> y)
+{
   double sse = 0.;
-  for(size_t i = 0; i < y.size(); i++)
+  for (size_t i = 0; i < y.size(); i++)
   {
-    if( !isfinite(x[i]) )
-    {
-      _k->_logger->logWarning("Normal","Non-finite value detected in the results passed in the log-likelihood function.\n");
-      return korali::Inf;
-    }
-    double diff = y[i] - x[i];
-    sse += diff*diff;
+    double diff = (y[i] - f[i]) / g[i];
+    sse += diff * diff;
   }
   return sse;
 }
 
+void korali::problem::bayesian::Reference::loglikelihoodNormal(korali::Sample &sample)
+{
+  if (sample["Standard Deviation"].size() != _referenceData.size())
+    _k->_logger->logError("This Bayesian (%s) problem requires a %lu-sized Standard Deviation array. Provided: %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), sample["Standard Deviation"].size());
 
-double korali::problem::bayesian::Reference::compute_normalized_sse( std::vector<double> f, std::vector<double> g, std::vector<double> y ){
-  double sse = 0.;
-  for(size_t i = 0; i < y.size(); i++)
+  double sse = compute_normalized_sse(sample["Reference Evaluations"], sample["Standard Deviation"], _referenceData);
+
+  double loglike = 0.;
+  double sdev;
+  for (size_t i = 0; i < sample["Standard Deviation"].size(); i++)
   {
-
-    if( !isfinite(f[i]) || !isfinite(g[i]) ){
-      _k->_logger->logWarning("Normal","Non-finite value detected in the results passed in the log-likelihood function.\n");
-      return korali::Inf;
-    }
-    if( g[i]<=0 ){
-      _k->_logger->logError("Negative or zero value detected in the standard deviation results passed in the log-likelihood function.\n");
-      return korali::Inf;
-    }
-    double diff = ( y[i] - f[i] ) / g[i];
-    sse += diff*diff;
+    sdev = sample["Standard Deviation"][i];
+    if (sdev < 0.0) _k->_logger->logError("Negative value (%lf) detected for the Standard Deviation.\n", sdev);
+    loglike -= log(sdev);
   }
-  return sse;
+
+  loglike -= 0.5 * (_referenceData.size() * _log2pi + sse);
+  sample["logLikelihood"] = loglike;
 }
 
-
-void korali::problem::bayesian::Reference::loglikelihoodNormal(korali::Sample& sample)
+void korali::problem::bayesian::Reference::loglikelihoodPositiveNormal(korali::Sample &sample)
 {
-  double sse = compute_normalized_sse( sample["Reference Evaluations"], sample["Standard Deviation"], _referenceData );
+  double sse = compute_normalized_sse(sample["Reference Evaluations"], sample["Standard Deviation"], _referenceData);
 
-  if( isinf(sse) )
-    sample["logLikelihood"] = -korali::Inf;
-  else{
-    double loglike = 0.;
-    for(size_t i=0; i<sample["Standard Deviation"].size(); i++)
-      loglike -= log( (double) sample["Standard Deviation"][i] );
-    loglike -=   0.5*( _referenceData.size()*_log2pi + sse );
-
-    sample["logLikelihood"] = loglike;
+  double loglike = 0.;
+  for (size_t i = 0; i < sample["Standard Deviation"].size(); i++)
+  {
+    double m = sample["Reference Evaluations"][i];
+    double s = sample["Standard Deviation"][i];
+    loglike -= log(s);
+    loglike -= log(1. - gsl_cdf_ugaussian_P(-m / s));
   }
+  loglike += -0.5 * (_referenceData.size() * _log2pi + sse);
+  sample["logLikelihood"] = loglike;
 }
 
-
-void korali::problem::bayesian::Reference::loglikelihoodPositiveNormal(korali::Sample& sample)
+void korali::problem::bayesian::Reference::loglikelihoodNegativeBinomial(korali::Sample &sample)
 {
-  double sse = compute_normalized_sse( sample["Reference Evaluations"], sample["Standard Deviation"], _referenceData );
-
-  if( isinf(sse) )
-    sample["logLikelihood"] = -korali::Inf;
-  else{
-    double loglike = 0.;
-    for(size_t i=0; i<sample["Standard Deviation"].size(); i++){
-      double m = sample["Reference Evaluations"][i];
-      double s = sample["Standard Deviation"][i];
-      loglike -= log( s );
-      loglike -= log( 1. - gsl_cdf_ugaussian_P(-m/s) );
-    }
-    loglike +=  -0.5*( _referenceData.size()*_log2pi + sse );
-    sample["logLikelihood"] = loglike;
-  }
-}
-
-
-void korali::problem::bayesian::Reference::loglikelihoodNegativeBinomial(korali::Sample& sample)
-{
-
   size_t N = _referenceData.size();
+  double loglike = 0.0;
 
-  double loglike = _negativeBinomialConstant;
-
-  for( size_t i=0; i<N; i++ ){
+  for (size_t i = 0; i < N; i++)
+  {
+    loglike -= gsl_sf_lngamma(_referenceData[i] + 1.);
     double m = sample["Reference Evaluations"][i];
 
-    if(m<0){
-      sample["logLikelihood"] =  -korali::Inf;
+    if (m < 0)
+    {
+      sample["logLikelihood"] = -korali::Inf;
       return;
     }
 
     double r = sample["Dispersion"][i];
-    double p = m/(m+r);
+    double p = m / (m + r);
     double y = _referenceData[i];
 
-    loglike += gsl_sf_lngamma( y+r );
-    loglike -= gsl_sf_lngamma( r );
-    loglike += r*log( 1-p );
-    loglike += y*log( p );
+    loglike += gsl_sf_lngamma(y + r);
+    loglike -= gsl_sf_lngamma(r);
+    loglike += r * log(1 - p);
+    loglike += y * log(p);
   }
 
   sample["logLikelihood"] = loglike;
 }
 
-
-void korali::problem::bayesian::Reference::loglikelihoodNormalAdditive(korali::Sample& sample)
+void korali::problem::bayesian::Reference::gradientLoglikelihoodNegativeBinomial(korali::Sample &sample)
 {
-  double sigma   = sample["Parameters"][statisticalVariableIndex];
-  double sigma2  = sigma*sigma;
+  size_t N = _referenceData.size();
 
-  double sse = compute_sse( sample["Reference Evaluations"], _referenceData );
+  std::vector<std::vector<double>> gradient = sample["Gradient"];
+  std::vector<double> refEvaluations = sample["Reference Evaluations"];
 
-  if( isinf(sse) )
-    sample["logLikelihood"] = -korali::Inf;
-  else
-    sample["logLikelihood"] = -0.5*( _referenceData.size()*log(2*M_PI*sigma2) + sse/sigma2);
-}
+  std::vector<double> llkgradient(N, 0.0);
 
-
-void korali::problem::bayesian::Reference::loglikelihoodNormalAdditiveVariance(korali::Sample& sample)
-{
-  double sigma2 = sample["Parameters"][statisticalVariableIndex];
-
-  double sse = compute_sse( sample["Reference Evaluations"], _referenceData );
-
-  if( isinf(sse) )
-    sample["logLikelihood"] = -korali::Inf;
-  else
-    sample["logLikelihood"] = -0.5*( _referenceData.size()*log(2*M_PI*sigma2) + sse/sigma2);
-}
-
-
-void korali::problem::bayesian::Reference::loglikelihoodNormalMultiplicative(korali::Sample& sample)
-{
-  double sigma    = sample["Parameters"][statisticalVariableIndex];
-  double ssn      = 0.0;
-  double logSigma = 0.0;
-
-  for(size_t i = 0; i < _referenceData.size(); i++)
+  double r, m, d, tmpsum;
+  for (size_t i = 0; i < N; i++)
   {
-    double eval = sample["Reference Evaluations"][i];
+    r = sample["Dispersion"][i];
+    m = refEvaluations[i];
+    d = _referenceData[i];
 
-    if( !isfinite(eval) )
+    tmpsum = r + m;
+
+    for (size_t d = 0; d < _k->_variables.size() - 1; ++d)
     {
-      _k->_logger->logWarning("Normal","Non-finite value detected in the results passed in the log-likelihood function.\n");
-      sample["logLikelihood"] = -korali::Inf;
-      return;
+      llkgradient[d] += d * (r + gradient[i][d]) / (tmpsum * tmpsum) - r / tmpsum * gradient[i][d];
     }
 
-    double diff   = _referenceData[i] - eval;
-    double denom  = sigma*eval;
-    ssn += diff*diff / (denom*denom);
-    logSigma += log(denom);
+    llkgradient[_k->_variables.size() - 1] = gsl_sf_psi(r + d) + log(r / tmpsum) + (m - d) / tmpsum - gsl_sf_psi(r);
   }
 
-  sample["logLikelihood"] = -0.5*( _referenceData.size()*_log2pi + ssn) - _referenceData.size()*logSigma;
+  sample["logLikelihood Gradient"] = llkgradient;
 }
 
-
-void korali::problem::bayesian::Reference::loglikelihoodNormalMultiplicativeData(korali::Sample& sample)
-{
-  double sigma    = sample["Parameters"][statisticalVariableIndex];
-  double ssn      = 0.0;
-  double logSigma = 0.0;
-  for(size_t i = 0; i < _referenceData.size(); i++)
-  {
-    double eval = sample["Reference Evaluations"][i];
-
-    if( !isfinite(eval) )
-    {
-      _k->_logger->logWarning("Normal","Non-finite value detected in the results passed in the log-likelihood function.\n");
-      sample["logLikelihood"] = -korali::Inf;
-      return;
-    }
-
-    double diff   = _referenceData[i] - eval;
-    double denom  = sigma*_referenceData[i];
-    ssn += diff*diff / (denom*denom);
-    logSigma += log(denom);
-  }
-
-  sample["logLikelihood"] = -0.5*( _referenceData.size()*_log2pi + ssn) - _referenceData.size()*logSigma;
-}
-
-
-void korali::problem::bayesian::Reference::evaluateLogLikelihoodGradient(korali::Sample& sample)
+void korali::problem::bayesian::Reference::evaluateLoglikelihoodGradient(korali::Sample &sample)
 {
   double eval = sample["F(x)"];
   if (isfinite(eval))
   {
-    if (sample["Gradient"].size() != _referenceData.size())
-    _k->_logger->logError("This Bayesian (%s) problem requires a %lu-sized gradient array (a gradient for each reference evaluation). Provided: %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), sample["Gradient"].size());
-
-    if (_likelihoodModel == "Additive Normal") gradientLogLikelihoodNormalAdditive(sample);
-    else  _k->_logger->logError("Gradient not yet implemented for selected bayesian problem and log likelihood model.");
+    if (_likelihoodModel == "Normal")
+      gradientLoglikelihoodNormal(sample);
+    else if (_likelihoodModel == "Negative Binomial")
+      gradientLoglikelihoodNegativeBinomial(sample);
+    // TODO Truncated Gaussian
+    else
+      _k->_logger->logError("Gradient not yet implemented for selected bayesian problem and log likelihood model.");
   }
   else
   {
-   sample["logLikelihood Gradient"] = std::vector<double>(_k->_variables.size(), 0.0);
+    sample["logLikelihood Gradient"] = std::vector<double>(_k->_variables.size(), 0.0);
   }
 }
 
-void korali::problem::bayesian::Reference::gradientLogLikelihoodNormalAdditive(korali::Sample& sample)
+void korali::problem::bayesian::Reference::gradientLoglikelihoodNormal(korali::Sample &sample)
 {
-    double sigma = sample["Parameters"][statisticalVariableIndex];
-    double var   = sigma*sigma;
-    double sse   = 0.0;
-    std::vector<std::vector<double>> gradient = sample["Gradient"];
-    std::vector<double> refEvaluations = sample["Reference Evaluations"];
+  std::vector<double> refEvaluations = sample["Reference Evaluations"];
+  std::vector<double> standardDev = sample["Standard Deviation"];
+  std::vector<std::vector<double>> gradientF = sample["Gradient Mean"];
+  std::vector<std::vector<double>> gradientG = sample["Gradient Standard Deviation"];
 
-    std::vector<double> llkgradient(_k->_variables.size(), 0.0);
-    for(size_t i = 0; i < _referenceData.size(); ++i)
+  if (sample["Gradient Mean"].size() != refEvaluations.size()) _k->_logger->logError("Bayesian problem requires a gradient of the Mean for each reference evaluation (provided %zu required %zu).", gradientF.size(), refEvaluations.size());
+  if (gradientG.size() != refEvaluations.size()) _k->_logger->logError("Bayesian problem requires a gradient of the Standard Deviation for each reference evaluation (provided %zu required %zu).", gradientF.size(), refEvaluations.size());
+
+  std::vector<double> llkgradient(_k->_variables.size(), 0.0);
+  for (size_t i = 0; i < _referenceData.size(); ++i)
+  {
+    if (gradientF[i].size() != _k->_variables.size()) _k->_logger->logError("Bayesian Reference Mean gradient calculation requires gradients of size %zu (provided size %zu)\n", _k->_variables.size(), gradientF[i].size());
+    if (gradientG[i].size() != _k->_variables.size()) _k->_logger->logError("Bayesian Reference Standard Deviation gradient calculation requires gradients of size %zu (provided size %zu)\n", _k->_variables.size(), gradientG[i].size());
+
+    double invStdDev = 1.0 / standardDev[i];
+    double invStdDev2 = invStdDev * invStdDev;
+    double invStdDev3 = invStdDev2 * invStdDev;
+
+    double dif = refEvaluations[i] - _referenceData[i];
+
+    for (size_t d = 0; d < _k->_variables.size(); ++d)
     {
-        if (gradient[i].size() != _k->_variables.size()-1) _k->_logger->logError("Bayesian Reference gradient calculation requires gradients of size %zu (provided size %zu)\n", _k->_variables.size(), gradient[i].size()-1);
-
-        double dif = refEvaluations[i] - _referenceData[i];
-        sse += dif*dif;
-        for(size_t d = 0; d < _k->_variables.size()-1; ++d)
-        {
-            if( !isfinite(gradient[i][d]) ) _k->_logger->logWarning("Normal","Non-finite value detected in a provided gradient.\n");
-            llkgradient[d] -= gradient[i][d]*dif;
-        }
+      if (!isfinite(gradientF[i][d])) _k->_logger->logWarning("Normal", "Non-finite value detected in Gradient Mean.\n");
+      if (!isfinite(gradientG[i][d])) _k->_logger->logWarning("Normal", "Non-finite value detected in Gradient Standard Deviation.\n");
+      double tmpGrad = -invStdDev * gradientG[i][d] - invStdDev2 * dif * gradientF[i][d] + invStdDev3 * dif * dif * gradientG[i][d];
+      llkgradient[d] += tmpGrad;
     }
-    for(size_t d = 0; d < _k->_variables.size()-1; ++d) llkgradient[d] /= var;
-    llkgradient[_k->_variables.size()-1] = (sse/var - _referenceData.size())/sigma;
+  }
 
-    sample["logLikelihood Gradient"] = llkgradient;
+  sample["logLikelihood Gradient"] = llkgradient;
 }
 
-
-void korali::problem::bayesian::Reference::evaluateFisherInformation(korali::Sample& sample)
+void korali::problem::bayesian::Reference::evaluateFisherInformation(korali::Sample &sample)
 {
   double eval = sample["F(x)"];
   if (isfinite(eval))
   {
-    if (sample["Gradient"].size() != _referenceData.size())
-    _k->_logger->logError("This Bayesian (%s) problem requires a %lu-sized gradient array (a gradient for each reference evaluation). Provided: %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), sample["Gradient"].size());
-
-    if (_likelihoodModel == "Additive Normal") fisherInformationLogLikelihoodNormalAdditive(sample);
-    else  _k->_logger->logError("Fisher Information not yet implemented for selected bayesian problem and log likelihood model.");
+    if (_likelihoodModel == "Normal")
+      fisherInformationLoglikelihoodNormal(sample);
+    else
+      _k->_logger->logError("Fisher Information not yet implemented for selected Bayesian problem and log likelihood model.");
   }
   else
   {
-   sample["Fisher Information"] = std::vector<double>(_k->_variables.size()*_k->_variables.size(), 0.0);
+    sample["Fisher Information"] = std::vector<double>(_k->_variables.size() * _k->_variables.size(), 0.0);
   }
 }
 
-
-void korali::problem::bayesian::Reference::fisherInformationLogLikelihoodNormalAdditive(korali::Sample& sample)
+void korali::problem::bayesian::Reference::fisherInformationLoglikelihoodNormal(korali::Sample &sample)
 {
-  double sigma = sample["Parameters"][statisticalVariableIndex];
-  double var   = sigma*sigma;
-
-  size_t Nd  = _referenceData.size();
+  size_t Nd = _referenceData.size();
   size_t Nth = _k->_variables.size();
-  
-  std::vector<std::vector<double>> gradients = sample["Gradient"];
-  gsl_matrix* S = gsl_matrix_alloc(Nth-1, Nd);
 
-  std::vector<double> FIM(_k->_variables.size()*_k->_variables.size(), 0.0);
-  for(size_t i = 0; i < Nd; ++i)
+  std::vector<double> standardDev = sample["Standard Deviation"];
+  std::vector<std::vector<double>> gradientF = sample["Gradient Mean"];
+  std::vector<std::vector<double>> gradientG = sample["Gradient Standard Deviation"];
+
+  std::vector<double> FIM(Nth * Nth, 0.0);
+  for (size_t i = 0; i < Nd; ++i)
   {
-      gsl_vector_const_view dY = gsl_vector_const_view_array(&gradients[i][0], Nth-1);
-      gsl_matrix_set_col(S, i, &dY.vector);
+    double tmp;
+    double tmpvar = standardDev[i] * standardDev[i];
+    double tmpvarinv = 1. / tmpvar;
+    for (size_t k = 0; k < Nth; ++k)
+    {
+      for (size_t l = 0; l < k; ++l)
+      {
+        tmp = tmpvarinv * gradientF[i][k] * gradientF[i][l] + 2. * tmpvarinv * gradientG[i][k] * gradientG[i][l];
+        FIM[k * Nth + l] += tmp;
+        FIM[l * Nth + k] += tmp;
+      }
+      tmp = tmpvar * gradientF[i][k] * gradientF[i][k] + 2. * tmpvarinv * gradientG[i][k] * gradientG[i][k];
+      FIM[k * Nth + k] += tmp;
+    }
   }
-
-  gsl_matrix* S2 = gsl_matrix_alloc(Nth-1, Nth-1);
-  gsl_blas_dgemm(CblasNoTrans, CblasTrans, 1.0, S, S, 0.0, S2);
-
-  gsl_matrix_view FIMview = gsl_matrix_view_array(&FIM[0], Nth, Nth);
-  gsl_matrix_view subFIMview = gsl_matrix_submatrix(&FIMview.matrix, 0, 0, Nth-1, Nth-1);
-  gsl_matrix_memcpy(&subFIMview.matrix, S2);
-  
-  FIM[Nth*Nth-1] = 2.0*Nd;
-  gsl_matrix_scale(&FIMview.matrix, 1.0/var);
-  
-  gsl_matrix_free(S);
-  gsl_matrix_free(S2);
-
   sample["Fisher Information"] = FIM;
 }
-
-

@@ -1,114 +1,113 @@
 #ifndef _KORALI_CONDUIT_HPP_
 #define _KORALI_CONDUIT_HPP_
 
-#include "modules/module.hpp"
-#include "modules/experiment/experiment.hpp"
-#include "modules/solver/solver.hpp"
 #include "modules/conduit/conduit.hpp"
-#include <vector>
+#include "modules/experiment/experiment.hpp"
+#include "modules/module.hpp"
+#include "modules/solver/solver.hpp"
 #include <chrono>
 #include <stack>
+#include <vector>
 
-namespace korali {
-
+namespace korali
+{
 class Engine;
 
-class Conduit : public korali::Module {
-
- public:
-
- /**
+class Conduit : public korali::Module
+{
+  public:
+  /**
   * @brief A pointer to the Conduit's logger object.
  */
- korali::Logger* _logger;
+  korali::Logger *_logger;
 
- /**
+  /**
  * @brief Accepts a sample for processing.
- * @param A Korali sample
+ * @param sample A Korali sample
  */
- virtual void processSample(korali::Sample& sample) = 0;
+  virtual void processSample(korali::Sample &sample) = 0;
 
- /**
+  /**
   * @brief Stacks a new Engine into the engine stack
-  * @param A Korali Engine
+  * @param engine A Korali Engine
   */
- virtual void stackEngine(korali::Engine* engine) = 0;
+  virtual void stackEngine(korali::Engine *engine) = 0;
 
- /**
+  /**
   * @brief Pops the current Engine from the engine stack
   */
- virtual void popEngine() = 0;
+  virtual void popEngine() = 0;
 
- /**
+  /**
   * @brief Initializes the worker/server bifurcation in the conduit
   */
- virtual void initServer() = 0;
+  virtual void initServer() = 0;
 
- /**
+  /**
   * @brief Indicates how many samples can be evaluated concurrently.
+  * @return Maximum number of workers.
   */
- virtual size_t maxConcurrency() = 0;
+  virtual size_t maxConcurrency() = 0;
 
- /**
+  /**
  * @brief Determines whether the caller rank/thread/process is root.
  * @return True, if it is root; false, otherwise.
  */
- virtual bool isRoot() { return true; }
+  virtual bool isRoot() { return true; }
 
- /**
+  /**
  * @brief Starts the execution of a sample on the worker side with its own coroutine.
  * @param sampleJs JSON object with the sample information
  */
- void initiateSample(knlohmann::json& sampleJs);
+  void initiateSample(knlohmann::json &sampleJs);
 
- /**
+  /**
  * @brief Aborts execution for all ranks/threads/processes.
  */
- virtual void abort() { exit(-1); }
+  virtual void abort() { exit(-1); }
 
- /**
+  /**
  * @brief Starts the execution of the sample.
- * @param A Korali sample
+ * @param sample A Korali sample
  */
- void start(korali::Sample& sample);
+  void start(korali::Sample &sample);
 
- /**
+  /**
   * @brief Waits for a given sample to finish. The experiment will not continue until the sample has been evaluated.
-  * @param A Korali sample
+  * @param sample A Korali sample
   */
- void wait(korali::Sample& sample);
+  void wait(korali::Sample &sample);
 
- /**
+  /**
    * @brief Waits for a set of sample to finish. The experiment will not continue until all samples have been evaluated.
-   * @param A list of Korali samples
+   * @param samples A list of Korali samples
    */
- void waitAll(std::vector<korali::Sample>& samples);
+  void waitAll(std::vector<korali::Sample> &samples);
 
- /**
+  /**
   * @brief Waits for a set of sample to finish. The experiment will not continue until at least one of the samples have been evaluated.
-  * @param A list of Korali samples
+  * @param samples A list of Korali samples
+  * @return Position in the vector of the sample that has finished.
   */
- size_t waitAny(std::vector<korali::Sample>& samples);
+  size_t waitAny(std::vector<korali::Sample> &samples);
 
- /**
+  /**
  * @brief Sends sample information back to engine
  * @param sample Sample to send back
  */
- virtual void update(korali::Sample& sample) = 0;
+  virtual void update(korali::Sample &sample) = 0;
 
- /**
+  /**
    * @brief Wrapper function for the sample coroutine
    */
- static void coroutineWrapper();
+  static void coroutineWrapper();
 };
 
 /**
   * @brief A singleton pointer to the execution conduit. Shared among all experiments.
   */
-extern Conduit* _conduit;
+extern Conduit *_conduit;
 
 } // namespace korali
 
-
 #endif // _KORALI_CONDUIT_HPP_
-

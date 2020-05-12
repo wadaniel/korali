@@ -3,35 +3,37 @@
 
 #include "modules/distribution/distribution.hpp"
 
-namespace korali { namespace distribution {
-
+namespace korali
+{
+namespace distribution
+{
 class Univariate : public korali::Distribution
 {
- public:
-
+  public:
   void initialize() override;
 
- /**
+  /**
  * @brief Gets the probability density of the distribution at point x.
  * @param x point to evaluate P(x)
  * @return Value of the probability density.
  */
- virtual double getDensity(double x) = 0;
+  virtual double getDensity(double x) = 0;
 
- /**
+  /**
  * @brief Gets the Log probability density of the distribution at point x.
  * @param x point to evaluate log(P(x))
  * @return Log of probability density.
  */
- virtual double getLogDensity(double x) = 0;
+  virtual double getLogDensity(double x) = 0;
 
- /**
+  /**
   * @brief Draws and returns a random number from the distribution.
   * @return Random real number.
   */
- virtual double getRandomNumber() = 0;
+  virtual double getRandomNumber() = 0;
 };
 
-} } // namespace korali::distribution
+} // namespace distribution
+} // namespace korali
 
 #endif // _KORALI_DISTRIBUTIONHPP_

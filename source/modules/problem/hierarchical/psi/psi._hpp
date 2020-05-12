@@ -1,83 +1,86 @@
 #ifndef _KORALI_PROBLEM_PSI_HPP_
 #define _KORALI_PROBLEM_PSI_HPP_
 
-#include "modules/problem/hierarchical/hierarchical.hpp"
 #include "modules/distribution/distribution.hpp"
+#include "modules/problem/hierarchical/hierarchical.hpp"
 
-namespace korali { namespace problem { namespace hierarchical {
-
+namespace korali
+{
+namespace problem
+{
+namespace hierarchical
+{
 class Psi : public korali::problem::Hierarchical
 {
- private:
-
- /**
+  private:
+  /**
   * @brief Stores the pre-computed positions (pointers) of the conditional priors to evaluate for performance
   */
- struct conditionalPriorInfo
- {
-  /**
+  struct conditionalPriorInfo
+  {
+    /**
     * @brief Stores the position of the conditional prior
     */
-  std::vector<size_t> _samplePositions;
+    std::vector<size_t> _samplePositions;
 
-  /**
+    /**
    * @brief Stores the pointer of the conditional prior
    */
-  std::vector<double*> _samplePointers;
- };
+    std::vector<double *> _samplePointers;
+  };
 
- /**
+  /**
   * @brief Stores the Experiment modules of the subproblems to use as input
   */
- std::vector<korali::Experiment> _subProblemEngines;
+  std::vector<korali::Experiment> _subProblemEngines;
 
- /**
+  /**
   * @brief Stores the number of subproblems
   */
- size_t _subProblemsCount;
+  size_t _subProblemsCount;
 
- /**
+  /**
  * @brief Stores the number of variables in the subproblems (all must be the same)
  */
- size_t _subProblemsVariablesCount;
+  size_t _subProblemsVariablesCount;
 
- /**
+  /**
   * @brief Stores the sample coordinates of all the subproblems
   */
- std::vector<std::vector<std::vector<double>>> _subProblemsSampleCoordinates;
+  std::vector<std::vector<std::vector<double>>> _subProblemsSampleCoordinates;
 
- /**
+  /**
   * @brief Stores the sample logLikelihoods of all the subproblems
   */
- std::vector<std::vector<double>> _subProblemsSampleLogLikelihoods;
+  std::vector<std::vector<double>> _subProblemsSampleLogLikelihoods;
 
- /**
+  /**
   * @brief Stores the sample logPriors of all the subproblems
   */
- std::vector<std::vector<double>> _subProblemsSampleLogPriors;
+  std::vector<std::vector<double>> _subProblemsSampleLogPriors;
 
- /**
+  /**
   * @brief Stores the precomputed conditional prior information, for performance
   */
- std::vector<conditionalPriorInfo> _conditionalPriorInfos;
+  std::vector<conditionalPriorInfo> _conditionalPriorInfos;
 
- public:
-
- /**
+  public:
+  /**
   * @brief Stores the indexes of conditional priors to Experiment variables
   */
- std::vector<size_t> _conditionalPriorIndexes;
+  std::vector<size_t> _conditionalPriorIndexes;
 
- /**
+  /**
   * @brief Updates the distribution parameters for the conditional priors, given variable values in the sample.
   * @param sample A Korali Sample
   */
- void updateConditionalPriors(korali::Sample& sample);
- void evaluateLogLikelihood(korali::Sample& sample) override;
- void initialize() override;
+  void updateConditionalPriors(korali::Sample &sample);
+  void evaluateLogLikelihood(korali::Sample &sample) override;
+  void initialize() override;
 };
 
-} } } // namespace korali::problem::bayesian::hierarchical
-
+} // namespace hierarchical
+} // namespace problem
+} // namespace korali
 
 #endif // _KORALI_PROBLEM_PSI_HPP_

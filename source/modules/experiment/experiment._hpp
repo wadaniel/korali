@@ -1,13 +1,13 @@
 #ifndef _KORALI_EXPERIMENT_HPP_
 #define _KORALI_EXPERIMENT_HPP_
 
-#include <vector>
-#include <functional>
-#include <chrono>
+#include "auxiliar/koraliJson.hpp"
+#include "modules/module.hpp"
 #include "sample/sample.hpp"
 #include "variable/variable.hpp"
-#include "modules/module.hpp"
-#include "auxiliar/koraliJson.hpp"
+#include <chrono>
+#include <functional>
+#include <vector>
 
 namespace korali
 {
@@ -15,106 +15,104 @@ class Solver;
 class Problem;
 class Engine;
 
-class Experiment : public korali::Module {
+class Experiment : public korali::Module
+{
+  public:
+  Experiment();
 
- public:
+  void initialize() override;
+  void finalize() override;
 
- Experiment();
-
- void initialize() override;
- void finalize() override;
-
- /**
+  /**
   * @brief JSON object to store the experiment's configuration
   */
- korali::KoraliJson  _js;
+  korali::KoraliJson _js;
 
- /**
+  /**
   * @brief A pointer to the Experiment's logger object.
  */
- korali::Logger* _logger;
+  korali::Logger *_logger;
 
- /**
+  /**
  * @brief A pointer to the parent engine
  */
- korali::Engine* _engine;
+  korali::Engine *_engine;
 
- /**
+  /**
   * @brief JSON object to details of all the samples that have been executed, if requested by the user.
   */
- korali::KoraliJson  _sampleInfo;
+  korali::KoraliJson _sampleInfo;
 
- /**
+  /**
  * @brief Maps sample Ids to their pointers
  */
- std::map<size_t, korali::Sample*> sampleIdMap;
+  std::map<size_t, korali::Sample *> sampleIdMap;
 
- /**
+  /**
   * @brief Log file onto which to output log information. (Default = stdout)
   */
- FILE* _logFile;
+  FILE *_logFile;
 
- /**
+  /**
   * @brief Experiment Identifier
   */
- size_t _experimentId;
+  size_t _experimentId;
 
- /**
+  /**
   * @brief Experiment's coroutine (thread). It is swapped among other experiments, and sample threads.
   */
- cothread_t _thread;
+  cothread_t _thread;
 
- /**
+  /**
   * @brief Gets an item from the JSON object at the current pointer position.
   * @param key A pybind11 object acting as JSON key (number or string).
   * @return A pybind11 object
  */
- pybind11::object getItem(pybind11::object key);
+  pybind11::object getItem(pybind11::object key);
 
- /**
+  /**
   * @brief Sets an item on the JSON object at the current pointer position.
   * @param key A pybind11 object acting as JSON key (number or string).
   * @param val The value of the item to set.
  */
- void setItem(pybind11::object key, pybind11::object val);
+  void setItem(pybind11::object key, pybind11::object val);
 
- /**
+  /**
   * @brief Load the state of a previous experiment's execution.
   * @param path Path from which to load the experiment state.
   * @return True, if successful; false, otherwise.
  */
- bool loadState(std::string path);
+  bool loadState(std::string path);
 
- /**
+  /**
   * @brief Load the state of a previous experiment's execution from the experiment's result path.
   * @return True, if successful; false, otherwise.
  */
- bool loadState();
+  bool loadState();
 
- /**
+  /**
    * @brief Saves the state into the experiment's result path.
   */
- void saveState();
+  void saveState();
 
- /**
+  /**
    * @brief Start the execution of the current experiment.
    */
- void run();
+  void run();
 
-
- /**
+  /**
   * @brief C++ wrapper for the getItem operator.
   * @param key A C++ string acting as JSON key.
   * @return The referenced JSON object content.
  */
- knlohmann::json& operator[](const std::string& key);
+  knlohmann::json &operator[](const std::string &key);
 
- /**
+  /**
   * @brief C++ wrapper for the getItem operator.
   * @param key A C++ integer acting as JSON key.
   * @return The referenced JSON object content.
  */
- knlohmann::json& operator[](const unsigned long int& key);
+  knlohmann::json &operator[](const unsigned long int &key);
 };
 
 } // namespace korali

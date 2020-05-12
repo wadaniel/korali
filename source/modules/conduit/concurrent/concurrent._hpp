@@ -2,59 +2,59 @@
 #define _KORALI_CONDUIT_EXTERNAL_HPP_
 
 #include "modules/conduit/conduit.hpp"
+#include <chrono>
+#include <map>
+#include <queue>
 #include <sys/types.h>
 #include <unistd.h>
-#include <queue>
-#include <chrono>
 #include <vector>
-#include <map>
 
-namespace korali { namespace conduit {
+namespace korali
+{
+namespace conduit
+{
+class Concurrent : public korali::Conduit
+{
+  private:
+  void worker(int workerId);
 
-class Concurrent : public korali::Conduit {
-
- private:
-
- void worker(int workerId);
-
- public:
-
- /**
+  public:
+  /**
    * @brief PID of worker processes
    */
- std::vector<pid_t> _workerPids;
+  std::vector<pid_t> _workerPids;
 
- /**
+  /**
    * @brief Worker Id for current workers
    */
- int _workerId;
+  int _workerId;
 
- /**
+  /**
    * @brief OS Pipe to handle result communication coming from worker processes
    */
- std::vector<std::vector<int>> _resultPipe;
+  std::vector<std::vector<int>> _resultPipe;
 
- /**
+  /**
   * @brief OS Pipe to handle sample parameter communication to worker processes
   */
- std::vector<std::vector<int>> _inputsPipe;
+  std::vector<std::vector<int>> _inputsPipe;
 
- /**
+  /**
   * @brief Queue with free worker threads
   */
- std::queue<int> _launcherQueue;
+  std::queue<int> _launcherQueue;
 
- void update(korali::Sample& sample) override;
- void initServer() override;
- size_t maxConcurrency() override;
- void processSample(korali::Sample& sample) override;
- void initialize() override;
- void stackEngine(korali::Engine*) override;
- void popEngine() override;
- void finalize() override;
-
+  void update(korali::Sample &sample) override;
+  void initServer() override;
+  size_t maxConcurrency() override;
+  void processSample(korali::Sample &sample) override;
+  void initialize() override;
+  void stackEngine(korali::Engine *) override;
+  void popEngine() override;
+  void finalize() override;
 };
 
-} } // namespace korali::conduit
+} // namespace conduit
+} // namespace korali
 
 #endif // _KORALI_CONDUIT_EXTERNAL_HPP_

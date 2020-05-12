@@ -1,18 +1,4 @@
-Dry-run all real-case examples
+Run the korali.plotter for all basic tutorial results.
 ################################################################ 
 
-## Description
-
-Description
-
-## Source
-
-[https://github.com/cselab/korali/tree/master/tests/REG-005](https://github.com/cselab/korali/tree/master/tests/REG-005)
-
-## Steps
-
-### Step 1
-
-+ Operation: Run all .py found in Tutorials (A) .
-+ Expected: No errors (rc = 0).
-
+Run the korali.plotter for all results found in the basic tutorials folder to verify the plotter works correctly.

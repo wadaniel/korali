@@ -3,35 +3,45 @@
 void korali::problem::Propagation::initialize()
 {
   if (_k->_variables.size() == 0) _k->_logger->logError("Execution problems require at least one variable.\n");
- 
+
   // Validate the given _priorDistribution and _precomputedValues
   size_t Ns = _k->_variables[0]->_precomputedValues.size();
   for (size_t i = 0; i < _k->_variables.size(); i++)
-    if (_k->_variables[i]->_precomputedValues.size() != Ns)  _k->_logger->logError("All 'Precomputed Values' must have the same length ");
+    if (_k->_variables[i]->_precomputedValues.size() != Ns) _k->_logger->logError("All 'Precomputed Values' must have the same length ");
 
   for (size_t i = 0; i < _k->_variables.size(); i++)
   {
     bool foundDistribution = false;
-    if( Ns == 0 ){
+    if (Ns == 0)
+    {
       // Validate the _priorDistribution names
       for (size_t j = 0; j < _k->_distributions.size(); j++)
-  	    if (_k->_variables[i]->_priorDistribution == _k->_distributions[j]->_name){ foundDistribution = true; _k->_variables[i]->_distributionIndex = j; }
-  	   
+        if (_k->_variables[i]->_priorDistribution == _k->_distributions[j]->_name)
+        {
+          foundDistribution = true;
+          _k->_variables[i]->_distributionIndex = j;
+        }
+
       if (foundDistribution == false) _k->_logger->logError("Did not find distribution %s, specified by variable %s\n", _k->_variables[i]->_priorDistribution.c_str(), _k->_variables[i]->_name.c_str());
-      if( _numberOfSamples == 0 ) _k->_logger->logError("Number of Samples must be larger than 0");
+      if (_numberOfSamples == 0) _k->_logger->logError("Number of Samples must be larger than 0");
       _k->_variables[i]->_sampledValues.resize(_numberOfSamples);
     }
-    else{
-   	  for (size_t j = 0; j < _k->_distributions.size(); j++)
-	      if (_k->_variables[i]->_priorDistribution == _k->_distributions[j]->_name) { foundDistribution = true; _k->_variables[i]->_distributionIndex = j; }
-	   
+    else
+    {
+      for (size_t j = 0; j < _k->_distributions.size(); j++)
+        if (_k->_variables[i]->_priorDistribution == _k->_distributions[j]->_name)
+        {
+          foundDistribution = true;
+          _k->_variables[i]->_distributionIndex = j;
+        }
+
       if (foundDistribution == true) _k->_logger->logError("Found distribution %s in variable %s\n, although using precomputed Values", _k->_variables[i]->_priorDistribution.c_str(), _k->_variables[i]->_name.c_str());
-	    if( _numberOfSamples > 0 ) _k->_logger->logError("Number of Samples set although using precomputed Values");
+      if (_numberOfSamples > 0) _k->_logger->logError("Number of Samples set although using precomputed Values");
     }
   }
 }
 
-void korali::problem::Propagation::execute(korali::Sample& sample)
+void korali::problem::Propagation::execute(korali::Sample &sample)
 {
- sample.run(_executionModel);
+  sample.run(_executionModel);
 }

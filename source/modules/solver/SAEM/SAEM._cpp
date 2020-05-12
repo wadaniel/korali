@@ -31,9 +31,8 @@ void korali::solver::SAEM::initialize()
   _experiment["Problem"]["Objective Function"] = &QFunction;
 }
 
-
 /** @brief Is called repeatedly to run the generations of the experiment. */
-void korali::solver::SAEM::runGeneration( void )
+void korali::solver::SAEM::runGeneration(void)
 {
   if (_k->_currentGeneration == 1) setInitialConfiguration();
 
@@ -280,7 +279,6 @@ void korali::solver::SAEM::updateHyperparameters()
     _numberGenerationsSmallLikelihoodChange++;
 }
 
-
 /** @brief Test whether index idx corresponds to a latent variable.
 
  @param idx The index of a variable, in the list of all variables. The order is given by the user when defining
@@ -311,7 +309,7 @@ std::vector<double> korali::solver::SAEM::meanAndSDev(std::vector<double> v)
 
     That is, data[i][j] will be moved to result[j][i].
     */
-std::vector<std::vector<double> > korali::solver::SAEM::transpose(const std::vector<std::vector<double> > data)
+std::vector<std::vector<double>> korali::solver::SAEM::transpose(const std::vector<std::vector<double>> data)
 {
   /* From: https://stackoverflow.com/questions/6009782/how-to-pivot-a-vector-of-vectors */
   // this assumes that all inner vectors have the same size
@@ -322,9 +320,8 @@ std::vector<std::vector<double> > korali::solver::SAEM::transpose(const std::vec
   return result;
 }
 
-
 /** @brief Don't print anything before running a generation. */
-void korali::solver::SAEM::printGenerationBefore(){ return; }
+void korali::solver::SAEM::printGenerationBefore() { return; }
 
 /** @brief After each except the final generation, print information about optimization progress.
     More is printed with  output option "Detailed".

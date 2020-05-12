@@ -6,18 +6,20 @@
 #include "modules/solver/solver.hpp"
 #include <vector>
 
-namespace korali { namespace solver {
-
+namespace korali
+{
+namespace solver
+{
 /*! @brief Class for the (general) Stochastic Approximation Expectation Maximization solver. */
 class SAEM : public korali::Solver
 {
   public:
   void setInitialConfiguration();
 
-  korali::Engine _engine; //!< @brief Korali engine for running the optimization in the M step
+  korali::Engine _engine;         //!< @brief Korali engine for running the optimization in the M step
   korali::Experiment _experiment; //!< @brief Korali experiment for the optimization in the M step
 
-  korali::problem::bayesian::Latent* _latentProblem; //!< @brief The problem instance that this SAEM is supposed to solve
+  korali::problem::bayesian::Latent *_latentProblem; //!< @brief The problem instance that this SAEM is supposed to solve
 
   /**
   * @brief Run the user defined sampler to get new samples. Track mean and variance of the samples.
@@ -39,7 +41,7 @@ class SAEM : public korali::Solver
   */
   void calculateSampleSVectors();
 
-/** @brief Robbins-Monro-update our estimate of S.
+  /** @brief Robbins-Monro-update our estimate of S.
 
  Uses:
         _currentSamplesSValues

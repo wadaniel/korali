@@ -5,18 +5,28 @@ void korali::solver::NeuralNetwork::setInitialConfiguration()
 {
  // Initialize solver's configuration here
 
- if (_backend == "oneDNN")
- {
   #ifndef _KORALI_USE_ONEDNN
-    _k->_logger->logError("Requested oneDNN backend for the neural network, but Korali has not been properly installed to support it.\n");
+    _k->_logger->logError("OneDNN has not been properly installed to support NN operations.\n");
   #endif
- }
 
 }
 
 void korali::solver::NeuralNetwork::runGeneration()
 {
  if (_k->_currentGeneration == 1) setInitialConfiguration();
+
+ if (_operation == "Training") doTraining();
+ if (_operation == "Forwarding") doForwarding();
+
+}
+
+void korali::solver::NeuralNetwork::doTraining()
+{
+
+}
+
+void korali::solver::NeuralNetwork::doForwarding()
+{
 
 }
 

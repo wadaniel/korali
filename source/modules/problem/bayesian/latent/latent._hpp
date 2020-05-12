@@ -21,7 +21,13 @@ class Latent : public korali::problem::Bayesian
   void evaluateFisherInformation(korali::Sample &sample) override;
 
   /*! @brief run the user defined sampler.
-   *  @param sample contains ['Hyperparameters'] and ['Number Samples']
+      @param sample contains [Hyperparameters] and [Number Samples].
+      @param sample needs to contain:
+      - sample["Hyperparameters"]
+      - sample["Number Samples"]
+
+    Values that will be set:
+      - sample["Samples"]
    */
   void sampleLatent(korali::Sample &sample);
 

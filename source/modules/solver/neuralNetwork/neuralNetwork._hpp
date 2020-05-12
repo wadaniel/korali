@@ -4,6 +4,10 @@
 #include "modules/solver/solver.hpp"
 #include "modules/layer/layer.hpp"
 
+#ifdef _KORALI_USE_ONEDNN
+#include "dnnl.hpp"
+#endif
+
 namespace korali { namespace solver {
 
 class NeuralNetwork : public korali::Solver

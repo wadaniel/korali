@@ -27,6 +27,7 @@ e["Variables"][2]["Type"] = "Output"
 
 e["Solver"]["Type"] = "Neural Network"
 e["Solver"]["Operation"] = "Train"
+e["Solver"]["Backend"] = "oneDNN"
 e["Solver"]["Optimizer"] = "CMAES"
 e["Solver"]["Termination Criteria"]["Max Generations"] = 1
   

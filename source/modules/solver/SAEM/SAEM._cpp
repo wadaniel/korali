@@ -111,7 +111,7 @@ void korali::solver::SAEM::setInitialConfiguration()
   _experiment["Console Output"]["Verbosity"] = "Silent";
 }
 
-/// @brief Run the user defined sampler to get new samples. Track mean and variance of the samples.
+///  Run the user defined sampler to get new samples. Track mean and variance of the samples.
 void korali::solver::SAEM::sampleLatent()
 {
   korali::Sample sample;
@@ -140,7 +140,7 @@ void korali::solver::SAEM::sampleLatent()
   }
 }
 
-/*! @brief Called after sampling.
+/* Called after sampling.
 
 Called after sampling; sets _currentSamplesSVectors using each current sample of latent variables
 and the current hyperparameter values
@@ -176,7 +176,7 @@ void korali::solver::SAEM::calculateSampleSVectors()
   }
 }
 
-/*! @brief Robbins-Monro-update our estimate of S.
+/*  Robbins-Monro-update our estimate of S.
 
  Uses:
         _currentSamplesSValues
@@ -226,7 +226,7 @@ void korali::solver::SAEM::updateS()
   return;
 }
 
-/*! @brief Function to be optimized in the M-step.
+/*  Function to be optimized in the M-step.
 
    Uses:
        _currentS
@@ -257,7 +257,7 @@ void korali::solver::SAEM::QFunction(korali::Sample &sample)
   sample["F(x)"] = -zeta + std::inner_product(std::begin(solver->_currentS), std::end(solver->_currentS), std::begin(phi), 0.0);
 }
 
-/*! @brief Set up a korali experiment and optimize the current
+/*  Set up a korali experiment and optimize the current
           Q function to get a new vector of hyperparameters. */
 void korali::solver::SAEM::updateHyperparameters()
 {

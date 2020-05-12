@@ -29,7 +29,7 @@ void korali::problem::bayesian::Latent::initialize()
 
 /*! @brief Given 'Hyperparameters' and 'Latent Variables' (parameters the sample is expected to have), calculate
           the total log likelihood.
-*/
+*/                                      
 void korali::problem::bayesian::Latent::evaluateLogLikelihood(korali::Sample& sample){
     // Evaluate the user-given probability distribution for latent- and hyperparameter values given in the sample
   sample.run(_sOfLikelihoodModel);

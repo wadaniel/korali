@@ -140,13 +140,3 @@ void korali::problem::bayesian::Approximate::likelihoodTruncatedNormal(korali::S
 
   sample["logLikelihood"] = -logNormalization - 0.5 * ssn / sigma2;
 }
-
-void korali::problem::bayesian::Approximate::evaluateLoglikelihoodGradient(korali::Sample &sample)
-{
-  _k->_logger->logError("Gradient not yet implemented for selected bayesian problem and log likelihood model.");
-}
-
-void korali::problem::bayesian::Approximate::evaluateFisherInformation(korali::Sample &sample)
-{
-  _k->_logger->logError("Fisher information not yet implemented for selected bayesian problem and log likelihood model.");
-}

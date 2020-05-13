@@ -210,7 +210,7 @@ void korali::solver::TMCMC::prepareGeneration()
 
   std::vector<double> zeroMean(_k->_variables.size(), 0.0);
   _multivariateGenerator->_meanVector = zeroMean;
-  _multivariateGenerator->_covarianceMatrix = _covarianceMatrix;
+  _multivariateGenerator->_sigma = _covarianceMatrix;
   _multivariateGenerator->updateDistribution();
 
   for (size_t i = 0; i < _populationSize; i++)
@@ -316,6 +316,10 @@ void korali::solver::TMCMC::processGeneration()
       _covarianceMatrix[i * _k->_variables.size() + j] = _covarianceMatrix[j * _k->_variables.size() + i] = _covarianceScaling * s;
     }
   }
+
+  /* Cholesky Decomp */
+  gsl_matrix_view sigma = gsl_matrix_view_array(&_covarianceMatrix[0], _k->_variables.size(), _k->_variables.size());
+  gsl_linalg_cholesky_decomp(&sigma.matrix);
 
   /* Resampling - Init new chains */
   std::fill(std::begin(_chainLengths), std::end(_chainLengths), 0);
@@ -544,7 +548,12 @@ void korali::solver::TMCMC::generateCandidate(const size_t sampleId)
     {
       std::vector<double> zeroMean(_k->_variables.size(), 0.0);
       _multivariateGenerator->_meanVector = _chainLeaders[sampleId];
-      for (size_t i = 0; i < _k->_variables.size() * _k->_variables.size(); ++i) _multivariateGenerator->_covarianceMatrix[i] = _chainLeadersCovariance[sampleId][i] * _stepSize;
+      for (size_t i = 0; i < _k->_variables.size() * _k->_variables.size(); ++i) _multivariateGenerator->_sigma[i] = _chainLeadersCovariance[sampleId][i] * _stepSize;
+
+      /* Cholesky Decomp */
+      gsl_matrix_view sigma = gsl_matrix_view_array(&_multivariateGenerator->_sigma[0], _k->_variables.size(), _k->_variables.size());
+      gsl_linalg_cholesky_decomp(&sigma.matrix);
+
       _multivariateGenerator->updateDistribution();
       _multivariateGenerator->getRandomVector(&_chainCandidates[sampleId][0], _k->_variables.size());
 
@@ -556,7 +565,7 @@ void korali::solver::TMCMC::generateCandidate(const size_t sampleId)
     else /* error */
     {
       _multivariateGenerator->_meanVector = _chainLeaders[sampleId];
-      _multivariateGenerator->_covarianceMatrix = _covarianceMatrix;
+      _multivariateGenerator->_sigma = _covarianceMatrix;
       _multivariateGenerator->updateDistribution();
       _multivariateGenerator->getRandomVector(&_chainCandidates[sampleId][0], _k->_variables.size());
     }

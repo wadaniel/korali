@@ -28,7 +28,7 @@ void korali::distribution::multivariate::Normal::getRandomVector(double *x, size
 
 void korali::distribution::multivariate::Normal::updateDistribution()
 {
-  size_t covarianceMatrixSize = _covarianceMatrix.size();
+  size_t covarianceMatrixSize = _sigma.size();
 
   size_t sideSize = sqrt(covarianceMatrixSize);
   if ((sideSize * sideSize) != covarianceMatrixSize)
@@ -39,7 +39,7 @@ void korali::distribution::multivariate::Normal::updateDistribution()
 
   _workVector.resize(meanSize);
 
-  _sigma_view = gsl_matrix_view_array(_covarianceMatrix.data(), sideSize, sideSize);
+  _sigma_view = gsl_matrix_view_array(_sigma.data(), sideSize, sideSize);
   _mean_view = gsl_vector_view_array(_meanVector.data(), meanSize);
   _work_view = gsl_vector_view_array(_workVector.data(), meanSize);
 }
@@ -52,9 +52,9 @@ void korali::distribution::multivariate::Normal::setProperty(std::string propert
     _meanVector = values;
     recognizedProperty = true;
   }
-  if (propertyName == "Covariance Matrix")
+  if (propertyName == "Sigma")
   {
-    _covarianceMatrix = values;
+    _sigma = values;
     recognizedProperty = true;
   }
   if (recognizedProperty == false) _k->_logger->logError("Unrecognized property: %s for the Multivariate Normal distribution", propertyName.c_str());

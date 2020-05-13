@@ -5,8 +5,8 @@
 
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_matrix.h>
-#include <gsl/gsl_vector.h>
 #include <gsl/gsl_randist.h>
+#include <gsl/gsl_vector.h>
 
 #include <algorithm> //sort
 #include <chrono>
@@ -240,10 +240,10 @@ void korali::solver::Nested::generateCandidatesFromMCMC()
   std::vector<double> zeroMean(_k->_variables.size(), 0.0);
   _multivariateGenerator->_meanVector = zeroMean;
   _multivariateGenerator->_sigma = _covarianceMatrix;
- 
+
   /* Cholesky Decomp */
-  gsl_matrix_view sigma = gsl_matrix_view_array( &_multivariateGenerator->_sigma[0], _k->_variables.size(), _k->_variables.size() );
-  gsl_linalg_cholesky_decomp( &sigma.matrix );
+  gsl_matrix_view sigma = gsl_matrix_view_array(&_multivariateGenerator->_sigma[0], _k->_variables.size(), _k->_variables.size());
+  gsl_linalg_cholesky_decomp(&sigma.matrix);
 
   _multivariateGenerator->updateDistribution();
 

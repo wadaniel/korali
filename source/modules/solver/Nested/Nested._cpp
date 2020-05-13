@@ -238,7 +238,7 @@ void korali::solver::Nested::generateCandidatesFromMCMC()
 {
   std::vector<double> zeroMean(_k->_variables.size(), 0.0);
   _multivariateGenerator->_meanVector = zeroMean;
-  _multivariateGenerator->_covarianceMatrix = _covarianceMatrix;
+  _multivariateGenerator->_sigma = _covarianceMatrix;
   _multivariateGenerator->updateDistribution();
 
   for (size_t i = 0; i < _batchSize; i++)

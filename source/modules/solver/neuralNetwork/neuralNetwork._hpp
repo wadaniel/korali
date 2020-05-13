@@ -3,6 +3,8 @@
 
 #include "modules/solver/solver.hpp"
 #include "modules/layer/layer.hpp"
+#include "modules/distribution/univariate/uniform/uniform.hpp"
+#include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 
 #ifdef _KORALI_USE_ONEDNN
 #include "dnnl.hpp"
@@ -13,6 +15,24 @@ namespace korali { namespace solver {
 class NeuralNetwork : public korali::Solver
 {
  public:
+
+ /**
+  * @brief Storage for the pointer to the learning problem
+  */
+ korali::problem::SupervisedLearning *_problem;
+
+ #ifdef _KORALI_USE_ONEDNN
+ /**
+   * @brief oneDNN Engine
+   */
+ dnnl::engine _engine;
+
+ /**
+   * @brief oneDNN Stream to run operations
+   */
+ dnnl::stream _stream;
+
+ #endif
 
  /**
   * @brief Performs Training Operations

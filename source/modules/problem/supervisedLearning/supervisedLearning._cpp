@@ -2,12 +2,25 @@
 
 void korali::problem::SupervisedLearning::initialize()
 {
- // Initializing Problem Configuration
+ // If it has already been initialized, reset generation and skip initialization.
+  if (_isInitialized == true) return;
+
+  // Processing output/input variable configuration
+
+  for (size_t i = 0; i < _k->_variables.size(); i++)
+  {
+    if (_k->_variables[i]->_type == "Output") _outputVectorIndexes.push_back(i);
+    if (_k->_variables[i]->_type == "Input") _inputVectorIndexes.push_back(i);
+  }
+
+  _inputVectorSize = _inputVectorIndexes.size();
+  _outputVectorSize = _outputVectorIndexes.size();
+
+  if (_inputVectorSize == 0) _k->_logger->logError("No input variables have been defined.\n");
+  if (_outputVectorSize == 0) _k->_logger->logError("No output variables have been defined.\n");
+
+  // Now mark as initalized
+  _isInitialized = true;
 }
 
-void korali::problem::SupervisedLearning::evaluate(korali::Sample& sample)
-{
- // Evaluating Sample
- sample["Evaluation"] = 1.0;
-}
 

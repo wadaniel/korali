@@ -13,8 +13,6 @@ class Dense : public korali::Layer
 {
  public:
 
- void initialize() override;
- void forward(const std::vector<double>& inputs) override;
 };
 
 } // namespace layer

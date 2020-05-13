@@ -27,25 +27,25 @@ e["Variables"][2]["Type"] = "Output"
 
 e["Solver"]["Type"] = "Neural Network"
 e["Solver"]["Operation"] = "Train"
-e["Solver"]["Backend"] = "oneDNN"
+e["Solver"]["Engine Kind"] = "CPU"
 e["Solver"]["Optimizer"] = "CMAES"
 e["Solver"]["Termination Criteria"]["Max Generations"] = 1
-e["Solver"]["Weight Initialization"] = "Xavier"
+e["Solver"]["Weight Initialization"] = "Xavier" 
 
 e["Solver"]["Layers"][0]["Type"] = "Input"
-e["Solver"]["Layers"][0]["Nodes"] = 2
+e["Solver"]["Layers"][0]["Node Count"] = 2
 e["Solver"]["Layers"][0]["Activation Function"] = "Identity"
 
 e["Solver"]["Layers"][1]["Type"] = "Dense"
-e["Solver"]["Layers"][1]["Nodes"] = 80
+e["Solver"]["Layers"][1]["Node Count"] = 80
 e["Solver"]["Layers"][1]["Activation Function"] = "SoftSign"
 
 e["Solver"]["Layers"][2]["Type"] = "Dense"
-e["Solver"]["Layers"][2]["Nodes"] = 60
+e["Solver"]["Layers"][2]["Node Count"] = 60
 e["Solver"]["Layers"][2]["Activation Function"] = "SoftMax"
 
 e["Solver"]["Layers"][3]["Type"] = "Output"
-e["Solver"]["Layers"][3]["Nodes"] = 1
+e["Solver"]["Layers"][3]["Node Count"] = 1
 e["Solver"]["Layers"][3]["Activation Function"] = "Identity"
 
 k = korali.Engine()

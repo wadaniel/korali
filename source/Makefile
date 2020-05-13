@@ -9,9 +9,9 @@ endif
 # ==============================================================================
 CXXFLAGS  = -g $(OPTFLAGS) $(GSLCFLAGS) $(CXXARCH) $(WARNINGFLAGS)
 CXXFLAGS += -I. -I./external
-CXXFLAGS += $(PYBIND11INCLUDES) $(MPIFLAGS) $(ONEDNNFLAGS)
+CXXFLAGS += $(PYBIND11INCLUDES) $(MPIFLAGS) $(ONEDNNCFLAGS)
 
-LDFLAGS = $(SHAREDLIB_FLAG) -L$(GSLPREFIX)/lib -Wl,-rpath -Wl,$(GSLPREFIX)/lib $(GSLLIBS)
+LDFLAGS = $(SHAREDLIB_FLAG) -L$(GSLPREFIX)/lib -Wl,-rpath -Wl,$(GSLPREFIX)/lib $(GSLLIBS) $(ONEDNNLDFLAGS)
 LDFLAGS += $(PYBIND11LIBS)
 
 DEPFLAGS = -MT $@ -MD -MP -MF $(DEPDIR)/$*.Td

@@ -5,9 +5,75 @@ void korali::solver::NeuralNetwork::setInitialConfiguration()
 {
  // Initialize solver's configuration here
 
-  #ifndef _KORALI_USE_ONEDNN
-    _k->_logger->logError("OneDNN has not been properly installed to support NN operations.\n");
-  #endif
+ #ifndef _KORALI_USE_ONEDNN
+
+ _k->_logger->logError("OneDNN has not been properly installed to support NN operations.\n");
+
+ #else
+
+ // If initial generation, get problem pointer, and set initial Learner configuration
+ _problem = dynamic_cast<korali::problem::SupervisedLearning *>(_k->_problem);
+
+ if (_engineKind == "CPU") _engine = dnnl::engine(dnnl::engine::kind::cpu, 0);
+ if (_engineKind == "GPU") _engine = dnnl::engine(dnnl::engine::kind::gpu, 0);
+
+ _stream = dnnl::stream(_engine);
+
+ // Initializing Layers
+
+ size_t layerCount = _layers.size();
+
+ if (_layers[0]->_type != "Input") _k->_logger->logError("The first layer must be of an input type.\n");
+ for (size_t i = 1; i < layerCount-1; i++)
+ {
+  if (_layers[i]->_type == "Input") _k->_logger->logError("Hidden layers cannot be input type.\n");
+  if (_layers[i]->_type == "Output") _k->_logger->logError("Hidden layers cannot be output type.\n");
+ }
+ if (_layers[layerCount-1]->_type != "Output") _k->_logger->logError("The last layer must be of an output type.\n");
+
+ // Initializing Weights
+
+ for (size_t i = 1; i < layerCount; i++)
+ {
+  size_t weightCount = _layers[i]->_nodeCount * _layers[i-1]->_nodeCount;
+  _layers[i]->_weights.resize(weightCount);
+
+  if (_weightInitialization == "Xavier")
+  {
+   double d = sqrt(6.0 / sqrt(weightCount));
+
+   for (size_t j = 0; j < weightCount; j++)
+   {
+     double n = _uniformGenerator->getRandomNumber(); // 0 <= d <= 1
+     _layers[i]->_weights[j] = d*n; // -n <= weight <= n
+     printf("Layer %lu - Weight %lu: %f\n", i, j, _layers[i]->_weights[j]);
+   }
+  }
+ }
+
+ // Initializing Memory Objects
+
+ size_t inputCount = _problem->_trainingSet.size();
+
+ // Initializing memory objects for hidden layers
+
+ for (size_t i = 0; i < layerCount; i++)
+ {
+  const dnnl::memory::dim N = inputCount, IC = _layers[i]->_nodeCount;
+  dnnl::memory::dims layerDims = {N, IC};
+  auto nodeMemDesc = dnnl::memory::desc(layerDims, dnnl::memory::data_type::f32, dnnl::memory::format_tag::ab);
+  _layers[i]->_nodeMem = dnnl::memory(nodeMemDesc, _engine);
+ }
+
+ for (size_t i = 1; i < layerCount; i++)
+ {
+  const dnnl::memory::dim N = inputCount, IC = _layers[i-1]->_nodeCount, OC = _layers[i]->_nodeCount;
+  dnnl::memory::dims layerDims = {N, IC, OC};
+  auto weightMemDesc = dnnl::memory::desc(layerDims, dnnl::memory::data_type::f32, dnnl::memory::format_tag::abc);
+  _layers[i]->_weightMem = dnnl::memory(weightMemDesc, _engine);
+ }
+
+ #endif
 
 }
 

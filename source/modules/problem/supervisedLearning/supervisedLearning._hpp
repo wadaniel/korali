@@ -10,7 +10,6 @@ class SupervisedLearning : public korali::Problem
  public:
 
  void initialize() override;
- void evaluate(korali::Sample& sample);
 
 };
 

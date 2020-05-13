@@ -1,6 +1,10 @@
 #ifndef _KORALI_LAYER_HPP_
 #define _KORALI_LAYER_HPP_
 
+#ifdef _KORALI_USE_ONEDNN
+#include "dnnl.hpp"
+#endif
+
 #include "modules/module.hpp"
 
 namespace korali
@@ -9,7 +13,14 @@ class Layer : public korali::Module
 {
   public:
 
- virtual void forward(const std::vector<double>& inputs) = 0;
+#ifdef _KORALI_USE_ONEDNN
+ /**
+   * @brief oneDNN Memory object descriptor to contain input data
+   */
+ dnnl::memory _nodeMem;
+ dnnl::memory _weightMem;
+#endif
+
 };
 
 } // namespace korali

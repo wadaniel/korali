@@ -204,7 +204,8 @@ fi
 
 ######## Checking support for oneDNN ########
 
-ONEDNNFLAGS=""
+ONEDNNCFLAGS=""
+ONEDNNLDFLAGS=""
 log "[Korali] Checking for oneDNN support..."
 if [ ! -f ${DNNLROOT}/lib64/libdnnl.so ]
 then
@@ -212,7 +213,8 @@ then
  logEcho "         > To use oneDNN, define the \$DNNLROOT environment variable."
 else
  log "[Korali] Found openDNN library at ${DNNLROOT}/lib64/libdnnl.so"
- ONEDNNFLAGS="-D_KORALI_USE_ONEDNN -Wl,-rpath -Wl,${DNNLROOT}/lib64/ -L${DNNLROOT}/lib64/ -I${DNNLROOT}/include -ldnnl"
+ ONEDNNCFLAGS="-D_KORALI_USE_ONEDNN -I${DNNLROOT}/include"
+ ONEDNNLDFLAGS="-Wl,-rpath -Wl,${DNNLROOT}/lib64/ -L${DNNLROOT}/lib64/ -ldnnl"
 fi
 
 ######## Checking support for Python3 ########
@@ -305,7 +307,8 @@ echo CXX=$USE_CXX > source/Makefile.conf
 echo CXXARCH=$CXXARCH >> source/Makefile.conf
 echo SHAREDLIB_FLAG=$SHAREDLIB_FLAG >> source/Makefile.conf
 echo MPIFLAGS=$MPIFLAGS >> source/Makefile.conf
-echo ONEDNNFLAGS=$ONEDNNFLAGS >> source/Makefile.conf
+echo ONEDNNCFLAGS=$ONEDNNCFLAGS >> source/Makefile.conf
+echo ONEDNNLDFLAGS=$ONEDNNLDFLAGS >> source/Makefile.conf
 echo OPTFLAGS=$OPTFLAGS >> source/Makefile.conf
 echo MACHINEARCH=$arch >> source/Makefile.conf
 

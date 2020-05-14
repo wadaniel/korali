@@ -465,8 +465,6 @@ void korali::solver::TMCMC::calculateProposals(std::vector<korali::Sample> &samp
     double minEval = gsl_vector_min(Evals);
     if (minEval <= 0.0)
     {
-      //for(size_t d = 0; d < Nth; ++d)
-      //printf("minEval %lf\n",minEval);
       _chainCandidatesErrors[finishedId] = 4;
       gsl_matrix_free(FIMinv);
       gsl_vector_free(Evals);

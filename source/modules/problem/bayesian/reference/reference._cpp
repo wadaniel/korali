@@ -298,10 +298,10 @@ void korali::problem::bayesian::Reference::fisherInformationLoglikelihoodPositiv
     double sig = standardDev[i];
     double var = sig * sig;
 
-    double phims = gsl_ran_gaussian_pdf(mu/sig, 1.0);
+    double phims = gsl_ran_gaussian_pdf(mu / sig, 1.0);
     double phims2 = phims * phims;
 
-    double Z = 1.0 - gsl_cdf_gaussian_P(-mu/sig, 1.0);
+    double Z = 1.0 - gsl_cdf_gaussian_P(-mu / sig, 1.0);
     double invZ = 1.0 / Z;
     double invZ2 = invZ * invZ;
 

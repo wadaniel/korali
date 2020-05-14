@@ -119,6 +119,7 @@ void korali::solver::TMCMC::setInitialConfiguration()
   _logEvidence = 0.0;
   _coefficientOfVariation = 0.0;
   _numCovarianceCorrections = 0;
+  _numNegativeDefiniteProposals = 0;
   _chainCount = _populationSize;
 
   // Initializing Chain Length first Generation
@@ -186,6 +187,7 @@ void korali::solver::TMCMC::prepareGeneration()
   if (_version == "mTMCMC")
   {
     _numCovarianceCorrections = 0;
+    _numNegativeDefiniteProposals = 0;
     _sampleErrorDatabase.clear();
     _sampleGradientDatabase.clear();
     _sampleCovariancesDatabase.clear();
@@ -411,7 +413,7 @@ void korali::solver::TMCMC::calculateProposals(std::vector<korali::Sample> &samp
   for (size_t c = 0; c < _chainCount; c++)
   {
     size_t finishedId = _conduit->waitAny(samples);
-    //printf("%s\n", samples[finishedId]._js.getJson().dump(2).c_str());
+    printf("%s\n", samples[finishedId]._js.getJson().dump(2).c_str());
 
     // reset
     std::fill(_chainCandidatesCovariance[finishedId].begin(), _chainCandidatesCovariance[finishedId].end(), 0.0);
@@ -451,7 +453,6 @@ void korali::solver::TMCMC::calculateProposals(std::vector<korali::Sample> &samp
     status = gsl_eigen_symmv(FIMinv, Evals, Evecs, work);
     gsl_eigen_symmv_free(work);
 
-    double minEval = gsl_vector_min(Evals);
     if (status != GSL_SUCCESS)
     {
       _chainCandidatesErrors[finishedId] = 3;
@@ -461,12 +462,17 @@ void korali::solver::TMCMC::calculateProposals(std::vector<korali::Sample> &samp
       continue;
     }
 
+    double minEval = gsl_vector_min(Evals);
     if (minEval <= 0.0)
     {
+      //for(size_t d = 0; d < Nth; ++d)
+      printf("minEval %lf\n",minEval);
       _chainCandidatesErrors[finishedId] = 4;
       gsl_matrix_free(FIMinv);
       gsl_vector_free(Evals);
       gsl_matrix_free(Evecs);
+
+      _numNegativeDefiniteProposals++;
       continue;
     }
 
@@ -765,6 +771,7 @@ void korali::solver::TMCMC::printGenerationAfter()
   _k->_logger->logInfo("Normal", "Coefficient of Variation: %.2f%%\n", 100.0 * _coefficientOfVariation);
   _k->_logger->logInfo("Normal", "logEvidence: %.3f\n", _logEvidence);
   if (_version == "mTMCMC") _k->_logger->logInfo("Normal", "Number Of Covariance Corrections: %zu\n", _numCovarianceCorrections);
+  if (_version == "mTMCMC") _k->_logger->logInfo("Normal", "Number Of Negative Definite Proposals: %zu\n", _numNegativeDefiniteProposals);
 
   _k->_logger->logInfo("Detailed", "Sample Mean:\n");
   for (size_t i = 0; i < _k->_variables.size(); i++) _k->_logger->logData("Detailed", " %s = %+6.3e\n", _k->_variables[i]->_name.c_str(), _meanTheta[i]);

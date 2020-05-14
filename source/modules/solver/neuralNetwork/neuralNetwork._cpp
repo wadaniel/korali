@@ -17,8 +17,7 @@ void korali::solver::NeuralNetwork::setInitialConfiguration()
 
  #else
 
- // If initial generation, get problem pointer, and set initial Learner configuration
- _problem = dynamic_cast<korali::problem::SupervisedLearning *>(_k->_problem);
+ // Initializing Engine and stream
 
  if (_engineKind == "CPU") _engine = engine(engine::kind::cpu, 0);
  if (_engineKind == "GPU") _engine = engine(engine::kind::gpu, 0);
@@ -37,9 +36,20 @@ void korali::solver::NeuralNetwork::setInitialConfiguration()
  }
  if (_layers[layerCount-1]->_type != "Output") _k->_logger->logError("The last layer must be of an output type.\n");
 
- // Initializing Memory Objects
+ // Checking input/output training data
 
- size_t inputCount = _problem->_trainingSet.size();
+ size_t inputCount = _trainingSetInput.size();
+ size_t inputSize = _layers[0]->_nodeCount;
+
+ if (_trainingSetInput.size() == 0) _k->_logger->logError("You should provide an input training set.\n");
+ if (_trainingSetOutput.size() == 0) _k->_logger->logError("You should provide an output training set.\n");
+ if (_trainingSetOutput.size() != inputCount) _k->_logger->logError("Different batch size for input and output training sets provided.\n");
+
+ for (size_t i = 0; i < _trainingSetInput.size(); i++)
+ {
+  if (_trainingSetInput[i].size() != inputSize) _k->_logger->logError("Input data set %lu has a different number of elements than the input layer node count.\n", i);
+  if (_trainingSetOutput[i].size() != _layers[_layers.size()-1]->_nodeCount) _k->_logger->logError("Output data set %lu has a different number of elements than the output layer node count.\n", i);
+ }
 
  // Initializing memory objects for activation functions
 
@@ -51,7 +61,7 @@ void korali::solver::NeuralNetwork::setInitialConfiguration()
   _layers[i]->_activationMem = memory(activationMemDesc, _engine);
  }
 
- // Initializing dnn memory and values
+ // Initializing weight matrix memories and values
 
  for (size_t i = 1; i < layerCount; i++)
  {
@@ -74,7 +84,7 @@ void korali::solver::NeuralNetwork::setInitialConfiguration()
    {
      double n = _uniformGenerator->getRandomNumber(); // 0 <= d <= 1
      weightsData[j] = d*n; // -n <= weight <= n
-     printf("Layer %lu - Weight %lu: %f\n", i, j, weightsData[j]);
+     // printf("Layer %lu - Weight %lu: %f\n", i, j, weightsData[j]);
    }
   }
 
@@ -104,7 +114,10 @@ void korali::solver::NeuralNetwork::setInitialConfiguration()
 
   if (_layers[i]->_activationFunction == "Identity")
   {
-   // do nothing
+   const float scale = 1.0f;
+   const float alpha = 1.0f;
+   const float beta = 0.f;
+   inner_product_ops.append_eltwise(scale, algorithm::eltwise_linear, alpha, beta);
   }
 
   if (_layers[i]->_activationFunction == "ReLu")
@@ -142,8 +155,15 @@ void korali::solver::NeuralNetwork::setInitialConfiguration()
   _layers[i]->_primitive = inner_product_forward(inner_product_pd);
  }
 
- #endif
+ // Copying input data to first layer
+ std::vector<float> trainingInput(inputCount * inputSize);
+ for (size_t i = 0; i < inputCount; i++)
+  for (size_t j = 0; j < inputSize; j++)
+   trainingInput[i*inputSize + j] = _trainingSetInput[i][j];
 
+ write_to_dnnl_memory(trainingInput.data(), _layers[0]->_activationMem);
+
+#endif
 }
 
 void korali::solver::NeuralNetwork::runGeneration()
@@ -157,6 +177,23 @@ void korali::solver::NeuralNetwork::runGeneration()
 
 void korali::solver::NeuralNetwork::doTraining()
 {
+ size_t layerCount = _layers.size();
+
+ for (size_t i = 1; i < layerCount; i++)
+ {
+  // Configuring inner product arguments
+  std::unordered_map<int, memory> inner_product_args;
+  inner_product_args.insert({DNNL_ARG_SRC, _layers[i-1]->_activationMem});
+  inner_product_args.insert({DNNL_ARG_WEIGHTS, _layers[i]->_innerProductWeightMem});
+  inner_product_args.insert({DNNL_ARG_BIAS, _layers[i]->_biasMem});
+  inner_product_args.insert({DNNL_ARG_DST, _layers[i]->_activationMem});
+
+  // Initialize primitive execution
+  _layers[i]->_primitive.execute(_stream, inner_product_args);
+
+  // Wait for the computation to finalize.
+  _stream.wait();
+ }
 
 }
 

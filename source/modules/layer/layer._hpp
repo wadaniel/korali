@@ -17,8 +17,11 @@ class Layer : public korali::Module
  /**
    * @brief oneDNN Memory object descriptor to contain input data
    */
- dnnl::memory _nodeMem;
+ dnnl::memory _activationMem;
  dnnl::memory _weightMem;
+ dnnl::memory _innerProductWeightMem;
+ dnnl::memory _biasMem;
+ dnnl::primitive _primitive;
 #endif
 
 };

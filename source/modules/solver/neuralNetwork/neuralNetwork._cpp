@@ -1,6 +1,12 @@
 #include "modules/solver/neuralNetwork/neuralNetwork.hpp"
 #include "modules/conduit/conduit.hpp"
 
+#ifdef _KORALI_USE_ONEDNN
+#include "external/oneDNN/oneDNNUtils.hpp"
+#endif
+
+using namespace dnnl;
+
 void korali::solver::NeuralNetwork::setInitialConfiguration()
 {
  // Initialize solver's configuration here
@@ -14,10 +20,10 @@ void korali::solver::NeuralNetwork::setInitialConfiguration()
  // If initial generation, get problem pointer, and set initial Learner configuration
  _problem = dynamic_cast<korali::problem::SupervisedLearning *>(_k->_problem);
 
- if (_engineKind == "CPU") _engine = dnnl::engine(dnnl::engine::kind::cpu, 0);
- if (_engineKind == "GPU") _engine = dnnl::engine(dnnl::engine::kind::gpu, 0);
+ if (_engineKind == "CPU") _engine = engine(engine::kind::cpu, 0);
+ if (_engineKind == "GPU") _engine = engine(engine::kind::gpu, 0);
 
- _stream = dnnl::stream(_engine);
+ _stream = stream(_engine);
 
  // Initializing Layers
 
@@ -31,46 +37,109 @@ void korali::solver::NeuralNetwork::setInitialConfiguration()
  }
  if (_layers[layerCount-1]->_type != "Output") _k->_logger->logError("The last layer must be of an output type.\n");
 
- // Initializing Weights
-
- for (size_t i = 1; i < layerCount; i++)
- {
-  size_t weightCount = _layers[i]->_nodeCount * _layers[i-1]->_nodeCount;
-  _layers[i]->_weights.resize(weightCount);
-
-  if (_weightInitialization == "Xavier")
-  {
-   double d = sqrt(6.0 / sqrt(weightCount));
-
-   for (size_t j = 0; j < weightCount; j++)
-   {
-     double n = _uniformGenerator->getRandomNumber(); // 0 <= d <= 1
-     _layers[i]->_weights[j] = d*n; // -n <= weight <= n
-     printf("Layer %lu - Weight %lu: %f\n", i, j, _layers[i]->_weights[j]);
-   }
-  }
- }
-
  // Initializing Memory Objects
 
  size_t inputCount = _problem->_trainingSet.size();
 
- // Initializing memory objects for hidden layers
+ // Initializing memory objects for activation functions
 
  for (size_t i = 0; i < layerCount; i++)
  {
-  const dnnl::memory::dim N = inputCount, IC = _layers[i]->_nodeCount;
-  dnnl::memory::dims layerDims = {N, IC};
-  auto nodeMemDesc = dnnl::memory::desc(layerDims, dnnl::memory::data_type::f32, dnnl::memory::format_tag::ab);
-  _layers[i]->_nodeMem = dnnl::memory(nodeMemDesc, _engine);
+  const memory::dim N = inputCount, IC = _layers[i]->_nodeCount;
+  memory::dims layerDims = {N, IC};
+  auto activationMemDesc = memory::desc(layerDims, memory::data_type::f32, memory::format_tag::ab);
+  _layers[i]->_activationMem = memory(activationMemDesc, _engine);
  }
+
+ // Initializing dnn memory and values
 
  for (size_t i = 1; i < layerCount; i++)
  {
-  const dnnl::memory::dim N = inputCount, IC = _layers[i-1]->_nodeCount, OC = _layers[i]->_nodeCount;
-  dnnl::memory::dims layerDims = {N, IC, OC};
-  auto weightMemDesc = dnnl::memory::desc(layerDims, dnnl::memory::data_type::f32, dnnl::memory::format_tag::abc);
-  _layers[i]->_weightMem = dnnl::memory(weightMemDesc, _engine);
+  const memory::dim IC = _layers[i-1]->_nodeCount, OC = _layers[i]->_nodeCount;
+  memory::dims weightDims = {OC, IC};
+  size_t weightCount = product(weightDims);
+
+  // Allocating weight memory
+  auto weightMemDesc = memory::desc(weightDims, memory::data_type::f32, memory::format_tag::ab);
+  _layers[i]->_weightMem = memory(weightMemDesc, _engine);
+
+  // Initializing weight data
+  std::vector<float> weightsData(weightCount);
+
+  if (_weightInitialization == "Xavier")
+  {
+   double d = sqrt(6.0 / sqrt(IC + OC));
+
+   for (size_t j = 0; j < weightCount; j++)
+   {
+     double n = _uniformGenerator->getRandomNumber(); // 0 <= d <= 1
+     weightsData[j] = d*n; // -n <= weight <= n
+     printf("Layer %lu - Weight %lu: %f\n", i, j, weightsData[j]);
+   }
+  }
+
+  // Allocating bias memory
+  auto biasMemDesc = memory::desc( { OC }, memory::data_type::f32, memory::format_tag::a);
+  _layers[i]->_biasMem = memory(biasMemDesc, _engine);
+
+  // Initializing bias data
+  std::vector<float> biasData(_layers[i]->_nodeCount, 0.0);
+
+  // Setting weight and bias data to oneDNN format
+  write_to_dnnl_memory(weightsData.data(), _layers[i]->_weightMem);
+  write_to_dnnl_memory(biasData.data(), _layers[i]->_biasMem);
+
+  // Create memory descriptor for weights with format_tag::any. This enables
+  // the inner product primitive to choose the memory layout for an optimized
+  // primitive implementation, and this format may differ from the one
+  // provided by the user.
+  auto inner_product_weights_md = memory::desc(weightDims, memory::data_type::f32, memory::format_tag::any);
+
+  // Create operation descriptor.
+  auto inner_product_d = inner_product_forward::desc(prop_kind::forward_training, _layers[i-1]->_activationMem.get_desc(), inner_product_weights_md, biasMemDesc, _layers[i]->_activationMem.get_desc());
+
+  // Create weight evaluation + activation function primitive.
+
+  post_ops inner_product_ops;
+
+  if (_layers[i]->_activationFunction == "Identity")
+  {
+   // do nothing
+  }
+
+  if (_layers[i]->_activationFunction == "ReLu")
+  {
+   const float scale = 1.0f;
+   const float alpha = 0.f;
+   const float beta = 0.f;
+   inner_product_ops.append_eltwise(scale, algorithm::eltwise_relu, alpha, beta);
+  }
+
+  // if (_layers[i]->_activationFunction == "SoftSign")
+  // if (_layers[i]->_activationFunction == "SoftMax")
+
+  primitive_attr inner_product_attr;
+  inner_product_attr.set_post_ops(inner_product_ops);
+
+  // Create inner product primitive descriptor.
+  auto inner_product_pd = inner_product_forward::primitive_desc(inner_product_d, inner_product_attr, _engine);
+
+  // For now, assume that the weights memory layout generated by the primitive
+  // and the one provided by the user are identical.
+  _layers[i]->_innerProductWeightMem = _layers[i]->_weightMem;
+
+  // Reorder the data in case the weights memory layout generated by the
+  // primitive and the one provided by the user are different. In this case,
+  // we create additional memory objects with internal buffers that will
+  // contain the reordered data.
+  if (inner_product_pd.weights_desc() != _layers[i]->_weightMem.get_desc())
+  {
+   _layers[i]->_innerProductWeightMem = memory(inner_product_pd.weights_desc(), _engine);
+   reorder(_layers[i]->_weightMem, _layers[i]->_innerProductWeightMem).execute(_stream, _layers[i]->_weightMem, _layers[i]->_innerProductWeightMem);
+  }
+
+  // Create the primitive.
+  _layers[i]->_primitive = inner_product_forward(inner_product_pd);
  }
 
  #endif

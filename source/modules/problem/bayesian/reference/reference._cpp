@@ -323,7 +323,7 @@ void korali::problem::bayesian::Reference::fisherInformationLoglikelihoodPositiv
         FIM[k * Nth + l] += tmp;
         FIM[l * Nth + k] += tmp;
       }
-      FIM[k * Nth + k] = gradientF[i][k] * gradientF[i][k] * Imu + (gradientF[i][k] * gradientG[i][k] + gradientF[i][k] * gradientG[i][k]) * Ims + gradientG[i][k] * gradientG[i][k] * Isig;
+      FIM[k * Nth + k] += (gradientF[i][k] * gradientF[i][k] * Imu + (gradientF[i][k] * gradientG[i][k] + gradientF[i][k] * gradientG[i][k]) * Ims + gradientG[i][k] * gradientG[i][k] * Isig);
     }
   }
   sample["Fisher Information"] = FIM;

@@ -413,7 +413,7 @@ void korali::solver::TMCMC::calculateProposals(std::vector<korali::Sample> &samp
   for (size_t c = 0; c < _chainCount; c++)
   {
     size_t finishedId = _conduit->waitAny(samples);
-    printf("%s\n", samples[finishedId]._js.getJson().dump(2).c_str());
+    //printf("%s\n", samples[finishedId]._js.getJson().dump(2).c_str());
 
     // reset
     std::fill(_chainCandidatesCovariance[finishedId].begin(), _chainCandidatesCovariance[finishedId].end(), 0.0);
@@ -466,7 +466,7 @@ void korali::solver::TMCMC::calculateProposals(std::vector<korali::Sample> &samp
     if (minEval <= 0.0)
     {
       //for(size_t d = 0; d < Nth; ++d)
-      printf("minEval %lf\n",minEval);
+      //printf("minEval %lf\n",minEval);
       _chainCandidatesErrors[finishedId] = 4;
       gsl_matrix_free(FIMinv);
       gsl_vector_free(Evals);

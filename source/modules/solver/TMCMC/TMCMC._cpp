@@ -118,10 +118,11 @@ void korali::solver::TMCMC::setInitialConfiguration()
   _annealingExponent = 0.0;
   _logEvidence = 0.0;
   _coefficientOfVariation = 0.0;
+  _maxLoglikelihood = -std::numeric_limits<double>::infinity();
   _chainCount = _populationSize;
-
+  
   _numCovarianceCorrections = 0;
-
+  
   _numNegativeDefiniteProposals = 0;
   _numLUDecompositionFailuresProposal = 0;
   _numEigenDecompositionFailuresProposal = 0;
@@ -185,6 +186,7 @@ void korali::solver::TMCMC::prepareGeneration()
 
   _acceptedSamplesCount = 0;
   _finishedChainsCount = 0;
+  _maxLoglikelihood = -std::numeric_limits<double>::infinity();
 
   _sampleLogLikelihoodDatabase.clear();
   _sampleLogPriorDatabase.clear();
@@ -313,13 +315,13 @@ void korali::solver::TMCMC::processGeneration()
 
   /* scale weights with number repeated samples */
   for (size_t i = 0; i < _populationSize; i++) weight[i] = weight[i] * numselections[i];
-
+  
   sum_weight = std::accumulate(weight.begin(), weight.end(), 0.0);
 
-  for (size_t i = 0; i < _populationSize; i++) weight[i] = weight[i] / sum_weight;
-
+  for (size_t i = 0; i < _populationSize; i++) weight[i] = weight[i] / sum_weight; 
+  
   double sum_weight2 = 0.0;
-  for (size_t i = 0; i < _populationSize; i++) sum_weight2 += weight[i] * weight[i];
+  for (size_t i = 0; i < _populationSize; i++) sum_weight2 += weight[i]*weight[i];
 
   /* Update mean and covariance */
   for (size_t i = 0; i < _k->_variables.size(); i++)
@@ -327,6 +329,7 @@ void korali::solver::TMCMC::processGeneration()
     _meanTheta[i] = 0;
     for (size_t j = 0; j < _populationSize; j++) _meanTheta[i] += _sampleDatabase[j][i] * weight[j];
   }
+
 
   for (size_t i = 0; i < _k->_variables.size(); i++)
   {
@@ -393,6 +396,7 @@ void korali::solver::TMCMC::processGeneration()
   _proposalsAcceptanceRate = (1.0 * _acceptedSamplesCount) / _populationSize;
   _selectionAcceptanceRate = (1.0 * uniqueSelections) / _populationSize;
 
+  _maxLoglikelihood = *std::max_element(_sampleLogLikelihoodDatabase.begin(), _sampleLogLikelihoodDatabase.end()); 
   _chainCount = leaderId;
 }
 
@@ -792,15 +796,16 @@ void korali::solver::TMCMC::printGenerationAfter()
   _k->_logger->logInfo("Minimal", "Acceptance Rate (proposals / selections): (%.2f%% / %.2f%%)\n", 100 * _proposalsAcceptanceRate, 100 * _selectionAcceptanceRate);
   _k->_logger->logInfo("Normal", "Coefficient of Variation: %.2f%%\n", 100.0 * _coefficientOfVariation);
   _k->_logger->logInfo("Normal", "logEvidence: %.3f\n", _logEvidence);
-
-  if (_version == "mTMCMC")
+  _k->_logger->logInfo("Normal", "max logLikelihood: %.3f\n", _maxLoglikelihood);
+  
+  if(_version == "mTMCMC")
   {
     _k->_logger->logInfo("Normal", "Number Of Covariance Corrections: %zu\n", _numCovarianceCorrections);
     _k->_logger->logInfo("Normal", "Number Of LU Decomposition Errors: %zu\n", _numLUDecompositionFailuresProposal);
     _k->_logger->logInfo("Normal", "Number Of Eigenvalue Errors: %zu\n", _numEigenDecompositionFailuresProposal);
     _k->_logger->logInfo("Normal", "Number Of FIM Inversion Errors: %zu\n", _numInversionFailuresProposal);
     _k->_logger->logInfo("Normal", "Number Of Negative Definite Proposals: %zu\n", _numNegativeDefiniteProposals);
-  }
+  }    
 
   _k->_logger->logInfo("Detailed", "Sample Mean:\n");
   for (size_t i = 0; i < _k->_variables.size(); i++) _k->_logger->logData("Detailed", " %s = %+6.3e\n", _k->_variables[i]->_name.c_str(), _meanTheta[i]);

@@ -17,9 +17,9 @@ class NeuralNetwork : public korali::Solver
  public:
 
  /**
-  * @brief Storage for the pointer to the learning problem
+  * @brief Flag that indicates whether the oneDNN structures have been initialized
   */
- korali::problem::SupervisedLearning *_problem;
+ bool _isInitialized;
 
  #ifdef _KORALI_USE_ONEDNN
  /**
@@ -33,16 +33,6 @@ class NeuralNetwork : public korali::Solver
  dnnl::stream _stream;
 
  #endif
-
- /**
-  * @brief Performs Training Operations
-  */
- void doTraining();
-
- /**
-  * @brief Forwards a new set of input variables through the trained NN
- */
- void doForwarding();
 
  void setInitialConfiguration() override;
  void runGeneration() override;

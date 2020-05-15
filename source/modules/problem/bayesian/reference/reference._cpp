@@ -275,7 +275,7 @@ void korali::problem::bayesian::Reference::fisherInformationLoglikelihoodNormal(
         FIM[k * Nth + l] += tmp;
         FIM[l * Nth + k] += tmp;
       }
-      FIM[k * Nth + k] = var * gradientF[i][k] * gradientF[i][k] + 2. * varinv * gradientG[i][k] * gradientG[i][k];
+      FIM[k * Nth + k] += (varinv * gradientF[i][k] * gradientF[i][k] + 2. * varinv * gradientG[i][k] * gradientG[i][k]);
     }
   }
   sample["Fisher Information"] = FIM;
@@ -298,10 +298,10 @@ void korali::problem::bayesian::Reference::fisherInformationLoglikelihoodPositiv
     double sig = standardDev[i];
     double var = sig * sig;
 
-    double phims = gsl_ran_gaussian_pdf(mu, sig);
+    double phims = gsl_ran_gaussian_pdf(mu / sig, 1.0);
     double phims2 = phims * phims;
 
-    double Z = 1.0 - gsl_cdf_gaussian_P(-mu, sig);
+    double Z = 1.0 - gsl_cdf_gaussian_P(-mu / sig, 1.0);
     double invZ = 1.0 / Z;
     double invZ2 = invZ * invZ;
 
@@ -323,7 +323,7 @@ void korali::problem::bayesian::Reference::fisherInformationLoglikelihoodPositiv
         FIM[k * Nth + l] += tmp;
         FIM[l * Nth + k] += tmp;
       }
-      FIM[k * Nth + k] = gradientF[i][k] * gradientF[i][k] * Imu + (gradientF[i][k] * gradientG[i][k] + gradientF[i][k] * gradientG[i][k]) * Ims + gradientG[i][k] * gradientG[i][k] * Isig;
+      FIM[k * Nth + k] += (gradientF[i][k] * gradientF[i][k] * Imu + (gradientF[i][k] * gradientG[i][k] + gradientF[i][k] * gradientG[i][k]) * Ims + gradientG[i][k] * gradientG[i][k] * Isig);
     }
   }
   sample["Fisher Information"] = FIM;

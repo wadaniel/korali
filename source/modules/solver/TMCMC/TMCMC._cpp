@@ -120,12 +120,12 @@ void korali::solver::TMCMC::setInitialConfiguration()
   _coefficientOfVariation = 0.0;
   _maxLoglikelihood = -std::numeric_limits<double>::infinity();
   _chainCount = _populationSize;
-  
+
   _numCovarianceCorrections = 0;
-  
+
   _numFinitePriorEvaluations = 0;
   _numFiniteLikelihoodEvaluations = 0;
-  
+
   _numNegativeDefiniteProposals = 0;
   _numLUDecompositionFailuresProposal = 0;
   _numEigenDecompositionFailuresProposal = 0;
@@ -198,10 +198,10 @@ void korali::solver::TMCMC::prepareGeneration()
   _sampleLogLikelihoodDatabase.clear();
   _sampleLogPriorDatabase.clear();
   _sampleDatabase.clear();
- 
+
   _numFinitePriorEvaluations = 0;
   _numFiniteLikelihoodEvaluations = 0;
- 
+
   if (_version == "mTMCMC")
   {
     _numCovarianceCorrections = 0;
@@ -326,13 +326,13 @@ void korali::solver::TMCMC::processGeneration()
 
   /* scale weights with number repeated samples */
   for (size_t i = 0; i < _populationSize; i++) weight[i] = weight[i] * numselections[i];
-  
+
   sum_weight = std::accumulate(weight.begin(), weight.end(), 0.0);
 
-  for (size_t i = 0; i < _populationSize; i++) weight[i] = weight[i] / sum_weight; 
-  
+  for (size_t i = 0; i < _populationSize; i++) weight[i] = weight[i] / sum_weight;
+
   double sum_weight2 = 0.0;
-  for (size_t i = 0; i < _populationSize; i++) sum_weight2 += weight[i]*weight[i];
+  for (size_t i = 0; i < _populationSize; i++) sum_weight2 += weight[i] * weight[i];
 
   /* Update mean and covariance */
   for (size_t i = 0; i < _k->_variables.size(); i++)
@@ -340,7 +340,6 @@ void korali::solver::TMCMC::processGeneration()
     _meanTheta[i] = 0;
     for (size_t j = 0; j < _populationSize; j++) _meanTheta[i] += _sampleDatabase[j][i] * weight[j];
   }
-
 
   for (size_t i = 0; i < _k->_variables.size(); i++)
   {
@@ -407,7 +406,7 @@ void korali::solver::TMCMC::processGeneration()
   _proposalsAcceptanceRate = (1.0 * _acceptedSamplesCount) / _populationSize;
   _selectionAcceptanceRate = (1.0 * uniqueSelections) / _populationSize;
 
-  _maxLoglikelihood = *std::max_element(_sampleLogLikelihoodDatabase.begin(), _sampleLogLikelihoodDatabase.end()); 
+  _maxLoglikelihood = *std::max_element(_sampleLogLikelihoodDatabase.begin(), _sampleLogLikelihoodDatabase.end());
   _chainCount = leaderId;
 }
 
@@ -592,13 +591,13 @@ void korali::solver::TMCMC::generateCandidate(const size_t sampleId)
       int status = gsl_linalg_cholesky_decomp(&sigma.matrix);
       if (status == GSL_SUCCESS)
       {
-          _multivariateGenerator->updateDistribution();
-          _multivariateGenerator->getRandomVector(&_chainCandidates[sampleId][0], _k->_variables.size());
+        _multivariateGenerator->updateDistribution();
+        _multivariateGenerator->getRandomVector(&_chainCandidates[sampleId][0], _k->_variables.size());
 
-          gsl_vector_view candidate = gsl_vector_view_array(&_chainCandidates[sampleId][0], _k->_variables.size());
-          gsl_vector_const_view leaderGrad = gsl_vector_const_view_array(&_chainLeadersGradients[sampleId][0], _k->_variables.size());
-          gsl_matrix_const_view leaderCov = gsl_matrix_const_view_array(&_chainLeadersCovariance[sampleId][0], _k->_variables.size(), _k->_variables.size());
-          gsl_blas_dgemv(CblasNoTrans, 0.5 * _stepSize, &leaderCov.matrix, &leaderGrad.vector, 1.0, &candidate.vector);
+        gsl_vector_view candidate = gsl_vector_view_array(&_chainCandidates[sampleId][0], _k->_variables.size());
+        gsl_vector_const_view leaderGrad = gsl_vector_const_view_array(&_chainLeadersGradients[sampleId][0], _k->_variables.size());
+        gsl_matrix_const_view leaderCov = gsl_matrix_const_view_array(&_chainLeadersCovariance[sampleId][0], _k->_variables.size(), _k->_variables.size());
+        gsl_blas_dgemv(CblasNoTrans, 0.5 * _stepSize, &leaderCov.matrix, &leaderGrad.vector, 1.0, &candidate.vector);
       }
       else
       {
@@ -606,7 +605,7 @@ void korali::solver::TMCMC::generateCandidate(const size_t sampleId)
         _chainLeadersErrors[sampleId] = 5;
       }
     }
-    if( _chainLeadersErrors[sampleId] != 0) /* error */
+    if (_chainLeadersErrors[sampleId] != 0) /* error */
     {
       _multivariateGenerator->_meanVector = _chainLeaders[sampleId];
       _multivariateGenerator->_sigma = _covarianceMatrix;
@@ -815,8 +814,8 @@ void korali::solver::TMCMC::printGenerationAfter()
   _k->_logger->logInfo("Normal", "logEvidence: %.3f\n", _logEvidence);
   _k->_logger->logInfo("Detailed", "max logLikelihood: %.3f\n", _maxLoglikelihood);
   _k->_logger->logInfo("Detailed", "Number of finite evaluations (prior / likelihood): (%zu / %zu)\n", _numFinitePriorEvaluations, _numFiniteLikelihoodEvaluations);
-  
-  if(_version == "mTMCMC")
+
+  if (_version == "mTMCMC")
   {
     _k->_logger->logInfo("Normal", "Number Of Covariance Corrections: %zu\n", _numCovarianceCorrections);
     _k->_logger->logInfo("Detailed", "Number Of LU Decomposition Errors: %zu\n", _numLUDecompositionFailuresProposal);
@@ -824,7 +823,7 @@ void korali::solver::TMCMC::printGenerationAfter()
     _k->_logger->logInfo("Detailed", "Number Of FIM Inversion Errors: %zu\n", _numInversionFailuresProposal);
     _k->_logger->logInfo("Detailed", "Number Of Negative Definite Proposals: %zu\n", _numNegativeDefiniteProposals);
     _k->_logger->logInfo("Detailed", "Number Of Cholesky Decomposition Errors: %zu\n", _numCholeskyDecompositionFailuresProposal);
-  }    
+  }
 
   _k->_logger->logInfo("Detailed", "Sample Mean:\n");
   for (size_t i = 0; i < _k->_variables.size(); i++) _k->_logger->logData("Detailed", " %s = %+6.3e\n", _k->_variables[i]->_name.c_str(), _meanTheta[i]);

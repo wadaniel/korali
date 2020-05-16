@@ -123,10 +123,14 @@ void korali::solver::TMCMC::setInitialConfiguration()
   
   _numCovarianceCorrections = 0;
   
+  _numFinitePriorEvaluations = 0;
+  _numFiniteLikelihoodEvaluations = 0;
+  
   _numNegativeDefiniteProposals = 0;
   _numLUDecompositionFailuresProposal = 0;
   _numEigenDecompositionFailuresProposal = 0;
   _numInversionFailuresProposal = 0;
+  _numCholeskyDecompositionFailuresProposal = 0;
 
   // Initializing Chain Length first Generation
   std::fill(std::begin(_chainLengths), std::end(_chainLengths), 1);
@@ -164,6 +168,9 @@ void korali::solver::TMCMC::runGeneration()
     _chainCandidatesLogLikelihoods[finishedId] = samples[finishedId]["logLikelihood"];
     _chainCandidatesLogPriors[finishedId] = samples[finishedId]["logPrior"];
 
+    if (isfinite(_chainCandidatesLogPriors[finishedId])) _numFinitePriorEvaluations++;
+    if (isfinite(_chainCandidatesLogLikelihoods[finishedId])) _numFiniteLikelihoodEvaluations++;
+
     if (_version == "TMCMC") processCandidate(finishedId);
     if (_currentChainStep[finishedId] == _chainLengths[finishedId] + _currentBurnIn) _finishedChainsCount++;
   }
@@ -191,7 +198,10 @@ void korali::solver::TMCMC::prepareGeneration()
   _sampleLogLikelihoodDatabase.clear();
   _sampleLogPriorDatabase.clear();
   _sampleDatabase.clear();
-
+ 
+  _numFinitePriorEvaluations = 0;
+  _numFiniteLikelihoodEvaluations = 0;
+ 
   if (_version == "mTMCMC")
   {
     _numCovarianceCorrections = 0;
@@ -199,6 +209,7 @@ void korali::solver::TMCMC::prepareGeneration()
     _numLUDecompositionFailuresProposal = 0;
     _numEigenDecompositionFailuresProposal = 0;
     _numInversionFailuresProposal = 0;
+    _numCholeskyDecompositionFailuresProposal = 0;
 
     _sampleErrorDatabase.clear();
     _sampleGradientDatabase.clear();
@@ -573,23 +584,29 @@ void korali::solver::TMCMC::generateCandidate(const size_t sampleId)
     // TODO: refine error treatment granularity
     if (_chainLeadersErrors[sampleId] == 0)
     {
-      std::vector<double> zeroMean(_k->_variables.size(), 0.0);
       _multivariateGenerator->_meanVector = _chainLeaders[sampleId];
       for (size_t i = 0; i < _k->_variables.size() * _k->_variables.size(); ++i) _multivariateGenerator->_sigma[i] = _chainLeadersCovariance[sampleId][i] * _stepSize;
 
       /* Cholesky Decomp */
       gsl_matrix_view sigma = gsl_matrix_view_array(&_multivariateGenerator->_sigma[0], _k->_variables.size(), _k->_variables.size());
-      gsl_linalg_cholesky_decomp(&sigma.matrix);
+      int status = gsl_linalg_cholesky_decomp(&sigma.matrix);
+      if (status == GSL_SUCCESS)
+      {
+          _multivariateGenerator->updateDistribution();
+          _multivariateGenerator->getRandomVector(&_chainCandidates[sampleId][0], _k->_variables.size());
 
-      _multivariateGenerator->updateDistribution();
-      _multivariateGenerator->getRandomVector(&_chainCandidates[sampleId][0], _k->_variables.size());
-
-      gsl_vector_view candidate = gsl_vector_view_array(&_chainCandidates[sampleId][0], _k->_variables.size());
-      gsl_vector_const_view leaderGrad = gsl_vector_const_view_array(&_chainLeadersGradients[sampleId][0], _k->_variables.size());
-      gsl_matrix_const_view leaderCov = gsl_matrix_const_view_array(&_chainLeadersCovariance[sampleId][0], _k->_variables.size(), _k->_variables.size());
-      gsl_blas_dgemv(CblasNoTrans, 0.5 * _stepSize, &leaderCov.matrix, &leaderGrad.vector, 1.0, &candidate.vector);
+          gsl_vector_view candidate = gsl_vector_view_array(&_chainCandidates[sampleId][0], _k->_variables.size());
+          gsl_vector_const_view leaderGrad = gsl_vector_const_view_array(&_chainLeadersGradients[sampleId][0], _k->_variables.size());
+          gsl_matrix_const_view leaderCov = gsl_matrix_const_view_array(&_chainLeadersCovariance[sampleId][0], _k->_variables.size(), _k->_variables.size());
+          gsl_blas_dgemv(CblasNoTrans, 0.5 * _stepSize, &leaderCov.matrix, &leaderGrad.vector, 1.0, &candidate.vector);
+      }
+      else
+      {
+        _numCholeskyDecompositionFailuresProposal++;
+        _chainLeadersErrors[sampleId] = 5;
+      }
     }
-    else /* error */
+    if( _chainLeadersErrors[sampleId] != 0) /* error */
     {
       _multivariateGenerator->_meanVector = _chainLeaders[sampleId];
       _multivariateGenerator->_sigma = _covarianceMatrix;
@@ -796,15 +813,17 @@ void korali::solver::TMCMC::printGenerationAfter()
   _k->_logger->logInfo("Minimal", "Acceptance Rate (proposals / selections): (%.2f%% / %.2f%%)\n", 100 * _proposalsAcceptanceRate, 100 * _selectionAcceptanceRate);
   _k->_logger->logInfo("Normal", "Coefficient of Variation: %.2f%%\n", 100.0 * _coefficientOfVariation);
   _k->_logger->logInfo("Normal", "logEvidence: %.3f\n", _logEvidence);
-  _k->_logger->logInfo("Normal", "max logLikelihood: %.3f\n", _maxLoglikelihood);
+  _k->_logger->logInfo("Detailed", "max logLikelihood: %.3f\n", _maxLoglikelihood);
+  _k->_logger->logInfo("Detailed", "Number of finite evaluations (prior / likelihood): (%zu / %zu)\n", _numFinitePriorEvaluations, _numFiniteLikelihoodEvaluations);
   
   if(_version == "mTMCMC")
   {
     _k->_logger->logInfo("Normal", "Number Of Covariance Corrections: %zu\n", _numCovarianceCorrections);
-    _k->_logger->logInfo("Normal", "Number Of LU Decomposition Errors: %zu\n", _numLUDecompositionFailuresProposal);
-    _k->_logger->logInfo("Normal", "Number Of Eigenvalue Errors: %zu\n", _numEigenDecompositionFailuresProposal);
-    _k->_logger->logInfo("Normal", "Number Of FIM Inversion Errors: %zu\n", _numInversionFailuresProposal);
-    _k->_logger->logInfo("Normal", "Number Of Negative Definite Proposals: %zu\n", _numNegativeDefiniteProposals);
+    _k->_logger->logInfo("Detailed", "Number Of LU Decomposition Errors: %zu\n", _numLUDecompositionFailuresProposal);
+    _k->_logger->logInfo("Detailed", "Number Of Eigenvalue Errors: %zu\n", _numEigenDecompositionFailuresProposal);
+    _k->_logger->logInfo("Detailed", "Number Of FIM Inversion Errors: %zu\n", _numInversionFailuresProposal);
+    _k->_logger->logInfo("Detailed", "Number Of Negative Definite Proposals: %zu\n", _numNegativeDefiniteProposals);
+    _k->_logger->logInfo("Detailed", "Number Of Cholesky Decomposition Errors: %zu\n", _numCholeskyDecompositionFailuresProposal);
   }    
 
   _k->_logger->logInfo("Detailed", "Sample Mean:\n");

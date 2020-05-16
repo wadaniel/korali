@@ -51,6 +51,8 @@ e["Variables"][1]["Prior Distribution"] = "Uniform 1"
 e["Variables"][2]["Name"] = "[Sigma]"
 e["Variables"][2]["Prior Distribution"] = "Uniform 2"
 
+e["Console Output"]["Verbosity"] = "Detailed"
 # Starting Korali's Engine and running experiment
+
 k = korali.Engine()
 k.run(e)

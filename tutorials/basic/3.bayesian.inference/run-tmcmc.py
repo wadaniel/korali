@@ -53,5 +53,7 @@ e["Variables"][2]["Prior Distribution"] = "Uniform 2"
 e["Store Sample Information"] = True
 
 # Starting Korali's Engine and running experiment
+
+e["Console Output"]["Verbosity"] = "Detailed"
 k = korali.Engine()
 k.run(e)

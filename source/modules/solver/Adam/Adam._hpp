@@ -3,20 +3,20 @@
 
 #include "modules/solver/solver.hpp"
 
-namespace korali { namespace solver {
-
+namespace korali
+{
+namespace solver
+{
 class Adam : public korali::Solver
 {
- public:
-
- void setInitialConfiguration() override;
- void runGeneration() override;
- void printGenerationBefore() override;
- void printGenerationAfter() override;
-
+  public:
+  void setInitialConfiguration() override;
+  void runGeneration() override;
+  void printGenerationBefore() override;
+  void printGenerationAfter() override;
 };
 
-} } // namespace korali::solver
-
+} // namespace solver
+} // namespace korali
 
 #endif // _KORALI_SOLVER_ADAM_HPP_

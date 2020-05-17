@@ -2,19 +2,4 @@
 Adam
 **************************
 
-Here goes the description of the new solver module: Adam
-
-You can add code:
-
-.. code-block:: python
-  
-  print('Hello World')
-  
-or formulae:
-
-.. math::
-
-  y = x^2
-
-And other rST devices.
-
+This implements *Adam* for stochastic optimisation as published in https://arxiv.org/pdf/1412.6980.pdf.

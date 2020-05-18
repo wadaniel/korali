@@ -19,6 +19,7 @@ void korali::solver::Adam::setInitialConfiguration()
   _biasCorrectedSecondMoment.resize(_k->_variables.size(), 0.0);
 
   _bestEvaluation = korali::Inf;
+  _gradientNorm = 1;
 }
 
 void korali::solver::Adam::runGeneration()
@@ -40,12 +41,15 @@ void korali::solver::Adam::runGeneration()
   // Processing results
   _currentEvaluation = sample["F(x)"];
   _currentEvaluation = -_currentEvaluation; //minimize
+  _gradientNorm = 0.0;
   for (size_t i = 0; i < _k->_variables.size(); i++)
   {
     _gradient[i] = sample["Gradient"][i];
     _gradient[i] = -_gradient[i]; // minimize
     _squaredGradient[i] = _gradient[i] * _gradient[i];
+    _gradientNorm += _squaredGradient[i];
   }
+  _gradientNorm = std::sqrt(_gradientNorm);
 
   if (_currentEvaluation < _bestEvaluation)
   {
@@ -62,6 +66,8 @@ void korali::solver::Adam::runGeneration()
   _k->_logger->logInfo("Normal", "DF(X) = [ ");
   for (size_t k = 0; k < _k->_variables.size(); k++) _k->_logger->logData("Normal", " %.5le  ", _gradient[k]);
   _k->_logger->logData("Normal", " ]\n");
+
+_k->_logger->logInfo("Normal", "|DF(X)| = %le \n", _gradientNorm);
 
   // update first and second moment estimators and bias corrected versions
   for (size_t i = 0; i < _k->_variables.size(); i++)
@@ -81,6 +87,7 @@ void korali::solver::Adam::runGeneration()
 
 void korali::solver::Adam::printGenerationBefore()
 {
+  _k->_logger->logInfo("Normal", "Starting generation %lu...\n", _k->_currentGeneration);
 }
 
 void korali::solver::Adam::printGenerationAfter()

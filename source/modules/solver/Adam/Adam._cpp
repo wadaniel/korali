@@ -67,7 +67,7 @@ void korali::solver::Adam::runGeneration()
   for (size_t k = 0; k < _k->_variables.size(); k++) _k->_logger->logData("Normal", " %.5le  ", _gradient[k]);
   _k->_logger->logData("Normal", " ]\n");
 
-_k->_logger->logInfo("Normal", "|DF(X)| = %le \n", _gradientNorm);
+  _k->_logger->logInfo("Normal", "|DF(X)| = %le \n", _gradientNorm);
 
   // update first and second moment estimators and bias corrected versions
   for (size_t i = 0; i < _k->_variables.size(); i++)

@@ -66,12 +66,14 @@ void korali::problem::bayesian::Reference::loglikelihoodNormal(korali::Sample &s
 void korali::problem::bayesian::Reference::loglikelihoodPositiveNormal(korali::Sample &sample)
 {
   double sse = compute_normalized_sse(sample["Reference Evaluations"], sample["Standard Deviation"], _referenceData);
-
   double loglike = 0.;
   for (size_t i = 0; i < sample["Standard Deviation"].size(); i++)
   {
     double m = sample["Reference Evaluations"][i];
     double s = sample["Standard Deviation"][i];
+    if (s < 0.0) _k->_logger->logError("Negative value (%lf) detected for the Standard Deviation.\n", s);
+    if (m < 0.0) _k->_logger->logError("Negative value (%lf) detected in Reference Evaluation.\n", m);
+
     loglike -= log(s);
     loglike -= log(1. - gsl_cdf_gaussian_P(-m, s));
   }
@@ -148,13 +150,13 @@ void korali::problem::bayesian::Reference::gradientLoglikelihoodNormal(korali::S
     double invStdDev2 = invStdDev * invStdDev;
     double invStdDev3 = invStdDev2 * invStdDev;
 
-    double dif = refEvaluations[i] - _referenceData[i];
+    double dif = _referenceData[i] - refEvaluations[i];
 
     for (size_t d = 0; d < _k->_variables.size(); ++d)
     {
       if (!isfinite(gradientF[i][d])) _k->_logger->logWarning("Normal", "Non-finite value detected in Gradient Mean.\n");
       if (!isfinite(gradientG[i][d])) _k->_logger->logWarning("Normal", "Non-finite value detected in Gradient Standard Deviation.\n");
-      double tmpGrad = -invStdDev * gradientG[i][d] - invStdDev2 * dif * gradientF[i][d] + invStdDev3 * dif * dif * gradientG[i][d];
+      double tmpGrad = -invStdDev * gradientG[i][d] + invStdDev2 * dif * gradientF[i][d] + invStdDev3 * dif * dif * gradientG[i][d];
       llkgradient[d] += tmpGrad;
     }
   }
@@ -185,9 +187,10 @@ void korali::problem::bayesian::Reference::gradientLoglikelihoodPositiveNormal(k
     double invsig2 = invsig * invsig;
     double invsig3 = invsig2 * invsig;
 
-    double Z = 1.0 - gsl_cdf_gaussian_P(-mu, invsig);
+    double Z = 1.0 - gsl_cdf_gaussian_P(-mu / sig, 1.0);
     double invZ = 1.0 / Z;
-    double phims = gsl_ran_gaussian_pdf(-mu, sig);
+
+    double phims = gsl_ran_gaussian_pdf(-mu / sig, 1.0);
 
     double dif = _referenceData[i] - refEvaluations[i];
 
@@ -195,7 +198,8 @@ void korali::problem::bayesian::Reference::gradientLoglikelihoodPositiveNormal(k
     {
       if (!isfinite(gradientF[i][d])) _k->_logger->logWarning("Normal", "Non-finite value detected in Gradient Mean.\n");
       if (!isfinite(gradientG[i][d])) _k->_logger->logWarning("Normal", "Non-finite value detected in Gradient Standard Deviation.\n");
-      llkgradient[d] += (-invsig * gradientG[i][d] + invZ * phims * (-1.0 * invsig * gradientF[i][d] + invsig2 * mu * gradientG[i][d]) + dif * (invsig2 * gradientF[i][d] + invsig3 * dif * gradientG[i][d]));
+      llkgradient[d] += (-invsig * gradientG[i][d] + invsig2 * dif * gradientF[i][d] + invsig3 * dif * dif * gradientG[i][d]);
+      llkgradient[d] += invZ * phims * (-1.0 * invsig * gradientF[i][d] + invsig2 * mu * gradientG[i][d]);
     }
   }
 
@@ -298,16 +302,16 @@ void korali::problem::bayesian::Reference::fisherInformationLoglikelihoodPositiv
     double sig = standardDev[i];
     double var = sig * sig;
 
-    double phims = gsl_ran_gaussian_pdf(mu / sig, 1.0);
+    double phims = gsl_ran_ugaussian_pdf(mu / sig);
     double phims2 = phims * phims;
 
-    double Z = 1.0 - gsl_cdf_gaussian_P(-mu / sig, 1.0);
+    double Z = 1.0 - gsl_cdf_ugaussian_P(-mu / sig);
     double invZ = 1.0 / Z;
     double invZ2 = invZ * invZ;
 
     double invvar = 1. / var;
-    double invsig3 = 1. / (var * sig);
-    double invsig4 = 1. / (var * var);
+    double invsig3 = invvar / sig;
+    double invsig4 = invvar * invvar;
     double invsig5 = invvar * invsig3;
 
     double Imu = invvar - invZ2 * invvar * phims2 - invZ * mu * invsig3 * phims;
@@ -323,7 +327,7 @@ void korali::problem::bayesian::Reference::fisherInformationLoglikelihoodPositiv
         FIM[k * Nth + l] += tmp;
         FIM[l * Nth + k] += tmp;
       }
-      FIM[k * Nth + k] += (gradientF[i][k] * gradientF[i][k] * Imu + (gradientF[i][k] * gradientG[i][k] + gradientF[i][k] * gradientG[i][k]) * Ims + gradientG[i][k] * gradientG[i][k] * Isig);
+      FIM[k * Nth + k] += (gradientF[i][k] * gradientF[i][k] * Imu + (2 * gradientF[i][k] * gradientG[i][k]) * Ims + gradientG[i][k] * gradientG[i][k] * Isig);
     }
   }
   sample["Fisher Information"] = FIM;

@@ -97,7 +97,8 @@ def plot(genList):
     
     fig, ax = plt.subplots(numdim, numdim, figsize=(8,8))
     samplesTmp = np.reshape( samples, (numentries,numdim) )
-    plt.suptitle( 'TMCMC Plotter - \nNumber of Samples {0}\n'.format(str(numentries)), fontweight='bold', fontsize  = 12)
+    version = genList[lastGen]['Solver']['Version']
+    plt.suptitle( '{0} Plotter - \nNumber of Samples {1}\n'.format(str(version), str(numentries)), fontweight='bold', fontsize  = 12)
     
 
     plot_histogram(ax, samplesTmp)

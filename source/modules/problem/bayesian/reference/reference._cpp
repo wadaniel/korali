@@ -156,7 +156,7 @@ void korali::problem::bayesian::Reference::gradientLoglikelihoodNormal(korali::S
     {
       if (!isfinite(gradientF[i][d])) _k->_logger->logWarning("Normal", "Non-finite value detected in Gradient Mean.\n");
       if (!isfinite(gradientG[i][d])) _k->_logger->logWarning("Normal", "Non-finite value detected in Gradient Standard Deviation.\n");
-      double tmpGrad = -invStdDev * gradientG[i][d] - invStdDev2 * dif * gradientF[i][d] + invStdDev3 * dif * dif * gradientG[i][d];
+      double tmpGrad = -invStdDev * gradientG[i][d] + invStdDev2 * dif * gradientF[i][d] + invStdDev3 * dif * dif * gradientG[i][d];
       llkgradient[d] += tmpGrad;
     }
   }
@@ -198,9 +198,8 @@ void korali::problem::bayesian::Reference::gradientLoglikelihoodPositiveNormal(k
     {
       if (!isfinite(gradientF[i][d])) _k->_logger->logWarning("Normal", "Non-finite value detected in Gradient Mean.\n");
       if (!isfinite(gradientG[i][d])) _k->_logger->logWarning("Normal", "Non-finite value detected in Gradient Standard Deviation.\n");
-      llkgradient[d] += -invsig * gradientG[i][d];
+      llkgradient[d] += (-invsig * gradientG[i][d] + invsig2 * dif * gradientF[i][d] + invsig3 * dif * dif * gradientG[i][d]);
       llkgradient[d] += invZ * phims * (-1.0 * invsig * gradientF[i][d] + invsig2 * mu * gradientG[i][d]);
-      llkgradient[d] += dif * invsig * (1.0 * invsig * gradientF[i][d] + 1.0 * invsig2 * dif * gradientG[i][d]);
     }
   }
 

@@ -96,8 +96,11 @@ class SAEM : public korali::Solver
    @param sample - the sample used during optimization; is expected to contain the
             hyperparameters at sample["Parameters"].
             Sets sample["F(x)"].
+
+   @param zetaFc Function for calculating zeta of the likelihood model
+   @param phiFc Function for calculating phi of the likelihood model
   */
-  static void QFunction(korali::Sample &sample);
+  static void QFunction(korali::Sample &sample, size_t zetaFc, size_t phiFc);
 
   void initialize() override;
   void finalize() override;

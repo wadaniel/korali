@@ -80,8 +80,10 @@ void korali::Engine::run()
 
  if (_conduit->isRoot())
  {
+  // (Engine-Side) Adding engine to the stack to support Korali-in-Korali execution
+  _engineStack.push(this);
 
-  // Adding engine to the stack
+  // (Workers-Side) Adding engine to the stack to support Korali-in-Korali execution
   _conduit->stackEngine(this);
 
   // Setting base time for profiling.
@@ -116,7 +118,10 @@ void korali::Engine::run()
   // Finalizing experiments
   for (size_t i = 0; i < _experimentVector.size(); i++) _experimentVector[i]->finalize();
 
-  // Removing the current engine to the conduit's engine stack
+  // (Engine-Side) Removing the current engine to the conduit's engine stack
+  _engineStack.pop();
+
+  // (Workers-Side) Removing the current engine to the conduit's engine stack
   _conduit->popEngine();
  }
 
@@ -173,15 +178,6 @@ void korali::Engine::resume(std::vector<korali::Experiment>& experiments)
  run();
 }
 
-#ifdef _KORALI_USE_MPI
-long int korali::Engine::getMPICommPointer() { return (long int)(&__KoraliTeamComm); }
-#endif
-
-knlohmann::json& korali::Engine::operator[](const std::string& key) { return _js[key]; }
-knlohmann::json& korali::Engine::operator[](const unsigned long int& key) { return _js[key]; }
-pybind11::object korali::Engine::getItem(pybind11::object key) { return _js.getItem(key); }
-void korali::Engine::setItem(pybind11::object key, pybind11::object val) { _js.setItem(key, val); }
-
 void korali::Engine::serialize(knlohmann::json& js)
 {
   for (size_t i = 0; i < _experimentVector.size(); i++)
@@ -206,6 +202,15 @@ korali::Engine* korali::Engine::deserialize(knlohmann::json& js)
 
  return k;
 }
+
+#ifdef _KORALI_USE_MPI
+long int korali::Engine::getMPICommPointer() { return (long int)(&__KoraliTeamComm); }
+#endif
+
+knlohmann::json& korali::Engine::operator[](const std::string& key) { return _js[key]; }
+knlohmann::json& korali::Engine::operator[](const unsigned long int& key) { return _js[key]; }
+pybind11::object korali::Engine::getItem(pybind11::object key) { return _js.getItem(key); }
+void korali::Engine::setItem(pybind11::object key, pybind11::object val) { _js.setItem(key, val); }
 
 PYBIND11_MODULE(libkorali, m)
 {

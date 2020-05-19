@@ -3,21 +3,9 @@
 
 korali::Conduit *korali::_conduit = NULL;
 
-void korali::Conduit::coroutineWrapper()
-{
-  korali::Engine *engine = _engineStack.top();
-  korali::Sample *currentSample = engine->_engineSample;
-  co_switch(engine->_currentExperiment->_thread);
-  (*currentSample)["Experiment Id"] = engine->_currentExperiment->_experimentId;
-  (*currentSample)["Current Generation"] = engine->_currentExperiment->_currentGeneration;
-
-  _conduit->processSample(*currentSample);
-
-  currentSample->_state = SampleState::finished;
-  co_switch(engine->_currentExperiment->_thread);
-
-  if (currentSample->_state != SampleState::uninitialized) _conduit->_logger->logError("Resuming a finished sample\n");
-}
+/***********************************
+ * Worker-Side Operations
+ **********************************/
 
 void korali::Conduit::initiateSample(knlohmann::json &sampleJs)
 {
@@ -36,6 +24,7 @@ void korali::Conduit::initiateSample(knlohmann::json &sampleJs)
   if (it == experiment->sampleIdMap.end())
   {
     sampleJs["Finished"] = false;
+    sampleJs["Globals"] = _globals;
     experiment->sampleIdMap[sampleId] = new korali::Sample;
     experiment->sampleIdMap[sampleId]->_sampleThread = co_create(8192 * sizeof(void *), korali::Sample::sampleLauncher);
   }
@@ -51,6 +40,26 @@ void korali::Conduit::initiateSample(knlohmann::json &sampleJs)
     delete (experiment->sampleIdMap[sampleId]);
     experiment->sampleIdMap.erase(sampleId);
   }
+}
+
+/***********************************
+ * Worker-Side Operations
+ **********************************/
+
+void korali::Conduit::coroutineWrapper()
+{
+  korali::Engine *engine = _engineStack.top();
+  korali::Sample *currentSample = engine->_engineSample;
+  co_switch(engine->_currentExperiment->_thread);
+  (*currentSample)["Experiment Id"] = engine->_currentExperiment->_experimentId;
+  (*currentSample)["Current Generation"] = engine->_currentExperiment->_currentGeneration;
+
+  _conduit->processSample(*currentSample);
+
+  currentSample->_state = SampleState::finished;
+  co_switch(engine->_currentExperiment->_thread);
+
+  if (currentSample->_state != SampleState::uninitialized) _conduit->_logger->logError("Resuming a finished sample\n");
 }
 
 void korali::Conduit::start(korali::Sample &sample)

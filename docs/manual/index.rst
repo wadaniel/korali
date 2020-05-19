@@ -29,7 +29,8 @@ Korali's Documentation
    modules/problem/*
    modules/solver/*
    modules/conduit/*
-   modules/distribution/*      
+   modules/distribution/*
+   modules/layer/*         
    
 .. toctree::
    :maxdepth: 2

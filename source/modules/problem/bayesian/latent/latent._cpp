@@ -28,9 +28,6 @@ void korali::problem::bayesian::Latent::initialize()
 
 void korali::problem::bayesian::Latent::evaluateLoglikelihood(korali::Sample &sample)
 {
-  //TODO does it work?
-  if (!sample.contains("Latent Variables")) _k->_logger->logError("The given sample does not have 'Latent Variables' defined.\n");
-
   // Evaluate the user-given probability distribution for latent- and hyperparameter values given in the sample
   sample.run(_sOfLikelihoodModel);
   sample.run(_zetaOfLikelihoodModel);
@@ -48,7 +45,7 @@ void korali::problem::bayesian::Latent::evaluateLoglikelihood(korali::Sample &sa
   sample["logLikelihood"] = -_zetaValue + std::inner_product(std::begin(_sValues), std::end(_sValues), std::begin(_phiValues), 0.0);
 }
 
-/* @brief run the user defined sampler.
+/*  run the user defined sampler.
     Input sample needs to contain:
       - sample["Hyperparameters"]
       - sample["Number Samples"]
@@ -62,27 +59,23 @@ void korali::problem::bayesian::Latent::sampleLatent(korali::Sample &sample)
   sample.run(_latentVariableSampler);
 }
 
+/*  Evaluate the user-defined 'S' function (the sufficient statistics of the distribution).
+          sample is expected to contain parameter 'Latent Variables' */
 void korali::problem::bayesian::Latent::evaluateS(korali::Sample &sample)
 {
   sample.run(_sOfLikelihoodModel);
 }
 
+/*  Evaluate the user-defined 'phi' function (log-llh = -zeta + <S, phi>).
+          sample is expected to contain parameter 'Hyperparameters' */
 void korali::problem::bayesian::Latent::evaluatePhi(korali::Sample &sample)
 {
   sample.run(_phiOfLikelihoodModel);
 }
 
+/*  Evaluate the user-defined 'zeta' function (~ the log-normalization constant of the distribution).
+          sample is expected to contain parameter 'Hyperparameters' */
 void korali::problem::bayesian::Latent::evaluateZeta(korali::Sample &sample)
 {
   sample.run(_zetaOfLikelihoodModel);
-}
-
-void korali::problem::bayesian::Latent::evaluateLoglikelihoodGradient(korali::Sample &sample)
-{
-  _k->_logger->logError("Gradient not yet implemented for selected bayesian problem and log likelihood model.");
-}
-
-void korali::problem::bayesian::Latent::evaluateFisherInformation(korali::Sample &sample)
-{
-  _k->_logger->logError("Fisher information not yet implemented for selected bayesian problem and log likelihood model.");
 }

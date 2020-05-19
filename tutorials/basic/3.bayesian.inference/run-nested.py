@@ -29,12 +29,12 @@ e["Solver"]["Resampling Method"] = "Ellipse"
 # Configuring the problem's random distributions
 e["Distributions"][0]["Name"] = "Uniform 0"
 e["Distributions"][0]["Type"] = "Univariate/Uniform"
-e["Distributions"][0]["Minimum"] = -5.0
+e["Distributions"][0]["Minimum"] = 0.0
 e["Distributions"][0]["Maximum"] = +5.0
 
 e["Distributions"][1]["Name"] = "Uniform 1"
 e["Distributions"][1]["Type"] = "Univariate/Uniform"
-e["Distributions"][1]["Minimum"] = -5.0
+e["Distributions"][1]["Minimum"] = 0.0
 e["Distributions"][1]["Maximum"] = +5.0
 
 e["Distributions"][2]["Name"] = "Uniform 2"

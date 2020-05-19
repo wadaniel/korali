@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-/* @brief This is always run before (re-)starting the solver */
+/** @brief This is always run before (re-)starting the solver */
 void korali::solver::SAEM::initialize()
 {
   if (_k->_problem->getType() != "Bayesian/Latent")
@@ -32,6 +32,7 @@ void korali::solver::SAEM::initialize()
     [zFc = _latentProblem->_zetaOfLikelihoodModel, pFc = _latentProblem->_phiOfLikelihoodModel](korali::Sample &sample) { QFunction(sample, zFc, pFc); };
 }
 
+/** @brief Is called repeatedly to run the generations of the experiment. */
 void korali::solver::SAEM::runGeneration(void)
 {
   if (_k->_currentGeneration == 1) setInitialConfiguration();
@@ -49,7 +50,7 @@ void korali::solver::SAEM::runGeneration(void)
   updateHyperparameters();
 }
 
-/* @brief Run once, before the first generation */
+/** @brief Run once, before the first generation */
 void korali::solver::SAEM::setInitialConfiguration()
 {
   _currentSamplesSVectors.resize(_numberSamplesPerStep);
@@ -110,7 +111,7 @@ void korali::solver::SAEM::setInitialConfiguration()
   _experiment["Console Output"]["Verbosity"] = "Silent";
 }
 
-// @brief Run the user defined sampler to get new samples. Track mean and variance of the samples.
+///  Run the user defined sampler to get new samples. Track mean and variance of the samples.
 void korali::solver::SAEM::sampleLatent()
 {
   korali::Sample sample;
@@ -139,7 +140,9 @@ void korali::solver::SAEM::sampleLatent()
   }
 }
 
-/* @brief Call this after sampling; sets _currentSamplesSVectors using each current sample of latent variables
+/* Called after sampling.
+
+Called after sampling; sets _currentSamplesSVectors using each current sample of latent variables
 and the current hyperparameter values
 
 Uses:
@@ -173,7 +176,7 @@ void korali::solver::SAEM::calculateSampleSVectors()
   }
 }
 
-/* @brief Robbins-Monro-update our estimate of S.
+/*  Robbins-Monro-update our estimate of S.
 
  Uses:
         _currentSamplesSValues
@@ -223,7 +226,8 @@ void korali::solver::SAEM::updateS()
   return;
 }
 
-/* @brief Function to be optimized in the M-step.
+/*  Function to be optimized in the M-step.
+
    Uses:
        _currentS
        zeta and phi functions of _latentProblem
@@ -249,7 +253,7 @@ void korali::solver::SAEM::QFunction(korali::Sample &sample, size_t zetaFc, size
   sample["F(x)"] = -zeta + std::inner_product(std::begin(currentS), std::end(currentS), std::begin(phi), 0.0);
 }
 
-/* @brief Set up a korali experiment and optimize the current
+/*  Set up a korali experiment and optimize the current
           Q function to get a new vector of hyperparameters. */
 void korali::solver::SAEM::updateHyperparameters()
 {
@@ -275,12 +279,18 @@ void korali::solver::SAEM::updateHyperparameters()
     _numberGenerationsSmallLikelihoodChange++;
 }
 
+/** @brief Test whether index idx corresponds to a latent variable.
+
+ @param idx The index of a variable, in the list of all variables. The order is given by the user when defining
+            variables, e.g. k["Variables"][3] will be the third variable. (typo possible.)
+ */
 bool korali::solver::SAEM::isLatent(int idx)
 {
   /* checks whether the variable at index idx, i.e., k->_variables[idx], is latent or not*/
   return _k->_variables[idx]->_bayesianType == "Latent";
 }
 
+/** @brief Utility function to calculate mean and standard deviation of the values in vector v. */
 std::vector<double> korali::solver::SAEM::meanAndSDev(std::vector<double> v)
 {
   // https://stackoverflow.com/questions/7616511/calculate-mean-and-standard-deviation-from-a-vector-of-samples-in-c-using-boos
@@ -295,6 +305,10 @@ std::vector<double> korali::solver::SAEM::meanAndSDev(std::vector<double> v)
   return result;
 }
 
+/** @brief Utility function, "transposes" a vector of vectors @param data 
+
+    That is, data[i][j] will be moved to result[j][i].
+    */
 std::vector<std::vector<double>> korali::solver::SAEM::transpose(const std::vector<std::vector<double>> data)
 {
   /* From: https://stackoverflow.com/questions/6009782/how-to-pivot-a-vector-of-vectors */
@@ -306,8 +320,12 @@ std::vector<std::vector<double>> korali::solver::SAEM::transpose(const std::vect
   return result;
 }
 
+/** @brief Don't print anything before running a generation. */
 void korali::solver::SAEM::printGenerationBefore() { return; }
 
+/** @brief After each except the final generation, print information about optimization progress.
+    More is printed with  output option "Detailed".
+    */
 void korali::solver::SAEM::printGenerationAfter()
 {
   if (_maxGenerations <= _k->_currentGeneration) return; //No printout here in last generation, this is done in finalize()
@@ -337,6 +355,8 @@ void korali::solver::SAEM::printGenerationAfter()
   return;
 }
 
+/** @brief After the final generation, show the final and best loglikelihood, as well as final values of hyperparameters
+ and the last samples of latent variables. (These latent samples still are stochastic.)*/
 void korali::solver::SAEM::finalize()
 {
   _k->_logger->logInfo("Minimal", "Final hyperparameters:\n");

@@ -23,7 +23,6 @@ e["Problem"]["Likelihood Model"] = lg5
 e["Solver"]["Type"] = "TMCMC"
 e["Solver"]["Population Size"] = 10000
 
-e["Solver"]["Default Burn In"] = 3
 e["Solver"]["Target Coefficient Of Variation"] = 0.4
 
 # Configuring the problem's random distributions

@@ -39,5 +39,5 @@ e["Solver"]["Target Coefficient Of Variation"] = 0.4
 # Running Korali
 k.run(e)
 
-checkMean(e, 0.0, 0.035)
+checkMean(e, 0.0, 0.05)
 checkStd(e, 1.0, 0.05)

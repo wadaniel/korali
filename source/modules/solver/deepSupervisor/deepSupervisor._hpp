@@ -1,0 +1,23 @@
+#ifndef _KORALI_SOLVER_DEEPSUPERVISOR_HPP_
+#define _KORALI_SOLVER_DEEPSUPERVISOR_HPP_
+
+#include "modules/solver/solver.hpp"
+#include "modules/neuralNetwork/neuralNetwork.hpp"
+
+namespace korali { namespace solver {
+
+class DeepSupervisor : public korali::Solver
+{
+ public:
+
+ void setInitialConfiguration() override;
+ void runGeneration() override;
+ void printGenerationBefore() override;
+ void printGenerationAfter() override;
+
+};
+
+} } // namespace korali::solver
+
+
+#endif // _KORALI_SOLVER_DEEPSUPERVISOR_HPP_

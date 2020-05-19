@@ -1,0 +1,30 @@
+#include "modules/solver/deepSupervisor/deepSupervisor.hpp"
+#include "modules/conduit/conduit.hpp"
+#include "modules/experiment/experiment.hpp"
+
+void korali::solver::DeepSupervisor::setInitialConfiguration()
+{
+ // Initialize solver's configuration here
+}
+
+void korali::solver::DeepSupervisor::runGeneration()
+{
+ if (_k->_currentGeneration == 1) setInitialConfiguration();
+
+ _k->_logger->logInfo("Normal", "Running generation %lu...\n", _k->_currentGeneration);
+
+ _previousAverageValidationLoss = _currentAverageValidationLoss;
+ _currentAverageValidationLoss = _k->_currentGeneration;
+
+}
+
+void korali::solver::DeepSupervisor::printGenerationBefore()
+{
+
+}
+
+void korali::solver::DeepSupervisor::printGenerationAfter()
+{
+
+}
+

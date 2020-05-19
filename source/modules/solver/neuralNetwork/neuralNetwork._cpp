@@ -3,9 +3,8 @@
 
 #ifdef _KORALI_USE_ONEDNN
   #include "external/oneDNN/oneDNNUtils.hpp"
-#endif
-
 using namespace dnnl;
+#endif
 
 void korali::solver::NeuralNetwork::initialize()
 {

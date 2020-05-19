@@ -110,13 +110,9 @@ void korali::conduit::Concurrent::worker(int workerId)
     auto actionJs = knlohmann::json::parse(inputString);
 
     if (actionJs["Conduit Action"] == "Terminate") exit(0);
-
     if (actionJs["Conduit Action"] == "Process Sample") initiateSample(actionJs);
-
-    if (actionJs["Conduit Action"] == "Stack Engines")
-      for (size_t i = 0; i < actionJs["Engines"].size(); i++)
-        _engineStack.push(korali::Engine::deserialize(actionJs["Engines"][i]));
-
+    if (actionJs["Conduit Action"] == "Broadcast Globals") _globals = actionJs;
+    if (actionJs["Conduit Action"] == "Stack Engine") _engineStack.push(korali::Engine::deserialize(actionJs["Engine"]));
     if (actionJs["Conduit Action"] == "Pop Engine") _engineStack.pop();
   }
 }
@@ -193,51 +189,9 @@ void korali::conduit::Concurrent::processSample(korali::Sample &sample)
 
 void korali::conduit::Concurrent::stackEngine(korali::Engine *engine)
 {
-  auto newStack = _engineStack;
-  newStack.push(engine);
-
-  for (size_t i = 0; i < newStack.size() - 1; i++) popEngine();
-
-  _engineStack = newStack;
-
-  size_t stackSize = newStack.size();
-  std::vector<korali::Engine *> engineList;
-  for (size_t i = 0; i < stackSize; i++)
-  {
-    engineList.push_back(newStack.top());
-    newStack.pop();
-  }
-
-  auto stackJs = knlohmann::json();
-  stackJs["Conduit Action"] = "Stack Engines";
-
-  for (int i = 0; i < stackSize; i++)
-    engineList[stackSize - i - 1]->serialize(stackJs["Engines"][i]);
-
-  std::string stackString = stackJs.dump();
-  size_t stackStringSize = stackString.size();
-
-  for (int i = 0; i < _concurrentJobs; i++)
-  {
-    write(_inputsPipe[i][1], &stackStringSize, sizeof(size_t));
-
-    size_t curPos = 0;
-    while (curPos < stackStringSize)
-    {
-      size_t bufSize = BUFFERSIZE;
-      if (curPos + bufSize > stackStringSize) bufSize = stackStringSize - curPos;
-      write(_inputsPipe[i][1], stackString.c_str() + curPos, bufSize * sizeof(char));
-      curPos += bufSize;
-    }
-  }
-}
-
-void korali::conduit::Concurrent::popEngine()
-{
-  _engineStack.pop();
-
-  auto engineJs = knlohmann::json();
-  engineJs["Conduit Action"] = "Pop Engine";
+  knlohmann::json engineJs;
+  engineJs["Conduit Action"] = "Stack Engine";
+  engine->serialize(engineJs["Engine"]);
 
   std::string engineString = engineJs.dump();
   size_t engineStringSize = engineString.size();
@@ -245,7 +199,51 @@ void korali::conduit::Concurrent::popEngine()
   for (int i = 0; i < _concurrentJobs; i++)
   {
     write(_inputsPipe[i][1], &engineStringSize, sizeof(size_t));
-    write(_inputsPipe[i][1], engineString.c_str(), engineStringSize * sizeof(char));
+
+    size_t curPos = 0;
+    while (curPos < engineStringSize)
+    {
+      size_t bufSize = BUFFERSIZE;
+      if (curPos + bufSize > engineStringSize) bufSize = engineStringSize - curPos;
+      write(_inputsPipe[i][1], engineString.c_str() + curPos, bufSize * sizeof(char));
+      curPos += bufSize;
+    }
+  }
+}
+
+void korali::conduit::Concurrent::popEngine()
+{
+  auto popJs = knlohmann::json();
+  popJs["Conduit Action"] = "Pop Engine";
+
+  std::string popString = popJs.dump();
+  size_t popStringSize = popString.size();
+
+  for (int i = 0; i < _concurrentJobs; i++)
+  {
+    write(_inputsPipe[i][1], &popStringSize, sizeof(size_t));
+    write(_inputsPipe[i][1], popString.c_str(), popStringSize * sizeof(char));
+  }
+}
+
+void korali::conduit::Concurrent::broadcastGlobals(knlohmann::json &globalsJs)
+{
+  globalsJs["Conduit Action"] = "Broadcast Globals";
+  std::string globalsString = globalsJs.dump();
+  size_t globalsStringSize = globalsString.size();
+
+  for (int i = 0; i < _concurrentJobs; i++)
+  {
+    write(_inputsPipe[i][1], &globalsStringSize, sizeof(size_t));
+
+    size_t curPos = 0;
+    while (curPos < globalsStringSize)
+    {
+      size_t bufSize = BUFFERSIZE;
+      if (curPos + bufSize > globalsStringSize) bufSize = globalsStringSize - curPos;
+      write(_inputsPipe[i][1], globalsString.c_str() + curPos, bufSize * sizeof(char));
+      curPos += bufSize;
+    }
   }
 }
 

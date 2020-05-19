@@ -26,27 +26,13 @@ void korali::conduit::Sequential::processSample(korali::Sample &sample)
   __profiler["Timelines"]["Worker 0"] += js;
 }
 
-void korali::conduit::Sequential::stackEngine(korali::Engine *engine)
-{
-  _engineStack.push(engine);
-}
-
-void korali::conduit::Sequential::popEngine()
-{
-  _engineStack.pop();
-}
-
 void korali::conduit::Sequential::update(korali::Sample &sample)
 {
   korali::Engine *engine = _engineStack.top();
   engine->_engineSample->_js.getJson() = sample._js.getJson();
 }
 
-void korali::conduit::Sequential::initServer()
+void korali::conduit::Sequential::broadcastGlobals(knlohmann::json &globalsJs)
 {
-}
-
-size_t korali::conduit::Sequential::maxConcurrency()
-{
-  return 1;
+  _conduit->_globals = globalsJs;
 }

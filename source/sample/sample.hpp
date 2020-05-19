@@ -16,11 +16,13 @@
 namespace korali
 {
 
+class Experiment;
+class Engine;
+
 /**
  * @brief Stores all functions inserted as parameters to experiment's configuration
  */
 extern std::vector<std::function<void(korali::Sample&)>*> _functionVector;
-
 
 /**
 * @brief Execution states of a given sample.

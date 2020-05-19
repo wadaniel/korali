@@ -1,0 +1,240 @@
+#include "modules/conduit/conduit.hpp"
+#include "modules/solver/neuralNetwork/neuralNetwork.hpp"
+
+#ifdef _KORALI_USE_ONEDNN
+  #include "external/oneDNN/oneDNNUtils.hpp"
+using namespace dnnl;
+#endif
+
+void korali::solver::NeuralNetwork::initialize()
+{
+#ifndef _KORALI_USE_ONEDNN
+
+  _k->_logger->logError("OneDNN has not been properly installed to support NN operations.\n");
+
+#endif
+}
+
+void korali::solver::NeuralNetwork::setInitialConfiguration()
+{
+  // Initialize solver's configuration here
+  size_t layerCount = _layers.size();
+
+#ifdef _KORALI_USE_ONEDNN
+
+  // Initializing Engine and stream
+
+  if (_engineKind == "CPU") _engine = engine(engine::kind::cpu, 0);
+  if (_engineKind == "GPU") _engine = engine(engine::kind::gpu, 0);
+
+  _stream = stream(_engine);
+
+  // Initializing Layers
+
+  if (_layers[0]->_type != "Input") _k->_logger->logError("The first layer must be of an input type.\n");
+  for (size_t i = 1; i < layerCount - 1; i++)
+  {
+    if (_layers[i]->_type == "Input") _k->_logger->logError("Hidden layers cannot be input type.\n");
+    if (_layers[i]->_type == "Output") _k->_logger->logError("Hidden layers cannot be output type.\n");
+  }
+  if (_layers[layerCount - 1]->_type != "Output") _k->_logger->logError("The last layer must be of an output type.\n");
+
+  // Checking input/output training data
+
+  size_t batchSize = _layers[0]->_nodeValues.size();
+  size_t inputSize = _layers[0]->_nodeCount;
+
+  if (batchSize == 0) _k->_logger->logError("You should provide an input forwarding set.\n");
+
+  for (size_t i = 0; i < batchSize; i++)
+    if (_layers[0]->_nodeValues[i].size() != inputSize)
+      _k->_logger->logError("Input data set %lu has a different number of elements than the input layer node count.\n", i);
+
+  // Initializing memory objects for activation functions
+
+  for (size_t i = 0; i < layerCount; i++)
+  {
+    const memory::dim N = batchSize, IC = _layers[i]->_nodeCount;
+    memory::dims layerDims = {N, IC};
+    auto activationMemDesc = memory::desc(layerDims, memory::data_type::f32, memory::format_tag::ab);
+    _layers[i]->_nodeMem = memory(activationMemDesc, _engine);
+  }
+
+  // Initializing weight matrix memories and values
+  for (size_t i = 1; i < layerCount; i++)
+  {
+    const memory::dim IC = _layers[i - 1]->_nodeCount, OC = _layers[i]->_nodeCount;
+    memory::dims weightDims = {OC, IC};
+    size_t weightCount = product(weightDims);
+
+    // Allocating weight memory
+    auto weightMemDesc = memory::desc(weightDims, memory::data_type::f32, memory::format_tag::ba);
+    _layers[i]->_weightMem = memory(weightMemDesc, _engine);
+
+    // Storing weight memory
+
+    if (_layers[i]->_weights.size() != OC)
+      _k->_logger->logError("Layer %lu weights were either not initialized (perhaps the NN is not yet trained) or not provided correctly. Expected: %lu, provided: %lu weight sets. \n", i, OC, _layers[i]->_weights.size());
+
+    for (size_t j = 0; j < OC; j++)
+      if (_layers[i]->_weights[j].size() != IC)
+        _k->_logger->logError("Layer %lu weight set %lu was either not initialized (perhaps the NN is not yet trained) or not provided correctly. Expected: %lu, provided: %lu weight sets. \n", i, j, IC, _layers[i]->_weights[j].size());
+
+    std::vector<float> weightsData(weightCount);
+
+    for (size_t j = 0; j < OC; j++)
+      for (size_t k = 0; k < IC; k++)
+        weightsData[j * IC + k] = _layers[i]->_weights[j][k];
+
+    // Allocating bias memory
+    auto biasMemDesc = memory::desc({OC}, memory::data_type::f32, memory::format_tag::a);
+    _layers[i]->_biasMem = memory(biasMemDesc, _engine);
+
+    std::vector<float> biasData(OC);
+
+    if (_layers[i]->_bias.size() != OC)
+      _k->_logger->logError("Layer %lu biases were either not initialized (perhaps the NN is not yet trained) or not provided correctly. Expected: %lu, provided: %lu biases. \n", i, OC, _layers[i]->_bias.size());
+
+    for (size_t j = 0; j < OC; j++) biasData[j] = _layers[i]->_bias[j];
+
+    // Setting weight and bias data to oneDNN format
+    write_to_dnnl_memory(weightsData.data(), _layers[i]->_weightMem);
+    write_to_dnnl_memory(biasData.data(), _layers[i]->_biasMem);
+
+    // Create memory descriptor for weights with format_tag::any. This enables
+    // the inner product primitive to choose the memory layout for an optimized
+    // primitive implementation, and this format may differ from the one
+    // provided by the user.
+    auto inner_product_weights_md = memory::desc(weightDims, memory::data_type::f32, memory::format_tag::any);
+
+    // Create operation descriptor.
+    auto inner_product_d = inner_product_forward::desc(prop_kind::forward_training, _layers[i - 1]->_nodeMem.get_desc(), inner_product_weights_md, biasMemDesc, _layers[i]->_nodeMem.get_desc());
+
+    // Create weight evaluation + activation function primitive.
+
+    post_ops inner_product_ops;
+
+    if (_layers[i]->_activationFunction == "Identity")
+    {
+      const float scale = 1.0f;
+      const float alpha = 1.0f;
+      const float beta = 0.f;
+      inner_product_ops.append_eltwise(scale, algorithm::eltwise_linear, alpha, beta);
+    }
+
+    if (_layers[i]->_activationFunction == "ReLU")
+    {
+      const float scale = 1.0f;
+      const float alpha = 0.f;
+      const float beta = 0.f;
+      inner_product_ops.append_eltwise(scale, algorithm::eltwise_relu, alpha, beta);
+    }
+
+    if (_layers[i]->_activationFunction == "Tanh")
+    {
+      const float scale = 1.0f;
+      const float alpha = 0.f;
+      const float beta = 0.f;
+      inner_product_ops.append_eltwise(scale, algorithm::eltwise_tanh, alpha, beta);
+    }
+
+    primitive_attr inner_product_attr;
+    inner_product_attr.set_post_ops(inner_product_ops);
+
+    // Create inner product primitive descriptor.
+    auto inner_product_pd = inner_product_forward::primitive_desc(inner_product_d, inner_product_attr, _engine);
+
+    // For now, assume that the weights memory layout generated by the primitive
+    // and the one provided by the user are identical.
+    _layers[i]->_innerProductWeightMem = _layers[i]->_weightMem;
+
+    // Reorder the data in case the weights memory layout generated by the
+    // primitive and the one provided by the user are different. In this case,
+    // we create additional memory objects with internal buffers that will
+    // contain the reordered data.
+    if (inner_product_pd.weights_desc() != _layers[i]->_weightMem.get_desc())
+    {
+      _layers[i]->_innerProductWeightMem = memory(inner_product_pd.weights_desc(), _engine);
+      reorder(_layers[i]->_weightMem, _layers[i]->_innerProductWeightMem).execute(_stream, _layers[i]->_weightMem, _layers[i]->_innerProductWeightMem);
+    }
+
+    // Create the primitive.
+    _layers[i]->_primitive = inner_product_forward(inner_product_pd);
+  }
+
+  // Creating storage for layer's node data
+  for (size_t currentLayer = 1; currentLayer < layerCount; currentLayer++)
+  {
+    size_t nodeCount = _layers[currentLayer]->_nodeCount;
+    _layers[currentLayer]->_nodeValues.resize(batchSize);
+    for (size_t i = 0; i < batchSize; i++) _layers[currentLayer]->_nodeValues[i].resize(nodeCount);
+  }
+
+  // Creating storage and copying input data to first layer
+  std::vector<float> batchInput(batchSize * inputSize);
+  for (size_t i = 0; i < batchSize; i++)
+    for (size_t j = 0; j < inputSize; j++)
+      batchInput[i * inputSize + j] = _layers[0]->_nodeValues[i][j];
+
+  write_to_dnnl_memory(batchInput.data(), _layers[0]->_nodeMem);
+#endif
+}
+
+void korali::solver::NeuralNetwork::runGeneration()
+{
+#ifdef _KORALI_USE_ONEDNN
+
+  if (_k->_currentGeneration == 1) setInitialConfiguration();
+
+  size_t layerCount = _layers.size();
+  size_t inputSize = _layers[0]->_nodeCount;
+  size_t batchSize = _layers[0]->_nodeValues.size();
+
+  // Running neural network
+  for (size_t currentLayer = 1; currentLayer < layerCount; currentLayer++)
+  {
+    // Configuring inner product arguments
+    std::unordered_map<int, memory> inner_product_args;
+    inner_product_args.insert({DNNL_ARG_SRC, _layers[currentLayer - 1]->_nodeMem});
+    inner_product_args.insert({DNNL_ARG_WEIGHTS, _layers[currentLayer]->_innerProductWeightMem});
+    inner_product_args.insert({DNNL_ARG_BIAS, _layers[currentLayer]->_biasMem});
+    inner_product_args.insert({DNNL_ARG_DST, _layers[currentLayer]->_nodeMem});
+
+    // Initialize primitive execution
+    _layers[currentLayer]->_primitive.execute(_stream, inner_product_args);
+
+    // Wait for the computation to finalize.
+    _stream.wait();
+
+    // Restoring the layer's node values
+    size_t nodeCount = _layers[currentLayer]->_nodeCount;
+    std::vector<float> resultData(batchSize * nodeCount);
+    read_from_dnnl_memory(resultData.data(), _layers[currentLayer]->_nodeMem);
+
+    for (size_t i = 0; i < batchSize; i++)
+      for (size_t j = 0; j < nodeCount; j++)
+        _layers[currentLayer]->_nodeValues[i][j] = resultData[i * nodeCount + j];
+  }
+
+#endif
+}
+
+void korali::solver::NeuralNetwork::printGenerationAfter()
+{
+#ifdef _KORALI_USE_ONEDNN
+
+  size_t currentLayer = _layers.size() - 1;
+  size_t batchSize = _layers[0]->_nodeValues.size();
+  size_t nodeCount = _layers[currentLayer]->_nodeCount;
+
+  // Printing Layer values
+
+  for (size_t i = 0; i < batchSize; i++)
+  {
+    _k->_logger->logInfo("Normal", "Layer: Output %lu: ( %f", i, _layers[currentLayer]->_nodeValues[i][0]);
+    for (size_t j = 1; j < nodeCount; j++) _k->_logger->logData("Normal", ", %f", _layers[currentLayer]->_nodeValues[i][j]);
+    _k->_logger->logData("Normal", " )\n");
+  }
+
+#endif
+}

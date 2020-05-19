@@ -47,11 +47,12 @@ class Concurrent : public korali::Conduit
   void update(korali::Sample &sample) override;
   void initServer() override;
   size_t maxConcurrency() override;
+  void broadcastGlobals(knlohmann::json &sampleJs) override;
   void processSample(korali::Sample &sample) override;
   void initialize() override;
+  void finalize() override;
   void stackEngine(korali::Engine *) override;
   void popEngine() override;
-  void finalize() override;
 };
 
 } // namespace conduit

@@ -33,9 +33,6 @@ class MCMCLatentSampler:
         #  *  Create one sampling experiment to sample all latent variables. After all, the latent vars are correlated /
         #     have a joint distribution .
 
-        k = korali.Engine()
-        e = korali.Experiment()
-
         def probability_function(s):
 
              latent_vars = s["Parameters"]
@@ -64,6 +61,9 @@ class MCMCLatentSampler:
 
         # * * * * *  * * * * *  * * * * * probability_function end
 
+        k = korali.Engine()
+        e = korali.Experiment()
+        
          # * Based on tutorial a2-sampling
         e["Problem"]["Type"] = "Sampling"
         e["Problem"]["Probability Function"] = lambda s : probability_function(s)

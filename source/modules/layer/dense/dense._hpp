@@ -1,0 +1,19 @@
+#ifndef _KORALI_LAYER_DENSE_HPP_
+#define _KORALI_LAYER_DENSE_HPP_
+
+#include "modules/layer/layer.hpp"
+
+namespace korali
+{
+namespace layer
+{
+class Dense : public korali::Layer
+{
+  public:
+};
+
+} // namespace layer
+
+} // namespace korali
+
+#endif // _KORALI_LAYER_DENSE_HPP_

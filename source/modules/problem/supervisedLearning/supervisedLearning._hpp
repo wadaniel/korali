@@ -1,0 +1,18 @@
+#ifndef _KORALI_PROBLEM_SUPERVISEDLEARNING_HPP_
+#define _KORALI_PROBLEM_SUPERVISEDLEARNING_HPP_
+
+#include "modules/problem/problem.hpp"
+
+namespace korali
+{
+namespace problem
+{
+class SupervisedLearning : public korali::Problem
+{
+  public:
+};
+
+} // namespace problem
+} // namespace korali
+
+#endif // _KORALI_PROBLEM_SUPERVISEDLEARNING_HPP_

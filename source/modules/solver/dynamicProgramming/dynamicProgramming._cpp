@@ -16,8 +16,8 @@ void korali::solver::DynamicProgramming::initialize()
   // For training, We run as many evaluations as needed if no other termination criteria has been defined
   if (_maxEvaluations == 0) _maxEvaluations = _tableEntryCount;
 
-  // For Running, We run as many stages as necessary
-  if (_maxStages == 0) _maxStages = _recursionDepth;
+  // For Running, we run as many stages as necessary
+  if (_maxStages > _recursionDepth) _maxStages = _recursionDepth;
 }
 
 void korali::solver::DynamicProgramming::runGeneration()

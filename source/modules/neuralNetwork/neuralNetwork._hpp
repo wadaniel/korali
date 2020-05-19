@@ -1,10 +1,9 @@
-#ifndef _KORALI_SOLVER_NEURALNETWORK_HPP_
-#define _KORALI_SOLVER_NEURALNETWORK_HPP_
+#ifndef _KORALI_NEURAL_NETWORK_HPP_
+#define _KORALI_NEURAL_NETWORK_HPP_
 
 #include "modules/distribution/univariate/uniform/uniform.hpp"
 #include "modules/layer/layer.hpp"
-#include "modules/problem/supervisedLearning/supervisedLearning.hpp"
-#include "modules/solver/solver.hpp"
+#include "modules/module.hpp"
 
 #ifdef _KORALI_USE_ONEDNN
   #include "dnnl.hpp"
@@ -12,9 +11,7 @@
 
 namespace korali
 {
-namespace solver
-{
-class NeuralNetwork : public korali::Solver
+class NeuralNetwork : public korali::Module
 {
   public:
   /**
@@ -36,12 +33,18 @@ class NeuralNetwork : public korali::Solver
 #endif
 
   void initialize() override;
-  void setInitialConfiguration() override;
-  void runGeneration() override;
-  void printGenerationAfter() override;
+
+  /**
+   * @brief Updates the internal memory structures, with regards to the layer configuration of the network
+   */
+  void update();
+
+  /**
+   * @brief Forward-propagates the input batch data through the network.
+  */
+  void forward();
 };
 
-} // namespace solver
 } // namespace korali
 
-#endif // _KORALI_SOLVER_NEURALNETWORK_HPP_
+#endif // _KORALI_SOLVER_NEURAL_NETWORK_HPP_

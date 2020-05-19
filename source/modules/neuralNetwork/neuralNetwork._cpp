@@ -1,26 +1,29 @@
-#include "modules/conduit/conduit.hpp"
-#include "modules/solver/neuralNetwork/neuralNetwork.hpp"
+#include "modules/neuralNetwork/neuralNetwork.hpp"
+#include "modules/experiment/experiment.hpp"
 
 #ifdef _KORALI_USE_ONEDNN
   #include "external/oneDNN/oneDNNUtils.hpp"
 using namespace dnnl;
 #endif
 
-void korali::solver::NeuralNetwork::initialize()
+void korali::NeuralNetwork::initialize()
 {
 #ifndef _KORALI_USE_ONEDNN
 
   _k->_logger->logError("OneDNN has not been properly installed to support NN operations.\n");
 
 #endif
+
+  // Setting initialized flag to false
+  _isInitialized = false;
 }
 
-void korali::solver::NeuralNetwork::setInitialConfiguration()
+void korali::NeuralNetwork::update()
 {
-  // Initialize solver's configuration here
-  size_t layerCount = _layers.size();
-
 #ifdef _KORALI_USE_ONEDNN
+
+ // Initialize solver's configuration here
+ size_t layerCount = _layers.size();
 
   // Initializing Engine and stream
 
@@ -177,14 +180,16 @@ void korali::solver::NeuralNetwork::setInitialConfiguration()
       batchInput[i * inputSize + j] = _layers[0]->_nodeValues[i][j];
 
   write_to_dnnl_memory(batchInput.data(), _layers[0]->_nodeMem);
+
+  // Setting initialized flag to true
+  _isInitialized = true;
+
 #endif
 }
 
-void korali::solver::NeuralNetwork::runGeneration()
+void korali::NeuralNetwork::forward()
 {
 #ifdef _KORALI_USE_ONEDNN
-
-  if (_k->_currentGeneration == 1) setInitialConfiguration();
 
   size_t layerCount = _layers.size();
   size_t inputSize = _layers[0]->_nodeCount;
@@ -216,25 +221,15 @@ void korali::solver::NeuralNetwork::runGeneration()
         _layers[currentLayer]->_nodeValues[i][j] = resultData[i * nodeCount + j];
   }
 
-#endif
-}
-
-void korali::solver::NeuralNetwork::printGenerationAfter()
-{
-#ifdef _KORALI_USE_ONEDNN
-
-  size_t currentLayer = _layers.size() - 1;
-  size_t batchSize = _layers[0]->_nodeValues.size();
-  size_t nodeCount = _layers[currentLayer]->_nodeCount;
-
   // Printing Layer values
 
-  for (size_t i = 0; i < batchSize; i++)
-  {
-    _k->_logger->logInfo("Normal", "Layer: Output %lu: ( %f", i, _layers[currentLayer]->_nodeValues[i][0]);
-    for (size_t j = 1; j < nodeCount; j++) _k->_logger->logData("Normal", ", %f", _layers[currentLayer]->_nodeValues[i][j]);
-    _k->_logger->logData("Normal", " )\n");
-  }
+  for (size_t currentLayer = 1; currentLayer < layerCount; currentLayer++)
+   for (size_t i = 0; i < batchSize; i++)
+   {
+     _k->_logger->logInfo("Normal", "Layer: Output %lu: ( %f", i, _layers[currentLayer]->_nodeValues[i][0]);
+     for (size_t j = 1; j < inputSize; j++) _k->_logger->logData("Normal", ", %f", _layers[currentLayer]->_nodeValues[i][j]);
+     _k->_logger->logData("Normal", " )\n");
+   }
 
 #endif
 }

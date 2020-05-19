@@ -469,7 +469,9 @@ for moduleDir, relDir, fileNames in os.walk(modulesDir):
    moduleCodeString += createGetConfiguration(moduleConfig)
    moduleCodeString += createApplyModuleDefaults(moduleConfig)
    moduleCodeString += createApplyVariableDefaults(moduleConfig)
-   moduleCodeString += createCheckTermination(moduleConfig)
+   
+   if 'Termination Criteria' in moduleConfig:
+     moduleCodeString += createCheckTermination(moduleConfig)
 
    if 'Available Operations' in moduleConfig:
      moduleCodeString += createRunOperation(moduleConfig)
@@ -495,11 +497,12 @@ for moduleDir, relDir, fileNames in os.walk(modulesDir):
    # Adding overridden function declarations
    functionOverrideString = ''
    
-   functionOverrideString += '/**\n'
-   functionOverrideString += '* @brief Determines whether the module can trigger termination of an experiment run.\n'
-   functionOverrideString += '* @return True, if it should trigger termination; false, otherwise.\n'
-   functionOverrideString += '*/\n'
-   functionOverrideString += ' bool checkTermination() override;\n'
+   if 'Termination Criteria' in moduleConfig:
+    functionOverrideString += '/**\n'
+    functionOverrideString += '* @brief Determines whether the module can trigger termination of an experiment run.\n'
+    functionOverrideString += '* @return True, if it should trigger termination; false, otherwise.\n'
+    functionOverrideString += '*/\n'
+    functionOverrideString += ' bool checkTermination() override;\n'
    
    functionOverrideString += '/**\n'
    functionOverrideString += '* @brief Obtains the entire current state and configuration of the module.\n'

@@ -34,9 +34,9 @@ class NeuralNetwork : public korali::Solver
 
  #endif
 
+ void initialize() override;
  void setInitialConfiguration() override;
  void runGeneration() override;
- void printGenerationBefore() override;
  void printGenerationAfter() override;
 
 };

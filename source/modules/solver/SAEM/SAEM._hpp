@@ -80,7 +80,7 @@ class SAEM : public korali::Solver
   * @brief [Missing Description]
   * @param sample [Missing Description]
   */
-  static void QFunction(korali::Sample &sample);
+  static void QFunction(korali::Sample &sample, size_t zetaFc, size_t phiFc);
 
   void initialize() override;
   void finalize() override;

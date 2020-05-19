@@ -29,6 +29,8 @@ void korali::problem::bayesian::Latent::initialize()
 void korali::problem::bayesian::Latent::evaluateLoglikelihood(korali::Sample &sample)
 {
   //TODO does it work?
+ if (!sample.contains("Latent Variables")) _k->_logger->logError("The given sample does not have 'Latent Variables' defined.\n");
+
   // Evaluate the user-given probability distribution for latent- and hyperparameter values given in the sample
   sample.run(_sOfLikelihoodModel);
   sample.run(_zetaOfLikelihoodModel);

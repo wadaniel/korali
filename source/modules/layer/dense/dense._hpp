@@ -5,14 +5,11 @@
 
 namespace korali
 {
-
 namespace layer
 {
-
 class Dense : public korali::Layer
 {
- public:
-
+  public:
 };
 
 } // namespace layer

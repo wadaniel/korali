@@ -1,20 +1,5 @@
 **************************
-supervisedLearning
+Supervised Learning
 **************************
 
-Here goes the description of the new problem type: supervisedLearning
-
-You can add code:
-
-.. code-block:: python
-  
-  print('Hello World')
-  
-or formulae:
-
-.. math::
-
-  y = x^2
-
-And other rST devices.
-
+Describes a problem where, given a training and validation sets of inputs and outputs, the best policy for future sets of inputs is found, as to minimize a loss function.   

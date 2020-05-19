@@ -3,16 +3,16 @@
 
 #include "modules/problem/problem.hpp"
 
-namespace korali { namespace problem {
-
+namespace korali
+{
+namespace problem
+{
 class SupervisedLearning : public korali::Problem
 {
- public:
-
-
+  public:
 };
 
-} } // namespace korali::problem
-
+} // namespace problem
+} // namespace korali
 
 #endif // _KORALI_PROBLEM_SUPERVISEDLEARNING_HPP_

@@ -34,5 +34,5 @@ void korali::conduit::Sequential::update(korali::Sample &sample)
 
 void korali::conduit::Sequential::broadcastGlobals(knlohmann::json &globalsJs)
 {
- _conduit->_globals = globalsJs;
+  _conduit->_globals = globalsJs;
 }

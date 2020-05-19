@@ -1,47 +1,47 @@
 #ifndef _KORALI_SOLVER_NEURALNETWORK_HPP_
 #define _KORALI_SOLVER_NEURALNETWORK_HPP_
 
-#include "modules/solver/solver.hpp"
-#include "modules/layer/layer.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
+#include "modules/layer/layer.hpp"
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
+#include "modules/solver/solver.hpp"
 
 #ifdef _KORALI_USE_ONEDNN
-#include "dnnl.hpp"
+  #include "dnnl.hpp"
 #endif
 
-namespace korali { namespace solver {
-
+namespace korali
+{
+namespace solver
+{
 class NeuralNetwork : public korali::Solver
 {
- public:
-
- /**
+  public:
+  /**
   * @brief Flag that indicates whether the oneDNN structures have been initialized
   */
- bool _isInitialized;
+  bool _isInitialized;
 
- #ifdef _KORALI_USE_ONEDNN
- /**
+#ifdef _KORALI_USE_ONEDNN
+  /**
    * @brief oneDNN Engine
    */
- dnnl::engine _engine;
+  dnnl::engine _engine;
 
- /**
+  /**
    * @brief oneDNN Stream to run operations
    */
- dnnl::stream _stream;
+  dnnl::stream _stream;
 
- #endif
+#endif
 
- void initialize() override;
- void setInitialConfiguration() override;
- void runGeneration() override;
- void printGenerationAfter() override;
-
+  void initialize() override;
+  void setInitialConfiguration() override;
+  void runGeneration() override;
+  void printGenerationAfter() override;
 };
 
-} } // namespace korali::solver
-
+} // namespace solver
+} // namespace korali
 
 #endif // _KORALI_SOLVER_NEURALNETWORK_HPP_

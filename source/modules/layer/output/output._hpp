@@ -5,14 +5,11 @@
 
 namespace korali
 {
-
 namespace layer
 {
-
 class Output : public korali::Layer
 {
- public:
-
+  public:
 };
 
 } // namespace layer

@@ -3,7 +3,6 @@
 
 korali::Conduit *korali::_conduit = NULL;
 
-
 /***********************************
  * Worker-Side Operations
  **********************************/

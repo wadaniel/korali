@@ -189,12 +189,12 @@ void korali::conduit::Concurrent::processSample(korali::Sample &sample)
 
 void korali::conduit::Concurrent::stackEngine(korali::Engine *engine)
 {
- knlohmann::json engineJs;
- engineJs["Conduit Action"] = "Stack Engine";
- engine->serialize(engineJs["Engine"]);
+  knlohmann::json engineJs;
+  engineJs["Conduit Action"] = "Stack Engine";
+  engine->serialize(engineJs["Engine"]);
 
- std::string engineString = engineJs.dump();
- size_t engineStringSize = engineString.size();
+  std::string engineString = engineJs.dump();
+  size_t engineStringSize = engineString.size();
 
   for (int i = 0; i < _concurrentJobs; i++)
   {
@@ -228,23 +228,23 @@ void korali::conduit::Concurrent::popEngine()
 
 void korali::conduit::Concurrent::broadcastGlobals(knlohmann::json &globalsJs)
 {
- globalsJs["Conduit Action"] = "Broadcast Globals";
- std::string globalsString = globalsJs.dump();
- size_t globalsStringSize = globalsString.size();
+  globalsJs["Conduit Action"] = "Broadcast Globals";
+  std::string globalsString = globalsJs.dump();
+  size_t globalsStringSize = globalsString.size();
 
- for (int i = 0; i < _concurrentJobs; i++)
- {
-   write(_inputsPipe[i][1], &globalsStringSize, sizeof(size_t));
+  for (int i = 0; i < _concurrentJobs; i++)
+  {
+    write(_inputsPipe[i][1], &globalsStringSize, sizeof(size_t));
 
-   size_t curPos = 0;
-   while (curPos < globalsStringSize)
-   {
-     size_t bufSize = BUFFERSIZE;
-     if (curPos + bufSize > globalsStringSize) bufSize = globalsStringSize - curPos;
-     write(_inputsPipe[i][1], globalsString.c_str() + curPos, bufSize * sizeof(char));
-     curPos += bufSize;
-   }
- }
+    size_t curPos = 0;
+    while (curPos < globalsStringSize)
+    {
+      size_t bufSize = BUFFERSIZE;
+      if (curPos + bufSize > globalsStringSize) bufSize = globalsStringSize - curPos;
+      write(_inputsPipe[i][1], globalsString.c_str() + curPos, bufSize * sizeof(char));
+      curPos += bufSize;
+    }
+  }
 }
 
 size_t korali::conduit::Concurrent::maxConcurrency()

@@ -29,8 +29,7 @@ void korali::solver::SAEM::initialize()
       _k->_logger->logError("Initial Value of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
 
   _experiment["Problem"]["Objective Function"] =
-    [zFc = _latentProblem->_zetaOfLikelihoodModel, pFc = _latentProblem->_phiOfLikelihoodModel]
-    (korali::Sample& sample){ QFunction(sample, zFc, pFc); };
+    [zFc = _latentProblem->_zetaOfLikelihoodModel, pFc = _latentProblem->_phiOfLikelihoodModel](korali::Sample &sample) { QFunction(sample, zFc, pFc); };
 }
 
 void korali::solver::SAEM::runGeneration(void)
@@ -235,14 +234,17 @@ void korali::solver::SAEM::QFunction(korali::Sample &sample, size_t zetaFc, size
 {
   sample["Hyperparameters"] = sample["Parameters"];
   sample.run(zetaFc); // Zeta of Likelihood Model
-  sample.run(phiFc); // Phi of Likelihood Model
+  sample.run(phiFc);  // Phi of Likelihood Model
 
   double zeta = sample["zeta"];
   std::vector<double> phi = sample["phi"];
   std::vector<double> currentS = sample["Globals"]["Current S"];
 
   if (phi.size() != currentS.size())
-   { fprintf(stderr, "[Korali] SAEM Internal model error. Current Robbins-Monro-averaged vector S did not have the same length as vector phi from the problem definition (from the model). \n"); exit(-1); }
+  {
+    fprintf(stderr, "[Korali] SAEM Internal model error. Current Robbins-Monro-averaged vector S did not have the same length as vector phi from the problem definition (from the model). \n");
+    exit(-1);
+  }
 
   sample["F(x)"] = -zeta + std::inner_product(std::begin(currentS), std::end(currentS), std::begin(phi), 0.0);
 }
@@ -251,8 +253,8 @@ void korali::solver::SAEM::QFunction(korali::Sample &sample, size_t zetaFc, size
           Q function to get a new vector of hyperparameters. */
 void korali::solver::SAEM::updateHyperparameters()
 {
-   knlohmann::json globalsJs;
-   globalsJs["Current S"] = _currentS;
+  knlohmann::json globalsJs;
+  globalsJs["Current S"] = _currentS;
   _conduit->broadcastGlobals(globalsJs);
 
   _experiment["Random Seed"] = _k->_randomSeed++;

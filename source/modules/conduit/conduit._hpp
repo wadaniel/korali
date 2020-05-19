@@ -35,7 +35,7 @@ class Conduit : public korali::Module
   /**
   * @brief Initializes the worker/server bifurcation in the conduit
   */
-  virtual void initServer() {};
+  virtual void initServer(){};
 
   /**
   * @brief Indicates how many samples can be evaluated concurrently.
@@ -97,21 +97,21 @@ class Conduit : public korali::Module
  */
   virtual void update(korali::Sample &sample) = 0;
 
- /**
+  /**
   * @brief Stacks a new Engine into the engine stack
   * @param engine A Korali Engine
   */
-  virtual void stackEngine(korali::Engine *engine) { };
+  virtual void stackEngine(korali::Engine *engine){};
 
   /**
   * @brief Pops the current Engine from the engine stack
   */
-  virtual void popEngine() { };
+  virtual void popEngine(){};
 
- /**
+  /**
   * @brief Wrapper function for the sample coroutine
   */
- static void coroutineWrapper();
+  static void coroutineWrapper();
 };
 
 /**

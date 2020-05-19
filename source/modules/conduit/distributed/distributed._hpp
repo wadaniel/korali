@@ -2,7 +2,7 @@
 #define _KORALI_CONDUIT_MPI_HPP_
 
 #ifdef _KORALI_USE_MPI
-#include "mpi.h"
+  #include "mpi.h"
 /**
  * @brief Communicator storage for the current Korali Team
  */

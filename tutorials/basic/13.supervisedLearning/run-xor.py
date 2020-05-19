@@ -32,5 +32,5 @@ e["Solver"]["Layers"][2]["Weights"] = [ [ 1.0, -2.0 ] ]
 e["Solver"]["Layers"][2]["Bias"] = [ 0.0 ]
 
 k = korali.Engine()
-k.run(e)
+#k.run(e)
 

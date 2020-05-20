@@ -323,7 +323,7 @@ void korali::problem::bayesian::Reference::fisherInformationLoglikelihoodPositiv
     {
       for (size_t l = 0; l < k; ++l)
       {
-        tmp = gradientF[i][k] * gradientF[i][l] * Imu + (gradientF[i][k] * 2 * sig * gradientG[i][l] + gradientF[i][l] * 2 * sig *  gradientG[i][k]) * Ims + 4 * var * gradientG[i][k] * gradientG[i][l] * Isig;
+        tmp = gradientF[i][k] * gradientF[i][l] * Imu + (gradientF[i][k] * 2 * sig * gradientG[i][l] + gradientF[i][l] * 2 * sig * gradientG[i][k]) * Ims + 4 * var * gradientG[i][k] * gradientG[i][l] * Isig;
         FIM[k * Nth + l] += tmp;
         FIM[l * Nth + k] += tmp;
       }

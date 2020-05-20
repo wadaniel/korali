@@ -31,6 +31,7 @@ Korali's Documentation
    modules/conduit/*
    modules/distribution/*
    modules/layer/*         
+   modules/neuralNetwork/*
    
 .. toctree::
    :maxdepth: 2

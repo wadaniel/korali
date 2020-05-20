@@ -19,10 +19,22 @@ void korali::solver::DeepSupervisor::setInitialConfiguration()
   }
  }
 
+ // Setting output training data
+ _trainingSolutions.resize(_problem->_trainingBatchSize);
+ for (size_t i = 0; i < _problem->_trainingBatchSize; i++)
+ {
+  _trainingSolutions[i].resize(_problem->_outputVectorSize);
+  for (size_t j = 0; j < _problem->_outputVectorSize; j++)
+  {
+    size_t varIdx = _problem->_outputVectorIndexes[j];
+    _trainingSolutions[i][j] = _k->_variables[varIdx]->_trainingData[i];
+  }
+ }
+
  // Creating evaluation lambda function for optimization
- auto evaluateProposal = [nn = _neuralNetwork]
+ auto evaluateProposal = [nn = _neuralNetwork, sol = &_trainingSolutions]
                          (korali::Sample& sample)
-                         { runNeuralNetwork(sample, nn); };
+                         { runNeuralNetwork(sample, nn, sol); };
 
  _experiment["Problem"]["Type"] = "Optimization/Stochastic";
  _experiment["Problem"]["Objective Function"] = evaluateProposal;
@@ -51,20 +63,19 @@ void korali::solver::DeepSupervisor::setInitialConfiguration()
     std::string varNameString(varName);
     _experiment["Variables"][currentVariable]["Name"] = varNameString;
     _experiment["Variables"][currentVariable]["Initial Mean"] = 0.0;
-    _experiment["Variables"][currentVariable]["Initial Standard Deviation"] = 10.0;
+    _experiment["Variables"][currentVariable]["Initial Standard Deviation"] = 50.0;
     currentVariable++;
    }
  }
 
  _experiment["Solver"]["Type"] = "CMAES";
- _experiment["Solver"]["Population Size"] = 50;
+ _experiment["Solver"]["Population Size"] = 100;
  _experiment["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-7;
- _experiment["Solver"]["Termination Criteria"]["Max Generations"] = 1;
 
  _experiment["File Output"]["Frequency"] = 0;
  _experiment["File Output"]["Enabled"] = false;
- //_experiment["Console Output"]["Frequency"] = 0;
- //_experiment["Console Output"]["Verbosity"] = "Silent";
+// _experiment["Console Output"]["Frequency"] = 0;
+// _experiment["Console Output"]["Verbosity"] = "Silent";
 }
 
 void korali::solver::DeepSupervisor::runGeneration()
@@ -76,10 +87,11 @@ void korali::solver::DeepSupervisor::runGeneration()
  _previousAverageValidationLoss = _currentAverageValidationLoss;
  _currentAverageValidationLoss = _k->_currentGeneration;
 
- _engine.run(_experiment);
+ _experiment["Solver"]["Termination Criteria"]["Max Generations"] = _k->_currentGeneration;
+ _engine.resume(_experiment);
 }
 
-void korali::solver::DeepSupervisor::runNeuralNetwork(korali::Sample& sample, korali::NeuralNetwork* nn)
+void korali::solver::DeepSupervisor::runNeuralNetwork(korali::Sample& sample, korali::NeuralNetwork* nn, std::vector<std::vector<double>>* solution)
 {
  // Setting weights and biases
  size_t currentVariable = 0;
@@ -102,8 +114,31 @@ void korali::solver::DeepSupervisor::runNeuralNetwork(korali::Sample& sample, ko
     nn->_layers[i]->_bias[j] = sample["Parameters"][currentVariable++];
  }
 
+ // Updating the network's weights and biases
  nn->update();
- sample["F(x)"] = 1.0;
+
+ // Running the input values through the neural network
+ nn->forward();
+
+ // Printing Layer values
+ size_t outputLayerId = nn->_layers.size()-1;
+ size_t batchSize = nn->_layers[outputLayerId]->_nodeValues.size();
+ size_t outputSize = nn->_layers[outputLayerId]->_nodeValues[0].size();
+
+ // Calculating mean square error
+ double meanSquaredError = 0.0;
+
+ for (size_t i = 0; i < batchSize; i++)
+  for (size_t j = 0; j < outputSize; j++)
+  {
+   double diff = nn->_layers[outputLayerId]->_nodeValues[i][j] - (*solution)[i][j];
+   meanSquaredError += diff*diff;
+  }
+
+ meanSquaredError = meanSquaredError / (double) batchSize;
+
+ // Saving the negative of the error because we want to minimize it
+ sample["F(x)"] = -meanSquaredError;
 }
 
 void korali::solver::DeepSupervisor::printGenerationBefore()

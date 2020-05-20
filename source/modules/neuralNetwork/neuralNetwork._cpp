@@ -221,15 +221,5 @@ void korali::NeuralNetwork::forward()
         _layers[currentLayer]->_nodeValues[i][j] = resultData[i * nodeCount + j];
   }
 
-  // Printing Layer values
-
-  for (size_t currentLayer = 1; currentLayer < layerCount; currentLayer++)
-    for (size_t i = 0; i < batchSize; i++)
-    {
-      _k->_logger->logInfo("Normal", "Layer: Output %lu: ( %f", i, _layers[currentLayer]->_nodeValues[i][0]);
-      for (size_t j = 1; j < inputSize; j++) _k->_logger->logData("Normal", ", %f", _layers[currentLayer]->_nodeValues[i][j]);
-      _k->_logger->logData("Normal", " )\n");
-    }
-
 #endif
 }

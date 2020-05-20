@@ -69,7 +69,7 @@ void korali::Conduit::start(korali::Sample &sample)
   if (sample._state != SampleState::uninitialized) _logger->logError("Sample has already been initialized.\n");
 
   if (sample._isAllocated == false)
-    sample._sampleThread = co_create(1 < 24, korali::Conduit::coroutineWrapper);
+    sample._sampleThread = co_create(1 << 24, korali::Conduit::coroutineWrapper);
   else
     _logger->logError("Sample thread is already allocated; has it executed before being re-started?\n");
 

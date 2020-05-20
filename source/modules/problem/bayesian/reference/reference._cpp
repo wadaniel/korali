@@ -71,7 +71,7 @@ void korali::problem::bayesian::Reference::loglikelihoodPositiveNormal(korali::S
   {
     double m = sample["Reference Evaluations"][i];
     double s = sample["Standard Deviation"][i];
-    if (s < 0.0) _k->_logger->logError("Negative value (%lf) detected for the Standard Deviation.\n", s);
+    if (s <= 0.0) _k->_logger->logError("Negative or zero value (%lf) detected for the Standard Deviation.\n", s);
     if (m < 0.0) _k->_logger->logError("Negative value (%lf) detected in Reference Evaluation.\n", m);
 
     loglike -= log(s);

@@ -71,7 +71,7 @@ void korali::problem::bayesian::Reference::loglikelihoodPositiveNormal(korali::S
   {
     double m = sample["Reference Evaluations"][i];
     double s = sample["Standard Deviation"][i];
-    if (s < 0.0) _k->_logger->logError("Negative value (%lf) detected for the Standard Deviation.\n", s);
+    if (s <= 0.0) _k->_logger->logError("Negative or zero value (%lf) detected for the Standard Deviation.\n", s);
     if (m < 0.0) _k->_logger->logError("Negative value (%lf) detected in Reference Evaluation.\n", m);
 
     loglike -= log(s);
@@ -323,11 +323,11 @@ void korali::problem::bayesian::Reference::fisherInformationLoglikelihoodPositiv
     {
       for (size_t l = 0; l < k; ++l)
       {
-        tmp = gradientF[i][k] * gradientF[i][l] * Imu + (gradientF[i][k] * gradientG[i][l] + gradientF[i][l] * gradientG[i][k]) * Ims + gradientG[i][k] * gradientG[i][l] * Isig;
+        tmp = gradientF[i][k] * gradientF[i][l] * Imu + (gradientF[i][k] * 2 * sig * gradientG[i][l] + gradientF[i][l] * 2 * sig * gradientG[i][k]) * Ims + 4 * var * gradientG[i][k] * gradientG[i][l] * Isig;
         FIM[k * Nth + l] += tmp;
         FIM[l * Nth + k] += tmp;
       }
-      FIM[k * Nth + k] += (gradientF[i][k] * gradientF[i][k] * Imu + (2 * gradientF[i][k] * gradientG[i][k]) * Ims + gradientG[i][k] * gradientG[i][k] * Isig);
+      FIM[k * Nth + k] += (gradientF[i][k] * gradientF[i][k] * Imu + (4 * sig * gradientF[i][k] * gradientG[i][k]) * Ims + 4 * var * gradientG[i][k] * gradientG[i][k] * Isig);
     }
   }
   sample["Fisher Information"] = FIM;

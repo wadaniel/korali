@@ -95,6 +95,8 @@ def main():
     e["Console Output"]["Verbosity"] = "Detailed"
     e["Random Seed"] = 0xC0FFEE
 
+    #k["Conduit"]["Type"] = "Concurrent"
+    #k["Conduit"]["Concurrent Jobs"] = 4
     k.run(e)
 
 if __name__ == '__main__':

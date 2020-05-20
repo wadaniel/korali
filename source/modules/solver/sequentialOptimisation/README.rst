@@ -1,5 +1,5 @@
 **************************
-sequentialOptimisation
+Sequential Optimisation
 **************************
 
 Sequential Optimisation performs optimisation

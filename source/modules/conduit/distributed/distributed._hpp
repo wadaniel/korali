@@ -2,7 +2,7 @@
 #define _KORALI_CONDUIT_MPI_HPP_
 
 #ifdef _KORALI_USE_MPI
-#include "mpi.h"
+  #include "mpi.h"
 /**
  * @brief Communicator storage for the current Korali Team
  */
@@ -92,7 +92,7 @@ class Distributed : public korali::Conduit
   size_t maxConcurrency() override;
   void initialize() override;
   void finalize() override;
-
+  void broadcastGlobals(knlohmann::json &sampleJs) override;
   void processSample(korali::Sample &sample) override;
   void stackEngine(korali::Engine *) override;
   void popEngine() override;

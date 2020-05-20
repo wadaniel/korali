@@ -192,13 +192,29 @@ log "[Korali] Running \"\$MPICXX --help\"..."
 $MPICXX --help > /dev/null 2>&1
 if [ ! $? -eq 0 ]
 then
- logEcho "[Korali] Installing Korali without support for MPI."
+ logEcho "[Korali] MPI not found. Installing Korali without support for MPI."
+ logEcho "         > To use MPI, define the \$MPICXX environment variable."
  USE_MPI=0
 else
  log "[Korali] Found $MPICXX for MPI compiler/wrapper."
  log "[Korali] Use 'export MPICXX=(path)' to use a different MPI wrapper."
  USE_CXX=$MPICXX
  MPIFLAGS="-D_KORALI_USE_MPI"
+fi
+
+######## Checking support for oneDNN ########
+
+ONEDNNCFLAGS=""
+ONEDNNLDFLAGS=""
+log "[Korali] Checking for oneDNN support..."
+if [ ! -f ${DNNLROOT}/lib64/libdnnl.so ]
+then
+ logEcho "[Korali] oneDNN not found. Installing Korali without support for oneDNN."
+ logEcho "         > To use oneDNN, define the \$DNNLROOT environment variable."
+else
+ log "[Korali] Found openDNN library at ${DNNLROOT}/lib64/libdnnl.so"
+ ONEDNNCFLAGS="-D_KORALI_USE_ONEDNN -I${DNNLROOT}/include"
+ ONEDNNLDFLAGS="-Wl,-rpath -Wl,${DNNLROOT}/lib64/ -L${DNNLROOT}/lib64/ -ldnnl"
 fi
 
 ######## Checking support for Python3 ########
@@ -291,6 +307,8 @@ echo CXX=$USE_CXX > source/Makefile.conf
 echo CXXARCH=$CXXARCH >> source/Makefile.conf
 echo SHAREDLIB_FLAG=$SHAREDLIB_FLAG >> source/Makefile.conf
 echo MPIFLAGS=$MPIFLAGS >> source/Makefile.conf
+echo ONEDNNCFLAGS=$ONEDNNCFLAGS >> source/Makefile.conf
+echo ONEDNNLDFLAGS=$ONEDNNLDFLAGS >> source/Makefile.conf
 echo OPTFLAGS=$OPTFLAGS >> source/Makefile.conf
 echo MACHINEARCH=$arch >> source/Makefile.conf
 

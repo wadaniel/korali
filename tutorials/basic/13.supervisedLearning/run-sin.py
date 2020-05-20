@@ -12,20 +12,19 @@ vInputSet  = np.random.uniform(0,2*np.pi,20)
 tOutputSet = np.sin(tInputSet)
 vOutputSet = np.sin(vInputSet)
 
-trainingSet = list(zip(tInputSet.tolist(), tOutputSet.tolist()))
-validationSet = list(zip(tInputSet.tolist(), tOutputSet.tolist()))
-
 e = korali.Experiment()
 
 e["Problem"]["Type"] = "Supervised Learning"
-e["Problem"]["Training Set"] = trainingSet
-e["Problem"]["Validation Set"] = validationSet
  
 e["Variables"][0]["Name"] = "X"
 e["Variables"][0]["Type"] = "Input"
+e["Variables"][0]["Training Data"] = tInputSet.tolist()
+e["Variables"][0]["Validation Data"] = vInputSet.tolist()
 
 e["Variables"][1]["Name"] = "Sin(X)"
 e["Variables"][1]["Type"] = "Output"
+e["Variables"][1]["Training Data"] = tOutputSet.tolist()
+e["Variables"][1]["Validation Data"] = vOutputSet.tolist()
 
 e["Solver"]["Type"] = "Deep Supervisor"
 e["Solver"]["Optimizer"] = "CMAES"
@@ -45,9 +44,6 @@ e["Solver"]["Neural Network"]["Layers"][2]["Activation Function"] = "Tanh"
 e["Solver"]["Neural Network"]["Layers"][3]["Type"] = "Output"
 e["Solver"]["Neural Network"]["Layers"][3]["Node Count"] = 1
 e["Solver"]["Neural Network"]["Layers"][3]["Activation Function"] = "Identity"
-
-e["File Output"]["Enabled"] = False
-e["Console Output"]["Verbosity"] = "Silent"
 
 k = korali.Engine()
 k.run(e)

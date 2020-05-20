@@ -10,8 +10,7 @@ namespace problem
 class SupervisedLearning : public korali::Problem
 {
   public:
-
- void initialize() override;
+  void initialize() override;
 };
 
 } // namespace problem

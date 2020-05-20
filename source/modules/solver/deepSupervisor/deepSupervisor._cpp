@@ -1,30 +1,92 @@
-#include "modules/solver/deepSupervisor/deepSupervisor.hpp"
 #include "modules/conduit/conduit.hpp"
 #include "modules/experiment/experiment.hpp"
+#include "modules/solver/deepSupervisor/deepSupervisor.hpp"
 
 void korali::solver::DeepSupervisor::setInitialConfiguration()
 {
- // Initialize solver's configuration here
+  // Getting problem pointer
+  _problem = dynamic_cast<korali::problem::SupervisedLearning *>(_k->_problem);
+
+  // Setting input training data
+  _neuralNetwork->_layers[0]->_nodeValues.resize(_problem->_trainingBatchSize);
+  for (size_t i = 0; i < _problem->_trainingBatchSize; i++)
+  {
+    _neuralNetwork->_layers[0]->_nodeValues[i].resize(_problem->_inputVectorSize);
+    for (size_t j = 0; j < _problem->_inputVectorSize; j++)
+    {
+      size_t varIdx = _problem->_inputVectorIndexes[j];
+      _neuralNetwork->_layers[0]->_nodeValues[i][j] = _k->_variables[varIdx]->_trainingData[i];
+    }
+  }
+
+  // Creating evaluation lambda function for optimization
+  auto evaluateProposal = [nn = _neuralNetwork](korali::Sample &sample) { runNeuralNetwork(sample, nn); };
+
+  _experiment["Problem"]["Type"] = "Optimization/Stochastic";
+  _experiment["Problem"]["Objective Function"] = evaluateProposal;
+
+  size_t currentVariable = 0;
+  for (size_t i = 1; i < _neuralNetwork->_layers.size(); i++)
+  {
+    // Adding layer's weights
+    for (size_t j = 0; j < _neuralNetwork->_layers[i]->_nodeCount; j++)
+      for (size_t k = 0; k < _neuralNetwork->_layers[i - 1]->_nodeCount; k++)
+      {
+        char varName[512];
+        sprintf(varName, "Weight [%u] %u->%u", i, j, k);
+        std::string varNameString(varName);
+        _experiment["Variables"][currentVariable]["Name"] = varNameString;
+        _experiment["Variables"][currentVariable]["Initial Mean"] = 0.0;
+        _experiment["Variables"][currentVariable]["Initial Standard Deviation"] = 10.0;
+        currentVariable++;
+      }
+
+    // Adding layer's biases
+    for (size_t j = 0; j < _neuralNetwork->_layers[i]->_nodeCount; j++)
+    {
+      char varName[512];
+      sprintf(varName, "Bias [%u] %u", i, j);
+      std::string varNameString(varName);
+      _experiment["Variables"][currentVariable]["Name"] = varNameString;
+      _experiment["Variables"][currentVariable]["Initial Mean"] = 0.0;
+      _experiment["Variables"][currentVariable]["Initial Standard Deviation"] = 10.0;
+      currentVariable++;
+    }
+  }
+
+  _experiment["Solver"]["Type"] = "CMAES";
+  _experiment["Solver"]["Population Size"] = 50;
+  _experiment["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-7;
+  _experiment["Solver"]["Termination Criteria"]["Max Generations"] = 1;
+
+  _experiment["File Output"]["Frequency"] = 0;
+  _experiment["File Output"]["Enabled"] = false;
+  //_experiment["Console Output"]["Frequency"] = 0;
+  //_experiment["Console Output"]["Verbosity"] = "Silent";
 }
 
 void korali::solver::DeepSupervisor::runGeneration()
 {
- if (_k->_currentGeneration == 1) setInitialConfiguration();
+  if (_k->_currentGeneration == 1) setInitialConfiguration();
 
- _k->_logger->logInfo("Normal", "Running generation %lu...\n", _k->_currentGeneration);
+  _k->_logger->logInfo("Normal", "Running generation %lu...\n", _k->_currentGeneration);
 
- _previousAverageValidationLoss = _currentAverageValidationLoss;
- _currentAverageValidationLoss = _k->_currentGeneration;
+  _previousAverageValidationLoss = _currentAverageValidationLoss;
+  _currentAverageValidationLoss = _k->_currentGeneration;
 
+  _engine.run(_experiment);
+}
+
+void korali::solver::DeepSupervisor::runNeuralNetwork(korali::Sample &sample, korali::NeuralNetwork *nn)
+{
+  nn->update();
+  sample["F(x)"] = 1.0;
 }
 
 void korali::solver::DeepSupervisor::printGenerationBefore()
 {
-
 }
 
 void korali::solver::DeepSupervisor::printGenerationAfter()
 {
-
 }
-

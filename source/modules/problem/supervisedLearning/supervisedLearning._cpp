@@ -2,7 +2,7 @@
 
 void korali::problem::SupervisedLearning::initialize()
 {
- // If it has already been initialized, reset generation and skip initialization.
+  // If it has already been initialized, reset generation and skip initialization.
   if (_isInitialized == true) return;
 
   // Processing output/input variable configuration
@@ -21,4 +21,19 @@ void korali::problem::SupervisedLearning::initialize()
 
   // Now mark as initalized
   _isInitialized = true;
+
+  // Checking training/validation inputs
+  _trainingBatchSize = _k->_variables[0]->_trainingData.size();
+  if (_trainingBatchSize == 0) _k->_logger->logError("Training data has not been provided for variable 0.\n");
+
+  for (size_t i = 1; i < _k->_variables.size(); i++)
+    if (_k->_variables[i]->_trainingData.size() != _trainingBatchSize)
+      _k->_logger->logError("Variable %lu has a different training set vector size (%lu) than that of variable 0 (%lu).\n", _k->_variables[i]->_trainingData.size(), _trainingBatchSize);
+
+  _validationBatchSize = _k->_variables[0]->_validationData.size();
+  if (_validationBatchSize == 0) _k->_logger->logError("Validation data has not been provided for variable 0.\n");
+
+  for (size_t i = 1; i < _k->_variables.size(); i++)
+    if (_k->_variables[i]->_validationData.size() != _validationBatchSize)
+      _k->_logger->logError("Variable %lu has a different training set vector size (%lu) than that of variable 0 (%lu).\n", _k->_variables[i]->_validationData.size(), _validationBatchSize);
 }

@@ -1,5 +1,5 @@
-#include "modules/neuralNetwork/neuralNetwork.hpp"
 #include "modules/experiment/experiment.hpp"
+#include "modules/neuralNetwork/neuralNetwork.hpp"
 
 #ifdef _KORALI_USE_ONEDNN
   #include "external/oneDNN/oneDNNUtils.hpp"
@@ -22,8 +22,8 @@ void korali::NeuralNetwork::update()
 {
 #ifdef _KORALI_USE_ONEDNN
 
- // Initialize solver's configuration here
- size_t layerCount = _layers.size();
+  // Initialize solver's configuration here
+  size_t layerCount = _layers.size();
 
   // Initializing Engine and stream
 
@@ -51,7 +51,7 @@ void korali::NeuralNetwork::update()
 
   for (size_t i = 0; i < batchSize; i++)
     if (_layers[0]->_nodeValues[i].size() != inputSize)
-      _k->_logger->logError("Input data set %lu has a different number of elements than the input layer node count.\n", i);
+      _k->_logger->logError("Input data set %lu has a different number of elements (%lu) than the input layer node count (%lu).\n", i, _layers[0]->_nodeValues[i].size(), inputSize);
 
   // Initializing memory objects for activation functions
 
@@ -224,12 +224,12 @@ void korali::NeuralNetwork::forward()
   // Printing Layer values
 
   for (size_t currentLayer = 1; currentLayer < layerCount; currentLayer++)
-   for (size_t i = 0; i < batchSize; i++)
-   {
-     _k->_logger->logInfo("Normal", "Layer: Output %lu: ( %f", i, _layers[currentLayer]->_nodeValues[i][0]);
-     for (size_t j = 1; j < inputSize; j++) _k->_logger->logData("Normal", ", %f", _layers[currentLayer]->_nodeValues[i][j]);
-     _k->_logger->logData("Normal", " )\n");
-   }
+    for (size_t i = 0; i < batchSize; i++)
+    {
+      _k->_logger->logInfo("Normal", "Layer: Output %lu: ( %f", i, _layers[currentLayer]->_nodeValues[i][0]);
+      for (size_t j = 1; j < inputSize; j++) _k->_logger->logData("Normal", ", %f", _layers[currentLayer]->_nodeValues[i][j]);
+      _k->_logger->logData("Normal", " )\n");
+    }
 
 #endif
 }

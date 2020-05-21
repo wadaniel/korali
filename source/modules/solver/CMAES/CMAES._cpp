@@ -191,6 +191,10 @@ void korali::solver::CMAES::runGeneration()
   // Waiting for samples to finish
   _conduit->waitAll(samples);
   updateDistribution(samples);
+
+  // Updating Results
+  (*_k)["Results"]["Best Sample"]["F(x)"] = _bestEverValue;
+  (*_k)["Results"]["Best Sample"]["Parameters"] = _bestEverVariables;
 }
 
 void korali::solver::CMAES::initMuWeights(size_t numsamplesmu)
@@ -502,9 +506,6 @@ void korali::solver::CMAES::updateDistribution(std::vector<korali::Sample> &samp
       for (size_t c = 0; c < _constraintEvaluations.size(); c++)
         _bestConstraintEvaluations[c] = _constraintEvaluations[c][_bestValidSample];
   }
-
-  (*_k)["Results"]["Best Sample"]["F(x)"] = _bestEverValue;
-  (*_k)["Results"]["Best Sample"]["Parameters"] = _bestEverVariables;
 
   /* set weights */
   for (size_t d = 0; d < _k->_variables.size(); ++d)

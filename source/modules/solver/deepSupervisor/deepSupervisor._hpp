@@ -29,6 +29,16 @@ class DeepSupervisor : public korali::Solver
  */
   korali::Experiment _experiment;
 
+  /**
+   * @brief Korali NN to be used for training
+   */
+  korali::NeuralNetwork _trainingNetwork;
+
+  /**
+   * @brief Korali NN to be used for validation
+  */
+  korali::NeuralNetwork _validationNetwork;
+
   void initialize() override;
   void setInitialConfiguration() override;
   void runGeneration() override;

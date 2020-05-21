@@ -34,16 +34,19 @@ e["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 1
 e["Solver"]["Neural Network"]["Layers"][0]["Activation Function"] = "Identity"
 
 e["Solver"]["Neural Network"]["Layers"][1]["Type"] = "Dense"
-e["Solver"]["Neural Network"]["Layers"][1]["Node Count"] = 4
+e["Solver"]["Neural Network"]["Layers"][1]["Node Count"] = 20
 e["Solver"]["Neural Network"]["Layers"][1]["Activation Function"] = "Tanh"
 
 e["Solver"]["Neural Network"]["Layers"][2]["Type"] = "Dense"
-e["Solver"]["Neural Network"]["Layers"][2]["Node Count"] = 4
+e["Solver"]["Neural Network"]["Layers"][2]["Node Count"] = 20
 e["Solver"]["Neural Network"]["Layers"][2]["Activation Function"] = "Tanh"
 
 e["Solver"]["Neural Network"]["Layers"][3]["Type"] = "Output"
 e["Solver"]["Neural Network"]["Layers"][3]["Node Count"] = 1
 e["Solver"]["Neural Network"]["Layers"][3]["Activation Function"] = "Identity"
+
+e["Random Seed"] = 0xC0FFEE
+e["File Output"]["Enabled"] = False
 
 k = korali.Engine()
 k.run(e)

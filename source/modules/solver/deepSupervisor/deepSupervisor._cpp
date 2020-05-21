@@ -72,13 +72,13 @@ void korali::solver::DeepSupervisor::initialize()
  }
 
  _experiment["Solver"]["Type"] = "CMAES";
- _experiment["Solver"]["Population Size"] = 100;
+ _experiment["Solver"]["Population Size"] = 30;
  _experiment["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-7;
 
  _experiment["File Output"]["Frequency"] = 0;
  _experiment["File Output"]["Enabled"] = false;
- // _experiment["Console Output"]["Frequency"] = 0;
- // _experiment["Console Output"]["Verbosity"] = "Silent";
+ _experiment["Console Output"]["Frequency"] = 0;
+ _experiment["Console Output"]["Verbosity"] = "Silent";
 }
 
 void korali::solver::DeepSupervisor::setInitialConfiguration()
@@ -90,13 +90,19 @@ void korali::solver::DeepSupervisor::runGeneration()
 {
  if (_k->_currentGeneration == 1) setInitialConfiguration();
 
- _k->_logger->logInfo("Normal", "Running generation %lu...\n", _k->_currentGeneration);
+ // Configuring optimizer to run yet another generation
+ _experiment["Solver"]["Termination Criteria"]["Max Generations"] = _k->_currentGeneration;
+
+ // Running Optimizer
+ _engine.resume(_experiment);
+
+ // Getting results of optimization
+ double trainingLoss = - _experiment["Results"]["Best Sample"]["F(x)"].get<double>();
+
+ _k->_logger->logInfo("Normal", "Current Loss: %f\n", trainingLoss);
 
  _previousAverageValidationLoss = _currentAverageValidationLoss;
- _currentAverageValidationLoss = _k->_currentGeneration;
-
- _experiment["Solver"]["Termination Criteria"]["Max Generations"] = _k->_currentGeneration;
- _engine.resume(_experiment);
+ _currentAverageValidationLoss = trainingLoss;
 }
 
 void korali::solver::DeepSupervisor::runNeuralNetwork(korali::Sample& sample, korali::NeuralNetwork* nn, std::vector<std::vector<double>>* solution)

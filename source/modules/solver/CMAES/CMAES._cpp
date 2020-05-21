@@ -494,7 +494,6 @@ void korali::solver::CMAES::updateDistribution(std::vector<korali::Sample> &samp
   {
     _previousBestEverValue = _bestEverValue;
     _bestEverValue = _currentBestValue;
-    (*_k)["Results"]["Best Sample"] = samples[_bestValidSample]._js.getJson();
 
     for (size_t d = 0; d < _k->_variables.size(); ++d)
       _bestEverVariables[d] = _currentBestVariables[d];
@@ -503,6 +502,9 @@ void korali::solver::CMAES::updateDistribution(std::vector<korali::Sample> &samp
       for (size_t c = 0; c < _constraintEvaluations.size(); c++)
         _bestConstraintEvaluations[c] = _constraintEvaluations[c][_bestValidSample];
   }
+
+  (*_k)["Results"]["Best Sample"]["F(x)"] = _bestEverValue;
+  (*_k)["Results"]["Best Sample"]["Parameters"] = _bestEverVariables;
 
   /* set weights */
   for (size_t d = 0; d < _k->_variables.size(); ++d)

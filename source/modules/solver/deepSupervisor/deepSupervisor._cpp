@@ -2,7 +2,7 @@
 #include "modules/conduit/conduit.hpp"
 #include "modules/experiment/experiment.hpp"
 
-void korali::solver::DeepSupervisor::setInitialConfiguration()
+void korali::solver::DeepSupervisor::initialize()
 {
  // Getting problem pointer
  _problem = dynamic_cast<korali::problem::SupervisedLearning *>(_k->_problem);
@@ -30,6 +30,9 @@ void korali::solver::DeepSupervisor::setInitialConfiguration()
     _trainingSolutions[i][j] = _k->_variables[varIdx]->_trainingData[i];
   }
  }
+
+ // Creating Neural Network internal structures
+ _neuralNetwork->create();
 
  // Creating evaluation lambda function for optimization
  auto evaluateProposal = [nn = _neuralNetwork, sol = &_trainingSolutions]
@@ -74,8 +77,13 @@ void korali::solver::DeepSupervisor::setInitialConfiguration()
 
  _experiment["File Output"]["Frequency"] = 0;
  _experiment["File Output"]["Enabled"] = false;
-// _experiment["Console Output"]["Frequency"] = 0;
-// _experiment["Console Output"]["Verbosity"] = "Silent";
+ // _experiment["Console Output"]["Frequency"] = 0;
+ // _experiment["Console Output"]["Verbosity"] = "Silent";
+}
+
+void korali::solver::DeepSupervisor::setInitialConfiguration()
+{
+
 }
 
 void korali::solver::DeepSupervisor::runGeneration()

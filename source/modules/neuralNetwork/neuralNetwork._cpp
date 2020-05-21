@@ -18,8 +18,9 @@ void korali::NeuralNetwork::initialize()
   _isInitialized = false;
 }
 
-void korali::NeuralNetwork::update()
+void korali::NeuralNetwork::create()
 {
+
 #ifdef _KORALI_USE_ONEDNN
 
   // Initialize solver's configuration here
@@ -74,35 +75,9 @@ void korali::NeuralNetwork::update()
     auto weightMemDesc = memory::desc(weightDims, memory::data_type::f32, memory::format_tag::ba);
     _layers[i]->_weightMem = memory(weightMemDesc, _engine);
 
-    // Storing weight memory
-
-    if (_layers[i]->_weights.size() != OC)
-      _k->_logger->logError("Layer %lu weights were either not initialized (perhaps the NN is not yet trained) or not provided correctly. Expected: %lu, provided: %lu weight sets. \n", i, OC, _layers[i]->_weights.size());
-
-    for (size_t j = 0; j < OC; j++)
-      if (_layers[i]->_weights[j].size() != IC)
-        _k->_logger->logError("Layer %lu weight set %lu was either not initialized (perhaps the NN is not yet trained) or not provided correctly. Expected: %lu, provided: %lu weight sets. \n", i, j, IC, _layers[i]->_weights[j].size());
-
-    std::vector<float> weightsData(weightCount);
-
-    for (size_t j = 0; j < OC; j++)
-      for (size_t k = 0; k < IC; k++)
-        weightsData[j * IC + k] = _layers[i]->_weights[j][k];
-
     // Allocating bias memory
     auto biasMemDesc = memory::desc({OC}, memory::data_type::f32, memory::format_tag::a);
     _layers[i]->_biasMem = memory(biasMemDesc, _engine);
-
-    std::vector<float> biasData(OC);
-
-    if (_layers[i]->_bias.size() != OC)
-      _k->_logger->logError("Layer %lu biases were either not initialized (perhaps the NN is not yet trained) or not provided correctly. Expected: %lu, provided: %lu biases. \n", i, OC, _layers[i]->_bias.size());
-
-    for (size_t j = 0; j < OC; j++) biasData[j] = _layers[i]->_bias[j];
-
-    // Setting weight and bias data to oneDNN format
-    write_to_dnnl_memory(weightsData.data(), _layers[i]->_weightMem);
-    write_to_dnnl_memory(biasData.data(), _layers[i]->_biasMem);
 
     // Create memory descriptor for weights with format_tag::any. This enables
     // the inner product primitive to choose the memory layout for an optimized
@@ -155,11 +130,8 @@ void korali::NeuralNetwork::update()
     // primitive and the one provided by the user are different. In this case,
     // we create additional memory objects with internal buffers that will
     // contain the reordered data.
-    if (inner_product_pd.weights_desc() != _layers[i]->_weightMem.get_desc())
-    {
+    if (_layers[i]->_innerProductWeightMem.get_desc() != _layers[i]->_weightMem.get_desc())
       _layers[i]->_innerProductWeightMem = memory(inner_product_pd.weights_desc(), _engine);
-      reorder(_layers[i]->_weightMem, _layers[i]->_innerProductWeightMem).execute(_stream, _layers[i]->_weightMem, _layers[i]->_innerProductWeightMem);
-    }
 
     // Create the primitive.
     _layers[i]->_primitive = inner_product_forward(inner_product_pd);
@@ -173,16 +145,72 @@ void korali::NeuralNetwork::update()
     for (size_t i = 0; i < batchSize; i++) _layers[currentLayer]->_nodeValues[i].resize(nodeCount);
   }
 
+ #endif
+
+  // Setting initialized flag to true
+  _isInitialized = true;
+}
+
+void korali::NeuralNetwork::update()
+{
+  if (_isInitialized == false)
+   _k->_logger->logError("The neural network has not been initialized before the update.\n");
+
+  #ifdef _KORALI_USE_ONEDNN
+
+  // Initialize solver's configuration here
+  size_t layerCount = _layers.size();
+  size_t batchSize = _layers[0]->_nodeValues.size();
+
+  // Initializing weight matrix memories and values
+  for (size_t i = 1; i < layerCount; i++)
+  {
+    const memory::dim IC = _layers[i - 1]->_nodeCount, OC = _layers[i]->_nodeCount;
+    memory::dims weightDims = {OC, IC};
+    size_t weightCount = product(weightDims);
+    std::vector<float> weightsData(weightCount);
+    std::vector<float> biasData(OC);
+
+    if (_layers[i]->_weights.size() != OC)
+      _k->_logger->logError("Layer %lu weights were either not initialized (perhaps the NN is not yet trained) or not provided correctly. Expected: %lu, provided: %lu weight sets. \n", i, OC, _layers[i]->_weights.size());
+
+    for (size_t j = 0; j < OC; j++)
+      if (_layers[i]->_weights[j].size() != IC)
+        _k->_logger->logError("Layer %lu weight set %lu was either not initialized (perhaps the NN is not yet trained) or not provided correctly. Expected: %lu, provided: %lu weight sets. \n", i, j, IC, _layers[i]->_weights[j].size());
+
+    if (_layers[i]->_bias.size() != OC)
+      _k->_logger->logError("Layer %lu biases were either not initialized (perhaps the NN is not yet trained) or not provided correctly. Expected: %lu, provided: %lu biases. \n", i, OC, _layers[i]->_bias.size());
+
+    for (size_t j = 0; j < OC; j++)
+      for (size_t k = 0; k < IC; k++)
+        weightsData[j * IC + k] = _layers[i]->_weights[j][k];
+
+    for (size_t j = 0; j < OC; j++)
+     biasData[j] = _layers[i]->_bias[j];
+
+    // Setting weight and bias data to oneDNN format
+    write_to_dnnl_memory(weightsData.data(), _layers[i]->_weightMem);
+    write_to_dnnl_memory(biasData.data(), _layers[i]->_biasMem);
+
+    // For now, assume that the weights memory layout generated by the primitive
+    // and the one provided by the user are identical.
+    _layers[i]->_innerProductWeightMem = _layers[i]->_weightMem;
+
+    // Reorder the data in case the weights memory layout generated by the
+    // primitive and the one provided by the user are different.
+    if (_layers[i]->_innerProductWeightMem.get_desc() != _layers[i]->_weightMem.get_desc())
+      reorder(_layers[i]->_weightMem, _layers[i]->_innerProductWeightMem).execute(_stream, _layers[i]->_weightMem, _layers[i]->_innerProductWeightMem);
+  }
+
   // Creating storage and copying input data to first layer
+  size_t inputSize = _layers[0]->_nodeCount;
+
   std::vector<float> batchInput(batchSize * inputSize);
   for (size_t i = 0; i < batchSize; i++)
     for (size_t j = 0; j < inputSize; j++)
       batchInput[i * inputSize + j] = _layers[0]->_nodeValues[i][j];
 
   write_to_dnnl_memory(batchInput.data(), _layers[0]->_nodeMem);
-
-  // Setting initialized flag to true
-  _isInitialized = true;
 
 #endif
 }

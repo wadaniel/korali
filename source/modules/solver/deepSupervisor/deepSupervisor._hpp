@@ -29,6 +29,7 @@ class DeepSupervisor : public korali::Solver
  */
   korali::Experiment _experiment;
 
+  void initialize() override;
   void setInitialConfiguration() override;
   void runGeneration() override;
   void printGenerationBefore() override;

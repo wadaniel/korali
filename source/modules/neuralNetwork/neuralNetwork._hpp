@@ -35,7 +35,12 @@ class NeuralNetwork : public korali::Module
   void initialize() override;
 
   /**
-   * @brief Updates the internal memory structures, with regards to the layer configuration of the network
+   * @brief Initializes the internal memory structures, with regards to the layer configuration of the network
+   */
+  void create();
+
+  /**
+   * @brief Updates the values of weights, biases, and inputs to the NN
    */
   void update();
 

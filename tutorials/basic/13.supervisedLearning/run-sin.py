@@ -26,7 +26,7 @@ e["Variables"][1]["Type"] = "Output"
 e["Variables"][1]["Training Data"] = tOutputSet.tolist()
 e["Variables"][1]["Validation Data"] = vOutputSet.tolist()
 
-e["Solver"]["Type"] = "Deep Supervisor"
+e["Solver"]["Type"] = "Deep Supervisor / Train"
 e["Solver"]["Optimizer"] = "CMAES"
 
 e["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Input"
@@ -34,11 +34,11 @@ e["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 1
 e["Solver"]["Neural Network"]["Layers"][0]["Activation Function"] = "Identity"
 
 e["Solver"]["Neural Network"]["Layers"][1]["Type"] = "Dense"
-e["Solver"]["Neural Network"]["Layers"][1]["Node Count"] = 20
+e["Solver"]["Neural Network"]["Layers"][1]["Node Count"] = 10
 e["Solver"]["Neural Network"]["Layers"][1]["Activation Function"] = "Tanh"
 
 e["Solver"]["Neural Network"]["Layers"][2]["Type"] = "Dense"
-e["Solver"]["Neural Network"]["Layers"][2]["Node Count"] = 20
+e["Solver"]["Neural Network"]["Layers"][2]["Node Count"] = 10
 e["Solver"]["Neural Network"]["Layers"][2]["Activation Function"] = "Tanh"
 
 e["Solver"]["Neural Network"]["Layers"][3]["Type"] = "Output"

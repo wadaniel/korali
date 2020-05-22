@@ -68,7 +68,7 @@ def getNamespaceName(path):
 def getParentClassName(className):
  nameString = className.rsplit('::', 2)
  if (len(nameString) == 2): return 'korali::Module'
- parentClass = nameString[0] + '::' + nameString[-2].capitalize()
+ parentClass = nameString[0] + '::' + nameString[-2][0].upper() + nameString[-2][1:]
  return parentClass
 
 def isLeafModule(path):

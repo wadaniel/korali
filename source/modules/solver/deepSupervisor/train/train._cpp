@@ -1,0 +1,157 @@
+#include "modules/solver/deepSupervisor/train/train.hpp"
+#include "modules/conduit/conduit.hpp"
+#include "modules/experiment/experiment.hpp"
+
+void korali::solver::deepSupervisor::Train::initialize()
+{
+ // Getting problem pointer
+ _problem = dynamic_cast<korali::problem::SupervisedLearning *>(_k->_problem);
+
+ // Setting training NN
+ knlohmann::json js;
+ _neuralNetwork->getConfiguration(js);
+ _trainingNetwork.setConfiguration(js);
+ _neuralNetwork->getConfiguration(js);
+ _validationNetwork.setConfiguration(js);
+
+ // Setting input training data
+ _trainingNetwork._layers[0]->_nodeValues.resize(_problem->_trainingBatchSize);
+ for (size_t i = 0; i < _problem->_trainingBatchSize; i++)
+ {
+  _trainingNetwork._layers[0]->_nodeValues[i].resize(_problem->_inputVectorSize);
+  for (size_t j = 0; j < _problem->_inputVectorSize; j++)
+  {
+    size_t varIdx = _problem->_inputVectorIndexes[j];
+   _trainingNetwork._layers[0]->_nodeValues[i][j] = _k->_variables[varIdx]->_trainingData[i];
+  }
+ }
+
+ // Setting input validation data
+ _validationNetwork._layers[0]->_nodeValues.resize(_problem->_validationBatchSize);
+ for (size_t i = 0; i < _problem->_validationBatchSize; i++)
+ {
+  _validationNetwork._layers[0]->_nodeValues[i].resize(_problem->_inputVectorSize);
+  for (size_t j = 0; j < _problem->_inputVectorSize; j++)
+  {
+    size_t varIdx = _problem->_inputVectorIndexes[j];
+    _validationNetwork._layers[0]->_nodeValues[i][j] = _k->_variables[varIdx]->_validationData[i];
+  }
+ }
+
+ // Setting output training data
+ _trainingSolutions.resize(_problem->_trainingBatchSize);
+ for (size_t i = 0; i < _problem->_trainingBatchSize; i++)
+ {
+  _trainingSolutions[i].resize(_problem->_outputVectorSize);
+  for (size_t j = 0; j < _problem->_outputVectorSize; j++)
+  {
+    size_t varIdx = _problem->_outputVectorIndexes[j];
+    _trainingSolutions[i][j] = _k->_variables[varIdx]->_trainingData[i];
+  }
+ }
+
+ // Creating Neural Networks internal structures
+ _trainingNetwork.create();
+ _validationNetwork.create();
+
+ // Creating evaluation lambda function for optimization
+ auto evaluateProposal = [nn = &_trainingNetwork, sol = &_trainingSolutions]
+                         (korali::Sample& sample)
+                         { runNeuralNetwork(sample, nn, sol); };
+
+ _experiment["Problem"]["Type"] = "Optimization/Stochastic";
+ _experiment["Problem"]["Objective Function"] = evaluateProposal;
+
+ size_t currentVariable = 0;
+ for (size_t i = 1; i < _trainingNetwork._layers.size(); i++)
+ {
+   // Adding layer's weights
+   for (size_t j = 0; j < _trainingNetwork._layers[i]->_nodeCount; j++)
+   for (size_t k = 0; k < _trainingNetwork._layers[i-1]->_nodeCount; k++)
+   {
+    char varName[512];
+    sprintf(varName, "Weight [%u] %u->%u", i, j, k);
+    std::string varNameString(varName);
+    _experiment["Variables"][currentVariable]["Name"] = varNameString;
+    _experiment["Variables"][currentVariable]["Initial Mean"] = 0.0;
+    _experiment["Variables"][currentVariable]["Initial Standard Deviation"] = 2.0;
+    currentVariable++;
+   }
+
+   // Adding layer's biases
+   for (size_t j = 0; j < _trainingNetwork._layers[i]->_nodeCount; j++)
+   {
+    char varName[512];
+    sprintf(varName, "Bias [%u] %u", i, j);
+    std::string varNameString(varName);
+    _experiment["Variables"][currentVariable]["Name"] = varNameString;
+    _experiment["Variables"][currentVariable]["Initial Mean"] = 0.0;
+    _experiment["Variables"][currentVariable]["Initial Standard Deviation"] = 2.0;
+    currentVariable++;
+   }
+ }
+
+ size_t populationSize = 3*ceil(4.0 + floor(3*log((double)currentVariable)));
+
+ _experiment["Solver"]["Type"] = "CMAES";
+ _experiment["Solver"]["Population Size"] = populationSize;
+
+ _experiment["File Output"]["Frequency"] = 0;
+ _experiment["File Output"]["Enabled"] = false;
+ _experiment["Console Output"]["Frequency"] = 0;
+ _experiment["Console Output"]["Verbosity"] = "Silent";
+ _experiment["Random Seed"] = _k->_randomSeed++;
+}
+
+void korali::solver::deepSupervisor::Train::runGeneration()
+{
+ /**************************************************************
+  * Training Stage
+  *************************************************************/
+
+ // Configuring optimizer to run yet another generation
+ _experiment["Solver"]["Termination Criteria"]["Max Generations"] = _k->_currentGeneration;
+
+ // Running Optimizer
+ _engine.resume(_experiment);
+
+ // Getting results of optimization
+ _currentTrainingLoss = - _experiment["Results"]["Best Sample"]["F(x)"].get<double>();
+
+ /**************************************************************
+  * Validation Stage
+  *************************************************************/
+
+ // Getting best weight/bias configuration
+ korali::Sample bestSample;
+ bestSample._js.getJson() = _experiment["Results"]["Best Sample"];
+
+ // Setting input validation data
+ runNeuralNetwork(bestSample, &_validationNetwork, &_trainingSolutions);
+
+ // Getting results of optimization
+ _currentValidationLoss = - bestSample["F(x)"].get<double>();
+
+ // If validation is better, saving it as the best network for use as for test batch later.
+ _currentInactiveSteps++;
+ if (_currentValidationLoss < _lowestValidationLoss)
+ {
+  // Reseting inactive counter
+  _currentInactiveSteps = 0;
+
+  // Saving lowest validation loss
+  _lowestValidationLoss = _currentValidationLoss;
+
+  // Storing best NN
+  knlohmann::json js;
+  _validationNetwork.getConfiguration(js);
+  _bestNetwork->setConfiguration(js);
+ }
+
+ // Printing results so far
+ _k->_logger->logInfo("Normal", "Training Loss: %.15f\n", _currentTrainingLoss);
+ _k->_logger->logInfo("Normal", "Current Validation Loss: %.15f\n", _currentValidationLoss);
+ _k->_logger->logInfo("Normal", "Lowest Validation Loss: %.15f\n", _lowestValidationLoss);
+ _k->_logger->logInfo("Normal", "Inactive Step Counter: %lu\n", _currentInactiveSteps);
+}
+

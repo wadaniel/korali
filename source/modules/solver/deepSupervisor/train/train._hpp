@@ -1,0 +1,50 @@
+#ifndef _KORALI_SOLVER_DEEPSUPERVISOR_TRAIN_HPP_
+#define _KORALI_SOLVER_DEEPSUPERVISOR_TRAIN_HPP_
+
+#include "engine.hpp"
+#include "modules/experiment/experiment.hpp"
+#include "modules/neuralNetwork/neuralNetwork.hpp"
+#include "modules/solver/deepSupervisor/deepSupervisor.hpp"
+
+namespace korali
+{
+namespace solver
+{
+namespace deepSupervisor
+{
+class Train : public korali::solver::DeepSupervisor
+{
+  public:
+  /**
+ * @brief Korali engine for optimizing NN weights and biases
+ */
+  korali::problem::SupervisedLearning *_problem;
+
+  /**
+ * @brief Korali engine for optimizing NN weights and biases
+ */
+  korali::Engine _engine;
+
+  /**
+ * @brief Korali engine for optimizing NN weights and biases
+ */
+  korali::Experiment _experiment;
+
+  /**
+   * @brief Korali NN to be used for training
+   */
+  korali::NeuralNetwork _trainingNetwork;
+
+  /**
+   * @brief Korali NN to be used for validation
+  */
+  korali::NeuralNetwork _validationNetwork;
+
+  void initialize() override;
+  void runGeneration() override;
+};
+} // namespace deepSupervisor
+} // namespace solver
+} // namespace korali
+
+#endif // _KORALI_SOLVER_DEEPSUPERVISOR_TRAIN_HPP_

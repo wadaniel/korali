@@ -2,18 +2,19 @@
 import os
 import sys
 import numpy as np
+import matplotlib.pyplot as plt
 
 import korali
 k = korali.Engine()
 
 # Defining Training Sets
-trainingInputSet  = np.random.uniform(0,2*np.pi,100)
-validationInputSet  = np.random.uniform(0,2*np.pi,20)
+trainingInputSet  = np.random.uniform(0,2*np.pi,500)
+validationInputSet  = np.random.uniform(0,2*np.pi,500)
 
 trainingOutputSet = np.sin(trainingInputSet)
 validationOutputSet = np.sin(validationInputSet)
 
-testInputSet  = np.random.uniform(0,2*np.pi,100)
+testInputSet  = np.random.uniform(0,2*np.pi,500)
 
 eTrain = korali.Experiment()
 
@@ -38,20 +39,16 @@ eTrain["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 1
 eTrain["Solver"]["Neural Network"]["Layers"][0]["Activation Function"] = "Identity"
 
 eTrain["Solver"]["Neural Network"]["Layers"][1]["Type"] = "Dense"
-eTrain["Solver"]["Neural Network"]["Layers"][1]["Node Count"] = 10
+eTrain["Solver"]["Neural Network"]["Layers"][1]["Node Count"] = 15
 eTrain["Solver"]["Neural Network"]["Layers"][1]["Activation Function"] = "Tanh"
 
 eTrain["Solver"]["Neural Network"]["Layers"][2]["Type"] = "Dense"
-eTrain["Solver"]["Neural Network"]["Layers"][2]["Node Count"] = 10
+eTrain["Solver"]["Neural Network"]["Layers"][2]["Node Count"] = 15
 eTrain["Solver"]["Neural Network"]["Layers"][2]["Activation Function"] = "Tanh"
 
 eTrain["Solver"]["Neural Network"]["Layers"][3]["Type"] = "Output"
 eTrain["Solver"]["Neural Network"]["Layers"][3]["Node Count"] = 1
 eTrain["Solver"]["Neural Network"]["Layers"][3]["Activation Function"] = "Identity"
-
-eTrain["Solver"]["Termination Criteria"]["Max Generations"] = 3
-eTrain["Random Seed"] = 0xC0FFEE
-eTrain["File Output"]["Enabled"] = False
 
 k.run(eTrain)
 
@@ -71,3 +68,13 @@ eTest["Solver"]["Termination Criteria"]["Max Generations"] = 1
 eTest["Solver"]["Neural Network"].set( eTrain["Solver"]["Neural Network"].get() )
 
 k.run(eTest)
+
+testOutputSet = np.sin(testInputSet).tolist()
+inferredOutputSet = eTest["Results"]["Inferred Results"]
+
+#print(testOutputSet)
+#print(inferredOutputSet)
+
+plt.plot(testInputSet,testOutputSet, "o")
+plt.plot(testInputSet,inferredOutputSet, "x")
+plt.show()

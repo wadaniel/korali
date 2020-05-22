@@ -148,6 +148,8 @@ void korali::solver::deepSupervisor::Train::runGeneration()
   // Storing best NN
   knlohmann::json js;
   _validationNetwork.getConfiguration(js);
+
+  _neuralNetwork->_layers.clear();
   _neuralNetwork->setConfiguration(js);
  }
 

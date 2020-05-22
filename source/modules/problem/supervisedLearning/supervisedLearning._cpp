@@ -2,10 +2,10 @@
 
 void korali::problem::SupervisedLearning::initialize()
 {
-  // If it has already been initialized, reset generation and skip initialization.
-  if (_isInitialized == true) return;
-
   // Processing output/input variable configuration
+
+  _outputVectorIndexes.clear();
+  _inputVectorIndexes.clear();
 
   for (size_t i = 0; i < _k->_variables.size(); i++)
   {
@@ -19,21 +19,19 @@ void korali::problem::SupervisedLearning::initialize()
   if (_inputVectorSize == 0) _k->_logger->logError("No input variables have been defined.\n");
   if (_outputVectorSize == 0) _k->_logger->logError("No output variables have been defined.\n");
 
-  // Now mark as initalized
-  _isInitialized = true;
-
   // Checking training/validation inputs
   _trainingBatchSize = _k->_variables[0]->_trainingData.size();
-  if (_trainingBatchSize == 0) _k->_logger->logError("Training data has not been provided for variable 0.\n");
-
   for (size_t i = 1; i < _k->_variables.size(); i++)
     if (_k->_variables[i]->_trainingData.size() != _trainingBatchSize)
       _k->_logger->logError("Variable %lu has a different training set vector size (%lu) than that of variable 0 (%lu).\n", _k->_variables[i]->_trainingData.size(), _trainingBatchSize);
 
   _validationBatchSize = _k->_variables[0]->_validationData.size();
-  if (_validationBatchSize == 0) _k->_logger->logError("Validation data has not been provided for variable 0.\n");
-
   for (size_t i = 1; i < _k->_variables.size(); i++)
     if (_k->_variables[i]->_validationData.size() != _validationBatchSize)
-      _k->_logger->logError("Variable %lu has a different training set vector size (%lu) than that of variable 0 (%lu).\n", _k->_variables[i]->_validationData.size(), _validationBatchSize);
+      _k->_logger->logError("Variable %lu has a different validation set vector size (%lu) than that of variable 0 (%lu).\n", _k->_variables[i]->_validationData.size(), _validationBatchSize);
+
+  _testBatchSize = _k->_variables[_inputVectorIndexes[0]]->_testData.size();
+  for (size_t i = 1; i < _inputVectorIndexes.size(); i++)
+    if (_k->_variables[_inputVectorIndexes[i]]->_testData.size() != _testBatchSize)
+      _k->_logger->logError("Variable %lu has a different test set vector size (%lu) than that of variable %lu (%lu).\n", _inputVectorIndexes[i], _k->_variables[i]->_testData.size(), _inputVectorIndexes[0], _testBatchSize);
 }

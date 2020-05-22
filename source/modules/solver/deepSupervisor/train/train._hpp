@@ -18,11 +18,6 @@ class Train : public korali::solver::DeepSupervisor
   /**
  * @brief Korali engine for optimizing NN weights and biases
  */
-  korali::problem::SupervisedLearning *_problem;
-
-  /**
- * @brief Korali engine for optimizing NN weights and biases
- */
   korali::Engine _engine;
 
   /**

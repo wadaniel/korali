@@ -98,7 +98,7 @@ def plot(genList):
     fig, ax = plt.subplots(numdim, numdim, figsize=(8,8))
     samplesTmp = np.reshape( samples, (numentries,numdim) )
     version = genList[lastGen]['Solver']['Version']
-    plt.suptitle( '{0} Plotter - \nNumber of Samples {1}\n'.format(str(version), str(numentries)), fontweight='bold', fontsize  = 12)
+    plt.suptitle( '{0} Plotter - \nNumber of Samples {1}'.format(str(version), str(numentries)).strip(), fontweight='bold', fontsize  = 12)
     
 
     plot_histogram(ax, samplesTmp)

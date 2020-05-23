@@ -7,7 +7,7 @@ double korali::_cumulativeTime;
 
 // Module Include List
 
-korali::Module *korali::Module::getModule(knlohmann::json &js)
+korali::Module *korali::Module::getModule(knlohmann::json &js, korali::Experiment* e)
 {
   std::string moduleType = "Undefined";
 
@@ -24,7 +24,7 @@ korali::Module *korali::Module::getModule(knlohmann::json &js)
 
   if (module == nullptr) _k->_logger->logError("Unrecognized module: %s.\n", moduleType.c_str());
 
-  module->_k = _k;
+  module->_k = e;
   module->applyVariableDefaults();
   module->applyModuleDefaults(js);
   module->setConfiguration(js);

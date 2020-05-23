@@ -35,6 +35,9 @@ eTrain["Variables"][1]["Validation Data"] = validationOutputSet.tolist()
 eTrain["Solver"]["Type"] = "Deep Supervisor / Train"
 eTrain["Solver"]["Optimizer"] = "CMAES"
 
+eTrain["Solver"]["Neural Network"]["Optimizer"]["Type"] = "CMAES"
+eTrain["Solver"]["Neural Network"]["Optimizer"]["Population Size"] = 32
+
 eTrain["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Input"
 eTrain["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 1
 eTrain["Solver"]["Neural Network"]["Layers"][0]["Activation Function"] = "Identity"

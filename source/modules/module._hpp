@@ -39,7 +39,7 @@ class Module
   * @param js JSON file containing the module's configuration and type.
   * @return Pointer with the newly created module.
   */
-  Module *getModule(knlohmann::json &js);
+  Module *getModule(knlohmann::json &js, korali::Experiment* e);
 
   /**
    * @brief Initializes Module upon creation. May allocate memory, set initial states, and initialize external code.

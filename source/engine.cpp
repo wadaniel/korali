@@ -66,7 +66,7 @@ void korali::Engine::run()
  if (_conduit == NULL)
  {
   // Configuring conduit
-  auto conduit = dynamic_cast<korali::Conduit*>(getModule(_js["Conduit"]));
+  auto conduit = dynamic_cast<korali::Conduit*>( getModule(_js["Conduit"],_k) );
 
   // Initializing conduit server
   conduit->initServer();

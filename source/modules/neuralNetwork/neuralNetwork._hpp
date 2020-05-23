@@ -4,6 +4,7 @@
 #include "modules/distribution/univariate/uniform/uniform.hpp"
 #include "modules/layer/layer.hpp"
 #include "modules/module.hpp"
+#include "modules/solver/solver.hpp"
 
 #ifdef _KORALI_USE_ONEDNN
   #include "dnnl.hpp"

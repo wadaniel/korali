@@ -11,11 +11,8 @@ void korali::solver::deepSupervisor::Train::initialize()
  if (_problem->_validationBatchSize == 0) _k->_logger->logError("Validation data has not been provided for variable 0.\n");
 
  // Setting training NN
- knlohmann::json js;
- _neuralNetwork->getConfiguration(js);
- _trainingNetwork.setConfiguration(js);
- _neuralNetwork->getConfiguration(js);
- _validationNetwork.setConfiguration(js);
+ _trainingNetwork.copy(*_neuralNetwork);
+ _validationNetwork.copy(*_neuralNetwork);
 
  // Setting input training data
  _trainingNetwork._layers[0]->_nodeValues.resize(_problem->_trainingBatchSize);

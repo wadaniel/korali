@@ -80,3 +80,5 @@ inferredOutputSet = eTest["Results"]["Inferred Results"]
 plt.plot(testInputSet,testOutputSet, "o")
 plt.plot(testInputSet,inferredOutputSet, "x")
 plt.show()
+
+#0.506816089425576

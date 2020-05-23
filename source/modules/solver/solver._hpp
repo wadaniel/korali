@@ -34,6 +34,11 @@ class Solver : public korali::Module
   * @brief Initializes the solver with starting values for the first generation.
  */
   virtual void setInitialConfiguration(){};
+
+  /**
+  * @brief Stores termination criteria for the module.
+  */
+  std::vector<std::string> _terminationCriteria;
 };
 
 } // namespace korali

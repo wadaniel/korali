@@ -151,7 +151,7 @@ def saveValue(base, path, varName, varType):
   return sString
   
  if ('gsl_rng*' in varType):
-  sString = '   ' + base + path + ' = getRange(' + varName + ');\n'
+  sString = '   ' + base + path + ' = getRange(' + varName + ');\n' 
   return sString
 
  if ('korali::Variable' in varType):
@@ -226,7 +226,7 @@ def createSetConfiguration(module):
 ####################################################################
 
 def createGetConfiguration(module):
- codeString = 'void ' + module["Class"]  + '::getConfiguration(knlohmann::json& js) \n{\n\n'
+ codeString = 'void ' + module["Class"]  + '::getConfiguration(knlohmann::json& js) const \n{\n\n'
 
  codeString += ' js["Type"] = _type;\n'
 
@@ -508,7 +508,7 @@ for moduleDir, relDir, fileNames in os.walk(modulesDir):
    functionOverrideString += '* @brief Obtains the entire current state and configuration of the module.\n'
    functionOverrideString += '* @param js JSON object onto which to save the serialized state of the module.\n'
    functionOverrideString += '*/\n'
-   functionOverrideString += ' void getConfiguration(knlohmann::json& js) override;\n'
+   functionOverrideString += ' void getConfiguration(knlohmann::json& js) const override;\n'
    
    functionOverrideString += '/**\n'
    functionOverrideString += '* @brief Sets the entire state and configuration of the module, given a JSON object.\n'

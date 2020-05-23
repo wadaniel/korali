@@ -8,6 +8,7 @@ import korali
 k = korali.Engine()
 
 # Defining Training Sets
+np.random.seed(0xC0FFEE)
 trainingInputSet  = np.random.uniform(0,2*np.pi,500)
 validationInputSet  = np.random.uniform(0,2*np.pi,500)
 
@@ -39,17 +40,18 @@ eTrain["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 1
 eTrain["Solver"]["Neural Network"]["Layers"][0]["Activation Function"] = "Identity"
 
 eTrain["Solver"]["Neural Network"]["Layers"][1]["Type"] = "Dense"
-eTrain["Solver"]["Neural Network"]["Layers"][1]["Node Count"] = 15
+eTrain["Solver"]["Neural Network"]["Layers"][1]["Node Count"] = 5
 eTrain["Solver"]["Neural Network"]["Layers"][1]["Activation Function"] = "Tanh"
 
 eTrain["Solver"]["Neural Network"]["Layers"][2]["Type"] = "Dense"
-eTrain["Solver"]["Neural Network"]["Layers"][2]["Node Count"] = 15
+eTrain["Solver"]["Neural Network"]["Layers"][2]["Node Count"] = 5
 eTrain["Solver"]["Neural Network"]["Layers"][2]["Activation Function"] = "Tanh"
 
 eTrain["Solver"]["Neural Network"]["Layers"][3]["Type"] = "Output"
 eTrain["Solver"]["Neural Network"]["Layers"][3]["Node Count"] = 1
 eTrain["Solver"]["Neural Network"]["Layers"][3]["Activation Function"] = "Identity"
 
+eTrain["Random Seed"] = 0xC0FFEE
 k.run(eTrain)
 
 eTest = korali.Experiment()

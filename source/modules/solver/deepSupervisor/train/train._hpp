@@ -16,16 +16,6 @@ class Train : public korali::solver::DeepSupervisor
 {
   public:
 
-  /**
-   * @brief Korali NN to be used for training
-   */
-  korali::NeuralNetwork _trainingNetwork;
-
-  /**
-   * @brief Korali NN to be used for validation
-  */
-  korali::NeuralNetwork _validationNetwork;
-
   void initialize() override;
   void runGeneration() override;
 };

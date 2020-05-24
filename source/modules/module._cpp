@@ -11,7 +11,7 @@ korali::Module *korali::Module::getModule(knlohmann::json &js, korali::Experimen
 {
   std::string moduleType = "Undefined";
 
-  if (!korali::JsonInterface::isDefined(js, "['Type']")) _k->_logger->logError("No module type provided.\n");
+  if (!korali::JsonInterface::isDefined(js, "['Type']")) e->_logger->logError("No module type provided.\n");
 
   moduleType = js["Type"].get<std::string>();
   moduleType.erase(remove_if(moduleType.begin(), moduleType.end(), isspace), moduleType.end());
@@ -22,7 +22,7 @@ korali::Module *korali::Module::getModule(knlohmann::json &js, korali::Experimen
 
   // Module Selection List
 
-  if (module == nullptr) _k->_logger->logError("Unrecognized module: %s.\n", moduleType.c_str());
+  if (module == nullptr) e->_logger->logError("Unrecognized module: %s.\n", moduleType.c_str());
 
   module->_k = e;
   module->applyVariableDefaults();
@@ -33,11 +33,9 @@ korali::Module *korali::Module::getModule(knlohmann::json &js, korali::Experimen
   return module;
 }
 
-void korali::Module::copy(Module& src)
+korali::Module* korali::Module::duplicate(korali::Module* src)
 {
  knlohmann::json js;
- src.getConfiguration(js);
- this->setConfiguration(js);
- this->_k = src._k;
- this->initialize();
+ src->getConfiguration(js);
+ return korali::Module::getModule(js, src->_k);
 }

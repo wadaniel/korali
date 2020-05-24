@@ -11,50 +11,50 @@ void korali::solver::deepSupervisor::Train::initialize()
  if (_problem->_validationBatchSize == 0) _k->_logger->logError("Validation data has not been provided for variable 0.\n");
 
  // Setting training NN
- _trainingNetwork.copy(*_neuralNetwork);
- _validationNetwork.copy(*_neuralNetwork);
+ _trainingNeuralNetwork = dynamic_cast<korali::NeuralNetwork*>(korali::Module::duplicate(_neuralNetwork));
+ _validationNeuralNetwork = dynamic_cast<korali::NeuralNetwork*>(korali::Module::duplicate(_neuralNetwork));
 
  // Setting input training data
- _trainingNetwork._layers[0]->_nodeValues.resize(_problem->_trainingBatchSize);
+ _trainingNeuralNetwork->_layers[0]->_nodeValues.resize(_problem->_trainingBatchSize);
  for (size_t i = 0; i < _problem->_trainingBatchSize; i++)
  {
-  _trainingNetwork._layers[0]->_nodeValues[i].resize(_problem->_inputVectorSize);
+  _trainingNeuralNetwork->_layers[0]->_nodeValues[i].resize(_problem->_inputVectorSize);
   for (size_t j = 0; j < _problem->_inputVectorSize; j++)
   {
     size_t varIdx = _problem->_inputVectorIndexes[j];
-   _trainingNetwork._layers[0]->_nodeValues[i][j] = _k->_variables[varIdx]->_trainingData[i];
+   _trainingNeuralNetwork->_layers[0]->_nodeValues[i][j] = _k->_variables[varIdx]->_trainingData[i];
   }
  }
 
  // Setting input validation data
- _validationNetwork._layers[0]->_nodeValues.resize(_problem->_validationBatchSize);
+ _validationNeuralNetwork->_layers[0]->_nodeValues.resize(_problem->_validationBatchSize);
  for (size_t i = 0; i < _problem->_validationBatchSize; i++)
  {
-  _validationNetwork._layers[0]->_nodeValues[i].resize(_problem->_inputVectorSize);
+  _validationNeuralNetwork->_layers[0]->_nodeValues[i].resize(_problem->_inputVectorSize);
   for (size_t j = 0; j < _problem->_inputVectorSize; j++)
   {
     size_t varIdx = _problem->_inputVectorIndexes[j];
-    _validationNetwork._layers[0]->_nodeValues[i][j] = _k->_variables[varIdx]->_validationData[i];
+    _validationNeuralNetwork->_layers[0]->_nodeValues[i][j] = _k->_variables[varIdx]->_validationData[i];
   }
  }
 
  // Setting Solution for NN training and validation
- _trainingNetwork._solution.resize(_problem->_trainingBatchSize);
+ _trainingNeuralNetwork->_solution.resize(_problem->_trainingBatchSize);
  for (size_t i = 0; i < _problem->_trainingBatchSize; i++)
  {
-  _trainingNetwork._solution[i].resize(_problem->_outputVectorSize);
+  _trainingNeuralNetwork->_solution[i].resize(_problem->_outputVectorSize);
   for (size_t j = 0; j < _problem->_outputVectorSize; j++)
   {
     size_t varIdx = _problem->_outputVectorIndexes[j];
-    _trainingNetwork._solution[i][j] = _k->_variables[varIdx]->_trainingData[i];
+    _trainingNeuralNetwork->_solution[i][j] = _k->_variables[varIdx]->_trainingData[i];
   }
  }
 
- _validationNetwork._solution =  _trainingNetwork._solution;
+ _validationNeuralNetwork->_solution =  _trainingNeuralNetwork->_solution;
 
  // Creating Neural Networks internal structures
- _trainingNetwork.create();
- _validationNetwork.create();
+ _trainingNeuralNetwork->create();
+ _validationNeuralNetwork->create();
 }
 
 void korali::solver::deepSupervisor::Train::runGeneration()
@@ -63,17 +63,17 @@ void korali::solver::deepSupervisor::Train::runGeneration()
   * Training Stage
   *************************************************************/
 
- _trainingNetwork.train();
+ _trainingNeuralNetwork->train();
 
  /**************************************************************
   * Validation Stage
   *************************************************************/
 
  // Setting input validation data
- korali::NeuralNetwork::runSample(_trainingNetwork._bestSample, &_validationNetwork);
+ korali::NeuralNetwork::runSample(_trainingNeuralNetwork->_bestSample, _validationNeuralNetwork);
 
  // Getting results of optimization
- _currentValidationLoss = - _trainingNetwork._bestSample["F(x)"].get<double>();
+ _currentValidationLoss = - _trainingNeuralNetwork->_bestSample["F(x)"].get<double>();
 
  // If validation is better, saving it as the best network for use as for test batch later.
  _currentInactiveSteps++;
@@ -87,14 +87,14 @@ void korali::solver::deepSupervisor::Train::runGeneration()
 
   // Storing best NN
   knlohmann::json js;
-  _validationNetwork.getConfiguration(js);
+  _validationNeuralNetwork->getConfiguration(js);
 
   _neuralNetwork->_layers.clear();
   _neuralNetwork->setConfiguration(js);
  }
 
  // Printing results so far
- _k->_logger->logInfo("Normal", "Training Loss: %.15f\n", _trainingNetwork._currentTrainingLoss);
+ _k->_logger->logInfo("Normal", "Training Loss: %.15f\n", _trainingNeuralNetwork->_currentTrainingLoss);
  _k->_logger->logInfo("Normal", "Current Validation Loss: %.15f\n", _currentValidationLoss);
  _k->_logger->logInfo("Normal", "Lowest Validation Loss: %.15f\n", _lowestValidationLoss);
  _k->_logger->logInfo("Normal", "Inactive Step Counter: %lu\n", _currentInactiveSteps);

@@ -39,7 +39,7 @@ class Module
   * @param js JSON file containing the module's configuration and type.
   * @return Pointer with the newly created module.
   */
-  Module *getModule(knlohmann::json &js, korali::Experiment* e);
+  static Module *getModule(knlohmann::json &js, korali::Experiment* e);
 
   /**
    * @brief Initializes Module upon creation. May allocate memory, set initial states, and initialize external code.
@@ -94,7 +94,7 @@ class Module
   */
   virtual bool runOperation(std::string operation, korali::Sample &sample) { return false; };
 
-  void copy(Module& src);
+  static Module* duplicate(Module* src);
 };
 
 /**

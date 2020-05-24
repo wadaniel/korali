@@ -16,11 +16,6 @@ class Test : public korali::solver::DeepSupervisor
 {
   public:
 
- /**
-  * @brief Korali NN to be used for testing
-  */
- korali::NeuralNetwork _testingNetwork;
-
   void initialize() override;
   void runGeneration() override;
 };

@@ -11,46 +11,46 @@ void korali::solver::deepSupervisor::Test::initialize()
   _k->_logger->logError("No input test data has been provided for evaluation.\n");
 
  // Setting testing NN
- _testingNetwork.copy(*_neuralNetwork);
+ _testNeuralNetwork = dynamic_cast<korali::NeuralNetwork*>(korali::Module::duplicate(_neuralNetwork));
 
  // Setting input training data
- _testingNetwork._layers[0]->_nodeValues.resize(_problem->_testBatchSize);
+ _testNeuralNetwork->_layers[0]->_nodeValues.resize(_problem->_testBatchSize);
  for (size_t i = 0; i < _problem->_testBatchSize; i++)
  {
-  _testingNetwork._layers[0]->_nodeValues[i].resize(_problem->_inputVectorSize);
+  _testNeuralNetwork->_layers[0]->_nodeValues[i].resize(_problem->_inputVectorSize);
   for (size_t j = 0; j < _problem->_inputVectorSize; j++)
   {
     size_t varIdx = _problem->_inputVectorIndexes[j];
-   _testingNetwork._layers[0]->_nodeValues[i][j] = _k->_variables[varIdx]->_testData[i];
+   _testNeuralNetwork->_layers[0]->_nodeValues[i][j] = _k->_variables[varIdx]->_testData[i];
   }
  }
 
  // Creating Neural Networks internal structures
- _testingNetwork.create();
+ _testNeuralNetwork->create();
 }
 
 void korali::solver::deepSupervisor::Test::runGeneration()
 {
  // Updating the network's weights and biases
- _testingNetwork.update();
+ _testNeuralNetwork->update();
 
  // Running the input values through the neural network
- _testingNetwork.forward();
+ _testNeuralNetwork->forward();
 
  // Printing Layer values
- size_t outputLayerId = _testingNetwork._layers.size()-1;
- size_t batchSize = _testingNetwork._layers[outputLayerId]->_nodeValues.size();
- size_t outputSize = _testingNetwork._layers[outputLayerId]->_nodeValues[0].size();
+ size_t outputLayerId = _testNeuralNetwork->_layers.size()-1;
+ size_t batchSize = _testNeuralNetwork->_layers[outputLayerId]->_nodeValues.size();
+ size_t outputSize = _testNeuralNetwork->_layers[outputLayerId]->_nodeValues[0].size();
 
 // printf("Results:\n");
 // for (size_t i = 0; i < batchSize; i++)
 // {
-//  printf("Input %lu - ( %f", i, _testingNetwork._layers[outputLayerId]->_nodeValues[i][0]);
+//  printf("Input %lu - ( %f", i, _testNeuralNetwork->_layers[outputLayerId]->_nodeValues[i][0]);
 //  for (size_t j = 1; j < outputSize; j++)
-//   printf(", %f", _testingNetwork._layers[outputLayerId]->_nodeValues[i][j]);
+//   printf(", %f", _testNeuralNetwork->_layers[outputLayerId]->_nodeValues[i][j]);
 //  printf(")\n");
 // }
 
- (*_k)["Results"]["Inferred Results"] = _testingNetwork._layers[outputLayerId]->_nodeValues;
+ (*_k)["Results"]["Inferred Results"] = _testNeuralNetwork->_layers[outputLayerId]->_nodeValues;
 }
 

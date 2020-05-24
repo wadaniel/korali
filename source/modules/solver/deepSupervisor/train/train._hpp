@@ -21,7 +21,7 @@ class Train : public korali::solver::DeepSupervisor
  */
  korali::problem::SupervisedLearning *_problem;
 
- std::vector<std::vector<double>> test(const std::vector<std::vector<double>>& inputBatch);
+ std::vector<std::vector<double>> test(const std::vector<std::vector<double>>& inputBatch) override;
 
   void initialize() override;
   void runGeneration() override;

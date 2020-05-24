@@ -192,6 +192,11 @@ void korali::Experiment::finalize()
   co_delete(_thread);
 }
 
+std::vector<std::vector<double>> korali::Experiment::test(const std::vector<std::vector<double>>& inputBatch)
+{
+ return _solver->test(inputBatch);
+}
+
 knlohmann::json &korali::Experiment::operator[](const std::string &key) { return _js[key]; }
 knlohmann::json &korali::Experiment::operator[](const unsigned long int &key) { return _js[key]; }
 pybind11::object korali::Experiment::getItem(pybind11::object key) { return _js.getItem(key); }

@@ -15,72 +15,50 @@ validationInputSet  = np.random.uniform(0,2*np.pi,500)
 trainingOutputSet = np.sin(trainingInputSet)
 validationOutputSet = np.sin(validationInputSet)
 
-testInputSet  = np.random.uniform(0,2*np.pi,500)
+e = korali.Experiment()
 
-eTrain = korali.Experiment()
-
-eTrain["Problem"]["Type"] = "Supervised Learning"
+e["Problem"]["Type"] = "Supervised Learning"
  
-eTrain["Variables"][0]["Name"] = "X"
-eTrain["Variables"][0]["Type"] = "Input"
-eTrain["Variables"][0]["Training Data"] = trainingInputSet.tolist()
-eTrain["Variables"][0]["Validation Data"] = validationInputSet.tolist()
+e["Variables"][0]["Name"] = "X"
+e["Variables"][0]["Type"] = "Input"
+e["Variables"][0]["Training Data"] = trainingInputSet.tolist()
+e["Variables"][0]["Validation Data"] = validationInputSet.tolist()
 
-eTrain["Variables"][1]["Name"] = "Sin(X)"
-eTrain["Variables"][1]["Type"] = "Output"
-eTrain["Variables"][1]["Training Data"] = trainingOutputSet.tolist()
-eTrain["Variables"][1]["Validation Data"] = validationOutputSet.tolist()
+e["Variables"][1]["Name"] = "Sin(X)"
+e["Variables"][1]["Type"] = "Output"
+e["Variables"][1]["Training Data"] = trainingOutputSet.tolist()
+e["Variables"][1]["Validation Data"] = validationOutputSet.tolist()
 
-eTrain["Solver"]["Type"] = "Deep Supervisor / Train"
+e["Solver"]["Type"] = "Deep Supervisor / Train"
 
-eTrain["Solver"]["Neural Network"]["Optimizer"]["Type"] = "CMAES"
-eTrain["Solver"]["Neural Network"]["Optimizer"]["Population Size"] = 32
+e["Solver"]["Neural Network"]["Optimizer"]["Type"] = "CMAES"
+e["Solver"]["Neural Network"]["Optimizer"]["Population Size"] = 32
 
-eTrain["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Input"
-eTrain["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 1
-eTrain["Solver"]["Neural Network"]["Layers"][0]["Activation Function"] = "Identity"
+e["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Input"
+e["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 1
+e["Solver"]["Neural Network"]["Layers"][0]["Activation Function"] = "Identity"
 
-eTrain["Solver"]["Neural Network"]["Layers"][1]["Type"] = "Dense"
-eTrain["Solver"]["Neural Network"]["Layers"][1]["Node Count"] = 5
-eTrain["Solver"]["Neural Network"]["Layers"][1]["Activation Function"] = "Tanh"
+e["Solver"]["Neural Network"]["Layers"][1]["Type"] = "Dense"
+e["Solver"]["Neural Network"]["Layers"][1]["Node Count"] = 5
+e["Solver"]["Neural Network"]["Layers"][1]["Activation Function"] = "Tanh"
 
-eTrain["Solver"]["Neural Network"]["Layers"][2]["Type"] = "Dense"
-eTrain["Solver"]["Neural Network"]["Layers"][2]["Node Count"] = 5
-eTrain["Solver"]["Neural Network"]["Layers"][2]["Activation Function"] = "Tanh"
+e["Solver"]["Neural Network"]["Layers"][2]["Type"] = "Dense"
+e["Solver"]["Neural Network"]["Layers"][2]["Node Count"] = 5
+e["Solver"]["Neural Network"]["Layers"][2]["Activation Function"] = "Tanh"
 
-eTrain["Solver"]["Neural Network"]["Layers"][3]["Type"] = "Output"
-eTrain["Solver"]["Neural Network"]["Layers"][3]["Node Count"] = 1
-eTrain["Solver"]["Neural Network"]["Layers"][3]["Activation Function"] = "Identity"
+e["Solver"]["Neural Network"]["Layers"][3]["Type"] = "Output"
+e["Solver"]["Neural Network"]["Layers"][3]["Node Count"] = 1
+e["Solver"]["Neural Network"]["Layers"][3]["Activation Function"] = "Identity"
 
-eTrain["Random Seed"] = 0xC0FFEE
-k.run(eTrain)
+e["Random Seed"] = 0xC0FFEE
+k.run(e)
 
-#eTrain["Variables"][0]["Test Data"] = testInputSet.tolist()
-#eTest = korali.Experiment()
+testInputSet = np.random.uniform(0,2*np.pi,500)
+testInputSet = [ [ x ] for x in testInputSet.tolist() ]
 
-#eTest["Problem"]["Type"] = "Supervised Learning"
+testInferredSet = e.test(testInputSet)
+testOutputSet = np.sin(testInputSet).tolist()
 
-#eTest["Variables"][0]["Name"] = "X"
-#eTest["Variables"][0]["Type"] = "Input"
-#eTest["Variables"][0]["Test Data"] = testInputSet.tolist()
-
-#eTest["Variables"][1]["Name"] = "Sin(X)"
-#eTest["Variables"][1]["Type"] = "Output"
-
-#eTest["Solver"]["Type"] = "Deep Supervisor / Test"
-#eTest["Solver"]["Termination Criteria"]["Max Generations"] = 1
-#eTest["Solver"]["Neural Network"].set( eTrain["Solver"]["Neural Network"].get() )
-
-#k.run(eTest)
-
-#testOutputSet = np.sin(testInputSet).tolist()
-#inferredOutputSet = eTest["Results"]["Inferred Results"]
-
-#print(testOutputSet)
-#print(inferredOutputSet)
-
-#plt.plot(testInputSet,testOutputSet, "o")
-#plt.plot(testInputSet,inferredOutputSet, "x")
-#plt.show()
-
-#0.506816089425576
+plt.plot(testInputSet,testOutputSet, "o")
+plt.plot(testInputSet,testInferredSet, "x")
+plt.show()

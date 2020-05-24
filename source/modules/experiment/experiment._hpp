@@ -113,6 +113,8 @@ class Experiment : public korali::Module
   * @return The referenced JSON object content.
  */
   knlohmann::json &operator[](const unsigned long int &key);
+
+  std::vector<std::vector<double>> test(const std::vector<std::vector<double>>& inputBatch);
 };
 
 } // namespace korali

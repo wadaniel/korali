@@ -249,6 +249,7 @@ PYBIND11_MODULE(libkorali, m)
    .def(pybind11::init<>())
    .def("__getitem__", pybind11::overload_cast<pybind11::object>(&korali::Experiment::getItem), pybind11::return_value_policy::reference)
    .def("__setitem__", pybind11::overload_cast<pybind11::object, pybind11::object>(&korali::Experiment::setItem), pybind11::return_value_policy::reference)
+   .def("test",   &korali::Experiment::test)
    .def("loadState",   pybind11::overload_cast<std::string>(&korali::Experiment::loadState))
    .def("loadState",   pybind11::overload_cast<>(&korali::Experiment::loadState));
 }

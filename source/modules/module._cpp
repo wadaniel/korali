@@ -33,9 +33,11 @@ korali::Module *korali::Module::getModule(knlohmann::json &js, korali::Experimen
   return module;
 }
 
-void korali::Module::copy(const Module& src)
+void korali::Module::copy(Module& src)
 {
  knlohmann::json js;
  src.getConfiguration(js);
  this->setConfiguration(js);
+ this->_k = src._k;
+ this->initialize();
 }

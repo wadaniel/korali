@@ -20,7 +20,7 @@ void korali::NeuralNetwork::initialize()
   // Creating evaluation lambda function for optimization
   auto evaluateProposal = [nn = this]
                           (korali::Sample& sample)
-                          { trainSample(sample, nn); };
+                          { runSample(sample, nn); };
 
   _koraliExperiment["Problem"]["Type"] = "Optimization/Stochastic";
   _koraliExperiment["Problem"]["Objective Function"] = evaluateProposal;
@@ -302,13 +302,17 @@ void korali::NeuralNetwork::forward()
 
 void korali::NeuralNetwork::train(size_t stepsToRun)
 {
- size_t currentGen = _koraliExperiment["Current Generation"].get<size_t>();
- size_t maxGen = currentGen + stepsToRun;
- _koraliExperiment["Solver"]["Termination Criteria"]["Max Generation"] = maxGen;
- _koraliEngine.run(_koraliExperiment);
+ _koraliExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _koraliExperiment._currentGeneration + stepsToRun;
+ _koraliEngine.resume(_koraliExperiment);
+
+ // Getting results of optimization
+ _currentTrainingLoss = - _koraliExperiment["Results"]["Best Sample"]["F(x)"].get<double>();
+
+ // Getting best weight/bias configuration
+ _bestSample._js.getJson() = _koraliExperiment["Results"]["Best Sample"];
 }
 
-void korali::NeuralNetwork::trainSample(korali::Sample& sample, korali::NeuralNetwork* nn)
+void korali::NeuralNetwork::runSample(korali::Sample& sample, korali::NeuralNetwork* nn)
 {
  // Setting weights and biases
  size_t currentVariable = 0;

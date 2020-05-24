@@ -40,7 +40,7 @@ class NeuralNetwork : public korali::Module
   * @param sample The sample containing proposal configuration
   * @param nn Pointer to the neural network
   */
-   static void trainSample(korali::Sample &sample, korali::NeuralNetwork *nn);
+   static void runSample(korali::Sample &sample, korali::NeuralNetwork *nn);
 
   /**
  * @brief Korali engine for optimizing the NN's weights and biases

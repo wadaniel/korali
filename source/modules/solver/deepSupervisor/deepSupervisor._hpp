@@ -18,12 +18,6 @@ class DeepSupervisor : public korali::Solver
  */
   korali::problem::SupervisedLearning *_problem;
 
-  /**
- * @brief Model function to evaluate the proposed NN configuration
- * @param sample The sample containing proposal configuration
- * @param nn Pointer to the neural network
- */
-  static void runNeuralNetwork(korali::Sample &sample, korali::NeuralNetwork *nn, std::vector<std::vector<double>>* solution);
 };
 
 } // namespace solver

@@ -38,69 +38,23 @@ void korali::solver::deepSupervisor::Train::initialize()
   }
  }
 
- // Setting output training data
- _trainingSolutions.resize(_problem->_trainingBatchSize);
+ // Setting Solution for NN training and validation
+ _trainingNetwork._solution.resize(_problem->_trainingBatchSize);
  for (size_t i = 0; i < _problem->_trainingBatchSize; i++)
  {
-  _trainingSolutions[i].resize(_problem->_outputVectorSize);
+  _trainingNetwork._solution[i].resize(_problem->_outputVectorSize);
   for (size_t j = 0; j < _problem->_outputVectorSize; j++)
   {
     size_t varIdx = _problem->_outputVectorIndexes[j];
-    _trainingSolutions[i][j] = _k->_variables[varIdx]->_trainingData[i];
+    _trainingNetwork._solution[i][j] = _k->_variables[varIdx]->_trainingData[i];
   }
  }
+
+ _validationNetwork._solution =  _trainingNetwork._solution;
 
  // Creating Neural Networks internal structures
  _trainingNetwork.create();
  _validationNetwork.create();
-
- // Creating evaluation lambda function for optimization
- auto evaluateProposal = [nn = &_trainingNetwork, sol = &_trainingSolutions]
-                         (korali::Sample& sample)
-                         { runNeuralNetwork(sample, nn, sol); };
-
- _experiment["Problem"]["Type"] = "Optimization/Stochastic";
- _experiment["Problem"]["Objective Function"] = evaluateProposal;
-
- size_t currentVariable = 0;
- for (size_t i = 1; i < _trainingNetwork._layers.size(); i++)
- {
-   // Adding layer's weights
-   for (size_t j = 0; j < _trainingNetwork._layers[i]->_nodeCount; j++)
-   for (size_t k = 0; k < _trainingNetwork._layers[i-1]->_nodeCount; k++)
-   {
-    char varName[512];
-    sprintf(varName, "Weight [%u] %u->%u", i, j, k);
-    std::string varNameString(varName);
-    _experiment["Variables"][currentVariable]["Name"] = varNameString;
-    _experiment["Variables"][currentVariable]["Initial Mean"] = 0.0;
-    _experiment["Variables"][currentVariable]["Initial Standard Deviation"] = 2.0;
-    currentVariable++;
-   }
-
-   // Adding layer's biases
-   for (size_t j = 0; j < _trainingNetwork._layers[i]->_nodeCount; j++)
-   {
-    char varName[512];
-    sprintf(varName, "Bias [%u] %u", i, j);
-    std::string varNameString(varName);
-    _experiment["Variables"][currentVariable]["Name"] = varNameString;
-    _experiment["Variables"][currentVariable]["Initial Mean"] = 0.0;
-    _experiment["Variables"][currentVariable]["Initial Standard Deviation"] = 2.0;
-    currentVariable++;
-   }
- }
-
- size_t populationSize = 3*ceil(4.0 + floor(3*log((double)currentVariable)));
-
- _experiment["Solver"]["Type"] = "CMAES";
- _experiment["Solver"]["Population Size"] = populationSize;
-
- _experiment["File Output"]["Frequency"] = 0;
- _experiment["File Output"]["Enabled"] = false;
- _experiment["Console Output"]["Frequency"] = 0;
- _experiment["Console Output"]["Verbosity"] = "Silent";
- _experiment["Random Seed"] = _k->_randomSeed++;
 }
 
 void korali::solver::deepSupervisor::Train::runGeneration()
@@ -109,29 +63,17 @@ void korali::solver::deepSupervisor::Train::runGeneration()
   * Training Stage
   *************************************************************/
 
- // Configuring optimizer to run yet another generation
- _experiment["Solver"]["Termination Criteria"]["Max Generations"] = _k->_currentGeneration;
-
- // Running Optimizer
- _engine.resume(_experiment);
-
- // Getting results of optimization
- _currentTrainingLoss = - _experiment["Results"]["Best Sample"]["F(x)"].get<double>();
+ _trainingNetwork.train();
 
  /**************************************************************
   * Validation Stage
   *************************************************************/
 
- // Getting best weight/bias configuration
- korali::Sample bestSample;
- bestSample._js.getJson() = _experiment["Results"]["Best Sample"];
-
  // Setting input validation data
- _trainingNetwork.train();
- runNeuralNetwork(bestSample, &_validationNetwork, &_trainingSolutions);
+ korali::NeuralNetwork::runSample(_trainingNetwork._bestSample, &_validationNetwork);
 
  // Getting results of optimization
- _currentValidationLoss = - bestSample["F(x)"].get<double>();
+ _currentValidationLoss = - _trainingNetwork._bestSample["F(x)"].get<double>();
 
  // If validation is better, saving it as the best network for use as for test batch later.
  _currentInactiveSteps++;
@@ -152,7 +94,7 @@ void korali::solver::deepSupervisor::Train::runGeneration()
  }
 
  // Printing results so far
- _k->_logger->logInfo("Normal", "Training Loss: %.15f\n", _currentTrainingLoss);
+ _k->_logger->logInfo("Normal", "Training Loss: %.15f\n", _trainingNetwork._currentTrainingLoss);
  _k->_logger->logInfo("Normal", "Current Validation Loss: %.15f\n", _currentValidationLoss);
  _k->_logger->logInfo("Normal", "Lowest Validation Loss: %.15f\n", _lowestValidationLoss);
  _k->_logger->logInfo("Normal", "Inactive Step Counter: %lu\n", _currentInactiveSteps);

@@ -178,6 +178,13 @@ void korali::Engine::resume(std::vector<korali::Experiment>& experiments)
  run();
 }
 
+void korali::Engine::initialize(korali::Experiment& experiment)
+{
+ _experimentVector.clear();
+ _experimentVector.push_back(experiment._k);
+ initialize();
+}
+
 void korali::Engine::serialize(knlohmann::json& js)
 {
   for (size_t i = 0; i < _experimentVector.size(); i++)

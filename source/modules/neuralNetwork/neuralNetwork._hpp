@@ -1,6 +1,8 @@
 #ifndef _KORALI_NEURAL_NETWORK_HPP_
 #define _KORALI_NEURAL_NETWORK_HPP_
 
+#include "engine.hpp"
+#include "modules/experiment/experiment.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
 #include "modules/layer/layer.hpp"
 #include "modules/module.hpp"
@@ -33,7 +35,29 @@ class NeuralNetwork : public korali::Module
 
 #endif
 
+  /**
+  * @brief Model function to evaluate the proposed NN configuration
+  * @param sample The sample containing proposal configuration
+  * @param nn Pointer to the neural network
+  */
+   static void trainSample(korali::Sample &sample, korali::NeuralNetwork *nn);
+
+  /**
+ * @brief Korali engine for optimizing the NN's weights and biases
+ */
+  korali::Engine _koraliEngine;
+
+  /**
+ * @brief Korali engine for optimizing the NN's weights and biases
+ */
+  korali::Experiment _koraliExperiment;
+
   void initialize() override;
+
+  /**
+   * @brief Performs the training phase of the NN, given a solution and the NN's configuration.
+   */
+  void train(size_t stepsToRun = 1);
 
   /**
    * @brief Initializes the internal memory structures, with regards to the layer configuration of the network

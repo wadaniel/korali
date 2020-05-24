@@ -83,10 +83,6 @@ def isLeafModule(path):
 def consumeValue(base, moduleName, path, varName, varType, isMandatory, options):
  cString = '\n'
 
- if ('*' in varName):
-  cString += '   korali::JsonInterface::eraseValue(' + base + ', "' + path.replace('"', "'").replace('*', '') + '");\n'
-  return cString
-  
  if ('std::function' in varType):
   cString += ' ' + varName + ' = ' + base + path + '.get<size_t>();\n'
   cString += '   korali::JsonInterface::eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n'
@@ -150,9 +146,6 @@ def consumeValue(base, moduleName, path, varName, varType, isMandatory, options)
 
 def saveValue(base, path, varName, varType):
 
- if ('*' in varName):
-  return ''
-  
  if ('korali::Sample' in varType):
   sString = '   ' + base + path + ' = ' + varName + '._js.getJson();\n'
   return sString
@@ -359,10 +352,9 @@ def createGetPropertyPointer(module):
 
 def createHeaderDeclarations(module):
  headerString =  ''
-  
+
  if 'Configuration Settings' in module:
   for v in module["Configuration Settings"]:
-   if ('*' in getCXXVariableName(v["Name"])): return headerString
    headerString += '/**\n'
    headerString += '* @brief ' +  v["Description"] + '\n'
    headerString += '*/\n'

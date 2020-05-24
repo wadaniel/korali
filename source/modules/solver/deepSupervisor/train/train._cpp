@@ -127,6 +127,7 @@ void korali::solver::deepSupervisor::Train::runGeneration()
  bestSample._js.getJson() = _experiment["Results"]["Best Sample"];
 
  // Setting input validation data
+ _trainingNetwork.train();
  runNeuralNetwork(bestSample, &_validationNetwork, &_trainingSolutions);
 
  // Getting results of optimization

@@ -16,6 +16,54 @@ void korali::NeuralNetwork::initialize()
 
   // Setting initialized flag to false
   _isInitialized = false;
+
+  // Creating evaluation lambda function for optimization
+  auto evaluateProposal = [nn = this]
+                          (korali::Sample& sample)
+                          { trainSample(sample, nn); };
+
+  _koraliExperiment["Problem"]["Type"] = "Optimization/Stochastic";
+  _koraliExperiment["Problem"]["Objective Function"] = evaluateProposal;
+
+  size_t currentVariable = 0;
+  for (size_t i = 1; i < _layers.size(); i++)
+  {
+    // Adding layer's weights
+    for (size_t j = 0; j < _layers[i]->_nodeCount; j++)
+    for (size_t k = 0; k < _layers[i-1]->_nodeCount; k++)
+    {
+     char varName[512];
+     sprintf(varName, "Weight [%u] %u->%u", i, j, k);
+     std::string varNameString(varName);
+     _koraliExperiment["Variables"][currentVariable]["Name"] = varNameString;
+     _koraliExperiment["Variables"][currentVariable]["Initial Mean"] = 0.0;
+     _koraliExperiment["Variables"][currentVariable]["Initial Standard Deviation"] = 2.0;
+     currentVariable++;
+    }
+
+    // Adding layer's biases
+    for (size_t j = 0; j < _layers[i]->_nodeCount; j++)
+    {
+     char varName[512];
+     sprintf(varName, "Bias [%u] %u", i, j);
+     std::string varNameString(varName);
+     _koraliExperiment["Variables"][currentVariable]["Name"] = varNameString;
+     _koraliExperiment["Variables"][currentVariable]["Initial Mean"] = 0.0;
+     _koraliExperiment["Variables"][currentVariable]["Initial Standard Deviation"] = 2.0;
+     currentVariable++;
+    }
+  }
+
+  _koraliExperiment["Solver"] = _optimizer;
+
+  _koraliExperiment["File Output"]["Frequency"] = 0;
+  _koraliExperiment["File Output"]["Enabled"] = false;
+  _koraliExperiment["Console Output"]["Frequency"] = 0;
+  _koraliExperiment["Console Output"]["Verbosity"] = "Silent";
+  _koraliExperiment["Random Seed"] = _k->_randomSeed++;
+
+  // Running initialization to verify that the configuration is correct
+  _koraliEngine.initialize(_koraliExperiment);
 }
 
 void korali::NeuralNetwork::create()
@@ -251,3 +299,63 @@ void korali::NeuralNetwork::forward()
 
 #endif
 }
+
+void korali::NeuralNetwork::train(size_t stepsToRun)
+{
+ size_t currentGen = _koraliExperiment["Current Generation"].get<size_t>();
+ size_t maxGen = currentGen + stepsToRun;
+ _koraliExperiment["Solver"]["Termination Criteria"]["Max Generation"] = maxGen;
+ _koraliEngine.run(_koraliExperiment);
+}
+
+void korali::NeuralNetwork::trainSample(korali::Sample& sample, korali::NeuralNetwork* nn)
+{
+ // Setting weights and biases
+ size_t currentVariable = 0;
+ for (size_t i = 1; i < nn->_layers.size(); i++)
+ {
+   nn->_layers[i]->_weights.resize(nn->_layers[i]->_nodeCount);
+   nn->_layers[i]->_bias.resize(nn->_layers[i]->_nodeCount);
+
+   // Adding layer's weights
+   for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++)
+   {
+    nn->_layers[i]->_weights[j].resize(nn->_layers[i-1]->_nodeCount);
+
+    for (size_t k = 0; k < nn->_layers[i-1]->_nodeCount; k++)
+     nn->_layers[i]->_weights[j][k] = sample["Parameters"][currentVariable++];
+   }
+
+   // Adding layer's biases
+   for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++)
+    nn->_layers[i]->_bias[j] = sample["Parameters"][currentVariable++];
+ }
+
+ // Updating the network's weights and biases
+ nn->update();
+
+ // Running the input values through the neural network
+ nn->forward();
+
+ // Printing Layer values
+ size_t outputLayerId = nn->_layers.size()-1;
+ size_t batchSize = nn->_layers[outputLayerId]->_nodeValues.size();
+ size_t outputSize = nn->_layers[outputLayerId]->_nodeValues[0].size();
+
+ // Calculating mean square error
+ double meanSquaredError = 0.0;
+
+ for (size_t i = 0; i < batchSize; i++)
+  for (size_t j = 0; j < outputSize; j++)
+  {
+   double diff = nn->_layers[outputLayerId]->_nodeValues[i][j] - nn->_solution[i][j];
+   meanSquaredError += diff*diff;
+  }
+
+ meanSquaredError = meanSquaredError / (double) batchSize;
+
+ // Saving the negative of the error because we want to minimize it
+ sample["F(x)"] = -meanSquaredError;
+}
+
+

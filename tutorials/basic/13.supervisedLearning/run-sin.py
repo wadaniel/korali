@@ -17,7 +17,9 @@ validationOutputSet = np.sin(validationInputSet)
 
 e = korali.Experiment()
 
-e["Problem"]["Type"] = "Supervised Learning"
+### Defining a learning problem to infer values of sin(x)
+
+e["Problem"]["Type"] = "Learning"
  
 e["Variables"][0]["Name"] = "X"
 e["Variables"][0]["Type"] = "Input"
@@ -29,10 +31,14 @@ e["Variables"][1]["Type"] = "Output"
 e["Variables"][1]["Training Data"] = trainingOutputSet.tolist()
 e["Variables"][1]["Validation Data"] = validationOutputSet.tolist()
 
-e["Solver"]["Type"] = "Deep Supervisor / Train"
+### Using a neural network solver (deep learning) for inference
+
+e["Solver"]["Type"] = "Deep Learning"
 
 e["Solver"]["Neural Network"]["Optimizer"]["Type"] = "CMAES"
 e["Solver"]["Neural Network"]["Optimizer"]["Population Size"] = 32
+
+### Defining the shape of the neural network
 
 e["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Input"
 e["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 1
@@ -51,13 +57,20 @@ e["Solver"]["Neural Network"]["Layers"][3]["Node Count"] = 1
 e["Solver"]["Neural Network"]["Layers"][3]["Activation Function"] = "Identity"
 
 e["Random Seed"] = 0xC0FFEE
+
+### Training the neural network
+
 k.run(e)
+
+### Obtaining inferred results from the NN and comparing them to the actual solution
 
 testInputSet = np.random.uniform(0,2*np.pi,500)
 testInputSet = [ [ x ] for x in testInputSet.tolist() ]
 
 testInferredSet = e.test(testInputSet)
 testOutputSet = np.sin(testInputSet).tolist()
+
+### Plotting Results
 
 plt.plot(testInputSet,testOutputSet, "o")
 plt.plot(testInputSet,testInferredSet, "x")

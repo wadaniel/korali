@@ -1,11 +1,11 @@
-#include "modules/solver/deepSupervisor/train/train.hpp"
+#include "modules/solver/deepLearning/deepLearning.hpp"
 #include "modules/conduit/conduit.hpp"
 #include "modules/experiment/experiment.hpp"
 
-void korali::solver::deepSupervisor::Train::initialize()
+void korali::solver::DeepLearning::initialize()
 {
  // Getting problem pointer
- _problem = dynamic_cast<korali::problem::SupervisedLearning *>(_k->_problem);
+ _problem = dynamic_cast<korali::problem::Learning *>(_k->_problem);
 
  if (_problem->_trainingBatchSize == 0) _k->_logger->logError("Training data has not been provided for variable 0.\n");
  if (_problem->_validationBatchSize == 0) _k->_logger->logError("Validation data has not been provided for variable 0.\n");
@@ -58,7 +58,7 @@ void korali::solver::deepSupervisor::Train::initialize()
  _validationNeuralNetwork->create();
 }
 
-void korali::solver::deepSupervisor::Train::runGeneration()
+void korali::solver::DeepLearning::runGeneration()
 {
  /**************************************************************
   * Training Stage
@@ -100,7 +100,7 @@ void korali::solver::deepSupervisor::Train::runGeneration()
  _k->_logger->logInfo("Normal", "Inactive Step Counter: %lu\n", _currentInactiveSteps);
 }
 
-std::vector<std::vector<double>> korali::solver::deepSupervisor::Train::test(const std::vector<std::vector<double>>& inputBatch)
+std::vector<std::vector<double>> korali::solver::DeepLearning::test(const std::vector<std::vector<double>>& inputBatch)
 {
  _testNeuralNetwork->_layers[0]->_nodeValues = inputBatch;
  _testNeuralNetwork->create();

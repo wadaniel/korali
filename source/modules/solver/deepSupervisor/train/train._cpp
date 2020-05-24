@@ -13,6 +13,7 @@ void korali::solver::deepSupervisor::Train::initialize()
  // Setting training NN
  _trainingNeuralNetwork = dynamic_cast<korali::NeuralNetwork*>(korali::Module::duplicate(_neuralNetwork));
  _validationNeuralNetwork = dynamic_cast<korali::NeuralNetwork*>(korali::Module::duplicate(_neuralNetwork));
+ _testNeuralNetwork = dynamic_cast<korali::NeuralNetwork*>(korali::Module::duplicate(_neuralNetwork));
 
  // Setting input training data
  _trainingNeuralNetwork->_layers[0]->_nodeValues.resize(_problem->_trainingBatchSize);
@@ -88,9 +89,8 @@ void korali::solver::deepSupervisor::Train::runGeneration()
   // Storing best NN
   knlohmann::json js;
   _validationNeuralNetwork->getConfiguration(js);
-
-  _neuralNetwork->_layers.clear();
-  _neuralNetwork->setConfiguration(js);
+  _testNeuralNetwork->_layers.clear();
+  _testNeuralNetwork->setConfiguration(js);
  }
 
  // Printing results so far
@@ -98,5 +98,33 @@ void korali::solver::deepSupervisor::Train::runGeneration()
  _k->_logger->logInfo("Normal", "Current Validation Loss: %.15f\n", _currentValidationLoss);
  _k->_logger->logInfo("Normal", "Lowest Validation Loss: %.15f\n", _lowestValidationLoss);
  _k->_logger->logInfo("Normal", "Inactive Step Counter: %lu\n", _currentInactiveSteps);
+}
+
+std::vector<std::vector<double>> korali::solver::deepSupervisor::Train::test(const std::vector<std::vector<double>>& inputBatch)
+{
+ _testNeuralNetwork->_layers[0]->_nodeValues = inputBatch;
+ _testNeuralNetwork->create();
+
+ // Updating the network's weights and biases
+ _testNeuralNetwork->update();
+
+ // Running the input values through the neural network
+ _testNeuralNetwork->forward();
+
+ // Printing Layer values
+ size_t outputLayerId = _testNeuralNetwork->_layers.size()-1;
+ size_t batchSize = _testNeuralNetwork->_layers[outputLayerId]->_nodeValues.size();
+ size_t outputSize = _testNeuralNetwork->_layers[outputLayerId]->_nodeValues[0].size();
+
+// printf("Results:\n");
+// for (size_t i = 0; i < batchSize; i++)
+// {
+//  printf("Input %lu - ( %f", i, _testNeuralNetwork->_layers[outputLayerId]->_nodeValues[i][0]);
+//  for (size_t j = 1; j < outputSize; j++)
+//   printf(", %f", _testNeuralNetwork->_layers[outputLayerId]->_nodeValues[i][j]);
+//  printf(")\n");
+// }
+
+ return _testNeuralNetwork->_layers[outputLayerId]->_nodeValues;
 }
 

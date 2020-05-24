@@ -25,7 +25,6 @@ eTrain["Variables"][0]["Name"] = "X"
 eTrain["Variables"][0]["Type"] = "Input"
 eTrain["Variables"][0]["Training Data"] = trainingInputSet.tolist()
 eTrain["Variables"][0]["Validation Data"] = validationInputSet.tolist()
-eTrain["Variables"][0]["Test Data"] = testInputSet.tolist()
 
 eTrain["Variables"][1]["Name"] = "Sin(X)"
 eTrain["Variables"][1]["Type"] = "Output"
@@ -33,7 +32,6 @@ eTrain["Variables"][1]["Training Data"] = trainingOutputSet.tolist()
 eTrain["Variables"][1]["Validation Data"] = validationOutputSet.tolist()
 
 eTrain["Solver"]["Type"] = "Deep Supervisor / Train"
-eTrain["Solver"]["Optimizer"] = "CMAES"
 
 eTrain["Solver"]["Neural Network"]["Optimizer"]["Type"] = "CMAES"
 eTrain["Solver"]["Neural Network"]["Optimizer"]["Population Size"] = 32
@@ -57,31 +55,32 @@ eTrain["Solver"]["Neural Network"]["Layers"][3]["Activation Function"] = "Identi
 eTrain["Random Seed"] = 0xC0FFEE
 k.run(eTrain)
 
-eTest = korali.Experiment()
+#eTrain["Variables"][0]["Test Data"] = testInputSet.tolist()
+#eTest = korali.Experiment()
 
-eTest["Problem"]["Type"] = "Supervised Learning"
+#eTest["Problem"]["Type"] = "Supervised Learning"
 
-eTest["Variables"][0]["Name"] = "X"
-eTest["Variables"][0]["Type"] = "Input"
-eTest["Variables"][0]["Test Data"] = testInputSet.tolist()
+#eTest["Variables"][0]["Name"] = "X"
+#eTest["Variables"][0]["Type"] = "Input"
+#eTest["Variables"][0]["Test Data"] = testInputSet.tolist()
 
-eTest["Variables"][1]["Name"] = "Sin(X)"
-eTest["Variables"][1]["Type"] = "Output"
+#eTest["Variables"][1]["Name"] = "Sin(X)"
+#eTest["Variables"][1]["Type"] = "Output"
 
-eTest["Solver"]["Type"] = "Deep Supervisor / Test"
-eTest["Solver"]["Termination Criteria"]["Max Generations"] = 1
-eTest["Solver"]["Neural Network"].set( eTrain["Solver"]["Neural Network"].get() )
+#eTest["Solver"]["Type"] = "Deep Supervisor / Test"
+#eTest["Solver"]["Termination Criteria"]["Max Generations"] = 1
+#eTest["Solver"]["Neural Network"].set( eTrain["Solver"]["Neural Network"].get() )
 
-k.run(eTest)
+#k.run(eTest)
 
-testOutputSet = np.sin(testInputSet).tolist()
-inferredOutputSet = eTest["Results"]["Inferred Results"]
+#testOutputSet = np.sin(testInputSet).tolist()
+#inferredOutputSet = eTest["Results"]["Inferred Results"]
 
 #print(testOutputSet)
 #print(inferredOutputSet)
 
-plt.plot(testInputSet,testOutputSet, "o")
-plt.plot(testInputSet,inferredOutputSet, "x")
-plt.show()
+#plt.plot(testInputSet,testOutputSet, "o")
+#plt.plot(testInputSet,inferredOutputSet, "x")
+#plt.show()
 
 #0.506816089425576

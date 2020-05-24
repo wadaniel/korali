@@ -29,9 +29,4 @@ void korali::problem::SupervisedLearning::initialize()
   for (size_t i = 1; i < _k->_variables.size(); i++)
     if (_k->_variables[i]->_validationData.size() != _validationBatchSize)
       _k->_logger->logError("Variable %lu has a different validation set vector size (%lu) than that of variable 0 (%lu).\n", _k->_variables[i]->_validationData.size(), _validationBatchSize);
-
-  _testBatchSize = _k->_variables[_inputVectorIndexes[0]]->_testData.size();
-  for (size_t i = 1; i < _inputVectorIndexes.size(); i++)
-    if (_k->_variables[_inputVectorIndexes[i]]->_testData.size() != _testBatchSize)
-      _k->_logger->logError("Variable %lu has a different test set vector size (%lu) than that of variable %lu (%lu).\n", _inputVectorIndexes[i], _k->_variables[i]->_testData.size(), _inputVectorIndexes[0], _testBatchSize);
 }

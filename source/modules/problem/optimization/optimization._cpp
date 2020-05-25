@@ -1,13 +1,25 @@
 #include "modules/problem/optimization/optimization.hpp"
 
-bool korali::problem::Optimization::isSampleFeasible(korali::Sample& sample)
+bool korali::problem::Optimization::isSampleFeasible(korali::Sample &sample)
 {
   for (size_t i = 0; i < sample["Parameters"].size(); i++)
   {
     double par = sample["Parameters"][i];
-    if (std::isfinite(par) == false) { sample["Is Feasible"] = false; return false; }
-    if (par < _k->_variables[i]->_lowerBound) { sample["Is Feasible"] = false; return false; }
-    if (par > _k->_variables[i]->_upperBound) { sample["Is Feasible"] = false; return false; }
+    if (std::isfinite(par) == false)
+    {
+      sample["Is Feasible"] = false;
+      return false;
+    }
+    if (par < _k->_variables[i]->_lowerBound)
+    {
+      sample["Is Feasible"] = false;
+      return false;
+    }
+    if (par > _k->_variables[i]->_upperBound)
+    {
+      sample["Is Feasible"] = false;
+      return false;
+    }
   }
 
   sample["Is Feasible"] = true;
@@ -16,15 +28,12 @@ bool korali::problem::Optimization::isSampleFeasible(korali::Sample& sample)
 
 void korali::problem::Optimization::initialize()
 {
- if (_k->_variables.size() == 0) _k->_logger->logError("Optimization Evaluation problems require at least one variable.\n");
+  if (_k->_variables.size() == 0) _k->_logger->logError("Optimization Evaluation problems require at least one variable.\n");
 
- /* check _granularity for discrete variables */
- for (size_t i = 0; i < _k->_variables.size(); i++)
- {
-   if(_k->_variables[i]->_granularity < 0.0)   _k->_logger->logError("Negative granularity for variable \'%s\'.\n", _k->_variables[i]->_name.c_str());
-   if(_k->_variables[i]->_granularity > 0.0)  _hasDiscreteVariables = true;
- }
+  /* check _granularity for discrete variables */
+  for (size_t i = 0; i < _k->_variables.size(); i++)
+  {
+    if (_k->_variables[i]->_granularity < 0.0) _k->_logger->logError("Negative granularity for variable \'%s\'.\n", _k->_variables[i]->_name.c_str());
+    if (_k->_variables[i]->_granularity > 0.0) _hasDiscreteVariables = true;
+  }
 }
-
-
-

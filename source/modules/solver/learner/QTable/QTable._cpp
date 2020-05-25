@@ -1,0 +1,146 @@
+#include "math.h"
+#include "modules/solver/learner/QTable/QTable.hpp"
+
+/////// Mandatory Functions for Learner Interface
+
+void korali::solver::learner::QTable::initialize()
+{
+  for (size_t i = 0; i < _k->_variables.size(); i++)
+    if (_k->_variables[i]->_parameterSpace == "Continuous")
+      _k->_logger->logError("Variable %lu (%s) is continuous, but Q-Table based algorithms can only process discrete or custom defined parameter spaces.\n", i, _k->_variables[i]->_name.c_str());
+}
+
+void korali::solver::learner::QTable::setInitialConfiguration()
+{
+  _q.resize(_problem->_actionCount * _problem->_stateCount);
+
+  for (size_t i = 0; i < _q.size(); i++)
+    _q[i] = _initialQValue;
+}
+
+std::vector<double> korali::solver::learner::QTable::getAction(const std::vector<double> &state)
+{
+  // Calculating state's index
+  size_t stateIdx = _problem->getIndexFromState(state);
+
+  return getPolicyAction(stateIdx);
+}
+
+void korali::solver::learner::QTable::storeExperience(const std::vector<double> &state, const std::vector<double> &action, const double reward, const std::vector<double> &newState)
+{
+  // Calculating state's index
+  size_t stateIdx = _problem->getIndexFromState(state);
+
+  // Creating storage for new action
+  std::vector<double> newAction;
+
+  // Q-Learning: Calculating new action with argmax(a): q(s',a)
+  if (_qUpdateAlgorithm == "Q-Learning")
+    newAction = getBestAction(stateIdx);
+
+  // SARSA: Calculating new action based on policy a: q(s',a -> epsilon-greedy)
+  if (_qUpdateAlgorithm == "SARSA")
+    newAction = getPolicyAction(stateIdx);
+
+  // Obtaining new state and action indexes
+  size_t actionIdx = _problem->getIndexFromAction(action);
+  size_t newStateIdx = _problem->getIndexFromState(newState);
+  size_t newActionIdx = _problem->getIndexFromAction(newAction);
+
+  // Calculating Q indexes
+  size_t curQIdx = stateIdx * _problem->_actionCount + actionIdx;
+  size_t newQIdx = newStateIdx * _problem->_actionCount + newActionIdx;
+
+  // Updating Q Table
+  double curQValue = _q[curQIdx];
+  double newQValue = (1 - _learningRate) * curQValue + _learningRate * (reward + _discountFactor * _q[newQIdx]);
+  _q[curQIdx] = newQValue;
+
+  // Adding difference to convergence rate
+  double diff = abs(newQValue - curQValue);
+  if (std::isnan(diff) == false) _convergenceRate += diff;
+}
+
+void korali::solver::learner::QTable::initializeGeneration()
+{
+  // Initializing covergence rate to zero
+  _convergenceRate = 0.0;
+}
+
+void korali::solver::learner::QTable::processGeneration()
+{
+  // Adjusting the value of epsilon
+  _epsilon = _epsilon - _epsilonDecreaseRate;
+  if (_epsilon < 0) _epsilon = 0;
+}
+
+/////// Auxiliary functions for QTable
+
+std::vector<double> korali::solver::learner::QTable::getPolicyAction(const size_t &stateIdx)
+{
+  // Declaring the action vector
+  std::vector<double> action;
+
+  // Getting p = U[0,1] for the epsilon strategy
+  double p = _uniformGenerator->getRandomNumber();
+
+  // If p < e, then we choose the action randomly, with a uniform probability, among all possible actions.
+  if (p < _epsilon) action = getRandomAction();
+
+  // Else, we go for the greedy approach of selecting the best known action for the state.
+  else
+    action = getBestAction(stateIdx);
+
+  return action;
+}
+
+std::vector<double> korali::solver::learner::QTable::getBestAction(const size_t &stateIdx)
+{
+  // Setting initial and final positions of the Q-Table
+  size_t startPos = stateIdx * _problem->_actionCount;
+  size_t finalPos = startPos + _problem->_actionCount;
+
+  // Initializing best Q value with minus infinity
+  double qVal = -korali::Inf;
+  size_t qIdx = 0;
+
+  // Iterating over the current state's entries of the Q table
+  for (size_t pos = startPos; pos < finalPos; pos++)
+    if (_q[pos] > qVal)
+    {
+      qVal = _q[pos];
+      qIdx = pos;
+    }
+
+  // Obtaining action index
+  size_t actionIdx = qIdx - startPos;
+
+  // Returning action
+  return _problem->getActionFromIndex(actionIdx);
+}
+
+std::vector<double> korali::solver::learner::QTable::getRandomAction()
+{
+  // Getting p = U[0,1] for the epsilon strategy
+  double p = _uniformGenerator->getRandomNumber();
+
+  // Getting random index for action
+  double idxSpace = _problem->_actionCount;
+
+  // We use the floor function to get the integer index of the selected action
+  size_t actionIdx = floor(p * idxSpace);
+
+  return _problem->getActionFromIndex(actionIdx);
+}
+
+/////// Output functions for QTable
+
+void korali::solver::learner::QTable::printGenerationBefore()
+{
+}
+
+void korali::solver::learner::QTable::printGenerationAfter()
+{
+  _k->_logger->logInfo("Normal", "Best Reward: %f\n", _bestReward);
+  _k->_logger->logInfo("Normal", "Convergence Rate: %f\n", _convergenceRate);
+}

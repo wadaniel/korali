@@ -1,19 +1,21 @@
 #!/bin/bash
 
+# Check Code Formatting
+
+###### Auxiliar Functions and Variables #########
+
 source ../functions.sh
 
-pushd ../../tutorials/
+############# STEP 1 ##############
 
-logEcho "[Korali] Beginning plotting tests"
 
-for dir in ./basic/*/*_result*/
-do
-  logEcho "-------------------------------------"
-  logEcho " Plotting results from $dir ..."
-  logEcho "-------------------------------------"
-  python3 -m korali.plotter --test --dir "${dir}" >> $logFile 2>&1
-  check_result
+logEcho "[Korali] Beginning code formatting check..."
 
-done
+pushd ../../tools/dev-tools/
+check_result
+
+ ./test_style.sh >> $logFile 2>&1
+ check_result
 
 popd
+check_result

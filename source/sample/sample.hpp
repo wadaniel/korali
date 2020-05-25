@@ -13,17 +13,16 @@
 #undef _POSIX_C_SOURCE
 #undef _XOPEN_SOURCE
 
-/** \namespace
-* @brief The Korali namespace includes all Korali-specific functions, variables, and modules.
-******************************************************************************/
 namespace korali
 {
+
+class Experiment;
+class Engine;
 
 /**
  * @brief Stores all functions inserted as parameters to experiment's configuration
  */
 extern std::vector<std::function<void(korali::Sample&)>*> _functionVector;
-
 
 /**
 * @brief Execution states of a given sample.
@@ -73,7 +72,7 @@ class Sample {
 
  /**
   * @brief Runs a computational model by reinterpreting a numerical pointer to a function(sample) object to an actual function pointer and calls it.
-  * @param funcPtr Number containing a pointer to a function.
+  * @param functionPosition Number containing a pointer to a function.
   */
  void run(size_t functionPosition);
 

@@ -31,13 +31,13 @@ e["Variables"][0]["Prior Distribution"] = "Uniform 0"
 
 # Configuring the TMCMC sampler parameters
 e["Solver"]["Type"] = "TMCMC"
-e["Solver"]["Population Size"] = 3000
-e["Solver"]["Covariance Scaling"] = 0.05
-e["Solver"]["Default Burn In"] = 5
-e["Solver"]["Target Coefficient Of Variation"] = 0.6
+e["Solver"]["Population Size"] = 5000
+e["Solver"]["Covariance Scaling"] = 0.01
+e["Solver"]["Default Burn In"] = 3
+e["Solver"]["Target Coefficient Of Variation"] = 0.4
 
 # Running Korali
 k.run(e)
 
-checkMean(e, 0.0, 0.035)
-checkStd(e, 1.0, 0.035)
+checkMean(e, 0.0, 0.05)
+checkStd(e, 1.0, 0.05)

@@ -4,24 +4,35 @@
 #include "modules/conduit/conduit.hpp"
 #include <vector>
 
-namespace korali { namespace conduit {
-
+namespace korali
+{
+namespace conduit
+{
 class Sequential : public korali::Conduit
 {
- private:
+  private:
+  public:
+  /**
+ * @brief Gets back to Korali's engine from the model without finalizing the sample.
+ * The purpose is to update its state with new information without finalizing the function's environment.
+ * @param sample Sample to update.
+ */
+  void update(korali::Sample &sample) override;
 
- public:
+  /**
+  * @brief Initializes the conduit's configuration, only once per process.
+  */
+  void initialize() override;
 
- void update(korali::Sample& sample) override;
- void initialize() override;
- void initServer() override;
- size_t maxConcurrency() override;
- void processSample(korali::Sample& sample) override;
- void stackEngine(korali::Engine* engine) override;
- void popEngine() override;
-
+  /**
+  * @brief Starts/Resumes the processing of a new sample.
+  * @param sample Sample to start/resume.
+  */
+  void processSample(korali::Sample &sample) override;
+  void broadcastGlobals(knlohmann::json &globalsJs) override;
 };
 
-} } // namespace korali
+} // namespace conduit
+} // namespace korali
 
 #endif // _KORALI_CONDUIT_SIMPLE_HPP_

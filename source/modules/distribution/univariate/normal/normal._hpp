@@ -3,44 +3,47 @@
 
 #include "modules/distribution/univariate/univariate.hpp"
 
-namespace korali { namespace distribution { namespace univariate {
+namespace korali
+{
+namespace distribution
+{
+namespace univariate
+{
+class Normal : public korali::distribution::Univariate
+{
+  private:
+  double _normalization;
+  double _logNormalization;
 
-class Normal : public korali::distribution::Univariate {
-
- private:
-   double _normalization;
-   double _logNormalization;
-   
- public:
-
- /*
+  public:
+  /*
   * @brief Updates distribution with new parameter (here standard deviaiton).
   */
- void updateDistribution() override;
- 
- /**
+  void updateDistribution() override;
+
+  /**
  * @brief Gets the probability density of the distribution at point x.
  * @param x point to evaluate P(x)
  * @return Value of the probability density.
  */
- double getDensity(double x) override;
- 
- /**
+  double getDensity(double x) override;
+
+  /**
  * @brief Gets the Log probability density of the distribution at point x.
  * @param x point to evaluate log(P(x))
  * @return Log of probability density.
  */
- double getLogDensity(double x) override;
- 
- /**
+  double getLogDensity(double x) override;
+
+  /**
   * @brief Draws and returns a random number from the distribution.
   * @return Random real number.
   */
- double getRandomNumber() override;
-
-
+  double getRandomNumber() override;
 };
 
-} } } // namespace korali::distribution::univariate
+} // namespace univariate
+} // namespace distribution
+} // namespace korali
 
 #endif // _KORALI_DISTRIBUTION_UNIVARIATE_NORMAL_HPP_

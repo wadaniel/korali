@@ -3,12 +3,13 @@
 
 #include "modules/solver/solver.hpp"
 
-namespace korali { namespace solver {
-
+namespace korali
+{
+namespace solver
+{
 class Executor : public korali::Solver
 {
   private:
-
   public:
   /**
   * @brief Generate a sample and evaluate it.
@@ -19,14 +20,14 @@ class Executor : public korali::Solver
   * @brief Console Output before generation runs.
   */
   void printGenerationBefore() override;
- 
+
   /**
   * @brief Console output after generation.
   */
   void printGenerationAfter() override;
-
 };
 
-} } // namespace korali::solver
+} // namespace solver
+} // namespace korali
 
 #endif // _KORALI_SOLVER_EXECUTION_HPP_

@@ -28,7 +28,7 @@ def validateOutput(output):
         sys.exit(-1)
 
 
-def main(path, mean, check, test, output):
+def main(path, check, test, output, args):
 
  if (check == True):
   print("[Korali] Plotter correctly installed.")
@@ -82,7 +82,7 @@ def main(path, mean, check, test, output):
  if os.path.isfile(solverFile):
   sys.path.append(solverDir)
   solverLib = importlib.import_module(solverName, package=None)
-  fig, ax = solverLib.plot(genList)
+  solverLib.plot(genList, args)
 
  if not output:
   plt.show()
@@ -113,10 +113,10 @@ def main(path, mean, check, test, output):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='korali.plotter', description='Plot the results of a Korali execution.')
     parser.add_argument('--dir', help='directory of result files', default='_korali_result', required = False)
-    parser.add_argument('--mean', help='plot mean of objective variables', action='store_true', required = False)
     parser.add_argument('--check', help='verifies that korali.plotter is available', action='store_true', required = False)
     parser.add_argument('--test', help='run without graphics (for testing purpose)', action='store_true', required = False)
     parser.add_argument('--output', help='save figure to file', type=str, default="")
+    parser.add_argument('--all', help='plot all generations', action='store_true', required = False)
     args = parser.parse_args()
 
-    main(args.dir, args.mean, args.check, args.test, args.output)
+    main(args.dir, args.check, args.test, args.output, args)

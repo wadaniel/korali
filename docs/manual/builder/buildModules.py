@@ -97,7 +97,7 @@ def processModule(parentModuleConfig, moduleRelPath, moduleName):
 
  print('Processing file: ' + moduleConfigFile)
 
- moduleReadmeString = '.. _module-' + moduleRelPath.lower().replace('/','-') + ':\n\n'
+ moduleReadmeString = '.. _module-' + moduleRelPath.lower().replace('/','-').replace(' ','_') + ':\n\n'
   
  # Loading configuration and readme files 
  with open(moduleConfigFile, 'r') as file: moduleConfigString  = file.read()
@@ -165,7 +165,7 @@ def processModule(parentModuleConfig, moduleRelPath, moduleName):
    moduleReadmeString += '----------------------------------\n\n'
    moduleReadmeString += 'This problem can be solved using the following modules: \n\n'
    for v in moduleConfig["Compatible Solvers"]:
-    moduleReadmeString += '   - :ref:`' + v + ' <module-solver-' + v.lower().replace('/','-') + '>`\n'
+    moduleReadmeString += '   - :ref:`' + v + ' <module-solver-' + v.lower().replace('/','-').replace(' ','_') + '>`\n'
 
   if ('Results' in moduleConfig):
    moduleReadmeString += '\n.. _module-' + moduleRelPath.lower().replace('/','-') + '-results:\n\n'

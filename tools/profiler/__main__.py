@@ -19,6 +19,7 @@ parser.add_argument('--input', help='Json files with profiling information to re
 parser.add_argument('--test', help='Run without graphics (for testing purpose)', action='store_true', required = False)
 parser.add_argument('--tend', help='Indicates the maximum time to report in the timeline', required = False, default = 'undefined')
 parser.add_argument('--output', help='Indicates the output file path. If not specified, it prints to screen.', required = False)
+parser.add_argument('--timeFormat', help='Indicates the format to use for the timeline.', required = False, choices=['Seconds', 'Minutes', 'Hours', 'Days'], default = 'seconds')
 
 args = parser.parse_args()
 
@@ -32,6 +33,7 @@ from matplotlib import pyplot
 
 #### Reading profiling files
 
+experimentCount = 0
 elapsedTime = 0
 fullJs = { 'Timelines': {} }
 
@@ -43,7 +45,10 @@ for file in args.input:
  with open(file) as f:
   jsString = f.read()
   js  = json.loads(jsString)
-
+  
+  currExperimentCount = js["Experiment Count"]
+  if (currExperimentCount > experimentCount): experimentCount = currExperimentCount
+  
  fullJs["Timelines"].update(js["Timelines"])
  if (float(js["Elapsed Time"]) > elapsedTime): elapsedTime = float(js["Elapsed Time"])  
 timelines = []
@@ -56,11 +61,12 @@ for x in fullJs["Timelines"]:
  timelines.append(fullJs["Timelines"][x])
  labels.append(x)
 
+
 #### Preprocessing information
 
 startLists = []
 durationLists = []
-solverIdLists = []
+experimentIdLists = []
 for list in timelines:
  currentStartList = []
  currentDurationList = []
@@ -71,11 +77,11 @@ for list in timelines:
   currentSolverIdList.append(segment["Solver Id"])
  startLists.append(currentStartList)
  durationLists.append(currentDurationList)
- solverIdLists.append(currentSolverIdList)
+ experimentIdLists.append(currentSolverIdList)
 
 #### Setting Plot Format
 
-height = (5 * len(durationLists) / 512)  
+height = 8  
 fig, ax = pyplot.subplots(1, 1, sharex=True, figsize=(25, height))
 
 # Setting Y-axis limits 
@@ -94,7 +100,13 @@ ax.set_xticks(xticks)
 ax.set_yticks([])
 
 xticklabels = []
-for tick in xticks: xticklabels.append("{:.1f}".format(tick/3600))
+
+timescale = 1
+if (args.timeFormat == 'Minutes'): timescale = 60
+if (args.timeFormat == 'Hours'): timescale = 3600
+if (args.timeFormat == 'Days'): timescale = 86400
+
+for tick in xticks: xticklabels.append("{:.1f}".format(tick/timescale))
 ax.set_xticklabels(xticklabels)
 
 # Setting graph attribute 
@@ -102,12 +114,12 @@ ax.grid(False)
 
 # Creating Color list
 cMap = pyplot.get_cmap('plasma')
-cNorm  = colors.Normalize(vmin=0, vmax=16)
+cNorm  = colors.Normalize(vmin=0, vmax=experimentCount*3)
 scalarMap = cm.ScalarMappable(norm=cNorm, cmap=cMap)
-colorMap = [ scalarMap.to_rgba(i) for i in range(16) ]
+colorMap = [ scalarMap.to_rgba(i) for i in range(experimentCount*3) ]
 
 for i in range(len(startLists)):
- colorList = [ colorMap[solverIdLists[i][j]*3] for j in range(0, len(solverIdLists[i])) ]
+ colorList = [ colorMap[experimentIdLists[i][j]*3] for j in range(0, experimentCount) ]
  segList = [ (startLists[i][j], durationLists[i][j]) for j in range(0, len(startLists[i])) ]
  ax.broken_barh(segList, (yticks[i] - 5, 9), facecolors = tuple(colorList) )
  
@@ -123,8 +135,8 @@ for tick in yticks: ytickLabels.append(str(int(tick/10)))
 ax.set_yticklabels(ytickLabels)
 
 ax.set_ylabel('Worker History', fontsize=18)  
-ax.set_xlabel('Time (Hours)', fontsize=18)  
-
+ax.set_xlabel('Time (' + args.timeFormat + ')', fontsize=18)  
+ 
 if (args.output is None):
  pyplot.show()
 else: 

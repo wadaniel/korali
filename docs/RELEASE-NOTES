@@ -1,3 +1,26 @@
+May 3, 2020 - Korali 1.0.4
+
+New Features / Enhancements
+
++ New problem and solver modules.
++ Added the ability to run Korali-in-Korali experiments
+
+Breaking Changes
+
++ The syntax to continue running the execution of experiments (either partially ran or loaded from a file) has changed to:
+
+  e.resume(),
+
+  and the behavior of e.run() has been changed to always start from the first generation. This change facilitates the re-run of experiments.
+
++ None
+
+Bug Fixes
+
++ Fxied bug where, if not saving results to a file, they will not be accessible at runtime either.
+
+---------------------------------------------------------------------
+
 April 2, 2020 - Korali 1.0.3
 
 New Features / Enhancements

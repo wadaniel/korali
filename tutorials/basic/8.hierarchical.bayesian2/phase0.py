@@ -25,6 +25,7 @@ e["Variables"][3]["Precomputed Values"] = (5*np.ones(N)).tolist()
 e["Solver"]["Type"] = "Executor"
 e["File Output"]["Path"] = "setup/results_phase_0/"
 e["Console Output"]["Verbosity"] = "Detailed"
+e["Random Seed"] = 0xC0FFEE
 
 # Starting Korali's Engine and running experiment
 k = korali.Engine()

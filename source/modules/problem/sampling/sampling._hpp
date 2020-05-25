@@ -3,20 +3,24 @@
 
 #include "modules/problem/problem.hpp"
 
-namespace korali { namespace problem {
-
+namespace korali
+{
+namespace problem
+{
 class Sampling : public korali::Problem
 {
- private:
+  private:
+  public:
+  void initialize() override;
 
- public:
-
- void initialize() override;
- virtual void evaluate(korali::Sample&);
-
+  /**
+   * @brief Evaluates the probability density (P(x)) of the function at the given parameters.
+   * @param sample Sample to evaluate
+   */
+  virtual void evaluate(korali::Sample &sample);
 };
 
-} } // namespace korali::problem
-
+} // namespace problem
+} // namespace korali
 
 #endif // _KORALI_PROBLEM_SAMPLING_HPP_

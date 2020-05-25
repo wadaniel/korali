@@ -1,0 +1,38 @@
+#ifndef _KORALI_SOLVER_DYNAMIC_PROGRAMMING_HPP_
+#define _KORALI_SOLVER_DYNAMIC_PROGRAMMING_HPP_
+
+#include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
+#include "modules/solver/solver.hpp"
+
+namespace korali
+{
+namespace solver
+{
+class DynamicProgramming : public korali::Solver
+{
+  public:
+  /**
+   * @brief Storage for the pointer to the learning problem
+   */
+  korali::problem::ReinforcementLearning *_problem;
+
+  /**
+   * @brief Performs Training Operations
+   */
+  void doTraining();
+
+  /**
+   * @brief Runs the optimal policy for as many stages as specified
+  */
+  void doRunning();
+
+  void initialize() override;
+  void runGeneration() override;
+  void printGenerationBefore() override;
+  void printGenerationAfter() override;
+};
+
+} // namespace solver
+} // namespace korali
+
+#endif // _KORALI_SOLVER_DYNAMIC_PROGRAMMING_HPP_

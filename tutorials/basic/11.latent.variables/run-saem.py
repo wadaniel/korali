@@ -41,8 +41,8 @@ def main():
     e["Problem"]["Latent Variable Sampler"] = lambda sample: gaussian_sampler_obj.sampleLatent(sample)
 
     e["Solver"]["Type"] = "SAEM"
-    e["Solver"]["Number Samples Per Step"] = 100
-    e["Solver"]["Termination Criteria"]["Max Generations"] = 30 
+    e["Solver"]["Number Samples Per Step"] = 10
+    e["Solver"]["Termination Criteria"]["Max Generations"] = 40
 
     e["Variables"][0]["Name"] = "sigma"
     e["Variables"][0]["Bayesian Type"] = "Hyperparameter"
@@ -68,10 +68,12 @@ def main():
     e["Distributions"][1]["Minimum"] = -5
     e["Distributions"][1]["Maximum"] = 5
 
-    k["Conduit"]["Type"] = "Concurrent"
-    k["Conduit"]["Concurrent Jobs"] = 4
+    e["Random Seed"] = 0xC0FFEE
 
+    #k["Conduit"]["Type"] = "Concurrent"
+    #k["Conduit"]["Concurrent Jobs"] = 4
     #k["Conduit"]["Type"] = "Distributed"
+
     k.run(e)
 
 if __name__ == '__main__':

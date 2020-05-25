@@ -14,11 +14,19 @@
 
 namespace korali
 {
+ /**
+  * @brief A Korali Engine initializes the conduit and experiments, and guides their execution.
+ */
  class Engine : public korali::Module
  {
   public:
 
   Engine();
+
+  /**
+   * @brief Verbosity level of the Engine ('Silent', 'Minimal' (default), 'Normal' or 'Detailed').
+  */
+  std::string _verbosityLevel;
 
   /**
    * @brief A pointer to the Engine's logger object.
@@ -74,9 +82,21 @@ namespace korali
 
   /**
    * @brief Stores a single experiment into the experiment list and runs it to completion.
-   * @param experiments The experiment to run.
+   * @param experiment The experiment to run.
    */
   void run(korali::Experiment& experiment);
+
+  /**
+   * @brief Resumes a set experiments from the point they have previously finished.
+   * @param experiments Set of experiments.
+   */
+  void resume(std::vector<korali::Experiment>& experiments);
+
+  /**
+   * @brief Resumes a single experiment from the point it has previously finished.
+   * @param experiment The experiment to run.
+   */
+  void resume(korali::Experiment& experiment);
 
   /**
    * @brief Runs the stored list of experiments.
@@ -154,6 +174,7 @@ namespace korali
 
   /**
    * @brief Returns the worker teams MPI communication pointer (Distributed Conduit only).
+   * @return Numerical pointer to the MPI communicator
    */
   static long int getMPICommPointer();
 

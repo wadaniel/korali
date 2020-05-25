@@ -6,22 +6,50 @@ import numpy as np
 
 
 def model( s, x ): 
-  v1 = s["Parameters"][0]
-  v2 = s["Parameters"][1]
+  a   = s["Parameters"][0]
+  b   = s["Parameters"][1]
+  sig = s["Parameters"][2]
   
-  result = [ ]
+  fval = [ ]
+  sdev = [ ]
   for i in range(len(x)):
-    result.append(v1*x[i] + v2)
+    fval.append(a*x[i] + b)
+    sdev.append(sig)
 
-  s["Reference Evaluations"] = result
+  s["Reference Evaluations"] = fval
+  s["Standard Deviation"]    = sdev
+
+def modelWithDerivatives( s, x ): 
+  a   = s["Parameters"][0]
+  b   = s["Parameters"][1]
+  sig = s["Parameters"][2]
+  
+  fval = [ ]
+  sdev = [ ]
+  
+  fvalgrad = [ ]
+  sdevgrad = [ ]
+  for i in range(len(x)):
+    fval.append(a*x[i] + b)
+    sdev.append(sig)
+    
+    fvalgrad.append([x[i], 1.0, 0.0])
+    sdevgrad.append([0.0, 0.0, 1.0])
+
+  s["Reference Evaluations"] = fval
+  s["Standard Deviation"]    = sdev
+
+  s["Gradient Mean"]               = fvalgrad
+  s["Gradient Standard Deviation"] = sdevgrad
+
 
 def getReferenceData():
  y=[]
- y.append(3.2069);
- y.append(4.1454);
- y.append(4.9393);
- y.append(6.0588);
- y.append(6.8425);
+ y.append(3.21);
+ y.append(4.14);
+ y.append(4.94);
+ y.append(6.06);
+ y.append(6.84);
  return y
 
 def getReferencePoints():

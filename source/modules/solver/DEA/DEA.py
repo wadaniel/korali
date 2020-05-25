@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from korali.plotter.helpers import hlsColors, drawMulticoloredLine
 
 # Plot DEA results (read from .json files)
-def plot(genList):
+def plot(genList, args):
     firstKey = next(iter(genList))
     fig, ax = plt.subplots(2,2,num='Korali Results', figsize=(8,8))
 
@@ -77,5 +77,3 @@ def plot(genList):
         ax[1,1].plot(genIds, means[i], color = colors[i], label=names[i])
     #if ( (idx == 2) or (updateLegend == False) ):
     ax[1,1].legend(bbox_to_anchor=(1.04,0.5), loc="center left", borderaxespad=0, handlelength=1)
-  
-    return fig, ax

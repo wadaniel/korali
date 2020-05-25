@@ -50,7 +50,7 @@ To do this, we simply define an initial set of termination criteria, and run the
     e["Solver"]["Termination Criteria"]["Max Generation"] = 100
     
     # Running again, starting from generation 4.
-    k.run(e)
+    k.resume(e)
 
 
 For a working example of this scenario, check this :ref:`tutorial <partialruns>`.
@@ -91,7 +91,10 @@ To do this, we simply define an initial set of termination criteria, and run the
 
    # If found, we continue execution 
    if (found == True):
-   k.run(e)
+     k.resume(e)
+   # Else, then we start from the beginning
+   else:
+     k.run(e)
 
 
 For a working example of this scenario, check this :ref:`tutorial <checkpointrestart>`.
@@ -133,6 +136,6 @@ In this case, we use the :code:`e.loadState()` function for all experiments.
    e1["Problem"]["Objective Function"] = myModel1
 
    # If found, we continue execution 
-   k.run([e0, e1])
+   k.resume([e0, e1])
 
 For a working example of this scenario, check this :ref:`tutorial <checkpointrestart>`.

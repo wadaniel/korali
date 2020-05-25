@@ -29,12 +29,14 @@ Korali's Documentation
    modules/problem/*
    modules/solver/*
    modules/conduit/*
-   modules/distribution/*      
+   modules/distribution/*
+   modules/layer/*         
    
 .. toctree::
    :maxdepth: 2
    :caption: Development
 
+   dev/collaborating
    dev/build
    dev/testing
    dev/moduledev

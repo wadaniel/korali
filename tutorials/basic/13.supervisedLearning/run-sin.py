@@ -35,9 +35,13 @@ e["Variables"][1]["Validation Data"] = validationOutputSet.tolist()
 
 e["Solver"]["Type"] = "Deep Learning"
 e["Solver"]["Termination Criteria"]["Max Inactive Steps"] = 50
-e["Solver"]["Neural Network"]["Optimizer"]["Type"] = "CMAES"
 
 ### Defining the shape of the neural network
+
+e["Solver"]["Neural Network"]["Optimizer"]["Type"] = "CMAES"
+e["Solver"]["Neural Network"]["Optimizer"]["Population Size"] = 300
+
+e["Solver"]["Neural Network"]["Batch Normalization"]["Enabled"] = True
 
 e["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Input"
 e["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 1

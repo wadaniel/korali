@@ -14,14 +14,35 @@ class Layer : public korali::Module
   public:
 #ifdef _KORALI_USE_ONEDNN
   /**
-   * @brief oneDNN Memory object descriptor to contain input data
+   * @brief oneDNN Memory object descriptor to contain the result value of the neurons of the layer
    */
   dnnl::memory _nodeMem;
+
+  /**
+   * @brief oneDNN Memory object descriptor to contain the weights of inner product with incoming channels
+   */
   dnnl::memory _weightMem;
+
+  /**
+   * @brief oneDNN Memory object descriptor to contain work memory of the inner product, required for backward propagation later
+   */
   dnnl::memory _innerProductWeightMem;
+
+  /**
+   * @brief oneDNN Arguments to the inner product operation
+   */
   std::unordered_map<int, dnnl::memory> _innerProductArgs;
+
+  /**
+   * @brief oneDNN Memory object descriptor to contain the bias to add to incoming channels
+   */
   dnnl::memory _biasMem;
+
+  /**
+   * @brief oneDNN primitive to run the inner product + bias addition operation
+   */
   dnnl::primitive _primitive;
+
 #endif
 };
 

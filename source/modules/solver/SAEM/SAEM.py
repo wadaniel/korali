@@ -61,8 +61,6 @@ def plotVariables(genList):
 
 
 
-def plot(genList):
+def plot(genList, args):
 
     fig, ax = plotVariables(genList)
-
-    return fig, ax

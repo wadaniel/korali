@@ -87,7 +87,7 @@ def plot_lower_triangle(ax, theta):
             if j > 0:
                 ax[i, j].set_yticklabels([])
                 
-def plot(genList):
+def plot(genList, args):
     numgens = len(genList)
 
     lastGen = 0
@@ -105,5 +105,3 @@ def plot(genList):
     plot_histogram(ax, samplesTmp)
     plot_upper_triangle(ax, samplesTmp, False)
     plot_lower_triangle(ax, samplesTmp)
-
-    return fig, ax

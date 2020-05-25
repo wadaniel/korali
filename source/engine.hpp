@@ -24,6 +24,11 @@ namespace korali
   Engine();
 
   /**
+   * @brief Verbosity level of the Engine ('Silent', 'Minimal' (default), 'Normal' or 'Detailed').
+  */
+  std::string _verbosityLevel;
+
+  /**
    * @brief A pointer to the Engine's logger object.
   */
   korali::Logger* _logger;

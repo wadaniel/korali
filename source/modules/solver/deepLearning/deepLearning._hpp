@@ -24,6 +24,7 @@ class DeepLearning : public korali::Solver
 
   void initialize() override;
   void runGeneration() override;
+  void printGenerationAfter() override;
 };
 } // namespace solver
 } // namespace korali

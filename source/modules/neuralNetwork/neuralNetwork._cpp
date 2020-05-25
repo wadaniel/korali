@@ -37,7 +37,7 @@ void korali::NeuralNetwork::initialize()
      std::string varNameString(varName);
      _koraliExperiment["Variables"][currentVariable]["Name"] = varNameString;
      _koraliExperiment["Variables"][currentVariable]["Initial Mean"] = 0.0;
-     _koraliExperiment["Variables"][currentVariable]["Initial Standard Deviation"] = 2.0;
+     _koraliExperiment["Variables"][currentVariable]["Initial Standard Deviation"] = 1.0;
      currentVariable++;
     }
 
@@ -49,7 +49,7 @@ void korali::NeuralNetwork::initialize()
      std::string varNameString(varName);
      _koraliExperiment["Variables"][currentVariable]["Name"] = varNameString;
      _koraliExperiment["Variables"][currentVariable]["Initial Mean"] = 0.0;
-     _koraliExperiment["Variables"][currentVariable]["Initial Standard Deviation"] = 2.0;
+     _koraliExperiment["Variables"][currentVariable]["Initial Standard Deviation"] = 1.0;
      currentVariable++;
     }
   }
@@ -305,11 +305,17 @@ void korali::NeuralNetwork::train(size_t stepsToRun)
  _koraliExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _koraliExperiment._currentGeneration + stepsToRun;
  _koraliEngine.resume(_koraliExperiment);
 
- // Getting results of optimization
- _currentTrainingLoss = - _koraliExperiment["Results"]["Best Sample"]["F(x)"].get<double>();
+// // Getting results of optimization
+ //_validationParameters = _koraliExperiment["Solver"]["Current Mean"].get<std::vector<double>>();
+ _validationParameters = _koraliExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
 
- // Getting best weight/bias configuration
- _bestSample._js.getJson() = _koraliExperiment["Results"]["Best Sample"];
+ // Setting input validation data
+ korali::Sample newSample;
+ newSample["Parameters"] = _validationParameters;
+ korali::NeuralNetwork::runSample(newSample, this);
+
+ // Getting results of optimization
+ _currentTrainingLoss = - newSample["F(x)"].get<double>();
 }
 
 void korali::NeuralNetwork::runSample(korali::Sample& sample, korali::NeuralNetwork* nn)

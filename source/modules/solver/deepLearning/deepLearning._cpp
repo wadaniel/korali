@@ -51,7 +51,16 @@ void korali::solver::DeepLearning::initialize()
   }
  }
 
- _validationNeuralNetwork->_solution =  _trainingNeuralNetwork->_solution;
+ _validationNeuralNetwork->_solution.resize(_problem->_validationBatchSize);
+ for (size_t i = 0; i < _problem->_validationBatchSize; i++)
+ {
+  _validationNeuralNetwork->_solution[i].resize(_problem->_outputVectorSize);
+  for (size_t j = 0; j < _problem->_outputVectorSize; j++)
+  {
+    size_t varIdx = _problem->_outputVectorIndexes[j];
+    _validationNeuralNetwork->_solution[i][j] = _k->_variables[varIdx]->_validationData[i];
+  }
+ }
 
  // Creating Neural Networks internal structures
  _trainingNeuralNetwork->create();
@@ -71,10 +80,12 @@ void korali::solver::DeepLearning::runGeneration()
   *************************************************************/
 
  // Setting input validation data
- korali::NeuralNetwork::runSample(_trainingNeuralNetwork->_bestSample, _validationNeuralNetwork);
+ korali::Sample validationSample;
+ validationSample["Parameters"] = _trainingNeuralNetwork->_validationParameters;
+ korali::NeuralNetwork::runSample(validationSample, _validationNeuralNetwork);
 
  // Getting results of optimization
- _currentValidationLoss = - _trainingNeuralNetwork->_bestSample["F(x)"].get<double>();
+ _currentValidationLoss = - validationSample["F(x)"].get<double>();
 
  // If validation is better, saving it as the best network for use as for test batch later.
  _currentInactiveSteps++;
@@ -93,11 +104,6 @@ void korali::solver::DeepLearning::runGeneration()
   _testNeuralNetwork->setConfiguration(js);
  }
 
- // Printing results so far
- _k->_logger->logInfo("Normal", "Training Loss: %.15f\n", _trainingNeuralNetwork->_currentTrainingLoss);
- _k->_logger->logInfo("Normal", "Current Validation Loss: %.15f\n", _currentValidationLoss);
- _k->_logger->logInfo("Normal", "Lowest Validation Loss: %.15f\n", _lowestValidationLoss);
- _k->_logger->logInfo("Normal", "Inactive Step Counter: %lu\n", _currentInactiveSteps);
 }
 
 std::vector<std::vector<double>> korali::solver::DeepLearning::test(const std::vector<std::vector<double>>& inputBatch)
@@ -128,3 +134,12 @@ std::vector<std::vector<double>> korali::solver::DeepLearning::test(const std::v
  return _testNeuralNetwork->_layers[outputLayerId]->_nodeValues;
 }
 
+
+void korali::solver::DeepLearning::printGenerationAfter()
+{
+ // Printing results so far
+ _k->_logger->logInfo("Normal", "Training Loss: %.15f\n", _trainingNeuralNetwork->_currentTrainingLoss);
+ _k->_logger->logInfo("Normal", "Current Validation Loss: %.15f\n", _currentValidationLoss);
+ _k->_logger->logInfo("Normal", "Lowest Validation Loss: %.15f\n", _lowestValidationLoss);
+ _k->_logger->logInfo("Normal", "Inactive Step Counter: %lu\n", _currentInactiveSteps);
+}

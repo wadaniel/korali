@@ -121,7 +121,11 @@ void korali::Engine::run()
     _cumulativeTime += std::chrono::duration<double>(_endTime - _startTime).count();
 
     // Finalizing experiments
-    for (size_t i = 0; i < _experimentVector.size(); i++) _experimentVector[i]->finalize();
+    for (size_t i = 0; i < _experimentVector.size(); i++)
+    {
+      _experimentVector[i]->finalize();
+      if (_experimentVector.size() > 1) fclose(_experimentVector[i]->_logFile);
+    }
 
     // (Engine-Side) Removing the current engine to the conduit's engine stack
     _engineStack.pop();

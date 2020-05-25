@@ -56,6 +56,7 @@ class NeuralNetwork : public korali::Module
 
   /**
    * @brief Performs the training phase of the NN, given a solution and the NN's configuration.
+   * @param stepsToRun The number of generations of the optimizer to run.
    */
   void train(size_t stepsToRun = 1);
 

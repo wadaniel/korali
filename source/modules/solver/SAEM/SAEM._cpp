@@ -263,7 +263,7 @@ void korali::solver::SAEM::updateHyperparameters()
   _experiment["Random Seed"] = _k->_randomSeed++;
   _engine.run(_experiment);
 
-  _currentHyperparameters = _experiment["Results"]["Best Sample"]["Hyperparameters"].get<std::vector<double>>();
+  _currentHyperparameters = _experiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
   double llh = _experiment["Results"]["Best Sample"]["F(x)"].get<double>();
   _currentLogLikelihood = llh;
 

@@ -37,6 +37,7 @@ class Module
   /**
   * @brief Instantiates the requested module class given its type and returns its pointer.
   * @param js JSON file containing the module's configuration and type.
+  * @param e Korali Experiment to serve as parent to the module.
   * @return Pointer with the newly created module.
   */
   static Module *getModule(knlohmann::json &js, korali::Experiment *e);
@@ -94,6 +95,11 @@ class Module
   */
   virtual bool runOperation(std::string operation, korali::Sample &sample) { return false; };
 
+  /**
+  * @brief Duplicates the contents of a module and re-initializes the copy.
+  * @param src The module to duplicate.
+  * @return A pointer to the duplicated module.
+  */
   static Module *duplicate(Module *src);
 };
 

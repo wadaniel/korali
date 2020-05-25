@@ -90,7 +90,7 @@ void korali::Engine::run()
   _startTime = std::chrono::high_resolution_clock::now();
   _profilingLastSave = std::chrono::high_resolution_clock::now();
 
-  if (_experimentVector.size() > 1) for (size_t i = 0; i < _experimentVector.size(); i++) _logger->logInfo(_experimentVector[0]->_consoleOutputVerbosity, "Starting Experiment %lu...\n", i);
+  if (_experimentVector.size() > 1) for (size_t i = 0; i < _experimentVector.size(); i++) if(_experimentVector[i]->_consoleOutputVerbosity != "Silent") _logger->logInfo("Minimal", "Starting Experiment %lu...\n", i);
 
   while(true)
   {
@@ -102,15 +102,15 @@ void korali::Engine::run()
     co_switch(_experimentVector[i]->_thread);
     executed = true;
     saveProfilingInfo(false);
-    if (_experimentVector.size() > 1) if (_experimentVector[i]->_isFinished == true) _logger->logInfo(_experimentVector[0]->_consoleOutputVerbosity, "Experiment %lu has finished.\n", i);
+    if (_experimentVector.size() > 1) if (_experimentVector[i]->_isFinished == true && _experimentVector[i]->_consoleOutputVerbosity != "Silent") _logger->logInfo("Minimal", "Experiment %lu has finished.\n", i);
    }
    if (executed == false) break;
   }
 
   _endTime = std::chrono::high_resolution_clock::now();
 
-  if (_experimentVector.size() > 1) _logger->logInfo(_experimentVector[0]->_consoleOutputVerbosity, "All jobs have finished correctly.\n");
-  if (_experimentVector.size() > 1) _logger->logInfo(_experimentVector[0]->_consoleOutputVerbosity, "Elapsed Time: %.3fs\n", std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count());
+  if (_experimentVector.size() > 1) _logger->logInfo("Minimal", "All jobs have finished correctly.\n");
+  if (_experimentVector.size() > 1) _logger->logInfo("Minimal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(std::chrono::high_resolution_clock::now()-_startTime).count());
 
   saveProfilingInfo(true);
   _cumulativeTime += std::chrono::duration<double>(_endTime-_startTime).count();

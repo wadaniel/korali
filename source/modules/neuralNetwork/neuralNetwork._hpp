@@ -2,8 +2,8 @@
 #define _KORALI_NEURAL_NETWORK_HPP_
 
 #include "engine.hpp"
-#include "modules/experiment/experiment.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
+#include "modules/experiment/experiment.hpp"
 #include "modules/layer/layer.hpp"
 #include "modules/module.hpp"
 #include "modules/solver/solver.hpp"
@@ -40,7 +40,7 @@ class NeuralNetwork : public korali::Module
   * @param sample The sample containing proposal configuration
   * @param nn Pointer to the neural network
   */
-   static void runSample(korali::Sample &sample, korali::NeuralNetwork *nn);
+  static void runSample(korali::Sample &sample, korali::NeuralNetwork *nn);
 
   /**
  * @brief Korali engine for optimizing the NN's weights and biases

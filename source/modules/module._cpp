@@ -7,7 +7,7 @@ double korali::_cumulativeTime;
 
 // Module Include List
 
-korali::Module *korali::Module::getModule(knlohmann::json &js, korali::Experiment* e)
+korali::Module *korali::Module::getModule(knlohmann::json &js, korali::Experiment *e)
 {
   std::string moduleType = "Undefined";
 
@@ -33,9 +33,9 @@ korali::Module *korali::Module::getModule(knlohmann::json &js, korali::Experimen
   return module;
 }
 
-korali::Module* korali::Module::duplicate(korali::Module* src)
+korali::Module *korali::Module::duplicate(korali::Module *src)
 {
- knlohmann::json js;
- src->getConfiguration(js);
- return korali::Module::getModule(js, src->_k);
+  knlohmann::json js;
+  src->getConfiguration(js);
+  return korali::Module::getModule(js, src->_k);
 }

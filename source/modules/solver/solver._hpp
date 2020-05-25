@@ -35,7 +35,7 @@ class Solver : public korali::Module
  */
   virtual void setInitialConfiguration(){};
 
-  virtual std::vector<std::vector<double>> test(const std::vector<std::vector<double>>& inputBatch);
+  virtual std::vector<std::vector<double>> test(const std::vector<std::vector<double>> &inputBatch);
 
   /**
   * @brief Stores termination criteria for the module.

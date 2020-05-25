@@ -18,9 +18,7 @@ void korali::NeuralNetwork::initialize()
   _isInitialized = false;
 
   // Creating evaluation lambda function for optimization
-  auto evaluateProposal = [nn = this]
-                          (korali::Sample& sample)
-                          { runSample(sample, nn); };
+  auto evaluateProposal = [nn = this](korali::Sample &sample) { runSample(sample, nn); };
 
   _koraliExperiment["Problem"]["Type"] = "Optimization/Stochastic";
   _koraliExperiment["Problem"]["Objective Function"] = evaluateProposal;
@@ -30,27 +28,27 @@ void korali::NeuralNetwork::initialize()
   {
     // Adding layer's weights
     for (size_t j = 0; j < _layers[i]->_nodeCount; j++)
-    for (size_t k = 0; k < _layers[i-1]->_nodeCount; k++)
-    {
-     char varName[512];
-     sprintf(varName, "Weight [%u] %u->%u", i, j, k);
-     std::string varNameString(varName);
-     _koraliExperiment["Variables"][currentVariable]["Name"] = varNameString;
-     _koraliExperiment["Variables"][currentVariable]["Initial Mean"] = 0.0;
-     _koraliExperiment["Variables"][currentVariable]["Initial Standard Deviation"] = 1.0;
-     currentVariable++;
-    }
+      for (size_t k = 0; k < _layers[i - 1]->_nodeCount; k++)
+      {
+        char varName[512];
+        sprintf(varName, "Weight [%u] %u->%u", i, j, k);
+        std::string varNameString(varName);
+        _koraliExperiment["Variables"][currentVariable]["Name"] = varNameString;
+        _koraliExperiment["Variables"][currentVariable]["Initial Mean"] = 0.0;
+        _koraliExperiment["Variables"][currentVariable]["Initial Standard Deviation"] = 1.0;
+        currentVariable++;
+      }
 
     // Adding layer's biases
     for (size_t j = 0; j < _layers[i]->_nodeCount; j++)
     {
-     char varName[512];
-     sprintf(varName, "Bias [%u] %u", i, j);
-     std::string varNameString(varName);
-     _koraliExperiment["Variables"][currentVariable]["Name"] = varNameString;
-     _koraliExperiment["Variables"][currentVariable]["Initial Mean"] = 0.0;
-     _koraliExperiment["Variables"][currentVariable]["Initial Standard Deviation"] = 1.0;
-     currentVariable++;
+      char varName[512];
+      sprintf(varName, "Bias [%u] %u", i, j);
+      std::string varNameString(varName);
+      _koraliExperiment["Variables"][currentVariable]["Name"] = varNameString;
+      _koraliExperiment["Variables"][currentVariable]["Initial Mean"] = 0.0;
+      _koraliExperiment["Variables"][currentVariable]["Initial Standard Deviation"] = 1.0;
+      currentVariable++;
     }
   }
 
@@ -68,7 +66,6 @@ void korali::NeuralNetwork::initialize()
 
 void korali::NeuralNetwork::create()
 {
-
 #ifdef _KORALI_USE_ONEDNN
 
   // Initialize solver's configuration here
@@ -193,7 +190,7 @@ void korali::NeuralNetwork::create()
     for (size_t i = 0; i < batchSize; i++) _layers[currentLayer]->_nodeValues[i].resize(nodeCount);
   }
 
- #endif
+#endif
 
   // Setting initialized flag to true
   _isInitialized = true;
@@ -202,9 +199,9 @@ void korali::NeuralNetwork::create()
 void korali::NeuralNetwork::update()
 {
   if (_isInitialized == false)
-   _k->_logger->logError("The neural network has not been initialized before the update.\n");
+    _k->_logger->logError("The neural network has not been initialized before the update.\n");
 
-  #ifdef _KORALI_USE_ONEDNN
+#ifdef _KORALI_USE_ONEDNN
 
   // Initialize solver's configuration here
   size_t layerCount = _layers.size();
@@ -234,7 +231,7 @@ void korali::NeuralNetwork::update()
         weightsData[j * IC + k] = _layers[i]->_weights[j][k];
 
     for (size_t j = 0; j < OC; j++)
-     biasData[j] = _layers[i]->_bias[j];
+      biasData[j] = _layers[i]->_bias[j];
 
     // Setting weight and bias data to oneDNN format
     write_to_dnnl_memory(weightsData.data(), _layers[i]->_weightMem);
@@ -302,70 +299,68 @@ void korali::NeuralNetwork::forward()
 
 void korali::NeuralNetwork::train(size_t stepsToRun)
 {
- _koraliExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _koraliExperiment._currentGeneration + stepsToRun;
- _koraliEngine.resume(_koraliExperiment);
+  _koraliExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _koraliExperiment._currentGeneration + stepsToRun;
+  _koraliEngine.resume(_koraliExperiment);
 
-// // Getting results of optimization
- //_validationParameters = _koraliExperiment["Solver"]["Current Mean"].get<std::vector<double>>();
- _validationParameters = _koraliExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
+  // // Getting results of optimization
+  //_validationParameters = _koraliExperiment["Solver"]["Current Mean"].get<std::vector<double>>();
+  _validationParameters = _koraliExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
 
- // Setting input validation data
- korali::Sample newSample;
- newSample["Parameters"] = _validationParameters;
- korali::NeuralNetwork::runSample(newSample, this);
+  // Setting input validation data
+  korali::Sample newSample;
+  newSample["Parameters"] = _validationParameters;
+  korali::NeuralNetwork::runSample(newSample, this);
 
- // Getting results of optimization
- _currentTrainingLoss = - newSample["F(x)"].get<double>();
+  // Getting results of optimization
+  _currentTrainingLoss = -newSample["F(x)"].get<double>();
 }
 
-void korali::NeuralNetwork::runSample(korali::Sample& sample, korali::NeuralNetwork* nn)
+void korali::NeuralNetwork::runSample(korali::Sample &sample, korali::NeuralNetwork *nn)
 {
- // Setting weights and biases
- size_t currentVariable = 0;
- for (size_t i = 1; i < nn->_layers.size(); i++)
- {
-   nn->_layers[i]->_weights.resize(nn->_layers[i]->_nodeCount);
-   nn->_layers[i]->_bias.resize(nn->_layers[i]->_nodeCount);
-
-   // Adding layer's weights
-   for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++)
-   {
-    nn->_layers[i]->_weights[j].resize(nn->_layers[i-1]->_nodeCount);
-
-    for (size_t k = 0; k < nn->_layers[i-1]->_nodeCount; k++)
-     nn->_layers[i]->_weights[j][k] = sample["Parameters"][currentVariable++];
-   }
-
-   // Adding layer's biases
-   for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++)
-    nn->_layers[i]->_bias[j] = sample["Parameters"][currentVariable++];
- }
-
- // Updating the network's weights and biases
- nn->update();
-
- // Running the input values through the neural network
- nn->forward();
-
- // Printing Layer values
- size_t outputLayerId = nn->_layers.size()-1;
- size_t batchSize = nn->_layers[outputLayerId]->_nodeValues.size();
- size_t outputSize = nn->_layers[outputLayerId]->_nodeValues[0].size();
-
- // Calculating mean square error
- double meanSquaredError = 0.0;
-
- for (size_t i = 0; i < batchSize; i++)
-  for (size_t j = 0; j < outputSize; j++)
+  // Setting weights and biases
+  size_t currentVariable = 0;
+  for (size_t i = 1; i < nn->_layers.size(); i++)
   {
-   double diff = nn->_layers[outputLayerId]->_nodeValues[i][j] - nn->_solution[i][j];
-   meanSquaredError += diff*diff;
+    nn->_layers[i]->_weights.resize(nn->_layers[i]->_nodeCount);
+    nn->_layers[i]->_bias.resize(nn->_layers[i]->_nodeCount);
+
+    // Adding layer's weights
+    for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++)
+    {
+      nn->_layers[i]->_weights[j].resize(nn->_layers[i - 1]->_nodeCount);
+
+      for (size_t k = 0; k < nn->_layers[i - 1]->_nodeCount; k++)
+        nn->_layers[i]->_weights[j][k] = sample["Parameters"][currentVariable++];
+    }
+
+    // Adding layer's biases
+    for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++)
+      nn->_layers[i]->_bias[j] = sample["Parameters"][currentVariable++];
   }
 
- meanSquaredError = meanSquaredError / (double) batchSize;
+  // Updating the network's weights and biases
+  nn->update();
 
- // Saving the negative of the error because we want to minimize it
- sample["F(x)"] = -meanSquaredError;
+  // Running the input values through the neural network
+  nn->forward();
+
+  // Printing Layer values
+  size_t outputLayerId = nn->_layers.size() - 1;
+  size_t batchSize = nn->_layers[outputLayerId]->_nodeValues.size();
+  size_t outputSize = nn->_layers[outputLayerId]->_nodeValues[0].size();
+
+  // Calculating mean square error
+  double meanSquaredError = 0.0;
+
+  for (size_t i = 0; i < batchSize; i++)
+    for (size_t j = 0; j < outputSize; j++)
+    {
+      double diff = nn->_layers[outputLayerId]->_nodeValues[i][j] - nn->_solution[i][j];
+      meanSquaredError += diff * diff;
+    }
+
+  meanSquaredError = meanSquaredError / (double)batchSize;
+
+  // Saving the negative of the error because we want to minimize it
+  sample["F(x)"] = -meanSquaredError;
 }
-
-

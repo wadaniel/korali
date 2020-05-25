@@ -114,7 +114,7 @@ class Experiment : public korali::Module
  */
   knlohmann::json &operator[](const unsigned long int &key);
 
-  std::vector<std::vector<double>> test(const std::vector<std::vector<double>>& inputBatch);
+  std::vector<std::vector<double>> test(const std::vector<std::vector<double>> &inputBatch);
 };
 
 } // namespace korali

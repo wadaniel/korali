@@ -39,7 +39,6 @@ e["Solver"]["Termination Criteria"]["Max Inactive Steps"] = 50
 ### Defining the shape of the neural network
 
 e["Solver"]["Neural Network"]["Optimizer"]["Type"] = "CMAES"
-e["Solver"]["Neural Network"]["Optimizer"]["Population Size"] = 300
 
 e["Solver"]["Neural Network"]["Batch Normalization"]["Enabled"] = True
 

@@ -5,18 +5,14 @@
 # Description: Utility to adjust source code according to style conventions
 # Copyright 2020 ETH Zurich. All Rights Reserved.
 
-SRC_H='.*\._hpp'
-SRC_S='.*\._cpp'
-
 clangFormat=llvm/bin/clang-format
 if [ ! -f $clangFormat ]; then
  clangFormat=clang-format
 fi
 
+root="../../source"
 
-# format in-place
-find ../../source \
-    -regextype 'egrep' \
-    -regex "${SRC_H}" -or \
-    -regex "${SRC_S}" | \
+src_files=`find $root -type f -name "*pp" -not -path "$root/external/*"`
+
+echo $src_files | \
     xargs -n6 -P2 $clangFormat -style=file -i "$@"

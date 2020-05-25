@@ -5,33 +5,37 @@
 * @brief Include header for the Korali Engine
 */
 
-#include "modules/experiment/experiment.hpp"
-#include "modules/conduit/distributed/distributed.hpp"
-#include "modules/conduit/conduit.hpp"
 #include "auxiliar/py2json.hpp"
+#include "modules/conduit/conduit.hpp"
+#include "modules/conduit/distributed/distributed.hpp"
+#include "modules/experiment/experiment.hpp"
 #include <chrono>
 #include <vector>
 
 namespace korali
 {
- /**
+/**
   * @brief A Korali Engine initializes the conduit and experiments, and guides their execution.
  */
- class Engine : public korali::Module
- {
+class Engine : public korali::Module
+{
   public:
-
   Engine();
+
+  /**
+   * @brief Verbosity level of the Engine ('Silent', 'Minimal' (default), 'Normal' or 'Detailed').
+  */
+  std::string _verbosityLevel;
 
   /**
    * @brief A pointer to the Engine's logger object.
   */
-  korali::Logger* _logger;
+  korali::Logger *_logger;
 
   /**
     * @brief Stores the list of experiments to run.
     */
-  std::vector<korali::Experiment*> _experimentVector;
+  std::vector<korali::Experiment *> _experimentVector;
 
   /**
     * @brief Stores the main execution thread (coroutine).
@@ -73,31 +77,31 @@ namespace korali
    * @brief Stores a set experiments into the experiment list and runs them to completion.
    * @param experiments Set of experiments.
    */
-  void run(std::vector<korali::Experiment>& experiments);
+  void run(std::vector<korali::Experiment> &experiments);
 
   /**
    * @brief Stores a single experiment into the experiment list and runs it to completion.
    * @param experiment The experiment to run.
    */
-  void run(korali::Experiment& experiment);
+  void run(korali::Experiment &experiment);
 
   /**
    * @brief Resumes a set experiments from the point they have previously finished.
    * @param experiments Set of experiments.
    */
-  void resume(std::vector<korali::Experiment>& experiments);
+  void resume(std::vector<korali::Experiment> &experiments);
 
   /**
    * @brief Resumes a single experiment from the point it has previously finished.
    * @param experiment The experiment to run.
    */
-  void resume(korali::Experiment& experiment);
+  void resume(korali::Experiment &experiment);
 
   /**
    * @brief Initializes (does not run) a single experiment.
    * @param experiment The experiment to initialize.
    */
-  void initialize(korali::Experiment& experiment);
+  void initialize(korali::Experiment &experiment);
 
   /**
    * @brief Runs the stored list of experiments.
@@ -115,14 +119,14 @@ namespace korali
    * @param key A C++ string acting as JSON key.
    * @return The referenced JSON object content.
   */
-  knlohmann::json& operator[](const std::string& key);
+  knlohmann::json &operator[](const std::string &key);
 
   /**
    * @brief C++ wrapper for the getItem operator.
    * @param key A C++ integer acting as JSON key.
    * @return The referenced JSON object content.
   */
-  knlohmann::json& operator[](const unsigned long int& key);
+  knlohmann::json &operator[](const unsigned long int &key);
 
   /**
    * @brief Gets an item from the JSON object at the current pointer position.
@@ -141,7 +145,7 @@ namespace korali
   /**
    * @brief Stores the JSON based configuration for the engine.
   */
-  korali::KoraliJson  _js;
+  korali::KoraliJson _js;
 
   /**
    * @brief Determines whether this is a dry run (no conduit initialization nor execution)
@@ -151,22 +155,22 @@ namespace korali
   /**
     * @brief A pointer to the worker, on the worker side.
     */
-  Conduit* _currentWorker;
+  Conduit *_currentWorker;
 
   /**
   * @brief (Worker) Stores a pointer to the current Experiment being processed
   */
-  korali::Experiment* _currentExperiment;
+  korali::Experiment *_currentExperiment;
 
   /**
   * @brief Stores a pointer to the current sample being processed
   */
-  korali::Sample* _currentSample;
+  korali::Sample *_currentSample;
 
   /**
   * @brief (Engine) Stores a pointer to the current sample to process
   */
-  korali::Sample* _engineSample;
+  korali::Sample *_engineSample;
 
   /**
    * @brief Stores the state of a worker thread
@@ -183,21 +187,21 @@ namespace korali
    * @brief Serializes Engine's data into a JSON object.
    * @param js Json object onto which to store the Engine data.
    */
-  void serialize(knlohmann::json& js);
+  void serialize(knlohmann::json &js);
 
   /**
    * @brief Deserializes JSON object and returns a Korali Engine
    * @param js Json object onto which to store the Engine data.
    * @return The Korali Engine
    */
-  static Engine* deserialize(knlohmann::json& js);
- };
+  static Engine *deserialize(knlohmann::json &js);
+};
 
 /**
 * @brief Stack storing pointers to different Engine execution levels
 */
-extern std::stack<korali::Engine*> _engineStack;
+extern std::stack<korali::Engine *> _engineStack;
 
-}
+} // namespace korali
 
 #endif

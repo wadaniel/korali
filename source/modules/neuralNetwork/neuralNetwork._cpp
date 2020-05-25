@@ -101,7 +101,6 @@ void korali::NeuralNetwork::create()
     if (_layers[0]->_nodeValues[i].size() != inputSize)
       _k->_logger->logError("Input data set %lu has a different number of elements (%lu) than the input layer node count (%lu).\n", i, _layers[0]->_nodeValues[i].size(), inputSize);
 
-
   /****************************************************************************
   /*  Initializing memory objects for inner product and activation functions
   /****************************************************************************/
@@ -202,8 +201,8 @@ void korali::NeuralNetwork::create()
   /****************************************************************************
    /* Creating batch input normalization primitive
    /****************************************************************************/
-   if (_batchNormalizationEnabled == true)
-   {
+  if (_batchNormalizationEnabled == true)
+  {
     const memory::dim IC = _layers[0]->_nodeCount;
     const memory::dims scaleShiftDims = {2, IC};
 
@@ -212,37 +211,36 @@ void korali::NeuralNetwork::create()
     // Processing shift/scale part of batch normalization
     if (_batchNormalizationScale.size() > 0 || _batchNormalizationShift.size() > 0)
     {
-     if (_batchNormalizationScale.size() != inputSize)
-      _k->_logger->logError("Number of values (%lu) in the batch normalization scale vector is different from that of the node count of the first layer (%lu).\n", _batchNormalizationScale.size(), inputSize);
+      if (_batchNormalizationScale.size() != inputSize)
+        _k->_logger->logError("Number of values (%lu) in the batch normalization scale vector is different from that of the node count of the first layer (%lu).\n", _batchNormalizationScale.size(), inputSize);
 
-     if (_batchNormalizationShift.size() != inputSize)
+      if (_batchNormalizationShift.size() != inputSize)
         _k->_logger->logError("Number of values (%lu) in the batch normalization shift vector is different from that of the node count of the first layer (%lu).\n", _batchNormalizationShift.size(), inputSize);
 
+      auto normalizationScaleShiftMemDesc = memory::desc(scaleShiftDims, memory::data_type::f32, memory::format_tag::nc);
+      _normalizationScaleShiftMem = memory(normalizationScaleShiftMemDesc, _engine);
 
-     auto normalizationScaleShiftMemDesc = memory::desc(scaleShiftDims, memory::data_type::f32, memory::format_tag::nc);
-     _normalizationScaleShiftMem = memory(normalizationScaleShiftMemDesc, _engine);
+      // Storing scale/shift data
+      std::vector<float> scaleShiftData(product(scaleShiftDims));
+      for (size_t i = 0; i < inputSize; i++)
+      {
+        scaleShiftData[i + inputSize * 0] = _batchNormalizationScale[i];
+        scaleShiftData[i + inputSize * 1] = _batchNormalizationShift[i];
+      }
 
-     // Storing scale/shift data
-     std::vector<float> scaleShiftData(product(scaleShiftDims));
-     for (size_t i = 0; i < inputSize; i++)
-     {
-      scaleShiftData[i + inputSize*0] = _batchNormalizationScale[i];
-      scaleShiftData[i + inputSize*1] = _batchNormalizationShift[i];
-     }
-
-     normalizationFlags |= normalization_flags::use_scale_shift;
-     write_to_dnnl_memory(scaleShiftData.data(), _normalizationScaleShiftMem);
+      normalizationFlags |= normalization_flags::use_scale_shift;
+      write_to_dnnl_memory(scaleShiftData.data(), _normalizationScaleShiftMem);
     }
 
     // Create operation descriptor.
     auto normalizationDesc = dnnl::batch_normalization_forward::desc(
-          prop_kind::forward_training, _layers[0]->_nodeMem.get_desc(), _batchNormalizationEpsilon, normalizationFlags);
+      prop_kind::forward_training, _layers[0]->_nodeMem.get_desc(), _batchNormalizationEpsilon, normalizationFlags);
     auto normalizationPrimitiveDesc = dnnl::batch_normalization_forward::primitive_desc(normalizationDesc, _engine);
     _normalizationPrimitive = dnnl::batch_normalization_forward(normalizationPrimitiveDesc);
 
     // Create memory objects using memory descriptors created by the primitive descriptor: mean, variance, workspace.
-    _normalizationMeanMem      = memory(normalizationPrimitiveDesc.mean_desc(), _engine);
-    _normalizationVarianceMem  = memory(normalizationPrimitiveDesc.variance_desc(), _engine);
+    _normalizationMeanMem = memory(normalizationPrimitiveDesc.mean_desc(), _engine);
+    _normalizationVarianceMem = memory(normalizationPrimitiveDesc.variance_desc(), _engine);
     _normalizationWorkspaceMem = memory(normalizationPrimitiveDesc.workspace_desc(), _engine);
 
     _normalizationArgs.insert({DNNL_ARG_SRC, _layers[0]->_nodeMem});
@@ -251,7 +249,7 @@ void korali::NeuralNetwork::create()
     _normalizationArgs.insert({DNNL_ARG_SCALE_SHIFT, _normalizationScaleShiftMem});
     _normalizationArgs.insert({DNNL_ARG_WORKSPACE, _normalizationWorkspaceMem});
     _normalizationArgs.insert({DNNL_ARG_DST, _layers[0]->_nodeMem});
-   }
+  }
 
 #endif
 
@@ -331,7 +329,7 @@ void korali::NeuralNetwork::forward()
 
   // Normalizing input, given user configuration
   if (_batchNormalizationEnabled == true)
-   _normalizationPrimitive.execute(_stream, _normalizationArgs);
+    _normalizationPrimitive.execute(_stream, _normalizationArgs);
 
   // Running neural network
   for (size_t currentLayer = 1; currentLayer < layerCount; currentLayer++)

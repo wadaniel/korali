@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from korali.plotter.helpers import hlsColors, drawMulticoloredLine
 
 # Plot CMAES results (read from .json files)
-def plot(genList):
+def plot(genList, args):
     fig, ax  = plt.subplots(2,2,num='Korali Results', figsize=(8,8))
     firstKey = next(iter(genList))
     numdim   = len(genList[firstKey]['Variables'])
@@ -86,5 +86,3 @@ def plot(genList):
     ax[1,1].set_yscale('log')
     for i in range(numdim):
       ax[1,1].plot(genIds, ssdev[i], color = colors[i], label = names[i])
-        
-    return fig, ax

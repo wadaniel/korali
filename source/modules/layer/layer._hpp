@@ -19,6 +19,7 @@ class Layer : public korali::Module
   dnnl::memory _nodeMem;
   dnnl::memory _weightMem;
   dnnl::memory _innerProductWeightMem;
+  std::unordered_map<int, dnnl::memory> _innerProductArgs;
   dnnl::memory _biasMem;
   dnnl::primitive _primitive;
 #endif

@@ -245,6 +245,12 @@ void korali::NeuralNetwork::update()
     // primitive and the one provided by the user are different.
     if (_layers[i]->_innerProductWeightMem.get_desc() != _layers[i]->_weightMem.get_desc())
       reorder(_layers[i]->_weightMem, _layers[i]->_innerProductWeightMem).execute(_stream, _layers[i]->_weightMem, _layers[i]->_innerProductWeightMem);
+
+    // Configuring inner product arguments
+    _layers[i]->_innerProductArgs.insert({DNNL_ARG_SRC, _layers[i - 1]->_nodeMem});
+    _layers[i]->_innerProductArgs.insert({DNNL_ARG_WEIGHTS, _layers[i]->_innerProductWeightMem});
+    _layers[i]->_innerProductArgs.insert({DNNL_ARG_BIAS, _layers[i]->_biasMem});
+    _layers[i]->_innerProductArgs.insert({DNNL_ARG_DST, _layers[i]->_nodeMem});
   }
 
   // Creating storage and copying input data to first layer
@@ -270,30 +276,20 @@ void korali::NeuralNetwork::forward()
 
   // Running neural network
   for (size_t currentLayer = 1; currentLayer < layerCount; currentLayer++)
-  {
-    // Configuring inner product arguments
-    std::unordered_map<int, memory> inner_product_args;
-    inner_product_args.insert({DNNL_ARG_SRC, _layers[currentLayer - 1]->_nodeMem});
-    inner_product_args.insert({DNNL_ARG_WEIGHTS, _layers[currentLayer]->_innerProductWeightMem});
-    inner_product_args.insert({DNNL_ARG_BIAS, _layers[currentLayer]->_biasMem});
-    inner_product_args.insert({DNNL_ARG_DST, _layers[currentLayer]->_nodeMem});
+    _layers[currentLayer]->_primitive.execute(_stream, _layers[currentLayer]->_innerProductArgs);
 
-    // Initialize primitive execution
-    _layers[currentLayer]->_primitive.execute(_stream, inner_product_args);
+  // Wait for the computation to finalize.
+  _stream.wait();
 
-    // Wait for the computation to finalize.
-    _stream.wait();
+  // Restoring the output later node values
+  size_t lastLayer = layerCount - 1;
+  size_t nodeCount = _layers[lastLayer]->_nodeCount;
+  std::vector<float> resultData(batchSize * nodeCount);
+  read_from_dnnl_memory(resultData.data(), _layers[lastLayer]->_nodeMem);
 
-    // Restoring the layer's node values
-    size_t nodeCount = _layers[currentLayer]->_nodeCount;
-    std::vector<float> resultData(batchSize * nodeCount);
-    read_from_dnnl_memory(resultData.data(), _layers[currentLayer]->_nodeMem);
-
-    for (size_t i = 0; i < batchSize; i++)
-      for (size_t j = 0; j < nodeCount; j++)
-        _layers[currentLayer]->_nodeValues[i][j] = resultData[i * nodeCount + j];
-  }
-
+  for (size_t i = 0; i < batchSize; i++)
+    for (size_t j = 0; j < nodeCount; j++)
+      _layers[lastLayer]->_nodeValues[i][j] = resultData[i * nodeCount + j];
 #endif
 }
 

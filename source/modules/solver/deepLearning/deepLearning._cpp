@@ -64,8 +64,7 @@ void korali::solver::DeepLearning::initialize()
 
   // Creating Neural Networks internal structures
   _trainingNeuralNetwork->_operation = "Training";
-  _validationNeuralNetwork->_operation = "Inference";
-  _testNeuralNetwork->_operation = "Inference";
+  _validationNeuralNetwork->_operation = "Validation";
 
   _trainingNeuralNetwork->create();
   _validationNeuralNetwork->create();
@@ -111,6 +110,9 @@ void korali::solver::DeepLearning::runGeneration()
 
 std::vector<std::vector<double>> korali::solver::DeepLearning::test(const std::vector<std::vector<double>> &inputBatch)
 {
+  // Configuring this NN for testing operation.
+  _testNeuralNetwork->_operation = "Testing";
+
   // Re-creating NN's internal structures
   _testNeuralNetwork->_layers[0]->_nodeValues = inputBatch;
   _testNeuralNetwork->create();
@@ -121,21 +123,23 @@ std::vector<std::vector<double>> korali::solver::DeepLearning::test(const std::v
   // Running the input values through the neural network
   _testNeuralNetwork->forward();
 
-  // Printing Layer values
+  // Denormalizing values
   size_t outputLayerId = _testNeuralNetwork->_layers.size() - 1;
   size_t batchSize = _testNeuralNetwork->_layers[outputLayerId]->_nodeValues.size();
   size_t outputSize = _testNeuralNetwork->_layers[outputLayerId]->_nodeValues[0].size();
 
-  // printf("Results:\n");
-  // for (size_t i = 0; i < batchSize; i++)
-  // {
-  //  printf("Input %lu - ( %f", i, _testNeuralNetwork->_layers[outputLayerId]->_nodeValues[i][0]);
-  //  for (size_t j = 1; j < outputSize; j++)
-  //   printf(", %f", _testNeuralNetwork->_layers[outputLayerId]->_nodeValues[i][j]);
-  //  printf(")\n");
-  // }
+ // If training was normalized, we need to de-normalize the results
+ if (_testNeuralNetwork->_batchNormalizationEnabled == true)
+ {
+  for (size_t i = 0; i < batchSize; i++)
+   for (size_t j = 0; j < outputSize; j++)
+   {
+     double value =  _testNeuralNetwork->_layers[outputLayerId]->_nodeValues[i][j];
+     _testNeuralNetwork->_layers[outputLayerId]->_nodeValues[i][j] = (value * _testNeuralNetwork->_outputNormalizationSigmas[j]) + _testNeuralNetwork->_outputNormalizationMeans[j];
+   }
+ }
 
-  return _testNeuralNetwork->_layers[outputLayerId]->_nodeValues;
+ return _testNeuralNetwork->_layers[outputLayerId]->_nodeValues;
 }
 
 void korali::solver::DeepLearning::printGenerationAfter()

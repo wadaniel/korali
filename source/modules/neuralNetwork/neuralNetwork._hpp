@@ -36,37 +36,37 @@ class NeuralNetwork : public korali::Module
   /**
    * @brief oneDNN Memory object descriptor to contain the raw batch input
    */
-  dnnl::memory _normalizationInputMem;
+  dnnl::memory _inputNormalizationInputMem;
 
   /**
    * @brief oneDNN Memory object descriptor to contain the scaling shift for normalization of raw batch input
    */
-  dnnl::memory _normalizationScaleShiftMem;
+  dnnl::memory _inputNormalizationScaleShiftMem;
 
   /**
    * @brief oneDNN Memory object descriptor to contain the mean for normalization of raw batch input
    */
-  dnnl::memory _normalizationMeanMem;
+  dnnl::memory _inputNormalizationMeanMem;
 
   /**
    * @brief oneDNN Memory object descriptor to contain the variance for normalization of raw batch input
    */
-  dnnl::memory _normalizationVarianceMem;
+  dnnl::memory _inputNormalizationVarianceMem;
 
   /**
    * @brief oneDNN Memory object descriptor to contain the workspace for normalization of raw batch input
    */
-  dnnl::memory _normalizationWorkspaceMem;
+  dnnl::memory _inputNormalizationWorkspaceMem;
 
   /**
    * @brief oneDNN Arguments to the input batch normalization operation
    */
-  std::unordered_map<int, dnnl::memory> _normalizationArgs;
+  std::unordered_map<int, dnnl::memory> _inputNormalizationArgs;
 
   /**
    * @brief oneDNN Descriptor of the batch normalization primitive
    */
-  dnnl::primitive _normalizationPrimitive;
+  dnnl::primitive _inputNormalizationPrimitive;
 
 #endif
 

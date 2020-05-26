@@ -11,8 +11,8 @@ k = korali.Engine()
 
 # Defining Training Sets
 np.random.seed(0xC0FFEE)
-trainingInputSet  = np.random.uniform(0,2*np.pi,200)
-validationInputSet  = np.random.uniform(0,2*np.pi,200)
+trainingInputSet  = np.random.uniform(0,2*np.pi,1000)
+validationInputSet  = np.random.uniform(0,2*np.pi,1000)
 
 trainingOutputSet = np.sin(trainingInputSet)*scaling
 validationOutputSet = np.sin(validationInputSet)*scaling
@@ -36,13 +36,13 @@ e["Variables"][1]["Validation Data"] = validationOutputSet.tolist()
 ### Using a neural network solver (deep learning) for inference
 
 e["Solver"]["Type"] = "Deep Learning"
-e["Solver"]["Termination Criteria"]["Max Inactive Steps"] = 50
+e["Solver"]["Termination Criteria"]["Max Inactive Steps"] = 500
+e["Solver"]["Termination Criteria"]["Max Generations"] = 2000
 
 ### Defining the shape of the neural network
 
 e["Solver"]["Neural Network"]["Optimizer"]["Type"] = "CMAES"
-
-e["Solver"]["Neural Network"]["Batch Normalization"]["Enabled"] = True
+e["Solver"]["Neural Network"]["Batch Normalization"]["Enabled"] = False
 
 e["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Input"
 e["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 1
@@ -56,6 +56,8 @@ e["Solver"]["Neural Network"]["Layers"][2]["Type"] = "Output"
 e["Solver"]["Neural Network"]["Layers"][2]["Node Count"] = 1
 e["Solver"]["Neural Network"]["Layers"][2]["Activation Function"] = "Identity"
 
+e["Console Output"]["Frequency"] = 50
+e["File Output"]["Enabled"] = False
 e["Random Seed"] = 0xC0FFEE
 
 ### Training the neural network

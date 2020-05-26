@@ -194,7 +194,7 @@ void korali::Experiment::finalize()
 
 std::vector<std::vector<double>> korali::Experiment::test(const std::vector<std::vector<double>> &inputBatch)
 {
-  return _solver->test(inputBatch);
+  return _k->_solver->test(inputBatch);
 }
 
 knlohmann::json &korali::Experiment::operator[](const std::string &key) { return _js[key]; }

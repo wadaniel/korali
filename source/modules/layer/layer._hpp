@@ -14,7 +14,7 @@ class Layer : public korali::Module
   public:
 #ifdef _KORALI_USE_ONEDNN
 
- /********************************************************
+  /********************************************************
   * Forward Propagation Memory Structures and Primitives
   *******************************************************/
 

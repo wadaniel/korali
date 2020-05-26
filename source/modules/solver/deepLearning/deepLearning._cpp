@@ -128,18 +128,18 @@ std::vector<std::vector<double>> korali::solver::DeepLearning::test(const std::v
   size_t batchSize = _testNeuralNetwork->_layers[outputLayerId]->_nodeValues.size();
   size_t outputSize = _testNeuralNetwork->_layers[outputLayerId]->_nodeValues[0].size();
 
- // If training was normalized, we need to de-normalize the results
- if (_testNeuralNetwork->_batchNormalizationEnabled == true)
- {
-  for (size_t i = 0; i < batchSize; i++)
-   for (size_t j = 0; j < outputSize; j++)
-   {
-     double value =  _testNeuralNetwork->_layers[outputLayerId]->_nodeValues[i][j];
-     _testNeuralNetwork->_layers[outputLayerId]->_nodeValues[i][j] = (value * _testNeuralNetwork->_outputNormalizationSigmas[j]) + _testNeuralNetwork->_outputNormalizationMeans[j];
-   }
- }
+  // If training was normalized, we need to de-normalize the results
+  if (_testNeuralNetwork->_batchNormalizationEnabled == true)
+  {
+    for (size_t i = 0; i < batchSize; i++)
+      for (size_t j = 0; j < outputSize; j++)
+      {
+        double value = _testNeuralNetwork->_layers[outputLayerId]->_nodeValues[i][j];
+        _testNeuralNetwork->_layers[outputLayerId]->_nodeValues[i][j] = (value * _testNeuralNetwork->_outputNormalizationSigmas[j]) + _testNeuralNetwork->_outputNormalizationMeans[j];
+      }
+  }
 
- return _testNeuralNetwork->_layers[outputLayerId]->_nodeValues;
+  return _testNeuralNetwork->_layers[outputLayerId]->_nodeValues;
 }
 
 void korali::solver::DeepLearning::printGenerationAfter()

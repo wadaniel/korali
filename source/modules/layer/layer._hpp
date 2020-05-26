@@ -13,35 +13,63 @@ class Layer : public korali::Module
 {
   public:
 #ifdef _KORALI_USE_ONEDNN
+
+ /********************************************************
+  * Forward Propagation Memory Structures and Primitives
+  *******************************************************/
+
   /**
    * @brief oneDNN Memory object descriptor to contain the result value of the neurons of the layer
    */
-  dnnl::memory _nodeMem;
+  dnnl::memory _forwardNodeMem;
 
   /**
    * @brief oneDNN Memory object descriptor to contain the weights of inner product with incoming channels
    */
-  dnnl::memory _weightMem;
-
-  /**
-   * @brief oneDNN Memory object descriptor to contain work memory of the inner product, required for backward propagation later
-   */
-  dnnl::memory _innerProductWeightMem;
-
-  /**
-   * @brief oneDNN Arguments to the inner product operation
-   */
-  std::unordered_map<int, dnnl::memory> _innerProductArgs;
+  dnnl::memory _forwardWeightMem;
 
   /**
    * @brief oneDNN Memory object descriptor to contain the bias to add to incoming channels
    */
-  dnnl::memory _biasMem;
+  dnnl::memory _forwardBiasMem;
+
+  /**
+   * @brief oneDNN Memory object descriptor to contain work memory of the inner product, required for backward propagation later
+   */
+  dnnl::memory _forwardWorkMem;
+
+  /**
+   * @brief oneDNN Arguments to the inner product operation
+   */
+  std::unordered_map<int, dnnl::memory> _forwardInnerProductArgs;
+
+  /**
+   * @brief oneDNN primitive attributes that describe the activation function
+   */
+  dnnl::primitive_attr _forwardPrimitiveAttributes;
+
+  /**
+   * @brief oneDNN primitive attributes that describe the full forward propagation primitive
+   */
+  dnnl::inner_product_forward::primitive_desc _forwardPrimitiveDescription;
 
   /**
    * @brief oneDNN primitive to run the inner product + bias addition operation
    */
-  dnnl::primitive _primitive;
+  dnnl::primitive _forwardPrimitive;
+
+  /********************************************************
+   * Backward Propagation Memory Structures and Primitives
+   *******************************************************/
+  /**
+   * @brief oneDNN Memory object descriptor to contain the gradients of the bias to add to incoming channels
+   */
+  dnnl::memory _backwardBiasDiffMem;
+
+  /**
+   * @brief oneDNN primitive to run the inner product + bias addition operation
+   */
+  dnnl::primitive _backwardPrimitive;
 
 #endif
 };

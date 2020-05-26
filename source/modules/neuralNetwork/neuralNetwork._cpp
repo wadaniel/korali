@@ -68,6 +68,9 @@ void korali::NeuralNetwork::create()
 {
 #ifdef _KORALI_USE_ONEDNN
 
+  auto forwardPropagationKind = prop_kind::forward_training;
+  if (_operation == "Inference") forwardPropagationKind = prop_kind::forward_inference;
+
   // Obtaining NN dimensions
   size_t inputSize = _layers[0]->_nodeCount;
   size_t batchSize = _layers[0]->_nodeValues.size();
@@ -101,9 +104,9 @@ void korali::NeuralNetwork::create()
     if (_layers[0]->_nodeValues[i].size() != inputSize)
       _k->_logger->logError("Input data set %lu has a different number of elements (%lu) than the input layer node count (%lu).\n", i, _layers[0]->_nodeValues[i].size(), inputSize);
 
-  /****************************************************************************
-  /*  Initializing memory objects for inner product and activation functions
-  /****************************************************************************/
+  /*********************************************************************************
+  /*  Initializing memory objects for FORWARD inner product and activation functions
+  /*********************************************************************************/
   for (size_t i = 0; i < layerCount; i++)
   {
     const memory::dim IC = _layers[i]->_nodeCount;
@@ -136,7 +139,7 @@ void korali::NeuralNetwork::create()
     auto inner_product_weights_md = memory::desc(weightDims, memory::data_type::f32, memory::format_tag::any);
 
     // Create operation descriptor.
-    auto inner_product_d = inner_product_forward::desc(prop_kind::forward_training, _layers[i - 1]->_nodeMem.get_desc(), inner_product_weights_md, biasMemDesc, _layers[i]->_nodeMem.get_desc());
+    auto inner_product_d = inner_product_forward::desc(forwardPropagationKind, _layers[i - 1]->_nodeMem.get_desc(), inner_product_weights_md, biasMemDesc, _layers[i]->_nodeMem.get_desc());
 
     // Create weight evaluation + activation function primitive.
 
@@ -234,7 +237,7 @@ void korali::NeuralNetwork::create()
 
     // Create operation descriptor.
     auto normalizationDesc = dnnl::batch_normalization_forward::desc(
-      prop_kind::forward_training, _layers[0]->_nodeMem.get_desc(), _batchNormalizationEpsilon, normalizationFlags);
+      forwardPropagationKind, _layers[0]->_nodeMem.get_desc(), _batchNormalizationEpsilon, normalizationFlags);
     auto normalizationPrimitiveDesc = dnnl::batch_normalization_forward::primitive_desc(normalizationDesc, _engine);
     _normalizationPrimitive = dnnl::batch_normalization_forward(normalizationPrimitiveDesc);
 

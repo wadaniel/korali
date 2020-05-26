@@ -63,6 +63,10 @@ void korali::solver::DeepLearning::initialize()
   }
 
   // Creating Neural Networks internal structures
+  _trainingNeuralNetwork->_operation = "Training";
+  _validationNeuralNetwork->_operation = "Inference";
+  _testNeuralNetwork->_operation = "Inference";
+
   _trainingNeuralNetwork->create();
   _validationNeuralNetwork->create();
 }
@@ -107,6 +111,7 @@ void korali::solver::DeepLearning::runGeneration()
 
 std::vector<std::vector<double>> korali::solver::DeepLearning::test(const std::vector<std::vector<double>> &inputBatch)
 {
+  // Re-creating NN's internal structures
   _testNeuralNetwork->_layers[0]->_nodeValues = inputBatch;
   _testNeuralNetwork->create();
 

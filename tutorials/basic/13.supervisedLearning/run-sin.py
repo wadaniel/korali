@@ -4,6 +4,8 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 
+scaling = 5.0
+
 import korali
 k = korali.Engine()
 
@@ -12,8 +14,8 @@ np.random.seed(0xC0FFEE)
 trainingInputSet  = np.random.uniform(0,2*np.pi,200)
 validationInputSet  = np.random.uniform(0,2*np.pi,200)
 
-trainingOutputSet = np.sin(trainingInputSet)
-validationOutputSet = np.sin(validationInputSet)
+trainingOutputSet = np.sin(trainingInputSet)*scaling
+validationOutputSet = np.sin(validationInputSet)*scaling
 
 e = korali.Experiment()
 
@@ -66,7 +68,7 @@ testInputSet = np.random.uniform(0,2*np.pi,200)
 testInputSet = [ [ x ] for x in testInputSet.tolist() ]
 
 testInferredSet = e.test(testInputSet)
-testOutputSet = np.sin(testInputSet).tolist()
+testOutputSet = np.sin(testInputSet)*scaling
 
 ### Plotting Results
 

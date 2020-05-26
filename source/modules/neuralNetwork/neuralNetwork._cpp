@@ -313,7 +313,8 @@ void korali::NeuralNetwork::update()
   // Initializing weight matrix memories and values
   for (size_t i = 1; i < layerCount; i++)
   {
-    const memory::dim IC = _layers[i-1]->_nodeCount, OC = _layers[i]->_nodeCount;
+    const memory::dim IC = _layers[i-1]->_nodeCount;
+    const memory::dim OC = _layers[i]->_nodeCount;
     memory::dims weightDims = {OC, IC};
     size_t weightCount = product(weightDims);
     std::vector<float> weightsData(weightCount);
@@ -392,6 +393,8 @@ void korali::NeuralNetwork::forward()
   for (size_t i = 0; i < batchSize; i++)
     for (size_t j = 0; j < nodeCount; j++)
       _layers[lastLayer]->_nodeValues[i][j] = resultData[i * nodeCount + j];
+
+
 #endif
 
   // Setting fact that forward propagation has been performed.
@@ -412,21 +415,34 @@ void korali::NeuralNetwork::backward()
  size_t layerCount = _layers.size();
 
  // Backward propagating neural network
- for (size_t currentLayer = 1; currentLayer < layerCount; currentLayer++)
-   _layers[currentLayer]->_backwardPrimitive.execute(_stream, _layers[currentLayer]->_backwardInnerProductArgs);
+ for (size_t i = 1; i < layerCount; i++)
+   _layers[i]->_backwardPrimitive.execute(_stream, _layers[i]->_backwardInnerProductArgs);
 
-//  // Wait for the computation to finalize.
-//  _stream.wait();
-//
-//  // Restoring the output later node values
-//  size_t lastLayer = layerCount - 1;
-//  size_t nodeCount = _layers[lastLayer]->_nodeCount;
-//  std::vector<float> resultData(batchSize * nodeCount);
-//  read_from_dnnl_memory(resultData.data(), _layers[lastLayer]->_forwardNodeMem);
-//
-//  for (size_t i = 0; i < batchSize; i++)
-//    for (size_t j = 0; j < nodeCount; j++)
-//      _layers[lastLayer]->_nodeValues[i][j] = resultData[i * nodeCount + j];
+ // Wait for the computation to finalize.
+ _stream.wait();
+
+ // Retrieving weight and bias gradients
+ for (size_t i = 1; i < layerCount; i++)
+ {
+  const memory::dim IC = _layers[i-1]->_nodeCount;
+  const memory::dim OC = _layers[i]->_nodeCount;
+  memory::dims weightDims = {OC, IC};
+  size_t weightCount = product(weightDims);
+
+  std::vector<float> weightsDiffData(weightCount);
+  std::vector<float> biasDiffData(OC);
+
+  read_from_dnnl_memory(weightsDiffData.data(), _layers[i]->_forwardWorkMem);
+  read_from_dnnl_memory(biasDiffData.data(), _layers[i]->_backwardBiasDiffMem);
+
+  for (size_t j = 0; j < OC; j++)
+    for (size_t k = 0; k < IC; k++)
+     _layers[i]->_weights[j][k] = weightsDiffData[j * IC + k];
+
+  for (size_t j = 0; j < OC; j++)
+   _layers[i]->_bias[j] = biasDiffData[j];
+ }
+
 #endif
 }
 
@@ -447,13 +463,6 @@ void korali::NeuralNetwork::train(size_t stepsToRun)
 
   // Getting results of optimization
   _currentTrainingLoss = -newSample["F(x)"].get<double>();
-
-  // If this is a training NN, run backward propagation and store gradients as well
-  if (_operation == "Training")
-  {
-    // Running backward propagation
-    backward();
-  }
 }
 
 void korali::NeuralNetwork::runSample(korali::Sample &sample, korali::NeuralNetwork *nn)
@@ -504,4 +513,35 @@ void korali::NeuralNetwork::runSample(korali::Sample &sample, korali::NeuralNetw
 
   // Saving the negative of the error because we want to minimize it
   sample["F(x)"] = -meanSquaredError;
+
+  // If this is a training NN, run backward propagation and store gradients as well
+  if (nn->_operation == "Training")
+  {
+    // Running backward propagation
+    nn->backward();
+
+    // Copying back the gradients and biases back
+    std::vector<double> gradientVector(currentVariable);
+    currentVariable = 0;
+    for (size_t i = 1; i < nn->_layers.size(); i++)
+    {
+      nn->_layers[i]->_weights.resize(nn->_layers[i]->_nodeCount);
+      nn->_layers[i]->_bias.resize(nn->_layers[i]->_nodeCount);
+
+      // Adding layer's weights
+      for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++)
+      {
+        nn->_layers[i]->_weights[j].resize(nn->_layers[i-1]->_nodeCount);
+
+        for (size_t k = 0; k < nn->_layers[i-1]->_nodeCount; k++)
+         gradientVector[currentVariable++] = nn->_layers[i]->_weights[j][k];
+      }
+
+      // Adding layer's biases
+      for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++)
+       gradientVector[currentVariable++] = nn->_layers[i]->_bias[j];
+    }
+
+    sample["Gradients"] = gradientVector;
+  }
 }

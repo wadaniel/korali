@@ -67,6 +67,11 @@ class Layer : public korali::Module
   dnnl::memory _backwardBiasDiffMem;
 
   /**
+   * @brief oneDNN Arguments to the inner product operation
+   */
+  std::unordered_map<int, dnnl::memory> _backwardInnerProductArgs;
+
+  /**
    * @brief oneDNN primitive to run the inner product + bias addition operation
    */
   dnnl::primitive _backwardPrimitive;

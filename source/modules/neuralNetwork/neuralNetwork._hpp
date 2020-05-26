@@ -109,6 +109,11 @@ class NeuralNetwork : public korali::Module
    * @brief Forward-propagates the input batch data through the network.
   */
   void forward();
+
+  /**
+   * @brief Forward-propagates to find out the gradients of the weights and biases.
+  */
+  void backward();
 };
 
 } // namespace korali

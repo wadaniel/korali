@@ -285,6 +285,11 @@ void korali::NeuralNetwork::create()
      // Create the primitive.
      auto backwardPrimitiveDesc = inner_product_backward_weights::primitive_desc(backwardDesc, _engine, _layers[i]->_forwardPrimitiveDescription);
      _layers[i]->_backwardPrimitive = inner_product_backward_weights(backwardPrimitiveDesc);
+
+     _layers[i]->_backwardInnerProductArgs.insert({DNNL_ARG_SRC, _layers[i-1]->_forwardNodeMem});
+     _layers[i]->_backwardInnerProductArgs.insert({DNNL_ARG_DIFF_WEIGHTS, _layers[i]->_forwardWorkMem});
+     _layers[i]->_backwardInnerProductArgs.insert({DNNL_ARG_DIFF_BIAS, _layers[i]->_backwardBiasDiffMem});
+     _layers[i]->_backwardInnerProductArgs.insert({DNNL_ARG_DIFF_DST, _layers[i]->_forwardNodeMem});
    }
   }
 
@@ -346,6 +351,9 @@ void korali::NeuralNetwork::update()
   }
 
 #endif
+
+  // Lifting flag to make sure we do not backpropagate without running forward first
+  _hasPerformedForwardPropagation = false;
 }
 
 void korali::NeuralNetwork::forward()
@@ -368,7 +376,7 @@ void korali::NeuralNetwork::forward()
   if (_batchNormalizationEnabled == true)
     _normalizationPrimitive.execute(_stream, _normalizationArgs);
 
-  // Running neural network
+  // forward propagating neural network
   for (size_t currentLayer = 1; currentLayer < layerCount; currentLayer++)
     _layers[currentLayer]->_forwardPrimitive.execute(_stream, _layers[currentLayer]->_forwardInnerProductArgs);
 
@@ -385,7 +393,43 @@ void korali::NeuralNetwork::forward()
     for (size_t j = 0; j < nodeCount; j++)
       _layers[lastLayer]->_nodeValues[i][j] = resultData[i * nodeCount + j];
 #endif
+
+  // Setting fact that forward propagation has been performed.
+  _hasPerformedForwardPropagation = true;
 }
+
+
+void korali::NeuralNetwork::backward()
+{
+ if (_operation != "Training")
+   _k->_logger->logError("Neural network being backward propagated but has not being tagged as training in the 'Operation' setting. \n");
+
+ if (_hasPerformedForwardPropagation == false)
+  _k->_logger->logError("Neural network being backward propagated without doing a forward propagation first. \n");
+
+#ifdef _KORALI_USE_ONEDNN
+
+ size_t layerCount = _layers.size();
+
+ // Backward propagating neural network
+ for (size_t currentLayer = 1; currentLayer < layerCount; currentLayer++)
+   _layers[currentLayer]->_backwardPrimitive.execute(_stream, _layers[currentLayer]->_backwardInnerProductArgs);
+
+//  // Wait for the computation to finalize.
+//  _stream.wait();
+//
+//  // Restoring the output later node values
+//  size_t lastLayer = layerCount - 1;
+//  size_t nodeCount = _layers[lastLayer]->_nodeCount;
+//  std::vector<float> resultData(batchSize * nodeCount);
+//  read_from_dnnl_memory(resultData.data(), _layers[lastLayer]->_forwardNodeMem);
+//
+//  for (size_t i = 0; i < batchSize; i++)
+//    for (size_t j = 0; j < nodeCount; j++)
+//      _layers[lastLayer]->_nodeValues[i][j] = resultData[i * nodeCount + j];
+#endif
+}
+
 
 void korali::NeuralNetwork::train(size_t stepsToRun)
 {
@@ -403,6 +447,13 @@ void korali::NeuralNetwork::train(size_t stepsToRun)
 
   // Getting results of optimization
   _currentTrainingLoss = -newSample["F(x)"].get<double>();
+
+  // If this is a training NN, run backward propagation and store gradients as well
+  if (_operation == "Training")
+  {
+    // Running backward propagation
+    backward();
+  }
 }
 
 void korali::NeuralNetwork::runSample(korali::Sample &sample, korali::NeuralNetwork *nn)

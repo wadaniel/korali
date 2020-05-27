@@ -87,7 +87,8 @@ def plotGen(genList, idx):
     samples = genList[idx]['Solver']['Sample Database']
     llk = np.array( genList[idx]['Solver']['Sample LogLikelihood Database'] )
     lpr = np.array( genList[idx]['Solver']['Sample LogPrior Database'] )
-    lpo = llk + lpr
+    lpo = (llk + lpr).tolist()
+    samples = [s for _,s in sorted(zip(lpr,samples))]
     numentries = len(samples)
     
     fig, ax = plt.subplots(numdim, numdim, figsize=(8,8))

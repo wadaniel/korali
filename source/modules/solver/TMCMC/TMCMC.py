@@ -98,7 +98,7 @@ def plotGen(genList, idx):
     
 
     plot_histogram(ax, samplesTmp)
-    plot_upper_triangle(ax, samplesTmp, lpo.tolist())
+    plot_upper_triangle(ax, samplesTmp, lpo)
     plot_lower_triangle(ax, samplesTmp)
 
     for i in range(numdim):

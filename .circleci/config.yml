@@ -23,7 +23,7 @@ jobs:
 
       - restore_cache:
           keys:
-            - cache-linux-v8
+            - cache-linux-v9
             
       - run:
           name: Get developer tools
@@ -34,7 +34,7 @@ jobs:
           command: ./install --prereqs --jobs=8
 
       - save_cache:
-          key: cache-linux-v8
+          key: cache-linux-v9
           paths:
             - "~/korali/build"
             - "~/korali/tools/dev-tools"
@@ -62,12 +62,14 @@ jobs:
 
       - restore_cache:
           keys:
-            - cache-macos-v8
+            - cache-macos-v9
 
       - run:
           name: Install wget dependency
           command: HOMEBREW_NO_AUTO_UPDATE=1 brew install wget;
-                   HOMEBREW_NO_AUTO_UPDATE=1 brew install coreutils
+                   HOMEBREW_NO_AUTO_UPDATE=1 brew install coreutils;
+                   HOMEBREW_NO_AUTO_UPDATE=1 brew install cmake;
+                   HOMEBREW_NO_AUTO_UPDATE=1 brew install gsl;
                    
       - run:
           name: Get developer tools
@@ -75,10 +77,10 @@ jobs:
           
       - run:
           name: build Korali
-          command: ./install --prereqs --jobs=8
+          command: ./install --prereqs --jobs=4
 
       - save_cache:
-          key: cache-macos-v8
+          key: cache-macos-v9
           paths:
             - "~/korali/build"
             - "~/korali/tools/dev-tools"

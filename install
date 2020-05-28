@@ -335,7 +335,7 @@ if [ $oneDnnFound == 0 ]; then
   $cMakeBin .. -DCMAKE_INSTALL_PREFIX=$DNNLROOT >> $logFile 2>&1; check
   
   logEcho "[Korali] Compiling oneDNN... "
-  make -j$NJOBS >> $logFile 2>&1; check
+  make -j$NJOBS; check
   
   logEcho "[Korali] Installing oneDNN... "
   make install >> $logFile 2>&1; check

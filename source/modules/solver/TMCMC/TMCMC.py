@@ -46,17 +46,16 @@ def plot_histogram(ax, theta):
 
 
 #Plot scatter plot in upper triangle of figure
-def plot_upper_triangle(ax, theta, lik=False):
+def plot_upper_triangle(ax, theta, lik):
     dim = theta.shape[1]
     if (dim == 1): return
     
     for i in range(dim):
         for j in range(i + 1, dim):
             if lik:
-                ax[i, j].scatter(theta[:, j], theta[:, i], marker='o', s=10,
-                    c=theta, alpha=0.5)
+                ax[i, j].scatter(theta[:, j], theta[:, i], marker='o', s=3, alpha=0.5, c=lik)
             else:
-                ax[i, j].plot(theta[:, j], theta[:, i], '.', markersize=1)
+                ax[i, j].plot(theta[:, j], theta[:, i], marker='.', s=1, alpha=0.5)
             ax[i, j].set_xticklabels([])
             ax[i, j].set_yticklabels([])
             ax[i, j].grid(b=True, which='both')
@@ -86,6 +85,10 @@ def plot_lower_triangle(ax, theta):
 def plotGen(genList, idx):
     numdim = len(genList[idx]['Variables'])
     samples = genList[idx]['Solver']['Sample Database']
+    llk = np.array( genList[idx]['Solver']['Sample LogLikelihood Database'] )
+    lpr = np.array( genList[idx]['Solver']['Sample LogPrior Database'] )
+    lpo = (llk + lpr).tolist()
+    samples = [s for _,s in sorted(zip(lpr,samples))]
     numentries = len(samples)
     
     fig, ax = plt.subplots(numdim, numdim, figsize=(8,8))
@@ -95,7 +98,7 @@ def plotGen(genList, idx):
     
 
     plot_histogram(ax, samplesTmp)
-    plot_upper_triangle(ax, samplesTmp, False)
+    plot_upper_triangle(ax, samplesTmp, lpo)
     plot_lower_triangle(ax, samplesTmp)
 
     for i in range(numdim):

@@ -55,7 +55,7 @@ void korali::problem::bayesian::Reference::loglikelihoodNormal(korali::Sample &s
   for (size_t i = 0; i < sample["Standard Deviation"].size(); i++)
   {
     sdev = sample["Standard Deviation"][i];
-    if (sdev < 0.0) _k->_logger->logError("Negative value (%lf) detected for the Standard Deviation.\n", sdev);
+    if (sdev <= 0.0) _k->_logger->logError("Negative or zero value (%lf) detected for the Standard Deviation.\n", sdev);
     loglike -= log(sdev);
   }
 
@@ -91,7 +91,7 @@ void korali::problem::bayesian::Reference::loglikelihoodNegativeBinomial(korali:
     loglike -= gsl_sf_lngamma(_referenceData[i] + 1.);
     double m = sample["Reference Evaluations"][i];
 
-    if (m < 0)
+    if (m <= 0)
     {
       sample["logLikelihood"] = -korali::Inf;
       return;

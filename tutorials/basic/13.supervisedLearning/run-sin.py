@@ -36,13 +36,12 @@ e["Variables"][1]["Validation Data"] = validationOutputSet.tolist()
 ### Using a neural network solver (deep learning) for inference
 
 e["Solver"]["Type"] = "Deep Learning"
-e["Solver"]["Termination Criteria"]["Max Inactive Steps"] = 500
-e["Solver"]["Termination Criteria"]["Max Generations"] = 100
+e["Solver"]["Termination Criteria"]["Max Inactive Steps"] = 100
+e["Solver"]["Termination Criteria"]["Max Generations"] = 2000
 
 ### Defining the shape of the neural network
 
 e["Solver"]["Neural Network"]["Optimizer"]["Type"] = "CMAES"
-e["Solver"]["Neural Network"]["Batch Normalization"]["Enabled"] = True
 
 e["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Input"
 e["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 1

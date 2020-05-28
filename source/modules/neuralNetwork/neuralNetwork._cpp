@@ -236,6 +236,8 @@ void korali::NeuralNetwork::create()
     }
 
     // Processing shift/scale part of batch normalization
+    dnnl::memory inputNormalizationScaleShiftMem;
+
     if (_batchNormalizationScale.size() > 0 || _batchNormalizationShift.size() > 0)
     {
       if (_batchNormalizationScale.size() != inputSize)
@@ -245,7 +247,7 @@ void korali::NeuralNetwork::create()
         _k->_logger->logError("Number of values (%lu) in the batch normalization shift vector is different from that of the node count of the first layer (%lu).\n", _batchNormalizationShift.size(), inputSize);
 
       auto normalizationScaleShiftMemDesc = memory::desc(scaleShiftDims, memory::data_type::f32, memory::format_tag::nc);
-      _inputNormalizationScaleShiftMem = memory(normalizationScaleShiftMemDesc, _engine);
+      inputNormalizationScaleShiftMem = memory(normalizationScaleShiftMemDesc, _engine);
 
       // Storing scale/shift data
       std::vector<float> scaleShiftData(product(scaleShiftDims));
@@ -256,7 +258,7 @@ void korali::NeuralNetwork::create()
       }
 
       normalizationFlags |= normalization_flags::use_scale_shift;
-      write_to_dnnl_memory(scaleShiftData.data(), _inputNormalizationScaleShiftMem);
+      write_to_dnnl_memory(scaleShiftData.data(), inputNormalizationScaleShiftMem);
     }
 
     // Create operation descriptor.
@@ -267,19 +269,20 @@ void korali::NeuralNetwork::create()
       normalizationFlags);
 
     auto normalizationPrimitiveDesc = batch_normalization_forward::primitive_desc(normalizationDesc, _engine);
-    _inputNormalizationPrimitive = dnnl::batch_normalization_forward(normalizationPrimitiveDesc);
+    dnnl::primitive inputNormalizationPrimitive = dnnl::batch_normalization_forward(normalizationPrimitiveDesc);
 
     // Create memory objects using memory descriptors created by the primitive descriptor: mean, variance, workspace.
-    _inputNormalizationMeanMem = memory(normalizationPrimitiveDesc.mean_desc(), _engine);
-    _inputNormalizationVarianceMem = memory(normalizationPrimitiveDesc.variance_desc(), _engine);
-    _inputNormalizationWorkspaceMem = memory(normalizationPrimitiveDesc.workspace_desc(), _engine);
+    dnnl::memory inputNormalizationMeanMem = memory(normalizationPrimitiveDesc.mean_desc(), _engine);
+    dnnl::memory inputNormalizationVarianceMem = memory(normalizationPrimitiveDesc.variance_desc(), _engine);
+    dnnl::memory inputNormalizationWorkspaceMem = memory(normalizationPrimitiveDesc.workspace_desc(), _engine);
 
-    _inputNormalizationArgs.insert({DNNL_ARG_SRC, _layers[0]->_forwardNodeMem});
-    _inputNormalizationArgs.insert({DNNL_ARG_MEAN, _inputNormalizationMeanMem});
-    _inputNormalizationArgs.insert({DNNL_ARG_VARIANCE, _inputNormalizationVarianceMem});
-    _inputNormalizationArgs.insert({DNNL_ARG_SCALE_SHIFT, _inputNormalizationScaleShiftMem});
-    _inputNormalizationArgs.insert({DNNL_ARG_WORKSPACE, _inputNormalizationWorkspaceMem});
-    _inputNormalizationArgs.insert({DNNL_ARG_DST, _layers[0]->_forwardNodeMem});
+    std::unordered_map<int, dnnl::memory> inputNormalizationArgs;
+    inputNormalizationArgs.insert({DNNL_ARG_SRC, _layers[0]->_forwardNodeMem});
+    inputNormalizationArgs.insert({DNNL_ARG_MEAN, inputNormalizationMeanMem});
+    inputNormalizationArgs.insert({DNNL_ARG_VARIANCE, inputNormalizationVarianceMem});
+    inputNormalizationArgs.insert({DNNL_ARG_SCALE_SHIFT, inputNormalizationScaleShiftMem});
+    inputNormalizationArgs.insert({DNNL_ARG_WORKSPACE, inputNormalizationWorkspaceMem});
+    inputNormalizationArgs.insert({DNNL_ARG_DST, _layers[0]->_forwardNodeMem});
 
     // Creating memory to read/write variances and means
     std::vector<float> inputNormalizationMeans(IC);
@@ -294,20 +297,20 @@ void korali::NeuralNetwork::create()
       inputNormalizationVariances[i] = _inputNormalizationVariances[i];
      }
 
-     write_to_dnnl_memory(inputNormalizationMeans.data(), _inputNormalizationMeanMem);
-     write_to_dnnl_memory(inputNormalizationVariances.data(), _inputNormalizationVarianceMem);
+     write_to_dnnl_memory(inputNormalizationMeans.data(), inputNormalizationMeanMem);
+     write_to_dnnl_memory(inputNormalizationVariances.data(), inputNormalizationVarianceMem);
     }
 
     // Normalizing input
-    _inputNormalizationPrimitive.execute(_stream, _inputNormalizationArgs);
+    inputNormalizationPrimitive.execute(_stream, inputNormalizationArgs);
 
     _stream.wait();
 
     // Retrieving normalization means and variances
     if (_inputNormalizationMeans.size() == 0 && _inputNormalizationVariances.size() == 0)
     {
-     read_from_dnnl_memory(inputNormalizationMeans.data(), _inputNormalizationMeanMem);
-     read_from_dnnl_memory(inputNormalizationVariances.data(), _inputNormalizationVarianceMem);
+     read_from_dnnl_memory(inputNormalizationMeans.data(), inputNormalizationMeanMem);
+     read_from_dnnl_memory(inputNormalizationVariances.data(), inputNormalizationVarianceMem);
 
      _inputNormalizationMeans.resize(inputNormalizationMeans.size());
      _inputNormalizationVariances.resize(inputNormalizationVariances.size());

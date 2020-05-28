@@ -31,7 +31,7 @@ jobs:
                    
       - run:
           name: build Korali
-          command: ./install --prereqs --jobs=12
+          command: ./install --prereqs --jobs=8
 
       - save_cache:
           key: cache-linux-v8
@@ -75,7 +75,7 @@ jobs:
           
       - run:
           name: build Korali
-          command: ./install --prereqs --jobs=12
+          command: ./install --prereqs --jobs=8
 
       - save_cache:
           key: cache-macos-v8

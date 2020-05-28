@@ -12,8 +12,6 @@ void korali::solver::DeepLearning::initialize()
 
   // Setting training NN
   _trainingNeuralNetwork = dynamic_cast<korali::NeuralNetwork *>(korali::Module::duplicate(_neuralNetwork));
-  _validationNeuralNetwork = dynamic_cast<korali::NeuralNetwork *>(korali::Module::duplicate(_neuralNetwork));
-  _testNeuralNetwork = dynamic_cast<korali::NeuralNetwork *>(korali::Module::duplicate(_neuralNetwork));
 
   // Setting input training data
   _trainingNeuralNetwork->_layers[0]->_nodeValues.resize(_problem->_trainingBatchSize);
@@ -24,18 +22,6 @@ void korali::solver::DeepLearning::initialize()
     {
       size_t varIdx = _problem->_inputVectorIndexes[j];
       _trainingNeuralNetwork->_layers[0]->_nodeValues[i][j] = _k->_variables[varIdx]->_trainingData[i];
-    }
-  }
-
-  // Setting input validation data
-  _validationNeuralNetwork->_layers[0]->_nodeValues.resize(_problem->_validationBatchSize);
-  for (size_t i = 0; i < _problem->_validationBatchSize; i++)
-  {
-    _validationNeuralNetwork->_layers[0]->_nodeValues[i].resize(_problem->_inputVectorSize);
-    for (size_t j = 0; j < _problem->_inputVectorSize; j++)
-    {
-      size_t varIdx = _problem->_inputVectorIndexes[j];
-      _validationNeuralNetwork->_layers[0]->_nodeValues[i][j] = _k->_variables[varIdx]->_validationData[i];
     }
   }
 
@@ -51,6 +37,26 @@ void korali::solver::DeepLearning::initialize()
     }
   }
 
+  // Creating Training Neural Network internal structures
+  _trainingNeuralNetwork->_operation = "Training";
+  _trainingNeuralNetwork->create();
+
+  // Creating Validation NN
+  _validationNeuralNetwork = dynamic_cast<korali::NeuralNetwork *>(korali::Module::duplicate(_trainingNeuralNetwork));
+  _validationNeuralNetwork->_operation = "Inference";
+
+  // Setting input validation data
+  _validationNeuralNetwork->_layers[0]->_nodeValues.resize(_problem->_validationBatchSize);
+  for (size_t i = 0; i < _problem->_validationBatchSize; i++)
+  {
+    _validationNeuralNetwork->_layers[0]->_nodeValues[i].resize(_problem->_inputVectorSize);
+    for (size_t j = 0; j < _problem->_inputVectorSize; j++)
+    {
+      size_t varIdx = _problem->_inputVectorIndexes[j];
+      _validationNeuralNetwork->_layers[0]->_nodeValues[i][j] = _k->_variables[varIdx]->_validationData[i];
+    }
+  }
+
   _validationNeuralNetwork->_solution.resize(_problem->_validationBatchSize);
   for (size_t i = 0; i < _problem->_validationBatchSize; i++)
   {
@@ -62,12 +68,12 @@ void korali::solver::DeepLearning::initialize()
     }
   }
 
-  // Creating Neural Networks internal structures
-  _trainingNeuralNetwork->_operation = "Training";
-  _validationNeuralNetwork->_operation = "Validation";
-
-  _trainingNeuralNetwork->create();
+  // Creating Validation Neural Network internal structures, keeping normalization from training NN
   _validationNeuralNetwork->create();
+
+  // Creating Test NN
+  _testNeuralNetwork = dynamic_cast<korali::NeuralNetwork *>(korali::Module::duplicate(_neuralNetwork));
+  _validationNeuralNetwork->_operation = "Inference";
 }
 
 void korali::solver::DeepLearning::runGeneration()
@@ -105,20 +111,18 @@ void korali::solver::DeepLearning::runGeneration()
     _validationNeuralNetwork->getConfiguration(js);
     _testNeuralNetwork->_layers.clear();
     _testNeuralNetwork->setConfiguration(js);
+    _testNeuralNetwork->_solution.clear();
   }
 }
 
 std::vector<std::vector<double>> korali::solver::DeepLearning::test(const std::vector<std::vector<double>> &inputBatch)
 {
-  // Configuring this NN for testing operation.
-  _testNeuralNetwork->_operation = "Testing";
-
   // Re-creating NN's internal structures
   _testNeuralNetwork->_layers[0]->_nodeValues = inputBatch;
   _testNeuralNetwork->create();
 
   // Updating the network's weights and biases
-  _testNeuralNetwork->update();
+  _testNeuralNetwork->updateWeightsAndBias();
 
   // Running the input values through the neural network
   _testNeuralNetwork->forward();
@@ -135,7 +139,10 @@ std::vector<std::vector<double>> korali::solver::DeepLearning::test(const std::v
       for (size_t j = 0; j < outputSize; j++)
       {
         double value = _testNeuralNetwork->_layers[outputLayerId]->_nodeValues[i][j];
-        _testNeuralNetwork->_layers[outputLayerId]->_nodeValues[i][j] = (value * _testNeuralNetwork->_outputNormalizationSigmas[j]) + _testNeuralNetwork->_outputNormalizationMeans[j];
+        double sigma = _testNeuralNetwork->_outputNormalizationSigmas[j];
+        double mean = _testNeuralNetwork->_outputNormalizationMeans[j];
+        _testNeuralNetwork->_layers[outputLayerId]->_nodeValues[i][j] *= sigma;
+        _testNeuralNetwork->_layers[outputLayerId]->_nodeValues[i][j] += mean;
       }
   }
 

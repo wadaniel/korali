@@ -80,7 +80,7 @@ void korali::NeuralNetwork::create()
 #ifdef _KORALI_USE_ONEDNN
 
   auto forwardPropagationKind = prop_kind::forward_training;
-  if (_operation != "Training") forwardPropagationKind = prop_kind::forward_inference;
+  if (_operation == "Inference") forwardPropagationKind = prop_kind::forward_inference;
 
   // Obtaining NN dimensions
   size_t inputSize = _layers[0]->_nodeCount;
@@ -206,7 +206,15 @@ void korali::NeuralNetwork::create()
     for (size_t j = 0; j < batchSize; j++) _layers[i]->_nodeValues[j].resize(nodeCount);
   }
 
-  // Creating batch input normalization primitive
+  // Copying input data to first layer
+  std::vector<float> batchInput(batchSize * inputSize);
+  for (size_t i = 0; i < batchSize; i++)
+    for (size_t j = 0; j < inputSize; j++)
+      batchInput[i * inputSize + j] = _layers[0]->_nodeValues[i][j];
+
+  write_to_dnnl_memory(batchInput.data(), _layers[0]->_forwardNodeMem);
+
+  // Creating batch input/output normalization primitives
 
   if (_batchNormalizationEnabled == true)
   {
@@ -214,6 +222,18 @@ void korali::NeuralNetwork::create()
     const memory::dims scaleShiftDims = {2, IC};
 
     auto normalizationFlags = dnnl::normalization_flags::none;
+
+    // If not training, assign given variances and means
+    if (_inputNormalizationMeans.size() > 0 || _inputNormalizationVariances.size() > 0)
+    {
+     if (_inputNormalizationMeans.size() != IC)
+      _k->_logger->logError("Number of values (%lu) in the batch normalization means vector is different from that of the node count of the first layer (%lu).\n", _inputNormalizationMeans.size(), IC);
+
+     if (_inputNormalizationVariances.size() != IC)
+      _k->_logger->logError("Number of values (%lu) in the batch normalization variances vector is different from that of the node count of the first layer (%lu).\n", _inputNormalizationVariances.size(), IC);
+
+      normalizationFlags |= dnnl::normalization_flags::use_global_stats;
+    }
 
     // Processing shift/scale part of batch normalization
     if (_batchNormalizationScale.size() > 0 || _batchNormalizationShift.size() > 0)
@@ -260,11 +280,54 @@ void korali::NeuralNetwork::create()
     _inputNormalizationArgs.insert({DNNL_ARG_SCALE_SHIFT, _inputNormalizationScaleShiftMem});
     _inputNormalizationArgs.insert({DNNL_ARG_WORKSPACE, _inputNormalizationWorkspaceMem});
     _inputNormalizationArgs.insert({DNNL_ARG_DST, _layers[0]->_forwardNodeMem});
+
+    // Creating memory to read/write variances and means
+    std::vector<float> inputNormalizationMeans(IC);
+    std::vector<float> inputNormalizationVariances(IC);
+
+    // If not training, assign given variances and means
+    if (_inputNormalizationMeans.size() > 0)
+    {
+     for (size_t i = 0; i < IC; i++)
+     {
+      inputNormalizationMeans[i] = _inputNormalizationMeans[i];
+      inputNormalizationVariances[i] = _inputNormalizationVariances[i];
+     }
+
+     write_to_dnnl_memory(inputNormalizationMeans.data(), _inputNormalizationMeanMem);
+     write_to_dnnl_memory(inputNormalizationVariances.data(), _inputNormalizationVarianceMem);
+    }
+
+    // Normalizing input
+    _inputNormalizationPrimitive.execute(_stream, _inputNormalizationArgs);
+
+    _stream.wait();
+
+    // Retrieving normalization means and variances
+    if (_inputNormalizationMeans.size() == 0 && _inputNormalizationVariances.size() == 0)
+    {
+     read_from_dnnl_memory(inputNormalizationMeans.data(), _inputNormalizationMeanMem);
+     read_from_dnnl_memory(inputNormalizationVariances.data(), _inputNormalizationVarianceMem);
+
+     _inputNormalizationMeans.resize(inputNormalizationMeans.size());
+     _inputNormalizationVariances.resize(inputNormalizationVariances.size());
+     _inputNormalizationSigmas.resize(inputNormalizationVariances.size());
+
+     // Translating from variance to sigma values
+     for (size_t i = 0; i < IC; i++)
+     {
+       _inputNormalizationMeans[i] = inputNormalizationMeans[i];
+       _inputNormalizationVariances[i] = inputNormalizationVariances[i];
+       _inputNormalizationSigmas[i] = sqrt(inputNormalizationVariances[i]);
+       // printf("%f, %f\n", _inputNormalizationMeans[i], _inputNormalizationVariances[i]);
+     }
+    }
   }
 
   // Creating batch output normalization primitive
 
-  if (_batchNormalizationEnabled == true && _operation != "Testing")
+  if (_batchNormalizationEnabled == true)
+  if (_solution.size() > 0)
   {
     const memory::dim IC = _solution[0].size();
     const memory::dims scaleShiftDims = {2, IC};
@@ -272,15 +335,21 @@ void korali::NeuralNetwork::create()
     auto normalizationFlags = dnnl::normalization_flags::none;
     dnnl::memory outputNormalizationScaleShiftMem;
 
+    // If not training, assign given variances and means
+    if (_outputNormalizationMeans.size() > 0 || _outputNormalizationVariances.size() > 0)
+    {
+     if (_outputNormalizationMeans.size() != IC)
+      _k->_logger->logError("Number of values (%lu) in the batch normalization means vector is different from that of the node count of the first layer (%lu).\n", _outputNormalizationMeans.size(), IC);
+
+     if (_outputNormalizationVariances.size() != IC)
+      _k->_logger->logError("Number of values (%lu) in the batch normalization variances vector is different from that of the node count of the first layer (%lu).\n", _outputNormalizationVariances.size(), IC);
+
+      normalizationFlags |= dnnl::normalization_flags::use_global_stats;
+    }
+
     // Processing shift/scale part of batch normalization
     if (_batchNormalizationScale.size() > 0 || _batchNormalizationShift.size() > 0)
     {
-      if (_batchNormalizationScale.size() != IC)
-        _k->_logger->logError("Number of values (%lu) in the batch normalization scale vector is different from that of the node count of the first layer (%lu).\n", _batchNormalizationScale.size(), IC);
-
-      if (_batchNormalizationShift.size() != IC)
-        _k->_logger->logError("Number of values (%lu) in the batch normalization shift vector is different from that of the node count of the first layer (%lu).\n", _batchNormalizationShift.size(), IC);
-
       auto normalizationScaleShiftMemDesc = memory::desc(scaleShiftDims, memory::data_type::f32, memory::format_tag::nc);
       outputNormalizationScaleShiftMem = memory(normalizationScaleShiftMemDesc, _engine);
 
@@ -333,8 +402,48 @@ void korali::NeuralNetwork::create()
 
     // Executing normalization
     write_to_dnnl_memory(batchOutput.data(), normalizedOutputMem);
+
+    // Creating memory to read/write variances and means
+    std::vector<float> outputNormalizationMeans(IC);
+    std::vector<float> outputNormalizationVariances(IC);
+
+    // If not training, assign given variances and means
+    if (_outputNormalizationMeans.size() > 0)
+    {
+     for (size_t i = 0; i < IC; i++)
+     {
+      outputNormalizationMeans[i] = _outputNormalizationMeans[i];
+      outputNormalizationVariances[i] = _outputNormalizationVariances[i];
+     }
+
+     write_to_dnnl_memory(outputNormalizationMeans.data(), outputNormalizationMeanMem);
+     write_to_dnnl_memory(outputNormalizationVariances.data(), outputNormalizationVarianceMem);
+    }
+
+    // Normalizing output
     outputNormalizationPrimitive.execute(_stream, outputNormalizationArgs);
+
     _stream.wait();
+
+    // Retrieving normalization means and variances
+    if (_outputNormalizationMeans.size() == 0 && _outputNormalizationVariances.size() == 0)
+    {
+     read_from_dnnl_memory(outputNormalizationMeans.data(), outputNormalizationMeanMem);
+     read_from_dnnl_memory(outputNormalizationVariances.data(), outputNormalizationVarianceMem);
+
+     _outputNormalizationMeans.resize(outputNormalizationMeans.size());
+     _outputNormalizationVariances.resize(outputNormalizationVariances.size());
+     _outputNormalizationSigmas.resize(outputNormalizationVariances.size());
+
+     // Translating from variance to sigma values
+     for (size_t i = 0; i < IC; i++)
+     {
+       _outputNormalizationMeans[i] = outputNormalizationMeans[i];
+       _outputNormalizationVariances[i] = outputNormalizationVariances[i];
+       _outputNormalizationSigmas[i] = sqrt(outputNormalizationVariances[i]);
+       // printf("%f, %f\n", _outputNormalizationMeans[i], _outputNormalizationVariances[i]);
+     }
+    }
 
     // Retrieving normalized solution
     read_from_dnnl_memory(batchOutput.data(), normalizedOutputMem);
@@ -342,22 +451,6 @@ void korali::NeuralNetwork::create()
     for (size_t i = 0; i < N; i++)
       for (size_t j = 0; j < IC; j++)
         _solution[i][j] = batchOutput[i * IC + j];
-
-    std::vector<float> outputNormalizationMeans(IC);
-    std::vector<float> outputNormalizationVariances(IC);
-
-    read_from_dnnl_memory(outputNormalizationMeans.data(), outputNormalizationMeanMem);
-    read_from_dnnl_memory(outputNormalizationVariances.data(), outputNormalizationVarianceMem);
-
-    _outputNormalizationMeans.resize(outputNormalizationMeans.size());
-    _outputNormalizationSigmas.resize(outputNormalizationVariances.size());
-
-    // Translating from variance to sigma values
-    for (size_t i = 0; i < IC; i++)
-    {
-      _outputNormalizationMeans[i] = outputNormalizationMeans[i];
-      _outputNormalizationSigmas[i] = sqrt(outputNormalizationVariances[i]);
-    }
   }
 
   /*********************************************************************************
@@ -399,7 +492,7 @@ void korali::NeuralNetwork::create()
   _isInitialized = true;
 }
 
-void korali::NeuralNetwork::update()
+void korali::NeuralNetwork::updateWeightsAndBias()
 {
   if (_isInitialized == false)
     _k->_logger->logError("The neural network has not been initialized before the update.\n");
@@ -465,18 +558,6 @@ void korali::NeuralNetwork::forward()
   size_t inputSize = _layers[0]->_nodeCount;
   size_t batchSize = _layers[0]->_nodeValues.size();
 
-  // Copying input data to first layer
-  std::vector<float> batchInput(batchSize * inputSize);
-  for (size_t i = 0; i < batchSize; i++)
-    for (size_t j = 0; j < inputSize; j++)
-      batchInput[i * inputSize + j] = _layers[0]->_nodeValues[i][j];
-
-  write_to_dnnl_memory(batchInput.data(), _layers[0]->_forwardNodeMem);
-
-  // Normalizing input
-  if (_batchNormalizationEnabled == true)
-    _inputNormalizationPrimitive.execute(_stream, _inputNormalizationArgs);
-
   // forward propagating neural network
   for (size_t currentLayer = 1; currentLayer < layerCount; currentLayer++)
     _layers[currentLayer]->_forwardPrimitive.execute(_stream, _layers[currentLayer]->_forwardInnerProductArgs);
@@ -502,7 +583,7 @@ void korali::NeuralNetwork::forward()
 
 void korali::NeuralNetwork::backward()
 {
-  if (_operation != "Training")
+  if (_operation == "Inference")
     _k->_logger->logError("Neural network being backward propagated but has not being tagged as training in the 'Operation' setting. \n");
 
   if (_hasPerformedForwardPropagation == false)
@@ -586,7 +667,7 @@ void korali::NeuralNetwork::runSample(korali::Sample &sample, korali::NeuralNetw
   }
 
   // Updating the network's weights and biases
-  nn->update();
+  nn->updateWeightsAndBias();
 
   // Running the input values through the neural network
   nn->forward();

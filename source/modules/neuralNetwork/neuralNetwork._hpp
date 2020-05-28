@@ -103,7 +103,7 @@ class NeuralNetwork : public korali::Module
   /**
    * @brief Updates the values of weights, biases, and inputs to the NN
    */
-  void update();
+  void updateWeightsAndBias();
 
   /**
    * @brief Forward-propagates the input batch data through the network.

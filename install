@@ -95,7 +95,7 @@ done
 version=`cat docs/VERSION`
 logEcho "[Korali] Installing Korali v${version}..." 
 logEcho "[Korali] Determining Configuration..." 
-log "[Korali] Using $NJOBS jobs."
+logEcho "[Korali] Using $NJOBS jobs."
 log "[Korali] Checking for architecture..."
 arch="$(uname -s)"
 
@@ -139,6 +139,74 @@ if [ $DETECTED_CRAY      -eq 0 ]; then USE_CXX=CC;      fi;
 if [ $DETECTED_CLANG     -eq 0 ]; then USE_CXX=clang++; fi;
 if [ $DETECTED_CXX       -eq 0 ]; then USE_CXX=$CXX;    fi;
 
+######## Checking for CMake ########
+
+cmakeFound=0
+cMakeVer=0.0
+
+cMakeBin=$PWD/build/cmakeInstall/bin/cmake
+
+if [ ! -f ${cMakeBin} ]; then
+ cMakeBin=cmake
+fi
+
+$cMakeBin --version > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+ minCMakeVer=3.0
+ cMakeVer=`cmake --version | head -n 1 | cut -d' ' -f 3`
+ cmpver=`printf "${cMakeVer}\n${minCMakeVer}" | sort -V | head -n 1`
+ 
+ if [[ "$cmpver" != "$minCMakeVer" ]]; then
+    logEcho "[Korali] CMake version found (${cMakeVer}) is smaller than required (${minCMakeVer})."
+ else
+    cmakeFound=1
+ fi
+fi
+
+if [ ${cmakeFound} == 0 ]; then
+
+ if [ $INSTALLREQS -eq 0 ]; then
+ logEcho "[Korali] Error: CMake not found or older version than 3.0."
+ logEcho "         Solution: Have 'cmake' correctly installed and in your PATH environment variable..."
+ logEcho "         1. Have 'cmake' version >3.0 correctly installed and in your PATH environment variable"
+ logEcho "         2. Run ./install --prereqs to allow Korali."
+ logEcho "            to install missing prerequisites automatically.."
+ exitWithError
+ fi
+ 
+ logEcho "[Korali] Downloading CMake... "
+ 
+ mkdir -p build; check
+ CURDIR=$PWD
+ 
+ pushd build >> $logFile 2>&1; check
+ 
+ rm -f cmake-3.17.3.tar.gz >> $logFile 2>&1; check
+ rm -rf cmake-3.17.3 >> $logFile 2>&1; check
+ rm -rf cmakeInstall >> $logFile 2>&1; check
+ 
+ wget https://github.com/Kitware/CMake/releases/download/v3.17.3/cmake-3.17.3.tar.gz >> $logFile 2>&1; check
+ tar -xzvf cmake-3.17.3.tar.gz >> $logFile 2>&1; check
+  
+ echo "[Korali] Configuring CMake... "
+ cd cmake-3.17.3/
+ ./configure --prefix=${CURDIR}/build/cmakeInstall --parallel=$NJOBS >> $logFile 2>&1; check
+ 
+ echo "[Korali] Building CMake... "
+ make -j$NJOBS >> $logFile 2>&1; check
+ 
+ echo "[Korali] Installing CMake... "
+ make install >> $logFile 2>&1; check
+ 
+ popd >> $logFile 2>&1; check
+ 
+ logEcho "[Korali] Finished installing CMake. "
+ cMakeBin=${CURDIR}/build/cmakeInstall/bin/cmake
+fi
+
+cMakeVer=`cmake --version | head -n 1 | cut -d' ' -f 3` 
+logEcho "[Korali] Found CMake version $cMakeVer"
+
 ######## Checking support for GNU Scientific Library ########
 
 log "[Korali] Looking for existing GNU Scientific Library (GSL)..."
@@ -161,7 +229,7 @@ if [ $? -eq 0 ]; then
  foundGSL=1
  cmpver=`printf "${gslver}\n${mingslver}" | sort -V | head -n 1`
  if [[ "$cmpver" != "$mingslver" ]]; then
-   logEcho "[Korali] GSL Version found (${gslver}) is smaller than required (${mingslver})."
+   logEcho "[Korali] GSL version found (${gslver}) is smaller than required (${mingslver})."
    foundGSL=0
  fi
 fi
@@ -265,7 +333,7 @@ if [ $oneDnnFound == 0 ]; then
   cd build>> $logFile 2>&1; check
   
   logEcho "[Korali] Running cmake ..."
-  cmake .. -DCMAKE_INSTALL_PREFIX=$DNNLROOT >> $logFile 2>&1; check
+  $cMakeBin .. -DCMAKE_INSTALL_PREFIX=$DNNLROOT >> $logFile 2>&1; check
   
   logEcho "[Korali] Compiling oneDNN... "
   make -j$NJOBS >> $logFile 2>&1; check

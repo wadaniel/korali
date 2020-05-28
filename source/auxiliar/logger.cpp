@@ -113,5 +113,5 @@ void korali::Logger::logError(const char *format, ...)
   fflush(stderr);
   free(outstr);
 
-  std::abort();
+  throw;
 }

@@ -21,7 +21,7 @@ e = korali.Experiment()
 
 ### Defining a learning problem to infer values of sin(x)
 
-e["Problem"]["Type"] = "Learning"
+e["Problem"]["Type"] = "Supervised Learning"
  
 e["Variables"][0]["Name"] = "X"
 e["Variables"][0]["Type"] = "Input"
@@ -35,9 +35,9 @@ e["Variables"][1]["Validation Data"] = validationOutputSet.tolist()
 
 ### Using a neural network solver (deep learning) for inference
 
-e["Solver"]["Type"] = "Deep Learning"
+e["Solver"]["Type"] = "Deep Learner"
 e["Solver"]["Termination Criteria"]["Max Inactive Steps"] = 100
-e["Solver"]["Termination Criteria"]["Max Generations"] = 2000
+e["Solver"]["Termination Criteria"]["Max Generations"] = 500
 
 ### Defining the shape of the neural network
 

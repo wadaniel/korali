@@ -28,7 +28,7 @@ Installation Steps
    
      ./install --jobs=8
 
-  If you are missing prerequsites, you can ask Korali to install them automatically. E.g.,
+  If you are missing any prerequsites, you can ask Korali to install them automatically via:
 
   .. code-block:: bash
    

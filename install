@@ -204,7 +204,7 @@ if [ ${cmakeFound} == 0 ]; then
  cMakeBin=${CURDIR}/build/cmakeInstall/bin/cmake
 fi
 
-cMakeVer=`cmake --version | head -n 1 | cut -d' ' -f 3` 
+cMakeVer=`$cMakeBin --version | head -n 1 | cut -d' ' -f 3` 
 logEcho "[Korali] Found CMake version $cMakeVer"
 
 ######## Checking support for GNU Scientific Library ########
@@ -248,15 +248,15 @@ if [ $foundGSL == 0 ]; then
   logEcho "[Korali] Downloading GNU Scientific Library... "
   mkdir -p build; check
   CURDIR=$PWD
-  rm -f gsl-2.5.tar.gz; check 
-  wget 'ftp://ftp.gnu.org/gnu/gsl/gsl-2.5.tar.gz'; check 
-  tar -xzvf gsl-2.5.tar.gz >> $logFile 2>&1; check
+  rm -f gsl-2.5.tar.gz >> $logFile 2>&1; check
+  wget 'ftp://ftp.gnu.org/gnu/gsl/gsl-2.5.tar.gz' >> $logFile 2>&1; check 
+  tar -xzvf gsl-2.5.tar.gz >> $logFile 2>&1 >> $logFile 2>&1; check
   
   echo "[Korali] Configuring GNU Scientific Library... "
   cd gsl-2.5; check 
   
   logEcho "[Korali] Running ./configure --prefix=$gslprefix ..."
-  ./configure --prefix=$gslprefix >> $logFile 2>&1 ; check
+  ./configure --prefix=$gslprefix >> $logFile 2>&1; check
   
   logEcho "[Korali] Compiling GNU Scientific Library... "
   make -j$NJOBS >> $logFile 2>&1; check
@@ -320,19 +320,19 @@ if [ $oneDnnFound == 0 ]; then
   fi
   
   logEcho "[Korali] Downloading oneDNN... "
-  mkdir -p build; check
-  pushd build; check
+  mkdir -p build >> $logFile 2>&1; check
+  pushd build >> $logFile 2>&1; check
   
-  rm -rf oneDNN; check
-  git clone https://github.com/oneapi-src/oneDNN.git; check 
+  rm -rf oneDNN >> $logFile 2>&1; check
+  git clone https://github.com/oneapi-src/oneDNN.git >> $logFile 2>&1; check
   
   echo "[Korali] Configuring oneDNN... "
-  cd oneDNN; check
+  cd oneDNN >> $logFile 2>&1; check
   
-  mkdir -p build; check
-  cd build>> $logFile 2>&1; check
+  mkdir -p build >> $logFile 2>&1; check
+  cd build >> $logFile 2>&1; check
   
-  logEcho "[Korali] Running cmake ..."
+  logEcho "[Korali] Running CMake on oneDNN..."
   $cMakeBin .. -DCMAKE_INSTALL_PREFIX=$DNNLROOT >> $logFile 2>&1; check
   
   logEcho "[Korali] Compiling oneDNN... "

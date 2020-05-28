@@ -1,6 +1,6 @@
-#include "modules/problem/learning/learning.hpp"
+#include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 
-void korali::problem ::Learning::initialize()
+void korali::problem::SupervisedLearning::initialize()
 {
   // Processing output/input variable configuration
 

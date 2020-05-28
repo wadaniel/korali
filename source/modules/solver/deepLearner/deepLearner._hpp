@@ -1,23 +1,23 @@
-#ifndef _KORALI_SOLVER_DEEP_LEARNING_TRAIN_HPP_
-#define _KORALI_SOLVER_DEEP_LEARNING_TRAIN_HPP_
+#ifndef _KORALI_SOLVER_DEEP_LEARNER_TRAIN_HPP_
+#define _KORALI_SOLVER_DEEP_LEARNER_TRAIN_HPP_
 
 #include "engine.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/neuralNetwork/neuralNetwork.hpp"
-#include "modules/problem/learning/learning.hpp"
+#include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 #include "modules/solver/solver.hpp"
 
 namespace korali
 {
 namespace solver
 {
-class DeepLearning : public korali::Solver
+class DeepLearner : public korali::Solver
 {
   public:
   /**
  * @brief Korali engine for optimizing NN weights and biases
  */
-  korali::problem::Learning *_problem;
+  korali::problem::SupervisedLearning *_problem;
 
   std::vector<std::vector<double>> test(const std::vector<std::vector<double>> &inputBatch) override;
 
@@ -28,4 +28,4 @@ class DeepLearning : public korali::Solver
 } // namespace solver
 } // namespace korali
 
-#endif // _KORALI_SOLVER_DEEP_LEARNING_TRAIN_HPP_
+#endif // _KORALI_SOLVER_DEEP_LEARNER_TRAIN_HPP_

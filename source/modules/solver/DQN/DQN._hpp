@@ -1,5 +1,5 @@
-#ifndef _KORALI_SOLVER_LEARNER_HPP_
-#define _KORALI_SOLVER_LEARNER_HPP_
+#ifndef _KORALI_SOLVER_DQN_HPP_
+#define _KORALI_SOLVER_DQN_HPP_
 
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
 #include "modules/solver/solver.hpp"
@@ -8,7 +8,7 @@ namespace korali
 {
 namespace solver
 {
-class Learner : public korali::Solver
+class DQN : public korali::Solver
 {
   public:
   /**
@@ -24,19 +24,19 @@ class Learner : public korali::Solver
   /**
   * @brief Instructs the learner to initialize variables before the start of a generation.
   */
-  virtual void initializeGeneration() = 0;
+  virtual void initializeGeneration() { _k->_logger->logError("Not implemented yet\n"); exit(1); };
 
   /**
   * @brief Instructs the learner to perform after-generation processing.
   */
-  virtual void processGeneration() = 0;
+  virtual void processGeneration() { _k->_logger->logError("Not implemented yet\n"); exit(1); };
 
   /**
   * @brief Given the state of the agent, the learner returns a new action.
   * @param state The current agent state
   * @return A vector containing the new action to perform
   */
-  virtual std::vector<double> getAction(const std::vector<double> &state) = 0;
+  virtual std::vector<double> getAction(const std::vector<double> &state) { _k->_logger->logError("Not implemented yet\n"); exit(1); return { }; };
 
   /**
   * @brief Stores the (state, action, reward, new state) agent experience and and uses it to update the policy.
@@ -45,10 +45,10 @@ class Learner : public korali::Solver
   * @param reward The perceived reward
   * @param newState The new agent state
   */
-  virtual void storeExperience(const std::vector<double> &state, const std::vector<double> &action, const double reward, const std::vector<double> &newState) = 0;
+  virtual void storeExperience(const std::vector<double> &state, const std::vector<double> &action, const double reward, const std::vector<double> &newState) { _k->_logger->logError("Not implemented yet\n"); exit(1); };
 };
 
 } // namespace solver
 } // namespace korali
 
-#endif // _KORALI_SOLVER_LEARNER_HPP_
+#endif // _KORALI_SOLVER_DQN_HPP_

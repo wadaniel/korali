@@ -1,16 +1,16 @@
 #include "modules/conduit/conduit.hpp"
-#include "modules/solver/learner/learner.hpp"
+#include "modules/solver/DQN/DQN.hpp"
 
-void korali::solver::Learner::runGeneration()
+void korali::solver::DQN::runGeneration()
 {
-  // If initial generation, get problem pointer, and set initial Learner configuration
+  // If initial generation, get problem pointer, and set initial DQN configuration
   if (_k->_currentGeneration == 1)
   {
     _problem = dynamic_cast<korali::problem::ReinforcementLearning *>(_k->_problem);
     setInitialConfiguration();
   }
 
-  // Instructing Learner to initialize generation configuration
+  // Instructing DQN to initialize generation configuration
   initializeGeneration();
 
   // Creating storage for agents
@@ -125,6 +125,6 @@ void korali::solver::Learner::runGeneration()
       _k->_js["Results"]["Optimal Reward"] = _bestReward;
     }
 
-  // Instructing Learner to process finsihed generation
+  // Instructing DQN to process finsihed generation
   processGeneration();
 }

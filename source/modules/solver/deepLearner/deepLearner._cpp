@@ -1,11 +1,11 @@
 #include "modules/conduit/conduit.hpp"
 #include "modules/experiment/experiment.hpp"
-#include "modules/solver/deepLearning/deepLearning.hpp"
+#include "modules/solver/deepLearner/deepLearner.hpp"
 
-void korali::solver::DeepLearning::initialize()
+void korali::solver::DeepLearner::initialize()
 {
   // Getting problem pointer
-  _problem = dynamic_cast<korali::problem::Learning *>(_k->_problem);
+  _problem = dynamic_cast<korali::problem::SupervisedLearning *>(_k->_problem);
 
   if (_problem->_trainingBatchSize == 0) _k->_logger->logError("Training data has not been provided for variable 0.\n");
   if (_problem->_validationBatchSize == 0) _k->_logger->logError("Validation data has not been provided for variable 0.\n");
@@ -76,7 +76,7 @@ void korali::solver::DeepLearning::initialize()
   _validationNeuralNetwork->_operation = "Inference";
 }
 
-void korali::solver::DeepLearning::runGeneration()
+void korali::solver::DeepLearner::runGeneration()
 {
   /**************************************************************
   * Training Stage
@@ -115,7 +115,7 @@ void korali::solver::DeepLearning::runGeneration()
   }
 }
 
-std::vector<std::vector<double>> korali::solver::DeepLearning::test(const std::vector<std::vector<double>> &inputBatch)
+std::vector<std::vector<double>> korali::solver::DeepLearner::test(const std::vector<std::vector<double>> &inputBatch)
 {
   // Re-creating NN's internal structures
   _testNeuralNetwork->_layers[0]->_nodeValues = inputBatch;
@@ -149,7 +149,7 @@ std::vector<std::vector<double>> korali::solver::DeepLearning::test(const std::v
   return _testNeuralNetwork->_layers[outputLayerId]->_nodeValues;
 }
 
-void korali::solver::DeepLearning::printGenerationAfter()
+void korali::solver::DeepLearner::printGenerationAfter()
 {
   // Printing results so far
   _k->_logger->logInfo("Normal", "Training Loss: %.15f\n", _trainingNeuralNetwork->_currentTrainingLoss);

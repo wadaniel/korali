@@ -41,6 +41,30 @@ If you are experiencing problems installing or running Korali, please check the 
 
   - For further questions, feel free to `contact us </korali/#contact>`_.
 
+
+Cray systems (Piz Daint)
+------------------------
+
+The default installation of `mpi4py` possibly uses a different MPI implementation than Korali, preventing multi-rank runs.
+To fix it, configure MPI compilers and reinstall `mpi4py` and Korali.
+
+.. code-block:: bash
+
+    # Create wrappers `mpicc` and `mpic++` around Cray compilers `cc` and `CC`, respectively.
+    # Warning: this will overwrite any `mpicc` and `mpic++` in your `~/bin` folder!
+    mkdir -p $HOME/bin
+    echo -e '#!/bin/bash'"\n"'cc "$@"' > $HOME/bin/mpicc
+    echo -e '#!/bin/bash'"\n"'CC "$@"' > $HOME/bin/mpic++
+    chmod +x $HOME/bin/mpicc $HOME/bin/mpic++
+
+    # Load Python module (you can add this to your `~/.bashrc`).
+    module load cray-python
+    
+    # Reinstall mpi4py locally and reinstall korali.
+    python3 -m pip install --user mpi4py --ignore-installed -v
+    cd ~/path/to/korali
+    MPICXX=mpic++ ./install --rebuild --jobs=12
+
 System Requirements
 ====================
 

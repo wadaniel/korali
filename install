@@ -346,7 +346,7 @@ fi
 
 logEcho "[Korali] Found oneDNN at ${DNNLROOT}"
 ONEDNNCFLAGS="-D_KORALI_USE_ONEDNN -I${DNNLROOT}/include"
-ONEDNNLDFLAGS="-Wl,-rpath -Wl,${DNNLROOT}/lib64/ -L${DNNLROOT}/lib64/ -Wl,${DNNLROOT}/lib/ -L${DNNLROOT}/lib/ -ldnnl"
+ONEDNNLDFLAGS="-Wl,-rpath -Wl,${DNNLROOT}/lib64/ -L${DNNLROOT}/lib64/ -Wl,-rpath -Wl,${DNNLROOT}/lib/ -L${DNNLROOT}/lib/ -ldnnl"
  
 ######## Checking support for Python3 ########
 

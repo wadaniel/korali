@@ -28,6 +28,12 @@ Installation Steps
    
      ./install --jobs=8
 
+  If you are missing prerequsites, you can ask Korali to install them automatically. E.g.,
+
+  .. code-block:: bash
+   
+     ./install --prereqs
+
 Troubleshooting
 ====================
 
@@ -101,7 +107,10 @@ Automatically Installed by Korali
       Korali requires *pybind11* to enable Python/C++ interaction. If not found, it will try to install it automatically using *pip3*.
   
   - **GNU Scientific Library**
-      Korali requires the `GSL-2.4 <http://www.gnu.org/software/gsl/>`_ or later must be installed on your system. If the command ``gsl-config`` is not found, Korali will try to install GSL automatically. *Hint:* If you do not want Korali downloading and installing GSL on its own, run ``./install --no-prereqs``
+      Korali requires that the `GSL-2.4 <http://www.gnu.org/software/gsl/>`_ or later must be installed on your system. If the command ``gsl-config`` is not found, you can ask Korali  to install GSL automatically by using the ``--prereqs`` option. 
+
+  - **oneDNN**
+      Korali requires that the `OneAPI Deep Neural Network Library <https://oneapi-src.github.io/oneDNN/>`_ or later must be installed on your system. If you have an installation of oneDNN already in your system, make sure the environment variable ``DNNLROOT`` pointing to its installation folder is correctly defined. If OneDNN is not found, you can ask Korali to install it automatically  by using the ``--prereqs`` option.
 
 Optional Requirements
 ---------------------------------

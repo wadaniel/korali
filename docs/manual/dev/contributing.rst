@@ -1,7 +1,7 @@
-.. _collaborating:
+.. _contributing:
 
 ********************
-Collaborating
+Contributing
 ********************
 
 Additional Software

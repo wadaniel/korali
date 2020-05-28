@@ -8,14 +8,14 @@ function print_help ()
 {
  echo ""
  echo "Syntax: ./install"
- echo "        [--no-prereqs]"
+ echo "        [--prereqs]"
  echo "        [--rebuild]"
  echo "        [--debug]"
  echo "        [--jobs=N]"
  echo "        [--help]"
  echo ""
  echo "Where:"
- echo " --no-prereqs prevents Korali from automatically installing prerequisites."
+ echo " --prereqs Allows Korali to install any missing prerequisites."
  echo " --rebuild Cleans and rebuilds/installs Korali for development purposes."
  echo " --debug builds a non-optimized Korali for debugging purposes."
  echo " --jobs=N Specifies N jobs to use when building Korali."
@@ -42,15 +42,23 @@ function exitWithError ()
  exit -1
 }
 
-INSTALLREQS=1
+function check()
+{
+ if [ ! $? -eq 0 ]
+ then
+  exitWithError
+ fi 
+}
+
+INSTALLREQS=0
 NJOBS=4
 OPTFLAGS="-O3 -DJSON_NOEXCEPTION"
 
 for i in "$@"
 do
 case $i in
-    --no-prereqs)
-    INSTALLREQS=0
+    --prereqs)
+    INSTALLREQS=1
     shift 
     ;;
     --debug)
@@ -135,53 +143,64 @@ if [ $DETECTED_CXX       -eq 0 ]; then USE_CXX=$CXX;    fi;
 
 log "[Korali] Looking for existing GNU Scientific Library (GSL)..."
 
+mingslver=2.5
+foundGSL=0
 gslprefix=$PWD/build
+gslcfgFile=gsl-config
 
-gslcfgFile=$gslprefix/bin/gsl-config
-if [ ! -f "$gslcfgFile" ]; then
- gslcfgFile=gsl-config
+if [ -f ${gslprefix}/bin/gsl-config ]; then
+ gslcfgFile=${gslprefix}/bin/gsl-config
 fi
 
-log "[Korali] Running \"$gslcfgFile --version\"..."
-gslver=`$gslcfgFile --version`
-mingslver=2.5
-if [  $? -eq 0 ]
-then
- log "[Korali] Found GSL version $gslver."
+$gslcfgFile --version > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+ log "[Korali] Running \"$gslcfgFile --version\"..."
+
+ gslver=`$gslcfgFile --version`
+ logEcho "[Korali] Found GSL version $gslver."
+ foundGSL=1
  cmpver=`printf "${gslver}\n${mingslver}" | sort -V | head -n 1`
  if [[ "$cmpver" != "$mingslver" ]]; then
- 
+   logEcho "[Korali] GSL Version found (${gslver}) is smaller than required (${mingslver})."
+   foundGSL=0
+ fi
+fi
+
+if [ $foundGSL == 0 ]; then
+
   if [ $INSTALLREQS -eq 0 ]; then
-   logEcho "[Korali] Error: GSL Version found (${gslver}) is smaller than required (${mingslver})."
-   logEcho "[Korali] Solution: Run \"./install\"."
+   logEcho "[Korali] GSL (version > 2.5) not found. Try either of these solutions:"
+   logEcho "         1. Configure your system so that the file gsl-config from your."
+   logEcho "            GSL (version > 2.5) is accesible by the PATH environment variable"
+   logEcho "         2. Run ./install --prereqs to allow Korali."
+   logEcho "            to install missing prerequisites automatically.." 
    exitWithError
   fi
   
   logEcho "[Korali] Downloading GNU Scientific Library... "
-  mkdir -p build
+  mkdir -p build; check
   CURDIR=$PWD
-  rm -f gsl-2.5.tar.gz 
-  wget 'ftp://ftp.gnu.org/gnu/gsl/gsl-2.5.tar.gz' 
-  tar -xzvf gsl-2.5.tar.gz >> $logFile 2>&1
-  echo "[Korali] Configuring GNU Scientific Library... "
-  cd gsl-2.5 
-  logEcho "[Korali] Running ./configure --prefix=$gslprefix ..."
-  ./configure --prefix=$gslprefix >> $logFile 2>&1 
-  logEcho "[Korali] Compiling GNU Scientific Library... "
-  make -j$NJOBS >> $logFile 2>&1
-  logEcho "[Korali] Installing GNU Scientific Library... "
+  rm -f gsl-2.5.tar.gz; check 
+  wget 'ftp://ftp.gnu.org/gnu/gsl/gsl-2.5.tar.gz'; check 
+  tar -xzvf gsl-2.5.tar.gz >> $logFile 2>&1; check
   
-  make install >> $logFile 2>&1
-  if [  $? -ne 0 ]; then
-   logEcho -e "[Korali] Error: Failed GNU Scientific Library installation."
-   exitWithError
-  fi
+  echo "[Korali] Configuring GNU Scientific Library... "
+  cd gsl-2.5; check 
+  
+  logEcho "[Korali] Running ./configure --prefix=$gslprefix ..."
+  ./configure --prefix=$gslprefix >> $logFile 2>&1 ; check
+  
+  logEcho "[Korali] Compiling GNU Scientific Library... "
+  make -j$NJOBS >> $logFile 2>&1; check
+  
+  logEcho "[Korali] Installing GNU Scientific Library... "
+  make install >> $logFile 2>&1; check
   
   cd .. 
-  rm -rf gsl-2.5 gsl-2.5.tar.gz >> $logFile 2>&1
+  rm -rf gsl-2.5 gsl-2.5.tar.gz >> $logFile 2>&1; check
+  
   logEcho "[Korali] Finished installing GNU Scientific Library. "
   gslcfgFile=$gslprefix/bin/gsl-config
- fi
 fi
 
 ######## Checking support for MPI ########
@@ -190,6 +209,7 @@ MPIFLAGS=""
 log "[Korali] Checking for MPI support..."
 log "[Korali] Running \"\$MPICXX --help\"..."
 $MPICXX --help > /dev/null 2>&1
+
 if [ ! $? -eq 0 ]
 then
  logEcho "[Korali] MPI not found. Installing Korali without support for MPI."
@@ -206,17 +226,61 @@ fi
 
 ONEDNNCFLAGS=""
 ONEDNNLDFLAGS=""
+oneDnnFound=0
+
 log "[Korali] Checking for oneDNN support..."
-if [ ! -f ${DNNLROOT}/lib64/libdnnl.so ]
-then
- logEcho "[Korali] oneDNN not found. Installing Korali without support for oneDNN."
- logEcho "         > To use oneDNN, define the \$DNNLROOT environment variable."
-else
+if [ -f ${DNNLROOT}/lib64/libdnnl.so ]; then
  log "[Korali] Found openDNN library at ${DNNLROOT}/lib64/libdnnl.so"
- ONEDNNCFLAGS="-D_KORALI_USE_ONEDNN -I${DNNLROOT}/include"
- ONEDNNLDFLAGS="-Wl,-rpath -Wl,${DNNLROOT}/lib64/ -L${DNNLROOT}/lib64/ -ldnnl"
+ oneDnnFound=1
+else
+ DNNLROOT=$PWD/build/oneDNNInstall
+ if [ -f ${DNNLROOT}/lib64/libdnnl.so ]; then
+  log "[Korali] Found openDNN library at ${DNNLROOT}/lib64/libdnnl.so"
+  oneDnnFound=1
+ fi
 fi
 
+if [ $oneDnnFound == 0 ]; then
+  
+  if [ $INSTALLREQS -eq 0 ]; then
+   logEcho "[Korali] oneDNN not found. Try either of these solutions:"
+   logEcho "         1. Define the \$DNNLROOT environment variable."
+   logEcho "           to indicate the installation folder of oneDNN."
+   logEcho "         2. Run ./install --prereqs to allow Korali."
+   logEcho "           to install missing prerequisites automatically.." 
+   exitWithError
+  fi
+  
+  logEcho "[Korali] Downloading oneDNN... "
+  mkdir -p build; check
+  pushd build; check
+  
+  rm -rf oneDNN; check
+  git clone https://github.com/oneapi-src/oneDNN.git; check 
+  
+  echo "[Korali] Configuring oneDNN... "
+  cd oneDNN; check
+  
+  mkdir -p build; check
+  cd build>> $logFile 2>&1; check
+  
+  logEcho "[Korali] Running cmake ..."
+  cmake .. -DCMAKE_INSTALL_PREFIX=$DNNLROOT >> $logFile 2>&1; check
+  
+  logEcho "[Korali] Compiling oneDNN... "
+  make -j$NJOBS >> $logFile 2>&1; check
+  
+  logEcho "[Korali] Installing oneDNN... "
+  make install >> $logFile 2>&1; check
+  
+  popd >> $logFile 2>&1; check
+  
+fi
+
+logEcho "[Korali] Found oneDNN at ${DNNLROOT}"
+ONEDNNCFLAGS="-D_KORALI_USE_ONEDNN -I${DNNLROOT}/include"
+ONEDNNLDFLAGS="-Wl,-rpath -Wl,${DNNLROOT}/lib64/ -L${DNNLROOT}/lib64/ -ldnnl"
+ 
 ######## Checking support for Python3 ########
 
 log "[Korali] Checking for Python3 support using \"python3 --version\"."
@@ -261,11 +325,7 @@ if [ $? -ne 0 ]; then
   fi
   
   logEcho "[Korali] pybind11 not found, trying to install it automatically."
-  python3 -m pip install $PIP_USER pybind11 >> $logFile 2>&1
-  if [ $? -ne 0 ]; then
-    logEcho "[Korali] Error trying to install pybind11."
-    exitWithError
-  fi
+  python3 -m pip install $PIP_USER pybind11 >> $logFile 2>&1; check
 fi
 
 ######## Determining Library Flags ########
@@ -335,6 +395,7 @@ if [ $? -ne 0 ]; then
 fi
 
 ######## Installing Korali using pip ########
+
 logEcho "[Korali] Installing Korali..."
 
 cp source/libkorali.so . >> $logFile 2>&1
@@ -348,6 +409,7 @@ if [ $? -ne 0 ]; then
   logEcho "[Korali] Error installing Korali's Python module."
   exitWithError
 fi
+
 rm -f libkorali.so >> $logFile 2>&1 
 
 echo "------------------------------------------------------------------"

@@ -5,58 +5,49 @@
 import numpy as np
 
 
-def model( s, x ): 
+def model( s, X ):
   a   = s["Parameters"][0]
   b   = s["Parameters"][1]
   sig = s["Parameters"][2]
-  
-  fval = [ ]
-  sdev = [ ]
-  for i in range(len(x)):
-    fval.append(a*x[i] + b)
-    sdev.append(sig)
 
-  s["Reference Evaluations"] = fval
-  s["Standard Deviation"]    = sdev
+  s["Reference Evaluations"] = []
+  s["Standard Deviation"]    = []
+  for x in X:
+    s["Reference Evaluations"] += [ a*x + b ]
+    s["Standard Deviation"] += [ sig ]
 
-def modelWithDerivatives( s, x ): 
+
+def modelWithDerivatives( s, X ):
   a   = s["Parameters"][0]
   b   = s["Parameters"][1]
   sig = s["Parameters"][2]
-  
-  fval = [ ]
-  sdev = [ ]
-  
-  fvalgrad = [ ]
-  sdevgrad = [ ]
-  for i in range(len(x)):
-    fval.append(a*x[i] + b)
-    sdev.append(sig)
-    
-    fvalgrad.append([x[i], 1.0, 0.0])
-    sdevgrad.append([0.0, 0.0, 1.0])
 
-  s["Reference Evaluations"] = fval
-  s["Standard Deviation"]    = sdev
+  s["Reference Evaluations"] = []
+  s["Standard Deviation"]    = []
+  s["Gradient Mean"]               = []
+  s["Gradient Standard Deviation"] = []
 
-  s["Gradient Mean"]               = fvalgrad
-  s["Gradient Standard Deviation"] = sdevgrad
+  for x in X:
+    s["Reference Evaluations"] += [ a*x + b ]
+    s["Standard Deviation"] += [ sig ]
+    s["Gradient Mean"] += [[x, 1.0, 0.0]]
+    s["Gradient Standard Deviation"] += [[0.0, 0.0, 1.0]]
 
 
 def getReferenceData():
- y=[]
- y.append(3.21);
- y.append(4.14);
- y.append(4.94);
- y.append(6.06);
- y.append(6.84);
- return y
+  y=[]
+  y.append(3.21);
+  y.append(4.14);
+  y.append(4.94);
+  y.append(6.06);
+  y.append(6.84);
+  return y
 
 def getReferencePoints():
- x=[] 
- x.append(1.0);
- x.append(2.0);
- x.append(3.0);
- x.append(4.0);
- x.append(5.0);
- return x
+  x=[]
+  x.append(1.0);
+  x.append(2.0);
+  x.append(3.0);
+  x.append(4.0);
+  x.append(5.0);
+  return x

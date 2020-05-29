@@ -34,7 +34,7 @@ fi
 
 ##### Running Tests
 
-python3 ./__test-sin.py; check_result
+OMP_NUM_THREADS=1 python3 ./__test-sin.py; check_result
 
 ##### Deleting Tests
 

@@ -11,8 +11,8 @@ k = korali.Engine()
 
 # Defining Training Sets
 np.random.seed(0xC0FFEE)
-trainingInputSet  = np.random.uniform(0,2*np.pi,100)
-validationInputSet  = np.random.uniform(0,2*np.pi,100)
+trainingInputSet  = np.random.uniform(0,2*np.pi,500)
+validationInputSet  = np.random.uniform(0,2*np.pi,500)
 
 trainingOutputSet = np.sin(trainingInputSet)*scaling
 validationOutputSet = np.sin(validationInputSet)*scaling

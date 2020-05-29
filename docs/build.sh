@@ -69,13 +69,21 @@ check
 cp -r manual/.build/html/* web/docs
 check
 
-# Running Doxygen
-doxCommand=../tools/dev-tools/doxygen/bin/doxygen
+doxygenBin=../prereqs/doxygen
+# If doxygen is not installed, run the installation script
+if [ ! -f $doxygenBin ]; then
+ pushd ..
+ ./prereqs/install_doxygen.sh
+ popd
+fi
 
-echo "Using $doxCommand for C++ documentation..."
-$doxCommand doxygen.config 2>&1 | grep -E 'warning|error'
+# Running Doxygen
+echo "Using $doxygenBin for C++ documentation..."
+$doxygenBin doxygen.config 2>&1 | grep -E 'warning|error'
 if [ $? -eq 0 ]; then
- echo "[Korali] Error running doxygen. Check log for more information."
+ echo "[Korali] Error running doxygen."
+ echo "[Korali] Solution: Make sure doxygen is correly installed by running:"
+ echo "[Korali]           > {KORALI_ROOT}/prereqs/install_doxygen.sh"
  exit -1
 fi 
 

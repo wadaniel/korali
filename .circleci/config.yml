@@ -190,15 +190,6 @@ jobs:
             - "~/korali/prereqs/oneDNN/install"
                             
       - run:
-          name: Get developer tools
-          command: pushd tools/dev-tools; ./get-tools.sh; popd       
-          
-      - save_cache:
-          key: cache-macos-dev-tools-v1
-          paths:
-            - "~/korali/tools/dev-tools"          
-          
-      - run:
           name: build Korali
           command: ./install --prereqs --jobs=4
 

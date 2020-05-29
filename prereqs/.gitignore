@@ -6,3 +6,5 @@ oneDNN
 oneDNNlink
 doxygen
 _doxygen
+_llvm
+clang-format

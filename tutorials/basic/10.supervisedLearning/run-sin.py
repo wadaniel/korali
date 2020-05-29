@@ -11,8 +11,8 @@ k = korali.Engine()
 
 # Defining Training Sets
 np.random.seed(0xC0FFEE)
-trainingInputSet  = np.random.uniform(0,2*np.pi,1000)
-validationInputSet  = np.random.uniform(0,2*np.pi,1000)
+trainingInputSet  = np.random.uniform(0,2*np.pi,100)
+validationInputSet  = np.random.uniform(0,2*np.pi,100)
 
 trainingOutputSet = np.sin(trainingInputSet)*scaling
 validationOutputSet = np.sin(validationInputSet)*scaling
@@ -65,7 +65,7 @@ k.run(e)
 
 ### Obtaining inferred results from the NN and comparing them to the actual solution
 
-testInputSet = np.random.uniform(0,2*np.pi,200)
+testInputSet = np.random.uniform(0,2*np.pi,100)
 testInputSet = [ [ x ] for x in testInputSet.tolist() ]
 
 testInferredSet = e.test(testInputSet)

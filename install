@@ -179,7 +179,8 @@ if [ ! $? == 0 ]; then
 fi
 
 ## Looking for oneDNN
-if [ $INSTALLREQS -eq 0 ]; then
+./prereqs/install_oneDNN.sh $installFlag --jobs=$NJOBS
+if [ ! $? == 0 ]; then
  logEcho "[Korali] oneDNN not found. Try either of these solutions:"
  logEcho "         1. Define the \$DNNLROOT environment variable to indicate the installation folder of oneDNN."
  logEcho "         2. Run './install --prereqs' to allow Korali install missing prerequisites automatically."
@@ -260,11 +261,11 @@ DNNLROOT=`readlink -f prereqs/oneDNNlink`; check
 ONEDNNCFLAGS="-D_KORALI_USE_ONEDNN -I${DNNLROOT}/include"
 ONEDNNLDFLAGS="-Wl,-rpath -Wl,${DNNLROOT}/lib64/ -L${DNNLROOT}/lib64/ -Wl,-rpath -Wl,${DNNLROOT}/lib/ -L${DNNLROOT}/lib/ -ldnnl"
  
-GSLPREFIX=`$gslcfgFile --prefix`
-GSLCFLAGS=`$gslcfgFile --cflags`
-GSLLIBS=`$gslcfgFile --libs`
-PYBIND11INCLUDES=`python3 -m pybind11 --includes` 
-PYBIND11LIBS=`python3-config --ldflags`
+GSLPREFIX=`./prereqs/gsl-config --prefix`; check
+GSLCFLAGS=`./prereqs/gsl-config --cflags`; check
+GSLLIBS=`./prereqs/gsl-config --libs`; check
+PYBIND11INCLUDES=`python3 -m pybind11 --includes` ; check
+PYBIND11LIBS=`python3-config --ldflags`; check
 
 CXXARCH="-std=c++14"
 which $USE_CXX | grep "cray" >> $logFile 2>&1

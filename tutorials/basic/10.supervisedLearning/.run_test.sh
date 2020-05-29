@@ -17,7 +17,7 @@ rm -rf _korali_result*; check_result
 
 echo "  + Creating test files..."
 
-sed -e 's%\plt.show()%%g' \
+sed -e 's%\plt.%#plt.%g' \
         run-sin.py > __test-sin.py; check_result
 
 ##### If fast mode, then creating faster variations
@@ -27,7 +27,7 @@ if [[ $testMode == "fast" ]]; then
  echo "  + Creating fast mode test files..."
  
 sed -e 's%\["Max Generations"\]%\["Max Generations"\] = 100 #%g' \
-    -e 's%\plt.show()%%g' \
+    -e 's%\plt.%#plt.%g' \
         run-sin.py > __test-sin.py; check_result
 
 fi

@@ -130,7 +130,9 @@ if [ ${binFound} == 0 ]; then
  
   hdiutil attach Doxygen-1.8.13.dmg; check
  
-  cp -r /Volumes/Doxygen/Doxygen.app/Contents/* doxygen; check
+  mkdir tempDir; check
+  
+  cp -r /Volumes/Doxygen/Doxygen.app/Contents/* tempDir; check
  
   mv doxygen/Resources/* $installDir; check
   

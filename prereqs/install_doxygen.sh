@@ -121,6 +121,8 @@ if [ ${binFound} == 0 ]; then
  
  pushd $buildDir; check
  
+ arch="$(uname -s)"; check
+
  # If using MacOs, use the Darwin package 
  if [ "$arch" == "Darwin" ]; then
   
@@ -131,7 +133,7 @@ if [ ${binFound} == 0 ]; then
   cp -r /Volumes/Doxygen/Doxygen.app/Contents/* doxygen; check
  
   mv doxygen/Resources/* $installDir; check
- 
+  
  else  # Else default to Linux64
 
   wget https://sourceforge.net/projects/doxygen/files/rel-1.8.13/doxygen-1.8.13.linux.bin.tar.gz; check
@@ -155,7 +157,8 @@ fi
 
 fullBinPath=`which ${binPath}`
 ln -sf $fullBinPath ${prereqsDir}/${binName}; check
-binVersion=`${prereqsDir}/${binName} --version | head -n 1`; check 
+versionLine=`${prereqsDir}/${binName} --version`; check
+binVersion=`echo $versionLine | head -n 1`; check 
 echo "[Korali] Using ${libName} version $binVersion"
 
 exit 0

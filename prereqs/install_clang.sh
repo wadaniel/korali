@@ -121,6 +121,8 @@ if [ ${binFound} == 0 ]; then
  
  pushd $buildDir; check
  
+ arch="$(uname -s)"; check
+ 
  # If using MacOs, use the Darwin package 
  if [ "$arch" == "Darwin" ]; then
   
@@ -159,7 +161,8 @@ fi
 
 fullBinPath=`which ${binPath}`
 ln -sf $fullBinPath ${prereqsDir}/${binName}; check
-binVersion=`${prereqsDir}/${binName} --version | head -n 1 | cut -d' ' -f 3`; check 
+versionLine=`${prereqsDir}/${binName} --version`; check
+binVersion=`echo $versionLine | head -n 1 | cut -d' ' -f 3`; check 
 echo "[Korali] Using ${libName} version $binVersion"
 
 exit 0

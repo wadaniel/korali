@@ -1,9 +1,9 @@
 #!/bin/bash
 
 ######### Global Definitions ########
-libName="CMake"
-binName="cmake"
-minVersion=3.0
+libName="GSL"
+binName="gsl-config"
+minVersion=2.5
 
 ######### Helper Functions ########
 
@@ -91,7 +91,7 @@ fi
 
 $binPath --version > /dev/null 2>&1
 if [ $? -eq 0 ]; then
- binVersion=`${binPath} --version | head -n 1 | cut -d' ' -f 3`
+ binVersion=`${binPath} --version`
  cmpver=`printf "${binVersion}\n${minVersion}" | sort -V | head -n 1`
  
  if [[ "$cmpver" != "$minVersion" ]]; then
@@ -111,6 +111,7 @@ if [ ${binFound} == 0 ]; then
    exit 1
  fi
  
+ 
  echo "[Korali] Downloading ${libName}... "
  
  rm -rf $buildDir; check
@@ -119,15 +120,15 @@ if [ ${binFound} == 0 ]; then
  mkdir -p $buildDir; check
  pushd $buildDir; check
  
- rm -f cmake-3.17.3.tar.gz; check
- rm -rf cmake-3.17.3; check
+ rm -f gsl-2.6.tar.gz; check
+ rm -rf gsl-2.6; check
  
- wget https://github.com/Kitware/CMake/releases/download/v3.17.3/cmake-3.17.3.tar.gz; check
- tar -xzvf cmake-3.17.3.tar.gz; check
+ wget 'ftp://ftp.gnu.org/gnu/gsl/gsl-2.6.tar.gz'; check
+ tar -xzvf gsl-2.6.tar.gz ; check
   
  echo "[Korali] Configuring ${libName}... "
- cd cmake-3.17.3/
- ./configure --prefix=$installDir --parallel=$NJOBS; check
+ cd gsl-2.6
+ ./configure --prefix=$installDir; check
  
  echo "[Korali] Building ${libName}... "
  make -j$NJOBS; check
@@ -144,11 +145,11 @@ if [ ${binFound} == 0 ]; then
  rm -rf $buildDir; check
 fi
 
-######## Finalization ######## 
+######## Finalization ########
 
 fullBinPath=`which ${binPath}`
 ln -sf $fullBinPath ${prereqsDir}/${binName}; check
-binVersion=`${prereqsDir}/${binName} --version | head -n 1 | cut -d' ' -f 3`; check 
+binVersion=`${prereqsDir}/${binName} --version`; check 
 echo "[Korali] Using ${libName} version $binVersion"
 
 exit 0

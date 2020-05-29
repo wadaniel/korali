@@ -23,31 +23,57 @@ jobs:
 
       - restore_cache:
           keys:
-            - cache-linux-v9
+            - cache-linux-cmake-v0
+            - cache-linux-gsl-v0
+            - cache-linux-oneDNN-v0
+            - cache-linux-dev-tools-v0
             
+      - run:
+          name: Install CMake
+          command: ./prereqs/install_CMake.sh
+          
+      - save_cache:
+          key: cache-linux-cmake-v0
+          paths:
+            - "~/korali/prereqs/CMake/install"
+
+      - run:
+          name: Install GSL
+          command: ./prereqs/install_gsl.sh
+          
+      - save_cache:
+          key: cache-linux-gsl-v0
+          paths:
+            - "~/korali/prereqs/GSL/install"
+      
+      - run:
+          name: Install oneDNN
+          command: ./prereqs/install_oneDNN.sh
+          
+      - save_cache:
+          key: cache-linux-oneDNN-v0
+          paths:
+            - "~/korali/prereqs/oneDNN/install"
+                                  
       - run:
           name: Get developer tools
           command: pushd tools/dev-tools; ./get-tools.sh; popd                  
                    
+      - save_cache:
+          key: cache-linux-dev-tools-v0
+          paths:
+            - "~/korali/tools/dev-tools"
+            
       - run:
           name: build Korali
           command: ./install --prereqs --jobs=8
 
-      - save_cache:
-          key: cache-linux-v9
-          paths:
-            - "~/korali/build"
-            - "~/korali/tools/dev-tools"
-            
       - run:
           name: run tests
           command: pushd tests; ./run_all_tests.sh; popd
       
       - store_artifacts:
           path: ~/korali/install.log
-
-      - store_artifacts:
-          path: ~/korali/tests
 
       - store_artifacts:
           path: ~/korali/docs/test.log
@@ -60,30 +86,59 @@ jobs:
 
       - checkout
 
-      - restore_cache:
-          keys:
-            - cache-macos-v9
-
       - run:
           name: Install wget dependency
           command: HOMEBREW_NO_AUTO_UPDATE=1 brew install wget;
                    HOMEBREW_NO_AUTO_UPDATE=1 brew install coreutils;
                    HOMEBREW_NO_AUTO_UPDATE=1 brew install cmake;
                    HOMEBREW_NO_AUTO_UPDATE=1 brew install gsl;
-                   
+   
+      - restore_cache:
+          keys:
+            - cache-macos-cmake-v0
+            - cache-macos-gsl-v0
+            - cache-macos-oneDNN-v0
+            - cache-macos-dev-tools-v0
+            
+      - run:
+          name: Install CMake
+          command: ./prereqs/install_CMake.sh
+          
+      - save_cache:
+          key: cache-macos-cmake-v0
+          paths:
+            - "~/korali/prereqs/CMake/install"
+
+      - run:
+          name: Install GSL
+          command: ./prereqs/install_gsl.sh
+          
+      - save_cache:
+          key: cache-macos-gsl-v0
+          paths:
+            - "~/korali/prereqs/GSL/install"
+      
+      - run:
+          name: Install oneDNN
+          command: ./prereqs/install_oneDNN.sh
+          
+      - save_cache:
+          key: cache-macos-oneDNN-v0
+          paths:
+            - "~/korali/prereqs/oneDNN/install"
+                            
       - run:
           name: Get developer tools
           command: pushd tools/dev-tools; ./get-tools.sh; popd       
           
+      - save_cache:
+          key: cache-macos-dev-tools-v0
+          paths:
+            - "~/korali/tools/dev-tools"          
+          
       - run:
           name: build Korali
           command: ./install --prereqs --jobs=4
-
-      - save_cache:
-          key: cache-macos-v9
-          paths:
-            - "~/korali/build"
-            - "~/korali/tools/dev-tools"
 
       - run:
           name: run tests
@@ -93,5 +148,4 @@ jobs:
            path: ~/korali/install.log
 
       - store_artifacts:
-          path: ~/korali/tests/
-
+          path: ~/korali/docs/test.log

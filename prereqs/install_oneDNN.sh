@@ -1,9 +1,9 @@
 #!/bin/bash
 
 ######### Global Definitions ########
-libName="CMake"
-binName="cmake"
-minVersion=3.0
+libName="oneDNN"
+binName="oneDNN"
+minVersion=
 
 ######### Helper Functions ########
 
@@ -78,39 +78,44 @@ done
 ######## Checking for existing software ########
 
 prereqsDir=${baseKoraliDir}/prereqs
+
 baseLibDir=${prereqsDir}/${libName}
 installDir=${baseLibDir}/install
 buildDir=${baseLibDir}/build
 
-binFound=0
-binPath=${installDir}/bin/${binName}
+fileFound=0
+localFile=${installDir}/include/dnnl.hpp
+globalFile=${DNNLROOT}/include/dnnl.hpp
 
-if [ ! -f ${binPath} ]; then
- binPath=${binName}
+if [ -f ${globalFile} ]; then
+ fileFound=1
+ filePath=${globalFile}
+ oneDNNBaseDir=${DNNLROOT}
 fi
 
-$binPath --version > /dev/null 2>&1
-if [ $? -eq 0 ]; then
- binVersion=`${binPath} --version | head -n 1 | cut -d' ' -f 3`
- cmpver=`printf "${binVersion}\n${minVersion}" | sort -V | head -n 1`
- 
- if [[ "$cmpver" != "$minVersion" ]]; then
-    echo "[Korali] ${libName} version found (${binVersion}) is smaller than required (${minVersion}). Installing newer version..."
- else
-    binFound=1
-    echo "[Korali] Found existing ${libName} version ${binVersion}. Skipping installation..."
- fi
+if [ -f ${localFile} ]; then
+ fileFound=1
+ filePath=${localFile}
+ oneDNNBaseDir=$installDir
 fi
 
 ######## If not installed, download and install ########
 
-if [ ${binFound} == 0 ]; then
+if [ ${fileFound} == 0 ]; then
 
  if [ ${install} == 0 ]; then
    echo "[Korali] Could not find an installation of ${libName}."
    exit 1
  fi
  
+ # Checking whether cmake is accessible
+ $prereqsDir/install_CMake.sh 
+ if [ $? != 0 ]; then
+  echo "[Korali] Error: CMake is required to install ${libName}, but was not found."
+  echo "[Korali] Solution: Run install_CMake.sh to install it."
+  exit 1
+ fi
+
  echo "[Korali] Downloading ${libName}... "
  
  rm -rf $buildDir; check
@@ -119,15 +124,13 @@ if [ ${binFound} == 0 ]; then
  mkdir -p $buildDir; check
  pushd $buildDir; check
  
- rm -f cmake-3.17.3.tar.gz; check
- rm -rf cmake-3.17.3; check
- 
- wget https://github.com/Kitware/CMake/releases/download/v3.17.3/cmake-3.17.3.tar.gz; check
- tar -xzvf cmake-3.17.3.tar.gz; check
+ git clone https://github.com/oneapi-src/oneDNN.git $buildDir; check
   
  echo "[Korali] Configuring ${libName}... "
- cd cmake-3.17.3/
- ./configure --prefix=$installDir --parallel=$NJOBS; check
+ mkdir -p build; check
+ cd build; check
+  
+ ${prereqsDir}/cmake .. -DCMAKE_INSTALL_PREFIX=${installDir}; check
  
  echo "[Korali] Building ${libName}... "
  make -j$NJOBS; check
@@ -142,13 +145,13 @@ if [ ${binFound} == 0 ]; then
  
  echo "[Korali] Cleaning up build folder..."
  rm -rf $buildDir; check
+ 
+ oneDNNBaseDir=$installDir
 fi
 
-######## Finalization ######## 
+######## Finalization ########
 
-fullBinPath=`which ${binPath}`
-ln -sf $fullBinPath ${prereqsDir}/${binName}; check
-binVersion=`${prereqsDir}/${binName} --version | head -n 1 | cut -d' ' -f 3`; check 
-echo "[Korali] Using ${libName} version $binVersion"
+ln -sf ${oneDNNBaseDir} ${prereqsDir}/${binName}link; check
+echo "[Korali] Using oneDNN located at ${oneDNNBaseDir}."
 
 exit 0

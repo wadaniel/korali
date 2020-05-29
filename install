@@ -89,6 +89,19 @@ case $i in
 esac
 done
 
+######### Environment Configuration ########
+
+baseKoraliDir=$PWD
+foundbinVersionFile=0
+
+if [ -f $baseKoraliDir/docs/VERSION ]; then
+ foundbinVersionFile=1
+fi
+
+if [ $foundbinVersionFile == 0 ]; then
+  echo "[Korali] Error: You need to run this file from Korali's base folder."
+  exit 1
+fi
 
 ######## Start Configuration ######
 
@@ -139,135 +152,38 @@ if [ $DETECTED_CRAY      -eq 0 ]; then USE_CXX=CC;      fi;
 if [ $DETECTED_CLANG     -eq 0 ]; then USE_CXX=clang++; fi;
 if [ $DETECTED_CXX       -eq 0 ]; then USE_CXX=$CXX;    fi;
 
-######## Checking for CMake ########
+######## Checking for Prerequisites ########
 
-cmakeFound=0
-cMakeVer=0.0
-cMakeBin=$PWD/build/cmakeInstall/bin/cmake
-
-if [ ! -f ${cMakeBin} ]; then
- cMakeBin=cmake
+installFlag=
+if [ $INSTALLREQS -eq 0 ]; then
+ installFlag='--no-install'
 fi
 
-$cMakeBin --version > /dev/null 2>&1
-if [ $? -eq 0 ]; then
- minCMakeVer=3.0
- cMakeVer=`cmake --version | head -n 1 | cut -d' ' -f 3`
- cmpver=`printf "${cMakeVer}\n${minCMakeVer}" | sort -V | head -n 1`
- 
- if [[ "$cmpver" != "$minCMakeVer" ]]; then
-    logEcho "[Korali] CMake version found (${cMakeVer}) is smaller than required (${minCMakeVer})."
- else
-    cmakeFound=1
- fi
-fi
+## Looking for CMake
 
-if [ ${cmakeFound} == 0 ]; then
+#./prereqs/install_CMake.sh $installFlag --jobs=$NJOBS
+#if [ ! $? == 0 ]; then
+# logEcho "[Korali] Error: CMake not found or older version than 3.0. Solutions:"
+# logEcho "         . Have 'cmake' version >3.0 correctly installed and in your PATH environment variable"
+# logEcho "         . Run './install --prereqs' to allow Korali install missing prerequisites automatically."
+# exitWithError
+#fi
 
- if [ $INSTALLREQS -eq 0 ]; then
- logEcho "[Korali] Error: CMake not found or older version than 3.0."
- logEcho "         Solution: Have 'cmake' correctly installed and in your PATH environment variable..."
- logEcho "         1. Have 'cmake' version >3.0 correctly installed and in your PATH environment variable"
- logEcho "         2. Run ./install --prereqs to allow Korali."
- logEcho "            to install missing prerequisites automatically.."
+## Looking for GSL
+./prereqs/install_gsl.sh $installFlag --jobs=$NJOBS
+if [ ! $? == 0 ]; then
+ logEcho "[Korali] Error: GSL not found or older version than 2.5. Solutions"
+ logEcho "         . Have 'gsl-config' version >2.5 correctly installed and in your PATH environment variable"
+ logEcho "         . Run './install --prereqs' to allow Korali install missing prerequisites automatically."
  exitWithError
- fi
- 
- logEcho "[Korali] Downloading CMake... "
- 
- mkdir -p build; check
- CURDIR=$PWD
- 
- pushd build >> $logFile 2>&1; check
- 
- rm -f cmake-3.17.3.tar.gz >> $logFile 2>&1; check
- rm -rf cmake-3.17.3 >> $logFile 2>&1; check
- rm -rf cmakeInstall >> $logFile 2>&1; check
- 
- wget https://github.com/Kitware/CMake/releases/download/v3.17.3/cmake-3.17.3.tar.gz >> $logFile 2>&1; check
- tar -xzvf cmake-3.17.3.tar.gz >> $logFile 2>&1; check
-  
- echo "[Korali] Configuring CMake... "
- cd cmake-3.17.3/
- ./configure --prefix=${CURDIR}/build/cmakeInstall --parallel=$NJOBS >> $logFile 2>&1; check
- 
- echo "[Korali] Building CMake... "
- make -j$NJOBS >> $logFile 2>&1; check
- 
- echo "[Korali] Installing CMake... "
- make install >> $logFile 2>&1; check
- 
- popd >> $logFile 2>&1; check
- 
- logEcho "[Korali] Finished installing CMake. "
- cMakeBin=${CURDIR}/build/cmakeInstall/bin/cmake
 fi
 
-cMakeVer=`$cMakeBin --version | head -n 1 | cut -d' ' -f 3` 
-logEcho "[Korali] Found CMake version $cMakeVer"
-
-######## Checking support for GNU Scientific Library ########
-
-log "[Korali] Looking for existing GNU Scientific Library (GSL)..."
-
-mingslver=2.5
-foundGSL=0
-gslprefix=$PWD/build
-gslcfgFile=gsl-config
-
-if [ -f ${gslprefix}/bin/gsl-config ]; then
- gslcfgFile=${gslprefix}/bin/gsl-config
-fi
-
-$gslcfgFile --version > /dev/null 2>&1
-if [ $? -eq 0 ]; then
- log "[Korali] Running \"$gslcfgFile --version\"..."
-
- gslver=`$gslcfgFile --version`
- logEcho "[Korali] Found GSL version $gslver."
- foundGSL=1
- cmpver=`printf "${gslver}\n${mingslver}" | sort -V | head -n 1`
- if [[ "$cmpver" != "$mingslver" ]]; then
-   logEcho "[Korali] GSL version found (${gslver}) is smaller than required (${mingslver})."
-   foundGSL=0
- fi
-fi
-
-if [ $foundGSL == 0 ]; then
-
-  if [ $INSTALLREQS -eq 0 ]; then
-   logEcho "[Korali] GSL (version > 2.5) not found. Try either of these solutions:"
-   logEcho "         1. Configure your system so that the file gsl-config from your."
-   logEcho "            GSL (version > 2.5) is accesible by the PATH environment variable"
-   logEcho "         2. Run ./install --prereqs to allow Korali."
-   logEcho "            to install missing prerequisites automatically.." 
-   exitWithError
-  fi
-  
-  logEcho "[Korali] Downloading GNU Scientific Library... "
-  mkdir -p build; check
-  CURDIR=$PWD
-  rm -f gsl-2.5.tar.gz >> $logFile 2>&1; check
-  wget 'ftp://ftp.gnu.org/gnu/gsl/gsl-2.5.tar.gz' >> $logFile 2>&1; check 
-  tar -xzvf gsl-2.5.tar.gz >> $logFile 2>&1 >> $logFile 2>&1; check
-  
-  echo "[Korali] Configuring GNU Scientific Library... "
-  cd gsl-2.5; check 
-  
-  logEcho "[Korali] Running ./configure --prefix=$gslprefix ..."
-  ./configure --prefix=$gslprefix >> $logFile 2>&1; check
-  
-  logEcho "[Korali] Compiling GNU Scientific Library... "
-  make -j$NJOBS >> $logFile 2>&1; check
-  
-  logEcho "[Korali] Installing GNU Scientific Library... "
-  make install >> $logFile 2>&1; check
-  
-  cd .. 
-  rm -rf gsl-2.5 gsl-2.5.tar.gz >> $logFile 2>&1; check
-  
-  logEcho "[Korali] Finished installing GNU Scientific Library. "
-  gslcfgFile=$gslprefix/bin/gsl-config
+## Looking for oneDNN
+if [ $INSTALLREQS -eq 0 ]; then
+ logEcho "[Korali] oneDNN not found. Try either of these solutions:"
+ logEcho "         1. Define the \$DNNLROOT environment variable to indicate the installation folder of oneDNN."
+ logEcho "         2. Run './install --prereqs' to allow Korali install missing prerequisites automatically."
+ exitWithError
 fi
 
 ######## Checking support for MPI ########
@@ -289,65 +205,6 @@ else
  MPIFLAGS="-D_KORALI_USE_MPI"
 fi
 
-######## Checking support for oneDNN ########
-
-ONEDNNCFLAGS=""
-ONEDNNLDFLAGS=""
-oneDnnFound=0
-
-log "[Korali] Checking for oneDNN support..."
-if [ -f ${DNNLROOT}/include/dnnl.hpp ]; then
- log "[Korali] Found openDNN header file at ${DNNLROOT}/include/dnnl.hpp"
- oneDnnFound=1
-else
- DNNLROOT=$PWD/build/oneDNNInstall
- if [ -f ${DNNLROOT}/include/dnnl.hpp ]; then
-  log "[Korali] Found openDNN header file at ${DNNLROOT}/include/dnnl.hpp"
-  oneDnnFound=1
- fi
-fi
-
-if [ $oneDnnFound == 0 ]; then
-  
-  if [ $INSTALLREQS -eq 0 ]; then
-   logEcho "[Korali] oneDNN not found. Try either of these solutions:"
-   logEcho "         1. Define the \$DNNLROOT environment variable."
-   logEcho "           to indicate the installation folder of oneDNN."
-   logEcho "         2. Run ./install --prereqs to allow Korali."
-   logEcho "           to install missing prerequisites automatically.." 
-   exitWithError
-  fi
-  
-  logEcho "[Korali] Downloading oneDNN... "
-  mkdir -p build >> $logFile 2>&1; check
-  pushd build >> $logFile 2>&1; check
-  
-  rm -rf oneDNN >> $logFile 2>&1; check
-  git clone https://github.com/oneapi-src/oneDNN.git >> $logFile 2>&1; check
-  
-  echo "[Korali] Configuring oneDNN... "
-  cd oneDNN >> $logFile 2>&1; check
-  
-  mkdir -p build >> $logFile 2>&1; check
-  cd build >> $logFile 2>&1; check
-  
-  logEcho "[Korali] Running CMake on oneDNN..."
-  $cMakeBin .. -DCMAKE_INSTALL_PREFIX=$DNNLROOT >> $logFile 2>&1; check
-  
-  logEcho "[Korali] Compiling oneDNN... "
-  make -j$NJOBS; check
-  
-  logEcho "[Korali] Installing oneDNN... "
-  make install >> $logFile 2>&1; check
-  
-  popd >> $logFile 2>&1; check
-  
-fi
-
-logEcho "[Korali] Found oneDNN at ${DNNLROOT}"
-ONEDNNCFLAGS="-D_KORALI_USE_ONEDNN -I${DNNLROOT}/include"
-ONEDNNLDFLAGS="-Wl,-rpath -Wl,${DNNLROOT}/lib64/ -L${DNNLROOT}/lib64/ -Wl,-rpath -Wl,${DNNLROOT}/lib/ -L${DNNLROOT}/lib/ -ldnnl"
- 
 ######## Checking support for Python3 ########
 
 log "[Korali] Checking for Python3 support using \"python3 --version\"."
@@ -399,6 +256,10 @@ fi
 
 echo "[Korali] Creating configuration files..."
 
+DNNLROOT=`readlink -f prereqs/oneDNNlink`; check
+ONEDNNCFLAGS="-D_KORALI_USE_ONEDNN -I${DNNLROOT}/include"
+ONEDNNLDFLAGS="-Wl,-rpath -Wl,${DNNLROOT}/lib64/ -L${DNNLROOT}/lib64/ -Wl,-rpath -Wl,${DNNLROOT}/lib/ -L${DNNLROOT}/lib/ -ldnnl"
+ 
 GSLPREFIX=`$gslcfgFile --prefix`
 GSLCFLAGS=`$gslcfgFile --cflags`
 GSLLIBS=`$gslcfgFile --libs`

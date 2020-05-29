@@ -3,6 +3,7 @@
 ######### Global Definitions ########
 libName="CMake"
 binName="cmake"
+minVersion=3.0
 
 ######### Helper Functions ########
 
@@ -18,10 +19,10 @@ function check()
 function print_help ()
 {
  echo ""
- echo "Syntax: ./install_cmake.sh [--jobs=N]"
+ echo "Syntax: ./install_${libName}.sh [--jobs=N]"
  echo ""
  echo "Where:"
- echo " --jobs=N Specifies N jobs to use when building cmake."
+ echo " --jobs=N Specifies N jobs to use when building ${libName}."
  echo " --help Displays this help message."
 }
 
@@ -29,24 +30,21 @@ function print_help ()
 
 NJOBS=4
 baseKoraliDir=$PWD
-foundVersionFile=0
+foundbinVersionFile=0
 
 if [ -f $baseKoraliDir/docs/VERSION ]; then
- foundVersionFile=1
+ foundbinVersionFile=1
 fi
 
 if [ -f $baseKoraliDir/../docs/VERSION ]; then
- foundVersionFile=1
+ foundbinVersionFile=1
  baseKoraliDir=$PWD/../
 fi
 
-if [ $foundVersionFile == 0 ]; then
+if [ $foundbinVersionFile == 0 ]; then
   echo "[Korali] Error: You need to run this file from Korali's base folder."
   exit -1
 fi
-
-echo $NJOBS
-exit 0
 
 ######### Argument Parsing ########
 
@@ -73,68 +71,69 @@ done
 
 ######## Checking for existing software ########
 
-installDir=${baseKoraliDir}/prereqs/cmakeInstall/
-buildDir=${baseKoraliDir}/prereqs/cmakeBuild/
+baseLibDir=${baseKoraliDir}/prereqs/${libName}
+installDir=${baseLibDir}/install
+buildDir=${baseLibDir}/build
 
-isFound=0
-version=0.0
-binary=${installDir}/bin/cmake
+binFound=0
+binVersion=0.0
+binPath=${installDir}/bin/${binName}
 
-if [ ! -f ${binary} ]; then
- binary=cmake
-fi
+#if [ ! -f ${binPath} ]; then
+# binPath=${binName}
+#fi
 
-$binary --version > /dev/null 2>&1
+$binPath --version > /dev/null 2>&1
 if [ $? -eq 0 ]; then
- minversion=3.0
- version=`cmake --version | head -n 1 | cut -d' ' -f 3`
- cmpver=`printf "${version}\n${minversion}" | sort -V | head -n 1`
+ binVersion=`${binPath} --version | head -n 1 | cut -d' ' -f 3`
+ cmpver=`printf "${binVersion}\n${minVersion}" | sort -V | head -n 1`
  
- if [[ "$cmpver" != "$minversion" ]]; then
-    echo "[Korali] CMake version found (${version}) is smaller than required (${minversion}). Installing newer version..."
+ if [[ "$cmpver" != "$minVersion" ]]; then
+    echo "[Korali] ${libName} version found (${binVersion}) is smaller than required (${minVersion}). Installing newer version..."
  else
-    isFound=1
-    echo "[Korali] Found existing CMake version ${version}. Skipping installation..."
+    binFound=1
+    echo "[Korali] Found existing ${libName} version ${binVersion}. Skipping installation..."
  fi
 fi
 
 ######## If not installed, download and install ########
 
-if [ ${isFound} == 0 ]; then
+if [ ${binFound} == 0 ]; then
 
- echo "[Korali] Downloading CMake... "
+ echo "[Korali] Downloading ${libName}... "
  
  rm -rf $buildDir; check
+ rm -rf $installDir; check
+ 
  mkdir -p $buildDir; check
  pushd $buildDir; check
  
  rm -f cmake-3.17.3.tar.gz; check
  rm -rf cmake-3.17.3; check
- rm -rf cmakeInstall; check
  
  wget https://github.com/Kitware/CMake/releases/download/v3.17.3/cmake-3.17.3.tar.gz; check
  tar -xzvf cmake-3.17.3.tar.gz; check
   
- echo "[Korali] Configuring CMake... "
+ echo "[Korali] Configuring ${libName}... "
  cd cmake-3.17.3/
- ./configure --prefix=${CURDIR}/build/cmakeInstall --parallel=$NJOBS; check
+ ./configure --prefix=$installDir --parallel=$NJOBS; check
  
- echo "[Korali] Building CMake... "
+ echo "[Korali] Building ${libName}... "
  make -j$NJOBS; check
  
- echo "[Korali] Installing CMake... "
+ echo "[Korali] Installing ${libName}... "
  make install; check
  
  popd; check
  
- echo "[Korali] Finished installing CMake. "
- binary=${installDir}/bin/cmake
+ echo "[Korali] Finished installing ${libName}."
+ binPath=${installDir}/bin/${binName}
  
- echo "[Korali] Cleaning up build folder. "
+ echo "[Korali] Cleaning up build folder..."
  rm -rf $buildDir; check
 fi
 
 ######## Finalization ########
 
-version=`$binary --version | head -n 1 | cut -d' ' -f 3` 
-echo "[Korali] Using CMake version $version"
+binVersion=`$binPath --version | head -n 1 | cut -d' ' -f 3` 
+echo "[Korali] Using ${libName} version $binVersion"

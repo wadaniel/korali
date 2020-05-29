@@ -257,7 +257,7 @@ fi
 
 echo "[Korali] Creating configuration files..."
 
-DNNLROOT=`readlink -f prereqs/oneDNNlink`; check
+DNNLROOT=`readlink prereqs/oneDNNlink`; check
 ONEDNNCFLAGS="-D_KORALI_USE_ONEDNN -I${DNNLROOT}/include"
 ONEDNNLDFLAGS="-Wl,-rpath -Wl,${DNNLROOT}/lib64/ -L${DNNLROOT}/lib64/ -Wl,-rpath -Wl,${DNNLROOT}/lib/ -L${DNNLROOT}/lib/ -ldnnl"
  

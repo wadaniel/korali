@@ -110,11 +110,11 @@ jobs:
           keys:
             - cache-macos-gsl-v0
             
-     - restore_cache:
+      - restore_cache:
           keys:
             - cache-macos-oneDNN-v0
             
-     - restore_cache:
+      - restore_cache:
           keys:
             - cache-macos-dev-tools-v0
             

@@ -24,8 +24,17 @@ jobs:
       - restore_cache:
           keys:
             - cache-linux-cmake-v0
+      
+      - restore_cache:
+          keys:
             - cache-linux-gsl-v0
+            
+      - restore_cache:
+          keys:
             - cache-linux-oneDNN-v0
+            
+      - restore_cache:
+          keys:
             - cache-linux-dev-tools-v0
             
       - run:
@@ -87,7 +96,7 @@ jobs:
       - checkout
 
       - run:
-          name: Install wget dependency
+          name: Install MacOS dependencies
           command: HOMEBREW_NO_AUTO_UPDATE=1 brew install wget;
                    HOMEBREW_NO_AUTO_UPDATE=1 brew install coreutils;
                    HOMEBREW_NO_AUTO_UPDATE=1 brew install cmake;
@@ -96,8 +105,17 @@ jobs:
       - restore_cache:
           keys:
             - cache-macos-cmake-v0
+           
+      - restore_cache:
+          keys:
             - cache-macos-gsl-v0
+            
+     - restore_cache:
+          keys:
             - cache-macos-oneDNN-v0
+            
+     - restore_cache:
+          keys:
             - cache-macos-dev-tools-v0
             
       - run:

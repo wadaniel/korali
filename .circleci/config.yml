@@ -23,30 +23,30 @@ jobs:
 
       - restore_cache:
           keys:
-            - cache-linux-doxygen-v4
+            - cache-linux-doxygen-v5
             
       - restore_cache:
           keys:
-            - cache-linux-llvm-v4
+            - cache-linux-llvm-v5
             
       - restore_cache:
           keys:
-            - cache-linux-cmake-v4
+            - cache-linux-cmake-v5
       
       - restore_cache:
           keys:
-            - cache-linux-gsl-v4
+            - cache-linux-gsl-v5
             
       - restore_cache:
           keys:
-            - cache-linux-oneDNN-v4
+            - cache-linux-oneDNN-v5
             
       - run:
           name: Install Doxygen
           command: ./prereqs/install_doxygen.sh
           
       - save_cache:
-          key: cache-linux-doxygen-v4
+          key: cache-linux-doxygen-v5
           paths:
             - "~/korali/prereqs/_doxygen/install"
                   
@@ -55,7 +55,7 @@ jobs:
           command: ./prereqs/install_clang.sh
           
       - save_cache:
-          key: cache-linux-llvm-v4
+          key: cache-linux-llvm-v5
           paths:
             - "~/korali/prereqs/_llvm/install"
             
@@ -64,7 +64,7 @@ jobs:
           command: ./prereqs/install_CMake.sh
           
       - save_cache:
-          key: cache-linux-cmake-v4
+          key: cache-linux-cmake-v5
           paths:
             - "~/korali/prereqs/CMake/install"
 
@@ -73,7 +73,7 @@ jobs:
           command: ./prereqs/install_gsl.sh
           
       - save_cache:
-          key: cache-linux-gsl-v4
+          key: cache-linux-gsl-v5
           paths:
             - "~/korali/prereqs/GSL/install"
       
@@ -82,7 +82,7 @@ jobs:
           command: ./prereqs/install_oneDNN.sh
           
       - save_cache:
-          key: cache-linux-oneDNN-v4
+          key: cache-linux-oneDNN-v5
           paths:
             - "~/korali/prereqs/oneDNN/install"
                                   
@@ -117,30 +117,30 @@ jobs:
    
       - restore_cache:
           keys:
-            - cache-macos-doxygen-v4
+            - cache-macos-doxygen-v5
             
       - restore_cache:
           keys:
-            - cache-macos-llvm-v4
+            - cache-macos-llvm-v5
             
       - restore_cache:
           keys:
-            - cache-macos-cmake-v4
+            - cache-macos-cmake-v5
            
       - restore_cache:
           keys:
-            - cache-macos-gsl-v4
+            - cache-macos-gsl-v5
             
       - restore_cache:
           keys:
-            - cache-macos-oneDNN-v4
+            - cache-macos-oneDNN-v5
             
       - run:
           name: Install Doxygen
           command: ./prereqs/install_doxygen.sh
           
       - save_cache:
-          key: cache-macos-doxygen-v4
+          key: cache-macos-doxygen-v5
           paths:
             - "~/korali/prereqs/_doxygen/install"
                   
@@ -149,7 +149,7 @@ jobs:
           command: ./prereqs/install_clang.sh
           
       - save_cache:
-          key: cache-macos-llvm-v4
+          key: cache-macos-llvm-v5
           paths:
             - "~/korali/prereqs/_llvm/install"
             
@@ -158,7 +158,7 @@ jobs:
           command: ./prereqs/install_CMake.sh 
           
       - save_cache:
-          key: cache-macos-cmake-v4
+          key: cache-macos-cmake-v5
           paths:
             - "~/korali/prereqs/CMake/install"
 
@@ -167,7 +167,7 @@ jobs:
           command: ./prereqs/install_gsl.sh
           
       - save_cache:
-          key: cache-macos-gsl-v4
+          key: cache-macos-gsl-v5
           paths:
             - "~/korali/prereqs/GSL/install"
       
@@ -176,7 +176,7 @@ jobs:
           command: ./prereqs/install_oneDNN.sh
           
       - save_cache:
-          key: cache-macos-oneDNN-v4
+          key: cache-macos-oneDNN-v5
           paths:
             - "~/korali/prereqs/oneDNN/install"
                             

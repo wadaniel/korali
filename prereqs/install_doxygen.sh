@@ -134,7 +134,7 @@ if [ ${binFound} == 0 ]; then
   
   cp -r /Volumes/Doxygen/Doxygen.app/Contents/* tempDir; check
  
-  mv doxygen/Resources/* $installDir; check
+  mv tempdir/Resources/* $installDir; check
   
  else  # Else default to Linux64
 

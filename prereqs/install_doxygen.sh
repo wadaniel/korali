@@ -132,10 +132,10 @@ if [ ${binFound} == 0 ]; then
  
   mkdir tempDir; check
   
-  cp -r /Volumes/Doxygen/Doxygen.app/Contents/* tempDir; check
+  cp -r /Volumes/Doxygen/Doxygen.app/Contents/* $installDir; check
  
-  mv tempdir/Resources/* $installDir; check
-  
+  binPath=${installDir}/Resources/${binName}
+ 
  else  # Else default to Linux64
 
   wget https://sourceforge.net/projects/doxygen/files/rel-1.8.13/doxygen-1.8.13.linux.bin.tar.gz; check
@@ -144,12 +144,14 @@ if [ ${binFound} == 0 ]; then
  
   mv doxygen-1.8.13/* $installDir; check
   
+  binPath=${installDir}/bin/${binName}
+  
  fi
  
  popd; check
  
  echo "[Korali] Finished installing ${libName}."
- binPath=${installDir}/bin/${binName}
+
  
  echo "[Korali] Cleaning up build folder..."
  rm -rf $buildDir; check

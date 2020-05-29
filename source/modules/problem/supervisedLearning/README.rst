@@ -1,7 +1,5 @@
-**************************
+********************
 Supervised Learning
-**************************
+********************
 
-Describes a problem where, given a training and validation sets of inputs and outputs.
-   
-The resulting state of the solver should be able to return infered values for future sets of inputs that minimize a loss function. 
+Describes a problem where parameters of a function approximator are optimized such that they minimize the *Loss Function*. The user provides *Training Data* and *Validation Data* for which the loss function is computed.

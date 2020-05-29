@@ -1,9 +1,9 @@
 #!/bin/bash
 
 ######### Global Definitions ########
-libName="GSL"
-binName="gsl-config"
-minVersion=2.5
+libName="doxygen"
+binName="doxygen"
+minVersion=1.8.13
 
 ######### Helper Functions ########
 
@@ -78,7 +78,7 @@ done
 ######## Checking for existing software ########
 
 prereqsDir=${baseKoraliDir}/prereqs
-baseLibDir=${prereqsDir}/${libName}
+baseLibDir=${prereqsDir}/_${libName}
 installDir=${baseLibDir}/install
 buildDir=${baseLibDir}/build
 
@@ -91,7 +91,7 @@ fi
 
 $binPath --version > /dev/null 2>&1
 if [ $? -eq 0 ]; then
- binVersion=`${binPath} --version`
+ binVersion=`${binPath} --version | head -n 1`
  cmpver=`printf "${binVersion}\n${minVersion}" | sort -V | head -n 1`
  
  if [[ "$cmpver" != "$minVersion" ]]; then
@@ -111,30 +111,36 @@ if [ ${binFound} == 0 ]; then
    exit 1
  fi
  
- 
  echo "[Korali] Downloading ${libName}... "
  
  rm -rf $buildDir; check
  rm -rf $installDir; check
  
  mkdir -p $buildDir; check
+ mkdir -p $installDir; check
+ 
  pushd $buildDir; check
  
- rm -f gsl-2.6.tar.gz; check
- rm -rf gsl-2.6; check
- 
- wget 'ftp://ftp.gnu.org/gnu/gsl/gsl-2.6.tar.gz'; check
- tar -xzvf gsl-2.6.tar.gz ; check
+ # If using MacOs, use the Darwin package 
+ if [ "$arch" == "Darwin" ]; then
   
- echo "[Korali] Configuring ${libName}... "
- cd gsl-2.6
- ./configure --prefix=$installDir; check
+  wget https://downloads.sourceforge.net/project/doxygen/rel-1.8.13/Doxygen-1.8.13.dmg; check
  
- echo "[Korali] Building ${libName}... "
- make -j$NJOBS; check
+  hdiutil attach Doxygen-1.8.13.dmg; check
  
- echo "[Korali] Installing ${libName}... "
- make install; check
+  cp -r /Volumes/Doxygen/Doxygen.app/Contents/* doxygen; check
+ 
+  mv doxygen/Resources/* $installDir; check
+ 
+ else  # Else default to Linux64
+
+  wget https://sourceforge.net/projects/doxygen/files/rel-1.8.13/doxygen-1.8.13.linux.bin.tar.gz; check
+ 
+  tar -xzvf doxygen-1.8.13.linux.bin.tar.gz;  check
+ 
+  mv doxygen-1.8.13/* $installDir; check
+  
+ fi
  
  popd; check
  
@@ -145,11 +151,11 @@ if [ ${binFound} == 0 ]; then
  rm -rf $buildDir; check
 fi
 
-######## Finalization ########
+######## Finalization ######## 
 
 fullBinPath=`which ${binPath}`
 ln -sf $fullBinPath ${prereqsDir}/${binName}; check
-binVersion=`${prereqsDir}/${binName} --version`; check 
+binVersion=`${prereqsDir}/${binName} --version | head -n 1`; check 
 echo "[Korali] Using ${libName} version $binVersion"
 
 exit 0

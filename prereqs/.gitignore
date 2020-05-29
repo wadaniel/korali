@@ -4,3 +4,7 @@ GSL
 gsl-config
 oneDNN
 oneDNNlink
+doxygen
+_doxygen
+_llvm
+clang-format

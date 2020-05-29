@@ -1,9 +1,9 @@
 #!/bin/bash
 
 ######### Global Definitions ########
-libName="GSL"
-binName="gsl-config"
-minVersion=2.5
+libName="llvm"
+binName="clang-format"
+minVersion=10.0.0
 
 ######### Helper Functions ########
 
@@ -78,7 +78,7 @@ done
 ######## Checking for existing software ########
 
 prereqsDir=${baseKoraliDir}/prereqs
-baseLibDir=${prereqsDir}/${libName}
+baseLibDir=${prereqsDir}/_${libName}
 installDir=${baseLibDir}/install
 buildDir=${baseLibDir}/build
 
@@ -91,8 +91,8 @@ fi
 
 $binPath --version > /dev/null 2>&1
 if [ $? -eq 0 ]; then
- binVersion=`${binPath} --version`
- cmpver=`printf "${binVersion}\n${minVersion}" | sort -V | head -n 1`
+ binVersion=`${binPath} --version | head -n 1`
+ cmpver=`printf "${binVersion}\n${minVersion}" | sort -V | head -n 1 | cut -d' ' -f 3`
  
  if [[ "$cmpver" != "$minVersion" ]]; then
     echo "[Korali] ${libName} version found (${binVersion}) is smaller than required (${minVersion})."
@@ -111,30 +111,40 @@ if [ ${binFound} == 0 ]; then
    exit 1
  fi
  
- 
  echo "[Korali] Downloading ${libName}... "
  
  rm -rf $buildDir; check
  rm -rf $installDir; check
  
  mkdir -p $buildDir; check
+ mkdir -p $installDir; check
+ 
  pushd $buildDir; check
  
- rm -f gsl-2.6.tar.gz; check
- rm -rf gsl-2.6; check
- 
- wget 'ftp://ftp.gnu.org/gnu/gsl/gsl-2.6.tar.gz'; check
- tar -xzvf gsl-2.6.tar.gz ; check
+ # If using MacOs, use the Darwin package 
+ if [ "$arch" == "Darwin" ]; then
   
- echo "[Korali] Configuring ${libName}... "
- cd gsl-2.6
- ./configure --prefix=$installDir; check
+  wget https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.0/clang+llvm-10.0.0-x86_64-apple-darwin.tar.xz;  check
+  
+  tar -xf clang+llvm-10.0.0-x86_64-apple-darwin.tar.xz;  check
+  
+  mv clang+llvm-10.0.0-x86_64-apple-darwin/* $installDir; check
  
- echo "[Korali] Building ${libName}... "
- make -j$NJOBS; check
- 
- echo "[Korali] Installing ${libName}... "
- make install; check
+ else  # Else default to Linux64
+
+  wget https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.0/clang+llvm-10.0.0-x86_64-linux-sles11.3.tar.xz; check
+  
+  tar -xf clang+llvm-10.0.0-x86_64-linux-sles11.3.tar.xz;  check
+  
+  mv clang+llvm-10.0.0-x86_64-linux-sles11.3 llvm;  check
+  
+  # Fix for systems that have no libcurses lib
+  ln -s libunwind.so.1.0 llvm/lib/libncurses.so.5;  check
+  
+  # Finally copy it to destination
+  mv llvm/* $installDir;  check
+  
+ fi
  
  popd; check
  
@@ -145,11 +155,11 @@ if [ ${binFound} == 0 ]; then
  rm -rf $buildDir; check
 fi
 
-######## Finalization ########
+######## Finalization ######## 
 
 fullBinPath=`which ${binPath}`
 ln -sf $fullBinPath ${prereqsDir}/${binName}; check
-binVersion=`${prereqsDir}/${binName} --version`; check 
+binVersion=`${prereqsDir}/${binName} --version | head -n 1 | cut -d' ' -f 3`; check 
 echo "[Korali] Using ${libName} version $binVersion"
 
 exit 0

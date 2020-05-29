@@ -23,26 +23,48 @@ jobs:
 
       - restore_cache:
           keys:
-            - cache-linux-cmake-v0
+            - cache-linux-doxygen-v2
+            
+      - restore_cache:
+          keys:
+            - cache-linux-llvm-v2
+            
+      - restore_cache:
+          keys:
+            - cache-linux-cmake-v2
       
       - restore_cache:
           keys:
-            - cache-linux-gsl-v0
+            - cache-linux-gsl-v2
             
       - restore_cache:
           keys:
-            - cache-linux-oneDNN-v0
+            - cache-linux-oneDNN-v2
             
-      - restore_cache:
-          keys:
-            - cache-linux-dev-tools-v0
+      - run:
+          name: Install Doxygen
+          command: ./prereqs/install_doxygen.sh
+          
+      - save_cache:
+          key: cache-linux-doxygen-v2
+          paths:
+            - "~/korali/prereqs/_doxygen/install"
+                  
+      - run:
+          name: Install LLVM (clang-format)
+          command: ./prereqs/install_clang.sh
+          
+      - save_cache:
+          key: cache-linux-llvm-v2
+          paths:
+            - "~/korali/prereqs/_llvm/install"
             
       - run:
           name: Install CMake
           command: ./prereqs/install_CMake.sh
           
       - save_cache:
-          key: cache-linux-cmake-v0
+          key: cache-linux-cmake-v2
           paths:
             - "~/korali/prereqs/CMake/install"
 
@@ -51,7 +73,7 @@ jobs:
           command: ./prereqs/install_gsl.sh
           
       - save_cache:
-          key: cache-linux-gsl-v0
+          key: cache-linux-gsl-v2
           paths:
             - "~/korali/prereqs/GSL/install"
       
@@ -60,19 +82,10 @@ jobs:
           command: ./prereqs/install_oneDNN.sh
           
       - save_cache:
-          key: cache-linux-oneDNN-v0
+          key: cache-linux-oneDNN-v2
           paths:
             - "~/korali/prereqs/oneDNN/install"
                                   
-      - run:
-          name: Get developer tools
-          command: pushd tools/dev-tools; ./get-tools.sh; popd                  
-                   
-      - save_cache:
-          key: cache-linux-dev-tools-v0
-          paths:
-            - "~/korali/tools/dev-tools"
-            
       - run:
           name: build Korali
           command: ./install --prereqs --jobs=8
@@ -104,26 +117,48 @@ jobs:
    
       - restore_cache:
           keys:
-            - cache-macos-cmake-v0
+            - cache-macos-doxygen-v2
+            
+      - restore_cache:
+          keys:
+            - cache-macos-llvm-v2
+            
+      - restore_cache:
+          keys:
+            - cache-macos-cmake-v2
            
       - restore_cache:
           keys:
-            - cache-macos-gsl-v0
+            - cache-macos-gsl-v2
             
       - restore_cache:
           keys:
-            - cache-macos-oneDNN-v0
+            - cache-macos-oneDNN-v2
             
-      - restore_cache:
-          keys:
-            - cache-macos-dev-tools-v0
+      - run:
+          name: Install Doxygen
+          command: ./prereqs/install_doxygen.sh
+          
+      - save_cache:
+          key: cache-macos-doxygen-v2
+          paths:
+            - "~/korali/prereqs/_doxygen/install"
+                  
+      - run:
+          name: Install LLVM (clang-format)
+          command: ./prereqs/install_clang.sh
+          
+      - save_cache:
+          key: cache-macos-llvm-v2
+          paths:
+            - "~/korali/prereqs/_llvm/install"
             
       - run:
           name: Install CMake
           command: ./prereqs/install_CMake.sh 
           
       - save_cache:
-          key: cache-macos-cmake-v0
+          key: cache-macos-cmake-v2
           paths:
             - "~/korali/prereqs/CMake/install"
 
@@ -132,7 +167,7 @@ jobs:
           command: ./prereqs/install_gsl.sh
           
       - save_cache:
-          key: cache-macos-gsl-v0
+          key: cache-macos-gsl-v2
           paths:
             - "~/korali/prereqs/GSL/install"
       
@@ -141,19 +176,10 @@ jobs:
           command: ./prereqs/install_oneDNN.sh
           
       - save_cache:
-          key: cache-macos-oneDNN-v0
+          key: cache-macos-oneDNN-v2
           paths:
             - "~/korali/prereqs/oneDNN/install"
                             
-      - run:
-          name: Get developer tools
-          command: pushd tools/dev-tools; ./get-tools.sh; popd       
-          
-      - save_cache:
-          key: cache-macos-dev-tools-v0
-          paths:
-            - "~/korali/tools/dev-tools"          
-          
       - run:
           name: build Korali
           command: ./install --prereqs --jobs=4

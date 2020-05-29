@@ -95,7 +95,7 @@ if [ $? -eq 0 ]; then
  cmpver=`printf "${binVersion}\n${minVersion}" | sort -V | head -n 1`
  
  if [[ "$cmpver" != "$minVersion" ]]; then
-    echo "[Korali] ${libName} version found (${binVersion}) is smaller than required (${minVersion}). Installing newer version..."
+    echo "[Korali] ${libName} version found (${binVersion}) is smaller than required (${minVersion})."
  else
     binFound=1
     echo "[Korali] Found existing ${libName} version ${binVersion}. Skipping installation..."

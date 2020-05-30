@@ -69,7 +69,7 @@ void korali::Engine::run()
   if (_conduit == NULL)
   {
     // Configuring conduit
-    auto conduit = dynamic_cast<korali::Conduit *>(getModule(_js["Conduit"]));
+    auto conduit = dynamic_cast<korali::Conduit *>(getModule(_js["Conduit"], _k));
 
     // Initializing conduit server
     conduit->initServer();
@@ -187,6 +187,13 @@ void korali::Engine::resume(std::vector<korali::Experiment> &experiments)
   run();
 }
 
+void korali::Engine::initialize(korali::Experiment &experiment)
+{
+  _experimentVector.clear();
+  _experimentVector.push_back(experiment._k);
+  initialize();
+}
+
 void korali::Engine::serialize(knlohmann::json &js)
 {
   for (size_t i = 0; i < _experimentVector.size(); i++)
@@ -243,6 +250,8 @@ PYBIND11_MODULE(libkorali, m)
     .def("__setitem__", pybind11::overload_cast<pybind11::object, pybind11::object>(&korali::Engine::setItem), pybind11::return_value_policy::reference);
 
   pybind11::class_<korali::KoraliJson>(m, "koraliJson")
+    .def("get", &korali::KoraliJson::get)
+    .def("set", &korali::KoraliJson::set)
     .def("__getitem__", pybind11::overload_cast<pybind11::object>(&korali::KoraliJson::getItem), pybind11::return_value_policy::reference)
     .def("__setitem__", pybind11::overload_cast<pybind11::object, pybind11::object>(&korali::KoraliJson::setItem), pybind11::return_value_policy::reference);
 
@@ -255,6 +264,7 @@ PYBIND11_MODULE(libkorali, m)
     .def(pybind11::init<>())
     .def("__getitem__", pybind11::overload_cast<pybind11::object>(&korali::Experiment::getItem), pybind11::return_value_policy::reference)
     .def("__setitem__", pybind11::overload_cast<pybind11::object, pybind11::object>(&korali::Experiment::setItem), pybind11::return_value_policy::reference)
+    .def("test", &korali::Experiment::test)
     .def("loadState", pybind11::overload_cast<std::string>(&korali::Experiment::loadState))
     .def("loadState", pybind11::overload_cast<>(&korali::Experiment::loadState));
 }

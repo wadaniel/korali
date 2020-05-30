@@ -183,13 +183,18 @@ void korali::Experiment::initialize()
   setConfiguration(_js.getJson());
   getConfiguration(_js.getJson());
   __expPointer = this;
-  _thread = co_create(8192 * sizeof(void *), korali::threadWrapper);
+  _thread = co_create(1 << 20, korali::threadWrapper);
   co_switch(_thread);
 }
 
 void korali::Experiment::finalize()
 {
   co_delete(_thread);
+}
+
+std::vector<std::vector<double>> korali::Experiment::test(const std::vector<std::vector<double>> &inputBatch)
+{
+  return _k->_solver->test(inputBatch);
 }
 
 knlohmann::json &korali::Experiment::operator[](const std::string &key) { return _js[key]; }

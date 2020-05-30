@@ -68,7 +68,7 @@ def getNamespaceName(path):
 def getParentClassName(className):
  nameString = className.rsplit('::', 2)
  if (len(nameString) == 2): return 'korali::Module'
- parentClass = nameString[0] + '::' + nameString[-2].capitalize()
+ parentClass = nameString[0] + '::' + nameString[-2][0].upper() + nameString[-2][1:]
  return parentClass
 
 def isLeafModule(path):
@@ -107,14 +107,14 @@ def consumeValue(base, moduleName, path, varName, varType, isMandatory, options)
 
  if ('std::vector<korali::' in varType):
   baseType = varType.replace('std::vector<', '').replace('>','')
-  cString += ' for(size_t i = 0; i < ' + base + path + '.size(); i++) ' + varName + '.push_back((' + baseType + ')korali::Module::getModule(' + base + path + '[i]));\n'
+  cString += ' for(size_t i = 0; i < ' + base + path + '.size(); i++) ' + varName + '.push_back((' + baseType + ')korali::Module::getModule(' + base + path + '[i], _k));\n'
   cString += ' korali::JsonInterface::eraseValue(' + base + ', "' + path.replace('"', "'") + '");\n\n'
   return cString
 
  rhs = base + path + '.get<' + varType + '>();\n'
  
  if ('korali::' in varType):
-  rhs = 'dynamic_cast<' + varType + '>(korali::Module::getModule(' + base + path + '));\n'
+  rhs = 'dynamic_cast<' + varType + '>(korali::Module::getModule(' + base + path + ', _k));\n'
 
  if ('gsl_rng*' in varType):
   rhs = 'setRange(' + base + path + '.get<std::string>());\n'
@@ -151,7 +151,7 @@ def saveValue(base, path, varName, varType):
   return sString
   
  if ('gsl_rng*' in varType):
-  sString = '   ' + base + path + ' = getRange(' + varName + ');\n'
+  sString = '   ' + base + path + ' = getRange(' + varName + ');\n' 
   return sString
 
  if ('korali::Variable' in varType):
@@ -469,7 +469,9 @@ for moduleDir, relDir, fileNames in os.walk(modulesDir):
    moduleCodeString += createGetConfiguration(moduleConfig)
    moduleCodeString += createApplyModuleDefaults(moduleConfig)
    moduleCodeString += createApplyVariableDefaults(moduleConfig)
-   moduleCodeString += createCheckTermination(moduleConfig)
+   
+   if 'Termination Criteria' in moduleConfig:
+     moduleCodeString += createCheckTermination(moduleConfig)
 
    if 'Available Operations' in moduleConfig:
      moduleCodeString += createRunOperation(moduleConfig)
@@ -495,11 +497,12 @@ for moduleDir, relDir, fileNames in os.walk(modulesDir):
    # Adding overridden function declarations
    functionOverrideString = ''
    
-   functionOverrideString += '/**\n'
-   functionOverrideString += '* @brief Determines whether the module can trigger termination of an experiment run.\n'
-   functionOverrideString += '* @return True, if it should trigger termination; false, otherwise.\n'
-   functionOverrideString += '*/\n'
-   functionOverrideString += ' bool checkTermination() override;\n'
+   if 'Termination Criteria' in moduleConfig:
+    functionOverrideString += '/**\n'
+    functionOverrideString += '* @brief Determines whether the module can trigger termination of an experiment run.\n'
+    functionOverrideString += '* @return True, if it should trigger termination; false, otherwise.\n'
+    functionOverrideString += '*/\n'
+    functionOverrideString += ' bool checkTermination() override;\n'
    
    functionOverrideString += '/**\n'
    functionOverrideString += '* @brief Obtains the entire current state and configuration of the module.\n'

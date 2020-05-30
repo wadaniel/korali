@@ -1,0 +1,86 @@
+#ifndef _KORALI_NEURAL_NETWORK_HPP_
+#define _KORALI_NEURAL_NETWORK_HPP_
+
+#include "engine.hpp"
+#include "modules/distribution/univariate/uniform/uniform.hpp"
+#include "modules/experiment/experiment.hpp"
+#include "modules/layer/layer.hpp"
+#include "modules/module.hpp"
+#include "modules/solver/solver.hpp"
+
+#ifdef _KORALI_USE_ONEDNN
+  #include "dnnl.hpp"
+#endif
+
+namespace korali
+{
+class NeuralNetwork : public korali::Module
+{
+  public:
+  /**
+  * @brief Flag that indicates whether the oneDNN structures have been initialized
+  */
+  bool _isInitialized;
+
+#ifdef _KORALI_USE_ONEDNN
+  /**
+   * @brief oneDNN Engine
+   */
+  dnnl::engine _engine;
+
+  /**
+   * @brief oneDNN Stream to run operations
+   */
+  dnnl::stream _stream;
+
+#endif
+
+  /**
+  * @brief Model function to evaluate the proposed NN configuration
+  * @param sample The sample containing proposal configuration
+  * @param nn Pointer to the neural network
+  */
+  static void runSample(korali::Sample &sample, korali::NeuralNetwork *nn);
+
+  /**
+ * @brief Korali engine for optimizing the NN's weights and biases
+ */
+  korali::Engine _koraliEngine;
+
+  /**
+ * @brief Korali engine for optimizing the NN's weights and biases
+ */
+  korali::Experiment _koraliExperiment;
+
+  void initialize() override;
+
+  /**
+   * @brief Performs the training phase of the NN, given a solution and the NN's configuration.
+   * @param stepsToRun The number of generations of the optimizer to run.
+   */
+  void train(size_t stepsToRun = 1);
+
+  /**
+   * @brief Initializes the internal memory structures, with regards to the layer configuration of the network
+   */
+  void create();
+
+  /**
+   * @brief Updates the values of weights, biases, and inputs to the NN
+   */
+  void updateWeightsAndBias();
+
+  /**
+   * @brief Forward-propagates the input batch data through the network.
+  */
+  void forward();
+
+  /**
+   * @brief Forward-propagates to find out the gradients of the weights and biases.
+  */
+  void backward();
+};
+
+} // namespace korali
+
+#endif // _KORALI_SOLVER_NEURAL_NETWORK_HPP_

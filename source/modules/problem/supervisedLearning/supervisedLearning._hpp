@@ -1,5 +1,5 @@
-#ifndef _KORALI_PROBLEM_SUPERVISEDLEARNING_HPP_
-#define _KORALI_PROBLEM_SUPERVISEDLEARNING_HPP_
+#ifndef _KORALI_PROBLEM_SUPERVISED_LEARNING_HPP_
+#define _KORALI_PROBLEM_SUPERVISED_LEARNING_HPP_
 
 #include "modules/problem/problem.hpp"
 
@@ -10,9 +10,10 @@ namespace problem
 class SupervisedLearning : public korali::Problem
 {
   public:
+  void initialize() override;
 };
 
 } // namespace problem
 } // namespace korali
 
-#endif // _KORALI_PROBLEM_SUPERVISEDLEARNING_HPP_
+#endif // _KORALI_PROBLEM_SUPERVISED_LEARNING_HPP_

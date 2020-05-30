@@ -28,8 +28,38 @@ void korali::solver::SAEM::initialize()
     if (std::isfinite(_k->_variables[i]->_initialValue) == false)
       _k->_logger->logError("Initial Value of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
 
+  // Configuring Experiment
+  _experiment["Problem"]["Type"] = "Optimization/Stochastic";
   _experiment["Problem"]["Objective Function"] =
     [zFc = _latentProblem->_zetaOfLikelihoodModel, pFc = _latentProblem->_phiOfLikelihoodModel](korali::Sample &sample) { QFunction(sample, zFc, pFc); };
+
+  // The variables are our hyperparameters
+  int hyperparamIdx = 0;
+  for (size_t i = 0; i < _numberVariables; i++)
+  {
+    if (isLatent(i))
+      continue;
+    auto var = _k->_variables[i];
+    if (var->_lowerBound >= var->_upperBound)
+      _k->_logger->logError("Lower bound was equal to or higher than upper bound for hyperparameter %s. Did you perhaps forget to set upper and lower bounds for this hyperparamter?", var->_name.c_str());
+    _experiment["Variables"][hyperparamIdx]["Name"] = var->_name;
+    _experiment["Variables"][hyperparamIdx]["Lower Bound"] = var->_lowerBound;
+    _experiment["Variables"][hyperparamIdx]["Upper Bound"] = var->_upperBound;
+    hyperparamIdx++;
+  }
+
+  // configure the solver
+  if (_mStepSolverType != "CMAES") _k->_logger->logError("Currently, only using a CMAES solver is supported");
+
+  _experiment["Solver"]["Type"] = "CMAES";
+  _experiment["Solver"]["Population Size"] = 4;
+  _experiment["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-15;
+  _experiment["Solver"]["Termination Criteria"]["Max Generations"] = _mStepSolverMaxGenerations;
+
+  _experiment["File Output"]["Frequency"] = 0;
+  _experiment["File Output"]["Enabled"] = false;
+  _experiment["Console Output"]["Frequency"] = 0;
+  _experiment["Console Output"]["Verbosity"] = "Silent";
 }
 
 /** @brief Is called repeatedly to run the generations of the experiment. */
@@ -78,37 +108,6 @@ void korali::solver::SAEM::setInitialConfiguration()
   }
 
   _bestLogLikelihood = -korali::Inf;
-
-  // Configuring Experiment
-  _experiment["Problem"]["Type"] = "Optimization/Stochastic";
-
-  // The variables are our hyperparameters
-  int hyperparamIdx = 0;
-  for (size_t i = 0; i < _numberVariables; i++)
-  {
-    if (isLatent(i))
-      continue;
-    auto var = _k->_variables[i];
-    if (var->_lowerBound >= var->_upperBound)
-      _k->_logger->logError("Lower bound was equal to or higher than upper bound for hyperparameter %s. Did you perhaps forget to set upper and lower bounds for this hyperparamter?", var->_name.c_str());
-    _experiment["Variables"][hyperparamIdx]["Name"] = var->_name;
-    _experiment["Variables"][hyperparamIdx]["Lower Bound"] = var->_lowerBound;
-    _experiment["Variables"][hyperparamIdx]["Upper Bound"] = var->_upperBound;
-    hyperparamIdx++;
-  }
-
-  // configure the solver
-  if (_mStepSolverType != "CMAES") _k->_logger->logError("Currently, only using a CMAES solver is supported");
-
-  _experiment["Solver"]["Type"] = "CMAES";
-  _experiment["Solver"]["Population Size"] = 4;
-  _experiment["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-15;
-  _experiment["Solver"]["Termination Criteria"]["Max Generations"] = _mStepSolverMaxGenerations;
-
-  _experiment["File Output"]["Frequency"] = 0;
-  _experiment["File Output"]["Enabled"] = false;
-  _experiment["Console Output"]["Frequency"] = 0;
-  _experiment["Console Output"]["Verbosity"] = "Silent";
 }
 
 ///  Run the user defined sampler to get new samples. Track mean and variance of the samples.
@@ -264,7 +263,7 @@ void korali::solver::SAEM::updateHyperparameters()
   _experiment["Random Seed"] = _k->_randomSeed++;
   _engine.run(_experiment);
 
-  _currentHyperparameters = _experiment["Results"]["Best Sample"]["Hyperparameters"].get<std::vector<double>>();
+  _currentHyperparameters = _experiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
   double llh = _experiment["Results"]["Best Sample"]["F(x)"].get<double>();
   _currentLogLikelihood = llh;
 

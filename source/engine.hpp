@@ -98,6 +98,12 @@ class Engine : public korali::Module
   void resume(korali::Experiment &experiment);
 
   /**
+   * @brief Initializes (does not run) a single experiment.
+   * @param experiment The experiment to initialize.
+   */
+  void initialize(korali::Experiment &experiment);
+
+  /**
    * @brief Runs the stored list of experiments.
    * @param initializeConduit Indicates whether the conduit should be initialized or inherited (Korali in Korali Executions)
    */

@@ -97,7 +97,7 @@ def processModule(parentModuleConfig, moduleRelPath, moduleName):
 
  print('Processing file: ' + moduleConfigFile)
 
- moduleReadmeString = '.. _module-' + moduleRelPath.lower().replace('/','-').replace(' ','_') + ':\n\n'
+ moduleReadmeString = '.. _module-' + moduleRelPath.lower().replace('/','-').replace(' ','') + ':\n\n'
   
  # Loading configuration and readme files 
  with open(moduleConfigFile, 'r') as file: moduleConfigString  = file.read()
@@ -126,7 +126,8 @@ def processModule(parentModuleConfig, moduleRelPath, moduleName):
   
  # If its parent, construct children modules
  if (isParentModule == True):
-  moduleReadmeString += 'Sub-Categories\n\n'
+  moduleReadmeString += '\nSub-Categories:\n'
+  moduleReadmeString += '-----------------\n\n'
   moduleReadmeString += '.. toctree::\n'
   moduleReadmeString += '   :titlesonly:\n\n'
   
@@ -165,7 +166,7 @@ def processModule(parentModuleConfig, moduleRelPath, moduleName):
    moduleReadmeString += '----------------------------------\n\n'
    moduleReadmeString += 'This problem can be solved using the following modules: \n\n'
    for v in moduleConfig["Compatible Solvers"]:
-    moduleReadmeString += '   - :ref:`' + v + ' <module-solver-' + v.lower().replace('/','-').replace(' ','_') + '>`\n'
+    moduleReadmeString += '   - :ref:`' + v + ' <module-solver-' + v.lower().replace('/','-').replace(' ','') + '>`\n'
 
   if ('Results' in moduleConfig):
    moduleReadmeString += '\n.. _module-' + moduleRelPath.lower().replace('/','-') + '-results:\n\n'

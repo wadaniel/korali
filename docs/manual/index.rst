@@ -31,12 +31,13 @@ Korali's Documentation
    modules/conduit/*
    modules/distribution/*
    modules/layer/*         
+   modules/neuralNetwork/*
    
 .. toctree::
    :maxdepth: 2
    :caption: Development
 
-   dev/collaborating
+   dev/contributing
    dev/build
    dev/testing
    dev/moduledev

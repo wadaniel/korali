@@ -91,19 +91,19 @@ def main(path, check, test, output, args):
   plt.savefig(output)
   exit(-1)
 
- if solverName == 'Executor':
+ if solverName.replace(' ','') == 'Executor':
     # TODO
     print("[Korali] No plotter for solver of type Executor available...")
     exit(0)
 
- if solverName == 'Rprop':
+ if solverName.replace(' ','') == 'Rprop':
    # TODO
    print("[Korali] No plotter for solver of type Rprop available...")
    exit(0)
 
- if solverName == 'RecursiveDiscretizer':
+ if solverName.replace(' ','') == 'DeepLearner':
    # TODO
-   print("[Korali] No plotter for solver of type RecursiveDiscretizer available...")
+   print("[Korali] No plotter for solver of type Deep Learner available...")
    exit(0)
    
  print("[Korali] Error: Did not recognize solver '{0}' for plotting...".format(solverName))

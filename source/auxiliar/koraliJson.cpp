@@ -28,6 +28,19 @@ void korali::KoraliJson::traverseKey(pybind11::object key)
   exit(-1);
 }
 
+std::string korali::KoraliJson::get()
+{
+  auto ret = _opt->dump(2);
+  _opt = &_js;
+  return ret;
+}
+
+void korali::KoraliJson::set(const std::string &js)
+{
+  *_opt = knlohmann::json::parse(js);
+  _opt = &_js;
+}
+
 void korali::KoraliJson::setItem(pybind11::object key, pybind11::object val)
 {
   traverseKey(key);

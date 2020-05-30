@@ -1,7 +1,7 @@
-.. _collaborating:
+.. _contributing:
 
 ********************
-Collaborating
+Contributing
 ********************
 
 Additional Software
@@ -15,7 +15,7 @@ To collaborate in the development of Korali you need the following additional to
 
 * `Sphinx <https://www.sphinx-doc.org/en/master/>`_ - (automatically installed by Korali) For generating module documentation.
 
-If you wish Korali to install these tools automatically, use the :code:`tools/dev-tools/get-tools.sh` script.
+Korali will try to install these tools automatically, if you do not have them in your system.
 
 General Design Rules
 ---------------------------

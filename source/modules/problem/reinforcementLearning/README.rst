@@ -1,16 +1,11 @@
-****************************
+**********************
 Reinforcement Learning
-****************************
+**********************
 
-This module describes  `Control Theory <https://en.wikipedia.org/wiki/Control_theory>`_, problems:
-
-This problem finds an admissible control :math:`\mathbf{u}^{\ast}` which causes the system :math:`\dot{\mathbf{x}}(t) = \mathbf{g} \left( \mathbf{x}(t), \mathbf{u}(t), t \right)` to follow an admissible trajectory :math:`\mathbf{x}^{\ast}` on a continuous time interval :math:`t_{0} \leq t \leq t_{1}` that minimizes a **cost function**
+Describes a problem were we want to solve a sequential decision making problem. Here we are given an environment such that for an action :math:`a` a state :math:`s` is mapped to state :math:`s'` while giving a reward :math:`r` with probability :math:`p(s',r|s,a)`. The goal is to find a policy :math:`\pi` that choses an action :math:`a` for a given state :math:`s` with probability :math:`\pi(a|s)` such that for every state :math:`s` the chosen action :math:`a` is such that the value function :math:`V^\pi` is maximal
 
 .. math::
 
-   J = b \left( \mathbf{x}(t_{1}), t_{1} \right) + \int_{t_{0}}^{t_{1}} f \left( \mathbf{x}(t), \mathbf{u}(t), t \right) \mathrm{d} t 
-   
-The solution to this problem is an optimal control law or policy :math:`\mathbf{u}^{\ast} = h(\mathbf{x}(t), t)`, which produces an optimal trajectory :math:`\mathbf{x}^{\ast}` and an optimized reward function :math:`J^{\ast}`.
+    V^\pi(s)=\E_{\substack{a_t\sim \pi(\cdot|s_t) \\ s_{t+1},r_t\sim p(\cdot,\cdot|s_t,a_t)}}\left[\sum\limits_{t=0}^\infty \gamma^t r_t\bigg|s_0=s\right]
 
-This module allows defining the cost function, which receives a sample containing a full proposed **policy**. Constraints to policies can be enforced by assigned a *-Infinite* cost to them.
-
+Here :math:`\gamma` is the discount factor.

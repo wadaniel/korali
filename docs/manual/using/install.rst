@@ -28,6 +28,12 @@ Installation Steps
    
      ./install --jobs=8
 
+  If you are missing any prerequsites, you can ask Korali to install them automatically via:
+
+  .. code-block:: bash
+   
+     ./install --prereqs
+
 Troubleshooting
 ====================
 
@@ -77,7 +83,7 @@ Mandatory Requirements
       Korali's installer will check the **$CXX** environment variable to determine the default C++ compiler. You can change the value of this variable to define a custom C++ compiler.
   
   - **CMake**
-      Korali requires that you have `CMake <https://cmake.org/>`_ version 3.0 or higher installed in your system.  
+      Korali requires that you have `CMake <https://cmake.org/>`_ version 3.0 or higher installed in your system.  If CMake is not found, you can ask Korali to install it automatically by using the ``--prereqs`` option.
       
   - **wget**
       Korali requires access to the internet and the *wget* command to be available to automatically resolve some of its dependencies. If you wish to install Korali on a system without access to internet or no *wget* command, you check the `Installed by Korali <#automatically-installed-by-korali>`_ section of this document to manually define these requirements.
@@ -94,14 +100,14 @@ Mandatory Requirements
   - **Pip3 Installer**
       Korali requires the *pip3* command to install it's engine and tools. This command is typically included in standard installations of python. *Hint:*  If *pip3* is missing, you can get it by installing pip3, with e.g, ``brew install pip3``
   
-Automatically Installed by Korali
-------------------------------------
-  
   - **PyBind11**
       Korali requires *pybind11* to enable Python/C++ interaction. If not found, it will try to install it automatically using *pip3*.
   
   - **GNU Scientific Library**
-      Korali requires the `GSL-2.4 <http://www.gnu.org/software/gsl/>`_ or later must be installed on your system. If the command ``gsl-config`` is not found, Korali will try to install GSL automatically. *Hint:* If you do not want Korali downloading and installing GSL on its own, run ``./install --no-prereqs``
+      Korali requires that the `GSL-2.4 <http://www.gnu.org/software/gsl/>`_ or later must be installed on your system. If the command ``gsl-config`` is not found, you can ask Korali  to install GSL automatically by using the ``--prereqs`` option. 
+
+  - **oneDNN**
+      Korali requires that the `OneAPI Deep Neural Network Library <https://oneapi-src.github.io/oneDNN/>`_ or later must be installed on your system. If you have an installation of oneDNN already in your system, make sure the environment variable ``DNNLROOT`` pointing to its installation folder is correctly defined. If OneDNN is not found, you can ask Korali to install it automatically  by using the ``--prereqs`` option.
 
 Optional Requirements
 ---------------------------------

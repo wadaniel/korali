@@ -19,6 +19,7 @@ void korali::solver::CMAES::setInitialConfiguration()
   _previousBestValue = _bestEverValue;
   _currentBestValue = _bestEverValue;
 
+  if (_populationSize == 0) _populationSize = ceil(4.0 + floor(3 * log((double)_k->_variables.size())));
   if (_muValue == 0) _muValue = _populationSize / 2;
   if (_viabilityMuValue == 0) _viabilityMuValue = _viabilityPopulationSize / 2;
 
@@ -191,6 +192,10 @@ void korali::solver::CMAES::runGeneration()
   // Waiting for samples to finish
   _conduit->waitAll(samples);
   updateDistribution(samples);
+
+  // Updating Results
+  (*_k)["Results"]["Best Sample"]["F(x)"] = _bestEverValue;
+  (*_k)["Results"]["Best Sample"]["Parameters"] = _bestEverVariables;
 }
 
 void korali::solver::CMAES::initMuWeights(size_t numsamplesmu)
@@ -494,7 +499,6 @@ void korali::solver::CMAES::updateDistribution(std::vector<korali::Sample> &samp
   {
     _previousBestEverValue = _bestEverValue;
     _bestEverValue = _currentBestValue;
-    (*_k)["Results"]["Best Sample"] = samples[_bestValidSample]._js.getJson();
 
     for (size_t d = 0; d < _k->_variables.size(); ++d)
       _bestEverVariables[d] = _currentBestVariables[d];

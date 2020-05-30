@@ -23,31 +23,79 @@ jobs:
 
       - restore_cache:
           keys:
-            - cache-linux-v6
+            - cache-linux-doxygen-v6
+            
+      - restore_cache:
+          keys:
+            - cache-linux-llvm-v6
+            
+      - restore_cache:
+          keys:
+            - cache-linux-cmake-v6
+      
+      - restore_cache:
+          keys:
+            - cache-linux-gsl-v6
+            
+      - restore_cache:
+          keys:
+            - cache-linux-oneDNN-v6
             
       - run:
-          name: Get developer tools
-          command: pushd tools/dev-tools; ./get-tools.sh; popd                  
-                   
+          name: Install Doxygen
+          command: ./prereqs/install_doxygen.sh
+          
+      - save_cache:
+          key: cache-linux-doxygen-v6
+          paths:
+            - "~/korali/prereqs/_doxygen/install"
+                  
+      - run:
+          name: Install LLVM (clang-format)
+          command: ./prereqs/install_clang.sh
+          
+      - save_cache:
+          key: cache-linux-llvm-v6
+          paths:
+            - "~/korali/prereqs/_llvm/install"
+            
+      - run:
+          name: Install CMake
+          command: ./prereqs/install_CMake.sh
+          
+      - save_cache:
+          key: cache-linux-cmake-v6
+          paths:
+            - "~/korali/prereqs/CMake/install"
+
+      - run:
+          name: Install GSL
+          command: ./prereqs/install_gsl.sh
+          
+      - save_cache:
+          key: cache-linux-gsl-v6
+          paths:
+            - "~/korali/prereqs/GSL/install"
+      
+      - run:
+          name: Install oneDNN
+          command: ./prereqs/install_oneDNN.sh
+          
+      - save_cache:
+          key: cache-linux-oneDNN-v6
+          paths:
+            - "~/korali/prereqs/oneDNN/install"
+                                  
       - run:
           name: build Korali
-          command: timeout 10m ./install
+          command: ./install --prereqs --jobs=8
 
-      - save_cache:
-          key: cache-linux-v6
-          paths:
-            - "~/korali/build"
-            - "~/korali/tools/dev-tools"
-            
       - run:
           name: run tests
           command: pushd tests; ./run_all_tests.sh; popd
       
       - store_artifacts:
           path: ~/korali/install.log
-
-      - store_artifacts:
-          path: ~/korali/tests
 
       - store_artifacts:
           path: ~/korali/docs/test.log
@@ -60,28 +108,81 @@ jobs:
 
       - checkout
 
+      - run:
+          name: Install MacOS dependencies
+          command: HOMEBREW_NO_AUTO_UPDATE=1 brew install wget;
+                   HOMEBREW_NO_AUTO_UPDATE=1 brew install coreutils;
+                   HOMEBREW_NO_AUTO_UPDATE=1 brew install cmake;
+                   HOMEBREW_NO_AUTO_UPDATE=1 brew install gsl;
+   
       - restore_cache:
           keys:
-            - cache-macos-v6
+            - cache-macos-doxygen-v6
+            
+      - restore_cache:
+          keys:
+            - cache-macos-llvm-v6
+            
+      - restore_cache:
+          keys:
+            - cache-macos-cmake-v6
+           
+      - restore_cache:
+          keys:
+            - cache-macos-gsl-v6
+            
+      - restore_cache:
+          keys:
+            - cache-macos-oneDNN-v6
+            
+      - run:
+          name: Install Doxygen
+          command: ./prereqs/install_doxygen.sh
+          
+      - save_cache:
+          key: cache-macos-doxygen-v6
+          paths:
+            - "~/korali/prereqs/_doxygen/install"
+                  
+      - run:
+          name: Install LLVM (clang-format)
+          command: ./prereqs/install_clang.sh
+          
+      - save_cache:
+          key: cache-macos-llvm-v6
+          paths:
+            - "~/korali/prereqs/_llvm/install"
+            
+      - run:
+          name: Install CMake
+          command: ./prereqs/install_CMake.sh 
+          
+      - save_cache:
+          key: cache-macos-cmake-v6
+          paths:
+            - "~/korali/prereqs/CMake/install"
 
       - run:
-          name: Install wget dependency
-          command: HOMEBREW_NO_AUTO_UPDATE=1 brew install wget;
-                   HOMEBREW_NO_AUTO_UPDATE=1 brew install coreutils
-                   
-      - run:
-          name: Get developer tools
-          command: pushd tools/dev-tools; ./get-tools.sh; popd       
+          name: Install GSL
+          command: ./prereqs/install_gsl.sh
           
+      - save_cache:
+          key: cache-macos-gsl-v6
+          paths:
+            - "~/korali/prereqs/GSL/install"
+      
+      - run:
+          name: Install oneDNN
+          command: ./prereqs/install_oneDNN.sh
+          
+      - save_cache:
+          key: cache-macos-oneDNN-v6
+          paths:
+            - "~/korali/prereqs/oneDNN/install"
+                            
       - run:
           name: build Korali
-          command: gtimeout 10m ./install
-
-      - save_cache:
-          key: cache-macos-v6
-          paths:
-            - "~/korali/build"
-            - "~/korali/tools/dev-tools"
+          command: ./install --prereqs --jobs=4
 
       - run:
           name: run tests
@@ -91,5 +192,4 @@ jobs:
            path: ~/korali/install.log
 
       - store_artifacts:
-          path: ~/korali/tests/
-
+          path: ~/korali/docs/test.log

@@ -60,6 +60,7 @@ void korali::solver::Integrator::runGeneration()
     for (auto &x : sampleData) _k->_logger->logData("Detailed", " %le   ", x);
     _k->_logger->logData("Detailed", "\n");
 
+    samples[i]["Sample Id"] = i;
     samples[i]["Module"] = "Problem";
     samples[i]["Operation"] = "Execute";
     samples[i]["Parameters"] = sampleData;

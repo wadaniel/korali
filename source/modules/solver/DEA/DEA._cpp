@@ -104,6 +104,7 @@ void korali::solver::DEA::prepareGeneration()
         mutateSingle(i);
         if (_fixInfeasible && isSampleFeasible == false) fixInfeasible(i);
         korali::Sample sample;
+        sample["Sample Id"] = 0;
         sample["Module"] = "Problem";
         sample["Parameters"] = _candidatePopulation[i];
         sample["Operation"] = "Check Feasibility";

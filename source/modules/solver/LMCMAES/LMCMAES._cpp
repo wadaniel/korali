@@ -169,6 +169,7 @@ void korali::solver::LMCMAES::prepareGeneration()
       _infeasibleSampleCount++;
       sampleSingle(i);
       korali::Sample sample;
+      sample["Sample Id"] = 0;
       sample["Module"] = "Problem";
       sample["Parameters"] = _samplePopulation[i];
       sample["Operation"] = "Check Feasibility";

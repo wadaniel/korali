@@ -9,7 +9,6 @@ korali::Sample::Sample()
 {
   _self = this;
   _state = SampleState::uninitialized;
-  _js["Sample Id"] = 0;
   _isAllocated = false;
 }
 
@@ -40,7 +39,28 @@ void korali::Sample::sampleLauncher()
 
   (*sample)["Finished"] = false;
   size_t sampleId = (*sample)["Sample Id"];
-  std::string operation = (*sample)["Operation"];
+
+  // Getting operation to run
+  std::string operation;
+  try
+  {
+    operation = (*sample)["Operation"].get<std::string>();
+  }
+  catch (const std::exception &e)
+  {
+    korali::Logger::logError("Development Error. Incorrect or missing operation type for the sample.\n  Solution: sample[\"Operation\"] = <operation to run>, before starting sample.\n  Reason: %s", e.what());
+  }
+
+  // Getting module type
+  std::string module;
+  try
+  {
+    module = (*sample)["Module"].get<std::string>();
+  }
+  catch (const std::exception &e)
+  {
+    korali::Logger::logError("Development Error. Incorrect or missing module to run sample with.\n   Solution: sample[\"Module\"] = \"Problem\" or \"Solver\", before starting sample.\n  Reason: %s", e.what());
+  }
 
   if ((*sample)["Module"] == "Problem")
     experiment->_problem->runOperation(operation, *sample);

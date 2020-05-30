@@ -277,6 +277,7 @@ void korali::solver::CMAES::checkMeanAndSetRegime()
   if (_isViabilityRegime == false) return; /* mean already inside valid domain, no udpates */
 
   korali::Sample sample;
+  sample["Sample Id"] = 0;
   sample["Parameters"] = _currentMean;
   sample["Module"] = "Problem";
   sample["Operation"] = "Evaluate Constraints";
@@ -307,6 +308,7 @@ void korali::solver::CMAES::updateConstraints()
     _sampleConstraintViolationCounts[i] = 0;
 
     korali::Sample sample;
+    sample["Sample Id"] = 0;
     sample["Parameters"] = _samplePopulation[i];
     sample["Module"] = "Problem";
     sample["Operation"] = "Evaluate Constraints";
@@ -343,6 +345,7 @@ void korali::solver::CMAES::reEvaluateConstraints()
     if (_sampleConstraintViolationCounts[i] > 0)
     {
       korali::Sample sample;
+      sample["Sample Id"] = 0;
       sample["Parameters"] = _samplePopulation[i];
       sample["Module"] = "Problem";
       sample["Operation"] = "Evaluate Constraints";
@@ -394,6 +397,7 @@ void korali::solver::CMAES::prepareGeneration()
       _infeasibleSampleCount++;
       sampleSingle(i);
       korali::Sample sample;
+      sample["Sample Id"] = 0;
       sample["Parameters"] = _samplePopulation[i];
       sample["Module"] = "Problem";
       sample["Operation"] = "Check Feasibility";
@@ -731,6 +735,7 @@ void korali::solver::CMAES::handleConstraints()
             return;
           }
 
+          sample["Sample Id"] = 0;
           sample["Parameters"] = _samplePopulation[i];
           sample["Module"] = "Problem";
           sample["Operation"] = "Check Feasibility";

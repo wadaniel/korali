@@ -71,6 +71,7 @@ void korali::solver::SequentialOptimisation::runGeneration()
     for (auto &x : sampleData) _k->_logger->logData("Detailed", " %lu   ", x);
     _k->_logger->logData("Detailed", "\n");
 
+    samples[i]["Sample Id"] = i;
     samples[i]["Module"] = "Problem";
     samples[i]["Operation"] = "Evaluate";
     samples[i]["Parameters"] = sampleData;

@@ -420,6 +420,7 @@ void korali::solver::TMCMC::calculateGradients(std::vector<korali::Sample> &samp
   {
     if (!(std::isfinite(_chainCandidatesLogPriors[c]) && std::isfinite(_chainCandidatesLogLikelihoods[c]))) continue;
     samples[c]["Module"] = "Problem";
+    samples[c]["Sample Id"] = c;
     samples[c]["Operation"] = "Evaluate Gradient";
     _conduit->start(samples[c]);
     numGradientCalculations++;
@@ -438,6 +439,7 @@ void korali::solver::TMCMC::calculateProposals(std::vector<korali::Sample> &samp
   for (size_t c = 0; c < _chainCount; ++c)
   {
     if (!(std::isfinite(_chainCandidatesLogPriors[c]) && std::isfinite(_chainCandidatesLogLikelihoods[c]))) continue;
+    samples[c]["Sample Id"] = c;
     samples[c]["Module"] = "Problem";
     samples[c]["Operation"] = "Evaluate Fisher Information";
     _conduit->start(samples[c]);

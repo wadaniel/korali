@@ -28,12 +28,12 @@ bool korali::problem::Optimization::isSampleFeasible(korali::Sample &sample)
 
 void korali::problem::Optimization::initialize()
 {
-  if (_k->_variables.size() == 0) _k->_logger->logError("Optimization Evaluation problems require at least one variable.\n");
+  if (_k->_variables.size() == 0) korali::Logger::logError("Optimization Evaluation problems require at least one variable.\n");
 
   /* check _granularity for discrete variables */
   for (size_t i = 0; i < _k->_variables.size(); i++)
   {
-    if (_k->_variables[i]->_granularity < 0.0) _k->_logger->logError("Negative granularity for variable \'%s\'.\n", _k->_variables[i]->_name.c_str());
+    if (_k->_variables[i]->_granularity < 0.0) korali::Logger::logError("Negative granularity for variable \'%s\'.\n", _k->_variables[i]->_name.c_str());
     if (_k->_variables[i]->_granularity > 0.0) _hasDiscreteVariables = true;
   }
 }

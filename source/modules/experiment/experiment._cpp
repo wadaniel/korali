@@ -85,7 +85,7 @@ void korali::Experiment::run()
   _logger->logInfo("Normal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(t1 - t0).count());
 
   co_switch(_engine->_thread);
-  _logger->logError("Trying to continue finished Experiment thread.\n");
+  korali::Logger::logError("Trying to continue finished Experiment thread.\n");
 }
 
 void korali::Experiment::saveState()

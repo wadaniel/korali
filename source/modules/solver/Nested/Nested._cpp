@@ -16,24 +16,24 @@
 
 void korali::solver::Nested::setInitialConfiguration()
 {
-  if (_covarianceScaling <= 0.0) _k->_logger->logError("Covariance Scaling must be larger 0.0 (is %lf).\n", _covarianceScaling);
-  if (_maxGainFactor < 0.0) _k->_logger->logError("Max Gain Factor must be larger equal 0.0 (is %lf).\n", _maxGainFactor);
+  if (_covarianceScaling <= 0.0) korali::Logger::logError("Covariance Scaling must be larger 0.0 (is %lf).\n", _covarianceScaling);
+  if (_maxGainFactor < 0.0) korali::Logger::logError("Max Gain Factor must be larger equal 0.0 (is %lf).\n", _maxGainFactor);
 
-  if ((_resamplingMethod != "MCMC") && (_resamplingMethod != "Box") && (_resamplingMethod != "Ellipse")) _k->_logger->logError("Only accepted Resampling Method are 'MCMC', 'Box' and 'Ellipse' (is %s).\n", _resamplingMethod.c_str());
+  if ((_resamplingMethod != "MCMC") && (_resamplingMethod != "Box") && (_resamplingMethod != "Ellipse")) korali::Logger::logError("Only accepted Resampling Method are 'MCMC', 'Box' and 'Ellipse' (is %s).\n", _resamplingMethod.c_str());
 
-  if (_proposalUpdateFrequency == 0) _k->_logger->logError("Proposal Update Frequency must be larger 0");
+  if (_proposalUpdateFrequency == 0) korali::Logger::logError("Proposal Update Frequency must be larger 0");
 
   _priorLowerBound.resize(_k->_variables.size());
   _priorWidth.resize(_k->_variables.size());
 
   for (size_t d = 0; d < _k->_variables.size(); ++d)
   {
-    if (_k->_distributions[_k->_variables[d]->_distributionIndex]->_type != "Univariate/Uniform") _k->_logger->logError("Only 'Univariate/Uniform' priors allowed (is %s).\n", _k->_distributions[_k->_variables[d]->_distributionIndex]->_type.c_str());
+    if (_k->_distributions[_k->_variables[d]->_distributionIndex]->_type != "Univariate/Uniform") korali::Logger::logError("Only 'Univariate/Uniform' priors allowed (is %s).\n", _k->_distributions[_k->_variables[d]->_distributionIndex]->_type.c_str());
     _priorWidth[d] = dynamic_cast<korali::distribution::univariate::Uniform *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->_maximum - dynamic_cast<korali::distribution::univariate::Uniform *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->_minimum;
     _priorLowerBound[d] = dynamic_cast<korali::distribution::univariate::Uniform *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->_minimum;
   }
 
-  if ((_resamplingMethod == "Ellipse") && (_k->_variables.size() == 2)) _k->_logger->logError("Resampling Method Ellipse only suitable for problems of dim larger 2.");
+  if ((_resamplingMethod == "Ellipse") && (_k->_variables.size() == 2)) korali::Logger::logError("Resampling Method Ellipse only suitable for problems of dim larger 2.");
 
   _candidateLogLikelihoods.resize(_batchSize);
   _candidateLogPriors.resize(_batchSize);
@@ -382,7 +382,7 @@ void korali::solver::Nested::updateEllipse()
 
   gsl_matrix_scale(covar, max);
   int status3 = gsl_linalg_cholesky_decomp1(covar); // LL^T = A
-  if (status3 == 1) _k->_logger->logError("Cholesky Decomposition failed during Ellipse update.");
+  if (status3 == 1) korali::Logger::logError("Cholesky Decomposition failed during Ellipse update.");
   /* On output the diagonal and lower triangular part of the 
      * input matrix A contain the matrix L, while the upper triangular part 
      * contains the original matrix. */

@@ -4,7 +4,7 @@ void korali::problem::gaussian::Execute::initialize()
 {
   auto _gpJson = knlohmann::json();
   if (korali::JsonInterface::loadJsonFromFile(_gpJson, _gaussianProcessJsonFile.c_str()) == false)
-    _k->_logger->logError("Could not load Gaussian Process Json file '%s'.\n", _gaussianProcessJsonFile.c_str());
+    korali::Logger::logError("Could not load Gaussian Process Json file '%s'.\n", _gaussianProcessJsonFile.c_str());
 
   // Create the Gaussian Process
   std::string covarianceFunction = _gpJson["Problem"]["Covariance Function"];

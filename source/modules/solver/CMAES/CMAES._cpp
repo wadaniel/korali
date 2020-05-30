@@ -92,15 +92,15 @@ void korali::solver::CMAES::setInitialConfiguration()
   {
     if (std::isfinite(_k->_variables[i]->_initialMean) == false)
     {
-      if (std::isfinite(_k->_variables[i]->_lowerBound) == false) _k->_logger->logError("Initial Mean of variable \'%s\' not defined, and cannot be inferred because variable lower bound is not finite.\n", _k->_variables[i]->_name.c_str());
-      if (std::isfinite(_k->_variables[i]->_upperBound) == false) _k->_logger->logError("Initial Mean of variable \'%s\' not defined, and cannot be inferred because variable upper bound is not finite.\n", _k->_variables[i]->_name.c_str());
+      if (std::isfinite(_k->_variables[i]->_lowerBound) == false) korali::Logger::logError("Initial Mean of variable \'%s\' not defined, and cannot be inferred because variable lower bound is not finite.\n", _k->_variables[i]->_name.c_str());
+      if (std::isfinite(_k->_variables[i]->_upperBound) == false) korali::Logger::logError("Initial Mean of variable \'%s\' not defined, and cannot be inferred because variable upper bound is not finite.\n", _k->_variables[i]->_name.c_str());
       _k->_variables[i]->_initialMean = (_k->_variables[i]->_upperBound + _k->_variables[i]->_lowerBound) * 0.5;
     }
 
     if (std::isfinite(_k->_variables[i]->_initialStandardDeviation) == false)
     {
-      if (std::isfinite(_k->_variables[i]->_lowerBound) == false) _k->_logger->logError("Initial Mean of variable \'%s\' not defined, and cannot be inferred because variable lower bound is not finite.\n", _k->_variables[i]->_name.c_str());
-      if (std::isfinite(_k->_variables[i]->_upperBound) == false) _k->_logger->logError("Initial Standard Deviation \'%s\' not defined, and cannot be inferred because variable upper bound is not finite.\n", _k->_variables[i]->_name.c_str());
+      if (std::isfinite(_k->_variables[i]->_lowerBound) == false) korali::Logger::logError("Initial Mean of variable \'%s\' not defined, and cannot be inferred because variable lower bound is not finite.\n", _k->_variables[i]->_name.c_str());
+      if (std::isfinite(_k->_variables[i]->_upperBound) == false) korali::Logger::logError("Initial Standard Deviation \'%s\' not defined, and cannot be inferred because variable upper bound is not finite.\n", _k->_variables[i]->_name.c_str());
       _k->_variables[i]->_initialStandardDeviation = (_k->_variables[i]->_upperBound - _k->_variables[i]->_lowerBound) * 0.3;
     }
   }
@@ -109,11 +109,11 @@ void korali::solver::CMAES::setInitialConfiguration()
   if (_areConstraintsDefined)
   {
     if ((_globalSuccessLearningRate <= 0.0) || (_globalSuccessLearningRate > 1.0))
-      _k->_logger->logError("Invalid Global Success Learning Rate (%f), must be greater than 0.0 and less than 1.0\n", _globalSuccessLearningRate);
+      korali::Logger::logError("Invalid Global Success Learning Rate (%f), must be greater than 0.0 and less than 1.0\n", _globalSuccessLearningRate);
     if ((_targetSuccessRate <= 0.0) || (_targetSuccessRate > 1.0))
-      _k->_logger->logError("Invalid Target Success Rate (%f), must be greater than 0.0 and less than 1.0\n", _targetSuccessRate);
+      korali::Logger::logError("Invalid Target Success Rate (%f), must be greater than 0.0 and less than 1.0\n", _targetSuccessRate);
     if (_covarianceMatrixAdaptionStrength <= 0.0)
-      _k->_logger->logError("Invalid Adaption Size (%f), must be greater than 0.0\n", _covarianceMatrixAdaptionStrength);
+      korali::Logger::logError("Invalid Adaption Size (%f), must be greater than 0.0\n", _covarianceMatrixAdaptionStrength);
 
     _globalSuccessRate = 0.5;
     _bestValidSample = -1;
@@ -208,7 +208,7 @@ void korali::solver::CMAES::initMuWeights(size_t numsamplesmu)
   else if (_muType == "Logarithmic")
     for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = log(std::max((double)numsamplesmu, 0.5 * _currentPopulationSize) + 0.5) - log(i + 1.);
   else
-    _k->_logger->logError("Invalid setting of Mu Type (%s) (Linear, Equal, or Logarithmic accepted).", _muType.c_str());
+    korali::Logger::logError("Invalid setting of Mu Type (%s) (Linear, Equal, or Logarithmic accepted).", _muType.c_str());
 
   // Normalize weights vector and set mueff
   double s1 = 0.0;

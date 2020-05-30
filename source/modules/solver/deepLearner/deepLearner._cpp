@@ -7,8 +7,8 @@ void korali::solver::DeepLearner::initialize()
   // Getting problem pointer
   _problem = dynamic_cast<korali::problem::SupervisedLearning *>(_k->_problem);
 
-  if (_problem->_trainingBatchSize == 0) _k->_logger->logError("Training data has not been provided for variable 0.\n");
-  if (_problem->_validationBatchSize == 0) _k->_logger->logError("Validation data has not been provided for variable 0.\n");
+  if (_problem->_trainingBatchSize == 0) korali::Logger::logError("Training data has not been provided for variable 0.\n");
+  if (_problem->_validationBatchSize == 0) korali::Logger::logError("Validation data has not been provided for variable 0.\n");
 
   // Setting training NN
   _trainingNeuralNetwork = dynamic_cast<korali::NeuralNetwork *>(korali::Module::duplicate(_neuralNetwork));

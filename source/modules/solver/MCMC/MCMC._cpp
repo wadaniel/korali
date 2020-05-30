@@ -15,11 +15,11 @@
 
 void korali::solver::MCMC::setInitialConfiguration()
 {
-  if (_chainCovarianceScaling <= 0.0) _k->_logger->logError("Chain Covariance Scaling must be larger 0.0 (is %lf).\n", _chainCovarianceScaling);
-  if (_leap < 1) _k->_logger->logError("Leap must be larger 0 (is %zu).\n", _leap);
-  if (_burnIn < 0) _k->_logger->logError("Burn In must be larger equal 0 (is %zu).\n", _burnIn);
-  if (_rejectionLevels < 1) _k->_logger->logError("Rejection Levels must be larger 0 (is %zu).\n", _rejectionLevels);
-  if (_nonAdaptionPeriod < 0) _k->_logger->logError("Non Adaption Period must be larger equal 0 (is %zu).\n", _nonAdaptionPeriod);
+  if (_chainCovarianceScaling <= 0.0) korali::Logger::logError("Chain Covariance Scaling must be larger 0.0 (is %lf).\n", _chainCovarianceScaling);
+  if (_leap < 1) korali::Logger::logError("Leap must be larger 0 (is %zu).\n", _leap);
+  if (_burnIn < 0) korali::Logger::logError("Burn In must be larger equal 0 (is %zu).\n", _burnIn);
+  if (_rejectionLevels < 1) korali::Logger::logError("Rejection Levels must be larger 0 (is %zu).\n", _rejectionLevels);
+  if (_nonAdaptionPeriod < 0) korali::Logger::logError("Non Adaption Period must be larger equal 0 (is %zu).\n", _nonAdaptionPeriod);
 
   // Allocating MCMC memory
   _chainCandidate.resize(_rejectionLevels);

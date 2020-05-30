@@ -13,7 +13,7 @@ void korali::solver::DEA::setInitialConfiguration()
 {
   for (size_t d = 0; d < _k->_variables.size(); ++d)
     if (_k->_variables[d]->_upperBound < _k->_variables[d]->_lowerBound)
-      _k->_logger->logError("Lower Bound (%.4f) of variable \'%s\'  exceeds Upper Bound (%.4f).\n", _k->_variables[d]->_lowerBound, _k->_variables[d]->_name.c_str(), _k->_variables[d]->_upperBound);
+      korali::Logger::logError("Lower Bound (%.4f) of variable \'%s\'  exceeds Upper Bound (%.4f).\n", _k->_variables[d]->_lowerBound, _k->_variables[d]->_name.c_str(), _k->_variables[d]->_upperBound);
 
   // Allocating Memory
   _samplePopulation.resize(_populationSize);
@@ -262,7 +262,7 @@ void korali::solver::DEA::updateSolver(std::vector<korali::Sample> &samples)
     acceptRuleRecognized = true;
   }
 
-  if (acceptRuleRecognized == false) _k->_logger->logError("Accept Rule (%s) not recognized.\n", _acceptRule.c_str());
+  if (acceptRuleRecognized == false) korali::Logger::logError("Accept Rule (%s) not recognized.\n", _acceptRule.c_str());
 
   for (size_t i = 0; i < _populationSize; ++i)
     for (size_t d = 0; d < _k->_variables.size(); ++d)

@@ -16,7 +16,7 @@
 void korali::solver::SAEM::initialize()
 {
   if (_k->_problem->getType() != "Bayesian/Latent")
-    _k->_logger->logError("SAEM can only optimize problems of type 'Bayesian/Latent' .\n");
+    korali::Logger::logError("SAEM can only optimize problems of type 'Bayesian/Latent' .\n");
 
   _latentProblem = dynamic_cast<korali::problem::bayesian::Latent *>(_k->_problem); // .get<korali::problem::bayesian::Latent>()
 
@@ -26,7 +26,7 @@ void korali::solver::SAEM::initialize()
 
   for (size_t i = 0; i < _numberVariables; i++)
     if (std::isfinite(_k->_variables[i]->_initialValue) == false)
-      _k->_logger->logError("Initial Value of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
+      korali::Logger::logError("Initial Value of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
 
   // Configuring Experiment
   _experiment["Problem"]["Type"] = "Optimization/Stochastic";
@@ -41,7 +41,7 @@ void korali::solver::SAEM::initialize()
       continue;
     auto var = _k->_variables[i];
     if (var->_lowerBound >= var->_upperBound)
-      _k->_logger->logError("Lower bound was equal to or higher than upper bound for hyperparameter %s. Did you perhaps forget to set upper and lower bounds for this hyperparamter?", var->_name.c_str());
+      korali::Logger::logError("Lower bound was equal to or higher than upper bound for hyperparameter %s. Did you perhaps forget to set upper and lower bounds for this hyperparamter?", var->_name.c_str());
     _experiment["Variables"][hyperparamIdx]["Name"] = var->_name;
     _experiment["Variables"][hyperparamIdx]["Lower Bound"] = var->_lowerBound;
     _experiment["Variables"][hyperparamIdx]["Upper Bound"] = var->_upperBound;
@@ -49,7 +49,7 @@ void korali::solver::SAEM::initialize()
   }
 
   // configure the solver
-  if (_mStepSolverType != "CMAES") _k->_logger->logError("Currently, only using a CMAES solver is supported");
+  if (_mStepSolverType != "CMAES") korali::Logger::logError("Currently, only using a CMAES solver is supported");
 
   _experiment["Solver"]["Type"] = "CMAES";
   _experiment["Solver"]["Population Size"] = 4;
@@ -125,7 +125,7 @@ void korali::solver::SAEM::sampleLatent()
   _conduit->wait(sample);
 
   _currentSamples = sample["Samples"].get<std::vector<std::vector<double>>>();
-  if (_currentSamples.size() != _numberSamplesPerStep) _k->_logger->logError("User defined sampler did not return the correct number of samples ('Number Samples').");
+  if (_currentSamples.size() != _numberSamplesPerStep) korali::Logger::logError("User defined sampler did not return the correct number of samples ('Number Samples').");
 
   // mean and variance:
   auto transposed = transpose(_currentSamples);
@@ -173,7 +173,7 @@ void korali::solver::SAEM::calculateSampleSVectors()
     std::vector<double> v = k[i]["S"];
     _currentSamplesSVectors[i] = v;
     if (v.size() != _latentProblem->_sDimension)
-      _k->_logger->logError("S vector had incorrect size, or incorrect size was given as 'S Dimension' when defining the problem");
+      korali::Logger::logError("S vector had incorrect size, or incorrect size was given as 'S Dimension' when defining the problem");
   }
 }
 

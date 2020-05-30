@@ -77,7 +77,7 @@ void korali::Conduit::coroutineWrapper()
   currentSample->_state = SampleState::finished;
   co_switch(engine->_currentExperiment->_thread);
 
-  if (currentSample->_state != SampleState::uninitialized) _conduit->_logger->logError("Resuming a finished sample\n");
+  if (currentSample->_state != SampleState::uninitialized) korali::Logger::logError("Resuming a finished sample\n");
 }
 
 void korali::Conduit::start(korali::Sample &sample)
@@ -95,12 +95,12 @@ void korali::Conduit::start(korali::Sample &sample)
     korali::Logger::logError("Development Error. Incorrect or missing sample ID of the sample.\n  Solution: set sample[\"Sample Id\"] = ID, before starting sample.\n  Reason: %s", e.what());
   }
 
-  if (sample._state != SampleState::uninitialized) _logger->logError("Sample has already been initialized.\n");
+  if (sample._state != SampleState::uninitialized) korali::Logger::logError("Sample has already been initialized.\n");
 
   if (sample._isAllocated == false)
     sample._sampleThread = co_create(1 << 24, korali::Conduit::coroutineWrapper);
   else
-    _logger->logError("Sample thread is already allocated; has it executed before being re-started?\n");
+    korali::Logger::logError("Sample thread is already allocated; has it executed before being re-started?\n");
 
   sample._state = SampleState::initialized;
   engine->_engineSample = &sample;

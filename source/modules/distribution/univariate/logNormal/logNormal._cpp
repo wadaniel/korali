@@ -21,7 +21,7 @@ double korali::distribution::univariate::LogNormal::getRandomNumber()
 
 void korali::distribution::univariate::LogNormal::updateDistribution()
 {
-  if (_sigma <= 0.0) _k->_logger->logError("Incorrect Sigma parameter of LogNormal distribution: %f.\n", _sigma);
+  if (_sigma <= 0.0) korali::Logger::logError("Incorrect Sigma parameter of LogNormal distribution: %f.\n", _sigma);
 
   _aux = -0.5 * gsl_sf_log(2 * M_PI) - gsl_sf_log(_sigma);
 }

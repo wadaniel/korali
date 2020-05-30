@@ -5,7 +5,7 @@
 void korali::distribution::multivariate::Normal::getDensity(double *x, double *result, size_t n)
 {
   if (_workVector.size() != n)
-    _k->_logger->logError("multivariate::Normal::getDensity Error - requested %lu densities, but distribution is configured with %lu.\n", n, _workVector.size());
+    korali::Logger::logError("multivariate::Normal::getDensity Error - requested %lu densities, but distribution is configured with %lu.\n", n, _workVector.size());
 
   gsl_vector_view _input_view = gsl_vector_view_array(x, n);
 
@@ -32,10 +32,10 @@ void korali::distribution::multivariate::Normal::updateDistribution()
 
   size_t sideSize = sqrt(covarianceMatrixSize);
   if ((sideSize * sideSize) != covarianceMatrixSize)
-    _k->_logger->logError("Size of Multivariate Normal covariance matrix size (%lu) is not a perfect square number.\n", covarianceMatrixSize);
+    korali::Logger::logError("Size of Multivariate Normal covariance matrix size (%lu) is not a perfect square number.\n", covarianceMatrixSize);
 
   size_t meanSize = _meanVector.size();
-  if (sideSize != meanSize) _k->_logger->logError("Size of Multivariate Normal mean vector (%lu) is not the same as the side of covariance matrix (%lu).\n", meanSize, sideSize);
+  if (sideSize != meanSize) korali::Logger::logError("Size of Multivariate Normal mean vector (%lu) is not the same as the side of covariance matrix (%lu).\n", meanSize, sideSize);
 
   _workVector.resize(meanSize);
 
@@ -57,5 +57,5 @@ void korali::distribution::multivariate::Normal::setProperty(std::string propert
     _sigma = values;
     recognizedProperty = true;
   }
-  if (recognizedProperty == false) _k->_logger->logError("Unrecognized property: %s for the Multivariate Normal distribution", propertyName.c_str());
+  if (recognizedProperty == false) korali::Logger::logError("Unrecognized property: %s for the Multivariate Normal distribution", propertyName.c_str());
 }

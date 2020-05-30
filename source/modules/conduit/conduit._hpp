@@ -17,11 +17,6 @@ class Conduit : public korali::Module
 {
   public:
   /**
-  * @brief A pointer to the Conduit's logger object.
- */
-  korali::Logger *_logger;
-
-  /**
    * @brief Dictionary of global information broadcasted by the solver, shared by all workers.
   */
   knlohmann::json _globals;

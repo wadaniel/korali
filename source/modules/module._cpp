@@ -13,7 +13,15 @@ korali::Module *korali::Module::getModule(knlohmann::json &js, korali::Experimen
 
   if (!korali::JsonInterface::isDefined(js, "['Type']")) e->_logger->logError("No module type provided.\n");
 
-  moduleType = js["Type"].get<std::string>();
+  try
+  {
+    moduleType = js["Type"].get<std::string>();
+  }
+  catch (const std::exception &e)
+  {
+    korali::Logger::throwException("Could not parse module type: '%s'.\n%s", js["Type"].dump(2).c_str(), e.what());
+  }
+
   moduleType.erase(remove_if(moduleType.begin(), moduleType.end(), isspace), moduleType.end());
 
   korali::JsonInterface::eraseValue(js, "['Type']");

@@ -17,16 +17,16 @@ function check()
 fileDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 pushd $fileDir
 
-root="../../"
+root=$fileDir/../..
 
 ##############################################
 ### Correcting C++ Code Style
 ##############################################
 
 # If clang-format is not installed, run the installation script
-clangFormatBin=$PWD/../../prereqs/clang-format
+clangFormatBin=${root}/prereqs/clang-format
 if [ ! -f $clangFormatBin ]; then
- pushd ../..
+ pushd ${root}
  ./prereqs/install_clang.sh
  check
  popd
@@ -52,7 +52,7 @@ if [ $? -ne 0 ]; then
   python3 -m pip install $PIP_USER yapf >> $logFile 2>&1; check
 fi
 
-src_files=`find $root -type f -name "*.py" -not -path "$root/external/*"`
+src_files=`find $root -type f -name "*.py" -not -path "${root}/source/external/*" -not -path "${root}/prereqs/*"`
 
 echo $src_files | \
     xargs -n6 -P2 python3 -m yapf --style=yapf -i "$@"

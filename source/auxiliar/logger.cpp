@@ -1,5 +1,6 @@
 #include "logger.hpp"
 #include <stdarg.h>
+#include <stdexcept>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -109,9 +110,19 @@ void korali::Logger::logError(const char *format, ...)
   va_start(ap, format);
   vasprintf(&outstr, newFormat.c_str(), ap);
 
-  fprintf(stderr, "%s", outstr);
-  fflush(stderr);
+  newFormat = outstr;
   free(outstr);
+  throw std::runtime_error(newFormat.c_str());
+}
 
-  throw;
+void korali::Logger::throwException(const char *format, ...)
+{
+  char *outstr = 0;
+  va_list ap;
+  va_start(ap, format);
+  vasprintf(&outstr, format, ap);
+
+  std::string errorMsg = outstr;
+  free(outstr);
+  throw std::runtime_error(errorMsg.c_str());
 }

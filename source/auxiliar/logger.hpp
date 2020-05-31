@@ -93,7 +93,14 @@ class Logger
   * @param format Format string of the data (printf-style)
   * @param ... List of arguments for the format string
   */
-  void logError(const char *format, ...);
+  static void logError(const char *format, ...);
+
+  /**
+  * @brief Throws a runtinme error with a given message. Overrides any verbosity level.
+  * @param format Format string of the data (printf-style)
+  * @param ... List of arguments for the format string
+  */
+  static void throwException(const char *format, ...);
 };
 
 } // namespace korali

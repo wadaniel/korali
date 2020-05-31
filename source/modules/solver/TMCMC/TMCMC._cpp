@@ -44,8 +44,8 @@ void korali::solver::TMCMC::setInitialConfiguration()
 {
   knlohmann::json problemConfig = (*_k)["Problem"];
 
-  if (_maxChainLength == 0) _k->_logger->logError("Max Chain Length must be greater 0.");
-  if (_covarianceScaling <= 0.0) _k->_logger->logError("Covariance Scaling must be larger 0.0 (is %lf).\n", _covarianceScaling);
+  if (_maxChainLength == 0) korali::Logger::logError("Max Chain Length must be greater 0.");
+  if (_covarianceScaling <= 0.0) korali::Logger::logError("Covariance Scaling must be larger 0.0 (is %lf).\n", _covarianceScaling);
 
   if (_perGenerationBurnIn.size() > 0 && _perGenerationBurnIn[0] != 0)
     _k->_logger->logWarning("Normal", "The 0th entry of the Burn In vector is being ignored (corresponding to Generation 0)\n");
@@ -80,11 +80,11 @@ void korali::solver::TMCMC::setInitialConfiguration()
       std::string problemType = problemConfig["Type"];
       if (problemType == "Bayesian/Reference") valid = true;
     }
-    if (valid == false) _k->_logger->logError("mTMCMC works only for problems of type 'Bayesian/Reference'\n");
+    if (valid == false) korali::Logger::logError("mTMCMC works only for problems of type 'Bayesian/Reference'\n");
 
-    if (_maxChainLength != 1) _k->_logger->logError("Current version of 'mTMCMC' supports only 'Max Chain Length' of 1 (BASIS).");
-    if (_stepSize < 0.0) _k->_logger->logError("Step Size lower than 0.0 (is %lf)\n", _stepSize);
-    if (_domainExtensionFactor < 0.0) _k->_logger->logError("Domain Extension Factor lower than 0.0 (is %lf)\n", _domainExtensionFactor);
+    if (_maxChainLength != 1) korali::Logger::logError("Current version of 'mTMCMC' supports only 'Max Chain Length' of 1 (BASIS).");
+    if (_stepSize < 0.0) korali::Logger::logError("Step Size lower than 0.0 (is %lf)\n", _stepSize);
+    if (_domainExtensionFactor < 0.0) korali::Logger::logError("Domain Extension Factor lower than 0.0 (is %lf)\n", _domainExtensionFactor);
 
     _chainCandidatesErrors.resize(_populationSize, -1);
     _chainLeadersErrors.resize(_populationSize, -1);
@@ -107,7 +107,7 @@ void korali::solver::TMCMC::setInitialConfiguration()
 
     for (size_t d = 0; d < _k->_variables.size(); ++d)
     {
-      if (_k->_distributions[_k->_variables[d]->_distributionIndex]->_type != "Univariate/Uniform") _k->_logger->logError("Only 'Univariate/Uniform' priors allowed (is %s).\n", _k->_distributions[_k->_variables[d]->_distributionIndex]->_type.c_str());
+      if (_k->_distributions[_k->_variables[d]->_distributionIndex]->_type != "Univariate/Uniform") korali::Logger::logError("Only 'Univariate/Uniform' priors allowed (is %s).\n", _k->_distributions[_k->_variables[d]->_distributionIndex]->_type.c_str());
       double width = dynamic_cast<korali::distribution::univariate::Uniform *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->_maximum - dynamic_cast<korali::distribution::univariate::Uniform *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->_minimum;
       _upperExtendedBoundaries[d] = dynamic_cast<korali::distribution::univariate::Uniform *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->_maximum + width * _domainExtensionFactor;
       _lowerExtendedBoundaries[d] = dynamic_cast<korali::distribution::univariate::Uniform *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->_minimum - width * _domainExtensionFactor;
@@ -165,8 +165,23 @@ void korali::solver::TMCMC::runGeneration()
     //printf("%s\n", samples[finishedId]._js.getJson().dump(2).c_str());
     _chainPendingEvaluation[finishedId] = false;
 
-    _chainCandidatesLogLikelihoods[finishedId] = samples[finishedId]["logLikelihood"];
-    _chainCandidatesLogPriors[finishedId] = samples[finishedId]["logPrior"];
+    try
+    {
+      _chainCandidatesLogLikelihoods[finishedId] = samples[finishedId]["logLikelihood"];
+    }
+    catch (const std::exception &e)
+    {
+      korali::Logger::logError("TMCMC: Dev Error - Missing or incorrect value of 'logLikelihood' returned by the sample evaluation. \n   + Solution: Make sure the problem is storing this result, e.g., sample[\"logLikelihood\"] = value.\n   + Cause: %s\n", e.what());
+    }
+
+    try
+    {
+      _chainCandidatesLogPriors[finishedId] = samples[finishedId]["logPrior"];
+    }
+    catch (const std::exception &e)
+    {
+      korali::Logger::logError("TMCMC: Dev Error - Missing or incorrect value of 'logPrior' returned by the sample evaluation. \n   + Solution: Make sure the problem is storing this result, e.g., sample[\"logPrior\"] = value.\n   + Cause: %s\n", e.what());
+    }
 
     if (isfinite(_chainCandidatesLogPriors[finishedId])) _numFinitePriorEvaluations++;
     if (isfinite(_chainCandidatesLogLikelihoods[finishedId])) _numFiniteLikelihoodEvaluations++;
@@ -420,6 +435,7 @@ void korali::solver::TMCMC::calculateGradients(std::vector<korali::Sample> &samp
   {
     if (!(std::isfinite(_chainCandidatesLogPriors[c]) && std::isfinite(_chainCandidatesLogLikelihoods[c]))) continue;
     samples[c]["Module"] = "Problem";
+    samples[c]["Sample Id"] = c;
     samples[c]["Operation"] = "Evaluate Gradient";
     _conduit->start(samples[c]);
     numGradientCalculations++;
@@ -438,6 +454,7 @@ void korali::solver::TMCMC::calculateProposals(std::vector<korali::Sample> &samp
   for (size_t c = 0; c < _chainCount; ++c)
   {
     if (!(std::isfinite(_chainCandidatesLogPriors[c]) && std::isfinite(_chainCandidatesLogLikelihoods[c]))) continue;
+    samples[c]["Sample Id"] = c;
     samples[c]["Module"] = "Problem";
     samples[c]["Operation"] = "Evaluate Fisher Information";
     _conduit->start(samples[c]);

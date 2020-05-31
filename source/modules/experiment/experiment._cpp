@@ -10,8 +10,6 @@
 #include <chrono>
 #include <cstdio>
 #include <map>
-#include <sys/stat.h>
-#include <sys/types.h>
 
 /**
   * @brief Pointer to the current experiment in execution
@@ -29,8 +27,6 @@ void threadWrapper() { __expPointer->run(); }
 void korali::Experiment::run()
 {
   co_switch(_engine->_thread);
-
-  _logger = new Logger(_consoleOutputVerbosity, _logFile);
 
   auto t0 = std::chrono::system_clock::now();
 
@@ -89,16 +85,13 @@ void korali::Experiment::run()
   _logger->logInfo("Normal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(t1 - t0).count());
 
   co_switch(_engine->_thread);
-  _logger->logError("Trying to continue finished Experiment thread.\n");
+  korali::Logger::logError("Trying to continue finished Experiment thread.\n");
 }
 
 void korali::Experiment::saveState()
 {
   char genFileName[256];
   sprintf(genFileName, "gen%08lu.json", _currentGeneration);
-
-  if (_fileOutputEnabled)
-    if (!korali::dirExists(_fileOutputPath)) korali::mkdir(_fileOutputPath);
 
   // Getting configuration
   _timestamp = getTimestamp();
@@ -178,13 +171,20 @@ korali::Experiment::Experiment()
 
 void korali::Experiment::initialize()
 {
-  _js["Samples"] = knlohmann::json();
-  applyModuleDefaults(_js.getJson());
-  setConfiguration(_js.getJson());
-  getConfiguration(_js.getJson());
-  __expPointer = this;
-  _thread = co_create(1 << 20, korali::threadWrapper);
-  co_switch(_thread);
+  try
+  {
+    _js["Samples"] = knlohmann::json();
+    applyModuleDefaults(_js.getJson());
+    setConfiguration(_js.getJson());
+    getConfiguration(_js.getJson());
+    __expPointer = this;
+    _thread = co_create(1 << 20, korali::threadWrapper);
+    co_switch(_thread);
+  }
+  catch (const std::exception &e)
+  {
+    korali::Logger::throwException("[Korali] Error initializing experiment. Reason:\n%s", e.what());
+  }
 }
 
 void korali::Experiment::finalize()

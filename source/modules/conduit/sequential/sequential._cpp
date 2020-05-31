@@ -6,8 +6,6 @@
 
 void korali::conduit::Sequential::initialize()
 {
-  // Instantiating Engine logger.
-  _logger = new korali::Logger();
 }
 
 void korali::conduit::Sequential::processSample(korali::Sample &sample)

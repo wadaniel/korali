@@ -28,11 +28,6 @@ class Engine : public korali::Module
   std::string _verbosityLevel;
 
   /**
-   * @brief A pointer to the Engine's logger object.
-  */
-  korali::Logger *_logger;
-
-  /**
     * @brief Stores the list of experiments to run.
     */
   std::vector<korali::Experiment *> _experimentVector;

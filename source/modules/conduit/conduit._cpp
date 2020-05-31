@@ -9,8 +9,26 @@ korali::Conduit *korali::_conduit = NULL;
 
 void korali::Conduit::initiateSample(knlohmann::json &sampleJs)
 {
-  size_t experimentId = sampleJs["Experiment Id"];
-  size_t sampleId = sampleJs["Sample Id"];
+  size_t experimentId;
+
+  try
+  {
+    experimentId = sampleJs["Experiment Id"];
+  }
+  catch (const std::exception &e)
+  {
+    korali::Logger::logError("Development Error. Incorrect or missing Experiment ID of the sample.\n  Solution: set sample[\"Experiment Id\"] = ID, before starting sample.\n  Reason: %s", e.what());
+  }
+
+  size_t sampleId;
+  try
+  {
+    sampleId = sampleJs["Sample Id"];
+  }
+  catch (const std::exception &e)
+  {
+    korali::Logger::logError("Development Error. Incorrect or missing sample ID of the sample.\n  Solution: set sample[\"Sample Id\"] = ID, before starting sample.\n  Reason: %s", e.what());
+  }
 
   korali::Engine *engine = _engineStack.top();
   engine->_currentWorker = this;
@@ -59,19 +77,30 @@ void korali::Conduit::coroutineWrapper()
   currentSample->_state = SampleState::finished;
   co_switch(engine->_currentExperiment->_thread);
 
-  if (currentSample->_state != SampleState::uninitialized) _conduit->_logger->logError("Resuming a finished sample\n");
+  if (currentSample->_state != SampleState::uninitialized) korali::Logger::logError("Resuming a finished sample\n");
 }
 
 void korali::Conduit::start(korali::Sample &sample)
 {
   korali::Engine *engine = _engineStack.top();
 
-  if (sample._state != SampleState::uninitialized) _logger->logError("Sample has already been initialized.\n");
+  // Checking if sample id was defined
+  size_t sampleId;
+  try
+  {
+    sampleId = sample["Sample Id"];
+  }
+  catch (const std::exception &e)
+  {
+    korali::Logger::logError("Development Error. Incorrect or missing sample ID of the sample.\n  Solution: set sample[\"Sample Id\"] = ID, before starting sample.\n  Reason: %s", e.what());
+  }
+
+  if (sample._state != SampleState::uninitialized) korali::Logger::logError("Sample has already been initialized.\n");
 
   if (sample._isAllocated == false)
     sample._sampleThread = co_create(1 << 24, korali::Conduit::coroutineWrapper);
   else
-    _logger->logError("Sample thread is already allocated; has it executed before being re-started?\n");
+    korali::Logger::logError("Sample thread is already allocated; has it executed before being re-started?\n");
 
   sample._state = SampleState::initialized;
   engine->_engineSample = &sample;
@@ -91,7 +120,16 @@ void korali::Conduit::wait(korali::Sample &sample)
     if (sample._state == SampleState::waiting || sample._state == SampleState::initialized) co_switch(engine->_thread);
   }
 
-  size_t sampleId = sample["Sample Id"];
+  size_t sampleId;
+  try
+  {
+    sampleId = sample["Sample Id"];
+  }
+  catch (const std::exception &e)
+  {
+    korali::Logger::logError("Development Error. Incorrect or missing sample ID of the sample.\n  Solution: set sample[\"Sample Id\"] = ID, before starting sample.\n  Reason: %s", e.what());
+  }
+
   engine->_currentExperiment->_sampleInfo["Samples"][sampleId] = sample._js.getJson();
   if (sample._isAllocated == true)
   {
@@ -120,7 +158,16 @@ size_t korali::Conduit::waitAny(std::vector<korali::Sample> &samples)
 
       if (samples[currentSample]._state == SampleState::finished)
       {
-        size_t sampleId = samples[currentSample]["Sample Id"];
+        size_t sampleId;
+        try
+        {
+          sampleId = samples[currentSample]["Sample Id"];
+        }
+        catch (const std::exception &e)
+        {
+          korali::Logger::logError("Development Error. Incorrect or missing sample ID of the sample.\n  Solution: set sample[\"Sample Id\"] = ID, before starting sample.\n  Reason: %s", e.what());
+        }
+
         engine->_currentExperiment->_sampleInfo["Samples"][sampleId] = samples[currentSample]._js.getJson();
         if (samples[currentSample]._isAllocated == true)
         {
@@ -162,7 +209,16 @@ void korali::Conduit::waitAll(std::vector<korali::Sample> &samples)
 
   for (size_t i = 0; i < samples.size(); i++)
   {
-    size_t sampleId = samples[i]["Sample Id"];
+    size_t sampleId;
+    try
+    {
+      sampleId = samples[i]["Sample Id"];
+    }
+    catch (const std::exception &e)
+    {
+      korali::Logger::logError("Development Error. Incorrect or missing sample ID of the sample.\n  Solution: set sample[\"Sample Id\"] = ID, before starting sample.\n  Reason: %s", e.what());
+    }
+
     engine->_currentExperiment->_sampleInfo["Samples"][sampleId] = samples[i]._js.getJson();
     if (samples[i]._isAllocated == true)
     {

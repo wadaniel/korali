@@ -106,12 +106,11 @@ class KoraliJson
 };
 
 /**
-* \class JsonInterface
+* \namespace JsonInterface
 * @brief Provides auxiliar functions for the manipulation of JSON objects
 */
-class JsonInterface
+namespace JsonInterface
 {
-  public:
   /**
   * @brief Checks whether the JSON object is empty.
   * @param js The JSON object to check.

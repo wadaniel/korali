@@ -5,7 +5,7 @@ void korali::solver::Adam::setInitialConfiguration()
 {
   for (size_t i = 0; i < _k->_variables.size(); i++)
     if (std::isfinite(_k->_variables[i]->_initialValue) == false)
-      _k->_logger->logError("Initial Value of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
+      korali::Logger::logError("Initial Value of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
 
   _currentValue.resize(_k->_variables.size());
   for (size_t i = 0; i < _k->_variables.size(); i++)
@@ -39,12 +39,28 @@ void korali::solver::Adam::runGeneration()
   _conduit->wait(sample);
 
   // Processing results
-  _currentEvaluation = sample["F(x)"];
+  try
+  {
+    _currentEvaluation = sample["F(x)"];
+  }
+  catch (const std::exception &e)
+  {
+    korali::Logger::logError("ADAM: Missing or incorrect value of 'F(x)' returned by the sample evaluation. \n   + Solution: Make sure your model is storing its result, e.g., sample[\"F(x)\"] = value.\n   + Cause: %s\n", e.what());
+  }
+
   _currentEvaluation = -_currentEvaluation; //minimize
   _gradientNorm = 0.0;
   for (size_t i = 0; i < _k->_variables.size(); i++)
   {
-    _gradient[i] = sample["Gradient"][i];
+    try
+    {
+      _gradient[i] = sample["Gradient"][i];
+    }
+    catch (const std::exception &e)
+    {
+      korali::Logger::logError("ADAM: Missing, incomplete, or incorrect value of the gradient returned by the sample evaluation on position %lu. \n   + Solution: Make sure your model is storing its result, e.g., sample[\"Gradient(x)\"] = value(s).\n   + Cause: %s\n", i, e.what());
+    }
+
     _gradient[i] = -_gradient[i]; // minimize
     _squaredGradient[i] = _gradient[i] * _gradient[i];
     _gradientNorm += _squaredGradient[i];

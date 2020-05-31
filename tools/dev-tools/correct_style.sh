@@ -5,6 +5,9 @@
 # Description: Utility to adjust source code according to style conventions
 # Copyright 2020 ETH Zurich. All Rights Reserved.
 
+fileDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+pushd $fileDir
+
 # If clang-format is not installed, run the installation script
 clangFormatBin=$PWD/../../prereqs/clang-format
 if [ ! -f $clangFormatBin ]; then
@@ -19,3 +22,5 @@ src_files=`find $root -type f -name "*pp" -not -path "$root/external/*"`
 
 echo $src_files | \
     xargs -n6 -P2 $clangFormatBin -style=file -i "$@"
+
+popd

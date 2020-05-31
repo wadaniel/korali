@@ -4,7 +4,7 @@
 void korali::problem::gaussian::Evaluate::initialize()
 {
   if (_xData.size() != _yData.size())
-    _k->_logger->logError("The number of rows of 'X Data' (%lu) must beq equal to the number of rows of 'Y Data' (%lu).\n", _xData.size(), _yData.size());
+    korali::Logger::logError("The number of rows of 'X Data' (%lu) must beq equal to the number of rows of 'Y Data' (%lu).\n", _xData.size(), _yData.size());
 
   _dataSize = _xData.size();
   _dataDimension = _xData[0].size();

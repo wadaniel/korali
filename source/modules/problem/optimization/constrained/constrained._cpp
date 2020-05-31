@@ -7,9 +7,17 @@ void korali::problem::optimization::Constrained::evaluate(korali::Sample &sample
   std::string sampleString = "['F(x)']";
 
   if (korali::JsonInterface::isDefined(sample._js.getJson(), sampleString) == false)
-    _k->_logger->logError("The %s problem needs a function evaluation. Be sure that you assign a value to the %s attribute in the model definition.\n", _k->_problem->getType().c_str(), sampleString.c_str());
+    korali::Logger::logError("The %s problem needs a function evaluation. Be sure that you assign a value to the %s attribute in the model definition.\n", _k->_problem->getType().c_str(), sampleString.c_str());
 
-  double evaluation = sample["F(x)"];
+  double evaluation = -korali::Inf;
+  try
+  {
+    evaluation = sample["F(x)"];
+  }
+  catch (const std::exception &e)
+  {
+    korali::Logger::logError("Missing or incorrect value of 'F(x)' returned by the sample evaluation. \n   + Solution: Make sure your model is storing its Evaluation value, e.g., sample[\"F(x)\"] = value(s).\n   + Cause: %s\n", e.what());
+  }
 
   // If result is not a finite number, objective function evaluates to -Infinity
   if (std::isnan(evaluation))
@@ -23,7 +31,17 @@ void korali::problem::optimization::Constrained::evaluateConstraints(korali::Sam
   for (size_t i = 0; i < _constraints.size(); i++)
   {
     sample.run(_constraints[i]);
-    double evaluation = sample["F(x)"];
+
+    double evaluation = -korali::Inf;
+    try
+    {
+      evaluation = sample["F(x)"];
+    }
+    catch (const std::exception &e)
+    {
+      korali::Logger::logError("Missing or incorrect value of 'F(x)' returned by the sample evaluation. \n   + Solution: Make sure your model is storing its Evaluation value, e.g., sample[\"F(x)\"] = value(s).\n   + Cause: %s\n", e.what());
+    }
+
     // If constraint is not a finite number, constraint is set to +Infinity
     if (std::isnan(evaluation))
       sample["Constraint Evaluations"][i] = korali::Inf;

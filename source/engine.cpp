@@ -1,10 +1,13 @@
 #include "engine.hpp"
+#include "auxiliar/fs.hpp"
 #include "auxiliar/koraliJson.hpp"
 #include "modules/conduit/conduit.hpp"
 #include "modules/conduit/distributed/distributed.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/problem.hpp"
 #include "modules/solver/solver.hpp"
+#include <sys/stat.h>
+#include <sys/types.h>
 
 std::vector<std::function<void(korali::Sample &)> *> korali::_functionVector;
 std::stack<korali::Engine *> korali::_engineStack;
@@ -20,44 +23,46 @@ korali::Engine::Engine()
 
 void korali::Engine::initialize()
 {
-  // Instantiating Engine logger.
-  if (!korali::JsonInterface::isDefined(_js.getJson(), "['Verbosity']")) _js["Verbosity"] = "Minimal";
-  _verbosityLevel = _js["Verbosity"];
-  _logger = new korali::Logger(_verbosityLevel);
+  // Setting Engine configuration defaults
+  if (!JsonInterface::isDefined(_js.getJson(), "['Profiling']['Detail']")) _js["Profiling"]["Detail"] = "None";
+  if (!JsonInterface::isDefined(_js.getJson(), "['Profiling']['Path']")) _js["Profiling"]["Path"] = "./profiling.json";
+  if (!JsonInterface::isDefined(_js.getJson(), "['Profiling']['Frequency']")) _js["Profiling"]["Frequency"] = 60.0;
+  if (!JsonInterface::isDefined(_js.getJson(), "['Conduit']['Type']")) _js["Conduit"]["Type"] = "Sequential";
+  if (!JsonInterface::isDefined(_js.getJson(), "['Dry Run']")) _js["Dry Run"] = false;
 
-  if (!korali::JsonInterface::isDefined(_js.getJson(), "['Profiling']['Detail']")) _js["Profiling"]["Detail"] = "None";
-  if (!korali::JsonInterface::isDefined(_js.getJson(), "['Profiling']['Path']")) _js["Profiling"]["Path"] = "./profiling.json";
-  if (!korali::JsonInterface::isDefined(_js.getJson(), "['Profiling']['Frequency']")) _js["Profiling"]["Frequency"] = 60.0;
-  if (!korali::JsonInterface::isDefined(_js.getJson(), "['Conduit']['Type']")) _js["Conduit"]["Type"] = "Sequential";
-  if (!korali::JsonInterface::isDefined(_js.getJson(), "['Dry Run']")) _js["Dry Run"] = false;
-
+  // Loading configuration values
   _isDryRun = _js["Dry Run"];
   _profilingPath = _js["Profiling"]["Path"];
   _profilingDetail = _js["Profiling"]["Detail"];
   _profilingFrequency = _js["Profiling"]["Frequency"];
 
+  // Initializing experiment's configuration
   for (size_t i = 0; i < _experimentVector.size(); i++)
   {
     _experimentVector[i]->_experimentId = i;
     _experimentVector[i]->_engine = this;
     _experimentVector[i]->initialize();
     _experimentVector[i]->_isFinished = false;
-    std::string fileName = "./log.txt";
-    //std::string fileName = "./" + _experimentVector[i]->_resultsOutputPath + "/log.txt";
-    if (_experimentVector.size() > 1) _experimentVector[i]->_logFile = fopen(fileName.c_str(), "a");
-    if (_experimentVector.size() == 1) _experimentVector[i]->_logFile = stdout;
   }
 
   // Check configuration correctness
   auto js = _js.getJson();
-  if (korali::JsonInterface::isDefined(js, "['Verbosity']")) korali::JsonInterface::eraseValue(js, "['Verbosity']");
-  if (korali::JsonInterface::isDefined(js, "['Conduit']")) korali::JsonInterface::eraseValue(js, "['Conduit']");
-  if (korali::JsonInterface::isDefined(js, "['Dry Run']")) korali::JsonInterface::eraseValue(js, "['Dry Run']");
-  if (korali::JsonInterface::isDefined(js, "['Conduit']['Type']")) korali::JsonInterface::eraseValue(js, "['Conduit']['Type']");
-  if (korali::JsonInterface::isDefined(js, "['Profiling']['Detail']")) korali::JsonInterface::eraseValue(js, "['Profiling']['Detail']");
-  if (korali::JsonInterface::isDefined(js, "['Profiling']['Path']")) korali::JsonInterface::eraseValue(js, "['Profiling']['Path']");
-  if (korali::JsonInterface::isDefined(js, "['Profiling']['Frequency']")) korali::JsonInterface::eraseValue(js, "['Profiling']['Frequency']");
-  if (korali::JsonInterface::isEmpty(js) == false) _logger->logError("Unrecognized settings for Korali's Engine: \n%s\n", js.dump(2).c_str());
+  try
+  {
+    if (JsonInterface::isDefined(js, "['Verbosity']")) JsonInterface::eraseValue(js, "['Verbosity']");
+    if (JsonInterface::isDefined(js, "['Conduit']")) JsonInterface::eraseValue(js, "['Conduit']");
+    if (JsonInterface::isDefined(js, "['Dry Run']")) JsonInterface::eraseValue(js, "['Dry Run']");
+    if (JsonInterface::isDefined(js, "['Conduit']['Type']")) JsonInterface::eraseValue(js, "['Conduit']['Type']");
+    if (JsonInterface::isDefined(js, "['Profiling']['Detail']")) JsonInterface::eraseValue(js, "['Profiling']['Detail']");
+    if (JsonInterface::isDefined(js, "['Profiling']['Path']")) JsonInterface::eraseValue(js, "['Profiling']['Path']");
+    if (JsonInterface::isDefined(js, "['Profiling']['Frequency']")) JsonInterface::eraseValue(js, "['Profiling']['Frequency']");
+  }
+  catch (const std::exception &e)
+  {
+    korali::Logger::logError("[Korali] Error parsing Korali Engine's parameters. Reason:\n%s", e.what());
+  }
+
+  if (JsonInterface::isEmpty(js) == false) korali::Logger::logError("Unrecognized settings for Korali's Engine: \n%s\n", js.dump(2).c_str());
 }
 
 void korali::Engine::run()
@@ -68,21 +73,49 @@ void korali::Engine::run()
   // Only initialize conduit if the Engine being ran is the first one in the process
   if (_conduit == NULL)
   {
-    // Configuring conduit
-    auto conduit = dynamic_cast<korali::Conduit *>(getModule(_js["Conduit"], _k));
+    try
+    {
+      // Configuring conduit
+      auto conduit = dynamic_cast<korali::Conduit *>(getModule(_js["Conduit"], _k));
 
-    // Initializing conduit server
-    conduit->initServer();
+      // Initializing conduit server
+      conduit->initServer();
 
-    // Assigning pointer after starting workers, so they can initialize their own conduit
-    _conduit = conduit;
+      // Assigning pointer after starting workers, so they can initialize their own conduit
+      _conduit = conduit;
 
-    // Recovering Conduit configuration in case of restart
-    _conduit->getConfiguration(_js.getJson()["Conduit"]);
+      // Recovering Conduit configuration in case of restart
+      _conduit->getConfiguration(_js.getJson()["Conduit"]);
+    }
+    catch (const std::exception &e)
+    {
+      korali::Logger::logError("Could not initialize execution conduit. Reason:\n%s", e.what());
+    }
   }
 
   if (_conduit->isRoot())
   {
+    // Initializing experiment's result folder / log files (or stdout)
+    for (size_t i = 0; i < _experimentVector.size(); i++)
+    {
+      _experimentVector[i]->_logFile = stdout;
+
+      // If experiments are saving results to file, create folder
+      if (_experimentVector[i]->_fileOutputEnabled)
+      {
+        if (!korali::dirExists(_experimentVector[i]->_fileOutputPath)) korali::mkdir(_experimentVector[i]->_fileOutputPath);
+
+        // Setting log files to be saved on to the log folder
+        std::string fileName = "./" + _experimentVector[i]->_fileOutputPath + "/log.txt";
+        if (_experimentVector.size() > 1) _experimentVector[i]->_logFile = fopen(fileName.c_str(), "a");
+
+        if (_experimentVector[i]->_logFile == NULL)
+          korali::Logger::logError("[Korali] Could not create log file (%s) for experiment %lu.\n", fileName.c_str(), i);
+      }
+
+      _experimentVector[i]->_logger = new Logger(_experimentVector[i]->_consoleOutputVerbosity, _experimentVector[i]->_logFile);
+    }
+
     // (Engine-Side) Adding engine to the stack to support Korali-in-Korali execution
     _engineStack.push(this);
 
@@ -94,7 +127,7 @@ void korali::Engine::run()
     _profilingLastSave = std::chrono::high_resolution_clock::now();
 
     if (_experimentVector.size() > 1)
-      for (size_t i = 0; i < _experimentVector.size(); i++) _logger->logInfo("Minimal", "Starting Experiment %lu...\n", i);
+      for (size_t i = 0; i < _experimentVector.size(); i++) _experimentVector[i]->_logger->logInfo("Minimal", "Starting Experiment %lu...\n", i);
 
     while (true)
     {
@@ -107,15 +140,15 @@ void korali::Engine::run()
           executed = true;
           saveProfilingInfo(false);
           if (_experimentVector.size() > 1)
-            if (_experimentVector[i]->_isFinished == true) _logger->logInfo("Minimal", "Experiment %lu has finished.\n", i);
+            if (_experimentVector[i]->_isFinished == true) _experimentVector[i]->_logger->logInfo("Minimal", "Experiment %lu has finished.\n", i);
         }
       if (executed == false) break;
     }
 
     _endTime = std::chrono::high_resolution_clock::now();
 
-    if (_experimentVector.size() > 1) _logger->logInfo("Minimal", "All jobs have finished correctly.\n");
-    if (_experimentVector.size() > 1) _logger->logInfo("Minimal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - _startTime).count());
+    if (_experimentVector.size() > 1) _experimentVector[0]->_logger->logInfo("Minimal", "All jobs have finished correctly.\n");
+    if (_experimentVector.size() > 1) _experimentVector[0]->_logger->logInfo("Minimal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - _startTime).count());
 
     saveProfilingInfo(true);
     _cumulativeTime += std::chrono::duration<double>(_endTime - _startTime).count();
@@ -153,7 +186,7 @@ void korali::Engine::saveProfilingInfo(bool forceSave)
       double elapsedTime = std::chrono::duration<double>(currTime - _startTime).count();
       __profiler["Experiment Count"] = _experimentVector.size();
       __profiler["Elapsed Time"] = elapsedTime + _cumulativeTime;
-      korali::JsonInterface::saveJsonToFile(_profilingPath.c_str(), __profiler);
+      JsonInterface::saveJsonToFile(_profilingPath.c_str(), __profiler);
       _profilingLastSave = std::chrono::high_resolution_clock::now();
     }
   }

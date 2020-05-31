@@ -53,7 +53,14 @@ void korali::solver::DQN::runGeneration()
   for (size_t i = 0; i < _agentCount; i++)
     if (hasFinished[i] == false)
     {
-      states[i] = agents[i]["State"].get<std::vector<double>>();
+      try
+      {
+        states[i] = agents[i]["State"].get<std::vector<double>>();
+      }
+      catch (const std::exception &e)
+      {
+        korali::Logger::logError("DQN: Missing or incorrect value of 'State' returned by the sample evaluation. \n   + Solution: Make sure your model is storing its result, e.g., sample[\"State\"] = value.\n   + Cause: %s\n", e.what());
+      }
 
       // Getting new action to perform
       actions[i] = getAction(states[i]);
@@ -77,10 +84,25 @@ void korali::solver::DQN::runGeneration()
     currentPolicyStates[i].push_back(states[i]);
 
     // Updating reward
-    rewards[i] = agents[i]["Reward"];
+    try
+    {
+      rewards[i] = agents[i]["Reward"];
+    }
+    catch (const std::exception &e)
+    {
+      korali::Logger::logError("DQN: Missing or incorrect value of 'Reward' returned by the sample evaluation. \n   + Solution: Make sure your model is storing its result, e.g., sample[\"State\"] = value.\n   + Cause: %s\n", e.what());
+    }
 
     // Storing agent's new state
-    std::vector<double> newState = agents[i]["State"];
+    std::vector<double> newState;
+    try
+    {
+      newState = agents[i]["State"].get<std::vector<double>>();
+    }
+    catch (const std::exception &e)
+    {
+      korali::Logger::logError("DQN: Missing or incorrect value of 'State' returned by the sample evaluation. \n   + Solution: Make sure your model is storing its result, e.g., sample[\"State\"] = value.\n   + Cause: %s\n", e.what());
+    }
 
     // Storing the agent's experience into the learner
     storeExperience(states[i], actions[i], rewards[i], newState);

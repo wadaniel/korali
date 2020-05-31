@@ -52,4 +52,9 @@ if [ $? -ne 0 ]; then
   python3 -m pip install $PIP_USER yapf >> $logFile 2>&1; check
 fi
 
+src_files=`find $root -type f -name "*.py" -not -path "$root/external/*"`
+
+echo $src_files | \
+    xargs -n6 -P2 python3 -m yapf --style=yapf -i "$@"
+
 popd

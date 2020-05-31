@@ -3,6 +3,10 @@
 fileDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 pushd $fileDir
 
+##############################################
+### Testing C++ Code Style
+##############################################
+
 # If clang-format is not installed, run the installation script
 clangFormatBin=$PWD/../../prereqs/clang-format
 if [ ! -f $clangFormatBin ]; then
@@ -39,5 +43,12 @@ else
  echo "[Korali] C++ Code formatting is correct."
  exit 0
 fi
+
+##############################################
+### Testing Python Code Style
+##############################################
+
+echo $src_files | \
+    xargs -n6 -P2 python3 -m yapf --style=yapf -i "$@"
 
 popd

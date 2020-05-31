@@ -2,28 +2,28 @@
 variables that maximize the objective function, given by a
 user-provided computational model. */
 
-#include "model/direct.hpp"
 #include "korali.hpp"
+#include "model/direct.hpp"
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
- // Configuring Problem.
- auto e = korali::Experiment();
- e["Problem"]["Type"] = "Optimization/Stochastic";
- e["Problem"]["Objective Function"] = &direct;
+  // Configuring Problem.
+  auto e = korali::Experiment();
+  e["Problem"]["Type"] = "Optimization/Stochastic";
+  e["Problem"]["Objective Function"] = &direct;
 
- // Defining the problem's variables.
- e["Variables"][0]["Name"] = "X";
- e["Variables"][0]["Lower Bound"] = -10.0;
- e["Variables"][0]["Upper Bound"] = +10.0;
+  // Defining the problem's variables.
+  e["Variables"][0]["Name"] = "X";
+  e["Variables"][0]["Lower Bound"] = -10.0;
+  e["Variables"][0]["Upper Bound"] = +10.0;
 
- // Configuring CMA-ES parameters
- e["Solver"]["Type"] = "CMAES";
- e["Solver"]["Population Size"] = 32;
- e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-7;
- e["Solver"]["Termination Criteria"]["Max Generations"] = 100;
+  // Configuring CMA-ES parameters
+  e["Solver"]["Type"] = "CMAES";
+  e["Solver"]["Population Size"] = 32;
+  e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-7;
+  e["Solver"]["Termination Criteria"]["Max Generations"] = 100;
 
- // Running Korali
- auto k = korali::Engine();
- k.run(e);
+  // Running Korali
+  auto k = korali::Engine();
+  k.run(e);
 }

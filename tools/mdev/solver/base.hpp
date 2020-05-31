@@ -1,22 +1,22 @@
-#ifndef _KORALI_SOLVER_[MODULETAG]_HPP_
-#define _KORALI_SOLVER_[MODULETAG]_HPP_
+#ifndef _KORALI_SOLVER_[MODULETAG] _HPP_
+#define _KORALI_SOLVER_ [MODULETAG] _HPP_
 
 #include "modules/solver/solver.hpp"
 
-namespace korali { namespace solver {
-
-class [CLASSNAME] : public korali::Solver
+namespace korali
 {
- public:
-
- void setInitialConfiguration() override;
- void runGeneration() override;
- void printGenerationBefore() override;
- void printGenerationAfter() override;
-
+namespace solver
+{
+class[CLASSNAME] : public korali::Solver
+{
+  public:
+  void setInitialConfiguration() override;
+  void runGeneration() override;
+  void printGenerationBefore() override;
+  void printGenerationAfter() override;
 };
 
-} } // namespace korali::solver
-
+} // namespace solver
+} // namespace korali
 
 #endif // _KORALI_SOLVER_[MODULETAG]_HPP_

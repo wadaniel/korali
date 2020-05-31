@@ -3,11 +3,10 @@
 
 #include "korali.hpp"
 
-void direct(korali::Sample& k)
+void direct(korali::Sample &k)
 {
   float x = k["Parameters"][0];
-  k["F(x)"] = -0.5*x*x;
+  k["F(x)"] = -0.5 * x * x;
 }
-
 
 #endif

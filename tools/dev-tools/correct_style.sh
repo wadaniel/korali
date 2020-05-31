@@ -16,7 +16,7 @@ if [ ! -f $clangFormatBin ]; then
  popd
 fi
 
-root="../../source"
+root="../../"
 
 src_files=`find $root -type f -name "*pp" -not -path "$root/external/*"`
 

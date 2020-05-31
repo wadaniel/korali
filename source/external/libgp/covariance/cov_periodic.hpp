@@ -9,22 +9,23 @@
 
 namespace libgp
 {
-  class CovPeriodic : public CovarianceFunction
-  {
+class CovPeriodic : public CovarianceFunction
+{
   public:
-    CovPeriodic ();
-    virtual ~CovPeriodic ();
-    bool init(int n);
-    double get(const Eigen::VectorXd &x1, const Eigen::VectorXd &x2);
-    void grad(const Eigen::VectorXd &x1, const Eigen::VectorXd &x2, Eigen::VectorXd &grad);
-    void set_loghyper(const Eigen::VectorXd &p);
-    virtual std::string to_string();
-  private:
-    double ell;
-    double sf2;
-    double T;
-  };
+  CovPeriodic();
+  virtual ~CovPeriodic();
+  bool init(int n);
+  double get(const Eigen::VectorXd &x1, const Eigen::VectorXd &x2);
+  void grad(const Eigen::VectorXd &x1, const Eigen::VectorXd &x2, Eigen::VectorXd &grad);
+  void set_loghyper(const Eigen::VectorXd &p);
+  virtual std::string to_string();
 
-}
+  private:
+  double ell;
+  double sf2;
+  double T;
+};
+
+} // namespace libgp
 
 #endif

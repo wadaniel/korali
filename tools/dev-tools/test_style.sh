@@ -12,14 +12,16 @@ function check()
 fileDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 pushd $fileDir
 
+root=$fileDir/../..
+
 ##############################################
 ### Testing C++ Code Style
 ##############################################
 
 # If clang-format is not installed, run the installation script
-clangFormatBin=$PWD/../../prereqs/clang-format
+clangFormatBin=${root}/prereqs/clang-format
 if [ ! -f $clangFormatBin ]; then
- pushd ../..
+ pushd ${root}
  ./prereqs/install_clang.sh
  popd
 fi
@@ -35,14 +37,14 @@ if [ ! -f  run-clang-format/run-clang-format.py ]; then
 
 fi
 
-clangFormatCmd=../../prereqs/clang-format
+clangFormatCmd=${root}/prereqs/clang-format
 if [ ! -f $clangFormatCmd ]; then
  clangFormatCmd=clang-format
 fi
 
 runClangCmd=run-clang-format/run-clang-format.py
 
-python3 $runClangCmd --clang-format-executable $clangFormatCmd -r ../../ --extensions _cpp,_hpp > /dev/null
+python3 $runClangCmd --clang-format-executable $clangFormatCmd -r ${root} --extensions _cpp,_hpp > /dev/null
 
 if [ ! $? -eq 0 ]; then
  echo "[Korali] Error: C++ Code formatting is not normalized."
@@ -65,7 +67,7 @@ if [ $? -ne 0 ]; then
   python3 -m pip install $PIP_USER yapf; check
 fi
 
-src_files=`find ../.. -type f -name "*.py" -not -path "$root/external/*"`
+src_files=`find ${root} -type f -name "*.py" -not -path "${root}/source/external/*" -not -path "${root}/prereqs/*"`
 
 diff=`echo $src_files | xargs -n6 -P2 python3 -m yapf --style=yapf -d "$@"`
 

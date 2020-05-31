@@ -9,26 +9,26 @@
 
 namespace libgp
 {
-
-  /** Linear covariance function with automatic relevance detection.
+/** Linear covariance function with automatic relevance detection.
    *  Parameters: \f$l_1^2, \dots, l_n^2\f$
    *  @ingroup cov_group
    *  @author Manuel Blum
    */
-  class CovLinearard : public CovarianceFunction
-  {
+class CovLinearard : public CovarianceFunction
+{
   public:
-    CovLinearard ();
-    virtual ~CovLinearard ();
-    bool init(int n);
-    double get(const Eigen::VectorXd &x1, const Eigen::VectorXd &x2);
-    void grad(const Eigen::VectorXd &x1, const Eigen::VectorXd &x2, Eigen::VectorXd &grad);
-    void set_loghyper(const Eigen::VectorXd &p);
-    virtual std::string to_string();
-  private:
-    Eigen::VectorXd ell;
-  };
+  CovLinearard();
+  virtual ~CovLinearard();
+  bool init(int n);
+  double get(const Eigen::VectorXd &x1, const Eigen::VectorXd &x2);
+  void grad(const Eigen::VectorXd &x1, const Eigen::VectorXd &x2, Eigen::VectorXd &grad);
+  void set_loghyper(const Eigen::VectorXd &p);
+  virtual std::string to_string();
 
-}
+  private:
+  Eigen::VectorXd ell;
+};
+
+} // namespace libgp
 
 #endif /* __COV_LINEAR_ARD_H__ */

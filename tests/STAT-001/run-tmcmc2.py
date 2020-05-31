@@ -24,7 +24,7 @@ e["Distributions"][0]["Name"] = "Uniform 0"
 e["Distributions"][0]["Type"] = "Univariate/Uniform"
 e["Distributions"][0]["Minimum"] = -20.0
 e["Distributions"][0]["Maximum"] = +20.0
- 
+
 # Defining problem's variables and prior distribution for TMCMC
 e["Variables"][0]["Name"] = "X"
 e["Variables"][0]["Prior Distribution"] = "Uniform 0"

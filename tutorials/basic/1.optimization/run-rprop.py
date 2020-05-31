@@ -23,7 +23,7 @@ e["Problem"]["Objective Function"] = model_with_gradient
 # Defining the problem's variables.
 for i in range(5):
   e["Variables"][i]["Name"] = "X" + str(i)
-  e["Variables"][i]["Initial Value"] = -10.0+i
+  e["Variables"][i]["Initial Value"] = -10.0 + i
 
 # Configuring CMA-ES parameters
 e["Solver"]["Type"] = "Rprop"

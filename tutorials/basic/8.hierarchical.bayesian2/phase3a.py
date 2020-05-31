@@ -6,7 +6,7 @@ import korali
 # Creating hierarchical Bayesian problem from previous two problems
 e = korali.Experiment()
 
-e["Problem"]["Type"]  = "Hierarchical/ThetaNew"
+e["Problem"]["Type"] = "Hierarchical/ThetaNew"
 e["Problem"]["Psi Problem Path"] = 'setup/results_phase_2/'
 
 e["Distributions"][0]["Name"] = "Uniform 0"
@@ -43,8 +43,8 @@ e["Solver"]["Type"] = "TMCMC"
 e["Solver"]["Population Size"] = 1000
 e["Solver"]["Target Coefficient Of Variation"] = 0.6
 e["Solver"]["Covariance Scaling"] = 0.02
-e["Solver"]["Default Burn In"] = 1;
-e["Solver"]["Max Chain Length"] = 1;
+e["Solver"]["Default Burn In"] = 1
+e["Solver"]["Max Chain Length"] = 1
 
 e["Random Seed"] = 0xC0FFEE
 e["Console Output"]["Verbosity"] = "Detailed"

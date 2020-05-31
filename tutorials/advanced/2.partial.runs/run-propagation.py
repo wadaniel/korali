@@ -5,8 +5,8 @@ sys.path.append('./model/')
 from model import *
 import numpy as np
 
-Ns        = 100
-means     = [-5, 5, 10, 15, 20]
+Ns = 100
+means = [-5, 5, 10, 15, 20]
 variances = [1, 1, 1, 1, 1]
 fileName = '_propagation_output/samplesOut.dat'
 prepareFile(fileName)
@@ -16,7 +16,8 @@ k = korali.Engine()
 e = korali.Experiment()
 
 e["Problem"]["Type"] = "Propagation"
-e["Problem"]["Execution Model"] = lambda modelData: put_normal_rnds(modelData, Ns, fileName)
+e["Problem"]["Execution Model"] = lambda modelData: put_normal_rnds(
+    modelData, Ns, fileName)
 
 e["Variables"][0]["Name"] = "Mean"
 e["Variables"][0]["Precomputed Values"] = means

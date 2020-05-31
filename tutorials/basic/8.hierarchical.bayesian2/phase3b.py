@@ -10,14 +10,14 @@ from model import *
 # Creating hierarchical Bayesian problem from previous two problems
 e = korali.Experiment()
 
-e["Problem"]["Type"]  = "Hierarchical/Theta"
+e["Problem"]["Type"] = "Hierarchical/Theta"
 e["Problem"]["Theta Problem Path"] = 'setup/results_phase_1/000/'
 e["Problem"]["Psi Problem Path"] = 'setup/results_phase_2/'
 
 e["Solver"]["Type"] = "TMCMC"
 e["Solver"]["Population Size"] = 1000
 e["Solver"]["Termination Criteria"]["Max Generations"] = 30
-e["Solver"]["Default Burn In"] = 1;
+e["Solver"]["Default Burn In"] = 1
 e["Solver"]["Target Coefficient Of Variation"] = 0.6
 
 e["Random Seed"] = 0xC0FFEE

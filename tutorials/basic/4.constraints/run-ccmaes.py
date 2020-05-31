@@ -18,10 +18,10 @@ e = korali.Experiment()
 # Selecting problem type
 e["Problem"]["Type"] = "Optimization/Constrained"
 e["Problem"]["Objective Function"] = model
-e["Problem"]["Constraints"] = [ g1, g2, g3, g4 ]
+e["Problem"]["Constraints"] = [g1, g2, g3, g4]
 
 # Creating 7 variables and setting their CCMA-ES bounds
-for i in range(7) :
+for i in range(7):
   e["Variables"][i]["Name"] = "X" + str(i)
   e["Variables"][i]["Lower Bound"] = -10.0
   e["Variables"][i]["Upper Bound"] = +10.0

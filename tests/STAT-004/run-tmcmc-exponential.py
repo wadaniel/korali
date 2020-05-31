@@ -40,4 +40,3 @@ k.run(e)
 
 verifyMean(e["Solver"]["Sample Database"], [4.0], 0.05)
 verifyStd(e["Solver"]["Sample Database"], [4.0], 0.05)
-

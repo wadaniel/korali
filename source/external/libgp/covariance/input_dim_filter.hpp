@@ -9,26 +9,26 @@
 
 namespace libgp
 {
-
-  /** Linear covariance function.
+/** Linear covariance function.
    *  @ingroup cov_group
    *  @author Manuel Blum
    */
-  class InputDimFilter : public CovarianceFunction
-  {
+class InputDimFilter : public CovarianceFunction
+{
   public:
-    InputDimFilter ();
-    virtual ~InputDimFilter ();
-    bool init(int input_dim, int filter, CovarianceFunction * covf);
-    double get(const Eigen::VectorXd &x1, const Eigen::VectorXd &x2);
-    void grad(const Eigen::VectorXd &x1, const Eigen::VectorXd &x2, Eigen::VectorXd &grad);
-    void set_loghyper(const Eigen::VectorXd &p);
-    virtual std::string to_string();
-  private:
-    int filter;
-    CovarianceFunction *nested;
-  };
+  InputDimFilter();
+  virtual ~InputDimFilter();
+  bool init(int input_dim, int filter, CovarianceFunction *covf);
+  double get(const Eigen::VectorXd &x1, const Eigen::VectorXd &x2);
+  void grad(const Eigen::VectorXd &x1, const Eigen::VectorXd &x2, Eigen::VectorXd &grad);
+  void set_loghyper(const Eigen::VectorXd &p);
+  virtual std::string to_string();
 
-}
+  private:
+  int filter;
+  CovarianceFunction *nested;
+};
+
+} // namespace libgp
 
 #endif /* __COV_LINEAR_ONE__ */

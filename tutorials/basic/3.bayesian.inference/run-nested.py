@@ -17,14 +17,14 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Bayesian/Reference"
 e["Problem"]["Likelihood Model"] = "Normal"
 e["Problem"]["Reference Data"] = getReferenceData()
-e["Problem"]["Computational Model"] = lambda sampleData: model(sampleData, getReferencePoints())
+e["Problem"]["Computational Model"] = lambda sampleData: model(
+    sampleData, getReferencePoints())
 
 # Configuring Nested Sampling parameters
 e["Solver"]["Type"] = "Nested"
 e["Solver"]["Number Live Points"] = 1500
 e["Solver"]["Batch Size"] = 1
 e["Solver"]["Resampling Method"] = "Ellipse"
-
 
 # Configuring the problem's random distributions
 e["Distributions"][0]["Name"] = "Uniform 0"
@@ -52,14 +52,12 @@ e["Variables"][1]["Prior Distribution"] = "Uniform 1"
 e["Variables"][2]["Name"] = "[Sigma]"
 e["Variables"][2]["Prior Distribution"] = "Uniform 2"
 
-
 e["File Output"]["Frequency"] = 5000
 e["Console Output"]["Frequency"] = 500
 e["Console Output"]["Verbosity"] = 'Detailed'
 e["Solver"]["Termination Criteria"]["Max Generations"] = 100000
 e["Solver"]["Termination Criteria"]["Max Effective Sample Size"] = 10000
 e["Solver"]["Termination Criteria"]["Max Gain Factor"] = 1e-4
-
 
 # Starting Korali's Engine and running experiment
 k = korali.Engine()

@@ -35,15 +35,16 @@ found = e.loadState()
 
 # If not found, we run first 5 generations.
 if (found == False):
- print('------------------------------------------------------')
- print('Running first 5 generations anew...')
- print('------------------------------------------------------')
- k.run(e)
+  print('------------------------------------------------------')
+  print('Running first 5 generations anew...')
+  print('------------------------------------------------------')
+  k.run(e)
 
-# If found, we continue with the next 5 generations. 
+# If found, we continue with the next 5 generations.
 if (found == True):
- print('------------------------------------------------------')
- print('Running 5 more generations from previous run...')
- print('------------------------------------------------------')
- e["Solver"]["Termination Criteria"]["Max Generations"] = e["Solver"]["Termination Criteria"]["Max Generations"] + 5
- k.resume(e)
+  print('------------------------------------------------------')
+  print('Running 5 more generations from previous run...')
+  print('------------------------------------------------------')
+  e["Solver"]["Termination Criteria"]["Max Generations"] = e["Solver"][
+      "Termination Criteria"]["Max Generations"] + 5
+  k.resume(e)

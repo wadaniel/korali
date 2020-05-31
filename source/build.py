@@ -107,7 +107,7 @@ def consumeValue(base, moduleName, path, varName, varType, isMandatory,
     cString += '   korali::Logger::throwException("   + Object: [ ' + moduleName + ' ] \\n   + Key:    ' + path.replace(
         '"', "'") + '\\n%s\\n", e.what());\n'
     cString += ' } \n'
-    cString += '   korali::JsonInterface::eraseValue(' + base + ', "' + path.replace(
+    cString += '   JsonInterface::eraseValue(' + base + ', "' + path.replace(
         '"', "'") + '");\n'
     return cString
 
@@ -119,21 +119,21 @@ def consumeValue(base, moduleName, path, varName, varType, isMandatory,
 
   if ('korali::Sample' in varType):
     cString += ' ' + varName + '._js.getJson() = ' + base + path + ';\n'
-    cString += '   korali::JsonInterface::eraseValue(' + base + ', "' + path.replace(
+    cString += '   JsonInterface::eraseValue(' + base + ', "' + path.replace(
         '"', "'") + '");\n'
     return cString
 
   if ('std::vector<korali::Variable*>' in varType):
     baseType = varType.replace('std::vector<', '').replace('>', '')
     cString += ' for(size_t i = 0; i < ' + base + path + '.size(); i++) ' + varName + '.push_back(new korali::Variable());\n'
-    cString += ' korali::JsonInterface::eraseValue(' + base + ', "' + path.replace(
+    cString += ' JsonInterface::eraseValue(' + base + ', "' + path.replace(
         '"', "'") + '");\n\n'
     return cString
 
   if ('std::vector<korali::' in varType):
     baseType = varType.replace('std::vector<', '').replace('>', '')
     cString += ' for(size_t i = 0; i < ' + base + path + '.size(); i++) ' + varName + '.push_back((' + baseType + ')korali::Module::getModule(' + base + path + '[i], _k));\n'
-    cString += ' korali::JsonInterface::eraseValue(' + base + ', "' + path.replace(
+    cString += ' JsonInterface::eraseValue(' + base + ', "' + path.replace(
         '"', "'") + '");\n\n'
     return cString
 
@@ -145,13 +145,13 @@ def consumeValue(base, moduleName, path, varName, varType, isMandatory,
   if ('gsl_rng*' in varType):
     rhs = 'setRange(' + base + path + '.get<std::string>());\n'
 
-  cString += ' if (korali::JsonInterface::isDefined(' + base + ', "' + path.replace(
+  cString += ' if (JsonInterface::isDefined(' + base + ', "' + path.replace(
       '"', "'") + '"))  \n  { \n'
   cString += ' try {' + varName + ' = ' + rhs + ' } catch (const std::exception& e) {\n'
   cString += '   korali::Logger::throwException("   + Object: [ ' + moduleName + ' ] \\n   + Key:    ' + path.replace(
       '"', "'") + '\\n%s\\n", e.what());\n'
   cString += ' } \n'
-  cString += '   korali::JsonInterface::eraseValue(' + base + ', "' + path.replace(
+  cString += '   JsonInterface::eraseValue(' + base + ', "' + path.replace(
       '"', "'") + '");\n'
   cString += '  }\n'
 
@@ -212,7 +212,7 @@ def createSetConfiguration(module):
   codeString = 'void ' + module[
       "Class"] + '::setConfiguration(knlohmann::json& js) \n{\n'
 
-  codeString += ' if (korali::JsonInterface::isDefined(js, "[\'Results\']"))  korali::JsonInterface::eraseValue(js, "[\'Results\']");\n\n'
+  codeString += ' if (JsonInterface::isDefined(js, "[\'Results\']"))  JsonInterface::eraseValue(js, "[\'Results\']");\n\n'
 
   # Consume Configuration Settings
   if 'Configuration Settings' in module:
@@ -255,7 +255,7 @@ def createSetConfiguration(module):
           v
       ) + '.is_string()) { _hasConditionalVariables = true; ' + getCXXVariableName(
           v["Name"]) + 'Conditional = js' + getVariablePath(v) + '; } \n'
-      codeString += ' korali::JsonInterface::eraseValue(js, "' + getVariablePath(
+      codeString += ' JsonInterface::eraseValue(js, "' + getVariablePath(
           v).replace('"', "'") + '");\n\n'
 
   if 'Compatible Solvers' in module:
@@ -273,8 +273,8 @@ def createSetConfiguration(module):
   codeString += ' ' + module["Parent Class"] + '::setConfiguration(js);\n'
 
   codeString += ' _type = "' + module["Option Name"] + '";\n'
-  codeString += ' if(korali::JsonInterface::isDefined(js, "[\'Type\']")) korali::JsonInterface::eraseValue(js, "[\'Type\']");\n'
-  codeString += ' if(korali::JsonInterface::isEmpty(js) == false) korali::Logger::logError("Unrecognized settings for Korali module: ' + module[
+  codeString += ' if(JsonInterface::isDefined(js, "[\'Type\']")) JsonInterface::eraseValue(js, "[\'Type\']");\n'
+  codeString += ' if(JsonInterface::isEmpty(js) == false) korali::Logger::logError("Unrecognized settings for Korali module: ' + module[
       "Name"] + ': \\n%s\\n", js.dump(2).c_str());\n'
   codeString += '} \n\n'
 

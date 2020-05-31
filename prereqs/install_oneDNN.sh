@@ -151,6 +151,7 @@ fi
 
 ######## Finalization ########
 
+rm -f ${prereqsDir}/${binName}link
 ln -sf ${oneDNNBaseDir} ${prereqsDir}/${binName}link; check
 echo "[Korali] Using oneDNN located at ${oneDNNBaseDir}."
 

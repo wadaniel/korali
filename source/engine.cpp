@@ -24,11 +24,11 @@ korali::Engine::Engine()
 void korali::Engine::initialize()
 {
   // Setting Engine configuration defaults
-  if (!korali::JsonInterface::isDefined(_js.getJson(), "['Profiling']['Detail']")) _js["Profiling"]["Detail"] = "None";
-  if (!korali::JsonInterface::isDefined(_js.getJson(), "['Profiling']['Path']")) _js["Profiling"]["Path"] = "./profiling.json";
-  if (!korali::JsonInterface::isDefined(_js.getJson(), "['Profiling']['Frequency']")) _js["Profiling"]["Frequency"] = 60.0;
-  if (!korali::JsonInterface::isDefined(_js.getJson(), "['Conduit']['Type']")) _js["Conduit"]["Type"] = "Sequential";
-  if (!korali::JsonInterface::isDefined(_js.getJson(), "['Dry Run']")) _js["Dry Run"] = false;
+  if (!JsonInterface::isDefined(_js.getJson(), "['Profiling']['Detail']")) _js["Profiling"]["Detail"] = "None";
+  if (!JsonInterface::isDefined(_js.getJson(), "['Profiling']['Path']")) _js["Profiling"]["Path"] = "./profiling.json";
+  if (!JsonInterface::isDefined(_js.getJson(), "['Profiling']['Frequency']")) _js["Profiling"]["Frequency"] = 60.0;
+  if (!JsonInterface::isDefined(_js.getJson(), "['Conduit']['Type']")) _js["Conduit"]["Type"] = "Sequential";
+  if (!JsonInterface::isDefined(_js.getJson(), "['Dry Run']")) _js["Dry Run"] = false;
 
   // Loading configuration values
   _isDryRun = _js["Dry Run"];
@@ -49,20 +49,20 @@ void korali::Engine::initialize()
   auto js = _js.getJson();
   try
   {
-    if (korali::JsonInterface::isDefined(js, "['Verbosity']")) korali::JsonInterface::eraseValue(js, "['Verbosity']");
-    if (korali::JsonInterface::isDefined(js, "['Conduit']")) korali::JsonInterface::eraseValue(js, "['Conduit']");
-    if (korali::JsonInterface::isDefined(js, "['Dry Run']")) korali::JsonInterface::eraseValue(js, "['Dry Run']");
-    if (korali::JsonInterface::isDefined(js, "['Conduit']['Type']")) korali::JsonInterface::eraseValue(js, "['Conduit']['Type']");
-    if (korali::JsonInterface::isDefined(js, "['Profiling']['Detail']")) korali::JsonInterface::eraseValue(js, "['Profiling']['Detail']");
-    if (korali::JsonInterface::isDefined(js, "['Profiling']['Path']")) korali::JsonInterface::eraseValue(js, "['Profiling']['Path']");
-    if (korali::JsonInterface::isDefined(js, "['Profiling']['Frequency']")) korali::JsonInterface::eraseValue(js, "['Profiling']['Frequency']");
+    if (JsonInterface::isDefined(js, "['Verbosity']")) JsonInterface::eraseValue(js, "['Verbosity']");
+    if (JsonInterface::isDefined(js, "['Conduit']")) JsonInterface::eraseValue(js, "['Conduit']");
+    if (JsonInterface::isDefined(js, "['Dry Run']")) JsonInterface::eraseValue(js, "['Dry Run']");
+    if (JsonInterface::isDefined(js, "['Conduit']['Type']")) JsonInterface::eraseValue(js, "['Conduit']['Type']");
+    if (JsonInterface::isDefined(js, "['Profiling']['Detail']")) JsonInterface::eraseValue(js, "['Profiling']['Detail']");
+    if (JsonInterface::isDefined(js, "['Profiling']['Path']")) JsonInterface::eraseValue(js, "['Profiling']['Path']");
+    if (JsonInterface::isDefined(js, "['Profiling']['Frequency']")) JsonInterface::eraseValue(js, "['Profiling']['Frequency']");
   }
   catch (const std::exception &e)
   {
     korali::Logger::logError("[Korali] Error parsing Korali Engine's parameters. Reason:\n%s", e.what());
   }
 
-  if (korali::JsonInterface::isEmpty(js) == false) korali::Logger::logError("Unrecognized settings for Korali's Engine: \n%s\n", js.dump(2).c_str());
+  if (JsonInterface::isEmpty(js) == false) korali::Logger::logError("Unrecognized settings for Korali's Engine: \n%s\n", js.dump(2).c_str());
 }
 
 void korali::Engine::run()
@@ -186,7 +186,7 @@ void korali::Engine::saveProfilingInfo(bool forceSave)
       double elapsedTime = std::chrono::duration<double>(currTime - _startTime).count();
       __profiler["Experiment Count"] = _experimentVector.size();
       __profiler["Elapsed Time"] = elapsedTime + _cumulativeTime;
-      korali::JsonInterface::saveJsonToFile(_profilingPath.c_str(), __profiler);
+      JsonInterface::saveJsonToFile(_profilingPath.c_str(), __profiler);
       _profilingLastSave = std::chrono::high_resolution_clock::now();
     }
   }

@@ -110,7 +110,9 @@ void korali::Logger::logError(const char *format, ...)
   va_start(ap, format);
   vasprintf(&outstr, newFormat.c_str(), ap);
 
-  throw std::runtime_error(outstr);
+  newFormat = outstr;
+  free(outstr);
+  throw std::runtime_error(newFormat.c_str());
 }
 
 void korali::Logger::throwException(const char *format, ...)
@@ -120,5 +122,7 @@ void korali::Logger::throwException(const char *format, ...)
   va_start(ap, format);
   vasprintf(&outstr, format, ap);
 
-  throw std::runtime_error(outstr);
+  std::string errorMsg = outstr;
+  free(outstr);
+  throw std::runtime_error(errorMsg.c_str());
 }

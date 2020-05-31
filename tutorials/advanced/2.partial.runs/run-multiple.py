@@ -18,22 +18,22 @@ k = korali.Engine()
 eList = []
 
 for i in range(8):
- e = korali.Experiment()
+  e = korali.Experiment()
 
- e["Problem"]["Type"] = "Optimization/Stochastic"
- e["Problem"]["Objective Function"] = model
+  e["Problem"]["Type"] = "Optimization/Stochastic"
+  e["Problem"]["Objective Function"] = model
 
- e["Solver"]["Type"] = "CMAES"
- e["Solver"]["Population Size"] = 5
- e["Solver"]["Termination Criteria"]["Max Generations"] = 25
+  e["Solver"]["Type"] = "CMAES"
+  e["Solver"]["Population Size"] = 5
+  e["Solver"]["Termination Criteria"]["Max Generations"] = 25
 
- e["Variables"][0]["Name"] = "X"
- e["Variables"][0]["Lower Bound"] = -10.0
- e["Variables"][0]["Upper Bound"] = +10.0
+  e["Variables"][0]["Name"] = "X"
+  e["Variables"][0]["Lower Bound"] = -10.0
+  e["Variables"][0]["Upper Bound"] = +10.0
 
- e["File Output"]["Path"] = '_result_run-multiple/exp' + str(i)
- e["Console Output"]["Frequency"] = 10
- eList.append(e)
+  e["File Output"]["Path"] = '_result_run-multiple/exp' + str(i)
+  e["Console Output"]["Frequency"] = 10
+  eList.append(e)
 
 print('------------------------------------------------------')
 print('Now running first 25 generations...')
@@ -45,5 +45,6 @@ print('------------------------------------------------------')
 print('Now running last 25 generations...')
 print('------------------------------------------------------')
 
-for e in eList: e["Solver"]["Termination Criteria"]["Max Generations"] = 50 
+for e in eList:
+  e["Solver"]["Termination Criteria"]["Max Generations"] = 50
 k.resume(eList)

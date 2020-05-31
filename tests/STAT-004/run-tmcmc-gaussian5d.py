@@ -8,7 +8,7 @@ sys.path.append('./helpers')
 from model import *
 from helpers import *
 
-lg5 = lambda x : lgaussianxdCustom( x, 5 )
+lg5 = lambda x: lgaussianxdCustom(x, 5)
 
 # Starting Korali's Engine
 import korali

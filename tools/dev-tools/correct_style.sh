@@ -45,7 +45,7 @@ check
 
 PIP_USER=$(python3 -c "import sys; hasattr(sys, 'real_prefix') or print('--user')")
 
-python3 -m yapf --version
+python3 -m yapf --version > /dev/null
 if [ $? -ne 0 ]; then
 
   echo "[Korali] yapf not found, trying to install it automatically."

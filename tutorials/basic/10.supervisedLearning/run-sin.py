@@ -11,18 +11,18 @@ k = korali.Engine()
 
 # Defining Training Sets
 np.random.seed(0xC0FFEE)
-trainingInputSet  = np.random.uniform(0,2*np.pi,500)
-validationInputSet  = np.random.uniform(0,2*np.pi,500)
+trainingInputSet = np.random.uniform(0, 2 * np.pi, 500)
+validationInputSet = np.random.uniform(0, 2 * np.pi, 500)
 
-trainingOutputSet = np.sin(trainingInputSet)*scaling
-validationOutputSet = np.sin(validationInputSet)*scaling
+trainingOutputSet = np.sin(trainingInputSet) * scaling
+validationOutputSet = np.sin(validationInputSet) * scaling
 
 e = korali.Experiment()
 
 ### Defining a learning problem to infer values of sin(x)
 
 e["Problem"]["Type"] = "Supervised Learning"
- 
+
 e["Variables"][0]["Name"] = "X"
 e["Variables"][0]["Type"] = "Input"
 e["Variables"][0]["Training Data"] = trainingInputSet.tolist()
@@ -65,14 +65,14 @@ k.run(e)
 
 ### Obtaining inferred results from the NN and comparing them to the actual solution
 
-testInputSet = np.random.uniform(0,2*np.pi,100)
-testInputSet = [ [ x ] for x in testInputSet.tolist() ]
+testInputSet = np.random.uniform(0, 2 * np.pi, 100)
+testInputSet = [[x] for x in testInputSet.tolist()]
 
 testInferredSet = e.test(testInputSet)
-testOutputSet = np.sin(testInputSet)*scaling
+testOutputSet = np.sin(testInputSet) * scaling
 
 ### Plotting Results
 
-plt.plot(testInputSet,testOutputSet, "o")
-plt.plot(testInputSet,testInferredSet, "x")
+plt.plot(testInputSet, testOutputSet, "o")
+plt.plot(testInputSet, testInferredSet, "x")
 plt.show()

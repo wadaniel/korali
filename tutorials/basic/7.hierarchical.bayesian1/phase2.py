@@ -8,8 +8,10 @@ import korali
 # Creating hierarchical Bayesian problem from previous two problems
 e = korali.Experiment()
 
-e["Problem"]["Type"]  = "Hierarchical/Psi"
-e["Problem"]["Sub Problems"] = ['setup/results_phase_1/' + str(i).zfill(3) for i in range(5)]
+e["Problem"]["Type"] = "Hierarchical/Psi"
+e["Problem"]["Sub Problems"] = [
+    'setup/results_phase_1/' + str(i).zfill(3) for i in range(5)
+]
 
 # Add probability of theta given psi, one per subproblem variable.
 
@@ -23,7 +25,7 @@ e["Variables"][1]["Prior Distribution"] = "Uniform 1"
 e["Variables"][2]["Prior Distribution"] = "Uniform 2"
 e["Variables"][3]["Prior Distribution"] = "Uniform 3"
 
-e["Problem"]["Conditional Priors"] = [ "Conditional 0", "Conditional 1" ]
+e["Problem"]["Conditional Priors"] = ["Conditional 0", "Conditional 1"]
 
 # Configuring the problem's random distributions
 e["Distributions"][0]["Name"] = "Conditional 0"
@@ -33,7 +35,7 @@ e["Distributions"][0]["Standard Deviation"] = "Psi 2"
 
 e["Distributions"][1]["Name"] = "Conditional 1"
 e["Distributions"][1]["Type"] = "Univariate/LogNormal"
-e["Distributions"][1]["Mu"]    = "Psi 3"
+e["Distributions"][1]["Mu"] = "Psi 3"
 e["Distributions"][1]["Sigma"] = "Psi 4"
 
 e["Distributions"][2]["Name"] = "Uniform 0"
@@ -58,7 +60,7 @@ e["Distributions"][5]["Maximum"] = 5.0
 
 e["Solver"]["Type"] = "TMCMC"
 e["Solver"]["Population Size"] = 2000
-e["Solver"]["Default Burn In"] = 1;
+e["Solver"]["Default Burn In"] = 1
 e["Solver"]["Target Coefficient Of Variation"] = 0.6
 e["Solver"]["Covariance Scaling"] = 0.1
 

@@ -27,7 +27,7 @@ e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-12
 e["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
 # Defining the problem's variables and their bounds.
-e["Variables"][0]["Name"] = "X";
+e["Variables"][0]["Name"] = "X"
 e["Variables"][0]["Lower Bound"] = -10.0
 e["Variables"][0]["Upper Bound"] = +10.0
 

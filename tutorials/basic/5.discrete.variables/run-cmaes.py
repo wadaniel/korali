@@ -19,11 +19,11 @@ e["Problem"]["Type"] = "Optimization/Stochastic"
 e["Problem"]["Objective Function"] = model
 
 # Creating 10 variables and setting their CMA-ES bounds
-for i in range(10) :
+for i in range(10):
   e["Variables"][i]["Name"] = "X" + str(i)
   e["Variables"][i]["Initial Mean"] = 1.0
-  e["Variables"][i]["Lower Bound"]  = -19.0
-  e["Variables"][i]["Upper Bound"]  = +21.0
+  e["Variables"][i]["Lower Bound"] = -19.0
+  e["Variables"][i]["Upper Bound"] = +21.0
 
 # We set some of them as discrete.
 e["Variables"][0]["Granularity"] = 1.0
@@ -44,4 +44,3 @@ e["Console Output"]["Frequency"] = 50
 # Starting Korali's Engine and running experiment
 k = korali.Engine()
 k.run(e)
-

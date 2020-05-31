@@ -20,7 +20,7 @@ e["Problem"]["Objective Function"] = model_with_gradient
 
 e["Solver"]["Type"] = "Rprop"
 e["Solver"]["Termination Criteria"]["Max Generations"] = 25
-e["Solver"]["Termination Criteria"]['Parameter Relative Tolerance'] = 1e-8;
+e["Solver"]["Termination Criteria"]['Parameter Relative Tolerance'] = 1e-8
 
 e["Variables"][0]["Name"] = "X"
 e["Variables"][0]["Initial Value"] = -10.
@@ -39,4 +39,3 @@ print("-------------------------------------------------------------\n")
 
 e["Solver"]["Termination Criteria"]["Max Generations"] = 50
 k.resume(e)
-

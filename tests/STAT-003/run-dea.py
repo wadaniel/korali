@@ -18,9 +18,9 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Optimization/Stochastic"
 e["Problem"]["Objective Function"] = evalmodel
 
-e["Variables"][0]["Name"] = "X";
-e["Variables"][0]["Lower Bound"] = -10.0;
-e["Variables"][0]["Upper Bound"] = +10.0;
+e["Variables"][0]["Name"] = "X"
+e["Variables"][0]["Lower Bound"] = -10.0
+e["Variables"][0]["Upper Bound"] = +10.0
 
 e["Solver"]["Type"] = "DEA"
 e["Solver"]["Population Size"] = 10

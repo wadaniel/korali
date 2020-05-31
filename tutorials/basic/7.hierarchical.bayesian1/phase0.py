@@ -5,7 +5,7 @@ from model import *
 import numpy as np
 
 # N : number of datasets
-N = 5 
+N = 5
 
 # Ns: number os samples in each dataset
 Ns = 100
@@ -19,8 +19,8 @@ e["Problem"]["Execution Model"] = lambda modelData: normal_rnds(modelData, Ns)
 
 e["Variables"][0]["Name"] = "V1"
 e["Variables"][1]["Name"] = "V2"
-e["Variables"][0]["Precomputed Values"] = np.random.normal( 10, 4, N ).tolist()
-e["Variables"][1]["Precomputed Values"] = np.random.lognormal( 0, 1, N ).tolist()
+e["Variables"][0]["Precomputed Values"] = np.random.normal(10, 4, N).tolist()
+e["Variables"][1]["Precomputed Values"] = np.random.lognormal(0, 1, N).tolist()
 
 e["Solver"]["Type"] = "Executor"
 e["Solver"]["Executions Per Generation"] = 1

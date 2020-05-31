@@ -4,7 +4,8 @@ import os
 import json
 import sys
 
-koraliDir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)) + '/../..') 
+koraliDir = os.path.abspath(
+    os.path.dirname(os.path.realpath(__file__)) + '/../..')
 
 from buildModules import *
 from buildTests import *

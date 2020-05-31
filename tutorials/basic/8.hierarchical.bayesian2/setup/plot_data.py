@@ -5,8 +5,7 @@ import matplotlib.pyplot as plt
 for k in range(5):
   dataFile = "../setup/data/data_set_" + str(k).zfill(3) + ".dat"
   x = np.loadtxt(dataFile)
-  plt.plot( x[:,0], x[:,1], '-o')
-
+  plt.plot(x[:, 0], x[:, 1], '-o')
 
 plt.autoscale(enable=True, axis='x', tight=True)
 plt.xlabel('time')

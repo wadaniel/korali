@@ -18,7 +18,7 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Sampling"
 e["Problem"]["Probability Function"] = model
 
-e["Solver"]["Type"]  = "MCMC"
+e["Solver"]["Type"] = "MCMC"
 e["Solver"]["Burn In"] = 500
 e["Solver"]["Termination Criteria"]["Max Samples"] = 1000
 

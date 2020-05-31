@@ -17,11 +17,12 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Bayesian/Reference"
 e["Problem"]["Likelihood Model"] = "Normal"
 e["Problem"]["Reference Data"] = getReferenceData()
-e["Problem"]["Computational Model"] = lambda sampleData: model(sampleData, getReferencePoints())
+e["Problem"]["Computational Model"] = lambda sampleData: model(
+    sampleData, getReferencePoints())
 
 # Configuring CMA-ES parameters
 e["Solver"]["Type"] = "CMAES"
-e["Solver"]["Population Size"] = 24 
+e["Solver"]["Population Size"] = 24
 e["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
 # Configuring the problem's random distributions

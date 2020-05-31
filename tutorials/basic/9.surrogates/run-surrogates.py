@@ -6,19 +6,21 @@ import korali
 from os import listdir
 from os.path import isfile, join
 
-def read_matrix_for_gp( fileName, lastColumnIsData=True ):
-  f = open( fileName, "r" )
-  data = [ [ float(n) for n in line.split()]  for line in f]
+
+def read_matrix_for_gp(fileName, lastColumnIsData=True):
+  f = open(fileName, "r")
+  data = [[float(n) for n in line.split()] for line in f]
   f.close()
 
-  if( lastColumnIsData == True ):
+  if (lastColumnIsData == True):
     x = [row[:-1] for row in data]
-    y = [row[ -1] for row in data]
+    y = [row[-1] for row in data]
   else:
     x = data
     y = []
 
-  return x,y
+  return x, y
+
 
 x, y = read_matrix_for_gp('data/sincos1d_train.dat')
 
@@ -59,7 +61,7 @@ e1["Console Output"]["Frequency"] = 10
 e1["File Output"]["Frequency"] = 100
 e1["File Output"]["Path"] = "_korali_result_test"
 
-x, y = read_matrix_for_gp('data/sincos1d_new.dat',lastColumnIsData=True)
+x, y = read_matrix_for_gp('data/sincos1d_new.dat', lastColumnIsData=True)
 e2 = korali.Experiment()
 e2["Problem"]["Type"] = "Gaussian/Execute"
 e2["Problem"]["Gaussian Process Json File"] = resultFile

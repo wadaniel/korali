@@ -13,7 +13,7 @@ import korali
 k = korali.Engine()
 e = korali.Experiment()
 
-e["File Output"]["Frequency"]    = 0
+e["File Output"]["Frequency"] = 0
 e["Console Output"]["Frequency"] = 5000
 
 # Selecting problem and solver types.
@@ -26,7 +26,7 @@ e["Variables"][0]["Initial Mean"] = 0.0
 e["Variables"][0]["Initial Standard Deviation"] = 1.0
 
 # Configuring the MCMC sampler parameters
-e["Solver"]["Type"]  = "MCMC"
+e["Solver"]["Type"] = "MCMC"
 e["Solver"]["Burn In"] = 100
 e["Solver"]["Use Adaptive Sampling"] = False
 
@@ -38,4 +38,3 @@ k.run(e)
 
 verifyMean(e["Solver"]["Sample Database"], [4.0], 0.05)
 verifyStd(e["Solver"]["Sample Database"], [4.0], 0.05)
-

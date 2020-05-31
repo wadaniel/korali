@@ -8,7 +8,6 @@ sys.path.append('./helpers')
 from model import *
 from helpers import *
 
-
 # Starting Korali's Engine
 import korali
 k = korali.Engine()
@@ -27,7 +26,7 @@ e["Variables"][0]["Initial Mean"] = 0.0
 e["Variables"][0]["Initial Standard Deviation"] = 1.0
 
 # Configuring the MCMC sampler parameters
-e["Solver"]["Type"]  = "MCMC"
+e["Solver"]["Type"] = "MCMC"
 e["Solver"]["Burn In"] = 100
 e["Solver"]["Rejection Levels"] = 3
 e["Solver"]["Use Adaptive Sampling"] = True

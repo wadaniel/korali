@@ -9,8 +9,11 @@ from load_data import *
 from model import *
 from utils import *
 
+
 def test_distribution_1():
-     raise NotImplementedError
+  raise NotImplementedError
+
+
 # int test_distribution_1()[
 #
 #     # initialize the distribution
@@ -125,90 +128,79 @@ def test_distribution_1():
 #     return 0;
 # ]
 
-
-
 # # /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-
-
 def test_distribution_2():
-    # Initialize the distribution
-    distrib2 = ExampleDistribution2()
+  # Initialize the distribution
+  distrib2 = ExampleDistribution2()
 
+  nClusters = distrib2._p.nClusters  # 2
+  nDimensions = distrib2._p.nDimensions  # 2
+  d2_numberLatentVars = distrib2._p.nPoints  # one for each datapoint
+  d2_numberHyperparams = distrib2._p.nDimensions * distrib2._p.nClusters + 1
 
-    nClusters = distrib2._p.nClusters # 2
-    nDimensions = distrib2._p.nDimensions # 2
-    d2_numberLatentVars = distrib2._p.nPoints # one for each datapoint
-    d2_numberHyperparams = distrib2._p.nDimensions * distrib2._p.nClusters + 1
+  # Some value pairs:
+  sigma = 1.0
+  assignments = []
+  hyperparams = []
+  points = []
+  # # /* The test inputs*/
+  assignments.append([0])
+  hyperparams.append([0, 0, 2, 2, sigma])  # (mu1, mu2, sigma)
+  points.append([[0, 0]])
+  assignments.append([0, 1])
+  hyperparams.append([0, 0, 2, 2, sigma])  # (mu1, mu2, sigma)
+  points.append([[2, 2], [0, 0]])
+  assignments.append([0])
+  hyperparams.append([0, 0, 2, 2, 0.5])  # (mu1, mu2, sigma)
+  points.append([[0, 0]])
+  assignments.append([1, 1])
+  hyperparams.append([0, 0, 2, 2, 0.5])  # (mu1, mu2, sigma)
+  points.append([[1.5, 2.25], [-0.5, 2]])
+  assignments.append([0, 0, 0, 1, 1, 2])
+  hyperparams.append([-1.5, 0, 20., 5., 3.0, 3.5, 7.5])  # (mu1, mu2, sigma)
+  points.append([[1.5, -1.5], [-0.5, 2], [
+      -5.,
+      7.,
+  ], [22.0, 10.3], [17.5, 30.], [0.0, 7.2]])
 
-     # Some value pairs:
-    sigma = 1.0
-    assignments = []
-    hyperparams = []
-    points = []
-    # # /* The test inputs*/
-    assignments.append([0])
-    hyperparams.append([0, 0, 2, 2, sigma]) # (mu1, mu2, sigma)
-    points.append( [ [0, 0] ])
-    assignments.append([0, 1])
-    hyperparams.append([0, 0, 2, 2, sigma]) # (mu1, mu2, sigma)
-    points.append( [
-        [2,2], [0,0]
-        ])
-    assignments.append([0])
-    hyperparams.append([0, 0, 2, 2, 0.5]) # (mu1, mu2, sigma)
-    points.append( [
-        [0,0]
-        ])
-    assignments.append([1,1])
-    hyperparams.append([0, 0, 2, 2, 0.5]) # (mu1, mu2, sigma)
-    points.append( [
-        [1.5, 2.25], [-0.5, 2]
-        ])
-    assignments.append([0,0,0, 1,1,2])
-    hyperparams.append([-1.5, 0, 20., 5., 3.0, 3.5, 7.5]) # (mu1, mu2, sigma)
-    points.append( [
-        [1.5, -1.5], [-0.5, 2], [-5., 7.,],
-		[22.0, 10.3], [17.5, 30.],     [0.0, 7.2]
-        ])
+  for i in range(len(assignments)):
+    current_points = points[i]
+    sigma = hyperparams[i][-1]
+    # * extract mu vectors from hyperparameters
+    nClusters = int((len(hyperparams[i]) - 1) / nDimensions)
+    mu_vectors_concat = hyperparams[i][:-1]
+    mu_vectors = np.array(mu_vectors_concat).reshape((nClusters, -1))
+    assert mu_vectors.shape[1] == nDimensions
 
-    for i in range(len(assignments)):
-        current_points = points[i]
-        sigma = hyperparams[i][-1]
-        # * extract mu vectors from hyperparameters
-        nClusters = int((len(hyperparams[i])- 1) / nDimensions)
-        mu_vectors_concat = hyperparams[i][:-1]
-        mu_vectors = np.array(mu_vectors_concat).reshape((nClusters, -1))
-        assert mu_vectors.shape[1] == nDimensions
+    p = multivariate_gaussian_probability(mu_vectors, nDimensions,
+                                          assignments[i], nClusters, sigma,
+                                          current_points)
 
-        p = multivariate_gaussian_probability(mu_vectors, nDimensions, assignments[i], nClusters, sigma, current_points)
+    distrib2._p.reset_points(current_points, assignments[i], nClusters)
 
-        distrib2._p.reset_points(current_points, assignments[i], nClusters )
+    # /* Use the distributions S, zeta and phi functions to calculate the probability */
+    k = {}
+    k["Latent Variables"] = assignments[i]
+    k["Hyperparameters"] = hyperparams[i]
 
-        # /* Use the distributions S, zeta and phi functions to calculate the probability */
-        k = {}
-        k["Latent Variables"] = assignments[i]
-        k["Hyperparameters"] = hyperparams[i]
+    distrib2.S(k)
+    distrib2.zeta(k)
+    distrib2.phi(k)
 
-        distrib2.S(k)
-        distrib2.zeta(k)
-        distrib2.phi(k)
+    _zetaValue = k["zeta"]
+    _sValues = k["S"]
+    _phiValues = k["phi"]
 
-        _zetaValue = k["zeta"]
-        _sValues = k["S"]
-        _phiValues = k["phi"]
+    p_from_model_direct = np.exp(-_zetaValue + np.inner(_sValues, _phiValues))
 
-        p_from_model_direct =  np.exp( - _zetaValue + np.inner(_sValues,_phiValues) )
+    assert (np.abs(p - p_from_model_direct) < 0.1 * p)
 
-        assert (np.abs(p - p_from_model_direct) < 0.1*p)
-
-
-    return True
-
+  return True
 
 
 if __name__ == '__main__':
-    success = test_distribution_2()
-    assert success
-    print("OK")
+  success = test_distribution_2()
+  assert success
+  print("OK")

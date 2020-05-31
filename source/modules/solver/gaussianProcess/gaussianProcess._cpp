@@ -1,7 +1,7 @@
+#include "external/libgp/gp.hpp"
 #include "modules/conduit/conduit.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/solver/gaussianProcess/gaussianProcess.hpp"
-#include "external/libgp/gp.hpp"
 #include <Eigen/Dense>
 
 void korali::solver::GaussianProcess::initialize()
@@ -9,32 +9,34 @@ void korali::solver::GaussianProcess::initialize()
   _problem = dynamic_cast<korali::problem::SupervisedLearning *>(_k->_problem);
 
   // Load a GP from file, skip training
-  if( _gaussianProcessJsonFile.empty() == false ){
-    _k->_logger->logInfo("Normal", "Loading Gaussian Process from file %s.", _gaussianProcessJsonFile.c_str() );
+  if (_gaussianProcessJsonFile.empty() == false)
+  {
+    _k->_logger->logInfo("Normal", "Loading Gaussian Process from file %s.", _gaussianProcessJsonFile.c_str());
     //  ...
   }
 
   // Initialize a GP training
-  else{
-
+  else
+  {
     if (_problem->_trainingBatchSize == 0) _k->_logger->logError("Training data has not been provided for variable 0.\n");
 
     if (_problem->_outputVectorIndexes.size() > 1) _k->_logger->logError("The output space should be one dimensional.");
 
     _gpInputDimension = _problem->_inputVectorIndexes.size();
-    _gp = new libgp::GaussianProcess( _gpInputDimension, _covarianceFunction);
+    _gp = new libgp::GaussianProcess(_gpInputDimension, _covarianceFunction);
 
     _gpParameterDimension = _gp->covf().get_param_dim();
 
     // Creating evaluation lambda function for optimization
-    auto evaluateProposal = [gp=_gp](korali::Sample &sample) { runSample(sample,gp); };
+    auto evaluateProposal = [gp = _gp](korali::Sample &sample) { runSample(sample, gp); };
 
     _koraliExperiment["Problem"]["Type"] = "Optimization/Gradient";
     _koraliExperiment["Problem"]["Objective Function"] = evaluateProposal;
 
     Eigen::VectorXd eParameters(_gpParameterDimension);
 
-    for(size_t i=0; i<_gpParameterDimension; i++){
+    for (size_t i = 0; i < _gpParameterDimension; i++)
+    {
       _koraliExperiment["Variables"][i]["Name"] = "X" + std::to_string(i);
       eParameters[i] = 0.1;
       _koraliExperiment["Variables"][i]["Initial Value"] = eParameters[i];
@@ -58,27 +60,24 @@ void korali::solver::GaussianProcess::initialize()
     double outData;
     size_t inIdx[_gpInputDimension];
     size_t outIdx = _problem->_outputVectorIndexes[0];
-    for(size_t i=0; i<_gpInputDimension; i++ )  inIdx[i] = _problem->_inputVectorIndexes[i];
+    for (size_t i = 0; i < _gpInputDimension; i++) inIdx[i] = _problem->_inputVectorIndexes[i];
 
-
-    for (size_t i = 0; i < _problem->_trainingBatchSize; ++i){
-
-      for(size_t j=0; j<_gpInputDimension; j++)
+    for (size_t i = 0; i < _problem->_trainingBatchSize; ++i)
+    {
+      for (size_t j = 0; j < _gpInputDimension; j++)
         inData[j] = _k->_variables[inIdx[j]]->_trainingData[i];
       outData = _k->_variables[outIdx]->_trainingData[i];
 
-      _gp->add_pattern( inData, outData );
+      _gp->add_pattern(inData, outData);
     }
   }
-
 }
 
-
-void korali::solver::GaussianProcess::runSample(korali::Sample &sample,libgp::GaussianProcess *gp)
+void korali::solver::GaussianProcess::runSample(korali::Sample &sample, libgp::GaussianProcess *gp)
 {
   size_t gpParameterDimension = gp->covf().get_param_dim();
   Eigen::VectorXd p(gpParameterDimension);
-  for (size_t i=0; i<gpParameterDimension; i++) p[i] = sample["Parameters"][i];
+  for (size_t i = 0; i < gpParameterDimension; i++) p[i] = sample["Parameters"][i];
 
   gp->covf().set_loghyper(p);
 
@@ -86,10 +85,9 @@ void korali::solver::GaussianProcess::runSample(korali::Sample &sample,libgp::Ga
   sample["P(x)"] = sample["F(x)"];
 
   Eigen::VectorXd eigenGrad = gp->log_likelihood_gradient();
-  for (size_t i=0; i<gpParameterDimension; i++)
+  for (size_t i = 0; i < gpParameterDimension; i++)
     sample["Gradient"][i] = eigenGrad[i];
 }
-
 
 void korali::solver::GaussianProcess::runGeneration()
 {
@@ -98,21 +96,20 @@ void korali::solver::GaussianProcess::runGeneration()
   _koraliExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _koraliExperiment._currentGeneration + 1;
 }
 
-
 void korali::solver::GaussianProcess::printGenerationAfter()
 {
   return;
 }
 
-
 std::vector<std::vector<double>> korali::solver::GaussianProcess::test(const std::vector<std::vector<double>> &input)
 {
-    int inputSize = input.size();
-    std::vector<std::vector<double>> output(inputSize,std::vector<double>(2));
+  int inputSize = input.size();
+  std::vector<std::vector<double>> output(inputSize, std::vector<double>(2));
 
-    for( size_t i=0; i<inputSize; i++){
-      output[i][0] = _gp->f( input[i].data() );
-      output[i][1] = _gp->var( input[i].data() );
-    }
-    return output;
+  for (size_t i = 0; i < inputSize; i++)
+  {
+    output[i][0] = _gp->f(input[i].data());
+    output[i][1] = _gp->var(input[i].data());
+  }
+  return output;
 }

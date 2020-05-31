@@ -183,12 +183,10 @@ void korali::solver::Rprop::Update_iminus(void)
   }
 }
 
-
 void korali::solver::Rprop::printGenerationBefore()
 {
   return;
 }
-
 
 void korali::solver::Rprop::printGenerationAfter()
 {
@@ -206,7 +204,6 @@ void korali::solver::Rprop::printGenerationAfter()
   for (size_t k = 0; k < _k->_variables.size(); k++) _k->_logger->logData("Normal", " %.5le  ", _bestX[k]);
   _k->_logger->logData("Normal", " ]\n");
 }
-
 
 void korali::solver::Rprop::finalize()
 {

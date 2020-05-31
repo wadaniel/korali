@@ -5,7 +5,7 @@ void korali::problem::SupervisedLearning::initialize()
   // Processing output/input variable configuration
   _outputVectorIndexes.clear();
   _inputVectorIndexes.clear();
-  
+
   for (size_t i = 0; i < _k->_variables.size(); i++)
   {
     if (_k->_variables[i]->_type == "Output") _outputVectorIndexes.push_back(i);

@@ -110,7 +110,16 @@ void korali::solver::DEA::prepareGeneration()
         sample["Operation"] = "Check Feasibility";
         _conduit->start(sample);
         _conduit->wait(sample);
-        isSampleFeasible = sample["Is Feasible"];
+
+        try
+        {
+          isSampleFeasible = sample["Is Feasible"];
+        }
+        catch (const std::exception &e)
+        {
+          korali::Logger::logError("DEA: Dev Error: Missing or incorrect value of 'Is Feasible' returned by the sample evaluation. \n   + Solution: Make sure the problem module defines this value.\n   + Cause: %s\n", e.what());
+        }
+
       } while (isSampleFeasible == false);
 
       _infeasibleSampleCount--;
@@ -196,7 +205,16 @@ void korali::solver::DEA::updateSolver(std::vector<korali::Sample> &samples)
 {
   // Processing results
   for (size_t i = 0; i < _populationSize; i++)
-    _valueVector[i] = samples[i]["F(x)"];
+  {
+    try
+    {
+      _valueVector[i] = samples[i]["F(x)"];
+    }
+    catch (const std::exception &e)
+    {
+      korali::Logger::logError("DEA: Missing or incorrect value of 'F(x)' returned by the sample evaluation. \n   + Solution: Make sure your model is storing its result, e.g., sample[\"F(x)\"] = value.\n   + Cause: %s\n", e.what());
+    }
+  }
 
   _bestSampleIndex = std::distance(std::begin(_valueVector), std::max_element(std::begin(_valueVector), std::end(_valueVector)));
   _previousBestEverValue = _bestEverValue;

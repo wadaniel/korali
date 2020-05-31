@@ -109,8 +109,24 @@ void korali::solver::Nested::runGeneration()
   {
     size_t finishedId = _conduit->waitAny(samples);
 
-    _candidateLogLikelihoods[finishedId] = samples[finishedId]["logLikelihood"];
-    _candidateLogPriors[finishedId] = samples[finishedId]["logPrior"];
+    try
+    {
+      _candidateLogLikelihoods[finishedId] = samples[finishedId]["logLikelihood"];
+    }
+    catch (const std::exception &e)
+    {
+      korali::Logger::logError("Nested: Dev Error - Missing or incorrect value of 'logLikelihood' returned by the sample evaluation. \n   + Solution: Make sure the problem is storing this result, e.g., sample[\"logLikelihood\"] = value.\n   + Cause: %s\n", e.what());
+    }
+
+    try
+    {
+      _candidateLogPriors[finishedId] = samples[finishedId]["logPrior"];
+    }
+    catch (const std::exception &e)
+    {
+      korali::Logger::logError("Nested: Dev Error - Missing or incorrect value of 'logPrior' returned by the sample evaluation. \n   + Solution: Make sure the problem is storing this result, e.g., sample[\"logPrior\"] = value.\n   + Cause: %s\n", e.what());
+    }
+
     finishedCandidatesCount++;
   }
 
@@ -143,8 +159,23 @@ void korali::solver::Nested::runFirstGeneration()
   {
     size_t finishedId = _conduit->waitAny(samples);
 
-    _liveLogLikelihoods[finishedId] = samples[finishedId]["logLikelihood"];
-    _liveLogPriors[finishedId] = samples[finishedId]["logPrior"];
+    try
+    {
+      _liveLogLikelihoods[finishedId] = samples[finishedId]["logLikelihood"];
+    }
+    catch (const std::exception &e)
+    {
+      korali::Logger::logError("Nested: Dev Error - Missing or incorrect value of 'logLikelihood' returned by the sample evaluation. \n   + Solution: Make sure the problem is storing this result, e.g., sample[\"logLikelihood\"] = value.\n   + Cause: %s\n", e.what());
+    }
+
+    try
+    {
+      _liveLogPriors[finishedId] = samples[finishedId]["logPrior"];
+    }
+    catch (const std::exception &e)
+    {
+      korali::Logger::logError("Nested: Dev Error - Missing or incorrect value of 'logPrior' returned by the sample evaluation. \n   + Solution: Make sure the problem is storing this result, e.g., sample[\"logPrior\"] = value.\n   + Cause: %s\n", e.what());
+    }
 
     finishedCandidatesCount++;
   }

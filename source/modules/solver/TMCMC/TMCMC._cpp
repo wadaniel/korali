@@ -165,8 +165,23 @@ void korali::solver::TMCMC::runGeneration()
     //printf("%s\n", samples[finishedId]._js.getJson().dump(2).c_str());
     _chainPendingEvaluation[finishedId] = false;
 
-    _chainCandidatesLogLikelihoods[finishedId] = samples[finishedId]["logLikelihood"];
-    _chainCandidatesLogPriors[finishedId] = samples[finishedId]["logPrior"];
+    try
+    {
+      _chainCandidatesLogLikelihoods[finishedId] = samples[finishedId]["logLikelihood"];
+    }
+    catch (const std::exception &e)
+    {
+      korali::Logger::logError("TMCMC: Dev Error - Missing or incorrect value of 'logLikelihood' returned by the sample evaluation. \n   + Solution: Make sure the problem is storing this result, e.g., sample[\"logLikelihood\"] = value.\n   + Cause: %s\n", e.what());
+    }
+
+    try
+    {
+      _chainCandidatesLogPriors[finishedId] = samples[finishedId]["logPrior"];
+    }
+    catch (const std::exception &e)
+    {
+      korali::Logger::logError("TMCMC: Dev Error - Missing or incorrect value of 'logPrior' returned by the sample evaluation. \n   + Solution: Make sure the problem is storing this result, e.g., sample[\"logPrior\"] = value.\n   + Cause: %s\n", e.what());
+    }
 
     if (isfinite(_chainCandidatesLogPriors[finishedId])) _numFinitePriorEvaluations++;
     if (isfinite(_chainCandidatesLogLikelihoods[finishedId])) _numFiniteLikelihoodEvaluations++;

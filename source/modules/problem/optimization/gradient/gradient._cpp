@@ -11,7 +11,15 @@ void korali::problem::optimization::Gradient::evaluate(korali::Sample &sample)
   if (korali::JsonInterface::isDefined(sample._js.getJson(), sampleString) == false)
     korali::Logger::logError("The %s problem needs a function evaluation. Be sure that you assign a value to the %s attribute in the model definition.\n", _k->_problem->getType().c_str(), sampleString.c_str());
 
-  double evaluation = sample["F(x)"];
+  double evaluation = -korali::Inf;
+  try
+  {
+    evaluation = sample["F(x)"];
+  }
+  catch (const std::exception &e)
+  {
+    korali::Logger::logError("Missing or incorrect value of 'F(x)' returned by the sample evaluation. \n   + Solution: Make sure your model is storing its Evaluation value, e.g., sample[\"F(x)\"] = value(s).\n   + Cause: %s\n", e.what());
+  }
 
   // If result is not a finite number, objective function evaluates to -Infinity
   if (std::isnan(evaluation))
@@ -25,7 +33,15 @@ void korali::problem::optimization::Gradient::evaluate(korali::Sample &sample)
   if (sample["Gradient"].size() != sample["Parameters"].size())
     korali::Logger::logError("The size of the gradient (%zu) is not equal to the size of parameters (%zu).", sample["Gradient"].size(), sample["Parameters"].size());
 
-  std::vector<double> gradient = sample["Gradient"];
+  std::vector<double> gradient;
+  try
+  {
+    gradient = sample["Gradient"].get<std::vector<double>>();
+  }
+  catch (const std::exception &e)
+  {
+    korali::Logger::logError("Missing or incorrect value of 'Gradient' returned by the sample evaluation. \n   + Solution: Make sure your model is storing its Gradient evaluation, e.g., sample[\"Gradient\"] = value(s).\n   + Cause: %s\n", e.what());
+  }
 
   // If result is not a finite number, gradient is set to zero
   if (std::isnan(evaluation) || korali::isanynan(gradient))

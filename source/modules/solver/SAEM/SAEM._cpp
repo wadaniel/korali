@@ -124,7 +124,15 @@ void korali::solver::SAEM::sampleLatent()
   _conduit->start(sample);
   _conduit->wait(sample);
 
-  _currentSamples = sample["Samples"].get<std::vector<std::vector<double>>>();
+  try
+  {
+    _currentSamples = sample["Samples"].get<std::vector<std::vector<double>>>();
+  }
+  catch (const std::exception &e)
+  {
+    korali::Logger::logError("SAEM: Missing or incorrect value of 'Samples' from the 'Sample Latent Variables' operation.\n Reason: %s\n", e.what());
+  }
+
   if (_currentSamples.size() != _numberSamplesPerStep) korali::Logger::logError("User defined sampler did not return the correct number of samples ('Number Samples').");
 
   // mean and variance:
@@ -170,7 +178,16 @@ void korali::solver::SAEM::calculateSampleSVectors()
 
   for (size_t i = 0; i < _numberSamplesPerStep; i++)
   {
-    std::vector<double> v = k[i]["S"];
+    std::vector<double> v;
+    try
+    {
+      v = k[i]["S"].get<std::vector<double>>();
+    }
+    catch (const std::exception &e)
+    {
+      korali::Logger::logError("SAEM: Missing or incorrect value of 'S' from the S model evaluation.\n   + Solution: Make sure your S model is storing its result, e.g., sample[\"S\"] = value.\n   + Cause: %s\n", e.what());
+    }
+
     _currentSamplesSVectors[i] = v;
     if (v.size() != _latentProblem->_sDimension)
       korali::Logger::logError("S vector had incorrect size, or incorrect size was given as 'S Dimension' when defining the problem");
@@ -241,8 +258,26 @@ void korali::solver::SAEM::QFunction(korali::Sample &sample, size_t zetaFc, size
   sample.run(zetaFc); // Zeta of Likelihood Model
   sample.run(phiFc);  // Phi of Likelihood Model
 
-  double zeta = sample["zeta"];
-  std::vector<double> phi = sample["phi"];
+  double zeta = 0;
+  try
+  {
+    double zeta = sample["zeta"];
+  }
+  catch (const std::exception &e)
+  {
+    korali::Logger::logError("SAEM: Missing or incorrect value of 'zeta' from the zeta model evaluation.\n   + Solution: Make sure your zeta model is storing its result, e.g., sample[\"zeta\"] = value.\n   + Cause: %s\n", e.what());
+  }
+
+  std::vector<double> phi;
+  try
+  {
+    phi = sample["phi"].get<std::vector<double>>();
+  }
+  catch (const std::exception &e)
+  {
+    korali::Logger::logError("SAEM: Missing or incorrect value of 'phi' from the phi model evaluation.\n   + Solution: Make sure your phi model is storing its result, e.g., sample[\"phi\"] = value.\n   + Cause: %s\n", e.what());
+  }
+
   std::vector<double> currentS = sample["Globals"]["Current S"];
 
   if (phi.size() != currentS.size())

@@ -69,7 +69,17 @@ void korali::solver::MCMC::runGeneration()
     sample["Operation"] = "Evaluate";
     _conduit->start(sample);
     _conduit->wait(sample);
-    double evaluation = sample["P(x)"];
+
+    double evaluation = 0.0;
+
+    try
+    {
+      evaluation = sample["P(x)"];
+    }
+    catch (const std::exception &e)
+    {
+      korali::Logger::logError("MCMC: Missing or incorrect value of 'P(x)' returned by the sample evaluation. \n   + Solution: Make sure your model is storing its result, e.g., sample[\"P(x)\"] = value.\n   + Cause: %s\n", e.what());
+    }
 
     _chainCandidatesEvaluations[i] = evaluation;
 

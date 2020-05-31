@@ -81,7 +81,14 @@ void korali::solver::SequentialOptimisation::runGeneration()
   _conduit->waitAll(samples);
   for (size_t i = 0; i < _numberOfLocations; i++)
   {
-    _utility[_k->_currentGeneration - 1][i] = samples[i]["F(x)"];
+    try
+    {
+      _utility[_k->_currentGeneration - 1][i] = samples[i]["F(x)"];
+    }
+    catch (const std::exception &e)
+    {
+      korali::Logger::logError("Sequential Optimisation: Missing or incorrect value of 'F(x)' returned by the sample evaluation. \n   + Solution: Make sure your model is storing its result, e.g., sample[\"F(x)\"] = value.\n   + Cause: %s\n", e.what());
+    }
   }
 
   std::vector<double>::iterator maximum = std::max_element(_utility[_k->_currentGeneration - 1].begin(), _utility[_k->_currentGeneration - 1].end());

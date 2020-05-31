@@ -82,6 +82,15 @@ void korali::problem::Integration::execute(korali::Sample &sample)
   if (korali::JsonInterface::isDefined(sample._js.getJson(), sampleString) == false)
     korali::Logger::logError("The %s problem needs a function evaluation. Be sure that you assign a value to the %s attribute in the model definition.\n", _k->_problem->getType().c_str(), sampleString.c_str());
 
-  double evaluation = sample["Evaluation"];
+  double evaluation = -korali::Inf;
+  try
+  {
+    evaluation = sample["Evaluation"];
+  }
+  catch (const std::exception &e)
+  {
+    korali::Logger::logError("Missing or incorrect value of 'Evaluation' returned by the sample evaluation. \n   + Solution: Make sure your model is storing its Evaluation value, e.g., sample[\"F(x)\"] = value(s).\n   + Cause: %s\n", e.what());
+  }
+
   if (std::isnan(evaluation)) korali::Logger::logError("The function evaluation returned NaN.\n");
 }

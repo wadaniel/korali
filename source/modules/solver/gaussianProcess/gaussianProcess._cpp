@@ -6,7 +6,7 @@
 
 void korali::solver::GaussianProcess::initialize()
 {
-  _problem = dynamic_cast<korali::problem::Learning *>(_k->_problem);
+  _problem = dynamic_cast<korali::problem::SupervisedLearning *>(_k->_problem);
 
   // Load a GP from file, skip training
   if( _gaussianProcessJsonFile.empty() == false ){
@@ -42,6 +42,7 @@ void korali::solver::GaussianProcess::initialize()
     _gp->covf().set_loghyper(eParameters);
 
     _koraliExperiment["Solver"] = _optimizer;
+    _koraliExperiment["Solver"]["Termination Criteria"]["Max Generations"] = 1;
 
     _koraliExperiment["File Output"]["Frequency"] = 0;
     _koraliExperiment["File Output"]["Enabled"] = false;
@@ -93,6 +94,8 @@ void korali::solver::GaussianProcess::runSample(korali::Sample &sample,libgp::Ga
 void korali::solver::GaussianProcess::runGeneration()
 {
   _koraliEngine.resume(_koraliExperiment);
+
+  _koraliExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _koraliExperiment._currentGeneration + 1;
 }
 
 

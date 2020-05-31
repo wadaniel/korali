@@ -17,7 +17,7 @@ k = korali.Engine()
 
 e = korali.Experiment()
 
-e['Problem']['Type'] = 'Learning'
+e['Problem']['Type'] = 'Supervised Learning'
 
 e['Variables'][0]['Name'] = 'X'
 e['Variables'][0]['Type'] = 'Input'

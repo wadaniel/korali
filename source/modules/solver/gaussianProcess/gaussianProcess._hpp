@@ -3,7 +3,7 @@
 
 #include "engine.hpp"
 #include "modules/experiment/experiment.hpp"
-#include "modules/problem/learning/learning.hpp"
+#include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 #include "modules/solver/solver.hpp"
 #include "external/libgp/gp.hpp"
 
@@ -17,7 +17,7 @@ class GaussianProcess : public korali::Solver
   /**
   * @brief Korali engine for optimizing NN weights and biases
   */
-  korali::problem::Learning *_problem;
+  korali::problem::SupervisedLearning *_problem;
 
   /**
   * @brief Pointer to the gaussian processes library

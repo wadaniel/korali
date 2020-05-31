@@ -131,6 +131,7 @@ void korali::Engine::run()
 
     while (true)
     {
+      // Checking for break signals coming from Python
       bool executed = false;
       for (size_t i = 0; i < _experimentVector.size(); i++)
         if (_experimentVector[i]->_isFinished == false)

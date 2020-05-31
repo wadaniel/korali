@@ -67,6 +67,9 @@ void korali::Experiment::run()
       if (_currentGeneration % _fileOutputFrequency == 0) saveState();
 
     _currentGeneration++;
+
+    // Check for error signals from python
+    if (PyErr_CheckSignals() != 0) korali::Logger::logError("User requested break.\n");
   }
 
   auto t1 = std::chrono::system_clock::now();

@@ -299,11 +299,11 @@ echo "[Korali] Creating configuration files..."
 
 DNNLROOT=`readlink external/oneDNNlink`; check
 ONEDNNCFLAGS="-D_KORALI_USE_ONEDNN -I${DNNLROOT}/include"
-ONEDNNLIBS="-Wl,-rpath -Wl,${DNNLROOT}/lib64/ -L${DNNLROOT}/lib64/ -Wl,-rpath -Wl,${DNNLROOT}/lib/ -L${DNNLROOT}/lib/ -ldnnl"
+ONEDNNLIBS="-Wl,-rpath -Wl,${DNNLROOT}/lib64/ -L${DNNLROOT}/lib64/ -Wl,-rpath -Wl,${DNNLROOT}/lib/ -L${DNNLROOT}/lib -ldnnl"
 
 LIBGPROOT=`readlink external/libGPlink`; check
 LIBGPCFLAGS="-I${LIBGPROOT}/include"
-LIBGPLIBS="-Wl,-rpath -Wl,${LIBGPROOT}/lib64/ -L${LIBGPROOT}/lib64/ -Wl,-rpath -Wl,${LIBGPROOT}/lib/ -L${LIBGPROOT}/lib/ -lgp"
+LIBGPLIBS="-Wl,-rpath -Wl,${LIBGPROOT}/lib64/ -L${LIBGPROOT}/lib64/ -Wl,-rpath -Wl,${LIBGPROOT}/lib -L${LIBGPROOT}/lib -lgp"
 
 LIBCOROOT=`readlink external/libcolink`; check
 LIBCOCFLAGS="-I${LIBCOROOT}"
@@ -319,7 +319,7 @@ RTNORMLIBS="${RTNORMROOT}/rtnorm.o"
 GSLPREFIX=`./external/gsl-config --prefix`; check
 GSLCFLAGS=`./external/gsl-config --cflags`; check
 GSLLIBS=`./external/gsl-config --libs`; check
-GSLLIBS="${GSLLIBS} -L${GSLPREFIX}/lib -Wl,-rpath -Wl,${GSLPREFIX}/lib"
+GSLLIBS="${GSLLIBS} -L${GSLPREFIX}/lib -Wl,-rpath -Wl,${GSLPREFIX}/lib -L${GSLPREFIX}/lib64 -Wl,-rpath -Wl,${GSLPREFIX}/lib64"
 
 PYBIND11INCLUDES=`python3 -m pybind11 --includes` ; check
 PYBIND11LIBS=`python3-config --ldflags`; check

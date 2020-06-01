@@ -48,52 +48,52 @@ jobs:
             
       - run:
           name: Install Doxygen
-          command: ./prereqs/install_doxygen.sh
+          command: ./external/install_doxygen.sh
           
       - save_cache:
           key: cache-linux-doxygen-v7
           paths:
-            - "~/korali/prereqs/_doxygen/install"
+            - "~/korali/external/_doxygen/install"
                   
       - run:
           name: Install LLVM (clang-format)
-          command: ./prereqs/install_clang.sh
+          command: ./external/install_clang.sh
           
       - save_cache:
           key: cache-linux-llvm-v7
           paths:
-            - "~/korali/prereqs/_llvm/install"
+            - "~/korali/external/_llvm/install"
             
       - run:
           name: Install CMake
-          command: ./prereqs/install_CMake.sh
+          command: ./external/install_CMake.sh
           
       - save_cache:
           key: cache-linux-cmake-v7
           paths:
-            - "~/korali/prereqs/CMake/install"
+            - "~/korali/external/CMake/install"
 
       - run:
           name: Install GSL
-          command: ./prereqs/install_gsl.sh
+          command: ./external/install_gsl.sh
           
       - save_cache:
           key: cache-linux-gsl-v7
           paths:
-            - "~/korali/prereqs/GSL/install"
+            - "~/korali/external/GSL/install"
       
       - run:
           name: Install oneDNN
-          command: ./prereqs/install_oneDNN.sh
+          command: ./external/install_oneDNN.sh
           
       - save_cache:
           key: cache-linux-oneDNN-v7
           paths:
-            - "~/korali/prereqs/oneDNN/install"
+            - "~/korali/external/oneDNN/install"
                                   
       - run:
           name: build Korali
-          command: ./install --prereqs --jobs=8
+          command: ./install --external --jobs=8
 
       - run:
           name: run tests
@@ -147,52 +147,52 @@ jobs:
             
       - run:
           name: Install Doxygen
-          command: ./prereqs/install_doxygen.sh
+          command: ./external/install_doxygen.sh
           
       - save_cache:
           key: cache-macos-doxygen-v7
           paths:
-            - "~/korali/prereqs/_doxygen/install"
+            - "~/korali/external/_doxygen/install"
                   
       - run:
           name: Install LLVM (clang-format)
-          command: ./prereqs/install_clang.sh
+          command: ./external/install_clang.sh
           
       - save_cache:
           key: cache-macos-llvm-v7
           paths:
-            - "~/korali/prereqs/_llvm/install"
+            - "~/korali/external/_llvm/install"
             
       - run:
           name: Install CMake
-          command: ./prereqs/install_CMake.sh 
+          command: ./external/install_CMake.sh 
           
       - save_cache:
           key: cache-macos-cmake-v7
           paths:
-            - "~/korali/prereqs/CMake/install"
+            - "~/korali/external/CMake/install"
 
       - run:
           name: Install GSL
-          command: ./prereqs/install_gsl.sh
+          command: ./external/install_gsl.sh
           
       - save_cache:
           key: cache-macos-gsl-v7
           paths:
-            - "~/korali/prereqs/GSL/install"
+            - "~/korali/external/GSL/install"
       
       - run:
           name: Install oneDNN
-          command: ./prereqs/install_oneDNN.sh
+          command: ./external/install_oneDNN.sh
           
       - save_cache:
           key: cache-macos-oneDNN-v7
           paths:
-            - "~/korali/prereqs/oneDNN/install"
+            - "~/korali/external/oneDNN/install"
                             
       - run:
           name: build Korali
-          command: ./install --prereqs --jobs=4
+          command: ./install --external --jobs=4
 
       - run:
           name: run tests

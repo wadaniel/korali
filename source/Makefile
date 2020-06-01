@@ -8,7 +8,7 @@ endif
 
 # ==============================================================================
 CXXFLAGS  = -g $(OPTFLAGS) $(GSLCFLAGS) $(CXXARCH) $(WARNINGFLAGS)
-CXXFLAGS += -I. -I./external -I../external/eigen
+CXXFLAGS += -I. -I./external -I../external/eigen -I../external/libco
 CXXFLAGS += $(PYBIND11INCLUDES) $(MPIFLAGS) $(ONEDNNCFLAGS)
 
 LDFLAGS = $(SHAREDLIB_FLAG) -L$(GSLPREFIX)/lib -Wl,-rpath -Wl,$(GSLPREFIX)/lib $(GSLLIBS) $(ONEDNNLDFLAGS)
@@ -28,7 +28,7 @@ BUILDFILES = $(shell find . -name "build.py")
 OBJDIR := .o
 DEPDIR := .d
 
-OBJS := $(patsubst %,$(OBJDIR)/%.o,$(basename $(SOURCES)))
+OBJS := $(patsubst %,$(OBJDIR)/%.o,$(basename $(SOURCES))) ../external/libco/libco.o
 DEPS := $(patsubst %,$(DEPDIR)/%.d,$(basename $(SOURCES)))
 
 $(shell mkdir -p $(dir $(OBJS)) >/dev/null)

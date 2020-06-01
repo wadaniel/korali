@@ -7,7 +7,7 @@
 
 #include "auxiliar/koraliJson.hpp"
 #include "auxiliar/logger.hpp"
-#include "external/libco/libco.h"
+#include "libco.h"
 #include <string>
 
 #undef _POSIX_C_SOURCE

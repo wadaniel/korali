@@ -40,7 +40,7 @@ fi
 
 if [ -f $baseKoraliDir/../docs/VERSION ]; then
  foundbinVersionFile=1
- baseKoraliDir=$PWD/../
+ baseKoraliDir=`realpath $PWD/../`
 fi
 
 if [ $foundbinVersionFile == 0 ]; then

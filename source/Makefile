@@ -7,11 +7,18 @@ ifeq ($(CXX),$(MACOS_CXX))
 endif
 
 # ==============================================================================
-CXXFLAGS  = -g $(OPTFLAGS) $(GSLCFLAGS) $(CXXARCH) $(WARNINGFLAGS)
-CXXFLAGS += -I. -I./external -I../external/eigen -I../external/libco
-CXXFLAGS += $(PYBIND11INCLUDES) $(MPIFLAGS) $(ONEDNNCFLAGS)
+CXXFLAGS  = -g $(OPTFLAGS)  $(CXXARCH) $(WARNINGFLAGS)
+CXXFLAGS += -I. -I./external -I../external/eigen -I../external/libco 
+CXXFLAGS += $(MPIFLAGS) 
+CXXFLAGS += $(GSLCFLAGS)
+CXXFLAGS += $(ONEDNNCFLAGS)
+CXXFLAGS += $(LIBGPCFLAGS)
+CXXFLAGS += $(PYBIND11INCLUDES)
 
-LDFLAGS = $(SHAREDLIB_FLAG) -L$(GSLPREFIX)/lib -Wl,-rpath -Wl,$(GSLPREFIX)/lib $(GSLLIBS) $(ONEDNNLDFLAGS)
+LDFLAGS = $(SHAREDLIB_FLAG)
+LDFLAGS += $(GSLLIBS) 
+LDFLAGS += $(ONEDNNLIBS)
+LDFLAGS += $(LIBGPLIBS)
 LDFLAGS += $(PYBIND11LIBS)
 
 DEPFLAGS = -MT $@ -MD -MP -MF $(DEPDIR)/$*.Td

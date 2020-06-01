@@ -28,30 +28,34 @@ jobs:
 
       - restore_cache:
           keys:
-            - cache-linux-doxygen-v7
+            - cache-linux-doxygen-v8
             
       - restore_cache:
           keys:
-            - cache-linux-llvm-v7
+            - cache-linux-llvm-v8
             
       - restore_cache:
           keys:
-            - cache-linux-cmake-v7
+            - cache-linux-cmake-v8
       
       - restore_cache:
           keys:
-            - cache-linux-gsl-v7
+            - cache-linux-gsl-v8
             
       - restore_cache:
           keys:
-            - cache-linux-oneDNN-v7
+            - cache-linux-oneDNN-v8
+      
+      - restore_cache:
+          keys:
+            - cache-linux-libGP-v8
             
       - run:
           name: Install Doxygen
           command: ./external/install_doxygen.sh
           
       - save_cache:
-          key: cache-linux-doxygen-v7
+          key: cache-linux-doxygen-v8
           paths:
             - "~/korali/external/_doxygen/install"
                   
@@ -60,7 +64,7 @@ jobs:
           command: ./external/install_clang.sh
           
       - save_cache:
-          key: cache-linux-llvm-v7
+          key: cache-linux-llvm-v8
           paths:
             - "~/korali/external/_llvm/install"
             
@@ -69,7 +73,7 @@ jobs:
           command: ./external/install_CMake.sh
           
       - save_cache:
-          key: cache-linux-cmake-v7
+          key: cache-linux-cmake-v8
           paths:
             - "~/korali/external/CMake/install"
 
@@ -78,7 +82,7 @@ jobs:
           command: ./external/install_gsl.sh
           
       - save_cache:
-          key: cache-linux-gsl-v7
+          key: cache-linux-gsl-v8
           paths:
             - "~/korali/external/GSL/install"
       
@@ -87,10 +91,19 @@ jobs:
           command: ./external/install_oneDNN.sh
           
       - save_cache:
-          key: cache-linux-oneDNN-v7
+          key: cache-linux-oneDNN-v8
           paths:
             - "~/korali/external/oneDNN/install"
                                   
+      - run:
+          name: Install LibGP
+          command: ./external/install_libgp.sh
+          
+      - save_cache:
+          key: cache-linux-libGP-v8
+          paths:
+            - "~/korali/external/libGP/install"
+            
       - run:
           name: build Korali
           command: ./install --prereqs --jobs=8
@@ -127,30 +140,34 @@ jobs:
    
       - restore_cache:
           keys:
-            - cache-macos-doxygen-v7
+            - cache-macos-doxygen-v8
             
       - restore_cache:
           keys:
-            - cache-macos-llvm-v7
+            - cache-macos-llvm-v8
             
       - restore_cache:
           keys:
-            - cache-macos-cmake-v7
+            - cache-macos-cmake-v8
            
       - restore_cache:
           keys:
-            - cache-macos-gsl-v7
+            - cache-macos-gsl-v8
             
       - restore_cache:
           keys:
-            - cache-macos-oneDNN-v7
+            - cache-macos-oneDNN-v8
             
+      - restore_cache:
+          keys:
+            - cache-macos-libGP-v8
+      
       - run:
           name: Install Doxygen
           command: ./external/install_doxygen.sh
           
       - save_cache:
-          key: cache-macos-doxygen-v7
+          key: cache-macos-doxygen-v8
           paths:
             - "~/korali/external/_doxygen/install"
                   
@@ -159,7 +176,7 @@ jobs:
           command: ./external/install_clang.sh
           
       - save_cache:
-          key: cache-macos-llvm-v7
+          key: cache-macos-llvm-v8
           paths:
             - "~/korali/external/_llvm/install"
             
@@ -168,7 +185,7 @@ jobs:
           command: ./external/install_CMake.sh 
           
       - save_cache:
-          key: cache-macos-cmake-v7
+          key: cache-macos-cmake-v8
           paths:
             - "~/korali/external/CMake/install"
 
@@ -177,7 +194,7 @@ jobs:
           command: ./external/install_gsl.sh
           
       - save_cache:
-          key: cache-macos-gsl-v7
+          key: cache-macos-gsl-v8
           paths:
             - "~/korali/external/GSL/install"
       
@@ -186,10 +203,19 @@ jobs:
           command: ./external/install_oneDNN.sh
           
       - save_cache:
-          key: cache-macos-oneDNN-v7
+          key: cache-macos-oneDNN-v8
           paths:
             - "~/korali/external/oneDNN/install"
                             
+      - run:
+          name: Install LibGP
+          command: ./external/install_libgp.sh
+          
+      - save_cache:
+          key: cache-macos-libGP-v8
+          paths:
+            - "~/korali/external/libGP/install"
+            
       - run:
           name: build Korali
           command: ./install --prereqs --jobs=4

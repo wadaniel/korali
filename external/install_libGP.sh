@@ -1,9 +1,8 @@
 #!/bin/bash
 
 ######### Global Definitions ########
-libName="doxygen"
-binName="doxygen"
-minVersion=1.8.13
+libName="libGP"
+minVersion=
 
 ######### Helper Functions ########
 
@@ -78,91 +77,72 @@ done
 ######## Checking for existing software ########
 
 externalDir=${baseKoraliDir}/external
-baseLibDir=${externalDir}/_${libName}
-installDir=${baseLibDir}/install
+
+baseLibDir=${externalDir}/${libName}
+installDir=${baseLibDir}/install/
 buildDir=${baseLibDir}/build
 
-binFound=0
-binPath=${installDir}/bin/${binName}
+fileFound=0
+localFile=${installDir}/include/gp/gp.h
 
-if [ ! -f ${binPath} ]; then
- binPath=${binName}
+if [ -f ${localFile} ]; then
+ fileFound=1
+ filePath=${localFile}
 fi
-
-$binPath --version > /dev/null 2>&1
-if [ $? -eq 0 ]; then
- binVersion=`${binPath} --version | head -n 1`
- cmpver=`printf "${binVersion}\n${minVersion}" | sort -V | head -n 1`
  
- if [[ "$cmpver" != "$minVersion" ]]; then
-    echo "[Korali] ${libName} version found (${binVersion}) is smaller than required (${minVersion})."
- else
-    binFound=1
-    echo "[Korali] Found existing ${libName} version ${binVersion}. Skipping installation..."
- fi
-fi
-
 ######## If not installed, download and install ########
 
-if [ ${binFound} == 0 ]; then
+if [ ${fileFound} == 0 ]; then
 
  if [ ${install} == 0 ]; then
    echo "[Korali] Could not find an installation of ${libName}."
    exit 1
  fi
  
+ # Checking whether cmake is accessible
+ $externalDir/install_CMake.sh 
+ if [ $? != 0 ]; then
+  echo "[Korali] Error: CMake is required to install ${libName}, but was not found."
+  echo "[Korali] Solution: Run install_CMake.sh to install it."
+  exit 1
+ fi
+
  echo "[Korali] Downloading ${libName}... "
  
  rm -rf $buildDir; check
  rm -rf $installDir; check
  
  mkdir -p $buildDir; check
- mkdir -p $installDir; check
- 
  pushd $buildDir; check
  
- arch="$(uname -s)"; check
-
- # If using MacOs, use the Darwin package 
- if [ "$arch" == "Darwin" ]; then
+ git clone https://github.com/mblum/libgp.git $buildDir; check
   
-  wget https://downloads.sourceforge.net/project/doxygen/rel-1.8.13/Doxygen-1.8.13.dmg; check
- 
-  hdiutil attach Doxygen-1.8.13.dmg; check
- 
-  mkdir tempDir; check
+ echo "[Korali] Configuring ${libName}... "
+ mkdir -p build; check
+ cd build; check
   
-  cp -r /Volumes/Doxygen/Doxygen.app/Contents/* $installDir; check
+ ${externalDir}/cmake .. -DCMAKE_INSTALL_PREFIX=${installDir} -DBUILD_SHARED_LIBS=true; check
  
-  binPath=${installDir}/Resources/${binName}
+ echo "[Korali] Building ${libName}... "
+ make -j$NJOBS; check
  
- else  # Else default to Linux64
-
-  wget https://sourceforge.net/projects/doxygen/files/rel-1.8.13/doxygen-1.8.13.linux.bin.tar.gz; check
- 
-  tar -xzvf doxygen-1.8.13.linux.bin.tar.gz;  check
- 
-  mv doxygen-1.8.13/* $installDir; check
-  
-  binPath=${installDir}/bin/${binName}
-  
- fi
+ echo "[Korali] Installing ${libName}... "
+ make install; check
  
  popd; check
  
  echo "[Korali] Finished installing ${libName}."
-
+ binPath=${installDir}/bin/${binName}
  
  echo "[Korali] Cleaning up build folder..."
  rm -rf $buildDir; check
+ 
 fi
 
-######## Finalization ######## 
+######## Finalization ########
 
-fullBinPath=`which ${binPath}`
-ln -sf $fullBinPath ${externalDir}/${binName}; check
-versionLine=`${externalDir}/${binName} --version`; check
-binVersion=`echo $versionLine | head -n 1`; check 
-echo "[Korali] Using ${libName} version $binVersion"
+rm -f ${externalDir}/libGPlink
+ln -sf ${installDir} ${externalDir}/libGPlink; check
+echo "[Korali] Using libGP located at ${installDir}."
 
 exit 0

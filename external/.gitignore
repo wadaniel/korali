@@ -8,3 +8,5 @@ doxygen
 _doxygen
 _llvm
 clang-format
+libGP
+libGPlink

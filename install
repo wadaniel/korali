@@ -163,7 +163,6 @@ else
  logEcho "[Korali] Updating submodules..."
  git submodule init >> $logFile 2>&1; check
  git submodule update --remote >> $logFile 2>&1; check 
- git submodule foreach git pull origin master >> $logFile 2>&1; check
 fi
 
 ## Looking for Eigen

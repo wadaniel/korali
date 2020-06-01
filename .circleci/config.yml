@@ -175,15 +175,6 @@ jobs:
       - restore_cache:
           keys:
             - cache-macos-cmake-v9
-           
-      - run:
-          name: Install Eigen
-          command: ./external/install_eigen.sh
-          
-      - save_cache:
-          key: cache-macos-eigen-v9
-          paths:
-            - "~/korali/external/eigen/install"
         
       - restore_cache:
           keys:
@@ -226,7 +217,16 @@ jobs:
       - run:
           name: Install CMake
           command: ./external/install_CMake.sh 
+        
+      - run:
+          name: Install Eigen
+          command: ./external/install_eigen.sh
           
+      - save_cache:
+          key: cache-macos-eigen-v9
+          paths:
+            - "~/korali/external/eigen/install"
+              
       - save_cache:
           key: cache-macos-cmake-v9
           paths:

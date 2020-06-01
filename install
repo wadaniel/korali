@@ -153,16 +153,17 @@ if [ $DETECTED_CRAY      -eq 0 ]; then USE_CXX=CC;      fi;
 if [ $DETECTED_CLANG     -eq 0 ]; then USE_CXX=clang++; fi;
 if [ $DETECTED_CXX       -eq 0 ]; then USE_CXX=$CXX;    fi;
 
+######## Updating submodules ##########
+
+logEcho "[Korali] Updating submodules..."
+git submodule init >> $logFile 2>&1; check
+git submodule update --remote >> $logFile 2>&1; check
+
 ######## Checking for Prerequisites ########
 
 installFlag=
 if [ $INSTALLREQS -eq 0 ]; then
  installFlag='--no-install'
-else
- # Updating submodules
- logEcho "[Korali] Updating submodules..."
- git submodule init >> $logFile 2>&1; check
- git submodule update --remote >> $logFile 2>&1; check 
 fi
 
 
@@ -210,6 +211,14 @@ fi
 ./external/install_libGP.sh $installFlag --jobs=$NJOBS
 if [ ! $? == 0 ]; then
  logEcho "[Korali] libGP not found. Try either of these solutions:"
+ logEcho "         . Run './install --prereqs' to allow Korali install missing prerequisites automatically."
+ exitWithError
+fi
+
+## Looking for libco
+./external/install_libco.sh $installFlag --jobs=$NJOBS
+if [ ! $? == 0 ]; then
+ logEcho "[Korali] libco not found. Try either of these solutions:"
  logEcho "         . Run './install --prereqs' to allow Korali install missing prerequisites automatically."
  exitWithError
 fi
@@ -300,6 +309,10 @@ ONEDNNLIBS="-Wl,-rpath -Wl,${DNNLROOT}/lib64/ -L${DNNLROOT}/lib64/ -Wl,-rpath -W
 LIBGPROOT=`readlink external/libGPlink`; check
 LIBGPCFLAGS="-I${LIBGPROOT}/include"
 LIBGPLIBS="-Wl,-rpath -Wl,${LIBGPROOT}/lib64/ -L${LIBGPROOT}/lib64/ -Wl,-rpath -Wl,${LIBGPROOT}/lib/ -L${LIBGPROOT}/lib/ -lgp"
+
+LIBCOROOT=`readlink external/libcolink`; check
+LIBCOCFLAGS="-I${LIBCOROOT}/include"
+LIBCOLIBS="${LIBCOROOT}/libco.o"
  
 GSLPREFIX=`./external/gsl-config --prefix`; check
 GSLCFLAGS=`./external/gsl-config --cflags`; check
@@ -338,16 +351,23 @@ echo CXX=$USE_CXX > source/Makefile.conf
 echo CXXARCH=$CXXARCH >> source/Makefile.conf
 echo SHAREDLIB_FLAG=$SHAREDLIB_FLAG >> source/Makefile.conf
 echo MPIFLAGS=$MPIFLAGS >> source/Makefile.conf
+
 echo ONEDNNCFLAGS=$ONEDNNCFLAGS >> source/Makefile.conf
 echo ONEDNNLIBS=$ONEDNNLIBS >> source/Makefile.conf
+
 echo LIBGPCFLAGS=$LIBGPCFLAGS >> source/Makefile.conf
 echo LIBGPLIBS=$LIBGPLIBS >> source/Makefile.conf
+
+echo LIBCOCFLAGS=$LIBCOCFLAGS >> source/Makefile.conf
+echo LIBCOLIBS=$LIBCOLIBS >> source/Makefile.conf
+
 echo OPTFLAGS=$OPTFLAGS >> source/Makefile.conf
 echo MACHINEARCH=$arch >> source/Makefile.conf
 
 echo GSLPREFIX=$GSLPREFIX >> source/Makefile.conf
 echo GSLCFLAGS=$GSLCFLAGS >> source/Makefile.conf
 echo GSLLIBS=$GSLLIBS  >> source/Makefile.conf
+
 echo PYBIND11INCLUDES=$PYBIND11INCLUDES >> source/Makefile.conf 
 echo PYBIND11LIBS=$PYBIND11LIBS >> source/Makefile.conf
 

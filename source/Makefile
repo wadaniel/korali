@@ -13,12 +13,14 @@ CXXFLAGS += $(MPIFLAGS)
 CXXFLAGS += $(GSLCFLAGS)
 CXXFLAGS += $(ONEDNNCFLAGS)
 CXXFLAGS += $(LIBGPCFLAGS)
+CXXFLAGS += $(LIBCOCFLAGS)
 CXXFLAGS += $(PYBIND11INCLUDES)
 
 LDFLAGS = $(SHAREDLIB_FLAG)
 LDFLAGS += $(GSLLIBS) 
 LDFLAGS += $(ONEDNNLIBS)
 LDFLAGS += $(LIBGPLIBS)
+LDFLAGS += $(LIBCOLIBS)
 LDFLAGS += $(PYBIND11LIBS)
 
 DEPFLAGS = -MT $@ -MD -MP -MF $(DEPDIR)/$*.Td
@@ -35,7 +37,7 @@ BUILDFILES = $(shell find . -name "build.py")
 OBJDIR := .o
 DEPDIR := .d
 
-OBJS := $(patsubst %,$(OBJDIR)/%.o,$(basename $(SOURCES))) ../external/libco/libco.o
+OBJS := $(patsubst %,$(OBJDIR)/%.o,$(basename $(SOURCES)))
 DEPS := $(patsubst %,$(DEPDIR)/%.d,$(basename $(SOURCES)))
 
 $(shell mkdir -p $(dir $(OBJS)) >/dev/null)

@@ -1,4 +1,3 @@
-#include "gp/gp.h"
 #include "modules/conduit/conduit.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/solver/gaussianProcess/gaussianProcess.hpp"

@@ -2,7 +2,7 @@
 #define _KORALI_SOLVER_GAUSSIAN_PROCESS_HPP_
 
 #include "engine.hpp"
-#include "external/libgp/gp.hpp"
+#include "gp/gp.h"
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 #include "modules/solver/solver.hpp"

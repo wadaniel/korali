@@ -10,3 +10,5 @@ _llvm
 clang-format
 libGP
 libGPlink
+libco
+libcolink

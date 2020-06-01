@@ -97,7 +97,7 @@ jobs:
                                   
       - run:
           name: Install LibGP
-          command: ./external/install_libgp.sh
+          command: ./external/install_libGP.sh
           
       - save_cache:
           key: cache-linux-libGP-v8
@@ -209,7 +209,7 @@ jobs:
                             
       - run:
           name: Install LibGP
-          command: ./external/install_libgp.sh
+          command: ./external/install_libGP.sh
           
       - save_cache:
           key: cache-macos-libGP-v8

@@ -257,7 +257,7 @@ jobs:
       - save_cache:
           key: cache-macos-libGP-v10
           paths:
-            - "~/korali/external/rtnorm/install"
+            - "~/korali/external/libgp/install"
             
       - run:
           name: Install rtnorm

@@ -393,6 +393,15 @@ if [ $? -ne 0 ]; then
   exitWithError
 fi
 
+# For macOS, adjusting library paths
+if [ "$arch" == "Darwin" ]; then
+ if [ -f ${LIBGPROOT}/lib64/libgp.dylib ]; then
+   install_name_tool -change libgp.dylib ${LIBGPROOT}/lib64/libgp.dylib source/libkorali.so; check
+ else 
+   install_name_tool -change libgp.dylib ${LIBGPROOT}/lib/libgp.dylib source/libkorali.so; check
+ fi
+fi
+
 ######## Installing Korali using pip ########
 
 logEcho "[Korali] Installing Korali..."
@@ -402,6 +411,7 @@ if [ $? -ne 0 ]; then
   logEcho "[Korali] Error obtaining libkorali.so"
   exitWithError
 fi
+
 
 python3 -m pip install . $PIP_USER --upgrade >> $logFile 2>&1
 if [ $? -ne 0 ]; then

@@ -73,6 +73,7 @@ case $i in
     logEcho "[Korali] Cleaning Korali for new build..."
     python3 -m pip uninstall -y korali >> $logFile 2>&1
     make -C source clean >> $logFile 2>&1
+    make -C external/libco clean >> $logFile 2>&1
     shift 
     ;;
     --help)
@@ -159,8 +160,10 @@ if [ $INSTALLREQS -eq 0 ]; then
  installFlag='--no-install'
 else
  # Updating submodules
+ logEcho "[Korali] Updating submodules..."
  git submodule init >> $logFile 2>&1; check
- git submodule update >> $logFile 2>&1; check 
+ git submodule update --remote >> $logFile 2>&1; check 
+ git submodule foreach git pull origin master >> $logFile 2>&1; check
 fi
 
 ## Looking for Eigen
@@ -168,6 +171,18 @@ fi
 if [ ! -f ./external/eigen/Eigen/Core ]; then
  logEcho "[Korali] Error: Eigen library not found. Solutions:"
  logEcho "         . Run './install --prereqs' to allow Korali install missing git submodules automatically."
+ exitWithError
+fi
+
+## Making libco
+logEcho "[Korali] Building libco..."
+pushd external/libco/ >> $logFile 2>&1; check
+ CXX=$USE_CXX make >> $logFile 2>&1; check
+popd >> $logFile 2>&1; check
+
+if [ ! -f external/libco/libco.o ]; then
+ logEcho "[Korali] Error: Libco not found. Solutions"
+ logEcho "         . Run './install --prereqs' to allow Korali install missing prerequisites automatically."
  exitWithError
 fi
 

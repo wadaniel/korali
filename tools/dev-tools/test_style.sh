@@ -12,7 +12,7 @@ function check()
 fileDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 pushd $fileDir
 
-root=$fileDir/../..
+root=`realpath $fileDir/../..`
 
 ##############################################
 ### Testing C++ Code Style
@@ -68,7 +68,7 @@ if [ $? -ne 0 ]; then
 fi
 
 src_files=`find $root -type f -not -name "__*"  -name "*.py" \
-          -not -path "${root}/source/tools/dev-tools/*" \
+          -not -path "${root}/tools/dev-tools/*" \
           -not -path "${root}/source/external/*" \
           -not -path "${root}/external/*" \
           -not -path "${root}/tutorials/examples/*"`

@@ -211,7 +211,7 @@ if [ ! $? == 0 ]; then
 fi
 
 ## Looking for libGP
-CXX=$USE_CXX ./external/install_libGP.sh $installFlag --jobs=$NJOBS
+CXX=$USE_CXX ./external/install_libGP.sh $installFlag
 if [ ! $? == 0 ]; then
  logEcho "[Korali] libGP not found. Try either of these solutions:"
  logEcho "         . Run './install --prereqs' to allow Korali install missing prerequisites automatically."

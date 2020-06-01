@@ -5,7 +5,7 @@
 #ifndef _KORALI_AUXILIARS_KORALIJSON_HPP_
 #define _KORALI_AUXILIARS_KORALIJSON_HPP_
 
-#include "external/json/json.hpp"
+#include "auxiliar/json.hpp"
 #include "pybind11/functional.h"
 #include "pybind11/pybind11.h"
 #include "pybind11/stl.h"

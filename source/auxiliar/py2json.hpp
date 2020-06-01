@@ -12,7 +12,7 @@
 #ifndef PYBIND_JSON_HPP
 #define PYBIND_JSON_HPP
 
-#include "external/json/json.hpp"
+#include "auxiliar/json.hpp"
 #include "pybind11/pybind11.h"
 #include "pybind11/stl.h"
 #include "sample/sample.hpp"

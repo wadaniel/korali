@@ -150,6 +150,6 @@ fullBinPath=`which ${binPath}`
 ln -sf $fullBinPath ${externalDir}/${binName}; check
 versionLine=`${externalDir}/${binName} --version`; check
 binVersion=`echo $versionLine | head -n 1 | cut -d' ' -f 3`; check 
-echo "[Korali] Using ${libName} version $binVersion"
+echo "[Korali] Using ${libName} $binVersion located at ${installDir}"
 
 exit 0

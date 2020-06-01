@@ -99,6 +99,14 @@ if [ ${fileFound} == 0 ]; then
    exit 1
  fi
 
+ # Checking whether gsl is accessible
+ $externalDir/install_gsl.sh 
+ if [ $? != 0 ]; then
+  echo "[Korali] Error: GSL is required to install ${libName}, but was not found."
+  echo "[Korali] Solution: Run install_gsl.sh to install it."
+  exit 1
+ fi
+ 
  echo "[Korali] Downloading ${libName}... "
  
  rm -rf $buildDir; check
@@ -115,7 +123,16 @@ if [ ${fileFound} == 0 ]; then
  mkdir -p tmp; check;
  
  mv Makefile oldMakefile; check;
- cat oldMakefile | sed -e "s/CXX =/#CXX =/g" -e 's/CXXFLAG =/CXXFLAG = -O3 -fPIC /g' > Makefile; check;
+ 
+ GSLPREFIX=`${externalDir}/gsl-config --prefix`; check
+ GSLCFLAGS=`${externalDir}/gsl-config --cflags`; check
+ GSLLIBS=`${externalDir}/gsl-config --libs`; check
+ GSLLIBS="${GSLLIBS} -L${GSLPREFIX}/lib -Wl,-rpath -Wl,${GSLPREFIX}/lib"
+ 
+ cat oldMakefile | sed -e "s/CXX =/#CXX =/g" \
+                       -e "s%CXXFLAG =%CXXFLAG = $GSLCFLAGS -O3 -fPIC %g" \
+                       -e "s%LIB =%LIB = $GSLLIBS %g" \
+                        > Makefile; check;
  make -j$NJOBS; check
  
  echo "[Korali] Installing ${libName}... "

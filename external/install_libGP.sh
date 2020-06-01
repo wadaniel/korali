@@ -110,8 +110,8 @@ if [ ${fileFound} == 0 ]; then
  # Checking whether eigen is accessible
  $externalDir/install_eigen.sh 
  if [ $? != 0 ]; then
-  echo "[Korali] Error: CMake is required to install ${libName}, but was not found."
-  echo "[Korali] Solution: Run install_CMake.sh to install it."
+  echo "[Korali] Error: eigen is required to install ${libName}, but was not found."
+  echo "[Korali] Solution: Run install_eigen.sh to install it."
   exit 1
  fi
 

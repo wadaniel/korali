@@ -83,7 +83,16 @@ installDir=${baseLibDir}/install
 buildDir=${baseLibDir}/build
 
 binFound=0
-binPath=${installDir}/bin/${binName}
+
+arch="$(uname -s)"; check
+
+# If using MacOs, use the Darwin package 
+
+if [ "$arch" == "Darwin" ]; then
+  binPath=${installDir}/Resources/${binName}
+else
+  binPath=${installDir}/bin/${binName}
+fi
 
 if [ ! -f ${binPath} ]; then
  binPath=${binName}
@@ -121,9 +130,6 @@ if [ ${binFound} == 0 ]; then
  
  pushd $buildDir; check
  
- arch="$(uname -s)"; check
-
- # If using MacOs, use the Darwin package 
  if [ "$arch" == "Darwin" ]; then
   
   wget https://downloads.sourceforge.net/project/doxygen/rel-1.8.13/Doxygen-1.8.13.dmg; check
@@ -134,8 +140,6 @@ if [ ${binFound} == 0 ]; then
   
   cp -r /Volumes/Doxygen/Doxygen.app/Contents/* $installDir; check
  
-  binPath=${installDir}/Resources/${binName}
- 
  else  # Else default to Linux64
 
   wget https://sourceforge.net/projects/doxygen/files/rel-1.8.13/doxygen-1.8.13.linux.bin.tar.gz; check
@@ -143,8 +147,6 @@ if [ ${binFound} == 0 ]; then
   tar -xzvf doxygen-1.8.13.linux.bin.tar.gz;  check
  
   mv doxygen-1.8.13/* $installDir; check
-  
-  binPath=${installDir}/bin/${binName}
   
  fi
  

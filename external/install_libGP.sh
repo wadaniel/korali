@@ -121,7 +121,7 @@ if [ ${fileFound} == 0 ]; then
  mkdir -p build; check
  cd build; check
   
- ${externalDir}/cmake .. -DCMAKE_INSTALL_PREFIX=${installDir} -DBUILD_SHARED_LIBS=true; check
+ CXXFLAGS=-O3 ${externalDir}/cmake .. -DCMAKE_INSTALL_PREFIX=${installDir} -DBUILD_SHARED_LIBS=true; check
  
  echo "[Korali] Building ${libName}... "
  make -j$NJOBS; check

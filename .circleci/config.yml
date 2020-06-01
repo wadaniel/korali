@@ -28,42 +28,42 @@ jobs:
 
       - restore_cache:
           keys:
-            - cache-linux-doxygen-v9
+            - cache-linux-doxygen-v10
             
       - restore_cache:
           keys:
-            - cache-linux-llvm-v9
+            - cache-linux-llvm-v10
             
       - restore_cache:
           keys:
-            - cache-linux-cmake-v9
+            - cache-linux-cmake-v10
 
       - restore_cache:
           keys:
-            - cache-linux-eigen-v9
+            - cache-linux-eigen-v10
                   
       - restore_cache:
           keys:
-            - cache-linux-gsl-v9
+            - cache-linux-gsl-v10
             
       - restore_cache:
           keys:
-            - cache-linux-oneDNN-v9
+            - cache-linux-oneDNN-v10
       
       - restore_cache:
           keys:
-            - cache-linux-libGP-v9
+            - cache-linux-libGP-v10
             
       - restore_cache:
           keys:
-            - cache-linux-rtnorm-v9
+            - cache-linux-rtnorm-v10
             
       - run:
           name: Install Doxygen
           command: ./external/install_doxygen.sh
           
       - save_cache:
-          key: cache-linux-doxygen-v9
+          key: cache-linux-doxygen-v10
           paths:
             - "~/korali/external/_doxygen/install"
                   
@@ -72,7 +72,7 @@ jobs:
           command: ./external/install_clang.sh
           
       - save_cache:
-          key: cache-linux-llvm-v9
+          key: cache-linux-llvm-v10
           paths:
             - "~/korali/external/_llvm/install"
             
@@ -81,7 +81,7 @@ jobs:
           command: ./external/install_CMake.sh
           
       - save_cache:
-          key: cache-linux-cmake-v9
+          key: cache-linux-cmake-v10
           paths:
             - "~/korali/external/CMake/install"
 
@@ -90,7 +90,7 @@ jobs:
           command: ./external/install_eigen.sh
           
       - save_cache:
-          key: cache-linux-eigen-v9
+          key: cache-linux-eigen-v10
           paths:
             - "~/korali/external/eigen/install"
             
@@ -99,7 +99,7 @@ jobs:
           command: ./external/install_gsl.sh
           
       - save_cache:
-          key: cache-linux-gsl-v9
+          key: cache-linux-gsl-v10
           paths:
             - "~/korali/external/GSL/install"
       
@@ -108,7 +108,7 @@ jobs:
           command: ./external/install_oneDNN.sh
           
       - save_cache:
-          key: cache-linux-oneDNN-v9
+          key: cache-linux-oneDNN-v10
           paths:
             - "~/korali/external/oneDNN/install"
                                   
@@ -117,7 +117,7 @@ jobs:
           command: ./external/install_libGP.sh
           
       - save_cache:
-          key: cache-linux-libGP-v9
+          key: cache-linux-libGP-v10
           paths:
             - "~/korali/external/libGP/install"
             
@@ -126,7 +126,7 @@ jobs:
           command: ./external/install_rtnorm.sh
                     
       - save_cache:
-          key: cache-linux-rtnorm-v9
+          key: cache-linux-rtnorm-v10
           paths:
             - "~/korali/external/rtnorm/install"
             
@@ -166,42 +166,42 @@ jobs:
    
       - restore_cache:
           keys:
-            - cache-macos-doxygen-v9
+            - cache-macos-doxygen-v10
             
       - restore_cache:
           keys:
-            - cache-macos-llvm-v9
+            - cache-macos-llvm-v10
             
       - restore_cache:
           keys:
-            - cache-macos-cmake-v9
+            - cache-macos-cmake-v10
         
       - restore_cache:
           keys:
-            - cache-macos-eigen-v9
+            - cache-macos-eigen-v10
             
       - restore_cache:
           keys:
-            - cache-macos-gsl-v9
+            - cache-macos-gsl-v10
             
       - restore_cache:
           keys:
-            - cache-macos-oneDNN-v9
+            - cache-macos-oneDNN-v10
             
       - restore_cache:
           keys:
-            - cache-macos-libGP-v9
+            - cache-macos-libGP-v10
             
       - restore_cache:
           keys:
-            - cache-macos-rtnorm-v9
+            - cache-macos-rtnorm-v10
       
       - run:
           name: Install Doxygen
           command: ./external/install_doxygen.sh
           
       - save_cache:
-          key: cache-macos-doxygen-v9
+          key: cache-macos-doxygen-v10
           paths:
             - "~/korali/external/_doxygen/install"
                   
@@ -210,7 +210,7 @@ jobs:
           command: ./external/install_clang.sh
           
       - save_cache:
-          key: cache-macos-llvm-v9
+          key: cache-macos-llvm-v10
           paths:
             - "~/korali/external/_llvm/install"
             
@@ -223,12 +223,12 @@ jobs:
           command: ./external/install_eigen.sh
           
       - save_cache:
-          key: cache-macos-eigen-v9
+          key: cache-macos-eigen-v10
           paths:
             - "~/korali/external/eigen/install"
               
       - save_cache:
-          key: cache-macos-cmake-v9
+          key: cache-macos-cmake-v10
           paths:
             - "~/korali/external/CMake/install"
 
@@ -237,7 +237,7 @@ jobs:
           command: ./external/install_gsl.sh
           
       - save_cache:
-          key: cache-macos-gsl-v9
+          key: cache-macos-gsl-v10
           paths:
             - "~/korali/external/GSL/install"
       
@@ -246,7 +246,7 @@ jobs:
           command: ./external/install_oneDNN.sh
           
       - save_cache:
-          key: cache-macos-oneDNN-v9
+          key: cache-macos-oneDNN-v10
           paths:
             - "~/korali/external/oneDNN/install"
                             
@@ -255,7 +255,7 @@ jobs:
           command: ./external/install_libGP.sh
 
       - save_cache:
-          key: cache-macos-libGP-v9
+          key: cache-macos-libGP-v10
           paths:
             - "~/korali/external/rtnorm/install"
             
@@ -264,7 +264,7 @@ jobs:
           command: ./external/install_rtnorm.sh
                     
       - save_cache:
-          key: cache-macos-rtnorm-v9
+          key: cache-macos-rtnorm-v10
           paths:
             - "~/korali/external/rtnorm/install"
                   

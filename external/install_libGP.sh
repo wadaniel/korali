@@ -106,6 +106,14 @@ if [ ${fileFound} == 0 ]; then
   echo "[Korali] Solution: Run install_CMake.sh to install it."
   exit 1
  fi
+ 
+ # Checking whether eigen is accessible
+ $externalDir/install_eigen.sh 
+ if [ $? != 0 ]; then
+  echo "[Korali] Error: CMake is required to install ${libName}, but was not found."
+  echo "[Korali] Solution: Run install_CMake.sh to install it."
+  exit 1
+ fi
 
  echo "[Korali] Downloading ${libName}... "
  
@@ -121,7 +129,7 @@ if [ ${fileFound} == 0 ]; then
  mkdir -p build; check
  cd build; check
   
- CXXFLAGS=-O3 ${externalDir}/cmake .. -DCMAKE_INSTALL_PREFIX=${installDir} -DBUILD_SHARED_LIBS=true; check
+ CXXFLAGS=-O3 ${externalDir}/cmake .. -DCMAKE_INSTALL_PREFIX=${installDir} -DBUILD_SHARED_LIBS=true -DEIGEN3_INCLUDE_DIR=${externalDir}/eigenlink/include/eigen3/; check
  
  echo "[Korali] Building ${libName}... "
  make -j$NJOBS; check

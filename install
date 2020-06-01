@@ -185,6 +185,14 @@ if [ ! $? == 0 ]; then
  exitWithError
 fi
 
+## Looking for rtnorm
+CXX=$USE_CXX ./external/install_rtnorm.sh $installFlag --jobs=$NJOBS
+if [ ! $? == 0 ]; then
+ logEcho "[Korali] Error: rtnorm not found. Solutions"
+ logEcho "         . Run './install --prereqs' to allow Korali install missing prerequisites automatically."
+ exitWithError
+fi
+
 ## Looking for Eigen
 CXX=$USE_CXX ./external/install_eigen.sh $installFlag --jobs=$NJOBS
 if [ ! $? == 0 ]; then
@@ -304,6 +312,10 @@ LIBCOLIBS="${LIBCOROOT}/libco.o"
 EIGENROOT=`readlink external/eigenlink`; check
 EIGENCFLAGS="-I${EIGENROOT}/include/eigen3"
  
+RTNORMROOT=`readlink external/rtnormlink`; check
+RTNORMCFLAGS="-I${RTNORMROOT}"
+RTNORMLIBS="${RTNORMROOT}/rtnorm.o"
+
 GSLPREFIX=`./external/gsl-config --prefix`; check
 GSLCFLAGS=`./external/gsl-config --cflags`; check
 GSLLIBS=`./external/gsl-config --libs`; check
@@ -350,6 +362,9 @@ echo LIBGPLIBS=$LIBGPLIBS >> source/Makefile.conf
 
 echo LIBCOCFLAGS=$LIBCOCFLAGS >> source/Makefile.conf
 echo LIBCOLIBS=$LIBCOLIBS >> source/Makefile.conf
+
+echo RTNORMCFLAGS=$RTNORMCFLAGS >> source/Makefile.conf
+echo RTNORMLIBS=$RTNORMLIBS >> source/Makefile.conf
 
 echo EIGENCFLAGS=$EIGENCFLAGS >> source/Makefile.conf
 echo OPTFLAGS=$OPTFLAGS >> source/Makefile.conf

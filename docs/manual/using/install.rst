@@ -11,7 +11,7 @@ Installation Steps
   
   .. code-block:: bash
     
-     git clone https://github.com/cselab/korali.git --branch latest
+     git clone https://github.com/cselab/korali.git --recursive --branch latest
 
 2. Install Korali
 

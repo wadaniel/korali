@@ -53,6 +53,7 @@ if [ $? -ne 0 ]; then
 fi
 
 src_files=`find $root -type f -not -name "__*"  -name "*.py" \
+          -not -path "${root}/source/tools/dev-tools/*" \
           -not -path "${root}/source/external/*" \
           -not -path "${root}/external/*" \
           -not -path "${root}/tutorials/examples/*"`

@@ -69,7 +69,7 @@ void korali::Experiment::run()
     _currentGeneration++;
 
     // Check for error signals from python
-    if (PyErr_CheckSignals() != 0) korali::Logger::logError("User requested break.\n");
+    if (korali::isPythonActive && PyErr_CheckSignals() != 0) korali::Logger::logError("User requested break.\n");
   }
 
   auto t1 = std::chrono::system_clock::now();

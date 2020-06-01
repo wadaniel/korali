@@ -82,7 +82,8 @@ echo "Using $doxygenBin for C++ documentation..."
 $doxygenBin doxygen.config 2>&1 | grep -E 'warning|error'
 if [ $? -eq 0 ]; then
  echo "[Korali] Error running doxygen."
- echo "[Korali] Solution: Make sure doxygen is correly installed by running:"
+ echo "[Korali] Hint: Check if there is any missing variable/function documentation."
+ echo "[Korali] Hint: Also make sure doxygen is correctly installed by running:"
  echo "[Korali]           > {KORALI_ROOT}/prereqs/install_doxygen.sh"
  exit -1
 fi 

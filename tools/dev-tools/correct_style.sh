@@ -24,10 +24,10 @@ root=$fileDir/../..
 ##############################################
 
 # If clang-format is not installed, run the installation script
-clangFormatBin=${root}/prereqs/clang-format
+clangFormatBin=${root}/external/clang-format
 if [ ! -f $clangFormatBin ]; then
  pushd ${root}
- ./prereqs/install_clang.sh
+ ./external/install_clang.sh
  check
  popd
 fi
@@ -52,7 +52,7 @@ if [ $? -ne 0 ]; then
   python3 -m pip install $PIP_USER yapf >> $logFile 2>&1; check
 fi
 
-src_files=`find $root -type f -name "*.py" -not -path "${root}/source/external/*" -not -path "${root}/prereqs/*"`
+src_files=`find $root -type f -name "*.py" -not -path "${root}/source/external/*" -not -path "${root}/external/*"`
 
 echo $src_files | \
     xargs -n6 -P2 python3 -m yapf --style=yapf -i "$@"

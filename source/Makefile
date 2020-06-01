@@ -8,7 +8,7 @@ endif
 
 # ==============================================================================
 CXXFLAGS  = -g $(OPTFLAGS) $(GSLCFLAGS) $(CXXARCH) $(WARNINGFLAGS)
-CXXFLAGS += -I. -I./external
+CXXFLAGS += -I. -I./external -I../external/Eigen
 CXXFLAGS += $(PYBIND11INCLUDES) $(MPIFLAGS) $(ONEDNNCFLAGS)
 
 LDFLAGS = $(SHAREDLIB_FLAG) -L$(GSLPREFIX)/lib -Wl,-rpath -Wl,$(GSLPREFIX)/lib $(GSLLIBS) $(ONEDNNLDFLAGS)

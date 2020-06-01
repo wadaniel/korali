@@ -17,36 +17,41 @@ jobs:
       - checkout
 
       - run:
+          name: Get Submodules
+          command: git submodule init
+                   git submodule update --remote
+                   
+      - run:
           name: install MPI
           command: sudo apt-get install mpich;
                    echo 'export MPICXX=mpicxx' >> $BASH_ENV
 
       - restore_cache:
           keys:
-            - cache-linux-doxygen-v6
+            - cache-linux-doxygen-v7
             
       - restore_cache:
           keys:
-            - cache-linux-llvm-v6
+            - cache-linux-llvm-v7
             
       - restore_cache:
           keys:
-            - cache-linux-cmake-v6
+            - cache-linux-cmake-v7
       
       - restore_cache:
           keys:
-            - cache-linux-gsl-v6
+            - cache-linux-gsl-v7
             
       - restore_cache:
           keys:
-            - cache-linux-oneDNN-v6
+            - cache-linux-oneDNN-v7
             
       - run:
           name: Install Doxygen
           command: ./prereqs/install_doxygen.sh
           
       - save_cache:
-          key: cache-linux-doxygen-v6
+          key: cache-linux-doxygen-v7
           paths:
             - "~/korali/prereqs/_doxygen/install"
                   
@@ -55,7 +60,7 @@ jobs:
           command: ./prereqs/install_clang.sh
           
       - save_cache:
-          key: cache-linux-llvm-v6
+          key: cache-linux-llvm-v7
           paths:
             - "~/korali/prereqs/_llvm/install"
             
@@ -64,7 +69,7 @@ jobs:
           command: ./prereqs/install_CMake.sh
           
       - save_cache:
-          key: cache-linux-cmake-v6
+          key: cache-linux-cmake-v7
           paths:
             - "~/korali/prereqs/CMake/install"
 
@@ -73,7 +78,7 @@ jobs:
           command: ./prereqs/install_gsl.sh
           
       - save_cache:
-          key: cache-linux-gsl-v6
+          key: cache-linux-gsl-v7
           paths:
             - "~/korali/prereqs/GSL/install"
       
@@ -82,7 +87,7 @@ jobs:
           command: ./prereqs/install_oneDNN.sh
           
       - save_cache:
-          key: cache-linux-oneDNN-v6
+          key: cache-linux-oneDNN-v7
           paths:
             - "~/korali/prereqs/oneDNN/install"
                                   
@@ -107,7 +112,12 @@ jobs:
     steps:
 
       - checkout
-
+      
+      - run:
+          name: Get Submodules
+          command: git submodule init
+                   git submodule update --remote
+                   
       - run:
           name: Install MacOS dependencies
           command: HOMEBREW_NO_AUTO_UPDATE=1 brew install wget;
@@ -117,30 +127,30 @@ jobs:
    
       - restore_cache:
           keys:
-            - cache-macos-doxygen-v6
+            - cache-macos-doxygen-v7
             
       - restore_cache:
           keys:
-            - cache-macos-llvm-v6
+            - cache-macos-llvm-v7
             
       - restore_cache:
           keys:
-            - cache-macos-cmake-v6
+            - cache-macos-cmake-v7
            
       - restore_cache:
           keys:
-            - cache-macos-gsl-v6
+            - cache-macos-gsl-v7
             
       - restore_cache:
           keys:
-            - cache-macos-oneDNN-v6
+            - cache-macos-oneDNN-v7
             
       - run:
           name: Install Doxygen
           command: ./prereqs/install_doxygen.sh
           
       - save_cache:
-          key: cache-macos-doxygen-v6
+          key: cache-macos-doxygen-v7
           paths:
             - "~/korali/prereqs/_doxygen/install"
                   
@@ -149,7 +159,7 @@ jobs:
           command: ./prereqs/install_clang.sh
           
       - save_cache:
-          key: cache-macos-llvm-v6
+          key: cache-macos-llvm-v7
           paths:
             - "~/korali/prereqs/_llvm/install"
             
@@ -158,7 +168,7 @@ jobs:
           command: ./prereqs/install_CMake.sh 
           
       - save_cache:
-          key: cache-macos-cmake-v6
+          key: cache-macos-cmake-v7
           paths:
             - "~/korali/prereqs/CMake/install"
 
@@ -167,7 +177,7 @@ jobs:
           command: ./prereqs/install_gsl.sh
           
       - save_cache:
-          key: cache-macos-gsl-v6
+          key: cache-macos-gsl-v7
           paths:
             - "~/korali/prereqs/GSL/install"
       
@@ -176,7 +186,7 @@ jobs:
           command: ./prereqs/install_oneDNN.sh
           
       - save_cache:
-          key: cache-macos-oneDNN-v6
+          key: cache-macos-oneDNN-v7
           paths:
             - "~/korali/prereqs/oneDNN/install"
                             

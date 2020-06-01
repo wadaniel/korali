@@ -1,6 +1,3 @@
 [submodule "tutorials/examples"]
 	path = tutorials/examples
 	url = https://github.com/cselab/korali-apps.git
-[submodule "external/eigen"]
-	path = external/eigen
-	url = https://gitlab.com/libeigen/eigen.git

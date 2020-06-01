@@ -37,7 +37,11 @@ jobs:
       - restore_cache:
           keys:
             - cache-linux-cmake-v8
-      
+
+      - restore_cache:
+          keys:
+            - cache-linux-eigen-v8
+                  
       - restore_cache:
           keys:
             - cache-linux-gsl-v8
@@ -77,6 +81,15 @@ jobs:
           paths:
             - "~/korali/external/CMake/install"
 
+      - run:
+          name: Install Eigen
+          command: ./external/install_eigen.sh
+          
+      - save_cache:
+          key: cache-linux-eigen-v8
+          paths:
+            - "~/korali/external/eigen/install"
+            
       - run:
           name: Install GSL
           command: ./external/install_gsl.sh
@@ -150,6 +163,19 @@ jobs:
           keys:
             - cache-macos-cmake-v8
            
+      - run:
+          name: Install Eigen
+          command: ./external/install_eigen.sh
+          
+      - save_cache:
+          key: cache-macos-eigen-v8
+          paths:
+            - "~/korali/external/eigen/install"
+        
+      - restore_cache:
+          keys:
+            - cache-macos-eigen-v8
+            
       - restore_cache:
           keys:
             - cache-macos-gsl-v8

@@ -177,29 +177,24 @@ if [ ! $? == 0 ]; then
  exitWithError
 fi
 
-## Looking for Eigen
-
-if [ ! -f ./external/eigen/Eigen/Core ]; then
- logEcho "[Korali] Error: Eigen library not found. Solutions:"
- logEcho "         . Run './install --prereqs' to allow Korali install missing git submodules automatically."
- exitWithError
-fi
-
-## Making libco
-
-logEcho "[Korali] Building libco..."
-pushd external/libco/ >> $logFile 2>&1; check
- CXX=$USE_CXX make >> $logFile 2>&1; check
-popd >> $logFile 2>&1; check
-
-if [ ! -f external/libco/libco.o ]; then
+## Looking for libco
+CXX=$USE_CXX ./external/install_libco.sh $installFlag --jobs=$NJOBS
+if [ ! $? == 0 ]; then
  logEcho "[Korali] Error: Libco not found. Solutions"
  logEcho "         . Run './install --prereqs' to allow Korali install missing prerequisites automatically."
  exitWithError
 fi
 
+## Looking for Eigen
+CXX=$USE_CXX ./external/install_eigen.sh $installFlag --jobs=$NJOBS
+if [ ! $? == 0 ]; then
+ logEcho "[Korali] Error: Eigen not found. Solutions"
+ logEcho "         . Run './install --prereqs' to allow Korali install missing prerequisites automatically."
+ exitWithError
+fi
+
 ## Looking for GSL
-./external/install_gsl.sh $installFlag --jobs=$NJOBS
+CXX=$USE_CXX ./external/install_gsl.sh $installFlag --jobs=$NJOBS
 if [ ! $? == 0 ]; then
  logEcho "[Korali] Error: GSL not found or older version than 2.5. Solutions"
  logEcho "         . Have 'gsl-config' version >2.5 correctly installed and in your PATH environment variable"
@@ -208,23 +203,15 @@ if [ ! $? == 0 ]; then
 fi
 
 ## Looking for libGP
-./external/install_libGP.sh $installFlag --jobs=$NJOBS
+CXX=$USE_CXX ./external/install_libGP.sh $installFlag --jobs=$NJOBS
 if [ ! $? == 0 ]; then
  logEcho "[Korali] libGP not found. Try either of these solutions:"
  logEcho "         . Run './install --prereqs' to allow Korali install missing prerequisites automatically."
  exitWithError
 fi
 
-## Looking for libco
-./external/install_libco.sh $installFlag --jobs=$NJOBS
-if [ ! $? == 0 ]; then
- logEcho "[Korali] libco not found. Try either of these solutions:"
- logEcho "         . Run './install --prereqs' to allow Korali install missing prerequisites automatically."
- exitWithError
-fi
-
 ## Looking for oneDNN
-./external/install_oneDNN.sh $installFlag --jobs=$NJOBS
+CXX=$USE_CXX ./external/install_oneDNN.sh $installFlag --jobs=$NJOBS
 if [ ! $? == 0 ]; then
  logEcho "[Korali] oneDNN not found. Try either of these solutions:"
  logEcho "         1. Define the \$DNNLROOT environment variable to indicate the installation folder of oneDNN."
@@ -311,8 +298,11 @@ LIBGPCFLAGS="-I${LIBGPROOT}/include"
 LIBGPLIBS="-Wl,-rpath -Wl,${LIBGPROOT}/lib64/ -L${LIBGPROOT}/lib64/ -Wl,-rpath -Wl,${LIBGPROOT}/lib/ -L${LIBGPROOT}/lib/ -lgp"
 
 LIBCOROOT=`readlink external/libcolink`; check
-LIBCOCFLAGS="-I${LIBCOROOT}/include"
+LIBCOCFLAGS="-I${LIBCOROOT}"
 LIBCOLIBS="${LIBCOROOT}/libco.o"
+
+EIGENROOT=`readlink external/eigenlink`; check
+EIGENCFLAGS="-I${EIGENROOT}/include/eigen3"
  
 GSLPREFIX=`./external/gsl-config --prefix`; check
 GSLCFLAGS=`./external/gsl-config --cflags`; check
@@ -361,6 +351,7 @@ echo LIBGPLIBS=$LIBGPLIBS >> source/Makefile.conf
 echo LIBCOCFLAGS=$LIBCOCFLAGS >> source/Makefile.conf
 echo LIBCOLIBS=$LIBCOLIBS >> source/Makefile.conf
 
+echo EIGENCFLAGS=$EIGENCFLAGS >> source/Makefile.conf
 echo OPTFLAGS=$OPTFLAGS >> source/Makefile.conf
 echo MACHINEARCH=$arch >> source/Makefile.conf
 

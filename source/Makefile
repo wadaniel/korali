@@ -8,8 +8,9 @@ endif
 
 # ==============================================================================
 CXXFLAGS  = -g $(OPTFLAGS)  $(CXXARCH) $(WARNINGFLAGS)
-CXXFLAGS += -I. -I./external -I../external/eigen -I../external/libco 
-CXXFLAGS += $(MPIFLAGS) 
+CXXFLAGS += -I. -I./external  
+CXXFLAGS += $(MPIFLAGS)
+CXXFLAGS += $(EIGENCFLAGS) 
 CXXFLAGS += $(GSLCFLAGS)
 CXXFLAGS += $(ONEDNNCFLAGS)
 CXXFLAGS += $(LIBGPCFLAGS)

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ######### Global Definitions ########
-libName="libco"
+libName="eigen"
 minVersion=
 
 ######### Helper Functions ########
@@ -83,7 +83,7 @@ installDir=${baseLibDir}/install/
 buildDir=${baseLibDir}/build
 
 fileFound=0
-localFile=${installDir}/libco.o
+localFile=${installDir}/include/eigen3/Eigen/Core
 
 if [ -f ${localFile} ]; then
  fileFound=1
@@ -98,6 +98,14 @@ if [ ${fileFound} == 0 ]; then
    echo "[Korali] Could not find an installation of ${libName}."
    exit 1
  fi
+ 
+ # Checking whether cmake is accessible
+ $externalDir/install_CMake.sh 
+ if [ $? != 0 ]; then
+  echo "[Korali] Error: CMake is required to install ${libName}, but was not found."
+  echo "[Korali] Solution: Run install_CMake.sh to install it."
+  exit 1
+ fi
 
  echo "[Korali] Downloading ${libName}... "
  
@@ -108,13 +116,19 @@ if [ ${fileFound} == 0 ]; then
  mkdir -p $installDir; check
  pushd $buildDir; check
  
- git clone https://github.com/SergioMartin86/libco.git $buildDir; check
+ git clone https://gitlab.com/libeigen/eigen.git $buildDir; check
   
+ echo "[Korali] Configuring ${libName}... "
+ mkdir -p build; check
+ cd build; check
+  
+ CXXFLAGS=-O3 ${externalDir}/cmake .. -DCMAKE_INSTALL_PREFIX=${installDir}; check
+ 
  echo "[Korali] Building ${libName}... "
  make -j$NJOBS; check
  
  echo "[Korali] Installing ${libName}... "
- cp -r * $installDir; check;
+ make install; check
  
  popd; check
  
@@ -128,8 +142,8 @@ fi
 
 ######## Finalization ########
 
-rm -f ${externalDir}/libcolink
-ln -sf ${installDir} ${externalDir}/libcolink; check
-echo "[Korali] Using libco located at ${installDir}."
+rm -f ${externalDir}/eigenlink
+ln -sf ${installDir} ${externalDir}/eigenlink; check
+echo "[Korali] Using Eigen located at ${installDir}."
 
 exit 0

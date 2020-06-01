@@ -111,7 +111,7 @@ if [ ${binFound} == 0 ]; then
    exit 1
  fi
  
- echo "[Korali] Downloading ${libName}... "
+ echo "[Korali] Downloading ${libName}... " 
  
  rm -rf $buildDir; check
  rm -rf $installDir; check

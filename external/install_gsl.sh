@@ -111,7 +111,7 @@ if [ ${binFound} == 0 ]; then
    exit 1
  fi
  
- 
+  
  echo "[Korali] Downloading ${libName}... "
  
  rm -rf $buildDir; check
@@ -147,7 +147,7 @@ fi
 
 ######## Finalization ########
 
-fullBinPath=`which ${binPath}`
+fullBinPath=`which ${binPath}` 
 ln -sf $fullBinPath ${externalDir}/${binName}; check
 binVersion=`${externalDir}/${binName} --version`; check 
 echo "[Korali] Using ${libName} version $binVersion"

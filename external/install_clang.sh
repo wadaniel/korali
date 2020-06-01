@@ -120,7 +120,7 @@ if [ ${binFound} == 0 ]; then
  mkdir -p $installDir; check
  
  pushd $buildDir; check
- 
+  
  arch="$(uname -s)"; check
  
  # If using MacOs, use the Darwin package 

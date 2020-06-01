@@ -129,7 +129,7 @@ fi
 
 logEcho "[Korali] Checking Pre-requisites..."
 
-log "Checking for C++ Compiler..."
+log "[Korali] Checking for C++ Compiler..."
 
 $CXX --version > /dev/null 2>&1
 DETECTED_CXX=$?
@@ -157,6 +157,18 @@ if [ $DETECTED_CXX       -eq 0 ]; then USE_CXX=$CXX;    fi;
 installFlag=
 if [ $INSTALLREQS -eq 0 ]; then
  installFlag='--no-install'
+else
+ # Updating submodules
+ git submodule init >> $logFile 2>&1; check
+ git submodule update >> $logFile 2>&1; check 
+fi
+
+## Looking for Eigen
+
+if [ ! -f ./external/eigen/Eigen/Core ]; then
+ logEcho "[Korali] Error: Eigen library not found. Solutions:"
+ logEcho "         . Run './install --prereqs' to allow Korali install missing git submodules automatically."
+ exitWithError
 fi
 
 ## Looking for CMake
@@ -165,7 +177,7 @@ fi
 #if [ ! $? == 0 ]; then
 # logEcho "[Korali] Error: CMake not found or older version than 3.0. Solutions:"
 # logEcho "         . Have 'cmake' version >3.0 correctly installed and in your PATH environment variable"
-# logEcho "         . Run './install --external' to allow Korali install missing prerequisites automatically."
+# logEcho "         . Run './install --prereqs' to allow Korali install missing prerequisites automatically."
 # exitWithError
 #fi
 
@@ -174,7 +186,7 @@ fi
 if [ ! $? == 0 ]; then
  logEcho "[Korali] Error: GSL not found or older version than 2.5. Solutions"
  logEcho "         . Have 'gsl-config' version >2.5 correctly installed and in your PATH environment variable"
- logEcho "         . Run './install --external' to allow Korali install missing prerequisites automatically."
+ logEcho "         . Run './install --prereqs' to allow Korali install missing prerequisites automatically."
  exitWithError
 fi
 
@@ -183,7 +195,7 @@ fi
 if [ ! $? == 0 ]; then
  logEcho "[Korali] oneDNN not found. Try either of these solutions:"
  logEcho "         1. Define the \$DNNLROOT environment variable to indicate the installation folder of oneDNN."
- logEcho "         2. Run './install --external' to allow Korali install missing prerequisites automatically."
+ logEcho "         2. Run './install --prereqs' to allow Korali install missing prerequisites automatically."
  exitWithError
 fi
 

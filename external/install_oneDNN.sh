@@ -91,14 +91,14 @@ if [ -f ${globalFile} ]; then
  fileFound=1
  filePath=${globalFile}
  oneDNNBaseDir=${DNNLROOT}
-fi
+fi 
 
 if [ -f ${localFile} ]; then
  fileFound=1
  filePath=${localFile}
  oneDNNBaseDir=$installDir
 fi
-
+ 
 ######## If not installed, download and install ########
 
 if [ ${fileFound} == 0 ]; then

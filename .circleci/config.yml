@@ -93,7 +93,7 @@ jobs:
                                   
       - run:
           name: build Korali
-          command: ./install --external --jobs=8
+          command: ./install --prereqs --jobs=8
 
       - run:
           name: run tests
@@ -192,7 +192,7 @@ jobs:
                             
       - run:
           name: build Korali
-          command: ./install --external --jobs=4
+          command: ./install --prereqs --jobs=4
 
       - run:
           name: run tests

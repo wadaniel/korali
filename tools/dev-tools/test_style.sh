@@ -72,7 +72,8 @@ src_files=`find ${root} -type f -not -name "__*" -name "*.py" -not -path "${root
 diff=`echo $src_files | xargs -n6 -P2 python3 -m yapf --style=yapf -d "$@"`
 
 if [ ! "$diff" == "" ]; then
- echo "[Korali] Error: Python Code formatting is not normalized."
+ echo "[Korali] Error: Python Code formatting is not normalized:"
+ echo $diff | head -n 5
  echo "[Korali] Solution: Please run $fileDir/correct_style.sh to fix it."
  exit -1
 else

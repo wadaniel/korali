@@ -49,7 +49,7 @@ python3 -m yapf --version > /dev/null
 if [ $? -ne 0 ]; then
 
   echo "[Korali] yapf not found, trying to install it automatically."
-  python3 -m pip install $PIP_USER yapf >> $logFile 2>&1; check
+  python3 -m pip install $PIP_USER yapf; check
 fi
 
 src_files=`find $root -type f -not -name "__*"  -name "*.py" \

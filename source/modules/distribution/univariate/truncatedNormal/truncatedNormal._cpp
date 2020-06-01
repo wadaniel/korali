@@ -1,6 +1,6 @@
-#include "rtnorm.hpp"
 #include "modules/distribution/univariate/truncatedNormal/truncatedNormal.hpp"
 #include "modules/experiment/experiment.hpp"
+#include "rtnorm.hpp"
 
 using namespace Rtnorm;
 

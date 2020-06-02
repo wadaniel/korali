@@ -205,7 +205,7 @@ void korali::solver::DEA::updateSolver(std::vector<korali::Sample> &samples)
 {
   // Processing results
   for (size_t i = 0; i < _populationSize; i++)
-    _valueVector[i] = samples[i].get<double>({"F(x)"}, __FILE__, __LINE__);
+    _valueVector[i] = KORALI_GET(double, samples[i], {"F(x)"});
 
   _bestSampleIndex = std::distance(std::begin(_valueVector), std::max_element(std::begin(_valueVector), std::end(_valueVector)));
   _previousBestEverValue = _bestEverValue;

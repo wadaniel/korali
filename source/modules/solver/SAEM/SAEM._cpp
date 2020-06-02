@@ -124,7 +124,7 @@ void korali::solver::SAEM::sampleLatent()
   _conduit->start(sample);
   _conduit->wait(sample);
 
-  _currentSamples = sample.get<std::vector<std::vector<double>>>({"Samples"}, __FILE__, __LINE__);
+  _currentSamples = KORALI_GET(std::vector<std::vector<double>>, sample, {"Samples"});
 
   if (_currentSamples.size() != _numberSamplesPerStep)
     KORALI_LOG_ERROR("User defined sampler did not return the correct number of samples ('Number Samples').");
@@ -172,7 +172,7 @@ void korali::solver::SAEM::calculateSampleSVectors()
 
   for (size_t i = 0; i < _numberSamplesPerStep; i++)
   {
-    auto v = k[i].get<std::vector<double>>({"S"}, __FILE__, __LINE__);
+    auto v = KORALI_GET(std::vector<double>, k[i], {"S"});
 
     _currentSamplesSVectors[i] = v;
     if (v.size() != _latentProblem->_sDimension)
@@ -244,9 +244,11 @@ void korali::solver::SAEM::QFunction(korali::Sample &sample, size_t zetaFc, size
   sample.run(zetaFc); // Zeta of Likelihood Model
   sample.run(phiFc);  // Phi of Likelihood Model
 
-  auto zeta = sample.get<double>({"zeta"}, __FILE__, __LINE__);
-  auto phi = sample.get<std::vector<double>>({"phi"}, __FILE__, __LINE__);
-  auto currentS = sample.get<std::vector<double>>({"Globals", "Current S"}, __FILE__, __LINE__);
+  auto zeta = KORALI_GET(double, sample, {"zeta"});
+  auto phi = KORALI_GET(std::vector<double>, sample, {"phi"});
+
+  std::vector<std::string> parVector = {"Globals", "Current S"};
+  auto currentS = KORALI_GET(std::vector<double>, sample, parVector);
 
   if (phi.size() != currentS.size())
     KORALI_LOG_ERROR("SAEM Internal model error. Current Robbins-Monro-averaged vector S did not have the same length as vector phi from the problem definition (from the model).\n");

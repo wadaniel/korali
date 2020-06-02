@@ -77,7 +77,7 @@ void korali::problem::Integration::execute(korali::Sample &sample)
   // Evaluating Sample
   sample.run(_integrand);
 
-  double evaluation = sample.get<double>({"Evaluation"}, __FILE__, __LINE__);
+  auto evaluation = KORALI_GET(double, sample, {"Evaluation"});
 
   if (std::isnan(evaluation)) KORALI_LOG_ERROR("The function evaluation returned NaN.\n");
 }

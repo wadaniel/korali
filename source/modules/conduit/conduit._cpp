@@ -67,7 +67,7 @@ void korali::Conduit::start(korali::Sample &sample)
   korali::Engine *engine = _engineStack.top();
 
   // Checking if sample id was defined
-  size_t sampleId = sample.get<size_t>({"Sample Id"}, __FILE__, __LINE__);
+  auto sampleId = KORALI_GET(size_t, sample, {"Sample Id"});
 
   if (sample._state != SampleState::uninitialized) KORALI_LOG_ERROR("Sample has already been initialized.\n");
 
@@ -97,7 +97,7 @@ void korali::Conduit::wait(korali::Sample &sample)
     if (sample._state == SampleState::waiting || sample._state == SampleState::initialized) co_switch(engine->_thread);
   }
 
-  size_t sampleId = sample.get<size_t>({"Sample Id"}, __FILE__, __LINE__);
+  size_t sampleId = KORALI_GET(size_t, sample, {"Sample Id"});
 
   engine->_currentExperiment->_sampleInfo["Samples"][sampleId] = sample._js.getJson();
   if (sample._isAllocated == true)
@@ -130,7 +130,7 @@ size_t korali::Conduit::waitAny(std::vector<korali::Sample> &samples)
 
       if (samples[currentSample]._state == SampleState::finished)
       {
-        size_t sampleId = samples[currentSample].get<size_t>({"Sample Id"}, __FILE__, __LINE__);
+        auto sampleId = KORALI_GET(size_t, samples[currentSample], {"Sample Id"});
 
         engine->_currentExperiment->_sampleInfo["Samples"][sampleId] = samples[currentSample]._js.getJson();
         if (samples[currentSample]._isAllocated == true)
@@ -176,7 +176,7 @@ void korali::Conduit::waitAll(std::vector<korali::Sample> &samples)
 
   for (size_t i = 0; i < samples.size(); i++)
   {
-    auto sampleId = samples[i].get<size_t>({"Sample Id"}, __FILE__, __LINE__);
+    auto sampleId = KORALI_GET(size_t, samples[i], {"Sample Id"});
 
     engine->_currentExperiment->_sampleInfo["Samples"][sampleId] = samples[i]._js.getJson();
     if (samples[i]._isAllocated == true)

@@ -19,7 +19,7 @@ void korali::problem::bayesian::Reference::evaluateLoglikelihood(korali::Sample 
 {
   sample.run(_computationalModel);
 
-  auto refEvals = sample.get<std::vector<double>>({"Reference Evaluations"}, __FILE__, __LINE__);
+  auto refEvals = KORALI_GET(std::vector<double>, sample, {"Reference Evaluations"});
 
   if (refEvals.size() != _referenceData.size())
     KORALI_LOG_ERROR("This Bayesian (%s) problem requires a %lu-sized result array. Provided: %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), refEvals.size());
@@ -47,8 +47,8 @@ double korali::problem::bayesian::Reference::compute_normalized_sse(std::vector<
 
 void korali::problem::bayesian::Reference::loglikelihoodNormal(korali::Sample &sample)
 {
-  auto refEvals = sample.get<std::vector<double>>({"Reference Evaluations"}, __FILE__, __LINE__);
-  auto stdDevs = sample.get<std::vector<double>>({"Standard Deviation"}, __FILE__, __LINE__);
+  auto refEvals = KORALI_GET(std::vector<double>, sample, {"Reference Evaluations"});
+  auto stdDevs = KORALI_GET(std::vector<double>, sample, {"Standard Deviation"});
 
   if (stdDevs.size() != _referenceData.size())
     KORALI_LOG_ERROR("This Bayesian (%s) problem requires a %lu-sized Standard Deviation array. Provided: %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), stdDevs.size());
@@ -73,8 +73,8 @@ void korali::problem::bayesian::Reference::loglikelihoodNormal(korali::Sample &s
 
 void korali::problem::bayesian::Reference::loglikelihoodPositiveNormal(korali::Sample &sample)
 {
-  auto refEvals = sample.get<std::vector<double>>({"Reference Evaluations"}, __FILE__, __LINE__);
-  auto stdDevs = sample.get<std::vector<double>>({"Standard Deviation"}, __FILE__, __LINE__);
+  auto refEvals = KORALI_GET(std::vector<double>, sample, {"Reference Evaluations"});
+  auto stdDevs = KORALI_GET(std::vector<double>, sample, {"Standard Deviation"});
 
   if (stdDevs.size() != _referenceData.size())
     KORALI_LOG_ERROR("This Bayesian (%s) problem requires a %lu-sized Standard Deviation array. Provided: %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), stdDevs.size());
@@ -103,8 +103,8 @@ void korali::problem::bayesian::Reference::loglikelihoodPositiveNormal(korali::S
 
 void korali::problem::bayesian::Reference::loglikelihoodNegativeBinomial(korali::Sample &sample)
 {
-  auto refEvals = sample.get<std::vector<double>>({"Reference Evaluations"}, __FILE__, __LINE__);
-  auto dispersion = sample.get<std::vector<double>>({"Dispersion"}, __FILE__, __LINE__);
+  auto refEvals = KORALI_GET(std::vector<double>, sample, {"Reference Evaluations"});
+  auto dispersion = KORALI_GET(std::vector<double>, sample, {"Dispersion"});
 
   if (refEvals.size() != _referenceData.size())
     KORALI_LOG_ERROR("This Bayesian (%s) problem requires a %lu-sized Reference Evaluations array. Provided: %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), refEvals.size());
@@ -163,10 +163,10 @@ void korali::problem::bayesian::Reference::evaluateLoglikelihoodGradient(korali:
 
 void korali::problem::bayesian::Reference::gradientLoglikelihoodNormal(korali::Sample &sample)
 {
-  auto refEvals = sample.get<std::vector<double>>({"Reference Evaluations"}, __FILE__, __LINE__);
-  auto stdDevs = sample.get<std::vector<double>>({"Standard Deviation"}, __FILE__, __LINE__);
-  auto gradientF = sample.get<std::vector<std::vector<double>>>({"Gradient Mean"}, __FILE__, __LINE__);
-  auto gradientG = sample.get<std::vector<std::vector<double>>>({"Gradient Standard Deviation"}, __FILE__, __LINE__);
+  auto refEvals = KORALI_GET(std::vector<double>, sample, {"Reference Evaluations"});
+  auto stdDevs = KORALI_GET(std::vector<double>, sample, {"Standard Deviation"});
+  auto gradientF = KORALI_GET(std::vector<std::vector<double>>, sample, {"Gradient Mean"});
+  auto gradientG = KORALI_GET(std::vector<std::vector<double>>, sample, {"Gradient Standard Deviation"});
 
   if (stdDevs.size() != _referenceData.size())
     KORALI_LOG_ERROR("This Bayesian (%s) problem requires a %lu-sized Standard Deviation array. Provided: %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), stdDevs.size());
@@ -203,10 +203,10 @@ void korali::problem::bayesian::Reference::gradientLoglikelihoodNormal(korali::S
 
 void korali::problem::bayesian::Reference::gradientLoglikelihoodPositiveNormal(korali::Sample &sample)
 {
-  auto refEvals = sample.get<std::vector<double>>({"Reference Evaluations"}, __FILE__, __LINE__);
-  auto stdDevs = sample.get<std::vector<double>>({"Standard Deviation"}, __FILE__, __LINE__);
-  auto gradientF = sample.get<std::vector<std::vector<double>>>({"Gradient Mean"}, __FILE__, __LINE__);
-  auto gradientG = sample.get<std::vector<std::vector<double>>>({"Gradient Standard Deviation"}, __FILE__, __LINE__);
+  auto refEvals = KORALI_GET(std::vector<double>, sample, {"Reference Evaluations"});
+  auto stdDevs = KORALI_GET(std::vector<double>, sample, {"Standard Deviation"});
+  auto gradientF = KORALI_GET(std::vector<std::vector<double>>, sample, {"Gradient Mean"});
+  auto gradientG = KORALI_GET(std::vector<std::vector<double>>, sample, {"Gradient Standard Deviation"});
 
   if (stdDevs.size() != _referenceData.size())
     KORALI_LOG_ERROR("This Bayesian (%s) problem requires a %lu-sized Standard Deviation array. Provided: %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), stdDevs.size());
@@ -253,9 +253,9 @@ void korali::problem::bayesian::Reference::gradientLoglikelihoodNegativeBinomial
 {
   size_t N = _referenceData.size();
 
-  auto refEvals = sample.get<std::vector<double>>({"Reference Evaluations"}, __FILE__, __LINE__);
-  auto dispersion = sample.get<std::vector<double>>({"Dispersion"}, __FILE__, __LINE__);
-  auto gradient = sample.get<std::vector<std::vector<double>>>({"Gradient Mean"}, __FILE__, __LINE__);
+  auto refEvals = KORALI_GET(std::vector<double>, sample, {"Reference Evaluations"});
+  auto dispersion = KORALI_GET(std::vector<double>, sample, {"Dispersion"});
+  auto gradient = KORALI_GET(std::vector<std::vector<double>>, sample, {"Gradient Mean"});
 
   if (refEvals.size() != _referenceData.size())
     KORALI_LOG_ERROR("This Bayesian (%s) problem requires a %lu-sized Reference Evaluations array. Provided: %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), refEvals.size());
@@ -289,7 +289,7 @@ void korali::problem::bayesian::Reference::gradientLoglikelihoodNegativeBinomial
 
 void korali::problem::bayesian::Reference::evaluateFisherInformation(korali::Sample &sample)
 {
-  auto eval = sample.get<double>({"F(x)"}, __FILE__, __LINE__);
+  auto eval = KORALI_GET(double, sample, {"F(x)"});
 
   if (isfinite(eval))
   {
@@ -313,9 +313,9 @@ void korali::problem::bayesian::Reference::fisherInformationLoglikelihoodNormal(
   size_t Nd = _referenceData.size();
   size_t Nth = _k->_variables.size();
 
-  auto stdDevs = sample.get<std::vector<double>>({"Standard Deviation"}, __FILE__, __LINE__);
-  auto gradientF = sample.get<std::vector<std::vector<double>>>({"Gradient Mean"}, __FILE__, __LINE__);
-  auto gradientG = sample.get<std::vector<std::vector<double>>>({"Gradient Standard Deviation"}, __FILE__, __LINE__);
+  auto stdDevs = KORALI_GET(std::vector<double>, sample, {"Standard Deviation"});
+  auto gradientF = KORALI_GET(std::vector<std::vector<double>>, sample, {"Gradient Mean"});
+  auto gradientG = KORALI_GET(std::vector<std::vector<double>>, sample, {"Gradient Standard Deviation"});
 
   if (stdDevs.size() != _referenceData.size())
     KORALI_LOG_ERROR("This Bayesian (%s) problem requires a %lu-sized Standard Deviation array. Provided: %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), stdDevs.size());
@@ -349,10 +349,10 @@ void korali::problem::bayesian::Reference::fisherInformationLoglikelihoodPositiv
   size_t Nd = _referenceData.size();
   size_t Nth = _k->_variables.size();
 
-  auto refEvals = sample.get<std::vector<double>>({"Reference Evaluations"}, __FILE__, __LINE__);
-  auto stdDevs = sample.get<std::vector<double>>({"Standard Deviation"}, __FILE__, __LINE__);
-  auto gradientF = sample.get<std::vector<std::vector<double>>>({"Gradient Mean"}, __FILE__, __LINE__);
-  auto gradientG = sample.get<std::vector<std::vector<double>>>({"Gradient Standard Deviation"}, __FILE__, __LINE__);
+  auto refEvals = KORALI_GET(std::vector<double>, sample, {"Reference Evaluations"});
+  auto stdDevs = KORALI_GET(std::vector<double>, sample, {"Standard Deviation"});
+  auto gradientF = KORALI_GET(std::vector<std::vector<double>>, sample, {"Gradient Mean"});
+  auto gradientG = KORALI_GET(std::vector<std::vector<double>>, sample, {"Gradient Standard Deviation"});
 
   if (stdDevs.size() != _referenceData.size())
     KORALI_LOG_ERROR("This Bayesian (%s) problem requires a %lu-sized Standard Deviation array. Provided: %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), stdDevs.size());

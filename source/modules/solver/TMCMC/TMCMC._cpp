@@ -165,8 +165,8 @@ void korali::solver::TMCMC::runGeneration()
     //printf("%s\n", samples[finishedId]._js.getJson().dump(2).c_str());
     _chainPendingEvaluation[finishedId] = false;
 
-    _chainCandidatesLogLikelihoods[finishedId] = samples[finishedId].get<double>({"logLikelihood"}, __FILE__, __LINE__);
-    _chainCandidatesLogPriors[finishedId] = samples[finishedId].get<double>({"logPrior"}, __FILE__, __LINE__);
+    _chainCandidatesLogLikelihoods[finishedId] = KORALI_GET(double, samples[finishedId], {"logLikelihood"});
+    _chainCandidatesLogPriors[finishedId] = KORALI_GET(double, samples[finishedId], {"logPrior"});
 
     if (isfinite(_chainCandidatesLogPriors[finishedId])) _numFinitePriorEvaluations++;
     if (isfinite(_chainCandidatesLogLikelihoods[finishedId])) _numFiniteLikelihoodEvaluations++;
@@ -429,7 +429,8 @@ void korali::solver::TMCMC::calculateGradients(std::vector<korali::Sample> &samp
   for (size_t c = 0; c < numGradientCalculations; c++)
   {
     size_t finishedId = _conduit->waitAny(samples);
-    _chainCandidatesGradients[finishedId] = samples[finishedId].get<std::vector<double>>({"logLikelihood Gradient"}, __FILE__, __LINE__);
+
+    _chainCandidatesGradients[finishedId] = KORALI_GET(std::vector<double>, samples[finishedId], {"logLikelihood Gradient"});
     for (size_t d = 0; d < _k->_variables.size(); ++d) _chainCandidatesGradients[finishedId][d] *= _annealingExponent;
   }
 }

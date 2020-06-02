@@ -42,10 +42,8 @@ void korali::solver::Rprop::evaluateFunctionAndGradient(korali::Sample &sample)
 
   // Processing results
   // The 'minus' is there because we want Rprop to do Maximization be default.
-  _currentEvaluation = sample.get<double>({"F(x)"}, __FILE__, __LINE__);
-  _currentEvaluation = -_currentEvaluation;
-
-  _currentGradient = sample.get<std::vector<double>>({"Gradient"}, __FILE__, __LINE__);
+  _currentEvaluation = -KORALI_GET(double, sample, {"F(x)"});
+  _currentGradient = KORALI_GET(std::vector<double>, sample, {"Gradient"});
 
   if (_currentGradient.size() != _k->_variables.size())
     KORALI_LOG_ERROR("Size of sample's gradient evaluations vector (%lu) is different from the number of problem variables defined (%lu).\n", _currentGradient.size(), _k->_variables.size());

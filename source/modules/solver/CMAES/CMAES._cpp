@@ -287,7 +287,7 @@ void korali::solver::CMAES::checkMeanAndSetRegime()
   _conduit->wait(sample);
   _constraintEvaluationCount++;
 
-  auto cEvals = sample.get<std::vector<double>>({"Constraint Evaluations"}, __FILE__, __LINE__);
+  auto cEvals = KORALI_GET(std::vector<double>, sample, {"Constraint Evaluations"});
 
   if (cEvals.size() != _constraintEvaluations.size())
     KORALI_LOG_ERROR("Size of sample's sample evaluations vector (%lu) is different from the number of constraints defined (%lu).\n", cEvals.size(), _constraintEvaluations.size());
@@ -323,7 +323,7 @@ void korali::solver::CMAES::updateConstraints()
     _conduit->wait(sample);
     _constraintEvaluationCount++;
 
-    auto cEvals = sample.get<std::vector<double>>({"Constraint Evaluations"}, __FILE__, __LINE__);
+    auto cEvals = KORALI_GET(std::vector<double>, sample, {"Constraint Evaluations"});
 
     if (cEvals.size() != _constraintEvaluations.size())
       KORALI_LOG_ERROR("Size of sample's sample evaluations vector (%lu) is different from the number of constraints defined (%lu).\n", cEvals.size(), _constraintEvaluations.size());
@@ -368,7 +368,7 @@ void korali::solver::CMAES::reEvaluateConstraints()
 
       _sampleConstraintViolationCounts[i] = 0;
 
-      auto cEvals = sample.get<std::vector<double>>({"Constraint Evaluations"}, __FILE__, __LINE__);
+      auto cEvals = KORALI_GET(std::vector<double>, sample, {"Constraint Evaluations"});
 
       if (cEvals.size() != _constraintEvaluations.size())
         KORALI_LOG_ERROR("Size of sample's sample evaluations vector (%lu) is different from the number of constraints defined (%lu).\n", cEvals.size(), _constraintEvaluations.size());
@@ -424,7 +424,7 @@ void korali::solver::CMAES::prepareGeneration()
       _conduit->start(sample);
       _conduit->wait(sample);
 
-      isSampleFeasible = sample.get<bool>({"Is Feasible"}, __FILE__, __LINE__);
+      isSampleFeasible = KORALI_GET(bool, sample, {"Is Feasible"});
 
     } while (isSampleFeasible == false);
 
@@ -491,7 +491,7 @@ void korali::solver::CMAES::sampleSingle(size_t sampleIdx)
 void korali::solver::CMAES::updateDistribution(std::vector<korali::Sample> &samples)
 {
   for (size_t i = 0; i < _currentPopulationSize; i++)
-    _valueVector[i] = samples[i].get<double>({"F(x)"}, __FILE__, __LINE__);
+    _valueVector[i] = KORALI_GET(double, samples[i], {"F(x)"});
 
   /* Generate _sortingIndex */
   sort_index(_valueVector, _sortingIndex, _currentPopulationSize);
@@ -764,7 +764,7 @@ void korali::solver::CMAES::handleConstraints()
           _conduit->start(sample);
           _conduit->wait(sample);
 
-          isSampleFeasible = sample.get<bool>({"Is Feasible"}, __FILE__, __LINE__);
+          isSampleFeasible = KORALI_GET(bool, sample, {"Is Feasible"});
 
         } while (isSampleFeasible == false);
       }
@@ -810,7 +810,7 @@ void korali::solver::CMAES::updateDiscreteMutationMatrix()
 
 void korali::solver::CMAES::discretize(korali::Sample &sample)
 {
-  auto parameters = sample.get<std::vector<double>>({"Parameters"}, __FILE__, __LINE__);
+  auto parameters = KORALI_GET(std::vector<double>, sample, {"Parameters"});
 
   if (parameters.size() != _k->_variables.size())
     KORALI_LOG_ERROR("Size of sample's parameter vector (%lu) is different from the number of problem variables.\n", parameters.size(), _k->_variables.size());

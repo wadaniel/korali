@@ -53,7 +53,7 @@ void korali::solver::DQN::runGeneration()
   for (size_t i = 0; i < _agentCount; i++)
     if (hasFinished[i] == false)
     {
-      states[i] = agents[i].get<std::vector<double>>({"State"}, __FILE__, __LINE__);
+      states[i] = KORALI_GET(std::vector<double>, agents[i], {"State"});
 
       // Getting new action to perform
       actions[i] = getAction(states[i]);
@@ -77,10 +77,10 @@ void korali::solver::DQN::runGeneration()
     currentPolicyStates[i].push_back(states[i]);
 
     // Updating reward
-    rewards[i] = agents[i].get<double>({"Reward"}, __FILE__, __LINE__);
+    rewards[i] = KORALI_GET(double, agents[i], {"Reward"});
 
     // Storing agent's new state
-    std::vector<double> newState = agents[i].get<std::vector<double>>({"State"}, __FILE__, __LINE__);
+    auto newState = KORALI_GET(std::vector<double>, agents[i], {"State"});
 
     // Storing the agent's experience into the learner
     storeExperience(states[i], actions[i], rewards[i], newState);
@@ -88,7 +88,7 @@ void korali::solver::DQN::runGeneration()
     // The new state becomes the current state
     states[i] = newState;
 
-    hasFinished[i] = agents[i].get<bool>({"Finished"}, __FILE__, __LINE__);
+    hasFinished[i] = KORALI_GET(bool, agents[i], {"Finished"});
 
     // If it finished, then add to the count
     if (hasFinished[i])

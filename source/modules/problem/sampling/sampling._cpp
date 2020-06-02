@@ -9,7 +9,7 @@ void korali::problem::Sampling::evaluate(korali::Sample &sample)
 {
   sample.run(_probabilityFunction);
 
-  double evaluation = sample.get<double>({"P(x)"}, __FILE__, __LINE__);
+  auto evaluation = KORALI_GET(double, sample, {"P(x)"});
 
   // TODO: Check 0 <= P(x) <= 1
   // TODO: Use Lognormalization

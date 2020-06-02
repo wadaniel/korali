@@ -19,6 +19,12 @@ class Experiment;
 class Engine;
 
 /**
+ * @brief Macro to get information from a sample. Checks for the existence of the path and produces detailed information on failure.
+ */
+#define KORALI_GET(TYPE, SAMPLE, PATH) \
+  SAMPLE.get<TYPE>(PATH, __FILE__, __LINE__);
+
+/**
  * @brief Stores all functions inserted as parameters to experiment's configuration
  */
 extern std::vector<std::function<void(korali::Sample &)> *> _functionVector;

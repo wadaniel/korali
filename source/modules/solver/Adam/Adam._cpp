@@ -40,12 +40,12 @@ void korali::solver::Adam::runGeneration()
 
   // Processing results
 
-  _currentEvaluation = sample.get<double>({"F(x)"}, __FILE__, __LINE__);
+  _currentEvaluation = KORALI_GET(double, sample, {"F(x)"});
 
   _currentEvaluation = -_currentEvaluation; //minimize
   _gradientNorm = 0.0;
 
-  _gradient = sample.get<std::vector<double>>({"Gradient"}, __FILE__, __LINE__);
+  _gradient = KORALI_GET(std::vector<double>, sample, {"Gradient"});
 
   if (_gradient.size() != _k->_variables.size())
     KORALI_LOG_ERROR("Size of sample's gradient evaluations vector (%lu) is different from the number of problem variables defined (%lu).\n", _gradient.size(), _k->_variables.size());

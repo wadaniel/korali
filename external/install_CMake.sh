@@ -98,7 +98,6 @@ if [ $? -eq 0 ]; then
     echo "[Korali] ${libName} version found (${binVersion}) is smaller than required (${minVersion})."
  else
     binFound=1
-    echo "[Korali] Found existing ${libName} version ${binVersion}. Skipping installation..."
  fi
 fi
 

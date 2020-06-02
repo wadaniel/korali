@@ -4,7 +4,7 @@ void korali::problem::optimization::Constrained::evaluate(korali::Sample &sample
 {
   sample.run(_objectiveFunction);
 
-  double evaluation = sample.get<double>({"F(x)"}, __FILE__, __LINE__);
+  auto evaluation = KORALI_GET(double, sample, {"F(x)"});
 
   // If result is not a finite number, objective function evaluates to -Infinity
   if (std::isnan(evaluation))
@@ -19,7 +19,7 @@ void korali::problem::optimization::Constrained::evaluateConstraints(korali::Sam
   {
     sample.run(_constraints[i]);
 
-    double evaluation = sample.get<double>({"F(x)"}, __FILE__, __LINE__);
+    auto evaluation = KORALI_GET(double, sample, {"F(x)"});
 
     // If constraint is not a finite number, constraint is set to +Infinity
     if (std::isnan(evaluation))

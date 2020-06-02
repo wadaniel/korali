@@ -17,17 +17,17 @@ function check()
 fileDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 pushd $fileDir
 
-root=$fileDir/../..
+root=`realpath $fileDir/../..`
 
 ##############################################
 ### Correcting C++ Code Style
 ##############################################
 
 # If clang-format is not installed, run the installation script
-clangFormatBin=${root}/prereqs/clang-format
+clangFormatBin=${root}/external/clang-format
 if [ ! -f $clangFormatBin ]; then
  pushd ${root}
- ./prereqs/install_clang.sh
+ ./external/install_clang.sh
  check
  popd
 fi
@@ -49,10 +49,14 @@ python3 -m yapf --version > /dev/null
 if [ $? -ne 0 ]; then
 
   echo "[Korali] yapf not found, trying to install it automatically."
-  python3 -m pip install $PIP_USER yapf >> $logFile 2>&1; check
+  python3 -m pip install $PIP_USER yapf; check
 fi
 
-src_files=`find $root -type f -name "*.py" -not -path "${root}/source/external/*" -not -path "${root}/prereqs/*"`
+src_files=`find $root -type f -not -name "__*"  -name "*.py" \
+          -not -path "${root}/tools/dev-tools/*" \
+          -not -path "${root}/source/external/*" \
+          -not -path "${root}/external/*" \
+          -not -path "${root}/tutorials/examples/*"`
 
 echo $src_files | \
     xargs -n6 -P2 python3 -m yapf --style=yapf -i "$@"

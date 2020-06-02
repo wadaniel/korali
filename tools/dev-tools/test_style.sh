@@ -12,17 +12,17 @@ function check()
 fileDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 pushd $fileDir
 
-root=$fileDir/../..
+root=`realpath $fileDir/../..`
 
 ##############################################
 ### Testing C++ Code Style
 ##############################################
 
 # If clang-format is not installed, run the installation script
-clangFormatBin=${root}/prereqs/clang-format
+clangFormatBin=${root}/external/clang-format
 if [ ! -f $clangFormatBin ]; then
  pushd ${root}
- ./prereqs/install_clang.sh
+ ./external/install_clang.sh
  popd
 fi
 
@@ -37,7 +37,7 @@ if [ ! -f  run-clang-format/run-clang-format.py ]; then
 
 fi
 
-clangFormatCmd=${root}/prereqs/clang-format
+clangFormatCmd=${root}/external/clang-format
 if [ ! -f $clangFormatCmd ]; then
  clangFormatCmd=clang-format
 fi
@@ -67,12 +67,17 @@ if [ $? -ne 0 ]; then
   python3 -m pip install $PIP_USER yapf; check
 fi
 
-src_files=`find ${root} -type f -not -name "__*" -name "*.py" -not -path "${root}/source/external/*" -not -path "${root}/prereqs/*" -not -path "${root}/tools/dev-tools/*"`
-
+src_files=`find $root -type f -not -name "__*"  -name "*.py" \
+          -not -path "${root}/tools/dev-tools/*" \
+          -not -path "${root}/source/external/*" \
+          -not -path "${root}/external/*" \
+          -not -path "${root}/tutorials/examples/*"`
+          
 diff=`echo $src_files | xargs -n6 -P2 python3 -m yapf --style=yapf -d "$@"`
 
 if [ ! "$diff" == "" ]; then
- echo "[Korali] Error: Python Code formatting is not normalized."
+ echo "[Korali] Error: Python Code formatting is not normalized:"
+ echo $diff | head -n 5
  echo "[Korali] Solution: Please run $fileDir/correct_style.sh to fix it."
  exit -1
 else

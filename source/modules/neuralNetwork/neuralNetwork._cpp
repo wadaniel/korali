@@ -2,7 +2,7 @@
 #include "modules/neuralNetwork/neuralNetwork.hpp"
 
 #ifdef _KORALI_USE_ONEDNN
-  #include "external/oneDNN/oneDNNUtils.hpp"
+  #include "auxiliar/dnnUtils.hpp"
 using namespace dnnl;
 #endif
 

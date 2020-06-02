@@ -1,7 +1,7 @@
 #ifndef _KORALI_SOLVERHPP_
 #define _KORALI_SOLVERHPP_
 
-#include "external/libco/libco.h"
+#include "libco.h"
 #include "modules/experiment/experiment.hpp"
 #include "modules/module.hpp"
 #include <string>

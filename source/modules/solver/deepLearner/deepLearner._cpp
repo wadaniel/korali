@@ -94,7 +94,7 @@ void korali::solver::DeepLearner::runGeneration()
   korali::NeuralNetwork::runSample(validationSample, _validationNeuralNetwork);
 
   // Getting results of optimization
-  _currentValidationLoss = -KORALI_GET(double, validationSample, {"F(x)"});
+  _currentValidationLoss = -KORALI_GET(double, validationSample, "F(x)");
 
   // If validation is better, saving it as the best network for use as for test batch later.
   _currentInactiveSteps++;

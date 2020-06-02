@@ -649,6 +649,8 @@ void korali::NeuralNetwork::train(size_t stepsToRun)
 void korali::NeuralNetwork::runSample(korali::Sample &sample, korali::NeuralNetwork *nn)
 {
   // Setting weights and biases
+  auto parameters = KORALI_GET(std::vector<double>, sample, "Parameters");
+
   size_t currentVariable = 0;
   for (size_t i = 1; i < nn->_layers.size(); i++)
   {
@@ -661,12 +663,12 @@ void korali::NeuralNetwork::runSample(korali::Sample &sample, korali::NeuralNetw
       nn->_layers[i]->_weights[j].resize(nn->_layers[i - 1]->_nodeCount);
 
       for (size_t k = 0; k < nn->_layers[i - 1]->_nodeCount; k++)
-        nn->_layers[i]->_weights[j][k] = sample["Parameters"][currentVariable++];
+        nn->_layers[i]->_weights[j][k] = parameters[currentVariable++];
     }
 
     // Adding layer's biases
     for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++)
-      nn->_layers[i]->_bias[j] = sample["Parameters"][currentVariable++];
+      nn->_layers[i]->_bias[j] = parameters[currentVariable++];
   }
 
   // Updating the network's weights and biases

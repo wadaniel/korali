@@ -109,8 +109,8 @@ void korali::solver::Nested::runGeneration()
   {
     size_t finishedId = _conduit->waitAny(samples);
 
-    _candidateLogLikelihoods[finishedId] = KORALI_GET(double, samples[finishedId], {"logLikelihood"});
-    _candidateLogPriors[finishedId] = KORALI_GET(double, samples[finishedId], {"logPrior"});
+    _candidateLogLikelihoods[finishedId] = KORALI_GET(double, samples[finishedId], "logLikelihood");
+    _candidateLogPriors[finishedId] = KORALI_GET(double, samples[finishedId], "logPrior");
 
     finishedCandidatesCount++;
   }
@@ -144,8 +144,8 @@ void korali::solver::Nested::runFirstGeneration()
   {
     size_t finishedId = _conduit->waitAny(samples);
 
-    _liveLogLikelihoods[finishedId] = KORALI_GET(double, samples[finishedId], {"logLikelihood"});
-    _liveLogPriors[finishedId] = KORALI_GET(double, samples[finishedId], {"logPrior"});
+    _liveLogLikelihoods[finishedId] = KORALI_GET(double, samples[finishedId], "logLikelihood");
+    _liveLogPriors[finishedId] = KORALI_GET(double, samples[finishedId], "logPrior");
 
     finishedCandidatesCount++;
   }

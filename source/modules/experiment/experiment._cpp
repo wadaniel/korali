@@ -106,13 +106,13 @@ void korali::Experiment::saveState()
   auto js = _js.getJson();
   js["Results"] = results;
 
-  if (_fileOutputEnabled) korali::JsonInterface::saveJsonToFile(fileName.c_str(), js);
+  if (_fileOutputEnabled) korali::saveJsonToFile(fileName.c_str(), js);
 }
 
 bool korali::Experiment::loadState()
 {
   std::string path = "_korali_result";
-  if (korali::JsonInterface::isDefined(_js.getJson(), "['File Output']['Path']"))
+  if (korali::isDefined(_js.getJson(), "File Output", "Path"))
     std::string path = _js["File Output"]["Path"];
   return loadState(path);
 }
@@ -128,7 +128,7 @@ bool korali::Experiment::loadState(std::string path)
     {
       std::string filePath = entry;
       if (filePath.find("gen00000000.json", 0) != std::string::npos)
-        if (korali::JsonInterface::loadJsonFromFile(js, filePath.c_str()) == false) return false;
+        if (korali::loadJsonFromFile(js, filePath.c_str()) == false) return false;
     }
 
     // Loading latest solver generation
@@ -140,7 +140,7 @@ bool korali::Experiment::loadState(std::string path)
         if (filePath.compare(filePath.size() - fileExt.size(), fileExt.size(), fileExt) == 0)
         {
           auto curJs = knlohmann::json();
-          if (korali::JsonInterface::loadJsonFromFile(curJs, filePath.c_str()))
+          if (korali::loadJsonFromFile(curJs, filePath.c_str()))
           {
             size_t runId = js["Run ID"];
             size_t currentGenRunId = curJs["Run ID"];

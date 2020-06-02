@@ -6,7 +6,7 @@ void korali::problem::optimization::Gradient::evaluate(korali::Sample &sample)
 {
   sample.run(_objectiveFunction);
 
-  auto evaluation = KORALI_GET(double, sample, {"F(x)"});
+  auto evaluation = KORALI_GET(double, sample, "F(x)");
 
   // If result is not a finite number, objective function evaluates to -Infinity
   if (std::isnan(evaluation))
@@ -14,7 +14,7 @@ void korali::problem::optimization::Gradient::evaluate(korali::Sample &sample)
   else
     sample["F(x)"] = evaluation;
 
-  auto gradient = KORALI_GET(std::vector<double>, sample, {"Gradient"});
+  auto gradient = KORALI_GET(std::vector<double>, sample, "Gradient");
 
   if (gradient.size() != _k->_variables.size())
     KORALI_LOG_ERROR("Size of sample's gradient evaluations vector (%lu) is different from the number of problem variables defined (%lu).\n", gradient.size(), _k->_variables.size());

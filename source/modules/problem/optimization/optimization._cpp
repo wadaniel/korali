@@ -2,7 +2,7 @@
 
 bool korali::problem::Optimization::isSampleFeasible(korali::Sample &sample)
 {
-  auto parameters = KORALI_GET(std::vector<double>, sample, {"Parameters"});
+  auto parameters = KORALI_GET(std::vector<double>, sample, "Parameters");
 
   for (size_t i = 0; i < parameters.size(); i++)
   {

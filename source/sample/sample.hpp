@@ -21,8 +21,8 @@ class Engine;
 /**
  * @brief Macro to get information from a sample. Checks for the existence of the path and produces detailed information on failure.
  */
-#define KORALI_GET(TYPE, SAMPLE, PATH) \
-  SAMPLE.get<TYPE>(PATH, __FILE__, __LINE__);
+#define KORALI_GET(TYPE, SAMPLE, ...) \
+  SAMPLE.get<TYPE>(__FILE__, __LINE__, __VA_ARGS__);
 
 /**
  * @brief Stores all functions inserted as parameters to experiment's configuration
@@ -139,29 +139,22 @@ class Sample
    * @param lineNumber number where the error occurred, given by the __LINE__ macro
    * @return Requested value
    */
-  template <class T>
-  T get(const std::vector<std::string> path, const char *fileName, const int lineNumber)
+  template <class T, typename ...Key>
+  T get(const char fileName[], int lineNumber, const Key &...key)
   {
-    if (JsonInterface::isDefined(_self->_js.getJson(), path) == false)
+    if (isDefined(_self->_js.getJson(), key...) == false)
     {
-      std::string fullPath;
-      for (auto const &p : path) fullPath += "[\"" + p + "\"]";
-      korali::Logger::logError(fileName, lineNumber, "Requesting non existing value %s from sample.\n", fullPath.c_str(), fileName, lineNumber);
+      korali::Logger::logError(fileName, lineNumber, "Requesting non existing value from sample.\n", fileName, lineNumber);
     }
 
-    T val;
     try
     {
-      val = JsonInterface::getValue(_self->_js.getJson(), path).get<T>();
+     return getValue(_self->_js.getJson(), key...);
     }
     catch (std::exception &e)
     {
-      std::string fullPath;
-      for (auto const &p : path) fullPath += "[\"" + p + "\"]";
-      korali::Logger::logError(fileName, lineNumber, "Missing or incorrect value: %s for the sample.\n + Cause: %s\n", fullPath.c_str(), fileName, lineNumber, e.what());
+      korali::Logger::logError(fileName, lineNumber, "Missing or incorrect value for the sample.\n + Cause: %s\n", fileName, lineNumber, e.what());
     }
-
-    return val;
   }
 };
 

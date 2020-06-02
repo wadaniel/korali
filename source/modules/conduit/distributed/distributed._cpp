@@ -166,7 +166,7 @@ void korali::conduit::Distributed::processSample(korali::Sample &sample)
 
   int teamId = -1;
 
-  if (JsonInterface::isDefined(sample._js.getJson(), "['Worker']"))
+  if (isDefined(sample._js.getJson(), "Worker"))
   {
     teamId = sample["Worker"];
   }

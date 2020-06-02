@@ -30,7 +30,7 @@ void korali::solver::CMAES::setInitialConfiguration()
   _chiSquareNumberDiscreteMutations = sqrt((double)_k->_variables.size()) * (1. - 1. / (4. * _k->_variables.size()) + 1. / (21. * _k->_variables.size() * _k->_variables.size()));
 
   _areConstraintsDefined = false;
-  if (korali::JsonInterface::isDefined(problemConfig, "['Constraints']"))
+  if (isDefined(problemConfig, "Constraints"))
   {
     std::vector<size_t> problemConstraints = problemConfig["Constraints"];
     if (problemConstraints.size() > 0) _areConstraintsDefined = true;
@@ -38,7 +38,7 @@ void korali::solver::CMAES::setInitialConfiguration()
   }
 
   _hasDiscreteVariables = false;
-  if (korali::JsonInterface::isDefined(problemConfig, "['Has Discrete Variables']"))
+  if (isDefined(problemConfig, "Has Discrete Variables"))
     _hasDiscreteVariables = problemConfig["Has Discrete Variables"];
 
   _isViabilityRegime = _areConstraintsDefined;
@@ -287,7 +287,7 @@ void korali::solver::CMAES::checkMeanAndSetRegime()
   _conduit->wait(sample);
   _constraintEvaluationCount++;
 
-  auto cEvals = KORALI_GET(std::vector<double>, sample, {"Constraint Evaluations"});
+  auto cEvals = KORALI_GET(std::vector<double>, sample, "Constraint Evaluations");
 
   if (cEvals.size() != _constraintEvaluations.size())
     KORALI_LOG_ERROR("Size of sample's sample evaluations vector (%lu) is different from the number of constraints defined (%lu).\n", cEvals.size(), _constraintEvaluations.size());
@@ -323,7 +323,7 @@ void korali::solver::CMAES::updateConstraints()
     _conduit->wait(sample);
     _constraintEvaluationCount++;
 
-    auto cEvals = KORALI_GET(std::vector<double>, sample, {"Constraint Evaluations"});
+    auto cEvals = KORALI_GET(std::vector<double>, sample, "Constraint Evaluations");
 
     if (cEvals.size() != _constraintEvaluations.size())
       KORALI_LOG_ERROR("Size of sample's sample evaluations vector (%lu) is different from the number of constraints defined (%lu).\n", cEvals.size(), _constraintEvaluations.size());
@@ -368,7 +368,7 @@ void korali::solver::CMAES::reEvaluateConstraints()
 
       _sampleConstraintViolationCounts[i] = 0;
 
-      auto cEvals = KORALI_GET(std::vector<double>, sample, {"Constraint Evaluations"});
+      auto cEvals = KORALI_GET(std::vector<double>, sample, "Constraint Evaluations");
 
       if (cEvals.size() != _constraintEvaluations.size())
         KORALI_LOG_ERROR("Size of sample's sample evaluations vector (%lu) is different from the number of constraints defined (%lu).\n", cEvals.size(), _constraintEvaluations.size());
@@ -424,7 +424,7 @@ void korali::solver::CMAES::prepareGeneration()
       _conduit->start(sample);
       _conduit->wait(sample);
 
-      isSampleFeasible = KORALI_GET(bool, sample, {"Is Feasible"});
+      isSampleFeasible = KORALI_GET(bool, sample, "Is Feasible");
 
     } while (isSampleFeasible == false);
 
@@ -491,7 +491,7 @@ void korali::solver::CMAES::sampleSingle(size_t sampleIdx)
 void korali::solver::CMAES::updateDistribution(std::vector<korali::Sample> &samples)
 {
   for (size_t i = 0; i < _currentPopulationSize; i++)
-    _valueVector[i] = KORALI_GET(double, samples[i], {"F(x)"});
+    _valueVector[i] = KORALI_GET(double, samples[i], "F(x)");
 
   /* Generate _sortingIndex */
   sort_index(_valueVector, _sortingIndex, _currentPopulationSize);
@@ -764,7 +764,7 @@ void korali::solver::CMAES::handleConstraints()
           _conduit->start(sample);
           _conduit->wait(sample);
 
-          isSampleFeasible = KORALI_GET(bool, sample, {"Is Feasible"});
+          isSampleFeasible = KORALI_GET(bool, sample, "Is Feasible");
 
         } while (isSampleFeasible == false);
       }
@@ -810,7 +810,7 @@ void korali::solver::CMAES::updateDiscreteMutationMatrix()
 
 void korali::solver::CMAES::discretize(korali::Sample &sample)
 {
-  auto parameters = KORALI_GET(std::vector<double>, sample, {"Parameters"});
+  auto parameters = KORALI_GET(std::vector<double>, sample, "Parameters");
 
   if (parameters.size() != _k->_variables.size())
     KORALI_LOG_ERROR("Size of sample's parameter vector (%lu) is different from the number of problem variables.\n", parameters.size(), _k->_variables.size());

@@ -81,7 +81,7 @@ void korali::solver::SequentialOptimisation::runGeneration()
   _conduit->waitAll(samples);
 
   for (size_t i = 0; i < _numberOfLocations; i++)
-    _utility[_k->_currentGeneration - 1][i] = KORALI_GET(double, samples[i], {"F(x)"});
+    _utility[_k->_currentGeneration - 1][i] = KORALI_GET(double, samples[i], "F(x)");
 
   std::vector<double>::iterator maximum = std::max_element(_utility[_k->_currentGeneration - 1].begin(), _utility[_k->_currentGeneration - 1].end());
   size_t maxIndex = std::distance(_utility[_k->_currentGeneration - 1].begin(), maximum);

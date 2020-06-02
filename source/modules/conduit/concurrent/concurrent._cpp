@@ -119,7 +119,7 @@ void korali::conduit::Concurrent::processSample(korali::Sample &sample)
   korali::Engine *engine = _engineStack.top();
 
   int launcherId = -1;
-  if (JsonInterface::isDefined(sample._js.getJson(), "['Worker']"))
+  if (isDefined(sample._js.getJson(), "Worker"))
   {
     launcherId = sample["Worker"];
   }

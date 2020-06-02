@@ -75,7 +75,7 @@ void korali::solver::TMCMC::setInitialConfiguration()
   if (_version == "mTMCMC")
   {
     bool valid = false;
-    if (korali::JsonInterface::isDefined(problemConfig, "['Type']"))
+    if (isDefined(problemConfig, "Type"))
     {
       std::string problemType = problemConfig["Type"];
       if (problemType == "Bayesian/Reference") valid = true;
@@ -165,8 +165,8 @@ void korali::solver::TMCMC::runGeneration()
     //printf("%s\n", samples[finishedId]._js.getJson().dump(2).c_str());
     _chainPendingEvaluation[finishedId] = false;
 
-    _chainCandidatesLogLikelihoods[finishedId] = KORALI_GET(double, samples[finishedId], {"logLikelihood"});
-    _chainCandidatesLogPriors[finishedId] = KORALI_GET(double, samples[finishedId], {"logPrior"});
+    _chainCandidatesLogLikelihoods[finishedId] = KORALI_GET(double, samples[finishedId], "logLikelihood");
+    _chainCandidatesLogPriors[finishedId] = KORALI_GET(double, samples[finishedId], "logPrior");
 
     if (isfinite(_chainCandidatesLogPriors[finishedId])) _numFinitePriorEvaluations++;
     if (isfinite(_chainCandidatesLogLikelihoods[finishedId])) _numFiniteLikelihoodEvaluations++;
@@ -430,7 +430,7 @@ void korali::solver::TMCMC::calculateGradients(std::vector<korali::Sample> &samp
   {
     size_t finishedId = _conduit->waitAny(samples);
 
-    _chainCandidatesGradients[finishedId] = KORALI_GET(std::vector<double>, samples[finishedId], {"logLikelihood Gradient"});
+    _chainCandidatesGradients[finishedId] = KORALI_GET(std::vector<double>, samples[finishedId], "logLikelihood Gradient");
     for (size_t d = 0; d < _k->_variables.size(); ++d) _chainCandidatesGradients[finishedId][d] *= _annealingExponent;
   }
 }

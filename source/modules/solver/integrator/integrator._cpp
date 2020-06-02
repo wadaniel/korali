@@ -76,7 +76,7 @@ void korali::solver::Integrator::runGeneration()
     for (size_t d = 0; d < _k->_variables.size(); d++)
       weight *= _k->_variables[d]->_quadratureWeights[usedIndices[i][d]];
 
-    auto f = KORALI_GET(double, samples[i], {"Evaluation"});
+    auto f = KORALI_GET(double, samples[i], "Evaluation");
 
     _integral += weight * f;
   }

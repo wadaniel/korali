@@ -4,7 +4,7 @@ void korali::problem::optimization::Stochastic::evaluate(korali::Sample &sample)
 {
   sample.run(_objectiveFunction);
 
-  auto evaluation = KORALI_GET(double, sample, {"F(x)"});
+  auto evaluation = KORALI_GET(double, sample, "F(x)");
 
   // If result is not a finite number, objective function evaluates to -Infinity
   if (std::isnan(evaluation))

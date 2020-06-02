@@ -36,17 +36,16 @@ void korali::Sample::sampleLauncher()
 
   (*sample)["Finished"] = false;
 
-  size_t experimentId = sample->get<size_t>({"Experiment Id"}, __FILE__, __LINE__);
+  // Getting sample information
+  size_t experimentId = KORALI_GET(size_t, (*sample), "Experiment Id");
+  auto sampleId = KORALI_GET(size_t, (*sample), "Sample Id");
+  auto operation = KORALI_GET(std::string, (*sample), "Operation");
+  auto module = KORALI_GET(std::string, (*sample), "Module");
+
+  // Getting experiment pointer
   auto experiment = engine->_experimentVector[experimentId];
 
-  size_t sampleId = sample->get<size_t>({"Sample Id"}, __FILE__, __LINE__);
-
-  // Getting operation to run
-  std::string operation = sample->get<std::string>({"Operation"}, __FILE__, __LINE__);
-
-  // Getting module type
-  std::string module = sample->get<std::string>({"Module"}, __FILE__, __LINE__);
-
+  // Running operation
   if ((*sample)["Module"] == "Problem")
     experiment->_problem->runOperation(operation, *sample);
 

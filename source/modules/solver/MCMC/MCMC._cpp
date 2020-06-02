@@ -70,7 +70,7 @@ void korali::solver::MCMC::runGeneration()
     _conduit->start(sample);
     _conduit->wait(sample);
 
-    double evaluation = KORALI_GET(double, sample, {"P(x)"});
+    double evaluation = KORALI_GET(double, sample, "P(x)");
 
     _chainCandidatesEvaluations[i] = evaluation;
 

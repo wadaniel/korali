@@ -104,11 +104,10 @@ def consumeValue(base, moduleName, path, varName, varType, isMandatory,
 
   if ('std::function' in varType):
     cString += ' try { ' + varName + ' = ' + base + path + '.get<size_t>(); } catch (const std::exception& e) {\n'
-    cString += '   KORALI_LOG_ERROR("   + Object: [ ' + moduleName + ' ] \\n   + Key:    ' + path.replace(
-        '"', "'") + '\\n%s\\n", e.what());\n'
+    cString += '   KORALI_LOG_ERROR(" + Object: [ ' + moduleName + ' ] \\n + Key:    ' + path.replace(
+        '"', "'") + '\\n%s", e.what());\n'
     cString += ' } \n'
-    cString += '   JsonInterface::eraseValue(' + base + ', "' + path.replace(
-        '"', "'") + '");\n'
+    cString += '   eraseValue(' + base + ', ' + path.replace('][', ", ").replace('[','').replace(']','') + ');\n'
     return cString
 
   if ('std::vector<korali::Variable' in varType):
@@ -119,22 +118,19 @@ def consumeValue(base, moduleName, path, varName, varType, isMandatory,
 
   if ('korali::Sample' in varType):
     cString += ' ' + varName + '._js.getJson() = ' + base + path + ';\n'
-    cString += '   JsonInterface::eraseValue(' + base + ', "' + path.replace(
-        '"', "'") + '");\n'
+    cString += '   eraseValue(' + base + ', ' + path.replace('][', ", ").replace('[','').replace(']','') + ');\n'
     return cString
 
   if ('std::vector<korali::Variable*>' in varType):
     baseType = varType.replace('std::vector<', '').replace('>', '')
     cString += ' for(size_t i = 0; i < ' + base + path + '.size(); i++) ' + varName + '.push_back(new korali::Variable());\n'
-    cString += ' JsonInterface::eraseValue(' + base + ', "' + path.replace(
-        '"', "'") + '");\n\n'
+    cString += ' eraseValue(' + base + ', ' + path.replace('][', ", ").replace('[','').replace(']','') + ');\n\n'
     return cString
 
   if ('std::vector<korali::' in varType):
     baseType = varType.replace('std::vector<', '').replace('>', '')
     cString += ' for(size_t i = 0; i < ' + base + path + '.size(); i++) ' + varName + '.push_back((' + baseType + ')korali::Module::getModule(' + base + path + '[i], _k));\n'
-    cString += ' JsonInterface::eraseValue(' + base + ', "' + path.replace(
-        '"', "'") + '");\n\n'
+    cString += ' eraseValue(' + base + ', ' + path.replace('][', ", ").replace('[','').replace(']','') + ');\n\n'
     return cString
 
   rhs = base + path + '.get<' + varType + '>();\n'
@@ -145,14 +141,12 @@ def consumeValue(base, moduleName, path, varName, varType, isMandatory,
   if ('gsl_rng*' in varType):
     rhs = 'setRange(' + base + path + '.get<std::string>());\n'
 
-  cString += ' if (JsonInterface::isDefined(' + base + ', "' + path.replace(
-      '"', "'") + '"))  \n  { \n'
+  cString += ' if (isDefined(' + base + ', ' + path.replace('][', ", ").replace('[','').replace(']','') + '))  \n  { \n'
   cString += ' try {' + varName + ' = ' + rhs + ' } catch (const std::exception& e) {\n'
-  cString += '   KORALI_LOG_ERROR("   + Object: [ ' + moduleName + ' ] \\n   + Key:    ' + path.replace(
-      '"', "'") + '\\n%s\\n", e.what());\n'
+  cString += '   KORALI_LOG_ERROR(" + Object: [ ' + moduleName + ' ] \\n + Key:    ' + path.replace(
+      '"', "'") + '\\n%s", e.what());\n'
   cString += ' } \n'
-  cString += '   JsonInterface::eraseValue(' + base + ', "' + path.replace(
-      '"', "'") + '");\n'
+  cString += '   eraseValue(' + base + ', ' + path.replace('][', ", ").replace('[','').replace(']','') + ');\n'
   cString += '  }\n'
 
   if (isMandatory):
@@ -212,7 +206,7 @@ def createSetConfiguration(module):
   codeString = 'void ' + module[
       "Class"] + '::setConfiguration(knlohmann::json& js) \n{\n'
 
-  codeString += ' if (JsonInterface::isDefined(js, "[\'Results\']"))  JsonInterface::eraseValue(js, "[\'Results\']");\n\n'
+  codeString += ' if (isDefined(js, "Results"))  eraseValue(js, "Results");\n\n'
 
   # Consume Configuration Settings
   if 'Configuration Settings' in module:
@@ -255,8 +249,7 @@ def createSetConfiguration(module):
           v
       ) + '.is_string()) { _hasConditionalVariables = true; ' + getCXXVariableName(
           v["Name"]) + 'Conditional = js' + getVariablePath(v) + '; } \n'
-      codeString += ' JsonInterface::eraseValue(js, "' + getVariablePath(
-          v).replace('"', "'") + '");\n\n'
+      codeString += ' eraseValue(js, ' + getVariablePath(v).replace('][', ", ").replace('[','').replace(']','') + ');\n\n'
 
   if 'Compatible Solvers' in module:
     codeString += '  bool detectedCompatibleSolver = false; \n'
@@ -273,8 +266,8 @@ def createSetConfiguration(module):
   codeString += ' ' + module["Parent Class"] + '::setConfiguration(js);\n'
 
   codeString += ' _type = "' + module["Option Name"] + '";\n'
-  codeString += ' if(JsonInterface::isDefined(js, "[\'Type\']")) JsonInterface::eraseValue(js, "[\'Type\']");\n'
-  codeString += ' if(JsonInterface::isEmpty(js) == false) KORALI_LOG_ERROR("Unrecognized settings for Korali module: ' + module[
+  codeString += ' if(isDefined(js, "Type")) eraseValue(js, "Type");\n'
+  codeString += ' if(isEmpty(js) == false) KORALI_LOG_ERROR("Unrecognized settings for Korali module: ' + module[
       "Name"] + ': \\n%s\\n", js.dump(2).c_str());\n'
   codeString += '} \n\n'
 
@@ -342,7 +335,7 @@ def createApplyModuleDefaults(module):
     codeString += ' std::string defaultString = "' + json.dumps(
         module["Module Defaults"]).replace('"', '\\"') + '";\n'
     codeString += ' knlohmann::json defaultJs = knlohmann::json::parse(defaultString);\n'
-    codeString += ' JsonInterface::mergeJson(js, defaultJs); \n'
+    codeString += ' mergeJson(js, defaultJs); \n'
 
   codeString += ' ' + module["Parent Class"] + '::applyModuleDefaults(js);\n'
 
@@ -362,7 +355,7 @@ def createApplyVariableDefaults(module):
         module["Variable Defaults"]).replace('"', '\\"') + '";\n'
     codeString += ' knlohmann::json defaultJs = knlohmann::json::parse(defaultString);\n'
     codeString += ' for (size_t i = 0; i < _k->_js["Variables"].size(); i++) \n'
-    codeString += '  JsonInterface::mergeJson(_k->_js["Variables"][i], defaultJs); \n'
+    codeString += '  mergeJson(_k->_js["Variables"][i], defaultJs); \n'
 
   codeString += ' ' + module["Parent Class"] + '::applyVariableDefaults();\n'
   codeString += '} \n\n'

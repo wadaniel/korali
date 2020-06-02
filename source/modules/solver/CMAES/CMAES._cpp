@@ -287,8 +287,13 @@ void korali::solver::CMAES::checkMeanAndSetRegime()
   _conduit->wait(sample);
   _constraintEvaluationCount++;
 
+  auto cEvals = sample.get<std::vector<double>>( { "Constraint Evaluations" }, __FILE__, __LINE__ );
+
+  if ( cEvals.size() != _constraintEvaluations.size() )
+   korali::Logger::logError("Size of sample's sample evaluations vector (%lu) is different from the number of constraints defined (%lu).\n", cEvals.size() , _constraintEvaluations.size());
+
   for (size_t c = 0; c < _constraintEvaluations.size(); c++)
-    if (sample["Constraint Evaluations"][c] > 0.0) return; /* mean violates constraint, do nothing */
+    if (cEvals[c] > 0.0) return; /* mean violates constraint, do nothing */
 
   /* mean inside domain, switch regime and update internal variables */
   _isViabilityRegime = false;
@@ -318,17 +323,13 @@ void korali::solver::CMAES::updateConstraints()
     _conduit->wait(sample);
     _constraintEvaluationCount++;
 
+    auto cEvals = sample.get<std::vector<double>>( { "Constraint Evaluations" }, __FILE__, __LINE__ );
+
+    if ( cEvals.size() != _constraintEvaluations.size() )
+     korali::Logger::logError("Size of sample's sample evaluations vector (%lu) is different from the number of constraints defined (%lu).\n", cEvals.size() , _constraintEvaluations.size());
+
     for (size_t c = 0; c < _constraintEvaluations.size(); c++)
-    {
-      try
-      {
-        _constraintEvaluations[c][i] = sample["Constraint Evaluations"][c];
-      }
-      catch (const std::exception &e)
-      {
-        korali::Logger::logError("CMAES: Missing or incorrect value of evaluation returned by the constraint model %lu. \n   + Solution: Make sure the your model stores the constraint evaluation in the sample %lu 'F(x)' field. E.g.,: sample['F(x)'] = constraintEval.\n   + Cause: %s\n", i, c, e.what());
-      }
-    }
+        _constraintEvaluations[c][i] = cEvals[c];
   }
 
   _maxConstraintViolationCount = 0;
@@ -366,16 +367,15 @@ void korali::solver::CMAES::reEvaluateConstraints()
       _constraintEvaluationCount++;
 
       _sampleConstraintViolationCounts[i] = 0;
+
+      auto cEvals = sample.get<std::vector<double>>( { "Constraint Evaluations" }, __FILE__, __LINE__ );
+
+      if ( cEvals.size() != _constraintEvaluations.size() )
+       korali::Logger::logError("Size of sample's sample evaluations vector (%lu) is different from the number of constraints defined (%lu).\n", cEvals.size() , _constraintEvaluations.size());
+
       for (size_t c = 0; c < _constraintEvaluations.size(); c++)
       {
-        try
-        {
-          _constraintEvaluations[c][i] = sample["Constraint Evaluations"][c];
-        }
-        catch (const std::exception &e)
-        {
-          korali::Logger::logError("CMAES: Missing or incorrect value of evaluation returned by the constraint model %lu. \n   + Solution: Make sure the your model stores the constraint evaluation in the sample %lu 'F(x)' field. E.g.,: sample['F(x)'] = constraintEval.\n   + Cause: %s\n", i, c, e.what());
-        }
+        _constraintEvaluations[c][i] = cEvals[c];
 
         if (_constraintEvaluations[c][i] > _viabilityBoundaries[c] + 1e-12)
         {
@@ -424,14 +424,7 @@ void korali::solver::CMAES::prepareGeneration()
       _conduit->start(sample);
       _conduit->wait(sample);
 
-      try
-      {
-        isSampleFeasible = sample["Is Feasible"];
-      }
-      catch (const std::exception &e)
-      {
-        korali::Logger::logError("CMAES: Dev Error: Missing or incorrect value of 'Is Feasible' returned by the sample evaluation. \n   + Solution: Make sure the problem module defines this value.\n   + Cause: %s\n", e.what());
-      }
+      isSampleFeasible = sample.get<bool>( { "Is Feasible" }, __FILE__, __LINE__ );
 
     } while (isSampleFeasible == false);
 
@@ -498,16 +491,7 @@ void korali::solver::CMAES::sampleSingle(size_t sampleIdx)
 void korali::solver::CMAES::updateDistribution(std::vector<korali::Sample> &samples)
 {
   for (size_t i = 0; i < _currentPopulationSize; i++)
-  {
-    try
-    {
-      _valueVector[i] = samples[i]["F(x)"];
-    }
-    catch (const std::exception &e)
-    {
-      korali::Logger::logError("CMAES: Missing or incorrect value of 'F(x)' returned by the sample evaluation. \n   + Solution: Make sure your model is storing its result, e.g., sample[\"F(x)\"] = value.\n   + Cause: %s\n", e.what());
-    }
-  }
+    _valueVector[i] = samples[i].get<double>( { "F(x)" }, __FILE__, __LINE__ );
 
   /* Generate _sortingIndex */
   sort_index(_valueVector, _sortingIndex, _currentPopulationSize);
@@ -780,14 +764,7 @@ void korali::solver::CMAES::handleConstraints()
           _conduit->start(sample);
           _conduit->wait(sample);
 
-          try
-          {
-            isSampleFeasible = sample["Is Feasible"];
-          }
-          catch (const std::exception &e)
-          {
-            korali::Logger::logError("CMAES: Dev Error: Missing or incorrect value of 'Is Feasible' returned by the sample evaluation. \n   + Solution: Make sure the problem module defines this value.\n   + Cause: %s\n", e.what());
-          }
+          isSampleFeasible = sample.get<bool>( { "Is Feasible" }, __FILE__, __LINE__ );
 
         } while (isSampleFeasible == false);
       }
@@ -833,22 +810,14 @@ void korali::solver::CMAES::updateDiscreteMutationMatrix()
 
 void korali::solver::CMAES::discretize(korali::Sample &sample)
 {
+  auto parameters = sample.get<std::vector<double>>( { "Parameters" }, __FILE__, __LINE__ );
+
+  if ( parameters.size() != _k->_variables.size() )
+   korali::Logger::logError("Size of sample's parameter vector (%lu) is different from the number of problem variables.\n", parameters.size(), _k->_variables.size());
+
   for (size_t d = 0; d < _k->_variables.size(); ++d)
     if (_k->_variables[d]->_granularity != 0.0)
-    {
-      double par = 0;
-
-      try
-      {
-        par = sample["Parameters"][d];
-      }
-      catch (const std::exception &e)
-      {
-        korali::Logger::logError("CMAES: Dev Error: Missing parameter %lu for sample.\n   + Cause: %s\n", d, e.what());
-      }
-
-      sample["Parameters"][d] = std::round(par / _k->_variables[d]->_granularity) * _k->_variables[d]->_granularity;
-    }
+     sample["Parameters"][d] = std::round(parameters[d] / _k->_variables[d]->_granularity) * _k->_variables[d]->_granularity;
 }
 
 void korali::solver::CMAES::updateEigensystem(std::vector<double> &M)

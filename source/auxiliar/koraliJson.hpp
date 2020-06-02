@@ -228,6 +228,20 @@ static void eraseValue(knlohmann::json &js, std::string path)
 }
 
 /**
+  * @brief Returns a value on a given JS given a string containing the full path
+  * @param js The JSON object to modify.
+  * @param settings The string vector containing the full path. E.g, { "A", "B" }
+ */
+static knlohmann::json& getValue(knlohmann::json &js, const std::vector<std::string> &settings)
+{
+  knlohmann::json *aux = &js;
+  size_t i = 0;
+  for (; i < settings.size() - 1; i++)
+    aux = &aux->at(settings[i]);
+  return (*aux)[settings[i]];
+}
+
+/**
   * @brief Merges the values of two JSON objects recursively and applying priority.
   * @param dest the JSON object onto which the changes will be made. Values here have priority (are not replaced).
   * @param defaults the JSON object that applies onto the other. Values here have no priority (they will not replace)

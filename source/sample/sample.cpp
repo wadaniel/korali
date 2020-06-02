@@ -19,7 +19,7 @@ void korali::Sample::run(size_t functionPosition)
     fprintf(stderr, "Function ID: %lu not contained in function vector (size: %lu). If you are resuming a previous experiment, you need to re-specify model functions.\n", functionPosition, _functionVector.size());
     exit(-1);
   }
-  (*_functionVector[functionPosition])(*this);
+  (*_functionVector[functionPosition])(*_self);
 }
 
 void korali::Sample::update()

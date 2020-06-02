@@ -125,6 +125,28 @@ class Sample
   * @param key Key (pybind11 object) to look for.
   */
   void setItem(pybind11::object key, pybind11::object val);
+
+  /**
+   * @brief Retrieves an element from the sample information
+   * @param path Path to element within sample
+   */
+  template <class T> T get(const std::vector<std::string> path, const char* fileName, const int lineNumber)
+  {
+   if (JsonInterface::isDefined(_self->_js.getJson(), path) == false)
+    korali::Logger::logError("Requesting non existing value %s from sample. Detected at %s:%d\n", fileName, lineNumber);
+
+   T val;
+   try
+   {
+     val = JsonInterface::getValue(_self->_js.getJson(), path).get<T>();
+   }
+   catch (std::exception &e)
+   {
+    korali::Logger::logError("Missing or incorrect value: %s for the sample.\n   + Possible Solution: Make sure the your computational model(s) store(s) this value on the sample after computation. \n  + Detected at: %s:%d\n  + Cause: %s\n", path, fileName, lineNumber, e.what());
+   }
+
+   return val;
+  }
 };
 
 } // namespace korali

@@ -13,9 +13,12 @@
 #include <limits>
 #include <math.h> //isfinite
 #include <numeric>
+#include <random> // std::default_random_engine
 
 void korali::solver::Nested::setInitialConfiguration()
 {
+  _shuffleSeed = _k->_randomSeed++;
+
   if (_covarianceScaling <= 0.0) KORALI_LOG_ERROR("Covariance Scaling must be larger 0.0 (is %lf).\n", _covarianceScaling);
   if (_maxGainFactor < 0.0) KORALI_LOG_ERROR("Max Gain Factor must be larger equal 0.0 (is %lf).\n", _maxGainFactor);
 
@@ -466,7 +469,7 @@ void korali::solver::Nested::generatePosterior()
 
   std::vector<size_t> permutation(_databaseEntries);
   std::iota(std::begin(permutation), std::end(permutation), 0);
-  std::random_shuffle(permutation.begin(), permutation.end());
+  std::shuffle(permutation.begin(), permutation.end(), std::default_random_engine(_shuffleSeed));
 
   size_t rndIdx;
   _posteriorSamples.clear();

@@ -193,6 +193,11 @@ class Engine : public korali::Module
 };
 
 /**
+* @brief Flag indicating that Korali has been called from Korali
+*/
+extern bool isPythonActive;
+
+/**
 * @brief Stack storing pointers to different Engine execution levels
 */
 extern std::stack<korali::Engine *> _engineStack;

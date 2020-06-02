@@ -114,6 +114,9 @@ void korali::Conduit::wait(korali::Sample &sample)
 
   while (sample._state == SampleState::waiting || sample._state == SampleState::initialized)
   {
+    // Check for error signals from python
+    if (korali::isPythonActive && PyErr_CheckSignals() != 0) korali::Logger::logError("User requested break.\n");
+
     sample._state = SampleState::running;
     co_switch(sample._sampleThread);
 
@@ -148,6 +151,9 @@ size_t korali::Conduit::waitAny(std::vector<korali::Sample> &samples)
 
   while (isFinished == false)
   {
+    // Check for error signals from python
+    if (korali::isPythonActive && PyErr_CheckSignals() != 0) throw pybind11::error_already_set();
+
     for (currentSample = 0; currentSample < samples.size(); currentSample++)
     {
       if (samples[currentSample]._state == SampleState::waiting || samples[currentSample]._state == SampleState::initialized)
@@ -194,6 +200,9 @@ void korali::Conduit::waitAll(std::vector<korali::Sample> &samples)
 
   while (isFinished == false)
   {
+    // Check for error signals from python
+    if (korali::isPythonActive && PyErr_CheckSignals() != 0) korali::Logger::logError("User requested break.\n");
+
     isFinished = true;
 
     for (size_t i = 0; i < samples.size(); i++)

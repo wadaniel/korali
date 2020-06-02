@@ -75,20 +75,6 @@ void korali::solver::Rprop::runGeneration(void)
 
   evaluateFunctionAndGradient(sample);
 
-  _k->_logger->logInfo("Normal", "X = [ ");
-  for (size_t k = 0; k < _k->_variables.size(); k++) _k->_logger->logData("Normal", " %.5le  ", _currentX[k]);
-  _k->_logger->logData("Normal", " ]\n");
-
-  _k->_logger->logInfo("Normal", "F(X) = %le \n", _currentEvaluation);
-
-  _k->_logger->logInfo("Normal", "DF(X) = [ ");
-  for (size_t k = 0; k < _k->_variables.size(); k++) _k->_logger->logData("Normal", " %.5le  ", _currentGradient[k]);
-  _k->_logger->logData("Normal", " ]\n");
-
-  _k->_logger->logInfo("Normal", "X_best = [ ");
-  for (size_t k = 0; k < _k->_variables.size(); k++) _k->_logger->logData("Normal", " %.5le  ", _bestX[k]);
-  _k->_logger->logData("Normal", " ]\n");
-
   Update_iminus();
 
   _previousEvaluation = _currentEvaluation;
@@ -197,8 +183,29 @@ void korali::solver::Rprop::Update_iminus(void)
   }
 }
 
-void korali::solver::Rprop::printGenerationBefore() { return; }
+void korali::solver::Rprop::printGenerationBefore()
+{
+  return;
+}
 
-void korali::solver::Rprop::printGenerationAfter() { return; }
+void korali::solver::Rprop::printGenerationAfter()
+{
+  _k->_logger->logInfo("Normal", "X = [ ");
+  for (size_t k = 0; k < _k->_variables.size(); k++) _k->_logger->logData("Normal", " %.5le  ", _currentX[k]);
+  _k->_logger->logData("Normal", " ]\n");
 
-void korali::solver::Rprop::finalize() { return; }
+  _k->_logger->logInfo("Normal", "F(X) = %le \n", _currentEvaluation);
+
+  _k->_logger->logInfo("Normal", "DF(X) = [ ");
+  for (size_t k = 0; k < _k->_variables.size(); k++) _k->_logger->logData("Normal", " %.5le  ", _currentGradient[k]);
+  _k->_logger->logData("Normal", " ]\n");
+
+  _k->_logger->logInfo("Normal", "X_best = [ ");
+  for (size_t k = 0; k < _k->_variables.size(); k++) _k->_logger->logData("Normal", " %.5le  ", _bestX[k]);
+  _k->_logger->logData("Normal", " ]\n");
+}
+
+void korali::solver::Rprop::finalize()
+{
+  return;
+}

@@ -2,78 +2,52 @@
 
 import os
 import sys
+import csv
 import korali
+import numpy as np
+
 from os import listdir
 from os.path import isfile, join
 
+train_data = np.loadtxt('data/sincos1d_train.dat', usecols=range(2))
+test_data = np.loadtxt('data/sincos1d_test.dat', usecols=range(2))
 
-def read_matrix_for_gp(fileName, lastColumnIsData=True):
-  f = open(fileName, "r")
-  data = [[float(n) for n in line.split()] for line in f]
-  f.close()
-
-  if (lastColumnIsData == True):
-    x = [row[:-1] for row in data]
-    y = [row[-1] for row in data]
-  else:
-    x = data
-    y = []
-
-  return x, y
-
-
-x, y = read_matrix_for_gp('data/sincos1d_train.dat')
-
+import korali
 k = korali.Engine()
-resultPath = "_korali_result_train"
 
-e0 = korali.Experiment()
-e0["Problem"]["Type"] = "Gaussian/Evaluate"
-e0["Problem"]["Covariance Function"] = "CovSum ( CovSEiso, CovNoise)"
-e0["Problem"]["X Data"] = x
-e0["Problem"]["Y Data"] = y
-e0["Solver"]["Type"] = "Rprop"
-e0["Solver"]["Termination Criteria"]["Max Generations"] = 1000
-e0["Solver"]["Termination Criteria"]["Parameter Relative Tolerance"] = 1e-8
-e0["Console Output"]["Verbosity"] = "Normal"
-e0["Console Output"]["Frequency"] = 10
-e0["File Output"]["Frequency"] = 100
-e0["File Output"]["Path"] = "_korali_result_train"
+e = korali.Experiment()
 
-# Getting result file
-k.run(e0)
-resultFileList = [f for f in listdir(resultPath) if isfile(join(resultPath, f))]
-resultFileList.sort()
-resultFile = join(resultPath, resultFileList[-1])
-print(resultFile)
+e['Problem']['Type'] = 'Supervised Learning'
 
-x, y = read_matrix_for_gp('data/sincos1d_test.dat')
-e1 = korali.Experiment()
-e1["Problem"]["Type"] = "Gaussian/Execute"
-e1["Problem"]["Gaussian Process Json File"] = resultFile
-e1["Problem"]["X Data"] = x
-e1["Problem"]["Y Data"] = y
-e1["Solver"]["Type"] = "Executor"
-e1["Solver"]["Executions Per Generation"] = 1
-e1["Solver"]["Termination Criteria"]["Max Generations"] = 1000
-e1["Console Output"]["Verbosity"] = "Normal"
-e1["Console Output"]["Frequency"] = 10
-e1["File Output"]["Frequency"] = 100
-e1["File Output"]["Path"] = "_korali_result_test"
+e['Variables'][0]['Name'] = 'X'
+e['Variables'][0]['Type'] = 'Input'
+e['Variables'][0]['Training Data'] = train_data[:, 0].tolist()
+e['Variables'][0]['Validation Data'] = test_data[:, 0].tolist()
 
-x, y = read_matrix_for_gp('data/sincos1d_new.dat', lastColumnIsData=True)
-e2 = korali.Experiment()
-e2["Problem"]["Type"] = "Gaussian/Execute"
-e2["Problem"]["Gaussian Process Json File"] = resultFile
-e2["Problem"]["X Data"] = x
-e2["Problem"]["Y Data"] = y
-e2["Solver"]["Type"] = "Executor"
-e2["Solver"]["Executions Per Generation"] = 1
-e2["Solver"]["Termination Criteria"]["Max Generations"] = 1000
-e2["Console Output"]["Verbosity"] = "Normal"
-e2["Console Output"]["Frequency"] = 10
-e2["File Output"]["Frequency"] = 100
-e2["File Output"]["Path"] = "_korali_result_new"
+e['Variables'][1]['Name'] = 'Y'
+e['Variables'][1]['Type'] = 'Output'
+e['Variables'][1]['Training Data'] = train_data[:, 1].tolist()
+e['Variables'][1]['Validation Data'] = test_data[:, 1].tolist()
 
-k.run(e1)
-k.run(e2)
+e['Solver']['Type'] = 'Gaussian Process'
+e['Solver']['Covariance Function'] = 'CovSum ( CovSEiso, CovNoise)'
+
+e['Solver']['Optimizer']['Type'] = 'Rprop'
+e['Solver']['Optimizer']['Termination Criteria']['Max Generations'] = 1000
+e['Solver']['Optimizer']['Termination Criteria'][
+    'Parameter Relative Tolerance'] = 1e-8
+
+e['File Output']['Enabled'] = False
+e['Random Seed'] = 0xC0FFEE
+
+k.run(e)
+
+x = np.linspace(0, 14, 1000)
+x = [[i] for i in x.tolist()]
+y = e.test(x)
+
+z = [i + j for i, j in zip(x, y)]
+
+with open('data/results.dat', 'w') as f:
+  wr = csv.writer(f, delimiter=' ')
+  wr.writerows(z)

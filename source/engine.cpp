@@ -11,6 +11,7 @@
 
 std::vector<std::function<void(korali::Sample &)> *> korali::_functionVector;
 std::stack<korali::Engine *> korali::_engineStack;
+bool korali::isPythonActive = 0;
 
 korali::Engine::Engine()
 {
@@ -131,6 +132,7 @@ void korali::Engine::run()
 
     while (true)
     {
+      // Checking for break signals coming from Python
       bool executed = false;
       for (size_t i = 0; i < _experimentVector.size(); i++)
         if (_experimentVector[i]->_isFinished == false)
@@ -275,10 +277,22 @@ PYBIND11_MODULE(libkorali, m)
 
   pybind11::class_<korali::Engine>(m, "Engine")
     .def(pybind11::init<>())
-    .def("run", pybind11::overload_cast<korali::Experiment &>(&korali::Engine::run))
-    .def("run", pybind11::overload_cast<std::vector<korali::Experiment> &>(&korali::Engine::run))
-    .def("resume", pybind11::overload_cast<korali::Experiment &>(&korali::Engine::resume))
-    .def("resume", pybind11::overload_cast<std::vector<korali::Experiment> &>(&korali::Engine::resume))
+    .def("run", [](korali::Engine &k, korali::Experiment &e) {
+      korali::isPythonActive = true;
+      k.run(e);
+    })
+    .def("run", [](korali::Engine &k, std::vector<korali::Experiment> &e) {
+      korali::isPythonActive = true;
+      k.run(e);
+    })
+    .def("resume", [](korali::Engine &k, korali::Experiment &e) {
+      korali::isPythonActive = true;
+      k.resume(e);
+    })
+    .def("resume", [](korali::Engine &k, std::vector<korali::Experiment> &e) {
+      korali::isPythonActive = true;
+      k.resume(e);
+    })
     .def("__getitem__", pybind11::overload_cast<pybind11::object>(&korali::Engine::getItem), pybind11::return_value_policy::reference)
     .def("__setitem__", pybind11::overload_cast<pybind11::object, pybind11::object>(&korali::Engine::setItem), pybind11::return_value_policy::reference);
 

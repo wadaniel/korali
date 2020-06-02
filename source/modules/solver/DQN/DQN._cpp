@@ -53,14 +53,7 @@ void korali::solver::DQN::runGeneration()
   for (size_t i = 0; i < _agentCount; i++)
     if (hasFinished[i] == false)
     {
-      try
-      {
-        states[i] = agents[i]["State"].get<std::vector<double>>();
-      }
-      catch (const std::exception &e)
-      {
-        korali::Logger::logError("DQN: Missing or incorrect value of 'State' returned by the sample evaluation. \n   + Solution: Make sure your model is storing its result, e.g., sample[\"State\"] = value.\n   + Cause: %s\n", e.what());
-      }
+      states[i] = agents[i].get<std::vector<double>>({"State"}, __FILE__, __LINE__);
 
       // Getting new action to perform
       actions[i] = getAction(states[i]);
@@ -84,25 +77,10 @@ void korali::solver::DQN::runGeneration()
     currentPolicyStates[i].push_back(states[i]);
 
     // Updating reward
-    try
-    {
-      rewards[i] = agents[i]["Reward"];
-    }
-    catch (const std::exception &e)
-    {
-      korali::Logger::logError("DQN: Missing or incorrect value of 'Reward' returned by the sample evaluation. \n   + Solution: Make sure your model is storing its result, e.g., sample[\"State\"] = value.\n   + Cause: %s\n", e.what());
-    }
+    rewards[i] = agents[i].get<double>({"Reward"}, __FILE__, __LINE__);
 
     // Storing agent's new state
-    std::vector<double> newState;
-    try
-    {
-      newState = agents[i]["State"].get<std::vector<double>>();
-    }
-    catch (const std::exception &e)
-    {
-      korali::Logger::logError("DQN: Missing or incorrect value of 'State' returned by the sample evaluation. \n   + Solution: Make sure your model is storing its result, e.g., sample[\"State\"] = value.\n   + Cause: %s\n", e.what());
-    }
+    std::vector<double> newState = agents[i].get<std::vector<double>>({"State"}, __FILE__, __LINE__);
 
     // Storing the agent's experience into the learner
     storeExperience(states[i], actions[i], rewards[i], newState);
@@ -110,7 +88,7 @@ void korali::solver::DQN::runGeneration()
     // The new state becomes the current state
     states[i] = newState;
 
-    hasFinished[i] = agents[i]["Finished"];
+    hasFinished[i] = agents[i].get<bool>({"Finished"}, __FILE__, __LINE__);
 
     // If it finished, then add to the count
     if (hasFinished[i])

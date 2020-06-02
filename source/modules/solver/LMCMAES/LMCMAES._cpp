@@ -13,7 +13,7 @@ void korali::solver::LMCMAES::setInitialConfiguration()
   if (_targetDistanceCoefficients.size() == 0) _targetDistanceCoefficients = {double(_k->_variables.size()), 0.0, 0.0};
 
   if (_targetDistanceCoefficients.size() != 3)
-    korali::Logger::logError("LMCMAES requires 3 parameters for 'Target Distance Coefficients' (%zu provided).\n", _targetDistanceCoefficients.size());
+    korali::Logger::logError(__FILE__, __LINE__, "LMCMAES requires 3 parameters for 'Target Distance Coefficients' (%zu provided).\n", _targetDistanceCoefficients.size());
 
   if (_muValue == 0) _muValue = _populationSize / 2;
   if (_cumulativeCovariance == 0.0) _cumulativeCovariance = 0.5 / std::sqrt((double)_k->_variables.size());
@@ -70,13 +70,13 @@ void korali::solver::LMCMAES::setInitialConfiguration()
   {
     /* confirm lower & upper bound */
     //   if( (std::isfinite(_k->_variables[i]->_lowerBound) && std::isfinite(_k->_variables[i]->_upperBound) ) == false )
-    //        korali::Logger::logError("Lower and/or upper bound of variable \'%s\' is not defined.\n", _k->_variables[i]->_name.c_str());
+    //        korali::Logger::logError(__FILE__, __LINE__, "Lower and/or upper bound of variable \'%s\' is not defined.\n", _k->_variables[i]->_name.c_str());
 
     /* init mean if not defined */
     if (std::isfinite(_k->_variables[i]->_initialMean) == false)
     {
-      if (std::isfinite(_k->_variables[i]->_lowerBound) == false) korali::Logger::logError("Initial Mean of variable \'%s\' not defined, and cannot be inferred because variable lower bound is not finite.\n", _k->_variables[i]->_name.c_str());
-      if (std::isfinite(_k->_variables[i]->_upperBound) == false) korali::Logger::logError("Initial Mean of variable \'%s\' not defined, and cannot be inferred because variable upper bound is not finite.\n", _k->_variables[i]->_name.c_str());
+      if (std::isfinite(_k->_variables[i]->_lowerBound) == false) korali::Logger::logError(__FILE__, __LINE__, "Initial Mean of variable \'%s\' not defined, and cannot be inferred because variable lower bound is not finite.\n", _k->_variables[i]->_name.c_str());
+      if (std::isfinite(_k->_variables[i]->_upperBound) == false) korali::Logger::logError(__FILE__, __LINE__, "Initial Mean of variable \'%s\' not defined, and cannot be inferred because variable upper bound is not finite.\n", _k->_variables[i]->_name.c_str());
       _k->_variables[i]->_initialMean = (_k->_variables[i]->_upperBound + _k->_variables[i]->_lowerBound) * 0.5;
     }
 
@@ -90,7 +90,7 @@ void korali::solver::LMCMAES::setInitialConfiguration()
   _sigma = _initialSigma;
 
   if ((_sigmaUpdateRule == "CMAES" || _sigmaUpdateRule == "LMCMA") == false)
-    korali::Logger::logError("Invalid setting of Sigma Update Rule (%s) (choose CMAES, or LMCMA).", _sigmaUpdateRule.c_str());
+    korali::Logger::logError(__FILE__, __LINE__, "Invalid setting of Sigma Update Rule (%s) (choose CMAES, or LMCMA).", _sigmaUpdateRule.c_str());
 
   if (_muType == "Linear")
     for (size_t i = 0; i < _muValue; i++) _muWeights[i] = _muValue - i;
@@ -99,9 +99,9 @@ void korali::solver::LMCMAES::setInitialConfiguration()
   else if (_muType == "Logarithmic")
     for (size_t i = 0; i < _muValue; i++) _muWeights[i] = log(std::max((double)_muValue, 0.5 * _populationSize) + 0.5) - log(i + 1.);
   else
-    korali::Logger::logError("Invalid setting of Mu Type (%s) (Linear, Equal, and Logarithmic accepted).", _muType.c_str());
+    korali::Logger::logError(__FILE__, __LINE__, "Invalid setting of Mu Type (%s) (Linear, Equal, and Logarithmic accepted).", _muType.c_str());
 
-  if ((_randomNumberDistribution != "Normal") && (_randomNumberDistribution != "Uniform")) korali::Logger::logError("Invalid setting of Random Number Distribution (%s) (Normal and Uniform accepted).", _randomNumberDistribution.c_str());
+  if ((_randomNumberDistribution != "Normal") && (_randomNumberDistribution != "Uniform")) korali::Logger::logError(__FILE__, __LINE__, "Invalid setting of Random Number Distribution (%s) (Normal and Uniform accepted).", _randomNumberDistribution.c_str());
 
   // Normalize weights vector and set mueff
   double s1 = 0.0;
@@ -117,17 +117,17 @@ void korali::solver::LMCMAES::setInitialConfiguration()
   for (size_t i = 0; i < _muValue; i++) _muWeights[i] /= s1;
 
   if (_initialSigma <= 0.0)
-    korali::Logger::logError("Invalid Initial Sigma (must be greater 0.0, is %lf).", _initialSigma);
+    korali::Logger::logError(__FILE__, __LINE__, "Invalid Initial Sigma (must be greater 0.0, is %lf).", _initialSigma);
   if (_cumulativeCovariance <= 0.0)
-    korali::Logger::logError("Invalid Initial Cumulative Covariance (must be greater 0.0).");
+    korali::Logger::logError(__FILE__, __LINE__, "Invalid Initial Cumulative Covariance (must be greater 0.0).");
   if (_sigmaCumulationFactor <= 0.0)
-    korali::Logger::logError("Invalid Sigma Cumulative Covariance (must be greater 0.0).");
+    korali::Logger::logError(__FILE__, __LINE__, "Invalid Sigma Cumulative Covariance (must be greater 0.0).");
   if (_dampFactor <= 0.0)
-    korali::Logger::logError("Invalid Damp Factor (must be greater 0.0).");
+    korali::Logger::logError(__FILE__, __LINE__, "Invalid Damp Factor (must be greater 0.0).");
   if (_choleskyMatrixLearningRate <= 0.0 || _choleskyMatrixLearningRate > 1.0)
-    korali::Logger::logError("Invalid Cholesky Matrix Learning Rate (must be in (0, 1], is %lf).", _choleskyMatrixLearningRate);
+    korali::Logger::logError(__FILE__, __LINE__, "Invalid Cholesky Matrix Learning Rate (must be in (0, 1], is %lf).", _choleskyMatrixLearningRate);
   if (_setUpdateInterval <= 0.0)
-    korali::Logger::logError("Invalid Set Update Interval(must be greater 0, is %zu).", _setUpdateInterval);
+    korali::Logger::logError(__FILE__, __LINE__, "Invalid Set Update Interval(must be greater 0, is %zu).", _setUpdateInterval);
 
   _infeasibleSampleCount = 0;
   _bestEverValue = -std::numeric_limits<double>::infinity();
@@ -176,14 +176,7 @@ void korali::solver::LMCMAES::prepareGeneration()
       _conduit->start(sample);
       _conduit->wait(sample);
 
-      try
-      {
-        isSampleFeasible = sample["Is Feasible"];
-      }
-      catch (const std::exception &e)
-      {
-        korali::Logger::logError("CMAES: Dev Error: Missing or incorrect value of 'Is Feasible' returned by the sample evaluation. \n   + Solution: Make sure the problem module defines this value.\n   + Cause: %s\n", e.what());
-      }
+      isSampleFeasible = sample.get<bool>({"Is Feasible"}, __FILE__, __LINE__);
 
     } while (isSampleFeasible == false);
 
@@ -213,16 +206,7 @@ void korali::solver::LMCMAES::updateDistribution(std::vector<korali::Sample> &sa
 {
   // Processing results
   for (size_t i = 0; i < _populationSize; i++)
-  {
-    try
-    {
-      _valueVector[i] = samples[i]["F(x)"];
-    }
-    catch (const std::exception &e)
-    {
-      korali::Logger::logError("LMCMAES: Missing or incorrect value of 'F(x)' returned by the sample evaluation. \n   + Solution: Make sure your model is storing its result, e.g., sample[\"F(x)\"] = value.\n   + Cause: %s\n", e.what());
-    }
-  }
+    _valueVector[i] = samples[i].get<double>({"F(x)"}, __FILE__, __LINE__);
 
   /* Copy to previous */
   std::copy(_sortingIndex.begin(), _sortingIndex.end(), _previousSortingIndex.begin());

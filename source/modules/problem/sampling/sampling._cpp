@@ -2,27 +2,14 @@
 
 void korali::problem::Sampling::initialize()
 {
-  if (_k->_variables.size() == 0) korali::Logger::logError("Sampling Evaluation problems require at least one variable.\n");
+  if (_k->_variables.size() == 0) korali::Logger::logError(__FILE__, __LINE__, "Sampling Evaluation problems require at least one variable.\n");
 }
 
 void korali::problem::Sampling::evaluate(korali::Sample &sample)
 {
   sample.run(_probabilityFunction);
 
-  std::string sampleString = "['P(x)']";
-
-  if (korali::JsonInterface::isDefined(sample._js.getJson(), sampleString) == false)
-    korali::Logger::logError("The %s problem needs a function evaluation. Be sure that you assign a value to the %s attribute in the model definition.\n", _k->_problem->getType().c_str(), sampleString.c_str());
-
-  double evaluation = -korali::Inf;
-  try
-  {
-    evaluation = sample["P(x)"];
-  }
-  catch (const std::exception &e)
-  {
-    korali::Logger::logError("Missing or incorrect value of 'P(x)' returned by the sample evaluation. \n   + Solution: Make sure your model is storing its probability density evaluation, e.g., sample[\"P(x)\"] = value(s).\n   + Cause: %s\n", e.what());
-  }
+  double evaluation = sample.get<double>({"P(x)"}, __FILE__, __LINE__);
 
   // TODO: Check 0 <= P(x) <= 1
   // TODO: Use Lognormalization

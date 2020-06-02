@@ -9,7 +9,7 @@ void korali::solver::Rprop::setInitialConfiguration()
 {
   for (size_t i = 0; i < _k->_variables.size(); i++)
     if (std::isfinite(_k->_variables[i]->_initialValue) == false)
-      korali::Logger::logError("Initial Value of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
+      korali::Logger::logError(__FILE__, __LINE__, "Initial Value of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
 
   _currentX.resize(_k->_variables.size(), 0.0);
   for (size_t i = 0; i < _k->_variables.size(); i++)
@@ -42,29 +42,16 @@ void korali::solver::Rprop::evaluateFunctionAndGradient(korali::Sample &sample)
 
   // Processing results
   // The 'minus' is there because we want Rprop to do Maximization be default.
-  try
-  {
-    _currentEvaluation = sample["F(x)"];
-  }
-  catch (const std::exception &e)
-  {
-    korali::Logger::logError("Rprop: Missing or incorrect value of 'F(x)' returned by the sample evaluation. \n   + Solution: Make sure your model is storing its result, e.g., sample[\"F(x)\"] = value.\n   + Cause: %s\n", e.what());
-  }
-
+  _currentEvaluation = sample.get<double>({"F(x)"}, __FILE__, __LINE__);
   _currentEvaluation = -_currentEvaluation;
-  for (size_t i = 0; i < _k->_variables.size(); i++)
-  {
-    try
-    {
-      _currentGradient[i] = sample["Gradient"][i];
-    }
-    catch (const std::exception &e)
-    {
-      korali::Logger::logError("Rprop: Missing, incomplete, or incorrect value of the gradient returned by the sample evaluation on position %lu. \n   + Solution: Make sure your model is storing its result, e.g., sample[\"Gradient(x)\"] = value(s).\n   + Cause: %s\n", i, e.what());
-    }
 
+  _currentGradient = sample.get<std::vector<double>>({"Gradient"}, __FILE__, __LINE__);
+
+  if (_currentGradient.size() != _k->_variables.size())
+    korali::Logger::logError(__FILE__, __LINE__, "Size of sample's gradient evaluations vector (%lu) is different from the number of problem variables defined (%lu).\n", _currentGradient.size(), _k->_variables.size());
+
+  for (size_t i = 0; i < _k->_variables.size(); i++)
     _currentGradient[i] = -_currentGradient[i];
-  }
 }
 
 void korali::solver::Rprop::runGeneration(void)

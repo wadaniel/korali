@@ -13,7 +13,7 @@ void korali::solver::DEA::setInitialConfiguration()
 {
   for (size_t d = 0; d < _k->_variables.size(); ++d)
     if (_k->_variables[d]->_upperBound < _k->_variables[d]->_lowerBound)
-      korali::Logger::logError("Lower Bound (%.4f) of variable \'%s\'  exceeds Upper Bound (%.4f).\n", _k->_variables[d]->_lowerBound, _k->_variables[d]->_name.c_str(), _k->_variables[d]->_upperBound);
+      korali::Logger::logError(__FILE__, __LINE__, "Lower Bound (%.4f) of variable \'%s\'  exceeds Upper Bound (%.4f).\n", _k->_variables[d]->_lowerBound, _k->_variables[d]->_name.c_str(), _k->_variables[d]->_upperBound);
 
   // Allocating Memory
   _samplePopulation.resize(_populationSize);
@@ -117,7 +117,7 @@ void korali::solver::DEA::prepareGeneration()
         }
         catch (const std::exception &e)
         {
-          korali::Logger::logError("DEA: Dev Error: Missing or incorrect value of 'Is Feasible' returned by the sample evaluation. \n   + Solution: Make sure the problem module defines this value.\n   + Cause: %s\n", e.what());
+          korali::Logger::logError(__FILE__, __LINE__, "DEA: Dev Error: Missing or incorrect value of 'Is Feasible' returned by the sample evaluation. \n   + Solution: Make sure the problem module defines this value.\n   + Cause: %s\n", e.what());
         }
 
       } while (isSampleFeasible == false);
@@ -205,16 +205,7 @@ void korali::solver::DEA::updateSolver(std::vector<korali::Sample> &samples)
 {
   // Processing results
   for (size_t i = 0; i < _populationSize; i++)
-  {
-    try
-    {
-      _valueVector[i] = samples[i]["F(x)"];
-    }
-    catch (const std::exception &e)
-    {
-      korali::Logger::logError("DEA: Missing or incorrect value of 'F(x)' returned by the sample evaluation. \n   + Solution: Make sure your model is storing its result, e.g., sample[\"F(x)\"] = value.\n   + Cause: %s\n", e.what());
-    }
-  }
+    _valueVector[i] = samples[i].get<double>({"F(x)"}, __FILE__, __LINE__);
 
   _bestSampleIndex = std::distance(std::begin(_valueVector), std::max_element(std::begin(_valueVector), std::end(_valueVector)));
   _previousBestEverValue = _bestEverValue;
@@ -280,7 +271,7 @@ void korali::solver::DEA::updateSolver(std::vector<korali::Sample> &samples)
     acceptRuleRecognized = true;
   }
 
-  if (acceptRuleRecognized == false) korali::Logger::logError("Accept Rule (%s) not recognized.\n", _acceptRule.c_str());
+  if (acceptRuleRecognized == false) korali::Logger::logError(__FILE__, __LINE__, "Accept Rule (%s) not recognized.\n", _acceptRule.c_str());
 
   for (size_t i = 0; i < _populationSize; ++i)
     for (size_t d = 0; d < _k->_variables.size(); ++d)

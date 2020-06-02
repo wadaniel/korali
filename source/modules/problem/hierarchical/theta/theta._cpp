@@ -4,30 +4,30 @@
 void korali::problem::hierarchical::Theta::initialize()
 {
   // Loading Psi-problem Experiment from path
-  if (_psiProblemEngine.loadState(_psiProblemPath) == false) korali::Logger::logError("Error loading psi problem results from: %s...\n", _psiProblemPath.c_str());
+  if (_psiProblemEngine.loadState(_psiProblemPath) == false) korali::Logger::logError(__FILE__, __LINE__, "Error loading psi problem results from: %s...\n", _psiProblemPath.c_str());
   _psiProblemEngine._engine = _k->_engine;
   _psiProblemEngine.initialize();
 
-  if (_thetaProblemEngine.loadState(_thetaProblemPath) == false) korali::Logger::logError("Error loading theta problem results from: %s...\n", _thetaProblemPath.c_str());
+  if (_thetaProblemEngine.loadState(_thetaProblemPath) == false) korali::Logger::logError(__FILE__, __LINE__, "Error loading theta problem results from: %s...\n", _thetaProblemPath.c_str());
   _thetaProblemEngine._engine = _k->_engine;
   _thetaProblemEngine.initialize();
 
   // Sub-problem correctness checks
   std::string problemName = _thetaProblemEngine["Problem"]["Type"];
   if (problemName.rfind("Bayesian", 0) != 0)
-    korali::Logger::logError("The Hierarchical Bayesian (Theta) can only accept sub-problems of type 'Bayesian' but is of type: '%s'.\n", _thetaProblemEngine["Problem"]["Type"].get<std::string>().c_str());
+    korali::Logger::logError(__FILE__, __LINE__, "The Hierarchical Bayesian (Theta) can only accept sub-problems of type 'Bayesian' but is of type: '%s'.\n", _thetaProblemEngine["Problem"]["Type"].get<std::string>().c_str());
 
   if (_thetaProblemEngine["Is Finished"] == false)
-    korali::Logger::logError("The Hierarchical Bayesian (Theta) requires that the theta problem has run completely, but this one has not.\n");
+    korali::Logger::logError(__FILE__, __LINE__, "The Hierarchical Bayesian (Theta) requires that the theta problem has run completely, but this one has not.\n");
 
   // Psi-problem correctness checks
   std::string psiProblemType = _psiProblemEngine["Problem"]["Type"];
   if (psiProblemType != "Hierarchical/Psi")
-    korali::Logger::logError("The Hierarchical Bayesian (Theta) can only accept a psi-problem of type 'Bayesian/Hierarchical/Psi' but psi-Problem is of type: '%s'.\n", psiProblemType.c_str());
+    korali::Logger::logError(__FILE__, __LINE__, "The Hierarchical Bayesian (Theta) can only accept a psi-problem of type 'Bayesian/Hierarchical/Psi' but psi-Problem is of type: '%s'.\n", psiProblemType.c_str());
 
   // Cross-checks
   if (_psiProblemEngine["Problem"]["Conditional Priors"].size() != _thetaProblemEngine["Variables"].size())
-    korali::Logger::logError("Sub-problem contains a different number of variables (%lu) than conditional priors in the Bayesian/Hierarchical/Psi problem (%lu).\n", _thetaProblemEngine["Variables"].size(), _psiProblemEngine["Problem"]["Conditional Priors"].size());
+    korali::Logger::logError(__FILE__, __LINE__, "Sub-problem contains a different number of variables (%lu) than conditional priors in the Bayesian/Hierarchical/Psi problem (%lu).\n", _thetaProblemEngine["Variables"].size(), _psiProblemEngine["Problem"]["Conditional Priors"].size());
 
   // Now inheriting Sub problem's variables
   _k->_distributions = _thetaProblemEngine._distributions;
@@ -46,7 +46,7 @@ void korali::problem::hierarchical::Theta::initialize()
   {
     double expPrior = exp(_psiProblemSampleLogPriors[i]);
     if (std::isfinite(expPrior) == false)
-      korali::Logger::logError("Non finite (%lf) prior has been detected at sample %zu in Psi problem.\n", expPrior, i);
+      korali::Logger::logError(__FILE__, __LINE__, "Non finite (%lf) prior has been detected at sample %zu in Psi problem.\n", expPrior, i);
   }
 
   // Loading Theta problem results
@@ -59,7 +59,7 @@ void korali::problem::hierarchical::Theta::initialize()
   {
     double expPrior = exp(_thetaProblemSampleLogPriors[i]);
     if (std::isfinite(expPrior) == false)
-      korali::Logger::logError("Non finite (%lf) prior has been detected at sample %zu in Theta problem.\n", expPrior, i);
+      korali::Logger::logError(__FILE__, __LINE__, "Non finite (%lf) prior has been detected at sample %zu in Theta problem.\n", expPrior, i);
   }
 
   std::vector<double> logValues;

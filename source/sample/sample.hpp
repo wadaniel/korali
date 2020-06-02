@@ -129,23 +129,33 @@ class Sample
   /**
    * @brief Retrieves an element from the sample information
    * @param path Path to element within sample
+   * @param fileName where the error occurred, given by the __FILE__ macro
+   * @param lineNumber number where the error occurred, given by the __LINE__ macro
+   * @return Requested value
    */
-  template <class T> T get(const std::vector<std::string> path, const char* fileName, const int lineNumber)
+  template <class T>
+  T get(const std::vector<std::string> path, const char *fileName, const int lineNumber)
   {
-   if (JsonInterface::isDefined(_self->_js.getJson(), path) == false)
-    korali::Logger::logError("Requesting non existing value %s from sample. Detected at %s:%d\n", fileName, lineNumber);
+    if (JsonInterface::isDefined(_self->_js.getJson(), path) == false)
+    {
+      std::string fullPath;
+      for (auto const &p : path) fullPath += "[" + p + "]";
+      korali::Logger::logError(fileName, lineNumber, "Requesting non existing value %s from sample.\n + Occurred at %s:%d\n", fullPath.c_str(), fileName, lineNumber);
+    }
 
-   T val;
-   try
-   {
-     val = JsonInterface::getValue(_self->_js.getJson(), path).get<T>();
-   }
-   catch (std::exception &e)
-   {
-    korali::Logger::logError("Missing or incorrect value: %s for the sample.\n   + Possible Solution: Make sure the your computational model(s) store(s) this value on the sample after computation. \n  + Detected at: %s:%d\n  + Cause: %s\n", path, fileName, lineNumber, e.what());
-   }
+    T val;
+    try
+    {
+      val = JsonInterface::getValue(_self->_js.getJson(), path).get<T>();
+    }
+    catch (std::exception &e)
+    {
+      std::string fullPath;
+      for (auto const &p : path) fullPath += "[" + p + "]";
+      korali::Logger::logError(fileName, lineNumber, "Missing or incorrect value: %s for the sample.\n + Occurred at %s:%d\n + Cause: %s\n", fullPath.c_str(), fileName, lineNumber, e.what());
+    }
 
-   return val;
+    return val;
   }
 };
 

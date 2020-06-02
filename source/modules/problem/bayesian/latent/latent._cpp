@@ -22,7 +22,7 @@ void korali::problem::bayesian::Latent::initialize()
       _latentVariableIndices.push_back(i);
       recognizedType = true;
     }
-    if (recognizedType == false) korali::Logger::logError("Incorrect Bayesian variable type selected: %s.\n", typeString.c_str());
+    if (recognizedType == false) korali::Logger::logError(__FILE__, __LINE__, "Incorrect Bayesian variable type selected: %s.\n", typeString.c_str());
   }
 }
 
@@ -34,40 +34,17 @@ void korali::problem::bayesian::Latent::evaluateLoglikelihood(korali::Sample &sa
   sample.run(_phiOfLikelihoodModel);
   // -> Assume these set: sample["S"], sample["zeta"] and sample["phi"]
 
-  if (!sample.contains("S")) korali::Logger::logError("The specified likelihood model did not assign the value: 'S' to the sample.\n");
-  if (!sample.contains("zeta")) korali::Logger::logError("The specified likelihood model did not assign the value: 'zeta' to the sample.\n");
-  if (!sample.contains("phi")) korali::Logger::logError("The specified likelihood model did not assign the value: 'phi' to the sample.\n");
+  if (!sample.contains("S")) korali::Logger::logError(__FILE__, __LINE__, "The specified likelihood model did not assign the value: 'S' to the sample.\n");
+  if (!sample.contains("zeta")) korali::Logger::logError(__FILE__, __LINE__, "The specified likelihood model did not assign the value: 'zeta' to the sample.\n");
+  if (!sample.contains("phi")) korali::Logger::logError(__FILE__, __LINE__, "The specified likelihood model did not assign the value: 'phi' to the sample.\n");
 
   double _zetaValue = -korali::Inf;
   std::vector<double> _sValues;
   std::vector<double> _phiValues;
 
-  try
-  {
-    _zetaValue = sample["zeta"].get<double>();
-  }
-  catch (const std::exception &e)
-  {
-    korali::Logger::logError("Missing or incorrect value of 'zeta' returned by the sample evaluation. \n   + Solution: Make sure your model is storing its zeta values, e.g., sample[\"zeta\"] = value(s).\n   + Cause: %s\n", e.what());
-  }
-
-  try
-  {
-    _sValues = sample["S"].get<std::vector<double>>();
-  }
-  catch (const std::exception &e)
-  {
-    korali::Logger::logError("Missing or incorrect value of 'S' returned by the sample evaluation. \n   + Solution: Make sure your model is storing its S values, e.g., sample[\"S\"] = value(s).\n   + Cause: %s\n", e.what());
-  }
-
-  try
-  {
-    _phiValues = sample["phi"].get<std::vector<double>>();
-  }
-  catch (const std::exception &e)
-  {
-    korali::Logger::logError("Missing or incorrect value of 'phi' returned by the sample evaluation. \n   + Solution: Make sure your model is storing its phi values, e.g., sample[\"phi\"] = value(s).\n   + Cause: %s\n", e.what());
-  }
+  _zetaValue = sample.get<double>({"zeta"}, __FILE__, __LINE__);
+  _sValues = sample.get<std::vector<double>>({"S"}, __FILE__, __LINE__);
+  _phiValues = sample.get<std::vector<double>>({"phi"}, __FILE__, __LINE__);
 
   sample["logLikelihood"] = -_zetaValue + std::inner_product(std::begin(_sValues), std::end(_sValues), std::begin(_phiValues), 0.0);
 }

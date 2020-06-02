@@ -104,7 +104,7 @@ def consumeValue(base, moduleName, path, varName, varType, isMandatory,
 
   if ('std::function' in varType):
     cString += ' try { ' + varName + ' = ' + base + path + '.get<size_t>(); } catch (const std::exception& e) {\n'
-    cString += '   korali::Logger::throwException("   + Object: [ ' + moduleName + ' ] \\n   + Key:    ' + path.replace(
+    cString += '   korali::Logger::throwException(__FILE__, __LINE__, "   + Object: [ ' + moduleName + ' ] \\n   + Key:    ' + path.replace(
         '"', "'") + '\\n%s\\n", e.what());\n'
     cString += ' } \n'
     cString += '   JsonInterface::eraseValue(' + base + ', "' + path.replace(
@@ -148,7 +148,7 @@ def consumeValue(base, moduleName, path, varName, varType, isMandatory,
   cString += ' if (JsonInterface::isDefined(' + base + ', "' + path.replace(
       '"', "'") + '"))  \n  { \n'
   cString += ' try {' + varName + ' = ' + rhs + ' } catch (const std::exception& e) {\n'
-  cString += '   korali::Logger::throwException("   + Object: [ ' + moduleName + ' ] \\n   + Key:    ' + path.replace(
+  cString += '   korali::Logger::throwException(__FILE__, __LINE__, "   + Object: [ ' + moduleName + ' ] \\n   + Key:    ' + path.replace(
       '"', "'") + '\\n%s\\n", e.what());\n'
   cString += ' } \n'
   cString += '   JsonInterface::eraseValue(' + base + ', "' + path.replace(
@@ -157,7 +157,7 @@ def consumeValue(base, moduleName, path, varName, varType, isMandatory,
 
   if (isMandatory):
     cString += '  else '
-    cString += '  korali::Logger::logError("No value provided for mandatory setting: ' + path.replace(
+    cString += '  korali::Logger::logError(__FILE__, __LINE__, "No value provided for mandatory setting: ' + path.replace(
         '"', "'") + ' required by ' + moduleName + '.\\n"); \n'
 
   cString += '\n'
@@ -168,7 +168,7 @@ def consumeValue(base, moduleName, path, varName, varType, isMandatory,
     cString += ' bool ' + validVarName + ' = false; \n'
     for v in options:
       cString += ' if (' + varName + ' == "' + v + '") ' + validVarName + ' = true; \n'
-    cString += ' if (' + validVarName + ' == false) korali::Logger::logError("Unrecognized value provided for mandatory setting: ' + path.replace(
+    cString += ' if (' + validVarName + ' == false) korali::Logger::logError(__FILE__, __LINE__, "Unrecognized value provided for mandatory setting: ' + path.replace(
         '"', "'") + ' required by ' + moduleName + '.\\n"); \n'
     cString += '}\n'
 
@@ -267,14 +267,14 @@ def createSetConfiguration(module):
       codeString += '   candidateSolverName = "' + v + '"; \n'
       codeString += '   candidateSolverName.erase(remove_if(candidateSolverName.begin(), candidateSolverName.end(), isspace), candidateSolverName.end()); \n'
       codeString += '   if (solverName == candidateSolverName) detectedCompatibleSolver = true;\n'
-    codeString += '  if (detectedCompatibleSolver == false) korali::Logger::logError("Specified solver (%s) is not compatible with problem of type: ' + module[
+    codeString += '  if (detectedCompatibleSolver == false) korali::Logger::logError(__FILE__, __LINE__, "Specified solver (%s) is not compatible with problem of type: ' + module[
         "Name"] + '\\n",  _k->_js["Solver"]["Type"].dump(1).c_str()); \n\n'
 
   codeString += ' ' + module["Parent Class"] + '::setConfiguration(js);\n'
 
   codeString += ' _type = "' + module["Option Name"] + '";\n'
   codeString += ' if(JsonInterface::isDefined(js, "[\'Type\']")) JsonInterface::eraseValue(js, "[\'Type\']");\n'
-  codeString += ' if(JsonInterface::isEmpty(js) == false) korali::Logger::logError("Unrecognized settings for Korali module: ' + module[
+  codeString += ' if(JsonInterface::isEmpty(js) == false) korali::Logger::logError(__FILE__, __LINE__, "Unrecognized settings for Korali module: ' + module[
       "Name"] + ': \\n%s\\n", js.dump(2).c_str());\n'
   codeString += '} \n\n'
 
@@ -415,7 +415,7 @@ def createRunOperation(module):
 
   codeString += ' operationDetected = operationDetected || ' + module[
       "Parent Class"] + '::runOperation(operation, sample);\n'
-  codeString += ' if (operationDetected == false) korali::Logger::logError("Operation %s not recognized for problem ' + module[
+  codeString += ' if (operationDetected == false) korali::Logger::logError(__FILE__, __LINE__, "Operation %s not recognized for problem ' + module[
       "Class"] + '.\\n", operation.c_str());\n'
   codeString += ' return operationDetected;\n'
   codeString += '}\n\n'
@@ -435,7 +435,7 @@ def createGetPropertyPointer(module):
     codeString += ' if (property == "' + v["Name"][
         0] + '") return &' + getCXXVariableName(v["Name"]) + ';\n'
 
-  codeString += ' korali::Logger::logError("Property %s not recognized for distribution ' + module[
+  codeString += ' korali::Logger::logError(__FILE__, __LINE__, "Property %s not recognized for distribution ' + module[
       "Class"] + '.\\n", property.c_str());\n'
   codeString += ' return NULL;\n'
   codeString += '}\n\n'

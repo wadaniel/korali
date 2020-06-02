@@ -231,8 +231,9 @@ static void eraseValue(knlohmann::json &js, std::string path)
   * @brief Returns a value on a given JS given a string containing the full path
   * @param js The JSON object to modify.
   * @param settings The string vector containing the full path. E.g, { "A", "B" }
+  * @return JSON object of the requested path
  */
-static knlohmann::json& getValue(knlohmann::json &js, const std::vector<std::string> &settings)
+static knlohmann::json &getValue(knlohmann::json &js, const std::vector<std::string> &settings)
 {
   knlohmann::json *aux = &js;
   size_t i = 0;

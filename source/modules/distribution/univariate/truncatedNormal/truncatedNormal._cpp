@@ -24,7 +24,7 @@ double korali::distribution::univariate::TruncatedNormal::getRandomNumber()
 
 void korali::distribution::univariate::TruncatedNormal::updateDistribution()
 {
-  if (_sigma <= 0.0) korali::Logger::logError("Incorrect Standard Deviation parameter of Truncated Normal distribution: %f.\n", _sigma);
+  if (_sigma <= 0.0) korali::Logger::logError(__FILE__, __LINE__, "Incorrect Standard Deviation parameter of Truncated Normal distribution: %f.\n", _sigma);
 
   if (_maximum - _minimum <= 0.0)
     _aux = korali::NaN;

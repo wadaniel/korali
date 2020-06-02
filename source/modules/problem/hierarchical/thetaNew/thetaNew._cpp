@@ -6,21 +6,21 @@ void korali::problem::hierarchical::ThetaNew::initialize()
   korali::problem::Hierarchical::initialize();
 
   // Loading Psi-problem Experiment from path
-  if (_psiProblemEngine.loadState(_psiProblemPath) == false) korali::Logger::logError("Error loading psi problem results from: %s...\n", _psiProblemPath.c_str());
+  if (_psiProblemEngine.loadState(_psiProblemPath) == false) korali::Logger::logError(__FILE__, __LINE__, "Error loading psi problem results from: %s...\n", _psiProblemPath.c_str());
   _psiProblemEngine._engine = _k->_engine;
   _psiProblemEngine.initialize();
 
   // Psi-problem correctness checks
   std::string psiProblemType = _psiProblemEngine["Problem"]["Type"];
   if (psiProblemType != "Hierarchical/Psi")
-    korali::Logger::logError("The Hierarchical Bayesian (Theta) can only accept a psi-problem of type 'Hierarchical/Psi' but psi-Problem is of type: '%s'.\n", psiProblemType.c_str());
+    korali::Logger::logError(__FILE__, __LINE__, "The Hierarchical Bayesian (Theta) can only accept a psi-problem of type 'Hierarchical/Psi' but psi-Problem is of type: '%s'.\n", psiProblemType.c_str());
 
   if (_psiProblemEngine["Is Finished"] == false)
-    korali::Logger::logError("The Hierarchical Bayesian (Theta New) requires that the psi-problem has run completely, but it has not.\n");
+    korali::Logger::logError(__FILE__, __LINE__, "The Hierarchical Bayesian (Theta New) requires that the psi-problem has run completely, but it has not.\n");
 
   // Cross-checks
   if (_psiProblemEngine["Problem"]["Conditional Priors"].size() != _k->_variables.size())
-    korali::Logger::logError("The problem contains a different number of variables (%lu) than conditional priors in the Hierarchical/Psi problem (%lu).\n", _k->_variables.size(), _psiProblemEngine["Problem"]["Conditional Priors"].size());
+    korali::Logger::logError(__FILE__, __LINE__, "The problem contains a different number of variables (%lu) than conditional priors in the Hierarchical/Psi problem (%lu).\n", _k->_variables.size(), _psiProblemEngine["Problem"]["Conditional Priors"].size());
 
   // Loading Psi problem results
   _psiProblemSampleCount = _psiProblemEngine["Solver"]["Chain Leaders LogLikelihoods"].size();
@@ -32,7 +32,7 @@ void korali::problem::hierarchical::ThetaNew::initialize()
   {
     double expPrior = exp(_psiProblemSampleLogPriors[i]);
     if (std::isfinite(expPrior) == false)
-      korali::Logger::logError("Non finite (%lf) prior has been detected at sample %zu in subproblem.\n", expPrior, i);
+      korali::Logger::logError(__FILE__, __LINE__, "Non finite (%lf) prior has been detected at sample %zu in subproblem.\n", expPrior, i);
   }
 }
 

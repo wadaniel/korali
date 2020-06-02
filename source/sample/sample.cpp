@@ -34,33 +34,18 @@ void korali::Sample::sampleLauncher()
   korali::Engine *engine = _engineStack.top();
   korali::Sample *sample = engine->_currentSample;
 
-  size_t experimentId = (*sample)["Experiment Id"];
+  (*sample)["Finished"] = false;
+
+  size_t experimentId = sample->get<size_t>({"Experiment Id"}, __FILE__, __LINE__);
   auto experiment = engine->_experimentVector[experimentId];
 
-  (*sample)["Finished"] = false;
-  size_t sampleId = (*sample)["Sample Id"];
+  size_t sampleId = sample->get<size_t>({"Sample Id"}, __FILE__, __LINE__);
 
   // Getting operation to run
-  std::string operation;
-  try
-  {
-    operation = (*sample)["Operation"].get<std::string>();
-  }
-  catch (const std::exception &e)
-  {
-    korali::Logger::logError("Development Error. Incorrect or missing operation type for the sample.\n  Solution: sample[\"Operation\"] = <operation to run>, before starting sample.\n  Reason: %s", e.what());
-  }
+  std::string operation = sample->get<std::string>({"Operation"}, __FILE__, __LINE__);
 
   // Getting module type
-  std::string module;
-  try
-  {
-    module = (*sample)["Module"].get<std::string>();
-  }
-  catch (const std::exception &e)
-  {
-    korali::Logger::logError("Development Error. Incorrect or missing module to run sample with.\n   Solution: sample[\"Module\"] = \"Problem\" or \"Solver\", before starting sample.\n  Reason: %s", e.what());
-  }
+  std::string module = sample->get<std::string>({"Module"}, __FILE__, __LINE__);
 
   if ((*sample)["Module"] == "Problem")
     experiment->_problem->runOperation(operation, *sample);

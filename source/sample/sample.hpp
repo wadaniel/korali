@@ -144,7 +144,7 @@ class Sample
   {
     if (isDefined(_self->_js.getJson(), key...) == false)
     {
-      korali::Logger::logError(fileName, lineNumber, "Requesting non existing value from sample.\n", fileName, lineNumber);
+      korali::Logger::logError(fileName, lineNumber, "Requesting non existing value %s from sample.\n", getPath(key...).c_str());
     }
 
     try
@@ -153,7 +153,7 @@ class Sample
     }
     catch (std::exception &e)
     {
-      korali::Logger::logError(fileName, lineNumber, "Missing or incorrect value for the sample.\n + Cause: %s\n", fileName, lineNumber, e.what());
+      korali::Logger::logError(fileName, lineNumber, "Missing or incorrect value %s for the sample.\n + Cause: %s\n", getPath(key...).c_str(), e.what());
     }
   }
 };

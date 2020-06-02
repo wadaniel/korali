@@ -60,10 +60,10 @@ void korali::Engine::initialize()
   }
   catch (const std::exception &e)
   {
-    korali::Logger::logError(__FILE__, __LINE__, "[Korali] Error parsing Korali Engine's parameters. Reason:\n%s", e.what());
+    KORALI_LOG_ERROR("[Korali] Error parsing Korali Engine's parameters. Reason:\n%s", e.what());
   }
 
-  if (JsonInterface::isEmpty(js) == false) korali::Logger::logError(__FILE__, __LINE__, "Unrecognized settings for Korali's Engine: \n%s\n", js.dump(2).c_str());
+  if (JsonInterface::isEmpty(js) == false) KORALI_LOG_ERROR("Unrecognized settings for Korali's Engine: \n%s\n", js.dump(2).c_str());
 }
 
 void korali::Engine::run()
@@ -90,7 +90,7 @@ void korali::Engine::run()
     }
     catch (const std::exception &e)
     {
-      korali::Logger::logError(__FILE__, __LINE__, "Could not initialize execution conduit. Reason:\n%s", e.what());
+      KORALI_LOG_ERROR("Could not initialize execution conduit. Reason:\n%s", e.what());
     }
   }
 
@@ -111,7 +111,7 @@ void korali::Engine::run()
         if (_experimentVector.size() > 1) _experimentVector[i]->_logFile = fopen(fileName.c_str(), "a");
 
         if (_experimentVector[i]->_logFile == NULL)
-          korali::Logger::logError(__FILE__, __LINE__, "[Korali] Could not create log file (%s) for experiment %lu.\n", fileName.c_str(), i);
+          KORALI_LOG_ERROR("[Korali] Could not create log file (%s) for experiment %lu.\n", fileName.c_str(), i);
       }
 
       _experimentVector[i]->_logger = new Logger(_experimentVector[i]->_consoleOutputVerbosity, _experimentVector[i]->_logFile);

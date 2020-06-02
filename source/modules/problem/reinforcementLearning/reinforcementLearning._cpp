@@ -10,24 +10,24 @@ void korali::problem::ReinforcementLearning::initialize()
   {
     if (_k->_variables[i]->_parameterSpace == "Continuous" || _k->_variables[i]->_parameterSpace == "Discrete")
     {
-      if (_k->_variables[i]->_parameterVector.size() > 0) korali::Logger::logError(__FILE__, __LINE__, "Variable %lu (%s): Parameter Vector is defined, but variable's parameter space is not marked as user-defined.\n", i, _k->_variables[i]->_name.c_str());
-      if (_k->_variables[i]->_lowerBound == korali::Inf) korali::Logger::logError(__FILE__, __LINE__, "Variable %lu (%s): Lower bound for continuous/discrete variable is not defined.\n", i, _k->_variables[i]->_name.c_str());
-      if (_k->_variables[i]->_upperBound == -korali::Inf) korali::Logger::logError(__FILE__, __LINE__, "Variable %lu (%s): Upper bound for continuous/discrete variable is not defined.\n", i, _k->_variables[i]->_name.c_str());
-      if (_k->_variables[i]->_upperBound <= _k->_variables[i]->_lowerBound) korali::Logger::logError(__FILE__, __LINE__, "Variable %lu (%s): Upper bound is lower than lower bound.\n", i, _k->_variables[i]->_name.c_str());
+      if (_k->_variables[i]->_parameterVector.size() > 0) KORALI_LOG_ERROR("Variable %lu (%s): Parameter Vector is defined, but variable's parameter space is not marked as user-defined.\n", i, _k->_variables[i]->_name.c_str());
+      if (_k->_variables[i]->_lowerBound == korali::Inf) KORALI_LOG_ERROR("Variable %lu (%s): Lower bound for continuous/discrete variable is not defined.\n", i, _k->_variables[i]->_name.c_str());
+      if (_k->_variables[i]->_upperBound == -korali::Inf) KORALI_LOG_ERROR("Variable %lu (%s): Upper bound for continuous/discrete variable is not defined.\n", i, _k->_variables[i]->_name.c_str());
+      if (_k->_variables[i]->_upperBound <= _k->_variables[i]->_lowerBound) KORALI_LOG_ERROR("Variable %lu (%s): Upper bound is lower than lower bound.\n", i, _k->_variables[i]->_name.c_str());
     }
 
     if (_k->_variables[i]->_parameterSpace == "Discrete")
     {
-      if (_k->_variables[i]->_granularity <= 0.0) korali::Logger::logError(__FILE__, __LINE__, "Variable %lu (%s): Granularity for discrete variable is invalid/not defined.\n", i, _k->_variables[i]->_name.c_str());
-      if (_k->_variables[i]->_granularity > _k->_variables[i]->_upperBound - _k->_variables[i]->_lowerBound) korali::Logger::logError(__FILE__, __LINE__, "Variable %lu (%s): Granularity for discrete variable is larger than the [lower,upper] bound space.\n", i, _k->_variables[i]->_name.c_str());
+      if (_k->_variables[i]->_granularity <= 0.0) KORALI_LOG_ERROR("Variable %lu (%s): Granularity for discrete variable is invalid/not defined.\n", i, _k->_variables[i]->_name.c_str());
+      if (_k->_variables[i]->_granularity > _k->_variables[i]->_upperBound - _k->_variables[i]->_lowerBound) KORALI_LOG_ERROR("Variable %lu (%s): Granularity for discrete variable is larger than the [lower,upper] bound space.\n", i, _k->_variables[i]->_name.c_str());
     }
 
     if (_k->_variables[i]->_parameterSpace == "Custom")
     {
-      if (_k->_variables[i]->_granularity > 0.0) korali::Logger::logError(__FILE__, __LINE__, "Variable %lu (%s): Granularity is defined, but variable's parameter space is marked as user-defined.\n", i, _k->_variables[i]->_name.c_str());
-      if (_k->_variables[i]->_parameterVector.size() == 0) korali::Logger::logError(__FILE__, __LINE__, "Variable %lu (%s): Parameter Vector is not defined for user-defined variable.\n", i, _k->_variables[i]->_name.c_str());
-      if (_k->_variables[i]->_lowerBound != korali::Inf) korali::Logger::logError(__FILE__, __LINE__, "Variable %lu (%s): Lower bound for variable is defined, but variable's parameter space is marked as user-defined.\n", i, _k->_variables[i]->_name.c_str());
-      if (_k->_variables[i]->_upperBound != -korali::Inf) korali::Logger::logError(__FILE__, __LINE__, "Variable %lu (%s): Upper bound for variable is defined, but variable's parameter space is marked as user-defined.\n", i, _k->_variables[i]->_name.c_str());
+      if (_k->_variables[i]->_granularity > 0.0) KORALI_LOG_ERROR("Variable %lu (%s): Granularity is defined, but variable's parameter space is marked as user-defined.\n", i, _k->_variables[i]->_name.c_str());
+      if (_k->_variables[i]->_parameterVector.size() == 0) KORALI_LOG_ERROR("Variable %lu (%s): Parameter Vector is not defined for user-defined variable.\n", i, _k->_variables[i]->_name.c_str());
+      if (_k->_variables[i]->_lowerBound != korali::Inf) KORALI_LOG_ERROR("Variable %lu (%s): Lower bound for variable is defined, but variable's parameter space is marked as user-defined.\n", i, _k->_variables[i]->_name.c_str());
+      if (_k->_variables[i]->_upperBound != -korali::Inf) KORALI_LOG_ERROR("Variable %lu (%s): Upper bound for variable is defined, but variable's parameter space is marked as user-defined.\n", i, _k->_variables[i]->_name.c_str());
     }
   }
 
@@ -59,8 +59,8 @@ void korali::problem::ReinforcementLearning::initialize()
   _actionVectorSize = _actionVectorIndexes.size();
   _stateVectorSize = _stateVectorIndexes.size();
 
-  if (_actionVectorSize == 0) korali::Logger::logError(__FILE__, __LINE__, "No action variables have been defined.\n");
-  if (_stateVectorSize == 0) korali::Logger::logError(__FILE__, __LINE__, "No state variables have been defined.\n");
+  if (_actionVectorSize == 0) KORALI_LOG_ERROR("No action variables have been defined.\n");
+  if (_stateVectorSize == 0) KORALI_LOG_ERROR("No state variables have been defined.\n");
 
   _stateCount = 1;
   for (size_t i = 0; i < _stateVectorSize; i++)

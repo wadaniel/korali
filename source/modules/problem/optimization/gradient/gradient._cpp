@@ -17,7 +17,7 @@ void korali::problem::optimization::Gradient::evaluate(korali::Sample &sample)
   auto gradient = sample.get<std::vector<double>>({"Gradient"}, __FILE__, __LINE__);
 
   if (gradient.size() != _k->_variables.size())
-    korali::Logger::logError(__FILE__, __LINE__, "Size of sample's gradient evaluations vector (%lu) is different from the number of problem variables defined (%lu).\n", gradient.size(), _k->_variables.size());
+    KORALI_LOG_ERROR("Size of sample's gradient evaluations vector (%lu) is different from the number of problem variables defined (%lu).\n", gradient.size(), _k->_variables.size());
 
   // If result is not a finite number, gradient is set to zero
   if (std::isnan(evaluation) || korali::isanynan(gradient))

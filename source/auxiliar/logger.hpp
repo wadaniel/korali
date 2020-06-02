@@ -7,6 +7,9 @@
 
 #include <string>
 
+#define KORALI_LOG_ERROR(...) \
+        korali::Logger::logError(__FILE__, __LINE__, __VA_ARGS__)
+
 namespace korali
 {
 /**
@@ -96,15 +99,6 @@ class Logger
   * @param ... List of arguments for the format string
   */
   static void logError(const char *fileName, const int lineNumber, const char *format, ...);
-
-  /**
-  * @brief Throws a runtinme error with a given message. Overrides any verbosity level.
-  * @param fileName where the error occurred, given by the __FILE__ macro
-  * @param lineNumber number where the error occurred, given by the __LINE__ macro
-  * @param format Format string of the data (printf-style)
-  * @param ... List of arguments for the format string
-  */
-  static void throwException(const char *fileName, const int lineNumber, const char *format, ...);
 };
 
 } // namespace korali

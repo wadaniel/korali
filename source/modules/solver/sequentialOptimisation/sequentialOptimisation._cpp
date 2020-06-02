@@ -3,12 +3,12 @@
 
 void korali::solver::SequentialOptimisation::setInitialConfiguration()
 {
-  if (_numberOfSensors < 1) korali::Logger::logError(__FILE__, __LINE__, "Number of Sensors %lu must be larger then 0.", _numberOfSensors);
+  if (_numberOfSensors < 1) KORALI_LOG_ERROR("Number of Sensors %lu must be larger then 0.", _numberOfSensors);
   _numberOfLocations = 1;
   for (size_t i = 0; i < _locationsPerVariable.size(); i++)
     _numberOfLocations *= _locationsPerVariable[i];
   if (_numberOfLocations > _maxModelEvaluations)
-    korali::Logger::logError(__FILE__, __LINE__, "%lu > %lu. To many evaluations of the Utility per Sensor", _numberOfLocations, _maxModelEvaluations);
+    KORALI_LOG_ERROR("%lu > %lu. To many evaluations of the Utility per Sensor", _numberOfLocations, _maxModelEvaluations);
   _k->_logger->logInfo("Normal", "Evaluating a total of %lu locations per sensor...\n", _numberOfLocations);
   _maxModelEvaluations = _numberOfSensors * _numberOfLocations;
 

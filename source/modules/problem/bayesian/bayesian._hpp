@@ -54,13 +54,13 @@ class Bayesian : public korali::Problem
  * @brief Evaluates the gradient of the logLikelikood w.r.t. to the variables, and stores it in sample["Log Likelihood Gradient"]
  * @param sample A Korali Sample
  */
-  virtual void evaluateLoglikelihoodGradient(korali::Sample &sample) { korali::Logger::logError(__FILE__, __LINE__, "Gradient not yet implemented for selected Bayesian problem and log likelihood model."); }
+  virtual void evaluateLoglikelihoodGradient(korali::Sample &sample) { KORALI_LOG_ERROR("Gradient not yet implemented for selected Bayesian problem and log likelihood model."); }
 
   /**
  * @brief Evaluates the empirical Fisher information.
  * @param sample A Korali Sample
  */
-  virtual void evaluateFisherInformation(korali::Sample &sample) { korali::Logger::logError(__FILE__, __LINE__, "Fisher information not yet implemented for selected Bayesian problem and log likelihood model."); }
+  virtual void evaluateFisherInformation(korali::Sample &sample) { KORALI_LOG_ERROR("Fisher information not yet implemented for selected Bayesian problem and log likelihood model."); }
 };
 
 } // namespace problem

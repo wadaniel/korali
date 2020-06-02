@@ -26,7 +26,7 @@ class DQN : public korali::Solver
   */
   virtual void initializeGeneration()
   {
-    korali::Logger::logError(__FILE__, __LINE__, "Not implemented yet\n");
+    KORALI_LOG_ERROR("Not implemented yet\n");
     exit(1);
   };
 
@@ -35,7 +35,7 @@ class DQN : public korali::Solver
   */
   virtual void processGeneration()
   {
-    korali::Logger::logError(__FILE__, __LINE__, "Not implemented yet\n");
+    KORALI_LOG_ERROR("Not implemented yet\n");
     exit(1);
   };
 
@@ -46,7 +46,7 @@ class DQN : public korali::Solver
   */
   virtual std::vector<double> getAction(const std::vector<double> &state)
   {
-    korali::Logger::logError(__FILE__, __LINE__, "Not implemented yet\n");
+    KORALI_LOG_ERROR("Not implemented yet\n");
     exit(1);
     return {};
   };
@@ -60,7 +60,7 @@ class DQN : public korali::Solver
   */
   virtual void storeExperience(const std::vector<double> &state, const std::vector<double> &action, const double reward, const std::vector<double> &newState)
   {
-    korali::Logger::logError(__FILE__, __LINE__, "Not implemented yet\n");
+    KORALI_LOG_ERROR("Not implemented yet\n");
     exit(1);
   };
 };

@@ -139,8 +139,8 @@ class Sample
     if (JsonInterface::isDefined(_self->_js.getJson(), path) == false)
     {
       std::string fullPath;
-      for (auto const &p : path) fullPath += "[" + p + "]";
-      korali::Logger::logError(fileName, lineNumber, "Requesting non existing value %s from sample.\n + Occurred at %s:%d\n", fullPath.c_str(), fileName, lineNumber);
+      for (auto const &p : path) fullPath += "[\"" + p + "\"]";
+      korali::Logger::logError(fileName, lineNumber, "Requesting non existing value %s from sample.\n", fullPath.c_str(), fileName, lineNumber);
     }
 
     T val;
@@ -151,8 +151,8 @@ class Sample
     catch (std::exception &e)
     {
       std::string fullPath;
-      for (auto const &p : path) fullPath += "[" + p + "]";
-      korali::Logger::logError(fileName, lineNumber, "Missing or incorrect value: %s for the sample.\n + Occurred at %s:%d\n + Cause: %s\n", fullPath.c_str(), fileName, lineNumber, e.what());
+      for (auto const &p : path) fullPath += "[\"" + p + "\"]";
+      korali::Logger::logError(fileName, lineNumber, "Missing or incorrect value: %s for the sample.\n + Cause: %s\n", fullPath.c_str(), fileName, lineNumber, e.what());
     }
 
     return val;

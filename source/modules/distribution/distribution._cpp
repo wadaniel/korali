@@ -40,7 +40,7 @@ gsl_rng *korali::Distribution::setRange(std::string rangeString)
 
   if (rangeString != "")
   {
-    if (m != n) korali::Logger::logError(__FILE__, __LINE__, "Invalid GSL state size: %lu != %lu\n", m, n);
+    if (m != n) KORALI_LOG_ERROR("Invalid GSL state size: %lu != %lu\n", m, n);
 
     const char *rngHexString = rangeString.c_str();
 

@@ -14,7 +14,7 @@ void korali::problem::Bayesian::initialize()
       }
 
     if (foundDistribution == false)
-      korali::Logger::logError(__FILE__, __LINE__, "Did not find distribution %s, specified by variable %s\n", _k->_variables[i]->_priorDistribution.c_str(), _k->_variables[i]->_name.c_str());
+      KORALI_LOG_ERROR("Did not find distribution %s, specified by variable %s\n", _k->_variables[i]->_priorDistribution.c_str(), _k->_variables[i]->_name.c_str());
   }
 }
 
@@ -45,7 +45,7 @@ void korali::problem::Bayesian::evaluateLogPosterior(korali::Sample &sample)
     double logLikelihood = sample["logLikelihood"];
     double logPosterior = logPrior + logLikelihood;
 
-    if (std::isnan(logLikelihood) == true) korali::Logger::logError(__FILE__, __LINE__, "Sample %d returned NaN logLikelihood evaluation.\n", sampleId);
+    if (std::isnan(logLikelihood) == true) KORALI_LOG_ERROR("Sample %d returned NaN logLikelihood evaluation.\n", sampleId);
 
     sample["logPosterior"] = logPrior + logLikelihood;
   }

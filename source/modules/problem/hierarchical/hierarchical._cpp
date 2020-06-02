@@ -14,7 +14,7 @@ void korali::problem::Hierarchical::initialize()
       }
 
     if (foundDistribution == false)
-      korali::Logger::logError(__FILE__, __LINE__, "Did not find distribution %s, specified by variable %s\n", _k->_variables[i]->_priorDistribution.c_str(), _k->_variables[i]->_name.c_str());
+      KORALI_LOG_ERROR("Did not find distribution %s, specified by variable %s\n", _k->_variables[i]->_priorDistribution.c_str(), _k->_variables[i]->_name.c_str());
   }
 }
 
@@ -45,7 +45,7 @@ void korali::problem::Hierarchical::evaluateLogPosterior(korali::Sample &sample)
     double logLikelihood = sample["logLikelihood"];
     double logPosterior = logPrior + logLikelihood;
 
-    if (std::isnan(logPosterior) == true) korali::Logger::logError(__FILE__, __LINE__, "Sample %d returned NaN logPosterior evaluation.\n", sampleId);
+    if (std::isnan(logPosterior) == true) KORALI_LOG_ERROR("Sample %d returned NaN logPosterior evaluation.\n", sampleId);
 
     sample["logPosterior"] = logPrior + logLikelihood;
   }

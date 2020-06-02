@@ -102,38 +102,21 @@ void korali::Logger::logWarning(const std::string verbosityLevel, const char *fo
 
 void korali::Logger::logError(const char *fileName, const int lineNumber, const char *format, ...)
 {
-  std::string newFormat = "[Korali] Error: ";
-  newFormat += format;
-
-  char *outstr = 0;
-  va_list ap;
-  va_start(ap, format);
-  vasprintf(&outstr, newFormat.c_str(), ap);
-
-  char location[1024];
-  sprintf(location, " + Occurred in %s:%lu\n", fileName, lineNumber);
-
-  newFormat = outstr;
-  newFormat += location;
-
-  free(outstr);
-  throw std::runtime_error(newFormat.c_str());
-}
-
-void korali::Logger::throwException(const char *fileName, const int lineNumber, const char *format, ...)
-{
   char *outstr = 0;
   va_list ap;
   va_start(ap, format);
   vasprintf(&outstr, format, ap);
 
-  std::string errorMsg = outstr;
-
-  char location[1024];
-  sprintf(location, " + Occurred in %s:%lu\n", fileName, lineNumber);
-
-  errorMsg += location;
-
+  std::string outString = outstr;
   free(outstr);
-  throw std::runtime_error(errorMsg.c_str());
+
+  char info[1024];
+
+  sprintf(info, " + Reported by Korali\n");
+  outString += info;
+
+  sprintf(info, " + Occurred in %s:%lu\n", fileName, lineNumber);
+  outString += info;
+
+  throw std::runtime_error(outString.c_str());
 }

@@ -4,7 +4,7 @@
 # Single function evaluation
 def model(p):
   x = p["Parameters"][0]
-  p["F(x)"] = -0.5 * x * x
+  p["G(x)"] = -0.5 * x * x
 
 
 # Function and Gradient function evaluation

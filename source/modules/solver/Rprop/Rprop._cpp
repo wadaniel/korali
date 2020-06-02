@@ -9,7 +9,7 @@ void korali::solver::Rprop::setInitialConfiguration()
 {
   for (size_t i = 0; i < _k->_variables.size(); i++)
     if (std::isfinite(_k->_variables[i]->_initialValue) == false)
-      korali::Logger::logError(__FILE__, __LINE__, "Initial Value of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
+      KORALI_LOG_ERROR("Initial Value of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
 
   _currentX.resize(_k->_variables.size(), 0.0);
   for (size_t i = 0; i < _k->_variables.size(); i++)
@@ -48,7 +48,7 @@ void korali::solver::Rprop::evaluateFunctionAndGradient(korali::Sample &sample)
   _currentGradient = sample.get<std::vector<double>>({"Gradient"}, __FILE__, __LINE__);
 
   if (_currentGradient.size() != _k->_variables.size())
-    korali::Logger::logError(__FILE__, __LINE__, "Size of sample's gradient evaluations vector (%lu) is different from the number of problem variables defined (%lu).\n", _currentGradient.size(), _k->_variables.size());
+    KORALI_LOG_ERROR("Size of sample's gradient evaluations vector (%lu) is different from the number of problem variables defined (%lu).\n", _currentGradient.size(), _k->_variables.size());
 
   for (size_t i = 0; i < _k->_variables.size(); i++)
     _currentGradient[i] = -_currentGradient[i];

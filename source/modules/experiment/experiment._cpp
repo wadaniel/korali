@@ -69,7 +69,7 @@ void korali::Experiment::run()
     _currentGeneration++;
 
     // Check for error signals from python
-    if (korali::isPythonActive && PyErr_CheckSignals() != 0) korali::Logger::logError(__FILE__, __LINE__, "User requested break.\n");
+    if (korali::isPythonActive && PyErr_CheckSignals() != 0) KORALI_LOG_ERROR("User requested break.\n");
   }
 
   auto t1 = std::chrono::system_clock::now();
@@ -88,7 +88,7 @@ void korali::Experiment::run()
   _logger->logInfo("Normal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(t1 - t0).count());
 
   co_switch(_engine->_thread);
-  korali::Logger::logError(__FILE__, __LINE__, "Trying to continue finished Experiment thread.\n");
+  KORALI_LOG_ERROR("Trying to continue finished Experiment thread.\n");
 }
 
 void korali::Experiment::saveState()
@@ -186,7 +186,7 @@ void korali::Experiment::initialize()
   }
   catch (const std::exception &e)
   {
-    korali::Logger::logError(__FILE__, __LINE__, "Experiment could not be initialized. Reason:\n%s", e.what());
+    KORALI_LOG_ERROR("Experiment could not be initialized. Reason:\n%s", e.what());
   }
 }
 

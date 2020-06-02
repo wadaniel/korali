@@ -59,7 +59,7 @@ void korali::Conduit::coroutineWrapper()
   currentSample->_state = SampleState::finished;
   co_switch(engine->_currentExperiment->_thread);
 
-  if (currentSample->_state != SampleState::uninitialized) korali::Logger::logError(__FILE__, __LINE__, "Resuming a finished sample\n");
+  if (currentSample->_state != SampleState::uninitialized) KORALI_LOG_ERROR("Resuming a finished sample\n");
 }
 
 void korali::Conduit::start(korali::Sample &sample)
@@ -69,12 +69,12 @@ void korali::Conduit::start(korali::Sample &sample)
   // Checking if sample id was defined
   size_t sampleId = sample.get<size_t>({"Sample Id"}, __FILE__, __LINE__);
 
-  if (sample._state != SampleState::uninitialized) korali::Logger::logError(__FILE__, __LINE__, "Sample has already been initialized.\n");
+  if (sample._state != SampleState::uninitialized) KORALI_LOG_ERROR("Sample has already been initialized.\n");
 
   if (sample._isAllocated == false)
     sample._sampleThread = co_create(1 << 24, korali::Conduit::coroutineWrapper);
   else
-    korali::Logger::logError(__FILE__, __LINE__, "Sample thread is already allocated; has it executed before being re-started?\n");
+    KORALI_LOG_ERROR("Sample thread is already allocated; has it executed before being re-started?\n");
 
   sample._state = SampleState::initialized;
   engine->_engineSample = &sample;
@@ -89,7 +89,7 @@ void korali::Conduit::wait(korali::Sample &sample)
   while (sample._state == SampleState::waiting || sample._state == SampleState::initialized)
   {
     // Check for error signals from python
-    if (korali::isPythonActive && PyErr_CheckSignals() != 0) korali::Logger::logError(__FILE__, __LINE__, "User requested break.\n");
+    if (korali::isPythonActive && PyErr_CheckSignals() != 0) KORALI_LOG_ERROR("User requested break.\n");
 
     sample._state = SampleState::running;
     co_switch(sample._sampleThread);
@@ -159,7 +159,7 @@ void korali::Conduit::waitAll(std::vector<korali::Sample> &samples)
   while (isFinished == false)
   {
     // Check for error signals from python
-    if (korali::isPythonActive && PyErr_CheckSignals() != 0) korali::Logger::logError(__FILE__, __LINE__, "User requested break.\n");
+    if (korali::isPythonActive && PyErr_CheckSignals() != 0) KORALI_LOG_ERROR("User requested break.\n");
 
     isFinished = true;
 

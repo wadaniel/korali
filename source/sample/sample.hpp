@@ -134,13 +134,13 @@ class Sample
 
   /**
    * @brief Retrieves an element from the sample information
-   * @param path Path to element within sample
    * @param fileName where the error occurred, given by the __FILE__ macro
    * @param lineNumber number where the error occurred, given by the __LINE__ macro
+   * @param key a list of keys describing the full path to traverse
    * @return Requested value
    */
-  template <class T, typename ...Key>
-  T get(const char fileName[], int lineNumber, const Key &...key)
+  template <class T, typename... Key>
+  T get(const char fileName[], int lineNumber, const Key &... key)
   {
     if (isDefined(_self->_js.getJson(), key...) == false)
     {
@@ -149,7 +149,7 @@ class Sample
 
     try
     {
-     return getValue(_self->_js.getJson(), key...);
+      return getValue(_self->_js.getJson(), key...);
     }
     catch (std::exception &e)
     {

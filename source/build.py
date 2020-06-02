@@ -107,7 +107,8 @@ def consumeValue(base, moduleName, path, varName, varType, isMandatory,
     cString += '   KORALI_LOG_ERROR(" + Object: [ ' + moduleName + ' ] \\n + Key:    ' + path.replace(
         '"', "'") + '\\n%s", e.what());\n'
     cString += ' } \n'
-    cString += '   eraseValue(' + base + ', ' + path.replace('][', ", ").replace('[','').replace(']','') + ');\n'
+    cString += '   eraseValue(' + base + ', ' + path.replace(
+        '][', ", ").replace('[', '').replace(']', '') + ');\n'
     return cString
 
   if ('std::vector<korali::Variable' in varType):
@@ -118,19 +119,22 @@ def consumeValue(base, moduleName, path, varName, varType, isMandatory,
 
   if ('korali::Sample' in varType):
     cString += ' ' + varName + '._js.getJson() = ' + base + path + ';\n'
-    cString += '   eraseValue(' + base + ', ' + path.replace('][', ", ").replace('[','').replace(']','') + ');\n'
+    cString += '   eraseValue(' + base + ', ' + path.replace(
+        '][', ", ").replace('[', '').replace(']', '') + ');\n'
     return cString
 
   if ('std::vector<korali::Variable*>' in varType):
     baseType = varType.replace('std::vector<', '').replace('>', '')
     cString += ' for(size_t i = 0; i < ' + base + path + '.size(); i++) ' + varName + '.push_back(new korali::Variable());\n'
-    cString += ' eraseValue(' + base + ', ' + path.replace('][', ", ").replace('[','').replace(']','') + ');\n\n'
+    cString += ' eraseValue(' + base + ', ' + path.replace('][', ", ").replace(
+        '[', '').replace(']', '') + ');\n\n'
     return cString
 
   if ('std::vector<korali::' in varType):
     baseType = varType.replace('std::vector<', '').replace('>', '')
     cString += ' for(size_t i = 0; i < ' + base + path + '.size(); i++) ' + varName + '.push_back((' + baseType + ')korali::Module::getModule(' + base + path + '[i], _k));\n'
-    cString += ' eraseValue(' + base + ', ' + path.replace('][', ", ").replace('[','').replace(']','') + ');\n\n'
+    cString += ' eraseValue(' + base + ', ' + path.replace('][', ", ").replace(
+        '[', '').replace(']', '') + ');\n\n'
     return cString
 
   rhs = base + path + '.get<' + varType + '>();\n'
@@ -141,12 +145,14 @@ def consumeValue(base, moduleName, path, varName, varType, isMandatory,
   if ('gsl_rng*' in varType):
     rhs = 'setRange(' + base + path + '.get<std::string>());\n'
 
-  cString += ' if (isDefined(' + base + ', ' + path.replace('][', ", ").replace('[','').replace(']','') + '))  \n  { \n'
+  cString += ' if (isDefined(' + base + ', ' + path.replace('][', ", ").replace(
+      '[', '').replace(']', '') + '))  \n  { \n'
   cString += ' try {' + varName + ' = ' + rhs + ' } catch (const std::exception& e) {\n'
   cString += '   KORALI_LOG_ERROR(" + Object: [ ' + moduleName + ' ] \\n + Key:    ' + path.replace(
       '"', "'") + '\\n%s", e.what());\n'
   cString += ' } \n'
-  cString += '   eraseValue(' + base + ', ' + path.replace('][', ", ").replace('[','').replace(']','') + ');\n'
+  cString += '   eraseValue(' + base + ', ' + path.replace('][', ", ").replace(
+      '[', '').replace(']', '') + ');\n'
   cString += '  }\n'
 
   if (isMandatory):
@@ -249,7 +255,8 @@ def createSetConfiguration(module):
           v
       ) + '.is_string()) { _hasConditionalVariables = true; ' + getCXXVariableName(
           v["Name"]) + 'Conditional = js' + getVariablePath(v) + '; } \n'
-      codeString += ' eraseValue(js, ' + getVariablePath(v).replace('][', ", ").replace('[','').replace(']','') + ');\n\n'
+      codeString += ' eraseValue(js, ' + getVariablePath(v).replace(
+          '][', ", ").replace('[', '').replace(']', '') + ');\n\n'
 
   if 'Compatible Solvers' in module:
     codeString += '  bool detectedCompatibleSolver = false; \n'

@@ -2,6 +2,6 @@
 
 std::vector<std::vector<double>> korali::Solver::test(const std::vector<std::vector<double>> &inputBatch)
 {
-  korali::Logger::logError("This solver does not provide a test operation.\n");
+  KORALI_LOG_ERROR("This solver does not provide a test operation.\n");
   return {{}};
 }

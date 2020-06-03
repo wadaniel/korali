@@ -15,6 +15,11 @@ class Nested : public korali::Solver
 {
   private:
   /*
+  * @brief Seed for the shuffle randomizer
+  */
+  size_t _shuffleSeed;
+
+  /*
   * @brief Init and run first Generation.
   */
   void runFirstGeneration();

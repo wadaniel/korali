@@ -69,23 +69,14 @@ void korali::solver::Integrator::runGeneration()
   }
   _conduit->waitAll(samples);
 
-  double weight, f;
+  double weight;
   for (size_t i = 0; i < _executionsPerGeneration; i++)
   {
-    weight = 1;
+    weight = 1.0;
     for (size_t d = 0; d < _k->_variables.size(); d++)
-    {
       weight *= _k->_variables[d]->_quadratureWeights[usedIndices[i][d]];
-    }
 
-    try
-    {
-      f = samples[i]["Evaluation"];
-    }
-    catch (const std::exception &e)
-    {
-      korali::Logger::logError("Integrator: Missing or incorrect value of 'Evaluation' returned by the sample evaluation. \n   + Solution: Make sure your model is storing its result, e.g., sample[\"Evaluation\"] = value.\n   + Cause: %s\n", e.what());
-    }
+    auto f = KORALI_GET(double, samples[i], "Evaluation");
 
     _integral += weight * f;
   }

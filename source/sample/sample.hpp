@@ -19,6 +19,12 @@ class Experiment;
 class Engine;
 
 /**
+ * @brief Macro to get information from a sample. Checks for the existence of the path and produces detailed information on failure.
+ */
+#define KORALI_GET(TYPE, SAMPLE, ...) \
+  SAMPLE.get<TYPE>(__FILE__, __LINE__, __VA_ARGS__);
+
+/**
  * @brief Stores all functions inserted as parameters to experiment's configuration
  */
 extern std::vector<std::function<void(korali::Sample &)> *> _functionVector;
@@ -125,6 +131,31 @@ class Sample
   * @param key Key (pybind11 object) to look for.
   */
   void setItem(pybind11::object key, pybind11::object val);
+
+  /**
+   * @brief Retrieves an element from the sample information
+   * @param fileName where the error occurred, given by the __FILE__ macro
+   * @param lineNumber number where the error occurred, given by the __LINE__ macro
+   * @param key a list of keys describing the full path to traverse
+   * @return Requested value
+   */
+  template <class T, typename... Key>
+  T get(const char fileName[], int lineNumber, const Key &... key)
+  {
+    if (isDefined(_self->_js.getJson(), key...) == false)
+    {
+      korali::Logger::logError(fileName, lineNumber, "Requesting non existing value %s from sample.\n", getPath(key...).c_str());
+    }
+
+    try
+    {
+      return getValue(_self->_js.getJson(), key...);
+    }
+    catch (std::exception &e)
+    {
+      korali::Logger::logError(fileName, lineNumber, "Missing or incorrect value %s for the sample.\n + Cause: %s\n", getPath(key...).c_str(), e.what());
+    }
+  }
 };
 
 } // namespace korali

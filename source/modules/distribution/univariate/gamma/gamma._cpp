@@ -19,8 +19,8 @@ double korali::distribution::univariate::Gamma::getRandomNumber()
 
 void korali::distribution::univariate::Gamma::updateDistribution()
 {
-  if (_shape <= 0.0) korali::Logger::logError("Incorrect Shape parameter of Gamma distribution: %f.\n", _shape);
-  if (_scale <= 0.0) korali::Logger::logError("Incorrect Scale parameter of Gamma distribution: %f.\n", _scale);
+  if (_shape <= 0.0) KORALI_LOG_ERROR("Incorrect Shape parameter of Gamma distribution: %f.\n", _shape);
+  if (_scale <= 0.0) KORALI_LOG_ERROR("Incorrect Scale parameter of Gamma distribution: %f.\n", _scale);
 
   _aux = -gsl_sf_lngamma(_shape) - _shape * log(_scale);
 }

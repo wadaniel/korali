@@ -17,9 +17,9 @@ void korali::solver::GaussianProcess::initialize()
   // Initialize a GP training
   else
   {
-    if (_problem->_trainingBatchSize == 0) _k->_logger->logError("Training data has not been provided for variable 0.\n");
+    if (_problem->_trainingBatchSize == 0) _k->_logger->logError(__FILE__, __LINE__, "Training data has not been provided for variable 0.\n");
 
-    if (_problem->_outputVectorIndexes.size() > 1) _k->_logger->logError("The output space should be one dimensional.");
+    if (_problem->_outputVectorIndexes.size() > 1) _k->_logger->logError(__FILE__, __LINE__, "The output space should be one dimensional.");
 
     _gpInputDimension = _problem->_inputVectorIndexes.size();
     _gp = new libgp::GaussianProcess(_gpInputDimension, _covarianceFunction);

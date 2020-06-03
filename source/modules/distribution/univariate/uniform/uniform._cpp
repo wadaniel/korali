@@ -18,7 +18,7 @@ double korali::distribution::univariate::Uniform::getLogDensity(double x)
 double korali::distribution::univariate::Uniform::getRandomNumber()
 {
   if (_maximum - _minimum <= 0.0)
-    korali::Logger::logError("Maximum (%f) bound must be higher than Minimum (%f) bound in a Uniform distribution in order to draw a random number.\n", _maximum, _minimum);
+    KORALI_LOG_ERROR("Maximum (%f) bound must be higher than Minimum (%f) bound in a Uniform distribution in order to draw a random number.\n", _maximum, _minimum);
 
   return gsl_ran_flat(_range, _minimum, _maximum);
 }

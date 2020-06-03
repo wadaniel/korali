@@ -10,7 +10,7 @@ void korali::NeuralNetwork::initialize()
 {
 #ifndef _KORALI_USE_ONEDNN
 
-  korali::Logger::logError("OneDNN has not been properly installed to support NN operations.\n");
+  KORALI_LOG_ERROR("OneDNN has not been properly installed to support NN operations.\n");
 
 #endif
 
@@ -92,21 +92,21 @@ void korali::NeuralNetwork::create()
   /* Checking input/output configuration
   /****************************************************************************/
 
-  if (_layers[0]->_type != "Input") korali::Logger::logError("The first layer must be of an input type.\n");
+  if (_layers[0]->_type != "Input") KORALI_LOG_ERROR("The first layer must be of an input type.\n");
   for (size_t i = 1; i < layerCount - 1; i++)
   {
-    if (_layers[i]->_type == "Input") korali::Logger::logError("Hidden layers cannot be input type.\n");
-    if (_layers[i]->_type == "Output") korali::Logger::logError("Hidden layers cannot be output type.\n");
+    if (_layers[i]->_type == "Input") KORALI_LOG_ERROR("Hidden layers cannot be input type.\n");
+    if (_layers[i]->_type == "Output") KORALI_LOG_ERROR("Hidden layers cannot be output type.\n");
   }
-  if (_layers[layerCount - 1]->_type != "Output") korali::Logger::logError("The last layer must be of an output type.\n");
+  if (_layers[layerCount - 1]->_type != "Output") KORALI_LOG_ERROR("The last layer must be of an output type.\n");
 
   // Checking input/output training data
 
-  if (batchSize == 0) korali::Logger::logError("You should provide an input forwarding set.\n");
+  if (batchSize == 0) KORALI_LOG_ERROR("You should provide an input forwarding set.\n");
 
   for (size_t i = 0; i < batchSize; i++)
     if (_layers[0]->_nodeValues[i].size() != inputSize)
-      korali::Logger::logError("Input data set %lu has a different number of elements (%lu) than the input layer node count (%lu).\n", i, _layers[0]->_nodeValues[i].size(), inputSize);
+      KORALI_LOG_ERROR("Input data set %lu has a different number of elements (%lu) than the input layer node count (%lu).\n", i, _layers[0]->_nodeValues[i].size(), inputSize);
 
   /*********************************************************************************
   /*  Initializing memory objects and primitives for FORWARD propagation
@@ -227,10 +227,10 @@ void korali::NeuralNetwork::create()
     if (_inputNormalizationMeans.size() > 0 || _inputNormalizationVariances.size() > 0)
     {
       if (_inputNormalizationMeans.size() != IC)
-        korali::Logger::logError("Number of values (%lu) in the batch normalization means vector is different from that of the node count of the first layer (%lu).\n", _inputNormalizationMeans.size(), IC);
+        KORALI_LOG_ERROR("Number of values (%lu) in the batch normalization means vector is different from that of the node count of the first layer (%lu).\n", _inputNormalizationMeans.size(), IC);
 
       if (_inputNormalizationVariances.size() != IC)
-        korali::Logger::logError("Number of values (%lu) in the batch normalization variances vector is different from that of the node count of the first layer (%lu).\n", _inputNormalizationVariances.size(), IC);
+        KORALI_LOG_ERROR("Number of values (%lu) in the batch normalization variances vector is different from that of the node count of the first layer (%lu).\n", _inputNormalizationVariances.size(), IC);
 
       normalizationFlags |= dnnl::normalization_flags::use_global_stats;
     }
@@ -241,10 +241,10 @@ void korali::NeuralNetwork::create()
     if (_batchNormalizationScale.size() > 0 || _batchNormalizationShift.size() > 0)
     {
       if (_batchNormalizationScale.size() != inputSize)
-        korali::Logger::logError("Number of values (%lu) in the batch normalization scale vector is different from that of the node count of the first layer (%lu).\n", _batchNormalizationScale.size(), inputSize);
+        KORALI_LOG_ERROR("Number of values (%lu) in the batch normalization scale vector is different from that of the node count of the first layer (%lu).\n", _batchNormalizationScale.size(), inputSize);
 
       if (_batchNormalizationShift.size() != inputSize)
-        korali::Logger::logError("Number of values (%lu) in the batch normalization shift vector is different from that of the node count of the first layer (%lu).\n", _batchNormalizationShift.size(), inputSize);
+        KORALI_LOG_ERROR("Number of values (%lu) in the batch normalization shift vector is different from that of the node count of the first layer (%lu).\n", _batchNormalizationShift.size(), inputSize);
 
       auto normalizationScaleShiftMemDesc = memory::desc(scaleShiftDims, memory::data_type::f32, memory::format_tag::nc);
       inputNormalizationScaleShiftMem = memory(normalizationScaleShiftMemDesc, _engine);
@@ -342,10 +342,10 @@ void korali::NeuralNetwork::create()
       if (_outputNormalizationMeans.size() > 0 || _outputNormalizationVariances.size() > 0)
       {
         if (_outputNormalizationMeans.size() != IC)
-          korali::Logger::logError("Number of values (%lu) in the batch normalization means vector is different from that of the node count of the first layer (%lu).\n", _outputNormalizationMeans.size(), IC);
+          KORALI_LOG_ERROR("Number of values (%lu) in the batch normalization means vector is different from that of the node count of the first layer (%lu).\n", _outputNormalizationMeans.size(), IC);
 
         if (_outputNormalizationVariances.size() != IC)
-          korali::Logger::logError("Number of values (%lu) in the batch normalization variances vector is different from that of the node count of the first layer (%lu).\n", _outputNormalizationVariances.size(), IC);
+          KORALI_LOG_ERROR("Number of values (%lu) in the batch normalization variances vector is different from that of the node count of the first layer (%lu).\n", _outputNormalizationVariances.size(), IC);
 
         normalizationFlags |= dnnl::normalization_flags::use_global_stats;
       }
@@ -498,7 +498,7 @@ void korali::NeuralNetwork::create()
 void korali::NeuralNetwork::updateWeightsAndBias()
 {
   if (_isInitialized == false)
-    korali::Logger::logError("The neural network has not been initialized before the update.\n");
+    KORALI_LOG_ERROR("The neural network has not been initialized before the update.\n");
 
 #ifdef _KORALI_USE_ONEDNN
 
@@ -517,14 +517,14 @@ void korali::NeuralNetwork::updateWeightsAndBias()
     std::vector<float> biasData(OC);
 
     if (_layers[i]->_weights.size() != OC)
-      korali::Logger::logError("Layer %lu weights were either not initialized (perhaps the NN is not yet trained) or not provided correctly. Expected: %lu, provided: %lu weight sets. \n", i, OC, _layers[i]->_weights.size());
+      KORALI_LOG_ERROR("Layer %lu weights were either not initialized (perhaps the NN is not yet trained) or not provided correctly. Expected: %lu, provided: %lu weight sets. \n", i, OC, _layers[i]->_weights.size());
 
     for (size_t j = 0; j < OC; j++)
       if (_layers[i]->_weights[j].size() != IC)
-        korali::Logger::logError("Layer %lu weight set %lu was either not initialized (perhaps the NN is not yet trained) or not provided correctly. Expected: %lu, provided: %lu weight sets. \n", i, j, IC, _layers[i]->_weights[j].size());
+        KORALI_LOG_ERROR("Layer %lu weight set %lu was either not initialized (perhaps the NN is not yet trained) or not provided correctly. Expected: %lu, provided: %lu weight sets. \n", i, j, IC, _layers[i]->_weights[j].size());
 
     if (_layers[i]->_bias.size() != OC)
-      korali::Logger::logError("Layer %lu biases were either not initialized (perhaps the NN is not yet trained) or not provided correctly. Expected: %lu, provided: %lu biases. \n", i, OC, _layers[i]->_bias.size());
+      KORALI_LOG_ERROR("Layer %lu biases were either not initialized (perhaps the NN is not yet trained) or not provided correctly. Expected: %lu, provided: %lu biases. \n", i, OC, _layers[i]->_bias.size());
 
     for (size_t j = 0; j < OC; j++)
       for (size_t k = 0; k < IC; k++)
@@ -587,10 +587,10 @@ void korali::NeuralNetwork::forward()
 void korali::NeuralNetwork::backward()
 {
   if (_operation == "Inference")
-    korali::Logger::logError("Neural network being backward propagated but has not being tagged as training in the 'Operation' setting. \n");
+    KORALI_LOG_ERROR("Neural network being backward propagated but has not being tagged as training in the 'Operation' setting. \n");
 
   if (_hasPerformedForwardPropagation == false)
-    korali::Logger::logError("Neural network being backward propagated without doing a forward propagation first. \n");
+    KORALI_LOG_ERROR("Neural network being backward propagated without doing a forward propagation first. \n");
 
 #ifdef _KORALI_USE_ONEDNN
 
@@ -649,6 +649,8 @@ void korali::NeuralNetwork::train(size_t stepsToRun)
 void korali::NeuralNetwork::runSample(korali::Sample &sample, korali::NeuralNetwork *nn)
 {
   // Setting weights and biases
+  auto parameters = KORALI_GET(std::vector<double>, sample, "Parameters");
+
   size_t currentVariable = 0;
   for (size_t i = 1; i < nn->_layers.size(); i++)
   {
@@ -661,12 +663,12 @@ void korali::NeuralNetwork::runSample(korali::Sample &sample, korali::NeuralNetw
       nn->_layers[i]->_weights[j].resize(nn->_layers[i - 1]->_nodeCount);
 
       for (size_t k = 0; k < nn->_layers[i - 1]->_nodeCount; k++)
-        nn->_layers[i]->_weights[j][k] = sample["Parameters"][currentVariable++];
+        nn->_layers[i]->_weights[j][k] = parameters[currentVariable++];
     }
 
     // Adding layer's biases
     for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++)
-      nn->_layers[i]->_bias[j] = sample["Parameters"][currentVariable++];
+      nn->_layers[i]->_bias[j] = parameters[currentVariable++];
   }
 
   // Updating the network's weights and biases

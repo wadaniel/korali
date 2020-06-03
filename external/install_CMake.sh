@@ -40,7 +40,7 @@ fi
 
 if [ -f $baseKoraliDir/../docs/VERSION ]; then
  foundbinVersionFile=1
- baseKoraliDir=`realpath $PWD/../`
+ baseKoraliDir=`dirname $PWD`
 fi
 
 if [ $foundbinVersionFile == 0 ]; then
@@ -98,7 +98,6 @@ if [ $? -eq 0 ]; then
     echo "[Korali] ${libName} version found (${binVersion}) is smaller than required (${minVersion})."
  else
     binFound=1
-    echo "[Korali] Found existing ${libName} version ${binVersion}. Skipping installation..."
  fi
 fi
 

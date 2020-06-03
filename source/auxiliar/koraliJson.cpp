@@ -53,7 +53,7 @@ pybind11::object korali::KoraliJson::getItem(pybind11::object key)
 {
   traverseKey(key);
 
-  if (JsonInterface::isElemental(*_opt))
+  if (isElemental(*_opt))
   {
     auto tmp = _opt;
     _opt = &_js;

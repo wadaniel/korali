@@ -324,14 +324,14 @@ GSLLIBS="${GSLLIBS} -L${GSLPREFIX}/lib -Wl,-rpath -Wl,${GSLPREFIX}/lib -L${GSLPR
 PYBIND11INCLUDES=`python3 -m pybind11 --includes` ; check
 PYBIND11LIBS=`python3-config --ldflags`; check
 
-CXXARCH="-std=c++14"
+CXXARCH="-std=c++17"
 which $USE_CXX | grep "cray" >> $logFile 2>&1
 if [ $? -eq 0 ]; then
   logEcho "[Korali] Assuming Cray System."
   CC -craype-verbose 2>&1 | grep "driver.CC" >> $logFile 2>&1
   if [ $? -eq 0 ]; then
    logEcho "[Korali] Detected Cray compiler."
-   CXXARCH="-hstd=c++14"
+   CXXARCH="-hstd=c++17"
    PYBIND11LIBS=`echo $PYBIND11LIBS | sed 's/-Xlinker//g' | sed 's/-export-dynamic//g'`
   fi
 fi

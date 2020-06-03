@@ -19,7 +19,7 @@ void korali::Sample::run(size_t functionPosition)
     fprintf(stderr, "Function ID: %lu not contained in function vector (size: %lu). If you are resuming a previous experiment, you need to re-specify model functions.\n", functionPosition, _functionVector.size());
     exit(-1);
   }
-  (*_functionVector[functionPosition])(*this);
+  (*_functionVector[functionPosition])(*_self);
 }
 
 void korali::Sample::update()
@@ -34,34 +34,18 @@ void korali::Sample::sampleLauncher()
   korali::Engine *engine = _engineStack.top();
   korali::Sample *sample = engine->_currentSample;
 
-  size_t experimentId = (*sample)["Experiment Id"];
+  (*sample)["Finished"] = false;
+
+  // Getting sample information
+  size_t experimentId = KORALI_GET(size_t, (*sample), "Experiment Id");
+  auto sampleId = KORALI_GET(size_t, (*sample), "Sample Id");
+  auto operation = KORALI_GET(std::string, (*sample), "Operation");
+  auto module = KORALI_GET(std::string, (*sample), "Module");
+
+  // Getting experiment pointer
   auto experiment = engine->_experimentVector[experimentId];
 
-  (*sample)["Finished"] = false;
-  size_t sampleId = (*sample)["Sample Id"];
-
-  // Getting operation to run
-  std::string operation;
-  try
-  {
-    operation = (*sample)["Operation"].get<std::string>();
-  }
-  catch (const std::exception &e)
-  {
-    korali::Logger::logError("Development Error. Incorrect or missing operation type for the sample.\n  Solution: sample[\"Operation\"] = <operation to run>, before starting sample.\n  Reason: %s", e.what());
-  }
-
-  // Getting module type
-  std::string module;
-  try
-  {
-    module = (*sample)["Module"].get<std::string>();
-  }
-  catch (const std::exception &e)
-  {
-    korali::Logger::logError("Development Error. Incorrect or missing module to run sample with.\n   Solution: sample[\"Module\"] = \"Problem\" or \"Solver\", before starting sample.\n  Reason: %s", e.what());
-  }
-
+  // Running operation
   if ((*sample)["Module"] == "Problem")
     experiment->_problem->runOperation(operation, *sample);
 

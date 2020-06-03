@@ -1,4 +1,4 @@
-Quick run of all basic tutorials for a quick sanity check
-################################################################ 
+Testing Documentation Building 
+################################################################
 
-Quickly run all basic tutorials to check syntax and basic functioning of Korali's engine.
+Testing whether the documentation can be build and no warnings/errors occur.

@@ -31,7 +31,7 @@ for dir in ./examples/*/
 do
   logEcho "-------------------------------------"
   logEcho " Entering Folder: $dir"
-  pushd $dir >> $logFile 2>&1
+  pushd $dir 
   check_result
 
   for file in run-*.{py,sh}
@@ -45,12 +45,12 @@ do
  
     logEcho "  + Running File: $file"
     if [ ${file: -3} == ".py" ]; then
-      python3 _$file >> $logFile 2>&1
+      python3 _$file 
       check_result
     fi
     
     if [ ${file: -3} == ".sh" ]; then
-      sh _$file >> $logFile 2>&1
+      sh _$file 
       check_result
     fi
     
@@ -59,7 +59,7 @@ do
 
   done
 
-  popd >> $logFile 2>&1
+  popd 
   check_result
   logEcho "-------------------------------------"
 done

@@ -2,14 +2,14 @@
 Korali Basics
 ***********************
 
-This document describes the basic concepts that make a Korali application. For example Korali applications, visit the :ref:`basic tutorials <examples>` section.
+This document describes the basic concepts that make a Korali application. 
 
 
 Creating a Korali Experiment
 ========================================
 
 Korali provides a range of optimization and uncertainty quantification tools. To use these tools, a user needs to create a *Korali Experiment*.
-The following python code snippet shows how to load Korali's library and instantiate a new experiment (to use Korali in C++, visit this :ref:`tutorial <runningcxx>`): 
+The following python code snippet shows how to load Korali's library and instantiate a new experiment: 
 
 .. code-block:: python
 

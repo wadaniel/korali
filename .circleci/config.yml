@@ -142,7 +142,7 @@ jobs:
           path: ~/korali/install.log
 
       - store_artifacts:
-          path: ~/korali/docs/test.log
+          path: ~/korali/tests/test.log
 
   build_macos:
     macos:
@@ -277,7 +277,7 @@ jobs:
           command: pushd tests; ./run_all_tests.sh; popd
 
       - store_artifacts:
-           path: ~/korali/install.log
+          path: ~/korali/install.log
 
       - store_artifacts:
-          path: ~/korali/docs/test.log
+          path: ~/korali/tests/test.log

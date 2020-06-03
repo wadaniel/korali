@@ -12,11 +12,11 @@ do
   logEcho "-------------------------------------"
   logEcho " Running $file"
   logEcho "-------------------------------------"
-  ./"$file" >> $logFile 2>&1
+  ./"$file" 
   check_result
 done
 
 log "[Korali] Removing results..."
-rm -rf _results_* >> $logFile 2>&1
+rm -rf _results_* 
 
 

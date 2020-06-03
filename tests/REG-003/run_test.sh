@@ -13,12 +13,12 @@ dir=$PWD/../../examples
 logEcho "[Korali] Beginning examples test..."
 logEcho "-------------------------------------"
 
-pushd $dir >> $logFile 2>&1; check_result
+pushd $dir; check_result
 
-./.run_test.sh >> $logFile 2>&1
+./.run_test.sh
 check_result
 
-popd >> $logFile 2>&1
+popd
 check_result
 
 logEcho "-------------------------------------"

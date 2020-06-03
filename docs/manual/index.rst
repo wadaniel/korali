@@ -14,9 +14,10 @@ Korali's Documentation
    
 .. toctree::
    :maxdepth: 2
+   :glob:
    :caption: Examples
 
-   examples/examples
+   examples/*
 
 .. toctree::
    :maxdepth: 2

@@ -12,7 +12,7 @@ do
    logEcho "----------------------------------------------"
    logEcho " Processing profiler information from $dir ..."
    logEcho "----------------------------------------------"
-   python3 -m korali.profiler --test --dir "${dir}" >> $logFile 2>&1
+   python3 -m korali.profiler --test --dir "${dir}" 
    check_result
   fi
 done

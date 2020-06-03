@@ -2,7 +2,6 @@
 
 curdir=$PWD
 logFile=$curdir/test.log
-echo "" > $logFile
 
 # Function to check whether the last command was correctly executed
 function check_result()

@@ -55,7 +55,7 @@ def processExample(exampleRelPath, exampleName):
     for f in subFolderList:
       subExampleFullPath = os.path.join(examplePath, f)
       if (not '/_' in subExampleFullPath ):
-       exampleReadmeString += '   ' + f + '/' + f + '\n'
+       exampleReadmeString += '   ' + exampleName + '/' + f + '\n'
        subPath = os.path.join(exampleRelPath, f)
        processExample(subPath, f)
 

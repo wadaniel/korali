@@ -16,5 +16,5 @@ do
 done
 
 log "[Korali] Removing results..."
-rm -rf _result_run-* >> $logFile 2>&1
+rm -rf _result_run-* 
 check_result

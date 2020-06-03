@@ -11,7 +11,7 @@ do
   logEcho "-------------------------------------"
   logEcho " Plotting results from $dir ..."
   logEcho "-------------------------------------"
-  python3 -m korali.plotter --test --dir "${dir}" >> $logFile 2>&1
+  python3 -m korali.plotter --test --dir "${dir}" 
   check_result
 
 done

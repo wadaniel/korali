@@ -1,2 +1,4 @@
 [style]
-based_on_style = yapf
+based_on_style = pep8
+join_multiple_lines = true
+column_limit = 1000

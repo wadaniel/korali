@@ -15,8 +15,7 @@ e = korali.Experiment()
 
 e["Problem"]["Type"] = "Integration"
 e["Problem"]["Integrand"] = lambda modelData: integrand(modelData)
-e["Problem"][
-    "Integration Method"] = "Rectangle"  #"Rectangle" #"Trapezoidal", "Simpson", "Monte Carlo", "Custom"
+e["Problem"]["Integration Method"] = "Rectangle"
 
 e["Distributions"][0]["Name"] = "Uniform"
 e["Distributions"][0]["Type"] = "Univariate/Uniform"

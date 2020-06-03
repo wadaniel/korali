@@ -101,7 +101,7 @@ class Logger
   * @param format Format string of the data (printf-style)
   * @param ... List of arguments for the format string
   */
-  static void logError [[ noreturn ]] (const char *fileName, const int lineNumber, const char *format, ...);
+  static void logError [[noreturn]] (const char *fileName, const int lineNumber, const char *format, ...);
 };
 
 } // namespace korali

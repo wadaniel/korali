@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import os
 import sys
-sys.path.append('./model/')
+sys.path.append('./_model/')
 from model import *
 import numpy as np
 

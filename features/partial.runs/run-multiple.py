@@ -8,7 +8,7 @@
 # First, we run a simple Korali experiment.
 
 import sys
-sys.path.append('model')
+sys.path.append('_model')
 from model import *
 
 import korali

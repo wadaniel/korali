@@ -206,7 +206,7 @@ pointsInfoStruct &heat2DInit(int *argc, char **argv[])
   size_t nPoints = 0;
 
   printf("Heat2D - Running problem from data.in... \n");
-  problemFile = fopen("model/data.in", "r");
+  problemFile = fopen("_model/data.in", "r");
   fscanf(problemFile, "%lu", &nPoints);
 
   __p.xPos.resize(nPoints);

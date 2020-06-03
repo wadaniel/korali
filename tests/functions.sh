@@ -8,8 +8,7 @@ function check_result()
 {
  if [ ! $? -eq 0 ]
  then 
-  echo "[Korali] Error running test: (check log: $logFile)"
-  tail $logFile
+  echo "[Korali] Error detected."
   exit -1
  fi 
 }

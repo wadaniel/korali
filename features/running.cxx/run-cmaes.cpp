@@ -1,5 +1,5 @@
 #include "korali.hpp"
-#include "model/heat2d.h"
+#include "_model/heat2d.h"
 
 int main(int argc, char *argv[])
 {
@@ -12,8 +12,8 @@ int main(int argc, char *argv[])
   e["Problem"]["Reference Data"] = p.refTemp;
   e["Problem"]["Computational Model"] = &heat2DSolver;
 
-  e["Solver"]["Type"] = "LMCMAES";
-  e["Solver"]["Population Size"] = 32;
+  e["Solver"]["Type"] = "CMAES";
+  e["Solver"]["Population Size"] = 12;
   e["Solver"]["Termination Criteria"]["Max Generations"] = 30;
 
   e["Distributions"][0]["Name"] = "Uniform 0";

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import korali
 import sys
-sys.path.append("model")
+sys.path.append("_model")
 from runModel import *
 
 k = korali.Engine()

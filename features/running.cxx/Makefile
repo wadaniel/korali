@@ -1,22 +1,22 @@
-BINARIES = run-tmcmc run-cmaes
+BINARIES = run-cmaes-direct run-cmaes run-lmcma-direct run-lmcma run-tmcmc
 KORALICXX=$(shell python3 -m korali.cxx --compiler)
 KORALICFLAGS=`python3 -m korali.cxx --cflags`
 KORALILIBS=`python3 -m korali.cxx --libs`
 
 .SECONDARY:
-.PHONY: all 
+.PHONY: all
 all: $(BINARIES)
 
-$(BINARIES) : % : %.o model/jacobi.o
+$(BINARIES) : % : %.o _model/heat2d.o
 	$(KORALICXX) -o $@ $^ $(KORALILIBS)
 
-model/jacobi.o:
-	$(MAKE) -C model all
+_model/%.o: 
+	$(MAKE) -C _model all 
 
 %.o: %.cpp
-	$(KORALICXX) -c $< $(KORALICFLAGS)
+	$(KORALICXX) -c $(KORALICFLAGS) $<
 
 .PHONY: clean
 clean:
-	$(MAKE) -C model clean
+	$(MAKE) -C _model clean
 	$(RM) $(BINARIES) *.o *.ti *.optrpt *.txt

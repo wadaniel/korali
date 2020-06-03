@@ -4,7 +4,7 @@ import subprocess
 
 
 def runModel(x):
-  argString = ['model/model.py']
+  argString = ['_model/model.py']
   v = x["Parameters"]
   for i in v:
     argString.append(str(i))

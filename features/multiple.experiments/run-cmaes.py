@@ -6,7 +6,7 @@
 
 # Importing computational model
 import sys
-sys.path.append('./model')
+sys.path.append('./_model')
 from model import *
 
 # Starting Korali's Engine

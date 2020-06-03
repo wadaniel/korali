@@ -8,7 +8,7 @@ source ../functions.sh
 
 ############# STEP 1 ##############
 
-logEcho "[Korali] Beginning code formatting check..."
+echo "[Korali] Beginning code formatting check..."
 
 pushd ../../tools/dev-tools/
 check_result

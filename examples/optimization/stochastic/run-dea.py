@@ -31,5 +31,8 @@ e["Variables"][0]["Name"] = "X"
 e["Variables"][0]["Lower Bound"] = -10.0
 e["Variables"][0]["Upper Bound"] = +10.0
 
+# Configuring results path
+e["File Output"]["Path"] = '_korali_result_dea'
+
 # Running Korali
 k.run(e)

@@ -14,12 +14,12 @@ pushd ../../tutorials/advanced/6.running.mpi/
 check_result
 dir=$PWD
 
-logEcho "-------------------------------------"
-logEcho " Entering Folder: $dir"
+echo "-------------------------------------"
+echo " Entering Folder: $dir"
 
 ############ STEP 1 #######
 
-logEcho "[Korali] Compiling tests ..."
+echo "[Korali] Compiling tests ..."
 make clean >> $logFile 
 check_result
 
@@ -34,23 +34,23 @@ do
   
   ############# STEP 2 ##############
   
-  logEcho "[Korali] Running mpirun -n 9 ./$execName 1..."
+  echo "[Korali] Running mpirun -n 9 ./$execName 1..."
   mpirun -n 9 ./$execName 1 >> $logFile
   check_result
   
   ############# STEP 3 ##############
   
-  logEcho "[Korali] Running mpirun -n 9 ./$execName 4..."
+  echo "[Korali] Running mpirun -n 9 ./$execName 4..."
   mpirun -n 9 ./$execName 4 >> $logFile 
   check_result
   
   ############# STEP 4 ##############
   
-  logEcho "[Korali] Running mpirun -n 9 ./$execName 8..."
+  echo "[Korali] Running mpirun -n 9 ./$execName 8..."
   mpirun -n 9 ./$execName 8 >> $logFile 
   check_result
 done
 
-logEcho "-------------------------------------"
+echo "-------------------------------------"
 
 popd

@@ -8,24 +8,24 @@ if [[ $archString == *"Darwin"* ]]; then
   exit 0
 fi
 
-logEcho "[Korali] Running C++ Test..."
+echo "[Korali] Running C++ Test..."
 
 pushd ../../tutorials/advanced/4.running.cxx/
 check_result
 dir=$PWD
 
-logEcho "-------------------------------------"
-logEcho " Entering Folder: $dir"
+echo "-------------------------------------"
+echo " Entering Folder: $dir"
 
-log "[Korali] Removing any old result files..."
-rm -rf _korali_results >> $logFile 2>&1
+echo "[Korali] Removing any old result files..."
+rm -rf _korali_results
 check_result
 
-log "[Korali] Compiling test case..."
-make clean >> $logFile 2>&1
+echo "[Korali] Compiling test case..."
+make clean
 check_result
 
-make -j >> $logFile 2>&1
+make -j
 check_result
 
 for file in *.cpp
@@ -33,12 +33,12 @@ do
   if [ ! -f $file ]; then continue; fi
 
   execName=${file%.*}
-  logEcho "  + Running File: $execName"
-  ./$execName >> $logFile 2>&1
+  echo "  + Running File: $execName"
+  ./$execName
   check_result
 done
 
-logEcho "-------------------------------------"
+echo "-------------------------------------"
 
 popd
 

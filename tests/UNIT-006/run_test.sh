@@ -63,22 +63,22 @@ nested_values=(
 # CMA-ES Termination Criterion Tests
 #################################################
 
-logEcho "[Korali] Beginning CMA-ES termination criterion tests"
+echo "[Korali] Beginning CMA-ES termination criterion tests"
 
 for ((i=0;i<${#cmaes_criteria[@]};++i)); do
 
-  logEcho "-------------------------------------"
-  logEcho "Testing Termination Criterion: ${cmaes_criteria[$i]}"
-  logEcho "Running File: cmaes_termination.py"
+  echo "-------------------------------------"
+  echo "Testing Termination Criterion: ${cmaes_criteria[$i]}"
+  echo "Running File: cmaes_termination.py"
 
-  python3 ./cmaes_termination.py --criterion "${cmaes_criteria[$i]}" --value ${cmaes_values[$i]} >> $logFile 2>&1
+  python3 ./cmaes_termination.py --criterion "${cmaes_criteria[$i]}" --value ${cmaes_values[$i]}
   check_result
 
-  log "[Korali] Removing results..."
-  rm -rf "_korali_result" >> $logFile 2>&1
+  echo "[Korali] Removing results..."
+  rm -rf "_korali_result"
   check_result
 
-  logEcho "-------------------------------------"
+  echo "-------------------------------------"
 
 done
 
@@ -87,22 +87,22 @@ done
 # DEA Termination Criterion Tests
 #################################################
 
-logEcho "[Korali] Beginning DEA termination criterion tests"
+echo "[Korali] Beginning DEA termination criterion tests"
 
 for ((i=0;i<${#dea_criteria[@]};++i)); do
 
-  logEcho "-------------------------------------"
-  logEcho "Testing Termination Criterion: ${dea_criteria[$i]}"
-  logEcho "Running File: dea_termination.py"
+  echo "-------------------------------------"
+  echo "Testing Termination Criterion: ${dea_criteria[$i]}"
+  echo "Running File: dea_termination.py"
 
-  python3 ./dea_termination.py --criterion "${dea_criteria[$i]}" --value ${dea_values[$i]} >> $logFile 2>&1
+  python3 ./dea_termination.py --criterion "${dea_criteria[$i]}" --value ${dea_values[$i]}
   check_result
 
-  log "[Korali] Removing results..."
-  rm -rf "_korali_result" >> $logFile 2>&1
+  echo "[Korali] Removing results..."
+  rm -rf "_korali_result"
   check_result
 
-  logEcho "-------------------------------------"
+  echo "-------------------------------------"
 
 done
 
@@ -111,22 +111,22 @@ done
 # TMCMC Termination Criterion Tests
 #################################################
 
-logEcho "[Korali] Beginning TMCMC termination criterion tests"
+echo "[Korali] Beginning TMCMC termination criterion tests"
 
 for ((i=0;i<${#tmcmc_criteria[@]};++i)); do
 
-  logEcho "-------------------------------------"
-  logEcho "Testing Termination Criterion: ${tmcmc_criteria[$i]}"
-  logEcho "Running File: tmcmc_termination.py"
+  echo "-------------------------------------"
+  echo "Testing Termination Criterion: ${tmcmc_criteria[$i]}"
+  echo "Running File: tmcmc_termination.py"
 
-  python3 ./tmcmc_termination.py --criterion "${tmcmc_criteria[$i]}" --value ${tmcmc_values[$i]} >> $logFile 2>&1
+  python3 ./tmcmc_termination.py --criterion "${tmcmc_criteria[$i]}" --value ${tmcmc_values[$i]}
   check_result
 
-  log "[Korali] Removing results..."
-  rm -rf "_korali_result" >> $logFile 2>&1
+  echo "[Korali] Removing results..."
+  rm -rf "_korali_result"
   check_result
 
-  logEcho "-------------------------------------"
+  echo "-------------------------------------"
 
 done
 
@@ -134,21 +134,21 @@ done
 # Nested Termination Criterion Tests
 #################################################
 
-logEcho "[Korali] Beginning Nested termination criterion tests"
+echo "[Korali] Beginning Nested termination criterion tests"
 
 for ((i=0;i<${#nested_criteria[@]};++i)); do
 
-  logEcho "-------------------------------------"
-  logEcho "Testing Termination Criterion: ${nested_criteria[$i]}"
-  logEcho "Running File: nested_termination.py"
+  echo "-------------------------------------"
+  echo "Testing Termination Criterion: ${nested_criteria[$i]}"
+  echo "Running File: nested_termination.py"
 
-  python3 ./nested_termination.py --criterion "${nested_criteria[$i]}" --value ${nested_values[$i]} >> $logFile 2>&1
+  python3 ./nested_termination.py --criterion "${nested_criteria[$i]}" --value ${nested_values[$i]}
   check_result
 
-  log "[Korali] Removing results..."
-  rm -rf "_korali_result" >> $logFile 2>&1
+  echo "[Korali] Removing results..."
+  rm -rf "_korali_result"
   check_result
 
-  logEcho "-------------------------------------"
+  echo "-------------------------------------"
 
 done

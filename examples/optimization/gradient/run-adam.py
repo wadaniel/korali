@@ -30,5 +30,8 @@ e["Solver"]["Type"] = "Adam"
 e["Solver"]["Eta"] = 0.1
 e["Solver"]["Termination Criteria"]["Max Generations"] = 2000
 
+# Configuring results path
+e["File Output"]["Path"] = '_korali_result_adam'
+
 # Running Experiment
 k.run(e)

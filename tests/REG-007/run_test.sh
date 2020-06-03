@@ -18,19 +18,19 @@ source ../functions.sh
 
 ############# STEP 1 ##############
 
-logEcho "[Korali] Pulling korali-apps repository"
+echo "[Korali] Pulling korali-apps repository"
 pushd ../../
 git submodule update --init --recursive --remote
 check_result
 popd
 
-logEcho "[Korali] Beginning case study dry run tests..."
+echo "[Korali] Beginning case study dry run tests..."
 pushd ../../tutorials
 
 for dir in ./examples/*/
 do
-  logEcho "-------------------------------------"
-  logEcho " Entering Folder: $dir"
+  echo "-------------------------------------"
+  echo " Entering Folder: $dir"
   pushd $dir 
   check_result
 
@@ -43,7 +43,7 @@ do
     
     sed 's/k.run(/k["Dry Run"] = True; k.run(/g' $file > _$file
  
-    logEcho "  + Running File: $file"
+    echo "  + Running File: $file"
     if [ ${file: -3} == ".py" ]; then
       python3 _$file 
       check_result
@@ -61,7 +61,7 @@ do
 
   popd 
   check_result
-  logEcho "-------------------------------------"
+  echo "-------------------------------------"
 done
 
 popd

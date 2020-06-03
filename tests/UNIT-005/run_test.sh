@@ -2,17 +2,17 @@
 
 source ../functions.sh
 
-logEcho "[Korali] Running Checkpoint/Restart Test..."
+echo "[Korali] Running Checkpoint/Restart Test..."
 
 pushd ../../tutorials/advanced/1.checkpoint.restart
 check_result
 dir=$PWD
 
-logEcho "-------------------------------------"
-logEcho " Entering Folder: $dir"
+echo "-------------------------------------"
+echo " Entering Folder: $dir"
 
-log "[Korali] Removing any old result files..."
-rm -rf _korali_results >> $logFile 2>&1
+echo "[Korali] Removing any old result files..."
+rm -rf _korali_results
 check_result
 
 for file in *.py
@@ -21,13 +21,13 @@ do
 
   for i in $(seq 1 5)
   do
-   logEcho "  + Running File: $file"
-   ./$file >> $logFile 2>&1
+   echo "  + Running File: $file"
+   ./$file
    check_result
   done
 done
 
-logEcho "-------------------------------------"
+echo "-------------------------------------"
 
 popd
 

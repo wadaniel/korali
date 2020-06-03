@@ -73,6 +73,8 @@ def main():
   e["Distributions"][1]["Minimum"] = -5
   e["Distributions"][1]["Maximum"] = 5
 
+  # Configuring results path
+  e["File Output"]["Path"] = '_korali_result_saem'
   e["Random Seed"] = 0xC0FFEE
 
   #k["Conduit"]["Type"] = "Concurrent"

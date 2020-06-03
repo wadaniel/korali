@@ -2,17 +2,17 @@
 
 source ../functions.sh
 
-logEcho "[Korali] Beginning Stat Test 004"
+echo "[Korali] Beginning Stat Test 004"
 
 for file in run-*.py
 do
-  logEcho "-------------------------------------"
-  logEcho " Running $file"
-  logEcho "-------------------------------------"
+  echo "-------------------------------------"
+  echo " Running $file"
+  echo "-------------------------------------"
   ./"$file" 
   check_result
 done
 
-log "[Korali] Removing results..."
+echo "[Korali] Removing results..."
 rm -rf _korali_result 
 check_result

@@ -33,5 +33,8 @@ e["Solver"]["Population Size"] = 32
 e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-7
 e["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
+# Configuring results path
+e["File Output"]["Path"] = '_korali_result_lmcma'
+
 # Running Korali
 k.run(e)

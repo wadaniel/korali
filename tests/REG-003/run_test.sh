@@ -10,8 +10,8 @@ source ../functions.sh
 
 dir=$PWD/../../examples
 
-logEcho "[Korali] Beginning examples test..."
-logEcho "-------------------------------------"
+echo "[Korali] Beginning examples test..."
+echo "-------------------------------------"
 
 pushd $dir; check_result
 
@@ -21,4 +21,4 @@ check_result
 popd
 check_result
 
-logEcho "-------------------------------------"
+echo "-------------------------------------"

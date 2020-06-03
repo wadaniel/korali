@@ -1,4 +1,4 @@
-Sampling: Draw Samples from a Function
+Sampling
 ======================================
 
 In this tutorial we show how to directly **sample** from a function

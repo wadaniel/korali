@@ -20,14 +20,6 @@ def processFeature(featureRelPath, featureName):
 
   featureReadmeString = '.. _feature_' + featureRelPath.lower().replace('./', '').replace('/', '-').replace(' ', '') + ':\n\n'
 
-  # Adding source code
-  featureReadmeString += '.. hint::\n\n'
-  featureReadmeString += '   Feature source code: `https://github.com/cselab/korali/tree/master/tutorials/' + featureRelPath.replace('./','') + '/ <https://github.com/cselab/korali/tree/master/tutorials/' + featureRelPath.replace('./','') + '/>`_\n\n'
-
-  # Reading original rst
-  with open(featureReadmeFile, 'r') as file:
-   featureReadmeString += file.read() + '\n\n'
-
   # Creating subfolder list
   subFolderList = []
   list_dir = os.listdir(featurePath)
@@ -46,6 +38,15 @@ def processFeature(featureRelPath, featureName):
   if (subFolderList == []):
     isParentFeature = False
 
+  # If its leaf, link to source code
+  if (isParentFeature == False):
+    featureReadmeString += '.. hint::\n\n'
+    featureReadmeString += '   Example code: `https://github.com/cselab/korali/tree/master/features/' + featureRelPath.replace('./','') + '/ <https://github.com/cselab/korali/tree/master/features/' + featureRelPath.replace('./','') + '/>`_\n\n'
+
+  # Reading original rst
+  with open(featureReadmeFile, 'r') as file:
+   featureReadmeString += file.read() + '\n\n'
+    
   # If its parent, construct children features
   if (isParentFeature == True):
     featureReadmeString += '**Sub-Categories**\n\n'
@@ -58,11 +59,7 @@ def processFeature(featureRelPath, featureName):
        featureReadmeString += '   ' + featureName + '/' + f + '\n'
        subPath = os.path.join(featureRelPath, f)
        processFeature(subPath, f)
-
-  # If its leaf, build actual readme with links
-  if (isParentFeature == False):
-    featureReadmeString += ''
-
+       
   # Saving Feature's readme file
   featureReadmeString += '\n\n'
   with open(featureOutputDir + '/' + featureName + '.rst', 'w') as file:

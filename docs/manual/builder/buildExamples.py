@@ -20,14 +20,6 @@ def processExample(exampleRelPath, exampleName):
 
   exampleReadmeString = '.. _example_' + exampleRelPath.lower().replace('./', '').replace('/', '-').replace(' ', '') + ':\n\n'
 
-  # Adding source code
-  exampleReadmeString += '.. hint::\n\n'
-  exampleReadmeString += '   Example source code: `https://github.com/cselab/korali/tree/master/tutorials/' + exampleRelPath.replace('./','') + '/ <https://github.com/cselab/korali/tree/master/tutorials/' + exampleRelPath.replace('./','') + '/>`_\n\n'
-
-  # Reading original rst
-  with open(exampleReadmeFile, 'r') as file:
-   exampleReadmeString += file.read() + '\n\n'
-
   # Creating subfolder list
   subFolderList = []
   list_dir = os.listdir(examplePath)
@@ -46,6 +38,15 @@ def processExample(exampleRelPath, exampleName):
   if (subFolderList == []):
     isParentExample = False
 
+  # If its leaf, link to source code
+  if (isParentExample == False):
+    exampleReadmeString += '.. hint::\n\n'
+    exampleReadmeString += '   Example code: `https://github.com/cselab/korali/tree/master/examples/' + exampleRelPath.replace('./','') + '/ <https://github.com/cselab/korali/tree/master/examples/' + exampleRelPath.replace('./','') + '/>`_\n\n'
+
+  # Reading original rst
+  with open(exampleReadmeFile, 'r') as file:
+   exampleReadmeString += file.read() + '\n\n'
+    
   # If its parent, construct children examples
   if (isParentExample == True):
     exampleReadmeString += '**Sub-Categories**\n\n'
@@ -58,11 +59,7 @@ def processExample(exampleRelPath, exampleName):
        exampleReadmeString += '   ' + exampleName + '/' + f + '\n'
        subPath = os.path.join(exampleRelPath, f)
        processExample(subPath, f)
-
-  # If its leaf, build actual readme with links
-  if (isParentExample == False):
-    exampleReadmeString += ''
-
+       
   # Saving Example's readme file
   exampleReadmeString += '\n\n'
   with open(exampleOutputDir + '/' + exampleName + '.rst', 'w') as file:

@@ -1,5 +1,4 @@
-==================================================================
-Optimizing parameters in a latent variable model, using SA-EM
+Latent Space Optimization
 ==================================================================
 
 Here we optimize a model with the solver `SA-EM`  to solve two different problems. Both aim to find the parameters for a probability distribution, that maximize the likelihood of a set of observed points :math:`X = \{x_i\}_i`,  :math:`x_i \in \mathbb{R}^n`.

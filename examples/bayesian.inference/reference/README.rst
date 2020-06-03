@@ -1,4 +1,5 @@
-Baesian Inference and Optimization
+
+Inference with Reference Data
 ==================================
 
 In this tutorial we show how to **optimize** and **sample** the posterior

@@ -2,7 +2,7 @@
 Korali Basics
 ***********************
 
-This document describes the basic concepts that make a Korali application. For a quick kickstart example, visit the :ref:`basic tutorials <basic-tutorials>` section.
+This document describes the basic concepts that make a Korali application. For example Korali applications, visit the :ref:`basic tutorials <examples>` section.
 
 
 Creating a Korali Experiment

@@ -1,5 +1,3 @@
-.. _examples_bayesian_inference:
-
 Bayesian Inference
 ======================
 

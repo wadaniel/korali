@@ -1,5 +1,3 @@
-.. _examples_hierarchical_bayesiane:
-
 Hierarchical Bayesian
 ======================
 

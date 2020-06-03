@@ -14,16 +14,19 @@ exampleSrcDir = '../../../examples'
 def processExample(exampleRelPath, exampleName):
   examplePath = os.path.join(exampleSrcDir, exampleRelPath)
   exampleReadmeFile = examplePath + '/README.rst'
-  exampleOutputDir = '../examples/' + exampleRelPath
+  exampleOutputDir = os.path.abspath(os.path.join('../examples/' + exampleRelPath, os.pardir)) 
 
   print('Processing file: ' + exampleReadmeFile)
 
-  exampleReadmeString = '.. _example-' + exampleRelPath.lower().replace(
-      '/', '-').replace(' ', '') + ':\n\n'
+  exampleReadmeString = '.. _example_' + exampleRelPath.lower().replace('./', '').replace('/', '-').replace(' ', '') + ':\n\n'
 
-  # Creating example's folder, if not exists
-  if not os.path.exists(exampleOutputDir):
-    os.mkdir(exampleOutputDir)
+  # Adding source code
+  exampleReadmeString += '.. hint::\n\n'
+  exampleReadmeString += '   Example source code: `https://github.com/cselab/korali/tree/master/tutorials/' + exampleRelPath.replace('./','') + '/ <https://github.com/cselab/korali/tree/master/tutorials/' + exampleRelPath.replace('./','') + '/>`_\n\n'
+
+  # Reading original rst
+  with open(exampleReadmeFile, 'r') as file:
+   exampleReadmeString += file.read() + '\n\n'
 
   # Creating subfolder list
   subFolderList = []
@@ -31,9 +34,13 @@ def processExample(exampleRelPath, exampleName):
   for f in list_dir:
     fullPath = os.path.join(examplePath, f)
     if not os.path.isfile(fullPath):
-      if (not '.o/' in fullPath and not '.d/' in fullPath):
+      if (not '.o/' in fullPath and not '.d/' in fullPath and not '/_' in fullPath):
         subFolderList.append(f)
 
+   # Creating example's folder, if not exists
+  if not os.path.exists(exampleOutputDir):
+    os.mkdir(exampleOutputDir)
+         
   # Determining if its a parent or leaf example
   isParentExample = True
   if (subFolderList == []):
@@ -41,8 +48,7 @@ def processExample(exampleRelPath, exampleName):
 
   # If its parent, construct children examples
   if (isParentExample == True):
-    exampleReadmeString += '**Sub-Categories**\n'
-    exampleReadmeString += '-----------------\n\n'
+    exampleReadmeString += '**Sub-Categories**\n\n'
     exampleReadmeString += '.. toctree::\n'
     exampleReadmeString += '   :titlesonly:\n\n'
 
@@ -73,5 +79,5 @@ list_dir = os.listdir(exampleSrcDir)
 for f in list_dir:
   fullPath = os.path.join(exampleSrcDir, f)
   if not os.path.isfile(fullPath):
-    if (not '/_' in fullPath ):
-     processExample(f, f)
+    if (not '.o/' in fullPath and not '.d/' in fullPath and not '/_' in fullPath):
+      processExample(f, f)

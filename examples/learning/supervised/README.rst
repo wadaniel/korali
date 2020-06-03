@@ -1,5 +1,3 @@
-.. _examples_supervised_learning:
-
 Supervised Learning
 ======================
 

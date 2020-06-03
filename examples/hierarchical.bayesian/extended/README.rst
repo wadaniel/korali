@@ -15,7 +15,7 @@ Running
 -----------
 
 All 3 phases can be run with the shell script
-
+ 
 .. code-block:: bash
 
     ./run-hierarchical.sh

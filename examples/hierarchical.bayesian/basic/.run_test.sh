@@ -5,7 +5,7 @@
 source ../../../tests/functions.sh
 
 ##### Deleting Previous Results
-
+ 
 echo "  + Deleting previous results..."
 
 pushd _setup; check_result

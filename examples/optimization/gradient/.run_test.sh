@@ -8,7 +8,7 @@ source ../../../tests/functions.sh
 
 echo "  + Deleting previous results..."
 rm -rf _korali_result*; check_result
-
+ 
 ##### Creating test files
 
 echo "  + Creating test files..."

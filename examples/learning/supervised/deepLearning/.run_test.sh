@@ -4,13 +4,13 @@
 
 source ../../../../tests/functions.sh
 
-##### Deleting Previous Results
+##### Deleting Previous Results 
 
 echo "  + Deleting previous results..."
 rm -rf _korali_result*; check_result
 
 ##### Creating test files
-
+ 
 echo "  + Creating test files..."
 
 sed -e 's%\plt.%#plt.%g' \

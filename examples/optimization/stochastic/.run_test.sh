@@ -7,7 +7,7 @@ source ../../../tests/functions.sh
 
 ##### Deleting Previous Results
 
-echo "  + Deleting previous results..."
+echo "  + Deleting previous results..." 
 rm -rf _korali_result*; check_result
 
 ##### Running Tests
@@ -15,3 +15,4 @@ rm -rf _korali_result*; check_result
 python3 ./run-cmaes.py; check_result
 python3 ./run-dea.py; check_result
 python3 ./run-lmcma.py; check_result
+

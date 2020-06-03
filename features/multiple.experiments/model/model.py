@@ -1,6 +1,7 @@
-#!/ usr / bin / env python
+#!/usr/bin/env python
 
-#This is a linear regression model with two params(slope and intercept)
+# This is a linear regression model with two params (slope and intercept)
+
 
 def model(s, x):
   v1 = s["Parameters"][0]

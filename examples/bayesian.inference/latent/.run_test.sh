@@ -13,5 +13,5 @@ rm -rf _korali_result*; check_result
 
 python3 ./run-saem-gaussian-mixture.py; check_result
 python3 ./run-saem.py; check_result
-
+ 
   

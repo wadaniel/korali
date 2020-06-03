@@ -1,4 +1,4 @@
-#!/ usr / bin / env python3
+#!/usr/bin/env python3
 
 ## In this example, we demonstrate how a Korali experiment can
 ## be resumed from any point (generation). This is a useful feature

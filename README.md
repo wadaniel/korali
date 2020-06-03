@@ -9,7 +9,7 @@ Korali is a high-performance framework for uncertainty quantification of large-s
 Korali provides a simple interface that allows users to easily describe statistical problems and choose the algorithms to solve them, allowing users to apply a wide range of operations on the same problem with minimal re-configuration efforts. Finally, users can easily extend Korali to describe new problems and test new experimental algorithms
 
 ## Website
-
+ 
 Visit: https://www.cse-lab.ethz.ch/korali/ for more information.
 
 ## Folders

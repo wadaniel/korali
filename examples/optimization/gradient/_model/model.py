@@ -1,6 +1,6 @@
-#!/ usr / bin / env python
+#!/usr/bin/env python
 
-#Function and Gradient function evaluation
+# Function and Gradient function evaluation
 def model_with_gradient(p):
   X = p["Parameters"]
   gradient = []

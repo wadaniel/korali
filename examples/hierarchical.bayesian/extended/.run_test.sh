@@ -3,13 +3,13 @@
 ###### Auxiliar Functions and Variables #########
 
 source ../../../tests/functions.sh
-
+ 
 ##### Deleting Previous Results
 
 echo "  + Deleting previous results..."
 
 pushd _setup; check_result
-./clean.sh; check_result
+./clean.sh; check_result 
 popd; check_result
 
 ##### Running Tests

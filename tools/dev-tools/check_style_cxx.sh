@@ -3,9 +3,9 @@
 function check()
 {
  if [ ! $? -eq 0 ]
- then
+ then 
   echo "[Korali] Error fixing style."
-  exit -1
+  exit -1 
  fi
 }
 
@@ -25,7 +25,7 @@ if [ ! -f $clangFormatBin ]; then
  ./external/install_clang.sh
  popd
 fi
-
+ 
 # If run-clang-format is not installed, clone it
 if [ ! -f  run-clang-format/run-clang-format.py ]; then
 

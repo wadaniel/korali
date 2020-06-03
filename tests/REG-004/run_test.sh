@@ -2,15 +2,17 @@
 
 source ../functions.sh
 
-pushd ../../tutorials/
+pushd ../../examples/; check_result
 
-logEcho "[Korali] Beginning plotting tests"
+echo "[Korali] Beginning plotting tests"
 
-for dir in ./basic/*/*_result*/
+resDirs=`find . -name "*_result*"`
+
+for dir in $resDirs
 do
-  logEcho "-------------------------------------"
-  logEcho " Plotting results from $dir ..."
-  logEcho "-------------------------------------"
+  echo "-------------------------------------"
+  echo " Plotting results from $dir ..."
+  echo "-------------------------------------"
   python3 -m korali.plotter --test --dir "${dir}" 
   check_result
 

@@ -1,4 +1,4 @@
-Running Korali with Compiled C++ Code
+Running C++ 
 =====================================================
 
 In this tutorial we show how Korali can be used with c++.

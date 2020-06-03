@@ -1,4 +1,4 @@
-Parallel Execution with Concurrent Processes
+Concurrent Execution
 =====================================================
 
 In this tutorial we show how an MPI model can be executed with Korali.

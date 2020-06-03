@@ -1,4 +1,4 @@
-Preserving Quantities of Interest
+Preserving Results
 =====================================================
 
 In this tutorial we show how Korali can be used to store important outputs from the computational model

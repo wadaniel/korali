@@ -1,4 +1,4 @@
-Composite Execution (Running Korali as Model)
+Korali + Korali Model
 ==============================================
 
 This tutorial demonstrates that Korali can be composed: models evaluations can contain in themselves a new Korali experiment. 

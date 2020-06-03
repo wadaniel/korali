@@ -22,6 +22,13 @@ Korali's Documentation
 .. toctree::
    :maxdepth: 2
    :glob:
+   :caption: Features
+
+   features/*
+
+.. toctree::
+   :maxdepth: 2
+   :glob:
    :caption: Module Configuration
   
    modules/experiment/*   

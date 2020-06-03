@@ -1,4 +1,4 @@
-Running Korali with an MPI-based Model
+Running MPI Applications
 =====================================================
 
 In this tutorial we show how an MPI model can be executed with Korali.

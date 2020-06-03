@@ -1,4 +1,4 @@
-Checkpoint / Resuming a Previous Korali Run
+Checkpoint / Resume
 =====================================================
 
 In this tutorial we show how to restart a previous Korali run.

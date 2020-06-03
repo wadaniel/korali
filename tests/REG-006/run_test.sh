@@ -2,19 +2,19 @@
 
 source ../functions.sh
 
-pushd ../../tutorials/
+pushd ../../
 
 echo "[Korali] Beginning profiling tests..."
 
-for dir in ./a*/
+profFiles=`find . -name profiling.json`
+
+for f in $profFiles
 do
-  if [ -f "${dir}/profiling.json" ]; then
    echo "----------------------------------------------"
-   echo " Processing profiler information from $dir ..."
+   echo " Processing profiler information from $f ..."
    echo "----------------------------------------------"
-   python3 -m korali.profiler --test --dir "${dir}" 
+   echo "python3 -m korali.profiler --test --input $f "
    check_result
-  fi
 done
 
 popd

@@ -2,24 +2,19 @@
 
 source ../functions.sh
 
-#################################################
-# Execute Solver Scripts
-#################################################
+pushd ../../
 
-echo "[Korali] Beginning solver tests"
+echo "[Korali] Beginning profiling tests..."
 
-for file in *.py
+profFiles=`find . -name profiling.json`
+
+for f in $profFiles
 do
-  echo "-------------------------------------"
-  echo "Running File: ${file%.*}"
-  
-  python3 ./$file
-  check_result
-
-  echo "[Korali] Removing results..."
-  rm -rf "_korali_result" 
-  check_result
-
-  echo "-------------------------------------"
+   echo "----------------------------------------------"
+   echo " Processing profiler information from $f ..."
+   echo "----------------------------------------------"
+   echo "python3 -m korali.profiler --test --input $f "
+   check_result
 done
 
+popd

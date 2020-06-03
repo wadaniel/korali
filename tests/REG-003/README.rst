@@ -1,4 +1,4 @@
-Run example applications
+Run the korali.plotter for all basic tutorial results.
 ################################################################ 
 
-Quickly run all provided examples to check syntax and basic functioning of Korali's engine.
+Run the korali.plotter for all results found in the basic tutorials folder to verify the plotter works correctly.

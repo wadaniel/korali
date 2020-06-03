@@ -1,41 +1,21 @@
 #!/bin/bash
 
-# Brief: Re-run all examples and features for basic sanity check.
-
-###### Auxiliar Functions and Variables #########
-
 source ../functions.sh
 
-############# STEP 1 ##############
+pushd ../../examples/; check_result
 
-dir=$PWD/../../examples
+echo "[Korali] Beginning plotting tests"
 
-echo "[Korali] Beginning examples test..."
-echo "-------------------------------------"
+resDirs=`find . -name "*_result*"`
 
-pushd $dir; check_result
+for dir in $resDirs
+do
+  echo "-------------------------------------"
+  echo " Plotting results from $dir ..."
+  echo "-------------------------------------"
+  python3 -m korali.plotter --test --dir "${dir}" 
+  check_result
 
-./.run_test.sh
-check_result
-
-popd
-check_result
-
-echo "-------------------------------------"
-
-############# STEP 2 ##############
-
-dir=$PWD/../../features
-
-echo "[Korali] Beginning features test..."
-echo "-------------------------------------"
-
-pushd $dir; check_result
-
-./.run_test.sh
-check_result
+done
 
 popd
-check_result
-
-echo "-------------------------------------"

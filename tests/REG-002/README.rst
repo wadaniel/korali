@@ -1,4 +1,4 @@
-Testing Documentation Building 
-################################################################
+Run example applications
+################################################################ 
 
-Testing whether the documentation can be build and no warnings/errors occur.
+Quickly run all provided examples to check syntax and basic functioning of Korali's engine.

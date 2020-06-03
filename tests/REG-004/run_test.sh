@@ -2,20 +2,24 @@
 
 source ../functions.sh
 
-pushd ../../examples/; check_result
+#################################################
+# Execute Solver Scripts
+#################################################
 
-echo "[Korali] Beginning plotting tests"
+echo "[Korali] Beginning solver tests"
 
-resDirs=`find . -name "*_result*"`
-
-for dir in $resDirs
+for file in *.py
 do
   echo "-------------------------------------"
-  echo " Plotting results from $dir ..."
-  echo "-------------------------------------"
-  python3 -m korali.plotter --test --dir "${dir}" 
+  echo "Running File: ${file%.*}"
+  
+  python3 ./$file
   check_result
 
+  echo "[Korali] Removing results..."
+  rm -rf "_korali_result" 
+  check_result
+
+  echo "-------------------------------------"
 done
 
-popd

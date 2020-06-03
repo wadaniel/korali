@@ -4,6 +4,14 @@
 
 source ../../tests/functions.sh
 
+###### Checking if MPI available ##########
+
+if [[ $MPICXX == "" ]]
+then
+ echo "[Korali] MPI not installed, skipping test."
+ exit 0
+fi
+
 ##### Deleting Previous Results
 
 echo "  + Deleting previous results..." 

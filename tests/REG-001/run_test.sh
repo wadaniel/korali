@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Brief: Quickly Re-run all Python example applications for basic sanity check.
+# Brief: Quickly Re-run all example applications for basic sanity check.
 
 ###### Auxiliar Functions and Variables #########
 
@@ -8,25 +8,17 @@ source ../functions.sh
 
 ############# STEP 1 ##############
 
-pushd ../../tutorials
+dir=$PWD/../../examples
 
-logEcho "[Korali] Beginning tutorial tests..."
+logEcho "[Korali] Beginning examples test..."
+logEcho "-------------------------------------"
 
-for dir in ./basic/*/
-do
-  logEcho "-------------------------------------"
-  logEcho " Entering Folder: $dir"
+pushd $dir >> $logFile 2>&1; check_result
 
-  pushd $dir >> $logFile 2>&1
-  check_result
+./.run_test.sh >> $logFile 2>&1
+check_result
 
-  logEcho " Runnning fast test script..."
-  ./.run_test.sh --fast >> $logFile 2>&1
-  check_result
+popd >> $logFile 2>&1
+check_result
 
-  popd >> $logFile 2>&1
-  check_result
-  logEcho "-------------------------------------"
-done
-
-popd
+logEcho "-------------------------------------"

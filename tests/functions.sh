@@ -28,17 +28,3 @@ function log ()
  echo "$1" >> $logFile
 }
 
-
-# Function to get test type
-function getTestMode()
-{
- testMode=undefined
-
- if [[ "$1" == "--fast" ]]; then testMode="fast"; fi
- if [[ "$1" == "--full" ]]; then testMode="full"; fi
-
- if [[ $testMode == "undefined" ]]; then
-  echo "Error: must define whether the test is meant to run in --fast or --full mode."
-  exit -1
- fi
-}

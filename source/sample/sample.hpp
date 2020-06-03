@@ -155,9 +155,6 @@ class Sample
     {
       korali::Logger::logError(fileName, lineNumber, "Missing or incorrect value %s for the sample.\n + Cause: %s\n", getPath(key...).c_str(), e.what());
     }
-
-    // Preventing warnings
-    return T();
   }
 };
 

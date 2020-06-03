@@ -179,9 +179,6 @@ static T getValue(T &js, const Key &... key)
     std::string keyString(*lastKey);
     KORALI_LOG_ERROR("Could not find key '%s' to return.\n", keyString.c_str());
   }
-
-  // Preventing warnings
-  return T();
 }
 
 /**

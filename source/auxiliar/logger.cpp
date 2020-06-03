@@ -100,7 +100,7 @@ void korali::Logger::logWarning(const std::string verbosityLevel, const char *fo
   free(outstr);
 }
 
-void korali::Logger::logError(const char *fileName, const int lineNumber, const char *format, ...)
+void korali::Logger::logError [[noreturn]]  (const char *fileName, const int lineNumber, const char *format, ...)
 {
   char *outstr = 0;
   va_list ap;
@@ -112,7 +112,7 @@ void korali::Logger::logError(const char *fileName, const int lineNumber, const 
 
   char info[1024];
 
-  sprintf(info, " + From %s:%lu\n", fileName, lineNumber);
+  snprintf(info, sizeof(info) - 1, " + From %s:%d\n", fileName, lineNumber);
   outString += info;
 
   throw std::runtime_error(outString.c_str());

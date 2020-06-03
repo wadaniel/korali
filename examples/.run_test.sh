@@ -4,7 +4,6 @@
 
 source ../tests/functions.sh
 
-
 exampleDirs=`find -type d -not -path "*/_*" | sort | awk '$0 !~ last "/" {print last} {last=$0} END {print last}'`
 
 for dir in $exampleDirs
@@ -16,3 +15,5 @@ do
   
   popd; check_result
 done
+
+exit 0

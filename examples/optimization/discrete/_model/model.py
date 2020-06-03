@@ -1,7 +1,6 @@
-#!/usr/bin/env python
+#!/ usr / bin / env python
 
-# Minus g09
-
+#Minus g09
 
 def model(s):
   npar = 10

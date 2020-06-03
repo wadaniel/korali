@@ -1,5 +1,4 @@
-Test correct execution of solvers with non 0815 parametrization.
+Run the korali.profiler for all example application results.
 #################################################################
 
-This test runs python scripts that set up a Korali problem and run Korali solvers. Solvers will be extensively configured to check for corner cases.
-
+Run the korali.profiler for all results found in the basic tutorials folder to verify the plotter works correctly.

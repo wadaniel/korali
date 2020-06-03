@@ -1,40 +1,32 @@
-#!/usr/bin/env python3
+#!/ usr / bin / env python3
 
-# Importing computational model
-import sys
-sys.path.append('./model')
-sys.path.append('./helpers')
+#Importing computational model
+import sys sys.path.append('./model')
+                             sys.path.append('./helpers')
 
-from model import *
-from helpers import *
+                                               from model import *
+                                             from helpers import *
 
-# Starting Korali's Engine
-import korali
+#Starting Korali's Engine
+                                             import korali
 
-e = korali.Experiment()
-e["Console Output"]["Frequency"] = 500
-e["File Output"]["Frequency"] = 500
+                                             e = korali.Experiment()
+                                               e["Console Output"]["Frequency"] = 500 e["File Output"]["Frequency"] = 500
 
-e["Problem"]["Type"] = "Sampling"
-e["Problem"]["Probability Function"] = model
+                                             e["Problem"]["Type"] = "Sampling" e["Problem"]["Probability Function"] = model
 
-# Configuring the MCMC sampler parameters
-e["Solver"]["Type"] = "MCMC"
-e["Solver"]["Burn In"] = 500
-e["Solver"]["Termination Criteria"]["Max Samples"] = 5000
+#Configuring the MCMC sampler parameters
+                                             e["Solver"]["Type"] = "MCMC" e["Solver"]["Burn In"] = 500 e["Solver"]["Termination Criteria"]["Max Samples"] = 5000
 
-# Defining problem's variables and their MCMC settings
-e["Variables"][0]["Name"] = "X"
-e["Variables"][0]["Initial Mean"] = 1.0
-e["Variables"][0]["Initial Standard Deviation"] = 1.0
+#Defining problem's variables and their MCMC settings
+                                             e["Variables"][0]["Name"] = "X" e["Variables"][0]["Initial Mean"] = 1.0 e["Variables"][0]["Initial Standard Deviation"] = 1.0
 
-# Running Korali
-e["Random Seed"] = 0xC0FFEE
-e["File Output"]["Path"] = "_result_run-mcmc"
+#Running Korali
+                                             e["Random Seed"] = 0xC0FFEE e["File Output"]["Path"] = "_result_run-mcmc"
 
-k = korali.Engine()
-k.run(e)
+                                                                                          k = korali.Engine()
+                                                                                                              k.run(e)
 
-# Testing Results
-checkMean(e, 0.0, 0.01)
-checkStd(e, 1.0, 0.025)
+#Testing Results
+                                                                                                                checkMean(e, 0.0, 0.01)
+                                                                                                                            checkStd(e, 1.0, 0.025)

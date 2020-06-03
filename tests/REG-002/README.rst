@@ -1,4 +1,4 @@
-Check C++ Code Formattinr
+Quick run of all basic tutorials for a quick sanity check
 ################################################################ 
 
-This test makes sure all code has been formatted to satisfy Korali's standard
+Quickly run all basic tutorials to check syntax and basic functioning of Korali's engine.

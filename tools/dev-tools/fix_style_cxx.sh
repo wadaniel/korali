@@ -17,7 +17,7 @@ function check()
 fileDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 pushd $fileDir
 
-root=`realpath $fileDir/../..`
+root=$fileDir/../..
 
 ##############################################
 ### Correcting C++ Code Style
@@ -32,26 +32,6 @@ if [ ! -f $clangFormatBin ]; then
  popd
 fi
 
-src_files=`find $root -type f -name "*pp" -not -path "$root/external/*"`
-
-echo $src_files | \
-    xargs -n6 -P2 $clangFormatBin -style=file -i "$@"
-
-check
-
-##############################################
-### Correcting Python Code Style
-##############################################
-
-PIP_USER=$(python3 -c "import sys; hasattr(sys, 'real_prefix') or print('--user')")
-
-python3 -m yapf --version > /dev/null
-if [ $? -ne 0 ]; then
-
-  echo "[Korali] yapf not found, trying to install it automatically."
-  python3 -m pip install $PIP_USER yapf; check
-fi
-
 src_files=`find $root -type f -not -name "__*"  -name "*.py" \
           -not -path "${root}/tools/dev-tools/*" \
           -not -path "${root}/source/external/*" \
@@ -59,6 +39,8 @@ src_files=`find $root -type f -not -name "__*"  -name "*.py" \
           -not -path "${root}/tutorials/examples/*"`
 
 echo $src_files | \
-    xargs -n6 -P2 python3 -m yapf --style=yapf -i "$@"
+    xargs -n6 -P2 $clangFormatBin -style=file -i "$@"
+
+check
 
 popd

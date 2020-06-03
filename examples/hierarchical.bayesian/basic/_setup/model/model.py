@@ -1,30 +1,12 @@
-#!/usr/bin/env python3
-import sys
-import os
-import numpy as np
+#!/ usr / bin / env python3
+import sys import os import numpy as np
 
+  def normal_rnds(s, Ns) : th1 = s["Parameters"][0] th2 = s["Parameters"][1] k = s["Sample Id"] y = np.random.normal(th1, th2, Ns) dataFolder = "_setup/data/" if not os.path.exists(dataFolder) : os.makedirs(dataFolder) dataFile = dataFolder + "/data_set_" + str(k).zfill(3) + ".dat" np.savetxt(dataFile, np.transpose(y))
 
-def normal_rnds(s, Ns):
-  th1 = s["Parameters"][0]
-  th2 = s["Parameters"][1]
-  k = s["Sample Id"]
-  y = np.random.normal(th1, th2, Ns)
-  dataFolder = "_setup/data/"
-  if not os.path.exists(dataFolder):
-    os.makedirs(dataFolder)
-  dataFile = dataFolder + "/data_set_" + str(k).zfill(3) + ".dat"
-  np.savetxt(dataFile, np.transpose(y))
+                                                                                                                                                                                                                                                                                                                  def getReferenceData(path, i) : fileName = path + "/data_set_" + str(i).zfill(3) + ".dat" y = readColumnFromFile(fileName, 0) return y
 
-
-def getReferenceData(path, i):
-  fileName = path + "/data_set_" + str(i).zfill(3) + ".dat"
-  y = readColumnFromFile(fileName, 0)
-  return y
-
-
-def readColumnFromFile(FileName, Column):
-  try:
-    f = open(FileName, "r")
+                                                                                                                                                                                                                                                                                                                                                                                                                                   def readColumnFromFile(FileName, Column):
+try : f = open(FileName, "r")
     lines = f.readlines()
     y = []
     for l in lines:

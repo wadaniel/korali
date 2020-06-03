@@ -4,10 +4,6 @@
 
 source ../../../tests/functions.sh
 
-##### Getting Test Type
-
-getTestMode $1
-
 ##### Deleting Previous Results
 
 echo "  + Deleting previous results..."

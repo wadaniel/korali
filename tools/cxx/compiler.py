@@ -1,2 +1,1 @@
-def getcompiler(extdir, makeFlags):
-  print(makeFlags['CXX'])
+def getcompiler(extdir, makeFlags) : print(makeFlags['CXX'])

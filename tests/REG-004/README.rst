@@ -1,4 +1,4 @@
-Full re-run of all basic tutorials for a comprehensive sanity check
-##################################################################### 
+Run the korali.plotter for all basic tutorial results.
+################################################################ 
 
-Full re-run all basic tutorials to make sure none of them fail after any commit.
+Run the korali.plotter for all results found in the basic tutorials folder to verify the plotter works correctly.

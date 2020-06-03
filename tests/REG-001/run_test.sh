@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Brief: Quickly Re-run all example applications for basic sanity check.
+# Check Code Formatting
 
 ###### Auxiliar Functions and Variables #########
 
@@ -8,17 +8,14 @@ source ../functions.sh
 
 ############# STEP 1 ##############
 
-dir=$PWD/../../examples
 
-logEcho "[Korali] Beginning examples test..."
-logEcho "-------------------------------------"
+logEcho "[Korali] Beginning C++ code formatting check..."
 
-pushd $dir >> $logFile 2>&1; check_result
-
-./.run_test.sh >> $logFile 2>&1
+pushd ../../tools/dev-tools/
 check_result
 
-popd >> $logFile 2>&1
-check_result
+ ./check_style_cxx.sh >> $logFile 2>&1
+ check_result
 
-logEcho "-------------------------------------"
+popd
+check_result

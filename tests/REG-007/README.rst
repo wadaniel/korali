@@ -1,4 +1,4 @@
-Run the korali.profiler for all example application results.
-#################################################################
+Dry-run all real-case examples
+################################################################ 
 
-Run the korali.profiler for all results found in the basic tutorials folder to verify the plotter works correctly.
+Dry run all python scripts in the real-case tutorials/example folder, to make sure that at least they are correctly configured.

@@ -15,5 +15,3 @@ rm -rf _korali_result*; check_result
 python3 ./run-cmaes.py; check_result
 python3 ./run-dea.py; check_result
 python3 ./run-lmcma.py; check_result
-python3 ./run-rprop.py; check_result
-

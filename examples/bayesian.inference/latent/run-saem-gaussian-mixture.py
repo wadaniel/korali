@@ -97,6 +97,8 @@ def main():
     variable_counter += 1
     latent_counter += 1
 
+  # Configuring results path
+  e["File Output"]["Path"] = '_korali_result_saem-mixture'
   e["File Output"]["Frequency"] = 50
   e["Console Output"]["Frequency"] = 10
   e["Console Output"]["Verbosity"] = "Detailed"

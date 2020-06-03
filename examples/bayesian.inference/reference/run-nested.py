@@ -59,6 +59,9 @@ e["Solver"]["Termination Criteria"]["Max Generations"] = 100000
 e["Solver"]["Termination Criteria"]["Max Effective Sample Size"] = 10000
 e["Solver"]["Termination Criteria"]["Max Gain Factor"] = 1e-4
 
+# Configuring output settings
+e["File Output"]["Path"] = '_korali_result_nested'
+
 # Starting Korali's Engine and running experiment
 k = korali.Engine()
 k.run(e)

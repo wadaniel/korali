@@ -17,7 +17,7 @@ k = korali.Engine()
 e = korali.Experiment()
 
 # Configuring Problem.
-e["Problem"]["Type"] = "Optimization/Gradient"
+e["Problem"]["Type"] = "Optimization"
 e["Problem"]["Objective Function"] = model_with_gradient
 
 # Defining the problem's variables.

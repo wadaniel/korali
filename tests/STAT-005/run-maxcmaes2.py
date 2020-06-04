@@ -8,7 +8,7 @@ import korali
 k = korali.Engine()
 e = korali.Experiment()
 
-e["Problem"]["Type"] = "Optimization/Stochastic"
+e["Problem"]["Type"] = "Optimization"
 e["Problem"]["Objective Function"] = maxmodel2
 
 e["Variables"][0]["Name"] = "X"

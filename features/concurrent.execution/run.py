@@ -14,7 +14,7 @@ if (len(sys.argv) != 2):
 
 e = korali.Experiment()
 
-e["Problem"]["Type"] = "Optimization/Stochastic"
+e["Problem"]["Type"] = "Optimization"
 e["Problem"]["Objective Function"] = runModel
 
 e["Solver"]["Type"] = "CMAES"

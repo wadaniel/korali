@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 {
   // Configuring Problem.
   auto e = korali::Experiment();
-  e["Problem"]["Type"] = "Optimization/Stochastic";
+  e["Problem"]["Type"] = "Optimization";
   e["Problem"]["Objective Function"] = &direct;
 
   // Defining the problem's variables.

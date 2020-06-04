@@ -18,7 +18,7 @@ e = korali.Experiment()
 
 # Configuring Problem
 e["Random Seed"] = 0xC0FEE
-e["Problem"]["Type"] = "Optimization/Stochastic"
+e["Problem"]["Type"] = "Optimization"
 e["Problem"]["Objective Function"] = model
 
 # Defining the problem's variables.

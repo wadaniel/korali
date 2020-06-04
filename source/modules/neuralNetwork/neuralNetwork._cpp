@@ -20,7 +20,7 @@ void korali::NeuralNetwork::initialize()
   // Creating evaluation lambda function for optimization
   auto evaluateProposal = [nn = this](korali::Sample &sample) { runSample(sample, nn); };
 
-  _koraliExperiment["Problem"]["Type"] = "Optimization/Stochastic";
+  _koraliExperiment["Problem"]["Type"] = "Optimization";
   _koraliExperiment["Problem"]["Objective Function"] = evaluateProposal;
 
   size_t currentVariable = 0;

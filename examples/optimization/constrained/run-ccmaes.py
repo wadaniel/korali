@@ -16,7 +16,7 @@ import korali
 e = korali.Experiment()
 
 # Selecting problem type
-e["Problem"]["Type"] = "Optimization/Constrained"
+e["Problem"]["Type"] = "Optimization"
 e["Problem"]["Objective Function"] = model
 e["Problem"]["Constraints"] = [g1, g2, g3, g4]
 

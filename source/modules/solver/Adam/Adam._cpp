@@ -29,7 +29,7 @@ void korali::solver::Adam::runGeneration()
   // Initializing Sample Evaluation
   korali::Sample sample;
   sample["Module"] = "Problem";
-  sample["Operation"] = "Evaluate";
+  sample["Operation"] = "Evaluate With Gradient";
   sample["Parameters"] = _currentValue;
   sample["Sample Id"] = 0;
   _modelEvaluationCount++;

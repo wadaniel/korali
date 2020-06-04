@@ -29,7 +29,7 @@ void korali::solver::SAEM::initialize()
       KORALI_LOG_ERROR("Initial Value of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
 
   // Configuring Experiment
-  _experiment["Problem"]["Type"] = "Optimization/Stochastic";
+  _experiment["Problem"]["Type"] = "Optimization";
   _experiment["Problem"]["Objective Function"] =
     [zFc = _latentProblem->_zetaOfLikelihoodModel, pFc = _latentProblem->_phiOfLikelihoodModel](korali::Sample &sample) { QFunction(sample, zFc, pFc); };
 

@@ -19,7 +19,7 @@ def run_dea_with_termination_criterion(criterion, value):
           "'{0}'".format(criterion))
 
   e = korali.Experiment()
-  e["Problem"]["Type"] = "Optimization/Stochastic"
+  e["Problem"]["Type"] = "Optimization"
   e["Problem"]["Objective Function"] = evaluateModel
 
   e["Variables"][0]["Name"] = "X"

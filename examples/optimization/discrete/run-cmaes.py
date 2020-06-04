@@ -15,7 +15,7 @@ import korali
 e = korali.Experiment()
 
 # Selecting problem type
-e["Problem"]["Type"] = "Optimization/Stochastic"
+e["Problem"]["Type"] = "Optimization"
 e["Problem"]["Objective Function"] = model
 
 # Creating 10 variables and setting their CMA-ES bounds

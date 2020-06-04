@@ -16,7 +16,7 @@ class Theta : public korali::problem::Hierarchical
   /**
   * @brief Stores the Psi problem experiment to use as input
   */
-  korali::Experiment _psiProblemEngine;
+  korali::Experiment _psiProblemExperiment;
 
   /**
   * @brief Stores the number of variables defined in the Psi problem
@@ -51,7 +51,7 @@ class Theta : public korali::problem::Hierarchical
   /**
   * @brief Stores the Psi problem experiment to use as input
   */
-  korali::Experiment _thetaProblemEngine;
+  korali::Experiment _thetaProblemExperiment;
 
   /**
   * @brief Stores the number of variables defined in the Psi problem

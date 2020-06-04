@@ -32,7 +32,7 @@ class Psi : public korali::problem::Hierarchical
   /**
   * @brief Stores the Experiment modules of the subproblems to use as input
   */
-  std::vector<korali::Experiment> _subProblemEngines;
+  std::vector<korali::Experiment> _subProblemExperiments;
 
   /**
   * @brief Stores the number of subproblems

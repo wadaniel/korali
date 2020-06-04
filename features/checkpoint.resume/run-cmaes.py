@@ -30,10 +30,12 @@ e["Problem"]["Objective Function"] = model
 
 k.run(e)
 
-# Loading previous results, if they exist.
-found = e.loadState()
+exit(0)
 
-# If not found, we run first 5 generations.
+# Loading previous results, if they exist.
+found = korali.loadExperimentFromFile("_korali_results/latest")
+
+# If not fdound, we run first 5 generations.
 if (found == False):
   print('------------------------------------------------------')
   print('Running first 5 generations anew...')

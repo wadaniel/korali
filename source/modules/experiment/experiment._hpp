@@ -78,17 +78,11 @@ class Experiment : public korali::Module
   void setItem(pybind11::object key, pybind11::object val);
 
   /**
-  * @brief Load the state of a previous experiment's execution.
+  * @brief Load the state of an experiment from a Korali result file.
   * @param path Path from which to load the experiment state.
-  * @return True, if successful; false, otherwise.
- */
-  bool loadState(std::string path);
-
-  /**
-  * @brief Load the state of a previous experiment's execution from the experiment's result path.
-  * @return True, if successful; false, otherwise.
- */
-  bool loadState();
+  * @return The experiment, by reference
+  */
+  static Experiment& loadExperimentFromFile(const std::string& path);
 
   /**
    * @brief Saves the state into the experiment's result path.

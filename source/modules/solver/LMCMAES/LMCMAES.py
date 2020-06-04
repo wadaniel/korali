@@ -19,37 +19,26 @@ def plot(genList, args):
     if genList[i]['Current Generation'] > lastGen:
       lastGen = genList[i]['Current Generation']
 
-  cond = [0.0] * numgens
   fval = [0.0] * numgens
   dfval = [0.0] * numgens
   genIds = [0.0] * numgens
   sigma = [0.0] * numgens
   psL2 = [0.0] * numgens
-  axis = [None] * numdim
   objVec = [None] * numdim
-  ssdev = [None] * numdim
 
   for i in range(numdim):
-    axis[i] = [None] * numgens
     objVec[i] = [None] * numgens
-    ssdev[i] = [None] * numgens
 
   curPos = 0
   for gen in genList:
     genIds[curPos] = genList[gen]['Current Generation']
-    cond[curPos] = genList[gen]['Solver'][
-        'Maximum Covariance Eigenvalue'] / genList[gen]['Solver'][
-            'Minimum Covariance Eigenvalue']
     fval[curPos] = genList[gen]['Solver']['Current Best Value']
     dfval[curPos] = abs(genList[gen]['Solver']['Current Best Value'] -
                         genList[gen]['Solver']['Best Ever Value'])
     sigma[curPos] = genList[gen]['Solver']['Sigma']
     psL2[curPos] = genList[gen]['Solver']['Conjugate Evolution Path L2 Norm']
     for i in range(numdim):
-      axis[i][curPos] = genList[gen]['Solver']['Axis Lengths'][i]
       objVec[i][curPos] = genList[gen]['Solver']['Current Best Variables'][i]
-      ssdev[i][curPos] = genList[gen]['Solver']["Sigma"] * np.sqrt(
-          genList[gen]['Solver']['Covariance Matrix'][i * numdim + i])
     curPos = curPos + 1
 
   plt.suptitle('CMAES Diagnostics', fontweight='bold', fontsize=12)
@@ -62,7 +51,6 @@ def plot(genList, args):
   #drawMulticoloredLine(ax[0,0], genIds, fval, 0.0, 'r', 'b', '$| F |$')
   ax[0, 0].plot(genIds, fval, color='r', label='$| F |$')
   ax[0, 0].plot(genIds, dfval, 'x', color='#34495e', label='$| F - F_{best} |$')
-  ax[0, 0].plot(genIds, cond, color='#98D8D8', label='$\kappa(\mathbf{C})$')
   ax[0, 0].plot(genIds, sigma, color='#F8D030', label='$\sigma$')
   ax[0, 0].plot(genIds, psL2, color='k', label='$|| \mathbf{p}_{\sigma} ||$')
 
@@ -91,12 +79,8 @@ def plot(genList, args):
   ax[1, 0].set_title('Square Root of Eigenvalues of $\mathbf{C}$')
   ax[1, 0].grid(True)
   ax[1, 0].set_yscale('log')
-  for i in range(numdim):
-    ax[1, 0].plot(genIds, axis[i], color=colors[i])
 
   # Lower Left Plot
   ax[1, 1].set_title('$\sigma \sqrt{diag(\mathbf{C})}$')
   ax[1, 1].grid(True)
   ax[1, 1].set_yscale('log')
-  for i in range(numdim):
-    ax[1, 1].plot(genIds, ssdev[i], color=colors[i], label=names[i])

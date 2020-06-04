@@ -100,7 +100,7 @@ void korali::Logger::logWarning(const std::string verbosityLevel, const char *fo
   free(outstr);
 }
 
-void korali::Logger::logError [[noreturn]]  (const char *fileName, const int lineNumber, const char *format, ...)
+void korali::Logger::logError [[noreturn]] (const char *fileName, const int lineNumber, const char *format, ...)
 {
   char *outstr = 0;
   va_list ap;

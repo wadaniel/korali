@@ -153,8 +153,7 @@ def processModule(parentModuleConfig, moduleRelPath, moduleName):
 
   # If its parent, construct children modules
   if (isParentModule == True):
-    moduleReadmeString += '\nSub-Categories:\n'
-    moduleReadmeString += '-----------------\n\n'
+    moduleReadmeString += '\n**Sub-Categories:**\n\n'
     moduleReadmeString += '.. toctree::\n'
     moduleReadmeString += '   :titlesonly:\n\n'
 

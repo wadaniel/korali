@@ -2,14 +2,14 @@
 Korali Basics
 ***********************
 
-This document describes the basic concepts that make a Korali application. For a quick kickstart example, visit the :ref:`basic tutorials <basic-tutorials>` section.
+This document describes the basic concepts that make a Korali application. 
 
 
 Creating a Korali Experiment
 ========================================
 
 Korali provides a range of optimization and uncertainty quantification tools. To use these tools, a user needs to create a *Korali Experiment*.
-The following python code snippet shows how to load Korali's library and instantiate a new experiment (to use Korali in C++, visit this :ref:`tutorial <runningcxx>`): 
+The following python code snippet shows how to load Korali's library and instantiate a new experiment: 
 
 .. code-block:: python
 
@@ -34,10 +34,10 @@ A Korali Experiment is configured to run a specific problem type by specifying i
 
 .. code-block:: python
 
-   # Example: Setting the experiment to run a stochastic optimization problem
-   e["Problem"]["Type"] = "Optimization/Stochastic"
+   # Example: Setting the experiment to run an optimization problem
+   e["Problem"]["Type"] = "Optimization"
 
-Sets the experiment to solve a :ref:`stochastic optimization <module-problem-optimization-stochastic>` problem. The complete list of problem types can be found :ref:`here <module-problem>`.
+Sets the experiment to solve an :ref:`optimization <module-problem-optimization>` problem. The complete list of problem types can be found :ref:`here <module-problem>`.
 
 Problem Configuration
 ---------------------------------
@@ -59,7 +59,7 @@ Depending on the property, their values could be numeric, text strings, function
    e["Problem"]["Setting 3"]["Parameter 1"] = 0.0
    e["Problem"]["Setting 3"]["Parameter 2"] = 1.0
 
-To find the full list of properties for each problem type, look for "Configuration Settings" in the problem's configuration page. Here is, for example, the :ref:`configuration settings <module-problem-optimization-stochastic-config>` for Optimization/Stochastic.
+To find the full list of properties for each problem type, look for "Configuration Settings" in the problem's configuration page. Here is, for example, the :ref:`configuration settings <module-problem-optimization-config>` for Optimization/Stochastic.
 
 
 Choosing a Solver Method
@@ -70,7 +70,7 @@ The next step is to choose which solver algorithm should be used to obtain the r
 Solver-Problem Compatibility
 ---------------------------------
 
-Although the complete list of solver types can be found :ref:`here <module-solver>`, each solver can only solve a specific set of problem types. To find which solver methods can be used for a specific problem type, look for "Compatible Solvers" in the problem's configuration page. Here is, for example, the :ref:`compatible solvers list <module-problem-optimization-stochastic-compat>` for Optimization/Stochastic.  
+Although the complete list of solver types can be found :ref:`here <module-solver>`, each solver can only solve a specific set of problem types. To find which solver methods can be used for a specific problem type, look for "Compatible Solvers" in the problem's configuration page. Here is, for example, the :ref:`compatible solvers list <module-problem-optimization-compat>` for Optimization/Stochastic.  
 
 To continue our example above, we will choose to use the :ref:`DEA <module-solver-dea>`, which is a compatible solver for the Optimization/Stochastic problem type. 
 
@@ -132,7 +132,7 @@ Variable Configuration
 
 Variable definitions require additional parameters depending on which problem and solver types have been selected. These parameters are explained in detail in each solver/problem documentation page. 
 
-For example, the following :ref:`variable settings <module-solver-cmaes-varsettings>` are mandatory for the CMAES solver, and these :ref:`variable settings <module-problem-optimization-stochastic-varsettings>` are mandatory for the Optimization/Stochastic problem.
+For example, the following :ref:`variable settings <module-solver-cmaes-varsettings>` are mandatory for the CMAES solver, and these :ref:`variable settings <module-problem-optimization-varsettings>` are mandatory for the optimization problem.
 
 In the code snippet below, we show how the configuration for each variable is specified:
 
@@ -328,7 +328,7 @@ Accessing Results
 
 When called, the *run* will not return until one of the experiment's termination criteria has been met. After return, the experiment will contain a *Results* section, from which the user can retrieve the desired results.
 
-Each problem type prescribes a different set of results. To see which variable defaults (if any) have been defined for a given method, look for the "Results" section in their configuration page. Here is, for example, the :ref:`results <module-problem-optimization-stochastic-results>` for Optimization/Stochastic.
+Each problem type prescribes a different set of results. To see which variable defaults (if any) have been defined for a given method, look for the "Results" section in their configuration page. Here is, for example, the :ref:`results <module-problem-optimization-results>`.
 
 To access the results, use the following syntax:
 

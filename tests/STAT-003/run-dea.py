@@ -15,7 +15,7 @@ from helpers import *
 
 e = korali.Experiment()
 
-e["Problem"]["Type"] = "Optimization/Stochastic"
+e["Problem"]["Type"] = "Optimization"
 e["Problem"]["Objective Function"] = evalmodel
 
 e["Variables"][0]["Name"] = "X"

@@ -29,7 +29,7 @@ void korali::solver::GaussianProcess::initialize()
     // Creating evaluation lambda function for optimization
     auto evaluateProposal = [gp = _gp](korali::Sample &sample) { runSample(sample, gp); };
 
-    _koraliExperiment["Problem"]["Type"] = "Optimization/Gradient";
+    _koraliExperiment["Problem"]["Type"] = "Optimization";
     _koraliExperiment["Problem"]["Objective Function"] = evaluateProposal;
 
     Eigen::VectorXd eParameters(_gpParameterDimension);

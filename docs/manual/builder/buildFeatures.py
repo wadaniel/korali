@@ -5,6 +5,7 @@ import os
 import json
 import shutil
 import copy
+import glob
 
 featureSrcDir = '../../../features'
 
@@ -43,6 +44,10 @@ def processFeature(featureRelPath, featureName):
     featureReadmeString += '.. hint::\n\n'
     featureReadmeString += '   Example code: `https://github.com/cselab/korali/tree/master/features/' + featureRelPath.replace('./','') + '/ <https://github.com/cselab/korali/tree/master/features/' + featureRelPath.replace('./','') + '/>`_\n\n'
 
+  # Copying any images in the source folder
+  for file in glob.glob(r'' + featurePath + '/*.png'):
+   shutil.copy(file, featureOutputDir)
+   
   # Reading original rst
   with open(featureReadmeFile, 'r') as file:
    featureReadmeString += file.read() + '\n\n'

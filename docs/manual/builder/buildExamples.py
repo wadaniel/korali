@@ -5,6 +5,7 @@ import os
 import json
 import shutil
 import copy
+import glob
 
 exampleSrcDir = '../../../examples'
 
@@ -38,11 +39,19 @@ def processExample(exampleRelPath, exampleName):
   if (subFolderList == []):
     isParentExample = False
 
+  # If there is a test script, do not proceed further
+  if (os.path.isfile(examplePath + '/.run_test.sh')):  
+    isParentExample = False
+  
   # If its leaf, link to source code
   if (isParentExample == False):
     exampleReadmeString += '.. hint::\n\n'
     exampleReadmeString += '   Example code: `https://github.com/cselab/korali/tree/master/examples/' + exampleRelPath.replace('./','') + '/ <https://github.com/cselab/korali/tree/master/examples/' + exampleRelPath.replace('./','') + '/>`_\n\n'
 
+  # Copying any images in the source folder
+  for file in glob.glob(r'' + examplePath + '/*.png'):
+   shutil.copy(file, exampleOutputDir)
+   
   # Reading original rst
   with open(exampleReadmeFile, 'r') as file:
    exampleReadmeString += file.read() + '\n\n'

@@ -18,7 +18,7 @@ def model(p):
 
   # Configuring Problem
   e["Random Seed"] = 0xC0FEE
-  e["Problem"]["Type"] = "Optimization/Stochastic"
+  e["Problem"]["Type"] = "Optimization"
   e["Problem"]["Objective Function"] = lambda sampleData: subModel(
       sampleData, x)
 

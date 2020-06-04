@@ -7,7 +7,7 @@ source ../tests/functions.sh
 
 ### Testing examples
 
-exampleDirs=`find -type d -not -path "*/_*" -not -path "*/study.cases/*" | sort | awk '$0 !~ last "/" {print last} {last=$0} END {print last}'`
+exampleDirs=`find -type d -not -path "*/_*" -not -path "*/study.cases/*" -not -name "study.cases" | sort | awk '$0 !~ last "/" {print last} {last=$0} END {print last}'`
 
 for dir in $exampleDirs
 do

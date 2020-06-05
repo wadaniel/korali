@@ -1,5 +1,5 @@
-#ifndef _KORALI_SOLVER_SEQUENTIALOPTIMISATION_HPP_
-#define _KORALI_SOLVER_SEQUENTIALOPTIMISATION_HPP_
+#ifndef _KORALI_SOLVER_GRIDSEARCH_HPP_
+#define _KORALI_SOLVER_GRIDSEARCH_HPP_
 
 #include "modules/solver/solver.hpp"
 
@@ -7,17 +7,16 @@ namespace korali
 {
 namespace solver
 {
-class SequentialOptimisation : public korali::Solver
+class GridSearch : public korali::Solver
 {
   public:
   void setInitialConfiguration() override;
   void runGeneration() override;
   void printGenerationBefore() override;
   void printGenerationAfter() override;
-  void finalize() override;
 };
 
 } // namespace solver
 } // namespace korali
 
-#endif // _KORALI_SOLVER_SEQUENTIALOPTIMISATION_HPP_
+#endif // _KORALI_SOLVER_GRIDSEARCH_HPP_

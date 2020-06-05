@@ -6,8 +6,11 @@ import korali
 # Creating hierarchical Bayesian problem from previous two problems
 e = korali.Experiment()
 
+psi = korali.Experiment()
+psi.loadState('_setup/results_phase_2/latest')
+
 e["Problem"]["Type"] = "Hierarchical/ThetaNew"
-e["Problem"]["Psi Problem Path"] = '_setup/results_phase_2'
+e["Problem"]["Psi Experiment"] = psi
 
 e["Distributions"][0]["Name"] = "Uniform 0"
 e["Distributions"][0]["Type"] = "Univariate/Uniform"

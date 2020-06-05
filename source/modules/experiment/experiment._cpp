@@ -138,7 +138,13 @@ korali::Experiment::Experiment()
 
 void korali::Experiment::initialize()
 {
+    // Clearning sample information
     _js["Samples"] = knlohmann::json();
+
+    // Initializing Variables
+    _variables.resize(_js["Variables"].size());
+    for(size_t i = 0; i < _js["Variables"].size(); i++) _variables[i] = new korali::Variable;
+
     applyModuleDefaults(_js.getJson());
 
     try
@@ -155,11 +161,11 @@ void korali::Experiment::initialize()
     _thread = co_create(1 << 20, korali::threadWrapper);
     __returnThread = co_active();
     co_switch(_thread);
-
 }
 
 void korali::Experiment::finalize()
 {
+  for(size_t i = 0; i < _variables.size(); i++) delete _variables[i];
   co_delete(_thread);
 }
 

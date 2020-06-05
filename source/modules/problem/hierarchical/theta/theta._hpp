@@ -13,10 +13,6 @@ namespace hierarchical
 class Theta : public korali::problem::Hierarchical
 {
   private:
-  /**
-  * @brief Stores the Psi problem experiment to use as input
-  */
-  korali::Experiment _psiProblemExperiment;
 
   /**
   * @brief Stores the number of variables defined in the Psi problem
@@ -47,11 +43,6 @@ class Theta : public korali::problem::Hierarchical
   * @brief Stores the Problem module of the Psi problem experiment to use as input
   */
   korali::problem::hierarchical::Psi *_psiProblem;
-
-  /**
-  * @brief Stores the Psi problem experiment to use as input
-  */
-  korali::Experiment _thetaProblemExperiment;
 
   /**
   * @brief Stores the number of variables defined in the Psi problem

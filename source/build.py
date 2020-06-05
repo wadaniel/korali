@@ -112,9 +112,6 @@ def consumeValue(base, moduleName, path, varName, varType, isMandatory,
     return cString
 
   if ('std::vector<korali::Variable' in varType):
-    baseType = varType.replace('std::vector<', '').replace('>', '')
-    cString += ' ' + varName + '.clear();\n'
-    cString += ' for(size_t i = 0; i < ' + base + path + '.size(); i++) ' + varName + '.push_back(new korali::Variable);\n'
     return cString
 
   if ('korali::Sample' in varType):
@@ -124,8 +121,6 @@ def consumeValue(base, moduleName, path, varName, varType, isMandatory,
     return cString
 
   if ('std::vector<korali::Variable*>' in varType):
-    baseType = varType.replace('std::vector<', '').replace('>', '')
-    cString += ' for(size_t i = 0; i < ' + base + path + '.size(); i++) ' + varName + '.push_back(new korali::Variable());\n'
     cString += ' eraseValue(' + base + ', ' + path.replace('][', ", ").replace(
         '[', '').replace(']', '') + ');\n\n'
     return cString

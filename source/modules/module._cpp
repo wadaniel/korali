@@ -12,7 +12,7 @@ korali::Module *korali::Module::getModule(knlohmann::json &js, korali::Experimen
   std::string moduleType = "Undefined";
 
   if (!isDefined(js, "Type"))
-    KORALI_LOG_ERROR("No module type provided.\n");
+    KORALI_LOG_ERROR("No module type provided in:\n %s\n", js.dump(2).c_str());
 
   try
   {
@@ -40,8 +40,10 @@ korali::Module *korali::Module::getModule(knlohmann::json &js, korali::Experimen
 
   // If this is a new experiment, we should assign it its own configuration
   if (isExperiment == true)
-   dynamic_cast<korali::Experiment*>(module)->_js.getJson() = js;
-
+  {
+   korali::Experiment* exp = dynamic_cast<korali::Experiment*>(module);
+   exp->_js.getJson() = js;
+  }
   // If this is a module inside an experiment, it needs to be properly configured
   if (isExperiment == false)
   {

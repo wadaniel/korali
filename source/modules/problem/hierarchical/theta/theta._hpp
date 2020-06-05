@@ -13,7 +13,6 @@ namespace hierarchical
 class Theta : public korali::problem::Hierarchical
 {
   private:
-
   /**
   * @brief Stores the number of variables defined in the Psi problem
   */

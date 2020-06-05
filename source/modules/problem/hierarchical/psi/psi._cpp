@@ -53,16 +53,16 @@ void korali::problem::hierarchical::Psi::initialize()
 
   for (size_t i = 0; i < _subProblemsCount; i++)
   {
-   try
-   {
-    _subProblemsSampleLogPriors[i] = (*_subExperiments[i])["Solver"]["Sample LogPrior Database"].get<std::vector<double>>();
-    _subProblemsSampleLogLikelihoods[i] = (*_subExperiments[i])["Solver"]["Sample LogLikelihood Database"].get<std::vector<double>>();
-    _subProblemsSampleCoordinates[i] = (*_subExperiments[i])["Solver"]["Sample Database"].get<std::vector<std::vector<double>>>();
-   }
-   catch (std::exception &e)
-   {
-    KORALI_LOG_ERROR("Error reading the sample database from sub-problem: %lu. Was it a sampling experiment?\n", i);
-   }
+    try
+    {
+      _subProblemsSampleLogPriors[i] = (*_subExperiments[i])["Solver"]["Sample LogPrior Database"].get<std::vector<double>>();
+      _subProblemsSampleLogLikelihoods[i] = (*_subExperiments[i])["Solver"]["Sample LogLikelihood Database"].get<std::vector<double>>();
+      _subProblemsSampleCoordinates[i] = (*_subExperiments[i])["Solver"]["Sample Database"].get<std::vector<std::vector<double>>>();
+    }
+    catch (std::exception &e)
+    {
+      KORALI_LOG_ERROR("Error reading the sample database from sub-problem: %lu. Was it a sampling experiment?\n", i);
+    }
 
     for (size_t j = 0; j < _subProblemsSampleLogPriors.size(); j++)
     {

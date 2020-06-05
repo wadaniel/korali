@@ -240,7 +240,7 @@ static int saveJsonToFile(const char *fileName, knlohmann::json &js)
   }
   else
   {
-   return -1;
+    return -1;
   }
 
   return 0;

@@ -9,8 +9,8 @@
 #include "modules/solver/solver.hpp"
 #include <chrono>
 #include <cstdio>
-#include <stdlib.h>
 #include <map>
+#include <stdlib.h>
 
 /**
   * @brief Pointer to the current experiment in execution
@@ -116,18 +116,18 @@ void korali::Experiment::saveState()
   if (_fileOutputEnabled)
   {
     if (korali::saveJsonToFile(fileName.c_str(), js) != 0)
-     KORALI_LOG_ERROR("Error trying to save result file: %s.\n", fileName.c_str());
+      KORALI_LOG_ERROR("Error trying to save result file: %s.\n", fileName.c_str());
 
-    remove ( linkName.c_str() );
+    remove(linkName.c_str());
 
-    if ( link(fileName.c_str(), linkName.c_str()) != 0 )
-     KORALI_LOG_ERROR("Could not create hard link to latest result.\n + Target: %s\n + Link: %s\n", fileName.c_str(), linkName.c_str());
+    if (link(fileName.c_str(), linkName.c_str()) != 0)
+      KORALI_LOG_ERROR("Could not create hard link to latest result.\n + Target: %s\n + Link: %s\n", fileName.c_str(), linkName.c_str());
   }
 }
 
-bool korali::Experiment::loadState(const std::string& path)
+bool korali::Experiment::loadState(const std::string &path)
 {
- return korali::loadJsonFromFile(_js.getJson(), path.c_str());
+  return korali::loadJsonFromFile(_js.getJson(), path.c_str());
 }
 
 korali::Experiment::Experiment()
@@ -138,34 +138,34 @@ korali::Experiment::Experiment()
 
 void korali::Experiment::initialize()
 {
-    // Clearning sample information
-    _js["Samples"] = knlohmann::json();
+  // Clearning sample information
+  _js["Samples"] = knlohmann::json();
 
-    // Initializing Variables
-    _variables.resize(_js["Variables"].size());
-    for(size_t i = 0; i < _js["Variables"].size(); i++) _variables[i] = new korali::Variable;
+  // Initializing Variables
+  _variables.resize(_js["Variables"].size());
+  for (size_t i = 0; i < _js["Variables"].size(); i++) _variables[i] = new korali::Variable;
 
-    applyModuleDefaults(_js.getJson());
+  applyModuleDefaults(_js.getJson());
 
-    try
-    {
-      setConfiguration(_js.getJson());
-    }
-    catch (const std::exception &e)
-    {
-      KORALI_LOG_ERROR("Error parsing Experiment's configuration. Reason:\n%s", e.what());
-    }
+  try
+  {
+    setConfiguration(_js.getJson());
+  }
+  catch (const std::exception &e)
+  {
+    KORALI_LOG_ERROR("Error parsing Experiment's configuration. Reason:\n%s", e.what());
+  }
 
-    getConfiguration(_js.getJson());
-    __expPointer = this;
-    _thread = co_create(1 << 20, korali::threadWrapper);
-    __returnThread = co_active();
-    co_switch(_thread);
+  getConfiguration(_js.getJson());
+  __expPointer = this;
+  _thread = co_create(1 << 20, korali::threadWrapper);
+  __returnThread = co_active();
+  co_switch(_thread);
 }
 
 void korali::Experiment::finalize()
 {
-  for(size_t i = 0; i < _variables.size(); i++) delete _variables[i];
+  for (size_t i = 0; i < _variables.size(); i++) delete _variables[i];
   co_delete(_thread);
 }
 

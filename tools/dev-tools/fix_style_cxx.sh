@@ -27,16 +27,15 @@ root=$fileDir/../..
 clangFormatBin=${root}/external/clang-format
 if [ ! -f $clangFormatBin ]; then
  pushd ${root}
- ./external/install_clang.sh
+ ./external/install_clang.sh 
  check
  popd
 fi
 
-src_files=`find $root -type f -not -name "__*"  -name "*.py" \
+src_files=`find $root -type f -not -name "__*"  -name "*pp" -name "*pp" \
           -not -path "${root}/tools/dev-tools/*" \
-          -not -path "${root}/source/external/*" \
           -not -path "${root}/external/*" \
-          -not -path "${root}/tutorials/examples/*"`
+          -not -path "${root}/examples/test.cases/*"`
 
 echo $src_files | \
     xargs -n6 -P2 $clangFormatBin -style=file -i "$@"

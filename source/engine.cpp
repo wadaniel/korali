@@ -262,9 +262,8 @@ void korali::Engine::setItem(pybind11::object key, pybind11::object val) { _js.s
 
 PYBIND11_MODULE(libkorali, m)
 {
-
 #ifdef _KORALI_USE_MPI
-   m.def("getMPICommPointer", &korali::Engine::getMPICommPointer, pybind11::return_value_policy::reference);
+  m.def("getMPICommPointer", &korali::Engine::getMPICommPointer, pybind11::return_value_policy::reference);
 #endif
 
   pybind11::class_<korali::Engine>(m, "Engine")

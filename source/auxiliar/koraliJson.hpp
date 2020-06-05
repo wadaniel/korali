@@ -49,7 +49,7 @@ class KoraliJson
    * @brief Function to make a copy of the JSON object
    * @return A copy of the JSON object.
    */
-  void getCopy(knlohmann::json& dst) const;
+  void getCopy(knlohmann::json &dst) const;
 
   /**
   * @brief Function to set the JSON object.

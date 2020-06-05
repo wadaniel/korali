@@ -40,15 +40,15 @@ korali::Module *korali::Module::getModule(knlohmann::json &js, korali::Experimen
 
   // If this is a new experiment, we should assign it its own configuration
   if (isExperiment == true)
-    dynamic_cast<korali::Experiment*>(module)->_js.getJson() = js;
+    dynamic_cast<korali::Experiment *>(module)->_js.getJson() = js;
 
   // If this is a module inside an experiment, it needs to be properly configured
   if (isExperiment == false)
   {
-   module->_k = e;
-   module->applyVariableDefaults();
-   module->applyModuleDefaults(js);
-   module->setConfiguration(js);
+    module->_k = e;
+    module->applyVariableDefaults();
+    module->applyModuleDefaults(js);
+    module->setConfiguration(js);
   }
 
   // Initializing module

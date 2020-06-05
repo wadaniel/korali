@@ -5,7 +5,7 @@ void korali::problem::hierarchical::Theta::initialize()
 {
   _psiProblem = dynamic_cast<korali::problem::hierarchical::Psi *>(_psiExperiment->_problem);
   if (_psiProblem == NULL)
-   KORALI_LOG_ERROR("Psi experiment passed is not of type Hierarchical/Psi\n");
+    KORALI_LOG_ERROR("Psi experiment passed is not of type Hierarchical/Psi\n");
 
   // Sub-problem correctness checks
   std::string problemName = (*_thetaExperiment)["Problem"]["Type"];

@@ -220,10 +220,8 @@ static bool loadJsonFromFile(knlohmann::json &dst, const char *fileName)
     dst = knlohmann::json::parse(string);
 
     free(string);
-
     return true;
   }
-
   return false;
 }
 
@@ -232,7 +230,7 @@ static bool loadJsonFromFile(knlohmann::json &dst, const char *fileName)
   * @param fileName The path to the file onto which to save the JSON object.
   * @param js The input JSON object.
 */
-static void saveJsonToFile(const char *fileName, knlohmann::json &js)
+static int saveJsonToFile(const char *fileName, knlohmann::json &js)
 {
   FILE *fid = fopen(fileName, "w");
   if (fid != NULL)
@@ -242,9 +240,10 @@ static void saveJsonToFile(const char *fileName, knlohmann::json &js)
   }
   else
   {
-    fprintf(stderr, "Could not write to file: %s.\n", fileName);
-    exit(-1);
+    return -1;
   }
+
+  return 0;
 }
 
 } // namespace korali

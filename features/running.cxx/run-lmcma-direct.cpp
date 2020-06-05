@@ -2,8 +2,8 @@
 variables that maximize the objective function, given by a
 user-provided computational model. */
 
-#include "korali.hpp"
 #include "_model/direct.hpp"
+#include "korali.hpp"
 
 int main(int argc, char *argv[])
 {

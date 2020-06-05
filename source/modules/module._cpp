@@ -12,7 +12,7 @@ korali::Module *korali::Module::getModule(knlohmann::json &js, korali::Experimen
   std::string moduleType = "Undefined";
 
   if (!isDefined(js, "Type"))
-    KORALI_LOG_ERROR("No module type provided.\n");
+    KORALI_LOG_ERROR("No module type provided in:\n %s\n", js.dump(2).c_str());
 
   try
   {
@@ -25,25 +25,33 @@ korali::Module *korali::Module::getModule(knlohmann::json &js, korali::Experimen
 
   moduleType.erase(remove_if(moduleType.begin(), moduleType.end(), isspace), moduleType.end());
 
-  try
-  {
-    eraseValue(js, "Type");
-  }
-  catch (const std::exception &ex)
-  {
-    KORALI_LOG_ERROR(" + Error erasing type value.\n%s", ex.what());
-  }
+  bool isExperiment = false;
+  if (js["Type"] == "Experiment") isExperiment = true;
 
+  // Once we've read the module type, we delete this information, because it is not parsed by the module itself
+  eraseValue(js, "Type");
+
+  // Creating module pointer from it's type.
   korali::Module *module = nullptr;
 
   // Module Selection List
 
   if (module == nullptr) KORALI_LOG_ERROR("Unrecognized module: %s.\n", moduleType.c_str());
 
-  module->_k = e;
-  module->applyVariableDefaults();
-  module->applyModuleDefaults(js);
-  module->setConfiguration(js);
+  // If this is a new experiment, we should assign it its own configuration
+  if (isExperiment == true)
+    dynamic_cast<korali::Experiment *>(module)->_js.getJson() = js;
+
+  // If this is a module inside an experiment, it needs to be properly configured
+  if (isExperiment == false)
+  {
+    module->_k = e;
+    module->applyVariableDefaults();
+    module->applyModuleDefaults(js);
+    module->setConfiguration(js);
+  }
+
+  // Initializing module
   module->initialize();
 
   return module;

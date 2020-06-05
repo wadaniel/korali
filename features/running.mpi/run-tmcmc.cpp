@@ -1,5 +1,5 @@
-#include "korali.hpp"
 #include "_model/jacobi.h"
+#include "korali.hpp"
 #include <stdlib.h>
 #include <unistd.h>
 

@@ -50,7 +50,6 @@ void korali::Engine::initialize()
   auto js = _js.getJson();
   try
   {
-    if (isDefined(js, "Verbosity")) eraseValue(js, "Verbosity");
     if (isDefined(js, "Conduit")) eraseValue(js, "Conduit");
     if (isDefined(js, "Dry Run")) eraseValue(js, "Dry Run");
     if (isDefined(js, "Conduit", "Type")) eraseValue(js, "Conduit", "Type");
@@ -127,9 +126,6 @@ void korali::Engine::run()
     _startTime = std::chrono::high_resolution_clock::now();
     _profilingLastSave = std::chrono::high_resolution_clock::now();
 
-    if (_experimentVector.size() > 1)
-      for (size_t i = 0; i < _experimentVector.size(); i++) _experimentVector[i]->_logger->logInfo("Minimal", "Starting Experiment %lu...\n", i);
-
     while (true)
     {
       // Checking for break signals coming from Python
@@ -141,16 +137,11 @@ void korali::Engine::run()
           co_switch(_experimentVector[i]->_thread);
           executed = true;
           saveProfilingInfo(false);
-          if (_experimentVector.size() > 1)
-            if (_experimentVector[i]->_isFinished == true) _experimentVector[i]->_logger->logInfo("Minimal", "Experiment %lu has finished.\n", i);
         }
       if (executed == false) break;
     }
 
     _endTime = std::chrono::high_resolution_clock::now();
-
-    if (_experimentVector.size() > 1) _experimentVector[0]->_logger->logInfo("Minimal", "All jobs have finished correctly.\n");
-    if (_experimentVector.size() > 1) _experimentVector[0]->_logger->logInfo("Minimal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - _startTime).count());
 
     saveProfilingInfo(true);
     _cumulativeTime += std::chrono::duration<double>(_endTime - _startTime).count();
@@ -196,13 +187,13 @@ void korali::Engine::saveProfilingInfo(bool forceSave)
 
 void korali::Engine::run(korali::Experiment &experiment)
 {
-  experiment._k->_js["Current Generation"] = 0;
+  experiment._js["Current Generation"] = 0;
   resume(experiment);
 }
 
 void korali::Engine::run(std::vector<korali::Experiment> &experiments)
 {
-  for (size_t i = 0; i < experiments.size(); i++) experiments[i]._k->_js["Current Generation"] = 0;
+  for (size_t i = 0; i < experiments.size(); i++) experiments[i]._js["Current Generation"] = 0;
   resume(experiments);
 }
 
@@ -311,7 +302,6 @@ PYBIND11_MODULE(libkorali, m)
     .def(pybind11::init<>())
     .def("__getitem__", pybind11::overload_cast<pybind11::object>(&korali::Experiment::getItem), pybind11::return_value_policy::reference)
     .def("__setitem__", pybind11::overload_cast<pybind11::object, pybind11::object>(&korali::Experiment::setItem), pybind11::return_value_policy::reference)
-    .def("test", &korali::Experiment::test)
-    .def("loadState", pybind11::overload_cast<std::string>(&korali::Experiment::loadState))
-    .def("loadState", pybind11::overload_cast<>(&korali::Experiment::loadState));
+    .def("loadState", &korali::Experiment::loadState)
+    .def("test", &korali::Experiment::test);
 }

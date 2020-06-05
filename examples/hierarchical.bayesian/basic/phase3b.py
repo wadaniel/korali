@@ -7,10 +7,15 @@ import korali
 
 # Creating hierarchical Bayesian problem from previous two problems
 e = korali.Experiment()
+theta = korali.Experiment()
+psi = korali.Experiment()
+
+theta.loadState('_setup/results_phase_1/000/latest')
+psi.loadState('_setup/results_phase_2/latest')
 
 e["Problem"]["Type"] = "Hierarchical/Theta"
-e["Problem"]["Theta Problem Path"] = '_setup/results_phase_1/000'
-e["Problem"]["Psi Problem Path"] = '_setup/results_phase_2'
+e["Problem"]["Theta Experiment"] = theta
+e["Problem"]["Psi Experiment"] = psi
 
 e["Solver"]["Type"] = "TMCMC"
 e["Solver"]["Population Size"] = 1000

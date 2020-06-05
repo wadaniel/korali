@@ -48,7 +48,7 @@ void korali::solver::GaussianProcess::initialize()
     _koraliExperiment["File Output"]["Frequency"] = 0;
     _koraliExperiment["File Output"]["Enabled"] = false;
     _koraliExperiment["Console Output"]["Frequency"] = 0;
-    _koraliExperiment["Console Output"]["Verbosity"] = "Normal";
+    _koraliExperiment["Console Output"]["Verbosity"] = "Silent";
     _koraliExperiment["Random Seed"] = _k->_randomSeed++;
 
     // Running initialization to verify that the configuration is correct

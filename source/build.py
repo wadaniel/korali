@@ -321,6 +321,9 @@ def createGetConfiguration(module):
 
   codeString += ' ' + module["Parent Class"] + '::getConfiguration(js);\n'
 
+  if 'Experiment' == module['Name']:
+     codeString += ' js["Variables"] = _js["Variables"];\n'
+
   codeString += '} \n\n'
 
   return codeString

@@ -16,10 +16,12 @@
 #include "pybind11/pybind11.h"
 #include "pybind11/stl.h"
 #include "sample/sample.hpp"
+#include "modules/experiment/experiment.hpp"
 #include <functional>
 #include <gsl/gsl_rng.h>
 #include <string>
 #include <vector>
+
 
 #ifdef _KORALI_USE_MPI
   #include "mpi.h"
@@ -76,6 +78,25 @@ inline void adl_serializer<MPI_Comm>::to_json(json &j, const MPI_Comm &obj)
 }
 
 #endif
+
+/**
+    * @brief Struct containing serializer/deserializer object for korali::Experiment and JSON objects.
+    */
+template <>
+struct adl_serializer<korali::Experiment>
+{
+  static void to_json(json &j, const korali::Experiment& obj);
+};
+
+/**
+    * @brief Serializes a korali::Experiment into a JSON-acceptable number containing its pointer.
+    * @param j The JSON object to write.
+    * @param obj The korali::Experiment  to serialize
+    */
+inline void adl_serializer<korali::Experiment>::to_json(json &j, const korali::Experiment& obj)
+{
+ obj._js.getCopy(j);
+}
 
 /*! \namespace detail
         \brief Implementations details for the json serialization objects
@@ -185,6 +206,11 @@ inline json to_json_impl(const pybind11::handle &obj)
     }
     return out;
   }
+  if (pybind11::isinstance<pybind11::object>(obj))
+  {
+   return obj.cast<korali::Experiment>();
+  }
+
   throw std::runtime_error("to_json not implemented for this type of object: " + obj.cast<std::string>());
 }
 } // namespace detail

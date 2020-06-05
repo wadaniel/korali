@@ -80,9 +80,9 @@ class Experiment : public korali::Module
   /**
   * @brief Load the state of an experiment from a Korali result file.
   * @param path Path from which to load the experiment state.
-  * @return The experiment, by reference
+  * @return true, if file was found; false, otherwise
   */
-  static Experiment& loadExperimentFromFile(const std::string& path);
+  bool loadState(const std::string& path);
 
   /**
    * @brief Saves the state into the experiment's result path.

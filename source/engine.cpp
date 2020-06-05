@@ -196,13 +196,13 @@ void korali::Engine::saveProfilingInfo(bool forceSave)
 
 void korali::Engine::run(korali::Experiment &experiment)
 {
-  experiment._k->_js["Current Generation"] = 0;
+  experiment._js["Current Generation"] = 0;
   resume(experiment);
 }
 
 void korali::Engine::run(std::vector<korali::Experiment> &experiments)
 {
-  for (size_t i = 0; i < experiments.size(); i++) experiments[i]._k->_js["Current Generation"] = 0;
+  for (size_t i = 0; i < experiments.size(); i++) experiments[i]._js["Current Generation"] = 0;
   resume(experiments);
 }
 
@@ -271,11 +271,10 @@ void korali::Engine::setItem(pybind11::object key, pybind11::object val) { _js.s
 
 PYBIND11_MODULE(libkorali, m)
 {
-   m.def("loadExperimentFromFile", &korali::Experiment::loadExperimentFromFile, pybind11::return_value_policy::reference)
+
 #ifdef _KORALI_USE_MPI
-   .def("getMPICommPointer", &korali::Engine::getMPICommPointer, pybind11::return_value_policy::reference);
+   m.def("getMPICommPointer", &korali::Engine::getMPICommPointer, pybind11::return_value_policy::reference);
 #endif
-  ;
 
   pybind11::class_<korali::Engine>(m, "Engine")
     .def(pybind11::init<>())
@@ -313,5 +312,6 @@ PYBIND11_MODULE(libkorali, m)
     .def(pybind11::init<>())
     .def("__getitem__", pybind11::overload_cast<pybind11::object>(&korali::Experiment::getItem), pybind11::return_value_policy::reference)
     .def("__setitem__", pybind11::overload_cast<pybind11::object, pybind11::object>(&korali::Experiment::setItem), pybind11::return_value_policy::reference)
+    .def("loadState", &korali::Experiment::loadState)
     .def("test", &korali::Experiment::test);
 }

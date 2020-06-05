@@ -8,6 +8,7 @@
 # First, we run a simple Korali experiment.
 
 import sys
+import os
 sys.path.append('_model')
 from model import *
 import korali
@@ -28,25 +29,19 @@ e["Variables"][0]["Upper Bound"] = +10.0
 # Setting computational model
 e["Problem"]["Objective Function"] = model
 
-k.run(e)
-
-exit(0)
-
-# Loading previous results, if they exist.
-found = korali.loadExperimentFromFile("_korali_results/latest")
-
-# If not fdound, we run first 5 generations.
+found = e.loadState('_korali_result/latest')
+  
+# If not found, we run first 5 generations.
 if (found == False):
   print('------------------------------------------------------')
-  print('Running first 5 generations anew...')
+  print('Running first 5 generations...')
   print('------------------------------------------------------')
-  k.run(e)
 
 # If found, we continue with the next 5 generations.
 if (found == True):
   print('------------------------------------------------------')
-  print('Running 5 more generations from previous run...')
+  print('Running last 10 generations...')
   print('------------------------------------------------------')
-  e["Solver"]["Termination Criteria"]["Max Generations"] = e["Solver"][
-      "Termination Criteria"]["Max Generations"] + 5
-  k.resume(e)
+  e["Solver"]["Termination Criteria"]["Max Generations"] = 10
+
+k.resume(e)

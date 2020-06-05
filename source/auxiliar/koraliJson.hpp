@@ -46,6 +46,12 @@ class KoraliJson
   knlohmann::json &getJson();
 
   /**
+   * @brief Function to make a copy of the JSON object
+   * @return A copy of the JSON object.
+   */
+  void getCopy(knlohmann::json& dst) const;
+
+  /**
   * @brief Function to set the JSON object.
   * @param js The input JSON object.
  */

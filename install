@@ -52,7 +52,7 @@ function check()
 
 INSTALLREQS=0
 NJOBS=4
-OPTFLAGS="-O3"
+OPTFLAGS="-O3 -Wall"
 
 for i in "$@"
 do

@@ -7,15 +7,20 @@
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/problem.hpp"
 #include "modules/solver/solver.hpp"
-#include <filesystem>
 #include <chrono>
 #include <cstdio>
+#include <stdlib.h>
 #include <map>
 
 /**
   * @brief Pointer to the current experiment in execution
  */
 korali::Experiment *__expPointer;
+
+/**
+  * @brief Pointer to the calling thread
+ */
+cothread_t __returnThread;
 
 namespace korali
 {
@@ -27,7 +32,7 @@ void threadWrapper() { __expPointer->run(); }
 
 void korali::Experiment::run()
 {
-  co_switch(_engine->_thread);
+  co_switch(__returnThread);
 
   auto t0 = std::chrono::system_clock::now();
 
@@ -115,46 +120,42 @@ void korali::Experiment::saveState()
 
     remove ( linkName.c_str() );
 
-    if (symlink(genFileName, linkName.c_str()) != 0)
-     KORALI_LOG_ERROR("Error trying to create symbolic link to latest result: %s.\n", linkName.c_str());
+    if ( link(fileName.c_str(), linkName.c_str()) != 0 )
+     KORALI_LOG_ERROR("Could not create hard link to latest result.\n + Target: %s\n + Link: %s\n", fileName.c_str(), linkName.c_str());
   }
 }
 
-korali::Experiment& korali::Experiment::loadExperimentFromFile(const std::string& path)
+bool korali::Experiment::loadState(const std::string& path)
 {
- auto e = std::unique_ptr<korali::Experiment>(new korali::Experiment());
-
- if (korali::loadJsonFromFile(e.get()->_js.getJson(), path.c_str()) != 0)
-  KORALI_LOG_ERROR("Did not find path %s to load experiment from.", path.c_str());
-
- e.get()->initialize();
-
- return *(e.get());
+ return korali::loadJsonFromFile(_js.getJson(), path.c_str());
 }
 
 korali::Experiment::Experiment()
 {
   _runID = korali::getTimehash();
-  _currentGeneration = 0;
   _k = this;
 }
 
 void korali::Experiment::initialize()
 {
-  try
-  {
     _js["Samples"] = knlohmann::json();
     applyModuleDefaults(_js.getJson());
-    setConfiguration(_js.getJson());
+
+    try
+    {
+      setConfiguration(_js.getJson());
+    }
+    catch (const std::exception &e)
+    {
+      KORALI_LOG_ERROR("Error parsing Experiment's configuration. Reason:\n%s", e.what());
+    }
+
     getConfiguration(_js.getJson());
     __expPointer = this;
     _thread = co_create(1 << 20, korali::threadWrapper);
+    __returnThread = co_active();
     co_switch(_thread);
-  }
-  catch (const std::exception &e)
-  {
-    KORALI_LOG_ERROR("Experiment could not be initialized. Reason:\n%s", e.what());
-  }
+
 }
 
 void korali::Experiment::finalize()

@@ -220,10 +220,8 @@ static bool loadJsonFromFile(knlohmann::json &dst, const char *fileName)
     dst = knlohmann::json::parse(string);
 
     free(string);
-
     return true;
   }
-
   return false;
 }
 

@@ -78,6 +78,12 @@ knlohmann::json &korali::KoraliJson::getJson()
   return _js;
 }
 
+void korali::KoraliJson::getCopy(knlohmann::json& dst) const
+{
+  dst = _js;
+}
+
+
 void korali::KoraliJson::setJson(knlohmann::json &js)
 {
   _js = js;

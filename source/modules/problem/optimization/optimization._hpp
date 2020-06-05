@@ -24,7 +24,19 @@ class Optimization : public korali::Problem
   * @brief Evaluates the values of a sample, given a set of parameters.
   * @param sample A sample to process
   */
-  virtual void evaluate(korali::Sample &sample) = 0;
+  void evaluate(korali::Sample &sample);
+
+  /**
+    * @brief Evaluates whether at least one of constraints have been met.
+    * @param sample A Korali Sample
+   */
+  void evaluateConstraints(korali::Sample &sample);
+
+  /**
+   * @brief Evaluates the F(x) and Gradient(x) of a sample, given a set of parameters.
+   * @param sample A sample to process
+   */
+  void evaluateWithGradients(korali::Sample &sample);
 };
 
 } // namespace problem

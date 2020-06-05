@@ -10,8 +10,6 @@
 #include <chrono>
 #include <cstdio>
 #include <map>
-#include <sys/stat.h>
-#include <sys/types.h>
 
 /**
   * @brief Pointer to the current experiment in execution
@@ -29,8 +27,6 @@ void threadWrapper() { __expPointer->run(); }
 void korali::Experiment::run()
 {
   co_switch(_engine->_thread);
-
-  _logger = new Logger(_consoleOutputVerbosity, _logFile);
 
   auto t0 = std::chrono::system_clock::now();
 
@@ -71,6 +67,9 @@ void korali::Experiment::run()
       if (_currentGeneration % _fileOutputFrequency == 0) saveState();
 
     _currentGeneration++;
+
+    // Check for error signals from python
+    if (korali::isPythonActive && PyErr_CheckSignals() != 0) KORALI_LOG_ERROR("User requested break.\n");
   }
 
   auto t1 = std::chrono::system_clock::now();
@@ -89,16 +88,13 @@ void korali::Experiment::run()
   _logger->logInfo("Normal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(t1 - t0).count());
 
   co_switch(_engine->_thread);
-  _logger->logError("Trying to continue finished Experiment thread.\n");
+  KORALI_LOG_ERROR("Trying to continue finished Experiment thread.\n");
 }
 
 void korali::Experiment::saveState()
 {
   char genFileName[256];
   sprintf(genFileName, "gen%08lu.json", _currentGeneration);
-
-  if (_fileOutputEnabled)
-    if (!korali::dirExists(_fileOutputPath)) korali::mkdir(_fileOutputPath);
 
   // Getting configuration
   _timestamp = getTimestamp();
@@ -110,13 +106,13 @@ void korali::Experiment::saveState()
   auto js = _js.getJson();
   js["Results"] = results;
 
-  if (_fileOutputEnabled) korali::JsonInterface::saveJsonToFile(fileName.c_str(), js);
+  if (_fileOutputEnabled) korali::saveJsonToFile(fileName.c_str(), js);
 }
 
 bool korali::Experiment::loadState()
 {
   std::string path = "_korali_result";
-  if (korali::JsonInterface::isDefined(_js.getJson(), "['File Output']['Path']"))
+  if (korali::isDefined(_js.getJson(), "File Output", "Path"))
     std::string path = _js["File Output"]["Path"];
   return loadState(path);
 }
@@ -132,7 +128,7 @@ bool korali::Experiment::loadState(std::string path)
     {
       std::string filePath = entry;
       if (filePath.find("gen00000000.json", 0) != std::string::npos)
-        if (korali::JsonInterface::loadJsonFromFile(js, filePath.c_str()) == false) return false;
+        if (korali::loadJsonFromFile(js, filePath.c_str()) == false) return false;
     }
 
     // Loading latest solver generation
@@ -144,7 +140,7 @@ bool korali::Experiment::loadState(std::string path)
         if (filePath.compare(filePath.size() - fileExt.size(), fileExt.size(), fileExt) == 0)
         {
           auto curJs = knlohmann::json();
-          if (korali::JsonInterface::loadJsonFromFile(curJs, filePath.c_str()))
+          if (korali::loadJsonFromFile(curJs, filePath.c_str()))
           {
             size_t runId = js["Run ID"];
             size_t currentGenRunId = curJs["Run ID"];
@@ -178,18 +174,30 @@ korali::Experiment::Experiment()
 
 void korali::Experiment::initialize()
 {
-  _js["Samples"] = knlohmann::json();
-  applyModuleDefaults(_js.getJson());
-  setConfiguration(_js.getJson());
-  getConfiguration(_js.getJson());
-  __expPointer = this;
-  _thread = co_create(8192 * sizeof(void *), korali::threadWrapper);
-  co_switch(_thread);
+  try
+  {
+    _js["Samples"] = knlohmann::json();
+    applyModuleDefaults(_js.getJson());
+    setConfiguration(_js.getJson());
+    getConfiguration(_js.getJson());
+    __expPointer = this;
+    _thread = co_create(1 << 20, korali::threadWrapper);
+    co_switch(_thread);
+  }
+  catch (const std::exception &e)
+  {
+    KORALI_LOG_ERROR("Experiment could not be initialized. Reason:\n%s", e.what());
+  }
 }
 
 void korali::Experiment::finalize()
 {
   co_delete(_thread);
+}
+
+std::vector<std::vector<double>> korali::Experiment::test(const std::vector<std::vector<double>> &inputBatch)
+{
+  return _k->_solver->test(inputBatch);
 }
 
 knlohmann::json &korali::Experiment::operator[](const std::string &key) { return _js[key]; }

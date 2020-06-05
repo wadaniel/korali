@@ -14,11 +14,17 @@ Korali's Documentation
    
 .. toctree::
    :maxdepth: 2
-   :caption: Tutorials
-    
-   tutorials/basic
-   tutorials/advanced
-   tutorials/examples
+   :glob:
+   :caption: Examples
+
+   examples/*
+
+.. toctree::
+   :maxdepth: 2
+   :glob:
+   :caption: Features
+
+   features/*
 
 .. toctree::
    :maxdepth: 2
@@ -31,12 +37,13 @@ Korali's Documentation
    modules/conduit/*
    modules/distribution/*
    modules/layer/*         
+   modules/neuralNetwork/*
    
 .. toctree::
    :maxdepth: 2
    :caption: Development
 
-   dev/collaborating
+   dev/contributing
    dev/build
    dev/testing
    dev/moduledev

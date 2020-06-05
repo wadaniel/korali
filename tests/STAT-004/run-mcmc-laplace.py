@@ -22,9 +22,8 @@ e["Variables"][0]["Name"] = "X0"
 e["Variables"][0]["Initial Mean"] = 0.0
 e["Variables"][0]["Initial Standard Deviation"] = 1.0
 
-
 # Configuring the MCMC sampler parameters
-e["Solver"]["Type"]  = "MCMC"
+e["Solver"]["Type"] = "MCMC"
 e["Solver"]["Burn In"] = 500
 e["Solver"]["Use Adaptive Sampling"] = True
 e["Solver"]["Termination Criteria"]["Max Samples"] = 100000
@@ -38,4 +37,3 @@ k.run(e)
 
 verifyMean(e["Solver"]["Sample Database"], [4.0], 0.05)
 verifyStd(e["Solver"]["Sample Database"], [math.sqrt(2)], 0.05)
-

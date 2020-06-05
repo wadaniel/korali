@@ -15,11 +15,11 @@
 
 void korali::solver::MCMC::setInitialConfiguration()
 {
-  if (_chainCovarianceScaling <= 0.0) _k->_logger->logError("Chain Covariance Scaling must be larger 0.0 (is %lf).\n", _chainCovarianceScaling);
-  if (_leap < 1) _k->_logger->logError("Leap must be larger 0 (is %zu).\n", _leap);
-  if (_burnIn < 0) _k->_logger->logError("Burn In must be larger equal 0 (is %zu).\n", _burnIn);
-  if (_rejectionLevels < 1) _k->_logger->logError("Rejection Levels must be larger 0 (is %zu).\n", _rejectionLevels);
-  if (_nonAdaptionPeriod < 0) _k->_logger->logError("Non Adaption Period must be larger equal 0 (is %zu).\n", _nonAdaptionPeriod);
+  if (_chainCovarianceScaling <= 0.0) KORALI_LOG_ERROR("Chain Covariance Scaling must be larger 0.0 (is %lf).\n", _chainCovarianceScaling);
+  if (_leap < 1) KORALI_LOG_ERROR("Leap must be larger 0 (is %zu).\n", _leap);
+  if (_burnIn < 0) KORALI_LOG_ERROR("Burn In must be larger equal 0 (is %zu).\n", _burnIn);
+  if (_rejectionLevels < 1) KORALI_LOG_ERROR("Rejection Levels must be larger 0 (is %zu).\n", _rejectionLevels);
+  if (_nonAdaptionPeriod < 0) KORALI_LOG_ERROR("Non Adaption Period must be larger equal 0 (is %zu).\n", _nonAdaptionPeriod);
 
   // Allocating MCMC memory
   _chainCandidate.resize(_rejectionLevels);
@@ -69,7 +69,8 @@ void korali::solver::MCMC::runGeneration()
     sample["Operation"] = "Evaluate";
     _conduit->start(sample);
     _conduit->wait(sample);
-    double evaluation = sample["P(x)"];
+
+    double evaluation = KORALI_GET(double, sample, "P(x)");
 
     _chainCandidatesEvaluations[i] = evaluation;
 

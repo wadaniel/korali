@@ -16,9 +16,6 @@ long int getKoraliMPICommPointer() { return (long int)(&__KoraliTeamComm); }
 
 void korali::conduit::Distributed::initialize()
 {
-  // Instantiating Engine logger.
-  _logger = new korali::Logger();
-
 #ifdef _KORALI_USE_MPI
   _rankCount = 1;
   _rankId = 0;
@@ -42,14 +39,14 @@ void korali::conduit::Distributed::initialize()
 #endif
 
 #ifndef _KORALI_USE_MPI
-  _logger->logError("Running an Distributed-based Korali application, but Korali was installed without support for Distributed.\n");
+  KORALI_LOG_ERROR("Running an Distributed-based Korali application, but Korali was installed without support for Distributed.\n");
 #endif
 
 #ifdef _KORALI_USE_MPI
   MPI_Barrier(_mpiCommunicator);
   _continueEvaluations = true;
 
-  if (_rankCount == 1) _logger->logError("Korali Distributed applications require at least 2 Distributed ranks to run.\n");
+  if (_rankCount == 1) KORALI_LOG_ERROR("Korali Distributed applications require at least 2 Distributed ranks to run.\n");
 
   _teamCount = (_rankCount - 1) / _workersPerTeam;
   _teamId = -1;
@@ -79,7 +76,7 @@ void korali::conduit::Distributed::initialize()
     MPI_Comm_size(_mpiCommunicator, &mpiSize);
 
     if (_rankCount < _workersPerTeam + 1)
-      _logger->logError("You are running Korali with %d ranks. However, you need at least %d ranks to have at least one worker team. \n", _rankCount, _workersPerTeam + 1);
+      KORALI_LOG_ERROR("You are running Korali with %d ranks. However, you need at least %d ranks to have at least one worker team. \n", _rankCount, _workersPerTeam + 1);
 
     _teamId = _teamCount + 1;
   }
@@ -169,7 +166,7 @@ void korali::conduit::Distributed::processSample(korali::Sample &sample)
 
   int teamId = -1;
 
-  if (JsonInterface::isDefined(sample._js.getJson(), "['Worker']"))
+  if (isDefined(sample._js.getJson(), "Worker"))
   {
     teamId = sample["Worker"];
   }

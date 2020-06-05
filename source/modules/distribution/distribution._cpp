@@ -6,7 +6,7 @@ void korali::Distribution::initialize()
   if (_hasConditionalVariables == false) updateDistribution();
 }
 
-std::string korali::Distribution::getRange(gsl_rng *range)
+std::string korali::Distribution::getRange(gsl_rng *range) const
 {
   unsigned char *state = (unsigned char *)gsl_rng_state(range);
   size_t n = gsl_rng_size(range);
@@ -40,7 +40,7 @@ gsl_rng *korali::Distribution::setRange(std::string rangeString)
 
   if (rangeString != "")
   {
-    if (m != n) _k->_logger->logError("Invalid GSL state size: %lu != %lu\n", m, n);
+    if (m != n) KORALI_LOG_ERROR("Invalid GSL state size: %lu != %lu\n", m, n);
 
     const char *rngHexString = rangeString.c_str();
 

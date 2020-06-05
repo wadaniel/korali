@@ -19,6 +19,7 @@ void korali::solver::CMAES::setInitialConfiguration()
   _previousBestValue = _bestEverValue;
   _currentBestValue = _bestEverValue;
 
+  if (_populationSize == 0) _populationSize = ceil(4.0 + floor(3 * log((double)_k->_variables.size())));
   if (_muValue == 0) _muValue = _populationSize / 2;
   if (_viabilityMuValue == 0) _viabilityMuValue = _viabilityPopulationSize / 2;
 
@@ -29,7 +30,7 @@ void korali::solver::CMAES::setInitialConfiguration()
   _chiSquareNumberDiscreteMutations = sqrt((double)_k->_variables.size()) * (1. - 1. / (4. * _k->_variables.size()) + 1. / (21. * _k->_variables.size() * _k->_variables.size()));
 
   _areConstraintsDefined = false;
-  if (korali::JsonInterface::isDefined(problemConfig, "['Constraints']"))
+  if (isDefined(problemConfig, "Constraints"))
   {
     std::vector<size_t> problemConstraints = problemConfig["Constraints"];
     if (problemConstraints.size() > 0) _areConstraintsDefined = true;
@@ -37,7 +38,7 @@ void korali::solver::CMAES::setInitialConfiguration()
   }
 
   _hasDiscreteVariables = false;
-  if (korali::JsonInterface::isDefined(problemConfig, "['Has Discrete Variables']"))
+  if (isDefined(problemConfig, "Has Discrete Variables"))
     _hasDiscreteVariables = problemConfig["Has Discrete Variables"];
 
   _isViabilityRegime = _areConstraintsDefined;
@@ -91,15 +92,15 @@ void korali::solver::CMAES::setInitialConfiguration()
   {
     if (std::isfinite(_k->_variables[i]->_initialMean) == false)
     {
-      if (std::isfinite(_k->_variables[i]->_lowerBound) == false) _k->_logger->logError("Initial Mean of variable \'%s\' not defined, and cannot be inferred because variable lower bound is not finite.\n", _k->_variables[i]->_name.c_str());
-      if (std::isfinite(_k->_variables[i]->_upperBound) == false) _k->_logger->logError("Initial Mean of variable \'%s\' not defined, and cannot be inferred because variable upper bound is not finite.\n", _k->_variables[i]->_name.c_str());
+      if (std::isfinite(_k->_variables[i]->_lowerBound) == false) KORALI_LOG_ERROR("Initial Mean of variable \'%s\' not defined, and cannot be inferred because variable lower bound is not finite.\n", _k->_variables[i]->_name.c_str());
+      if (std::isfinite(_k->_variables[i]->_upperBound) == false) KORALI_LOG_ERROR("Initial Mean of variable \'%s\' not defined, and cannot be inferred because variable upper bound is not finite.\n", _k->_variables[i]->_name.c_str());
       _k->_variables[i]->_initialMean = (_k->_variables[i]->_upperBound + _k->_variables[i]->_lowerBound) * 0.5;
     }
 
     if (std::isfinite(_k->_variables[i]->_initialStandardDeviation) == false)
     {
-      if (std::isfinite(_k->_variables[i]->_lowerBound) == false) _k->_logger->logError("Initial Mean of variable \'%s\' not defined, and cannot be inferred because variable lower bound is not finite.\n", _k->_variables[i]->_name.c_str());
-      if (std::isfinite(_k->_variables[i]->_upperBound) == false) _k->_logger->logError("Initial Standard Deviation \'%s\' not defined, and cannot be inferred because variable upper bound is not finite.\n", _k->_variables[i]->_name.c_str());
+      if (std::isfinite(_k->_variables[i]->_lowerBound) == false) KORALI_LOG_ERROR("Initial Mean of variable \'%s\' not defined, and cannot be inferred because variable lower bound is not finite.\n", _k->_variables[i]->_name.c_str());
+      if (std::isfinite(_k->_variables[i]->_upperBound) == false) KORALI_LOG_ERROR("Initial Standard Deviation \'%s\' not defined, and cannot be inferred because variable upper bound is not finite.\n", _k->_variables[i]->_name.c_str());
       _k->_variables[i]->_initialStandardDeviation = (_k->_variables[i]->_upperBound - _k->_variables[i]->_lowerBound) * 0.3;
     }
   }
@@ -108,11 +109,11 @@ void korali::solver::CMAES::setInitialConfiguration()
   if (_areConstraintsDefined)
   {
     if ((_globalSuccessLearningRate <= 0.0) || (_globalSuccessLearningRate > 1.0))
-      _k->_logger->logError("Invalid Global Success Learning Rate (%f), must be greater than 0.0 and less than 1.0\n", _globalSuccessLearningRate);
+      KORALI_LOG_ERROR("Invalid Global Success Learning Rate (%f), must be greater than 0.0 and less than 1.0\n", _globalSuccessLearningRate);
     if ((_targetSuccessRate <= 0.0) || (_targetSuccessRate > 1.0))
-      _k->_logger->logError("Invalid Target Success Rate (%f), must be greater than 0.0 and less than 1.0\n", _targetSuccessRate);
+      KORALI_LOG_ERROR("Invalid Target Success Rate (%f), must be greater than 0.0 and less than 1.0\n", _targetSuccessRate);
     if (_covarianceMatrixAdaptionStrength <= 0.0)
-      _k->_logger->logError("Invalid Adaption Size (%f), must be greater than 0.0\n", _covarianceMatrixAdaptionStrength);
+      KORALI_LOG_ERROR("Invalid Adaption Size (%f), must be greater than 0.0\n", _covarianceMatrixAdaptionStrength);
 
     _globalSuccessRate = 0.5;
     _bestValidSample = -1;
@@ -191,6 +192,10 @@ void korali::solver::CMAES::runGeneration()
   // Waiting for samples to finish
   _conduit->waitAll(samples);
   updateDistribution(samples);
+
+  // Updating Results
+  (*_k)["Results"]["Best Sample"]["F(x)"] = _bestEverValue;
+  (*_k)["Results"]["Best Sample"]["Parameters"] = _bestEverVariables;
 }
 
 void korali::solver::CMAES::initMuWeights(size_t numsamplesmu)
@@ -203,7 +208,7 @@ void korali::solver::CMAES::initMuWeights(size_t numsamplesmu)
   else if (_muType == "Logarithmic")
     for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = log(std::max((double)numsamplesmu, 0.5 * _currentPopulationSize) + 0.5) - log(i + 1.);
   else
-    _k->_logger->logError("Invalid setting of Mu Type (%s) (Linear, Equal, or Logarithmic accepted).", _muType.c_str());
+    KORALI_LOG_ERROR("Invalid setting of Mu Type (%s) (Linear, Equal, or Logarithmic accepted).", _muType.c_str());
 
   // Normalize weights vector and set mueff
   double s1 = 0.0;
@@ -272,6 +277,7 @@ void korali::solver::CMAES::checkMeanAndSetRegime()
   if (_isViabilityRegime == false) return; /* mean already inside valid domain, no udpates */
 
   korali::Sample sample;
+  sample["Sample Id"] = 0;
   sample["Parameters"] = _currentMean;
   sample["Module"] = "Problem";
   sample["Operation"] = "Evaluate Constraints";
@@ -281,8 +287,13 @@ void korali::solver::CMAES::checkMeanAndSetRegime()
   _conduit->wait(sample);
   _constraintEvaluationCount++;
 
+  auto cEvals = KORALI_GET(std::vector<double>, sample, "Constraint Evaluations");
+
+  if (cEvals.size() != _constraintEvaluations.size())
+    KORALI_LOG_ERROR("Size of sample's sample evaluations vector (%lu) is different from the number of constraints defined (%lu).\n", cEvals.size(), _constraintEvaluations.size());
+
   for (size_t c = 0; c < _constraintEvaluations.size(); c++)
-    if (sample["Constraint Evaluations"][c] > 0.0) return; /* mean violates constraint, do nothing */
+    if (cEvals[c] > 0.0) return; /* mean violates constraint, do nothing */
 
   /* mean inside domain, switch regime and update internal variables */
   _isViabilityRegime = false;
@@ -302,6 +313,7 @@ void korali::solver::CMAES::updateConstraints()
     _sampleConstraintViolationCounts[i] = 0;
 
     korali::Sample sample;
+    sample["Sample Id"] = 0;
     sample["Parameters"] = _samplePopulation[i];
     sample["Module"] = "Problem";
     sample["Operation"] = "Evaluate Constraints";
@@ -311,7 +323,13 @@ void korali::solver::CMAES::updateConstraints()
     _conduit->wait(sample);
     _constraintEvaluationCount++;
 
-    for (size_t c = 0; c < _constraintEvaluations.size(); c++) _constraintEvaluations[c][i] = sample["Constraint Evaluations"][c];
+    auto cEvals = KORALI_GET(std::vector<double>, sample, "Constraint Evaluations");
+
+    if (cEvals.size() != _constraintEvaluations.size())
+      KORALI_LOG_ERROR("Size of sample's sample evaluations vector (%lu) is different from the number of constraints defined (%lu).\n", cEvals.size(), _constraintEvaluations.size());
+
+    for (size_t c = 0; c < _constraintEvaluations.size(); c++)
+      _constraintEvaluations[c][i] = cEvals[c];
   }
 
   _maxConstraintViolationCount = 0;
@@ -338,6 +356,7 @@ void korali::solver::CMAES::reEvaluateConstraints()
     if (_sampleConstraintViolationCounts[i] > 0)
     {
       korali::Sample sample;
+      sample["Sample Id"] = 0;
       sample["Parameters"] = _samplePopulation[i];
       sample["Module"] = "Problem";
       sample["Operation"] = "Evaluate Constraints";
@@ -348,9 +367,16 @@ void korali::solver::CMAES::reEvaluateConstraints()
       _constraintEvaluationCount++;
 
       _sampleConstraintViolationCounts[i] = 0;
+
+      auto cEvals = KORALI_GET(std::vector<double>, sample, "Constraint Evaluations");
+
+      if (cEvals.size() != _constraintEvaluations.size())
+        KORALI_LOG_ERROR("Size of sample's sample evaluations vector (%lu) is different from the number of constraints defined (%lu).\n", cEvals.size(), _constraintEvaluations.size());
+
       for (size_t c = 0; c < _constraintEvaluations.size(); c++)
       {
-        _constraintEvaluations[c][i] = sample["Constraint Evaluations"][c];
+        _constraintEvaluations[c][i] = cEvals[c];
+
         if (_constraintEvaluations[c][i] > _viabilityBoundaries[c] + 1e-12)
         {
           _viabilityIndicator[c][i] = true;
@@ -389,6 +415,7 @@ void korali::solver::CMAES::prepareGeneration()
       _infeasibleSampleCount++;
       sampleSingle(i);
       korali::Sample sample;
+      sample["Sample Id"] = 0;
       sample["Parameters"] = _samplePopulation[i];
       sample["Module"] = "Problem";
       sample["Operation"] = "Check Feasibility";
@@ -396,7 +423,9 @@ void korali::solver::CMAES::prepareGeneration()
       if (_hasDiscreteVariables) discretize(sample);
       _conduit->start(sample);
       _conduit->wait(sample);
-      isSampleFeasible = sample["Is Feasible"];
+
+      isSampleFeasible = KORALI_GET(bool, sample, "Is Feasible");
+
     } while (isSampleFeasible == false);
 
     _infeasibleSampleCount--;
@@ -462,7 +491,7 @@ void korali::solver::CMAES::sampleSingle(size_t sampleIdx)
 void korali::solver::CMAES::updateDistribution(std::vector<korali::Sample> &samples)
 {
   for (size_t i = 0; i < _currentPopulationSize; i++)
-    _valueVector[i] = samples[i]["F(x)"];
+    _valueVector[i] = KORALI_GET(double, samples[i], "F(x)");
 
   /* Generate _sortingIndex */
   sort_index(_valueVector, _sortingIndex, _currentPopulationSize);
@@ -494,7 +523,6 @@ void korali::solver::CMAES::updateDistribution(std::vector<korali::Sample> &samp
   {
     _previousBestEverValue = _bestEverValue;
     _bestEverValue = _currentBestValue;
-    (*_k)["Results"]["Best Sample"] = samples[_bestValidSample]._js.getJson();
 
     for (size_t d = 0; d < _k->_variables.size(); ++d)
       _bestEverVariables[d] = _currentBestVariables[d];
@@ -727,6 +755,7 @@ void korali::solver::CMAES::handleConstraints()
             return;
           }
 
+          sample["Sample Id"] = 0;
           sample["Parameters"] = _samplePopulation[i];
           sample["Module"] = "Problem";
           sample["Operation"] = "Check Feasibility";
@@ -734,7 +763,9 @@ void korali::solver::CMAES::handleConstraints()
           if (_hasDiscreteVariables) discretize(sample);
           _conduit->start(sample);
           _conduit->wait(sample);
-          isSampleFeasible = sample["Is Feasible"];
+
+          isSampleFeasible = KORALI_GET(bool, sample, "Is Feasible");
+
         } while (isSampleFeasible == false);
       }
 
@@ -779,12 +810,14 @@ void korali::solver::CMAES::updateDiscreteMutationMatrix()
 
 void korali::solver::CMAES::discretize(korali::Sample &sample)
 {
+  auto parameters = KORALI_GET(std::vector<double>, sample, "Parameters");
+
+  if (parameters.size() != _k->_variables.size())
+    KORALI_LOG_ERROR("Size of sample's parameter vector (%lu) is different from the number of problem variables.\n", parameters.size(), _k->_variables.size());
+
   for (size_t d = 0; d < _k->_variables.size(); ++d)
     if (_k->_variables[d]->_granularity != 0.0)
-    {
-      double par = sample["Parameters"][d];
-      sample["Parameters"][d] = std::round(par / _k->_variables[d]->_granularity) * _k->_variables[d]->_granularity;
-    }
+      sample["Parameters"][d] = std::round(parameters[d] / _k->_variables[d]->_granularity) * _k->_variables[d]->_granularity;
 }
 
 void korali::solver::CMAES::updateEigensystem(std::vector<double> &M)

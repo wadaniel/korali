@@ -1,5 +1,5 @@
-**************************
+********************
 Supervised Learning
-**************************
+********************
 
-Describes a problem where, given a training and validation sets of inputs and outputs, the best policy for future sets of inputs is found, as to minimize a loss function.   
+Describes a problem where parameters of a function approximator are optimized such that they minimize a given *Loss Function*. The user provides *Training Data* and *Validation Data* for which the loss function is computed.

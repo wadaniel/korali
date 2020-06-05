@@ -30,11 +30,6 @@ class Module
   std::string _type;
 
   /**
-  * @brief Stores termination criteria for the module.
-  */
-  std::vector<std::string> _terminationCriteria;
-
-  /**
   * @brief Stores a pointer to its containing experiment.
   */
   korali::Experiment *_k;
@@ -42,9 +37,10 @@ class Module
   /**
   * @brief Instantiates the requested module class given its type and returns its pointer.
   * @param js JSON file containing the module's configuration and type.
+  * @param e Korali Experiment to serve as parent to the module.
   * @return Pointer with the newly created module.
   */
-  Module *getModule(knlohmann::json &js);
+  static Module *getModule(knlohmann::json &js, korali::Experiment *e);
 
   /**
    * @brief Initializes Module upon creation. May allocate memory, set initial states, and initialize external code.
@@ -98,6 +94,13 @@ class Module
   * @return True, if operation found and executed; false, otherwise.
   */
   virtual bool runOperation(std::string operation, korali::Sample &sample) { return false; };
+
+  /**
+  * @brief Duplicates the contents of a module and re-initializes the copy.
+  * @param src The module to duplicate.
+  * @return A pointer to the duplicated module.
+  */
+  static Module *duplicate(Module *src);
 };
 
 /**

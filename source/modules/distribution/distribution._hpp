@@ -40,7 +40,7 @@ class Distribution : public korali::Module
  * @param range Range to read from
  * @return Hexadecimal string produced.
  */
-  std::string getRange(gsl_rng *range);
+  std::string getRange(gsl_rng *range) const;
 
   void initialize() override;
 

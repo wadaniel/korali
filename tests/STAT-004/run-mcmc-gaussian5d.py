@@ -8,7 +8,7 @@ sys.path.append('./helpers')
 from model import *
 from helpers import *
 
-lg5 = lambda x : lgaussianxd( x, 5 )
+lg5 = lambda x: lgaussianxd(x, 5)
 
 # Starting Korali's Engine
 import korali
@@ -28,7 +28,7 @@ for i in range(5):
   e["Variables"][i]["Initial Standard Deviation"] = 1.0
 
 # Configuring the MCMC sampler parameters
-e["Solver"]["Type"]  = "MCMC"
+e["Solver"]["Type"] = "MCMC"
 e["Solver"]["Burn In"] = 500
 e["Solver"]["Use Adaptive Sampling"] = False
 e["Solver"]["Termination Criteria"]["Max Samples"] = 50000

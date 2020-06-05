@@ -8,7 +8,6 @@ sys.path.append('./helpers')
 from model import *
 from helpers import *
 
-
 # Starting Korali's Engine
 import korali
 k = korali.Engine()

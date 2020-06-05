@@ -7,40 +7,42 @@
 
 #include <string>
 
+/**
+ * @brief Terminates execution, printing an error message and indicates file name and line number where the error occurred.
+ */
+#define KORALI_LOG_ERROR(...) \
+  korali::Logger::logError(__FILE__, __LINE__, __VA_ARGS__)
+
 namespace korali
 {
-
 /**
 * @brief Logger object for Korali Modules
 */
-class Logger {
-
- private:
-
- /**
+class Logger
+{
+  private:
+  /**
  * @brief Global variable that contains the verbosity level for the current Korali experiment.
  */
- size_t __verbosityLevel;
+  size_t __verbosityLevel;
 
- /**
+  /**
  * @brief Global variable that contains the output file for the current Korali experiment.
  */
- FILE* __outputFile;
+  FILE *__outputFile;
 
-
- public:
-
- /**
+  public:
+  /**
  * @brief Default constructor for Korali Logger
  */
- Logger();
+  Logger();
 
- /**
+  /**
  * @brief parametrized constructor for Korali Logger
  * @param verbosityLevel The verbosity level above which nothing is printed.
  * @param file Output file (default: stdout)
  */
- Logger(const  std::string verbosityLevel, FILE* file = stdout);
+  Logger(const std::string verbosityLevel, FILE *file = stdout);
 
   /**
   * @brief Sets the verbosity level.
@@ -59,7 +61,7 @@ class Logger {
   * @brief Sets the console output file.
   * @param file Open pointer to the file onto which to save the output.
   */
-  void setConsoleOutputFile(FILE* file);
+  void setConsoleOutputFile(FILE *file);
 
   /**
   * @brief Checks whether the current verbosity level is enough to authorize the requested level. Serves to filter out non-important messages when low verbosity is chosen.
@@ -74,7 +76,7 @@ class Logger {
   * @param format Format string of the data (printf-style)
   * @param ... List of arguments for the format string
   */
-  void logData(const std::string verbosityLevel, const char* format, ... );
+  void logData(const std::string verbosityLevel, const char *format, ...);
 
   /**
   * @brief Outputs an information message to the console file.
@@ -82,7 +84,7 @@ class Logger {
   * @param format Format string of the data (printf-style)
   * @param ... List of arguments for the format string
   */
-  void logInfo(const std::string verbosityLevel, const char* format, ... );
+  void logInfo(const std::string verbosityLevel, const char *format, ...);
 
   /**
   * @brief Outputs a warning message to the console file.
@@ -90,15 +92,17 @@ class Logger {
   * @param format Format string of the data (printf-style)
   * @param ... List of arguments for the format string
   */
-  void logWarning(const std::string verbosityLevel, const char* format, ... );
+  void logWarning(const std::string verbosityLevel, const char *format, ...);
 
   /**
   * @brief Outputs an error message to the console file. Overrides any verbosity level, prints, and exits execution with error.
+  * @param fileName where the error occurred, given by the __FILE__ macro
+  * @param lineNumber number where the error occurred, given by the __LINE__ macro
   * @param format Format string of the data (printf-style)
   * @param ... List of arguments for the format string
   */
-  void logError(const char* format, ... );
+  static void logError [[noreturn]] (const char *fileName, const int lineNumber, const char *format, ...);
 };
 
-}
+} // namespace korali
 #endif

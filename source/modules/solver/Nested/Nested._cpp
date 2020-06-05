@@ -13,27 +13,30 @@
 #include <limits>
 #include <math.h> //isfinite
 #include <numeric>
+#include <random> // std::default_random_engine
 
 void korali::solver::Nested::setInitialConfiguration()
 {
-  if (_covarianceScaling <= 0.0) _k->_logger->logError("Covariance Scaling must be larger 0.0 (is %lf).\n", _covarianceScaling);
-  if (_maxGainFactor < 0.0) _k->_logger->logError("Max Gain Factor must be larger equal 0.0 (is %lf).\n", _maxGainFactor);
+  _shuffleSeed = _k->_randomSeed++;
 
-  if ((_resamplingMethod != "MCMC") && (_resamplingMethod != "Box") && (_resamplingMethod != "Ellipse")) _k->_logger->logError("Only accepted Resampling Method are 'MCMC', 'Box' and 'Ellipse' (is %s).\n", _resamplingMethod.c_str());
+  if (_covarianceScaling <= 0.0) KORALI_LOG_ERROR("Covariance Scaling must be larger 0.0 (is %lf).\n", _covarianceScaling);
+  if (_maxGainFactor < 0.0) KORALI_LOG_ERROR("Max Gain Factor must be larger equal 0.0 (is %lf).\n", _maxGainFactor);
 
-  if (_proposalUpdateFrequency == 0) _k->_logger->logError("Proposal Update Frequency must be larger 0");
+  if ((_resamplingMethod != "MCMC") && (_resamplingMethod != "Box") && (_resamplingMethod != "Ellipse")) KORALI_LOG_ERROR("Only accepted Resampling Method are 'MCMC', 'Box' and 'Ellipse' (is %s).\n", _resamplingMethod.c_str());
+
+  if (_proposalUpdateFrequency == 0) KORALI_LOG_ERROR("Proposal Update Frequency must be larger 0");
 
   _priorLowerBound.resize(_k->_variables.size());
   _priorWidth.resize(_k->_variables.size());
 
   for (size_t d = 0; d < _k->_variables.size(); ++d)
   {
-    if (_k->_distributions[_k->_variables[d]->_distributionIndex]->_type != "Univariate/Uniform") _k->_logger->logError("Only 'Univariate/Uniform' priors allowed (is %s).\n", _k->_distributions[_k->_variables[d]->_distributionIndex]->_type.c_str());
+    if (_k->_distributions[_k->_variables[d]->_distributionIndex]->_type != "Univariate/Uniform") KORALI_LOG_ERROR("Only 'Univariate/Uniform' priors allowed (is %s).\n", _k->_distributions[_k->_variables[d]->_distributionIndex]->_type.c_str());
     _priorWidth[d] = dynamic_cast<korali::distribution::univariate::Uniform *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->_maximum - dynamic_cast<korali::distribution::univariate::Uniform *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->_minimum;
     _priorLowerBound[d] = dynamic_cast<korali::distribution::univariate::Uniform *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->_minimum;
   }
 
-  if ((_resamplingMethod == "Ellipse") && (_k->_variables.size() == 2)) _k->_logger->logError("Resampling Method Ellipse only suitable for problems of dim larger 2.");
+  if ((_resamplingMethod == "Ellipse") && (_k->_variables.size() == 2)) KORALI_LOG_ERROR("Resampling Method Ellipse only suitable for problems of dim larger 2.");
 
   _candidateLogLikelihoods.resize(_batchSize);
   _candidateLogPriors.resize(_batchSize);
@@ -109,8 +112,9 @@ void korali::solver::Nested::runGeneration()
   {
     size_t finishedId = _conduit->waitAny(samples);
 
-    _candidateLogLikelihoods[finishedId] = samples[finishedId]["logLikelihood"];
-    _candidateLogPriors[finishedId] = samples[finishedId]["logPrior"];
+    _candidateLogLikelihoods[finishedId] = KORALI_GET(double, samples[finishedId], "logLikelihood");
+    _candidateLogPriors[finishedId] = KORALI_GET(double, samples[finishedId], "logPrior");
+
     finishedCandidatesCount++;
   }
 
@@ -143,8 +147,8 @@ void korali::solver::Nested::runFirstGeneration()
   {
     size_t finishedId = _conduit->waitAny(samples);
 
-    _liveLogLikelihoods[finishedId] = samples[finishedId]["logLikelihood"];
-    _liveLogPriors[finishedId] = samples[finishedId]["logPrior"];
+    _liveLogLikelihoods[finishedId] = KORALI_GET(double, samples[finishedId], "logLikelihood");
+    _liveLogPriors[finishedId] = KORALI_GET(double, samples[finishedId], "logPrior");
 
     finishedCandidatesCount++;
   }
@@ -382,7 +386,7 @@ void korali::solver::Nested::updateEllipse()
 
   gsl_matrix_scale(covar, max);
   int status3 = gsl_linalg_cholesky_decomp1(covar); // LL^T = A
-  if (status3 == 1) _k->_logger->logError("Cholesky Decomposition failed during Ellipse update.");
+  if (status3 == 1) KORALI_LOG_ERROR("Cholesky Decomposition failed during Ellipse update.");
   /* On output the diagonal and lower triangular part of the 
      * input matrix A contain the matrix L, while the upper triangular part 
      * contains the original matrix. */
@@ -465,7 +469,7 @@ void korali::solver::Nested::generatePosterior()
 
   std::vector<size_t> permutation(_databaseEntries);
   std::iota(std::begin(permutation), std::end(permutation), 0);
-  std::random_shuffle(permutation.begin(), permutation.end());
+  std::shuffle(permutation.begin(), permutation.end(), std::default_random_engine(_shuffleSeed));
 
   size_t rndIdx;
   _posteriorSamples.clear();

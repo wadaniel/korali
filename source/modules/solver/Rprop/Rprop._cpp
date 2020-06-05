@@ -9,7 +9,7 @@ void korali::solver::Rprop::setInitialConfiguration()
 {
   for (size_t i = 0; i < _k->_variables.size(); i++)
     if (std::isfinite(_k->_variables[i]->_initialValue) == false)
-      _k->_logger->logError("Initial Value of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
+      KORALI_LOG_ERROR("Initial Value of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
 
   _currentX.resize(_k->_variables.size(), 0.0);
   for (size_t i = 0; i < _k->_variables.size(); i++)
@@ -31,7 +31,7 @@ void korali::solver::Rprop::evaluateFunctionAndGradient(korali::Sample &sample)
 {
   // Initializing Sample Evaluation
   sample["Module"] = "Problem";
-  sample["Operation"] = "Evaluate";
+  sample["Operation"] = "Evaluate With Gradients";
   sample["Parameters"] = _currentX;
   sample["Sample Id"] = 0;
   _modelEvaluationCount++;
@@ -42,13 +42,14 @@ void korali::solver::Rprop::evaluateFunctionAndGradient(korali::Sample &sample)
 
   // Processing results
   // The 'minus' is there because we want Rprop to do Maximization be default.
-  _currentEvaluation = sample["F(x)"];
-  _currentEvaluation = -_currentEvaluation;
+  _currentEvaluation = -KORALI_GET(double, sample, "F(x)");
+  _currentGradient = KORALI_GET(std::vector<double>, sample, "Gradient");
+
+  if (_currentGradient.size() != _k->_variables.size())
+    KORALI_LOG_ERROR("Size of sample's gradient evaluations vector (%lu) is different from the number of problem variables defined (%lu).\n", _currentGradient.size(), _k->_variables.size());
+
   for (size_t i = 0; i < _k->_variables.size(); i++)
-  {
-    _currentGradient[i] = sample["Gradient"][i];
     _currentGradient[i] = -_currentGradient[i];
-  }
 }
 
 void korali::solver::Rprop::runGeneration(void)
@@ -58,20 +59,6 @@ void korali::solver::Rprop::runGeneration(void)
   korali::Sample sample;
 
   evaluateFunctionAndGradient(sample);
-
-  _k->_logger->logInfo("Normal", "X = [ ");
-  for (size_t k = 0; k < _k->_variables.size(); k++) _k->_logger->logData("Normal", " %.5le  ", _currentX[k]);
-  _k->_logger->logData("Normal", " ]\n");
-
-  _k->_logger->logInfo("Normal", "F(X) = %le \n", _currentEvaluation);
-
-  _k->_logger->logInfo("Normal", "DF(X) = [ ");
-  for (size_t k = 0; k < _k->_variables.size(); k++) _k->_logger->logData("Normal", " %.5le  ", _currentGradient[k]);
-  _k->_logger->logData("Normal", " ]\n");
-
-  _k->_logger->logInfo("Normal", "X_best = [ ");
-  for (size_t k = 0; k < _k->_variables.size(); k++) _k->_logger->logData("Normal", " %.5le  ", _bestX[k]);
-  _k->_logger->logData("Normal", " ]\n");
 
   Update_iminus();
 
@@ -181,8 +168,29 @@ void korali::solver::Rprop::Update_iminus(void)
   }
 }
 
-void korali::solver::Rprop::printGenerationBefore() { return; }
+void korali::solver::Rprop::printGenerationBefore()
+{
+  return;
+}
 
-void korali::solver::Rprop::printGenerationAfter() { return; }
+void korali::solver::Rprop::printGenerationAfter()
+{
+  _k->_logger->logInfo("Normal", "X = [ ");
+  for (size_t k = 0; k < _k->_variables.size(); k++) _k->_logger->logData("Normal", " %.5le  ", _currentX[k]);
+  _k->_logger->logData("Normal", " ]\n");
 
-void korali::solver::Rprop::finalize() { return; }
+  _k->_logger->logInfo("Normal", "F(X) = %le \n", _currentEvaluation);
+
+  _k->_logger->logInfo("Normal", "DF(X) = [ ");
+  for (size_t k = 0; k < _k->_variables.size(); k++) _k->_logger->logData("Normal", " %.5le  ", _currentGradient[k]);
+  _k->_logger->logData("Normal", " ]\n");
+
+  _k->_logger->logInfo("Normal", "X_best = [ ");
+  for (size_t k = 0; k < _k->_variables.size(); k++) _k->_logger->logData("Normal", " %.5le  ", _bestX[k]);
+  _k->_logger->logData("Normal", " ]\n");
+}
+
+void korali::solver::Rprop::finalize()
+{
+  return;
+}

@@ -12,10 +12,7 @@
 
 void korali::conduit::Concurrent::initialize()
 {
-  // Instantiating Engine logger.
-  _logger = new korali::Logger();
-
-  if (_concurrentJobs < 1) _logger->logError("You need to define at least 1 concurrent job(s) for external models \n");
+  if (_concurrentJobs < 1) KORALI_LOG_ERROR("You need to define at least 1 concurrent job(s) for external models \n");
   _resultPipe.clear();
   _inputsPipe.clear();
   while (!_launcherQueue.empty()) _launcherQueue.pop();
@@ -27,8 +24,8 @@ void korali::conduit::Concurrent::initialize()
   // Opening Inter-process communicator pipes
   for (int i = 0; i < _concurrentJobs; i++)
   {
-    if (pipe(_inputsPipe[i].data()) == -1) _logger->logError("Unable to create inter-process pipe. \n");
-    if (pipe(_resultPipe[i].data()) == -1) _logger->logError("Unable to create inter-process pipe. \n");
+    if (pipe(_inputsPipe[i].data()) == -1) KORALI_LOG_ERROR("Unable to create inter-process pipe. \n");
+    if (pipe(_resultPipe[i].data()) == -1) KORALI_LOG_ERROR("Unable to create inter-process pipe. \n");
     fcntl(_resultPipe[i][0], F_SETFL, fcntl(_resultPipe[i][0], F_GETFL) | O_NONBLOCK);
     fcntl(_resultPipe[i][1], F_SETFL, fcntl(_resultPipe[i][1], F_GETFL) | O_NONBLOCK);
   }
@@ -122,7 +119,7 @@ void korali::conduit::Concurrent::processSample(korali::Sample &sample)
   korali::Engine *engine = _engineStack.top();
 
   int launcherId = -1;
-  if (JsonInterface::isDefined(sample._js.getJson(), "['Worker']"))
+  if (isDefined(sample._js.getJson(), "Worker"))
   {
     launcherId = sample["Worker"];
   }
@@ -157,7 +154,7 @@ void korali::conduit::Concurrent::processSample(korali::Sample &sample)
     {
       int status;
       pid_t result = waitpid(_workerPids[i], &status, WNOHANG);
-      if (result != 0) _logger->logError("Worker %i (Pid: %d) exited unexpectedly.\n", i, _workerPids[i]);
+      if (result != 0) KORALI_LOG_ERROR("Worker %i (Pid: %d) exited unexpectedly.\n", i, _workerPids[i]);
     }
 
     size_t resultStringSize;

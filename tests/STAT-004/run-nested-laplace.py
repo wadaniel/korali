@@ -41,7 +41,6 @@ e["Solver"]["Termination Criteria"]["Max Generations"] = 50000
 e["Solver"]["Termination Criteria"]["Max Gain Factor"] = 1e-9
 e["Solver"]["Termination Criteria"]["Max Effective Sample Size"] = 50000
 
-
 # Running Korali
 e["Random Seed"] = 1337
 k.run(e)

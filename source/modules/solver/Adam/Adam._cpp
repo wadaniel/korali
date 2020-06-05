@@ -5,7 +5,7 @@ void korali::solver::Adam::setInitialConfiguration()
 {
   for (size_t i = 0; i < _k->_variables.size(); i++)
     if (std::isfinite(_k->_variables[i]->_initialValue) == false)
-      _k->_logger->logError("Initial Value of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
+      KORALI_LOG_ERROR("Initial Value of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
 
   _currentValue.resize(_k->_variables.size());
   for (size_t i = 0; i < _k->_variables.size(); i++)
@@ -29,7 +29,7 @@ void korali::solver::Adam::runGeneration()
   // Initializing Sample Evaluation
   korali::Sample sample;
   sample["Module"] = "Problem";
-  sample["Operation"] = "Evaluate";
+  sample["Operation"] = "Evaluate With Gradients";
   sample["Parameters"] = _currentValue;
   sample["Sample Id"] = 0;
   _modelEvaluationCount++;
@@ -39,12 +39,19 @@ void korali::solver::Adam::runGeneration()
   _conduit->wait(sample);
 
   // Processing results
-  _currentEvaluation = sample["F(x)"];
+
+  _currentEvaluation = KORALI_GET(double, sample, "F(x)");
+
   _currentEvaluation = -_currentEvaluation; //minimize
   _gradientNorm = 0.0;
+
+  _gradient = KORALI_GET(std::vector<double>, sample, "Gradient");
+
+  if (_gradient.size() != _k->_variables.size())
+    KORALI_LOG_ERROR("Size of sample's gradient evaluations vector (%lu) is different from the number of problem variables defined (%lu).\n", _gradient.size(), _k->_variables.size());
+
   for (size_t i = 0; i < _k->_variables.size(); i++)
   {
-    _gradient[i] = sample["Gradient"][i];
     _gradient[i] = -_gradient[i]; // minimize
     _squaredGradient[i] = _gradient[i] * _gradient[i];
     _gradientNorm += _squaredGradient[i];

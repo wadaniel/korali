@@ -8,7 +8,7 @@ void korali::solver::GridSearch::setInitialConfiguration()
     _numberOfValues *= _k->_variables[i]->_values.size();
 
   if (_numberOfValues > _maxModelEvaluations)
-    _k->_logger->logError("%lu > %lu. To many evaluations of the Utility per Sensor", _numberOfValues, _maxModelEvaluations);
+    KORALI_LOG_ERROR("%lu > %lu. To many evaluations of the Utility per Sensor", _numberOfValues, _maxModelEvaluations);
 
   _k->_logger->logInfo("Normal", "Evaluating a total of %lu values..\n", _numberOfValues);
 
@@ -59,23 +59,25 @@ void korali::solver::GridSearch::runGeneration()
     samples[i]["Module"] = "Problem";
     samples[i]["Operation"] = "Evaluate";
     samples[i]["Parameters"] = sampleData;
+    samples[i]["Sample Id"] = i;
     _conduit->start(samples[i]);
     _modelEvaluationCount++;
   }
   _conduit->waitAll(samples);
   for (size_t i = 0; i < _numberOfValues; i++)
   {
-    _objective[i] = samples[i]["F(x)"];
+    _objective[i] = KORALI_GET(double, samples[i], "F(x)");
   }
 
   std::vector<double>::iterator maximum = std::max_element(_objective.begin(), _objective.end());
   size_t maxIndex = std::distance(_objective.begin(), maximum);
 
-  std::vector<double> location = samples[maxIndex]["Parameters"];
-  _locationOfMaximum = location;
-  (*_k)["Results"]["Best Sample"] = location;
+  _locationOfMaximum = KORALI_GET(std::vector<double>, samples[maxIndex], "Parameters");
+  _maximum = KORALI_GET(double, samples[maxIndex], "F(x)");
 
-  _maximum = samples[maxIndex]["F(x)"];
+  // Updating Results
+  (*_k)["Results"]["Best Sample"]["Parameters"] = _locationOfMaximum;
+  (*_k)["Results"]["Best Sample"]["F(x)"] = _maximum;
 }
 
 void korali::solver::GridSearch::printGenerationBefore()

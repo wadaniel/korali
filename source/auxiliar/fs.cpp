@@ -4,7 +4,6 @@
 #include <string>
 #include <sys/stat.h>
 
-
 void korali::mkdir(const std::string dirPath)
 {
   char tmp[256];

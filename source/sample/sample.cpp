@@ -38,7 +38,6 @@ void korali::Sample::sampleLauncher()
 
   // Getting sample information
   size_t experimentId = KORALI_GET(size_t, (*sample), "Experiment Id");
-  auto sampleId = KORALI_GET(size_t, (*sample), "Sample Id");
   auto operation = KORALI_GET(std::string, (*sample), "Operation");
   auto module = KORALI_GET(std::string, (*sample), "Module");
 

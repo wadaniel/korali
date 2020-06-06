@@ -14,6 +14,7 @@ namespace solver
 class Nested : public korali::Solver
 {
   private:
+  
   /*
   * @brief Seed for the shuffle randomizer
   */
@@ -83,6 +84,16 @@ class Nested : public korali::Solver
   * @brief Generate posterior distribution from sample data base.
   */
   void generatePosterior();
+ 
+  /*
+  * @brief Calculate L2 distance between two vectors.
+  */
+   double l2distance(std::vector<double> sampleOne, std::vector<double> sampleTwo) const;
+  
+  /*
+  * @brief Applies k-means clustering (k=2) and fills cluster vectors with samples.
+  */
+  void kmeansClustering(std::vector<std::vector<double>> samples, size_t maxIter, std::vector<std::vector<double>> clusterOne, std::vector<std::vector<double>> clusterTwo) const;
 
   /*
   * @brief Calculate effective number of samples.
@@ -101,8 +112,8 @@ class Nested : public korali::Solver
 
   public:
   /**
- * @brief Configures Sampler.
- */
+  * @brief Configures Sampler.
+  */
   void setInitialConfiguration() override;
 
   /**

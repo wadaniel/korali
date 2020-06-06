@@ -67,7 +67,7 @@ void korali::Conduit::start(korali::Sample &sample)
   korali::Engine *engine = _engineStack.top();
 
   // Checking if sample id was defined
-  auto sampleId = KORALI_GET(size_t, sample, "Sample Id");
+  KORALI_GET(size_t, sample, "Sample Id");
 
   if (sample._state != SampleState::uninitialized) KORALI_LOG_ERROR("Sample has already been initialized.\n");
 

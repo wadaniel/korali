@@ -91,7 +91,7 @@ void korali::solver::GaussianProcess::printGenerationAfter()
 
 std::vector<std::vector<double>> korali::solver::GaussianProcess::test(const std::vector<std::vector<double>> &input)
 {
-  int inputSize = input.size();
+  size_t inputSize = input.size();
   std::vector<std::vector<double>> output(inputSize, std::vector<double>(2));
 
   for (size_t i = 0; i < inputSize; i++)

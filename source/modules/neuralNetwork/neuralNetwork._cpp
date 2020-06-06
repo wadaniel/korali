@@ -31,7 +31,7 @@ void korali::NeuralNetwork::initialize()
       for (size_t k = 0; k < _layers[i - 1]->_nodeCount; k++)
       {
         char varName[512];
-        sprintf(varName, "Weight [%u] %u->%u", i, j, k);
+        sprintf(varName, "Weight [%lu] %lu->%lu", i, j, k);
         std::string varNameString(varName);
         _koraliExperiment["Variables"][currentVariable]["Name"] = varNameString;
         _koraliExperiment["Variables"][currentVariable]["Initial Mean"] = 0.0;
@@ -43,7 +43,7 @@ void korali::NeuralNetwork::initialize()
     for (size_t j = 0; j < _layers[i]->_nodeCount; j++)
     {
       char varName[512];
-      sprintf(varName, "Bias [%u] %u", i, j);
+      sprintf(varName, "Bias [%lu] %lu", i, j);
       std::string varNameString(varName);
       _koraliExperiment["Variables"][currentVariable]["Name"] = varNameString;
       _koraliExperiment["Variables"][currentVariable]["Initial Mean"] = 0.0;
@@ -89,8 +89,8 @@ void korali::NeuralNetwork::create()
   memory::dim N = batchSize;
 
   /****************************************************************************
-  /* Checking input/output configuration
-  /****************************************************************************/
+  * Checking input/output configuration
+  ****************************************************************************/
 
   if (_layers[0]->_type != "Input") KORALI_LOG_ERROR("The first layer must be of an input type.\n");
   for (size_t i = 1; i < layerCount - 1; i++)
@@ -109,8 +109,8 @@ void korali::NeuralNetwork::create()
       KORALI_LOG_ERROR("Input data set %lu has a different number of elements (%lu) than the input layer node count (%lu).\n", i, _layers[0]->_nodeValues[i].size(), inputSize);
 
   /*********************************************************************************
-  /*  Initializing memory objects and primitives for FORWARD propagation
-  /*********************************************************************************/
+  *  Initializing memory objects and primitives for FORWARD propagation
+  *********************************************************************************/
 
   // Creating inner product and activation functions
   for (size_t i = 0; i < layerCount; i++)
@@ -128,7 +128,6 @@ void korali::NeuralNetwork::create()
     const memory::dim OC = _layers[i]->_nodeCount;
 
     memory::dims weightDims = {OC, IC};
-    size_t weightCount = product(weightDims);
 
     // Allocating weight memory
     auto weightMemDesc = memory::desc(weightDims, memory::data_type::f32, memory::format_tag::ba);
@@ -226,10 +225,10 @@ void korali::NeuralNetwork::create()
     // If not training, assign given variances and means
     if (_inputNormalizationMeans.size() > 0 || _inputNormalizationVariances.size() > 0)
     {
-      if (_inputNormalizationMeans.size() != IC)
+      if (_inputNormalizationMeans.size() != (size_t)IC)
         KORALI_LOG_ERROR("Number of values (%lu) in the batch normalization means vector is different from that of the node count of the first layer (%lu).\n", _inputNormalizationMeans.size(), IC);
 
-      if (_inputNormalizationVariances.size() != IC)
+      if (_inputNormalizationVariances.size() != (size_t)IC)
         KORALI_LOG_ERROR("Number of values (%lu) in the batch normalization variances vector is different from that of the node count of the first layer (%lu).\n", _inputNormalizationVariances.size(), IC);
 
       normalizationFlags |= dnnl::normalization_flags::use_global_stats;
@@ -291,7 +290,7 @@ void korali::NeuralNetwork::create()
     // If not training, assign given variances and means
     if (_inputNormalizationMeans.size() > 0)
     {
-      for (size_t i = 0; i < IC; i++)
+      for (size_t i = 0; i < (size_t)IC; i++)
       {
         inputNormalizationMeans[i] = _inputNormalizationMeans[i];
         inputNormalizationVariances[i] = _inputNormalizationVariances[i];
@@ -317,7 +316,7 @@ void korali::NeuralNetwork::create()
       _inputNormalizationSigmas.resize(inputNormalizationVariances.size());
 
       // Translating from variance to sigma values
-      for (size_t i = 0; i < IC; i++)
+      for (size_t i = 0; i < (size_t)IC; i++)
       {
         _inputNormalizationMeans[i] = inputNormalizationMeans[i];
         _inputNormalizationVariances[i] = inputNormalizationVariances[i];
@@ -341,10 +340,10 @@ void korali::NeuralNetwork::create()
       // If not training, assign given variances and means
       if (_outputNormalizationMeans.size() > 0 || _outputNormalizationVariances.size() > 0)
       {
-        if (_outputNormalizationMeans.size() != IC)
+        if (_outputNormalizationMeans.size() != (size_t)IC)
           KORALI_LOG_ERROR("Number of values (%lu) in the batch normalization means vector is different from that of the node count of the first layer (%lu).\n", _outputNormalizationMeans.size(), IC);
 
-        if (_outputNormalizationVariances.size() != IC)
+        if (_outputNormalizationVariances.size() != (size_t)IC)
           KORALI_LOG_ERROR("Number of values (%lu) in the batch normalization variances vector is different from that of the node count of the first layer (%lu).\n", _outputNormalizationVariances.size(), IC);
 
         normalizationFlags |= dnnl::normalization_flags::use_global_stats;
@@ -358,7 +357,7 @@ void korali::NeuralNetwork::create()
 
         // Storing scale/shift data
         std::vector<float> scaleShiftData(product(scaleShiftDims));
-        for (size_t i = 0; i < IC; i++)
+        for (size_t i = 0; i < (size_t)IC; i++)
         {
           scaleShiftData[i + IC * 0] = _batchNormalizationScale[i];
           scaleShiftData[i + IC * 1] = _batchNormalizationShift[i];
@@ -399,8 +398,8 @@ void korali::NeuralNetwork::create()
 
       // Copying input data to first layer
       std::vector<float> batchOutput(N * IC);
-      for (size_t i = 0; i < N; i++)
-        for (size_t j = 0; j < IC; j++)
+      for (size_t i = 0; i < (size_t)N; i++)
+        for (size_t j = 0; j < (size_t)IC; j++)
           batchOutput[i * IC + j] = _solution[i][j];
 
       // Executing normalization
@@ -413,7 +412,7 @@ void korali::NeuralNetwork::create()
       // If not training, assign given variances and means
       if (_outputNormalizationMeans.size() > 0)
       {
-        for (size_t i = 0; i < IC; i++)
+        for (size_t i = 0; i < (size_t)IC; i++)
         {
           outputNormalizationMeans[i] = _outputNormalizationMeans[i];
           outputNormalizationVariances[i] = _outputNormalizationVariances[i];
@@ -439,7 +438,7 @@ void korali::NeuralNetwork::create()
         _outputNormalizationSigmas.resize(outputNormalizationVariances.size());
 
         // Translating from variance to sigma values
-        for (size_t i = 0; i < IC; i++)
+        for (size_t i = 0; i < (size_t)IC; i++)
         {
           _outputNormalizationMeans[i] = outputNormalizationMeans[i];
           _outputNormalizationVariances[i] = outputNormalizationVariances[i];
@@ -451,14 +450,14 @@ void korali::NeuralNetwork::create()
       // Retrieving normalized solution
       read_from_dnnl_memory(batchOutput.data(), normalizedOutputMem);
 
-      for (size_t i = 0; i < N; i++)
-        for (size_t j = 0; j < IC; j++)
+      for (size_t i = 0; i < (size_t)N; i++)
+        for (size_t j = 0; j < (size_t)IC; j++)
           _solution[i][j] = batchOutput[i * IC + j];
     }
 
   /*********************************************************************************
-  /*  Initializing memory objects and primitives for BACKWARD propagation
-  /*********************************************************************************/
+  *  Initializing memory objects and primitives for BACKWARD propagation
+  *********************************************************************************/
 
   if (_operation == "Training")
   {
@@ -504,7 +503,6 @@ void korali::NeuralNetwork::updateWeightsAndBias()
 
   // Initialize solver's configuration here
   size_t layerCount = _layers.size();
-  size_t batchSize = _layers[0]->_nodeValues.size();
 
   // Initializing weight matrix memories and values
   for (size_t i = 1; i < layerCount; i++)
@@ -516,21 +514,21 @@ void korali::NeuralNetwork::updateWeightsAndBias()
     std::vector<float> weightsData(weightCount);
     std::vector<float> biasData(OC);
 
-    if (_layers[i]->_weights.size() != OC)
+    if (_layers[i]->_weights.size() != (size_t)OC)
       KORALI_LOG_ERROR("Layer %lu weights were either not initialized (perhaps the NN is not yet trained) or not provided correctly. Expected: %lu, provided: %lu weight sets. \n", i, OC, _layers[i]->_weights.size());
 
-    for (size_t j = 0; j < OC; j++)
-      if (_layers[i]->_weights[j].size() != IC)
+    for (size_t j = 0; j < (size_t)OC; j++)
+      if (_layers[i]->_weights[j].size() != (size_t)IC)
         KORALI_LOG_ERROR("Layer %lu weight set %lu was either not initialized (perhaps the NN is not yet trained) or not provided correctly. Expected: %lu, provided: %lu weight sets. \n", i, j, IC, _layers[i]->_weights[j].size());
 
-    if (_layers[i]->_bias.size() != OC)
+    if (_layers[i]->_bias.size() != (size_t)OC)
       KORALI_LOG_ERROR("Layer %lu biases were either not initialized (perhaps the NN is not yet trained) or not provided correctly. Expected: %lu, provided: %lu biases. \n", i, OC, _layers[i]->_bias.size());
 
-    for (size_t j = 0; j < OC; j++)
-      for (size_t k = 0; k < IC; k++)
+    for (size_t j = 0; j < (size_t)OC; j++)
+      for (size_t k = 0; k < (size_t)IC; k++)
         weightsData[j * IC + k] = _layers[i]->_weights[j][k];
 
-    for (size_t j = 0; j < OC; j++)
+    for (size_t j = 0; j < (size_t)OC; j++)
       biasData[j] = _layers[i]->_bias[j];
 
     // Setting weight and bias data to oneDNN format
@@ -558,7 +556,6 @@ void korali::NeuralNetwork::forward()
 #ifdef _KORALI_USE_ONEDNN
 
   size_t layerCount = _layers.size();
-  size_t inputSize = _layers[0]->_nodeCount;
   size_t batchSize = _layers[0]->_nodeValues.size();
 
   // forward propagating neural network
@@ -617,11 +614,11 @@ void korali::NeuralNetwork::backward()
     read_from_dnnl_memory(weightsDiffData.data(), _layers[i]->_forwardWorkMem);
     read_from_dnnl_memory(biasDiffData.data(), _layers[i]->_backwardBiasDiffMem);
 
-    for (size_t j = 0; j < OC; j++)
-      for (size_t k = 0; k < IC; k++)
+    for (size_t j = 0; j < (size_t)OC; j++)
+      for (size_t k = 0; k < (size_t)IC; k++)
         _layers[i]->_weights[j][k] = weightsDiffData[j * IC + k];
 
-    for (size_t j = 0; j < OC; j++)
+    for (size_t j = 0; j < (size_t)OC; j++)
       _layers[i]->_bias[j] = biasDiffData[j];
   }
 

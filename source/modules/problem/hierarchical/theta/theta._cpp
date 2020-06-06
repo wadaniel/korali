@@ -88,8 +88,6 @@ void korali::problem::hierarchical::Theta::initialize()
 
 void korali::problem::hierarchical::Theta::evaluateLogLikelihood(korali::Sample &sample)
 {
-  double logLikelihood = 0.0;
-
   std::vector<double> logValues;
   logValues.resize(_psiProblemSampleCount);
 

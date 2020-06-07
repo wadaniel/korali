@@ -74,14 +74,14 @@ class KoraliJson
   * @param key A pybind11 object acting as JSON key (number or string).
   * @return A pybind11 object
  */
-  pybind11::object getItem(pybind11::object key);
+  pybind11::object getItem(const pybind11::object key);
 
   /**
   * @brief Sets an item on the JSON object at the current pointer position.
   * @param key A pybind11 object acting as JSON key (number or string).
   * @param val The value of the item to set.
  */
-  void setItem(pybind11::object key, pybind11::object val);
+  void setItem(const pybind11::object key, const pybind11::object val);
 
   /**
   * @brief C++ wrapper for the getItem operator.

@@ -10,12 +10,12 @@ namespace distribution
 namespace univariate
 {
 
-double Cauchy::getDensity(double x)
+double Cauchy::getDensity(const double x) const
 {
   return gsl_ran_cauchy_pdf(x - _location, _scale);
 }
 
-double Cauchy::getLogDensity(double x)
+double Cauchy::getLogDensity(const double x) const
 {
   return _aux - gsl_sf_log(1. + gsl_sf_pow_int((x - _location) / _scale, 2));
 }

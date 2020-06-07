@@ -10,12 +10,12 @@ namespace distribution
 namespace univariate
 {
 
-double Gamma::getDensity(double x)
+double Gamma::getDensity(const double x) const
 {
   return gsl_ran_gamma_pdf(x, _shape, _scale);
 }
 
-double Gamma::getLogDensity(double x)
+double Gamma::getLogDensity(const double x) const
 {
   if (x < 0) return -INFINITY;
   return _aux + (_shape - 1) * log(x) - x / _scale;

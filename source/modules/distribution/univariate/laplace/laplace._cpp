@@ -10,12 +10,12 @@ namespace distribution
 namespace univariate
 {
 
-double Laplace::getDensity(double x)
+double Laplace::getDensity(const double x) const
 {
   return gsl_ran_laplace_pdf(x - _mean, _width);
 }
 
-double Laplace::getLogDensity(double x)
+double Laplace::getLogDensity(const double x) const
 {
   return _aux - fabs(x - _mean) / _width;
 }

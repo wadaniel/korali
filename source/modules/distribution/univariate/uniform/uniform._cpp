@@ -10,13 +10,13 @@ namespace distribution
 namespace univariate
 {
 
-double Uniform::getDensity(double x)
+double Uniform::getDensity(const double x) const
 {
   if (_maximum - _minimum <= 0.0) return NaN;
   return gsl_ran_flat_pdf(x, _minimum, _maximum);
 }
 
-double Uniform::getLogDensity(double x)
+double Uniform::getLogDensity(const double x) const
 {
   if (_maximum - _minimum <= 0.0) return NaN;
 

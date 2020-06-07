@@ -30,7 +30,7 @@ std::string Distribution::getRange(gsl_rng *range) const
   return output;
 }
 
-gsl_rng *Distribution::setRange(std::string rangeString)
+gsl_rng *Distribution::setRange(const std::string rangeString)
 {
   gsl_rng *rng = gsl_rng_alloc(gsl_rng_default);
   if (_randomSeed == 0) _randomSeed = _k->_randomSeed++;

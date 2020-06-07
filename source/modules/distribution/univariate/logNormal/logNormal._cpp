@@ -10,12 +10,12 @@ namespace distribution
 namespace univariate
 {
 
-double LogNormal::getDensity(double x)
+double LogNormal::getDensity(const double x) const
 {
   return gsl_ran_lognormal_pdf(x, _mu, _sigma);
 }
 
-double LogNormal::getLogDensity(double x)
+double LogNormal::getLogDensity(const double x) const
 {
   if (x < 0) return -INFINITY;
   double logx = gsl_sf_log(x);

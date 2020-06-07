@@ -10,12 +10,12 @@ namespace distribution
 namespace univariate
 {
 
-double Geometric::getDensity(double x)
+double Geometric::getDensity(const double x) const
 {
   return gsl_ran_geometric_pdf((int)x, _successProbability);
 }
 
-double Geometric::getLogDensity(double x)
+double Geometric::getLogDensity(const double x) const
 {
   return log(_successProbability) + (x - 1) * log(1.0 - _successProbability);
 }

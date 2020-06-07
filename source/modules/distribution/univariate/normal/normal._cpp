@@ -10,13 +10,13 @@ namespace distribution
 namespace univariate
 {
 
-double Normal::getDensity(double x)
+double Normal::getDensity(const double x) const
 {
   double y = (x - _mean) / _standardDeviation;
   return gsl_sf_exp(-0.5 * y * y) / _normalization;
 }
 
-double Normal::getLogDensity(double x)
+double Normal::getLogDensity(const double x) const
 {
   double d = (x - _mean) / _standardDeviation;
   return _logNormalization - 0.5 * d * d;

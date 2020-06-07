@@ -63,7 +63,7 @@ void Sample::sampleLauncher()
 bool Sample::contains(const std::string &key) { return _self->_js.contains(key); }
 knlohmann::json &Sample::operator[](const std::string &key) { return _self->_js[key]; }
 knlohmann::json &Sample::operator[](const unsigned long int &key) { return _self->_js[key]; }
-pybind11::object Sample::getItem(pybind11::object key) { return _self->_js.getItem(key); }
-void Sample::setItem(pybind11::object key, pybind11::object val) { _self->_js.setItem(key, val); }
+pybind11::object Sample::getItem(const pybind11::object key) { return _self->_js.getItem(key); }
+void Sample::setItem(const pybind11::object key, const pybind11::object val) { _self->_js.setItem(key, val); }
 
 } // namespace

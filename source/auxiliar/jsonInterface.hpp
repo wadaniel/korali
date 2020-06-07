@@ -20,14 +20,14 @@ namespace korali
   * @param js The JSON object to check.
   * @return true, if it's empty; false, otherwise.
  */
-bool isEmpty(knlohmann::json &js);
+bool isEmpty(const knlohmann::json &js);
 
 /**
   * @brief Checks whether the JSON object is of elemental type (number or string).
   * @param js The JSON object to check.
   * @return true, if it's elemental; false, otherwise.
  */
-bool isElemental(knlohmann::json &js);
+bool isElemental(const knlohmann::json &js);
 
 /**
   * @brief Function made exclusively made to avoid warnings on getting the last element of variadic template arguments
@@ -146,7 +146,7 @@ bool loadJsonFromFile(knlohmann::json &dst, const char *fileName);
   * @param fileName The path to the file onto which to save the JSON object.
   * @param js The input JSON object.
 */
-int saveJsonToFile(const char *fileName, knlohmann::json &js);
+int saveJsonToFile(const char *fileName, const knlohmann::json &js);
 
 } // namespace korali
 #endif // _KORALI_AUXILIARS_JSONINTERFACE_HPP_

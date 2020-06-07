@@ -44,7 +44,7 @@ void KoraliJson::set(const std::string &js)
   _opt = &_js;
 }
 
-void KoraliJson::setItem(pybind11::object key, pybind11::object val)
+void KoraliJson::setItem(const pybind11::object key, const pybind11::object val)
 {
   traverseKey(key);
 
@@ -52,7 +52,7 @@ void KoraliJson::setItem(pybind11::object key, pybind11::object val)
   _opt = &_js;
 }
 
-pybind11::object KoraliJson::getItem(pybind11::object key)
+pybind11::object KoraliJson::getItem(const pybind11::object key)
 {
   traverseKey(key);
 

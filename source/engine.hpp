@@ -62,7 +62,7 @@ class Engine : public Module
   * @brief Saves the profiling information to the specified path
   * @param forceSave Saves even if the current generation does not divide _profilingFrequency. Reserved for last generation.
   */
-  void saveProfilingInfo(bool forceSave = false);
+  void saveProfilingInfo(const bool forceSave = false);
 
   /**
    * @brief Initialization stage of the Korali Engine
@@ -101,12 +101,6 @@ class Engine : public Module
 
   /**
    * @brief Runs the stored list of experiments.
-   * @param initializeConduit Indicates whether the conduit should be initialized or inherited (Korali in Korali Executions)
-   */
-  void run(bool initializeConduit);
-
-  /**
-   * @brief Runs the stored list of experiments.
    */
   void run();
 
@@ -129,14 +123,14 @@ class Engine : public Module
    * @param key A pybind11 object acting as JSON key (number or string).
    * @return A pybind11 object
   */
-  pybind11::object getItem(pybind11::object key);
+  pybind11::object getItem(const pybind11::object key);
 
   /**
    * @brief Sets an item on the JSON object at the current pointer position.
    * @param key A pybind11 object acting as JSON key (number or string).
    * @param val The value of the item to set.
   */
-  void setItem(pybind11::object key, pybind11::object val);
+  void setItem(const pybind11::object key, const pybind11::object val);
 
   /**
    * @brief Stores the JSON based configuration for the engine.
@@ -190,7 +184,7 @@ class Engine : public Module
    * @param js Json object onto which to store the Engine data.
    * @return The Korali Engine
    */
-  static Engine *deserialize(knlohmann::json &js);
+  static Engine *deserialize(const knlohmann::json &js);
 };
 
 /**

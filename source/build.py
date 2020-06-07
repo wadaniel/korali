@@ -426,7 +426,7 @@ def createRunOperation(module):
 
 def createGetPropertyPointer(module):
   codeString = 'double* ' + module[
-      "Class"] + '::getPropertyPointer(std::string property)\n'
+      "Class"] + '::getPropertyPointer(const std::string& property)\n'
   codeString += '{\n'
 
   for v in module["Conditional Variables"]:
@@ -654,7 +654,7 @@ for moduleDir, relDir, fileNames in os.walk(modulesDir):
         functionOverrideString += '* @param property Name of the property to find.\n'
         functionOverrideString += '* @return The pointer to the property..\n'
         functionOverrideString += '*/\n'
-        functionOverrideString += ' double* getPropertyPointer(std::string property) override;\n'
+        functionOverrideString += ' double* getPropertyPointer(const std::string& property) override;\n'
 
       newHeaderString = moduleTemplateHeaderString.replace(
           'public:', 'public: \n' + functionOverrideString + '\n')

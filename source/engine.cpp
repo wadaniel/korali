@@ -171,7 +171,7 @@ void Engine::run()
   }
 }
 
-void Engine::saveProfilingInfo(bool forceSave)
+void Engine::saveProfilingInfo(const bool forceSave)
 {
   if (_profilingDetail == "Full")
   {
@@ -232,7 +232,7 @@ void Engine::serialize(knlohmann::json &js)
   }
 }
 
-Engine *Engine::deserialize(knlohmann::json &js)
+Engine *Engine::deserialize(const knlohmann::json &js)
 {
   auto k = new Engine;
 
@@ -260,8 +260,8 @@ knlohmann::json &Engine::operator[](const std::string &key)
   return _js[key];
 }
 knlohmann::json &Engine::operator[](const unsigned long int &key) { return _js[key]; }
-pybind11::object Engine::getItem(pybind11::object key) { return _js.getItem(key); }
-void Engine::setItem(pybind11::object key, pybind11::object val) { _js.setItem(key, val); }
+pybind11::object Engine::getItem(const pybind11::object key) { return _js.getItem(key); }
+void Engine::setItem(const pybind11::object key, const pybind11::object val) { _js.setItem(key, val); }
 
 PYBIND11_MODULE(libkorali, m)
 {

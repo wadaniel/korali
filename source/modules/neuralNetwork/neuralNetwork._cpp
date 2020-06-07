@@ -629,7 +629,7 @@ void NeuralNetwork::backward()
 #endif
 }
 
-void NeuralNetwork::train(size_t stepsToRun)
+void NeuralNetwork::train(const size_t stepsToRun)
 {
   _koraliExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _koraliExperiment._currentGeneration + stepsToRun;
   _koraliEngine.resume(_koraliExperiment);

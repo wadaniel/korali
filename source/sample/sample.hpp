@@ -123,14 +123,14 @@ class Sample
   * @param key Key (pybind11 object) to look for.
   * @return Pybind11 object for the given key.
   */
-  pybind11::object getItem(pybind11::object key);
+  pybind11::object getItem(const pybind11::object key);
 
   /**
   * @brief Sets the value of a given key in the sample.
   * @param val Value to assign.
   * @param key Key (pybind11 object) to look for.
   */
-  void setItem(pybind11::object key, pybind11::object val);
+  void setItem(const pybind11::object key, const pybind11::object val);
 
   /**
    * @brief Retrieves an element from the sample information

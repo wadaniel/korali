@@ -305,7 +305,7 @@ void korali::solver::LMCMAES::updateSet()
   }
   else
   {
-    double tmparg, minarg, target;
+    double tmparg = 0.0, minarg, target;
     minarg = std::numeric_limits<double>::max();
     for (size_t i = 1; i < _subsetSize; ++i)
     {

@@ -232,10 +232,16 @@ void korali::solver::CMAES::initMuWeights(size_t numsamplesmu)
   // Setting Sigma Cumulation Factor
   _sigmaCumulationFactor = _initialSigmaCumulationFactor;
   if (_sigmaCumulationFactor <= 0 || _sigmaCumulationFactor >= 1)
+  {
     if (_areConstraintsDefined)
+    {
       _sigmaCumulationFactor = sqrt(_effectiveMu) / (sqrt(_effectiveMu) + sqrt(_k->_variables.size()));
+    }
     else
+    {
       _sigmaCumulationFactor = (_effectiveMu + 2.0) / (_k->_variables.size() + _effectiveMu + 3.0);
+    }
+  }
 
   // Setting Damping Factor
   _dampFactor = _initialDampFactor;

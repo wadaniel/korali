@@ -207,7 +207,7 @@ void korali::solver::SAEM::updateS()
   // --> decay factor gamma
   double curGen = static_cast<double>(_k->_currentGeneration);
   double gamma = std::pow(curGen, -alpha);
-  int S_dim = _latentProblem->_sDimension;
+  size_t S_dim = _latentProblem->_sDimension;
 
   // Calculate mean S of our current samples
   std::vector<double> sumVec(S_dim, 0);

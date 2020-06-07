@@ -60,7 +60,6 @@ void korali::problem::bayesian::Reference::loglikelihoodNormal(korali::Sample &s
   sse = compute_normalized_sse(refEvals, stdDevs, _referenceData);
 
   double loglike = 0.;
-  double sdev;
   for (size_t i = 0; i < stdDevs.size(); i++)
   {
     if (stdDevs[i] <= 0.0) KORALI_LOG_ERROR("Negative or zero value (%lf) detected for the Standard Deviation.\n", stdDevs[i]);

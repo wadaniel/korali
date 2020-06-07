@@ -651,6 +651,7 @@ double korali::solver::TMCMC::calculateAcceptanceProbability(const size_t sample
 {
   double P = 0.0;
   if (std::isfinite(_chainCandidatesLogPriors[sampleId]) && std::isfinite(_chainCandidatesLogLikelihoods[sampleId]))
+  {
     if (_version == "TMCMC")
     {
       P = exp((_chainCandidatesLogLikelihoods[sampleId] - _chainLeadersLogLikelihoods[sampleId]) * _annealingExponent + (_chainCandidatesLogPriors[sampleId] - _chainLeadersLogPriors[sampleId]));
@@ -680,7 +681,7 @@ double korali::solver::TMCMC::calculateAcceptanceProbability(const size_t sample
         gsl_matrix *cholCovLeader = gsl_matrix_alloc(_k->_variables.size(), _k->_variables.size());
         gsl_matrix_memcpy(cholCovLeader, &covLeader.matrix);
         gsl_matrix_scale(cholCovLeader, _stepSize);
-        int status = gsl_linalg_cholesky_decomp1(cholCovLeader);
+        gsl_linalg_cholesky_decomp1(cholCovLeader);
 
         gsl_vector *work = gsl_vector_alloc(_k->_variables.size());
 
@@ -700,6 +701,7 @@ double korali::solver::TMCMC::calculateAcceptanceProbability(const size_t sample
         P = exp((_chainCandidatesLogLikelihoods[sampleId] - _chainLeadersLogLikelihoods[sampleId]) * _annealingExponent + (_chainCandidatesLogPriors[sampleId] - _chainLeadersLogPriors[sampleId]));
       }
     }
+  }
   return P;
 }
 

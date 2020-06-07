@@ -138,7 +138,7 @@ std::vector<std::vector<double>> korali::solver::DeepLearner::test(const std::ve
     for (size_t i = 0; i < batchSize; i++)
       for (size_t j = 0; j < outputSize; j++)
       {
-        double value = _testNeuralNetwork->_layers[outputLayerId]->_nodeValues[i][j];
+        //double value = _testNeuralNetwork->_layers[outputLayerId]->_nodeValues[i][j];
         double sigma = _testNeuralNetwork->_outputNormalizationSigmas[j];
         double mean = _testNeuralNetwork->_outputNormalizationMeans[j];
         _testNeuralNetwork->_layers[outputLayerId]->_nodeValues[i][j] *= sigma;

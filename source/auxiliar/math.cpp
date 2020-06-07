@@ -108,7 +108,7 @@ korali::crc korali::crcFast(uint8_t const message[], size_t nBytes)
 {
   uint8_t data;
   uint32_t remainder = 0;
-  for (int byte = 0; byte < nBytes; ++byte)
+  for (size_t byte = 0; byte < nBytes; ++byte)
   {
     data = message[byte] ^ (remainder >> (WIDTH - 8));
     remainder = crcTable[data] ^ (remainder << 8);

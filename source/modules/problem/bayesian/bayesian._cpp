@@ -47,7 +47,7 @@ void korali::problem::Bayesian::evaluateLogPosterior(korali::Sample &sample)
 
     if (std::isnan(logLikelihood) == true) KORALI_LOG_ERROR("Sample %d returned NaN logLikelihood evaluation.\n", sampleId);
 
-    sample["logPosterior"] = logPrior + logLikelihood;
+    sample["logPosterior"] = logPosterior;
   }
 }
 

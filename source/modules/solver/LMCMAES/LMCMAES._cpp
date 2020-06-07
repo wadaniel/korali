@@ -8,7 +8,13 @@
 #include <stdio.h>
 #include <unistd.h>
 
-void korali::solver::LMCMAES::setInitialConfiguration()
+namespace korali
+{
+
+namespace solver
+{
+
+void LMCMAES::setInitialConfiguration()
 {
   if (_targetDistanceCoefficients.size() == 0) _targetDistanceCoefficients = {double(_k->_variables.size()), 0.0, 0.0};
 
@@ -136,14 +142,14 @@ void korali::solver::LMCMAES::setInitialConfiguration()
   for (size_t i = 0; i < _k->_variables.size(); i++) _currentMean[i] = _previousMean[i] = _k->_variables[i]->_initialMean;
 }
 
-void korali::solver::LMCMAES::runGeneration()
+void LMCMAES::runGeneration()
 {
   if (_k->_currentGeneration == 1) setInitialConfiguration();
 
   prepareGeneration();
 
   // Initializing Sample Evaluation
-  std::vector<korali::Sample> samples(_populationSize);
+  std::vector<Sample> samples(_populationSize);
   for (size_t i = 0; i < _populationSize; i++)
   {
     samples[i]["Module"] = "Problem";
@@ -159,7 +165,7 @@ void korali::solver::LMCMAES::runGeneration()
   updateDistribution(samples);
 }
 
-void korali::solver::LMCMAES::prepareGeneration()
+void LMCMAES::prepareGeneration()
 {
   for (size_t i = 0; i < _populationSize; ++i)
   {
@@ -168,7 +174,7 @@ void korali::solver::LMCMAES::prepareGeneration()
     {
       _infeasibleSampleCount++;
       sampleSingle(i);
-      korali::Sample sample;
+      Sample sample;
       sample["Sample Id"] = 0;
       sample["Module"] = "Problem";
       sample["Parameters"] = _samplePopulation[i];
@@ -184,7 +190,7 @@ void korali::solver::LMCMAES::prepareGeneration()
   }
 }
 
-void korali::solver::LMCMAES::sampleSingle(size_t sampleIdx)
+void LMCMAES::sampleSingle(size_t sampleIdx)
 {
   if (_symmetricSampling || (sampleIdx % 2) == 0)
   {
@@ -202,7 +208,7 @@ void korali::solver::LMCMAES::sampleSingle(size_t sampleIdx)
   }
 }
 
-void korali::solver::LMCMAES::updateDistribution(std::vector<korali::Sample> &samples)
+void LMCMAES::updateDistribution(std::vector<Sample> &samples)
 {
   // Processing results
   for (size_t i = 0; i < _populationSize; i++)
@@ -266,7 +272,7 @@ void korali::solver::LMCMAES::updateDistribution(std::vector<korali::Sample> &sa
   numericalErrorTreatment();
 }
 
-void korali::solver::LMCMAES::choleskyFactorUpdate(size_t sampleIdx)
+void LMCMAES::choleskyFactorUpdate(size_t sampleIdx)
 {
   /* randomly select subsetStartIndex */
   double ms = 4.0;
@@ -293,7 +299,7 @@ void korali::solver::LMCMAES::choleskyFactorUpdate(size_t sampleIdx)
   }
 }
 
-void korali::solver::LMCMAES::updateSet()
+void LMCMAES::updateSet()
 {
   size_t t = std::floor(double(_k->_currentGeneration - 1.0) / double(_setUpdateInterval));
 
@@ -330,7 +336,7 @@ void korali::solver::LMCMAES::updateSet()
   std::copy(_evolutionPath.begin(), _evolutionPath.end(), _evolutionPathHistory[_subsetHistory[_replacementIndex]].begin());
 }
 
-void korali::solver::LMCMAES::updateInverseVectors()
+void LMCMAES::updateInverseVectors()
 {
   double djt, k;
   double fac = std::sqrt(1.0 + _choleskyMatrixLearningRate / (1.0 - _choleskyMatrixLearningRate));
@@ -360,7 +366,7 @@ void korali::solver::LMCMAES::updateInverseVectors()
   }
 }
 
-void korali::solver::LMCMAES::updateSigma()
+void LMCMAES::updateSigma()
 {
   /* update sigma */
   if (_sigmaUpdateRule == "LMCMA")
@@ -409,7 +415,7 @@ void korali::solver::LMCMAES::updateSigma()
   }
 }
 
-void korali::solver::LMCMAES::numericalErrorTreatment()
+void LMCMAES::numericalErrorTreatment()
 {
   //treat numerical precision provblems
   //TODO
@@ -419,7 +425,7 @@ void korali::solver::LMCMAES::numericalErrorTreatment()
 /*                    Additional Methods                                */
 /************************************************************************/
 
-void korali::solver::LMCMAES::sort_index(const std::vector<double> &vec, std::vector<size_t> &sortingIndex) const
+void LMCMAES::sort_index(const std::vector<double> &vec, std::vector<size_t> &sortingIndex) const
 {
   // initialize original _sortingIndex locations
   std::iota(std::begin(sortingIndex), std::end(sortingIndex), (size_t)0);
@@ -428,9 +434,9 @@ void korali::solver::LMCMAES::sort_index(const std::vector<double> &vec, std::ve
   std::sort(std::begin(sortingIndex), std::end(sortingIndex), [vec](size_t i1, size_t i2) { return vec[i1] > vec[i2]; });
 }
 
-void korali::solver::LMCMAES::printGenerationBefore() { return; }
+void LMCMAES::printGenerationBefore() { return; }
 
-void korali::solver::LMCMAES::printGenerationAfter()
+void LMCMAES::printGenerationAfter()
 {
   _k->_logger->logInfo("Normal", "Sigma:                        %+6.3e\n", _sigma);
   _k->_logger->logInfo("Normal", "Current Function Value: Max = %+6.3e - Best = %+6.3e\n", _currentBestValue, _bestEverValue);
@@ -448,10 +454,14 @@ void korali::solver::LMCMAES::printGenerationAfter()
   _k->_logger->logInfo("Detailed", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
 }
 
-void korali::solver::LMCMAES::finalize()
+void LMCMAES::finalize()
 {
   _k->_logger->logInfo("Minimal", "Optimum found: %e\n", _bestEverValue);
   _k->_logger->logInfo("Minimal", "Optimum found at:\n");
   for (size_t d = 0; d < _k->_variables.size(); ++d) _k->_logger->logData("Minimal", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverVariables[d]);
   _k->_logger->logInfo("Detailed", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
 }
+
+} // namespace
+
+} // namespace

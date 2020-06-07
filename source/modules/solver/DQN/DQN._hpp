@@ -8,13 +8,13 @@ namespace korali
 {
 namespace solver
 {
-class DQN : public korali::Solver
+class DQN : public Solver
 {
   public:
   /**
    * @brief Storage for the pointer to the learning problem
    */
-  korali::problem::ReinforcementLearning *_problem;
+  problem::ReinforcementLearning *_problem;
 
   /**
   * @brief Runs a generation of the environment(s), running an action on each episode, and updating the policy.

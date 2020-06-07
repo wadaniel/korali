@@ -10,7 +10,7 @@ namespace korali
 {
 namespace solver
 {
-class CMAES : public korali::Solver
+class CMAES : public Solver
 {
   private:
   /**
@@ -38,7 +38,7 @@ class CMAES : public korali::Solver
   /**
  * @brief Updates mean and covariance of Gaussian proposal distribution.
  */
-  void updateDistribution(std::vector<korali::Sample> &samples);
+  void updateDistribution(std::vector<Sample> &samples);
 
   /**
     * @brief Updates the system of eigenvalues and eigenvectors
@@ -107,7 +107,7 @@ class CMAES : public korali::Solver
   /**
  * @brief Discretize variables to given granularity using arithmetic rounding.
  */
-  void discretize(korali::Sample &sample);
+  void discretize(Sample &sample);
 
   public:
   /**

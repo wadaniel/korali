@@ -3,9 +3,18 @@
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/hierarchical/psi/psi.hpp"
 
-void korali::problem::hierarchical::Psi::initialize()
+namespace korali
 {
-  korali::problem::Hierarchical::initialize();
+
+namespace problem
+{
+
+namespace hierarchical
+{
+
+void Psi::initialize()
+{
+  Hierarchical::initialize();
 
   _conditionalPriorIndexes.resize(_conditionalPriors.size());
 
@@ -109,7 +118,7 @@ void korali::problem::hierarchical::Psi::initialize()
   }
 }
 
-void korali::problem::hierarchical::Psi::updateConditionalPriors(korali::Sample &sample)
+void Psi::updateConditionalPriors(Sample &sample)
 {
   for (size_t i = 0; i < _conditionalPriors.size(); i++)
   {
@@ -119,11 +128,11 @@ void korali::problem::hierarchical::Psi::updateConditionalPriors(korali::Sample 
   }
 }
 
-void korali::problem::hierarchical::Psi::evaluateLogLikelihood(korali::Sample &sample)
+void Psi::evaluateLogLikelihood(Sample &sample)
 {
   if (isSampleFeasible(sample) == false)
   {
-    sample["logLikelihood"] = -korali::Inf;
+    sample["logLikelihood"] = -Inf;
     return;
   };
 
@@ -146,10 +155,16 @@ void korali::problem::hierarchical::Psi::evaluateLogLikelihood(korali::Sample &s
 
     if (std::isnan(logLikelihood))
     {
-      sample["logLikelihood"] = -korali::Inf;
+      sample["logLikelihood"] = -Inf;
       return;
     };
   }
 
   sample["logLikelihood"] = logLikelihood;
 }
+
+} // namespace
+
+} // namespace
+
+} // namespace

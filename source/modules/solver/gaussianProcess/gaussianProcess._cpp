@@ -3,9 +3,15 @@
 #include "modules/solver/gaussianProcess/gaussianProcess.hpp"
 #include <Eigen/Dense>
 
-void korali::solver::GaussianProcess::initialize()
+namespace korali
 {
-  _problem = dynamic_cast<korali::problem::SupervisedLearning *>(_k->_problem);
+
+namespace solver
+{
+
+void GaussianProcess::initialize()
+{
+  _problem = dynamic_cast<problem::SupervisedLearning *>(_k->_problem);
 
   if (_problem->_trainingBatchSize == 0) _k->_logger->logError(__FILE__, __LINE__, "Training data has not been provided for variable 0.\n");
 
@@ -17,7 +23,7 @@ void korali::solver::GaussianProcess::initialize()
   _gpParameterDimension = _gp->covf().get_param_dim();
 
   // Creating evaluation lambda function for optimization
-  auto evaluateProposal = [gp = _gp](korali::Sample &sample) { runSample(sample, gp); };
+  auto evaluateProposal = [gp = _gp](Sample &sample) { runSample(sample, gp); };
 
   _koraliExperiment["Problem"]["Type"] = "Optimization";
   _koraliExperiment["Problem"]["Objective Function"] = evaluateProposal;
@@ -61,7 +67,7 @@ void korali::solver::GaussianProcess::initialize()
   }
 }
 
-void korali::solver::GaussianProcess::runSample(korali::Sample &sample, libgp::GaussianProcess *gp)
+void GaussianProcess::runSample(Sample &sample, libgp::GaussianProcess *gp)
 {
   size_t gpParameterDimension = gp->covf().get_param_dim();
   Eigen::VectorXd p(gpParameterDimension);
@@ -77,19 +83,19 @@ void korali::solver::GaussianProcess::runSample(korali::Sample &sample, libgp::G
     sample["Gradient"][i] = eigenGrad[i];
 }
 
-void korali::solver::GaussianProcess::runGeneration()
+void GaussianProcess::runGeneration()
 {
   _koraliEngine.resume(_koraliExperiment);
 
   _koraliExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _koraliExperiment._currentGeneration + 1;
 }
 
-void korali::solver::GaussianProcess::printGenerationAfter()
+void GaussianProcess::printGenerationAfter()
 {
   return;
 }
 
-std::vector<std::vector<double>> korali::solver::GaussianProcess::test(const std::vector<std::vector<double>> &input)
+std::vector<std::vector<double>> GaussianProcess::test(const std::vector<std::vector<double>> &input)
 {
   size_t inputSize = input.size();
   std::vector<std::vector<double>> output(inputSize, std::vector<double>(2));
@@ -101,3 +107,7 @@ std::vector<std::vector<double>> korali::solver::GaussianProcess::test(const std
   }
   return output;
 }
+
+} // namespace
+
+} // namespace

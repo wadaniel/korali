@@ -14,7 +14,7 @@
 
 namespace korali
 {
-class NeuralNetwork : public korali::Module
+class NeuralNetwork : public Module
 {
   public:
   /**

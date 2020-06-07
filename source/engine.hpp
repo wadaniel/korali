@@ -11,13 +11,14 @@
 #include "modules/experiment/experiment.hpp"
 #include <chrono>
 #include <vector>
+#include <stack>
 
 namespace korali
 {
 /**
   * @brief A Korali Engine initializes the conduit and experiments, and guides their execution.
  */
-class Engine : public korali::Module
+class Engine : public Module
 {
   public:
   Engine();
@@ -30,7 +31,7 @@ class Engine : public korali::Module
   /**
     * @brief Stores the list of experiments to run.
     */
-  std::vector<korali::Experiment *> _experimentVector;
+  std::vector<Experiment *> _experimentVector;
 
   /**
     * @brief Stores the main execution thread (coroutine).
@@ -72,31 +73,31 @@ class Engine : public korali::Module
    * @brief Stores a set experiments into the experiment list and runs them to completion.
    * @param experiments Set of experiments.
    */
-  void run(std::vector<korali::Experiment> &experiments);
+  void run(std::vector<Experiment> &experiments);
 
   /**
    * @brief Stores a single experiment into the experiment list and runs it to completion.
    * @param experiment The experiment to run.
    */
-  void run(korali::Experiment &experiment);
+  void run(Experiment &experiment);
 
   /**
    * @brief Resumes a set experiments from the point they have previously finished.
    * @param experiments Set of experiments.
    */
-  void resume(std::vector<korali::Experiment> &experiments);
+  void resume(std::vector<Experiment> &experiments);
 
   /**
    * @brief Resumes a single experiment from the point it has previously finished.
    * @param experiment The experiment to run.
    */
-  void resume(korali::Experiment &experiment);
+  void resume(Experiment &experiment);
 
   /**
    * @brief Initializes (does not run) a single experiment.
    * @param experiment The experiment to initialize.
    */
-  void initialize(korali::Experiment &experiment);
+  void initialize(Experiment &experiment);
 
   /**
    * @brief Runs the stored list of experiments.
@@ -140,7 +141,7 @@ class Engine : public korali::Module
   /**
    * @brief Stores the JSON based configuration for the engine.
   */
-  korali::KoraliJson _js;
+  KoraliJson _js;
 
   /**
    * @brief Determines whether this is a dry run (no conduit initialization nor execution)
@@ -155,17 +156,17 @@ class Engine : public korali::Module
   /**
   * @brief (Worker) Stores a pointer to the current Experiment being processed
   */
-  korali::Experiment *_currentExperiment;
+  Experiment *_currentExperiment;
 
   /**
   * @brief Stores a pointer to the current sample being processed
   */
-  korali::Sample *_currentSample;
+  Sample *_currentSample;
 
   /**
   * @brief (Engine) Stores a pointer to the current sample to process
   */
-  korali::Sample *_engineSample;
+  Sample *_engineSample;
 
   /**
    * @brief Stores the state of a worker thread
@@ -200,7 +201,7 @@ extern bool isPythonActive;
 /**
 * @brief Stack storing pointers to different Engine execution levels
 */
-extern std::stack<korali::Engine *> _engineStack;
+extern std::stack<Engine *> _engineStack;
 
 } // namespace korali
 

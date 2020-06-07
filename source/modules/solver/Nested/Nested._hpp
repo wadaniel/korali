@@ -11,7 +11,7 @@ namespace korali
 {
 namespace solver
 {
-class Nested : public korali::Solver
+class Nested : public Solver
 {
   private:
   /*

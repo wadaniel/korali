@@ -9,7 +9,14 @@
 #include <stdio.h>
 #include <unistd.h>
 
-void korali::solver::DEA::setInitialConfiguration()
+namespace korali
+{
+
+namespace solver
+{
+
+
+void DEA::setInitialConfiguration()
 {
   for (size_t d = 0; d < _k->_variables.size(); ++d)
     if (_k->_variables[d]->_upperBound < _k->_variables[d]->_lowerBound)
@@ -29,18 +36,18 @@ void korali::solver::DEA::setInitialConfiguration()
   _maxDistances.resize(_k->_variables.size());
 
   _valueVector.resize(_populationSize);
-  for (size_t i = 0; i < _populationSize; i++) _valueVector[i] = -korali::Inf;
+  for (size_t i = 0; i < _populationSize; i++) _valueVector[i] = -Inf;
 
   _valueVector.resize(_populationSize);
 
   _infeasibleSampleCount = 0;
   _bestSampleIndex = 0;
 
-  _previousBestValue = -korali::Inf;
-  _currentBestValue = -korali::Inf;
-  _previousBestEverValue = -korali::Inf;
-  _bestEverValue = -korali::Inf;
-  _currentMinimumStepSize = +korali::Inf;
+  _previousBestValue = -Inf;
+  _currentBestValue = -Inf;
+  _previousBestEverValue = -Inf;
+  _bestEverValue = -Inf;
+  _currentMinimumStepSize = +Inf;
 
   initSamples();
 
@@ -55,14 +62,14 @@ void korali::solver::DEA::setInitialConfiguration()
       _currentMean[d] += _samplePopulation[i][d] / ((double)_populationSize);
 }
 
-void korali::solver::DEA::runGeneration()
+void DEA::runGeneration()
 {
   if (_k->_currentGeneration == 1) setInitialConfiguration();
 
   prepareGeneration();
 
   // Initializing Sample Evaluation
-  std::vector<korali::Sample> samples(_populationSize);
+  std::vector<Sample> samples(_populationSize);
   for (size_t i = 0; i < _populationSize; i++)
   {
     samples[i]["Module"] = "Problem";
@@ -79,7 +86,7 @@ void korali::solver::DEA::runGeneration()
   updateSolver(samples);
 }
 
-void korali::solver::DEA::initSamples()
+void DEA::initSamples()
 {
   /* skip sampling in gen 1 */
   for (size_t i = 0; i < _populationSize; ++i)
@@ -91,7 +98,7 @@ void korali::solver::DEA::initSamples()
     }
 }
 
-void korali::solver::DEA::prepareGeneration()
+void DEA::prepareGeneration()
 {
   /* at gen 1 candidates initialized in initialize() */
   if (_k->_currentGeneration > 1)
@@ -103,7 +110,7 @@ void korali::solver::DEA::prepareGeneration()
         _infeasibleSampleCount++;
         mutateSingle(i);
         if (_fixInfeasible && isSampleFeasible == false) fixInfeasible(i);
-        korali::Sample sample;
+        Sample sample;
         sample["Sample Id"] = 0;
         sample["Module"] = "Problem";
         sample["Parameters"] = _candidatePopulation[i];
@@ -127,7 +134,7 @@ void korali::solver::DEA::prepareGeneration()
   _previousValueVector = _valueVector;
 }
 
-void korali::solver::DEA::mutateSingle(size_t sampleIdx)
+void DEA::mutateSingle(size_t sampleIdx)
 {
   size_t a, b;
   do
@@ -187,7 +194,7 @@ void korali::solver::DEA::mutateSingle(size_t sampleIdx)
   }
 }
 
-void korali::solver::DEA::fixInfeasible(size_t sampleIdx)
+void DEA::fixInfeasible(size_t sampleIdx)
 {
   for (size_t d = 0; d < _k->_variables.size(); ++d)
   {
@@ -201,7 +208,7 @@ void korali::solver::DEA::fixInfeasible(size_t sampleIdx)
   }
 }
 
-void korali::solver::DEA::updateSolver(std::vector<korali::Sample> &samples)
+void DEA::updateSolver(std::vector<Sample> &samples)
 {
   // Processing results
   for (size_t i = 0; i < _populationSize; i++)
@@ -279,8 +286,8 @@ void korali::solver::DEA::updateSolver(std::vector<korali::Sample> &samples)
 
   for (size_t d = 0; d < _k->_variables.size(); ++d)
   {
-    double max = -korali::Inf;
-    double min = +korali::Inf;
+    double max = -Inf;
+    double min = +Inf;
     for (size_t i = 0; i < _populationSize; ++i)
     {
       if (_samplePopulation[i][d] > max) max = _samplePopulation[i][d];
@@ -289,7 +296,7 @@ void korali::solver::DEA::updateSolver(std::vector<korali::Sample> &samples)
     _maxDistances[d] = max - min;
   }
 
-  _currentMinimumStepSize = +korali::Inf;
+  _currentMinimumStepSize = +Inf;
   for (size_t d = 0; d < _k->_variables.size(); ++d) std::min(_currentMinimumStepSize, fabs(_currentMean[d] - _previousMean[d]));
 }
 
@@ -297,9 +304,9 @@ void korali::solver::DEA::updateSolver(std::vector<korali::Sample> &samples)
 /*                    Additional Methods                                */
 /************************************************************************/
 
-void korali::solver::DEA::printGenerationBefore() { return; }
+void DEA::printGenerationBefore() { return; }
 
-void korali::solver::DEA::printGenerationAfter()
+void DEA::printGenerationAfter()
 {
   _k->_logger->logInfo("Normal", "Current Function Value: Max = %+6.3e - Best = %+6.3e\n", _currentBestValue, _bestEverValue);
   _k->_logger->logInfo("Detailed", "Variable = (MeanX, BestX):\n");
@@ -309,10 +316,15 @@ void korali::solver::DEA::printGenerationAfter()
   _k->_logger->logInfo("Detailed", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
 }
 
-void korali::solver::DEA::finalize()
+void DEA::finalize()
 {
   _k->_logger->logInfo("Minimal", "Optimum found: %e\n", _bestEverValue);
   _k->_logger->logInfo("Minimal", "Optimum found at:\n");
   for (size_t d = 0; d < _k->_variables.size(); ++d) _k->_logger->logData("Minimal", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverVariables[d]);
   _k->_logger->logInfo("Minimal", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
 }
+
+} // namespace
+
+} // namespace
+

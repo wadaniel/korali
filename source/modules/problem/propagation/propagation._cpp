@@ -1,6 +1,13 @@
 #include "modules/problem/propagation/propagation.hpp"
 
-void korali::problem::Propagation::initialize()
+namespace korali
+{
+
+namespace problem
+{
+
+
+void Propagation::initialize()
 {
   if (_k->_variables.size() == 0) KORALI_LOG_ERROR("Execution problems require at least one variable.\n");
 
@@ -41,7 +48,11 @@ void korali::problem::Propagation::initialize()
   }
 }
 
-void korali::problem::Propagation::execute(korali::Sample &sample)
+void Propagation::execute(Sample &sample)
 {
   sample.run(_executionModel);
 }
+
+} // namespace
+
+} // namespace

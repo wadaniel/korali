@@ -15,7 +15,7 @@ class Solver;
 class Problem;
 class Engine;
 
-class Experiment : public korali::Module
+class Experiment : public Module
 {
   public:
   Experiment();
@@ -26,27 +26,27 @@ class Experiment : public korali::Module
   /**
   * @brief JSON object to store the experiment's configuration
   */
-  korali::KoraliJson _js;
+  KoraliJson _js;
 
   /**
   * @brief A pointer to the Experiment's logger object.
  */
-  korali::Logger *_logger;
+  Logger *_logger;
 
   /**
  * @brief A pointer to the parent engine
  */
-  korali::Engine *_engine;
+  Engine *_engine;
 
   /**
   * @brief JSON object to details of all the samples that have been executed, if requested by the user.
   */
-  korali::KoraliJson _sampleInfo;
+  KoraliJson _sampleInfo;
 
   /**
  * @brief Maps sample Ids to their pointers
  */
-  std::map<size_t, korali::Sample *> sampleIdMap;
+  std::map<size_t, Sample *> sampleIdMap;
 
   /**
   * @brief Log file onto which to output log information. (Default = stdout)

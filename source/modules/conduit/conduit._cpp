@@ -1,18 +1,23 @@
 #include "engine.hpp"
 #include "modules/conduit/conduit.hpp"
 
-korali::Conduit *korali::_conduit = NULL;
+using namespace std;
+
+namespace korali
+{
+
+Conduit *_conduit = NULL;
 
 /***********************************
  * Worker-Side Operations
  **********************************/
 
-void korali::Conduit::initiateSample(knlohmann::json &sampleJs)
+void Conduit::initiateSample(knlohmann::json &sampleJs)
 {
   size_t experimentId = sampleJs["Experiment Id"];
   size_t sampleId = sampleJs["Sample Id"];
 
-  korali::Engine *engine = _engineStack.top();
+  Engine *engine = _engineStack.top();
   engine->_currentWorker = this;
   engine->_workerThread = co_active();
 
@@ -25,8 +30,8 @@ void korali::Conduit::initiateSample(knlohmann::json &sampleJs)
   {
     sampleJs["Finished"] = false;
     sampleJs["Globals"] = _globals;
-    experiment->sampleIdMap[sampleId] = new korali::Sample;
-    experiment->sampleIdMap[sampleId]->_sampleThread = co_create(1 << 30, korali::Sample::sampleLauncher);
+    experiment->sampleIdMap[sampleId] = new Sample;
+    experiment->sampleIdMap[sampleId]->_sampleThread = co_create(1 << 30, Sample::sampleLauncher);
   }
 
   experiment->sampleIdMap[sampleId]->_js.getJson() = sampleJs;
@@ -46,10 +51,10 @@ void korali::Conduit::initiateSample(knlohmann::json &sampleJs)
  * Worker-Side Operations
  **********************************/
 
-void korali::Conduit::coroutineWrapper()
+void Conduit::coroutineWrapper()
 {
-  korali::Engine *engine = _engineStack.top();
-  korali::Sample *currentSample = engine->_engineSample;
+  Engine *engine = _engineStack.top();
+  Sample *currentSample = engine->_engineSample;
   co_switch(engine->_currentExperiment->_thread);
   (*currentSample)["Experiment Id"] = engine->_currentExperiment->_experimentId;
   (*currentSample)["Current Generation"] = engine->_currentExperiment->_currentGeneration;
@@ -62,9 +67,9 @@ void korali::Conduit::coroutineWrapper()
   if (currentSample->_state != SampleState::uninitialized) KORALI_LOG_ERROR("Resuming a finished sample\n");
 }
 
-void korali::Conduit::start(korali::Sample &sample)
+void Conduit::start(Sample &sample)
 {
-  korali::Engine *engine = _engineStack.top();
+  Engine *engine = _engineStack.top();
 
   // Checking if sample id was defined
   KORALI_GET(size_t, sample, "Sample Id");
@@ -72,7 +77,7 @@ void korali::Conduit::start(korali::Sample &sample)
   if (sample._state != SampleState::uninitialized) KORALI_LOG_ERROR("Sample has already been initialized.\n");
 
   if (sample._isAllocated == false)
-    sample._sampleThread = co_create(1 << 24, korali::Conduit::coroutineWrapper);
+    sample._sampleThread = co_create(1 << 24, Conduit::coroutineWrapper);
   else
     KORALI_LOG_ERROR("Sample thread is already allocated; has it executed before being re-started?\n");
 
@@ -82,14 +87,14 @@ void korali::Conduit::start(korali::Sample &sample)
   co_switch(sample._sampleThread);
 }
 
-void korali::Conduit::wait(korali::Sample &sample)
+void Conduit::wait(Sample &sample)
 {
-  korali::Engine *engine = _engineStack.top();
+  Engine *engine = _engineStack.top();
 
   while (sample._state == SampleState::waiting || sample._state == SampleState::initialized)
   {
     // Check for error signals from python
-    if (korali::isPythonActive && PyErr_CheckSignals() != 0) KORALI_LOG_ERROR("User requested break.\n");
+    if (isPythonActive && PyErr_CheckSignals() != 0) KORALI_LOG_ERROR("User requested break.\n");
 
     sample._state = SampleState::running;
     co_switch(sample._sampleThread);
@@ -109,16 +114,16 @@ void korali::Conduit::wait(korali::Sample &sample)
   co_delete(sample._sampleThread);
 }
 
-size_t korali::Conduit::waitAny(std::vector<korali::Sample> &samples)
+size_t Conduit::waitAny(vector<Sample> &samples)
 {
-  korali::Engine *engine = _engineStack.top();
+  Engine *engine = _engineStack.top();
   bool isFinished = false;
   size_t currentSample;
 
   while (isFinished == false)
   {
     // Check for error signals from python
-    if (korali::isPythonActive && PyErr_CheckSignals() != 0) throw pybind11::error_already_set();
+    if (isPythonActive && PyErr_CheckSignals() != 0) throw pybind11::error_already_set();
 
     for (currentSample = 0; currentSample < samples.size(); currentSample++)
     {
@@ -151,15 +156,15 @@ size_t korali::Conduit::waitAny(std::vector<korali::Sample> &samples)
   return currentSample;
 }
 
-void korali::Conduit::waitAll(std::vector<korali::Sample> &samples)
+void Conduit::waitAll(vector<Sample> &samples)
 {
-  korali::Engine *engine = _engineStack.top();
+  Engine *engine = _engineStack.top();
   bool isFinished = false;
 
   while (isFinished == false)
   {
     // Check for error signals from python
-    if (korali::isPythonActive && PyErr_CheckSignals() != 0) KORALI_LOG_ERROR("User requested break.\n");
+    if (isPythonActive && PyErr_CheckSignals() != 0) KORALI_LOG_ERROR("User requested break.\n");
 
     isFinished = true;
 
@@ -188,3 +193,5 @@ void korali::Conduit::waitAll(std::vector<korali::Sample> &samples)
     co_delete(samples[i]._sampleThread);
   }
 }
+
+} // namespace

@@ -1,12 +1,19 @@
 #include "modules/conduit/conduit.hpp"
 #include "modules/solver/DQN/DQN.hpp"
 
-void korali::solver::DQN::runGeneration()
+namespace korali
+{
+
+namespace solver
+{
+
+
+void DQN::runGeneration()
 {
   // If initial generation, get problem pointer, and set initial DQN configuration
   if (_k->_currentGeneration == 1)
   {
-    _problem = dynamic_cast<korali::problem::ReinforcementLearning *>(_k->_problem);
+    _problem = dynamic_cast<problem::ReinforcementLearning *>(_k->_problem);
     setInitialConfiguration();
   }
 
@@ -14,7 +21,7 @@ void korali::solver::DQN::runGeneration()
   initializeGeneration();
 
   // Creating storage for agents
-  std::vector<korali::Sample> agents(_agentCount);
+  std::vector<Sample> agents(_agentCount);
 
   // Index for current worker Id that helps making a balanced distribution of work
   size_t currentWorker = 0;
@@ -128,3 +135,7 @@ void korali::solver::DQN::runGeneration()
   // Instructing DQN to process finsihed generation
   processGeneration();
 }
+
+} // namespace
+
+} // namespace

@@ -12,13 +12,19 @@
 #include <string>
 #include <vector>
 
+namespace korali
+{
+
+namespace solver
+{
+
 /** @brief This is always run before (re-)starting the solver */
-void korali::solver::SAEM::initialize()
+void SAEM::initialize()
 {
   if (_k->_problem->getType() != "Bayesian/Latent")
     KORALI_LOG_ERROR("SAEM can only optimize problems of type 'Bayesian/Latent' .\n");
 
-  _latentProblem = dynamic_cast<korali::problem::bayesian::Latent *>(_k->_problem); // .get<korali::problem::bayesian::Latent>()
+  _latentProblem = dynamic_cast<problem::bayesian::Latent *>(_k->_problem); // .get<problem::bayesian::Latent>()
 
   _numberVariables = _k->_variables.size();
   _numberLatent = _latentProblem->_latentVariableIndices.size();
@@ -31,7 +37,7 @@ void korali::solver::SAEM::initialize()
   // Configuring Experiment
   _experiment["Problem"]["Type"] = "Optimization";
   _experiment["Problem"]["Objective Function"] =
-    [zFc = _latentProblem->_zetaOfLikelihoodModel, pFc = _latentProblem->_phiOfLikelihoodModel](korali::Sample &sample) { QFunction(sample, zFc, pFc); };
+    [zFc = _latentProblem->_zetaOfLikelihoodModel, pFc = _latentProblem->_phiOfLikelihoodModel](Sample &sample) { QFunction(sample, zFc, pFc); };
 
   // The variables are our hyperparameters
   int hyperparamIdx = 0;
@@ -63,7 +69,7 @@ void korali::solver::SAEM::initialize()
 }
 
 /** @brief Is called repeatedly to run the generations of the experiment. */
-void korali::solver::SAEM::runGeneration(void)
+void SAEM::runGeneration(void)
 {
   if (_k->_currentGeneration == 1) setInitialConfiguration();
 
@@ -81,7 +87,7 @@ void korali::solver::SAEM::runGeneration(void)
 }
 
 /** @brief Run once, before the first generation */
-void korali::solver::SAEM::setInitialConfiguration()
+void SAEM::setInitialConfiguration()
 {
   _currentSamplesSVectors.resize(_numberSamplesPerStep);
   _currentS.resize(_latentProblem->_sDimension);
@@ -107,13 +113,13 @@ void korali::solver::SAEM::setInitialConfiguration()
     hyperparam_index++;
   }
 
-  _bestLogLikelihood = -korali::Inf;
+  _bestLogLikelihood = -Inf;
 }
 
 ///  Run the user defined sampler to get new samples. Track mean and variance of the samples.
-void korali::solver::SAEM::sampleLatent()
+void SAEM::sampleLatent()
 {
-  korali::Sample sample;
+  Sample sample;
   sample["Sample Id"] = 0;
   sample["Hyperparameters"] = _currentHyperparameters;
   sample["Number Samples"] = _numberSamplesPerStep;
@@ -154,9 +160,9 @@ Uses:
 Sets:
       _currentSamplesSVectors
 */
-void korali::solver::SAEM::calculateSampleSVectors()
+void SAEM::calculateSampleSVectors()
 {
-  std::vector<korali::Sample> k(_numberSamplesPerStep);
+  std::vector<Sample> k(_numberSamplesPerStep);
 
   for (size_t i = 0; i < _numberSamplesPerStep; i++)
   {
@@ -193,7 +199,7 @@ void korali::solver::SAEM::calculateSampleSVectors()
        Note/ Todo: This could be parallelized. But this would only be relevant if there are a huge amount of
                     samples, else this function should execute fast already.
 */
-void korali::solver::SAEM::updateS()
+void SAEM::updateS()
 {
   _previousS = _currentS;
 
@@ -238,7 +244,7 @@ void korali::solver::SAEM::updateS()
    Sets:
        _currentQ
 */
-void korali::solver::SAEM::QFunction(korali::Sample &sample, size_t zetaFc, size_t phiFc)
+void SAEM::QFunction(Sample &sample, size_t zetaFc, size_t phiFc)
 {
   sample["Hyperparameters"] = sample["Parameters"];
   sample.run(zetaFc); // Zeta of Likelihood Model
@@ -256,7 +262,7 @@ void korali::solver::SAEM::QFunction(korali::Sample &sample, size_t zetaFc, size
 
 /*  Set up a korali experiment and optimize the current
           Q function to get a new vector of hyperparameters. */
-void korali::solver::SAEM::updateHyperparameters()
+void SAEM::updateHyperparameters()
 {
   knlohmann::json globalsJs;
   globalsJs["Current S"] = _currentS;
@@ -285,14 +291,14 @@ void korali::solver::SAEM::updateHyperparameters()
  @param idx The index of a variable, in the list of all variables. The order is given by the user when defining
             variables, e.g. k["Variables"][3] will be the third variable. (typo possible.)
  */
-bool korali::solver::SAEM::isLatent(int idx)
+bool SAEM::isLatent(int idx)
 {
   /* checks whether the variable at index idx, i.e., k->_variables[idx], is latent or not*/
   return _k->_variables[idx]->_bayesianType == "Latent";
 }
 
 /** @brief Utility function to calculate mean and standard deviation of the values in vector v. */
-std::vector<double> korali::solver::SAEM::meanAndSDev(std::vector<double> v)
+std::vector<double> SAEM::meanAndSDev(std::vector<double> v)
 {
   // https://stackoverflow.com/questions/7616511/calculate-mean-and-standard-deviation-from-a-vector-of-samples-in-c-using-boos
   double sum = std::accumulate(v.begin(), v.end(), 0.0);
@@ -310,7 +316,7 @@ std::vector<double> korali::solver::SAEM::meanAndSDev(std::vector<double> v)
 
     That is, data[i][j] will be moved to result[j][i].
     */
-std::vector<std::vector<double>> korali::solver::SAEM::transpose(const std::vector<std::vector<double>> data)
+std::vector<std::vector<double>> SAEM::transpose(const std::vector<std::vector<double>> data)
 {
   /* From: https://stackoverflow.com/questions/6009782/how-to-pivot-a-vector-of-vectors */
   // this assumes that all inner vectors have the same size
@@ -322,12 +328,12 @@ std::vector<std::vector<double>> korali::solver::SAEM::transpose(const std::vect
 }
 
 /** @brief Don't print anything before running a generation. */
-void korali::solver::SAEM::printGenerationBefore() { return; }
+void SAEM::printGenerationBefore() { return; }
 
 /** @brief After each except the final generation, print information about optimization progress.
     More is printed with  output option "Detailed".
     */
-void korali::solver::SAEM::printGenerationAfter()
+void SAEM::printGenerationAfter()
 {
   if (_maxGenerations <= _k->_currentGeneration) return; //No printout here in last generation, this is done in finalize()
 
@@ -358,7 +364,7 @@ void korali::solver::SAEM::printGenerationAfter()
 
 /** @brief After the final generation, show the final and best loglikelihood, as well as final values of hyperparameters
  and the last samples of latent variables. (These latent samples still are stochastic.)*/
-void korali::solver::SAEM::finalize()
+void SAEM::finalize()
 {
   _k->_logger->logInfo("Minimal", "Final hyperparameters:\n");
   size_t j = 0;
@@ -389,3 +395,7 @@ void korali::solver::SAEM::finalize()
 
   return;
 }
+
+} // namespace
+
+} // namespace

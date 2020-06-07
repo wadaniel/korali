@@ -11,7 +11,7 @@
  * @brief Terminates execution, printing an error message and indicates file name and line number where the error occurred.
  */
 #define KORALI_LOG_ERROR(...) \
-  korali::Logger::logError(__FILE__, __LINE__, __VA_ARGS__)
+  Logger::logError(__FILE__, __LINE__, __VA_ARGS__)
 
 namespace korali
 {

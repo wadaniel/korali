@@ -1,24 +1,40 @@
 #include "modules/distribution/univariate/laplace/laplace.hpp"
 #include "modules/experiment/experiment.hpp"
 
-double korali::distribution::univariate::Laplace::getDensity(double x)
+namespace korali
+{
+
+namespace distribution
+{
+
+namespace univariate
+{
+
+double Laplace::getDensity(double x)
 {
   return gsl_ran_laplace_pdf(x - _mean, _width);
 }
 
-double korali::distribution::univariate::Laplace::getLogDensity(double x)
+double Laplace::getLogDensity(double x)
 {
   return _aux - fabs(x - _mean) / _width;
 }
 
-double korali::distribution::univariate::Laplace::getRandomNumber()
+double Laplace::getRandomNumber()
 {
   return _mean + gsl_ran_laplace(_range, _width);
 }
 
-void korali::distribution::univariate::Laplace::updateDistribution()
+void Laplace::updateDistribution()
 {
   if (_width <= 0.0) KORALI_LOG_ERROR("Incorrect Width parameter of Laplace distribution: %f.\n", _width);
 
   _aux = -gsl_sf_log(2. * _width);
 }
+
+} // namespace
+
+} // namespace
+
+} // namespace
+

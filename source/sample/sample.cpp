@@ -5,14 +5,17 @@
 #include "modules/problem/problem.hpp"
 #include "modules/solver/solver.hpp"
 
-korali::Sample::Sample()
+namespace korali
+{
+
+Sample::Sample()
 {
   _self = this;
   _state = SampleState::uninitialized;
   _isAllocated = false;
 }
 
-void korali::Sample::run(size_t functionPosition)
+void Sample::run(size_t functionPosition)
 {
   if (functionPosition >= _functionVector.size())
   {
@@ -22,17 +25,17 @@ void korali::Sample::run(size_t functionPosition)
   (*_functionVector[functionPosition])(*_self);
 }
 
-void korali::Sample::update()
+void Sample::update()
 {
-  korali::Engine *engine = _engineStack.top();
+  Engine *engine = _engineStack.top();
   engine->_currentWorker->update(*_self);
   co_switch(engine->_workerThread);
 }
 
-void korali::Sample::sampleLauncher()
+void Sample::sampleLauncher()
 {
-  korali::Engine *engine = _engineStack.top();
-  korali::Sample *sample = engine->_currentSample;
+  Engine *engine = _engineStack.top();
+  Sample *sample = engine->_currentSample;
 
   (*sample)["Finished"] = false;
 
@@ -57,8 +60,10 @@ void korali::Sample::sampleLauncher()
   co_switch(engine->_workerThread);
 }
 
-bool korali::Sample::contains(const std::string &key) { return _self->_js.contains(key); }
-knlohmann::json &korali::Sample::operator[](const std::string &key) { return _self->_js[key]; }
-knlohmann::json &korali::Sample::operator[](const unsigned long int &key) { return _self->_js[key]; }
-pybind11::object korali::Sample::getItem(pybind11::object key) { return _self->_js.getItem(key); }
-void korali::Sample::setItem(pybind11::object key, pybind11::object val) { _self->_js.setItem(key, val); }
+bool Sample::contains(const std::string &key) { return _self->_js.contains(key); }
+knlohmann::json &Sample::operator[](const std::string &key) { return _self->_js[key]; }
+knlohmann::json &Sample::operator[](const unsigned long int &key) { return _self->_js[key]; }
+pybind11::object Sample::getItem(pybind11::object key) { return _self->_js.getItem(key); }
+void Sample::setItem(pybind11::object key, pybind11::object val) { _self->_js.setItem(key, val); }
+
+} // namespace

@@ -8,10 +8,10 @@ namespace korali
 {
 namespace solver
 {
-class Rprop : public korali::Solver
+class Rprop : public Solver
 {
   private:
-  void evaluateFunctionAndGradient(korali::Sample &sample);
+  void evaluateFunctionAndGradient(Sample &sample);
 
   void Update_plus(void);   // Rprop_plus
   void Update_minus(void);  // Rprop_minus

@@ -10,7 +10,7 @@
 
 namespace korali
 {
-class Distribution : public korali::Module
+class Distribution : public Module
 {
   public:
   /**

@@ -1,2 +1,13 @@
 #include "modules/distribution/multivariate/multivariate.hpp"
 #include "modules/experiment/experiment.hpp"
+
+namespace korali
+{
+
+namespace distribution
+{
+
+
+} // namespace
+
+} // namespace

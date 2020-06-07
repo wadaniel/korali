@@ -13,7 +13,13 @@
 #include <gsl/gsl_sort_vector.h>
 #include <gsl/gsl_statistics.h>
 
-void korali::solver::MCMC::setInitialConfiguration()
+namespace korali
+{
+
+namespace solver
+{
+
+void MCMC::setInitialConfiguration()
 {
   if (_chainCovarianceScaling <= 0.0) KORALI_LOG_ERROR("Chain Covariance Scaling must be larger 0.0 (is %lf).\n", _chainCovarianceScaling);
   if (_leap < 1) KORALI_LOG_ERROR("Leap must be larger 0 (is %zu).\n", _leap);
@@ -50,7 +56,7 @@ void korali::solver::MCMC::setInitialConfiguration()
   (*_k)["Results"]["Sample Database"] = {};
 }
 
-void korali::solver::MCMC::runGeneration()
+void MCMC::runGeneration()
 {
   if (_k->_currentGeneration == 1) setInitialConfiguration();
 
@@ -60,7 +66,7 @@ void korali::solver::MCMC::runGeneration()
   {
     generateCandidate(i);
 
-    auto sample = korali::Sample();
+    auto sample = Sample();
 
     _modelEvaluationCount++;
     sample["Parameters"] = _chainCandidate[i];
@@ -98,7 +104,7 @@ void korali::solver::MCMC::runGeneration()
   _chainLength++;
 }
 
-void korali::solver::MCMC::choleskyDecomp(const std::vector<double> &inC, std::vector<double> &outL) const
+void MCMC::choleskyDecomp(const std::vector<double> &inC, std::vector<double> &outL) const
 {
   gsl_matrix *A = gsl_matrix_alloc(_k->_variables.size(), _k->_variables.size());
 
@@ -129,7 +135,7 @@ void korali::solver::MCMC::choleskyDecomp(const std::vector<double> &inC, std::v
   gsl_matrix_free(A);
 }
 
-double korali::solver::MCMC::recursiveAlpha(double &deonominator, const double leaderLoglikelihood, const double *loglikelihoods, size_t N) const
+double MCMC::recursiveAlpha(double &deonominator, const double leaderLoglikelihood, const double *loglikelihoods, size_t N) const
 {
   // recursive formula from Trias[2009]
 
@@ -165,7 +171,7 @@ double korali::solver::MCMC::recursiveAlpha(double &deonominator, const double l
   }
 }
 
-void korali::solver::MCMC::generateCandidate(size_t sampleIdx)
+void MCMC::generateCandidate(size_t sampleIdx)
 {
   _proposedSampleCount++;
 
@@ -182,7 +188,7 @@ void korali::solver::MCMC::generateCandidate(size_t sampleIdx)
       for (size_t e = 0; e < _k->_variables.size(); ++e) _chainCandidate[sampleIdx][d] += _choleskyDecompositionChainCovariance[d * _k->_variables.size() + e] * _normalGenerator->getRandomNumber();
 }
 
-void korali::solver::MCMC::updateState()
+void MCMC::updateState()
 {
   _acceptanceRate = ((double)_acceptanceCount / (double)_chainLength);
 
@@ -216,9 +222,9 @@ void korali::solver::MCMC::updateState()
   if ((_useAdaptiveSampling == true) && (_sampleDatabase.size() > _nonAdaptionPeriod)) choleskyDecomp(_chainCovariance, _choleskyDecompositionChainCovariance);
 }
 
-void korali::solver::MCMC::printGenerationBefore() { return; }
+void MCMC::printGenerationBefore() { return; }
 
-void korali::solver::MCMC::printGenerationAfter()
+void MCMC::printGenerationAfter()
 {
   _k->_logger->logInfo("Minimal", "Database Entries %ld\n", _sampleDatabase.size());
 
@@ -238,10 +244,14 @@ void korali::solver::MCMC::printGenerationAfter()
   }
 }
 
-void korali::solver::MCMC::finalize()
+void MCMC::finalize()
 {
   _k->_logger->logInfo("Minimal", "Number of Generated Samples: %zu\n", _proposedSampleCount);
   _k->_logger->logInfo("Minimal", "Acceptance Rate: %.2f%%\n", 100 * _acceptanceRate);
   if (_sampleDatabase.size() == _maxSamples) _k->_logger->logInfo("Minimal", "Max Samples Reached.\n");
   (*_k)["Results"]["Sample Database"] = _sampleDatabase;
 }
+
+} // namespace
+
+} // namespace

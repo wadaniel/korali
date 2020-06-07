@@ -1,7 +1,13 @@
 #include "modules/conduit/conduit.hpp"
 #include "modules/solver/Adam/Adam.hpp"
 
-void korali::solver::Adam::setInitialConfiguration()
+namespace korali
+{
+
+namespace solver
+{
+
+void Adam::setInitialConfiguration()
 {
   for (size_t i = 0; i < _k->_variables.size(); i++)
     if (std::isfinite(_k->_variables[i]->_initialValue) == false)
@@ -18,16 +24,16 @@ void korali::solver::Adam::setInitialConfiguration()
   _secondMoment.resize(_k->_variables.size(), 0.0);
   _biasCorrectedSecondMoment.resize(_k->_variables.size(), 0.0);
 
-  _bestEvaluation = korali::Inf;
+  _bestEvaluation = Inf;
   _gradientNorm = 1;
 }
 
-void korali::solver::Adam::runGeneration()
+void Adam::runGeneration()
 {
   if (_k->_currentGeneration == 1) setInitialConfiguration();
 
   // Initializing Sample Evaluation
-  korali::Sample sample;
+  Sample sample;
   sample["Module"] = "Problem";
   sample["Operation"] = "Evaluate With Gradients";
   sample["Parameters"] = _currentValue;
@@ -92,12 +98,17 @@ void korali::solver::Adam::runGeneration()
   }
 }
 
-void korali::solver::Adam::printGenerationBefore()
+void Adam::printGenerationBefore()
 {
   _k->_logger->logInfo("Normal", "Starting generation %lu...\n", _k->_currentGeneration);
 }
 
-void korali::solver::Adam::printGenerationAfter()
+void Adam::printGenerationAfter()
 {
   _k->_logger->logInfo("Normal", "Finished generation %lu...\n", _k->_currentGeneration);
 }
+
+} // namespace
+
+} // namespace
+

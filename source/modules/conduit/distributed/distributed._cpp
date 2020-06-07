@@ -4,6 +4,11 @@
 #include "modules/problem/problem.hpp"
 #include "modules/solver/solver.hpp"
 
+using namespace std;
+
+namespace korali
+{
+
 #ifdef _KORALI_USE_MPI
 
   #define MPI_TAG_ACTION_JSON_SIZE 1
@@ -14,7 +19,10 @@ MPI_Comm getKoraliMPIComm() { return __KoraliTeamComm; }
 long int getKoraliMPICommPointer() { return (long int)(&__KoraliTeamComm); }
 #endif
 
-void korali::conduit::Distributed::initialize()
+namespace conduit
+{
+
+void Distributed::initialize()
 {
 #ifdef _KORALI_USE_MPI
   _rankCount = 1;
@@ -59,7 +67,7 @@ void korali::conduit::Distributed::initialize()
   _teamIdSet = false;
   size_t currentRank = 0;
   _teamWorkers.clear();
-  _teamQueue = std::queue<size_t>();
+  _teamQueue = queue<size_t>();
   while (!_teamQueue.empty()) _teamQueue.pop();
   for (size_t i = 0; i < _teamCount; i++)
   {
@@ -92,19 +100,19 @@ void korali::conduit::Distributed::initialize()
 #endif
 }
 
-void korali::conduit::Distributed::initServer()
+void Distributed::initServer()
 {
 #ifdef _KORALI_USE_MPI
   if (!isRoot()) workerThread();
 #endif
 }
 
-void korali::conduit::Distributed::update(korali::Sample &sample)
+void Distributed::update(Sample &sample)
 {
 #ifdef _KORALI_USE_MPI
   if (_localRankId == 0)
   {
-    std::string resultJsonString = sample._js.getJson().dump();
+    string resultJsonString = sample._js.getJson().dump();
     size_t resultJsonSize = resultJsonString.size();
     MPI_Send(&resultJsonSize, 1, MPI_UNSIGNED_LONG, getRootRank(), MPI_TAG_ACTION_JSON_SIZE, _mpiCommunicator);
     MPI_Send(resultJsonString.c_str(), resultJsonSize, MPI_CHAR, getRootRank(), MPI_TAG_ACTION_JSON_CONTENT, _mpiCommunicator);
@@ -112,13 +120,13 @@ void korali::conduit::Distributed::update(korali::Sample &sample)
 #endif
 }
 
-void korali::conduit::Distributed::finalize()
+void Distributed::finalize()
 {
 #ifdef _KORALI_USE_MPI
   auto terminationJs = knlohmann::json();
   terminationJs["Conduit Action"] = "Terminate";
 
-  std::string terminationString = terminationJs.dump();
+  string terminationString = terminationJs.dump();
   size_t terminationStringSize = terminationString.size();
 
   if (isRoot())
@@ -134,10 +142,10 @@ void korali::conduit::Distributed::finalize()
   MPI_Barrier(_mpiCommunicator);
 #endif
 
-  korali::Conduit::finalize();
+  Conduit::finalize();
 }
 
-void korali::conduit::Distributed::workerThread()
+void Distributed::workerThread()
 {
 #ifdef _KORALI_USE_MPI
   if (_teamIdSet == false) return;
@@ -156,7 +164,7 @@ void korali::conduit::Distributed::workerThread()
     if (actionJs["Conduit Action"] == "Terminate") return;
     if (actionJs["Conduit Action"] == "Process Sample") initiateSample(actionJs);
     if (actionJs["Conduit Action"] == "Broadcast Globals") _globals = actionJs;
-    if (actionJs["Conduit Action"] == "Stack Engine") _engineStack.push(korali::Engine::deserialize(actionJs["Engine"]));
+    if (actionJs["Conduit Action"] == "Stack Engine") _engineStack.push(Engine::deserialize(actionJs["Engine"]));
     if (actionJs["Conduit Action"] == "Pop Engine") _engineStack.pop();
 
     MPI_Barrier(__KoraliTeamComm);
@@ -164,9 +172,9 @@ void korali::conduit::Distributed::workerThread()
 #endif
 }
 
-void korali::conduit::Distributed::processSample(korali::Sample &sample)
+void Distributed::processSample(Sample &sample)
 {
-  korali::Engine *engine = _engineStack.top();
+  Engine *engine = _engineStack.top();
 
 #ifdef _KORALI_USE_MPI
 
@@ -190,7 +198,7 @@ void korali::conduit::Distributed::processSample(korali::Sample &sample)
   auto sampleJs = sample._js.getJson();
   sampleJs["Conduit Action"] = "Process Sample";
 
-  std::string sampleJsonString = sampleJs.dump();
+  string sampleJsonString = sampleJs.dump();
   size_t sampleJsonSize = sampleJsonString.size();
 
   for (size_t i = 0; i < _workersPerTeam; i++)
@@ -205,7 +213,7 @@ void korali::conduit::Distributed::processSample(korali::Sample &sample)
   MPI_Irecv(&resultJsonSize, 1, MPI_UNSIGNED_LONG, _teamWorkers[teamId][0], MPI_TAG_ACTION_JSON_SIZE, _mpiCommunicator, &resultJsonRequest);
 
   auto timelineJs = knlohmann::json();
-  timelineJs["Start Time"] = std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - _startTime).count() + _cumulativeTime;
+  timelineJs["Start Time"] = chrono::duration<double>(chrono::high_resolution_clock::now() - _startTime).count() + _cumulativeTime;
 
   int flag = 0;
   while (flag == 0)
@@ -226,27 +234,27 @@ void korali::conduit::Distributed::processSample(korali::Sample &sample)
     }
   }
 
-  timelineJs["End Time"] = std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - _startTime).count() + _cumulativeTime;
+  timelineJs["End Time"] = chrono::duration<double>(chrono::high_resolution_clock::now() - _startTime).count() + _cumulativeTime;
   timelineJs["Solver Id"] = engine->_currentExperiment->_experimentId;
   timelineJs["Current Generation"] = engine->_currentExperiment->_currentGeneration;
-  __profiler["Timelines"]["Worker " + std::to_string(teamId)] += timelineJs;
+  __profiler["Timelines"]["Worker " + to_string(teamId)] += timelineJs;
 
 #endif
 }
 
-size_t korali::conduit::Distributed::maxConcurrency()
+size_t Distributed::maxConcurrency()
 {
 #ifdef _KORALI_USE_MPI
   return _teamCount;
 #endif
 }
 
-void korali::conduit::Distributed::broadcastGlobals(knlohmann::json &globalsJs)
+void Distributed::broadcastGlobals(knlohmann::json &globalsJs)
 {
 #ifdef _KORALI_USE_MPI
 
   globalsJs["Conduit Action"] = "Broadcast Globals";
-  std::string globalsString = globalsJs.dump();
+  string globalsString = globalsJs.dump();
   size_t globalsStringSize = globalsString.size();
 
   for (size_t i = 0; i < _teamCount; i++)
@@ -259,7 +267,7 @@ void korali::conduit::Distributed::broadcastGlobals(knlohmann::json &globalsJs)
 #endif
 }
 
-size_t korali::conduit::Distributed::getRootRank()
+size_t Distributed::getRootRank()
 {
 #ifdef _KORALI_USE_MPI
   return _rankCount - 1;
@@ -268,7 +276,7 @@ size_t korali::conduit::Distributed::getRootRank()
   return 0;
 }
 
-bool korali::conduit::Distributed::isRoot()
+bool Distributed::isRoot()
 {
 #ifdef _KORALI_USE_MPI
   return _rankId == getRootRank();
@@ -277,14 +285,14 @@ bool korali::conduit::Distributed::isRoot()
   return true;
 }
 
-void korali::conduit::Distributed::abort()
+void Distributed::abort()
 {
 #ifdef _KORALI_USE_MPI
   MPI_Abort(_mpiCommunicator, -1);
 #endif
 }
 
-void korali::conduit::Distributed::stackEngine(korali::Engine *engine)
+void Distributed::stackEngine(Engine *engine)
 {
 #ifdef _KORALI_USE_MPI
 
@@ -292,7 +300,7 @@ void korali::conduit::Distributed::stackEngine(korali::Engine *engine)
   engineJs["Conduit Action"] = "Stack Engine";
   engine->serialize(engineJs["Engine"]);
 
-  std::string engineString = engineJs.dump();
+  string engineString = engineJs.dump();
   size_t engineStringSize = engineString.size();
 
   for (size_t i = 0; i < _teamCount; i++)
@@ -305,13 +313,13 @@ void korali::conduit::Distributed::stackEngine(korali::Engine *engine)
 #endif
 }
 
-void korali::conduit::Distributed::popEngine()
+void Distributed::popEngine()
 {
 #ifdef _KORALI_USE_MPI
 
   auto popJs = knlohmann::json();
   popJs["Conduit Action"] = "Pop Engine";
-  std::string popString = popJs.dump();
+  string popString = popJs.dump();
   size_t popStringSize = popString.size();
 
   if (isRoot())
@@ -326,3 +334,7 @@ void korali::conduit::Distributed::popEngine()
 
 #endif
 }
+
+} // namespace
+
+} // namespace

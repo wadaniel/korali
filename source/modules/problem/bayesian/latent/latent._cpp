@@ -3,13 +3,10 @@
 
 namespace korali
 {
-
 namespace problem
 {
-
 namespace bayesian
 {
-
 void Latent::initialize()
 {
   Bayesian::initialize();
@@ -89,8 +86,8 @@ void Latent::evaluateZeta(Sample &sample)
   sample.run(_zetaOfLikelihoodModel);
 }
 
-} // namespace
+} // namespace bayesian
 
-} // namespace
+} // namespace problem
 
-} // namespace
+} // namespace korali

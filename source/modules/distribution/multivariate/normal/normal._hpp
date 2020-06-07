@@ -38,7 +38,7 @@ class Normal : public korali::distribution::Multivariate
   * @param propertyName The name of the property to update
   * @param values double Numerical values to assign.
   */
-  void setProperty(const std::string& propertyName, const std::vector<double>& values) override;
+  void setProperty(const std::string &propertyName, const std::vector<double> &values) override;
 
   /**
  * @brief Gets the probability density of the distribution at points x.

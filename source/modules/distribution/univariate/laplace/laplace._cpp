@@ -3,13 +3,10 @@
 
 namespace korali
 {
-
 namespace distribution
 {
-
 namespace univariate
 {
-
 double Laplace::getDensity(const double x) const
 {
   return gsl_ran_laplace_pdf(x - _mean, _width);
@@ -32,9 +29,8 @@ void Laplace::updateDistribution()
   _aux = -gsl_sf_log(2. * _width);
 }
 
-} // namespace
+} // namespace univariate
 
-} // namespace
+} // namespace distribution
 
-} // namespace
-
+} // namespace korali

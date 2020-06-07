@@ -5,13 +5,10 @@
 
 namespace korali
 {
-
 namespace problem
 {
-
 namespace hierarchical
 {
-
 void Psi::initialize()
 {
   Hierarchical::initialize();
@@ -163,8 +160,8 @@ void Psi::evaluateLogLikelihood(Sample &sample)
   sample["logLikelihood"] = logLikelihood;
 }
 
-} // namespace
+} // namespace hierarchical
 
-} // namespace
+} // namespace problem
 
-} // namespace
+} // namespace korali

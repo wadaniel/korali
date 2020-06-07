@@ -8,7 +8,6 @@ using namespace std;
 
 namespace korali
 {
-
 #ifdef _KORALI_USE_MPI
 
   #define MPI_TAG_ACTION_JSON_SIZE 1
@@ -21,7 +20,6 @@ long int getKoraliMPICommPointer() { return (long int)(&__KoraliTeamComm); }
 
 namespace conduit
 {
-
 void Distributed::initialize()
 {
 #ifdef _KORALI_USE_MPI
@@ -335,6 +333,6 @@ void Distributed::popEngine()
 #endif
 }
 
-} // namespace
+} // namespace conduit
 
-} // namespace
+} // namespace korali

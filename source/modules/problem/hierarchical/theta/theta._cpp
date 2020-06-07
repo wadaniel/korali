@@ -3,13 +3,10 @@
 
 namespace korali
 {
-
 namespace problem
 {
-
 namespace hierarchical
 {
-
 void Theta::initialize()
 {
   _psiProblem = dynamic_cast<Psi *>(_psiExperiment->_problem);
@@ -117,8 +114,8 @@ void Theta::evaluateLogLikelihood(Sample &sample)
   sample["logLikelihood"] = -log(_psiProblemSampleCount) + logSumExp(logValues);
 }
 
-} // namespace
+} // namespace hierarchical
 
-} // namespace
+} // namespace problem
 
-} // namespace
+} // namespace korali

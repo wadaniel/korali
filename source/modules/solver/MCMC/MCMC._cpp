@@ -15,10 +15,8 @@
 
 namespace korali
 {
-
 namespace solver
 {
-
 void MCMC::setInitialConfiguration()
 {
   if (_chainCovarianceScaling <= 0.0) KORALI_LOG_ERROR("Chain Covariance Scaling must be larger 0.0 (is %lf).\n", _chainCovarianceScaling);
@@ -252,6 +250,6 @@ void MCMC::finalize()
   (*_k)["Results"]["Sample Database"] = _sampleDatabase;
 }
 
-} // namespace
+} // namespace solver
 
-} // namespace
+} // namespace korali

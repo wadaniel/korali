@@ -4,13 +4,10 @@
 
 namespace korali
 {
-
 namespace distribution
 {
-
 namespace multivariate
 {
-
 void Normal::getDensity(double *x, double *result, const size_t n)
 {
   if (_workVector.size() != n)
@@ -53,7 +50,7 @@ void Normal::updateDistribution()
   _work_view = gsl_vector_view_array(_workVector.data(), meanSize);
 }
 
-void Normal::setProperty(const std::string& propertyName, const std::vector<double>& values)
+void Normal::setProperty(const std::string &propertyName, const std::vector<double> &values)
 {
   bool recognizedProperty = false;
   if (propertyName == "Mean Vector")
@@ -69,9 +66,8 @@ void Normal::setProperty(const std::string& propertyName, const std::vector<doub
   if (recognizedProperty == false) KORALI_LOG_ERROR("Unrecognized property: %s for the Multivariate Normal distribution", propertyName.c_str());
 }
 
-} // namespace
+} // namespace multivariate
 
-} // namespace
+} // namespace distribution
 
-} // namespace
-
+} // namespace korali

@@ -2,10 +2,8 @@
 
 namespace korali
 {
-
 namespace problem
 {
-
 bool Optimization::isSampleFeasible(Sample &sample)
 {
   auto parameters = KORALI_GET(std::vector<double>, sample, "Parameters");
@@ -99,6 +97,6 @@ void Optimization::evaluateWithGradients(Sample &sample)
     for (size_t i = 0; i < sample["Gradient"].size(); i++) sample["Gradient"][i] = gradient[i];
 }
 
-} // namespace
+} // namespace problem
 
-} // namespace
+} // namespace korali

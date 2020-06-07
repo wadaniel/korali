@@ -2,13 +2,10 @@
 
 namespace korali
 {
-
 namespace problem
 {
-
 namespace bayesian
 {
-
 void Approximate::initialize()
 {
   Bayesian::initialize();
@@ -150,8 +147,8 @@ void Approximate::likelihoodTruncatedNormal(Sample &sample)
   sample["logLikelihood"] = -logNormalization - 0.5 * ssn / sigma2;
 }
 
-} // namespace
+} // namespace bayesian
 
-} // namespace
+} // namespace problem
 
-} // namespace
+} // namespace korali

@@ -3,11 +3,8 @@
 
 namespace korali
 {
-
 namespace distribution
 {
+} // namespace distribution
 
-
-} // namespace
-
-} // namespace
+} // namespace korali

@@ -3,13 +3,10 @@
 
 namespace korali
 {
-
 namespace distribution
 {
-
 namespace univariate
 {
-
 double LogNormal::getDensity(const double x) const
 {
   return gsl_ran_lognormal_pdf(x, _mu, _sigma);
@@ -35,9 +32,8 @@ void LogNormal::updateDistribution()
   _aux = -0.5 * gsl_sf_log(2 * M_PI) - gsl_sf_log(_sigma);
 }
 
-} // namespace
+} // namespace univariate
 
-} // namespace
+} // namespace distribution
 
-} // namespace
-
+} // namespace korali

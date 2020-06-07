@@ -2,10 +2,8 @@
 
 namespace korali
 {
-
 namespace problem
 {
-
 void SupervisedLearning::initialize()
 {
   // Processing output/input variable configuration
@@ -36,6 +34,6 @@ void SupervisedLearning::initialize()
       KORALI_LOG_ERROR("Variable %lu has a different validation set vector size (%lu) than that of variable 0 (%lu).\n", _k->_variables[i]->_validationData.size(), _validationBatchSize);
 }
 
-} // namespace
+} // namespace problem
 
-} // namespace
+} // namespace korali

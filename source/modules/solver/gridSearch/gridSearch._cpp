@@ -3,10 +3,8 @@
 
 namespace korali
 {
-
 namespace solver
 {
-
 void GridSearch::setInitialConfiguration()
 {
   _numberOfValues = 1;
@@ -99,6 +97,6 @@ void GridSearch::printGenerationAfter()
   _k->_logger->logData("Normal", "\n");
 }
 
-} // namespace
+} // namespace solver
 
-} // namespace
+} // namespace korali

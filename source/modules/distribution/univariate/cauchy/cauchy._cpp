@@ -3,13 +3,10 @@
 
 namespace korali
 {
-
 namespace distribution
 {
-
 namespace univariate
 {
-
 double Cauchy::getDensity(const double x) const
 {
   return gsl_ran_cauchy_pdf(x - _location, _scale);
@@ -32,8 +29,8 @@ void Cauchy::updateDistribution()
   _aux = -gsl_sf_log(_scale * M_PI);
 }
 
-} // namespace
+} // namespace univariate
 
-} // namespace
+} // namespace distribution
 
-} // namespace
+} // namespace korali

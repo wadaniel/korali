@@ -3,10 +3,8 @@
 
 namespace korali
 {
-
 namespace solver
 {
-
 void Integrator::setInitialConfiguration()
 {
   _integral = 0;
@@ -103,6 +101,6 @@ void Integrator::finalize()
   _k->_logger->logInfo("Minimal", "Integral Calculated: %e\n", _integral);
 }
 
-} // namespace
+} // namespace solver
 
-} // namespace
+} // namespace korali

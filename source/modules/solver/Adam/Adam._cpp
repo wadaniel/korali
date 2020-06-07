@@ -3,10 +3,8 @@
 
 namespace korali
 {
-
 namespace solver
 {
-
 void Adam::setInitialConfiguration()
 {
   for (size_t i = 0; i < _k->_variables.size(); i++)
@@ -108,7 +106,6 @@ void Adam::printGenerationAfter()
   _k->_logger->logInfo("Normal", "Finished generation %lu...\n", _k->_currentGeneration);
 }
 
-} // namespace
+} // namespace solver
 
-} // namespace
-
+} // namespace korali

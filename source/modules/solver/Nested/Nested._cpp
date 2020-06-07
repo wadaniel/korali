@@ -17,10 +17,8 @@
 
 namespace korali
 {
-
 namespace solver
 {
-
 void Nested::setInitialConfiguration()
 {
   _shuffleSeed = _k->_randomSeed++;
@@ -556,6 +554,6 @@ void Nested::finalize()
   return;
 }
 
-} // namespace
+} // namespace solver
 
-} // namespace
+} // namespace korali

@@ -3,13 +3,10 @@
 
 namespace korali
 {
-
 namespace distribution
 {
-
 namespace univariate
 {
-
 double Igamma::getDensity(const double x) const
 {
   return _aux * std::pow(x, -_shape - 1.) * std::exp(-_scale / x);
@@ -35,9 +32,8 @@ void Igamma::updateDistribution()
   _aux = std::exp(_auxLog);
 }
 
-} // namespace
+} // namespace univariate
 
-} // namespace
+} // namespace distribution
 
-} // namespace
-
+} // namespace korali

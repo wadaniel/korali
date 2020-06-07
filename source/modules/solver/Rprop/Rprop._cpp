@@ -7,10 +7,8 @@
 
 namespace korali
 {
-
 namespace solver
 {
-
 void Rprop::setInitialConfiguration()
 {
   for (size_t i = 0; i < _k->_variables.size(); i++)
@@ -201,6 +199,6 @@ void Rprop::finalize()
   return;
 }
 
-} // namespace
+} // namespace solver
 
-} // namespace
+} // namespace korali

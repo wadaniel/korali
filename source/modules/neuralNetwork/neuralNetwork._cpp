@@ -8,8 +8,6 @@ using namespace dnnl;
 
 namespace korali
 {
-
-
 void NeuralNetwork::initialize()
 {
 #ifndef _KORALI_USE_ONEDNN
@@ -730,4 +728,4 @@ void NeuralNetwork::runSample(Sample &sample, NeuralNetwork *nn)
   }
 }
 
-} // namespace
+} // namespace korali

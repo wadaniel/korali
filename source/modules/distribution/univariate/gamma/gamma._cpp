@@ -3,13 +3,10 @@
 
 namespace korali
 {
-
 namespace distribution
 {
-
 namespace univariate
 {
-
 double Gamma::getDensity(const double x) const
 {
   return gsl_ran_gamma_pdf(x, _shape, _scale);
@@ -34,9 +31,8 @@ void Gamma::updateDistribution()
   _aux = -gsl_sf_lngamma(_shape) - _shape * log(_scale);
 }
 
-} // namespace
+} // namespace univariate
 
-} // namespace
+} // namespace distribution
 
-} // namespace
-
+} // namespace korali

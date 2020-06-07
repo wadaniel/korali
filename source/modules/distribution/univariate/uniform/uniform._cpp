@@ -3,13 +3,10 @@
 
 namespace korali
 {
-
 namespace distribution
 {
-
 namespace univariate
 {
-
 double Uniform::getDensity(const double x) const
 {
   if (_maximum - _minimum <= 0.0) return NaN;
@@ -40,8 +37,8 @@ void Uniform::updateDistribution()
     _aux = -gsl_sf_log(_maximum - _minimum);
 }
 
-} // namespace
+} // namespace univariate
 
-} // namespace
+} // namespace distribution
 
-} // namespace
+} // namespace korali

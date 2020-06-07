@@ -4,11 +4,8 @@
 
 namespace korali
 {
-
 namespace solver
 {
-
-
 void DeepLearner::initialize()
 {
   // Getting problem pointer
@@ -165,6 +162,6 @@ void DeepLearner::printGenerationAfter()
   _k->_logger->logInfo("Normal", "Inactive Step Counter: %lu\n", _currentInactiveSteps);
 }
 
-} // namespace
+} // namespace solver
 
-} // namespace
+} // namespace korali

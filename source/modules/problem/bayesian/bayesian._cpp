@@ -2,10 +2,8 @@
 
 namespace korali
 {
-
 namespace problem
 {
-
 void Bayesian::initialize()
 {
   for (size_t i = 0; i < _k->_variables.size(); i++)
@@ -81,6 +79,6 @@ void Bayesian::evaluateGradient(Sample &sample)
   evaluateLoglikelihoodGradient(sample);
 }
 
-} // namespace
+} // namespace problem
 
-} // namespace
+} // namespace korali

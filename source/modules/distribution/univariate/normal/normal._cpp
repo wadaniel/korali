@@ -3,13 +3,10 @@
 
 namespace korali
 {
-
 namespace distribution
 {
-
 namespace univariate
 {
-
 double Normal::getDensity(const double x) const
 {
   double y = (x - _mean) / _standardDeviation;
@@ -35,9 +32,8 @@ void Normal::updateDistribution()
   _logNormalization = -0.5 * gsl_sf_log(2 * M_PI) - gsl_sf_log(_standardDeviation);
 }
 
-} // namespace
+} // namespace univariate
 
-} // namespace
+} // namespace distribution
 
-} // namespace
-
+} // namespace korali

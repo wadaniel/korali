@@ -2,11 +2,8 @@
 
 namespace korali
 {
-
 namespace problem
 {
-
-
 void ReinforcementLearning::initialize()
 {
   // If it has already been initialized, reset generation and skip initialization.
@@ -159,6 +156,6 @@ void ReinforcementLearning::runEnvironment(Sample &sample)
   sample.run(_environmentFunction);
 }
 
-} // namespace
+} // namespace problem
 
-} // namespace
+} // namespace korali

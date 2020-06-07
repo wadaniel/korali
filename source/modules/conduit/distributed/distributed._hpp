@@ -8,7 +8,6 @@
 
 namespace korali
 {
-
 #ifdef _KORALI_USE_MPI
   #include "mpi.h"
 /**

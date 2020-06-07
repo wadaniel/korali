@@ -2,10 +2,8 @@
 
 namespace korali
 {
-
 namespace problem
 {
-
 void Hierarchical::initialize()
 {
   for (size_t i = 0; i < _k->_variables.size(); i++)
@@ -76,6 +74,6 @@ void Hierarchical::evaluate(Sample &sample)
   sample["F(x)"] = sample["logPosterior"];
 }
 
-} // namespace
+} // namespace problem
 
-} // namespace
+} // namespace korali

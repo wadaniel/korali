@@ -10,8 +10,8 @@
 #include "modules/conduit/distributed/distributed.hpp"
 #include "modules/experiment/experiment.hpp"
 #include <chrono>
-#include <vector>
 #include <stack>
+#include <vector>
 
 namespace korali
 {

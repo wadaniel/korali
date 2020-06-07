@@ -3,11 +3,8 @@
 
 namespace korali
 {
-
 namespace solver
 {
-
-
 void DQN::runGeneration()
 {
   // If initial generation, get problem pointer, and set initial DQN configuration
@@ -136,6 +133,6 @@ void DQN::runGeneration()
   processGeneration();
 }
 
-} // namespace
+} // namespace solver
 
-} // namespace
+} // namespace korali

@@ -6,13 +6,10 @@ using namespace Rtnorm;
 
 namespace korali
 {
-
 namespace distribution
 {
-
 namespace univariate
 {
-
 double TruncatedNormal::getDensity(const double x) const
 {
   double d = (x - _mu) / _sigma;
@@ -48,8 +45,8 @@ void TruncatedNormal::updateDistribution()
   }
 }
 
-} // namespace
+} // namespace univariate
 
-} // namespace
+} // namespace distribution
 
-} // namespace
+} // namespace korali

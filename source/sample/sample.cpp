@@ -7,7 +7,6 @@
 
 namespace korali
 {
-
 Sample::Sample()
 {
   _self = this;
@@ -66,4 +65,4 @@ knlohmann::json &Sample::operator[](const unsigned long int &key) { return _self
 pybind11::object Sample::getItem(const pybind11::object key) { return _self->_js.getItem(key); }
 void Sample::setItem(const pybind11::object key, const pybind11::object val) { _self->_js.setItem(key, val); }
 
-} // namespace
+} // namespace korali

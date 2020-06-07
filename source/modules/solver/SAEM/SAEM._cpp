@@ -14,10 +14,8 @@
 
 namespace korali
 {
-
 namespace solver
 {
-
 /** @brief This is always run before (re-)starting the solver */
 void SAEM::initialize()
 {
@@ -396,6 +394,6 @@ void SAEM::finalize()
   return;
 }
 
-} // namespace
+} // namespace solver
 
-} // namespace
+} // namespace korali

@@ -61,7 +61,7 @@ class Distribution : public Module
    * @param property The name of the property to update
    * @return Pointer to the property
    */
-  virtual double *getPropertyPointer(const std::string& property)  { return NULL; };
+  virtual double *getPropertyPointer(const std::string &property) { return NULL; };
 };
 
 } // namespace korali

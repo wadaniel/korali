@@ -10,10 +10,8 @@
 
 namespace korali
 {
-
 namespace solver
 {
-
 void LMCMAES::setInitialConfiguration()
 {
   if (_targetDistanceCoefficients.size() == 0) _targetDistanceCoefficients = {double(_k->_variables.size()), 0.0, 0.0};
@@ -462,6 +460,6 @@ void LMCMAES::finalize()
   _k->_logger->logInfo("Detailed", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
 }
 
-} // namespace
+} // namespace solver
 
-} // namespace
+} // namespace korali

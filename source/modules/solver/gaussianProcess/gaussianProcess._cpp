@@ -5,10 +5,8 @@
 
 namespace korali
 {
-
 namespace solver
 {
-
 void GaussianProcess::initialize()
 {
   _problem = dynamic_cast<problem::SupervisedLearning *>(_k->_problem);
@@ -108,6 +106,6 @@ std::vector<std::vector<double>> GaussianProcess::test(const std::vector<std::ve
   return output;
 }
 
-} // namespace
+} // namespace solver
 
-} // namespace
+} // namespace korali

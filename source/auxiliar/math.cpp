@@ -7,7 +7,6 @@
 
 namespace korali
 {
-
 double logSumExp(const std::vector<double> &logValues)
 {
   double maxLogValues = *std::max_element(std::begin(logValues), std::end(logValues));
@@ -180,4 +179,4 @@ void byteToHexPair(char *dst, const uint8_t byte)
   dst[1] = decimalToHexChar(bL);
 }
 
-} // namespace
+} // namespace korali

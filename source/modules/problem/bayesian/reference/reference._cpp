@@ -8,13 +8,10 @@
 
 namespace korali
 {
-
 namespace problem
 {
-
 namespace bayesian
 {
-
 void Reference::initialize()
 {
   Bayesian::initialize();
@@ -414,8 +411,8 @@ void Reference::fisherInformationLoglikelihoodNegativeBinomial(Sample &sample)
   // TODO
 }
 
-} // namespace
+} // namespace bayesian
 
-} // namespace
+} // namespace problem
 
-} // namespace
+} // namespace korali

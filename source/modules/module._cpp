@@ -4,7 +4,6 @@
 
 namespace korali
 {
-
 knlohmann::json __profiler;
 std::chrono::time_point<std::chrono::high_resolution_clock> _startTime;
 std::chrono::time_point<std::chrono::high_resolution_clock> _endTime;
@@ -67,4 +66,4 @@ Module *Module::duplicate(Module *src)
   return Module::getModule(js, src->_k);
 }
 
-} // namespace
+} // namespace korali

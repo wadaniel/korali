@@ -5,7 +5,6 @@
 
 namespace korali
 {
-
 KoraliJson::KoraliJson()
 {
   _opt = &_js;
@@ -97,4 +96,4 @@ bool KoraliJson::contains(const std::string &key)
   return true;
 }
 
-} // namespace
+} // namespace korali

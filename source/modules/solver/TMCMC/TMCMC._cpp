@@ -16,10 +16,8 @@
 
 namespace korali
 {
-
 namespace solver
 {
-
 /**
   * @brief Struct for TMCMC optimization operations
  */
@@ -862,6 +860,6 @@ void TMCMC::printGenerationAfter()
   }
 }
 
-} // namespace
+} // namespace solver
 
-} // namespace
+} // namespace korali

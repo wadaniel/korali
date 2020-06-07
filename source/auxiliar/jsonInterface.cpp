@@ -7,7 +7,6 @@
 
 namespace korali
 {
-
 bool isEmpty(const knlohmann::json &js)
 {
   bool empty = true;
@@ -125,4 +124,4 @@ int saveJsonToFile(const char *fileName, const knlohmann::json &js)
   return 0;
 }
 
-} // namespace
+} // namespace korali

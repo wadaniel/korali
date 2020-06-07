@@ -3,7 +3,6 @@
 
 namespace korali
 {
-
 void Distribution::initialize()
 {
   if (_hasConditionalVariables == false) updateDistribution();
@@ -59,4 +58,4 @@ gsl_rng *Distribution::setRange(const std::string rangeString)
   return rng;
 }
 
-} // namespace
+} // namespace korali

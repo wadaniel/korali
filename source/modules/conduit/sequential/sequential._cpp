@@ -8,10 +8,8 @@ using namespace std;
 
 namespace korali
 {
-
 namespace conduit
 {
-
 void Sequential::initialize()
 {
 }
@@ -43,6 +41,6 @@ void Sequential::broadcastGlobals(knlohmann::json &globalsJs)
   _conduit->_globals = globalsJs;
 }
 
-} // namespace
+} // namespace conduit
 
-} // namespace
+} // namespace korali

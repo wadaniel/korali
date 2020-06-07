@@ -5,7 +5,6 @@ using namespace std;
 
 namespace korali
 {
-
 Conduit *_conduit = NULL;
 
 /***********************************
@@ -194,4 +193,4 @@ void Conduit::waitAll(vector<Sample> &samples)
   }
 }
 
-} // namespace
+} // namespace korali

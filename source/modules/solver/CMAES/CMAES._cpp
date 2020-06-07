@@ -10,10 +10,8 @@
 
 namespace korali
 {
-
 namespace solver
 {
-
 void CMAES::setInitialConfiguration()
 {
   knlohmann::json problemConfig = (*_k)["Problem"];
@@ -975,7 +973,6 @@ void CMAES::finalize()
   _k->_logger->logInfo("Minimal", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
 }
 
-} // namespace
+} // namespace solver
 
-} // namespace
-
+} // namespace korali

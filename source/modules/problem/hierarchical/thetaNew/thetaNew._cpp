@@ -3,13 +3,10 @@
 
 namespace korali
 {
-
 namespace problem
 {
-
 namespace hierarchical
 {
-
 void ThetaNew::initialize()
 {
   Hierarchical::initialize();
@@ -61,8 +58,8 @@ void ThetaNew::evaluateLogLikelihood(Sample &sample)
   sample["logLikelihood"] = -log(_psiProblemSampleCount) + logSumExp(logValues);
 }
 
-} // namespace
+} // namespace hierarchical
 
-} // namespace
+} // namespace problem
 
-} // namespace
+} // namespace korali

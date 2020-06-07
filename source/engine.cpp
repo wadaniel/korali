@@ -11,7 +11,6 @@
 
 namespace korali
 {
-
 std::vector<std::function<void(Sample &)> *> _functionVector;
 std::stack<Engine *> _engineStack;
 bool isPythonActive = 0;
@@ -309,4 +308,4 @@ PYBIND11_MODULE(libkorali, m)
     .def("test", &Experiment::test);
 }
 
-} // namespace
+} // namespace korali

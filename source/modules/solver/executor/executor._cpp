@@ -3,11 +3,8 @@
 
 namespace korali
 {
-
 namespace solver
 {
-
-
 void Executor::runGeneration()
 {
   _sampleCount = std::max(_k->_variables[0]->_precomputedValues.size(), _k->_variables[0]->_sampledValues.size());
@@ -52,7 +49,6 @@ void Executor::printGenerationAfter()
   _k->_logger->logInfo("Minimal", "Total Executions %lu.\n", _modelEvaluationCount);
 }
 
-} // namespace
+} // namespace solver
 
-} // namespace
-
+} // namespace korali

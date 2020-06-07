@@ -3,13 +3,10 @@
 
 namespace korali
 {
-
 namespace distribution
 {
-
 namespace univariate
 {
-
 double Geometric::getDensity(const double x) const
 {
   return gsl_ran_geometric_pdf((int)x, _successProbability);
@@ -30,8 +27,8 @@ void Geometric::updateDistribution()
   _aux = 0.0;
 }
 
-} // namespace
+} // namespace univariate
 
-} // namespace
+} // namespace distribution
 
-} // namespace
+} // namespace korali

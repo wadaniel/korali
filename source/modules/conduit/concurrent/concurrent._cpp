@@ -14,10 +14,8 @@ using namespace std;
 
 namespace korali
 {
-
 namespace conduit
 {
-
 void Concurrent::initialize()
 {
   if (_concurrentJobs < 1) KORALI_LOG_ERROR("You need to define at least 1 concurrent job(s) for external models \n");
@@ -256,6 +254,6 @@ size_t Concurrent::maxConcurrency()
   return _concurrentJobs;
 }
 
-} // namespace Conduit
+} // namespace conduit
 
-} // namespace Korali
+} // namespace korali

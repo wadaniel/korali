@@ -3,10 +3,9 @@
 
 namespace korali
 {
-
 void distribution::Univariate::initialize()
 {
   Distribution::initialize();
 }
 
-}
+} // namespace korali

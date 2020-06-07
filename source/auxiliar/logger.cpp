@@ -6,7 +6,6 @@
 
 namespace korali
 {
-
 Logger::Logger()
 {
   __verbosityLevel = 3;
@@ -121,4 +120,4 @@ void Logger::logError [[noreturn]] (const char *fileName, const int lineNumber, 
   throw std::runtime_error(outString.c_str());
 }
 
-} // namespace
+} // namespace korali

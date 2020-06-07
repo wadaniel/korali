@@ -6,7 +6,6 @@
 
 namespace korali
 {
-
 void mkdir(const std::string dirPath)
 {
   char tmp[256];
@@ -60,4 +59,4 @@ bool dirExists(const std::string dirPath)
   return false;
 }
 
-} // namespace
+} // namespace korali

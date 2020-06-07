@@ -3,13 +3,10 @@
 
 namespace korali
 {
-
 namespace distribution
 {
-
 namespace univariate
 {
-
 double Exponential::getDensity(const double x) const
 {
   return gsl_ran_exponential_pdf(x - _location, _mean);
@@ -31,8 +28,8 @@ void Exponential::updateDistribution()
   _aux = 0.0;
 }
 
-} // namespace
+} // namespace univariate
 
-} // namespace
+} // namespace distribution
 
-} // namespace
+} // namespace korali

@@ -9,11 +9,13 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-std::vector<std::function<void(korali::Sample &)> *> korali::_functionVector;
-std::stack<korali::Engine *> korali::_engineStack;
-bool korali::isPythonActive = 0;
+namespace korali
+{
+std::vector<std::function<void(Sample &)> *> _functionVector;
+std::stack<Engine *> _engineStack;
+bool isPythonActive = 0;
 
-korali::Engine::Engine()
+Engine::Engine()
 {
   _cumulativeTime = 0.0;
   _thread = co_active();
@@ -22,7 +24,7 @@ korali::Engine::Engine()
   gsl_set_error_handler_off();
 }
 
-void korali::Engine::initialize()
+void Engine::initialize()
 {
   // Setting Engine configuration defaults
   if (!isDefined(_js.getJson(), "Profiling", "Detail")) _js["Profiling"]["Detail"] = "None";
@@ -65,7 +67,7 @@ void korali::Engine::initialize()
   if (isEmpty(js) == false) KORALI_LOG_ERROR("Unrecognized settings for Korali's Engine: \n%s\n", js.dump(2).c_str());
 }
 
-void korali::Engine::run()
+void Engine::run()
 {
   // Checking if its a dry run and return if it is
   if (_isDryRun) return;
@@ -76,7 +78,7 @@ void korali::Engine::run()
     try
     {
       // Configuring conduit
-      auto conduit = dynamic_cast<korali::Conduit *>(getModule(_js["Conduit"], _k));
+      auto conduit = dynamic_cast<Conduit *>(getModule(_js["Conduit"], _k));
 
       // Initializing conduit server
       conduit->initServer();
@@ -103,7 +105,7 @@ void korali::Engine::run()
       // If experiments are saving results to file, create folder
       if (_experimentVector[i]->_fileOutputEnabled)
       {
-        if (!korali::dirExists(_experimentVector[i]->_fileOutputPath)) korali::mkdir(_experimentVector[i]->_fileOutputPath);
+        if (!dirExists(_experimentVector[i]->_fileOutputPath)) mkdir(_experimentVector[i]->_fileOutputPath);
 
         // Setting log files to be saved on to the log folder
         std::string fileName = "./" + _experimentVector[i]->_fileOutputPath + "/log.txt";
@@ -168,7 +170,7 @@ void korali::Engine::run()
   }
 }
 
-void korali::Engine::saveProfilingInfo(bool forceSave)
+void Engine::saveProfilingInfo(const bool forceSave)
 {
   if (_profilingDetail == "Full")
   {
@@ -185,19 +187,19 @@ void korali::Engine::saveProfilingInfo(bool forceSave)
   }
 }
 
-void korali::Engine::run(korali::Experiment &experiment)
+void Engine::run(Experiment &experiment)
 {
   experiment._js["Current Generation"] = 0;
   resume(experiment);
 }
 
-void korali::Engine::run(std::vector<korali::Experiment> &experiments)
+void Engine::run(std::vector<Experiment> &experiments)
 {
   for (size_t i = 0; i < experiments.size(); i++) experiments[i]._js["Current Generation"] = 0;
   resume(experiments);
 }
 
-void korali::Engine::resume(korali::Experiment &experiment)
+void Engine::resume(Experiment &experiment)
 {
   _experimentVector.clear();
   _experimentVector.push_back(experiment._k);
@@ -205,7 +207,7 @@ void korali::Engine::resume(korali::Experiment &experiment)
   run();
 }
 
-void korali::Engine::resume(std::vector<korali::Experiment> &experiments)
+void Engine::resume(std::vector<Experiment> &experiments)
 {
   _experimentVector.clear();
   for (size_t i = 0; i < experiments.size(); i++) _experimentVector.push_back(experiments[i]._k);
@@ -213,14 +215,14 @@ void korali::Engine::resume(std::vector<korali::Experiment> &experiments)
   run();
 }
 
-void korali::Engine::initialize(korali::Experiment &experiment)
+void Engine::initialize(Experiment &experiment)
 {
   _experimentVector.clear();
   _experimentVector.push_back(experiment._k);
   initialize();
 }
 
-void korali::Engine::serialize(knlohmann::json &js)
+void Engine::serialize(knlohmann::json &js)
 {
   for (size_t i = 0; i < _experimentVector.size(); i++)
   {
@@ -229,13 +231,13 @@ void korali::Engine::serialize(knlohmann::json &js)
   }
 }
 
-korali::Engine *korali::Engine::deserialize(knlohmann::json &js)
+Engine *Engine::deserialize(const knlohmann::json &js)
 {
-  auto k = new korali::Engine;
+  auto k = new Engine;
 
   for (size_t i = 0; i < js["Experiment Vector"].size(); i++)
   {
-    auto e = new korali::Experiment;
+    auto e = new Experiment;
     e->_js.getJson() = js["Experiment Vector"][i];
     k->_experimentVector.push_back(e);
   }
@@ -246,62 +248,64 @@ korali::Engine *korali::Engine::deserialize(knlohmann::json &js)
 }
 
 #ifdef _KORALI_USE_MPI
-long int korali::Engine::getMPICommPointer()
+long int Engine::getMPICommPointer()
 {
   return (long int)(&__KoraliTeamComm);
 }
 #endif
 
-knlohmann::json &korali::Engine::operator[](const std::string &key)
+knlohmann::json &Engine::operator[](const std::string &key)
 {
   return _js[key];
 }
-knlohmann::json &korali::Engine::operator[](const unsigned long int &key) { return _js[key]; }
-pybind11::object korali::Engine::getItem(pybind11::object key) { return _js.getItem(key); }
-void korali::Engine::setItem(pybind11::object key, pybind11::object val) { _js.setItem(key, val); }
+knlohmann::json &Engine::operator[](const unsigned long int &key) { return _js[key]; }
+pybind11::object Engine::getItem(const pybind11::object key) { return _js.getItem(key); }
+void Engine::setItem(const pybind11::object key, const pybind11::object val) { _js.setItem(key, val); }
 
 PYBIND11_MODULE(libkorali, m)
 {
 #ifdef _KORALI_USE_MPI
-  m.def("getMPICommPointer", &korali::Engine::getMPICommPointer, pybind11::return_value_policy::reference);
+  m.def("getMPICommPointer", &Engine::getMPICommPointer, pybind11::return_value_policy::reference);
 #endif
 
-  pybind11::class_<korali::Engine>(m, "Engine")
+  pybind11::class_<Engine>(m, "Engine")
     .def(pybind11::init<>())
-    .def("run", [](korali::Engine &k, korali::Experiment &e) {
-      korali::isPythonActive = true;
+    .def("run", [](Engine &k, Experiment &e) {
+      isPythonActive = true;
       k.run(e);
     })
-    .def("run", [](korali::Engine &k, std::vector<korali::Experiment> &e) {
-      korali::isPythonActive = true;
+    .def("run", [](Engine &k, std::vector<Experiment> &e) {
+      isPythonActive = true;
       k.run(e);
     })
-    .def("resume", [](korali::Engine &k, korali::Experiment &e) {
-      korali::isPythonActive = true;
+    .def("resume", [](Engine &k, Experiment &e) {
+      isPythonActive = true;
       k.resume(e);
     })
-    .def("resume", [](korali::Engine &k, std::vector<korali::Experiment> &e) {
-      korali::isPythonActive = true;
+    .def("resume", [](Engine &k, std::vector<Experiment> &e) {
+      isPythonActive = true;
       k.resume(e);
     })
-    .def("__getitem__", pybind11::overload_cast<pybind11::object>(&korali::Engine::getItem), pybind11::return_value_policy::reference)
-    .def("__setitem__", pybind11::overload_cast<pybind11::object, pybind11::object>(&korali::Engine::setItem), pybind11::return_value_policy::reference);
+    .def("__getitem__", pybind11::overload_cast<pybind11::object>(&Engine::getItem), pybind11::return_value_policy::reference)
+    .def("__setitem__", pybind11::overload_cast<pybind11::object, pybind11::object>(&Engine::setItem), pybind11::return_value_policy::reference);
 
-  pybind11::class_<korali::KoraliJson>(m, "koraliJson")
-    .def("get", &korali::KoraliJson::get)
-    .def("set", &korali::KoraliJson::set)
-    .def("__getitem__", pybind11::overload_cast<pybind11::object>(&korali::KoraliJson::getItem), pybind11::return_value_policy::reference)
-    .def("__setitem__", pybind11::overload_cast<pybind11::object, pybind11::object>(&korali::KoraliJson::setItem), pybind11::return_value_policy::reference);
+  pybind11::class_<KoraliJson>(m, "koraliJson")
+    .def("get", &KoraliJson::get)
+    .def("set", &KoraliJson::set)
+    .def("__getitem__", pybind11::overload_cast<pybind11::object>(&KoraliJson::getItem), pybind11::return_value_policy::reference)
+    .def("__setitem__", pybind11::overload_cast<pybind11::object, pybind11::object>(&KoraliJson::setItem), pybind11::return_value_policy::reference);
 
-  pybind11::class_<korali::Sample>(m, "Sample")
-    .def("__getitem__", pybind11::overload_cast<pybind11::object>(&korali::Sample::getItem), pybind11::return_value_policy::reference)
-    .def("__setitem__", pybind11::overload_cast<pybind11::object, pybind11::object>(&korali::Sample::setItem), pybind11::return_value_policy::reference)
-    .def("update", &korali::Sample::update);
+  pybind11::class_<Sample>(m, "Sample")
+    .def("__getitem__", pybind11::overload_cast<pybind11::object>(&Sample::getItem), pybind11::return_value_policy::reference)
+    .def("__setitem__", pybind11::overload_cast<pybind11::object, pybind11::object>(&Sample::setItem), pybind11::return_value_policy::reference)
+    .def("update", &Sample::update);
 
-  pybind11::class_<korali::Experiment>(m, "Experiment")
+  pybind11::class_<Experiment>(m, "Experiment")
     .def(pybind11::init<>())
-    .def("__getitem__", pybind11::overload_cast<pybind11::object>(&korali::Experiment::getItem), pybind11::return_value_policy::reference)
-    .def("__setitem__", pybind11::overload_cast<pybind11::object, pybind11::object>(&korali::Experiment::setItem), pybind11::return_value_policy::reference)
-    .def("loadState", &korali::Experiment::loadState)
-    .def("test", &korali::Experiment::test);
+    .def("__getitem__", pybind11::overload_cast<pybind11::object>(&Experiment::getItem), pybind11::return_value_policy::reference)
+    .def("__setitem__", pybind11::overload_cast<pybind11::object, pybind11::object>(&Experiment::setItem), pybind11::return_value_policy::reference)
+    .def("loadState", &Experiment::loadState)
+    .def("test", &Experiment::test);
 }
+
+} // namespace korali

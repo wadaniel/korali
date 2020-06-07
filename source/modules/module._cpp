@@ -1,13 +1,15 @@
 #include "module.hpp"
 
-knlohmann::json korali::__profiler;
-std::chrono::time_point<std::chrono::high_resolution_clock> korali::_startTime;
-std::chrono::time_point<std::chrono::high_resolution_clock> korali::_endTime;
-double korali::_cumulativeTime;
-
 // Module Include List
 
-korali::Module *korali::Module::getModule(knlohmann::json &js, korali::Experiment *e)
+namespace korali
+{
+knlohmann::json __profiler;
+std::chrono::time_point<std::chrono::high_resolution_clock> _startTime;
+std::chrono::time_point<std::chrono::high_resolution_clock> _endTime;
+double _cumulativeTime;
+
+Module *Module::getModule(knlohmann::json &js, Experiment *e)
 {
   std::string moduleType = "Undefined";
 
@@ -32,7 +34,7 @@ korali::Module *korali::Module::getModule(knlohmann::json &js, korali::Experimen
   eraseValue(js, "Type");
 
   // Creating module pointer from it's type.
-  korali::Module *module = nullptr;
+  Module *module = nullptr;
 
   // Module Selection List
 
@@ -40,7 +42,7 @@ korali::Module *korali::Module::getModule(knlohmann::json &js, korali::Experimen
 
   // If this is a new experiment, we should assign it its own configuration
   if (isExperiment == true)
-    dynamic_cast<korali::Experiment *>(module)->_js.getJson() = js;
+    dynamic_cast<Experiment *>(module)->_js.getJson() = js;
 
   // If this is a module inside an experiment, it needs to be properly configured
   if (isExperiment == false)
@@ -57,9 +59,11 @@ korali::Module *korali::Module::getModule(knlohmann::json &js, korali::Experimen
   return module;
 }
 
-korali::Module *korali::Module::duplicate(korali::Module *src)
+Module *Module::duplicate(Module *src)
 {
   knlohmann::json js;
   src->getConfiguration(js);
-  return korali::Module::getModule(js, src->_k);
+  return Module::getModule(js, src->_k);
 }
+
+} // namespace korali

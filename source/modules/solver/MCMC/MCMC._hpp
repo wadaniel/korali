@@ -10,7 +10,7 @@ namespace korali
 {
 namespace solver
 {
-class MCMC : public korali::Solver
+class MCMC : public Solver
 {
   private:
   /**

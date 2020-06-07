@@ -27,7 +27,7 @@ class Engine;
 /**
  * @brief Stores all functions inserted as parameters to experiment's configuration
  */
-extern std::vector<std::function<void(korali::Sample &)> *> _functionVector;
+extern std::vector<std::function<void(Sample &)> *> _functionVector;
 
 /**
 * @brief Execution states of a given sample.
@@ -74,7 +74,7 @@ class Sample
   /**
   * @brief JSON object containing the sample's configuration and input/output data.
   */
-  korali::KoraliJson _js;
+  KoraliJson _js;
 
   /**
   * @brief Constructs Sample. Stores its own pointer, sets ID to zero, state as uninitialized, and isAllocated to false.
@@ -123,14 +123,14 @@ class Sample
   * @param key Key (pybind11 object) to look for.
   * @return Pybind11 object for the given key.
   */
-  pybind11::object getItem(pybind11::object key);
+  pybind11::object getItem(const pybind11::object key);
 
   /**
   * @brief Sets the value of a given key in the sample.
   * @param val Value to assign.
   * @param key Key (pybind11 object) to look for.
   */
-  void setItem(pybind11::object key, pybind11::object val);
+  void setItem(const pybind11::object key, const pybind11::object val);
 
   /**
    * @brief Retrieves an element from the sample information
@@ -144,7 +144,7 @@ class Sample
   {
     if (isDefined(_self->_js.getJson(), key...) == false)
     {
-      korali::Logger::logError(fileName, lineNumber, "Requesting non existing value %s from sample.\n", getPath(key...).c_str());
+      Logger::logError(fileName, lineNumber, "Requesting non existing value %s from sample.\n", getPath(key...).c_str());
     }
 
     try
@@ -153,7 +153,7 @@ class Sample
     }
     catch (std::exception &e)
     {
-      korali::Logger::logError(fileName, lineNumber, "Missing or incorrect value %s for the sample.\n + Cause: %s\n", getPath(key...).c_str(), e.what());
+      Logger::logError(fileName, lineNumber, "Missing or incorrect value %s for the sample.\n + Cause: %s\n", getPath(key...).c_str(), e.what());
     }
   }
 };

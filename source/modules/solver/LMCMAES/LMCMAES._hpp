@@ -10,7 +10,7 @@ namespace korali
 {
 namespace solver
 {
-class LMCMAES : public korali::Solver
+class LMCMAES : public Solver
 {
   private:
   /**
@@ -51,7 +51,7 @@ class LMCMAES : public korali::Solver
   /**
  * @brief Updates mean and covariance of Gaussian proposal distribution.
  */
-  void updateDistribution(std::vector<korali::Sample> &samples);
+  void updateDistribution(std::vector<Sample> &samples);
 
   /**
   * @brief Update covariance matrix scaling

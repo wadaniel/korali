@@ -15,7 +15,11 @@
 #include <numeric>
 #include <random> // std::default_random_engine
 
-void korali::solver::Nested::setInitialConfiguration()
+namespace korali
+{
+namespace solver
+{
+void Nested::setInitialConfiguration()
 {
   _shuffleSeed = _k->_randomSeed++;
 
@@ -32,8 +36,8 @@ void korali::solver::Nested::setInitialConfiguration()
   for (size_t d = 0; d < _k->_variables.size(); ++d)
   {
     if (_k->_distributions[_k->_variables[d]->_distributionIndex]->_type != "Univariate/Uniform") KORALI_LOG_ERROR("Only 'Univariate/Uniform' priors allowed (is %s).\n", _k->_distributions[_k->_variables[d]->_distributionIndex]->_type.c_str());
-    _priorWidth[d] = dynamic_cast<korali::distribution::univariate::Uniform *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->_maximum - dynamic_cast<korali::distribution::univariate::Uniform *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->_minimum;
-    _priorLowerBound[d] = dynamic_cast<korali::distribution::univariate::Uniform *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->_minimum;
+    _priorWidth[d] = dynamic_cast<distribution::univariate::Uniform *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->_maximum - dynamic_cast<distribution::univariate::Uniform *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->_minimum;
+    _priorLowerBound[d] = dynamic_cast<distribution::univariate::Uniform *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->_minimum;
   }
 
   if ((_resamplingMethod == "Ellipse") && (_k->_variables.size() == 2)) KORALI_LOG_ERROR("Resampling Method Ellipse only suitable for problems of dim larger 2.");
@@ -83,7 +87,7 @@ void korali::solver::Nested::setInitialConfiguration()
   (*_k)["Results"]["Posterior Samples"] = {};
 }
 
-void korali::solver::Nested::runGeneration()
+void Nested::runGeneration()
 {
   if (_k->_currentGeneration == 1)
   {
@@ -94,7 +98,7 @@ void korali::solver::Nested::runGeneration()
 
   // Generation > 1
   prepareGeneration();
-  std::vector<korali::Sample> samples(_batchSize);
+  std::vector<Sample> samples(_batchSize);
 
   for (size_t c = 0; c < _batchSize; c++)
   {
@@ -123,13 +127,13 @@ void korali::solver::Nested::runGeneration()
   return;
 }
 
-void korali::solver::Nested::runFirstGeneration()
+void Nested::runFirstGeneration()
 {
   for (size_t i = 0; i < _numberLivePoints; i++)
     for (size_t d = 0; d < _k->_variables.size(); d++)
       _liveSamples[i][d] = _k->_distributions[_k->_variables[d]->_distributionIndex]->getRandomNumber();
 
-  std::vector<korali::Sample> samples(_numberLivePoints);
+  std::vector<Sample> samples(_numberLivePoints);
 
   for (size_t c = 0; c < _numberLivePoints; c++)
   {
@@ -161,7 +165,7 @@ void korali::solver::Nested::runFirstGeneration()
   return;
 }
 
-void korali::solver::Nested::prepareGeneration()
+void Nested::prepareGeneration()
 {
   if (_k->_currentGeneration > 3 && _k->_currentGeneration % _proposalUpdateFrequency != 0) return;
 
@@ -184,7 +188,7 @@ void korali::solver::Nested::prepareGeneration()
   return;
 }
 
-void korali::solver::Nested::processGeneration()
+void Nested::processGeneration()
 {
   size_t sampleIdx = _liveSamplesRank[0];
   size_t acceptedBefore = _acceptedSamples;
@@ -239,7 +243,7 @@ void korali::solver::Nested::processGeneration()
   return;
 }
 
-void korali::solver::Nested::generateCandidatesFromMCMC()
+void Nested::generateCandidatesFromMCMC()
 {
   std::vector<double> zeroMean(_k->_variables.size(), 0.0);
   _multivariateGenerator->_meanVector = zeroMean;
@@ -260,7 +264,7 @@ void korali::solver::Nested::generateCandidatesFromMCMC()
   }
 }
 
-void korali::solver::Nested::generateCandidatesFromBox()
+void Nested::generateCandidatesFromBox()
 {
   for (size_t i = 0; i < _batchSize; i++)
   {
@@ -269,7 +273,7 @@ void korali::solver::Nested::generateCandidatesFromBox()
   }
 }
 
-void korali::solver::Nested::generateCandidatesFromEllipse()
+void Nested::generateCandidatesFromEllipse()
 {
   std::vector<double> vec(_k->_variables.size());
   for (size_t i = 0; i < _batchSize; i++)
@@ -298,7 +302,7 @@ void korali::solver::Nested::generateCandidatesFromEllipse()
   }
 }
 
-void korali::solver::Nested::updateMeanAndCovariance()
+void Nested::updateMeanAndCovariance()
 {
   for (size_t d = 0; d < _k->_variables.size(); d++) _domainMean[d] = 0.0;
 
@@ -319,7 +323,7 @@ void korali::solver::Nested::updateMeanAndCovariance()
   }
 }
 
-void korali::solver::Nested::updateBox()
+void Nested::updateBox()
 {
   for (size_t d = 0; d < _k->_variables.size(); d++) _boxLowerBound[d] = std::numeric_limits<double>::max();
   for (size_t d = 0; d < _k->_variables.size(); d++) _boxUpperBound[d] = std::numeric_limits<double>::lowest();
@@ -332,7 +336,7 @@ void korali::solver::Nested::updateBox()
     }
 }
 
-void korali::solver::Nested::updateEllipse()
+void Nested::updateEllipse()
 {
   for (size_t d = 0; d < _k->_variables.size(); d++) _domainMean[d] = 0.0;
 
@@ -403,14 +407,14 @@ void korali::solver::Nested::updateEllipse()
   gsl_matrix_free(covar);
 }
 
-void korali::solver::Nested::sortLiveSamplesAscending()
+void Nested::sortLiveSamplesAscending()
 {
   //TODO: speed up
   std::iota(_liveSamplesRank.begin(), _liveSamplesRank.end(), 0);
   stable_sort(_liveSamplesRank.begin(), _liveSamplesRank.end(), [this](const size_t &idx1, const size_t &idx2) -> bool { return this->_liveLogLikelihoods[idx1] < this->_liveLogLikelihoods[idx2]; });
 }
 
-void korali::solver::Nested::updateSampleDatabase(size_t sampleIdx)
+void Nested::updateSampleDatabase(size_t sampleIdx)
 {
   _databaseEntries++;
   _sampleDatabase.push_back(_liveSamples[sampleIdx]);
@@ -419,7 +423,7 @@ void korali::solver::Nested::updateSampleDatabase(size_t sampleIdx)
   _sampleLogWeightDatabase.push_back(_logWeight);
 }
 
-void korali::solver::Nested::consumeLiveSamples()
+void Nested::consumeLiveSamples()
 {
   size_t sampleIdx;
   double dLogVol, logEvidenceOld, informationOld, evidenceTerm;
@@ -463,7 +467,7 @@ void korali::solver::Nested::consumeLiveSamples()
   _effectiveSampleSize = calcEffectiveSamples();
 }
 
-void korali::solver::Nested::generatePosterior()
+void Nested::generatePosterior()
 {
   double maxLogWtDb = *max_element(std::begin(_sampleLogWeightDatabase), std::end(_sampleLogWeightDatabase));
 
@@ -489,7 +493,7 @@ void korali::solver::Nested::generatePosterior()
   return;
 }
 
-double korali::solver::Nested::calcEffectiveSamples() const
+double Nested::calcEffectiveSamples() const
 {
   if (_databaseEntries < 1) return 0.0;
 
@@ -505,7 +509,7 @@ double korali::solver::Nested::calcEffectiveSamples() const
   return exp(2.0 * wtsum - wt2sum);
 }
 
-double korali::solver::Nested::safeLogPlus(double logx, double logy) const
+double Nested::safeLogPlus(double logx, double logy) const
 {
   if (logx > logy)
     return logx + log1p(exp(logy - logx));
@@ -513,14 +517,14 @@ double korali::solver::Nested::safeLogPlus(double logx, double logy) const
     return logy + log1p(exp(logx - logy));
 }
 
-double korali::solver::Nested::safeLogMinus(double logx, double logy) const
+double Nested::safeLogMinus(double logx, double logy) const
 {
   return log(exp(logx - logy) - 1) + logy;
 }
 
-void korali::solver::Nested::printGenerationBefore() { return; }
+void Nested::printGenerationBefore() { return; }
 
-void korali::solver::Nested::printGenerationAfter()
+void Nested::printGenerationAfter()
 {
   _k->_logger->logInfo("Minimal", "Log Evidence: %.4f (+- %.4f)\n", _logEvidence, sqrt(_logEvidenceVar));
   _k->_logger->logInfo("Minimal", "Accepted Samples: %zu (+%zu) \n", _acceptedSamples, _numberLivePoints);
@@ -534,7 +538,7 @@ void korali::solver::Nested::printGenerationAfter()
   return;
 }
 
-void korali::solver::Nested::finalize()
+void Nested::finalize()
 {
   if (_k->_currentGeneration <= 1) return;
   if (_addLivePoints == true) consumeLiveSamples();
@@ -549,3 +553,7 @@ void korali::solver::Nested::finalize()
   _k->_logger->logInfo("Minimal", "Sampling Efficiency: %.2f%%\n", 100.0 * (_acceptedSamples + _numberLivePoints) / ((double)_generatedSamples));
   return;
 }
+
+} // namespace solver
+
+} // namespace korali

@@ -1,7 +1,11 @@
 #include "modules/conduit/conduit.hpp"
 #include "modules/solver/gridSearch/gridSearch.hpp"
 
-void korali::solver::GridSearch::setInitialConfiguration()
+namespace korali
+{
+namespace solver
+{
+void GridSearch::setInitialConfiguration()
 {
   _numberOfValues = 1;
   for (size_t i = 0; i < _k->_variables.size(); i++)
@@ -28,12 +32,12 @@ void korali::solver::GridSearch::setInitialConfiguration()
   }
 }
 
-void korali::solver::GridSearch::runGeneration()
+void GridSearch::runGeneration()
 {
   if (_k->_currentGeneration == 1) setInitialConfiguration();
 
   // Example: Evaluating a sample
-  std::vector<korali::Sample> samples(_numberOfValues);
+  std::vector<Sample> samples(_numberOfValues);
   std::vector<double> sampleData(_k->_variables.size());
 
   size_t rest, index;
@@ -80,15 +84,19 @@ void korali::solver::GridSearch::runGeneration()
   (*_k)["Results"]["Best Sample"]["F(x)"] = _maximum;
 }
 
-void korali::solver::GridSearch::printGenerationBefore()
+void GridSearch::printGenerationBefore()
 {
   _k->_logger->logInfo("Minimal", "Starting GridSearch\n");
 }
 
-void korali::solver::GridSearch::printGenerationAfter()
+void GridSearch::printGenerationAfter()
 {
   _k->_logger->logInfo("Minimal", "Found Maximum with Objective %+6.3e at:\n", _maximum);
   for (size_t i = 0; i < _locationOfMaximum.size(); i++)
     _k->_logger->logData("Normal", " %+6.3e", _locationOfMaximum[i]);
   _k->_logger->logData("Normal", "\n");
 }
+
+} // namespace solver
+
+} // namespace korali

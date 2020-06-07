@@ -4,7 +4,9 @@
 #include <string>
 #include <sys/stat.h>
 
-void korali::mkdir(const std::string dirPath)
+namespace korali
+{
+void mkdir(const std::string dirPath)
 {
   char tmp[256];
   char *p = NULL;
@@ -24,7 +26,7 @@ void korali::mkdir(const std::string dirPath)
   ::mkdir(tmp, S_IRWXU);
 }
 
-std::vector<std::string> korali::listDirFiles(const std::string dirPath)
+std::vector<std::string> listDirFiles(const std::string dirPath)
 {
   struct dirent *entry = nullptr;
   std::vector<std::string> dirList;
@@ -45,7 +47,7 @@ std::vector<std::string> korali::listDirFiles(const std::string dirPath)
   return dirList;
 }
 
-bool korali::dirExists(const std::string dirPath)
+bool dirExists(const std::string dirPath)
 {
   DIR *dir = opendir(dirPath.c_str());
   if (dir)
@@ -56,3 +58,5 @@ bool korali::dirExists(const std::string dirPath)
 
   return false;
 }
+
+} // namespace korali

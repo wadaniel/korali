@@ -8,7 +8,11 @@
 #include <stdio.h>
 #include <unistd.h>
 
-void korali::solver::CMAES::setInitialConfiguration()
+namespace korali
+{
+namespace solver
+{
+void CMAES::setInitialConfiguration()
 {
   knlohmann::json problemConfig = (*_k)["Problem"];
 
@@ -163,7 +167,7 @@ void korali::solver::CMAES::setInitialConfiguration()
   _currentMaxStandardDeviation = -std::numeric_limits<double>::infinity();
 }
 
-void korali::solver::CMAES::runGeneration()
+void CMAES::runGeneration()
 {
   if (_k->_currentGeneration == 1) setInitialConfiguration();
 
@@ -176,7 +180,7 @@ void korali::solver::CMAES::runGeneration()
   }
 
   // Initializing Sample Evaluation
-  std::vector<korali::Sample> samples(_currentPopulationSize);
+  std::vector<Sample> samples(_currentPopulationSize);
   for (size_t i = 0; i < _currentPopulationSize; i++)
   {
     samples[i]["Module"] = "Problem";
@@ -198,7 +202,7 @@ void korali::solver::CMAES::runGeneration()
   (*_k)["Results"]["Best Sample"]["Parameters"] = _bestEverVariables;
 }
 
-void korali::solver::CMAES::initMuWeights(size_t numsamplesmu)
+void CMAES::initMuWeights(size_t numsamplesmu)
 {
   // Initializing Mu Weights
   if (_muType == "Linear")
@@ -249,7 +253,7 @@ void korali::solver::CMAES::initMuWeights(size_t numsamplesmu)
     _dampFactor = (1.0 + 2 * std::max(0.0, sqrt((_effectiveMu - 1.0) / (_k->_variables.size() + 1.0)) - 1)) + _sigmaCumulationFactor;
 }
 
-void korali::solver::CMAES::initCovariance()
+void CMAES::initCovariance()
 {
   // Setting Sigma
   _trace = 0.0;
@@ -278,11 +282,11 @@ void korali::solver::CMAES::initCovariance()
     if (_minimumDiagonalCovarianceMatrixElement > _covarianceMatrix[i * _k->_variables.size() + i]) _minimumDiagonalCovarianceMatrixElement = _covarianceMatrix[i * _k->_variables.size() + i];
 }
 
-void korali::solver::CMAES::checkMeanAndSetRegime()
+void CMAES::checkMeanAndSetRegime()
 {
   if (_isViabilityRegime == false) return; /* mean already inside valid domain, no udpates */
 
-  korali::Sample sample;
+  Sample sample;
   sample["Sample Id"] = 0;
   sample["Parameters"] = _currentMean;
   sample["Module"] = "Problem";
@@ -312,13 +316,13 @@ void korali::solver::CMAES::checkMeanAndSetRegime()
   initCovariance();
 }
 
-void korali::solver::CMAES::updateConstraints()
+void CMAES::updateConstraints()
 {
   for (size_t i = 0; i < _currentPopulationSize; i++)
   {
     _sampleConstraintViolationCounts[i] = 0;
 
-    korali::Sample sample;
+    Sample sample;
     sample["Sample Id"] = 0;
     sample["Parameters"] = _samplePopulation[i];
     sample["Module"] = "Problem";
@@ -354,14 +358,14 @@ void korali::solver::CMAES::updateConstraints()
   }
 }
 
-void korali::solver::CMAES::reEvaluateConstraints()
+void CMAES::reEvaluateConstraints()
 {
   _maxConstraintViolationCount = 0;
 
   for (size_t i = 0; i < _currentPopulationSize; ++i)
     if (_sampleConstraintViolationCounts[i] > 0)
     {
-      korali::Sample sample;
+      Sample sample;
       sample["Sample Id"] = 0;
       sample["Parameters"] = _samplePopulation[i];
       sample["Module"] = "Problem";
@@ -395,7 +399,7 @@ void korali::solver::CMAES::reEvaluateConstraints()
     }
 }
 
-void korali::solver::CMAES::updateViabilityBoundaries()
+void CMAES::updateViabilityBoundaries()
 {
   for (size_t c = 0; c < _constraintEvaluations.size(); c++)
   {
@@ -408,7 +412,7 @@ void korali::solver::CMAES::updateViabilityBoundaries()
   }
 }
 
-void korali::solver::CMAES::prepareGeneration()
+void CMAES::prepareGeneration()
 {
   for (size_t d = 0; d < _k->_variables.size(); ++d) _auxiliarCovarianceMatrix = _covarianceMatrix;
   updateEigensystem(_auxiliarCovarianceMatrix);
@@ -420,7 +424,7 @@ void korali::solver::CMAES::prepareGeneration()
     {
       _infeasibleSampleCount++;
       sampleSingle(i);
-      korali::Sample sample;
+      Sample sample;
       sample["Sample Id"] = 0;
       sample["Parameters"] = _samplePopulation[i];
       sample["Module"] = "Problem";
@@ -438,7 +442,7 @@ void korali::solver::CMAES::prepareGeneration()
   }
 }
 
-void korali::solver::CMAES::sampleSingle(size_t sampleIdx)
+void CMAES::sampleSingle(size_t sampleIdx)
 {
   for (size_t d = 0; d < _k->_variables.size(); ++d)
   {
@@ -494,7 +498,7 @@ void korali::solver::CMAES::sampleSingle(size_t sampleIdx)
   }
 }
 
-void korali::solver::CMAES::updateDistribution(std::vector<korali::Sample> &samples)
+void CMAES::updateDistribution(std::vector<Sample> &samples)
 {
   for (size_t i = 0; i < _currentPopulationSize; i++)
     _valueVector[i] = KORALI_GET(double, samples[i], "F(x)");
@@ -611,7 +615,7 @@ void korali::solver::CMAES::updateDistribution(std::vector<korali::Sample> &samp
   }
 }
 
-void korali::solver::CMAES::adaptC(int hsig)
+void CMAES::adaptC(int hsig)
 {
   /* definitions for speeding up inner-most loop */
   //double ccov1  = std::min(_covarianceMatrixLearningRate * (1./_muCovariance) * (_isDiagonal ? (_k->_variables.size()+1.5) / 3. : 1.), 1.); (orig, alternative)
@@ -643,7 +647,7 @@ void korali::solver::CMAES::adaptC(int hsig)
   }
 }
 
-void korali::solver::CMAES::updateSigma()
+void CMAES::updateSigma()
 {
   /* update for non-viable region */
   if (_areConstraintsDefined && (_isViabilityRegime == true))
@@ -687,7 +691,7 @@ void korali::solver::CMAES::updateSigma()
   }
 }
 
-void korali::solver::CMAES::numericalErrorTreatment()
+void CMAES::numericalErrorTreatment()
 {
   //treat maximal standard deviations
   //TODO
@@ -707,7 +711,7 @@ void korali::solver::CMAES::numericalErrorTreatment()
   //TODO
 }
 
-void korali::solver::CMAES::handleConstraints()
+void CMAES::handleConstraints()
 {
   size_t initial_resampled = _resampledParameterCount;
   size_t initial_corrections = _covarianceMatrixAdaptationCount;
@@ -746,7 +750,7 @@ void korali::solver::CMAES::handleConstraints()
     for (size_t i = 0; i < _currentPopulationSize; ++i)
       if (_sampleConstraintViolationCounts[i] > 0)
       {
-        korali::Sample sample;
+        Sample sample;
         bool isSampleFeasible;
 
         do
@@ -786,7 +790,7 @@ void korali::solver::CMAES::handleConstraints()
   } //while _maxConstraintViolationCount > 0
 }
 
-void korali::solver::CMAES::updateDiscreteMutationMatrix()
+void CMAES::updateDiscreteMutationMatrix()
 {
   // implemented based on 'A CMA-ES for Mixed-Integer Nonlinear Optimization' by
   // Hansen2011
@@ -814,7 +818,7 @@ void korali::solver::CMAES::updateDiscreteMutationMatrix()
   std::fill(std::begin(_discreteMutations), std::end(_discreteMutations), 0.0);
 }
 
-void korali::solver::CMAES::discretize(korali::Sample &sample)
+void CMAES::discretize(Sample &sample)
 {
   auto parameters = KORALI_GET(std::vector<double>, sample, "Parameters");
 
@@ -826,7 +830,7 @@ void korali::solver::CMAES::discretize(korali::Sample &sample)
       sample["Parameters"][d] = std::round(parameters[d] / _k->_variables[d]->_granularity) * _k->_variables[d]->_granularity;
 }
 
-void korali::solver::CMAES::updateEigensystem(std::vector<double> &M)
+void CMAES::updateEigensystem(std::vector<double> &M)
 {
   eigen(_k->_variables.size(), M, _auxiliarAxisLengths, _auxiliarCovarianceEigenvectorMatrix);
 
@@ -868,7 +872,7 @@ void korali::solver::CMAES::updateEigensystem(std::vector<double> &M)
 /*                    Additional Methods                                */
 /************************************************************************/
 
-void korali::solver::CMAES::eigen(size_t size, std::vector<double> &M, std::vector<double> &diag, std::vector<double> &Q) const
+void CMAES::eigen(size_t size, std::vector<double> &M, std::vector<double> &diag, std::vector<double> &Q) const
 {
   std::vector<double> data(size * size);
 
@@ -902,7 +906,7 @@ void korali::solver::CMAES::eigen(size_t size, std::vector<double> &M, std::vect
   gsl_eigen_symmv_free(gsl_work);
 }
 
-void korali::solver::CMAES::sort_index(const std::vector<double> &vec, std::vector<size_t> &sortingIndex, size_t N) const
+void CMAES::sort_index(const std::vector<double> &vec, std::vector<size_t> &sortingIndex, size_t N) const
 {
   // initialize original sortingIndex locations
   std::iota(std::begin(sortingIndex), std::begin(sortingIndex) + N, (size_t)0);
@@ -911,9 +915,9 @@ void korali::solver::CMAES::sort_index(const std::vector<double> &vec, std::vect
   std::sort(std::begin(sortingIndex), std::begin(sortingIndex) + N, [vec](size_t i1, size_t i2) { return vec[i1] > vec[i2]; });
 }
 
-void korali::solver::CMAES::printGenerationBefore() { return; }
+void CMAES::printGenerationBefore() { return; }
 
-void korali::solver::CMAES::printGenerationAfter()
+void CMAES::printGenerationAfter()
 {
   if (_areConstraintsDefined && _isViabilityRegime)
   {
@@ -955,7 +959,7 @@ void korali::solver::CMAES::printGenerationAfter()
   }
 }
 
-void korali::solver::CMAES::finalize()
+void CMAES::finalize()
 {
   _k->_logger->logInfo("Minimal", "Optimum found: %e\n", _bestEverValue);
   _k->_logger->logInfo("Minimal", "Optimum found at:\n");
@@ -968,3 +972,7 @@ void korali::solver::CMAES::finalize()
   }
   _k->_logger->logInfo("Minimal", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
 }
+
+} // namespace solver
+
+} // namespace korali

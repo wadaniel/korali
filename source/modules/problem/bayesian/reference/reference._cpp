@@ -6,16 +6,22 @@
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_sf_gamma.h>
 
-void korali::problem::bayesian::Reference::initialize()
+namespace korali
 {
-  korali::problem::Bayesian::initialize();
+namespace problem
+{
+namespace bayesian
+{
+void Reference::initialize()
+{
+  Bayesian::initialize();
 
   if (_referenceData.size() == 0) KORALI_LOG_ERROR("Bayesian (%s) problems require defining reference data.\n", _likelihoodModel.c_str());
 
   if (_k->_variables.size() < 1) KORALI_LOG_ERROR("Bayesian (%s) inference problems require at least one variable.\n", _likelihoodModel.c_str());
 }
 
-void korali::problem::bayesian::Reference::evaluateLoglikelihood(korali::Sample &sample)
+void Reference::evaluateLoglikelihood(Sample &sample)
 {
   sample.run(_computationalModel);
 
@@ -34,7 +40,7 @@ void korali::problem::bayesian::Reference::evaluateLoglikelihood(korali::Sample 
     KORALI_LOG_ERROR("Bayesian problem (%s) not recognized.\n", _likelihoodModel.c_str());
 }
 
-double korali::problem::bayesian::Reference::compute_normalized_sse(std::vector<double> f, std::vector<double> g, std::vector<double> y)
+double Reference::compute_normalized_sse(std::vector<double> f, std::vector<double> g, std::vector<double> y)
 {
   double sse = 0.;
   for (size_t i = 0; i < y.size(); i++)
@@ -45,7 +51,7 @@ double korali::problem::bayesian::Reference::compute_normalized_sse(std::vector<
   return sse;
 }
 
-void korali::problem::bayesian::Reference::loglikelihoodNormal(korali::Sample &sample)
+void Reference::loglikelihoodNormal(Sample &sample)
 {
   auto refEvals = KORALI_GET(std::vector<double>, sample, "Reference Evaluations");
   auto stdDevs = KORALI_GET(std::vector<double>, sample, "Standard Deviation");
@@ -56,7 +62,7 @@ void korali::problem::bayesian::Reference::loglikelihoodNormal(korali::Sample &s
   if (refEvals.size() != _referenceData.size())
     KORALI_LOG_ERROR("This Bayesian (%s) problem requires a %lu-sized Reference Evaluations array. Provided: %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), refEvals.size());
 
-  double sse = -korali::Inf;
+  double sse = -Inf;
   sse = compute_normalized_sse(refEvals, stdDevs, _referenceData);
 
   double loglike = 0.;
@@ -70,7 +76,7 @@ void korali::problem::bayesian::Reference::loglikelihoodNormal(korali::Sample &s
   sample["logLikelihood"] = loglike;
 }
 
-void korali::problem::bayesian::Reference::loglikelihoodPositiveNormal(korali::Sample &sample)
+void Reference::loglikelihoodPositiveNormal(Sample &sample)
 {
   auto refEvals = KORALI_GET(std::vector<double>, sample, "Reference Evaluations");
   auto stdDevs = KORALI_GET(std::vector<double>, sample, "Standard Deviation");
@@ -100,7 +106,7 @@ void korali::problem::bayesian::Reference::loglikelihoodPositiveNormal(korali::S
   sample["logLikelihood"] = loglike;
 }
 
-void korali::problem::bayesian::Reference::loglikelihoodNegativeBinomial(korali::Sample &sample)
+void Reference::loglikelihoodNegativeBinomial(Sample &sample)
 {
   auto refEvals = KORALI_GET(std::vector<double>, sample, "Reference Evaluations");
   auto dispersion = KORALI_GET(std::vector<double>, sample, "Dispersion");
@@ -122,7 +128,7 @@ void korali::problem::bayesian::Reference::loglikelihoodNegativeBinomial(korali:
 
     if (m <= 0)
     {
-      sample["logLikelihood"] = -korali::Inf;
+      sample["logLikelihood"] = -Inf;
       return;
     }
 
@@ -140,7 +146,7 @@ void korali::problem::bayesian::Reference::loglikelihoodNegativeBinomial(korali:
   sample["logLikelihood"] = loglike;
 }
 
-void korali::problem::bayesian::Reference::evaluateLoglikelihoodGradient(korali::Sample &sample)
+void Reference::evaluateLoglikelihoodGradient(Sample &sample)
 {
   double eval = sample["F(x)"];
   if (isfinite(eval))
@@ -160,7 +166,7 @@ void korali::problem::bayesian::Reference::evaluateLoglikelihoodGradient(korali:
   }
 }
 
-void korali::problem::bayesian::Reference::gradientLoglikelihoodNormal(korali::Sample &sample)
+void Reference::gradientLoglikelihoodNormal(Sample &sample)
 {
   auto refEvals = KORALI_GET(std::vector<double>, sample, "Reference Evaluations");
   auto stdDevs = KORALI_GET(std::vector<double>, sample, "Standard Deviation");
@@ -200,7 +206,7 @@ void korali::problem::bayesian::Reference::gradientLoglikelihoodNormal(korali::S
   sample["logLikelihood Gradient"] = llkgradient;
 }
 
-void korali::problem::bayesian::Reference::gradientLoglikelihoodPositiveNormal(korali::Sample &sample)
+void Reference::gradientLoglikelihoodPositiveNormal(Sample &sample)
 {
   auto refEvals = KORALI_GET(std::vector<double>, sample, "Reference Evaluations");
   auto stdDevs = KORALI_GET(std::vector<double>, sample, "Standard Deviation");
@@ -248,7 +254,7 @@ void korali::problem::bayesian::Reference::gradientLoglikelihoodPositiveNormal(k
   sample["logLikelihood Gradient"] = llkgradient;
 }
 
-void korali::problem::bayesian::Reference::gradientLoglikelihoodNegativeBinomial(korali::Sample &sample)
+void Reference::gradientLoglikelihoodNegativeBinomial(Sample &sample)
 {
   size_t N = _referenceData.size();
 
@@ -286,7 +292,7 @@ void korali::problem::bayesian::Reference::gradientLoglikelihoodNegativeBinomial
   sample["logLikelihood Gradient"] = llkgradient;
 }
 
-void korali::problem::bayesian::Reference::evaluateFisherInformation(korali::Sample &sample)
+void Reference::evaluateFisherInformation(Sample &sample)
 {
   auto eval = KORALI_GET(double, sample, "F(x)");
 
@@ -307,7 +313,7 @@ void korali::problem::bayesian::Reference::evaluateFisherInformation(korali::Sam
   }
 }
 
-void korali::problem::bayesian::Reference::fisherInformationLoglikelihoodNormal(korali::Sample &sample)
+void Reference::fisherInformationLoglikelihoodNormal(Sample &sample)
 {
   size_t Nd = _referenceData.size();
   size_t Nth = _k->_variables.size();
@@ -343,7 +349,7 @@ void korali::problem::bayesian::Reference::fisherInformationLoglikelihoodNormal(
   sample["Fisher Information"] = FIM;
 }
 
-void korali::problem::bayesian::Reference::fisherInformationLoglikelihoodPositiveNormal(korali::Sample &sample)
+void Reference::fisherInformationLoglikelihoodPositiveNormal(Sample &sample)
 {
   size_t Nd = _referenceData.size();
   size_t Nth = _k->_variables.size();
@@ -400,7 +406,13 @@ void korali::problem::bayesian::Reference::fisherInformationLoglikelihoodPositiv
   sample["Fisher Information"] = FIM;
 }
 
-void korali::problem::bayesian::Reference::fisherInformationLoglikelihoodNegativeBinomial(korali::Sample &sample)
+void Reference::fisherInformationLoglikelihoodNegativeBinomial(Sample &sample)
 {
   // TODO
 }
+
+} // namespace bayesian
+
+} // namespace problem
+
+} // namespace korali

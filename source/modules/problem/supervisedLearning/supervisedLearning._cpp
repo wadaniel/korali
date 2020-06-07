@@ -1,6 +1,10 @@
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 
-void korali::problem::SupervisedLearning::initialize()
+namespace korali
+{
+namespace problem
+{
+void SupervisedLearning::initialize()
 {
   // Processing output/input variable configuration
   _outputVectorIndexes.clear();
@@ -29,3 +33,7 @@ void korali::problem::SupervisedLearning::initialize()
     if (_k->_variables[i]->_validationData.size() != _validationBatchSize)
       KORALI_LOG_ERROR("Variable %lu has a different validation set vector size (%lu) than that of variable 0 (%lu).\n", _k->_variables[i]->_validationData.size(), _validationBatchSize);
 }
+
+} // namespace problem
+
+} // namespace korali

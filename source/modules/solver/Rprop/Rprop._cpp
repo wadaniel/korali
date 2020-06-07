@@ -5,7 +5,11 @@
 
 #include <stdio.h>
 
-void korali::solver::Rprop::setInitialConfiguration()
+namespace korali
+{
+namespace solver
+{
+void Rprop::setInitialConfiguration()
 {
   for (size_t i = 0; i < _k->_variables.size(); i++)
     if (std::isfinite(_k->_variables[i]->_initialValue) == false)
@@ -20,14 +24,14 @@ void korali::solver::Rprop::setInitialConfiguration()
   _currentGradient.resize(_k->_variables.size(), 0);
   _previousGradient.resize(_k->_variables.size(), 0.0);
 
-  _bestEvaluation = korali::Inf;
-  _xDiff = korali::Inf;
+  _bestEvaluation = Inf;
+  _xDiff = Inf;
   _maxStallCounter = 0;
-  _normPreviousGradient = korali::Inf;
-  _previousEvaluation = korali::Inf;
+  _normPreviousGradient = Inf;
+  _previousEvaluation = Inf;
 }
 
-void korali::solver::Rprop::evaluateFunctionAndGradient(korali::Sample &sample)
+void Rprop::evaluateFunctionAndGradient(Sample &sample)
 {
   // Initializing Sample Evaluation
   sample["Module"] = "Problem";
@@ -52,11 +56,11 @@ void korali::solver::Rprop::evaluateFunctionAndGradient(korali::Sample &sample)
     _currentGradient[i] = -_currentGradient[i];
 }
 
-void korali::solver::Rprop::runGeneration(void)
+void Rprop::runGeneration(void)
 {
   if (_k->_currentGeneration == 1) setInitialConfiguration();
 
-  korali::Sample sample;
+  Sample sample;
 
   evaluateFunctionAndGradient(sample);
 
@@ -84,7 +88,7 @@ void korali::solver::Rprop::runGeneration(void)
 }
 
 // Rprop_plus
-void korali::solver::Rprop::Update_plus(void)
+void Rprop::Update_plus(void)
 {
   for (size_t i = 0; i < _k->_variables.size(); i++)
   {
@@ -110,7 +114,7 @@ void korali::solver::Rprop::Update_plus(void)
 }
 
 // Rprop_minus
-void korali::solver::Rprop::Update_minus(void)
+void Rprop::Update_minus(void)
 {
   for (size_t i = 0; i < _k->_variables.size(); i++)
   {
@@ -124,7 +128,7 @@ void korali::solver::Rprop::Update_minus(void)
 }
 
 // iRprop_plus
-void korali::solver::Rprop::Update_iplus(void)
+void Rprop::Update_iplus(void)
 {
   for (size_t i = 0; i < _k->_variables.size(); i++)
   {
@@ -150,7 +154,7 @@ void korali::solver::Rprop::Update_iplus(void)
 }
 
 // iRprop_minus
-void korali::solver::Rprop::Update_iminus(void)
+void Rprop::Update_iminus(void)
 {
   for (size_t i = 0; i < _k->_variables.size(); i++)
   {
@@ -168,12 +172,12 @@ void korali::solver::Rprop::Update_iminus(void)
   }
 }
 
-void korali::solver::Rprop::printGenerationBefore()
+void Rprop::printGenerationBefore()
 {
   return;
 }
 
-void korali::solver::Rprop::printGenerationAfter()
+void Rprop::printGenerationAfter()
 {
   _k->_logger->logInfo("Normal", "X = [ ");
   for (size_t k = 0; k < _k->_variables.size(); k++) _k->_logger->logData("Normal", " %.5le  ", _currentX[k]);
@@ -190,7 +194,11 @@ void korali::solver::Rprop::printGenerationAfter()
   _k->_logger->logData("Normal", " ]\n");
 }
 
-void korali::solver::Rprop::finalize()
+void Rprop::finalize()
 {
   return;
 }
+
+} // namespace solver
+
+} // namespace korali

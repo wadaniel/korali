@@ -21,7 +21,7 @@ struct Neighbor
 void jacobi(korali::Sample &k)
 {
   int myRank, rankCount;
-  MPI_Comm comm = getKoraliMPIComm();
+  MPI_Comm comm = korali::getKoraliMPIComm();
   MPI_Comm_rank(comm, &myRank);
   MPI_Comm_size(comm, &rankCount);
 

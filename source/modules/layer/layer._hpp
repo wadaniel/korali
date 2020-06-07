@@ -9,7 +9,7 @@
 
 namespace korali
 {
-class Layer : public korali::Module
+class Layer : public Module
 {
   public:
 #ifdef _KORALI_USE_ONEDNN

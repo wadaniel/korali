@@ -10,7 +10,7 @@ namespace korali
 {
 namespace solver
 {
-class DEA : public korali::Solver
+class DEA : public Solver
 {
   private:
   /**
@@ -29,7 +29,7 @@ class DEA : public korali::Solver
   * @brief Update the state of Differential Evolution
   * @param samples Sample evaluations.
  */
-  void updateSolver(std::vector<korali::Sample> &samples);
+  void updateSolver(std::vector<Sample> &samples);
 
   /**
   * @brief Create new set of candidates.

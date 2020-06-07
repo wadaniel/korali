@@ -1,6 +1,6 @@
 include Makefile.conf
 # ==============================================================================
-WARNINGFLAGS += -Wall -Wno-deprecated-declarations -Wno-cast-function-type -Wfatal-errors
+WARNINGFLAGS += -Wall -Wno-deprecated-declarations -Wno-cast-function-type -Wno-parentheses -Wfatal-errors
 
 # ==============================================================================
 CXXFLAGS  = -g $(OPTFLAGS)  $(CXXARCH) $(WARNINGFLAGS)

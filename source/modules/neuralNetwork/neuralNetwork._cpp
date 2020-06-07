@@ -6,7 +6,9 @@
 using namespace dnnl;
 #endif
 
-void korali::NeuralNetwork::initialize()
+namespace korali
+{
+void NeuralNetwork::initialize()
 {
 #ifndef _KORALI_USE_ONEDNN
 
@@ -18,7 +20,7 @@ void korali::NeuralNetwork::initialize()
   _isInitialized = false;
 
   // Creating evaluation lambda function for optimization
-  auto evaluateProposal = [nn = this](korali::Sample &sample) { runSample(sample, nn); };
+  auto evaluateProposal = [nn = this](Sample &sample) { runSample(sample, nn); };
 
   _koraliExperiment["Problem"]["Type"] = "Optimization";
   _koraliExperiment["Problem"]["Objective Function"] = evaluateProposal;
@@ -75,7 +77,7 @@ void korali::NeuralNetwork::initialize()
 #endif
 }
 
-void korali::NeuralNetwork::create()
+void NeuralNetwork::create()
 {
 #ifdef _KORALI_USE_ONEDNN
 
@@ -494,7 +496,7 @@ void korali::NeuralNetwork::create()
   _isInitialized = true;
 }
 
-void korali::NeuralNetwork::updateWeightsAndBias()
+void NeuralNetwork::updateWeightsAndBias()
 {
   if (_isInitialized == false)
     KORALI_LOG_ERROR("The neural network has not been initialized before the update.\n");
@@ -551,7 +553,7 @@ void korali::NeuralNetwork::updateWeightsAndBias()
   _hasPerformedForwardPropagation = false;
 }
 
-void korali::NeuralNetwork::forward()
+void NeuralNetwork::forward()
 {
 #ifdef _KORALI_USE_ONEDNN
 
@@ -581,7 +583,7 @@ void korali::NeuralNetwork::forward()
   _hasPerformedForwardPropagation = true;
 }
 
-void korali::NeuralNetwork::backward()
+void NeuralNetwork::backward()
 {
   if (_operation == "Inference")
     KORALI_LOG_ERROR("Neural network being backward propagated but has not being tagged as training in the 'Operation' setting. \n");
@@ -625,7 +627,7 @@ void korali::NeuralNetwork::backward()
 #endif
 }
 
-void korali::NeuralNetwork::train(size_t stepsToRun)
+void NeuralNetwork::train(const size_t stepsToRun)
 {
   _koraliExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _koraliExperiment._currentGeneration + stepsToRun;
   _koraliEngine.resume(_koraliExperiment);
@@ -635,15 +637,15 @@ void korali::NeuralNetwork::train(size_t stepsToRun)
   _validationParameters = _koraliExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
 
   // Setting input validation data
-  korali::Sample newSample;
+  Sample newSample;
   newSample["Parameters"] = _validationParameters;
-  korali::NeuralNetwork::runSample(newSample, this);
+  NeuralNetwork::runSample(newSample, this);
 
   // Getting results of optimization
   _currentTrainingLoss = -newSample["F(x)"].get<double>();
 }
 
-void korali::NeuralNetwork::runSample(korali::Sample &sample, korali::NeuralNetwork *nn)
+void NeuralNetwork::runSample(Sample &sample, NeuralNetwork *nn)
 {
   // Setting weights and biases
   auto parameters = KORALI_GET(std::vector<double>, sample, "Parameters");
@@ -725,3 +727,5 @@ void korali::NeuralNetwork::runSample(korali::Sample &sample, korali::NeuralNetw
     sample["Gradients"] = gradientVector;
   }
 }
+
+} // namespace korali

@@ -1,11 +1,15 @@
 #include "modules/problem/sampling/sampling.hpp"
 
-void korali::problem::Sampling::initialize()
+namespace korali
+{
+namespace problem
+{
+void Sampling::initialize()
 {
   if (_k->_variables.size() == 0) KORALI_LOG_ERROR("Sampling Evaluation problems require at least one variable.\n");
 }
 
-void korali::problem::Sampling::evaluate(korali::Sample &sample)
+void Sampling::evaluate(Sample &sample)
 {
   sample.run(_probabilityFunction);
 
@@ -16,9 +20,13 @@ void korali::problem::Sampling::evaluate(korali::Sample &sample)
 
   // If result is not a finite number, objective function evaluates to -Infinity
   if (std::isnan(evaluation))
-    sample["P(x)"] = -korali::Inf;
+    sample["P(x)"] = -Inf;
   else
     sample["P(x)"] = evaluation;
 
   sample["F(x)"] = sample["P(x)"];
 }
+
+} // namespace problem
+
+} // namespace korali

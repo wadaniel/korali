@@ -5,7 +5,9 @@
 #include "auxiliar/jsonInterface.hpp"
 #include <string>
 
-bool korali::isEmpty(knlohmann::json &js)
+namespace korali
+{
+bool isEmpty(const knlohmann::json &js)
 {
   bool empty = true;
 
@@ -17,7 +19,6 @@ bool korali::isEmpty(knlohmann::json &js)
     for (size_t i = 0; i < js.size(); i++)
     {
       bool elEmpty = isEmpty(js[i]);
-      if (elEmpty) js.erase(i--);
       empty = empty && elEmpty;
     }
   }
@@ -31,13 +32,12 @@ bool korali::isEmpty(knlohmann::json &js)
       if (elEmpty == true) erasedKeys.push_back(el.key());
       empty = empty && elEmpty;
     }
-    for (size_t i = 0; i < erasedKeys.size(); i++) js.erase(erasedKeys[i]);
   }
 
   return empty;
 }
 
-bool korali::isElemental(knlohmann::json &js)
+bool isElemental(const knlohmann::json &js)
 {
   if (js.is_number()) return true;
   if (js.is_string()) return true;
@@ -61,7 +61,7 @@ bool korali::isElemental(knlohmann::json &js)
   return isArray;
 }
 
-void korali::mergeJson(knlohmann::json &dest, const knlohmann::json &defaults)
+void mergeJson(knlohmann::json &dest, const knlohmann::json &defaults)
 {
   if (dest.is_object() == false)
   {
@@ -85,7 +85,7 @@ void korali::mergeJson(knlohmann::json &dest, const knlohmann::json &defaults)
   }
 }
 
-bool korali::loadJsonFromFile(knlohmann::json &dst, const char *fileName)
+bool loadJsonFromFile(knlohmann::json &dst, const char *fileName)
 {
   FILE *fid = fopen(fileName, "r");
   if (fid != NULL)
@@ -108,7 +108,7 @@ bool korali::loadJsonFromFile(knlohmann::json &dst, const char *fileName)
   return false;
 }
 
-int korali::saveJsonToFile(const char *fileName, knlohmann::json &js)
+int saveJsonToFile(const char *fileName, const knlohmann::json &js)
 {
   FILE *fid = fopen(fileName, "w");
   if (fid != NULL)
@@ -123,3 +123,5 @@ int korali::saveJsonToFile(const char *fileName, knlohmann::json &js)
 
   return 0;
 }
+
+} // namespace korali

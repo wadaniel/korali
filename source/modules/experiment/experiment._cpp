@@ -126,7 +126,12 @@ void Experiment::saveState()
 
 bool Experiment::loadState(const std::string &path)
 {
-  return loadJsonFromFile(_js.getJson(), path.c_str());
+  if (loadJsonFromFile(_js.getJson(), path.c_str()))
+  {
+    initialize();
+    return true;
+  }
+  return false;
 }
 
 Experiment::Experiment()

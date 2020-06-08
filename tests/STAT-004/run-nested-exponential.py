@@ -17,7 +17,7 @@ e["Problem"]["Type"] = "Bayesian/Custom"
 e["Problem"]["Likelihood Model"] = lexponentialCustom
 
 # Configuring Nested Sampling parameters
-e["Solver"]["Type"] = "Nested"
+e["Solver"]["Type"] = "Sampler/Nested"
 e["Solver"]["Number Live Points"] = 1000
 e["Solver"]["Batch Size"] = 1
 e["Solver"]["Add Live Points"] = True

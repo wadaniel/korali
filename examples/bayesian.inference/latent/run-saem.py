@@ -41,9 +41,7 @@ def main():
   e["Problem"]["Zeta Of Likelihood Model"] = distrib1_zeta
   e["Problem"]["Phi Of Likelihood Model"] = distrib1_phi
   e["Problem"]["S Dimension"] = 1
-  e["Problem"][
-      "Latent Variable Sampler"] = lambda sample: gaussian_sampler_obj.sampleLatent(
-          sample)
+  e["Problem"]["Latent Variable Sampler"] = lambda sample: gaussian_sampler_obj.sampleLatent(sample)
 
   e["Solver"]["Type"] = "SAEM"
   e["Solver"]["Number Samples Per Step"] = 10
@@ -59,7 +57,7 @@ def main():
   # define a variable for each coordinate of mu
   for i in range(distrib1._p.nDimensions):
     e["Variables"][1 + i]["Name"] = "mu" + str(i)
-    e["Variables"][1 + i]["Bayesian Type"] = "Sampler/Latent"
+    e["Variables"][1 + i]["Bayesian Type"] = "Latent"
     e["Variables"][1 + i]["Prior Distribution"] = "Uniform 1"
     e["Variables"][1 + i]["Initial Value"] = 0
 

@@ -25,7 +25,7 @@ e["Variables"][0]["Name"] = "X"
 e["Variables"][0]["Lower Bound"] = -1.0
 e["Variables"][0]["Upper Bound"] = +1.0
 
-e["Solver"]["Type"] = "CMAES"
+e["Solver"]["Type"] = "Optimizer/CMAES"
 e["Solver"]["Population Size"] = 4
 e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-15
 e["Solver"]["Termination Criteria"]["Max Generations"] = 100

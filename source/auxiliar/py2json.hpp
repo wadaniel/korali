@@ -140,7 +140,7 @@ inline pybind11::object from_json_impl(const json &j)
     {
       obj.attr("append")(from_json_impl(el));
     }
-    return obj;
+    return std::move(obj);
   }
   else // Object
   {
@@ -149,7 +149,7 @@ inline pybind11::object from_json_impl(const json &j)
     {
       obj[pybind11::str(it.key())] = from_json_impl(it.value());
     }
-    return obj;
+    return std::move(obj);
   }
 }
 

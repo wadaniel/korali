@@ -12,6 +12,7 @@ def create_train_data(n=20, L=2):
 k = korali.Engine()
 e = korali.Experiment()
 
+e['Random Seed'] = 0xC0FFEE
 e['Problem']['Type'] = 'Supervised Learning'
 
 xtrain, ytrain = create_train_data()
@@ -35,7 +36,7 @@ e['Solver']['Optimizer']['Termination Criteria'][
 e['Console Output']['Verbosity'] = 'Normal'
 e['Console Output']['Frequency'] = 10
 e['File Output']['Frequency'] = 100
-e['Random Seed'] = 0xC0FFEE
+e["File Output"]["Path"] = "_korali_result_surrogate"
 
 k.run(e)
 

@@ -7,6 +7,8 @@
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 #include "modules/solver/solver.hpp"
 
+#include <memory>
+
 namespace korali
 {
 namespace solver
@@ -14,6 +16,8 @@ namespace solver
 class GaussianProcess : public Solver
 {
   public:
+  ~GaussianProcess();
+
   /**
   * @brief Korali engine for optimizing NN weights and biases
   */
@@ -22,7 +26,7 @@ class GaussianProcess : public Solver
   /**
   * @brief Pointer to the gaussian processes library
   */
-  libgp::GaussianProcess *_gp;
+  std::unique_ptr<libgp::GaussianProcess> _gp;
 
   /**
   * @brief Korali engine for optimizing the GP's parameters

@@ -32,7 +32,7 @@ e['Variables'][1]['Type'] = 'Output'
 e['Variables'][1]['Training Data'] = ytrain.tolist()
 
 e['Solver']['Type'] = 'Gaussian Process'
-e['Solver']['Covariance Function'] = 'CovSum ( CovSEiso, CovNoise)'
+e['Solver']['Covariance Function'] = 'CovSEiso'
 
 e['Solver']['Optimizer']['Type'] = 'Rprop'
 e['Solver']['Optimizer']['Termination Criteria']['Max Generations'] = 1000
@@ -46,17 +46,18 @@ e['Random Seed'] = 0xC0FFEE
 
 k.run(e)
 
-xtest = np.linspace(-1, 1, 100)
-xtest = xtest.reshape((len(xtest), 1))
-ytest = np.array(e.test(xtest.tolist()))
+show_figure = False
 
-#print(xtest, ytest)
+if show_figure:
+  xtest = np.linspace(-1, 1, 100)
+  xtest = xtest.reshape((len(xtest), 1))
+  ytest = np.array(e.test(xtest.tolist()))
 
-import matplotlib.pyplot as plt
+  import matplotlib.pyplot as plt
 
-fig = plt.figure(0)
-ax = fig.subplots()
+  fig = plt.figure(0)
+  ax = fig.subplots()
 
-ax.plot(xtrain, ytrain, 'ob')
-ax.plot(xtest.flatten(), ytest[:,0], '-r')
-plt.show()
+  ax.plot(xtrain, ytrain, 'ob')
+  ax.plot(xtest.flatten(), ytest[:,0], '-r')
+  plt.show()

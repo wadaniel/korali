@@ -7,6 +7,14 @@ namespace korali
 {
 namespace solver
 {
+static Eigen::VectorXd toEigen(const std::vector<double> &v)
+{
+  Eigen::VectorXd ev(v.size());
+  for (size_t i = 0; i < v.size(); ++i)
+    ev[i] = v[i];
+  return ev;
+}
+
 GaussianProcess::~GaussianProcess() = default;
 
 void GaussianProcess::initialize()
@@ -35,7 +43,7 @@ void GaussianProcess::initialize()
   for (size_t i = 0; i < _gpParameterDimension; i++)
   {
     _koraliExperiment["Variables"][i]["Name"] = "X" + std::to_string(i);
-    eParameters[i] = 0.1;
+    eParameters[i] = _defaultHyperparameter;
     _koraliExperiment["Variables"][i]["Initial Value"] = eParameters[i];
   }
   _gp->covf().set_loghyper(eParameters);
@@ -72,8 +80,7 @@ void GaussianProcess::initialize()
 void GaussianProcess::runSample(Sample &sample, libgp::GaussianProcess *gp)
 {
   size_t gpParameterDimension = gp->covf().get_param_dim();
-  Eigen::VectorXd p(gpParameterDimension);
-  for (size_t i = 0; i < gpParameterDimension; i++) p[i] = sample["Parameters"][i];
+  const Eigen::VectorXd p = toEigen(sample["Parameters"].get<std::vector<double>>());
 
   gp->covf().set_loghyper(p);
 
@@ -87,9 +94,9 @@ void GaussianProcess::runSample(Sample &sample, libgp::GaussianProcess *gp)
 
 void GaussianProcess::runGeneration()
 {
-  _koraliEngine.resume(_koraliExperiment);
-
   _koraliExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _koraliExperiment._currentGeneration + 1;
+  _koraliEngine.resume(_koraliExperiment);
+  _gpHyperparameters = _koraliExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
 }
 
 void GaussianProcess::printGenerationAfter()
@@ -101,6 +108,8 @@ std::vector<std::vector<double>> GaussianProcess::test(const std::vector<std::ve
 {
   size_t inputSize = input.size();
   std::vector<std::vector<double>> output(inputSize, std::vector<double>(2));
+
+  _gp->covf().set_loghyper(toEigen(_gpHyperparameters));
 
   for (size_t i = 0; i < inputSize; i++)
   {

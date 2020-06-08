@@ -11,8 +11,6 @@ namespace korali
 {
 namespace solver
 {
-
-
 typedef struct ellipse_s
 {
   /**
@@ -28,8 +26,8 @@ typedef struct ellipse_s
   /** 
    * @brief Mean vector of samples in ellipse.
    */
-  std::vector<double> mean; 
-  
+  std::vector<double> mean;
+
   /**
     * @brief Covariance Matrix of samples in ellipse.
    */
@@ -50,19 +48,16 @@ typedef struct ellipse_s
    */
   double trueVolume;
 
-
 } ellipse_t;
-
 
 class Nested : public korali::Solver
 {
   private:
-  
   /*
   * @brief Seed for the shuffle randomizer
   */
   size_t _shuffleSeed;
- 
+
   /*
   * @brief Storing ellipses (only relevant for Multi Ellipsoidal sampling).
   */
@@ -132,31 +127,31 @@ class Nested : public korali::Solver
   * @brief Generate posterior distribution from sample data base.
   */
   void generatePosterior();
- 
+
   /*
   * @brief Calculate L2 distance between two vectors.
   */
-   double l2distance(std::vector<double> sampleOne, std::vector<double> sampleTwo) const;
-  
+  double l2distance(std::vector<double> sampleOne, std::vector<double> sampleTwo) const;
+
   /*
   * @brief Applies k-means clustering (k=2) and fills cluster vectors with samples.
   */
-  void kmeansClustering(const ellipse_t & parent, size_t maxIter, ellipse_t & childOne, ellipse_t & childTwo) const;
- 
+  void kmeansClustering(const ellipse_t &parent, size_t maxIter, ellipse_t &childOne, ellipse_t &childTwo) const;
+
   /*
   * @brief Udates the mean vector of ellipse argument.
   */
-  void updateEllipseMean(ellipse_t & ellipse) const;
- 
+  void updateEllipseMean(ellipse_t &ellipse) const;
+
   /*
   * @brief Udates the covariance matrix of input ellipse.
   */
-  void updateEllipseCov(ellipse_t & ellipse) const;
- 
+  void updateEllipseCov(ellipse_t &ellipse) const;
+
   /*
   * @brief Udates volume and enlargement factor of the ellipse.
   */
-  void updateEllipseVolume(ellipse_t & ellipse) const;
+  void updateEllipseVolume(ellipse_t &ellipse) const;
 
   /*
   * @brief Calculate effective number of samples.

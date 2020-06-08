@@ -11,8 +11,8 @@ assert found
 def model(sample):
   x = sample["Parameters"][0]
   y = surrogate.test([[x]])
-  sample["F(x)"] = y[0,0]
-
+  # minus because we maximize
+  sample["F(x)"] = -y[0,0]
 
 k = korali.Engine()
 e = korali.Experiment()
@@ -36,16 +36,3 @@ e['File Output']['Frequency'] = 100
 e["File Output"]["Path"] = "_korali_result_cmaes"
 
 k.run(e)
-
-x = np.linspace(-1, 1, 1000)
-xtest = [[i] for i in x.tolist()]
-ytest = e.test(xtest)
-
-import matplotlib.pyplot as plt
-
-fig = plt.figure(0)
-ax = fig.add_subplots()
-
-ax.plot(xtrain, ytrain, 'ob')
-ax.plot(xtest, ytest, '-r')
-plt.show()

@@ -11,7 +11,7 @@ from os.path import isfile, join
 
 def create_train_data(n=20, L=2):
   """ create synthetic data to train on """
-  x = np.linspace(-L/2, L/2)
+  x = np.linspace(-L/2, L/2, n)
   y = x**2
   return x, y
 
@@ -46,11 +46,11 @@ e['Random Seed'] = 0xC0FFEE
 
 k.run(e)
 
-xtest = np.linspace(-1, 1, 1000)
+xtest = np.linspace(-1, 1, 100)
 xtest = xtest.reshape((len(xtest), 1))
 ytest = np.array(e.test(xtest.tolist()))
 
-print(ytest.shape)
+#print(xtest, ytest)
 
 import matplotlib.pyplot as plt
 

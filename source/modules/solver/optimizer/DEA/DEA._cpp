@@ -1,7 +1,7 @@
 #include "modules/conduit/conduit.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/problem.hpp"
-#include "modules/solver/DEA/DEA.hpp"
+#include "modules/solver/optimizer/DEA/DEA.hpp"
 
 #include <algorithm>
 #include <chrono>
@@ -12,6 +12,8 @@
 namespace korali
 {
 namespace solver
+{
+namespace optimizer
 {
 void DEA::setInitialConfiguration()
 {
@@ -320,6 +322,8 @@ void DEA::finalize()
   for (size_t d = 0; d < _k->_variables.size(); ++d) _k->_logger->logData("Minimal", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverVariables[d]);
   _k->_logger->logInfo("Minimal", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
 }
+
+} // namespace optimizer
 
 } // namespace solver
 

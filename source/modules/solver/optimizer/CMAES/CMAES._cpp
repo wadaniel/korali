@@ -1,5 +1,5 @@
 #include "modules/conduit/conduit.hpp"
-#include "modules/solver/CMAES/CMAES.hpp"
+#include "modules/solver/optimizer/CMAES/CMAES.hpp"
 #include "sample/sample.hpp"
 
 #include <algorithm> // std::sort
@@ -11,6 +11,8 @@
 namespace korali
 {
 namespace solver
+{
+namespace optimizer
 {
 void CMAES::setInitialConfiguration()
 {
@@ -94,16 +96,16 @@ void CMAES::setInitialConfiguration()
   // Initializing variable defaults
   for (size_t i = 0; i < _k->_variables.size(); i++)
   {
-    if (std::isfinite(_k->_variables[i]->_initialMean) == false)
+    if (std::isfinite(_k->_variables[i]->_initialValue) == false)
     {
-      if (std::isfinite(_k->_variables[i]->_lowerBound) == false) KORALI_LOG_ERROR("Initial Mean of variable \'%s\' not defined, and cannot be inferred because variable lower bound is not finite.\n", _k->_variables[i]->_name.c_str());
-      if (std::isfinite(_k->_variables[i]->_upperBound) == false) KORALI_LOG_ERROR("Initial Mean of variable \'%s\' not defined, and cannot be inferred because variable upper bound is not finite.\n", _k->_variables[i]->_name.c_str());
-      _k->_variables[i]->_initialMean = (_k->_variables[i]->_upperBound + _k->_variables[i]->_lowerBound) * 0.5;
+      if (std::isfinite(_k->_variables[i]->_lowerBound) == false) KORALI_LOG_ERROR("Initial (Mean) Value of variable \'%s\' not defined, and cannot be inferred because variable lower bound is not finite.\n", _k->_variables[i]->_name.c_str());
+      if (std::isfinite(_k->_variables[i]->_upperBound) == false) KORALI_LOG_ERROR("Initial (Mean) Value of variable \'%s\' not defined, and cannot be inferred because variable upper bound is not finite.\n", _k->_variables[i]->_name.c_str());
+      _k->_variables[i]->_initialValue = (_k->_variables[i]->_upperBound + _k->_variables[i]->_lowerBound) * 0.5;
     }
 
     if (std::isfinite(_k->_variables[i]->_initialStandardDeviation) == false)
     {
-      if (std::isfinite(_k->_variables[i]->_lowerBound) == false) KORALI_LOG_ERROR("Initial Mean of variable \'%s\' not defined, and cannot be inferred because variable lower bound is not finite.\n", _k->_variables[i]->_name.c_str());
+      if (std::isfinite(_k->_variables[i]->_lowerBound) == false) KORALI_LOG_ERROR("Initial (Mean) Value of variable \'%s\' not defined, and cannot be inferred because variable lower bound is not finite.\n", _k->_variables[i]->_name.c_str());
       if (std::isfinite(_k->_variables[i]->_upperBound) == false) KORALI_LOG_ERROR("Initial Standard Deviation \'%s\' not defined, and cannot be inferred because variable upper bound is not finite.\n", _k->_variables[i]->_name.c_str());
       _k->_variables[i]->_initialStandardDeviation = (_k->_variables[i]->_upperBound - _k->_variables[i]->_lowerBound) * 0.3;
     }
@@ -161,7 +163,7 @@ void CMAES::setInitialConfiguration()
 
   _conjugateEvolutionPathL2Norm = 0.0;
 
-  for (size_t i = 0; i < _k->_variables.size(); i++) _currentMean[i] = _previousMean[i] = _k->_variables[i]->_initialMean;
+  for (size_t i = 0; i < _k->_variables.size(); i++) _currentMean[i] = _previousMean[i] = _k->_variables[i]->_initialValue;
 
   _currentMinStandardDeviation = +std::numeric_limits<double>::infinity();
   _currentMaxStandardDeviation = -std::numeric_limits<double>::infinity();
@@ -972,6 +974,8 @@ void CMAES::finalize()
   }
   _k->_logger->logInfo("Minimal", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
 }
+
+} // namespace optimizer
 
 } // namespace solver
 

@@ -1,9 +1,11 @@
 #include "modules/conduit/conduit.hpp"
-#include "modules/solver/Adam/Adam.hpp"
+#include "modules/solver/optimizer/Adam/Adam.hpp"
 
 namespace korali
 {
 namespace solver
+{
+namespace optimizer
 {
 void Adam::setInitialConfiguration()
 {
@@ -105,6 +107,8 @@ void Adam::printGenerationAfter()
 {
   _k->_logger->logInfo("Normal", "Finished generation %lu...\n", _k->_currentGeneration);
 }
+
+} // namespace optimizer
 
 } // namespace solver
 

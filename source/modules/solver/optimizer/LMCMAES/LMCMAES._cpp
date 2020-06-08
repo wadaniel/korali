@@ -1,5 +1,5 @@
 #include "modules/conduit/conduit.hpp"
-#include "modules/solver/LMCMAES/LMCMAES.hpp"
+#include "modules/solver/optimizer/LMCMAES/LMCMAES.hpp"
 #include "sample/sample.hpp"
 
 #include <algorithm> // std::sort
@@ -11,6 +11,8 @@
 namespace korali
 {
 namespace solver
+{
+namespace optimizer
 {
 void LMCMAES::setInitialConfiguration()
 {
@@ -77,11 +79,11 @@ void LMCMAES::setInitialConfiguration()
     //        KORALI_LOG_ERROR("Lower and/or upper bound of variable \'%s\' is not defined.\n", _k->_variables[i]->_name.c_str());
 
     /* init mean if not defined */
-    if (std::isfinite(_k->_variables[i]->_initialMean) == false)
+    if (std::isfinite(_k->_variables[i]->_initialValue) == false)
     {
-      if (std::isfinite(_k->_variables[i]->_lowerBound) == false) KORALI_LOG_ERROR("Initial Mean of variable \'%s\' not defined, and cannot be inferred because variable lower bound is not finite.\n", _k->_variables[i]->_name.c_str());
-      if (std::isfinite(_k->_variables[i]->_upperBound) == false) KORALI_LOG_ERROR("Initial Mean of variable \'%s\' not defined, and cannot be inferred because variable upper bound is not finite.\n", _k->_variables[i]->_name.c_str());
-      _k->_variables[i]->_initialMean = (_k->_variables[i]->_upperBound + _k->_variables[i]->_lowerBound) * 0.5;
+      if (std::isfinite(_k->_variables[i]->_lowerBound) == false) KORALI_LOG_ERROR("Initial (Mean) Value of variable \'%s\' not defined, and cannot be inferred because variable lower bound is not finite.\n", _k->_variables[i]->_name.c_str());
+      if (std::isfinite(_k->_variables[i]->_upperBound) == false) KORALI_LOG_ERROR("Initial (Mean) Value of variable \'%s\' not defined, and cannot be inferred because variable upper bound is not finite.\n", _k->_variables[i]->_name.c_str());
+      _k->_variables[i]->_initialValue = (_k->_variables[i]->_upperBound + _k->_variables[i]->_lowerBound) * 0.5;
     }
 
     /* calculate stddevs */
@@ -137,7 +139,7 @@ void LMCMAES::setInitialConfiguration()
   _bestEverValue = -std::numeric_limits<double>::infinity();
   _sqrtInverseCholeskyRate = std::sqrt(1.0 - _choleskyMatrixLearningRate);
 
-  for (size_t i = 0; i < _k->_variables.size(); i++) _currentMean[i] = _previousMean[i] = _k->_variables[i]->_initialMean;
+  for (size_t i = 0; i < _k->_variables.size(); i++) _currentMean[i] = _previousMean[i] = _k->_variables[i]->_initialValue;
 }
 
 void LMCMAES::runGeneration()
@@ -459,6 +461,8 @@ void LMCMAES::finalize()
   for (size_t d = 0; d < _k->_variables.size(); ++d) _k->_logger->logData("Minimal", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverVariables[d]);
   _k->_logger->logInfo("Detailed", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
 }
+
+} // namespace optimizer
 
 } // namespace solver
 

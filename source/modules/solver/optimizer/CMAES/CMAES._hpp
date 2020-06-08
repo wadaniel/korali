@@ -3,14 +3,16 @@
 
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
-#include "modules/solver/solver.hpp"
+#include "modules/solver/optimizer/optimizer.hpp"
 #include <vector>
 
 namespace korali
 {
 namespace solver
 {
-class CMAES : public Solver
+namespace optimizer
+{
+class CMAES : public Optimizer
 {
   private:
   /**
@@ -136,6 +138,7 @@ class CMAES : public Solver
   void finalize() override;
 };
 
+} // namespace optimizer
 } // namespace solver
 } // namespace korali
 

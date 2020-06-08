@@ -1,13 +1,15 @@
 #include "modules/conduit/conduit.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/problem.hpp"
-#include "modules/solver/Rprop/Rprop.hpp"
+#include "modules/solver/optimizer/Rprop/Rprop.hpp"
 
 #include <stdio.h>
 
 namespace korali
 {
 namespace solver
+{
+namespace optimizer
 {
 void Rprop::setInitialConfiguration()
 {
@@ -198,6 +200,8 @@ void Rprop::finalize()
 {
   return;
 }
+
+} // namespace optimizer
 
 } // namespace solver
 

@@ -1,13 +1,15 @@
-#ifndef _KORALI_SOLVER_ADAM_HPP_
-#define _KORALI_SOLVER_ADAM_HPP_
+#ifndef _KORALI_SOLVER_GRIDSEARCH_HPP_
+#define _KORALI_SOLVER_GRIDSEARCH_HPP_
 
-#include "modules/solver/solver.hpp"
+#include "modules/solver/optimizer/optimizer.hpp"
 
 namespace korali
 {
 namespace solver
 {
-class Adam : public Solver
+namespace optimizer
+{
+class GridSearch : public Optimizer
 {
   public:
   void setInitialConfiguration() override;
@@ -16,7 +18,8 @@ class Adam : public Solver
   void printGenerationAfter() override;
 };
 
+} // namespace optimizer
 } // namespace solver
 } // namespace korali
 
-#endif // _KORALI_SOLVER_ADAM_HPP_
+#endif // _KORALI_SOLVER_GRIDSEARCH_HPP_

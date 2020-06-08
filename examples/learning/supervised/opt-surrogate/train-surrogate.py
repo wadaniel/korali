@@ -1,20 +1,13 @@
 #!/usr/bin/env python3
 
-import os
-import sys
-import csv
 import korali
 import numpy as np
-
-from os import listdir
-from os.path import isfile, join
 
 def create_train_data(n=20, L=2):
   """ create synthetic data to train on """
   x = np.linspace(-L/2, L/2, n)
   y = x**2
   return x, y
-
 
 k = korali.Engine()
 e = korali.Experiment()

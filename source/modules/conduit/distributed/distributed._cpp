@@ -172,9 +172,8 @@ void Distributed::workerThread()
 
 void Distributed::processSample(Sample &sample)
 {
-  Engine *engine = _engineStack.top();
-
 #ifdef _KORALI_USE_MPI
+  Engine *engine = _engineStack.top();
 
   int teamId = -1;
 

@@ -75,7 +75,6 @@ void Rprop::runGeneration(void)
   if (_currentEvaluation < _bestEvaluation)
   {
     _bestEvaluation = _currentEvaluation;
-    (*_k)["Results"]["Best Sample"] = sample._js.getJson();
 
     std::vector<double> tmp(_k->_variables.size());
     for (size_t j = 0; j < _k->_variables.size(); j++) tmp[j] = _bestX[j] - _currentX[j];
@@ -87,6 +86,7 @@ void Rprop::runGeneration(void)
   {
     _maxStallCounter++;
   }
+  (*_k)["Results"]["Best Sample"] = sample._js.getJson();
 }
 
 // Rprop_plus

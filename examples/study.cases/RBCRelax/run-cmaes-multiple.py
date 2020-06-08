@@ -44,7 +44,7 @@ for i in range(len(expNames)):
  e["Problem"]["Reference Data"]   = getReferenceData(expNames[i])
 
  # Configuring CMA-ES parameters
- e["Solver"]["Type"] = "CMAES"
+ e["Solver"]["Type"] = "Optimizer/CMAES"
  e["Solver"]["Population Size"] = 8 
  e["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
@@ -62,12 +62,12 @@ for i in range(len(expNames)):
  # Configuring the problem's variables 
  e["Variables"][0]["Name"] = "gammaC"
  e["Variables"][0]["Prior Distribution"] = "Uniform 0"
- e["Variables"][0]["Initial Mean"] = 16000
+ e["Variables"][0]["Initial Value"] = 16000
  e["Variables"][0]["Initial Standard Deviation"] = 7200
 
  e["Variables"][1]["Name"] = "[Sigma]"
  e["Variables"][1]["Prior Distribution"] = "Uniform 1"
- e["Variables"][1]["Initial Mean"] = 0.5
+ e["Variables"][1]["Initial Value"] = 0.5
  e["Variables"][1]["Initial Standard Deviation"] = 0.66
 
  # General Settings

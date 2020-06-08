@@ -185,13 +185,12 @@ void CMAES::runGeneration()
   std::vector<Sample> samples(_currentPopulationSize);
   for (size_t i = 0; i < _currentPopulationSize; i++)
   {
+    if (_hasDiscreteVariables) discretize(_samplePopulation[i]);
 
-   if (_hasDiscreteVariables) discretize(_samplePopulation[i]);
-
-   samples[i]["Module"] = "Problem";
-   samples[i]["Operation"] = "Evaluate";
-   samples[i]["Parameters"] = _samplePopulation[i];
-   samples[i]["Sample Id"] = i;
+    samples[i]["Module"] = "Problem";
+    samples[i]["Operation"] = "Evaluate";
+    samples[i]["Parameters"] = _samplePopulation[i];
+    samples[i]["Sample Id"] = i;
     _modelEvaluationCount++;
 
     _conduit->start(samples[i]);
@@ -371,8 +370,7 @@ void CMAES::reEvaluateConstraints()
   for (size_t i = 0; i < _currentPopulationSize; ++i)
     if (_sampleConstraintViolationCounts[i] > 0)
     {
-
-     if (_hasDiscreteVariables) discretize(_samplePopulation[i]);
+      if (_hasDiscreteVariables) discretize(_samplePopulation[i]);
 
       Sample sample;
       sample["Sample Id"] = 0;
@@ -430,15 +428,15 @@ void CMAES::prepareGeneration()
     bool isFeasible;
     do
     {
-      _infeasibleSampleCount++;
       sampleSingle(i);
 
       if (_hasDiscreteVariables) discretize(_samplePopulation[i]);
 
       isFeasible = isSampleFeasible(_samplePopulation[i]);
-    } while (isFeasible == false);
 
-    _infeasibleSampleCount--;
+      if (isFeasible == false) _infeasibleSampleCount++;
+
+    } while (isFeasible == false);
   }
 }
 
@@ -817,7 +815,7 @@ void CMAES::discretize(std::vector<double> &sample)
 
   for (size_t d = 0; d < _k->_variables.size(); ++d)
     if (_k->_variables[d]->_granularity != 0.0)
-     sample[d] = std::round(sample[d] / _k->_variables[d]->_granularity) * _k->_variables[d]->_granularity;
+      sample[d] = std::round(sample[d] / _k->_variables[d]->_granularity) * _k->_variables[d]->_granularity;
 }
 
 void CMAES::updateEigensystem(std::vector<double> &M)

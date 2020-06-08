@@ -112,8 +112,6 @@ void DEA::prepareGeneration()
         isFeasible = isSampleFeasible(_candidatePopulation[i]);
         if (isFeasible == false) _infeasibleSampleCount++;
       } while (isFeasible == false);
-
-      _infeasibleSampleCount--;
     }
   _previousValueVector = _valueVector;
 }

@@ -172,13 +172,11 @@ void LMCMAES::prepareGeneration()
     bool isFeasible;
     do
     {
-     isFeasible = isSampleFeasible(_samplePopulation[i]);
+      isFeasible = isSampleFeasible(_samplePopulation[i]);
 
       if (isFeasible == false) _infeasibleSampleCount++;
 
     } while (isFeasible == false);
-
-    _infeasibleSampleCount--;
   }
 }
 

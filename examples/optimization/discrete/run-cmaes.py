@@ -21,7 +21,7 @@ e["Problem"]["Objective Function"] = model
 # Creating 10 variables and setting their CMA-ES bounds
 for i in range(10):
   e["Variables"][i]["Name"] = "X" + str(i)
-  e["Variables"][i]["Initial Mean"] = 1.0
+  e["Variables"][i]["Initial Value"] = 1.0
   e["Variables"][i]["Lower Bound"] = -19.0
   e["Variables"][i]["Upper Bound"] = +21.0
 

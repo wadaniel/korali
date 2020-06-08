@@ -24,7 +24,7 @@ e["Problem"]["Objective Function"] = model
 e["Variables"][0]["Name"] = "X"
 e["Variables"][0]["Lower Bound"] = -10.0
 e["Variables"][0]["Upper Bound"] = +10.0
-e["Variables"][0]["Initial Mean"] = +0.0
+e["Variables"][0]["Initial Value"] = +0.0
 e["Variables"][0]["Initial Standard Deviation"] = +2.0
 
 # Configuring CMA-ES parameters

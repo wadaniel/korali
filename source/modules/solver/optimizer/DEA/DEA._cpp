@@ -103,30 +103,15 @@ void DEA::prepareGeneration()
   if (_k->_currentGeneration > 1)
     for (size_t i = 0; i < _populationSize; ++i)
     {
-      bool isSampleFeasible = true;
+      bool isFeasible = true;
       do
       {
-        _infeasibleSampleCount++;
         mutateSingle(i);
-        if (_fixInfeasible && isSampleFeasible == false) fixInfeasible(i);
-        Sample sample;
-        sample["Sample Id"] = 0;
-        sample["Module"] = "Problem";
-        sample["Parameters"] = _candidatePopulation[i];
-        sample["Operation"] = "Check Feasibility";
-        _conduit->start(sample);
-        _conduit->wait(sample);
+        if (_fixInfeasible && isFeasible == false) fixInfeasible(i);
 
-        try
-        {
-          isSampleFeasible = sample["Is Feasible"];
-        }
-        catch (const std::exception &e)
-        {
-          KORALI_LOG_ERROR("DEA: Dev Error: Missing or incorrect value of 'Is Feasible' returned by the sample evaluation. \n   + Solution: Make sure the problem module defines this value.\n   + Cause: %s\n", e.what());
-        }
-
-      } while (isSampleFeasible == false);
+        isFeasible = isSampleFeasible(_candidatePopulation[i]);
+        if (isFeasible == false) _infeasibleSampleCount++;
+      } while (isFeasible == false);
 
       _infeasibleSampleCount--;
     }

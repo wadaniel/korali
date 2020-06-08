@@ -83,7 +83,7 @@ We choose the solver `CMAES`, set the population size to be `32` and two termina
 
 .. code-block:: python
 
-    e["Solver"]["Type"] = "CMAES"
+    e["Solver"]["Type"] = "Optimizer/CMAES"
     e["Solver"]["Population Size"] = 32
     e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-7
     e["Solver"]["Termination Criteria"]["Max Generations"] = 100

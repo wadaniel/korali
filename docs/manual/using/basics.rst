@@ -82,7 +82,7 @@ It is possible, however, to choose another solver to solve a given problem, simp
  
 .. code-block:: python
 
-   k["Solver"]["Type"] = "CMAES"
+   k["Solver"]["Type"] = "Optimizer/CMAES"
    
 Solver Configuration
 ---------------------------------

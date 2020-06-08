@@ -189,7 +189,7 @@ Next, we choose the solver `CMA-ES`, the population size to be `24`.
 
 .. code-block:: python
 
-    e["Solver"]["Type"] = "CMAES"
+    e["Solver"]["Type"] = "Optimizer/CMAES"
     e["Solver"]["Population Size"] = 24
 
 And activating one of its available termination criteria.

@@ -25,7 +25,7 @@ for i in range(8):
       sampleData, getReferencePoints())
 
   # Configuring CMA-ES parameters
-  e["Solver"]["Type"] = "CMAES"
+  e["Solver"]["Type"] = "Optimizer/CMAES"
   e["Solver"]["Population Size"] = 24
   e["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
@@ -48,17 +48,17 @@ for i in range(8):
   # Configuring the problem's variables
   e["Variables"][0]["Name"] = "a"
   e["Variables"][0]["Prior Distribution"] = "Uniform 0"
-  e["Variables"][0]["Initial Mean"] = +0.0
+  e["Variables"][0]["Initial Value"] = +0.0
   e["Variables"][0]["Initial Standard Deviation"] = +1.0
 
   e["Variables"][1]["Name"] = "b"
   e["Variables"][1]["Prior Distribution"] = "Uniform 1"
-  e["Variables"][1]["Initial Mean"] = +0.0
+  e["Variables"][1]["Initial Value"] = +0.0
   e["Variables"][1]["Initial Standard Deviation"] = +1.0
 
   e["Variables"][2]["Name"] = "[Sigma]"
   e["Variables"][2]["Prior Distribution"] = "Uniform 2"
-  e["Variables"][2]["Initial Mean"] = +2.5
+  e["Variables"][2]["Initial Value"] = +2.5
   e["Variables"][2]["Initial Standard Deviation"] = +0.5
 
   # Setting distinct experiment paths

@@ -14,13 +14,6 @@ class Bayesian : public korali::Problem
   void initialize() override;
 
   /**
-  * @brief Checks whether the proposed sample fits within the range of the prior distribution.
-  * @param sample A Korali Sample
-  * @return True, if feasible; false, otherwise.
- */
-  bool isSampleFeasible(korali::Sample &sample);
-
-  /**
    * @brief Produces a generic evaluation from the Posterior distribution of the sample, for optimization with CMAES, DEA, storing it in and stores it in sample["F(x)"].
    * @param sample A Korali Sample
   */

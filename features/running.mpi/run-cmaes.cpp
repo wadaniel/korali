@@ -62,40 +62,40 @@ int main(int argc, char *argv[])
 
   e["Variables"][0]["Name"] = "X0";
   e["Variables"][0]["Prior Distribution"] = "Uniform 0";
-  e["Variables"][0]["Initial Mean"] = +2.0;
+  e["Variables"][0]["Initial Value"] = +2.0;
   e["Variables"][0]["Initial Standard Deviation"] = +1.0;
 
   e["Variables"][1]["Name"] = "X1";
   e["Variables"][1]["Prior Distribution"] = "Uniform 1";
-  e["Variables"][1]["Initial Mean"] = -2.0;
+  e["Variables"][1]["Initial Value"] = -2.0;
   e["Variables"][1]["Initial Standard Deviation"] = +1.0;
 
   e["Variables"][2]["Name"] = "Y0";
   e["Variables"][2]["Prior Distribution"] = "Uniform 2";
-  e["Variables"][2]["Initial Mean"] = +4.0;
+  e["Variables"][2]["Initial Value"] = +4.0;
   e["Variables"][2]["Initial Standard Deviation"] = +1.0;
 
   e["Variables"][3]["Name"] = "Y1";
   e["Variables"][3]["Prior Distribution"] = "Uniform 3";
-  e["Variables"][3]["Initial Mean"] = -2.0;
+  e["Variables"][3]["Initial Value"] = -2.0;
   e["Variables"][3]["Initial Standard Deviation"] = +1.0;
 
   e["Variables"][4]["Name"] = "Z0";
   e["Variables"][4]["Prior Distribution"] = "Uniform 4";
-  e["Variables"][4]["Initial Mean"] = +5.0;
+  e["Variables"][4]["Initial Value"] = +5.0;
   e["Variables"][4]["Initial Standard Deviation"] = +1.0;
 
   e["Variables"][5]["Name"] = "Z1";
   e["Variables"][5]["Prior Distribution"] = "Uniform 5";
-  e["Variables"][5]["Initial Mean"] = +0.0;
+  e["Variables"][5]["Initial Value"] = +0.0;
   e["Variables"][5]["Initial Standard Deviation"] = +1.0;
 
   e["Variables"][6]["Name"] = "[Sigma]";
   e["Variables"][6]["Prior Distribution"] = "Uniform 6";
-  e["Variables"][6]["Initial Mean"] = +10.0;
+  e["Variables"][6]["Initial Value"] = +10.0;
   e["Variables"][6]["Initial Standard Deviation"] = +1.0;
 
-  e["Solver"]["Type"] = "CMAES";
+  e["Solver"]["Type"] = "Optimizer/CMAES";
   e["Solver"]["Population Size"] = 16;
   e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-7;
   e["Solver"]["Termination Criteria"]["Max Generations"] = 10;

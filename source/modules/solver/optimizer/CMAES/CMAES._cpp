@@ -185,13 +185,15 @@ void CMAES::runGeneration()
   std::vector<Sample> samples(_currentPopulationSize);
   for (size_t i = 0; i < _currentPopulationSize; i++)
   {
-    samples[i]["Module"] = "Problem";
-    samples[i]["Operation"] = "Evaluate";
-    samples[i]["Parameters"] = _samplePopulation[i];
-    samples[i]["Sample Id"] = i;
+
+   if (_hasDiscreteVariables) discretize(_samplePopulation[i]);
+
+   samples[i]["Module"] = "Problem";
+   samples[i]["Operation"] = "Evaluate";
+   samples[i]["Parameters"] = _samplePopulation[i];
+   samples[i]["Sample Id"] = i;
     _modelEvaluationCount++;
 
-    if (_hasDiscreteVariables) discretize(samples[i]);
     _conduit->start(samples[i]);
   }
 
@@ -288,13 +290,14 @@ void CMAES::checkMeanAndSetRegime()
 {
   if (_isViabilityRegime == false) return; /* mean already inside valid domain, no udpates */
 
+  if (_hasDiscreteVariables) discretize(_currentMean);
+
   Sample sample;
   sample["Sample Id"] = 0;
   sample["Parameters"] = _currentMean;
   sample["Module"] = "Problem";
   sample["Operation"] = "Evaluate Constraints";
 
-  if (_hasDiscreteVariables) discretize(sample);
   _conduit->start(sample);
   _conduit->wait(sample);
   _constraintEvaluationCount++;
@@ -324,13 +327,14 @@ void CMAES::updateConstraints()
   {
     _sampleConstraintViolationCounts[i] = 0;
 
+    if (_hasDiscreteVariables) discretize(_samplePopulation[i]);
+
     Sample sample;
     sample["Sample Id"] = 0;
     sample["Parameters"] = _samplePopulation[i];
     sample["Module"] = "Problem";
     sample["Operation"] = "Evaluate Constraints";
 
-    if (_hasDiscreteVariables) discretize(sample);
     _conduit->start(sample);
     _conduit->wait(sample);
     _constraintEvaluationCount++;
@@ -367,13 +371,15 @@ void CMAES::reEvaluateConstraints()
   for (size_t i = 0; i < _currentPopulationSize; ++i)
     if (_sampleConstraintViolationCounts[i] > 0)
     {
+
+     if (_hasDiscreteVariables) discretize(_samplePopulation[i]);
+
       Sample sample;
       sample["Sample Id"] = 0;
       sample["Parameters"] = _samplePopulation[i];
       sample["Module"] = "Problem";
       sample["Operation"] = "Evaluate Constraints";
 
-      if (_hasDiscreteVariables) discretize(sample);
       _conduit->start(sample);
       _conduit->wait(sample);
       _constraintEvaluationCount++;
@@ -421,24 +427,16 @@ void CMAES::prepareGeneration()
 
   for (size_t i = 0; i < _currentPopulationSize; ++i)
   {
-    bool isSampleFeasible;
+    bool isFeasible;
     do
     {
       _infeasibleSampleCount++;
       sampleSingle(i);
-      Sample sample;
-      sample["Sample Id"] = 0;
-      sample["Parameters"] = _samplePopulation[i];
-      sample["Module"] = "Problem";
-      sample["Operation"] = "Check Feasibility";
 
-      if (_hasDiscreteVariables) discretize(sample);
-      _conduit->start(sample);
-      _conduit->wait(sample);
+      if (_hasDiscreteVariables) discretize(_samplePopulation[i]);
 
-      isSampleFeasible = KORALI_GET(bool, sample, "Is Feasible");
-
-    } while (isSampleFeasible == false);
+      isFeasible = isSampleFeasible(_samplePopulation[i]);
+    } while (isFeasible == false);
 
     _infeasibleSampleCount--;
   }
@@ -753,7 +751,7 @@ void CMAES::handleConstraints()
       if (_sampleConstraintViolationCounts[i] > 0)
       {
         Sample sample;
-        bool isSampleFeasible;
+        bool isFeasible;
 
         do
         {
@@ -767,18 +765,10 @@ void CMAES::handleConstraints()
             return;
           }
 
-          sample["Sample Id"] = 0;
-          sample["Parameters"] = _samplePopulation[i];
-          sample["Module"] = "Problem";
-          sample["Operation"] = "Check Feasibility";
+          if (_hasDiscreteVariables) discretize(_samplePopulation[i]);
+          isFeasible = isSampleFeasible(_samplePopulation[i]);
 
-          if (_hasDiscreteVariables) discretize(sample);
-          _conduit->start(sample);
-          _conduit->wait(sample);
-
-          isSampleFeasible = KORALI_GET(bool, sample, "Is Feasible");
-
-        } while (isSampleFeasible == false);
+        } while (isFeasible == false);
       }
 
     reEvaluateConstraints();
@@ -820,16 +810,14 @@ void CMAES::updateDiscreteMutationMatrix()
   std::fill(std::begin(_discreteMutations), std::end(_discreteMutations), 0.0);
 }
 
-void CMAES::discretize(Sample &sample)
+void CMAES::discretize(std::vector<double> &sample)
 {
-  auto parameters = KORALI_GET(std::vector<double>, sample, "Parameters");
-
-  if (parameters.size() != _k->_variables.size())
-    KORALI_LOG_ERROR("Size of sample's parameter vector (%lu) is different from the number of problem variables.\n", parameters.size(), _k->_variables.size());
+  if (sample.size() != _k->_variables.size())
+    KORALI_LOG_ERROR("Size of sample's parameter vector (%lu) is different from the number of problem variables.\n", sample.size(), _k->_variables.size());
 
   for (size_t d = 0; d < _k->_variables.size(); ++d)
     if (_k->_variables[d]->_granularity != 0.0)
-      sample["Parameters"][d] = std::round(parameters[d] / _k->_variables[d]->_granularity) * _k->_variables[d]->_granularity;
+     sample[d] = std::round(sample[d] / _k->_variables[d]->_granularity) * _k->_variables[d]->_granularity;
 }
 
 void CMAES::updateEigensystem(std::vector<double> &M)

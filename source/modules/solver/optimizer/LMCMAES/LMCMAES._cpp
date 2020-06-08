@@ -169,22 +169,14 @@ void LMCMAES::prepareGeneration()
 {
   for (size_t i = 0; i < _populationSize; ++i)
   {
-    bool isSampleFeasible;
+    bool isFeasible;
     do
     {
-      _infeasibleSampleCount++;
-      sampleSingle(i);
-      Sample sample;
-      sample["Sample Id"] = 0;
-      sample["Module"] = "Problem";
-      sample["Parameters"] = _samplePopulation[i];
-      sample["Operation"] = "Check Feasibility";
-      _conduit->start(sample);
-      _conduit->wait(sample);
+     isFeasible = isSampleFeasible(_samplePopulation[i]);
 
-      isSampleFeasible = KORALI_GET(bool, sample, "Is Feasible");
+      if (isFeasible == false) _infeasibleSampleCount++;
 
-    } while (isSampleFeasible == false);
+    } while (isFeasible == false);
 
     _infeasibleSampleCount--;
   }

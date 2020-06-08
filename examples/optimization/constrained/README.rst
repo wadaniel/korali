@@ -125,7 +125,7 @@ We choose the solver `CMA-ES`,
 
 .. code-block:: python
 
-    e["Solver"]["Type"] = "CMAES"
+    e["Solver"]["Type"] = "Optimizer/CMAES"
 
 Then we set a few parameters for CCMA-ES,
 

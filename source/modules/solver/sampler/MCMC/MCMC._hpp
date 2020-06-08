@@ -3,14 +3,16 @@
 
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
-#include "modules/solver/solver.hpp"
+#include "modules/solver/sampler/sampler.hpp"
 #include <vector>
 
 namespace korali
 {
 namespace solver
 {
-class MCMC : public Solver
+namespace sampler
+{
+class MCMC : public Sampler
 {
   private:
   /**
@@ -69,6 +71,7 @@ class MCMC : public Solver
   void printGenerationAfter() override;
 };
 
+} // namespace sampler
 } // namespace solver
 } // namespace korali
 

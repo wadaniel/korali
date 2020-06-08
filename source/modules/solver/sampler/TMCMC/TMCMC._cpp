@@ -1,6 +1,6 @@
 #include "modules/conduit/conduit.hpp"
 #include "modules/experiment/experiment.hpp"
-#include "modules/solver/TMCMC/TMCMC.hpp"
+#include "modules/solver/sampler/TMCMC/TMCMC.hpp"
 #include <chrono>
 #include <limits>
 #include <numeric>
@@ -17,6 +17,8 @@
 namespace korali
 {
 namespace solver
+{
+namespace sampler
 {
 /**
   * @brief Struct for TMCMC optimization operations
@@ -859,6 +861,8 @@ void TMCMC::printGenerationAfter()
     _k->_logger->logData("Detailed", " |\n");
   }
 }
+
+} // namespace sampler
 
 } // namespace solver
 

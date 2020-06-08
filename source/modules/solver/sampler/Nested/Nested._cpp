@@ -1,7 +1,7 @@
 #include "modules/conduit/conduit.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
 #include "modules/experiment/experiment.hpp"
-#include "modules/solver/Nested/Nested.hpp"
+#include "modules/solver/sampler/Nested/Nested.hpp"
 
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_matrix.h>
@@ -18,6 +18,8 @@
 namespace korali
 {
 namespace solver
+{
+namespace sampler
 {
 void Nested::setInitialConfiguration()
 {
@@ -553,6 +555,8 @@ void Nested::finalize()
   _k->_logger->logInfo("Minimal", "Sampling Efficiency: %.2f%%\n", 100.0 * (_acceptedSamples + _numberLivePoints) / ((double)_generatedSamples));
   return;
 }
+
+} // namespace sampler
 
 } // namespace solver
 

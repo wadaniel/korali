@@ -1,7 +1,7 @@
 #include "modules/conduit/conduit.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/problem.hpp"
-#include "modules/solver/MCMC/MCMC.hpp"
+#include "modules/solver/sampler/MCMC/MCMC.hpp"
 
 #include <chrono>
 #include <limits>
@@ -16,6 +16,8 @@
 namespace korali
 {
 namespace solver
+{
+namespace sampler
 {
 void MCMC::setInitialConfiguration()
 {
@@ -249,6 +251,8 @@ void MCMC::finalize()
   if (_sampleDatabase.size() == _maxSamples) _k->_logger->logInfo("Minimal", "Max Samples Reached.\n");
   (*_k)["Results"]["Sample Database"] = _sampleDatabase;
 }
+
+} // namespace sampler
 
 } // namespace solver
 

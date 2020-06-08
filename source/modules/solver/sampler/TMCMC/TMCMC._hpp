@@ -5,14 +5,16 @@
 #include "modules/distribution/multivariate/normal/normal.hpp"
 #include "modules/distribution/specific/multinomial/multinomial.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
-#include "modules/solver/solver.hpp"
+#include "modules/solver/sampler/sampler.hpp"
 #include <gsl/gsl_vector.h>
 
 namespace korali
 {
 namespace solver
 {
-class TMCMC : public Solver
+namespace sampler
+{
+class TMCMC : public Sampler
 {
   private:
   /*
@@ -113,6 +115,7 @@ class TMCMC : public Solver
   void finalize() override;
 };
 
+} // namespace sampler
 } // namespace solver
 } // namespace korali
 

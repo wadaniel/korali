@@ -4,14 +4,16 @@
 #include "modules/distribution/multivariate/normal/normal.hpp"
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
-#include "modules/solver/solver.hpp"
+#include "modules/solver/sampler/sampler.hpp"
 #include <vector>
 
 namespace korali
 {
 namespace solver
 {
-class Nested : public Solver
+namespace sampler
+{
+class Nested : public Sampler
 {
   private:
   /*
@@ -126,6 +128,7 @@ class Nested : public Solver
   void finalize() override;
 };
 
+} // namespace sampler
 } // namespace solver
 } // namespace korali
 

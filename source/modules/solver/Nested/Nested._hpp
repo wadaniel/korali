@@ -11,6 +11,49 @@ namespace korali
 {
 namespace solver
 {
+
+
+typedef struct ellipse_s
+{
+  /**
+   * @brief Number samples in ellipse.
+   */
+  size_t num;
+
+  /** 
+   * @brief Indices of samples from live data set.
+   */
+  std::vector<size_t> sampleIdx;
+
+  /** 
+   * @brief Mean vector of samples in ellipse.
+   */
+  std::vector<double> mean; 
+  
+  /**
+    * @brief Covariance Matrix of samples in ellipse.
+   */
+  std::vector<std::vector<double>> cov;
+
+  /**
+   * @brief Volume estimated from covariance.
+   */
+  double volume;
+
+  /**
+   * @brief Enlargement factor such that volume is at least as large as the 'true' volume.
+   */
+  double enlargementFactor;
+
+  /**
+   * @brief 'True' volume from which the subset of samples were sampled from.
+   */
+  double trueVolume;
+
+
+} ellipse_t;
+
+
 class Nested : public korali::Solver
 {
   private:
@@ -19,6 +62,11 @@ class Nested : public korali::Solver
   * @brief Seed for the shuffle randomizer
   */
   size_t _shuffleSeed;
+ 
+  /*
+  * @brief Storing ellipses (only relevant for Multi Ellipsoidal sampling).
+  */
+  std::vector<ellipse_t> _ellipseVector;
 
   /*
   * @brief Init and run first Generation.
@@ -93,7 +141,22 @@ class Nested : public korali::Solver
   /*
   * @brief Applies k-means clustering (k=2) and fills cluster vectors with samples.
   */
-  void kmeansClustering(std::vector<std::vector<double>> samples, size_t maxIter, std::vector<std::vector<double>> clusterOne, std::vector<std::vector<double>> clusterTwo) const;
+  void kmeansClustering(const ellipse_t & parent, size_t maxIter, ellipse_t & childOne, ellipse_t & childTwo) const;
+ 
+  /*
+  * @brief Udates the mean vector of ellipse argument.
+  */
+  void updateEllipseMean(ellipse_t & ellipse) const;
+ 
+  /*
+  * @brief Udates the covariance matrix of input ellipse.
+  */
+  void updateEllipseCov(ellipse_t & ellipse) const;
+ 
+  /*
+  * @brief Udates volume and enlargement factor of the ellipse.
+  */
+  void updateEllipseVolume(ellipse_t & ellipse) const;
 
   /*
   * @brief Calculate effective number of samples.

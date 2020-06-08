@@ -8,7 +8,6 @@ def getlibs(extdir, makeFlags):
   flags += '-L' + extdir + ' -lkorali -Wl,-rpath,' + extdir + ' '
   flags += '-L' + makeFlags['GSLPREFIX'] + '/lib -Wl,-rpath,' + makeFlags[
       'GSLPREFIX'] + '/lib '
-  flags += '-lpython3'
   flags += ' ' + makeFlags['ONEDNNLIBS']
   flags += ' ' + makeFlags['LIBGPLIBS']
   flags += ' ' + makeFlags['RTNORMLIBS']

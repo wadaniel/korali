@@ -40,7 +40,7 @@ e["Variables"][1]["Name"] = "Beta"
 e["Variables"][1]["Prior Distribution"] = "Uniform 1"
 
 # Configuring the TMCMC sampler parameters
-e["Solver"]["Type"] = "TMCMC"
+e["Solver"]["Type"] = "Sampler/TMCMC"
 e["Solver"]["Population Size"] = 2000
 e["Solver"]["Target Coefficient Of Variation"] = 2.0
 

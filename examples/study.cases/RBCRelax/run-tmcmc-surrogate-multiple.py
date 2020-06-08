@@ -38,7 +38,7 @@ for i in range(len(expNames)):
  e["Problem"]["Reference Data"]   = getReferenceData(expNames[i])
 
  # Configuring TMCMC parameters
- e["Solver"]["Type"] = "TMCMC"
+ e["Solver"]["Type"] = "Sampler/TMCMC"
  e["Solver"]["Population Size"] = popSize
  e["Solver"]["Target Coefficient Of Variation"] = 0.5
  e["Solver"]["Covariance Scaling"] = 0.04

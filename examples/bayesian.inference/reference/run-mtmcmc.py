@@ -21,7 +21,7 @@ e["Problem"]["Computational Model"] = lambda sampleData: modelWithDerivatives(
     sampleData, getReferencePoints())
 
 # Configuring TMCMC parameters
-e["Solver"]["Type"] = "TMCMC"
+e["Solver"]["Type"] = "Sampler/TMCMC"
 e["Solver"]["Version"] = "mTMCMC"
 e["Solver"]["Population Size"] = 5000
 e["Console Output"]["Verbosity"] = 'Detailed'

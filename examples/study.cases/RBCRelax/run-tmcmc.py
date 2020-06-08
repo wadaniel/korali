@@ -60,7 +60,7 @@ e["Problem"]["Likelihood Model"] = "Normal"
 e["Problem"]["Reference Data"]   = refData
 
 # Configuring TMCMC parameters
-e["Solver"]["Type"] = "TMCMC"
+e["Solver"]["Type"] = "Sampler/TMCMC"
 e["Solver"]["Population Size"] = popSize
 e["Solver"]["Termination Criteria"]["Max Generations"] = 7 
 

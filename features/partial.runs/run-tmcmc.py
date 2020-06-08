@@ -18,7 +18,7 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Bayesian/Custom"
 e["Problem"]["Likelihood Model"] = calculateLogLikelihood
 
-e["Solver"]["Type"] = "TMCMC"
+e["Solver"]["Type"] = "Sampler/TMCMC"
 e["Solver"]["Population Size"] = 5000
 e["Solver"]["Termination Criteria"]["Max Generations"] = 4
 

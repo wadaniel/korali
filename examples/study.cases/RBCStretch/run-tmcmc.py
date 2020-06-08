@@ -44,7 +44,7 @@ e["Variables"][2]["Name"] = "[Sigma]"
 e["Variables"][2]["Prior Distribution"] = "Uniform 2"
 
 # Setting CMAES as Solver
-e["Solver"]["Type"]  = "TMCMC"
+e["Solver"]["Type"]  = "Sampler/TMCMC"
 e["Solver"]["Population Size"] = int(popSize)
 e["Solver"]["Termination Criteria"]["Max Generations"] = 20
 

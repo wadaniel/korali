@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
   e["Problem"]["Reference Data"] = p.refTemp;
   e["Problem"]["Computational Model"] = &heat2DSolver;
 
-  e["Solver"]["Type"] = "TMCMC";
+  e["Solver"]["Type"] = "Sampler/TMCMC";
   e["Solver"]["Population Size"] = 200;
 
   e["Distributions"][0]["Name"] = "Uniform 0";

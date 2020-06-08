@@ -78,7 +78,7 @@ e["Distributions"][8]["Type"] = "Univariate/Uniform"
 e["Distributions"][8]["Minimum"] = 0.0
 e["Distributions"][8]["Maximum"] = 0.3
 
-e["Solver"]["Type"] = "TMCMC"
+e["Solver"]["Type"] = "Sampler/TMCMC"
 e["Solver"]["Population Size"] = 10000
 
 e["Console"]["Verbosity"] = "Detailed"

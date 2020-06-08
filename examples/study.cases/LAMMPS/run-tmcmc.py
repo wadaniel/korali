@@ -44,7 +44,7 @@ e["Variables"][2]["Name"] = "[Sigma]"
 e["Variables"][2]["Prior Distribution"] = "Uniform 2"
 
 # Configuring TMCMC parameters
-e["Solver"]["Type"] = "TMCMC"
+e["Solver"]["Type"] = "Sampler/TMCMC"
 e["Solver"]["Population Size"] = 32
 e["Solver"]["Termination Criteria"]["Max Generations"] = 20
 

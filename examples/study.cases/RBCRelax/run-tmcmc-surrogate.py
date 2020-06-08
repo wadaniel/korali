@@ -49,7 +49,7 @@ e["Problem"]["Reference Data"]   = getReferenceData(expNames[i])
 e["Problem"]["Computational Model"] = lambda sample: relaxModel_surrogate(sample, getReferencePoints('hochmuth01'), 'hochmuth01', 0.4 )
 
 # Configuring TMCMC parameters
-e["Solver"]["Type"] = "TMCMC"
+e["Solver"]["Type"] = "Sampler/TMCMC"
 e["Solver"]["Population Size"] = popSize
 e["Solver"]["Target Coefficient Of Variation"] = 1.0
 e["Solver"]["Covariance Scaling"] = 0.04

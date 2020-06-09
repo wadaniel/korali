@@ -32,12 +32,12 @@ typedef struct ellipse_s
     * @brief Covariance Matrix of samples in ellipse.
    */
   std::vector<double> cov;
- 
+
   /**
     * @brief Inverse of Covariance Matrix.
    */
   std::vector<double> invCov;
- 
+
   /**
     * @brief Axes of the ellipse.
    */
@@ -82,7 +82,7 @@ class Nested : public korali::Solver
   * @brief Prepare Generation before evaluation, update proposals.
   */
   void prepareGeneration();
- 
+
   /*
   * @brief Generate new candidates to evaluate.
   */
@@ -101,8 +101,8 @@ class Nested : public korali::Solver
   /** 
   * @brief Generate new samples uniformly in Ellipse
   */
-  void generateCandidatesFromEllipse(const ellipse_t& ellipse);
- 
+  void generateCandidatesFromEllipse(const ellipse_t &ellipse);
+
   /** 
   * @brief Generate new samples uniformly from multiple Ellipses
   */
@@ -147,11 +147,11 @@ class Nested : public korali::Solver
   * @brief Calculate L2 distance between two vectors.
   */
   double l2distance(std::vector<double> sampleOne, std::vector<double> sampleTwo) const;
- 
+
   /*
   * @brief Updates bounding Ellipse.
   */
-  void updateEllipse(ellipse_t& ellipse) const;
+  void updateEllipse(ellipse_t &ellipse) const;
 
   /*
   * @brief Applies k-means clustering (k=2) and fills cluster vectors with samples.
@@ -172,7 +172,7 @@ class Nested : public korali::Solver
   * @brief Updates volume and enlargement factor of the ellipse.
   */
   void updateEllipseVolume(ellipse_t &ellipse) const;
- 
+
   /*
   * @brief Update ellipse axes.
   */

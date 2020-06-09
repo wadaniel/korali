@@ -83,12 +83,12 @@ void korali::solver::Nested::setInitialConfiguration()
     _ellipseVector.emplace_back(ellipse_t());
     ellipse_t *first = _ellipseVector.data();
     first->sampleIdx.resize(_numberLivePoints);
-    
+
     std::iota(first->sampleIdx.begin(), first->sampleIdx.end(), 0);
     first->num = _numberLivePoints;
   }
   else /* _resamplingMethod == "Multi Ellipse" */
-  { 
+  {
     _ellipseVector.emplace_back(ellipse_t());
     ellipse_t *first = _ellipseVector.data();
     first->sampleIdx.resize(_numberLivePoints);
@@ -663,7 +663,6 @@ void korali::solver::Nested::updateEllipseAxes(ellipse_t &ellipse) const
 
     if (res > max) max = res;
   }
-
 
   gsl_vector_free(vec);
   gsl_vector_free(vout);

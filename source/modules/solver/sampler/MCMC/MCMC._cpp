@@ -52,8 +52,6 @@ void MCMC::setInitialConfiguration()
   _chainLength = 0;
   _chainLeaderEvaluation = -std::numeric_limits<double>::infinity();
   _acceptanceRate = 1.0;
-
-  (*_k)["Results"]["Sample Database"] = {};
 }
 
 void MCMC::runGeneration()
@@ -97,7 +95,6 @@ void MCMC::runGeneration()
   {
     _sampleDatabase.push_back(_chainLeader);
     _sampleEvaluationDatabase.push_back(_chainLeaderEvaluation);
-    (*_k)["Results"]["Sample Database"] += _chainLeader;
   }
 
   updateState();

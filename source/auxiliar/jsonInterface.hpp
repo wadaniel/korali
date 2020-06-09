@@ -145,6 +145,7 @@ bool loadJsonFromFile(knlohmann::json &dst, const char *fileName);
   * @brief Saves a JSON object to a file.
   * @param fileName The path to the file onto which to save the JSON object.
   * @param js The input JSON object.
+  * @return 0 if successful, otherwise if not.
 */
 int saveJsonToFile(const char *fileName, const knlohmann::json &js);
 

@@ -91,7 +91,7 @@ We choose the solver `MCMC` and set the initial mean and standard deviation of t
     e["Solver"]["Termination Criteria"]["Max Samples"] = 5000
 
 We also set some settings for MCMC. For a detailed description of the MCMC settings, see
-:ref:`MCMC <module-solver-mcmc>`
+:ref:`MCMC <module-solver-sampler-mcmc>`
 
 Configuring the output
 ---------------------------

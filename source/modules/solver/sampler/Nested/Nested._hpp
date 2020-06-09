@@ -88,16 +88,23 @@ class Nested : public Sampler
 
   /*
   * @brief Calculate effective number of samples.
+  * @return the number of effective samples
   */
   double calcEffectiveSamples() const;
 
   /*
   * @brief Safely adding two values that are in log space. Returns in log space.
+  * @param logx logx
+  * @param logy logy
+  * return The operation result
   */
   double safeLogPlus(double logx, double logy) const;
 
   /*
   * @brief Safely subtracting logy from logx. Returns in log space.
+  * @param logx logx
+  * @param logy logy
+  * return The operation result
   */
   double safeLogMinus(double logx, double logy) const;
 

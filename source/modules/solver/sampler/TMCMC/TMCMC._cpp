@@ -192,8 +192,6 @@ void TMCMC::runGeneration()
   }
 
   processGeneration();
-
-  (*_k)["Results"]["Sample Database"] = _sampleDatabase;
 }
 
 void TMCMC::prepareGeneration()
@@ -821,6 +819,8 @@ void TMCMC::setBurnIn()
 
 void TMCMC::finalize()
 {
+  // Setting results
+  (*_k)["Results"]["Sample Database"] = _sampleDatabase;
 }
 
 void TMCMC::printGenerationBefore()

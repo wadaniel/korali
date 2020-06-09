@@ -72,13 +72,13 @@ Solver-Problem Compatibility
 
 Although the complete list of solver types can be found :ref:`here <module-solver>`, each solver can only solve a specific set of problem types. To find which solver methods can be used for a specific problem type, look for "Compatible Solvers" in the problem's configuration page. Here is, for example, the :ref:`compatible solvers list <module-problem-optimization-compat>` for Optimization/Stochastic.  
 
-To continue our example above, we will choose to use the :ref:`DEA <module-solver-dea>`, which is a compatible solver for the Optimization/Stochastic problem type. 
+To continue our example above, we will choose to use the :ref:`DEA <module-solver-optimizer-dea>`, which is a compatible solver for the Optimization/Stochastic problem type. 
 
 .. code-block:: python
 
    k["Solver"]["Type"] = "DEA"
 
-It is possible, however, to choose another solver to solve a given problem, simply by changing the solver method choice. For example, if now we wanted to solve the problem using :ref:`CMAES <module-solver-cmaes>` instead, we simply change the field:
+It is possible, however, to choose another solver to solve a given problem, simply by changing the solver method choice. For example, if now we wanted to solve the problem using :ref:`CMAES <module-solver-optimizer-cmaes>` instead, we simply change the field:
  
 .. code-block:: python
 
@@ -87,7 +87,7 @@ It is possible, however, to choose another solver to solve a given problem, simp
 Solver Configuration
 ---------------------------------
 
-Korali solvers, just like problems, also contain their own set of settings to configure. For example, :ref:`CMAES <module-solver-cmaes>` requires defining a *population size*, the number of samples to run per iteration.: 
+Korali solvers, just like problems, also contain their own set of settings to configure. For example, :ref:`CMAES <module-solver-optimizer-cmaes>` requires defining a *population size*, the number of samples to run per iteration.: 
 
 .. code-block:: python
 
@@ -104,13 +104,13 @@ A Korali solver will run until at least one of its *termination criteria* is met
    k["Solver"]["Termination Criteria"]["Max Generations"] = 1000
    
 Will run iterations of the CMAES algorithm until the difference in objective value (optimization) is less than 0.0001, meaning it has reached convergence within an accepted tolerance **OR** until it has reached a total of 1000 generations (iterations).
-The list of termination criteria for each solver can be found in the "Termination Criteria" section of their documentation. Here is, for example, the :ref:`termination criteria list <module-solver-cmaes-criteria>` for CMAES. 
+The list of termination criteria for each solver can be found in the "Termination Criteria" section of their documentation. Here is, for example, the :ref:`termination criteria list <module-solver-optimizer-cmaes-criteria>` for CMAES. 
 
 Configuration Defaults
 ------------------------------
 
 Not all the properties or termination criteria of a solver method need to be explicitly defined. Instead, every solver provides a set of defaults values which should work fine in the majority of cases. 
-To see which defaults have been defined for a given method, look for the "Default Configuration" section in their configuration page. Here is, for example, the :ref:`default configuration <module-solver-cmaes-defaults>` for CMAES.
+To see which defaults have been defined for a given method, look for the "Default Configuration" section in their configuration page. Here is, for example, the :ref:`default configuration <module-solver-optimizer-cmaes-defaults>` for CMAES.
 
 
 Variables
@@ -132,7 +132,7 @@ Variable Configuration
 
 Variable definitions require additional parameters depending on which problem and solver types have been selected. These parameters are explained in detail in each solver/problem documentation page. 
 
-For example, the following :ref:`variable settings <module-solver-cmaes-varsettings>` are mandatory for the CMAES solver, and these :ref:`variable settings <module-problem-optimization-varsettings>` are mandatory for the optimization problem.
+For example, the following :ref:`variable settings <module-solver-optimizer-cmaes-varsettings>` are mandatory for the CMAES solver, and these :ref:`variable settings <module-problem-optimization-varsettings>` are mandatory for the optimization problem.
 
 In the code snippet below, we show how the configuration for each variable is specified:
 
@@ -150,7 +150,7 @@ In the code snippet below, we show how the configuration for each variable is sp
 Variable Defaults
 ----------------------------
    
-Korali problem or solver can specify defaults for their variable settings. To see which variable defaults (if any) have been defined for a given method, look for the "Default Configuration" section in their configuration page. Here is, for example, the :ref:`variable defaults <module-solver-cmaes-var-defaults>` for CMAES.   
+Korali problem or solver can specify defaults for their variable settings. To see which variable defaults (if any) have been defined for a given method, look for the "Default Configuration" section in their configuration page. Here is, for example, the :ref:`variable defaults <module-solver-optimizer-cmaes-var-defaults>` for CMAES.   
 
 
 Korali Samples and Models
@@ -328,7 +328,7 @@ Accessing Results
 
 When called, the *run* will not return until one of the experiment's termination criteria has been met. After return, the experiment will contain a *Results* section, from which the user can retrieve the desired results.
 
-Each problem type prescribes a different set of results. To see which variable defaults (if any) have been defined for a given method, look for the "Results" section in their configuration page. Here is, for example, the :ref:`results <module-problem-optimization-results>`.
+Each solver type prescribes a different set of results that it produces. To see which results are produced (if any) by a given method, look for the "Results" section in their configuration page. Here is, for example, the :ref:`results <module-solver-optimizer-cmaes-results>`.
 
 To access the results, use the following syntax:
 

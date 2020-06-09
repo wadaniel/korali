@@ -85,8 +85,6 @@ void Nested::setInitialConfiguration()
   _generatedSamples = 0;
   _lStarOld = std::numeric_limits<double>::lowest();
   _lStar = std::numeric_limits<double>::lowest();
-
-  (*_k)["Results"]["Posterior Samples"] = {};
 }
 
 void Nested::runGeneration()
@@ -547,6 +545,7 @@ void Nested::finalize()
 
   generatePosterior();
   (*_k)["Results"]["Posterior Samples"] = _posteriorSamples;
+  (*_k)["Results"]["Sample Database"] = _sampleDatabase;
 
   _k->_logger->logInfo("Minimal", "Final Log Evidence: %.4f (+- %.4F)\n", _logEvidence, sqrt(_logEvidenceVar));
   _k->_logger->logInfo("Minimal", "Max evaluation: %.2f\n", _maxEvaluation);

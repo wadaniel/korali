@@ -217,7 +217,7 @@ We also need to configure the problem's random distributions, which we referred 
     e["Distributions"][2]["Minimum"] = 0.0
     e["Distributions"][2]["Maximum"] = +5.0
 
-For a detailed description of CMA-ES settings see :ref:`CMAES <module-solver-cmaes>`
+For a detailed description of CMA-ES settings see :ref:`CMAES <module-solver-optimizer-cmaes>`
 
 Finally, we configure the output, and then need to add a call to the run() routine to start the Korali engine.
 
@@ -251,7 +251,7 @@ To sample the posterior distribution, we set the solver to `TMCMC` sampler and s
     e["Solver"]["Type"] = "TMCMC"
     e["Solver"]["Population Size"] = 5000
 
-For a detailed description of the TMCMC settings see :ref:`TMCMC <module-solver-tmcmc>`
+For a detailed description of the TMCMC settings see :ref:`TMCMC <module-solver-sampler-tmcmc>`
 
 Finally, we need to add a call to the run() routine to start the Korali engine.
 

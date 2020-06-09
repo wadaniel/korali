@@ -107,6 +107,12 @@ def plot(genList, args):
 
   numdim = len(genList[lastGen]['Variables'])
   samples = genList[lastGen]['Solver']['Posterior Samples']
+  
+  #llk = np.array(genList[lastGen]['Solver']['Sample LogLikelihood Database'])
+  #lpr = np.array(genList[lastGen]['Solver']['Sample LogPrior Database'])
+  #lpo = (llk + lpr).tolist()
+  #samples, idx = zip(*(sorted(zip(lpr, samples))))
+  #lpo = lpo[idx]
   numentries = len(samples)
 
   fig, ax = plt.subplots(numdim, numdim, figsize=(8, 8))

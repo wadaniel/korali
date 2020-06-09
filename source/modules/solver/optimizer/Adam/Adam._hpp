@@ -12,6 +12,7 @@ namespace optimizer
 class Adam : public Optimizer
 {
   public:
+  void finalize() override;
   void setInitialConfiguration() override;
   void runGeneration() override;
   void printGenerationBefore() override;

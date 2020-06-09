@@ -65,22 +65,7 @@ void Adam::runGeneration()
   _gradientNorm = std::sqrt(_gradientNorm);
 
   if (_currentEvaluation < _bestEvaluation)
-  {
     _bestEvaluation = _currentEvaluation;
-    (*_k)["Results"]["Best Sample"] = sample._js.getJson();
-  }
-
-  _k->_logger->logInfo("Normal", "x = [ ");
-  for (size_t k = 0; k < _k->_variables.size(); k++) _k->_logger->logData("Normal", " %.5le  ", _currentValue[k]);
-  _k->_logger->logData("Normal", " ]\n");
-
-  _k->_logger->logInfo("Normal", "F(X) = %le \n", _currentEvaluation);
-
-  _k->_logger->logInfo("Normal", "DF(X) = [ ");
-  for (size_t k = 0; k < _k->_variables.size(); k++) _k->_logger->logData("Normal", " %.5le  ", _gradient[k]);
-  _k->_logger->logData("Normal", " ]\n");
-
-  _k->_logger->logInfo("Normal", "|DF(X)| = %le \n", _gradientNorm);
 
   // update first and second moment estimators and bias corrected versions
   for (size_t i = 0; i < _k->_variables.size(); i++)
@@ -105,7 +90,25 @@ void Adam::printGenerationBefore()
 
 void Adam::printGenerationAfter()
 {
-  _k->_logger->logInfo("Normal", "Finished generation %lu...\n", _k->_currentGeneration);
+  _k->_logger->logInfo("Normal", "x = [ ");
+  for (size_t k = 0; k < _k->_variables.size(); k++) _k->_logger->logData("Normal", " %.5le  ", _currentValue[k]);
+  _k->_logger->logData("Normal", " ]\n");
+
+  _k->_logger->logInfo("Normal", "F(X) = %le \n", _currentEvaluation);
+
+  _k->_logger->logInfo("Normal", "DF(X) = [ ");
+  for (size_t k = 0; k < _k->_variables.size(); k++) _k->_logger->logData("Normal", " %.5le  ", _gradient[k]);
+  _k->_logger->logData("Normal", " ]\n");
+
+  _k->_logger->logInfo("Normal", "|DF(X)| = %le \n", _gradientNorm);
+}
+
+void Adam::finalize()
+{
+  // Updating Results
+  (*_k)["Results"]["Best Sample"]["F(x)"] = _currentEvaluation;
+  (*_k)["Results"]["Best Sample"]["Gradient(x)"] = _gradient;
+  (*_k)["Results"]["Best Sample"]["Parameters"] = _currentValue;
 }
 
 } // namespace optimizer

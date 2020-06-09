@@ -80,10 +80,6 @@ void GridSearch::runGeneration()
 
   _locationOfMaximum = KORALI_GET(std::vector<double>, samples[maxIndex], "Parameters");
   _maximum = KORALI_GET(double, samples[maxIndex], "F(x)");
-
-  // Updating Results
-  (*_k)["Results"]["Best Sample"]["Parameters"] = _locationOfMaximum;
-  (*_k)["Results"]["Best Sample"]["F(x)"] = _maximum;
 }
 
 void GridSearch::printGenerationBefore()
@@ -97,6 +93,13 @@ void GridSearch::printGenerationAfter()
   for (size_t i = 0; i < _locationOfMaximum.size(); i++)
     _k->_logger->logData("Normal", " %+6.3e", _locationOfMaximum[i]);
   _k->_logger->logData("Normal", "\n");
+}
+
+void GridSearch::finalize()
+{
+  // Updating Results
+  (*_k)["Results"]["Best Sample"]["Parameters"] = _locationOfMaximum;
+  (*_k)["Results"]["Best Sample"]["F(x)"] = _maximum;
 }
 
 } // namespace optimizer

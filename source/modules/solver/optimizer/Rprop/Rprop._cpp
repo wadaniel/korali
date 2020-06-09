@@ -86,7 +86,6 @@ void Rprop::runGeneration(void)
   {
     _maxStallCounter++;
   }
-  (*_k)["Results"]["Best Sample"] = sample._js.getJson();
 }
 
 // Rprop_plus
@@ -198,6 +197,10 @@ void Rprop::printGenerationAfter()
 
 void Rprop::finalize()
 {
+  // Updating Results
+  (*_k)["Results"]["Best Sample"]["F(x)"] = _currentEvaluation;
+  (*_k)["Results"]["Best Sample"]["Gradient(x)"] = _currentGradient;
+  (*_k)["Results"]["Best Sample"]["Parameters"] = _currentX;
   return;
 }
 

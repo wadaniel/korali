@@ -223,7 +223,6 @@ void LMCMAES::updateDistribution(std::vector<Sample> &samples)
   {
     _previousBestEverValue = _bestEverValue;
     _bestEverValue = _currentBestValue;
-    (*_k)["Results"]["Best Sample"] = samples[_sortingIndex[0]]._js.getJson();
 
     for (size_t d = 0; d < _k->_variables.size(); ++d) _bestEverVariables[d] = _currentBestVariables[d];
   }
@@ -446,6 +445,10 @@ void LMCMAES::printGenerationAfter()
 
 void LMCMAES::finalize()
 {
+  // Updating Results
+  (*_k)["Results"]["Best Sample"]["F(x)"] = _bestEverValue;
+  (*_k)["Results"]["Best Sample"]["Parameters"] = _bestEverVariables;
+
   _k->_logger->logInfo("Minimal", "Optimum found: %e\n", _bestEverValue);
   _k->_logger->logInfo("Minimal", "Optimum found at:\n");
   for (size_t d = 0; d < _k->_variables.size(); ++d) _k->_logger->logData("Minimal", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverVariables[d]);

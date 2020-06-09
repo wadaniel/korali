@@ -68,6 +68,7 @@ void Experiment::run()
     // Timing and Profiling End
     auto t1 = std::chrono::system_clock::now();
 
+    // Printing results to console
     if (_consoleOutputFrequency > 0)
       if (_currentGeneration % _consoleOutputFrequency == 0)
       {

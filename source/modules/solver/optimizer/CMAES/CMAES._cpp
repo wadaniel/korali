@@ -199,10 +199,6 @@ void CMAES::runGeneration()
   // Waiting for samples to finish
   _conduit->waitAll(samples);
   updateDistribution(samples);
-
-  // Updating Results
-  (*_k)["Results"]["Best Sample"]["F(x)"] = _bestEverValue;
-  (*_k)["Results"]["Best Sample"]["Parameters"] = _bestEverVariables;
 }
 
 void CMAES::initMuWeights(size_t numsamplesmu)
@@ -949,6 +945,10 @@ void CMAES::printGenerationAfter()
 
 void CMAES::finalize()
 {
+  // Updating Results
+  (*_k)["Results"]["Best Sample"]["F(x)"] = _bestEverValue;
+  (*_k)["Results"]["Best Sample"]["Parameters"] = _bestEverVariables;
+
   _k->_logger->logInfo("Minimal", "Optimum found: %e\n", _bestEverValue);
   _k->_logger->logInfo("Minimal", "Optimum found at:\n");
   for (size_t d = 0; d < _k->_variables.size(); ++d) _k->_logger->logData("Minimal", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverVariables[d]);

@@ -267,7 +267,7 @@ void korali::solver::Nested::generateCandidatesFromMCMC()
   _multivariateGenerator->_sigma = _covarianceMatrix;
 
   /* Cholesky Decomp */
-  gsl_matrix_view sigma = gsl_matrix_view_array(&_multivariateGenerator->_sigma[0], _k->_variables.size(), _k->_variables.size());
+  gsl_matrix_view sigma = gsl_matrix_view_array(_multivariateGenerator->_sigma.data(), _dimensions, _dimensions);
   gsl_linalg_cholesky_decomp(&sigma.matrix);
 
   _multivariateGenerator->updateDistribution();
@@ -319,6 +319,27 @@ void korali::solver::Nested::generateCandidatesFromEllipse()
   }
 }
 
+void korali::solver::Nested::generateCandidatesFromMultiEllipse()
+{
+  double rnd_ellipse = _uniformGenerator->getRandomNumber();
+  double totalVol = 0.0;
+  for(auto& ellipse : _ellipseVector) totalVol += ellipse.volume;
+  
+  ellipse_t* ellipse_ptr;
+  double cumVol = 0.0;
+  for(auto& ellipse : _ellipseVector) 
+  {
+      cumVol += ellipse.volume/totalVol;
+      if(rnd_ellipse < cumVol) 
+      {
+        ellipse_ptr = &ellipse;
+        break;
+      }
+  }
+
+
+}
+ 
 void korali::solver::Nested::updateMeanAndCovariance()
 {
   for (size_t d = 0; d < _k->_variables.size(); d++) _domainMean[d] = 0.0;
@@ -351,6 +372,47 @@ void korali::solver::Nested::updateBox()
       _boxLowerBound[d] = std::min(_boxLowerBound[d], _liveSamples[i][d]);
       _boxUpperBound[d] = std::max(_boxUpperBound[d], _liveSamples[i][d]);
     }
+}
+
+void korali::solver::Nested::updateEllipseAxes(ellipse_t& ellipse) const
+{
+  ellipse.axes.resize(_dimensions*_dimensions);
+
+  gsl_vector *vec  = gsl_vector_calloc(_k->_variables.size());
+  gsl_vector *vout = gsl_vector_calloc(_k->_variables.size());
+  gsl_matrix_view inv  = gsl_matrix_view_array(ellipse.invCov.data(), _dimensions, _dimensions);
+  gsl_matrix_view cov  = gsl_matrix_view_array(ellipse.cov.data(), _dimensions, _dimensions);
+  gsl_matrix_view axes = gsl_matrix_view_array(ellipse.axes.data(), _dimensions, _dimensions);
+
+  double res, max = std::numeric_limits<double>::lowest();
+
+  // find scaling s.t. all samples are bounded by ellipse
+  for (size_t i = 0; i < ellipse.num; ++i)
+  {
+    size_t six = ellipse.sampleIdx[i];
+    for (size_t d = 0; d < _dimensions; ++d)
+      gsl_vector_set(vec, d, (_liveSamples[six][d] - ellipse.mean[d]));
+
+    gsl_blas_dgemv(CblasNoTrans, 1., &inv.matrix, vec, 0., vout);
+    res = 0.;
+    gsl_blas_ddot(vec, vout, &res);
+
+    if (res > max) max = res;
+  }
+ 
+  gsl_vector_free(vec);
+  gsl_vector_free(vout);
+ 
+  // calculate axes from cholesky decomposition
+  int status;
+  status = gsl_matrix_memcpy(&axes.matrix, &cov.matrix);
+  gsl_matrix_scale(&axes.matrix, max);
+  status = gsl_linalg_cholesky_decomp1(&axes.matrix); // LL^T = A
+  if (status == 1) KORALI_LOG_ERROR("Cholesky Decomposition failed during Ellipse update.");
+  
+  /* On output the diagonal and lower triangular part of the 
+     * input matrix A contain the matrix L, while the upper triangular part 
+     * contains the original matrix. */
 }
 
 void korali::solver::Nested::updateEllipse()
@@ -549,7 +611,7 @@ void korali::solver::Nested::kmeansClustering(const ellipse_t &parent, size_t ma
     {
       double d1 = l2distance(_liveSamples[i], childOne.mean);
       double d2 = l2distance(_liveSamples[i], childOne.mean);
-      size_t flag = (d1 < d2) ? 1 : 2;
+      int8_t flag = (d1 < d2) ? 1 : 2;
 
       if (clusterFlag[i] != flag) diffs++;
       clusterFlag[i] = flag;
@@ -620,8 +682,7 @@ void korali::solver::Nested::updateEllipseMean(ellipse_t &ellipse) const
 
 void korali::solver::Nested::updateEllipseCov(ellipse_t &ellipse) const
 {
-  ellipse.cov.resize(_dimensions);
-  for (auto &v : ellipse.cov) v.resize(_dimensions);
+  ellipse.cov.resize(_dimensions*_dimensions);
 
   for (size_t i = 0; i < _dimensions; i++)
   {
@@ -633,7 +694,7 @@ void korali::solver::Nested::updateEllipseCov(ellipse_t &ellipse) const
         size_t sidx = ellipse.sampleIdx[k];
         c += (_liveSamples[sidx][i] - ellipse.mean[i]) * (_liveSamples[sidx][j] - ellipse.mean[j]);
       }
-      ellipse.cov[i][j] = ellipse.cov[j][i] = c / (ellipse.num - 1.0);
+      ellipse.cov[i*_dimensions+j] = ellipse.cov[j*_dimensions+i] = c / (ellipse.num - 1.0);
     }
   }
 }
@@ -642,22 +703,52 @@ void korali::solver::Nested::updateEllipseVolume(ellipse_t &ellipse) const
 {
   ellipse.trueVolume = exp(_logVolume) * (double)ellipse.num / ((double)_numberLivePoints);
 
-  gsl_matrix *mat = gsl_matrix_alloc(_dimensions, _dimensions);
+
+  gsl_matrix *matLU = gsl_matrix_alloc(_dimensions, _dimensions);
   for (size_t i = 0; i < _dimensions; i++)
     for (size_t j = i; j < _dimensions; j++)
-      gsl_matrix_set(mat, i, j, ellipse.cov[i][j]);
+    {
+      gsl_matrix_set(matLU, i, j, ellipse.cov[i*_dimensions+j]);
+      gsl_matrix_set(matLU, j, i, ellipse.cov[i*_dimensions+j]);
+    }
 
   int signal;
   gsl_permutation *perm = gsl_permutation_alloc(_dimensions);
-  gsl_linalg_LU_decomp(mat, perm, &signal);
+  gsl_linalg_LU_decomp(matLU, perm, &signal);
 
-  double det = gsl_linalg_LU_det(mat, signal);
+  ellipse.invCov.resize(_dimensions*_dimensions);
+  gsl_matrix_view invCov = gsl_matrix_view_array(ellipse.invCov.data(), _dimensions, _dimensions);
+  signal = gsl_linalg_LU_invert(matLU, perm, &invCov.matrix);
+  
+  double det = gsl_linalg_LU_det(matLU, signal);
 
-  gsl_matrix_free(mat);
+  gsl_matrix_free(matLU);
   gsl_permutation_free(perm);
   double voltmp = pow(_ellipsoidalScaling, _dimensions / 2.0) * sqrt(det);
 
   ellipse.enlargementFactor = voltmp > ellipse.trueVolume ? _ellipsoidalScaling : pow(ellipse.trueVolume / voltmp, 2.0 / _dimensions);
+}
+
+double korali::solver::Nested::weightedMahalanobisDistance(std::vector<double> sample, ellipse_t ellipse) const
+{
+  std::vector<double> dif(_dimensions);
+  for(size_t d = 0; d < _dimensions; ++d) dif[d] = sample[d] - ellipse.mean[d];
+
+  // Mahalanobis distance
+  double dist = 0;
+  double tmp;
+  for(size_t i = 0; i < _dimensions; ++i)
+  {
+    tmp = 0.0;
+    for(size_t j = 0; j < _dimensions; ++j) 
+        tmp += dif[j]*ellipse.invCov[i+_dimensions*j];
+    tmp *= dif[i];
+    dist += tmp;
+  }
+
+  // weighting
+  return ellipse.volume*dist/ellipse.trueVolume;
+
 }
 
 double korali::solver::Nested::calcEffectiveSamples() const

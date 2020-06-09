@@ -31,7 +31,17 @@ typedef struct ellipse_s
   /**
     * @brief Covariance Matrix of samples in ellipse.
    */
-  std::vector<std::vector<double>> cov;
+  std::vector<double> cov;
+ 
+  /**
+    * @brief Inverse of Covariance Matrix.
+   */
+  std::vector<double> invCov;
+ 
+  /**
+    * @brief Axes of the ellipse.
+   */
+  std::vector<double> axes;
 
   /**
    * @brief Volume estimated from covariance.
@@ -87,6 +97,11 @@ class Nested : public korali::Solver
   * @brief Generate new samples uniformly in Ellipse
   */
   void generateCandidatesFromEllipse();
+ 
+  /** 
+  * @brief Generate new samples uniformly from multiple Ellipses
+  */
+  void generateCandidatesFromMultiEllipse();
 
   /*
   * @brief Process Generation after receiving all results.
@@ -149,9 +164,19 @@ class Nested : public korali::Solver
   void updateEllipseCov(ellipse_t &ellipse) const;
 
   /*
-  * @brief Udates volume and enlargement factor of the ellipse.
+  * @brief Updates volume and enlargement factor of the ellipse.
   */
   void updateEllipseVolume(ellipse_t &ellipse) const;
+ 
+  /*
+  * @brief Update ellipse axes.
+  */
+  void updateEllipseAxes(ellipse_t &ellipse) const;
+
+  /*
+  * @brief Calculates weighted Mahalanobis metric of sample and ellipse.
+  */
+  double weightedMahalanobisDistance(std::vector<double> sample, ellipse_t ellipse) const;
 
   /*
   * @brief Calculate effective number of samples.

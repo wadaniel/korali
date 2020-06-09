@@ -85,7 +85,7 @@ e["Distributions"][9]["Type"] = "Univariate/Uniform"
 e["Distributions"][9]["Minimum"] = 0.0
 e["Distributions"][9]["Maximum"] = 15.0
 
-e["Solver"]["Type"] = "TMCMC"
+e["Solver"]["Type"] = "Sampler/TMCMC"
 e["Solver"]["Population Size"] = 1000
 e["Solver"]["Default Burn In"] = 3
 e["Solver"]["Target Coefficient Of Variation"] = 0.6

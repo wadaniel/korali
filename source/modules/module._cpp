@@ -14,7 +14,7 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   std::string moduleType = "Undefined";
 
   if (!isDefined(js, "Type"))
-    KORALI_LOG_ERROR("No module type provided in:\n %s\n", js.dump(2).c_str());
+    KORALI_LOG_ERROR(" + No module type provided in:\n %s\n", js.dump(2).c_str());
 
   try
   {
@@ -22,7 +22,7 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   }
   catch (const std::exception &ex)
   {
-    KORALI_LOG_ERROR("Could not parse module type: '%s'.\n%s", js["Type"].dump(2).c_str(), ex.what());
+    KORALI_LOG_ERROR(" + Could not parse module type: '%s'.\n%s", js["Type"].dump(2).c_str(), ex.what());
   }
 
   moduleType.erase(remove_if(moduleType.begin(), moduleType.end(), isspace), moduleType.end());
@@ -38,7 +38,7 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
 
   // Module Selection List
 
-  if (module == nullptr) KORALI_LOG_ERROR("Unrecognized module: %s.\n", moduleType.c_str());
+  if (module == nullptr) KORALI_LOG_ERROR(" + Unrecognized module: %s.\n", moduleType.c_str());
 
   // If this is a new experiment, we should assign it its own configuration
   if (isExperiment == true)

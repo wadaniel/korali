@@ -26,7 +26,7 @@ def run_dea_with_termination_criterion(criterion, value):
   e["Variables"][0]["Lower Bound"] = +1.0
   e["Variables"][0]["Upper Bound"] = +10.0
 
-  e["Solver"]["Type"] = "DEA"
+  e["Solver"]["Type"] = "Optimizer/DEA"
   e["Solver"]["Population Size"] = 10
   e["Solver"]["Termination Criteria"][criterion] = value
 

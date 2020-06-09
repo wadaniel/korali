@@ -21,7 +21,7 @@ e["Problem"]["Computational Model"] = lambda sampleData: model(
     sampleData, getReferencePoints())
 
 # Configuring Nested Sampling parameters
-e["Solver"]["Type"] = "Nested"
+e["Solver"]["Type"] = "Sampler/Nested"
 e["Solver"]["Number Live Points"] = 1500
 e["Solver"]["Batch Size"] = 1
 e["Solver"]["Resampling Method"] = "Ellipse"

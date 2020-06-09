@@ -55,18 +55,6 @@ void Bayesian::evaluateLogPosterior(Sample &sample)
   }
 }
 
-bool Bayesian::isSampleFeasible(Sample &sample)
-{
-  for (size_t i = 0; i < sample["Parameters"].size(); i++)
-    if (isfinite(_k->_distributions[_k->_variables[i]->_distributionIndex]->getLogDensity(sample["Parameters"][i])) == false)
-    {
-      sample["Is Feasible"] = false;
-      return false;
-    }
-  sample["Is Feasible"] = true;
-  return true;
-}
-
 void Bayesian::evaluate(Sample &sample)
 {
   evaluateLogPosterior(sample);

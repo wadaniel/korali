@@ -4,34 +4,6 @@ namespace korali
 {
 namespace problem
 {
-bool Optimization::isSampleFeasible(Sample &sample)
-{
-  auto parameters = KORALI_GET(std::vector<double>, sample, "Parameters");
-
-  for (size_t i = 0; i < parameters.size(); i++)
-  {
-    double par = parameters[i];
-    if (std::isfinite(par) == false)
-    {
-      sample["Is Feasible"] = false;
-      return false;
-    }
-    if (par < _k->_variables[i]->_lowerBound)
-    {
-      sample["Is Feasible"] = false;
-      return false;
-    }
-    if (par > _k->_variables[i]->_upperBound)
-    {
-      sample["Is Feasible"] = false;
-      return false;
-    }
-  }
-
-  sample["Is Feasible"] = true;
-  return true;
-}
-
 void Optimization::initialize()
 {
   if (_k->_variables.size() == 0) KORALI_LOG_ERROR("Optimization Evaluation problems require at least one variable.\n");

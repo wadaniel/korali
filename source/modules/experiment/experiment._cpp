@@ -35,7 +35,14 @@ void Experiment::run()
 
   auto t0 = std::chrono::system_clock::now();
 
-  if (_currentGeneration == 0) saveState();
+  // Saving initial configuration
+  if (_currentGeneration == 0)
+    if (_fileOutputEnabled)
+    {
+      _timestamp = getTimestamp();
+      getConfiguration(_js.getJson());
+      saveState();
+    }
 
   _solver->getConfiguration(_js["Solver"]);
   _currentGeneration++;
@@ -61,6 +68,7 @@ void Experiment::run()
     // Timing and Profiling End
     auto t1 = std::chrono::system_clock::now();
 
+    // Printing results to console
     if (_consoleOutputFrequency > 0)
       if (_currentGeneration % _consoleOutputFrequency == 0)
       {
@@ -68,8 +76,15 @@ void Experiment::run()
         _logger->logInfo("Detailed", "Experiment: %lu - Generation Time: %.3fs\n", _experimentId, std::chrono::duration<double>(t1 - t0).count());
       }
 
-    if (_fileOutputFrequency > 0)
-      if (_currentGeneration % _fileOutputFrequency == 0) saveState();
+    // Saving state to a file
+    if (_fileOutputEnabled)
+      if (_fileOutputFrequency > 0)
+        if (_currentGeneration % _fileOutputFrequency == 0)
+        {
+          _timestamp = getTimestamp();
+          getConfiguration(_js.getJson());
+          saveState();
+        }
 
     _currentGeneration++;
 
@@ -79,11 +94,15 @@ void Experiment::run()
 
   auto t1 = std::chrono::system_clock::now();
 
-  // Saving last generation and final.json
+  // Finalizing experiment
   _currentGeneration--;
   _isFinished = true;
   _solver->finalize();
-  saveState();
+
+  // Saving last generation and final results
+  _timestamp = getTimestamp();
+  getConfiguration(_js.getJson());
+  if (_fileOutputEnabled) saveState();
 
   _logger->logInfo("Minimal", "--------------------------------------------------------------------\n");
   _logger->logInfo("Minimal", "%s finished correctly.\n", _solver->getType().c_str());
@@ -98,30 +117,21 @@ void Experiment::run()
 
 void Experiment::saveState()
 {
+  if (_storeSampleInformation == true) _js["Samples"] = _sampleInfo["Samples"];
+
   char genFileName[256];
   sprintf(genFileName, "gen%08lu.json", _currentGeneration);
 
-  // Getting configuration
-  _timestamp = getTimestamp();
-  knlohmann::json results = _js.getJson()["Results"];
-  getConfiguration(_js.getJson());
   std::string fileName = "./" + _fileOutputPath + "/" + genFileName;
   std::string linkName = "./" + _fileOutputPath + "/latest";
 
-  if (_storeSampleInformation == true) _js["Samples"] = _sampleInfo["Samples"];
-  auto js = _js.getJson();
-  js["Results"] = results;
+  if (saveJsonToFile(fileName.c_str(), _js.getJson()) != 0)
+    KORALI_LOG_ERROR("Error trying to save result file: %s.\n", fileName.c_str());
 
-  if (_fileOutputEnabled)
-  {
-    if (saveJsonToFile(fileName.c_str(), js) != 0)
-      KORALI_LOG_ERROR("Error trying to save result file: %s.\n", fileName.c_str());
+  remove(linkName.c_str());
 
-    remove(linkName.c_str());
-
-    if (link(fileName.c_str(), linkName.c_str()) != 0)
-      KORALI_LOG_ERROR("Could not create hard link to latest result.\n + Target: %s\n + Link: %s\n", fileName.c_str(), linkName.c_str());
-  }
+  if (link(fileName.c_str(), linkName.c_str()) != 0)
+    KORALI_LOG_ERROR("Could not create hard link to latest result.\n + Target: %s\n + Link: %s\n", fileName.c_str(), linkName.c_str());
 }
 
 bool Experiment::loadState(const std::string &path)
@@ -142,7 +152,8 @@ Experiment::Experiment()
 
 void Experiment::initialize()
 {
-  // Clearning sample information
+  // Clearning sample and previous result information
+  _js["Results"] = knlohmann::json();
   _js["Samples"] = knlohmann::json();
 
   // Initializing Variables

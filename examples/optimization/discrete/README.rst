@@ -82,7 +82,7 @@ We choose the solver `CMA-ES` and set two termination criteria,
 
 .. code-block:: python
 
-    e["Solver"]["Type"] = "CMAES"
+    e["Solver"]["Type"] = "Optimizer/CMAES"
     e["Solver"]["Population Size"] = 8
     e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-9
     e["Solver"]["Termination Criteria"]["Max Generations"] = 5000

@@ -64,7 +64,9 @@ size_t getTimehash()
   return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
-// CRC Implementation taken from https://barrgroup.com/embedded-systems/how-to/crc-calculation-c-code
+/**
+* @brief CRC table Implementation taken from https://barrgroup.com/embedded-systems/how-to/crc-calculation-c-code
+*/
 crc crcTable[256];
 void crcInit(void)
 {

@@ -52,12 +52,7 @@ void SAEM::initialize()
     hyperparamIdx++;
   }
 
-  // configure the solver
-  if (_mStepSolverType != "CMAES") KORALI_LOG_ERROR("Currently, only using a CMAES solver is supported");
-
-  _experiment["Solver"]["Type"] = "CMAES";
-  _experiment["Solver"]["Population Size"] = 4;
-  _experiment["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-15;
+  _experiment["Solver"] = _mStepSolver;
   _experiment["Solver"]["Termination Criteria"]["Max Generations"] = _mStepSolverMaxGenerations;
 
   _experiment["File Output"]["Frequency"] = 0;

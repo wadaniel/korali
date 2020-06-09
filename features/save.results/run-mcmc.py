@@ -28,7 +28,7 @@ e["Variables"][1]["Initial Mean"] = +30.0
 e["Variables"][1]["Initial Standard Deviation"] = +5.0
 
 # Configuring the TMCMC sampler parameters
-e["Solver"]["Type"] = "MCMC"
+e["Solver"]["Type"] = "Sampler/MCMC"
 e["Solver"]["Burn In"] = 500
 e["Solver"]["Termination Criteria"]["Max Samples"] = 5000
 

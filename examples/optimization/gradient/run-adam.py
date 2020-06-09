@@ -26,7 +26,7 @@ for i in range(5):
   e["Variables"][i]["Initial Value"] = -10.0 + i
 
 # Configuring Adam parameters
-e["Solver"]["Type"] = "Adam"
+e["Solver"]["Type"] = "Optimizer/Adam"
 e["Solver"]["Eta"] = 0.1
 e["Solver"]["Termination Criteria"]["Max Generations"] = 2000
 

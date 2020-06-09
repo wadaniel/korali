@@ -32,7 +32,7 @@ To do this, we simply define an initial set of termination criteria, and run the
    e = korali.Experiment()
    e["Problem"]["Type"] = "Optimization/Stochastic"
    e["Problem"]["Objective Function"] = myModel
-   e["Solver"]["Type"] = "CMAES"
+   e["Solver"]["Type"] = "Optimizer/CMAES"
    
    # ...  More experiment configuration ...
 

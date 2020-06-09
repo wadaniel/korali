@@ -30,7 +30,7 @@ def run_nested_with_termination_criterion(criterion, value):
   e["Variables"][0]["Name"] = "X"
   e["Variables"][0]["Prior Distribution"] = "Uniform 0"
 
-  e["Solver"]["Type"] = "Nested"
+  e["Solver"]["Type"] = "Sampler/Nested"
   e["Solver"]["Number Live Points"] = 1500
   e["Solver"]["Batch Size"] = 1
   e["Solver"]["Add Live Points"] = True

@@ -262,6 +262,10 @@ knlohmann::json &Engine::operator[](const unsigned long int &key) { return _js[k
 pybind11::object Engine::getItem(const pybind11::object key) { return _js.getItem(key); }
 void Engine::setItem(const pybind11::object key, const pybind11::object val) { _js.setItem(key, val); }
 
+} // namespace korali
+
+using namespace korali;
+
 PYBIND11_MODULE(libkorali, m)
 {
 #ifdef _KORALI_USE_MPI
@@ -307,5 +311,3 @@ PYBIND11_MODULE(libkorali, m)
     .def("loadState", &Experiment::loadState)
     .def("test", &Experiment::test);
 }
-
-} // namespace korali

@@ -457,7 +457,9 @@ void korali::solver::Nested::generatePosterior()
   std::shuffle(permutation.begin(), permutation.end(), std::default_random_engine(_shuffleSeed));
 
   size_t rndIdx;
-  _posteriorSamples.clear();
+  _posteriorSampleDatabase.clear();
+  _posteriorSampleLogPriorDatabase.clear();
+  _posteriorSampleLogLikelihoodDatabase.clear();
 
   double k = 1.0;
   double sum = _uniformGenerator->getRandomNumber();
@@ -467,7 +469,9 @@ void korali::solver::Nested::generatePosterior()
     sum += exp(_sampleLogWeightDatabase[rndIdx] - maxLogWtDb);
     if (sum > k)
     {
-      _posteriorSamples.push_back(_sampleDatabase[rndIdx]);
+      _posteriorSampleDatabase.push_back(_sampleDatabase[rndIdx]);
+      _posteriorSampleLogPriorDatabase.push_back(_sampleLogPriorDatabase[rndIdx]);
+      _posteriorSampleLogLikelihoodDatabase.push_back(_sampleLogLikelihoodDatabase[rndIdx]);
       k++;
     }
   }
@@ -751,12 +755,14 @@ void korali::solver::Nested::finalize()
   if (_addLivePoints == true) consumeLiveSamples();
 
   generatePosterior();
-  (*_k)["Results"]["Posterior Samples"] = _posteriorSamples;
+  (*_k)["Results"]["Posterior Sample Database"] = _posteriorSampleDatabase;
+  (*_k)["Results"]["Posterior Sample LogPrior Database"] = _posteriorSampleLogPriorDatabase;
+  (*_k)["Results"]["Posterior Sample LogLikelihood Database"] = _posteriorSampleLogLikelihoodDatabase;
 
   _k->_logger->logInfo("Minimal", "Final Log Evidence: %.4f (+- %.4F)\n", _logEvidence, sqrt(_logEvidenceVar));
   _k->_logger->logInfo("Minimal", "Max evaluation: %.2f\n", _maxEvaluation);
   _k->_logger->logInfo("Minimal", "Information: %.4f\n", _information);
-  _k->_logger->logInfo("Minimal", "Posterior Samples: %zu\n", _posteriorSamples.size());
+  _k->_logger->logInfo("Minimal", "Posterior Samples: %zu\n", _posteriorSampleDatabase.size());
   _k->_logger->logInfo("Minimal", "Sampling Efficiency: %.2f%%\n", 100.0 * (_acceptedSamples + _numberLivePoints) / ((double)_generatedSamples));
   return;
 }

@@ -27,28 +27,28 @@ void korali::solver::Nested::setInitialConfiguration()
 
   if (_proposalUpdateFrequency <= 0) KORALI_LOG_ERROR("Proposal Update Frequency must be larger 0");
 
-  _priorLowerBound.resize(_k->_variables.size());
-  _priorWidth.resize(_k->_variables.size());
+  _priorLowerBound.resize(_dimensions);
+  _priorWidth.resize(_dimensions);
 
-  for (size_t d = 0; d < _k->_variables.size(); ++d)
+  for (size_t d = 0; d < _dimensions; ++d)
   {
     if (_k->_distributions[_k->_variables[d]->_distributionIndex]->_type != "Univariate/Uniform") KORALI_LOG_ERROR("Only 'Univariate/Uniform' priors allowed (is %s).\n", _k->_distributions[_k->_variables[d]->_distributionIndex]->_type.c_str());
     _priorWidth[d] = dynamic_cast<korali::distribution::univariate::Uniform *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->_maximum - dynamic_cast<korali::distribution::univariate::Uniform *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->_minimum;
     _priorLowerBound[d] = dynamic_cast<korali::distribution::univariate::Uniform *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->_minimum;
   }
 
-  if ((_resamplingMethod == "Ellipse" || _resamplingMethod == "Multi Ellipse") && (_k->_variables.size() == 2)) KORALI_LOG_ERROR("Resampling Method Ellipse only suitable for problems of dim larger 2.");
+  if ((_resamplingMethod == "Ellipse" || _resamplingMethod == "Multi Ellipse") && (_dimensions == 2)) KORALI_LOG_ERROR("Resampling Method Ellipse only suitable for problems of dim larger 2.");
 
   _candidateLogLikelihoods.resize(_batchSize);
   _candidateLogPriors.resize(_batchSize);
   _candidates.resize(_batchSize);
-  for (size_t i = 0; i < _batchSize; i++) _candidates[i].resize(_k->_variables.size());
+  for (size_t i = 0; i < _batchSize; i++) _candidates[i].resize(_dimensions);
 
   _liveLogLikelihoods.resize(_numberLivePoints);
   _liveLogPriors.resize(_numberLivePoints);
   _liveSamplesRank.resize(_numberLivePoints);
   _liveSamples.resize(_numberLivePoints);
-  for (size_t i = 0; i < _numberLivePoints; i++) _liveSamples[i].resize(_k->_variables.size());
+  for (size_t i = 0; i < _numberLivePoints; i++) _liveSamples[i].resize(_dimensions);
 
   _databaseEntries = 0;
   _sampleLogLikelihoodDatabase.resize(0);
@@ -68,40 +68,39 @@ void korali::solver::Nested::setInitialConfiguration()
   _lStarOld = std::numeric_limits<double>::lowest();
   _lStar = std::numeric_limits<double>::lowest();
 
-  _domainMean.resize(_k->_variables.size());
+  _domainMean.resize(_dimensions);
   if (_resamplingMethod == "MCMC")
   {
-    _covarianceMatrix.resize(_k->_variables.size() * _k->_variables.size());
+    _covarianceMatrix.resize(_dimensions * _dimensions);
   }
   else if (_resamplingMethod == "Box")
   {
-    _boxLowerBound.resize(_k->_variables.size());
-    _boxUpperBound.resize(_k->_variables.size());
+    _boxLowerBound.resize(_dimensions);
+    _boxUpperBound.resize(_dimensions);
   }
   else if (_resamplingMethod == "Ellipse")
   {
-    _ellipseAxes.resize(_k->_variables.size());
-    for (size_t i = 0; i < _k->_variables.size(); i++) _ellipseAxes[i].resize(_k->_variables.size());
+    _ellipseAxes.resize(_dimensions);
+    for (size_t i = 0; i < _dimensions; i++) _ellipseAxes[i].resize(_dimensions);
 
     _ellipseVector.resize(1);
     ellipse_t *first = _ellipseVector.data();
     first->sampleIdx.resize(_numberLivePoints);
 
     size_t i = 0;
-    std::fill(first->sampleIdx.begin(), first->sampleIdx.end(), i++);
+    std::iota(first->sampleIdx.begin(), first->sampleIdx.end(), i++);
   }
   else /* _resamplingMethod == "Multi Ellipse" */
   {
+    _ellipseAxes.resize(_dimensions);
+    for (size_t i = 0; i < _dimensions; i++) _ellipseAxes[i].resize(_dimensions);
+
     _ellipseVector.resize(1);
     ellipse_t *first = _ellipseVector.data();
     first->sampleIdx.resize(_numberLivePoints);
 
     size_t i = 0;
-    std::fill(first->sampleIdx.begin(), first->sampleIdx.end(), i++);
-
-    updateEllipseMean(*first);
-    updateEllipseCov(*first);
-    updateEllipseVolume(*first);
+    std::iota(first->sampleIdx.begin(), first->sampleIdx.end(), i++);
   }
 
   (*_k)["Results"]["Posterior Samples"] = {};
@@ -151,7 +150,7 @@ void korali::solver::Nested::runGeneration()
 void korali::solver::Nested::runFirstGeneration()
 {
   for (size_t i = 0; i < _numberLivePoints; i++)
-    for (size_t d = 0; d < _k->_variables.size(); d++)
+    for (size_t d = 0; d < _dimensions; d++)
       _liveSamples[i][d] = _k->_distributions[_k->_variables[d]->_distributionIndex]->getRandomNumber();
 
   std::vector<korali::Sample> samples(_numberLivePoints);
@@ -204,7 +203,7 @@ void korali::solver::Nested::prepareGeneration()
   }
   else /* _resamplingMethod == "Multi Ellipse" */
   {
-    // TODO
+    for(auto& ellipse : _ellipseVector) updateEllipse(ellipse);
   }
 }
 
@@ -224,6 +223,7 @@ void korali::solver::Nested::generateCandidates()
   }
   else /* _resamplingMethod == "Multi Ellipse" */
   {
+    generateCandidatesFromEllipse(_ellipseVector.front());
     // TODO
   }
 }
@@ -285,7 +285,7 @@ void korali::solver::Nested::processGeneration()
 
 void korali::solver::Nested::generateCandidatesFromMCMC()
 {
-  std::vector<double> zeroMean(_k->_variables.size(), 0.0);
+  std::vector<double> zeroMean(_dimensions, 0.0);
   _multivariateGenerator->_meanVector = zeroMean;
   _multivariateGenerator->_sigma = _covarianceMatrix;
 
@@ -297,10 +297,10 @@ void korali::solver::Nested::generateCandidatesFromMCMC()
 
   for (size_t i = 0; i < _batchSize; i++)
   {
-    _multivariateGenerator->getRandomVector(&_candidates[i][0], _k->_variables.size());
+    _multivariateGenerator->getRandomVector(&_candidates[i][0], _dimensions);
 
     size_t cpyIdx = (size_t)(_uniformGenerator->getRandomNumber() * _numberLivePoints);
-    for (size_t d = 0; d < _k->_variables.size(); ++d) _candidates[i][d] = _candidates[i][d] * _priorWidth[d] + _liveSamples[cpyIdx][d];
+    for (size_t d = 0; d < _dimensions; ++d) _candidates[i][d] = _candidates[i][d] * _priorWidth[d] + _liveSamples[cpyIdx][d];
   }
 }
 
@@ -308,7 +308,7 @@ void korali::solver::Nested::generateCandidatesFromBox()
 {
   for (size_t i = 0; i < _batchSize; i++)
   {
-    for (size_t d = 0; d < _k->_variables.size(); ++d)
+    for (size_t d = 0; d < _dimensions; ++d)
       _candidates[i][d] = _boxLowerBound[d] + _uniformGenerator->getRandomNumber() * (_boxUpperBound[d] - _boxLowerBound[d]);
   }
 }
@@ -362,32 +362,32 @@ void korali::solver::Nested::generateCandidatesFromMultiEllipse()
 
 void korali::solver::Nested::updateMeanAndCovariance()
 {
-  for (size_t d = 0; d < _k->_variables.size(); d++) _domainMean[d] = 0.0;
+  for (size_t d = 0; d < _dimensions; d++) _domainMean[d] = 0.0;
 
   double weight1 = 1. / ((double)_numberLivePoints);
   for (size_t i = 0; i < _numberLivePoints; i++)
-    for (size_t d = 0; d < _k->_variables.size(); d++)
+    for (size_t d = 0; d < _dimensions; d++)
       _domainMean[d] += weight1 * _liveSamples[i][d];
 
   double weight2 = 1. / ((double)_numberLivePoints - 1.);
-  for (size_t i = 0; i < _k->_variables.size(); i++)
+  for (size_t i = 0; i < _dimensions; i++)
   {
-    for (size_t j = i; j < _k->_variables.size(); ++j)
+    for (size_t j = i; j < _dimensions; ++j)
     {
       double s = 0.;
       for (size_t k = 0; k < _numberLivePoints; ++k) s += (_liveSamples[k][i] - _domainMean[i]) * (_liveSamples[k][j] - _domainMean[j]);
-      _covarianceMatrix[i * _k->_variables.size() + j] = _covarianceMatrix[j * _k->_variables.size() + i] = _covarianceScaling * weight2 * s / (_priorWidth[i] * _priorWidth[j]);
+      _covarianceMatrix[i * _dimensions + j] = _covarianceMatrix[j * _dimensions + i] = _covarianceScaling * weight2 * s / (_priorWidth[i] * _priorWidth[j]);
     }
   }
 }
 
 void korali::solver::Nested::updateBox()
 {
-  for (size_t d = 0; d < _k->_variables.size(); d++) _boxLowerBound[d] = std::numeric_limits<double>::max();
-  for (size_t d = 0; d < _k->_variables.size(); d++) _boxUpperBound[d] = std::numeric_limits<double>::lowest();
+  for (size_t d = 0; d < _dimensions; d++) _boxLowerBound[d] = std::numeric_limits<double>::max();
+  for (size_t d = 0; d < _dimensions; d++) _boxUpperBound[d] = std::numeric_limits<double>::lowest();
 
   for (size_t i = 0; i < _numberLivePoints; i++)
-    for (size_t d = 0; d < _k->_variables.size(); d++)
+    for (size_t d = 0; d < _dimensions; d++)
     {
       _boxLowerBound[d] = std::min(_boxLowerBound[d], _liveSamples[i][d]);
       _boxUpperBound[d] = std::max(_boxUpperBound[d], _liveSamples[i][d]);
@@ -648,8 +648,8 @@ void korali::solver::Nested::updateEllipseAxes(ellipse_t &ellipse) const
 {
   ellipse.axes.resize(_dimensions * _dimensions);
 
-  gsl_vector *vec = gsl_vector_calloc(_k->_variables.size());
-  gsl_vector *vout = gsl_vector_calloc(_k->_variables.size());
+  gsl_vector *vec = gsl_vector_calloc(_dimensions);
+  gsl_vector *vout = gsl_vector_calloc(_dimensions);
   gsl_matrix_view inv = gsl_matrix_view_array(ellipse.invCov.data(), _dimensions, _dimensions);
   gsl_matrix_view cov = gsl_matrix_view_array(ellipse.cov.data(), _dimensions, _dimensions);
   gsl_matrix_view axes = gsl_matrix_view_array(ellipse.axes.data(), _dimensions, _dimensions);

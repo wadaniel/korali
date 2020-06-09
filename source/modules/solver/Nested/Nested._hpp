@@ -79,9 +79,14 @@ class Nested : public korali::Solver
   void runFirstGeneration();
 
   /*
-  * @brief Prepare Generation before evaluation.
+  * @brief Prepare Generation before evaluation, update proposals.
   */
   void prepareGeneration();
+ 
+  /*
+  * @brief Generate new candidates to evaluate.
+  */
+  void generateCandidates();
 
   /** 
   * @brief Generates new samples by copying and mutating randomly selected samples
@@ -96,7 +101,7 @@ class Nested : public korali::Solver
   /** 
   * @brief Generate new samples uniformly in Ellipse
   */
-  void generateCandidatesFromEllipse();
+  void generateCandidatesFromEllipse(const ellipse_t& ellipse);
  
   /** 
   * @brief Generate new samples uniformly from multiple Ellipses
@@ -124,11 +129,6 @@ class Nested : public korali::Solver
   void updateBox();
 
   /*
-  * @brief Updates bounding Ellipse.
- */
-  void updateEllipse();
-
-  /*
   * @brief Ascending sort of live sample ranks based on evaluation.
  */
   void sortLiveSamplesAscending();
@@ -147,6 +147,11 @@ class Nested : public korali::Solver
   * @brief Calculate L2 distance between two vectors.
   */
   double l2distance(std::vector<double> sampleOne, std::vector<double> sampleTwo) const;
+ 
+  /*
+  * @brief Updates bounding Ellipse.
+  */
+  void updateEllipse(ellipse_t& ellipse) const;
 
   /*
   * @brief Applies k-means clustering (k=2) and fills cluster vectors with samples.

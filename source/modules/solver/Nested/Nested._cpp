@@ -82,11 +82,18 @@ void korali::solver::Nested::setInitialConfiguration()
   {
     _ellipseAxes.resize(_k->_variables.size());
     for (size_t i = 0; i < _k->_variables.size(); i++) _ellipseAxes[i].resize(_k->_variables.size());
+  
+    _ellipseVector.resize(1);
+    ellipse_t *first = _ellipseVector.data();
+    first->sampleIdx.resize(_numberLivePoints);
+
+    size_t i = 0;
+    std::fill(first->sampleIdx.begin(), first->sampleIdx.end(), i++);
   }
   else /* _resamplingMethod == "Multi Ellipse" */
   {
     _ellipseVector.resize(1);
-    ellipse_t *first = &_ellipseVector[0];
+    ellipse_t *first = _ellipseVector.data();
     first->sampleIdx.resize(_numberLivePoints);
 
     size_t i = 0;
@@ -111,6 +118,7 @@ void korali::solver::Nested::runGeneration()
 
   // Generation > 1
   prepareGeneration();
+  generateCandidates();
   std::vector<korali::Sample> samples(_batchSize);
 
   for (size_t c = 0; c < _batchSize; c++)
@@ -185,24 +193,39 @@ void korali::solver::Nested::prepareGeneration()
   if (_resamplingMethod == "MCMC")
   {
     updateMeanAndCovariance();
-    generateCandidatesFromMCMC();
   }
   else if (_resamplingMethod == "Box")
   {
     updateBox();
-    generateCandidatesFromBox();
   }
   else if (_resamplingMethod == "Ellipse")
   {
-    updateEllipse();
-    generateCandidatesFromEllipse();
+    updateEllipse(_ellipseVector.front());
   }
   else /* _resamplingMethod == "Multi Ellipse" */
   {
     // TODO
   }
+}
 
-  return;
+void korali::solver::Nested::generateCandidates()
+{
+  if (_resamplingMethod == "MCMC")
+  {
+    generateCandidatesFromMCMC();
+  }
+  else if (_resamplingMethod == "Box")
+  {
+    generateCandidatesFromBox();
+  }
+  else if (_resamplingMethod == "Ellipse")
+  {
+    generateCandidatesFromEllipse(_ellipseVector.front());
+  }
+  else /* _resamplingMethod == "Multi Ellipse" */
+  {
+    // TODO
+  }
 }
 
 void korali::solver::Nested::processGeneration()
@@ -290,37 +313,34 @@ void korali::solver::Nested::generateCandidatesFromBox()
   }
 }
 
-void korali::solver::Nested::generateCandidatesFromEllipse()
+void korali::solver::Nested::generateCandidatesFromEllipse(const ellipse_t& ellipse)
 {
-  std::vector<double> vec(_k->_variables.size());
+  std::vector<double> vec(_dimensions);
   for (size_t i = 0; i < _batchSize; i++)
   {
     double len = 0;
-    for (size_t d = 0; d < _k->_variables.size(); ++d)
+    for (size_t d = 0; d < _dimensions; ++d)
     {
       vec[d] = _normalGenerator->getRandomNumber();
       len += vec[d] * vec[d];
     }
-    double dim = _k->_variables.size();
-    for (size_t d = 0; d < _k->_variables.size(); ++d)
-      vec[d] *= pow(_uniformGenerator->getRandomNumber(), 1. / dim) / sqrt(len);
+    for (size_t d = 0; d < _dimensions; ++d)
+      vec[d] *= pow(_uniformGenerator->getRandomNumber(), 1. / ((double) _dimensions)) / sqrt(len);
 
-    for (size_t k = 0; k < _k->_variables.size(); ++k)
+    for (size_t k = 0; k < _dimensions; ++k)
     {
-      _candidates[i][k] = _domainMean[k];
-      //for(size_t l = k; l < _k->_variables.size(); ++l){
+      _candidates[i][k] = ellipse.mean[k];
       for (size_t l = 0; l < k + 1; ++l)
       {
-        _candidates[i][k] += _ellipsoidalScaling * _ellipseAxes[k][l] * vec[l];
+        _candidates[i][k] += ellipse.enlargementFactor * ellipse.axes[k*_dimensions+l] * vec[l];
       }
-      _candidates[i][k] *= _priorWidth[k];
-      _candidates[i][k] += _priorLowerBound[k];
     }
   }
 }
 
 void korali::solver::Nested::generateCandidatesFromMultiEllipse()
 {
+  // randomly select ellipse
   double rnd_ellipse = _uniformGenerator->getRandomNumber();
   double totalVol = 0.0;
   for(auto& ellipse : _ellipseVector) totalVol += ellipse.volume;
@@ -337,6 +357,7 @@ void korali::solver::Nested::generateCandidatesFromMultiEllipse()
       }
   }
 
+  // sample from ellipse and check overlaps
 
 }
  
@@ -372,118 +393,6 @@ void korali::solver::Nested::updateBox()
       _boxLowerBound[d] = std::min(_boxLowerBound[d], _liveSamples[i][d]);
       _boxUpperBound[d] = std::max(_boxUpperBound[d], _liveSamples[i][d]);
     }
-}
-
-void korali::solver::Nested::updateEllipseAxes(ellipse_t& ellipse) const
-{
-  ellipse.axes.resize(_dimensions*_dimensions);
-
-  gsl_vector *vec  = gsl_vector_calloc(_k->_variables.size());
-  gsl_vector *vout = gsl_vector_calloc(_k->_variables.size());
-  gsl_matrix_view inv  = gsl_matrix_view_array(ellipse.invCov.data(), _dimensions, _dimensions);
-  gsl_matrix_view cov  = gsl_matrix_view_array(ellipse.cov.data(), _dimensions, _dimensions);
-  gsl_matrix_view axes = gsl_matrix_view_array(ellipse.axes.data(), _dimensions, _dimensions);
-
-  double res, max = std::numeric_limits<double>::lowest();
-
-  // find scaling s.t. all samples are bounded by ellipse
-  for (size_t i = 0; i < ellipse.num; ++i)
-  {
-    size_t six = ellipse.sampleIdx[i];
-    for (size_t d = 0; d < _dimensions; ++d)
-      gsl_vector_set(vec, d, (_liveSamples[six][d] - ellipse.mean[d]));
-
-    gsl_blas_dgemv(CblasNoTrans, 1., &inv.matrix, vec, 0., vout);
-    res = 0.;
-    gsl_blas_ddot(vec, vout, &res);
-
-    if (res > max) max = res;
-  }
- 
-  gsl_vector_free(vec);
-  gsl_vector_free(vout);
- 
-  // calculate axes from cholesky decomposition
-  int status;
-  status = gsl_matrix_memcpy(&axes.matrix, &cov.matrix);
-  gsl_matrix_scale(&axes.matrix, max);
-  status = gsl_linalg_cholesky_decomp1(&axes.matrix); // LL^T = A
-  if (status == 1) KORALI_LOG_ERROR("Cholesky Decomposition failed during Ellipse update.");
-  
-  /* On output the diagonal and lower triangular part of the 
-     * input matrix A contain the matrix L, while the upper triangular part 
-     * contains the original matrix. */
-}
-
-void korali::solver::Nested::updateEllipse()
-{
-  for (size_t d = 0; d < _k->_variables.size(); d++) _domainMean[d] = 0.0;
-
-  gsl_matrix *cvlup = gsl_matrix_calloc(_k->_variables.size(), _k->_variables.size());
-  gsl_matrix *covar = gsl_matrix_calloc(_k->_variables.size(), _k->_variables.size());
-
-  double weight1 = 1. / ((double)_numberLivePoints);
-  for (size_t i = 0; i < _numberLivePoints; i++)
-    for (size_t d = 0; d < _k->_variables.size(); d++)
-      _domainMean[d] += weight1 * _liveSamples[i][d];
-  for (size_t d = 0; d < _k->_variables.size(); d++)
-    _domainMean[d] = (_domainMean[d] - _priorLowerBound[d]) / _priorWidth[d];
-
-  double weight2 = 1. / ((double)_numberLivePoints - 1.);
-  for (size_t i = 0; i < _k->_variables.size(); i++)
-  {
-    for (size_t j = i; j < _k->_variables.size(); ++j)
-    {
-      double s = 0.0;
-      for (size_t k = 0; k < _numberLivePoints; ++k) s += ((_liveSamples[k][i] - _priorLowerBound[i]) / _priorWidth[i] - _domainMean[i]) * ((_liveSamples[k][j] - _priorLowerBound[j]) / _priorWidth[j] - _domainMean[j]);
-      gsl_matrix_set(cvlup, i, j, weight2 * s);
-      gsl_matrix_set(cvlup, j, i, weight2 * s);
-      gsl_matrix_set(covar, i, j, weight2 * s);
-      gsl_matrix_set(covar, j, i, weight2 * s);
-    }
-  }
-
-  gsl_permutation *p = gsl_permutation_alloc(_k->_variables.size());
-  int s;
-  int status1 = gsl_linalg_LU_decomp(cvlup, p, &s);
-
-  gsl_matrix *inv = gsl_matrix_alloc(_k->_variables.size(), _k->_variables.size());
-  int status2 = gsl_linalg_LU_invert(cvlup, p, inv);
-
-  if ((status1 != 0) or (status2 != 0)) gsl_matrix_set_identity(inv);
-
-  gsl_vector *vec = gsl_vector_calloc(_k->_variables.size());
-  gsl_vector *vout = gsl_vector_calloc(_k->_variables.size());
-  double res, max = std::numeric_limits<double>::lowest();
-  for (size_t i = 0; i < _numberLivePoints; ++i)
-  {
-    for (size_t d = 0; d < _k->_variables.size(); ++d)
-      gsl_vector_set(vec, d, (_liveSamples[i][d] - _priorLowerBound[d]) / _priorWidth[d] - _domainMean[d]);
-
-    gsl_blas_dgemv(CblasNoTrans, 1., inv, vec, 0., vout);
-    res = 0.;
-    gsl_blas_ddot(vec, vout, &res);
-
-    if (res > max) max = res;
-  }
-
-  gsl_matrix_scale(covar, max);
-  int status3 = gsl_linalg_cholesky_decomp1(covar); // LL^T = A
-  if (status3 == 1) KORALI_LOG_ERROR("Cholesky Decomposition failed during Ellipse update.");
-  /* On output the diagonal and lower triangular part of the 
-     * input matrix A contain the matrix L, while the upper triangular part 
-     * contains the original matrix. */
-
-  for (size_t k = 0; k < _k->_variables.size(); k++)
-    for (size_t l = 0; l < _k->_variables.size(); l++)
-      _ellipseAxes[k][l] = gsl_matrix_get(covar, k, l);
-
-  gsl_vector_free(vec);
-  gsl_vector_free(vout);
-  gsl_matrix_free(inv);
-  gsl_permutation_free(p);
-  gsl_matrix_free(cvlup);
-  gsl_matrix_free(covar);
 }
 
 void korali::solver::Nested::sortLiveSamplesAscending()
@@ -580,6 +489,14 @@ double korali::solver::Nested::l2distance(std::vector<double> sampleOne, std::ve
   return sqrt(d);
 }
 
+void korali::solver::Nested::updateEllipse(ellipse_t& ellipse) const
+{
+  updateEllipseMean(ellipse);
+  updateEllipseCov(ellipse);
+  updateEllipseVolume(ellipse);
+  updateEllipseAxes(ellipse);
+}
+
 void korali::solver::Nested::kmeansClustering(const ellipse_t &parent, size_t maxIter, ellipse_t &childOne, ellipse_t &childTwo) const
 {
   childOne.mean.resize(_dimensions);
@@ -664,6 +581,7 @@ void korali::solver::Nested::kmeansClustering(const ellipse_t &parent, size_t ma
   }
 }
 
+
 void korali::solver::Nested::updateEllipseMean(ellipse_t &ellipse) const
 {
   ellipse.mean.resize(_dimensions);
@@ -699,6 +617,7 @@ void korali::solver::Nested::updateEllipseCov(ellipse_t &ellipse) const
   }
 }
 
+
 void korali::solver::Nested::updateEllipseVolume(ellipse_t &ellipse) const
 {
   ellipse.trueVolume = exp(_logVolume) * (double)ellipse.num / ((double)_numberLivePoints);
@@ -728,6 +647,49 @@ void korali::solver::Nested::updateEllipseVolume(ellipse_t &ellipse) const
 
   ellipse.enlargementFactor = voltmp > ellipse.trueVolume ? _ellipsoidalScaling : pow(ellipse.trueVolume / voltmp, 2.0 / _dimensions);
 }
+
+
+void korali::solver::Nested::updateEllipseAxes(ellipse_t& ellipse) const
+{
+  ellipse.axes.resize(_dimensions*_dimensions);
+
+  gsl_vector *vec  = gsl_vector_calloc(_k->_variables.size());
+  gsl_vector *vout = gsl_vector_calloc(_k->_variables.size());
+  gsl_matrix_view inv  = gsl_matrix_view_array(ellipse.invCov.data(), _dimensions, _dimensions);
+  gsl_matrix_view cov  = gsl_matrix_view_array(ellipse.cov.data(), _dimensions, _dimensions);
+  gsl_matrix_view axes = gsl_matrix_view_array(ellipse.axes.data(), _dimensions, _dimensions);
+
+  double res, max = std::numeric_limits<double>::lowest();
+
+  // find scaling s.t. all samples are bounded by ellipse
+  for (size_t i = 0; i < ellipse.num; ++i)
+  {
+    size_t six = ellipse.sampleIdx[i];
+    for (size_t d = 0; d < _dimensions; ++d)
+      gsl_vector_set(vec, d, (_liveSamples[six][d] - ellipse.mean[d]));
+
+    gsl_blas_dgemv(CblasNoTrans, 1., &inv.matrix, vec, 0., vout);
+    res = 0.;
+    gsl_blas_ddot(vec, vout, &res);
+
+    if (res > max) max = res;
+  }
+ 
+  gsl_vector_free(vec);
+  gsl_vector_free(vout);
+ 
+  // calculate axes from cholesky decomposition
+  int status;
+  status = gsl_matrix_memcpy(&axes.matrix, &cov.matrix);
+  gsl_matrix_scale(&axes.matrix, max);
+  status = gsl_linalg_cholesky_decomp1(&axes.matrix); // LL^T = A
+  if (status == 1) KORALI_LOG_ERROR("Cholesky Decomposition failed during Ellipse update.");
+  
+  /* On output the diagonal and lower triangular part of the 
+     * input matrix A contain the matrix L, while the upper triangular part 
+     * contains the original matrix. */
+}
+
 
 double korali::solver::Nested::weightedMahalanobisDistance(std::vector<double> sample, ellipse_t ellipse) const
 {

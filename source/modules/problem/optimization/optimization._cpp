@@ -1,34 +1,10 @@
 #include "modules/problem/optimization/optimization.hpp"
 
-bool korali::problem::Optimization::isSampleFeasible(korali::Sample &sample)
+namespace korali
 {
-  auto parameters = KORALI_GET(std::vector<double>, sample, "Parameters");
-
-  for (size_t i = 0; i < parameters.size(); i++)
-  {
-    double par = parameters[i];
-    if (std::isfinite(par) == false)
-    {
-      sample["Is Feasible"] = false;
-      return false;
-    }
-    if (par < _k->_variables[i]->_lowerBound)
-    {
-      sample["Is Feasible"] = false;
-      return false;
-    }
-    if (par > _k->_variables[i]->_upperBound)
-    {
-      sample["Is Feasible"] = false;
-      return false;
-    }
-  }
-
-  sample["Is Feasible"] = true;
-  return true;
-}
-
-void korali::problem::Optimization::initialize()
+namespace problem
+{
+void Optimization::initialize()
 {
   if (_k->_variables.size() == 0) KORALI_LOG_ERROR("Optimization Evaluation problems require at least one variable.\n");
 
@@ -40,7 +16,7 @@ void korali::problem::Optimization::initialize()
   }
 }
 
-void korali::problem::Optimization::evaluateConstraints(korali::Sample &sample)
+void Optimization::evaluateConstraints(Sample &sample)
 {
   for (size_t i = 0; i < _constraints.size(); i++)
   {
@@ -50,13 +26,13 @@ void korali::problem::Optimization::evaluateConstraints(korali::Sample &sample)
 
     // If constraint is not a finite number, constraint is set to +Infinity
     if (std::isnan(evaluation))
-      sample["Constraint Evaluations"][i] = korali::Inf;
+      sample["Constraint Evaluations"][i] = Inf;
     else
       sample["Constraint Evaluations"][i] = evaluation;
   }
 }
 
-void korali::problem::Optimization::evaluate(korali::Sample &sample)
+void Optimization::evaluate(Sample &sample)
 {
   sample.run(_objectiveFunction);
 
@@ -64,12 +40,12 @@ void korali::problem::Optimization::evaluate(korali::Sample &sample)
 
   // If result is not a finite number, objective function evaluates to -Infinity
   if (std::isnan(evaluation))
-    sample["F(x)"] = -korali::Inf;
+    sample["F(x)"] = -Inf;
   else
     sample["F(x)"] = evaluation;
 }
 
-void korali::problem::Optimization::evaluateWithGradients(korali::Sample &sample)
+void Optimization::evaluateWithGradients(Sample &sample)
 {
   sample.run(_objectiveFunction);
 
@@ -77,7 +53,7 @@ void korali::problem::Optimization::evaluateWithGradients(korali::Sample &sample
 
   // If result is not a finite number, objective function evaluates to -Infinity
   if (std::isnan(evaluation))
-    sample["F(x)"] = -korali::Inf;
+    sample["F(x)"] = -Inf;
   else
     sample["F(x)"] = evaluation;
 
@@ -87,8 +63,12 @@ void korali::problem::Optimization::evaluateWithGradients(korali::Sample &sample
     KORALI_LOG_ERROR("Size of sample's gradient evaluations vector (%lu) is different from the number of problem variables defined (%lu).\n", gradient.size(), _k->_variables.size());
 
   // If result is not a finite number, gradient is set to zero
-  if (std::isnan(evaluation) || korali::isanynan(gradient))
+  if (std::isnan(evaluation) || isanynan(gradient))
     for (size_t i = 0; i < sample["Gradient"].size(); i++) sample["Gradient"][i] = 0.;
   else
     for (size_t i = 0; i < sample["Gradient"].size(); i++) sample["Gradient"][i] = gradient[i];
 }
+
+} // namespace problem
+
+} // namespace korali

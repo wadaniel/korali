@@ -11,6 +11,7 @@ function print_help ()
  echo "        [--prereqs]"
  echo "        [--rebuild]"
  echo "        [--debug]"
+ echo "        [--werror]"
  echo "        [--jobs=N]"
  echo "        [--help]"
  echo ""
@@ -18,6 +19,7 @@ function print_help ()
  echo " --prereqs Allows Korali to install any missing prerequisites."
  echo " --rebuild Cleans and rebuilds/installs Korali for development purposes."
  echo " --debug builds a non-optimized Korali for debugging purposes."
+ echo " --werror For testing purposes, it treats warnings as errors during compilation."
  echo " --jobs=N Specifies N jobs to use when building Korali."
  echo " --help Displays this help message."
 }
@@ -52,13 +54,18 @@ function check()
 
 INSTALLREQS=0
 NJOBS=4
-OPTFLAGS="-O3 -Wall"
+WARNINGFLAGS=
+OPTFLAGS="-O3"
 
 for i in "$@"
 do
 case $i in
     --prereqs)
     INSTALLREQS=1
+    shift 
+    ;;
+    --werror)
+    WARNINGFLAGS="-Werror"
     shift 
     ;;
     --debug)
@@ -368,6 +375,7 @@ echo RTNORMLIBS=$RTNORMLIBS >> source/Makefile.conf
 
 echo EIGENCFLAGS=$EIGENCFLAGS >> source/Makefile.conf
 echo OPTFLAGS=$OPTFLAGS >> source/Makefile.conf
+echo WARNINGFLAGS=$WARNINGFLAGS >> source/Makefile.conf
 echo MACHINEARCH=$arch >> source/Makefile.conf
 
 echo GSLPREFIX=$GSLPREFIX >> source/Makefile.conf

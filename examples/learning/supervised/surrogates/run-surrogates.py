@@ -32,10 +32,12 @@ e['Variables'][1]['Validation Data'] = test_data[:, 1].tolist()
 e['Solver']['Type'] = 'Gaussian Process'
 e['Solver']['Covariance Function'] = 'CovSum ( CovSEiso, CovNoise)'
 
-e['Solver']['Optimizer']['Type'] = 'Rprop'
+e['Solver']['Optimizer']['Type'] = 'Optimizer/Rprop'
 e['Solver']['Optimizer']['Termination Criteria']['Max Generations'] = 1000
-e['Solver']['Optimizer']['Termination Criteria'][
-    'Parameter Relative Tolerance'] = 1e-8
+e['Solver']['Optimizer']['Termination Criteria']['Parameter Relative Tolerance'] = 1e-8
+
+e['Console Output']['Verbosity'] = 'Normal'
+e['Console Output']['Frequency'] = 10
 
 e['File Output']['Enabled'] = False
 e['Random Seed'] = 0xC0FFEE

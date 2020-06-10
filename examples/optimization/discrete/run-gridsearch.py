@@ -27,7 +27,7 @@ e["Variables"][0]["Name"] = "X"
 e["Variables"][0]["Values"] = np.linspace( -1, 1, 1000 ).tolist()
 
 # Chosing Grid Search solver
-e["Solver"]["Type"] = "GridSearch"
+e["Solver"]["Type"] = "Optimizer/GridSearch"
 
 # Running Korali
 k.run(e)

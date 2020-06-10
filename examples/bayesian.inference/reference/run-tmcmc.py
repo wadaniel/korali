@@ -21,7 +21,7 @@ e["Problem"]["Computational Model"] = lambda sampleData: model(
     sampleData, getReferencePoints())
 
 # Configuring TMCMC parameters
-e["Solver"]["Type"] = "TMCMC"
+e["Solver"]["Type"] = "Sampler/TMCMC"
 e["Solver"]["Population Size"] = 5000
 e["Solver"]["Covariance Scaling"] = 0.04
 

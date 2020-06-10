@@ -1,9 +1,15 @@
 #include "modules/conduit/conduit.hpp"
 #include "modules/problem/hierarchical/theta/theta.hpp"
 
-void korali::problem::hierarchical::Theta::initialize()
+namespace korali
 {
-  _psiProblem = dynamic_cast<korali::problem::hierarchical::Psi *>(_psiExperiment->_problem);
+namespace problem
+{
+namespace hierarchical
+{
+void Theta::initialize()
+{
+  _psiProblem = dynamic_cast<Psi *>(_psiExperiment->_problem);
   if (_psiProblem == NULL)
     KORALI_LOG_ERROR("Psi experiment passed is not of type Hierarchical/Psi\n");
 
@@ -60,11 +66,11 @@ void korali::problem::hierarchical::Theta::initialize()
   std::vector<double> logValues;
   logValues.resize(_thetaProblemSampleCount);
 
-  _psiProblem = dynamic_cast<korali::problem::hierarchical::Psi *>(_psiProblem);
+  _psiProblem = dynamic_cast<Psi *>(_psiProblem);
 
   for (size_t i = 0; i < _psiProblemSampleCount; i++)
   {
-    korali::Sample psiSample;
+    Sample psiSample;
     psiSample["Parameters"] = _psiProblemSampleCoordinates[i];
 
     _psiProblem->updateConditionalPriors(psiSample);
@@ -83,19 +89,17 @@ void korali::problem::hierarchical::Theta::initialize()
     _precomputedLogDenominator.push_back(localSum);
   }
 
-  korali::problem::Hierarchical::initialize();
+  Hierarchical::initialize();
 }
 
-void korali::problem::hierarchical::Theta::evaluateLogLikelihood(korali::Sample &sample)
+void Theta::evaluateLogLikelihood(Sample &sample)
 {
-  double logLikelihood = 0.0;
-
   std::vector<double> logValues;
   logValues.resize(_psiProblemSampleCount);
 
   for (size_t i = 0; i < _psiProblemSampleCount; i++)
   {
-    korali::Sample psiSample;
+    Sample psiSample;
     psiSample["Parameters"] = _psiProblemSampleCoordinates[i];
 
     _psiProblem->updateConditionalPriors(psiSample);
@@ -109,3 +113,9 @@ void korali::problem::hierarchical::Theta::evaluateLogLikelihood(korali::Sample 
 
   sample["logLikelihood"] = -log(_psiProblemSampleCount) + logSumExp(logValues);
 }
+
+} // namespace hierarchical
+
+} // namespace problem
+
+} // namespace korali

@@ -15,7 +15,7 @@ Create a series of experiments:
       e["Problem"]["Computational Model"] = lambda sampleData: model(sampleData, getReferencePoints())
       
       # Configuring CMA-ES parameters
-      e["Solver"]["Type"] = "CMAES"
+      e["Solver"]["Type"] = "Optimizer/CMAES"
       ...
 
 Set Experiment Vector

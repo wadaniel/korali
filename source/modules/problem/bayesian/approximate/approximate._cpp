@@ -1,8 +1,14 @@
 #include "modules/problem/bayesian/approximate/approximate.hpp"
 
-void korali::problem::bayesian::Approximate::initialize()
+namespace korali
 {
-  korali::problem::Bayesian::initialize();
+namespace problem
+{
+namespace bayesian
+{
+void Approximate::initialize()
+{
+  Bayesian::initialize();
 
   if (_referenceData.size() == 0) KORALI_LOG_ERROR("Bayesian (%s) problems require defining reference data.\n", _likelihoodModel.c_str());
 
@@ -68,13 +74,13 @@ void korali::problem::bayesian::Approximate::initialize()
   }
 }
 
-void korali::problem::bayesian::Approximate::evaluateLoglikelihood(korali::Sample &sample)
+void Approximate::evaluateLoglikelihood(Sample &sample)
 {
   if (_likelihoodModel == "Truncated Normal") likelihoodTruncatedNormal(sample);
   if (_likelihoodModel == "Normal") likelihoodNormal(sample);
 }
 
-void korali::problem::bayesian::Approximate::likelihoodNormal(korali::Sample &sample)
+void Approximate::likelihoodNormal(Sample &sample)
 {
   double mu = sample["Parameters"][meanVariableIndex];
   double sigma = sample["Parameters"][sigmaVariableIndex];
@@ -84,7 +90,7 @@ void korali::problem::bayesian::Approximate::likelihoodNormal(korali::Sample &sa
 
   if (logNormalization <= 0.)
   {
-    sample["logLikelihood"] = -korali::Inf;
+    sample["logLikelihood"] = -Inf;
     return;
   }
 
@@ -100,7 +106,7 @@ void korali::problem::bayesian::Approximate::likelihoodNormal(korali::Sample &sa
   sample["logLikelihood"] = -logNormalization - 0.5 * ssn / sigma2;
 }
 
-void korali::problem::bayesian::Approximate::likelihoodTruncatedNormal(korali::Sample &sample)
+void Approximate::likelihoodTruncatedNormal(Sample &sample)
 {
   double a = sample["Parameters"][lowerBoundVariableIndex];
   double b = sample["Parameters"][upperBoundVariableIndex];
@@ -112,7 +118,7 @@ void korali::problem::bayesian::Approximate::likelihoodTruncatedNormal(korali::S
 
   if (a > b)
   {
-    sample["logLikelihood"] = -korali::Inf;
+    sample["logLikelihood"] = -Inf;
     return;
   };
 
@@ -120,7 +126,7 @@ void korali::problem::bayesian::Approximate::likelihoodTruncatedNormal(korali::S
 
   if (logNormalization <= 0.)
   {
-    sample["logLikelihood"] = -korali::Inf;
+    sample["logLikelihood"] = -Inf;
     return;
   }
 
@@ -131,7 +137,7 @@ void korali::problem::bayesian::Approximate::likelihoodTruncatedNormal(korali::S
   {
     if (d > b || d < a)
     {
-      sample["logLikelihood"] = -korali::Inf;
+      sample["logLikelihood"] = -Inf;
       return;
     };
     double diff = d - mu;
@@ -140,3 +146,9 @@ void korali::problem::bayesian::Approximate::likelihoodTruncatedNormal(korali::S
 
   sample["logLikelihood"] = -logNormalization - 0.5 * ssn / sigma2;
 }
+
+} // namespace bayesian
+
+} // namespace problem
+
+} // namespace korali

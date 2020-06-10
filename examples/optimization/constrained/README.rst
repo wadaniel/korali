@@ -125,7 +125,7 @@ We choose the solver `CMA-ES`,
 
 .. code-block:: python
 
-    e["Solver"]["Type"] = "CMAES"
+    e["Solver"]["Type"] = "Optimizer/CMAES"
 
 Then we set a few parameters for CCMA-ES,
 
@@ -137,7 +137,7 @@ Then we set a few parameters for CCMA-ES,
     e["Solver"]["Termination Criteria"]["Max Value"] = -680.630057374402 - 1e-4
     e["Solver"]["Termination Criteria"]["Max Generations"] = 500
 
-For a detailed description of CCMA-ES settings see :ref:`CMAES <module-solver-cmaes>`.
+For a detailed description of CCMA-ES settings see :ref:`CMAES <module-solver-optimizer-cmaes>`.
 
 We configure output settings,
 

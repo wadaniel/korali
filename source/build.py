@@ -152,7 +152,7 @@ def consumeValue(base, moduleName, path, varName, varType, isMandatory,
 
   if (isMandatory):
     cString += '  else '
-    cString += '  KORALI_LOG_ERROR("No value provided for mandatory setting: ' + path.replace(
+    cString += '  KORALI_LOG_ERROR(" + No value provided for mandatory setting: ' + path.replace(
         '"', "'") + ' required by ' + moduleName + '.\\n"); \n'
 
   cString += '\n'
@@ -163,7 +163,7 @@ def consumeValue(base, moduleName, path, varName, varType, isMandatory,
     cString += ' bool ' + validVarName + ' = false; \n'
     for v in options:
       cString += ' if (' + varName + ' == "' + v + '") ' + validVarName + ' = true; \n'
-    cString += ' if (' + validVarName + ' == false) KORALI_LOG_ERROR("Unrecognized value provided for mandatory setting: ' + path.replace(
+    cString += ' if (' + validVarName + ' == false) KORALI_LOG_ERROR(" + Unrecognized value provided for mandatory setting: ' + path.replace(
         '"', "'") + ' required by ' + moduleName + '.\\n"); \n'
     cString += '}\n'
 
@@ -261,15 +261,15 @@ def createSetConfiguration(module):
     for v in module["Compatible Solvers"]:
       codeString += '   candidateSolverName = "' + v + '"; \n'
       codeString += '   candidateSolverName.erase(remove_if(candidateSolverName.begin(), candidateSolverName.end(), isspace), candidateSolverName.end()); \n'
-      codeString += '   if (solverName == candidateSolverName) detectedCompatibleSolver = true;\n'
-    codeString += '  if (detectedCompatibleSolver == false) KORALI_LOG_ERROR("Specified solver (%s) is not compatible with problem of type: ' + module[
+      codeString += '   if (solverName.rfind(candidateSolverName, 0) == 0) detectedCompatibleSolver = true;\n'
+    codeString += '  if (detectedCompatibleSolver == false) KORALI_LOG_ERROR(" + Specified solver (%s) is not compatible with problem of type: ' + module[
         "Name"] + '\\n",  _k->_js["Solver"]["Type"].dump(1).c_str()); \n\n'
 
   codeString += ' ' + module["Parent Class"] + '::setConfiguration(js);\n'
 
   codeString += ' _type = "' + module["Option Name"] + '";\n'
   codeString += ' if(isDefined(js, "Type")) eraseValue(js, "Type");\n'
-  codeString += ' if(isEmpty(js) == false) KORALI_LOG_ERROR("Unrecognized settings for Korali module: ' + module[
+  codeString += ' if(isEmpty(js) == false) KORALI_LOG_ERROR(" + Unrecognized settings for Korali module: ' + module[
       "Name"] + ': \\n%s\\n", js.dump(2).c_str());\n'
   codeString += '} \n\n'
 
@@ -413,7 +413,7 @@ def createRunOperation(module):
 
   codeString += ' operationDetected = operationDetected || ' + module[
       "Parent Class"] + '::runOperation(operation, sample);\n'
-  codeString += ' if (operationDetected == false) KORALI_LOG_ERROR("Operation %s not recognized for problem ' + module[
+  codeString += ' if (operationDetected == false) KORALI_LOG_ERROR(" + Operation %s not recognized for problem ' + module[
       "Class"] + '.\\n", operation.c_str());\n'
   codeString += ' return operationDetected;\n'
   codeString += '}\n\n'
@@ -426,14 +426,14 @@ def createRunOperation(module):
 
 def createGetPropertyPointer(module):
   codeString = 'double* ' + module[
-      "Class"] + '::getPropertyPointer(std::string property)\n'
+      "Class"] + '::getPropertyPointer(const std::string& property)\n'
   codeString += '{\n'
 
   for v in module["Conditional Variables"]:
     codeString += ' if (property == "' + v["Name"][
         0] + '") return &' + getCXXVariableName(v["Name"]) + ';\n'
 
-  codeString += ' KORALI_LOG_ERROR("Property %s not recognized for distribution ' + module[
+  codeString += ' KORALI_LOG_ERROR(" + Property %s not recognized for distribution ' + module[
       "Class"] + '.\\n", property.c_str());\n'
   codeString += ' return NULL;\n'
   codeString += '}\n\n'
@@ -654,7 +654,7 @@ for moduleDir, relDir, fileNames in os.walk(modulesDir):
         functionOverrideString += '* @param property Name of the property to find.\n'
         functionOverrideString += '* @return The pointer to the property..\n'
         functionOverrideString += '*/\n'
-        functionOverrideString += ' double* getPropertyPointer(std::string property) override;\n'
+        functionOverrideString += ' double* getPropertyPointer(const std::string& property) override;\n'
 
       newHeaderString = moduleTemplateHeaderString.replace(
           'public:', 'public: \n' + functionOverrideString + '\n')

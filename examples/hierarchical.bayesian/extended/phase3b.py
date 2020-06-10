@@ -19,7 +19,7 @@ e["Problem"]["Type"] = "Hierarchical/Theta"
 e["Problem"]["Theta Experiment"] = theta
 e["Problem"]["Psi Experiment"] = psi
 
-e["Solver"]["Type"] = "TMCMC"
+e["Solver"]["Type"] = "Sampler/TMCMC"
 e["Solver"]["Population Size"] = 1000
 e["Solver"]["Termination Criteria"]["Max Generations"] = 30
 e["Solver"]["Default Burn In"] = 1

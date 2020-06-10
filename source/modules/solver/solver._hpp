@@ -12,7 +12,7 @@
 */
 namespace korali
 {
-class Solver : public korali::Module
+class Solver : public Module
 {
   public:
   /**

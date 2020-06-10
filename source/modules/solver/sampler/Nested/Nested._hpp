@@ -1,0 +1,242 @@
+#ifndef _KORALI_SOLVER_NESTED_HPP_
+#define _KORALI_SOLVER_NESTED_HPP_
+
+#include "modules/distribution/multivariate/normal/normal.hpp"
+#include "modules/distribution/univariate/normal/normal.hpp"
+#include "modules/distribution/univariate/uniform/uniform.hpp"
+#include "modules/solver/sampler/sampler.hpp"
+#include <vector>
+
+namespace korali
+{
+namespace solver
+{
+namespace sampler
+{
+typedef struct ellipse_s
+{
+  /**
+   * @brief Number samples in ellipse.
+   */
+  size_t num;
+
+  /** 
+   * @brief Indices of samples from live data set.
+   */
+  std::vector<size_t> sampleIdx;
+
+  /** 
+   * @brief Mean vector of samples in ellipse.
+   */
+  std::vector<double> mean;
+
+  /**
+    * @brief Covariance Matrix of samples in ellipse.
+   */
+  std::vector<double> cov;
+
+  /**
+    * @brief Inverse of Covariance Matrix.
+   */
+  std::vector<double> invCov;
+
+  /**
+    * @brief Axes of the ellipse.
+   */
+  std::vector<double> axes;
+
+  /**
+   * @brief Volume estimated from covariance.
+   */
+  double volume;
+
+  /**
+   * @brief Enlargement factor such that volume is at least as large as the 'true' volume.
+   */
+  double enlargementFactor;
+
+  /**
+   * @brief 'True' volume from which the subset of samples were sampled from.
+   */
+  double trueVolume;
+
+} ellipse_t;
+
+
+class Nested : public korali::Solver
+{
+  private:
+  /*
+  * @brief Seed for the shuffle randomizer
+  */
+  size_t _shuffleSeed;
+
+  /*
+  * @brief Storing ellipses (only relevant for Multi Ellipsoidal sampling).
+  */
+  std::vector<ellipse_t> _ellipseVector;
+
+  /*
+  * @brief Init and run first Generation.
+  */
+  void runFirstGeneration();
+
+  /*
+  * @brief Prepare Generation before evaluation, update proposals.
+  */
+  void prepareGeneration();
+
+  /*
+  * @brief Generate new candidates to evaluate.
+  */
+  void generateCandidates();
+
+  /** 
+  * @brief Generates new samples by copying and mutating randomly selected samples
+  */
+  void generateCandidatesFromMCMC();
+
+  /** 
+  * @brief Generate new samples uniformly in Box
+  */
+  void generateCandidatesFromBox();
+
+  /** 
+  * @brief Generate new samples uniformly in Ellipse
+  */
+  void generateCandidatesFromEllipse(const ellipse_t &ellipse);
+
+  /** 
+  * @brief Generate new samples uniformly from multiple Ellipses
+  */
+  void generateCandidatesFromMultiEllipse();
+
+  /*
+  * @brief Process Generation after receiving all results.
+  */
+  void processGeneration();
+
+  /*
+  * @brief Add all live samples to sample data base.
+  */
+  void consumeLiveSamples();
+
+  /*
+  * @brief Calculates Mean and Covariance from Live Samples.
+ */
+  void updateMeanAndCovariance();
+
+  /*
+  * @brief Updates bounding Box.
+ */
+  void updateBox();
+
+  /*
+  * @brief Ascending sort of live sample ranks based on evaluation.
+ */
+  void sortLiveSamplesAscending();
+
+  /*
+  * @brief Add sample to discard to sample database.
+ */
+  void updateSampleDatabase(size_t sampleIdx);
+
+  /*
+  * @brief Generate posterior distribution from sample data base.
+  */
+  void generatePosterior();
+
+  /*
+  * @brief Calculate L2 distance between two vectors.
+  */
+  double l2distance(const std::vector<double>& sampleOne, const std::vector<double>& sampleTwo) const;
+
+  /*
+  * @brief Updates bounding Ellipse.
+  */
+  void updateEllipse(ellipse_t &ellipse) const;
+
+  /*
+  * @brief Applies k-means clustering (k=2) and fills cluster vectors with samples.
+  */
+  void kmeansClustering(const ellipse_t &parent, size_t maxIter, ellipse_t &childOne, ellipse_t &childTwo) const;
+
+  /*
+  * @brief Udates the mean vector of ellipse argument.
+  */
+  void updateEllipseMean(ellipse_t &ellipse) const;
+
+  /*
+  * @brief Udates the covariance matrix of input ellipse.
+  */
+  void updateEllipseCov(ellipse_t &ellipse) const;
+
+  /*
+  * @brief Updates volume and enlargement factor of the ellipse.
+  */
+  void updateEllipseVolume(ellipse_t &ellipse) const;
+
+  /*
+  * @brief Update ellipse axes.
+  */
+  void updateEllipseAxes(ellipse_t &ellipse) const;
+
+  /*
+  * @brief Calculates weighted Mahalanobis metric of sample and ellipse.
+  */
+  double weightedMahalanobisDistance(std::vector<double> sample, ellipse_t ellipse) const;
+
+  /*
+  * @brief Calculate effective number of samples.
+  * @return the number of effective samples
+  */
+  double calcEffectiveSamples() const;
+
+  /*
+  * @brief Safely adding two values that are in log space. Returns in log space.
+  * @param logx logx
+  * @param logy logy
+  * return The operation result
+  */
+  double safeLogPlus(double logx, double logy) const;
+
+  /*
+  * @brief Safely subtracting logy from logx. Returns in log space.
+  * @param logx logx
+  * @param logy logy
+  * return The operation result
+  */
+  double safeLogMinus(double logx, double logy) const;
+
+  public:
+  /**
+  * @brief Configures Sampler.
+  */
+  void setInitialConfiguration() override;
+
+  /**
+  * @brief Main solver loop.
+  */
+  void runGeneration() override;
+
+  /**
+ * @brief Console Output before generation runs.
+ */
+  void printGenerationBefore() override;
+
+  /**
+ * @brief Console output after generation.
+ */
+  void printGenerationAfter() override;
+
+  /**
+  * @brief Final console output at termination.
+  */
+  void finalize() override;
+};
+
+} // namespace sampler
+} // namespace solver
+} // namespace korali
+
+#endif // _KORALI_SOLVER_NESTED_HPP_

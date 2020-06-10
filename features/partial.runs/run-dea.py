@@ -18,7 +18,7 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Optimization"
 e["Problem"]["Objective Function"] = model
 
-e["Solver"]["Type"] = "DEA"
+e["Solver"]["Type"] = "Optimizer/DEA"
 e["Solver"]["Population Size"] = 10
 e["Solver"]["Termination Criteria"]["Max Generations"] = 50
 

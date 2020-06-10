@@ -27,7 +27,7 @@ e["Variables"][0]["Lower Bound"] = -10.0
 e["Variables"][0]["Upper Bound"] = +10.0
 
 # Configuring CMA-ES parameters
-e["Solver"]["Type"] = "CMAES"
+e["Solver"]["Type"] = "Optimizer/CMAES"
 e["Solver"]["Population Size"] = 4
 e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-15
 e["Solver"]["Termination Criteria"]["Max Generations"] = 20

@@ -1,11 +1,9 @@
 #include "modules/conduit/conduit.hpp"
-#include "modules/solver/optimizer/gridSearch/gridSearch.hpp"
+#include "modules/solver/gridSearch/gridSearch.hpp"
 
 namespace korali
 {
 namespace solver
-{
-namespace optimizer
 {
 void GridSearch::setInitialConfiguration()
 {
@@ -101,8 +99,6 @@ void GridSearch::finalize()
   (*_k)["Results"]["Best Sample"]["Parameters"] = _locationOfMaximum;
   (*_k)["Results"]["Best Sample"]["F(x)"] = _maximum;
 }
-
-} // namespace optimizer
 
 } // namespace solver
 

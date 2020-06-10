@@ -28,6 +28,9 @@ void NeuralNetwork::initialize()
   size_t currentVariable = 0;
   for (size_t i = 1; i < _layers.size(); i++)
   {
+   // Setting value for this layer's xavier constant
+   double xavierConstant = sqrt(6.0) / sqrt(_layers[i]->_nodeCount +  _layers[i - 1]->_nodeCount);
+
     // Adding layer's weights
     for (size_t j = 0; j < _layers[i]->_nodeCount; j++)
       for (size_t k = 0; k < _layers[i - 1]->_nodeCount; k++)
@@ -35,8 +38,14 @@ void NeuralNetwork::initialize()
         char varName[512];
         sprintf(varName, "Weight [%lu] %lu->%lu", i, j, k);
         std::string varNameString(varName);
+
+        // Setting initial weight values
+        double initialGuess = 0.0;
+        if (_weightInitialization == "Xavier") initialGuess = xavierConstant *  _uniformGenerator->getRandomNumber();
+
         _koraliExperiment["Variables"][currentVariable]["Name"] = varNameString;
-        _koraliExperiment["Variables"][currentVariable]["Initial Value"] = 0.0;
+        _koraliExperiment["Variables"][currentVariable]["Initial Value"] = initialGuess;
+        _koraliExperiment["Variables"][currentVariable]["Initial Mean"] = initialGuess;
         _koraliExperiment["Variables"][currentVariable]["Initial Standard Deviation"] = 1.0;
         currentVariable++;
       }
@@ -48,7 +57,13 @@ void NeuralNetwork::initialize()
       sprintf(varName, "Bias [%lu] %lu", i, j);
       std::string varNameString(varName);
       _koraliExperiment["Variables"][currentVariable]["Name"] = varNameString;
-      _koraliExperiment["Variables"][currentVariable]["Initial Value"] = 0.0;
+
+      // Setting initial biases values
+      double initialGuess = 0.0;
+      if (_weightInitialization == "Xavier") initialGuess = xavierConstant *  _uniformGenerator->getRandomNumber();
+
+      _koraliExperiment["Variables"][currentVariable]["Initial Value"] = initialGuess;
+      _koraliExperiment["Variables"][currentVariable]["Initial Mean"] = initialGuess;
       _koraliExperiment["Variables"][currentVariable]["Initial Standard Deviation"] = 1.0;
       currentVariable++;
     }
@@ -724,7 +739,7 @@ void NeuralNetwork::runSample(Sample &sample, NeuralNetwork *nn)
         gradientVector[currentVariable++] = nn->_layers[i]->_bias[j];
     }
 
-    sample["Gradients"] = gradientVector;
+    sample["Gradient"] = gradientVector;
   }
 }
 

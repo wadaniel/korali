@@ -146,7 +146,7 @@ class Nested : public korali::Solver
   /*
   * @brief Calculate L2 distance between two vectors.
   */
-  double l2distance(std::vector<double> sampleOne, std::vector<double> sampleTwo) const;
+  double l2distance(const std::vector<double>& sampleOne, const std::vector<double>& sampleTwo) const;
 
   /*
   * @brief Updates bounding Ellipse.

@@ -99,7 +99,6 @@ void Nested::setInitialConfiguration()
     ellipse_t *first = _ellipseVector.data();
     first->sampleIdx.resize(_numberLivePoints);
 
-    size_t i = 0;
     std::iota(first->sampleIdx.begin(), first->sampleIdx.end(), 0);
     first->num = _numberLivePoints;
   }
@@ -204,7 +203,6 @@ void Nested::prepareGeneration()
   }
   else /* _resamplingMethod == "Multi Ellipse" */
   {
-<<<<<<< HEAD:source/modules/solver/Nested/Nested._cpp
     std::vector<ellipse_t> newEllipseVector;
     
     size_t split = 0;
@@ -239,14 +237,9 @@ void Nested::prepareGeneration()
         {
             newEllipseVector.push_back(ellipse);
         }
-    for (auto &ellipse : _ellipseVector)
-    {
-      auto one = ellipse_t();
-      auto two = ellipse_t();
-      kmeansClustering(ellipse, 100, one, two);
-      updateEllipse(ellipse);
+
+        _ellipseVector = newEllipseVector;
     }
-    _ellipseVector = newEllipseVector;
   }
 }
 
@@ -700,6 +693,7 @@ void Nested::updateEllipseVolume(ellipse_t &ellipse) const
   ellipse.invCov.resize(_dimensions * _dimensions);
   gsl_matrix_view invCov = gsl_matrix_view_array(ellipse.invCov.data(), _dimensions, _dimensions);
   int status = gsl_linalg_LU_invert(matLU, perm, &invCov.matrix);
+  if (status != 0) KORALI_LOG_ERROR("Covariance inversion failed during Ellipse update.");
 
   double det = gsl_linalg_LU_det(matLU, signal);
  
@@ -729,7 +723,6 @@ void Nested::updateEllipseVolume(ellipse_t &ellipse) const
   gsl_vector_free(vout);
 
   // calculate axes from cholesky decomposition
-  int status;
   status = gsl_matrix_memcpy(&axes.matrix, &cov.matrix);
   gsl_matrix_scale(&axes.matrix, max);
   status = gsl_linalg_cholesky_decomp1(&axes.matrix); // LL^T = A
@@ -809,9 +802,8 @@ double Nested::weightedMahalanobisDistance(std::vector<double> sample, ellipse_t
   return ellipse.volume * dist / ellipse.trueVolume;
 }
 
-<<<<<<< HEAD:source/modules/solver/Nested/Nested._cpp
 
-size_t korali::solver::Nested::reassignSamples(ellipse_t &childOne, ellipse_t &childTwo) const
+size_t Nested::reassignSamples(ellipse_t &childOne, ellipse_t &childTwo) const
 {
 
     size_t reassign = 0;

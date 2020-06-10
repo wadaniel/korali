@@ -198,12 +198,42 @@ void korali::solver::Nested::prepareGeneration()
   }
   else /* _resamplingMethod == "Multi Ellipse" */
   {
-    for(auto& ellipse : _ellipseVector) {
+    std::vector<ellipse_t> newEllipseVector;
+    
+    size_t split = 0;
+    for(size_t idx = 0; idx < _ellipseVector.size(); ++idx)
+    {
+        printf("idx %zu (%zu)\n", idx, _ellipseVector.size());
+        ellipse_t& ellipse = _ellipseVector[idx];
         auto one = ellipse_t();
         auto two = ellipse_t();
         kmeansClustering(ellipse, 100, one, two);
         updateEllipse(ellipse);
+        updateEllipse(one);
+        updateEllipse(two);
+
+        size_t iter = 0;
+        while(reassignSamples(one, two) > 0)
+        {
+          updateEllipse(one);
+          updateEllipse(two);
+          if(iter > 100) break;
+          iter++;
+        }
+        printf("reassing %zu vols: %lf, %lf (%lf < %lf) (%lf > %lf)\n", iter, one.volume, two.volume,  one.volume+two.volume, ellipse.volume, ellipse.volume, 2.0*exp(_logVolume));
+        if (one.volume+two.volume < ellipse.volume || ellipse.volume > 2.0*exp(_logVolume) ) 
+        { 
+            split++;
+            _ellipseVector.push_back(one); 
+            _ellipseVector.push_back(two); 
+            printf("splitting ellipse %zu.. (%zu)\n", split, _ellipseVector.size());
+        }
+        else
+        {
+            newEllipseVector.push_back(ellipse);
+        }
     }
+    _ellipseVector = newEllipseVector;
   }
 }
 
@@ -505,11 +535,13 @@ void korali::solver::Nested::kmeansClustering(const ellipse_t &parent, size_t ma
   childOne.mean.resize(_dimensions);
   childTwo.mean.resize(_dimensions);
 
-  for (size_t d = 0; d < _dimensions; ++d)
-  {
-    childOne.mean[d] = _priorLowerBound[d] + _k->_distributions[_k->_variables[d]->_distributionIndex]->getRandomNumber() * _priorWidth[d];
-    childTwo.mean[d] = _priorLowerBound[d] + _k->_distributions[_k->_variables[d]->_distributionIndex]->getRandomNumber() * _priorWidth[d];
-  }
+
+  size_t rdIdx1 = _uniformGenerator->getRandomNumber()*parent.num;
+  size_t rdIdx2 = _uniformGenerator->getRandomNumber()*parent.num;
+
+  if(rdIdx1 == rdIdx2) rdIdx2 = (++rdIdx2) % parent.num; // TODO: this may be improved
+  childOne.mean = _liveSamples[parent.sampleIdx[rdIdx1]];
+  childTwo.mean = _liveSamples[parent.sampleIdx[rdIdx2]];
 
   size_t diffs, nOne, nTwo;
   std::vector<double> meanOneTmp(_dimensions);
@@ -567,7 +599,10 @@ void korali::solver::Nested::kmeansClustering(const ellipse_t &parent, size_t ma
   }
   if (iter >= maxIter) _k->_logger->logWarning("Normal", "K-Means Clustering did not terminate in %zu steps.\n", maxIter);
 
+  childOne.num = nOne;
   childOne.sampleIdx.resize(nOne);
+
+  childTwo.num = nTwo;
   childTwo.sampleIdx.resize(nTwo);
 
   size_t idxOne = 0;
@@ -612,6 +647,7 @@ void korali::solver::Nested::updateEllipseMean(ellipse_t &ellipse) const
       ellipse.mean[d] += _liveSamples[sidx][d];
     }
 
+  if(ellipse.num > 0)
   for (size_t d = 0; d < _dimensions; ++d)
     ellipse.mean[d] /= ((double)ellipse.num);
 }
@@ -620,6 +656,7 @@ void korali::solver::Nested::updateEllipseCov(ellipse_t &ellipse) const
 {
   ellipse.cov.resize(_dimensions * _dimensions);
 
+  if(ellipse.num > 1)
   for (size_t i = 0; i < _dimensions; i++)
   {
     for (size_t j = i; j < _dimensions; ++j)
@@ -639,13 +676,10 @@ void korali::solver::Nested::updateEllipseVolume(ellipse_t &ellipse) const
 {
   ellipse.trueVolume = exp(_logVolume) * (double)ellipse.num / ((double)_numberLivePoints);
 
+  gsl_matrix_view cov = gsl_matrix_view_array(ellipse.cov.data(), _dimensions, _dimensions);
+  
   gsl_matrix *matLU = gsl_matrix_alloc(_dimensions, _dimensions);
-  for (size_t i = 0; i < _dimensions; i++)
-    for (size_t j = i; j < _dimensions; j++)
-    {
-      gsl_matrix_set(matLU, i, j, ellipse.cov[i * _dimensions + j]);
-      gsl_matrix_set(matLU, j, i, ellipse.cov[i * _dimensions + j]);
-    }
+  gsl_matrix_memcpy(matLU, &cov.matrix);
 
   int signal;
   gsl_permutation *perm = gsl_permutation_alloc(_dimensions);
@@ -656,12 +690,49 @@ void korali::solver::Nested::updateEllipseVolume(ellipse_t &ellipse) const
   int status = gsl_linalg_LU_invert(matLU, perm, &invCov.matrix);
 
   double det = gsl_linalg_LU_det(matLU, signal);
+ 
+  ellipse.axes.resize(_dimensions * _dimensions);
+
+  gsl_vector *vec = gsl_vector_calloc(_dimensions);
+  gsl_vector *vout = gsl_vector_calloc(_dimensions);
+  gsl_matrix_view axes = gsl_matrix_view_array(ellipse.axes.data(), _dimensions, _dimensions);
+
+  double res, max = std::numeric_limits<double>::lowest();
+
+  // find scaling s.t. all samples are bounded by ellipse
+  for (size_t i = 0; i < ellipse.num; ++i)
+  {
+    size_t six = ellipse.sampleIdx[i];
+    for (size_t d = 0; d < _dimensions; ++d)
+      gsl_vector_set(vec, d, (_liveSamples[six][d] - ellipse.mean[d]));
+
+    gsl_blas_dgemv(CblasNoTrans, 1., &invCov.matrix, vec, 0., vout);
+    res = 0.;
+    gsl_blas_ddot(vec, vout, &res);
+
+    if (res > max) max = res;
+  }
+
+  gsl_vector_free(vec);
+  gsl_vector_free(vout);
+
+  // calculate axes from cholesky decomposition
+  int status;
+  status = gsl_matrix_memcpy(&axes.matrix, &cov.matrix);
+  gsl_matrix_scale(&axes.matrix, max);
+  status = gsl_linalg_cholesky_decomp1(&axes.matrix); // LL^T = A
+  if (status != 0) KORALI_LOG_ERROR("Cholesky Decomposition failed during Ellipse update.");
+
+  /* On output the diagonal and lower triangular part of the 
+     * input matrix A contain the matrix L, while the upper triangular part 
+     * contains the original matrix. */
 
   gsl_matrix_free(matLU);
   gsl_permutation_free(perm);
   double voltmp = pow(_ellipsoidalScaling, _dimensions / 2.0) * sqrt(det);
 
-  ellipse.enlargementFactor = voltmp > ellipse.trueVolume ? _ellipsoidalScaling : pow(ellipse.trueVolume / voltmp, 2.0 / _dimensions);
+  ellipse.enlargementFactor = voltmp > ellipse.trueVolume ? _ellipsoidalScaling : pow(ellipse.trueVolume / sqrt(det), 2.0 / _dimensions);
+  ellipse.volume = pow(ellipse.enlargementFactor, _dimensions / 2.0) * sqrt(det);
 }
 
 void korali::solver::Nested::updateEllipseAxes(ellipse_t &ellipse) const
@@ -711,7 +782,7 @@ double korali::solver::Nested::weightedMahalanobisDistance(std::vector<double> s
   for (size_t d = 0; d < _dimensions; ++d) dif[d] = sample[d] - ellipse.mean[d];
 
   // Mahalanobis distance
-  double dist = 0;
+  double dist = 0.;
   double tmp;
   for (size_t i = 0; i < _dimensions; ++i)
   {
@@ -725,6 +796,46 @@ double korali::solver::Nested::weightedMahalanobisDistance(std::vector<double> s
   // weighting
   return ellipse.volume * dist / ellipse.trueVolume;
 }
+
+
+size_t korali::solver::Nested::reassignSamples(ellipse_t &childOne, ellipse_t &childTwo) const
+{
+
+    size_t reassign = 0;
+    std::vector<size_t> sampleIdxOne;
+    std::vector<size_t> sampleIdxTwo;
+
+    //printf("before (%zu/%zu)\n", childOne.num, childTwo.num);
+    //printf("volume (%lf/%lf)\n", childOne.volume, childOne.trueVolume);
+    //printf("volume (%lf/%lf)\n", childTwo.volume, childTwo.trueVolume);
+    for(size_t i = 0; i < childOne.num; ++i)
+    {
+        size_t six = childOne.sampleIdx[i];
+        double distOne = weightedMahalanobisDistance(_liveSamples[six], childOne);
+        double distTwo = weightedMahalanobisDistance(_liveSamples[six], childTwo);
+        if( distOne < distTwo ) sampleIdxOne.push_back(six);
+        else                    { sampleIdxTwo.push_back(six); reassign++; }
+    }
+
+    for(size_t i = 0; i < childTwo.num; ++i)
+    {
+        size_t six = childTwo.sampleIdx[i];
+        double distOne = weightedMahalanobisDistance(_liveSamples[six], childOne);
+        double distTwo = weightedMahalanobisDistance(_liveSamples[six], childTwo);
+        if( distOne < distTwo ) { sampleIdxOne.push_back(six); reassign++; }
+        else                    sampleIdxTwo.push_back(six);
+    }
+
+    childOne.num = sampleIdxOne.size();
+    childOne.sampleIdx = sampleIdxOne;
+
+    childTwo.num = sampleIdxTwo.size();
+    childTwo.sampleIdx = sampleIdxTwo;
+
+    //printf("reassigning samples %zu (%zu/%zu)\n", reassign, childOne.num, childTwo.num);
+    return reassign;
+}
+
 
 double korali::solver::Nested::calcEffectiveSamples() const
 {

@@ -182,6 +182,12 @@ class Nested : public korali::Solver
   * @brief Calculates weighted Mahalanobis metric of sample and ellipse.
   */
   double weightedMahalanobisDistance(std::vector<double> sample, ellipse_t ellipse) const;
+ 
+  /*
+  * @brief Reassigns samples from parent to childs based on weighted Mahalanobis distance.
+  */
+  size_t reassignSamples(ellipse_t &childOne, ellipse_t &childTwo) const;
+
 
   /*
   * @brief Calculate effective number of samples.

@@ -28,8 +28,8 @@ void NeuralNetwork::initialize()
   size_t currentVariable = 0;
   for (size_t i = 1; i < _layers.size(); i++)
   {
-   // Setting value for this layer's xavier constant
-   double xavierConstant = sqrt(6.0) / sqrt(_layers[i]->_nodeCount +  _layers[i - 1]->_nodeCount);
+    // Setting value for this layer's xavier constant
+    double xavierConstant = sqrt(6.0) / sqrt(_layers[i]->_nodeCount + _layers[i - 1]->_nodeCount);
 
     // Adding layer's weights
     for (size_t j = 0; j < _layers[i]->_nodeCount; j++)
@@ -41,7 +41,7 @@ void NeuralNetwork::initialize()
 
         // Setting initial weight values
         double initialGuess = 0.0;
-        if (_weightInitialization == "Xavier") initialGuess = xavierConstant *  _uniformGenerator->getRandomNumber();
+        if (_weightInitialization == "Xavier") initialGuess = xavierConstant * _uniformGenerator->getRandomNumber();
 
         _koraliExperiment["Variables"][currentVariable]["Name"] = varNameString;
         _koraliExperiment["Variables"][currentVariable]["Initial Value"] = initialGuess;
@@ -60,7 +60,7 @@ void NeuralNetwork::initialize()
 
       // Setting initial biases values
       double initialGuess = 0.0;
-      if (_weightInitialization == "Xavier") initialGuess = xavierConstant *  _uniformGenerator->getRandomNumber();
+      if (_weightInitialization == "Xavier") initialGuess = xavierConstant * _uniformGenerator->getRandomNumber();
 
       _koraliExperiment["Variables"][currentVariable]["Initial Value"] = initialGuess;
       _koraliExperiment["Variables"][currentVariable]["Initial Mean"] = initialGuess;

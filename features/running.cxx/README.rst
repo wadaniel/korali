@@ -51,7 +51,7 @@ Then, we decide on `CMAES` as solver and configure its parameters,
 
 .. code-block:: python
 
-    e["Solver"]["Type"] = "CMAES";
+    e["Solver"]["Type"] = "Optimizer/CMAES";
     e["Solver"]["Population Size"] = 32;
     e["Solver"]["Termination Criteria"]["Max Generations"] = 100;
 

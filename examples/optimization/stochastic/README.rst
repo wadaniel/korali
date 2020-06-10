@@ -83,12 +83,12 @@ We choose the solver `CMAES`, set the population size to be `32` and two termina
 
 .. code-block:: python
 
-    e["Solver"]["Type"] = "CMAES"
+    e["Solver"]["Type"] = "Optimizer/CMAES"
     e["Solver"]["Population Size"] = 32
     e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-7
     e["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
-For a detailed description of CMAES settings see :ref:`CMAES <module-solver-cmaes>`.
+For a detailed description of CMAES settings see :ref:`CMAES <module-solver-optimizer-cmaes>`.
 
 Finally, we need to add a call to the run() routine to start the Korali engine.
 

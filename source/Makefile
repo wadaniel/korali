@@ -1,10 +1,6 @@
 include Makefile.conf
 # ==============================================================================
-WARNINGFLAGS = -Wno-deprecated-declarations -Wfatal-errors
-MACOS_CXX = clang++
-ifeq ($(CXX),$(MACOS_CXX))
-   WARNINGFLAGS += -Wno-self-assign-field -Wno-dangling-else
-endif
+WARNINGFLAGS += -Wall -Wno-deprecated-declarations -Wno-cast-function-type -Wno-parentheses -Wfatal-errors
 
 # ==============================================================================
 CXXFLAGS  = -g $(OPTFLAGS)  $(CXXARCH) $(WARNINGFLAGS)

@@ -1,9 +1,15 @@
 #include "modules/conduit/conduit.hpp"
 #include "modules/problem/hierarchical/thetaNew/thetaNew.hpp"
 
-void korali::problem::hierarchical::ThetaNew::initialize()
+namespace korali
 {
-  korali::problem::Hierarchical::initialize();
+namespace problem
+{
+namespace hierarchical
+{
+void ThetaNew::initialize()
+{
+  Hierarchical::initialize();
 
   // Psi-problem correctness checks
   std::string psiProblemType = (*_psiExperiment)["Problem"]["Type"];
@@ -31,16 +37,16 @@ void korali::problem::hierarchical::ThetaNew::initialize()
   }
 }
 
-void korali::problem::hierarchical::ThetaNew::evaluateLogLikelihood(korali::Sample &sample)
+void ThetaNew::evaluateLogLikelihood(Sample &sample)
 {
-  auto _psiProblem = dynamic_cast<korali::problem::hierarchical::Psi *>(_psiExperiment->_problem);
+  auto _psiProblem = dynamic_cast<Psi *>(_psiExperiment->_problem);
 
   size_t Ntheta = _k->_variables.size();
   std::vector<double> logValues(_psiProblemSampleCount, 0.0);
 
   for (size_t i = 0; i < _psiProblemSampleCount; i++)
   {
-    korali::Sample psiSample;
+    Sample psiSample;
     psiSample["Parameters"] = _psiProblemSampleCoordinates[i];
     _psiProblem->updateConditionalPriors(psiSample);
 
@@ -51,3 +57,9 @@ void korali::problem::hierarchical::ThetaNew::evaluateLogLikelihood(korali::Samp
 
   sample["logLikelihood"] = -log(_psiProblemSampleCount) + logSumExp(logValues);
 }
+
+} // namespace hierarchical
+
+} // namespace problem
+
+} // namespace korali

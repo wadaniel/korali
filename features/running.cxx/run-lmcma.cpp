@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
   e["Problem"]["Reference Data"] = p.refTemp;
   e["Problem"]["Computational Model"] = &heat2DSolver;
 
-  e["Solver"]["Type"] = "LMCMAES";
+  e["Solver"]["Type"] = "Optimizer/LMCMAES";
   e["Solver"]["Population Size"] = 32;
   e["Solver"]["Termination Criteria"]["Max Generations"] = 30;
 
@@ -38,22 +38,22 @@ int main(int argc, char *argv[])
 
   e["Variables"][0]["Name"] = "Intensity";
   e["Variables"][0]["Prior Distribution"] = "Uniform 0";
-  e["Variables"][0]["Initial Mean"] = 30.0;
+  e["Variables"][0]["Initial Value"] = 30.0;
   e["Variables"][0]["Initial Standard Deviation"] = 5.0;
 
   e["Variables"][1]["Name"] = "PosX";
   e["Variables"][1]["Prior Distribution"] = "Uniform 1";
-  e["Variables"][1]["Initial Mean"] = 0.25;
+  e["Variables"][1]["Initial Value"] = 0.25;
   e["Variables"][1]["Initial Standard Deviation"] = 0.01;
 
   e["Variables"][2]["Name"] = "PosY";
   e["Variables"][2]["Prior Distribution"] = "Uniform 2";
-  e["Variables"][2]["Initial Mean"] = 0.8;
+  e["Variables"][2]["Initial Value"] = 0.8;
   e["Variables"][2]["Initial Standard Deviation"] = 0.1;
 
   e["Variables"][3]["Name"] = "[Sigma]";
   e["Variables"][3]["Prior Distribution"] = "Uniform 3";
-  e["Variables"][3]["Initial Mean"] = 10.0;
+  e["Variables"][3]["Initial Value"] = 10.0;
   e["Variables"][3]["Initial Standard Deviation"] = 1.0;
 
   k.run(e);

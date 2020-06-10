@@ -7,39 +7,43 @@
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 #include "modules/solver/solver.hpp"
 
+#include <memory>
+
 namespace korali
 {
 namespace solver
 {
-class GaussianProcess : public korali::Solver
+class GaussianProcess : public Solver
 {
   public:
+  ~GaussianProcess();
+
   /**
   * @brief Korali engine for optimizing NN weights and biases
   */
-  korali::problem::SupervisedLearning *_problem;
+  problem::SupervisedLearning *_problem;
 
   /**
   * @brief Pointer to the gaussian processes library
   */
-  libgp::GaussianProcess *_gp;
+  std::unique_ptr<libgp::GaussianProcess> _gp;
 
   /**
   * @brief Korali engine for optimizing the GP's parameters
   */
-  korali::Engine _koraliEngine;
+  Engine _koraliEngine;
 
   /**
   * @brief Korali experiment for optimizing the GP's parameters
   */
-  korali::Experiment _koraliExperiment;
+  Experiment _koraliExperiment;
 
   /**
   * @brief Model function to evaluate the error function of the GP
   * @param sample The sample containing the proposal parameters
   * @param gp Pointer to the GP
   */
-  static void runSample(korali::Sample &sample, libgp::GaussianProcess *gp);
+  static void runSample(Sample &sample, libgp::GaussianProcess *gp);
 
   std::vector<std::vector<double>> test(const std::vector<std::vector<double>> &input) override;
 

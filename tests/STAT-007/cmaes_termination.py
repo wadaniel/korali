@@ -27,7 +27,7 @@ def run_cmaes_with_termination_criterion(criterion, value):
   e["Variables"][0]["Lower Bound"] = +1.0
   e["Variables"][0]["Upper Bound"] = +10.0
 
-  e["Solver"]["Type"] = "CMAES"
+  e["Solver"]["Type"] = "Optimizer/CMAES"
   e["Solver"]["Population Size"] = 8
   e["Solver"]["Termination Criteria"][criterion] = value
 

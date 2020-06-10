@@ -1,9 +1,15 @@
 #include "modules/problem/bayesian/latent/latent.hpp"
 #include <vector>
 
-void korali::problem::bayesian::Latent::initialize()
+namespace korali
 {
-  korali::problem::Bayesian::initialize();
+namespace problem
+{
+namespace bayesian
+{
+void Latent::initialize()
+{
+  Bayesian::initialize();
 
   _latentVariableIndices.clear();
   _hyperparameterVariableIndices.clear();
@@ -26,7 +32,7 @@ void korali::problem::bayesian::Latent::initialize()
   }
 }
 
-void korali::problem::bayesian::Latent::evaluateLoglikelihood(korali::Sample &sample)
+void Latent::evaluateLoglikelihood(Sample &sample)
 {
   // Evaluate the user-given probability distribution for latent- and hyperparameter values given in the sample
   sample.run(_sOfLikelihoodModel);
@@ -53,7 +59,7 @@ void korali::problem::bayesian::Latent::evaluateLoglikelihood(korali::Sample &sa
     Values that will be set:
       - sample["Samples"]
  */
-void korali::problem::bayesian::Latent::sampleLatent(korali::Sample &sample)
+void Latent::sampleLatent(Sample &sample)
 {
   sample["Number Of Latent Variables"] = _latentVariableIndices.size();
   sample.run(_latentVariableSampler);
@@ -61,21 +67,27 @@ void korali::problem::bayesian::Latent::sampleLatent(korali::Sample &sample)
 
 /*  Evaluate the user-defined 'S' function (the sufficient statistics of the distribution).
           sample is expected to contain parameter 'Latent Variables' */
-void korali::problem::bayesian::Latent::evaluateS(korali::Sample &sample)
+void Latent::evaluateS(Sample &sample)
 {
   sample.run(_sOfLikelihoodModel);
 }
 
 /*  Evaluate the user-defined 'phi' function (log-llh = -zeta + <S, phi>).
           sample is expected to contain parameter 'Hyperparameters' */
-void korali::problem::bayesian::Latent::evaluatePhi(korali::Sample &sample)
+void Latent::evaluatePhi(Sample &sample)
 {
   sample.run(_phiOfLikelihoodModel);
 }
 
 /*  Evaluate the user-defined 'zeta' function (~ the log-normalization constant of the distribution).
           sample is expected to contain parameter 'Hyperparameters' */
-void korali::problem::bayesian::Latent::evaluateZeta(korali::Sample &sample)
+void Latent::evaluateZeta(Sample &sample)
 {
   sample.run(_zetaOfLikelihoodModel);
 }
+
+} // namespace bayesian
+
+} // namespace problem
+
+} // namespace korali

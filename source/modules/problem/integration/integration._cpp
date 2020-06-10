@@ -1,6 +1,10 @@
 #include "modules/problem/integration/integration.hpp"
 
-void korali::problem::Integration::initialize()
+namespace korali
+{
+namespace problem
+{
+void Integration::initialize()
 {
   if (_k->_variables.size() == 0) KORALI_LOG_ERROR("Integration problems require at least one variable.\n");
 
@@ -72,7 +76,7 @@ void korali::problem::Integration::initialize()
   }
 }
 
-void korali::problem::Integration::execute(korali::Sample &sample)
+void Integration::execute(Sample &sample)
 {
   // Evaluating Sample
   sample.run(_integrand);
@@ -81,3 +85,7 @@ void korali::problem::Integration::execute(korali::Sample &sample)
 
   if (std::isnan(evaluation)) KORALI_LOG_ERROR("The function evaluation returned NaN.\n");
 }
+
+} // namespace problem
+
+} // namespace korali

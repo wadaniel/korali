@@ -73,7 +73,6 @@ void Nested::setInitialConfiguration()
   _generatedSamples = 0;
   _lStarOld = std::numeric_limits<double>::lowest();
   _lStar = std::numeric_limits<double>::lowest();
-<<<<<<< HEAD:source/modules/solver/Nested/Nested._cpp
 
   _domainMean.resize(_dimensions);
   if (_resamplingMethod == "MCMC")
@@ -205,16 +204,17 @@ void Nested::prepareGeneration()
   }
   else /* _resamplingMethod == "Multi Ellipse" */
   {
-    for(auto& ellipse : _ellipseVector) {
-        auto one = ellipse_t();
-        auto two = ellipse_t();
-        kmeansClustering(ellipse, 100, one, two);
-        updateEllipse(ellipse);
+    for (auto &ellipse : _ellipseVector)
+    {
+      auto one = ellipse_t();
+      auto two = ellipse_t();
+      kmeansClustering(ellipse, 100, one, two);
+      updateEllipse(ellipse);
     }
   }
 }
 
-void korali::solver::Nested::generateCandidates()
+void Nested::generateCandidates()
 {
   if (_resamplingMethod == "MCMC")
   {
@@ -320,7 +320,7 @@ void Nested::generateCandidatesFromBox()
   }
 }
 
-void Nested::generateCandidatesFromEllipse()
+void Nested::generateCandidatesFromEllipse(const ellipse_t &ellipse)
 {
   std::vector<double> vec(_dimensions);
   for (size_t i = 0; i < _batchSize; i++)
@@ -399,77 +399,6 @@ void Nested::updateBox()
       _boxLowerBound[d] = std::min(_boxLowerBound[d], _liveSamples[i][d]);
       _boxUpperBound[d] = std::max(_boxUpperBound[d], _liveSamples[i][d]);
     }
-}
-
-void Nested::updateEllipse()
-{
-  for (size_t d = 0; d < _k->_variables.size(); d++) _domainMean[d] = 0.0;
-
-  gsl_matrix *cvlup = gsl_matrix_calloc(_k->_variables.size(), _k->_variables.size());
-  gsl_matrix *covar = gsl_matrix_calloc(_k->_variables.size(), _k->_variables.size());
-
-  double weight1 = 1. / ((double)_numberLivePoints);
-  for (size_t i = 0; i < _numberLivePoints; i++)
-    for (size_t d = 0; d < _k->_variables.size(); d++)
-      _domainMean[d] += weight1 * _liveSamples[i][d];
-  for (size_t d = 0; d < _k->_variables.size(); d++)
-    _domainMean[d] = (_domainMean[d] - _priorLowerBound[d]) / _priorWidth[d];
-
-  double weight2 = 1. / ((double)_numberLivePoints - 1.);
-  for (size_t i = 0; i < _k->_variables.size(); i++)
-  {
-    for (size_t j = i; j < _k->_variables.size(); ++j)
-    {
-      double s = 0.0;
-      for (size_t k = 0; k < _numberLivePoints; ++k) s += ((_liveSamples[k][i] - _priorLowerBound[i]) / _priorWidth[i] - _domainMean[i]) * ((_liveSamples[k][j] - _priorLowerBound[j]) / _priorWidth[j] - _domainMean[j]);
-      gsl_matrix_set(cvlup, i, j, weight2 * s);
-      gsl_matrix_set(cvlup, j, i, weight2 * s);
-      gsl_matrix_set(covar, i, j, weight2 * s);
-      gsl_matrix_set(covar, j, i, weight2 * s);
-    }
-  }
-
-  gsl_permutation *p = gsl_permutation_alloc(_k->_variables.size());
-  int s;
-  int status1 = gsl_linalg_LU_decomp(cvlup, p, &s);
-
-  gsl_matrix *inv = gsl_matrix_alloc(_k->_variables.size(), _k->_variables.size());
-  int status2 = gsl_linalg_LU_invert(cvlup, p, inv);
-
-  if ((status1 != 0) or (status2 != 0)) gsl_matrix_set_identity(inv);
-
-  gsl_vector *vec = gsl_vector_calloc(_k->_variables.size());
-  gsl_vector *vout = gsl_vector_calloc(_k->_variables.size());
-  double res, max = std::numeric_limits<double>::lowest();
-  for (size_t i = 0; i < _numberLivePoints; ++i)
-  {
-    for (size_t d = 0; d < _k->_variables.size(); ++d)
-      gsl_vector_set(vec, d, (_liveSamples[i][d] - _priorLowerBound[d]) / _priorWidth[d] - _domainMean[d]);
-
-    gsl_blas_dgemv(CblasNoTrans, 1., inv, vec, 0., vout);
-    res = 0.;
-    gsl_blas_ddot(vec, vout, &res);
-
-    if (res > max) max = res;
-  }
-
-  gsl_matrix_scale(covar, max);
-  int status3 = gsl_linalg_cholesky_decomp1(covar); // LL^T = A
-  if (status3 == 1) KORALI_LOG_ERROR("Cholesky Decomposition failed during Ellipse update.");
-  /* On output the diagonal and lower triangular part of the 
-     * input matrix A contain the matrix L, while the upper triangular part 
-     * contains the original matrix. */
-
-  for (size_t k = 0; k < _k->_variables.size(); k++)
-    for (size_t l = 0; l < _k->_variables.size(); l++)
-      _ellipseAxes[k][l] = gsl_matrix_get(covar, k, l);
-
-  gsl_vector_free(vec);
-  gsl_vector_free(vout);
-  gsl_matrix_free(inv);
-  gsl_permutation_free(p);
-  gsl_matrix_free(cvlup);
-  gsl_matrix_free(covar);
 }
 
 void Nested::sortLiveSamplesAscending()
@@ -562,7 +491,7 @@ void Nested::generatePosterior()
   return;
 }
 
-double Nested::l2distance(const std::vector<double>& sampleOne, const std::vector<double>& sampleTwo) const
+double Nested::l2distance(const std::vector<double> &sampleOne, const std::vector<double> &sampleTwo) const
 {
   double dist = 0.;
   for (size_t d = 0; d < _dimensions; ++d) dist += (sampleOne[d] - sampleTwo[d]) * (sampleOne[d] - sampleTwo[d]);
@@ -629,15 +558,15 @@ void Nested::kmeansClustering(const ellipse_t &parent, size_t maxIter, ellipse_t
     }
 
     // calc mean (average)
-    if (nOne > 0) 
+    if (nOne > 0)
     {
-        for (size_t d = 0; d < _dimensions; ++d) meanOneTmp[d] /= ((double)nOne);
-        childOne.mean = meanOneTmp;
+      for (size_t d = 0; d < _dimensions; ++d) meanOneTmp[d] /= ((double)nOne);
+      childOne.mean = meanOneTmp;
     }
-    if (nTwo > 0) 
+    if (nTwo > 0)
     {
-        for (size_t d = 0; d < _dimensions; ++d) meanTwoTmp[d] /= ((double)nTwo);
-        childTwo.mean = meanTwoTmp;
+      for (size_t d = 0; d < _dimensions; ++d) meanTwoTmp[d] /= ((double)nTwo);
+      childTwo.mean = meanTwoTmp;
     }
 
     iter++;
@@ -666,16 +595,15 @@ void Nested::kmeansClustering(const ellipse_t &parent, size_t maxIter, ellipse_t
     }
   }
   printf("k-means terminated in %zu steps (%zu, %zu)\n", iter, nOne, nTwo);
-  
-  if(nOne == 0 || nTwo == 0)
-  for (size_t i = 0; i < parent.num; ++i)
-  {
+
+  if (nOne == 0 || nTwo == 0)
+    for (size_t i = 0; i < parent.num; ++i)
+    {
       size_t six = parent.sampleIdx[i];
       double d1 = l2distance(_liveSamples[six], childOne.mean);
       double d2 = l2distance(_liveSamples[six], childTwo.mean);
       printf("%zu %lf %lf\n", six, d1, d2);
-  }
-
+    }
 }
 
 void Nested::updateEllipseMean(ellipse_t &ellipse) const

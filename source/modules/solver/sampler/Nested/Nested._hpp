@@ -62,8 +62,7 @@ typedef struct ellipse_s
 
 } ellipse_t;
 
-
-class Nested : public korali::Solver
+class Nested : public Sampler
 {
   private:
   /*
@@ -149,7 +148,7 @@ class Nested : public korali::Solver
   /*
   * @brief Calculate L2 distance between two vectors.
   */
-  double l2distance(const std::vector<double>& sampleOne, const std::vector<double>& sampleTwo) const;
+  double l2distance(const std::vector<double> &sampleOne, const std::vector<double> &sampleTwo) const;
 
   /*
   * @brief Updates bounding Ellipse.

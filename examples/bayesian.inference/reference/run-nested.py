@@ -57,7 +57,7 @@ e["Console Output"]["Frequency"] = 500
 e["Console Output"]["Verbosity"] = 'Detailed'
 e["Solver"]["Termination Criteria"]["Max Generations"] = 100000
 e["Solver"]["Termination Criteria"]["Max Effective Sample Size"] = 10000
-e["Solver"]["Termination Criteria"]["Max Gain Factor"] = 1e-4
+e["Solver"]["Termination Criteria"]["Max Gain Factor"] = 1e-2
 
 # Configuring output settings
 e["File Output"]["Path"] = '_korali_result_nested'

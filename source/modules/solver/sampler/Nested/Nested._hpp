@@ -51,11 +51,6 @@ typedef struct ellipse_s
   double volume;
 
   /**
-   * @brief Enlargement factor such that volume is at least as large as the 'true' volume.
-   */
-  double enlargementFactor;
-
-  /**
    * @brief 'True' volume from which the subset of samples were sampled from.
    */
   double trueVolume;
@@ -99,6 +94,11 @@ class Nested : public Sampler
   * @brief Generate new samples uniformly in Box
   */
   void generateCandidatesFromBox();
+
+  /** 
+  * @brief Generates a sample uniformly in Ellipse
+  */
+  void generateSampleFromEllipse(const ellipse_t &ellipse, std::vector<double> &sample) const;
 
   /** 
   * @brief Generate new samples uniformly in Ellipse
@@ -156,6 +156,11 @@ class Nested : public Sampler
   void updateEllipse(ellipse_t &ellipse) const;
 
   /*
+  * @brief Initializes the ellipse vector with one ellipse..
+  */
+  void initEllipseVector();
+
+  /*
   * @brief Applies k-means clustering (k=2) and fills cluster vectors with samples.
   */
   void kmeansClustering(const ellipse_t &parent, size_t maxIter, ellipse_t &childOne, ellipse_t &childTwo) const;
@@ -181,15 +186,19 @@ class Nested : public Sampler
   void updateEllipseAxes(ellipse_t &ellipse) const;
 
   /*
+  * @brief Calculates Mahalanobis metric of sample and ellipse.
+  */
+  double mahalanobisDistance(const std::vector<double> &sample, const ellipse_t &ellipse) const;
+
+  /*
   * @brief Calculates weighted Mahalanobis metric of sample and ellipse.
   */
-  double weightedMahalanobisDistance(std::vector<double> sample, ellipse_t ellipse) const;
- 
+  double weightedMahalanobisDistance(const std::vector<double> &sample, const ellipse_t &ellipse) const;
+
   /*
   * @brief Reassigns samples from parent to childs based on weighted Mahalanobis distance.
   */
   size_t reassignSamples(ellipse_t &childOne, ellipse_t &childTwo) const;
-
 
   /*
   * @brief Calculate effective number of samples.

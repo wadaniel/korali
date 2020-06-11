@@ -180,7 +180,7 @@ void Nested::runFirstGeneration()
 
 void Nested::prepareGeneration()
 {
-  if ( _k->_currentGeneration > 3 && (_k->_currentGeneration % _proposalUpdateFrequency) != 0) return;
+  if (_k->_currentGeneration > 3 && (_k->_currentGeneration % _proposalUpdateFrequency) != 0) return;
 
   if (_resamplingMethod == "MCMC")
   {
@@ -515,61 +515,58 @@ void Nested::updateEllipse(ellipse_t &ellipse) const
   updateEllipseMean(ellipse);
   updateEllipseCov(ellipse);
   updateEllipseVolume(ellipse);
-  //updateEllipseAxes(ellipse);
 }
-
 
 void Nested::updateMultiEllipse()
 {
-    initEllipseVector();
-    std::vector<ellipse_t> newEllipseVector;
-    updateEllipse(_ellipseVector.front());
+  initEllipseVector();
+  std::vector<ellipse_t> newEllipseVector;
+  updateEllipse(_ellipseVector.front());
 
-    size_t minnum = 0;
-    size_t split = 0;
-    for (size_t idx = 0; idx < _ellipseVector.size(); ++idx)
+  size_t minnum = 0;
+  size_t split = 0;
+  for (size_t idx = 0; idx < _ellipseVector.size(); ++idx)
+  {
+    printf("idx %zu/%zu\n", idx, _ellipseVector.size());
+    ellipse_t &ellipse = _ellipseVector[idx];
+    auto one = ellipse_t();
+    auto two = ellipse_t();
+    kmeansClustering(ellipse, 100, one, two);
+
+    updateEllipse(one);
+    updateEllipse(two);
+
+    size_t iter = 0;
+    while (reassignSamples(one, two) > 0)
     {
-      //printf("idx %zu/%zu\n", idx, _ellipseVector.size());
-      ellipse_t &ellipse = _ellipseVector[idx];
-      auto one = ellipse_t();
-      auto two = ellipse_t();
-      kmeansClustering(ellipse, 100, one, two);
-
       updateEllipse(one);
       updateEllipse(two);
-
-      size_t iter = 0;
-      while (reassignSamples(one, two) > 0)
-      {
-        updateEllipse(one);
-        updateEllipse(two);
-        if (iter > 100) break;
-        iter++;
-      }
-
-      minnum = std::min(one.num, two.num);
-      //printf("reassing samples (%zu - %zu) in %zu steps: %lf, %lf\n", one.num, two.num, iter, one.volume, two.volume);
-      //printf("check: %lf < %lf, %lf > %lf\n", one.volume+two.volume, ellipse.volume, ellipse.volume, 2.0*exp(_logVolume));
-      if (((one.volume + two.volume >= ellipse.volume) && (ellipse.volume < 2.0 * exp(_logVolume))) || minnum <= 100 * _dimensions)
-      {
-        newEllipseVector.push_back(ellipse);
-        //printf("adding  ellipse %zu (%zu)\n", newEllipseVector.size(), ellipse.num);
-      }
-      else
-      {
-        split++;
-        _ellipseVector.push_back(one);
-        _ellipseVector.push_back(two);
-        //printf("splitting ellipse %zu.. (%zu/%zu)\n", split, one.num, two.num);
-      }
+      if (iter > 100) break;
+      iter++;
     }
 
-    size_t sanity = 0;
-    for (auto &e : newEllipseVector) sanity += e.num;
-    printf("sanity check: %zu (%zu)\n", sanity, newEllipseVector.size());
+    minnum = std::min(one.num, two.num);
+    printf("reassing samples (%zu - %zu) in %zu steps: %lf, %lf\n", one.num, two.num, iter, one.volume, two.volume);
+    printf("check: %lf < %lf, %lf > %lf\n", one.volume + two.volume, ellipse.volume, ellipse.volume, 2.0 * exp(_logVolume));
+    if (((one.volume + two.volume >= ellipse.volume) && (ellipse.volume < 2.0 * exp(_logVolume))) || minnum <= 100 * _dimensions)
+    {
+      newEllipseVector.push_back(ellipse);
+      printf("adding  ellipse %zu (%zu)\n", newEllipseVector.size(), ellipse.num);
+    }
+    else
+    {
+      split++;
+      _ellipseVector.push_back(one);
+      _ellipseVector.push_back(two);
+      printf("splitting ellipse %zu.. (%zu/%zu)\n", split, one.num, two.num);
+    }
+  }
 
-    _ellipseVector = newEllipseVector;
-    //_ellipseVector.resize(1); // = newEllipseVector;
+  size_t sanity = 0;
+  for (auto &e : newEllipseVector) sanity += e.num;
+  printf("sanity check: %zu (%zu)\n", sanity, newEllipseVector.size());
+
+  _ellipseVector = newEllipseVector;
 }
 
 void Nested::initEllipseVector()
@@ -772,7 +769,6 @@ void Nested::updateEllipseVolume(ellipse_t &ellipse) const
   status = gsl_matrix_memcpy(&axes.matrix, &cov.matrix);
   if (status != 0) KORALI_LOG_ERROR("Memcpy failed during Ellipse update.");
 
-  // gsl_matrix_scale(&axes.matrix, max);
   status = gsl_linalg_cholesky_decomp1(&axes.matrix); // LL^T = A
   if (status != 0) KORALI_LOG_ERROR("Cholesky Decomposition failed during Ellipse update.");
 
@@ -785,57 +781,13 @@ void Nested::updateEllipseVolume(ellipse_t &ellipse) const
   double K = sqrt(pow(M_PI, _dimensions)) * 2.0 / ((double)_dimensions * gsl_sf_gamma(0.5 * _dimensions));
   double voltmp = sqrt(pow(_ellipsoidalScaling * max, _dimensions) * det) * K;
 
-  //double enlargementFactor = _ellipsoidalScaling * max;
-  //for(size_t d = 0; d < _dimensions; ++d) printf("%lf %lf\n", ellipse.cov[d*_dimensions+d], ellipse.mean[d]);
-
-  //printf("%lf (%lf) -- %lf (%d)\n", voltmp, max, ellipse.trueVolume, voltmp > ellipse.trueVolume);
+  printf("%lf (%lf) -- %lf (%d)\n", voltmp, max, ellipse.trueVolume, voltmp > ellipse.trueVolume);
   double enlargementFactor = voltmp > ellipse.trueVolume ? _ellipsoidalScaling * max : pow((ellipse.trueVolume * ellipse.trueVolume) / (K * K * det), 1.0 / ((double)_dimensions));
   ellipse.volume = pow(enlargementFactor, _dimensions / 2.0) * sqrt(det);
 
   gsl_matrix_scale(&cov.matrix, enlargementFactor);
   gsl_matrix_scale(&invCov.matrix, 1. / enlargementFactor);
   gsl_matrix_scale(&axes.matrix, sqrt(enlargementFactor));
-}
-
-void Nested::updateEllipseAxes(ellipse_t &ellipse) const
-{
-  ellipse.axes.resize(_dimensions * _dimensions);
-
-  gsl_vector *vec = gsl_vector_calloc(_dimensions);
-  gsl_vector *vout = gsl_vector_calloc(_dimensions);
-  gsl_matrix_view inv = gsl_matrix_view_array(ellipse.invCov.data(), _dimensions, _dimensions);
-  gsl_matrix_view cov = gsl_matrix_view_array(ellipse.cov.data(), _dimensions, _dimensions);
-  gsl_matrix_view axes = gsl_matrix_view_array(ellipse.axes.data(), _dimensions, _dimensions);
-
-  double res, max = std::numeric_limits<double>::lowest();
-
-  // find scaling s.t. all samples are bounded by ellipse
-  for (size_t i = 0; i < ellipse.num; ++i)
-  {
-    size_t six = ellipse.sampleIdx[i];
-    for (size_t d = 0; d < _dimensions; ++d)
-      gsl_vector_set(vec, d, (_liveSamples[six][d] - ellipse.mean[d]));
-
-    gsl_blas_dgemv(CblasNoTrans, 1., &inv.matrix, vec, 0., vout);
-    res = 0.;
-    gsl_blas_ddot(vec, vout, &res);
-
-    if (res > max) max = res;
-  }
-
-  gsl_vector_free(vec);
-  gsl_vector_free(vout);
-
-  // calculate axes from cholesky decomposition
-  int status;
-  status = gsl_matrix_memcpy(&axes.matrix, &cov.matrix);
-  gsl_matrix_scale(&axes.matrix, max);
-  status = gsl_linalg_cholesky_decomp1(&axes.matrix); // LL^T = A
-  if (status != 0) KORALI_LOG_ERROR("Cholesky Decomposition failed during Ellipse update.");
-
-  /* On output the diagonal and lower triangular part of the 
-     * input matrix A contain the matrix L, while the upper triangular part 
-     * contains the original matrix. */
 }
 
 double Nested::mahalanobisDistance(const std::vector<double> &sample, const ellipse_t &ellipse) const
@@ -870,9 +822,6 @@ size_t Nested::reassignSamples(ellipse_t &childOne, ellipse_t &childTwo) const
   std::vector<size_t> sampleIdxOne;
   std::vector<size_t> sampleIdxTwo;
 
-  //printf("before (%zu/%zu)\n", childOne.num, childTwo.num);
-  //printf("volume (%lf/%lf)\n", childOne.volume, childOne.trueVolume);
-  //printf("volume (%lf/%lf)\n", childTwo.volume, childTwo.trueVolume);
   for (size_t i = 0; i < childOne.num; ++i)
   {
     size_t six = childOne.sampleIdx[i];
@@ -907,7 +856,7 @@ size_t Nested::reassignSamples(ellipse_t &childOne, ellipse_t &childTwo) const
   childTwo.num = sampleIdxTwo.size();
   childTwo.sampleIdx = sampleIdxTwo;
 
-  //printf("reassigning samples %zu (%zu/%zu)\n", reassign, childOne.num, childTwo.num);
+  printf("reassigning samples %zu (%zu/%zu)\n", reassign, childOne.num, childTwo.num);
   return reassign;
 }
 

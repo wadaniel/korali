@@ -180,7 +180,7 @@ void Nested::runFirstGeneration()
 
 void Nested::prepareGeneration()
 {
-  if (_k->_currentGeneration > 3 && _k->_currentGeneration % _proposalUpdateFrequency != 0) return;
+  if ( _k->_currentGeneration > 3 && (_k->_currentGeneration % _proposalUpdateFrequency) != 0) return;
 
   if (_resamplingMethod == "MCMC")
   {
@@ -196,56 +196,7 @@ void Nested::prepareGeneration()
   }
   else /* _resamplingMethod == "Multi Ellipse" */
   {
-    initEllipseVector();
-    std::vector<ellipse_t> newEllipseVector;
-    updateEllipse(_ellipseVector.front());
-
-    size_t minnum = 0;
-    size_t split = 0;
-    for (size_t idx = 0; idx < _ellipseVector.size(); ++idx)
-    {
-      //printf("idx %zu/%zu\n", idx, _ellipseVector.size());
-      ellipse_t &ellipse = _ellipseVector[idx];
-      auto one = ellipse_t();
-      auto two = ellipse_t();
-      kmeansClustering(ellipse, 100, one, two);
-      //updateEllipse(ellipse);
-
-      updateEllipse(one);
-      updateEllipse(two);
-
-      size_t iter = 0;
-      while (reassignSamples(one, two) > 0)
-      {
-        updateEllipse(one);
-        updateEllipse(two);
-        if (iter > 100) break;
-        iter++;
-      }
-
-      minnum = std::min(one.num, two.num);
-      //printf("reassing samples (%zu - %zu) in %zu steps: %lf, %lf\n", one.num, two.num, iter, one.volume, two.volume);
-      //printf("check: %lf < %lf, %lf > %lf\n", one.volume+two.volume, ellipse.volume, ellipse.volume, 2.0*exp(_logVolume));
-      if (((one.volume + two.volume >= ellipse.volume) && (ellipse.volume < 2.0 * exp(_logVolume))) || minnum <= 100 * _dimensions)
-      {
-        newEllipseVector.push_back(ellipse);
-        //printf("adding  ellipse %zu (%zu)\n", newEllipseVector.size(), ellipse.num);
-      }
-      else
-      {
-        split++;
-        _ellipseVector.push_back(one);
-        _ellipseVector.push_back(two);
-        //printf("splitting ellipse %zu.. (%zu/%zu)\n", split, one.num, two.num);
-      }
-    }
-
-    size_t sanity = 0;
-    for (auto &e : newEllipseVector) sanity += e.num;
-    printf("sanity check: %zu (%zu)\n", sanity, newEllipseVector.size());
-
-    _ellipseVector = newEllipseVector;
-    //_ellipseVector.resize(1); // = newEllipseVector;
+    updateMultiEllipse();
   }
 }
 
@@ -261,12 +212,11 @@ void Nested::generateCandidates()
   }
   else if (_resamplingMethod == "Ellipse")
   {
-    generateCandidatesFromEllipse(_ellipseVector.front());
+    generateCandidatesFromEllipse();
   }
   else /* _resamplingMethod == "Multi Ellipse" */
   {
-    generateCandidatesFromEllipse(_ellipseVector.front());
-    // TODO
+    generateCandidatesFromMultiEllipse();
   }
 }
 
@@ -377,11 +327,11 @@ void Nested::generateSampleFromEllipse(const ellipse_t &ellipse, std::vector<dou
   }
 }
 
-void Nested::generateCandidatesFromEllipse(const ellipse_t &ellipse)
+void Nested::generateCandidatesFromEllipse()
 {
   for (size_t i = 0; i < _batchSize; i++)
   {
-    generateSampleFromEllipse(ellipse, _candidates[i]);
+    generateSampleFromEllipse(_ellipseVector.front(), _candidates[i]);
   }
 }
 
@@ -566,6 +516,60 @@ void Nested::updateEllipse(ellipse_t &ellipse) const
   updateEllipseCov(ellipse);
   updateEllipseVolume(ellipse);
   //updateEllipseAxes(ellipse);
+}
+
+
+void Nested::updateMultiEllipse()
+{
+    initEllipseVector();
+    std::vector<ellipse_t> newEllipseVector;
+    updateEllipse(_ellipseVector.front());
+
+    size_t minnum = 0;
+    size_t split = 0;
+    for (size_t idx = 0; idx < _ellipseVector.size(); ++idx)
+    {
+      //printf("idx %zu/%zu\n", idx, _ellipseVector.size());
+      ellipse_t &ellipse = _ellipseVector[idx];
+      auto one = ellipse_t();
+      auto two = ellipse_t();
+      kmeansClustering(ellipse, 100, one, two);
+
+      updateEllipse(one);
+      updateEllipse(two);
+
+      size_t iter = 0;
+      while (reassignSamples(one, two) > 0)
+      {
+        updateEllipse(one);
+        updateEllipse(two);
+        if (iter > 100) break;
+        iter++;
+      }
+
+      minnum = std::min(one.num, two.num);
+      //printf("reassing samples (%zu - %zu) in %zu steps: %lf, %lf\n", one.num, two.num, iter, one.volume, two.volume);
+      //printf("check: %lf < %lf, %lf > %lf\n", one.volume+two.volume, ellipse.volume, ellipse.volume, 2.0*exp(_logVolume));
+      if (((one.volume + two.volume >= ellipse.volume) && (ellipse.volume < 2.0 * exp(_logVolume))) || minnum <= 100 * _dimensions)
+      {
+        newEllipseVector.push_back(ellipse);
+        //printf("adding  ellipse %zu (%zu)\n", newEllipseVector.size(), ellipse.num);
+      }
+      else
+      {
+        split++;
+        _ellipseVector.push_back(one);
+        _ellipseVector.push_back(two);
+        //printf("splitting ellipse %zu.. (%zu/%zu)\n", split, one.num, two.num);
+      }
+    }
+
+    size_t sanity = 0;
+    for (auto &e : newEllipseVector) sanity += e.num;
+    printf("sanity check: %zu (%zu)\n", sanity, newEllipseVector.size());
+
+    _ellipseVector = newEllipseVector;
+    //_ellipseVector.resize(1); // = newEllipseVector;
 }
 
 void Nested::initEllipseVector()

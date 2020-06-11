@@ -103,7 +103,7 @@ class Nested : public Sampler
   /** 
   * @brief Generate new samples uniformly in Ellipse
   */
-  void generateCandidatesFromEllipse(const ellipse_t &ellipse);
+  void generateCandidatesFromEllipse();
 
   /** 
   * @brief Generate new samples uniformly from multiple Ellipses
@@ -154,7 +154,12 @@ class Nested : public Sampler
   * @brief Updates bounding Ellipse.
   */
   void updateEllipse(ellipse_t &ellipse) const;
-
+ 
+  /*
+  * @brief Updates ellipses based on Multi Nest.
+  */
+  void updateMultiEllipse();
+  
   /*
   * @brief Initializes the ellipse vector with one ellipse..
   */

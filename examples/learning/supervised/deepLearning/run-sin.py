@@ -69,7 +69,7 @@ k.run(e)
 testInputSet = np.random.uniform(0, 2 * np.pi, 100)
 testInputSet = [[x] for x in testInputSet.tolist()]
 
-testInferredSet = e.test(testInputSet)
+testInferredSet = e.evaluate(testInputSet)
 testOutputSet = np.sin(testInputSet) * scaling
 
 ### Plotting Results

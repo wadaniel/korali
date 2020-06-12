@@ -182,9 +182,9 @@ void Experiment::finalize()
   co_delete(_thread);
 }
 
-std::vector<std::vector<double>> Experiment::test(const std::vector<std::vector<double>> &inputBatch)
+std::vector<std::vector<double>> Experiment::evaluate(const std::vector<std::vector<double>> &inputBatch)
 {
-  return _k->_solver->test(inputBatch);
+  return _k->_solver->evaluate(inputBatch);
 }
 
 knlohmann::json &Experiment::operator[](const std::string &key) { return _js[key]; }

@@ -19,6 +19,11 @@ class Layer : public Module
   *******************************************************/
 
   /**
+   * @brief oneDNN Memory object descriptor to contain the result value of applying the activation function on incoming data
+   */
+  dnnl::memory _activationMem;
+
+  /**
    * @brief oneDNN Memory object descriptor to contain the result value of the neuron data of the layer
    */
   dnnl::memory _dataMem;
@@ -44,8 +49,27 @@ class Layer : public Module
   dnnl::memory _dataDiffMem;
 
   /*****************************************************************
-  * Declaring Layers's Forward Inner Product Primitive Configuration
+  * Declaring Layers's Forward Activation Function Primitive Configuration
   ******************************************************************/
+
+  /**
+   * @brief oneDNN Arguments to the activation function
+   */
+  std::unordered_map<int, dnnl::memory> _forwardActivationArgs;
+
+  /**
+   * @brief oneDNN primitive attributes that describe the activation function
+   */
+  dnnl::eltwise_forward::primitive_desc _forwardActivationPrimitiveDesc;
+
+  /**
+   * @brief oneDNN primitive to run the activation function operation
+   */
+  dnnl::primitive _forwardActivationPrimitive;
+
+  /*****************************************************************
+   * Declaring Layers's Forward Inner Product Primitive Configuration
+   ******************************************************************/
 
   /**
    * @brief oneDNN Arguments to the inner product operation
@@ -53,19 +77,14 @@ class Layer : public Module
   std::unordered_map<int, dnnl::memory> _forwardInnerProductArgs;
 
   /**
-   * @brief oneDNN primitive attributes that describe the activation function
-   */
-  dnnl::primitive_attr _forwardPrimitiveAttributes;
-
-  /**
    * @brief oneDNN primitive attributes that describe the full forward propagation primitive
    */
-  dnnl::inner_product_forward::primitive_desc _forwardPrimitiveDescription;
+  dnnl::inner_product_forward::primitive_desc _forwardInnerProductPrimitiveDesc;
 
   /**
    * @brief oneDNN primitive to run the inner product + bias addition operation
    */
-  dnnl::primitive _forwardPrimitive;
+  dnnl::primitive _forwardInnerProductPrimitive;
 
   /*****************************************************************
    * Declaring Layers's Backward Propagation Configuration
